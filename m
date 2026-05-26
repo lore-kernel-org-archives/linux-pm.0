@@ -1,191 +1,146 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 714D4403E96
-	for <linux-pm@vger.kernel.org>; Tue, 26 May 2026 17:09:43 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id 27C0B3FDBFC;
+	Tue, 26 May 2026 17:16:35 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1779815386; cv=none; b=o/r6m5iCIB/A2X8M6iqL5Taei4N4utBDTpmCs5UEuBzD5WuyRJ9eRNLfaB4bEREjFSFiX1pC9sIJdAdDCT23czF6DvTHZ+TiR9Z5kHIckfcIXYffW7NaQUND2swbK5bC0sShkuztiEMdEoza4k98XFGBTiB3WNBbW0w8B2nh9js=
+	t=1779815797; cv=none; b=n9xaC79lQWde28LrmgCKfCzqDB230OWtPQNguGQegM3xsU1udPHqasv+oJmYvbDug5VEBDy0UOwX+Tn2XDVB7xoEALkAdmZBNxkllhqsJXLa2/zWjo/8lqEEhp4Bfb66JiFJtqZgDqf33CspkHvGS5+euvoMgkAFiTcU5Y3Vplo=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1779815386; c=relaxed/simple;
-	bh=Bxc6k4bzw5xeuRXN0IWh5CVnDL1xrkz230UL8YHY+Y8=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=Bz53WT0BCegpUbeVinXwdeYWK2Kb0UMHEzQ+BFYLUCUG7jmNCDC/jSeUNiZcmdSKC0Z4E+XJ6t38Qrw9p84zzbyJL+McYf7BYGu1Dx40UIWgoOUSrek/igZHs0EDdX97mFYPJWISjbYRuaORDHdwuxqN93QGyZ13BY3kiMBqz/A=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=ZicgubKV; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1779815797; c=relaxed/simple;
+	bh=WIXz7WNYMvm82e1/NC/YqiOWrGAn8LR6Ted2Q5Op/Rc=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=sRaSnFr7V6qNKNDQBIyE9bPUDF8MT4tWo4M5XMfFbEeGxr9vOj5E0qhEuNYz9tICUCqD0oO8Em2Te9+R40+dlnyWZzlCYeWxGViLS8Fw85RfocvEFEChbO03t83A9vf7Z+djAFbeKS/yBGozGUv+z4y5oswiL9XPk7A0QfuBi/M=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=NoDmx1EH; arc=none smtp.client-ip=217.140.110.172
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="ZicgubKV"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id DF9931F00ACF
-	for <linux-pm@vger.kernel.org>; Tue, 26 May 2026 17:09:42 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1779815382;
-	bh=V2BsSwCD4BDsdyOJ8Qm9DBZb9dJPidTJtzC5g1sEG5k=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc;
-	b=ZicgubKVQfkBXnvu6GjmDyKStuCcbpimZMByyYnPPPmRakH6CZptfahw0JxTrJpCL
-	 aQNvSSrMXHTr3QE312MjAjveVeAzJa32w3jfHWuf4ShZ7/y7JB1n9f3rFQfb5CDrOW
-	 P1vyjDaRxCKbUZ+ryr4sbiXwRsfhVDoGUpfOvQeVzdb69hrRHyK8ENxu1HcW8e17kY
-	 0M4MHIcWEvP8yiOf9gtxBDV4mRs8R/fL6s4obe8lc7Rb8EHS5Zj7++fh5lXzKcLxYC
-	 W4wgYq30ASA/4pkj+Z7DwTO32zgumuF7iUWOJueD+8HwoIQzVI6jwiYxVRyvC3WJC5
-	 ItXYRiQ3eA0Ew==
-Received: by mail-lj1-f181.google.com with SMTP id 38308e7fff4ca-394413a63d3so82120101fa.1
-        for <linux-pm@vger.kernel.org>; Tue, 26 May 2026 10:09:42 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AFNElJ+ON1n4gv/ihwUYtHbGZWVJJcGf2EN/cs+f+Iope6BGK+vWWUzxBDBhG4Bwv5pGbT/GT7P/L6xN9w==@vger.kernel.org
-X-Gm-Message-State: AOJu0YyH5SWWHOeBiALV5RFayWlPopoL7FU1DXieUYxHYuRdxAL44X0y
-	7RyVNuX0nSZ/tOcEx8BT+NeAx9cwi+4QxfesG9wTBa0ydeCggRWfPjlCF2vy3vs0IjYz7eyxgDI
-	PUeSlJ5Bm/i+7YCoJFQFN9hKsj94Nddg=
-X-Received: by 2002:a05:6512:36cb:b0:5a4:1918:20e with SMTP id
- 2adb3069b0e04-5aa323a3eb0mr3362773e87.30.1779815381098; Tue, 26 May 2026
- 10:09:41 -0700 (PDT)
+	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="NoDmx1EH"
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 467172880;
+	Tue, 26 May 2026 10:16:30 -0700 (PDT)
+Received: from [10.57.68.144] (unknown [10.57.68.144])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 1BF0E3F7D8;
+	Tue, 26 May 2026 10:16:31 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
+	t=1779815795; bh=WIXz7WNYMvm82e1/NC/YqiOWrGAn8LR6Ted2Q5Op/Rc=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=NoDmx1EH6MEkVLU4J208rYtHLWz6gon+oh65Q+F7PorzYCyQT6i0KEwdaMtKnmoEo
+	 AviwPW5HVtPXzz8E6PBMj9V7nx6V1AOK5ztiUxIHq6y4xjrKQ1Lf4QSqfj3NCjY4Mc
+	 Jd3WB8wLf6dgXAq5pHG868b4/cIQLX4KxA5SBkvU=
+Message-ID: <cd93c5e6-b581-4a9c-b5f7-09443ab76672@arm.com>
+Date: Tue, 26 May 2026 19:16:30 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260419132655.3800673-1-zhongqiu.han@oss.qualcomm.com>
- <CAJZ5v0i_KhPRkh-p2pCKgV+UKO5bnTJF0TVbQNsjpY4iBO3w+g@mail.gmail.com> <0b1ff222-ecda-4b21-9604-7d4e8fc86279@oss.qualcomm.com>
-In-Reply-To: <0b1ff222-ecda-4b21-9604-7d4e8fc86279@oss.qualcomm.com>
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Date: Tue, 26 May 2026 19:09:28 +0200
-X-Gmail-Original-Message-ID: <CAJZ5v0irkk_8sRQ59KYKpz6RmQYmdZk+edVr5=WSpDsKpS4kBA@mail.gmail.com>
-X-Gm-Features: AVHnY4KzqkLUD-UgzpMK1QXNbzX9LQrs5IFwhWPQjnJcn7giGyHHWDhN2bjmUaQ
-Message-ID: <CAJZ5v0irkk_8sRQ59KYKpz6RmQYmdZk+edVr5=WSpDsKpS4kBA@mail.gmail.com>
-Subject: Re: [PATCH v3 0/2] governor: Fix races and stale baseline on prev_cpu_nice
-To: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, viresh.kumar@linaro.org, 
-	venkatesh.pallipadi@intel.com, davej@redhat.com, trenn@suse.de, 
-	linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] sched/fair: Revert boost in cpu_util()
+To: "hongyan.xia" <hongyan.xia@transsion.com>,
+ "Rafael J. Wysocki" <rafael@kernel.org>,
+ Viresh Kumar <viresh.kumar@linaro.org>, Ingo Molnar <mingo@redhat.com>,
+ Peter Zijlstra <peterz@infradead.org>, Juri Lelli <juri.lelli@redhat.com>,
+ Vincent Guittot <vincent.guittot@linaro.org>,
+ Steven Rostedt <rostedt@goodmis.org>, Ben Segall <bsegall@google.com>,
+ Mel Gorman <mgorman@suse.de>, Valentin Schneider <vschneid@redhat.com>,
+ K Prateek Nayak <kprateek.nayak@amd.com>
+Cc: hupu <hupu@transsion.com>, "jiazi.li" <jiazi.li@transsion.com>,
+ "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Qais Yousef <qyousef@layalina.io>,
+ Christian Loehle <christian.loehle@arm.com>
+References: <20260518024039.932-1-hongyan.xia@transsion.com>
+ <0f7dd656-5ee4-4c14-a27c-fa30c12a676a@arm.com>
+ <bc7720fa-012c-4f0e-add6-4db526fdaa2d@transsion.com>
+Content-Language: en-GB
+From: Dietmar Eggemann <dietmar.eggemann@arm.com>
+In-Reply-To: <bc7720fa-012c-4f0e-add6-4db526fdaa2d@transsion.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 
-On Sun, May 24, 2026 at 7:57=E2=80=AFAM Zhongqiu Han
-<zhongqiu.han@oss.qualcomm.com> wrote:
->
-> On 5/22/2026 11:14 PM, Rafael J. Wysocki wrote:
-> > On Sun, Apr 19, 2026 at 3:27=E2=80=AFPM Zhongqiu Han
-> > <zhongqiu.han@oss.qualcomm.com> wrote:
-> >>
-> >> Patch 1 fixes two baseline-consistency issues in the DBS governor
-> >> framework.
-> >>
-> >> gov_update_cpu_data() writes prev_cpu_idle and prev_cpu_nice while
-> >> holding only attr_set->update_lock, whereas dbs_update() reads and
-> >> writes the same fields while holding only policy_dbs->update_mutex.
-> >> Because these are independent locks, the two paths are not mutually
-> >> exclusive.  The fix acquires policy_dbs->update_mutex inside
-> >> gov_update_cpu_data() for each policy.
-> >>
-> >> Additionally, cpufreq_dbs_governor_start() reads io_is_busy before
-> >> acquiring policy_dbs->update_mutex.  A concurrent io_is_busy_store()
-> >> can update io_is_busy and call gov_update_cpu_data(), which writes
-> >> prev_cpu_idle with the new value under the mutex.
-> >> cpufreq_dbs_governor_start() then overwrites prev_cpu_idle with the
-> >> stale value.  The fix reads io_is_busy inside the mutex.
-> >>
-> >> Patch 2 fixes a stale-baseline race on prev_cpu_nice when
-> >> ignore_nice_load is enabled via sysfs.  There is a race window
-> >> between setting ignore_nice_load and gov_update_cpu_data() acquiring
-> >> update_mutex: a concurrent dbs_update() can see the new ignore_nice_lo=
-ad
-> >> value but read a stale prev_cpu_nice, producing an inflated idle_time
-> >> for that sample.
-> >>
-> >> The fix unconditionally advances prev_cpu_nice on every dbs_update()
-> >> call.  With prev_cpu_nice always reflecting the most recent sample,
-> >> enabling ignore_nice_load can never produce a stale-baseline spike.
-> >> To keep prev_cpu_nice handling consistent, gov_update_cpu_data()
-> >> resets prev_cpu_nice unconditionally alongside prev_cpu_idle, and
-> >> cpufreq_dbs_governor_start() initializes prev_cpu_nice unconditionally=
-.
-> >>
-> >> v3:
-> >> - Update linux-next base
-> >> - Fix two additional issues found during sashiko.dev review:
-> >>      - Patch 1: move io_busy read inside policy_dbs->update_mutex in
-> >>        cpufreq_dbs_governor_start() to close a TOCTOU window against
-> >>        concurrent io_is_busy_store().
-> >>      - Patch 2: restore unconditional prev_cpu_nice reset in
-> >>        gov_update_cpu_data() to keep both baselines consistent when
-> >>        io_is_busy changes with ignore_nice_load enabled; update commen=
-t.
-> >>      - Patch 2: keep gov_update_cpu_data() in ignore_nice_load_store()=
- to
-> >>        prevent a stale-baseline spike in the governor-start window (wh=
-en
-> >>        ignore_nice_load is set before the first dbs_update() call); on=
-ly
-> >>        cpufreq_governor.c is modified.  Update commit message and add =
-one
-> >>        more fixes tag '326c86deaed54a ("[CPUFREQ] Remove unneeded lock=
-s").'
-> >>      - Update the commit messages.
-> >> - Link to v2: https://lore.kernel.org/all/20260409111407.9775-1-zhongq=
-iu.han@oss.qualcomm.com/
-> >> - Sashiko v2 comments: https://sashiko.dev/#/patchset/20260409111407.9=
-775-1-zhongqiu.han%40oss.qualcomm.com
-> >
-> > So sashiko.dev still has some comments on the first patch in v3:
-> >
-> > https://sashiko.dev/#/patchset/20260419132655.3800673-1-zhongqiu.han%40=
-oss.qualcomm.com
-> >
-> > Can you please have a look at that and let me know what you think?
-> >
->
->
-> Hi Rafael,
-> Thanks for pointing this out. I've looked at both comments:
->
-> Comment 1 (io_is_busy transition window):
->
-> The race is real but pre-existing. After Patch 1 the only remaining
-> window is the gap between the io_is_busy write and gov_update_cpu_data()
-> acquiring the lock:
->
-> CPU0 (io_is_busy_store):    CPU1 (dbs_update):
-> io_is_busy =3D 1              mutex_lock()
-> /* waiting for mutex */     io_busy =3D 1  /* sees new value */
->                              cur_idle =3D get_cpu_idle_time(io_busy=3D1)
->                              /* prev_cpu_idle still set with io_busy=3D0 =
-*/
->                              /* idle_time may be clamped to 0 */
->                              /* load inflated for this sample */
->                              mutex_unlock()
-> mutex_lock()
-> prev_cpu_idle =3D ../* reset */
-> mutex_unlock()
->
-> The mismatch between the two metrics causes a one-sample anomaly in
-> either direction: 0=E2=86=921 tends to inflate the load estimate (frequen=
-cy
-> pushed upward), while 1=E2=86=920 tends to deflate it. The AI's "drives t=
-o
-> minimum" conclusion is wrong for the 0=E2=86=921 case.
->
-> This window is inherent to the design. One possible fix is to add a per
-> policy io_is_busy copy inside policy_dbs_info and update it under
-> update_mutex in gov_update_cpu_data(), so dbs_update() always reads a
-> value consistent with the current prev_cpu_idle baseline. The impact
-> should be a single-sample frequency spike that self-corrects.
->
->
-> Comment 2 (sampling_rate_store vs. gov_set_update_util):
->
-> Also pre-existing. The race:
->
->    cpufreq_dbs_governor_start():     sampling_rate_store():
->      mutex_unlock()                    mutex_lock()
->      gov->start()                      sample_delay_ns =3D 0
->      gov_set_update_util()             mutex_unlock()
->        sample_delay_ns =3D rate  <--->
->
-> If needed, e possible approach would be to move both gov->start() and
-> gov_set_update_util() inside the mutex would work.
+On 22.05.26 11:36, hongyan.xia wrote:
+> On 5/22/2026 3:49 PM, Dietmar Eggemann wrote:
+>> On 18.05.26 04:40, hongyan.xia(夏弘彦) wrote:
+>>> From: Hongyan Xia <hongyan.xia@transsion.com>
 
-Yeah.
+[...]
 
-So I've applied both patches in the series as 7.2 material.
+>> Are you using Android on your devices? I remember there was some
+>> functionality added to avoid janks in display pipeline.
+> 
+> Yes, this is Android but with scheduler vendor hooks stripped, so kernel 
+> 6.6 schedutil with some GKI patches on top. There is "something to avoid 
+> janks", but to make sure the results can be shared upstream, such 
+> Android things are disabled, leaving basically vanilla schedutil.
 
-Please feel free to send a follow-up patch making the change mentioned abov=
-e.
+OK.
 
-Thanks!
+Would be interesting to know how this 'avoid janks' feature can be
+disabled. So all ADPF ('Performance Hints' and/or 'Performance boost for
+games') hints are off? And this can be achieved by simply stripping all
+Vendor Hooks?
+I haven't looked at this for quite some time so I don't know how this is
+all wired up and how to disable this.
+
+>>> pinpointed the regression to the cpu_util(boost) feature. After
+>>> reverting the boost feature the massive energy regression is gone.
+>>> Detailed trace analysis down below. The regression is found across quite
+>>> many apps but Youtube is one of the worst offenders, shown in the
+>>> 1080p60fps video benchmark:
+>>>
+>>>   Setup      FPS   SoC Power (mW)  diff
+>>> w/  boost  59.94      913.6
+>>> w/o boost  59.93      720.4     -21.15%
+>>>
+>>> Signed-off-by: Hongyan Xia <hongyan.xia@transsion.com>
+>>>
+>>> ---
+>>> Analysis:
+>>
+>> [...]
+>>
+>>> 2. Using the absolute value of runnable_avg to drive frequency is
+>>>     too high to be reasonable:
+>>>
+>>> We use runnable in a _relative_ way to util to know whether there is
+>>
+>> Is this part of the value adds you put on top of mainline kernel? Are
+>> you able to share this here?
+> 
+> By 'we' I mean upstream schedutil, like the comparison in 
+> util_est_update between util and runnable to know whether there is 
+> contention. The results I shared in this thread were always run on a 
+> setup that doesn't include our internal stuff.
+
+Ah, OK. But this condition in util_est_update() does this on individual
+task level:
+
+  /*
+   * To avoid underestimate of task utilization, skip updates of EWMA if
+   * we cannot grant that thread got all CPU time it wanted.
+   */
+   if ((dequeued + UTIL_EST_MARGIN) < READ_ONCE(se->avg.runnable_avg))
+                goto done;
+
+>>> contention in several places. However, the _absolute_ value should not
+>>> be used like util. Runnable_avg tends to be significantly higher,
+>>> making it much easier to saturate frequency.
+
+[...]
+
+>>> 3. Runnable_avg may not even reflect true contention:
+>>>
+>>> When tasks are dependent, the bottleneck is often the data flow between
+>>> tasks, not the contention seen by runnable_avg. Boosting frequency with
+>>> runnable in such scenarios wastes power without performance benefits.
+>>
+>> That's probably true. But here any global feature (which doesn't need
+>> per-task setup) won't be able to give perfect results, only per-task
+>> setup can fix this.
+> 
+> Our observation seems that few tasks benefit and most of our workloads 
+> suffer from a big energy regression, so putting this feature on the 
+> generic path might not be the best thing.
+
+OK.
+
