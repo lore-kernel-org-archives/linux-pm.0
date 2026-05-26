@@ -1,38 +1,37 @@
-Received: from canpmsgout07.his.huawei.com (canpmsgout07.his.huawei.com [113.46.200.222])
+Received: from canpmsgout03.his.huawei.com (canpmsgout03.his.huawei.com [113.46.200.218])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 612483FFAC5;
-	Tue, 26 May 2026 14:56:18 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=113.46.200.222
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A5C2E401A05;
+	Tue, 26 May 2026 14:56:20 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=113.46.200.218
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1779807382; cv=none; b=Fga7p+tY6Tjym3HKflSwlhb+2yw7uFHYTOTUcFwH+W2uIx9LyRtix5W0HIB0tH6r54uROKtPc7voUzeOutZMNZKq3H2A1p/pZAnyz/wTt+0rypFlMSALLyPUD39SDUSEDw1SCVrcb508FzDZjS+b7j5Dt7oltsTGQl8NgosDapA=
+	t=1779807383; cv=none; b=e02p/CnlcvSkA5MIBe5wpFka5WkAXmg1Wfh2JKQZA8lGjzE+Ibr8xTkpJxm7kYm2/0ezvnPQS+SD/iuLw48UGcpkO7q2dlbx29fZm4lpebPj0u3z3FQDrpiFgBWJDhtNyxsPzSuE28xq87l2w4t/KIasIYrf+2g1gJ0uH0o52x4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1779807382; c=relaxed/simple;
-	bh=iWjJTsW6BuEeSJC1LGqlI912lSrBEV+g23DvGRdK2hk=;
-	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=WoqFvPRtmzpDjd4+N6WlZaEvqS9cS9ZwdXlHN7x91lgOr0K4uW27N5RVGfV1OFNhOrYUTYkPSE7ZyUpOrZbWkRSp33bTtExx/Nj7fsf5KI0BRPAdEebgYgQ1p5pJDJ2l3L44FZRUnPtiXsnbC86O+juxpRJ2gyssHYrqTMm3ZGU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; spf=pass smtp.mailfrom=huawei.com; dkim=pass (1024-bit key) header.d=huawei.com header.i=@huawei.com header.b=6IZrptZt; arc=none smtp.client-ip=113.46.200.222
+	s=arc-20240116; t=1779807383; c=relaxed/simple;
+	bh=ZDRUcMhWnAHU9SjMDnSqBw8kkhdM4eOWJaxJqneMyBk=;
+	h=From:To:CC:Subject:Date:Message-ID:MIME-Version:Content-Type; b=DC6BOF3ShOa4IXls79Zp815L5lh0lHuYcTpyWnPH5hKvBo3t+cKnHQhmdLhKHUs1yTJzX1TOrKx+C5LK1cpYVVrE9lPIMagbW3hGq00Wny8ZafVf6Gz94868j0E6oC/JzUQsfLp2bZihzPkFFCKVk+g0q9wo6MXDEuahlENAApU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; spf=pass smtp.mailfrom=huawei.com; dkim=pass (1024-bit key) header.d=huawei.com header.i=@huawei.com header.b=oNnYAJtF; arc=none smtp.client-ip=113.46.200.218
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=huawei.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=huawei.com header.i=@huawei.com header.b="6IZrptZt"
+	dkim=pass (1024-bit key) header.d=huawei.com header.i=@huawei.com header.b="oNnYAJtF"
 dkim-signature: v=1; a=rsa-sha256; d=huawei.com; s=dkim;
 	c=relaxed/relaxed; q=dns/txt;
 	h=From;
-	bh=SRAvpL5kg7zfVB87jHmBF+c3eWPsqtwvfUMg/m3KWqc=;
-	b=6IZrptZt5pccedulAnBT8WZ9BpyHxnDtRYuwsBIYpsE+R49/hVIqXtnwoIHkcra0wdM3302cd
-	TArJlb9VMRw0M09I5X1Ptta9isxW+2x2NHLRQMjUNumTS8/2z7/BgrG5HQgOGHeoowJftfugxM4
-	f1Mp3586pp6HqfZ8jmmJtRQ=
-Received: from mail.maildlp.com (unknown [172.19.163.200])
-	by canpmsgout07.his.huawei.com (SkyGuard) with ESMTPS id 4gPwby4VlGzLlSS;
-	Tue, 26 May 2026 22:48:30 +0800 (CST)
+	bh=tAOc0X5Ad5JET2TC9jtYXzCGegy15EhzBhrLna1J1iI=;
+	b=oNnYAJtFtBgGQSd27b8WhXsDgb/0pSK5BLEBS9P2hWlJ+ZLu8ZVnPWVy0Nea73pW/FtNdSq1+
+	n9s/lIWU9iEd/+tSltQfDjqavQdGCcmagG7lU8SrBvdKe1X8xGz7rqh5mkyjpIdIog7O96zBhP0
+	m9sDvQTKzbDB64y0y/QPHUo=
+Received: from mail.maildlp.com (unknown [172.19.163.104])
+	by canpmsgout03.his.huawei.com (SkyGuard) with ESMTPS id 4gPwcF0nYNzpSwR;
+	Tue, 26 May 2026 22:48:45 +0800 (CST)
 Received: from kwepemr500001.china.huawei.com (unknown [7.202.194.229])
-	by mail.maildlp.com (Postfix) with ESMTPS id 613854055B;
-	Tue, 26 May 2026 22:56:15 +0800 (CST)
+	by mail.maildlp.com (Postfix) with ESMTPS id CC8F54048F;
+	Tue, 26 May 2026 22:56:09 +0800 (CST)
 Received: from huawei.com (10.50.87.63) by kwepemr500001.china.huawei.com
  (7.202.194.229) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1544.11; Tue, 26 May
- 2026 22:56:13 +0800
+ 2026 22:56:08 +0800
 From: Yin Tirui <yintirui@huawei.com>
 To: Andrew Morton <akpm@linux-foundation.org>, Matthew Wilcox
 	<willy@infradead.org>, David Hildenbrand <david@kernel.org>, Lorenzo Stoakes
@@ -63,12 +62,10 @@ CC: Catalin Marinas <catalin.marinas@arm.com>, Peter Xu <peterx@redhat.com>,
 	<linux-kernel@vger.kernel.org>, <x86@kernel.org>,
 	<linux-arm-kernel@lists.infradead.org>, <linuxppc-dev@lists.ozlabs.org>,
 	<linux-pm@vger.kernel.org>
-Subject: [PATCH mm-unstable RFC v4 4/7] mm/huge_memory: refactor copy_huge_pmd()
-Date: Tue, 26 May 2026 22:50:00 +0800
-Message-ID: <20260526145003.88445-5-yintirui@huawei.com>
+Subject: [PATCH mm-unstable RFC v4 0/7] mm: add huge pfnmap support for remap_pfn_range()
+Date: Tue, 26 May 2026 22:49:56 +0800
+Message-ID: <20260526145003.88445-1-yintirui@huawei.com>
 X-Mailer: git-send-email 2.43.0
-In-Reply-To: <20260526145003.88445-1-yintirui@huawei.com>
-References: <20260526145003.88445-1-yintirui@huawei.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -80,241 +77,156 @@ Content-Type: text/plain
 X-ClientProxiedBy: kwepems100001.china.huawei.com (7.221.188.238) To
  kwepemr500001.china.huawei.com (7.202.194.229)
 
-Classify the source PMD via pmd_present() and vm_normal_folio_pmd(),
-matching the way the PTE path uses pte_present() and vm_normal_page().
-This moves the present-PMD decision from VMA identity checks to the
-actual PMD/folio state.
+This series is based on mm-unstable and depends on:
+1. pgtable_has_pmd_leaves(), introduced by Luiz's series:
+     https://lore.kernel.org/linux-mm/cover.1777663129.git.luizcap@redhat.com/
+2. mm/huge_memory: update file PMD counter before folio_put()
+     https://lore.kernel.org/linux-mm/20260526101337.1984081-1-yintirui@huawei.com/T/#u
 
-Drop the defensive "if (!pmd_trans_huge(pmd)) goto out_unlock" branch:
-with mmap_write_lock held during fork, it should not occur.
+v4:
+- Following Matthew Wilcox's feedback that huge-page attribute handling
+  should stay in architecture helpers:
+  https://lore.kernel.org/all/aapXRN4KjWtUUJ0g@casper.infradead.org/
 
-Extract the present-PMD side of copy_huge_pmd() into
-copy_present_huge_pmd(). The helper owns the child pgtable passed by the
-caller: it either deposits the pgtable when installing a copied PMD, or
-frees it on paths that do not install one.
+  Reworked the pgprot contract for architectures that enable
+  CONFIG_ARCH_SUPPORTS_PMD_PFNMAP: pfn_pmd()/pfn_pud() construct PMD/PUD
+  leaf entries from base-PTE pgprot_t, while pmd_pgprot()/pud_pgprot()
+  return base-PTE pgprot_t.  Added the required x86, arm64 and powerpc
+  support; RISC-V already satisfies the required semantics.
+- Refactored copy_huge_pmd() and __split_huge_pmd_locked() to first
+  classify PMDs by pmd_present(), and then use vm_normal_folio_pmd() for
+  present PMDs, and make move_huge_pmd() use has_deposited_pgtable().
+- Introduced a restriction, following the discussion with Lorenzo and
+  David, that remap_pfn_range() does not create PMD-sized mappings for
+  VMAs that have a fault handler:
+  [https://lore.kernel.org/linux-mm/6417587a-7e43-4615-9e2c-50a245842f59@kernel.org/]
 
-The child pgtable is now allocated once up front and freed on every skip
-path. This makes file/shmem and PFNMAP/special skip paths take the PMD
-locks and free the preallocated pgtable before returning. These are not
-expected to be hot paths, and the PFNMAP case is reused by the follow-up
-PMD PFNMAP copy support.
+  With this restriction, PMD PFNMAP entries in VMAs without fault handlers
+  are known to have been installed by remap_pfn_range(), which deposits a
+  page table when installing such mappings; PMD PFNMAP entries in VMAs
+  with fault handlers are created through fault-time insertion paths such
+  as vmf_insert_pfn_pmd().
 
-Signed-off-by: Yin Tirui <yintirui@huawei.com>
----
- mm/huge_memory.c | 175 +++++++++++++++++++++++++----------------------
- 1 file changed, 95 insertions(+), 80 deletions(-)
+v3: https://lore.kernel.org/all/20260228070906.1418911-1-yintirui@huawei.com/
+1. Architectural Type Safety (Matthew Wilcox):
+Following the insightful architectural feedback from Matthew Wilcox in v2,
+the approach to clearing huge page attributes has been completely redesigned.
+Instead of spreading the `pte_clrhuge()` anti-pattern to ARM64 and RISC-V,
+this series enforces strict type safety at the lowest level: `pfn_pte()`
+must never natively return a PTE with huge page attributes set.
 
-diff --git a/mm/huge_memory.c b/mm/huge_memory.c
-index 9832ee910d5e..3964258ff91d 100644
---- a/mm/huge_memory.c
-+++ b/mm/huge_memory.c
-@@ -1879,6 +1879,82 @@ bool touch_pmd(struct vm_area_struct *vma, unsigned long addr,
- 	return false;
- }
- 
-+static int copy_present_huge_pmd(
-+		struct mm_struct *dst_mm, struct mm_struct *src_mm,
-+		pmd_t *dst_pmd, pmd_t *src_pmd, unsigned long addr,
-+		struct vm_area_struct *dst_vma, struct vm_area_struct *src_vma,
-+		pmd_t pmd, pgtable_t pgtable, bool *need_split)
-+{
-+	struct folio *src_folio;
-+	bool wrprotect = true;
-+
-+	src_folio = vm_normal_folio_pmd(src_vma, addr, pmd);
-+	if (!src_folio) {
-+		/*
-+		 * When page table lock is held, the huge zero pmd should not be
-+		 * under splitting since we don't split the page itself, only pmd to
-+		 * a page table.
-+		 */
-+		if (is_huge_zero_pmd(pmd)) {
-+			/*
-+			 * mm_get_huge_zero_folio() will never allocate a new
-+			 * folio here, since we already have a zero page to
-+			 * copy. It just takes a reference.
-+			 */
-+			mm_get_huge_zero_folio(dst_mm);
-+			goto set_pmd;
-+		}
-+
-+		/*
-+		 * Making sure it's not a CoW VMA with writable
-+		 * mapping, otherwise it means either the anon page wrongly
-+		 * applied special bit, or we made the PRIVATE mapping be
-+		 * able to wrongly write to the backend MMIO.
-+		 */
-+		VM_WARN_ON_ONCE(is_cow_mapping(src_vma->vm_flags) && pmd_write(pmd));
-+		pte_free(dst_mm, pgtable);
-+		pgtable = NULL;
-+		wrprotect = false;
-+		goto set_pmd;
-+	}
-+
-+	/* File THPs are copied lazily by refaulting. */
-+	if (!folio_test_anon(src_folio)) {
-+		pte_free(dst_mm, pgtable);
-+		return 0;
-+	}
-+
-+	folio_get(src_folio);
-+	if (unlikely(folio_try_dup_anon_rmap_pmd(src_folio,
-+							&src_folio->page,
-+							dst_vma, src_vma))) {
-+		/* Page maybe pinned: split and retry the fault on PTEs. */
-+		folio_put(src_folio);
-+		pte_free(dst_mm, pgtable);
-+		*need_split = true;
-+		return -EAGAIN;
-+	}
-+	add_mm_counter(dst_mm, MM_ANONPAGES, HPAGE_PMD_NR);
-+
-+set_pmd:
-+	if (pgtable) {
-+		mm_inc_nr_ptes(dst_mm);
-+		pgtable_trans_huge_deposit(dst_mm, dst_pmd, pgtable);
-+	}
-+
-+	if (wrprotect) {
-+		pmdp_set_wrprotect(src_mm, addr, src_pmd);
-+		if (!userfaultfd_wp(dst_vma))
-+			pmd = pmd_clear_uffd_wp(pmd);
-+		pmd = pmd_wrprotect(pmd);
-+	}
-+
-+	pmd = pmd_mkold(pmd);
-+	set_pmd_at(dst_mm, addr, dst_pmd, pmd);
-+
-+	return 0;
-+}
-+
- static void copy_huge_non_present_pmd(
- 		struct mm_struct *dst_mm, struct mm_struct *src_mm,
- 		pmd_t *dst_pmd, pmd_t *src_pmd, unsigned long addr,
-@@ -1940,104 +2016,43 @@ int copy_huge_pmd(struct mm_struct *dst_mm, struct mm_struct *src_mm,
- 		  struct vm_area_struct *dst_vma, struct vm_area_struct *src_vma)
- {
- 	spinlock_t *dst_ptl, *src_ptl;
--	struct page *src_page;
--	struct folio *src_folio;
--	pmd_t pmd;
- 	pgtable_t pgtable = NULL;
--	int ret = -ENOMEM;
--
--	pmd = pmdp_get_lockless(src_pmd);
--	if (unlikely(pmd_present(pmd) && pmd_special(pmd) &&
--		     !is_huge_zero_pmd(pmd))) {
--		dst_ptl = pmd_lock(dst_mm, dst_pmd);
--		src_ptl = pmd_lockptr(src_mm, src_pmd);
--		spin_lock_nested(src_ptl, SINGLE_DEPTH_NESTING);
--		/*
--		 * No need to recheck the pmd, it can't change with write
--		 * mmap lock held here.
--		 *
--		 * Meanwhile, making sure it's not a CoW VMA with writable
--		 * mapping, otherwise it means either the anon page wrongly
--		 * applied special bit, or we made the PRIVATE mapping be
--		 * able to wrongly write to the backend MMIO.
--		 */
--		VM_WARN_ON_ONCE(is_cow_mapping(src_vma->vm_flags) && pmd_write(pmd));
--		goto set_pmd;
--	}
--
--	/* Skip if can be re-fill on fault */
--	if (!vma_is_anonymous(dst_vma))
--		return 0;
-+	bool need_split = false;
-+	int ret = 0;
-+	pmd_t pmd;
- 
- 	pgtable = pte_alloc_one(dst_mm);
- 	if (unlikely(!pgtable))
--		goto out;
-+		return -ENOMEM;
- 
- 	dst_ptl = pmd_lock(dst_mm, dst_pmd);
- 	src_ptl = pmd_lockptr(src_mm, src_pmd);
- 	spin_lock_nested(src_ptl, SINGLE_DEPTH_NESTING);
- 
--	ret = -EAGAIN;
- 	pmd = *src_pmd;
- 
--	if (unlikely(thp_migration_supported() &&
--		     pmd_is_valid_softleaf(pmd))) {
--		copy_huge_non_present_pmd(dst_mm, src_mm, dst_pmd, src_pmd, addr,
-+	if (likely(pmd_present(pmd))) {
-+		ret = copy_present_huge_pmd(dst_mm, src_mm, dst_pmd, src_pmd, addr,
-+					  dst_vma, src_vma, pmd, pgtable, &need_split);
-+	} else if (unlikely(thp_migration_supported() && pmd_is_valid_softleaf(pmd))) {
-+		if (unlikely(!vma_is_anonymous(dst_vma)))
-+			pte_free(dst_mm, pgtable);
-+		else
-+			copy_huge_non_present_pmd(dst_mm, src_mm, dst_pmd, src_pmd, addr,
- 					  dst_vma, src_vma, pmd, pgtable);
--		ret = 0;
--		goto out_unlock;
--	}
--
--	if (unlikely(!pmd_trans_huge(pmd))) {
-+	} else {
-+		VM_WARN_ONCE(1, "unexpected non-present PMD %llx\n",
-+				(unsigned long long)pmd_val(pmd));
- 		pte_free(dst_mm, pgtable);
--		goto out_unlock;
--	}
--	/*
--	 * When page table lock is held, the huge zero pmd should not be
--	 * under splitting since we don't split the page itself, only pmd to
--	 * a page table.
--	 */
--	if (is_huge_zero_pmd(pmd)) {
--		/*
--		 * mm_get_huge_zero_folio() will never allocate a new
--		 * folio here, since we already have a zero page to
--		 * copy. It just takes a reference.
--		 */
--		mm_get_huge_zero_folio(dst_mm);
--		goto out_zero_page;
-+		ret = -EAGAIN;
- 	}
- 
--	src_page = pmd_page(pmd);
--	VM_BUG_ON_PAGE(!PageHead(src_page), src_page);
--	src_folio = page_folio(src_page);
-+	spin_unlock(src_ptl);
-+	spin_unlock(dst_ptl);
- 
--	folio_get(src_folio);
--	if (unlikely(folio_try_dup_anon_rmap_pmd(src_folio, src_page, dst_vma, src_vma))) {
--		/* Page maybe pinned: split and retry the fault on PTEs. */
--		folio_put(src_folio);
--		pte_free(dst_mm, pgtable);
--		spin_unlock(src_ptl);
--		spin_unlock(dst_ptl);
-+	if (unlikely(need_split))
- 		__split_huge_pmd(src_vma, src_pmd, addr, false);
--		return -EAGAIN;
--	}
--	add_mm_counter(dst_mm, MM_ANONPAGES, HPAGE_PMD_NR);
--out_zero_page:
--	mm_inc_nr_ptes(dst_mm);
--	pgtable_trans_huge_deposit(dst_mm, dst_pmd, pgtable);
--	pmdp_set_wrprotect(src_mm, addr, src_pmd);
--	if (!userfaultfd_wp(dst_vma))
--		pmd = pmd_clear_uffd_wp(pmd);
--	pmd = pmd_wrprotect(pmd);
--set_pmd:
--	pmd = pmd_mkold(pmd);
--	set_pmd_at(dst_mm, addr, dst_pmd, pmd);
- 
--	ret = 0;
--out_unlock:
--	spin_unlock(src_ptl);
--	spin_unlock(dst_ptl);
--out:
- 	return ret;
- }
- 
+To achieve this without breaking the x86 core MM, the series is structured as:
+  - Fix historical type-casting abuses in x86 (vmemmap, vmalloc, CPA) where
+    `pfn_pte()` was wrongly used to generate huge PMDs/PUDs.
+  - Update `pfn_pte()` on x86 and ARM64 to inherently filter out huge page
+    attributes. (RISC-V leaf PMDs and PTEs share the exact same hardware
+    format without a specific "huge" bit, so it is naturally compliant).
+  - Completely eradicate `pte_clrhuge()` from the x86 tree and clean up
+    the type-casting mess in `arch/x86/mm/init_64.c`.
+
+2. Page Table Deposit fix during clone() (syzbot):
+Previously, `copy_huge_pmd()` was unaware of special PMDs created by pfnmap,
+failing to deposit a page table for the child process during `clone()`.
+This led to crashes during process teardown or PMD splitting. The logic is now
+updated to properly allocate and deposit pgtables for `pmd_special()` entries.
+
+v2: https://lore.kernel.org/linux-mm/20251016112704.179280-1-yintirui@huawei.com/#t
+- remove "nohugepfnmap" boot option and "pfnmap_max_page_shift" variable.
+- zap_deposited_table for non-special pmd.
+- move set_pmd_at() inside pmd_lock.
+- prevent PMD mapping creation when pgtable allocation fails.
+- defer the refactor of pte_clrhuge() to a separate patch series. For now,
+  add a TODO to track this.
+
+v1: https://lore.kernel.org/linux-mm/20250923133104.926672-1-yintirui@huawei.com/
+
+Overview
+========
+This patch series adds huge page support for remap_pfn_range(),
+automatically creating huge mappings when prerequisites are satisfied
+(size, alignment, architecture support, etc.) and falling back to
+normal page mappings otherwise.
+
+This work builds on Peter Xu's previous efforts on huge pfnmap
+support [0].
+
+TODO
+====
+- Add PUD-level huge page support. Currently, only PMD-level huge
+pages are supported.
+
+Tests Done
+==========
+- Cross-build tests.
+- Core MM Regression Tests
+   - Booted x86 kernel with `debug_pagealloc=on` to heavily stress the
+     large page splitting logic in direct mapping. No panics observed.
+   - Ran `make -C tools/testing/selftests/vm run_tests`. Both THP and
+     Hugetlbfs tests passed successfully, proving the `pfn_pte()` changes
+     do not interfere with native huge page generation.
+- Functional Tests (with a custom device driver & PTDUMP):
+   - Verified that `remap_pfn_range()` successfully creates 2MB mappings
+     by observing `/sys/kernel/debug/page_tables/current_user`.
+   - Triggered PMD splits via 4K-granular `mprotect()` and partial `munmap()`,
+     verifying correct fallback to 512 PTEs without corrupting permissions
+     or causing kernel crashes.
+   - Triggered `fork()`/`clone()` on the mapped regions, validating the
+     syzbot fix and ensuring safe pgtable deposit/withdraw lifecycle.
+- Performance tests with custom device driver implementing mmap()
+  with remap_pfn_range():
+    - lat_mem_rd benchmark modified to use mmap(device_fd) instead of
+      malloc() shows around 40% improvement in memory access latency with
+      huge page support compared to normal page mappings.
+
+      numactl -C 0 lat_mem_rd -t 4096M (stride=64)
+      Memory Size (MB)    Without Huge Mapping With Huge Mapping Improvement
+      ----------------    -----------------    --------------    -----------
+      64.00               148.858 ns           100.780 ns        32.3%
+      128.00              164.745 ns           103.537 ns        37.2%
+      256.00              169.907 ns           103.179 ns        39.3%
+      512.00              171.285 ns           103.072 ns        39.8%
+      1024.00             173.054 ns           103.055 ns        40.4%
+      2048.00             172.820 ns           103.091 ns        40.3%
+      4096.00             172.877 ns           103.115 ns        40.4%
+
+    - Custom memory copy operations on mmap(device_fd) show around 18% performance 
+      improvement with huge page support compared to normal page mappings.
+
+      numactl -C 0 memcpy_test (memory copy performance test)
+      Memory Size (MB)    Without Huge Mapping With Huge Mapping Improvement
+      ----------------    -----------------    --------------    -----------
+      1024.00             95.76 ms             77.91 ms          18.6%
+      2048.00             190.87 ms            155.64 ms         18.5%
+      4096.00             380.84 ms            311.45 ms         18.2%
+
+[0] https://lore.kernel.org/all/20240826204353.2228736-2-peterx@redhat.com/T/#u
+
+Yin Tirui (7):
+  x86/mm: use PTE-level pgprot for huge PFN helpers
+  arm64/mm: use PTE-level pgprot for huge PFN helpers
+  powerpc/mm: use PTE-level pgprot for huge PFN helpers
+  mm/huge_memory: refactor copy_huge_pmd()
+  mm/huge_memory: refactor __split_huge_pmd_locked()
+  mm/huge_memory: make move_huge_pmd() use has_deposited_pgtable()
+  mm: add PMD-level PFNMAP support for remap_pfn_range()
+
+ arch/arm64/include/asm/pgtable.h             |  48 +-
+ arch/arm64/mm/mmu.c                          |   4 +-
+ arch/powerpc/include/asm/book3s/64/pgtable.h |   5 +-
+ arch/powerpc/include/asm/pgtable.h           |  11 +-
+ arch/powerpc/mm/book3s64/pgtable.c           |  11 +-
+ arch/x86/include/asm/pgtable.h               |  68 ++-
+ arch/x86/include/asm/pgtable_types.h         |  12 +-
+ arch/x86/mm/init_32.c                        |   8 +-
+ arch/x86/mm/init_64.c                        |  30 +-
+ arch/x86/mm/pat/set_memory.c                 |  51 +--
+ arch/x86/mm/pgtable.c                        |   8 +-
+ arch/x86/power/hibernate_32.c                |   6 +-
+ mm/huge_memory.c                             | 440 +++++++++++--------
+ mm/internal.h                                |  21 +
+ mm/memory.c                                  |  87 +++-
+ 15 files changed, 493 insertions(+), 317 deletions(-)
+
 -- 
 2.43.0
 
