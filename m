@@ -1,100 +1,125 @@
-Received: from out-182.mta0.migadu.com (out-182.mta0.migadu.com [91.218.175.182])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4CD5A3BB11A
-	for <linux-pm@vger.kernel.org>; Tue, 26 May 2026 11:13:14 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=91.218.175.182
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 63E67388E5A
+	for <linux-pm@vger.kernel.org>; Tue, 26 May 2026 11:14:47 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1779793997; cv=none; b=MODRm0w0Wrrkh4LCnhzlXteHmEUWAwE9xUvwYN/BDpT7vqBStJ0bshHvwHd21fNgbgbdmxyMPf1z3y88Wx+oA3ALlPX6D8LtWZ/sRdgPJJpO3RopbkhNznuInS2KeqqMe+90/X74gAno5Tj8CqRZLRY4X8MlzZFN1EJD5i7KgVs=
+	t=1779794088; cv=none; b=Ne0FbXcxz0AeEw7qYPQDzyA1V/pv4ENd2BiOh4lbK60O4VXIGKuUbLM0QdjZT/eYcLcBgITUGkF+sPpSPHmm9aIDFzOtg1UX1V9PwCCV9zL9jyEUZ7dQ+N5WDWwhhUTqB8o0z3j0/tHpd4eY4OPT8INBg/d4kyqgmNxzLRIdT7Q=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1779793997; c=relaxed/simple;
-	bh=ahWeOXN5CcSCy55poUbMW4AnXz8eEDd0o8bq34pDmXk=;
-	h=Mime-Version:Content-Type:Date:Message-Id:Subject:From:To:Cc:
-	 References:In-Reply-To; b=lINKRi7Gy2lhH2r7oeVutaeXSVFc1S6Fjxn7THk41Y4xN53BvLM8ZS/7Z6+fJ08RVirFg+0g8c/+bVdte6//CeOjL1nwm2tZqMoQPGTIr++/puYOBGpE1LulgSGLNJ3U+83gOufEU7S7WzOpEhb4KeO78gEugElp4SF4k6Fqqe4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.dev; spf=pass smtp.mailfrom=linux.dev; dkim=pass (1024-bit key) header.d=linux.dev header.i=@linux.dev header.b=tJNfFhBb; arc=none smtp.client-ip=91.218.175.182
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.dev
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.dev
+	s=arc-20240116; t=1779794088; c=relaxed/simple;
+	bh=q9w7+K4dw3tUgZV9s0a7MpYsMEq6WClBHHgbFLPKpEA=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=rBhuYamj7GvuZz0ocHU0zeQXfR3f96khag5VqxZA2wz1pYMwk0JfjsJE9C6KKoz1B6xi2VmbBOr/f6BZ8PPTB7IFQUvVI8XazJORi32d9/YgSsZWmVgDEZ1Ldwxt820flR9KoIRScosOrf20Iahu5D28TTQJfpToX7/a7Ede3VE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=m+35ZIbP; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=linux.dev header.i=@linux.dev header.b="tJNfFhBb"
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="m+35ZIbP"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4AE431F00A3A
+	for <linux-pm@vger.kernel.org>; Tue, 26 May 2026 11:14:47 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1779794087;
+	bh=Jl4A5BploI0aLzf+f1VH2H1uwnUGnoJyUMtMQYNxCVw=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc;
+	b=m+35ZIbPw68o69pVdadGClRCk00jjm8HZHM0GRdr31xkz8BxbPJzPxfZElOVwzsVV
+	 pYGanaKB81RFK8R5Fmuu+qIyDmQ6hmsYOffk3g8rHBh4b3RMAggfFqpVrXYFwJQIa+
+	 UgZdDknxScOHgMky8i2s2cpujxI470xfMxcAWkMYVO4RS+ExmrWTRPPXTGvHD15qk0
+	 Fcbw19L6yLJyBM/xSaszI5L+a+tjP11nG0/vYPQpDuW3vgDAxVDplXR9l07J7/GrQo
+	 VHClYlfNVfJ1ExJaywLQ4JIg8YL5Fq64O+bdAhPpkuty5CnOgzUd4xhGkjjjrehsbg
+	 tAGOjlo4vGfTw==
+Received: by mail-lf1-f51.google.com with SMTP id 2adb3069b0e04-5a746f9c092so14548261e87.1
+        for <linux-pm@vger.kernel.org>; Tue, 26 May 2026 04:14:47 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AFNElJ9cpQ1E1zB/naY6fd2U8aS8d+G8+nbfkBWuAKo7Wb6qeCmNXXgMGG4KvaNCwzPZkP78tSKBCZdkRw==@vger.kernel.org
+X-Gm-Message-State: AOJu0YxGGxauAj+OYx0n0mgrAawRfn5g4T+XYaBlcQwn5jqJi3XiVGVC
+	c+xThGPEIg7XA6tNWyilbscHvElk/6Zqmehf3LwJpEpnSng/WTIzjpbySdJOfWIJ2f6Mmf79e+n
+	nboHX1+fkg0HMVKjmD42hpoqukSdKyv0=
+X-Received: by 2002:a05:6512:704:b0:5a7:4912:1a50 with SMTP id
+ 2adb3069b0e04-5aa2ba8c2a7mr4167836e87.20.1779794085637; Tue, 26 May 2026
+ 04:14:45 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
-Mime-Version: 1.0
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
-	t=1779793992;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=TjpF0orjvF0V7w7odDBpl4riq79fYXZGW3boLcM3Ji8=;
-	b=tJNfFhBb6nEZkjaV1nORtu55FFe2fYeAVJ4+u4AENQjmULOJXH9njHDAvgtJGgUE0hUv0o
-	0Q2BpR/Shg0RjQmXJSdKpM4bEwKinKU742K3ZAoozqHT8nCTlfifnDfU15QwxWOH2sYP9L
-	5AhJJcaHC7uZjY8bLBqNgU1qKdXBBks=
+MIME-Version: 1.0
+References: <20260519055920.13180-1-jszhang@kernel.org>
+In-Reply-To: <20260519055920.13180-1-jszhang@kernel.org>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Date: Tue, 26 May 2026 13:14:31 +0200
+X-Gmail-Original-Message-ID: <CAJZ5v0jOfVmjwpTFw3UKALiGrPQRbD9pBvnuga+TKt4Hm2OuCg@mail.gmail.com>
+X-Gm-Features: AVHnY4I3p3JtLqx6qWtPGsdALHvbUCPKp6zNoy1khUWLvVCRZ3XGvVcV8QjRQtw
+Message-ID: <CAJZ5v0jOfVmjwpTFw3UKALiGrPQRbD9pBvnuga+TKt4Hm2OuCg@mail.gmail.com>
+Subject: Re: [PATCH] PM: Use LIST_HEAD() to initialize on stack list head
+To: Jisheng Zhang <jszhang@kernel.org>
+Cc: "Rafael J . Wysocki" <rafael@kernel.org>, Pavel Machek <pavel@kernel.org>, Len Brown <lenb@kernel.org>, 
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Danilo Krummrich <dakr@kernel.org>, linux-pm@vger.kernel.org, 
+	driver-core@lists.linux.dev, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset=UTF-8
-Date: Tue, 26 May 2026 13:13:07 +0200
-Message-Id: <DISKBALN21QH.32PUYTB5LZLJ1@linux.dev>
-Subject: Re: [PATCH 0/4] mm: misc cleanups from __GFP_UNMAPPED series
-X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
-From: "Brendan Jackman" <brendan.jackman@linux.dev>
-To: "Andrew Morton" <akpm@linux-foundation.org>, "Vlastimil Babka (SUSE)"
- <vbabka@kernel.org>
-Cc: "Brendan Jackman" <jackmanb@google.com>, "Kairui Song"
- <kasong@tencent.com>, "Qi Zheng" <qi.zheng@linux.dev>, "Shakeel Butt"
- <shakeel.butt@linux.dev>, "Barry Song" <baohua@kernel.org>, "Axel
- Rasmussen" <axelrasmussen@google.com>, "Yuanchu Xie" <yuanchu@google.com>,
- "Wei Xu" <weixugc@google.com>, "David Hildenbrand" <david@kernel.org>,
- "Lorenzo Stoakes" <ljs@kernel.org>, "Liam R. Howlett" <liam@infradead.org>,
- "Mike Rapoport" <rppt@kernel.org>, "Suren Baghdasaryan"
- <surenb@google.com>, "Michal Hocko" <mhocko@suse.com>, "Rafael J. Wysocki"
- <rafael@kernel.org>, "Pavel Machek" <pavel@kernel.org>, "Len Brown"
- <lenb@kernel.org>, "Johannes Weiner" <hannes@cmpxchg.org>, "Zi Yan"
- <ziy@nvidia.com>, <linux-mm@kvack.org>, <linux-kernel@vger.kernel.org>,
- <linux-pm@vger.kernel.org>
-References: <20260513-page_alloc-unmapped-prep-v1-0-dacdf5402be8@google.com>
- <20260518111546.3baebae99dc3f2a4fd65e605@linux-foundation.org>
- <DIM2YAI5ORUU.2YLTV7PWKE516@google.com>
- <20260518134811.b2b78352779d7519e8123597@linux-foundation.org>
- <CA+i-1C1THr6fH=wdTKEngbCSD_DMS5tGroN64BEf3L56DH2XWA@mail.gmail.com>
- <cd721e44-05cf-470b-ae92-d86791778c28@kernel.org>
- <20260522201154.26bc14524c36df15e40c3470@linux-foundation.org>
-In-Reply-To: <20260522201154.26bc14524c36df15e40c3470@linux-foundation.org>
-X-Migadu-Flow: FLOW_OUT
 
-On Sat May 23, 2026 at 5:11 AM CEST, Andrew Morton wrote:
-> On Fri, 22 May 2026 09:59:49 +0200 "Vlastimil Babka (SUSE)" <vbabka@kerne=
-l.org> wrote:
+On Tue, May 19, 2026 at 8:18=E2=80=AFAM Jisheng Zhang <jszhang@kernel.org> =
+wrote:
 >
->> >> > Cool thanks, (also I got the "added to mm-new branch notification" =
-and
->> >> > realised why I missed it last time, broken mail filter).
->> >> >
->> >> > The 4/4 update is already up, in reply to the thread.
->> >>
->> >> Is that "mm/page_alloc: tidy up pindex helpers"?
->> >>
->> >> For some reason I didn't receive that email, directly or via any
->> >> mailing list.  I do have the similar "mm/page_alloc: remove ifdefs fr=
-om
->> >> pindex helpers" from May 13.
->>=20
->> Found it, seems to be threaded well with In-reply-to: too, maybe it's th=
-e
->> different subject?
->>=20
->> https://lore.kernel.org/all/20260517230556.590677-1-jackmanb@google.com/
->>=20
->> Should be fine to replace the current "mm/page_alloc: remove ifdefs from
->> pindex helpers" in mm.git with that.
+> Use LIST_HEAD to initialize on stack list head. No intentional
+> functional impact.
 >
-> I could attempt to do that by my confidence that I got it right would
-> be low.
+> Change generated with below coccinelle script:
 >
-> Brendan, please send us a v2 of the series "mm: misc cleanups from
-> __GFP_UNMAPPED series", thanks.
+> @@
+> identifier name;
+> @@
+> - struct list_head name;
+> + LIST_HEAD(name);
+> ... when !=3D name
+> - INIT_LIST_HEAD(&name);
+>
+> Signed-off-by: Jisheng Zhang <jszhang@kernel.org>
 
-Sorry for the delay, was travelling - it looks like you have already
-applied the current patches, I will send a separate patch to remove
-the VM_BUG_ONs.
+I'd rather see two separate patches for these changes as they affect
+unrelated code.
+
+Thanks!
+
+> ---
+>  drivers/base/power/clock_ops.c | 4 +---
+>  drivers/base/power/main.c      | 3 +--
+>  2 files changed, 2 insertions(+), 5 deletions(-)
+>
+> diff --git a/drivers/base/power/clock_ops.c b/drivers/base/power/clock_op=
+s.c
+> index 59bb37e8244c..1f708e10e711 100644
+> --- a/drivers/base/power/clock_ops.c
+> +++ b/drivers/base/power/clock_ops.c
+> @@ -422,13 +422,11 @@ void pm_clk_destroy(struct device *dev)
+>  {
+>         struct pm_subsys_data *psd =3D dev_to_psd(dev);
+>         struct pm_clock_entry *ce, *c;
+> -       struct list_head list;
+> +       LIST_HEAD(list);
+>
+>         if (!psd)
+>                 return;
+>
+> -       INIT_LIST_HEAD(&list);
+> -
+>         pm_clk_list_lock(psd);
+>
+>         list_for_each_entry_safe_reverse(ce, c, &psd->clock_list, node)
+> diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
+> index e1b550664bab..d0c7b1d4101e 100644
+> --- a/drivers/base/power/main.c
+> +++ b/drivers/base/power/main.c
+> @@ -1257,11 +1257,10 @@ static void device_complete(struct device *dev, p=
+m_message_t state)
+>   */
+>  void dpm_complete(pm_message_t state)
+>  {
+> -       struct list_head list;
+> +       LIST_HEAD(list);
+>
+>         trace_suspend_resume(TPS("dpm_complete"), state.event, true);
+>
+> -       INIT_LIST_HEAD(&list);
+>         mutex_lock(&dpm_list_mtx);
+>         while (!list_empty(&dpm_prepared_list)) {
+>                 struct device *dev =3D to_device(dpm_prepared_list.prev);
+> --
