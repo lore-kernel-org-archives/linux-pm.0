@@ -1,296 +1,172 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-dy1-f176.google.com (mail-dy1-f176.google.com [74.125.82.176])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 192D23F6C53
-	for <linux-pm@vger.kernel.org>; Tue, 26 May 2026 11:54:05 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1779796455; cv=none; b=qhHwCYWTh4yg1Q0qZxDP2Qgu0dz4JseP62EikoNG/i7qEEyN6oNxsFm6lXMfOLO+eiUU1ZeJqTy8UsknruG8bU6xTmn87ziabVN5vE7oxe9kNXQRSk7uEMuR5WB7e1eIwRbCGTrE3r2qZV/EuC9M+AcdChKsCVJlv+jL7o+d8yE=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1779796455; c=relaxed/simple;
-	bh=obiRXhqWYaoVh/7S/afYu0ZHOfGBcJ7ElhJCrN8PNjk=;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4CF6A3F5BED
+	for <linux-pm@vger.kernel.org>; Tue, 26 May 2026 12:29:39 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=74.125.82.176
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1779798580; cv=pass; b=GMBhAqhQVhHbvb+X+hJxELhF25RCpkrp8aWVteM7rQYtGo5drWaIQW7BwpXvvlSIyrsvgDiThlXuG9QZv8FCtlRRtpyX9gd2dHRBP+1C81QYC3E7/F9i04w/Fdl8SVN7CwrwnQnt5L9YqvYtPwcR7myFQCLM107vexVgYsS8fy8=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1779798580; c=relaxed/simple;
+	bh=Dg3mTo5Mcn8ngqMvpVvFnTbUkbCXNIGOywIbkn4YrmE=;
 	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=n8s15PFLEiefVE0Pz+kONFuTYutfq44EY/ajx2iKel2VbIAQSzzOUK4e25OUHicNxiq+JojyY/7g+p1BssdD4+PGMir+vL6NC4dYb2W0oPbOOFJacIQN8r5iBvgMNRJ2XSFqZHkzu07Ik0QVXFOOF9gMdLIrwi3Xdy4IS6asqf8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=b1rSyLen; arc=none smtp.client-ip=100.103.45.18
+	 To:Cc:Content-Type; b=LwBzMREYAvL3upmjlTv62bCxlB9m83iPGZ/SiQFnUoXnh4j7bpz1d1Vpsa0qN4c045JB9zxo/ugW3TmCiL+F8NsNo1oZ0hdGP3lPyg7q8QFVN4cTTys7FqK9Ht8T0B41Z5YSXI4A+/6pEO8AhQjQX7Nl+kJY4aMhcrikgdoV4Xg=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=h1yXffAp; arc=pass smtp.client-ip=74.125.82.176
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="b1rSyLen"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id A134B1F000E9
-	for <linux-pm@vger.kernel.org>; Tue, 26 May 2026 11:54:02 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1779796442;
-	bh=Rqd4bc4WUQNfwkEdU9ul2rorhcX8UKt3xTOi+dY5lDY=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc;
-	b=b1rSyLenZXxaFIXmGxrphoihdxZOuV/jpDdWe1HwzCSubV7q8x4iWthDJVz709Vot
-	 bSp2bYMFyKOZDNF4DjT8uGWuXsFjxivjYs8Cu7Zvr+UXvQZvVYp0NlBnHPbyWznfoT
-	 0IPQNv1aWSA9J7MS5Sus5Ko4Fd+ibt6317Psxzi8dP6bfmmuvqITjq8vdrvY3EOMQd
-	 HFR/v0n2BByiZ1exC0wZMU0XtWsjsaumjy1LsGwRhmML8MOwy/CV3DcbMMUG/ZHHIu
-	 /LFki+BE01WgLugiKCwgbzATWOIEJZvcTX6ApWdiUtspAd4T79BeUZSfwuuKaQPV5Q
-	 uGqQUJbxebHtg==
-Received: by mail-lj1-f176.google.com with SMTP id 38308e7fff4ca-395317d8852so88633771fa.2
-        for <linux-pm@vger.kernel.org>; Tue, 26 May 2026 04:54:02 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AFNElJ8I+/ESv5z1/uWq3TYR9K1WVF6uM913ikD1W6YYp9WQ8xUqGfBQs+RpwEgsYDsB3iOnr04SPq1aMQ==@vger.kernel.org
-X-Gm-Message-State: AOJu0YwIDM+pBcyI0ox0SM2Zwjn20q151HDq5bxy7nVGVLRZoSk5Oiin
-	OSd7t6Q4b8zueJxmMNlWnwLeBai4dXPgNnuFQf43jKVikGxEPotxs1IZ4rLG+UY4qzmhyYCMtBG
-	OCpEH5xpttE6HtZkOU7QmFZajIAWMtgI=
-X-Received: by 2002:a05:6512:2245:b0:5a4:d44:99f0 with SMTP id
- 2adb3069b0e04-5aa3237d6acmr5330442e87.6.1779796440969; Tue, 26 May 2026
- 04:54:00 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="h1yXffAp"
+Received: by mail-dy1-f176.google.com with SMTP id 5a478bee46e88-304545f5206so5513729eec.0
+        for <linux-pm@vger.kernel.org>; Tue, 26 May 2026 05:29:39 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1779798578; cv=none;
+        d=google.com; s=arc-20240605;
+        b=ZwfK/6bZXeZ/HkmQEqt0b6Ch3rMnH/k+kPSc/8d668Id3GUHoaK7KQhPoomtnQWv0B
+         Fm7Nlrblc8vWFWe0PlfzOv5fiI1xzeMXcUDqXRQQxfBRQLJfYA2sTf1szrS1KFE3l6Li
+         gDrBAp1ZEXp01mSf2CtjBfW3OBhaR7ksnOCMgU6Ytp3EmchuApW5LhKCOXiqIZDUpMiV
+         NkwRsdSSyJjM1SQY/MBfZGmF8g6vPjRHOYSmmlWc3pyv4mDkPn/RoKxKOboyakVxuTm0
+         5vQ3+AGNv8cx01+YLNj2iSJjBAlaY3VCVOXWMdNxGZpgrglb3QuLmzOCS+BOcxaLA2nN
+         7iMA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=prH/VGp3s5plVdS0J3nbTvDbEC8lmkPqocrz3Fq1Ipw=;
+        fh=aQZycWE8/FmPpJ2mZQhHrs+EHuQHkvCYq8Wdo4ko/J0=;
+        b=FB5ufhF8l+baTUWoARpeKoWGyXMV2AP6QYogR/JLudX16dnPdLSAMikG9lFWD/mL0j
+         4Q+wGimlE33XmLZ67cuCyzCxM3pBpiTBb6KIxnmeo/rrOGF7OHTPIdOWVW+5s1VBNNpt
+         2B/fNOj+8X1oXdu378auGlM6azyPI6jmSvMQY2hNKRvlxbajAWqjxYqVpIaMVq5ozt/C
+         jNsNSHbKt+2EahVslYpe6JXT6km+SY72wCZkk5N3nLYSsLy0U89bfcbOzkq4EdJ90S95
+         sTNV5h8gbM4a4AmcddOiCHzrtZEoQS6aAYJINLw27yMdSVIigS+/vs7DDQiZP/eogpdl
+         PAAg==;
+        darn=vger.kernel.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1779798578; x=1780403378; darn=vger.kernel.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=prH/VGp3s5plVdS0J3nbTvDbEC8lmkPqocrz3Fq1Ipw=;
+        b=h1yXffApRVj8DnmaJq+9aVe0KzjkXkD7ErPjhLHgtj/9+w+F562VG8pO3sXXPDfzE2
+         CsSZfsBa6BLtwlYJNE7WfvqJRJe1MIUNQr4fygoIXnczSysRZWfOTnRUfm8rR19kXgIp
+         d0xTUaowzopt2gjqzp8V2gX2NFivEX54c6vmjR1rv81VgWFK+dafm39kA8NvPbt1SATc
+         maOUrWS7XlbNMJIdhE36j37/+6IT+SgmPpyCil8GJOFBNRL72ei83nTIWYykjANfazrp
+         WI6XWQgRWIJf3V2NpZTvq6MurtJU2Bee8QV6/mNIpZlLi9lHDcNVgZ9if4dcCyUf0bgw
+         lY9Q==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1779798578; x=1780403378;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=prH/VGp3s5plVdS0J3nbTvDbEC8lmkPqocrz3Fq1Ipw=;
+        b=UsKgeIzzMKNMtP4s5zmIFdAxoYkIBFDcvD12jXahZ+mxu0GVeAbAfn4/eHCY8+Nj3a
+         MX8BpvCSPVTulSViOifmvbbqTZXmThHngV3NpIzKUX44PWKDUxwvcmkdqtMDJfZyDirL
+         wTWSnGtlKkEI6IO2BglECxIrXsEZxb+MP/zofBsPAIHt1dgQh8La7l9NCeYa3BOKxVmm
+         JacK4WZo+lDz2B/5yHGAvSEWf2xQB99xNx6y4sttpl2XbOia+mhbKD84pMD9lwLnFPLd
+         r63jCND1dwWfP4xC02bbnxm5+Ru2V2EKw5nhBqBOmnC7ud+SeiYlKy1IPEqb28EjZDTa
+         IbPA==
+X-Forwarded-Encrypted: i=1; AFNElJ+NEuZk2xOKW91iiK3WWUJPgCSoluRPioG2VxcLJCsxGZVoKPLYCKe0+gqKDZxOS8lh/QCDpvDdrA==@vger.kernel.org
+X-Gm-Message-State: AOJu0YwZz8m/hO/Gvw+8da5GJ8ePyZcYuR2g3Ix7EQ0tZU1MwKrs0fgy
+	WVSm94CRCO/HrpnakSFUCH45P/euUUAy5/mr0z6ZywukMvV24EH8FgMSojHzZ9SR4WYO4sMqxQc
+	4jKx1cC8xL1OVQJbOWLKbCBwYnyOMKPI=
+X-Gm-Gg: Acq92OESAzb+Rb2sLA4shaU8xHHxhZaSkWfoA0hOmjl+OdpFod5WLlCX1jgCmhDIa+x
+	2ZFTcG7g9Tz3jtwQ8WR6u0FjDDC5uhJSZUsqWuHAKKLvbDsxL6C148Iz8Snk/+2hae0ffUMG+VL
+	RFU7VE05PWIltMO7MUO8sQNBGtjUvu4MKt5iNCI7DERayDHA0toml3s1hcmlKh9vyyHzCSg4IF1
+	5QiB95AGbjn75TdD9LO5HeFCIriHOjvOv1vAoNH/wwBDQGOCcXnsuo7BxMjQENvK9pTpzdaUh0N
+	8AJ+jfO3
+X-Received: by 2002:a05:693c:2c0c:b0:303:a1af:5042 with SMTP id
+ 5a478bee46e88-30448d51723mr8826200eec.0.1779798578350; Tue, 26 May 2026
+ 05:29:38 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260518-hibernation-decrease-time-in-copy-data-pages-v1-0-3998bdf90ee5@collabora.com>
- <20260518-hibernation-decrease-time-in-copy-data-pages-v1-3-3998bdf90ee5@collabora.com>
-In-Reply-To: <20260518-hibernation-decrease-time-in-copy-data-pages-v1-3-3998bdf90ee5@collabora.com>
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Date: Tue, 26 May 2026 13:53:48 +0200
-X-Gmail-Original-Message-ID: <CAJZ5v0iHezk28gWu+wNni01wi73bV7vkqmVKXD14Gtk+CKyGDg@mail.gmail.com>
-X-Gm-Features: AVHnY4J_zG8pMYc4mhhT64ozM1b1ptv471pQd2Uu_3vYPvAaEuvnzM2qka_jwd8
-Message-ID: <CAJZ5v0iHezk28gWu+wNni01wi73bV7vkqmVKXD14Gtk+CKyGDg@mail.gmail.com>
-Subject: Re: [PATCH 3/3] PM: hibernate: Allow disabling zero page check in copy_data_pages()
-To: =?UTF-8?B?TsOtY29sYXMgRi4gUi4gQS4gUHJhZG8=?= <nfraprado@collabora.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Len Brown <lenb@kernel.org>, Pavel Machek <pavel@kernel.org>, 
-	Brian Geffon <bgeffon@google.com>, kernel@collabora.com, linux-pm@vger.kernel.org, 
-	linux-kernel@vger.kernel.org
+References: <20260523085102.51000-1-clamor95@gmail.com> <20260523085102.51000-2-clamor95@gmail.com>
+ <CAMRc=MfXVwD2u0e115RapnyLzf5JRjWMs=2PSNzMnm0GDd7aaQ@mail.gmail.com>
+ <CAPVz0n1G5Yu2X5f+=q90RAbnsWi9psMq-L5tWDMM4JRC4R_mPg@mail.gmail.com> <CAMRc=Me4G-YqKoFan3epofXk2OWzxY1iPE1mP=uwEjs9wgA6Cw@mail.gmail.com>
+In-Reply-To: <CAMRc=Me4G-YqKoFan3epofXk2OWzxY1iPE1mP=uwEjs9wgA6Cw@mail.gmail.com>
+From: Svyatoslav Ryhel <clamor95@gmail.com>
+Date: Tue, 26 May 2026 15:29:25 +0300
+X-Gm-Features: AVHnY4LlPJQvUtSK0QH2SeBmOMPhEhv-MZAC_ScpGO8WYUg9vZq45m_SVat0lzY
+Message-ID: <CAPVz0n2P-zB1_uetZN9pVcQChK+FkdQowbF4Z0YZOBQBsB76WQ@mail.gmail.com>
+Subject: Re: [PATCH v2 1/2] dt-bindings: soc: tegra: Document Nvidia Tegra
+ modem pwrseq
+To: Bartosz Golaszewski <brgl@kernel.org>
+Cc: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+	Conor Dooley <conor+dt@kernel.org>, Thierry Reding <thierry.reding@kernel.org>, 
+	Jonathan Hunter <jonathanh@nvidia.com>, devicetree@vger.kernel.org, 
+	linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org, 
+	linux-pm@vger.kernel.org
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Mon, May 18, 2026 at 11:34=E2=80=AFPM N=C3=ADcolas F. R. A. Prado
-<nfraprado@collabora.com> wrote:
+=D0=B2=D1=82, 26 =D1=82=D1=80=D0=B0=D0=B2. 2026=E2=80=AF=D1=80. =D0=BE 14:1=
+4 Bartosz Golaszewski <brgl@kernel.org> =D0=BF=D0=B8=D1=88=D0=B5:
 >
-> The current implementation of copy_data_pages() has at its center
-> do_copy_page(), which copies data of all saveable pages in a loop one
-> long at a time, while checking whether the page is fully zero to allow
-> it to not be saved in the hibernation image.
+> On Tue, 26 May 2026 12:03:59 +0200, Svyatoslav Ryhel <clamor95@gmail.com>=
+ said:
+> > =D0=B2=D1=82, 26 =D1=82=D1=80=D0=B0=D0=B2. 2026=E2=80=AF=D1=80. =D0=BE =
+12:51 Bartosz Golaszewski <brgl@kernel.org> =D0=BF=D0=B8=D1=88=D0=B5:
+> >>
+> >> On Sat, May 23, 2026 at 10:51=E2=80=AFAM Svyatoslav Ryhel <clamor95@gm=
+ail.com> wrote:
+> >> >
+> >> > Document the Tegra modem pwseq used by various devices based on the =
+Nvidia
+> >> > Tegra SoC, describing its usage. The power sequence provides interac=
+tion
+> >> > between the modem and SoC-specific interface configurations.
+> >> >
+> >> > Signed-off-by: Svyatoslav Ryhel <clamor95@gmail.com>
+> >> > ---
+> >>
+> >> ...
+> >>
+> >> > +
+> >> > +examples:
+> >> > +  - |
+> >> > +    #include <dt-bindings/gpio/gpio.h>
+> >> > +
+> >> > +    pwrseq-modem {
+> >> > +        compatible =3D "nvidia,tegra-modem-pwrseq";
+> >> > +
+> >> > +        enable-gpios =3D <&gpio 165 GPIO_ACTIVE_HIGH>;
+> >> > +        power-supply =3D <&vdd_3v3_vbat>;
+> >> > +
+> >> > +        nvidia,usb-bus =3D <&usb2>;
+> >> > +    };
+> >> > --
+> >> > 2.51.0
+> >> >
+> >>
+> >> I assume there's no such component as the tegra modem *pwrseq*?
+> >
+> > Hardware component, I assume no.
+> >
+> >> What is the relationship between this node and the "infineon,xmm6260"
+> >> compatible node?
+> >>
+> >
+> > The xmm6260 has a phandle reference to it. Since there is consumer
+> > matching logic in the pwrseq driver I am leaning towards removing this
+> > node entirely. This patches is still in non-final stage and I would
+> > like to hear any opinions on the way to improving it.
+> >
 >
-> As the comment above do_copy_page() mentions, this loop was used instead
-> of the more optimized copy_page() and memcpy() due to them depending on
-> fpu_begin()/fpu_end() (see [1] and commit 95018f7c94cb ("[PATCH] swsusp:
-> do not use memcpy for snapshotting memory")). However, since commit
-> c6dbd3e5e69c ("x86/mmx_32: Remove X86_USE_3DNOW"), this limitation no
-> longer holds, and it only affected x86-32 in the first place.
->
-> From testing it is clear that removing the zero page check and using
-> copy_page() makes it almost 3 times quicker:
-> - Current:
->     PM: hibernation: Copied 4940240 kbytes in 11.33 seconds (436.03 MB/s)
-> - With just the zero check removed:
->     PM: hibernation: Copied 4974664 kbytes in 9.03 seconds (550.90 MB/s)
-> - With the zero check removed and using copy_page() instead:
->     PM: hibernation: Copied 6275216 kbytes in 3.96 seconds (1584.65 MB/s)
->
-> Given that copy_data_pages() runs inside a critical section where only
-> a single CPU is online and syscore is suspended, it should be kept as
-> short as possible to keep the system responsive.
+> The node attached to the pwrseq provider device should represent a real
+> hardware component. Are the enable-gpios and power-supply lines connected
+> to the modem package?
 
-I'm not sure if being responsive during hibernation is all that important.
+Yes, enable-gpio is connected to the modem and signals that USB is set
+and ready to work with the modem, while power-supply is an optional
+supply connected to the modem's vbus input.
 
-Also, the change is about using copy_page() to reduce the time spent
-in syscore_suspend(), so the subject is a bit confusing.
+> Is there an internal structure to it, like a PMIC to which these lines co=
+nnect
+> that controls the actual modem IC?
 
-> While switching from the loop to copy_page() brings big speed
-> improvements, it also makes the zero page check much costlier since it
-> can no longer be done in the middle of the copy. In fact upon testing
-> adding the zero check alongside copy_page() made it slower than the
-> current code.
+Modem does have internal PMIC to power up all its components, but they
+are controlled by the modems internal firmware and are not accessible
+via any standard means.
 
-Guess what, CPUs have caches.
-
-> The following shows a rough comparison of a few more metrics between the
-> current code and when both copy_page() is used and the zero page check
-> is disabled:
-> - Total time to hibernate:
->   - before: 13.77s
->   - after: 14.13s
-
-Score for the current code.
-
-> - Total time to resume:
->   - before: 5.85s
->   - after: 5.85s
-> - Total time in syscore_suspend():
->   - before: 11.3s
->   - after: 4.08s
-
-Why does this matter?
-
-> - Total image size written to disk:
->   - before: 4956296kB =3D> 2606402kB compressed =3D 2.60MB
->   - after: 6274608 =3D> 2616624kB compressed =3D 2.61MB
-
-"kB" seems to be missing in the bottom row.
-
-Which means that this is a score for the current code again because it
-needs to copy and compress fewer pages which means that less energy
-needs to be used (which may be kind of relevant in low-battery
-situations).
-
-> As can be seen the total time to hibernate is roughly the same,
-> suggesting that the time saved with the more efficient copy_page() is
-> payed by having to compress more data (the zero pages). The time to
-> resume remains the same. And the hibernation image size is basically the
-> same, as the zero pages compress well (the case would be quite different
-> if compression is disabled). The big win here is that the time between
-> syscore_suspend() and syscore_resume() is much lower, meaning the system
-> will be more responsive throughout hibernation.
->
-> Expose a 'nozerocheck' module parameter
-
-I'd rather not.
-
-Either the switch-over is compelling enough to do it unconditionally,
-or it is not, in which case the existing code can be used just fine.
-
-As it stands, I'm not convinced.
-
-> to allow the zero page check to
-> be disabled and the faster copy_page() to be used, giving the option for
-> userspace to choose between a more responsive system and reducing the
-> disk usage particularly when compression is disabled.
->
-> Testing was done on the SteamDeck OLED.
->
-> [1] https://lore.kernel.org/all/1096877559.9064.45.camel@desktop.cunningh=
-ams/
->
-> Signed-off-by: N=C3=ADcolas F. R. A. Prado <nfraprado@collabora.com>
-> ---
->  kernel/power/snapshot.c | 37 ++++++++++++++++++++++++++-----------
->  1 file changed, 26 insertions(+), 11 deletions(-)
->
-> diff --git a/kernel/power/snapshot.c b/kernel/power/snapshot.c
-> index 4f452baf31dc..00feac18faae 100644
-> --- a/kernel/power/snapshot.c
-> +++ b/kernel/power/snapshot.c
-> @@ -40,6 +40,9 @@
->
->  #include "power.h"
->
-> +static bool nozerocheck;
-> +module_param(nozerocheck, bool, 0644);
-> +
->  #if defined(CONFIG_STRICT_KERNEL_RWX) && defined(CONFIG_ARCH_HAS_SET_MEM=
-ORY)
->  static bool hibernate_restore_protection;
->  static bool hibernate_restore_protection_active;
-> @@ -1425,11 +1428,9 @@ static unsigned int count_data_pages(void)
->  }
->
->  /*
-> - * This is needed, because copy_page and memcpy are not usable for copyi=
-ng
-> - * task structs. Returns true if the page was filled with only zeros,
-> - * otherwise false.
-> + * Returns true if the page was filled with only zeros, otherwise false.
->   */
-> -static inline bool do_copy_page(long *dst, long *src)
-> +static inline bool do_copy_page_zerocheck(long *dst, long *src)
->  {
->         long z =3D 0;
->         int n;
-> @@ -1441,6 +1442,12 @@ static inline bool do_copy_page(long *dst, long *s=
-rc)
->         return !z;
->  }
->
-> +static inline bool do_copy_page_nozerocheck(long *dst, long *src)
-> +{
-> +       copy_page(dst, src);
-> +       return false;
-> +}
-> +
->  /**
->   * safe_copy_page - Copy a page in a safe way.
->   *
-> @@ -1450,7 +1457,8 @@ static inline bool do_copy_page(long *dst, long *sr=
-c)
->   * always returns 'true'. Returns true if the page was entirely composed=
- of
->   * zeros, otherwise it will return false.
->   */
-> -static bool safe_copy_page(void *dst, struct page *s_page)
-> +static bool safe_copy_page(void *dst, struct page *s_page,
-> +                          bool (*do_copy_page)(long *dst, long *src))
->  {
->         bool zeros_only;
->
-> @@ -1471,7 +1479,8 @@ static inline struct page *page_is_saveable(struct =
-zone *zone, unsigned long pfn
->                 saveable_highmem_page(zone, pfn) : saveable_page(zone, pf=
-n);
->  }
->
-> -static bool copy_data_page(unsigned long dst_pfn, unsigned long src_pfn)
-> +static bool copy_data_page(unsigned long dst_pfn, unsigned long src_pfn,
-> +                          bool (*do_copy_page)(long *dst, long *src))
->  {
->         struct page *s_page, *d_page;
->         void *src, *dst;
-> @@ -1491,12 +1500,13 @@ static bool copy_data_page(unsigned long dst_pfn,=
- unsigned long src_pfn)
->                          * The page pointed to by src may contain some ke=
-rnel
->                          * data modified by kmap_atomic()
->                          */
-> -                       zeros_only =3D safe_copy_page(buffer, s_page);
-> +                       zeros_only =3D safe_copy_page(buffer, s_page, do_=
-copy_page);
->                         dst =3D kmap_local_page(d_page);
->                         copy_page(dst, buffer);
->                         kunmap_local(dst);
->                 } else {
-> -                       zeros_only =3D safe_copy_page(page_address(d_page=
-), s_page);
-> +                       zeros_only =3D safe_copy_page(page_address(d_page=
-),
-> +                                                   s_page, do_copy_page)=
-;
->                 }
->         }
->         return zeros_only;
-> @@ -1504,10 +1514,12 @@ static bool copy_data_page(unsigned long dst_pfn,=
- unsigned long src_pfn)
->  #else
->  #define page_is_saveable(zone, pfn)    saveable_page(zone, pfn)
->
-> -static inline int copy_data_page(unsigned long dst_pfn, unsigned long sr=
-c_pfn)
-> +static inline int
-> +copy_data_page(unsigned long dst_pfn, unsigned long src_pfn,
-> +              bool (*do_copy_page)(long *dst, long *src))
->  {
->         return safe_copy_page(page_address(pfn_to_page(dst_pfn)),
-> -                               pfn_to_page(src_pfn));
-> +                               pfn_to_page(src_pfn), do_copy_page);
->  }
->  #endif /* CONFIG_HIGHMEM */
->
-> @@ -1524,6 +1536,9 @@ static unsigned long copy_data_pages(struct memory_=
-bitmap *copy_bm,
->         unsigned long copied_pages =3D 0;
->         struct zone *zone;
->         unsigned long pfn, copy_pfn;
-> +       bool (*do_copy_page)(long *dst, long *src);
-> +
-> +       do_copy_page =3D nozerocheck ? do_copy_page_nozerocheck : do_copy=
-_page_zerocheck;
->
->         for_each_populated_zone(zone) {
->                 unsigned long max_zone_pfn;
-> @@ -1541,7 +1556,7 @@ static unsigned long copy_data_pages(struct memory_=
-bitmap *copy_bm,
->                 pfn =3D memory_bm_next_pfn(orig_bm);
->                 if (unlikely(pfn =3D=3D BM_END_OF_MAP))
->                         break;
-> -               if (copy_data_page(copy_pfn, pfn)) {
-> +               if (copy_data_page(copy_pfn, pfn, do_copy_page)) {
->                         memory_bm_set_bit(zero_bm, pfn);
->                         /* Use this copy_pfn for a page that is not full =
-of zeros */
->                         continue;
->
-> --
-> 2.53.0
->
+> Bart
