@@ -1,75 +1,68 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0A6923CF699
-	for <linux-pm@vger.kernel.org>; Tue, 26 May 2026 09:22:53 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 97CAA3D8101;
+	Tue, 26 May 2026 09:42:37 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1779787373; cv=none; b=W764ohbFMSyK7uNNaO465af4Iat6lvxdMF5BU/p6kiF/QIR6WlbhLJ8AqyBAc9DCMbR6ev6wzZttnVnfuiPged+4OziZB1X6S8H4zl0MmvN6aRhHXKHC2H/keqB9GkRryhCuM9VWq2DOSLUdjXy2qCl94Upvwjcb1RqyHFTfHDs=
+	t=1779788558; cv=none; b=OpcxWce+uDoz7Cs5cYKMJDp6jg6t8rGEJu0XUDxTPr1aKpftzNT1fPLCfY/rankn+D1q4zO505K8IgieMABjzLYu3ML/MBxytcoQu558Jaax7TOfRfByczVE4dfqC6kCQbiiRZAd43PNP3yebWF8PFmdxLJh4la2Zg9B983xBgc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1779787373; c=relaxed/simple;
-	bh=f5Ip5MoNMqo5xCWQ5WJqD/NuvsxW2Ia3YpFnyvgUMUM=;
-	h=From:To:Subject:Date:Message-ID:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=RkOJ1S6kJVHH3INf63qhZ8rsccIEn87U4q3Y4b1W1/0o+pzhU+rmP9zehGN1Dx5LgRhZECyg/UoDQ4aIBmT0BhlZAR76yCRoC0F2w6d8nCajqNwfzhHLf2ZHMAN6JQBkTRyqnicZcMfXiw9l+Zis9GIhsSgbtBkMS/mRq1dTo7Y=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=qjSjd5m9; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1779788558; c=relaxed/simple;
+	bh=rKNgA79MMeQk+bwc28f395YxJbYOZxdMNnULJfDhld4=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=TK6aegtlMXOVfF2+oSKsUqXfrZKR9m5udFELQ8vlIvBbPD9kp1U4CksGmf337TY/v1HBrnt6VhzSN67L2Gkao2MuFarw0eDGivI4WliM0XIPx9uQl1CJGa1CVDaM7j1AYiAoID0CxB2aYl/OD8O2lgMZTtXwgUPW0CI6fnF+R5Y=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=f6yin3Kx; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="qjSjd5m9"
-Received: by smtp.kernel.org (Postfix) with ESMTPS id D83AAC2BCF5
-	for <linux-pm@vger.kernel.org>; Tue, 26 May 2026 09:22:52 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1779787372;
-	bh=f5Ip5MoNMqo5xCWQ5WJqD/NuvsxW2Ia3YpFnyvgUMUM=;
-	h=From:To:Subject:Date:In-Reply-To:References:From;
-	b=qjSjd5m9WjUc2Gg571LUwyKo9fii7VvgserV64QcWCxH07RYsbULqgtfnsFvfQURz
-	 WOla4VhZ1dPNTGJ2Mjei6sfqa0Zhq98TS+InlkboIoQtu7TBDijP5x/vTtBpdYWFFA
-	 1s0v8ZBofX9Rb5u8CinKBrWmvBej3bCA6x8tuFHNG+jgyMcoUuZ5PBV33+wuJHVSdT
-	 u2WT53iV4+LDAnHDN5C/KbOwbOiBaixfFpUPtMOpJzYFdw2wjBV1ZumkZkaFXnN/UW
-	 vZXvzcUQWmDC7fepbfDmHaxc3lTiKjjJNb4ANHohtawGr0iJvRcWcMW8zdqu0bZUXL
-	 rRbWH1Us3OzHA==
-Received: by aws-us-west-2-korg-bugzilla-1.web.codeaurora.org (Postfix, from userid 48)
-	id C4D3BC41612; Tue, 26 May 2026 09:22:52 +0000 (UTC)
-From: bugzilla-daemon@kernel.org
-To: linux-pm@vger.kernel.org
-Subject: [Bug 221505] REGRESSION][amd_pstate] "EPP cannot be set under
- performance policy" (EBUSY) when switching to performance profile via PPD on
- 7.1
-Date: Tue, 26 May 2026 09:22:52 +0000
-X-Bugzilla-Reason: AssignedTo
-X-Bugzilla-Type: changed
-X-Bugzilla-Watch-Reason: None
-X-Bugzilla-Product: Power Management
-X-Bugzilla-Component: cpufreq
-X-Bugzilla-Version: 2.5
-X-Bugzilla-Keywords: 
-X-Bugzilla-Severity: normal
-X-Bugzilla-Who: mario.limonciello@amd.com
-X-Bugzilla-Status: NEW
-X-Bugzilla-Resolution: 
-X-Bugzilla-Priority: P3
-X-Bugzilla-Assigned-To: linux-pm@vger.kernel.org
-X-Bugzilla-Flags: 
-X-Bugzilla-Changed-Fields: 
-Message-ID: <bug-221505-137361-YQ4d3hgJ4B@https.bugzilla.kernel.org/>
-In-Reply-To: <bug-221505-137361@https.bugzilla.kernel.org/>
-References: <bug-221505-137361@https.bugzilla.kernel.org/>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-X-Bugzilla-URL: https://bugzilla.kernel.org/
-Auto-Submitted: auto-generated
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="f6yin3Kx"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4A75D1F000E9;
+	Tue, 26 May 2026 09:42:36 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1779788557;
+	bh=69ANfIB+mPawv6oMTVRw25TJh4t4UGQi6U/dIsBgm28=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=f6yin3KxVaJ1jBemQnvmFo5AGKVub33e0kYifkfPT5EaW9nitTxB49akxonXsG8xR
+	 PNe1OnsbXuGzS81XpSTVuYv0RK6twW7ryXfLJ+yAQ6stTyUfGrzXMPt5rq+PRY/QTX
+	 0G3Af0VrE//lZh5p6pK20KeUN4qA3EaDNJCEHy2N9jfALuc7dB+uExNnL5KN8DfT1f
+	 yhAtRTsh3W9THd1vqjwo6XYR58cbStkIAwXWO6SkfUMejByHUpM+jvAcXtKnbK5uFE
+	 qvxyXLCfbmdgbE6hGJNuJnzQJJU8h1YLd6cr8eNo+/OB5F843RFOsV4H3CJDQ7eS3h
+	 dG0gXfnRmzHyQ==
+Date: Tue, 26 May 2026 11:42:34 +0200
+From: Krzysztof Kozlowski <krzk@kernel.org>
+To: Tudor Ambarus <tudor.ambarus@linaro.org>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, 
+	Daniel Lezcano <daniel.lezcano@kernel.org>, Zhang Rui <rui.zhang@intel.com>, 
+	Lukasz Luba <lukasz.luba@arm.com>, Rob Herring <robh@kernel.org>, 
+	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
+	Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, Kees Cook <kees@kernel.org>, 
+	"Gustavo A. R. Silva" <gustavoars@kernel.org>, Peter Griffin <peter.griffin@linaro.org>, 
+	=?utf-8?B?QW5kcsOp?= Draszik <andre.draszik@linaro.org>, Alim Akhtar <alim.akhtar@samsung.com>, jyescas@google.com, 
+	linux-kernel@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, 
+	devicetree@vger.kernel.org, linux-hardening@vger.kernel.org, 
+	linux-arm-kernel@lists.infradead.org
+Subject: Re: [PATCH v5 5/5] arm64: defconfig: enable Exynos ACPM thermal
+ support
+Message-ID: <20260526-laughing-hissing-starling-7e088e@quoll>
+References: <20260525-acpm-tmu-v5-0-85fde739752e@linaro.org>
+ <20260525-acpm-tmu-v5-5-85fde739752e@linaro.org>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20260525-acpm-tmu-v5-5-85fde739752e@linaro.org>
 
-https://bugzilla.kernel.org/show_bug.cgi?id=3D221505
+On Mon, May 25, 2026 at 12:50:25PM +0000, Tudor Ambarus wrote:
+> Enable the Exynos ACPM thermal driver (CONFIG_EXYNOS_ACPM_THERMAL)
+> to allow temperature monitoring and thermal management on Samsung
+> Exynos SoCs 
 
---- Comment #14 from Mario Limonciello (AMD) (mario.limonciello@amd.com) ---
-This is with dynamic epp off you're hitting that on 7.1-rc5?
+"on Samsung Exynos foobar SoCs" or "on Samsung Exynos SoCs (like
+Google GS101)", used on "faz baz boards".
 
---=20
-You may reply to this email to add a comment.
 
-You are receiving this mail because:
-You are the assignee for the bug.=
+Best regards,
+Krzysztof
+
