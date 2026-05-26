@@ -1,136 +1,123 @@
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.19])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F2D8E231829;
-	Tue, 26 May 2026 08:44:11 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.19
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E18493C553C
+	for <linux-pm@vger.kernel.org>; Tue, 26 May 2026 09:20:42 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1779785054; cv=none; b=EpFFYGvyhsp+sPXatVyGtB/kqRvZlhF5CbjYGVQqypW8CPIj0OWMJm20ZXiTDbto1pQH3hdEoi8vaJNkHZUu2vcu3USGZr6Cz8YgwY7yGzzHvynNL/oQ2QQ/u6yZINhUwY5E1G8neYYMAb7JJ4/VmR8LQkRSrQc0D7VHDw2+W4U=
+	t=1779787243; cv=none; b=r28Z/9dgqKo4Vj+0T7iZZ8leHGOtbPzCWiIvxg44IhqLB1/LBEH948W1VnMJDi0zJSTVWlXFaKI31T7xUJ0C7aCfpXskGnsqtf7vg3uLUEcsDYNOitQvvibQGhS9r0loqLk+AtsxA0biufI1/D4maFTfxxSMF955ohZLk08LKcc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1779785054; c=relaxed/simple;
-	bh=P1TTSb+W9oa+KvOKtQtNe5QY+x6v34i6rntYIM4q0Fg=;
-	h=Date:From:To:Cc:Subject:Message-ID; b=IKCVl5Y76BG+W5hAjhCFUarw6+s5G/jIzdPxYHLELdNedL94Q/enI1KqaSHndJJUGBjf6CVayjNZXxtGwt9nS5DCRpA1d4bw63DrV836BpqvyrXRBjzPpZI/LVqavOMUtfVGP4p3q2mtL3VGbUbRvHqtxGCTJK7u8FJAzoy4TnI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=bew/DJkk; arc=none smtp.client-ip=198.175.65.19
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
+	s=arc-20240116; t=1779787243; c=relaxed/simple;
+	bh=vyzgwuiDKczg5+v8KgUfZ48+HjbmnFEHSLWTtGERbE4=;
+	h=From:To:Subject:Date:Message-ID:In-Reply-To:References:
+	 Content-Type:MIME-Version; b=AHmWMHgVdLMooTNH2Z5IrKr0L7EUg8WKUXlHxyYfmF6AfURIxVnolsTDgot9z9EhEAXEEgRSwSdx055rk4I9VDpyUK8yp5LAA1pQWPRGAs/jdh/Zywdyc+oYk/LfNSgxrwZkSAx0RoRrVk+Rb3lmo1TPhXuITyWtPW5lcQOkvu4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Tr1IfdYz; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="bew/DJkk"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1779785052; x=1811321052;
-  h=date:from:to:cc:subject:message-id;
-  bh=P1TTSb+W9oa+KvOKtQtNe5QY+x6v34i6rntYIM4q0Fg=;
-  b=bew/DJkkJQFNPUaAKKAIWGXH3gpWl+EYw19y9K/pcUpasP1NjSnf+iS/
-   Bjz/a1aj+nN4Rk21l/fepgSOVZsk4VzKpCHN1jkKLPtjJRZJfuCbGPEpz
-   a6gTkY6rIKc87+D+uezJxjqE61LNJ8/wGSnS7HKfKnJzuGEaSaJGV95Z1
-   HldXBPyrmp1+TYIT+zYLBWllNQtLH6sdEJwPPRhgZZrj1ZYoPId93POlP
-   XN5l3nzBBxRgXxCHvp2wmSZyQ91NfmId54VEqX+gxkJBYGffL1ATgNPiW
-   +4Sz24XP+qJZXyGM2gWlIL05RE2QWtCkLPfCGg5rgfmpLQi36Rv1qK84A
-   A==;
-X-CSE-ConnectionGUID: UP7ZG1gATkmUtR3oNB6KKA==
-X-CSE-MsgGUID: vfVwpx4UTK2U0VvGCzHQ6w==
-X-IronPort-AV: E=McAfee;i="6800,10657,11797"; a="80563688"
-X-IronPort-AV: E=Sophos;i="6.24,169,1774335600"; 
-   d="scan'208";a="80563688"
-Received: from fmviesa010.fm.intel.com ([10.60.135.150])
-  by orvoesa111.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 26 May 2026 01:44:12 -0700
-X-CSE-ConnectionGUID: e8YYxvEZS/S6DsBHNBe9tg==
-X-CSE-MsgGUID: UptraIbqQRGI7dYmcH9fdw==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.24,169,1774335600"; 
-   d="scan'208";a="237670475"
-Received: from lkp-server01.sh.intel.com (HELO f0d55cb201f0) ([10.239.97.150])
-  by fmviesa010.fm.intel.com with ESMTP; 26 May 2026 01:44:10 -0700
-Received: from kbuild by f0d55cb201f0 with local (Exim 4.98.2)
-	(envelope-from <lkp@intel.com>)
-	id 1wRnOS-000000002Gk-0Sxy;
-	Tue, 26 May 2026 08:44:08 +0000
-Date: Tue, 26 May 2026 16:43:23 +0800
-From: kernel test robot <lkp@intel.com>
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org
-Subject: [rafael-pm:bleeding-edge] BUILD SUCCESS
- 44d6101d610303d64d51b8366de0de0034cac61f
-Message-ID: <202605261614.gH5niLEx-lkp@intel.com>
-User-Agent: s-nail v14.9.25
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Tr1IfdYz"
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 71AD4C2BCB3
+	for <linux-pm@vger.kernel.org>; Tue, 26 May 2026 09:20:42 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1779787242;
+	bh=vyzgwuiDKczg5+v8KgUfZ48+HjbmnFEHSLWTtGERbE4=;
+	h=From:To:Subject:Date:In-Reply-To:References:From;
+	b=Tr1IfdYzKWRxaD9FfFlltoYpF1URRZ6aUq3kbTPMPMqTr3LcXencwoNT4nmdjO82G
+	 fzMdl9UHWKBhxjmkqwgrC2jktxRFL7QYDVCaMp+5FijWnfR4PFYYx1G2gi3eMTPCvZ
+	 WsDnYXWZNP1GO45LImVG8Wx3o4UHtwGwtCeRg5u9Oh+ChHa8HjOTOeYOq8B/Y55D/Z
+	 2UCn6TAexDjkMVPc/HhodXmxJavlS4GsgAJk/XiOMLl3KA21ykm/47bPfjSs7g5SpY
+	 jvSJuFE9gXSLKe9z35WKLmtGdU0mN9neg3U5oQgPWTiQ0wSZuxAqDpvovNgazSiz+x
+	 h0daAc/nYgdTw==
+Received: by aws-us-west-2-korg-bugzilla-1.web.codeaurora.org (Postfix, from userid 48)
+	id 59C8CC3279F; Tue, 26 May 2026 09:20:42 +0000 (UTC)
+From: bugzilla-daemon@kernel.org
+To: linux-pm@vger.kernel.org
+Subject: [Bug 221505] REGRESSION][amd_pstate] "EPP cannot be set under
+ performance policy" (EBUSY) when switching to performance profile via PPD on
+ 7.1
+Date: Tue, 26 May 2026 09:20:42 +0000
+X-Bugzilla-Reason: AssignedTo
+X-Bugzilla-Type: changed
+X-Bugzilla-Watch-Reason: None
+X-Bugzilla-Product: Power Management
+X-Bugzilla-Component: cpufreq
+X-Bugzilla-Version: 2.5
+X-Bugzilla-Keywords: 
+X-Bugzilla-Severity: normal
+X-Bugzilla-Who: alexaandru@gmail.com
+X-Bugzilla-Status: NEW
+X-Bugzilla-Resolution: 
+X-Bugzilla-Priority: P3
+X-Bugzilla-Assigned-To: linux-pm@vger.kernel.org
+X-Bugzilla-Flags: 
+X-Bugzilla-Changed-Fields: 
+Message-ID: <bug-221505-137361-QpFZsSNn1I@https.bugzilla.kernel.org/>
+In-Reply-To: <bug-221505-137361@https.bugzilla.kernel.org/>
+References: <bug-221505-137361@https.bugzilla.kernel.org/>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+X-Bugzilla-URL: https://bugzilla.kernel.org/
+Auto-Submitted: auto-generated
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
+MIME-Version: 1.0
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git bleeding-edge
-branch HEAD: 44d6101d610303d64d51b8366de0de0034cac61f  Merge branch 'experimental/acpi-driver-work' into bleeding-edge
+https://bugzilla.kernel.org/show_bug.cgi?id=3D221505
 
-elapsed time: 998m
+--- Comment #13 from Alex Ungur (alexaandru@gmail.com) ---
+I use 7.1-rc5 and I can switch just fine to balanced or power-saver but not=
+ to
+performance:
 
-configs tested: 59
-configs skipped: 9
+```
+$ powerprofilesctl
+  performance:
+    CpuDriver:  amd_pstate
+    PlatformDriver:     platform_profile
+    Degraded:   no
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+* balanced:
+    CpuDriver:  amd_pstate
+    PlatformDriver:     platform_profile
 
-tested configs:
-alpha                   allnoconfig    gcc-15.2.0
-alpha                  allyesconfig    gcc-15.2.0
-arc                    allmodconfig    gcc-15.2.0
-arc                     allnoconfig    gcc-15.2.0
-arc                    allyesconfig    gcc-15.2.0
-arm                     allnoconfig    clang-23
-arm                    allyesconfig    gcc-15.2.0
-arm64                  allmodconfig    clang-19
-arm64                   allnoconfig    gcc-15.2.0
-arm64       randconfig-002-20260526    gcc-8.5.0
-csky                   allmodconfig    gcc-15.2.0
-csky                    allnoconfig    gcc-15.2.0
-csky        randconfig-001-20260526    gcc-15.2.0
-csky        randconfig-002-20260526    gcc-13.4.0
-hexagon                allmodconfig    clang-17
-hexagon                 allnoconfig    clang-23
-i386                   allmodconfig    gcc-14
-i386                    allnoconfig    gcc-14
-i386                   allyesconfig    gcc-14
-loongarch              allmodconfig    clang-19
-loongarch               allnoconfig    clang-23
-loongarch   randconfig-001-20260526    gcc-15.2.0
-m68k                   allmodconfig    gcc-15.2.0
-m68k                    allnoconfig    gcc-15.2.0
-m68k                   allyesconfig    gcc-15.2.0
-microblaze              allnoconfig    gcc-15.2.0
-microblaze             allyesconfig    gcc-15.2.0
-mips                   allmodconfig    gcc-15.2.0
-mips                    allnoconfig    gcc-15.2.0
-mips                   allyesconfig    gcc-15.2.0
-nios2                  allmodconfig    gcc-11.5.0
-nios2                   allnoconfig    gcc-11.5.0
-openrisc               allmodconfig    gcc-15.2.0
-openrisc                allnoconfig    gcc-15.2.0
-parisc                 allmodconfig    gcc-15.2.0
-parisc                  allnoconfig    gcc-15.2.0
-parisc                 allyesconfig    gcc-15.2.0
-powerpc                allmodconfig    gcc-15.2.0
-powerpc                 allnoconfig    gcc-15.2.0
-riscv                  allmodconfig    clang-23
-riscv                   allnoconfig    gcc-15.2.0
-riscv                  allyesconfig    clang-16
-s390                   allmodconfig    clang-18
-s390                    allnoconfig    clang-23
-s390                   allyesconfig    gcc-15.2.0
-sh                     allmodconfig    gcc-15.2.0
-sh                      allnoconfig    gcc-15.2.0
-sh                     allyesconfig    gcc-15.2.0
-sh          randconfig-001-20260526    gcc-10.5.0
-sparc                   allnoconfig    gcc-15.2.0
-sparc64                allmodconfig    clang-23
-um                     allmodconfig    clang-19
-um                      allnoconfig    clang-23
-um                     allyesconfig    gcc-14
-x86_64                 allmodconfig    clang-20
-x86_64                  allnoconfig    clang-20
-x86_64                 allyesconfig    clang-20
-x86_64                rhel-9.4-rust    clang-20
-xtensa                  allnoconfig    gcc-15.2.0
+  power-saver:
+    CpuDriver:  amd_pstate
+    PlatformDriver:     platform_profile
+$ powerprofilesctl set power-saver # ok
+$ powerprofilesctl set balanced    # ok
+$ powerprofilesctl set performance # not ok
+Failed to communicate with power-profiles-daemon: g-io-error-quark:
+GDBus.Error:org.gtk.GDBus.UnmappedGError.Quark._g_2dio_2derror_2dquark.Code=
+26:
+Failed to activate CPU driver 'amd_pstate': Error writing
+'/sys/devices/system/cpu/cpufreq/policy11/energy_performance_preference':
+Resource busy (26)
+```
 
---
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
+It worked fine with rc4 though... I could switch to any profile, incl.
+performance.
+
+My machine is:
+```
+$ inxi -CM
+Machine:
+  Type: Laptop System: ASUSTeK product: ASUS Vivobook S 16 M5606WA_M5606WA
+    v: 1.0 serial: <superuser required>
+  Mobo: ASUSTeK model: M5606WA v: 1.0 serial: <superuser required>
+    UEFI: American Megatrends LLC. v: M5606WA.316 date: 01/05/2026
+CPU:
+  Info: 12-core model: AMD Ryzen AI 9 HX 370 w/ Radeon 890M bits: 64
+    type: MT MCP cache: L2: 12 MiB
+  Speed (MHz): avg: 3585 min/max: 605/5158:3289 cores: 1: 3585 2: 3585
+    3: 3585 4: 3585 5: 3585 6: 3585 7: 3585 8: 3585 9: 3585 10: 3585 11: 35=
+85
+    12: 3585 13: 3585 14: 3585 15: 3585 16: 3585 17: 3585 18: 3585 19: 3585
+    20: 3585 21: 3585 22: 3585 23: 3585 24: 3585
+```
+
+--=20
+You may reply to this email to add a comment.
+
+You are receiving this mail because:
+You are the assignee for the bug.=
