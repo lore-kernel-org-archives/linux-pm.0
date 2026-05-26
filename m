@@ -1,68 +1,101 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 97CAA3D8101;
-	Tue, 26 May 2026 09:42:37 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4967F3DB651
+	for <linux-pm@vger.kernel.org>; Tue, 26 May 2026 09:48:15 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1779788558; cv=none; b=OpcxWce+uDoz7Cs5cYKMJDp6jg6t8rGEJu0XUDxTPr1aKpftzNT1fPLCfY/rankn+D1q4zO505K8IgieMABjzLYu3ML/MBxytcoQu558Jaax7TOfRfByczVE4dfqC6kCQbiiRZAd43PNP3yebWF8PFmdxLJh4la2Zg9B983xBgc=
+	t=1779788897; cv=none; b=BidjgRDVMCNCHMBK0cPBYyGrdZ4IaJvZ4P+xJhiKc+Pwy6fawamfwg1UjJHJDHF/z7B0v+UOq3/qmMfFPTOmuZAP6KeUdD09g2qg7dBbN1pH7gK2T2hp/0PN1R72KPKC4fvVghWSHBU/haAsrelCWJQwDvO7KQyHgeCYOxfArrk=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1779788558; c=relaxed/simple;
-	bh=rKNgA79MMeQk+bwc28f395YxJbYOZxdMNnULJfDhld4=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=TK6aegtlMXOVfF2+oSKsUqXfrZKR9m5udFELQ8vlIvBbPD9kp1U4CksGmf337TY/v1HBrnt6VhzSN67L2Gkao2MuFarw0eDGivI4WliM0XIPx9uQl1CJGa1CVDaM7j1AYiAoID0CxB2aYl/OD8O2lgMZTtXwgUPW0CI6fnF+R5Y=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=f6yin3Kx; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1779788897; c=relaxed/simple;
+	bh=6xgiU7UHk0fyH8OtVpuJExgRt0VbjZpUEjJ/frbR0FA=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=J9Vb1Q8BglISZCBvwSG65aUuqyPC2gA4F4+LYWNrXvo5MtR0mGDmrTza0hC/1TUwbP59POZIOaelScOvHaewjXx1XLyh+nPlbnBhB9u1yWvGVHMfDih+DKLdTwNip040stl9z60uxqlSXXbUpRfB26tlj+mACK1vXFdzXF7PZ9g=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=NVZlTsys; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="f6yin3Kx"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4A75D1F000E9;
-	Tue, 26 May 2026 09:42:36 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="NVZlTsys"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id F0EDE1F00A3F
+	for <linux-pm@vger.kernel.org>; Tue, 26 May 2026 09:48:14 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1779788557;
-	bh=69ANfIB+mPawv6oMTVRw25TJh4t4UGQi6U/dIsBgm28=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=f6yin3KxVaJ1jBemQnvmFo5AGKVub33e0kYifkfPT5EaW9nitTxB49akxonXsG8xR
-	 PNe1OnsbXuGzS81XpSTVuYv0RK6twW7ryXfLJ+yAQ6stTyUfGrzXMPt5rq+PRY/QTX
-	 0G3Af0VrE//lZh5p6pK20KeUN4qA3EaDNJCEHy2N9jfALuc7dB+uExNnL5KN8DfT1f
-	 yhAtRTsh3W9THd1vqjwo6XYR58cbStkIAwXWO6SkfUMejByHUpM+jvAcXtKnbK5uFE
-	 qvxyXLCfbmdgbE6hGJNuJnzQJJU8h1YLd6cr8eNo+/OB5F843RFOsV4H3CJDQ7eS3h
-	 dG0gXfnRmzHyQ==
-Date: Tue, 26 May 2026 11:42:34 +0200
-From: Krzysztof Kozlowski <krzk@kernel.org>
-To: Tudor Ambarus <tudor.ambarus@linaro.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, 
-	Daniel Lezcano <daniel.lezcano@kernel.org>, Zhang Rui <rui.zhang@intel.com>, 
-	Lukasz Luba <lukasz.luba@arm.com>, Rob Herring <robh@kernel.org>, 
-	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
-	Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, Kees Cook <kees@kernel.org>, 
-	"Gustavo A. R. Silva" <gustavoars@kernel.org>, Peter Griffin <peter.griffin@linaro.org>, 
-	=?utf-8?B?QW5kcsOp?= Draszik <andre.draszik@linaro.org>, Alim Akhtar <alim.akhtar@samsung.com>, jyescas@google.com, 
-	linux-kernel@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, 
-	devicetree@vger.kernel.org, linux-hardening@vger.kernel.org, 
-	linux-arm-kernel@lists.infradead.org
-Subject: Re: [PATCH v5 5/5] arm64: defconfig: enable Exynos ACPM thermal
- support
-Message-ID: <20260526-laughing-hissing-starling-7e088e@quoll>
-References: <20260525-acpm-tmu-v5-0-85fde739752e@linaro.org>
- <20260525-acpm-tmu-v5-5-85fde739752e@linaro.org>
+	s=k20260515; t=1779788895;
+	bh=6xgiU7UHk0fyH8OtVpuJExgRt0VbjZpUEjJ/frbR0FA=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc;
+	b=NVZlTsys9BWdtHzTDLDn5rfEhTbtLxyyJGzF9yhWAnDRt41GZGQkchM1KVUs4BE+V
+	 1ZfotqeJQVRfUIDBM6RJ2k1gVu2eBPsu9O+FeP6SXfWF/fNjDthrrS7mHTkNCjm0tu
+	 z8lXLoRuCz3oM81VIG4KNypW0wZMBD+C0W5bBLTTQrUkpCxFSnVeLs5s6QmfusqyrK
+	 2DZ+l73jxUWSahhHCjeNnze7jpJ4/4lfxQqN/demRkAnfOOJj/aQiLbtdK7j/e7uRU
+	 bs0KQ9vbAJ0Tk2r4RTaxzHBYygw2z2HFkI95yphzgxLV8SHOsGkb3Hm9fXVZm2Odf1
+	 r7Hx6MJKvNEGw==
+Received: by mail-lj1-f177.google.com with SMTP id 38308e7fff4ca-392445f11c5so105831711fa.1
+        for <linux-pm@vger.kernel.org>; Tue, 26 May 2026 02:48:14 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AFNElJ/FBHEPZiazyM/puacEzPbW7r+fA4SgBdAzEw3dxdJBCXs1DFVUJFb4hepyJ9+H3hWyu6KngYq7mA==@vger.kernel.org
+X-Gm-Message-State: AOJu0YxCQs04+348CPcpxYmpRDB6mDrlKw8MVFJxJ9IsUnoQkZrGt1Cv
+	ZQ8k+1PU5d07C3LmSdMP3T4ZH9mMc8bqQ8by/pyJNhZzLoqn3HVxe9s9IKdO4jzXVkzlpKfsBM1
+	QDNBnQzimTtJnetV2MZ4yr3RQ3v5srEAZtoTT4tFcJQ==
+X-Received: by 2002:a05:651c:20cd:20b0:38e:94c6:b706 with SMTP id
+ 38308e7fff4ca-395ca1c8679mr43054031fa.7.1779788893678; Tue, 26 May 2026
+ 02:48:13 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20260525-acpm-tmu-v5-5-85fde739752e@linaro.org>
+References: <20260515090149.3169406-1-wenst@chromium.org> <CAMRc=MdnjRRMVzxPkkrPhQ4dz7rsK8-HKUp9cQ0z11apL3escQ@mail.gmail.com>
+ <CAGXv+5HC3dqgcE3KnKzakHHWFHB6m_X42orOkNUvZvp=SL_O8g@mail.gmail.com>
+In-Reply-To: <CAGXv+5HC3dqgcE3KnKzakHHWFHB6m_X42orOkNUvZvp=SL_O8g@mail.gmail.com>
+From: Bartosz Golaszewski <brgl@kernel.org>
+Date: Tue, 26 May 2026 11:48:01 +0200
+X-Gmail-Original-Message-ID: <CAMRc=Med-_0GSYzoFBRiwFzBCK0DZqJD8_SEBxi+zwR20GS-HA@mail.gmail.com>
+X-Gm-Features: AVHnY4JnWCndh1h2w4rgycQThCJN5e2R-74Cpg5S6rpAEGBFVHeaeEFDCnabd1Q
+Message-ID: <CAMRc=Med-_0GSYzoFBRiwFzBCK0DZqJD8_SEBxi+zwR20GS-HA@mail.gmail.com>
+Subject: Re: [PATCH RFC 00/12] arm64: mediatek: Add M.2 E-key slot on Chromebooks
+To: Chen-Yu Tsai <wenst@chromium.org>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Rob Herring <robh@kernel.org>, 
+	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
+	Matthias Brugger <matthias.bgg@gmail.com>, 
+	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>, linux-pm@vger.kernel.org, 
+	linux-usb@vger.kernel.org, devicetree@vger.kernel.org, 
+	linux-mediatek@lists.infradead.org, linux-arm-kernel@lists.infradead.org, 
+	linux-kernel@vger.kernel.org, Manivannan Sadhasivam <mani@kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-On Mon, May 25, 2026 at 12:50:25PM +0000, Tudor Ambarus wrote:
-> Enable the Exynos ACPM thermal driver (CONFIG_EXYNOS_ACPM_THERMAL)
-> to allow temperature monitoring and thermal management on Samsung
-> Exynos SoCs 
+On Sun, May 24, 2026 at 10:06=E2=80=AFAM Chen-Yu Tsai <wenst@chromium.org> =
+wrote:
+>
+> > >
+> > > I expect some discussion on this patch, because a) it adds some
+> > > OF-specific code into an otherwise generic (core) driver, and
+> > > b) it doesn't yet handle USB 2.0 / 3.x shared ports; it ends up power=
+ing
+> > > on the port twice, which negates the port reset part.
+> > >
+> >
+> > I understand that you do this because the port device has no OF node
+> > assigned. If we wanted to call pwrseq_get() for the port device, is
+> > there really no other way to associate it with the correct pwrseq
+> > provider?
+>
+> I suppose we could tie the "port@X" node to the usb port device, but
+> AFAIK no other subsystem does this so we would be introducing a new
+> pattern.
+>
+> In the M.2 pwrseq driver, we would have to match by port node instead
+> of its parent device node. We may end up with different behavior for
+> the USB target vs the other targets.
+>
 
-"on Samsung Exynos foobar SoCs" or "on Samsung Exynos SoCs (like
-Google GS101)", used on "faz baz boards".
+I imagine, we can check the bus type of the parent device to know if
+this is USB?
 
+> Also, the "port@X" nodes only exist for the OF graph connections to
+> connectors and/or muxes (this series doesn't deal with the latter).
+> For directly connected devices, there is a "device@X" child node
+> directly under the USB hub node. That node is what gets tied to the
+> the USB device.
+>
 
-Best regards,
-Krzysztof
+Is this a problem? I don't think I understand what you're saying here.
 
+Bart
