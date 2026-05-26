@@ -1,95 +1,100 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+Received: from out-182.mta0.migadu.com (out-182.mta0.migadu.com [91.218.175.182])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7A443388E5A
-	for <linux-pm@vger.kernel.org>; Tue, 26 May 2026 11:12:55 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4CD5A3BB11A
+	for <linux-pm@vger.kernel.org>; Tue, 26 May 2026 11:13:14 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=91.218.175.182
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1779793976; cv=none; b=T84o/8LY2WGJgMunGbJ55/2hg4v7+OUXvJeW2h9RRopTNOiSVSIQ+KzonLh8oeQ59IUm/MIKQD3LOBXpEZFLRNilNOXQFMSALAJxWssm1t/Fn9IyLhPpzd15+9STHVZypx5rELODGxZGXEBTHruvaUn6Z1FFEa5z4tu1NZuJcKM=
+	t=1779793997; cv=none; b=MODRm0w0Wrrkh4LCnhzlXteHmEUWAwE9xUvwYN/BDpT7vqBStJ0bshHvwHd21fNgbgbdmxyMPf1z3y88Wx+oA3ALlPX6D8LtWZ/sRdgPJJpO3RopbkhNznuInS2KeqqMe+90/X74gAno5Tj8CqRZLRY4X8MlzZFN1EJD5i7KgVs=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1779793976; c=relaxed/simple;
-	bh=6DHcLqW2hF6arW2oI1mYZlWVbcgF/kCF3yAdubQuJC0=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=It0F5nzFfNCKo9Zpwc6hu4Qy2yp8MnvWiVenCBdbV5cJ7v800W6lY/hgR14widaPWncOw/fR2F9OW8NExtdBVkixL0qBA2no6MTdO4bFntVmRmKFIRX84fksnt1m3AM607FcmbgeKV2qTvdqEWYWbgJZPtU6p95bQLa+nHZb6Gk=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=MjIJHwin; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1779793997; c=relaxed/simple;
+	bh=ahWeOXN5CcSCy55poUbMW4AnXz8eEDd0o8bq34pDmXk=;
+	h=Mime-Version:Content-Type:Date:Message-Id:Subject:From:To:Cc:
+	 References:In-Reply-To; b=lINKRi7Gy2lhH2r7oeVutaeXSVFc1S6Fjxn7THk41Y4xN53BvLM8ZS/7Z6+fJ08RVirFg+0g8c/+bVdte6//CeOjL1nwm2tZqMoQPGTIr++/puYOBGpE1LulgSGLNJ3U+83gOufEU7S7WzOpEhb4KeO78gEugElp4SF4k6Fqqe4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.dev; spf=pass smtp.mailfrom=linux.dev; dkim=pass (1024-bit key) header.d=linux.dev header.i=@linux.dev header.b=tJNfFhBb; arc=none smtp.client-ip=91.218.175.182
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.dev
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.dev
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="MjIJHwin"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2E09C1F000E9
-	for <linux-pm@vger.kernel.org>; Tue, 26 May 2026 11:12:55 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1779793975;
-	bh=HuXE1RIeo32t9S/mLJp4qTohd6ZFYKZYOeaolLQzZRE=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc;
-	b=MjIJHwinbMRdAs+ZdMRjOMkyZyg654kXJ7g/krCs2Aa0cWdMoGsWk9slWwfyiK0jT
-	 v9UbAigt8trfKslhajALhY+BhOfIVmmb86dQVTDE/IUo9Ma9ZQJv372M3X6ebOL30O
-	 tResSCiRCRMPfiFIU9eguGaqMao37OjCn+KlNDWR2Efj8aM2Cfi+YWzahf9y7vpcAl
-	 YrPSmhq3BIhL9zeLIOeOCq5Xo9kFjsbelaLOF83QY2OYYhJtAvmFCBOjABU5f+H/38
-	 XfU9P53jepoDtesvgsgrVzh37aTwXpuSV2/DUjGZzuthKt2OstYnzKtsdqIqsOHe3/
-	 h16Gh77yBLQ8A==
-Received: by mail-lf1-f47.google.com with SMTP id 2adb3069b0e04-5a8738c178dso9156569e87.1
-        for <linux-pm@vger.kernel.org>; Tue, 26 May 2026 04:12:55 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AFNElJ8n1zkSKnoouufiagKlc5f1u/QCda4V+hdzzELypE3V+wIYFjfo+Oou8SnTRwXC+DhVoKCtAGF/Tg==@vger.kernel.org
-X-Gm-Message-State: AOJu0YyAoHjUN6LKO6EWP3S0mYshZBPYuIjyU/ulSbytfObRhigY1xbV
-	ucY0bejDqXxnhDJX+TbwH6PzhCTYAzJAF9oQMie35szyJc3eHdW+qc2LHL7EGibfYc6UqpRbVUw
-	TecLgVfYKYRLZcMfgtZpZqMb2mSCIJ54=
-X-Received: by 2002:a05:6512:39d0:b0:5a8:f243:eea6 with SMTP id
- 2adb3069b0e04-5aa323d4962mr5880150e87.24.1779793973568; Tue, 26 May 2026
- 04:12:53 -0700 (PDT)
+	dkim=pass (1024-bit key) header.d=linux.dev header.i=@linux.dev header.b="tJNfFhBb"
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
-MIME-Version: 1.0
-References: <20260520081254.13493-1-l1rox3.developer@gmail.com>
-In-Reply-To: <20260520081254.13493-1-l1rox3.developer@gmail.com>
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Date: Tue, 26 May 2026 13:12:40 +0200
-X-Gmail-Original-Message-ID: <CAJZ5v0i6_c8ScWB02GW6ryrwbM0ZHYpgn-pmop+U3WCTBwdraA@mail.gmail.com>
-X-Gm-Features: AVHnY4JZXPag6083P7d753YAvjazRtqVbNeYvP-0z9_VQh4NRy22tivnIG7vx5o
-Message-ID: <CAJZ5v0i6_c8ScWB02GW6ryrwbM0ZHYpgn-pmop+U3WCTBwdraA@mail.gmail.com>
-Subject: Re: [PATCH] PM: hibernate: make LZ4 available for hibernation compression
-To: l1rox3 <l1rox3.developer@gmail.com>
-Cc: rafael@kernel.org, lenb@kernel.org, pavel@kernel.org, 
-	linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
+	t=1779793992;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=TjpF0orjvF0V7w7odDBpl4riq79fYXZGW3boLcM3Ji8=;
+	b=tJNfFhBb6nEZkjaV1nORtu55FFe2fYeAVJ4+u4AENQjmULOJXH9njHDAvgtJGgUE0hUv0o
+	0Q2BpR/Shg0RjQmXJSdKpM4bEwKinKU742K3ZAoozqHT8nCTlfifnDfU15QwxWOH2sYP9L
+	5AhJJcaHC7uZjY8bLBqNgU1qKdXBBks=
 Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=UTF-8
+Date: Tue, 26 May 2026 13:13:07 +0200
+Message-Id: <DISKBALN21QH.32PUYTB5LZLJ1@linux.dev>
+Subject: Re: [PATCH 0/4] mm: misc cleanups from __GFP_UNMAPPED series
+X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
+From: "Brendan Jackman" <brendan.jackman@linux.dev>
+To: "Andrew Morton" <akpm@linux-foundation.org>, "Vlastimil Babka (SUSE)"
+ <vbabka@kernel.org>
+Cc: "Brendan Jackman" <jackmanb@google.com>, "Kairui Song"
+ <kasong@tencent.com>, "Qi Zheng" <qi.zheng@linux.dev>, "Shakeel Butt"
+ <shakeel.butt@linux.dev>, "Barry Song" <baohua@kernel.org>, "Axel
+ Rasmussen" <axelrasmussen@google.com>, "Yuanchu Xie" <yuanchu@google.com>,
+ "Wei Xu" <weixugc@google.com>, "David Hildenbrand" <david@kernel.org>,
+ "Lorenzo Stoakes" <ljs@kernel.org>, "Liam R. Howlett" <liam@infradead.org>,
+ "Mike Rapoport" <rppt@kernel.org>, "Suren Baghdasaryan"
+ <surenb@google.com>, "Michal Hocko" <mhocko@suse.com>, "Rafael J. Wysocki"
+ <rafael@kernel.org>, "Pavel Machek" <pavel@kernel.org>, "Len Brown"
+ <lenb@kernel.org>, "Johannes Weiner" <hannes@cmpxchg.org>, "Zi Yan"
+ <ziy@nvidia.com>, <linux-mm@kvack.org>, <linux-kernel@vger.kernel.org>,
+ <linux-pm@vger.kernel.org>
+References: <20260513-page_alloc-unmapped-prep-v1-0-dacdf5402be8@google.com>
+ <20260518111546.3baebae99dc3f2a4fd65e605@linux-foundation.org>
+ <DIM2YAI5ORUU.2YLTV7PWKE516@google.com>
+ <20260518134811.b2b78352779d7519e8123597@linux-foundation.org>
+ <CA+i-1C1THr6fH=wdTKEngbCSD_DMS5tGroN64BEf3L56DH2XWA@mail.gmail.com>
+ <cd721e44-05cf-470b-ae92-d86791778c28@kernel.org>
+ <20260522201154.26bc14524c36df15e40c3470@linux-foundation.org>
+In-Reply-To: <20260522201154.26bc14524c36df15e40c3470@linux-foundation.org>
+X-Migadu-Flow: FLOW_OUT
 
-On Wed, May 20, 2026 at 10:16=E2=80=AFAM l1rox3 <l1rox3.developer@gmail.com=
-> wrote:
+On Sat May 23, 2026 at 5:11 AM CEST, Andrew Morton wrote:
+> On Fri, 22 May 2026 09:59:49 +0200 "Vlastimil Babka (SUSE)" <vbabka@kerne=
+l.org> wrote:
 >
-> Without this, CRYPTO_LZ4 had to be manually enabled in the config
-> to use LZ4 for hibernation compression. Add the select so it gets
-> pulled in automatically when hibernation is enabled, just like
-> CRYPTO_LZO already does.
+>> >> > Cool thanks, (also I got the "added to mm-new branch notification" =
+and
+>> >> > realised why I missed it last time, broken mail filter).
+>> >> >
+>> >> > The 4/4 update is already up, in reply to the thread.
+>> >>
+>> >> Is that "mm/page_alloc: tidy up pindex helpers"?
+>> >>
+>> >> For some reason I didn't receive that email, directly or via any
+>> >> mailing list.  I do have the similar "mm/page_alloc: remove ifdefs fr=
+om
+>> >> pindex helpers" from May 13.
+>>=20
+>> Found it, seems to be threaded well with In-reply-to: too, maybe it's th=
+e
+>> different subject?
+>>=20
+>> https://lore.kernel.org/all/20260517230556.590677-1-jackmanb@google.com/
+>>=20
+>> Should be fine to replace the current "mm/page_alloc: remove ifdefs from
+>> pindex helpers" in mm.git with that.
 >
-> Tested-by: l1rox3 <l1rox3.developer@gmail.com>
-> Signed-off-by: l1rox3 <l1rox3.developer@gmail.com>
-> ---
->  kernel/power/Kconfig | 1 +
->  1 file changed, 1 insertion(+)
+> I could attempt to do that by my confidence that I got it right would
+> be low.
 >
-> diff --git a/kernel/power/Kconfig b/kernel/power/Kconfig
-> index 05337f437cca..530c897311d4 100644
-> --- a/kernel/power/Kconfig
-> +++ b/kernel/power/Kconfig
-> @@ -42,6 +42,7 @@ config HIBERNATION
->         select CRC32
->         select CRYPTO
->         select CRYPTO_LZO
-> +       select CRYPTO_LZ4
->         help
->           Enable the suspend to disk (STD) functionality, which is usuall=
-y
->           called "hibernation" in user interfaces.  STD checkpoints the
-> --
+> Brendan, please send us a v2 of the series "mm: misc cleanups from
+> __GFP_UNMAPPED series", thanks.
 
-Please check the sashiko.dev feedback on this change:
-
-https://sashiko.dev/#/patchset/20260520081254.13493-1-l1rox3.developer%40gm=
-ail.com
-
-and either address it, or let me know why you don't think that it
-needs to be addressed.
-
-Thanks!
+Sorry for the delay, was travelling - it looks like you have already
+applied the current patches, I will send a separate patch to remove
+the VM_BUG_ONs.
