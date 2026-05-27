@@ -1,217 +1,138 @@
-Received: from mail-ej1-f45.google.com (mail-ej1-f45.google.com [209.85.218.45])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 42E3C3CFF6C
-	for <linux-pm@vger.kernel.org>; Wed, 27 May 2026 08:12:38 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.218.45
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 731E13BBA0F;
+	Wed, 27 May 2026 08:20:04 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1779869559; cv=none; b=ojusrv1NDFovUvMBXDZC//26NAxKEo9RqSIeYirwRyI0MtQlm6ztHtLcOsCOMgHQufbSCnHCRt6ZKyhu8OLxKOIdxQdVE5ZOwbwRjchosXEMPYZXBM5T9nqD23MPFYNYZLw6eLaMkbRnDvSQ7Nlt/WoC+m0TBrFC6pnsAQdnGeM=
+	t=1779870005; cv=none; b=o2r0C1aa8kMF/k5cphTKwCgZsfy5nl1X5MjMxoie5Loe9drPBdk3P/rA24/q2pHIKx/DLJACTkaVeUqZ1McVmzjSHTViEjobD39wu+v39dtLOCTKfkLKCYZuqxG+ycfUXx1GQ+p6xjsUIWNVk3naV0NU5oVDwgDKJD28mlngwA0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1779869559; c=relaxed/simple;
-	bh=W4q88dV9VxTrbQWDOtogmMurOVzPT5extR6wwZoZJuU=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=DwiWHVV9x0mHBofEXLRC5aVh0BcikJQcCN+1ir1BxEz8haKaqW+ENVi7JE4yOqAfliS/bqXkzTX4768gMgR48vz4zEQOnUKiibXjAT8MGozrkiwkbDQGB6N92sjASBFFOSZOWozYq0avy5FQtILg5pIQZ/z60ORXBFfXtO+HRfc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=fCYKk20r; arc=none smtp.client-ip=209.85.218.45
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1779870005; c=relaxed/simple;
+	bh=4p7YpYossY5Comsbr6Wibqr/JBpZn0fw44LDYX4vkJc=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=phLo774zjWsMOHaLGloYzWXoDSPK9oPyk4E6XCkqEQArVCPO81+x4kDKWPKE0CSs/Caj7SjvQTCNyDUzslWWQQU8AMKGhtHhptNOEfZWJAmcxp3oBGU54sFaM1OcZNnroFniP7cL/DeJcceW/ay3hNVnZCUUHZe24RURgJfcDp8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=M+RqU6A7; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="fCYKk20r"
-Received: by mail-ej1-f45.google.com with SMTP id a640c23a62f3a-bd21ffaca79so2105301166b.0
-        for <linux-pm@vger.kernel.org>; Wed, 27 May 2026 01:12:38 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1779869556; x=1780474356; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=Z8I5cb9EDSN0CWGopKBTwtEF+OyzEohAwWcJqwzO5iQ=;
-        b=fCYKk20rOkIbx3xx5euPaMOIuDjbk0NwitT1KXLXPdxPA4EWSk3dgCsMymqCviKbWT
-         6hEqF5ZViUjfjCdf0ogz27zJsWRcXXkDHVwDl2a0ivPtyx9hW+8zvHpcSgDgSx9aiEbm
-         WjbR7OwRNErUgERC41i/pN6XGk6Eg+zwRVSjUkoW3nZNN5tswqZwc12us8FFnJLFjnJe
-         wQIgYb6XY6rR2eOYg5MIVFiuf0G1Rx33F9C4k3KwaLbyqvz6s3qPUnRAJqRJtCE7k/jw
-         urwkGg6IoMP7rSoYWjKwzmO7fiotxYqV9b77en55ddg/OsPqu+Tu36gKH0OWusnqZI1R
-         9x9g==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1779869556; x=1780474356;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=Z8I5cb9EDSN0CWGopKBTwtEF+OyzEohAwWcJqwzO5iQ=;
-        b=Q9ap5d0+XJFcFYUySB4Di7rzeIoLUj582twnfIoQuQ5+bIvdtfMbj8b7ALVvRaYEav
-         SmV5PYEaZEk1sVR3ZrIbGWL9c/iLpaYroJzO/dbxpCZZDEQ2CgBrh2NnrUyty5H+aT++
-         E81XlnWaNS+w8emBt0y9OId8hrP06iAS9DKSqlwq5FSu9b8q7PVaQekhbaJAo7mwej7j
-         qLl6R6thdwcMMI5D4/dbKiqXl8irz8CtmIwHDnzIyRseJ740wBG+2pwOU2nF+SAhZoPO
-         1JavsJ8Pj9n7uf/QRDlOhCUs59E9CufVP5gI600ZkBkLEOopGL/MWJeHmnRybumdtVip
-         mPsQ==
-X-Forwarded-Encrypted: i=1; AFNElJ83iDyvPMTT1s7WpqPv796LWPZfnB6u0rqL49zdnVWD+4f3qS8nmSTV/+9n6a6Xh8qwuYJkxE654Q==@vger.kernel.org
-X-Gm-Message-State: AOJu0YyB3rZ2H1QMFuv++NkDEet6PD7Bt+Mz3N7AbUM7WHmT65EWy4O0
-	Q7pmPskoGbdbGtr2U2ISGvuRUy3U2lZYLVLRXsJfo0ReDA9WLdyBZnJB
-X-Gm-Gg: Acq92OGk2iME4esQaqUlcYzJ8s935t/ZVAChXi5trNjMVBpDbCfWhWqqxTaYex5y5Va
-	yp8iwJa99u90KrUnDjMhmwg6UJLRwjbxgFE1HGwAT0CnDiubTTEHyRT4UUccq74Bj8sb0+tIWqZ
-	gUZYMQbLPLgPI0bnD7PSY3JIY5mGU39OjHAS2gByUbJhVARu1fR1fLLzyilQoCMKOFLEbapSEu2
-	t+ss1gLFgm4uJmmtmusr5gKTI3UbKard9qkycVtqwm1bZ70YHYd1rXqSVMci40Vk93J5m4KXlnN
-	fGZy4R31VJAdGVrZOcY22cTsuPyX8Rs1BHd8H5EwrDlR/Iae0VqlyyFtBAe2SztOMEodyVJ4ocd
-	RC4O3bR/dlL4kEkBRrbabV+67NV6u+krIyz2u1sMvljspFjMEd75zx4aEgyhNN8srpybFWoCT6P
-	KQYlRV6si8NvAxmP+JUr/ojDH+v5CXkqsv+yP4oQE1eRvlAHA/RKVMjlb7jgfwL9Lzr1qM
-X-Received: by 2002:a17:907:d0c:b0:bd5:1ad4:cd73 with SMTP id a640c23a62f3a-bdbff5847aamr1432093266b.2.1779869556249;
-        Wed, 27 May 2026 01:12:36 -0700 (PDT)
-Received: from powerpenguini-l140cu.emea.dell.com ([132.237.167.248])
-        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-bddc2c4e3d5sm597838466b.15.2026.05.27.01.12.34
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 27 May 2026 01:12:35 -0700 (PDT)
-From: =?UTF-8?q?Mateusz=20Ja=C5=9Bkiewicz?= <jaskiewiczteo@gmail.com>
-To: Thomas Renninger <trenn@suse.com>,
-	Shuah Khan <shuah@kernel.org>,
-	"John B. Wyatt IV" <jwyatt@redhat.com>,
-	John Kacur <jkacur@redhat.com>
-Cc: =?UTF-8?q?Mateusz=20Ja=C5=9Bkiewicz?= <jaskiewiczteo@gmail.com>,
-	linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-Subject: [PATCH v3] cpupower: Implement powercap enabled setters
-Date: Wed, 27 May 2026 10:12:33 +0200
-Message-ID: <20260527081233.4060762-1-jaskiewiczteo@gmail.com>
-X-Mailer: git-send-email 2.54.0
-In-Reply-To: <ce170d8f-88a3-4b8b-8e87-744433ebc442@linuxfoundation.org>
-References: <ce170d8f-88a3-4b8b-8e87-744433ebc442@linuxfoundation.org>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="M+RqU6A7"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id B51EE1F00A3A;
+	Wed, 27 May 2026 08:20:00 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1779870004;
+	bh=UCIfKr4cuPHJ/po9NuSBRY9bQ9XvG3G9bUam9Jge12E=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To;
+	b=M+RqU6A7gxlGQMmbCYAS5BjhmbpHnS8Py8Ox6zvSugGyGkZRLFHt7IgOuWKZKEHFP
+	 3HLqWEkU3abX6co0E9/2D17/8vF5xJIzxf6GC7jTVa/9uP4i/K3bvTV0YI1eTo/dM+
+	 yhWTU4vUIINl93jQh+FDFiNwWZTrcypuTTtrFBsUuCmG4uQad5XwyUTRk4NlZCgiSc
+	 su7A9vRzgqmV2L3mTOwFErGixdqbaOH9uoD4TQ94JS1uUdBEvt+8ypwoaDmHQmo/6n
+	 dK3fRudg62nPks4crtudDCfzchnWoe9ibzUY4lxTEp7r+1T5UNwkLnxqYQkdVasIBA
+	 s8oqBKFXkrBJw==
+Message-ID: <c97af94f-f2cb-4ea9-b477-33b6893c9461@kernel.org>
+Date: Wed, 27 May 2026 10:19:58 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v2 1/2] dt-bindings: soc: tegra: Document Nvidia Tegra
+ modem pwrseq
+To: Svyatoslav Ryhel <clamor95@gmail.com>, Rob Herring <robh@kernel.org>,
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
+ <conor+dt@kernel.org>, Thierry Reding <thierry.reding@kernel.org>,
+ Jonathan Hunter <jonathanh@nvidia.com>, Bartosz Golaszewski <brgl@kernel.org>
+Cc: devicetree@vger.kernel.org, linux-tegra@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+References: <20260523085102.51000-1-clamor95@gmail.com>
+ <20260523085102.51000-2-clamor95@gmail.com>
+From: Krzysztof Kozlowski <krzk@kernel.org>
+Content-Language: en-US
+Autocrypt: addr=krzk@kernel.org; keydata=
+ xsFNBFVDQq4BEAC6KeLOfFsAvFMBsrCrJ2bCalhPv5+KQF2PS2+iwZI8BpRZoV+Bd5kWvN79
+ cFgcqTTuNHjAvxtUG8pQgGTHAObYs6xeYJtjUH0ZX6ndJ33FJYf5V3yXqqjcZ30FgHzJCFUu
+ JMp7PSyMPzpUXfU12yfcRYVEMQrmplNZssmYhiTeVicuOOypWugZKVLGNm0IweVCaZ/DJDIH
+ gNbpvVwjcKYrx85m9cBVEBUGaQP6AT7qlVCkrf50v8bofSIyVa2xmubbAwwFA1oxoOusjPIE
+ J3iadrwpFvsZjF5uHAKS+7wHLoW9hVzOnLbX6ajk5Hf8Pb1m+VH/E8bPBNNYKkfTtypTDUCj
+ NYcd27tjnXfG+SDs/EXNUAIRefCyvaRG7oRYF3Ec+2RgQDRnmmjCjoQNbFrJvJkFHlPeHaeS
+ BosGY+XWKydnmsfY7SSnjAzLUGAFhLd/XDVpb1Een2XucPpKvt9ORF+48gy12FA5GduRLhQU
+ vK4tU7ojoem/G23PcowM1CwPurC8sAVsQb9KmwTGh7rVz3ks3w/zfGBy3+WmLg++C2Wct6nM
+ Pd8/6CBVjEWqD06/RjI2AnjIq5fSEH/BIfXXfC68nMp9BZoy3So4ZsbOlBmtAPvMYX6U8VwD
+ TNeBxJu5Ex0Izf1NV9CzC3nNaFUYOY8KfN01X5SExAoVTr09ewARAQABzSVLcnp5c3p0b2Yg
+ S296bG93c2tpIDxrcnprQGtlcm5lbC5vcmc+wsGVBBMBCgA/AhsDBgsJCAcDAgYVCAIJCgsE
+ FgIDAQIeAQIXgBYhBJvQfg4MUfjVlne3VBuTQ307QWKbBQJoF1BKBQkWlnSaAAoJEBuTQ307
+ QWKbHukP/3t4tRp/bvDnxJfmNdNVn0gv9ep3L39IntPalBFwRKytqeQkzAju0whYWg+R/rwp
+ +r2I1Fzwt7+PTjsnMFlh1AZxGDmP5MFkzVsMnfX1lGiXhYSOMP97XL6R1QSXxaWOpGNCDaUl
+ ajorB0lJDcC0q3xAdwzRConxYVhlgmTrRiD8oLlSCD5baEAt5Zw17UTNDnDGmZQKR0fqLpWy
+ 786Lm5OScb7DjEgcA2PRm17st4UQ1kF0rQHokVaotxRM74PPDB8bCsunlghJl1DRK9s1aSuN
+ hL1Pv9VD8b4dFNvCo7b4hfAANPU67W40AaaGZ3UAfmw+1MYyo4QuAZGKzaP2ukbdCD/DYnqi
+ tJy88XqWtyb4UQWKNoQqGKzlYXdKsldYqrLHGoMvj1UN9XcRtXHST/IaLn72o7j7/h/Ac5EL
+ 8lSUVIG4TYn59NyxxAXa07Wi6zjVL1U11fTnFmE29ALYQEXKBI3KUO1A3p4sQWzU7uRmbuxn
+ naUmm8RbpMcOfa9JjlXCLmQ5IP7Rr5tYZUCkZz08LIfF8UMXwH7OOEX87Y++EkAB+pzKZNNd
+ hwoXulTAgjSy+OiaLtuCys9VdXLZ3Zy314azaCU3BoWgaMV0eAW/+gprWMXQM1lrlzvwlD/k
+ whyy9wGf0AEPpLssLVt9VVxNjo6BIkt6d1pMg6mHsUEVzsFNBFVDXDQBEADNkrQYSREUL4D3
+ Gws46JEoZ9HEQOKtkrwjrzlw/tCmqVzERRPvz2Xg8n7+HRCrgqnodIYoUh5WsU84N03KlLue
+ MNsWLJBvBaubYN4JuJIdRr4dS4oyF1/fQAQPHh8Thpiz0SAZFx6iWKB7Qrz3OrGCjTPcW6ei
+ OMheesVS5hxietSmlin+SilmIAPZHx7n242u6kdHOh+/SyLImKn/dh9RzatVpUKbv34eP1wA
+ GldWsRxbf3WP9pFNObSzI/Bo3kA89Xx2rO2roC+Gq4LeHvo7ptzcLcrqaHUAcZ3CgFG88CnA
+ 6z6lBZn0WyewEcPOPdcUB2Q7D/NiUY+HDiV99rAYPJztjeTrBSTnHeSBPb+qn5ZZGQwIdUW9
+ YegxWKvXXHTwB5eMzo/RB6vffwqcnHDoe0q7VgzRRZJwpi6aMIXLfeWZ5Wrwaw2zldFuO4Dt
+ 91pFzBSOIpeMtfgb/Pfe/a1WJ/GgaIRIBE+NUqckM+3zJHGmVPqJP/h2Iwv6nw8U+7Yyl6gU
+ BLHFTg2hYnLFJI4Xjg+AX1hHFVKmvl3VBHIsBv0oDcsQWXqY+NaFahT0lRPjYtrTa1v3tem/
+ JoFzZ4B0p27K+qQCF2R96hVvuEyjzBmdq2esyE6zIqftdo4MOJho8uctOiWbwNNq2U9pPWmu
+ 4vXVFBYIGmpyNPYzRm0QPwARAQABwsF8BBgBCgAmAhsMFiEEm9B+DgxR+NWWd7dUG5NDfTtB
+ YpsFAmgXUF8FCRaWWyoACgkQG5NDfTtBYptO0w//dlXJs5/42hAXKsk+PDg3wyEFb4NpyA1v
+ qmx7SfAzk9Hf6lWwU1O6AbqNMbh6PjEwadKUk1m04S7EjdQLsj/MBSgoQtCT3MDmWUUtHZd5
+ RYIPnPq3WVB47GtuO6/u375tsxhtf7vt95QSYJwCB+ZUgo4T+FV4hquZ4AsRkbgavtIzQisg
+ Dgv76tnEv3YHV8Jn9mi/Bu0FURF+5kpdMfgo1sq6RXNQ//TVf8yFgRtTUdXxW/qHjlYURrm2
+ H4kutobVEIxiyu6m05q3e9eZB/TaMMNVORx+1kM3j7f0rwtEYUFzY1ygQfpcMDPl7pRYoJjB
+ dSsm0ZuzDaCwaxg2t8hqQJBzJCezTOIkjHUsWAK+tEbU4Z4SnNpCyM3fBqsgYdJxjyC/tWVT
+ AQ18NRLtPw7tK1rdcwCl0GFQHwSwk5pDpz1NH40e6lU+NcXSeiqkDDRkHlftKPV/dV+lQXiu
+ jWt87ecuHlpL3uuQ0ZZNWqHgZoQLXoqC2ZV5KrtKWb/jyiFX/sxSrodALf0zf+tfHv0FZWT2
+ zHjUqd0t4njD/UOsuIMOQn4Ig0SdivYPfZukb5cdasKJukG1NOpbW7yRNivaCnfZz6dTawXw
+ XRIV/KDsHQiyVxKvN73bThKhONkcX2LWuD928tAR6XMM2G5ovxLe09vuOzzfTWQDsm++9UKF a/A=
+In-Reply-To: <20260523085102.51000-2-clamor95@gmail.com>
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
 
-powercap_set_enabled() and powercap_zone_set_enabled() are part of the
-public libcpupower API, but both currently return success without
-updating sysfs.
+On 23/05/2026 10:51, Svyatoslav Ryhel wrote:
+> Document the Tegra modem pwseq used by various devices based on the Nvidia
+> Tegra SoC, describing its usage. The power sequence provides interaction
+> between the modem and SoC-specific interface configurations.
+> 
+> Signed-off-by: Svyatoslav Ryhel <clamor95@gmail.com>
+> ---
+>  .../soc/tegra/nvidia,tegra-modem-pwrseq.yaml  | 49 +++++++++++++++++++
+>  1 file changed, 49 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/soc/tegra/nvidia,tegra-modem-pwrseq.yaml
+> 
+> diff --git a/Documentation/devicetree/bindings/soc/tegra/nvidia,tegra-modem-pwrseq.yaml b/Documentation/devicetree/bindings/soc/tegra/nvidia,tegra-modem-pwrseq.yaml
+> new file mode 100644
+> index 000000000000..3770fd6dc2cf
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/soc/tegra/nvidia,tegra-modem-pwrseq.yaml
+> @@ -0,0 +1,49 @@
+> +# SPDX-License-Identifier: (GPL-2.0 OR BSD-2-Clause)
+> +%YAML 1.2
+> +---
+> +$id: http://devicetree.org/schemas/soc/tegra/nvidia,tegra-modem-pwrseq.yaml#
+> +$schema: http://devicetree.org/meta-schemas/core.yaml#
+> +
+> +title: Nvidia Tegra modem power sequence
+> +
+> +description:
+> +  A configuration sequence used in Tegra SoCs to provide proper interaction
+> +  between the application processor and the modem, as well as control over
+> +  one of the SoC's USB lines for the modem.
+> +
+> +maintainers:
+> +  - Svyatoslav Ryhel <clamor95@gmail.com>
+> +
+> +properties:
+> +  compatible:
+> +    const: nvidia,tegra-modem-pwrseq
 
-Write the requested value to the matching enabled attribute so callers
-can actually enable or disable the powercap control type or zone, and
-report write failures back to the caller.
+There is no such thing as pwrseq. I pointed you to existing code showing
+how to do it - PCI or USB. Fake devices won't be accepted.
 
-Signed-off-by: Mateusz Jaśkiewicz <jaskiewiczteo@gmail.com>
----
-Changes in v3:
-- Move the patch changelog below the Signed-off-by trailer so the
-  sign-off is kept when the patch is applied.
-
-Changes in v2:
-- Check current enabled value before writing.
-- Use fd < 0 style for open() failures.
-- Print sysfs open/write failures with perror().
-- Drop the sizeof(path) typecast.
-
- tools/power/cpupower/lib/powercap.c | 58 +++++++++++++++++++++++------
- 1 file changed, 47 insertions(+), 11 deletions(-)
-
-diff --git a/tools/power/cpupower/lib/powercap.c b/tools/power/cpupower/lib/powercap.c
-index 94a0c69e5..80af65287 100644
---- a/tools/power/cpupower/lib/powercap.c
-+++ b/tools/power/cpupower/lib/powercap.c
-@@ -21,7 +21,7 @@ static unsigned int sysfs_read_file(const char *path, char *buf, size_t buflen)
- 	ssize_t numread;
- 
- 	fd = open(path, O_RDONLY);
--	if (fd == -1)
-+	if (fd < 0)
- 		return 0;
- 
- 	numread = read(fd, buf, buflen - 1);
-@@ -36,7 +36,7 @@ static unsigned int sysfs_read_file(const char *path, char *buf, size_t buflen)
- 	return (unsigned int) numread;
- }
- 
--static int sysfs_get_enabled(char *path, int *mode)
-+static int sysfs_get_enabled(const char *path, int *mode)
- {
- 	int fd;
- 	char yes_no;
-@@ -45,7 +45,7 @@ static int sysfs_get_enabled(char *path, int *mode)
- 	*mode = 0;
- 
- 	fd = open(path, O_RDONLY);
--	if (fd == -1) {
-+	if (fd < 0) {
- 		ret = -1;
- 		goto out;
- 	}
-@@ -70,6 +70,36 @@ static int sysfs_get_enabled(char *path, int *mode)
- 	return ret;
- }
- 
-+static int sysfs_set_enabled(const char *path, int mode)
-+{
-+	char yes_no;
-+	int fd;
-+	int current_mode;
-+	ssize_t ret;
-+
-+	if (mode != 0 && mode != 1)
-+		return -1;
-+
-+	if (sysfs_get_enabled(path, &current_mode) == 0 &&
-+	    current_mode == mode)
-+		return 0;
-+
-+	yes_no = mode ? '1' : '0';
-+	fd = open(path, O_WRONLY);
-+	if (fd < 0) {
-+		perror(path);
-+		return -1;
-+	}
-+	ret = write(fd, &yes_no, 1);
-+	if (ret != 1) {
-+		if (ret < 0)
-+			perror(path);
-+		close(fd);
-+		return -1;
-+	}
-+	return close(fd);
-+}
-+
- int powercap_get_enabled(int *mode)
- {
- 	char path[SYSFS_PATH_MAX] = PATH_TO_POWERCAP "/intel-rapl/enabled";
-@@ -77,17 +107,13 @@ int powercap_get_enabled(int *mode)
- 	return sysfs_get_enabled(path, mode);
- }
- 
--/*
-- * TODO: implement function. Returns dummy 0 for now.
-- */
- int powercap_set_enabled(int mode)
- {
--	return 0;
-+	return sysfs_set_enabled(PATH_TO_RAPL "/enabled", mode);
- }
--
- /*
-  * Hardcoded, because rapl is the only powercap implementation
--- * this needs to get more generic if more powercap implementations
-+ * this needs to get more generic if more powercap implementations
-  * should show up
-  */
- int powercap_get_driver(char *driver, int buflen)
-@@ -180,8 +206,18 @@ int powercap_zone_get_enabled(struct powercap_zone *zone, int *mode)
- 
- int powercap_zone_set_enabled(struct powercap_zone *zone, int mode)
- {
--	/* To be done if needed */
--	return 0;
-+	char path[SYSFS_PATH_MAX];
-+	int ret;
-+
-+	if (!zone)
-+		return -1;
-+
-+	ret = snprintf(path, sizeof(path), "%s/%s/enabled",
-+		       PATH_TO_POWERCAP, zone->sys_name);
-+	if (ret < 0 || ret >= sizeof(path))
-+		return -1;
-+
-+	return sysfs_set_enabled(path, mode);
- }
- 
- 
--- 
-2.54.0
+Best regards,
+Krzysztof
