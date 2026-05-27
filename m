@@ -1,383 +1,216 @@
-Received: from CH4PR04CU002.outbound.protection.outlook.com (mail-northcentralusazon11013012.outbound.protection.outlook.com [40.107.201.12])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-lf1-f46.google.com (mail-lf1-f46.google.com [209.85.167.46])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DA25C3BF684;
-	Wed, 27 May 2026 20:26:47 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.107.201.12
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C1E9F399018
+	for <linux-pm@vger.kernel.org>; Wed, 27 May 2026 21:24:15 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.167.46
 ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1779913609; cv=fail; b=GyQKxH0/RHbMEzx9qJeiwWNMr0C8uH2IXJLDUooZ8HPc8gRWasFHq5t5fI2jhn/Tzhvp1J4xC3fyewvKwVku6p2XreFNIJM+tAcg6C7HL0tpfYCo5aDHl5vYsA8QXO1ivYHD6FkftJ6qXXEMWrgMyAd19NnoQJiZLfEkvlzehcw=
+	t=1779917057; cv=pass; b=UVaJG/TvN4x2Bx7vcFmOmoQ/L2J+U0OSyDU3qWNmKvi0N22tlTtrfaqntZcu30tMrt2I0knGWijRTkcBqYUGvvQxv+puvaDVs29jHsiAXOpmZvxF77rbwHTd05gKXhrBfEQsXT/vW/rd+YxI/C0omtEXpBOC2zJT3Gq8TJyJvYA=
 ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1779913609; c=relaxed/simple;
-	bh=y0jYMBLjmLxBIJeTWu5Nyl1GspLcy5QRlvKIPnZCavg=;
-	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=SzXrdBSfNOEQD4TLy+6OOWciMjyXRhz8Vk72EXd0LOVtp+JjzTn8NPtoQPqZjHOcJ8HNmNqpMQPfvbAniHg3shOwD/wXhTKduDabmiaOvo6pJP/bxBhh64fafsu01XjAHWItHhjuqiSHUacJstaViaa+GdkdTIWm6N4GWYLqh8w=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com; spf=fail smtp.mailfrom=nvidia.com; dkim=pass (2048-bit key) header.d=Nvidia.com header.i=@Nvidia.com header.b=VRIB8/us; arc=fail smtp.client-ip=40.107.201.12
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com
-Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=nvidia.com
+	s=arc-20240116; t=1779917057; c=relaxed/simple;
+	bh=c5Jc2Curx+hrKXgScOBcK42cc4R5Gw14VE5X6Khiqxk=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=RjshTGes2K6zv1/V4/41h9MpCaSS28Af+Ji+JXkIlAbQeGK5XQ0ahwrLbVgSuajFPFIsmISoPn++VAV6I4mz9GBjHEA58kPrbNau0NJbfUpUI2RJrqLztC/rgj3EYLt76IsB8EN0yTzgRj8GsXsqnZ8SHHgJo8zH+vhaU9a1H6k=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=chromium.org; spf=pass smtp.mailfrom=chromium.org; dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b=NSPlKI7b; arc=pass smtp.client-ip=209.85.167.46
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=chromium.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=chromium.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=Nvidia.com header.i=@Nvidia.com header.b="VRIB8/us"
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=hSpJrTATzjCJFGaMJf49qj3EA3oEGstGEbVrpS2PS4gE/3yQtrFLNr4J4cVYlYWedQSV+/RSEt4CRxTMLoENAxrl+vhByoc3paSdqRBHdP+4HYyGtlER63wtPFWKiTe3OUmKBTussIzRAYSxZzivk5A2C3mboesLvHcCHsq7J4+8MBvDp0S1fpgnKX5b22kNrvVu5lK6TZGKbgBOjtS6lwkEb+jo1DgURzBDlKfC4rgVZEAsxEXxUdgNReC10VR77VHVL3BsxeWvGzOJKGU8xCHK1NZUADc9MGXM4ySPQ1fmSfHUsPIryGqw1NhR+ThV01L2X3HRHHKoWPna1asH5A==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=kJ32RM4pcrn0RFFNjtbCOwRr3V9GyKOkeew6uGW9OUE=;
- b=h25Jg6DbNPvfRinSiQv3fmGTybl8P4VOohxY7B31GU9uajKvOAPwMBtYUGhldcAkR0FeTZ7OxeDarFrsHMJ9x7Gh94WGCFlPiMsLpOOMpH9Wxw4BVBnZrJMoRWUKjvj5hLuiqm/8gOjSyR4VT+jANyrIVgto+ESvK3wazgVwovIDTa+ByRT6tzU4jrxquJy7hiNxvpcDVwBdNHph/0+5H6n8yFAHHtuW1DfVgbbF56c62K3sSje/YurHT0fmGAIwKv91DIttaaPghDSDBQGgLmArdWzDgzCKUCDfZc9Wsv+opwt36szzBljO8rzay/mfNXrr3YXc4nQj5cnCde1uMw==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
- 216.228.118.233) smtp.rcpttodomain=kernel.org smtp.mailfrom=nvidia.com;
- dmarc=pass (p=reject sp=reject pct=100) action=none header.from=nvidia.com;
- dkim=none (message not signed); arc=none (0)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
- s=selector2;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=kJ32RM4pcrn0RFFNjtbCOwRr3V9GyKOkeew6uGW9OUE=;
- b=VRIB8/us95e5gWDlfFMgVoY6uREwrYC/1GFFS4f//la1+gX7cotWOY1ItZafPVZAHzLW6ShcxvPdVkjogiT+jMkeNCQ4vtRa/nWXIG2w7ucYTVlTULvYkoYN5mhmd7MkOfdktVkfV5/W1uhDhAAE8ZqmFwV+5PGeMHshfSy1m6ZA8TDvAWLc6lYmz2qNVPCq1kyo2vIi21ahlbQDe/kzwvtHchIKc0x4gjxgMes3g+gd2PDPqAR8fN2n936Lkgc8vG7OsIhXKXHrazw6DlGZhbPDtpOy6oFAE0Urrgbxx0YAeDSx5C0AfTKO1U5NW5UcEWgExyy87+Sz354H2TJM5A==
-Received: from CH5PR04CA0023.namprd04.prod.outlook.com (2603:10b6:610:1f4::23)
- by DM4PR12MB6231.namprd12.prod.outlook.com (2603:10b6:8:a6::18) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.71.12; Wed, 27 May
- 2026 20:26:40 +0000
-Received: from DS3PEPF0000C37B.namprd04.prod.outlook.com
- (2603:10b6:610:1f4:cafe::5f) by CH5PR04CA0023.outlook.office365.com
- (2603:10b6:610:1f4::23) with Microsoft SMTP Server (version=TLS1_3,
- cipher=TLS_AES_256_GCM_SHA384) id 15.21.71.13 via Frontend Transport; Wed, 27
- May 2026 20:26:40 +0000
-X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 216.228.118.233)
- smtp.mailfrom=nvidia.com; dkim=none (message not signed)
- header.d=none;dmarc=pass action=none header.from=nvidia.com;
-Received-SPF: Pass (protection.outlook.com: domain of nvidia.com designates
- 216.228.118.233 as permitted sender) receiver=protection.outlook.com;
- client-ip=216.228.118.233; helo=mail.nvidia.com; pr=C
-Received: from mail.nvidia.com (216.228.118.233) by
- DS3PEPF0000C37B.mail.protection.outlook.com (10.167.23.5) with Microsoft SMTP
- Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.21.71.7 via Frontend Transport; Wed, 27 May 2026 20:26:40 +0000
-Received: from drhqmail201.nvidia.com (10.126.190.180) by mail.nvidia.com
- (10.127.129.6) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.20; Wed, 27 May
- 2026 13:26:24 -0700
-Received: from drhqmail203.nvidia.com (10.126.190.182) by
- drhqmail201.nvidia.com (10.126.190.180) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.2562.20; Wed, 27 May 2026 13:26:23 -0700
-Received: from sumitg-l4t.nvidia.com (10.127.8.14) by mail.nvidia.com
- (10.126.190.182) with Microsoft SMTP Server id 15.2.2562.20 via Frontend
- Transport; Wed, 27 May 2026 13:26:18 -0700
-From: Sumit Gupta <sumitg@nvidia.com>
-To: <rafael@kernel.org>, <viresh.kumar@linaro.org>, <pierre.gondois@arm.com>,
-	<ionela.voinescu@arm.com>, <zhenglifeng1@huawei.com>,
-	<zhanjie9@hisilicon.com>, <corbet@lwn.net>, <skhan@linuxfoundation.org>,
-	<rdunlap@infradead.org>, <mario.limonciello@amd.com>,
-	<linux-pm@vger.kernel.org>, <linux-doc@vger.kernel.org>,
-	<linux-kernel@vger.kernel.org>
-CC: <linux-tegra@vger.kernel.org>, <treding@nvidia.com>,
-	<jonathanh@nvidia.com>, <vsethi@nvidia.com>, <ksitaraman@nvidia.com>,
-	<sanjayc@nvidia.com>, <mochs@nvidia.com>, <bbasu@nvidia.com>,
-	<sumitg@nvidia.com>
-Subject: [PATCH v4 2/2] cpufreq: CPPC: add autonomous mode boot parameter support
-Date: Thu, 28 May 2026 01:55:50 +0530
-Message-ID: <20260527202550.206828-3-sumitg@nvidia.com>
-X-Mailer: git-send-email 2.34.1
-In-Reply-To: <20260527202550.206828-1-sumitg@nvidia.com>
-References: <20260527202550.206828-1-sumitg@nvidia.com>
+	dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="NSPlKI7b"
+Received: by mail-lf1-f46.google.com with SMTP id 2adb3069b0e04-5aa4bb157c6so1336115e87.3
+        for <linux-pm@vger.kernel.org>; Wed, 27 May 2026 14:24:15 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1779917054; cv=none;
+        d=google.com; s=arc-20240605;
+        b=hA89mfDodMCUOFibJCAG0+4gyjx34jq8zcPta1CCAN98clQ+2FyYvNSY9zrcBIWTzu
+         TAGt8x4p6/q8z6BE7Oa8erpIAwl/aQV4qTvpYEWh2c7sWwOQYLOMwf9+0cq5l7vYSnY/
+         +Gm/RwJK3ZgfsBWELnzO2xMC8Pa/tOYL4SR5Jwc5HyD5cy2f+p0SszC3fIUuD5Kn9oPa
+         fE1haH916R+pw9dboNJjtSB98MztsJDt+qJOJwUTaB5JJA7qqif5DdGILqbngIaRNrt5
+         1XUwHHCenqTB5FRxxDa5iXypObiULugVDHGi+Czwco1zbi8GmpYEIqXb20OMgURdu5N4
+         0jQw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=UNa7dgr+T6R1ukhKHHLy6CJqrOmDsV/gnRDcoFC7IoM=;
+        fh=2H31ZsibcZMTs5h5yK0/WJ5RE5osGgzIPhIxkQam3AE=;
+        b=EGt96EZIsFbhiInemPKEtqLhZxROr+2203+jvTDKfnqOETZTxKQTkIw25pX7Li2013
+         JgXgygl1T1WGgswJ1ChlDaW8UUxK2uQyA9GqOrsdNT7degG/6GU7A1xiagJT+XXP5FrW
+         BW4BVBwf7nwB/cQj6RBwXn56K9vzkMdDsx2A3wXBOVACsNBdYqD4CO0ZhwFYtH+pBzHb
+         r7h5p5tu/lLpz9NKwfaW0D6zcLHbPkUkRoQzzXljUat84ilHYTIDNlv3sOkGtnuSNx4U
+         CNBQpkt5UhJGoyA5hAT7CEGbCPmT8tTWds9st12nZxnYZd5AOh1EhFCLUN0OfmEeaets
+         b8jA==;
+        darn=vger.kernel.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=chromium.org; s=google; t=1779917054; x=1780521854; darn=vger.kernel.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=UNa7dgr+T6R1ukhKHHLy6CJqrOmDsV/gnRDcoFC7IoM=;
+        b=NSPlKI7bCiybkA7NZQEXKfT95r2jQgQlFICBKaVjauyaCL2d72SRvEqwJc6AQcWHp0
+         22pKsGgJ670pGIG4quBx3lRUCM5iiyPiADKLIKuuGjaZ0FElq/m1ZPaIU+D0hSR0VEAK
+         p5fhex9bnEjkKf6QVnebXorrqnwOpyErVmGkU=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1779917054; x=1780521854;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=UNa7dgr+T6R1ukhKHHLy6CJqrOmDsV/gnRDcoFC7IoM=;
+        b=qrWwOk8P285HNh4NZN0gpWyBZuLMkMOdXZrNIWNvOZf1cQHo7fWzxNSA8qtB6uKURh
+         zl12NFtcaVZ4SfrzrIw3X6sfTsHodfj4Ep/uRs14cjscgmmODsU6Hi8LJjsl6Bo4YRKj
+         BvVJTYmwNBPId4oA1gvvaXf6YbrEngWst1LFbDjO9IC8QGVFg09YpW8fCYFox2H/g26i
+         OrcETdzMZw9lW9Co4vIHpQ+JTxjhTCwNF7ywu6vaBIF2Lo0QL8lCW1z8gJyEP5Nubgv9
+         GxBCvVajHM7B/J8vwNmbOmTj6O/A1sbHBJQk1GJEnFFFBdCK+BsTahu9v+GytSZV4CPL
+         SOdQ==
+X-Forwarded-Encrypted: i=1; AFNElJ8bEy8UX9vzPem9kPMeBNS8yS5mzJpcrLbQ0maqKOPQXAca0QTmGGPm1d+F2F+2Y9roZaBnvF5D0A==@vger.kernel.org
+X-Gm-Message-State: AOJu0YzCF3tzo/II+EZ/gowk3TDY4Df7HiQ0dW/3DTbRJssq/BZ+H184
+	w3h/oWuaoTaPV+GLE3maZOfiWopLxDc4OAtMJiAiUh10/yEsf+02Z48YbC7WL3sOU1BcgoWms+z
+	vlMY5l1WN7QJv5b9HWnq2DwDAoUaftDr+hGEz774t
+X-Gm-Gg: Acq92OFPsrlQ1oRazAZijyk7ucQ4pN2BseVZQsyC+hK27A9xZi5veiFlD5wBuJg1xjV
+	YOVAb320MBCR7X+dQi5UyF8xIuJPoLGdxzbsNrzgN9l/lTgqOy7dVEaF8MGrN5bkuaF5LO4CBIF
+	N1knmP16klaWP7MEzJOLteX58vuVRgLDGxImpORoQrcKhYKxk8+Kn6FxIz10rvNFimWaOlKVY6H
+	ysHU1Ah1oYiUCRLr+Bn6lmqaPTKQ7Gb2tQnfhuBrDYJVO9UiNbdfkZ7f1gjgp4IS7OcGz5yFZMN
+	3O29tKXiBx0p845Mzw==
+X-Received: by 2002:ac2:4c50:0:b0:5a8:65ce:e83b with SMTP id
+ 2adb3069b0e04-5aa3238bcc6mr8479844e87.7.1779917054041; Wed, 27 May 2026
+ 14:24:14 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-NVConfidentiality: public
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-NV-OnPremToCloud: ExternallySecured
-X-EOPAttributedMessage: 0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: DS3PEPF0000C37B:EE_|DM4PR12MB6231:EE_
-X-MS-Office365-Filtering-Correlation-Id: 7d178303-b9c9-4e5e-8dcc-08debc2e4286
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|1800799024|82310400026|36860700016|7416014|376014|921020|13003099007|3023799007|11063799006|22082099003|6133799003|18002099003|18092099006|56012099006;
-X-Microsoft-Antispam-Message-Info:
-	ExgWt+x2brjCaN7gGrfo0u5zfL6eRJEyK9mLXxypybtVosdXyjuelAaQrc/DQFmAcFxHjZFiI7Kv/f/N7rctalEYy4K7v7pv6oaFDsezZGnAauJH6W0JX9RpR8EDLy7R+QKKJCvDs75rb9BKtY0QJthoFe4GLc6jwP844wZEwgj3xooxbRfNQVHrhHHJmhRGiiKglrzSeSQqHrv9pPGKFXrI/NMGgqnzWKOYFXPQ25pi+rnM0sCz45Z2YcRbSufvEMy/fRM14qetLT+F5z0FM9wyT5m+hlbnCJiIrHwVsMLuHT/EoDGRsLcTrvmBWdpZMKzN/Gx47ZJbVoFYlYWP+3FpktpHFGBeLPDEhEasFJMUF3TSzEh95x+071xERoSnbRSTQT+mdwCsjNlj7MXSi0yer9xM8RMDZSo7JumQFdaBKltlnfbzVdNYkfS0KNl2+1lcPJ9lWEA8mQkbsLbvkeTjkgqq8ytF+BqrmQliBHj1Cxt2XveeKcRfp5zygiyEmfUCVtXfpkd6xjMXIs70sO6WU/aEBrDFe+OmKkH8JrbY7VO2FCPwbI2BAu5JIDPtR/ZzsUNkjAGsXIhd4/UGmR7PqDzSxkRhP+4znYRWI3RHxwg72S+8tOoX4+Xkn6gtZmDgb6EoqYrVDig9hQc+LbJD9OzY36+F80sW3QeDe09HJ8XZcoyjsLEMYj2XaC90kFBgYQ6z4m/a9i2CcEHh2S37XPAQgemx35LNc1wiQLjwAauJQQ4PaTiUwmqDcc++PhhGbE28PpUqvqNcYIBcvg==
-X-Forefront-Antispam-Report:
-	CIP:216.228.118.233;CTRY:US;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:mail.nvidia.com;PTR:dc7edge2.nvidia.com;CAT:NONE;SFS:(13230040)(1800799024)(82310400026)(36860700016)(7416014)(376014)(921020)(13003099007)(3023799007)(11063799006)(22082099003)(6133799003)(18002099003)(18092099006)(56012099006);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	NA9nti+xFeFvqlfyjw7AZA8JpIyDfzpOxCCkPoyytw36dKRktUsqSCqpt4ko+IQ73Uk2RjZqRgISiYeck538qNRjld5wI03SUOW27jaM45AyAfowaQWCAEVfcJAXr5vuX6pIvzvmDk9d97cQxTIVLiGP39w1omx/QknBLjAQZ0DgA7jgdra1csiCyD7HNg5CA9Cdk4nvgs/YmSJqmMqlTpwm7D8ttNL/sPew8dPZnS4ptkTx5kOeCqKP5cQSdrPQ8jtUTZvqUCRZ8BdgEUFvaobCwE9bVKe9bsZK1MCBCNosnzkKNS2SEGvgKCB5xBQ+c74/LwQUdCuuOgZyyXbDdMvI+0AgYRMpLQPKROXUCmaRN6ldgZbq6blLfdXJwrFLGjC1MYEGTqBXi9XE1VE/kHxY4emWM+p1eAQyUyiPH06sTsN6LEs3GQ+rAhNBYwNW
-X-OriginatorOrg: Nvidia.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 27 May 2026 20:26:40.2588
- (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: 7d178303-b9c9-4e5e-8dcc-08debc2e4286
-X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
-X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=43083d15-7273-40c1-b7db-39efd9ccc17a;Ip=[216.228.118.233];Helo=[mail.nvidia.com]
-X-MS-Exchange-CrossTenant-AuthSource:
-	DS3PEPF0000C37B.namprd04.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Anonymous
-X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: DM4PR12MB6231
+References: <20260515090149.3169406-1-wenst@chromium.org> <CAMRc=MdnjRRMVzxPkkrPhQ4dz7rsK8-HKUp9cQ0z11apL3escQ@mail.gmail.com>
+ <CAGXv+5HC3dqgcE3KnKzakHHWFHB6m_X42orOkNUvZvp=SL_O8g@mail.gmail.com>
+ <CAMRc=Med-_0GSYzoFBRiwFzBCK0DZqJD8_SEBxi+zwR20GS-HA@mail.gmail.com>
+ <CAGXv+5GbW0bx3nKdZt2+tHuHyQ-J-1-Z79nMzHAwjmEPGKT02A@mail.gmail.com> <2026052710-flagship-unsmooth-ce82@gregkh>
+In-Reply-To: <2026052710-flagship-unsmooth-ce82@gregkh>
+From: Chen-Yu Tsai <wenst@chromium.org>
+Date: Wed, 27 May 2026 23:24:02 +0200
+X-Gm-Features: AVHnY4LeDHWwGMjgnhSmei9PL68DdRKYxFo5lLp-irYNZJy9WYHdf0RaNUwFV18
+Message-ID: <CAGXv+5HdrKjFe=jZFYQzanmHOgCNOXRydLCvsM6o=DGhoO1HBA@mail.gmail.com>
+Subject: Re: [PATCH RFC 00/12] arm64: mediatek: Add M.2 E-key slot on Chromebooks
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Bartosz Golaszewski <brgl@kernel.org>, Manivannan Sadhasivam <mani@kernel.org>, Rob Herring <robh@kernel.org>, 
+	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
+	Matthias Brugger <matthias.bgg@gmail.com>, 
+	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>, linux-pm@vger.kernel.org, 
+	linux-usb@vger.kernel.org, devicetree@vger.kernel.org, 
+	linux-mediatek@lists.infradead.org, linux-arm-kernel@lists.infradead.org, 
+	linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Add a kernel boot parameter 'cppc_cpufreq.auto_sel_mode' to enable
-CPPC autonomous performance selection on all CPUs at system startup.
-When autonomous mode is enabled, the hardware automatically adjusts
-CPU performance based on workload demands using Energy Performance
-Preference (EPP) hints.
+On Wed, May 27, 2026 at 7:42=E2=80=AFPM Greg Kroah-Hartman
+<gregkh@linuxfoundation.org> wrote:
+>
+> On Wed, May 27, 2026 at 06:21:00PM +0200, Chen-Yu Tsai wrote:
+> > On Tue, May 26, 2026 at 11:48=E2=80=AFAM Bartosz Golaszewski <brgl@kern=
+el.org> wrote:
+> > >
+> > > On Sun, May 24, 2026 at 10:06=E2=80=AFAM Chen-Yu Tsai <wenst@chromium=
+.org> wrote:
+> > > >
+> > > > > >
+> > > > > > I expect some discussion on this patch, because a) it adds some
+> > > > > > OF-specific code into an otherwise generic (core) driver, and
+> > > > > > b) it doesn't yet handle USB 2.0 / 3.x shared ports; it ends up=
+ powering
+> > > > > > on the port twice, which negates the port reset part.
+> > > > > >
+> > > > >
+> > > > > I understand that you do this because the port device has no OF n=
+ode
+> > > > > assigned. If we wanted to call pwrseq_get() for the port device, =
+is
+> > > > > there really no other way to associate it with the correct pwrseq
+> > > > > provider?
+> > > >
+> > > > I suppose we could tie the "port@X" node to the usb port device, bu=
+t
+> > > > AFAIK no other subsystem does this so we would be introducing a new
+> > > > pattern.
+> > > >
+> > > > In the M.2 pwrseq driver, we would have to match by port node inste=
+ad
+> > > > of its parent device node. We may end up with different behavior fo=
+r
+> > > > the USB target vs the other targets.
+> > > >
+> > >
+> > > I imagine, we can check the bus type of the parent device to know if
+> > > this is USB?
+> >
+> > The "bus type" type is probably not exported. However since the DT bind=
+ing
+> > explicitly says which port on the M.2 slot is for which connection type=
+,
+> > I think the matching can do a special case check for the USB port.
+> > The next obstacle is that the target string is not given to the provide=
+r
+> > match function.
+> >
+> > > > Also, the "port@X" nodes only exist for the OF graph connections to
+> > > > connectors and/or muxes (this series doesn't deal with the latter).
+> > > > For directly connected devices, there is a "device@X" child node
+> > > > directly under the USB hub node. That node is what gets tied to the
+> > > > the USB device.
+> > > >
+> > >
+> > > Is this a problem? I don't think I understand what you're saying here=
+.
+> >
+> > It shouldn't be. I'm just saying there would be different behavior on
+> > the USB side for connectors vs onboard devices (like hubs) device nodes=
+.
+> >
+> > I talked to Greg earlier, and he said not to touch the hub driver; the
+> > hub driver should only deal with features from the USB spec. The
+> > "onboard USB devices" driver is what should be used. And this would
+> > be a proper case of adding an auxiliary device to the M.2 slot driver.
+> >
+> > However this seems to completely decouple the power sequencing from the
+> > USB core. Take the USB A connector for example, it was recently added t=
+o
+> > the onboard USB devices driver. However the connector has a device node
+> > that is not a child node of any USB host controller or hub; it is conne=
+cted
+> > through OF graph. At the same time, since it typically sits at the top
+> > level of the device tree, a platform device is directly created and the
+> > driver subsequently binds to that device. This is totally different fro=
+m
+> > how the hub and other directly connected onboard USB devices work. In
+> > the onboard device case, the device node is a child node of the USB hub
+> > or controller, and the corresponding platform device only gets created
+> > when the USB hub driver probes, thereby sort of tying it into the USB
+> > device topology.
+>
+> Hm, did we mess this up?  If so, we can always change it if you think
+> this should be done differently.
+>
+> Hubs should be dealing with the power issues for their ports, so maybe
+> rethinking this might be wise.  I'm just loath to add hardware-specific
+> hacks to the hub common code for obvious reasons.  Anything we can do to
+> pull it out to a separate driver is best so it doesn't affect the 99% of
+> the users that don't have that crazy hardware :)
 
-When the parameter is set:
-- Configure all CPUs for autonomous operation on first init
-- Use HW min/max_perf when available; otherwise initialize from caps
-- Initialize desired_perf to max_perf as a starting hint
-- Hardware controls frequency instead of the OS governor
-- EPP behavior depends on parameter value:
-  - performance (or 1):         override EPP to performance (0x0)
-  - balance_performance (or 2): override EPP to balance_performance
-                                (0x80)
-  - default_epp (or 3):         preserve EPP value programmed by
-                                BIOS/firmware
+I understand. The way I have it in this series is that besides having
+the port powered up initially, usb_hub_set_port_power() port power
+control also extends to the pwrseq target for the M.2 slot or USB A
+connector, just like if VBUS was controlled by the hub itself.
 
-The boot parameter is applied only during first policy initialization.
-Skip applying it on CPU hotplug to preserve runtime sysfs configuration.
+M.2 slots might be somewhat rarer, but I think many embedded devices
+have USB A ports with VBUS that are controlled via GPIO, not wired
+to the USB hub's (if any) port VBUS control pin. This is also present
+on Chromebooks.
 
-This patch depends on patch series [1] ("cpufreq: Set policy->min and
-max as real QoS constraints") so that the policy->min/max set in
-cppc_cpufreq_cpu_init() are not overridden by cpufreq_set_policy()
-during init.
+I think wiring up pwrseq to the USB port and using it for VBUS control
+on these USB A ports is an improvement over the recent addition of USB
+A connectors to the onboard device driver, which just turns on VBUS.
+It would make the power cycle loop in hub_port_connect() actually work
+on these devices.
 
-Signed-off-by: Sumit Gupta <sumitg@nvidia.com>
----
-[1] https://lore.kernel.org/lkml/20260511135538.522653-1-pierre.gondois@arm.com/
----
- .../admin-guide/kernel-parameters.txt         |  20 +++
- drivers/cpufreq/cppc_cpufreq.c                | 146 +++++++++++++++++-
- include/acpi/cppc_acpi.h                      |   1 +
- 3 files changed, 162 insertions(+), 5 deletions(-)
+Is it code for stuff outside of the hub itself? Yes. Is it crazy hardware?
+Maybe not.
 
-diff --git a/Documentation/admin-guide/kernel-parameters.txt b/Documentation/admin-guide/kernel-parameters.txt
-index 6f0910abdd25..5182905719ed 100644
---- a/Documentation/admin-guide/kernel-parameters.txt
-+++ b/Documentation/admin-guide/kernel-parameters.txt
-@@ -1047,6 +1047,26 @@ Kernel parameters
- 			policy to use. This governor must be registered in the
- 			kernel before the cpufreq driver probes.
- 
-+	cppc_cpufreq.auto_sel_mode=
-+			[CPU_FREQ] Enable ACPI CPPC autonomous performance
-+			selection. When enabled, hardware automatically adjusts
-+			CPU frequency on all CPUs based on workload demands.
-+			In Autonomous mode, Energy Performance Preference (EPP)
-+			hints guide hardware toward performance (0x0) or energy
-+			efficiency (0xff).
-+			Requires ACPI CPPC autonomous selection register
-+			support.
-+			Accepts:
-+			  performance, 1:
-+				  enable auto_sel + set EPP to performance (0x0)
-+			  balance_performance, 2:
-+				  enable auto_sel + set EPP to
-+				  balance_performance (0x80)
-+			  default_epp, 3:
-+				  enable auto_sel, preserve EPP value programmed
-+				  by BIOS/firmware
-+			Unset: cpufreq governors are used (auto_sel disabled).
-+
- 	cpu_init_udelay=N
- 			[X86,EARLY] Delay for N microsec between assert and de-assert
- 			of APIC INIT to start processors.  This delay occurs
-diff --git a/drivers/cpufreq/cppc_cpufreq.c b/drivers/cpufreq/cppc_cpufreq.c
-index 7db33761e899..5ae164fce557 100644
---- a/drivers/cpufreq/cppc_cpufreq.c
-+++ b/drivers/cpufreq/cppc_cpufreq.c
-@@ -28,6 +28,52 @@
- 
- static struct cpufreq_driver cppc_cpufreq_driver;
- 
-+/* Autonomous Selection boot parameter modes */
-+enum {
-+	AUTO_SEL_PERFORMANCE = 1,
-+	AUTO_SEL_BALANCE_PERFORMANCE = 2,
-+	AUTO_SEL_DEFAULT_EPP = 3,
-+};
-+
-+static int auto_sel_mode;
-+
-+static int auto_sel_mode_set(const char *val, const struct kernel_param *kp)
-+{
-+	int *mode = kp->arg;
-+
-+	if (sysfs_streq(val, "performance") || sysfs_streq(val, "1"))
-+		*mode = AUTO_SEL_PERFORMANCE;
-+	else if (sysfs_streq(val, "balance_performance") || sysfs_streq(val, "2"))
-+		*mode = AUTO_SEL_BALANCE_PERFORMANCE;
-+	else if (sysfs_streq(val, "default_epp") || sysfs_streq(val, "3"))
-+		*mode = AUTO_SEL_DEFAULT_EPP;
-+	else
-+		return -EINVAL;
-+
-+	return 0;
-+}
-+
-+static int auto_sel_mode_get(char *buffer, const struct kernel_param *kp)
-+{
-+	int *mode = kp->arg;
-+
-+	switch (*mode) {
-+	case AUTO_SEL_PERFORMANCE:
-+		return sysfs_emit(buffer, "performance\n");
-+	case AUTO_SEL_BALANCE_PERFORMANCE:
-+		return sysfs_emit(buffer, "balance_performance\n");
-+	case AUTO_SEL_DEFAULT_EPP:
-+		return sysfs_emit(buffer, "default_epp\n");
-+	default:
-+		return sysfs_emit(buffer, "disabled\n");
-+	}
-+}
-+
-+static const struct kernel_param_ops auto_sel_mode_ops = {
-+	.set = auto_sel_mode_set,
-+	.get = auto_sel_mode_get,
-+};
-+
- #ifdef CONFIG_ACPI_CPPC_CPUFREQ_FIE
- static enum {
- 	FIE_UNSET = -1,
-@@ -645,7 +691,9 @@ static int cppc_cpufreq_cpu_init(struct cpufreq_policy *policy)
- 	unsigned int cpu = policy->cpu;
- 	struct cppc_cpudata *cpu_data;
- 	struct cppc_perf_caps *caps;
-+	bool set_epp = true;
- 	int ret;
-+	u32 epp;
- 
- 	cpu_data = cppc_cpufreq_get_cpu_data(cpu);
- 	if (!cpu_data) {
-@@ -715,11 +763,87 @@ static int cppc_cpufreq_cpu_init(struct cpufreq_policy *policy)
- 	policy->cur = cppc_perf_to_khz(caps, caps->highest_perf);
- 	cpu_data->perf_ctrls.desired_perf =  caps->highest_perf;
- 
--	ret = cppc_set_perf(cpu, &cpu_data->perf_ctrls);
--	if (ret) {
--		pr_debug("Err setting perf value:%d on CPU:%d. ret:%d\n",
--			 caps->highest_perf, cpu, ret);
--		goto out;
-+	/*
-+	 * Enable autonomous mode on first init if boot param is set.
-+	 * Check last_governor to detect first init and skip if auto_sel
-+	 * is already enabled.
-+	 */
-+	if (auto_sel_mode && policy->last_governor[0] == '\0' &&
-+	    !cpu_data->perf_ctrls.auto_sel) {
-+		/* Init min/max_perf from caps if not already set by HW. */
-+		if (!cpu_data->perf_ctrls.min_perf)
-+			cpu_data->perf_ctrls.min_perf = caps->lowest_nonlinear_perf;
-+		if (!cpu_data->perf_ctrls.max_perf)
-+			cpu_data->perf_ctrls.max_perf = policy->boost_enabled ?
-+				caps->highest_perf : caps->nominal_perf;
-+
-+		/*
-+		 * In autonomous mode desired_perf is only a hint; EPP and
-+		 * the platform drive actual selection within [min, max].
-+		 * Initialize it to max_perf so HW starts at the upper bound.
-+		 */
-+		cpu_data->perf_ctrls.desired_perf = cpu_data->perf_ctrls.max_perf;
-+
-+		policy->cur = cppc_perf_to_khz(caps,
-+					       cpu_data->perf_ctrls.desired_perf);
-+
-+		/*
-+		 * Set EPP per mode. 'default_epp' preserves the BIOS/firmware
-+		 * programmed EPP value. EPP is optional - some platforms may
-+		 * not support it.
-+		 */
-+		switch (auto_sel_mode) {
-+		case AUTO_SEL_PERFORMANCE:
-+			epp = CPPC_EPP_PERFORMANCE_PREF;
-+			break;
-+		case AUTO_SEL_BALANCE_PERFORMANCE:
-+			epp = CPPC_EPP_BALANCE_PERFORMANCE_PREF;
-+			break;
-+		default:
-+			set_epp = false;
-+			break;
-+		}
-+
-+		if (set_epp) {
-+			ret = cppc_set_epp(cpu, epp);
-+			if (ret && ret != -EOPNOTSUPP)
-+				pr_warn("Failed to set EPP for CPU%d (%d)\n", cpu, ret);
-+			else if (!ret)
-+				cpu_data->perf_ctrls.energy_perf = epp;
-+		}
-+
-+		/* Program min/max/desired into CPPC regs (non-fatal on failure). */
-+		ret = cppc_set_perf(cpu, &cpu_data->perf_ctrls);
-+		if (ret)
-+			pr_warn("set_perf failed CPU%d (%d); using HW values\n",
-+				cpu, ret);
-+
-+		ret = cppc_set_auto_sel(cpu, true);
-+		if (ret && ret != -EOPNOTSUPP)
-+			pr_warn("auto_sel CPU%d failed (%d); using OS mode\n",
-+				cpu, ret);
-+		else if (!ret)
-+			cpu_data->perf_ctrls.auto_sel = true;
-+	}
-+
-+	if (cpu_data->perf_ctrls.auto_sel) {
-+		/* Sync policy limits from HW when autonomous mode is active */
-+		policy->min = cppc_perf_to_khz(caps,
-+					       cpu_data->perf_ctrls.min_perf ?:
-+					       caps->lowest_nonlinear_perf);
-+		policy->max = cppc_perf_to_khz(caps,
-+					       cpu_data->perf_ctrls.max_perf ?:
-+					       (policy->boost_enabled ?
-+						caps->highest_perf :
-+						caps->nominal_perf));
-+	} else {
-+		/* Normal mode: governors control frequency */
-+		ret = cppc_set_perf(cpu, &cpu_data->perf_ctrls);
-+		if (ret) {
-+			pr_debug("Err setting perf value:%d on CPU:%d. ret:%d\n",
-+				 caps->highest_perf, cpu, ret);
-+			goto out;
-+		}
- 	}
- 
- 	cppc_cpufreq_cpu_fie_init(policy);
-@@ -1126,10 +1250,22 @@ static int __init cppc_cpufreq_init(void)
- 
- static void __exit cppc_cpufreq_exit(void)
- {
-+	unsigned int cpu;
-+
-+	for_each_present_cpu(cpu)
-+		cppc_set_auto_sel(cpu, false);
-+
- 	cpufreq_unregister_driver(&cppc_cpufreq_driver);
- 	cppc_freq_invariance_exit();
- }
- 
-+module_param_cb(auto_sel_mode, &auto_sel_mode_ops, &auto_sel_mode, 0444);
-+MODULE_PARM_DESC(auto_sel_mode,
-+		 "Enable CPPC autonomous performance selection at boot: "
-+		 "performance or 1 (EPP=performance), "
-+		 "balance_performance or 2 (EPP=balance_performance), "
-+		 "default_epp or 3 (preserve BIOS/firmware EPP)");
-+
- module_exit(cppc_cpufreq_exit);
- MODULE_AUTHOR("Ashwin Chaugule");
- MODULE_DESCRIPTION("CPUFreq driver based on the ACPI CPPC v5.0+ spec");
-diff --git a/include/acpi/cppc_acpi.h b/include/acpi/cppc_acpi.h
-index dc70a8215a3e..14c6d5d0ac12 100644
---- a/include/acpi/cppc_acpi.h
-+++ b/include/acpi/cppc_acpi.h
-@@ -42,6 +42,7 @@
- #define CPPC_AUTO_ACT_WINDOW_SIG_CARRY_THRESH 129
- 
- #define CPPC_EPP_PERFORMANCE_PREF		0x00
-+#define CPPC_EPP_BALANCE_PERFORMANCE_PREF	0x80
- #define CPPC_EPP_ENERGY_EFFICIENCY_PREF		0xFF
- 
- #define CPPC_PERF_LIMITED_DESIRED_EXCURSION	BIT(0)
--- 
-2.34.1
 
+Thanks
+ChenYu
