@@ -1,134 +1,157 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.11])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A9491453498;
-	Wed, 27 May 2026 17:42:23 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5CA9C3A8741;
+	Wed, 27 May 2026 17:55:41 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.11
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1779903747; cv=none; b=uaHdVEeEkAfQSR1NXloDqfkzzE5lRyR4fhJY9w5PxA0cGnbHSkXI25isy5nXalBcXbpsNQ+hd7AIjhXvbH+fcNZ+k2y+YWkU1nMmPfHydJjebbL6MOHYj/iNBUKPwA1AdLT/13TmWcTk0EMz/x6zOC4RP/pDe5dfdycb2We6Qjc=
+	t=1779904543; cv=none; b=gi1AuYFMR5IdZbec3XGuZg7IqnUo6AN38SCvaQbIpyoaK76eaB8O7hIp1WRVQspwmrdrG+GbMBfRLan4lKlnWGR8Ml5ZAXFi9ZyjaZCJYyDMKPlwmCD7Q/0QN7M/X7zD7avRSy/s1GSEFFax3DOmuhAnuFBxsnu3a/0tCPNJu1c=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1779903747; c=relaxed/simple;
-	bh=qDPnmO6n26zUyqGRYY9jO55c06DrJ1oerxzLPySgx0E=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=FeG0KpzL48tEnO0ZQFpE546D8KYpTQWheN98UIcO+r/D4yBI8IPkAUqWbmkF6V/0FJaa/n2u3MfWIKMJHCZYGHknXvNgxQXUJRZsCDX4yaqchnSnJiCgzcYmtaUDt+kg/a3ayu71ETGA/mLKusAKqdEaaK11fztHMeyWaRXAXKQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b=YWwcELU9; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1779904543; c=relaxed/simple;
+	bh=5g1x+u2cw+oVokz9sX8bH0WKp0vu/iJa7txpSzGoqRI=;
+	h=Date:From:To:Cc:Subject:Message-ID; b=mrGZjX65c2a4BAe7FbyhJ99FtKCLuHhQKebnVmwowNP0BFoyskVTwelpq0oFo/Othy9BxDM/0xLHFTRJ9glDyK76peFAk8m5X24G0OvbjdQjpPqvwCBQB/SJ1poxd83ysmrw8gISfWXEXxwRM6xF3CN7NEf36ZitbaSvxpFJzKA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=UzSeUzAk; arc=none smtp.client-ip=198.175.65.11
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b="YWwcELU9"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id BEB471F000E9;
-	Wed, 27 May 2026 17:42:21 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linuxfoundation.org;
-	s=korg; t=1779903742;
-	bh=IKN54VPAXWs5sF6ceJNmuHYcIYkUxjL/vSmM5J5IU/k=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=YWwcELU9M4r41zdQPC6qERI7NXdLXgr43PuuvlJcUNR9EPObjH4P4FEO0GXC13nqf
-	 EzW0fD89RHfmeyJv3YySA0EDrhdDg3r+qQzqjaTJePNY2hdPMeGI63sx7hxPEHBoyv
-	 YES0VYGMOKF159sxKYnb1U1f/CZRlf++oHgyXNGo=
-Date: Wed, 27 May 2026 19:41:30 +0200
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-To: Chen-Yu Tsai <wenst@chromium.org>
-Cc: Bartosz Golaszewski <brgl@kernel.org>,
-	Manivannan Sadhasivam <mani@kernel.org>,
-	Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Matthias Brugger <matthias.bgg@gmail.com>,
-	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>,
-	linux-pm@vger.kernel.org, linux-usb@vger.kernel.org,
-	devicetree@vger.kernel.org, linux-mediatek@lists.infradead.org,
-	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH RFC 00/12] arm64: mediatek: Add M.2 E-key slot on
- Chromebooks
-Message-ID: <2026052710-flagship-unsmooth-ce82@gregkh>
-References: <20260515090149.3169406-1-wenst@chromium.org>
- <CAMRc=MdnjRRMVzxPkkrPhQ4dz7rsK8-HKUp9cQ0z11apL3escQ@mail.gmail.com>
- <CAGXv+5HC3dqgcE3KnKzakHHWFHB6m_X42orOkNUvZvp=SL_O8g@mail.gmail.com>
- <CAMRc=Med-_0GSYzoFBRiwFzBCK0DZqJD8_SEBxi+zwR20GS-HA@mail.gmail.com>
- <CAGXv+5GbW0bx3nKdZt2+tHuHyQ-J-1-Z79nMzHAwjmEPGKT02A@mail.gmail.com>
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="UzSeUzAk"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1779904542; x=1811440542;
+  h=date:from:to:cc:subject:message-id;
+  bh=5g1x+u2cw+oVokz9sX8bH0WKp0vu/iJa7txpSzGoqRI=;
+  b=UzSeUzAkm0V6iA63tKduJpzhY86a78sfDDUKsax4v/wlWcnNMyL0gU3V
+   CyB+wNDQBOIqniQh6N8PHNESno7MT3RV/Y6I59Ld4ZvOR0qN0YjweH4/c
+   R4VVYSDXunnMAXo7n/FDNwzgzRqj/5fRSgDu2fRqAx6OvP5NiPb6D6Sf0
+   WOmGhKNiJ/jk3zRY/GvfwKn060m5xBi6IhuWUOWi1JbJUIH8G19gMwsm2
+   pEQgpFhJlXSmGyUU73uKIuigTcWNJv/2PJh7Mamoqh/75XxwPoeYVA+Lw
+   eKgTMQgXuIkmm3342HBd2Yurhcc3NkySHr0MTMQoWt7KqfU5amUtRxzR6
+   Q==;
+X-CSE-ConnectionGUID: GhlQwWBsT/e1jl2N0ooSdQ==
+X-CSE-MsgGUID: H64lCE3RRE2aSulwg7EKUg==
+X-IronPort-AV: E=McAfee;i="6800,10657,11799"; a="91050017"
+X-IronPort-AV: E=Sophos;i="6.24,172,1774335600"; 
+   d="scan'208";a="91050017"
+Received: from fmviesa003.fm.intel.com ([10.60.135.143])
+  by orvoesa103.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 27 May 2026 10:54:34 -0700
+X-CSE-ConnectionGUID: CN8ICdwzS3m+X2CXZAyDEw==
+X-CSE-MsgGUID: QyX6qFPRSHO5/39xgBYLOQ==
+X-ExtLoop1: 1
+Received: from lkp-server01.sh.intel.com (HELO f0d55cb201f0) ([10.239.97.150])
+  by fmviesa003.fm.intel.com with ESMTP; 27 May 2026 10:54:32 -0700
+Received: from kbuild by f0d55cb201f0 with local (Exim 4.98.2)
+	(envelope-from <lkp@intel.com>)
+	id 1wSISc-000000004Hi-0KGx;
+	Wed, 27 May 2026 17:54:30 +0000
+Date: Thu, 28 May 2026 01:54:09 +0800
+From: kernel test robot <lkp@intel.com>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org
+Subject: [rafael-pm:fixes] BUILD SUCCESS
+ 1b504fc632399a915b94541d2915825687c524cb
+Message-ID: <202605280158.BkYngJri-lkp@intel.com>
+User-Agent: s-nail v14.9.25
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <CAGXv+5GbW0bx3nKdZt2+tHuHyQ-J-1-Z79nMzHAwjmEPGKT02A@mail.gmail.com>
 
-On Wed, May 27, 2026 at 06:21:00PM +0200, Chen-Yu Tsai wrote:
-> On Tue, May 26, 2026 at 11:48 AM Bartosz Golaszewski <brgl@kernel.org> wrote:
-> >
-> > On Sun, May 24, 2026 at 10:06 AM Chen-Yu Tsai <wenst@chromium.org> wrote:
-> > >
-> > > > >
-> > > > > I expect some discussion on this patch, because a) it adds some
-> > > > > OF-specific code into an otherwise generic (core) driver, and
-> > > > > b) it doesn't yet handle USB 2.0 / 3.x shared ports; it ends up powering
-> > > > > on the port twice, which negates the port reset part.
-> > > > >
-> > > >
-> > > > I understand that you do this because the port device has no OF node
-> > > > assigned. If we wanted to call pwrseq_get() for the port device, is
-> > > > there really no other way to associate it with the correct pwrseq
-> > > > provider?
-> > >
-> > > I suppose we could tie the "port@X" node to the usb port device, but
-> > > AFAIK no other subsystem does this so we would be introducing a new
-> > > pattern.
-> > >
-> > > In the M.2 pwrseq driver, we would have to match by port node instead
-> > > of its parent device node. We may end up with different behavior for
-> > > the USB target vs the other targets.
-> > >
-> >
-> > I imagine, we can check the bus type of the parent device to know if
-> > this is USB?
-> 
-> The "bus type" type is probably not exported. However since the DT binding
-> explicitly says which port on the M.2 slot is for which connection type,
-> I think the matching can do a special case check for the USB port.
-> The next obstacle is that the target string is not given to the provider
-> match function.
-> 
-> > > Also, the "port@X" nodes only exist for the OF graph connections to
-> > > connectors and/or muxes (this series doesn't deal with the latter).
-> > > For directly connected devices, there is a "device@X" child node
-> > > directly under the USB hub node. That node is what gets tied to the
-> > > the USB device.
-> > >
-> >
-> > Is this a problem? I don't think I understand what you're saying here.
-> 
-> It shouldn't be. I'm just saying there would be different behavior on
-> the USB side for connectors vs onboard devices (like hubs) device nodes.
-> 
-> I talked to Greg earlier, and he said not to touch the hub driver; the
-> hub driver should only deal with features from the USB spec. The
-> "onboard USB devices" driver is what should be used. And this would
-> be a proper case of adding an auxiliary device to the M.2 slot driver.
-> 
-> However this seems to completely decouple the power sequencing from the
-> USB core. Take the USB A connector for example, it was recently added to
-> the onboard USB devices driver. However the connector has a device node
-> that is not a child node of any USB host controller or hub; it is connected
-> through OF graph. At the same time, since it typically sits at the top
-> level of the device tree, a platform device is directly created and the
-> driver subsequently binds to that device. This is totally different from
-> how the hub and other directly connected onboard USB devices work. In
-> the onboard device case, the device node is a child node of the USB hub
-> or controller, and the corresponding platform device only gets created
-> when the USB hub driver probes, thereby sort of tying it into the USB
-> device topology.
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git fixes
+branch HEAD: 1b504fc632399a915b94541d2915825687c524cb  Merge branch 'pm-cpufreq-fixes' into fixes
 
-Hm, did we mess this up?  If so, we can always change it if you think
-this should be done differently.
+elapsed time: 1549m
 
-Hubs should be dealing with the power issues for their ports, so maybe
-rethinking this might be wise.  I'm just loath to add hardware-specific
-hacks to the hub common code for obvious reasons.  Anything we can do to
-pull it out to a separate driver is best so it doesn't affect the 99% of
-the users that don't have that crazy hardware :)
+configs tested: 82
+configs skipped: 12
 
-thanks,
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-greg k-h
+tested configs:
+alpha                   allnoconfig    gcc-15.2.0
+alpha                  allyesconfig    gcc-15.2.0
+arc                    allmodconfig    gcc-15.2.0
+arc                     allnoconfig    gcc-15.2.0
+arc                    allyesconfig    gcc-15.2.0
+arc         randconfig-001-20260527    gcc-9.5.0
+arc         randconfig-002-20260527    gcc-15.2.0
+arm                     allnoconfig    clang-23
+arm                    allyesconfig    gcc-15.2.0
+arm         randconfig-004-20260527    gcc-11.5.0
+arm64                  allmodconfig    clang-19
+arm64                   allnoconfig    gcc-15.2.0
+csky                    allnoconfig    gcc-15.2.0
+hexagon                allmodconfig    clang-17
+hexagon                 allnoconfig    clang-23
+i386                   allmodconfig    gcc-14
+i386                    allnoconfig    gcc-14
+i386                   allyesconfig    gcc-14
+loongarch              allmodconfig    clang-19
+loongarch               allnoconfig    clang-23
+loongarch   randconfig-001-20260528    clang-18
+m68k                   allmodconfig    gcc-15.2.0
+m68k                    allnoconfig    gcc-15.2.0
+m68k                   allyesconfig    gcc-15.2.0
+microblaze              allnoconfig    gcc-15.2.0
+microblaze             allyesconfig    gcc-15.2.0
+mips                   allmodconfig    gcc-15.2.0
+mips                    allnoconfig    gcc-15.2.0
+mips                   allyesconfig    gcc-15.2.0
+nios2                  allmodconfig    gcc-11.5.0
+nios2                   allnoconfig    gcc-11.5.0
+nios2       randconfig-001-20260528    gcc-11.5.0
+nios2       randconfig-002-20260528    gcc-8.5.0
+openrisc               allmodconfig    gcc-15.2.0
+openrisc                allnoconfig    gcc-15.2.0
+openrisc                  defconfig    gcc-15.2.0
+parisc                 allmodconfig    gcc-15.2.0
+parisc                  allnoconfig    gcc-15.2.0
+parisc                 allyesconfig    gcc-15.2.0
+parisc                    defconfig    gcc-15.2.0
+powerpc                allmodconfig    gcc-15.2.0
+powerpc                 allnoconfig    gcc-15.2.0
+riscv                  allmodconfig    clang-23
+riscv                   allnoconfig    gcc-15.2.0
+riscv                  allyesconfig    clang-16
+riscv                     defconfig    clang-23
+riscv                randconfig-001    gcc-8.5.0
+riscv       randconfig-001-20260527    gcc-9.5.0
+riscv                randconfig-002    clang-23
+riscv       randconfig-002-20260527    gcc-15.2.0
+s390                   allmodconfig    clang-18
+s390                    allnoconfig    clang-23
+s390                   allyesconfig    gcc-15.2.0
+s390                      defconfig    clang-23
+s390                 randconfig-001    gcc-11.5.0
+s390        randconfig-001-20260527    gcc-12.5.0
+s390                 randconfig-002    clang-23
+s390        randconfig-002-20260527    gcc-11.5.0
+sh                     allmodconfig    gcc-15.2.0
+sh                      allnoconfig    gcc-15.2.0
+sh                     allyesconfig    gcc-15.2.0
+sh                        defconfig    gcc-15.2.0
+sh                   randconfig-001    gcc-15.2.0
+sh          randconfig-001-20260527    gcc-14.3.0
+sh                   randconfig-002    gcc-14.3.0
+sh          randconfig-002-20260527    gcc-11.5.0
+sparc                   allnoconfig    gcc-15.2.0
+sparc                     defconfig    gcc-15.2.0
+sparc64                allmodconfig    clang-23
+sparc64                   defconfig    clang-20
+um                     allmodconfig    clang-19
+um                      allnoconfig    clang-23
+um                     allyesconfig    gcc-14
+um                        defconfig    clang-23
+um                   i386_defconfig    gcc-14
+um                 x86_64_defconfig    clang-23
+x86_64                 allmodconfig    clang-20
+x86_64                  allnoconfig    clang-20
+x86_64                 allyesconfig    clang-20
+x86_64                    defconfig    gcc-14
+x86_64                rhel-9.4-rust    clang-20
+xtensa                  allnoconfig    gcc-15.2.0
+
+--
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests/wiki
