@@ -1,324 +1,160 @@
-Received: from mo4-p01-ob.smtp.rzone.de (mo4-p01-ob.smtp.rzone.de [81.169.146.167])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1F53C3C945B;
-	Wed, 27 May 2026 07:39:29 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=81.169.146.167
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1779867572; cv=pass; b=SJHdOnWsQXOfw03ddiyiz/V813YzJwqE8mkyYJKzrtlnOPQlqRtm7caKl1+wfBOZuTHPFV3Buozk6zrqRTI/lc2oQa4CNAjXv7Eb7kSMgQqx7zUVkvHB/QSM+YhfyC+TATBpv6I6aBAY/eY8fBRYZCDNDnGAckP4z79TfAVE/RE=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1779867572; c=relaxed/simple;
-	bh=pXPW/nXpGbQld+Hckyjd9fLieEtjotxDgp7EPR3V0do=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=IaJPdR/E1AQL/JAYWRGA6B/73No7azb7fxFHX+eB/0eJdZm2ApVb4EDEN/gaEcGfwwWBtMNqR9+C8r6u5n56dju2/61KVg9rzLOxQPpNmsCbgLVDqzDEHe8vcLIrkJt7Ko8tUgohvYovmKVaOoSuNr/f/Ios+YVI3PfU1YeIejM=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=lechthaler.online; spf=none smtp.mailfrom=lechthaler.online; dkim=pass (2048-bit key) header.d=lechthaler.online header.i=@lechthaler.online header.b=ZnF712CY; dkim=permerror (0-bit key) header.d=lechthaler.online header.i=@lechthaler.online header.b=58A8fxlM; arc=pass smtp.client-ip=81.169.146.167
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=lechthaler.online
-Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=lechthaler.online
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 52EAD276049
+	for <linux-pm@vger.kernel.org>; Wed, 27 May 2026 07:55:05 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1779868506; cv=none; b=cqeK2DwIPT1RgwE3thRuKAYeFAJzY73q1Z9TLVRTpsPjdT5J9mR7eo/Mn7yW8YCYIcdhS3EVi6s8kwPJK7Tp+N6Q/6t/AIIWSeTcOcl7dNdMlZptLeewAGXrS356Tq9VdMOgUcLIE0C6hsHV1GZeb9UKyPF4OpyvzJbkIKkJroQ=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1779868506; c=relaxed/simple;
+	bh=TinoBZ5FTOzSVqA4vf8A548fMG5R5EFZFN4mybwiaj8=;
+	h=From:In-Reply-To:MIME-Version:References:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=Msg7Bd84GoNLpK4jZBxDlOMslR2g+E/e+JMQWAV6ILiVMUhJqpvfYGW6QP6pyj6UlhvqczEoeP45xRP5UroYGWNteaP2h96FB6ypZLdvpPZIJQc9YN9GTydgpHD4EFN6m4Yd90RtpbRjL1OpufyJuPxpqU4vaKVINtzRf6Gc5rY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=IBpZwvnt; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=lechthaler.online header.i=@lechthaler.online header.b="ZnF712CY";
-	dkim=permerror (0-bit key) header.d=lechthaler.online header.i=@lechthaler.online header.b="58A8fxlM"
-ARC-Seal: i=1; a=rsa-sha256; t=1779867388; cv=none;
-    d=strato.com; s=strato-dkim-0002;
-    b=p5V+fnnSi1vLCEhXwuyo1lfDZRAfhb9nd805tM4ZgRpCsuVw6jjtPAlw3Ht3AAyuUL
-    0UEUGOhrRVIhKoLdb8Lps+IBMVw6ORUnRroE9jTYw+fpAAUxxUgzXByiHosRk3V9BEmQ
-    UruccskZMYMqqrhiMPT2kiin69h4CaC4h2IisXUqLAs+maDos55/uOvxjoG/QgXAD1/q
-    9BeE6o8prVNm6hj3P2YdgInnSbURQ5L6bCJPbioYjZ5p2UP9XRP5mzWj+SB+Tg3yrn1d
-    PqZA3aR06ULeWsenNLfAyzy4Y42Y+XVzzABcofRI1KgmjNHY7bzgNbW8/0i+4jtSX3tr
-    xRBw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; t=1779867388;
-    s=strato-dkim-0002; d=strato.com;
-    h=In-Reply-To:From:References:Cc:To:Subject:Date:Message-ID:Cc:Date:
-    From:Subject:Sender;
-    bh=eJtH7ii6+yHNXsZIFOqJuRL18J6pEveBiwPmTt8JMmc=;
-    b=qnVeoSdiDr04LWDlWOChg6pJiy9iAxHoIAsueJ79dsP8L0o6t6y2i7veTwBl365yWv
-    1t4GOruHeLw99vtT3pOnQoYxu+QvdnjczVd3XqJijwlRT/JfYaEH9n0hL3ffrafm3jBv
-    bz+FV8EcPP65purEGXPszUGMO+Q64poQ8RKtgQvgRJ18QU+2BQWx6hz6GsVj/4wJfFnH
-    gh1eYJnwqr9UapDHYlo7WEmkG8Ugn5pqKz7wy3Qch6ed5lZ6qA8vc0LiBrk3wzbDX1Bd
-    8xGaVT4DAbh+ZMTSfpFp00DSXHjiVbzmldh4icruoYHwB959FupE2ReJe12h4KK1HuAh
-    WK7g==
-ARC-Authentication-Results: i=1; strato.com;
-    arc=none;
-    dkim=none
-X-RZG-CLASS-ID: mo01
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; t=1779867388;
-    s=strato-dkim-0002; d=lechthaler.online;
-    h=In-Reply-To:From:References:Cc:To:Subject:Date:Message-ID:Cc:Date:
-    From:Subject:Sender;
-    bh=eJtH7ii6+yHNXsZIFOqJuRL18J6pEveBiwPmTt8JMmc=;
-    b=ZnF712CY3qs5R8GSH3XDF5ETULdAWWH7petfLGxcipQtQ3/x18XNWI3HsK6wiFd1Sv
-    MKuO6fRoveufNOQDlPimFprNRpZXWK421jte1MncldE9r6gJYhbpYi2bITcFsQGLvnRW
-    0b8K3ecLQj9ZZ23clL6ovwDoTDMZGx3idfhD7ZxXzu4mRtEgJc/05sSCZ5UKqNcaeR6k
-    RlhN5OQCFftbwi1Hs/tLJDXuPdmyK3rlJEO3/URycEx18xMaW8nTPOGvvYOQqVPZP70O
-    Zylg9QljKEv/t1I0lEqVACWk2Ei2oM0PCl6W7045u1xAIiFWcxVkqValeLuLUM5sFKDe
-    UY5Q==
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; t=1779867388;
-    s=strato-dkim-0003; d=lechthaler.online;
-    h=In-Reply-To:From:References:Cc:To:Subject:Date:Message-ID:Cc:Date:
-    From:Subject:Sender;
-    bh=eJtH7ii6+yHNXsZIFOqJuRL18J6pEveBiwPmTt8JMmc=;
-    b=58A8fxlMLQZRaXH0dYocIAqYu10Cagg1uo9BT+MO9VXk24BdssR/sqlepzYi8kNBbb
-    n3SBqxHKILXeCRq8OrDA==
-X-RZG-AUTH: ":LWABbUGmf/p3GWz138t3dAG4+iFy9XUTxnN94F8mUwTghZauya1bHdwWZANyhT7JUoBGg72fwp4OIxY="
-Received: from [192.168.0.101]
-    by smtp.strato.de (RZmta 55.0.1 AUTH)
-    with ESMTPSA id j78f5a24R7aR7Kv
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256 bits))
-	(Client did not present a certificate);
-    Wed, 27 May 2026 09:36:27 +0200 (CEST)
-Message-ID: <acdcb8c9-7814-48c5-8ffd-abbaec22955b@lechthaler.online>
-Date: Wed, 27 May 2026 09:36:25 +0200
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="IBpZwvnt"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 30ED01F00ADB
+	for <linux-pm@vger.kernel.org>; Wed, 27 May 2026 07:55:05 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1779868505;
+	bh=TinoBZ5FTOzSVqA4vf8A548fMG5R5EFZFN4mybwiaj8=;
+	h=From:In-Reply-To:References:Date:Subject:To:Cc;
+	b=IBpZwvntlzDZda5S4ksMbHKk2oECsb3PmTK1002SfoskyX2IaGDrlwyNicf7twiy/
+	 TK+M3L+mk9MRFC/Cuom5GYjinqb9hF7vzwHDWDPXU4HhqxF3FBy5d+t3tgxL4Ws+Bl
+	 NXbDjk7BhkBXWWpJkMUU1d4tj6GG6jDrnh5Bdr9W97j7izkMSc/gPRA5Hgu4aNAK4/
+	 eC9AoIQjuCs+or2mtlGky4+0qkUpch6bFzIO81ugnf/cnLShR5ioHlxF7kC/OqE7V/
+	 4xEG31dRTE1jsqZKoJXanDzEnGM9wjvoXL9chy/WD5h5ZeWVIC5bCZjONx5DNo6TK3
+	 q0VS622CGc7BA==
+Received: by mail-lf1-f46.google.com with SMTP id 2adb3069b0e04-5aa4a628ab0so557540e87.2
+        for <linux-pm@vger.kernel.org>; Wed, 27 May 2026 00:55:05 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AFNElJ+RnIksVmpBYHpHVcTfD94wfRKixAJ3e/SPcN6KoHvDKdnt+NFE3sJmOzZyonLwCEdbvp1yA1E8jg==@vger.kernel.org
+X-Gm-Message-State: AOJu0YyK3u4Oq9m/vjUvttpTfqrcSxVbt0n5LJ0XetTUn0vNEeKYp4ff
+	7munTA33sTYMkYggxUrDjakrojfg5h09RtquaFU24UyDmEymvuIUeM19xHk9hXCEf8KVQ/1UuOf
+	3cGNz97hwjzdzcrE7MFYcIe5ZXTBUd2Ad55QyMg5CaA==
+X-Received: by 2002:a05:6512:1595:b0:5aa:116d:ae0b with SMTP id
+ 2adb3069b0e04-5aa3232a168mr6419026e87.16.1779868503859; Wed, 27 May 2026
+ 00:55:03 -0700 (PDT)
+Received: from 969154062570 named unknown by gmailapi.google.com with
+ HTTPREST; Wed, 27 May 2026 03:55:02 -0400
+Received: from 969154062570 named unknown by gmailapi.google.com with
+ HTTPREST; Wed, 27 May 2026 03:55:01 -0400
+From: Bartosz Golaszewski <brgl@kernel.org>
+In-Reply-To: <CAPVz0n3X8Gw2Yo9VgwhV0uAqvArGXbvmzw=cZVJw=4BEH_E7_w@mail.gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] power: snapshot: fix missing kernel-doc parameter
- descriptions
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: pavel@kernel.org, lenb@kernel.org, linux-pm@vger.kernel.org,
- linux-kernel@vger.kernel.org
-References: <20260522181113.40350-1-alexander@lechthaler.online>
- <CAJZ5v0jNL6s33ZUJuA8+Q+1YN+Aim09q9LLQggPvjhD_Xk4aAw@mail.gmail.com>
-Content-Language: en-US
-From: Alexander Lechthaler <alexander@lechthaler.online>
-In-Reply-To: <CAJZ5v0jNL6s33ZUJuA8+Q+1YN+Aim09q9LLQggPvjhD_Xk4aAw@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+References: <20260523085102.51000-1-clamor95@gmail.com> <20260523085102.51000-2-clamor95@gmail.com>
+ <CAMRc=MfXVwD2u0e115RapnyLzf5JRjWMs=2PSNzMnm0GDd7aaQ@mail.gmail.com>
+ <CAPVz0n1G5Yu2X5f+=q90RAbnsWi9psMq-L5tWDMM4JRC4R_mPg@mail.gmail.com>
+ <CAMRc=Me4G-YqKoFan3epofXk2OWzxY1iPE1mP=uwEjs9wgA6Cw@mail.gmail.com>
+ <CAPVz0n2P-zB1_uetZN9pVcQChK+FkdQowbF4Z0YZOBQBsB76WQ@mail.gmail.com>
+ <CAMRc=MfAAE4UtnW4S1=pY+2yvS6Hsd-U9+uveUFtPGoJPrv6aA@mail.gmail.com>
+ <CAPVz0n2COsDL+fNBAuKr1ty_AVe9sK5yNJithkXex6GNa1T_Tw@mail.gmail.com>
+ <CAMRc=Mc9g=yezRtAtRMzh7t-pSoyoKQEtxrb5U0oeFAbcjb6Ew@mail.gmail.com> <CAPVz0n3X8Gw2Yo9VgwhV0uAqvArGXbvmzw=cZVJw=4BEH_E7_w@mail.gmail.com>
+Date: Wed, 27 May 2026 03:55:01 -0400
+X-Gmail-Original-Message-ID: <CAMRc=Mf4W9hoP7FAbxQTNLaG3M9W+GmvQSMECbzzdQLU_+5D4A@mail.gmail.com>
+X-Gm-Features: AVHnY4Lt6npNCIf-HQwre2EThWE1lIb8ewUMXlF5zYGKxytOXdvRZmQqD1cgohY
+Message-ID: <CAMRc=Mf4W9hoP7FAbxQTNLaG3M9W+GmvQSMECbzzdQLU_+5D4A@mail.gmail.com>
+Subject: Re: [PATCH v2 1/2] dt-bindings: soc: tegra: Document Nvidia Tegra
+ modem pwrseq
+To: Svyatoslav Ryhel <clamor95@gmail.com>
+Cc: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+	Conor Dooley <conor+dt@kernel.org>, Thierry Reding <thierry.reding@kernel.org>, 
+	Jonathan Hunter <jonathanh@nvidia.com>, devicetree@vger.kernel.org, 
+	linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org, 
+	linux-pm@vger.kernel.org, Bartosz Golaszewski <brgl@kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-On 5/26/26 13:09, Rafael J. Wysocki wrote:
-> On Fri, May 22, 2026 at 8:12 PM Alexander Lechthaler
-> <alexander@lechthaler.online> wrote:
+On Tue, 26 May 2026 15:41:58 +0200, Svyatoslav Ryhel <clamor95@gmail.com> s=
+aid:
+> =D0=B2=D1=82, 26 =D1=82=D1=80=D0=B0=D0=B2. 2026=E2=80=AF=D1=80. =D0=BE 16=
+:14 Bartosz Golaszewski <brgl@kernel.org> =D0=BF=D0=B8=D1=88=D0=B5:
 >>
->> Add missing parameter descriptions to kernel-doc comments in
->> kernel/power/snapshot.c to silence documentation warnings.
-> 
-> All of the functions in question are static AFAICS, so they don't
-> really deserve kerneldoc comments in the first place.  Why don't you
-> replace the kerneldoc /** marker with the regular comment start marker
-> /* in all of those comments?
-> 
->> Signed-off-by: Alexander Lechthaler <alexander@lechthaler.online>
->> ---
->>   kernel/power/snapshot.c | 52 +++++++++++++++++++++++++++++++++++++++--
->>   1 file changed, 50 insertions(+), 2 deletions(-)
+>> On Tue, May 26, 2026 at 2:55=E2=80=AFPM Svyatoslav Ryhel <clamor95@gmail=
+.com> wrote:
+>> >
+>> > > > >
+>> > > > > The node attached to the pwrseq provider device should represent=
+ a real
+>> > > > > hardware component. Are the enable-gpios and power-supply lines =
+connected
+>> > > > > to the modem package?
+>> > > >
+>> > > > Yes, enable-gpio is connected to the modem and signals that USB is=
+ set
+>> > > > and ready to work with the modem, while power-supply is an optiona=
+l
+>> > > > supply connected to the modem's vbus input.
+>> > > >
+>> > >
+>> > > The modem is a hard-wired USB device? Do you implement it as a
+>> > > platform driver or a USB driver?
+>> > >
+>> >
+>> > It is not a traditional USB device. XMM6260 is an embedded modem used
+>> > in the Tegra phones, it is linked with the AP using USB line in HSIC
+>> > mode. The driver is implemented as a platform device since it does not
+>> > interacts with the exposed USB device directly, it just ensures that
+>> > USB device is properly configured and is ready for IPC.
+>> >
+>> > > Is there a connector of any kind that could be used as the HW
+>> > > component represented by the pwrseq device?
+>> >
+>> > I assume control over USB line is the HW base, but as I have said, I
+>> > can integrate binding in the modem node itself, and pwrseq can get all
+>> > it needs from the match. Pwrseq framework states "This framework is
+>> > designed to abstract complex power-up sequences that are shared
+>> > between multiple logical devices in the Linux kernel." it does not say
+>> > that it must represent some specific hardware.
+>> >
 >>
->> diff --git a/kernel/power/snapshot.c b/kernel/power/snapshot.c
->> index a564650734dc..153c27439972 100644
->> --- a/kernel/power/snapshot.c
->> +++ b/kernel/power/snapshot.c
->> @@ -460,6 +460,10 @@ static struct rtree_node *alloc_rtree_node(gfp_t gfp_mask, int safe_needed,
+>> No, not at all. We just can't make up any imaginary, logical "pwrseq"
+>> devices and describe them in DT bindings.
 >>
->>   /**
->>    * add_rtree_block - Add a new leave node to the radix tree.
->> + * @zone: Radix tree where node gets added.
->> + * @gfp_mask: GFP mask for the allocation.
->> + * @safe_needed: Get pages not used before hibernation (restore only).
->> + * @ca: Pointer to a linked list of pages ("a chain") to allocate from.
->>    *
->>    * The leave nodes need to be allocated in order to keep the leaves
->>    * linked list in order. This is guaranteed by the zone->blocks
->> @@ -530,6 +534,11 @@ static void free_zone_bm_rtree(struct mem_zone_bm_rtree *zone,
+>
+> Ye, ye, sure, pwrseq framework is quite flexible and I am not stating
+> this bindings is mandatory.
+>
+>> > Using pwrseq allows modem driver to be SoC independent since USB line
+>> > handling is moved into SoC specific power sequence, and this modem is
+>> > used in Exynos and OMAP too with similar setup but they all have
+>> > different USB controllers. Maybe you can point me where SoC specific
+>> > USB controller handling can be implemented?
+>> >
 >>
->>   /**
->>    * create_zone_bm_rtree - Create a radix tree for one zone.
->> + * @gfp_mask: GFP mask for the allocation.
->> + * @safe_needed: Get pages not used before hibernation (restore only).
->> + * @ca: Pointer to a linked list of pages ("a chain") to allocate from.
->> + * @start: First page frame number (PFN) in the zone to build the tree for.
->> + * @end: PFN one past the last page covered by the tree.
->>    *
->>    * Allocated the mem_zone_bm_rtree structure and initializes it.
->>    * This function also allocated and builds the radix tree for the
->> @@ -568,6 +577,8 @@ static struct mem_zone_bm_rtree *create_zone_bm_rtree(gfp_t gfp_mask,
+>> I'm not sure I'm following. Can you rephrase or point me where OMAP
+>> and Samsung implement it?
 >>
->>   /**
->>    * free_zone_bm_rtree - Free the memory of the radix tree.
->> + * @zone: Radix tree to free node pages from.
->> + * @clear_nosave_free: If set, clear the PageNosaveFree bit for the pages.
->>    *
->>    * Free all node pages of the radix tree. The mem_zone_bm_rtree
->>    * structure itself is not freed here nor are the rtree_node
->> @@ -680,6 +691,9 @@ static int create_mem_extents(struct list_head *list, gfp_t gfp_mask)
->>
->>   /**
->>    * memory_bm_create - Allocate memory for a memory bitmap.
->> + * @bm: Memory bitmap.
->> + * @gfp_mask: Mask to use for memory allocations.
->> + * @safe_needed: Get pages not used before hibernation (restore only).
->>    */
->>   static int memory_bm_create(struct memory_bitmap *bm, gfp_t gfp_mask,
->>                              int safe_needed)
->> @@ -723,6 +737,7 @@ static int memory_bm_create(struct memory_bitmap *bm, gfp_t gfp_mask,
->>   /**
->>    * memory_bm_free - Free memory occupied by the memory bitmap.
->>    * @bm: Memory bitmap.
->> + * @clear_nosave_free: If set, clear the PageNosaveFree bit for the pages.
->>    */
->>   static void memory_bm_free(struct memory_bitmap *bm, int clear_nosave_free)
->>   {
->> @@ -738,9 +753,14 @@ static void memory_bm_free(struct memory_bitmap *bm, int clear_nosave_free)
->>
->>   /**
->>    * memory_bm_find_bit - Find the bit for a given PFN in a memory bitmap.
->> + * @bm: Memory bitmap.
->> + * @pfn: Page Frame Number (PFN).
->> + * @addr: Returned address of the bitmap storage containing the bit.
->> + * @bit_nr: Returned bit number within @addr.
->>    *
->>    * Find the bit in memory bitmap @bm that corresponds to the given PFN.
->> - * The cur.zone, cur.block and cur.node_pfn members of @bm are updated.
->> + * The cur.zone, cur.node, cur.node_pfn and cur.cur_pfn members
->> + * of @bm are updated.
->>    *
->>    * Walk the radix tree to find the page containing the bit that represents @pfn
->>    * and return the position of the bit in @addr and @bit_nr.
->> @@ -879,8 +899,9 @@ static bool memory_bm_pfn_present(struct memory_bitmap *bm, unsigned long pfn)
->>          return !memory_bm_find_bit(bm, pfn, &addr, &bit);
->>   }
->>
->> -/*
->> +/**
->>    * rtree_next_node - Jump to the next leaf node.
->> + * @bm: Memory bitmap.
->>    *
->>    * Set the position to the beginning of the next node in the
->>    * memory bitmap. This is either the next node in the current
->> @@ -990,6 +1011,8 @@ static void memory_bm_recycle(struct memory_bitmap *bm)
->>
->>   /**
->>    * register_nosave_region - Register a region of unsaveable memory.
->> + * @start_pfn: Start page frame number (PFN).
->> + * @end_pfn: End page frame number (PFN).
->>    *
->>    * Register a range of page frames the contents of which should not be saved
->>    * during hibernation (to be used in the early initialization code).
->> @@ -1307,6 +1330,8 @@ static unsigned int count_free_highmem_pages(void)
->>
->>   /**
->>    * saveable_highmem_page - Check if a highmem page is saveable.
->> + * @zone: Zone containing the PFN.
->> + * @pfn: Page frame number to check.
->>    *
->>    * Determine whether a highmem page should be included in a hibernation image.
->>    *
->> @@ -1364,6 +1389,8 @@ static unsigned int count_highmem_pages(void)
->>
->>   /**
->>    * saveable_page - Check if the given page is saveable.
->> + * @zone: Zone containing the PFN.
->> + * @pfn: Page frame number to check.
->>    *
->>    * Determine whether a non-highmem page should be included in a hibernation
->>    * image.
->> @@ -1442,6 +1469,8 @@ static inline bool do_copy_page(long *dst, long *src)
->>
->>   /**
->>    * safe_copy_page - Copy a page in a safe way.
->> + * @dst: Destination page.
->> + * @s_page: Source page.
->>    *
->>    * Check if the page we are going to copy is marked as present in the kernel
->>    * page tables. This always is the case if CONFIG_DEBUG_PAGEALLOC or
->> @@ -1689,6 +1718,9 @@ static unsigned long preallocate_image_highmem(unsigned long nr_pages)
->>
->>   /**
->>    *  __fraction - Compute (an approximation of) x * (multiplier / base).
->> + * @x: Value the fraction is applied to.
->> + * @multiplier: Fraction numerator.
->> + * @base: Fraction denominator.
->>    */
->>   static unsigned long __fraction(u64 x, u64 multiplier, u64 base)
->>   {
->> @@ -1984,6 +2016,7 @@ int hibernate_preallocate_memory(void)
->>   #ifdef CONFIG_HIGHMEM
->>   /**
->>    * count_pages_for_highmem - Count non-highmem pages needed for copying highmem.
->> + * @nr_highmem: Number of highmem pages to copy.
->>    *
->>    * Compute the number of non-highmem pages that will be necessary for creating
->>    * copies of highmem pages.
->> @@ -2005,6 +2038,8 @@ static unsigned int count_pages_for_highmem(unsigned int nr_highmem) { return 0;
->>
->>   /**
->>    * enough_free_mem - Check if there is enough free memory for the image.
->> + * @nr_pages: Number of normal pages required for the image.
->> + * @nr_highmem: Number of highmem pages required for the image.
->>    */
->>   static int enough_free_mem(unsigned int nr_pages, unsigned int nr_highmem)
->>   {
->> @@ -2025,6 +2060,7 @@ static int enough_free_mem(unsigned int nr_pages, unsigned int nr_highmem)
->>   #ifdef CONFIG_HIGHMEM
->>   /**
->>    * get_highmem_buffer - Allocate a buffer for highmem pages.
->> + * @safe_needed: Whether a safe buffer for copying highmem pages is needed.
->>    *
->>    * If there are some highmem pages in the hibernation image, we may need a
->>    * buffer to copy them and/or load their data.
->> @@ -2037,6 +2073,8 @@ static inline int get_highmem_buffer(int safe_needed)
->>
->>   /**
->>    * alloc_highmem_pages - Allocate some highmem pages for the image.
->> + * @bm: Bitmap to mark allocated pages in.
->> + * @nr_highmem: Number of highmem pages to allocate.
->>    *
->>    * Try to allocate as many pages as needed, but if the number of free highmem
->>    * pages is less than that, allocate them all.
->> @@ -2067,6 +2105,9 @@ static inline unsigned int alloc_highmem_pages(struct memory_bitmap *bm,
->>
->>   /**
->>    * swsusp_alloc - Allocate memory for hibernation image.
->> + * @copy_bm: Bitmap to mark allocated pages in.
->> + * @nr_pages: Number of normal pages to allocate.
->> + * @nr_highmem: Number of highmem pages to allocate.
->>    *
->>    * We first try to allocate as many highmem pages as there are
->>    * saveable highmem pages in the system.  If that fails, we allocate
->> @@ -2294,6 +2335,7 @@ static void duplicate_memory_bitmap(struct memory_bitmap *dst,
->>
->>   /**
->>    * mark_unsafe_pages - Mark pages that were used before hibernation.
->> + * @bm: Bitmap containing PFNs of pages used before hibernation.
->>    *
->>    * Mark the pages that cannot be used for storing the image during restoration,
->>    * because they conflict with the pages that had been used before hibernation.
->> @@ -2332,6 +2374,7 @@ static int check_header(struct swsusp_info *info)
->>
->>   /**
->>    * load_header - Check the image header and copy the data from it.
->> + * @info: Pointer to the structure to copy the header data to.
->>    */
->>   static int load_header(struct swsusp_info *info)
->>   {
->> @@ -2485,6 +2528,8 @@ static struct page *last_highmem_page;
->>
->>   /**
->>    * get_highmem_page_buffer - Prepare a buffer to store a highmem image page.
->> + * @page: Page structure of the highmem image page to be loaded.
->> + * @ca: Chain allocator to allocate memory for the page copy if needed.
->>    *
->>    * For a given highmem image page get a buffer that suspend_write_next() should
->>    * return to its caller to write to.
->> @@ -2708,6 +2753,8 @@ static int prepare_image(struct memory_bitmap *new_bm, struct memory_bitmap *bm,
->>
->>   /**
->>    * get_buffer - Get the address to store the next image data page.
->> + * @bm: Memory bitmap with the "original" PFNs of the image pages.
->> + * @ca: Chain allocator to allocate memory for the page copy if needed.
->>    *
->>    * Get the address that snapshot_write_next() should return to its caller to
->>    * write to.
->> @@ -2845,6 +2892,7 @@ int snapshot_write_next(struct snapshot_handle *handle)
->>
->>   /**
->>    * snapshot_write_finalize - Complete the loading of a hibernation image.
->> + * @handle: Snapshot handle structure used for the loading.
->>    *
->>    * Must be called after the last call to snapshot_write_next() in case the last
->>    * page in the image happens to be a highmem page and its contents should be
->> --
->> 2.43.0
->>
+>
+> They did not.
+>
+> The XMM6260 modem is used not only in the Tegra phones but in the OMAP
+> and Exynos based too. Replicant tried to implement support locally
+> with midas devices and they had some progress. From what I have seen
+> generic implementation I am proposing will work with any of those 3
+> SoCs maybe with some slight tweaks, only part that is totally
+> different and SoC specific is how USB controller used by the modem is
+> handled (well and IPC but that is out of scope of this patchset
+> anyway).
+>
+> Obviously, non of the 3 vendors have submitted any mainline patches,
+> everything is in the downstream forks. I have investigated a bit how
+> this modem works on my Tegra phone and re-implemented it to work with
+> mainline kernel (I don't have Exynos and OMAP devices to play with). I
+> have come up with generic platform driver which handles modem
+> configuration and a SoC specific part which performs USB controller
+> bind/probe when modem is ready to handle the USB. ATM this SoC
+> specific part is available and tested only for Tegra devices.
+>
 
-Thanks for the feedback. Makes sense. I have send a v2 a minute ago.
+Are you familiar with the PCI pwrctrl code that lives under
+drivers/pci/pwrctrl/? It seems to be solving a somewhat similar issue for
+PCI devices that are hardwired and powered externally. Maybe you could use
+some of that code for your USB use-case?
+
+Bartosz
