@@ -1,114 +1,128 @@
-Received: from mail-oa1-f52.google.com (mail-oa1-f52.google.com [209.85.160.52])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3219B3FC5DA
-	for <linux-pm@vger.kernel.org>; Wed, 27 May 2026 15:26:43 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.160.52
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 64B7425D215;
+	Wed, 27 May 2026 15:32:03 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1779895605; cv=none; b=DBjv71aCGknh220e6gPEk0qM/a79GWuDWO6yyZWcVpAdFA+IJbQXBOBoiEWA9F/UOCLU0IxQ/Brz0q253J0eYidSj9mwmGxz+qrG4LqJdfx0B2hfB7Hy3iuen9Pg8jcifLrdMpFz/SIXw3+9RBzDt3mb3Hgg9OtV/WFS7hXfbhc=
+	t=1779895925; cv=none; b=mZhEbgAQDQDY0QDKF0ShnfUZx6UoAKUH2ZYgcRA3lSgy0ACZbjyIV2xxWJhsUKkLQRq+00nrp95IktWmbueJ2Yma7qtRDtdlSH6+lVbRxULrRfS2Aqel1UMZMrVZwvODTrggkXC8KrpdrsRZlXRDQc2Uoh9bDYo9H03WMs8JZSM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1779895605; c=relaxed/simple;
-	bh=CcTUPZ6t+mVwYOKt4FJuqUXX/0MqLRI/5XzUOTPLIoE=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=ut9iUZV4uTU30H6C2KJJLBlwT2zdIO+HXABfLIHpe7iQqjPUQB/OOs4U0iQZlCXY/hKhNW8f5jc4XCWuhZMdHXdb98lwENaCAk92x8t1jw/2QIm0g0Qol6bGe7ah9UH7B+tEZT7jBHghTybthbL2ZC8qmofJodVdic9ntW0WRSg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linuxfoundation.org; spf=pass smtp.mailfrom=linuxfoundation.org; dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b=Moo+u+Ap; arc=none smtp.client-ip=209.85.160.52
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linuxfoundation.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linuxfoundation.org
+	s=arc-20240116; t=1779895925; c=relaxed/simple;
+	bh=5nHLKp+sy0tnxXWnqkXfQhkOAjPNcQzLML8Vz6khoVA=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=XTXi5UEmta7yuvfXdOqKEMut5g7yAR7Pp3JbAEERZGaWzEc4YNYMkSoBLQrEFzbDwVw+V8a5M29LFjRmCu9MpCumuLi2G+aQ3gTMUO+dJYsMHa3CkUbRtjj0ptW3xVhsHVyI8711u4KXO4t1lvyIYV7vGkeh6L30O/jZ1n+JnjI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=FaGGD42N; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b="Moo+u+Ap"
-Received: by mail-oa1-f52.google.com with SMTP id 586e51a60fabf-43a2ad7bcc4so5477617fac.1
-        for <linux-pm@vger.kernel.org>; Wed, 27 May 2026 08:26:42 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linuxfoundation.org; s=google; t=1779895602; x=1780500402; darn=vger.kernel.org;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=oxx39jkUnqnkX8z8ETOUwIEf1nlUkPLtNKUYJCQs90s=;
-        b=Moo+u+ApJGEZ0jBLxTC5HivqXRLiolSx+4IlPnVs3wvLQrd7Ruh95pCQV5z0TnGkpr
-         YwKufkOv3O08OUDxzRVAZKg8EwWyscgVZvY+YHsiX2SY9tOpx97M80l0E1+CSAbXbY0r
-         fpZCkPR4vSkkOoO/8A5RSq9jYKNLd4fFbi2K4=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1779895602; x=1780500402;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=oxx39jkUnqnkX8z8ETOUwIEf1nlUkPLtNKUYJCQs90s=;
-        b=oWGzzFUNTzVcU9FnI1n9bUCcyL4UUG9YwJ2OB2VzzUjnDY/yZOnFvbo1w3E7C/0WuT
-         pSWJHfIRMQhsi6Eres0du59CmkU03DWYs996QZ35HXS3UV0ti59Hun9tylQ/efX/I/N7
-         aA6pzpqQXgT9CTwpnzZb0f/ZGusc0+iFyLJlSgHQYtXeMHz1d0KaELLF/enCmk2J8hxd
-         rd7ud1zVRGydiuKre/ZgEKWE937qfrJ4kj3fpsRL3z4kLJa9/sVj6S9IMvbjlpdUVp0c
-         XS+LurAaODr9D/YVF0kA7zSc75OCkmpreXtkOBBkIbYpuCxGSkstr2uWnlsqB1xy3U89
-         eQpw==
-X-Gm-Message-State: AOJu0Yx3Zrj80I5qNWc+zM/ovtfOkS3I01e627Ajhn2bgKFmMbIDIhbk
-	HmtjO4Gw+9aIz02FY7Oa06SM1uSCBymu4ASZDF8JqeKP06ELNae+V4MrLJmTWyPWQfY=
-X-Gm-Gg: Acq92OFhEwRvjN0atypdbEsgE28sFRd+WmKc6QFvhYx3Pmhy0J5RUxQmR4/4zRz/dJS
-	q5utMMAO00HLZhRj2VbtkkjQ2vCgwJlvJHngSzJfZOy/+WO5SSkrgc6iTJUR5q/fh32YPSAor9D
-	bVzq81id55k/aX0bQAs3HEUbotOjLWmnGnfsPhCAnF0osCmwgrNwlMLruPt8+eOFispVdSWiGY5
-	O8EGXr+dCTtfRbwxiKkUinvCE3rsFPDol31SZbrJax9607xxGKOc6d33B2wHGJNtHrMF8w2toEi
-	1GlKFbv2LCT7P8VhcNFao6cBON/u6BU7LmxY7D8I7J2/Z7RoIemuEl75YVFXoAxwz2X4BzPyl+Z
-	VNFlTrUuWypV8hY1iG7/Fu3TRujEO0JYGNsPsE3mlB2xqa5/1rziVFCcfUkXLO0/xEMEyBh2GiT
-	VuYhhMvrbzwfqyw+y6W/6aI72JVhrvipnz0L5ZJEUj1A==
-X-Received: by 2002:a05:6871:3149:b0:417:c2d1:fc37 with SMTP id 586e51a60fabf-43b5aebe229mr14272899fac.30.1779895602088;
-        Wed, 27 May 2026 08:26:42 -0700 (PDT)
-Received: from [192.168.1.14] ([38.15.57.99])
-        by smtp.gmail.com with ESMTPSA id 586e51a60fabf-43b635e4f8bsm16791019fac.7.2026.05.27.08.26.40
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Wed, 27 May 2026 08:26:41 -0700 (PDT)
-Message-ID: <5ff19049-a83a-4ef9-9cae-b97438fb3e77@linuxfoundation.org>
-Date: Wed, 27 May 2026 09:26:39 -0600
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="FaGGD42N"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id E4D1B1F000E9;
+	Wed, 27 May 2026 15:31:50 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1779895922;
+	bh=sPB3GQXOChiJjIRbQ0GadVrki7VxeBUCGhJ+IYPxXck=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=FaGGD42Nqlqm9Nyx82W2AqDxkvBm80X77FAB3xKsnB+oVYWMGraAhP/mSIhzds8aU
+	 rAdVdkgfpXi0zfoMtLHCnzHMYI8h4wVrNIJvZi0GpukC0Z2xP0WEMx4b6piMpwuxwu
+	 Swrth+betjV7a3t+m6opjKJfj7sE8+8RGsReZVZp3AKobeajhKzNfp8QFh5rFW28c0
+	 6QJjLJdtNa7ndhmgSLFzIHNshPz7tSIbDpSsmNU/Vu7pBO4OR3fw6ioR4bUcHlyQgG
+	 vC11omiC6aVPZvCoxV6Ww88fHKvZdxYEjcPgf6jrBhhFmPTd09gPa3EsJdTZ6SrZ8h
+	 oy6tsLFZtmWSw==
+Date: Wed, 27 May 2026 16:31:48 +0100
+From: Lee Jones <lee@kernel.org>
+To: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
+Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>,
+	Thierry Reding <thierry.reding@avionic-design.de>,
+	Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>,
+	Andrew Lunn <andrew+netdev@lunn.ch>,
+	"David S. Miller" <davem@davemloft.net>,
+	Eric Dumazet <edumazet@google.com>,
+	Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
+	Srinivas Kandagatla <srini@kernel.org>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	Vinod Koul <vkoul@kernel.org>,
+	"Rafael J. Wysocki" <rafael@kernel.org>,
+	Danilo Krummrich <dakr@kernel.org>, Rob Herring <robh@kernel.org>,
+	Saravana Kannan <saravanak@kernel.org>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+	Andi Shyti <andi.shyti@kernel.org>,
+	Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+	Joerg Roedel <joro@8bytes.org>, Will Deacon <will@kernel.org>,
+	Robin Murphy <robin.murphy@arm.com>,
+	Doug Berger <opendmb@gmail.com>,
+	Florian Fainelli <florian.fainelli@broadcom.com>,
+	Broadcom internal kernel review list <bcm-kernel-feedback-list@broadcom.com>,
+	Ulf Hansson <ulfh@kernel.org>, Frank Li <Frank.Li@nxp.com>,
+	Sascha Hauer <s.hauer@pengutronix.de>,
+	Pengutronix Kernel Team <kernel@pengutronix.de>,
+	Fabio Estevam <festevam@gmail.com>,
+	Matthew Brost <matthew.brost@intel.com>,
+	Thomas =?iso-8859-1?Q?Hellstr=F6m?= <thomas.hellstrom@linux.intel.com>,
+	Rodrigo Vivi <rodrigo.vivi@intel.com>,
+	David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>,
+	Peter Chen <peter.chen@kernel.org>,
+	Paul Cercueil <paul@crapouillou.net>, Bin Liu <b-liu@ti.com>,
+	Philipp Zabel <p.zabel@pengutronix.de>,
+	Maximilian Luz <luzmaximilian@gmail.com>,
+	Hans de Goede <hansg@kernel.org>,
+	Ilpo =?iso-8859-1?Q?J=E4rvinen?= <ilpo.jarvinen@linux.intel.com>,
+	Krzysztof Kozlowski <krzk@kernel.org>,
+	Benjamin Herrenschmidt <benh@kernel.crashing.org>, brgl@kernel.org,
+	linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+	linux-arm-msm@vger.kernel.org, linux-sound@vger.kernel.org,
+	driver-core@lists.linux.dev, devicetree@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org, linux-i2c@vger.kernel.org,
+	iommu@lists.linux.dev, linux-pm@vger.kernel.org,
+	imx@lists.linux.dev, linux-arm-kernel@lists.infradead.org,
+	intel-xe@lists.freedesktop.org, dri-devel@lists.freedesktop.org,
+	linux-usb@vger.kernel.org, linux-mips@vger.kernel.org,
+	platform-driver-x86@vger.kernel.org
+Subject: Re: [PATCH 15/23] mfd: tps6586: use platform_device_set_of_node()
+Message-ID: <20260527153148.GC712405@google.com>
+References: <20260521-pdev-fwnode-ref-v1-0-88c324a1b8d2@oss.qualcomm.com>
+ <20260521-pdev-fwnode-ref-v1-15-88c324a1b8d2@oss.qualcomm.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v3] cpupower: Implement powercap enabled setters
-To: =?UTF-8?Q?Mateusz_Ja=C5=9Bkiewicz?= <jaskiewiczteo@gmail.com>,
- Thomas Renninger <trenn@suse.com>, Shuah Khan <shuah@kernel.org>,
- "John B. Wyatt IV" <jwyatt@redhat.com>, John Kacur <jkacur@redhat.com>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
- Shuah Khan <skhan@linuxfoundation.org>
-References: <ce170d8f-88a3-4b8b-8e87-744433ebc442@linuxfoundation.org>
- <20260527081233.4060762-1-jaskiewiczteo@gmail.com>
-Content-Language: en-US
-From: Shuah Khan <skhan@linuxfoundation.org>
-In-Reply-To: <20260527081233.4060762-1-jaskiewiczteo@gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260521-pdev-fwnode-ref-v1-15-88c324a1b8d2@oss.qualcomm.com>
 
-On 5/27/26 02:12, Mateusz Jaśkiewicz wrote:
-> powercap_set_enabled() and powercap_zone_set_enabled() are part of the
-> public libcpupower API, but both currently return success without
-> updating sysfs.
+On Thu, 21 May 2026, Bartosz Golaszewski wrote:
+
+> Ahead of reworking the reference counting logic for platform devices,
+> encapsulate the assignment of the OF node for dynamically allocated
+> platform devices with the provided helper.
 > 
-> Write the requested value to the matching enabled attribute so callers
-> can actually enable or disable the powercap control type or zone, and
-> report write failures back to the caller.
-> 
-> Signed-off-by: Mateusz Jaśkiewicz <jaskiewiczteo@gmail.com>
+> Signed-off-by: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
+
+Acked-by: Lee Jones <lee@kernel.org>
+
 > ---
-> Changes in v3:
-> - Move the patch changelog below the Signed-off-by trailer so the
->    sign-off is kept when the patch is applied.
+>  drivers/mfd/tps6586x.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 > 
-> Changes in v2:
-> - Check current enabled value before writing.
-> - Use fd < 0 style for open() failures.
-> - Print sysfs open/write failures with perror().
-> - Drop the sizeof(path) typecast.
+> diff --git a/drivers/mfd/tps6586x.c b/drivers/mfd/tps6586x.c
+> index f5f805446603315ba76ce1fc501c908f1cec0d16..3cfd2f02b62f3cc370e0d970ec2643b638fd0fec 100644
+> --- a/drivers/mfd/tps6586x.c
+> +++ b/drivers/mfd/tps6586x.c
+> @@ -397,7 +397,7 @@ static int tps6586x_add_subdevs(struct tps6586x *tps6586x,
+>  
+>  		pdev->dev.parent = tps6586x->dev;
+>  		pdev->dev.platform_data = subdev->platform_data;
+> -		pdev->dev.of_node = of_node_get(subdev->of_node);
+> +		platform_device_set_of_node(pdev, subdev->of_node);
+>  
+>  		ret = platform_device_add(pdev);
+>  		if (ret) {
 > 
->   tools/power/cpupower/lib/powercap.c | 58 +++++++++++++++++++++++------
->   1 file changed, 47 insertions(+), 11 deletions(-)
+> -- 
+> 2.47.3
 > 
 
-Something to fix here:
-
-lib/powercap.c: In function ‘powercap_zone_set_enabled’:
-lib/powercap.c:217:28: warning: comparison of integer expressions of different signedness: ‘int’ and ‘long unsigned int’ [-Wsign-compare]
-   217 |         if (ret < 0 || ret >= sizeof(path))
-       |                            ^~
-
-thanks,
--- Shuah
+-- 
+Lee Jones
