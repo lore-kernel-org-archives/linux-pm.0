@@ -1,332 +1,186 @@
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id 80FB53EF650;
-	Wed, 27 May 2026 12:24:26 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1779884668; cv=none; b=WbwmfLGHe3I6RSnmOGsXNuriO1Nh/y3Q054rAPjkuWSd9hj2Xw0nmFUKPXRgDUOuh8U5wMnatvS5Zy+th809dPEJgDTohWQxrULEifUt6Rt/aBeOpeLg8I6iU4g03HUmpLxM6URmX3oPHS+u+Q9JKHSSvNIpLtZqrjDnxzE1bfQ=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1779884668; c=relaxed/simple;
-	bh=UotxsZ+zZr/XhydpYBQL8pv0WmoT4CF/hvzZHlKS1wI=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=JcDGazaJjTpDgRvgx3sjFVwPYTrMt5ngCn1QSpzIKGI2xErR2JZ+DdzPiu8C/+qXZHOd1Ir9xeoiIPWKLUeRc+ddcUER6gmk/m4RifYyxh6J+cUVTIbIhXBWwK6zEeIH8cSOwTIT2joupRqAqUFSU68uZ+vjC6nLIVF9/kRs7Ok=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=lBe3ZX3V; arc=none smtp.client-ip=217.140.110.172
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
+Received: from CWXP265CU010.outbound.protection.outlook.com (mail-ukwestazon11022140.outbound.protection.outlook.com [52.101.101.140])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6EE6C3CE0B8;
+	Wed, 27 May 2026 13:13:06 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.101.140
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1779887589; cv=fail; b=aadO1VePCs85MF/bkv9l4F6oy9kdwn+V2gF9pTR48HfRVd9Dhvcoytydqei8/7KMnUTp5V7ML6guAUNj6AzzVq25N5q7VciKYSAxQu1sXKosl21dOZAN3fKh/wqtoHZYIFAyWbaPJH3NyuUBXJwzHrC0Km6FzE5YSKFCiH1x/54=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1779887589; c=relaxed/simple;
+	bh=9DORoUHH8c0epgG21o5CKbqQWeId+8D+fhpl7RFAeI0=;
+	h=Content-Type:Date:Message-Id:Cc:Subject:From:To:References:
+	 In-Reply-To:MIME-Version; b=EAnugZ2pLU7o7Z0dyks5DKbfOo4N58KMoIWSGss9TEeSoFRtek9TnR4FnLWZaVAtUN4amjdS9pWc57LIllx1WJGH/Cz3TGNqIkxWz1/L5ziDeKa9If/6ymylwqeMvdk5XIuasAEi0F6MDoJg8a13HISFm2uTKg7zFkUZyM1E4R8=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=garyguo.net; spf=pass smtp.mailfrom=garyguo.net; dkim=pass (1024-bit key) header.d=garyguo.net header.i=@garyguo.net header.b=EYyRSoBb; arc=fail smtp.client-ip=52.101.101.140
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=garyguo.net
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=garyguo.net
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="lBe3ZX3V"
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 962572880;
-	Wed, 27 May 2026 05:24:20 -0700 (PDT)
-Received: from [10.164.19.7] (unknown [10.164.19.7])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id A70A43F905;
-	Wed, 27 May 2026 05:24:08 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1779884665; bh=UotxsZ+zZr/XhydpYBQL8pv0WmoT4CF/hvzZHlKS1wI=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=lBe3ZX3VofaulxbGxDNMYHhGSvjPT3XdKH4EXZZetS4djxu0JFRfKn/pdasiSVkNW
-	 2Nu5MPl/CJbYh+REJ+3ixRKC6FiHTlZ3FU5o3LG8N2CLRJTSRzn8/IxQ9AL2d/C7tr
-	 YIEo8Qurl5gJrZCjR8uegmh+i9jLeQziPgLEAD3w=
-Message-ID: <38ee9d6e-4331-48b0-82e4-2e6ae0aee705@arm.com>
-Date: Wed, 27 May 2026 17:54:05 +0530
+	dkim=pass (1024-bit key) header.d=garyguo.net header.i=@garyguo.net header.b="EYyRSoBb"
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=hNx/oSAqY63AZ2OswhSw/vOBkKmhUO7S+rMQHKOK8upRARpiiKd441qNSJ08jWMPXFp4J42tvAjrv6fjcLaus/DoHfCh/SQ4z49o/DikSL/MwoQVpgZjUdlG6xypkiYXxQiIgCaOBFnxcZ6+TQ2btkZCLrFmBhi4RivEpPXUKobddm1N1qhqnaD6jRApLYppCLeAC0cTjZ6iI1BhfJZVzZ0wY2TdVRZeVcKHywI3k7GSZISHl6F45kJUuU4/pZPypWHWQNZ+oO2rXMJKVH2fuDUMWZdCYjBYheiIYEyzl6roqRBAC7FsR7XTC/ciRHFO5P3M9SXiW1F21N1nKUHMlw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=4Yz2efpOsaj5hYOAkNbgN8/utAy3HXSEXQNxm+Evn9I=;
+ b=ko/eORuX7AW0IBOgksZ31UDMU1Cf0iaVVerOVTPX7rL7iPWjXpG55UNsdhAXATeN2BNIMXxZSW8jP5bm1/2WQJdLti4mziHpT/BRAkj5J5Lr3xPvsgIucc5v7/9aDAzYPrEIQH4x4jyhoS5IV/hEwtd6xzfssVnCcjSgvDzKE1lKdyjoTYuT+IjX5XkqyT8t4DvyViHmMgWeMrzTyf4OR4WQRvmhr1J3v1L5U4CnBr4xD5BD2/+/Aw+EdtI4A+R0oKnJYJa5rDcNE+ULf+VgYUFJtAqkjSaoewMkCxK4ebh0p5ghJTaEcpHKhR2cCFp1XW7W7mBHjUAkprJ6SpXGTQ==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=garyguo.net; dmarc=pass action=none header.from=garyguo.net;
+ dkim=pass header.d=garyguo.net; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=garyguo.net;
+ s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=4Yz2efpOsaj5hYOAkNbgN8/utAy3HXSEXQNxm+Evn9I=;
+ b=EYyRSoBbZsVO12E+X4WG6Q1zEoI1eblQyt7JJr95OBwrJER1FKlANkRMSJ6sRgy679erHeQvwkKl4xo6bytDtBW8MXRgfHg1bfW03cAtM/u9HAXVaEj0ji02jOZoKXejrGyqa1RbxsvhbKBrdzn4QQNvMODDDJT66J979V2re2Y=
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=garyguo.net;
+Received: from LOVP265MB8871.GBRP265.PROD.OUTLOOK.COM (2603:10a6:600:488::16)
+ by CW1P265MB8687.GBRP265.PROD.OUTLOOK.COM (2603:10a6:400:27e::21) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.71.12; Wed, 27 May
+ 2026 13:13:02 +0000
+Received: from LOVP265MB8871.GBRP265.PROD.OUTLOOK.COM
+ ([fe80::1c3:ceba:21b4:9986]) by LOVP265MB8871.GBRP265.PROD.OUTLOOK.COM
+ ([fe80::1c3:ceba:21b4:9986%4]) with mapi id 15.21.0071.011; Wed, 27 May 2026
+ 13:13:02 +0000
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=UTF-8
+Date: Wed, 27 May 2026 14:13:01 +0100
+Message-Id: <DITHHN0ECZIE.LHY3OLB53XAR@garyguo.net>
+Cc: <driver-core@lists.linux.dev>, <linux-kernel@vger.kernel.org>,
+ <nova-gpu@lists.linux.dev>, <dri-devel@lists.freedesktop.org>,
+ <linux-pm@vger.kernel.org>, <linux-pwm@vger.kernel.org>,
+ <linux-pci@vger.kernel.org>, <rust-for-linux@vger.kernel.org>, "Eliot
+ Courtney" <ecourtney@nvidia.com>
+Subject: Re: [PATCH v5 11/24] rust: device: make Core and CoreInternal
+ lifetime-parameterized
+From: "Gary Guo" <gary@garyguo.net>
+To: "Danilo Krummrich" <dakr@kernel.org>, <gregkh@linuxfoundation.org>,
+ <rafael@kernel.org>, <acourbot@nvidia.com>, <aliceryhl@google.com>,
+ <david.m.ertman@intel.com>, <ira.weiny@intel.com>, <leon@kernel.org>,
+ <viresh.kumar@linaro.org>, <m.wilczynski@samsung.com>,
+ <ukleinek@kernel.org>, <bhelgaas@google.com>, <kwilczynski@kernel.org>,
+ <abdiel.janulgue@gmail.com>, <robin.murphy@arm.com>,
+ <markus.probst@posteo.de>, <ojeda@kernel.org>, <boqun@kernel.org>,
+ <gary@garyguo.net>, <bjorn3_gh@protonmail.com>, <lossin@kernel.org>,
+ <a.hindborg@kernel.org>, <tmgross@umich.edu>, <igor.korotin@linux.dev>,
+ <daniel.almeida@collabora.com>, <pcolberg@redhat.com>
+X-Mailer: aerc 0.21.0
+References: <20260525202921.124698-1-dakr@kernel.org>
+ <20260525202921.124698-12-dakr@kernel.org>
+In-Reply-To: <20260525202921.124698-12-dakr@kernel.org>
+X-ClientProxiedBy: LO4P302CA0024.GBRP302.PROD.OUTLOOK.COM
+ (2603:10a6:600:2c1::10) To LOVP265MB8871.GBRP265.PROD.OUTLOOK.COM
+ (2603:10a6:600:488::16)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH mm-unstable RFC v4 4/7] mm/huge_memory: refactor
- copy_huge_pmd()
-To: Yin Tirui <yintirui@huawei.com>, Andrew Morton
- <akpm@linux-foundation.org>, Matthew Wilcox <willy@infradead.org>,
- David Hildenbrand <david@kernel.org>, Lorenzo Stoakes <ljs@kernel.org>,
- Juergen Gross <jgross@suse.com>, Jonathan Cameron <jic23@kernel.org>,
- Will Deacon <will@kernel.org>
-Cc: Catalin Marinas <catalin.marinas@arm.com>, Peter Xu <peterx@redhat.com>,
- Luiz Capitulino <luizcap@redhat.com>, Thomas Gleixner <tglx@kernel.org>,
- Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>,
- Dave Hansen <dave.hansen@linux.intel.com>, "H . Peter Anvin"
- <hpa@zytor.com>, Andy Lutomirski <luto@kernel.org>,
- Peter Zijlstra <peterz@infradead.org>,
- Madhavan Srinivasan <maddy@linux.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
- Christophe Leroy <chleroy@kernel.org>, "Liam R . Howlett"
- <liam@infradead.org>, Zi Yan <ziy@nvidia.com>,
- Baolin Wang <baolin.wang@linux.alibaba.com>, Nico Pache <npache@redhat.com>,
- Ryan Roberts <ryan.roberts@arm.com>, Barry Song <baohua@kernel.org>,
- Lance Yang <lance.yang@linux.dev>, Vlastimil Babka <vbabka@kernel.org>,
- Mike Rapoport <rppt@kernel.org>, Suren Baghdasaryan <surenb@google.com>,
- Michal Hocko <mhocko@suse.com>, Anshuman Khandual
- <anshuman.khandual@arm.com>, Rohan McLure <rmclure@linux.ibm.com>,
- Kevin Brodsky <kevin.brodsky@arm.com>, Alistair Popple <apopple@nvidia.com>,
- Andrew Donnellan <andrew+kernel@donnellan.id.au>,
- Pasha Tatashin <pasha.tatashin@soleen.com>, Baoquan He <bhe@redhat.com>,
- Thomas Huth <thuth@redhat.com>, Coiby Xu <coxu@redhat.com>,
- Dan Williams <djbw@kernel.org>, Yu-cheng Yu <yu-cheng.yu@intel.com>,
- Lu Baolu <baolu.lu@linux.intel.com>,
- Conor Dooley <conor.dooley@microchip.com>, Rik van Riel <riel@surriel.com>,
- wangkefeng.wang@huawei.com, chenjun102@huawei.com, linux-mm@kvack.org,
- linux-kernel@vger.kernel.org, x86@kernel.org,
- linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
- linux-pm@vger.kernel.org
-References: <20260526145003.88445-1-yintirui@huawei.com>
- <20260526145003.88445-5-yintirui@huawei.com>
-Content-Language: en-US
-From: Dev Jain <dev.jain@arm.com>
-In-Reply-To: <20260526145003.88445-5-yintirui@huawei.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: LOVP265MB8871:EE_|CW1P265MB8687:EE_
+X-MS-Office365-Filtering-Correlation-Id: 657549bc-3d59-4847-c5c9-08debbf1aea3
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|376014|7416014|366016|10070799003|1800799024|22082099003|18002099003|921020|4143699003|56012099006;
+X-Microsoft-Antispam-Message-Info:
+	HS/iQkr9C+5UvxBcpSzCVITn2u8Uqsppyk81wXTDq+FQt6OdQ8J8nWsi0LDDRsE07tKB+Mm2VWd6oY9oA8ZDvJEjBJZGce0WaAR17Ojohs35zXsq1exRljImq8H78bM2m+i4w/qKKRC03pVOZvpSJ50YM0Tt+MvqxcMGTko4GVblgiWe/i9YQJ2tsao78shkSDiFimsF39JPoEyqeDR5eZbWzbGpYQzC1bivc9RGu0raFoqswH4UyaUVPSe3qpsRlh9rwzmqlfDCMoWXV2ODmh6VOOEsAockVl2EuQX2ZhNzVJx0XFYCo/CvbsZYvo7QORbJ9Eyebkx3rS+em5dkGTSH/UxF63HpMJORX83Xjs6qyfeFGj0tmMEveQnaCDM8dYSEgqrSzLpv/D0TuN2E/aeog15V7k2notTHa0/3C6N0Th6aDwe4YjOD9OzpzuIHJdUuqAB8/0/8BsOV6z8yo8CaHag7MC5vhOpVj6aUb2/Txg4cxvgtamprJ+JZgklCPNPb0y/S67r1S2YbPyWAupIv0ZbgXWxy96N4OQ8uDq5nn/p80Y3kda1MlWFzhMwSu5qQL6bt5UHIh8POPTfTpZ///yfvZVsIZZTRlSDwkg102nTonDtCqeezuJvDOsZpvz3QKL6NTJk3dcMLBvDp9LAschR3PhDejNBjAWNTox+il4Qeo5GmzG7csKpv0qZQ9L8V9RZjK5JbaYPmW4AKaqUKpBIz8zlZIEroznbxGag=
+X-Forefront-Antispam-Report:
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:LOVP265MB8871.GBRP265.PROD.OUTLOOK.COM;PTR:;CAT:NONE;SFS:(13230040)(376014)(7416014)(366016)(10070799003)(1800799024)(22082099003)(18002099003)(921020)(4143699003)(56012099006);DIR:OUT;SFP:1102;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	=?utf-8?B?OWxKZ3JBb3RrY1FQaGFxTlFmNitQejhpNVdaNDN3VGU1M3ZWKzBNdWUxMHBk?=
+ =?utf-8?B?Q3pObTBmU2Qya29IMFlSVzBrNnM5bkZmMk5NUSt3MGhneWkrM3pJZkl3S0FF?=
+ =?utf-8?B?VUU0SFJuQUhKbWZOWWVaaDd2a051dE9McjE5QUdSMHI0V1ZsK3lUOUp6SURQ?=
+ =?utf-8?B?RmY0QThPSDl0NitEWG90REQ3L1lESGw3UnA3aUxnMU52ZGh2VHlnL3dtTnRK?=
+ =?utf-8?B?QitIc3Q2VnlnR25wL1Fsc3JtUjN0dy9wWU9RTy9LUUlpSkFpQ05LQ2t2NjdO?=
+ =?utf-8?B?a28xQU4ydkNFNW1Na3dqLzFiZjVHQlRkRDJ2OEIyZS9GODB3VmFEVG44N245?=
+ =?utf-8?B?SjhYOEMvdTc0S2tSQzdtS3BDQWlhQVFMQytma0tlcXMwV1lXVU5HaERWenY5?=
+ =?utf-8?B?T2hEUzhMYk1zN0RWRWhnTTZRY0I2bkQrZHN3SVp5K1hZczRsQXV2TVlRNE5n?=
+ =?utf-8?B?WWxKd1grY3JHd1NIQTZkYUFPajJKV0IwWHBRQk1uNDVxZGZ6Q2J5L1pWQ1po?=
+ =?utf-8?B?a2llaDJpWkxBQnJKV3Qvd0tRQ2ZYSU12SFdlUjNRYU5jZmlFbFlrWVVxNEVj?=
+ =?utf-8?B?MklCQWVoYk8zZnY3ODR1ZHBxVHRoU2tlUFZrc0dQenpBWFN1Mk92cXRBTmVn?=
+ =?utf-8?B?R1FKaWxDRmx4WmhLWHpIVnoyOUVFOWorWU5qT2RtTHBUVHVzblpaYjRCWWlO?=
+ =?utf-8?B?bnpQeU9ydkg1Tm93cHZEaDJlNzI0ZGsvMWtmSjBpZWJjUi9JUy84WkFsQ042?=
+ =?utf-8?B?VWZmQXNJcjE1WkdCUmNoRzlPRmhQVTh1eW9YZ3hxNE5RMVBTNnh0SUZNT29r?=
+ =?utf-8?B?ZVpSaThBbDJFQnpNeEdwQ0pCTVkvN1M5b04zaURKcDY0YTJjYkxzSTR5TStU?=
+ =?utf-8?B?NkVObm5tOWI2eDdwRDlPeTJXUndzdkgrcWxSUVNkS1Mrc28yeVBkQTg2MWRq?=
+ =?utf-8?B?cnVlYTNZVEFiUTBaejFPdVNEdEVwM1RsZUlaeWhCZWRBSEtzeVdzTG0yTXds?=
+ =?utf-8?B?MEZjdlNWL2kvdFZGdkt3aFgxVW1TUlN4WjZaeXo2K2dvZDlrWmV5WHRONm9M?=
+ =?utf-8?B?cjBaMGVBQ0FXSUNkOGlUMllUSHU1b1hpNVYxVDhMbS91clZoMmtHUGFucHdq?=
+ =?utf-8?B?OUJOUy9XL1VRQWludXFOUWwzVkhyOFVLL2lVMFZBTzZIWGZyUTMyNUxDdXo5?=
+ =?utf-8?B?dU04d0JSOXRMV2p5MERHeEIvNDg5SFpYakxZQzNrUnpvdzFxNjJTankyclZU?=
+ =?utf-8?B?dS9XRlh5U2FwUUljVnhFVnduelYxd0E0bXN2Rk1wUVdqSlRjK045ZTZIRCt1?=
+ =?utf-8?B?MUlBZExqMXNNTVpBOWxFK1daSnBGYXplR1oyRE1rSjI3LzVpQ1ltdUxGWWlB?=
+ =?utf-8?B?SmMvYkZwdTJhZHBoamE3T0tCOFovSHBya0QvbkRDSTFVSitVZzEyNFJVUGVw?=
+ =?utf-8?B?ek5qUXVRU0l5RXZoeHk2NHNieGY2NXhKZkdxc0RJUzVOSjczUzBoZWFSVFlI?=
+ =?utf-8?B?elBGTEZBWWF0UUxIOUIvQW16RC9icTBTL3gweFh1ckYvSEVoRFNvRUl0dUsz?=
+ =?utf-8?B?ZVNjTVVpeWswb3NRaE5lSGxnMStqWllGTGF4YVhxQktlUkJ1eWs4RVlHL21O?=
+ =?utf-8?B?L2o5VUNCNzlPOXBUL3FSN2tibjhvZjlUTzhGRThSNlcxNDRUZ3NONkhmQjdQ?=
+ =?utf-8?B?cEowd1pSRUZRM0ppbllTempoa2p4bzlTY2pqNitjdDlPRmhGTHAxTys3M04x?=
+ =?utf-8?B?L0FPUHQ5TURFckkwUzlURkRpdTRESlpkL2Mvc2tIK2Nlbk0yWEJiQnNBNW5v?=
+ =?utf-8?B?ZlJBcGRzMkhTSTNiaXNRejVBSTFnUUJXUnNEUGNwZThhU1ZkNzFDdXhmMkZw?=
+ =?utf-8?B?MW9mMHFYSXpHZ0ZBTGVpR201bWloQU55V1p5cFVzZXcxSW1ZeERKWitMOXpp?=
+ =?utf-8?B?K1IxSHBZcVkrWDZWcTI1U0c0emFiNThJbHQ2a0k3YzlDcEZST3labmVXSy82?=
+ =?utf-8?B?ZlZMZXdQZG1keFNsSTZjYitYa0srekNFNkM1Y2duMnVJQTE0Zm0xZkk1MzFW?=
+ =?utf-8?B?bGgvb2hPRUZwd2RMbFRYOFJQK1J2TG0yVGorWkFMNlF2TnZyTVBJbFR4a1F0?=
+ =?utf-8?B?NXdaK2l4bXFrV3BzNTRxWmE0T0dDeE9Wc2J4VituMU5GZ290bmhxSWE5bmFD?=
+ =?utf-8?B?NlV3Sk5uZnU4c1cvNkpnRjF3MEdJd1VlZXd6eXA4NmE4eURWRUVOSzkrMGRN?=
+ =?utf-8?B?WE9MVW1lUFEwS1VvZjhmNFg2QlNtUytoLzkrQm5WZHVMVWxTVzRlVlo3R1VQ?=
+ =?utf-8?B?MzJCdHhCaGNPb2lYQlpGZ2tzYWtEUUU4NzdHZkZnRkdzWUJjakF3UT09?=
+X-OriginatorOrg: garyguo.net
+X-MS-Exchange-CrossTenant-Network-Message-Id: 657549bc-3d59-4847-c5c9-08debbf1aea3
+X-MS-Exchange-CrossTenant-AuthSource: LOVP265MB8871.GBRP265.PROD.OUTLOOK.COM
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 27 May 2026 13:13:02.6079
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: bbc898ad-b10f-4e10-8552-d9377b823d45
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: 63SvK01cqMUCy3A1r7FjT9J8Jod/31fGviMLNOiPRkFhzNAT1wHGK35fWHjdLGmICrxR37YaMubXZr81BOTVJw==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: CW1P265MB8687
 
+On Mon May 25, 2026 at 9:20 PM BST, Danilo Krummrich wrote:
+> Device<Core> references in probe callbacks are scoped to the callback,
+> not the full binding duration. Add a lifetime parameter to Core and
+> CoreInternal to accurately represent this in the type system.
+>=20
+> Suggested-by: Gary Guo <gary@garyguo.net>
+> Reviewed-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+> Reviewed-by: Alexandre Courbot <acourbot@nvidia.com>
+> Reviewed-by: Eliot Courtney <ecourtney@nvidia.com>
+> Signed-off-by: Danilo Krummrich <dakr@kernel.org>
 
+Reviewed-by: Gary Guo <gary@garyguo.net>
 
-On 26/05/26 8:20 pm, Yin Tirui wrote:
-> Classify the source PMD via pmd_present() and vm_normal_folio_pmd(),
-> matching the way the PTE path uses pte_present() and vm_normal_page().
-> This moves the present-PMD decision from VMA identity checks to the
-> actual PMD/folio state.
-> 
-> Drop the defensive "if (!pmd_trans_huge(pmd)) goto out_unlock" branch:
-> with mmap_write_lock held during fork, it should not occur.
-
-Split this from this patch? This is a functional change so will be better
-to review it separately.
-
-> 
-> Extract the present-PMD side of copy_huge_pmd() into
-> copy_present_huge_pmd(). The helper owns the child pgtable passed by the
-> caller: it either deposits the pgtable when installing a copied PMD, or
-> frees it on paths that do not install one.
-> 
-> The child pgtable is now allocated once up front and freed on every skip
-> path. This makes file/shmem and PFNMAP/special skip paths take the PMD
-> locks and free the preallocated pgtable before returning. These are not
-> expected to be hot paths, and the PFNMAP case is reused by the follow-up
-> PMD PFNMAP copy support.
-> 
-> Signed-off-by: Yin Tirui <yintirui@huawei.com>
 > ---
-
-Since the series is still marked RFC, I think it would be better to send
-the refactor patches separately?
-
->  mm/huge_memory.c | 175 +++++++++++++++++++++++++----------------------
->  1 file changed, 95 insertions(+), 80 deletions(-)
-> 
-> diff --git a/mm/huge_memory.c b/mm/huge_memory.c
-> index 9832ee910d5e..3964258ff91d 100644
-> --- a/mm/huge_memory.c
-> +++ b/mm/huge_memory.c
-> @@ -1879,6 +1879,82 @@ bool touch_pmd(struct vm_area_struct *vma, unsigned long addr,
->  	return false;
->  }
->  
-> +static int copy_present_huge_pmd(
-> +		struct mm_struct *dst_mm, struct mm_struct *src_mm,
-> +		pmd_t *dst_pmd, pmd_t *src_pmd, unsigned long addr,
-> +		struct vm_area_struct *dst_vma, struct vm_area_struct *src_vma,
-> +		pmd_t pmd, pgtable_t pgtable, bool *need_split)
-> +{
-> +	struct folio *src_folio;
-> +	bool wrprotect = true;
-> +
-> +	src_folio = vm_normal_folio_pmd(src_vma, addr, pmd);
-> +	if (!src_folio) {
-> +		/*
-> +		 * When page table lock is held, the huge zero pmd should not be
-> +		 * under splitting since we don't split the page itself, only pmd to
-> +		 * a page table.
-> +		 */
-> +		if (is_huge_zero_pmd(pmd)) {
-> +			/*
-> +			 * mm_get_huge_zero_folio() will never allocate a new
-> +			 * folio here, since we already have a zero page to
-> +			 * copy. It just takes a reference.
-> +			 */
-> +			mm_get_huge_zero_folio(dst_mm);
-> +			goto set_pmd;
-> +		}
-> +
-> +		/*
-> +		 * Making sure it's not a CoW VMA with writable
-> +		 * mapping, otherwise it means either the anon page wrongly
-> +		 * applied special bit, or we made the PRIVATE mapping be
-> +		 * able to wrongly write to the backend MMIO.
-> +		 */
-> +		VM_WARN_ON_ONCE(is_cow_mapping(src_vma->vm_flags) && pmd_write(pmd));
-> +		pte_free(dst_mm, pgtable);
-> +		pgtable = NULL;
-> +		wrprotect = false;
-> +		goto set_pmd;
-> +	}
-> +
-> +	/* File THPs are copied lazily by refaulting. */
-> +	if (!folio_test_anon(src_folio)) {
-> +		pte_free(dst_mm, pgtable);
-> +		return 0;
-> +	}
-
-
-You removed !vma_is_anonymous to condense it into !folio_test_anon.
-For private-file mappings that is not true, but okay since PMD mapping
-is not supported.
-
-> +
-> +	folio_get(src_folio);
-> +	if (unlikely(folio_try_dup_anon_rmap_pmd(src_folio,
-> +							&src_folio->page,
-> +							dst_vma, src_vma))) {
-> +		/* Page maybe pinned: split and retry the fault on PTEs. */
-> +		folio_put(src_folio);
-> +		pte_free(dst_mm, pgtable);
-> +		*need_split = true;
-> +		return -EAGAIN;
-> +	}
-> +	add_mm_counter(dst_mm, MM_ANONPAGES, HPAGE_PMD_NR);
-> +
-> +set_pmd:
-> +	if (pgtable) {
-> +		mm_inc_nr_ptes(dst_mm);
-> +		pgtable_trans_huge_deposit(dst_mm, dst_pmd, pgtable);
-> +	}
-> +
-> +	if (wrprotect) {
-> +		pmdp_set_wrprotect(src_mm, addr, src_pmd);
-> +		if (!userfaultfd_wp(dst_vma))
-> +			pmd = pmd_clear_uffd_wp(pmd);
-> +		pmd = pmd_wrprotect(pmd);
-> +	}
-> +
-> +	pmd = pmd_mkold(pmd);
-> +	set_pmd_at(dst_mm, addr, dst_pmd, pmd);
-> +
-> +	return 0;
-> +}
-> +
->  static void copy_huge_non_present_pmd(
->  		struct mm_struct *dst_mm, struct mm_struct *src_mm,
->  		pmd_t *dst_pmd, pmd_t *src_pmd, unsigned long addr,
-> @@ -1940,104 +2016,43 @@ int copy_huge_pmd(struct mm_struct *dst_mm, struct mm_struct *src_mm,
->  		  struct vm_area_struct *dst_vma, struct vm_area_struct *src_vma)
->  {
->  	spinlock_t *dst_ptl, *src_ptl;
-> -	struct page *src_page;
-> -	struct folio *src_folio;
-> -	pmd_t pmd;
->  	pgtable_t pgtable = NULL;
-> -	int ret = -ENOMEM;
-> -
-> -	pmd = pmdp_get_lockless(src_pmd);
-> -	if (unlikely(pmd_present(pmd) && pmd_special(pmd) &&
-> -		     !is_huge_zero_pmd(pmd))) {
-> -		dst_ptl = pmd_lock(dst_mm, dst_pmd);
-> -		src_ptl = pmd_lockptr(src_mm, src_pmd);
-> -		spin_lock_nested(src_ptl, SINGLE_DEPTH_NESTING);
-> -		/*
-> -		 * No need to recheck the pmd, it can't change with write
-> -		 * mmap lock held here.
-> -		 *
-> -		 * Meanwhile, making sure it's not a CoW VMA with writable
-> -		 * mapping, otherwise it means either the anon page wrongly
-> -		 * applied special bit, or we made the PRIVATE mapping be
-> -		 * able to wrongly write to the backend MMIO.
-> -		 */
-> -		VM_WARN_ON_ONCE(is_cow_mapping(src_vma->vm_flags) && pmd_write(pmd));
-> -		goto set_pmd;
-> -	}
-> -
-> -	/* Skip if can be re-fill on fault */
-> -	if (!vma_is_anonymous(dst_vma))
-> -		return 0;
-> +	bool need_split = false;
-> +	int ret = 0;
-> +	pmd_t pmd;
->  
->  	pgtable = pte_alloc_one(dst_mm);
->  	if (unlikely(!pgtable))
-> -		goto out;
-> +		return -ENOMEM;
->  
->  	dst_ptl = pmd_lock(dst_mm, dst_pmd);
->  	src_ptl = pmd_lockptr(src_mm, src_pmd);
->  	spin_lock_nested(src_ptl, SINGLE_DEPTH_NESTING);
->  
-> -	ret = -EAGAIN;
->  	pmd = *src_pmd;
->  
-> -	if (unlikely(thp_migration_supported() &&
-> -		     pmd_is_valid_softleaf(pmd))) {
-> -		copy_huge_non_present_pmd(dst_mm, src_mm, dst_pmd, src_pmd, addr,
-> +	if (likely(pmd_present(pmd))) {
-> +		ret = copy_present_huge_pmd(dst_mm, src_mm, dst_pmd, src_pmd, addr,
-> +					  dst_vma, src_vma, pmd, pgtable, &need_split);
-> +	} else if (unlikely(thp_migration_supported() && pmd_is_valid_softleaf(pmd))) {
-> +		if (unlikely(!vma_is_anonymous(dst_vma)))
-> +			pte_free(dst_mm, pgtable);
-> +		else
-> +			copy_huge_non_present_pmd(dst_mm, src_mm, dst_pmd, src_pmd, addr,
->  					  dst_vma, src_vma, pmd, pgtable);
-> -		ret = 0;
-> -		goto out_unlock;
-> -	}
-> -
-> -	if (unlikely(!pmd_trans_huge(pmd))) {
-> +	} else {
-> +		VM_WARN_ONCE(1, "unexpected non-present PMD %llx\n",
-> +				(unsigned long long)pmd_val(pmd));
->  		pte_free(dst_mm, pgtable);
-> -		goto out_unlock;
-> -	}
-> -	/*
-> -	 * When page table lock is held, the huge zero pmd should not be
-> -	 * under splitting since we don't split the page itself, only pmd to
-> -	 * a page table.
-> -	 */
-> -	if (is_huge_zero_pmd(pmd)) {
-> -		/*
-> -		 * mm_get_huge_zero_folio() will never allocate a new
-> -		 * folio here, since we already have a zero page to
-> -		 * copy. It just takes a reference.
-> -		 */
-> -		mm_get_huge_zero_folio(dst_mm);
-> -		goto out_zero_page;
-> +		ret = -EAGAIN;
->  	}
->  
-> -	src_page = pmd_page(pmd);
-> -	VM_BUG_ON_PAGE(!PageHead(src_page), src_page);
-> -	src_folio = page_folio(src_page);
-> +	spin_unlock(src_ptl);
-> +	spin_unlock(dst_ptl);
->  
-> -	folio_get(src_folio);
-> -	if (unlikely(folio_try_dup_anon_rmap_pmd(src_folio, src_page, dst_vma, src_vma))) {
-> -		/* Page maybe pinned: split and retry the fault on PTEs. */
-> -		folio_put(src_folio);
-> -		pte_free(dst_mm, pgtable);
-> -		spin_unlock(src_ptl);
-> -		spin_unlock(dst_ptl);
-> +	if (unlikely(need_split))
->  		__split_huge_pmd(src_vma, src_pmd, addr, false);
-> -		return -EAGAIN;
-> -	}
-> -	add_mm_counter(dst_mm, MM_ANONPAGES, HPAGE_PMD_NR);
-> -out_zero_page:
-> -	mm_inc_nr_ptes(dst_mm);
-> -	pgtable_trans_huge_deposit(dst_mm, dst_pmd, pgtable);
-> -	pmdp_set_wrprotect(src_mm, addr, src_pmd);
-> -	if (!userfaultfd_wp(dst_vma))
-> -		pmd = pmd_clear_uffd_wp(pmd);
-> -	pmd = pmd_wrprotect(pmd);
-> -set_pmd:
-> -	pmd = pmd_mkold(pmd);
-> -	set_pmd_at(dst_mm, addr, dst_pmd, pmd);
->  
-> -	ret = 0;
-> -out_unlock:
-> -	spin_unlock(src_ptl);
-> -	spin_unlock(dst_ptl);
-> -out:
->  	return ret;
->  }
->  
+>  drivers/cpufreq/rcpufreq_dt.rs        |  2 +-
+>  drivers/gpu/drm/nova/driver.rs        |  5 ++-
+>  drivers/gpu/drm/tyr/driver.rs         |  2 +-
+>  drivers/gpu/nova-core/driver.rs       |  4 +--
+>  drivers/gpu/nova-core/gpu.rs          |  2 +-
+>  drivers/pwm/pwm_th1520.rs             |  2 +-
+>  rust/kernel/auxiliary.rs              | 12 ++++---
+>  rust/kernel/cpufreq.rs                |  2 +-
+>  rust/kernel/device.rs                 | 49 +++++++++++++++++++++------
+>  rust/kernel/devres.rs                 |  2 +-
+>  rust/kernel/dma.rs                    |  2 +-
+>  rust/kernel/driver.rs                 |  6 ++--
+>  rust/kernel/i2c.rs                    | 16 ++++-----
+>  rust/kernel/io/mem.rs                 |  4 +--
+>  rust/kernel/pci.rs                    | 20 ++++++-----
+>  rust/kernel/pci/id.rs                 |  2 +-
+>  rust/kernel/platform.rs               | 12 +++----
+>  rust/kernel/usb.rs                    | 16 ++++-----
+>  samples/rust/rust_debugfs.rs          |  4 +--
+>  samples/rust/rust_dma.rs              |  2 +-
+>  samples/rust/rust_driver_auxiliary.rs |  7 ++--
+>  samples/rust/rust_driver_i2c.rs       |  6 ++--
+>  samples/rust/rust_driver_pci.rs       |  4 +--
+>  samples/rust/rust_driver_platform.rs  |  2 +-
+>  samples/rust/rust_driver_usb.rs       |  8 ++---
+>  samples/rust/rust_i2c_client.rs       |  4 +--
+>  samples/rust/rust_soc.rs              |  2 +-
+>  27 files changed, 118 insertions(+), 81 deletions(-)
 
