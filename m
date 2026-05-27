@@ -1,448 +1,184 @@
-Received: from mail-dl1-f48.google.com (mail-dl1-f48.google.com [74.125.82.48])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from DM5PR21CU001.outbound.protection.outlook.com (mail-centralusazon11011006.outbound.protection.outlook.com [52.101.62.6])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 674E1379C3B
-	for <linux-pm@vger.kernel.org>; Wed, 27 May 2026 19:30:28 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.82.48
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1779910230; cv=none; b=abhUlZnLnOy90Tp+TnDG04c/mhJfhXgZYCQEtm0DK8HV8eevZQQS8nVxnm6frcV5JxEQ6I2QZ3SWYBH1V4htk0JilF6ntR3G6Nmx67DJyDnYuqALViXMC8z1c0nqcnG88W4WmBRkdcS+dWpGMsOZhIXkw+JViBno9HqlR0cmVbI=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1779910230; c=relaxed/simple;
-	bh=XnLXECd39en+z/aRQhZU/Pi3po/muwdDHatmweq+ty8=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=dU1x5vVt2fjQMaFHRZrMS6oPbEdR9FszC6GVT/laXnZpNd5EDsH0HeVYDrAf2iqR6OjH797nWNVtRIaEGx6F3sGxbUBJK5sO0dfj0U2DQ6RhZKuxMnJ8ckAfh1IPXZ7vdF/i/vMu0xtUZOIH2SSFdCfElBeEYCNBD4bZjFt/cOw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com; spf=pass smtp.mailfrom=google.com; dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b=rSAfWEyq; arc=none smtp.client-ip=74.125.82.48
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=google.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C46603B1013;
+	Wed, 27 May 2026 19:47:09 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.62.6
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1779911231; cv=fail; b=svslfocYW2ugSEBvxKXVW4ugA8VIfrJ67zTAj/AhJ0ooN67qnyXmoJZup/r+ECQ05oODMyU93d69QJ6UJIL95wpWG4kHas/YGP1nNc3qNEglvhQwlkEh7rcOraJohsChQEmbp4DnVYYXfW9e+RthuHNPhf+3eBoEJmVTc6kOkAU=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1779911231; c=relaxed/simple;
+	bh=9+LI+81okwi3RvxqHTp5yY6FYJcQHQr9cTfo/OsoiLM=;
+	h=From:To:CC:Subject:Date:Message-ID:MIME-Version:Content-Type; b=b/XxvoQP933b3+4S8AAljNDAn4p7yyIIud8D9JsRDDogaXl/L5mI8xuV3JaUBH+BNbeTkP/GJBPDYnNpw8FdGbShiy1dfdJ/rmOC5QXkA+6fwiPwhgwH6UNnNyiSy6l0WYmaVz1G6BT2qlMG1e8vPcPdWB25RqSI3i5lwfW9Sdc=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com; spf=fail smtp.mailfrom=nvidia.com; dkim=pass (2048-bit key) header.d=Nvidia.com header.i=@Nvidia.com header.b=Kr7CizqS; arc=fail smtp.client-ip=52.101.62.6
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com
+Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=nvidia.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b="rSAfWEyq"
-Received: by mail-dl1-f48.google.com with SMTP id a92af1059eb24-132830d8281so5405362c88.1
-        for <linux-pm@vger.kernel.org>; Wed, 27 May 2026 12:30:28 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20251104; t=1779910227; x=1780515027; darn=vger.kernel.org;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=PXtWEbDs3zgPkGw6xxXPOO82q1lDm2Cgn2gdWx+FiYo=;
-        b=rSAfWEyqTah8N+oP2wRwHrcfdXAb+1Mc57obnMITI7WjdaI/SGLDsWUHGI/ci24SFS
-         i/2XpGY/CLnQi8kdY86pyuto7AHujRCq1w02Vg0iAQxKiErbaS838IRql9X4q6FlEiDl
-         1heyDaSVSQS0MK36T+GX6T4Peg7EA7sNlxR9vzVFXFidsZiM8U2jxsp1A0WTIPqQGlOr
-         A5b67GVWFzUw9ygbO0ELwnwFZkfBW2AyQsYCZwgZtgZ8A1AdqxRw4q4dRRIwXjdA9Uv5
-         V9NSaKUuZg6/BBBSkKUTak/wR2wfUJ/6smYr5xFFXov4Gl0vytmKzC3zfFJ8chqlMuIG
-         HsFw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1779910227; x=1780515027;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=PXtWEbDs3zgPkGw6xxXPOO82q1lDm2Cgn2gdWx+FiYo=;
-        b=ZyIhkSvx8/MyOXuQraiOlWP8B0KRBjGnV4xxRPRlC96aBCxGHD5haKZHiFjwsvNl2v
-         G+U9wSJYmLEGUfD1ikZT2NLCaKoDEovzb2YftM9Reapgkqh9jaf5OxcjdQIFrPnmvWHA
-         UfakE3RqOHuM4b92VP8sup8B9qAKV/Q/7sktn0OWtEeAnMz6dIThpGgSSPssp2kmTdSE
-         QQRERs31WHmawFxukH+PQ4adISIbAiSBjJZVu2IF3WNpI9GSORDJbMzM33NJI+y+AXXP
-         N3tXE2VHxpX5Q8hPEwZ1o1MJ31vu5aV/gO6E8Vp2FojNzRz9jgGiSd62LbydVTiDs717
-         7abA==
-X-Gm-Message-State: AOJu0Yy4eGP73iX+6jFNO6FCcx0TytwB7dqoQoposhvPUTgLdNNmpRfk
-	tUujKBn0Hbox1EELbUrtSaV3KF955/KCdHmprfNkg2AaTpiz0UIqCkr9+zRYM2eBJw==
-X-Gm-Gg: Acq92OHLTKz9VmouRLAE/wZXBetoGxdBxbWz4ec4MWSDnp1kNhRBDMMePSN1w0tW0iq
-	Mvr5w/u1nVFvb/oq2XJR9qYOBS9GqnRzZHUfRvVofAkjz9FKZGPoanYtnyTNI90h9zuVc8cPfMj
-	n5C2wJFvE+t8uyjGwsBunkMpg72gTwoxq2zH6qgz5FBRMGYKayaOoNrHtSmByeCCGetIEs8er4C
-	6TTqcOAjpwcJRViZu5VpbgdFMLwkLZrRrEQkAefRfAwNN0LZrYCs0+2RcDAtKEjY+BCbYRRJiYE
-	mzGC0YUXh6QvqfsS59q/+5AJBdto95a2vLtUF36DQ3T8088ZaRSSwdR9k0U/qKB8brjMGg/FRVg
-	S4JKFofxPwpKA34utiDte11fl5lwF0Cq4DeFpCbq197gR9u2Jc+XGG2WolfL+XMdOJSmbpmIELE
-	OKlDUGD5pDU0sMbrdg9TbMqUHMhokzbAxjc9ONtMFKfd33bUQ5YYCG0WIzr7JOniHUxGJ+U2Wgl
-	stK8Q5/JB65mzYBINHKbReeXJYD6cWIYxxMXgT4bHLPdbYdwBobdoDGZ/iE0OZWdw==
-X-Received: by 2002:a05:7301:fa8b:b0:2ca:8099:ffc0 with SMTP id 5a478bee46e88-30448ffc59emr10801053eec.7.1779910225133;
-        Wed, 27 May 2026 12:30:25 -0700 (PDT)
-Received: from ?IPV6:2a00:79e0:2e7c:8:1f44:24e2:83c:2f06? ([2a00:79e0:2e7c:8:1f44:24e2:83c:2f06])
-        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-30481ad4cd3sm11102024eec.27.2026.05.27.12.30.23
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Wed, 27 May 2026 12:30:24 -0700 (PDT)
-Message-ID: <638948f5-99e7-4a64-8f55-d9a895dd8e81@google.com>
-Date: Wed, 27 May 2026 12:30:19 -0700
+	dkim=pass (2048-bit key) header.d=Nvidia.com header.i=@Nvidia.com header.b="Kr7CizqS"
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=Ks9/AtPRsMzhrnLlVDtJuLRRu/Bo/BRMQSC7XB3S2NdQUqUhqCfLT/dIwh5bOAfX1a/+FoHtAAMRz94/UdNv15LtOXMrjUKKXIEoOqhpykN8e61XUbv4z1XYLpEg7rAKvJusJX0Z2v6GWVMRlyrmT1v3CORg6ua54OAkamZzPmtwsbGVLv0ZZd/QmVj9Lc2ZTZLBEYR8Sqic8PYlaR95rNXe0Hv8J5P4mimknBG2ZjvkyeC0Yit5Iere9EDFzb4HU1KpXd5UsTyVaCXJ2Q/vnfVDxamhrbDxClTZWG7BCIegQFIRu/gRV3NEm0kHaGpnw+KZ109Am0jStAw3Kt3DrQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=GnoYMlGrEKLg8mFiRp42PD0qseHKZSUUpKXnZg2UZN4=;
+ b=gukLawMIZj0baKG2lisk31143ffYdlzwBlWoaxRclAaDiwUpm1SuMzmxioPkWyzgdNuJD1VvPs61XVlYtg40qYjdxKXaU6HY2RTtiiXYGt5C/ZIGkmmaH+RgZ3WgtQYiwBJ4h4q2jiuMGjfJn5B0FixntMvJ00Le0ARnh8FEg1LcTA7Y8MOnYQ7nzOzY5FP/nYa9oAQn1LyO3duAnSdULxraMIJ7RXSZ6Q2gA2bclZReuJW4KBv4iMaL2F0rgyPq9kayq/Ui0UTJ0P0BR/ydI7sH+MJ5CJWK1BgLs7bOhQBOq5W6qP9h6yBWqTgowwpqg0cBiQVBCoMItFDV0QTx4Q==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
+ 216.228.117.161) smtp.rcpttodomain=kernel.org smtp.mailfrom=nvidia.com;
+ dmarc=pass (p=reject sp=reject pct=100) action=none header.from=nvidia.com;
+ dkim=none (message not signed); arc=none (0)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
+ s=selector2;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=GnoYMlGrEKLg8mFiRp42PD0qseHKZSUUpKXnZg2UZN4=;
+ b=Kr7CizqSbjtfXuEtTW+9mLw0FTZb4swKU+nZF2iWgQBduIkRyYSvWUS8a4uSr1lvdsHQkB6MKa3WhXVEhu06MVblN9b2Qy9vEf8PKKX4mOXxsT/fb2IXvwqMo9TtdoqUcfj7M7XHvlM1BiXa2rUx2lLi3WArr1WjifpjoyH1Tm1TWcMtcZqTTciqUZbIm2G/ltrVOgvkghi1Wsrl1TgoVLSJP4/gz0j1/jg249pBXPx8tjY05Y7veLUP3pQuus8SjqH/dNaLAVIXMLgkxyMdSzIWGhHI1Dt/LgooIrWP0XEJu2F5jfU6bBhV7hz6vPvitN0gpRoAP1jXc7yWleP9/g==
+Received: from SJ0PR03CA0022.namprd03.prod.outlook.com (2603:10b6:a03:33a::27)
+ by PH8PR12MB7253.namprd12.prod.outlook.com (2603:10b6:510:226::16) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.71.12; Wed, 27 May
+ 2026 19:47:03 +0000
+Received: from CO1PEPF00012E63.namprd05.prod.outlook.com
+ (2603:10b6:a03:33a:cafe::17) by SJ0PR03CA0022.outlook.office365.com
+ (2603:10b6:a03:33a::27) with Microsoft SMTP Server (version=TLS1_3,
+ cipher=TLS_AES_256_GCM_SHA384) id 15.21.71.12 via Frontend Transport; Wed, 27
+ May 2026 19:47:03 +0000
+X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 216.228.117.161)
+ smtp.mailfrom=nvidia.com; dkim=none (message not signed)
+ header.d=none;dmarc=pass action=none header.from=nvidia.com;
+Received-SPF: Pass (protection.outlook.com: domain of nvidia.com designates
+ 216.228.117.161 as permitted sender) receiver=protection.outlook.com;
+ client-ip=216.228.117.161; helo=mail.nvidia.com; pr=C
+Received: from mail.nvidia.com (216.228.117.161) by
+ CO1PEPF00012E63.mail.protection.outlook.com (10.167.249.72) with Microsoft
+ SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.21.71.7 via Frontend Transport; Wed, 27 May 2026 19:47:03 +0000
+Received: from rnnvmail202.nvidia.com (10.129.68.7) by mail.nvidia.com
+ (10.129.200.67) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.20; Wed, 27 May
+ 2026 12:46:34 -0700
+Received: from rnnvmail201.nvidia.com (10.129.68.8) by rnnvmail202.nvidia.com
+ (10.129.68.7) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.20; Wed, 27 May
+ 2026 12:46:33 -0700
+Received: from sumitg-l4t.nvidia.com (10.127.8.14) by mail.nvidia.com
+ (10.129.68.8) with Microsoft SMTP Server id 15.2.2562.20 via Frontend
+ Transport; Wed, 27 May 2026 12:46:28 -0700
+From: Sumit Gupta <sumitg@nvidia.com>
+To: <rafael@kernel.org>, <viresh.kumar@linaro.org>, <lenb@kernel.org>,
+	<pierre.gondois@arm.com>, <zhenglifeng1@huawei.com>,
+	<zhanjie9@hisilicon.com>, <mario.limonciello@amd.com>,
+	<saket.dumbre@intel.com>, <linux-acpi@vger.kernel.org>,
+	<linux-kernel@vger.kernel.org>, <linux-pm@vger.kernel.org>,
+	<acpica-devel@lists.linux.dev>
+CC: <treding@nvidia.com>, <jonathanh@nvidia.com>, <vsethi@nvidia.com>,
+	<ksitaraman@nvidia.com>, <sanjayc@nvidia.com>, <mochs@nvidia.com>,
+	<bbasu@nvidia.com>, <sumitg@nvidia.com>
+Subject: [PATCH v4 0/2] ACPI: CPPC: Add CPPC v4 support (ACPI 6.6)
+Date: Thu, 28 May 2026 01:16:24 +0530
+Message-ID: <20260527194626.185286-1-sumitg@nvidia.com>
+X-Mailer: git-send-email 2.34.1
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 2/2] usb: typec: tcpm: Add support for Battery Status
- response message
-To: Hans de Goede <hansg@kernel.org>, Sebastian Reichel <sre@kernel.org>,
- Badhri Jagan Sridharan <badhri@google.com>,
- Heikki Krogerus <heikki.krogerus@linux.intel.com>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Krzysztof Kozlowski <krzk@kernel.org>,
- Marek Szyprowski <m.szyprowski@samsung.com>,
- Sebastian Krzyszkowiak <sebastian.krzyszkowiak@puri.sm>,
- Purism Kernel Team <kernel@puri.sm>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
- linux-usb@vger.kernel.org, =?UTF-8?Q?Andr=C3=A9_Draszik?=
- <andre.draszik@linaro.org>, Tudor Ambarus <tudor.ambarus@linaro.org>,
- Peter Griffin <peter.griffin@linaro.org>, RD Babiera <rdbabiera@google.com>,
- Kyle Tso <kyletso@google.com>
-References: <20260527-batt-status-v2-0-4282985165f3@google.com>
- <20260527-batt-status-v2-2-4282985165f3@google.com>
- <4e4a63a4-9d07-4b77-a8dc-ba19c9a803f7@kernel.org>
-Content-Language: en-US
-From: Amit Sunil Dhamne <amitsd@google.com>
-In-Reply-To: <4e4a63a4-9d07-4b77-a8dc-ba19c9a803f7@kernel.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+X-NVConfidentiality: public
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-NV-OnPremToCloud: ExternallySecured
+X-EOPAttributedMessage: 0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: CO1PEPF00012E63:EE_|PH8PR12MB7253:EE_
+X-MS-Office365-Filtering-Correlation-Id: dda17301-9188-4e7b-7299-08debc28b9af
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|36860700016|1800799024|376014|7416014|82310400026|13003099007|921020|11063799006|18002099003|56012099006;
+X-Microsoft-Antispam-Message-Info:
+	t1zXQ3E2VenhNO7i334lgwYun/8UXffsTx9N8d3hHAno6rnDSneF0tprkO12hycfWOASfkQ0h6YSTKiEfaaeg/EeQY2NmbPJsiSPftf06S+SY7mg1ePUEj2NP93eAWiRK65/oloOd2rPEF+IhakpUSGIFE+kANgo2Q3NTiLrelPhaPkaVgKGAE728VVNB5lXlYGThJxmJzCf85R39lGFLi9NunN4UgeqUaUndRREfwYokAkP5xEBgI6f4wALHI3ZBEVSlfve8zq8/+J4AJbrxHdTTnNyd7rUAutMLWoBGoJuwndJJAAQX+q768Pby5xGktCj/Z5P3LNgNO5kRtQ1VIxm25uE0sz1n1d7JCRejVOdWqRt+4nKbwT1akJnbq4SwB6DcLUKcNpR+6YEQKPPbnUfY32FgtxBgFBzMdrxMQKjC4wXO13avlzKFvC5sP+4JoVlrouHmzyi0wunZRmEkglz9JoaNcZewQmL56a4wyzA8N7wZ4Jchg6z2oAchawAvXp3f5NMIdIdV+7MW7rVVkMHEjHkyndqtrSaO6p/raOAD68X24JCe7zdVEZvbTmm9ixiiJkmir8fVJLOh3hmG+1SkqdJh5TX92T6X71eW1Pc5lI+STYeSzk41pPPf650J9AewsfXGTDWWn8w9SXyM8Jm/WTqvUkShv3fr/5080rgArxTGyxctTrQXknkpcYrS/kT6XykniKyy4F3SkELHnXcl7uh/mwIOq1XhCm93e/eI2BJGwdvgYxvWKomiKJVVzvfldncsL2yepkIq58eohupw1iYM0sWmQGGmsa5z8o=
+X-Forefront-Antispam-Report:
+	CIP:216.228.117.161;CTRY:US;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:mail.nvidia.com;PTR:dc6edge2.nvidia.com;CAT:NONE;SFS:(13230040)(36860700016)(1800799024)(376014)(7416014)(82310400026)(13003099007)(921020)(11063799006)(18002099003)(56012099006);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	2dC7AlhXGxd/XX815gn1SARpOByqohJGYIAXNrGGPukZA0doj0MS/b/OTj1bW8K1Xutx7vMKH33QVV4goJaoQEJSye+4e9e4Pe5QGnMtHMO8bZQMx6FCRzHpwOHH6gBTJeHAc8dTpS++OeWGBEWzC23fOEfVQjsbqOgyBfOvkNouuSxZVTpfyI3NBXRnbIBBOumMys3Nmi49UAG/ELhuqINS3bNeEoZyJIwBYGkldSPKRo/lNNZ2qSmJEp9K4G2z+zwMWDiiGoPeNexMtL31/T+GhBfYmJHhHtoMLX3SPBnGixfkCNeaVHXoxe+/2AuYCoKovHAm0ldJja8PCLO6UVXLOmN3oGsslHj02deHUM1iCrqPEWniF4cOzh27OfvYrBWfEHIxcTVF4iK/IY/c9NLRPcBVoDcf6iP5LMAr5NYOJ6xWWiztZGIMhZfUD1Oc
+X-OriginatorOrg: Nvidia.com
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 27 May 2026 19:47:03.2381
+ (UTC)
+X-MS-Exchange-CrossTenant-Network-Message-Id: dda17301-9188-4e7b-7299-08debc28b9af
+X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
+X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=43083d15-7273-40c1-b7db-39efd9ccc17a;Ip=[216.228.117.161];Helo=[mail.nvidia.com]
+X-MS-Exchange-CrossTenant-AuthSource:
+	CO1PEPF00012E63.namprd05.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Anonymous
+X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: PH8PR12MB7253
 
-Hi Hans,
+Add initial kernel support for CPPC v4 (ACPI 6.6, Section 8.4.6),
+which extends the _CPC package from 23 to 25 entries with two
+optional fields:
 
-Thanks for the review!
+  - OSPM Nominal Performance (8.4.6.1.2.6): register used by OSPM
+    to tell the platform what it considers nominal. The platform
+    classifies performance above this as boost and below as
+    throttle for power/thermal decisions.
 
-On 5/27/26 3:15 AM, Hans de Goede wrote:
-> Hi,
->
-> On 27-May-26 02:02, Amit Sunil Dhamne via B4 Relay wrote:
->> From: Amit Sunil Dhamne <amitsd@google.com>
->>
->> Add support for responding to a Get_Battery_Status request with a
->> Battery_Status message. The port partner shall request the status of a
->> port's battery by providing an index in the Get_Battery_Status AMS. In
->> case of failure to identify the battery, the port shall reply with an
->> appropriate message indicating so.
->>
->> Support for Battery_Status message is required for sinks that contain
->> battery as specified in USB PD Rev3.1 v1.8
->> ("Applicability of Data Messages" section).
->>
->> Signed-off-by: Amit Sunil Dhamne <amitsd@google.com>
->> Reviewed-by: Badhri Jagan Sridharan <badhri@google.com>
->> ---
->>   drivers/usb/typec/tcpm/tcpm.c | 151 +++++++++++++++++++++++++++++++++++++++++-
->>   include/linux/usb/pd.h        |  29 ++++++++
->>   2 files changed, 177 insertions(+), 3 deletions(-)
->>
->> diff --git a/drivers/usb/typec/tcpm/tcpm.c b/drivers/usb/typec/tcpm/tcpm.c
->> index dfbb94ddc98a..ee45d90dbf98 100644
->> --- a/drivers/usb/typec/tcpm/tcpm.c
->> +++ b/drivers/usb/typec/tcpm/tcpm.c
->> @@ -232,7 +232,8 @@ enum pd_msg_request {
->>   	PD_MSG_DATA_SINK_CAP,
->>   	PD_MSG_DATA_SOURCE_CAP,
->>   	PD_MSG_DATA_REV,
->> -	PD_MSG_EXT_SINK_CAP_EXT
->> +	PD_MSG_EXT_SINK_CAP_EXT,
->> +	PD_MSG_DATA_BATT_STATUS
->>   };
->>   
->>   enum adev_actions {
->> @@ -389,6 +390,14 @@ struct pd_timings {
->>   /* Convert microwatt to watt */
->>   #define UW_TO_W(pow)					((pow) / 1000000)
->>   
->> +/*
->> + * As per USB PD Spec Rev 3.18 (Sec. 6.5.13.11), the number of fixed batteries
->> + * that a port can be queried is restricted to 4.
->> + */
->> +#define MAX_NUM_FIXED_BATT				4
->> +
->> +#define BATTERY_PROPERTY_UNKNOWN			0xffff
->> +
->>   /*
->>    * struct pd_identifier - Contains info about PD identifiers
->>    * @vid: Vendor ID (assigned by USB-IF)
->> @@ -683,6 +692,9 @@ struct tcpm_port {
->>   
->>   	struct pd_identifier pd_ident;
->>   	struct sink_caps_ext_data sink_caps_ext;
->> +	struct power_supply *fixed_batt[MAX_NUM_FIXED_BATT];
->> +	u32 fixed_batt_cnt;
-> Why not just have a struct power_supply **fixed_batt here
-> and directly pass that to power_supply_get_battery_all() ?
->
-> And then call power_supply_put_battery_all() at cleanup /
-> driver-remove time ?
+  - Resource Priority (8.4.6.1.2.7): Package of Resource Priority
+    Register Descriptor sub-packages. Full parsing is not yet
+    implemented; such entries are marked as unsupported.
 
-Comment addressed below.
+Patch 1: Add v4 _CPC parsing - validate the 25-entry layout,
+restrict the Resource Priority package fallback to that slot
+only, and mark the two new registers optional.
 
+Patch 2: Add per-policy sysfs attribute ospm_nominal_freq (kHz)
+under cpufreq. Writes are converted to perf and applied to every
+CPU in policy->cpus.
 
->
->
->> +	u32 batt_request_id;
->>   #ifdef CONFIG_DEBUG_FS
->>   	struct dentry *dentry;
->>   	struct mutex logbuffer_lock;	/* log buffer access lock */
->> @@ -1391,6 +1403,37 @@ static int tcpm_pd_send_revision(struct tcpm_port *port)
->>   	return tcpm_pd_transmit(port, TCPC_TX_SOP, &msg);
->>   }
->>   
->> +static void tcpm_init_fixed_batt(struct tcpm_port *port)
->> +{
->> +	struct power_supply **batteries;
->> +	int ret, i;
->> +
->> +	if (port->fixed_batt_cnt > 0)
->> +		return;
->> +
->> +	ret = power_supply_get_battery_all(port->dev, &batteries);
->> +	if (ret < 0) {
->> +		tcpm_log(port, "Failed to fetch batteries refs ret=%d", ret);
->> +		return;
->> +	}
->> +
->> +	for (i = 0; i < ret; i++) {
->> +		if (!batteries[i])
->> +			continue;
->> +
->> +		if (port->fixed_batt_cnt < MAX_NUM_FIXED_BATT)
->> +			port->fixed_batt[port->fixed_batt_cnt++] = batteries[i];
->> +		else
->> +			break;
->> +	}
->> +
->> +	if (i < ret)
->> +		power_supply_put_array(batteries + i, ret - i);
->> +
->> +	if (ret)
->> +		kfree(batteries);
->> +}
->> +
-> If you do as I suggest above this entire function can go away.
-The reason for implementing it this way was because the USB PD protocol 
-only caters to a maximum of 4 batteries. I wanted to avoid unnecessarily 
-holding references to any extra ones if a platform theoretically had 5 
-or more.
+---
+v3[3] -> v4:
+- Patch 2:
+  - Add a bool cpu_data->ospm_nominal_perf_set to distinguish an
+    unwritten cache from a valid perf=0 write.
+  - Switch freq_khz to unsigned int and use kstrtouint(). 
+  - Add rollback in store_ospm_nominal_freq() to restore the previous
+    cached value on a partial multi-CPU write failure.
 
-However, I agree that this is overthinking it for a practical scenario, 
-and your approach is much cleaner. I will drop the helper function and 
-switch to dynamically holding the array pointer directly as you suggested.
+v2[2] -> v3:
+- Patch 1:
+  - Accept ACPI_TYPE_PACKAGE only at RESOURCE_PRIORITY; abort otherwise.
+  - Added Reviewed-by from Pierre Gondois.
+- Patch 2:
+  - Sysfs moved from per-CPU acpi_cppc to per-policy cpufreq.
+  - Read ospm_nominal_freq sysfs input in kHz and convert to perf.
+  - Cached ospm_nominal_perf moved from cpc_desc to cppc_cpudata.
+  - Validate input against [Lowest Performance, Nominal Performance]
+    in cppc_set_ospm_nominal_perf().
+  - Dropped unconditional init in cppc_cpufreq_cpu_init().
+  - Remove to skip write if cache matches in cppc_set_ospm_nominal_perf.
+  - Early -ENODEV return when no CPC descriptor.
+  - Added ABI documentation at
+    Documentation/ABI/testing/sysfs-devices-system-cpu.
 
+v1[1] -> v2:
+- Patch 1: Added Reviewed-by from Mario Limonciello.
+- Patch 2:
+  - Make ospm_nominal_perf sysfs read-write; cache last write in
+    cpc_desc and skip redundant register writes.
+  - Validate input in cppc_set_ospm_nominal_perf.
 
->
->>   static int tcpm_pd_send_source_caps(struct tcpm_port *port)
->>   {
->>   	struct pd_message msg;
->> @@ -1476,6 +1519,8 @@ static int tcpm_pd_send_sink_cap_ext(struct tcpm_port *port)
->>   
->>   	if (!port->self_powered)
->>   		data->spr_op_pdp = operating_snk_watt;
->> +	else
->> +		tcpm_init_fixed_batt(port);
-> And you can just call power_supply_get_battery_all() here and store
-> count int fixed_batt_cnt (make fixed_batt_cnt an int so that negative
-> errors don't turn into a big number.
->
->>   
->>   	/*
->>   	 * SPR Sink Minimum PDP indicates the minimum power required to operate
->> @@ -1502,6 +1547,7 @@ static int tcpm_pd_send_sink_cap_ext(struct tcpm_port *port)
->>   	skedb.load_step = data->load_step;
->>   	skedb.load_char = cpu_to_le16(data->load_char);
->>   	skedb.compliance = data->compliance;
->> +	skedb.batt_info = port->fixed_batt_cnt;
->>   	skedb.modes = data->modes;
->>   	skedb.spr_min_pdp = data->spr_min_pdp;
->>   	skedb.spr_op_pdp = data->spr_op_pdp;
->> @@ -1520,6 +1566,87 @@ static int tcpm_pd_send_sink_cap_ext(struct tcpm_port *port)
->>   					   port->message_id,
->>   					   data_obj_cnt,
->>   					   1 /* Denotes if ext header */));
->> +
->> +	return tcpm_pd_transmit(port, TCPC_TX_SOP, &msg);
->> +}
->> +
->> +static int tcpm_pd_send_batt_status(struct tcpm_port *port)
->> +{
->> +	u16 present_charge = BATTERY_PROPERTY_UNKNOWN;
->> +	bool batt_present = false, invalid_ref = true;
->> +	u32 batt_id = port->batt_request_id;
->> +	union power_supply_propval val;
->> +	struct power_supply *batt;
->> +	u8 charging_status = 0;
->> +	struct pd_message msg;
->> +	int ret, charge_now;
->> +	u64 energy_now;
->> +	u32 bsdo;
->> +
->> +	memset(&msg, 0, sizeof(msg));
->> +
->> +	if (batt_id >= port->fixed_batt_cnt || !port->fixed_batt[batt_id])
->> +		goto send_status;
-> And here you can then additionally check against MAX_NUM_FIXED_BATT .
->
-> Also drop the NULL check here, power_supply_get_battery_all() never
-> leaves holes / NULL entries in the array.
+Sumit Gupta (2):
+  ACPI: CPPC: Add support for CPPC v4
+  ACPI: CPPC: Add ospm_nominal_perf support
 
-Ack.
+ .../ABI/testing/sysfs-devices-system-cpu      | 17 ++++++
+ drivers/acpi/cppc_acpi.c                      | 58 ++++++++++++++++--
+ drivers/cpufreq/cppc_cpufreq.c                | 60 +++++++++++++++++++
+ include/acpi/cppc_acpi.h                      | 20 ++++++-
+ 4 files changed, 147 insertions(+), 8 deletions(-)
 
+[1] https://lore.kernel.org/lkml/20260427051823.280419-1-sumitg@nvidia.com/
+[2] https://lore.kernel.org/lkml/20260430142430.755437-1-sumitg@nvidia.com/
+[3] https://lore.kernel.org/lkml/20260514194822.1841748-1-sumitg@nvidia.com/
 
-BR,
-
-Amit
-
->
->
->> +
->> +	invalid_ref = false;
->> +	batt = port->fixed_batt[batt_id];
->> +	ret = power_supply_get_property(batt, POWER_SUPPLY_PROP_PRESENT, &val);
->> +	if (ret)
->> +		tcpm_log(port,
->> +			 "Failed to fetch power_supply_prop_present ret %d",
->> +			 ret);
->> +	else
->> +		batt_present = val.intval > 0;
->> +
->> +	ret = power_supply_get_property(batt, POWER_SUPPLY_PROP_CHARGE_NOW,
->> +					&val);
->> +	if (!ret) {
->> +		charge_now = val.intval;
->> +
->> +		ret = power_supply_get_property(batt,
->> +						POWER_SUPPLY_PROP_VOLTAGE_AVG,
->> +						&val);
->> +		if (!ret) {
->> +			energy_now = ((u64)charge_now * val.intval) / 1000000;
->> +
->> +			/*
->> +			 * Battery Present Charge is reported in
->> +			 * increments of 0.1WH.
->> +			 */
->> +			present_charge = (u16)UW_TO_W(energy_now * 10);
->> +		}
->> +	}
->> +
->> +	ret = power_supply_get_property(batt, POWER_SUPPLY_PROP_STATUS, &val);
->> +	if (!ret) {
->> +		switch (val.intval) {
->> +		case POWER_SUPPLY_STATUS_CHARGING:
->> +			charging_status = BSDO_BATTERY_INFO_CHARGING;
->> +			break;
->> +		case POWER_SUPPLY_STATUS_DISCHARGING:
->> +			charging_status = BSDO_BATTERY_INFO_DISCHARGING;
->> +			break;
->> +		case POWER_SUPPLY_STATUS_NOT_CHARGING:
->> +		case POWER_SUPPLY_STATUS_FULL:
->> +			charging_status = BSDO_BATTERY_INFO_IDLE;
->> +			break;
->> +		default:
->> +			charging_status = BSDO_BATTERY_INFO_RSVD;
->> +			break;
->> +		}
->> +	}
->> +
->> +send_status:
->> +
->> +	bsdo = BSDO(present_charge, charging_status, batt_present, invalid_ref);
->> +	msg.payload[0] = cpu_to_le32(bsdo);
->> +	msg.header = PD_HEADER_LE(PD_DATA_BATT_STATUS,
->> +				  port->pwr_role,
->> +				  port->data_role,
->> +				  port->negotiated_rev,
->> +				  port->message_id,
->> +				  1);
->> +
->>   	return tcpm_pd_transmit(port, TCPC_TX_SOP, &msg);
->>   }
->>   
->> @@ -3854,6 +3981,7 @@ static void tcpm_pd_ext_msg_request(struct tcpm_port *port,
->>   {
->>   	enum pd_ext_msg_type type = pd_header_type_le(msg->header);
->>   	unsigned int data_size = pd_ext_header_data_size_le(msg->ext_msg.header);
->> +	const struct pd_chunked_ext_message_data *ext_msg = &msg->ext_msg;
->>   
->>   	/* stopping VDM state machine if interrupted by other Messages */
->>   	if (tcpm_vdm_ams(port)) {
->> @@ -3862,7 +3990,7 @@ static void tcpm_pd_ext_msg_request(struct tcpm_port *port,
->>   		mod_vdm_delayed_work(port, 0);
->>   	}
->>   
->> -	if (!(le16_to_cpu(msg->ext_msg.header) & PD_EXT_HDR_CHUNKED)) {
->> +	if (!(le16_to_cpu(ext_msg->header) & PD_EXT_HDR_CHUNKED)) {
->>   		tcpm_pd_handle_msg(port, PD_MSG_CTRL_NOT_SUPP, NONE_AMS);
->>   		tcpm_log(port, "Unchunked extended messages unsupported");
->>   		return;
->> @@ -3887,9 +4015,17 @@ static void tcpm_pd_ext_msg_request(struct tcpm_port *port,
->>   					     NONE_AMS, 0);
->>   		}
->>   		break;
->> +	case PD_EXT_GET_BATT_STATUS:
->> +		if (data_size >= 1) {
->> +			port->batt_request_id = ext_msg->data[0];
->> +			tcpm_pd_handle_msg(port, PD_MSG_DATA_BATT_STATUS,
->> +					   GETTING_BATTERY_STATUS);
->> +		} else {
->> +			tcpm_set_state(port, SOFT_RESET_SEND, 0);
->> +		}
->> +		break;
->>   	case PD_EXT_SOURCE_CAP_EXT:
->>   	case PD_EXT_GET_BATT_CAP:
->> -	case PD_EXT_GET_BATT_STATUS:
->>   	case PD_EXT_BATT_CAP:
->>   	case PD_EXT_GET_MANUFACTURER_INFO:
->>   	case PD_EXT_MANUFACTURER_INFO:
->> @@ -4100,6 +4236,14 @@ static bool tcpm_send_queued_message(struct tcpm_port *port)
->>   					 ret);
->>   			tcpm_ams_finish(port);
->>   			break;
->> +		case PD_MSG_DATA_BATT_STATUS:
->> +			ret = tcpm_pd_send_batt_status(port);
->> +			if (ret)
->> +				tcpm_log(port,
->> +					 "Failed to send battery status ret=%d",
->> +					 ret);
->> +			tcpm_ams_finish(port);
->> +			break;
->>   		default:
->>   			break;
->>   		}
->> @@ -8597,6 +8741,7 @@ void tcpm_unregister_port(struct tcpm_port *port)
->>   	hrtimer_cancel(&port->vdm_state_machine_timer);
->>   	hrtimer_cancel(&port->state_machine_timer);
->>   
->> +	power_supply_put_array(port->fixed_batt, port->fixed_batt_cnt);
->>   	tcpm_reset_port(port);
->>   
->>   	tcpm_port_unregister_pd(port);
->> diff --git a/include/linux/usb/pd.h b/include/linux/usb/pd.h
->> index 337a5485af7c..afb9c2c65588 100644
->> --- a/include/linux/usb/pd.h
->> +++ b/include/linux/usb/pd.h
->> @@ -724,4 +724,33 @@ void usb_power_delivery_unlink_device(struct usb_power_delivery *pd, struct devi
->>   
->>   #endif /* CONFIG_TYPEC */
->>   
->> +/* Battery Status Data Object */
->> +#define BSDO_PRESENT_CAPACITY				GENMASK(31, 16)
->> +#define BSDO_CHG_STATUS					GENMASK(11, 10)
->> +#define BSDO_BATTERY_PRESENT				BIT(9)
->> +#define BSDO_INVALID_BATTERY_REFERENCE			BIT(8)
->> +
->> +/*
->> + * Battery Charge Status: Battery Charging Status Values as defined in
->> + * "USB PD Spec Rev3.1 Ver1.8", "Table 6-46 Battery Status Data Object (BSDO)".
->> + */
->> +#define BSDO_BATTERY_INFO_CHARGING			0x0
->> +#define BSDO_BATTERY_INFO_DISCHARGING			0x1
->> +#define BSDO_BATTERY_INFO_IDLE				0x2
->> +#define BSDO_BATTERY_INFO_RSVD				0x3
->> +
->> +/**
->> + * BSDO() - Pack data into Battery Status Data Object format.
->> + * @batt_charge: Battery's present state of charge in 0.1WH increment.
->> + * @chg_status: Battery charge status.
->> + * @batt_present: Indicates that battery is present/attached when set else absent when unset.
->> + * @invalid_ref: Indicates that an invalid battery reference was made in the Get_Battery_Status
->> + *		 request.
->> + */
->> +#define BSDO(batt_charge, chg_status, batt_present, invalid_ref)	\
->> +	((FIELD_PREP(BSDO_PRESENT_CAPACITY, batt_charge)) |		\
->> +	 (FIELD_PREP(BSDO_CHG_STATUS, chg_status)) |			\
->> +	 ((batt_present) ? BSDO_BATTERY_PRESENT : 0) |			\
->> +	 ((invalid_ref) ? BSDO_INVALID_BATTERY_REFERENCE : 0))
->> +
->>   #endif /* __LINUX_USB_PD_H */
->>
->
-> Regards,
->
-> Hans
->
->
+-- 
+2.34.1
