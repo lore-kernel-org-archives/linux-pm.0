@@ -1,33 +1,33 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B198E3E7BA6;
-	Wed, 27 May 2026 09:20:17 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E0577396579;
+	Wed, 27 May 2026 09:52:54 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1779873620; cv=none; b=JnEbGZs8FfQEmPglTrHJHloyhXiYroxfmKGLMUm86RLBBQ8diGW7xI9h/wpWv0rIrDKazMbmEbKltRw/OP8oAglbqNMd6kD1V9NRIAvd5EFUUAWxN1/CHccsmb001xg+4HnPfsPf6CfhCJvxsVzKZYWSR6GEuUijJcpjAIXtQ54=
+	t=1779875576; cv=none; b=UfIDVHw3BuChyMINjPXwnr6nD7FmCuUHOhHlWfQq9GwxQaRxPjLmf8y8wTbZRxpCxD71lTt+jqlZ7KvYpHPS5kJa0+yOm+u3Pdbc46T3vDk62aNJJ8f8wAdfWlkcs//OWBZ82omiyCnURb+9yuU7T7g0r1EtRwP/qCBSwlb22eE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1779873620; c=relaxed/simple;
-	bh=6m7OGDlPMuvsQiJ8hveFktz8KcLIRgrwMqOMVjbCkro=;
+	s=arc-20240116; t=1779875576; c=relaxed/simple;
+	bh=yW/IQw++XLRR/CzMzjAfkfnR8Kxglizdpzl8dv8jzWs=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=pThL+87OYsoSe+CqooKp8mTHM74KXfdTPDFRKZK7EPmmGWGcgmvSuImU6b2priFCGqKivuB2Xm6UBoTayD+Cv5qmm7YtNqgBupBN/pK0TOygB2VU2kFomayzOSN/XgqsCV/HOlLjZhqRCUCdKu2Wc9x1CYfepKSnxBUiY8dSxhc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=nL28ATp/; arc=none smtp.client-ip=100.103.45.18
+	 In-Reply-To:Content-Type; b=N/Fqu9i5wJkI/hEcxbnHZawmC9ascgM+xjpG51CgeJt7TSTVeh2mFgnWFXNowfx1/npud+RC9a1MrzbA1etLNbhEz0T1rVmAhA9k9lsNJUn1NaQ5KH6xyTg45+GEO3AjAVvd3lJnfAosAEemuDTZPlJy9Ijp4M0Xnv1eCzo1L+U=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=LQEvmrtY; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="nL28ATp/"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6F8E81F000E9;
-	Wed, 27 May 2026 09:20:11 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="LQEvmrtY"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2EE521F000E9;
+	Wed, 27 May 2026 09:52:51 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1779873616;
-	bh=c+2Jf/5YHovO3XbSQ9sVw9O47cO2wm87gZwcDX64Qgk=;
+	s=k20260515; t=1779875574;
+	bh=xpicSIcdbRhMqvRSlfdrldSbJ0CuDgnbN5bHk5btR/A=;
 	h=Date:Subject:To:Cc:References:From:In-Reply-To;
-	b=nL28ATp/xCIT33YKQsgoV8DpOWBJ2LGzPevUHP28e6KgSWUmDZEt9aWDS+vy7X5/g
-	 K09aCRwDZ2F98dLeahKrl/4h4heWevB1Nx3WlzCAfQkutz9/jexPFfbo38PxiOzLN5
-	 8z/t2YBGjgNadYhfCyCHndseyaqz+nfeNdYG5zlwWFPqCBrfo8gKAUsYcubbsbBRZa
-	 8QHEU2Db7cPkSpLT88CwYjNam9EZ2WckSilbLDHtvsKhURMuvKlX3adDJ5x87MV+rS
-	 BIbEIGdX9/Jez4apghxUPOJgLAk2Ol7RizNQmqsTzsMbPhCjRa2zuKARTfyCmwSybN
-	 BkZt8qEFHtOUg==
-Message-ID: <0c4fe9b9-3ec6-4988-b579-776cf37585ca@kernel.org>
-Date: Wed, 27 May 2026 11:20:09 +0200
+	b=LQEvmrtYip53xWNPKa/Whmxwlm3VB0QUSV2IBsngQMSGy5bf7NoQ3y61LVPgeFmKP
+	 AogLUEfYFZOH+A7OzWYq+DJJh0LgEKlUoY7Md8Y02X+H5uw3BSX/6H85GSWyEWA2Is
+	 s+QxOHYv511DmVx5GGfSEikzJGnbZoR4MdV23nnZdvNYv+u3n/SwMiXaW45LF1kRfP
+	 6kXQV0NI+79s57HwNqSZa8j4gQp8KK0tVTerL3v4F/TJpgG7uuh4X7jMeUP+HPZCas
+	 bV/x2XMi7XcXiB5VxNf7xNc8r9qws5tDXnMiCqHFVRnfPyIYROlV8Nub4lNzWq62sr
+	 ta4RCLhU1lR8w==
+Message-ID: <6f53fb78-ec28-4765-be66-0d6abd022216@kernel.org>
+Date: Wed, 27 May 2026 11:52:49 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -35,188 +35,241 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 1/2] dt-bindings: soc: tegra: Document Nvidia Tegra
- modem pwrseq
-To: Svyatoslav Ryhel <clamor95@gmail.com>,
- Bartosz Golaszewski <brgl@kernel.org>
-Cc: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
- Conor Dooley <conor+dt@kernel.org>,
- Thierry Reding <thierry.reding@kernel.org>,
- Jonathan Hunter <jonathanh@nvidia.com>, devicetree@vger.kernel.org,
- linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org,
- linux-pm@vger.kernel.org
-References: <20260523085102.51000-1-clamor95@gmail.com>
- <20260523085102.51000-2-clamor95@gmail.com>
- <CAMRc=MfXVwD2u0e115RapnyLzf5JRjWMs=2PSNzMnm0GDd7aaQ@mail.gmail.com>
- <CAPVz0n1G5Yu2X5f+=q90RAbnsWi9psMq-L5tWDMM4JRC4R_mPg@mail.gmail.com>
- <CAMRc=Me4G-YqKoFan3epofXk2OWzxY1iPE1mP=uwEjs9wgA6Cw@mail.gmail.com>
- <CAPVz0n2P-zB1_uetZN9pVcQChK+FkdQowbF4Z0YZOBQBsB76WQ@mail.gmail.com>
- <CAMRc=MfAAE4UtnW4S1=pY+2yvS6Hsd-U9+uveUFtPGoJPrv6aA@mail.gmail.com>
- <CAPVz0n2COsDL+fNBAuKr1ty_AVe9sK5yNJithkXex6GNa1T_Tw@mail.gmail.com>
- <CAMRc=Mc9g=yezRtAtRMzh7t-pSoyoKQEtxrb5U0oeFAbcjb6Ew@mail.gmail.com>
- <CAPVz0n3X8Gw2Yo9VgwhV0uAqvArGXbvmzw=cZVJw=4BEH_E7_w@mail.gmail.com>
- <CAMRc=Mf4W9hoP7FAbxQTNLaG3M9W+GmvQSMECbzzdQLU_+5D4A@mail.gmail.com>
- <80e102be-04c3-4591-8e75-ddf859d3a877@kernel.org>
- <CAPVz0n3_wueX1yeZ=MDfSMy3UaQa80-nGg1b7ZQuCTneOaQDkQ@mail.gmail.com>
-From: Krzysztof Kozlowski <krzk@kernel.org>
-Content-Language: en-US
-Autocrypt: addr=krzk@kernel.org; keydata=
- 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 a/A=
-In-Reply-To: <CAPVz0n3_wueX1yeZ=MDfSMy3UaQa80-nGg1b7ZQuCTneOaQDkQ@mail.gmail.com>
+Subject: Re: [PATCH v2 1/2] power: supply: Add helpers to get and put arrays
+ of power supply handles
+To: amitsd@google.com, Sebastian Reichel <sre@kernel.org>,
+ Badhri Jagan Sridharan <badhri@google.com>,
+ Heikki Krogerus <heikki.krogerus@linux.intel.com>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Krzysztof Kozlowski <krzk@kernel.org>,
+ Marek Szyprowski <m.szyprowski@samsung.com>,
+ Sebastian Krzyszkowiak <sebastian.krzyszkowiak@puri.sm>,
+ Purism Kernel Team <kernel@puri.sm>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linux-usb@vger.kernel.org, =?UTF-8?Q?Andr=C3=A9_Draszik?=
+ <andre.draszik@linaro.org>, Tudor Ambarus <tudor.ambarus@linaro.org>,
+ Peter Griffin <peter.griffin@linaro.org>, RD Babiera <rdbabiera@google.com>,
+ Kyle Tso <kyletso@google.com>
+References: <20260527-batt-status-v2-0-4282985165f3@google.com>
+ <20260527-batt-status-v2-1-4282985165f3@google.com>
+From: Hans de Goede <hansg@kernel.org>
+Content-Language: en-US, nl
+In-Reply-To: <20260527-batt-status-v2-1-4282985165f3@google.com>
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
 
-On 27/05/2026 11:06, Svyatoslav Ryhel wrote:
-> ср, 27 трав. 2026 р. о 11:26 Krzysztof Kozlowski <krzk@kernel.org> пише:
->>
->> On 27/05/2026 09:55, Bartosz Golaszewski wrote:
->>> On Tue, 26 May 2026 15:41:58 +0200, Svyatoslav Ryhel <clamor95@gmail.com> said:
->>>> вт, 26 трав. 2026 р. о 16:14 Bartosz Golaszewski <brgl@kernel.org> пише:
->>>>>
->>>>> On Tue, May 26, 2026 at 2:55 PM Svyatoslav Ryhel <clamor95@gmail.com> wrote:
->>>>>>
->>>>>>>>>
->>>>>>>>> The node attached to the pwrseq provider device should represent a real
->>>>>>>>> hardware component. Are the enable-gpios and power-supply lines connected
->>>>>>>>> to the modem package?
->>>>>>>>
->>>>>>>> Yes, enable-gpio is connected to the modem and signals that USB is set
->>>>>>>> and ready to work with the modem, while power-supply is an optional
->>>>>>>> supply connected to the modem's vbus input.
->>>>>>>>
->>>>>>>
->>>>>>> The modem is a hard-wired USB device? Do you implement it as a
->>>>>>> platform driver or a USB driver?
->>>>>>>
->>>>>>
->>>>>> It is not a traditional USB device. XMM6260 is an embedded modem used
->>>>>> in the Tegra phones, it is linked with the AP using USB line in HSIC
->>>>>> mode. The driver is implemented as a platform device since it does not
->>>>>> interacts with the exposed USB device directly, it just ensures that
->>>>>> USB device is properly configured and is ready for IPC.
->>>>>>
->>>>>>> Is there a connector of any kind that could be used as the HW
->>>>>>> component represented by the pwrseq device?
->>>>>>
->>>>>> I assume control over USB line is the HW base, but as I have said, I
->>>>>> can integrate binding in the modem node itself, and pwrseq can get all
->>>>>> it needs from the match. Pwrseq framework states "This framework is
->>>>>> designed to abstract complex power-up sequences that are shared
->>>>>> between multiple logical devices in the Linux kernel." it does not say
->>>>>> that it must represent some specific hardware.
->>>>>>
->>>>>
->>>>> No, not at all. We just can't make up any imaginary, logical "pwrseq"
->>>>> devices and describe them in DT bindings.
->>>>>
->>>>
->>>> Ye, ye, sure, pwrseq framework is quite flexible and I am not stating
->>>> this bindings is mandatory.
->>>>
->>>>>> Using pwrseq allows modem driver to be SoC independent since USB line
->>>>>> handling is moved into SoC specific power sequence, and this modem is
->>>>>> used in Exynos and OMAP too with similar setup but they all have
->>>>>> different USB controllers. Maybe you can point me where SoC specific
->>>>>> USB controller handling can be implemented?
->>>>>>
->>>>>
->>>>> I'm not sure I'm following. Can you atrephrase or point me where OMAP
->>>>> and Samsung implement it?
->>>>>
->>>>
->>>> They did not.
->>>>
->>>> The XMM6260 modem is used not only in the Tegra phones but in the OMAP
->>>> and Exynos based too. Replicant tried to implement support locally
->>>> with midas devices and they had some progress. From what I have seen
->>>> generic implementation I am proposing will work with any of those 3
->>>> SoCs maybe with some slight tweaks, only part that is totally
->>>> different and SoC specific is how USB controller used by the modem is
->>>> handled (well and IPC but that is out of scope of this patchset
->>>> anyway).
->>>>
->>>> Obviously, non of the 3 vendors have submitted any mainline patches,
->>>> everything is in the downstream forks. I have investigated a bit how
->>>> this modem works on my Tegra phone and re-implemented it to work with
->>>> mainline kernel (I don't have Exynos and OMAP devices to play with). I
->>>> have come up with generic platform driver which handles modem
->>>> configuration and a SoC specific part which performs USB controller
->>>> bind/probe when modem is ready to handle the USB. ATM this SoC
->>>> specific part is available and tested only for Tegra devices.
->>>>
->>>
->>> Are you familiar with the PCI pwrctrl code that lives under
->>> drivers/pci/pwrctrl/? It seems to be solving a somewhat similar issue for
->>> PCI devices that are hardwired and powered externally. Maybe you could use
->>> some of that code for your USB use-case?
->>
->>
->> I pointed to PCI already:
->> https://lore.kernel.org/lkml/20260518-mustard-rabbit-of-ecstasy-eed3b6@quoll/
->>
->> And emphasized to describe hardware, not drivers. This binding AGAIN
->> describes drivers, so we did not move forward at all.
->>
->>
->> Best regards,
->> Krzysztof
+Hi,
+
+Thank you for the new version.
+
+On 27-May-26 02:02, Amit Sunil Dhamne via B4 Relay wrote:
+> From: Amit Sunil Dhamne <amitsd@google.com>
 > 
-> Krzysztof, why are you so mean? Yes, I misunderstood you and sent this
+> Add power_supply_get_battery_all() to allow drivers to obtain a list of
+> registered battery type power supply references in the system. Also add
+> power_supply_put_array() to release references to the power supplies
+> when no longer needed.
+> 
+> Signed-off-by: Amit Sunil Dhamne <amitsd@google.com>
+> ---
+>  drivers/power/supply/power_supply_core.c | 137 +++++++++++++++++++++++++++++++
+>  include/linux/power_supply.h             |  12 +++
+>  2 files changed, 149 insertions(+)
+> 
+> diff --git a/drivers/power/supply/power_supply_core.c b/drivers/power/supply/power_supply_core.c
+> index a446d3d086fc..04e5c1083e8f 100644
+> --- a/drivers/power/supply/power_supply_core.c
+> +++ b/drivers/power/supply/power_supply_core.c
+> @@ -482,6 +482,127 @@ struct power_supply *power_supply_get_by_name(const char *name)
+>  }
+>  EXPORT_SYMBOL_GPL(power_supply_get_by_name);
+>  
+> +static int __power_supply_get_num_battery(struct power_supply *epsy, void *data)
+> +{
+> +	int *count = data;
+> +
+> +	if (epsy->desc->type == POWER_SUPPLY_TYPE_BATTERY)
+> +		(*count)++;
+> +
+> +	return 0;
+> +}
+> +
+> +static int power_supply_get_num_battery(struct device *dev)
+> +{
+> +	int ret, count = 0;
+> +
+> +	ret = power_supply_for_each_psy(&count, __power_supply_get_num_battery);
+> +
+> +	dev_dbg(dev, "%s: count: %d ret %d\n", __func__, count, ret);
+> +
+> +	if (ret)
+> +		return ret;
+> +
+> +	return count;
+> +}
+> +
+> +struct psy_get_supplies_data {
+> +	int cnt;
+> +	int size;
+> +	struct power_supply **psys;
+> +};
+> +
+> +static int __power_supply_populate_battery_array(struct power_supply *epsy,
+> +						 void *_data)
+> +{
+> +	struct psy_get_supplies_data *data = _data;
+> +
+> +	if (epsy->desc->type == POWER_SUPPLY_TYPE_BATTERY) {
+> +		if (data->size <= data->cnt)
+> +			return -EOVERFLOW;
+> +
+> +		get_device(&epsy->dev);
+> +		data->psys[data->cnt] = epsy;
+> +		atomic_inc(&epsy->use_cnt);
+> +		data->cnt++;
+> +	}
+> +
+> +	return 0;
+> +}
+> +
+> +static int power_supply_populate_battery_array(struct device *dev, int size,
+> +					       struct power_supply **batteries)
+> +{
+> +	int ret;
+> +
+> +	struct psy_get_supplies_data data = {
+> +		.cnt = 0,
+> +		.size = size,
+> +		.psys = batteries,
+> +	};
+> +
+> +	ret = power_supply_for_each_psy(&data, __power_supply_populate_battery_array);
+> +
+> +	dev_dbg(dev, "%s Found %d batteries with array size %d ret %d\n",
+> +		__func__, data.cnt, data.size, ret);
+> +
+> +	if (ret < 0) {
+> +		power_supply_put_array(batteries, data.cnt);
+> +		return ret;
+> +	}
+> +
+> +	return data.cnt;
+> +}
+> +
+> +/**
+> + * power_supply_get_battery_all() - Fetches references to all battery type power
+> + *                                  supplies.
+> + * @dev: Pointer to device requesting the power supply refs.
+> + * @psys: Pointer to an array of power supply refs.
+> + *
+> + * Helper function to get handles to all battery type power supplies.
+> + * If acquiring a ref to a power supply fails, then the search for battery
+> + * type power supplies will abort and the acquired power supply references will
+> + * be released.
+> + *
+> + * Return: Indicates the number of battery type power supplies returned on
+> + * success or a negative error code on failure.
+> + *
+> + * The caller should invoke power_supply_put_array() on the returned array
+> + * of psy refs and free the array returned by this function using kfree()
+> + * after use.
+> + */
+> +int __must_check power_supply_get_battery_all(struct device *dev,
+> +					      struct power_supply ***psys)
+> +{
+> +	int ret;
+> +
+> +	if (!psys)
+> +		return -EINVAL;
+> +
+> +	ret = power_supply_get_num_battery(dev);
+> +	if (ret < 0)
+> +		return ret;
+> +
+> +	if (!ret) {
+> +		*psys = NULL;
+> +		return 0;
+> +	}
+> +
+> +	*psys = kzalloc_objs(**psys, ret);
+> +	if (!*psys)
+> +		return -ENOMEM;
+> +
+> +	ret = power_supply_populate_battery_array(dev, ret, *psys);
+> +	if (ret <= 0) {
+> +		kfree(*psys);
+> +		*psys = NULL;
+> +	}
+> +
+> +	return ret;
+> +}
+> +EXPORT_SYMBOL_GPL(power_supply_get_battery_all);
+> +
+>  /**
+>   * power_supply_put() - Drop reference obtained with power_supply_get_by_name
+>   * @psy: Reference to put
+> @@ -496,6 +617,22 @@ void power_supply_put(struct power_supply *psy)
+>  }
+>  EXPORT_SYMBOL_GPL(power_supply_put);
+>  
+> +/**
+> + * power_supply_put_array() - Drop references to an array of power supplies.
+> + * @psys: Array of power supply references to put.
+> + * @count: Number of elements in the array.
+> + */
+> +void power_supply_put_array(struct power_supply **psys, int count)
+> +{
+> +	int i;
+> +
+> +	for (i = 0; i < count; i++) {
+> +		if (psys[i])
+> +			power_supply_put(psys[i]);
+> +	}
+> +}
+> +EXPORT_SYMBOL_GPL(power_supply_put_array);
+> +
 
-Just to recap:
+I think it would be better to call this: power_supply_put_battery_all()
+and move it to directly below power_supply_get_battery_all()and also
+have it call kfree(psys) so that it does all the teardown of what
+power_supply_get_battery_all() has done.
 
-https://lore.kernel.org/all/CAPVz0n09ZP1i2tasdTvnt8RvjhALvUYjv9u_EGRtnXPOYQtuqQ@mail.gmail.com/
+Regards,
 
-And enormous discussion wasting our time here:
-https://lore.kernel.org/all/CAPVz0n0u7uhL8_FQFiuB7DrnL++ecbaEKEoV7N2PgTVRBVECkw@mail.gmail.com/
-because you were pushing your solution. I run out of spare time to
-handle endless discussions with you because you reject standard comments
-and expect long discussions with multiple justifications for standard
-(and documented in writing bindings) DT rules.
+Hans
 
-So here I told you to do like USB and PCI. This patchset is nothing like
-them.
 
-Best regards,
-Krzysztof
+
+>  static int power_supply_match_device_fwnode(struct device *dev, const void *data)
+>  {
+>  	return dev->parent && dev_fwnode(dev->parent) == data;
+> diff --git a/include/linux/power_supply.h b/include/linux/power_supply.h
+> index 7a5e4c3242a0..026412164a88 100644
+> --- a/include/linux/power_supply.h
+> +++ b/include/linux/power_supply.h
+> @@ -806,11 +806,23 @@ extern int power_supply_reg_notifier(struct notifier_block *nb);
+>  extern void power_supply_unreg_notifier(struct notifier_block *nb);
+>  #if IS_ENABLED(CONFIG_POWER_SUPPLY)
+>  extern struct power_supply *power_supply_get_by_name(const char *name);
+> +extern int __must_check power_supply_get_battery_all(struct device *dev,
+> +						     struct power_supply ***psys);
+> +extern void power_supply_put_array(struct power_supply **psys, int count);
+>  extern void power_supply_put(struct power_supply *psy);
+>  #else
+>  static inline void power_supply_put(struct power_supply *psy) {}
+>  static inline struct power_supply *power_supply_get_by_name(const char *name)
+>  { return NULL; }
+> +static inline int __must_check power_supply_get_battery_all(struct device *dev,
+> +							    struct power_supply ***psys)
+> +{
+> +	if (psys)
+> +		*psys = NULL;
+> +	return 0;
+> +}
+> +
+> +static inline void power_supply_put_array(struct power_supply **psys, int count) {}
+>  #endif
+>  extern struct power_supply *power_supply_get_by_reference(struct fwnode_handle *fwnode,
+>  							  const char *property);
+> 
+
