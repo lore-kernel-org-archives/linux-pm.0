@@ -1,37 +1,37 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 537263101B0;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A8558311C2F;
 	Thu, 28 May 2026 03:39:31 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1779939571; cv=none; b=pvWDoHCJNgPoPZKDcnJpBh9das+AykfTtCW8GEn7jPQGVIaca5knK8G03QKeRAOEziF0ykTjHQiz16CflXkYPxyrnCuhmS+E7rAn0EeHowUsp/nT7Pb8FL4IAdrJQX+q6CnOJsXuqGNRFAqRd0/05ZAAXa1f8yfZEdZfaA9DIMk=
+	t=1779939571; cv=none; b=jFgOggfcdyZ795nnRT7vc0yAs0iZ8roxzt9J7dO+axTBhDlo43PVdKLbRwB41CitSYmaRTkuGlqCfuZZvqdC5A4yVXf2qEEFcW96tVHpx8JLtweG/r6rq1DU2ITXwasOn036kFbuzM/bgB7jVwZkM1g5ZLexQaYtSYQLcgWhZkY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1779939571; c=relaxed/simple;
-	bh=ke7HvLdLefDj+v9czBNoRTxNhOufQCAgn7Qfxki38Bk=;
-	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=PVpl3hv1mIIMvX1GXs+ZKNbomggjQc8Dqnzujzv7FrmWl7VwsO59WkJ5xzheBo2yffRH/pR89EvIL7hJtLcqW9qW+K72CmhI3iYOk3IS0Vbv4ihhVoOm/bsU5u+ycMDZYw8IpKkl2HqtkkD9oE3LcynsWuxbHbCLm/Q9PKD9lQU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=fDrd4RbX; arc=none smtp.client-ip=10.30.226.201
+	bh=o8kNJddvVcrK7IoCVMe+UkaLiQ35HZDprvVYZkVvtAU=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=jog/+RZZ+XtSob89PJRupCxKZeZgjQFy0wfZth10zcnlqasoVLzwC3oSNwdC5l4cDd91oUrTzXfu7VWCxoeOYPbGfQjFJNSLTPJwtqtUg3leIOkK3os3matCTWni9/WTahURkxnBuvhF1D6POx+eW9Ta1U5szymBxiQqHaWqP6U=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=J7nemYBs; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="fDrd4RbX"
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 6DD69C19425;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="J7nemYBs"
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 9FB66C4AF0F;
 	Thu, 28 May 2026 03:39:30 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
 	s=k20201202; t=1779939570;
-	bh=ke7HvLdLefDj+v9czBNoRTxNhOufQCAgn7Qfxki38Bk=;
-	h=From:Subject:Date:To:Cc:Reply-To:From;
-	b=fDrd4RbXmzepZfOCfSdodJmx8RqeZf36eMHZgsxSdKhaP7I/9WVSG4HtV59FnUaVz
-	 i2hn+iMeSj/ANXe24FQU+qtdCb9mYlzL53s/b4PLIg+Qc38xspeEAQ4ITw3aBHd8BP
-	 L19ty6Q/fclyjTGLzldqNwYoEItWn4x9IRVKVnyP9DPHpv5A6bMvwlkRegYmSLl2qs
-	 XWL+GWNTyNvPV7XArek4XWO9dv3eUpN1ct92SZIeUldZblT9KmblXTz/dA7FvFS4Su
-	 RmLSwNjLb2uQrKlna4VgVy46HwH6sVA3yZ5OkPdLCqAm6VrcPr7Y7V0s5ONbCKqasE
-	 Iva1IKg8CVPfw==
+	bh=o8kNJddvVcrK7IoCVMe+UkaLiQ35HZDprvVYZkVvtAU=;
+	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
+	b=J7nemYBs2SODUE/Zv0LBj0PoWDb+ZxkjfWC8UQMk/HW1QBn4sxisvbgradguMYrDV
+	 ipIsyBKwID1OTmI09oDRZs8uQpnLrOO7dgTfkkOFVMmsy1JcbjznM+MmVq8tnfYEeE
+	 CTJcShUqiymWrrWDb284H7koyjMI09ebUVRpSGHVlG4xZl13JuNXq2pdklUlWxWibV
+	 OCG22QwHSDffNuMsXjdrAlBkRCcA5Nv7vtHWZ1Reazg4h/6+vjZu6DizzpvsLg+Ox+
+	 7z9z1c9HvD+1JrWWpipYq0XKAqJw6kMFdFzWhfoDDsUj0e1kqTU/InpmCs1YmTDIDq
+	 NagLpq69SuI9g==
 Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 656B6CD6E45;
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 93FC6CD6E45;
 	Thu, 28 May 2026 03:39:30 +0000 (UTC)
 From: Rudraksha Gupta via B4 Relay <devnull+guptarud.gmail.com@kernel.org>
-Subject: [PATCH v2 0/3] Add cpufreq to MSM8960
-Date: Wed, 27 May 2026 20:39:27 -0700
-Message-Id: <20260527-expressatt_cpufreq-v2-0-b9b7726ccb6d@gmail.com>
+Date: Wed, 27 May 2026 20:39:29 -0700
+Subject: [PATCH v2 2/3] soc: qcom: spm: Add MSM8960 SAW2 CPU support
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -40,13 +40,9 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-B4-Tracking: v=1; b=H4sIAAAAAAAC/4XQ0WrDIBQG4FcJXs+ixpg0jLH3GCUYPSaypOnUS
- EvJu88kg5Ux6OUv53wH/zvy4Cx4VGd35CBab6dzCuwlQ6qX5w6w1SkjRpggBc0xXC8OvJchNOo
- yGwdfWAiRV62sNC0ESotpwNjrhn6c9pzG5mSH/RGNq7DZdfa606x8oHGYZtV/wg1Hhikm/KiV5
- NSoXL53o7TDQU3j23rrmdQoOYKTjRmk73EUmGANxNCCEMaBP9U4oY+amWFounmdiXmyjqLkyij
- SFpL9sVrpAacw2lBnsTwQtHbRWx8md9v6jnQr46da/l+1MX0e86o0mumyqorj7xF0WpblG1I0Y
- MHAAQAA
-X-Change-ID: 20260513-expressatt_cpufreq-66638ba8d156
+Message-Id: <20260527-expressatt_cpufreq-v2-2-b9b7726ccb6d@gmail.com>
+References: <20260527-expressatt_cpufreq-v2-0-b9b7726ccb6d@gmail.com>
+In-Reply-To: <20260527-expressatt_cpufreq-v2-0-b9b7726ccb6d@gmail.com>
 To: Bjorn Andersson <andersson@kernel.org>, 
  Konrad Dybcio <konradybcio@kernel.org>, Rob Herring <robh@kernel.org>, 
  Krzysztof Kozlowski <krzk+dt@kernel.org>, 
@@ -55,14 +51,13 @@ To: Bjorn Andersson <andersson@kernel.org>,
  Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@kernel.org>
 Cc: linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org, 
  linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, 
- Rudraksha Gupta <guptarud@gmail.com>, 
- Antony Kurniawan Soemardi <linux@smankusors.com>
+ Rudraksha Gupta <guptarud@gmail.com>
 X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1779939569; l=3382;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1779939570; l=2263;
  i=guptarud@gmail.com; s=20240916; h=from:subject:message-id;
- bh=ke7HvLdLefDj+v9czBNoRTxNhOufQCAgn7Qfxki38Bk=;
- b=ZHDH7p6//jV4zZAz7g1u6LCwqUGnaKuS7ve3ru1Woi3B+iOxk2F+qYK5VzX+L5omsj/hoedJE
- b23/V/l0MIqBfh7IQpjvbrGDgwzAxqkKdWDEm+p1tWHmdSZJdGWdNPT
+ bh=7s3KzFwEWbUff19gMuQdq9JEmjBwkmq5B8cP8DEG7zQ=;
+ b=+9RKQtGrbedqx6kW4YRBStMd7qCMFDl+Vusc3AVas4VSS/a4yxvKeFbtMhrKxZbhhd3vtBt/f
+ 6s7f9UCjtcICfXCOFnNlbrGLQ4ftSr6RniljOOKDojFv/TEw59Zjt2r
 X-Developer-Key: i=guptarud@gmail.com; a=ed25519;
  pk=ETrudRugWAtOpr0OhRiheQ1lXM4Kk4KGFnBySlKDi2I=
 X-Endpoint-Received: by B4 Relay for guptarud@gmail.com/20240916 with
@@ -70,92 +65,67 @@ X-Endpoint-Received: by B4 Relay for guptarud@gmail.com/20240916 with
 X-Original-From: Rudraksha Gupta <guptarud@gmail.com>
 Reply-To: guptarud@gmail.com
 
-Similar to APQ8064, cpufreq is enabled with this small patch series.
+From: Rudraksha Gupta <guptarud@gmail.com>
 
-Tests:
+The MSM8960 uses SAW2 v1.1, the same hardware version as the APQ8064.
+Add SPM register data so that the SAW2 driver can program the correct
+SPM sequences and PMIC parameters for MSM8960 CPUs.
 
-// Show available frequencies
-$ cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_available_frequencies
-384000 486000 594000 702000 810000 918000 1026000 1080000 1134000 1242000 1350000 1512000
-$ cat /sys/devices/system/cpu/cpu1/cpufreq/scaling_available_frequencies
-384000 486000 594000 702000 810000 918000 1026000 1080000 1134000 1242000 1350000 1512000
- 
-// Show current governor
-$ cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
-schedutil
-$ cat /sys/devices/system/cpu/cpu1/cpufreq/scaling_governor
-schedutil
- 
-// set low freq
-$ echo 384000 > /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq
-$ cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq
-384000
- 
-// set mid freq
-$ echo 1026000 > /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq
-$ cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq
-1026000
- 
-// set max freq
-$ echo 1512000 > /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq
-$ cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq
-1512000
- 
-// set low freq
-$ echo 384000 > /sys/devices/system/cpu/cpu1/cpufreq/scaling_max_freq
-$ cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq
-384000
- 
-// set mid freq
-$ echo 1026000 > /sys/devices/system/cpu/cpu1/cpufreq/scaling_max_freq
-$ cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq
-1026000
- 
-// set max freq
-$ echo 1512000 > /sys/devices/system/cpu/cpu1/cpufreq/scaling_max_freq
-$ cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq
-1512000
- 
-// SAW2 regulators
-$ cat /sys/class/regulator/regulator.*/microvolts 2>/dev/null | head -2
-1200000
-1150000
-
+Link: https://github.com/CyanogenMod/android_kernel_samsung_d2/blob/0dbe2b56847b304d30b809dfd08ba3b4a61d9af8/arch/arm/mach-msm/board-express.c#L3265-L3285
+Link: https://github.com/CyanogenMod/android_kernel_samsung_d2/blob/0dbe2b56847b304d30b809dfd08ba3b4a61d9af8/arch/arm/mach-msm/board-express.c#L3353-L3381
+Assisted-by: Claude:claude-opus-4.6
 Signed-off-by: Rudraksha Gupta <guptarud@gmail.com>
 ---
-Changes in v2:
-- undo saw2 compatible rename
-- update dts schema
-- formatting
-- Link to v1: https://lore.kernel.org/r/20260514-expressatt_cpufreq-v1-0-487fd2d78859@gmail.com
+ drivers/soc/qcom/spm.c | 20 +++++++++++++++++++-
+ 1 file changed, 19 insertions(+), 1 deletion(-)
 
----
-Rudraksha Gupta (3):
-      dt-bindings: opp: Allow optional -vN suffix in opp-microvolt property name
-      soc: qcom: spm: Add MSM8960 SAW2 CPU support
-      ARM: dts: qcom: msm8960: Add CPU frequency scaling support
+diff --git a/drivers/soc/qcom/spm.c b/drivers/soc/qcom/spm.c
+index f75659fff287..fb3ec8aa42b0 100644
+--- a/drivers/soc/qcom/spm.c
++++ b/drivers/soc/qcom/spm.c
+@@ -233,7 +233,7 @@ static const u16 spm_reg_offset_v1_1[SPM_REG_NR] = {
+ 
+ static void smp_set_vdd_v1_1(void *data);
+ 
+-/* SPM register data for 8064 */
++/* SPM register data for 8064, 8960 */
+ static struct linear_range spm_v1_1_regulator_range =
+ 	REGULATOR_LINEAR_RANGE(700000, 0, 56, 12500);
+ 
+@@ -253,6 +253,22 @@ static const struct spm_reg_data spm_reg_8064_cpu = {
+ 	.ramp_delay = 1250,
+ };
+ 
++static const struct spm_reg_data spm_reg_8960_cpu = {
++	.reg_offset = spm_reg_offset_v1_1,
++	.spm_cfg = 0x1f,
++	.pmic_dly = 0x03020004,
++	.pmic_data[0] = 0x0084009c,
++	.pmic_data[1] = 0x00a4001c,
++	.seq = { 0x03, 0x0f, 0x00, 0x24, 0x54, 0x10, 0x09, 0x03, 0x01,
++		0x10, 0x54, 0x30, 0x0c, 0x24, 0x30, 0x0f },
++	.start_index[PM_SLEEP_MODE_STBY] = 0,
++	.start_index[PM_SLEEP_MODE_SPC] = 2,
++	.set_vdd = smp_set_vdd_v1_1,
++	.range = &spm_v1_1_regulator_range,
++	.init_uV = 1300000,
++	.ramp_delay = 1250,
++};
++
+ static inline void spm_register_write(struct spm_driver_data *drv,
+ 					enum spm_reg reg, u32 val)
+ {
+@@ -501,6 +517,8 @@ static const struct of_device_id spm_match_table[] = {
+ 	  .data = &spm_reg_8974_8084_cpu },
+ 	{ .compatible = "qcom,apq8064-saw2-v1.1-cpu",
+ 	  .data = &spm_reg_8064_cpu },
++	{ .compatible = "qcom,msm8960-saw2-cpu",
++	  .data = &spm_reg_8960_cpu },
+ 	{ },
+ };
+ MODULE_DEVICE_TABLE(of, spm_match_table);
 
- .../devicetree/bindings/opp/opp-v2-kryo-cpu.yaml   |   2 +-
- arch/arm/boot/dts/qcom/qcom-msm8960.dtsi           | 129 +++++++++++++++++++++
- drivers/soc/qcom/spm.c                             |  20 +++-
- 3 files changed, 149 insertions(+), 2 deletions(-)
----
-base-commit: 3131ff5a117498bb4b9db3a238bb311cbf8383ce
-change-id: 20260513-expressatt_cpufreq-66638ba8d156
-prerequisite-message-id: <20260527-expressatt-touchkey-v2-1-049dca41fc3a@gmail.com>
-prerequisite-patch-id: 2b24e9ba47500ef05d38e37b40d8ca2dceb4716a
-prerequisite-message-id: <20260527-expressatt_camera_flash-v6-0-de0f150024e4@gmail.com>
-prerequisite-patch-id: ab8b8d87fd2d518c4c5b5dace3f22238d1abbe49
-prerequisite-patch-id: 466e1f74760f1a5ba7c222d01953aed6ea787390
-prerequisite-patch-id: 7ef7df61e7ef6476a35811d765f522f793d9ecc7
-prerequisite-message-id: <20260401-expressatt_fuel_guage-v3-0-9674cfc0b5a2@gmail.com>
-prerequisite-patch-id: 27c37aa51fe76043b4998137d106689ed5ae6c91
-prerequisite-patch-id: e477ee37abf167c55659f5e591b070b176187ca7
-prerequisite-patch-id: 9680b63831f2be63607bff2175639c1987af5e85
-prerequisite-patch-id: ee275dc3aec6159072d0a9efb66d18468a72ad57
-
-Best regards,
 -- 
-Rudraksha Gupta <guptarud@gmail.com>
+2.54.0
 
 
