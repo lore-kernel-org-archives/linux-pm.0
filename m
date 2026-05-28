@@ -1,58 +1,47 @@
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id 33C903AB274;
-	Thu, 28 May 2026 09:10:14 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 84B8839A81E;
+	Thu, 28 May 2026 10:32:42 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1779959415; cv=none; b=oAkPRFR9i8Jdk8ihle7v7kbvFWjKWAFcz1VsPVdWrM+7X3dJWhVRD2RD5yLsUy7W9Ab8tP9qxtkNk1nSJaRYhvxmApwJxgWnm+wFTnfmOX2GPeLBsUSdeQahGTK7M+pRM/NL1YX+cbfENNTxGhTgka4P3kQcyP6wGYtU9l8eld4=
+	t=1779964363; cv=none; b=B+zixez3HYlxwQZp85inXTT/QjYwTzk1mPoE7o0tllB+IcS5zuo/r4t4JF2Rq3mIvshJnkbJaSbpQy2H9GlyTeH93ck0Bj0g5wZaXXq/GZXuksVOUZiYMAxVAyXdiQyrwx58XfNtjD0eG6l+SazFdbtRY2eZMQaqcnIidIXRjkc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1779959415; c=relaxed/simple;
-	bh=r3/vjATgWEGj2o9tOCXkkVyPIqLlGthQcOjtR8FaSiM=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=lVoOX9nQb5W3+L0pt76kYOVFhYth3gMUXS4SNSO9iqfo5mCzO64oP163TcXXTkZNnL0c0JEpj/vT6KbWs9cUAClW0qqdAkBuXM+iD6t74IxfnLFsbDpiYCPxnmfld9qj644Q8Hw5RtSkL936SHLsdx73K8631wDyIenEC/cOyRQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=hgazRG0H; arc=none smtp.client-ip=217.140.110.172
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
+	s=arc-20240116; t=1779964363; c=relaxed/simple;
+	bh=aBMi0mrcf4vS1PF/4E16iOtxM6eVrsZSlKC1dqPmC6I=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=kT2qdMG05UlublfXNbg6RGXTf/rxPskfjzT9gBvCx8GoUSXrkxTVNjCUTOjiJnKqeSNMjRX0jJqjeHv8+6lmM/V91xPK+8Sk/183hJ/I5OMopTlgce+wQPVXsfG04H27TtW/e4e2kvZzg42WD7Sht4g2+yCZXf28jzdcx/8AV3w=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=RUx7mE+t; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="hgazRG0H"
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 841394403;
-	Thu, 28 May 2026 02:10:08 -0700 (PDT)
-Received: from e135073.arm.com (unknown [10.57.24.196])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id 860523F632;
-	Thu, 28 May 2026 02:10:09 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1779959413; bh=r3/vjATgWEGj2o9tOCXkkVyPIqLlGthQcOjtR8FaSiM=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=hgazRG0HyEBEPtlFjrSSpaMRCWY/ECmc7Stsh41Yg9FCvFoxQbJQ1CkNZIaTrx+cz
-	 ohA2zVRzyNo8lZ0CP2kSF1bUtjwopFUBSZ3wD/AO4g2nacElQRRgkEfSvmtupuw6nH
-	 XMIg28sQPVwJOCdCoaOD22vAk0aZgpWxg/LaWSOw=
-From: Pierre Gondois <pierre.gondois@arm.com>
-To: linux-kernel@vger.kernel.org
-Cc: Jie Zhan <zhanjie9@hisilicon.com>,
-	Lifeng Zheng <zhenglifeng1@huawei.com>,
-	Ionela Voinescu <ionela.voinescu@arm.com>,
-	Sumit Gupta <sumitg@nvidia.com>,
-	Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>,
-	Pierre Gondois <pierre.gondois@arm.com>,
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="RUx7mE+t"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 055461F000E9;
+	Thu, 28 May 2026 10:32:39 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1779964362;
+	bh=DkMr80QBD3s23T5qqCcla25byzvfr1d064BGe3h1zfg=;
+	h=From:To:Cc:Subject:Date;
+	b=RUx7mE+tbuhbUvUMifqnZtDE2uqWtP/EsTLR7SNlcYVu6TKNf8HEz7I4vtFl5eNxM
+	 //Nmmo/xa7ULn0lhYGhKCKS7aiAj06oCs0Lf/o4lcuCMOzyJPGafUfRdBqWSXCfM7X
+	 a061suEnOBT9U/gIDXs3gZK9RX103qCEqc/wp1LTDRpgplioPbaC7UBs4PX9UheeX5
+	 oxpbRthP6Th7l8ghcaR9/9NUbBmNUn6rCRpmJ4VlDR74I1IbFmGALXJv/A2aOxnSka
+	 gVHV8cutY7ABVd0EcUOhOsCM/oSDb7CSJVJ9HcmlJBBWkrNbU1xNrj+RYNtFFijSSY
+	 XV0ZkzFiCprew==
+From: Tzung-Bi Shih <tzungbi@kernel.org>
+To: Jonathan Corbet <corbet@lwn.net>,
 	"Rafael J. Wysocki" <rafael@kernel.org>,
-	Viresh Kumar <viresh.kumar@linaro.org>,
-	Jonathan Corbet <corbet@lwn.net>,
-	Shuah Khan <skhan@linuxfoundation.org>,
-	Huang Rui <ray.huang@amd.com>,
-	Mario Limonciello <mario.limonciello@amd.com>,
-	Perry Yuan <perry.yuan@amd.com>,
-	K Prateek Nayak <kprateek.nayak@amd.com>,
-	Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	Danilo Krummrich <dakr@kernel.org>
+Cc: Shuah Khan <skhan@linuxfoundation.org>,
+	Pavel Machek <pavel@kernel.org>,
 	Len Brown <lenb@kernel.org>,
-	Saravana Kannan <saravanak@kernel.org>,
+	tzungbi@kernel.org,
+	linux-doc@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
 	linux-pm@vger.kernel.org,
-	linux-doc@vger.kernel.org
-Subject: [PATCH v3 4/4] cpufreq: Use policy->min/max init as QoS request
-Date: Thu, 28 May 2026 11:09:06 +0200
-Message-ID: <20260528090913.2759118-5-pierre.gondois@arm.com>
-X-Mailer: git-send-email 2.43.0
-In-Reply-To: <20260528090913.2759118-1-pierre.gondois@arm.com>
-References: <20260528090913.2759118-1-pierre.gondois@arm.com>
+	driver-core@lists.linux.dev
+Subject: [PATCH] PM: sleep: Allow disabling DPM watchdog by default
+Date: Thu, 28 May 2026 10:32:15 +0000
+Message-ID: <20260528103215.505795-1-tzungbi@kernel.org>
+X-Mailer: git-send-email 2.54.0.929.g9b7fa37559-goog
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -61,76 +50,108 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Consider policy->min/max being set in the driver .init()
-callback as a QoS request. Impacted driver are:
-- gx-suspmod.c (min)
-- cppc-cpufreq.c (min)
-- longrun.c (min/max)
+Introduce the CONFIG_DPM_WATCHDOG_DEFAULT_ENABLED Kconfig option to
+allow the device suspend/resume watchdog (DPM watchdog) to be disabled
+by default at compile time.
 
-Update the documentation accordingly.
+Additionally, introduce the "dpm_watchdog_enabled" boot parameter to
+enable or disable the watchdog at boot time.
 
-Signed-off-by: Pierre Gondois <pierre.gondois@arm.com>
+This provides flexibility for systems that want the watchdog code
+compiled in but inactive by default, allowing it to be enabled only when
+needed.
+
+Signed-off-by: Tzung-Bi Shih <tzungbi@kernel.org>
 ---
- Documentation/cpu-freq/cpu-drivers.rst |  9 +++++++--
- drivers/cpufreq/cpufreq.c              | 12 ++++++++++--
- 2 files changed, 17 insertions(+), 4 deletions(-)
+ .../admin-guide/kernel-parameters.txt         |  8 ++++++++
+ drivers/base/power/main.c                     | 20 +++++++++++++++++++
+ kernel/power/Kconfig                          |  9 +++++++++
+ 3 files changed, 37 insertions(+)
 
-diff --git a/Documentation/cpu-freq/cpu-drivers.rst b/Documentation/cpu-freq/cpu-drivers.rst
-index c5635ac3de547..95e4c513c4533 100644
---- a/Documentation/cpu-freq/cpu-drivers.rst
-+++ b/Documentation/cpu-freq/cpu-drivers.rst
-@@ -114,8 +114,13 @@ Then, the driver must fill in the following values:
- |policy->cur			    | The current operating frequency of   |
- |				    | this CPU (if appropriate)		   |
- +-----------------------------------+--------------------------------------+
--|policy->min,			    |					   |
--|policy->max,			    |					   |
-+|policy->min,			    | The min/max scaling frequency.       |
-+|policy->max			    | If set by the driver in ->init(),    |
-+|				    | used as initial min/max frequency    |
-+|				    | QoS request; otherwise, follow       |
-+|				    | the min/max allowed frequency        |
-+|				    | the cpufreq driver can set.          |
-++-----------------------------------+--------------------------------------+
- |policy->policy and, if necessary,  |					   |
- |policy->governor		    | must contain the "default policy" for|
- |				    | this CPU. A few moments later,       |
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index d75c6739aa780..759e85bf4ba17 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -1399,8 +1399,16 @@ static void cpufreq_policy_free(struct cpufreq_policy *policy)
+diff --git a/Documentation/admin-guide/kernel-parameters.txt b/Documentation/admin-guide/kernel-parameters.txt
+index 85936e48cf9a..3a919e660137 100644
+--- a/Documentation/admin-guide/kernel-parameters.txt
++++ b/Documentation/admin-guide/kernel-parameters.txt
+@@ -1344,6 +1344,14 @@ Kernel parameters
+ 			it becomes active and is searched during signature
+ 			verification.
  
- static int cpufreq_policy_init_qos(struct cpufreq_policy *policy)
- {
-+	unsigned int min_freq, max_freq;
- 	int ret;
- 
-+	/* Use policy->min/max set by the driver as QoS requests. */
-+	min_freq = max(FREQ_QOS_MIN_DEFAULT_VALUE, policy->min);
-+	if (policy->max)
-+		max_freq = min(FREQ_QOS_MAX_DEFAULT_VALUE, policy->max);
-+	else
-+		max_freq = FREQ_QOS_MAX_DEFAULT_VALUE;
++	dpm_watchdog_enabled=
++			[KNL] Enable or disable the device suspend/resume
++			watchdog (DPM watchdog).
++			Format: {"0" | "1"}
++			0: disable
++			1: enable
++			Default value is set by CONFIG_DPM_WATCHDOG_DEFAULT_ENABLED.
 +
- 	if (policy->boost_supported) {
- 		ret = freq_qos_add_request(&policy->constraints,
- 						&policy->boost_freq_req,
-@@ -1411,12 +1419,12 @@ static int cpufreq_policy_init_qos(struct cpufreq_policy *policy)
- 	}
+ 	driver_async_probe=  [KNL]
+ 			List of driver names to be probed asynchronously. *
+ 			matches with all driver names. If * is specified, the
+diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
+index e1b550664bab..4f92905f3edf 100644
+--- a/drivers/base/power/main.c
++++ b/drivers/base/power/main.c
+@@ -527,6 +527,20 @@ module_param(dpm_watchdog_all_cpu_backtrace, bool, 0644);
+ MODULE_PARM_DESC(dpm_watchdog_all_cpu_backtrace,
+ 		 "Backtrace all CPUs on DPM watchdog timeout");
  
- 	ret = freq_qos_add_request(&policy->constraints, &policy->min_freq_req,
--				   FREQ_QOS_MIN, FREQ_QOS_MIN_DEFAULT_VALUE);
-+				   FREQ_QOS_MIN, min_freq);
- 	if (ret < 0)
- 		return ret;
++#ifdef CONFIG_DPM_WATCHDOG_DEFAULT_ENABLED
++static unsigned int __read_mostly dpm_watchdog_enabled = 1;
++#else
++static unsigned int __read_mostly dpm_watchdog_enabled;
++#endif
++
++static int __init dpm_watchdog_setup(char *str)
++{
++	if (kstrtouint(str, 0, &dpm_watchdog_enabled) == 0)
++		return 1;
++	return 0;
++}
++__setup("dpm_watchdog_enabled=", dpm_watchdog_setup);
++
+ /**
+  * dpm_watchdog_handler - Driver suspend / resume watchdog handler.
+  * @t: The timer that PM watchdog depends on.
+@@ -570,6 +584,9 @@ static void dpm_watchdog_set(struct dpm_watchdog *wd, struct device *dev)
+ {
+ 	struct timer_list *timer = &wd->timer;
  
- 	ret = freq_qos_add_request(&policy->constraints, &policy->max_freq_req,
--				   FREQ_QOS_MAX, FREQ_QOS_MAX_DEFAULT_VALUE);
-+				   FREQ_QOS_MAX, max_freq);
- 	if (ret < 0)
- 		return ret;
++	if (!dpm_watchdog_enabled)
++		return;
++
+ 	wd->dev = dev;
+ 	wd->tsk = current;
+ 	wd->fatal = CONFIG_DPM_WATCHDOG_TIMEOUT == CONFIG_DPM_WATCHDOG_WARNING_TIMEOUT;
+@@ -588,6 +605,9 @@ static void dpm_watchdog_clear(struct dpm_watchdog *wd)
+ {
+ 	struct timer_list *timer = &wd->timer;
  
++	if (!dpm_watchdog_enabled)
++		return;
++
+ 	timer_delete_sync(timer);
+ 	timer_destroy_on_stack(timer);
+ }
+diff --git a/kernel/power/Kconfig b/kernel/power/Kconfig
+index 05337f437cca..d4cecdb8575e 100644
+--- a/kernel/power/Kconfig
++++ b/kernel/power/Kconfig
+@@ -267,6 +267,15 @@ config DPM_WATCHDOG
+ 	  captured in pstore device for inspection in subsequent
+ 	  boot session.
+ 
++config DPM_WATCHDOG_DEFAULT_ENABLED
++	bool "Enable DPM watchdog by default"
++	depends on DPM_WATCHDOG
++	default y
++	help
++	  If you say Y here, the DPM watchdog will be enabled by default.
++	  If you say N, it will be compiled in but disabled, requiring a
++	  boot parameter to activate.
++
+ config DPM_WATCHDOG_TIMEOUT
+ 	int "Watchdog timeout to panic in seconds"
+ 	range 1 120
 -- 
-2.43.0
+2.54.0.929.g9b7fa37559-goog
 
