@@ -1,49 +1,49 @@
-Received: from DB3PR0202CU003.outbound.protection.outlook.com (mail-northeuropeazon11010023.outbound.protection.outlook.com [52.101.84.23])
+Received: from MRWPR03CU001.outbound.protection.outlook.com (mail-francesouthazon11011006.outbound.protection.outlook.com [40.107.130.6])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DAFA238D403;
-	Thu, 28 May 2026 08:56:33 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.84.23
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1AA923911AD;
+	Thu, 28 May 2026 08:56:51 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.107.130.6
 ARC-Seal:i=3; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1779958596; cv=fail; b=c9Z4dCAZn+ghVYnFygkzJHht5VS1NGMuHtHsuHShYbh7Q2K7WyAQz3w5sYQsCq9zvtfKJY7TxkxVXSj+zI0BogOOwRdMzzZYEAw6VvQXXhqJlhm8sBVcKFQMsO6BJQfOCBAZ8Ks646qiNaULhYGXoO6sczIHVC2yZ6jWLtdikv4=
+	t=1779958617; cv=fail; b=gwrK7+0Cx46owMlpgB/gzGgYNSqbwunpYJP4bbZMtLzzjmo48ie8319I1XRtSRQ1y1RRRKDZ0Cc9LZAY4Nbkwn3T9lWDkyK0ZyOcswfE7aCI74vBPvjn6fdvTx2PiA3jg4hj8bxRVwmOxgacAPK7ku6cI/BHIPtjiEJ5f39PA2w=
 ARC-Message-Signature:i=3; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1779958596; c=relaxed/simple;
-	bh=C5bnyEM5wa67C5mJ6dXBor3AuCyztjv+DI8/V5DMaSo=;
-	h=Message-ID:Date:Subject:To:Cc:References:From:In-Reply-To:
-	 Content-Type:MIME-Version; b=n3hQ2LYKM0kndD0jsvxNOexVL9F6CveVWiYb2RdOBMPUVz8bYhtpSwqR+VEPEdGCQSMxBOecTaYQ/Ov+lneZmE+V2W8PLOeIqDaBV82g2Ivv8QkSv2+3NajhfCrlRPDgNeVA+ETkoJTfEVHW+rrVAVg1snWX48MCeACMSyVbs0M=
-ARC-Authentication-Results:i=3; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=l0ZckSf0; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=l0ZckSf0; arc=fail smtp.client-ip=52.101.84.23
+	s=arc-20240116; t=1779958617; c=relaxed/simple;
+	bh=K7tuIMTbHJYFaYRIe5AJncRnqOQLw9mdaB7ZERX7Jyc=;
+	h=Message-ID:Date:From:Subject:To:Cc:References:In-Reply-To:
+	 Content-Type:MIME-Version; b=d81s6ZgCe+XJo7lE31OHFgmjS7HTFPBNLCOlHhVBRniWip40tubwjt6Li2BA4cU8y08NnzyIdrJODMyJ0v0yPVnbHhzfmcYxKlW521dDpwuWPoMfUo1EGXr3XuXHeZYMcWq8psbJKD623lveJ1PcBgF1WUKgpTtVhLOco6UIWKQ=
+ARC-Authentication-Results:i=3; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=K+3BUok/; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=K+3BUok/; arc=fail smtp.client-ip=40.107.130.6
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="l0ZckSf0";
-	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="l0ZckSf0"
+	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="K+3BUok/";
+	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="K+3BUok/"
 ARC-Seal: i=2; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=pass;
- b=Ejdye6n2CX8B+VOBPBkA/fOwmB0v3XlBC7gJ4UNq2Bag7nvLVTy/FVcyl4PjZmYsGi+Lmd3gMOk7l4XCH07pY0z2XsI3JUCLw2+UWyMxIoWAN8MvpjUgZMCy9brqWVCA7w+KkOvIFYfFpBiDUekDASyCdjpnMgLxiBRD5z9kRLB7Jlbeb3gqOp9muF45qPY0YYJy00QE/bbk8woaeKadHQ/MpJqTefPsMkj9Rev3qWuYrlmA5tVdpXbCTFDB/FaEM094GdgdC/jaetjGiXx6lmfJx2nyuZiqZVjxrXcQDuTgOpQbLvwpcEDrZtB6RIysaIf8qoqPabjd2H4FQ4i30w==
+ b=vTHCRl0Bh9X7tbqe61yyry/xZz9e+gxTcDIuwzdV0GTpzYeOqVjhU8Lr73PZrdESMOVy7rySl5igdt17rJ1+1uWqU8qdoxHwqMHOk+LuLZnCtkY3Ct+uiz7GHy1zmQkZ5zoXlVGSYbn1WgAdKi5HXpL5mD2sfzU2fWZkwUvU/tCwTe8lqVSZ3SpgWZSdBQVp9n+RYIcLgTWT5GT9jPzoFgoWMQaZ0UGfJn60SjQVjj3W5Q4MyqZu4Z9cJByGSs2RsHzZVbZqb2PKrxS5b86IMmJ5JyDal9I9nU6m7Ll5rLUI7Y6jX6pG80Hb5KlANNNCI/u+MXCH+brdnwlewUkKYw==
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector10001;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=GMGI1HdI6tH1EMMpOkehXMfM6aRlpUcHZJsPE7sUGy8=;
- b=QiBU917rmU4Q7YiA9lxUhVz9ETfcIfYfom6wFa/YsvwNgdfddX0dJcfah0T2MvfEPqy50SwR5wbY8asgc6xM0+anVuM5FfJuv4Nd/j52rstrbIhw3uH6dQ61nsscpTzDPbpkCX3y3mOozh624BirCA3Ar4NvQ+1Xehn8pOxf5vPtwZVtJaAjmLmiiqVQ8dpRIPhWZBn+fe2294sJWPyxIWS3jssKttQXIaskr6tYwqsdP9/dorVZ9IDjossyKV8qqscWptdiYI9lHjCQzNFCe0KMgb9aIqHOXajj3crY6I03XfnNPbQB71DQ0t9tKjqLOXiXeCbaiBNS8t2yzN3MXw==
+ bh=Y0FlReazdrLX7xl1YCeBKcpZSsZ7Pbu0ACZs5VxkEPU=;
+ b=trTwd0+fU/C8hXbachZp0ttSxTZV6YcmJuuuYtfLsg5UyVh5fOb1/nAZ9RU0zyDe2J7nHhzvlf2nZsiKb/nhIz0akUkmThv5+qiShLiesHhk0nYIuTGlklYhXRlkclglTe+ud6RbsAfJNDyQq6ibDj2izM/030F+xu7ulPBTr4sqE9FjANWIsgO1pQmpcUOVh0LtWaxR5veD1TBaLGm6GN5XYUGSkUmsAiJPDfQOhL9iw9m3B3OangcD+QFDcddijoVWEohEU6FImW8mYnvQCvhUwbV2eRPZOIvbP/hybdx1miRiTs8Sqi263g407oiRq7kgl/NpbDg6/UmZL6EFFA==
 ARC-Authentication-Results: i=2; mx.microsoft.com 1; spf=pass (sender ip is
- 4.158.2.129) smtp.rcpttodomain=linaro.org smtp.mailfrom=arm.com; dmarc=pass
- (p=none sp=none pct=100) action=none header.from=arm.com; dkim=pass
- (signature was verified) header.d=arm.com; arc=pass (0 oda=1 ltdi=1
+ 4.158.2.129) smtp.rcpttodomain=oss.qualcomm.com smtp.mailfrom=arm.com;
+ dmarc=pass (p=none sp=none pct=100) action=none header.from=arm.com;
+ dkim=pass (signature was verified) header.d=arm.com; arc=pass (0 oda=1 ltdi=1
  spf=[1,1,smtp.mailfrom=arm.com] dkim=[1,1,header.d=arm.com]
  dmarc=[1,1,header.from=arm.com])
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=arm.com; s=selector1;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=GMGI1HdI6tH1EMMpOkehXMfM6aRlpUcHZJsPE7sUGy8=;
- b=l0ZckSf0QUhbGUUgQfiv1w3RsQBlCVBt+RO80N/eXLsH1qOR2aPXtfBZM+rAWU9BbDMQM1EEUT/sY0Yb096/z+pu3TH5aVq6NyCb4TFYWm7ReWk4HLkSV4DQVwCmwGa544NSnVWyu5/iFRoILrcQbtI7beHynOPl4qJh8z9D4fk=
-Received: from DB9PR02CA0026.eurprd02.prod.outlook.com (2603:10a6:10:1d9::31)
- by MI3PR08MB11933.eurprd08.prod.outlook.com (2603:10a6:290:75::24) with
+ bh=Y0FlReazdrLX7xl1YCeBKcpZSsZ7Pbu0ACZs5VxkEPU=;
+ b=K+3BUok/XaB0n9d+uLf7S/r4JEFyiyGyV1WFnZo88fnXvqo1eLl4g1/rVXwcFUVN5MMDUy+NmXmT/JQnnFMT8G7XaHasm8LSnragyxlrv678GrfUXJpMwLDg+V/v82/1d4P1xABa9DIVZ2sNT21RuvxM2ys91Is831OcAnIAV1g=
+Received: from DU2PR04CA0037.eurprd04.prod.outlook.com (2603:10a6:10:234::12)
+ by GV2PR08MB11491.eurprd08.prod.outlook.com (2603:10a6:150:2a6::18) with
  Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.71.12; Thu, 28 May
- 2026 08:56:29 +0000
-Received: from DU2PEPF00028D0B.eurprd03.prod.outlook.com
- (2603:10a6:10:1d9:cafe::5c) by DB9PR02CA0026.outlook.office365.com
- (2603:10a6:10:1d9::31) with Microsoft SMTP Server (version=TLS1_3,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.71.13; Thu, 28 May
+ 2026 08:56:45 +0000
+Received: from DU2PEPF00028D10.eurprd03.prod.outlook.com
+ (2603:10a6:10:234:cafe::b) by DU2PR04CA0037.outlook.office365.com
+ (2603:10a6:10:234::12) with Microsoft SMTP Server (version=TLS1_3,
  cipher=TLS_AES_256_GCM_SHA384) id 15.21.71.13 via Frontend Transport; Thu, 28
- May 2026 08:56:29 +0000
+ May 2026 08:56:45 +0000
 X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 4.158.2.129)
  smtp.mailfrom=arm.com; dkim=pass (signature was verified)
  header.d=arm.com;dmarc=pass action=none header.from=arm.com;
@@ -51,45 +51,45 @@ Received-SPF: Pass (protection.outlook.com: domain of arm.com designates
  4.158.2.129 as permitted sender) receiver=protection.outlook.com;
  client-ip=4.158.2.129; helo=outbound-uk1.az.dlp.m.darktrace.com; pr=C
 Received: from outbound-uk1.az.dlp.m.darktrace.com (4.158.2.129) by
- DU2PEPF00028D0B.mail.protection.outlook.com (10.167.242.171) with Microsoft
+ DU2PEPF00028D10.mail.protection.outlook.com (10.167.242.24) with Microsoft
  SMTP Server (version=TLS1_3, cipher=TLS_AES_256_GCM_SHA384) id 15.21.48.11
- via Frontend Transport; Thu, 28 May 2026 08:56:29 +0000
+ via Frontend Transport; Thu, 28 May 2026 08:56:44 +0000
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=yIMk5Q/tFwsjPTae5kDGDKq5HkaELPy8P8Xh5gxHAXpNiE2c1hynUniUnSLh0rJ1VjYZXkDvmivbGRqFGIHekQL5xFMGeD/r0KbICIj2CPbE2+vUoo4jqobfzl+G01iHQatN6u1GZ/27Adzq/oHEIxkGZ2jg9/aMyOxPY9T0K2GjUkjuFowmENuOk/a7VBxMGgei/qMlZaZE5uio9/AhH6CFTUbIU8GW/37zTM1SYL5XqypzMGftMPoL7Y7i7GUd7X3zPBxNOc46OzMayibpYv5Wh5K43ze/e4p1VIi8DIa5asRQtLKDgZfW512JsOSGPStayk4PClm9xva547mkGw==
+ b=SJvkk2M3+gdzNBxqXwnhkqqcgUkxUB3j8MDT+foO6yfct7axXgQY2Vftn7OOMYolPd7a0ZHvmBOGBzFWtFMORd+XCjyZrBpiDHnN8RIqLHJYRS5vBGcyt5VhEwR5r3tBwR5kQEGo4q0/X9fjdr8xnEqz0uDVjR1Oe0QS5kM+AZfsiKhMuERGYX8PK7r6ZEiENJy/aB+BhZMLRs4T/BQ7dlaac4gy5L4OCpC2LIqqzz7EOJ3r9vr8Lnmrh7D2WEyd6O1remGeSMZUxgG5c67OsacXqRknZnDpSk0zJcQg+KpS3zcbEWTfmTBegphC3nbQIFS5BYe5522NbrCrc6xoYA==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector10001;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=GMGI1HdI6tH1EMMpOkehXMfM6aRlpUcHZJsPE7sUGy8=;
- b=saM8RhXLEMhDEzDj20/xMr+9FP1aZwm96HBYBK35a0NuPxRqrrEkUm5UZ76k7WznZd/nEcCPwmd1N6ejZQo1ZrFIpwicjoKqeZJYIyHoswYXX8nXEkWvAsZJALQKBJsvMk44fVLpIoLFr/u19S/rxVRNJSkMeQlHcnO4aA1kqLi990mVLhkdcxvLY23da2pDv8qH5vPNk6Sg7vEqvawr9/thI3jeH1U9JddeZKC9efd+V8zhpue6nNIf+NHACJGQBO/AKTOROeEjNVZlTpb8nloxjfAYdbliKijGFTliOms6PyBmRFdRVBEYVYjfAzsitzXZR7DKu2f4mqfRnRWuwA==
+ bh=Y0FlReazdrLX7xl1YCeBKcpZSsZ7Pbu0ACZs5VxkEPU=;
+ b=DpBjwNUjDEbGATjqm9fGUv0ktdqGXaivVWnKjRcB3pZOOpfP2gil2HufSYR6Fecf2UPX1lTicJ1a+S41tqmesD3AmIe9tM8HzFa5TMn0YOqUv9szTFziSFRjDJ5sQHG6Pb1RVrp5PeRUXpyM+nVEEsTX4wW0eZH0AqO+6bqO63Hc+8YA8j6uCVS++Eoof6XjC0JBIx2CSvpfEQPwx/LLfRd5HzNSvN8xD2WKKnyACmZSQJE3cIBQ1lPV4pcyJfXJbwCiM2BOBML7Jej54bQx4h3UCahW1TKUenUclbgFx3UEx2auWD7z2X/SeYq6+oaa7RdkfZSBBe++m1JupFXGkA==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
  smtp.mailfrom=arm.com; dmarc=pass action=none header.from=arm.com; dkim=pass
  header.d=arm.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=arm.com; s=selector1;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=GMGI1HdI6tH1EMMpOkehXMfM6aRlpUcHZJsPE7sUGy8=;
- b=l0ZckSf0QUhbGUUgQfiv1w3RsQBlCVBt+RO80N/eXLsH1qOR2aPXtfBZM+rAWU9BbDMQM1EEUT/sY0Yb096/z+pu3TH5aVq6NyCb4TFYWm7ReWk4HLkSV4DQVwCmwGa544NSnVWyu5/iFRoILrcQbtI7beHynOPl4qJh8z9D4fk=
+ bh=Y0FlReazdrLX7xl1YCeBKcpZSsZ7Pbu0ACZs5VxkEPU=;
+ b=K+3BUok/XaB0n9d+uLf7S/r4JEFyiyGyV1WFnZo88fnXvqo1eLl4g1/rVXwcFUVN5MMDUy+NmXmT/JQnnFMT8G7XaHasm8LSnragyxlrv678GrfUXJpMwLDg+V/v82/1d4P1xABa9DIVZ2sNT21RuvxM2ys91Is831OcAnIAV1g=
 Authentication-Results-Original: dkim=none (message not signed)
  header.d=none;dmarc=none action=none header.from=arm.com;
 Received: from VI0PR08MB10391.eurprd08.prod.outlook.com (2603:10a6:800:20c::6)
  by DB8PR08MB5450.eurprd08.prod.outlook.com (2603:10a6:10:116::22) with
  Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.71.13; Thu, 28 May
- 2026 08:55:26 +0000
+ 2026 08:55:41 +0000
 Received: from VI0PR08MB10391.eurprd08.prod.outlook.com
  ([fe80::fa6b:9ba8:5c2f:ac91]) by VI0PR08MB10391.eurprd08.prod.outlook.com
  ([fe80::fa6b:9ba8:5c2f:ac91%3]) with mapi id 15.21.0071.010; Thu, 28 May 2026
- 08:55:24 +0000
-Message-ID: <31854023-7a24-4662-9515-5459fde41aa1@arm.com>
-Date: Thu, 28 May 2026 10:55:21 +0200
+ 08:55:41 +0000
+Message-ID: <c7353d1b-82b3-46ee-ba0d-319004a55f3f@arm.com>
+Date: Thu, 28 May 2026 10:55:39 +0200
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 2/4] cpufreq: Set default policy->min/max values for
- all drivers
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linux-kernel@vger.kernel.org, Jie Zhan <zhanjie9@hisilicon.com>,
- Lifeng Zheng <zhenglifeng1@huawei.com>,
- Ionela Voinescu <ionela.voinescu@arm.com>, Sumit Gupta <sumitg@nvidia.com>,
- Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>,
- "Rafael J. Wysocki" <rafael@kernel.org>, Jonathan Corbet <corbet@lwn.net>,
+From: Pierre Gondois <pierre.gondois@arm.com>
+Subject: Re: [PATCH v2 1/4] cpufreq: Extract cpufreq_policy_init_qos()
+ function
+To: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>, linux-kernel@vger.kernel.org
+Cc: Jie Zhan <zhanjie9@hisilicon.com>, Lifeng Zheng
+ <zhenglifeng1@huawei.com>, Ionela Voinescu <ionela.voinescu@arm.com>,
+ Sumit Gupta <sumitg@nvidia.com>, "Rafael J. Wysocki" <rafael@kernel.org>,
+ Viresh Kumar <viresh.kumar@linaro.org>, Jonathan Corbet <corbet@lwn.net>,
  Shuah Khan <skhan@linuxfoundation.org>, Huang Rui <ray.huang@amd.com>,
  Mario Limonciello <mario.limonciello@amd.com>,
  Perry Yuan <perry.yuan@amd.com>, K Prateek Nayak <kprateek.nayak@amd.com>,
@@ -97,15 +97,14 @@ Cc: linux-kernel@vger.kernel.org, Jie Zhan <zhanjie9@hisilicon.com>,
  Len Brown <lenb@kernel.org>, Saravana Kannan <saravanak@kernel.org>,
  linux-pm@vger.kernel.org, linux-doc@vger.kernel.org
 References: <20260511135538.522653-1-pierre.gondois@arm.com>
- <20260511135538.522653-3-pierre.gondois@arm.com>
- <5jmfuo7wi4zqz3cv3voeheq6jm4xaxkwrnsprpjwewtk6v6qjs@vea3o4u7cyl4>
+ <20260511135538.522653-2-pierre.gondois@arm.com>
+ <cbf289b8-19d9-46b2-a80c-f72720686c46@oss.qualcomm.com>
 Content-Language: en-US
-From: Pierre Gondois <pierre.gondois@arm.com>
-In-Reply-To: <5jmfuo7wi4zqz3cv3voeheq6jm4xaxkwrnsprpjwewtk6v6qjs@vea3o4u7cyl4>
+In-Reply-To: <cbf289b8-19d9-46b2-a80c-f72720686c46@oss.qualcomm.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-ClientProxiedBy: LO3P123CA0008.GBRP123.PROD.OUTLOOK.COM
- (2603:10a6:600:ba::13) To VI0PR08MB10391.eurprd08.prod.outlook.com
+Content-Transfer-Encoding: 8bit
+X-ClientProxiedBy: LO3P123CA0005.GBRP123.PROD.OUTLOOK.COM
+ (2603:10a6:600:ba::10) To VI0PR08MB10391.eurprd08.prod.outlook.com
  (2603:10a6:800:20c::6)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
@@ -114,94 +113,126 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 X-MS-TrafficTypeDiagnostic:
-	VI0PR08MB10391:EE_|DB8PR08MB5450:EE_|DU2PEPF00028D0B:EE_|MI3PR08MB11933:EE_
-X-MS-Office365-Filtering-Correlation-Id: b03bb1f4-b500-44a7-4184-08debc97020e
+	VI0PR08MB10391:EE_|DB8PR08MB5450:EE_|DU2PEPF00028D10:EE_|GV2PR08MB11491:EE_
+X-MS-Office365-Filtering-Correlation-Id: b9c122d2-8723-4f44-190e-08debc970b2e
 x-checkrecipientrouted: true
 NoDisclaimer: true
 X-MS-Exchange-SenderADCheck: 1
 X-MS-Exchange-AntiSpam-Relay: 0
 X-Microsoft-Antispam-Untrusted:
- BCL:0;ARA:13230040|376014|7416014|366016|1800799024|4143699003|56012099006|5023799004|11063799006|3023799007|6133799003|18002099003|22082099003;
+ BCL:0;ARA:13230040|376014|7416014|366016|1800799024|4143699003|56012099006|11063799006|3023799007|6133799003|18002099003|22082099003;
 X-Microsoft-Antispam-Message-Info-Original:
- V05O0vC0UTnyww7L4sYFgfTfnzBDnlVHxpnNpBUstx9/9M44BaEMoAHMdQVtcQ2f7+AYSNDGBoIXBWvOH2t4oYNEGhp3buXQVR5elrH7RAgjaKuvjbQ4uUW6hpouXJ34WJt3XmUk4b2f5S6ymAz7VyxxhXlPI7thoWiqumXa+hTqi5S3Ud44mHHnz8+NzWbzQcLEXyNqkmKMQR0PEy/DanVhlx945F75NlYmxho2c+85q2nrwA7mnagW4D66ow56vtAGviNtOWYjwz6X5qlxTNOK/qzpCNXQr1G9yVElTMABAAWjHdmZ/kldxJMU7hwSUXUQDl0ubCRHMNdPmR1QVUY5SdWRYHZhtDgRXCbL2YXLlx76Xr3qHHEgV1sEpvC9gr8V0TLiyJ6L1VpXHlCNggWROp8D7dtt559X2GKeWkcyvXr7pMOyzgbcwfcphxRaKcn0s/9AYVncGX7lS+4JfhfQlNny88Yx7ep/lfzbTZgAN1h3BYCB9cRrgo3/ImidSNYICqQef20dZpQv81HzaeaP6eUuj1QR+yMrCCbVaeadsFB+b99d0N2Fqg5f/RAEm2Hph0RG51QfbtWDLkKwraU/g7MkUo7TCYaO0UEdw+Q0rGWl9/U+jobQVKe1N6ivLD/xlJCY80ilXhYQ6r9mpQ==
+ w2S44V3EGosgbZuLYFIXbM7Hqnl3CnY9lPZWYjcDlQOxtoY8LiG4TetC406X2r2JUIKBnsFvGE1lW90cIC4RAeu1Szv8I5iuLJCJhl32cUPnhGB3fv/yYJVoypxBof0VvPnhIzE4B6ZSqOLxzye6QCbfZUdbtBQ4h8Gl/pg2TOYwxkAIHbtmTGDV+Eiyg3DClfZ6inTlO2bxr1ndQ1S8IW1h8n6qmuJDaGlSBUfY20tg4AGNq2msoaiNtFwHNZTHLRYqbF1Z38gbKN7EAsLYEvsVuxUTX2PyUA3HtYPxNaLU6run4Ql6jiIxW0pu5kfKquTrANO35f7TwURST6FkyiLbID6utUV/UW77pd1WyAHPIbgZla/DJFVBkwttWKaSPs0L0iVCGfz85WtNGZZ6EzYb4nwIuc9CFWXfyaWCx8vfoncbI1k3j33kog1G7ovJGtJjdHBNvclDZGSggXtG7eqNEP5HRUzFokxekNi9awu27VrS3WpcSggugkEAoHPDGxTDJMDiXgln0XtmeTegfozZnJbB7RnKLIGO1jYHGN4k++FnCTTxB4UBMQpuSOjJ6Ncu+YDH8Of3g9tUA5LpVxignzwWeI3Vo1pwIRdOwGRNDKCEJiruZ54UNaVX8OLgqDFuJ/dJgiIY5dnYCVmwIIXN79H/VPMWzNu9QURaWVheZryMVNUI8ve0iVdvm9UX
 X-Forefront-Antispam-Report-Untrusted:
- CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:VI0PR08MB10391.eurprd08.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(376014)(7416014)(366016)(1800799024)(4143699003)(56012099006)(5023799004)(11063799006)(3023799007)(6133799003)(18002099003)(22082099003);DIR:OUT;SFP:1101;
+ CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:VI0PR08MB10391.eurprd08.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(376014)(7416014)(366016)(1800799024)(4143699003)(56012099006)(11063799006)(3023799007)(6133799003)(18002099003)(22082099003);DIR:OUT;SFP:1101;
 X-Exchange-RoutingPolicyChecked:
- ivMVUfp0uW1+QvXWwudlclGj7laNrZZAInDc1nA9bGgEgsfs6PyQPXwBcYNrH7S9/XEt/TvGRA3nvzEk3fuQGUzGcNsVteHJ/Ayi9u6sRLcDWDHJuoqnMK42yKePsrGzJr3Hp6f2PIuMnPIUs51kxI6ns5QiRIfh93Ykbf9ttPpxNNonMfINChKiKbvkBxvzEQ69j9TgW6asUDeaM5PF/Li5tFbtV2AJDUXag/3LlgINykOWNSQC0PWf+VgaEXD5whJWCJJ5C2iuAFqxi+pfcF/tixSm1cCmuYBOdSRp22Fq2ylAbtSIilZueGNsuwR52Q0Nd3DSNC1MOQ6JDvkfFg==
+ KaosXn7FAOfgTlzeuT+1iZhTs5v4XUPg0iqE4menF7xOt09x/5oQ9vII/FWt9uAu+akBSDVyu8t6bR4eXIpgJCseutAkndUSjWnSmpdMRDcxLI09CFHt9PP6piRHjv0RTgJ1+CN5qlV2FWKZbP0l0sGBVedRoP8lPLCtVcioI+QPteMPikHR/0h2e7U0rStk6ZBYNVFfnT9V5Dpa6O8IROx9Yn2a8D0Tn0ErovSYRQ/v9LEviaCG629WBLG/5Fys8LS9drZxAfh59zi82qccjr+mvayfUlXbyLOaVB9cFJGy6FPBbkeo1R3DN1CF0yX2PFnMpL7v8j5TEKCO/gB+Zg==
 X-MS-Exchange-Transport-CrossTenantHeadersStamped: DB8PR08MB5450
 X-EOPAttributedMessage: 0
 X-MS-Exchange-Transport-CrossTenantHeadersStripped:
- DU2PEPF00028D0B.eurprd03.prod.outlook.com
+ DU2PEPF00028D10.eurprd03.prod.outlook.com
 X-MS-PublicTrafficType: Email
 X-MS-Office365-Filtering-Correlation-Id-Prvs:
-	53ecd7c6-96e5-4cb8-0c14-08debc96db61
+	85fba731-a41c-49fe-934b-08debc96e57c
 X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|35042699022|82310400026|36860700016|1800799024|376014|14060799003|7416014|18002099003|22082099003|4143699003|3023799007|56012099006|6133799003|5023799004|11063799006;
+	BCL:0;ARA:13230040|14060799003|1800799024|82310400026|35042699022|376014|36860700016|7416014|4143699003|3023799007|11063799006|56012099006|6133799003|22082099003|18002099003;
 X-Microsoft-Antispam-Message-Info:
-	zdNa/hk5poirh7dqlvJxFHg+pCPrjZer3cBwyeI6G3d5AL6rBTZwzFUAJ+YUgzzssqBuXY/RFzI3v0mowFGg19iM+PMyvRwJBUpNbkH75sp2AY5sDdOKdS+npwVyqAsIcEgCGV8kS8nGQ+5burKb6gvyKH/vjdlYilnmMb0H8XK5LIye3D0l6u977he0WgRA8lkayquLpEpoKqV6dEIVyjaJ2Enhem/SQP5ortonnWmZwzHZmAYojSjf+Zv6jS3DHICphd0Zs6oENufOix3hUc7xtTbfrCwL5ykuk0hoygPyVCnVWiiJ9TFOAHNLnEpSjkF6B0g7N4iHRca2DyzAjNqhuILCOM/eHq7vf0IQmPzX2ilvAT34eymHprobP5qFTvYZNiYrcnfJQgnHDJPoujXQTPecMuLk7TLKwQmklvBrNMpqeaCRg2MaGIAkmvg1C5FeKV6b6Utu89/E0ZnvvSRm2sDuho8KWwKDZhypajoGChbzqiVi49k/ciQarcySqsmYUPGNmFrAH5La3V4R3SORHoKsGFdCLrDjuwnimTT6ucKCp0Qxrq98Q7wkGLoss8pJaQ3BGULFv7QrZ2KVy6MWBTTu3ESuy3bpIsh/xt+xlGCDb5QdHW4dUNgABbMNnfgHn2NTcvSflmguBHsExtF04rj0nP/Ji5tibK8p/vKTFkqyj+chpeUTe6348Mk9
+	uDIc/uAKCqzyuO5Be/mwexJ9hk/cm0WU/Nie7mmsST6r4Rp8WKcDfVwEP0v54QAmXwdBpoyIA/pd6HMiu6EfZnURXUFUF5vDOE8fYdk8NE0G4Mh/w/PYy4zJYfw8kYdHGi16Tj/Y0kx7jFHdWPlLrbLc5Pe51SJr1BEwXIOFIc0sToqog6aJ62b2bpfScNUd/H07Rxk4wtrRjxYGGDLTzqo4LWnGo+p7U7q8fplkGp8CgMac3Pam6xJlGiyx8E+us5/xEfwOlSj0nF184d/YUWWptjN2GWuPFZTVA5Xm3xoQ27fnT0RQZsPcmpUrzIKPvZTP0kJDd6StlhVfUMdZc/pFsKYa1sIGgar4CIdJCq3hsBjTkXzUtXvdpj4/yX2AtwBItX7Mn1pwNyelf9ikbRH6jz5gHLMJVmquY1ZQI/xQrMygsFTuF3tY7sFpZIDhQJBVmdoTwvBIhhzeEmpHvfcZKfW+kM8gkMHCGWPNJjTuA4hlJoCHKGGJBmW4kGXDrMuHy15sDyfXDPGiXouYz4D3ZVJwhJltXq6DKY9TW8bjXJWIPPvKh7xx37oZlb+UIo1pHOjAoqv347DNZgMJZSZBFmLoA2nhBwNm/PVhx+YYVt+piVuicwP5jtnbK8R/lZxK8n3nV3/ihrIQJJyc2erOBmJTD3vSsoHi86Pu5s37qRNCoQT0eVMCS9AE6M3nILQOkvkVj7CChrtGERE8mu0H2YZxqUcO51vK+7ZmqvI=
 X-Forefront-Antispam-Report:
-	CIP:4.158.2.129;CTRY:GB;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:outbound-uk1.az.dlp.m.darktrace.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230040)(35042699022)(82310400026)(36860700016)(1800799024)(376014)(14060799003)(7416014)(18002099003)(22082099003)(4143699003)(3023799007)(56012099006)(6133799003)(5023799004)(11063799006);DIR:OUT;SFP:1101;
+	CIP:4.158.2.129;CTRY:GB;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:outbound-uk1.az.dlp.m.darktrace.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230040)(14060799003)(1800799024)(82310400026)(35042699022)(376014)(36860700016)(7416014)(4143699003)(3023799007)(11063799006)(56012099006)(6133799003)(22082099003)(18002099003);DIR:OUT;SFP:1101;
 X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
 X-MS-Exchange-AntiSpam-MessageData-0:
-	G5mGIMDSijTDYP6aZ4gJDivqP+aLhVqOYFe7NB9XJdNqF0kBhe2WuzdTDB1eRXeb+iXfc9UyID8RiUSvrYw5dJpyx/6Ub0klOEzzz/iNZaX4ArXYcoZOdt7V4lxAS+/Fe2ZOd0E9LuHB6Ie5YxhaSWhyotNn77c+gEXGBDe+XPD7W32NKUao+HdEftXPQrTVQNQ/yhY2QH4fUnBjp7AzSPyh3Hex3SLs1nOO4IlTQra2+9TrK0QJEo8yC2WtC1bamZFr1NHg3gZTP2nafd1m5PCHKIfI/MECmVLLFoiKFslZalh5gBoWH+/CvnUky+WnRZW3JPOJ0tBOqNelTwIkI187jGqEs5ueTZpR0rZIeXbdD9zZwBlEYSH8abdZBzTQBB2fOm/+5Vy0YPQ5igvFqqZ91se/dqbW3hv+GF9O3XKtiwt+Cq4MimmyBX1aCe2G
+	SGm/e6LJiY/9R1WsHEAS58AD5+oiAm4QWf8R6cDWXju3LlnyJSfgUh/gVPPgDtIEAbHkqQXBe9Vvd52+5RL9CwOSDCb+lxM+OUSkR4kNz/JdPtwGzNrEqwa4auKt1HU66KrFEOqpJ97Tco5n/XofKqHlAUz/yXl5/ZeM1IqYeNACCy8Ga8e61znszhS7Ycc/S+E3Dut/0Ffw86ztfLp8zfkoNt2haPFjz9bQHk06MJ65tv08rLw7ztppgxxhN98tBJEW6601yE45dO69ZPBODTkJ5VWX1P0Dj+r+xK0kBSgOJogekZDMXUFsCA1SXlEEhDTjSJLCHQVdJ80cBnoI+JdpLlx5bcSwMt0OsP2pQgALHE4Hr56+BDzv9HQfRFY4X1thULJvDjEJpigRJ3iwmY2CilKk22wDLYo8dHMUwQtN43v4Nj9APCo0PeiwNLc0
 X-OriginatorOrg: arm.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 28 May 2026 08:56:29.2747
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 28 May 2026 08:56:44.5818
  (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: b03bb1f4-b500-44a7-4184-08debc97020e
+X-MS-Exchange-CrossTenant-Network-Message-Id: b9c122d2-8723-4f44-190e-08debc970b2e
 X-MS-Exchange-CrossTenant-Id: f34e5979-57d9-4aaa-ad4d-b122a662184d
 X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=f34e5979-57d9-4aaa-ad4d-b122a662184d;Ip=[4.158.2.129];Helo=[outbound-uk1.az.dlp.m.darktrace.com]
 X-MS-Exchange-CrossTenant-AuthSource:
-	DU2PEPF00028D0B.eurprd03.prod.outlook.com
+	DU2PEPF00028D10.eurprd03.prod.outlook.com
 X-MS-Exchange-CrossTenant-AuthAs: Anonymous
 X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: MI3PR08MB11933
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: GV2PR08MB11491
 
-Hello Viresh,
+Hello Zhongqiu,
 
-On 5/22/26 07:43, Viresh Kumar wrote:
-> On 11-05-26, 15:55, Pierre Gondois wrote:
->> Some drivers set policy->min/max in their .init() callback.
->> cpufreq_set_policy() will ultimately override them through:
->> cpufreq_policy_online()
->> \-cpufreq_init_policy()
->>    \-cpufreq_set_policy()
->>      \-/* Set policy->min/max */
->> Thus the policy min/max values provided are only temporary.
+On 5/19/26 15:51, Zhongqiu Han wrote:
+> On 5/11/2026 9:55 PM, Pierre Gondois wrote:
+>> Extract the QoS related logic from cpufreq_policy_online()
+>> to make the function shorter/simpler.
 >>
->> There is an exception if CPUFREQ_NEED_INITIAL_FREQ_CHECK is set and:
->> cpufreq_policy_online()
->> \-__cpufreq_driver_target()
->>    \-cpufreq_driver->target()
+>> The logic is placed in cpufreq_policy_init_qos() and is
+>> now executed right after the following calls:
+>> - cpufreq_driver->init()
+>> - cpufreq_table_validate_and_sort()
 >>
->> To prepare for a following patch that will remove all
->> policy->min/max initialization in the driver .init() callback
->> if the min/max value is equal to the cpuinfo.min/max_freq,
->> set a default policy->min/max value for all drivers.
+>> This helps preparing following patches that will,
+>> in cpufreq_policy_init_qos():
+>> - treat the policy->min/max values set by drivers as QoS requests.
+>> - set a default policy->min/max value to all policies.
+>>
+>> No functional change.
 >>
 >> Signed-off-by: Pierre Gondois <pierre.gondois@arm.com>
+>
+>
+> Looks good to me apart from a minor nit inline.
+>
+> Reviewed-by: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>
+>
+>
 >> ---
->>   drivers/cpufreq/cpufreq.c | 7 +++++++
->>   1 file changed, 7 insertions(+)
+>>   drivers/cpufreq/cpufreq.c | 53 +++++++++++++++++++++++----------------
+>>   1 file changed, 32 insertions(+), 21 deletions(-)
 >>
 >> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
->> index 034603c2af325..9e2d9d3fc5351 100644
+>> index 44eb1b7e7fc1b..034603c2af325 100644
 >> --- a/drivers/cpufreq/cpufreq.c
 >> +++ b/drivers/cpufreq/cpufreq.c
->> @@ -1401,6 +1401,13 @@ static int cpufreq_policy_init_qos(struct cpufreq_policy *policy)
->>   {
->>   	int ret;
->>   
->> +	/*
->> +	 * If the driver didn't set policy->min/max, set them as
->> +	 * they are used to clamp frequency requests.
->> +	 */
->> +	policy->min = policy->min ? policy->min : policy->cpuinfo.min_freq;
->> +	policy->max = policy->max ? policy->max : policy->cpuinfo.max_freq;
+>> @@ -1397,6 +1397,32 @@ static void cpufreq_policy_free(struct 
+>> cpufreq_policy *policy)
+>>       kfree(policy);
+>>   }
+>>   +static int cpufreq_policy_init_qos(struct cpufreq_policy *policy)
+>> +{
+>> +    int ret;
 >> +
-> This has nothing to do with qos-init, we should do it along with:
+>> +    if (policy->boost_supported) {
+>> +        ret = freq_qos_add_request(&policy->constraints,
+>> +                        &policy->boost_freq_req,
+>> +                        FREQ_QOS_MAX,
+>> +                        policy->cpuinfo.max_freq);
+>> +        if (ret < 0)
+>> +            return ret;
+>> +    }
+>> +
+>> +    ret = freq_qos_add_request(&policy->constraints, 
+>> &policy->min_freq_req,
+>> +                   FREQ_QOS_MIN, FREQ_QOS_MIN_DEFAULT_VALUE);
+>> +    if (ret < 0)
+>> +        return ret;
+>> +
+>> +    ret = freq_qos_add_request(&policy->constraints, 
+>> &policy->max_freq_req,
+>> +                   FREQ_QOS_MAX, FREQ_QOS_MAX_DEFAULT_VALUE);
+>> +    if (ret < 0)
+>> +        return ret;
+>> +
+>> +    return ret;
 >
->          cpumask_copy(policy->related_cpus, policy->cpus);
 >
-> in cpufreq_policy_online().
 >
-Ok right, I changed it in v3
+> Just minor nit: cpufreq_policy_init_qos() could perhaps return 0 on
+> success.
+>
+> In the original inline code we only checked 'ret < 0', so positive
+> return values were not intended to propagate as part of the API
+> contract. Returning 'ret' here may expose a positive success code (e.g.
+> 1) and make the helper easier to misuse (e.g. 'if (ret)' checks).
+> Returning 0 would keep the semantics unambiguous.
+
+
+Yes right indeed, I ll do that.
+
+
