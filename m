@@ -1,145 +1,172 @@
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.9])
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.13])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A28583D3491;
-	Thu, 28 May 2026 11:21:35 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.9
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3CAA23A6B9A
+	for <linux-pm@vger.kernel.org>; Thu, 28 May 2026 11:25:12 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.13
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1779967297; cv=none; b=CZ4nGyfyZ2NTyAMr1p/vAtyRgYMIRfGJzoQx/szoxpOzs4khnvEHUhb3gqaYIFn7zeO/HIEfCZnJODbrmaNjsoW1wl02+so3s/uWF/8X5EM/aWS3GgWxVBfHn8hLZd5VkKeuxntft+svktB6lNWj7447hsBD3GAcgQiUXW0IOww=
+	t=1779967515; cv=none; b=mfmJsKArxuhzLXNHl+FyJJtitTmnIExtBy9ircOpiPzwEc2IkuU8jGpvLrox9rtvjTdtP94C+3F/UlinykmZeeTIocsnqhZfgreEf8s4Q3+dZzZj2SsDCm2VJItcWtz05Ii+Qo+N6vbjNtrGZwyEkRchBOQffUw62eGhBxMd0sI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1779967297; c=relaxed/simple;
-	bh=f/lIC4TgmEzyiBDPh2iBCW6oUeY6y5+TmWqzleJFfvY=;
-	h=From:Date:To:cc:Subject:In-Reply-To:Message-ID:References:
-	 MIME-Version:Content-Type; b=bTpRNi9xWi6NAZ9hg0k+E60lA2+4Htrx5oLqKfFJkL0Twj/PB0sg+4xXfYuOEmoHbkcJkie44RshfQQQIQQ0BMlOWdsmbVFcS/WcdIDrcqJ7gdHOwwEKjiK50eD40H/1qf53cbw0kYcCsHBKqRF2xK7IM7S8De1GClnT2ZFE7D8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=pass smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=jVJ+Ngzp; arc=none smtp.client-ip=198.175.65.9
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.intel.com
+	s=arc-20240116; t=1779967515; c=relaxed/simple;
+	bh=IrpciD1D4mV8t56Rf6hUyqgbSzTj0OOvoOP/ugPTdrQ=;
+	h=Date:From:To:Cc:Subject:Message-ID; b=lkuDakySlqkEa8v4vk1eOgN20wXIQZJbNDLexjtXgfGmAktvsP+3PyT6Rpk78z8fvrI0d/gDYePDiKXlp/r00gmK79ydcR3ORGNUa9Yvtvp+oO7HD4M2QfgjyZYnQVbZ/y3LM4KqZsUzHyvSnGmu6fFA4uLv4iCW6nnFtw5bEOg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=RYYQgjXI; arc=none smtp.client-ip=192.198.163.13
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="jVJ+Ngzp"
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="RYYQgjXI"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1779967296; x=1811503296;
-  h=from:date:to:cc:subject:in-reply-to:message-id:
-   references:mime-version;
-  bh=f/lIC4TgmEzyiBDPh2iBCW6oUeY6y5+TmWqzleJFfvY=;
-  b=jVJ+NgzpXSONr+RHbU6qtCCrztJa5bqPUWbPogVG670ahHdbLpztMlD2
-   LcExizHgnYSr5uusg/B++Rlg6iY3ewekxdkYBUusP2p7rfcVFPo11YkpY
-   +VPfeJRP2cxwEuYP9iJLhpTG/sB5AoyHqXNf9jJf/vAIxkdRz21sV/edC
-   S4SvSeeFKau7+FmX0jBDqNtAI+YBLoD+aJwH00RMhKjG2olrfHw7UVCXw
-   /K0rmUWzZ/RA5FHPZMUUHeyW6fnweYNoVRYL4PkZQznYCNLx+/O2zcC+6
-   bnY4ieUaHTgOJfFSZDlxPvBgnxsB6LKEZq69H+JmWQLRMLwJYD/qQfdsk
-   A==;
-X-CSE-ConnectionGUID: 81EPxlcyToqpjP3cFLSHKw==
-X-CSE-MsgGUID: sRzTGLwxS6OY/9ZIJEHWLg==
-X-IronPort-AV: E=McAfee;i="6800,10657,11799"; a="103480346"
+  t=1779967512; x=1811503512;
+  h=date:from:to:cc:subject:message-id;
+  bh=IrpciD1D4mV8t56Rf6hUyqgbSzTj0OOvoOP/ugPTdrQ=;
+  b=RYYQgjXIosfPQacbk0LqHtuo1q5Yy4GvBni8clHvwwTqNBv7o4T3tO6P
+   QjXBVS4lHcOk8PYZIl3Rfqi4r3/agIIo+Mp/LpChZaNGLXQNVB9yEbYYU
+   mFycidbQfzRaeDrjRLeNGayHcKYbZDZsRpHnh0rt6/XbO8ilZ0jrHg1/2
+   dd6g+UhTnz5nM08VXiPeAAwZ+2QlgEF7tu+97G6qKinuFGFEtue0VEyjJ
+   gYGXdDHmnEbvnMLYYJlU8oMEAzUXIiDoD+94ssJE+C2xA5zUGBIdqz6AN
+   BRD5KuUWROA14ozUuz6KGWrOd/YcNgESBGSTEnWbHqmT8yZ3yWxix7pFN
+   g==;
+X-CSE-ConnectionGUID: 4Jes5lieS2W7/M1Vb5QKCg==
+X-CSE-MsgGUID: JzcWwijXQSuNRZ+lO19JPw==
+X-IronPort-AV: E=McAfee;i="6800,10657,11799"; a="83384500"
 X-IronPort-AV: E=Sophos;i="6.24,173,1774335600"; 
-   d="scan'208";a="103480346"
-Received: from fmviesa010.fm.intel.com ([10.60.135.150])
-  by orvoesa101.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 28 May 2026 04:21:34 -0700
-X-CSE-ConnectionGUID: NhorkxbETOO3yaxAYXvTkQ==
-X-CSE-MsgGUID: vXFsgfpXQNSWfwq2pTGuRg==
+   d="scan'208";a="83384500"
+Received: from fmviesa002.fm.intel.com ([10.60.135.142])
+  by fmvoesa107.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 28 May 2026 04:25:12 -0700
+X-CSE-ConnectionGUID: H15aFt1dS7anWJEf1ard7A==
+X-CSE-MsgGUID: HKcIbs8sRqawQJWNaEPJ1Q==
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="6.24,173,1774335600"; 
-   d="scan'208";a="238337774"
-Received: from ijarvine-mobl1.ger.corp.intel.com (HELO localhost) ([10.245.245.187])
-  by fmviesa010-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 28 May 2026 04:21:15 -0700
-From: =?UTF-8?q?Ilpo=20J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>
-Date: Thu, 28 May 2026 14:21:11 +0300 (EEST)
-To: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
-cc: Lee Jones <lee@kernel.org>, 
-    Mark Brown <broonie@opensource.wolfsonmicro.com>, 
-    Thierry Reding <thierry.reding@avionic-design.de>, 
-    Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, 
-    Andrew Lunn <andrew+netdev@lunn.ch>, 
-    "David S. Miller" <davem@davemloft.net>, 
-    Eric Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>, 
-    Paolo Abeni <pabeni@redhat.com>, Srinivas Kandagatla <srini@kernel.org>, 
-    Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
-    Vinod Koul <vkoul@kernel.org>, "Rafael J. Wysocki" <rafael@kernel.org>, 
-    Danilo Krummrich <dakr@kernel.org>, Rob Herring <robh@kernel.org>, 
-    Saravana Kannan <saravanak@kernel.org>, 
-    Madhavan Srinivasan <maddy@linux.ibm.com>, 
-    Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, 
-    "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, 
-    Andi Shyti <andi.shyti@kernel.org>, 
-    Andy Shevchenko <andriy.shevchenko@linux.intel.com>, 
-    Joerg Roedel <joro@8bytes.org>, Will Deacon <will@kernel.org>, 
-    Robin Murphy <robin.murphy@arm.com>, Doug Berger <opendmb@gmail.com>, 
-    Florian Fainelli <florian.fainelli@broadcom.com>, 
-    Broadcom internal kernel review list <bcm-kernel-feedback-list@broadcom.com>, 
-    Ulf Hansson <ulfh@kernel.org>, Frank Li <Frank.Li@nxp.com>, 
-    Sascha Hauer <s.hauer@pengutronix.de>, 
-    Pengutronix Kernel Team <kernel@pengutronix.de>, 
-    Fabio Estevam <festevam@gmail.com>, 
-    Matthew Brost <matthew.brost@intel.com>, 
-    =?ISO-8859-15?Q?Thomas_Hellstr=F6m?= <thomas.hellstrom@linux.intel.com>, 
-    Rodrigo Vivi <rodrigo.vivi@intel.com>, David Airlie <airlied@gmail.com>, 
-    Simona Vetter <simona@ffwll.ch>, Peter Chen <peter.chen@kernel.org>, 
-    Paul Cercueil <paul@crapouillou.net>, Bin Liu <b-liu@ti.com>, 
-    Philipp Zabel <p.zabel@pengutronix.de>, 
-    Maximilian Luz <luzmaximilian@gmail.com>, Hans de Goede <hansg@kernel.org>, 
-    Krzysztof Kozlowski <krzk@kernel.org>, 
-    Benjamin Herrenschmidt <benh@kernel.crashing.org>, brgl@kernel.org, 
-    LKML <linux-kernel@vger.kernel.org>, Netdev <netdev@vger.kernel.org>, 
-    linux-arm-msm@vger.kernel.org, linux-sound@vger.kernel.org, 
-    driver-core@lists.linux.dev, devicetree@vger.kernel.org, 
-    linuxppc-dev@lists.ozlabs.org, linux-i2c@vger.kernel.org, 
-    iommu@lists.linux.dev, linux-pm@vger.kernel.org, imx@lists.linux.dev, 
-    linux-arm-kernel@lists.infradead.org, intel-xe@lists.freedesktop.org, 
-    dri-devel@lists.freedesktop.org, linux-usb@vger.kernel.org, 
-    linux-mips@vger.kernel.org, platform-driver-x86@vger.kernel.org
-Subject: Re: [PATCH 19/23] platform/surface: gpe: use
- platform_device_set_fwnode()
-In-Reply-To: <20260521-pdev-fwnode-ref-v1-19-88c324a1b8d2@oss.qualcomm.com>
-Message-ID: <bfdbc026-b3f9-971b-aaf0-0485434b8411@linux.intel.com>
-References: <20260521-pdev-fwnode-ref-v1-0-88c324a1b8d2@oss.qualcomm.com> <20260521-pdev-fwnode-ref-v1-19-88c324a1b8d2@oss.qualcomm.com>
+   d="scan'208";a="266131618"
+Received: from igk-lkp-server01.igk.intel.com (HELO 892db79562d4) ([10.211.93.152])
+  by fmviesa002.fm.intel.com with ESMTP; 28 May 2026 04:25:10 -0700
+Received: from kbuild by 892db79562d4 with local (Exim 4.98.2)
+	(envelope-from <lkp@intel.com>)
+	id 1wSYrL-000000000KL-3dzz;
+	Thu, 28 May 2026 11:25:07 +0000
+Date: Thu, 28 May 2026 13:24:44 +0200
+From: kernel test robot <lkp@intel.com>
+To: "Mario Limonciello (AMD)" <superm1@kernel.org>
+Cc: oe-kbuild-all@lists.linux.dev, linux-pm@vger.kernel.org
+Subject: [amd-pstate:superm1/backlight-property-v4 3/9]
+ drivers/gpu/drm/drm_backlight.c:101:76: error: passing argument 3 of
+ 'kobject_uevent_env' from incompatible pointer type
+Message-ID: <202605281301.8RWsqel0-lkp@intel.com>
+User-Agent: s-nail v14.9.25
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="8323328-947565217-1779967271=:1291"
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+tree:   https://git.kernel.org/pub/scm/linux/kernel/git/superm1/linux.git superm1/backlight-property-v4
+head:   d6dda4e35a589d00e7be9db8c45aef13547401f2
+commit: 838d0906592749f46424cbf58eb20a85a95efd27 [3/9] drm: link connectors to backlight devices
+config: x86_64-rhel-9.4 (https://download.01.org/0day-ci/archive/20260528/202605281301.8RWsqel0-lkp@intel.com/config)
+compiler: gcc-14 (Debian 14.2.0-19) 14.2.0
+reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20260528/202605281301.8RWsqel0-lkp@intel.com/reproduce)
 
---8323328-947565217-1779967271=:1291
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+If you fix the issue in a separate patch/commit (i.e. not just a new version of
+the same patch/commit), kindly add following tags
+| Reported-by: kernel test robot <lkp@intel.com>
+| Closes: https://lore.kernel.org/oe-kbuild-all/202605281301.8RWsqel0-lkp@intel.com/
 
-On Thu, 21 May 2026, Bartosz Golaszewski wrote:
+All errors (new ones prefixed by >>):
 
-> Ahead of reworking the reference counting logic for platform devices,
-> encapsulate the assignment of the firmware node for dynamically allocated
-> platform devices with the provided helper.
->=20
-> Signed-off-by: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
-> ---
->  drivers/platform/surface/surface_gpe.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
->=20
-> diff --git a/drivers/platform/surface/surface_gpe.c b/drivers/platform/su=
-rface/surface_gpe.c
-> index b359413903b13c4f8e8b284ef7ae6f6db3f47d72..40896a8544b0a4da4261ea881=
-b1eaed62d93b32b 100644
-> --- a/drivers/platform/surface/surface_gpe.c
-> +++ b/drivers/platform/surface/surface_gpe.c
-> @@ -317,7 +317,7 @@ static int __init surface_gpe_init(void)
->  =09=09goto err_alloc;
->  =09}
-> =20
-> -=09pdev->dev.fwnode =3D fwnode;
-> +=09platform_device_set_fwnode(pdev, fwnode);
-> =20
->  =09status =3D platform_device_add(pdev);
->  =09if (status)
->=20
->=20
+   drivers/gpu/drm/drm_backlight.c: In function '__drm_backlight_worker':
+>> drivers/gpu/drm/drm_backlight.c:101:76: error: passing argument 3 of 'kobject_uevent_env' from incompatible pointer type [-Wincompatible-pointer-types]
+     101 |                 kobject_uevent_env(&b->connector->kdev->kobj, KOBJ_CHANGE, ep);
+         |                                                                            ^~
+         |                                                                            |
+         |                                                                            const char * const*
+   In file included from include/linux/energy_model.h:7,
+                    from include/linux/device.h:16,
+                    from include/linux/backlight.h:12,
+                    from drivers/gpu/drm/drm_backlight.c:8:
+   include/linux/kobject.h:216:31: note: expected 'char **' but argument is of type 'const char * const*'
+     216 |                         char *envp[]);
+         |                         ~~~~~~^~~~~~
+   drivers/gpu/drm/drm_backlight.c: At top level:
+   drivers/gpu/drm/drm_backlight.c:315:6: warning: no previous prototype for 'drm_backlight_inhibit_legacy' [-Wmissing-prototypes]
+     315 | void drm_backlight_inhibit_legacy(struct drm_backlight *b)
+         |      ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   drivers/gpu/drm/drm_backlight.c: In function 'drm_backlight_inhibit_legacy':
+   drivers/gpu/drm/drm_backlight.c:321:10: error: 'struct drm_backlight' has no member named 'luminance_clients'
+     321 |         b->luminance_clients++;
+         |          ^~
+   drivers/gpu/drm/drm_backlight.c:323:36: error: 'struct backlight_device' has no member named 'drm_takeover'
+     323 |                 atomic_inc(&b->link->drm_takeover);
+         |                                    ^~
+   drivers/gpu/drm/drm_backlight.c: At top level:
+   drivers/gpu/drm/drm_backlight.c:334:6: warning: no previous prototype for 'drm_backlight_uninhibit_legacy' [-Wmissing-prototypes]
+     334 | void drm_backlight_uninhibit_legacy(struct drm_backlight *b)
+         |      ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   In file included from arch/x86/include/asm/bug.h:193,
+                    from arch/x86/include/asm/alternative.h:9,
+                    from arch/x86/include/asm/segment.h:6,
+                    from arch/x86/include/asm/ptrace.h:5,
+                    from arch/x86/include/asm/math_emu.h:5,
+                    from arch/x86/include/asm/processor.h:13,
+                    from include/linux/sched.h:13,
+                    from include/linux/ratelimit.h:6,
+                    from include/linux/dev_printk.h:16,
+                    from include/linux/device.h:15:
+   drivers/gpu/drm/drm_backlight.c: In function 'drm_backlight_uninhibit_legacy':
+   drivers/gpu/drm/drm_backlight.c:340:22: error: 'struct drm_backlight' has no member named 'luminance_clients'
+     340 |         if (WARN_ON(b->luminance_clients == 0))
+         |                      ^~
+   include/asm-generic/bug.h:110:32: note: in definition of macro 'WARN_ON'
+     110 |         int __ret_warn_on = !!(condition);                              \
+         |                                ^~~~~~~~~
+   drivers/gpu/drm/drm_backlight.c:342:10: error: 'struct drm_backlight' has no member named 'luminance_clients'
+     342 |         b->luminance_clients--;
+         |          ^~
+   drivers/gpu/drm/drm_backlight.c:344:36: error: 'struct backlight_device' has no member named 'drm_takeover'
+     344 |                 atomic_dec(&b->link->drm_takeover);
+         |                                    ^~
+   drivers/gpu/drm/drm_backlight.c: At top level:
+   drivers/gpu/drm/drm_backlight.c:356:6: warning: no previous prototype for 'drm_backlight_inhibit_legacy_all' [-Wmissing-prototypes]
+     356 | void drm_backlight_inhibit_legacy_all(struct drm_device *dev)
+         |      ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   drivers/gpu/drm/drm_backlight.c:372:6: warning: no previous prototype for 'drm_backlight_uninhibit_legacy_all' [-Wmissing-prototypes]
+     372 | void drm_backlight_uninhibit_legacy_all(struct drm_device *dev)
+         |      ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Acked-by: Ilpo J=C3=A4rvinen <ilpo.jarvinen@linux.intel.com>
 
---=20
- i.
+vim +/kobject_uevent_env +101 drivers/gpu/drm/drm_backlight.c
 
---8323328-947565217-1779967271=:1291--
+    74	
+    75	static void __drm_backlight_worker(struct work_struct *w)
+    76	{
+    77		struct drm_backlight *b = container_of(w, struct drm_backlight, work);
+    78		static const char * const ep[] = { "BACKLIGHT=1", NULL };
+    79		struct backlight_device *bd;
+    80		bool send_uevent;
+    81		unsigned int v;
+    82	
+    83		scoped_guard(spinlock, &drm_backlight_lock) {
+    84			send_uevent = b->changed;
+    85			b->changed = false;
+    86			v = b->set_value;
+    87			bd = b->link;
+    88			backlight_device_ref(bd);
+    89		}
+    90	
+    91		if (bd) {
+    92			int rc = backlight_set_brightness(bd, v, BACKLIGHT_UPDATE_DRM);
+    93	
+    94			WARN_ON(rc);
+    95			if (rc)
+    96				backlight_set_brightness(bd, U16_MAX, BACKLIGHT_UPDATE_DRM);
+    97			backlight_device_unref(bd);
+    98		}
+    99	
+   100		if (send_uevent)
+ > 101			kobject_uevent_env(&b->connector->kdev->kobj, KOBJ_CHANGE, ep);
+   102	}
+   103	
+
+--
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests/wiki
