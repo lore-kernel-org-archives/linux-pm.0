@@ -1,170 +1,156 @@
-Received: from CH1PR05CU001.outbound.protection.outlook.com (mail-northcentralusazon11010064.outbound.protection.outlook.com [52.101.193.64])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8E37C37C0E4;
-	Thu, 28 May 2026 08:33:28 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.193.64
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1779957209; cv=fail; b=OXQkS4lHmwbkwswDAynIyPzS8xa1XiMGpgQB2Ne8Av9+9JfpOgc7gdFDp7XGsl1ySLgU7o0S0bG+C/tYVDZVzYyTPTl2OP4tZ1h/dZicklXuj6QCVicPDyjYSMsFyUDLjiu0pZYipmIhbx4owYr1MMt4nLntQimmYqLMjkPpqyg=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1779957209; c=relaxed/simple;
-	bh=GTJ25p0KsHP1QuVnlpX/QFtqpZMPCHH6BOQk1/OipHU=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:Content-Type:
-	 Content-Disposition:In-Reply-To:MIME-Version; b=Yl3hbC2vwUW93lKJ/7eYam1d+AkINZghwZhLfeHzcQEcJh9DdV9aPNw74IIeuFR3H1J80T/ADOVeXGgdtX3PsudbLTsHu9DIt3U7CEWJTDIWe1CNm1zYtQrULaBUEOEk+SzfoU9l2c01TBNOreqSwnHFj7pYZsuIxRW3/apYSMI=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com; spf=fail smtp.mailfrom=nvidia.com; dkim=pass (2048-bit key) header.d=Nvidia.com header.i=@Nvidia.com header.b=h/5FfWgu; arc=fail smtp.client-ip=52.101.193.64
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com
-Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=nvidia.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E2CF9380FC2
+	for <linux-pm@vger.kernel.org>; Thu, 28 May 2026 08:33:47 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1779957229; cv=none; b=jOU1ZbrlGjFPDkbczPtfh6m2u4rCJAX+SB3521ZjInY7cPhIg/yFe+wJgGKYh8NJpLjTDWrNSu3vkus/yWXD+t/Zqm6GUJcmaeXOxjOSogDj/vqbLDUAoPLTMgnizfGJJw9Ltz8JaDfKYtI5VgQaLymm1Tg5sqg0DIlbHC38Wko=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1779957229; c=relaxed/simple;
+	bh=3UE1ukep6rVlGvZk5YzSNt1eDdxkKrWNxxGuKxbk0mA=;
+	h=From:In-Reply-To:MIME-Version:References:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=enCUm6Wxgg+7ksZOmi7JnWTgX+yIu/YQ73vKUkyWv3jaAVeq8PV5tF8eedvCaD2jrI4+G5Xms4vBzyV6qHrwkk+YEJg0ciTqma1ew6sG+EHfy2OOgSp1RFBHJrYlper35iwStqtKoCtE8DS+74VLnHo8y2lIBfhSkEHYIzgrMx0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=BTt3A5I5; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=Nvidia.com header.i=@Nvidia.com header.b="h/5FfWgu"
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=llv4VqcE2CM7D9g4pdImtz0SzH1Q4kSwthAUMZE6+6IiAxIJaxc7fCIur0WVw5/LN7X8SV5EDwVawMXwpXY94ukKt4T/ltrCeEiWavDacWwGGNnPrlNRBat2cM5S+tjEwbLMVLgj5orH9atT7iExPw4l5jhZ01JhijkmKI310gz1Gg33bJVzUJGh/y/yszldH98ODDa6eiW6QWm7E1a3Y1/ZuJc49d6njmKrlw5Jt104E61yPvNGqylXSmQ6OBMxBoY8vm/HO06mUGzgb7/OndyJwFXZI+VI+jgcX+bS36NG4nqvExKH1qhf4jm3qOsxss2+pANDIhpy6NEMxtt0PQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=1W5FgpjSQjzKpZ7DVgSFODrVV8lO9otGGuVrWp3wHhM=;
- b=wQrxEHdz8n669pYFL9as+cRVixoOlpK3MMXCabd1K90IiAnuFpgM+tP6p72VvkKme96Wb2XAgxRDy4hJi7lzuprkK0QGBvRUXW25375S7EzaXI4lzizUgez95F3O7dUUYvWrgCLn5yFfBNYvkIVx1Z+/Yfugf+cMnUdSumsXcyfDxwWjGZ84pZ+Wt4aORry50Xel19q3zhvhGlImDBGebrB00GKEu/zjjAi219S4BolaP0iFOGNVtvLPu5t4SWee738e5Mpn9XLL8VtUlGP85Z9AdTF86DV0sO6U9eEtmMyti1xxNMAuhzCWfcUelObX6wdx7zgRokY26gUu/1bkcA==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=nvidia.com; dmarc=pass action=none header.from=nvidia.com;
- dkim=pass header.d=nvidia.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
- s=selector2;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=1W5FgpjSQjzKpZ7DVgSFODrVV8lO9otGGuVrWp3wHhM=;
- b=h/5FfWguHSekGicBlesfw7duZIuOO0qsYJdlZ9xhe4toMzrfDlaShkDGPLLAIDRlk7r3BIXEUXSyxROY25HhFkswnXKptmEBnpSFsWpywBpMwlhdyJBkNqDnwgjSPNSmUtFHx6SEADs7mZE+1rJV6V8+CBnnZB+KtbuGp1HXNaxs2D7ygRarmsuDlyGpLxiBmnS+wDgm4eB1zJqt/UWbkpxUWBORQ3ssFsRbWwV6hJUVGsB4zZ6rk9Ct379g4Vi2FOPXHGJg8NxCETU9UITgu78PmknvNmvImccZKhmiwRNxMLwWwpHXMcHvOEo8yGXijuKC/j57r75LG10+n4eNNQ==
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=nvidia.com;
-Received: from BL0PR12MB2370.namprd12.prod.outlook.com (2603:10b6:207:47::27)
- by SN7PR12MB7346.namprd12.prod.outlook.com (2603:10b6:806:299::16) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.71.12; Thu, 28 May
- 2026 08:33:24 +0000
-Received: from BL0PR12MB2370.namprd12.prod.outlook.com
- ([fe80::86cf:c3ec:2cf5:74c8]) by BL0PR12MB2370.namprd12.prod.outlook.com
- ([fe80::86cf:c3ec:2cf5:74c8%5]) with mapi id 15.21.0071.011; Thu, 28 May 2026
- 08:33:24 +0000
-Date: Thu, 28 May 2026 16:33:11 +0800
-From: Richard Cheng <icheng@nvidia.com>
-To: Tomasz Wolski <tomasz.wolski@fujitsu.com>
-Cc: smita.koralahallichannabasappa@amd.com, alison.schofield@intel.com, 
-	dan.j.williams@intel.com, linux-cxl@vger.kernel.org, linux-fsdevel@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, nvdimm@lists.linux.dev, 
-	ardb@kernel.org, benjamin.cheatham@amd.com, dave.jiang@intel.com, 
-	jonathan.cameron@huawei.com
-Subject: Re: [PATCH v3] dax/bus: Upgrade resource conflict message to
- dev_err() in alloc_dax_region()
-Message-ID: <ahf9nC7CK3_1xZmZ@MWDK4CY14F>
-References: <20260528064546.23362-1-tomasz.wolski@fujitsu.com>
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20260528064546.23362-1-tomasz.wolski@fujitsu.com>
-X-ClientProxiedBy: SI2P153CA0031.APCP153.PROD.OUTLOOK.COM (2603:1096:4:190::7)
- To BL0PR12MB2370.namprd12.prod.outlook.com (2603:10b6:207:47::27)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="BTt3A5I5"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id C54F21F00ACF
+	for <linux-pm@vger.kernel.org>; Thu, 28 May 2026 08:33:47 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1779957227;
+	bh=3UE1ukep6rVlGvZk5YzSNt1eDdxkKrWNxxGuKxbk0mA=;
+	h=From:In-Reply-To:References:Date:Subject:To:Cc;
+	b=BTt3A5I5n0ay2ZpJFPy9zqNZYf0SojnpzrK4eah8mJc1JrtcSKBdyXfYnZKqB7v+1
+	 cJLNn4UDEiXORzdYWVSkX4eeLYPzPhaNMqjEvax1BVzK7L1cz0DqXz/UOa8EV+Z6rN
+	 yTdE4+WdcYo+gaOQOmxVVacAmQ5q9Gp+5uix2RG02SVi7+pp6OgsiNhZA1+rK74r33
+	 JTqMlW5PU0iF2M+895YI9bhzwpqDxkIHY+ZUpczOuSVAnAER159bipf1NKIRzHLe0y
+	 fdJJU2LIm6esC8gOEkfQ5MEqX3JovcoLJRyklBoj+9Gg3BWdgsJaGszzzrB4YZ2s97
+	 5Ha7lPil6GKPw==
+Received: by mail-lj1-f177.google.com with SMTP id 38308e7fff4ca-39378db197aso125536871fa.3
+        for <linux-pm@vger.kernel.org>; Thu, 28 May 2026 01:33:47 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AFNElJ/TBzZo9TfRSvJ30NbqrMGWUdXvtvqVoMj1N4uIMqH0h4GM5AucFVqA2FECblAcPtYBSXVKXM3beA==@vger.kernel.org
+X-Gm-Message-State: AOJu0YxreNy2nTKlfJfzuFYhPPmwI/E3uMc9NhITQbYiMYdMvAoWzV9+
+	I/xG8zOVosODpshBk6LAm87juFqLAx6tVR6mBJahBF8w18+3+9mqzgwLTW3OjGhtmo6K+dc8VSr
+	lZCMaeh9Hh4EcAHJKmcXVmdnaIWmpQQ4an0e+9zxrsQ==
+X-Received: by 2002:a2e:8957:0:b0:38d:e220:8dc2 with SMTP id
+ 38308e7fff4ca-395d8cef4abmr68081351fa.20.1779957226354; Thu, 28 May 2026
+ 01:33:46 -0700 (PDT)
+Received: from 969154062570 named unknown by gmailapi.google.com with
+ HTTPREST; Thu, 28 May 2026 04:33:44 -0400
+Received: from 969154062570 named unknown by gmailapi.google.com with
+ HTTPREST; Thu, 28 May 2026 04:33:44 -0400
+From: Bartosz Golaszewski <brgl@kernel.org>
+In-Reply-To: <CAGXv+5GbW0bx3nKdZt2+tHuHyQ-J-1-Z79nMzHAwjmEPGKT02A@mail.gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: BL0PR12MB2370:EE_|SN7PR12MB7346:EE_
-X-MS-Office365-Filtering-Correlation-Id: af9a4179-2723-4701-d970-08debc93c579
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|7416014|376014|1800799024|366016|11063799006|56012099006|6133799003|18002099003|22082099003;
-X-Microsoft-Antispam-Message-Info:
-	lNCuU+QRE7LCC7FQBHHS3Tvz2hHBHujdeb/ERjAZLidecZ2G5m1Jy4N5CsSYrHRkZUWUz/rjvMYQwk04maZaDj6cFTOOExAHnf1RJ5bu8w0N+rfN54T890bODXBII6WJk5eBFIK8FvwamMWzZMfvZkEhkmhbRq/oGyUThP7hWP43Zu1dX6DVRr3UE/8hvbjAxwHSkKgrQjnYFVbsEHnbN339g0gpKFM7qbK09rqm9ZlZZFNt5f7cCmlTEjB5caRGZTWuDkz05YBLa7ZeSAh3yPGF3xWzk+bY0RVm8zRgBBW+KwKsapSU3p7RTCde17IAoLeA+W0Kzk8qAu+YROBBrdZ+T18vevEdKWfVgA4xWZXEtMFxOG4a84DPPYnbNvoCBRbohz4VbCQRqjfnc0gKoKeJnh7nxO+4Bdj3b88yTMrANjCLXRh4Y7bVTjpV1x+yIOuHXhVw4livfOcJ99nqvVEXcPK6XMHZybIpQiaNlOM8k7Yhzqkx/Qy5VqeK5IUPUofVrmxacj564FA0Wu1A1ROjFr0alVQ5TrwdqPvfGBCaXHOw8EVz9UJHlLaZk5KFxUgRLTvV81Nik8+cV3W0Z9Kl5OvtR7j2kx7rSl2BHV4cncs0D+a00k9NtFtZcQP+HQTOSNb4/+GwJr8Dmrj+NPaU0qVDyjTWJAWyG3Dp9UAa31Z1IdpnB5gBZ/KGI5ZNOkmJF1HEI4NPCzDQFHXtLA==
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:BL0PR12MB2370.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(7416014)(376014)(1800799024)(366016)(11063799006)(56012099006)(6133799003)(18002099003)(22082099003);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?utf-8?B?aWhTOU1EOEVkSmFPYzBEVlN0bHVrRkRyd3hsUzV1Q1RKa3FML1FyVWRuSFQy?=
- =?utf-8?B?TTcrZG5NbHBOSVJtUGViNE41bElUVU53N2hjU1hzMnNlKzNXZzVLa0k2eGlM?=
- =?utf-8?B?YUF1Q1hkNmVzaENrUmRLaHNMMHo2RkxUYTJHZDR4RnRzYWt4aDZEbEl4NElT?=
- =?utf-8?B?VCtBUUlIRVNMV21UWEYyYi9BaGlhamp3eVozOFBWdVk5NEl4eUFlaWRNejhq?=
- =?utf-8?B?dGVWQndNMjFhUGRqSHVtcjUySVBCOHY2eEJuVlB0OUY2aDBGdlFhT1gwYXk1?=
- =?utf-8?B?eVBMQUV1bkxWdkJLUEFsdWg4Q2VONTVhS21BNnVGRkppZW01UmxsTTliSFBs?=
- =?utf-8?B?allLVkZicWRzUWo5Wm5zdWhCdU5YZWcrMDlsN05OTDRrU2dZak1YaVRDTjYz?=
- =?utf-8?B?OWlYM1UwSFJuWmg2QWxsUjFMeHNUaElzbEJoemxoWllNUEE0VGdEOGNZVkVr?=
- =?utf-8?B?YmVzN3owQVhFYWlXTVdCUDJNUUJSWm15dm1rZTRYYU1KMXlNNndWSWpsaXlS?=
- =?utf-8?B?eHdDeEgvbEZqTmJjcndDVDVuSCtiRktYdnhZTFpWc1ZnNk1PMndHV0l3NXoz?=
- =?utf-8?B?R2p4K0oyaWFVS0tiMlRqWXZqbVNDTDFia2dieEpwbHAvNThvMXdPeHprMzdp?=
- =?utf-8?B?VjVQWG9UK0FwL3VUR1F3V21ENlhoWGZWRlhpK0J2ZVNCNVhFZ1lGSXV5VThX?=
- =?utf-8?B?L1VVQzBFQzRzTG5XOFpIbjdBMUdHTEwrZFQwYVV3cUZ1dWpBZk8vRXF5bFNY?=
- =?utf-8?B?MSt1dlFtQUNpQWR4a1VLcDVjeTdVbGJIVzRIRlpwVktFT3NxYUhHVTRFbnh0?=
- =?utf-8?B?bDlxb1Rqd2xJVjVHOXJRSTFjK3dOVURNeUUwL1BTdFV2WHU0UFJ3WUt4Z3Jy?=
- =?utf-8?B?VzB0czdZWFRDeTU5K2Q2V2tJVWI1aHB4UERtR25SRUx3dGh0UWFEZ1pLV2Ix?=
- =?utf-8?B?MmtBRUp6a21VV1dmVHdEOEZiRUd3VHNZMU9NdXB6NUFJK1RBT3hqbnQ4MUJl?=
- =?utf-8?B?ejkzOHRrOW13bjJEckNSRHFZK29yRHIrRVlYYjhCQWlXTGljQWtsN0thYmJF?=
- =?utf-8?B?WjZicWh2aVZYdEJiOWFONm0yWVFIUXRUTFdDb2E2aFVnVFlMTFlKNjV3UzNV?=
- =?utf-8?B?TytacVgwaGtTYjZyTklmY0MxanQxRThZejJwd3BpdlJ4ekkvbndSVmpPL0Z4?=
- =?utf-8?B?SC9UdlAvamRDUFpkbG9DQnBpMitHTngyK2tiWWV5YVZUNzZxR1pjc3RIbmww?=
- =?utf-8?B?T2FzRmtkdEVmZjVpcVhPVXFFeGFMQnNsL0ZzWU5DdFZwV2dSRTN5bVVJL1dQ?=
- =?utf-8?B?d3RpZHVYYmJCbEswcDZLVTRMUWkwQ2lRM0tmd1pUWDk4Nk1lSXE2clhGWWw0?=
- =?utf-8?B?bTlFb2hqQmJNRkpLTkVYRERGNzdQQTVmTi9CZmwrNUx2R0lNdXMwNGhqYWpr?=
- =?utf-8?B?T2tKUnlwcU9iU09qbnhueGFUV05naGE5RW85YzU2K1Qrdkw2Q2o1U3J4U2I0?=
- =?utf-8?B?ZVFpNDBSbE9nSm8xSUtXUU95bHNCMlVHSEUycEdLZmRkRjdyQ1l6WUZhUnk4?=
- =?utf-8?B?Ym9ja3FLaXdWQWw0NmJmbWJRTzBjNGwyV21Ud2xnd1V6SUpsbmIrN1QxcGRR?=
- =?utf-8?B?bElBeWl6WmN3M2hSU3RlYnhGL0hrLzFsTHVOcUhTamsyMTVDd1A3VGkrTzk4?=
- =?utf-8?B?eGZqWHVnT0YybzMrZVNubFRtemQwWDJZeVoxSGVFZml4OVNUdU45dUVjN1Yz?=
- =?utf-8?B?V1pCS0JwbUdSS1hkZ0xEZ0JRaXVTUkZlUGw4ZkRQcWZnQVVqcWpOTzZDTml4?=
- =?utf-8?B?RzZaMGxjclJEaFRBVlJ5cFkrMnNXWnR4Y3Y1bkdvc29weGxrV0lLeEVsSG1U?=
- =?utf-8?B?OUdva0NtR3RscGtqNmdyUTEyYkdZcEkrU2Y4bDc3bllZNUdMaE00SGhYUE5v?=
- =?utf-8?B?TWZGTUkvOU90dlVOMTg2Y1RRbWNPa3FON2YzQWp2bURPYlMzbnVDL1hIRUNL?=
- =?utf-8?B?N2RwQWRNTEQ0eGJNNElOTDlUKzBxUW5FTDhaTkJVRFZNU1hmRFJYYmQ4OVYz?=
- =?utf-8?B?VHNheExsdXlxR1dYS0hpd05pVGNoSVJNTWlLVVpUSitDOGtoWEowZkxxb3ZR?=
- =?utf-8?B?RUxoa0RXbXdKUm5yTGdrMnJra3g4MytPSUpqZU1MdzlBSGVuZWtJU1MvRC9W?=
- =?utf-8?B?S3NkSmZjTkxWYXVLL0dXQlpmRmFkK1FLaW9WYmxTcXZGQndOaWxQckF0L2FN?=
- =?utf-8?B?WHNZU1B1ZEF1aWtSUGFDeWZnbFhYM3VuN1NockhQcmdFenhMUnV0bVBKVTVj?=
- =?utf-8?B?cFNpd29PN3JsRU0yZ1UxdFBrVFJTbDY2WFpQckVVZmJFZjFvTllaQT09?=
-X-OriginatorOrg: Nvidia.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: af9a4179-2723-4701-d970-08debc93c579
-X-MS-Exchange-CrossTenant-AuthSource: BL0PR12MB2370.namprd12.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 28 May 2026 08:33:23.7333
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: +37v8DQsfXB0cw8awawW0CL1kRBuccUynsZXFiZEPJBtC/eHtprFlkm44zy7+f+UaHGG7O476+VQE/UAtJgzeg==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: SN7PR12MB7346
+References: <20260515090149.3169406-1-wenst@chromium.org> <CAMRc=MdnjRRMVzxPkkrPhQ4dz7rsK8-HKUp9cQ0z11apL3escQ@mail.gmail.com>
+ <CAGXv+5HC3dqgcE3KnKzakHHWFHB6m_X42orOkNUvZvp=SL_O8g@mail.gmail.com>
+ <CAMRc=Med-_0GSYzoFBRiwFzBCK0DZqJD8_SEBxi+zwR20GS-HA@mail.gmail.com> <CAGXv+5GbW0bx3nKdZt2+tHuHyQ-J-1-Z79nMzHAwjmEPGKT02A@mail.gmail.com>
+Date: Thu, 28 May 2026 04:33:44 -0400
+X-Gmail-Original-Message-ID: <CAMRc=McADm0F4bwhj5qoigfUT-AV6CVpo+FAaqoBnZ3PrjBc7Q@mail.gmail.com>
+X-Gm-Features: AVHnY4JaLBmctUhYgIAJpJojKGEMDv_BBPh6vAfJvyQAFJsp1fEnomeZ5fRkbMM
+Message-ID: <CAMRc=McADm0F4bwhj5qoigfUT-AV6CVpo+FAaqoBnZ3PrjBc7Q@mail.gmail.com>
+Subject: Re: [PATCH RFC 00/12] arm64: mediatek: Add M.2 E-key slot on Chromebooks
+To: Chen-Yu Tsai <wenst@chromium.org>
+Cc: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+	Conor Dooley <conor+dt@kernel.org>, Matthias Brugger <matthias.bgg@gmail.com>, 
+	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>, linux-pm@vger.kernel.org, 
+	linux-usb@vger.kernel.org, devicetree@vger.kernel.org, 
+	linux-mediatek@lists.infradead.org, linux-arm-kernel@lists.infradead.org, 
+	linux-kernel@vger.kernel.org, Bartosz Golaszewski <brgl@kernel.org>, 
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Manivannan Sadhasivam <mani@kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-On Thu, May 28, 2026 at 08:45:46AM +0800, Tomasz Wolski wrote:
-> The dax_region resource conflict in alloc_dax_region() indicates a
-> serious configuration problem — two subsystems (e.g. dax_hmem and
-> dax_cxl) are attempting to register overlapping address ranges. This is
-> not a transient or debug-level condition; it represents a genuine
-> resource conflict that an administrator needs to be aware of.
-> 
-> Promote the log level from dev_dbg() to dev_err() so that the conflict
-> is visible by default without requiring dynamic debug to be enabled.
-> 
-> Suggested-by: Dan Williams <dan.j.williams@intel.com>
-> Link: https://lore.kernel.org/linux-cxl/69c1a8d1c0fa9_7ee3100a1@dwillia2-mobl4.notmuch/
-> Signed-off-by: Tomasz Wolski <tomasz.wolski@fujitsu.com>
-> ---
->  drivers/dax/bus.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/drivers/dax/bus.c b/drivers/dax/bus.c
-> index 68437c05e21d..cd963eeeef7b 100644
-> --- a/drivers/dax/bus.c
-> +++ b/drivers/dax/bus.c
-> @@ -672,7 +672,7 @@ struct dax_region *alloc_dax_region(struct device *parent, int region_id,
->  
->  	rc = request_resource(&dax_regions, &dax_region->res);
->  	if (rc) {
-> -		dev_dbg(parent, "dax_region resource conflict for %pR\n",
-> +		dev_err(parent, "dax_region resource conflict for %pR\n",
->  			&dax_region->res);
->  		goto err_res;
->  	}
-> -- 
-> 2.47.3
+On Wed, 27 May 2026 18:21:00 +0200, Chen-Yu Tsai <wenst@chromium.org> said:
+> On Tue, May 26, 2026 at 11:48=E2=80=AFAM Bartosz Golaszewski <brgl@kernel=
+.org> wrote:
+>>
+>> On Sun, May 24, 2026 at 10:06=E2=80=AFAM Chen-Yu Tsai <wenst@chromium.or=
+g> wrote:
+>> >
+>> > > >
+>> > > > I expect some discussion on this patch, because a) it adds some
+>> > > > OF-specific code into an otherwise generic (core) driver, and
+>> > > > b) it doesn't yet handle USB 2.0 / 3.x shared ports; it ends up po=
+wering
+>> > > > on the port twice, which negates the port reset part.
+>> > > >
+>> > >
+>> > > I understand that you do this because the port device has no OF node
+>> > > assigned. If we wanted to call pwrseq_get() for the port device, is
+>> > > there really no other way to associate it with the correct pwrseq
+>> > > provider?
+>> >
+>> > I suppose we could tie the "port@X" node to the usb port device, but
+>> > AFAIK no other subsystem does this so we would be introducing a new
+>> > pattern.
+>> >
+>> > In the M.2 pwrseq driver, we would have to match by port node instead
+>> > of its parent device node. We may end up with different behavior for
+>> > the USB target vs the other targets.
+>> >
+>>
+>> I imagine, we can check the bus type of the parent device to know if
+>> this is USB?
+>
+> The "bus type" type is probably not exported. However since the DT bindin=
+g
+> explicitly says which port on the M.2 slot is for which connection type,
+> I think the matching can do a special case check for the USB port.
+> The next obstacle is that the target string is not given to the provider
+> match function.
+>
+>> > Also, the "port@X" nodes only exist for the OF graph connections to
+>> > connectors and/or muxes (this series doesn't deal with the latter).
+>> > For directly connected devices, there is a "device@X" child node
+>> > directly under the USB hub node. That node is what gets tied to the
+>> > the USB device.
+>> >
+>>
+>> Is this a problem? I don't think I understand what you're saying here.
+>
+> It shouldn't be. I'm just saying there would be different behavior on
+> the USB side for connectors vs onboard devices (like hubs) device nodes.
+>
+> I talked to Greg earlier, and he said not to touch the hub driver; the
+> hub driver should only deal with features from the USB spec. The
+> "onboard USB devices" driver is what should be used. And this would
+> be a proper case of adding an auxiliary device to the M.2 slot driver.
 >
 
-Reviewed-by: Richard Cheng <icheng@nvidia.com>
+The onboard USB device is what initially inspired the PCI pwrctl code so it
+doesn't surprise me we circle back to it.
 
-Best regards,
-Richard Cheng. 
+> However this seems to completely decouple the power sequencing from the
+> USB core. Take the USB A connector for example, it was recently added to
+> the onboard USB devices driver. However the connector has a device node
+> that is not a child node of any USB host controller or hub; it is connect=
+ed
+> through OF graph. At the same time, since it typically sits at the top
+> level of the device tree, a platform device is directly created and the
+> driver subsequently binds to that device. This is totally different from
+> how the hub and other directly connected onboard USB devices work. In
+> the onboard device case, the device node is a child node of the USB hub
+> or controller, and the corresponding platform device only gets created
+> when the USB hub driver probes, thereby sort of tying it into the USB
+> device topology.
+>
+
+Which is precisely what we do for PCI pwrctl. Though I'm not sure how we co=
+uld
+replicate this behavior without touching the hub driver.
+
+> If the power sequencing ends up not connected to the USB subsystem, then
+> maybe the M.2 slot driver could just check if the USB port (port@3) was
+> used, and just enable the USB / BT pwrseq target at probe time? That
+> would mean less changes needed.
+>
+
+That sounds sane to me.
+
+Bartosz
