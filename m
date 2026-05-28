@@ -1,169 +1,155 @@
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.10])
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EFA29283FE5
-	for <linux-pm@vger.kernel.org>; Thu, 28 May 2026 13:57:23 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.10
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 431E543C065;
+	Thu, 28 May 2026 15:15:08 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1779976646; cv=none; b=ZpTcewTQPQ301OQsV1UeRcvcXSQ8GxrjmZ5tI/izkmPwp3kosO86XIlqF2qSOADHYmOR2fm1lsUCwhABIQK0ECGocH6q6IHdJxt6toJTi3IReSvDuKYne5uDsREBLI2puC/IsI9Ux0iU+pU9O7YO0ORqNWo+3dJRC4+19HIidg4=
+	t=1779981309; cv=none; b=EYsN7kIBIEdnRpO+w5B0ScE8bpyanNgbfwniHIURZLjMoSCeEHKUtDVvld5Oia17ig0yMIy5/KkYoY+lE57MrZb9RQAbpG8dDhA0mMfYtA+4I351wf2ZtBntE/H2/7zHFygaDRTRj397vu00d8mcNWKKst2cvICPOJqzjFbQYtA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1779976646; c=relaxed/simple;
-	bh=R4wixPQ5VzxTmo/HsU4ylHaObjt3mfis+odIpgxlx6s=;
-	h=Date:From:To:Cc:Subject:Message-ID; b=BKU2/QI5Kj0Arko+5s3tPPcW7wM3zmDRdmTuohV2/D2ryLSHxy7ULyW8HN8xK9Sj0EEmK5i5xovdPBywmjfkE8dI9v5utnyJUTsYzR4nf3E813Rod6SGlPDCHqYfc8Xcl2cKdbO+v+mlyOAn/q09y/GKHFM0tww+Xt9j1vgCNnQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=FrpUnnDL; arc=none smtp.client-ip=192.198.163.10
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
+	s=arc-20240116; t=1779981309; c=relaxed/simple;
+	bh=+Hk3LqQsJvfMFTkSHUPBjmdJP3ffrEDsxBKid7Dg5BY=;
+	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=pHf5ZyyNU48RsIhjI1y4OfQX6Kt5jQvyMOok1RM+ZngbCaYdf3r/UNXCk8XIP4ac6EOVawmj2crnvM5DBag8wKMXUU7JYWCBo7ISULEbalUMwhIIcGhrpda5N6TTSOHcutsf+dwF4Wwb5z384/oBymS8RbZVAXO+Ra/m23+kS8o=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=pass smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=dzuvxvRO; arc=none smtp.client-ip=198.175.65.18
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="FrpUnnDL"
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="dzuvxvRO"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1779976644; x=1811512644;
-  h=date:from:to:cc:subject:message-id;
-  bh=R4wixPQ5VzxTmo/HsU4ylHaObjt3mfis+odIpgxlx6s=;
-  b=FrpUnnDLQ9Wf60SGNOXwm9JUAv5Fba4lx7q/Il66I4e9dAd921mgmPd7
-   syZ75u8iRG1Q8pOTSiLwfxqHkwSNxY4GWTZAgMD0De70hTNZhf42bR9s4
-   5Kr3Mys8IpLAD6F+SV8JxFRQOBorV67HkBElXxIpQARnukgDWKy711ow+
-   XY0irVokw5ZcQY2gJ1P8pWnyVrc+vCoGtxF7bULDMFD+0XQpa57aRI/kD
-   QEqjMp9xvNBYnX6/N0vat2pMV315XFtqlJRURB0A+pKxfB337VvL93Zax
-   6r+pddOKMuIEv7vUvBbcJcyAi8euuM9rNYgxX30bZrPBKKXZlIVSDdjtx
+  t=1779981308; x=1811517308;
+  h=from:subject:date:message-id:mime-version:
+   content-transfer-encoding:to:cc;
+  bh=+Hk3LqQsJvfMFTkSHUPBjmdJP3ffrEDsxBKid7Dg5BY=;
+  b=dzuvxvRO0YFjMBdC1F7mbxwVIdc2wnjxIq+Eanl0Oysct2Dn/qX2Z7cI
+   BadaJRVPrfb763Fbs4aOhmB9JJEsHnG6DvBCcTstrYfx38rDuV/JQR3qD
+   zPwfHUng7zM9FmCkrpTDslgDJQ+rTfQ5Cp+23hAOpnFAzZqy3Trxf6483
+   eIc4Rhp6amta2vF5Mw9Il5FQrkI8f44iXKr5EwUoKAuqm6+HMr34tk0CB
+   IfvfTs4zD/sXYz95jn0+CSYRU2IQM0LVRVNP+Yv8I38O2mO1qdAGhCUSP
+   08gqQrIXYMjZiL6crolu7ImMy/umTqS0v6y607Er25dlhtSzCmlm5VpAi
    g==;
-X-CSE-ConnectionGUID: 22VXHEv/QFu13q/UCHd/Mg==
-X-CSE-MsgGUID: sxZzuZg8Q8Caefj7Y65Q+w==
-X-IronPort-AV: E=McAfee;i="6800,10657,11799"; a="92204149"
+X-CSE-ConnectionGUID: iiil1CduRGSfFLGB0KCYVA==
+X-CSE-MsgGUID: t/hW6QZVTOaItCQr9+zZJQ==
+X-IronPort-AV: E=McAfee;i="6800,10657,11800"; a="80887331"
 X-IronPort-AV: E=Sophos;i="6.24,173,1774335600"; 
-   d="scan'208";a="92204149"
-Received: from fmviesa005.fm.intel.com ([10.60.135.145])
-  by fmvoesa104.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 28 May 2026 06:57:19 -0700
-X-CSE-ConnectionGUID: 2hE3PV36SHSO2XvnEXHW1g==
-X-CSE-MsgGUID: EhIm+4YFTCiq+b6dpWnFVQ==
+   d="scan'208";a="80887331"
+Received: from orviesa006.jf.intel.com ([10.64.159.146])
+  by orvoesa110.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 28 May 2026 08:15:06 -0700
+X-CSE-ConnectionGUID: Feq6+yn7TNm32BT6ExtZXA==
+X-CSE-MsgGUID: aonHwoM3Qn6PctkFlVIBrQ==
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="6.24,173,1774335600"; 
-   d="scan'208";a="247642405"
-Received: from igk-lkp-server01.igk.intel.com (HELO 892db79562d4) ([10.211.93.152])
-  by fmviesa005.fm.intel.com with ESMTP; 28 May 2026 06:57:17 -0700
-Received: from kbuild by 892db79562d4 with local (Exim 4.98.2)
-	(envelope-from <lkp@intel.com>)
-	id 1wSbEZ-000000000WL-43Rr;
-	Thu, 28 May 2026 13:57:15 +0000
-Date: Thu, 28 May 2026 15:56:51 +0200
-From: kernel test robot <lkp@intel.com>
-To: "Mario Limonciello (AMD)" <superm1@kernel.org>
-Cc: llvm@lists.linux.dev, oe-kbuild-all@lists.linux.dev,
- linux-pm@vger.kernel.org
-Subject: [amd-pstate:superm1/backlight-property-v4 3/9]
- drivers/gpu/drm/drm_backlight.c:101:62: error: passing 'const char *const[2]'
- to parameter of type 'char **' discards qualifiers in nested pointer types
-Message-ID: <202605281543.JSTIO0Te-lkp@intel.com>
-User-Agent: s-nail v14.9.25
+   d="scan'208";a="241536805"
+Received: from unknown (HELO [172.25.112.21]) ([172.25.112.21])
+  by orviesa006.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 28 May 2026 08:15:06 -0700
+From: Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
+Subject: [PATCH v2 0/5] thermal: intel: Add support for Directed Package
+ Thermal Interrupt
+Date: Thu, 28 May 2026 08:25:41 -0700
+Message-Id: <20260528-rneri-directed-therm-intr-v2-0-8e2f9e0c1a36@linux.intel.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-B4-Tracking: v=1; b=H4sIAHVeGGoC/32NQQqDMBBFryJZd2RMUJqueo/iosZJHdBYJqlYx
+ Ls3Fbrt7N7//DebiiRMUV2KTQktHHkOGfSpUG64hwcB95mVRt2gwQYk5AH0LOQS9ZAGkgk4JAH
+ rjT/n6zrjVd4/hTyvh/vWZh44plnex6ul+qY/q/1jXSpA0LZuyCCirfE6cnitZS5pLN08qXbf9
+ w/ju0OlyAAAAA==
+To: "Rafael J. Wysocki" <rafael@kernel.org>, 
+ Daniel Lezcano <daniel.lezcano@kernel.org>, 
+ Lukasz Luba <lukasz.luba@arm.com>
+Cc: x86@kernel.org, 
+ Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, 
+ Zhang Rui <rui.zhang@intel.com>, linux-kernel@vger.kernel.org, 
+ linux-pm@vger.kernel.org, Ricardo Neri <ricardo.neri@intel.com>, 
+ Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
+X-Mailer: b4 0.13.0
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1779981967; l=3795;
+ i=ricardo.neri-calderon@linux.intel.com; s=20250602;
+ h=from:subject:message-id; bh=+Hk3LqQsJvfMFTkSHUPBjmdJP3ffrEDsxBKid7Dg5BY=;
+ b=CnZGJjMvL7LNzNcnL/YT589mVsLwl8A/pxvR3CHkYFt6taF2LkhOtreNfRBhpqi17pFRTrLr/
+ dk+4wwG+TQSCoTfTblbqI1+JQJ1WhdCsPI6bA/roiyreceae04ZCSKS
+X-Developer-Key: i=ricardo.neri-calderon@linux.intel.com; a=ed25519;
+ pk=NfZw5SyQ2lxVfmNMaMR6KUj3+0OhcwDPyRzFDH9gY2w=
 
-tree:   https://git.kernel.org/pub/scm/linux/kernel/git/superm1/linux.git superm1/backlight-property-v4
-head:   d6dda4e35a589d00e7be9db8c45aef13547401f2
-commit: 838d0906592749f46424cbf58eb20a85a95efd27 [3/9] drm: link connectors to backlight devices
-config: x86_64-rhel-9.4-rust (https://download.01.org/0day-ci/archive/20260528/202605281543.JSTIO0Te-lkp@intel.com/config)
-compiler: clang version 20.1.8 (https://github.com/llvm/llvm-project 87f0227cb60147a26a1eeb4fb06e3b505e9c7261)
-rustc: rustc 1.88.0 (6b00bc388 2025-06-23)
-reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20260528/202605281543.JSTIO0Te-lkp@intel.com/reproduce)
+Hi,
 
-If you fix the issue in a separate patch/commit (i.e. not just a new version of
-the same patch/commit), kindly add following tags
-| Reported-by: kernel test robot <lkp@intel.com>
-| Closes: https://lore.kernel.org/oe-kbuild-all/202605281543.JSTIO0Te-lkp@intel.com/
+This is v2 of this series. The main changes are a new patch fixing a pre-
+existing bug and a redesigned error rollback strategy that disables
+directed thermal interrupts across all packages when enabling fails in any
+one of them. Please see the changelog for details.
 
-All errors (new ones prefixed by >>):
+Package-level thermal interrupts are currently broadcast to all CPUs in a
+package. Only one CPU is needed to service package-wide events.
+Broadcasting creates unnecessary resource contention. Thermal interrupts
+generated for Hardware Feedback Interface[1] updates are an example: all
+CPUs in the package receive the interrupt and race for a lock to update a
+shared data structure. Idle CPUs are needlessly woken up.
 
->> drivers/gpu/drm/drm_backlight.c:101:62: error: passing 'const char *const[2]' to parameter of type 'char **' discards qualifiers in nested pointer types [-Werror,-Wincompatible-pointer-types-discards-qualifiers]
-     101 |                 kobject_uevent_env(&b->connector->kdev->kobj, KOBJ_CHANGE, ep);
-         |                                                                            ^~
-   include/linux/kobject.h:216:10: note: passing argument to parameter 'envp' here
-     216 |                         char *envp[]);
-         |                               ^
-   drivers/gpu/drm/drm_backlight.c:321:5: error: no member named 'luminance_clients' in 'struct drm_backlight'
-     321 |         b->luminance_clients++;
-         |         ~  ^
-   drivers/gpu/drm/drm_backlight.c:323:24: error: no member named 'drm_takeover' in 'struct backlight_device'
-     323 |                 atomic_inc(&b->link->drm_takeover);
-         |                             ~~~~~~~  ^
-   drivers/gpu/drm/drm_backlight.c:315:6: warning: no previous prototype for function 'drm_backlight_inhibit_legacy' [-Wmissing-prototypes]
-     315 | void drm_backlight_inhibit_legacy(struct drm_backlight *b)
-         |      ^
-   drivers/gpu/drm/drm_backlight.c:315:1: note: declare 'static' if the function is not intended to be used outside of this translation unit
-     315 | void drm_backlight_inhibit_legacy(struct drm_backlight *b)
-         | ^
-         | static 
-   drivers/gpu/drm/drm_backlight.c:340:17: error: no member named 'luminance_clients' in 'struct drm_backlight'
-     340 |         if (WARN_ON(b->luminance_clients == 0))
-         |                     ~  ^
-   include/asm-generic/bug.h:110:25: note: expanded from macro 'WARN_ON'
-     110 |         int __ret_warn_on = !!(condition);                              \
-         |                                ^~~~~~~~~
-   drivers/gpu/drm/drm_backlight.c:342:5: error: no member named 'luminance_clients' in 'struct drm_backlight'
-     342 |         b->luminance_clients--;
-         |         ~  ^
-   drivers/gpu/drm/drm_backlight.c:344:24: error: no member named 'drm_takeover' in 'struct backlight_device'
-     344 |                 atomic_dec(&b->link->drm_takeover);
-         |                             ~~~~~~~  ^
-   drivers/gpu/drm/drm_backlight.c:334:6: warning: no previous prototype for function 'drm_backlight_uninhibit_legacy' [-Wmissing-prototypes]
-     334 | void drm_backlight_uninhibit_legacy(struct drm_backlight *b)
-         |      ^
-   drivers/gpu/drm/drm_backlight.c:334:1: note: declare 'static' if the function is not intended to be used outside of this translation unit
-     334 | void drm_backlight_uninhibit_legacy(struct drm_backlight *b)
-         | ^
-         | static 
-   drivers/gpu/drm/drm_backlight.c:356:6: warning: no previous prototype for function 'drm_backlight_inhibit_legacy_all' [-Wmissing-prototypes]
-     356 | void drm_backlight_inhibit_legacy_all(struct drm_device *dev)
-         |      ^
-   drivers/gpu/drm/drm_backlight.c:356:1: note: declare 'static' if the function is not intended to be used outside of this translation unit
-     356 | void drm_backlight_inhibit_legacy_all(struct drm_device *dev)
-         | ^
-         | static 
-   drivers/gpu/drm/drm_backlight.c:372:6: warning: no previous prototype for function 'drm_backlight_uninhibit_legacy_all' [-Wmissing-prototypes]
-     372 | void drm_backlight_uninhibit_legacy_all(struct drm_device *dev)
-         |      ^
-   drivers/gpu/drm/drm_backlight.c:372:1: note: declare 'static' if the function is not intended to be used outside of this translation unit
-     372 | void drm_backlight_uninhibit_legacy_all(struct drm_device *dev)
-         | ^
-         | static 
-   4 warnings and 6 errors generated.
+Newer Intel processors allow directing package-level thermal interrupts
+only to CPUs that explicitly request them. A CPU opts in by setting a
+designated bit in IA32_THERM_INTERRUPT. Hardware acknowledges the request
+by setting a designated bit in IA32_PACKAGE_THERM_STATUS.
 
+This series enables directed package-level thermal interrupts and
+designates one handler CPU per package using the CPU hotplug
+infrastructure. A new CPU is selected if the handler CPU goes offline.
 
-vim +101 drivers/gpu/drm/drm_backlight.c
+Because CPU0's hotplug callbacks are not invoked during suspend and resume,
+syscore callbacks are added to restore the handler for the boot package.
+The series also disables directed delivery during kexec reboot, avoiding
+stale interrupt routing when rebooting into a kernel that does not support
+the feature.
 
-    74	
-    75	static void __drm_backlight_worker(struct work_struct *w)
-    76	{
-    77		struct drm_backlight *b = container_of(w, struct drm_backlight, work);
-    78		static const char * const ep[] = { "BACKLIGHT=1", NULL };
-    79		struct backlight_device *bd;
-    80		bool send_uevent;
-    81		unsigned int v;
-    82	
-    83		scoped_guard(spinlock, &drm_backlight_lock) {
-    84			send_uevent = b->changed;
-    85			b->changed = false;
-    86			v = b->set_value;
-    87			bd = b->link;
-    88			backlight_device_ref(bd);
-    89		}
-    90	
-    91		if (bd) {
-    92			int rc = backlight_set_brightness(bd, v, BACKLIGHT_UPDATE_DRM);
-    93	
-    94			WARN_ON(rc);
-    95			if (rc)
-    96				backlight_set_brightness(bd, U16_MAX, BACKLIGHT_UPDATE_DRM);
-    97			backlight_device_unref(bd);
-    98		}
-    99	
-   100		if (send_uevent)
- > 101			kobject_uevent_env(&b->connector->kdev->kobj, KOBJ_CHANGE, ep);
-   102	}
-   103	
+This patchset introduces a change in behavior in the /sys/devices/system/
+cpu/cpuN/thermal_throttle/package* sysfs files. These files reflect per-CPU
+variables updated when a CPU handles a package-level thermal interrupt. In
+broadcast mode, all CPUs update their variables. When directed package-
+level thermal interrupts are enabled, only the handler CPU's variables are
+updated.
 
---
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
+Lastly, nothing changes for processors that do not support this feature:
+they fall back to broadcast delivery.
+
+[1] Intel Software Developer's Manual Vol. 3, Section 17.6, March 2026 https://www.intel.com/SDM
+
+Signed-off-by: Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
+---
+Changes in v2:
+- Fixed an existing bug in the error-handling of thermal_throttle_online()
+  CPU hotplug callback.
+- Redesigned the rollback mechanism to handle all packages, not only
+  the boot package.
+- Fixed the handling of the return value of cpumask_any_but(), which on
+  failure returns small_cpumask_bits, not nr_cpu_ids.
+- Renamed the Directed Package Thermal Interrupt CPUID and MSR bits for
+  consistency and brevity. (Boris)
+- Added measurements of the latency of setup acknowledgment from hardware.
+- Removed an unused argument from directed_thermal_pkg_intr_supported().
+- Reused the global rollback mechanism in the syscore shutdown callback.
+- Link to v1: https://lore.kernel.org/r/20260309-rneri-directed-therm-intr-v1-0-2956e3000950@linux.intel.com
+
+---
+Ricardo Neri (5):
+      thermal: intel: Fix dangling resources on thermal_throttle_online() failure
+      x86/thermal: Add bit definitions for Intel Directed Package Thermal Interrupt
+      thermal: intel: Enable the Directed Package-level Thermal Interrupt
+      thermal: intel: Add syscore callbacks for suspend and resume
+      thermal: intel: Add a syscore shutdown callback for kexec reboot
+
+ arch/x86/include/asm/cpufeatures.h  |   2 +
+ arch/x86/include/asm/msr-index.h    |   2 +
+ drivers/thermal/intel/therm_throt.c | 272 +++++++++++++++++++++++++++++++++++-
+ 3 files changed, 272 insertions(+), 4 deletions(-)
+---
+base-commit: e7ae89a0c97ce2b68b0983cd01eda67cf373517d
+change-id: 20260306-rneri-directed-therm-intr-9f3f8888bb3f
+
+Best regards,
+-- 
+Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
+
