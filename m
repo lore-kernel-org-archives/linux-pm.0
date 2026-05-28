@@ -1,36 +1,36 @@
-Received: from smtpbguseast1.qq.com (smtpbguseast1.qq.com [54.204.34.129])
+Received: from smtpbgsg1.qq.com (smtpbgsg1.qq.com [54.254.200.92])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8B41E314D07;
-	Thu, 28 May 2026 08:19:12 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=54.204.34.129
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5453F2571C7;
+	Thu, 28 May 2026 08:19:24 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=54.254.200.92
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1779956357; cv=none; b=TtwS5fmVC7WwObzdCD3s0UN+zniHycTb1Qxi3obhdyDcEJEZxeKX+Vus2A1mFn56xeSr1koy1Tqukolt3qML1uUAlXZUnhcoFICLJe5wALtjgjR+R7IDcODx5czYWYlW5omG7AWvofLOowWxQzUoV5WMVFB08Zj6nfcdceJ9tJk=
+	t=1779956368; cv=none; b=M2STwJu8Dv+3DhXH+l59RegMIsgj7Biz+zjE9POrumPwAkHf+Z8Hg7uITZzS902Lsd8yNZjYipRKAQCV+/mxQv1Ul6chM5cOo4Gyk3XXaG0rrIWY7t8g7O9+GTbj2tvnrVm9RNChYsG+hiOxeia3hWXFOw390u18YWnAFbFmz30=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1779956357; c=relaxed/simple;
-	bh=nT7vtUkFVweXht3a+NAlINTXWJpVZFgV0zikEEBICyQ=;
+	s=arc-20240116; t=1779956368; c=relaxed/simple;
+	bh=MLatFh+ITEgavEN5ELhODVOrrueAp2v6chz36/OYIfQ=;
 	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=jdfthhDzlrTYb4Pnc/+OCqerPFrRv1i29tzJURV+SNCKHMvg+cmyJrOFYStoPqkSrfMJ4ZIXzdMwFaALVdL47+1/po2KrhoH+rtCwSt2XR/QbiSQILNgPrXRCHhCqtp/aDqLv3PC9dflOzc6F6HlfbO70AVmTT4H+QBXrpRyeJM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=uniontech.com; spf=pass smtp.mailfrom=uniontech.com; dkim=pass (1024-bit key) header.d=uniontech.com header.i=@uniontech.com header.b=f8a4FuBJ; arc=none smtp.client-ip=54.204.34.129
+	 MIME-Version; b=u6xErf/cIm+Zp8jBJqhJfbVM+pVfYYEnH3SofjzAJcIXEg1HlDuhH6LsUngR751VCgWHAXMljt7YlFZA0zG0kukBgFDrXgSeOJNxnnmRzmBuPlTL0f0wd0Iy/jC1CV26+2ye/tYCHRVnhZU1oKCvyjSBod05FH1bg7SmECLIq30=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=uniontech.com; spf=pass smtp.mailfrom=uniontech.com; dkim=pass (1024-bit key) header.d=uniontech.com header.i=@uniontech.com header.b=UPoGZUCW; arc=none smtp.client-ip=54.254.200.92
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=uniontech.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=uniontech.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=uniontech.com header.i=@uniontech.com header.b="f8a4FuBJ"
+	dkim=pass (1024-bit key) header.d=uniontech.com header.i=@uniontech.com header.b="UPoGZUCW"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=uniontech.com;
-	s=onoh2408; t=1779956344;
-	bh=KWr/K5mP2Y58tJXieQkFjga7owiMuJEyUtjw67tfJ78=;
+	s=onoh2408; t=1779956363;
+	bh=oeURz6oicc+pZP9AWLhlYv7MHtn2iU5Ne4XKIeL0nIc=;
 	h=From:To:Subject:Date:Message-Id:MIME-Version;
-	b=f8a4FuBJXZg4BEBiUyFpKXX4tG4lbgfol21Tg9Gn9ZSQJ94mHtpTAAOTVhYOuZGsk
-	 XBkMyeEOs9WIplPDjI3JF0WqhHAIuvZyPWY/b+stGa6mV6jeyiLcqD9OOGTCza4PRA
-	 wVo1DZW+zEB5mZzXKniz/052ovWwbofTZaPF8fW4=
-X-QQ-mid: zesmtpgz3t1779956333t6885fce0
-X-QQ-Originating-IP: xIOo1WjjSFuC3rAr/TU7gIVukxxul7/cimwAROAwV+o=
+	b=UPoGZUCWSPekYr5V/OPXEZDb4Up4tHhT8ZmgXB04zWiajDnu0f0lXi6iHdRHo3z6h
+	 mlroBJ48QaFss/GBpMLB5nRpD46uGS8spiFdvy3dSW4ZKGT+TEq3WXkcQvpUnnT4jq
+	 6fpTv8RgaVj0N2XjQOXlGXTb18rFC+13t1DEG5VY=
+X-QQ-mid: zesmtpgz3t1779956349t15de0229
+X-QQ-Originating-IP: SYALA+0AfiCbbM+XpXJbIjiqmJcJglSmxfVd4eUuncE=
 Received: from localhost.localdomain ( [113.57.152.160])
 	by bizesmtp.qq.com (ESMTP) with 
-	id ; Thu, 28 May 2026 16:18:51 +0800 (CST)
+	id ; Thu, 28 May 2026 16:19:06 +0800 (CST)
 X-QQ-SSF: 0000000000000000000000000000000
 X-QQ-GoodBg: 1
-X-BIZMAIL-ID: 434068552171632037
+X-BIZMAIL-ID: 10008302796186427878
 EX-QQ-RecipientCnt: 15
 From: Haowen Tu <tuhaowen@uniontech.com>
 To: rafael@kernel.org
@@ -48,12 +48,13 @@ Cc: lenb@kernel.org,
 	linux-kernel@vger.kernel.org,
 	kernel@uniontech.com,
 	Haowen Tu <tuhaowen@uniontech.com>
-Subject: [PATCH v2 0/2] PM: hibernate: skip UVC resume after snapshot
-Date: Thu, 28 May 2026 16:18:38 +0800
-Message-Id: <20260528081840.3528089-1-tuhaowen@uniontech.com>
+Subject: [PATCH v2 2/2] media: uvcvideo: skip resume after hibernation snapshot
+Date: Thu, 28 May 2026 16:18:40 +0800
+Message-Id: <20260528081840.3528089-3-tuhaowen@uniontech.com>
 X-Mailer: git-send-email 2.20.1
-In-Reply-To: <20260428080513.1833515-1-tuhaowen@uniontech.com>
+In-Reply-To: <20260528081840.3528089-1-tuhaowen@uniontech.com>
 References: <20260428080513.1833515-1-tuhaowen@uniontech.com>
+ <20260528081840.3528089-1-tuhaowen@uniontech.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -63,58 +64,95 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-QQ-SENDSIZE: 520
 Feedback-ID: zesmtpgz:uniontech.com:qybglogicsvrsz:qybglogicsvrsz3b-0
-X-QQ-XMAILINFO: NrJTIfBrO/QTz6vBxvXQhyPUzTGs9U+QQK/Rvi4nVcW5zeshmCiHBukq
-	e7rkU1ah9+FUFkx0Cw+Kc9UwpbFeKUlGUeUiGo5RTR/uoTybXKFkjW90oEGDGMQ9DszJPSN
-	TK+BVnnAIz2Uzl2TJdRxFDqh+ijBxJTdFyTG0PdMCO7Rl46zJPglBCj9rZPGuCxRh/rIelT
-	2e0K3d26/lil+cibGhp0mUL49kScd3EfEmz0F1y2zu3f+3VVHAJ3hb+YDwD/pHM4DHfG+jH
-	EmbbRKctBpUpci+Y2fMpodA8NhE6Y588ap/z9LM2DSuGulEXaqqFkqndqeo4Gk7yQr8g9ff
-	lqsPg6OQdIbxcLNPjZmzQv1HkfCww/zrbHMdeJsV8EIUoh8I/rHxGKJTMwvfmnaiLtX/Qb1
-	g7sGn+lNEISk6ziYiRPUJdrjdNg0qwZNGFgFwwv49zCfBnG+6nq221i0Nb9QYZ2Ca33n6GS
-	SL0has35DXfq54qViidPWDIeohE8fIqA+tNDxmByuOevFpUnC1rkNKxjkGjxwZW/N+WapqS
-	IPwTxYGhBQvvZteVgMLP/38ZU3CZ2BI1PTY5xGztsOSYcLH58f7ZJcIfFZ7dPgbpqfXNiH6
-	NnZNV6aznxJ+w6sRKMihN0jDXU9P8lcjpvYDuAnFHCFk4D9qFCM+oHhDwEf4fiVXjF0+SKT
-	uYV36KrvOtozSQw0inZn0cySbhKIeER8Lamlghp8gRhY4xKw87FENpu3K7e0E11dsBhBts/
-	D/rfS7AGKLRktbnpAP4Mf4GXmZQTZiEO5+3RVNIiexq0h1aUA8YXz/A9xeOJfYqpJC4hETU
-	QaYDzPeg6av6VeOX9ZKmZtA7s/iXCMQ9rMErRakDiJa8GVHOnB84/+NtscmXKqwCFgqey5y
-	ah6bExJvSFm5yCdG4zZ+X6QaAg9/OcQQkK9XwmnRfca8DHaXpfSxE7h0eN3KQE0GfKPib8U
-	tj25Fx+549adXw7HWgGqZs9qzgw5APlaUKlHblLg3hOBKaicO15xVMdW4qXL8aBGjU2uBBw
-	ArQhLWumMWZ/Sdo1LNIpbVe+J/oIT7fWFroBdViQ==
-X-QQ-XMRINFO: OWPUhxQsoeAVwkVaQIEGSKwwgKCxK/fD5g==
+X-QQ-XMAILINFO: M1v+UkG2MoDhCQ3lacNFWoCDrJnYJ5B3tmDdimcXIgaZwyiSgngjOLmD
+	mQEbX3CeVAzjBC4FzfP00rCgV9FQZ+QmDE7xu4mMmJRAG4vYd8VYpxSxccpyruECF7/3pKc
+	JuRF+GJOjNc3rBcGDDZJW0Gf9Ou3nxfQ5xs+MVC7Sl34tfE7ELOJ2Kraal0lN+YhHUyQicq
+	Lx94dkSNIOv92oafEIWMld19YWIA0lR+qocNdyLGzVSAoc5B+JPfxM226GVTQoD9TcvGVaK
+	nBkOy1lEHnD4aOc7vji531GBCKmg8n8WcyL72Ah3hiAZTfvpymYY7omDj5Re2Zx436QQrU7
+	fatfUt3EifvQ/x4MHZa2m1hqinZ1c19bMsINPrWeQ/hBuGHvZmOxCTGmHSVgntez46cqvxV
+	9H9YrfcGKyX7XUWH6+e/ocm6SIoKamYdTFqy4PGBjvuRqtqxy4waQ5W0Cq1Zr8k4GbELftu
+	h+ZE4gThnjzB15lSPWOhUJGHn3wGcJqNnNFfLgf3KodfEHRKmu0hJabcL9ESvXLf83/voC8
+	17sqmcaA/dzMYo3zLmr98kNPsEOEb8fxc7Br847qvymc0N/KbX3983URYf9nI7ix3SMWjyN
+	O8UjEYEt/2y6PvHDF/FjPakE89YuHBLUBU+LbQPWsTRAwjt4gyWOfuBaTRGUCL/7sF+yHAr
+	6DtT+Ku7AlXCx12kBlysgdveTGh2x0bJqTs6ry/FSZPfOD5rAGPWdxWi6Pk9TiaGgLvTtgY
+	aF+Fyvq2Uwb+dAKEdC8xOwmnuIpHMR9ZZtoecCUf+uT5t5mVrlp9Y+peqZezaOYOfGRKXVY
+	7WIVtT3Q1A0T/EtgDTGWrjMnuINJxIANqCGINnLn2QUY4tHYFMEtwGlCTW1JQ5FlLv+ADrw
+	2erg01hfhceUMHwz9bWqX/h5K87SVWJla7oa3pNi0f2D3O+7sNAVnoyiYOxrza1uZj+1w4U
+	VwLVqMcM+0jd+6fr6fX7HDZ6q8c23P8ioiTU+CDt2zTCBdJeaswnHJ376CNqMmbbglsPn0y
+	KEKHQhT4io61twSqypHRh/F9cGabCrRLbzpFQAaKhluk9aKbC+oDMdva7yc9HaVTboUaAs0
+	XBDr6B3dJZY
+X-QQ-XMRINFO: Mp0Kj//9VHAxzExpfF+O8yhSrljjwrznVg==
 X-QQ-RECHKSPAM: 0
 
-During hibernation, after the memory snapshot has been created, the
-kernel briefly resumes devices with PMSG_THAW to write the snapshot to
-storage before powering off.  USB driver resume callbacks do not receive
-the hibernation PM message, so uvcvideo cannot distinguish this transient
-image-write phase from the final restore path.
+When a UVC camera is in active use and the system enters S4 hibernation,
+the camera is suspended as part of the normal device freeze sequence.
+However, after create_image() saves the memory snapshot, the kernel
+briefly resumes all devices with PMSG_THAW to write the hibernation
+image to storage.  This causes uvc_video_resume() to run and
+reinitialize the camera hardware, which visibly turns on the camera
+indicator LED during this intermediate phase even though the system is
+about to power off.
 
-This series adds pm_hibernation_snapshot_done() and uses it in uvcvideo
-to avoid reinitializing the camera during the image-write phase.
+The UVC device is not needed during the image-write window, where the
+system only needs devices required for writing the hibernation image.
+USB .resume callbacks do not receive pm_message_t, unlike .suspend, so
+use the PM-layer helper to detect this phase.
 
-This is not intended to make every leaf driver special-case hibernation
-THAW.  A generic USB-core skip would not be safe because some USB
-interfaces may be part of the storage path, or otherwise be required by
-dependencies during image writeout.  The helper is an opt-in mechanism
-for drivers with a concrete reason to avoid reinitializing hardware in
-this transient phase.  In this case, uvcvideo has a user-visible side
-effect, the camera indicator LED, while the camera is not part of the
-image writeout path.
+This is intentionally handled in uvcvideo rather than in USB core.  USB
+core cannot skip all interface resume callbacks during hibernation THAW,
+because some USB interfaces may be part of the image writeout path or
+otherwise be required by dependencies.  uvcvideo has a concrete
+user-visible side effect from reinitializing hardware in this transient
+phase, and it is not involved in image writeout.
 
+The check is placed after stream->frozen is cleared and the clock is
+reset, so that driver state remains consistent if the image write fails
+and the system resumes normally instead of powering off.  In that case
+userspace will need to restart the stream, but the driver will not be
+left with stale frozen state.
+
+Tested with hibernation image written to local storage and resumed from
+disk on a system with a USB UVC camera attached; the camera LED remains
+off during image writing and the video stream resumes correctly after
+restore.
+
+Signed-off-by: Haowen Tu <tuhaowen@uniontech.com>
+---
 Changes in v2:
-- Rename pm_hibernation_storing_image() to
-  pm_hibernation_snapshot_done().
-- Clear in_suspend before releasing snapshot memory on the hibernation
-  failure paths and after swsusp_write() returns.
-- Update the uvcvideo call site for the new helper name.
-
-Haowen Tu (2):
-  PM: hibernate: add pm_hibernation_snapshot_done() helper
-  media: uvcvideo: skip resume after hibernation snapshot
+- Use pm_hibernation_snapshot_done() after the PM helper was renamed.
 
  drivers/media/usb/uvc/uvc_video.c | 12 ++++++++++++
- include/linux/suspend.h           |  2 ++
- kernel/power/hibernate.c          | 31 +++++++++++++++++++++++++++----
- 3 files changed, 41 insertions(+), 4 deletions(-)
+ 1 file changed, 12 insertions(+)
 
+diff --git a/drivers/media/usb/uvc/uvc_video.c b/drivers/media/usb/uvc/uvc_video.c
+index f6c8e3223796..9fa649fd47e0 100644
+--- a/drivers/media/usb/uvc/uvc_video.c
++++ b/drivers/media/usb/uvc/uvc_video.c
+@@ -12,6 +12,7 @@
+ #include <linux/list.h>
+ #include <linux/module.h>
+ #include <linux/slab.h>
++#include <linux/suspend.h>
+ #include <linux/usb.h>
+ #include <linux/usb/hcd.h>
+ #include <linux/videodev2.h>
+@@ -2151,6 +2152,17 @@ int uvc_video_resume(struct uvc_streaming *stream, int reset)
+ 	if (!uvc_queue_streaming(&stream->queue))
+ 		return 0;
+ 
++	/*
++	 * During hibernation image writing (PMSG_THAW), the kernel briefly
++	 * resumes devices after the snapshot has been created.  Skip hardware
++	 * reinitialization to avoid USB traffic and the spurious camera LED
++	 * activation.  stream->frozen has already been cleared, so if the
++	 * image write fails and the system resumes normally, driver state
++	 * remains consistent; userspace will need to restart the stream.
++	 */
++	if (pm_hibernation_snapshot_done())
++		return 0;
++
+ 	ret = uvc_commit_video(stream, &stream->ctrl);
+ 	if (ret < 0)
+ 		return ret;
 -- 
 2.20.1
