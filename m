@@ -1,222 +1,106 @@
-Received: from mail-ed1-f45.google.com (mail-ed1-f45.google.com [209.85.208.45])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.17])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0F56D3BD224
-	for <linux-pm@vger.kernel.org>; Thu, 28 May 2026 15:32:53 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.208.45
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1CC122EBB9E;
+	Thu, 28 May 2026 15:37:15 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.17
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1779982374; cv=none; b=CRSQswfao9/n7r4GOBCSsillHAbedb9a34eYD1I/RCSgRpWgF6ZCyiGXzByvbitljFWerYe1c5NgWwkd1Zp52bXpxoP2cO7iL9bF+/pokwcZVjTSnXunThGN56cOO7TOiK3MYstRxfDhj2KoeG3q6oJGoU9jGX2Z1VmzSgy8z04=
+	t=1779982636; cv=none; b=iCRhJT9EuKpE2P2gvOSJKQFbyoUT2HJC+NJtKhNzjSkBDIZC5R/syMwPfcjjAGNzzfi2x7iLVSpq4g6w/08wEnnYQzyhOY1j8TrZGDmHRU/dL9+JXxBltals5+1ve11Ztb1h4RInQkGS8q7//BnRCmJcZjFEq0ka5o0uzfG+oqY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1779982374; c=relaxed/simple;
-	bh=CAW3syDKKim3+pEQ7wMxF8KtuVzPR1nXCGH2CuOXEHQ=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=N+LGCawpofnH82PCzCUngFYeFhDKAaR+QQ7EfqXhOpSnoMY3ai5lkKlFaFHH9x2qL3mi5uy6cOgN2IzRw2fKvuuL8F6EU/xkbOLWXHdELtZBkHXmhwAxRUFXf0vJ+SSWgBtuHe1nW1mtT2Z4P1JuaR16h499ay1QU3VCTBlcCiY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=Z1m4TV4z; arc=none smtp.client-ip=209.85.208.45
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1779982636; c=relaxed/simple;
+	bh=TEn+txG6ta+6hE/Z9Pzr+UAtGT6r145WOb+oTH7pZyQ=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=By8bUYJh4VnzCyQtD6Y932WKC5NSOq2QanlP0em2Ih62yi7VfFmka6OamEAcsWw/pQms7zcx8vA3JbKzSQfvDckev6lDdr7wKzqQNPu94mGjf338crhEeJrnrfXr0yMXef25zyn6mfJOOHIzqMDoDpibxB0t7C6cETMuIRXP890=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=R6I2TXeR; arc=none smtp.client-ip=198.175.65.17
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Z1m4TV4z"
-Received: by mail-ed1-f45.google.com with SMTP id 4fb4d7f45d1cf-68b90fc6a1dso655741a12.1
-        for <linux-pm@vger.kernel.org>; Thu, 28 May 2026 08:32:53 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1779982372; x=1780587172; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=bu1VHF115W9s3boPLAXFQHBS6iEnbQcNg2EXl5Ejckk=;
-        b=Z1m4TV4zFVh4FBwVMllyoljddC0Y7uaEs7gbg233nDmp1W4FbkeAGoJHfAuwfjwXaO
-         oyD8WZV0FUJJA9ysFLQcbTkOYEx41c0icLXliAIVflyFmwfSGVf5lKTEI02PVeEata7e
-         HHFeG/QelfzyNAqMDipwlznYhanGAVJKumW1Ubq0pPRzieIaIOxrF1CAScvP/xN+pFrw
-         QHfkD/NaKMYb6JWDZyQAyppRkfineYCThkc9Qhm5vdj1Su2yMje+urlsMl0cdVnMZFVO
-         0UcUBIWa66bWbGNmn1fvomHllRmqSULTNpsjYdEfDSRFZebn7obwdp9eyuIRLZM9+RsP
-         4WXA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1779982372; x=1780587172;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=bu1VHF115W9s3boPLAXFQHBS6iEnbQcNg2EXl5Ejckk=;
-        b=Fl82aLiLb2/Mkwbfo/3tNAFv13MUmsR90ixIcZ2ZYdApZbaEqvvw7mkiBboF5Knrlp
-         RI94wffNzaRHiOkRyl0jlFXEtjZ0f+CRgS11QdpgZNArSDPbI98Sj0FArXgCNAMay/qd
-         4QM1Fey7Yr5K8S/yyKmhzURgg4g7hql/ScFn4wXc14lIWn9nnAH8h3GXptHnh8mvW3jV
-         pX+UVkRIaadHJwYXsKS7vS5G9SVQ1rqa8mF3rKLsdMUIDQySFQWDTBxnxoYlcJkh1Y5F
-         vvgKPHtGu1B7clTmL9kSNkV/KU8rOLkKs8XOUifNZXZWUG6FB7u0OmCu1FwgeBstGxvP
-         S3iQ==
-X-Forwarded-Encrypted: i=1; AFNElJ9HGl3uTlI6jD1uWUCiQO/lDIPVynOKTZZNjjV8aHKwNXdyPYdszggmXlKoDjQ7jZgfbHYF6LFATw==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yz9wi3Ca8u4m2zZF83OXc63mGsMkPJc0HYAOdBTTCBXjMjH8n7y
-	WwIgBV6tHkUXMydJhQ7RFtRf5yWDafD1io6AcUS4rKHIw9SCUEbD8IUU
-X-Gm-Gg: Acq92OGisIitmDFo9RVg5kIm17Y7cKo1TwQ/RGpnod75oSHDSvsT6UW1ooMMV41wm6n
-	HKBYFzZkvPkDbyrerrGkKWQwuDrXGlF/A32falr2J+HKNYMcthZKXTnpOVftFEQZ6WJq0PELpyd
-	SWhqXXfeg3G6LXE3h8we/MfXJhDfhDPl3I0H3KflMeMFrx2iQAvIynZnlbfiQOBc2IR+UV505oX
-	g5CjM9+KukHu52ddBDvNsbjNg7QbPJ/YpMvgPh09c4Mg/a5VR1hTMMd2VKE7xb28eqptRWhPYD0
-	ziT1hJ3rEiKVIW7KhtLS2ahvIkd7TPL2C5fRSDOPnUk1lCv/WH47w4hmWuVuhnJg+D0V+wYjXJd
-	WsQeBGnQEo21RCWA9TRV5JoLZEH0LzCdBNI+IDdYghLIzeXMTmETmlsRqkYji6QiiABG9yB3y3G
-	qSEaHzOd0V6Xq2Hnu1+lc3c08Ol0pX/skknBa14qVgipO0T0N2qDarHN+WnuKhFQrOwkxSOrCYq
-	AGCdrq94/tVcBwR
-X-Received: by 2002:a05:6402:2038:b0:678:a5d1:ca74 with SMTP id 4fb4d7f45d1cf-68b5a0b1b5cmr911530a12.16.1779982372267;
-        Thu, 28 May 2026 08:32:52 -0700 (PDT)
-Received: from powerpenguini-l140cu (staticline-31-183-186-11.toya.net.pl. [31.183.186.11])
-        by smtp.gmail.com with ESMTPSA id 4fb4d7f45d1cf-68b96fd79a4sm311495a12.7.2026.05.28.08.32.49
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 28 May 2026 08:32:50 -0700 (PDT)
-From: =?UTF-8?q?Mateusz=20Ja=C5=9Bkiewicz?= <jaskiewiczteo@gmail.com>
-To: Shuah Khan <shuah@kernel.org>
-Cc: Thomas Renninger <trenn@suse.com>,
-	"John B. Wyatt IV" <jwyatt@redhat.com>,
-	John Kacur <jkacur@redhat.com>,
-	linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	=?UTF-8?q?Mateusz=20Ja=C5=9Bkiewicz?= <jaskiewiczteo@gmail.com>
-Subject: [PATCH v4] cpupower: Implement powercap enabled setters
-Date: Thu, 28 May 2026 17:32:48 +0200
-Message-ID: <20260528153248.4114324-1-jaskiewiczteo@gmail.com>
-X-Mailer: git-send-email 2.54.0
-In-Reply-To: <5ff19049-a83a-4ef9-9cae-b97438fb3e77@linuxfoundation.org>
-References: <5ff19049-a83a-4ef9-9cae-b97438fb3e77@linuxfoundation.org>
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="R6I2TXeR"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1779982636; x=1811518636;
+  h=message-id:date:mime-version:subject:to:cc:references:
+   from:in-reply-to:content-transfer-encoding;
+  bh=TEn+txG6ta+6hE/Z9Pzr+UAtGT6r145WOb+oTH7pZyQ=;
+  b=R6I2TXeR9gqcbgC2+ctdNzsedyoOEE1tROhaSnege3VTzJmaj7K6rmEv
+   7iUkr2+tJYO+r8uz1vZ1dQx03bMoVN7ZDOe4BsvCGD9sQcsRefdAsqWDR
+   9cnSRvnPQ1NPPHey+gMwVv8RdRMD5DezUn+K/Arl0K04hsh9hXDzifm7c
+   tdHSWK0ex4wnuYSIZ4lVlrRcJQWuBls3ph49IJWaqVYoGB1CmrIu8TEh3
+   2TeX9adiKSeGpSDIjOlhFYNTBdvJabUUmQ7qaUpUjqprH1/+X4hFwj2bF
+   a7vRCU1RB3JLw6Ooc4QpVpNLdcoOr6kREOWfKk2KhgCXF7lT9IzHJhkz+
+   w==;
+X-CSE-ConnectionGUID: jR5NPJIzTI6JdZVVZ4qtqQ==
+X-CSE-MsgGUID: kqc1iu41Q6KLWzSOHFwLyg==
+X-IronPort-AV: E=McAfee;i="6800,10657,11800"; a="80819348"
+X-IronPort-AV: E=Sophos;i="6.24,173,1774335600"; 
+   d="scan'208";a="80819348"
+Received: from orviesa002.jf.intel.com ([10.64.159.142])
+  by orvoesa109.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 28 May 2026 08:37:16 -0700
+X-CSE-ConnectionGUID: HIrujNteQKyG5fD0QnT/Pw==
+X-CSE-MsgGUID: Thpjl90iQ4K+psZL8Y+37g==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.24,173,1774335600"; 
+   d="scan'208";a="272915069"
+Received: from aduenasd-mobl5.amr.corp.intel.com (HELO [10.125.111.91]) ([10.125.111.91])
+  by orviesa002-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 28 May 2026 08:37:10 -0700
+Message-ID: <97fc27c6-6cda-4a78-9847-fc2aa17ce057@intel.com>
+Date: Thu, 28 May 2026 08:37:08 -0700
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v3] dax/bus: Upgrade resource conflict message to
+ dev_err() in alloc_dax_region()
+To: Tomasz Wolski <tomasz.wolski@fujitsu.com>,
+ smita.koralahallichannabasappa@amd.com, alison.schofield@intel.com,
+ dan.j.williams@intel.com
+Cc: icheng@nvidia.com, linux-cxl@vger.kernel.org,
+ linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linux-pm@vger.kernel.org, nvdimm@lists.linux.dev, ardb@kernel.org,
+ benjamin.cheatham@amd.com, jonathan.cameron@huawei.com
+References: <20260528064546.23362-1-tomasz.wolski@fujitsu.com>
+Content-Language: en-US
+From: Dave Jiang <dave.jiang@intel.com>
+In-Reply-To: <20260528064546.23362-1-tomasz.wolski@fujitsu.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 
-powercap_set_enabled() and powercap_zone_set_enabled() are part of the
-public libcpupower API, but both currently return success without
-updating sysfs.
 
-Write the requested value to the matching enabled attribute so callers
-can actually enable or disable the powercap control type or zone, and
-report write failures back to the caller.
 
-Signed-off-by: Mateusz Jaśkiewicz <jaskiewiczteo@gmail.com>
----
-Changes in v4:
-- Compare the snprintf() return value against SYSFS_PATH_MAX to avoid
-  the signedness warning without adding a typecast.
+On 5/27/26 11:45 PM, Tomasz Wolski wrote:
+> The dax_region resource conflict in alloc_dax_region() indicates a
+> serious configuration problem — two subsystems (e.g. dax_hmem and
+> dax_cxl) are attempting to register overlapping address ranges. This is
+> not a transient or debug-level condition; it represents a genuine
+> resource conflict that an administrator needs to be aware of.
+> 
+> Promote the log level from dev_dbg() to dev_err() so that the conflict
+> is visible by default without requiring dynamic debug to be enabled.
+> 
+> Suggested-by: Dan Williams <dan.j.williams@intel.com>
+> Link: https://lore.kernel.org/linux-cxl/69c1a8d1c0fa9_7ee3100a1@dwillia2-mobl4.notmuch/
+> Signed-off-by: Tomasz Wolski <tomasz.wolski@fujitsu.com>
 
-Changes in v3:
-- Move the patch changelog below the Signed-off-by trailer so the
-  sign-off is kept when the patch is applied.
+Reviewed-by: Dave Jiang <dave.jiang@intel.com>
 
-Changes in v2:
-- Check current enabled value before writing.
-- Use fd < 0 style for open() failures.
-- Print sysfs open/write failures with perror().
-- Drop the sizeof(path) typecast.
+> ---
+>  drivers/dax/bus.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/drivers/dax/bus.c b/drivers/dax/bus.c
+> index 68437c05e21d..cd963eeeef7b 100644
+> --- a/drivers/dax/bus.c
+> +++ b/drivers/dax/bus.c
+> @@ -672,7 +672,7 @@ struct dax_region *alloc_dax_region(struct device *parent, int region_id,
+>  
+>  	rc = request_resource(&dax_regions, &dax_region->res);
+>  	if (rc) {
+> -		dev_dbg(parent, "dax_region resource conflict for %pR\n",
+> +		dev_err(parent, "dax_region resource conflict for %pR\n",
+>  			&dax_region->res);
+>  		goto err_res;
+>  	}
 
- tools/power/cpupower/lib/powercap.c | 58 +++++++++++++++++++++++------
- 1 file changed, 47 insertions(+), 11 deletions(-)
-
-diff --git a/tools/power/cpupower/lib/powercap.c b/tools/power/cpupower/lib/powercap.c
-index 94a0c69e5..cbbfc4736 100644
---- a/tools/power/cpupower/lib/powercap.c
-+++ b/tools/power/cpupower/lib/powercap.c
-@@ -21,7 +21,7 @@ static unsigned int sysfs_read_file(const char *path, char *buf, size_t buflen)
- 	ssize_t numread;
- 
- 	fd = open(path, O_RDONLY);
--	if (fd == -1)
-+	if (fd < 0)
- 		return 0;
- 
- 	numread = read(fd, buf, buflen - 1);
-@@ -36,7 +36,7 @@ static unsigned int sysfs_read_file(const char *path, char *buf, size_t buflen)
- 	return (unsigned int) numread;
- }
- 
--static int sysfs_get_enabled(char *path, int *mode)
-+static int sysfs_get_enabled(const char *path, int *mode)
- {
- 	int fd;
- 	char yes_no;
-@@ -45,7 +45,7 @@ static int sysfs_get_enabled(char *path, int *mode)
- 	*mode = 0;
- 
- 	fd = open(path, O_RDONLY);
--	if (fd == -1) {
-+	if (fd < 0) {
- 		ret = -1;
- 		goto out;
- 	}
-@@ -70,6 +70,36 @@ static int sysfs_get_enabled(char *path, int *mode)
- 	return ret;
- }
- 
-+static int sysfs_set_enabled(const char *path, int mode)
-+{
-+	char yes_no;
-+	int fd;
-+	int current_mode;
-+	ssize_t ret;
-+
-+	if (mode != 0 && mode != 1)
-+		return -1;
-+
-+	if (sysfs_get_enabled(path, &current_mode) == 0 &&
-+	    current_mode == mode)
-+		return 0;
-+
-+	yes_no = mode ? '1' : '0';
-+	fd = open(path, O_WRONLY);
-+	if (fd < 0) {
-+		perror(path);
-+		return -1;
-+	}
-+	ret = write(fd, &yes_no, 1);
-+	if (ret != 1) {
-+		if (ret < 0)
-+			perror(path);
-+		close(fd);
-+		return -1;
-+	}
-+	return close(fd);
-+}
-+
- int powercap_get_enabled(int *mode)
- {
- 	char path[SYSFS_PATH_MAX] = PATH_TO_POWERCAP "/intel-rapl/enabled";
-@@ -77,17 +107,13 @@ int powercap_get_enabled(int *mode)
- 	return sysfs_get_enabled(path, mode);
- }
- 
--/*
-- * TODO: implement function. Returns dummy 0 for now.
-- */
- int powercap_set_enabled(int mode)
- {
--	return 0;
-+	return sysfs_set_enabled(PATH_TO_RAPL "/enabled", mode);
- }
--
- /*
-  * Hardcoded, because rapl is the only powercap implementation
--- * this needs to get more generic if more powercap implementations
-+ * this needs to get more generic if more powercap implementations
-  * should show up
-  */
- int powercap_get_driver(char *driver, int buflen)
-@@ -180,8 +206,18 @@ int powercap_zone_get_enabled(struct powercap_zone *zone, int *mode)
- 
- int powercap_zone_set_enabled(struct powercap_zone *zone, int mode)
- {
--	/* To be done if needed */
--	return 0;
-+	char path[SYSFS_PATH_MAX];
-+	int ret;
-+
-+	if (!zone)
-+		return -1;
-+
-+	ret = snprintf(path, sizeof(path), "%s/%s/enabled",
-+		       PATH_TO_POWERCAP, zone->sys_name);
-+	if (ret < 0 || ret >= SYSFS_PATH_MAX)
-+		return -1;
-+
-+	return sysfs_set_enabled(path, mode);
- }
- 
- 
--- 
-2.54.0
