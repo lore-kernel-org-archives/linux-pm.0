@@ -1,31 +1,30 @@
 Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id CD7853B47D7;
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id CD5133B47D6;
 	Thu, 28 May 2026 09:09:57 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1779959400; cv=none; b=BDq9POak8UyG7BePOew9/ySz1FMrMjiGqm+FmD18wK3Om/fE4vRoFrwn0Ylp17M8MvdF6K2Vg8TpG21q9BEMUbzxkrg9vF0I8eM7mIx+ojbkvn+pibJuSRu9rC3m/12liu7YK0gqomGHkxA8XMGAssW3qxwT0eJWS4Pr3WEZv6U=
+	t=1779959400; cv=none; b=tbZIvXBe8USJ6D+t5GaTDUgr94JdJxi+HhIoRI5eJBq3tLJjTjJP5BuztSUmeNNF202gyZpc1t+Ucrn+nb7l45yIj/Vi94SrZiGT9jY9zOj9hLuFRbwvyIcuF0IleC76q4+6dW9c1XwudqOgKU93q2qvIbsQ+lwznBeI4t7jMUs=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1779959400; c=relaxed/simple;
-	bh=OrIbLK4EvKzZg2CobVMv3AVJGKbR0lNlgy5pTXO+xRI=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=XHXxSR5CND3R0sttWQZbAbv2pW6gLFB4jtTpgkNLJZU1z1H59WKVr6OHnBYYHQ8LLcgnVaX7IGiXZ4HWKPQFhLPWVt8ztAiTaoaRdpt5PL7d3vCZ4uFXixE7W8dUHip3ufNFthpAvmSzMnSbXEOKrT1xipQGPkrkJLGa5j/ITeU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=VZNjgRY7; arc=none smtp.client-ip=217.140.110.172
+	bh=J5FaSO+cEOtu+6EIwYHYtqCJ4MxvY/FPB445RyrkOTo=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=KCxQk6Gfq5x13365y4EoQIxxrjqB+bdQXYgHRoXdrERylIdFDpjYkoF//SbSI1IWMvfMwetfaWl04B9yMGxeL63wo/2uUpzWh4OJV9dKuiZ/dkk/TOQwksmKsD4+usvc9+fbdgT3Q8pEheZgbDDUXJxmnvu+f1tG9hALjS2ew30=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=LIUGXYSs; arc=none smtp.client-ip=217.140.110.172
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="VZNjgRY7"
+	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="LIUGXYSs"
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 1D3404402;
-	Thu, 28 May 2026 02:09:52 -0700 (PDT)
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id CC21E43F7;
+	Thu, 28 May 2026 02:09:45 -0700 (PDT)
 Received: from e135073.arm.com (unknown [10.57.24.196])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id B96FD3F632;
-	Thu, 28 May 2026 02:09:52 -0700 (PDT)
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id 964BF3F632;
+	Thu, 28 May 2026 02:09:46 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1779959397; bh=OrIbLK4EvKzZg2CobVMv3AVJGKbR0lNlgy5pTXO+xRI=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=VZNjgRY7SGSkq95nHN0iz9nMQV05DAXBGFJDq5LRKX3YYHo9jWlpekB02ia5aDiqM
-	 g3FjKoFSHCOAFrhD7oAXX5kCpkk0wEqKTF196M+iCbaMvsLJFIXOdTUJNhgkyHT+Yh
-	 gO1PBQDdz4VkyLi3i0ZbdTpADPCdtv5UqI6Lgn38=
+	t=1779959390; bh=J5FaSO+cEOtu+6EIwYHYtqCJ4MxvY/FPB445RyrkOTo=;
+	h=From:To:Cc:Subject:Date:From;
+	b=LIUGXYSsVHZuKAeqTc4elzp2IQHeZSSt182k0O9aY6Tw7xioH68W0LshyFlpMQapj
+	 vPlxZgOogvrcWVQjEDHFHgi2Lb7v/xYw7OftEvo5c5aQ/1QxENG5olHAwNaLhjG6gd
+	 xW3puTwGVyHeDqL5ZyYb78s/m1YqPrFgF+Nl/d0U=
 From: Pierre Gondois <pierre.gondois@arm.com>
 To: linux-kernel@vger.kernel.org
 Cc: Jie Zhan <zhanjie9@hisilicon.com>,
@@ -47,12 +46,10 @@ Cc: Jie Zhan <zhanjie9@hisilicon.com>,
 	Saravana Kannan <saravanak@kernel.org>,
 	linux-pm@vger.kernel.org,
 	linux-doc@vger.kernel.org
-Subject: [PATCH v3 1/4] cpufreq: Extract cpufreq_policy_init_qos() function
-Date: Thu, 28 May 2026 11:09:03 +0200
-Message-ID: <20260528090913.2759118-2-pierre.gondois@arm.com>
+Subject: [PATCH v3 0/4] cpufreq: Set policy->min and max as real QoS constraints
+Date: Thu, 28 May 2026 11:09:02 +0200
+Message-ID: <20260528090913.2759118-1-pierre.gondois@arm.com>
 X-Mailer: git-send-email 2.43.0
-In-Reply-To: <20260528090913.2759118-1-pierre.gondois@arm.com>
-References: <20260528090913.2759118-1-pierre.gondois@arm.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -61,106 +58,50 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Extract the QoS related logic from cpufreq_policy_online()
-to make the function shorter/simpler.
+This patch is a follow-up from the serie:
+- [PATCH v6 0/4] cpufreq: Introduce boost frequency QoS
+https://lore.kernel.org/lkml/20260317101753.2284763-1-pierre.gondois@arm.com/
 
-The logic is placed in cpufreq_policy_init_qos() and is
-now executed right after the following calls:
-- cpufreq_driver->init()
-- cpufreq_table_validate_and_sort()
+v3:
+- Added Reviewed-by tags
+- Return 0 on cpufreq_policy_init_qos() success instead of
+  a random positive value
+- Moved policy->min/max assignment out of cpufreq_policy_init_qos()
+- Updated documentation
+v2:
+- Split the patch in multiple steps
+- Replace min/max -> min_freq/max_freq
+- Add references to commit 521223d8b3ec ("cpufreq: Fix initialization
+  of min and max frequency QoS requests") to explain the intent
+  of the patch
+- Update documentation (cpu-drivers.rst)
+- Set default policy->min/max values before the call to
+  blocking_notifier_call_chain()
+- Create a new cpufreq_policy_init_qos() function to put all
+  the QoS and policy->min/max logic inside.
+- Didn't add Sumit's reviewed-by as the patches changed a bit.
+v1:
+https://lore.kernel.org/lkml/20260423084731.1090384-1-pierre.gondois@arm.com/#t
 
-This helps preparing following patches that will,
-in cpufreq_policy_init_qos():
-- treat the policy->min/max values set by drivers as QoS requests.
-- set a default policy->min/max value to all policies.
+Pierre Gondois (4):
+  cpufreq: Extract cpufreq_policy_init_qos() function
+  cpufreq: Set default policy->min/max values for all drivers
+  cpufreq: Remove driver default policy->min/max init
+  cpufreq: Use policy->min/max init as QoS request
 
-No functional change.
+ Documentation/cpu-freq/cpu-drivers.rst |  9 +++-
+ drivers/cpufreq/amd-pstate.c           | 14 +++---
+ drivers/cpufreq/cppc_cpufreq.c         |  5 +-
+ drivers/cpufreq/cpufreq-nforce2.c      |  4 +-
+ drivers/cpufreq/cpufreq.c              | 68 ++++++++++++++++++--------
+ drivers/cpufreq/freq_table.c           |  7 ++-
+ drivers/cpufreq/gx-suspmod.c           |  2 +-
+ drivers/cpufreq/intel_pstate.c         |  3 --
+ drivers/cpufreq/pcc-cpufreq.c          | 10 ++--
+ drivers/cpufreq/pxa3xx-cpufreq.c       |  5 +-
+ drivers/cpufreq/sh-cpufreq.c           |  6 +--
+ drivers/cpufreq/virtual-cpufreq.c      |  5 +-
+ 12 files changed, 77 insertions(+), 61 deletions(-)
 
-Signed-off-by: Pierre Gondois <pierre.gondois@arm.com>
-Reviewed-by: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>
-Reviewed-by: Jie Zhan <zhanjie9@hisilicon.com>
----
- drivers/cpufreq/cpufreq.c | 53 +++++++++++++++++++++++----------------
- 1 file changed, 32 insertions(+), 21 deletions(-)
-
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 44eb1b7e7fc1b..50616cfebc617 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -1397,6 +1397,32 @@ static void cpufreq_policy_free(struct cpufreq_policy *policy)
- 	kfree(policy);
- }
- 
-+static int cpufreq_policy_init_qos(struct cpufreq_policy *policy)
-+{
-+	int ret;
-+
-+	if (policy->boost_supported) {
-+		ret = freq_qos_add_request(&policy->constraints,
-+						&policy->boost_freq_req,
-+						FREQ_QOS_MAX,
-+						policy->cpuinfo.max_freq);
-+		if (ret < 0)
-+			return ret;
-+	}
-+
-+	ret = freq_qos_add_request(&policy->constraints, &policy->min_freq_req,
-+				   FREQ_QOS_MIN, FREQ_QOS_MIN_DEFAULT_VALUE);
-+	if (ret < 0)
-+		return ret;
-+
-+	ret = freq_qos_add_request(&policy->constraints, &policy->max_freq_req,
-+				   FREQ_QOS_MAX, FREQ_QOS_MAX_DEFAULT_VALUE);
-+	if (ret < 0)
-+		return ret;
-+
-+	return 0;
-+}
-+
- static int cpufreq_policy_online(struct cpufreq_policy *policy,
- 				 unsigned int cpu, bool new_policy)
- {
-@@ -1442,6 +1468,12 @@ static int cpufreq_policy_online(struct cpufreq_policy *policy,
- 		if (ret)
- 			goto out_offline_policy;
- 
-+		if (new_policy) {
-+			ret = cpufreq_policy_init_qos(policy);
-+			if (ret < 0)
-+				goto out_offline_policy;
-+		}
-+
- 		/* related_cpus should at least include policy->cpus. */
- 		cpumask_copy(policy->related_cpus, policy->cpus);
- 	}
-@@ -1458,27 +1490,6 @@ static int cpufreq_policy_online(struct cpufreq_policy *policy,
- 			add_cpu_dev_symlink(policy, j, get_cpu_device(j));
- 		}
- 
--		if (policy->boost_supported) {
--			ret = freq_qos_add_request(&policy->constraints,
--						   &policy->boost_freq_req,
--						   FREQ_QOS_MAX,
--						   policy->cpuinfo.max_freq);
--			if (ret < 0)
--				goto out_destroy_policy;
--		}
--
--		ret = freq_qos_add_request(&policy->constraints,
--					   &policy->min_freq_req, FREQ_QOS_MIN,
--					   FREQ_QOS_MIN_DEFAULT_VALUE);
--		if (ret < 0)
--			goto out_destroy_policy;
--
--		ret = freq_qos_add_request(&policy->constraints,
--					   &policy->max_freq_req, FREQ_QOS_MAX,
--					   FREQ_QOS_MAX_DEFAULT_VALUE);
--		if (ret < 0)
--			goto out_destroy_policy;
--
- 		blocking_notifier_call_chain(&cpufreq_policy_notifier_list,
- 				CPUFREQ_CREATE_POLICY, policy);
- 	}
--- 
+--
 2.43.0
-
