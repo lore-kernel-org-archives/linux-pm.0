@@ -1,202 +1,172 @@
-Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pl1-f194.google.com (mail-pl1-f194.google.com [209.85.214.194])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D16B23A8723
-	for <linux-pm@vger.kernel.org>; Fri, 29 May 2026 08:08:37 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.180.131
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 22B0633F5B0
+	for <linux-pm@vger.kernel.org>; Fri, 29 May 2026 08:18:18 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.194
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1780042119; cv=none; b=ff2sK7DLiItRB3oUS0v3cJB8Ic+bPWbBJVPXzJBpslKlkBqYvt/3aj5Evf5HS3om+lyEHsxer9Xtw1Dp27G/vTwUeJ0WQXVf9qtObPM9clxk290qrFHY+EfAEv8fet9kmLnx52+VWz0nppmXl6P8R6TkgcEbv5zXEbKqVJFT2Hw=
+	t=1780042701; cv=none; b=jhEnPQJ5ACdsajNg4p0mPcvlDr+V+fKMEDq4HialhOEWaAhuJFEDVS4URYGeHJMhTlV0BFRi2bwwn2qI2hsNy1QhyyRy4Xp4afiYs7lYUcHWpuaRdtQ1n/El9IOaLnkb27ad/snV+pqnLJJv/Pg1Q+B6pBy6U5s++s2PpCHzxgE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1780042119; c=relaxed/simple;
-	bh=WUVxhXzmB8uPNvi/ZQYWakDnsjdqi0YrZMtCuFg3dW4=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=Ociks+KvZtxbyHa5m13Qrg7H0jUINDdVZIniEQxCVIipTm1KyqrBY/+Egpsa3sjcZOyk46sztV9IogMnVH1VxiqhH0BJowplUhqlXXqpq/poAS9/2lru01TW0KlcLBYDv8G/kBJ9n/3wuiSxRibG9SmT3O9iTLnERtpn57eSzy4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=QBecIaz3; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=hpSDivrE; arc=none smtp.client-ip=205.220.180.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="QBecIaz3";
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="hpSDivrE"
-Received: from pps.filterd (m0279869.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 64T5KuZ51249223
-	for <linux-pm@vger.kernel.org>; Fri, 29 May 2026 08:08:37 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	mzQpnzu1SKsYZ2m+zDkXHsIhMOLKeojhZ3aXI9k++z0=; b=QBecIaz3NMlBwFyE
-	ehrdxbTk6PpKMJqF/OJ5jmeP/WyUYHx+BhY1DJmr2arflkJ1JvzBT75p/iaRASVK
-	VaB3H9X3uEW53HtwqjvegwvUtIBl/RSVag+UOL1cE+Pwg30bdDzxviqplAoqPLMl
-	HSL73dsv6w4j3JDG46QgfpGYiP967JcORaqeg9NHAv0C8bFLiW2qvlnfcu1d4dyA
-	db2tuwMf27yxleRFggctOV0X0dAfkxZKx9etLf8f+JrOyMAn8iI2/P2lOruTN9k2
-	kOT/48v3GYbUgLPCDAD/kCQAiW+/pKVCh6E2hAOlIvkO9aguyysbZ+UtO+jw3rkQ
-	kRPQJA==
-Received: from mail-pf1-f197.google.com (mail-pf1-f197.google.com [209.85.210.197])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4ef4jj0ns1-1
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Fri, 29 May 2026 08:08:36 +0000 (GMT)
-Received: by mail-pf1-f197.google.com with SMTP id d2e1a72fcca58-82fa1c94b37so13585900b3a.0
-        for <linux-pm@vger.kernel.org>; Fri, 29 May 2026 01:08:36 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1780042116; x=1780646916; darn=vger.kernel.org;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=mzQpnzu1SKsYZ2m+zDkXHsIhMOLKeojhZ3aXI9k++z0=;
-        b=hpSDivrE8Zr7wUwXSP14okRREOvxdWdGeEZwvGnQQKb8wAah53y0YXnTphOmHsOkxZ
-         3TEDe0UpTN50Udv0vaqKerefXBFMWr8DxJ5enLLjk7QuPpLkivZaR6qIJVhfYEwWw2/a
-         6Aj29qQ8xU/n/6XhxtQpnO/4u1zcWKVGVXpdvnhWHLyZh0yxLSeZq57d0Ulk/Es6KAed
-         Zxw4PO9Ca4THPFGJK2K7RJyzVq/2NfgEoppZArHjAIIEPLnS8ItfCKJWPqEOSFFx/I9i
-         e3AZpXubtLs7ny5E3Z1JqNxvJvZTlkGPxnanYydcgfbCgqOKZKVP5SiAMsnhxfYRwf1k
-         xHBw==
+	s=arc-20240116; t=1780042701; c=relaxed/simple;
+	bh=IM3BzY+gKDUbwOzi0elpTmXkAq0dg7APDtCwAuuGtNs=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=u6o9OWAxTlgQBzuQlvGGAmKR8F49auNch6H8ypGmLT0xB420nvyuS1G1UJvY9f0Rhwkv+8PbRpVF5WxhayhRVmAh7fluVCLBctveFZZJdGVprgM2oc5O+rwPchY5rf8IFh4wEnFY2zOLWx1DSMjp79FoDG/M229c+aaiL3p4WeA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kylinos.cn; spf=pass smtp.mailfrom=gmail.com; arc=none smtp.client-ip=209.85.214.194
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kylinos.cn
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+Received: by mail-pl1-f194.google.com with SMTP id d9443c01a7336-2bf114b0cf9so8672805ad.2
+        for <linux-pm@vger.kernel.org>; Fri, 29 May 2026 01:18:18 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1780042116; x=1780646916;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=mzQpnzu1SKsYZ2m+zDkXHsIhMOLKeojhZ3aXI9k++z0=;
-        b=rQJaFq1V9eK5c3rmk6tjmoOFU65KqCbia6nBWh0qLSdnCd0zW/uTfinuv73DH1spsZ
-         bu+nSH+3M04Uh0HkLx2ssZllq/c36RWdpUh9UixMaCKGrlzRAwmFBnVG3MTXF5wlksLW
-         brl2VgxRshEer9lbQKfaTHbkE7UGXGEuvMOto8QKCXsf1WnIT/eoahC7PkoOsjwAyIOl
-         b+z5Ebc9KFJ1U8JMv2vo6GpbikLuvTVPHfLjTfYLK5CBDWu6yjPJUSmDRjPOBS55Mdt/
-         GBbFiFqk37NsYVMa/03b3zUFmBUaIIhUGgKm8u99uw1HquhM5JuB6wBg2svo+Z7RBvwD
-         hK5g==
-X-Forwarded-Encrypted: i=1; AFNElJ8X9ZL5SXhVnzyDgNt0firfxCHivzxNTJzMRtugQRnkTUstjt9ZQWfBF56M7+NLK2+8Ib59YaTR5g==@vger.kernel.org
-X-Gm-Message-State: AOJu0YymdZcxn2iv2xvY+KASAczN1a/YNlzpIIbi5oQMtBsC1bILihiJ
-	ZcJkp+ikaKf3RAHtJuptzlRBiyna6BfGtWbqwk9yv0hUaZpiV39S8Sk0OPtNKkfTa9ScJzy+NEu
-	zpRTIDKN09q2n5pjxl7zUS02pWUENP6u83/t3mHCs3r167RZIKWPJzKNwWteuWw==
-X-Gm-Gg: Acq92OGZUwi4IFR2v7MqnrBXi7r2z8A/V8I1jEEpwZOeANG5bPMKJZRayAy3ODcZnqO
-	THPxXB0eXEvTsdxppgtXvUHyseeektARJLF9YIQHBmGp3M0rhBUUFbliMs8c6A5sRwwDoxaiGaL
-	3cBvpHtgzqLRHSbHwl2PZQ888V3aqnxDLBOnTf4akuV00m5B8jR2sIWx8BtlNAKCH4bgKs6Xlfi
-	XEr8BMScnViYT1XusjhAswMCfA1SRu9GeUycFi+RTSS6zDQJCWlELVY1X2AEla9Wogd0YEj5p3M
-	4tgJRMFh7XLdUW/P+0cdUcewm0NIGKkvMKGB4w/MfkyOojJLK40quJ1gHlb+FKr3Aty9PtLDAQQ
-	DM16CW7nB2Grht0GBcV20vu649ByiAM3rWynbIiOK+GSG5NjkZu57S2yfS+72C8BN/Mg7xCmwXs
-	Yui8mHKYI/reZz71HHDZgOD8hd9pXv
-X-Received: by 2002:a05:6a00:4387:b0:829:8083:472b with SMTP id d2e1a72fcca58-84211467b20mr1641098b3a.4.1780042115025;
-        Fri, 29 May 2026 01:08:35 -0700 (PDT)
-X-Received: by 2002:a05:6a00:4387:b0:829:8083:472b with SMTP id d2e1a72fcca58-84211467b20mr1641056b3a.4.1780042114436;
-        Fri, 29 May 2026 01:08:34 -0700 (PDT)
-Received: from [10.133.33.131] (tpe-colo-wan-fw-bordernet.qualcomm.com. [103.229.16.4])
-        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-84214ce75f9sm1080257b3a.49.2026.05.29.01.08.29
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Fri, 29 May 2026 01:08:34 -0700 (PDT)
-Message-ID: <024dcce3-52ab-4c49-843c-78687b293914@oss.qualcomm.com>
-Date: Fri, 29 May 2026 16:08:26 +0800
+        d=1e100.net; s=20251104; t=1780042698; x=1780647498;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=CO1vwp8sJ+t+jcxvi6cBiGKxFDrYU96NEUGJgzYEAbw=;
+        b=HbrbOolUV8TNBTQEmkLehe8ynK0eOCBAF1uxHHdOUI63DuZLPirHkwd53ZcbCKp+eL
+         jZNDGVS8WfsC3iRzqAXmAZ3RVdBGW2JGsIyElg/uL8+1t5z0lt3uv5tMyg6IS7SsRNhJ
+         ee6DuuPHrp8GaNYenOD/o6ai1bGch+B2McaVB/1jSdS2cfJ8p8QiCRNA9lcIRnFPMrr3
+         QThtBdMAF7p69qfoGJWNL64NwzcaXQtNxjt6qxD29AnHQQmufoIID0q+tpXhyqxLsmEH
+         QKhkqxaMAfEQ3URRm8azP2ueyRLGtXbPl9RTadymvSLGTk5dL1XH0TTtIZUOOww8eD3F
+         +01g==
+X-Forwarded-Encrypted: i=1; AFNElJ+/w25aZSduVTaIMn/AI6iKtXYf5+EKw8s+xNS2MNp5QZfCRb1aj58LrwR/uLqgpRUFQhahY8ey6g==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yz64rMhYxvat/cBpESK0bUz+mDIInEWj2q19uZku7hlSzbr/eIL
+	58Mk7Cfzi4t/JdRemn+hzaVTijtqLYmZE0raGt+aIkSKnP8P1Trd6u4W
+X-Gm-Gg: Acq92OFfI63YTekyz2lUF54a5/ZOyuiiPEs5ZkZ0iushd1oJDfpLbqH0SccltE/F7bC
+	f8Y+33boOtZZeb7I9zodR6UgMRd1hOij1O7l/o91G8lH0I4CKNiybUoR8STSnGfQr47ENfsIDYL
+	QxL6S323/I0SAD12kbw08d6UU8unG66Und+Qe/dvaTaHw26VPIgYc4PWAireK/9WAO+jK37EbUy
+	f10JFara7lS/Hb63zeUF7eVc2SDls9jQqAkUES4YautrfOqThMxGf4k9cBtt6SLmeJ633Zw2Nn6
+	6b1o8MIC9jCtCggfqywQqv4x+7Weee8iRWYWs7NmKpwHbjMhQFNT+RAhtrU7w0J8g6LYzyVoGit
+	UGfPKKmwGi0jwl398fIzlGxU0zzUmLe7L8Bjh0XeGpsRNRBMdi/Up42/fd6vglahKSvB1LBEKJb
+	Hx+nJPno+FLjeghiFDmKbq7K2FOlrs6DxiLOQX7ulieUbS351HMXRYGeY=
+X-Received: by 2002:a17:903:1ae6:b0:2bd:7191:5708 with SMTP id d9443c01a7336-2bf20bb8cbbmr26366445ad.29.1780042698270;
+        Fri, 29 May 2026 01:18:18 -0700 (PDT)
+Received: from kylin-XiaoXinPro-16-AHP9.. ([116.128.244.171])
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2bf23c3a5c8sm10204315ad.71.2026.05.29.01.18.14
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 29 May 2026 01:18:17 -0700 (PDT)
+From: Xueqin Luo <luoxueqin@kylinos.cn>
+To: rafael@kernel.org,
+	lenb@kernel.org,
+	srinivas.pandruvada@linux.intel.com,
+	viresh.kumar@linaro.org,
+	saket.dumbre@intel.com,
+	linux-acpi@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	linux-pm@vger.kernel.org,
+	acpica-devel@lists.linux.dev
+Cc: Xueqin Luo <luoxueqin@kylinos.cn>
+Subject: [PATCH] ACPI: CPPC: Add helper to get effective guaranteed performance
+Date: Fri, 29 May 2026 16:18:01 +0800
+Message-ID: <20260529081801.29346-1-luoxueqin@kylinos.cn>
+X-Mailer: git-send-email 2.43.0
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v3 0/4] cpufreq: Set policy->min and max as real QoS
- constraints
-To: Pierre Gondois <pierre.gondois@arm.com>, linux-kernel@vger.kernel.org
-Cc: Jie Zhan <zhanjie9@hisilicon.com>, Lifeng Zheng
- <zhenglifeng1@huawei.com>,
-        Ionela Voinescu <ionela.voinescu@arm.com>,
-        Sumit Gupta <sumitg@nvidia.com>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Viresh Kumar <viresh.kumar@linaro.org>,
-        Jonathan Corbet <corbet@lwn.net>,
-        Shuah Khan <skhan@linuxfoundation.org>, Huang Rui <ray.huang@amd.com>,
-        Mario Limonciello <mario.limonciello@amd.com>,
-        Perry Yuan <perry.yuan@amd.com>,
-        K Prateek Nayak <kprateek.nayak@amd.com>,
-        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
-        Len Brown <lenb@kernel.org>, Saravana Kannan <saravanak@kernel.org>,
-        linux-pm@vger.kernel.org, linux-doc@vger.kernel.org,
-        zhongqiu.han@oss.qualcomm.com
-References: <20260528090913.2759118-1-pierre.gondois@arm.com>
-Content-Language: en-US
-From: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>
-In-Reply-To: <20260528090913.2759118-1-pierre.gondois@arm.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNTI5MDA3OCBTYWx0ZWRfX1vFQV0fWIIGu
- hdY2BhKl7kNXAjVFUBvAdR44VgWtqEtFZMTeNSMqv+CkYcdEo1hhwvJy08bpv/LFL3ykHH/jG/f
- fwkk9spG2IYqG2HHi8+cYF1iXwr84eoWcmGvxA+5U4iAGcVWQEdkBTesu6xVQ+zgbhMA5iB/MYD
- ryEuypfrbPOX4/JlM/dIWAoPSrJnYKQJAu3AW33/vAUoAEpXokT4X0Pqa5FRsspLQ9PyiIXfsIt
- ir3aB57yn41XBhrN2uAKa1hWAiZyVxCfG/SB9MC0JahOyzUBlrRXQzIc+Q0UElEDwx5E0VHWaX9
- 32GcDZcUpAhi+D05n2MUVLtlYEfG/0KCKjQxKzLSt/BcFbgfI+MISeUFeiRNzNaiPE1wKOqnJIY
- fci5YO8JC62cukDMwbdiLhHn/uPqNpZEFt86YipB+4f0xnMPuMlFXOQ2DAnCCe5Fym1p7QL79sX
- HX87Go0x6skDF8XVRNg==
-X-Proofpoint-ORIG-GUID: PcpyKCxFwduDFjx8-OKtqYQm6w-KH90n
-X-Authority-Analysis: v=2.4 cv=Tt7WQjXh c=1 sm=1 tr=0 ts=6a194984 cx=c_pps
- a=rEQLjTOiSrHUhVqRoksmgQ==:117 a=nuhDOHQX5FNHPW3J6Bj6AA==:17
- a=IkcTkHD0fZMA:10 a=NGcC8JguVDcA:10 a=s4-Qcg_JpJYA:10
- a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=_glEPmIy2e8OvE2BGh3C:22
- a=VwQbUJbxAAAA:8 a=7CQSdrXTAAAA:8 a=EUspDBNiAAAA:8 a=StPsgHckyk6waopqk1EA:9
- a=QEXdDO2ut3YA:10 a=2VI0MkxyNR6bbpdq8BZq:22 a=a-qgeE7W1pNrGK8U0ZQC:22
-X-Proofpoint-GUID: PcpyKCxFwduDFjx8-OKtqYQm6w-KH90n
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.125,FMLib:17.12.100.49
- definitions=2026-05-29_02,2026-05-28_03,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- suspectscore=0 lowpriorityscore=0 clxscore=1015 impostorscore=0 bulkscore=0
- adultscore=0 malwarescore=0 phishscore=0 spamscore=0 priorityscore=1501
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2605210000 definitions=main-2605290078
+Content-Transfer-Encoding: 8bit
 
-On 5/28/2026 5:09 PM, Pierre Gondois wrote:
-> This patch is a follow-up from the serie:
-> - [PATCH v6 0/4] cpufreq: Introduce boost frequency QoS
-> https://lore.kernel.org/lkml/20260317101753.2284763-1-pierre.gondois@arm.com/
-> 
-> v3:
-> - Added Reviewed-by tags
-> - Return 0 on cpufreq_policy_init_qos() success instead of
->    a random positive value
-> - Moved policy->min/max assignment out of cpufreq_policy_init_qos()
-> - Updated documentation
+According to the ACPI CPPC specification, if the Guaranteed
+Performance register is not implemented, OSPM assumes the
+guaranteed performance is equal to nominal performance.
 
+Add cppc_get_effective_guaranteed_perf() helper to provide a
+spec-compliant effective guaranteed performance value while
+preserving the raw values returned by cppc_get_perf_caps().
 
-Sorry for the delay.
+Signed-off-by: Xueqin Luo <luoxueqin@kylinos.cn>
+---
+ drivers/acpi/cppc_acpi.c       | 26 ++++++++++++++++++++++++++
+ drivers/cpufreq/intel_pstate.c | 10 ++++------
+ include/acpi/cppc_acpi.h       |  5 +++++
+ 3 files changed, 35 insertions(+), 6 deletions(-)
 
-Looks good to me for patches 2/4, 3/4 and 4/4.
-
-Reviewed-by: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>
-
-
-> v2:
-> - Split the patch in multiple steps
-> - Replace min/max -> min_freq/max_freq
-> - Add references to commit 521223d8b3ec ("cpufreq: Fix initialization
->    of min and max frequency QoS requests") to explain the intent
->    of the patch
-> - Update documentation (cpu-drivers.rst)
-> - Set default policy->min/max values before the call to
->    blocking_notifier_call_chain()
-> - Create a new cpufreq_policy_init_qos() function to put all
->    the QoS and policy->min/max logic inside.
-> - Didn't add Sumit's reviewed-by as the patches changed a bit.
-> v1:
-> https://lore.kernel.org/lkml/20260423084731.1090384-1-pierre.gondois@arm.com/#t
-> 
-> Pierre Gondois (4):
->    cpufreq: Extract cpufreq_policy_init_qos() function
->    cpufreq: Set default policy->min/max values for all drivers
->    cpufreq: Remove driver default policy->min/max init
->    cpufreq: Use policy->min/max init as QoS request
-> 
->   Documentation/cpu-freq/cpu-drivers.rst |  9 +++-
->   drivers/cpufreq/amd-pstate.c           | 14 +++---
->   drivers/cpufreq/cppc_cpufreq.c         |  5 +-
->   drivers/cpufreq/cpufreq-nforce2.c      |  4 +-
->   drivers/cpufreq/cpufreq.c              | 68 ++++++++++++++++++--------
->   drivers/cpufreq/freq_table.c           |  7 ++-
->   drivers/cpufreq/gx-suspmod.c           |  2 +-
->   drivers/cpufreq/intel_pstate.c         |  3 --
->   drivers/cpufreq/pcc-cpufreq.c          | 10 ++--
->   drivers/cpufreq/pxa3xx-cpufreq.c       |  5 +-
->   drivers/cpufreq/sh-cpufreq.c           |  6 +--
->   drivers/cpufreq/virtual-cpufreq.c      |  5 +-
->   12 files changed, 77 insertions(+), 61 deletions(-)
-> 
-> --
-> 2.43.0
-
-
+diff --git a/drivers/acpi/cppc_acpi.c b/drivers/acpi/cppc_acpi.c
+index f370be8715ae..6dc11030707a 100644
+--- a/drivers/acpi/cppc_acpi.c
++++ b/drivers/acpi/cppc_acpi.c
+@@ -1328,6 +1328,32 @@ int cppc_get_highest_perf(int cpunum, u64 *highest_perf)
+ }
+ EXPORT_SYMBOL_GPL(cppc_get_highest_perf);
+ 
++/**
++ * cppc_get_effective_guaranteed_perf - get effective guaranteed performance
++ * @cpunum: CPU number
++ * @guaranteed_perf: Effective guaranteed performance value
++ *
++ * The ACPI CPPC specification states that if the Guaranteed
++ * Performance register is not implemented, OSPM assumes the
++ * guaranteed performance is equal to nominal performance.
++ *
++ * Return: 0 on success, negative errno on failure.
++ */
++int cppc_get_effective_guaranteed_perf(int cpunum, u64 *guaranteed_perf)
++{
++	struct cppc_perf_caps perf_caps;
++	int ret;
++
++	ret = cppc_get_perf_caps(cpunum, &perf_caps);
++	if (ret)
++		return ret;
++	*guaranteed_perf = perf_caps.guaranteed_perf ?:
++			   perf_caps.nominal_perf;
++
++	return 0;
++}
++EXPORT_SYMBOL_GPL(cppc_get_effective_guaranteed_perf);
++
+ /**
+  * cppc_get_epp_perf - Get the epp register value.
+  * @cpunum: CPU from which to get epp preference value.
+diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+index 8dc22a65e025..8934e48f71a2 100644
+--- a/drivers/cpufreq/intel_pstate.c
++++ b/drivers/cpufreq/intel_pstate.c
+@@ -404,17 +404,15 @@ static void intel_pstate_set_itmt_prio(int cpu)
+ 
+ static int intel_pstate_get_cppc_guaranteed(int cpu)
+ {
+-	struct cppc_perf_caps cppc_perf;
++	u64 guaranteed_perf;
+ 	int ret;
+ 
+-	ret = cppc_get_perf_caps(cpu, &cppc_perf);
++	ret = cppc_get_effective_guaranteed_perf(cpu, &guaranteed_perf);
++
+ 	if (ret)
+ 		return ret;
+ 
+-	if (cppc_perf.guaranteed_perf)
+-		return cppc_perf.guaranteed_perf;
+-
+-	return cppc_perf.nominal_perf;
++	return guaranteed_perf;
+ }
+ 
+ static int intel_pstate_cppc_get_scaling(int cpu)
+diff --git a/include/acpi/cppc_acpi.h b/include/acpi/cppc_acpi.h
+index d1f02ceec4f9..c02f3bc1fc1a 100644
+--- a/include/acpi/cppc_acpi.h
++++ b/include/acpi/cppc_acpi.h
+@@ -155,6 +155,7 @@ struct cppc_cpudata {
+ extern int cppc_get_desired_perf(int cpunum, u64 *desired_perf);
+ extern int cppc_get_nominal_perf(int cpunum, u64 *nominal_perf);
+ extern int cppc_get_highest_perf(int cpunum, u64 *highest_perf);
++extern int cppc_get_effective_guaranteed_perf(int cpunum, u64 *guaranteed_perf);
+ extern int cppc_get_perf_ctrs(int cpu, struct cppc_perf_fb_ctrs *perf_fb_ctrs);
+ extern int cppc_get_perf(int cpu, struct cppc_perf_ctrls *perf_ctrls);
+ extern int cppc_set_perf(int cpu, struct cppc_perf_ctrls *perf_ctrls);
+@@ -198,6 +199,10 @@ static inline int cppc_get_highest_perf(int cpunum, u64 *highest_perf)
+ {
+ 	return -EOPNOTSUPP;
+ }
++static inline int cppc_get_effective_guaranteed_perf(int cpunum, u64 *guaranteed_perf)
++{
++	return -EOPNOTSUPP;
++}
+ static inline int cppc_get_perf_ctrs(int cpu, struct cppc_perf_fb_ctrs *perf_fb_ctrs)
+ {
+ 	return -EOPNOTSUPP;
 -- 
-Thx and BRs,
-Zhongqiu Han
+2.43.0
+
