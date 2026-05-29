@@ -1,85 +1,33 @@
-Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A978E33A70E
-	for <linux-pm@vger.kernel.org>; Fri, 29 May 2026 13:30:23 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.180.131
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 81BB93E51F9;
+	Fri, 29 May 2026 14:17:10 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1780061424; cv=none; b=c3WftvL9+eioKjCbigOTGCcEXNx+EEvHRqU8d6n7/KhJZRWjVYweqhsO0mEnLANqKplXEAyBIGtcZbBulLv+vveZJNqFpPG6GWxb71ynukJwOhr/BW+j9RBtwA/nhovlI9YpJ2KnOqStzdEJc/9MqN1dTvhnIidJVGMdh8zcnSo=
+	t=1780064231; cv=none; b=A+rjMNt/KtWntaULCby8aEWIUme4e/94A6bp7R5KSddb/CaKPdhKBcpw5xv6om4zHX18hU7MaL7kfHstw293GeW6gZILtI2snnFVfRN05dYLFcmsPgVAN0sa/lqD1kLxLItzNF8n2dLLG/TbRCUzpmkpXQSBxeoTMjnULdnksqc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1780061424; c=relaxed/simple;
-	bh=MRykT7Ev3snfAOD0gmqt2lYUk2WpxUNUJ/ph6pxTUM4=;
+	s=arc-20240116; t=1780064231; c=relaxed/simple;
+	bh=BWTWH+mpSHryprY5sGX6KSC5Cna4XxqgCa+lpnWvDbc=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=VRqHj95G6u7GMYrgrg8/zOaiPJyf2URFfpi5iCB6R0Mtv2reiAfbs9QgxVAtXMwRcvt9wFqFGG+qec0CnhrScDflHLg5nKYagEdgQSW7Uit69WoF6xLXdf1mTPLkYuYrycf1tB73r0o2SbcJ0khx6aYvPoMd6qTMY7Y6yho92bk=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=Vukhh6zx; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=DP0Rj7Wm; arc=none smtp.client-ip=205.220.180.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
+	 In-Reply-To:Content-Type; b=qp9PtrSsCsFAgt9ZT9oMT7WYMc+7elHOaXnlZNZW7zC8S7cMZRPIrDTf2VvbP+HNBn2zyKvGMeTn3ItY4eLuyBTTtpg81bl17zDsWwTSK1nejxk/4PRBp6y+qcY2MlKuUouZ72M2cFrzX7hQgri3dYTn4GWmC1hSpLlm2YtB1rQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=j8C6s1Im; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="Vukhh6zx";
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="DP0Rj7Wm"
-Received: from pps.filterd (m0279873.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 64TDLB543656457
-	for <linux-pm@vger.kernel.org>; Fri, 29 May 2026 13:30:23 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	hWjqgXqaMryRWoWPpxKyf9wQ2j7ANbAzyzhN2DMzuFg=; b=Vukhh6zxXtDgPfLe
-	lWBLq4ebh8PoZTuu+0X7Mv3gSIGoWD5n+ySalceCc8X6mBHY+5ts37JMavRK5Q5t
-	suPNECaPJ0fCL8mSJoDNBcXntqXqNPH9bmwXgIZrBVk0Ekw6B3sliLp3U99WMlPJ
-	nN10WVlVMe9p3fVi3xsO9lZXTPvgaRat3w401+yN+0tN2qzzwgCE1C4I7fzk3xkw
-	NBI2bgwhcxBOrzPi0Gwgg86HoTGg2xUGseiELwZl1vvuYJLV/sa4jjkicUd4Po5P
-	gXE591Dw7Q5gR7MChKuWDiN9yA7v2wIUHnuitRND67uJ5ozeG4c0OxsuUVW40Hu2
-	IJvubw==
-Received: from mail-pl1-f197.google.com (mail-pl1-f197.google.com [209.85.214.197])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4eety5vd90-1
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Fri, 29 May 2026 13:30:22 +0000 (GMT)
-Received: by mail-pl1-f197.google.com with SMTP id d9443c01a7336-2bd04e4fe3dso111355715ad.3
-        for <linux-pm@vger.kernel.org>; Fri, 29 May 2026 06:30:22 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1780061422; x=1780666222; darn=vger.kernel.org;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=hWjqgXqaMryRWoWPpxKyf9wQ2j7ANbAzyzhN2DMzuFg=;
-        b=DP0Rj7Wm6sFoddH9Z4aSFaTYcwKZMkMXFOiwL3QK6/XiOEAfOHoSSl4MHEFPg3S1mB
-         wK8uZfjHtUS0ceBCLY//U1ruT+Yc/BpDT6kG5a2sbF9ME0JTKgCOOhP6mTs/EPP60YgV
-         hSO1fpdVqM4u/Jgzteq00Kit5mel5IbAhLpLfi7TJvWEdPyMMF9kQVBCR2bqlPZ06nOf
-         hd9hJIRMiWZq4v6ITvFsQnwn7Wpcs0/tPHE6S9hf8W8fMyR4yPU7ycgPgEf4N2Z1ZaF7
-         GB5hEESEqRofo7LFyneZX2duPzMB4UJexmTiubEKRQUR+lRlnvJWH/GXIZzywVSgIxQH
-         QZDQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1780061422; x=1780666222;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=hWjqgXqaMryRWoWPpxKyf9wQ2j7ANbAzyzhN2DMzuFg=;
-        b=rYDvVgHqCnctDrW/mDnGM57uVfFOouz1tJPa+G+bGyx5gSbeZEW6gLuBwPRFM/1G+f
-         IfTkzGhgt/AkHcU01sX6In1gSMoxtyl9BP21APXOQKGMezhWsqYTY+pVorseHqqlJA2S
-         9bIo6cSLxt2J2TCKJYQsKKxG44Nb8ydh5gsLmofc3195fzLJDCT/oJtGPPl9m1XxMXQW
-         CgfnQ63S5NkFh0+mKTci/WeAwLpIeniOmVOycENfFNhWQfGIVUEZjIM8+Xu26S3tHthP
-         5ofwSh1L66Q/3keIm8azDE4SKcyYAgrdo/A8Ml4t8ZKspMT4+ZypNW2rohzee4FD47jx
-         509A==
-X-Gm-Message-State: AOJu0Yyrpb9OR54DW58TN5uAC25VFf9b3Fr0H8UpBTOMUIv9mM8Ov4ib
-	Ai76JaSgKc+hUKDluHHx2rdRLj1SJbYrkXK5P7sw4XdtqEsifnZEQlmDx8NYQWPLdNw7q29irsR
-	IczjEsrl7XcBSGt9w617aCWvXTdQXuE5XLADgzqmpE4Oa2Iay1zsYFKgNoZloOA==
-X-Gm-Gg: Acq92OFHda2N6OSTV+2ufDODtu2Smz0bRUV1IhZXeOSU4EpaskOzUvchjK9oV6Q51kZ
-	fDKU3m/FFkSH1a1lBkQRbsdiPS8Fnaz2rk4qpfsXxzN+/Qrih4F2suP0u0NI6PGH9LGl3wXog3E
-	+G8Yty1Xqs8bq4XJRLGSv711Jz8BA5TNwJNTmjzpCfNKZCensPl58s1sn9ZeMcHItoII2XlGgY3
-	6kw/NqWRClREN755DoPM2xrAkrq0yz4SWvVS3GdJYoRmjOe94E53XDIKSgfAHyFWMo5qbS8te5m
-	m7oOB7BspUcolHM2ZmvcS9zlF2d3ZXfLcrGPF1ad0k4zkFsuYm3AGk71CMgJ71REBAW2+NIHxZV
-	9uuMq7pY2j6ahEy0u85xhWDtfrKXkoojnMk+e9ShVud0hVC6r2dTsz/jb12z3ok09mWo=
-X-Received: by 2002:a17:902:fc43:b0:2bd:8db9:cc0c with SMTP id d9443c01a7336-2bf2050c287mr38769865ad.6.1780061421541;
-        Fri, 29 May 2026 06:30:21 -0700 (PDT)
-X-Received: by 2002:a17:902:fc43:b0:2bd:8db9:cc0c with SMTP id d9443c01a7336-2bf2050c287mr38768925ad.6.1780061420801;
-        Fri, 29 May 2026 06:30:20 -0700 (PDT)
-Received: from [10.219.57.229] ([202.46.23.19])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2bf23c3d6besm21715725ad.74.2026.05.29.06.30.10
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Fri, 29 May 2026 06:30:19 -0700 (PDT)
-Message-ID: <0c6636b0-f6c7-49dc-b335-2b4fac16b848@oss.qualcomm.com>
-Date: Fri, 29 May 2026 19:00:09 +0530
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="j8C6s1Im"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 37E231F00893;
+	Fri, 29 May 2026 14:17:08 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1780064230;
+	bh=tfEJCEXEm8LWRGY1oQdKw6i86s/mrrt7TxPiYr7vO4Q=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To;
+	b=j8C6s1ImhAQxuNvoFN6cnuMTQLx6vi77nc0oNuDw/vGYc2b4CHZJpNC82KL5lqjf+
+	 wRrIXloldRf0P11cOJoIObsvvUul6ETdPdDAGrGdMSy5mrwdRinBMLjDQe69V7iIbo
+	 9wvOyq5TuPeedPaYI8UmxCSCR8ti/13P4g2IVz7Ov3b2FYObVjU2RvG6VeYajY44mz
+	 ON4ZXJczhAsZ5aGznJjVNTcMZc/FFlT95yvk7y51glx8K7qJJixfrzuuc+aV5/FTmY
+	 Z3aalPvrDrx9GIBn+CF4Y0j0za3Cyb1Orkswe7ucIb7vZ3MwV3F0ZtRYsv415Cr8G3
+	 MkeFN8BsglzDA==
+Message-ID: <61dd3fe3-3b8e-40de-b2ec-38469aff0d20@kernel.org>
+Date: Fri, 29 May 2026 16:17:06 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -87,93 +35,76 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v22 00/13] Implement PSCI reboot mode driver for PSCI
- resets
-To: Lorenzo Pieralisi <lpieralisi@kernel.org>, Arnd Bergmann <arnd@arndb.de>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-        devicetree@vger.kernel.org,
-        Florian Fainelli
- <florian.fainelli@broadcom.com>,
-        Krzysztof Kozlowski <krzk@kernel.org>,
-        Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>,
-        Mukesh Ojha <mukesh.ojha@oss.qualcomm.com>,
-        Andre Draszik <andre.draszik@linaro.org>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Kathiravan Thirumoorthy <kathiravan.thirumoorthy@oss.qualcomm.com>,
-        Srinivas Kandagatla <srini@kernel.org>,
-        Sebastian Reichel <sebastian.reichel@collabora.com>,
-        Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>,
-        Song Xue <quic_songxue@quicinc.com>,
-        Sebastian Reichel <sre@kernel.org>,
-        Mark Rutland <mark.rutland@arm.com>,
-        "Rafael J. Wysocki"
- <rafael@kernel.org>,
-        Daniel Lezcano <daniel.lezcano@kernel.org>,
-        Christian Loehle <christian.loehle@arm.com>,
-        Ulf Hansson <ulfh@kernel.org>, Lee Jones <lee@kernel.org>,
-        Rob Herring <robh@kernel.org>,
-        Krzysztof Kozlowski <krzk+dt@kernel.org>,
-        Conor Dooley
- <conor+dt@kernel.org>,
-        Bjorn Andersson <andersson@kernel.org>,
-        Konrad Dybcio <konradybcio@kernel.org>,
-        Souvik Chakravarty <Souvik.Chakravarty@arm.com>,
-        Andy Yan <andy.yan@rock-chips.com>,
-        Matthias Brugger
- <matthias.bgg@gmail.com>,
-        John Stultz <john.stultz@linaro.org>,
-        Moritz Fischer <moritz.fischer@ettus.com>,
-        Bartosz Golaszewski <brgl@kernel.org>,
-        Sudeep Holla <sudeep.holla@kernel.org>
-References: <20260514-arm-psci-system_reset2-vendor-reboots-v22-0-28a5bde07483@oss.qualcomm.com>
+Subject: Re: [PATCH v1 3/6] power: supply: max17042: Drop driver data in of
+ and platform device id arrays
+To: =?UTF-8?Q?Uwe_Kleine-K=C3=B6nig_=28The_Capable_Hub=29?=
+ <u.kleine-koenig@baylibre.com>, Sebastian Reichel <sre@kernel.org>
+Cc: Hans de Goede <hansg@kernel.org>,
+ Marek Szyprowski <m.szyprowski@samsung.com>,
+ Sebastian Krzyszkowiak <sebastian.krzyszkowiak@puri.sm>,
+ Purism Kernel Team <kernel@puri.sm>, linux-pm@vger.kernel.org,
+ linux-kernel@vger.kernel.org
+References: <cover.1780048925.git.u.kleine-koenig@baylibre.com>
+ <c4703f00d5a4d1debe51f1ce82afa11d2fdf04e0.1780048925.git.u.kleine-koenig@baylibre.com>
+From: Krzysztof Kozlowski <krzk@kernel.org>
 Content-Language: en-US
-From: Shivendra Pratap <shivendra.pratap@oss.qualcomm.com>
-In-Reply-To: <20260514-arm-psci-system_reset2-vendor-reboots-v22-0-28a5bde07483@oss.qualcomm.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Proofpoint-ORIG-GUID: Oe5C7MsiSQaUNdFMEj0Ir2TFl4ayNMUu
-X-Authority-Analysis: v=2.4 cv=TeqmcxQh c=1 sm=1 tr=0 ts=6a1994ee cx=c_pps
- a=cmESyDAEBpBGqyK7t0alAg==:117 a=j4ogTh8yFefVWWEFDRgCtg==:17
- a=IkcTkHD0fZMA:10 a=NGcC8JguVDcA:10 a=s4-Qcg_JpJYA:10
- a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=rJkE3RaqiGZ5pbrm-msn:22
- a=C-2j67T39HWltiyTxO0A:9 a=QEXdDO2ut3YA:10 a=1OuFwYUASf3TG4hYMiVC:22
-X-Proofpoint-GUID: Oe5C7MsiSQaUNdFMEj0Ir2TFl4ayNMUu
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNTI5MDEzNCBTYWx0ZWRfX749caf5Q+/AF
- ovHZrdLnie2qmA+LTybvATg1JAOHGJiNrlceFtGh+KVWgf6GdWDq6rmPC5NlAR8AoIYrCBr66sr
- Tbote94SserbMBG5hrfqKZQv6HeU3VV7l0NzZkI00aBpn8v/XtiQ+VXmHEr7mmbsOg18n0Xm3Pb
- JgAMZVKPzex1EFexc0lINETnN9U6RE5oPYcwFs2HXNzvlimYwKsIuRMgPvdRBalIyKL3Xxhf13a
- VTfCADwaw7ZcQiq3O7ehrQeasyj1bTuJ/Hc1gNXqMNQUQhkdei+5OuUbzn3MjLbsGjsCyWPvdru
- GilZENudp8bJFDCnxm7+LQ1SRifRx4PpRdSglsZh2njEMvLLJiPAkcobhpj3y3WbY0PtACUVBat
- Ehm4W3abtkECY2AZO8NGqS4YP1AVePqDNuIvGrVeIuedyrw1zCjXzoUWp3uV7cY4PyFpHeuAfh0
- ri3YeFuT1IA82i9Ma5Q==
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.125,FMLib:17.12.100.49
- definitions=2026-05-29_03,2026-05-28_03,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501 impostorscore=0 clxscore=1015 lowpriorityscore=0
- spamscore=0 suspectscore=0 bulkscore=0 malwarescore=0 adultscore=0
- phishscore=0 classifier=typeunknown authscore=0 authtc= authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2605210000
- definitions=main-2605290134
+Autocrypt: addr=krzk@kernel.org; keydata=
+ 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 a/A=
+In-Reply-To: <c4703f00d5a4d1debe51f1ce82afa11d2fdf04e0.1780048925.git.u.kleine-koenig@baylibre.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 
-
-
-On 14-05-2026 19:55, Shivendra Pratap wrote:
-> Userspace should be able to initiate device reboots using the various
-> PSCI SYSTEM_RESET and SYSTEM_RESET2 types defined by PSCI spec. This
-> patch series introduces psci-reboot-mode driver that will induce
-> command-based resets to psci driver for executing the device reset.
+On 29/05/2026 12:18, Uwe Kleine-König (The Capable Hub) wrote:
+> These values are not used, the relevant distinction happens in the mfd
+> parent driver. So they can be dropped.
 > 
-> The PSCI system reset calls takes two arguments: reset_type and cookie.
-> It defines predefined reset types, such as warm and cold reset, and
-> vendor-specific reset types which are SoC vendor specific. To support
-> these requirements, the reboot-mode framework is enhanced in two key
-> ways:
+> Signed-off-by: Uwe Kleine-König (The Capable Hub) <u.kleine-koenig@baylibre.com>
 
-Hi Lorenzo,
 
-Can you please review the if its aligning towards the suggestion in v20?
+I clearly see in this driver probe function 'chip_type =
+id->driver_data' which later is being used ('chip->chip_type =
+chip_type'), so I think it is used.
 
-thanks,
-Shivendra
+Best regards,
+Krzysztof
