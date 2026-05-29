@@ -1,76 +1,84 @@
-Received: from mail-wm1-f54.google.com (mail-wm1-f54.google.com [209.85.128.54])
+Received: from mail-wm1-f50.google.com (mail-wm1-f50.google.com [209.85.128.50])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 522633BE621
-	for <linux-pm@vger.kernel.org>; Fri, 29 May 2026 10:18:44 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.54
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D45BD3C6A51
+	for <linux-pm@vger.kernel.org>; Fri, 29 May 2026 10:18:45 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.50
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1780049926; cv=none; b=hRF/DadS637mof2/uGpHqp2QOTqgxi+g/aHCAsig1+TlLZLbGfj1I0GZCQUmAXLqWOOmRcRbe6C6LgDsDWSt2NBFo4buYfNY85vmOLTuPGGa1EYHmiTRoMr0DLHpsNmrnX4fhuUqRhvsMil3xOAZ1zyLVkqruDwYTr9nDk7Hcds=
+	t=1780049927; cv=none; b=C21lLmLqzN0/M9TbHU5ldBe9DR6a+cyeusc7oiGXWAks3wKWnBdCs7A0fZS7va+ET159BTyfcbYk26YarRF73WQ68yjiC8HMNR1UvIzwo18JOS5rox5JDgkiG/9CXtR5UnCoxVbtu4/fdV8oUqDwd8Ktid/5UA1WF2GXAe75R3E=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1780049926; c=relaxed/simple;
-	bh=zviK7dUflFAaqxqaW6Ow9ed+50ob1vfFG4YB7CN3Phw=;
+	s=arc-20240116; t=1780049927; c=relaxed/simple;
+	bh=W9xT+mzvNTBez1lAU3xkbd8dVtQp/hVdeRLR+vfLdCE=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=GBoPdyx88jkfVZ2DJ1feeLMOEQZebMzm27gKtLytmfltIG1jpZT2027KYsGKg2EMirErtDZZuSWtqoJqCXTDTpaecldz3GZa2Mi/qldUdYtklWQBwK2UIhvyFMqDHzq2DkwbXl+ucGOWGy240Qf5Wtr1F92imp08bB1GRv9EjG0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com; spf=pass smtp.mailfrom=baylibre.com; dkim=pass (2048-bit key) header.d=baylibre.com header.i=@baylibre.com header.b=QUIaHm84; arc=none smtp.client-ip=209.85.128.54
+	 MIME-Version:Content-Type; b=fh3l/w4eF5WKbT/5yal1FYnoEMkOs5mnQ325hCOU0CAvy2yip25sWolht7+OCH/iPBVjFVBmavVyeWF8rSVQluxwzW+1fisqXtR8syqqbJ9043Q+T/5Qo6etSsOFpugVBN42xO5/wc41CyixQywD7FEJkzuZNqpnksOFRfPuUAQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com; spf=pass smtp.mailfrom=baylibre.com; dkim=pass (2048-bit key) header.d=baylibre.com header.i=@baylibre.com header.b=JHxBS/sG; arc=none smtp.client-ip=209.85.128.50
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=baylibre.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=baylibre.com header.i=@baylibre.com header.b="QUIaHm84"
-Received: by mail-wm1-f54.google.com with SMTP id 5b1f17b1804b1-48a563e4ef7so97593805e9.0
-        for <linux-pm@vger.kernel.org>; Fri, 29 May 2026 03:18:44 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=baylibre.com header.i=@baylibre.com header.b="JHxBS/sG"
+Received: by mail-wm1-f50.google.com with SMTP id 5b1f17b1804b1-4893940bb5eso74209945e9.3
+        for <linux-pm@vger.kernel.org>; Fri, 29 May 2026 03:18:45 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=baylibre.com; s=google; t=1780049923; x=1780654723; darn=vger.kernel.org;
+        d=baylibre.com; s=google; t=1780049924; x=1780654724; darn=vger.kernel.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=SY9hQa0QdThun7r+BEm3YkBz0hQU6Eaf0ALusqx9WLI=;
-        b=QUIaHm84F0/b6CN3GrsbGWb7S7/Rzyt5MHJqryl8yiH8suLv/usDgqzKojJjEjy6ua
-         gEMd3TtGyQiC4Zfuo+WwhdHSDZoozz0wzESCOkdw+26T4XIeOFy2Kw9hrhXjbtzG8ssN
-         eVyE5hn2iMhbFBldLFiVKXFfJAveV6XKWCAHjH0hhzFxWoP8qgxlSLS54qZZRnltAUMc
-         TjlGnkZzgttE3I8lEnMR9esu3fGXRoZcpy5eCxnLWqF8u2/UhNYsP557gAldftv0KFhy
-         69sjQqCXmQY6Ns10WSTGx0EFzZf0yM9EJTta8t+i9Bm/F6XceVvhnhF3Fgavol3GgL/c
-         X9qQ==
+        bh=P4zSRLTrRKREVH9IqS8el7yHWyFDWA9l51ZOzDmK9sI=;
+        b=JHxBS/sGBAz7c0WWghIlgA0l3RG/DH0rEfLeshMKlkhw6Y+tScIEqyDryj9cFoEhVi
+         EMP6Lesja4+7J+j4YBTtc6TmD6kJ057G5jU+GR4jeymlBt7SB85xzN2NdxMrp7DHNWkH
+         GwqZvGYod6Ehj7lOthlaWDQ1j/EIKBjMFFA/GLb5HNXbayOBxUrQ4zIZj0K8+pK/gs1f
+         L2+5NVAIkuFdfJne/uVkmkLa8EPMR2Wi3Hl47suRCIqQ4wXITkmCqYmFe1IO/LdRmK7O
+         WJtqxzbIxNWiGmcpiKGOK90d30pXuhIeRJyF4k2bmNWeFeV0KOfVLpS3vySyX3XJ1dmo
+         Mycw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1780049923; x=1780654723;
+        d=1e100.net; s=20251104; t=1780049924; x=1780654724;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to;
-        bh=SY9hQa0QdThun7r+BEm3YkBz0hQU6Eaf0ALusqx9WLI=;
-        b=tTkRvzJa4LvYEpL5nK9nsP/mRbTO+yjFrZT7yGOl/aXVwyHbmXoRR5ukg8dmOAcf+h
-         ZFMgP+5di8EqrRyyaufGKltqeTjBy+30MuDWXEz7IOP6axuQ7bahoVdxEFOwjSYDODe8
-         t72j54PAfndJhlvqZPVAFwsEYJr7nO5rKGIlgIHeP6zxZnBCfpkocG5sZFZcH8T6yQv9
-         Qpd+Bt/gCF0bOQeF/wi7Bql8G5u7BpEdnyYmYKI2I2m7RBDNNHFcLn7+x2yqRAp5AvYu
-         vYFJVMNy1695Ba/8b3Gh5u0xg0KbgTN0S9SAw5DjcJgSmR8xj0MgKj0S9M7UhJVAHjVR
-         2+dQ==
-X-Forwarded-Encrypted: i=1; AFNElJ/p9P1V3rbxmyeXNdmoXw3xMcRTo+5YGxw717lzl+M84xAa+U+AhTckjga1cQJUqHdqWhSzBuo4Og==@vger.kernel.org
-X-Gm-Message-State: AOJu0YwG0fLg/rOKCvZoWfqW6aV41xjoa0S9mWr9GvEuz6P1WpZNEBq/
-	WJfLCaI3+FAqf/fs9zKpgnL2fKcJ0BCzOHiUL5uttjoCVn+upjCsYtBnH3kAdXom5v0=
-X-Gm-Gg: Acq92OHQ9xf9Lx1CIMf5QFHy3MyecqgdiP5be9Gl7CjMudF3F4Rv0ixWejNIayrgWIU
-	utJ4CXLagmm0al0cBw+idJog8A+MWG+PHNxNcbGvNFGo1REg3/ZQBPrWlg1K0K6z0XErJzL8cVm
-	6unAPvMBAIjFbNzCTH8VrjlWW3xKfgb89TuuXkgnVO67/lORntd7adN+4KafzzhSgwogd67es3v
-	Sg2cW9Q+yJ09YfjReBoyeUgpeq3AZUv5UYP3jLBfqj+Yupihi70VxEurIMjd1C5ESWkzGo+6tAj
-	rv6c21fr5GedF/6ibwFkAvsnNLAL+aaAXbY7jju5voaXDFjLtejR4uqt/CoFLqEyIA4pUe9Y7yC
-	2nS/C4gamSg36T0yoD285ucVkJD425ShtLWW2aSnlE4fIKeI6OX7NpQ4wqdBtiqJHIH9A6bKnBj
-	pHLkJ23RH8cxmV1QsQmRbnSjuaM6oOisYu4KghDK/wGWB79GA74jotuDl3tbEzQXAOlQ0d6oTGN
-	FYB0W1cPfD8dmziMorSO1jnLA==
-X-Received: by 2002:a05:600c:8582:b0:490:51e9:deba with SMTP id 5b1f17b1804b1-4909c0bb2e7mr32632275e9.27.1780049922821;
-        Fri, 29 May 2026 03:18:42 -0700 (PDT)
+        bh=P4zSRLTrRKREVH9IqS8el7yHWyFDWA9l51ZOzDmK9sI=;
+        b=Ic7Nlji/7H/GngIROUXmI52BxfU6Z9eW9QAesq2UzF155Pr5kkizCBEVABg/tZpuhA
+         CfHz6eaAydr5HrCwsTBbaND4tc+zuQZk7wVqN3ofXkEEkA3BrNWAQAjfJ5FDrbokYLy/
+         CKavAbE/bOOxshQFIQp5Np/Wt9UcIxGH4TsBu0RMLItITwhTIF75vJv/UKrNhDRBx3S2
+         yzbIN92ng/0Z/7Xg+L/p13Y18y0+GaAfZeOwyvBQCIhCtpIMR93Lk3aCI7v3tjkcEJji
+         GnXK/jJCDAgV1WiRvmtYoRg27t1LG+62t5EStEFQxJgFt/V5TthVuYD3uk0EStvy8rLC
+         0J0g==
+X-Forwarded-Encrypted: i=1; AFNElJ8tMZUZaJOPYDSnItadxoZbvO2JyNMqM2mWwRn9bsvBQk2GUC9+sWJy2bAKrylJvSbILWlUbx9Cpg==@vger.kernel.org
+X-Gm-Message-State: AOJu0YyxwuzR4vAqj6snegqK+QFQHds7bq3+YyZAFM1e9W96f0yT6+Y6
+	2J70ANaKV5Qq+IRcZImrbK9PF4JK+zh0UVuunifv/T6Wnq0FWI8cELfp3TdZm6uIhnk=
+X-Gm-Gg: Acq92OEmO3PzPFJ0J19HNn1Sks5E0HIXs9ZTCMFnYyuPdUtqc3vm9ka/gIdByb8fyhc
+	AHimQIcYblbbCfQalxgvNvGWWHEruXZt6zgEX8BlYKf3sJLjJ1Pr3OAoXn04o7uHcAdic5J9IBm
+	Hp3pipauZfg99g+nT21UvoF/xCu0eUcGT0LPQpUOS0wXcQItWtUiVMepIKlV+FtVxq0O59fknvC
+	RzCOnZ+aRXptOIyq4qYmVgl/IBZb/YkvJzt3eFX+zf/WcTuQhUzqdprxPvzcB9RyY+0ITyZ5zl4
+	xeww8wD4OMg4iHGopCvy+EBLPT7A7F0T0/3wtZppZCcyCrHFF/T1pcC5XfgrtgtnA3lfJZG5KME
+	s6gIZjWOVeHckIVUSTsg4AFlmgWslKYpYP74irrF2Utg4e8LnaKpidd8leam7G2FoTgh1jbsiY8
+	LqYZagkGNTlghCaBKd8N0i7eaYDZ6L9UcUojPSKK8qb9Hbz2oFzOTpZUdCz4fQf4q58TCM+Esh4
+	MKxcY9Hh46NTJMFsHo/3lyVBg==
+X-Received: by 2002:a05:600c:58ce:b0:490:44eb:c1ea with SMTP id 5b1f17b1804b1-4909c0b546cmr30191565e9.24.1780049924381;
+        Fri, 29 May 2026 03:18:44 -0700 (PDT)
 Received: from localhost (p200300f65f47db043f932d8b97293bf6.dip0.t-ipconnect.de. [2003:f6:5f47:db04:3f93:2d8b:9729:3bf6])
-        by smtp.gmail.com with UTF8SMTPSA id 5b1f17b1804b1-4909c130ef9sm11926505e9.35.2026.05.29.03.18.42
+        by smtp.gmail.com with UTF8SMTPSA id 5b1f17b1804b1-4909c0ad269sm11855695e9.11.2026.05.29.03.18.43
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 29 May 2026 03:18:42 -0700 (PDT)
+        Fri, 29 May 2026 03:18:43 -0700 (PDT)
 From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig=20=28The=20Capable=20Hub=29?= <u.kleine-koenig@baylibre.com>
 To: Sebastian Reichel <sre@kernel.org>
-Cc: Hans de Goede <hansg@kernel.org>,
-	Krzysztof Kozlowski <krzk@kernel.org>,
-	Marek Szyprowski <m.szyprowski@samsung.com>,
-	Sebastian Krzyszkowiak <sebastian.krzyszkowiak@puri.sm>,
-	Purism Kernel Team <kernel@puri.sm>,
+Cc: Yixun Lan <dlan@kernel.org>,
+	Andreas Kemnade <andreas@kemnade.info>,
+	Matti Vaittinen <mazziesaccount@gmail.com>,
+	Sven Peter <sven@kernel.org>,
+	Janne Grunau <j@jannau.net>,
+	Neal Gompa <neal@gompa.dev>,
+	Amit Sunil Dhamne <amitsd@google.com>,
+	Samuel Kayode <samkay014@gmail.com>,
 	linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-Subject: [PATCH v1 3/6] power: supply: max17042: Drop driver data in of and platform device id arrays
-Date: Fri, 29 May 2026 12:18:18 +0200
-Message-ID:  <c4703f00d5a4d1debe51f1ce82afa11d2fdf04e0.1780048925.git.u.kleine-koenig@baylibre.com>
+	linux-riscv@lists.infradead.org,
+	spacemit@lists.linux.dev,
+	linux-kernel@vger.kernel.org,
+	asahi@lists.linux.dev,
+	linux-arm-kernel@lists.infradead.org,
+	imx@lists.linux.dev
+Subject: [PATCH v1 4/6] power: Use named initializers for platform_device_id arrays
+Date: Fri, 29 May 2026 12:18:19 +0200
+Message-ID:  <1ceacf4f9c3f827bcad85b378aa04cdca1c04635.1780048925.git.u.kleine-koenig@baylibre.com>
 X-Mailer: git-send-email 2.47.3
 In-Reply-To: <cover.1780048925.git.u.kleine-koenig@baylibre.com>
 References: <cover.1780048925.git.u.kleine-koenig@baylibre.com>
@@ -81,50 +89,140 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1590; i=u.kleine-koenig@baylibre.com; h=from:subject:message-id; bh=zviK7dUflFAaqxqaW6Ow9ed+50ob1vfFG4YB7CN3Phw=; b=owEBbQGS/pANAwAKAY+A+1h9Ev5OAcsmYgBqGWfvaSx7MZS/OgeCURzCAKaLJ2woBtyFkSi60 SvwoFGEWPSJATMEAAEKAB0WIQQ/gaxpOnoeWYmt/tOPgPtYfRL+TgUCahln7wAKCRCPgPtYfRL+ TvJwB/9/7xLn3R0HLchYlbhbMdVMZyiPtONy6hhXXy1JlRnbJLKlf542zA983TUbbWsbSq9G4ql VmGvCyg8dWXDemFCKafnEG/tMd/P0dXMW6ZEkl0IVhZXeyKXtKhp2fwrWJ1P5S7vPxV54sMc57J 6bBRbqCxHBebo6a26ux4c6vf06fhfHLJSYWU/zNqNpldrn1UUuoGIGIU9KLyS/K/qCHAlMmmF3Y tn6pTiOW2CO/CfE8RILJItGxgBW6Gwk41DrfGOTzJg/HaxxHS9pFLj5qxHTwOO2xIqf64tBblST oQohf7KUCPnZk4gnE+JSI67kcfiV9GsazUP/T2BLJ2lAEJUr
+X-Developer-Signature: v=1; a=openpgp-sha256; l=5348; i=u.kleine-koenig@baylibre.com; h=from:subject:message-id; bh=W9xT+mzvNTBez1lAU3xkbd8dVtQp/hVdeRLR+vfLdCE=; b=owEBbQGS/pANAwAKAY+A+1h9Ev5OAcsmYgBqGWfy0bX/m5kq8Arlyt5XE8Z+Ge+pZiRLveebn 4cklmt0zVmJATMEAAEKAB0WIQQ/gaxpOnoeWYmt/tOPgPtYfRL+TgUCahln8gAKCRCPgPtYfRL+ Tgj4CACZl/QxMesCrrIl4aNkVxWwxHLc2F2zJNbXP7mUNUZy6iSAQRmCPv/wrBPSa2TyyvCYd7T zCUw3L9LezGtcTAcu4AT6betYFrT3vdx2aMXWqk/lunJew9bTfAOihdCMJcA3jLt0SHECHUBYCt 8ibifSKnMpS9cmgT1+nXA/3x0Zp26IE6mNdFJai3hgNrNtpW+8MKMX2tBk/3VT6uv4nv3bzs5JR DZ9/1h8ng6iT+z6mSE3NjM83dSCzN+fkhK6EXTAZ8k0GaxqyY4TdqZSyZdPCeFum1xeDSRiVunl YedBpxql0w3n64ysMOen1PE+PCNSTxrCd0ATCblCqdxOqrhO
 X-Developer-Key: i=u.kleine-koenig@baylibre.com; a=openpgp; fpr=0D2511F322BFAB1C1580266BE2DCDD9132669BD6
 Content-Transfer-Encoding: 8bit
 
-These values are not used, the relevant distinction happens in the mfd
-parent driver. So they can be dropped.
+Named initializers are better readable and more robust to changes of the
+struct definition. This robustness is relevant for a planned change to
+struct platform_device_id replacing .driver_data by an anonymous union.
+
+While touching these arrays unify spacing and usage of commas.
 
 Signed-off-by: Uwe Kleine-König (The Capable Hub) <u.kleine-koenig@baylibre.com>
 ---
- drivers/power/supply/max17042_battery.c | 14 +++++++-------
- 1 file changed, 7 insertions(+), 7 deletions(-)
+ drivers/power/reset/spacemit-p1-reboot.c | 4 ++--
+ drivers/power/reset/tps65086-restart.c   | 2 +-
+ drivers/power/supply/bd71828-power.c     | 8 ++++----
+ drivers/power/supply/macsmc-power.c      | 2 +-
+ drivers/power/supply/max77759_charger.c  | 2 +-
+ drivers/power/supply/max8998_charger.c   | 2 +-
+ drivers/power/supply/pf1550-charger.c    | 2 +-
+ drivers/power/supply/rt5033_charger.c    | 2 +-
+ 8 files changed, 12 insertions(+), 12 deletions(-)
 
-diff --git a/drivers/power/supply/max17042_battery.c b/drivers/power/supply/max17042_battery.c
-index 167fb3fb3732..3c50f5ba0591 100644
---- a/drivers/power/supply/max17042_battery.c
-+++ b/drivers/power/supply/max17042_battery.c
-@@ -1298,7 +1298,7 @@ static SIMPLE_DEV_PM_OPS(max17042_pm_ops, max17042_suspend,
+diff --git a/drivers/power/reset/spacemit-p1-reboot.c b/drivers/power/reset/spacemit-p1-reboot.c
+index 9ec3d1fff8f3..84026b042ea2 100644
+--- a/drivers/power/reset/spacemit-p1-reboot.c
++++ b/drivers/power/reset/spacemit-p1-reboot.c
+@@ -70,8 +70,8 @@ static int spacemit_p1_reboot_probe(struct platform_device *pdev)
+ }
  
- #ifdef CONFIG_ACPI
- static const struct acpi_device_id max17042_acpi_match[] = {
--	{ "MAX17047", MAXIM_DEVICE_TYPE_MAX17047 },
-+	{ "MAX17047" },
+ static const struct platform_device_id spacemit_p1_reboot_id_table[] = {
+-	{ "spacemit-p1-reboot", },
+-	{ /* sentinel */ },
++	{ .name = "spacemit-p1-reboot" },
++	{ /* sentinel */ }
+ };
+ MODULE_DEVICE_TABLE(platform, spacemit_p1_reboot_id_table);
+ 
+diff --git a/drivers/power/reset/tps65086-restart.c b/drivers/power/reset/tps65086-restart.c
+index 6976dbcac74f..37d248a9df17 100644
+--- a/drivers/power/reset/tps65086-restart.c
++++ b/drivers/power/reset/tps65086-restart.c
+@@ -41,7 +41,7 @@ static int tps65086_restart_probe(struct platform_device *pdev)
+ }
+ 
+ static const struct platform_device_id tps65086_restart_id_table[] = {
+-	{ "tps65086-reset", },
++	{ .name = "tps65086-reset" },
+ 	{ /* sentinel */ }
+ };
+ MODULE_DEVICE_TABLE(platform, tps65086_restart_id_table);
+diff --git a/drivers/power/supply/bd71828-power.c b/drivers/power/supply/bd71828-power.c
+index 5e78faa0a4aa..5ab514ff5c65 100644
+--- a/drivers/power/supply/bd71828-power.c
++++ b/drivers/power/supply/bd71828-power.c
+@@ -1184,10 +1184,10 @@ static int bd71828_power_probe(struct platform_device *pdev)
+ }
+ 
+ static const struct platform_device_id bd71828_charger_id[] = {
+-	{ "bd71815-power", ROHM_CHIP_TYPE_BD71815 },
+-	{ "bd71828-power", ROHM_CHIP_TYPE_BD71828 },
+-	{ "bd72720-power", ROHM_CHIP_TYPE_BD72720 },
+-	{ },
++	{ .name = "bd71815-power", .driver_data = ROHM_CHIP_TYPE_BD71815 },
++	{ .name = "bd71828-power", .driver_data = ROHM_CHIP_TYPE_BD71828 },
++	{ .name = "bd72720-power", .driver_data = ROHM_CHIP_TYPE_BD72720 },
++	{ }
+ };
+ MODULE_DEVICE_TABLE(platform, bd71828_charger_id);
+ 
+diff --git a/drivers/power/supply/macsmc-power.c b/drivers/power/supply/macsmc-power.c
+index 33ca07460f3a..ced07f71e0a8 100644
+--- a/drivers/power/supply/macsmc-power.c
++++ b/drivers/power/supply/macsmc-power.c
+@@ -834,7 +834,7 @@ static void macsmc_power_remove(struct platform_device *pdev)
+ }
+ 
+ static const struct platform_device_id macsmc_power_id[] = {
+-	{ "macsmc-power" },
++	{ .name = "macsmc-power" },
+ 	{ /* sentinel */ }
+ };
+ MODULE_DEVICE_TABLE(platform, macsmc_power_id);
+diff --git a/drivers/power/supply/max77759_charger.c b/drivers/power/supply/max77759_charger.c
+index 9bb414599f16..c606d7bafcb8 100644
+--- a/drivers/power/supply/max77759_charger.c
++++ b/drivers/power/supply/max77759_charger.c
+@@ -754,7 +754,7 @@ static int max77759_charger_probe(struct platform_device *pdev)
+ }
+ 
+ static const struct platform_device_id max77759_charger_id[] = {
+-	{ .name = "max77759-charger", },
++	{ .name = "max77759-charger" },
  	{ }
  };
- MODULE_DEVICE_TABLE(acpi, max17042_acpi_match);
-@@ -1346,12 +1346,12 @@ static const struct i2c_device_id max17042_id[] = {
- MODULE_DEVICE_TABLE(i2c, max17042_id);
+ MODULE_DEVICE_TABLE(platform, max77759_charger_id);
+diff --git a/drivers/power/supply/max8998_charger.c b/drivers/power/supply/max8998_charger.c
+index 418b882b163d..b0eda2b51e7f 100644
+--- a/drivers/power/supply/max8998_charger.c
++++ b/drivers/power/supply/max8998_charger.c
+@@ -188,7 +188,7 @@ static int max8998_battery_probe(struct platform_device *pdev)
+ }
  
- static const struct platform_device_id max17042_platform_id[] = {
--	{ "max17042", MAXIM_DEVICE_TYPE_MAX17042 },
--	{ "max17047", MAXIM_DEVICE_TYPE_MAX17047 },
--	{ "max17050", MAXIM_DEVICE_TYPE_MAX17050 },
--	{ "max17055", MAXIM_DEVICE_TYPE_MAX17055 },
--	{ "max77705-battery", MAXIM_DEVICE_TYPE_MAX17047 },
--	{ "max77849-battery", MAXIM_DEVICE_TYPE_MAX17047 },
-+	{ .name = "max17042" },
-+	{ .name = "max17047" },
-+	{ .name = "max17050" },
-+	{ .name = "max17055" },
-+	{ .name = "max77705-battery" },
-+	{ .name = "max77849-battery" },
+ static const struct platform_device_id max8998_battery_id[] = {
+-	{ "max8998-battery", TYPE_MAX8998 },
++	{ .name = "max8998-battery" },
  	{ }
  };
- MODULE_DEVICE_TABLE(platform, max17042_platform_id);
+ MODULE_DEVICE_TABLE(platform, max8998_battery_id);
+diff --git a/drivers/power/supply/pf1550-charger.c b/drivers/power/supply/pf1550-charger.c
+index a457862ef461..41036f4cb64a 100644
+--- a/drivers/power/supply/pf1550-charger.c
++++ b/drivers/power/supply/pf1550-charger.c
+@@ -622,7 +622,7 @@ static int pf1550_charger_probe(struct platform_device *pdev)
+ }
+ 
+ static const struct platform_device_id pf1550_charger_id[] = {
+-	{ "pf1550-charger", },
++	{ .name = "pf1550-charger" },
+ 	{ /* sentinel */ }
+ };
+ MODULE_DEVICE_TABLE(platform, pf1550_charger_id);
+diff --git a/drivers/power/supply/rt5033_charger.c b/drivers/power/supply/rt5033_charger.c
+index de724f23e453..536ab29b657d 100644
+--- a/drivers/power/supply/rt5033_charger.c
++++ b/drivers/power/supply/rt5033_charger.c
+@@ -727,7 +727,7 @@ static int rt5033_charger_probe(struct platform_device *pdev)
+ }
+ 
+ static const struct platform_device_id rt5033_charger_id[] = {
+-	{ "rt5033-charger", },
++	{ .name = "rt5033-charger" },
+ 	{ }
+ };
+ MODULE_DEVICE_TABLE(platform, rt5033_charger_id);
 -- 
 2.47.3
 
