@@ -1,33 +1,33 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 81BB93E51F9;
-	Fri, 29 May 2026 14:17:10 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C2B443438A0;
+	Fri, 29 May 2026 14:20:11 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1780064231; cv=none; b=A+rjMNt/KtWntaULCby8aEWIUme4e/94A6bp7R5KSddb/CaKPdhKBcpw5xv6om4zHX18hU7MaL7kfHstw293GeW6gZILtI2snnFVfRN05dYLFcmsPgVAN0sa/lqD1kLxLItzNF8n2dLLG/TbRCUzpmkpXQSBxeoTMjnULdnksqc=
+	t=1780064412; cv=none; b=L27/AOWsOVBnJfZmcwA0xtB00bg5SQIk8bHDWdquqC3zEZDUoUiS3dSeSW3vGGZammEUEiVP9g+QJ6MX9gx1JQb0hawdUbREiyPYh1O+HdcZa3ibHkChzj0aUyU71sGPu385Q0/uK8ubdwIKEAJdhBWDSBD9DMUlIFtna1Ei9U8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1780064231; c=relaxed/simple;
-	bh=BWTWH+mpSHryprY5sGX6KSC5Cna4XxqgCa+lpnWvDbc=;
+	s=arc-20240116; t=1780064412; c=relaxed/simple;
+	bh=3S9wbhq5EX9MyQB155reHrw9uFx8FDTRbti0Ie19F4s=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=qp9PtrSsCsFAgt9ZT9oMT7WYMc+7elHOaXnlZNZW7zC8S7cMZRPIrDTf2VvbP+HNBn2zyKvGMeTn3ItY4eLuyBTTtpg81bl17zDsWwTSK1nejxk/4PRBp6y+qcY2MlKuUouZ72M2cFrzX7hQgri3dYTn4GWmC1hSpLlm2YtB1rQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=j8C6s1Im; arc=none smtp.client-ip=100.103.45.18
+	 In-Reply-To:Content-Type; b=LJXJdlKkFto8ykZYnNUETISYn0jlxoa9BGTuc0Ln12lBn3XdFQ6An5lgdmFbQQG7XRJQQz1868jPwosYi/JfC+nKeEK0GgZQIiv3cR8C1BQVnQAdG3o98WLSW0VheXzrguUz6BigiziLXYwKJCYgJ1Q8ONmn1f3cr1rz0iGCkNE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=SbGeZVbN; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="j8C6s1Im"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 37E231F00893;
-	Fri, 29 May 2026 14:17:08 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="SbGeZVbN"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 49F701F00893;
+	Fri, 29 May 2026 14:20:10 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1780064230;
-	bh=tfEJCEXEm8LWRGY1oQdKw6i86s/mrrt7TxPiYr7vO4Q=;
+	s=k20260515; t=1780064411;
+	bh=91vwZFNFm5Xkd4iQM4Li4LC6u/89LeyRHzOlj2kuHP0=;
 	h=Date:Subject:To:Cc:References:From:In-Reply-To;
-	b=j8C6s1ImhAQxuNvoFN6cnuMTQLx6vi77nc0oNuDw/vGYc2b4CHZJpNC82KL5lqjf+
-	 wRrIXloldRf0P11cOJoIObsvvUul6ETdPdDAGrGdMSy5mrwdRinBMLjDQe69V7iIbo
-	 9wvOyq5TuPeedPaYI8UmxCSCR8ti/13P4g2IVz7Ov3b2FYObVjU2RvG6VeYajY44mz
-	 ON4ZXJczhAsZ5aGznJjVNTcMZc/FFlT95yvk7y51glx8K7qJJixfrzuuc+aV5/FTmY
-	 Z3aalPvrDrx9GIBn+CF4Y0j0za3Cyb1Orkswe7ucIb7vZ3MwV3F0ZtRYsv415Cr8G3
-	 MkeFN8BsglzDA==
-Message-ID: <61dd3fe3-3b8e-40de-b2ec-38469aff0d20@kernel.org>
-Date: Fri, 29 May 2026 16:17:06 +0200
+	b=SbGeZVbNgfigDUCt5cC9c4wSzWEEAvh3BrlJK6xZy1/E3Q6C8w+KwMo1Ioyz2iqOb
+	 QaUKDpIGaTrz94S5ajL3zqAgsn3TNC91uz2PG+1AoyV8lphPWXhGJdauzSy1LUOqZ+
+	 wzg5V058UpmeTBC4mGEL1skYLaqrfMqZxgrHYpQP0BC9kM2vLWHh1ODu9/nTaESbXs
+	 eWs8MCpiCEmKAD0KeZJ64LmB5yxla4cpOzP6xUBHAZ7CmJqGSwKpMUBcdZrDBcw4AB
+	 0FDRfplLpAAlZKjqjPlINdKngLTjsI7bIRPqcRHDBZJy1AcO6IS/dXsab2LJWItqRq
+	 l319gouMeV4Mg==
+Message-ID: <839d6813-6479-4395-9499-4da7ace33394@kernel.org>
+Date: Fri, 29 May 2026 16:20:08 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -35,17 +35,13 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v1 3/6] power: supply: max17042: Drop driver data in of
+Subject: Re: [PATCH v1 2/6] power: supply: max14577: Drop driver data in of
  and platform device id arrays
 To: =?UTF-8?Q?Uwe_Kleine-K=C3=B6nig_=28The_Capable_Hub=29?=
  <u.kleine-koenig@baylibre.com>, Sebastian Reichel <sre@kernel.org>
-Cc: Hans de Goede <hansg@kernel.org>,
- Marek Szyprowski <m.szyprowski@samsung.com>,
- Sebastian Krzyszkowiak <sebastian.krzyszkowiak@puri.sm>,
- Purism Kernel Team <kernel@puri.sm>, linux-pm@vger.kernel.org,
- linux-kernel@vger.kernel.org
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 References: <cover.1780048925.git.u.kleine-koenig@baylibre.com>
- <c4703f00d5a4d1debe51f1ce82afa11d2fdf04e0.1780048925.git.u.kleine-koenig@baylibre.com>
+ <62e1b01a6591dd59406a78f2bbca619d734a9150.1780048925.git.u.kleine-koenig@baylibre.com>
 From: Krzysztof Kozlowski <krzk@kernel.org>
 Content-Language: en-US
 Autocrypt: addr=krzk@kernel.org; keydata=
@@ -91,7 +87,7 @@ Autocrypt: addr=krzk@kernel.org; keydata=
  jWt87ecuHlpL3uuQ0ZZNWqHgZoQLXoqC2ZV5KrtKWb/jyiFX/sxSrodALf0zf+tfHv0FZWT2
  zHjUqd0t4njD/UOsuIMOQn4Ig0SdivYPfZukb5cdasKJukG1NOpbW7yRNivaCnfZz6dTawXw
  XRIV/KDsHQiyVxKvN73bThKhONkcX2LWuD928tAR6XMM2G5ovxLe09vuOzzfTWQDsm++9UKF a/A=
-In-Reply-To: <c4703f00d5a4d1debe51f1ce82afa11d2fdf04e0.1780048925.git.u.kleine-koenig@baylibre.com>
+In-Reply-To: <62e1b01a6591dd59406a78f2bbca619d734a9150.1780048925.git.u.kleine-koenig@baylibre.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 
@@ -100,11 +96,11 @@ On 29/05/2026 12:18, Uwe Kleine-König (The Capable Hub) wrote:
 > parent driver. So they can be dropped.
 > 
 > Signed-off-by: Uwe Kleine-König (The Capable Hub) <u.kleine-koenig@baylibre.com>
+> ---
+>  drivers/power/supply/max14577_charger.c | 12 +++++-------
 
 
-I clearly see in this driver probe function 'chip_type =
-id->driver_data' which later is being used ('chip->chip_type =
-chip_type'), so I think it is used.
+Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
 
 Best regards,
 Krzysztof
