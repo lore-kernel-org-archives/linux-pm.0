@@ -1,33 +1,33 @@
 Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id 170D62EAB61;
-	Fri, 29 May 2026 12:56:07 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id 2726C311597;
+	Fri, 29 May 2026 13:12:09 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1780059371; cv=none; b=PgH5vk1dZIbrb1N0BnwYT3p3ZyXq977wbf2JB/T1mT0wySS036MWsKA326J9p/6psP/ythFYSIZ2UxOfRuhZjFSULOov2xutjoTeSHZF7mr07Xu0KdkQD7q5LjeMK0Ed2WFuNJZRlrHuXOPrUFSQfAb91e49ExXlNptjBzPmpOc=
+	t=1780060331; cv=none; b=PrEKLqEAZTWgvdNURjJM3yaUUmf4UtIBVukGVkgQH0xV5hq8iBdJNwoSvbM/S/1rQFaipPPOxstjMPhuRO1AQOOzNJOjNHtX8z/Y3goWgiMzkztw5P4NiecC3+o+PMr9Sndyn3Xo5rE1fFuSKpCJaNfwu2YpOTLAc8FwAF1Vp44=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1780059371; c=relaxed/simple;
-	bh=0QxfIEC8qyuYWwOAb2WgzCIMH4/1O2Q1V9Anr+5ikEY=;
+	s=arc-20240116; t=1780060331; c=relaxed/simple;
+	bh=NWesLKco5m/X9+wT5+m7tBqm69QwtpwwaWWeHJXlkSg=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=C/jM4ZsRH7OvxE4pb43S+TbMnA1VNpx0m+EA6jCcHWgpiKmwTxVdnDTOm70iY4sOfvvhGJBtexMY4F1h6jqojyD6X8dU7BZx5mXbfg+QpCIifUcmQ4elJwEivCrd3ExeB0u4VE+n74xnvRexaBhR1bV+lvCr5QQmNijb0xMG6vw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=ocxpLU7J; arc=none smtp.client-ip=217.140.110.172
+	 In-Reply-To:Content-Type; b=ZchoWBHRydHHf+Rxgp4hlQ2n7HD6amgujqEiggn9btSiY3dWsZmo5+7a+7BGW/3BXtNFNsU3bLMXzla7I8XYnJW/oSR24w4LiybVAlI7+Z71H4nnWxzmqGHB69SFRmZ/7Tu+h9GNbZaFuPvJR9JP8+UkHjugfep8hU1HASMi8co=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=qMFzpoAu; arc=none smtp.client-ip=217.140.110.172
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="ocxpLU7J"
+	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="qMFzpoAu"
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 68DAD20E3;
-	Fri, 29 May 2026 05:56:02 -0700 (PDT)
-Received: from [10.57.26.238] (unknown [10.57.26.238])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 19FFC3FB3E;
-	Fri, 29 May 2026 05:56:00 -0700 (PDT)
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 740BE20E3;
+	Fri, 29 May 2026 06:12:04 -0700 (PDT)
+Received: from [10.57.69.151] (unknown [10.57.69.151])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 4823B3F905;
+	Fri, 29 May 2026 06:12:05 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1780059367; bh=0QxfIEC8qyuYWwOAb2WgzCIMH4/1O2Q1V9Anr+5ikEY=;
+	t=1780060329; bh=NWesLKco5m/X9+wT5+m7tBqm69QwtpwwaWWeHJXlkSg=;
 	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=ocxpLU7JwcuFGJNzN52Odm0/9BAn+vFuXL4dL3SP0K9Ycz25oxgomjRgE2vfGn+7x
-	 fdUro768IWnWcg1hZ8/X6pd+pLdb+uO7r0QttFPxl3OZxgcIhKskHQ68rYS20sB8sS
-	 pe9KxdyjtNBsrE0SkjGCfY7PP+sZBiDo9TODVQYk=
-Message-ID: <312d7b76-66a4-48e1-b8dd-23082b68de41@arm.com>
-Date: Fri, 29 May 2026 13:55:59 +0100
+	b=qMFzpoAu5/20wWYV5BRMcntvCa2zY9gbeHEHECfKVmTlyIapX1D683zZxSupgmy6f
+	 HlLgECMO+9e2NB/O3nMQVdzIYV5ljuGs4s+odsYJdSqZVPt3ABYNK21+4+Ael8XFhS
+	 HdabcIDhR/C1k95CXRFRp0w4A5SofEzbCnQMcgC8=
+Message-ID: <19b92583-ab78-4b45-a260-03a13874b0fe@arm.com>
+Date: Fri, 29 May 2026 14:12:02 +0100
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -35,107 +35,85 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v4 03/10] hwmon: Use non-OF thermal cooling device
- registration API
-To: Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>, rafael@kernel.org,
- daniel.lezcano@kernel.org
-Cc: Zhang Rui <rui.zhang@intel.com>, Rob Herring <robh@kernel.org>,
- Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
- <conor+dt@kernel.org>, Lucas Stach <l.stach@pengutronix.de>,
- Russell King <linux+etnaviv@armlinux.org.uk>,
- Christian Gmeiner <christian.gmeiner@gmail.com>,
- David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>,
- Guenter Roeck <linux@roeck-us.net>, Joel Stanley <joel@jms.id.au>,
- Andrew Jeffery <andrew@codeconstruct.com.au>,
- =?UTF-8?Q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>,
- Benson Leung <bleung@chromium.org>, =?UTF-8?Q?Pali_Roh=C3=A1r?=
- <pali@kernel.org>, Avi Fishman <avifishman70@gmail.com>,
- Tomer Maimon <tmaimon77@gmail.com>, Tali Perry <tali.perry1@gmail.com>,
- Patrick Venture <venture@google.com>, Nancy Yuen <yuenn@google.com>,
- Benjamin Fair <benjaminfair@google.com>, Heiko Stuebner <heiko@sntech.de>,
- Thierry Reding <thierry.reding@gmail.com>,
- Jonathan Hunter <jonathanh@nvidia.com>,
- Bjorn Andersson <andersson@kernel.org>,
- Konrad Dybcio <konradybcio@kernel.org>,
- Amit Daniel Kachhap <amit.kachhap@gmail.com>,
- Viresh Kumar <viresh.kumar@linaro.org>,
- Neil Armstrong <neil.armstrong@linaro.org>, Amit Kucheria
- <amitk@kernel.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
- linux-hwmon@vger.kernel.org,
- "open list:CHROMEOS EC HARDWARE MONITORING" <chrome-platform@lists.linux.dev>
-References: <20260526140802.1059293-12-daniel.lezcano@oss.qualcomm.com>
- <20260526140802.1059293-15-daniel.lezcano@oss.qualcomm.com>
+Subject: Re: [PATCH v4 2/2] ACPI: CPPC: Add ospm_nominal_perf support
+To: Sumit Gupta <sumitg@nvidia.com>, rafael@kernel.org,
+ viresh.kumar@linaro.org, lenb@kernel.org, pierre.gondois@arm.com,
+ zhenglifeng1@huawei.com, zhanjie9@hisilicon.com, mario.limonciello@amd.com,
+ saket.dumbre@intel.com, linux-acpi@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+ acpica-devel@lists.linux.dev
+Cc: treding@nvidia.com, jonathanh@nvidia.com, vsethi@nvidia.com,
+ ksitaraman@nvidia.com, sanjayc@nvidia.com, mochs@nvidia.com, bbasu@nvidia.com
+References: <20260527194626.185286-1-sumitg@nvidia.com>
+ <20260527194626.185286-3-sumitg@nvidia.com>
 Content-Language: en-US
-From: Lukasz Luba <lukasz.luba@arm.com>
-In-Reply-To: <20260526140802.1059293-15-daniel.lezcano@oss.qualcomm.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+From: Christian Loehle <christian.loehle@arm.com>
+In-Reply-To: <20260527194626.185286-3-sumitg@nvidia.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 
-
-
-On 5/26/26 15:08, Daniel Lezcano wrote:
-> Some HWMON drivers register cooling devices using the OF helper
-> devm_thermal_of_cooling_device_register() with a NULL device node.
+On 5/27/26 20:46, Sumit Gupta wrote:
+> Expose the OSPM Nominal Performance register (ACPI 6.6, Section
+> 8.4.6.1.2.6), which conveys the desired nominal performance level
+> at which the platform may run. Unlike the existing read-only
+> Nominal Performance register, it is writable and lets OSPM
+> request a lower nominal level than the platform-reported nominal.
+> The platform classifies performance above this level as boosted
+> and below as throttled for its power/thermal decisions.
 > 
-> With the introduction of a dedicated non-OF registration API,
-> switch these users to devm_thermal_cooling_device_register()
-> to make the intent explicit and avoid relying on OF-specific helpers.
+> It is exposed as a per-policy cpufreq sysfs attribute in kHz, to
+> match the cpufreq sysfs unit convention:
 > 
-> This is a pure refactoring with no functional change.
+>   /sys/devices/system/cpu/cpufreq/policyN/ospm_nominal_freq
 > 
-> Signed-off-by: Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>
-> Acked-by: Guenter Roeck <linux@roeck-us.net>
+> The attribute is documented in
+> Documentation/ABI/testing/sysfs-devices-system-cpu.
+> 
+> Writes are converted to perf via cppc_khz_to_perf(), validated
+> against [Lowest Performance, Nominal Performance], and applied to
+> every CPU in policy->cpus.
+> 
+> The register is write-only; the kernel caches the last written
+> value in struct cppc_cpudata for sysfs readback (returns 0 until
+> userspace writes a value).
+> 
+> Signed-off-by: Sumit Gupta <sumitg@nvidia.com>
 > ---
->   drivers/hwmon/cros_ec_hwmon.c  | 4 ++--
->   drivers/hwmon/dell-smm-hwmon.c | 4 ++--
->   drivers/hwmon/mlxreg-fan.c     | 4 ++--
->   3 files changed, 6 insertions(+), 6 deletions(-)
+>  .../ABI/testing/sysfs-devices-system-cpu      | 17 ++++++
+>  drivers/acpi/cppc_acpi.c                      | 35 +++++++++++
+>  drivers/cpufreq/cppc_cpufreq.c                | 60 +++++++++++++++++++
+>  include/acpi/cppc_acpi.h                      | 12 ++++
+>  4 files changed, 124 insertions(+)
 > 
-> diff --git a/drivers/hwmon/cros_ec_hwmon.c b/drivers/hwmon/cros_ec_hwmon.c
-> index 6cf5ab0f4b73..77dd9f28962d 100644
-> --- a/drivers/hwmon/cros_ec_hwmon.c
-> +++ b/drivers/hwmon/cros_ec_hwmon.c
-> @@ -532,8 +532,8 @@ static void cros_ec_hwmon_register_fan_cooling_devices(struct device *dev,
->   
->   		cpriv->hwmon_priv = priv;
->   		cpriv->index = i;
-> -		cdev = devm_thermal_of_cooling_device_register(dev, NULL, type, cpriv,
-> -							       &cros_ec_thermal_cooling_ops);
-> +		cdev = devm_thermal_cooling_device_register(dev, type, cpriv,
-> +							    &cros_ec_thermal_cooling_ops);
->   		if (IS_ERR(cdev)) {
->   			dev_warn(dev, "failed to register fan %zu as a cooling device: %pe\n", i,
->   				 cdev);
-> diff --git a/drivers/hwmon/dell-smm-hwmon.c b/drivers/hwmon/dell-smm-hwmon.c
-> index 038edffc1ac7..47b373ea6db4 100644
-> --- a/drivers/hwmon/dell-smm-hwmon.c
-> +++ b/drivers/hwmon/dell-smm-hwmon.c
-> @@ -1161,8 +1161,8 @@ static int dell_smm_init_cdev(struct device *dev, u8 fan_num)
->   	if (cdata) {
->   		cdata->fan_num = fan_num;
->   		cdata->data = data;
-> -		cdev = devm_thermal_of_cooling_device_register(dev, NULL, name, cdata,
-> -							       &dell_smm_cooling_ops);
-> +		cdev = devm_thermal_cooling_device_register(dev, name, cdata,
-> +							    &dell_smm_cooling_ops);
->   		if (IS_ERR(cdev)) {
->   			devm_kfree(dev, cdata);
->   			ret = PTR_ERR(cdev);
-> diff --git a/drivers/hwmon/mlxreg-fan.c b/drivers/hwmon/mlxreg-fan.c
-> index 137a90dd2075..860de6cfd8a4 100644
-> --- a/drivers/hwmon/mlxreg-fan.c
-> +++ b/drivers/hwmon/mlxreg-fan.c
-> @@ -583,8 +583,8 @@ static int mlxreg_fan_cooling_config(struct device *dev, struct mlxreg_fan *fan)
->   		pwm->fan = fan;
->   		/* Set minimal PWM speed. */
->   		pwm->last_hwmon_state = MLXREG_FAN_PWM_DUTY2STATE(MLXREG_FAN_MIN_DUTY);
-> -		pwm->cdev = devm_thermal_of_cooling_device_register(dev, NULL, mlxreg_fan_name[i],
-> -								    pwm, &mlxreg_fan_cooling_ops);
-> +		pwm->cdev = devm_thermal_cooling_device_register(dev, mlxreg_fan_name[i],
-> +								 pwm, &mlxreg_fan_cooling_ops);
->   		if (IS_ERR(pwm->cdev)) {
->   			dev_err(dev, "Failed to register cooling device\n");
->   			return PTR_ERR(pwm->cdev);
+> diff --git a/Documentation/ABI/testing/sysfs-devices-system-cpu b/Documentation/ABI/testing/sysfs-devices-system-cpu
+> index 82d10d556cc8..ac1bf1b89ac4 100644
+> --- a/Documentation/ABI/testing/sysfs-devices-system-cpu
+> +++ b/Documentation/ABI/testing/sysfs-devices-system-cpu
+> @@ -346,6 +346,23 @@ Description:	Performance Limited
+>  
+>  		This file is only present if the cppc-cpufreq driver is in use.
+>  
+> +What:		/sys/devices/system/cpu/cpuX/cpufreq/ospm_nominal_freq
+> +Date:		May 2026
+> +Contact:	linux-pm@vger.kernel.org
+> +Description:	OSPM Nominal Performance (kHz)
+> +
+> +		OSPM uses this attribute to request a nominal performance
+> +		level lower than the platform-reported nominal. The
+> +		platform treats performance above this level as boost
+> +		and below as throttle for power and thermal decisions.
+> +
+> +		Read returns the last written value in kHz, or 0 if no
+> +		value has been written. Write a kHz value in the range
+> +		[lowest_freq, nominal_freq].
+> +
+> +		This file is only present if the cppc-cpufreq driver is
+> +		in use.
+> +
 
+Given that this value, based also on firmware behavior, can create vast asymmetries
+between CPUs, which the scheduler would be unaware of I wonder if this warrants
+a similar disclaimer like intel_pstate carries for their per-CPU EPP:
+https://www.kernel.org/doc/html/v7.0/admin-guide/pm/intel_pstate.html#energy-vs-performance-hints
 
-Reviewed-by: Lukasz Luba <lukasz.luba@arm.com>
+"[Note that tasks may by migrated from one CPU to another by the scheduler’s load-balancing algorithm and if different energy vs performance hints are set for those CPUs, that may lead to undesirable outcomes. To avoid such issues it is better to set the same energy vs performance hint for all CPUs or to pin every task potentially sensitive to them to a specific CPU.]"
