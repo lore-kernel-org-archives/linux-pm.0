@@ -1,33 +1,33 @@
 Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id 3BD4A3321C2;
-	Fri, 29 May 2026 15:21:20 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id 758FD43C06A;
+	Fri, 29 May 2026 15:25:37 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1780068081; cv=none; b=h2EMN7uvcDOd5Evv6s6RqsE2kVc4DOYVlRQvx3CjVt7j0W4yi8fPhjNIAOxXqAIPQ7sDv/JxJolZhW4SmfF/IdolVn93vagvAX+5fAf35bQ12GBxMgV3auRHcL5Ob13TUz1Acia1/tCxKzlctXPES46cjfiEaFqSTGb6LZEnCgg=
+	t=1780068339; cv=none; b=a6LKcoFJFkKx2iaPyw4xb7HwSgiIHrLQHINChbBItLuh7fh5tatKfrNzcBtfAvvYq889KjrDNW5OQF5cwviNR2Yrkw7AyQ52d2OXyDFYnFW1pEPnWO+4WULmWURcLqHMyYg0k2y6MHmRszjG2QeUHYTZiUbNigGtociRgFW4hhI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1780068081; c=relaxed/simple;
-	bh=qDl3qf5rz3Gke1EzJNa6eNOmYlLUh8LCqRCcEme0YAE=;
+	s=arc-20240116; t=1780068339; c=relaxed/simple;
+	bh=sNebAPAYrZbeC4nLbGieW9R1xvkfOHd4d2XSWM2VjcY=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=MO6YYAyShAG9v9I/w/9TbnoHT3AkOJKzm7hfXcm7DUcPpCgI9ipVv6Qn2k8L17j/4rF9JbnRSSQcF7ICxJtb+9W6h6Ssa7nG8CFUk7q2r5xzrhNHRh5Fk3NgVOmgRL+PDZWwwG6Zr+KlCFM3CbRnNYQ663dMV/3LHPDuyy4JBXU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=kFosWjiJ; arc=none smtp.client-ip=217.140.110.172
+	 In-Reply-To:Content-Type; b=oCSYq946PFmeRnX6UOIuIKjPNj6leKf598umeLn3w4v299iEQDOz2hY+4nJzUOnD+hsoywpPbXJZ97Xwx1xGbib3iCgUqF8DC5vt7K7At2usX3QRYm5/aXYuYFy49z44EaWdEZePPgCALMWic76pJ5p9/cGdmIal21YDV8oxj0g=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=FiBDSh56; arc=none smtp.client-ip=217.140.110.172
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="kFosWjiJ"
+	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="FiBDSh56"
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 7ED4D33EA;
-	Fri, 29 May 2026 08:21:14 -0700 (PDT)
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id BBE7133EA;
+	Fri, 29 May 2026 08:25:31 -0700 (PDT)
 Received: from [10.57.26.238] (unknown [10.57.26.238])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 3FAF83F632;
-	Fri, 29 May 2026 08:21:13 -0700 (PDT)
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 897883FAF5;
+	Fri, 29 May 2026 08:25:30 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1780068079; bh=qDl3qf5rz3Gke1EzJNa6eNOmYlLUh8LCqRCcEme0YAE=;
+	t=1780068336; bh=sNebAPAYrZbeC4nLbGieW9R1xvkfOHd4d2XSWM2VjcY=;
 	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=kFosWjiJWQwRuUN9HtJlNZH2Vnk8UXNLOVLcJLtjlaZzak+plFDuIZ58CgOGs6WnS
-	 XBWl1K4x2sQ/P2L01lMpS+i1mn6Qzci16epWtxaDFwO7KpeObmWnYsZ3Gfshb8aj4t
-	 uRsCdZwBv7rDOEjHaDwax0hy8LEg0gNLt6MkP24o=
-Message-ID: <efe3602f-a67d-4232-bc8c-fd65daf6a695@arm.com>
-Date: Fri, 29 May 2026 16:21:11 +0100
+	b=FiBDSh56YZLRX/eBUiGNisrIH6kU+Dr0Nv85Ju8ZLOdxoi6UiNX1w5dLKkc4lElll
+	 W7+dA+v3izTCcLsbTLj7S7brUPbsAGSolMHTm/TTAHRLM/A2pwHu9Np3hpzppAoVD+
+	 Osh/DfD0W9r6mAc94G5mKLZGSDB8mNBuP0Qug6qc=
+Message-ID: <736518a8-0c81-4d48-ab73-bf83eb5ee98a@arm.com>
+Date: Fri, 29 May 2026 16:25:28 +0100
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -35,8 +35,8 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v4 08/10] thermal/of: Pass cdev_id and introduce devm
- registration helper
+Subject: Re: [PATCH v4 09/10] thermal/of: Support cooling device ID in
+ cooling-spec
 To: Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>, rafael@kernel.org,
  daniel.lezcano@kernel.org
 Cc: Zhang Rui <rui.zhang@intel.com>, Rob Herring <robh@kernel.org>,
@@ -63,44 +63,93 @@ Cc: Zhang Rui <rui.zhang@intel.com>, Rob Herring <robh@kernel.org>,
  <amitk@kernel.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
  linux-hwmon@vger.kernel.org
 References: <20260526140802.1059293-12-daniel.lezcano@oss.qualcomm.com>
- <20260526140802.1059293-20-daniel.lezcano@oss.qualcomm.com>
+ <20260526140802.1059293-21-daniel.lezcano@oss.qualcomm.com>
 Content-Language: en-US
 From: Lukasz Luba <lukasz.luba@arm.com>
-In-Reply-To: <20260526140802.1059293-20-daniel.lezcano@oss.qualcomm.com>
+In-Reply-To: <20260526140802.1059293-21-daniel.lezcano@oss.qualcomm.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 
 
 
 On 5/26/26 15:08, Daniel Lezcano wrote:
-> Extend the OF cooling device registration to support an explicit
-> cooling device identifier (cdev_id), preparing for upcoming DT
-> bindings where cooling devices are identified by a tuple (device node,
-> id) instead of relying on child nodes.
+> Extend the cooling device specifier parsing to support an optional
+> cooling device identifier (cdev_id).
 > 
-> Introduce a new helper:
+> Two formats are now supported:
 > 
->    devm_thermal_of_cooling_device_register()
+>    - Legacy format:
+>          <&cdev lower upper>
 > 
-> which registers a cooling device using the device's of_node and an
-> explicit cdev_id. This complements the existing
-> devm_thermal_of_child_cooling_device_register() helper, which
-> remains dedicated to the legacy child-node based bindings.
+>    - Indexed format:
+>          <&cdev cdev_id lower upper>
 > 
-> Internally, factorize the devm registration logic into a common
-> helper to avoid code duplication.
+> When the indexed format is used, both the device node and the
+> cdev_id must match in order to bind a cooling device to a thermal
+> zone. The legacy format continues to match on the device node only,
+> preserving backward compatibility.
 > 
-> Existing users are unaffected, as the child-based helper continues
-> to pass a default cdev_id of 0, preserving current behavior.
+> Update the parsing logic accordingly to handle both formats and
+> extract the mitigation limits from the appropriate arguments.
 > 
-> This change is a preparatory step for supporting indexed cooling
-> devices in thermal OF bindings.
+> This is a preparatory step for upcoming DT bindings describing
+> cooling devices using (device node, id) tuples instead of child
+> nodes.
+> 
+> No functional change for existing device trees.
 > 
 > Signed-off-by: Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>
 > ---
->   drivers/thermal/thermal_of.c | 58 ++++++++++++++++++++++++++++--------
->   include/linux/thermal.h      | 13 ++++++++
->   2 files changed, 59 insertions(+), 12 deletions(-)
+>   drivers/thermal/thermal_of.c | 26 ++++++++++++++++++++++----
+>   1 file changed, 22 insertions(+), 4 deletions(-)
 > 
+> diff --git a/drivers/thermal/thermal_of.c b/drivers/thermal/thermal_of.c
+> index 3584024b76f5..100fd8a0c8ce 100644
+> --- a/drivers/thermal/thermal_of.c
+> +++ b/drivers/thermal/thermal_of.c
+> @@ -259,16 +259,34 @@ static bool thermal_of_get_cooling_spec(struct device_node *map_np, int index,
+>   
+>   	of_node_put(cooling_spec.np);
+>   
+> -	if (cooling_spec.args_count < 2) {
+> -		pr_err("wrong reference to cooling device, missing limits\n");
+> +	/*
+> +	 * There are two formats:
+> +	 * - Legacy format :	<&cdev lower upper>
+> +	 * - New format    :	<&cdev cdev_id lower upper>
+> +	 *
+> +	 * With the new format, along with the device node pointer,
+> +	 * the cdev_id must match with the cooling device cdev_id in
+> +	 * order to bind
+> +	 */
+> +	if (cooling_spec.args_count < 2 || cooling_spec.args_count > 3) {
+> +		pr_err("Invalid number of cooling device parameters\n");
+>   		return false;
+>   	}
+>   
+>   	if (cooling_spec.np != cdev->np)
+>   		return false;
+>   
+> -	c->lower = cooling_spec.args[0];
+> -	c->upper = cooling_spec.args[1];
+> +	if (cooling_spec.args_count == 3 &&
+> +	    cooling_spec.args[0] != cdev->cdev_id)
+> +		return false;
+> +
+> +	if (cooling_spec.args_count != 3) {
+
+A bit odd to read the negation format while still having 'else'.
+
+> +		c->lower = cooling_spec.args[0];
+> +		c->upper = cooling_spec.args[1];
+> +	} else {
+> +		c->lower = cooling_spec.args[1];
+> +		c->upper = cooling_spec.args[2];
+> +	}
+>   	c->weight = weight;
+>   
+>   	return true;
+
+Just a minor comment, which can be ignored, fill free to do so
 
 Reviewed-by: Lukasz Luba <lukasz.luba@arm.com>
