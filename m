@@ -1,130 +1,135 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-wr1-f47.google.com (mail-wr1-f47.google.com [209.85.221.47])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4ABD7386C20
-	for <linux-pm@vger.kernel.org>; Fri, 29 May 2026 17:34:43 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4F87143C054
+	for <linux-pm@vger.kernel.org>; Fri, 29 May 2026 18:49:26 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.47
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1780076085; cv=none; b=pvNJgkeWUCp1JAFJuhvzLUvZ6I47qIpOVgdt4diXztm17OqSwam8gmJG8daZmZqRnuU6Oej7tyHWdrZIMFhOWLtyVVbcDonPmuJYhSs0SSkUP/2kbLycwJ0xfLqsbTj7vnJiZXApoD1GzLBBmg+2SOnv64rlyWzffByJK4VEnPc=
+	t=1780080572; cv=none; b=Z5U5ZVCZaW16rd9akNGOlSaLbTaBStSGOwDbPosEPgMytiHH7BW6MNd1ldo9SXjKTfSXSGCsuw3q0QSkfD7HZC/tPMRLh8yQ1F5qHgATeAAzh9ZNSP7KSEFFYwLX4U9FIP0gj44Z0jhmqQBxGxWEhenOIvmE/lk6MdcY/J1JNv4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1780076085; c=relaxed/simple;
-	bh=yFQEjf1OrYnLzPc/A6Tf6rhy0yAKag8495q1ohVt6B0=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=D3kP2dA1g2bH7Ti8h+7DFoUN/MMQjDOdsMNzuljaHHgqZZPV9VyglBzHyPzLoB4zaUOgBNeU1JrSNW6Rp7pDIGNM9ImiYSgINva8cQoW7+368JV0XGXlV26x14lMwXk9lxg8pOJqih7ZDaN51C7jp6W5gmIRq2JAu0FMgLS4xpw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=aeBWELJT; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1780080572; c=relaxed/simple;
+	bh=lp4vtffxigjSJ7RW/i4Jgv4QK66o94cv0dvcll4cQ/M=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=Jba5/AAI+ldJK5stmOHg33OCxbmQcECZuwH/L4cMPBiB3vx6xWf36R2V2x4ENkN9roWj1Ya1xF7AbC8C5WuPmU0BbgLEJPDeMPqVcjlwVloDAC0c14nwDJclBzZgLbHVAqrWfrmsrXv0fpFy3j+lg7aL7E7zI8DGYA7ueySlpps=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com; spf=pass smtp.mailfrom=baylibre.com; dkim=pass (2048-bit key) header.d=baylibre.com header.i=@baylibre.com header.b=PT2c/SHL; arc=none smtp.client-ip=209.85.221.47
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=baylibre.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="aeBWELJT"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0A8AE1F00A10
-	for <linux-pm@vger.kernel.org>; Fri, 29 May 2026 17:34:42 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1780076083;
-	bh=ogUR1hw2mWuyYrjJA9/13S+E++g4Iv0OaXgSlr+68Fo=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc;
-	b=aeBWELJTFiYdvmrsEq5It8NlVvFcKPqZlRynJyfVkrdbn8lkP3LfAiYfwa9AUR4gN
-	 4v7X0UqpkvibjI5NrqFZWeJuj2uuLgkr84bn8iudGJ0t3t/LZquwo7brNwR+5c32qV
-	 tBdlELy5BqGWRHGWkc9j+1e97HBtPh0KjlaDywQLMGhbhbh23SHeE2H4rDvYEfaN1q
-	 g+thIYZFjFMPbTOTd9cL89zCOKx6xDi6fOyfrqjrL8h/0EaKg7J44NV6vZ82AKH4R3
-	 3wtMULM9wmfnciPyvhsrtl8tDRRtub2yR1B+oEu63cKi6k9X1ltzSrbmj9YB0VHP1p
-	 T0WxrwU2e/vdQ==
-Received: by mail-lf1-f52.google.com with SMTP id 2adb3069b0e04-5aa2c25c632so9750043e87.1
-        for <linux-pm@vger.kernel.org>; Fri, 29 May 2026 10:34:42 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AFNElJ91mEVL0x8NrKHj4u1Yn8vecu2r81h3FnFDjSqwf1qAqCS6PbnhA5FPNz0jWLNKZcYGMz4ZW0uP5g==@vger.kernel.org
-X-Gm-Message-State: AOJu0Ywgaq3BDC8T1e56NbukTYZ/JfhVwfL9f5lTo/XByOoSWALpyYqW
-	WsCaRgqsTWQljnUvQHQ4j/rMoPExpSi3vSOLmJ+agxCBStOExJ5fb/61PiFvRRbJYS6wfLJqaTD
-	YkbdlDTO2luMZqg/n5lLg0tzsbBzKbDo=
-X-Received: by 2002:a05:6512:3caa:b0:5a4:1add:c56e with SMTP id
- 2adb3069b0e04-5aa607cd2e5mr243766e87.11.1780076081350; Fri, 29 May 2026
- 10:34:41 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=baylibre.com header.i=@baylibre.com header.b="PT2c/SHL"
+Received: by mail-wr1-f47.google.com with SMTP id ffacd0b85a97d-45ed18d8a1bso2904742f8f.0
+        for <linux-pm@vger.kernel.org>; Fri, 29 May 2026 11:49:26 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=baylibre.com; s=google; t=1780080565; x=1780685365; darn=vger.kernel.org;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=lp4vtffxigjSJ7RW/i4Jgv4QK66o94cv0dvcll4cQ/M=;
+        b=PT2c/SHLWWVReh4JVbObtDwQOCTMAnMb1ruHq1KIYIFbkdDuvWsXKPrvK8gPaW/mlj
+         yGBW+pYzqer9RxtpU9ZoOqJpWRuJL9r8m/+qSQe5rLQlodXdTxYOHDdgMOfRoruKevEi
+         R10Deic1rLnOANHCWXiV2r7ui3XS0/XoVd00UpyVUwKMIvcCGxuMU3r7964FrpWBx97A
+         xYL1C68ezRSZmXSXcaz9AXEh+FaLHMUJl/18N5YmslkeH0fSAfXwyiwCJx8Du+a7A8rO
+         SoHJCZq+PkyFw1fLVp0CYf1fRN74rRkxoHVtEH50smR9BKOCPlu96103StF+Ihp6RCWx
+         B2Rg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1780080565; x=1780685365;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=lp4vtffxigjSJ7RW/i4Jgv4QK66o94cv0dvcll4cQ/M=;
+        b=I6Zwjl/1sWMT5HdxKbzBT4YJx9ziibNbBaWvGDGnkrH/DoXpt5rfdkySqbDphMey9E
+         JO2qbkskb9axZXTdn+q6lnsAu1zszn+fYD26uw5q3j6wFIutmKqD2rNX01czBz14mpMn
+         TuI07F3TwhHtuHjQB4qauvAm3tP3oYBbeo1l6C+bdTAxJpnbEpgQtsaeKQ9Y96sRneug
+         rxFIghKswzEb2o2IqrOJ5QoKF+fIIB5RD3AhfsS6kz7nN0zxxtHLLSS2M95ZARDe+QNs
+         2l/dfLUpSW797xpnFsI4ayK1gYlS3z8gVO1PglQSYGvYiEiblVtYZIvsackF5rxPMTR2
+         GJOg==
+X-Forwarded-Encrypted: i=1; AFNElJ8TCDyeWHJHdFmQqtqrvQJAAnzQ1MPVzCy+1EhdoATzfL1rCENk2GU/d0EgxRFW5XYcRPnTN/euow==@vger.kernel.org
+X-Gm-Message-State: AOJu0YxBhokRBnfVnW81kB6I5SL7TXfMJoiMHF7rgjxEQzAsV15UXBgR
+	SNXPyLz7Yd/9EGu+nKESUqafFjPenX7n42n/CAFk1bzP0wY3FHecwoEbwNUF/qhT+0Y=
+X-Gm-Gg: Acq92OEVFT0z/wZHjFqXcLfRCmEX+wcPGOZe0i46I+xDOP2Adfwf6pPkAAlCTKdm2PG
+	/PM0mK5Xb0dhNst9liKPysfnOoAU2BuJCDcPbnfxquRcmkbHvUXzaNSeruQe8ZhiZ4eq0oI3nVZ
+	8LXT57Fdj/uBlfYA64SSaV3t16zbTrWJB29IQ9jVzxixhOHrgs7KBeat33QuUilAzfk/2AjoN9b
+	GnA8JepvAH80y3P9xWkXxjJuETp5lPqyDSnMG9ESnLbuCbkhntzlLLrykA6VtSllhxG4XC8dmEX
+	NJKM1s2J5feGNLYbIJEBic5pkegqGcPn/XtuFLRRpqZyi1VDEFn2swf/NoSHmh87BzlnJJdoUF8
+	5RS5UmO0KcT+PldRK/eLly47TLJRrBdz41HOv3XXyZC2nK9I5G/OY2fJRpJIN/I0lq/gQcM9g43
+	xclaq/lajzcID65KNkHBCvi/UuOTDfwXfLXYI/Vs8=
+X-Received: by 2002:adf:e609:0:b0:43e:aa88:f1a1 with SMTP id ffacd0b85a97d-45ef6b92502mr1248001f8f.30.1780080564532;
+        Fri, 29 May 2026 11:49:24 -0700 (PDT)
+Received: from localhost ([2a02:8071:56d1:2de0:1d24:d58d:2b65:c291])
+        by smtp.gmail.com with UTF8SMTPSA id ffacd0b85a97d-45ef34b47eesm6096276f8f.9.2026.05.29.11.49.23
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 29 May 2026 11:49:23 -0700 (PDT)
+Date: Fri, 29 May 2026 20:49:22 +0200
+From: Uwe =?utf-8?Q?Kleine-K=C3=B6nig_=28The_Capable_Hub=29?= <u.kleine-koenig@baylibre.com>
+To: Joshua Peisach <jpeisach@ubuntu.com>
+Cc: Sebastian Reichel <sre@kernel.org>, Yixun Lan <dlan@kernel.org>, 
+	Andreas Kemnade <andreas@kemnade.info>, Matti Vaittinen <mazziesaccount@gmail.com>, 
+	Sven Peter <sven@kernel.org>, Janne Grunau <j@jannau.net>, Neal Gompa <neal@gompa.dev>, 
+	Amit Sunil Dhamne <amitsd@google.com>, Samuel Kayode <samkay014@gmail.com>, linux-pm@vger.kernel.org, 
+	linux-riscv@lists.infradead.org, spacemit@lists.linux.dev, linux-kernel@vger.kernel.org, 
+	asahi@lists.linux.dev, linux-arm-kernel@lists.infradead.org, imx@lists.linux.dev
+Subject: Re: [PATCH v1 4/6] power: Use named initializers for
+ platform_device_id arrays
+Message-ID: <ahnev6lMK5tiUybP@monoceros>
+References: <cover.1780048925.git.u.kleine-koenig@baylibre.com>
+ <1ceacf4f9c3f827bcad85b378aa04cdca1c04635.1780048925.git.u.kleine-koenig@baylibre.com>
+ <DIV4J6UGUQGG.28KL8EGBZWJSJ@ubuntu.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260526140802.1059293-12-daniel.lezcano@oss.qualcomm.com>
- <a943706d-d413-4ed8-a0fd-a3234c66cd8d@oss.qualcomm.com> <CAJZ5v0hG4aNrTR1j1DX+xv7cBNwsN4Y+qa3eFfXtLrrDBZ6kCA@mail.gmail.com>
- <41eec804-5678-475d-b0b2-a5c0b3b005d4@oss.qualcomm.com> <c66d527a-17d3-4419-a0c4-676dc92bbe43@arm.com>
- <305d2570-4ffc-4d48-b831-e1f695d3dba7@oss.qualcomm.com>
-In-Reply-To: <305d2570-4ffc-4d48-b831-e1f695d3dba7@oss.qualcomm.com>
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Date: Fri, 29 May 2026 19:34:29 +0200
-X-Gmail-Original-Message-ID: <CAJZ5v0gbGAM5+JjjKDqOpYXgxAMGKHrF=3-GR1GbZydPt9ddXw@mail.gmail.com>
-X-Gm-Features: AVHnY4J7_r31ksIByvp0kdtXDzJ5Ml4Ck2f22EROA2m96cEI4ZYfXtDjSYBSgUc
-Message-ID: <CAJZ5v0gbGAM5+JjjKDqOpYXgxAMGKHrF=3-GR1GbZydPt9ddXw@mail.gmail.com>
-Subject: Re: [PATCH vs/3/4/ 00/11] Support cooling device with ID in the OF
-To: Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>
-Cc: Lukasz Luba <lukasz.luba@arm.com>, "Rafael J. Wysocki" <rafael@kernel.org>, daniel.lezcano@kernel.org, 
-	Zhang Rui <rui.zhang@intel.com>, Rob Herring <robh@kernel.org>, 
-	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
-	Lucas Stach <l.stach@pengutronix.de>, Russell King <linux+etnaviv@armlinux.org.uk>, 
-	Christian Gmeiner <christian.gmeiner@gmail.com>, David Airlie <airlied@gmail.com>, 
-	Simona Vetter <simona@ffwll.ch>, Guenter Roeck <linux@roeck-us.net>, Joel Stanley <joel@jms.id.au>, 
-	Andrew Jeffery <andrew@codeconstruct.com.au>, =?UTF-8?Q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>, 
-	Benson Leung <bleung@chromium.org>, =?UTF-8?Q?Pali_Roh=C3=A1r?= <pali@kernel.org>, 
-	Avi Fishman <avifishman70@gmail.com>, Tomer Maimon <tmaimon77@gmail.com>, 
-	Tali Perry <tali.perry1@gmail.com>, Patrick Venture <venture@google.com>, 
-	Nancy Yuen <yuenn@google.com>, Benjamin Fair <benjaminfair@google.com>, 
-	Heiko Stuebner <heiko@sntech.de>, Thierry Reding <thierry.reding@gmail.com>, 
-	Jonathan Hunter <jonathanh@nvidia.com>, Bjorn Andersson <andersson@kernel.org>, 
-	Konrad Dybcio <konradybcio@kernel.org>, Amit Daniel Kachhap <amit.kachhap@gmail.com>, 
-	Viresh Kumar <viresh.kumar@linaro.org>, Neil Armstrong <neil.armstrong@linaro.org>, 
-	Amit Kucheria <amitk@kernel.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	linux-hwmon@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="pzwfvojoqum2whq2"
+Content-Disposition: inline
+In-Reply-To: <DIV4J6UGUQGG.28KL8EGBZWJSJ@ubuntu.com>
+
+
+--pzwfvojoqum2whq2
+Content-Type: text/plain; protected-headers=v1; charset=us-ascii
+Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
+Subject: Re: [PATCH v1 4/6] power: Use named initializers for
+ platform_device_id arrays
+MIME-Version: 1.0
 
-On Fri, May 29, 2026 at 5:31=E2=80=AFPM Daniel Lezcano
-<daniel.lezcano@oss.qualcomm.com> wrote:
->
-> On 5/29/26 17:29, Lukasz Luba wrote:
-> > Hi Rafael and Daniel,
-> >
-> > On 5/29/26 13:41, Daniel Lezcano wrote:
-> >> On 5/29/26 14:35, Rafael J. Wysocki wrote:
-> >>> Hi Daniel,
-> >>>
-> >>> On Fri, May 29, 2026 at 10:35=E2=80=AFAM Daniel Lezcano
-> >>> <daniel.lezcano@oss.qualcomm.com> wrote:
-> >>>>
-> >>>>
-> >>>> Hi Rafael,
-> >>>>
-> >>>> On 5/26/26 16:08, Daniel Lezcano wrote:
-> >>>>
-> >>>> [ ... ]
-> >>>>
-> >>>>> ---
-> >>>>> Changelog:
-> >>>>>    - V4
-> >>>>>      - Reworked splitted functions to register a cooling device and
-> >>>>>        merged separately
-> >>>>
-> >>>> Are you fine with the thermal core changes in this series ?
-> >>>
-> >>> Generally, yes, I am, but let me have one more look at it.
-> >>>
-> >>>> Is it ok if I pick the series in my branch (and may be send a early
-> >>>> PR) ?
-> >>>
-> >>> I have no comments, I'll respond with an Acked-by to it later today.
-> >>>
-> >>> Thanks!
-> >>
-> >> Thanks
-> >
-> > I have re-ordered the patch 4 <-> 5 and the compilation issue goes away=
-.
-> > If you decide to do that feel free to add my tag to the current patch
-> > 04/10:
-> >
-> > Reviewed-by: Lukasz Luba <lukasz.luba@arm.com>
->
-> Thanks Lukasz !
+Hello Joshua,
 
-So with the change mentioned above by Lukasz, please feel free to add
+On Fri, May 29, 2026 at 07:29:08AM -0400, Joshua Peisach wrote:
+> For macsmc-power,
+>=20
+> Reviewed-by: Joshua Peisach <jpeisach@ubuntu.com>
 
-Acked-by: Rafael J. Wysocki (Intel) <rafael@kernel.org>
+Thanks!
 
-to the series and take it into your branch.
+> (I'm not sure if one can "Review-by" a specific section of a singular
+> patch, but also the other changes in the patch look fine to me, so
+> consider it reviewed as well.)
 
-And yes, an early PR would be welcome.
+I think what you did is quite usual. The restriction doesn't make it
+into git history this way though. Another usual idiom that can be found
+often in git-log is:
+
+Reviewed-by_ Joshua Peisach <jpeisach@ubuntu.com> # macsmc-power
+
+(intentionally added did s/:/_/ to not make tools pick up this line).
+
+Best regards
+Uwe
+
+
+--pzwfvojoqum2whq2
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQEzBAABCgAdFiEEP4GsaTp6HlmJrf7Tj4D7WH0S/k4FAmoZ368ACgkQj4D7WH0S
+/k7D9wf+K/Kbjth006e5cY3RbjoS8K9jW3NQ01G+VBxY+lHExj1dG+49FF1HI8kt
+qfulP3y/YdWSh2JA4Iu/NK5mHfXtx3IWR9T8IuNyDfXpEJECZipp2WG77R9slfko
+t4zpckQ+iaOMoUDYB7CB93ltVHaeYHp3Y079Vm1cylL5z2/tessr8YqNr+o5lP/l
+c/36Uyh8+f0J9Vm+OEsK5r4lyPA9YxyotfCCx4qbxxAjgGbQUW+rj6MZgm5AGfmK
+rcXLESM1abNV6atU3liVQQQhtTPw4t6YXGDZVfGZbyMLtuZTrVZKCQF24odWnbJ6
+juiDjaO5lCkS75qD+EK1IeT4tTF/hw==
+=+SnX
+-----END PGP SIGNATURE-----
+
+--pzwfvojoqum2whq2--
