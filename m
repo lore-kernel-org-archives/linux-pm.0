@@ -1,162 +1,99 @@
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id 6A06F3D1718;
-	Fri, 29 May 2026 12:24:26 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6B4003002A0
+	for <linux-pm@vger.kernel.org>; Fri, 29 May 2026 12:35:56 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1780057468; cv=none; b=qRDTCfSynMZkg4NdHOiqSfG1XEHtDx8GpVwvauPqMnDVHky1gHHEbHzaoEIMaZst3hYBR9xq0RIVt2LVHocWEZWUfy1htgxX3+6/WPRouVH+cr7N08DXtYtzNBZUvvZVUyAHx3Ymxgtgvkyxfp+F76U+F04BrPJ8Bq/Mq8TK0m4=
+	t=1780058157; cv=none; b=f+0MwHBCQg3G0heFbhZZxQSd+2NjF6lYeAk3sGyiLH9DB1Cm1SrASXlcHjtOUU1bOIFgXRWx6L9s/+HaSUs8fF7T4187C4G0jZHCYNEUVHClvJClQvNh3j6rUIgBh09d66uQHqp3BRJPRiWskbJ6LoRZGXORbfF2rgeIRb5nCqU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1780057468; c=relaxed/simple;
-	bh=fjbO4t8XdyU8NOb41mG4ChhG+m/bzPP3BywWNtdYqoA=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=btjAgdJXyV/tFlF5kTRjcBnxVl8x2i0VKcfxQZncA2vlEIfD5E53s4OM9OZNzuATqLSHgY9RahokqelZKunFJL8YabHf+a2gW9dmCvoYttxsJAt4FmZtE1w+LLiy4DrY8OCTn4ghCLSwjB0hnO3fuAvZptwOp+kvWzK18bw3CFY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=aPrsjUKC; arc=none smtp.client-ip=217.140.110.172
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
+	s=arc-20240116; t=1780058157; c=relaxed/simple;
+	bh=l++kw2Umx4n5N3laCPqoc0NPgx60DZVdOxmnYoGfK7U=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=J1vD2Hc9E3f7sB1lWa43+yBz3sXrlV5ESRHkgEg3UFP3If5YgS+kdJ8GhASCBTZrGD0QzSSRAfiv3oLs5EODKisGCCY3D3eCsugXYLBqIQqxX7DzA5ohhzr2l3ke0Z1BuzLFUapWqyMH6Qr1dksOhbOVO6njKSGYChpxCUpjpcQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Pzcx0WVE; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="aPrsjUKC"
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 45FEC204C;
-	Fri, 29 May 2026 05:24:20 -0700 (PDT)
-Received: from [10.57.37.50] (unknown [10.57.37.50])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 16BE13F632;
-	Fri, 29 May 2026 05:24:04 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1780057465; bh=fjbO4t8XdyU8NOb41mG4ChhG+m/bzPP3BywWNtdYqoA=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=aPrsjUKCk50s149VeWZk4F2Llmjdo90qP4DWtdM9ATKguxbUU6gRebVq07f2uJFK0
-	 YVnIN2oOqMRDRFm11YWBgDWM/xTptKipB8Q9REDRnovKPHG2ooZaALp7Zti/C2KUQ+
-	 b4qPfWs6v4eF/TgyfabaRYMbwAxOu8OUsO69761s=
-Message-ID: <3a4e22fe-b8ce-4e62-9139-113e0cd4f16b@arm.com>
-Date: Fri, 29 May 2026 13:24:02 +0100
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Pzcx0WVE"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3DF9F1F00898
+	for <linux-pm@vger.kernel.org>; Fri, 29 May 2026 12:35:56 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1780058156;
+	bh=8HHSUQYeEpATP6eQrlMUUpo6PYMGpfYyKOesnFMOdk4=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc;
+	b=Pzcx0WVEN8yhTAZzKKYNiTJJiD7DizHbrXGKFCNZfkt5gu7vtCScvCA7br2LWg/rs
+	 OXHAKU4wYzV5RKYkmrQvqv2CQj/nXF0qhv6URN89FP7o8A9+xU8v9Vw97vCuZhBY+y
+	 J35YwViER8+uwwTDSS4XXkg8CEjn53SXrHmOptOJlIUOrpjDOTvKTLcrXE6dQh15un
+	 3fcNc/4tjnfCamWuVLUeyX+nppOmVFfsTSu1GKxG5KvYR8ZW7w/0bPpdNiFUjPOSP5
+	 Kj5o/SrSNkIGz5iJQ3kn6sgE+ZSNRO/fDlghQriBn3TOi68O8EFAD5q7wc12Sb/RK2
+	 otdNv8+l7MJ1g==
+Received: by mail-lf1-f47.google.com with SMTP id 2adb3069b0e04-5a8891febd2so18237515e87.1
+        for <linux-pm@vger.kernel.org>; Fri, 29 May 2026 05:35:56 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AFNElJ8rl1smL6b5SS6a/xPCJZIyQ1H3rAdBLjkFgE0FbftAEgIRMSAeMWkFxDqmDtufnWKM3CpShtQizA==@vger.kernel.org
+X-Gm-Message-State: AOJu0YwBXGYYZ9/A0bglC34S74vnGBG9ATFI5vbzO2Z2TiaOoI28Q0IO
+	grvIML94uE/iI9y+8z9JrTWubJ0fZdxD+UlS5Cbx3dEnwey3va0l0c8gg1e2m47DLwgzd+M2JGn
+	MnFw48zix3Cm5AMfznQtS40zCyBRsxlc=
+X-Received: by 2002:a05:6512:3981:b0:5a8:87eb:b118 with SMTP id
+ 2adb3069b0e04-5aa594b88fdmr867278e87.22.1780058154325; Fri, 29 May 2026
+ 05:35:54 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 01/16] psci: simplify hotplug_tests()
-To: Yury Norov <ynorov@nvidia.com>, Andrew Morton
- <akpm@linux-foundation.org>, Rasmus Villemoes <linux@rasmusvillemoes.dk>
-Cc: Russell King <linux@armlinux.org.uk>, Frank Li <Frank.Li@nxp.com>,
- Sascha Hauer <s.hauer@pengutronix.de>,
- Pengutronix Kernel Team <kernel@pengutronix.de>,
- Fabio Estevam <festevam@gmail.com>, Madhavan Srinivasan
- <maddy@linux.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>,
- Nicholas Piggin <npiggin@gmail.com>,
- "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
- Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>,
- Arnaldo Carvalho de Melo <acme@kernel.org>,
- Namhyung Kim <namhyung@kernel.org>, Mark Rutland <mark.rutland@arm.com>,
- Alexander Shishkin <alexander.shishkin@linux.intel.com>,
- Jiri Olsa <jolsa@kernel.org>, Ian Rogers <irogers@google.com>,
- Adrian Hunter <adrian.hunter@intel.com>, James Clark
- <james.clark@linaro.org>, Thomas Gleixner <tglx@kernel.org>,
- Borislav Petkov <bp@alien8.de>, Dave Hansen <dave.hansen@linux.intel.com>,
- "H. Peter Anvin" <hpa@zytor.com>, "Rafael J. Wysocki" <rafael@kernel.org>,
- Len Brown <lenb@kernel.org>, Greg Kroah-Hartman
- <gregkh@linuxfoundation.org>, Danilo Krummrich <dakr@kernel.org>,
- Chanwoo Choi <cw00.choi@samsung.com>, MyungJoo Ham
- <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>,
- Heiko Stuebner <heiko@sntech.de>, Lorenzo Pieralisi <lpieralisi@kernel.org>,
- Xu Yilun <yilun.xu@intel.com>, Tom Rix <trix@redhat.com>,
- Moritz Fischer <mdf@kernel.org>, Yicong Yang <yangyicong@hisilicon.com>,
- Jonathan Cameron <jic23@kernel.org>,
- Dennis Dalessandro <dennis.dalessandro@cornelisnetworks.com>,
- Jason Gunthorpe <jgg@ziepe.ca>, Leon Romanovsky <leon@kernel.org>,
- Dan Williams <djbw@kernel.org>, Vishal Verma <vishal.l.verma@intel.com>,
- Dave Jiang <dave.jiang@intel.com>, Ira Weiny <ira.weiny@intel.com>,
- Bjorn Helgaas <bhelgaas@google.com>, Shuai Xue <xueshuai@linux.alibaba.com>,
- Will Deacon <will@kernel.org>, Jiucheng Xu <jiucheng.xu@amlogic.com>,
- Neil Armstrong <neil.armstrong@linaro.org>,
- Kevin Hilman <khilman@baylibre.com>, Jerome Brunet <jbrunet@baylibre.com>,
- Martin Blumenstingl <martin.blumenstingl@googlemail.com>,
- Jing Zhang <renyu.zj@linux.alibaba.com>, Xu Yang <xu.yang_2@nxp.com>,
- Linu Cherian <lcherian@marvell.com>,
- Gowthami Thiagarajan <gthiagarajan@marvell.com>,
- Ji Sheng Teoh <jisheng.teoh@starfivetech.com>,
- Khuong Dinh <khuong@os.amperecomputing.com>,
- Daniel Lezcano <daniel.lezcano@kernel.org>, Zhang Rui <rui.zhang@intel.com>,
- Lukasz Luba <lukasz.luba@arm.com>, Yury Norov <yury.norov@gmail.com>,
- Kees Cook <kees@kernel.org>,
- =?UTF-8?Q?Thomas_Wei=C3=9Fschuh?= <thomas.weissschuh@linutronix.de>,
- Aboorva Devarajan <aboorvad@linux.ibm.com>,
- "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
- Ilkka Koskinen <ilkka@os.amperecomputing.com>,
- Besar Wicaksono <bwicaksono@nvidia.com>, Ma Ke <make24@iscas.ac.cn>,
- Chengwen Feng <fengchengwen@huawei.com>,
- linux-arm-kernel@lists.infradead.org, imx@lists.linux.dev,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-perf-users@vger.kernel.org, linux-acpi@vger.kernel.org,
- driver-core@lists.linux.dev, linux-pm@vger.kernel.org,
- linux-rockchip@lists.infradead.org, linux-fpga@vger.kernel.org,
- linux-rdma@vger.kernel.org, nvdimm@lists.linux.dev,
- linux-pci@vger.kernel.org, linux-amlogic@lists.infradead.org,
- linux-cxl@vger.kernel.org, linux-arm-msm@vger.kernel.org
-References: <20260528183625.870813-1-ynorov@nvidia.com>
- <20260528183625.870813-2-ynorov@nvidia.com>
-From: Robin Murphy <robin.murphy@arm.com>
-Content-Language: en-GB
-In-Reply-To: <20260528183625.870813-2-ynorov@nvidia.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+References: <20260526140802.1059293-12-daniel.lezcano@oss.qualcomm.com> <a943706d-d413-4ed8-a0fd-a3234c66cd8d@oss.qualcomm.com>
+In-Reply-To: <a943706d-d413-4ed8-a0fd-a3234c66cd8d@oss.qualcomm.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Date: Fri, 29 May 2026 14:35:41 +0200
+X-Gmail-Original-Message-ID: <CAJZ5v0hG4aNrTR1j1DX+xv7cBNwsN4Y+qa3eFfXtLrrDBZ6kCA@mail.gmail.com>
+X-Gm-Features: AVHnY4LaeZiayztaDJATXujww2-z5ZrdMRh2TOtbmnvu0Re6m99BauFVLXS9Ypk
+Message-ID: <CAJZ5v0hG4aNrTR1j1DX+xv7cBNwsN4Y+qa3eFfXtLrrDBZ6kCA@mail.gmail.com>
+Subject: Re: [PATCH vs/3/4/ 00/11] Support cooling device with ID in the OF
+To: Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>
+Cc: rafael@kernel.org, daniel.lezcano@kernel.org, 
+	Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>, Rob Herring <robh@kernel.org>, 
+	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
+	Lucas Stach <l.stach@pengutronix.de>, Russell King <linux+etnaviv@armlinux.org.uk>, 
+	Christian Gmeiner <christian.gmeiner@gmail.com>, David Airlie <airlied@gmail.com>, 
+	Simona Vetter <simona@ffwll.ch>, Guenter Roeck <linux@roeck-us.net>, Joel Stanley <joel@jms.id.au>, 
+	Andrew Jeffery <andrew@codeconstruct.com.au>, =?UTF-8?Q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>, 
+	Benson Leung <bleung@chromium.org>, =?UTF-8?Q?Pali_Roh=C3=A1r?= <pali@kernel.org>, 
+	Avi Fishman <avifishman70@gmail.com>, Tomer Maimon <tmaimon77@gmail.com>, 
+	Tali Perry <tali.perry1@gmail.com>, Patrick Venture <venture@google.com>, 
+	Nancy Yuen <yuenn@google.com>, Benjamin Fair <benjaminfair@google.com>, 
+	Heiko Stuebner <heiko@sntech.de>, Thierry Reding <thierry.reding@gmail.com>, 
+	Jonathan Hunter <jonathanh@nvidia.com>, Bjorn Andersson <andersson@kernel.org>, 
+	Konrad Dybcio <konradybcio@kernel.org>, Amit Daniel Kachhap <amit.kachhap@gmail.com>, 
+	Viresh Kumar <viresh.kumar@linaro.org>, Neil Armstrong <neil.armstrong@linaro.org>, 
+	Amit Kucheria <amitk@kernel.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
+	linux-hwmon@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-On 2026-05-28 7:36 pm, Yury Norov wrote:
-> Switch to pr_info("... %pbl"), and drop the temporary buffer allocation.
+Hi Daniel,
 
-I would say this is simply an improvement in its own right, regardless 
-of whether cpumap_print_to_pagebuf() deserves to be removed or not. For 
-the change itself, FWIW,
+On Fri, May 29, 2026 at 10:35=E2=80=AFAM Daniel Lezcano
+<daniel.lezcano@oss.qualcomm.com> wrote:
+>
+>
+> Hi Rafael,
+>
+> On 5/26/26 16:08, Daniel Lezcano wrote:
+>
+> [ ... ]
+>
+> > ---
+> > Changelog:
+> >   - V4
+> >     - Reworked splitted functions to register a cooling device and
+> >       merged separately
+>
+> Are you fine with the thermal core changes in this series ?
 
-Reviewed-by: Robin Murphy <robin.murphy@arm.com>
+Generally, yes, I am, but let me have one more look at it.
 
-> This prepares for removing cpumap_print_to_pagebuf().
-> 
-> Signed-off-by: Yury Norov <ynorov@nvidia.com>
-> ---
->   drivers/firmware/psci/psci_checker.c | 14 ++------------
->   1 file changed, 2 insertions(+), 12 deletions(-)
-> 
-> diff --git a/drivers/firmware/psci/psci_checker.c b/drivers/firmware/psci/psci_checker.c
-> index e67ba9891082..ecd745bb90bf 100644
-> --- a/drivers/firmware/psci/psci_checker.c
-> +++ b/drivers/firmware/psci/psci_checker.c
-> @@ -186,7 +186,6 @@ static int hotplug_tests(void)
->   {
->   	int i, nb_cpu_group, err = -ENOMEM;
->   	cpumask_var_t offlined_cpus, *cpu_groups;
-> -	char *page_buf;
->   
->   	if (!alloc_cpumask_var(&offlined_cpus, GFP_KERNEL))
->   		return err;
-> @@ -194,10 +193,6 @@ static int hotplug_tests(void)
->   	nb_cpu_group = alloc_init_cpu_groups(&cpu_groups);
->   	if (nb_cpu_group < 0)
->   		goto out_free_cpus;
-> -	page_buf = (char *)__get_free_page(GFP_KERNEL);
-> -	if (!page_buf)
-> -		goto out_free_cpu_groups;
-> -
->   	/*
->   	 * Of course the last CPU cannot be powered down and cpu_down() should
->   	 * refuse doing that.
-> @@ -210,16 +205,11 @@ static int hotplug_tests(void)
->   	 * off, the cpu group itself should shut down.
->   	 */
->   	for (i = 0; i < nb_cpu_group; ++i) {
-> -		ssize_t len = cpumap_print_to_pagebuf(true, page_buf,
-> -						      cpu_groups[i]);
-> -		/* Remove trailing newline. */
-> -		page_buf[len - 1] = '\0';
-> -		pr_info("Trying to turn off and on again group %d (CPUs %s)\n",
-> -			i, page_buf);
-> +		pr_info("Trying to turn off and on again group %d (CPUs %*pbl)\n",
-> +			i, cpumask_pr_args(cpu_groups[i]));
->   		err += down_and_up_cpus(cpu_groups[i], offlined_cpus);
->   	}
->   
-> -	free_page((unsigned long)page_buf);
->   out_free_cpu_groups:
->   	free_cpu_groups(nb_cpu_group, &cpu_groups);
->   out_free_cpus:
+> Is it ok if I pick the series in my branch (and may be send a early PR) ?
 
+I have no comments, I'll respond with an Acked-by to it later today.
+
+Thanks!
