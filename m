@@ -1,172 +1,236 @@
-Received: from mail-pl1-f194.google.com (mail-pl1-f194.google.com [209.85.214.194])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 22B0633F5B0
-	for <linux-pm@vger.kernel.org>; Fri, 29 May 2026 08:18:18 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.194
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C39B43B3888
+	for <linux-pm@vger.kernel.org>; Fri, 29 May 2026 08:35:53 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.180.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1780042701; cv=none; b=jhEnPQJ5ACdsajNg4p0mPcvlDr+V+fKMEDq4HialhOEWaAhuJFEDVS4URYGeHJMhTlV0BFRi2bwwn2qI2hsNy1QhyyRy4Xp4afiYs7lYUcHWpuaRdtQ1n/El9IOaLnkb27ad/snV+pqnLJJv/Pg1Q+B6pBy6U5s++s2PpCHzxgE=
+	t=1780043755; cv=none; b=NB5Fj0oRlC5+riz22hC3qNKfpM1Wd4WbH+JHQTCdD4R2h7BP4HmT0K56vwOKXEE0joG8bxZHvWn+vOhQsEIIjKu2DdLdVKHSoEnejsjP91MAh/zFo0BrpIb3n2BkS9RDa8FCkVHqvLW6LWoSAnur+tsCqzhPspEhfrev7Teg/Jc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1780042701; c=relaxed/simple;
-	bh=IM3BzY+gKDUbwOzi0elpTmXkAq0dg7APDtCwAuuGtNs=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=u6o9OWAxTlgQBzuQlvGGAmKR8F49auNch6H8ypGmLT0xB420nvyuS1G1UJvY9f0Rhwkv+8PbRpVF5WxhayhRVmAh7fluVCLBctveFZZJdGVprgM2oc5O+rwPchY5rf8IFh4wEnFY2zOLWx1DSMjp79FoDG/M229c+aaiL3p4WeA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kylinos.cn; spf=pass smtp.mailfrom=gmail.com; arc=none smtp.client-ip=209.85.214.194
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kylinos.cn
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
-Received: by mail-pl1-f194.google.com with SMTP id d9443c01a7336-2bf114b0cf9so8672805ad.2
-        for <linux-pm@vger.kernel.org>; Fri, 29 May 2026 01:18:18 -0700 (PDT)
+	s=arc-20240116; t=1780043755; c=relaxed/simple;
+	bh=IiDzUPY3ZXxHniqaREbBQdI/nhXVv0VGu3X3wzZjFjE=;
+	h=Message-ID:Date:MIME-Version:Subject:From:To:Cc:References:
+	 In-Reply-To:Content-Type; b=Xh1jeEhwODoDlJL13nMbOrbLuZf30ksiakH3OKoTUtmf2/m9guCo84RwfUEq2/JBKT/N2Aqojf8zCPVyL+BirQMJZhgqc/pr/8ZSWH5xOGiVoCtIXqy6zAxYN/IwtxbcC+22/VsP90ICpoxtolx4Z8BUHbUkMhX8BhL1qbB4g/Y=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=oCTBQVDz; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=KJGOw/fy; arc=none smtp.client-ip=205.220.180.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="oCTBQVDz";
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="KJGOw/fy"
+Received: from pps.filterd (m0279869.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 64T5KNK21248198
+	for <linux-pm@vger.kernel.org>; Fri, 29 May 2026 08:35:52 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
+	jQKfd+djVSHMpFmIiOUjSH6Yd0pkzc/GU2jwfOrQ2uA=; b=oCTBQVDz63d2Xxwp
+	M3ZhS0jzWsM3EW0XgyXyJrDY1KKY6gtXcN/VEHY+B4J/pp2lMq9A37yT+IScujsg
+	3zwZWms2wPk9t7NWmSHSAxqG+MI0PAvcRM2zRPRIqiapyUxnfeY0eU2T1MAU6BuP
+	50DuTXgTsnUZm2/zv2GwY5MrBS616k2d10OC6XkCoAUvt2RVl6bEfArXqiGlrpEo
+	41I2EvVzbBqSR/ExcdECB6207Hpja/3Z7mTUlBlpo5hmDPjqwfmmysHFr+INiynN
+	jTXAkkgULWncBBBgqfHDHbFTg/4upwmsVJOPg6o3PY41fuBHnw+VAhSiaqBHLfDq
+	XlH/0g==
+Received: from mail-qt1-f197.google.com (mail-qt1-f197.google.com [209.85.160.197])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4ef4jj0skt-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <linux-pm@vger.kernel.org>; Fri, 29 May 2026 08:35:52 +0000 (GMT)
+Received: by mail-qt1-f197.google.com with SMTP id d75a77b69052e-50fbc70cfbdso141284661cf.2
+        for <linux-pm@vger.kernel.org>; Fri, 29 May 2026 01:35:52 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=oss.qualcomm.com; s=google; t=1780043752; x=1780648552; darn=vger.kernel.org;
+        h=content-transfer-encoding:in-reply-to:content-language:references
+         :cc:to:from:subject:user-agent:mime-version:date:message-id:from:to
+         :cc:subject:date:message-id:reply-to;
+        bh=jQKfd+djVSHMpFmIiOUjSH6Yd0pkzc/GU2jwfOrQ2uA=;
+        b=KJGOw/fyPemZ7X3dldX7KiwwIL0rt66AP2wduS/BZOXG1dWV/hIW6UAub7WO1/PPUb
+         aEnpm6PLLp41zhOevyy9VuqkE0CMJeO/oD/o13Lr5A77G+d8ecuNg2tH88YQsLSYhpCp
+         Ox6ptlJKh/7CRnJRVf86wxB6SwyLxvDts3kvB3bij/UWLi3CtkFbJCUPiCwk+l7vVnsz
+         S+CfnuOuLEGiexFhjO0R2lF9bh6XZku98V+kwk1Zzm0JoqTOWfRSeNaDAhwnRWRpYw33
+         B2R6K/e5mfksHLBN0OheawjVfjLj26EUwjWpjlhoJLjCBpFSl/pui5lZPSPc9UujPBWd
+         79Ow==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1780042698; x=1780647498;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=CO1vwp8sJ+t+jcxvi6cBiGKxFDrYU96NEUGJgzYEAbw=;
-        b=HbrbOolUV8TNBTQEmkLehe8ynK0eOCBAF1uxHHdOUI63DuZLPirHkwd53ZcbCKp+eL
-         jZNDGVS8WfsC3iRzqAXmAZ3RVdBGW2JGsIyElg/uL8+1t5z0lt3uv5tMyg6IS7SsRNhJ
-         ee6DuuPHrp8GaNYenOD/o6ai1bGch+B2McaVB/1jSdS2cfJ8p8QiCRNA9lcIRnFPMrr3
-         QThtBdMAF7p69qfoGJWNL64NwzcaXQtNxjt6qxD29AnHQQmufoIID0q+tpXhyqxLsmEH
-         QKhkqxaMAfEQ3URRm8azP2ueyRLGtXbPl9RTadymvSLGTk5dL1XH0TTtIZUOOww8eD3F
-         +01g==
-X-Forwarded-Encrypted: i=1; AFNElJ+/w25aZSduVTaIMn/AI6iKtXYf5+EKw8s+xNS2MNp5QZfCRb1aj58LrwR/uLqgpRUFQhahY8ey6g==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yz64rMhYxvat/cBpESK0bUz+mDIInEWj2q19uZku7hlSzbr/eIL
-	58Mk7Cfzi4t/JdRemn+hzaVTijtqLYmZE0raGt+aIkSKnP8P1Trd6u4W
-X-Gm-Gg: Acq92OFfI63YTekyz2lUF54a5/ZOyuiiPEs5ZkZ0iushd1oJDfpLbqH0SccltE/F7bC
-	f8Y+33boOtZZeb7I9zodR6UgMRd1hOij1O7l/o91G8lH0I4CKNiybUoR8STSnGfQr47ENfsIDYL
-	QxL6S323/I0SAD12kbw08d6UU8unG66Und+Qe/dvaTaHw26VPIgYc4PWAireK/9WAO+jK37EbUy
-	f10JFara7lS/Hb63zeUF7eVc2SDls9jQqAkUES4YautrfOqThMxGf4k9cBtt6SLmeJ633Zw2Nn6
-	6b1o8MIC9jCtCggfqywQqv4x+7Weee8iRWYWs7NmKpwHbjMhQFNT+RAhtrU7w0J8g6LYzyVoGit
-	UGfPKKmwGi0jwl398fIzlGxU0zzUmLe7L8Bjh0XeGpsRNRBMdi/Up42/fd6vglahKSvB1LBEKJb
-	Hx+nJPno+FLjeghiFDmKbq7K2FOlrs6DxiLOQX7ulieUbS351HMXRYGeY=
-X-Received: by 2002:a17:903:1ae6:b0:2bd:7191:5708 with SMTP id d9443c01a7336-2bf20bb8cbbmr26366445ad.29.1780042698270;
-        Fri, 29 May 2026 01:18:18 -0700 (PDT)
-Received: from kylin-XiaoXinPro-16-AHP9.. ([116.128.244.171])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2bf23c3a5c8sm10204315ad.71.2026.05.29.01.18.14
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 29 May 2026 01:18:17 -0700 (PDT)
-From: Xueqin Luo <luoxueqin@kylinos.cn>
-To: rafael@kernel.org,
-	lenb@kernel.org,
-	srinivas.pandruvada@linux.intel.com,
-	viresh.kumar@linaro.org,
-	saket.dumbre@intel.com,
-	linux-acpi@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	linux-pm@vger.kernel.org,
-	acpica-devel@lists.linux.dev
-Cc: Xueqin Luo <luoxueqin@kylinos.cn>
-Subject: [PATCH] ACPI: CPPC: Add helper to get effective guaranteed performance
-Date: Fri, 29 May 2026 16:18:01 +0800
-Message-ID: <20260529081801.29346-1-luoxueqin@kylinos.cn>
-X-Mailer: git-send-email 2.43.0
+        d=1e100.net; s=20251104; t=1780043752; x=1780648552;
+        h=content-transfer-encoding:in-reply-to:content-language:references
+         :cc:to:from:subject:user-agent:mime-version:date:message-id:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=jQKfd+djVSHMpFmIiOUjSH6Yd0pkzc/GU2jwfOrQ2uA=;
+        b=EIdeWOvQOJfRexP/h/kz21m5+UIEfvT1+FH04k27Q/96QunFWyZ1yEprIUMhRPoQha
+         sEEgUxn5pMvatPKnWG5MgdrZAB1btuxrTbJPkg5fEKmmWflQ/Y6zEy84qqCS0RtzZAJa
+         lvyx9hVgL4MgKZOq0dyBXQb4hZHTc7hD4Q7PsT86xeT2ThSZkayKW2ngP67qIi2bDa31
+         Y6ZKOS3/SomR/XlCafCRE+C5xz6OhV2ALLCaM+fOHrZvMQPjdIk1wAufx9JZa/M+5BOa
+         Vgpl/p81dTARgydCVnYfPft0+y39MajcSHfc+4MUYwJvt8B/J1hFe1ENotN45yZQEAeW
+         z7EA==
+X-Forwarded-Encrypted: i=1; AFNElJ9oZr1N6jlGcQsn7h2DcPu2Md6WA1BnWW+4tuGBarCOQS3/tWUjj3RyfSL5t/AXFFN7IjTj9NsBQQ==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yye9fdYmhntVdXHR1id0e3D2qdCFmlJXV+eWk6rjE/qR1/AJkN9
+	Bag+K1kBI0TYDDeZrEPMGA6Gc3rjoStRtubeRTwZWdXAHGjHchXILif3+4JLhigd3mM6LiEFSAo
+	norUuH4I5+TSjt5f9ceUzWjZZZoVXJPq/IPm+lAfIrLakL8zRtqmkYr1BeTmJ5g==
+X-Gm-Gg: Acq92OH9vXac+TExSNje+onXzQR1M0c/gq2AASuPnOgAmfyaCtRxOgDdez7QVcJNoKK
+	8GnKIJtqriLyLKdl/Et1ydbZ6PrnN54Dxb8Ym0hds1Jv98MHd7CnbloPa4VgSVK8EV0ACo0UifX
+	yvxEXtKMNL+tlMz8Y/NaCL9zHm5cEyIILE/3nkGJU9vnZpT0thnMQGF7SMINXtMqqLyssnWWFNg
+	mucl15jiApnOLNGg9IEPpK2VjmcVWBN3nTB8xj/Va2qr0CtV5vx/40a8jQp2ALIgwMbz29q1POl
+	6TXcefj/yp6s/tW/Fi59bhkkwvdwZV1bYybqHbpfCzIJ7sFSrOV++gOCGUBIT058w4OiVdcY2fv
+	Imrs54+DT/EhR6HH3qHAsjnI6Yd7XXquUp+Re/gUhEw2H5ypj9L76bBQVeXl7JfdSBZDA6rylab
+	eLsx1HEefu5IQK1zr22Yo=
+X-Received: by 2002:a05:622a:2a07:b0:516:e0c4:743a with SMTP id d75a77b69052e-5172dd240f8mr21783931cf.36.1780043752111;
+        Fri, 29 May 2026 01:35:52 -0700 (PDT)
+X-Received: by 2002:a05:622a:2a07:b0:516:e0c4:743a with SMTP id d75a77b69052e-5172dd240f8mr21783621cf.36.1780043751606;
+        Fri, 29 May 2026 01:35:51 -0700 (PDT)
+Received: from ?IPV6:2a05:6e02:1041:c10:ae20:597c:99b8:d161? ([2a05:6e02:1041:c10:ae20:597c:99b8:d161])
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4909ca6575csm49242245e9.4.2026.05.29.01.35.49
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Fri, 29 May 2026 01:35:50 -0700 (PDT)
+Message-ID: <a943706d-d413-4ed8-a0fd-a3234c66cd8d@oss.qualcomm.com>
+Date: Fri, 29 May 2026 10:35:49 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH vs/3/4/ 00/11] Support cooling device with ID in the OF
+From: Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>
+To: rafael@kernel.org, daniel.lezcano@kernel.org
+Cc: Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>,
+        Rob Herring <robh@kernel.org>,
+        Krzysztof Kozlowski <krzk+dt@kernel.org>,
+        Conor Dooley <conor+dt@kernel.org>,
+        Lucas Stach <l.stach@pengutronix.de>,
+        Russell King <linux+etnaviv@armlinux.org.uk>,
+        Christian Gmeiner <christian.gmeiner@gmail.com>,
+        David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>,
+        Guenter Roeck <linux@roeck-us.net>, Joel Stanley <joel@jms.id.au>,
+        Andrew Jeffery <andrew@codeconstruct.com.au>,
+        =?UTF-8?Q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>,
+        Benson Leung <bleung@chromium.org>,
+        =?UTF-8?Q?Pali_Roh=C3=A1r?=
+ <pali@kernel.org>,
+        Avi Fishman <avifishman70@gmail.com>,
+        Tomer Maimon <tmaimon77@gmail.com>, Tali Perry <tali.perry1@gmail.com>,
+        Patrick Venture <venture@google.com>, Nancy Yuen <yuenn@google.com>,
+        Benjamin Fair <benjaminfair@google.com>,
+        Heiko Stuebner <heiko@sntech.de>,
+        Thierry Reding <thierry.reding@gmail.com>,
+        Jonathan Hunter <jonathanh@nvidia.com>,
+        Bjorn Andersson <andersson@kernel.org>,
+        Konrad Dybcio <konradybcio@kernel.org>,
+        Amit Daniel Kachhap <amit.kachhap@gmail.com>,
+        Viresh Kumar <viresh.kumar@linaro.org>,
+        Neil Armstrong <neil.armstrong@linaro.org>,
+        Amit Kucheria
+ <amitk@kernel.org>, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-hwmon@vger.kernel.org
+References: <20260526140802.1059293-12-daniel.lezcano@oss.qualcomm.com>
+Content-Language: en-US
+In-Reply-To: <20260526140802.1059293-12-daniel.lezcano@oss.qualcomm.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNTI5MDA4MyBTYWx0ZWRfXwOAATyEI6g//
+ DpE2Qjfcq+Z3DH2Z6gUBuFW8tsG4XHdftom8PFLK3UgIWg4bV+l8M5CanvuTTqDCbk75sswgLzE
+ TwgijEv9x+XQUUD06wVeUVIsqMhgWRjISZck0hqCbetw8tEePwDaDJEvhRnTydM34FaOlsChsR7
+ 7OzJtx3l6kYqzwAiMm62U8uqO6gecLTeHUpfbMQPnclfDuGPQjPz6V6YG9hOxrKLdwgLCMI/Xco
+ J9BgwtE1Ovb5xXtS3lvcnNagHmlfKv2uP6B+9NGFKjvPM1jmefuWn6HmFP9zOn+AZVYWzjM8/vi
+ 7uwE3EEweaNAvinJ8DnUVlnK3Gz5GjwzcoVnQSrO0VwDhUcEw1t88k9uZyklMdlwOT9fQr5zZl0
+ mEHEZO1qQx84qzpjkowCHeTmJDYqjbGVc0ElinkUW3kneP7BAFDZ+8fErRrS9UEg2FAeTW46tUJ
+ tgVBKd7liLY/EysnxNA==
+X-Proofpoint-ORIG-GUID: MyGbXJ7BScn2YQFIibevluRp3RhwXQcu
+X-Authority-Analysis: v=2.4 cv=Tt7WQjXh c=1 sm=1 tr=0 ts=6a194fe8 cx=c_pps
+ a=EVbN6Ke/fEF3bsl7X48z0g==:117 a=xqWC_Br6kY4A:10 a=IkcTkHD0fZMA:10
+ a=NGcC8JguVDcA:10 a=s4-Qcg_JpJYA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=u7WPNUs3qKkmUXheDGA7:22 a=_glEPmIy2e8OvE2BGh3C:22 a=fdR-mB4-UEK_HjMIXJsA:9
+ a=QEXdDO2ut3YA:10 a=a_PwQJl-kcHnX1M80qC6:22
+X-Proofpoint-GUID: MyGbXJ7BScn2YQFIibevluRp3RhwXQcu
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.125,FMLib:17.12.100.49
+ definitions=2026-05-29_02,2026-05-28_03,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ suspectscore=0 lowpriorityscore=0 clxscore=1015 impostorscore=0 bulkscore=0
+ adultscore=0 malwarescore=0 phishscore=0 spamscore=0 priorityscore=1501
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2605210000 definitions=main-2605290083
 
-According to the ACPI CPPC specification, if the Guaranteed
-Performance register is not implemented, OSPM assumes the
-guaranteed performance is equal to nominal performance.
 
-Add cppc_get_effective_guaranteed_perf() helper to provide a
-spec-compliant effective guaranteed performance value while
-preserving the raw values returned by cppc_get_perf_caps().
+Hi Rafael,
 
-Signed-off-by: Xueqin Luo <luoxueqin@kylinos.cn>
----
- drivers/acpi/cppc_acpi.c       | 26 ++++++++++++++++++++++++++
- drivers/cpufreq/intel_pstate.c | 10 ++++------
- include/acpi/cppc_acpi.h       |  5 +++++
- 3 files changed, 35 insertions(+), 6 deletions(-)
+On 5/26/26 16:08, Daniel Lezcano wrote:
 
-diff --git a/drivers/acpi/cppc_acpi.c b/drivers/acpi/cppc_acpi.c
-index f370be8715ae..6dc11030707a 100644
---- a/drivers/acpi/cppc_acpi.c
-+++ b/drivers/acpi/cppc_acpi.c
-@@ -1328,6 +1328,32 @@ int cppc_get_highest_perf(int cpunum, u64 *highest_perf)
- }
- EXPORT_SYMBOL_GPL(cppc_get_highest_perf);
- 
-+/**
-+ * cppc_get_effective_guaranteed_perf - get effective guaranteed performance
-+ * @cpunum: CPU number
-+ * @guaranteed_perf: Effective guaranteed performance value
-+ *
-+ * The ACPI CPPC specification states that if the Guaranteed
-+ * Performance register is not implemented, OSPM assumes the
-+ * guaranteed performance is equal to nominal performance.
-+ *
-+ * Return: 0 on success, negative errno on failure.
-+ */
-+int cppc_get_effective_guaranteed_perf(int cpunum, u64 *guaranteed_perf)
-+{
-+	struct cppc_perf_caps perf_caps;
-+	int ret;
-+
-+	ret = cppc_get_perf_caps(cpunum, &perf_caps);
-+	if (ret)
-+		return ret;
-+	*guaranteed_perf = perf_caps.guaranteed_perf ?:
-+			   perf_caps.nominal_perf;
-+
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(cppc_get_effective_guaranteed_perf);
-+
- /**
-  * cppc_get_epp_perf - Get the epp register value.
-  * @cpunum: CPU from which to get epp preference value.
-diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-index 8dc22a65e025..8934e48f71a2 100644
---- a/drivers/cpufreq/intel_pstate.c
-+++ b/drivers/cpufreq/intel_pstate.c
-@@ -404,17 +404,15 @@ static void intel_pstate_set_itmt_prio(int cpu)
- 
- static int intel_pstate_get_cppc_guaranteed(int cpu)
- {
--	struct cppc_perf_caps cppc_perf;
-+	u64 guaranteed_perf;
- 	int ret;
- 
--	ret = cppc_get_perf_caps(cpu, &cppc_perf);
-+	ret = cppc_get_effective_guaranteed_perf(cpu, &guaranteed_perf);
-+
- 	if (ret)
- 		return ret;
- 
--	if (cppc_perf.guaranteed_perf)
--		return cppc_perf.guaranteed_perf;
--
--	return cppc_perf.nominal_perf;
-+	return guaranteed_perf;
- }
- 
- static int intel_pstate_cppc_get_scaling(int cpu)
-diff --git a/include/acpi/cppc_acpi.h b/include/acpi/cppc_acpi.h
-index d1f02ceec4f9..c02f3bc1fc1a 100644
---- a/include/acpi/cppc_acpi.h
-+++ b/include/acpi/cppc_acpi.h
-@@ -155,6 +155,7 @@ struct cppc_cpudata {
- extern int cppc_get_desired_perf(int cpunum, u64 *desired_perf);
- extern int cppc_get_nominal_perf(int cpunum, u64 *nominal_perf);
- extern int cppc_get_highest_perf(int cpunum, u64 *highest_perf);
-+extern int cppc_get_effective_guaranteed_perf(int cpunum, u64 *guaranteed_perf);
- extern int cppc_get_perf_ctrs(int cpu, struct cppc_perf_fb_ctrs *perf_fb_ctrs);
- extern int cppc_get_perf(int cpu, struct cppc_perf_ctrls *perf_ctrls);
- extern int cppc_set_perf(int cpu, struct cppc_perf_ctrls *perf_ctrls);
-@@ -198,6 +199,10 @@ static inline int cppc_get_highest_perf(int cpunum, u64 *highest_perf)
- {
- 	return -EOPNOTSUPP;
- }
-+static inline int cppc_get_effective_guaranteed_perf(int cpunum, u64 *guaranteed_perf)
-+{
-+	return -EOPNOTSUPP;
-+}
- static inline int cppc_get_perf_ctrs(int cpu, struct cppc_perf_fb_ctrs *perf_fb_ctrs)
- {
- 	return -EOPNOTSUPP;
--- 
-2.43.0
+[ ... ]
+
+> ---
+> Changelog:
+>   - V4
+>     - Reworked splitted functions to register a cooling device and
+>       merged separately
+
+Are you fine with the thermal core changes in this series ?
+
+Is it ok if I pick the series in my branch (and may be send a early PR) ?
+
+
+>   - V3
+>     - Reordered and reworked the patches to be git bisect safe
+>     - Reworked devm usage by using a more adequate function doing the
+>       same as the group of calls to devm*
+>     - Pass an init callback instead of moving
+>       thermal_cooling_device_init_complete() out of the function and
+>       calling it in different places
+>     - Sent separetely changes to the tegra soctherm driver
+>   - V2
+>     - Added stubs for OF functions in order to prevent to break the git
+>       bisectability compilation
+>     - Added missing call to thermal_cooling_device_init_complete() in
+>       devm_thermal_of_cooling_device_register()
+>     - Fixed assymetry in devm_ calls for the tegra/soctherm() driver
+>     - Fixed kernel documentation for API changes
+>     - Added missing static inline for a API stub
+>     - Hardened the test with two or three arguments in the cooling spec
+>     - Narrowed const: 2 strict in pwm-fan
+> ---
+> 
+> Daniel Lezcano (9):
+>    thermal/core: Introduce non-OF thermal_cooling_device_register()
+>    thermal/core: Add devm_thermal_cooling_device_register()
+>    hwmon: Use non-OF thermal cooling device registration API
+>    thermal/core: Make cooling device OF node conditional on
+>      CONFIG_THERMAL_OF
+>    thermal/of: Move cooling device OF helpers out of thermal core
+>    thermal/of: Rename the devm_thermal_of_cooling_device_register()
+>      function
+>    thermal/of: Add cooling device ID support
+>    thermal/of: Pass cdev_id and introduce devm registration helper
+>    thermal/of: Support cooling device ID in cooling-spec
+> 
+> Gaurav Kohli (1):
+>    dt-bindings: thermal: cooling-devices: Update support for 3 cells
+>      cooling device
+> 
+>   .../devicetree/bindings/hwmon/pwm-fan.yaml    |   3 +-
+>   .../thermal/thermal-cooling-devices.yaml      |   8 +-
+>   .../bindings/thermal/thermal-zones.yaml       |   3 +-
+>   drivers/gpu/drm/etnaviv/etnaviv_gpu.c         |   5 +-
+>   drivers/hwmon/amc6821.c                       |   2 +-
+>   drivers/hwmon/aspeed-pwm-tacho.c              |   5 +-
+>   drivers/hwmon/cros_ec_hwmon.c                 |   4 +-
+>   drivers/hwmon/dell-smm-hwmon.c                |   4 +-
+>   drivers/hwmon/emc2305.c                       |   6 +-
+>   drivers/hwmon/gpio-fan.c                      |   6 +-
+>   drivers/hwmon/max6650.c                       |   6 +-
+>   drivers/hwmon/mlxreg-fan.c                    |   4 +-
+>   drivers/hwmon/npcm750-pwm-fan.c               |   6 +-
+>   drivers/hwmon/pwm-fan.c                       |   5 +-
+>   drivers/hwmon/qnap-mcu-hwmon.c                |   6 +-
+>   drivers/hwmon/tc654.c                         |   5 +-
+>   drivers/memory/tegra/tegra210-emc-core.c      |   4 +-
+>   drivers/soc/qcom/qcom_aoss.c                  |   2 +-
+>   drivers/thermal/cpufreq_cooling.c             |   2 +-
+>   drivers/thermal/cpuidle_cooling.c             |   2 +-
+>   drivers/thermal/devfreq_cooling.c             |   2 +-
+>   drivers/thermal/khadas_mcu_fan.c              |   7 +-
+>   drivers/thermal/tegra/soctherm.c              |   6 +-
+>   drivers/thermal/thermal_core.c                |  85 ++--------
+>   drivers/thermal/thermal_core.h                |   5 +
+>   drivers/thermal/thermal_of.c                  | 148 +++++++++++++++++-
+>   include/linux/thermal.h                       |  69 +++++---
+>   27 files changed, 273 insertions(+), 137 deletions(-)
+> 
 
