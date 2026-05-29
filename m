@@ -1,92 +1,110 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from smtp.forwardemail.net (smtp.forwardemail.net [121.127.44.73])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 378EB3CA4AD
-	for <linux-pm@vger.kernel.org>; Fri, 29 May 2026 11:31:47 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 814543D88E1
+	for <linux-pm@vger.kernel.org>; Fri, 29 May 2026 11:39:59 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=121.127.44.73
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1780054308; cv=none; b=axqNFw8YuonR0H5R9Fn9JarMHU99thsj1QnjBUHzLKbX2rFq0GWry05ISdIx2DspscrtXBXfHPMQRvFrVEyNQHDBcWOR492wlsaodGwIPWFcRndIbh7ojrwjXsnAQCj/Wx9T8/fWMlZww0yZPDWozVhTBCE5NZDggYRUtVMJ5gI=
+	t=1780054802; cv=none; b=UZWBCw70HQGgHAao208ZhwAGg9tVQ4LL2hzsEBxf3ITtELzrH4VexbcHcUaTLvLo9KDquOBdDz9XCrTOIQHmhBO/UwPZktgPXUajRu/uSMM798zbhaTKfhgR2HwRywyCAiKJU+aH/cHUB9p7zPu9VCdLdSCQ9CprmQfST+GR2GE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1780054308; c=relaxed/simple;
-	bh=kts4Hx7wCVKuqkxIsRh3p7N+pKju6YYHuZIB9F9mqYc=;
-	h=From:To:Subject:Date:Message-ID:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=Z6l679cjpbZPO1whowzZLFUC1smm3U03xPbDSROAn2G0HUO4iQOz76ol1rbyxTwhXfg5OmumR5ESm2AFhbr2VIzIzlHF+fe0P4kHrzb7oTLuuzyZdIPBevbb+LJ6JWm3R1z1exvzgrQaMvc5rsp5x2wF3Bmm56Axs47JqbTMpLs=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=PqLniu8/; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1780054802; c=relaxed/simple;
+	bh=BFbpEcP2gl8SzS9V6g807nEM04+krO73ZpdU1ywX/YY=;
+	h=Mime-Version:Content-Type:Date:Message-Id:Subject:From:To:Cc:
+	 References:In-Reply-To; b=iWHvGcRP8iR3KOIE+742iHxM8zEsXi5BOSNBWR6WpKieUsfL/RH+oKDoNqLYFhNa7myYuu0HCe1BoIwNv45AhOvRcJIKBsGeiha/H6sHfJZlyVVho4jpYSESOmkejC4zRx2lkEKlt+bDYaht75DbjR6054WoG94c1ksDHQEviH0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=ubuntu.com; spf=pass smtp.mailfrom=fe-bounces.ubuntu.com; dkim=pass (2048-bit key) header.d=ubuntu.com header.i=@ubuntu.com header.b=VZbS/zX/; arc=none smtp.client-ip=121.127.44.73
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=ubuntu.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=fe-bounces.ubuntu.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="PqLniu8/"
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 784E2C2BCC9
-	for <linux-pm@vger.kernel.org>; Fri, 29 May 2026 11:31:47 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1780054307;
-	bh=kts4Hx7wCVKuqkxIsRh3p7N+pKju6YYHuZIB9F9mqYc=;
-	h=From:To:Subject:Date:In-Reply-To:References:From;
-	b=PqLniu8/CBhjCaNHR5HjXqac58rJNIqiGTDo6n1edotePOpiUCv3YbvCu2Fa2K/u4
-	 Q3MzwlO8FWR4qpHV5XHJDk32FaK6gP/4LwH4NKrEB0ElRictXo6gMiYN3KkM3FQ9ZT
-	 dx4iMFqSyPafdYwv2E43m0jDxPhs6xwMeijMYFlYt8dkdO9N5E96oa6LtcdPVrKjZi
-	 a2VAOXft2xJeLew5PZLPtNPqNEIde+idpVy1AnaYfsLTg7poqgFmUyQN2Q7anpqO2Q
-	 t5+q3NGmWyJkEXCVMt3kcTWviv+eAqbaXp9zthWV2olf225i/qcFgqzhB8nk1A2J58
-	 SG/quemJ0mtyA==
-Received: by aws-us-west-2-korg-bugzilla-1.web.codeaurora.org (Postfix, from userid 48)
-	id 6529FC4160E; Fri, 29 May 2026 11:31:47 +0000 (UTC)
-From: bugzilla-daemon@kernel.org
-To: linux-pm@vger.kernel.org
-Subject: [Bug 221505] REGRESSION][amd_pstate] "EPP cannot be set under
- performance policy" (EBUSY) when switching to performance profile via PPD on
- 7.1
-Date: Fri, 29 May 2026 11:31:47 +0000
-X-Bugzilla-Reason: AssignedTo
-X-Bugzilla-Type: changed
-X-Bugzilla-Watch-Reason: None
-X-Bugzilla-Product: Power Management
-X-Bugzilla-Component: cpufreq
-X-Bugzilla-Version: 2.5
-X-Bugzilla-Keywords: 
-X-Bugzilla-Severity: normal
-X-Bugzilla-Who: sergeyluashkov@gmail.com
-X-Bugzilla-Status: NEW
-X-Bugzilla-Resolution: 
-X-Bugzilla-Priority: P3
-X-Bugzilla-Assigned-To: linux-pm@vger.kernel.org
-X-Bugzilla-Flags: 
-X-Bugzilla-Changed-Fields: 
-Message-ID: <bug-221505-137361-56oIsgxsi5@https.bugzilla.kernel.org/>
-In-Reply-To: <bug-221505-137361@https.bugzilla.kernel.org/>
-References: <bug-221505-137361@https.bugzilla.kernel.org/>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-X-Bugzilla-URL: https://bugzilla.kernel.org/
-Auto-Submitted: auto-generated
+	dkim=pass (2048-bit key) header.d=ubuntu.com header.i=@ubuntu.com header.b="VZbS/zX/"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ubuntu.com;
+ h=In-Reply-To: References: Cc: To: From: Subject: Message-Id: Date:
+ Content-Type: Content-Transfer-Encoding: Mime-Version; q=dns/txt;
+ s=fe-953a8a3ca9; t=1780054798;
+ bh=mvGXi3GnoQLfXUwepfNKreQtoZ065df4GYADd0i3vGY=;
+ b=VZbS/zX/szNJKb7EbvE+4V4ABFIKuNOQXkc/8rtKb1tHOPreiihPJVZZ9qXU0ZZ6AIiYWyGuZ
+ F3+bMTpT736vBeTFy7MIsFaVP99cilzzv16YK9xQ3Olm7GZw7xZlI9sJDEDJj+waQQvlwPUtCqX
+ Z4lAupR9FARkcySXTZoPfhoE8+jjbURqWT0P4lyeTqr7r7teMOdqdR3il1THok4lPka6LZNHioG
+ 6a5Aw0MqecSzxs3fVSEBCAUS2ox07OVpLnKBH0rJX2wKT5X5e+y/jDifcdmoEhoNnAbVAjDSnZd
+ B3xme771VoQ0yDWGgo47kBV66MAhcNgQ38jE30/dvGvQ==
+X-Forward-Email-ID: 6a1978895c58ed9868160fa3
+X-Forward-Email-Sender: rfc822; jpeisach@ubuntu.com, smtp.forwardemail.net,
+ 121.127.44.73
+X-Forward-Email-Version: 2.8.15
+X-Forward-Email-Website: https://forwardemail.net
+X-Complaints-To: abuse@forwardemail.net
+X-Report-Abuse: abuse@forwardemail.net
+X-Report-Abuse-To: abuse@forwardemail.net
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
-MIME-Version: 1.0
+Mime-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=UTF-8; format=Flowed
+Date: Fri, 29 May 2026 07:29:08 -0400
+Message-Id: <DIV4J6UGUQGG.28KL8EGBZWJSJ@ubuntu.com>
+Subject: Re: [PATCH v1 4/6] power: Use named initializers for
+ platform_device_id arrays
+From: "Joshua Peisach" <jpeisach@ubuntu.com>
+To: =?utf-8?b?VXdlIEtsZWluZS1Lw7ZuaWcgKFRoZSBDYXBhYmxlIEh1Yik=?=
+ <u.kleine-koenig@baylibre.com>, "Sebastian Reichel" <sre@kernel.org>
+Cc: "Yixun Lan" <dlan@kernel.org>, "Andreas Kemnade" <andreas@kemnade.info>,
+ "Matti Vaittinen" <mazziesaccount@gmail.com>, "Sven Peter"
+ <sven@kernel.org>, "Janne Grunau" <j@jannau.net>, "Neal Gompa"
+ <neal@gompa.dev>, "Amit Sunil Dhamne" <amitsd@google.com>, "Samuel Kayode"
+ <samkay014@gmail.com>, <linux-pm@vger.kernel.org>,
+ <linux-riscv@lists.infradead.org>, <spacemit@lists.linux.dev>,
+ <linux-kernel@vger.kernel.org>, <asahi@lists.linux.dev>,
+ <linux-arm-kernel@lists.infradead.org>, <imx@lists.linux.dev>
+X-Mailer: aerc 0.21.0
+References: <cover.1780048925.git.u.kleine-koenig@baylibre.com>
+ <1ceacf4f9c3f827bcad85b378aa04cdca1c04635.1780048925.git.u.kleine-koenig@baylibre.com>
+In-Reply-To: <1ceacf4f9c3f827bcad85b378aa04cdca1c04635.1780048925.git.u.kleine-koenig@baylibre.com>
 
-https://bugzilla.kernel.org/show_bug.cgi?id=3D221505
+On Fri May 29, 2026 at 6:18 AM EDT, Uwe Kleine-K=C3=B6nig (The Capable Hub)=
+ wrote:
+> Named initializers are better readable and more robust to changes of the
+> struct definition. This robustness is relevant for a planned change to
+> struct platform_device_id replacing .driver_data by an anonymous union.
+>
+> While touching these arrays unify spacing and usage of commas.
+>
+> Signed-off-by: Uwe Kleine-K=C3=B6nig (The Capable Hub) <u.kleine-koenig@b=
+aylibre.com>
+> ---
+>  drivers/power/reset/spacemit-p1-reboot.c | 4 ++--
+>  drivers/power/reset/tps65086-restart.c   | 2 +-
+>  drivers/power/supply/bd71828-power.c     | 8 ++++----
+>  drivers/power/supply/macsmc-power.c      | 2 +-
+>  drivers/power/supply/max77759_charger.c  | 2 +-
+>  drivers/power/supply/max8998_charger.c   | 2 +-
+>  drivers/power/supply/pf1550-charger.c    | 2 +-
+>  drivers/power/supply/rt5033_charger.c    | 2 +-
+>  8 files changed, 12 insertions(+), 12 deletions(-)
 
---- Comment #25 from Sergey (sergeyluashkov@gmail.com) ---
-(In reply to The Linux kernel's regression tracker (Thorsten Leemhuis) from
-comment #24)
-> (In reply to Mario Limonciello (AMD) from comment #22)
-> > If I understood the root cause I would have a better answer for you.
->=20
-> One more question then, if I may: does a bisection make sense, or are thi=
-ngs
-> just to messy/complicated due to the other fixes in this area (or if, how=
- to
-> best approach one given those fixes? apply them at each step without
-> committing them?)?
->=20
-> Side note: Alex, Sergey, you both seems to have Asus laptops, wondering if
-> that's part of the problem here.
+[snip]
 
-I can't say for sure, but I can test the 7.1-rc5 kernel on a mini PC with an
-AMD Ryzen 9 7945HX this weekend and report back here if there are any issue=
-s.
+> diff --git a/drivers/power/supply/macsmc-power.c b/drivers/power/supply/m=
+acsmc-power.c
+> index 33ca07460f3a..ced07f71e0a8 100644
+> --- a/drivers/power/supply/macsmc-power.c
+> +++ b/drivers/power/supply/macsmc-power.c
+> @@ -834,7 +834,7 @@ static void macsmc_power_remove(struct platform_devic=
+e *pdev)
+>  }
+> =20
+>  static const struct platform_device_id macsmc_power_id[] =3D {
+> -	{ "macsmc-power" },
+> +	{ .name =3D "macsmc-power" },
+>  	{ /* sentinel */ }
+>  };
+>  MODULE_DEVICE_TABLE(platform, macsmc_power_id);
 
---=20
-You may reply to this email to add a comment.
+For macsmc-power,
 
-You are receiving this mail because:
-You are the assignee for the bug.=
+Reviewed-by: Joshua Peisach <jpeisach@ubuntu.com>
+
+(I'm not sure if one can "Review-by" a specific section of a singular
+patch, but also the other changes in the patch look fine to me, so
+consider it reviewed as well.)
