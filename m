@@ -1,33 +1,33 @@
 Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id CEC663321C2;
-	Fri, 29 May 2026 15:18:50 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id 3BD4A3321C2;
+	Fri, 29 May 2026 15:21:20 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1780067931; cv=none; b=lYa2HoXdNRGNc7m7dPp3IfohPIzmMcNjtxG5wE1DtvOKDdoH4olCuk7GMMrWpMaFKJv3fwVSiuSrDWUce19har4yT8nUlVj/8kx8pOycmzNgH4+PkqmmlpLlf6gJS0yghyRVJpjTuQ1MeWTlupvJhkQw4eqJL/qiqDblIldg7dM=
+	t=1780068081; cv=none; b=h2EMN7uvcDOd5Evv6s6RqsE2kVc4DOYVlRQvx3CjVt7j0W4yi8fPhjNIAOxXqAIPQ7sDv/JxJolZhW4SmfF/IdolVn93vagvAX+5fAf35bQ12GBxMgV3auRHcL5Ob13TUz1Acia1/tCxKzlctXPES46cjfiEaFqSTGb6LZEnCgg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1780067931; c=relaxed/simple;
-	bh=ivH/tOTm/MtMLHtuPvnKIKXI+O+0zuzXiqnxkcFsMmE=;
+	s=arc-20240116; t=1780068081; c=relaxed/simple;
+	bh=qDl3qf5rz3Gke1EzJNa6eNOmYlLUh8LCqRCcEme0YAE=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=W7XbEpuvpqZ5awNm2WpbAxZD1vQ5VOmrkpN9VxPJKYeRU1twoHbSXqEn8gqaORKiCRg5GcxBriM665b6hgOZfePnvEP9ehG4hfb5nyaKr9J0Eaitnn8U/13nhOT1U6qvjdq/aZeAcP/qiYXslF9DDzAY+PMiA7vcoAIKVs6k/Vc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=hgKzm/J0; arc=none smtp.client-ip=217.140.110.172
+	 In-Reply-To:Content-Type; b=MO6YYAyShAG9v9I/w/9TbnoHT3AkOJKzm7hfXcm7DUcPpCgI9ipVv6Qn2k8L17j/4rF9JbnRSSQcF7ICxJtb+9W6h6Ssa7nG8CFUk7q2r5xzrhNHRh5Fk3NgVOmgRL+PDZWwwG6Zr+KlCFM3CbRnNYQ663dMV/3LHPDuyy4JBXU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=kFosWjiJ; arc=none smtp.client-ip=217.140.110.172
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="hgKzm/J0"
+	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="kFosWjiJ"
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id E040533EA;
-	Fri, 29 May 2026 08:18:44 -0700 (PDT)
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 7ED4D33EA;
+	Fri, 29 May 2026 08:21:14 -0700 (PDT)
 Received: from [10.57.26.238] (unknown [10.57.26.238])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 344383FAF5;
-	Fri, 29 May 2026 08:18:43 -0700 (PDT)
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 3FAF83F632;
+	Fri, 29 May 2026 08:21:13 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1780067929; bh=ivH/tOTm/MtMLHtuPvnKIKXI+O+0zuzXiqnxkcFsMmE=;
+	t=1780068079; bh=qDl3qf5rz3Gke1EzJNa6eNOmYlLUh8LCqRCcEme0YAE=;
 	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=hgKzm/J08GPu32rvNURHQPhQwqlHMLKWK4g2wPk8wMNuhs71nZMwvNEJyknB3aS2H
-	 RDly5a1sZ0p9v8fYAphU9hEH69x6Yv9Y5lB3vnOvnFJKqUL70mcwOzn3FaKAE9NLJY
-	 6x9k9XotjJ05gFG+GuGAGAWkFy4+jAXBKaAYFRYY=
-Message-ID: <1f0527d4-1dfb-432b-8d0e-06e99a94f638@arm.com>
-Date: Fri, 29 May 2026 16:18:41 +0100
+	b=kFosWjiJWQwRuUN9HtJlNZH2Vnk8UXNLOVLcJLtjlaZzak+plFDuIZ58CgOGs6WnS
+	 XBWl1K4x2sQ/P2L01lMpS+i1mn6Qzci16epWtxaDFwO7KpeObmWnYsZ3Gfshb8aj4t
+	 uRsCdZwBv7rDOEjHaDwax0hy8LEg0gNLt6MkP24o=
+Message-ID: <efe3602f-a67d-4232-bc8c-fd65daf6a695@arm.com>
+Date: Fri, 29 May 2026 16:21:11 +0100
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -35,7 +35,8 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v4 07/10] thermal/of: Add cooling device ID support
+Subject: Re: [PATCH v4 08/10] thermal/of: Pass cdev_id and introduce devm
+ registration helper
 To: Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>, rafael@kernel.org,
  daniel.lezcano@kernel.org
 Cc: Zhang Rui <rui.zhang@intel.com>, Rob Herring <robh@kernel.org>,
@@ -60,45 +61,46 @@ Cc: Zhang Rui <rui.zhang@intel.com>, Rob Herring <robh@kernel.org>,
  Viresh Kumar <viresh.kumar@linaro.org>,
  Neil Armstrong <neil.armstrong@linaro.org>, Amit Kucheria
  <amitk@kernel.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
- linux-hwmon@vger.kernel.org,
- "moderated list:DRM DRIVERS FOR VIVANTE GPU IP"
- <etnaviv@lists.freedesktop.org>,
- "open list:DRM DRIVERS FOR VIVANTE GPU IP" <dri-devel@lists.freedesktop.org>
+ linux-hwmon@vger.kernel.org
 References: <20260526140802.1059293-12-daniel.lezcano@oss.qualcomm.com>
- <20260526140802.1059293-19-daniel.lezcano@oss.qualcomm.com>
+ <20260526140802.1059293-20-daniel.lezcano@oss.qualcomm.com>
 Content-Language: en-US
 From: Lukasz Luba <lukasz.luba@arm.com>
-In-Reply-To: <20260526140802.1059293-19-daniel.lezcano@oss.qualcomm.com>
+In-Reply-To: <20260526140802.1059293-20-daniel.lezcano@oss.qualcomm.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 
 
 
 On 5/26/26 15:08, Daniel Lezcano wrote:
-> Introduce an identifier (cdev_id) for cooling devices registered from
-> device tree.
+> Extend the OF cooling device registration to support an explicit
+> cooling device identifier (cdev_id), preparing for upcoming DT
+> bindings where cooling devices are identified by a tuple (device node,
+> id) instead of relying on child nodes.
 > 
-> This prepares support for a new DT binding where cooling devices are
-> identified by a tuple (device node, ID), instead of relying on child
-> nodes.
+> Introduce a new helper:
 > 
-> Existing users are updated to pass a default ID of 0, preserving the
-> current behavior.
+>    devm_thermal_of_cooling_device_register()
 > 
-> Future changes will extend the cooling map parsing to match cooling
-> devices based on both the device node and the ID.
+> which registers a cooling device using the device's of_node and an
+> explicit cdev_id. This complements the existing
+> devm_thermal_of_child_cooling_device_register() helper, which
+> remains dedicated to the legacy child-node based bindings.
 > 
-> No functional change intended.
+> Internally, factorize the devm registration logic into a common
+> helper to avoid code duplication.
+> 
+> Existing users are unaffected, as the child-based helper continues
+> to pass a default cdev_id of 0, preserving current behavior.
+> 
+> This change is a preparatory step for supporting indexed cooling
+> devices in thermal OF bindings.
 > 
 > Signed-off-by: Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>
 > ---
->   drivers/gpu/drm/etnaviv/etnaviv_gpu.c |  5 +++--
->   drivers/thermal/cpufreq_cooling.c     |  2 +-
->   drivers/thermal/cpuidle_cooling.c     |  2 +-
->   drivers/thermal/devfreq_cooling.c     |  2 +-
->   drivers/thermal/thermal_of.c          | 14 ++++++++------
->   include/linux/thermal.h               |  6 ++++--
->   6 files changed, 18 insertions(+), 13 deletions(-)
+>   drivers/thermal/thermal_of.c | 58 ++++++++++++++++++++++++++++--------
+>   include/linux/thermal.h      | 13 ++++++++
+>   2 files changed, 59 insertions(+), 12 deletions(-)
 > 
 
 Reviewed-by: Lukasz Luba <lukasz.luba@arm.com>
