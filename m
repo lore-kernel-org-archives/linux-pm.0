@@ -1,126 +1,208 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7AD6321CC5A;
-	Sat, 30 May 2026 12:32:05 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C4593225775;
+	Sat, 30 May 2026 13:10:19 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1780144326; cv=none; b=Uow/ssVzdEDZe8Fx3KcOngNqlIc9To0YzwfpQxATt7dkUbUEt4eM3e7p8kotl1IOxxoRNieKn6eVkqYaD5C+5eVkd2mPGhsDkA0qSnkeJ7DG0/9vo3fDPtFfCUv8sqhCkuY+z+5HprEch5oYrLQLj1WoOAZDTGEI7/ZdlN24um8=
+	t=1780146620; cv=none; b=moy4oLamtcNhM7eXCo828KJ2WaH6ZsE1vbVNv2fl+scPAZfUzgg2ts601j2LW+w2McRyTdcC6mdQhBnXYu4LIxP7vGf0i3hUl758RkzXu8zjpJZ1WspYYQfWZs0CMnS5wnro3e0yLQNjEk2Rc3iVHMXvxdW8lwiQM5DaRKXCwYA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1780144326; c=relaxed/simple;
-	bh=A3YYWQPGOSNfNFzUBFjjQ4OlMk/WhqTQ0O1JHsGY6XY=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=WXtjenDItqhQpm+iWtXquu4zOp+yRtWVHHch5a4Gt5ggZZQhT51jG3JVeegBz17+F2s3khywnristqzq5IQ+16OtJ/dS32gnniSOrnmoKMWNVJOysS4E1emiRHqRvbcqbaQnwjM+Ii35gYk8Q81YuZnFDLLbs6nQZT7VoZSjAlI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=LJczq9Ji; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1780146620; c=relaxed/simple;
+	bh=OIuD491KSCisdQ+EcRYI437BYyKWTPj5CxFAnaB7bZY=;
+	h=Mime-Version:Content-Type:Date:Message-Id:To:From:Subject:Cc:
+	 References:In-Reply-To; b=KYoRIWBmkGzawZUy1G1ABMvWyY49Mt3FSxv22W4Ag32JA4d+6r4JUAwJ3ncc1y+3Pr1WGMJ6z9Srke5F7doxrGZQurLeluC6EL1Q1sXdUu3obJ+zaw6DCQC7DHZ/bBAAZDCJonNcr93H83CqYUexO9vR5TQr1WGFsh5ENOLnmzA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=WqKO9Mn+; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="LJczq9Ji"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4B7161F00893;
-	Sat, 30 May 2026 12:32:02 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="WqKO9Mn+"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id BF9561F00893;
+	Sat, 30 May 2026 13:10:14 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1780144325;
-	bh=smmoYyxQcRtLKMjLcD7EIArEiMMan8ecg/rsJh8HwLo=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To;
-	b=LJczq9JinDhO48VGTUdSJh6ed6GILXCeoQXJ1M8ZxR61gDQrdcdbwYBjJnVMKcqOx
-	 ZOd2KhJKiWaI5RbLQIZYmU/dvFIkSnNyTUihuvCQR2wc4rXYl1SDq89i73rmYI61zo
-	 /+f8jT9OQtSXzET/SstVvjSry2ngSPw1GGsbcYmcHu8YdesWWWkC/aBuo0w0MFYQ83
-	 Ld7Je/Ov1JzkE2q22zL8Zu6u+CYN4CYAj1xN2OoS5fusZAHbpjGqWznTxrwgI5DWXI
-	 s1RK5q52m+sj5KLq9pUs/JpCsc2qkNUSCxmwjLguTd+Er4NuNkfNxm3RYs/AgsPGuo
-	 8SbsYFMDlpGQg==
-Message-ID: <e220d10e-1c36-424f-84b8-068615f1060d@kernel.org>
-Date: Sat, 30 May 2026 14:32:00 +0200
+	s=k20260515; t=1780146619;
+	bh=SP7i8xqzkSDvXySCs/V8aUcE/te0zaQ5nqg1gqmhcYs=;
+	h=Date:To:From:Subject:Cc:References:In-Reply-To;
+	b=WqKO9Mn+jBrEQH8HU/rNoVnKflCAf0//gRzZKcK+/cvEPWRUrvd8X0FvR/SdDhTWD
+	 1nNUsw57f+9Ku34CnFZr8S2ycOOqBly6cmDP+ht4kfqZaJWNI2EBmWNLQ1rSisiAjX
+	 StZ9IVBargDknO6BRXkgPihh3suhtwqKcJ76GZoJpS7Ek5rQ22zthHICd3WBLl1F9b
+	 Zrmg7PdmBSWG8+2WaG/v2nwRpzM0D7wUdITPwiJJlvyJpIpQ5Ihc5rr/i4MNaokRsH
+	 6DUzKZ/m5E4C0Oi+wZpRih3aZLiFshHihMLRVgGx1/a7A2/6pURbTlX7Kp/FmyuDA+
+	 k+39FPBFDME6Q==
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
-MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 3/3] arm64: dts: qcom: glymur: Enable SPEL powercap driver
-To: Manaf Meethalavalappu Pallikunhi <manaf.pallikunhi@oss.qualcomm.com>,
- Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
- Conor Dooley <conor+dt@kernel.org>, "Rafael J. Wysocki" <rafael@kernel.org>,
- Bjorn Andersson <andersson@kernel.org>,
- Konrad Dybcio <konradybcio@kernel.org>,
- Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>
-Cc: linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
- Gaurav Kohli <gaurav.kohli@oss.qualcomm.com>
-References: <20260519-qcom_spel_driver_upstream-v1-0-75356d1b7f94@oss.qualcomm.com>
- <20260519-qcom_spel_driver_upstream-v1-3-75356d1b7f94@oss.qualcomm.com>
-From: Krzysztof Kozlowski <krzk@kernel.org>
-Content-Language: en-US
-Autocrypt: addr=krzk@kernel.org; keydata=
- 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 a/A=
-In-Reply-To: <20260519-qcom_spel_driver_upstream-v1-3-75356d1b7f94@oss.qualcomm.com>
+Mime-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Date: Sat, 30 May 2026 15:10:13 +0200
+Message-Id: <DIW1B4FUIXO7.28GSUA0CEA4EV@kernel.org>
+To: "Markus Probst via B4 Relay"
+ <devnull+markus.probst.posteo.de@kernel.org>
+From: "Danilo Krummrich" <dakr@kernel.org>
+Subject: Re: [PATCH v8 3/5] rust: add basic serial device bus abstractions
+Cc: <markus.probst@posteo.de>, "Rob Herring" <robh@kernel.org>, "Greg
+ Kroah-Hartman" <gregkh@linuxfoundation.org>, "Jiri Slaby"
+ <jirislaby@kernel.org>, "Miguel Ojeda" <ojeda@kernel.org>, "Gary Guo"
+ <gary@garyguo.net>, =?utf-8?q?Bj=C3=B6rn_Roy_Baron?=
+ <bjorn3_gh@protonmail.com>, "Benno Lossin" <lossin@kernel.org>, "Andreas
+ Hindborg" <a.hindborg@kernel.org>, "Alice Ryhl" <aliceryhl@google.com>,
+ "Trevor Gross" <tmgross@umich.edu>, "Kari Argillander"
+ <kari.argillander@gmail.com>, "Rafael J. Wysocki" <rafael@kernel.org>,
+ "Viresh Kumar" <viresh.kumar@linaro.org>, "Boqun Feng" <boqun@kernel.org>,
+ "David Airlie" <airlied@gmail.com>, "Simona Vetter" <simona@ffwll.ch>,
+ <linux-serial@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
+ <rust-for-linux@vger.kernel.org>, <linux-pm@vger.kernel.org>,
+ <driver-core@lists.linux.dev>, <dri-devel@lists.freedesktop.org>
+References: <20260530-rust_serdev-v8-0-2a95f1da22a7@posteo.de>
+ <20260530-rust_serdev-v8-3-2a95f1da22a7@posteo.de>
+In-Reply-To: <20260530-rust_serdev-v8-3-2a95f1da22a7@posteo.de>
 
-On 19/05/2026 12:49, Manaf Meethalavalappu Pallikunhi wrote:
-> The Qualcomm SoC Power and Electrical Limits (SPEL) provides hardware
-> based power monitoring and limiting capabilities for various power
-> domains including System, SoC, CPU clusters, GPU, and various other
-> subsystems for glymur.
-> 
-> Signed-off-by: Manaf Meethalavalappu Pallikunhi <manaf.pallikunhi@oss.qualcomm.com>
-> ---
->  arch/arm64/boot/dts/qcom/glymur.dtsi | 10 ++++++++++
->  1 file changed, 10 insertions(+)
-> 
-> diff --git a/arch/arm64/boot/dts/qcom/glymur.dtsi b/arch/arm64/boot/dts/qcom/glymur.dtsi
-> index 72c7dc6e4f09..c0ba8740ae41 100644
-> --- a/arch/arm64/boot/dts/qcom/glymur.dtsi
-> +++ b/arch/arm64/boot/dts/qcom/glymur.dtsi
-> @@ -5033,6 +5033,16 @@ spmi_bus2: spmi@c48000 {
->  			};
->  		};
->  
-> +		power-controller@ef3b000 {
+On Sat May 30, 2026 at 3:13 AM CEST, Markus Probst via B4 Relay wrote:
+> +    extern "C" fn probe_callback(sdev: *mut bindings::serdev_device) -> =
+kernel::ffi::c_int {
+> +        // SAFETY: The serial device bus only ever calls the probe callb=
+ack with a valid pointer to
+> +        // a `struct serdev_device`.
+> +        //
+> +        // INVARIANT: `sdev` is valid for the duration of `probe_callbac=
+k()`.
+> +        let sdev =3D unsafe { &*sdev.cast::<Device<device::CoreInternal<=
+'_>>>() };
+> +        let info =3D <Self as driver::Adapter>::id_info(sdev.as_ref());
+> +
+> +        from_result(|| {
+> +            let private_data =3D devres::register(
+> +                sdev.as_ref(),
+> +                try_pin_init!(PrivateData {
+> +                    probe_complete <- Completion::new(),
+> +                    error: false.into(),
+> +                }),
+> +                GFP_KERNEL,
+> +            )?;
+> +
+> +            // SAFETY: `sdev.as_raw()` is guaranteed to be a valid point=
+er to `serdev_device`.
+> +            unsafe {
+> +                (*sdev.as_raw()).rust_private_data =3D
+> +                    (&raw const *private_data).cast::<c_void>().cast_mut=
+()
+> +            };
+> +
+> +            // SAFETY: `sdev.as_raw()` is guaranteed to be a valid point=
+er to `serdev_device`.
+> +            unsafe { bindings::serdev_device_set_client_ops(sdev.as_raw(=
+), Self::OPS) };
+> +
+> +            // SAFETY: The serial device bus only ever calls the probe c=
+allback with a valid pointer
+> +            // to a `serdev_device`.
+> +            to_result(unsafe {
+> +                bindings::devm_serdev_device_open(sdev.as_ref().as_raw()=
+, sdev.as_raw())
+> +            })?;
 
-Never properly build tested. Please read carefully either kernel docs or
-internal guide which tells you what steps you are supposed to do.
+The bus device private data drops before devres callbacks run, thus you can=
+'t
+use the devm helper here. I suggest to use serdev_device_open() and call
+serdev_device_close() from remove_callback() instead.
 
-NAK
+You may also want to consider whether you potentially want T::unbind() to a=
+llow
+to have concurrent transmits in flight regardless. IOW, you may want to cal=
+l
+serdev_device_close() before T::unbind() anyway.
 
-Best regards,
-Krzysztof
+> +
+> +            let data =3D T::probe(sdev, info);
+> +            let result =3D sdev.as_ref().set_drvdata(data);
+> +
+> +            // SAFETY: We have exclusive access to `private_data.error`.
+> +            unsafe { *private_data.error.get() =3D result.is_err() };
+> +
+> +            private_data.probe_complete.complete_all();
+> +
+> +            result.map(|()| 0)
+> +        })
+> +    }
+> +
+> +    extern "C" fn remove_callback(sdev: *mut bindings::serdev_device) {
+> +        // SAFETY: The serial device bus only ever calls the remove call=
+back with a valid pointer
+> +        // to a `struct serdev_device`.
+> +        //
+> +        // INVARIANT: `sdev` is valid for the duration of `remove_callba=
+ck()`.
+> +        let sdev =3D unsafe { &*sdev.cast::<Device<device::CoreInternal<=
+'_>>>() };
+> +
+> +        // SAFETY: `remove_callback` is only ever called after a success=
+ful call to
+> +        // `probe_callback`, hence it's guaranteed that `Device::set_drv=
+data()` has been called
+> +        // and stored a `Pin<KBox<T::Data<'_>>>`.
+> +        let data =3D unsafe { sdev.as_ref().drvdata_borrow::<T::Data<'_>=
+>() };
+> +
+> +        T::unbind(sdev, data);
+> +    }
+> +
+> +    extern "C" fn receive_buf_callback(
+> +        sdev: *mut bindings::serdev_device,
+> +        buf: *const u8,
+> +        length: usize,
+> +    ) -> usize {
+> +        // SAFETY: The serial device bus only ever calls the receive buf=
+ callback with a valid
+> +        // pointer to a `struct serdev_device`.
+> +        //
+> +        // INVARIANT: `sdev` is valid for the duration of `receive_buf_c=
+allback()`.
+> +        let sdev =3D unsafe { &*sdev.cast::<Device<device::CoreInternal<=
+'_>>>() };
+
+CoreInternal dereferences to Core, which is technically unsound within this
+callback.
+
+I think you want CoreInternal for drvdata_borrow(), so we should add a
+BoundInternal type state for this; I will send a patch for this.
+
+With this and the above fixed,
+
+Reviewed-by: Danilo Krummrich <dakr@kernel.org>
+
+from the driver-core side of things.
+
+> +        // SAFETY:
+> +        // - The serial device bus only ever calls the receive buf callb=
+ack with a valid pointer to
+> +        //   a `struct serdev_device`.
+> +        // - `receive_buf_callback` is only ever called after a successf=
+ul call to
+> +        //   `probe_callback`, hence it's guaranteed that `sdev.private_=
+data` is a pointer
+> +        //   to a valid `PrivateData`.
+> +        let private_data =3D unsafe { &*(*sdev.as_raw()).rust_private_da=
+ta.cast::<PrivateData>() };
+> +
+> +        private_data.probe_complete.wait_for_completion();
+> +
+> +        // SAFETY: No one has exclusive access to `private_data.error`.
+> +        if unsafe { *private_data.error.get() } {
+> +            return length;
+> +        }
+> +
+> +        // SAFETY: `receive_buf_callback` is only ever called after a su=
+ccessful call to
+> +        // `probe_callback`, hence it's guaranteed that `Device::set_drv=
+data()` has been called
+> +        // and stored a `Pin<KBox<T::Data<'_>>>`.
+> +        let data =3D unsafe { sdev.as_ref().drvdata_borrow::<T::Data<'_>=
+>() };
+> +
+> +        // SAFETY: `buf` is guaranteed to be non-null and has the size o=
+f `length`.
+> +        let buf =3D unsafe { core::slice::from_raw_parts(buf, length) };
+> +
+> +        T::receive(sdev, data, buf)
+> +    }
+> +}
