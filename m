@@ -1,101 +1,94 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 35517352C35;
-	Sat, 30 May 2026 20:48:31 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A0A063655DF;
+	Sat, 30 May 2026 20:59:55 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1780174114; cv=none; b=bUs6hPbqw967xBJJvcQ3SRja5DtX5Y4TFLMduViAKdaF4nxvG/dtOerUlvI1zqi1Qy/zpB0qhKsZLcTpOwQOMQevPepmgcqPYs7GGNikQO/UyznX97ZgpbBo6M6IEMXw/GUSQ71Uwkf9uw7YQsaOZiZe6h+KgcIRkADxoYISm4o=
+	t=1780174796; cv=none; b=f9BY9GXckrbGzM/cdfbZa+0R1Pn59bCVJgpSNUnGsaUez5vZFYjJykgHNFwo43w+wxSTW/X8Lh8bZLmLJPLskW0S9hsR2UlkV6jdVQbCstDGFulqup5xN+jnCYLMXNZ3lxvhoxXos6WRxUn5kiOErkn+daLCosht3/3PhswbQnI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1780174114; c=relaxed/simple;
-	bh=5+txLqFZyLzhfRSQGSDvj+oSfI9UcKA0qX4oCa6GViU=;
-	h=Date:Content-Type:MIME-Version:From:Cc:To:In-Reply-To:References:
-	 Message-Id:Subject; b=piB8g+Tfo3+HH149VkOcehA+9R/hQogs7/9c+w95gDWZUz1GPDUdMmQ4RBJm7vzcjb9Bh6osH+yv4xeZR6CHGHk7LKU1bUyueBUdT6le/rye+R45jOdcwNZdctoo743hwDJWVWXe5fwH+izRi3V/xCAF8kgMKsZ8lqB79leDNYs=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=LyBu6SZ5; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1780174796; c=relaxed/simple;
+	bh=I0XpV/UJgvdMUeyZPVzwXcTNw9GkbNU1eOxQB0PkzTI=;
+	h=Mime-Version:Content-Type:Date:Message-Id:Subject:Cc:To:From:
+	 References:In-Reply-To; b=MKo1w3SDhBRlXE9twfg8Tk3dgGVgb9WEV0Ar5eIe05XWS2RkBqzEHmTzYTkHAqO6amMcFCQgrlAJZE25S+p1gAsrGOjji9gu9ZhGVA5QA69ix7NZsR2ROb+/z7ItvDByW8zijNiUwvDzwNTEhfhMqMv3reqJZE1BPTvELktmrvg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=jifiKmME; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="LyBu6SZ5"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2F3EB1F00893;
-	Sat, 30 May 2026 20:48:31 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="jifiKmME"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 92B681F00893;
+	Sat, 30 May 2026 20:59:50 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1780174111;
-	bh=zRdUXHUxNpzFpwf/HXedGTjWjMk+ypXQQ/BZbvB5q+Q=;
-	h=Date:From:Cc:To:In-Reply-To:References:Subject;
-	b=LyBu6SZ55uxmIlpUrr+vhuMTSuWTftX5z3Mg5zBFqwssuzmXdzbphDpeKgr5e/Su/
-	 x5UxnRg9WLZMVwsOjAwXWHKWn2k03DifeEui2lacaNay2WQvXH0vvMCt/u5IQDENfm
-	 xiBcynhaoBf/sHd7pOz1d9pvLi4V+9K28OB6edUw9N0zhZiea4qO+M5wzhwTNwaPD/
-	 CBxkNauJW4NR7PsYtDZD3pZRKU+y7oCttgUIL6C0f1RYBv6Q1CaOKA4Kz/WVNrKLS3
-	 oXM0jDgBEdiVzhXs9WW8s01fyG72X0O7WuK6CHfIIWTPGmy36J6VXwnA55zPND9T+g
-	 wjh24vkRARz1Q==
-Date: Sat, 30 May 2026 15:48:29 -0500
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+	s=k20260515; t=1780174795;
+	bh=I0XpV/UJgvdMUeyZPVzwXcTNw9GkbNU1eOxQB0PkzTI=;
+	h=Date:Subject:Cc:To:From:References:In-Reply-To;
+	b=jifiKmME7zfqB4ndc4TqFzgI+RvBKaEp8U5IqhXg5aMLiy2CbWdLlxm6zI+A/Y92T
+	 7w9Rn4Le26XDiSOEA7az5HG9E74L3NGVjem4JK4u4g1XkTSHLFCxsXrg9szIVqDen0
+	 ahvS5RkCtt9R6AlDcmKqf8zlBU1WUsB/SZJ/ZlRmTvvPyiYivgfL1ssHMsXyaw3sGx
+	 QbT0hehHG2ZVuk8CxHGB6ulgQSMuDT9G2C06vvwNXpzGJ+JfunOTJ6PAvKLB036v4y
+	 SkhQyhiQyyG+pDTISsRdhdYEAspZvkzOSihwAoeFfBdbwRzwoQlhxArEbECZv1X4WQ
+	 dHm1juONeM39g==
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
-MIME-Version: 1.0
-From: "Rob Herring (Arm)" <robh@kernel.org>
-Cc: linux-kernel@vger.kernel.org, Thara Gopinath <thara.gopinath@gmail.com>, 
- Zhang Rui <rui.zhang@intel.com>, linux-arm-msm@vger.kernel.org, 
- linux-pm@vger.kernel.org, Conor Dooley <conor+dt@kernel.org>, 
- "Rafael J. Wysocki" <rafael@kernel.org>, devicetree@vger.kernel.org, 
- Lukasz Luba <lukasz.luba@arm.com>, 
- Daniel Lezcano <daniel.lezcano@kernel.org>, 
- Amit Kucheria <amitk@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>
-To: Herman van Hazendonk <github.com@herrie.org>
-In-Reply-To: <386f3cef9d50d61f588f99706d9f979c56f8bab8.1780148149.git.github.com@herrie.org>
-References: <cover.1780148149.git.github.com@herrie.org>
- <386f3cef9d50d61f588f99706d9f979c56f8bab8.1780148149.git.github.com@herrie.org>
-Message-Id: <178017410406.3710254.14105347323539031701.robh@kernel.org>
-Subject: Re: [PATCH 1/2] dt-bindings: thermal: qcom: add pm8901-temp-alarm
+Mime-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=UTF-8
+Date: Sat, 30 May 2026 22:59:48 +0200
+Message-Id: <DIWBAO4X3AAZ.I66NB6DQNQO3@kernel.org>
+Subject: Re: [PATCH v8 3/5] rust: add basic serial device bus abstractions
+Cc: "Markus Probst via B4 Relay"
+ <devnull+markus.probst.posteo.de@kernel.org>, "Rob Herring"
+ <robh@kernel.org>, "Greg Kroah-Hartman" <gregkh@linuxfoundation.org>, "Jiri
+ Slaby" <jirislaby@kernel.org>, "Miguel Ojeda" <ojeda@kernel.org>, "Gary
+ Guo" <gary@garyguo.net>, =?utf-8?q?Bj=C3=B6rn_Roy_Baron?=
+ <bjorn3_gh@protonmail.com>, "Benno Lossin" <lossin@kernel.org>, "Andreas
+ Hindborg" <a.hindborg@kernel.org>, "Alice Ryhl" <aliceryhl@google.com>,
+ "Trevor Gross" <tmgross@umich.edu>, "Kari Argillander"
+ <kari.argillander@gmail.com>, "Rafael J. Wysocki" <rafael@kernel.org>,
+ "Viresh Kumar" <viresh.kumar@linaro.org>, "Boqun Feng" <boqun@kernel.org>,
+ "David Airlie" <airlied@gmail.com>, "Simona Vetter" <simona@ffwll.ch>,
+ <linux-serial@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
+ <rust-for-linux@vger.kernel.org>, <linux-pm@vger.kernel.org>,
+ <driver-core@lists.linux.dev>, <dri-devel@lists.freedesktop.org>
+To: "Markus Probst" <markus.probst@posteo.de>
+From: "Danilo Krummrich" <dakr@kernel.org>
+References: <20260530-rust_serdev-v8-0-2a95f1da22a7@posteo.de>
+ <20260530-rust_serdev-v8-3-2a95f1da22a7@posteo.de>
+ <DIW1B4FUIXO7.28GSUA0CEA4EV@kernel.org>
+ <4638946fc49a38797b716ea173c93327eb751479.camel@posteo.de>
+ <ad98dfb1d8469022519d37364e8a068bed3b5687.camel@posteo.de>
+ <888dc39c52bb6ddac1a1eed7876c4573bdbef002.camel@posteo.de>
+ <DIW2JUUL6A6J.96VI4IQN6HYU@kernel.org>
+ <55eae11ea68f129508d0f7e30ac457ba919812b2.camel@posteo.de>
+ <DIW34DX6BSUS.ANXBOP9687B0@kernel.org>
+ <25dc9a4bbde0b542abf608be1b3305f1421a4502.camel@posteo.de>
+ <DIW587AGXYCS.39MR1B4TVSO9@kernel.org>
+ <01e20401845ce5eab5731698ca8a0f8f44ed3eb9.camel@posteo.de>
+ <DIW9Q5GVC0H2.2BEOWKL02AMWA@kernel.org>
+ <aaf88d7fc2168c3ef893713b0643c4132bec1da3.camel@posteo.de>
+In-Reply-To: <aaf88d7fc2168c3ef893713b0643c4132bec1da3.camel@posteo.de>
 
+On Sat May 30, 2026 at 10:31 PM CEST, Markus Probst wrote:
+> On Sat, 2026-05-30 at 21:45 +0200, Danilo Krummrich wrote:
+>> On Sat May 30, 2026 at 8:55 PM CEST, Markus Probst wrote:
+>> > pin-init doesn't have enum support yet, so at least in my driver devre=
+s is
+>> > still required for now.
+>>=20
+>> Hm...how is this related to having a registration type that takes a life=
+time
+>> rather than a registration type being wrapped in Devres?
+> In order to register "optional" devices, the driver currently uses
+> devres::register.
+>
+> I just released I could use KBox for this.
 
-On Sat, 30 May 2026 16:00:39 +0200, Herman van Hazendonk wrote:
-> Add the binding for the temperature-alarm block inside the Qualcomm
-> PM8901 PMIC (companion to the PM8058 on MSM8x60). The driver exposes
-> the PM8901 die-temperature trip stages (105 / 125 / 145 C) to the
-> thermal framework via a thermal-zone, with stage 3 wired as a
-> critical trip so the kernel issues orderly_poweroff() when the part
-> overheats.
-> 
-> The binding describes the SSBI sub-node address, the GIC interrupt
-> the alarm raises on a stage transition, and the parent PMIC
-> reference.
-> 
-> Signed-off-by: Herman van Hazendonk <github.com@herrie.org>
-> ---
->  .../thermal/qcom,pm8901-temp-alarm.yaml       | 79 +++++++++++++++++++
->  1 file changed, 79 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/thermal/qcom,pm8901-temp-alarm.yaml
-> 
+Ah, so you basically use devres::register() to avoid a pinned Option. Let's=
+ not
+absuse devres for this.
 
-My bot found errors running 'make dt_binding_check' on your patch:
-
-yamllint warnings/errors:
-
-dtschema/dtc warnings/errors:
-/builds/robherring/dt-review-ci/linux/Documentation/devicetree/bindings/thermal/qcom,pm8901-temp-alarm.example.dtb: pmic (qcom,pm8901): 'temp-alarm@23' does not match any of the regexes: '^pinctrl-[0-9]+$', 'gpio@[0-9a-f]+$', 'keypad@[0-9a-f]+$', 'led@[0-9a-f]+$', 'mpps@[0-9a-f]+$', 'pwrkey@[0-9a-f]+$', 'rtc@[0-9a-f]+$', 'vibrator@[0-9a-f]+$', 'xoadc@[0-9a-f]+$'
-	from schema $id: http://devicetree.org/schemas/mfd/qcom-pm8xxx.yaml
-/builds/robherring/dt-review-ci/linux/Documentation/devicetree/bindings/thermal/qcom,pm8901-temp-alarm.example.dtb: pmic (qcom,pm8901): 'oneOf' conditional failed, one must be fixed:
-	'interrupts' is a required property
-	'interrupts-extended' is a required property
-	from schema $id: http://devicetree.org/schemas/mfd/qcom-pm8xxx.yaml
-
-doc reference errors (make refcheckdocs):
-
-See https://patchwork.kernel.org/project/devicetree/patch/386f3cef9d50d61f588f99706d9f979c56f8bab8.1780148149.git.github.com@herrie.org
-
-The base for the series is generally the latest rc1. A different dependency
-should be noted in *this* patch.
-
-If you already ran 'make dt_binding_check' and didn't see the above
-error(s), then make sure 'yamllint' is installed and dt-schema is up to
-date:
-
-pip3 install dtschema --upgrade
-
-Please check and re-submit after running the above command yourself. Note
-that DT_SCHEMA_FILES can be set to your schema file to speed up checking
-your schema. However, it must be unset to test all examples with your schema.
-
+The class device registration should rather use a lifetime now that we got =
+all
+the infrastructure for this; the pinned Option problem can be tackled other=
+wise.
