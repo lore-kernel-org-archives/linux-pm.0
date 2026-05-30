@@ -1,287 +1,77 @@
-Received: from mout02.posteo.de (mout02.posteo.de [185.67.36.66])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D02CF312825
-	for <linux-pm@vger.kernel.org>; Sat, 30 May 2026 19:25:26 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=185.67.36.66
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 652F11A5B9D;
+	Sat, 30 May 2026 19:46:06 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1780169130; cv=none; b=R2O4t6RcR7tP4XeGYdPyexkN085eEfN/3O0GsiE23UvagKugPt0YSLLO8TfolB+h/AeVQXOwJYodB7zfqfDMTgk1NkqluevBM6jEAjhhpWVcNo6nTBpKSPAQ4fnP4b02esCpjAUxJebi5iJDd8uk0QS2HulHxUonv76YSPV/7/4=
+	t=1780170367; cv=none; b=lEVuz2jcHddI9ApozuXxA+xoFa44XgfNDNWOTUzJNgv3+mvWCDKe5u481OpzCFa8r773Ghwk/a23Ko6K4TVEwxuPd6hHWZkqpfreAEJVj9Q658uGZUxR+F6ov6joPs+hCGi0DhxWb63awgO7aE7U+0M+z76DRfuE4O/threN9/4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1780169130; c=relaxed/simple;
-	bh=kWHqDqopsoLEzI8G/1jRCL4n/V6ei1IvSJlqCr5mfNY=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=kq8mmATsmHIdhE56r03+uBSyE9J99j2sHxeEjlSE2xGCcFp7KDpZV5KCXB+a8szChXQCBfQnlGe4gO49EQx4yUdzIfykCe861GjE036th21hqRSa+aOSVldSjeXMvxVfBrtrxvhtkq5TjwLe0yX5+2C/eucok8W9sQk07KOt0Gg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=posteo.de; spf=pass smtp.mailfrom=posteo.de; dkim=pass (2048-bit key) header.d=posteo.de header.i=@posteo.de header.b=McpZff2W; arc=none smtp.client-ip=185.67.36.66
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=posteo.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=posteo.de
+	s=arc-20240116; t=1780170367; c=relaxed/simple;
+	bh=srBCy/zdErG7s9yoPUyWO9/eyzhiARnTTF7Wgqa2KHI=;
+	h=Mime-Version:Content-Type:Date:Message-Id:From:Subject:Cc:To:
+	 References:In-Reply-To; b=QWNt4FPMd4gxjhZndFZabc9AiPZK9jiuUbQzG2MmqQbscC5h/7FTsRxPb6nMl1G2g59ITy1D3wXB0cv1VhyMOjzP0R+WKD+sPPsKTbg2fACaMzV3S/tf4ZHiJexRUIuyN5j8566vjITw26mUgWkcjgjt16qNKndFfu6HwCxLkoU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=dBN/B1+Q; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=posteo.de header.i=@posteo.de header.b="McpZff2W"
-Received: from submission (posteo.de [185.67.36.169]) 
-	by mout02.posteo.de (Postfix) with ESMTPS id 70F44240101
-	for <linux-pm@vger.kernel.org>; Sat, 30 May 2026 21:25:25 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=posteo.de; s=2017;
-	t=1780169125; bh=42VT4Web8p97shcBKx9x37MHs8bYsHswj1i8r6Hcv5s=;
-	h=From:Date:Subject:MIME-Version:Content-Type:
-	 Content-Transfer-Encoding:Message-Id:To:Cc:Autocrypt:OpenPGP:From;
-	b=McpZff2W1YrYQEBF8au0n3Dw3R1W8Gu5uA89g20jjKm4mA23w27VvOrns8Ixj462A
-	 N475o/ackMftFwnKiwYRNae0FrHYwhiMsUSl5O3Kj6Wik17AWm/WWY942Aku4w033e
-	 9iEz8qhceACIbNqHaB6eTpO69PmLfqS+yeJ+xvCHrkqyUuzp+BANGnyGgNWLw4trzz
-	 Q8HlpJ3VBDi8uJRRVI8KV/rmpfWTsM4ay6MfG1ZWTx0B9/webGKhqgsFi191otj6vG
-	 6+MittqHwVKX6sLOkNohD4zY/ji5W/SoD4QoVZ1Ft6hehm7zYBr7kjszB4qNL0rn1I
-	 aAa2F5e4Z/eOw==
-Received: from customer (localhost [127.0.0.1])
-	by submission (posteo.de) with ESMTPSA id 4gSVYZ6prZz6twY;
-	Sat, 30 May 2026 21:25:22 +0200 (CEST)
-From: Markus Probst <markus.probst@posteo.de>
-Date: Sat, 30 May 2026 19:25:24 +0000
-Subject: [PATCH v10 4/5] samples: rust: add Rust serial device bus sample
- device driver
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="dBN/B1+Q"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5B2451F00893;
+	Sat, 30 May 2026 19:46:01 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1780170366;
+	bh=srBCy/zdErG7s9yoPUyWO9/eyzhiARnTTF7Wgqa2KHI=;
+	h=Date:From:Subject:Cc:To:References:In-Reply-To;
+	b=dBN/B1+QhwvG/s7vUQWrXB2MAfJ/CfV1cQ91HSJBXyEKyMfZqpO/BTKiUViC6kRyI
+	 XKpms9IW1BTjFjnQBN52Ukx0tIEXJJsCXzhL0lemL7OlqwLkNZ/qNIvnafAYO38w5y
+	 XGjMdcEZv9v3W73qpFMZvPv9SaM7lLWg9r16XLFN1rt9kFHE/tX11qdTdHXVaWCy6Y
+	 fnpbm4E1GJKZhfFgasaTTq+095fuf8JY+XtL81WdSi63BZ5LZgmNtDHdf8FDm2pNTd
+	 Ei8pc4QkW3n4xY10yTC5TyJVoAJQdk6NBb6zzrZVrmoGJq34E2XQLR9kb0Cn+cFU4y
+	 9Krwv9FftSh4A==
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20260530-rust_serdev-v10-4-65d1d5db876c@posteo.de>
-References: <20260530-rust_serdev-v10-0-65d1d5db876c@posteo.de>
-In-Reply-To: <20260530-rust_serdev-v10-0-65d1d5db876c@posteo.de>
-To: Rob Herring <robh@kernel.org>, 
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
- Jiri Slaby <jirislaby@kernel.org>, Miguel Ojeda <ojeda@kernel.org>, 
- Gary Guo <gary@garyguo.net>, 
- =?utf-8?q?Bj=C3=B6rn_Roy_Baron?= <bjorn3_gh@protonmail.com>, 
- Benno Lossin <lossin@kernel.org>, Andreas Hindborg <a.hindborg@kernel.org>, 
- Alice Ryhl <aliceryhl@google.com>, Trevor Gross <tmgross@umich.edu>, 
- Danilo Krummrich <dakr@kernel.org>, 
- Kari Argillander <kari.argillander@gmail.com>, 
- "Rafael J. Wysocki" <rafael@kernel.org>, 
- Viresh Kumar <viresh.kumar@linaro.org>, Boqun Feng <boqun@kernel.org>, 
- David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>, 
- Boqun Feng <boqun@kernel.org>
-Cc: linux-serial@vger.kernel.org, linux-kernel@vger.kernel.org, 
- rust-for-linux@vger.kernel.org, linux-pm@vger.kernel.org, 
- driver-core@lists.linux.dev, dri-devel@lists.freedesktop.org, 
- Markus Probst <markus.probst@posteo.de>
-X-Developer-Signature: v=1; a=openpgp-sha256; l=4748;
- i=markus.probst@posteo.de; h=from:subject:message-id;
- bh=kWHqDqopsoLEzI8G/1jRCL4n/V6ei1IvSJlqCr5mfNY=;
- b=owEBiQJ2/ZANAwAIATR2H/jnrUPSAcsmYgBqGzmcU/cyu2oqvylsxAjZwDoEXAHXUla1qNma7
- vuXU3E0ctaJAk8EAAEIADkWIQSCdBjE9KxY53IwxHM0dh/4561D0gUCahs5nBsUgAAAAAAEAA5t
- YW51MiwyLjUrMS4xMiwyLDIACgkQNHYf+OetQ9JsTBAAiZ9KJiUuV7spKjOxb+ePnUW9BnUpesF
- PLvPC1ZuLBlOt+gTRkPPTlGksdHzfa2dLOGoSJ4jQ9y3e4Lq48cjGAgQHfUVJ/kEsTKR52FH406
- ia75jBDnenSK5pP9JU1BdGDb0fLmLR0Xob1KyPYgbvE8eP3vaB7EWzYAhFLZ+K0XoKf6OQNkqes
- i1yslrmlv92Lg5EwV9ijQA3YMEbf1dXOvBvNzhXdxJHuBF9UldREUc8EJ9GxJu5mzxwP9b3NF7p
- Vx5cemm8B0X4XKq84MExgZRiea2aWc4LCvbveaVU2tsideAZa9hAb+runAahv+ijToKvc1zYDFZ
- dZvoW1u5HQXn1WTRPoek6H4c0rHiMuEhnTv2GxR5K18vOdLxvRMOEUsmYOfCHEAvDe3+X1AnwQ1
- ngppD1xiIAWOEcYSdIAPXeM/tqcWaZxVmP9Z1hgRjMBORi2ADEGD0F5VNhlZNQ2rTb+4EBynLdx
- dAyFVXjX3Ls7ouyWINTQPx9NFtxsV2MNqSLln/PXz780rFn79GlclM0lNuNs3SHCTEKY9C6pO8U
- yfiKhqAx0gCHJOsYPDXFrTrs2nCYakBhqGckRQnA2TJwqhMgzzEY2itWtE4mcKsJKXlZvgGX8cc
- UnV4E9aNs/2mrLYC8b+sMackt37W64bLJX/tFVG4rMKRMOII4z70=
-X-Developer-Key: i=markus.probst@posteo.de; a=openpgp;
- fpr=827418C4F4AC58E77230C47334761FF8E7AD43D2
-Autocrypt: addr=markus.probst@posteo.de; prefer-encrypt=mutual;
-  keydata=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
-  aBeNN4ijKZchBXHPgVx+YtWRHfcm4l8=
-OpenPGP: url=https://posteo.de/keys/markus.probst@posteo.de.asc; preference=encrypt
+Mime-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=UTF-8
+Date: Sat, 30 May 2026 21:45:59 +0200
+Message-Id: <DIW9Q5GVC0H2.2BEOWKL02AMWA@kernel.org>
+From: "Danilo Krummrich" <dakr@kernel.org>
+Subject: Re: [PATCH v8 3/5] rust: add basic serial device bus abstractions
+Cc: "Markus Probst via B4 Relay"
+ <devnull+markus.probst.posteo.de@kernel.org>, "Rob Herring"
+ <robh@kernel.org>, "Greg Kroah-Hartman" <gregkh@linuxfoundation.org>, "Jiri
+ Slaby" <jirislaby@kernel.org>, "Miguel Ojeda" <ojeda@kernel.org>, "Gary
+ Guo" <gary@garyguo.net>, =?utf-8?q?Bj=C3=B6rn_Roy_Baron?=
+ <bjorn3_gh@protonmail.com>, "Benno Lossin" <lossin@kernel.org>, "Andreas
+ Hindborg" <a.hindborg@kernel.org>, "Alice Ryhl" <aliceryhl@google.com>,
+ "Trevor Gross" <tmgross@umich.edu>, "Kari Argillander"
+ <kari.argillander@gmail.com>, "Rafael J. Wysocki" <rafael@kernel.org>,
+ "Viresh Kumar" <viresh.kumar@linaro.org>, "Boqun Feng" <boqun@kernel.org>,
+ "David Airlie" <airlied@gmail.com>, "Simona Vetter" <simona@ffwll.ch>,
+ <linux-serial@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
+ <rust-for-linux@vger.kernel.org>, <linux-pm@vger.kernel.org>,
+ <driver-core@lists.linux.dev>, <dri-devel@lists.freedesktop.org>
+To: "Markus Probst" <markus.probst@posteo.de>
+References: <20260530-rust_serdev-v8-0-2a95f1da22a7@posteo.de>
+ <20260530-rust_serdev-v8-3-2a95f1da22a7@posteo.de>
+ <DIW1B4FUIXO7.28GSUA0CEA4EV@kernel.org>
+ <4638946fc49a38797b716ea173c93327eb751479.camel@posteo.de>
+ <ad98dfb1d8469022519d37364e8a068bed3b5687.camel@posteo.de>
+ <888dc39c52bb6ddac1a1eed7876c4573bdbef002.camel@posteo.de>
+ <DIW2JUUL6A6J.96VI4IQN6HYU@kernel.org>
+ <55eae11ea68f129508d0f7e30ac457ba919812b2.camel@posteo.de>
+ <DIW34DX6BSUS.ANXBOP9687B0@kernel.org>
+ <25dc9a4bbde0b542abf608be1b3305f1421a4502.camel@posteo.de>
+ <DIW587AGXYCS.39MR1B4TVSO9@kernel.org>
+ <01e20401845ce5eab5731698ca8a0f8f44ed3eb9.camel@posteo.de>
+In-Reply-To: <01e20401845ce5eab5731698ca8a0f8f44ed3eb9.camel@posteo.de>
 
-Add a sample Rust serial device bus device driver illustrating the usage
-of the serial device bus abstractions.
+On Sat May 30, 2026 at 8:55 PM CEST, Markus Probst wrote:
+> pin-init doesn't have enum support yet, so at least in my driver devres i=
+s
+> still required for now.
 
-This drivers probes through either a match of device / driver name or a
-match within the OF ID table.
-
-Signed-off-by: Markus Probst <markus.probst@posteo.de>
----
- MAINTAINERS                        |  1 +
- samples/rust/Kconfig               | 11 +++++
- samples/rust/Makefile              |  1 +
- samples/rust/rust_driver_serdev.rs | 91 ++++++++++++++++++++++++++++++++++++++
- 4 files changed, 104 insertions(+)
-
-diff --git a/MAINTAINERS b/MAINTAINERS
-index d2f608ff8ca0..fa3f20f0cc4f 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -24278,6 +24278,7 @@ F:	drivers/tty/serdev/
- F:	include/linux/serdev.h
- F:	rust/helpers/serdev.c
- F:	rust/kernel/serdev.rs
-+F:	samples/rust/rust_driver_serdev.rs
- 
- SERIAL IR RECEIVER
- M:	Sean Young <sean@mess.org>
-diff --git a/samples/rust/Kconfig b/samples/rust/Kconfig
-index c49ab9106345..31d62533ef25 100644
---- a/samples/rust/Kconfig
-+++ b/samples/rust/Kconfig
-@@ -161,6 +161,17 @@ config SAMPLE_RUST_DRIVER_AUXILIARY
- 
- 	  If unsure, say N.
- 
-+config SAMPLE_RUST_DRIVER_SERDEV
-+	tristate "Serial Device Bus Device Driver"
-+	select RUST_SERIAL_DEV_BUS_ABSTRACTIONS
-+	help
-+	  This option builds the Rust serial device bus driver sample.
-+
-+	  To compile this as a module, choose M here:
-+	  the module will be called rust_driver_serdev.
-+
-+	  If unsure, say N.
-+
- config SAMPLE_RUST_SOC
- 	tristate "SoC Driver"
- 	select SOC_BUS
-diff --git a/samples/rust/Makefile b/samples/rust/Makefile
-index 6c0aaa58cccc..b986b681cde5 100644
---- a/samples/rust/Makefile
-+++ b/samples/rust/Makefile
-@@ -14,6 +14,7 @@ obj-$(CONFIG_SAMPLE_RUST_DRIVER_PLATFORM)	+= rust_driver_platform.o
- obj-$(CONFIG_SAMPLE_RUST_DRIVER_USB)		+= rust_driver_usb.o
- obj-$(CONFIG_SAMPLE_RUST_DRIVER_FAUX)		+= rust_driver_faux.o
- obj-$(CONFIG_SAMPLE_RUST_DRIVER_AUXILIARY)	+= rust_driver_auxiliary.o
-+obj-$(CONFIG_SAMPLE_RUST_DRIVER_SERDEV)		+= rust_driver_serdev.o
- obj-$(CONFIG_SAMPLE_RUST_CONFIGFS)		+= rust_configfs.o
- obj-$(CONFIG_SAMPLE_RUST_SOC)			+= rust_soc.o
- 
-diff --git a/samples/rust/rust_driver_serdev.rs b/samples/rust/rust_driver_serdev.rs
-new file mode 100644
-index 000000000000..824affbf6593
---- /dev/null
-+++ b/samples/rust/rust_driver_serdev.rs
-@@ -0,0 +1,91 @@
-+// SPDX-License-Identifier: GPL-2.0
-+
-+//! Rust Serial device bus device driver sample.
-+
-+use kernel::{
-+    acpi,
-+    device::{
-+        Bound,
-+        Core, //
-+    },
-+    of,
-+    prelude::*,
-+    serdev,
-+    sync::aref::ARef, //
-+};
-+
-+struct SampleDriver {
-+    sdev: ARef<serdev::Device>,
-+}
-+
-+kernel::of_device_table!(
-+    OF_TABLE,
-+    MODULE_OF_TABLE,
-+    <SampleDriver as serdev::Driver>::IdInfo,
-+    [(of::DeviceId::new(c"test,rust_driver_serdev"), ())]
-+);
-+
-+kernel::acpi_device_table!(
-+    ACPI_TABLE,
-+    MODULE_ACPI_TABLE,
-+    <SampleDriver as serdev::Driver>::IdInfo,
-+    [(acpi::DeviceId::new(c"LNUXBEEF"), ())]
-+);
-+
-+#[vtable]
-+impl serdev::Driver for SampleDriver {
-+    type IdInfo = ();
-+    type Data<'bound> = Self;
-+    const OF_ID_TABLE: Option<of::IdTable<Self::IdInfo>> = Some(&OF_TABLE);
-+    const ACPI_ID_TABLE: Option<acpi::IdTable<Self::IdInfo>> = Some(&ACPI_TABLE);
-+
-+    fn probe<'bound>(
-+        sdev: &'bound serdev::Device<Core<'_>>,
-+        _info: Option<&'bound Self::IdInfo>,
-+    ) -> impl PinInit<Self, Error> + 'bound {
-+        let dev = sdev.as_ref();
-+
-+        dev_dbg!(dev, "Probe Rust Serial device bus device driver sample.\n");
-+
-+        if sdev
-+            .set_baudrate(
-+                dev.fwnode()
-+                    .and_then(|fwnode| fwnode.property_read(c"baudrate").optional())
-+                    .unwrap_or(115200),
-+            )
-+            .is_err()
-+        {
-+            return Err(EINVAL);
-+        }
-+        sdev.set_flow_control(false);
-+        sdev.set_parity(serdev::Parity::None)?;
-+
-+        Ok(Self { sdev: sdev.into() })
-+    }
-+
-+    fn receive<'bound>(
-+        sdev: &'bound serdev::Device<Bound>,
-+        _this: Pin<&Self>,
-+        data: &[u8],
-+    ) -> usize {
-+        let _ = sdev.write_all(data, serdev::Timeout::Max);
-+        data.len()
-+    }
-+}
-+
-+impl Drop for SampleDriver {
-+    fn drop(&mut self) {
-+        dev_dbg!(
-+            self.sdev.as_ref(),
-+            "Remove Rust Serial device bus device driver sample.\n"
-+        );
-+    }
-+}
-+
-+kernel::module_serdev_device_driver! {
-+    type: SampleDriver,
-+    name: "rust_driver_serdev",
-+    authors: ["Markus Probst"],
-+    description: "Rust Serial device bus device driver",
-+    license: "GPL v2",
-+}
-
--- 
-2.53.0
-
+Hm...how is this related to having a registration type that takes a lifetim=
+e
+rather than a registration type being wrapped in Devres?
