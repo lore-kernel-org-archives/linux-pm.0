@@ -1,33 +1,33 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0AFB83ACF0B;
-	Sat, 30 May 2026 12:29:42 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7AD6321CC5A;
+	Sat, 30 May 2026 12:32:05 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1780144183; cv=none; b=DuPQ4loEj4Eurg3T0XhtiB65Rqx2nU468/7Z+2vDwzaDbsOUD52RZo62Abcy01aPtl2hBUoGQFVg6JwDiHYhJxX/njws0W8iltZlYU8R8uKx4Xqgc12/njsdtXpGUVDjG+Cx2N0ae46JNfjRlSyEjMWLnRzOesOnL9b0TsJ61B8=
+	t=1780144326; cv=none; b=Uow/ssVzdEDZe8Fx3KcOngNqlIc9To0YzwfpQxATt7dkUbUEt4eM3e7p8kotl1IOxxoRNieKn6eVkqYaD5C+5eVkd2mPGhsDkA0qSnkeJ7DG0/9vo3fDPtFfCUv8sqhCkuY+z+5HprEch5oYrLQLj1WoOAZDTGEI7/ZdlN24um8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1780144183; c=relaxed/simple;
-	bh=2cPBEeBinS7gmhZmm4yNqvAq3gFrcxr62j/aRFTiLTM=;
+	s=arc-20240116; t=1780144326; c=relaxed/simple;
+	bh=A3YYWQPGOSNfNFzUBFjjQ4OlMk/WhqTQ0O1JHsGY6XY=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=jgLg+Shzxdyr7BvZ9AHV4e8daLqJRyej2M6Kv7v6Yybp5g2pCwv0W7K8Vm/QXhGoVNF1BCt27bIY/KpWOswA84fRXtpMnroo8MQ3JW4T9VPxfd9xGwNb6G6mVexluqvvhEPwGcv5/PQYYAMConEsRGzOyeE7GsA4uuKmNZMxw9Q=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=G6R2Xfha; arc=none smtp.client-ip=100.103.45.18
+	 In-Reply-To:Content-Type; b=WXtjenDItqhQpm+iWtXquu4zOp+yRtWVHHch5a4Gt5ggZZQhT51jG3JVeegBz17+F2s3khywnristqzq5IQ+16OtJ/dS32gnniSOrnmoKMWNVJOysS4E1emiRHqRvbcqbaQnwjM+Ii35gYk8Q81YuZnFDLLbs6nQZT7VoZSjAlI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=LJczq9Ji; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="G6R2Xfha"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0506E1F00893;
-	Sat, 30 May 2026 12:29:39 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="LJczq9Ji"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4B7161F00893;
+	Sat, 30 May 2026 12:32:02 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1780144182;
-	bh=SZKWZW3A914trGkLe6DorV9KM6V8FmB/2QIq7le3Srs=;
+	s=k20260515; t=1780144325;
+	bh=smmoYyxQcRtLKMjLcD7EIArEiMMan8ecg/rsJh8HwLo=;
 	h=Date:Subject:To:Cc:References:From:In-Reply-To;
-	b=G6R2Xfhas80tIbhbOXYERcXx1OW6isLSC41ir0X9hM64srFTWDXBSyAxKU3Y/sUxa
-	 aIDLaM0J/xW/JeUanuef6FtBcn/5nOJWqVFBSv1YKuHtToi6Ls9diIawwdl62of0eT
-	 DX1FDmz0wyWe5kkrEyV7A/F35BRqH8SF9DT8BUkd9zPyVQyZobi4BOWKkvx+KIucee
-	 vJ3mfkvbg/zMyDx0VYuVhrUfl4k5ytPt3VO62sSwgJpWmr/2/d6xOjKX++LAIrYPE4
-	 YfEFRcU/L+UMLEpM3rz7XUVO9Ga9Yq3X1x65/jJSGXXV4X7V9dNprjkTpeHngRQkXc
-	 EhLgsvnqqi6HQ==
-Message-ID: <3c441940-e4e6-4626-8ff8-36db41409644@kernel.org>
-Date: Sat, 30 May 2026 14:29:38 +0200
+	b=LJczq9JinDhO48VGTUdSJh6ed6GILXCeoQXJ1M8ZxR61gDQrdcdbwYBjJnVMKcqOx
+	 ZOd2KhJKiWaI5RbLQIZYmU/dvFIkSnNyTUihuvCQR2wc4rXYl1SDq89i73rmYI61zo
+	 /+f8jT9OQtSXzET/SstVvjSry2ngSPw1GGsbcYmcHu8YdesWWWkC/aBuo0w0MFYQ83
+	 Ld7Je/Ov1JzkE2q22zL8Zu6u+CYN4CYAj1xN2OoS5fusZAHbpjGqWznTxrwgI5DWXI
+	 s1RK5q52m+sj5KLq9pUs/JpCsc2qkNUSCxmwjLguTd+Er4NuNkfNxm3RYs/AgsPGuo
+	 8SbsYFMDlpGQg==
+Message-ID: <e220d10e-1c36-424f-84b8-068615f1060d@kernel.org>
+Date: Sat, 30 May 2026 14:32:00 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -35,8 +35,7 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 1/3] dt-bindings: power: limits: Describe Qualcomm SPEL
- hardware
+Subject: Re: [PATCH 3/3] arm64: dts: qcom: glymur: Enable SPEL powercap driver
 To: Manaf Meethalavalappu Pallikunhi <manaf.pallikunhi@oss.qualcomm.com>,
  Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
  Conor Dooley <conor+dt@kernel.org>, "Rafael J. Wysocki" <rafael@kernel.org>,
@@ -47,7 +46,7 @@ Cc: linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org,
  linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
  Gaurav Kohli <gaurav.kohli@oss.qualcomm.com>
 References: <20260519-qcom_spel_driver_upstream-v1-0-75356d1b7f94@oss.qualcomm.com>
- <20260519-qcom_spel_driver_upstream-v1-1-75356d1b7f94@oss.qualcomm.com>
+ <20260519-qcom_spel_driver_upstream-v1-3-75356d1b7f94@oss.qualcomm.com>
 From: Krzysztof Kozlowski <krzk@kernel.org>
 Content-Language: en-US
 Autocrypt: addr=krzk@kernel.org; keydata=
@@ -93,50 +92,33 @@ Autocrypt: addr=krzk@kernel.org; keydata=
  jWt87ecuHlpL3uuQ0ZZNWqHgZoQLXoqC2ZV5KrtKWb/jyiFX/sxSrodALf0zf+tfHv0FZWT2
  zHjUqd0t4njD/UOsuIMOQn4Ig0SdivYPfZukb5cdasKJukG1NOpbW7yRNivaCnfZz6dTawXw
  XRIV/KDsHQiyVxKvN73bThKhONkcX2LWuD928tAR6XMM2G5ovxLe09vuOzzfTWQDsm++9UKF a/A=
-In-Reply-To: <20260519-qcom_spel_driver_upstream-v1-1-75356d1b7f94@oss.qualcomm.com>
+In-Reply-To: <20260519-qcom_spel_driver_upstream-v1-3-75356d1b7f94@oss.qualcomm.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 
 On 19/05/2026 12:49, Manaf Meethalavalappu Pallikunhi wrote:
 > The Qualcomm SoC Power and Electrical Limits (SPEL) provides hardware
-> based power monitoring and limiting capabilities for various domains.
-> 
-> Add a DeviceTree binding to describe the SPEL block on Qualcomm's SoC.
+> based power monitoring and limiting capabilities for various power
+> domains including System, SoC, CPU clusters, GPU, and various other
+> subsystems for glymur.
 > 
 > Signed-off-by: Manaf Meethalavalappu Pallikunhi <manaf.pallikunhi@oss.qualcomm.com>
 > ---
->  .../bindings/power/limits/qcom,spel.yaml           | 47 ++++++++++++++++++++++
->  MAINTAINERS                                        |  6 +++
->  2 files changed, 53 insertions(+)
+>  arch/arm64/boot/dts/qcom/glymur.dtsi | 10 ++++++++++
+>  1 file changed, 10 insertions(+)
 > 
-> diff --git a/Documentation/devicetree/bindings/power/limits/qcom,spel.yaml b/Documentation/devicetree/bindings/power/limits/qcom,spel.yaml
-> new file mode 100644
-> index 000000000000..e9bb70c3a3aa
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/power/limits/qcom,spel.yaml
-> @@ -0,0 +1,47 @@
-> +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
-> +%YAML 1.2
-> +---
-> +$id: http://devicetree.org/schemas/power/limits/qcom,spel.yaml#
-> +$schema: http://devicetree.org/meta-schemas/core.yaml#
-> +
-> +title: Qualcomm SoC Power and Electrical Limits (SPEL)
-> +
-> +maintainers:
-> +  - Manaf Meethalavalappu Pallikunhi <manaf.pallikunhi@oss.qualcomm.com>
-> +
-> +description:
-> +  The Qualcomm SPEL (SoC Power and Electrical Limits) provides hardware-based
-> +  power monitoring and limiting capabilities for various power domains in
-> +  Qualcomm SoCs.
-> +
-> +properties:
-> +  compatible:
-> +    const: qcom,spel
+> diff --git a/arch/arm64/boot/dts/qcom/glymur.dtsi b/arch/arm64/boot/dts/qcom/glymur.dtsi
+> index 72c7dc6e4f09..c0ba8740ae41 100644
+> --- a/arch/arm64/boot/dts/qcom/glymur.dtsi
+> +++ b/arch/arm64/boot/dts/qcom/glymur.dtsi
+> @@ -5033,6 +5033,16 @@ spmi_bus2: spmi@c48000 {
+>  			};
+>  		};
+>  
+> +		power-controller@ef3b000 {
 
-You don't get generic compatibles. I think I commented about this enough
-of times.
+Never properly build tested. Please read carefully either kernel docs or
+internal guide which tells you what steps you are supposed to do.
 
 NAK
 
