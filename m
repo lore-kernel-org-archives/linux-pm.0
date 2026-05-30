@@ -1,208 +1,154 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C4593225775;
-	Sat, 30 May 2026 13:10:19 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CB8A63B9D83
+	for <linux-pm@vger.kernel.org>; Sat, 30 May 2026 13:34:49 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.180.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1780146620; cv=none; b=moy4oLamtcNhM7eXCo828KJ2WaH6ZsE1vbVNv2fl+scPAZfUzgg2ts601j2LW+w2McRyTdcC6mdQhBnXYu4LIxP7vGf0i3hUl758RkzXu8zjpJZ1WspYYQfWZs0CMnS5wnro3e0yLQNjEk2Rc3iVHMXvxdW8lwiQM5DaRKXCwYA=
+	t=1780148090; cv=none; b=YrxK1TuA26AWuy0B8gqSgrjubtvLjl6YgWyGqCFFmmCElwYB7QwvIQorp7evAE8VrmEm9n3KYyQuzxFnLTUNeZaNk5k9MZp/4dti00h10OWVFW/tg2w443wqBvlt7kGZ0m+N4c+Nl6VQ/v4VC2MVHBQoruOVCfjExSvP8+PGByA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1780146620; c=relaxed/simple;
-	bh=OIuD491KSCisdQ+EcRYI437BYyKWTPj5CxFAnaB7bZY=;
-	h=Mime-Version:Content-Type:Date:Message-Id:To:From:Subject:Cc:
-	 References:In-Reply-To; b=KYoRIWBmkGzawZUy1G1ABMvWyY49Mt3FSxv22W4Ag32JA4d+6r4JUAwJ3ncc1y+3Pr1WGMJ6z9Srke5F7doxrGZQurLeluC6EL1Q1sXdUu3obJ+zaw6DCQC7DHZ/bBAAZDCJonNcr93H83CqYUexO9vR5TQr1WGFsh5ENOLnmzA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=WqKO9Mn+; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1780148090; c=relaxed/simple;
+	bh=nZm7/KrAFnUmw0HLeCbq5IVzJNNGM1ZDj6512w4P8Y8=;
+	h=Message-ID:Date:MIME-Version:From:Subject:To:Cc:References:
+	 In-Reply-To:Content-Type; b=lnvzV70IskZuJhDkhiUKrXc1wd6ep8gM7dlDOQsW1ZPYHrWzhrgA3HVTnBrMqaRKEfZcSBPtWK5swetEQ6cSfwvZu3wQJKVEl7Ph1wnYi8fArnUupBuoB68x1yZGm2GCE+4Hn5Uv9VS8ApU4KRE3/7He5if4FUqV91b31Ki5D7s=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=CJk4ZQAw; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=ZYlsJ6DY; arc=none smtp.client-ip=205.220.180.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="WqKO9Mn+"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id BF9561F00893;
-	Sat, 30 May 2026 13:10:14 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1780146619;
-	bh=SP7i8xqzkSDvXySCs/V8aUcE/te0zaQ5nqg1gqmhcYs=;
-	h=Date:To:From:Subject:Cc:References:In-Reply-To;
-	b=WqKO9Mn+jBrEQH8HU/rNoVnKflCAf0//gRzZKcK+/cvEPWRUrvd8X0FvR/SdDhTWD
-	 1nNUsw57f+9Ku34CnFZr8S2ycOOqBly6cmDP+ht4kfqZaJWNI2EBmWNLQ1rSisiAjX
-	 StZ9IVBargDknO6BRXkgPihh3suhtwqKcJ76GZoJpS7Ek5rQ22zthHICd3WBLl1F9b
-	 Zrmg7PdmBSWG8+2WaG/v2nwRpzM0D7wUdITPwiJJlvyJpIpQ5Ihc5rr/i4MNaokRsH
-	 6DUzKZ/m5E4C0Oi+wZpRih3aZLiFshHihMLRVgGx1/a7A2/6pURbTlX7Kp/FmyuDA+
-	 k+39FPBFDME6Q==
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="CJk4ZQAw";
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="ZYlsJ6DY"
+Received: from pps.filterd (m0279869.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 64U2Bjrd4045770
+	for <linux-pm@vger.kernel.org>; Sat, 30 May 2026 13:34:49 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
+	vZoiK8MxIGVbxIKBU/zLhqCKZIIFuB7l/xTg1Y+vmAc=; b=CJk4ZQAwCqxaXy3r
+	L2HLKZg9u9DRzbofSzp0fLi+FRrJG350s7E78UPm9VzTvligyzWOUzAj6ef0VKP+
+	I9pKrRDQs/e3HDhpl7l5bOFe2NE5MoT2nWM6QJS9zW0gUHB0sQQQbVfbRCr3vcMW
+	znMCDkJDeCwYusRp/DvZTQXMMn+4DSz608FBT9gnWulhfuHUT1/hlMBCpTdua9HW
+	LfS4Kbvz8z0y1hiN8OWnONUwPVHDoZKyZw0iMpPk1P6I7JdFOxGHuWmOHEaKL22D
+	xUgyR/H1xF7XY3xmN9sUeyGnaxsjnP0eAfYd7CgSauGF4NZxRzQSRErUmrAqEADV
+	9VDH5A==
+Received: from mail-qt1-f197.google.com (mail-qt1-f197.google.com [209.85.160.197])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4efpw7h7ch-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <linux-pm@vger.kernel.org>; Sat, 30 May 2026 13:34:48 +0000 (GMT)
+Received: by mail-qt1-f197.google.com with SMTP id d75a77b69052e-516dd6e4ed4so166355241cf.0
+        for <linux-pm@vger.kernel.org>; Sat, 30 May 2026 06:34:48 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=oss.qualcomm.com; s=google; t=1780148088; x=1780752888; darn=vger.kernel.org;
+        h=content-transfer-encoding:in-reply-to:content-language:references
+         :cc:to:subject:from:user-agent:mime-version:date:message-id:from:to
+         :cc:subject:date:message-id:reply-to;
+        bh=vZoiK8MxIGVbxIKBU/zLhqCKZIIFuB7l/xTg1Y+vmAc=;
+        b=ZYlsJ6DYJKiykTHVfesJ/D34RApF97+DhNyv4as7iNwWp2muTAw1kC4LOHeEuNmSsf
+         RESKzKgBG0YFK2cd39gjOEtcrdoxdWPjac+gFtli9Cfhcl+hdYF5VK8NVCt1m+uip7FH
+         O2cQDsm0EpN5RhJXBPq++Biu1oimi0mOhUsRjR0K+iPjUZV7993zIFyTVaHDPIiPlOBP
+         rqWxtc/hLUDMAOnBmnK/X+cXEGKCJ4IKED7Yg+QcP05FBClehakMsb+8klorIRmhKEPk
+         hfkCUS8AMbW5tRkRf+BM93pQ/SgL3x2bd5p8zf6qIvx/R6PVr2K/8nVy7i7AWKSlK+CN
+         9RbQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1780148088; x=1780752888;
+        h=content-transfer-encoding:in-reply-to:content-language:references
+         :cc:to:subject:from:user-agent:mime-version:date:message-id:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=vZoiK8MxIGVbxIKBU/zLhqCKZIIFuB7l/xTg1Y+vmAc=;
+        b=MYd6Z9f5eu6c79jBDCLfVMb6WIICcd6dxYot5zisvZPXAzxxFWu/UXG+2Wierre3FT
+         YczpgLULiMmMddvxWaPV2s2w4zHlywGL1U1JaKqEeOBhqi6NxHokHyidLSRL1MA2Ek3Y
+         MPpq6vDfhS5LXkMjAvKVoekloimMsPBfk95rUCMrBr+PJzgTfUGgw8G+gdNFDB82zI8H
+         BLjvZw9uVCBbcGehg2myy7choMAOcHwnI2C5RorfJhWpIEZL3286gbZXwaSyrQHZk5Nw
+         G+nj9PJxxBTHI3fcvzUTkst2ikAcVLSdC5I5iGQnLvZSTvn1j4Ro6mYZccGzcO2/izeH
+         VgmQ==
+X-Forwarded-Encrypted: i=1; AFNElJ/5sb1pPd24vD2mdC/V3SvjlXIzYLmQcXgBR5ceNsMTwVfF0F+8EhRyn4xyIF8D6glCPGXO37FTUA==@vger.kernel.org
+X-Gm-Message-State: AOJu0YwhhWxMxggp93Sxf2+FztyWbzKCpy09hjyXyY/+KaMYTpopQFsQ
+	yujLeh9ZjxLKqpS7lOqA4cohg6DucLEcfq6bIOZtT4GvnHXcP02F3qQ5MQB3ZZl+LnKSwthBF9x
+	CkGfd/1DR2Kw740vGkfZHntJKS4bmcPi1cmMfKd4HdTdu/Ei4C0eFVhPnNyA2kQ==
+X-Gm-Gg: Acq92OGfrQ1xM5OwG3/AR8I86JYb2+J7OrktubhCNSXtmHQhDPPvgUtVDLU8WRJauzz
+	01m7g+eOkWs58JKDg41WzlzNBUe0qWH2wG5Q5oEkjxcG7ppC8Lh0oaGyOoxDsWoNVKTgmLHgVS2
+	xVEhPnJpJRUfEqWZvH0ZxRSquq5QvLV05NI/UbfV67uZ1BoiUwVi9STAkgkhNU+mg/GWwVlfODJ
+	fJuJmcrvu/bHDSjiFS5amlXmTiM2wFN0k8ehyFmQuwTNM4T3FNT/s8fU3GgAVdQYgKKEubLcGAm
+	YNuWSdG4lo6F3xhefOfHwPB5tFf+rDDdbXveB7TdAsCRuZWS1DUR1QqtncuIJLbJUY7OhRv5mr0
+	bduLVP7+R9ZuD/YcU/0nNMS+3ydehK3ZKmLwWba07mWVQ1z1U8e5YSPqH9ps6GVFecf7pww1eUr
+	F//bBtMxRLhaCH+IisPsJgpidRx8TEYstfpCyjv5RRnTtQCFihbC41yqGE5m3wd6OIbmlWPvDku
+	KEIyu/sft8Xnvhe+wr+A5Lr4Sg=
+X-Received: by 2002:a05:622a:4c8c:b0:516:dcbd:aab9 with SMTP id d75a77b69052e-5173a67adb7mr54009831cf.16.1780148088268;
+        Sat, 30 May 2026 06:34:48 -0700 (PDT)
+X-Received: by 2002:a05:622a:4c8c:b0:516:dcbd:aab9 with SMTP id d75a77b69052e-5173a67adb7mr54009351cf.16.1780148087807;
+        Sat, 30 May 2026 06:34:47 -0700 (PDT)
+Received: from ?IPV6:2001:1c00:c32:7800:5bfa:a036:83f0:f9ec? (2001-1c00-0c32-7800-5bfa-a036-83f0-f9ec.cable.dynamic.v6.ziggo.nl. [2001:1c00:c32:7800:5bfa:a036:83f0:f9ec])
+        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-beb4356b901sm38478066b.9.2026.05.30.06.34.44
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Sat, 30 May 2026 06:34:46 -0700 (PDT)
+Message-ID: <8503d297-68ca-4bfe-bbdf-537a85890d86@oss.qualcomm.com>
+Date: Sat, 30 May 2026 15:34:43 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
-Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+From: johannes.goede@oss.qualcomm.com
+Subject: Re: [REGRESSION] Toshiba Fn keys + lidswitch
+To: John Veness <john-linux@pelago.org.uk>,
+        "Rafael J. Wysocki" <rafael@kernel.org>, Nick <nick@kousu.ca>
+Cc: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
+        regressions@lists.linux.dev, linux-acpi@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+        todd.e.brandt@linux.intel.com, xi.pardee@linux.intel.com,
+        platform-driver-x86@vger.kernel.org, stable@vger.kernel.org
+References: <E2OXET.4X5GTP37VTNC3@kousu.ca>
+ <CAJZ5v0jVQyWYqPo_MiUwNQb7FLNR_Q_++Xq=xA1owcHpcjN=OA@mail.gmail.com>
+ <bc9d5258-d4df-46a1-bba9-de3486f722ab@pelago.org.uk>
+Content-Language: en-US, nl
+In-Reply-To: <bc9d5258-d4df-46a1-bba9-de3486f722ab@pelago.org.uk>
 Content-Type: text/plain; charset=UTF-8
-Date: Sat, 30 May 2026 15:10:13 +0200
-Message-Id: <DIW1B4FUIXO7.28GSUA0CEA4EV@kernel.org>
-To: "Markus Probst via B4 Relay"
- <devnull+markus.probst.posteo.de@kernel.org>
-From: "Danilo Krummrich" <dakr@kernel.org>
-Subject: Re: [PATCH v8 3/5] rust: add basic serial device bus abstractions
-Cc: <markus.probst@posteo.de>, "Rob Herring" <robh@kernel.org>, "Greg
- Kroah-Hartman" <gregkh@linuxfoundation.org>, "Jiri Slaby"
- <jirislaby@kernel.org>, "Miguel Ojeda" <ojeda@kernel.org>, "Gary Guo"
- <gary@garyguo.net>, =?utf-8?q?Bj=C3=B6rn_Roy_Baron?=
- <bjorn3_gh@protonmail.com>, "Benno Lossin" <lossin@kernel.org>, "Andreas
- Hindborg" <a.hindborg@kernel.org>, "Alice Ryhl" <aliceryhl@google.com>,
- "Trevor Gross" <tmgross@umich.edu>, "Kari Argillander"
- <kari.argillander@gmail.com>, "Rafael J. Wysocki" <rafael@kernel.org>,
- "Viresh Kumar" <viresh.kumar@linaro.org>, "Boqun Feng" <boqun@kernel.org>,
- "David Airlie" <airlied@gmail.com>, "Simona Vetter" <simona@ffwll.ch>,
- <linux-serial@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
- <rust-for-linux@vger.kernel.org>, <linux-pm@vger.kernel.org>,
- <driver-core@lists.linux.dev>, <dri-devel@lists.freedesktop.org>
-References: <20260530-rust_serdev-v8-0-2a95f1da22a7@posteo.de>
- <20260530-rust_serdev-v8-3-2a95f1da22a7@posteo.de>
-In-Reply-To: <20260530-rust_serdev-v8-3-2a95f1da22a7@posteo.de>
+Content-Transfer-Encoding: 7bit
+X-Proofpoint-GUID: r-EVhRVc6nCI9e_DvJpAPLqOZtj2RBRM
+X-Proofpoint-ORIG-GUID: r-EVhRVc6nCI9e_DvJpAPLqOZtj2RBRM
+X-Authority-Analysis: v=2.4 cv=bNIm5v+Z c=1 sm=1 tr=0 ts=6a1ae778 cx=c_pps
+ a=EVbN6Ke/fEF3bsl7X48z0g==:117 a=xqWC_Br6kY4A:10 a=IkcTkHD0fZMA:10
+ a=NGcC8JguVDcA:10 a=s4-Qcg_JpJYA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=u7WPNUs3qKkmUXheDGA7:22 a=_glEPmIy2e8OvE2BGh3C:22 a=VwQbUJbxAAAA:8
+ a=jmGAqP9c4pEhswuVvyEA:9 a=QEXdDO2ut3YA:10 a=a_PwQJl-kcHnX1M80qC6:22
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNTMwMDE0NiBTYWx0ZWRfX5Nnh/vy9DAgL
+ e8YP8+B68TdKJouMaozKClCvnnOBWDHCQrcRULoOAfvXKwXczUg/Bac8Rn+8k5wlPaeTuAgWdQc
+ QF1QIj5UAIlNPK8OqN0Xl2edgjXnPFB7xK6NWzf+ZoLyc18WOj/OBh/ncjVyVoebE+7+S33RPQ+
+ 6puSSyIRQNQ8ak84P5lVcR+F4qmiUles/0sLIZDLQJmtlky6Ht20rGq7QiB4aSEgwtQIlX2YcgK
+ 1ev4+TXvSdjU4O0k6jDzaRKP9hFFo0KYY4+wrbCgy1FldsbvQz13MNY879ZNA8uMg779iGZ5uia
+ r+DPerNoi+sWlrVvOgoZJx0v+KWshx1sB0o4Y6e945O1VlcPdEc7Hnu1eruwNurlKOrkrr2F/N4
+ /6xIoifmSVjVvFR3HSPPLtaNOhZCKbJW271Jfbgvg2CQmCA4epn8xEQzbYIw43bl5TXjAhJZ7Pp
+ JkYM8mu19SVHScr5zwQ==
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.125,FMLib:17.12.100.49
+ definitions=2026-05-30_04,2026-05-28_03,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ suspectscore=0 impostorscore=0 phishscore=0 adultscore=0 malwarescore=0
+ bulkscore=0 priorityscore=1501 lowpriorityscore=0 spamscore=0 clxscore=1011
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2605210000 definitions=main-2605300146
 
-On Sat May 30, 2026 at 3:13 AM CEST, Markus Probst via B4 Relay wrote:
-> +    extern "C" fn probe_callback(sdev: *mut bindings::serdev_device) -> =
-kernel::ffi::c_int {
-> +        // SAFETY: The serial device bus only ever calls the probe callb=
-ack with a valid pointer to
-> +        // a `struct serdev_device`.
-> +        //
-> +        // INVARIANT: `sdev` is valid for the duration of `probe_callbac=
-k()`.
-> +        let sdev =3D unsafe { &*sdev.cast::<Device<device::CoreInternal<=
-'_>>>() };
-> +        let info =3D <Self as driver::Adapter>::id_info(sdev.as_ref());
-> +
-> +        from_result(|| {
-> +            let private_data =3D devres::register(
-> +                sdev.as_ref(),
-> +                try_pin_init!(PrivateData {
-> +                    probe_complete <- Completion::new(),
-> +                    error: false.into(),
-> +                }),
-> +                GFP_KERNEL,
-> +            )?;
-> +
-> +            // SAFETY: `sdev.as_raw()` is guaranteed to be a valid point=
-er to `serdev_device`.
-> +            unsafe {
-> +                (*sdev.as_raw()).rust_private_data =3D
-> +                    (&raw const *private_data).cast::<c_void>().cast_mut=
-()
-> +            };
-> +
-> +            // SAFETY: `sdev.as_raw()` is guaranteed to be a valid point=
-er to `serdev_device`.
-> +            unsafe { bindings::serdev_device_set_client_ops(sdev.as_raw(=
-), Self::OPS) };
-> +
-> +            // SAFETY: The serial device bus only ever calls the probe c=
-allback with a valid pointer
-> +            // to a `serdev_device`.
-> +            to_result(unsafe {
-> +                bindings::devm_serdev_device_open(sdev.as_ref().as_raw()=
-, sdev.as_raw())
-> +            })?;
+Hi John,
 
-The bus device private data drops before devres callbacks run, thus you can=
-'t
-use the devm helper here. I suggest to use serdev_device_open() and call
-serdev_device_close() from remove_callback() instead.
+On 30-May-26 14:19, John Veness wrote:
+> On 19/05/2026 15:08, Rafael J. Wysocki wrote:
+>> Thanks for reporting!
+>>
+>> I think that the problem is acpi_setup_gpe_for_wake() doing too much,
+>> I'll send you a patch to test later today.
+> 
+> Hi, can you release the test patch publicly? I'd like to test it here,
+> as I have several Toshiba laptops whose Fn+keys don't work (apart from
+> vol+/vol-).
 
-You may also want to consider whether you potentially want T::unbind() to a=
-llow
-to have concurrent transmits in flight regardless. IOW, you may want to cal=
-l
-serdev_device_close() before T::unbind() anyway.
+In case you've not seen it yet, Rafael send out the test patch
+publicly later that day in another email in this thread:
 
-> +
-> +            let data =3D T::probe(sdev, info);
-> +            let result =3D sdev.as_ref().set_drvdata(data);
-> +
-> +            // SAFETY: We have exclusive access to `private_data.error`.
-> +            unsafe { *private_data.error.get() =3D result.is_err() };
-> +
-> +            private_data.probe_complete.complete_all();
-> +
-> +            result.map(|()| 0)
-> +        })
-> +    }
-> +
-> +    extern "C" fn remove_callback(sdev: *mut bindings::serdev_device) {
-> +        // SAFETY: The serial device bus only ever calls the remove call=
-back with a valid pointer
-> +        // to a `struct serdev_device`.
-> +        //
-> +        // INVARIANT: `sdev` is valid for the duration of `remove_callba=
-ck()`.
-> +        let sdev =3D unsafe { &*sdev.cast::<Device<device::CoreInternal<=
-'_>>>() };
-> +
-> +        // SAFETY: `remove_callback` is only ever called after a success=
-ful call to
-> +        // `probe_callback`, hence it's guaranteed that `Device::set_drv=
-data()` has been called
-> +        // and stored a `Pin<KBox<T::Data<'_>>>`.
-> +        let data =3D unsafe { sdev.as_ref().drvdata_borrow::<T::Data<'_>=
->() };
-> +
-> +        T::unbind(sdev, data);
-> +    }
-> +
-> +    extern "C" fn receive_buf_callback(
-> +        sdev: *mut bindings::serdev_device,
-> +        buf: *const u8,
-> +        length: usize,
-> +    ) -> usize {
-> +        // SAFETY: The serial device bus only ever calls the receive buf=
- callback with a valid
-> +        // pointer to a `struct serdev_device`.
-> +        //
-> +        // INVARIANT: `sdev` is valid for the duration of `receive_buf_c=
-allback()`.
-> +        let sdev =3D unsafe { &*sdev.cast::<Device<device::CoreInternal<=
-'_>>>() };
+https://lore.kernel.org/linux-acpi/12896447.O9o76ZdvQC@rafael.j.wysocki/
 
-CoreInternal dereferences to Core, which is technically unsound within this
-callback.
+Regards,
 
-I think you want CoreInternal for drvdata_borrow(), so we should add a
-BoundInternal type state for this; I will send a patch for this.
+Hans
 
-With this and the above fixed,
 
-Reviewed-by: Danilo Krummrich <dakr@kernel.org>
-
-from the driver-core side of things.
-
-> +        // SAFETY:
-> +        // - The serial device bus only ever calls the receive buf callb=
-ack with a valid pointer to
-> +        //   a `struct serdev_device`.
-> +        // - `receive_buf_callback` is only ever called after a successf=
-ul call to
-> +        //   `probe_callback`, hence it's guaranteed that `sdev.private_=
-data` is a pointer
-> +        //   to a valid `PrivateData`.
-> +        let private_data =3D unsafe { &*(*sdev.as_raw()).rust_private_da=
-ta.cast::<PrivateData>() };
-> +
-> +        private_data.probe_complete.wait_for_completion();
-> +
-> +        // SAFETY: No one has exclusive access to `private_data.error`.
-> +        if unsafe { *private_data.error.get() } {
-> +            return length;
-> +        }
-> +
-> +        // SAFETY: `receive_buf_callback` is only ever called after a su=
-ccessful call to
-> +        // `probe_callback`, hence it's guaranteed that `Device::set_drv=
-data()` has been called
-> +        // and stored a `Pin<KBox<T::Data<'_>>>`.
-> +        let data =3D unsafe { sdev.as_ref().drvdata_borrow::<T::Data<'_>=
->() };
-> +
-> +        // SAFETY: `buf` is guaranteed to be non-null and has the size o=
-f `length`.
-> +        let buf =3D unsafe { core::slice::from_raw_parts(buf, length) };
-> +
-> +        T::receive(sdev, data, buf)
-> +    }
-> +}
