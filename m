@@ -1,72 +1,100 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B74893630B2;
-	Sat, 30 May 2026 09:55:11 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 371C019067C;
+	Sat, 30 May 2026 09:58:23 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1780134912; cv=none; b=WsMf8cRcW+G0B4MRYhQVUWgyOAMiE7ymSfmAkJ/8RotLEULQq8FSEyH1VsNa0Ffdfzvjn5H8PpONy7EVIAMoBa7dJeYEaM0Gy6aLTLZnyxNszMWSg/zqi0l+tcGpU/SnIPXb9fF3tXJj9ZJZcN4feloGwPkkZGn1v5IHTD0/49M=
+	t=1780135105; cv=none; b=ZJwcM00YfrkCsAOi27R/O8M2Bmz6WUD7nybTb/Pc0dg5LmqqRuKWZ1/meeFib8aQ/9QXPpSUcpFu2UbfttVHyCmLgD1LE4rilSAn2tasrUmdFhO1PwEMIEGdCDpc7kEcheQTpJovF//6DQuIEhV30Zq6AyjLzbCcJbP3P/UDsCI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1780134912; c=relaxed/simple;
-	bh=WqfLUJLud8lEZkAjSt4exA+VJyyrcXOf6ZUpZcQMn/s=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=JkOt5F8EIJRoliPs2+8cyMsTKhVCu4GEN61uCh16h0wEPW9Fino+TDMrkBtAspghNDo81J8obqYsLAazZrqpbK36NKWHNTaJa1ROBZ1TEMwR/ylethhQOQQ26dwgcT6SN8xU1RFnnaYyrTYcGIsgivRWW6mQ9N7t8pRGxm4VtIM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=UOYwxXcZ; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1780135105; c=relaxed/simple;
+	bh=sG0QImItOT2BBRg8jhNYccG5X3qLT2RzLfhID0oQdmw=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=ODdYjrxLJKP5j1JAlpYYr1nqO038Sg4yxuNOS33avHIzstUVgrnFAe2InkbT99TaYHPWOk7HSnB4MobcqyAnVSIA3KK0isZk36ygWUsErcXus5S0ZNgObbtur+tJxpzeLMKpBxNmQIlMU+TgMHN03lvdlqZUx4xvRjBVYydt0nY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=mPlXdPwF; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="UOYwxXcZ"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9E56E1F00893;
-	Sat, 30 May 2026 09:55:10 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="mPlXdPwF"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 98B531F00893;
+	Sat, 30 May 2026 09:58:20 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1780134911;
-	bh=uyUKkjo6pnNNWYfroj3w1XskPDVhdezyivpcvRA+dmg=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=UOYwxXcZ/OD8LETTFDiraW+3jdP45q6snmWBQ6hAq7kkOf6lYxN1AW+Ergw6ACAQd
-	 +gftRAlEjm7QnI993LAMUsqc/t6L4d1kg7Q0/JpYih1hkPdpXt2Y4c8PpPUki1V/rb
-	 WM2riGvPopkCLpE/5ffn1+ZnymjDi/Md9j7QayS0uSC2AniE8GxwXQBKRmtJ0UH316
-	 nEjnLZOHfO37kuAMuXsRvBFR3BY3rP+cSd36Og32j63vMa7ZFqzrQKEbOr32L7dOsX
-	 b8GH3ZNGXswZcIpx6r30+N/O8TDDlGOWkDu/HTx1ePQ6ROrQJbt0IHiSWjezwnsWuk
-	 71GAm5HQ7flhw==
-Date: Sat, 30 May 2026 11:55:08 +0200
-From: Krzysztof Kozlowski <krzk@kernel.org>
-To: Raviteja Laggyshetty <raviteja.laggyshetty@oss.qualcomm.com>
-Cc: Georgi Djakov <djakov@kernel.org>, Rob Herring <robh@kernel.org>, 
-	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
-	Rajendra Nayak <quic_rjendra@quicinc.com>, Abel Vesa <abelvesa@kernel.org>, 
-	Bjorn Andersson <andersson@kernel.org>, Konrad Dybcio <konradybcio@kernel.org>, 
-	linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, 
-	linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v2 1/3] dt-bindings: interconnect: qcom,x1e80100-rpmh:
- add clocks property to enable QoS
-Message-ID: <20260530-stereotyped-carp-of-fragrance-d410a9@quoll>
-References: <20260527-x1e80100_qos-v2-0-305c6539e6d2@oss.qualcomm.com>
- <20260527-x1e80100_qos-v2-1-305c6539e6d2@oss.qualcomm.com>
+	s=k20260515; t=1780135103;
+	bh=zqwh8xcAGxwy3ol8cmB/4jVQU8JQ/+FNbi+9K1RM1eo=;
+	h=From:To:Cc:Subject:Date;
+	b=mPlXdPwFKLsESryzYwzdlMQ68o0eq6SRv7Kcp9ul9G+EIf/z462m1krwfOnGBCVdL
+	 DZX4peUvt4SGsE0yl+/dN0zmm1b1UyvrDJ6q1eyfbGgIWtup9szHwtxjCa8kX/6gPC
+	 hX6vtGoRiR2sfR1XKRgVdzisO46enHIwgnpM4Uts2rzx+FNrZJpq1nMe4uPlN+FhG5
+	 GgssdqeQwCsvXP2pMDwxxPrEcKHqfVPODnq112C09siqZfD7SZcnhk952wQSfr4UuM
+	 ELw5zqP4wG941fGklYYQWpTBybpC/SN77V6s/HAuMqMSwxvimvHlikTfHrs7TRXEUk
+	 j5H3ucjORtwog==
+From: Miguel Ojeda <ojeda@kernel.org>
+To: "Rafael J. Wysocki" <rafael@kernel.org>,
+	Viresh Kumar <viresh.kumar@linaro.org>,
+	Miguel Ojeda <ojeda@kernel.org>
+Cc: linux-pm@vger.kernel.org,
+	Boqun Feng <boqun@kernel.org>,
+	Gary Guo <gary@garyguo.net>,
+	=?UTF-8?q?Bj=C3=B6rn=20Roy=20Baron?= <bjorn3_gh@protonmail.com>,
+	Benno Lossin <lossin@kernel.org>,
+	Andreas Hindborg <a.hindborg@kernel.org>,
+	Alice Ryhl <aliceryhl@google.com>,
+	Trevor Gross <tmgross@umich.edu>,
+	Danilo Krummrich <dakr@kernel.org>,
+	rust-for-linux@vger.kernel.org,
+	stable@vger.kernel.org
+Subject: [PATCH] rust: cpufreq: clean new `clippy::map_or_identity` lint for Rust 1.98.0
+Date: Sat, 30 May 2026 11:58:09 +0200
+Message-ID: <20260530095809.213611-1-ojeda@kernel.org>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20260527-x1e80100_qos-v2-1-305c6539e6d2@oss.qualcomm.com>
+Content-Transfer-Encoding: 8bit
 
-On Wed, May 27, 2026 at 05:37:09AM +0000, Raviteja Laggyshetty wrote:
-> Some interconnect nodes on X1E80100 have QoS registers located inside
-> a block whose interface is clock-gated. For those nodes, driver
-> must enable the corresponding clock(s) before accessing the
-> registers. Add the 'clocks' property so the driver can obtain
-> and enable the required clock(s).
-> 
-> Only interconnects that have clock-gated QoS register interface
-> use this property; it is not applicable to all interconnect nodes.
-> 
-> Signed-off-by: Raviteja Laggyshetty <raviteja.laggyshetty@oss.qualcomm.com>
-> ---
->  .../bindings/interconnect/qcom,x1e80100-rpmh.yaml  | 72 ++++++++++++++++++++++
->  1 file changed, 72 insertions(+)
+Starting with Rust 1.98.0 (expected 2026-08-20), Clippy is likely
+introducing a new lint `clippy::map_or_identity` [1][2], which currently
+triggers in a single case:
 
-Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
+    warning: expression can be simplified using `Result::unwrap_or()`
+        --> rust/kernel/cpufreq.rs:1326:60
+         |
+    1326 |         PolicyCpu::from_cpu(cpu_id).map_or(0, |mut policy| T::get(&mut policy).map_or(0, |f| f))
+         |                                                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+         |
+         = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#map_or_identity
+         = note: `-W clippy::map-or-identity` implied by `-W clippy::all`
+         = help: to override `-W clippy::all` add `#[allow(clippy::map_or_identity)]`
+    help: consider using `unwrap_or`
+         |
+    1326 -         PolicyCpu::from_cpu(cpu_id).map_or(0, |mut policy| T::get(&mut policy).map_or(0, |f| f))
+    1326 +         PolicyCpu::from_cpu(cpu_id).map_or(0, |mut policy| T::get(&mut policy).unwrap_or(0))
+         |
 
-Best regards,
-Krzysztof
+The suggestion is valid, thus clean it up.
+
+Cc: stable@vger.kernel.org # Needed in 6.12.y and later (Rust is pinned in older LTSs).
+Link: https://github.com/rust-lang/rust-clippy/issues/15801 [1]
+Link: https://github.com/rust-lang/rust-clippy/pull/16052 [2]
+Signed-off-by: Miguel Ojeda <ojeda@kernel.org>
+---
+ rust/kernel/cpufreq.rs | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/rust/kernel/cpufreq.rs b/rust/kernel/cpufreq.rs
+index d8d26870bea2..a20bd5006f38 100644
+--- a/rust/kernel/cpufreq.rs
++++ b/rust/kernel/cpufreq.rs
+@@ -1323,7 +1323,7 @@ impl<T: Driver> Registration<T> {
+         // SAFETY: The C API guarantees that `cpu` refers to a valid CPU number.
+         let cpu_id = unsafe { CpuId::from_u32_unchecked(cpu) };
+ 
+-        PolicyCpu::from_cpu(cpu_id).map_or(0, |mut policy| T::get(&mut policy).map_or(0, |f| f))
++        PolicyCpu::from_cpu(cpu_id).map_or(0, |mut policy| T::get(&mut policy).unwrap_or(0))
+     }
+ 
+     /// Driver's `update_limit` callback.
+
+base-commit: 420dd187e1572bb7e232781bc4377a80c8eb64fb
+-- 
+2.54.0
 
