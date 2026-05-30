@@ -1,145 +1,81 @@
-Received: from mail-dy1-f180.google.com (mail-dy1-f180.google.com [74.125.82.180])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4794430FC1C
-	for <linux-pm@vger.kernel.org>; Sat, 30 May 2026 11:34:18 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=74.125.82.180
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1780140859; cv=pass; b=EkH0ngKEy/mpIgoxpcvXAfdR31Ftx0EBETtiaUeyeUnzFJfMTddcd3tEvDvn8olYj60PV7+yhpJqT4wDjviLoRn+S16rITnunG18xPaja8A2ZXpy1IdZ3alBWWU7w5meS8es/w6oLzO0DCuN8NxxdHH3PrMPefefBAcVSImZeX8=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1780140859; c=relaxed/simple;
-	bh=7juR9p8Xv5arQajgMs8TzRWY4io96iOYQct7TEDteFw=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=DWbeDYe8GGvaAIRfzCzVR+vFTSxxKmBMesCHJ+KzOJEyafTbj6K+fyTsQfh8ugJlvFS+81w6ol7wB9aGE3eGcdPBUet2JAO51Bp6My2a9slDB4Bs7izo93qzdQt4+RaZ+1rb0pTumztDjmQhkSCAHFxF+bABKttGQvFNoMI9eBY=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=C12T/7qQ; arc=pass smtp.client-ip=74.125.82.180
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5D34E21ABC9;
+	Sat, 30 May 2026 11:55:05 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1780142106; cv=none; b=iGs84eRFDjAaKNJ89ETy7R6Cl8NC6upD7z6baH3wmRZEcsxuZ2MmaALy/KZzdDimXTKiB56EgXkLBWZR6cVLzFafrDZuFUrXpBMb6a5VqQTu48VoUcS22FUPUShbFDQvrRv6rz27JZrwsDPT5kff24hakAumGrWzjbAQdcnUBfo=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1780142106; c=relaxed/simple;
+	bh=jm8hdmAkEvJcbwS7hgydGF1qmrnzoDP4FHKn0i/2TXc=;
+	h=Mime-Version:Content-Type:Date:Message-Id:Subject:Cc:To:From:
+	 References:In-Reply-To; b=CWuwJ3pR9W5qlaHOuDK3IY1vG2yjXud4fhgjDvNxASktxQFwakrQQHS2Zm05EOnRxwc9ZqkiB1HNWFutpfqBAYXXOn+fE4qk0DL3LQoLbvQYNgRWqL1L5aFstyUKpB4jXMv3FvLR7M0twbJUn0ve7IF7tnhSPs/ZdPVcf1gJh1E=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=XCqCaQI3; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="C12T/7qQ"
-Received: by mail-dy1-f180.google.com with SMTP id 5a478bee46e88-304dd3bb7a6so216860eec.0
-        for <linux-pm@vger.kernel.org>; Sat, 30 May 2026 04:34:18 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1780140857; cv=none;
-        d=google.com; s=arc-20240605;
-        b=WsRsEsRUkiS0gGSJMO7hoX+me1z0MHEUAzs2ntTV6BAvavqxbn9XwIiOi4s5oyQe6T
-         EPApyGSvJ4JtPey4+Gr/dczo6JsnXUHdbq3sQFKaF0DQfiORVltGRr2/nToP4ryNi3qH
-         IZd3kQs6AuWDnus+kUke9t7cLaJBPF/a7vrd+YBqTFFpj+d5QmaWHGhEEOFDo8IvZDfZ
-         YxIAkv8oUp8y/90eYow9yJeKwCHp66QhUE5fCTlsHRdq2JhuZYk54bkFWx3/N0sefgwl
-         QJpfMKSCBGaUYg7z9zRY+WRC3bFtoJopptIFoSxXVDmAlX3TGcy0PEzmy25JuWTfhPeq
-         bhlw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=yoaIvqz3mqLE/33YsmI2LMsK8ApZkxaDEDAycdVwp0U=;
-        fh=0Axzf9IQdWqolgY8bCKMNt88KMO4wWEmmyOmruxWDgk=;
-        b=ROM86M2Az1cbLMcBZ0EDQK0uSSTs0IXA1g21r8RAJ5n1U1p8CTDPXQ7PAGXoz6RC7f
-         hs8ON9c6fSZlu5B3QxSDdegyTsIoPzntriSmLrn8ow6WOTI34h3M2H2w3NFe9+e7UOg1
-         UAhzLMyCnU3AKbd9iUPkh2chPz+pANBO2PkdJOGEfeouqZNvXrF3XDczGn2R/e+Isw6K
-         v5PAnzeGccXmz3EYNiHBUtvVinwP2T0DEoFmxOOf6sHII47Z5KTGCsvQonYcR8WBN8cw
-         kIo1NKZwQrCzpOPPE/qYgcrT2nlaqTp2IQI0hYXyeq/3A31MLXvxWP9dXU/zCVryGQiE
-         9AGA==;
-        darn=vger.kernel.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1780140857; x=1780745657; darn=vger.kernel.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=yoaIvqz3mqLE/33YsmI2LMsK8ApZkxaDEDAycdVwp0U=;
-        b=C12T/7qQExF7M+xAh4jbzmbwcYR6l6S6usG+T5rrx4k8SNonk1+upZzrj86aSZteiQ
-         KWLQt8H25JQ4/Odg1wmQMDlA+ryvfMq72Y8Ia4xin2cSEo3rlNGWLPVCxXRP9jBK+Xyi
-         XrDs5QiXpDubHQLDBCH/IHVJd3/rpnsD9jmgTPPryB9V2xg1Y4I1UzQfxrF40YmFphJg
-         M2EVkWFgQ2ErM0PGpCAfIECLY4eYiPTqV5HRSrH0/G67cWRSoPR1hF1M3DwMFgiy6jjQ
-         uiEelKH9suYP8mDLs4A7h6XS8vGMGL8Rv+/xcdilq4uMhHNdB/HhNMvugDyYvZep4TNf
-         Awdw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1780140857; x=1780745657;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=yoaIvqz3mqLE/33YsmI2LMsK8ApZkxaDEDAycdVwp0U=;
-        b=jTylSb+hd6k8zw+ETwlOIzrnmWCmjRm+FgJDlzWEbKhXfiZgpvTYM2Ne8UTH6EIJMb
-         guvFRASllUSZMT13rPVvmlx2Ww8qa69hOz6qhQiKEHBNAUi/ZDw7v4fC+UgnuK2Ynd7A
-         rdZL6zs65G4RMb2zhMCa5S8e/jQC59E7kyLrI9G4BGOYPykQHcEb3LG8uqiuJdAlXcTo
-         VE6zg9NT25EDeiijrwIisw9UlcioXwH7Ze5rRG0N5TNMD56SgWAN8FdG3Vv+2aLxYGga
-         DRTnA5FXe1Ak9Qs84B36fYHVE1THhHUdyCCyxtSHpunoIaXi/MEBFf/WrsLVCXBXzbpg
-         3Bxw==
-X-Forwarded-Encrypted: i=1; AFNElJ/+3B9ucMe7s3a23XinCKFHeWxABrhdEhdHh3etLKRwc0Ri5PMCw7susqZTFpqxXkUdQDiuaOkTvw==@vger.kernel.org
-X-Gm-Message-State: AOJu0YxjCYzMSYPr77Qx2HK8aClt33yvjeTEebMNDRCgeutJL8lNhK+O
-	aMP15UQQVlWf3snYnqGOHUUK9Kody0NXAA43nGU9qcQfsMKr1ujygUTGvhBRNrm5l9l6NLpkZw7
-	4KgjyESN/C2CS4O4bn/84TGW04WiJYXo=
-X-Gm-Gg: Acq92OG236nzG8YiHraVmNsA+SoTOzBXA0N84wBBA7k2oAp1vOlFA4NCDiztqbx3JsX
-	t94ao2x3Q1880PLa7TRf5dggQFBk7mHyPqxGK9O2s0P36iv2F7uqb4dB6RzUTUHCZNSVRP2xKW9
-	mxYRdLVye7UypE7nCP+7aOPMsW/FwEI62dhmcXsrUR2K09ZDOFKsLz7KbqvsY+mz762cYBOxai5
-	IeaZTUu8aJPY6hPk+XPay5V3mk90vruusz5zuo94eEnOblLSMszpFbuPJ6lsSxJOAOEQJLfTjC5
-	WFMkqiD/LP5o3KWU74d9Y+vYtseKf4Y+1uVn6D0I3heZ5bopCE1z0HPqZ9SOOb5t/vlfSs4qRRe
-	FH3za6ezJRRQbXefsZK57TJKxOjpXpImAbg==
-X-Received: by 2002:a05:7300:6ca1:b0:304:8860:74dd with SMTP id
- 5a478bee46e88-304fa6c4509mr884143eec.8.1780140857291; Sat, 30 May 2026
- 04:34:17 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="XCqCaQI3"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 97D1A1F00893;
+	Sat, 30 May 2026 11:55:00 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1780142105;
+	bh=jm8hdmAkEvJcbwS7hgydGF1qmrnzoDP4FHKn0i/2TXc=;
+	h=Date:Subject:Cc:To:From:References:In-Reply-To;
+	b=XCqCaQI3wTaiEpjHV+goSY6qoZCDZ8DaWIgGBul+wGjAgZWvz1L2AvWDURbUbLHXL
+	 bOrBQqdGXVTtfC/wxJjKkhtbb9ecGvyvFErDQRz0kxTggLdFYwwi1WOLmu3ED+3cHd
+	 pu9PoeZwr/zJ8Ntt4tyEuaVJPISqI6sPubXdr1vPp0N8QYwCdpQ1Zv/IPpKuttT3U0
+	 1pU7LdDg9ePcx09dnPQFzY39KIPQ6ywI1Dk1grBW6IEv6DXLZ+WKdnEfqBi7SsN6os
+	 P/1rNqCr62Fm1MdM5XT+rvEnUtKHMSkYV5FFl6BbURT0ht23Eb592jDlQ+w+HS9pYE
+	 eWHTdoMkOr4Fg==
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
-MIME-Version: 1.0
-References: <20260530095809.213611-1-ojeda@kernel.org>
-In-Reply-To: <20260530095809.213611-1-ojeda@kernel.org>
-From: Miguel Ojeda <miguel.ojeda.sandonis@gmail.com>
-Date: Sat, 30 May 2026 13:34:04 +0200
-X-Gm-Features: AVHnY4KQK2kRwQKYuYnJGv_YwzRpnyRzJ6oFPD1S0YuI_SIHE6subfsnC0txmV8
-Message-ID: <CANiq72ncuqxjjx+1SMV977UC-TZL9aPrbFECmCPPdzSLi-Oc=Q@mail.gmail.com>
-Subject: Re: [PATCH] rust: cpufreq: clean new `clippy::map_or_identity` lint
- for Rust 1.98.0
-To: Miguel Ojeda <ojeda@kernel.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, 
-	Boqun Feng <boqun@kernel.org>, Gary Guo <gary@garyguo.net>, 
-	=?UTF-8?Q?Bj=C3=B6rn_Roy_Baron?= <bjorn3_gh@protonmail.com>, 
-	Benno Lossin <lossin@kernel.org>, Andreas Hindborg <a.hindborg@kernel.org>, 
-	Alice Ryhl <aliceryhl@google.com>, Trevor Gross <tmgross@umich.edu>, 
-	Danilo Krummrich <dakr@kernel.org>, rust-for-linux@vger.kernel.org, stable@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=UTF-8
+Date: Sat, 30 May 2026 13:54:58 +0200
+Message-Id: <DIVZPIJYZ244.26RVUD86YHX1N@kernel.org>
+Subject: Re: [PATCH v8 1/5] rust: devres: return reference in
+ `devres::register`
+Cc: <markus.probst@posteo.de>, "Rob Herring" <robh@kernel.org>, "Greg
+ Kroah-Hartman" <gregkh@linuxfoundation.org>, "Jiri Slaby"
+ <jirislaby@kernel.org>, "Miguel Ojeda" <ojeda@kernel.org>, "Gary Guo"
+ <gary@garyguo.net>, =?utf-8?q?Bj=C3=B6rn_Roy_Baron?=
+ <bjorn3_gh@protonmail.com>, "Benno Lossin" <lossin@kernel.org>, "Andreas
+ Hindborg" <a.hindborg@kernel.org>, "Alice Ryhl" <aliceryhl@google.com>,
+ "Trevor Gross" <tmgross@umich.edu>, "Kari Argillander"
+ <kari.argillander@gmail.com>, "Rafael J. Wysocki" <rafael@kernel.org>,
+ "Viresh Kumar" <viresh.kumar@linaro.org>, "Boqun Feng" <boqun@kernel.org>,
+ "David Airlie" <airlied@gmail.com>, "Simona Vetter" <simona@ffwll.ch>,
+ <linux-serial@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
+ <rust-for-linux@vger.kernel.org>, <linux-pm@vger.kernel.org>,
+ <driver-core@lists.linux.dev>, <dri-devel@lists.freedesktop.org>
+To: "Markus Probst via B4 Relay"
+ <devnull+markus.probst.posteo.de@kernel.org>
+From: "Danilo Krummrich" <dakr@kernel.org>
+References: <20260530-rust_serdev-v8-0-2a95f1da22a7@posteo.de>
+ <20260530-rust_serdev-v8-1-2a95f1da22a7@posteo.de>
+In-Reply-To: <20260530-rust_serdev-v8-1-2a95f1da22a7@posteo.de>
 
-On Sat, May 30, 2026 at 11:58=E2=80=AFAM Miguel Ojeda <ojeda@kernel.org> wr=
-ote:
+On Sat May 30, 2026 at 3:13 AM CEST, Markus Probst via B4 Relay wrote:
+> From: Markus Probst <markus.probst@posteo.de>
 >
-> Starting with Rust 1.98.0 (expected 2026-08-20), Clippy is likely
-> introducing a new lint `clippy::map_or_identity` [1][2], which currently
-> triggers in a single case:
+> Return the reference to the initialized data in the `devres::register`
+> function.
 >
->     warning: expression can be simplified using `Result::unwrap_or()`
->         --> rust/kernel/cpufreq.rs:1326:60
->          |
->     1326 |         PolicyCpu::from_cpu(cpu_id).map_or(0, |mut policy| T::=
-get(&mut policy).map_or(0, |f| f))
->          |                                                            ^^^=
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
->          |
->          =3D help: for further information visit https://rust-lang.github=
-.io/rust-clippy/master/index.html#map_or_identity
->          =3D note: `-W clippy::map-or-identity` implied by `-W clippy::al=
-l`
->          =3D help: to override `-W clippy::all` add `#[allow(clippy::map_=
-or_identity)]`
->     help: consider using `unwrap_or`
->          |
->     1326 -         PolicyCpu::from_cpu(cpu_id).map_or(0, |mut policy| T::=
-get(&mut policy).map_or(0, |f| f))
->     1326 +         PolicyCpu::from_cpu(cpu_id).map_or(0, |mut policy| T::=
-get(&mut policy).unwrap_or(0))
->          |
+> This is needed in a following commit (rust: add basic serial device bus
+> abstractions).
 >
-> The suggestion is valid, thus clean it up.
->
-> Cc: stable@vger.kernel.org # Needed in 6.12.y and later (Rust is pinned i=
-n older LTSs).
-> Link: https://github.com/rust-lang/rust-clippy/issues/15801 [1]
-> Link: https://github.com/rust-lang/rust-clippy/pull/16052 [2]
-> Signed-off-by: Miguel Ojeda <ojeda@kernel.org>
+> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+> Signed-off-by: Markus Probst <markus.probst@posteo.de>
 
-Viresh, Rafael: I can put this into `rust-next` if you prefer (I
-considered `rust-fixes`, but it is not important enough at this
-stage).
+For driver-core and DRM,
 
-Cheers,
-Miguel
+Acked-by: Danilo Krummrich <dakr@kernel.org>
+
+This is useful in the context of the HRT work in general, should this serie=
+s not
+make it this cycle, please let me know, then I'm going to pick this through=
+ the
+driver-core tree.
