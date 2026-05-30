@@ -1,82 +1,194 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from mout02.posteo.de (mout02.posteo.de [185.67.36.66])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A34B125B08A
-	for <linux-pm@vger.kernel.org>; Sat, 30 May 2026 18:44:27 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CAAF013635E
+	for <linux-pm@vger.kernel.org>; Sat, 30 May 2026 18:55:41 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=185.67.36.66
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1780166667; cv=none; b=npdIt4kC/0t8l0NLdIU1984iz953yt3h9/gL1ZecPrixRFVOyQgrWi0X8ZALpG9ayLbXdvf0NTYBPP4pNdgP1pczFh/gGB96VmaQzqSkQdjl0CnUQaTuRQ6t8EpOXr9is2lmkIiC7Jh/Df1i/CFT73mMX6eAxbwwT7ksQEeBX+c=
+	t=1780167343; cv=none; b=M5qDoBrauE85TY4yKUNEkJhCpbf4LbwvwMDhE7YcqYyJ+fGGkZ4VzVKq9lX0AUV43PSqvdmbOKYOFhtBLCiPjCopUeEL0xKT4p8kUI0E/1JLzMNR0jArZb0mzBaB7Ip0d7GhhM+HqtB08IAzm2hvmykg7sbrosocsv1fv5Qavxw=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1780166667; c=relaxed/simple;
-	bh=zrsTKx6WuZvUpq1xHD32BkPglM5V3+MurM1uBdS9b1E=;
-	h=From:To:Subject:Date:Message-ID:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=RQ3yBK/WNPLhBJCiLO5E/jmrWUJxwl+CGKLyRt2oM3bWNrE2THMIrBervU6ENS5VEwiyI/+nE/Mn3NV3Gchr2ACicOAj+gzEwv7mpcsQjTF/UZ/narVv0o/0rTSyKXh1HwXmhMYpnI0TtD5N8oXvAe9TTJlZZIAs1Rjip7YNxp0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=TEYh8UFi; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1780167343; c=relaxed/simple;
+	bh=7liBuoUJTQfvwd86ABlHP9P2JYcIto0EGU7InnY/XZE=;
+	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
+	 Content-Type:MIME-Version; b=OGhuyy8Xuo1xJL22zrG+qqX412uVVJTQgD1qV8pQNIPKl/drLHr13DRDG9i6ItdwYcXVk60ZGOGXjlocc1SlxPhexOLJIN6bwydoqF1N/fD4iRE3faG5Av2dCi7Sj54TGALH/efCiChOIODcjSo7zl3PsuftMZgH6Q6tcd/zeK8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=posteo.de; spf=pass smtp.mailfrom=posteo.de; dkim=pass (2048-bit key) header.d=posteo.de header.i=@posteo.de header.b=AQzQ81Jg; arc=none smtp.client-ip=185.67.36.66
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=posteo.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=posteo.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="TEYh8UFi"
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 4D334C2BCF4
-	for <linux-pm@vger.kernel.org>; Sat, 30 May 2026 18:44:27 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1780166667;
-	bh=zrsTKx6WuZvUpq1xHD32BkPglM5V3+MurM1uBdS9b1E=;
-	h=From:To:Subject:Date:In-Reply-To:References:From;
-	b=TEYh8UFirhuiNsuma5PHAs29E5TmkdO4dkzovwX9FWsfJAQxZSHW9gcixuWLA6tVz
-	 xzGgP6YqLyOmIoluUZ0GXO0bqd1Wi2Oy2/I1U9SHQ8eJoc0EcAFt2m85EkBSaCO1sN
-	 WdgjsuSjBu6Lk7k9XQ+gOcUrV1y9trv90iBzlWH9Cxz0la5AR8zhtPoMDRbcUty7bG
-	 T3jaEKuikmmxbFLViAsSz/PTemudnODKkMtRP6voN3P+q6yts/IE4K24VdqkO16ywS
-	 elrH/uAr9xO6PPyr7XXXepTTPuRLH3IUnGrLmrB8/PUYhy7aV3dNZAqTP3jqeMqCZQ
-	 tq7jc1TTF4GMw==
-Received: by aws-us-west-2-korg-bugzilla-1.web.codeaurora.org (Postfix, from userid 48)
-	id 40079C53BC7; Sat, 30 May 2026 18:44:27 +0000 (UTC)
-From: bugzilla-daemon@kernel.org
-To: linux-pm@vger.kernel.org
-Subject: [Bug 221505] REGRESSION][amd_pstate] "EPP cannot be set under
- performance policy" (EBUSY) when switching to performance profile via PPD on
- 7.1
-Date: Sat, 30 May 2026 18:44:26 +0000
-X-Bugzilla-Reason: AssignedTo
-X-Bugzilla-Type: changed
-X-Bugzilla-Watch-Reason: None
-X-Bugzilla-Product: Power Management
-X-Bugzilla-Component: cpufreq
-X-Bugzilla-Version: 2.5
-X-Bugzilla-Keywords: 
-X-Bugzilla-Severity: normal
-X-Bugzilla-Who: scardracs@disroot.org
-X-Bugzilla-Status: NEW
-X-Bugzilla-Resolution: 
-X-Bugzilla-Priority: P3
-X-Bugzilla-Assigned-To: linux-pm@vger.kernel.org
-X-Bugzilla-Flags: 
-X-Bugzilla-Changed-Fields: 
-Message-ID: <bug-221505-137361-nvwThLz8vU@https.bugzilla.kernel.org/>
-In-Reply-To: <bug-221505-137361@https.bugzilla.kernel.org/>
-References: <bug-221505-137361@https.bugzilla.kernel.org/>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-X-Bugzilla-URL: https://bugzilla.kernel.org/
-Auto-Submitted: auto-generated
+	dkim=pass (2048-bit key) header.d=posteo.de header.i=@posteo.de header.b="AQzQ81Jg"
+Received: from submission (posteo.de [185.67.36.169]) 
+	by mout02.posteo.de (Postfix) with ESMTPS id 2E4D9240106
+	for <linux-pm@vger.kernel.org>; Sat, 30 May 2026 20:55:40 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=posteo.de; s=2017;
+	t=1780167340; bh=7liBuoUJTQfvwd86ABlHP9P2JYcIto0EGU7InnY/XZE=;
+	h=Message-ID:Subject:From:To:Cc:Date:Autocrypt:Content-Type:
+	 MIME-Version:OpenPGP:From;
+	b=AQzQ81JgcCAk3BTpUjk0I4TLHSFS80/+mtyz2ZZOY7GM2xGYhUCj70T0ddlGXO/Zs
+	 MJ42QTZomfzuu6DrUSYqD8aXKpZlxpQIXaywBuwh0IrViSU/61+DwNSIgH4PEMVLuh
+	 0cvVIcGk+kr3YHoZxV1UD9sBWu7c1Hkt8EbXZaeCXC0q6oXX2yr9b9gc7n3JjXUe5l
+	 9WPyI36EAsdQTlgdF/xd6tosqx6yqhUDcT3E0LKmNwVIbN+RWlbh7kJESNS2lDMrLJ
+	 ChRHCmkDizMg4x0XpJQ2mXWxQ6RrCAWKSzbuBuULDEFWR2+CqSg4Odk6g4pE8LTWeA
+	 bDJtvsE7kaNuw==
+Received: from customer (localhost [127.0.0.1])
+	by submission (posteo.de) with ESMTPSA id 4gSTvF0TB4z6tw4;
+	Sat, 30 May 2026 20:55:37 +0200 (CEST)
+Message-ID: <01e20401845ce5eab5731698ca8a0f8f44ed3eb9.camel@posteo.de>
+Subject: Re: [PATCH v8 3/5] rust: add basic serial device bus abstractions
+From: Markus Probst <markus.probst@posteo.de>
+To: Danilo Krummrich <dakr@kernel.org>
+Cc: Markus Probst via B4 Relay <devnull+markus.probst.posteo.de@kernel.org>,
+  Rob Herring <robh@kernel.org>, Greg Kroah-Hartman
+ <gregkh@linuxfoundation.org>, Jiri Slaby	 <jirislaby@kernel.org>, Miguel
+ Ojeda <ojeda@kernel.org>, Gary Guo	 <gary@garyguo.net>,
+ =?ISO-8859-1?Q?Bj=F6rn?= Roy Baron	 <bjorn3_gh@protonmail.com>, Benno
+ Lossin <lossin@kernel.org>, Andreas Hindborg	 <a.hindborg@kernel.org>,
+ Alice Ryhl <aliceryhl@google.com>, Trevor Gross	 <tmgross@umich.edu>, Kari
+ Argillander <kari.argillander@gmail.com>, "Rafael J. Wysocki"
+ <rafael@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Boqun Feng
+ <boqun@kernel.org>,  David Airlie <airlied@gmail.com>, Simona Vetter
+ <simona@ffwll.ch>, linux-serial@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, rust-for-linux@vger.kernel.org, 
+	linux-pm@vger.kernel.org, driver-core@lists.linux.dev, 
+	dri-devel@lists.freedesktop.org
+Date: Sat, 30 May 2026 18:55:39 +0000
+In-Reply-To: <DIW587AGXYCS.39MR1B4TVSO9@kernel.org>
+References: <20260530-rust_serdev-v8-0-2a95f1da22a7@posteo.de>
+	 <20260530-rust_serdev-v8-3-2a95f1da22a7@posteo.de>
+	 <DIW1B4FUIXO7.28GSUA0CEA4EV@kernel.org>
+	 <4638946fc49a38797b716ea173c93327eb751479.camel@posteo.de>
+	 <ad98dfb1d8469022519d37364e8a068bed3b5687.camel@posteo.de>
+	 <888dc39c52bb6ddac1a1eed7876c4573bdbef002.camel@posteo.de>
+	 <DIW2JUUL6A6J.96VI4IQN6HYU@kernel.org>
+	 <55eae11ea68f129508d0f7e30ac457ba919812b2.camel@posteo.de>
+	 <DIW34DX6BSUS.ANXBOP9687B0@kernel.org>
+	 <25dc9a4bbde0b542abf608be1b3305f1421a4502.camel@posteo.de>
+	 <DIW587AGXYCS.39MR1B4TVSO9@kernel.org>
+Autocrypt: addr=markus.probst@posteo.de; prefer-encrypt=mutual;
+ keydata=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
+ jfGillcaQOqFZ3WwVqyzG1BUfTow==
+Content-Type: multipart/signed; micalg="pgp-sha256";
+	protocol="application/pgp-signature"; boundary="=-KF9YFnMuz2Ii19euSWzF"
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+OpenPGP: url=https://posteo.de/keys/markus.probst@posteo.de.asc; preference=encrypt
 
-https://bugzilla.kernel.org/show_bug.cgi?id=3D221505
 
---- Comment #31 from Marco Scardovi (scardracs@disroot.org) ---
-(In reply to Mario Limonciello (AMD) from comment #30)
-> Very similar to what I just posted earlier today.
+--=-KF9YFnMuz2Ii19euSWzF
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+
+On Sat, 2026-05-30 at 18:14 +0200, Danilo Krummrich wrote:
+> On Sat May 30, 2026 at 4:51 PM CEST, Markus Probst wrote:
+> > On Sat, 2026-05-30 at 16:35 +0200, Danilo Krummrich wrote:
+> > > On Sat May 30, 2026 at 4:27 PM CEST, Markus Probst wrote:
+> > > > This would work, but I don't see how it would get rid of rust_priva=
+te_data in
+> > > > this way. The device private data will but the private bus abstract=
+ion data
+> > > > needs to outlive the devres callbacks (which is done by rust_privat=
+e_data).
+> > >=20
+> > > Why? You only ever use it in the receive callback, which won't be cal=
+led after
+> > > device unbind anymore.
+> > Because the possibility exists that some classdev ops or Drop calls
+> > e.g. sdev.set_baudrate. This is a null pointer dereference after
+> > serdev_device_close has been called. I interpreted it to add a state to
+> > the abstraction private data which would prevent those calls (early
+> > return with error) after serdev_device_close has been called, but this
+> > would only work if it outlives these calls.
+> >=20
+> > But it seems you were refering to something else with the state?
 >=20
-> https://lore.kernel.org/linux-pm/20260530154121.1670781-1-superm1@kernel.=
-org/
-> T/#u
+> Yes, but I just notice that I'm a step ahead. With the lifetime model cla=
+ss
+> device registrations shouldn't be guarded with Devres anymore, but with a
+> lifetime.
+That might be an issue. pin-init doesn't have enum support yet, so at
+least in my driver devres is still required for now.
 
-Oh sorry, I didn't notice it
+I will readd the rust_private_data field.
 
---=20
-You may reply to this email to add a comment.
+Thanks
+- Markus Probst
 
-You are receiving this mail because:
-You are the assignee for the bug.=
+>=20
+> (This also entirely eliminates the need for having different devres stage=
+s to
+> prevent drivers from smuggling a newly created Devres object into an exis=
+ting
+> Devres<Registration<T>>'s data, which would be unsound for obvious reason=
+s.)
+>=20
+> With this there is no way there are still class device callbacks after th=
+e bus
+> device private data has been dropped in the first place.
+
+--=-KF9YFnMuz2Ii19euSWzF
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+
+iQJPBAABCAA5FiEEgnQYxPSsWOdyMMRzNHYf+OetQ9IFAmobMqgbFIAAAAAABAAO
+bWFudTIsMi41KzEuMTIsMiwyAAoJEDR2H/jnrUPSsP4QAJvgDX/oBlDfYv2tZ9/k
+iqvykK+GkeeYAJsEMKKFHnbChReKuA8Ot+MHfe3ZXFFbUaQ9CuGWH0IH3Ve5aBrw
+/LVBWhhD9oGFkZiTl6d/JxBBEWw6d4diLm+G4hmD2E05opEe+lH/16V5ZQ+7nTgP
+0N7TCKrRudJIFg9gX31C1hJSDdUV/q1S4LBue2EOg67YX2nUVuVGyl4pxLoIZ5oM
+p7C+3Fr0EtetHiJEx5YLjNg56LybwCYIY2r1r9roln/Gh02CeoFOGeTAf7YZErbP
+4qUp6oQDfNZhBWWrjiCAKyeK7054GVyXL+Js+ECe+2EsK6eecj9vPjpPkGSlJCMW
+na564sEOpKt8IbPB65E+h8qqroFns2GPsoGLq7QX07DrUMoXRI8KdxemjpmjfjL7
+SUNDAKLCKRWC6q9WLyOWgTvr2xjFq12wf85rwFSJ02e1ibXMH4XkCzfkT/BGZSBb
+I8GmSQuaEb0+ht12v/86Iy5xwqdNITJMvE+gGSvvFVVOf7tUzinkA2fRjNzDuER7
+XkeESS26C36GmbI5924+gCiAYGP+Z1CfOLZWIVIyL2vsfl8koo2ox3cJOJVFmj3Y
+aWUces/kyUVV4jDpSvJD/th6XTpEY35vxtTcHWSlTJAq+ujhl58RWsxAw9VI/FxJ
+sZU2iF3gffqVfJX3mmzDz1KZ
+=ujLv
+-----END PGP SIGNATURE-----
+
+--=-KF9YFnMuz2Ii19euSWzF--
