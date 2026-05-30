@@ -1,175 +1,173 @@
-Received: from mout01.posteo.de (mout01.posteo.de [185.67.36.65])
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.15])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3CB2A3AC0FC
-	for <linux-pm@vger.kernel.org>; Sat, 30 May 2026 18:00:03 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=185.67.36.65
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 86E7333F8A2
+	for <linux-pm@vger.kernel.org>; Sat, 30 May 2026 18:05:15 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.15
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1780164004; cv=none; b=aF/ae7L5bWn+C68U6EPYeCyedwht0nCqB9ibKLleXDOmnCrlByMhvjD1z0SfA07g1AVoRqkJq1XyeMS8ibouiTPpUpgdImSoV+Gn5gm/EBHsHDO+vE2kjAKOIFxYF4Zr0vyCYG8zrw+i+dAJECVg1dfgSyiDs5B4uKK7p3ToqHg=
+	t=1780164317; cv=none; b=Lx560VY2Wd7Iyyst0HME5fxaarazmbNwTCILlTBylBe/RTubu147JQrdZ125oEzH0npggFW/isfH82pOeesrrMvX7YildX1ljDnXM8wRGocQQZDcU2n9lrC4Dl34vm213FnXZyJUjg0Aq8xORcwbCdI7A6ivXlH1tdM1CO/7aKE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1780164004; c=relaxed/simple;
-	bh=ld6v9KtJzzWT1+D0eL6RHWGuC0WgYHy7UXBZlKa+iMg=;
-	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=Gpy02o00uVolGqrtoE81po9vWbiCdv775n3K6xJMHTVEbXmwO2fw0fTg4DArq8v7BxwMsvPYYB+jGk3lril7jztR2Brids62MVlyQi34NagWMjQ5/GMp8Ids/5C0dICoODoU/rXoCgBnaO6YOsIQU0yZmfr6l+dhiIVjITOsXwE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=posteo.de; spf=pass smtp.mailfrom=posteo.de; dkim=pass (2048-bit key) header.d=posteo.de header.i=@posteo.de header.b=XRZskBUd; arc=none smtp.client-ip=185.67.36.65
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=posteo.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=posteo.de
+	s=arc-20240116; t=1780164317; c=relaxed/simple;
+	bh=mGQW32snOu4TyIRU0WPTaIkp4qt1qj4vr8DRIxnVgZA=;
+	h=Date:From:To:Cc:Subject:Message-ID; b=hXhOBmqUUS+BZhZDuZahB9a90mu8i+KC5xd0MSqUSiHa3STNIp+pVUyzPNeOUP/wbhao4nIfdyXF4ZF+khXpNNeZ6vWTyGaqS0FF8L/uJrZBfeURBXHYcrHRg2VWrCy5lwpNt4UcEtqY8STD3+fYEufVNYzs+d0Om5RKI5yXfy4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=Ky7zN8ZG; arc=none smtp.client-ip=192.198.163.15
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=posteo.de header.i=@posteo.de header.b="XRZskBUd"
-Received: from submission (posteo.de [185.67.36.169]) 
-	by mout01.posteo.de (Postfix) with ESMTPS id A2C2F240029
-	for <linux-pm@vger.kernel.org>; Sat, 30 May 2026 20:00:01 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=posteo.de; s=2017;
-	t=1780164001; bh=aMme/b7aJrnbG+SKubX74OAuyLaZdkWD0dg31B6c8YA=;
-	h=Message-ID:Subject:From:To:Cc:Date:Autocrypt:Content-Type:
-	 MIME-Version:OpenPGP:From;
-	b=XRZskBUdXcKsKI/jEoGaHkIm1o98nPlxTpdDwWMRknfw0EnRAOT2lyzeFBpTIewnX
-	 cOcZl/3/Pqnh5j+rVljeQKCT5iQ4ClQIIMf8QEoHjbmUyfDQf0iJRqoOplTWIrc2L3
-	 jDzUH/3ImDxNuIIoYwkFuyZUcjR1rMXx4clVWIXGTNPkNmNWpUbxYDoDSnevyIp4Wi
-	 /VDPfTjz8xLSxo28JO2TxBPHLyP715XRIIMX1C11RvAeqq2ZLKX0aBBqIJPJjjlO3g
-	 lJ2RGFrdc4KbX2vo/ETpojySGFj7MEgFQ7srh0SQ/xuMUGDMyzZRxPborY460yMv4k
-	 EsnjwpwAZ+wGQ==
-Received: from customer (localhost [127.0.0.1])
-	by submission (posteo.de) with ESMTPSA id 4gSSg30SNsz6trs;
-	Sat, 30 May 2026 19:59:59 +0200 (CEST)
-Message-ID: <fa841fad5493953f7932cde83d7a1b2e3356faa6.camel@posteo.de>
-Subject: Re: [PATCH v9 1/3] rust: add basic serial device bus abstractions
-From: Markus Probst <markus.probst@posteo.de>
-To: Rob Herring <robh@kernel.org>, Greg Kroah-Hartman	
- <gregkh@linuxfoundation.org>, Jiri Slaby <jirislaby@kernel.org>, Miguel
- Ojeda	 <ojeda@kernel.org>, Gary Guo <gary@garyguo.net>,
- =?ISO-8859-1?Q?Bj=F6rn?= Roy Baron <bjorn3_gh@protonmail.com>, Benno Lossin
- <lossin@kernel.org>, Andreas Hindborg	 <a.hindborg@kernel.org>, Alice Ryhl
- <aliceryhl@google.com>, Trevor Gross	 <tmgross@umich.edu>, Danilo Krummrich
- <dakr@kernel.org>, Kari Argillander	 <kari.argillander@gmail.com>, "Rafael
- J. Wysocki" <rafael@kernel.org>,  Viresh Kumar <viresh.kumar@linaro.org>,
- Boqun Feng <boqun@kernel.org>, David Airlie <airlied@gmail.com>,  Simona
- Vetter <simona@ffwll.ch>
-Cc: linux-serial@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	rust-for-linux@vger.kernel.org, linux-pm@vger.kernel.org, 
-	driver-core@lists.linux.dev, dri-devel@lists.freedesktop.org
-Date: Sat, 30 May 2026 18:00:00 +0000
-In-Reply-To: <20260530-rust_serdev-v9-1-f8b5fccb49c3@posteo.de>
-References: <20260530-rust_serdev-v9-0-f8b5fccb49c3@posteo.de>
-	 <20260530-rust_serdev-v9-1-f8b5fccb49c3@posteo.de>
-Autocrypt: addr=markus.probst@posteo.de; prefer-encrypt=mutual;
- keydata=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
- jfGillcaQOqFZ3WwVqyzG1BUfTow==
-Content-Type: multipart/signed; micalg="pgp-sha256";
-	protocol="application/pgp-signature"; boundary="=-YD5z8kaBMv6Utdv9eVyT"
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="Ky7zN8ZG"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1780164316; x=1811700316;
+  h=date:from:to:cc:subject:message-id;
+  bh=mGQW32snOu4TyIRU0WPTaIkp4qt1qj4vr8DRIxnVgZA=;
+  b=Ky7zN8ZGALncRB6jsBeeALMcWa1jkgTpiJCvjpPf/Ev83IV9NMC4it62
+   eTZ7Vigs7U2PPurvFe+AuziK12uhmUJ+u0JlsKoovPwtwT3ajQRfi+i6n
+   kcD/kAWJvDl4AFJgNOP6TAJAjhoG1RkwCwqX9xBUDD2iKwI0DxpMbZKmP
+   fliZEJ4A+ubGI9eC9JeoP49HbAiGxpnUTMDmDrRbqXgCkD+xCBXqfRp8/
+   VaA7fmw/QCcaMHtEk6WDQevQqLXtvztWMltNLaWeQyRLCkt8N3dOSovHT
+   Eo4ivzaBSM2ME+Zo/n5/UXbyckmtfuyDE6a5uXKUEnKy63JeJd4z1zSWM
+   A==;
+X-CSE-ConnectionGUID: MQqgUaHYRUqGPp3G/spgbw==
+X-CSE-MsgGUID: p6bDgYOWSGmSlSAEF7kGGA==
+X-IronPort-AV: E=McAfee;i="6800,10657,11802"; a="81095342"
+X-IronPort-AV: E=Sophos;i="6.24,177,1774335600"; 
+   d="scan'208";a="81095342"
+Received: from fmviesa002.fm.intel.com ([10.60.135.142])
+  by fmvoesa109.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 30 May 2026 11:05:15 -0700
+X-CSE-ConnectionGUID: epAjtd+aQtGegY4mlz8tfQ==
+X-CSE-MsgGUID: CbvFPeXdRamyG8yxizq/Qw==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.24,177,1774335600"; 
+   d="scan'208";a="266779662"
+Received: from lkp-server01.sh.intel.com (HELO f0d55cb201f0) ([10.239.97.150])
+  by fmviesa002.fm.intel.com with ESMTP; 30 May 2026 11:05:13 -0700
+Received: from kbuild by f0d55cb201f0 with local (Exim 4.98.2)
+	(envelope-from <lkp@intel.com>)
+	id 1wTO3b-000000008m4-1YBl;
+	Sat, 30 May 2026 18:05:11 +0000
+Date: Sun, 31 May 2026 02:04:30 +0800
+From: kernel test robot <lkp@intel.com>
+To: "Mario Limonciello (AMD)" <superm1@kernel.org>
+Cc: oe-kbuild-all@lists.linux.dev, linux-pm@vger.kernel.org
+Subject: [amd-pstate:superm1/backlight-property-v4 3/9]
+ drivers/gpu/drm/drm_backlight.c:101:76: error: passing argument 3 of
+ 'kobject_uevent_env' from incompatible pointer type
+Message-ID: <202605310146.7FTDGWKQ-lkp@intel.com>
+User-Agent: s-nail v14.9.25
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
-MIME-Version: 1.0
-OpenPGP: url=https://posteo.de/keys/markus.probst@posteo.de.asc; preference=encrypt
+
+tree:   https://git.kernel.org/pub/scm/linux/kernel/git/superm1/linux.git superm1/backlight-property-v4
+head:   d6dda4e35a589d00e7be9db8c45aef13547401f2
+commit: 838d0906592749f46424cbf58eb20a85a95efd27 [3/9] drm: link connectors to backlight devices
+config: m68k-allyesconfig (https://download.01.org/0day-ci/archive/20260531/202605310146.7FTDGWKQ-lkp@intel.com/config)
+compiler: m68k-linux-gcc (GCC) 15.2.0
+reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20260531/202605310146.7FTDGWKQ-lkp@intel.com/reproduce)
+
+If you fix the issue in a separate patch/commit (i.e. not just a new version of
+the same patch/commit), kindly add following tags
+| Reported-by: kernel test robot <lkp@intel.com>
+| Closes: https://lore.kernel.org/oe-kbuild-all/202605310146.7FTDGWKQ-lkp@intel.com/
+
+All errors (new ones prefixed by >>):
+
+   drivers/gpu/drm/drm_backlight.c: In function '__drm_backlight_worker':
+>> drivers/gpu/drm/drm_backlight.c:101:76: error: passing argument 3 of 'kobject_uevent_env' from incompatible pointer type [-Wincompatible-pointer-types]
+     101 |                 kobject_uevent_env(&b->connector->kdev->kobj, KOBJ_CHANGE, ep);
+         |                                                                            ^~
+         |                                                                            |
+         |                                                                            const char * const*
+   In file included from include/linux/energy_model.h:7,
+                    from include/linux/device.h:16,
+                    from include/linux/backlight.h:12,
+                    from drivers/gpu/drm/drm_backlight.c:8:
+   include/linux/kobject.h:216:31: note: expected 'char **' but argument is of type 'const char * const*'
+     216 |                         char *envp[]);
+         |                         ~~~~~~^~~~~~
+   drivers/gpu/drm/drm_backlight.c: At top level:
+   drivers/gpu/drm/drm_backlight.c:315:6: warning: no previous prototype for 'drm_backlight_inhibit_legacy' [-Wmissing-prototypes]
+     315 | void drm_backlight_inhibit_legacy(struct drm_backlight *b)
+         |      ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   drivers/gpu/drm/drm_backlight.c: In function 'drm_backlight_inhibit_legacy':
+   drivers/gpu/drm/drm_backlight.c:321:10: error: 'struct drm_backlight' has no member named 'luminance_clients'
+     321 |         b->luminance_clients++;
+         |          ^~
+   drivers/gpu/drm/drm_backlight.c:323:36: error: 'struct backlight_device' has no member named 'drm_takeover'
+     323 |                 atomic_inc(&b->link->drm_takeover);
+         |                                    ^~
+   drivers/gpu/drm/drm_backlight.c: At top level:
+   drivers/gpu/drm/drm_backlight.c:334:6: warning: no previous prototype for 'drm_backlight_uninhibit_legacy' [-Wmissing-prototypes]
+     334 | void drm_backlight_uninhibit_legacy(struct drm_backlight *b)
+         |      ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   In file included from arch/m68k/include/asm/bug.h:32,
+                    from include/linux/bug.h:5,
+                    from include/linux/thread_info.h:13,
+                    from include/asm-generic/preempt.h:5,
+                    from ./arch/m68k/include/generated/asm/preempt.h:1,
+                    from include/linux/preempt.h:79,
+                    from arch/m68k/include/asm/processor.h:11,
+                    from include/linux/sched.h:13,
+                    from include/linux/ratelimit.h:6,
+                    from include/linux/dev_printk.h:16,
+                    from include/linux/device.h:15:
+   drivers/gpu/drm/drm_backlight.c: In function 'drm_backlight_uninhibit_legacy':
+   drivers/gpu/drm/drm_backlight.c:340:22: error: 'struct drm_backlight' has no member named 'luminance_clients'
+     340 |         if (WARN_ON(b->luminance_clients == 0))
+         |                      ^~
+   include/asm-generic/bug.h:155:32: note: in definition of macro 'WARN_ON'
+     155 |         int __ret_warn_on = !!(condition);                              \
+         |                                ^~~~~~~~~
+   drivers/gpu/drm/drm_backlight.c:342:10: error: 'struct drm_backlight' has no member named 'luminance_clients'
+     342 |         b->luminance_clients--;
+         |          ^~
+   drivers/gpu/drm/drm_backlight.c:344:36: error: 'struct backlight_device' has no member named 'drm_takeover'
+     344 |                 atomic_dec(&b->link->drm_takeover);
+         |                                    ^~
+   drivers/gpu/drm/drm_backlight.c: At top level:
+   drivers/gpu/drm/drm_backlight.c:356:6: warning: no previous prototype for 'drm_backlight_inhibit_legacy_all' [-Wmissing-prototypes]
+     356 | void drm_backlight_inhibit_legacy_all(struct drm_device *dev)
+         |      ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   drivers/gpu/drm/drm_backlight.c:372:6: warning: no previous prototype for 'drm_backlight_uninhibit_legacy_all' [-Wmissing-prototypes]
+     372 | void drm_backlight_uninhibit_legacy_all(struct drm_device *dev)
+         |      ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
---=-YD5z8kaBMv6Utdv9eVyT
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+vim +/kobject_uevent_env +101 drivers/gpu/drm/drm_backlight.c
 
-On Sat, 2026-05-30 at 17:36 +0000, Markus Probst wrote:
->=20
-> +#[doc(hidden)]
-> +#[pin_data(PinnedDrop)]
-> +pub struct PrivateData<'bound, T: Driver> {
-> +    sdev: &'bound Device<device::Bound>,
-> +    #[pin]
-> +    driver: UnsafeCell<MaybeUninit<T::Data<'bound>>>,
-> +    #[pin]
-> +    probe_complete: Completion,
-> +    error: UnsafeCell<bool>,
-> +}
-> +
-> +#[pinned_drop]
-> +impl<T: Driver> PinnedDrop for PrivateData<'_, T> {
-> +    fn drop(self: Pin<&mut Self>) {
-> +        // SAFETY: No one has exclusive access to `self.error`.
-> +        if !unsafe { *self.error.get() } {
-> +            // SAFETY:
-> +            // - We have exclusive access to `self.driver`.
-> +            // - `self.driver` is guaranteed to be initialized.
-> +            unsafe { (*self.driver.get()).assume_init_drop() };
-> +        }
-> +
-> +        // SAFETY: `self.sdev.as_raw()` is guaranteed to be a pointer to=
- a valid
-> +        // `struct serdev_device`.
-> +        unsafe { bindings::serdev_device_close(self.sdev.as_raw()) };
-Ok, I might have sent this too early.
+    74	
+    75	static void __drm_backlight_worker(struct work_struct *w)
+    76	{
+    77		struct drm_backlight *b = container_of(w, struct drm_backlight, work);
+    78		static const char * const ep[] = { "BACKLIGHT=1", NULL };
+    79		struct backlight_device *bd;
+    80		bool send_uevent;
+    81		unsigned int v;
+    82	
+    83		scoped_guard(spinlock, &drm_backlight_lock) {
+    84			send_uevent = b->changed;
+    85			b->changed = false;
+    86			v = b->set_value;
+    87			bd = b->link;
+    88			backlight_device_ref(bd);
+    89		}
+    90	
+    91		if (bd) {
+    92			int rc = backlight_set_brightness(bd, v, BACKLIGHT_UPDATE_DRM);
+    93	
+    94			WARN_ON(rc);
+    95			if (rc)
+    96				backlight_set_brightness(bd, U16_MAX, BACKLIGHT_UPDATE_DRM);
+    97			backlight_device_unref(bd);
+    98		}
+    99	
+   100		if (send_uevent)
+ > 101			kobject_uevent_env(&b->connector->kdev->kobj, KOBJ_CHANGE, ep);
+   102	}
+   103	
 
-ignore for now. This is unsound.
-
-Thanks
-- Markus Probst
-
-> +    }
-> +}
-> +
-
---=-YD5z8kaBMv6Utdv9eVyT
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-
-iQJPBAABCAA5FiEEgnQYxPSsWOdyMMRzNHYf+OetQ9IFAmobJZ4bFIAAAAAABAAO
-bWFudTIsMi41KzEuMTIsMiwyAAoJEDR2H/jnrUPSf5sP/A6J/lvVI7uxowdg6WiV
-tnnsrCN/G10ZUfcHUUrVWDNAmzYReB42SLmLYZsvo24QHdH4LIj5JSU1W72Fp+dY
-UJSZYdw/GlJuskU2iizV6l1rm0g4HkBoUex9M7ELzDN9JPUiy50k9I6TVV7jW6zj
-/575K4cq+JCmJ9OCG/Bmf6hP93SQUYgRQWOowXQMpk4G/IX4aL3ocU8WnstlbPAI
-F58CDeXkxZyHmXYr265PSdZoWo8bdDdyZmWsMpg0nu+OECAr6bOKfPipE61ZkdCA
-uYRvrc9aSJcLwEYDDp4evm2WyZnJ+X7VMYhpgkwlazGqormyHnValJo8yE+XGq4O
-K3g4k/ip85KcaCCgX5qW8b8dzs3qD+bE+fHILPUl6BFjQwuifiX6T5rVQTVVhTZZ
-GrNnXSgdUpMWBeN64LXerjuHxNhoQWPzhJwYoH1b1d/AsKqpoWG30sHhC9GKo8A4
-T3A37gsx26XZY45pqMnGT/Z752oqYiEn3fMMPRPKND5GWZaJHP5fBvRx6sYsJ8Ly
-x2ZkVCUqGz7CCDbN8jlnRjiDlmbFdSwy7wcjcvmXQMdzUb2pI0bDU5XXDwUNSlfY
-Wr1WMfCSgO/Er+lBc3WeS+zFEh2pn4/qqrhnYWzPfCLMw7O6OVfhVoo5puEyBxZo
-ekgS6qe0+XH3HWq2q99CV8tD
-=CqxB
------END PGP SIGNATURE-----
-
---=-YD5z8kaBMv6Utdv9eVyT--
+--
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests/wiki
