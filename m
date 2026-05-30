@@ -1,37 +1,37 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 20F5E2EFD95;
-	Sat, 30 May 2026 01:13:54 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 769A1385D8E;
+	Sat, 30 May 2026 07:06:47 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1780103634; cv=none; b=IXjMC24r7hCIOPPf5IKO95amfQn5/A1Vui+qLX9xPCNmOSxhTIVWr7YEsAF/1LdqTy2Tg8NT2tA/gnogle4hUyrxYKvkw3o88mZa+f1zZGXc1jE+EjP6jmzaYQ5dJHYcU2Y2WQX7mNw0j6mY1kxk5EB4Z2IEBTlhyN92EQLq/pg=
+	t=1780124807; cv=none; b=Rt3lSmeyB7GpD8RZ2X9MoMMQHlHgdQOf2tRR9YMkRyqwYAj0xVbZwkjBs09wTNGEke7MP/AHEWq6EOg+qsPpMSfC9T1asy8hsYfdW/OPs33Y9zw3yv70SnSxe4txjrbhF0VZrNIlWqhKNTkiZmEsVdBqvqbgxai4l12M3xofAJw=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1780103634; c=relaxed/simple;
-	bh=i6yyE0Dn4THGDheAsQuCbxaViLFW1ARK5q9G8YpPkPo=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=Ln5114kYLQDnuP1j44WWkSIHMrQRFN6UVh0g0dxMYE4vlcZccMMroADzHOb1JxPyexIBOZLDYXHG93MQUdj7KSNq9oISLxBJ3hUj1DoHXLS7recOIJudKeb9k9nyLxhF3rSdgkj7XETncWPMP2mFRHMFzi+kieCAoPx6UPuKpSg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=RtsC3ZGz; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1780124807; c=relaxed/simple;
+	bh=5HNG54dPBxmmIkxBE1FpYE/o9KMljPg2ln/nqNqBMiY=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:To:Cc; b=uAh0FGAeuMUiX0okaONp/zc9ShBR3UgRqiJ4cCJlaqNfLVeR4BJ/LjqleAEDQifL26pCzuT+7qjVY5V5vwqC0SjpV4t7EqGo5lnXN1RdFqozrthEqN3Gb93tM2EMctvF3fIjL6vPsw7G8fvVk46ASmv9a6zr/VCq0S4av6CP30c=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=q1HVgV2Q; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="RtsC3ZGz"
-Received: by smtp.kernel.org (Postfix) with ESMTPS id CC977C32782;
-	Sat, 30 May 2026 01:13:53 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="q1HVgV2Q"
+Received: by smtp.kernel.org (Postfix) with ESMTPS id E7E01C19425;
+	Sat, 30 May 2026 07:06:46 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1780103633;
-	bh=i6yyE0Dn4THGDheAsQuCbxaViLFW1ARK5q9G8YpPkPo=;
-	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
-	b=RtsC3ZGz9u2DK+Zyrk2jsN1VIMkR+g4cATyoF/zIiAjIYMTknDJHNjnSpNnXbM4as
-	 0Rm6vTKsObq0n1kaRMmhzl1A2SHLnGS9IUTVIdD9x+p9qPKRUs20BXM7HYXfUuvry0
-	 ITo7TRxXHaRobKnL3Qxl6BGf+Rc1sgp9tfezmEGZAXLA2PQyHfawkDXfjml9n+cRB5
-	 alvrMKWL0TnsLCXAL3CGQOO0vrBFJ+kzcXobU9+eW63XPIZXJ1lptQSMbtMtZxEHf4
-	 xGNtBmwh42++H9XI3N7YCwdkyZaf34k0AaryqBBcoSuMkH3JciM35iJgO6Qd31fWuL
-	 ZzD4bdfpFm1Ag==
+	s=k20201202; t=1780124807;
+	bh=5HNG54dPBxmmIkxBE1FpYE/o9KMljPg2ln/nqNqBMiY=;
+	h=From:Date:Subject:To:Cc:Reply-To:From;
+	b=q1HVgV2Q066uy00q74VJPuVTVte5iYvwQUJdmTB2N7as/zY/0SCJDcc6leN0bE6TQ
+	 0rd1mrf8vYxfpJBcTLaaEPzYNN9QF19W1H8Jz8SBAcc6inKs0mIFwIhrOI2+3Wkhkl
+	 bAzvoZYPU64++0lvVWgBskr1Gemmjwh1WraBfZ2AoJRTzhCfTjSljrRivJAIm2advv
+	 DdKlbAZocRXU2RVKvNKNCROT4prY9ApKrShEZrkxLJDD2v21Ko4xETApm756aUqk2T
+	 l0UvA6ne2kbt+EeFSb+Mo4MfwO/LdmfLQ8Fz7OifzDq8VwGbg94afU2ExxRuC5gqzt
+	 7Hh7DNKNe9gdg==
 Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B9FD5CD6E54;
-	Sat, 30 May 2026 01:13:53 +0000 (UTC)
-From: Markus Probst via B4 Relay <devnull+markus.probst.posteo.de@kernel.org>
-Date: Sat, 30 May 2026 03:13:53 +0200
-Subject: [PATCH v8 5/5] MAINTAINERS: serdev: Add self for serdev
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D0E4ECD4F54;
+	Sat, 30 May 2026 07:06:46 +0000 (UTC)
+From: Ronald Claveau via B4 Relay <devnull+linux-kernel-dev.aliel.fr@kernel.org>
+Date: Sat, 30 May 2026 09:05:57 +0200
+Subject: [PATCH] firmware: meson: sm: add stub functions when
+ CONFIG_MESON_SM is disabled
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -40,75 +40,92 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260530-rust_serdev-v8-5-2a95f1da22a7@posteo.de>
-References: <20260530-rust_serdev-v8-0-2a95f1da22a7@posteo.de>
-In-Reply-To: <20260530-rust_serdev-v8-0-2a95f1da22a7@posteo.de>
-To: Rob Herring <robh@kernel.org>, 
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
- Jiri Slaby <jirislaby@kernel.org>, Miguel Ojeda <ojeda@kernel.org>, 
- Gary Guo <gary@garyguo.net>, 
- =?utf-8?q?Bj=C3=B6rn_Roy_Baron?= <bjorn3_gh@protonmail.com>, 
- Benno Lossin <lossin@kernel.org>, Andreas Hindborg <a.hindborg@kernel.org>, 
- Alice Ryhl <aliceryhl@google.com>, Trevor Gross <tmgross@umich.edu>, 
- Danilo Krummrich <dakr@kernel.org>, 
- Kari Argillander <kari.argillander@gmail.com>, 
- "Rafael J. Wysocki" <rafael@kernel.org>, 
- Viresh Kumar <viresh.kumar@linaro.org>, Boqun Feng <boqun@kernel.org>, 
- David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>, 
- Boqun Feng <boqun@kernel.org>
-Cc: linux-serial@vger.kernel.org, linux-kernel@vger.kernel.org, 
- rust-for-linux@vger.kernel.org, linux-pm@vger.kernel.org, 
- driver-core@lists.linux.dev, dri-devel@lists.freedesktop.org, 
- Markus Probst <markus.probst@posteo.de>
-X-Mailer: b4 0.15.2
-X-Developer-Signature: v=1; a=openpgp-sha256; l=838;
- i=markus.probst@posteo.de; h=from:subject:message-id;
- bh=P+qqzzRwhI8B2ZhOfr+PVqRWtfVtS9KesBahL8YX4uk=;
- b=owEBiQJ2/ZANAwAIATR2H/jnrUPSAcsmYgBqGjnPhljelHIuzdbOLC3zhJwHUwihLpJ+X/2k8
- 18CITrGo5+JAk8EAAEIADkWIQSCdBjE9KxY53IwxHM0dh/4561D0gUCaho5zxsUgAAAAAAEAA5t
- YW51MiwyLjUrMS4xMiwyLDIACgkQNHYf+OetQ9JNdQ/+IR2iPGEy8sqtRVurCujsY1VhZ/t7tm+
- 6bWZdXnedNebKNUT6bpdRAAxnB0/Kf7Iu/bWpGDcSZ/esml58O+dBLKANgmpDEn3Hb/kFG/8LmB
- cmAGhf2LSuYuN3IpSJax6GiRzWxb5NaDMhUHM81xmnNSWYnBnQ26L+kUw8x0A4rIkfF5SSu5FAG
- xfnu+x6oVlgHGj4SBPi9IrW5awYtoRMgLuGd97RaA9PSYUS54Zmih3fKnbnoqwUAolRi2iOM7SP
- 6lNBjb7sEhpDMsG7SiwfYC4RKp4bjI77UtZA7cFsNDNoV2FJvZAQePzkthoFFbd1i+kFgDiHdg4
- G24/p9FN9pUJ2PbuwfSXpJIZmkPi3W8Hw0hqgh6J64Jd0AtU9gU6x6FX+DBPgdjrax3/YV8PW7F
- UNrktM48Or5Vao7WkN39D2fD7+38l5CS/eWj5kJzeQQP/hn3E/TKPv+7FSSpFUX+8UMjJSpByik
- xqok0SyWTgVdW0JlXHGxsG5d10++pOpV+qXV+qbGjpeFs2aZ9KLLM0BhN1AZv5uMYA6qTU4BCad
- 3qCvEJMtgW1uR+gpWCO/uxlJdVexI7D79yFEu6Rj5eLADedrgkRuna6hkubYrkC7fYkqK3+kpZl
- I4h7OJ7fIeJGnn/h65/wr4XgfwNeMWAikFFjuM89/Lbmb0aBvlo0=
-X-Developer-Key: i=markus.probst@posteo.de; a=openpgp;
- fpr=827418C4F4AC58E77230C47334761FF8E7AD43D2
-X-Endpoint-Received: by B4 Relay for markus.probst@posteo.de/default with
- auth_id=680
-X-Original-From: Markus Probst <markus.probst@posteo.de>
-Reply-To: markus.probst@posteo.de
+Message-Id: <20260530-fix-missing-meson_sm-symbol-v1-1-3fb672b989d4@aliel.fr>
+X-B4-Tracking: v=1; b=H4sIAAAAAAAC/x3M0QpAMBSA4VfRuXZqVrZ4FUnYwSnbtFMieXfL5
+ Vd//wNCiUmgLR5IdLJwDBlVWcC8jWElZJcNWmmjat3gwhd6FuGwoieJYRCPcvsp7mitNU65xlm
+ jIB+ORDn/713/vh+4IbHLbQAAAA==
+X-Change-ID: 20260529-fix-missing-meson_sm-symbol-7776d0d9d760
+To: Neil Armstrong <neil.armstrong@linaro.org>, 
+ Daniel Lezcano <daniel.lezcano@kernel.org>, Zhang Rui <rui.zhang@intel.com>, 
+ "Rafael J. Wysocki" <rafael@kernel.org>, Lukasz Luba <lukasz.luba@arm.com>
+Cc: Guillaume La Roque <glaroque@baylibre.com>, 
+ Kevin Hilman <khilman@baylibre.com>, Jerome Brunet <jbrunet@baylibre.com>, 
+ Martin Blumenstingl <martin.blumenstingl@googlemail.com>, 
+ linux-arm-kernel@lists.infradead.org, linux-amlogic@lists.infradead.org, 
+ linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, 
+ Mark Brown <broonie@kernel.org>, Ronald Claveau <linux-kernel-dev@aliel.fr>
+X-Mailer: b4 0.14.3
+X-Developer-Signature: v=1; a=openpgp-sha256; l=2190;
+ i=linux-kernel-dev@aliel.fr; h=from:subject:message-id;
+ bh=9bC21YQnPxgGtSXVEFJabEi6tIt8Ai/WeaIfr6J2d/Q=;
+ b=owGbwMvMwCWm1SvKXP3cUInxtFoSQ5ZUT5nA3z2OrJe9ZwYLTfr6ViGqZJ7CyVPVm2zvevK4T
+ 4ic5n2go5SFQYyLQVZMkaV/ruWJd5ePnvm6Rz0FZg4rE8gQBi5OAZhIgxgjw/fgkB1dR1beYNyR
+ UPFhTUdUUsRmsdIPSyZ8Z1biO7vDrYiRYdaCuRtzbG7OK9J4Ivw0wyDg+KwERsmG8ANcFrd6M4S
+ VGQA=
+X-Developer-Key: i=linux-kernel-dev@aliel.fr; a=openpgp;
+ fpr=DFD863F61375BF917F0012173953305EF1D0EC3E
+X-Endpoint-Received: by B4 Relay for linux-kernel-dev@aliel.fr/default with
+ auth_id=744
+X-Original-From: Ronald Claveau <linux-kernel-dev@aliel.fr>
+Reply-To: linux-kernel-dev@aliel.fr
 
-From: Markus Probst <markus.probst@posteo.de>
+From: Ronald Claveau <linux-kernel-dev@aliel.fr>
 
-Rob mentioned he needs to find someone else to maintain serdev.
+After merging the thermal tree, linux-next build (arm_multi_v7
+defconfig) failed like this:
 
-Link: https://lore.kernel.org/rust-for-linux/20260430195858.GA1650658-robh@kernel.org/
-Link: https://lore.kernel.org/rust-for-linux/da85ceb81f51079d4a8248a1ffde6a27d2ef24ad.camel@posteo.de/
-Signed-off-by: Markus Probst <markus.probst@posteo.de>
+arm-linux-gnueabihf-ld: drivers/thermal/amlogic_thermal.o: in function `amlogic_thermal_probe_sm':
+/tmp/next/build/drivers/thermal/amlogic_thermal.c:196:(.text+0x2f4): undefined reference to `meson_sm_get'
+arm-linux-gnueabihf-ld: /tmp/next/build/drivers/thermal/amlogic_thermal.c:205:(.text+0x320): undefined reference to `meson_sm_get_thermal_calib'
+
+Add inline stub implementations of meson_sm_get() and
+meson_sm_get_thermal_calib() behind an #else guard so that drivers
+including this header can be compiled without CONFIG_MESON_SM .
+
+Fixes: b21d88de6918 ("thermal/drivers/amlogic: Add support for secure monitor calibration readout")
+Reported-by: Mark Brown <broonie@kernel.org>
+Signed-off-by: Ronald Claveau <linux-kernel-dev@aliel.fr>
 ---
- MAINTAINERS | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ include/linux/firmware/meson/meson_sm.h | 17 +++++++++++++++++
+ 1 file changed, 17 insertions(+)
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index fa3f20f0cc4f..58db6aedf45a 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -24270,7 +24270,7 @@ F:	drivers/iio/chemical/sps30_i2c.c
- F:	drivers/iio/chemical/sps30_serial.c
+diff --git a/include/linux/firmware/meson/meson_sm.h b/include/linux/firmware/meson/meson_sm.h
+index 3ebc2bd9a9760..813166ccedd1d 100644
+--- a/include/linux/firmware/meson/meson_sm.h
++++ b/include/linux/firmware/meson/meson_sm.h
+@@ -27,8 +27,25 @@ int meson_sm_call_write(struct meson_sm_firmware *fw, void *buffer,
+ int meson_sm_call_read(struct meson_sm_firmware *fw, void *buffer,
+ 		       unsigned int bsize, unsigned int cmd_index, u32 arg0,
+ 		       u32 arg1, u32 arg2, u32 arg3, u32 arg4);
++
++#ifdef CONFIG_MESON_SM
++
+ struct meson_sm_firmware *meson_sm_get(struct device_node *firmware_node);
+ int meson_sm_get_thermal_calib(struct meson_sm_firmware *fw, u32 *trim_info,
+ 			       u32 tsensor_id);
  
- SERIAL DEVICE BUS
--M:	Rob Herring <robh@kernel.org>
-+M:	Markus Probst <markus.probst@posteo.de>
- L:	linux-serial@vger.kernel.org
- S:	Maintained
- F:	Documentation/devicetree/bindings/serial/serial.yaml
++#else
++
++static inline struct meson_sm_firmware *meson_sm_get(struct device_node *firmware_node)
++{
++	return NULL;
++}
++static inline int meson_sm_get_thermal_calib(struct meson_sm_firmware *fw,
++					     u32 *trim_info, u32 tsensor_id)
++{
++	return -EINVAL;
++}
++
++#endif
++
+ #endif /* _MESON_SM_FW_H_ */
 
+---
+base-commit: 3929405c64376a8a54c794e8a4485023b108a97e
+change-id: 20260529-fix-missing-meson_sm-symbol-7776d0d9d760
+
+Best regards,
 -- 
-2.53.0
+Ronald Claveau <linux-kernel-dev@aliel.fr>
 
 
