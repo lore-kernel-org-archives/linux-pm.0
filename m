@@ -1,122 +1,67 @@
-Received: from courrier.aliel.fr (courrier.aliel.fr [65.21.61.41])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 56A19328631;
-	Sun, 31 May 2026 17:50:12 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=65.21.61.41
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A126438C2D0;
+	Sun, 31 May 2026 17:57:24 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1780249816; cv=none; b=AvJIF7wU47k5Uzw/TzaXhKOZUr+Aw2O5ePAl28hSRj74MDA9n4QqPLDJDhT1K0qpJQ3uULMGa6qSy0Ck3RAt3zuO3FCYdP8PkUVrjwqBbIJWnu9LS82J0AKUMb49IRLO94DNH1emLAr9SWS92eWqcgeqJAXcscP5Ck1fxrAl6mI=
+	t=1780250245; cv=none; b=qeFxLJ3W0tRInndyJgKP/6jZdeuVfhSthCR0nuCdiJwddWwFM5ADnySR59j/Qyj1UaPulnKdHoN7NEkLSRupoWBo1m+FNBQ84hm3Gl6lvsD6KA5qAbgW0mbbedzrfoIFHP4h4IcoLhjDU4TkOSwHh4vDkWiKkrZ3FnqXm4mcqp8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1780249816; c=relaxed/simple;
-	bh=JQpEJWohU7u2PUrSQq5dK/MO03Qv9YI8notJ93T8T3k=;
-	h=Message-ID:Date:MIME-Version:From:Subject:To:Cc:References:
-	 In-Reply-To:Content-Type; b=GAZC+bW4+T1JP3JDGMNyziUff4/xHmqNYv874lgQ/wBjheKDLe1uCKjyL8YzMFdR9ujo+Igm0pw41V5Xfkh01I5oqdKOpaeY/qyCZUEeURF36aK5HAS+zH+GQiDEpmBPpMY6XhRGYvBD05wxMTcj+k65aQX/2h9G6fCNTZPLvKw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=aliel.fr; spf=pass smtp.mailfrom=aliel.fr; dkim=pass (1024-bit key) header.d=aliel.fr header.i=@aliel.fr header.b=oJVEYD73; arc=none smtp.client-ip=65.21.61.41
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=aliel.fr
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=aliel.fr
+	s=arc-20240116; t=1780250245; c=relaxed/simple;
+	bh=OpwwfpuDat0PLBpEmIVKRTwlA8l4xHYQHuV7EJjt+eU=;
+	h=Mime-Version:Content-Type:Date:Message-Id:Subject:Cc:To:From:
+	 References:In-Reply-To; b=nSGOVo1a6glvV0Ruucz3aj58mhkMy1ssdD5JsTkXNiL3aH83CHNr3Jo9XrlRXjDjy2RXfe2WFH8PdMcY+Xp+k/tod1B5mwV+kAw177EAIZvCAT2MF61TmdgNecgLxfkEOQcqtdSz8MhjHl6J1wuU1odVyI9FXtBUSHCWlL2xe7s=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=AHSYeL/o; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=aliel.fr header.i=@aliel.fr header.b="oJVEYD73"
-Message-ID: <12d74340-0213-4f7e-a494-10ce147844ad@aliel.fr>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=aliel.fr;
-	s=courrier-s1; t=1780249805;
-	bh=JQpEJWohU7u2PUrSQq5dK/MO03Qv9YI8notJ93T8T3k=;
-	h=Date:From:Subject:To:Cc:References:In-Reply-To;
-	b=oJVEYD73f39ZQ8iUe8tM1mLjjbNxz4Aw2wpFEEW4h+E5It9PvmKzmqKDYSgM8dRCW
-	 QmdyKnjKhbFuzVWjJHlmL4/ekhXpHSz8AXid6Fwhnpo5Iw5p+qp91UmNnJKACqV0KD
-	 nK/0i3YsiVZdmB2M/Yy7X0I6YpjPuYYVPFIVp+C0=
-Date: Sun, 31 May 2026 19:49:55 +0200
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="AHSYeL/o"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8B4BF1F00893;
+	Sun, 31 May 2026 17:57:19 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1780250244;
+	bh=OpwwfpuDat0PLBpEmIVKRTwlA8l4xHYQHuV7EJjt+eU=;
+	h=Date:Subject:Cc:To:From:References:In-Reply-To;
+	b=AHSYeL/ohiyf+9qZFwNCkh88Ediyj90Je7rFdaRyHJ6WgOUmqQfiTjPiT+rogzXeZ
+	 pANqpaGD/nbhU9O3wrfTIFlNHsQaJPjeP7S6vtYVQ1yrdJ+M61VW7ygmImSQHCX79n
+	 1qFfTo2cYVm0gVX5EWcj7lfEJ9JUvSS7IENd4/fWFOWt/os1tGMa5AiyUhii58e9YI
+	 UYJXONQzdZOB2l65Rk8qrosXWOLeCaBKLfg2gKi9hALfx1UO6/9sTMeux+6vO6QpFB
+	 Sc/+wc1SMxvqkdQYIqr4ezD+RWJvzl38bxXMdMEknYiFHIWZZotvkt2hGzQoCmq7W3
+	 4ryPk2chCInNA==
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
-MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird Beta
-From: Ronald Claveau <linux-kernel-dev@aliel.fr>
-Subject: Re: [PATCH v2] firmware: meson: sm: add stub functions when
- CONFIG_MESON_SM is disabled
-To: Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>
-Cc: Guillaume La Roque <glaroque@baylibre.com>,
- Kevin Hilman <khilman@baylibre.com>, Jerome Brunet <jbrunet@baylibre.com>,
- Martin Blumenstingl <martin.blumenstingl@googlemail.com>,
- linux-arm-kernel@lists.infradead.org, linux-amlogic@lists.infradead.org,
- linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
- Mark Brown <broonie@kernel.org>, kernel test robot <lkp@intel.com>,
- Neil Armstrong <neil.armstrong@linaro.org>,
- Daniel Lezcano <daniel.lezcano@kernel.org>, Zhang Rui <rui.zhang@intel.com>,
- "Rafael J. Wysocki" <rafael@kernel.org>, Lukasz Luba <lukasz.luba@arm.com>
-References: <20260531-fix-missing-meson_sm-symbol-v2-1-1def8c3c169f@aliel.fr>
- <8c11a91b-cfbf-4b9c-a46f-907989bf8305@oss.qualcomm.com>
-Content-Language: en-US
-In-Reply-To: <8c11a91b-cfbf-4b9c-a46f-907989bf8305@oss.qualcomm.com>
+Mime-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Date: Sun, 31 May 2026 19:57:17 +0200
+Message-Id: <DIX21GVNFWF8.2AT1AX2B1NV6K@kernel.org>
+Subject: Re: [PATCH v11 1/3] rust: add basic serial device bus abstractions
+Cc: =?utf-8?q?Onur_=C3=96zkan?= <work@onurozkan.dev>, "Markus Probst via B4
+ Relay" <devnull+markus.probst.posteo.de@kernel.org>, "Rob Herring"
+ <robh@kernel.org>, "Greg Kroah-Hartman" <gregkh@linuxfoundation.org>, "Jiri
+ Slaby" <jirislaby@kernel.org>, "Miguel Ojeda" <ojeda@kernel.org>, "Gary
+ Guo" <gary@garyguo.net>, =?utf-8?q?Bj=C3=B6rn_Roy_Baron?=
+ <bjorn3_gh@protonmail.com>, "Benno Lossin" <lossin@kernel.org>, "Andreas
+ Hindborg" <a.hindborg@kernel.org>, "Alice Ryhl" <aliceryhl@google.com>,
+ "Trevor Gross" <tmgross@umich.edu>, "Kari Argillander"
+ <kari.argillander@gmail.com>, "Rafael J. Wysocki" <rafael@kernel.org>,
+ "Viresh Kumar" <viresh.kumar@linaro.org>, "Boqun Feng" <boqun@kernel.org>,
+ "David Airlie" <airlied@gmail.com>, "Simona Vetter" <simona@ffwll.ch>,
+ <linux-serial@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
+ <rust-for-linux@vger.kernel.org>, <linux-pm@vger.kernel.org>,
+ <driver-core@lists.linux.dev>, <dri-devel@lists.freedesktop.org>
+To: "Markus Probst" <markus.probst@posteo.de>
+From: "Danilo Krummrich" <dakr@kernel.org>
+References: <20260531-rust_serdev-v11-0-dee8e0d830f1@posteo.de>
+ <20260531-rust_serdev-v11-1-dee8e0d830f1@posteo.de>
+ <DIWEXUCNLURG.136XXDBHSBNVR@kernel.org>
+ <20260531065838.7352-1-work@onurozkan.dev>
+ <b6191edf3dc052fa86fae12fa5746d0c1c9c45ed.camel@posteo.de>
+In-Reply-To: <b6191edf3dc052fa86fae12fa5746d0c1c9c45ed.camel@posteo.de>
 
-On 5/31/26 10:41 AM, Daniel Lezcano wrote:
-> On 5/31/26 09:51, Ronald Claveau via B4 Relay wrote:
->> From: Ronald Claveau <linux-kernel-dev@aliel.fr>
->>
->> After merging the thermal tree, linux-next build (arm_multi_v7
->> defconfig) failed like this:
->>
->> arm-linux-gnueabihf-ld: drivers/thermal/amlogic_thermal.o: in function
->> `amlogic_thermal_probe_sm':
->> /tmp/next/build/drivers/thermal/amlogic_thermal.c:196:(.text+0x2f4):
->> undefined reference to `meson_sm_get'
->> arm-linux-gnueabihf-ld: /tmp/next/build/drivers/thermal/
->> amlogic_thermal.c:205:(.text+0x320): undefined reference to
->> `meson_sm_get_thermal_calib'
->>
->> Add inline stub implementations of meson_sm_get() and
->> meson_sm_get_thermal_calib() behind an #else guard so that drivers
->> including this header can be compiled without CONFIG_MESON_SM .
->>
->> Fixes: b21d88de6918 ("thermal/drivers/amlogic: Add support for secure
->> monitor calibration readout")
->> Closes: https://lore.kernel.org/oe-kbuild-all/202605291530.en7aGn7w-
->> lkp@intel.com/
->> Reported-by: Mark Brown <broonie@kernel.org>
->> Reported-by: kernel test robot <lkp@intel.com>
->> Signed-off-by: Ronald Claveau <linux-kernel-dev@aliel.fr>
->> ---
->> Changes in v2:
->> - Replace #ifdef CONFIG_MESON_SM by #if IS_ENABLED(CONFIG_MESON_SM)
->>    to cover builtin and module in config.
->> - Add missing trailers for kernel test robot.
->> - Link to v1: https://lore.kernel.org/r/20260530-fix-missing-meson_sm-
->> symbol-v1-1-3fb672b989d4@aliel.fr
->> ---
->>   include/linux/firmware/meson/meson_sm.h | 17 +++++++++++++++++
->>   1 file changed, 17 insertions(+)
->>
->> diff --git a/include/linux/firmware/meson/meson_sm.h b/include/linux/
->> firmware/meson/meson_sm.h
->> index 3ebc2bd9a9760..baecdaf263f41 100644
->> --- a/include/linux/firmware/meson/meson_sm.h
->> +++ b/include/linux/firmware/meson/meson_sm.h
->> @@ -27,8 +27,25 @@ int meson_sm_call_write(struct meson_sm_firmware
->> *fw, void *buffer,
->>   int meson_sm_call_read(struct meson_sm_firmware *fw, void *buffer,
->>                  unsigned int bsize, unsigned int cmd_index, u32 arg0,
->>                  u32 arg1, u32 arg2, u32 arg3, u32 arg4);
->> +
->> +#if IS_ENABLED(CONFIG_MESON_SM)
->> +
->>   struct meson_sm_firmware *meson_sm_get(struct device_node
->> *firmware_node);
->>   int meson_sm_get_thermal_calib(struct meson_sm_firmware *fw, u32
->> *trim_info,
->>                      u32 tsensor_id);
-> 
-> Do you really want to compile meson_sm as a module ?
-> 
-> 
-> 
+On Sun May 31, 2026 at 6:37 PM CEST, Markus Probst wrote:
+> How close? Should I rebase this patch on top of the srcu patch series?
 
-I don't want, but if I send a patch to change tristate to bool, it will
-raise a warning because 'm' is not valid.
-If it is accepted to ignore this warning, I can send another patch.
-
--- 
-Best regards,
-Ronald
+Since it isn't blocking you, it would only make sense if SRCU makes it this
+cycle, but this series does not.
