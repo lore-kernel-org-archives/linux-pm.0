@@ -1,193 +1,141 @@
-Received: from mail-106112.protonmail.ch (mail-106112.protonmail.ch [79.135.106.112])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C7C7432470A;
-	Sun, 31 May 2026 07:01:48 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=79.135.106.112
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CA85C204F8B;
+	Sun, 31 May 2026 07:52:17 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1780210910; cv=none; b=Grg+2xNjAzQmPQlWA+cpvUJ5nIUPSo9Kybw2JRP2cqpmTGaufDACmfWbFxYHGnH42ZeRP1ON9mwu4jCe+ip22eq7HlG4wGSyLWwrT329Ov5QuPdpElbGuS4zgRvujgRPenS91g+Lq/jidVF9cLB9HrKMeeQITpUjt2rNp1w/GBs=
+	t=1780213937; cv=none; b=rbLcXjy9bgyNx7KEI/5LQcrLlUOMOWWQOy9rvx86wspPxHpscsZa1rIit/ryhe73uCLSowH19PC0CflRX9qPREuSBKDwgHBAGpWt09pbKr8WAM8urEmQ+TK8KTZAabbO0DRTY/DZBn9fM6p6YXfamB82CGGsK/pRdFSNF6aqN/M=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1780210910; c=relaxed/simple;
-	bh=Qwtl7TctBiECnaqJS7rXbdYdDWZ8a1Vlb+t+lsxDqBg=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=O0ua15QXbQ+zi1tJsjdYiVIPjb58LEqOkQWe5HTS6u5nZMg4yVqe5JlcFoC+G8FLo1GgBiaxG0iLmp2KijDlJHxJML2Mb/vDFdoAGXHS6iIdZ7vIQ43hoWHIhJpkX8ulnTP6YJNg+dyasBkFgs4d0K/wEiiJyUYS9bF4ECfEuh0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=onurozkan.dev; spf=pass smtp.mailfrom=onurozkan.dev; dkim=pass (2048-bit key) header.d=onurozkan.dev header.i=@onurozkan.dev header.b=g7VckALZ; arc=none smtp.client-ip=79.135.106.112
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=onurozkan.dev
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=onurozkan.dev
+	s=arc-20240116; t=1780213937; c=relaxed/simple;
+	bh=I/w0HozSi+XyRg6QSq/WH39lvvn/3zkRceEeEY8qGWE=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:To:Cc; b=UaRK9ezMzKLK+V3oKhqwLIzjMT7iPWfmZy8KmfEoDGwVkCWezYFm6sgcDYqKvUEgxHk3oDeWrhxpTH5ldXi7kx/ExwiULzRWCI6HYYT6UIGNpCbxRubCmQhi11L+L1U6TQYE978CrZuWixAiq7tF6XaGY4HS5ozeYzUDDm2LkHc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=I4NGTqC2; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=onurozkan.dev header.i=@onurozkan.dev header.b="g7VckALZ"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=onurozkan.dev;
-	s=protonmail; t=1780210899; x=1780470099;
-	bh=rRQS1MJp4S0193hCQQAqVm3auiTkQtjPuQ4wbXu26iI=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:From:To:
-	 Cc:Date:Subject:Reply-To:Feedback-ID:Message-ID:BIMI-Selector;
-	b=g7VckALZ+lCaFO5OpPyQVMrKxbjtGsDsRkZkaSJcnXEvHkeqwOgKyq9sZ8tiqmor1
-	 IkHQGZ0tkAEK7gmfOOjwCC1yRsmNAQIz+G9qE7p/6St15/ECOTOkh9gOpMCe8LGXAw
-	 shm7K68wbdYv7qDVjs4cixPaY9m5ZpsvLcgjW2V4YDUbvEJ3bW4P4D6qyqyPCjPA/t
-	 OsAAkH7609kL6Mr/nEYZTqfUa0ES81DbfthzqRP063/31wVOMXdulgD//0q+QXqpW+
-	 RbMkm6SG+XtRt1QrFC+wxXnIbYKZypvECHqXWkwvwsOtME0ZXN5xrZmzwmV/wCeZ5r
-	 lSJx8qnH7L+qw==
-X-Pm-Submission-Id: 4gSp0t24nCz2ScPV
-From: =?UTF-8?q?Onur=20=C3=96zkan?= <work@onurozkan.dev>
-To: =?UTF-8?q?Onur=20=C3=96zkan?= <work@onurozkan.dev>
-Cc: Danilo Krummrich <dakr@kernel.org>,
-	Markus Probst via B4 Relay <devnull+markus.probst.posteo.de@kernel.org>,
-	markus.probst@posteo.de,
-	Rob Herring <robh@kernel.org>,
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	Jiri Slaby <jirislaby@kernel.org>,
-	Miguel Ojeda <ojeda@kernel.org>,
-	Gary Guo <gary@garyguo.net>,
-	=?utf-8?q?Bj=C3=B6rn_Roy_Baron?= <bjorn3_gh@protonmail.com>,
-	Benno Lossin <lossin@kernel.org>,
-	Andreas Hindborg <a.hindborg@kernel.org>,
-	Alice Ryhl <aliceryhl@google.com>,
-	Trevor Gross <tmgross@umich.edu>,
-	Kari Argillander <kari.argillander@gmail.com>,
-	"Rafael J. Wysocki" <rafael@kernel.org>,
-	Viresh Kumar <viresh.kumar@linaro.org>,
-	Boqun Feng <boqun@kernel.org>,
-	David Airlie <airlied@gmail.com>,
-	Simona Vetter <simona@ffwll.ch>,
-	linux-serial@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	rust-for-linux@vger.kernel.org,
-	linux-pm@vger.kernel.org,
-	driver-core@lists.linux.dev,
-	dri-devel@lists.freedesktop.org
-Subject: Re: [PATCH v11 1/3] rust: add basic serial device bus abstractions
-Date: Sun, 31 May 2026 10:01:31 +0300
-Message-ID: <20260531070133.9405-1-work@onurozkan.dev>
-X-Mailer: git-send-email 2.51.2
-In-Reply-To: <20260531065838.7352-1-work@onurozkan.dev>
-References: <20260531-rust_serdev-v11-0-dee8e0d830f1@posteo.de> <20260531-rust_serdev-v11-1-dee8e0d830f1@posteo.de> <DIWEXUCNLURG.136XXDBHSBNVR@kernel.org> <20260531065838.7352-1-work@onurozkan.dev>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="I4NGTqC2"
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 5BD54C2BCB4;
+	Sun, 31 May 2026 07:52:17 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1780213937;
+	bh=I/w0HozSi+XyRg6QSq/WH39lvvn/3zkRceEeEY8qGWE=;
+	h=From:Date:Subject:To:Cc:Reply-To:From;
+	b=I4NGTqC24tbh1Dub8fdfuCFmVKwmre6wfPk2Q+DPE104P5kXh6yz5Rfjpq3RQJZF1
+	 eOdpL+xljRusBMVfDh3D/wWxHpBu5ApoqYsyvaglxsMTPV+kOWOIhIrNrF0SO7UQjU
+	 JPG4kpgVvp9bNeQhdByr9EOcXTrxy4rIXEXghFfTUFNSObOZCMop1ytfuWI4lzejnA
+	 nlHmYv5R9GpM9eSnZI/eeSLcdciZWKBcefWbmHS1hFWAXqwUx1N7KgnGyBdydCiizk
+	 JCVL5af5PCzSiA0iEBkF2nkyLmpHUd6MDVFYhVxdR2H7zEOVA6M64WfAOv4XI2TWqv
+	 EfcG2IXnzmUKg==
+Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 43867CD6E55;
+	Sun, 31 May 2026 07:52:17 +0000 (UTC)
+From: Ronald Claveau via B4 Relay <devnull+linux-kernel-dev.aliel.fr@kernel.org>
+Date: Sun, 31 May 2026 09:51:37 +0200
+Subject: [PATCH v2] firmware: meson: sm: add stub functions when
+ CONFIG_MESON_SM is disabled
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20260531-fix-missing-meson_sm-symbol-v2-1-1def8c3c169f@aliel.fr>
+X-B4-Tracking: v=1; b=H4sIAAAAAAAC/33NQQ6CMBCF4auQrh1TiraWlfcwxIAdYBLamo4hE
+ sLdrcS1y/9l8s0qGBMhi7pYRcKZmGLIoQ6FeIxtGBDI5RZKKi3PykJPb/DETGEAjxzDnT3w4rs
+ 4gTFGO+msM1qKLDwT5vNdvzW5R+JXTMv+bC6/68+t5F93LqGEqu+0UZ29WHe6thPhdOyTaLZt+
+ wCBrsjqxQAAAA==
+X-Change-ID: 20260529-fix-missing-meson_sm-symbol-7776d0d9d760
+To: Neil Armstrong <neil.armstrong@linaro.org>, 
+ Daniel Lezcano <daniel.lezcano@kernel.org>, Zhang Rui <rui.zhang@intel.com>, 
+ "Rafael J. Wysocki" <rafael@kernel.org>, Lukasz Luba <lukasz.luba@arm.com>
+Cc: Guillaume La Roque <glaroque@baylibre.com>, 
+ Kevin Hilman <khilman@baylibre.com>, Jerome Brunet <jbrunet@baylibre.com>, 
+ Martin Blumenstingl <martin.blumenstingl@googlemail.com>, 
+ linux-arm-kernel@lists.infradead.org, linux-amlogic@lists.infradead.org, 
+ linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, 
+ Mark Brown <broonie@kernel.org>, kernel test robot <lkp@intel.com>, 
+ Ronald Claveau <linux-kernel-dev@aliel.fr>
+X-Mailer: b4 0.14.3
+X-Developer-Signature: v=1; a=openpgp-sha256; l=2615;
+ i=linux-kernel-dev@aliel.fr; h=from:subject:message-id;
+ bh=hEwMqxJxqL8pmXwuK2Rbg6Zwob3G2YZuQoVdSnhBZ2c=;
+ b=owGbwMvMwCWm1SvKXP3cUInxtFoSQ5b0i3XB5h02Cw6Y3pgkHHfyzGFhl3fztiUxBPeWH5r30
+ CLKPetCRykLgxgXg6yYIkv/XMsT7y4fPfN1j3oKzBxWJpAhDFycAjCRrqcMfzgrHT9ffPPcmu/H
+ hmld96/JJZh8u2HYyzx5ncaLE1/XaCsw/DMTqImcw1hssnHSpd3n5F7NYTM9H8dle0Vka0DmhTZ
+ ZQ04A
+X-Developer-Key: i=linux-kernel-dev@aliel.fr; a=openpgp;
+ fpr=DFD863F61375BF917F0012173953305EF1D0EC3E
+X-Endpoint-Received: by B4 Relay for linux-kernel-dev@aliel.fr/default with
+ auth_id=744
+X-Original-From: Ronald Claveau <linux-kernel-dev@aliel.fr>
+Reply-To: linux-kernel-dev@aliel.fr
 
-On Sun, 31 May 2026 09:58:34 +0300=0D
-Onur =C3=96zkan <work@onurozkan.dev> wrote:=0D
-=0D
-> On Sun, 31 May 2026 01:51:08 +0200=0D
-> Danilo Krummrich <dakr@kernel.org> wrote:=0D
-> =0D
-> > On Sun May 31, 2026 at 12:51 AM CEST, Markus Probst via B4 Relay wrote:=
-=0D
-> > > +#[pinned_drop]=0D
-> > > +impl<T: Driver> PinnedDrop for PrivateData<'_, T> {=0D
-> > > +    fn drop(self: Pin<&mut Self>) {=0D
-> > > +        let mut active =3D self.active.lock();=0D
-> > > +        if *active {=0D
-> > > +            // SAFETY:=0D
-> > > +            // - We have exclusive access to `self.driver`.=0D
-> > > +            // - `self.driver` is guaranteed to be initialized.=0D
-> > > +            unsafe { (*self.driver.get()).assume_init_drop() };=0D
-> > > +            *active =3D false;=0D
-> > > +        }=0D
-> > > +=0D
-> > > +        // SAFETY: We have exclusive access to `self.open`.=0D
-> > > +        if unsafe { *self.open.get() } {=0D
-> > > +            // SAFETY: `self.sdev.as_raw()` is guaranteed to be a po=
-inter to a valid=0D
-> > > +            // `struct serdev_device`.=0D
-> > > +            unsafe { bindings::serdev_device_close(self.sdev.as_raw(=
-)) };=0D
-> > > +        }=0D
-> > > +    }=0D
-> > > +}=0D
-> > =0D
-> > Just in case it came across otherwise, I did not mean to push for you t=
-o go for=0D
-> > this approach. We just kept discussing it because it let to the (to me =
-more=0D
-> > interesting) discussion around the LED class device abstraction.=0D
-> > =0D
-> > While this approach gets us rid of an extra allocation and the rust_pri=
-vate_data=0D
-> > pointer in struct serdev_device it also turns out a bit more convoluted=
-.=0D
-> > =0D
-> > That said, both are correct, and I won't object either one; up to you a=
-nd the=0D
-> > serdev / tty maintainers.=0D
-> > =0D
-> > Please wait a bit before resending, so other people can comment on this=
- as well.=0D
-> > =0D
-> > > +    extern "C" fn receive_buf_callback(=0D
-> > > +        sdev: *mut bindings::serdev_device,=0D
-> > > +        buf: *const u8,=0D
-> > > +        length: usize,=0D
-> > > +    ) -> usize {=0D
-> > > +        // SAFETY: The serial device bus only ever calls the receive=
- buf callback with a valid=0D
-> > > +        // pointer to a `struct serdev_device`.=0D
-> > > +        //=0D
-> > > +        // INVARIANT: `sdev` is valid for the duration of `receive_b=
-uf_callback()`.=0D
-> > > +        let sdev =3D unsafe { &*sdev.cast::<Device<device::CoreInter=
-nal<'_>>>() };=0D
-> > =0D
-> > CoreInternal snuck back in, should be BoundInternal.=0D
-> > =0D
-> > > +=0D
-> > > +        // SAFETY: `receive_buf_callback` is only ever called after =
-a successful call to=0D
-> > > +        // `probe_callback`, hence it's guaranteed that `Device::set=
-_drvdata()` has been called=0D
-> > > +        // and stored a `Pin<KBox<PrivateData<'_, T>>>`.=0D
-> > > +        let private_data =3D unsafe { sdev.as_ref().drvdata_borrow::=
-<PrivateData<'_, T>>() };=0D
-> > > +        let active =3D private_data.active.lock();=0D
-> > =0D
-> > I think SRCU would be a much better fit, but the code didn't land yet, =
-so the=0D
-> > mutex seems fine for now. But I'd probably add a TODO.=0D
-> > =0D
-> =0D
-> Jfyi v9 is on the list [1] and I would say we are pretty close on taking =
-that.=0D
-> =0D
-> Thanks,=0D
-> Onur=0D
-> =0D
-> [1]: https://lore.kernel.org/rust-for-linux/DIWEXUCNLURG.136XXDBHSBNVR@ke=
-rnel.org=0D
-> =0D
-=0D
-I pasted the wrong link, sorry.=0D
-=0D
-It should have been this instead:=0D
-=0D
-  https://lore.kernel.org/all/20260529134004.396743-1-work@onurozkan.dev=0D
-=0D
-> > > +=0D
-> > > +        if !*active {=0D
-> > > +            return length;=0D
-> > > +        }=0D
-> > > +=0D
-> > > +        // SAFETY: No one has exclusive access to `private_data.driv=
-er`.=0D
-> > > +        let data =3D unsafe { &*private_data.driver.get() };=0D
-> > > +        // SAFETY:=0D
-> > > +        // - `private_data.driver` is pinned.=0D
-> > > +        // - `receive_buf_callback` is only ever called after a succ=
-essful call to `probe_callback`,=0D
-> > > +        //   hence it's guaranteed that `private_data.driver` was in=
-itialized.=0D
-> > > +        let data_pinned =3D unsafe { Pin::new_unchecked(data.assume_=
-init_ref()) };=0D
-> > > +=0D
-> > > +        // SAFETY: `buf` is guaranteed to be non-null and has the si=
-ze of `length`.=0D
-> > > +        let buf =3D unsafe { core::slice::from_raw_parts(buf, length=
-) };=0D
-> > > +=0D
-> > > +        T::receive(sdev, data_pinned, buf)=0D
-> > > +    }=0D
-> > > +}=0D
+From: Ronald Claveau <linux-kernel-dev@aliel.fr>
+
+After merging the thermal tree, linux-next build (arm_multi_v7
+defconfig) failed like this:
+
+arm-linux-gnueabihf-ld: drivers/thermal/amlogic_thermal.o: in function `amlogic_thermal_probe_sm':
+/tmp/next/build/drivers/thermal/amlogic_thermal.c:196:(.text+0x2f4): undefined reference to `meson_sm_get'
+arm-linux-gnueabihf-ld: /tmp/next/build/drivers/thermal/amlogic_thermal.c:205:(.text+0x320): undefined reference to `meson_sm_get_thermal_calib'
+
+Add inline stub implementations of meson_sm_get() and
+meson_sm_get_thermal_calib() behind an #else guard so that drivers
+including this header can be compiled without CONFIG_MESON_SM .
+
+Fixes: b21d88de6918 ("thermal/drivers/amlogic: Add support for secure monitor calibration readout")
+Closes: https://lore.kernel.org/oe-kbuild-all/202605291530.en7aGn7w-lkp@intel.com/
+Reported-by: Mark Brown <broonie@kernel.org>
+Reported-by: kernel test robot <lkp@intel.com>
+Signed-off-by: Ronald Claveau <linux-kernel-dev@aliel.fr>
+---
+Changes in v2:
+- Replace #ifdef CONFIG_MESON_SM by #if IS_ENABLED(CONFIG_MESON_SM)
+  to cover builtin and module in config.
+- Add missing trailers for kernel test robot.
+- Link to v1: https://lore.kernel.org/r/20260530-fix-missing-meson_sm-symbol-v1-1-3fb672b989d4@aliel.fr
+---
+ include/linux/firmware/meson/meson_sm.h | 17 +++++++++++++++++
+ 1 file changed, 17 insertions(+)
+
+diff --git a/include/linux/firmware/meson/meson_sm.h b/include/linux/firmware/meson/meson_sm.h
+index 3ebc2bd9a9760..baecdaf263f41 100644
+--- a/include/linux/firmware/meson/meson_sm.h
++++ b/include/linux/firmware/meson/meson_sm.h
+@@ -27,8 +27,25 @@ int meson_sm_call_write(struct meson_sm_firmware *fw, void *buffer,
+ int meson_sm_call_read(struct meson_sm_firmware *fw, void *buffer,
+ 		       unsigned int bsize, unsigned int cmd_index, u32 arg0,
+ 		       u32 arg1, u32 arg2, u32 arg3, u32 arg4);
++
++#if IS_ENABLED(CONFIG_MESON_SM)
++
+ struct meson_sm_firmware *meson_sm_get(struct device_node *firmware_node);
+ int meson_sm_get_thermal_calib(struct meson_sm_firmware *fw, u32 *trim_info,
+ 			       u32 tsensor_id);
+ 
++#else
++
++static inline struct meson_sm_firmware *meson_sm_get(struct device_node *firmware_node)
++{
++	return NULL;
++}
++static inline int meson_sm_get_thermal_calib(struct meson_sm_firmware *fw,
++					     u32 *trim_info, u32 tsensor_id)
++{
++	return -EINVAL;
++}
++
++#endif
++
+ #endif /* _MESON_SM_FW_H_ */
+
+---
+base-commit: 3929405c64376a8a54c794e8a4485023b108a97e
+change-id: 20260529-fix-missing-meson_sm-symbol-7776d0d9d760
+
+Best regards,
+-- 
+Ronald Claveau <linux-kernel-dev@aliel.fr>
+
+
