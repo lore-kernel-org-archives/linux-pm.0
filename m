@@ -1,90 +1,122 @@
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.19])
+Received: from courrier.aliel.fr (courrier.aliel.fr [65.21.61.41])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9BC383546EB;
-	Sun, 31 May 2026 16:57:06 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.19
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 56A19328631;
+	Sun, 31 May 2026 17:50:12 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=65.21.61.41
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1780246628; cv=none; b=GfVM+WOYt9V9gE0KePfqHC3cKzAuvVC4/zKNGhSPhSbM5ZrAM4C1jvWHc8eU11nfX+i2GiVGPqVuWopxyK/8WdjLSSBNv3+U4ZC0LtEpDTj3/R8kTS/hG2tLcQefzw+J1ZTLUM7F1Us8ITgAP9bdzq8WT7qj1ghY9JOJO5HWY48=
+	t=1780249816; cv=none; b=AvJIF7wU47k5Uzw/TzaXhKOZUr+Aw2O5ePAl28hSRj74MDA9n4QqPLDJDhT1K0qpJQ3uULMGa6qSy0Ck3RAt3zuO3FCYdP8PkUVrjwqBbIJWnu9LS82J0AKUMb49IRLO94DNH1emLAr9SWS92eWqcgeqJAXcscP5Ck1fxrAl6mI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1780246628; c=relaxed/simple;
-	bh=YxB8iq1OKxhlx8OiSPDy6fWpMVZHM57unYTBUCz4B9k=;
-	h=Date:From:To:Cc:Subject:Message-ID; b=U/RDy3dhvCerHn1LzBYXyE8JrPHbTK74Ygg5wHbB4mMPYWeocJ0L6pHF7PmtiK62KwxPjho+62DXwIpXkGB+AFGodrb5m28TKcsO1Iliin4b6lvFf8TWzoXi1hZXsNMXj0pq62TunDrV5o88xpU5FOjU8fcWwDox/l0mz6MDrPE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=anxaks0w; arc=none smtp.client-ip=192.198.163.19
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
+	s=arc-20240116; t=1780249816; c=relaxed/simple;
+	bh=JQpEJWohU7u2PUrSQq5dK/MO03Qv9YI8notJ93T8T3k=;
+	h=Message-ID:Date:MIME-Version:From:Subject:To:Cc:References:
+	 In-Reply-To:Content-Type; b=GAZC+bW4+T1JP3JDGMNyziUff4/xHmqNYv874lgQ/wBjheKDLe1uCKjyL8YzMFdR9ujo+Igm0pw41V5Xfkh01I5oqdKOpaeY/qyCZUEeURF36aK5HAS+zH+GQiDEpmBPpMY6XhRGYvBD05wxMTcj+k65aQX/2h9G6fCNTZPLvKw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=aliel.fr; spf=pass smtp.mailfrom=aliel.fr; dkim=pass (1024-bit key) header.d=aliel.fr header.i=@aliel.fr header.b=oJVEYD73; arc=none smtp.client-ip=65.21.61.41
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=aliel.fr
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=aliel.fr
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="anxaks0w"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1780246627; x=1811782627;
-  h=date:from:to:cc:subject:message-id;
-  bh=YxB8iq1OKxhlx8OiSPDy6fWpMVZHM57unYTBUCz4B9k=;
-  b=anxaks0w7IcWcWFSnMXATm12d2fwSvb04O9H4OTPZ/sy5HeI9uZh0XNm
-   wno5aGziIR+MZjYyt17MhnE/BSPdKtT12wBiLAV8xM7d7pPnYi7YbHgBc
-   7iU+fJbG3BDbr5n9uzpVT/+L11kXt+4qp0u/B05uFVVPo6xWW0fpBDqL6
-   SyKn6TslxY435lY4khTgFwsfEm2EfuMIkPbI+sDj+zsN/7iHxa0UazR/5
-   T8aQuv4IEIp4YcPm91wdyDUgN9pO732qsyra9wVlowOdtq0jSh0KHUH5U
-   lV8pmFgfDdjwnvg/36+3f2Gq/wUdHKZV4NVk7IFQkB9uRpXA/mBgfqHgV
-   g==;
-X-CSE-ConnectionGUID: l5S5fC+4QcaIVbqbShy36A==
-X-CSE-MsgGUID: KgWYUR61ReSSeKlMyu5iSg==
-X-IronPort-AV: E=McAfee;i="6800,10657,11803"; a="80052730"
-X-IronPort-AV: E=Sophos;i="6.24,179,1774335600"; 
-   d="scan'208";a="80052730"
-Received: from fmviesa007.fm.intel.com ([10.60.135.147])
-  by fmvoesa113.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 31 May 2026 09:57:06 -0700
-X-CSE-ConnectionGUID: HML7du4AQKqM/795MF60SA==
-X-CSE-MsgGUID: ucLD1krjQxiRCYKBpg6OgQ==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.24,179,1774335600"; 
-   d="scan'208";a="240357461"
-Received: from igk-lkp-server01.igk.intel.com (HELO 892db79562d4) ([10.211.93.152])
-  by fmviesa007.fm.intel.com with ESMTP; 31 May 2026 09:57:04 -0700
-Received: from kbuild by 892db79562d4 with local (Exim 4.98.2)
-	(envelope-from <lkp@intel.com>)
-	id 1wTjTC-000000001PJ-18bg;
-	Sun, 31 May 2026 16:57:02 +0000
-Date: Sun, 31 May 2026 18:56:57 +0200
-From: kernel test robot <lkp@intel.com>
-To: Leo Li <sunpeng.li@amd.com>
-Cc: oe-kbuild-all@lists.linux.dev, linux-pm@vger.kernel.org,
- "Mario Limonciello (AMD)" <superm1@kernel.org>,
- linux-doc@vger.kernel.org
-Subject: [amd-pstate:superm1/backlight-property-v5 9/21] htmldocs:
- Documentation/gpu/amdgpu/display/display-manager:29:
- ./drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm_irq.c:789: WARNING: Line
- block ends without a blank line. [docutils]
-Message-ID: <202605311832.R47OfrlB-lkp@intel.com>
-User-Agent: s-nail v14.9.25
+	dkim=pass (1024-bit key) header.d=aliel.fr header.i=@aliel.fr header.b="oJVEYD73"
+Message-ID: <12d74340-0213-4f7e-a494-10ce147844ad@aliel.fr>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=aliel.fr;
+	s=courrier-s1; t=1780249805;
+	bh=JQpEJWohU7u2PUrSQq5dK/MO03Qv9YI8notJ93T8T3k=;
+	h=Date:From:Subject:To:Cc:References:In-Reply-To;
+	b=oJVEYD73f39ZQ8iUe8tM1mLjjbNxz4Aw2wpFEEW4h+E5It9PvmKzmqKDYSgM8dRCW
+	 QmdyKnjKhbFuzVWjJHlmL4/ekhXpHSz8AXid6Fwhnpo5Iw5p+qp91UmNnJKACqV0KD
+	 nK/0i3YsiVZdmB2M/Yy7X0I6YpjPuYYVPFIVp+C0=
+Date: Sun, 31 May 2026 19:49:55 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
+MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird Beta
+From: Ronald Claveau <linux-kernel-dev@aliel.fr>
+Subject: Re: [PATCH v2] firmware: meson: sm: add stub functions when
+ CONFIG_MESON_SM is disabled
+To: Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>
+Cc: Guillaume La Roque <glaroque@baylibre.com>,
+ Kevin Hilman <khilman@baylibre.com>, Jerome Brunet <jbrunet@baylibre.com>,
+ Martin Blumenstingl <martin.blumenstingl@googlemail.com>,
+ linux-arm-kernel@lists.infradead.org, linux-amlogic@lists.infradead.org,
+ linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+ Mark Brown <broonie@kernel.org>, kernel test robot <lkp@intel.com>,
+ Neil Armstrong <neil.armstrong@linaro.org>,
+ Daniel Lezcano <daniel.lezcano@kernel.org>, Zhang Rui <rui.zhang@intel.com>,
+ "Rafael J. Wysocki" <rafael@kernel.org>, Lukasz Luba <lukasz.luba@arm.com>
+References: <20260531-fix-missing-meson_sm-symbol-v2-1-1def8c3c169f@aliel.fr>
+ <8c11a91b-cfbf-4b9c-a46f-907989bf8305@oss.qualcomm.com>
+Content-Language: en-US
+In-Reply-To: <8c11a91b-cfbf-4b9c-a46f-907989bf8305@oss.qualcomm.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 
-tree:   https://git.kernel.org/pub/scm/linux/kernel/git/superm1/linux.git superm1/backlight-property-v5
-head:   5f2330560c00d587cd173ee4222011b62e1ac567
-commit: 4dbf62273708e62ea3d1532671b4e5c26f722b8b [9/21] drm/amd/display: Use vline2 interrupt on DCN instead of vstartup
-compiler: clang version 20.1.8 (https://github.com/llvm/llvm-project 87f0227cb60147a26a1eeb4fb06e3b505e9c7261)
-docutils: docutils (Docutils 0.21.2, Python 3.13.5, on linux)
-reproduce: (https://download.01.org/0day-ci/archive/20260531/202605311832.R47OfrlB-lkp@intel.com/reproduce)
+On 5/31/26 10:41 AM, Daniel Lezcano wrote:
+> On 5/31/26 09:51, Ronald Claveau via B4 Relay wrote:
+>> From: Ronald Claveau <linux-kernel-dev@aliel.fr>
+>>
+>> After merging the thermal tree, linux-next build (arm_multi_v7
+>> defconfig) failed like this:
+>>
+>> arm-linux-gnueabihf-ld: drivers/thermal/amlogic_thermal.o: in function
+>> `amlogic_thermal_probe_sm':
+>> /tmp/next/build/drivers/thermal/amlogic_thermal.c:196:(.text+0x2f4):
+>> undefined reference to `meson_sm_get'
+>> arm-linux-gnueabihf-ld: /tmp/next/build/drivers/thermal/
+>> amlogic_thermal.c:205:(.text+0x320): undefined reference to
+>> `meson_sm_get_thermal_calib'
+>>
+>> Add inline stub implementations of meson_sm_get() and
+>> meson_sm_get_thermal_calib() behind an #else guard so that drivers
+>> including this header can be compiled without CONFIG_MESON_SM .
+>>
+>> Fixes: b21d88de6918 ("thermal/drivers/amlogic: Add support for secure
+>> monitor calibration readout")
+>> Closes: https://lore.kernel.org/oe-kbuild-all/202605291530.en7aGn7w-
+>> lkp@intel.com/
+>> Reported-by: Mark Brown <broonie@kernel.org>
+>> Reported-by: kernel test robot <lkp@intel.com>
+>> Signed-off-by: Ronald Claveau <linux-kernel-dev@aliel.fr>
+>> ---
+>> Changes in v2:
+>> - Replace #ifdef CONFIG_MESON_SM by #if IS_ENABLED(CONFIG_MESON_SM)
+>>    to cover builtin and module in config.
+>> - Add missing trailers for kernel test robot.
+>> - Link to v1: https://lore.kernel.org/r/20260530-fix-missing-meson_sm-
+>> symbol-v1-1-3fb672b989d4@aliel.fr
+>> ---
+>>   include/linux/firmware/meson/meson_sm.h | 17 +++++++++++++++++
+>>   1 file changed, 17 insertions(+)
+>>
+>> diff --git a/include/linux/firmware/meson/meson_sm.h b/include/linux/
+>> firmware/meson/meson_sm.h
+>> index 3ebc2bd9a9760..baecdaf263f41 100644
+>> --- a/include/linux/firmware/meson/meson_sm.h
+>> +++ b/include/linux/firmware/meson/meson_sm.h
+>> @@ -27,8 +27,25 @@ int meson_sm_call_write(struct meson_sm_firmware
+>> *fw, void *buffer,
+>>   int meson_sm_call_read(struct meson_sm_firmware *fw, void *buffer,
+>>                  unsigned int bsize, unsigned int cmd_index, u32 arg0,
+>>                  u32 arg1, u32 arg2, u32 arg3, u32 arg4);
+>> +
+>> +#if IS_ENABLED(CONFIG_MESON_SM)
+>> +
+>>   struct meson_sm_firmware *meson_sm_get(struct device_node
+>> *firmware_node);
+>>   int meson_sm_get_thermal_calib(struct meson_sm_firmware *fw, u32
+>> *trim_info,
+>>                      u32 tsensor_id);
+> 
+> Do you really want to compile meson_sm as a module ?
+> 
+> 
+> 
 
-If you fix the issue in a separate patch/commit (i.e. not just a new version of
-the same patch/commit), kindly add following tags
-| Reported-by: kernel test robot <lkp@intel.com>
-| Closes: https://lore.kernel.org/oe-kbuild-all/202605311832.R47OfrlB-lkp@intel.com/
+I don't want, but if I send a patch to change tristate to bool, it will
+raise a warning because 'm' is not valid.
+If it is accepted to ignore this warning, I can send another patch.
 
-All warnings (new ones prefixed by >>):
-
-   WARNING: ./drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm_irq.c:805 function parameter 'state' not described in 'amdgpu_dm_set_vline_irq_state'
-   WARNING: ./drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm_irq.c:805 function parameter 'adev' not described in 'amdgpu_dm_set_vline_irq_state'
-   WARNING: ./drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm_irq.c:805 function parameter 'source' not described in 'amdgpu_dm_set_vline_irq_state'
-   WARNING: ./drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm_irq.c:805 function parameter 'vline_crtc_id' not described in 'amdgpu_dm_set_vline_irq_state'
-   WARNING: ./drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm_irq.c:805 function parameter 'state' not described in 'amdgpu_dm_set_vline_irq_state'
->> Documentation/gpu/amdgpu/display/display-manager:29: ./drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm_irq.c:789: WARNING: Line block ends without a blank line. [docutils]
-   Documentation/gpu/amdgpu/display/display-manager:47: ./drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm_color.c:61: ERROR: Unexpected section title.
-
---
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
+-- 
+Best regards,
+Ronald
