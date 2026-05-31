@@ -1,129 +1,181 @@
-Received: from outbound8.mail.transip.nl (outbound8.mail.transip.nl [136.144.136.8])
+Received: from mail-244107.protonmail.ch (mail-244107.protonmail.ch [109.224.244.107])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5C5F026F46F;
-	Sun, 31 May 2026 04:09:10 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=136.144.136.8
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4B94E329367;
+	Sun, 31 May 2026 06:58:51 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=109.224.244.107
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1780200585; cv=none; b=Thmiel8LpXan/nzVOINrQk/BqgzS9S8Jbm37vlOHdF1JCfSpIfP8Ba3YF7saJJeiZYdo13MyV2tvh3YhvbwTo2Ydc7NEg1cSWdJsDe+Pfcb/HOMEp98cI/MgoeqgFyCs+FrG464p0NK17VYxtepHiD4sBikbNDTyL4ct8A1bsLk=
+	t=1780210735; cv=none; b=MfzSvDVU9jsWn4nsdIL/uiEvG0NnnFEJM3IwllyTobu48kZH3oKyLG4k1XtOefldOv3lqTiI54GVSVtCGjG1sLkCigiG7x1CbavHckS1YVr37X7iTASSDlu0hX5Wj0E23on3BbaW2t0ACIs3pDxCAFmHeYtCHV5JJ9/mezTU/P0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1780200585; c=relaxed/simple;
-	bh=36NhuOVHY5OtaVczkA7Bdp6fFKvM65k1mtw8NRYVGJM=;
-	h=From:To:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=FEZmsvu61ndKFXykdYROfKSTXt7BpSxsTkUP4p30nFK4atvkDSTQ7tei6A9MrzhAviHRYCMA7C/nRNMXLEJ3VKb9NRD5NaanGBv8CorRa0NlHZV5EdXehW3BsH0VXCCneoPxHxGrbilZCBVYTpBTHbDpwXo6ICsp/xw/CL13qLM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=herrie.org; spf=pass smtp.mailfrom=herrie.org; dkim=pass (2048-bit key) header.d=herrie.org header.i=@herrie.org header.b=DztoHCe/; arc=none smtp.client-ip=136.144.136.8
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=herrie.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=herrie.org
+	s=arc-20240116; t=1780210735; c=relaxed/simple;
+	bh=xutHP44hJcIDCGcIELGlCWuxjlQ1wFNS9DJ9kd6fNzY=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=ByjpTzLdArpj/cMc8oBaXOrEd0g/tyvJuHr4YB+NJ6ffECDUWmvqwuQOz2R/Z6pMke8fEVq+wxZZHyeW4IvJspiPHgK8IgrVK7qTZ+uJ//L4fyBB3ckOve5iLa4wsR/23hCbsCN0NfNUryDzEYTbV79/Dy5ikeKJrnLSO499hjk=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=onurozkan.dev; spf=pass smtp.mailfrom=onurozkan.dev; dkim=pass (2048-bit key) header.d=onurozkan.dev header.i=@onurozkan.dev header.b=SoY3+pbW; arc=none smtp.client-ip=109.224.244.107
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=onurozkan.dev
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=onurozkan.dev
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=herrie.org header.i=@herrie.org header.b="DztoHCe/"
-Received: from submission3.mail.transip.nl (unknown [10.100.4.72])
-	by outbound8.mail.transip.nl (Postfix) with ESMTP id 4gSk9w3ZYhzY75ZZ;
-	Sun, 31 May 2026 06:09:08 +0200 (CEST)
-Received: from herrie-desktop.. (180-93-184-31.ftth.glasoperator.nl [31.184.93.180])
-	by submission3.mail.transip.nl (Postfix) with ESMTPA id 4gSk9v4ppGzf52b6;
-	Sun, 31 May 2026 06:09:07 +0200 (CEST)
-From: Herman van Hazendonk <github.com@herrie.org>
-To: Conor Dooley <conor+dt@kernel.org>,
-	devicetree@vger.kernel.org,
-	Georgi Djakov <djakov@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	linux-arm-msm@vger.kernel.org,
+	dkim=pass (2048-bit key) header.d=onurozkan.dev header.i=@onurozkan.dev header.b="SoY3+pbW"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=onurozkan.dev;
+	s=protonmail; t=1780210728; x=1780469928;
+	bh=1zuTcz9lsZ3dSxS9JH0d/vr7IOtYnrFPsiw5PML6+Tc=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:From:To:
+	 Cc:Date:Subject:Reply-To:Feedback-ID:Message-ID:BIMI-Selector;
+	b=SoY3+pbWoI8cC0zQAyDnyHRMxRceGzV9QkNEA442WHcQgE1DVT1H+X6fDltDwnCsM
+	 5EULxZMeC5BgKlr7dqiU3qXao9xTPr3MkSZncNgHbLk5VIAwpvDIwy0tEtC0Cjqmb3
+	 V1ZF8uWBx4py0dU3Uck8Ks+Njf1NFCH/wkGO67ZP2a9K9WNJDfTGubiawgZbualuyl
+	 4evv8n2fpnwr+WTPwO8rf71+CKAlmbgDA6kzBaUyXdSWVuWqJIlxuWPwkk8TIpmJbp
+	 HTQewyvcuyf38XcT5ehTYSUJ5LKEaU3eNd1WN8nmO2vYtywEpjm94ZH0PLKozYqgmw
+	 KQlROHlxlU5EA==
+X-Pm-Submission-Id: 4gSnxb0tjHz1DDKv
+From: =?UTF-8?q?Onur=20=C3=96zkan?= <work@onurozkan.dev>
+To: Danilo Krummrich <dakr@kernel.org>
+Cc: Markus Probst via B4 Relay <devnull+markus.probst.posteo.de@kernel.org>,
+	markus.probst@posteo.de,
+	Rob Herring <robh@kernel.org>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	Jiri Slaby <jirislaby@kernel.org>,
+	Miguel Ojeda <ojeda@kernel.org>,
+	Gary Guo <gary@garyguo.net>,
+	=?utf-8?q?Bj=C3=B6rn_Roy_Baron?= <bjorn3_gh@protonmail.com>,
+	Benno Lossin <lossin@kernel.org>,
+	Andreas Hindborg <a.hindborg@kernel.org>,
+	Alice Ryhl <aliceryhl@google.com>,
+	Trevor Gross <tmgross@umich.edu>,
+	Kari Argillander <kari.argillander@gmail.com>,
+	"Rafael J. Wysocki" <rafael@kernel.org>,
+	Viresh Kumar <viresh.kumar@linaro.org>,
+	Boqun Feng <boqun@kernel.org>,
+	David Airlie <airlied@gmail.com>,
+	Simona Vetter <simona@ffwll.ch>,
+	linux-serial@vger.kernel.org,
 	linux-kernel@vger.kernel.org,
+	rust-for-linux@vger.kernel.org,
 	linux-pm@vger.kernel.org,
-	Rob Herring <robh@kernel.org>
-Subject: [PATCH v2 0/2] interconnect: qcom: add MSM8x60 NoC driver
-Date: Sun, 31 May 2026 06:09:05 +0200
-Message-ID: <cover.1780197411.git.github.com@herrie.org>
-X-Mailer: git-send-email 2.43.0
-In-Reply-To: <cover.1780148149.git.github.com@herrie.org>
-References: <cover.1780148149.git.github.com@herrie.org>
+	driver-core@lists.linux.dev,
+	dri-devel@lists.freedesktop.org
+Subject: Re: [PATCH v11 1/3] rust: add basic serial device bus abstractions
+Date: Sun, 31 May 2026 09:58:34 +0300
+Message-ID: <20260531065838.7352-1-work@onurozkan.dev>
+X-Mailer: git-send-email 2.51.2
+In-Reply-To: <DIWEXUCNLURG.136XXDBHSBNVR@kernel.org>
+References: <20260531-rust_serdev-v11-0-dee8e0d830f1@posteo.de> <20260531-rust_serdev-v11-1-dee8e0d830f1@posteo.de> <DIWEXUCNLURG.136XXDBHSBNVR@kernel.org>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Scanned-By: ClueGetter at submission3.mail.transip.nl
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
- s=transip-a; d=herrie.org; t=1780200547; h=from:subject:to:references:
- in-reply-to:date:mime-version;
- bh=NlW9i/XlXywCqjlGWse0QjhnP2pj35gx6iynqe3HBOA=;
- b=DztoHCe/hVyufbESPee0DHTn8VM3g73jwxtq6fa/KLnjMFWRzQ54Z0r9U+bdw/gAnn3Yqs
- fcHkffhpxngFqbk3bRIj6qOTJjiaTwfciFwJ1/MTUtb0sIqSZbcn67lL/X4shqkkxZinlP
- XccuOY+nTj7P4CStJt8HJdtIc9UD47+IlfuIRap5xDbqbiPR5SNBJ0051y+8kr6jCp/XaI
- gy8BZBM5QGbWWUZ1f5CYxxmqJokgR2bU5SOYLRwgjjBF8vskTn5EBS4l5g89nMDW6z+YkE
- iEFREv7JQzu6bgwvXg//XKe6R+1RgrclxxOT4LYETrJwPkZGYyLHRVaOXjkuLw==
-X-Report-Abuse-To: abuse@transip.nl
-Message-ID: <20260531040905.ZAdI1TQarTaVwyV5T3xfExjsPFLtfkVkMq5lR39VWUA@z>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-Hi all,
-
-Self-review (with Sashiko AI assist) caught five real issues in v1's
-NoC driver before the maintainer review cycle reached them, so
-re-rolling promptly. v1:
-
-  https://lore.kernel.org/linux-arm-msm/cover.1780148149.git.github.com@herrie.org/
-
-v2 changes (driver patch only; the binding header is unchanged from v1):
-
-  - MMFAB master port collision: mmfab_to_appss claimed port 2, but
-    that port was already owned by mmfab_mas_adm1_port0. Per the
-    fabric's port table the APPS_FAB gateway lives at port 11; fix
-    the DEFINE_QNODE so ADM1 DMA's arbitration vote on MMFAB is no
-    longer overwritten by the gateway.
-
-  - msm8660_rpm_commit() double-converted bandwidth units: it called
-    icc_units_to_bps() (which already returns bytes/s) and then
-    immediately divided by 8 "bits -> bytes", asking RPM for 1/8 of
-    the bandwidth that consumers had requested. Drop the spurious
-    divide.
-
-  - Fabric rate cache hoisted to provider scope and divided by the
-    fabric's own bus width rather than the triggering node's local
-    buswidth. A fabric has one shared hardware clock; using each
-    master's local buswidth makes the requested clk rate oscillate
-    depending on which master called icc_set_bw() last, and caching
-    the result on the node lets a subsequent update skip clk_set_rate
-    even though a different node has already moved the hardware. The
-    new layout adds desc->bus_width per fabric (AFAB/SFAB/DFAB=8,
-    MMFAB=16) and qp->rate as the single source of truth.
-
-  - msm8660_get_rpm() rewritten:
-      * returns ERR_PTR(-EPROBE_DEFER) when the RPM phandle resolves
-        but the device hasn't probed yet, instead of returning NULL
-        and silently disabling ARB forever;
-      * adds a device_link to the RPM device so the devres-managed
-        qcom_rpm struct can't be freed out from under us if the RPM
-        driver is unbound at runtime (previously a use-after-free
-        risk because we kept a pointer past put_device()).
-    Probe propagates IS_ERR(qp->rpm) up so the framework retries.
-
-  - devm_clk_bulk_get_optional() now distinguishes -EPROBE_DEFER
-    (propagated) from real "no clocks" (continue without scaling).
-    Previously every error was swallowed, which permanently disabled
-    clock scaling if the icc driver happened to probe before the
-    clock provider - which it usually does, given the core_initcall
-    ordering.
-
-No functional change intended on the working paths; this is purely
-correctness work.
-
-Thanks,
-Herman
-
-Herman van Hazendonk (2):
-  dt-bindings: interconnect: qcom: add msm8660 fabric IDs
-  interconnect: qcom: add MSM8x60 NoC driver
-
- drivers/interconnect/qcom/Kconfig             |   10 +
- drivers/interconnect/qcom/Makefile            |    2 +
- drivers/interconnect/qcom/msm8660.c           | 1069 +++++++++++++++++
- .../dt-bindings/interconnect/qcom,msm8660.h   |  156 +++
- 4 files changed, 1237 insertions(+)
- create mode 100644 drivers/interconnect/qcom/msm8660.c
- create mode 100644 include/dt-bindings/interconnect/qcom,msm8660.h
-
--- 
-2.43.0
-
+On Sun, 31 May 2026 01:51:08 +0200=0D
+Danilo Krummrich <dakr@kernel.org> wrote:=0D
+=0D
+> On Sun May 31, 2026 at 12:51 AM CEST, Markus Probst via B4 Relay wrote:=0D
+> > +#[pinned_drop]=0D
+> > +impl<T: Driver> PinnedDrop for PrivateData<'_, T> {=0D
+> > +    fn drop(self: Pin<&mut Self>) {=0D
+> > +        let mut active =3D self.active.lock();=0D
+> > +        if *active {=0D
+> > +            // SAFETY:=0D
+> > +            // - We have exclusive access to `self.driver`.=0D
+> > +            // - `self.driver` is guaranteed to be initialized.=0D
+> > +            unsafe { (*self.driver.get()).assume_init_drop() };=0D
+> > +            *active =3D false;=0D
+> > +        }=0D
+> > +=0D
+> > +        // SAFETY: We have exclusive access to `self.open`.=0D
+> > +        if unsafe { *self.open.get() } {=0D
+> > +            // SAFETY: `self.sdev.as_raw()` is guaranteed to be a poin=
+ter to a valid=0D
+> > +            // `struct serdev_device`.=0D
+> > +            unsafe { bindings::serdev_device_close(self.sdev.as_raw())=
+ };=0D
+> > +        }=0D
+> > +    }=0D
+> > +}=0D
+> =0D
+> Just in case it came across otherwise, I did not mean to push for you to =
+go for=0D
+> this approach. We just kept discussing it because it let to the (to me mo=
+re=0D
+> interesting) discussion around the LED class device abstraction.=0D
+> =0D
+> While this approach gets us rid of an extra allocation and the rust_priva=
+te_data=0D
+> pointer in struct serdev_device it also turns out a bit more convoluted.=
+=0D
+> =0D
+> That said, both are correct, and I won't object either one; up to you and=
+ the=0D
+> serdev / tty maintainers.=0D
+> =0D
+> Please wait a bit before resending, so other people can comment on this a=
+s well.=0D
+> =0D
+> > +    extern "C" fn receive_buf_callback(=0D
+> > +        sdev: *mut bindings::serdev_device,=0D
+> > +        buf: *const u8,=0D
+> > +        length: usize,=0D
+> > +    ) -> usize {=0D
+> > +        // SAFETY: The serial device bus only ever calls the receive b=
+uf callback with a valid=0D
+> > +        // pointer to a `struct serdev_device`.=0D
+> > +        //=0D
+> > +        // INVARIANT: `sdev` is valid for the duration of `receive_buf=
+_callback()`.=0D
+> > +        let sdev =3D unsafe { &*sdev.cast::<Device<device::CoreInterna=
+l<'_>>>() };=0D
+> =0D
+> CoreInternal snuck back in, should be BoundInternal.=0D
+> =0D
+> > +=0D
+> > +        // SAFETY: `receive_buf_callback` is only ever called after a =
+successful call to=0D
+> > +        // `probe_callback`, hence it's guaranteed that `Device::set_d=
+rvdata()` has been called=0D
+> > +        // and stored a `Pin<KBox<PrivateData<'_, T>>>`.=0D
+> > +        let private_data =3D unsafe { sdev.as_ref().drvdata_borrow::<P=
+rivateData<'_, T>>() };=0D
+> > +        let active =3D private_data.active.lock();=0D
+> =0D
+> I think SRCU would be a much better fit, but the code didn't land yet, so=
+ the=0D
+> mutex seems fine for now. But I'd probably add a TODO.=0D
+> =0D
+=0D
+Jfyi v9 is on the list [1] and I would say we are pretty close on taking th=
+at.=0D
+=0D
+Thanks,=0D
+Onur=0D
+=0D
+[1]: https://lore.kernel.org/rust-for-linux/DIWEXUCNLURG.136XXDBHSBNVR@kern=
+el.org=0D
+=0D
+> > +=0D
+> > +        if !*active {=0D
+> > +            return length;=0D
+> > +        }=0D
+> > +=0D
+> > +        // SAFETY: No one has exclusive access to `private_data.driver=
+`.=0D
+> > +        let data =3D unsafe { &*private_data.driver.get() };=0D
+> > +        // SAFETY:=0D
+> > +        // - `private_data.driver` is pinned.=0D
+> > +        // - `receive_buf_callback` is only ever called after a succes=
+sful call to `probe_callback`,=0D
+> > +        //   hence it's guaranteed that `private_data.driver` was init=
+ialized.=0D
+> > +        let data_pinned =3D unsafe { Pin::new_unchecked(data.assume_in=
+it_ref()) };=0D
+> > +=0D
+> > +        // SAFETY: `buf` is guaranteed to be non-null and has the size=
+ of `length`.=0D
+> > +        let buf =3D unsafe { core::slice::from_raw_parts(buf, length) =
+};=0D
+> > +=0D
+> > +        T::receive(sdev, data_pinned, buf)=0D
+> > +    }=0D
+> > +}=0D
