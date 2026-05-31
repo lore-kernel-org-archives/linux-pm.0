@@ -1,247 +1,177 @@
-Received: from mout02.posteo.de (mout02.posteo.de [185.67.36.66])
+Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 85586329E79
-	for <linux-pm@vger.kernel.org>; Sun, 31 May 2026 19:42:24 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=185.67.36.66
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 25E1F30FF08
+	for <linux-pm@vger.kernel.org>; Sun, 31 May 2026 19:58:25 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.180.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1780256546; cv=none; b=J1E3bbhe/LzJ2Fi7W+PRpmFojStOqW1G/+rCzOG2dxbYNeGS5DQx0JWdexjjl3aGY7TQhJvI23zSnBp3OysppXVZc/ljuZPczIhmA96DUFM9A9/oE88CQ9D6mMFl8wYBjmrgBunaK3JhjNwYQ6hLqyWD0OMmWrBYQdR8981zfJI=
+	t=1780257506; cv=none; b=oaXJ5D9kdVz47ZiUt8OqmNJC+1eCZjR5+8Zcq8tMCgL/hkRAzqezzj1FtEhs+6la/QKhA1c8saiy7GZ5DIOd5FnJfuHBKSxCl60wwjTuCTyaqoPC6Q9Zgb6Sg+zdJZnsDVwSg+V0bpgVj/eKxXsMKo7ob/54MOOljAguc0hctNQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1780256546; c=relaxed/simple;
-	bh=YBFhw99VSvWxAjZ4DkTKQ7yaDKMKFaq9Ed6jBIkTrco=;
-	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=NvlE7QBPjJELHVfAnRD7mWoJv+GP3z+fNEVxayuHZNU2cszpkEcGwGmTTgfTmhmF9v4aTE6meKcKDaezghina7hXTN8jYS8Pcd4V8ClbCxu6cj7FS6nkX5hRvUTR90OZra1J32utKkVftJSIF5f6Xv/pUmFDhvkGCnseF02NGzE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=posteo.de; spf=pass smtp.mailfrom=posteo.de; dkim=pass (2048-bit key) header.d=posteo.de header.i=@posteo.de header.b=owDtBQDL; arc=none smtp.client-ip=185.67.36.66
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=posteo.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=posteo.de
+	s=arc-20240116; t=1780257506; c=relaxed/simple;
+	bh=4d27iXqwYegfSxwa0tyuhz4yvb+d61tUAzALnsjixzQ=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=lmOLfB0KxC8f77SG9ZPOhm5lCJpFhxHGv+IcEOrNkAc9NECUcN5ZGilug3qh7BFitS1l2+OEjhJ8x96LD4+skLq7sqxvK8GMH4iUF+HfN/qPc3LzK2hstSbCan8z/YHkDYVA2gZkO/yaFBc+9CINJTTYPijg6MzWzO20P0iflKc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=RbTVPKA/; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=g9k3xEbS; arc=none smtp.client-ip=205.220.180.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=posteo.de header.i=@posteo.de header.b="owDtBQDL"
-Received: from submission (posteo.de [185.67.36.169]) 
-	by mout02.posteo.de (Postfix) with ESMTPS id 67243240103
-	for <linux-pm@vger.kernel.org>; Sun, 31 May 2026 21:42:22 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=posteo.de; s=2017;
-	t=1780256542; bh=hUSWLp5mi7L5MOKZrN3iLNpIOwJb8J5/4ZNT2N3R2ww=;
-	h=Message-ID:Subject:From:To:Cc:Date:Autocrypt:Content-Type:
-	 MIME-Version:OpenPGP:From;
-	b=owDtBQDLgsKiOMwEXQi/IAIQCjwA+Mqa/23jbm94R7/6pOWMci10NYImeUg9+ZqOh
-	 hSTeeMChegEgibluJl0M5AYfLA03DvUI4zALnx++jSJpn/0n+w7nyOTJOvbgHBmu3w
-	 /g2MllJ4PJ3DVODZbQNDq8FVdFD7B/lAqrfZuC/bUsvez23YPKBR6llHk8FLFWrrlt
-	 5mw9Y+msoVUySj1+r0yIPFFeDWNJuGKlRIjbWSSKpsJOK9m6SzWSSnFf2EHb1BVhZU
-	 +OnxNhzKryONTUSNs2j7CTYDMXVkAz5sqCtaGQe/ZSM4jKM4SuDYgdnE8MASFrz8Cd
-	 AhGQCHXHyYjSw==
-Received: from customer (localhost [127.0.0.1])
-	by submission (posteo.de) with ESMTPSA id 4gT6tg2ngKz6tyt;
-	Sun, 31 May 2026 21:42:19 +0200 (CEST)
-Message-ID: <12fa6237168ecf6dc65ebf46118beeb5c51f3d1c.camel@posteo.de>
-Subject: Re: [PATCH v11 1/3] rust: add basic serial device bus abstractions
-From: Markus Probst <markus.probst@posteo.de>
-To: Danilo Krummrich <dakr@kernel.org>, Markus Probst via B4 Relay
-	 <devnull+markus.probst.posteo.de@kernel.org>
-Cc: Rob Herring <robh@kernel.org>, Greg Kroah-Hartman	
- <gregkh@linuxfoundation.org>, Jiri Slaby <jirislaby@kernel.org>, Miguel
- Ojeda	 <ojeda@kernel.org>, Gary Guo <gary@garyguo.net>,
- =?ISO-8859-1?Q?Bj=F6rn?= Roy Baron <bjorn3_gh@protonmail.com>, Benno Lossin
- <lossin@kernel.org>, Andreas Hindborg	 <a.hindborg@kernel.org>, Alice Ryhl
- <aliceryhl@google.com>, Trevor Gross	 <tmgross@umich.edu>, Kari Argillander
- <kari.argillander@gmail.com>, "Rafael J. Wysocki" <rafael@kernel.org>,
- Viresh Kumar <viresh.kumar@linaro.org>, Boqun Feng <boqun@kernel.org>, 
- David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>,
- linux-serial@vger.kernel.org, 	linux-kernel@vger.kernel.org,
- rust-for-linux@vger.kernel.org, 	linux-pm@vger.kernel.org,
- driver-core@lists.linux.dev, 	dri-devel@lists.freedesktop.org
-Date: Sun, 31 May 2026 19:42:21 +0000
-In-Reply-To: <DIWEXUCNLURG.136XXDBHSBNVR@kernel.org>
-References: <20260531-rust_serdev-v11-0-dee8e0d830f1@posteo.de>
-	 <20260531-rust_serdev-v11-1-dee8e0d830f1@posteo.de>
-	 <DIWEXUCNLURG.136XXDBHSBNVR@kernel.org>
-Autocrypt: addr=markus.probst@posteo.de; prefer-encrypt=mutual;
- keydata=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
- jfGillcaQOqFZ3WwVqyzG1BUfTow==
-Content-Type: multipart/signed; micalg="pgp-sha256";
-	protocol="application/pgp-signature"; boundary="=-i+uPwUkDiLZ5y8MtsrTf"
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="RbTVPKA/";
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="g9k3xEbS"
+Received: from pps.filterd (m0279869.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 64UNX9JS2900945
+	for <linux-pm@vger.kernel.org>; Sun, 31 May 2026 19:58:24 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
+	9EPVuHLNy9vtwwB1VoFU440/iMySrQARYXdbMN/T0bs=; b=RbTVPKA/5wmS3W0/
+	cUjJTZHMCY9tm2xDovY5HG/R+QoYu/vLCSihmbj5S16JknFgrb4b8OVo8TrTKZC1
+	qlIull9mxJRz4gP3mVRdPM5y8X5AS/VMdRWozNwUBYHvzeT6H7EWEWLxX9j+U1c3
+	lOFv6BdyVKD0UozxsAewMm1Zt7AGDUdaCucWB5h/xSIX+xI/feF5zj7pRg15cHkx
+	xwC/QtaQXFkGd5NFhSqbHEXgcZWwqsadkgm1ELads0Z53OgGYApx2EFhkjKFnSwF
+	MiibEEpyuuH6A00BYmutOu18Z6BntkVTnoPWU1BEFkE5Pirh7RhZlQn2VKgbvM+Y
+	x1rGnA==
+Received: from mail-qv1-f69.google.com (mail-qv1-f69.google.com [209.85.219.69])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4efpw7mjgn-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <linux-pm@vger.kernel.org>; Sun, 31 May 2026 19:58:24 +0000 (GMT)
+Received: by mail-qv1-f69.google.com with SMTP id 6a1803df08f44-8ccd719a2f2so18238436d6.0
+        for <linux-pm@vger.kernel.org>; Sun, 31 May 2026 12:58:23 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=oss.qualcomm.com; s=google; t=1780257503; x=1780862303; darn=vger.kernel.org;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=9EPVuHLNy9vtwwB1VoFU440/iMySrQARYXdbMN/T0bs=;
+        b=g9k3xEbSgT6o/FzzCY1JH25oVlxIt8HdM25p3LSDysgvmsBfbtt2dfsGW1hqo+FXWd
+         GUE0amgT7BJSkjR3tCUPhY/nx/AInao7mJym76Qo0xkL13orI1oZG0IfMAYBHBB8R9wx
+         fYtv5wQEZMA3DMtDXfTErvSV8rHv9Fcks1DVSU6MBfW3Vqv/86VJlXvmnNaBxcSLLGXN
+         Z7Xm7Kno1djfPxchmULGTCle2xcLP9ETt7MqL3ZeBr5dLhdPF/xnLJUuCKOGCZps88wR
+         0KFqPE2L7T1xmOP+G5Srga62gmaYAIlFBM1buRNtHDIBQTFyrCj9KfPeWQmQXhgYd6j4
+         SqEA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1780257503; x=1780862303;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=9EPVuHLNy9vtwwB1VoFU440/iMySrQARYXdbMN/T0bs=;
+        b=mHmsPO4/FlI9oPIebAVnWHKJt7DLidc+NIii/cItN7hYRbahmD1+h5Cf//iJDwHatO
+         Y3dlHY1GUhZRoPWxglMHo/YIWtrt/tudbRoZDdkmYhHcM/ne4pRbx6lCms0BD36iCC67
+         jYCNjdLDD15iMRGo433k9gfXP7COf5S64Z5dl/1ZwZ9XYSvkVOLadAL8ZCVAfvM1+36n
+         nXM/3AslfM35OyxRVCq+MV4tBx27AhmHyM5nXrRiWye0t0orhkvgI8PyAb63ljLmbcBf
+         QDV/tnFrV9TydyjRyt0usgmr92E0siDV0cf/e4U540EyHGCOXxQiezUvRQJwcFybIpW3
+         f47w==
+X-Forwarded-Encrypted: i=1; AFNElJ8i2oAonKnfifnhjva7SzkVWNQFHHd57/UwcQM1vGvB229mkFHLg4F6IKFVdYpdjuERRUYRIqFjBQ==@vger.kernel.org
+X-Gm-Message-State: AOJu0YxvckHUaMbFXTpXnUCLMmt8rRJ+SVjP2wKw41Lp9DYK3WuCJMVW
+	fPu4WR0qYEfBo0Z2H9oOhlxmhiMhHLnlvuxb0qD4rwl1UsV5P8wvOnM/5KuwosNhRY3xpvVMsjJ
+	VMQscEPxUpsZOmRJ0CyBqCXO1n4nuYVDmLuxQHJaG2m++A1rc19wCQcW24JSaIA==
+X-Gm-Gg: Acq92OEiL+HfsaMnMccWKwTb1vxICEg4shrZe3My0C9/LMulwganIz0mjnbqG74ddsj
+	YZK65bn967uUDutIqkxCnffvWCahjxig93+XX/p8xwHXIn2TbGXayMutncu0aDCoD59knFSR5iz
+	IhkxQNBb+89gK3Lmur0c/PnJNo9uyuah1xM6pA5Zv6TqtEJbtQBAvP1LQSWVnmf1anMH0idhTdI
+	yAuFz8Tt/tTHYj9aK7XAvweuJsKZTiule0tdKR0PNfaucUmqd1UTBBfRjsVMZIyqFDnxGRCC/Rb
+	/KbF0LNuwrzST6P2mm6m9QuDXsFSe+621oz2DIJKBS2L/T38uZ6NMU5pKID2TgYFBZ7sUzaN4ST
+	2JBUMGTFmB/wFq+7DYMnZydkYW/wZgSBzYPs1zYjwiJA693pu8XlG0LLNVwEcutOUx7Wbq/3vuc
+	em
+X-Received: by 2002:ac8:5143:0:b0:516:dede:2094 with SMTP id d75a77b69052e-5173a8b0d5cmr70777161cf.55.1780257503418;
+        Sun, 31 May 2026 12:58:23 -0700 (PDT)
+X-Received: by 2002:ac8:5143:0:b0:516:dede:2094 with SMTP id d75a77b69052e-5173a8b0d5cmr70776921cf.55.1780257502956;
+        Sun, 31 May 2026 12:58:22 -0700 (PDT)
+Received: from [192.168.2.1] (146725694.box.freepro.com. [130.180.211.218])
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4909d68a925sm303091335e9.2.2026.05.31.12.58.19
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Sun, 31 May 2026 12:58:22 -0700 (PDT)
+Message-ID: <0c5033f7-1535-49e8-a502-426e54333496@oss.qualcomm.com>
+Date: Sun, 31 May 2026 21:58:17 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-OpenPGP: url=https://posteo.de/keys/markus.probst@posteo.de.asc; preference=encrypt
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v2] firmware: meson: sm: add stub functions when
+ CONFIG_MESON_SM is disabled
+To: Ronald Claveau <linux-kernel-dev@aliel.fr>
+Cc: Guillaume La Roque <glaroque@baylibre.com>,
+        Kevin Hilman <khilman@baylibre.com>,
+        Jerome Brunet <jbrunet@baylibre.com>,
+        Martin Blumenstingl <martin.blumenstingl@googlemail.com>,
+        linux-arm-kernel@lists.infradead.org,
+        linux-amlogic@lists.infradead.org, linux-kernel@vger.kernel.org,
+        linux-pm@vger.kernel.org, Mark Brown <broonie@kernel.org>,
+        kernel test robot <lkp@intel.com>,
+        Neil Armstrong <neil.armstrong@linaro.org>,
+        Daniel Lezcano <daniel.lezcano@kernel.org>,
+        Zhang Rui <rui.zhang@intel.com>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Lukasz Luba <lukasz.luba@arm.com>
+References: <20260531-fix-missing-meson_sm-symbol-v2-1-1def8c3c169f@aliel.fr>
+ <8c11a91b-cfbf-4b9c-a46f-907989bf8305@oss.qualcomm.com>
+ <12d74340-0213-4f7e-a494-10ce147844ad@aliel.fr>
+Content-Language: en-US
+From: Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>
+In-Reply-To: <12d74340-0213-4f7e-a494-10ce147844ad@aliel.fr>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-Proofpoint-GUID: kqftKmMhxBX-dF5avPbHux5b6poNM2AX
+X-Proofpoint-ORIG-GUID: kqftKmMhxBX-dF5avPbHux5b6poNM2AX
+X-Authority-Analysis: v=2.4 cv=bNIm5v+Z c=1 sm=1 tr=0 ts=6a1c92e0 cx=c_pps
+ a=wEM5vcRIz55oU/E2lInRtA==:117 a=uw/3876vWhRnNVL35W6mqQ==:17
+ a=IkcTkHD0fZMA:10 a=NGcC8JguVDcA:10 a=s4-Qcg_JpJYA:10
+ a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=_glEPmIy2e8OvE2BGh3C:22
+ a=DmWT0VEtOxJI-Rt19aUA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
+ a=OIgjcC2v60KrkQgK7BGD:22
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNTMxMDIxNyBTYWx0ZWRfXw7f9joWJDVql
+ L6F/Mx4jZC79VtbFFfPutTzHbLTtZN0J0iyMOQbHmfZ47blogppTotNfmipIxXKJ3jcrNzSZyTy
+ I0K812LNSm9x6MMkmTy9zqTOCSC82fc2C5y04i5ju/jhyiRsX3vf+kuRDqwpDDXgi8037c0g2Ec
+ GMRsVaKB549ngordYjFhnX/AI+RdowC/oID2k3BtTTVgnt/0vlhUsqxWCBOiyF7YnLSvFd0pHVI
+ 9Cys0NP36sq/klV309FhI4RaK6aJCDmbTBAh+E7Kc8oi0qQPDl4VcJ4vg/Ye+EA5pQ9Dju8eBgg
+ 5t+64fna360pZeypqW4bhEs/haQLmukabMOgQvTohZf+QjgHMUZmqzXgK2Rxh0LMwITc+gTDIzn
+ T9VcvZNfChOiJBmETiOJXPpu3tJxIxIvwwrk1fjlK89/a0dpvIZPtg/QuaoBRsyHTI7U+xoYROs
+ CCAY+F6IMDV8M0lPeug==
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.125,FMLib:17.12.100.49
+ definitions=2026-05-31_06,2026-05-28_03,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ suspectscore=0 impostorscore=0 phishscore=0 adultscore=0 malwarescore=0
+ bulkscore=0 priorityscore=1501 lowpriorityscore=0 spamscore=0 clxscore=1015
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2605210000 definitions=main-2605310217
+
+On 5/31/26 19:49, Ronald Claveau wrote:
+> On 5/31/26 10:41 AM, Daniel Lezcano wrote:
+>> On 5/31/26 09:51, Ronald Claveau via B4 Relay wrote:
+>>> From: Ronald Claveau <linux-kernel-dev@aliel.fr>
+
+[ ... ]
+
+>>> +#if IS_ENABLED(CONFIG_MESON_SM)
+>>> +
+>>>    struct meson_sm_firmware *meson_sm_get(struct device_node
+>>> *firmware_node);
+>>>    int meson_sm_get_thermal_calib(struct meson_sm_firmware *fw, u32
+>>> *trim_info,
+>>>                       u32 tsensor_id);
+>>
+>> Do you really want to compile meson_sm as a module ?
+>>
+>>
+>>
+> 
+> I don't want, but if I send a patch to change tristate to bool, it will
+> raise a warning because 'm' is not valid.
+> If it is accepted to ignore this warning, I can send another patch.
 
 
---=-i+uPwUkDiLZ5y8MtsrTf
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Sorry, I don't get your point :/
 
-On Sun, 2026-05-31 at 01:51 +0200, Danilo Krummrich wrote:
-> On Sun May 31, 2026 at 12:51 AM CEST, Markus Probst via B4 Relay wrote:
-> > +#[pinned_drop]
-> > +impl<T: Driver> PinnedDrop for PrivateData<'_, T> {
-> > +    fn drop(self: Pin<&mut Self>) {
-> > +        let mut active =3D self.active.lock();
-> > +        if *active {
-> > +            // SAFETY:
-> > +            // - We have exclusive access to `self.driver`.
-> > +            // - `self.driver` is guaranteed to be initialized.
-> > +            unsafe { (*self.driver.get()).assume_init_drop() };
-> > +            *active =3D false;
-> > +        }
-> > +
-> > +        // SAFETY: We have exclusive access to `self.open`.
-> > +        if unsafe { *self.open.get() } {
-> > +            // SAFETY: `self.sdev.as_raw()` is guaranteed to be a poin=
-ter to a valid
-> > +            // `struct serdev_device`.
-> > +            unsafe { bindings::serdev_device_close(self.sdev.as_raw())=
- };
-> > +        }
-> > +    }
-> > +}
->=20
-> Just in case it came across otherwise, I did not mean to push for you to =
-go for
-> this approach. We just kept discussing it because it let to the (to me mo=
-re
-> interesting) discussion around the LED class device abstraction.
->=20
-> While this approach gets us rid of an extra allocation and the rust_priva=
-te_data
-> pointer in struct serdev_device it also turns out a bit more convoluted.
->=20
-> That said, both are correct, and I won't object either one; up to you and=
- the
-> serdev / tty maintainers.
->=20
-> Please wait a bit before resending, so other people can comment on this a=
-s well.
->=20
-> > +    extern "C" fn receive_buf_callback(
-> > +        sdev: *mut bindings::serdev_device,
-> > +        buf: *const u8,
-> > +        length: usize,
-> > +    ) -> usize {
-> > +        // SAFETY: The serial device bus only ever calls the receive b=
-uf callback with a valid
-> > +        // pointer to a `struct serdev_device`.
-> > +        //
-> > +        // INVARIANT: `sdev` is valid for the duration of `receive_buf=
-_callback()`.
-> > +        let sdev =3D unsafe { &*sdev.cast::<Device<device::CoreInterna=
-l<'_>>>() };
->=20
-> CoreInternal snuck back in, should be BoundInternal.
->=20
-> > +
-> > +        // SAFETY: `receive_buf_callback` is only ever called after a =
-successful call to
-> > +        // `probe_callback`, hence it's guaranteed that `Device::set_d=
-rvdata()` has been called
-> > +        // and stored a `Pin<KBox<PrivateData<'_, T>>>`.
-> > +        let private_data =3D unsafe { sdev.as_ref().drvdata_borrow::<P=
-rivateData<'_, T>>() };
-> > +        let active =3D private_data.active.lock();
->=20
-> I think SRCU would be a much better fit, but the code didn't land yet, so=
- the
-> mutex seems fine for now. But I'd probably add a TODO.
-I just noticed, is it even possible to use SRCU here? Currently the
-mutex not only ensures that no drvdata access happens after drvdata
-drop, but also that the receive_buf waits for the probe to complete, as
-the drvdata hasn't been initialized yet.
+'m' is a config option, make menuconfig should set it to yes or not set.
 
-(drvdata refers to PrivateData.driver in this context, not the whole
-PrivateData)
+Compiling the firmware as a module means it must be loaded before the 
+amlogic thermal driver, right ? Where is the dependency declared in the 
+module ?
 
-Thanks
-- Markus Probst
+If the sm_meson is in the platform, it should be selected as part of the 
+platform's component. No need to have an option for that, no ?
 
->=20
-> > +
-> > +        if !*active {
-> > +            return length;
-> > +        }
-> > +
-> > +        // SAFETY: No one has exclusive access to `private_data.driver=
-`.
-> > +        let data =3D unsafe { &*private_data.driver.get() };
-> > +        // SAFETY:
-> > +        // - `private_data.driver` is pinned.
-> > +        // - `receive_buf_callback` is only ever called after a succes=
-sful call to `probe_callback`,
-> > +        //   hence it's guaranteed that `private_data.driver` was init=
-ialized.
-> > +        let data_pinned =3D unsafe { Pin::new_unchecked(data.assume_in=
-it_ref()) };
-> > +
-> > +        // SAFETY: `buf` is guaranteed to be non-null and has the size=
- of `length`.
-> > +        let buf =3D unsafe { core::slice::from_raw_parts(buf, length) =
-};
-> > +
-> > +        T::receive(sdev, data_pinned, buf)
-> > +    }
-> > +}
 
---=-i+uPwUkDiLZ5y8MtsrTf
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-
-iQJPBAABCAA5FiEEgnQYxPSsWOdyMMRzNHYf+OetQ9IFAmocjxobFIAAAAAABAAO
-bWFudTIsMi41KzEuMTIsMiwyAAoJEDR2H/jnrUPSpGMQALexWGRaLmUISqGonZYw
-CeOMrMEudQuPoIAC1NbyIgnpT3ir0TLAP0G5nEwbQDKSeB3syHQqjEB8wMYaYjHX
-RUFlkm1ITINn5Yc3Pj0gL6FI3RC96G/1NZjtDhLxct+qeYzovYfe5ECfU6Cch65c
-H2LCNtBQdLOWc//PCXrz7gX6HYZnv4pGVlZrWxxvDLt21MFCAKJEpt+xDvIkU+BK
-KX40c+lHqUNNlafCLiZnKTGw6XusWT6ziCN8OaQcCLkbhXKIoka1rSQh6e40HNRG
-S7Cjj4o/8ix5JLmURMpNXtxUV2G51F9St9oG/iGYIuwMxwRA5HdRFoats9NwdSa9
-GLrhaCdaqJ3awv57Bp+k/HVCG6pta0KkNs/BPbHQ2dtkHNCn5d7QZk3IZ2ilU/pY
-qrAqDMylJc2gCRoQqhQKZRk9XMZ1iubnHUEojgEJGH1Eo0zf72R6IIVvAN5/3gZI
-RaAbCMzYr7Fnt0eQf0I8VIpkSf6EcfOeD0IVkGiEsqA64h0fM/XFeuXMa7i7Mwhv
-LDvHWpQWpknQ3SpwuMkgpMOUkqmpmrCjJ8PEtofApBxCigw0jyzVfR783WE3Xvhg
-r+f+Lvm5kiBMp9Whdqg74ybQ/w4MRjC42y8bQ9bOdfinP5+7mTOimsDvMADhcLbM
-rchoKeYTBB0SYYICElpnVTmL
-=ADNr
------END PGP SIGNATURE-----
-
---=-i+uPwUkDiLZ5y8MtsrTf--
