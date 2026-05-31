@@ -1,174 +1,77 @@
-Received: from fanzine2.igalia.com (fanzine2.igalia.com [213.97.179.56])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CCFA727FB05
-	for <linux-pm@vger.kernel.org>; Sun, 31 May 2026 12:18:18 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=213.97.179.56
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5266D299923
+	for <linux-pm@vger.kernel.org>; Sun, 31 May 2026 14:14:33 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1780229901; cv=none; b=TwlBk2Ky/PerCK95AvyIM/O+PsgA2+007mclphY0iK8iYGYTMazBoBVsLbZXtakOzXi50E5HV2cT3V/ZsSVvC0lI6CtJnF4Y127ysdGCNCJ7vUgUnwW+kXacmhje9uC7aW1MV+onkzC5YYW8lOeIWpwwSRAxo61xk1yVNIeszYI=
+	t=1780236873; cv=none; b=rtNSaf2SBrLkAEohZ581gdgJMqNHFMqlSjPpPwpKy028Wcq07TaWUdzTYTlcmGkLQgMDH5NmK1XimhAyOjv8bLZs2R09U9eqHO1pWXBU3tgFGMC4hmWWZo5xafNQMHkGRQx0paIFMIKb1/S2cNYXhNOF/Sb2VgnV0YsA5egoGGw=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1780229901; c=relaxed/simple;
-	bh=d2id1++KDfR5RCYjhnazg1z3eodESVA72TepiCQNIJM=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=gDT9kUuLX+nM0Oy/tp5lV9VLyTxfqoggjexho/5m7kxZhnj6nayNgSGCtn46Y9Iu7buwegOIZhQOm96R/qalhSlRINHXE8aCEG0gy5owUj7Kjh0FOi8eLi4B4dxPxLf6jUULNLdzkHiFsd4G5tCZqrLhFvcuDmbxir8+Kz8DMZE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=igalia.com; spf=pass smtp.mailfrom=igalia.com; dkim=pass (2048-bit key) header.d=igalia.com header.i=@igalia.com header.b=KNahn7qt; arc=none smtp.client-ip=213.97.179.56
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=igalia.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=igalia.com
+	s=arc-20240116; t=1780236873; c=relaxed/simple;
+	bh=kkTqQwXiFrTq3AeGCB+moa3dPEAuiSo16ng35qv5kIk=;
+	h=From:To:Subject:Date:Message-ID:In-Reply-To:References:
+	 Content-Type:MIME-Version; b=K2L9G9NqO1lABxpQ+K7t6xr25spc43QGVBTjaicM9mrXdMOxjVAt+FjY1LK5giMT/K52/yyrDXDlwy+TH4wAAyAlW8PRFBnmABBSnE92LrOFsDDKMqjRvhLvDo9A/gUlOZxVq6gCw5fcgVYlmyEHq5YfSlGOKE9v7BYjVmPlnZo=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=lLlWWrzs; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=igalia.com header.i=@igalia.com header.b="KNahn7qt"
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=igalia.com;
-	s=20170329; h=Content-Transfer-Encoding:Content-Type:In-Reply-To:From:
-	References:Cc:To:Subject:MIME-Version:Date:Message-ID:Sender:Reply-To:
-	Content-ID:Content-Description:Resent-Date:Resent-From:Resent-Sender:
-	Resent-To:Resent-Cc:Resent-Message-ID:List-Id:List-Help:List-Unsubscribe:
-	List-Subscribe:List-Post:List-Owner:List-Archive;
-	bh=1SIgq8nHu6psw4Php68J+X3M2P+JbJ62dqeHI2I7CMc=; b=KNahn7qtNwDSJ95/VyjhQogG5F
-	gAP843yR+nqj1HlCXX16K3bF0N1+oz944Hv5hFV0jOCNktJ228XdHkWL4I7rALgJOjPW2XNLt3hWG
-	m9AfuFqSu3Z47KS/dbFY2p4LYylbk6gWMr9/oUmZUqeYWUkI9epfKJb0W5R1ruri4h3OUpdWZzM1x
-	4jhS8+d//u74PAy3Ykb38CMhfV7Ru//WTmZg/D8QPCLaZbjgHaYqJnKORlCOxfBuPHBRaHKyFOKGX
-	kNJboHdY3wBSD+iqlQLgPznbfRSEOlWufplTw6dFC8w3noVZ+74mLAlPhH3g+dzM1b8sL0alCcngr
-	Qj6pEZNw==;
-Received: from [189.7.87.67] (helo=[192.168.0.2])
-	by fanzine2.igalia.com with esmtpsa 
-	(Cipher TLS1.3:ECDHE_X25519__RSA_PSS_RSAE_SHA256__AES_128_GCM:128) (Exim)
-	id 1wTf7I-00AZaA-LQ; Sun, 31 May 2026 14:18:08 +0200
-Message-ID: <eba66b9e-520e-4afc-8973-d54b22919d2c@igalia.com>
-Date: Sun, 31 May 2026 09:18:01 -0300
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="lLlWWrzs"
+Received: by smtp.kernel.org (Postfix) with ESMTPS id D5F8EC2BCC9
+	for <linux-pm@vger.kernel.org>; Sun, 31 May 2026 14:14:32 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1780236872;
+	bh=kkTqQwXiFrTq3AeGCB+moa3dPEAuiSo16ng35qv5kIk=;
+	h=From:To:Subject:Date:In-Reply-To:References:From;
+	b=lLlWWrzsLHUP5bSPVizuICNz3FFLQWqhNLLwcstETUGzD7KC1huR9aBbpqzfJA6hM
+	 Qj/dl88pRVIa3qme6+rHRO4U0GUNtUDM+5e2csmHoHaAuBOwWhSQxfFoHsZRvneVp/
+	 u4zc5ftiLVrE9FdU1Dt+2sgVF5dk9KYK0Up0vKiHAuYTfj/M7T2uooXjrOqgoN+OKq
+	 /RjVaOUaYtNRvzhlWi1DGF9RT4HxJGF/J+wPzA2MPylf9SQsCxB1dthxSaFpqU7HPV
+	 9/R7WVQaR0e/Ez+JonrEzuLbnIN7U1CrdZnTqIIe1CTG4zU5HS26N4jsuaWkviAxIk
+	 0TWY7S2eHZDug==
+Received: by aws-us-west-2-korg-bugzilla-1.web.codeaurora.org (Postfix, from userid 48)
+	id C445AC4160E; Sun, 31 May 2026 14:14:32 +0000 (UTC)
+From: bugzilla-daemon@kernel.org
+To: linux-pm@vger.kernel.org
+Subject: [Bug 221505] REGRESSION][amd_pstate] "EPP cannot be set under
+ performance policy" (EBUSY) when switching to performance profile via PPD on
+ 7.1
+Date: Sun, 31 May 2026 14:14:32 +0000
+X-Bugzilla-Reason: AssignedTo
+X-Bugzilla-Type: changed
+X-Bugzilla-Watch-Reason: None
+X-Bugzilla-Product: Power Management
+X-Bugzilla-Component: cpufreq
+X-Bugzilla-Version: 2.5
+X-Bugzilla-Keywords: 
+X-Bugzilla-Severity: normal
+X-Bugzilla-Who: mario.limonciello@amd.com
+X-Bugzilla-Status: NEW
+X-Bugzilla-Resolution: 
+X-Bugzilla-Priority: P3
+X-Bugzilla-Assigned-To: linux-pm@vger.kernel.org
+X-Bugzilla-Flags: 
+X-Bugzilla-Changed-Fields: 
+Message-ID: <bug-221505-137361-PFYVvwHcFu@https.bugzilla.kernel.org/>
+In-Reply-To: <bug-221505-137361@https.bugzilla.kernel.org/>
+References: <bug-221505-137361@https.bugzilla.kernel.org/>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+X-Bugzilla-URL: https://bugzilla.kernel.org/
+Auto-Submitted: auto-generated
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] pmdomain: bcm: bcm2835-power: Raise ASB poll timeout to
- 100us
-To: Stefan Wahren <wahrenst@gmx.net>, Ulf Hansson <ulfh@kernel.org>,
- Florian Fainelli <florian.fainelli@broadcom.com>,
- Broadcom internal kernel review list
- <bcm-kernel-feedback-list@broadcom.com>, Ray Jui <rjui@broadcom.com>,
- Scott Branden <sbranden@broadcom.com>
-Cc: linux-pm@vger.kernel.org, linux-rpi-kernel@lists.infradead.org,
- linux-arm-kernel@lists.infradead.org, kernel-dev@igalia.com
-References: <20260530204636.1115120-1-mcanal@igalia.com>
- <deecc409-02c1-4393-bc06-1852fc06e4d1@gmx.net>
-From: =?UTF-8?Q?Ma=C3=ADra_Canal?= <mcanal@igalia.com>
-Content-Language: en-US
-Autocrypt: addr=mcanal@igalia.com; keydata=
- xsBNBGcCwywBCADgTji02Sv9zjHo26LXKdCaumcSWglfnJ93rwOCNkHfPIBll85LL9G0J7H8
- /PmEL9y0LPo9/B3fhIpbD8VhSy9Sqz8qVl1oeqSe/rh3M+GceZbFUPpMSk5pNY9wr5raZ63d
- gJc1cs8XBhuj1EzeE8qbP6JAmsL+NMEmtkkNPfjhX14yqzHDVSqmAFEsh4Vmw6oaTMXvwQ40
- SkFjtl3sr20y07cJMDe++tFet2fsfKqQNxwiGBZJsjEMO2T+mW7DuV2pKHr9aifWjABY5EPw
- G7qbrh+hXgfT+njAVg5+BcLz7w9Ju/7iwDMiIY1hx64Ogrpwykj9bXav35GKobicCAwHABEB
- AAHNIE1hw61yYSBDYW5hbCA8bWNhbmFsQGlnYWxpYS5jb20+wsCRBBMBCAA7FiEE+ORdfQEW
- dwcppnfRP/MOinaI+qoFAmcCwywCGwMFCwkIBwICIgIGFQoJCAsCBBYCAwECHgcCF4AACgkQ
- P/MOinaI+qoUBQgAqz2gzUP7K3EBI24+a5FwFlruQGtim85GAJZXToBtzsfGLLVUSCL3aF/5
- O335Bh6ViSBgxmowIwVJlS/e+L95CkTGzIIMHgyUZfNefR2L3aZA6cgc9z8cfow62Wu8eXnq
- GM/+WWvrFQb/dBKKuohfBlpThqDWXxhozazCcJYYHradIuOM8zyMtCLDYwPW7Vqmewa+w994
- 7Lo4CgOhUXVI2jJSBq3sgHEPxiUBOGxvOt1YBg7H9C37BeZYZxFmU8vh7fbOsvhx7Aqu5xV7
- FG+1ZMfDkv+PixCuGtR5yPPaqU2XdjDC/9mlRWWQTPzg74RLEw5sz/tIHQPPm6ROCACFls7A
- TQRnAsMsAQgAxTU8dnqzK6vgODTCW2A6SAzcvKztxae4YjRwN1SuGhJR2isJgQHoOH6oCItW
- Xc1CGAWnci6doh1DJvbbB7uvkQlbeNxeIz0OzHSiB+pb1ssuT31Hz6QZFbX4q+crregPIhr+
- 0xeDi6Mtu+paYprI7USGFFjDUvJUf36kK0yuF2XUOBlF0beCQ7Jhc+UoI9Akmvl4sHUrZJzX
- LMeajARnSBXTcig6h6/NFVkr1mi1uuZfIRNCkxCE8QRYebZLSWxBVr3h7dtOUkq2CzL2kRCK
- T2rKkmYrvBJTqSvfK3Ba7QrDg3szEe+fENpL3gHtH6h/XQF92EOulm5S5o0I+ceREwARAQAB
- wsB2BBgBCAAgFiEE+ORdfQEWdwcppnfRP/MOinaI+qoFAmcCwywCGwwACgkQP/MOinaI+qpI
- zQf+NAcNDBXWHGA3lgvYvOU31+ik9bb30xZ7IqK9MIi6TpZqL7cxNwZ+FAK2GbUWhy+/gPkX
- it2gCAJsjo/QEKJi7Zh8IgHN+jfim942QZOkU+p/YEcvqBvXa0zqW0sYfyAxkrf/OZfTnNNE
- Tr+uBKNaQGO2vkn5AX5l8zMl9LCH3/Ieaboni35qEhoD/aM0Kpf93PhCvJGbD4n1DnRhrxm1
- uEdQ6HUjWghEjC+Jh9xUvJco2tUTepw4OwuPxOvtuPTUa1kgixYyG1Jck/67reJzMigeuYFt
- raV3P8t/6cmtawVjurhnCDuURyhUrjpRhgFp+lW8OGr6pepHol/WFIOQEg==
-In-Reply-To: <deecc409-02c1-4393-bc06-1852fc06e4d1@gmx.net>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
 
-Hi Stefan,
+https://bugzilla.kernel.org/show_bug.cgi?id=3D221505
 
-On 31/05/26 07:41, Stefan Wahren wrote:
-> Hi Maíra,
-> 
-> Am 30.05.26 um 22:46 schrieb Maíra Canal:
->> Commit 18605b1b936b ("pmdomain: bcm: bcm2835-power: Increase ASB control
->> timeout") raised the ASB handshake polling budget from 1us to 5us.
->> Surveying the pmdomain subsystem, 5us is still one of the smallest 
->> polling
->> budgets by a wide margin. Comparable handshakes in other drivers use:
->>
->>    - 100us : starfive jh71xx-pmu, apple pmgr-pwrstate
->>    - 1ms   : renesas rcar-sysc, rmobile-sysc (power-on)
->>    - 10ms  : renesas rcar-gen4-sysc, sunxi sun55i-pck600
->>    - 1s    : mediatek mtk-pm-domains, mtk-scpsys
->>
->> Raise the BCM2835 timeout to 100us, matching analogous drivers. 100us is
->> still negligible relative to a power-domain transition and gives the V3D
->> master ASB substantially more headroom to drain under heavy workloads,
->> assuring us that the timeout is enough for any scenario.
-> tbh I'm not convinced by this explanation. Starting with a timeout 
-> comparison across different pmdomain driver looks strange to me.
-> 
-> My expectation that the reason for such a patch is that there is some 
-> kind of scenario to trigger unexpected timeouts.
-> If this is the case, please provide more information about the scenario 
-> (specific platform, scenario, link to the bug report).
+--- Comment #32 from Mario Limonciello (AMD) (mario.limonciello@amd.com) ---
+No problem, and thanks for debugging in parallel! Feel free to leave some t=
+ags
+for review and test on the submission.
 
-The context: I was debugging this issue [1] and initially I had the
-intuition that it could be related to a timeout in the ASB polling loop.
-As I don't have access to the BCM2835 SoC datasheet (the public one
-doesn't have PM information), I started to check other driver's
-handshake timeout to see if ours was comparable to similar drivers. As
-you can see, our timeout is much smaller.
+--=20
+You may reply to this email to add a comment.
 
-In the end, issue [1] wasn't related to the pmdomain driver, so I don't
-have a specific scenario to trigger this issue. Even though, I sent this
-patch considering the comparison to other drivers with the goal to be
-conservative and use a larger timeout that could accommodate an extreme
-scenario. However, if you believe it's unreasonable, I'm okay dropping
-this patch.
-
-Ideally, it would be great to have information from Broadcom on what's
-the largest possible time required to perform a power transition. Maybe
-Florian could help us with that?
-
-[1] 
-https://lore.kernel.org/dri-devel/20260530-v3d-fix-rpi4-freezes-v1-0-c2c8307da6ce@igalia.com/T/
-
-> 
-> I'm not against the change in general, but please start your commit 
-> message with the problem and not with the solution.
-> 
-> A related question, does it make sense to add an error message here for 
-> the timeout case just like in the rest of the driver?
-
-Before commit 18605b1b936b, I was getting a "Failed to disable ASB
-master for v3d" error message, so I believe the error message already
-exists where the function is called.
-
-Thanks for your feedback!
-
-Best regards,
-- Maíra
-
-> 
-> Best regards
-> 
->>
->> Signed-off-by: Maíra Canal <mcanal@igalia.com>
->> ---
->>   drivers/pmdomain/bcm/bcm2835-power.c | 2 +-
->>   1 file changed, 1 insertion(+), 1 deletion(-)
->>
->> diff --git a/drivers/pmdomain/bcm/bcm2835-power.c b/drivers/pmdomain/ 
->> bcm/bcm2835-power.c
->> index b76d74e3849b..d507bb675e29 100644
->> --- a/drivers/pmdomain/bcm/bcm2835-power.c
->> +++ b/drivers/pmdomain/bcm/bcm2835-power.c
->> @@ -175,7 +175,7 @@ static int bcm2835_asb_control(struct 
->> bcm2835_power *power, u32 reg, bool enable
->>       writel(PM_PASSWORD | val, base + reg);
->>       if (readl_poll_timeout_atomic(base + reg, val,
->> -                      !!(val & ASB_ACK) != enable, 0, 5))
->> +                      !!(val & ASB_ACK) != enable, 0, 100))
->>           return -ETIMEDOUT;
->>       return 0;
-> 
-
+You are receiving this mail because:
+You are the assignee for the bug.=
