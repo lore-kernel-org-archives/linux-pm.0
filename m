@@ -1,141 +1,122 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CA85C204F8B;
-	Sun, 31 May 2026 07:52:17 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1E87137B025;
+	Sun, 31 May 2026 07:59:23 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1780213937; cv=none; b=rbLcXjy9bgyNx7KEI/5LQcrLlUOMOWWQOy9rvx86wspPxHpscsZa1rIit/ryhe73uCLSowH19PC0CflRX9qPREuSBKDwgHBAGpWt09pbKr8WAM8urEmQ+TK8KTZAabbO0DRTY/DZBn9fM6p6YXfamB82CGGsK/pRdFSNF6aqN/M=
+	t=1780214366; cv=none; b=I8BAQXbrxWSWDtbWo/Ycr595y99ntK8MikqWU3WkTCWuqMrgEitczy8BDOAJc2k9/IplKLFe4UFmi6WdRuV1ARWQXytYbCqr/NkH0p7UsRHAe9EKRtLHuHhwUZddrtACyHvG+sgvbRW2F0FlH5bLsJoR4Fl7YRydtjQF2/hQk1I=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1780213937; c=relaxed/simple;
-	bh=I/w0HozSi+XyRg6QSq/WH39lvvn/3zkRceEeEY8qGWE=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:To:Cc; b=UaRK9ezMzKLK+V3oKhqwLIzjMT7iPWfmZy8KmfEoDGwVkCWezYFm6sgcDYqKvUEgxHk3oDeWrhxpTH5ldXi7kx/ExwiULzRWCI6HYYT6UIGNpCbxRubCmQhi11L+L1U6TQYE978CrZuWixAiq7tF6XaGY4HS5ozeYzUDDm2LkHc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=I4NGTqC2; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1780214366; c=relaxed/simple;
+	bh=YeqN6WlIMkZ0pJvlc9F1LkJJ4vj8ld+TAkdRkNLSYw4=;
+	h=Message-ID:Date:MIME-Version:Subject:To:References:From:
+	 In-Reply-To:Content-Type; b=GoCQDZZ2KzOiPI0C/IkmHcfr34FIjvMX6N+bGVrf3ZpFMsK7G7HQMlRbfxK8KTq+xSuxp54pThYwqNiRaE2vl/3cGiCsZmczGdAGED90/Ls5Kmq/dKh2IJ1GAJvr0599rgVzGG0M/rWEWwRB2yHOULwUfqWs9bBizI+rgrdXIY0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=TG+qnAxv; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="I4NGTqC2"
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 5BD54C2BCB4;
-	Sun, 31 May 2026 07:52:17 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1780213937;
-	bh=I/w0HozSi+XyRg6QSq/WH39lvvn/3zkRceEeEY8qGWE=;
-	h=From:Date:Subject:To:Cc:Reply-To:From;
-	b=I4NGTqC24tbh1Dub8fdfuCFmVKwmre6wfPk2Q+DPE104P5kXh6yz5Rfjpq3RQJZF1
-	 eOdpL+xljRusBMVfDh3D/wWxHpBu5ApoqYsyvaglxsMTPV+kOWOIhIrNrF0SO7UQjU
-	 JPG4kpgVvp9bNeQhdByr9EOcXTrxy4rIXEXghFfTUFNSObOZCMop1ytfuWI4lzejnA
-	 nlHmYv5R9GpM9eSnZI/eeSLcdciZWKBcefWbmHS1hFWAXqwUx1N7KgnGyBdydCiizk
-	 JCVL5af5PCzSiA0iEBkF2nkyLmpHUd6MDVFYhVxdR2H7zEOVA6M64WfAOv4XI2TWqv
-	 EfcG2IXnzmUKg==
-Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 43867CD6E55;
-	Sun, 31 May 2026 07:52:17 +0000 (UTC)
-From: Ronald Claveau via B4 Relay <devnull+linux-kernel-dev.aliel.fr@kernel.org>
-Date: Sun, 31 May 2026 09:51:37 +0200
-Subject: [PATCH v2] firmware: meson: sm: add stub functions when
- CONFIG_MESON_SM is disabled
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="TG+qnAxv"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id DF1101F00893;
+	Sun, 31 May 2026 07:59:19 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1780214363;
+	bh=WWIPFmwqir+lVcdNUz875OEugHUBCOLR1fTDs8ewdis=;
+	h=Date:Subject:To:References:From:In-Reply-To;
+	b=TG+qnAxvTqDHP8AcUeMvZYCngsNz9RHVlVA5xEZp7nBEfkp6kIvgxQ/lPsENqvSKK
+	 7NtfDQAflM/WdAGRWb+KdkVarxjtoctFu4r9mccgddmagopvp6zRJu5B0Eom7Pb3qd
+	 t47TbFwYAESebqwAVan0WsKSX+eOa4KIltL7B79MDwEy96832IJCAnZPUypjeQZ5cf
+	 GtM78yo7HpAIAr/lZI7a1puUtm0VDGNu2eGN3e+xNmiEWw3ghXJxx5K3Ju1ldHwtyT
+	 1h7cnYp1L7oMQZjzW7SAgCxIg2zpkAW6h48t3/di7X6M6YMy705KZl5kSaqv4izBzS
+	 uQo5o+IXBvyhQ==
+Message-ID: <cf0e5048-7ca8-4316-86b3-f7ae735e65f9@kernel.org>
+Date: Sun, 31 May 2026 09:59:18 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v2 1/3] dt-bindings: mfd: qcom-pm8xxx: allow temp-alarm
+ subnode
+To: Herman van Hazendonk <github.com@herrie.org>,
+ Amit Kucheria <amitk@kernel.org>, Conor Dooley <conor+dt@kernel.org>,
+ Daniel Lezcano <daniel.lezcano@kernel.org>, devicetree@vger.kernel.org,
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, Lee Jones <lee@kernel.org>,
+ linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linux-pm@vger.kernel.org, Lukasz Luba <lukasz.luba@arm.com>,
+ "Rafael J. Wysocki" <rafael@kernel.org>, Rob Herring <robh@kernel.org>,
+ Satya Priya <quic_c_skakit@quicinc.com>,
+ Thara Gopinath <thara.gopinath@gmail.com>, Zhang Rui <rui.zhang@intel.com>
+References: <cover.1780148149.git.github.com@herrie.org>
+ <cover.1780197411.git.github.com@herrie.org>
+ <d5f7132771d9ed1d70504eb1ef189a3c1954a887.1780197411.git.github.com@herrie.org>
+From: Krzysztof Kozlowski <krzk@kernel.org>
+Content-Language: en-US
+Autocrypt: addr=krzk@kernel.org; keydata=
+ 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 a/A=
+In-Reply-To: <d5f7132771d9ed1d70504eb1ef189a3c1954a887.1780197411.git.github.com@herrie.org>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260531-fix-missing-meson_sm-symbol-v2-1-1def8c3c169f@aliel.fr>
-X-B4-Tracking: v=1; b=H4sIAAAAAAAC/33NQQ6CMBCF4auQrh1TiraWlfcwxIAdYBLamo4hE
- sLdrcS1y/9l8s0qGBMhi7pYRcKZmGLIoQ6FeIxtGBDI5RZKKi3PykJPb/DETGEAjxzDnT3w4rs
- 4gTFGO+msM1qKLDwT5vNdvzW5R+JXTMv+bC6/68+t5F93LqGEqu+0UZ29WHe6thPhdOyTaLZt+
- wCBrsjqxQAAAA==
-X-Change-ID: 20260529-fix-missing-meson_sm-symbol-7776d0d9d760
-To: Neil Armstrong <neil.armstrong@linaro.org>, 
- Daniel Lezcano <daniel.lezcano@kernel.org>, Zhang Rui <rui.zhang@intel.com>, 
- "Rafael J. Wysocki" <rafael@kernel.org>, Lukasz Luba <lukasz.luba@arm.com>
-Cc: Guillaume La Roque <glaroque@baylibre.com>, 
- Kevin Hilman <khilman@baylibre.com>, Jerome Brunet <jbrunet@baylibre.com>, 
- Martin Blumenstingl <martin.blumenstingl@googlemail.com>, 
- linux-arm-kernel@lists.infradead.org, linux-amlogic@lists.infradead.org, 
- linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, 
- Mark Brown <broonie@kernel.org>, kernel test robot <lkp@intel.com>, 
- Ronald Claveau <linux-kernel-dev@aliel.fr>
-X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=openpgp-sha256; l=2615;
- i=linux-kernel-dev@aliel.fr; h=from:subject:message-id;
- bh=hEwMqxJxqL8pmXwuK2Rbg6Zwob3G2YZuQoVdSnhBZ2c=;
- b=owGbwMvMwCWm1SvKXP3cUInxtFoSQ5b0i3XB5h02Cw6Y3pgkHHfyzGFhl3fztiUxBPeWH5r30
- CLKPetCRykLgxgXg6yYIkv/XMsT7y4fPfN1j3oKzBxWJpAhDFycAjCRrqcMfzgrHT9ffPPcmu/H
- hmld96/JJZh8u2HYyzx5ncaLE1/XaCsw/DMTqImcw1hssnHSpd3n5F7NYTM9H8dle0Vka0DmhTZ
- ZQ04A
-X-Developer-Key: i=linux-kernel-dev@aliel.fr; a=openpgp;
- fpr=DFD863F61375BF917F0012173953305EF1D0EC3E
-X-Endpoint-Received: by B4 Relay for linux-kernel-dev@aliel.fr/default with
- auth_id=744
-X-Original-From: Ronald Claveau <linux-kernel-dev@aliel.fr>
-Reply-To: linux-kernel-dev@aliel.fr
 
-From: Ronald Claveau <linux-kernel-dev@aliel.fr>
+On 31/05/2026 06:09, Herman van Hazendonk wrote:
+> The qcom,pm8xxx parent schema closes its child set via
+> `additionalProperties: false` and an explicit list of `patternProperties`.
+> PM8901 (and prospectively other parts in the family) exposes an
+> over-temperature alarm block as an SSBI sub-node; without a matching
+> pattern here, any board DT that instantiates `temp-alarm@<offset>`
+> under a PM8xxx parent fails dtbs_check.
+> 
+> Add the `temp-alarm@[0-9a-f]+$` pattern, referencing the new
+> qcom,pm8901-temp-alarm schema, so the temperature-alarm sub-node
+> validates as a recognised child of the PMIC.
+> 
+> Signed-off-by: Herman van Hazendonk <github.com@herrie.org>
+> ---
+>  Documentation/devicetree/bindings/mfd/qcom-pm8xxx.yaml | 4 ++++
+>  1 file changed, 4 insertions(+)
+> 
 
-After merging the thermal tree, linux-next build (arm_multi_v7
-defconfig) failed like this:
-
-arm-linux-gnueabihf-ld: drivers/thermal/amlogic_thermal.o: in function `amlogic_thermal_probe_sm':
-/tmp/next/build/drivers/thermal/amlogic_thermal.c:196:(.text+0x2f4): undefined reference to `meson_sm_get'
-arm-linux-gnueabihf-ld: /tmp/next/build/drivers/thermal/amlogic_thermal.c:205:(.text+0x320): undefined reference to `meson_sm_get_thermal_calib'
-
-Add inline stub implementations of meson_sm_get() and
-meson_sm_get_thermal_calib() behind an #else guard so that drivers
-including this header can be compiled without CONFIG_MESON_SM .
-
-Fixes: b21d88de6918 ("thermal/drivers/amlogic: Add support for secure monitor calibration readout")
-Closes: https://lore.kernel.org/oe-kbuild-all/202605291530.en7aGn7w-lkp@intel.com/
-Reported-by: Mark Brown <broonie@kernel.org>
-Reported-by: kernel test robot <lkp@intel.com>
-Signed-off-by: Ronald Claveau <linux-kernel-dev@aliel.fr>
----
-Changes in v2:
-- Replace #ifdef CONFIG_MESON_SM by #if IS_ENABLED(CONFIG_MESON_SM)
-  to cover builtin and module in config.
-- Add missing trailers for kernel test robot.
-- Link to v1: https://lore.kernel.org/r/20260530-fix-missing-meson_sm-symbol-v1-1-3fb672b989d4@aliel.fr
----
- include/linux/firmware/meson/meson_sm.h | 17 +++++++++++++++++
- 1 file changed, 17 insertions(+)
-
-diff --git a/include/linux/firmware/meson/meson_sm.h b/include/linux/firmware/meson/meson_sm.h
-index 3ebc2bd9a9760..baecdaf263f41 100644
---- a/include/linux/firmware/meson/meson_sm.h
-+++ b/include/linux/firmware/meson/meson_sm.h
-@@ -27,8 +27,25 @@ int meson_sm_call_write(struct meson_sm_firmware *fw, void *buffer,
- int meson_sm_call_read(struct meson_sm_firmware *fw, void *buffer,
- 		       unsigned int bsize, unsigned int cmd_index, u32 arg0,
- 		       u32 arg1, u32 arg2, u32 arg3, u32 arg4);
-+
-+#if IS_ENABLED(CONFIG_MESON_SM)
-+
- struct meson_sm_firmware *meson_sm_get(struct device_node *firmware_node);
- int meson_sm_get_thermal_calib(struct meson_sm_firmware *fw, u32 *trim_info,
- 			       u32 tsensor_id);
- 
-+#else
-+
-+static inline struct meson_sm_firmware *meson_sm_get(struct device_node *firmware_node)
-+{
-+	return NULL;
-+}
-+static inline int meson_sm_get_thermal_calib(struct meson_sm_firmware *fw,
-+					     u32 *trim_info, u32 tsensor_id)
-+{
-+	return -EINVAL;
-+}
-+
-+#endif
-+
- #endif /* _MESON_SM_FW_H_ */
-
----
-base-commit: 3929405c64376a8a54c794e8a4485023b108a97e
-change-id: 20260529-fix-missing-meson_sm-symbol-7776d0d9d760
+No clue why MFD patch is in interconnect thread...
 
 Best regards,
--- 
-Ronald Claveau <linux-kernel-dev@aliel.fr>
-
-
+Krzysztof
