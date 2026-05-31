@@ -1,96 +1,91 @@
-Received: from comms.kousu.ca (comms.kousu.ca [46.23.90.174])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8B0F43403EA;
-	Sun, 31 May 2026 20:55:48 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=46.23.90.174
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2735C223DC6;
+	Sun, 31 May 2026 21:49:06 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1780260951; cv=none; b=EbFvrk/gv7e88UzQKOKgT6Fr+AYlLt+yKTpoEP+iPsyNTwrG72isPlxF9BJwWlwVX3YNu69J7GIQS7MSaw6hUMwQmRslg72d0T4RufP9+8KCcLySaSXbeLyZYcKbg22/3L7MwighghIIlUMB1gUC89v29m643V/MnLuoZBrcdK4=
+	t=1780264148; cv=none; b=oLJw8yYhgs1x4J7hCZcUlU3UDIuzP78M6zEJzJ6Tn6qEMCGu/QKLiAkpx8zlpgpn4kjkfVmd+FbfLqHphQycvKcl9I2S5eVr4FEik+rxhvhzFVOc4fh/XTXKRAxK+tpf8Slic29PXjU0t3K3DWaoV31VyvvIWH2fnDP2QSeUEok=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1780260951; c=relaxed/simple;
-	bh=jbTNWhwRndBe/mVL+d70N8jfHasPnypOTPoQZy75zdA=;
-	h=MIME-Version:Date:From:To:Cc:Subject:In-Reply-To:References:
-	 Message-ID:Content-Type; b=XBW3vCt3+N9BH6rGl9Vi6VHwTJ5unG2APGVcguokRzuan93g+pvHohvKNCwIEmWx82JoqJJWwrslUNSZr8rnpnL88mGWsLJ2Z211WeHLhiw9aoxR4i7EoBe1Pyj+nE/9ILqI0lhsChfn0e0RiPbWlWzOqJXUSaPjmFYHd/606Mo=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=kousu.ca; spf=pass smtp.mailfrom=kousu.ca; dkim=permerror (0-bit key) header.d=kousu.ca header.i=@kousu.ca header.b=CpA7w6gB; dkim=pass (2048-bit key) header.d=kousu.ca header.i=@kousu.ca header.b=ONJ2JNJ2; arc=none smtp.client-ip=46.23.90.174
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=kousu.ca
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=kousu.ca
+	s=arc-20240116; t=1780264148; c=relaxed/simple;
+	bh=L+ffRUF60vNQKYusqHpysiqlE6F10p7SF3tPVvi3AmA=;
+	h=Mime-Version:Content-Type:Date:Message-Id:Subject:Cc:To:From:
+	 References:In-Reply-To; b=C5qfqfxRLBr0if+W8H+WAK3VOlOtk4YFqrBP4cm/Kn04hsuuU2dkiB7SZGtd9hOwTFIUceAj7gKatWQs1Ql/pcxtika4X/ny9KgFSXSyTDzoRgBDLf9FIVuH91j6eeCLzMsekLbSd6q8bqihod9ir4wMsmdAU62oCfE93Xnse0Y=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=gezCKlVM; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=permerror (0-bit key) header.d=kousu.ca header.i=@kousu.ca header.b="CpA7w6gB";
-	dkim=pass (2048-bit key) header.d=kousu.ca header.i=@kousu.ca header.b="ONJ2JNJ2"
-DKIM-Signature: v=1; a=ed25519-sha256; c=simple/simple; s=ed25519; bh=jbTNWhwR
-	ndBe/mVL+d70N8jfHasPnypOTPoQZy75zdA=; h=references:in-reply-to:
-	subject:cc:to:from:date; d=kousu.ca; b=CpA7w6gB2JlTc5jTyd+RffjydzAeIN1
-	dOseUah03OXLKGGdvaa8JaiN13/TLtcrh7qGuy1E8djTQQ5RKrJsMAA==
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; s=rsa; bh=jbTNWhwRndBe/mVL
-	+d70N8jfHasPnypOTPoQZy75zdA=; h=references:in-reply-to:subject:cc:to:
-	from:date; d=kousu.ca; b=ONJ2JNJ28HFs2UWnALkXu9hXPsOd3JwCDmgSYe+FmxKRy
-	vKfk6j5os6PEkcezplTMJAUrrmDJ6G2FzY7WpdjFVclqCZFd8jA+amQhaTcL/2uPp1C/P9
-	rysnEtyhlys+3mwXQ+wsfQCBaJb+NTN0aqHBm2biDlQf9367TcBTTqP6PmhL+S0Y7ZABOE
-	Fkv5NpDc4OMNCIsmPmBAkN9yluOtii+WtY6N3QxApB7Cq8h57ddW0jwhd17hhWlqXFhoC/
-	NUuSOCmMGbwDmIEwP+i/2Mz2Vxe/QyFMKGhUB9l8EJmw0o8mZDAwNUMuRDPik79XsiuIjn
-	WPQsRFQg2tENmJcuw==
-Received: from comms.kousu.ca (localhost [127.0.0.1])
-	by comms.kousu.ca (OpenSMTPD) with ESMTP id 6e368829;
-	Sun, 31 May 2026 22:29:06 +0200 (CEST)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="gezCKlVM"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5D2211F00893;
+	Sun, 31 May 2026 21:49:02 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1780264146;
+	bh=L+ffRUF60vNQKYusqHpysiqlE6F10p7SF3tPVvi3AmA=;
+	h=Date:Subject:Cc:To:From:References:In-Reply-To;
+	b=gezCKlVMpK/cNhif0323MPZ5yTHiTdOBBH7LLBsRzD+yhKZAmNe67+tH2KRprtphm
+	 +3SbrLyMWbH//guqNJpELaJpYEN+1gbFiuMVselAJ8RYh+grES/nfyDWiJIf5RhiP+
+	 31IIG9YuVzY+bkicD3y2Oep7XrqP0l2gaORBB1HPsYyxYl/KnSgrlsqDfJOBev/Dra
+	 1/pANUFgjwYpNIHbkGocM63nvQuYdOLU60hnDmPZlfeQ20qlbLOoTfd7E5zIbjLl5Q
+	 mQ2YTpzeWOOrIER5JTf0bcXLcrTDUTTpp4YDBWy/WYQQ77O8mtl2fta7Wd9v9Uhm4u
+	 2ZRBk14QW5GjQ==
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
-MIME-Version: 1.0
-Date: Sun, 31 May 2026 16:29:06 -0400
-From: Nick <nick@kousu.ca>
-To: linux-acpi@vger.kernel.org
-Cc: johannes.goede@oss.qualcomm.com, "Rafael J. Wysocki"
- <rafael@kernel.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
- regressions@lists.linux.dev, John Veness <john-linux@pelago.org.uk>,
- linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
- platform-driver-x86@vger.kernel.org, stable@vger.kernel.org
-Subject: Re: [REGRESSION] Toshiba Fn keys + lidswitch
-In-Reply-To: <75398536-2ca8-4205-9205-18afc5227397@pelago.org.uk>
-References: <E2OXET.4X5GTP37VTNC3@kousu.ca>
- <CAJZ5v0jVQyWYqPo_MiUwNQb7FLNR_Q_++Xq=xA1owcHpcjN=OA@mail.gmail.com>
- <bc9d5258-d4df-46a1-bba9-de3486f722ab@pelago.org.uk>
- <8503d297-68ca-4bfe-bbdf-537a85890d86@oss.qualcomm.com>
- <75398536-2ca8-4205-9205-18afc5227397@pelago.org.uk>
-Message-ID: <eddc6acd74abcea6131f3cfc606bc596@kousu.ca>
-X-Sender: nick@kousu.ca
-Content-Type: text/plain; charset=US-ASCII;
- format=flowed
-Content-Transfer-Encoding: 7bit
+Mime-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=UTF-8
+Date: Sun, 31 May 2026 23:49:00 +0200
+Message-Id: <DIX6YVWRDL67.3TXDMTAMASCVZ@kernel.org>
+Subject: Re: [PATCH v11 1/3] rust: add basic serial device bus abstractions
+Cc: "Markus Probst via B4 Relay"
+ <devnull+markus.probst.posteo.de@kernel.org>, "Rob Herring"
+ <robh@kernel.org>, "Greg Kroah-Hartman" <gregkh@linuxfoundation.org>, "Jiri
+ Slaby" <jirislaby@kernel.org>, "Miguel Ojeda" <ojeda@kernel.org>, "Gary
+ Guo" <gary@garyguo.net>, =?utf-8?q?Bj=C3=B6rn_Roy_Baron?=
+ <bjorn3_gh@protonmail.com>, "Benno Lossin" <lossin@kernel.org>, "Andreas
+ Hindborg" <a.hindborg@kernel.org>, "Alice Ryhl" <aliceryhl@google.com>,
+ "Trevor Gross" <tmgross@umich.edu>, "Kari Argillander"
+ <kari.argillander@gmail.com>, "Rafael J. Wysocki" <rafael@kernel.org>,
+ "Viresh Kumar" <viresh.kumar@linaro.org>, "Boqun Feng" <boqun@kernel.org>,
+ "David Airlie" <airlied@gmail.com>, "Simona Vetter" <simona@ffwll.ch>,
+ <linux-serial@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
+ <rust-for-linux@vger.kernel.org>, <linux-pm@vger.kernel.org>,
+ <driver-core@lists.linux.dev>, <dri-devel@lists.freedesktop.org>
+To: "Markus Probst" <markus.probst@posteo.de>
+From: "Danilo Krummrich" <dakr@kernel.org>
+References: <20260531-rust_serdev-v11-0-dee8e0d830f1@posteo.de>
+ <20260531-rust_serdev-v11-1-dee8e0d830f1@posteo.de>
+ <DIWEXUCNLURG.136XXDBHSBNVR@kernel.org>
+ <12fa6237168ecf6dc65ebf46118beeb5c51f3d1c.camel@posteo.de>
+In-Reply-To: <12fa6237168ecf6dc65ebf46118beeb5c51f3d1c.camel@posteo.de>
 
-On 2026-05-31 11:17, John Veness wrote:
-> On 30/05/2026 14:34, johannes.goede@oss.qualcomm.com wrote:
->> In case you've not seen it yet, Rafael send out the test patch
->> publicly later that day in another email in this thread:
->> 
->> https://lore.kernel.org/linux-acpi/12896447.O9o76ZdvQC@rafael.j.wysocki/
->> 
->> Regards,
->> 
->> Hans
-> 
-> Thanks for the pointer, and sorry for missing that! I had only been
-> looking in the archives of platform-driver-x86@vger.kernel.org which 
-> for
-> some reason didn't receive the patch.
-> 
-> John
+On Sun May 31, 2026 at 9:42 PM CEST, Markus Probst wrote:
+> I just noticed, is it even possible to use SRCU here? Currently the mutex=
+ not
+> only ensures that no drvdata access happens after drvdata drop, but also =
+that
+> the receive_buf waits for the probe to complete, as the drvdata hasn't be=
+en
+> initialized yet.
 
-On 2026-05-31 11:25, John Veness wrote:
-> I'm not Nick, but I have tested the patch here on my old Toshiba Tecra 
-> Z50-A
-> and it seems to have worked - I now have Fn+keys working fine, after 
-> losing them
-> in a recent kernel update (apart from Fn+3 for volume down, and Fn+4 
-> for volume up,
-> which for some reason continued to work when the others didn't).
-> 
-> John
+Yeah, if you drop the completion, you need the mutex.
 
-Same here. All my Fn keys work except for Esc through F8. Glad Rafael's 
-patch worked for you too! There's a newer copy of it at 
-https://lore.kernel.org/linux-acpi/2046403.PYKUYFuaPT@rafael.j.wysocki/T/#t 
-by the way.
+(In case it wasn't discussed in previous versions already, there is also th=
+e
+option to just attach separate private data to the receive callback, which =
+would
+avoid this synchonization problem in the first place.
 
-- Nick
+You could have serdev::Device<Core>::open(), which takes its own private da=
+ta
+and a corresponding close(), this way you'd allow drivers to control whethe=
+r
+they want the serial line "open" or not. You just need to make sure it is c=
+losed
+eventually.)
+
+That said, I don't know what turns out to be the better approach. And maybe=
+ it
+simply isn't something this initial series has to tackle? I think your driv=
+er
+does not implement the receive callback?
