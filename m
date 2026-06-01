@@ -1,215 +1,154 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 62CEC3E867A
-	for <linux-pm@vger.kernel.org>; Mon,  1 Jun 2026 18:22:13 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 79BF53E1231
+	for <linux-pm@vger.kernel.org>; Mon,  1 Jun 2026 18:26:55 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1780338135; cv=none; b=TkP4fyUhOT0LNZZDwXNVlcpzqh71YEJmWBS5fDlO7/eK7bHrUcjXE5VReUYkB+RAlrRFt3d/cNaxz6GDIL0QmOz1vGy/GoL5zEKYh5TFez7Mm0MsLejB8IfKNgumaIB9qE5fbrvWTGcRgc7GmWt1jFc/2slQ7F1Zpu8oGRDtPzg=
+	t=1780338416; cv=none; b=mbvP7htH1wPLBH7M/dcYdB9tvQqvEQj8z7kpF0Y8hgm259TW+XSIc8+yv908025iGQFlBtboV3eHpGlyqq4qofnbFK3/DknsBSxoBtgTbIfqQ4uWx3Ctc5DCnlIsbL4dJPN/AIhUTaAX8vqAp7tTggQL4myQMhsnk58pFIjjOro=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1780338135; c=relaxed/simple;
-	bh=VQuKlvwV4eZQyrRRUuM+4HRf2g3sBNyVBOZ4hFC+pQ8=;
+	s=arc-20240116; t=1780338416; c=relaxed/simple;
+	bh=RbU1kZHqjqFtfTsq+ic0zkG8gB1+osgpzJ2ahcO9/0k=;
 	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=HIdwmgKAv0UUmknIc3/3fxxK13+wQ+gJjqxSRa+LyQ1nGn0P2dTv/lhSDoCq9dVDdyXiWRk6ie7kwvX7KYMB2J9uzsfmodiJkSsugTQi+Or5g1TiW96qNVFPmZW78z+6NqBmVBZPhqJJ4DPzKQBZKYEb3PHL3NHiPQT1GqJeDgw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=HdGkWpk6; arc=none smtp.client-ip=100.103.45.18
+	 To:Cc:Content-Type; b=groFEVmWA5zHAzhm8iNThNT6W05Qo2Ljf67/MHMy9r70Drjx+vNRaAveqo+Tnigkps81auxGJLDzV1A1vfxZL/h1pQseRCNKacB3YkKBqG70fMhRtKJQtXG/ZGk1BASOrsdit49BBmKjhPM6/ntiq2pdGmgByM6ai+BGwfRTOJE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=bEwr1DcC; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="HdGkWpk6"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2A5B01F0089D
-	for <linux-pm@vger.kernel.org>; Mon,  1 Jun 2026 18:22:13 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="bEwr1DcC"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4D59A1F0089D
+	for <linux-pm@vger.kernel.org>; Mon,  1 Jun 2026 18:26:55 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1780338133;
-	bh=r48NnIlVqXZufhNNAi2X29vwzl6BbMVh195TUth/lGI=;
+	s=k20260515; t=1780338415;
+	bh=kh42sMWmTOO471jKcUUzqN/uJW2KiBLalBsKUVrgVM4=;
 	h=References:In-Reply-To:From:Date:Subject:To:Cc;
-	b=HdGkWpk6WogYcl021MQVs+Qf2DGiLNMMtnGcrvcLYC9aMaxax0eclZtii12vl5BEc
-	 zYJ4/sqJ6RN7Az4/UMh75ONCHkyccJnI+eJsa2D4ylgGXXrInXHDE2OVUX7x7oVgQs
-	 BTacTKW0btrEkxPEDePin4gjsv+y5gZehi86mIn8CUfrJlo8+qkwnD7/B2tYNva9Ql
-	 a3aVeROkjAtcoAXNmSUsqTEdFsJscO1FxawhbdSDTy8fkjkwV7NHBuF/vTpveItbJt
-	 S0iGpx9CL0CkFuzvPyK4HiZ5EojyRRT/Sn/d72X1GSgpC55GKJ0uL10sdIb+AN9UZX
-	 CbGV0ehB2hNFA==
-Received: by mail-lf1-f47.google.com with SMTP id 2adb3069b0e04-5aa63daf2a5so2040369e87.3
-        for <linux-pm@vger.kernel.org>; Mon, 01 Jun 2026 11:22:13 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AFNElJ9HxsZc4bSauACFTXQwHj6AqmZycVgjPPDOeVCesvPP9iuyDMW+Ye1xWitwA/ExOYVdJdPccHA7sA==@vger.kernel.org
-X-Gm-Message-State: AOJu0YzArQqH43uzwLLXfqHT9lwKns5IClDYXPqHVxaVZXJ+artmsWf4
-	W03VWSJmQnerz0P/TNZRb6TzTFCSasDzbJ/7MPDw0L/JZBtfMbjOIo5fuTcNmSh5meMbBTDH/gl
-	e5Sf7UQmccL83oE80YougIX6W+WinYqA=
-X-Received: by 2002:a05:6512:33c1:b0:5a8:64fd:142 with SMTP id
- 2adb3069b0e04-5aa73eaac3amr358116e87.15.1780338131589; Mon, 01 Jun 2026
- 11:22:11 -0700 (PDT)
+	b=bEwr1DcCBcRa5yUuf0bxcb14xNHvMHO2/pNUpPOW1kK/bTLlVEGOzNA2tQREIMLc5
+	 OcBDPH5x+wIIvsz6N5e7GeYNLN1n6zyizQeyQ/OfIvkraZaGm0wiVCixGZafDp+OS2
+	 /f7DlQfhdFVtKH9RG1KZFC/g96HfebHLhPH11DJWduhZkty1lQdCEE3x50Ee6GWos9
+	 B4zLcvz46H3LmE9U/uY1ZHqAbK+mgRbkfZpOI48ztH1Oc8sehE8SYQACDwe2wQozIm
+	 JO17AbZPLX8lx+sRLt3nzSARrFFfDoIUGH92vK6v03o2mSnmoknx0DMxbD/nnuZM5y
+	 lXX9q04ljGmEw==
+Received: by mail-lj1-f180.google.com with SMTP id 38308e7fff4ca-3967738c801so18573901fa.2
+        for <linux-pm@vger.kernel.org>; Mon, 01 Jun 2026 11:26:55 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AFNElJ+aoDaUbcDFHR8QraIbTUAtIIihFffjiJvfXsQQr11McXajs0Vaoar8oDFnNWVPCz0oqOC+4XpY5Q==@vger.kernel.org
+X-Gm-Message-State: AOJu0YyHVmo3vtw9O1I1M8t7KhrZLzXeIijmeNPqH/UZ/Vv8afSNaEIv
+	go0obrr07j8+f2jAAhJTnwdM+v0kP4P7Umoq9y2tJTmS24+KXs0u6yhTNKgp3IFbD1UgRijbBwq
+	2dNMb5RxFK0M8cw+V7MPqlc+TPN4RgIA=
+X-Received: by 2002:a05:6512:224c:b0:5aa:6ede:1a69 with SMTP id
+ 2adb3069b0e04-5aa6ede1b21mr1497253e87.17.1780338413755; Mon, 01 Jun 2026
+ 11:26:53 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260428080513.1833515-1-tuhaowen@uniontech.com>
- <20260528081840.3528089-1-tuhaowen@uniontech.com> <20260528081840.3528089-2-tuhaowen@uniontech.com>
-In-Reply-To: <20260528081840.3528089-2-tuhaowen@uniontech.com>
+References: <20260528-rneri-directed-therm-intr-v2-0-8e2f9e0c1a36@linux.intel.com>
+In-Reply-To: <20260528-rneri-directed-therm-intr-v2-0-8e2f9e0c1a36@linux.intel.com>
 From: "Rafael J. Wysocki" <rafael@kernel.org>
-Date: Mon, 1 Jun 2026 20:22:00 +0200
-X-Gmail-Original-Message-ID: <CAJZ5v0gvcsowJL0oqKqaG-VFinpb9Rj06KNOkG9XaQ+6wp0Ygg@mail.gmail.com>
-X-Gm-Features: AVHnY4I3h_nJVfbBOZ_6CvZ4PvSQtQmTMcd-7ar70x3H_wF8Ob5BeP9NyY_c7dI
-Message-ID: <CAJZ5v0gvcsowJL0oqKqaG-VFinpb9Rj06KNOkG9XaQ+6wp0Ygg@mail.gmail.com>
-Subject: Re: [PATCH v2 1/2] PM: hibernate: add pm_hibernation_snapshot_done() helper
-To: Haowen Tu <tuhaowen@uniontech.com>
-Cc: rafael@kernel.org, lenb@kernel.org, pavel@kernel.org, 
-	linux-pm@vger.kernel.org, laurent.pinchart@ideasonboard.com, hansg@kernel.org, 
-	mchehab@kernel.org, linux-media@vger.kernel.org, gregkh@linuxfoundation.org, 
-	stern@rowland.harvard.edu, oneukum@suse.com, linux-usb@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, kernel@uniontech.com
+Date: Mon, 1 Jun 2026 20:26:42 +0200
+X-Gmail-Original-Message-ID: <CAJZ5v0g3SncgrYri0Xo28MCKseOVSDGbx1L=mBAWATJYJRv7iw@mail.gmail.com>
+X-Gm-Features: AVHnY4J6T7lVdYx8yPjGVC-h2YJx8ci9Ct92sNufXkZBaC1w-0MC1R4lL4XbpAI
+Message-ID: <CAJZ5v0g3SncgrYri0Xo28MCKseOVSDGbx1L=mBAWATJYJRv7iw@mail.gmail.com>
+Subject: Re: [PATCH v2 0/5] thermal: intel: Add support for Directed Package
+ Thermal Interrupt
+To: Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Daniel Lezcano <daniel.lezcano@kernel.org>, 
+	Lukasz Luba <lukasz.luba@arm.com>, x86@kernel.org, 
+	Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Zhang Rui <rui.zhang@intel.com>, 
+	linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, 
+	Ricardo Neri <ricardo.neri@intel.com>
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Thu, May 28, 2026 at 10:19=E2=80=AFAM Haowen Tu <tuhaowen@uniontech.com>=
- wrote:
+On Thu, May 28, 2026 at 5:15=E2=80=AFPM Ricardo Neri
+<ricardo.neri-calderon@linux.intel.com> wrote:
 >
-> During hibernation, after create_image() saves the memory snapshot, the
-> kernel resumes devices with PMSG_THAW solely to write the hibernation
-> image to storage, then powers off.  Drivers for hardware not involved in
-> storage I/O have no reason to reinitialize during this transient phase.
-
-They do have a reason for doing it.
-
-Their poweroff (or shutdown) callbacks will be called while preparing
-to power off the system subsequently and they need to be ready for
-that.  The most straightforward way to achieve this is to resume so
-they can "suspend" again.
-
-> Some subsystems, such as USB, do not expose the hibernation PM message
-> to driver resume callbacks, so drivers there need an explicit query to
-> distinguish the image-write phase from the final restore path.  Export
-> pm_hibernation_snapshot_done() for this purpose.
+> Hi,
 >
-> The implementation returns !!in_suspend, which is set to 1 in
-> create_image() just before swsusp_arch_suspend().  Because in_suspend is
-> marked __nosavedata, it is not saved into the hibernation image; on the
-> restore path the variable remains 0, so the helper correctly returns
-> false during PMSG_RESTORE device resume.
+> This is v2 of this series. The main changes are a new patch fixing a pre-
+> existing bug and a redesigned error rollback strategy that disables
+> directed thermal interrupts across all packages when enabling fails in an=
+y
+> one of them. Please see the changelog for details.
 >
-> Clear in_suspend before releasing snapshot memory on hibernation failure
-> paths and after swsusp_write() returns, so the helper does not report a
-> stale snapshot after the snapshot pages have been released.
-
-This last piece needs to be split off into a separate patch.
-
-> Signed-off-by: Haowen Tu <tuhaowen@uniontech.com>
+> Package-level thermal interrupts are currently broadcast to all CPUs in a
+> package. Only one CPU is needed to service package-wide events.
+> Broadcasting creates unnecessary resource contention. Thermal interrupts
+> generated for Hardware Feedback Interface[1] updates are an example: all
+> CPUs in the package receive the interrupt and race for a lock to update a
+> shared data structure. Idle CPUs are needlessly woken up.
+>
+> Newer Intel processors allow directing package-level thermal interrupts
+> only to CPUs that explicitly request them. A CPU opts in by setting a
+> designated bit in IA32_THERM_INTERRUPT. Hardware acknowledges the request
+> by setting a designated bit in IA32_PACKAGE_THERM_STATUS.
+>
+> This series enables directed package-level thermal interrupts and
+> designates one handler CPU per package using the CPU hotplug
+> infrastructure. A new CPU is selected if the handler CPU goes offline.
+>
+> Because CPU0's hotplug callbacks are not invoked during suspend and resum=
+e,
+> syscore callbacks are added to restore the handler for the boot package.
+> The series also disables directed delivery during kexec reboot, avoiding
+> stale interrupt routing when rebooting into a kernel that does not suppor=
+t
+> the feature.
+>
+> This patchset introduces a change in behavior in the /sys/devices/system/
+> cpu/cpuN/thermal_throttle/package* sysfs files. These files reflect per-C=
+PU
+> variables updated when a CPU handles a package-level thermal interrupt. I=
+n
+> broadcast mode, all CPUs update their variables. When directed package-
+> level thermal interrupts are enabled, only the handler CPU's variables ar=
+e
+> updated.
+>
+> Lastly, nothing changes for processors that do not support this feature:
+> they fall back to broadcast delivery.
+>
+> [1] Intel Software Developer's Manual Vol. 3, Section 17.6, March 2026 ht=
+tps://www.intel.com/SDM
+>
+> Signed-off-by: Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
 > ---
 > Changes in v2:
-> - Rename pm_hibernation_storing_image() to
->   pm_hibernation_snapshot_done().
-> - Clear in_suspend before releasing snapshot memory on failure paths and
->   after swsusp_write() returns.
+> - Fixed an existing bug in the error-handling of thermal_throttle_online(=
+)
+>   CPU hotplug callback.
+> - Redesigned the rollback mechanism to handle all packages, not only
+>   the boot package.
+> - Fixed the handling of the return value of cpumask_any_but(), which on
+>   failure returns small_cpumask_bits, not nr_cpu_ids.
+> - Renamed the Directed Package Thermal Interrupt CPUID and MSR bits for
+>   consistency and brevity. (Boris)
+> - Added measurements of the latency of setup acknowledgment from hardware=
+.
+> - Removed an unused argument from directed_thermal_pkg_intr_supported().
+> - Reused the global rollback mechanism in the syscore shutdown callback.
+> - Link to v1: https://lore.kernel.org/r/20260309-rneri-directed-therm-int=
+r-v1-0-2956e3000950@linux.intel.com
 >
->  include/linux/suspend.h  |  2 ++
->  kernel/power/hibernate.c | 31 +++++++++++++++++++++++++++----
->  2 files changed, 29 insertions(+), 4 deletions(-)
+> ---
+> Ricardo Neri (5):
+>       thermal: intel: Fix dangling resources on thermal_throttle_online()=
+ failure
+>       x86/thermal: Add bit definitions for Intel Directed Package Thermal=
+ Interrupt
+>       thermal: intel: Enable the Directed Package-level Thermal Interrupt
+>       thermal: intel: Add syscore callbacks for suspend and resume
+>       thermal: intel: Add a syscore shutdown callback for kexec reboot
 >
-> diff --git a/include/linux/suspend.h b/include/linux/suspend.h
-> index b02876f1ae38..78e7e33c3d19 100644
-> --- a/include/linux/suspend.h
-> +++ b/include/linux/suspend.h
-> @@ -393,6 +393,7 @@ extern void hibernation_set_ops(const struct platform=
-_hibernation_ops *ops);
->  extern int hibernate(void);
->  extern bool system_entering_hibernation(void);
->  extern bool hibernation_available(void);
-> +extern bool pm_hibernation_snapshot_done(void);
->  asmlinkage int swsusp_save(void);
->  extern struct pbe *restore_pblist;
->  int pfn_is_nosave(unsigned long pfn);
-> @@ -412,6 +413,7 @@ static inline void hibernation_set_ops(const struct p=
-latform_hibernation_ops *op
->  static inline int hibernate(void) { return -ENOSYS; }
->  static inline bool system_entering_hibernation(void) { return false; }
->  static inline bool hibernation_available(void) { return false; }
-> +static inline bool pm_hibernation_snapshot_done(void) { return false; }
->
->  static inline int hibernate_quiet_exec(int (*func)(void *data), void *da=
-ta) {
->         return -ENOTSUPP;
-> diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
-> index af8d07bafe02..47047937e262 100644
-> --- a/kernel/power/hibernate.c
-> +++ b/kernel/power/hibernate.c
-> @@ -113,6 +113,25 @@ bool hibernation_available(void)
->                 !secretmem_active() && !cxl_mem_active();
->  }
->
-> +/**
-> + * pm_hibernation_snapshot_done - check if a hibernation snapshot is ava=
-ilable
-> + *
-> + * After create_image() saves a memory snapshot, the kernel briefly resu=
-mes
-> + * devices with PMSG_THAW to write the image to storage before final pow=
-erdown.
-> + * Drivers that do not need to participate in image writing may call thi=
-s
-> + * helper from their resume callbacks to skip unnecessary hardware
-> + * initialization during that transient phase.
-> + *
-> + * Context: May be called from device PM callbacks.
-> + * Return: %true if a hibernation snapshot has been taken and has not be=
-en
-> + *         released yet.
-> + */
-> +bool pm_hibernation_snapshot_done(void)
-> +{
-> +       return !!in_suspend;
-> +}
-> +EXPORT_SYMBOL_GPL(pm_hibernation_snapshot_done);
-> +
->  /**
->   * hibernation_set_ops - Set the global hibernate operations.
->   * @ops: Hibernation operations to use in subsequent hibernation transit=
-ions.
-> @@ -418,6 +437,7 @@ static void shrink_shmem_memory(void)
->  int hibernation_snapshot(int platform_mode)
->  {
->         pm_message_t msg;
-> +       bool snapshot_done;
->         int error;
->
->         pm_suspend_clear_flags();
-> @@ -474,15 +494,18 @@ int hibernation_snapshot(int platform_mode)
->          * returns here (1) after the image has been created or the
->          * image creation has failed and (2) after a successful restore.
->          */
-> +       snapshot_done =3D in_suspend;
->
->         /* We may need to release the preallocated image pages here. */
-> -       if (error || !in_suspend)
-> +       if (error || !snapshot_done) {
-> +               in_suspend =3D 0;
->                 swsusp_free();
-> +       }
->
-> -       msg =3D in_suspend ? (error ? PMSG_RECOVER : PMSG_THAW) : PMSG_RE=
-STORE;
-> +       msg =3D snapshot_done ? (error ? PMSG_RECOVER : PMSG_THAW) : PMSG=
-_RESTORE;
->         dpm_resume(msg);
->
-> -       if (error || !in_suspend)
-> +       if (error || !snapshot_done)
->                 pm_restore_gfp_mask();
->
->         console_resume_all();
-> @@ -865,6 +888,7 @@ int hibernate(void)
->
->                 pm_pr_dbg("Writing hibernation image.\n");
->                 error =3D swsusp_write(flags);
-> +               in_suspend =3D 0;
->                 swsusp_free();
->                 if (!error) {
->                         if (hibernation_mode =3D=3D HIBERNATION_TEST_RESU=
-ME)
-> @@ -872,7 +896,6 @@ int hibernate(void)
->                         else
->                                 power_down();
->                 }
-> -               in_suspend =3D 0;
->                 pm_restore_gfp_mask();
->         } else {
->                 pm_pr_dbg("Hibernation image restored successfully.\n");
-> --
-> 2.20.1
+>  arch/x86/include/asm/cpufeatures.h  |   2 +
+>  arch/x86/include/asm/msr-index.h    |   2 +
+>  drivers/thermal/intel/therm_throt.c | 272 ++++++++++++++++++++++++++++++=
++++++-
+>  3 files changed, 272 insertions(+), 4 deletions(-)
+> ---
+
+sashiko.dev has some feedback on patch 4 that appears to be valid to me:
+
+https://sashiko.dev/#/patchset/20260528-rneri-directed-therm-intr-v2-0-8e2f=
+9e0c1a36%40linux.intel.com
+
+Can you have a look at it please?
