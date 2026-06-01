@@ -1,40 +1,39 @@
-Received: from canpmsgout09.his.huawei.com (canpmsgout09.his.huawei.com [113.46.200.224])
+Received: from mailgw.kylinos.cn (mailgw.kylinos.cn [124.126.103.232])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id ACFFD18BBAE;
-	Mon,  1 Jun 2026 02:04:21 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=113.46.200.224
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C4B7478F4A;
+	Mon,  1 Jun 2026 02:31:54 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=124.126.103.232
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1780279466; cv=none; b=RMK+Z0q+86N2lt4HvkNxbwJ9VcfPQuHvXfNPJVWeqsPCxjaiL52Fnv2wJNuujqiI5b2HhoVD+edkVSL6gnTQoaAXuHgTCJkK1woZQYbIMLXhMp+EL0IzqdAKhz0JXvP7nuhRkgHJbHlZXAyXV1n0W4BMrQpuC1LjZFDswrwRXbQ=
+	t=1780281117; cv=none; b=lPYa8hMHUYdKL6MDWc0pGHfPId+ErTO3JY+nA8nJXJAK3TapYU3VcehfP9G4AfF76lHtAs7dfkrION4oqHh+HWutDViyx27sfZhHbtlhzetNi+GxoIBYEODdEKFkBiQ+5WmXS8kNITlZmUfV4OD1hPmNx/us8wsMZoWe4vhUEsk=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1780279466; c=relaxed/simple;
-	bh=24u0Mc/omcptN/bXvWCbC/xhppIqcwqy22nqFlXk27I=;
-	h=Message-ID:Date:MIME-Version:Subject:To:CC:References:From:
-	 In-Reply-To:Content-Type; b=T6+wpmlYpXlEAd4+ETM1ACnzqm2Ec6SQyCPQUH9BP9y1XeuAn1W3OUTDGC12++3A8i57lOtt1sYFDGfT3Fsa7kwGkWTGzSlvbT0OzDfrdrJVXsH8lmrMMoUs7jQhe0pQhxW4S7nWnj0OxxLkXntlP1515RX7Bn4BA5dtB98P7GI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; spf=pass smtp.mailfrom=huawei.com; dkim=pass (1024-bit key) header.d=huawei.com header.i=@huawei.com header.b=PqZWk8y9; arc=none smtp.client-ip=113.46.200.224
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=huawei.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=huawei.com header.i=@huawei.com header.b="PqZWk8y9"
-dkim-signature: v=1; a=rsa-sha256; d=huawei.com; s=dkim;
-	c=relaxed/relaxed; q=dns/txt;
-	h=From;
-	bh=n6O/rJnqc29q+9bm0i+9ElxVQIbKP87fJyka1ARSiLI=;
-	b=PqZWk8y9AK9nxhWXCFpDQs0N5riIKYx7IJNft1TIUVObqLqzqKxzJPQiaDA+c0nwhCVazVoNL
-	FrU3FWVzaL5zGM3N0EqntW9dSYBqZjafpEkZ0Q4glhkX1PdT1qiEgIDBx3K2Pt7xlpZ31P2hqaP
-	WtnREqT0t4m5J9RIQ04DHf8=
-Received: from mail.maildlp.com (unknown [172.19.163.214])
-	by canpmsgout09.his.huawei.com (SkyGuard) with ESMTPS id 4gTHBS34fDz1cyPZ;
-	Mon,  1 Jun 2026 09:56:32 +0800 (CST)
-Received: from kwepemr200004.china.huawei.com (unknown [7.202.195.241])
-	by mail.maildlp.com (Postfix) with ESMTPS id BA9364056C;
-	Mon,  1 Jun 2026 10:04:19 +0800 (CST)
-Received: from [10.67.121.62] (10.67.121.62) by kwepemr200004.china.huawei.com
- (7.202.195.241) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1544.11; Mon, 1 Jun
- 2026 10:04:18 +0800
-Message-ID: <2712839c-fb9b-4717-a36f-a0f922115be8@huawei.com>
-Date: Mon, 1 Jun 2026 10:04:18 +0800
+	s=arc-20240116; t=1780281117; c=relaxed/simple;
+	bh=mMceGhfGGhIyUIAPtc4wT2ZortdfXYgsMpxqn8eoBA0=;
+	h=Message-ID:Date:MIME-Version:Subject:To:References:From:
+	 In-Reply-To:Content-Type; b=Lbw3dvzIGpBTWGDNrv05hfHSKwIEdZvsM+ZFQ9OiVcuX4lVJDM8vxB5dCXa9JnLLwIBxTn2YezjvJeb3rRGmq35Wk07QZL96j/vFgDInNMQSkPSuIhm7m9Oy78b6e9WpPMUbG9v0ykzt1k4PQ7SFvcxnu0rqmUcbQpJY1eH+lN8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kylinos.cn; spf=pass smtp.mailfrom=kylinos.cn; arc=none smtp.client-ip=124.126.103.232
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kylinos.cn
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=kylinos.cn
+X-UUID: 098874ec5d6211f1aa26b74ffac11d73-20260601
+X-CID-P-RULE: Release_Ham
+X-CID-O-INFO: VERSION:1.3.12,REQID:e8df8b6f-1adc-4009-a840-06959c90a7ca,IP:0,U
+	RL:0,TC:0,Content:0,EDM:0,RT:0,SF:0,FILE:0,BULK:0,RULE:Release_Ham,ACTION:
+	release,TS:0
+X-CID-META: VersionHash:e7bac3a,CLOUDID:4f66cb218efca946c6ff02be308f0345,BulkI
+	D:nil,BulkQuantity:0,Recheck:0,SF:80|81|82|83|102|865|898,TC:nil,Content:0
+	|15|52,EDM:-3,IP:nil,URL:0,File:nil,RT:nil,Bulk:nil,QS:nil,BEC:nil,COL:0,O
+	SI:0,OSA:0,AV:0,LES:1,SPR:NO,DKR:0,DKP:0,BRR:0,BRE:0,ARC:0
+X-CID-BVR: 2,SSN|SDN
+X-CID-BAS: 2,SSN|SDN,0,_
+X-CID-FACTOR: TF_CID_SPAM_SNR
+X-CID-RHF: D41D8CD98F00B204E9800998ECF8427E
+X-UUID: 098874ec5d6211f1aa26b74ffac11d73-20260601
+Received: from [10.42.13.56] [(10.44.16.150)] by mailgw.kylinos.cn
+	(envelope-from <luoxueqin@kylinos.cn>)
+	(Generic MTA with TLSv1.3 TLS_AES_128_GCM_SHA256 128/128)
+	with ESMTP id 1043785512; Mon, 01 Jun 2026 10:31:47 +0800
+Message-ID: <5e91635e-8aa5-4113-bce9-b7a82320e09c@kylinos.cn>
+Date: Mon, 1 Jun 2026 10:31:46 +0800
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -42,104 +41,155 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] cpufreq: Documentation: fix freq_step description
-To: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>, <rafael@kernel.org>,
-	<viresh.kumar@linaro.org>, <corbet@lwn.net>, <skhan@linuxfoundation.org>
-CC: <linux-pm@vger.kernel.org>, <linux-doc@vger.kernel.org>,
-	<linux-kernel@vger.kernel.org>, <zhanjie9@hisilicon.com>,
-	<prime.zeng@hisilicon.com>, <wanghuiqiang@huawei.com>, <xuwei5@huawei.com>,
-	<lihuisong@huawei.com>, <zhenglifeng1@huawei.com>, <yubowen8@huawei.com>,
-	<wangzhi12@huawei.com>
-References: <20260529111122.3321645-1-zhangpengjie2@huawei.com>
- <f598e862-8120-4922-9d04-6e3729187420@oss.qualcomm.com>
-From: Pengjie Zhang <zhangpengjie2@huawei.com>
-In-Reply-To: <f598e862-8120-4922-9d04-6e3729187420@oss.qualcomm.com>
-Content-Type: text/plain; charset="UTF-8"; format=flowed
+Subject: Re: [PATCH] ACPI: CPPC: Add helper to get effective guaranteed
+ performance
+Content-Language: en-US
+To: srinivas pandruvada <srinivas.pandruvada@linux.intel.com>,
+ rafael@kernel.org, lenb@kernel.org, viresh.kumar@linaro.org,
+ saket.dumbre@intel.com, linux-acpi@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+ acpica-devel@lists.linux.dev
+References: <20260529081801.29346-1-luoxueqin@kylinos.cn>
+ <60119eb883057391dc6def200be119e56a6e4fb5.camel@linux.intel.com>
+From: luoxueqin <luoxueqin@kylinos.cn>
+In-Reply-To: <60119eb883057391dc6def200be119e56a6e4fb5.camel@linux.intel.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
-X-ClientProxiedBy: kwepems200001.china.huawei.com (7.221.188.67) To
- kwepemr200004.china.huawei.com (7.202.195.241)
 
 
-On 5/30/2026 10:36 PM, Zhongqiu Han wrote:
-> On 5/29/2026 7:11 PM, Pengjie Zhang wrote:
->> The conservative governor documentation incorrectly states that setting
->> freq_step to 0 will use the default 5% frequency step. In reality, since
->> the governor's initial implementation
->> commit b9170836d1aa ("[CPUFREQ] Conservative cpufreq governer"),
->> freq_step=0 has always caused the governor to skip frequency updates
->> entirely.
->
-> Hi Pengjie,
->
-> Thanks for the patch.
->
-> The documentation fix looks correct: in the current code,
-> cs_dbs_update() has an early goto out when freq_step == 0, which skips
-> the call to get_freq_step() and all subsequent frequency change logic.
->
-> However, the commit message's historical claim appears to be inaccurate.
-> In the original implementation (b9170836d1aa), freq_step=0 had
-> asymmetric behavior: frequency decreases were skipped (early return),
-> but frequency increases still used the hardcoded 5% fallback (freq_step
-> = 5 after the unlikely(freq_step == 0) check).
->
-> If so, would it make sense to remove/update the historical claim to
-> avoid the incorrect historical claim?
->
-Thanks for the careful review.
-
-Agreed. The correct commit for the symmetric freq_step=0 behavior
-should be 8e677ce83bf4 ("[CPUFREQ] conservative: fixup governor to
-function more like ondemand logic"), not b9170836d1aa.
-
-I'll fix the commit message in v2.
-
-On a related note, I have a quick question regarding code readability in
-this area. Currently, the code uses the name "freq_step" for two different
-concepts:
-
-1. `cs_tuners->freq_step`: The tunable exposed via sysfs/documentation,
-    which represents a percentage.
-2. `freq_step = get_freq_step(...)`: The local variable representing the
-    actual calculated frequency step (in kHz). The `if 
-(unlikely(freq_step == 0))`
-    check also applies to this absolute value.
-
-Since mixing a percentage and an absolute kHz value under the same name
-might be slightly confusing for readers, would it make sense to rename the
-local variable (e.g., to `freq_step_khz`) to clearly distinguish the two?
-
-Cheers,
-     Pengjie
-
+在 2026/5/29 23:33, srinivas pandruvada 写道:
+> On Fri, 2026-05-29 at 16:18 +0800, Xueqin Luo wrote:
+>> According to the ACPI CPPC specification, if the Guaranteed
+>> Performance register is not implemented, OSPM assumes the
+>> guaranteed performance is equal to nominal performance.
 >>
->> Correct the documentation to reflect the actual behavior: freq_step=0
->> disables frequency changes by the governor entirely.
+>> Add cppc_get_effective_guaranteed_perf() helper to provide a
+>> spec-compliant effective guaranteed performance value while
+>> preserving the raw values returned by cppc_get_perf_caps().
 >>
->> Fixes: 2a0e49279850 ("cpufreq: User/admin documentation update and 
->> consolidation")
->> Signed-off-by: Pengjie Zhang <zhangpengjie2@huawei.com>
+> Hi Luo,
+>
+> Are you trying to fix any issue where you have issue with
+> "base_frequency" display? intel_pstate will revert to native MSR, which
+> is always present when we are using CPPC.
+>
+> I worry about some bad nominal perf in some platforms as we will be
+> dependent on OEM BIOS.
+>
+> Thanks,
+> Srinivas
+>
+Thanks Srinivas.
+
+The intent is not to fix any issue in intel_pstate. It already
+implements the fallback correctly today.
+
+My goal was to provide a common helper encapsulating the ACPI
+CPPC semantics, with intel_pstate serving as the first user.
+That said, I agree the benefit may not justify a new exported
+helper at this point.
+>> Signed-off-by: Xueqin Luo <luoxueqin@kylinos.cn>
 >> ---
->>   Documentation/admin-guide/pm/cpufreq.rst | 4 ++--
->>   1 file changed, 2 insertions(+), 2 deletions(-)
+>>   drivers/acpi/cppc_acpi.c       | 26 ++++++++++++++++++++++++++
+>>   drivers/cpufreq/intel_pstate.c | 10 ++++------
+>>   include/acpi/cppc_acpi.h       |  5 +++++
+>>   3 files changed, 35 insertions(+), 6 deletions(-)
 >>
->> diff --git a/Documentation/admin-guide/pm/cpufreq.rst 
->> b/Documentation/admin-guide/pm/cpufreq.rst
->> index dbe6d23a5d67..98c724d49047 100644
->> --- a/Documentation/admin-guide/pm/cpufreq.rst
->> +++ b/Documentation/admin-guide/pm/cpufreq.rst
->> @@ -586,8 +586,8 @@ This governor exposes the following tunables:
->>       100 (5 by default).
->>         This is how much the frequency is allowed to change in one 
->> go.  Setting
->> -    it to 0 will cause the default frequency step (5 percent) to be 
->> used
->> -    and setting it to 100 effectively causes the governor to 
->> periodically
->> +    it to 0 disables frequency changes by the governor entirely and 
->> setting
->> +    it to 100 effectively causes the governor to periodically
->>       switch the frequency between the ``scaling_min_freq`` and
->>       ``scaling_max_freq`` policy limits.
->
->
+>> diff --git a/drivers/acpi/cppc_acpi.c b/drivers/acpi/cppc_acpi.c
+>> index f370be8715ae..6dc11030707a 100644
+>> --- a/drivers/acpi/cppc_acpi.c
+>> +++ b/drivers/acpi/cppc_acpi.c
+>> @@ -1328,6 +1328,32 @@ int cppc_get_highest_perf(int cpunum, u64
+>> *highest_perf)
+>>   }
+>>   EXPORT_SYMBOL_GPL(cppc_get_highest_perf);
+>>   
+>> +/**
+>> + * cppc_get_effective_guaranteed_perf - get effective guaranteed
+>> performance
+>> + * @cpunum: CPU number
+>> + * @guaranteed_perf: Effective guaranteed performance value
+>> + *
+>> + * The ACPI CPPC specification states that if the Guaranteed
+>> + * Performance register is not implemented, OSPM assumes the
+>> + * guaranteed performance is equal to nominal performance.
+>> + *
+>> + * Return: 0 on success, negative errno on failure.
+>> + */
+>> +int cppc_get_effective_guaranteed_perf(int cpunum, u64
+>> *guaranteed_perf)
+>> +{
+>> +	struct cppc_perf_caps perf_caps;
+>> +	int ret;
+>> +
+>> +	ret = cppc_get_perf_caps(cpunum, &perf_caps);
+>> +	if (ret)
+>> +		return ret;
+>> +	*guaranteed_perf = perf_caps.guaranteed_perf ?:
+>> +			   perf_caps.nominal_perf;
+>> +
+>> +	return 0;
+>> +}
+>> +EXPORT_SYMBOL_GPL(cppc_get_effective_guaranteed_perf);
+>> +
+>>   /**
+>>    * cppc_get_epp_perf - Get the epp register value.
+>>    * @cpunum: CPU from which to get epp preference value.
+>> diff --git a/drivers/cpufreq/intel_pstate.c
+>> b/drivers/cpufreq/intel_pstate.c
+>> index 8dc22a65e025..8934e48f71a2 100644
+>> --- a/drivers/cpufreq/intel_pstate.c
+>> +++ b/drivers/cpufreq/intel_pstate.c
+>> @@ -404,17 +404,15 @@ static void intel_pstate_set_itmt_prio(int cpu)
+>>   
+>>   static int intel_pstate_get_cppc_guaranteed(int cpu)
+>>   {
+>> -	struct cppc_perf_caps cppc_perf;
+>> +	u64 guaranteed_perf;
+>>   	int ret;
+>>   
+>> -	ret = cppc_get_perf_caps(cpu, &cppc_perf);
+>> +	ret = cppc_get_effective_guaranteed_perf(cpu,
+>> &guaranteed_perf);
+>> +
+>>   	if (ret)
+>>   		return ret;
+>>   
+>> -	if (cppc_perf.guaranteed_perf)
+>> -		return cppc_perf.guaranteed_perf;
+>> -
+>> -	return cppc_perf.nominal_perf;
+>> +	return guaranteed_perf;
+>>   }
+>>   
+>>   static int intel_pstate_cppc_get_scaling(int cpu)
+>> diff --git a/include/acpi/cppc_acpi.h b/include/acpi/cppc_acpi.h
+>> index d1f02ceec4f9..c02f3bc1fc1a 100644
+>> --- a/include/acpi/cppc_acpi.h
+>> +++ b/include/acpi/cppc_acpi.h
+>> @@ -155,6 +155,7 @@ struct cppc_cpudata {
+>>   extern int cppc_get_desired_perf(int cpunum, u64 *desired_perf);
+>>   extern int cppc_get_nominal_perf(int cpunum, u64 *nominal_perf);
+>>   extern int cppc_get_highest_perf(int cpunum, u64 *highest_perf);
+>> +extern int cppc_get_effective_guaranteed_perf(int cpunum, u64
+>> *guaranteed_perf);
+>>   extern int cppc_get_perf_ctrs(int cpu, struct cppc_perf_fb_ctrs
+>> *perf_fb_ctrs);
+>>   extern int cppc_get_perf(int cpu, struct cppc_perf_ctrls
+>> *perf_ctrls);
+>>   extern int cppc_set_perf(int cpu, struct cppc_perf_ctrls
+>> *perf_ctrls);
+>> @@ -198,6 +199,10 @@ static inline int cppc_get_highest_perf(int
+>> cpunum, u64 *highest_perf)
+>>   {
+>>   	return -EOPNOTSUPP;
+>>   }
+>> +static inline int cppc_get_effective_guaranteed_perf(int cpunum, u64
+>> *guaranteed_perf)
+>> +{
+>> +	return -EOPNOTSUPP;
+>> +}
+>>   static inline int cppc_get_perf_ctrs(int cpu, struct
+>> cppc_perf_fb_ctrs *perf_fb_ctrs)
+>>   {
+>>   	return -EOPNOTSUPP;
