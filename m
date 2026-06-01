@@ -1,116 +1,189 @@
-Received: from mail-dy1-f176.google.com (mail-dy1-f176.google.com [74.125.82.176])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8BA623290A6
-	for <linux-pm@vger.kernel.org>; Mon,  1 Jun 2026 06:30:56 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=74.125.82.176
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1780295457; cv=pass; b=QjyABJtVRR7o2iH4GC95souCVa1ZTXPFfZnDcXQx7X7wXCRKd6Z3vI1wEaWLMKWY2mRB9rKK3txdJfcYvXDwQD0y4fTphHcIl6vaWZxRqh8smPyLPYDJnrNrGSDZhBGhP8pUkKW8XLzZJOqqzUCHA5nCT8AI1BY0ThD/DQoLN1U=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1780295457; c=relaxed/simple;
-	bh=R1yhEG4MKoXjJ4bO08OeDXprdSO1fiP+peqcjquLtrs=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=JH5yZTCFDeeMU1VhdGP+0hz7gLYD/aW/vGk08Q5dNRNjduhYVoEpH5OWYCgTbrfFdpKPJKZo96UgMFWYWV4jopanToSPVSu3gK0g7lPY9dveyKU6GxJdGik5Nl2H2OIQga/F31VpoP2eR84Bg4YsSpIJBteBnEmBYcVr9ENeKtA=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=TewebJpN; arc=pass smtp.client-ip=74.125.82.176
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6F78D23D7E6
+	for <linux-pm@vger.kernel.org>; Mon,  1 Jun 2026 06:38:08 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1780295890; cv=none; b=rePUQb3Qo9NftYUHRdzIgVuy9ZszwDTmDY4sKTMTAaGhRUrgV2lh9ps5K0+m+7VNiqtf+2iru1BMPRViWuVTw7eRtn4Vypwo9R3e5k4M/9Jt7/y8r8853NW+DfQ9v11nOxzNc96aKKrryFNseoHjCf7w1eS8GaRI/mQ8K8cDQaE=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1780295890; c=relaxed/simple;
+	bh=NxsmgpXqtgg+7aG586diJbRcKlS0Itgqio//rv0yLKs=;
+	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=lQXGQ3jMitxbtGiWmERJUZA9WRDdO5YFQmK9HsFAUJU5u6gagDn8mJQHca9FzyJMj7p/kJZp0QW8YCB429jvDFNczjS7in7gFdT0snV5QCzR78H8TkFxW0YzhJ3le8rhiTaVPrXFdfQJCheTZ/MluuIc6X9MXVPD/1Iz+gpmBgs=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=kz0QVYzZ; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=O9IIB1XK; arc=none smtp.client-ip=205.220.168.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="TewebJpN"
-Received: by mail-dy1-f176.google.com with SMTP id 5a478bee46e88-304e5d3cdfeso168994eec.3
-        for <linux-pm@vger.kernel.org>; Sun, 31 May 2026 23:30:56 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1780295456; cv=none;
-        d=google.com; s=arc-20240605;
-        b=dgNQNW3Mf0HUBoN4DRGE7QTroenCtIzf8BSOEXF9Wf1HejdH/9PokD2zKCX+H3qrWP
-         ni8xLBDyYxGMCoR3u++L3UX1ss0Y1Z3B3Yb82UM6fH5YQnSkxEG6PjM0q5IH9EC6O8b8
-         HifI/lVji4sFpuFX97P+Tq4EkgL3WcqHKfNo2teQFKn+Zf/C231xRR4XyHCxWI3bkhzG
-         QWPiynLRIaWcnkSk+9nKoDl6ltJmwtZha0EMM/nGpPtNbaCvN/NNwW3h2tcfsMDGldQp
-         aq6ZXB9KS3cR8y4Qbc6vTakzOlgbD9w3ynCCa0rZAd35WaaecFTbJRzSiwF1wi+wCRHL
-         njUg==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=R1yhEG4MKoXjJ4bO08OeDXprdSO1fiP+peqcjquLtrs=;
-        fh=647DIYHzO38eElUXz7/exE//TiIm6aS+GQ4Gq+WDFIk=;
-        b=Vc1abzXSju6Jmfwq3YLR+geY2OqAfQ6IP7HeUGbLvV9k9DxY2VBDuXhox6VXBOGU5m
-         o8/Kq0lEUiC8zKz01sBOcSmPwmPtSN0fYkNy6tyxmhTUQDMOgzWymg3zf4yLvhIxKzBG
-         p1v7fp1l0DYjsJV2WcZCgAyAihMNa4YQDEurGX6bF8O1K2P4cWLZKlK1KNKj4L6Orwk6
-         qJMCegqTPVRoTqXDwXaFML/Q12Pif9c+s3rYpwrFv+jZaC02so90bA42fH9ztq3L8Gfa
-         10pGe0ttqKrr0x9c2X/qwk8lmU24Mk+UIaDP8VyN6n4hBKZaj+fKZHZKBjg0jMndlpPL
-         7unQ==;
-        darn=vger.kernel.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="kz0QVYzZ";
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="O9IIB1XK"
+Received: from pps.filterd (m0279867.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 64VM23sJ2734613
+	for <linux-pm@vger.kernel.org>; Mon, 1 Jun 2026 06:38:08 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-transfer-encoding:content-type:date:from:message-id
+	:mime-version:subject:to; s=qcppdkim1; bh=yAcgauqzFdzXcLgv0t2zyO
+	ijWIG8IzV/EiR5Mvck0ng=; b=kz0QVYzZR8trlEbdUydtH3pszPoSfNYmdlUXAj
+	9OX21Dgv1cW7NjVPFeSNVoLQJ2mDYLIC1b3mUSsV/y1/IKpmhJz7kyb37sJRFimh
+	ZHkjlx32nC+oniQ9gj1yj/dgbRmwzkjHlrDp8UWtCqKogGCpuyinhbQlU0M1xDfA
+	ArgiSYaqfT9huRxIeNkvArG0lslF5koD9zkbTduv7hi90dg/fvWZE7B1tsum7zh1
+	+cx4VIaG1bXGv2FYGdMRFGPutnAJKld2anghkYzwYtkwqAxP82SBZR+UWSDb5K3L
+	XaWhwRC4/2IV8OsSdC68aT/CKXgFXR7z8e06BJm3Z2wh+fRA==
+Received: from mail-pf1-f199.google.com (mail-pf1-f199.google.com [209.85.210.199])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4efxy7wchj-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <linux-pm@vger.kernel.org>; Mon, 01 Jun 2026 06:38:07 +0000 (GMT)
+Received: by mail-pf1-f199.google.com with SMTP id d2e1a72fcca58-84240b58211so789328b3a.1
+        for <linux-pm@vger.kernel.org>; Sun, 31 May 2026 23:38:07 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1780295456; x=1780900256; darn=vger.kernel.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=R1yhEG4MKoXjJ4bO08OeDXprdSO1fiP+peqcjquLtrs=;
-        b=TewebJpNtT6qAjTZUa+Mh16aWsN8/d/7b3VddeBekOT6dBZYswciaPWb0aQ5iZJCyf
-         4baxLX5lRuW6PXHqZZteTZ4MYFyYmFHYxQewdtTUz0v6WZe3N4Y+Za52bSSBYcc8atW9
-         XqKFeoRGNJHG8Z4l78aOK92iCqV0zMYn/DaIbVIczgsCXnLa9EXoQqUE1K0KAayO697+
-         fWAO2owf/6pFEgo7Fv+hfs2mlEcNf0eDEfJkButpuEu1KNF/HKxVaCbj6K9LEtkgD7ar
-         O1mwUp/kcuahZ4f4CWbhwGwTuoIGoyMUlvE3tQcl7QlXFW+kk/wP4hWDB4lNux2EAOpj
-         PRUw==
+        d=oss.qualcomm.com; s=google; t=1780295887; x=1780900687; darn=vger.kernel.org;
+        h=cc:to:content-transfer-encoding:mime-version:message-id:date
+         :subject:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=yAcgauqzFdzXcLgv0t2zyOijWIG8IzV/EiR5Mvck0ng=;
+        b=O9IIB1XKmRVaOojI9WcgSi0yX1x5yskIBXsQCkptFt6I8rm/08e2vihdtPzyDNu5eU
+         VdP5i68eKD260C3Jd6kbHj5lpf1KUYyEQFK/XHCN8/dAhIEUt5VpGd82eu/ZOyQZqtg9
+         tChG8wuTiKpKG8ql4ABjcGaqyojrS2kM9l64Eb/zmHavset7gv0JpcQYwwPaMY7z552u
+         peNfqo9OnIugNpzVko0c/NRcsBt2O2Dm9ViEuSL3anTQbA84lWqmaY96t1yqgJkBJWln
+         TmRpxmAjm5kiKuYZtQ+9STfwwMNVgygTxhursC2TIgE2RX9Tn69e1j6bCCsh9LVOgT63
+         ivWw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1780295456; x=1780900256;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=R1yhEG4MKoXjJ4bO08OeDXprdSO1fiP+peqcjquLtrs=;
-        b=kw/oScaXvM3i948E5c1BqxBavKtA/cST2nf9QOagIdBI2hmM/KpbyW4FH6yusIAbtK
-         T4sPCh90cVZML/ufUSc9bkX8tqHa1jCfsm7GrC2V87atRGhi9WFIsPYK8fAN/6AP5i03
-         M3HScDHpZk41HEboAcznVzZLAu0PkkymH5re7snkxrW/ovttI0wj/d09FxrIf031rBfH
-         lfJaXmMbQ0/UwqxXgbIMjhWVfZ2m2McL8nbblT3rmvgt9H3phrC/5NKvxceiOXoQxEKM
-         ++6x+aujO0UPoh5AVuVu3DxIjcsa0Klpkn5xzkpKe6RpMt9wc0RQR34+CfnUnlu1fWMA
-         suNQ==
-X-Forwarded-Encrypted: i=1; AFNElJ8xdHpEiR8ki3wYgQPx2+RgCo0OMMuRArBwdgGYgn40F9gTETodhE9+ZHo2a83cat+5ZsUR+iAjXA==@vger.kernel.org
-X-Gm-Message-State: AOJu0YxQ8x29UubAyLPmYQpZS34yg9+LdWganbja2+6xpsn0dt8nML7b
-	3mH9I8g+xPksODKt5KPMOVqGOrOi1n9V1GWTz5OuPDo21QoCGyZYxXMDj/h64NQ21TQz01aNm1P
-	lfx8W8NRQDCKJiRBTJgCqHYRngYly0BSFfUas
-X-Gm-Gg: Acq92OHN8TevCKJON1yTl3zZcIB6wa0hk2xP/yvnxUWqmMhdRrL4bRHUoq4DYkWc4RH
-	WpxmZb/4QBrS0NpTLgTwbrt01XiMVUhCgjGZ2egxYbythBfDE3FSFP59Jp6xrGKU+blMZ9/vwo1
-	9nGBWHwX3IV9/KDZnNUodKCjhjxtNvWBPlGm+YQ2UwweRDWsqI+305G2/BgzvPE7k2/8Cc+4J1S
-	dCaBE/DTy3b9T3BeE5nUOx6wpyPumX5SKAJdccyjwYiU8G6OMtvn4v8hkXdZhdqK7QorYyUcEnn
-	IKbGAaz8hSVNRhjUbgyqq4kviJ2LPMAx517IwdzejVkB32WMc8tSOBnn7n3m3rYAOjifSZsFhmd
-	MuTbnOQhslkNtCrZuyR1QRYeFNhzRRmpeeA==
-X-Received: by 2002:a05:7300:ec08:b0:304:2af3:5fef with SMTP id
- 5a478bee46e88-304fa70effbmr2039142eec.8.1780295455709; Sun, 31 May 2026
- 23:30:55 -0700 (PDT)
+        d=1e100.net; s=20251104; t=1780295887; x=1780900687;
+        h=cc:to:content-transfer-encoding:mime-version:message-id:date
+         :subject:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=yAcgauqzFdzXcLgv0t2zyOijWIG8IzV/EiR5Mvck0ng=;
+        b=Q4GV4hwopSbpFJKf8d/rJ05+IWRcY2EtAsKi063nupZhvfmV9NsnTcNMKTN+sHqkbQ
+         ZfQMVei4Cnmy83p8yO/msN7xuM+dsTgM6jdSdJ3/tqJJnnpO6HgvOzn+aPcLL9Fx20bT
+         0iVl/4ArvtQGqpFH9XN9f2k/GRM+6Z7PfMFlGv8PZIDFY7tyiRWtJI7Gp6gI+5DuNIHt
+         O7PFOhEF7YMo0Ouf5YABHsL5KQFK7UqN9m7joN2TcmHwyORwaIjgj03sfA0oAmY5m8NA
+         5rtCD1oBU0Tm9wsAkV11xdA38ktybV29uWshEKzchSosc1XPLT79S8UBU5ZeoVTUB7GG
+         pnMw==
+X-Forwarded-Encrypted: i=1; AFNElJ+t+DZD0+mUEPv+q49l75RYVxUYA0Lub7ZigM+yt2MlgjLrBoC/IIm3U+ihDUYWgE56kH3wiWQBVA==@vger.kernel.org
+X-Gm-Message-State: AOJu0YxDbsGMioKC1JXG1WMcG3TSyzm8qhYvvvczhosJq5qxESCSlche
+	Wj5P68yIKEywr807jnTxuNEmpEKRBhbs1R4NpF3c6K4QqFDS23wxzP+x1jHn7ndzUp3cgEpE05H
+	JwvGYYfcTXNpz+L6v7ihZWmnFFfz0g12Cd+0eV3hZxKoMvOaODfAIn/62BpRL9Q==
+X-Gm-Gg: Acq92OF3qoBJLwgq+hkMNPBIxoBhCZUoV5XzGIBa7KxT5pwrCsfr9stT3A+PiiWeiiV
+	pWfl6s4D7jbW9ETjsOc/B7YG+IYiRWhHFAkI0UjZCxNoq2+9UErBDTFuWDC9/GbwMG50l+uSwdI
+	cQLbQU03HrsKPfepYV3DsPxnhHKcN0BjsRTHqDmzyjLYy7GXDiD2y2N7rnsIHs+T1Sd9HpD58D8
+	JmrEc/KSPo6LRCDRGVkvcBdBhTnSmtQDfQFTW2g8+tor6mSKeEqIjfTBCkJqcKWNy1XyLD5q/Zx
+	/aAS9c8ocfTHk8sPDU9Wnp/XHL9YGguWm6zs2bq06x/V0JkQwWlRgxjSWFjvwxWPGPH7j3Q2Anz
+	LR1ZOVzn4HjQegXIrFoy846OsrcqJh16U1lGnNu/pRa4FGM2G0c6wxdwqHJfzGVQbzw==
+X-Received: by 2002:a05:6a00:2289:b0:82f:390a:69df with SMTP id d2e1a72fcca58-8422548f610mr8955719b3a.35.1780295887004;
+        Sun, 31 May 2026 23:38:07 -0700 (PDT)
+X-Received: by 2002:a05:6a00:2289:b0:82f:390a:69df with SMTP id d2e1a72fcca58-8422548f610mr8955683b3a.35.1780295886519;
+        Sun, 31 May 2026 23:38:06 -0700 (PDT)
+Received: from hu-priyjain-hyd.qualcomm.com ([202.46.22.19])
+        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-84214c9252bsm9321358b3a.39.2026.05.31.23.38.03
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sun, 31 May 2026 23:38:05 -0700 (PDT)
+From: Priyansh Jain <priyansh.jain@oss.qualcomm.com>
+Subject: [PATCH v2 0/2] thermal: qcom: tsens: refine wake IRQ handling for
+ suspend
+Date: Mon, 01 Jun 2026 12:07:55 +0530
+Message-Id: <20260601-tsens_interrupt_wake_control-v2-0-ce9570946abd@oss.qualcomm.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260530095809.213611-1-ojeda@kernel.org>
-In-Reply-To: <20260530095809.213611-1-ojeda@kernel.org>
-From: Miguel Ojeda <miguel.ojeda.sandonis@gmail.com>
-Date: Mon, 1 Jun 2026 08:30:41 +0200
-X-Gm-Features: AVHnY4L74PI_Op0lO-oFiwBsbA3m9WuT43J5CDI-t5H375DzSgGheCIUTH6PY5Y
-Message-ID: <CANiq72miRU9Qz1+ehyNa26LaG4LbT1XcHgKoODRhoHBxxDdHXw@mail.gmail.com>
-Subject: Re: [PATCH] rust: cpufreq: clean new `clippy::map_or_identity` lint
- for Rust 1.98.0
-To: Miguel Ojeda <ojeda@kernel.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, 
-	Boqun Feng <boqun@kernel.org>, Gary Guo <gary@garyguo.net>, 
-	=?UTF-8?Q?Bj=C3=B6rn_Roy_Baron?= <bjorn3_gh@protonmail.com>, 
-	Benno Lossin <lossin@kernel.org>, Andreas Hindborg <a.hindborg@kernel.org>, 
-	Alice Ryhl <aliceryhl@google.com>, Trevor Gross <tmgross@umich.edu>, 
-	Danilo Krummrich <dakr@kernel.org>, rust-for-linux@vger.kernel.org, stable@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-B4-Tracking: v=1; b=H4sIAMMoHWoC/42NWw6CMBREt0L6bUlpQgG/3IchpI+rVLHF3oIaw
+ t4tuAHnY5KTTM4sBCFYQHLMFhJgtmi9S8APGdG9dFeg1iQmnHHBSi5oRHDYWRchhGmM3UveodP
+ exeAHymoFlapF2RSGJMUY4GLfu/7c/hgndQMdN+e26C1GHz77/1xsuz+v5oIyKqTRpipTVHPyi
+ PlzkoP2j0eeirTrun4BZeDryuEAAAA=
+X-Change-ID: 20260526-tsens_interrupt_wake_control-08be7b86591d
+To: Amit Kucheria <amitk@kernel.org>,
+        Thara Gopinath <thara.gopinath@gmail.com>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Daniel Lezcano <daniel.lezcano@kernel.org>,
+        Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>
+Cc: linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org,
+        Priyansh Jain <priyansh.jain@oss.qualcomm.com>
+X-Mailer: b4 0.15.2
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1780295882; l=2081;
+ i=priyansh.jain@oss.qualcomm.com; s=20260515; h=from:subject:message-id;
+ bh=NxsmgpXqtgg+7aG586diJbRcKlS0Itgqio//rv0yLKs=;
+ b=pMvH3R5wSVeUdrd7RfL4fJ5VOoEHi/fZm/+uieHHSCC5PCk8C34F0mYSOVy6bPOImgW3PzPOd
+ RlCrzOKjKUcDgaOUsffu5C2E4ugQVPL2v6XbIl2vbu2i5rhsJFfuTV9
+X-Developer-Key: i=priyansh.jain@oss.qualcomm.com; a=ed25519;
+ pk=xe57jjgIoTuNHN/Dp00kZl1mAJjmROaH7JV9sRxEoEQ=
+X-Authority-Analysis: v=2.4 cv=POg/P/qC c=1 sm=1 tr=0 ts=6a1d28cf cx=c_pps
+ a=WW5sKcV1LcKqjgzy2JUPuA==:117 a=fChuTYTh2wq5r3m49p7fHw==:17
+ a=IkcTkHD0fZMA:10 a=FelO9ux0wxsA:10 a=s4-Qcg_JpJYA:10
+ a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=eoimf2acIAo5FJnRuUoq:22
+ a=bC-a23v3AAAA:8 a=EUspDBNiAAAA:8 a=VwQbUJbxAAAA:8 a=pGLkceISAAAA:8
+ a=QyXUC8HyAAAA:8 a=7CQSdrXTAAAA:8 a=kC-WkVMnToTUk7kQOxwA:9 a=QEXdDO2ut3YA:10
+ a=OpyuDcXvxspvyRM73sMx:22 a=FO4_E8m0qiDe52t0p3_H:22 a=a-qgeE7W1pNrGK8U0ZQC:22
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNjAxMDA2NCBTYWx0ZWRfXwjsIeP2kdZ91
+ ypoX469CJ1SVM3VUTxGAJgRec389Rfn0kzz0wLrOQb3Slqcv6hHztUMMImZql17kSiVLhckVFew
+ 82K7hPO+imBKl92SPYlQXasXjkAQTEwYrXrZfvOhaXBRjsx/LHUA/9cjkpPvTC+S1kkxpw5ZV0x
+ FunO2LiZOrKF3ziObv1XPaihbH7sYgtAd1XYOqaIAKRJbexkWFRKOhxKXwgJtxhHzVMJ8QJpLDb
+ rRyTxqrlkqPhNJk52X9JrXe3IisWb2/SLr73uZl8qNctrp9RuL04UEJ9Ze4K2iHk59b14crihZo
+ 3/PwAdJxQdwrAat7LBiZs29Y8zrEbQJtLA2wfWUL0Xrd1LwOC5c3qWV5kMvvi+ugH2kzoJMA5Pa
+ J2QvNbkR1HMvjXRRzXGKhEZ89bqhTVuzLTFDfhHJRWCN79UUVjk238UIEGm0gm4d7wi8Dgfaumx
+ muhbXQK39GKisfoTOqQ==
+X-Proofpoint-ORIG-GUID: 4JC_cpWSf8zqNFh5mCJMt3CBRWMg_yTT
+X-Proofpoint-GUID: 4JC_cpWSf8zqNFh5mCJMt3CBRWMg_yTT
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.125,FMLib:17.12.100.49
+ definitions=2026-06-01_02,2026-05-28_03,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501 malwarescore=0 phishscore=0 bulkscore=0 adultscore=0
+ spamscore=0 impostorscore=0 clxscore=1015 suspectscore=0 lowpriorityscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2605210000 definitions=main-2606010064
 
-On Sat, May 30, 2026 at 11:58=E2=80=AFAM Miguel Ojeda <ojeda@kernel.org> wr=
-ote:
->
-> Cc: stable@vger.kernel.org # Needed in 6.12.y and later (Rust is pinned i=
-n older LTSs).
+This series refines how TSENS threshold IRQs are used as wake sources
+across suspend/resume.
 
-Adjusted to "6.18.y and later", since `cpufreq` was not there in 6.12.y any=
-way.
+Patch 1 moves IRQ wake control from registration time into PM callbacks,
+so wakeup configuration follows the actual suspend state instead of being
+left enabled during normal runtime.
 
-(I didn't use Fixes: because it isn't really a fix, although as usual
-it depends on how one thinks about those...)
+Patch 2 adds a platform-data opt-out for wake IRQ setup and uses it for
+automotive TSENS compatibles (SA8775P/SA8255P), where parking suspend
+should not be exited repeatedly due to TSENS threshold wake events.
 
-Cheers,
-Miguel
+Series highlights:
+- store and manage TSENS IRQ wake state in suspend/resume paths
+- keep existing runtime monitoring behavior unchanged
+- disable TSENS wake IRQ setup for selected automotive targets
+
+Signed-off-by: Priyansh Jain <priyansh.jain@oss.qualcomm.com>
+---
+Changes in v2:
+- Fix indentation issues
+- Remove redundant checks for IRQ numbers since device_may_wakeup() already
+  ensures interrupts are registered. Simplifies code logic.
+- Patch 2: No changes, LGTM from Daniel Lezcano 
+- Link to v1: https://patch.msgid.link/20260526-tsens_interrupt_wake_control-v1-0-6adcd75555b9@oss.qualcomm.com
+
+To: Amit Kucheria <amitk@kernel.org>
+To: Thara Gopinath <thara.gopinath@gmail.com>
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+To: Daniel Lezcano <daniel.lezcano@kernel.org>
+To: Zhang Rui <rui.zhang@intel.com>
+To: Lukasz Luba <lukasz.luba@arm.com>
+Cc: linux-pm@vger.kernel.org
+Cc: linux-arm-msm@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+
+---
+Priyansh Jain (2):
+      thermal: qcom: tsens: switch wake IRQ handling to PM callbacks
+      thermal: qcom: tsens: Disable wakeup interrupt setup on automotive targets
+
+ drivers/thermal/qcom/tsens-v2.c |  9 +++++-
+ drivers/thermal/qcom/tsens.c    | 70 ++++++++++++++++++++++++++++++++++-------
+ drivers/thermal/qcom/tsens.h    | 23 +++++++++++++-
+ 3 files changed, 88 insertions(+), 14 deletions(-)
+---
+base-commit: e8c2f9fdadee7cbc75134dc463c1e0d856d6e5c7
+change-id: 20260526-tsens_interrupt_wake_control-08be7b86591d
+
+Best regards,
+--  
+Priyansh Jain <priyansh.jain@oss.qualcomm.com>
+
