@@ -1,453 +1,151 @@
 Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7321C346AFB
-	for <linux-pm@vger.kernel.org>; Mon,  1 Jun 2026 11:01:42 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F3E3135E1C1
+	for <linux-pm@vger.kernel.org>; Mon,  1 Jun 2026 11:32:39 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1780311705; cv=none; b=fnoU96uK7CCWASQz+d1JXN/B2b12D8bmvE0a4toqyTn3601PFcomMw0TCJrqSLvSrNMLWsNtPcuKiBy9s56pDGSkocOmd0oUkzN5v2pWdMo8YQoXsqDBw/ZiAJ1pmGofcAAxv5+xVZ0w5QOeXA5lpbBjMY1t/EmdB+KN3KnN85s=
+	t=1780313561; cv=none; b=R1ansWnjag0pmdPcBGcErHbPmz8PEIkNst/RHmD0x1KzN2wnNQBjMSOIhcDyHoZsFE1Jx3vpDVujBun0qD/tAJRRvF1a77v+hiWLPXpW+wa7LbjbViKCKoHl8VypN1bgeRwpGCPY3h/ZmZ+gyFvUbFhKbiFNcF9LpbuZN3Iycmo=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1780311705; c=relaxed/simple;
-	bh=rXEZNnUVSRCvaSz7ODIekuNb0fO7Aw6iapXSGDdrqEI=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=C2ThlU/JgANxGNTf9jEFcZff3nlGYk3FIPnZbWqvtweUGk0t8TS9LYnVBlCyQR7KP8urRiUYEq3K7d+J/BDDL39KxM2PpyQX0L/vUi82yS5pnxBg7ZED6sTwzZZ0MyqORzfbqyFkeTTLS4dLXw4fiSAdcqgNF43TyFl0EyxAROU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=OQhuDmRV; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=ikGklR4N; arc=none smtp.client-ip=205.220.168.131
+	s=arc-20240116; t=1780313561; c=relaxed/simple;
+	bh=KinhUJbjrVceL/4Wl+dsdy4Ce3twecfvD0JpSPSj5UM=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=hgC+9EH0Yz4CII3mw3laxhNKy0i+E6fdo+dS9MHBZXBhnN6LmsuHjABk1Wwexl11C8ekJb7NWYp1AxmSDbJjykL9c2I31Zu+zt7a9VpSFkrjSkftX1Fl8lcNb3ueOdxMSvre7f0zTINJTSpH145pF1sWl9tLDerus6WS6GbjdUw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=i2lSDYN7; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=aCX6dJ7a; arc=none smtp.client-ip=205.220.168.131
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="OQhuDmRV";
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="ikGklR4N"
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="i2lSDYN7";
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="aCX6dJ7a"
 Received: from pps.filterd (m0279867.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6518dsL14111113
-	for <linux-pm@vger.kernel.org>; Mon, 1 Jun 2026 11:01:41 GMT
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6518did04110250
+	for <linux-pm@vger.kernel.org>; Mon, 1 Jun 2026 11:32:39 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	wx7PsfCappcFeNrcYJjrCbV9OSLPVpQ+GgBu54EcyFM=; b=OQhuDmRV8J/L0Tkj
-	fCn2VXwHOV9oaEvB1J3uilMqKcsD9kyz8rgXZvYh0jcoLOVnnrPMSLabdosjgcCV
-	KN1kOkUA7az8FW6PgleTHN8W3hFaUTERhkrKl4MmrJMXQjV6cs8VPqPI6iV6/+AP
-	6BUIiFssdX83xLFLAlJDZ6K3Fc5blt4WKZ1Cevq9gTtj0RfNVhyP7ITVRYO5jouD
-	f+4AT5wdsr//zU4Q3vQQWTJ/LbRrIRbOMDn2VjD8TUU/QqdRm3HyZj8nxz4z7jy7
-	vZd7kOpNKTkETPpfGa2qE+7tdkrAJ2DjBrmznuN+ufvr0XOTOlGnW8QKWkYC49wH
-	sSUClg==
-Received: from mail-pl1-f198.google.com (mail-pl1-f198.google.com [209.85.214.198])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4eh6s3rheq-1
+	cc:content-type:date:from:in-reply-to:message-id:mime-version
+	:references:subject:to; s=qcppdkim1; bh=TcNMxS8xRhmU7EwCryiVhoez
+	FRvWo2OX6g5i8iYoWQE=; b=i2lSDYN7NYJxU/JcM+TRKvV+SVJvK80al4qrAUCU
+	TQXhsnY2ZjxRYmiDpGi12d3DHuxBWjrvuXXNhNgoDVoj+O5KL978gktcCEgT7gsD
+	inuvM6f0jC2ryPNTVA18oQsQDxTraYtrnnYhRio5Rt1uZgUzOEdmzbC0nOSEPM4u
+	0Yfjat9FIyckDkSK7ZDDFVq81tZ9qomJHOIwEv9rNTjYZj7PAJwd8j7ps41tUBbM
+	gl9OjDIeE0Jt7Bm55yr2ATyP9Ux7IcS5NsT1wjw68rUYascAciT38gJz9WAer0A9
+	LI+IIHr7C6eml5ARDUvwJLiUP1IEg4Y9lrUrdIZbzOC7tw==
+Received: from mail-vs1-f72.google.com (mail-vs1-f72.google.com [209.85.217.72])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4eh6s3rnbe-1
 	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Mon, 01 Jun 2026 11:01:41 +0000 (GMT)
-Received: by mail-pl1-f198.google.com with SMTP id d9443c01a7336-2c0a99db8dfso19596015ad.3
-        for <linux-pm@vger.kernel.org>; Mon, 01 Jun 2026 04:01:41 -0700 (PDT)
+	for <linux-pm@vger.kernel.org>; Mon, 01 Jun 2026 11:32:39 +0000 (GMT)
+Received: by mail-vs1-f72.google.com with SMTP id ada2fe7eead31-6c77c80d967so2065117137.1
+        for <linux-pm@vger.kernel.org>; Mon, 01 Jun 2026 04:32:39 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1780311701; x=1780916501; darn=vger.kernel.org;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :mime-version:subject:date:from:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=wx7PsfCappcFeNrcYJjrCbV9OSLPVpQ+GgBu54EcyFM=;
-        b=ikGklR4NUA0l6b662HaHUIQOng0JCxpqnMHQq9qc0MsdB3o/i2BQXctyjoNNKrdalx
-         DxquEOfG7BdIx784et0Tf58ca2LOxtw2crgpOJkstATyAYZO72k+QmaiKC4Jyo5NbAZf
-         ObQSpKeDgQEeFq1vfQhrJjV9XAZ7Qq5C2CJ/bfU0Vc69AuuLukdVE0Ae3KAzcsjai+vr
-         5ScwdU/s8NHpGQQD0hMqjuMBOcBwyXZ4eWqGBOsa9g09vwJLmPh6EBS0/V1x6xQVX9n+
-         03OGBLVgtOFKsf0MHGIGGAR8bOtFebvxvA3GM4l3DL5mg9NIHHQ6y18AVXZKs2dQilVc
-         vV4w==
+        d=oss.qualcomm.com; s=google; t=1780313558; x=1780918358; darn=vger.kernel.org;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=TcNMxS8xRhmU7EwCryiVhoezFRvWo2OX6g5i8iYoWQE=;
+        b=aCX6dJ7aKCyZqclKAa7Xlg99yK8GbwfmJw8CkCk+/zyLvhMUw56evDeTQgNzbGbmPV
+         HEeAJ2UcJuYF8uxFtz4GWW517C8JjKJuBiFOKisxkwWqKEp9Jq15DRBOkKBZ/EdjJZIR
+         WxtBrgreV+Uxjd3486CQOyfUVATz4l9OljzD5qepngyyUerJkkViqQUtuFsk0adGIF9I
+         c9Ml/LxoWTyTk1BaHIw2+r5XSygkuwmCLInbIpGQyrsXpVM31Erdt7x5cgdj1QuXqe9Y
+         b/2UvDBZKotJ6ZVKVBZSZyX/vMnir6wZK6rTVjlSHX+shx+28wDrK0kWTrCGvwLdZkFN
+         Mq3g==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1780311701; x=1780916501;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :mime-version:subject:date:from:x-gm-gg:x-gm-message-state:from:to
-         :cc:subject:date:message-id:reply-to;
-        bh=wx7PsfCappcFeNrcYJjrCbV9OSLPVpQ+GgBu54EcyFM=;
-        b=T4UdX36UFbaFhHn06dmDbkr1w2ShNW1NtVA/dfypkW3zSPl2aT8lYAd2e7c/2iiG0y
-         yRAVWYDB8MB0P1r0EprqcklhMyrHRh5NlVDFtUidKx0byeWEKBlQ4Rk9dN5MdB/rFrHe
-         Q3VLIn1GDXpKkSMZvKVLLPxyirSTfdckOudQnE7WzCDPWiqSD5uvd/eh5UxFL0AkRUPB
-         n4ye3v5Tm8WcL48EZUHZ2ReKFVRsU0mvgYY6hIS/HnvD49NHz/J9S5NcOCwPUJ3EsHrs
-         hyjWdZUlRkGt6AP1E6ThPnbpru9Zj/6dOH9NBmNdKf0Txenh4wlcGA9nxrXFi835JwPS
-         6BHw==
-X-Forwarded-Encrypted: i=1; AFNElJ9l5BmK7PCyHMvPFPMzEQS20OvrStGpRMVZ1Y6ZzPKK8wQufwnwE9oIifPj/fusQEDXjUU/LhzG2g==@vger.kernel.org
-X-Gm-Message-State: AOJu0YyJlhxCYAtoS9vZHXY+fJNl7iCTrUdD+ZZAbMo32VrCfEFnc/LF
-	Ts930SHH1zREtcOs1JXIUjbMl9LZpqBxc8oST77ns/8sAuqWlWZOb5mvWBaJvVak7BNHlpzAqvy
-	9uuP6MBK2RUJVwHZXoUH547Ko8Pz0JbnP7NfvPKz2OvYFvcYCQAzFDUJqn53fUA==
-X-Gm-Gg: Acq92OFEShDfAyCmXFEc0lpmjY0FEw9YOGbTeeLBGb2iNyVwQLQvvP+gNggceFRLOBo
-	c4a7Ejd5u2CkPKMBWt/dlFK53qj4JcOaXbGXTXbjAkYQn3uQnKwzAOFZl/GvL2QlXcIRl/wmJvI
-	0UHgAaNsc2u2V4Gf8xbgZQ/hBGaXAI93JbCrYfvh8CGkhygclhibs3Kl6T0Zm3RpfzOzq696k+/
-	W3a4sz22fRjjBzqriYYLrZY1FflSIcpxElO7K0Y6SC8jZDjL2+pxo3+Yhq/F38gxbmePlxCsgnj
-	L+uucwBnm39DMrg25mvjQ0UJyLoOqy+YNj0H0eWiTw91iP0d/GZqr9JDorgkrTDeNBnEZqtgIYY
-	VO7LRrfp8kLqLgoW9cif7ZA4+4OXJSJbAXtEeTOfbcTpJ7d5/moM+nI+vTnIozOpM
-X-Received: by 2002:a17:902:da8d:b0:2bc:b80f:677e with SMTP id d9443c01a7336-2bf3683bf5dmr118659525ad.25.1780311700704;
-        Mon, 01 Jun 2026 04:01:40 -0700 (PDT)
-X-Received: by 2002:a17:902:da8d:b0:2bc:b80f:677e with SMTP id d9443c01a7336-2bf3683bf5dmr118658745ad.25.1780311700025;
-        Mon, 01 Jun 2026 04:01:40 -0700 (PDT)
-Received: from hu-sachgupt-hyd.qualcomm.com ([202.46.22.19])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2bf239fd6edsm126239185ad.18.2026.06.01.04.01.33
+        d=1e100.net; s=20251104; t=1780313558; x=1780918358;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=TcNMxS8xRhmU7EwCryiVhoezFRvWo2OX6g5i8iYoWQE=;
+        b=nh0xF4LhE7XY36mpFdAnmkuKMVeWC4Y0rgPOpAp5/9jv8y2GjDaUquJ8UESiKXiErC
+         VFjTxvfbKeePh5wZFX7ABaLkPZC9SJ8fN0i+Ae7P1NEKv/Vqvuvc+GsgCHj+HGCLuHbd
+         BUVgxagEBAMocuOuju3la4wXtbbYdEisto6luHRbqGZhHxD97LlUFSsQi/y+a3gE/I3S
+         xWE3vqs8xC6HpmsLyyn0Ac5E2DUslbCTiYJruRTxutD2AWIab2p2o5DZWp+u98nL/GUI
+         vuVsyMZx4Uifxol55ee9OU8r6IeQawd7CTYkVkMup0L0utK7AUXuDyDLsOH9bBxx31aO
+         0WZw==
+X-Forwarded-Encrypted: i=1; AFNElJ9Sn8xLvyF71Gr0x8ipsOjQRp0aLo5rG21ujFv8OgOMUwvRf8VGP91EzCmiWCaPJyHBHiCco4vmeA==@vger.kernel.org
+X-Gm-Message-State: AOJu0Ywk4g9R0ZGIZh6hRHWEH/PquhoUeuIJIVjRG5qn6jwHQYs7So//
+	ODSo/oHz4oNxZg8V8yulcrVGvj8tipzJU6fzReB1pK2gXO/jd8bLSwy/RzvmmUjwkiNa0rN6qOH
+	DlbfJ0G7sKlYIUmg8oLF/4Bk4SBHUJM1V7OIC5tPSoMjavg4IG8ofQozsJ3fBJg==
+X-Gm-Gg: Acq92OE6E9aaJt4dAUUMP9uXTKu/2BUmPX6v3L+NabAw3dQRtvLCpbv5Id0e880HlSV
+	ShW4lbynfDyIpTV8iYrLmquWDyzXJxGsuxE7XJnlPfZ5JHN9i2Jwt4IeQWMPA51l8XKR5MDyFJv
+	fjdmhHViSuq64b8XYS8VJMx73uXdjgnQnkiHyVc1EtFSGgEtvSrRw5gyj4/d5Q17Hbyz1O0O7NE
+	oPcOOJ4y9VN50V70kXSlGks7hftltjhhSyjVqS0zNdmtS9oFGUlbqfIxYK+bnFSvUZr7GRbnma4
+	jGsQS0EdqfC46j+/RwCAKQS8T1MC3nSgYmp/FJO0LsS0GWIPg85C3ezlAid6M2mNpKPZV1ihbZ9
+	v0AcL0Cf44C4eBh58MiTPnwt8MbvrBTemhkorbZKEBbSzmTzrWPjDLSTEuRwJrcz93i3syBXDna
+	iKWQ3YCN5/8pN3Qw/OKYtOL2jNSlTYkPfnEcJeRdMjzTW6NQ==
+X-Received: by 2002:a05:6102:9d0:b0:631:ff40:22b5 with SMTP id ada2fe7eead31-6c6a72cc962mr3699799137.21.1780313558121;
+        Mon, 01 Jun 2026 04:32:38 -0700 (PDT)
+X-Received: by 2002:a05:6102:9d0:b0:631:ff40:22b5 with SMTP id ada2fe7eead31-6c6a72cc962mr3699774137.21.1780313557681;
+        Mon, 01 Jun 2026 04:32:37 -0700 (PDT)
+Received: from umbar.lan (2001-14ba-a073-af00-264b-feff-fe8b-be8a.rev.dnainternet.fi. [2001:14ba:a073:af00:264b:feff:fe8b:be8a])
+        by smtp.gmail.com with ESMTPSA id 38308e7fff4ca-396840dcfa1sm6288321fa.40.2026.06.01.04.32.35
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 01 Jun 2026 04:01:39 -0700 (PDT)
-From: Sachin Gupta <sachin.gupta@oss.qualcomm.com>
-Date: Mon, 01 Jun 2026 16:31:19 +0530
-Subject: [PATCH 2/2] thermal: qcom: Add support for Qualcomm MBG thermal
- monitoring
+        Mon, 01 Jun 2026 04:32:35 -0700 (PDT)
+Date: Mon, 1 Jun 2026 14:32:33 +0300
+From: Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>
+To: Rakesh Kota <rakesh.kota@oss.qualcomm.com>
+Cc: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
+        Conor Dooley <conor+dt@kernel.org>,
+        Bjorn Andersson <andersson@kernel.org>, Ulf Hansson <ulfh@kernel.org>,
+        linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+        kamal.wadhwa@oss.qualcomm.com, jishnu.prakash@oss.qualcomm.com,
+        Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
+Subject: Re: [PATCH v3 2/2] pmdomain: qcom: rpmpd: Add Shikra RPM Power
+ Domains
+Message-ID: <l63dp6mv6nu3dquqs5mzjw3izg7rk652dszq42qddd2yj76yai@bhxr4cekvu7w>
+References: <20260522-add_rpmpd_shikra-v3-0-632838e2428a@oss.qualcomm.com>
+ <20260522-add_rpmpd_shikra-v3-2-632838e2428a@oss.qualcomm.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20260601-spmi-mbg-driver-v1-2-b4892b55a17f@oss.qualcomm.com>
-References: <20260601-spmi-mbg-driver-v1-0-b4892b55a17f@oss.qualcomm.com>
-In-Reply-To: <20260601-spmi-mbg-driver-v1-0-b4892b55a17f@oss.qualcomm.com>
-To: Lee Jones <lee@kernel.org>, Rob Herring <robh@kernel.org>,
-        Krzysztof Kozlowski <krzk+dt@kernel.org>,
-        Conor Dooley <conor+dt@kernel.org>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Daniel Lezcano <daniel.lezcano@kernel.org>,
-        Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>,
-        Stephen Boyd <sboyd@kernel.org>,
-        Jishnu Prakash <jishnu.prakash@oss.qualcomm.com>,
-        Kamal Wadhwa <kamal.wadhwa@oss.qualcomm.com>,
-        Amit Kucheria <amitk@kernel.org>,
-        Thara Gopinath <thara.gopinath@gmail.com>
-Cc: linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
-        Satya Priya Kakitapalli <quic_skakitap@quicinc.com>,
-        Sachin Gupta <sachin.gupta@oss.qualcomm.com>,
-        Ajit Pandey <ajit.pandey@oss.qualcomm.com>,
-        Imran Shaik <imran.shaik@oss.qualcomm.com>,
-        Taniya Das <taniya.das@oss.qualcomm.com>,
-        Jagadeesh Kona <jagadeesh.kona@oss.qualcomm.com>
-X-Mailer: b4 0.15.2
-X-Authority-Analysis: v=2.4 cv=AP3YypGC c=1 sm=1 tr=0 ts=6a1d6695 cx=c_pps
- a=MTSHoo12Qbhz2p7MsH1ifg==:117 a=fChuTYTh2wq5r3m49p7fHw==:17
- a=IkcTkHD0fZMA:10 a=FelO9ux0wxsA:10 a=s4-Qcg_JpJYA:10
- a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=eoimf2acIAo5FJnRuUoq:22
- a=COk6AnOGAAAA:8 a=EUspDBNiAAAA:8 a=LIlL8iqg20j2UnsMqcUA:9 a=QEXdDO2ut3YA:10
- a=GvdueXVYPmCkWapjIL-Q:22 a=TjNXssC_j7lpFel5tvFf:22
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNjAxMDExMSBTYWx0ZWRfXyYoxZvlRC3rn
- TPpcWVWKDZ+JCvellcjqwyIL2onkzFUZ/izW18ODGZXxB31oOqFZ9eMj3W52Jo8QoLN/6kSucnM
- NSvgco/psIqVZaA0XYr5aBCav+36UPYQZvHIzjY/0433fIb1niOMFNSiIfx+olZE8GaVdBoXi/Y
- dTyyJTcu1Ag0nrSpOC7b78XybdBxzAZfaMOStGv9BdyuFTwY22Aq/0oVQSgFwwYLZgtTRpEyUA3
- yLHgsT24tHlg1C+Bc/GCFGKWWbiIF+G7ydSh/xLzf/ACL5T6EofBG5DJJHn0WXJ5Zk/xnXnQckV
- hTAKg2ICzrWXVP0sz/fTDkD22iRhV3Ud1JC1OHkwb/cs5yoD4kyd2zwLuay/yXV02TXH/jd0Poh
- n4Gi70g0SvGbB7a9bbnT4dDukZsWqvV4em38elm5oTjzD13hclurN/281D4qfAGw9w+3WB3msei
- PQ7gBNV/FVXZBSGLvwQ==
-X-Proofpoint-GUID: HTCPEaHb1QNqM06UCxr2tGvDmzSpvonE
-X-Proofpoint-ORIG-GUID: HTCPEaHb1QNqM06UCxr2tGvDmzSpvonE
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260522-add_rpmpd_shikra-v3-2-632838e2428a@oss.qualcomm.com>
+X-Authority-Analysis: v=2.4 cv=AP3YypGC c=1 sm=1 tr=0 ts=6a1d6dd7 cx=c_pps
+ a=DUEm7b3gzWu7BqY5nP7+9g==:117 a=xqWC_Br6kY4A:10 a=kj9zAlcOel0A:10
+ a=FelO9ux0wxsA:10 a=s4-Qcg_JpJYA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=u7WPNUs3qKkmUXheDGA7:22 a=eoimf2acIAo5FJnRuUoq:22 a=EUspDBNiAAAA:8
+ a=uP2ZawwrIzpawsG4yqYA:9 a=CjuIK1q_8ugA:10 a=-aSRE8QhW-JAV6biHavz:22
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNjAxMDExNiBTYWx0ZWRfXzH4fHjWlMqAc
+ 796AeMZDOAL4gc0Xt0OgRx2aSuRRWfc5zro1U4uHLzvHkH3bpTZm4lXPd7sWaDKV2hkO+/dIkpm
+ dQULizi064T9AQpD0jPPb8NyjZH6NYAzILFWAx5aK1PWGAdlT17UegROUX/iftRxkyBzuIt5d5I
+ 3+d1IfsGGWVF8daykikfADVSDWVPb9oUlSoHukXXxHVjzs8bAFoHFyUCYfE0lmYkFAm8V/koaef
+ jKYOeETut5gIkO0JDWGalanQ+uXcMPnGVIRAfGjkrNh8NIjih7Gf74FOwQQ+KVe3RBSB2bJypOZ
+ YlvndYvFgBFPEb373WirrhMn+DbvsfjdbEsxLfVf3Bb1NOswVBZ+el/VMs4MR1g+K8MQYx6Uir3
+ dH84gl//X0kkYILOpZ1YvrqtFmYN+KBIYKyBE7il/eWC9YYFAgHws2fgPFznNM9nKYFub+YLi/J
+ WFt/BvdJ3sb/JZIN6uQ==
+X-Proofpoint-GUID: sd9QacVSxoa3-WS6kftQZA41huTm-NVw
+X-Proofpoint-ORIG-GUID: sd9QacVSxoa3-WS6kftQZA41huTm-NVw
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.125,FMLib:17.12.100.49
  definitions=2026-06-01_03,2026-05-28_03,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- spamscore=0 impostorscore=0 suspectscore=0 malwarescore=0 clxscore=1011
+ spamscore=0 impostorscore=0 suspectscore=0 malwarescore=0 clxscore=1015
  priorityscore=1501 lowpriorityscore=0 phishscore=0 adultscore=0 bulkscore=0
  classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2605210000 definitions=main-2606010111
+ reason=mlx scancount=1 engine=8.22.0-2605210000 definitions=main-2606010116
 
-From: Satya Priya Kakitapalli <quic_skakitap@quicinc.com>
+On Fri, May 22, 2026 at 01:51:55PM +0530, Rakesh Kota wrote:
+> Add RPM power domain support for Shikra, reusing SM6125 power
+> domains with RPM_SMD_LEVEL_TURBO_NO_CPR as the max state.
+> 
+> Reviewed-by: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
+> Signed-off-by: Rakesh Kota <rakesh.kota@oss.qualcomm.com>
+> ---
+> Changes in v3:
+>  - update the subject.
+> 
+> Changes in v2:
+>  - Collected Reviewed-by tag.
+>  - reused SM6125 power domains as suggested by Konrad Dybcio.
+> ---
+>  drivers/pmdomain/qcom/rpmpd.c | 7 +++++++
+>  1 file changed, 7 insertions(+)
+> 
 
-Add driver for the Qualcomm MBG thermal monitoring device. It monitors
-the die temperature, and when there is a level 1 upper threshold
-violation, it receives an interrupt over spmi. The driver reads
-the fault status register and notifies thermal accordingly.
+Reviewed-by: Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>
 
-Signed-off-by: Satya Priya Kakitapalli <quic_skakitap@quicinc.com>
-Co-developed-by: Sachin Gupta <sachin.gupta@oss.qualcomm.com>
-Signed-off-by: Sachin Gupta <sachin.gupta@oss.qualcomm.com>
----
- drivers/thermal/qcom/Kconfig            |  11 ++
- drivers/thermal/qcom/Makefile           |   1 +
- drivers/thermal/qcom/qcom-spmi-mbg-tm.c | 254 ++++++++++++++++++++++++++++++++
- 3 files changed, 266 insertions(+)
-
-diff --git a/drivers/thermal/qcom/Kconfig b/drivers/thermal/qcom/Kconfig
-index a6bb01082ec6..f2fc24a3096f 100644
---- a/drivers/thermal/qcom/Kconfig
-+++ b/drivers/thermal/qcom/Kconfig
-@@ -21,6 +21,17 @@ config QCOM_SPMI_ADC_TM5
- 	  Thermal client sets threshold temperature for both warm and cool and
- 	  gets updated when a threshold is reached.
- 
-+config QCOM_SPMI_MBG_TM
-+	tristate "Qualcomm SPMI PMIC MBG Temperature monitor"
-+	depends on QCOM_SPMI_ADC5_GEN3
-+	select REGMAP_SPMI
-+	help
-+	  This enables a thermal driver for the MBG thermal monitoring device.
-+	  It shows up in sysfs as a thermal sensor with single trip point.
-+	  It notifies the thermal framework when this trip is violated. The
-+	  temperature reported by the thermal sensor reflects the real
-+	  time die temperature through ADC channel.
-+
- config QCOM_SPMI_TEMP_ALARM
- 	tristate "Qualcomm SPMI PMIC Temperature Alarm"
- 	depends on OF && SPMI && IIO
-diff --git a/drivers/thermal/qcom/Makefile b/drivers/thermal/qcom/Makefile
-index 0fa2512042e7..1bec2746b98d 100644
---- a/drivers/thermal/qcom/Makefile
-+++ b/drivers/thermal/qcom/Makefile
-@@ -4,5 +4,6 @@ obj-$(CONFIG_QCOM_TSENS)	+= qcom_tsens.o
- qcom_tsens-y			+= tsens.o tsens-v2.o tsens-v1.o tsens-v0_1.o \
- 				   tsens-8960.o
- obj-$(CONFIG_QCOM_SPMI_ADC_TM5)	+= qcom-spmi-adc-tm5.o
-+obj-$(CONFIG_QCOM_SPMI_MBG_TM) += qcom-spmi-mbg-tm.o
- obj-$(CONFIG_QCOM_SPMI_TEMP_ALARM)	+= qcom-spmi-temp-alarm.o
- obj-$(CONFIG_QCOM_LMH)		+= lmh.o
-diff --git a/drivers/thermal/qcom/qcom-spmi-mbg-tm.c b/drivers/thermal/qcom/qcom-spmi-mbg-tm.c
-new file mode 100644
-index 000000000000..60190b341fc7
---- /dev/null
-+++ b/drivers/thermal/qcom/qcom-spmi-mbg-tm.c
-@@ -0,0 +1,254 @@
-+// SPDX-License-Identifier: GPL-2.0-only
-+/*
-+ * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
-+ */
-+
-+#include <linux/interrupt.h>
-+#include <linux/irq.h>
-+#include <linux/module.h>
-+#include <linux/of.h>
-+#include <linux/platform_device.h>
-+#include <linux/regmap.h>
-+#include <linux/thermal.h>
-+#include <linux/iio/consumer.h>
-+
-+#define MBG_TEMP_MON2_FAULT_STATUS	0x50
-+
-+#define MON_FAULT_STATUS_MASK		GENMASK(7, 4)
-+#define MON_FAULT_LVL1_UPR		0x5
-+
-+#define MON2_LVL1_UP_THRESH		0x59
-+
-+#define MBG_TEMP_MON2_MISC_CFG		0x5f
-+#define MON2_UP_THRESH_EN		BIT(1)
-+
-+#define MBG_TEMP_STEP_MV		8
-+#define MBG_TEMP_DEFAULT_TEMP_MV	600
-+#define MBG_TEMP_CONSTANT		1000
-+#define MBG_MIN_TRIP_TEMP		25000
-+#define MBG_MAX_SUPPORTED_TEMP		160000
-+
-+/**
-+ * struct mbg_tm_chip - MBG thermal monitor device data.
-+ * @map: regmap for accessing MBG thermal registers.
-+ * @dev: mbg_tm_chip device.
-+ * @tz_dev: thermal zone device registered with the thermal framework.
-+ * @lock: mbg_tm_chip lock for set trip temperature.
-+ * @base: base register offset for this MBG instance
-+ * @irq: interrupt line used to signal threshold events
-+ * @last_temp: last measured temperature.
-+ * @last_thres_crossed: indicates whether the last interrupt crossed a threshold
-+ * @adc: IIO ADC channel used for temperature sensing
-+ */
-+struct mbg_tm_chip {
-+	struct regmap			*map;
-+	struct device			*dev;
-+	struct thermal_zone_device	*tz_dev;
-+	struct mutex                    lock;
-+	unsigned int			base;
-+	int				irq;
-+	int				last_temp;
-+	bool				last_thres_crossed;
-+	struct iio_channel		*adc;
-+};
-+
-+/**
-+ * struct mbg_map_table - temperature to voltage mapping entry
-+ * @min_temp: minimum temperature supported by this mapping entry
-+ * @vtemp0: reference voltage or ADC code corresponding to the temperature
-+ * @tc: temperature coefficient used for conversion calculations
-+ */
-+struct mbg_map_table {
-+	int min_temp;
-+	int vtemp0;
-+	int tc;
-+};
-+
-+static const struct mbg_map_table map_table[] = {
-+	/* minT	vtemp0	tc */
-+	{ -60000, 4337, 1967 },
-+	{ -40000, 4731, 1964 },
-+	{ -20000, 5124, 1957 },
-+	{ 0,      5515, 1949 },
-+	{ 20000,  5905, 1940 },
-+	{ 40000,  6293, 1930 },
-+	{ 60000,  6679, 1921 },
-+	{ 80000,  7064, 1910 },
-+	{ 100000, 7446, 1896 },
-+	{ 120000, 7825, 1878 },
-+	{ 140000, 8201, 1859 },
-+};
-+
-+static int mbg_tm_get_temp(struct thermal_zone_device *tz, int *temp)
-+{
-+	struct mbg_tm_chip *chip = thermal_zone_device_priv(tz);
-+	int ret, milli_celsius;
-+
-+	if (chip->last_thres_crossed) {
-+		dev_dbg(chip->dev, "last_temp: %d\n", chip->last_temp);
-+		chip->last_thres_crossed = false;
-+		*temp = chip->last_temp;
-+		return 0;
-+	}
-+
-+	ret = iio_read_channel_processed(chip->adc, &milli_celsius);
-+	if (ret < 0) {
-+		dev_err(chip->dev, "Failed to read iio channel with %d\n", ret);
-+		return ret;
-+	}
-+
-+	*temp = milli_celsius;
-+
-+	return 0;
-+}
-+
-+static int temp_to_vtemp_mv(int temp)
-+{
-+	int idx, vtemp, tc = 0, t0 = 0, vtemp0 = 0;
-+
-+	for (idx = 0; idx < ARRAY_SIZE(map_table); idx++)
-+		if (temp >= map_table[idx].min_temp &&
-+		    temp < (map_table[idx].min_temp + 20000)) {
-+			tc = map_table[idx].tc;
-+			t0 = map_table[idx].min_temp;
-+			vtemp0 = map_table[idx].vtemp0;
-+			break;
-+		}
-+
-+	/*
-+	 * Formula to calculate vtemp(mV) from a given temp
-+	 * vtemp = (temp - minT) * tc + vtemp0
-+	 * tc, t0 and vtemp0 values are mentioned in the map_table array.
-+	 */
-+	vtemp = ((temp - t0) * tc + vtemp0 * 100000) / 1000000;
-+
-+	/* step size is 8mV */
-+	return abs(vtemp - MBG_TEMP_DEFAULT_TEMP_MV) / MBG_TEMP_STEP_MV;
-+}
-+
-+static int mbg_tm_set_trip_temp(struct thermal_zone_device *tz, int low_temp,
-+				int temp)
-+{
-+	struct mbg_tm_chip *chip = thermal_zone_device_priv(tz);
-+	int ret = 0;
-+
-+	guard(mutex)(&chip->lock);
-+
-+	/* The HW has a limitation that the trip set must be above 25C */
-+	if (temp > MBG_MIN_TRIP_TEMP && temp < MBG_MAX_SUPPORTED_TEMP) {
-+		ret = regmap_set_bits(chip->map, chip->base + MBG_TEMP_MON2_MISC_CFG,
-+				      MON2_UP_THRESH_EN);
-+		if (ret < 0)
-+			return ret;
-+
-+		ret = regmap_write(chip->map, chip->base + MON2_LVL1_UP_THRESH,
-+				   temp_to_vtemp_mv(temp));
-+		if (ret < 0)
-+			return ret;
-+	} else {
-+		dev_dbg(chip->dev, "Set trip b/w 25C and 160C\n");
-+		ret = regmap_clear_bits(chip->map, chip->base + MBG_TEMP_MON2_MISC_CFG,
-+					MON2_UP_THRESH_EN);
-+		return ret;
-+	}
-+
-+	/*
-+	 * Configure the last_temp one degree higher, to ensure the
-+	 * violated temp is returned to thermal framework when it reads
-+	 * temperature for the first time after the violation happens.
-+	 * This is needed to account for the inaccuracy in the conversion
-+	 * formula used which leads to the thermal framework setting back
-+	 * the same thresholds in case the temperature it reads does not
-+	 * show violation.
-+	 */
-+	chip->last_temp = temp + MBG_TEMP_CONSTANT;
-+
-+	return ret;
-+}
-+
-+static const struct thermal_zone_device_ops mbg_tm_ops = {
-+	.get_temp = mbg_tm_get_temp,
-+	.set_trips = mbg_tm_set_trip_temp,
-+};
-+
-+static irqreturn_t mbg_tm_isr(int irq, void *data)
-+{
-+	struct mbg_tm_chip *chip = data;
-+	int ret, val;
-+
-+	scoped_guard(mutex, &chip->lock) {
-+		ret = regmap_read(chip->map, chip->base + MBG_TEMP_MON2_FAULT_STATUS, &val);
-+		if (ret < 0)
-+			return IRQ_HANDLED;
-+	}
-+
-+	if (FIELD_GET(MON_FAULT_STATUS_MASK, val) & MON_FAULT_LVL1_UPR) {
-+		chip->last_thres_crossed = true;
-+		dev_dbg(chip->dev, "Notifying Thermal, fault status=%d\n", val);
-+		thermal_zone_device_update(chip->tz_dev, THERMAL_TRIP_VIOLATED);
-+	} else {
-+		dev_dbg(chip->dev, "Lvl1 upper threshold not violated, ignoring interrupt\n");
-+	}
-+
-+	return IRQ_HANDLED;
-+}
-+
-+static int mbg_tm_probe(struct platform_device *pdev)
-+{
-+	struct mbg_tm_chip *chip;
-+	struct device_node *node = pdev->dev.of_node;
-+	u32 res;
-+	int ret;
-+
-+	chip = devm_kzalloc(&pdev->dev, sizeof(*chip), GFP_KERNEL);
-+	if (!chip)
-+		return -ENOMEM;
-+
-+	chip->dev = &pdev->dev;
-+
-+	mutex_init(&chip->lock);
-+
-+	chip->map = dev_get_regmap(pdev->dev.parent, NULL);
-+	if (!chip->map)
-+		return -ENXIO;
-+
-+	ret = device_property_read_u32(chip->dev, "reg", &res);
-+	if (ret < 0)
-+		return dev_err_probe(chip->dev, ret, "Couldn't read reg property\n");
-+
-+	chip->base = res;
-+
-+	chip->irq = platform_get_irq(pdev, 0);
-+	if (chip->irq < 0)
-+		return dev_err_probe(chip->dev, chip->irq, "Failed to get irq\n");
-+
-+	chip->adc = devm_iio_channel_get(&pdev->dev, "thermal");
-+	if (IS_ERR(chip->adc))
-+		return dev_err_probe(chip->dev, PTR_ERR(chip->adc), "Failed to get adc channel\n");
-+
-+	chip->tz_dev = devm_thermal_of_zone_register(chip->dev, 0, chip, &mbg_tm_ops);
-+	if (IS_ERR(chip->tz_dev))
-+		return dev_err_probe(chip->dev, PTR_ERR(chip->tz_dev),
-+				     "Failed to register sensor\n");
-+
-+	return devm_request_threaded_irq(&pdev->dev, chip->irq, NULL, mbg_tm_isr, IRQF_ONESHOT,
-+					 node->name, chip);
-+}
-+
-+static const struct of_device_id mbg_tm_match_table[] = {
-+	{ .compatible = "qcom,pm8775-mbg-tm" },
-+	{ }
-+};
-+MODULE_DEVICE_TABLE(of, mbg_tm_match_table);
-+
-+static struct platform_driver mbg_tm_driver = {
-+	.driver = {
-+		.name = "qcom-spmi-mbg-tm",
-+		.of_match_table = mbg_tm_match_table,
-+	},
-+	.probe = mbg_tm_probe,
-+};
-+module_platform_driver(mbg_tm_driver);
-+
-+MODULE_DESCRIPTION("PMIC MBG Temperature monitor driver");
-+MODULE_LICENSE("GPL");
 
 -- 
-2.34.1
-
+With best wishes
+Dmitry
