@@ -1,54 +1,54 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0B02036B059
-	for <linux-pm@vger.kernel.org>; Mon,  1 Jun 2026 17:57:19 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 041F6310779
+	for <linux-pm@vger.kernel.org>; Mon,  1 Jun 2026 18:01:03 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1780336640; cv=none; b=CyxE0vih3fU6FGyfyTC8g4KqLrCWHNfMZQE9pd/N4vFPuC1tJujDv4VZaa+b0TulXRHvWcSjmNa1z9ZOJujD3tcfKLRJ/iVlE5MIG676t7Q0gJ+zy3t7z6dWmTQ38zXvQAas8D8yKRfPv5L5AqsRzvCWWehb1wF7AXq0RUHPmQ8=
+	t=1780336864; cv=none; b=VybFEm9JGmT7dcJ+CKCUjUhEfoylxQUvdApBbmTxdqbD2s8fUWbBS0k1RLoVTI/nyPHsbTWCZvhk6qxYAmOATf4WrHpXFjtepR0vFO1CnmN+340QHAih7Sly3qqN0XxLrFxwuzx523ZHLER588VqnPCbXCbs3rIdg5QllUpKAtg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1780336640; c=relaxed/simple;
-	bh=a8NNwl3gj28TdelJ2QDDl+HZA18Xikw2b26A8/RV0gM=;
+	s=arc-20240116; t=1780336864; c=relaxed/simple;
+	bh=pm4U8vljrqThoQzokjpEtzQeCoCnEWcenZP8ww/4k9I=;
 	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=dcfCCXCg6cEKiIzrldz2FrrcHWVt9W6xhhk4VE/9N5ePmttpEkRFU3ouKxn21PvMTRfZ/ldc9WBuwhcmIfWJnEBD7OpoGDqAm3nlpz21tIV1bFIW7xv4Km3ZNGZuhCV4IrV+2S4SE0fg5CyomJ1lbshCNZ/R5fpBbkCglE73rGs=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=VEzYjb2k; arc=none smtp.client-ip=100.103.45.18
+	 To:Cc:Content-Type; b=Lt++Wwne+VT6lLBncyndrMfjp57ldyAMkNZEPtojyMTHekqKO01W5sFDEdR7BXwg8z2AbWwOOgUny+eoDAOrL+w0ep8WjRX6fEYbXonL5cjTOEhWRP7h3iqM76ea86mhUhTUqPZwozFU7w86rhrOJdA0OpkVKM8e7rF5qLjaybk=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=OVkHwiLJ; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="VEzYjb2k"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id E5D5A1F00A2C
-	for <linux-pm@vger.kernel.org>; Mon,  1 Jun 2026 17:57:18 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="OVkHwiLJ"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id DC1A31F00A03
+	for <linux-pm@vger.kernel.org>; Mon,  1 Jun 2026 18:01:02 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1780336638;
-	bh=Fs6zIa+oKHWvRltzPvd2mFdEu12rLJwaXHbNCVd0THk=;
+	s=k20260515; t=1780336862;
+	bh=FJai4EZrxNteMzYYq8qhvFkyeHuhupF0VyqZ/uPCRk0=;
 	h=References:In-Reply-To:From:Date:Subject:To:Cc;
-	b=VEzYjb2k+jXMAhXQHyz+v1BrlB+2//Wyn8yllWfB2zFKWK+4vx8+YpVCQ1MLYNWmK
-	 ZE+21JPsbTNbsRuE1E34fR/KspMOCQ0kqXiQIV5QcRvQkc6CNrnswoB6+YdEUx+wjf
-	 p/WvlAgPKW6j2CfAkywRPXEZVq/ZFHEZe9giPPkTHL0ZFodjL5I+d2L4e8lpuL21Kb
-	 ZMrZK20p1Z0Dbh1AC2efSJgFlH3JwZqN0jJFunYIA5MG7fpt9RbYKYYMvIpcTNxfsW
-	 XIWTqyeyXmxo8sES1fTCK4csLl5R5UzbXAunA7JTIwnbWMTa4fAF5qwKZuNH/eJpLR
-	 07Jdz5Hevn5gw==
-Received: by mail-lf1-f49.google.com with SMTP id 2adb3069b0e04-5aa68dbb38aso1329563e87.2
-        for <linux-pm@vger.kernel.org>; Mon, 01 Jun 2026 10:57:18 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AFNElJ+WXVMMCUvsRijouJG3b8EwHLUuwLEXYd0heiAgo8AVOJCwZeOfulTciC1PLFn6/Dww7bb1N0fScg==@vger.kernel.org
-X-Gm-Message-State: AOJu0Ywg2ov4m1vT5EsDhoX0FUmZYIYqx3eMcyO3ux9YoNdRgpFSaI83
-	xxXuFDa3BjFGCKIFRSryS+dYt5VP8ikWpGae+V1FuC4us//pJ70GczuWPCKirCiAZDDW3Ez1N/j
-	cUODUjzQV8GgJx14I7DQWSDrQNpJdfTA=
-X-Received: by 2002:a05:6512:8007:20b0:5aa:6395:f9c5 with SMTP id
- 2adb3069b0e04-5aa73ee8720mr300250e87.27.1780336637107; Mon, 01 Jun 2026
- 10:57:17 -0700 (PDT)
+	b=OVkHwiLJbNtRQR1daEbLMYYJbeH71xzB2myG6ijTJtDs+nzh7cy716sT7CPteSb4i
+	 9zBNU1nIHTfGSeTmSBp8hmIcfjkYTh6v0YnPOCRn09FQ5BMpGjMx0mFLMlfKXsr2Us
+	 64VZT94Psx6DCHlj40P8bCGLnWFWN46OpMUYIa0eMNMxhk5MbFcNFLFzHxoJu11J42
+	 ugmTbRxzpAsykc7thcDHxmTS6o+LXFTfTKlcQFO0r8l6EwoVRnStvyquf9U8tvsE+e
+	 1FyWbjqpD3LxQ4ufxVfslaxoBtX9RHWcS43d8bCfV0AGl2clRdQP6NN9mecArcrpCV
+	 /4v1Sp760+rDQ==
+Received: by mail-lf1-f51.google.com with SMTP id 2adb3069b0e04-5aa68d9dc18so1623386e87.2
+        for <linux-pm@vger.kernel.org>; Mon, 01 Jun 2026 11:01:02 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AFNElJ9rvrAaXi3x+cir9q9dvNl3o7eqXHWHthvt59glhC6aKjQz1QeP6SYItYjT5AEAd0HJoat7gbw66A==@vger.kernel.org
+X-Gm-Message-State: AOJu0YyjuUn3GPBvPGCKoN1XF8Hx4kF+yVEiCvdXHar2MJ4iyhpzMfXg
+	ov/qpnw2ZxeJjuS+RCE+LZGjjfCTlNZvszar6pkH0Xy0CRXj2pMJ2ljtRtg8mWEy9mdI8qV564f
+	BRujT/meuAD66SuD8kX6UWEBZilaAkcc=
+X-Received: by 2002:a05:6512:3044:b0:5a8:b92f:5471 with SMTP id
+ 2adb3069b0e04-5aa608f1fb7mr3302663e87.23.1780336860524; Mon, 01 Jun 2026
+ 11:01:00 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260528183625.870813-1-ynorov@nvidia.com> <20260528183625.870813-15-ynorov@nvidia.com>
-In-Reply-To: <20260528183625.870813-15-ynorov@nvidia.com>
+References: <20260528183625.870813-1-ynorov@nvidia.com> <20260528183625.870813-16-ynorov@nvidia.com>
+In-Reply-To: <20260528183625.870813-16-ynorov@nvidia.com>
 From: "Rafael J. Wysocki" <rafael@kernel.org>
-Date: Mon, 1 Jun 2026 19:57:04 +0200
-X-Gmail-Original-Message-ID: <CAJZ5v0g4G9aJ1fjQxXmk1YHXh+xBojpFz207j_jz7HiLH1Lz1Q@mail.gmail.com>
-X-Gm-Features: AVHnY4INVXbw7SKAZHG4Jnm8fXAHVwo_FKl3cnkJN8dTeVudl-a8v97e8VxcFA4
-Message-ID: <CAJZ5v0g4G9aJ1fjQxXmk1YHXh+xBojpFz207j_jz7HiLH1Lz1Q@mail.gmail.com>
-Subject: Re: [PATCH 14/16] powercap: intel_rapl: Use sysfs_emit() for cpumask show
+Date: Mon, 1 Jun 2026 20:00:49 +0200
+X-Gmail-Original-Message-ID: <CAJZ5v0jqMcRM6sks5P7Ai5p2wLxVmy34PsByierGLvO6tnuhdA@mail.gmail.com>
+X-Gm-Features: AVHnY4KfVk9OmH3E9_srGOfCDI7trpo8PRnK2g6u7Vl3uXG0PCY9qxi1Bkna5gc
+Message-ID: <CAJZ5v0jqMcRM6sks5P7Ai5p2wLxVmy34PsByierGLvO6tnuhdA@mail.gmail.com>
+Subject: Re: [PATCH 15/16] thermal: intel: Use sysfs_emit() for powerclamp cpumask
 To: Yury Norov <ynorov@nvidia.com>
 Cc: Andrew Morton <akpm@linux-foundation.org>, Rasmus Villemoes <linux@rasmusvillemoes.dk>, 
 	Russell King <linux@armlinux.org.uk>, Frank Li <Frank.Li@nxp.com>, 
@@ -86,44 +86,40 @@ Cc: Andrew Morton <akpm@linux-foundation.org>, Rasmus Villemoes <linux@rasmusvil
 	Aboorva Devarajan <aboorvad@linux.ibm.com>, "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>, 
 	Ilkka Koskinen <ilkka@os.amperecomputing.com>, Besar Wicaksono <bwicaksono@nvidia.com>, 
 	Ma Ke <make24@iscas.ac.cn>, Chengwen Feng <fengchengwen@huawei.com>, 
-	linux-arm-kernel@lists.infradead.org, imx@lists.linux.dev, 
-	linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
-	linux-perf-users@vger.kernel.org, linux-acpi@vger.kernel.org, 
-	driver-core@lists.linux.dev, linux-pm@vger.kernel.org, 
-	linux-rockchip@lists.infradead.org, linux-fpga@vger.kernel.org, 
-	linux-rdma@vger.kernel.org, nvdimm@lists.linux.dev, linux-pci@vger.kernel.org, 
-	linux-amlogic@lists.infradead.org, linux-cxl@vger.kernel.org, 
-	linux-arm-msm@vger.kernel.org
+	linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
 On Thu, May 28, 2026 at 8:37=E2=80=AFPM Yury Norov <ynorov@nvidia.com> wrot=
 e:
 >
-> cpumask_show() is a sysfs show callback. Use sysfs_emit() and
-> cpumask_pr_args() to emit the mask.
+> cpumask_get() is used as a sysfs getter for the cpumask module
+> parameter. Use sysfs_emit() and cpumask_pr_args() to emit the mask.
 >
 > This prepares for removing cpumap_print_to_pagebuf().
 >
 > Signed-off-by: Yury Norov <ynorov@nvidia.com>
 > ---
->  drivers/powercap/intel_rapl_common.c | 2 +-
+>  drivers/thermal/intel/intel_powerclamp.c | 2 +-
 >  1 file changed, 1 insertion(+), 1 deletion(-)
 >
-> diff --git a/drivers/powercap/intel_rapl_common.c b/drivers/powercap/inte=
-l_rapl_common.c
-> index a8dd02dff0a0..b38d4a7799a8 100644
-> --- a/drivers/powercap/intel_rapl_common.c
-> +++ b/drivers/powercap/intel_rapl_common.c
-> @@ -1441,7 +1441,7 @@ static ssize_t cpumask_show(struct device *dev,
->         }
->         cpus_read_unlock();
+> diff --git a/drivers/thermal/intel/intel_powerclamp.c b/drivers/thermal/i=
+ntel/intel_powerclamp.c
+> index ccf380da12f2..bd7fd98dc310 100644
+> --- a/drivers/thermal/intel/intel_powerclamp.c
+> +++ b/drivers/thermal/intel/intel_powerclamp.c
+> @@ -200,7 +200,7 @@ static int cpumask_get(char *buf, const struct kernel=
+_param *kp)
+>         if (!cpumask_available(idle_injection_cpu_mask))
+>                 return -ENODEV;
 >
-> -       ret =3D cpumap_print_to_pagebuf(true, buf, cpu_mask);
-> +       ret =3D sysfs_emit(buf, "%*pbl\n", cpumask_pr_args(cpu_mask));
+> -       return cpumap_print_to_pagebuf(false, buf, idle_injection_cpu_mas=
+k);
+> +       return sysfs_emit(buf, "%*pb\n", cpumask_pr_args(idle_injection_c=
+pu_mask));
+>  }
 >
->         free_cpumask_var(cpu_mask);
->
+>  static const struct kernel_param_ops cpumask_ops =3D {
 > --
 
-Applied (with adjusted subject and changelog) as 7.2 material, thanks!
+Applied as 7.2 material, thanks!
