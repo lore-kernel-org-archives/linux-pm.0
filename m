@@ -1,154 +1,182 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 79BF53E1231
-	for <linux-pm@vger.kernel.org>; Mon,  1 Jun 2026 18:26:55 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BD0CA3EF64A
+	for <linux-pm@vger.kernel.org>; Mon,  1 Jun 2026 18:39:55 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1780338416; cv=none; b=mbvP7htH1wPLBH7M/dcYdB9tvQqvEQj8z7kpF0Y8hgm259TW+XSIc8+yv908025iGQFlBtboV3eHpGlyqq4qofnbFK3/DknsBSxoBtgTbIfqQ4uWx3Ctc5DCnlIsbL4dJPN/AIhUTaAX8vqAp7tTggQL4myQMhsnk58pFIjjOro=
+	t=1780339199; cv=none; b=tSq/HtAvXzT2cPAcxUhyXJwO2xxDDZxXzerfaFLu8+WI6dBh1bhxQ5osJ9wLTgU+wBiOPJH+Wxnye6rAYCWP8Q6wKE/VtUzAdtiDwa9JL6ORfQ4SIgd5B0l+gkUfyVzCV/1cQmeoaZyrmadoJekWUWOVm28UgM7rNJ0PuFpXlBk=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1780338416; c=relaxed/simple;
-	bh=RbU1kZHqjqFtfTsq+ic0zkG8gB1+osgpzJ2ahcO9/0k=;
+	s=arc-20240116; t=1780339199; c=relaxed/simple;
+	bh=snnOueHzpddTMr0EOzT/SQMImZLV+bNVpqocozMConY=;
 	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=groFEVmWA5zHAzhm8iNThNT6W05Qo2Ljf67/MHMy9r70Drjx+vNRaAveqo+Tnigkps81auxGJLDzV1A1vfxZL/h1pQseRCNKacB3YkKBqG70fMhRtKJQtXG/ZGk1BASOrsdit49BBmKjhPM6/ntiq2pdGmgByM6ai+BGwfRTOJE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=bEwr1DcC; arc=none smtp.client-ip=100.103.45.18
+	 To:Cc:Content-Type; b=byciqz2rDeo5NO3x7lxeXla5iQhCrbm8Gk3Tqv9uuOiPx5Io1sbSC9jDmTts0N/Zi7OeDD4wHb7BC4npsafrgms3kfF+YhU9aRPgE2ZPdKEIALb2U4rtxWb1jHgnYxC2LhXEEg43hu4rznY+kiOTw0yLgWMwnvqT3f9MF91itk4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=EG1taH52; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="bEwr1DcC"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4D59A1F0089D
-	for <linux-pm@vger.kernel.org>; Mon,  1 Jun 2026 18:26:55 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="EG1taH52"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 53CE61F00899
+	for <linux-pm@vger.kernel.org>; Mon,  1 Jun 2026 18:39:55 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1780338415;
-	bh=kh42sMWmTOO471jKcUUzqN/uJW2KiBLalBsKUVrgVM4=;
+	s=k20260515; t=1780339195;
+	bh=+LmQVnmfAqr309eQQOPVN3BHemABDS73n6a5IHIbBM8=;
 	h=References:In-Reply-To:From:Date:Subject:To:Cc;
-	b=bEwr1DcCBcRa5yUuf0bxcb14xNHvMHO2/pNUpPOW1kK/bTLlVEGOzNA2tQREIMLc5
-	 OcBDPH5x+wIIvsz6N5e7GeYNLN1n6zyizQeyQ/OfIvkraZaGm0wiVCixGZafDp+OS2
-	 /f7DlQfhdFVtKH9RG1KZFC/g96HfebHLhPH11DJWduhZkty1lQdCEE3x50Ee6GWos9
-	 B4zLcvz46H3LmE9U/uY1ZHqAbK+mgRbkfZpOI48ztH1Oc8sehE8SYQACDwe2wQozIm
-	 JO17AbZPLX8lx+sRLt3nzSARrFFfDoIUGH92vK6v03o2mSnmoknx0DMxbD/nnuZM5y
-	 lXX9q04ljGmEw==
-Received: by mail-lj1-f180.google.com with SMTP id 38308e7fff4ca-3967738c801so18573901fa.2
-        for <linux-pm@vger.kernel.org>; Mon, 01 Jun 2026 11:26:55 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AFNElJ+aoDaUbcDFHR8QraIbTUAtIIihFffjiJvfXsQQr11McXajs0Vaoar8oDFnNWVPCz0oqOC+4XpY5Q==@vger.kernel.org
-X-Gm-Message-State: AOJu0YyHVmo3vtw9O1I1M8t7KhrZLzXeIijmeNPqH/UZ/Vv8afSNaEIv
-	go0obrr07j8+f2jAAhJTnwdM+v0kP4P7Umoq9y2tJTmS24+KXs0u6yhTNKgp3IFbD1UgRijbBwq
-	2dNMb5RxFK0M8cw+V7MPqlc+TPN4RgIA=
-X-Received: by 2002:a05:6512:224c:b0:5aa:6ede:1a69 with SMTP id
- 2adb3069b0e04-5aa6ede1b21mr1497253e87.17.1780338413755; Mon, 01 Jun 2026
- 11:26:53 -0700 (PDT)
+	b=EG1taH52XEILSUuPBEv3wY1T3HW01F/Zs+5no/1HQKlXKfvVZBSNCUwuZqgJ4Iaes
+	 IWKZUMmDYbqmLN9/Vcis3RMuBFUTIrG3uXrZdwLTSTsS754ukvBomFdjxpENFdY50L
+	 gdUVR/ut9s2IJkJ7Ou5hkEi/tqfloHI/b25HLD/mpA73DsM55gHhEOUvUR4PSCsIz2
+	 iDmNxhDMMBYnOMYnavySGiaPJCUO4lsnStTjOPU+2FPRSL6HL/NgIghJcpcCZq6oNF
+	 R4o/xsBL3y+FqE3D/KPVAEAQVpB0ScvTRIrjqEp8a9KY8G7V+IH/+4ez/HJ8+jKwth
+	 mSKlxtTBQ3zfA==
+Received: by mail-lf1-f43.google.com with SMTP id 2adb3069b0e04-5aa68dbb38aso1364762e87.2
+        for <linux-pm@vger.kernel.org>; Mon, 01 Jun 2026 11:39:55 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AFNElJ/fOFNy6m9VrVl8pdwW4VPRkaB91olhFVGitvH0LwYagKw2eTnMPL6Y1RY9haKzTbqteDly2tCaqQ==@vger.kernel.org
+X-Gm-Message-State: AOJu0YwspsLizoSxFUf1Zoy36B9sBMOW6YIFlxZ/4LVkV2CBVe38tqQA
+	OPfleznr0/Y5xdeCdAVAyNb+CCvVPPbgSA71ZwoHDYGZvxFq8yvL21rVSdLOGQE4oBcFp2kM/Eq
+	vjC+mTIJDh5dByezEwGkCeUtpU43TcNU=
+X-Received: by 2002:a05:6512:40cd:10b0:5aa:65b1:93ad with SMTP id
+ 2adb3069b0e04-5aa73ef21b5mr312223e87.35.1780339193786; Mon, 01 Jun 2026
+ 11:39:53 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260528-rneri-directed-therm-intr-v2-0-8e2f9e0c1a36@linux.intel.com>
-In-Reply-To: <20260528-rneri-directed-therm-intr-v2-0-8e2f9e0c1a36@linux.intel.com>
+References: <20260528103215.505795-1-tzungbi@kernel.org>
+In-Reply-To: <20260528103215.505795-1-tzungbi@kernel.org>
 From: "Rafael J. Wysocki" <rafael@kernel.org>
-Date: Mon, 1 Jun 2026 20:26:42 +0200
-X-Gmail-Original-Message-ID: <CAJZ5v0g3SncgrYri0Xo28MCKseOVSDGbx1L=mBAWATJYJRv7iw@mail.gmail.com>
-X-Gm-Features: AVHnY4J6T7lVdYx8yPjGVC-h2YJx8ci9Ct92sNufXkZBaC1w-0MC1R4lL4XbpAI
-Message-ID: <CAJZ5v0g3SncgrYri0Xo28MCKseOVSDGbx1L=mBAWATJYJRv7iw@mail.gmail.com>
-Subject: Re: [PATCH v2 0/5] thermal: intel: Add support for Directed Package
- Thermal Interrupt
-To: Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Daniel Lezcano <daniel.lezcano@kernel.org>, 
-	Lukasz Luba <lukasz.luba@arm.com>, x86@kernel.org, 
-	Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Zhang Rui <rui.zhang@intel.com>, 
-	linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, 
-	Ricardo Neri <ricardo.neri@intel.com>
+Date: Mon, 1 Jun 2026 20:39:42 +0200
+X-Gmail-Original-Message-ID: <CAJZ5v0gc7AtOjWd+cg6tFgzPBovu=wmYmavjaRRjTdNNd8q-0g@mail.gmail.com>
+X-Gm-Features: AVHnY4L0Ij-nQuMTLjzET6J7p6BaLuxrhCJAKBSFWN5kexmIcrQoC6VSYabDmjY
+Message-ID: <CAJZ5v0gc7AtOjWd+cg6tFgzPBovu=wmYmavjaRRjTdNNd8q-0g@mail.gmail.com>
+Subject: Re: [PATCH] PM: sleep: Allow disabling DPM watchdog by default
+To: Tzung-Bi Shih <tzungbi@kernel.org>
+Cc: Jonathan Corbet <corbet@lwn.net>, "Rafael J. Wysocki" <rafael@kernel.org>, 
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Danilo Krummrich <dakr@kernel.org>, 
+	Shuah Khan <skhan@linuxfoundation.org>, Pavel Machek <pavel@kernel.org>, 
+	Len Brown <lenb@kernel.org>, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, 
+	linux-pm@vger.kernel.org, driver-core@lists.linux.dev
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Thu, May 28, 2026 at 5:15=E2=80=AFPM Ricardo Neri
-<ricardo.neri-calderon@linux.intel.com> wrote:
+On Thu, May 28, 2026 at 12:32=E2=80=AFPM Tzung-Bi Shih <tzungbi@kernel.org>=
+ wrote:
 >
-> Hi,
+> Introduce the CONFIG_DPM_WATCHDOG_DEFAULT_ENABLED Kconfig option to
+> allow the device suspend/resume watchdog (DPM watchdog) to be disabled
+> by default at compile time.
 >
-> This is v2 of this series. The main changes are a new patch fixing a pre-
-> existing bug and a redesigned error rollback strategy that disables
-> directed thermal interrupts across all packages when enabling fails in an=
-y
-> one of them. Please see the changelog for details.
+> Additionally, introduce the "dpm_watchdog_enabled" boot parameter to
+> enable or disable the watchdog at boot time.
 >
-> Package-level thermal interrupts are currently broadcast to all CPUs in a
-> package. Only one CPU is needed to service package-wide events.
-> Broadcasting creates unnecessary resource contention. Thermal interrupts
-> generated for Hardware Feedback Interface[1] updates are an example: all
-> CPUs in the package receive the interrupt and race for a lock to update a
-> shared data structure. Idle CPUs are needlessly woken up.
+> This provides flexibility for systems that want the watchdog code
+> compiled in but inactive by default, allowing it to be enabled only when
+> needed.
 >
-> Newer Intel processors allow directing package-level thermal interrupts
-> only to CPUs that explicitly request them. A CPU opts in by setting a
-> designated bit in IA32_THERM_INTERRUPT. Hardware acknowledges the request
-> by setting a designated bit in IA32_PACKAGE_THERM_STATUS.
+> Signed-off-by: Tzung-Bi Shih <tzungbi@kernel.org>
+> ---
+>  .../admin-guide/kernel-parameters.txt         |  8 ++++++++
+>  drivers/base/power/main.c                     | 20 +++++++++++++++++++
+>  kernel/power/Kconfig                          |  9 +++++++++
+>  3 files changed, 37 insertions(+)
 >
-> This series enables directed package-level thermal interrupts and
-> designates one handler CPU per package using the CPU hotplug
-> infrastructure. A new CPU is selected if the handler CPU goes offline.
->
-> Because CPU0's hotplug callbacks are not invoked during suspend and resum=
-e,
-> syscore callbacks are added to restore the handler for the boot package.
-> The series also disables directed delivery during kexec reboot, avoiding
-> stale interrupt routing when rebooting into a kernel that does not suppor=
-t
-> the feature.
->
-> This patchset introduces a change in behavior in the /sys/devices/system/
-> cpu/cpuN/thermal_throttle/package* sysfs files. These files reflect per-C=
-PU
-> variables updated when a CPU handles a package-level thermal interrupt. I=
-n
-> broadcast mode, all CPUs update their variables. When directed package-
-> level thermal interrupts are enabled, only the handler CPU's variables ar=
+> diff --git a/Documentation/admin-guide/kernel-parameters.txt b/Documentat=
+ion/admin-guide/kernel-parameters.txt
+> index 85936e48cf9a..3a919e660137 100644
+> --- a/Documentation/admin-guide/kernel-parameters.txt
+> +++ b/Documentation/admin-guide/kernel-parameters.txt
+> @@ -1344,6 +1344,14 @@ Kernel parameters
+>                         it becomes active and is searched during signatur=
 e
-> updated.
+>                         verification.
 >
-> Lastly, nothing changes for processors that do not support this feature:
-> they fall back to broadcast delivery.
+> +       dpm_watchdog_enabled=3D
+> +                       [KNL] Enable or disable the device suspend/resume
+> +                       watchdog (DPM watchdog).
+> +                       Format: {"0" | "1"}
+> +                       0: disable
+> +                       1: enable
+> +                       Default value is set by CONFIG_DPM_WATCHDOG_DEFAU=
+LT_ENABLED.
+> +
+>         driver_async_probe=3D  [KNL]
+>                         List of driver names to be probed asynchronously.=
+ *
+>                         matches with all driver names. If * is specified,=
+ the
+> diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
+> index e1b550664bab..4f92905f3edf 100644
+> --- a/drivers/base/power/main.c
+> +++ b/drivers/base/power/main.c
+> @@ -527,6 +527,20 @@ module_param(dpm_watchdog_all_cpu_backtrace, bool, 0=
+644);
+>  MODULE_PARM_DESC(dpm_watchdog_all_cpu_backtrace,
+>                  "Backtrace all CPUs on DPM watchdog timeout");
 >
-> [1] Intel Software Developer's Manual Vol. 3, Section 17.6, March 2026 ht=
-tps://www.intel.com/SDM
->
-> Signed-off-by: Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
-> ---
-> Changes in v2:
-> - Fixed an existing bug in the error-handling of thermal_throttle_online(=
-)
->   CPU hotplug callback.
-> - Redesigned the rollback mechanism to handle all packages, not only
->   the boot package.
-> - Fixed the handling of the return value of cpumask_any_but(), which on
->   failure returns small_cpumask_bits, not nr_cpu_ids.
-> - Renamed the Directed Package Thermal Interrupt CPUID and MSR bits for
->   consistency and brevity. (Boris)
-> - Added measurements of the latency of setup acknowledgment from hardware=
-.
-> - Removed an unused argument from directed_thermal_pkg_intr_supported().
-> - Reused the global rollback mechanism in the syscore shutdown callback.
-> - Link to v1: https://lore.kernel.org/r/20260309-rneri-directed-therm-int=
-r-v1-0-2956e3000950@linux.intel.com
->
-> ---
-> Ricardo Neri (5):
->       thermal: intel: Fix dangling resources on thermal_throttle_online()=
- failure
->       x86/thermal: Add bit definitions for Intel Directed Package Thermal=
- Interrupt
->       thermal: intel: Enable the Directed Package-level Thermal Interrupt
->       thermal: intel: Add syscore callbacks for suspend and resume
->       thermal: intel: Add a syscore shutdown callback for kexec reboot
->
->  arch/x86/include/asm/cpufeatures.h  |   2 +
->  arch/x86/include/asm/msr-index.h    |   2 +
->  drivers/thermal/intel/therm_throt.c | 272 ++++++++++++++++++++++++++++++=
-+++++-
->  3 files changed, 272 insertions(+), 4 deletions(-)
-> ---
+> +#ifdef CONFIG_DPM_WATCHDOG_DEFAULT_ENABLED
+> +static unsigned int __read_mostly dpm_watchdog_enabled =3D 1;
+> +#else
+> +static unsigned int __read_mostly dpm_watchdog_enabled;
+> +#endif
+> +
+> +static int __init dpm_watchdog_setup(char *str)
+> +{
+> +       if (kstrtouint(str, 0, &dpm_watchdog_enabled) =3D=3D 0)
+> +               return 1;
+> +       return 0;
+> +}
+> +__setup("dpm_watchdog_enabled=3D", dpm_watchdog_setup);
 
-sashiko.dev has some feedback on patch 4 that appears to be valid to me:
+You might as well use a module parameter to allow this to be set or
+clear at run time.  Is there a particular reason why you only want it
+to be enabled or disabled via the kernel command line?
 
-https://sashiko.dev/#/patchset/20260528-rneri-directed-therm-intr-v2-0-8e2f=
-9e0c1a36%40linux.intel.com
-
-Can you have a look at it please?
+> +
+>  /**
+>   * dpm_watchdog_handler - Driver suspend / resume watchdog handler.
+>   * @t: The timer that PM watchdog depends on.
+> @@ -570,6 +584,9 @@ static void dpm_watchdog_set(struct dpm_watchdog *wd,=
+ struct device *dev)
+>  {
+>         struct timer_list *timer =3D &wd->timer;
+>
+> +       if (!dpm_watchdog_enabled)
+> +               return;
+> +
+>         wd->dev =3D dev;
+>         wd->tsk =3D current;
+>         wd->fatal =3D CONFIG_DPM_WATCHDOG_TIMEOUT =3D=3D CONFIG_DPM_WATCH=
+DOG_WARNING_TIMEOUT;
+> @@ -588,6 +605,9 @@ static void dpm_watchdog_clear(struct dpm_watchdog *w=
+d)
+>  {
+>         struct timer_list *timer =3D &wd->timer;
+>
+> +       if (!dpm_watchdog_enabled)
+> +               return;
+> +
+>         timer_delete_sync(timer);
+>         timer_destroy_on_stack(timer);
+>  }
+> diff --git a/kernel/power/Kconfig b/kernel/power/Kconfig
+> index 05337f437cca..d4cecdb8575e 100644
+> --- a/kernel/power/Kconfig
+> +++ b/kernel/power/Kconfig
+> @@ -267,6 +267,15 @@ config DPM_WATCHDOG
+>           captured in pstore device for inspection in subsequent
+>           boot session.
+>
+> +config DPM_WATCHDOG_DEFAULT_ENABLED
+> +       bool "Enable DPM watchdog by default"
+> +       depends on DPM_WATCHDOG
+> +       default y
+> +       help
+> +         If you say Y here, the DPM watchdog will be enabled by default.
+> +         If you say N, it will be compiled in but disabled, requiring a
+> +         boot parameter to activate.
+> +
+>  config DPM_WATCHDOG_TIMEOUT
+>         int "Watchdog timeout to panic in seconds"
+>         range 1 120
+> --
+> 2.54.0.929.g9b7fa37559-goog
+>
