@@ -1,31 +1,40 @@
-Received: from canpmsgout03.his.huawei.com (canpmsgout03.his.huawei.com [113.46.200.218])
+Received: from canpmsgout09.his.huawei.com (canpmsgout09.his.huawei.com [113.46.200.224])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 093841CD2C
-	for <linux-pm@vger.kernel.org>; Mon,  1 Jun 2026 02:03:26 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=113.46.200.218
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id ACFFD18BBAE;
+	Mon,  1 Jun 2026 02:04:21 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=113.46.200.224
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1780279409; cv=none; b=l1mY3JXZJR06y7srgvccuIUmTrUyGjnINw/cuvU191m86cwd5XoFlxDJTd5qnYufxUDEfXWLG5b56SKrJ89aSNw2op0ZasoKqkn4TYYm62KI8J4KSLRYO3d3HtYmG6J2wfvfi5mB/fy2hJBBh7dXBx+rLIcdR2fEp2cR0qnPQTw=
+	t=1780279466; cv=none; b=RMK+Z0q+86N2lt4HvkNxbwJ9VcfPQuHvXfNPJVWeqsPCxjaiL52Fnv2wJNuujqiI5b2HhoVD+edkVSL6gnTQoaAXuHgTCJkK1woZQYbIMLXhMp+EL0IzqdAKhz0JXvP7nuhRkgHJbHlZXAyXV1n0W4BMrQpuC1LjZFDswrwRXbQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1780279409; c=relaxed/simple;
-	bh=DQex9vHOwyHt20ScAKmXyC4wBGSdaO87xvQbHIgTkPU=;
+	s=arc-20240116; t=1780279466; c=relaxed/simple;
+	bh=24u0Mc/omcptN/bXvWCbC/xhppIqcwqy22nqFlXk27I=;
 	h=Message-ID:Date:MIME-Version:Subject:To:CC:References:From:
-	 In-Reply-To:Content-Type; b=Nhc2YeEnOZ+pFxizlBCy35sBRkDlEDa9t8TIImSj9RakNXAx4PMAAPq55atWbZ3KZlVcIgnd3wppzlCN5tGE4yKcmoe2f/GWEXUk/1lVUWtqEQyOgJm0z/IDKEevZkGIuAqzrItpm0dyeP4HBRRsHlTpdXyTfpU+3M0Du8146KA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=hisilicon.com; spf=pass smtp.mailfrom=hisilicon.com; arc=none smtp.client-ip=113.46.200.218
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=hisilicon.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=hisilicon.com
-Received: from mail.maildlp.com (unknown [172.19.162.197])
-	by canpmsgout03.his.huawei.com (SkyGuard) with ESMTPS id 4gTH9X3dkMzpStM;
-	Mon,  1 Jun 2026 09:55:44 +0800 (CST)
-Received: from kwepemf200017.china.huawei.com (unknown [7.202.181.10])
-	by mail.maildlp.com (Postfix) with ESMTPS id D5AF440569;
-	Mon,  1 Jun 2026 10:03:18 +0800 (CST)
-Received: from [10.67.121.58] (10.67.121.58) by kwepemf200017.china.huawei.com
- (7.202.181.10) with Microsoft SMTP Server (version=TLS1_2,
+	 In-Reply-To:Content-Type; b=T6+wpmlYpXlEAd4+ETM1ACnzqm2Ec6SQyCPQUH9BP9y1XeuAn1W3OUTDGC12++3A8i57lOtt1sYFDGfT3Fsa7kwGkWTGzSlvbT0OzDfrdrJVXsH8lmrMMoUs7jQhe0pQhxW4S7nWnj0OxxLkXntlP1515RX7Bn4BA5dtB98P7GI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; spf=pass smtp.mailfrom=huawei.com; dkim=pass (1024-bit key) header.d=huawei.com header.i=@huawei.com header.b=PqZWk8y9; arc=none smtp.client-ip=113.46.200.224
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=huawei.com
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (1024-bit key) header.d=huawei.com header.i=@huawei.com header.b="PqZWk8y9"
+dkim-signature: v=1; a=rsa-sha256; d=huawei.com; s=dkim;
+	c=relaxed/relaxed; q=dns/txt;
+	h=From;
+	bh=n6O/rJnqc29q+9bm0i+9ElxVQIbKP87fJyka1ARSiLI=;
+	b=PqZWk8y9AK9nxhWXCFpDQs0N5riIKYx7IJNft1TIUVObqLqzqKxzJPQiaDA+c0nwhCVazVoNL
+	FrU3FWVzaL5zGM3N0EqntW9dSYBqZjafpEkZ0Q4glhkX1PdT1qiEgIDBx3K2Pt7xlpZ31P2hqaP
+	WtnREqT0t4m5J9RIQ04DHf8=
+Received: from mail.maildlp.com (unknown [172.19.163.214])
+	by canpmsgout09.his.huawei.com (SkyGuard) with ESMTPS id 4gTHBS34fDz1cyPZ;
+	Mon,  1 Jun 2026 09:56:32 +0800 (CST)
+Received: from kwepemr200004.china.huawei.com (unknown [7.202.195.241])
+	by mail.maildlp.com (Postfix) with ESMTPS id BA9364056C;
+	Mon,  1 Jun 2026 10:04:19 +0800 (CST)
+Received: from [10.67.121.62] (10.67.121.62) by kwepemr200004.china.huawei.com
+ (7.202.195.241) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1544.11; Mon, 1 Jun
- 2026 10:03:18 +0800
-Message-ID: <ceb7d509-39d1-4d80-91a0-e129d0c2ce7b@hisilicon.com>
-Date: Mon, 1 Jun 2026 10:03:17 +0800
+ 2026 10:04:18 +0800
+Message-ID: <2712839c-fb9b-4717-a36f-a0f922115be8@huawei.com>
+Date: Mon, 1 Jun 2026 10:04:18 +0800
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -33,114 +42,104 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v3 4/4] devfreq: Refcount governor modules while in use
-To: "zhenglifeng (A)" <zhenglifeng1@huawei.com>, <cwchoi00@gmail.com>,
-	<cw00.choi@samsung.com>, <myungjoo.ham@samsung.com>,
-	<kyungmin.park@samsung.com>, <linux-pm@vger.kernel.org>,
-	<linux-arm-kernel@lists.infradead.org>
-CC: <linuxarm@huawei.com>, <tianyaxiong@kylinos.cn>,
-	<zhangpengjie2@huawei.com>, <lihuisong@huawei.com>,
-	<prime.zeng@hisilicon.com>
-References: <20260519113251.3745140-1-zhanjie9@hisilicon.com>
- <20260519113251.3745140-5-zhanjie9@hisilicon.com>
- <5e503177-95e6-460a-b6b8-39f725da34a8@huawei.com>
-Content-Language: en-US
-From: Jie Zhan <zhanjie9@hisilicon.com>
-In-Reply-To: <5e503177-95e6-460a-b6b8-39f725da34a8@huawei.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-X-ClientProxiedBy: kwepems500001.china.huawei.com (7.221.188.70) To
- kwepemf200017.china.huawei.com (7.202.181.10)
+Subject: Re: [PATCH] cpufreq: Documentation: fix freq_step description
+To: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>, <rafael@kernel.org>,
+	<viresh.kumar@linaro.org>, <corbet@lwn.net>, <skhan@linuxfoundation.org>
+CC: <linux-pm@vger.kernel.org>, <linux-doc@vger.kernel.org>,
+	<linux-kernel@vger.kernel.org>, <zhanjie9@hisilicon.com>,
+	<prime.zeng@hisilicon.com>, <wanghuiqiang@huawei.com>, <xuwei5@huawei.com>,
+	<lihuisong@huawei.com>, <zhenglifeng1@huawei.com>, <yubowen8@huawei.com>,
+	<wangzhi12@huawei.com>
+References: <20260529111122.3321645-1-zhangpengjie2@huawei.com>
+ <f598e862-8120-4922-9d04-6e3729187420@oss.qualcomm.com>
+From: Pengjie Zhang <zhangpengjie2@huawei.com>
+In-Reply-To: <f598e862-8120-4922-9d04-6e3729187420@oss.qualcomm.com>
+Content-Type: text/plain; charset="UTF-8"; format=flowed
+Content-Transfer-Encoding: 8bit
+X-ClientProxiedBy: kwepems200001.china.huawei.com (7.221.188.67) To
+ kwepemr200004.china.huawei.com (7.202.195.241)
 
 
+On 5/30/2026 10:36 PM, Zhongqiu Han wrote:
+> On 5/29/2026 7:11 PM, Pengjie Zhang wrote:
+>> The conservative governor documentation incorrectly states that setting
+>> freq_step to 0 will use the default 5% frequency step. In reality, since
+>> the governor's initial implementation
+>> commit b9170836d1aa ("[CPUFREQ] Conservative cpufreq governer"),
+>> freq_step=0 has always caused the governor to skip frequency updates
+>> entirely.
+>
+> Hi Pengjie,
+>
+> Thanks for the patch.
+>
+> The documentation fix looks correct: in the current code,
+> cs_dbs_update() has an early goto out when freq_step == 0, which skips
+> the call to get_freq_step() and all subsequent frequency change logic.
+>
+> However, the commit message's historical claim appears to be inaccurate.
+> In the original implementation (b9170836d1aa), freq_step=0 had
+> asymmetric behavior: frequency decreases were skipped (early return),
+> but frequency increases still used the hardcoded 5% fallback (freq_step
+> = 5 after the unlikely(freq_step == 0) check).
+>
+> If so, would it make sense to remove/update the historical claim to
+> avoid the incorrect historical claim?
+>
+Thanks for the careful review.
 
-On 5/21/2026 4:13 PM, zhenglifeng (A) wrote:
-> On 5/19/2026 7:32 PM, Jie Zhan wrote:
->> A governor module can be inserted or removed dynamically when built as a
->> kernel module.  'devfreq->governor' would become NULL if the governor
->> module is removed when it's in use.
+Agreed. The correct commit for the symmetric freq_step=0 behavior
+should be 8e677ce83bf4 ("[CPUFREQ] conservative: fixup governor to
+function more like ondemand logic"), not b9170836d1aa.
+
+I'll fix the commit message in v2.
+
+On a related note, I have a quick question regarding code readability in
+this area. Currently, the code uses the name "freq_step" for two different
+concepts:
+
+1. `cs_tuners->freq_step`: The tunable exposed via sysfs/documentation,
+    which represents a percentage.
+2. `freq_step = get_freq_step(...)`: The local variable representing the
+    actual calculated frequency step (in kHz). The `if 
+(unlikely(freq_step == 0))`
+    check also applies to this absolute value.
+
+Since mixing a percentage and an absolute kHz value under the same name
+might be slightly confusing for readers, would it make sense to rename the
+local variable (e.g., to `freq_step_khz`) to clearly distinguish the two?
+
+Cheers,
+     Pengjie
+
 >>
->> Add a refcount mechanism for governor modules to prevent the governor
->> module from being removed (except for force unload):
->> 1. Add an optional 'owner' member to struct devfreq_governor so the devfreq
->>    core can identify the module that holds the governor code.
->> 2. Get and put a refcount of the governor module when starting and stopping
->>    the governor.
+>> Correct the documentation to reflect the actual behavior: freq_step=0
+>> disables frequency changes by the governor entirely.
 >>
->> The new 'owner' field is optional:
->> - Common governor modules (performance, powersave, simple_ondemand,
->>   userspace, passive) set 'owner' to THIS_MODULE.
->> - Governors that are bundled into a device driver module must leave 'owner'
->>   NULL.  The device's lifetime already pins that module, and setting
->>   'owner' would create a self-reference that blocks the driver from being
->>   unloaded.
->>
->> As a result, a non-forced rmmod of an in-use stand-alone governor now
->> fails with -EBUSY, e.g.:
->>
->>   $ cat governor
->>   performance
->>   $ rmmod governor_performance
->>   rmmod: ERROR: Module governor_performance is in use
->>
->> Force unloads (rmmod -f, if configured) can't be blocked.
->>
->> Signed-off-by: Jie Zhan <zhanjie9@hisilicon.com>
+>> Fixes: 2a0e49279850 ("cpufreq: User/admin documentation update and 
+>> consolidation")
+>> Signed-off-by: Pengjie Zhang <zhangpengjie2@huawei.com>
 >> ---
->>  drivers/devfreq/devfreq.c                 | 17 ++++++++++++++++-
->>  drivers/devfreq/governor_passive.c        |  1 +
->>  drivers/devfreq/governor_performance.c    |  1 +
->>  drivers/devfreq/governor_powersave.c      |  1 +
->>  drivers/devfreq/governor_simpleondemand.c |  1 +
->>  drivers/devfreq/governor_userspace.c      |  1 +
->>  include/linux/devfreq-governor.h          | 11 +++++++++++
->>  7 files changed, 32 insertions(+), 1 deletion(-)
+>>   Documentation/admin-guide/pm/cpufreq.rst | 4 ++--
+>>   1 file changed, 2 insertions(+), 2 deletions(-)
 >>
->> diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
->> index 9e3e6a7348f8..1cee43636ded 100644
->> --- a/drivers/devfreq/devfreq.c
->> +++ b/drivers/devfreq/devfreq.c
->> @@ -345,24 +345,37 @@ static int devfreq_set_governor(struct devfreq *df,
->>  				 __func__, df->governor->name, ret);
->>  			return ret;
->>  		}
->> +		module_put(old_gov->owner);
->>  	}
->>  
->>  	/* Start the new governor */
->> +	if (!try_module_get(new_gov->owner)) {
->> +		df->governor = NULL;
-> 
-> Shouldn't the old governor be restored here?
-> 
-Yeah.  Perhaps we just move try_module_get() before stopping the old
-governor so as to avoid another hunk of restoring governor.
->> +		return -EINVAL;
->> +	}
->> +
->>  	df->governor = new_gov;
->>  	ret = df->governor->event_handler(df, DEVFREQ_GOV_START, NULL);
->>  	if (ret) {
->>  		dev_warn(dev, "%s: Governor %s not started(%d)\n",
->>  			 __func__, df->governor->name, ret);
->> +		module_put(new_gov->owner);
->>  
->>  		/* Restore previous governor */
->>  		df->governor = old_gov;
->>  		if (!df->governor)
->>  			return ret;
->>  
->> +		if (!try_module_get(old_gov->owner)) {
->> +			df->governor = NULL;
->> +			return -EINVAL;
->> +		}
->> +
->>  		ret = df->governor->event_handler(df, DEVFREQ_GOV_START, NULL);
->>  		if (ret) {
->>  			dev_err(dev, "%s: restore Governor %s failed (%d)\n",
->>  				__func__, df->governor->name, ret);
->> +			module_put(old_gov->owner);
->>  			df->governor = NULL;
->>  			return ret;
->>  		}
-[ ... ]
+>> diff --git a/Documentation/admin-guide/pm/cpufreq.rst 
+>> b/Documentation/admin-guide/pm/cpufreq.rst
+>> index dbe6d23a5d67..98c724d49047 100644
+>> --- a/Documentation/admin-guide/pm/cpufreq.rst
+>> +++ b/Documentation/admin-guide/pm/cpufreq.rst
+>> @@ -586,8 +586,8 @@ This governor exposes the following tunables:
+>>       100 (5 by default).
+>>         This is how much the frequency is allowed to change in one 
+>> go.  Setting
+>> -    it to 0 will cause the default frequency step (5 percent) to be 
+>> used
+>> -    and setting it to 100 effectively causes the governor to 
+>> periodically
+>> +    it to 0 disables frequency changes by the governor entirely and 
+>> setting
+>> +    it to 100 effectively causes the governor to periodically
+>>       switch the frequency between the ``scaling_min_freq`` and
+>>       ``scaling_max_freq`` policy limits.
+>
+>
