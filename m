@@ -1,135 +1,96 @@
-Received: from casper.infradead.org (casper.infradead.org [90.155.50.34])
+Received: from sender4-pp-f112.zoho.com (sender4-pp-f112.zoho.com [136.143.188.112])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0CEA337E30F;
-	Mon,  1 Jun 2026 20:24:21 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=90.155.50.34
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1780345463; cv=none; b=JO064iHtiRGhJk9CJ4YVy46rjntTacS25eTJ07t9K8lFea9Zul7ipvEaYd3kc1mNZSou95kS2n6JrECnIp28EFG7gy1OylAKMmcpcmQzmnWe+A/l/mD8j212K/AFIp6LcF6k6loDmeBIe6J7XfrRI0sbkZzG19SSZ/YrW3BvIQk=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1780345463; c=relaxed/simple;
-	bh=l3dLCfo8STCCjPr/FqdtQ/3GS1wUw1HahkL+2RftIZg=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=UKPrEQh6Hps01Kb1Y3KPK/oWFn31YcWM9+QDtgSb9mSjBJ1PNpVBSf7I/+diJFqLeJ8hN4t9rehpbW+p8R3slESZqltvauOcgj3SYTlPnXHJSnqjStNlCx+FNG7vVkVdnBSYlDCvy9QStDile0PiVm+V09+876wSH+sMVXiveYg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=infradead.org; spf=pass smtp.mailfrom=infradead.org; dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b=JD/rgItE; arc=none smtp.client-ip=90.155.50.34
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=infradead.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=infradead.org
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9F2AC364053;
+	Mon,  1 Jun 2026 21:15:15 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=136.143.188.112
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1780348516; cv=pass; b=SIaMBjcsQYhUomj9Wou0UVcxYE3GaMmpFrNJYgTdFKSvkeHpBu+4UnGX/TI14buTLBt/qpX4mJdkvkHyqki+6g8e92OZ+c5V0HxsHK+nC7z57EB/6b74nK8GvLZ6Addp+z+h/SeJBXXTARAa7FCG1qXb52iPE49AxP1yhsVCVhA=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1780348516; c=relaxed/simple;
+	bh=1YmWwssirbv9+peH+97cCiUxcb3gbZhvjvTlKrrkMHU=;
+	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
+	 Content-Type:MIME-Version; b=cFGU+dJ6Lr2ZpzKo6Fw+z38GKNtLFU2vZ5rxWscuGnTgCobD4gKKnkBTRynIEo/+0Rilw5427Jx9ayumJE6G6V05mHUxtt2KwB6el4OKmcvSz5yMcUVcy03mLmOWU1lbnBUwwt3gd4VCnt6Ok4jNVVO/8Z+CWTXOeoJOfKNvBVk=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (1024-bit key) header.d=collabora.com header.i=nfraprado@collabora.com header.b=L7mRp1FH; arc=pass smtp.client-ip=136.143.188.112
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="JD/rgItE"
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=infradead.org; s=casper.20170209; h=In-Reply-To:Content-Type:MIME-Version:
-	References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
-	Content-Transfer-Encoding:Content-ID:Content-Description;
-	bh=6/5W0G6Gs1Q9GB3IxcldPERQvThA7tz7U249bqa4a9U=; b=JD/rgItEItTF3waKZU0fyhZfOO
-	p6KhOF2dIKsWbBlXDH6Szda6v6pwxYE0KSLQ6p9Jvu4aC0kMd1Jp91bHbXXGW1JY4kLAuzDZFSXs9
-	P7bQk5/xrqJRa6GrGWdxnMhnM9cOr/Mh7DhOreUlDgBnF2TcRdtGfQbRd9WsBVDwHFqfKKNmW2p+o
-	Eq81r5ZCto6v0j62Ti/4LX0nmYsBAqhcbZ6JenvK3VL8pcuJJabuzAf2wJL1ohACsCSDs/sp5+nbD
-	m2tuZulS6JhmLQAZ2oWemvoJrOfuaHp1Sctzmp2YTWfFeramTBO8sylg/IQVtL1hc2i3NQH4Kt9qQ
-	+ovW+CfA==;
-Received: from willy by casper.infradead.org with local (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wU9Av-00000000iHG-2DOC;
-	Mon, 01 Jun 2026 20:23:53 +0000
-Date: Mon, 1 Jun 2026 21:23:53 +0100
-From: Matthew Wilcox <willy@infradead.org>
-To: David Laight <david.laight.linux@gmail.com>
-Cc: Kees Cook <kees@kernel.org>, Luis Chamberlain <mcgrof@kernel.org>,
-	Pengpeng Hou <pengpeng@iscas.ac.cn>, stable@vger.kernel.org,
-	Petr Pavlu <petr.pavlu@suse.com>,
-	Richard Weinberger <richard@nod.at>,
-	Anton Ivanov <anton.ivanov@cambridgegreys.com>,
-	Johannes Berg <johannes@sipsolutions.net>,
-	"Rafael J. Wysocki" <rafael@kernel.org>,
-	Len Brown <lenb@kernel.org>, Corey Minyard <corey@minyard.net>,
-	Gabriel Somlo <somlo@cmu.edu>,
-	"Michael S. Tsirkin" <mst@redhat.com>,
-	Jani Nikula <jani.nikula@linux.intel.com>,
-	Joonas Lahtinen <joonas.lahtinen@linux.intel.com>,
-	Rodrigo Vivi <rodrigo.vivi@intel.com>,
-	Tvrtko Ursulin <tursulin@ursulin.net>,
-	David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>,
-	Bart Van Assche <bvanassche@acm.org>,
-	Jason Gunthorpe <jgg@ziepe.ca>, Leon Romanovsky <leon@kernel.org>,
-	Laurent Pinchart <laurent.pinchart@ideasonboard.com>,
-	Hans de Goede <hansg@kernel.org>,
-	Mauro Carvalho Chehab <mchehab@kernel.org>,
-	Bjorn Helgaas <bhelgaas@google.com>, Hannes Reinecke <hare@suse.de>,
-	"James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>,
-	"Martin K. Petersen" <martin.petersen@oracle.com>,
-	Daniel Lezcano <daniel.lezcano@kernel.org>,
-	Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>,
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	Jiri Slaby <jirislaby@kernel.org>,
-	Alan Stern <stern@rowland.harvard.edu>,
-	Jason Wang <jasowang@redhat.com>,
-	Xuan Zhuo <xuanzhuo@linux.alibaba.com>,
-	Eugenio =?iso-8859-1?Q?P=E9rez?= <eperezma@redhat.com>,
-	Jason Baron <jbaron@akamai.com>, Jim Cromie <jim.cromie@gmail.com>,
-	Tiwei Bie <tiwei.btw@antgroup.com>,
-	Benjamin Berg <benjamin.berg@intel.com>,
-	Ilpo =?iso-8859-1?Q?J=E4rvinen?= <ilpo.jarvinen@linux.intel.com>,
-	"David E. Box" <david.e.box@linux.intel.com>,
-	"Maciej W. Rozycki" <macro@orcam.me.uk>,
-	Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
-	Peter Zijlstra <peterz@infradead.org>,
-	Heiko Carstens <hca@linux.ibm.com>,
-	Vasily Gorbik <gor@linux.ibm.com>,
-	Sean Christopherson <seanjc@google.com>,
-	Paolo Bonzini <pbonzini@redhat.com>,
-	Thomas Gleixner <tglx@kernel.org>, Ingo Molnar <mingo@redhat.com>,
-	Borislav Petkov <bp@alien8.de>,
-	Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org,
-	"H. Peter Anvin" <hpa@zytor.com>, Vinod Koul <vkoul@kernel.org>,
-	Frank Li <Frank.Li@kernel.org>, Daniel Gomez <da.gomez@kernel.org>,
-	Sami Tolvanen <samitolvanen@google.com>,
-	Aaron Tomlin <atomlin@atomlin.com>,
-	Alexander Potapenko <glider@google.com>,
-	Marco Elver <elver@google.com>, Dmitry Vyukov <dvyukov@google.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	John Johansen <john.johansen@canonical.com>,
-	Paul Moore <paul@paul-moore.com>, James Morris <jmorris@namei.org>,
-	"Serge E. Hallyn" <serge@hallyn.com>,
-	Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
-	Georgia Garcia <georgia.garcia@canonical.com>, kvm@vger.kernel.org,
-	dmaengine@vger.kernel.org, linux-modules@vger.kernel.org,
-	kasan-dev@googlegroups.com, linux-mm@kvack.org,
-	apparmor@lists.ubuntu.com, linux-security-module@vger.kernel.org,
-	linux-um@lists.infradead.org, linux-acpi@vger.kernel.org,
-	openipmi-developer@lists.sourceforge.net, qemu-devel@nongnu.org,
-	intel-gfx@lists.freedesktop.org, dri-devel@lists.freedesktop.org,
-	linux-rdma@vger.kernel.org, linux-media@vger.kernel.org,
-	linux-pci@vger.kernel.org, linux-scsi@vger.kernel.org,
-	linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-	linux-serial@vger.kernel.org, linux-usb@vger.kernel.org,
-	usb-storage@lists.one-eyed-alien.net,
-	virtualization@lists.linux.dev, linux-kernel@vger.kernel.org,
-	linux-arch@vger.kernel.org, netdev@vger.kernel.org,
-	linux-fsdevel@vger.kernel.org, linux-hardening@vger.kernel.org
-Subject: Re: [PATCH 01/11] params: bound array element output to the caller's
- page buffer
-Message-ID: <ah3qWZ4cqhrbHZcl@casper.infradead.org>
-References: <20260521133315.work.845-kees@kernel.org>
- <20260521133326.2465264-1-kees@kernel.org>
- <20260521174631.71a06440@pumpkin>
+	dkim=pass (1024-bit key) header.d=collabora.com header.i=nfraprado@collabora.com header.b="L7mRp1FH"
+ARC-Seal: i=1; a=rsa-sha256; t=1780348505; cv=none; 
+	d=zohomail.com; s=zohoarc; 
+	b=m3DfVrcaBofCJ3tIVniUoAsY9bRyA9sqv6s5PXQ2+EElXgUXeid8bJcotyPgpfpD2WInnIGIiVO07kFxnD73djMgmscLTtlKDonleVeoUDwvszkENXniPzVwW7aekP3kRSdZnM3qGpVP6WTd/aGlzUWnC/bPsNL0UEjRB0Tjn0w=
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=zohomail.com; s=zohoarc; 
+	t=1780348505; h=Content-Type:Content-Transfer-Encoding:Cc:Cc:Date:Date:From:From:In-Reply-To:MIME-Version:Message-ID:References:Subject:Subject:To:To:Message-Id:Reply-To; 
+	bh=1YmWwssirbv9+peH+97cCiUxcb3gbZhvjvTlKrrkMHU=; 
+	b=VmviOeR8DMghDfXxd+qop3uw/0a71iyaWC1zvRulj/ZQ1raRL/8eiwelEjT+PYYWrjO8gHT9b6KyWZcyoW6B2wd8hk270CwDysBwtHhUS+FeAkdy5xrDcd/69hQAqxBTsZnaYAbMVJc6pyj75H1n6YjE6H0wRjry3ZLZGGnD/Uw=
+ARC-Authentication-Results: i=1; mx.zohomail.com;
+	dkim=pass  header.i=collabora.com;
+	spf=pass  smtp.mailfrom=nfraprado@collabora.com;
+	dmarc=pass header.from=<nfraprado@collabora.com>
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; t=1780348505;
+	s=zohomail; d=collabora.com; i=nfraprado@collabora.com;
+	h=Message-ID:Subject:Subject:From:From:To:To:Cc:Cc:Date:Date:In-Reply-To:References:Content-Type:Content-Transfer-Encoding:MIME-Version:Message-Id:Reply-To;
+	bh=1YmWwssirbv9+peH+97cCiUxcb3gbZhvjvTlKrrkMHU=;
+	b=L7mRp1FHs2a56cJmNUWqOP3wDSzrVLZjSazSALCNp3qXkik1fBkY/MbHsFv3GWie
+	6vF/LixexP2c6G9NYkizW2Ai3LsgOnTEgkryCk0ehlhn9RCvSlVtJRO4rROJdk+97/z
+	9CX/wpA+h3pnGYIUIW7PovO6kAF2xjVM5H9SPNGQ=
+Received: by mx.zohomail.com with SMTPS id 1780348503708253.203249140945;
+	Mon, 1 Jun 2026 14:15:03 -0700 (PDT)
+Message-ID: <cf747f90a7ba3a26dd84e572ec1152cae48d9b4b.camel@collabora.com>
+Subject: Re: [PATCH 1/3] PM: hibernate: Print speed statistics of
+ copy_data_pages()
+From: =?ISO-8859-1?Q?N=EDcolas?= "F. R. A. Prado" <nfraprado@collabora.com>
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Len Brown <lenb@kernel.org>, Pavel Machek <pavel@kernel.org>, Brian
+ Geffon	 <bgeffon@google.com>, kernel@collabora.com,
+ linux-pm@vger.kernel.org, 	linux-kernel@vger.kernel.org
+Date: Mon, 01 Jun 2026 17:15:02 -0400
+In-Reply-To: <CAJZ5v0i4nsD8NJr_M_W8_rk2DM_0HBE-jnDyJe2zV+qdeK7UOQ@mail.gmail.com>
+References: 
+	<20260518-hibernation-decrease-time-in-copy-data-pages-v1-0-3998bdf90ee5@collabora.com>
+	 <20260518-hibernation-decrease-time-in-copy-data-pages-v1-1-3998bdf90ee5@collabora.com>
+	 <CAJZ5v0i4nsD8NJr_M_W8_rk2DM_0HBE-jnDyJe2zV+qdeK7UOQ@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+User-Agent: Evolution 3.56.2-9 
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260521174631.71a06440@pumpkin>
+X-ZohoMailClient: External
 
-On Thu, May 21, 2026 at 05:46:31PM +0100, David Laight wrote:
-> On Thu, 21 May 2026 06:33:14 -0700
-> Kees Cook <kees@kernel.org> wrote:
-> > Collect each element into a temporary PAGE_SIZE buffer first and then
-> > copy only the remaining space into the caller's page buffer.
-> 
-> Should this be using a 4k buffer on all architectures?
-> Initially perhaps just using a different name for the constant until
-> all the associated PAGE_SIZE limits have been removed.
+On Tue, 2026-05-26 at 13:25 +0200, Rafael J. Wysocki wrote:
+> On Mon, May 18, 2026 at 11:34=E2=80=AFPM N=C3=ADcolas F. R. A. Prado
+> <nfraprado@collabora.com> wrote:
+> >=20
+> > copy_data_pages() can take a long (multi-second) time to finish,
+> > and
+> > currently the only indication of that is the timestamp difference
+> > between print messages right before and right after. The timestamp
+> > is
+> > also immediately reset afterwards to the time before image
+> > creation,
+> > making it even harder to spot this delay. And this function runs in
+> > a
+> > critical section with a single CPU online and syscore suspended, so
+> > it
+> > should be kept as quick as possible to keep the system responsive.
+> >=20
+> > Call into swsusp_show_speed() to report the amount of data, time
+> > taken,
+> > and copy speed of copy_data_pages() to make it easier to spot
+> > delays and
+> > verify performance improvements. The current time is obtained
+> > through
+> > sched_clock() instead of ktime_get() since timekeeping is suspended
+> > in
+> > this region.
+>=20
+> Why not use local_clock() for this?
 
-If we're acually going to think about this, even 4KiB is too big.
-An 80x25 terminal is 2000 bytes (assuming no utf8), so 4KiB is two
-entire screenfuls.  Limiting to 2048 would seem reasonable to me.
+No particular reason. I'll switch to it for the next version.
+
+Thanks,
+N=C3=ADcolas
