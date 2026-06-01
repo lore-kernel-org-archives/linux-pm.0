@@ -1,276 +1,388 @@
-Received: from CH4PR04CU002.outbound.protection.outlook.com (mail-northcentralusazon11013002.outbound.protection.outlook.com [40.107.201.2])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-wr1-f44.google.com (mail-wr1-f44.google.com [209.85.221.44])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 01F4B3E171F;
-	Mon,  1 Jun 2026 18:01:57 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.107.201.2
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D9EC43E277E
+	for <linux-pm@vger.kernel.org>; Mon,  1 Jun 2026 18:06:51 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.221.44
 ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1780336919; cv=fail; b=t71ZHse5arsmhK+LISeBo5LrLmC2XX4xhxfGHiuhReHulyJnoGPTkJqdPyqcFgAe2WNouTxCaNRDbVlOiLH9AGSK39avRg4pBixmH76KhM925dWvwNab0+682X4oanKh7oUTZl2YY4/frA1kkRU12ezkhRYrYky7J/X7BIGl8oE=
+	t=1780337213; cv=pass; b=SfrlP0S3x8mAKFxq1MMlkwRnd22eFWaNfNwxVUAixAnOv94YFfxwp5/hOMcPlgKqqx9svp9szHMNbRaAKw+GtIFUCaGgq/RD+aJr7smQn62o/M99SjM7HDQSrR4Fc+v+1vaELay5hYDP6k04GKgOIwrgXLNWqTTlTSBUWuINKzc=
 ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1780336919; c=relaxed/simple;
-	bh=ZBmJcot8QlUBOtpC16BzBKcQz5vxyDEYWCXdcVZe3X8=;
-	h=Message-ID:Date:Subject:To:Cc:References:From:In-Reply-To:
-	 Content-Type:MIME-Version; b=KJgSGWtiQ3WmXAZGq7vf9iSWa/gjGn9NFYP08yZsv8M0pxj4br/CHxoYoSHAYqak4a9Flzq9EoEqVVksIus36isdfUb00snVwWg52WhGzM1AawFgrJw6tM4qu/YIfV69Ld/k1W2ANDsJdpBEX7LjnqseVSWJSdLrPqKEZmf/2ig=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com; spf=fail smtp.mailfrom=nvidia.com; dkim=pass (2048-bit key) header.d=Nvidia.com header.i=@Nvidia.com header.b=javT9oRt; arc=fail smtp.client-ip=40.107.201.2
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com
-Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=nvidia.com
+	s=arc-20240116; t=1780337213; c=relaxed/simple;
+	bh=ghYY1NsDZ0jpHFccSpot/TCvl6MbOIQ0KElLf2vfeCk=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=qU//xdfcJnnRCC0BD3ebkFvMizY6uZIRG6lfn/JBp7r3kcnw74yfMsCF4XKq49pusINEdHj9sJWgBmqkTjOdTnV2Rgklxn/3OWhzk/4CkvxR2fvOEKnnO9Wiwuuzw3g4iR1BJDukXDJfsyV9kpgLlyPA/BKICZQ5tP9Q/TpJoAY=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=Q0FzUPxw; arc=pass smtp.client-ip=209.85.221.44
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=Nvidia.com header.i=@Nvidia.com header.b="javT9oRt"
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=xdYE9r2yipEAC7mJRH/U0KtRA+iZoFdNI6P2DeVZu24/X2TJkN6Z9fg6iJnglVatuOQpS7Rk1eB9xlQ2QQaLHbFg+YYg71rCHEyrcgPAZEO8KzoNNwLZxBiA0hYN6gzTcOzahnWYuB0cBP1rGGwlhTH6S1D1jwgi4AZKmaCwMc9VPziruXKA5Oy42UB1xGMeqLTurAfGNpuJWVx7QIQwwKbo34/FBeklmZ4OUULig0IudKgZW54CIFFx47vWpeugOPW13rCh3znr83wxVya0niK2Xp3qMU9R2r3ajy6qiVXQcBB6XYlLHTY0kXd117f9uhEzpaMU3TSIfhHDTYamNw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=oRIG5P6TAq1ey018jcojjqdtd/KLMSXrbwUP1413j+M=;
- b=nYtvh1boHpgUkV/NYZKALTt+B9U6HZE4txGG+GLDDuYdTxZuaK1EUGE95SsSUrYikeyBCFkZE0ZALs40kK+Pt3BlRij65RY24VFjYap4tSFs/+ORQ9zTMFDeD2XH2bw5blRRh54cDlnfCYWIWPKKc/ggHLCm8U7g5GG3Ccu9qpMG4S11eAsgf2Py0vdsPVKVg3+x/WAIRd+Pmk7gjAE7RQlFtIEzfTaGPcIrHO+Ukttm1QCL+2OWK35ejQLN9L3J+07MWJeA7jC7BlUbEVC+e85gLXYXx5YKgLSpLaYdoeC9JvRGWE3J87dgMP/CpDypdXmgTWrtm86oKb1KMediqA==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=nvidia.com; dmarc=pass action=none header.from=nvidia.com;
- dkim=pass header.d=nvidia.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
- s=selector2;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=oRIG5P6TAq1ey018jcojjqdtd/KLMSXrbwUP1413j+M=;
- b=javT9oRtF9NFU9+YQVQylRgHw46356XAOm9CoJ9g8jwqvlgjgkLR3n/nZ3/2+AvFaguB+rddcdIn0evVd9hDvCkkw+k6zWrj4/j19h7o3MohilVQ4qI03RL3M3mka1+uuYvioBRkDxwFJ9sHpiuM7eS7Id9g8calUs4rgAA4Jd6gcmdzkKX3Z9TdwtTzty/699WrYTxe76LI4MmKy6RMBM8TzuCyq77F/gyGwd8KWFkqQvG6J6RAX7IKa2gb5DgaOrBCnwDHllPztbbk2fa4CJ2vAf3tvSrahBUpPalgcve9eXjwjpAplqOVG134oTZjPp836MLS1DeD2k9aB/nqgQ==
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=nvidia.com;
-Received: from BN9PR12MB5179.namprd12.prod.outlook.com (2603:10b6:408:11c::18)
- by SJ2PR12MB8011.namprd12.prod.outlook.com (2603:10b6:a03:4c8::19) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.48.17; Mon, 1 Jun 2026
- 18:01:48 +0000
-Received: from BN9PR12MB5179.namprd12.prod.outlook.com
- ([fe80::cf08:f59b:d016:c95f]) by BN9PR12MB5179.namprd12.prod.outlook.com
- ([fe80::cf08:f59b:d016:c95f%4]) with mapi id 15.21.0071.015; Mon, 1 Jun 2026
- 18:01:48 +0000
-Message-ID: <88932964-4148-4846-a872-8dbeb845c967@nvidia.com>
-Date: Mon, 1 Jun 2026 23:31:38 +0530
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v4 1/2] ACPI: CPPC: Add support for CPPC v4
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: viresh.kumar@linaro.org, pierre.gondois@arm.com, zhenglifeng1@huawei.com,
- zhanjie9@hisilicon.com, mario.limonciello@amd.com, saket.dumbre@intel.com,
- linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
- linux-pm@vger.kernel.org, acpica-devel@lists.linux.dev, treding@nvidia.com,
- jonathanh@nvidia.com, vsethi@nvidia.com, ksitaraman@nvidia.com,
- sanjayc@nvidia.com, mochs@nvidia.com, bbasu@nvidia.com,
- Mario Limonciello <superm1@kernel.org>
-References: <20260527194626.185286-1-sumitg@nvidia.com>
- <20260527194626.185286-2-sumitg@nvidia.com>
- <CAJZ5v0jFpTeX0Vxt+Ut5nkmgueJFxHjoP-mdjdDd6jkCokn-VA@mail.gmail.com>
-Content-Language: en-US
-From: Sumit Gupta <sumitg@nvidia.com>
-In-Reply-To: <CAJZ5v0jFpTeX0Vxt+Ut5nkmgueJFxHjoP-mdjdDd6jkCokn-VA@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-ClientProxiedBy: MAXP287CA0001.INDP287.PROD.OUTLOOK.COM
- (2603:1096:a00:49::13) To BN9PR12MB5179.namprd12.prod.outlook.com
- (2603:10b6:408:11c::18)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Q0FzUPxw"
+Received: by mail-wr1-f44.google.com with SMTP id ffacd0b85a97d-45ef56d9b67so2319314f8f.2
+        for <linux-pm@vger.kernel.org>; Mon, 01 Jun 2026 11:06:51 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1780337210; cv=none;
+        d=google.com; s=arc-20240605;
+        b=QDlyhUv8U3eTMrGUbweZlQr+nisNsXPqwKebOxtzIpdb1VkQauH34HsBGd+L9+ZbK3
+         2B+rLp+iF+rP0AJlHnGvD/povGR6WGjW5bDPjsEL8rHPUUHWjFOvVWMaDTUz/G8HssTp
+         1bJK6MPAuFFAxMjuVS6P5m7Y27/NAxoeoUpxpqzrJ859QgohO2xf417tppN+0l5BQulm
+         YWXznSD5HL2EsU73KQavukzaN0VZrAKAWjSo+Q+e7hYfix9Nle5Oskth6jnaiYYcnk08
+         EBs+wEJpCV54Qb3AOyRAXJw8VTVI8qeuR0Kdm/WP9juwyT+zB8JchZesLJzPGOOJESvY
+         M54g==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=k+NcOvINeD/X7jg493pqLpYD2a6ETdaWQNv9IdTEDm4=;
+        fh=tOx2iLtvd7INpJq1+JNmfgM1R/qcFns03pWalvcwNtY=;
+        b=Js824MEwAa4rQAadUIpBOOJSg09fM1BZFL+2rYKYShHJbm4vDhAZQd3Bwq0pz3cmFL
+         +1AUT6sPW9wVsbpxk83XByEhFagC0FCZ1wXzk87mT4QnZYO8qnxVWqe2RNC2f1gaobUW
+         wQWoYts1Klg58hJLFiqYjawUy1MMY4t72MslIGwy1D8LiGOkCJyVF4hmTDPJVlIKKR2w
+         /WSoTBsSmsjy5zlMTPQJjP1y7HlDbrXs4oESMQrBmxDY5Z6wBoe9W5kEfIfhpSl68wuL
+         i7rDamXtJOryZe4h8WO98bWxvCH8YYGQ57VGzAKhXj45OHWMXcnux35H6bq9gOe/yCqG
+         TGRg==;
+        darn=vger.kernel.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1780337210; x=1780942010; darn=vger.kernel.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=k+NcOvINeD/X7jg493pqLpYD2a6ETdaWQNv9IdTEDm4=;
+        b=Q0FzUPxwzGm/zWFf7Tg8sYP3YVthlIVOEnKgBuyM+ux6CENRgaaHHcMg7poSeU8A8p
+         C5c0/hTZySmDecntt7nqrt9DWz+Eof+ukCjbhR5ykyrlXd8AEZnFaxkSTQGqBZxi3NpJ
+         WPa8uChKUhNX7QI4lvUy/D0+8FzBfJOl1O30qFTHTaqTzl2ji+CDNgR2Q7ydv/3dx0jW
+         ETV8seoMAXU5fM1W3XcIS5w6NuveuwKud9/LnEKY91Y0jzkNiuVhqtU6ge9S3qQwU7c3
+         CEQXt/JOvHukMD9pnQfEw4HfBCS3KtWt2oOGCGb07Hf1jsK9Cvig/ssf0f3kcpi8cObX
+         RxDQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1780337210; x=1780942010;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=k+NcOvINeD/X7jg493pqLpYD2a6ETdaWQNv9IdTEDm4=;
+        b=tNpIoSOLB9P1hIfLmj7BxIKSvQi8NPDagyta7nCK3+ZztQ0yuHapTx8pAZPICg0ylB
+         BBO3/LMjW5OjHeCkC3jTu5AaHxajloyXZguP+LOcwrNnJqME3wFzHimZU6R3n78HP46v
+         yZtYnOCrkngm/DryfSEV3Rl/CsFIq6zPJUP3KI81shX+k6/Qq99luIahKAqgL4/vXm27
+         NUbR1uoSMV3woTOi2DkBJSIK68++/Z5dOHfDL3CBY4IJuZeIvoebtdoeI5veWv9z4cBZ
+         0olTYk03ciyupBSTQ/5gx5L1lvks9MfKNXTTjhdF/fJgBMyu55ae6mpIwGHB2oTfFiLl
+         F/1Q==
+X-Forwarded-Encrypted: i=1; AFNElJ+7TQw0UhbIGeAI+Qa8dSwD1piAIWXtxvN3n2iJ0AoCGBDkYDw+x+D6OQdxG0TdMW7WEZwWIEFLWA==@vger.kernel.org
+X-Gm-Message-State: AOJu0YzyTN0n5Clwkoo3UKjZ8wjWkZsOXV574Lx1gzKDcveEaDEaJSf+
+	s2TVuURn3cvfG1EXBP2oYNMu/FruuXLG5AdXQe4p/ASJR8vFHuf3TOKwmqcLek2nJW75/91ElOb
+	HSiJPaWj1E0dhZzTTZjGSK8bfRfPr1s8=
+X-Gm-Gg: Acq92OHUhDzaeTMYzsclLKaIxECMpo8mDk8uQgXvVpkSIu0Ttzqkth/qMrXhIJK4Ig8
+	rEPQmEWm8CU3wlW62oKhJWtAy356GU8f2phzTHsekIPhFcIsnfNr98eiAmcQeMP9waD7K5jXdxA
+	dnlvFNNTa2cgKpreeqnSBUx7m/juF4ivKRTcARmLfgsPFY+Sjm69ZU9KDIF8unAYu4kcmdKChov
+	D7ZTlNhRM9hP4tpyVK/kVoPdTZqfzArHPfa/b2bnH/+kzZJZhn7dzDREWSClaIZnsT1IIiwekLU
+	Rgl0jA9A2RkJCWjdLMpRhmnlxHjCciH0kc5j2315GcEFAY0hMw==
+X-Received: by 2002:a5d:58f6:0:b0:45e:e50e:3bc with SMTP id
+ ffacd0b85a97d-45ef6b71573mr17744808f8f.29.1780337209883; Mon, 01 Jun 2026
+ 11:06:49 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: BN9PR12MB5179:EE_|SJ2PR12MB8011:EE_
-X-MS-Office365-Filtering-Correlation-Id: 3f9a2a86-bbf3-4f60-e09b-08dec007d989
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|366016|376014|7416014|1800799024|18002099003|22082099003|11063799006|3023799007|4143699003|56012099006;
-X-Microsoft-Antispam-Message-Info:
-	Lj4jmUgut4wiWF0qaj/VMAFFLKMvk6rEoRLsubQZMQy3VuN8zK2rJZdjOwV4jiTeHHHLsJUXrkXf42Sk5sNx6HpKcgyj3HjYyQrJ1dO9R12in/fXhyiO95hvnmnAMujFLoN4NauNw5AOqa0z/T7Gez/cbba051FGTt3N4h5+RgtR49E6RMUvmPnGMWM95FJxytXVFDm13Q9v6DqxXmtSnoyJFSvY7HC4dgruGzUWQUomjzEAVZUESFtEbjqiS5OvPovRcsZRqsiMpujQZJRLBcZmlhN3KAE3jTIe7Mc+VN93PuWtmuTu34fPEKF7R3wgPBZPyY8K2mW7rqu2XTrUE+bT5fxaxWHDjC4WakVnGkaaTAm0MvzuCMXmz/17LCM4eCMeSBtjVtCM9/SoRdohV3y9ml/uRtBU5MFVNPqojMMX86Gahi/ZWohxwd6QRfU7D2sMYXKM4qrQNbRibA+EcBKtUmzE2O+ZEKX6ARMQdmMTXA0PvNkA+XvUVF0piBAw7oO0hcLIToPi/rHB4HftKhqOY0J9XVXQkYh/6+jT1AMZ7KCJm4Oequqkav1nM3cTldaYDzZRbGw56W8k/GIXzeANpdKOPQQZVIBIzbaLMj7SBF9AugShNEhl2cxNsoG0icTV0ysxwdSKhN1K6YB8eZDYlC8n2FZ7ObZirhp2HQftl0VqB7erGubb3JqsrWAb
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:BN9PR12MB5179.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(376014)(7416014)(1800799024)(18002099003)(22082099003)(11063799006)(3023799007)(4143699003)(56012099006);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?utf-8?B?cEhKek1ueE9uMGltVWo3K3ZKd3RRb3gwMDNwQzN2QklWVThOSCtNL2QwOURp?=
- =?utf-8?B?MzRSUkxzUXRLVWFSZ1BiQVg0cEVwbnBydThpS3dFRHA3czB5T2lOUkpVd01u?=
- =?utf-8?B?WVB3anZQMjRzN1hrSzdWbW5wTVNCTHV0UHNnWG42NUxoTjBTRktwbkpOL1Vr?=
- =?utf-8?B?ZDdtVGNBMGt1N1dyNFRBRk5aSGVNM1UraUZka013K1BqdFQzNGV3c3VQdHJD?=
- =?utf-8?B?dkRXOU1hZytUTVJodFlGZG9KSnorbTYyRk5ObUcwVkJtdGNSdDVEV2VJdmRF?=
- =?utf-8?B?RUx2MTg4ZWlWNnYxdnRrTEJuaU9RL0w3ZmxvM1lYUUZ0Wk43NHc0Z0d3dTBp?=
- =?utf-8?B?UWNKSkRwdFdublFhRmgraDMwNGJ2TkcrRU9xZ09rejZvY24xNkQzc0Y5WkRm?=
- =?utf-8?B?SExRM1Faa050WjI4amRXWTRsV1hVMWI0dm0xWnhtWHF2bE9GbU1ER1FpanlQ?=
- =?utf-8?B?bjBvTWd3eEQ4b2kxZmhKQ1d6aGp4aHVWVUoySm9Hd215M0hCRWdMMEN1eEF4?=
- =?utf-8?B?U2R0bENVWTIxNG9RSmk1SWp1NHptSitKNUpFWTdEc1hrY3dwcTRUTFdGdnMv?=
- =?utf-8?B?ZDNzWjR3aFJISEM2ZTdxS3hCUWFmdjlxN3VFRm9aak0ybDBFaG5DQmVkblVO?=
- =?utf-8?B?T3VLMnFJY0Y3c1J2MTZ2WGR6dGhuSGRQMk1vdzR2b0NObjJXejNheG9iSy9Y?=
- =?utf-8?B?d0hTYzhCcG9qbTErWHdUZVpzTmpWNnRmSlRQcFFudjFsY1RMMDkwVFYxWmpY?=
- =?utf-8?B?S3R0SE9tcGppQWhsQlY2YXM5OUxDMWpYUVJHb1VaVVFPdXFod2h1RmNXamUz?=
- =?utf-8?B?aFdWNWxoUWpmMWRzdVNwaTF2S2g0L0VncGRhdUpmeVZwT2RWdERSNk9jV3JH?=
- =?utf-8?B?MG9TSGJVWmozU1d5MGZJT3JraGFOOGpoOFo1enlhVDF5RTIvbXZWWHdESndO?=
- =?utf-8?B?K0dNeWVMYmFxdGtaS2xidjFVYVJvOXpHTSsvZkwvMVJmaGR6Z2RJQzI5d2Iz?=
- =?utf-8?B?MW11RXl6U1UvbjlIL04vZ2hGTit6c1l5U2VVZE1BemowcGpKWGg4emR4NEJa?=
- =?utf-8?B?aWtoRkg3aVJvdnE0ZU1ZWEUwbWhSR1pmeUozTmFzOTg4QlRqMVNJUTZUYUQy?=
- =?utf-8?B?RVIvUnV1T3RlUnJ0OHZmbWdwdUZVVFhMZUVPa0l6QlBhV25kUlJqeVZmcXJn?=
- =?utf-8?B?alhzMFJlcUtMUTNDcC9LcUNsNHRkWDV1MVRKZU9Vb21mUG5POGFGekY4V3pi?=
- =?utf-8?B?SnVINWh6aWxGQVJJbGhVc2pyOU13UWRxZUlMMENnZTF3WXJ0OGNqM3lKRUZa?=
- =?utf-8?B?ZlNmVnN3a1JDOCt3L21hb2UzeGZudklLWDNMSlFJNFl0K1NtWGJFeFBhUjJI?=
- =?utf-8?B?KzlYRlRFT0lwTWs5YWJwaGZ0bW00Y1labWFXd2FudFRHdHFYSm1NNkt4M2Z2?=
- =?utf-8?B?NG5SMXZLWWVHWlprTVlLZnZDTzYwSVNiUnpMbUJXdUV5Sjg5a1JaMUhWQ3JN?=
- =?utf-8?B?Mlg2RW8yczhsMkpiSmhNYzhBV2RGUmJpSElrTjkvUVZXaTdjblhLNzBENUNj?=
- =?utf-8?B?UXFZS29SdG9LY0VrcXA2aUdIbnA2OWk5ZEU4cWFaa0hPU0xrZ1I4aUFzcGhV?=
- =?utf-8?B?K0NpTXNCcEpzMU1XRHRCbmU5bkZQSjJXNDI5M2lzcG5Ibmd3ZTV6UTV3eUtZ?=
- =?utf-8?B?U2ZOV3BOZXIxWEVBVkFSbGx5QkF6TlBENnE0NWdNOGdkVDNoei9XWTBJY2E1?=
- =?utf-8?B?VXJML3p1RHNzeXNkUG5DSGNxS01WaVM5TkxUNUtDdW1xNkdLMDRUbmFIU1No?=
- =?utf-8?B?Qnd1djBrazk2akIxRHVqRVlpaitxejBtQ081cGkrT1R6MTBhZ08zUDFRNEEw?=
- =?utf-8?B?VmtIUnlxMlVuL2VkRFE1NFdFMHdiVnVkVnV5QWw1eklsTUE3aThaVEY5MSsx?=
- =?utf-8?B?dDdzQitXK0RVVXZSaXdGY2ZRS3BVczFOM3BSOURVQjFMTTR3a0lBR1pVTDR2?=
- =?utf-8?B?QkE1QlYzMXloaVZMVkhGWWlDK0lMMEN2Q0I1a1VhTUdvYW1lVHBHb2xyRzQr?=
- =?utf-8?B?cTdIRmFrcVowRmhTTFBEMWtBcUlzSUZZM2dWL0pIN0dxUCtWVG9zbjFOS09U?=
- =?utf-8?B?QWUybEV5czdhb2o5ZzE0ZnB4SVVKT2pLSGVXRFJnTmFrcHhtSHFQak94dVpT?=
- =?utf-8?B?UFRkQ2tidUo3cUFaOHV4cm5zYkFuc2oyMDc1dlQwOXN4TWFWUXhOc29adTA1?=
- =?utf-8?B?cVBrU0RjanU1SUNXWXd1UlpjbjlIZUYxY3ZkK2NGUmpRR05yNkdoaHMvNkpD?=
- =?utf-8?B?SU9sWVM0ZGZLSXlZU1R6d3hLbUdvMWY2MlZXcmk0ZThKeDI5a0swdz09?=
-X-OriginatorOrg: Nvidia.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 3f9a2a86-bbf3-4f60-e09b-08dec007d989
-X-MS-Exchange-CrossTenant-AuthSource: BN9PR12MB5179.namprd12.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 01 Jun 2026 18:01:48.4502
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: 7XaJOE8fbmhHYMNhWy2DzBwmg0rwtketftCaBni9evC0VpL0yXdU/EQYvSKP7zOFLklSOyrFyYHR9KZ/rsrzSA==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: SJ2PR12MB8011
+References: <20260528212955.1912856-1-nphamcs@gmail.com> <ahz_iYG4lqWL4g-J@KASONG-MC4>
+ <CAKEwX=PzMwXXgq=ULAkFD9UqMz+ewLqhKt+xdGxkV7OmA2QG6w@mail.gmail.com> <CAMgjq7BhOn48xEyC=2j837R7qddfjeBVHMiRqdx8no4ZEBpBLg@mail.gmail.com>
+In-Reply-To: <CAMgjq7BhOn48xEyC=2j837R7qddfjeBVHMiRqdx8no4ZEBpBLg@mail.gmail.com>
+From: Nhat Pham <nphamcs@gmail.com>
+Date: Mon, 1 Jun 2026 11:06:36 -0700
+X-Gm-Features: AVHnY4KpgrZEoyhjTsiexcEZOQjS_1bg9H_7TW6-dFwfjU3rgggaOz11SKO19Jw
+Message-ID: <CAKEwX=PmwzaJhfjBrho3+kQ8HXFUC0WiegQrsguBc-_pmn5bSA@mail.gmail.com>
+Subject: Re: [RFC PATCH 0/5] mm, swap: Virtual Swap Space (Swap Table Edition)
+To: Kairui Song <ryncsn@gmail.com>
+Cc: Liam.Howlett@oracle.com, akpm@linux-foundation.org, apopple@nvidia.com, 
+	axelrasmussen@google.com, baohua@kernel.org, baolin.wang@linux.alibaba.com, 
+	bhe@redhat.com, byungchul@sk.com, cgroups@vger.kernel.org, 
+	chengming.zhou@linux.dev, chrisl@kernel.org, corbet@lwn.net, david@kernel.org, 
+	dev.jain@arm.com, gourry@gourry.net, hannes@cmpxchg.org, hughd@google.com, 
+	jannh@google.com, joshua.hahnjy@gmail.com, lance.yang@linux.dev, 
+	lenb@kernel.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, 
+	linux-mm@kvack.org, linux-pm@vger.kernel.org, lorenzo.stoakes@oracle.com, 
+	matthew.brost@intel.com, mhocko@suse.com, muchun.song@linux.dev, 
+	npache@redhat.com, pavel@kernel.org, peterx@redhat.com, peterz@infradead.org, 
+	pfalcato@suse.de, rafael@kernel.org, rakie.kim@sk.com, 
+	roman.gushchin@linux.dev, rppt@kernel.org, ryan.roberts@arm.com, 
+	shakeel.butt@linux.dev, shikemeng@huaweicloud.com, surenb@google.com, 
+	tglx@kernel.org, vbabka@suse.cz, weixugc@google.com, 
+	ying.huang@linux.alibaba.com, yosry.ahmed@linux.dev, yuanchu@google.com, 
+	zhengqi.arch@bytedance.com, ziy@nvidia.com, kernel-team@meta.com, 
+	riel@surriel.com, haowenchao22@gmail.com
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Hi Rafael,
-
-
-On 01/06/26 23:05, Rafael J. Wysocki wrote:
-> External email: Use caution opening links or attachments
+On Mon, Jun 1, 2026 at 10:45=E2=80=AFAM Kairui Song <ryncsn@gmail.com> wrot=
+e:
 >
+> On Mon, Jun 1, 2026 at 11:57=E2=80=AFPM Nhat Pham <nphamcs@gmail.com> wro=
+te:
+> >
+> > On Mon, Jun 1, 2026 at 12:34=E2=80=AFAM Kairui Song <ryncsn@gmail.com> =
+wrote:
+> > >
+> > > For the format part, PHYS don't need that much bits I think,
+> > > so by slightly adjust the format vswap device could be share
+> > > mostly the same format with ordinary device.
+> > >
+> > > For example typical modern system don't have a address space larger
+> > > than 52 bit. (Even with full 64 bits used for addressing, shift it
+> > > by 12 we get 52). Plus 5 for type, you get 57, so you can have a
+> > > marker that should work as long as it shorter than 1000000 for PHYS,
+> > > and shared for all table format since it's not in conflict with
+> > > anything. You have also use a few extra bits so a single swap space
+> > > can be 8 times larger than RAM space, and since we can help
+> > > multiple swap type I think that should be far than enough?
+> > >
+> > > Then you have Shadow back at 001, and zero bit in shadow. The only
+> > > special one is Zswap, which will be 100 now, and that's exactly the
+> > > reserved pointer format in current swap table format, on seeing
+> > > si->flags & VSWAP && is_pointer(swp_tb) you know that's zswap :)
+> >
+> > Are you suggesting we merge the virtual table with main swap table?
+> >
+> > Man, I'd love to do this. There is a problem though - we have a case
+> > where we occupy both backing physical swap AND swap cache. Do you
+> > think we can fit both the physical swap slot handle and the swap cache
+> > PFN into the same slot in virtual table? Maybe with some expanding...?
 >
-> On Wed, May 27, 2026 at 9:47 PM Sumit Gupta <sumitg@nvidia.com> wrote:
->> CPPC v4 (ACPI 6.6, Section 8.4.6) adds two optional entries to the
->> _CPC package:
->>
->> 1. OSPM Nominal Performance (8.4.6.1.2.6): A write-only register that
->>     lets OSPM inform the platform what it considers nominal performance.
->>     The platform classifies performance above this level as boost and
->>     below as throttle for its power/thermal decisions.
->>
->> 2. Resource Priority (8.4.6.1.2.7): A Package of Resource Priority
->>     Register Descriptor sub-packages that allow OSPM to set relative
->>     priority among processors for shared resources (boost, throttle,
->>     L2/L3 cache, memory bandwidth). Parsing the full structure is not
->>     yet supported; such entries are marked as unsupported.
->>
->> Add v4 _CPC table parsing (25 entries) and update REG_OPTIONAL to
->> mark the two new registers as optional.
->>
->> Signed-off-by: Sumit Gupta <sumitg@nvidia.com>
->> Reviewed-by: Mario Limonciello (AMD) <superm1@kernel.org>
->> Reviewed-by: Pierre Gondois <pierre.gondois@arm.com>
-> This patch is good to go AFAICS, while there are still comments on the
-> second one in the series.
+> I don't really get why we would need to do that? If you put the PFN
+> info in the virtual / upper layer, then the count info, locking, and
+> all swap IO synchronization (via folio lock), dup (current protected
+> by ci lock / folio lock), and allocation (folio_alloc_swap), are all
+> handled in this layer.
 >
-> Do you want me to apply this one separately?
+> The physical / lower layer will just hold a reverse entry on
+> folio_realloc_swap, or no entry at all (no physical layer used, zswap,
+> or after swap allocation but before IO) right?
+>
+> Looking up the actual folio from the physical layer will be a bit
+> slower since it needs to resolve the reverse entry, but the only place
+> we need to do that is things like migrate, compaction (none of them
+> exist yet) which seems totally fine?
 
-Yes please. Patch 1 is independent of patch 2.
-I will send patch 2 separately as a v5 after addressing the
-review comments.
+All of this is correct, but consider swaping in a vswap entry backed
+by pswap. There are cases where you still want to maintain the pswap
+slots around backing vswap entry, while having the swap cache folio as
+well.
 
-Thank you,
-Sumit Gupta
+For e.g, at swap in time, we add the folio into the swap cache. First
+of all, we need to hold on to the physical swap slot for IO step. But
+even after IO succeeds, there are cases where you would still like to
+keep physical swap slots around (for e.g, to avoid swapping out again
+if the folio is only speculatively fetched).
 
+So you have to make sure we have space for both the physical swap
+slot, and the swap cache folio's PFN at the same time for each vswap
+entry. So we still need the vtable extension (well maybe the other
+approach I mentioned could work, but I'm not 100% sure).
 
 >
->> ---
->>   drivers/acpi/cppc_acpi.c | 23 +++++++++++++++++------
->>   include/acpi/cppc_acpi.h |  8 ++++++--
->>   2 files changed, 23 insertions(+), 8 deletions(-)
->>
->> diff --git a/drivers/acpi/cppc_acpi.c b/drivers/acpi/cppc_acpi.c
->> index f370be8715ae..c76cfafa3589 100644
->> --- a/drivers/acpi/cppc_acpi.c
->> +++ b/drivers/acpi/cppc_acpi.c
->> @@ -134,7 +134,7 @@ static DEFINE_PER_CPU(struct cpc_desc *, cpc_desc_ptr);
->>    * cpc_regs[] with the corresponding index. 0 means mandatory and 1
->>    * means optional.
->>    */
->> -#define REG_OPTIONAL (0x1FC7D0)
->> +#define REG_OPTIONAL (0x7FC7D0)
->>
->>   /*
->>    * Use the index of the register in per-cpu cpc_regs[] to check if
->> @@ -751,18 +751,19 @@ int acpi_cppc_processor_probe(struct acpi_processor *pr)
->>          /*
->>           * Disregard _CPC if the number of entries in the return package is not
->>           * as expected, but support future revisions being proper supersets of
->> -        * the v3 and only causing more entries to be returned by _CPC.
->> +        * the v4 and only causing more entries to be returned by _CPC.
->>           */
->>          if ((cpc_rev == CPPC_V2_REV && num_ent != CPPC_V2_NUM_ENT) ||
->>              (cpc_rev == CPPC_V3_REV && num_ent != CPPC_V3_NUM_ENT) ||
->> -           (cpc_rev > CPPC_V3_REV && num_ent <= CPPC_V3_NUM_ENT)) {
->> +           (cpc_rev == CPPC_V4_REV && num_ent != CPPC_V4_NUM_ENT) ||
->> +           (cpc_rev > CPPC_V4_REV && num_ent <= CPPC_V4_NUM_ENT)) {
->>                  pr_debug("Unexpected number of _CPC return package entries (%d) for CPU:%d\n",
->>                           num_ent, pr->id);
->>                  goto out_free;
->>          }
->> -       if (cpc_rev > CPPC_V3_REV) {
->> -               num_ent = CPPC_V3_NUM_ENT;
->> -               cpc_rev = CPPC_V3_REV;
->> +       if (cpc_rev > CPPC_V4_REV) {
->> +               num_ent = CPPC_V4_NUM_ENT;
->> +               cpc_rev = CPPC_V4_REV;
->>          }
->>
->>          cpc_ptr->num_entries = num_ent;
->> @@ -845,6 +846,16 @@ int acpi_cppc_processor_probe(struct acpi_processor *pr)
->>
->>                          cpc_ptr->cpc_regs[i-2].type = ACPI_TYPE_BUFFER;
->>                          memcpy(&cpc_ptr->cpc_regs[i-2].cpc_entry.reg, gas_t, sizeof(*gas_t));
->> +               } else if (cpc_obj->type == ACPI_TYPE_PACKAGE && (i - 2) == RESOURCE_PRIORITY) {
->> +                       /*
->> +                        * ACPI 6.6, s8.4.6.1.2.7 defines Resource Priority as a
->> +                        * Package of Resource Priority Register Descriptor sub-packages.
->> +                        * Parsing the full structure is not yet supported.
->> +                        * Mark the register as unsupported for now.
->> +                        */
->> +                       pr_debug("CPU:%d Resource Priority not supported\n", pr->id);
->> +                       cpc_ptr->cpc_regs[i-2].type = ACPI_TYPE_INTEGER;
->> +                       cpc_ptr->cpc_regs[i-2].cpc_entry.int_value = 0;
->>                  } else {
->>                          pr_debug("Invalid entry type (%d) in _CPC for CPU:%d\n",
->>                                   i, pr->id);
->> diff --git a/include/acpi/cppc_acpi.h b/include/acpi/cppc_acpi.h
->> index ee8352830c32..9b18fb9aab7c 100644
->> --- a/include/acpi/cppc_acpi.h
->> +++ b/include/acpi/cppc_acpi.h
->> @@ -17,16 +17,18 @@
->>   #include <acpi/pcc.h>
->>   #include <acpi/processor.h>
->>
->> -/* CPPCv2 and CPPCv3 support */
->> +/* CPPCv2, CPPCv3 and CPPCv4 support */
->>   #define CPPC_V2_REV    2
->>   #define CPPC_V3_REV    3
->> +#define CPPC_V4_REV    4
->>   #define CPPC_V2_NUM_ENT        21
->>   #define CPPC_V3_NUM_ENT        23
->> +#define CPPC_V4_NUM_ENT        25
->>
->>   #define PCC_CMD_COMPLETE_MASK  (1 << 0)
->>   #define PCC_ERROR_MASK         (1 << 2)
->>
->> -#define MAX_CPC_REG_ENT 21
->> +#define MAX_CPC_REG_ENT 23
->>
->>   /* CPPC specific PCC commands. */
->>   #define        CMD_READ 0
->> @@ -110,6 +112,8 @@ enum cppc_regs {
->>          REFERENCE_PERF,
->>          LOWEST_FREQ,
->>          NOMINAL_FREQ,
->> +       OSPM_NOMINAL_PERF,
->> +       RESOURCE_PRIORITY,
->>   };
->>
->>   /*
->> --
->> 2.34.1
->>
+> > > This could be imporved by per-si percpu cluster. Both YoungJun's
+> > > tiering and Baoquan's previous swap ops mentioned this is needed,
+> > > and now vswap also need that. If the vswap is also a si, then it will
+> > > make use of this too.
+> >
+> > Yeah I made the same recommendation when I review swap tier last week:
+> >
+> > https://lore.kernel.org/all/CAKEwX=3DN2XcMHN1jatppOk6wnmz-Shab5XMtTtzgY=
+OzRvU_6YFw@mail.gmail.com/
+> >
+> > I like it, but yeah it will be complicated. That said, I think not
+> > fixing the fast path for tiering/vswap will seriously restrict their
+> > usefulness. We don't want to go back to the old swap allocator days :)
+>
+> Thanks. Not too complicated, actually our internal kernel
+> implementation still using si->percpu cluster, and use a counter for
+> the rotation and each order have a counter :P, it's a bit ugly but
+> works fine. It still serves pretty well just like the global percpu
+> cluster, YoungJun's previous per ci percpu cluster also still provides
+> the fast path, many ways to do that.
+
+Sounds like something that should be upstreamed? ;)
+
+I was concerned that you might deem the overhead too high (so I came
+up with the per-tier percpu caching), but honestly I like it a lot.
+
+>
+> >
+> > >
+> > > YoungJun posted this a few month before:
+> > > https://lore.kernel.org/linux-mm/20260131125454.3187546-5-youngjun.pa=
+rk@lge.com/
+> > >
+> > > The concern is that some locking contention could be heavier, or mayb=
+e
+> > > that's just a hypothetical problem though.
+> >
+> > I don't think it's hypothetical. At least with vswap, it's very easy
+> > to get into a state where the shared per-cpu cache gets invalidated
+> > constantly if phys swap and vswap allocation alternates (which is
+> > actually very possible under heavy memory pressure), hammering the
+> > slow paths...
+>
+> I mean if the per-cpu cache is moved to si level, then whoever enters
+> the allocation path of a si will almost always get a stable percpu
+> cache to use, even if the last used si changes.
+>
+> We might better have a more explicit per si fast path for that. The
+> plist rotation should better be done in a different (will be even
+> better if lockless) way.
+
+Exactly! That's what I'm thinking too. Basically I'm special-casing
+for vswap here, but if you're happy with generalizing this for every
+si I'm happy with it.
+
+>
+> >
+> > >
+> > > >
+> > > > - Runtime enable/disable of the vswap device. To be honest, I don't
+> > > >   know if there is a value in this. My preference is vswap can be
+> > > >   optimized to the point that any overhead is negligible. Failing t=
+hat,
+> > > >   maybe we can come up with some simple heuristics that automatical=
+ly
+> > > >   decides for users?
+> > > >
+> > > >   In this RFC, CONFIG_VSWAP=3Dy means the vswap device is always cr=
+eated at
+> > > >   boot, and CONFIG_VSWAP=3Dn means the vswap device is never create=
+d. This
+> > > >   *might* be enough just on its own.
+> > > >
+> > > >   Is a runtime knob (sysfs or sysctl) worth the complexity beyond
+> > > >   these heuristics? I'm not sure yet. Maintaining both cases
+> > >
+> > > I checked the code and I think it's not hard to do, patch 1 already
+> > > handling the meta data dynamically, everything will still just work
+> > > even if you remove vswap at runtime. The rest of patches need adaptio=
+n
+> > > but might not end up being complex, it other comments here
+> > > are considered.
+> >
+> > Yeah, it's not terribily hard to do. I'm more wondering if it's worth
+> > the effort, both for the implementer and the user :)
+> >
+> > As I said here, if we want vswap, just enable it at boot time and get
+> > a vast (but dynamic) device. We can make it optional per-cgroup
+> > through Youngjun's interface, and that would be good enough?
+> >
+> > >
+> > > For patch 2, a few routines like vswap_can_swapin_thp seems not
+> > > needed or should be moved to __swap_cache_alloc? VSWAP_FOLIO is
+> > > same as swap cache folio check, which is already covered. Same for
+> > > zero checking, and VSWAP_NONE which is same as swap count check
+> > > I think. That way we not only save a lot of code, we also no
+> > > longer need to treat vswap specially.
+> >
+> > Unfortunately, I think a lot of this complexity is still needed. Vswap
+> > adds a new layer, which means new complications :)
+> >
+> > For instance, I think you still need vswap_can_swapin_thp. It
+> > basically enforces that the backend must be something
+> > swap_read_folio() can handle. That means:
+> >
+> > 1. No zswap.
+> >
+> > 2. No mixed backend.
+>
+> If mixed backend means phys vs zero vs zswap, then we already have
+> part of that covered with the current swap cache except for the phys
+> part (zswap part seems very doable with fujunjie's work).
+> swap_cache_alloc_folio will ensure there is no mixed zerobit, it can
+> be easily extended to ensure there is no mixed zswap as well
+> (according to what I've learned from fujunjie's code). Similar logic
+> for phys detection I think.
+
+Yeah it's basically generalizing that check, and handle the case where
+we can have indirection.
+
+I mean I can open-code it, but it has to be there :) And I figure it
+might be useful to check this opportunistically (at swap_pte_batch,
+even if it's not guaranteed to be correct down the line) before we
+even attempt to allocate a large folio etc. to avoid large folio
+allocation.
+
+>
+> > > For memcg table allocation, on demand seems a good idea, and actually
+> > > we are not far from there, I tried to generalize the
+> > > alloc-then-retry-sleep-alloc in swap_alloc_table but still not generi=
+c
+> > > enough I guess.. Good new is the allocation of the table is already
+> > > kind of ondemand, just need to split the detection of these two kind
+> > > of table.
+> >
+> > I have a prototype of this, but I have not tested, so I do not want to
+> > send it out. :)
+> >
+> > TLDR is - I still want to record the memcg for vswap (just not charge
+> > it towards the counter). So we still need memcg_table at both level,
+> > generally - just not allocating until needed (basically if a physical
+> > swap slot in the cluster is directly mapped into PTE). You can kinda
+> > tell, since you pass the folio into the allocation path - with some
+> > care you can distinguish between:
+> >
+> > 1. Virtual swap, or directly maped physical swap -> need memcg_table
+> >
+> > 2. Physical swap, backing vswap -> does not memcg_table.
+> >
+> > Another alternative is you can defer this allocation until the point
+> > where you have to do the charging action. But then you have to be
+> > careful with failure handling, and need to backoff ya di da di da.
+> > Funsies.
+> >
+> > I think I did a mixed of these 2 strategies. Anyway, I'll include the
+> > patch in v2 (if folks like this approach).
+> >
+> > >
+> > > Mean while I also remember we once discussed about splitting the
+> > > accounting for vswap / physical swap? If we went that approach we
+> > > don't need to treat memcg_table specially.
+> >
+> > For the charging behavior, I already have a patch for it actually in
+> > this series (just not the dynamic allocation of the memcg_table field
+> > yet).
+> >
+> > Basically:
+> >
+> > 1. For vswap entry, not backed by phys swap: record swap memcg, hold
+> > reference to pin the memcg, but not charging towards swap.current.
+>
+> Maybe you don't need to record memcg here since folio->memcg already
+> have that info?
+>
+> I previously had a patch:
+> https://lore.kernel.org/linux-mm/20260220-swap-table-p4-v1-7-104795d19815=
+@tencent.com/
+>
+> The defers the recording of memcg, the behavior is almost identical to
+> before, but charging & recording should be cleaner and you don't need
+> to record memcg at allocation time hence maybe reduce the possibility
+> of pinning a memcg. I didn't include that in P4 just to reduce LOC,
+> maybe can be resent or included.
+
+That works-ish when the folio is sitll in swap cache, but say if it's
+vswap backed by zswap (and the swap cache folio has been reclaimed),
+you need a place to store the memcg, no?
+
+Just seems cleaner to centralize this info at vswap layer when it is
+presented, for now anyway, rather than juggling this on a per-backend
+basis.
+
+>
+> > 2. For phys swap backing vswap: charging towards swap.current, but
+> > does not record the memcg in its memcg_table, nor does it hold
+> > reference to memcg (its vswap entry holds the reference already)
+> >
+> > 2. For phys swap directly mapped to PTE: charges, records, and holds re=
+ference.
+> >
+> > The motivation here is I do not want vswap entry to shares the same
+> > limit as phys swap counter. If we think of it as "infinite" or
+> > "dynamic", it should not be capped at all, but even if it is charged,
+> > it should be something separate.
+>
+> Good to know, it's not too messy to make everything dynamic, but if
+> our ultimate goal is to account for them separately, maybe we can save
+> some effort here.
+
+It's not terrible, TBH.
