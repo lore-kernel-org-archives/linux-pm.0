@@ -1,315 +1,349 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-ed1-f50.google.com (mail-ed1-f50.google.com [209.85.208.50])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1C5363DDDAB
-	for <linux-pm@vger.kernel.org>; Mon,  1 Jun 2026 17:37:59 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1780335481; cv=none; b=mRfGOf0zum9sq+kbtqUja6IQSM4eywqQlCF4EP3nsxfM6GDDchvDghwVEcDdUyR4mucKNtTQ5Xi17/CDFXnHSUvVKT9q1gy3d2buNot1oZX4PbeV4xog/8SQ54TNOQ1sxI8JyS4vqnVtwG5+WdrvECvnjz4yZJ53yqIkU3L8/dU=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1780335481; c=relaxed/simple;
-	bh=df/amR/kLwkxsGQOJwWAM5GmaSR7m2OcK4ooa6VDoS8=;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 590633E0C70
+	for <linux-pm@vger.kernel.org>; Mon,  1 Jun 2026 17:45:12 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.208.50
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1780335914; cv=pass; b=ZOM16eY5/UB/wDYsb1suzNXE+GiZA40cOGztPPHIiRtv8ccA1P1nCRlxKqEu8OOF/u9hgHPpbiNCy663Cbw9iJNyFOPreb+d4Nk3C2gKmkBcx2uIB9zOjo6KRnaZbRmBqgc806ZEq+TQ6SO70vOssd4AW+j+6oYia/xfGZEBQmE=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1780335914; c=relaxed/simple;
+	bh=b1X1Wus+CRdmVfPWGZGamYBMPYzTklUo5EaQiNtkQw4=;
 	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=s0nL1Z4T/JQbUrIX+hp+lnUqP2hcdFTDlbyYSeVO0TXmLFt+KT+1jry68GMxau/qdW3aN/7AB+9kAQYD2xXjoHhfp0preK0ypXnlDDU22qVL3H0XTQmy2pnEjuDB+VFREV0eJiiiZK9A4urugv2Ad0HO60BKddoJD0zuXOdQVaI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=MRvdDR99; arc=none smtp.client-ip=100.103.45.18
+	 To:Cc:Content-Type; b=BgOLLbVgAo4LU+7ACSvXcnl/NIAv7fh2YT6EHEVddc2s1LO8mU4wkgQoivK9oWagfT6tV/eQNUstkovwS7HfLN5ynqL3vk63SIOxV0242Rnzrg91yBxl5O69qGcibxNc5YmYwoVBtJb03hEoQduMJH1b+2rrxIu24ZlKzg9HcaY=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=aRGaizGG; arc=pass smtp.client-ip=209.85.208.50
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="MRvdDR99"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id E64ED1F00A02
-	for <linux-pm@vger.kernel.org>; Mon,  1 Jun 2026 17:37:58 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1780335478;
-	bh=H7SFs6AciS9HtX+vO6nb06GsMw5dbSS/v2vGNC/2pa4=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc;
-	b=MRvdDR99qa8K10n7eQ5wMRfZWK21ug7MRQp0BKTdLrgSxDRNDnT0vEQ5+F+BVjsHe
-	 cjHkWEj7gYWwx5Idqp2Q5c28AuawmCJxBQanFUAdg6XCTowsOPW7WR3xtY2pM/wBvn
-	 od3bLxcJ9it/+3yNzkPRxioUtzVR405gtund/deT3qC37zZGfQvXba0Jqm/VdcFD4N
-	 qPN/JNnscgOQF5IdbLt4ElAezDGfdloLFSmLbzWQgDHwGtPx3sphGRDBICWu4vWAHA
-	 h845qV8X1CT9kSshjhZDrsB2LpMNMSm0HWrWFv+x6mjumrHEdACcE29Rlblyv8IDR/
-	 s1KtWIWPcvMaQ==
-Received: by mail-lf1-f45.google.com with SMTP id 2adb3069b0e04-5aa63628d26so1933669e87.0
-        for <linux-pm@vger.kernel.org>; Mon, 01 Jun 2026 10:37:58 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AFNElJ+kB6xOHXRnJ3ArvN27iFEQUCrIWZiaz8T6En0VMfmvZ3Vds2bwcHNbhESEPBhG8HF/XubWcmUvfw==@vger.kernel.org
-X-Gm-Message-State: AOJu0YwB3D3Nx2GsJ13oFIpnBhwRzvOA2Vg7XO5kPbxQjxVVgbk7NcrT
-	PkkTcbl3KcGbSScIW46nlxrmypvAd/s14ySdf3ioKgyWzHFeO7YI7sWx9qoEGB9Vm4W5X9feNwM
-	xjRklXjAC2JsLCryTjtWVHeOleh9RET4=
-X-Received: by 2002:a05:6512:3185:b0:5a8:8df1:61bf with SMTP id
- 2adb3069b0e04-5aa74304014mr343527e87.21.1780335477287; Mon, 01 Jun 2026
- 10:37:57 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="aRGaizGG"
+Received: by mail-ed1-f50.google.com with SMTP id 4fb4d7f45d1cf-68ced97b6eeso2436606a12.0
+        for <linux-pm@vger.kernel.org>; Mon, 01 Jun 2026 10:45:12 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1780335911; cv=none;
+        d=google.com; s=arc-20240605;
+        b=h4I4PhV/chZ5aIPtF13QYlDteEpqXpGYTZ8j9M6q4siN+g69De+QfctIPykuZ3xgXh
+         +CS7Y2yCjcEJ1eZPTmNbPf9ubtKoamXqRQeLy06CeU9RFD/+8omUuPWKU5XUdb4am2ic
+         BRYM3/XGLWnPhvQTE0HhOkJQjyLdepeJTGY3OMbOQQUpT8WZJ0gNPQy7NHwoLU3YwOMG
+         kKop151rvgqVX+qkxcfjdzgbAnBFwz3d+ZyZXdyz3L+55+2G2oJAArje/cjy9hNl8cDm
+         7ApEQTC2eFeFc1DnKb8AugITcuVh27XHnDaGtBGee2vN06Kh0kXx7yEpGrWfIvvijVsb
+         rXvQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=zdBZDiQ9N2o+gUmeLxVAthNWp/fmNi0DwM5ZWNlvs8Q=;
+        fh=a2nD/MA0GEqnjz3Q4eGR+d3dYnWt8vGZStZRlnX68jI=;
+        b=TgDUvYiJKH+KcqiA0Zji4oEjgxgMaSKuCDYCrSQI50RoE0po6ewB/s0Tt62I/vWp1W
+         5cJlq5l/SaMIC8yDnu7BXHzTtnhGX7rKcTFS/7hK2frEZ7bfNrgWCDqpSl6yDFk39Cmf
+         9oqf0Kpw4l3D3xPDTlhjcOu4IKGKZxu1aaKvkCr/N0QRu1X6wgdZ3ktTbSRnuAdpX1Gc
+         0opRb/t+juFyNzvvBu0kdaUJimfV685LtGPdNuFvG8sU42jaRGuqZxm5y4MSwv4XvT3q
+         XBAvgp5UKXqsrPgZYWyq41okwWYhqH2qaS2+IaxSPIBAVejpNfQiJxZnYUQ/igSmiAAJ
+         w9Lw==;
+        darn=vger.kernel.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1780335911; x=1780940711; darn=vger.kernel.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=zdBZDiQ9N2o+gUmeLxVAthNWp/fmNi0DwM5ZWNlvs8Q=;
+        b=aRGaizGGW9utm+OAF7/91XcRpLUQ9G6XbQCgREzwRnR63v/8HGTgZQgfGWIKZteXes
+         2cYap3JTmzWbdjWJR84reTZZE+BOL5RKTdCnDE3qRj6gVaB145rWLK2Uc7Qv3Hm9AQso
+         XqiuGT4uCMv0Mkd+zMP46saDywyscGZgS2Bsxz4rP+euAewvEopBHU55HoevmC7gXtor
+         FewybKWASpPZo5Q6dVoLnSuSE+GVnwtiCfHMDDZNta7YZMAldheQUAPW7cqwZimbtV3V
+         uMxqa0svctAZogHBRUaUDkXFi+fqEurM/eZUSMM15BW6hUSXgbnguoJJqzSRude7PMlK
+         rdoQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1780335911; x=1780940711;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=zdBZDiQ9N2o+gUmeLxVAthNWp/fmNi0DwM5ZWNlvs8Q=;
+        b=ne1JjaGzQ+VNj+UWNt8LQ6u/4dAKT3vW/okJ1tqQZHoAx4+aVr7wyYnlBGwFGgJpDu
+         xjJrcpwWLfQ59c9Y6jvejAnpVPOuums9RSq2nmwMHhWHClM70fdplBiMygEKjJaZPLUm
+         zk42bcfMRLuEyf+JUbCDuW0nrGJo0R5+QNNimHXru+nRx8Sj8mef3LOYlfjNHcd8u4CI
+         oiYaZW9Zl8o6Chlc4zza9Mp7FaPBNBgQOISEgv9myMHMl6Lfa7DQ7kqo6iNAfCZZVGTx
+         NdT45MsCAW+6WmIhyhgSIy4sbKP75xAfBiFPtk4kQjdJamA3qHqhcPNOABI9VA4fMKli
+         xgHw==
+X-Forwarded-Encrypted: i=1; AFNElJ+D3k9fpaZ+u7A9h6QnrHTjVBC+4jVAfB2T8PasqTwaljcag12XVJ5zedzfF38c3kukP7YbQio/Bg==@vger.kernel.org
+X-Gm-Message-State: AOJu0Ywlc6WvrIogdNC/xYZoQM0u2aMz8fYJbi7eHxHSVRiZ1ndFP0Vd
+	Di2poiyTL7EAZNo+PaIJqIm7tBikGppSCSMGhdVXldQTB2wz3fDy32TE4uJP+qIvzn0z1ckSEEc
+	CmdxEwzmFP2vHmp/yBXPayFoMVOnGK7c=
+X-Gm-Gg: Acq92OGYhj7QXJXndEwah3GtvmiQpUqcAMsaK6u+LcFAnpk8/eOJMgoTgNqb9OfHzKo
+	ETTP+YxDz77NMXj7E9cvPOr2WQqqRoVKMMkVU5oMK2qm7Urjvl4ULbX48ZJvI71kthoh8RqZcNi
+	XV95ecHDAuPrAEZVCLlXUh/TAAgTh9ly4iueAw0pQ88W8HCj8/+8AIflIs7Ap7fjy33MtizDwU9
+	lggpy6Ei1DyjFatS7mWQMJ7I+BRskDQVKiAzIx9H4q5E/vgcTRKVDQyFGjr59RgMS55DH7LedoZ
+	JtKpF/ztCyTTvRyvlUxfRcYvj4WB+5oaUG7zQsSBfC3kzwEx4Hc=
+X-Received: by 2002:a17:907:d24:b0:bed:83ee:922a with SMTP id
+ a640c23a62f3a-bed83ee9b81mr309677466b.16.1780335910507; Mon, 01 Jun 2026
+ 10:45:10 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260527194626.185286-1-sumitg@nvidia.com> <20260527194626.185286-3-sumitg@nvidia.com>
-In-Reply-To: <20260527194626.185286-3-sumitg@nvidia.com>
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Date: Mon, 1 Jun 2026 19:37:45 +0200
-X-Gmail-Original-Message-ID: <CAJZ5v0icPAmaiThjgUTxWRymNGBQFarodurJhODFOkLKpVwtOQ@mail.gmail.com>
-X-Gm-Features: AVHnY4KU5BqE06IDKh9R9dO-EvUUPEYauhejTr3HcPK3qROeDgfiK_nynvaLr24
-Message-ID: <CAJZ5v0icPAmaiThjgUTxWRymNGBQFarodurJhODFOkLKpVwtOQ@mail.gmail.com>
-Subject: Re: [PATCH v4 2/2] ACPI: CPPC: Add ospm_nominal_perf support
-To: Sumit Gupta <sumitg@nvidia.com>
-Cc: rafael@kernel.org, viresh.kumar@linaro.org, lenb@kernel.org, 
-	pierre.gondois@arm.com, zhenglifeng1@huawei.com, zhanjie9@hisilicon.com, 
-	mario.limonciello@amd.com, saket.dumbre@intel.com, linux-acpi@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, 
-	acpica-devel@lists.linux.dev, treding@nvidia.com, jonathanh@nvidia.com, 
-	vsethi@nvidia.com, ksitaraman@nvidia.com, sanjayc@nvidia.com, 
-	mochs@nvidia.com, bbasu@nvidia.com
+References: <20260528212955.1912856-1-nphamcs@gmail.com> <ahz_iYG4lqWL4g-J@KASONG-MC4>
+ <CAKEwX=PzMwXXgq=ULAkFD9UqMz+ewLqhKt+xdGxkV7OmA2QG6w@mail.gmail.com>
+In-Reply-To: <CAKEwX=PzMwXXgq=ULAkFD9UqMz+ewLqhKt+xdGxkV7OmA2QG6w@mail.gmail.com>
+From: Kairui Song <ryncsn@gmail.com>
+Date: Tue, 2 Jun 2026 01:44:31 +0800
+X-Gm-Features: AVHnY4IUw3nIoySauxI6MLfil3rr6hgOs7Yvxi0fLc_FDWPMh1u4pdIwbMn_l88
+Message-ID: <CAMgjq7BhOn48xEyC=2j837R7qddfjeBVHMiRqdx8no4ZEBpBLg@mail.gmail.com>
+Subject: Re: [RFC PATCH 0/5] mm, swap: Virtual Swap Space (Swap Table Edition)
+To: Nhat Pham <nphamcs@gmail.com>
+Cc: Liam.Howlett@oracle.com, akpm@linux-foundation.org, apopple@nvidia.com, 
+	axelrasmussen@google.com, baohua@kernel.org, baolin.wang@linux.alibaba.com, 
+	bhe@redhat.com, byungchul@sk.com, cgroups@vger.kernel.org, 
+	chengming.zhou@linux.dev, chrisl@kernel.org, corbet@lwn.net, david@kernel.org, 
+	dev.jain@arm.com, gourry@gourry.net, hannes@cmpxchg.org, hughd@google.com, 
+	jannh@google.com, joshua.hahnjy@gmail.com, lance.yang@linux.dev, 
+	lenb@kernel.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, 
+	linux-mm@kvack.org, linux-pm@vger.kernel.org, lorenzo.stoakes@oracle.com, 
+	matthew.brost@intel.com, mhocko@suse.com, muchun.song@linux.dev, 
+	npache@redhat.com, pavel@kernel.org, peterx@redhat.com, peterz@infradead.org, 
+	pfalcato@suse.de, rafael@kernel.org, rakie.kim@sk.com, 
+	roman.gushchin@linux.dev, rppt@kernel.org, ryan.roberts@arm.com, 
+	shakeel.butt@linux.dev, shikemeng@huaweicloud.com, surenb@google.com, 
+	tglx@kernel.org, vbabka@suse.cz, weixugc@google.com, 
+	ying.huang@linux.alibaba.com, yosry.ahmed@linux.dev, yuanchu@google.com, 
+	zhengqi.arch@bytedance.com, ziy@nvidia.com, kernel-team@meta.com, 
+	riel@surriel.com, haowenchao22@gmail.com
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Wed, May 27, 2026 at 9:47=E2=80=AFPM Sumit Gupta <sumitg@nvidia.com> wro=
-te:
+On Mon, Jun 1, 2026 at 11:57=E2=80=AFPM Nhat Pham <nphamcs@gmail.com> wrote=
+:
 >
-> Expose the OSPM Nominal Performance register (ACPI 6.6, Section
-> 8.4.6.1.2.6), which conveys the desired nominal performance level
-> at which the platform may run. Unlike the existing read-only
-> Nominal Performance register, it is writable and lets OSPM
-> request a lower nominal level than the platform-reported nominal.
-> The platform classifies performance above this level as boosted
-> and below as throttled for its power/thermal decisions.
+> On Mon, Jun 1, 2026 at 12:34=E2=80=AFAM Kairui Song <ryncsn@gmail.com> wr=
+ote:
+> >
+> > For the format part, PHYS don't need that much bits I think,
+> > so by slightly adjust the format vswap device could be share
+> > mostly the same format with ordinary device.
+> >
+> > For example typical modern system don't have a address space larger
+> > than 52 bit. (Even with full 64 bits used for addressing, shift it
+> > by 12 we get 52). Plus 5 for type, you get 57, so you can have a
+> > marker that should work as long as it shorter than 1000000 for PHYS,
+> > and shared for all table format since it's not in conflict with
+> > anything. You have also use a few extra bits so a single swap space
+> > can be 8 times larger than RAM space, and since we can help
+> > multiple swap type I think that should be far than enough?
+> >
+> > Then you have Shadow back at 001, and zero bit in shadow. The only
+> > special one is Zswap, which will be 100 now, and that's exactly the
+> > reserved pointer format in current swap table format, on seeing
+> > si->flags & VSWAP && is_pointer(swp_tb) you know that's zswap :)
 >
-> It is exposed as a per-policy cpufreq sysfs attribute in kHz, to
-> match the cpufreq sysfs unit convention:
+> Are you suggesting we merge the virtual table with main swap table?
 >
->   /sys/devices/system/cpu/cpufreq/policyN/ospm_nominal_freq
->
-> The attribute is documented in
-> Documentation/ABI/testing/sysfs-devices-system-cpu.
->
-> Writes are converted to perf via cppc_khz_to_perf(), validated
-> against [Lowest Performance, Nominal Performance], and applied to
-> every CPU in policy->cpus.
->
-> The register is write-only; the kernel caches the last written
-> value in struct cppc_cpudata for sysfs readback (returns 0 until
-> userspace writes a value).
->
-> Signed-off-by: Sumit Gupta <sumitg@nvidia.com>
+> Man, I'd love to do this. There is a problem though - we have a case
+> where we occupy both backing physical swap AND swap cache. Do you
+> think we can fit both the physical swap slot handle and the swap cache
+> PFN into the same slot in virtual table? Maybe with some expanding...?
 
-There is some sashiko.dev feedback on this one that is valid AFAICS:
+I don't really get why we would need to do that? If you put the PFN
+info in the virtual / upper layer, then the count info, locking, and
+all swap IO synchronization (via folio lock), dup (current protected
+by ci lock / folio lock), and allocation (folio_alloc_swap), are all
+handled in this layer.
 
-https://sashiko.dev/#/patchset/20260527194626.185286-1-sumitg%40nvidia.com
+The physical / lower layer will just hold a reverse entry on
+folio_realloc_swap, or no entry at all (no physical layer used, zswap,
+or after swap allocation but before IO) right?
 
-> ---
->  .../ABI/testing/sysfs-devices-system-cpu      | 17 ++++++
->  drivers/acpi/cppc_acpi.c                      | 35 +++++++++++
->  drivers/cpufreq/cppc_cpufreq.c                | 60 +++++++++++++++++++
->  include/acpi/cppc_acpi.h                      | 12 ++++
->  4 files changed, 124 insertions(+)
+Looking up the actual folio from the physical layer will be a bit
+slower since it needs to resolve the reverse entry, but the only place
+we need to do that is things like migrate, compaction (none of them
+exist yet) which seems totally fine?
+
+> > This could be imporved by per-si percpu cluster. Both YoungJun's
+> > tiering and Baoquan's previous swap ops mentioned this is needed,
+> > and now vswap also need that. If the vswap is also a si, then it will
+> > make use of this too.
 >
-> diff --git a/Documentation/ABI/testing/sysfs-devices-system-cpu b/Documen=
-tation/ABI/testing/sysfs-devices-system-cpu
-> index 82d10d556cc8..ac1bf1b89ac4 100644
-> --- a/Documentation/ABI/testing/sysfs-devices-system-cpu
-> +++ b/Documentation/ABI/testing/sysfs-devices-system-cpu
-> @@ -346,6 +346,23 @@ Description:       Performance Limited
+> Yeah I made the same recommendation when I review swap tier last week:
 >
->                 This file is only present if the cppc-cpufreq driver is i=
-n use.
+> https://lore.kernel.org/all/CAKEwX=3DN2XcMHN1jatppOk6wnmz-Shab5XMtTtzgYOz=
+RvU_6YFw@mail.gmail.com/
 >
-> +What:          /sys/devices/system/cpu/cpuX/cpufreq/ospm_nominal_freq
-> +Date:          May 2026
-> +Contact:       linux-pm@vger.kernel.org
-> +Description:   OSPM Nominal Performance (kHz)
-> +
-> +               OSPM uses this attribute to request a nominal performance
-> +               level lower than the platform-reported nominal. The
-> +               platform treats performance above this level as boost
-> +               and below as throttle for power and thermal decisions.
-> +
-> +               Read returns the last written value in kHz, or 0 if no
-> +               value has been written. Write a kHz value in the range
-> +               [lowest_freq, nominal_freq].
-> +
-> +               This file is only present if the cppc-cpufreq driver is
-> +               in use.
-> +
->  What:          /sys/devices/system/cpu/cpu*/cache/index3/cache_disable_{=
-0,1}
->  Date:          August 2008
->  KernelVersion: 2.6.27
-> diff --git a/drivers/acpi/cppc_acpi.c b/drivers/acpi/cppc_acpi.c
-> index c76cfafa3589..ad6ece16c30d 100644
-> --- a/drivers/acpi/cppc_acpi.c
-> +++ b/drivers/acpi/cppc_acpi.c
-> @@ -1682,6 +1682,41 @@ int cppc_set_epp(int cpu, u64 epp_val)
->  }
->  EXPORT_SYMBOL_GPL(cppc_set_epp);
+> I like it, but yeah it will be complicated. That said, I think not
+> fixing the fast path for tiering/vswap will seriously restrict their
+> usefulness. We don't want to go back to the old swap allocator days :)
+
+Thanks. Not too complicated, actually our internal kernel
+implementation still using si->percpu cluster, and use a counter for
+the rotation and each order have a counter :P, it's a bit ugly but
+works fine. It still serves pretty well just like the global percpu
+cluster, YoungJun's previous per ci percpu cluster also still provides
+the fast path, many ways to do that.
+
 >
-> +/**
-> + * cppc_set_ospm_nominal_perf() - Write OSPM Nominal Performance registe=
-r.
-> + * @cpu: CPU on which to write register.
-> + * @ospm_nominal_perf: Value to write to the OSPM Nominal Performance re=
-gister.
-> + *
-> + * OSPM Nominal Performance conveys the desired nominal performance leve=
-l
-> + * at which the platform may run. Per ACPI 6.6, s8.4.6.1.2.6, the value
-> + * must lie within [Lowest Performance, Nominal Performance] and may be
-> + * set independently of Minimum, Maximum and Desired performance.
-> + *
-> + * Return: 0 on success or negative error code.
-> + */
-> +int cppc_set_ospm_nominal_perf(int cpu, u64 ospm_nominal_perf)
-> +{
-> +       struct cpc_desc *cpc_desc =3D per_cpu(cpc_desc_ptr, cpu);
-> +       struct cppc_perf_caps caps;
-> +       int ret;
-> +
-> +       if (!cpc_desc) {
-> +               pr_debug("No CPC descriptor for CPU:%d\n", cpu);
-> +               return -ENODEV;
-> +       }
-> +
-> +       ret =3D cppc_get_perf_caps(cpu, &caps);
-> +       if (ret)
-> +               return ret;
-> +
-> +       if (ospm_nominal_perf < caps.lowest_perf ||
-> +           ospm_nominal_perf > caps.nominal_perf)
-> +               return -EINVAL;
-> +
-> +       return cppc_set_reg_val(cpu, OSPM_NOMINAL_PERF, ospm_nominal_perf=
-);
-> +}
-> +EXPORT_SYMBOL_GPL(cppc_set_ospm_nominal_perf);
-> +
->  /**
->   * cppc_get_auto_act_window() - Read autonomous activity window register=
+> >
+> > YoungJun posted this a few month before:
+> > https://lore.kernel.org/linux-mm/20260131125454.3187546-5-youngjun.park=
+@lge.com/
+> >
+> > The concern is that some locking contention could be heavier, or maybe
+> > that's just a hypothetical problem though.
+>
+> I don't think it's hypothetical. At least with vswap, it's very easy
+> to get into a state where the shared per-cpu cache gets invalidated
+> constantly if phys swap and vswap allocation alternates (which is
+> actually very possible under heavy memory pressure), hammering the
+> slow paths...
+
+I mean if the per-cpu cache is moved to si level, then whoever enters
+the allocation path of a si will almost always get a stable percpu
+cache to use, even if the last used si changes.
+
+We might better have a more explicit per si fast path for that. The
+plist rotation should better be done in a different (will be even
+better if lockless) way.
+
+>
+> >
+> > >
+> > > - Runtime enable/disable of the vswap device. To be honest, I don't
+> > >   know if there is a value in this. My preference is vswap can be
+> > >   optimized to the point that any overhead is negligible. Failing tha=
+t,
+> > >   maybe we can come up with some simple heuristics that automatically
+> > >   decides for users?
+> > >
+> > >   In this RFC, CONFIG_VSWAP=3Dy means the vswap device is always crea=
+ted at
+> > >   boot, and CONFIG_VSWAP=3Dn means the vswap device is never created.=
+ This
+> > >   *might* be enough just on its own.
+> > >
+> > >   Is a runtime knob (sysfs or sysctl) worth the complexity beyond
+> > >   these heuristics? I'm not sure yet. Maintaining both cases
+> >
+> > I checked the code and I think it's not hard to do, patch 1 already
+> > handling the meta data dynamically, everything will still just work
+> > even if you remove vswap at runtime. The rest of patches need adaption
+> > but might not end up being complex, it other comments here
+> > are considered.
+>
+> Yeah, it's not terribily hard to do. I'm more wondering if it's worth
+> the effort, both for the implementer and the user :)
+>
+> As I said here, if we want vswap, just enable it at boot time and get
+> a vast (but dynamic) device. We can make it optional per-cgroup
+> through Youngjun's interface, and that would be good enough?
+>
+> >
+> > For patch 2, a few routines like vswap_can_swapin_thp seems not
+> > needed or should be moved to __swap_cache_alloc? VSWAP_FOLIO is
+> > same as swap cache folio check, which is already covered. Same for
+> > zero checking, and VSWAP_NONE which is same as swap count check
+> > I think. That way we not only save a lot of code, we also no
+> > longer need to treat vswap specially.
+>
+> Unfortunately, I think a lot of this complexity is still needed. Vswap
+> adds a new layer, which means new complications :)
+>
+> For instance, I think you still need vswap_can_swapin_thp. It
+> basically enforces that the backend must be something
+> swap_read_folio() can handle. That means:
+>
+> 1. No zswap.
+>
+> 2. No mixed backend.
+
+If mixed backend means phys vs zero vs zswap, then we already have
+part of that covered with the current swap cache except for the phys
+part (zswap part seems very doable with fujunjie's work).
+swap_cache_alloc_folio will ensure there is no mixed zerobit, it can
+be easily extended to ensure there is no mixed zswap as well
+(according to what I've learned from fujunjie's code). Similar logic
+for phys detection I think.
+
+> > For memcg table allocation, on demand seems a good idea, and actually
+> > we are not far from there, I tried to generalize the
+> > alloc-then-retry-sleep-alloc in swap_alloc_table but still not generic
+> > enough I guess.. Good new is the allocation of the table is already
+> > kind of ondemand, just need to split the detection of these two kind
+> > of table.
+>
+> I have a prototype of this, but I have not tested, so I do not want to
+> send it out. :)
+>
+> TLDR is - I still want to record the memcg for vswap (just not charge
+> it towards the counter). So we still need memcg_table at both level,
+> generally - just not allocating until needed (basically if a physical
+> swap slot in the cluster is directly mapped into PTE). You can kinda
+> tell, since you pass the folio into the allocation path - with some
+> care you can distinguish between:
+>
+> 1. Virtual swap, or directly maped physical swap -> need memcg_table
+>
+> 2. Physical swap, backing vswap -> does not memcg_table.
+>
+> Another alternative is you can defer this allocation until the point
+> where you have to do the charging action. But then you have to be
+> careful with failure handling, and need to backoff ya di da di da.
+> Funsies.
+>
+> I think I did a mixed of these 2 strategies. Anyway, I'll include the
+> patch in v2 (if folks like this approach).
+>
+> >
+> > Mean while I also remember we once discussed about splitting the
+> > accounting for vswap / physical swap? If we went that approach we
+> > don't need to treat memcg_table specially.
+>
+> For the charging behavior, I already have a patch for it actually in
+> this series (just not the dynamic allocation of the memcg_table field
+> yet).
+>
+> Basically:
+>
+> 1. For vswap entry, not backed by phys swap: record swap memcg, hold
+> reference to pin the memcg, but not charging towards swap.current.
+
+Maybe you don't need to record memcg here since folio->memcg already
+have that info?
+
+I previously had a patch:
+https://lore.kernel.org/linux-mm/20260220-swap-table-p4-v1-7-104795d19815@t=
+encent.com/
+
+The defers the recording of memcg, the behavior is almost identical to
+before, but charging & recording should be cleaner and you don't need
+to record memcg at allocation time hence maybe reduce the possibility
+of pinning a memcg. I didn't include that in P4 just to reduce LOC,
+maybe can be resent or included.
+
+> 2. For phys swap backing vswap: charging towards swap.current, but
+> does not record the memcg in its memcg_table, nor does it hold
+> reference to memcg (its vswap entry holds the reference already)
+>
+> 2. For phys swap directly mapped to PTE: charges, records, and holds refe=
+rence.
+>
+> The motivation here is I do not want vswap entry to shares the same
+> limit as phys swap counter. If we think of it as "infinite" or
+> "dynamic", it should not be capped at all, but even if it is charged,
+> it should be something separate.
+
+Good to know, it's not too messy to make everything dynamic, but if
+our ultimate goal is to account for them separately, maybe we can save
+some effort here.
+
+>
+> >
+> > > - Widen swap_info_struct->max to unsigned long. The vswap device's
+> > >   max is currently clamped to ALIGN_DOWN(UINT_MAX, SWAPFILE_CLUSTER)
+> > >   (~16 TiB) to fit in unsigned int. 16 TiB is small for vswap,
+> > >   especially when we're getting increasingly big machines memory-wise=
 .
->   * @cpu: CPU from which to read register.
-> diff --git a/drivers/cpufreq/cppc_cpufreq.c b/drivers/cpufreq/cppc_cpufre=
-q.c
-> index 15a728dea911..5c54af1655b5 100644
-> --- a/drivers/cpufreq/cppc_cpufreq.c
-> +++ b/drivers/cpufreq/cppc_cpufreq.c
-> @@ -1139,11 +1139,70 @@ static int cppc_get_perf_limited_filtered(int cpu=
-, u64 *perf_limited)
->  CPPC_CPUFREQ_ATTR_RW_U64(perf_limited, cppc_get_perf_limited_filtered,
->                          cppc_set_perf_limited)
+> >
+> > This should be very easy to do, just replace unsigned int with
+> > unsigned long, a lot of place to touch though :)
 >
-> +static ssize_t show_ospm_nominal_freq(struct cpufreq_policy *policy, cha=
-r *buf)
-> +{
-> +       struct cppc_cpudata *cpu_data =3D policy->driver_data;
-> +       unsigned int freq_khz;
-> +
-> +       if (!cpu_data->ospm_nominal_perf_set)
-> +               return sysfs_emit(buf, "0\n");
-> +
-> +       freq_khz =3D cppc_perf_to_khz(&cpu_data->perf_caps,
-> +                                   cpu_data->ospm_nominal_perf);
-> +       return sysfs_emit(buf, "%u\n", freq_khz);
-> +}
-> +
-> +static ssize_t store_ospm_nominal_freq(struct cpufreq_policy *policy,
-> +                                      const char *buf, size_t count)
-> +{
-> +       struct cppc_cpudata *cpu_data =3D policy->driver_data;
-> +       bool prev_set =3D cpu_data->ospm_nominal_perf_set;
-> +       u32 prev_perf =3D cpu_data->ospm_nominal_perf;
-> +       unsigned int sib, freq_khz, failing_cpu =3D 0;
-> +       u32 perf;
-> +       int ret;
-> +
-> +       ret =3D kstrtouint(buf, 0, &freq_khz);
-> +       if (ret)
-> +               return ret;
-> +
-> +       perf =3D cppc_khz_to_perf(&cpu_data->perf_caps, freq_khz);
-> +
-> +       for_each_cpu(sib, policy->cpus) {
-> +               ret =3D cppc_set_ospm_nominal_perf(sib, perf);
-> +               if (ret) {
-> +                       failing_cpu =3D sib;
-> +                       goto rollback;
-> +               }
-> +       }
-> +
-> +       cpu_data->ospm_nominal_perf =3D perf;
-> +       cpu_data->ospm_nominal_perf_set =3D true;
-> +       return count;
-> +
-> +rollback:
-> +       /*
-> +        * Restore the previous value on siblings already updated.
-> +        * for_each_cpu() iterates in CPU-id order, so siblings before
-> +        * @failing_cpu were updated successfully. Skip restore when
-> +        * there is no prior known-good value (first-ever write failed).
-> +        */
-> +       if (prev_set) {
-> +               for_each_cpu(sib, policy->cpus) {
-> +                       if (sib =3D=3D failing_cpu)
-> +                               break;
-> +                       cppc_set_ospm_nominal_perf(sib, prev_perf);
-> +               }
-> +       }
-> +       return ret;
-> +}
-> +
->  cpufreq_freq_attr_ro(freqdomain_cpus);
->  cpufreq_freq_attr_rw(auto_select);
->  cpufreq_freq_attr_rw(auto_act_window);
->  cpufreq_freq_attr_rw(energy_performance_preference_val);
->  cpufreq_freq_attr_rw(perf_limited);
-> +cpufreq_freq_attr_rw(ospm_nominal_freq);
->
->  static struct freq_attr *cppc_cpufreq_attr[] =3D {
->         &freqdomain_cpus,
-> @@ -1151,6 +1210,7 @@ static struct freq_attr *cppc_cpufreq_attr[] =3D {
->         &auto_act_window,
->         &energy_performance_preference_val,
->         &perf_limited,
-> +       &ospm_nominal_freq,
->         NULL,
->  };
->
-> diff --git a/include/acpi/cppc_acpi.h b/include/acpi/cppc_acpi.h
-> index 9b18fb9aab7c..14c6d5d0ac12 100644
-> --- a/include/acpi/cppc_acpi.h
-> +++ b/include/acpi/cppc_acpi.h
-> @@ -154,6 +154,13 @@ struct cppc_cpudata {
->         struct cppc_perf_fb_ctrs perf_fb_ctrs;
->         unsigned int shared_type;
->         cpumask_var_t shared_cpu_map;
-> +       /*
-> +        * Cached OSPM Nominal Performance value (write-only register).
-> +        * ospm_nominal_perf_set is true once userspace has written, so a=
-n
-> +        * unwritten cache is distinguishable from a valid 0 perf write.
-> +        */
-> +       u32 ospm_nominal_perf;
-> +       bool ospm_nominal_perf_set;
->  };
->
->  #ifdef CONFIG_ACPI_CPPC_LIB
-> @@ -181,6 +188,7 @@ extern int cpc_write_ffh(int cpunum, struct cpc_reg *=
-reg, u64 val);
->  extern int cppc_get_epp_perf(int cpunum, u64 *epp_perf);
->  extern int cppc_set_epp_perf(int cpu, struct cppc_perf_ctrls *perf_ctrls=
-, bool enable);
->  extern int cppc_set_epp(int cpu, u64 epp_val);
-> +extern int cppc_set_ospm_nominal_perf(int cpu, u64 ospm_nominal_perf);
->  extern int cppc_get_auto_act_window(int cpu, u64 *auto_act_window);
->  extern int cppc_set_auto_act_window(int cpu, u64 auto_act_window);
->  extern int cppc_get_auto_sel(int cpu, bool *enable);
-> @@ -267,6 +275,10 @@ static inline int cppc_set_epp(int cpu, u64 epp_val)
->  {
->         return -EOPNOTSUPP;
->  }
-> +static inline int cppc_set_ospm_nominal_perf(int cpu, u64 ospm_nominal_p=
-erf)
-> +{
-> +       return -EOPNOTSUPP;
-> +}
->  static inline int cppc_get_auto_act_window(int cpu, u64 *auto_act_window=
-)
->  {
->         return -EOPNOTSUPP;
-> --
-> 2.34.1
->
+> Agree. I'm just lazy, and this sounds like a simple patch as a
+> follow-up. This RFC is already 2000 LoCs - I do not want to burden
+> reviewers with extra useless details :)
+
+No problem, good to see progress here :)
