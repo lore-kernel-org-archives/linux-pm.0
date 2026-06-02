@@ -1,132 +1,162 @@
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.21])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7A453343886;
-	Tue,  2 Jun 2026 21:53:09 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.21
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1988232ABCA;
+	Tue,  2 Jun 2026 22:47:30 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1780437190; cv=none; b=QM5DZ5mjOJ9FPi50MCAhbeMHVawp7ZHrVDt7B4jy+VwShO78eG0DJDQNgiC9CwAuaBu96KTdGW67vAiWQQYyfOi7+TTAXu/rfGmtQvNypKjFlGB+SzQmW4bBt+01+6gE5GjX4P7RFZ9yU09TMqDXv/x/UuAmx2R7JDZ7NCcKdW8=
+	t=1780440450; cv=none; b=JtZnFFZMdmHs8rvEK5zsK/RGSd3aYGPpUCIZNwcTnHXStKp+4OL4GqKvkSDL1tPyncBbrZNDsoCdKO+fGo8BQC08QR8y25q29FP6AF1Q7abnlbFDv5SoswwYxWuEqxqMEPVaB6i5Y1y5K+7tjQBuA0Jo4U/sATMBO4ISRhx62fs=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1780437190; c=relaxed/simple;
-	bh=U2Ci0y5zstQSqkf04hmNdjkbNsyqDpkboO1KnVKRMOs=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=nISWfTEniBNSeBbD+lVkpc8BXuJW2TDuaacxIDmY25WGNiGxjctYr/O3JdZFERCHjx2TG/ChyZvXqlpjWhh+DH44/Ll7xfcCFAjCO3wBuHQMJwwf084YNjbaVerOL3qTQ/WMihWv9ZQK8W/KAt61t6nHz/vOP/UyNhz2e1oxrsk=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=pass smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=GJ5oML5+; arc=none smtp.client-ip=198.175.65.21
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.intel.com
+	s=arc-20240116; t=1780440450; c=relaxed/simple;
+	bh=vOXM84v3grTegAbF0vmkOPiyrZBmohrXgKxht5zyHrs=;
+	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=YcQGCW0NmrfHj9+cZ5zJgMCTJM8CdBc79HO/JdfqdPZq5m/auH8ZPviDyvWsqA3/zjI/amVnyMzrgu+q5UPbOCNgC4RS5FzYiYBbZJyHalJKbLQIzEGwBwgmUczpG/tNdHz6Ryc3YOVK0LppxST8s80ZFbgfxgECwTRxyqAKBuo=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=C0wkN9Vd; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="GJ5oML5+"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1780437190; x=1811973190;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=U2Ci0y5zstQSqkf04hmNdjkbNsyqDpkboO1KnVKRMOs=;
-  b=GJ5oML5+Ctf884JcW1blm6+nWVqkMp6/FtaDmKyQ/ybFUyx0PKyeAtEE
-   ywaouyI5kVYEalzUFtMG8RsIFr+sdr2pbaJdQXKCNIYvMjqIwq+tOGPJM
-   7zSGvPCj5rlvtQIq+4wLFIlC77g2aDXxSs1KJKHZx5kOmMiBnLsnGXcft
-   4dXmPtDCR8aQtkb/5vbRellpC+6SL09v3fGXwrx6JUulu+leVpF5ikJjn
-   2IlgQN+HVDH/n3Iz+mVyzMVeRopsnZwciC8hkOecW/6iMnBl1JiFU2dWz
-   Ba0gfsl4gMkUfnYkVclcALbrIVfucMFAW/EcEwGxUMjFVWnKqbPsebAcG
-   g==;
-X-CSE-ConnectionGUID: HZtwcMcrQ4SDZe/sWmXtyw==
-X-CSE-MsgGUID: PypeyUUwRPOkMvKP6HDmpw==
-X-IronPort-AV: E=McAfee;i="6800,10657,11805"; a="81139230"
-X-IronPort-AV: E=Sophos;i="6.24,183,1774335600"; 
-   d="scan'208";a="81139230"
-Received: from fmviesa003.fm.intel.com ([10.60.135.143])
-  by orvoesa113.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 02 Jun 2026 14:53:09 -0700
-X-CSE-ConnectionGUID: YYc13f2oRhu39dVGUvMdoA==
-X-CSE-MsgGUID: IznHTBKXQ4W8nlCW1v1K1g==
-X-ExtLoop1: 1
-Received: from pgcooper-mobl3.ger.corp.intel.com (HELO localhost) ([10.245.244.116])
-  by fmviesa003-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 02 Jun 2026 14:52:54 -0700
-Date: Wed, 3 Jun 2026 00:52:52 +0300
-From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-To: Philipp Zabel <p.zabel@pengutronix.de>
-Cc: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>,
-	Lee Jones <lee@kernel.org>,
-	Mark Brown <broonie@opensource.wolfsonmicro.com>,
-	Thierry Reding <thierry.reding@avionic-design.de>,
-	Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>,
-	Andrew Lunn <andrew+netdev@lunn.ch>,
-	"David S. Miller" <davem@davemloft.net>,
-	Eric Dumazet <edumazet@google.com>,
-	Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
-	Srinivas Kandagatla <srini@kernel.org>,
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	Vinod Koul <vkoul@kernel.org>,
-	"Rafael J. Wysocki" <rafael@kernel.org>,
-	Danilo Krummrich <dakr@kernel.org>, Rob Herring <robh@kernel.org>,
-	Saravana Kannan <saravanak@kernel.org>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-	Andi Shyti <andi.shyti@kernel.org>, Joerg Roedel <joro@8bytes.org>,
-	Will Deacon <will@kernel.org>, Robin Murphy <robin.murphy@arm.com>,
-	Doug Berger <opendmb@gmail.com>,
-	Florian Fainelli <florian.fainelli@broadcom.com>,
-	Broadcom internal kernel review list <bcm-kernel-feedback-list@broadcom.com>,
-	Ulf Hansson <ulfh@kernel.org>, Frank Li <Frank.Li@nxp.com>,
-	Sascha Hauer <s.hauer@pengutronix.de>,
-	Pengutronix Kernel Team <kernel@pengutronix.de>,
-	Fabio Estevam <festevam@gmail.com>,
-	Matthew Brost <matthew.brost@intel.com>,
-	Thomas =?iso-8859-1?Q?Hellstr=F6m?= <thomas.hellstrom@linux.intel.com>,
-	Rodrigo Vivi <rodrigo.vivi@intel.com>,
-	David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>,
-	Peter Chen <peter.chen@kernel.org>,
-	Paul Cercueil <paul@crapouillou.net>, Bin Liu <b-liu@ti.com>,
-	Maximilian Luz <luzmaximilian@gmail.com>,
-	Hans de Goede <hansg@kernel.org>,
-	Ilpo =?iso-8859-1?Q?J=E4rvinen?= <ilpo.jarvinen@linux.intel.com>,
-	Krzysztof Kozlowski <krzk@kernel.org>,
-	Benjamin Herrenschmidt <benh@kernel.crashing.org>, brgl@kernel.org,
-	linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-	linux-arm-msm@vger.kernel.org, linux-sound@vger.kernel.org,
-	driver-core@lists.linux.dev, devicetree@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org, linux-i2c@vger.kernel.org,
-	iommu@lists.linux.dev, linux-pm@vger.kernel.org,
-	imx@lists.linux.dev, linux-arm-kernel@lists.infradead.org,
-	intel-xe@lists.freedesktop.org, dri-devel@lists.freedesktop.org,
-	linux-usb@vger.kernel.org, linux-mips@vger.kernel.org,
-	platform-driver-x86@vger.kernel.org
-Subject: Re: [PATCH 22/23] reset: rzg2l: use
- platform_device_set_of_node_from_dev()
-Message-ID: <ah9QtExF2rUUTMNo@ashevche-desk.local>
-References: <20260521-pdev-fwnode-ref-v1-0-88c324a1b8d2@oss.qualcomm.com>
- <20260521-pdev-fwnode-ref-v1-22-88c324a1b8d2@oss.qualcomm.com>
- <6af284545729f03a60d06479339862a2f08c6b7e.camel@pengutronix.de>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="C0wkN9Vd"
+Received: by smtp.kernel.org (Postfix) with ESMTPS id B9979C2BCB4;
+	Tue,  2 Jun 2026 22:47:29 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1780440449;
+	bh=vOXM84v3grTegAbF0vmkOPiyrZBmohrXgKxht5zyHrs=;
+	h=From:Subject:Date:To:Cc:Reply-To:From;
+	b=C0wkN9VdWHBkg6xaKNIivlBj1FtKQXw/ZWWVXpn6j95UrkXmeML45kJJTigfut2g3
+	 jLVb0ExMHFdPqAJwAM4aacak8eVs+UECPChdIrLWCtOzYbbIr9V2xy8KxqNnPn9HnE
+	 xsUAv8SZdTR8K/+aevgUDPc/xyNq2/XxOYN8raKh9SaOS2qzRXGSNzNEuWc/qO2x90
+	 5AdvKhXNb3dsgBL+mUOOO1dWbjnb8wQmY7DcjuaNsX/aAQauOTr4WT+d+pHWcPIp/4
+	 O9o/x/ypTlwvbV66YLFkvRHF/Gl2wRewd0ryyqIWiPds1DwB/k0+7tOP95Xu3v1i0k
+	 eWMNGudU/Cy7w==
+Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9DC42CD6E57;
+	Tue,  2 Jun 2026 22:47:29 +0000 (UTC)
+From: Amit Sunil Dhamne via B4 Relay <devnull+amitsd.google.com@kernel.org>
+Subject: [PATCH v3 0/2] Add support for Battery Status AMS
+Date: Tue, 02 Jun 2026 22:47:05 +0000
+Message-Id: <20260602-batt-status-v3-0-a7c1c271f3b0@google.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <6af284545729f03a60d06479339862a2f08c6b7e.camel@pengutronix.de>
-Organization: Intel Finland Oy - BIC 0357606-4 - c/o Alberga Business Park, 6
- krs, Bertel Jungin Aukio 5, 02600 Espoo
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-B4-Tracking: v=1; b=H4sIAGldH2oC/1XMQQ7CIBRF0a00jMXwqUB15D6MA6C/LYmWBpBom
+ u5d2jiww/eSe2YSMTiM5FLNJGB20fmxjPpQETvosUfq2rIJZ1wywYAanRKNSadXpCCNVBIsMwZ
+ IKaaAnXtv2u1e9uBi8uGz4RnW9+eA2DkZKKMdttKotrGo1bX3vn/g0fonWaHM/2Ku9jEv8Yk3/
+ NwIkKKrd/GyLF9OdbKp5AAAAA==
+X-Change-ID: 20260501-batt-status-16b6761c0bb1
+To: Sebastian Reichel <sre@kernel.org>, 
+ Badhri Jagan Sridharan <badhri@google.com>, 
+ Heikki Krogerus <heikki.krogerus@linux.intel.com>, 
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
+ Hans de Goede <hansg@kernel.org>, Krzysztof Kozlowski <krzk@kernel.org>, 
+ Marek Szyprowski <m.szyprowski@samsung.com>, 
+ Sebastian Krzyszkowiak <sebastian.krzyszkowiak@puri.sm>, 
+ Purism Kernel Team <kernel@puri.sm>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
+ linux-usb@vger.kernel.org, 
+ =?utf-8?q?Andr=C3=A9_Draszik?= <andre.draszik@linaro.org>, 
+ Tudor Ambarus <tudor.ambarus@linaro.org>, 
+ Peter Griffin <peter.griffin@linaro.org>, RD Babiera <rdbabiera@google.com>, 
+ Kyle Tso <kyletso@google.com>, Amit Sunil Dhamne <amitsd@google.com>
+X-Mailer: b4 0.14.3
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1780440449; l=4020;
+ i=amitsd@google.com; s=20241031; h=from:subject:message-id;
+ bh=vOXM84v3grTegAbF0vmkOPiyrZBmohrXgKxht5zyHrs=;
+ b=PZRu7Om7DMi96whX862b+T+d3JzZFpYUmLyjxFB8JODQ4hovNaZ218I42QjFnItWT73dzQrvH
+ DYGJlZFvWAfARKg8O/CBRIkKRFrM7dUywOVz3/jWh/lfmDVdVWpMyEr
+X-Developer-Key: i=amitsd@google.com; a=ed25519;
+ pk=wD+XZSST4dmnNZf62/lqJpLm7fiyT8iv462zmQ3H6bI=
+X-Endpoint-Received: by B4 Relay for amitsd@google.com/20241031 with
+ auth_id=262
+X-Original-From: Amit Sunil Dhamne <amitsd@google.com>
+Reply-To: amitsd@google.com
 
-On Tue, Jun 02, 2026 at 10:24:41AM +0200, Philipp Zabel wrote:
-> On Do, 2026-05-21 at 10:36 +0200, Bartosz Golaszewski wrote:
-> > Ahead of reworking the reference counting logic for platform devices,
-> > encapsulate the assignment of the OF node from another device for
-> > dynamically allocated platform devices with the provided helper.
+PD 3.1 v1.8 Spec necessitates a response to Get_Battery_Status request
+from the port partner (see "6.13.2 Applicability of Data Message").
+This patchset adds support to get all the battery type power supplies
+and query them to report the telemetry required to build a Battery
+Status Message. Right now, this submission assumes all the battery type
+power supplies that exist in the system are fixed (meaning cannot be hot
+swapped).
 
-...
+Previously, I had sent a patch series [1]. However there were some
+concerns. Broadly:
+  * No client drivers
+  * Duplicating dt properties
+To address the above issues, we now have Fuel Gauge and Charger drivers.
+Also, I have rectified my approach to fetch information about batteries
+from the power supply core.
 
-> > -	device_set_of_node_from_dev(&vdev->dev, dev);
-> > +	platform_device_set_of_node_from_dev(vdev, dev);
+While, the original patch series [1] added support for Battery Caps as
+well, this patch series only adds support for Battery Status. Therefore,
+I am sending it as a new series while incorporating relevant feedback.
 
-Same Q here, why it uses inherited call? Cargo cult?
+[1] https://lore.kernel.org/all/20250507-batt_ops-v2-0-8d06130bffe6@google.com/
 
-'reused' flag is solely pin control (provider!) thingy as far as I remember.
+Patches in series:
+[A] "power: supply: Add helpers to get and put arrays of power supply handles"
+[B] "usb: typec: tcpm: Add support for Battery Status response message"
 
+Technical dependency of patches:
+[B] depends on [A] due to usage of `power_supply_get_battery_all` &
+`power_supply_put_battery_all` APIs.
+
+Signed-off-by: Amit Sunil Dhamne <amitsd@google.com>
+---
+Changes in v3:
+- Suggested by Hans:
+  - s/power_supply_put_array/power_supply_put_battery_all.
+  - Call kfree in power_supply_put_battery_all().
+  - Change the datatype for fixed_batt from an array of pointers to a
+    double pointer.
+  - Directly store the power supply pointers returned by
+    power_supply_get_battery_all() into fixed_batt.
+  - As we are directly storing all battery type power supplies returned
+    by *_get_battery_all() but as per the USB PD specification, tcpm
+    only supports reporting of up to 4 fixed batteries, we add
+    additional checks to satisfy the latter condition.
+  - It was suggested that fixed_batt_cnt be changed to int to store the
+    return value of *_get_battery_all(). However, I am leaving it as is
+    because: in case the retval is < 0, we don't care for the error
+    value beyond the scope of the function it's called in. It's sufficient
+    to just have fixed_batt_cnt to stay 0. Lmk if you still want it to
+    be int and I will change it.
+
+- Suggested by Badhri (internal review)
+  - It's not necessary from a PD protocol perspective that a Sink Cap
+    Extended AMS should always precede the Battery Status AMS.
+    Therefore, we should also get battery references during Battery
+    Status AMS in case fixed_batteries was unintialized.
+- Link to v2: https://lore.kernel.org/r/20260527-batt-status-v2-0-4282985165f3@google.com
+
+Changes in v2:
+- Suggested by Hans De Goede:
+  - Added helper power_supply_put_array() to release array of psy refs.
+  - Modified tcpm implementation to use the above.
+  - Drop "power: supply: max17042: add handler for energy_now property"
+    commit.
+  - Offload energy_now calculation to tcpm.
+- Minor changes to description comments of
+  power_supply_get_battery_all() to improve brevity.
+- Link to v1: https://lore.kernel.org/r/20260515-batt-status-v1-0-fed6b7d8cea7@google.com
+
+---
+Amit Sunil Dhamne (2):
+      power: supply: Add helpers to get and put arrays of power supply handles
+      usb: typec: tcpm: Add support for Battery Status response message
+
+ drivers/power/supply/power_supply_core.c | 133 ++++++++++++++++++++++++++++++
+ drivers/usb/typec/tcpm/tcpm.c            | 135 ++++++++++++++++++++++++++++++-
+ include/linux/power_supply.h             |  15 ++++
+ include/linux/usb/pd.h                   |  29 +++++++
+ 4 files changed, 309 insertions(+), 3 deletions(-)
+---
+base-commit: 57b8e2d666a31fa201432d58f5fe3469a0dd83ba
+change-id: 20260501-batt-status-16b6761c0bb1
+
+Best regards,
 -- 
-With Best Regards,
-Andy Shevchenko
+Amit Sunil Dhamne <amitsd@google.com>
 
 
