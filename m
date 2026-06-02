@@ -1,49 +1,49 @@
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.11])
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.19])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EAA3B367B66;
-	Tue,  2 Jun 2026 21:42:08 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.11
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CDB4927603C;
+	Tue,  2 Jun 2026 21:45:10 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.19
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1780436530; cv=none; b=nDJewXyysYxfL6W2W/gLN99wcn3myy2eqgMLjB7IJBwJBYIhyRt1A52XPAdZTRKnz8HzcnFAB8dgVs5/dpghwMBktcXWHCKvWT5Yf8HVsWsQrTnfBrr+tP9L+GiWqD3sGbnOSZEK5V2zAgro3zveQgtd12hanlOCPMjsuIeY+2I=
+	t=1780436712; cv=none; b=EITuYY/4EdCmvf3UPcIonYa0Yqq3lAYAqKIYlBy6kOPI3HIyPRlVnEygfgy+lovQLu25aUxLs5AXC878wE+fjcNZM4QYkLR2g73RrTYtr3vQ6mXJXgUEIr7WyKRMutXmeH/bQ+sSH/7T/6gP0Bv+wOZU1bMdxdcQ1oyPXmh7zIU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1780436530; c=relaxed/simple;
-	bh=y1ADfjlXNms8ZBUMtHS+kHppk6E04WG2MGtxZDw5VPQ=;
+	s=arc-20240116; t=1780436712; c=relaxed/simple;
+	bh=9mAoO9H8Y2BWm5p5K9c3oIGIMMxULY9BhMvq3EtYzfM=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=UaFRBgi4D8aS9/lVYG3x68rs+2uK6zIA0ul+2scX6D6/TVVV9w3MKqizwKEoHwWvy6Nj8W6h1lidNg1j2UgPQCZMvSU9L+z0h29n/w3c+45nqiGOSJVld97NfGnLmZecL+IFqQAs7bcHSjrn2V7j74UvcexL5fLvyjwe4LR9dUM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=pass smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=Ays48kj7; arc=none smtp.client-ip=198.175.65.11
+	 Content-Type:Content-Disposition:In-Reply-To; b=SEUcttufK/O+c9MBObBIMisJ62RaXYfX5CT8ITIcUgNjE5htLGn2IeZ4P0Sc/BsqjbhEWDGu9z1CsyRZA/cgRattwUWVcS6v68HYkUxXMwLuA79FuUiOJmrem/ZJH805Xci0/Ar9m4u9U1zWWHYLNARJ6zM9WemQ06/6RrDu6XE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=pass smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=VaH44L8M; arc=none smtp.client-ip=198.175.65.19
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="Ays48kj7"
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="VaH44L8M"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1780436529; x=1811972529;
+  t=1780436711; x=1811972711;
   h=date:from:to:cc:subject:message-id:references:
    mime-version:in-reply-to;
-  bh=y1ADfjlXNms8ZBUMtHS+kHppk6E04WG2MGtxZDw5VPQ=;
-  b=Ays48kj7lZCaRXhxGIt9pgHjLSiSEy21HIc6u0dXimntKLB8q653XIit
-   airOIkPCnPJ0G9QvvgId5C7LrAV8foLX+PiOnDO9pgrxOSayNcYcgXMTu
-   5ivOSAcCftpHRDIPa3WaHuGvVW5Nd+85Vi8xr5L25IDrtnowjebFBEL2F
-   j6C8pg+8npnTzwaJu/r3DfW2yB1DfF1YNyrFql8ZT6tywrqKX92oIOMM5
-   DESttfdbdPlLO96IUmG0jieSl514gMyUG+TfeOukPwA3Kf0KwC+6VfwDs
-   3VQsaqdPIYwj8vpT36MzPFFmeSCYFNVdeQCm81XFmXX9+njMLr9Qpyuil
-   g==;
-X-CSE-ConnectionGUID: Jlwe5SkGQxyTCIe/1S/B2w==
-X-CSE-MsgGUID: P3LQd/JcS+29POOmwX1CpQ==
-X-IronPort-AV: E=McAfee;i="6800,10657,11805"; a="91546432"
+  bh=9mAoO9H8Y2BWm5p5K9c3oIGIMMxULY9BhMvq3EtYzfM=;
+  b=VaH44L8MNVumZXyEXRK8AfdaQNRXXVbJOIqxBpfPga+NfruxtYz4WPWv
+   iFbOmuZwzUO0a+RHjpn0HZWq3fKiP8CgXIQyMECDulHQqlcn8F4orXntH
+   MCXcwudjW7kQIASkMedK3qtQRGfdtxuoF3HDavTP82HF13Hz+e2UP8DrG
+   xcvomKiruDpx02hN08hls/QIQbNMXX7GJhL8n6FQz+mFkv7C+8wvs3YSk
+   e3ybOfGgXyjEvanK+lFrEq7C0I1qXuKgvRWJi8PN1jnxgLAPA0XTbftLB
+   14VNu04wwUABisJbvro324yTUitnZNnkYKHZ5OAtRfcKG5kH5TjXjrMyx
+   w==;
+X-CSE-ConnectionGUID: 2vpw5QWaQzWX2q5jXLwKKw==
+X-CSE-MsgGUID: WGE6paOaTgOJTRVuq1HpUA==
+X-IronPort-AV: E=McAfee;i="6800,10657,11805"; a="81209909"
 X-IronPort-AV: E=Sophos;i="6.24,183,1774335600"; 
-   d="scan'208";a="91546432"
-Received: from fmviesa007.fm.intel.com ([10.60.135.147])
-  by orvoesa103.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 02 Jun 2026 14:42:08 -0700
-X-CSE-ConnectionGUID: tgIXYpSsR9qp+knkNCaUJg==
-X-CSE-MsgGUID: nLO3XIOVTTyZUZFp+zTfGQ==
+   d="scan'208";a="81209909"
+Received: from fmviesa009.fm.intel.com ([10.60.135.149])
+  by orvoesa111.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 02 Jun 2026 14:45:10 -0700
+X-CSE-ConnectionGUID: UvnADU78SIC781mCxKiYQg==
+X-CSE-MsgGUID: DRVbexEBQcalNu55EQ4gaw==
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="6.24,183,1774335600"; 
-   d="scan'208";a="241042785"
+   d="scan'208";a="237669752"
 Received: from pgcooper-mobl3.ger.corp.intel.com (HELO localhost) ([10.245.244.116])
-  by fmviesa007-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 02 Jun 2026 14:41:55 -0700
-Date: Wed, 3 Jun 2026 00:41:53 +0300
+  by fmviesa009-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 02 Jun 2026 14:44:57 -0700
+Date: Wed, 3 Jun 2026 00:44:55 +0300
 From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 To: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
 Cc: Lee Jones <lee@kernel.org>,
@@ -94,11 +94,11 @@ Cc: Lee Jones <lee@kernel.org>,
 	intel-xe@lists.freedesktop.org, dri-devel@lists.freedesktop.org,
 	linux-usb@vger.kernel.org, linux-mips@vger.kernel.org,
 	platform-driver-x86@vger.kernel.org
-Subject: Re: [PATCH 07/23] driver core: platform: provide
- platform_device_set_fwnode()
-Message-ID: <ah9OIVyrHEhcMHzN@ashevche-desk.local>
+Subject: Re: [PATCH 08/23] driver core: platform: provide
+ platform_device_set_of_node_from_dev()
+Message-ID: <ah9O15bMlAYgSlHx@ashevche-desk.local>
 References: <20260521-pdev-fwnode-ref-v1-0-88c324a1b8d2@oss.qualcomm.com>
- <20260521-pdev-fwnode-ref-v1-7-88c324a1b8d2@oss.qualcomm.com>
+ <20260521-pdev-fwnode-ref-v1-8-88c324a1b8d2@oss.qualcomm.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -107,19 +107,18 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20260521-pdev-fwnode-ref-v1-7-88c324a1b8d2@oss.qualcomm.com>
+In-Reply-To: <20260521-pdev-fwnode-ref-v1-8-88c324a1b8d2@oss.qualcomm.com>
 Organization: Intel Finland Oy - BIC 0357606-4 - c/o Alberga Business Park, 6
  krs, Bertel Jungin Aukio 5, 02600 Espoo
 
-On Thu, May 21, 2026 at 10:36:30AM +0200, Bartosz Golaszewski wrote:
-> Provide a helper function encapsulating the logic of assigning firmware
-> nodes to platform devices created with platform_device_alloc(). Make the
-> kerneldoc state that this is the proper interface for assigning firmware
-> nodes to dynamically allocated platform devices. This will allow us to
-> switch to counting the references of the device's firmware nodes in the
-> future, not only the OF nodes.
+On Thu, May 21, 2026 at 10:36:31AM +0200, Bartosz Golaszewski wrote:
+> Provide a platform-specific variant of device_set_of_node_from_dev(). In
+> addition to bumping the reference count of the OF node being assigned,
+> it also assigns the fwnode of the platform device.
 
-But why different for of_node and fwnode to begin with?!
+Can we rather investigate the way how to make that of node reuse thingy
+(which is used solely by pin control) differently and then drop this confusing
+device_set_of_node_from_dev() call altogether?
 
 -- 
 With Best Regards,
