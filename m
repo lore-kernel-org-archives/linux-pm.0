@@ -1,75 +1,114 @@
-Received: from mailgw.kylinos.cn (mailgw.kylinos.cn [124.126.103.232])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3B84C1FF1DA
-	for <linux-pm@vger.kernel.org>; Tue,  2 Jun 2026 10:31:27 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=124.126.103.232
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BDC853C9899;
+	Tue,  2 Jun 2026 10:48:17 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1780396290; cv=none; b=MZdq5qaTEimBYW+nVzw2e1A80tDB+APKC8lQf1J5izBcCgKZpZpZPjDXUmLWJNymWhIROE9Yy7PQvLfn3WObhw+iGwi5fs2TPPQEmmEUjCbgPeY/7Q2BApWXbZ8cYa45OoCkqXlmuf6ewh5JhU8zcEqNyMe4QlvQJMbDemfuMvk=
+	t=1780397298; cv=none; b=ksNxeAcUE7h7Cg0B7uEeyJiE3zGGa8yBR4mevkBod70pTdwEx7anLXzSFPlX57GFc6pVTYUgl6jcTpoZDtLyaVp3CB6yJBHuX9m64GJ9dbV/xVHE2Q/DV4aE0yuoHJjMnl+/8a2Epa4QqI9aNhsv9WebMXNX27DyTJ1QwmJRFA4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1780396290; c=relaxed/simple;
-	bh=LTa2NDwleG1lPrgo3OF8JsVLxkUAK7tIK2qlTAwvY8A=;
-	h=From:To:Subject:Date:Message-Id:MIME-Version; b=XDHEI4qO4asJZx1i4ArCH2fN/Z8LqmNEJsA/Xx3I7AxXoP8GIU1KtUWVwmqBTYQW1N6jFY/BuXmB4DE23qySAwZ8lQxkXeEnyYv51QLY8EV+vaAqdinzC5MrRoOnggki0O5EdQTRp2dsM4vQBMigAal13yb2u5uXCtjWlZp5YI8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kylinos.cn; spf=pass smtp.mailfrom=kylinos.cn; arc=none smtp.client-ip=124.126.103.232
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kylinos.cn
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=kylinos.cn
-X-UUID: 337ba3705e6e11f1aa26b74ffac11d73-20260602
-X-CID-P-RULE: Release_Ham
-X-CID-O-INFO: VERSION:1.3.12,REQID:e8528698-dc70-4add-b124-910d9207e9f4,IP:0,U
-	RL:0,TC:0,Content:-5,EDM:-25,RT:0,SF:0,FILE:0,BULK:0,RULE:Release_Ham,ACTI
-	ON:release,TS:-30
-X-CID-META: VersionHash:e7bac3a,CLOUDID:b5a6d7ec8d76bb97595c97f4da8cc14c,BulkI
-	D:nil,BulkQuantity:0,Recheck:0,SF:102|850|865|898,TC:nil,Content:0|15|50,E
-	DM:2,IP:nil,URL:0,File:nil,RT:nil,Bulk:nil,QS:nil,BEC:nil,COL:0,OSI:0,OSA:
-	0,AV:0,LES:1,SPR:NO,DKR:0,DKP:0,BRR:0,BRE:0,ARC:0
-X-CID-BVR: 2,SSN|SDN
-X-CID-BAS: 2,SSN|SDN,0,_
-X-CID-FACTOR: TF_CID_SPAM_SNR
-X-CID-RHF: D41D8CD98F00B204E9800998ECF8427E
-X-UUID: 337ba3705e6e11f1aa26b74ffac11d73-20260602
-X-User: lijun01@kylinos.cn
-Received: from localhost.localdomain [(10.44.16.150)] by mailgw.kylinos.cn
-	(envelope-from <lijun01@kylinos.cn>)
-	(Generic MTA with TLSv1.3 TLS_AES_256_GCM_SHA384 256/256)
-	with ESMTP id 898214067; Tue, 02 Jun 2026 18:31:22 +0800
-From: Li Jun <lijun01@kylinos.cn>
-To: lijun01@kylinos.cn,
-	djakov@kernel.org,
-	linux-pm@vger.kernel.org
-Subject: [PATCH] interconnect: debugfs-client: add NULL check for platform_device_alloc
-Date: Tue,  2 Jun 2026 18:31:20 +0800
-Message-Id: <20260602103120.2966458-1-lijun01@kylinos.cn>
-X-Mailer: git-send-email 2.25.1
+	s=arc-20240116; t=1780397298; c=relaxed/simple;
+	bh=B4CKpiaUZCSxxkW/73r3zDFW0NKlGkUpiM/8pseozZw=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=VXb8kIrjN/QICYYRhdpbHhRg8gquUaeiB4Lk0ew3RwyE7dyFq8qMepkdpZ1Hx0BN2FAU/ZGGfjBiCGSlEBlOfCBd/6v0o+8QIJc7rXPooLtiFppVcXFVrQR9f4184/qABoEzsxNB1sOIQrX5GcYy/T3l1LT/nkLWz9HuwIejBhU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=K/fCq/iv; arc=none smtp.client-ip=100.103.45.18
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="K/fCq/iv"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7B5981F00893;
+	Tue,  2 Jun 2026 10:48:15 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1780397297;
+	bh=tGgC4rIykQ3vI8+aBBTzSeILiADhagNEiS7yfs4f4z8=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=K/fCq/iv5hMN588bwdg9gYjWLuiUNFwJp4nehXWTP5KMC7XZVB5Njdn3/C06JHJRa
+	 ngcJ5LVTQLb+CvrKdDNX0HEvCbP/BiS0B89HZwdwPj2BpyNSwmagyjEuFXVNui8zp9
+	 Zn4wpBAPV9I1+YRaYuzWUutZbGHaXXPnCcAwi8rLY29cfX0lkPruANsGA1epPcIZMm
+	 +NHpkl1p1qerA/JPwwGh8XdVj5wc6zJdo4gZGF9h55zaOWApP4GqjepX36bN5EJ6rz
+	 QLIBR3vkhp4s95cRtozXdcUfDynUFDUtP/XMq1mP6uteU72rxFizoxfO8UDIgixiHN
+	 ytN7dUi6RZZNg==
+Date: Tue, 2 Jun 2026 10:48:13 +0000
+From: Tzung-Bi Shih <tzungbi@kernel.org>
+To: Tomasz Figa <tfiga@chromium.org>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>,
+	Jonathan Corbet <corbet@lwn.net>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	Danilo Krummrich <dakr@kernel.org>,
+	Shuah Khan <skhan@linuxfoundation.org>,
+	Pavel Machek <pavel@kernel.org>, Len Brown <lenb@kernel.org>,
+	linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linux-pm@vger.kernel.org, driver-core@lists.linux.dev
+Subject: Re: [PATCH] PM: sleep: Allow disabling DPM watchdog by default
+Message-ID: <ah607VQjZeVKqOP0@google.com>
+References: <20260528103215.505795-1-tzungbi@kernel.org>
+ <CAJZ5v0gc7AtOjWd+cg6tFgzPBovu=wmYmavjaRRjTdNNd8q-0g@mail.gmail.com>
+ <ah47N8Ng9zfcASmk@google.com>
+ <CAAFQd5Drvq0iPAb2Ly=K7WLOmbRAcLY4TzZxHmhzarK4cvx1xA@mail.gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
+In-Reply-To: <CAAFQd5Drvq0iPAb2Ly=K7WLOmbRAcLY4TzZxHmhzarK4cvx1xA@mail.gmail.com>
 
-platform_device_alloc() may return NULL when memory allocation fails.
-Add proper error handling to prevent a potential NULL pointer
-dereference when calling platform_device_add() with a NULL pointer.
+On Tue, Jun 02, 2026 at 05:37:13PM +0900, Tomasz Figa wrote:
+> On Tue, Jun 2, 2026 at 11:09 AM Tzung-Bi Shih <tzungbi@kernel.org> wrote:
+> >
+> > On Mon, Jun 01, 2026 at 08:39:42PM +0200, Rafael J. Wysocki wrote:
+> > > On Thu, May 28, 2026 at 12:32 PM Tzung-Bi Shih <tzungbi@kernel.org> wrote:
+> > > > diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
+> > > > index e1b550664bab..4f92905f3edf 100644
+> > > > --- a/drivers/base/power/main.c
+> > > > +++ b/drivers/base/power/main.c
+> > > > @@ -527,6 +527,20 @@ module_param(dpm_watchdog_all_cpu_backtrace, bool, 0644);
+> > > >  MODULE_PARM_DESC(dpm_watchdog_all_cpu_backtrace,
+> > > >                  "Backtrace all CPUs on DPM watchdog timeout");
+> > > >
+> > > > +#ifdef CONFIG_DPM_WATCHDOG_DEFAULT_ENABLED
+> > > > +static unsigned int __read_mostly dpm_watchdog_enabled = 1;
+> > > > +#else
+> > > > +static unsigned int __read_mostly dpm_watchdog_enabled;
+> > > > +#endif
+> > > > +
+> > > > +static int __init dpm_watchdog_setup(char *str)
+> > > > +{
+> > > > +       if (kstrtouint(str, 0, &dpm_watchdog_enabled) == 0)
+> > > > +               return 1;
+> > > > +       return 0;
+> > > > +}
+> > > > +__setup("dpm_watchdog_enabled=", dpm_watchdog_setup);
+> > >
+> > > You might as well use a module parameter to allow this to be set or
+> > > clear at run time.  Is there a particular reason why you only want it
+> > > to be enabled or disabled via the kernel command line?
+> >
+> > Thanks for the suggestion.  Mainly because in our use cases, we only need
+> > to set it once at boot time.
+> >
+> > Also, I was wondering if we need to consider potential races if the flag
+> > can be set at runtime.  E.g.:
+> > 1) The flag is set.
+> > 2) dpm_watchdog_set() is called and the timer is started.
+> > 3) The flag is then unset.
+> > 4) The subsequent dpm_watchdog_clear() isn't stop the timer.
+> >
+> > Given this, would you still suggest providing the module parameter for
+> > completeness?
+> 
+> Would that lead to anything bad, though? If I'm remembering correctly,
+> would that mean that any already ongoing PM operations would still be
+> subject to the timer, but not any new ones.
 
-Signed-off-by: Li Jun <lijun01@kylinos.cn>
----
- drivers/interconnect/debugfs-client.c | 2 ++
- 1 file changed, 2 insertions(+)
+I was overthinking the race.  All userspace programs should be frozen when
+the DPM watchdog is active.  The race I was concerned about isn't possible.
 
-diff --git a/drivers/interconnect/debugfs-client.c b/drivers/interconnect/debugfs-client.c
-index 08df9188ef94..91f86d9237a6 100644
---- a/drivers/interconnect/debugfs-client.c
-+++ b/drivers/interconnect/debugfs-client.c
-@@ -142,6 +142,8 @@ int icc_debugfs_client_init(struct dentry *icc_dir)
- 	int ret;
- 
- 	pdev = platform_device_alloc("icc-debugfs-client", PLATFORM_DEVID_NONE);
-+	if (!pdev)
-+		return -ENOMEM;
- 
- 	ret = platform_device_add(pdev);
- 	if (ret) {
--- 
-2.25.1
+Would you still suggest providing the module parameter for completeness?
 
+> 
+> My suggestion would also be to actually make the timeout and warning
+> timeout configurable at runtime.
+
+I'm working on that and I think that should be in a separate patch.
