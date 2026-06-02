@@ -1,129 +1,147 @@
-Received: from sendmail.purelymail.com (sendmail.purelymail.com [34.202.193.197])
+Received: from smtpbguseast1.qq.com (smtpbguseast1.qq.com [54.204.34.129])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CF0F6360751
-	for <linux-pm@vger.kernel.org>; Tue,  2 Jun 2026 03:05:49 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=34.202.193.197
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8E6A83233E8;
+	Tue,  2 Jun 2026 03:24:40 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=54.204.34.129
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1780369551; cv=none; b=p+J84y2AyBEgGsquqLPdRCOouxc+dGxMn/0OTHjhKPWygkQrCwOQIxNDVIrk1RH+DzUgzbgA1tnokjsvH8YADccom0wtMpDtZ5iFF0j0O/wKMp/VOS/igqdvhJLSjI6T542MQeahRrhven5eGn7TdG2ANc8NVE3QIks5o3EXOXs=
+	t=1780370686; cv=none; b=VVMlChvbb02NepKVc/ZW1FxM+GaAAhwkoHkzKOdyMg+oQ/N8uDW8jqXrk8Z5gBe4aiKVTf2qK/RxQAPZGGyJvk7dWC0zODv1kKzuVs4B1Zq4nIQDgzzQWD4sYc/EdO38fRyYnBudGDGxMoziQVtnMFB+60ZyuUj6lgU4v1RaT8s=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1780369551; c=relaxed/simple;
-	bh=f3zVbPBAMrce9oSBZHsiqEpX15pcL+jBl7cA2FiUI4s=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=RCocpusnzZ8ysJjjKknJW2U7OW1MR+g1tMYIoPgpzFJ5NFvlbjLtEXB9nPqA++O12SXYSYSu7y2G4j8nkVJpofCMhhlufsL7EibNdd3UWZMyLtLZ3XA6YqltvEPzHZOL2KSn2cAqDhHzXh+5iFN6Tvo0Ca08amwWH1ROF4IhCnc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=rcpassos.me; spf=pass smtp.mailfrom=rcpassos.me; dkim=pass (2048-bit key) header.d=rcpassos.me header.i=@rcpassos.me header.b=dZpNl4M/; dkim=pass (2048-bit key) header.d=purelymail.com header.i=@purelymail.com header.b=SpzwzfS+; arc=none smtp.client-ip=34.202.193.197
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=rcpassos.me
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=rcpassos.me
+	s=arc-20240116; t=1780370686; c=relaxed/simple;
+	bh=rcfAdu5JFRv9+PpxSEcJbPJNa2MF5dRJrCA4ua5wwCM=;
+	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
+	 MIME-Version; b=hOChlArlFp7bB+Pau7d8MFfJoSWmzZ01U3PYl1K3j+HgWkJbrhekcDaBJzGendKujhmvVGgarubQ+fxd5RD8CE4nZOzQb5HcA3mmj0r5ZOqS0ms3jeeT085g+qsZAuWlMS7GC0I7lOeQi7intxkCjFszSN7MGTDI9yev5/nq2hY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=uniontech.com; spf=pass smtp.mailfrom=uniontech.com; dkim=pass (1024-bit key) header.d=uniontech.com header.i=@uniontech.com header.b=gAWqknYF; arc=none smtp.client-ip=54.204.34.129
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=uniontech.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=uniontech.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=rcpassos.me header.i=@rcpassos.me header.b="dZpNl4M/";
-	dkim=pass (2048-bit key) header.d=purelymail.com header.i=@purelymail.com header.b="SpzwzfS+"
-Authentication-Results: purelymail.com; auth=pass
-DKIM-Signature: a=rsa-sha256; b=dZpNl4M/vVRayhwY2CUX4NxA5wkkCt/bf+MEyySXB0jWmQT6eejyATPA90UFy/TkY9pi4ZfkbEExViyrWZ2+uaa3YQXFpbcRDH8L9xuAGgEX1oH2uyBWy5ynWD9jgbrSk20QjVfSokagagpxVEtcEpaajf0yoW/Rog4ipcSpfFZFCsDdHFROV35hx1+xOsRxfFf7Bze5HxPFUKkM5Niup3oq49O1UPDS1F2wqCwHM+BF9+WF5udDpWKAFQBumBnMUTthXVfOMjUOwsMq7SDT+oHh+swUc0Y+4vYhAGo7Jxr95OKqV1Iy7lzELQre4DiEuNbKPBjQn9MPqHN5Zgmpkg==; s=purelymail1; d=rcpassos.me; v=1; bh=f3zVbPBAMrce9oSBZHsiqEpX15pcL+jBl7cA2FiUI4s=; h=Received:From:To:Subject:Date;
-DKIM-Signature: a=rsa-sha256; b=SpzwzfS+hiI/WR8j3bx7FQlYS1zNPs9aCD8QzW/D8WcLjQkjqoc5oO+ia0gUuRM1Xsoelv468fwFNsuwcEppv7+9sIzsYibu6V2op0fYoRo8RFBndeOpGy3UdTs7snxmXE2itJMMcXit1PBRY9swcwblYykw9zHInxq3xc4/dNtqNGQS3cPbT93qSfqJuE3i3pVODB5hf+a4/wiRM+xgb8xQqYqPaeIYvswnh9NaN5HjxOXAVu0l8EgzpPEAILUgyLkaZA4yBv+wSmAgqk/fpEUCKMZDqrGuMBb3lv6Z8WLImuf+wAVwSabD0UsqYtbYWWkpKVDHUufBuNgNEXtETA==; s=purelymail1; d=purelymail.com; v=1; bh=f3zVbPBAMrce9oSBZHsiqEpX15pcL+jBl7cA2FiUI4s=; h=Feedback-ID:Received:From:To:Subject:Date;
-Feedback-ID: 45355:7809:null:purelymail
-X-Pm-Original-To: linux-pm@vger.kernel.org
-Received: by smtp.purelymail.com (Purelymail SMTP) with ESMTPSA id -982909124;
-          (version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384);
-          Tue, 02 Jun 2026 03:05:35 +0000 (UTC)
-From: Rafael Passos <rafael@rcpassos.me>
-To: linux-input@vger.kernel.org,
-	lcasmz54@gmail.com,
-	bentiss@kernel.org
-Cc: hadess@hadess.net,
-	jikos@kernel.org,
+	dkim=pass (1024-bit key) header.d=uniontech.com header.i=@uniontech.com header.b="gAWqknYF"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=uniontech.com;
+	s=onoh2408; t=1780370678;
+	bh=dn8IPubHvNeXEKuaSdvnWy3G1wDEcbOyhaRuCaFScCU=;
+	h=From:To:Subject:Date:Message-Id:MIME-Version;
+	b=gAWqknYFmAbwuWLhg58rFiASb2xteKDZCsspk+X+bLzXtYsjV6h28jMunRrexrs8n
+	 cSCsKH9Bwxy96DWIrc7O+lRAx+q7oEAOzLFcRAKpwA6IT/h1TVtWlGs1WUU403Yfwu
+	 y+8zuJoUAJXqwZ67AbBQ/4s0pguX671fjkOVQFxk=
+X-QQ-mid: zesmtpsz3t1780370660t3a9299aa
+X-QQ-Originating-IP: fmcuOrwsv3WsdBsngma3ziQrLiGuL1e1TVsH2hItIlk=
+Received: from localhost.localdomain ( [113.57.152.160])
+	by bizesmtp.qq.com (ESMTP) with 
+	id ; Tue, 02 Jun 2026 11:24:17 +0800 (CST)
+X-QQ-SSF: 0000000000000000000000000000000
+X-QQ-GoodBg: 1
+X-BIZMAIL-ID: 18384957555402254008
+EX-QQ-RecipientCnt: 15
+From: Haowen Tu <tuhaowen@uniontech.com>
+To: rafael@kernel.org
+Cc: gregkh@linuxfoundation.org,
+	hansg@kernel.org,
+	kernel@uniontech.com,
+	laurent.pinchart@ideasonboard.com,
+	lenb@kernel.org,
 	linux-kernel@vger.kernel.org,
+	linux-media@vger.kernel.org,
 	linux-pm@vger.kernel.org,
-	sre@kernel.org,
-	kernel@lists.ime.usp.br,
-	Rafael Passos <rafael@rcpassos.me>
-Subject: [PATCH v2] HID: Input: Add battery list cleanup with devm action
-Date: Tue,  2 Jun 2026 00:05:19 -0300
-Message-ID: <20260602030519.3097058-1-rafael@rcpassos.me>
-X-Mailer: git-send-email 2.53.0
+	linux-usb@vger.kernel.org,
+	mchehab@kernel.org,
+	oneukum@suse.com,
+	pavel@kernel.org,
+	stern@rowland.harvard.edu,
+	tuhaowen@uniontech.com
+Subject: Re: [PATCH v2 1/2] PM: hibernate: add pm_hibernation_snapshot_done() helper
+Date: Tue,  2 Jun 2026 11:24:13 +0800
+Message-Id: <20260602032413.1540166-1-tuhaowen@uniontech.com>
+X-Mailer: git-send-email 2.20.1
+In-Reply-To: <CAJZ5v0gvcsowJL0oqKqaG-VFinpb9Rj06KNOkG9XaQ+6wp0Ygg@mail.gmail.com>
+References: <20260528081840.3528089-2-tuhaowen@uniontech.com> <CAJZ5v0gvcsowJL0oqKqaG-VFinpb9Rj06KNOkG9XaQ+6wp0Ygg@mail.gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-X-MIME-Autoconverted: from 8bit to quoted-printable by Purelymail
-Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-QQ-SENDSIZE: 520
+Feedback-ID: zesmtpsz:uniontech.com:qybglogicsvrsz:qybglogicsvrsz3b-0
+X-QQ-XMAILINFO: MbBTNOOgGymjteoZkaQ8JswGfC+XpLjEY+MwtwKgppJfYH33yXSOzmdV
+	e1yd3ScvY4UDRzFvizRIkiQakvNmzVjMxJO2PxD0zrgCfAetqgpP2r2itPzm2rsJnMZxebq
+	W9AQjGBsO+DT2dPEasYoUoO+DcSyZyfSegMFzshcBQy3MHtAjVLvTawB4tMf/OA8mfQSAiC
+	uE/2YxwUHkmo/XCpHizuJT2SDKKWIizDSukaB67LclGBbnB8MUcAfzh++jhET/zxM9OLS+n
+	riX8KKCvLC4E9I4uS3Ik5LfR0HexsAPt7/5HIdiRlSBFzeKKvrVbryA6gql3m9WLrkiFXxg
+	gboZQPbjIL2nc0UhOs1RAypU7LrS1pFIDU8boPVj/JP409DdXjLaKTcBdPoS9CZaUXwaHXN
+	bt+fvGsL0Gyy3tFAsKSPs47hbD6sDx3FShVv8yQTe2ACIpakjLrN7Q5sj+ejuFHwsnWu5Ol
+	+FuYvhjBj9sWrI6MFQyvxJyJ9dpFeGwyBZ3ctSZj+PtCjCc9Qtytparpwm17tiucWG9A827
+	WggPn452dc/eXUMdgpmX9+XjibUeZV0mU+60DSYJTtyBDIZUQ33SSPom170vfHaWPskzuUK
+	EU2ZPLodRgBlc3P1jO805Z00KKvcfOTZ4RPt+chSFU4c1C3XIrGiBRjw1Ihe2e2knyLzfYj
+	nIU7rtG0Jyi6fIQN1gBcxwAdanoWGUHQZcUZLPqYVHgcOudHP70FJFnARv6kmWJ8hm7fnEE
+	XHiQsqMoeQmdVzclLdpIg6AGdIVOLJSH7KkKe6xCNyumotTx4KGEeaKIqFwCMWchQYFykUM
+	+kl1FuERC3ai52rHEw5twq/BUp1ZRF7CNN7XYqANBu3frjgrJ5SLZjn0LuYpslklR+nqKtz
+	C245w6lvbIujB13mUqdTwxJ8tysy52YWfUP/sVbdQjpw5kyCGXTcrEBvz2YrgYv9zSsAZvl
+	noOevTI4d8axBWoF6VF7hwaWeGtn0WWjJlHgbXOE9OdlpTN6rYJwrU6Gj+2p9Olume0yoLs
+	9J1GwzTCp4JP+z1RMTBJJc0pppzugBm6NXhVohCw==
+X-QQ-XMRINFO: NI4Ajvh11aEjEMj13RCX7UuhPEoou2bs1g==
+X-QQ-RECHKSPAM: 0
 
-The batteries list (hdev->batteries) is not cleaned up during
-hidinput_disconnect(), but struct hid_battery entries are allocated
-with devm_kzalloc.
-When a driver is unbound (e.g. during devicereprobe), devm frees those
-entries while their list_head nodesremain dangling in hdev->batteries,
-which persists across rebinds.
+Hi Rafael,
 
-Fixes: 4a58ae85c3f9 ("HID: input: Add support for multiple batteries per de=
-vice")
-Signed-off-by: Rafael Passos <rafael@rcpassos.me>
----
-Hi, I hope there is time to land this in this cycle.
-Tell me if I should make any changes.
-I built and tested it againts the mainline.
-I dont have devices with multiple batteries to test.
+On Mon, Jun 01, 2026 at 08:22:00PM +0200, Rafael J. Wysocki wrote:
+> On Thu, May 28, 2026 at 10:19 AM Haowen Tu <tuhaowen@uniontech.com> wrote:
+> >
+> > During hibernation, after create_image() saves the memory snapshot, the
+> > kernel resumes devices with PMSG_THAW solely to write the hibernation
+> > image to storage, then powers off.  Drivers for hardware not involved in
+> > storage I/O have no reason to reinitialize during this transient phase.
+>
+> They do have a reason for doing it.
+>
+> Their poweroff (or shutdown) callbacks will be called while preparing
+> to power off the system subsequently and they need to be ready for
+> that.  The most straightforward way to achieve this is to resume so
+> they can "suspend" again.
 
-Bug report link:
-    https://lore.kernel.org/all/20260602011949.2825852-1-rafael@rcpassos.me=
-/
+Thanks for pointing this out.
 
-I received a sashiko review, and looked at wacom drivers for inspiration.
+My understanding is that the hibernation image contains the state from
+the snapshot point, that is before the subsequent THAW and image-write
+phase.  Therefore, on the later restore path, the kernel resumes from the
+state captured at the snapshot point and still goes through the normal
+PMSG_RESTORE resume path.  The THAW activity after the snapshot is not
+part of the restored image state.
 
-Changes in v2:
-- removed list deletion from hidinput_disconnect
-- new hidinput_cleanup_battery method
-- register the cleanup call using devm action
-  in hidinput_setup_battery
+That said, I agree that some devices may need to be resumed before the
+final poweroff/shutdown callbacks run, so the wording in the changelog is
+too broad.  I did not mean to suggest that all non-storage devices can or
+should skip THAW resume.
 
-If my searching was corect, this shoul be called when devres releases its g=
-roup
-The commit message changed, because it referenced the
-hidinput_disconnect method.
+The helper is meant to expose this PM state, not to prescribe that
+drivers should skip THAW resume.  Whether a driver uses it would remain a
+driver-specific decision, based on whether skipping the hardware
+reinitialization is safe for that device, including its subsequent
+poweroff/shutdown handling.  Drivers that need the normal THAW resume
+before poweroff/shutdown would simply not use it.
 
-Original patch: https://lore.kernel.org/linux-input/20260602020352.4256D1F0=
-0893@smtp.kernel.org/T/#t
-The sashiko review: https://sashiko.dev/#/patchset/20260602015029.2838058-1=
--rafael@rcpassos.me?part=3D1
+In this series the user is uvcvideo.  For USB devices, and specifically
+for UVC cameras, the device is hotpluggable and the driver already needs
+to tolerate device removal and disconnect-like conditions.  The UVC
+driver also does not need the camera streaming engine to be restarted in
+order to write the hibernation image, while restarting it has a visible
+side effect by turning the camera LED back on.  The check is placed after
+the driver's frozen state is cleared, so if image writeout fails, the
+driver is not left in the frozen state.
 
- drivers/hid/hid-input.c | 13 +++++++++++++
- 1 file changed, 13 insertions(+)
+I will reword the changelog in the next version to avoid implying that
+non-storage devices generally have no reason to resume during THAW.
 
-diff --git a/drivers/hid/hid-input.c b/drivers/hid/hid-input.c
-index d73cfa2e73d3..c7b8c4ff7a33 100644
---- a/drivers/hid/hid-input.c
-+++ b/drivers/hid/hid-input.c
-@@ -519,6 +519,13 @@ static struct hid_battery *hidinput_find_battery(struc=
-t hid_device *dev,
- =09return NULL;
- }
-=20
-+static void hidinput_cleanup_battery(void *res)
-+{
-+=09struct hid_battery *bat =3D res;
-+
-+=09list_del(&bat->list);
-+}
-+
- static int hidinput_setup_battery(struct hid_device *dev, unsigned report_=
-type,
- =09=09=09=09  struct hid_field *field, bool is_percentage)
- {
-@@ -610,6 +617,12 @@ static int hidinput_setup_battery(struct hid_device *d=
-ev, unsigned report_type,
-=20
- =09power_supply_powers(bat->ps, &dev->dev);
- =09list_add_tail(&bat->list, &dev->batteries);
-+
-+=09error =3D devm_add_action_or_reset(&dev->dev,
-+=09=09=09=09=09 hidinput_cleanup_battery, bat);
-+=09if (error)
-+=09=09return error;
-+
- =09return 0;
-=20
- err_free_name:
---=20
-2.53.0
+> > Clear in_suspend before releasing snapshot memory on hibernation failure
+> > paths and after swsusp_write() returns, so the helper does not report a
+> > stale snapshot after the snapshot pages have been released.
+>
+> This last piece needs to be split off into a separate patch.
 
+Sure, I will split the in_suspend cleanup into a separate patch in the
+next version.
+
+I will wait for your feedback before sending the next version.
+
+Thanks,
+Haowen
