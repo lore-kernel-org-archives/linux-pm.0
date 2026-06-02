@@ -1,120 +1,129 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+Received: from sendmail.purelymail.com (sendmail.purelymail.com [34.202.193.197])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A176629BD9A;
-	Tue,  2 Jun 2026 02:08:59 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CF0F6360751
+	for <linux-pm@vger.kernel.org>; Tue,  2 Jun 2026 03:05:49 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=34.202.193.197
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1780366140; cv=none; b=RkaHGgzrWC6mAYxxsaHcAQIzuljoYEa0gseDXA1kawbIz1XBhuqLqlKxAXDtV3IAy/ypwzo9fGafzmrH5bdu9cgRKIzB1ZE2ES9GGXrqqeB3QF81DH5nPowlCJamTyyeIc3EPzQE+/4i5HSG1ijZPwTBhORiYoFjlubC/whfV1Q=
+	t=1780369551; cv=none; b=p+J84y2AyBEgGsquqLPdRCOouxc+dGxMn/0OTHjhKPWygkQrCwOQIxNDVIrk1RH+DzUgzbgA1tnokjsvH8YADccom0wtMpDtZ5iFF0j0O/wKMp/VOS/igqdvhJLSjI6T542MQeahRrhven5eGn7TdG2ANc8NVE3QIks5o3EXOXs=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1780366140; c=relaxed/simple;
-	bh=4BHZ55I8M0TXApvgSlwo8lyoRxkRAi6JT5lTq6rvfgA=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=sYk0XiDFrXPItX0M6AN4gUn8eMbL9EF79maJt6PF90YuoyBqnfXSoyvDf5xhSMaZWM8JDxoBts0T2KB7K6EYJc5nNfTOd1SPV2NVQlCIrR2P8AtA5S5PYrvgHlgEY3vxAeozG5R/13Chslt8eLwPuJIw5Zn6k2Z0Y1wY8vD1/II=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=IX8uy/GT; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1780369551; c=relaxed/simple;
+	bh=f3zVbPBAMrce9oSBZHsiqEpX15pcL+jBl7cA2FiUI4s=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=RCocpusnzZ8ysJjjKknJW2U7OW1MR+g1tMYIoPgpzFJ5NFvlbjLtEXB9nPqA++O12SXYSYSu7y2G4j8nkVJpofCMhhlufsL7EibNdd3UWZMyLtLZ3XA6YqltvEPzHZOL2KSn2cAqDhHzXh+5iFN6Tvo0Ca08amwWH1ROF4IhCnc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=rcpassos.me; spf=pass smtp.mailfrom=rcpassos.me; dkim=pass (2048-bit key) header.d=rcpassos.me header.i=@rcpassos.me header.b=dZpNl4M/; dkim=pass (2048-bit key) header.d=purelymail.com header.i=@purelymail.com header.b=SpzwzfS+; arc=none smtp.client-ip=34.202.193.197
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=rcpassos.me
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=rcpassos.me
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="IX8uy/GT"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8EE3D1F00893;
-	Tue,  2 Jun 2026 02:08:57 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1780366139;
-	bh=+t0RYdIJ0r5/9fVdph4K07Ttv4KwZnct+mLmE7GxiC0=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=IX8uy/GTnMQZfAsvfMSS0CXCI/UCCofijMSMW/t3449FxNaXQHu1lJAOtLRwrf+xB
-	 Wm9ThH+5EAm1ThOxktJmpm9+t7u0x7XU0PJHKBN+a0ySWyuC+ttkbePvcArfBi30Yc
-	 qEClD+isYN9frA7DCjFVks1IPZUJDY3gLfoBhK6FuHgp+sPqm64LSYdBE+XJom6A7B
-	 mqNC3i42f8EqNuVTrUWH4cNFi8vEuyt4ycE6cyZmrUxRxR7sWtj564qbkQ+RlOBeFX
-	 iESr27DEOYC+1TWTUODyJVcRacYoLQjDHxz0Fd1LEhaMdRoaLmS8dsQPSMGj2uGmwE
-	 SXZn60Nj/cS2A==
-Date: Tue, 2 Jun 2026 02:08:55 +0000
-From: Tzung-Bi Shih <tzungbi@kernel.org>
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Jonathan Corbet <corbet@lwn.net>,
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	Danilo Krummrich <dakr@kernel.org>,
-	Shuah Khan <skhan@linuxfoundation.org>,
-	Pavel Machek <pavel@kernel.org>, Len Brown <lenb@kernel.org>,
-	linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linux-pm@vger.kernel.org, driver-core@lists.linux.dev,
-	tfiga@chromium.org
-Subject: Re: [PATCH] PM: sleep: Allow disabling DPM watchdog by default
-Message-ID: <ah47N8Ng9zfcASmk@google.com>
-References: <20260528103215.505795-1-tzungbi@kernel.org>
- <CAJZ5v0gc7AtOjWd+cg6tFgzPBovu=wmYmavjaRRjTdNNd8q-0g@mail.gmail.com>
+	dkim=pass (2048-bit key) header.d=rcpassos.me header.i=@rcpassos.me header.b="dZpNl4M/";
+	dkim=pass (2048-bit key) header.d=purelymail.com header.i=@purelymail.com header.b="SpzwzfS+"
+Authentication-Results: purelymail.com; auth=pass
+DKIM-Signature: a=rsa-sha256; b=dZpNl4M/vVRayhwY2CUX4NxA5wkkCt/bf+MEyySXB0jWmQT6eejyATPA90UFy/TkY9pi4ZfkbEExViyrWZ2+uaa3YQXFpbcRDH8L9xuAGgEX1oH2uyBWy5ynWD9jgbrSk20QjVfSokagagpxVEtcEpaajf0yoW/Rog4ipcSpfFZFCsDdHFROV35hx1+xOsRxfFf7Bze5HxPFUKkM5Niup3oq49O1UPDS1F2wqCwHM+BF9+WF5udDpWKAFQBumBnMUTthXVfOMjUOwsMq7SDT+oHh+swUc0Y+4vYhAGo7Jxr95OKqV1Iy7lzELQre4DiEuNbKPBjQn9MPqHN5Zgmpkg==; s=purelymail1; d=rcpassos.me; v=1; bh=f3zVbPBAMrce9oSBZHsiqEpX15pcL+jBl7cA2FiUI4s=; h=Received:From:To:Subject:Date;
+DKIM-Signature: a=rsa-sha256; b=SpzwzfS+hiI/WR8j3bx7FQlYS1zNPs9aCD8QzW/D8WcLjQkjqoc5oO+ia0gUuRM1Xsoelv468fwFNsuwcEppv7+9sIzsYibu6V2op0fYoRo8RFBndeOpGy3UdTs7snxmXE2itJMMcXit1PBRY9swcwblYykw9zHInxq3xc4/dNtqNGQS3cPbT93qSfqJuE3i3pVODB5hf+a4/wiRM+xgb8xQqYqPaeIYvswnh9NaN5HjxOXAVu0l8EgzpPEAILUgyLkaZA4yBv+wSmAgqk/fpEUCKMZDqrGuMBb3lv6Z8WLImuf+wAVwSabD0UsqYtbYWWkpKVDHUufBuNgNEXtETA==; s=purelymail1; d=purelymail.com; v=1; bh=f3zVbPBAMrce9oSBZHsiqEpX15pcL+jBl7cA2FiUI4s=; h=Feedback-ID:Received:From:To:Subject:Date;
+Feedback-ID: 45355:7809:null:purelymail
+X-Pm-Original-To: linux-pm@vger.kernel.org
+Received: by smtp.purelymail.com (Purelymail SMTP) with ESMTPSA id -982909124;
+          (version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384);
+          Tue, 02 Jun 2026 03:05:35 +0000 (UTC)
+From: Rafael Passos <rafael@rcpassos.me>
+To: linux-input@vger.kernel.org,
+	lcasmz54@gmail.com,
+	bentiss@kernel.org
+Cc: hadess@hadess.net,
+	jikos@kernel.org,
+	linux-kernel@vger.kernel.org,
+	linux-pm@vger.kernel.org,
+	sre@kernel.org,
+	kernel@lists.ime.usp.br,
+	Rafael Passos <rafael@rcpassos.me>
+Subject: [PATCH v2] HID: Input: Add battery list cleanup with devm action
+Date: Tue,  2 Jun 2026 00:05:19 -0300
+Message-ID: <20260602030519.3097058-1-rafael@rcpassos.me>
+X-Mailer: git-send-email 2.53.0
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <CAJZ5v0gc7AtOjWd+cg6tFgzPBovu=wmYmavjaRRjTdNNd8q-0g@mail.gmail.com>
+Content-Transfer-Encoding: quoted-printable
+X-MIME-Autoconverted: from 8bit to quoted-printable by Purelymail
+Content-Type: text/plain; charset=UTF-8
 
-On Mon, Jun 01, 2026 at 08:39:42PM +0200, Rafael J. Wysocki wrote:
-> On Thu, May 28, 2026 at 12:32 PM Tzung-Bi Shih <tzungbi@kernel.org> wrote:
-> > diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
-> > index e1b550664bab..4f92905f3edf 100644
-> > --- a/drivers/base/power/main.c
-> > +++ b/drivers/base/power/main.c
-> > @@ -527,6 +527,20 @@ module_param(dpm_watchdog_all_cpu_backtrace, bool, 0644);
-> >  MODULE_PARM_DESC(dpm_watchdog_all_cpu_backtrace,
-> >                  "Backtrace all CPUs on DPM watchdog timeout");
-> >
-> > +#ifdef CONFIG_DPM_WATCHDOG_DEFAULT_ENABLED
-> > +static unsigned int __read_mostly dpm_watchdog_enabled = 1;
-> > +#else
-> > +static unsigned int __read_mostly dpm_watchdog_enabled;
-> > +#endif
-> > +
-> > +static int __init dpm_watchdog_setup(char *str)
-> > +{
-> > +       if (kstrtouint(str, 0, &dpm_watchdog_enabled) == 0)
-> > +               return 1;
-> > +       return 0;
-> > +}
-> > +__setup("dpm_watchdog_enabled=", dpm_watchdog_setup);
-> 
-> You might as well use a module parameter to allow this to be set or
-> clear at run time.  Is there a particular reason why you only want it
-> to be enabled or disabled via the kernel command line?
+The batteries list (hdev->batteries) is not cleaned up during
+hidinput_disconnect(), but struct hid_battery entries are allocated
+with devm_kzalloc.
+When a driver is unbound (e.g. during devicereprobe), devm frees those
+entries while their list_head nodesremain dangling in hdev->batteries,
+which persists across rebinds.
 
-Thanks for the suggestion.  Mainly because in our use cases, we only need
-to set it once at boot time.
+Fixes: 4a58ae85c3f9 ("HID: input: Add support for multiple batteries per de=
+vice")
+Signed-off-by: Rafael Passos <rafael@rcpassos.me>
+---
+Hi, I hope there is time to land this in this cycle.
+Tell me if I should make any changes.
+I built and tested it againts the mainline.
+I dont have devices with multiple batteries to test.
 
-Also, I was wondering if we need to consider potential races if the flag
-can be set at runtime.  E.g.:
-1) The flag is set.
-2) dpm_watchdog_set() is called and the timer is started.
-3) The flag is then unset.
-4) The subsequent dpm_watchdog_clear() isn't stop the timer.
+Bug report link:
+    https://lore.kernel.org/all/20260602011949.2825852-1-rafael@rcpassos.me=
+/
 
-Given this, would you still suggest providing the module parameter for
-completeness?
+I received a sashiko review, and looked at wacom drivers for inspiration.
 
-> 
-> > +
-> >  /**
-> >   * dpm_watchdog_handler - Driver suspend / resume watchdog handler.
-> >   * @t: The timer that PM watchdog depends on.
-> > @@ -570,6 +584,9 @@ static void dpm_watchdog_set(struct dpm_watchdog *wd, struct device *dev)
-> >  {
-> >         struct timer_list *timer = &wd->timer;
-> >
-> > +       if (!dpm_watchdog_enabled)
-> > +               return;
-> > +
-> >         wd->dev = dev;
-> >         wd->tsk = current;
-> >         wd->fatal = CONFIG_DPM_WATCHDOG_TIMEOUT == CONFIG_DPM_WATCHDOG_WARNING_TIMEOUT;
-> > @@ -588,6 +605,9 @@ static void dpm_watchdog_clear(struct dpm_watchdog *wd)
-> >  {
-> >         struct timer_list *timer = &wd->timer;
-> >
-> > +       if (!dpm_watchdog_enabled)
-> > +               return;
-> > +
-> >         timer_delete_sync(timer);
-> >         timer_destroy_on_stack(timer);
-> >  }
+Changes in v2:
+- removed list deletion from hidinput_disconnect
+- new hidinput_cleanup_battery method
+- register the cleanup call using devm action
+  in hidinput_setup_battery
+
+If my searching was corect, this shoul be called when devres releases its g=
+roup
+The commit message changed, because it referenced the
+hidinput_disconnect method.
+
+Original patch: https://lore.kernel.org/linux-input/20260602020352.4256D1F0=
+0893@smtp.kernel.org/T/#t
+The sashiko review: https://sashiko.dev/#/patchset/20260602015029.2838058-1=
+-rafael@rcpassos.me?part=3D1
+
+ drivers/hid/hid-input.c | 13 +++++++++++++
+ 1 file changed, 13 insertions(+)
+
+diff --git a/drivers/hid/hid-input.c b/drivers/hid/hid-input.c
+index d73cfa2e73d3..c7b8c4ff7a33 100644
+--- a/drivers/hid/hid-input.c
++++ b/drivers/hid/hid-input.c
+@@ -519,6 +519,13 @@ static struct hid_battery *hidinput_find_battery(struc=
+t hid_device *dev,
+ =09return NULL;
+ }
+=20
++static void hidinput_cleanup_battery(void *res)
++{
++=09struct hid_battery *bat =3D res;
++
++=09list_del(&bat->list);
++}
++
+ static int hidinput_setup_battery(struct hid_device *dev, unsigned report_=
+type,
+ =09=09=09=09  struct hid_field *field, bool is_percentage)
+ {
+@@ -610,6 +617,12 @@ static int hidinput_setup_battery(struct hid_device *d=
+ev, unsigned report_type,
+=20
+ =09power_supply_powers(bat->ps, &dev->dev);
+ =09list_add_tail(&bat->list, &dev->batteries);
++
++=09error =3D devm_add_action_or_reset(&dev->dev,
++=09=09=09=09=09 hidinput_cleanup_battery, bat);
++=09if (error)
++=09=09return error;
++
+ =09return 0;
+=20
+ err_free_name:
+--=20
+2.53.0
+
