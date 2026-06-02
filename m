@@ -1,181 +1,180 @@
-Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
+Received: from sender4-pp-f112.zoho.com (sender4-pp-f112.zoho.com [136.143.188.112])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8BE5526E706
-	for <linux-pm@vger.kernel.org>; Tue,  2 Jun 2026 16:01:43 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.180.131
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1780416104; cv=none; b=DjiVufLcfbj+8xwqX2uo1dNdifLedioUy0kw6ihtnC2FN1aZWgsppB11lp6pATa0GdQB7kOTCUeEPYmiIMO697ecyHCtIXn2a7/3RGlSFEejwcgjbPTqT1J1yDJqVhkvg30XYPAslg/bzWhW0T+IgeHMDrghu30ciSz7qseracU=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1780416104; c=relaxed/simple;
-	bh=U8u87X4cEVl7xeiYNxJ9zFvPFZ++Mg3bP33Z2AuGVtY=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=U26HQd1HTpPohpiU6L9XGpZJP5nac9Ibo/DPCz/zEgNFUnD0S8Dx6AkvHpxiLtrIKJe7MxeB/boLhByg7JIH/JATGi7ADdDD0BHeXQ+rINlE17OYIsxWTAihQfmWGNi9rxs8327ank1HKkfZrA5+aO1Aovni/kI0YZ12erkcZZk=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=ecnlHgn9; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=f0G/Hnhu; arc=none smtp.client-ip=205.220.180.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1454326E706;
+	Tue,  2 Jun 2026 16:17:31 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=136.143.188.112
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1780417053; cv=pass; b=c+xDqOosQtaqr8+NBbrHRMgNCLZ5bAOQd9ScE48cJT0vAklYA0sJvKLQR5kK01Mp6D5Fe8N9HJdMwhmtNwaVpii4oXydlmIqhSKt8ZDo99PaJLkWOo2x3Pk7P2GWzeh8x3mmcb45OW9nTg728R3EhgEdtsOp9pCY2O4u7JFU1I0=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1780417053; c=relaxed/simple;
+	bh=kGL5GoSrxxNYelyQVOL7P+pk8TKiBY5rgX6SEgPGHkA=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=fXL48ysny48aH/3Sou57G1o8e/K1MHqxzHM7P803lHbyK+jlKnOdnZx8ew1+8mdk+yVLBZplPnrmL0RPRTMfhDueI57GN8m4Q5IuDw1zGVfbTuI2sPeNVFjwrgXqVMIbaq5QNjEUyyTfSwWxjdlYE4YUXq2ojbs5Jdf1/s07L5w=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (1024-bit key) header.d=collabora.com header.i=sebastian.reichel@collabora.com header.b=Y6Ua1359; arc=pass smtp.client-ip=136.143.188.112
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="ecnlHgn9";
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="f0G/Hnhu"
-Received: from pps.filterd (m0279870.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 652DBLp62885132
-	for <linux-pm@vger.kernel.org>; Tue, 2 Jun 2026 16:01:42 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	9cHo+HdLfWszrxz8FIlQUKjxLUJPM3VQU+KKIaZgzs8=; b=ecnlHgn9Mot6/zjN
-	P/Lx9gAlO0F9M5Kvyys6oergtAHmwf0hlMC/HPcSzcdCKheQFuMK71KnDqiEfI6d
-	5DuV7b0zGAXkDtD0/6wRkIGlOG8vdpY1uGDoEFEJvHDgGS+ngjGxhXHUgNGDWR6P
-	Kf6+Dd9zji1rcznj+z9+EsUrpcQjEOQCG6S1KCXE4dAVYno1cVJaVyS50SCiAfsZ
-	N+MnBRBijUy66CdEy25rXcteN97sWzBHdf4Vfy0sJM8USRWa87SQh8KkM1oUao5f
-	N20FQe41eDuQq2kAxYpSFuIFIdeycxrJsFbAwIysRq/6PKFwZRZrLr5Q/BKl/f69
-	oKE2Hw==
-Received: from mail-vs1-f71.google.com (mail-vs1-f71.google.com [209.85.217.71])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4ehsu12b4w-1
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Tue, 02 Jun 2026 16:01:42 +0000 (GMT)
-Received: by mail-vs1-f71.google.com with SMTP id ada2fe7eead31-6cfb918a9d7so3674259137.0
-        for <linux-pm@vger.kernel.org>; Tue, 02 Jun 2026 09:01:42 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1780416102; x=1781020902; darn=vger.kernel.org;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=9cHo+HdLfWszrxz8FIlQUKjxLUJPM3VQU+KKIaZgzs8=;
-        b=f0G/Hnhu5TetNIO11Mkkb58zCRB8VUsmztYr/Ns0ncdKWT5Tp4n1DZl40+zDyOAGRk
-         N7+uGXnQrb9d+h4nCnFO6zRglTel7laoOOvb9Rnr7Xqu9nl8EEaHPt3X6y0iV2bTuHzT
-         E8IPyyMZiepGkwogzcePiNIhsx1YQqumKC3vk9d/bklZAUgi+mjjCGjF0EcqfdXhw+Kh
-         Lrn8Agw1WzGa8yJnzmWazxf08Fv2DaGhGyj7d6x1vIHwujJiYZ4ThmyKtN01Ok758bm0
-         PmUJU+brVmv/MF0+YO6xtbcQxoBz72oC9BBYw92AoT8JBROifQSVv6xCcYkKxb7Ch+R7
-         Y1Pg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1780416102; x=1781020902;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=9cHo+HdLfWszrxz8FIlQUKjxLUJPM3VQU+KKIaZgzs8=;
-        b=AJoPoUOAG9R6JGNSoaZcLBTUf+KIBOY/dqZ2tE+kU3uFSMIasOPIuwg/CUgcdlMFlq
-         7EPdxAChk1fx7LMaqYhm0cNiA9l6fjkf5Z6LgfBajBLuHrpNMW9AmPXEojbdxPvfLOVl
-         PbOt13/iybuztr/2Y2Sm2mZtMI2ZlfU8qb7DjW3+KcpMtM2UDPSab7q0eNM8CXjnMxY9
-         KSKZC4+xsU8YhM0j+isP9V+Ko0XYLQ0GqVAUOh71H4aniO78kmQn9g0UTwkKckOAlGOQ
-         qsVhMzsx3/7p/PQA7e9Fqtvl4wha3b6VfTBKSD5cfayAMjIUBA44NvAokDk7zlKNoS0E
-         stAw==
-X-Forwarded-Encrypted: i=1; AFNElJ/MjC9HPveEjnNINILydBTEU2jErMyzefjS4oHiAzQZ48nWwLpsDw5b59Kvaz2NHD33hWomODzAeQ==@vger.kernel.org
-X-Gm-Message-State: AOJu0YzZC1ANZn+v0e5/nIQefqqiwkj4pvPSLYRiOyZSerVnoQhQL1eO
-	EpepbBHfV+p4/wimEJfxxVOE2/WHV3xEKM1HeTkAEvthBJf/fbaR4WZpZ9MHHMZTVZE8vkb/cPP
-	oXUGWJ+MtKYnh/WJgGurpu8xcgWkYbZ0qs/BB54vs7jUxhqdeeZGCBnBmjWYyRw==
-X-Gm-Gg: Acq92OEnbsEvLidw6Ddr7veprtgsQAMnz2Gr62emCnc2almW862EEKT8CYCf62Yu/SL
-	jqgCKjHAsWHSb5DiZAScJqGZd2GEjGVV303ozIYR1rbD+vj3YIzU1e+XA1Yb/74DrZF28S3UF37
-	HYZ71cMWqGQ7snzEdpW7VeDlpmRrRz3h5vnWugewQF2z72LRm9WHvTJ57jhq+g5rra8UVUnfHV9
-	mdhIPP/QG7HBfIWjJ6vOKqnZir57Q6CRt8tRaxZyweAYQZ4o7L79+veqe41hbkDcgXyg0b6tXGV
-	ET3FOSDSuIxVIrYV7cGeVtt5pXMoL+f3XKLutzKXRCNS5w+3vhSbfMGn2mzT87OA6Y74RV3WfU7
-	mWq3CWxnpo2B17hxprLC/K+hHBBU6LKMYjKFrOrAv0XA7sKyH1O1kknVj6Dy0yrfM6NpE/cWVn3
-	Yz
-X-Received: by 2002:a05:6102:a49:b0:639:4bb7:c916 with SMTP id ada2fe7eead31-6ea1cc674f6mr506753137.3.1780416088533;
-        Tue, 02 Jun 2026 09:01:28 -0700 (PDT)
-X-Received: by 2002:a05:6102:a49:b0:639:4bb7:c916 with SMTP id ada2fe7eead31-6ea1cc674f6mr505747137.3.1780416079609;
-        Tue, 02 Jun 2026 09:01:19 -0700 (PDT)
-Received: from [192.168.2.1] (146725694.box.freepro.com. [130.180.211.218])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-4601f351d40sm199325f8f.26.2026.06.02.09.01.14
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 02 Jun 2026 09:01:18 -0700 (PDT)
-Message-ID: <9adbe3cb-d42e-4b89-b6d7-62dd58b98e15@oss.qualcomm.com>
-Date: Tue, 2 Jun 2026 18:01:13 +0200
+	dkim=pass (1024-bit key) header.d=collabora.com header.i=sebastian.reichel@collabora.com header.b="Y6Ua1359"
+ARC-Seal: i=1; a=rsa-sha256; t=1780417045; cv=none; 
+	d=zohomail.com; s=zohoarc; 
+	b=KjOZoU/X7ci5/8cLfRMiibLbuZBr5/LdQ2ALqjHaziiLdlnQJu8Y5tNU5XYqpXbFlOyro5kJmSgBChDXIZ+bNpnds8CigMZZf/QtUvTs2aQ/aKIO5hvRhY5Jk/eCCemZeur4ffKZOoOWZUC2ubxbPQmIQUx3esrAg5SQPTuTv+Y=
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=zohomail.com; s=zohoarc; 
+	t=1780417045; h=Content-Type:Cc:Cc:Date:Date:From:From:In-Reply-To:MIME-Version:Message-ID:References:Subject:Subject:To:To:Message-Id:Reply-To; 
+	bh=gsqbAdhGzXllXxa+Bt8LLJa7hDfPuUC2XB/tua45DFQ=; 
+	b=bQVRTcv5uAxkA3u2s1bSmgnkmX/3/WbjBWYynfO5TtEDBrnQDFgkqfH6li7GrmpU/1YQ+BGlLrco387fSSmVoKeSUozuth8B2tYWU5EBcJ5NJmB1pZo2FrKeqXdKCJFMM/+fvzuy0cnGwUBVXchofSxF5d/wMgOYQo3oJU6rSiY=
+ARC-Authentication-Results: i=1; mx.zohomail.com;
+	dkim=pass  header.i=collabora.com;
+	spf=pass  smtp.mailfrom=sebastian.reichel@collabora.com;
+	dmarc=pass header.from=<sebastian.reichel@collabora.com>
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; t=1780417045;
+	s=zohomail; d=collabora.com; i=sebastian.reichel@collabora.com;
+	h=Date:Date:From:From:To:To:Cc:Cc:Subject:Subject:Message-ID:References:MIME-Version:Content-Type:In-Reply-To:Message-Id:Reply-To;
+	bh=gsqbAdhGzXllXxa+Bt8LLJa7hDfPuUC2XB/tua45DFQ=;
+	b=Y6Ua13596afGMYN5I+lx/ePez3DSLrMN8bXCVmcbcjWC5yyNqlX/A1/eyMjO33+2
+	SQwVa5jxVIVBapo+kb6vr73sieR71MvQPO7ioH41P4d9g1HwnWKG/qrES1QEdRT6Fm0
+	4Db6BULkql3x+rPPpLD3oZ8l5pavI6LIoSoIR0k4=
+Received: by mx.zohomail.com with SMTPS id 1780417043324202.710623861592;
+	Tue, 2 Jun 2026 09:17:23 -0700 (PDT)
+Received: by venus (Postfix, from userid 1000)
+	id D081018094C; Tue, 02 Jun 2026 18:17:16 +0200 (CEST)
+Date: Tue, 2 Jun 2026 18:17:16 +0200
+From: Sebastian Reichel <sebastian.reichel@collabora.com>
+To: Waqar Hameed <waqar.hameed@axis.com>
+Cc: Rob Herring <robh@kernel.org>, 
+	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, kernel@axis.com, 
+	linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org
+Subject: Re: [RFC PATCH 0/2] Add driver for TI BQ25630 charger
+Message-ID: <ah72aPNg-psfHrHi@venus>
+References: <cover.1772201049.git.waqar.hameed@axis.com>
+ <pnda4tunkrx.a.out@axis.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v3] thermal: amlogic: add missing dependency on MESON_SM
-To: linux-kernel-dev@aliel.fr, Neil Armstrong <neil.armstrong@linaro.org>,
-        Daniel Lezcano <daniel.lezcano@kernel.org>,
-        Zhang Rui <rui.zhang@intel.com>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Lukasz Luba <lukasz.luba@arm.com>
-Cc: Guillaume La Roque <glaroque@baylibre.com>,
-        Kevin Hilman <khilman@baylibre.com>,
-        Jerome Brunet <jbrunet@baylibre.com>,
-        Martin Blumenstingl <martin.blumenstingl@googlemail.com>,
-        linux-arm-kernel@lists.infradead.org,
-        linux-amlogic@lists.infradead.org, linux-kernel@vger.kernel.org,
-        linux-pm@vger.kernel.org, Mark Brown <broonie@kernel.org>,
-        kernel test robot <lkp@intel.com>
-References: <20260602-fix-missing-meson_sm-symbol-v3-1-6f7f69cd7d6c@aliel.fr>
-Content-Language: en-US
-From: Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>
-In-Reply-To: <20260602-fix-missing-meson_sm-symbol-v3-1-6f7f69cd7d6c@aliel.fr>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Proofpoint-ORIG-GUID: Oe5OW972sTVIbLPVWGBwLDSL09kOF7eY
-X-Proofpoint-GUID: Oe5OW972sTVIbLPVWGBwLDSL09kOF7eY
-X-Authority-Analysis: v=2.4 cv=MKFQXsZl c=1 sm=1 tr=0 ts=6a1efe66 cx=c_pps
- a=P2rfLEam3zuxRRdjJWA2cw==:117 a=uw/3876vWhRnNVL35W6mqQ==:17
- a=IkcTkHD0fZMA:10 a=FelO9ux0wxsA:10 a=s4-Qcg_JpJYA:10
- a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=gowsoOTTUOVcmtlkKump:22
- a=VwQbUJbxAAAA:8 a=QyXUC8HyAAAA:8 a=tv4TSO8pNUtKKAd5OgUA:9 a=QEXdDO2ut3YA:10
- a=ODZdjJIeia2B_SHc_B0f:22
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNjAyMDE1NSBTYWx0ZWRfXxlewkZ15285r
- F3kAH0lLELxhWqSUfs1BDxWmwivnV4TtKTJd8FPXAaailSGTQ/8ln/CaPgZsp3av8hnZSVKKlPi
- w3pVaAZ3PndQnfG+gx38B4n3swBRSqHUQv+iupCGWaaueIGuvaj1hhYXj7+SW1xQsxwGJQHa3ZQ
- W9/g5g472+Zcjs1hAeUi4PuGKjC5KDS6uZglRUugNSKt5skINbLY6LuAldRC2iWNj/zetW6g4Vh
- 2F4yLaAePqvFsCYg4d4q732QOJnIsS8p2bsUN+4SZ4z2SCCTkK4ol2cCJgf5Dcnuypcm+yDDWxU
- P6M9FdNRpkItRk0UE+EVvkXL7ZJJkWbv59Wb/18VAtmvqLnuuZS+ds5iE7fgBGgLuSUPbV7n1eC
- ZZSJwOYpyjqu+1q4KvbrOf5jDW5suiUqtrqbfHDms0uaZkC7OZeZL0/ssUyn4r30NO8JBnYALUb
- iKzP6iEyjZAQi55WFDA==
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.125,FMLib:17.12.100.49
- definitions=2026-06-02_02,2026-05-28_03,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- phishscore=0 priorityscore=1501 impostorscore=0 adultscore=0
- lowpriorityscore=0 bulkscore=0 spamscore=0 clxscore=1015 suspectscore=0
- malwarescore=0 classifier=typeunknown authscore=0 authtc= authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2605210000
- definitions=main-2606020155
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="oybkq5ntld5gkntk"
+Content-Disposition: inline
+In-Reply-To: <pnda4tunkrx.a.out@axis.com>
+X-Zoho-Virus-Status: 1
+X-Zoho-AV-Stamp: zmail-av-0.1.0.1.4.3/280.384.96
+X-ZohoMailClient: External
 
-On 6/2/26 16:19, Ronald Claveau via B4 Relay wrote:
-> From: Ronald Claveau <linux-kernel-dev@aliel.fr>
-> 
-> The amlogic thermal driver calls meson_sm_get() and
-> meson_sm_get_thermal_calib() which are exported by the meson_sm
-> driver. Without CONFIG_MESON_SM enabled, the build fails with
-> undefined references to these symbols.
-> 
-> Add a proper Kconfig dependency on MESON_SM instead of relying on
-> stub functions, which makes the dependency explicit and prevents
-> invalid configurations.
-> 
-> Closes: https://lore.kernel.org/oe-kbuild-all/202605291530.en7aGn7w-lkp@intel.com/
-> Reported-by: Mark Brown <broonie@kernel.org>
-> Reported-by: kernel test robot <lkp@intel.com>
-> Signed-off-by: Ronald Claveau <linux-kernel-dev@aliel.fr>
-> ---
-> Changes in v3:
-> - Add a dependency on MESON_SM instead of stub functions.
-> - Link to v2: https://lore.kernel.org/r/20260531-fix-missing-meson_sm-symbol-v2-1-1def8c3c169f@aliel.fr
-> 
-> Changes in v2:
-> - Replace #ifdef CONFIG_MESON_SM by #if IS_ENABLED(CONFIG_MESON_SM)
->    to cover builtin and module in config.
-> - Add missing trailers for kernel test robot.
-> - Link to v1: https://lore.kernel.org/r/20260530-fix-missing-meson_sm-symbol-v1-1-3fb672b989d4@aliel.fr
-> ---
->   drivers/thermal/Kconfig | 1 +
->   1 file changed, 1 insertion(+)
-> 
-> diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
-> index 1c4a5cd5a23ee..810eeccedfbab 100644
-> --- a/drivers/thermal/Kconfig
-> +++ b/drivers/thermal/Kconfig
-> @@ -436,6 +436,7 @@ config AMLOGIC_THERMAL
->   	tristate "Amlogic Thermal Support"
->   	default ARCH_MESON
->   	depends on OF && ARCH_MESON
-> +	depends on MESON_SM
->   	help
->   	  If you say yes here you get support for Amlogic Thermal
->   	  for G12 SoC Family.
 
-Did you forget to remove the stubs ?
+--oybkq5ntld5gkntk
+Content-Type: text/plain; protected-headers=v1; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+Subject: Re: [RFC PATCH 0/2] Add driver for TI BQ25630 charger
+MIME-Version: 1.0
+
+Hi,
+
+On Wed, May 20, 2026 at 05:49:38PM +0200, Waqar Hameed wrote:
+> On Fri, Feb 27, 2026 at 16:35 +0100 Waqar Hameed <waqar.hameed@axis.com> =
+wrote:
+> > This patch series contains a fully working driver for the basic
+> > functionality for the new TI BQ25630 charger (see datasheet [1]).
+
+Driver itself LGTM. I think it would be sensible to merge that while
+the extra features are being prepared, but the DT binding must be
+fixed first :)
+
+> > However, some functionality has no straightforward implementation. The
+> > following features have therefore been left out and hopefully we can
+> > have some design discussions to reach a clear resolution for the next
+> > patch version (hence the RFC tag):
+> >
+> >   1. The USB OTG functionality (i.e. power *out* from the device) would
+> >      probably need a minor refactorization to use the MFD sub-system to
+> >      also register a regulator driver. Looking at the bq257xx driver,
+> >      this should be the preferred design?
+
+If the regulator is the only part making this a MFD, just create it
+in the charger driver itself. There are a few examples, just grep
+for 'struct regulator_ops' in drivers/power/supply.
+
+> >   2. Other drivers add a custom `sysfs` attributes for BATFET control.
+> >      See for example rt9471 and bq24190. Is this the preferred approach?
+> >      Should we add a new power `sysfs` class ABI for this? (There is a
+> >      TODO left in the code for this.)
+> >     =20
+> >      I reckon it is quite common to have BATFET control for chargers,
+> >      i.e. being able to set them in "ship mode", "stand-by mode",
+> >      "shutdown mode" or "idle mode" (example values taken from the
+> >      `BATFET_CTRL` register field from datasheet [1])?
+
+Yes. I usually ask to use custom properties until there are a few
+users to avoid cluttering the general ABI. I think BATFET is a good
+candidate. Please add a new property for that one.
+
+> >   3. This device has liquid detection and corrosion mitigation. I
+> >      couldn't find any existing device driver with this kind of
+> >      functionality. The datasheet [1] even mentions "patent pending",
+> >      although it refers to the USB type-C Specification 2.3... :)
+
+This is something I also expect to see in more devices; I know a
+couple of Android devices offer this. But indeed nothing has been
+submitted so far.
+
+> >      When liquid is detected in the charging port, an interrupt is
+> >      fired. Likewise, an interrupt can be fired when the port is dry
+> >      enough (according to some configured threshold value). My initial
+> >      thought was that maybe we can add "liquid detected" to the `health`
+> >      `sysfs` ABI?
+
+Sounds good to me.
+
+> >      However, the question still remains though how one
+> >      should enable/disable and set threshold values for this (new power
+> >      class `sysfs` ABI or a custom one only for this driver)?
+> >
+> > [1] https://www.ti.com/lit/gpn/bq25630
+
+I had a quick look at the datasheet. I think a new standard property
+would be sensible:
+
+LIQUID_DETECTION_CONTROL with possible values
+    off =3D Not liquid detection is being performed
+    auto =3D Periodic liquid detection checks are being done
+    once =3D Writing this will perform a single check (and return to off)
+
+For the other controls I'm not sure how generalized they are. E.g.
+for TLQD and ILQD it offers 4 steps, but not explicit current
+(seconds and amps). OTOH for the voltage explicit values are listed.
+Maybe just leave them to the default until somebody actually need
+this configurable?
+
+> Friendly ping incoming!
+
+Sorry for being slow with reviews, I was quite busy and out of
+office in the whole May. I suggest that the 3 things are being
+send on top of the updaed base driver :)
+
+Greetings,
+
+-- Sebastian
+
+--oybkq5ntld5gkntk
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAmofAggACgkQ2O7X88g7
++pqhyg/+NRhgP5w48z5MfRA5UnpQ4swNmWs0oiwK8CiZQkQJ5OZd82pGm/8ICYSo
+Qxx/EfNochHhZv+R02xUDvabU7Ua77GXYXAXDsdlGzWjuFxFJmx9VA9gDLmHXl8o
+BtiauwMhx4M7s6u1rAgbAJeMAOteUAWcM2HQ/t+Crjst0g7kxPMImuks+LijRQ9e
+Q/lInQ8+zMMWK1+OIOuYTJTqTpuXIrBWIVgV0h7TlQXFUh6+fHKox1fRIAHqzOwI
+y6mAAREtHi8B/w+kvmub/9KU8xiMTGueLcbLWOztZFCmroVIJFa+OCtgC+iqBxa6
++4avc3TT3HwD6cflMGVUhNDWDRw17yXdPP/pz7A6BYTQdvE0krz7JKtkQ+tuwHFK
+LRAaq/nqFJlpIrgfG/7M9jAGMzXTPUZwV3EyktVo8DCOQAzN/+d1guxxgZtrjqqn
+ON2WqVgh+XrDmVIpKzmb+Rih1nROIkhka5CZsNdIW4HzDsX6/58q4V/edLKxi49y
+mnljdhmmv24/+UEHseNW4uj0NOjOxqD9PJUErJmPrjXW18HcYGKlmZKFD4yQt9Xq
+wl1sTv2G5eyT+zY/fDVMqDU3y4XqiBqzzJaYfhSHJlx1EqFghuqcl8ehXiU3oJOm
+bC/RMoEXG6mocJSK8iD0n8VFwddPCfEVzELbMvF8dnuTUC/Ffkc=
+=ql5j
+-----END PGP SIGNATURE-----
+
+--oybkq5ntld5gkntk--
