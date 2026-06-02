@@ -1,205 +1,181 @@
-Received: from mail-wm1-f54.google.com (mail-wm1-f54.google.com [209.85.128.54])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4419D3F210F
-	for <linux-pm@vger.kernel.org>; Tue,  2 Jun 2026 15:54:43 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.128.54
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1780415684; cv=pass; b=pYS7M/s+hzV9GXJa8KLjCsYPtMFhvlSCwXsZ9994ASnJDA9E+Yq9drjS8eflwmtaMo//hRP3mHarZtw8TP+yJcNusBMIpU2YMyqO3nTrfI6CdbYnKtSlu/BWaT1EdcYfBLdcWaKuxgvqiaVnT1TabSftuBue6Wopll0Nmf8l9Go=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1780415684; c=relaxed/simple;
-	bh=uv9Sy/kwsbhQqkAS4Zhet+9C0cGQwDE+yhgPZ0iyMCg=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=o9quizMEwHcqZc0VJr1cOr4AcGvAnC109PO//SLkjCExrNxpKvRHdUH4lBoLTOS/rRIpEf2cFXA2KSKdyaePSJWZ/077cluHbf+y7Zr1EfqrQNjrNXNOcNad2qcMUR3x/k5YIVDwzgJ/vWtBL0LwqnpuTmNoz1HSeoiauV1WhT8=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=r9C10OTg; arc=pass smtp.client-ip=209.85.128.54
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8BE5526E706
+	for <linux-pm@vger.kernel.org>; Tue,  2 Jun 2026 16:01:43 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.180.131
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1780416104; cv=none; b=DjiVufLcfbj+8xwqX2uo1dNdifLedioUy0kw6ihtnC2FN1aZWgsppB11lp6pATa0GdQB7kOTCUeEPYmiIMO697ecyHCtIXn2a7/3RGlSFEejwcgjbPTqT1J1yDJqVhkvg30XYPAslg/bzWhW0T+IgeHMDrghu30ciSz7qseracU=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1780416104; c=relaxed/simple;
+	bh=U8u87X4cEVl7xeiYNxJ9zFvPFZ++Mg3bP33Z2AuGVtY=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=U26HQd1HTpPohpiU6L9XGpZJP5nac9Ibo/DPCz/zEgNFUnD0S8Dx6AkvHpxiLtrIKJe7MxeB/boLhByg7JIH/JATGi7ADdDD0BHeXQ+rINlE17OYIsxWTAihQfmWGNi9rxs8327ank1HKkfZrA5+aO1Aovni/kI0YZ12erkcZZk=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=ecnlHgn9; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=f0G/Hnhu; arc=none smtp.client-ip=205.220.180.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="r9C10OTg"
-Received: by mail-wm1-f54.google.com with SMTP id 5b1f17b1804b1-4906238c62eso95242075e9.3
-        for <linux-pm@vger.kernel.org>; Tue, 02 Jun 2026 08:54:43 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1780415682; cv=none;
-        d=google.com; s=arc-20240605;
-        b=Kx7az6qr7t5sPzF6EeL9HoEJPl9mKlNs6gJHvMNW5g1xuWqng8qs6MAFjtuXNFgr0Z
-         J/Ny33pluiFDWGY+Ff3kcQL1YrforPYqmDq9l/GWx3pIshlCD1lzzxJ+3W/Zhm3Rxg3x
-         m3Cqd4ZsN5VZycMusTVjYDdzFRZI0rdkiaFMph2hdpnjTb0bRVtDqCAbhKmU9C8PMMXp
-         gA2NibGMxioOGmDOgBlzMv5VZwLnAq4gAZy6I7zBQL7B0BDwIIteBceNSdcpSwA4sIpr
-         mhD5hdGgTjOognoXpAXYk6G+YOTz/XxyGPGaV54htDyDlTNyuoOeIOdS5ccAgLezZ1Cr
-         vabQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=1R1Ix/hNP2c7DmSyPCrvcGynZL8Qs5aPHoY+LWWhkG4=;
-        fh=Bnv5wxbHlDc1nHrWhHrLoIDoTBQlosdGPGHEZulYytM=;
-        b=NHIRVLzkBukU3NWrKSdZWhnE/O23Suv70I2YpJF/tdYm90FOApiYSqk3fpkHdnM1YO
-         Jw4VjE3ygjSy7JJJwPs4E4Jq3op5XQPBaVTIlcQBqb/9n8sXItIhEfp7ebcNpmZKFd7v
-         yFD2d0mYDHyKQb/529+jVyr73F1hJ4nrzwXQBNH+Aq1Ys6XDzzfs2v+DI+DFlHCKChfU
-         mXb1RJdYtXiAE4scVCgpdlu+h7wQODl2Ah5DdsnpiMzo/FnV2Iq8UXp4+C4T6bzVz/Rt
-         Mt6uke66Gy2hDgjz7t57SrcPqN3UtZ+RieIxfD/ekojTR5nt8TO4ikxO3anFE4YVeFYV
-         2ZjA==;
-        darn=vger.kernel.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="ecnlHgn9";
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="f0G/Hnhu"
+Received: from pps.filterd (m0279870.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 652DBLp62885132
+	for <linux-pm@vger.kernel.org>; Tue, 2 Jun 2026 16:01:42 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
+	9cHo+HdLfWszrxz8FIlQUKjxLUJPM3VQU+KKIaZgzs8=; b=ecnlHgn9Mot6/zjN
+	P/Lx9gAlO0F9M5Kvyys6oergtAHmwf0hlMC/HPcSzcdCKheQFuMK71KnDqiEfI6d
+	5DuV7b0zGAXkDtD0/6wRkIGlOG8vdpY1uGDoEFEJvHDgGS+ngjGxhXHUgNGDWR6P
+	Kf6+Dd9zji1rcznj+z9+EsUrpcQjEOQCG6S1KCXE4dAVYno1cVJaVyS50SCiAfsZ
+	N+MnBRBijUy66CdEy25rXcteN97sWzBHdf4Vfy0sJM8USRWa87SQh8KkM1oUao5f
+	N20FQe41eDuQq2kAxYpSFuIFIdeycxrJsFbAwIysRq/6PKFwZRZrLr5Q/BKl/f69
+	oKE2Hw==
+Received: from mail-vs1-f71.google.com (mail-vs1-f71.google.com [209.85.217.71])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4ehsu12b4w-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <linux-pm@vger.kernel.org>; Tue, 02 Jun 2026 16:01:42 +0000 (GMT)
+Received: by mail-vs1-f71.google.com with SMTP id ada2fe7eead31-6cfb918a9d7so3674259137.0
+        for <linux-pm@vger.kernel.org>; Tue, 02 Jun 2026 09:01:42 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1780415682; x=1781020482; darn=vger.kernel.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=1R1Ix/hNP2c7DmSyPCrvcGynZL8Qs5aPHoY+LWWhkG4=;
-        b=r9C10OTgSxnKjWCcHjPcC+mNsq0xKy7Ozk1R38OOFbFehZ+8V6iPcdoKkWf7kDf444
-         yJj1/4x36RJHIsqGQw9kaV0ITPluinJ9VgYn/+iJMAuu609iIANZLUS2O8W9qtI7U/19
-         9//meuOMjWYZ4UXDSt73vFRYq7cN50wVkbJrYWBveYCyAnQKEwHhA4o/eXxQKn6p6rur
-         ASEd35m4rMBRC8/YSSoj4bA/Klpt7gGv48iuzP2fcENnIoJLauUwVaVdEzOoCMXfolcO
-         64ujFypgd6zOKXE354ognlSLL7+N5axMy6OH2g4sPdPlI8+pz1qP3Y1hBoewNkuKHmym
-         lEZA==
+        d=oss.qualcomm.com; s=google; t=1780416102; x=1781020902; darn=vger.kernel.org;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=9cHo+HdLfWszrxz8FIlQUKjxLUJPM3VQU+KKIaZgzs8=;
+        b=f0G/Hnhu5TetNIO11Mkkb58zCRB8VUsmztYr/Ns0ncdKWT5Tp4n1DZl40+zDyOAGRk
+         N7+uGXnQrb9d+h4nCnFO6zRglTel7laoOOvb9Rnr7Xqu9nl8EEaHPt3X6y0iV2bTuHzT
+         E8IPyyMZiepGkwogzcePiNIhsx1YQqumKC3vk9d/bklZAUgi+mjjCGjF0EcqfdXhw+Kh
+         Lrn8Agw1WzGa8yJnzmWazxf08Fv2DaGhGyj7d6x1vIHwujJiYZ4ThmyKtN01Ok758bm0
+         PmUJU+brVmv/MF0+YO6xtbcQxoBz72oC9BBYw92AoT8JBROifQSVv6xCcYkKxb7Ch+R7
+         Y1Pg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1780415682; x=1781020482;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=1R1Ix/hNP2c7DmSyPCrvcGynZL8Qs5aPHoY+LWWhkG4=;
-        b=MF00AfD0fGL+tvL0GV2kmUH40slaC7Ndt7IJMNmmEX9j2Vq68CKjnJ1mT2Jy14E7Zh
-         CTZBoQdCWYrvf8bTsTJ3ow/YR3y9+AKnsOedY3vVj0D3KYfz36ayBQ5XD0lz8IxTsbJg
-         eWl+cN9tKkj0+3ZN/x65PKN+CcFq91/48irRP2UuTIN8tZFPPU9lpWjjAQdjiyBs4NrJ
-         +Kauz4S2G/X4hZ6v4hBLdl119vJwGpdCMFbKUtL3wzZkOiA3EUmaDGIDlXMFL9ZTeJuZ
-         xiedb5bLsCDEbY+sYTjO7IkYDBd5bNnzS9KDOjYgUzp0N0XpkTbKs5fOSL3fBSArS1bb
-         M++Q==
-X-Forwarded-Encrypted: i=1; AFNElJ/tMvmc0NEoFuvihIRtcFPbrGA17eQSttj+z6i2gXXDCtHeA2QAtZ8dxABOOv/w7HkChDGgi3GbNA==@vger.kernel.org
-X-Gm-Message-State: AOJu0YxHutLpkX8TKKRbGH/L2qUO48ZJHeI7FiAzjklc+NlTlJpxSgE+
-	rNkDdl963oU4m4cUUVLfZ3Uj9HAtu+RQbHgEBQdW/ydVJl/+7kHTvssRNbmMq9/tb9e4TiyAZeC
-	TOuq9rwZ+b/qWb7qkY/Gi/eQoOJ0Kg24=
-X-Gm-Gg: Acq92OEZ/+qFeP+33OK1o7IlK2Qh6N6VE4mmhOfgOOohTjQdomYSYzkZ+nCe4huziak
-	jFvihJO8pS7Yizzac2uS9JK459IbpZPrNH55l3UtzVEG6Ac9e5U6h0TSWmBUL18/yGkCVerIR9t
-	qyUAqfB4wmMrVuOq4Aop9DQsKhEGiZKG4vEYxIUMy0KIDHgIT4aeuzki83bAv4o6oiXX2I/lW+Z
-	YAN7PHGP8JZSc9CIDU4v3o3MtmcEquUWLVD658Hh28++iV5oQtAUIGxcmGm/2idHnjzQlpE/VVs
-	2eirjaGbenlc4JxjHUrWHPDbbgCUcFGy1IMuH8Oc/M5xbVNlknrBorQzv3XC
-X-Received: by 2002:a05:600c:3f0d:b0:490:6e11:c303 with SMTP id
- 5b1f17b1804b1-490b50800dcmr5883175e9.13.1780415681566; Tue, 02 Jun 2026
- 08:54:41 -0700 (PDT)
+        d=1e100.net; s=20251104; t=1780416102; x=1781020902;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=9cHo+HdLfWszrxz8FIlQUKjxLUJPM3VQU+KKIaZgzs8=;
+        b=AJoPoUOAG9R6JGNSoaZcLBTUf+KIBOY/dqZ2tE+kU3uFSMIasOPIuwg/CUgcdlMFlq
+         7EPdxAChk1fx7LMaqYhm0cNiA9l6fjkf5Z6LgfBajBLuHrpNMW9AmPXEojbdxPvfLOVl
+         PbOt13/iybuztr/2Y2Sm2mZtMI2ZlfU8qb7DjW3+KcpMtM2UDPSab7q0eNM8CXjnMxY9
+         KSKZC4+xsU8YhM0j+isP9V+Ko0XYLQ0GqVAUOh71H4aniO78kmQn9g0UTwkKckOAlGOQ
+         qsVhMzsx3/7p/PQA7e9Fqtvl4wha3b6VfTBKSD5cfayAMjIUBA44NvAokDk7zlKNoS0E
+         stAw==
+X-Forwarded-Encrypted: i=1; AFNElJ/MjC9HPveEjnNINILydBTEU2jErMyzefjS4oHiAzQZ48nWwLpsDw5b59Kvaz2NHD33hWomODzAeQ==@vger.kernel.org
+X-Gm-Message-State: AOJu0YzZC1ANZn+v0e5/nIQefqqiwkj4pvPSLYRiOyZSerVnoQhQL1eO
+	EpepbBHfV+p4/wimEJfxxVOE2/WHV3xEKM1HeTkAEvthBJf/fbaR4WZpZ9MHHMZTVZE8vkb/cPP
+	oXUGWJ+MtKYnh/WJgGurpu8xcgWkYbZ0qs/BB54vs7jUxhqdeeZGCBnBmjWYyRw==
+X-Gm-Gg: Acq92OEnbsEvLidw6Ddr7veprtgsQAMnz2Gr62emCnc2almW862EEKT8CYCf62Yu/SL
+	jqgCKjHAsWHSb5DiZAScJqGZd2GEjGVV303ozIYR1rbD+vj3YIzU1e+XA1Yb/74DrZF28S3UF37
+	HYZ71cMWqGQ7snzEdpW7VeDlpmRrRz3h5vnWugewQF2z72LRm9WHvTJ57jhq+g5rra8UVUnfHV9
+	mdhIPP/QG7HBfIWjJ6vOKqnZir57Q6CRt8tRaxZyweAYQZ4o7L79+veqe41hbkDcgXyg0b6tXGV
+	ET3FOSDSuIxVIrYV7cGeVtt5pXMoL+f3XKLutzKXRCNS5w+3vhSbfMGn2mzT87OA6Y74RV3WfU7
+	mWq3CWxnpo2B17hxprLC/K+hHBBU6LKMYjKFrOrAv0XA7sKyH1O1kknVj6Dy0yrfM6NpE/cWVn3
+	Yz
+X-Received: by 2002:a05:6102:a49:b0:639:4bb7:c916 with SMTP id ada2fe7eead31-6ea1cc674f6mr506753137.3.1780416088533;
+        Tue, 02 Jun 2026 09:01:28 -0700 (PDT)
+X-Received: by 2002:a05:6102:a49:b0:639:4bb7:c916 with SMTP id ada2fe7eead31-6ea1cc674f6mr505747137.3.1780416079609;
+        Tue, 02 Jun 2026 09:01:19 -0700 (PDT)
+Received: from [192.168.2.1] (146725694.box.freepro.com. [130.180.211.218])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-4601f351d40sm199325f8f.26.2026.06.02.09.01.14
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Tue, 02 Jun 2026 09:01:18 -0700 (PDT)
+Message-ID: <9adbe3cb-d42e-4b89-b6d7-62dd58b98e15@oss.qualcomm.com>
+Date: Tue, 2 Jun 2026 18:01:13 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260528212955.1912856-1-nphamcs@gmail.com> <ahz_iYG4lqWL4g-J@KASONG-MC4>
- <CAKEwX=PzMwXXgq=ULAkFD9UqMz+ewLqhKt+xdGxkV7OmA2QG6w@mail.gmail.com>
- <CAKEwX=NNNf0KCZC0ph7VRW0gjnbXd4W5NKEaHM4XzPdN03Ek3A@mail.gmail.com> <CAMgjq7CT0ccCnzmpRGjTGPnNEn4eK==5A-OFbr3+p465dQMH4A@mail.gmail.com>
-In-Reply-To: <CAMgjq7CT0ccCnzmpRGjTGPnNEn4eK==5A-OFbr3+p465dQMH4A@mail.gmail.com>
-From: Nhat Pham <nphamcs@gmail.com>
-Date: Tue, 2 Jun 2026 08:54:29 -0700
-X-Gm-Features: AVHnY4JuNWTHfiBCJhA05cKPBhtFvToyOb40WTAxv5a1N06Szobh-7Laznmn538
-Message-ID: <CAKEwX=M3WAkSY=Zd35dEuQ6V3ZiNR02bKAN_DnCgVr69w9=0sQ@mail.gmail.com>
-Subject: Re: [RFC PATCH 0/5] mm, swap: Virtual Swap Space (Swap Table Edition)
-To: Kairui Song <ryncsn@gmail.com>
-Cc: Liam.Howlett@oracle.com, akpm@linux-foundation.org, apopple@nvidia.com, 
-	axelrasmussen@google.com, baohua@kernel.org, baolin.wang@linux.alibaba.com, 
-	bhe@redhat.com, byungchul@sk.com, cgroups@vger.kernel.org, 
-	chengming.zhou@linux.dev, chrisl@kernel.org, corbet@lwn.net, david@kernel.org, 
-	dev.jain@arm.com, gourry@gourry.net, hannes@cmpxchg.org, hughd@google.com, 
-	jannh@google.com, joshua.hahnjy@gmail.com, lance.yang@linux.dev, 
-	lenb@kernel.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	linux-mm@kvack.org, linux-pm@vger.kernel.org, lorenzo.stoakes@oracle.com, 
-	matthew.brost@intel.com, mhocko@suse.com, muchun.song@linux.dev, 
-	npache@redhat.com, pavel@kernel.org, peterx@redhat.com, peterz@infradead.org, 
-	pfalcato@suse.de, rafael@kernel.org, rakie.kim@sk.com, 
-	roman.gushchin@linux.dev, rppt@kernel.org, ryan.roberts@arm.com, 
-	shakeel.butt@linux.dev, shikemeng@huaweicloud.com, surenb@google.com, 
-	tglx@kernel.org, vbabka@suse.cz, weixugc@google.com, 
-	ying.huang@linux.alibaba.com, yosry.ahmed@linux.dev, yuanchu@google.com, 
-	zhengqi.arch@bytedance.com, ziy@nvidia.com, kernel-team@meta.com, 
-	riel@surriel.com, haowenchao22@gmail.com
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v3] thermal: amlogic: add missing dependency on MESON_SM
+To: linux-kernel-dev@aliel.fr, Neil Armstrong <neil.armstrong@linaro.org>,
+        Daniel Lezcano <daniel.lezcano@kernel.org>,
+        Zhang Rui <rui.zhang@intel.com>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Lukasz Luba <lukasz.luba@arm.com>
+Cc: Guillaume La Roque <glaroque@baylibre.com>,
+        Kevin Hilman <khilman@baylibre.com>,
+        Jerome Brunet <jbrunet@baylibre.com>,
+        Martin Blumenstingl <martin.blumenstingl@googlemail.com>,
+        linux-arm-kernel@lists.infradead.org,
+        linux-amlogic@lists.infradead.org, linux-kernel@vger.kernel.org,
+        linux-pm@vger.kernel.org, Mark Brown <broonie@kernel.org>,
+        kernel test robot <lkp@intel.com>
+References: <20260602-fix-missing-meson_sm-symbol-v3-1-6f7f69cd7d6c@aliel.fr>
+Content-Language: en-US
+From: Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>
+In-Reply-To: <20260602-fix-missing-meson_sm-symbol-v3-1-6f7f69cd7d6c@aliel.fr>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Proofpoint-ORIG-GUID: Oe5OW972sTVIbLPVWGBwLDSL09kOF7eY
+X-Proofpoint-GUID: Oe5OW972sTVIbLPVWGBwLDSL09kOF7eY
+X-Authority-Analysis: v=2.4 cv=MKFQXsZl c=1 sm=1 tr=0 ts=6a1efe66 cx=c_pps
+ a=P2rfLEam3zuxRRdjJWA2cw==:117 a=uw/3876vWhRnNVL35W6mqQ==:17
+ a=IkcTkHD0fZMA:10 a=FelO9ux0wxsA:10 a=s4-Qcg_JpJYA:10
+ a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=gowsoOTTUOVcmtlkKump:22
+ a=VwQbUJbxAAAA:8 a=QyXUC8HyAAAA:8 a=tv4TSO8pNUtKKAd5OgUA:9 a=QEXdDO2ut3YA:10
+ a=ODZdjJIeia2B_SHc_B0f:22
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNjAyMDE1NSBTYWx0ZWRfXxlewkZ15285r
+ F3kAH0lLELxhWqSUfs1BDxWmwivnV4TtKTJd8FPXAaailSGTQ/8ln/CaPgZsp3av8hnZSVKKlPi
+ w3pVaAZ3PndQnfG+gx38B4n3swBRSqHUQv+iupCGWaaueIGuvaj1hhYXj7+SW1xQsxwGJQHa3ZQ
+ W9/g5g472+Zcjs1hAeUi4PuGKjC5KDS6uZglRUugNSKt5skINbLY6LuAldRC2iWNj/zetW6g4Vh
+ 2F4yLaAePqvFsCYg4d4q732QOJnIsS8p2bsUN+4SZ4z2SCCTkK4ol2cCJgf5Dcnuypcm+yDDWxU
+ P6M9FdNRpkItRk0UE+EVvkXL7ZJJkWbv59Wb/18VAtmvqLnuuZS+ds5iE7fgBGgLuSUPbV7n1eC
+ ZZSJwOYpyjqu+1q4KvbrOf5jDW5suiUqtrqbfHDms0uaZkC7OZeZL0/ssUyn4r30NO8JBnYALUb
+ iKzP6iEyjZAQi55WFDA==
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.125,FMLib:17.12.100.49
+ definitions=2026-06-02_02,2026-05-28_03,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ phishscore=0 priorityscore=1501 impostorscore=0 adultscore=0
+ lowpriorityscore=0 bulkscore=0 spamscore=0 clxscore=1015 suspectscore=0
+ malwarescore=0 classifier=typeunknown authscore=0 authtc= authcc=
+ route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2605210000
+ definitions=main-2606020155
 
-On Mon, Jun 1, 2026 at 10:49=E2=80=AFAM Kairui Song <ryncsn@gmail.com> wrot=
-e:
->
-> On Tue, Jun 2, 2026 at 12:22=E2=80=AFAM Nhat Pham <nphamcs@gmail.com> wro=
-te:
-> >
-> > On Mon, Jun 1, 2026 at 8:56=E2=80=AFAM Nhat Pham <nphamcs@gmail.com> wr=
-ote:
-> > >
-> > > On Mon, Jun 1, 2026 at 12:34=E2=80=AFAM Kairui Song <ryncsn@gmail.com=
-> wrote:
-> > > >
-> > > > On Thu, May 28, 2026 at 02:29:24PM +0800, Nhat Pham wrote:
-> > > > > III. Follow-ups:
-> > > > >
-> > > > > In no particular order (and most of which can be done as follow-u=
-p
-> > > > > patch series rather than shoving everything in the initial landin=
-g):
-> > > > >
-> > > > > - More thorough stress testing is very much needed.
-> > > > >
-> > > > > - Performance benchmarks to make sure I don't accidentally regres=
-s
-> > > > >   the vswap-less case, and that the vswap's case performance is
-> > > > >   good. I suspect I will have to port a lot of the
-> > > > >   optimizations I implemented in v6 over here - some of the
-> > > > >   inefficiencies are inherent in any swap virtualization, and
-> > > > >   would require the same fix (for e.g the MRU cluster caching
-> > > > >   for faster cluster lookup - see [8] and [9]).
-> > > >
-> > > > This could be imporved by per-si percpu cluster. Both YoungJun's
-> > > > tiering and Baoquan's previous swap ops mentioned this is needed,
-> > > > and now vswap also need that. If the vswap is also a si, then it wi=
-ll
-> > > > make use of this too.
-> >
-> > Oh and the MRU cluster caching I mentioned here is not the allocation
-> > caching. It's the lookup caching, basically to avoid doing the
-> > xa_load() to look up clusters for consecutive swap operations on the
-> > same vswap cluster (which is the common case with vswap). For v6, it
-> > massively reduces this indirection lookup overhead. Performance-wise
-> > it's an absolute winner, just more complexity (because I need to
-> > handle reference counting carefully).
->
-> Ah alright, that's interesting. And I think we can keep things simple
-> to start, since sensitive users is stil able tol use plain device this
-> way.
+On 6/2/26 16:19, Ronald Claveau via B4 Relay wrote:
+> From: Ronald Claveau <linux-kernel-dev@aliel.fr>
+> 
+> The amlogic thermal driver calls meson_sm_get() and
+> meson_sm_get_thermal_calib() which are exported by the meson_sm
+> driver. Without CONFIG_MESON_SM enabled, the build fails with
+> undefined references to these symbols.
+> 
+> Add a proper Kconfig dependency on MESON_SM instead of relying on
+> stub functions, which makes the dependency explicit and prevents
+> invalid configurations.
+> 
+> Closes: https://lore.kernel.org/oe-kbuild-all/202605291530.en7aGn7w-lkp@intel.com/
+> Reported-by: Mark Brown <broonie@kernel.org>
+> Reported-by: kernel test robot <lkp@intel.com>
+> Signed-off-by: Ronald Claveau <linux-kernel-dev@aliel.fr>
+> ---
+> Changes in v3:
+> - Add a dependency on MESON_SM instead of stub functions.
+> - Link to v2: https://lore.kernel.org/r/20260531-fix-missing-meson_sm-symbol-v2-1-1def8c3c169f@aliel.fr
+> 
+> Changes in v2:
+> - Replace #ifdef CONFIG_MESON_SM by #if IS_ENABLED(CONFIG_MESON_SM)
+>    to cover builtin and module in config.
+> - Add missing trailers for kernel test robot.
+> - Link to v1: https://lore.kernel.org/r/20260530-fix-missing-meson_sm-symbol-v1-1-3fb672b989d4@aliel.fr
+> ---
+>   drivers/thermal/Kconfig | 1 +
+>   1 file changed, 1 insertion(+)
+> 
+> diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
+> index 1c4a5cd5a23ee..810eeccedfbab 100644
+> --- a/drivers/thermal/Kconfig
+> +++ b/drivers/thermal/Kconfig
+> @@ -436,6 +436,7 @@ config AMLOGIC_THERMAL
+>   	tristate "Amlogic Thermal Support"
+>   	default ARCH_MESON
+>   	depends on OF && ARCH_MESON
+> +	depends on MESON_SM
+>   	help
+>   	  If you say yes here you get support for Amlogic Thermal
+>   	  for G12 SoC Family.
 
-Of course. I'm hoping vswap-on-zswap will not be too terrible at a
-start. We can then optimize for the swapfile backend case later.
-
->
-> BTW maintaining MRU is also an overhead, I'm not sure if the lookup
-> pattern always follows that?
-
-Yeah I had to be a bit careful in v6 to make sure the cache (and cache
-invalidation) happens at the right time. I've had this idea for awhile
-- there's a reason why I waited until v6 to implement it :)
-
-For instance, when physical swap allocator runs out of slot for a
-cluster, we try to reclaim the swap-cache-only slots. That involves
-taking the rmap back to vswap layer, to check swap cache and swap
-count. This is a very random pattern, so it does not benefit from this
-lookup cache, and in fact invalidates the cache :) So I had to add
-some hint to avoid going back to the vswap layer to check for
-swap-cache-only state.
-
->
-> > I also just realized we'll induce the indirection overhead on
-> > allocation here too, even if the cached cluster still have slots for
-> > allocation, because we look up the cluster (which is basically free
-> > for static swap device, but not free for vswap devices). Might need to
-> > take care of that to maintain vswap performance (but it will then
-> > diverge from your existing code...).
->
-> That part should be indeed coverable by the si->percpu cluster though, I =
-think.
-
-Yeah agree - we just need to be a bit craftier with it. The
-fundamental problem is in the current model, we're only storing offset
-and si, then look up cluster based on that. But for dynamic vswap,
-that look up takes the xa_load().
-
-Once we move to per-si per-cpu cluster, then I think it becomes ok to
-store the cluster pointer directly, correct?
-
-The reference counting needs to be carefully handled though. I think
-in my old vss design I did something fairly silly - just hold a
-reference to it while it's in cache, then add CPU offlining handler to
-clean up. Not the end of the world I suppose, but maybe there's a
-smarter scheme.
+Did you forget to remove the stubs ?
