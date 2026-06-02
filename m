@@ -1,80 +1,80 @@
-Received: from mail-wr1-f42.google.com (mail-wr1-f42.google.com [209.85.221.42])
+Received: from mail-wm1-f54.google.com (mail-wm1-f54.google.com [209.85.128.54])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 10C593EDE46
-	for <linux-pm@vger.kernel.org>; Tue,  2 Jun 2026 15:28:22 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.221.42
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4419D3F210F
+	for <linux-pm@vger.kernel.org>; Tue,  2 Jun 2026 15:54:43 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.128.54
 ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1780414104; cv=pass; b=H92ITVhSL0D0gK60Hv8CWuPUZcOkNbjFaZ/+Sr3uQBZZtBWrRpntRR0wefHpAak2yMFIZGehqIfbqmQAesSHzvHTO+H/e8BKWoVs81k+uSoEYojEgz1gLfRHH0Gc1p3mMEdqwrDW9Aj46JXN23A4lMtMu/8pTk4vRc5E2Wh8ruY=
+	t=1780415684; cv=pass; b=pYS7M/s+hzV9GXJa8KLjCsYPtMFhvlSCwXsZ9994ASnJDA9E+Yq9drjS8eflwmtaMo//hRP3mHarZtw8TP+yJcNusBMIpU2YMyqO3nTrfI6CdbYnKtSlu/BWaT1EdcYfBLdcWaKuxgvqiaVnT1TabSftuBue6Wopll0Nmf8l9Go=
 ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1780414104; c=relaxed/simple;
-	bh=KioD6muOq73KOuZgXUdfc8mghtZCf5WX4ci2/jt07rE=;
+	s=arc-20240116; t=1780415684; c=relaxed/simple;
+	bh=uv9Sy/kwsbhQqkAS4Zhet+9C0cGQwDE+yhgPZ0iyMCg=;
 	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=DYTiavYW2eEmKer6RmfL3xLzzJP1RIJ07ToruK1PA+TMPwFRg6k2SruBwVfaXdqTxP9BT+FkYUiKWlmR76YjZAfDIRfeeR52WVRkvcv4T3oMaYf8PNYaR3pFJd3Iq2BFqBDueYBs4MO0273H2fNTalBLZ65fVLdiO61q22JMHAc=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=mZJisVyW; arc=pass smtp.client-ip=209.85.221.42
+	 To:Cc:Content-Type; b=o9quizMEwHcqZc0VJr1cOr4AcGvAnC109PO//SLkjCExrNxpKvRHdUH4lBoLTOS/rRIpEf2cFXA2KSKdyaePSJWZ/077cluHbf+y7Zr1EfqrQNjrNXNOcNad2qcMUR3x/k5YIVDwzgJ/vWtBL0LwqnpuTmNoz1HSeoiauV1WhT8=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=r9C10OTg; arc=pass smtp.client-ip=209.85.128.54
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="mZJisVyW"
-Received: by mail-wr1-f42.google.com with SMTP id ffacd0b85a97d-45ef372c58aso2252774f8f.0
-        for <linux-pm@vger.kernel.org>; Tue, 02 Jun 2026 08:28:22 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1780414101; cv=none;
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="r9C10OTg"
+Received: by mail-wm1-f54.google.com with SMTP id 5b1f17b1804b1-4906238c62eso95242075e9.3
+        for <linux-pm@vger.kernel.org>; Tue, 02 Jun 2026 08:54:43 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1780415682; cv=none;
         d=google.com; s=arc-20240605;
-        b=MbOABBSad/pqwlApg0iTWIfNGNQQi4S4/2dgpQsoLo7WgAJnJhZhazUusGaGevKodm
-         k/3lMj4TcyqFTxXashhyGRun/wbPR3ATMLAN+2tFA4ar//0322nJFNX/S9OosVRaO7Vj
-         c/tXuyYsySbu2hNuaVGyjHagepYjl+LUFQUZK+M+ODAXStdlG/f2498FwCMbYC3ouKe+
-         kFbhohvQ97WX/CiTU0lRYsTX8AMNZeCDZ65izcXCL3Vh2OtBfD/KpBr+tCN0eluTCJzM
-         wA9W4BRlPMnVnhkXXpBqbi1uT1O8+1oAYkXkGYMB4p2cIUJ3R0tjwvL3QQuaK5dZpZfm
-         jkCg==
+        b=Kx7az6qr7t5sPzF6EeL9HoEJPl9mKlNs6gJHvMNW5g1xuWqng8qs6MAFjtuXNFgr0Z
+         J/Ny33pluiFDWGY+Ff3kcQL1YrforPYqmDq9l/GWx3pIshlCD1lzzxJ+3W/Zhm3Rxg3x
+         m3Cqd4ZsN5VZycMusTVjYDdzFRZI0rdkiaFMph2hdpnjTb0bRVtDqCAbhKmU9C8PMMXp
+         gA2NibGMxioOGmDOgBlzMv5VZwLnAq4gAZy6I7zBQL7B0BDwIIteBceNSdcpSwA4sIpr
+         mhD5hdGgTjOognoXpAXYk6G+YOTz/XxyGPGaV54htDyDlTNyuoOeIOdS5ccAgLezZ1Cr
+         vabQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
         h=content-transfer-encoding:cc:to:subject:message-id:date:from
          :in-reply-to:references:mime-version:dkim-signature;
-        bh=KioD6muOq73KOuZgXUdfc8mghtZCf5WX4ci2/jt07rE=;
-        fh=BGlxz9+xA40Hs9NuRtBFg+23QZ7xyxktqp07hwe9PTk=;
-        b=Yj1W0AOJh4Rn1XL/W9yvIscFTQUBa+o4kG9hEiscYwLFuwau8DEBCEY9mfbHVru5GS
-         +GyUv2LgssJrQkyZ38I8qY0v+5BsKr/xatJyt8IrZWg2SxNQwk2PuereU4VZ03j9UxiX
-         T/pgNMGfkN5o5pnXBKatR1Fn293fyhDmTaaZapXj4M+sht9gvKlbhuFoiFQuISvBVXN1
-         79Hni964GGFjZ7PnBZCkE6t+Wb7zYer6blmWzyzIyE4v5Ykb0CQ4SDn2NbqiIFUGG7KS
-         5gEw4NthemIfRWMNUelOyfKvuKnLIMR8VgGX5UmTQCPb4JK695+S8FUFnf0HvVQKm3Vq
-         bpAA==;
+        bh=1R1Ix/hNP2c7DmSyPCrvcGynZL8Qs5aPHoY+LWWhkG4=;
+        fh=Bnv5wxbHlDc1nHrWhHrLoIDoTBQlosdGPGHEZulYytM=;
+        b=NHIRVLzkBukU3NWrKSdZWhnE/O23Suv70I2YpJF/tdYm90FOApiYSqk3fpkHdnM1YO
+         Jw4VjE3ygjSy7JJJwPs4E4Jq3op5XQPBaVTIlcQBqb/9n8sXItIhEfp7ebcNpmZKFd7v
+         yFD2d0mYDHyKQb/529+jVyr73F1hJ4nrzwXQBNH+Aq1Ys6XDzzfs2v+DI+DFlHCKChfU
+         mXb1RJdYtXiAE4scVCgpdlu+h7wQODl2Ah5DdsnpiMzo/FnV2Iq8UXp4+C4T6bzVz/Rt
+         Mt6uke66Gy2hDgjz7t57SrcPqN3UtZ+RieIxfD/ekojTR5nt8TO4ikxO3anFE4YVeFYV
+         2ZjA==;
         darn=vger.kernel.org
 ARC-Authentication-Results: i=1; mx.google.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1780414101; x=1781018901; darn=vger.kernel.org;
+        d=gmail.com; s=20251104; t=1780415682; x=1781020482; darn=vger.kernel.org;
         h=content-transfer-encoding:cc:to:subject:message-id:date:from
          :in-reply-to:references:mime-version:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=KioD6muOq73KOuZgXUdfc8mghtZCf5WX4ci2/jt07rE=;
-        b=mZJisVyWXmXPsPq1B+4RWVJXsEAcwnVm2eooLuPaonvGk5UuSz/RcfRnYDtaXFt1jr
-         lrzNhKSFhOKb9M5nvWDdGdBQ/stkgH/VByDF7fSn4tTHpXm3Q6TZvdKjxDpRp9QsqD/c
-         9pEmbNrI2DqujUzI1G22wDd9A22nC6jjZXH9C1yPOX1zafbGpaOZHWKRbLSlCU9IoMDd
-         6h71mvbZ4CFPTGUBAIxyVebOS3WOWDWF626Eozevs+puG3putEyoDLgA8EsCmEsIKC79
-         T99vcQTxJW4cRLJaCVY4NRFVdVFXKErPfy9zR0BTilyp31D0X/rBdl8iyePJNN0Z8Fe6
-         HtQw==
+        bh=1R1Ix/hNP2c7DmSyPCrvcGynZL8Qs5aPHoY+LWWhkG4=;
+        b=r9C10OTgSxnKjWCcHjPcC+mNsq0xKy7Ozk1R38OOFbFehZ+8V6iPcdoKkWf7kDf444
+         yJj1/4x36RJHIsqGQw9kaV0ITPluinJ9VgYn/+iJMAuu609iIANZLUS2O8W9qtI7U/19
+         9//meuOMjWYZ4UXDSt73vFRYq7cN50wVkbJrYWBveYCyAnQKEwHhA4o/eXxQKn6p6rur
+         ASEd35m4rMBRC8/YSSoj4bA/Klpt7gGv48iuzP2fcENnIoJLauUwVaVdEzOoCMXfolcO
+         64ujFypgd6zOKXE354ognlSLL7+N5axMy6OH2g4sPdPlI8+pz1qP3Y1hBoewNkuKHmym
+         lEZA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1780414101; x=1781018901;
+        d=1e100.net; s=20251104; t=1780415682; x=1781020482;
         h=content-transfer-encoding:cc:to:subject:message-id:date:from
          :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to;
-        bh=KioD6muOq73KOuZgXUdfc8mghtZCf5WX4ci2/jt07rE=;
-        b=J01VbdR1NqwDfeNhwaHRFwtOwmpZlEmr97NdDAoPvZyb3cJ+UEiDzsDKk7Qwns6RzL
-         3lBsiyt1Q3RLkGW8xBsIqnDvu+X7+6CdMMDUuaffd7MS9RVV5SfSwgp30MPCThvxwnHb
-         gvja1LuKsqh3rmgkLP7C9zZ3nMA7crXJHqf1Jp7kWRD++toEsm+e8DO0cx8dkkF/n+yi
-         ziT/YZ1sGjMAfA5p07KIv/zus2zFDXpaBFoH7U67iU/SRh1niQ+YFB+lRpvpaEVKs4LI
-         zUif8WppCLMMb1No+3fF3Te2JhM7RImWxs08qVlRkc228tLiS0XelAiK0PP45/t72xYM
-         LFbQ==
-X-Forwarded-Encrypted: i=1; AFNElJ8p98G64d95+E1da4hggHX105KIFO3TEWYRAXh1K4qlhN/jVYN5qN8FigvoSLP5ldR/wMqDIlmSUQ==@vger.kernel.org
-X-Gm-Message-State: AOJu0YyVnvUQhKcQEE4HzXwikakvjf3X4CmPV1hHwT2Lixtvs376RGPL
-	APxJe2YDU1CQ11tvSnlN4VQD5qn+51Jljo9QfgXlvKRfNBddHg8xDn/4oae9O2Z9w/OYCS+depu
-	3OkfNZB61Qez+lpWtUUrc+FAUn2LH5x4=
-X-Gm-Gg: Acq92OHIhlhcfPAxrSqiJkJGIXpzwKAv3oct/k20eLkTsHrAOBqL9mmva3ecm/REr46
-	ObAp133hgmC+8fGx1yOFqW/OCZHCAyfVRILXijfO8jhot2+KM41fdYZtlz5Jay70iKfjBFN8RTl
-	shfD7+p2dXLgGclX9YMJI9MyWw7BINbXRi3+uyeptqvSCdVhx0cbPOX9jNr55rLBTaz6j9uwO7o
-	nyO/pK1D+f0QmcHcZfWRo54jY6oA9G7xl22TnaLgFiFZDZM5sYKr9YwewcNlWeFjs4Wyl7+d4eP
-	6TFi8yfTebToC6KpuVqDd9gv3k/tZw7hGZxusbLoBTIr7I7p0A==
-X-Received: by 2002:a5d:5401:0:b0:45e:d6b2:e6a5 with SMTP id
- ffacd0b85a97d-45ef6b83764mr21337268f8f.34.1780414101045; Tue, 02 Jun 2026
- 08:28:21 -0700 (PDT)
+        bh=1R1Ix/hNP2c7DmSyPCrvcGynZL8Qs5aPHoY+LWWhkG4=;
+        b=MF00AfD0fGL+tvL0GV2kmUH40slaC7Ndt7IJMNmmEX9j2Vq68CKjnJ1mT2Jy14E7Zh
+         CTZBoQdCWYrvf8bTsTJ3ow/YR3y9+AKnsOedY3vVj0D3KYfz36ayBQ5XD0lz8IxTsbJg
+         eWl+cN9tKkj0+3ZN/x65PKN+CcFq91/48irRP2UuTIN8tZFPPU9lpWjjAQdjiyBs4NrJ
+         +Kauz4S2G/X4hZ6v4hBLdl119vJwGpdCMFbKUtL3wzZkOiA3EUmaDGIDlXMFL9ZTeJuZ
+         xiedb5bLsCDEbY+sYTjO7IkYDBd5bNnzS9KDOjYgUzp0N0XpkTbKs5fOSL3fBSArS1bb
+         M++Q==
+X-Forwarded-Encrypted: i=1; AFNElJ/tMvmc0NEoFuvihIRtcFPbrGA17eQSttj+z6i2gXXDCtHeA2QAtZ8dxABOOv/w7HkChDGgi3GbNA==@vger.kernel.org
+X-Gm-Message-State: AOJu0YxHutLpkX8TKKRbGH/L2qUO48ZJHeI7FiAzjklc+NlTlJpxSgE+
+	rNkDdl963oU4m4cUUVLfZ3Uj9HAtu+RQbHgEBQdW/ydVJl/+7kHTvssRNbmMq9/tb9e4TiyAZeC
+	TOuq9rwZ+b/qWb7qkY/Gi/eQoOJ0Kg24=
+X-Gm-Gg: Acq92OEZ/+qFeP+33OK1o7IlK2Qh6N6VE4mmhOfgOOohTjQdomYSYzkZ+nCe4huziak
+	jFvihJO8pS7Yizzac2uS9JK459IbpZPrNH55l3UtzVEG6Ac9e5U6h0TSWmBUL18/yGkCVerIR9t
+	qyUAqfB4wmMrVuOq4Aop9DQsKhEGiZKG4vEYxIUMy0KIDHgIT4aeuzki83bAv4o6oiXX2I/lW+Z
+	YAN7PHGP8JZSc9CIDU4v3o3MtmcEquUWLVD658Hh28++iV5oQtAUIGxcmGm/2idHnjzQlpE/VVs
+	2eirjaGbenlc4JxjHUrWHPDbbgCUcFGy1IMuH8Oc/M5xbVNlknrBorQzv3XC
+X-Received: by 2002:a05:600c:3f0d:b0:490:6e11:c303 with SMTP id
+ 5b1f17b1804b1-490b50800dcmr5883175e9.13.1780415681566; Tue, 02 Jun 2026
+ 08:54:41 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -83,13 +83,12 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 References: <20260528212955.1912856-1-nphamcs@gmail.com> <ahz_iYG4lqWL4g-J@KASONG-MC4>
  <CAKEwX=PzMwXXgq=ULAkFD9UqMz+ewLqhKt+xdGxkV7OmA2QG6w@mail.gmail.com>
- <CAMgjq7BhOn48xEyC=2j837R7qddfjeBVHMiRqdx8no4ZEBpBLg@mail.gmail.com>
- <CAKEwX=PmwzaJhfjBrho3+kQ8HXFUC0WiegQrsguBc-_pmn5bSA@mail.gmail.com> <CAMgjq7D4XsAD4NGDL7FC2kaYAQAP8PDJdn4bpzGZwXYtjEpJ6w@mail.gmail.com>
-In-Reply-To: <CAMgjq7D4XsAD4NGDL7FC2kaYAQAP8PDJdn4bpzGZwXYtjEpJ6w@mail.gmail.com>
+ <CAKEwX=NNNf0KCZC0ph7VRW0gjnbXd4W5NKEaHM4XzPdN03Ek3A@mail.gmail.com> <CAMgjq7CT0ccCnzmpRGjTGPnNEn4eK==5A-OFbr3+p465dQMH4A@mail.gmail.com>
+In-Reply-To: <CAMgjq7CT0ccCnzmpRGjTGPnNEn4eK==5A-OFbr3+p465dQMH4A@mail.gmail.com>
 From: Nhat Pham <nphamcs@gmail.com>
-Date: Tue, 2 Jun 2026 08:28:09 -0700
-X-Gm-Features: AVHnY4IWURpsnvI312VbRdsgEkqVndHtTZWSNA7JxRNHqCQ-2eUuyz0lSoO1lo4
-Message-ID: <CAKEwX=OZL+ykwTjZJzUDAEnTOO6B0mibc6dxiYtmnoLReB7TYA@mail.gmail.com>
+Date: Tue, 2 Jun 2026 08:54:29 -0700
+X-Gm-Features: AVHnY4JuNWTHfiBCJhA05cKPBhtFvToyOb40WTAxv5a1N06Szobh-7Laznmn538
+Message-ID: <CAKEwX=M3WAkSY=Zd35dEuQ6V3ZiNR02bKAN_DnCgVr69w9=0sQ@mail.gmail.com>
 Subject: Re: [RFC PATCH 0/5] mm, swap: Virtual Swap Space (Swap Table Edition)
 To: Kairui Song <ryncsn@gmail.com>
 Cc: Liam.Howlett@oracle.com, akpm@linux-foundation.org, apopple@nvidia.com, 
@@ -112,205 +111,95 @@ Cc: Liam.Howlett@oracle.com, akpm@linux-foundation.org, apopple@nvidia.com,
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Mon, Jun 1, 2026 at 8:25=E2=80=AFPM Kairui Song <ryncsn@gmail.com> wrote=
-:
->
-> On Tue, Jun 2, 2026 at 2:06=E2=80=AFAM Nhat Pham <nphamcs@gmail.com> wrot=
+On Mon, Jun 1, 2026 at 10:49=E2=80=AFAM Kairui Song <ryncsn@gmail.com> wrot=
 e:
+>
+> On Tue, Jun 2, 2026 at 12:22=E2=80=AFAM Nhat Pham <nphamcs@gmail.com> wro=
+te:
 > >
-> > On Mon, Jun 1, 2026 at 10:45=E2=80=AFAM Kairui Song <ryncsn@gmail.com> =
-wrote:
+> > On Mon, Jun 1, 2026 at 8:56=E2=80=AFAM Nhat Pham <nphamcs@gmail.com> wr=
+ote:
 > > >
-> > > On Mon, Jun 1, 2026 at 11:57=E2=80=AFPM Nhat Pham <nphamcs@gmail.com>=
- wrote:
+> > > On Mon, Jun 1, 2026 at 12:34=E2=80=AFAM Kairui Song <ryncsn@gmail.com=
+> wrote:
 > > > >
-> > > > Are you suggesting we merge the virtual table with main swap table?
-> > > >
-> > > > Man, I'd love to do this. There is a problem though - we have a cas=
-e
-> > > > where we occupy both backing physical swap AND swap cache. Do you
-> > > > think we can fit both the physical swap slot handle and the swap ca=
-che
-> > > > PFN into the same slot in virtual table? Maybe with some expanding.=
-..?
-> > >
-> > > I don't really get why we would need to do that? If you put the PFN
-> > > info in the virtual / upper layer, then the count info, locking, and
-> > > all swap IO synchronization (via folio lock), dup (current protected
-> > > by ci lock / folio lock), and allocation (folio_alloc_swap), are all
-> > > handled in this layer.
-> > >
-> > > The physical / lower layer will just hold a reverse entry on
-> > > folio_realloc_swap, or no entry at all (no physical layer used, zswap=
-,
-> > > or after swap allocation but before IO) right?
-> > >
-> > > Looking up the actual folio from the physical layer will be a bit
-> > > slower since it needs to resolve the reverse entry, but the only plac=
-e
-> > > we need to do that is things like migrate, compaction (none of them
-> > > exist yet) which seems totally fine?
-> >
-> > All of this is correct, but consider swaping in a vswap entry backed
-> > by pswap. There are cases where you still want to maintain the pswap
-> > slots around backing vswap entry, while having the swap cache folio as
-> > well.
-> >
-> > For e.g, at swap in time, we add the folio into the swap cache. First
-> > of all, we need to hold on to the physical swap slot for IO step. But
-> > even after IO succeeds, there are cases where you would still like to
-> > keep physical swap slots around (for e.g, to avoid swapping out again
-> > if the folio is only speculatively fetched).
->
-> A reverse entry is enough to hold the physical swap, just like how the
-> current hibernation works with a fake shadow, you don't need a PFN
-> just for holding that.
->
-> >
-> > So you have to make sure we have space for both the physical swap
-> > slot, and the swap cache folio's PFN at the same time for each vswap
-> > entry. So we still need the vtable extension (well maybe the other
-> > approach I mentioned could work, but I'm not 100% sure).
->
-> Right, vtable extension is fine, there is no redundant data. I just
-> mean you don't need to set the PFN twice (for vswap & pswap). So
-> simply reusing the PFN format in the vswap layer and solving
-> everything there should be enough.
-
-Ah yeah, then I might have misunderstood you here. I thought you were
-proposing a way to remove vtable :)
-
-"don't need to set the PFN twice" completely agree. I'm pretty sure I
-did not here, but do let me know if I accidentally set it twice. I'm
-be sure to check this myself for the next version.
-
->
-> > > Thanks. Not too complicated, actually our internal kernel
-> > > implementation still using si->percpu cluster, and use a counter for
-> > > the rotation and each order have a counter :P, it's a bit ugly but
-> > > works fine. It still serves pretty well just like the global percpu
-> > > cluster, YoungJun's previous per ci percpu cluster also still provide=
-s
-> > > the fast path, many ways to do that.
-> >
-> > Sounds like something that should be upstreamed? ;)
->
-> I'd love to :), there is a lot of work going on as you can see and
-> people seem to have many different proposals about this so I didn't
-> prioritize it. I'll try as things settle down.
-
-Yeah understandable. It's a very volatile codebase, with a lot of
-folks trying to improve different aspects.
-
-Hopefully we're close to a unified design :)
-
-I'll keep my dedicated vswap per-cpu alloc caching for now, but I'll
-get rid of it whenever the per-CPU per-si cache is ready.
-
->
+> > > > On Thu, May 28, 2026 at 02:29:24PM +0800, Nhat Pham wrote:
+> > > > > III. Follow-ups:
 > > > > >
-> > > > > For patch 2, a few routines like vswap_can_swapin_thp seems not
-> > > > > needed or should be moved to __swap_cache_alloc? VSWAP_FOLIO is
-> > > > > same as swap cache folio check, which is already covered. Same fo=
-r
-> > > > > zero checking, and VSWAP_NONE which is same as swap count check
-> > > > > I think. That way we not only save a lot of code, we also no
-> > > > > longer need to treat vswap specially.
+> > > > > In no particular order (and most of which can be done as follow-u=
+p
+> > > > > patch series rather than shoving everything in the initial landin=
+g):
+> > > > >
+> > > > > - More thorough stress testing is very much needed.
+> > > > >
+> > > > > - Performance benchmarks to make sure I don't accidentally regres=
+s
+> > > > >   the vswap-less case, and that the vswap's case performance is
+> > > > >   good. I suspect I will have to port a lot of the
+> > > > >   optimizations I implemented in v6 over here - some of the
+> > > > >   inefficiencies are inherent in any swap virtualization, and
+> > > > >   would require the same fix (for e.g the MRU cluster caching
+> > > > >   for faster cluster lookup - see [8] and [9]).
 > > > >
-> > > > Unfortunately, I think a lot of this complexity is still needed. Vs=
-wap
-> > > > adds a new layer, which means new complications :)
-> > > >
-> > > > For instance, I think you still need vswap_can_swapin_thp. It
-> > > > basically enforces that the backend must be something
-> > > > swap_read_folio() can handle. That means:
-> > > >
-> > > > 1. No zswap.
-> > > >
-> > > > 2. No mixed backend.
-> > >
-> > > If mixed backend means phys vs zero vs zswap, then we already have
-> > > part of that covered with the current swap cache except for the phys
-> > > part (zswap part seems very doable with fujunjie's work).
-> > > swap_cache_alloc_folio will ensure there is no mixed zerobit, it can
-> > > be easily extended to ensure there is no mixed zswap as well
-> > > (according to what I've learned from fujunjie's code). Similar logic
-> > > for phys detection I think.
+> > > > This could be imporved by per-si percpu cluster. Both YoungJun's
+> > > > tiering and Baoquan's previous swap ops mentioned this is needed,
+> > > > and now vswap also need that. If the vswap is also a si, then it wi=
+ll
+> > > > make use of this too.
 > >
-> > Yeah it's basically generalizing that check, and handle the case where
-> > we can have indirection.
-> >
-> > I mean I can open-code it, but it has to be there :) And I figure it
-> > might be useful to check this opportunistically (at swap_pte_batch,
-> > even if it's not guaranteed to be correct down the line) before we
-> > even attempt to allocate a large folio etc. to avoid large folio
-> > allocation.
+> > Oh and the MRU cluster caching I mentioned here is not the allocation
+> > caching. It's the lookup caching, basically to avoid doing the
+> > xa_load() to look up clusters for consecutive swap operations on the
+> > same vswap cluster (which is the common case with vswap). For v6, it
+> > massively reduces this indirection lookup overhead. Performance-wise
+> > it's an absolute winner, just more complexity (because I need to
+> > handle reference counting carefully).
 >
-> Right, but swap_cache_alloc_folio with orders=3D<large order> won't
-> attempt a large allocation if the batch check fails, so that's fine.
->
-> > > > Basically:
-> > > >
-> > > > 1. For vswap entry, not backed by phys swap: record swap memcg, hol=
-d
-> > > > reference to pin the memcg, but not charging towards swap.current.
-> > >
-> > > Maybe you don't need to record memcg here since folio->memcg already
-> > > have that info?
-> > >
-> > > I previously had a patch:
-> > > https://lore.kernel.org/linux-mm/20260220-swap-table-p4-v1-7-104795d1=
-9815@tencent.com/
-> > >
-> > > The defers the recording of memcg, the behavior is almost identical t=
-o
-> > > before, but charging & recording should be cleaner and you don't need
-> > > to record memcg at allocation time hence maybe reduce the possibility
-> > > of pinning a memcg. I didn't include that in P4 just to reduce LOC,
-> > > maybe can be resent or included.
-> >
-> > That works-ish when the folio is sitll in swap cache, but say if it's
-> > vswap backed by zswap (and the swap cache folio has been reclaimed),
-> > you need a place to store the memcg, no?
->
-> "Backed by zswap" means the actual swapout already happened, which is
-> the case where we always have to record the memcg info because the
-> folio is gone, seems still fit in the model.
+> Ah alright, that's interesting. And I think we can keep things simple
+> to start, since sensitive users is stil able tol use plain device this
+> way.
 
-Hmmm I might have misunderstood you in my last response here.
-
-So what you are doing in that patch:
-
-1. Charge towards folio->memcg when we allocate swap slots, but do not
-record or take reference yet.
-
-2. Once we reclaimed the folio after swap out, then we record and
-acquire reference to pin.
-
-You know what - this would simplify my usecase. For vswap entries not
-backing by pswap, it *basically* just means I skip step 1 for vswap
-backend. Step 2 is shared for all cases. Donezo.
-
-You're right. This is simpler :) Let me brew on it a bit longer in
-case there might be something we're missing. but it does seem like
-this will reduce complexity (and with the added benefits of me not
-having to come up with names for helpers).
+Of course. I'm hoping vswap-on-zswap will not be too terrible at a
+start. We can then optimize for the swapfile backend case later.
 
 >
-> > Just seems cleaner to centralize this info at vswap layer when it is
-> > presented, for now anyway, rather than juggling this on a per-backend
-> > basis.
+> BTW maintaining MRU is also an overhead, I'm not sure if the lookup
+> pattern always follows that?
+
+Yeah I had to be a bit careful in v6 to make sure the cache (and cache
+invalidation) happens at the right time. I've had this idea for awhile
+- there's a reason why I waited until v6 to implement it :)
+
+For instance, when physical swap allocator runs out of slot for a
+cluster, we try to reclaim the swap-cache-only slots. That involves
+taking the rmap back to vswap layer, to check swap cache and swap
+count. This is a very random pattern, so it does not benefit from this
+lookup cache, and in fact invalidates the cache :) So I had to add
+some hint to avoid going back to the vswap layer to check for
+swap-cache-only state.
+
 >
-> Zswap charge could be merged with vswap I think but pswap we just
-> discussed that we might want to charge it differently? And actually
-> vswap charge is still quite different from zswap charge if you want to
-> make vswap infinitely large? I think we can figure out this part as we
-> progress; it's not a major problem at this point.
+> > I also just realized we'll induce the indirection overhead on
+> > allocation here too, even if the cached cluster still have slots for
+> > allocation, because we look up the cluster (which is basically free
+> > for static swap device, but not free for vswap devices). Might need to
+> > take care of that to maintain vswap performance (but it will then
+> > diverge from your existing code...).
+>
+> That part should be indeed coverable by the si->percpu cluster though, I =
+think.
 
-That was because I misunderstood your suggestions. My bad :)
+Yeah agree - we just need to be a bit craftier with it. The
+fundamental problem is in the current model, we're only storing offset
+and si, then look up cluster based on that. But for dynamic vswap,
+that look up takes the xa_load().
 
-Anyway, please keep the suggestions and recommendations coming :) I'm
-playing with some of your suggestions right now, and waiting for other
-folks' inputs as well. Will send out the next version at some point.
-If there is no fundamental design flaws, I will un-RFC once I've
-addressed all the main issues.
+Once we move to per-si per-cpu cluster, then I think it becomes ok to
+store the cluster pointer directly, correct?
+
+The reference counting needs to be carefully handled though. I think
+in my old vss design I did something fairly silly - just hold a
+reference to it while it's in cache, then add CPU offlining handler to
+clean up. Not the end of the world I suppose, but maybe there's a
+smarter scheme.
