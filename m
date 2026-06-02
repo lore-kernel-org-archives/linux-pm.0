@@ -1,154 +1,191 @@
-Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BE62025B0BB
-	for <linux-pm@vger.kernel.org>; Tue,  2 Jun 2026 21:12:39 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.180.131
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id EC23F2236E0;
+	Tue,  2 Jun 2026 21:21:26 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1780434760; cv=none; b=i2blHYqpGwb8gg24oQNbV+oDyVSGbMAfc8X9B9mybBgLhHxj3Y9PhlTI494iX7OVc9AcY6RFDkZ54AlkTI5exFihBfFYot2eZ/qzSU69GMLseD9s7ZE466qVxqWny94gzz7VmZXI7e9tUF8bsGfd1NRpv0Kxw9qxSDHElwUoeo0=
+	t=1780435289; cv=none; b=ssPPHylQljV3iMp515HIwLXJEDSWPnpgdvmMzNytaOHjvhKld4mVYajs+dvjZ7JL0y7Djb0nzcNEH7FDGq662knUEmNjWa/8w1/DdQm0jNoaOWQXTkJwLVULnsRC6LC+rSw2WKPII5sBQEnCzldcGjs4q1aIfcdNuSwjO9bAGug=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1780434760; c=relaxed/simple;
-	bh=rDeXtDL/PJbNE80wWmAYiMIlUv/C2tp5BR6QLjbzJRk=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=GYoeyEPk7PKl6lALliRaX6v+5BLe+pl7HBBrzTwDHrEmwwp8dAYg9Pc38gI9nc+o21Oo2505LhYDagceFSUn3ZCTMbwK4W/rglz1Fg1097kla8+yZhjp9bwyIuUIe3QxqwsmLCmZ9oK8DxkCIt8g3U7Xrz+tBYVUjlMz5zHJOSY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=gD2vEr+D; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=OD5PbOz0; arc=none smtp.client-ip=205.220.180.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
+	s=arc-20240116; t=1780435289; c=relaxed/simple;
+	bh=ycyk/0BdjlJomF5MbiuTghmXGbhy80Qj+o+LzoMjj/k=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=oGMDZB4xaocFOp4w1pElbzmuckMKirWD6I6ub8IFUDHhM9GJJFMumD6Ur1/+cwmReXzCEPtNSAyrIEl+zKV1itLfkan5B6El9soZLjmEnLa3wOgT6CqqKgrt8YMmZozgtsDIvMbnWUKTN40g2TrrmTQzClvde2vqpsRTmKCr8EQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=PdlDpfEY; arc=none smtp.client-ip=217.140.110.172
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="gD2vEr+D";
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="OD5PbOz0"
-Received: from pps.filterd (m0279871.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 652Hea6q1938135
-	for <linux-pm@vger.kernel.org>; Tue, 2 Jun 2026 21:12:38 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	mhSG96DeO4siCnlPLzkltobE8Bmk/gbxupxseeS1UBg=; b=gD2vEr+DoVPkixd4
-	cS5j0E9R7LlPbyh5DJAyVIC+Vr9/uVwFOxWYlZxSnp2J0O3XKqaSpef9w4Y8LowJ
-	RxbebOXoXSe5/TuC4wFmLDzTqCIqpyhLiMwLofoHxnuFQqoWQFUry04+vVV7dCps
-	hkTJ40ct7QjixlXT66rUe1A78PQU4/qcUc5YC8gCnPFrRxDhwmDWKjkDkSWvdKvt
-	WrCztXkU92kt2PGjAb/Q2GaQIgnhYUqNicBQiNq1rIOx42qhMYRibSyEl+iRI6+R
-	kUkY4nB7BAJqgE+kaSKA/Ew3TG4YP3pWFt5FvHugJVaK3vms/UpEibeb9E7H07wA
-	28VgXQ==
-Received: from mail-qt1-f197.google.com (mail-qt1-f197.google.com [209.85.160.197])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4ehqubm3bp-1
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Tue, 02 Jun 2026 21:12:38 +0000 (GMT)
-Received: by mail-qt1-f197.google.com with SMTP id d75a77b69052e-5174a23afcbso40251221cf.3
-        for <linux-pm@vger.kernel.org>; Tue, 02 Jun 2026 14:12:38 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1780434758; x=1781039558; darn=vger.kernel.org;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=mhSG96DeO4siCnlPLzkltobE8Bmk/gbxupxseeS1UBg=;
-        b=OD5PbOz04O+DdhFIY7qgukXc/tWkf576hLkuvjzwuZiTI0oyc8lCu27KI+NYIwbfyh
-         guaMpA/C5mgzqdUMrqPYkhf1R9yKvn9lmv6SpQFL4DvENXl0z/ZWw8wWJEI+ckvKBjPa
-         cUM+lNHXct3kvL4C+MGNgpm/pDKePowyLJnjrqqjZvARVH3CAixxu7/+zFhT6pHq8spI
-         ho6TcXxvGNNP7EQRBGbURUvUWWC/6lFxleIezjniurcojJ91r1jY/DHfutA+F83rs4PZ
-         K1htGsm+8jD2l9Ll21RXyJxMyP43Fh1tjsjK4qKzSTISVI325ue5aLU0ciI42l2yIbGn
-         6+BA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1780434758; x=1781039558;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=mhSG96DeO4siCnlPLzkltobE8Bmk/gbxupxseeS1UBg=;
-        b=Gw6PQ0OHXlJdFR9vX/SpHbBoMJTkND7gI7RnfGdKDIr5gelXJTZP+1hd08p6RddfCX
-         vHmOVR2s0d5Ux0MbQ3tiK7ZIG3pjJPq+fxinGZOPO162XZ1vL+H0Tw9kMCcBimfrXLMW
-         sr41lP5uV1U3PykK32QJKDYtpfsMLQyqmWy5bIeLd0B/qKN3uHEO9IHIGeBjm2ontyGk
-         pPmBA9AxomviD+b8jOpCY3YEmYAWJOTTfkD+JJArhIdUDoX7fJZXuxT50C88X9Jkmu2W
-         tS7hiUkysD975QzBzozGj3Jep0sBQuGa6dC9MFUycUrlchPboP5ge+Rf3shHfavPIDbi
-         ogWA==
-X-Forwarded-Encrypted: i=1; AFNElJ/0TPJme5oANUNc4XoVKgA1Fd47mw17blMPE/16aAjMHZuNlktSiB54AmZpxQo2jpqSc7BSIj4eEA==@vger.kernel.org
-X-Gm-Message-State: AOJu0YwCLe9ASt5Uwn2AU6HyKT/Gbbpg6F5N/ymNdzEQJNLKMtVieaUV
-	Ar8ENbdKaIy/UglvpIL42Lk1L03DF8rqjSFSpxJtgzk5y2B/bUWuGJc5WxHY0jHt3TtEqkCXZz1
-	kqtTYUeIB0oee5N1TmPeEtE8qQm+GSpBZliM7PkL9p3BNlMwgWqtufeOagHP0wA==
-X-Gm-Gg: Acq92OF1bjGHx/5D4yTkDWa/CtRvyJFHJUYYXnrpGBRVaSMS3IFzcR4LP9ZlaKtaxi1
-	GDusGI6aYmcxK3aTfiajyxTErz7z4lN2RSw3V4Hv8m7du2UAzI/NXhjjJxPIMDO3QIlNaPYT8cb
-	URsXn+uc3Dp3z5f1uAUcuWFloSZSPcT3ToIamwjZywFgDBwEhrZo6ejyyFEoVg6PyZv7FEBL3oY
-	RVZWQB/ASTZuSWK7d4vFaWQEefjoXf2taS7OmjMRiyX5ypKtBEvXuE2RIVn4FCtPqIOLLTcVYZO
-	rXyvgJeDkLoXVtSGFz5wUN3kJLomvFhywncpifANXLOwzxgclUs6ldC2L1XhX/oQut99K3LBqkI
-	0/qWKx8JJ/QYARTANWyUT0bLKhkrwjVuSvNbr7Q9EzOMimqpD8XakWB4T4Rx+OAqZgMr0hlbW+T
-	1U
-X-Received: by 2002:a05:622a:190a:b0:516:d955:ea4 with SMTP id d75a77b69052e-517785d8ec1mr14317851cf.17.1780434758013;
-        Tue, 02 Jun 2026 14:12:38 -0700 (PDT)
-X-Received: by 2002:a05:622a:190a:b0:516:d955:ea4 with SMTP id d75a77b69052e-517785d8ec1mr14317431cf.17.1780434757610;
-        Tue, 02 Jun 2026 14:12:37 -0700 (PDT)
-Received: from [192.168.2.1] (146725694.box.freepro.com. [130.180.211.218])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-4601f368e9fsm2086132f8f.37.2026.06.02.14.12.34
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 02 Jun 2026 14:12:36 -0700 (PDT)
-Message-ID: <993ef9ed-65d8-4bcd-b0f9-fa6f167395d2@oss.qualcomm.com>
-Date: Tue, 2 Jun 2026 23:12:32 +0200
+	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="PdlDpfEY"
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 35CEF3293;
+	Tue,  2 Jun 2026 14:21:21 -0700 (PDT)
+Received: from u200865.usa.arm.com (U203867.austin.arm.com [10.118.30.58])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id D32A63F632;
+	Tue,  2 Jun 2026 14:21:25 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
+	t=1780435286; bh=ycyk/0BdjlJomF5MbiuTghmXGbhy80Qj+o+LzoMjj/k=;
+	h=From:To:Cc:Subject:Date:From;
+	b=PdlDpfEY8CPVZB/wakY+njADVOWhafcwQZGZnrlpgUNjGD1LM7Rk3OXhNKrQgW0V2
+	 4K59tQ5Qy4jSXz2OBP/4cFHWiO7oJeaCRdWpp8/6efqu7rknRVStTIJ1MPR9P9TQKZ
+	 HKyj3BwnTRnZ5y7LkbvGmsIdQJ5AwIfKGQS2r09s=
+From: Jeremy Linton <jeremy.linton@arm.com>
+To: linux-pm@vger.kernel.org
+Cc: sumitg@nvidia.com,
+	pierre.gondois@arm.com,
+	zhenglifeng1@huawei.com,
+	zhanjie9@hisilicon.com,
+	viresh.kumar@linaro.org,
+	leitao@debian.org,
+	rafael@kernel.org,
+	linux-kernel@vger.kernel.org,
+	Jeremy Linton <jeremy.linton@arm.com>
+Subject: [PATCH] cpufreq: cppc: Reduce cppc delivered perf sampling jitter
+Date: Tue,  2 Jun 2026 16:20:52 -0500
+Message-ID: <20260602212052.1278365-1-jeremy.linton@arm.com>
+X-Mailer: git-send-email 2.54.0
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 0/2] thermal: qcom: tsens: refine wake IRQ handling for
- suspend
-To: Priyansh Jain <priyansh.jain@oss.qualcomm.com>,
-        Amit Kucheria <amitk@kernel.org>,
-        Thara Gopinath <thara.gopinath@gmail.com>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Daniel Lezcano <daniel.lezcano@kernel.org>,
-        Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>
-Cc: linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-References: <20260601-tsens_interrupt_wake_control-v2-0-ce9570946abd@oss.qualcomm.com>
-Content-Language: en-US
-From: Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>
-In-Reply-To: <20260601-tsens_interrupt_wake_control-v2-0-ce9570946abd@oss.qualcomm.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Proofpoint-ORIG-GUID: Y2c4SfG5QIV0Vh1L7QbRzNiHVq_kpub4
-X-Proofpoint-GUID: Y2c4SfG5QIV0Vh1L7QbRzNiHVq_kpub4
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNjAyMDIwNiBTYWx0ZWRfX0T2mJd1JoGBX
- jOsYYo7oWWs/kMqt6QNn95Fd7d/zooxUDaJh8fnIkK/LC+XCVZzDdxn1PXBMkTlStDrRL5BkwNC
- YSz5vSIZi4BzJFqS/P0GORT3P8KDRzhWid/wg7Ka63eGsdXdFqrk0hFEeAmKnFHrMKTzRvfDQYQ
- lEKyin4VkYphuhQP9feHWaZCuk1EInX2L8YMx8wf3mzmc2A04CJ/m6mB6XzSZJuDzVNMS+1yeJR
- 3wrRoOPnpT7qLMarCnMRe77yhwoqSG9fBL6aey2s+oi6+9QlHGmkVWuPtRYzw/PakY0WtAdTPqk
- 5HERUKJQuKLB5Oh3hY4xlrf8BBPi3tQx9BPyEkm0/o8t11qMDOwPhUnklwafCCWw11YXYvzOhHO
- 1qReSIhKh5LeJ5vXz+T5eSt7rPIDHJpoDQelbvBCgazIJ58rgaOIGY7EO3V2Y5bXs3IL6GfJKCN
- d70WFQbKBzDid6Hd9XQ==
-X-Authority-Analysis: v=2.4 cv=FcoHAp+6 c=1 sm=1 tr=0 ts=6a1f4746 cx=c_pps
- a=EVbN6Ke/fEF3bsl7X48z0g==:117 a=uw/3876vWhRnNVL35W6mqQ==:17
- a=IkcTkHD0fZMA:10 a=FelO9ux0wxsA:10 a=s4-Qcg_JpJYA:10
- a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=3WHJM1ZQz_JShphwDgj5:22
- a=EUspDBNiAAAA:8 a=BZznKAv9R9A1RLtjlQAA:9 a=QEXdDO2ut3YA:10
- a=a_PwQJl-kcHnX1M80qC6:22
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.125,FMLib:17.12.100.49
- definitions=2026-06-02_04,2026-05-28_03,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501 phishscore=0 bulkscore=0 impostorscore=0 malwarescore=0
- suspectscore=0 lowpriorityscore=0 clxscore=1015 spamscore=0 adultscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2605210000 definitions=main-2606020206
+Content-Transfer-Encoding: 8bit
 
-On 6/1/26 08:37, Priyansh Jain wrote:
-> This series refines how TSENS threshold IRQs are used as wake sources
-> across suspend/resume.
-> 
-> Patch 1 moves IRQ wake control from registration time into PM callbacks,
-> so wakeup configuration follows the actual suspend state instead of being
-> left enabled during normal runtime.
-> 
-> Patch 2 adds a platform-data opt-out for wake IRQ setup and uses it for
-> automotive TSENS compatibles (SA8775P/SA8255P), where parking suspend
-> should not be exited repeatedly due to TSENS threshold wake events.
-> 
-> Series highlights:
-> - store and manage TSENS IRQ wake state in suspend/resume paths
-> - keep existing runtime monitoring behavior unchanged
-> - disable TSENS wake IRQ setup for selected automotive targets
-> 
-> Signed-off-by: Priyansh Jain <priyansh.jain@oss.qualcomm.com>
-> ---
+CPPC uses a pair of registers cycling at different frequencies to
+determine an accumulated performance level. For userspace reporting we
+want to convert this to an instantaneous CPU frequency, but over short
+time periods small errors caused by CPPC counter reads can cause
+fairly significant reported frequency variations even when the core
+CPU clock isn't changing.
 
-Applied, thanks
+Reduce this by keeping a start sample fixed and retrying the end
+sample until the counter deltas are large enough to reduce short
+window error, or until adjacent delivered performance estimates are
+within the CPU's observed CPPC read noise floor.
+
+To begin, resample the initial pair a small fixed number of times
+looking for matching delivered performance deltas.  This reduces the
+chance that a disturbed start sample anchors the rest of the
+calculation.
+
+Then look for an end sample while updating the noise floor from the
+best error seen between samples.  The floor remains zero on systems
+with stable feedback reads, but lets noisy systems stop early once
+another retry is unlikely to improve the result.  The retry loop is
+capped at 200 iterations, giving an ~20 usec explicit delay budget
+derived from ndelay(100).
+
+Signed-off-by: Jeremy Linton <jeremy.linton@arm.com>
+---
+ drivers/cpufreq/cppc_cpufreq.c | 68 ++++++++++++++++++++++++++++++----
+ 1 file changed, 61 insertions(+), 7 deletions(-)
+
+diff --git a/drivers/cpufreq/cppc_cpufreq.c b/drivers/cpufreq/cppc_cpufreq.c
+index 7e7f9dfb7a24..362c08def420 100644
+--- a/drivers/cpufreq/cppc_cpufreq.c
++++ b/drivers/cpufreq/cppc_cpufreq.c
+@@ -50,7 +50,7 @@ struct cppc_freq_invariance {
+ static DEFINE_PER_CPU(struct cppc_freq_invariance, cppc_freq_inv);
+ static struct kthread_worker *kworker_fie;
+ 
+-static int cppc_perf_from_fbctrs(u64 reference_perf,
++static u64 cppc_perf_from_fbctrs(u64 reference_perf,
+ 				 struct cppc_perf_fb_ctrs *fb_ctrs_t0,
+ 				 struct cppc_perf_fb_ctrs *fb_ctrs_t1);
+ 
+@@ -750,7 +750,7 @@ static inline u64 get_delta(u64 t1, u64 t0)
+ 	return (u32)t1 - (u32)t0;
+ }
+ 
+-static int cppc_perf_from_fbctrs(u64 reference_perf,
++static u64 cppc_perf_from_fbctrs(u64 reference_perf,
+ 				 struct cppc_perf_fb_ctrs *fb_ctrs_t0,
+ 				 struct cppc_perf_fb_ctrs *fb_ctrs_t1)
+ {
+@@ -771,19 +771,71 @@ static int cppc_perf_from_fbctrs(u64 reference_perf,
+ 	return (reference_perf * delta_delivered) / delta_reference;
+ }
+ 
+-static int cppc_get_perf_ctrs_sample(int cpu,
++/* CPPC read noise floor for early retry exit. */
++static DEFINE_PER_CPU(u64, err_floor);
++
++#define CPPC_SAMPLE_MAX_RETRIES	200
++
++static int cppc_get_perf_ctrs_sample(int cpu, u64 ref,
+ 				     struct cppc_perf_fb_ctrs *fb_ctrs_t0,
+ 				     struct cppc_perf_fb_ctrs *fb_ctrs_t1)
+ {
+ 	int ret;
++	s64 last_delivered = 0;
++	u64 smallest_error = 0;
++	int tries = 0;
++	u64 min_counts = ref * 2000;
++
++	/* Two subsequent reads with the same offset avoids one off large jitter values */
++	for (int x = 0; x < 10; x++) {
++		ret = cppc_get_perf_ctrs(cpu, fb_ctrs_t0);
++		if (ret)
++			return ret;
++
++		ret = cppc_get_perf_ctrs(cpu, fb_ctrs_t1);
++		if (ret)
++			return ret;
++
++		if (last_delivered == cppc_perf_from_fbctrs(ref, fb_ctrs_t0, fb_ctrs_t1))
++			break;
++
++		last_delivered = cppc_perf_from_fbctrs(ref, fb_ctrs_t0, fb_ctrs_t1);
++	}
++	last_delivered = 0;
++again:
++	ndelay(100);
+ 
+-	ret = cppc_get_perf_ctrs(cpu, fb_ctrs_t0);
++	ret = cppc_get_perf_ctrs(cpu, fb_ctrs_t1);
+ 	if (ret)
+ 		return ret;
+ 
+-	udelay(2); /* 2usec delay between sampling */
++	/*
++	 * We want at least two significant figures, if the counts are low, then there
++	 * can be rounding errors that show up as frequency that is swinging around a few hundred
++	 * Mhz. OTOH, if the delay gets too long the clock rate can be affected.
++	 * So we want it exactly long enough to have sufficient counter turn over, and
++	 * a repeatable low error value.
++	 */
++	if ((get_delta(fb_ctrs_t1->reference, fb_ctrs_t0->reference) < min_counts) ||
++	    (get_delta(fb_ctrs_t1->delivered, fb_ctrs_t0->delivered) < min_counts)) {
++		s64 delivered = cppc_perf_from_fbctrs(ref, fb_ctrs_t0, fb_ctrs_t1);
++		u64 error = abs(last_delivered - delivered);
++
++		if (smallest_error == 0 || smallest_error > error)
++			smallest_error = error;
++
++		if (error > per_cpu(err_floor, cpu)) {
++			last_delivered = delivered;
++			tries++;
++			if (tries < CPPC_SAMPLE_MAX_RETRIES)
++				goto again;
++		}
++	}
+ 
+-	return cppc_get_perf_ctrs(cpu, fb_ctrs_t1);
++	/* compute a running error */
++	per_cpu(err_floor, cpu) = (per_cpu(err_floor, cpu) + smallest_error) / 2;
++
++	return ret;
+ }
+ 
+ static unsigned int cppc_cpufreq_get_rate(unsigned int cpu)
+@@ -799,7 +851,9 @@ static unsigned int cppc_cpufreq_get_rate(unsigned int cpu)
+ 
+ 	cpu_data = policy->driver_data;
+ 
+-	ret = cppc_get_perf_ctrs_sample(cpu, &fb_ctrs_t0, &fb_ctrs_t1);
++	ret = cppc_get_perf_ctrs_sample(cpu, cpu_data->perf_caps.reference_perf,
++					&fb_ctrs_t0, &fb_ctrs_t1);
++
+ 	if (ret) {
+ 		if (ret == -EFAULT)
+ 			/* Any of the associated CPPC regs is 0. */
+-- 
+2.54.0
 
