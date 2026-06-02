@@ -1,352 +1,70 @@
-Received: from mail-wr1-f50.google.com (mail-wr1-f50.google.com [209.85.221.50])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E662326A0A7
-	for <linux-pm@vger.kernel.org>; Tue,  2 Jun 2026 17:00:55 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.50
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3AF2C39184C;
+	Tue,  2 Jun 2026 18:21:42 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1780419659; cv=none; b=WIwHX26r/AHZ8XwzxJX3phkDZDB7BuHQohC9fZd/+9aEPIBepxE4YlBvCBaXP93hLDkQtfKbXOFp2eaogW301VBy4rOo91U3HI+ymwCMlMjx7+VEvwUyNdUgMCTK82yRQQjRMQTPTFl+owebeLue1HqBFp8vWw19joI+3qHE+XY=
+	t=1780424504; cv=none; b=aTnoQu6t+zxRhsPMfiump0Z/IrR7rL1Qa3RvfatUL0GNVunA2mCQVhJ8fdZTlxDx1VskG3pvuiMvhEKnU4uilGdPa74bw8y64ohJzQ00ia81zVi+9znmFjPneeQooE+Y1TIIm2QJZhhcvk7Rweyob644hPZ0Rr8LF4MYco4hm6g=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1780419659; c=relaxed/simple;
-	bh=cWhAhaDFLAoUDdG0hR8RPClQQZ34eSbbH9qVOO1JS/c=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=HzilN1ter2PAF+11DUuyWCHLHbAnLawYQzmW1iI8zanNPy8yR4tnsEJ/EYQ0v3vLDgmhX0NKEsgQlz9sTIvBTlawQNilsztLsoaI7JHj9MKrxTJ9hnEGuDhF/QUXlN/2R3cOoUovzDIiP8XjcYd6N4bxZY9jb0pDn3sDnFHt1b4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=JeZALUGu; arc=none smtp.client-ip=209.85.221.50
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
+	s=arc-20240116; t=1780424504; c=relaxed/simple;
+	bh=8ytOHlLqGjw8D/71xahC8oDz2wv2y5Lsxg55xpfbd6w=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=sn1aVK2RyfrXRJ2RC1HGHF1tPYEKMP9ZndSOv0rtWEIZpELupztSOphc40dODR1yUE7dduGqzM39sP6NvjsyP/MFu4y0AKA5OCLigYuCb9sY4pzNEoi/Mwgbu4jPqgUAaqoeVccXxwIxb8Mlf+Sj4BQB4el8L4HhYDzzwCBlXBI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=MivB+XLK; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="JeZALUGu"
-Received: by mail-wr1-f50.google.com with SMTP id ffacd0b85a97d-4600cbb06deso1645859f8f.1
-        for <linux-pm@vger.kernel.org>; Tue, 02 Jun 2026 10:00:55 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1780419654; x=1781024454; darn=vger.kernel.org;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :mime-version:subject:date:from:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=SDntjNasVGG8hcuxF4CdQbpDwBoTb2ZE5Gcryz3TjxU=;
-        b=JeZALUGuTmh4/QY9U753eEc/VnUnN6YJj8jbgz4Ngvmv20VER+7y2GwRxU9bSFWIAZ
-         Lm8ND5K8o+lVjCJcKj15k13CqBd/liS9t2VkuXmfSi+UhVWFTvOXNCa1EAR/6yZOawLE
-         VmGXzzhZL1kEX4GgZgxx63tzyvpsxYVwNGrTJpjbIhDdkBW1BtWh4KyCMbIl+qC4pSB9
-         iZLM4qd2f0uxKH4ohjHbWMkzme2/3fQQ9cilaeHFdQh+J0EiX8ttXbwvtSPLHso/vLSh
-         4p1fBMSQEluV5UsoWHU7mLcQZlA/bubPb0L8VDgKoUcroGYpyG3Jw40Fmil9dGiX4CNF
-         4/CQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1780419654; x=1781024454;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :mime-version:subject:date:from:x-gm-gg:x-gm-message-state:from:to
-         :cc:subject:date:message-id:reply-to;
-        bh=SDntjNasVGG8hcuxF4CdQbpDwBoTb2ZE5Gcryz3TjxU=;
-        b=L/X//4rOLtFvhfb6rjf8z1djIvPF3iBbb2OXQ9hLZnVL7TbOWa+9Ln7HI52mygqqwB
-         +SxlHAavxZ11Jb9nA9EG13fsbTSlrq930bTNep2gFt2UhBoJPH+CHN2zmfNKhc+8TD/V
-         gTHl0VycOAcbfTjNQly7QsPP+rhlSexKYrsxt1FOzHqF0dueEPROg8VSHJ5p4ZcGCSKI
-         6OvRGSmxzPAS1MLku6Qddm5cdwZLWpdiA3okdWZFcVRvbESIcTMPNChNlhAQC23ylC5v
-         A77Q/31UTq7dYIMPcqbqav/P7CE6tB7A2kpz1A02miEj61KNS+y79Dow3/+Pqs3blq4w
-         Xerw==
-X-Forwarded-Encrypted: i=1; AFNElJ9ZnqPV3nXvGfCwXwDKsf+Nkn1IzLeeH1gmFSRUh+awjqY5m0FUP2zwK+0Dg1vAM1mLpbWzvOZ/sA==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yw6jYBlvCqVg2FY51n6vsh/0VFtPeEWrpae2QQoJN5wbYn3CLbA
-	07ArJg0Y6eoR9EWXC7l9XQs9jdzajrqhDJBVw2zAD0yPw+8gcl3ybVCnIUY4xYOuGfY=
-X-Gm-Gg: Acq92OFyqkxDP5wyZ1T0MMSqr0BKwdiz7WxXQssuYn23TRO3ItHpozpEw0brgeUd4LG
-	onNwpEm+FQUylQzN53FowU6M0jewAPmXmES+Egzvj9j4VFdqjvViJI5dkgqeFWS6lp9pedmyXxD
-	nlIGye/mscilzCoZCrmD8GNgDQrXA74l7/f8AfkPnqFg1PbVzXxpChEsWou8s2XyupUbfqX7IZG
-	SmEwfp3tgsw4EHBlphenEnMDk2hgrUCMx9LVZl8BKz/KDMLnnxtW3UyA81NUE2ctu//GjquYLJB
-	q2TTyN0kRvf4kG6fpOSgOX/P1L6oxUriW6SQTT03fOJHBe9kH4y+W/4mp01w5OWsMB8Mq32iPFV
-	H/adA/c1ex2nQ7r/uaqeg6NnfrruyEfskfyZ78mA+W/7hvgL79BlkH6WuRkgh1u18K/3beq/2tt
-	DcXqis2LSsLeLLXP7kRTcwmPmxettkCq8xQcVSQ+CeX/Mm0iQz/WaxpR27jYWdSBl0Uytne3JZW
-	xpmlJVg/6rne6o=
-X-Received: by 2002:a05:6000:46d3:b0:45e:73a1:8d04 with SMTP id ffacd0b85a97d-4601f6286e5mr118252f8f.1.1780419654223;
-        Tue, 02 Jun 2026 10:00:54 -0700 (PDT)
-Received: from ta2.c.googlers.com (213.53.77.34.bc.googleusercontent.com. [34.77.53.213])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-4601f360bd6sm541156f8f.36.2026.06.02.10.00.53
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 02 Jun 2026 10:00:53 -0700 (PDT)
-From: Tudor Ambarus <tudor.ambarus@linaro.org>
-Date: Tue, 02 Jun 2026 17:00:50 +0000
-Subject: [PATCH v7 4/5] arm64: dts: exynos: gs101: Add thermal management
- unit
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="MivB+XLK"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id B30DD1F00899;
+	Tue,  2 Jun 2026 18:21:40 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1780424502;
+	bh=b+ThjlcJjpLxxMSne/TmFnpLJdJaPgKpkVosByRLWi0=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References;
+	b=MivB+XLK5N4S55oTvZt5EaXMm2e2lVGBQFrevRgbEvHxpRHKSFNSZ1EdrD1tCxfnR
+	 Ih0YZ0VmdFC3gn6eJ2OdrAkJB5G/j54Ecw0QmhROAiAd2KQeVwSc/zwmAI0x+hX9Ta
+	 y5f+KocjaygiPBuwXRT58S+u1EsWR0P7QlCJ6Tm5CvgVHlL+dFOM7CVCalVVrNCSrB
+	 hYitwVNDbKAtQMvrEHZBB3jDd2j+IE5800akRhjjoVQoz2paI+HeEB2poZCLYeIDLb
+	 N0/IWiA7JzbOloauZSoc12CGcK3Iyl0K/BuVSFKsuWrW95CPakjdqVQx+ofcOyvsHI
+	 eInCIM7xwCkiw==
+From: Sasha Levin <sashal@kernel.org>
+To: Nick <nick@kousu.ca>,
+	John Veness <john-linux@pelago.org.uk>,
+	"Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Sasha Levin <sashal@kernel.org>,
+	linux-acpi@vger.kernel.org,
+	johannes.goede@oss.qualcomm.com,
+	"Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
+	regressions@lists.linux.dev,
+	linux-kernel@vger.kernel.org,
+	linux-pm@vger.kernel.org,
+	platform-driver-x86@vger.kernel.org,
+	stable@vger.kernel.org
+Subject: Re: [REGRESSION] Toshiba Fn keys + lidswitch
+Date: Tue,  2 Jun 2026 14:21:20 -0400
+Message-ID: <20260602180900.acpi-toshiba-reply@kernel.org>
+X-Mailer: git-send-email 2.53.0
+In-Reply-To: <CAJZ5v0hR2b81+0FWAn3s_HJNWwweRSVk35KczPBKNabb-H91kg@mail.gmail.com>
+References: <E2OXET.4X5GTP37VTNC3@kousu.ca> <CAJZ5v0jVQyWYqPo_MiUwNQb7FLNR_Q_++Xq=xA1owcHpcjN=OA@mail.gmail.com> <bc9d5258-d4df-46a1-bba9-de3486f722ab@pelago.org.uk> <8503d297-68ca-4bfe-bbdf-537a85890d86@oss.qualcomm.com> <75398536-2ca8-4205-9205-18afc5227397@pelago.org.uk> <eddc6acd74abcea6131f3cfc606bc596@kousu.ca> <CAJZ5v0hR2b81+0FWAn3s_HJNWwweRSVk35KczPBKNabb-H91kg@mail.gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20260602-acpm-tmu-v7-4-8047dd54b0e9@linaro.org>
-References: <20260602-acpm-tmu-v7-0-8047dd54b0e9@linaro.org>
-In-Reply-To: <20260602-acpm-tmu-v7-0-8047dd54b0e9@linaro.org>
-To: "Rafael J. Wysocki" <rafael@kernel.org>, 
- Daniel Lezcano <daniel.lezcano@kernel.org>, Zhang Rui <rui.zhang@intel.com>, 
- Lukasz Luba <lukasz.luba@arm.com>, Rob Herring <robh@kernel.org>, 
- Krzysztof Kozlowski <krzk+dt@kernel.org>, 
- Conor Dooley <conor+dt@kernel.org>, 
- Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, 
- Krzysztof Kozlowski <krzk@kernel.org>, Kees Cook <kees@kernel.org>, 
- "Gustavo A. R. Silva" <gustavoars@kernel.org>, 
- Peter Griffin <peter.griffin@linaro.org>, 
- =?utf-8?q?Andr=C3=A9_Draszik?= <andre.draszik@linaro.org>, 
- Alim Akhtar <alim.akhtar@samsung.com>
-Cc: jyescas@google.com, linux-kernel@vger.kernel.org, 
- linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, 
- devicetree@vger.kernel.org, linux-hardening@vger.kernel.org, 
- linux-arm-kernel@lists.infradead.org, 
- Tudor Ambarus <tudor.ambarus@linaro.org>
-X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1780419650; l=7066;
- i=tudor.ambarus@linaro.org; s=20241212; h=from:subject:message-id;
- bh=cWhAhaDFLAoUDdG0hR8RPClQQZ34eSbbH9qVOO1JS/c=;
- b=apG+pBt4RaD3p55VL+tYKafqLWdfptJk341hfVXxmHuVVAPTR+ucK4vZXv0pPUcu7yU4JlNIQ
- lVJbAqiECM1BpF553YSpUdwqEDaojhCiK1t6+56AP0VrZcwe/LLfHvb
-X-Developer-Key: i=tudor.ambarus@linaro.org; a=ed25519;
- pk=uQzE0NXo3dIjeowMTOPCpIiPHEz12IA/MbyzrZVh9WI=
+Content-Transfer-Encoding: 8bit
 
-Add the Thermal Management Unit (TMU) support for the Google GS101 SoC.
+On Mon, Jun 01, 2026 at 02:12:50PM +0200, Rafael J. Wysocki wrote:
+> The patch is there in 7.1-rc6, so it should propagate to -stable kernels
+> over time.
 
-Describe the TMU using a consolidated SoC node that includes memory
-resources for interrupt identification and a phandle to the ACPM IPC
-interface for functional control.
+I've queued the fix for 7.0.y now rather than waiting:
 
-Define thermal zones for the little, mid, and big CPU clusters, including
-associated trip points and cooling-device maps to enable thermal
-mitigation.
+  a004b8f0d3bc5d ("ACPI: button: Enable wakeup GPEs for ACPI buttons at probe time")
 
-Signed-off-by: Tudor Ambarus <tudor.ambarus@linaro.org>
----
- arch/arm64/boot/dts/exynos/google/gs101-tmu.dtsi | 136 +++++++++++++++++++++++
- arch/arm64/boot/dts/exynos/google/gs101.dtsi     |  18 +++
- 2 files changed, 154 insertions(+)
+along with its prerequisite:
 
-diff --git a/arch/arm64/boot/dts/exynos/google/gs101-tmu.dtsi b/arch/arm64/boot/dts/exynos/google/gs101-tmu.dtsi
-new file mode 100644
-index 000000000000..b27d1a539ec2
---- /dev/null
-+++ b/arch/arm64/boot/dts/exynos/google/gs101-tmu.dtsi
-@@ -0,0 +1,136 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/*
-+ * Google GS101 TMU configurations device tree source
-+ *
-+ * Copyright 2020 Samsung Electronics Co., Ltd.
-+ * Copyright 2020 Google LLC.
-+ * Copyright 2026 Linaro Ltd.
-+ */
-+
-+#include <dt-bindings/thermal/thermal.h>
-+
-+/ {
-+	thermal-zones {
-+		cpucl2-thermal {
-+			polling-delay-passive = <0>;
-+			polling-delay = <0>;
-+			thermal-sensors = <&tmu_top 0>;
-+
-+			trips {
-+				big_switch_on: big-switch-on {
-+					temperature = <80000>;
-+					hysteresis = <2000>;
-+					type = "passive";
-+				};
-+
-+				big_mitigate: big-mitigate {
-+					temperature = <90000>;
-+					hysteresis = <5000>;
-+					type = "passive";
-+				};
-+
-+				big_hot: big-hot {
-+					temperature = <100000>;
-+					hysteresis = <5000>;
-+					type = "hot";
-+				};
-+
-+				big_critical: big-critical {
-+					temperature = <105000>;
-+					hysteresis = <2000>;
-+					type = "critical";
-+				};
-+			};
-+
-+			cooling-maps {
-+				map0 {
-+					trip = <&big_mitigate>;
-+					cooling-device = <&cpu6 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
-+							 <&cpu7 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
-+				};
-+			};
-+		};
-+
-+		cpucl1-thermal {
-+			polling-delay-passive = <0>;
-+			polling-delay = <0>;
-+			thermal-sensors = <&tmu_top 1>;
-+
-+			trips {
-+				mid_switch_on: mid-switch-on {
-+					temperature = <80000>;
-+					hysteresis = <2000>;
-+					type = "passive";
-+				};
-+
-+				mid_mitigate: mid-mitigate {
-+					temperature = <90000>;
-+					hysteresis = <5000>;
-+					type = "passive";
-+				};
-+
-+				mid_hot: mid-hot {
-+					temperature = <100000>;
-+					hysteresis = <5000>;
-+					type = "hot";
-+				};
-+
-+				mid_critical: mid-critical {
-+					temperature = <105000>;
-+					hysteresis = <2000>;
-+					type = "critical";
-+				};
-+			};
-+
-+			cooling-maps {
-+				map0 {
-+				     trip = <&mid_mitigate>;
-+					cooling-device = <&cpu4 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
-+							 <&cpu5 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
-+			       };
-+			};
-+		};
-+
-+		cpucl0-thermal {
-+			polling-delay-passive = <0>;
-+			polling-delay = <0>;
-+			thermal-sensors = <&tmu_top 2>;
-+
-+			trips {
-+				little_switch_on: little-switch-on {
-+					temperature = <80000>;
-+					hysteresis = <2000>;
-+					type = "passive";
-+				};
-+
-+				little_mitigate: little-mitigate {
-+					temperature = <90000>;
-+					hysteresis = <5000>;
-+					type = "passive";
-+				};
-+
-+				little_hot: little-hot {
-+					temperature = <100000>;
-+					hysteresis = <5000>;
-+					type = "hot";
-+				};
-+
-+				little_critical: little-critical {
-+					temperature = <105000>;
-+					hysteresis = <2000>;
-+					type = "critical";
-+				};
-+			};
-+
-+			cooling-maps {
-+				map0 {
-+					trip = <&little_mitigate>;
-+					cooling-device = <&cpu0 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
-+							 <&cpu1 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
-+							 <&cpu2 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
-+							 <&cpu3 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
-+				};
-+			};
-+		};
-+	};
-+};
-diff --git a/arch/arm64/boot/dts/exynos/google/gs101.dtsi b/arch/arm64/boot/dts/exynos/google/gs101.dtsi
-index 86933f22647b..b6866ef99fb3 100644
---- a/arch/arm64/boot/dts/exynos/google/gs101.dtsi
-+++ b/arch/arm64/boot/dts/exynos/google/gs101.dtsi
-@@ -74,6 +74,7 @@ cpu0: cpu@0 {
- 			compatible = "arm,cortex-a55";
- 			reg = <0x0000>;
- 			clocks = <&acpm_ipc GS101_CLK_ACPM_DVFS_CPUCL0>;
-+			#cooling-cells = <2>;
- 			enable-method = "psci";
- 			cpu-idle-states = <&ananke_cpu_sleep>;
- 			capacity-dmips-mhz = <250>;
-@@ -86,6 +87,7 @@ cpu1: cpu@100 {
- 			compatible = "arm,cortex-a55";
- 			reg = <0x0100>;
- 			clocks = <&acpm_ipc GS101_CLK_ACPM_DVFS_CPUCL0>;
-+			#cooling-cells = <2>;
- 			enable-method = "psci";
- 			cpu-idle-states = <&ananke_cpu_sleep>;
- 			capacity-dmips-mhz = <250>;
-@@ -98,6 +100,7 @@ cpu2: cpu@200 {
- 			compatible = "arm,cortex-a55";
- 			reg = <0x0200>;
- 			clocks = <&acpm_ipc GS101_CLK_ACPM_DVFS_CPUCL0>;
-+			#cooling-cells = <2>;
- 			enable-method = "psci";
- 			cpu-idle-states = <&ananke_cpu_sleep>;
- 			capacity-dmips-mhz = <250>;
-@@ -110,6 +113,7 @@ cpu3: cpu@300 {
- 			compatible = "arm,cortex-a55";
- 			reg = <0x0300>;
- 			clocks = <&acpm_ipc GS101_CLK_ACPM_DVFS_CPUCL0>;
-+			#cooling-cells = <2>;
- 			enable-method = "psci";
- 			cpu-idle-states = <&ananke_cpu_sleep>;
- 			capacity-dmips-mhz = <250>;
-@@ -122,6 +126,7 @@ cpu4: cpu@400 {
- 			compatible = "arm,cortex-a76";
- 			reg = <0x0400>;
- 			clocks = <&acpm_ipc GS101_CLK_ACPM_DVFS_CPUCL1>;
-+			#cooling-cells = <2>;
- 			enable-method = "psci";
- 			cpu-idle-states = <&enyo_cpu_sleep>;
- 			capacity-dmips-mhz = <620>;
-@@ -134,6 +139,7 @@ cpu5: cpu@500 {
- 			compatible = "arm,cortex-a76";
- 			reg = <0x0500>;
- 			clocks = <&acpm_ipc GS101_CLK_ACPM_DVFS_CPUCL1>;
-+			#cooling-cells = <2>;
- 			enable-method = "psci";
- 			cpu-idle-states = <&enyo_cpu_sleep>;
- 			capacity-dmips-mhz = <620>;
-@@ -146,6 +152,7 @@ cpu6: cpu@600 {
- 			compatible = "arm,cortex-x1";
- 			reg = <0x0600>;
- 			clocks = <&acpm_ipc GS101_CLK_ACPM_DVFS_CPUCL2>;
-+			#cooling-cells = <2>;
- 			enable-method = "psci";
- 			cpu-idle-states = <&hera_cpu_sleep>;
- 			capacity-dmips-mhz = <1024>;
-@@ -158,6 +165,7 @@ cpu7: cpu@700 {
- 			compatible = "arm,cortex-x1";
- 			reg = <0x0700>;
- 			clocks = <&acpm_ipc GS101_CLK_ACPM_DVFS_CPUCL2>;
-+			#cooling-cells = <2>;
- 			enable-method = "psci";
- 			cpu-idle-states = <&hera_cpu_sleep>;
- 			capacity-dmips-mhz = <1024>;
-@@ -639,6 +647,15 @@ watchdog_cl1: watchdog@10070000 {
- 			status = "disabled";
- 		};
- 
-+		tmu_top: thermal-sensor@100a0000 {
-+			compatible = "google,gs101-tmu-top";
-+			reg = <0x100a0000 0x800>;
-+			clocks = <&cmu_misc CLK_GOUT_MISC_TMU_TOP_PCLK>;
-+			interrupts = <GIC_SPI 769 IRQ_TYPE_LEVEL_HIGH 0>;
-+			samsung,acpm-ipc = <&acpm_ipc>;
-+			#thermal-sensor-cells = <1>;
-+		};
-+
- 		trng: rng@10141400 {
- 			compatible = "google,gs101-trng",
- 				     "samsung,exynos850-trng";
-@@ -1862,3 +1879,4 @@ timer {
- };
- 
- #include "gs101-pinctrl.dtsi"
-+#include "gs101-tmu.dtsi"
+  fe80251152fed5 ("ACPI: button: Fix ACPI GPE handler leak during removal")
 
--- 
-2.54.0.1013.g208068f2d8-goog
-
+--
+Thanks,
+Sasha
