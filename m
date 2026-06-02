@@ -1,97 +1,153 @@
-Received: from sendmail.purelymail.com (sendmail.purelymail.com [34.202.193.197])
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.11])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5D57231ED8B
-	for <linux-pm@vger.kernel.org>; Tue,  2 Jun 2026 01:50:47 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=34.202.193.197
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6C3C5279DCA;
+	Tue,  2 Jun 2026 01:52:46 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.11
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1780365048; cv=none; b=ZM6lx9C1WKTiKNHLFKlkCA6suBsLVZ4aqfnuuqQXfFwnkRgG43uahlsGiRUXiKZwHjF5GOzFxzNuBW/LrVen0YOYDTPismMKSC4BJBJ39ARZNEtdb5dpFDerJc+1H1RJCByDn0WZKpyY6KsChZ6T4382Hjx64WcBH77ziFBur9M=
+	t=1780365168; cv=none; b=JoqqP6sRDxvYz9aoXGulL3QfVYAZZzNbqvhJgv4b8zzg9n0kOr35x7FGv0/8OwGeM3ONSP4197a791By1FFzmthlAj5UrGLAMAj9avk2ZLIUQuSq4OvZ3lBxPGA6xqSGZbkjWJGliMt9DchmTGd39ZI/lUbE1bnimDkDCrNFjH4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1780365048; c=relaxed/simple;
-	bh=u/N/eBKUNL06Djr6KY714eJpprrmOgnX37Q9XcaSZkk=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=LckX+k5MrHBJFAph35IggDvkL39nwgsc5AcnCOlQ/QA4SnnDBt2y7AXCLebzmpiDQTcO15m2zLN9AZl0gXCa8hgIspkpwwUV7ku/mLBE0EztnU7LUVEkmWMlaLh8clmIGbu88Aan4vlSSMZfGIpXysoJCtgChM0fzbQSFJ8n36c=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=rcpassos.me; spf=pass smtp.mailfrom=rcpassos.me; dkim=pass (2048-bit key) header.d=rcpassos.me header.i=@rcpassos.me header.b=LSZBOR3Q; dkim=pass (2048-bit key) header.d=purelymail.com header.i=@purelymail.com header.b=nQmTWI8r; arc=none smtp.client-ip=34.202.193.197
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=rcpassos.me
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=rcpassos.me
+	s=arc-20240116; t=1780365168; c=relaxed/simple;
+	bh=AbAm/pIqtcsFljma7tItx2r/3qntGqzm/Mi6uO74WGY=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=f28xiIOewxAIDoG4cNTV1rGNP/TdFXaiZbet57t+W63B3TZrGwKVNyZ2JEx0hXJu3DgGGcYk0WXTitCcBTnuJhoP+lyyHp9Gj0rBbLYJrMbKqFPc2VkGUb0TUxZgFLcHOpwfQycP4CcEYW+hjIJqUnsWR1IzKMWqu6QxZXENOmA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=pass smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=ZsI2b1o5; arc=none smtp.client-ip=192.198.163.11
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=rcpassos.me header.i=@rcpassos.me header.b="LSZBOR3Q";
-	dkim=pass (2048-bit key) header.d=purelymail.com header.i=@purelymail.com header.b="nQmTWI8r"
-Authentication-Results: purelymail.com; auth=pass
-DKIM-Signature: a=rsa-sha256; b=LSZBOR3QsxOO8JSifAVKJ3Fawv2tCIenr+6C16FMixyTg9ATf/NPp6ECTxa04rDnIUjuneBodeBpWowlCcY+u5op87C7Z5ffrtx+64kwzK+scV/9iXIYqwxNiP3Y7P14irRy6Zjfj83weJC22FrPChHtBErUpWbd/NIrjBYkmOQu08UWBIPUulSMxa+0tSMJO7QmVSiu4OI8LUwdRut8QpQgC7Th4FafnRhyIXrHR5TwYuNVH0mKFdjzNBzKmKHJE9LKfOdzRtdXiDxg+ikCk1TeyqsarC1GavrB8ULcHIJrdbDjsO4xlwgFy1ovkotrDfZp1JIYlA4JrfeeghaDVw==; s=purelymail1; d=rcpassos.me; v=1; bh=u/N/eBKUNL06Djr6KY714eJpprrmOgnX37Q9XcaSZkk=; h=Received:From:To:Subject:Date;
-DKIM-Signature: a=rsa-sha256; b=nQmTWI8rdzSlTZFxoJ3T8henBKTK7q0LPjabsVzAnyFe8SOpiEtBCmAvKfk4UocHLE7ByxhhSuemAFH4XSSKqhqdkIda1q8EmG2S8+1n056xcKCZ0QpXCMYRzAVD3+nqO5Kfe2xMMn7+NRcOqATQoYeLfxF5jMRz6AGs4MTiFDgU60fc/inIo7TEIjAta+jRLm7rVYd5SwCLkhi9xMKwIML5ThFC0zlqa+mxTfWQB1ZmASC39jgVGEG1FiugKTj8uF4URXQwnttmhBJJZyjDkvGMGNIx2Co8fLgUOyw/0DhvKGXV/1tfP/5nhy1Cbj8Helmd6onOIn93o+fv3pCtqQ==; s=purelymail1; d=purelymail.com; v=1; bh=u/N/eBKUNL06Djr6KY714eJpprrmOgnX37Q9XcaSZkk=; h=Feedback-ID:Received:From:To:Subject:Date;
-Feedback-ID: 45355:7809:null:purelymail
-X-Pm-Original-To: linux-pm@vger.kernel.org
-Received: by smtp.purelymail.com (Purelymail SMTP) with ESMTPSA id 287587098;
-          (version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384);
-          Tue, 02 Jun 2026 01:50:35 +0000 (UTC)
-From: Rafael Passos <rafael@rcpassos.me>
-To: linux-input@vger.kernel.org,
-	lcasmz54@gmail.com,
-	bentiss@kernel.org
-Cc: hadess@hadess.net,
-	jikos@kernel.org,
-	linux-kernel@vger.kernel.org,
-	linux-pm@vger.kernel.org,
-	sre@kernel.org,
-	kernel@lists.ime.usp.br,
-	Rafael Passos <rafael@rcpassos.me>
-Subject: [PATCH] HID: Input: Add battery list cleanup in hidinput_disconnect()
-Date: Mon,  1 Jun 2026 22:50:29 -0300
-Message-ID: <20260602015029.2838058-1-rafael@rcpassos.me>
-X-Mailer: git-send-email 2.53.0
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="ZsI2b1o5"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1780365167; x=1811901167;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:content-transfer-encoding:in-reply-to;
+  bh=AbAm/pIqtcsFljma7tItx2r/3qntGqzm/Mi6uO74WGY=;
+  b=ZsI2b1o5dvX15akgTyS17/gw+rVQqA18RJD4f4oMNsTkie629MYNtO1W
+   +TVvsobUVGbuyzZ2UdlACT1uAUsGlCoexNgEdjEulmqCVTEnzQa+EUG5D
+   Kq8Zs7JLUJjLXIg84PVHSq3xZ2WukJMlB9Gz0n+QRHWuK4JuiK781Mzf+
+   2yjVLW61L6uhk9Hmv7D8toNW8yREfTfpy3wNlmQE9Xuwg7Zb6Rf5clMLZ
+   GMz71nXaS+5R0Gc5pjCgVujvM0dQeV86M74Xi1+uCFpIKFa8L4gmfy0M4
+   jHq5Y7j0TcmN5zkxNCzbg2UFNHciUiCcn6exOOd6M1u2mo/Zce5QSUdhn
+   Q==;
+X-CSE-ConnectionGUID: Q5HOhfRUSta4V+Fyuv9Y9g==
+X-CSE-MsgGUID: 54D4CsB2Q/KGyuX/MNTkjQ==
+X-IronPort-AV: E=McAfee;i="6800,10657,11804"; a="91706655"
+X-IronPort-AV: E=Sophos;i="6.24,182,1774335600"; 
+   d="scan'208";a="91706655"
+Received: from orviesa008.jf.intel.com ([10.64.159.148])
+  by fmvoesa105.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 01 Jun 2026 18:52:46 -0700
+X-CSE-ConnectionGUID: bfuuTtEXRQS5ksNV1MMc5w==
+X-CSE-MsgGUID: zFCdL4mySXqTmH5qdGI6uw==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.24,182,1774335600"; 
+   d="scan'208";a="243574530"
+Received: from ranerica-svr.sc.intel.com ([172.25.110.23])
+  by orviesa008.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 01 Jun 2026 18:52:46 -0700
+Date: Mon, 1 Jun 2026 19:01:58 -0700
+From: Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Daniel Lezcano <daniel.lezcano@kernel.org>,
+	Lukasz Luba <lukasz.luba@arm.com>, x86@kernel.org,
+	Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
+	Zhang Rui <rui.zhang@intel.com>, linux-kernel@vger.kernel.org,
+	linux-pm@vger.kernel.org, Ricardo Neri <ricardo.neri@intel.com>
+Subject: Re: [PATCH v2 0/5] thermal: intel: Add support for Directed Package
+ Thermal Interrupt
+Message-ID: <20260602020158.GA23099@ranerica-svr.sc.intel.com>
+References: <20260528-rneri-directed-therm-intr-v2-0-8e2f9e0c1a36@linux.intel.com>
+ <CAJZ5v0g3SncgrYri0Xo28MCKseOVSDGbx1L=mBAWATJYJRv7iw@mail.gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-X-MIME-Autoconverted: from 8bit to quoted-printable by Purelymail
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <CAJZ5v0g3SncgrYri0Xo28MCKseOVSDGbx1L=mBAWATJYJRv7iw@mail.gmail.com>
+User-Agent: Mutt/1.9.4 (2018-02-28)
 
-The batteries list (hdev->batteries) is not cleaned up during
-hidinput_disconnect(), but struct hid_battery entries are allocated
-with devm_kzalloc.
-When a driver is unbound (e.g. during devicereprobe), devm frees those
-entries while their list_head nodesremain dangling in hdev->batteries,
-which persists across rebinds.
+On Mon, Jun 01, 2026 at 08:26:42PM +0200, Rafael J. Wysocki wrote:
+> On Thu, May 28, 2026 at 5:15 PM Ricardo Neri
+> <ricardo.neri-calderon@linux.intel.com> wrote:
+> >
+> > Hi,
+> >
+> > This is v2 of this series. The main changes are a new patch fixing a pre-
+> > existing bug and a redesigned error rollback strategy that disables
+> > directed thermal interrupts across all packages when enabling fails in any
+> > one of them. Please see the changelog for details.
+> >
+> > Package-level thermal interrupts are currently broadcast to all CPUs in a
+> > package. Only one CPU is needed to service package-wide events.
+> > Broadcasting creates unnecessary resource contention. Thermal interrupts
+> > generated for Hardware Feedback Interface[1] updates are an example: all
+> > CPUs in the package receive the interrupt and race for a lock to update a
+> > shared data structure. Idle CPUs are needlessly woken up.
+> >
+> > Newer Intel processors allow directing package-level thermal interrupts
+> > only to CPUs that explicitly request them. A CPU opts in by setting a
+> > designated bit in IA32_THERM_INTERRUPT. Hardware acknowledges the request
+> > by setting a designated bit in IA32_PACKAGE_THERM_STATUS.
+> >
+> > This series enables directed package-level thermal interrupts and
+> > designates one handler CPU per package using the CPU hotplug
+> > infrastructure. A new CPU is selected if the handler CPU goes offline.
+> >
+> > Because CPU0's hotplug callbacks are not invoked during suspend and resume,
+> > syscore callbacks are added to restore the handler for the boot package.
+> > The series also disables directed delivery during kexec reboot, avoiding
+> > stale interrupt routing when rebooting into a kernel that does not support
+> > the feature.
+> >
+> > This patchset introduces a change in behavior in the /sys/devices/system/
+> > cpu/cpuN/thermal_throttle/package* sysfs files. These files reflect per-CPU
+> > variables updated when a CPU handles a package-level thermal interrupt. In
+> > broadcast mode, all CPUs update their variables. When directed package-
+> > level thermal interrupts are enabled, only the handler CPU's variables are
+> > updated.
+> >
+> > Lastly, nothing changes for processors that do not support this feature:
+> > they fall back to broadcast delivery.
+> >
+> > [1] Intel Software Developer's Manual Vol. 3, Section 17.6, March 2026 https://www.intel.com/SDM
+> >
+> > Signed-off-by: Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
+> > ---
+> > Changes in v2:
+> > - Fixed an existing bug in the error-handling of thermal_throttle_online()
+> >   CPU hotplug callback.
+> > - Redesigned the rollback mechanism to handle all packages, not only
+> >   the boot package.
+> > - Fixed the handling of the return value of cpumask_any_but(), which on
+> >   failure returns small_cpumask_bits, not nr_cpu_ids.
+> > - Renamed the Directed Package Thermal Interrupt CPUID and MSR bits for
+> >   consistency and brevity. (Boris)
+> > - Added measurements of the latency of setup acknowledgment from hardware.
+> > - Removed an unused argument from directed_thermal_pkg_intr_supported().
+> > - Reused the global rollback mechanism in the syscore shutdown callback.
+> > - Link to v1: https://lore.kernel.org/r/20260309-rneri-directed-therm-intr-v1-0-2956e3000950@linux.intel.com
+> >
+> > ---
+> > Ricardo Neri (5):
+> >       thermal: intel: Fix dangling resources on thermal_throttle_online() failure
+> >       x86/thermal: Add bit definitions for Intel Directed Package Thermal Interrupt
+> >       thermal: intel: Enable the Directed Package-level Thermal Interrupt
+> >       thermal: intel: Add syscore callbacks for suspend and resume
+> >       thermal: intel: Add a syscore shutdown callback for kexec reboot
+> >
+> >  arch/x86/include/asm/cpufeatures.h  |   2 +
+> >  arch/x86/include/asm/msr-index.h    |   2 +
+> >  drivers/thermal/intel/therm_throt.c | 272 +++++++++++++++++++++++++++++++++++-
+> >  3 files changed, 272 insertions(+), 4 deletions(-)
+> > ---
+> 
+> sashiko.dev has some feedback on patch 4 that appears to be valid to me:
+> 
+> https://sashiko.dev/#/patchset/20260528-rneri-directed-therm-intr-v2-0-8e2f9e0c1a36%40linux.intel.com
+> 
+> Can you have a look at it please?
 
-Fixes: 4a58ae85c3f9 ("HID: input: Add support for multiple batteries per de=
-vice")
-Signed-off-by: Rafael Passos <rafael@rcpassos.me>
----
-
-Hi, I hope there is time to land this in this cycle.
-Tell me if I should make any changes.
-I built and tested it againts the mainline.
-
-Bug report link:
-    https://lore.kernel.org/all/20260602011949.2825852-1-rafael@rcpassos.me=
-/
-
- drivers/hid/hid-input.c | 9 +++++++++
- 1 file changed, 9 insertions(+)
-
-diff --git a/drivers/hid/hid-input.c b/drivers/hid/hid-input.c
-index d73cfa2e73d3..95815e140fdf 100644
---- a/drivers/hid/hid-input.c
-+++ b/drivers/hid/hid-input.c
-@@ -2408,6 +2408,15 @@ EXPORT_SYMBOL_GPL(hidinput_connect);
- void hidinput_disconnect(struct hid_device *hid)
- {
- =09struct hid_input *hidinput, *next;
-+#ifdef CONFIG_HID_BATTERY_STRENGTH
-+=09{
-+=09=09struct hid_battery *bat, *tmp;
-+
-+=09=09list_for_each_entry_safe(bat, tmp, &hid->batteries, list) {
-+=09=09=09list_del_init(&bat->list);
-+=09=09}
-+=09}
-+#endif
-=20
- =09list_for_each_entry_safe(hidinput, next, &hid->inputs, list) {
- =09=09list_del(&hidinput->list);
---=20
-2.53.0
-
+Sure, Rafael. That feedback looks valid to me too. I made the necessary changes
+in preparation for v3.
