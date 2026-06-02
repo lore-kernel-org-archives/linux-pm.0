@@ -1,191 +1,156 @@
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id EC23F2236E0;
-	Tue,  2 Jun 2026 21:21:26 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.20])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D522425A354;
+	Tue,  2 Jun 2026 21:40:24 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.20
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1780435289; cv=none; b=ssPPHylQljV3iMp515HIwLXJEDSWPnpgdvmMzNytaOHjvhKld4mVYajs+dvjZ7JL0y7Djb0nzcNEH7FDGq662knUEmNjWa/8w1/DdQm0jNoaOWQXTkJwLVULnsRC6LC+rSw2WKPII5sBQEnCzldcGjs4q1aIfcdNuSwjO9bAGug=
+	t=1780436426; cv=none; b=hG1oAR4KGjTTcYBlH+fghBotxTnMZVki4ChAPUn1smESfg84PEOO8UGmTQg/rPypw1yz6YDAjfC+L7O36u7rNqg/G1GLMro+7+M36uF2GYxOUVvKjZRTMjs57h7ORblmbeztBsKrunq5qEPmax0NW7XsTC9jvRQRvvi8tWq6BmA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1780435289; c=relaxed/simple;
-	bh=ycyk/0BdjlJomF5MbiuTghmXGbhy80Qj+o+LzoMjj/k=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=oGMDZB4xaocFOp4w1pElbzmuckMKirWD6I6ub8IFUDHhM9GJJFMumD6Ur1/+cwmReXzCEPtNSAyrIEl+zKV1itLfkan5B6El9soZLjmEnLa3wOgT6CqqKgrt8YMmZozgtsDIvMbnWUKTN40g2TrrmTQzClvde2vqpsRTmKCr8EQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=PdlDpfEY; arc=none smtp.client-ip=217.140.110.172
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
+	s=arc-20240116; t=1780436426; c=relaxed/simple;
+	bh=4eyZw4UOnHhwv4cFQ/JjHG+RrOIvOOmydNLwutjD+3M=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=QRu7q33Kb4LOlBIbQqlj7aYJtj1Lzq+sBxAP2CumSXJOKhS0BP3cc77Yw2xv15+e++kC3xhsg+XKglLv4rRBOy3Cnx74gQkX6FBmCvx1dPExSBhnc5Fy4UVlmNxeikVIpAXGYISO3E18zF+6Q2voXZzLNtGZuoOuI5EuU11dvDQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=pass smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=bOrxwt7d; arc=none smtp.client-ip=198.175.65.20
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="PdlDpfEY"
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 35CEF3293;
-	Tue,  2 Jun 2026 14:21:21 -0700 (PDT)
-Received: from u200865.usa.arm.com (U203867.austin.arm.com [10.118.30.58])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id D32A63F632;
-	Tue,  2 Jun 2026 14:21:25 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1780435286; bh=ycyk/0BdjlJomF5MbiuTghmXGbhy80Qj+o+LzoMjj/k=;
-	h=From:To:Cc:Subject:Date:From;
-	b=PdlDpfEY8CPVZB/wakY+njADVOWhafcwQZGZnrlpgUNjGD1LM7Rk3OXhNKrQgW0V2
-	 4K59tQ5Qy4jSXz2OBP/4cFHWiO7oJeaCRdWpp8/6efqu7rknRVStTIJ1MPR9P9TQKZ
-	 HKyj3BwnTRnZ5y7LkbvGmsIdQJ5AwIfKGQS2r09s=
-From: Jeremy Linton <jeremy.linton@arm.com>
-To: linux-pm@vger.kernel.org
-Cc: sumitg@nvidia.com,
-	pierre.gondois@arm.com,
-	zhenglifeng1@huawei.com,
-	zhanjie9@hisilicon.com,
-	viresh.kumar@linaro.org,
-	leitao@debian.org,
-	rafael@kernel.org,
-	linux-kernel@vger.kernel.org,
-	Jeremy Linton <jeremy.linton@arm.com>
-Subject: [PATCH] cpufreq: cppc: Reduce cppc delivered perf sampling jitter
-Date: Tue,  2 Jun 2026 16:20:52 -0500
-Message-ID: <20260602212052.1278365-1-jeremy.linton@arm.com>
-X-Mailer: git-send-email 2.54.0
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="bOrxwt7d"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1780436425; x=1811972425;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=4eyZw4UOnHhwv4cFQ/JjHG+RrOIvOOmydNLwutjD+3M=;
+  b=bOrxwt7dDdlu+tP9OU2MHGU2Tagrr5urXNNZGyFg9SW7iyaS4ycJF/jt
+   G7DzFSRuUviQCr4+/0YBH90Zi26k4nKHka39YsxJ6e/ItU1hjSddgaOze
+   Zrnu4wLJG/HAnwt4N4+RhcBYjnjIc4fWKDvu32buOY4fA8jSOILZRuc6/
+   Oquoy7V+wOXq3BuLTRFX4PV1ZZJLwm4xqKhixuJqCflyB/YT3R+DxvCGn
+   X+w/m00sEp/majR84hpYlILQE6N1uFcoiv4u+uasR+bJNnBpo3/gQxMNF
+   9HnQztpLpcpEsMpDc608AE4H5W8Evy7VyjMoMUy/vB74FP2Ok41osAO+j
+   A==;
+X-CSE-ConnectionGUID: 5vzSC6yuRUadbchniYYLFQ==
+X-CSE-MsgGUID: dJMr+KXQRnSltNzNwtzVWQ==
+X-IronPort-AV: E=McAfee;i="6800,10657,11805"; a="80972401"
+X-IronPort-AV: E=Sophos;i="6.24,183,1774335600"; 
+   d="scan'208";a="80972401"
+Received: from fmviesa006.fm.intel.com ([10.60.135.146])
+  by orvoesa112.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 02 Jun 2026 14:40:24 -0700
+X-CSE-ConnectionGUID: PcIQbEzqTbKa1yc0yhfIOQ==
+X-CSE-MsgGUID: nO91ZzCfR2qu25nrSJCLRw==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.24,183,1774335600"; 
+   d="scan'208";a="239575909"
+Received: from pgcooper-mobl3.ger.corp.intel.com (HELO localhost) ([10.245.244.116])
+  by fmviesa006-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 02 Jun 2026 14:40:11 -0700
+Date: Wed, 3 Jun 2026 00:40:08 +0300
+From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+To: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
+Cc: Lee Jones <lee@kernel.org>,
+	Mark Brown <broonie@opensource.wolfsonmicro.com>,
+	Thierry Reding <thierry.reding@avionic-design.de>,
+	Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>,
+	Andrew Lunn <andrew+netdev@lunn.ch>,
+	"David S. Miller" <davem@davemloft.net>,
+	Eric Dumazet <edumazet@google.com>,
+	Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
+	Srinivas Kandagatla <srini@kernel.org>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	Vinod Koul <vkoul@kernel.org>,
+	"Rafael J. Wysocki" <rafael@kernel.org>,
+	Danilo Krummrich <dakr@kernel.org>, Rob Herring <robh@kernel.org>,
+	Saravana Kannan <saravanak@kernel.org>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+	Andi Shyti <andi.shyti@kernel.org>, Joerg Roedel <joro@8bytes.org>,
+	Will Deacon <will@kernel.org>, Robin Murphy <robin.murphy@arm.com>,
+	Doug Berger <opendmb@gmail.com>,
+	Florian Fainelli <florian.fainelli@broadcom.com>,
+	Broadcom internal kernel review list <bcm-kernel-feedback-list@broadcom.com>,
+	Ulf Hansson <ulfh@kernel.org>, Frank Li <Frank.Li@nxp.com>,
+	Sascha Hauer <s.hauer@pengutronix.de>,
+	Pengutronix Kernel Team <kernel@pengutronix.de>,
+	Fabio Estevam <festevam@gmail.com>,
+	Matthew Brost <matthew.brost@intel.com>,
+	Thomas =?iso-8859-1?Q?Hellstr=F6m?= <thomas.hellstrom@linux.intel.com>,
+	Rodrigo Vivi <rodrigo.vivi@intel.com>,
+	David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>,
+	Peter Chen <peter.chen@kernel.org>,
+	Paul Cercueil <paul@crapouillou.net>, Bin Liu <b-liu@ti.com>,
+	Philipp Zabel <p.zabel@pengutronix.de>,
+	Maximilian Luz <luzmaximilian@gmail.com>,
+	Hans de Goede <hansg@kernel.org>,
+	Ilpo =?iso-8859-1?Q?J=E4rvinen?= <ilpo.jarvinen@linux.intel.com>,
+	Krzysztof Kozlowski <krzk@kernel.org>,
+	Benjamin Herrenschmidt <benh@kernel.crashing.org>, brgl@kernel.org,
+	linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+	linux-arm-msm@vger.kernel.org, linux-sound@vger.kernel.org,
+	driver-core@lists.linux.dev, devicetree@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org, linux-i2c@vger.kernel.org,
+	iommu@lists.linux.dev, linux-pm@vger.kernel.org,
+	imx@lists.linux.dev, linux-arm-kernel@lists.infradead.org,
+	intel-xe@lists.freedesktop.org, dri-devel@lists.freedesktop.org,
+	linux-usb@vger.kernel.org, linux-mips@vger.kernel.org,
+	platform-driver-x86@vger.kernel.org
+Subject: Re: [PATCH 06/23] driver core: platform: provide
+ platform_device_set_of_node()
+Message-ID: <ah9NXwJFrkK_yuw8@ashevche-desk.local>
+References: <20260521-pdev-fwnode-ref-v1-0-88c324a1b8d2@oss.qualcomm.com>
+ <20260521-pdev-fwnode-ref-v1-6-88c324a1b8d2@oss.qualcomm.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260521-pdev-fwnode-ref-v1-6-88c324a1b8d2@oss.qualcomm.com>
+Organization: Intel Finland Oy - BIC 0357606-4 - c/o Alberga Business Park, 6
+ krs, Bertel Jungin Aukio 5, 02600 Espoo
 
-CPPC uses a pair of registers cycling at different frequencies to
-determine an accumulated performance level. For userspace reporting we
-want to convert this to an instantaneous CPU frequency, but over short
-time periods small errors caused by CPPC counter reads can cause
-fairly significant reported frequency variations even when the core
-CPU clock isn't changing.
+On Thu, May 21, 2026 at 10:36:29AM +0200, Bartosz Golaszewski wrote:
+> Encapsulate the reference counting logic for OF nodes assigned to
+> platform devices created with platform_device_alloc() in a helper
+> function. Make the kerneldoc state that this is the proper interface for
+> assigning OF nodes to dynamically allocated platform devices. This will
+> allow us to switch to counting the references of the device's firmware
+> nodes, not only the OF nodes.
 
-Reduce this by keeping a start sample fixed and retrying the end
-sample until the counter deltas are large enough to reduce short
-window error, or until adjacent delivered performance estimates are
-within the CPU's observed CPPC read noise floor.
+...
 
-To begin, resample the initial pair a small fixed number of times
-looking for matching delivered performance deltas.  This reduces the
-chance that a disturbed start sample anchors the rest of the
-calculation.
+> +/**
+> + * platform_device_set_of_node - assign an OF node to device
+> + * @pdev: platform device to add the node for
+> + * @np: new device node
+> + *
+> + * Assign an OF node to this platform device. Internally keep track of the
+> + * reference count. Devices created with platform_device_alloc() must use this
+> + * function instead of assigning the node manually.
+> + */
+> +void platform_device_set_of_node(struct platform_device *pdev,
+> +				 struct device_node *np)
 
-Then look for an end sample while updating the noise floor from the
-best error seen between samples.  The floor remains zero on systems
-with stable feedback reads, but lets noisy systems stop early once
-another retry is unlikely to improve the result.  The retry loop is
-capped at 200 iterations, giving an ~20 usec explicit delay budget
-derived from ndelay(100).
+Why not fwnode to begin with?
 
-Signed-off-by: Jeremy Linton <jeremy.linton@arm.com>
----
- drivers/cpufreq/cppc_cpufreq.c | 68 ++++++++++++++++++++++++++++++----
- 1 file changed, 61 insertions(+), 7 deletions(-)
+> +{
+> +	of_node_put(pdev->dev.of_node);
 
-diff --git a/drivers/cpufreq/cppc_cpufreq.c b/drivers/cpufreq/cppc_cpufreq.c
-index 7e7f9dfb7a24..362c08def420 100644
---- a/drivers/cpufreq/cppc_cpufreq.c
-+++ b/drivers/cpufreq/cppc_cpufreq.c
-@@ -50,7 +50,7 @@ struct cppc_freq_invariance {
- static DEFINE_PER_CPU(struct cppc_freq_invariance, cppc_freq_inv);
- static struct kthread_worker *kworker_fie;
- 
--static int cppc_perf_from_fbctrs(u64 reference_perf,
-+static u64 cppc_perf_from_fbctrs(u64 reference_perf,
- 				 struct cppc_perf_fb_ctrs *fb_ctrs_t0,
- 				 struct cppc_perf_fb_ctrs *fb_ctrs_t1);
- 
-@@ -750,7 +750,7 @@ static inline u64 get_delta(u64 t1, u64 t0)
- 	return (u32)t1 - (u32)t0;
- }
- 
--static int cppc_perf_from_fbctrs(u64 reference_perf,
-+static u64 cppc_perf_from_fbctrs(u64 reference_perf,
- 				 struct cppc_perf_fb_ctrs *fb_ctrs_t0,
- 				 struct cppc_perf_fb_ctrs *fb_ctrs_t1)
- {
-@@ -771,19 +771,71 @@ static int cppc_perf_from_fbctrs(u64 reference_perf,
- 	return (reference_perf * delta_delivered) / delta_reference;
- }
- 
--static int cppc_get_perf_ctrs_sample(int cpu,
-+/* CPPC read noise floor for early retry exit. */
-+static DEFINE_PER_CPU(u64, err_floor);
-+
-+#define CPPC_SAMPLE_MAX_RETRIES	200
-+
-+static int cppc_get_perf_ctrs_sample(int cpu, u64 ref,
- 				     struct cppc_perf_fb_ctrs *fb_ctrs_t0,
- 				     struct cppc_perf_fb_ctrs *fb_ctrs_t1)
- {
- 	int ret;
-+	s64 last_delivered = 0;
-+	u64 smallest_error = 0;
-+	int tries = 0;
-+	u64 min_counts = ref * 2000;
-+
-+	/* Two subsequent reads with the same offset avoids one off large jitter values */
-+	for (int x = 0; x < 10; x++) {
-+		ret = cppc_get_perf_ctrs(cpu, fb_ctrs_t0);
-+		if (ret)
-+			return ret;
-+
-+		ret = cppc_get_perf_ctrs(cpu, fb_ctrs_t1);
-+		if (ret)
-+			return ret;
-+
-+		if (last_delivered == cppc_perf_from_fbctrs(ref, fb_ctrs_t0, fb_ctrs_t1))
-+			break;
-+
-+		last_delivered = cppc_perf_from_fbctrs(ref, fb_ctrs_t0, fb_ctrs_t1);
-+	}
-+	last_delivered = 0;
-+again:
-+	ndelay(100);
- 
--	ret = cppc_get_perf_ctrs(cpu, fb_ctrs_t0);
-+	ret = cppc_get_perf_ctrs(cpu, fb_ctrs_t1);
- 	if (ret)
- 		return ret;
- 
--	udelay(2); /* 2usec delay between sampling */
-+	/*
-+	 * We want at least two significant figures, if the counts are low, then there
-+	 * can be rounding errors that show up as frequency that is swinging around a few hundred
-+	 * Mhz. OTOH, if the delay gets too long the clock rate can be affected.
-+	 * So we want it exactly long enough to have sufficient counter turn over, and
-+	 * a repeatable low error value.
-+	 */
-+	if ((get_delta(fb_ctrs_t1->reference, fb_ctrs_t0->reference) < min_counts) ||
-+	    (get_delta(fb_ctrs_t1->delivered, fb_ctrs_t0->delivered) < min_counts)) {
-+		s64 delivered = cppc_perf_from_fbctrs(ref, fb_ctrs_t0, fb_ctrs_t1);
-+		u64 error = abs(last_delivered - delivered);
-+
-+		if (smallest_error == 0 || smallest_error > error)
-+			smallest_error = error;
-+
-+		if (error > per_cpu(err_floor, cpu)) {
-+			last_delivered = delivered;
-+			tries++;
-+			if (tries < CPPC_SAMPLE_MAX_RETRIES)
-+				goto again;
-+		}
-+	}
- 
--	return cppc_get_perf_ctrs(cpu, fb_ctrs_t1);
-+	/* compute a running error */
-+	per_cpu(err_floor, cpu) = (per_cpu(err_floor, cpu) + smallest_error) / 2;
-+
-+	return ret;
- }
- 
- static unsigned int cppc_cpufreq_get_rate(unsigned int cpu)
-@@ -799,7 +851,9 @@ static unsigned int cppc_cpufreq_get_rate(unsigned int cpu)
- 
- 	cpu_data = policy->driver_data;
- 
--	ret = cppc_get_perf_ctrs_sample(cpu, &fb_ctrs_t0, &fb_ctrs_t1);
-+	ret = cppc_get_perf_ctrs_sample(cpu, cpu_data->perf_caps.reference_perf,
-+					&fb_ctrs_t0, &fb_ctrs_t1);
-+
- 	if (ret) {
- 		if (ret == -EFAULT)
- 			/* Any of the associated CPPC regs is 0. */
+And if it has an fwnode?
+
+> +	pdev->dev.of_node = of_node_get(np);
+> +	pdev->dev.fwnode = of_fwnode_handle(np);
+
+This looks like
+
+	device_set_node(&pdev->dev, fwnode_handle_get(...));
+
+> +}
+
 -- 
-2.54.0
+With Best Regards,
+Andy Shevchenko
+
 
