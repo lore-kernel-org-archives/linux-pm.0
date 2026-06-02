@@ -1,156 +1,104 @@
-Received: from mail-wm1-f45.google.com (mail-wm1-f45.google.com [209.85.128.45])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 15FD32853E0
-	for <linux-pm@vger.kernel.org>; Tue,  2 Jun 2026 19:49:32 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.45
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3469A2F8EA2;
+	Tue,  2 Jun 2026 19:58:07 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1780429774; cv=none; b=skEXEBrW3oH6qx07gelnlXsX5gF/DLdhfC6IxDcSCdTxFjTJynhlDQFew41kMykYXQg1p9qR9XELXGcuYtdsci0/CNh7aGw+SpGQODQqm9K3TqprhHw4tOoO1Eq59j4+rN35xMGxLlkiRGJGYpZwMbC35lpJ2acjhD9Q9OWqnRg=
+	t=1780430289; cv=none; b=NTMc4cGZ3BihBFCKhKFuCmHVDmRpogCqkp0qFE4r+lXC/fOrEXnM40q+dNScFtnPuQxw6/qnNO/yq5x4NevcScNBNjiGd6TCuLR8cSDINqiedDK7l6pK4XSNcAHOR7eXEW34gkq9RVUY3Q0JsGsMJJGIw/ZzMF43mcdRkYWe0P0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1780429774; c=relaxed/simple;
-	bh=oBaTI4c79O6vpTgtjlM41+/n4xq+WnG2e+IzVNiDbJU=;
-	h=Mime-Version:Content-Type:Date:Message-Id:Cc:Subject:From:To:
-	 References:In-Reply-To; b=Pxs/PDZLAsElB+tAz7J1Q/Ew1UumM7coYUkaWBwbEU2mv+Rrwiiq/TRC3oj2W41xLPaLa19qmNlXC6nJ5ew1wj9/5rVbIZK9jc+ha8DVfBbmQhPNnfnqEDKxVDRJymXh+xDIDm8kSyURS4PJkNlkvDY+zipPY9l6vMqsx0XaVnk=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=UIZL/+P2; arc=none smtp.client-ip=209.85.128.45
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
+	s=arc-20240116; t=1780430289; c=relaxed/simple;
+	bh=zWmUa9IoGsfRyRSXVEZh1hDJdjIO4Y+uoIZvYw4doy0=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=uCPuYqGMz6ZiJkLqMxgWbHH6/YGSWiFPFmPC/9CaI51Xpda+/ODXIT21inW+6d39k8cFbqy+2y4kjWrb/dKUHsBXSyaeTCfvJpspZafNNV1NzcUD/F7TCXLVQWVbu7UY+9Oans7OQNyH09V7cEsXQK4+i7j7xV0mSTdkYko6kag=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=GoR/ooG3; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="UIZL/+P2"
-Received: by mail-wm1-f45.google.com with SMTP id 5b1f17b1804b1-490b613a17bso549155e9.3
-        for <linux-pm@vger.kernel.org>; Tue, 02 Jun 2026 12:49:32 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1780429771; x=1781034571; darn=vger.kernel.org;
-        h=in-reply-to:references:to:from:subject:cc:message-id:date
-         :content-transfer-encoding:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=uspwVvtiltCsqTff8wL3whaP7rrxXxnCkwg5ui4E/K8=;
-        b=UIZL/+P2j+ObC1TFknmKvWW+pvVGOvQ65357KvL2WrRK7JuPiejBSgMapE/rDxmsf9
-         vQILcjVvuz9mcx6E1ICApAYYjMFzlGOOWQbqcmi76iNBm42WCJHP90Gker3mFVCZO2Nn
-         V659XeY3viIK9N55O9XUVVUFkj4O5rNzkGG9cI26Uf9LsxZtNJJf+uMWQNJw8YEsRTXw
-         HywqDmVGAihaT2UNIbCuZlxrwfuw7wyA0Zb1HNSORb0bzPaP7Y9uOLd1KIf0xhlpe2GR
-         1b+vT2YJZXOtMmWE3fLkOIX0ZmJUW6NV+7Cz9ANpq3NDWCSDl034azL3vulPAmexINHS
-         5jlw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1780429771; x=1781034571;
-        h=in-reply-to:references:to:from:subject:cc:message-id:date
-         :content-transfer-encoding:mime-version:x-gm-gg:x-gm-message-state
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=uspwVvtiltCsqTff8wL3whaP7rrxXxnCkwg5ui4E/K8=;
-        b=QgfVztkolOCM9GuFyvGctS6MVoe6WLswo2zEmltZABxGh3PSyEiYBcBL/uCvQY3HPT
-         tazOOGwRdWSp231h9cz4g3CbET+i5aF6erLbnlw2UKYjHpp0FHqjitLToia5vxPpdIFv
-         YUYyRRdBh5FT3ulzWXZhKV6NsQmQmEsEKHRIytezCWUNr4TgZyj3xLK+zbLpzn6lYez4
-         y9UcItIqVV+xolLHtoW+HJLwZlOATOryCFflVlU3XKOwaiIxe9N+jfagqrr+5lmxTVWN
-         uZEYqstSiWx8SyOsOYFe7f+zTgx6O9euHk68ycM1Ffdo9E0uqe7waP8JujsPt0ia+bxC
-         2NJw==
-X-Forwarded-Encrypted: i=1; AFNElJ9abafyqzWtVnHIkCorkRzpzsyjd56ckyuhgTB+8Tbn56UwTFC0XwPn5fcXMKtrU4Uh5wW9HZXzMw==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yzs0SRji55Ihx90oXn74xEqsWKGHDNQkK03lOFZdoqPqPZaNeAE
-	C9rjGNKfGMZmSgljOJpUVCdlAv3rRckmnAWa4yL6bg9a//XTB7N26iav0AEHSKFjuG8=
-X-Gm-Gg: Acq92OHIfXmYiytr64yPHeuBUZZTONSpoOhAWvFMEiSCfaViPHsRRjGcp45/8icqiru
-	iiFd2fPKiYWHMBCEH4OUiiPRAqdMTDsrP2+itPm6SOsqOx7bX/iA+xx2UTPUAk7qmOXMoLoLz1d
-	5Auh6Az93P+78MTMLhUnmJuYDXXK6qDzaETwIKXofRdJ7JGxf69EQHEBQ2aRa1d+gw5vtS6wquj
-	gQlb5bnn0mA1/W8r8W0ZpHEPPOO8SW8sJhLU1jzoKQ9no0bG4KMxDQg4ZTPjd5C6TJe1x8Gmf4H
-	eZGf4x7Jv55IIKLnwuxREARvaLJ7KbTnX4MbrWNGYc49QQfwh3qGo+NDSGxyOwMrcxzs97ndzwA
-	K4SW0WlA2LqZvLGTpFZyxf6qRKs8Rt0kBs3qCNr/6Ss4vyHSeG7uH1Gr9xj/lPG1eGdXookLQ7q
-	EBdMjP55NqguaWLwwmjJfbdf6C9dp16v6LAsJ2TiDUD3ImG7XgKxvybA9qwrv66VJuZL6CloSeb
-	IwC7edILdvdZOyepZwKaNPCB1cPg1mlOtY=
-X-Received: by 2002:a05:600c:8b61:b0:490:b1b4:d437 with SMTP id 5b1f17b1804b1-490b5d3e1d5mr4934545e9.0.1780429771536;
-        Tue, 02 Jun 2026 12:49:31 -0700 (PDT)
-Received: from localhost ([94.4.195.193])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-490b60f6d5asm3064455e9.0.2026.06.02.12.49.30
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 02 Jun 2026 12:49:31 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="GoR/ooG3"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id AD89E1F00893;
+	Tue,  2 Jun 2026 19:58:07 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1780430287;
+	bh=fnLig1efP0TuJ12veBvKUYnUO2mrsAHX1oK+MYE3e7Q=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=GoR/ooG3A23xypxe/2xIjqhXBgNQL6JSdsjAIy5mcUDJyifn889NEwPXaX9plNUoQ
+	 95s+38nJXC3BmSI6OEEU9xfocEKCy4p3TuYErHQCifEiF5vj2uv69ycot9xDWNk8Uo
+	 lKQgRWyKxyn1v7TCaUc4ZigPwyxw7+23CyRtPwNMCb9g0wGFAEmy64M2jxJBQRt77t
+	 MCghHnNJMLBMEnrPwsa+jZT59Iykyxv3SbFGTk1qCENU3CeqW37zeThZjKl4tlDHWo
+	 waTd9ltZGETh15fjYkBwNpQEtlbfYmE0w6t/84CMFfn9gIPvZkLqmeid/filaiA1Xz
+	 GWL3TLidwOjjw==
+Date: Tue, 2 Jun 2026 14:58:07 -0500
+From: Rob Herring <robh@kernel.org>
+To: Louis-Alexis Eyraud <louisalexis.eyraud@collabora.com>
+Cc: Sen Chu <sen.chu@mediatek.com>, Sean Wang <sean.wang@mediatek.com>,
+	Macpaul Lin <macpaul.lin@mediatek.com>, Lee Jones <lee@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	Matthias Brugger <matthias.bgg@gmail.com>,
+	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>,
+	Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+	Chen Zhong <chen.zhong@mediatek.com>,
+	Jonathan Cameron <jic23@kernel.org>,
+	David Lechner <dlechner@baylibre.com>,
+	Nuno =?iso-8859-1?Q?S=E1?= <nuno.sa@analog.com>,
+	Andy Shevchenko <andy@kernel.org>, kernel@collabora.com,
+	linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
+	linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+	linux-mediatek@lists.infradead.org, linux-input@vger.kernel.org,
+	linux-iio@vger.kernel.org
+Subject: Re: [PATCH 0/9] MT6365 PMIC support cleanup
+Message-ID: <20260602195807.GA1062343-robh@kernel.org>
+References: <20260429-mediatek-genio-mt6365-cleanup-v1-0-6f43838be92f@collabora.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
-Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset=UTF-8
-Date: Tue, 02 Jun 2026 20:49:29 +0100
-Message-Id: <DIYTOGU8I2DV.1GKZ59F7AJWTE@linaro.org>
-Cc: <jyescas@google.com>, <linux-kernel@vger.kernel.org>,
- <linux-samsung-soc@vger.kernel.org>, <linux-pm@vger.kernel.org>,
- <devicetree@vger.kernel.org>, <linux-hardening@vger.kernel.org>,
- <linux-arm-kernel@lists.infradead.org>, "Krzysztof Kozlowski"
- <krzysztof.kozlowski@oss.qualcomm.com>
-Subject: Re: [PATCH v7 2/5] thermal: samsung: Add Exynos ACPM TMU driver
- GS101
-From: "Alexey Klimov" <alexey.klimov@linaro.org>
-To: "Tudor Ambarus" <tudor.ambarus@linaro.org>, "Rafael J. Wysocki"
- <rafael@kernel.org>, "Daniel Lezcano" <daniel.lezcano@kernel.org>, "Zhang
- Rui" <rui.zhang@intel.com>, "Lukasz Luba" <lukasz.luba@arm.com>, "Rob
- Herring" <robh@kernel.org>, "Krzysztof Kozlowski" <krzk+dt@kernel.org>,
- "Conor Dooley" <conor+dt@kernel.org>, "Bartlomiej Zolnierkiewicz"
- <bzolnier@gmail.com>, "Krzysztof Kozlowski" <krzk@kernel.org>, "Kees Cook"
- <kees@kernel.org>, "Gustavo A. R. Silva" <gustavoars@kernel.org>, "Peter
- Griffin" <peter.griffin@linaro.org>, =?utf-8?q?Andr=C3=A9_Draszik?=
- <andre.draszik@linaro.org>, "Alim Akhtar" <alim.akhtar@samsung.com>
-X-Mailer: aerc 0.21.0
-References: <20260602-acpm-tmu-v7-0-8047dd54b0e9@linaro.org>
- <20260602-acpm-tmu-v7-2-8047dd54b0e9@linaro.org>
-In-Reply-To: <20260602-acpm-tmu-v7-2-8047dd54b0e9@linaro.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260429-mediatek-genio-mt6365-cleanup-v1-0-6f43838be92f@collabora.com>
 
-On Tue Jun 2, 2026 at 6:00 PM BST, Tudor Ambarus wrote:
-> Add driver for the Thermal Management Unit (TMU) managed via the Alive
-> Clock and Power Manager (ACPM), found on Samsung Exynos SoCs such as
-> Google GS101 (and Exynos850, autov920, etc.).
->
-> The TMU on utilizes a hybrid management model shared between the
-> Application Processor (AP) and the ACPM firmware. The driver maintains
-> direct memory-mapped access to the TMU interrupt pending registers to
-> identify thermal events, while delegating functional tasks - such as
-> sensor initialization, threshold configuration, and temperature
-> acquisition - to the ACPM firmware via the ACPM IPC protocol.
->
-> Signed-off-by: Tudor Ambarus <tudor.ambarus@linaro.org>
-> Acked-by: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
+On Wed, Apr 29, 2026 at 11:44:13AM +0200, Louis-Alexis Eyraud wrote:
+> Several Mediatek and Radxa boards, based on MT8370, MT8390 or MT8395
+> SoC, integrate the MT6365 PMIC, that is a MT6359P variant:
+>  - Mediatek Genio 1200-EVK
+>  - Mediatek Genio 700-EVK
+>  - Mediatek Genio 510-EVK
+>  - Radxa NIO-12L
+> It is compatible with the MT6359 PMIC.
+> 
+> But both MT6365 PMIC support and compatibility were never expressed in
+> the dt-bindings and there is no MT6365 include file as well.
+> So, since these board support was introduced, their devicetrees use the
+> mt6359 include file to enable this PMIC support. 
+> 
+> The goal of this series is to clean this support by adding the missing
+> compatible strings for this MFD main and subdevices in the dt-bindings,
+> and add a include for MT6365 definitions to replace the MT6359 include
+> in these board devicetrees and for future ones (like Genio 520/720
+> EVKs).
+> 
+> The series is based on linux-next tree (tag: next-20260428) and has
+> been tested on Mediatek Genio 510, 700 and 1200-EVK boards.
+> 
 > ---
->  drivers/thermal/samsung/Kconfig    |  19 ++
->  drivers/thermal/samsung/Makefile   |   2 +
->  drivers/thermal/samsung/acpm-tmu.c | 618 +++++++++++++++++++++++++++++++=
-++++++
->  3 files changed, 639 insertions(+)
->
-> diff --git a/drivers/thermal/samsung/Kconfig b/drivers/thermal/samsung/Kc=
-onfig
-> index f4eff5a41a84..383ae3f56cbb 100644
-> --- a/drivers/thermal/samsung/Kconfig
-> +++ b/drivers/thermal/samsung/Kconfig
-> @@ -9,3 +9,22 @@ config EXYNOS_THERMAL
->  	  the TMU, reports temperature and handles cooling action if defined.
->  	  This driver uses the Exynos core thermal APIs and TMU configuration
->  	  data from the supported SoCs.
-> +
-> +config EXYNOS_ACPM_THERMAL
-> +	tristate "Exynos ACPM thermal management unit driver"
-> +	depends on THERMAL_OF
-> +	depends on HAS_IOMEM
-> +	depends on EXYNOS_ACPM_PROTOCOL || (COMPILE_TEST && !EXYNOS_ACPM_PROTOC=
-OL)
-> +	default ARCH_EXYNOS
-> +	help
-> +	  Support for the Thermal Management Unit (TMU) on Samsung Exynos SoCs
-> +	  (such as Google GS101 and Exynos850).
+> Louis-Alexis Eyraud (9):
+>       dt-bindings: mfd: mediatek: mt6397: Add rtc for MT6359
+>       dt-bindings: mfd: mediatek: mt6397: Add MT6365 PMIC support
+>       dt-bindings: input: mediatek,pmic-keys: Add MT6365 support
+>       dt-bindings: iio: adc: mt6359: Add MT6365 PMIC AuxADC
 
-This driver doesn't support Exynos850. There is no initialisation sequence
-and etc, moreover the next section is also not entirely correct for Exynos8=
-50.
-Not sure why it is mentioned here in such way.
-(Not even mentioning that ACPM TMU part is not aligned for Exynos850)
+Applied these 2 to fix warnings in linux-next.
 
-> +	  The TMU on these platforms is managed through a hybrid architecture.
-> +	  This driver handles direct register access for thermal interrupt stat=
-us
-> +	  monitoring and communicates with the Alive Clock and Power Manager
-> +	  (ACPM) firmware via the ACPM IPC protocol for functional sensor contr=
-ol
-> +	  and configuration.
+Angelo, Apply the binding changes along with the .dts changes if they 
+haven't been picked up yet.
 
-> +	  Select this if you want to monitor device temperature and enable
-> +	  thermal mitigation on Samsung Exynos ACPM based devices.
+Once again, Mediatek warnings are moving in the wrong direction. :(
 
-[..]
+Rob
 
-BR,
-Alexey
+>       arm64: dts: mediatek: mt6359: use proper compatible for rtc
+>       arm64: dts: mediatek: add MT6365 PMIC include
+>       arm64: dts: mediatek: mt8390-genio-common: use MT6365 PMIC definitions
+>       arm64: dts: mediatek: mt8395-genio-common: use MT6365 PMIC definitions
+>       arm64: dts: mediatek: mt8395-radxa-nio-12l: use MT6365 PMIC definitions
