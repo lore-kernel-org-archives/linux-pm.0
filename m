@@ -1,266 +1,120 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.15])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 290CB338936;
-	Tue,  2 Jun 2026 22:47:30 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 156782F7478;
+	Tue,  2 Jun 2026 23:35:26 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.15
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1780440450; cv=none; b=orBvIqXSPOljbFm24/GMR2pYCTr45i8PGizN/J5KXK6GhFJRq+jxoY6y4rXpKfML+4E+37x7HY5te5U3Jz5OaBhgwWXczWk5Motfhp2ubIP8JqbxTZELRrt/3hHK/SIPm34EECkTeFVLZ51CmIN9nzlJLvFl0s7mbTcYHpwHoKs=
+	t=1780443328; cv=none; b=BueNHHmJKy6KN6hnSfyy60Yrs0bwQVlvx3hdUx1QG14mshT9q3gTo3Z4yYLMmZL7n1zTnwJ+Y9enA9ACDuXkRbqEntUEMFx7KWRRPLdgAHcBpVuQ2Wnh6ASH0zUFDczZ2TTuKd5WOwdTG6oMbWsyTDaUadP9hIqPSD5q7m0NQbQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1780440450; c=relaxed/simple;
-	bh=DwWFAL9zm6baOK1xRDhamTlOqRvlsoNjK7vhr+fWTnY=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=WPink+6IAfn4gMRP2QfO+RsJceZnAj3UgvNm7CGs6/m1OUFf5/awu/gsme9kdunzQBBS9bAyLDcU8TbhlfESUCBO14Q+tUm1ikluwA2hYLcLtVlld4XxHqE6VOckGSFYD/E1DZA7UGbKHL/pFx7G0QAhtOx760X9FOqWCEzGxFM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=n+nZ3S4C; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1780443328; c=relaxed/simple;
+	bh=CPp9mntO1Z8AhjLa62UOmTDu/vkEQOgFfpPOSYZt15s=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=H0jEASzPfclECLWI0fUcMUejGZ36m9RKZVbKmS0tyimb9izI3p47BLm3mO8HG3Xu+P8zkN5XPUsKRYet3Tmfe8QNZxFrpDRfzH99iaOV1HlJrY1k3wBGTKQY+Z4G2ZRkPxfwgbRcUhPVGC4xkzPYbhDD/ph4Fe8BUAPqG3mejj8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=NzkKhO/f; arc=none smtp.client-ip=192.198.163.15
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="n+nZ3S4C"
-Received: by smtp.kernel.org (Postfix) with ESMTPS id C5747C2BCC7;
-	Tue,  2 Jun 2026 22:47:29 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1780440449;
-	bh=DwWFAL9zm6baOK1xRDhamTlOqRvlsoNjK7vhr+fWTnY=;
-	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
-	b=n+nZ3S4CrRIM730VEx3t7Tmg+EvFsYbu84rg8yZjxlqKzP/4i2pGKBj1m/kjTg2XD
-	 b5eN5QxVExdjAlIorJtpzKB+Xg4pUdD3WcqP2ey1eGA1VmEj2U1rm4ClKkcZ91uhMt
-	 wN8VDnNY2HyI36rrFOX3w/C2HnSshpy2n2r5+tosffiTaHRTzLCce+O1JJed56INZk
-	 vs8tYXTtvfvPnabk0GhJyLbu1TssIvZAaJKYPprsER1wAwkmiiOOk6jT62AI9qHfvQ
-	 FK6W6kJ8AtflLc/0Iw8xGR7X+miXF+vZfHc/iId442iMo7b5RIxhh7MCh2dcnqh/tI
-	 QG6rXU2AONsBw==
-Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AF62DCD5BD1;
-	Tue,  2 Jun 2026 22:47:29 +0000 (UTC)
-From: Amit Sunil Dhamne via B4 Relay <devnull+amitsd.google.com@kernel.org>
-Date: Tue, 02 Jun 2026 22:47:06 +0000
-Subject: [PATCH v3 1/2] power: supply: Add helpers to get and put arrays of
- power supply handles
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="NzkKhO/f"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1780443327; x=1811979327;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=CPp9mntO1Z8AhjLa62UOmTDu/vkEQOgFfpPOSYZt15s=;
+  b=NzkKhO/fW/hpoozaXZ/zUtxmahicw8zwhCfCtltHb0itCY4dAzBdYtLZ
+   YxcxC9krgMc7uIz9aI9C6OqyqaOoP+Y4ZnlLjpoZiPNs5AbbYip7hMxTA
+   NF4sAR4M8T2rs5+hAaXBMYJQjerypP1Tc2sVGhU943Hvh2cGw6OA5QH/t
+   85YqljIfNisacvfOy0Ejg7anHSzinEOK1NlpPwAz4oi2A+vtYRkeaNt7A
+   FgDYRziXKrmJ0aIT1U3G56+41Yp+3BhzlsZ2Z8qAkN8CkQbdFapWjQGu6
+   T++6RW4xelk3daOq+i0qxDJemfj7DK9ZXncvrhcIw7wssPDX944loc7Nd
+   g==;
+X-CSE-ConnectionGUID: IpI3nzZMQ4a623RUKtX+dw==
+X-CSE-MsgGUID: 8jjomkLyRYuYtCWq+XY1FQ==
+X-IronPort-AV: E=McAfee;i="6800,10657,11805"; a="81369633"
+X-IronPort-AV: E=Sophos;i="6.24,184,1774335600"; 
+   d="scan'208";a="81369633"
+Received: from fmviesa001.fm.intel.com ([10.60.135.141])
+  by fmvoesa109.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 02 Jun 2026 16:35:26 -0700
+X-CSE-ConnectionGUID: B64CSb24SA2zGjQ1FyNgJA==
+X-CSE-MsgGUID: KxNNY/SkSGC5FivD3At41A==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.24,184,1774335600"; 
+   d="scan'208";a="267921782"
+Received: from pgcooper-mobl3.ger.corp.intel.com (HELO localhost) ([10.245.244.116])
+  by smtpauth.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 02 Jun 2026 16:35:22 -0700
+Date: Wed, 3 Jun 2026 02:35:20 +0300
+From: Andy Shevchenko <andriy.shevchenko@intel.com>
+To: Jishnu Prakash <jishnu.prakash@oss.qualcomm.com>
+Cc: Jonathan Cameron <jic23@kernel.org>,
+	David Lechner <dlechner@baylibre.com>,
+	Nuno =?iso-8859-1?Q?S=E1?= <nuno.sa@analog.com>,
+	Andy Shevchenko <andy@kernel.org>, Amit Kucheria <amitk@kernel.org>,
+	Thara Gopinath <thara.gopinath@gmail.com>,
+	"Rafael J. Wysocki" <rafael@kernel.org>,
+	Daniel Lezcano <daniel.lezcano@kernel.org>,
+	Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>,
+	linux-arm-msm@vger.kernel.org, linux-iio@vger.kernel.org,
+	linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+	Kamal Wadhwa <kamal.wadhwa@oss.qualcomm.com>,
+	David Collins <david.collins@oss.qualcomm.com>,
+	Anjelique Melendez <anjelique.melendez@oss.qualcomm.com>,
+	Neil Armstrong <neil.armstrong@linaro.org>,
+	Stephan Gerhold <stephan.gerhold@linaro.org>
+Subject: Re: [PATCH v2 1/2] iio: adc: qcom-spmi-adc5-gen3: Share SDAM0 IRQ
+ with ADC_TM auxiliary driver
+Message-ID: <ah9ouLQFI7VtHCWL@ashevche-desk.local>
+References: <20260526-gen3_adc_tm-v2-0-702fbac919ac@oss.qualcomm.com>
+ <20260526-gen3_adc_tm-v2-1-702fbac919ac@oss.qualcomm.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20260602-batt-status-v3-1-a7c1c271f3b0@google.com>
-References: <20260602-batt-status-v3-0-a7c1c271f3b0@google.com>
-In-Reply-To: <20260602-batt-status-v3-0-a7c1c271f3b0@google.com>
-To: Sebastian Reichel <sre@kernel.org>, 
- Badhri Jagan Sridharan <badhri@google.com>, 
- Heikki Krogerus <heikki.krogerus@linux.intel.com>, 
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
- Hans de Goede <hansg@kernel.org>, Krzysztof Kozlowski <krzk@kernel.org>, 
- Marek Szyprowski <m.szyprowski@samsung.com>, 
- Sebastian Krzyszkowiak <sebastian.krzyszkowiak@puri.sm>, 
- Purism Kernel Team <kernel@puri.sm>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
- linux-usb@vger.kernel.org, 
- =?utf-8?q?Andr=C3=A9_Draszik?= <andre.draszik@linaro.org>, 
- Tudor Ambarus <tudor.ambarus@linaro.org>, 
- Peter Griffin <peter.griffin@linaro.org>, RD Babiera <rdbabiera@google.com>, 
- Kyle Tso <kyletso@google.com>, Amit Sunil Dhamne <amitsd@google.com>
-X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1780440449; l=5657;
- i=amitsd@google.com; s=20241031; h=from:subject:message-id;
- bh=+oFK9DK6dA282t97V5KFkOWT/2XMjPAyRjRR4RM0SBA=;
- b=0vIgf49wwOzDSqg5dCDSJsWWQWStmt7NVlbAs824NcAcXjZQMkGMiuS/8MstDZN57XnZiGfSg
- LN757LxguQWDGSX3M/0cbgfN8cVVHnGRO5QBjQYB8bzdZR6jv6keTkn
-X-Developer-Key: i=amitsd@google.com; a=ed25519;
- pk=wD+XZSST4dmnNZf62/lqJpLm7fiyT8iv462zmQ3H6bI=
-X-Endpoint-Received: by B4 Relay for amitsd@google.com/20241031 with
- auth_id=262
-X-Original-From: Amit Sunil Dhamne <amitsd@google.com>
-Reply-To: amitsd@google.com
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260526-gen3_adc_tm-v2-1-702fbac919ac@oss.qualcomm.com>
+Organization: Intel Finland Oy - BIC 0357606-4 - c/o Alberga Business Park, 6
+ krs, Bertel Jungin Aukio 5, 02600 Espoo
 
-From: Amit Sunil Dhamne <amitsd@google.com>
+On Tue, May 26, 2026 at 04:26:09PM +0530, Jishnu Prakash wrote:
+> The SDAM0 IRQ can be triggered for both EOC (end of conversion) events for
+> immediate ADC reads done in this driver and for threshold violation events,
+> based on ADC_TM thresholds configured from the auxiliary ADC_TM driver on
+> TM channels on the first SDAM.
+> 
+> At present, this interrupt is handled only in the ISR in the main ADC driver.
+> When the ISR is triggered for an ADC_TM event, this driver notifies the ADC_TM
+> driver by calling a notifier callback exposed from it for this purpose.
+> 
+> To simplify the interrupt handling in both drivers, share the interrupt between
+> the drivers. With this, ADC_TM interrupts on SDAM0 will be handled directly in
+> the ADC_TM driver, so remove the notifier callback and all TM interrupt
+> handling in the main ADC ISR.
 
-Add power_supply_get_battery_all() to allow drivers to obtain a list of
-registered battery type power supply references in the system. Also add
-power_supply_put_battery_all() to perform cleanup after the former
-function is called.
+...
 
-Signed-off-by: Amit Sunil Dhamne <amitsd@google.com>
----
- drivers/power/supply/power_supply_core.c | 133 +++++++++++++++++++++++++++++++
- include/linux/power_supply.h             |  15 ++++
- 2 files changed, 148 insertions(+)
+> +	/*
+> +	 * This interrupt is shared with the ADC_TM auxiliary driver, which
+> +	 * is threaded and uses IRQF_ONESHOT. Since shared interrupts need
+> +	 * to agree on IRQF_ONESHOT configuration and there is a kernel
+> +	 * warning for using IRQF_ONESHOT with non-threaded interrupts,
+> +	 * make this also a threaded IRQ.
+> +	 */
+> +
+> +	ret = devm_request_threaded_irq(dev, adc->dev_data.base[ADC5_GEN3_VADC_SDAM].irq,
+> +					NULL, adc5_gen3_isr, IRQF_ONESHOT | IRQF_SHARED,
+> +					adc->dev_data.base[ADC5_GEN3_VADC_SDAM].irq_name,
+> +					adc);
+>  	if (ret)
+>  		return dev_err_probe(dev, ret,
+>  				     "Failed to request SDAM%d irq\n",
 
-diff --git a/drivers/power/supply/power_supply_core.c b/drivers/power/supply/power_supply_core.c
-index a446d3d086fc..8da4eb275c47 100644
---- a/drivers/power/supply/power_supply_core.c
-+++ b/drivers/power/supply/power_supply_core.c
-@@ -482,6 +482,139 @@ struct power_supply *power_supply_get_by_name(const char *name)
- }
- EXPORT_SYMBOL_GPL(power_supply_get_by_name);
- 
-+static int __power_supply_get_num_battery(struct power_supply *epsy, void *data)
-+{
-+	int *count = data;
-+
-+	if (epsy->desc->type == POWER_SUPPLY_TYPE_BATTERY)
-+		(*count)++;
-+
-+	return 0;
-+}
-+
-+static int power_supply_get_num_battery(struct device *dev)
-+{
-+	int ret, count = 0;
-+
-+	ret = power_supply_for_each_psy(&count, __power_supply_get_num_battery);
-+
-+	dev_dbg(dev, "%s: count: %d ret %d\n", __func__, count, ret);
-+
-+	if (ret)
-+		return ret;
-+
-+	return count;
-+}
-+
-+struct psy_get_supplies_data {
-+	int cnt;
-+	int size;
-+	struct power_supply **psys;
-+};
-+
-+static int __power_supply_populate_battery_array(struct power_supply *epsy,
-+						 void *_data)
-+{
-+	struct psy_get_supplies_data *data = _data;
-+
-+	if (epsy->desc->type == POWER_SUPPLY_TYPE_BATTERY) {
-+		if (data->size <= data->cnt)
-+			return -EOVERFLOW;
-+
-+		get_device(&epsy->dev);
-+		data->psys[data->cnt] = epsy;
-+		atomic_inc(&epsy->use_cnt);
-+		data->cnt++;
-+	}
-+
-+	return 0;
-+}
-+
-+static int power_supply_populate_battery_array(struct device *dev, int size,
-+					       struct power_supply **batteries)
-+{
-+	int ret;
-+
-+	struct psy_get_supplies_data data = {
-+		.cnt = 0,
-+		.size = size,
-+		.psys = batteries,
-+	};
-+
-+	ret = power_supply_for_each_psy(&data, __power_supply_populate_battery_array);
-+
-+	dev_dbg(dev, "%s Found %d batteries with array size %d ret %d\n",
-+		__func__, data.cnt, data.size, ret);
-+
-+	if (ret < 0 || !data.cnt) {
-+		power_supply_put_battery_all(batteries, data.cnt);
-+		return ret;
-+	}
-+
-+	return data.cnt;
-+}
-+
-+/**
-+ * power_supply_get_battery_all() - Fetches references to all battery type power
-+ *                                  supplies.
-+ * @dev: Pointer to device requesting the power supply refs.
-+ * @psys: Pointer to an array of power supply refs.
-+ *
-+ * Helper function to get handles to all battery type power supplies.
-+ * If acquiring a ref to a power supply fails, then the search for battery
-+ * type power supplies will abort and the acquired power supply references will
-+ * be released.
-+ *
-+ * Return: Indicates the number of battery type power supplies returned on
-+ * success or a negative error code on failure.
-+ *
-+ * Call power_supply_put_battery_all() after use to cleanup resources.
-+ */
-+int __must_check power_supply_get_battery_all(struct device *dev,
-+					      struct power_supply ***psys)
-+{
-+	int ret;
-+
-+	if (!psys)
-+		return -EINVAL;
-+
-+	ret = power_supply_get_num_battery(dev);
-+	if (ret <= 0) {
-+		*psys = NULL;
-+		return ret;
-+	}
-+
-+	*psys = kzalloc_objs(**psys, ret);
-+	if (!*psys)
-+		return -ENOMEM;
-+
-+	ret = power_supply_populate_battery_array(dev, ret, *psys);
-+	if (ret <= 0)
-+		*psys = NULL;
-+
-+	return ret;
-+}
-+EXPORT_SYMBOL_GPL(power_supply_get_battery_all);
-+
-+/**
-+ * power_supply_put_battery_all() - Cleanup resources allocated by
-+ *                                  power_supply_get_battery_all()
-+ * @psys: Array of power supply references to release and free.
-+ * @count: Number of elements in the array.
-+ */
-+void power_supply_put_battery_all(struct power_supply **psys, int count)
-+{
-+	int i;
-+
-+	for (i = 0; i < count; i++) {
-+		if (psys[i])
-+			power_supply_put(psys[i]);
-+	}
-+
-+	kfree(psys);
-+}
-+EXPORT_SYMBOL_GPL(power_supply_put_battery_all);
-+
- /**
-  * power_supply_put() - Drop reference obtained with power_supply_get_by_name
-  * @psy: Reference to put
-diff --git a/include/linux/power_supply.h b/include/linux/power_supply.h
-index 7a5e4c3242a0..f2070ebc93dc 100644
---- a/include/linux/power_supply.h
-+++ b/include/linux/power_supply.h
-@@ -806,11 +806,26 @@ extern int power_supply_reg_notifier(struct notifier_block *nb);
- extern void power_supply_unreg_notifier(struct notifier_block *nb);
- #if IS_ENABLED(CONFIG_POWER_SUPPLY)
- extern struct power_supply *power_supply_get_by_name(const char *name);
-+extern int __must_check power_supply_get_battery_all(struct device *dev,
-+						     struct power_supply ***psys);
-+extern void power_supply_put_battery_all(struct power_supply **psys, int count);
- extern void power_supply_put(struct power_supply *psy);
- #else
- static inline void power_supply_put(struct power_supply *psy) {}
- static inline struct power_supply *power_supply_get_by_name(const char *name)
- { return NULL; }
-+static inline int __must_check power_supply_get_battery_all(struct device *dev,
-+							    struct power_supply ***psys)
-+{
-+	if (psys)
-+		*psys = NULL;
-+	return 0;
-+}
-+
-+static inline void power_supply_put_battery_all(struct power_supply **psys,
-+						int count)
-+{
-+}
- #endif
- extern struct power_supply *power_supply_get_by_reference(struct fwnode_handle *fwnode,
- 							  const char *property);
+Also add a patch to drop this duplicate message.
 
 -- 
-2.54.0.1013.g208068f2d8-goog
+With Best Regards,
+Andy Shevchenko
 
 
