@@ -1,30 +1,36 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9FA6539DBFD;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A8E963D1CA4;
 	Wed,  3 Jun 2026 20:47:02 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1780519623; cv=none; b=Yoao5KJMLaOek2mp+EF7Js6qpvk9GDY/rdjiUaG/5rWlzbOMHZmd34SEoniNS++nvbR0MCw+zjSh+VmQrIPY9OCdlqRdUgtELVYi/AneJYBFuEWGCfTEoFlWTczkiS2boSfEJK/+6k3ahgdDkebv+qPmYR5JCyefF5iUjLirfek=
+	t=1780519623; cv=none; b=IW4wW7/mShbUEPW/H8a9gqO7n7NhmuisCKEdYSq/g2xEJtPcUM2Wjm5qwHcOkpPU20zIVTAh4tZOJfTxd3P4AozSbfGUoCZ+dI1vRbMupZpe/CMEF+o63zkpzm5MRj1+MuJXs0StwdM1Ydxjm5g4guAm5hjkP5/g/ARqOvNOSWY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1780519623; c=relaxed/simple;
-	bh=3ldfLlzV7SiXkElP3s/RDvLIp+kEC+gqbQUC+4m+ucY=;
+	bh=OI+w5Ft3+926c7D6aVZt9En7bIFGC53cNQ802v7Pjuo=;
 	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
-	 MIME-Version:Content-Type; b=PCL+h9x/qUxKwBV57aPB7d8PyV6bVNh1sUMtVS9ibqiiScCYDzFG+oBMhkAUuAC+2f/KUZzKjXUiQOVnojYQjozvChINQhtnBwFm6f5HavlaUMbSMnt8X+bxzyfVbmXILwG4UQWb4cpxTWURCsncccxGD7auY52Ypt3UFhYozc8=
+	 MIME-Version:Content-Type; b=VrzJBR/ob8p3qBWfn3e2zA5HymzzMbuvzLSdXtxdvJoD2d0vtGhSm6FAB+CWKn576CqJ2dOXRUIr2k/CUCuvFlMRA/E3gaGho0IWO3+6MYkXlpIcC7VSBu2LHYAKKIWzm3/UT4Jz4gZF3trRbfljtRAbguPpGoaHrxVKEA3SEy0=
 ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 48FDB1F00898;
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4FF541F0089B;
 	Wed,  3 Jun 2026 20:47:02 +0000 (UTC)
 Received: by venus (Postfix, from userid 1000)
-	id DF561183854; Wed, 03 Jun 2026 22:46:59 +0200 (CEST)
+	id CB50C181D83; Wed, 03 Jun 2026 22:46:59 +0200 (CEST)
 From: Sebastian Reichel <sebastian.reichel@collabora.com>
-To: sre@kernel.org, philipp@uvos.xyz, Ma Ke <make24@iscas.ac.cn>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
- akpm@linux-foundation.org, stable@vger.kernel.org
-In-Reply-To: <20260424011013.879639-1-make24@iscas.ac.cn>
-References: <20260424011013.879639-1-make24@iscas.ac.cn>
-Subject: Re: [PATCH] power: supply: cpcap-battery: Fix missing
- nvmem_device_put() causing reference leak
-Message-Id: <178051961989.2666348.3637459049042630916.b4-ty@collabora.com>
+To: Lee Jones <lee@kernel.org>, Rob Herring <robh@kernel.org>, 
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+ Conor Dooley <conor+dt@kernel.org>, Orson Zhai <orsonzhai@gmail.com>, 
+ Baolin Wang <baolin.wang@linux.alibaba.com>, 
+ Chunyan Zhang <zhang.lyra@gmail.com>, Liam Girdwood <lgirdwood@gmail.com>, 
+ Mark Brown <broonie@kernel.org>, Sebastian Reichel <sre@kernel.org>, 
+ =?utf-8?q?Otto_Pfl=C3=BCger?= <otto.pflueger@abscue.de>
+Cc: devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
+ linux-pm@vger.kernel.org
+In-Reply-To: <20260528-sc27xx-mfd-cells-v3-0-25cd685d2743@abscue.de>
+References: <20260528-sc27xx-mfd-cells-v3-0-25cd685d2743@abscue.de>
+Subject: Re: (subset) [PATCH PARTIAL-RESEND v3 0/3] mfd: sc27xx: Use MFD
+ cells and devm_mfd_add_devices()
+Message-Id: <178051961981.2666348.665108516921227224.b4-ty@collabora.com>
 Date: Wed, 03 Jun 2026 22:46:59 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
@@ -37,20 +43,20 @@ Content-Transfer-Encoding: 8bit
 X-Mailer: b4 0.14.3
 
 
-On Fri, 24 Apr 2026 09:10:13 +0800, Ma Ke wrote:
-> In cpcap_battery_detect_battery_type(), the reference to an nvmem
-> device obtained via nvmem_device_find() is not released with
-> nvmem_device_put() on the success or read-failure paths, causing a
-> permanent reference leak. The driver’s retry logic on subsequent
-> battery property reads can compound this leak, preventing the nvmem
-> device from ever being freed.
+On Thu, 28 May 2026 18:18:22 +0200, Otto Pflüger wrote:
+> This is a resend of the remaining patches in a partially applied series
+> switching the SC27xx series of PMICs to use MFD cells instead of purely
+> OF-based device probing. There are no dependencies between the patches
+> in this series, but they are part of a single logical change.
+> 
+> Link to original series (v3): https://lore.kernel.org/r/20260329-sc27xx-mfd-cells-v3-0-9158dee41f74@abscue.de
 > 
 > [...]
 
 Applied, thanks!
 
-[1/1] power: supply: cpcap-battery: Fix missing nvmem_device_put() causing reference leak
-      commit: a2c14ff63e0e02e3c832385e523e9cc81301171c
+[2/3] power: reset: sc27xx: Add platform_device_id table
+      commit: b6c7feeb604262f31a4279bd66aa300ad0903255
 
 Best regards,
 -- 
