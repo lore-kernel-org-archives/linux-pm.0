@@ -1,63 +1,32 @@
-Received: from mail-oa1-f50.google.com (mail-oa1-f50.google.com [209.85.160.50])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4003E3DD53C
-	for <linux-pm@vger.kernel.org>; Wed,  3 Jun 2026 18:17:22 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.160.50
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8B15638C2C0
+	for <linux-pm@vger.kernel.org>; Wed,  3 Jun 2026 18:36:13 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1780510644; cv=none; b=eqADgxrS6hK2J6cjI1XhYFdq6At3OqAoanq7Gc1yMm6kfP3uN1h6fjHBiYkpgrI9kAIWysuoAbEGC57najIY5XNaLr7boNo2aMaOavJB1Dvn1xC5GoiLJgAZHMB35+U7EnuOv/ZRBvXVsWwQfldDmACIgk5rI5JmKxTyOaDWeIk=
+	t=1780511774; cv=none; b=N9RSo3yD2yvdhf5DkWImmGa0isVWUZ1ftINp4595FH0KjnkPBjIKtBOvrHxJACdejyl9alAAaH7thYLg1R20LhxJHmifTPdlL+8795DMe1mQpDJfkQpnWhmF/U1EiIs7T1LMi+eHnXPgsYlRH+nvqlg/+dmpq/LjQoVAv4gyXVs=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1780510644; c=relaxed/simple;
-	bh=mR4+Ie2bbuKPIew7pLbo5Lq0aWKZQl1rt3zOr2eMg8U=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=eJq5otQBsMXchDRdKE3AXsCC7rVF9jiotos/qpQrDAY+8yge9t0BaI+29UShMxRFKD0wGg3LZ6gZFoIKvttWmgDecaLamYrZ7k6njhMMWJt4nlIA8db7eJrGykW41/9wEgSzMHKe/Jb6LwrZx+Ivouz0DZQdFf0TcrwXHNRlJmo=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linuxfoundation.org; spf=pass smtp.mailfrom=linuxfoundation.org; dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b=Vw8rNWZe; arc=none smtp.client-ip=209.85.160.50
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linuxfoundation.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linuxfoundation.org
+	s=arc-20240116; t=1780511774; c=relaxed/simple;
+	bh=QqIWfrMxgttmX39wyQcVHcYyWTKjO+J7nXkR8YHnwaU=;
+	h=Message-ID:Date:MIME-Version:To:Cc:From:Subject:Content-Type; b=Aqy8D1onn7fXk9i1sz+FikPgUoNBIYY5SqtS5jMaKmfMDI/IS6DyC5RBHHV1xMI0JQZBqpL4kzSqHY8LyQIY+O71wYnKDzuSlma+pCecnAe9VL/gI0FIu2EpEpcTzEn9LSxJ1rslbEfp0dVljtezzPOD91TBHU6C3aiCvECwifU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=bPcPH9Ua; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b="Vw8rNWZe"
-Received: by mail-oa1-f50.google.com with SMTP id 586e51a60fabf-43b78b54dbdso8117447fac.1
-        for <linux-pm@vger.kernel.org>; Wed, 03 Jun 2026 11:17:22 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linuxfoundation.org; s=google; t=1780510642; x=1781115442; darn=vger.kernel.org;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=l5Er5Wpg+r3gMIOrk4BdcNKYR+hF85apkXNRWWoLPtI=;
-        b=Vw8rNWZeMZYzEezuM4ch0Wyn7fdrxwa9unlZ0fFkcUx0WMep65ITYKSKEQXvslsJA8
-         MLMRCAyJ6AM8aT2EcqpcUPMczAO2aI+R0/GKTxqAE+tPg5uKJidEb69Mug81BIVtNceO
-         5cFSFQavV29Qw6Sura1XSBK+tfQIja+jfh8Bo=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1780510642; x=1781115442;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=l5Er5Wpg+r3gMIOrk4BdcNKYR+hF85apkXNRWWoLPtI=;
-        b=O57rX3Va9qBFAOSukn3Rj3H2ivApOW/T3yzNyT6ZpJadaKyqr8Rr6G6lyhGzUrm/wB
-         6f0CxdYCjtv2+1uLQwshOxC+EWdv2TtyZcwCGELUpX2D3NpaMu1en/YU4P3ixATAI5eU
-         Cyljm5vcCjkkCNKB3aJRh7pJpz+vpAUMUhNgnXPAj0VDfjK/NwVMjh0fu6fqinN/Btjg
-         batDfYIFQ3aQFPcQoXN0ZaYAkq58vGl4FvfhetME5haLVzlIe4bU3YMqqcVFLD9R7qs6
-         maYpYchYeKC5oIyis7XRli6keoAygjGUgCmfacSCqagATA7P/Ayz4a8TExX5FVtzHC2A
-         +q4A==
-X-Forwarded-Encrypted: i=1; AFNElJ/D7nIpBveHPCHOd+0WrZPHY16SutDS0sj5qOchsvuJvi4Qrun1vKPSR3E5qkPzzBdSzm3Cq/afGw==@vger.kernel.org
-X-Gm-Message-State: AOJu0YxYQCwzlI2ud74LgriSuOCKeg6UdloZ/C3Nj2Z2FMkzxyXnUYNL
-	9cavxzFg06298LpGG7QvyRLp64di+T6fCRwWSZwBYviDgN6J8Jey2Y5UTW+paTEFOgQ=
-X-Gm-Gg: Acq92OH71+wDoUxo0IDo/T44uZhYK2hJH6nR5bNsCEUtOOCUJO84OLDMHWZcY2pYWxf
-	mBj2leiPwfwZsFkgb5qysuIP8Wh4GhQNwIJ91ySAofKXS5M2qCqnw74B5C7jVrrrdojNdlaT6Mn
-	DBQLcgUI6JMrI7S/F0El9nuHP1yP5Dj8gbyaLYjc9h6rmy+K4HEt8qxD8OXpQ+WDP58u6JTh8Iw
-	SxF7ibnBaAc0b0tKOOwxKuGiB9FAyDhMaMdS4pHEncKVpgjMFH2Ad8UV7ICOCM55ywXg8sz1jgI
-	VTK1/cDb3VoKKJY1nCMX1m4gKXvPm5ZO9mM5jjY2YNVB6CML/pKhMcpCfL3oBS07Bl8jYK38XTn
-	1J1kxaBKEaOvhYx4gOV3jaXHXUOT+WJE4zQ+JuIN+nAb8EpzTE1T2tDmlIBJ+Bw1fARa3Ge6E/d
-	Yu+hBvp3RVIU51f9upXx5aicCVs6M7jKVT5XTF2gpxZw==
-X-Received: by 2002:a05:6870:a447:b0:417:ab68:fbaf with SMTP id 586e51a60fabf-440db9db66emr2976318fac.20.1780510641909;
-        Wed, 03 Jun 2026 11:17:21 -0700 (PDT)
-Received: from [192.168.1.14] ([38.15.57.99])
-        by smtp.gmail.com with ESMTPSA id 586e51a60fabf-440d8500f0esm2778781fac.18.2026.06.03.11.17.20
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Wed, 03 Jun 2026 11:17:21 -0700 (PDT)
-Message-ID: <9e4994be-008d-4c0b-9bb0-1ff782ad00f5@linuxfoundation.org>
-Date: Wed, 3 Jun 2026 12:17:19 -0600
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="bPcPH9Ua"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 198001F00893;
+	Wed,  3 Jun 2026 18:36:13 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1780511773;
+	bh=gBX0ZsWn3N2PxKWCnnfLYMvHLgtahuVxn5vk4S///rs=;
+	h=Date:To:Cc:From:Subject;
+	b=bPcPH9UaKHgtiJW3WgIJv1Yn5O9InwVVZ2GA3c1QXPl+f9qYH9Qtdx1LkyH52EFl5
+	 LWxqR1XzScml7oBkGjbphU2xOdzr1kegPpqbNFzrRwhTPp8g+UoVrPOA4LIHILQQYp
+	 6APE75R7M1XQtoTsozLILpzGRGnOJkn27Yrm3EbnNh30dFPKa/uvYasKUj0F9OK+gm
+	 pvimg3Uoa/nc9y6WCpQwQxQw3KWQJbTb6z5+X+E+DmEdYrA+AlZYUjRF7tb5SPx+ZH
+	 A1xDkiq9H9DT55EzP6692UWI1BsbVQZ8X1byeVUTDSCtLdRg63phxPejsf5wJmzMFP
+	 6uE8x0ABNnQqw==
+Message-ID: <2167c764-6159-4a51-b3f0-f0fbf6c147ce@kernel.org>
+Date: Wed, 3 Jun 2026 13:36:12 -0500
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -65,42 +34,43 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v4] cpupower: Implement powercap enabled setters
-To: =?UTF-8?Q?Mateusz_Ja=C5=9Bkiewicz?= <jaskiewiczteo@gmail.com>,
- Shuah Khan <shuah@kernel.org>
-Cc: Thomas Renninger <trenn@suse.com>, "John B. Wyatt IV"
- <jwyatt@redhat.com>, John Kacur <jkacur@redhat.com>,
- linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
- Shuah Khan <skhan@linuxfoundation.org>
-References: <5ff19049-a83a-4ef9-9cae-b97438fb3e77@linuxfoundation.org>
- <20260528153248.4114324-1-jaskiewiczteo@gmail.com>
 Content-Language: en-US
-From: Shuah Khan <skhan@linuxfoundation.org>
-In-Reply-To: <20260528153248.4114324-1-jaskiewiczteo@gmail.com>
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: "open list:CPU FREQUENCY SCALING FRAMEWORK" <linux-pm@vger.kernel.org>
+From: Mario Limonciello <superm1@kernel.org>
+Subject: [GIT PULL] amd-pstate fixes for 7.1 (2026/06/02)
 Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
 
-On 5/28/26 09:32, Mateusz Jaśkiewicz wrote:
-> powercap_set_enabled() and powercap_zone_set_enabled() are part of the
-> public libcpupower API, but both currently return success without
-> updating sysfs.
+The following changes since commit e7ae89a0c97ce2b68b0983cd01eda67cf373517d:
 
-You are right that cpupower set_enable API simply returns success.
+   Linux 7.1-rc5 (2026-05-24 13:48:06 -0700)
 
-Does intel-rapl:0 implement store function on your system?
-It doesn't on mine.
+are available in the Git repository at:
 
-cd /sys/devices/virtual/powercap/intel-rapl/intel-rapl:0
-echo 1 > enabled
-bash: echo: write error: Function not implemented
+  
+ssh://git@gitolite.kernel.org/pub/scm/linux/kernel/git/superm1/linux.git 
+tags/amd-pstate-v7.1-2026-06-02
 
-> 
-> Write the requested value to the matching enabled attribute so callers
-> can actually enable or disable the powercap control type or zone, and
-> report write failures back to the caller.
-> 
+for you to fetch changes up to 5629eec1a2829871d496f3042884cdc267612f6a:
 
-The patch loos good. Is there an existing use-case for this?
+   cpufreq/amd-pstate: Fix setting EPP in performance mode (2026-06-02 
+12:32:06 -0500)
 
-thanks,
--- Shuah
+----------------------------------------------------------------
+amd-pstate fixes for 7.1 (2026-06-02)
+
+* Fix a kdoc issue
+* Fix an issue setting performance state in EPP mode introduced earlier in
+   the cycle from new 7.1 content
+
+----------------------------------------------------------------
+Mario Limonciello (AMD) (1):
+       cpufreq/amd-pstate: Fix setting EPP in performance mode
+
+Zhan Xusheng (1):
+       cpufreq/amd-pstate: drop stale @epp_cached kdoc
+
+  drivers/cpufreq/amd-pstate.c | 2 +-
+  drivers/cpufreq/amd-pstate.h | 1 -
+  2 files changed, 1 insertion(+), 2 deletions(-)
