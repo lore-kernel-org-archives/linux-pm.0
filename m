@@ -1,37 +1,37 @@
 Received: from layka.disroot.org (layka.disroot.org [178.21.23.139])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1A00346AEF2;
-	Wed,  3 Jun 2026 12:01:36 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 26CC846AEEA;
+	Wed,  3 Jun 2026 12:01:38 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=178.21.23.139
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1780488099; cv=none; b=q6DgjxErSMscUpffiaqADws46478b85V94Qoh7033UGQtNuE45LQtItzvgYNwS19fmX6Kb8lKCIqZQWt5JaeHEnV2NnVql33VXq87r0Iwi+fUl5GhzfjmWobfAqXcaXBqIZDDU6I+ndXbHscSU0QpdD/gd3hx5sRTX5Ch+B3u+s=
+	t=1780488100; cv=none; b=S2pDQA7qUSts+hQdASCxeNSc29X5OdO3R5t9KQWWdXNjZlkjRrQxvRzH4emhGTnZQKNgOS1/zp+jSbOD4NNIV227uI3clzTUSejsqgn++xgPMKFgpLIX1fva/Zy49uI0Gv+yThuUB5S+zlZGqTtsE098zf6YBYB9NO78qnTum+A=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1780488099; c=relaxed/simple;
-	bh=aIt7iflSFe/IeQyHr1BOSUPaXA/5ZY9y6pqWCjV/9XM=;
+	s=arc-20240116; t=1780488100; c=relaxed/simple;
+	bh=wblGCJrCm/VgNeNEH8FYabjvGp1gDOUsjasETsshYbs=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=NSBChHNXRKwszrAqrHU/J9810EBZhLxQ08aj2HmUZNlEfKjuAVgzz/Dnsk4OWPp5Otpx3OrjfZPYoR1imbwGTJrBwygSY+ql6xY0f3HeID/6bPsUr4I+wxw0wUf/9sIMi0meXGZl6fDQc4er5oRJbRftaWKq6C27X1z2rySvKg4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=disroot.org; spf=pass smtp.mailfrom=disroot.org; dkim=pass (2048-bit key) header.d=disroot.org header.i=@disroot.org header.b=l2MSuGr2; arc=none smtp.client-ip=178.21.23.139
+	 MIME-Version; b=mpJTWxwiDe7Wwd6oub4Pl5Me1mKdZoudjUEOrJQz8SJgJXrU2EoYKVbjkPi1QpfmwfPxVedQl5Q/5zeFP4cgx/yl4JRua0PMm2ytPTZ9XCcQI4RNYx75uFzQHMDlEYvY2mq/8IThqed4EfV1jxvtAnbIuAKhQCbMhO/sZZTg7Wc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=disroot.org; spf=pass smtp.mailfrom=disroot.org; dkim=pass (2048-bit key) header.d=disroot.org header.i=@disroot.org header.b=WBj2Imz3; arc=none smtp.client-ip=178.21.23.139
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=disroot.org
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=disroot.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=disroot.org header.i=@disroot.org header.b="l2MSuGr2"
+	dkim=pass (2048-bit key) header.d=disroot.org header.i=@disroot.org header.b="WBj2Imz3"
 Received: from mail01.disroot.lan (localhost [127.0.0.1])
-	by disroot.org (Postfix) with ESMTP id 2FAE72721D;
-	Wed,  3 Jun 2026 14:01:35 +0200 (CEST)
+	by disroot.org (Postfix) with ESMTP id C048D27117;
+	Wed,  3 Jun 2026 14:01:36 +0200 (CEST)
 X-Virus-Scanned: SPAM Filter at disroot.org
 Received: from layka.disroot.org ([127.0.0.1])
  by localhost (disroot.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id pfVK6ROpOcCS; Wed,  3 Jun 2026 14:01:34 +0200 (CEST)
+ id fk7GTP6CTn4L; Wed,  3 Jun 2026 14:01:36 +0200 (CEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=disroot.org; s=mail;
-	t=1780488094; bh=aIt7iflSFe/IeQyHr1BOSUPaXA/5ZY9y6pqWCjV/9XM=;
+	t=1780488096; bh=wblGCJrCm/VgNeNEH8FYabjvGp1gDOUsjasETsshYbs=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References;
-	b=l2MSuGr2f3FE9lzcozknawdLFUKzyF7z71TPyVtiy/PfLHvzfe5FoPyRlVc01B9vE
-	 tMHCuurSPDxAHtZVns7tYGGN/H5Rv770l/VIBRXuSFNAqhe6ykCLh3L4PJTISJ5dtP
-	 Yn7f+iwJfH49mhwuZY0mpAgjdcqPUTF31VOFfsVYz/YmtLU31wrASFRRoxWV6iLbor
-	 QEw/DzMgTxw0VOpLHs1bXXvcXuA6aPhxGeNViyAX40cYll1m8CTigkET3nJbyFE8ge
-	 4mnmkugjx94rWd6taXxeF35yWUoEIzFf4sPgIT2MA45dwOKRQv6ItY5fweGcINXXa+
-	 eC0Z7sUJEzkrw==
+	b=WBj2Imz3e/usopwYAbbMa4o6yTs+uG9aqDzmD+u1M3nk+JTxvBnvFYCakNx81as/m
+	 iyn1KVANe+/1Rw/1WpuuRlBU7eYtkP3/24Mk3PzcxgXCl7/vQZTLiTDBnoWKNNqilb
+	 xHXW83AHyU0pn4kN/6ZmL/ns3DNHSExqm0Zns/IxCUJ/PvTsYLfbLBfWALYevA+Bsz
+	 AQfrob2MRpxoGqZhJU3WVIbJgjwfEBNcn5vwXU+4sqnLKj2VB7+BuJiM2Ms/jeYISE
+	 +r1/KsFPEMqvrHj+UjZIVm0SlyNEE56Xslt+OCsJrQDY0BqK5Ex4qNB5qwoDqiWPdo
+	 mbPpDzfURpjjQ==
 From: Marco Scardovi <scardracs@disroot.org>
 To: kprateek.nayak@amd.com
 Cc: linux-kernel@vger.kernel.org,
@@ -44,11 +44,12 @@ Cc: linux-kernel@vger.kernel.org,
 	stuartmeckle@gmail.com,
 	viresh.kumar@linaro.org,
 	wyes.karny@amd.com
-Subject: [PATCH v2 0/2] cpufreq/amd-pstate: Fix EPP initialization and add capability check
-Date: Wed,  3 Jun 2026 13:56:33 +0200
-Message-ID: <20260603120121.25772-1-scardracs@disroot.org>
-In-Reply-To: <4cb9459c-f471-478a-9670-58d898619f45@amd.com>
+Subject: [PATCH v2 2/2] cpufreq/amd-pstate: Prevent active mode on systems without EPP support
+Date: Wed,  3 Jun 2026 13:56:35 +0200
+Message-ID: <20260603120121.25772-3-scardracs@disroot.org>
+In-Reply-To: <20260603120121.25772-1-scardracs@disroot.org>
 References: <4cb9459c-f471-478a-9670-58d898619f45@amd.com>
+ <20260603120121.25772-1-scardracs@disroot.org>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -57,55 +58,122 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Hi Prateek and all,
+Some AMD processors or firmware configurations do not support Collaborative
+Processor Performance Control (CPPC) Energy Performance Preference (EPP).
+When loading the amd-pstate driver in EPP-reliant "active" mode on these
+systems, the driver fails to function correctly.
 
-before trying merging in @Mario's git il post the new patches with the
-changes you suggested. If something doesn't feel right let me know.
+Unconditionally probe EPP support during driver initialization via a new
+amd_pstate_epp_supported() helper, which queries cppc_get_epp_perf() on
+the first online CPU. EPP capability is uniform across all CPUs on x86,
+making a single CPU query sufficient.
 
-This series addresses a boot-time performance regression on shared memory
-systems where the CPU gets stuck at the lowest non-linear frequency
-(1.7GHz), and adds proper EPP capability checks to prevent active mode from
-being incorrectly enabled on systems without EPP support.
+Treat EPP support as a tri-state during probing:
+- Success: EPP is supported.
+- -EOPNOTSUPP: EPP is definitively unsupported.
+- Unknown error: Warn about the unexpected failure, but default to assuming
+  EPP is supported to avoid false negatives.
 
-Patch 1 fixes the boot-time initialization regression by introducing an
-`epp_hw_programmed` flag in struct amd_cpudata to track whether EPP has
-been configured on the hardware. This bypasses a false cache hit on boot
-due to zero-initialized caching registers, ensuring that EPP and auto_sel
-are always written during CPU initialization, while still preserving the
-cache guard optimization for all subsequent runtime transitions.
+Cache the capability in a static global `epp_supported` boolean to avoid
+redundant capability checks during runtime mode switches.
 
-Patch 2 implements an EPP capability check at boot time using a new
-amd_pstate_epp_supported() helper, which queries the EPP performance
-capability on the first online CPU. If EPP is unsupported, the driver falls
-back to passive mode at boot, and rejects any subsequent runtime
-transitions to active mode.
+If EPP is unsupported:
+- Fall back to passive mode at boot to keep the driver functional rather
+  than failing to load entirely.
+- Reject runtime switches to active mode via sysfs with -ENODEV and print
+  a warning.
 
-Changes in v2:
-- Patch 1: Rename `epp_initialized` to `epp_hw_programmed`, explicitly
-  document the flag semantics, and add a comment documenting the EPP cache
-  guard optimization behavior.
-- Patch 2: Add comments explaining the uniform CPU capability check on x86,
-  handle EPP capability check errors robustly using a tri-state model (only
-  treat -EOPNOTSUPP as unsupported, warn and assume supported for other
-  errors to avoid false negatives), and reject runtime active mode transitions
-  at sysfs store time (preventing the driver from being left in an
-  unregistered state).
+Fixes: ffa5096a7c33 ("cpufreq: amd-pstate: implement Pstate EPP support for the AMD processors")
+Link: https://bugzilla.kernel.org/show_bug.cgi?id=221473
+Assisted-by: Antigravity:gemini-3.5-flash
+Signed-off-by: Marco Scardovi <scardracs@disroot.org>
+---
+ drivers/cpufreq/amd-pstate.c | 44 ++++++++++++++++++++++++++++++++++++
+ 1 file changed, 44 insertions(+)
 
-Changes in v1:
-- Fix the boot-time CPPC EPP/auto_sel initialization regression in
-  shmem_set_epp() using a state tracking flag while preserving runtime
-  cache optimization.
-- Add an EPP capability check helper during initialization.
-- Fall back to passive mode at boot if EPP is not supported, and reject
-  transitions to active mode at runtime if EPP is not supported.
-
-Marco Scardovi (2):
-  cpufreq/amd-pstate: Fix EPP initialization for shared memory systems
-  cpufreq/amd-pstate: Prevent active mode on systems without EPP support
-
- drivers/cpufreq/amd-pstate.c | 52 +++++++++++++++++++++++++++++++++++-
- drivers/cpufreq/amd-pstate.h |  2 ++
- 2 files changed, 53 insertions(+), 1 deletion(-)
-
+diff --git a/drivers/cpufreq/amd-pstate.c b/drivers/cpufreq/amd-pstate.c
+index e8057f3dfb1e..cd052880ecb3 100644
+--- a/drivers/cpufreq/amd-pstate.c
++++ b/drivers/cpufreq/amd-pstate.c
+@@ -27,6 +27,7 @@
+ #include <linux/module.h>
+ #include <linux/init.h>
+ #include <linux/smp.h>
++#include <linux/cpumask.h>
+ #include <linux/sched.h>
+ #include <linux/cpufreq.h>
+ #include <linux/compiler.h>
+@@ -88,6 +89,8 @@ static struct cpufreq_driver amd_pstate_epp_driver;
+ static int cppc_state = AMD_PSTATE_UNDEFINED;
+ static bool amd_pstate_prefcore = true;
+ static bool dynamic_epp;
++/* EPP support capability cached for driver mode switches. */
++static bool epp_supported;
+ static struct quirk_entry *quirks;
+ 
+ /*
+@@ -1772,6 +1775,11 @@ int amd_pstate_update_status(const char *buf, size_t size)
+ 	if (mode_idx < 0)
+ 		return mode_idx;
+ 
++	if (mode_idx == AMD_PSTATE_ACTIVE && !epp_supported) {
++		pr_warn("EPP is not supported by this processor, active mode rejected\n");
++		return -ENODEV;
++	}
++
+ 	if (mode_state_machine[cppc_state][mode_idx]) {
+ 		guard(mutex)(&amd_pstate_driver_lock);
+ 		return mode_state_machine[cppc_state][mode_idx](mode_idx);
+@@ -2229,6 +2237,36 @@ static bool amd_cppc_supported(void)
+ 	return true;
+ }
+ 
++static bool amd_pstate_epp_supported(void)
++{
++	unsigned int cpu = cpumask_first(cpu_online_mask);
++	u64 epp;
++	int ret;
++
++	/*
++	 * On symmetric x86 systems, CPPC EPP support is uniform across all
++	 * CPUs. Probing the first online CPU is sufficient to determine
++	 * system-wide capability.
++	 */
++	ret = cppc_get_epp_perf(cpu, &epp);
++	if (!ret)
++		return true;
++
++	/*
++	 * We treat EPP support as a tri-state:
++	 * - Success (0): EPP is supported.
++	 * - Unsupported (-EOPNOTSUPP): EPP is definitively unsupported.
++	 * - Unknown error (others): Warn about the unexpected failure, but
++	 *   default to assuming support to avoid false negatives (this may
++	 *   be revisited if transient errors cause driver instability).
++	 */
++	if (ret == -EOPNOTSUPP)
++		return false;
++
++	pr_warn("Unable to determine EPP capability: %d\n", ret);
++	return true;
++}
++
+ static int __init amd_pstate_init(void)
+ {
+ 	struct device *dev_root;
+@@ -2251,6 +2289,12 @@ static int __init amd_pstate_init(void)
+ 	if (cpufreq_get_current_driver())
+ 		return -EEXIST;
+ 
++	epp_supported = amd_pstate_epp_supported();
++	if (cppc_state == AMD_PSTATE_ACTIVE && !epp_supported) {
++		pr_warn("EPP not supported, falling back to passive mode\n");
++		cppc_state = AMD_PSTATE_PASSIVE;
++	}
++
+ 	quirks = NULL;
+ 
+ 	/* check if this machine need CPPC quirks */
 -- 
 2.54.0
+
