@@ -1,125 +1,162 @@
-Received: from stravinsky.debian.org (stravinsky.debian.org [82.195.75.108])
+Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DA18F3A9DA9;
-	Wed,  3 Jun 2026 10:54:50 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=82.195.75.108
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6F20F423158
+	for <linux-pm@vger.kernel.org>; Wed,  3 Jun 2026 11:10:53 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.180.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1780484092; cv=none; b=B1iGxtzvxMznfXfgFUxVGxb4ipIWZqFOBvxvwKqqT4654PFkmexjXrt8t/mqzZ1dyd75GHD+9vRazFQe4950dRMz9uagK5ElfQxdiSEZj1lKzIHf68DkPU6o4mBpfxc2WOUmL0Gq8Bfca3YgvqOtfBHRe66zJbcukr2SZET4tls=
+	t=1780485054; cv=none; b=iVv9g7oVGST/kct6YmCgaUOFIYNcxh9RHf3VrEMM4VF6+mv0hv6H/NB/oOD5McEHSSz0jaoNBT1NRRitSlMSEd/7Mg6WX2TQo8Koeb0DXoWcO+3QDjWvW9vIpoS13NaXNMM/tc7re21m2AM+SOWvGRNyqM1U+ytrjkbZwZZ8zGE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1780484092; c=relaxed/simple;
-	bh=Cb/2f3IOVyjVG3HvO/oBo2cGvY8f9XM8YOxOFI7ov18=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=FD6KRQDTm+oDPurAQKYKqFrTzaqVS5eptmgVyY6NSFKdJ43rYwA0f21CxiB88rgHU5FOZFdWxdQWhCj6ozS/wu2+WspsDX1d3JikSQ76XBA4joL+jyganrbJUDOpV2/RvHqeF84oMLfI0oNeH0fadpJ+JYq4lCc8NsOsRr9oMyk=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=debian.org; spf=pass smtp.mailfrom=debian.org; dkim=pass (2048-bit key) header.d=debian.org header.i=@debian.org header.b=mZSPLpmf; arc=none smtp.client-ip=82.195.75.108
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=debian.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=debian.org
+	s=arc-20240116; t=1780485054; c=relaxed/simple;
+	bh=Vs+9CbuVD/QgRSsN7Bgck8hT5qPQPlXEkllEYE9DOgs=;
+	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=myMtWwyPwkuYu23dTX1Cp290Dz1m2QwHS6UqKON2uPIJhpQi9Y6ePJDN+36sVtX7SMWIkLbNseQb9aFvGa/xNRsfiVmvGLuxAb8fJhuF8SrWK7xa0F37pH9GHZfZ3wEbpudfcQJa3kTTB+IU3hGMfE3/BoUXhH2Z+cq01h6F2Nw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=SnrAniin; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=AlQ6gc+R; arc=none smtp.client-ip=205.220.180.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=debian.org header.i=@debian.org header.b="mZSPLpmf"
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=debian.org;
-	s=smtpauto.stravinsky; h=X-Debian-User:In-Reply-To:Content-Type:MIME-Version:
-	References:Message-ID:Subject:Cc:To:From:Date:Reply-To:
-	Content-Transfer-Encoding:Content-ID:Content-Description;
-	bh=09IF4r2GPP51QC7fgR7GmCwwxB+trhrkzGHUOHz7fIk=; b=mZSPLpmfYTDC2FNPWZyT7nCDWB
-	XOJF+q295bze2DseYwmiUqORfac0Vff6GMAnYtP7jCubT53kvQ1FoFI+JDp9R0Zn2wxzXDbXksp21
-	pU9jVCXJB0PKUywhsa0+lPRZeM8L+hKO6uEShUwY5gCHOcHOIl3GqGcgJWK12Szx0USiwDrB3wM1f
-	3SDW0rmNaoHNbOwBuGVgVZIPB+bSYTRjZCOscOl575usT9W91OjJhM1vBldFEfB4OuXuUNNkwsb1A
-	/m+e+95LNYxFSknS5rwHJAw6W1ukLEOhgVCPegIrqWc06/Z1/XbGHheoBux2e7jcPxmlDoNynBQkg
-	kzrWLY3w==;
-Received: from authenticated-user
-	by stravinsky.debian.org with esmtpsa (TLS1.3:ECDHE_X25519__RSA_PSS_RSAE_SHA256__AES_256_GCM:256)
-	(Exim 4.96)
-	(envelope-from <leitao@debian.org>)
-	id 1wUjFC-003gKG-2H;
-	Wed, 03 Jun 2026 10:54:43 +0000
-Date: Wed, 3 Jun 2026 03:54:37 -0700
-From: Breno Leitao <leitao@debian.org>
-To: Jeremy Linton <jeremy.linton@arm.com>
-Cc: linux-pm@vger.kernel.org, sumitg@nvidia.com, pierre.gondois@arm.com, 
-	zhenglifeng1@huawei.com, zhanjie9@hisilicon.com, viresh.kumar@linaro.org, 
-	rafael@kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] cpufreq: cppc: Reduce cppc delivered perf sampling jitter
-Message-ID: <aiAGtKDKTVy2e4ds@gmail.com>
-References: <20260602212052.1278365-1-jeremy.linton@arm.com>
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="SnrAniin";
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="AlQ6gc+R"
+Received: from pps.filterd (m0279872.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6536RIOH2076177
+	for <linux-pm@vger.kernel.org>; Wed, 3 Jun 2026 11:10:52 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-transfer-encoding:content-type:date:from:message-id
+	:mime-version:subject:to; s=qcppdkim1; bh=/64rIzA/Pb/Cnm6v4Tx5KR
+	XT2mXNM2Pr3Na6j1LlbsU=; b=SnrAniinvhPxcfw33x/RrnXwNsFr2urPXQMqkx
+	BuSvZv3l6oNamCBe7mfn29F+UCQ/w1fF3wBQnJAT7qmsXTl2NOt3GMBA86kVKAlo
+	YQ1Y2NfGFdz71OrzvjmladSgHQuV2mDkqdRyTDEBB1tjA8GEnDRkLGTcLPMi9/rb
+	ch54jYtxEskw8JY+wg0hLP5HS5q56xI5YsgegVHval5gFsPNNhMeJ2GVhnriaofY
+	+0xH7URMoJIWnMyaoAhpiBwV7M9DmZ00ye8Po0v4UkSpiCgwO+M/HvBKqo5ZUsAl
+	AN8shDFSLAxDJX5sFC9jYlB28yhdoP6tYyG2PcrNGTixBmLA==
+Received: from mail-pl1-f198.google.com (mail-pl1-f198.google.com [209.85.214.198])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4ejev197y6-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <linux-pm@vger.kernel.org>; Wed, 03 Jun 2026 11:10:52 +0000 (GMT)
+Received: by mail-pl1-f198.google.com with SMTP id d9443c01a7336-2bf335549b8so63862915ad.1
+        for <linux-pm@vger.kernel.org>; Wed, 03 Jun 2026 04:10:52 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=oss.qualcomm.com; s=google; t=1780485051; x=1781089851; darn=vger.kernel.org;
+        h=cc:to:content-transfer-encoding:mime-version:message-id:date
+         :subject:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=/64rIzA/Pb/Cnm6v4Tx5KRXT2mXNM2Pr3Na6j1LlbsU=;
+        b=AlQ6gc+ReEu/QzDMlW3Z5vQwwfL7Jz85HniyrlvCNEnJbVFIF7g85N+FwWDPa44P4F
+         wd41zQIcZo6/UM0ndIbHvYsaxRfB7fVWJgVcgS78fdgAZrlEVc0m/UMSn/7AXHr0QYtS
+         ERsJ2/7BFOSsFFq7L5Mq+5kbKg4Bht69/lb9xHwQKTggjKYRe/nk9DNv+uFs1iPQ7eLL
+         g8GhS/0o0MuEWOUNqe+EpM4suxr6tbnEM860fYiTb4U6vSdCzxqSshghwIgKGMpzo61U
+         4VJQkzDP7sN872P2Eql/IijC5DxXoSVr1VXee+tPcgNDXK0lk5v+Vm6mxeXVhVndvKdf
+         rNGA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1780485051; x=1781089851;
+        h=cc:to:content-transfer-encoding:mime-version:message-id:date
+         :subject:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=/64rIzA/Pb/Cnm6v4Tx5KRXT2mXNM2Pr3Na6j1LlbsU=;
+        b=sb+2Bi2KfS68KEeGQS5dsNdBB2gj8XJVendGjQY3jIHNIWaXIguu0vRvHueBcWo+0E
+         oOFwPQmxuueyj+scU8kMH7Kq0hiujavx3CxzRkvF6No0YA99vRBx/fEfHZISja+RO/KG
+         cK8hhmHFHhx3Vkm2i585nxl7BChRKdLZORNEglEaxAK69h8qSwt10Wmp3Lb/sV9HsvZ2
+         n74LrMLyJPzUVssbuL1cavGCYbq1Tf7VUvKay9tKoggwjtgEt9MsNx0SoTr/XgyPiWy0
+         HZljyQD6tWi2wUh2AqRAIYDkpR51frk0AmsTah0KEtfUkJHMPMmNoPfUf1TXGRvWP3Ek
+         f12A==
+X-Forwarded-Encrypted: i=1; AFNElJ/65wz4I/Fd+TcWH8T6nMlpLkkpcAmsFAA3tAx3a0eUG64CGcj04c91u82S0rqpfjmpYFURpmIzVw==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yz5epIYbUSFKDsFpHRovNIi9lmTD24+n33IHwpfMGafYXCEKs8A
+	dH8gm5tfFb++37NoT46uYhxDI1xNTq6nr3m2iYVMMboYmcATBDUCDbGpO5SvFtNRewjlWdffcj3
+	EtjerN+Yi9aky9InXtiY03K4anLIfR6bAvOKbMHUbeXsPaXF8u3pWXuDf9I7JqQ==
+X-Gm-Gg: Acq92OFsFFIsoIkCIwKiahohZFk/O6jBiGFEvk/r2xx4196neZ8wwx5AIFnRvp+LXdH
+	iJwjPgEcy+lQQdU5jurWkkTPd4mwgloU3LabfLm+bTuEWaeIwSo+2ahuJSx7v9J4Af49DiRQMeN
+	+PlIrG/6my1CKp2QBBVWt0IkqZdnwgIVXtdNUNHbQVbjUw6L30xmwYJzeXwLfkoXPosSXdbIH+L
+	jdWF59iHQzpdfbyogn10JcizxmgT4HuaHCGTsMdawcrGTkegfitEebpBUIda03/xxVh82YKNkOk
+	MWT5KRoootbNXYdQF+28KeOVJ78cvZFtwBUY7oeV4LhEvh1Lyz1tYeag51pCsSEZwcWpL/eK7U2
+	/qsqcqxKYrYkUiTOOfY7ltSfUA6Dfs3Hm4ljWlr5qcrDzcxma3Pb83Wc=
+X-Received: by 2002:a17:903:32c7:b0:2c0:db23:4c1 with SMTP id d9443c01a7336-2c163a16f5dmr30956535ad.5.1780485051502;
+        Wed, 03 Jun 2026 04:10:51 -0700 (PDT)
+X-Received: by 2002:a17:903:32c7:b0:2c0:db23:4c1 with SMTP id d9443c01a7336-2c163a16f5dmr30955865ad.5.1780485050900;
+        Wed, 03 Jun 2026 04:10:50 -0700 (PDT)
+Received: from [169.254.0.2] ([202.46.22.19])
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2c16609e636sm22148805ad.51.2026.06.03.04.10.46
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 03 Jun 2026 04:10:50 -0700 (PDT)
+From: Raviteja Laggyshetty <raviteja.laggyshetty@oss.qualcomm.com>
+Subject: [PATCH v2 0/2] Add EPSS L3 provider support on Qualcomm Shikra SoC
+Date: Wed, 03 Jun 2026 11:10:36 +0000
+Message-Id: <20260603-shikra_epss_l3-v2-0-480cdb5abc85@oss.qualcomm.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260602212052.1278365-1-jeremy.linton@arm.com>
-X-Debian-User: leitao
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-B4-Tracking: v=1; b=H4sIAKwLIGoC/3WNQQ6CMBREr0K6toR+WkJceQ9DSMFfqQLFfmg0h
+ LtbcO1mkpfMvFkZobdI7JyszGOwZN0YAU4Jazs93pHbW2QGGRSZAsmps0+va5yI6j7nCkAblKY
+ pjWJxNHk09n0Ir9WPaWke2M67ZW90lmbnP8djEHvvrzwInvFGKCi1zAuRy4sjSl+L7ls3DGkMV
+ m3b9gWqcqPTxQAAAA==
+X-Change-ID: 20260524-shikra_epss_l3-522afe4fb8f5
+To: Georgi Djakov <djakov@kernel.org>, Rob Herring <robh@kernel.org>,
+        Krzysztof Kozlowski <krzk+dt@kernel.org>,
+        Conor Dooley <conor+dt@kernel.org>,
+        Sibi Sankar <sibi.sankar@oss.qualcomm.com>,
+        Komal Bajaj <komal.bajaj@oss.qualcomm.com>
+Cc: linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+        Raviteja Laggyshetty <raviteja.laggyshetty@oss.qualcomm.com>,
+        Odelu Kukatla <odelu.kukatla@oss.qualcomm.com>,
+        Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>,
+        Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>
+X-Mailer: b4 0.15.0
+X-Proofpoint-ORIG-GUID: zu2SCEaxx4nin8u1Fm91Je_qOwHHBOTm
+X-Authority-Analysis: v=2.4 cv=PNE/P/qC c=1 sm=1 tr=0 ts=6a200bbc cx=c_pps
+ a=MTSHoo12Qbhz2p7MsH1ifg==:117 a=fChuTYTh2wq5r3m49p7fHw==:17
+ a=IkcTkHD0fZMA:10 a=FelO9ux0wxsA:10 a=s4-Qcg_JpJYA:10
+ a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=yx91gb_oNiZeI1HMLzn7:22
+ a=bC-a23v3AAAA:8 a=EUspDBNiAAAA:8 a=r389I4eL0Z4o-6KvsIcA:9 a=QEXdDO2ut3YA:10
+ a=GvdueXVYPmCkWapjIL-Q:22 a=FO4_E8m0qiDe52t0p3_H:22
+X-Proofpoint-GUID: zu2SCEaxx4nin8u1Fm91Je_qOwHHBOTm
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNjAzMDEwNiBTYWx0ZWRfX7vrzMo7jpH8A
+ OjJoqoSgOZebcYshMsxaFyDjdR0zyOwHKNfe3Uc5tgBJbnU0gNU/k6f4WtMj1wIDV6ZRV7cwOol
+ B0qoFF65hUTNRfIBgPu2ggN2YLAYwqLVuuQELqPULVzIUmi3kRsjOSlOm0wAWgj4KQT+Rv3LU8y
+ bhu19abyG3RNmourmAvKmM7TWj3/QwMgV4clvZwaSk8i/pnvDDRLtNdzxXQJletyaMLJ7FdUWpQ
+ 2m2d0BmoO7HipmuWsKqEBQTCLSv/y15FodG0TX6a0V0F4LjYosrfNrjvUdgkAU92xKYEJ6Mv9hK
+ l/V/7pUDVTMGq7lMo4T4mey0rdDevKkKhPzqwCBGRFUFJp7III5CZBQT7PBeWAXcymo5utdIFsg
+ /yEhwVqZRzaqHbXm1jxvfE8ZAkIONgmyIYMUYLO8XUVhMzBsHbPZEYcYVp8l5DD+CYYjvjLAYQF
+ 6ptb9XCHIU1oEDA1+EQ==
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.125,FMLib:17.12.100.49
+ definitions=2026-06-03_04,2026-05-28_03,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ phishscore=0 bulkscore=0 clxscore=1015 malwarescore=0 spamscore=0
+ adultscore=0 impostorscore=0 suspectscore=0 priorityscore=1501
+ lowpriorityscore=0 classifier=typeunknown authscore=0 authtc= authcc=
+ route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2605210000
+ definitions=main-2606030106
 
-On Tue, Jun 02, 2026 at 04:20:52PM -0500, Jeremy Linton wrote:
-> CPPC uses a pair of registers cycling at different frequencies to
-> determine an accumulated performance level. For userspace reporting we
-> want to convert this to an instantaneous CPU frequency, but over short
-> time periods small errors caused by CPPC counter reads can cause
-> fairly significant reported frequency variations even when the core
-> CPU clock isn't changing.
-> 
-> Reduce this by keeping a start sample fixed and retrying the end
-> sample until the counter deltas are large enough to reduce short
-> window error, or until adjacent delivered performance estimates are
-> within the CPU's observed CPPC read noise floor.
-> 
-> To begin, resample the initial pair a small fixed number of times
-> looking for matching delivered performance deltas.  This reduces the
-> chance that a disturbed start sample anchors the rest of the
-> calculation.
-> 
-> Then look for an end sample while updating the noise floor from the
-> best error seen between samples.  The floor remains zero on systems
-> with stable feedback reads, but lets noisy systems stop early once
-> another retry is unlikely to improve the result.  The retry loop is
-> capped at 200 iterations, giving an ~20 usec explicit delay budget
-> derived from ndelay(100).
-> 
-> Signed-off-by: Jeremy Linton <jeremy.linton@arm.com>
-> ---
->  drivers/cpufreq/cppc_cpufreq.c | 68 ++++++++++++++++++++++++++++++----
->  1 file changed, 61 insertions(+), 7 deletions(-)
-> 
-> diff --git a/drivers/cpufreq/cppc_cpufreq.c b/drivers/cpufreq/cppc_cpufreq.c
-> index 7e7f9dfb7a24..362c08def420 100644
-> --- a/drivers/cpufreq/cppc_cpufreq.c
-> +++ b/drivers/cpufreq/cppc_cpufreq.c
-> @@ -50,7 +50,7 @@ struct cppc_freq_invariance {
->  static DEFINE_PER_CPU(struct cppc_freq_invariance, cppc_freq_inv);
->  static struct kthread_worker *kworker_fie;
->  
-> -static int cppc_perf_from_fbctrs(u64 reference_perf,
-> +static u64 cppc_perf_from_fbctrs(u64 reference_perf,
->  				 struct cppc_perf_fb_ctrs *fb_ctrs_t0,
->  				 struct cppc_perf_fb_ctrs *fb_ctrs_t1);
->  
-> @@ -750,7 +750,7 @@ static inline u64 get_delta(u64 t1, u64 t0)
->  	return (u32)t1 - (u32)t0;
->  }
->  
-> -static int cppc_perf_from_fbctrs(u64 reference_perf,
-> +static u64 cppc_perf_from_fbctrs(u64 reference_perf,
->  				 struct cppc_perf_fb_ctrs *fb_ctrs_t0,
->  				 struct cppc_perf_fb_ctrs *fb_ctrs_t1)
->  {
-> @@ -771,19 +771,71 @@ static int cppc_perf_from_fbctrs(u64 reference_perf,
->  	return (reference_perf * delta_delivered) / delta_reference;
->  }
->  
-> -static int cppc_get_perf_ctrs_sample(int cpu,
-> +/* CPPC read noise floor for early retry exit. */
-> +static DEFINE_PER_CPU(u64, err_floor);
-> +
-> +#define CPPC_SAMPLE_MAX_RETRIES	200
+Add Epoch Subsystem (EPSS) L3 scaling support on Qualcomm Shikra SoC.
+EPSS hardware on Shikra is similar to other SoCs but supports only twelve
+L3 frequency entries (LUT). Reading the LUT beyond supported frequencies
+can expose incorrect frequencies.
+Introduce new compatible to represent this constrained variant of EPSS.
 
-Could the remaining tuning literals get the same treatment?
-Specifically:
+Signed-off-by: Raviteja Laggyshetty <raviteja.laggyshetty@oss.qualcomm.com>
+---
+Changes in v2:
+- Use the existing qcom,osm-l3 bindings to describe the Qualcomm Shikra
+  EPSS L3 hardware, as it is similar to other Qualcomm EPSS/OSM L3
+  hardware. [Krzysztof]
+- Link to v1: https://patch.msgid.link/20260524-shikra_epss_l3-v1-0-b1528a436134@oss.qualcomm.com
 
-- the 10 initial-resample iteration count
-- the 2000 multiplier in ref * 2000
-- the 100 ns in ndelay(100)
+---
+Raviteja Laggyshetty (2):
+      dt-bindings: interconnect: qcom,shikra-epss-l3: Add EPSS L3 DT binding
+      interconnect: qcom: Add EPSS L3 scaling support for Shikra SoC
 
-Thanks
---breno
+ .../devicetree/bindings/interconnect/qcom,osm-l3.yaml    |  2 ++
+ drivers/interconnect/qcom/osm-l3.c                       | 16 +++++++++++++++-
+ 2 files changed, 17 insertions(+), 1 deletion(-)
+---
+base-commit: c1ecb239fa3456529a32255359fc78b69eb9d847
+change-id: 20260524-shikra_epss_l3-522afe4fb8f5
+
+Best regards,
+--  
+Raviteja Laggyshetty <raviteja.laggyshetty@oss.qualcomm.com>
+
