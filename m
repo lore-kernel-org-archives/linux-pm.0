@@ -1,155 +1,167 @@
-Received: from layka.disroot.org (layka.disroot.org [178.21.23.139])
+Received: from mail-wr1-f47.google.com (mail-wr1-f47.google.com [209.85.221.47])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AC45C436352;
-	Wed,  3 Jun 2026 08:22:00 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=178.21.23.139
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F3298409632
+	for <linux-pm@vger.kernel.org>; Wed,  3 Jun 2026 08:29:05 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.47
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1780474923; cv=none; b=U/RkkDeFatopDjNPfuul9H1oRnZ6zqn8yj3kpcHd+GU/Cieq921zgqlKstVd8WgVZkVajfwmppEEUBCBrirMrxGPFe+8M0vFnlt947/kKLFYd1XDbFn+2gz4A2dooHYYUyPsSMUNO/VMLzdu0ybZdghFosWOfoln5N5S1WPaMcw=
+	t=1780475347; cv=none; b=BMgD5OPK+bHLt8pmxVUg+HjqmGZGquGv8zQZHqCMF9pHy/AewPFtKWk5WDONsyL9l6BV9453FdCi3RwGo8qc2uNq64NpMfmfkKgZMUM7zNYeBT5UcMJyzAXtexMXTKroXvem5RPXmSuldM8uNUUQG84hymHA6CJMzk6QFDhXOEo=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1780474923; c=relaxed/simple;
-	bh=1cz1Zt5lBMkeN9SGzq7Xdo0H9z83kWDpI1nwDhTBVro=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=kMSgdRC+zqrA1qi6VgsMx0PTS0rYzw/HA17qAvE5wzz6yx0KFNGC9refa3C+4qPwZOJXUh+Vmpvt7vOeg5COSkVFCGwdtg2bgkDg1bNIq0mQ+aurmbgSYlh06sev99tEPqNEc5v8JvqZTT4ycQF0wcRvFwrsXJz/6Dyh7UxMT5A=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=disroot.org; spf=pass smtp.mailfrom=disroot.org; dkim=pass (2048-bit key) header.d=disroot.org header.i=@disroot.org header.b=lWx9hISH; arc=none smtp.client-ip=178.21.23.139
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=disroot.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=disroot.org
+	s=arc-20240116; t=1780475347; c=relaxed/simple;
+	bh=bloimK55FpfGsQLgS/eRSYfIoH0XLCbUnwSE5SJK4mA=;
+	h=Mime-Version:Content-Type:Date:Message-Id:Cc:Subject:From:To:
+	 References:In-Reply-To; b=GessjhAzB3zpHyEx1OUAmBliH8HbrgaATC7wfAwYmKTyaPrtWb1S34UeSg4WqgoytcwQlWk1Tu6rTEUBBdTsm3RtIybS7pag7Lmc2XRuETBhTMQCVYEwRnVKclu7McdeqldAGUvvJVyNCsbZx7DRjUo5NwjT24s3NKGZ0UtKliQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=EWNcTRTN; arc=none smtp.client-ip=209.85.221.47
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=disroot.org header.i=@disroot.org header.b="lWx9hISH"
-Received: from mail01.disroot.lan (localhost [127.0.0.1])
-	by disroot.org (Postfix) with ESMTP id 7321127138;
-	Wed,  3 Jun 2026 10:21:59 +0200 (CEST)
-X-Virus-Scanned: SPAM Filter at disroot.org
-Received: from layka.disroot.org ([127.0.0.1])
- by localhost (disroot.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id UxHIKg1d0gqQ; Wed,  3 Jun 2026 10:21:58 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=disroot.org; s=mail;
-	t=1780474918; bh=1cz1Zt5lBMkeN9SGzq7Xdo0H9z83kWDpI1nwDhTBVro=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References;
-	b=lWx9hISHJ5xiRlLlt6kBxIaChDi8fzpJBmOgo6dJ/pLVoZBjkBFyKIQxaJ08yX1Mq
-	 ogywTLlOYuspqnMVWEG6lYS8uhiw5LjXtO7TfKbJBPmKdGjBq7rIGYZ6x8/Naw+uOv
-	 vEUwVtkqk4MptRhFJJK/mxlINR/FYnRrQCAdoNSOPrxpNZpuETxldDGvcutAT4l+I0
-	 6e37BE4UIxOy0oGZOKURXl3ql0D8DqR4Tt5zT9GOYXhchDrspYcLWDNmqyD2FIxTY0
-	 FD8KDora4T5gghqs70EOWTQjnld3GS6E6FD7FlDWODSfi4Mm0EAMN/YsmLpTj8Vx2B
-	 wz/M/TqAQiL/A==
-From: Marco Scardovi <scardracs@disroot.org>
-To: viresh.kumar@linaro.org,
-	rafael@kernel.org,
-	ray.huang@amd.com,
-	mario.limonciello@amd.com
-Cc: perry.yuan@amd.com,
-	kprateek.nayak@amd.com,
-	wyes.karny@amd.com,
-	stuartmeckle@gmail.com,
-	linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-Subject: [PATCH 1/1] cpufreq/amd-pstate: Prevent active mode on systems without EPP support
-Date: Wed,  3 Jun 2026 10:19:57 +0200
-Message-ID: <20260603082143.11215-2-scardracs@disroot.org>
-In-Reply-To: <20260603082143.11215-1-scardracs@disroot.org>
-References: <20260603082143.11215-1-scardracs@disroot.org>
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="EWNcTRTN"
+Received: by mail-wr1-f47.google.com with SMTP id ffacd0b85a97d-45ef616daf6so4940664f8f.3
+        for <linux-pm@vger.kernel.org>; Wed, 03 Jun 2026 01:29:05 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1780475344; x=1781080144; darn=vger.kernel.org;
+        h=in-reply-to:references:to:from:subject:cc:message-id:date
+         :content-transfer-encoding:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=/UFR5yeANXS1ym7dwBfhF3G3wNluixUtSkJDeWkxZK0=;
+        b=EWNcTRTNT7pDA05mXrH769q8zlWlrxXDTZsceI7a+eI2mwvm/CFjPvFhngCqQpnf29
+         srTGnAkEzRHnZOFVbZ9wDjyA7NnuXxjwwwzJwh5gpuDRaIkoiCdV5KYCK6LDcL79g08Y
+         SVCOhIlhpcKFLOo+UZXyLH6MUeCm2tgyZiSYeiipUZ4lSA/pSGTwGXh01+fS3+O77lI6
+         tJ6tKef1JgE2i3o+3EH7AmaQjcwlZ75A0qToc7AlQHCAIaN8jQjoRM03pZ1nbGHiBvlD
+         h1YRCm5+oawq2kj0/711nznw/tEUAc+0K1I0msDkv8f/ELYR8JirQYzP6dFdVWiIqIMv
+         +E/w==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1780475344; x=1781080144;
+        h=in-reply-to:references:to:from:subject:cc:message-id:date
+         :content-transfer-encoding:mime-version:x-gm-gg:x-gm-message-state
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=/UFR5yeANXS1ym7dwBfhF3G3wNluixUtSkJDeWkxZK0=;
+        b=WNDQdCEtS0cT0JESzAYfK2PKXmywZXmxzhfy1ZuigFVQepDX8iWu7CWtqK5xeDAtMD
+         SGcEe76flA25hKswnRYQBk3rVLaBQHXjYm9SnBqn9fkYjP21Di6a7pLO9W99czLx6VrB
+         Mu+ICyQXcaFG4pPK53W+VBs2oBa5ncnp3Z2DQAdnLaUcSufY5DQ9+J2ctbdbGwchGMhE
+         xjvA4Wo7jM9OErhhjdsjpq83nCmEyQk4fZc9IKnCOUm6KRiMFZEyKswtyiVNIUjlBQAk
+         yIgPwEPYB7q/cgQgca11eXuu4hZlj+E7F4xTEjpoOPcPUWeh4lZ2UKDmpWBFa4on6Sze
+         qynA==
+X-Forwarded-Encrypted: i=1; AFNElJ8uPtcva36+EbaSVA7JqxODGS7715+JPZGDkyp3GvgaoLpnkT4Ddl0arbsM0GisGUa4kZt5uUdDrA==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yz86UTjpEa0rcDXoPtH2a+tb/WnZ4YnEBIJ/uqNe/QVvl7IYiCR
+	agWJB9aT1RM7cF8JVuUw/BuuPy/nQVrA2P5zWI4VsUVLc6GpPGHNmnp+3/OIp0gvskQ=
+X-Gm-Gg: Acq92OHOX/v40yzfas385bXqP4Aot1u95RrxcE/XuQQlwPO+slaNX7X7pqxScSIWbUN
+	MGl1IwabluzYB0yIyLgjbk4y0mf2ei0Fm4gRkExVzYOsChYzEKdqoWQr0y5iYnyHUjEl+wqun9d
+	U3ACDNCWvM3cRLYhFSr0tBxlpngy5AONsvbroHMRos9nr97Ejx4ENB1833T+m+sYUuBdS41DQ4E
+	AI+daJuWyertBPK/qEVDWlveR5G64D9mni+zRSuYv/dW9wSQAl4DktmLWuzz30Qnc+0W6+zxl0/
+	ZNsGF3uOabug8X4LOoQGijYwIEuFoYmBDiLt+u44KYPy9MpVOxgczY1QZdSyRQE6d0fYdIXRtRT
+	/Cbf1BHnxsa1T+mdSh/40r3o5cLA9CytwIVhDp5yvfjsd90bslQ2lhFibJeLZYAtN77KAwwods4
+	URp3s3qevYlkqBSt7A/1WUAjlCqT6/rdcA72pWax/b53aimagoy/gkJWZJ9rdlQ4UjWcNFcMPdZ
+	vLecZyoK7lkPjsmqtPnxQYW+zpw7TtHoUm+cHc=
+X-Received: by 2002:a5d:5389:0:b0:45e:f2bd:2b16 with SMTP id ffacd0b85a97d-4602182dbb8mr2455986f8f.18.1780475344302;
+        Wed, 03 Jun 2026 01:29:04 -0700 (PDT)
+Received: from localhost ([2a00:2381:fd67:101:9b1c:c9e0:4645:9af0])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-4601f360bd6sm6191614f8f.36.2026.06.03.01.29.03
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Wed, 03 Jun 2026 01:29:03 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Mime-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=UTF-8
+Date: Wed, 03 Jun 2026 09:29:02 +0100
+Message-Id: <DIZ9U0RE11CQ.3QJET21NQ2QJL@linaro.org>
+Cc: "Bartlomiej Zolnierkiewicz" <bzolnier@gmail.com>, "Krzysztof Kozlowski"
+ <krzk@kernel.org>, "Rafael J. Wysocki" <rafael@kernel.org>, "Daniel
+ Lezcano" <daniel.lezcano@kernel.org>, "Zhang Rui" <rui.zhang@intel.com>,
+ "Lukasz Luba" <lukasz.luba@arm.com>, "Peter Griffin"
+ <peter.griffin@linaro.org>, "Alim Akhtar" <alim.akhtar@samsung.com>, "open
+ list:SAMSUNG THERMAL DRIVER" <linux-samsung-soc@vger.kernel.org>,
+ "moderated list:ARM/SAMSUNG S3C, S5P AND EXYNOS ARM ARCHITECTURES"
+ <linux-arm-kernel@lists.infradead.org>, "open list"
+ <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] thermal/drivers/exynos: fix clock ordering race and
+ shared IRQ handling
+From: "Alexey Klimov" <alexey.klimov@linaro.org>
+To: "Rosen Penev" <rosenp@gmail.com>, <linux-pm@vger.kernel.org>
+X-Mailer: aerc 0.20.0
+References: <20260603013018.239703-1-rosenp@gmail.com>
+In-Reply-To: <20260603013018.239703-1-rosenp@gmail.com>
 
-Zen 2 and older AMD processors do not support Collaborative Processor
-Performance Control (CPPC) Energy Performance Preference (EPP). Loading
-the amd-pstate driver in EPP-reliant "active" mode on these systems
-pins the CPU frequency to the lowest non-linear frequency (1.7GHz).
+On Wed Jun 3, 2026 at 2:30 AM BST, Rosen Penev wrote:
+> Fix two pre-existing issues in exynos_tmu_probe/remove:
+>
+> 1. Clock ordering race: The driver manually unprepares clocks in
+>    exynos_tmu_remove() and the probe error path, but the IRQ handler and
+>    thermal zone are devm-managed and remain active until after the manual
+>    cleanup.  If the shared IRQ fires or the thermal zone is polled in tha=
+t
+>    window, clk_enable() is called on an unprepared clock, which is illega=
+l.
+>    Replace devm_clk_get() + manual clk_prepare() with devm_clk_get_prepar=
+ed(),
+>    and devm_clk_get() + manual clk_prepare_enable() with
+>    devm_clk_get_enabled(), so clock unprepare is tied to the devm lifetim=
+e
+>    and happens after the IRQ and thermal zone are released.  Remove the
+>    now-redundant manual cleanup from the error path and remove function.
+>
+> 2. Shared IRQ handling: The driver requests a shared IRQ (IRQF_SHARED) wi=
+th
+>    NULL as the hardirq handler, causing the kernel to wake the threaded
+>    handler for every interrupt on the shared line.  The threaded handler
+>    unconditionally returned IRQ_HANDLED without verifying that the TMU
+>    actually generated the interrupt, which could cause other shared-IRQ
+>    devices to be starved.  Change tmu_clear_irqs to return the interrupt
+>    status register value, and return IRQ_NONE from the handler if no TMU
+>    interrupt was pending.
+>
+> Assisted-by: opencode:big-pickle
+> Signed-off-by: Rosen Penev <rosenp@gmail.com>
+> ---
+>  drivers/thermal/samsung/exynos_tmu.c | 81 +++++++++-------------------
+>  1 file changed, 24 insertions(+), 57 deletions(-)
+>
+> diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/samsu=
+ng/exynos_tmu.c
+> index 47a99b3c5395..5dc22006d7f8 100644
+> --- a/drivers/thermal/samsung/exynos_tmu.c
+> +++ b/drivers/thermal/samsung/exynos_tmu.c
+> @@ -196,7 +196,7 @@ struct exynos_tmu_data {
+>  	void (*tmu_control)(struct platform_device *pdev, bool on);
+>  	int (*tmu_read)(struct exynos_tmu_data *data);
+>  	void (*tmu_set_emulation)(struct exynos_tmu_data *data, int temp);
+> -	void (*tmu_clear_irqs)(struct exynos_tmu_data *data);
+> +	u32 (*tmu_clear_irqs)(struct exynos_tmu_data *data);
+>  };
+> =20
+>  /*
+> @@ -760,24 +760,28 @@ static irqreturn_t exynos_tmu_threaded_irq(int irq,=
+ void *id)
+>  {
+>  	struct exynos_tmu_data *data =3D id;
+> =20
+> -	thermal_zone_device_update(data->tzd, THERMAL_EVENT_UNSPECIFIED);
+> -
+>  	mutex_lock(&data->lock);
+>  	clk_enable(data->clk);
+> =20
+> +	if (!data->tmu_clear_irqs(data)) {
+> +		clk_disable(data->clk);
+> +		mutex_unlock(&data->lock);
+> +		return IRQ_NONE;
+> +	}
+> +
+>  	/* TODO: take action based on particular interrupt */
+> -	data->tmu_clear_irqs(data);
 
-Unconditionally probe EPP support during driver initialization via a new
-amd_pstate_epp_supported() helper, which queries cppc_get_epp_perf() on
-the first online CPU. Lack of ENERGY_PERF support or any error from
-cppc_get_epp_perf() causes EPP to be treated as unsupported, with
-unexpected errors printing a warning.
+After that change the TODO comment now feels misplaced.
+From a quick glance, it seems it should be moved as well to just
+before if (!data->tmu_clear_irqs(data))
 
-Cache the capability in a static global `epp_supported` boolean to avoid
-redundant register reads during runtime mode transitions.
+> =20
+> +	thermal_zone_device_update(data->tzd, THERMAL_EVENT_UNSPECIFIED);
+> +
+>  	return IRQ_HANDLED;
 
-If EPP is unsupported:
-- Fall back to passive mode at boot to keep the system functional.
-- Reject runtime switches to active mode with -ENODEV.
-
-Fixes: ffa5096a7c33 ("cpufreq: amd-pstate: implement Pstate EPP support for the AMD processors")
-Link: https://bugzilla.kernel.org/show_bug.cgi?id=221473
-Assisted-by: Antigravity:gemini-3.5-flash
-Signed-off-by: Marco Scardovi <scardracs@disroot.org>
----
- drivers/cpufreq/amd-pstate.c | 29 +++++++++++++++++++++++++++++
- 1 file changed, 29 insertions(+)
-
-diff --git a/drivers/cpufreq/amd-pstate.c b/drivers/cpufreq/amd-pstate.c
-index 8d55e2be825b..61b75e3999b5 100644
---- a/drivers/cpufreq/amd-pstate.c
-+++ b/drivers/cpufreq/amd-pstate.c
-@@ -27,6 +27,7 @@
- #include <linux/module.h>
- #include <linux/init.h>
- #include <linux/smp.h>
-+#include <linux/cpumask.h>
- #include <linux/sched.h>
- #include <linux/cpufreq.h>
- #include <linux/compiler.h>
-@@ -88,6 +89,8 @@ static struct cpufreq_driver amd_pstate_epp_driver;
- static int cppc_state = AMD_PSTATE_UNDEFINED;
- static bool amd_pstate_prefcore = true;
- static bool dynamic_epp;
-+/* EPP support capability cached for driver mode switches. */
-+static bool epp_supported;
- static struct quirk_entry *quirks;
- 
- /*
-@@ -1614,6 +1617,10 @@ static void amd_pstate_driver_cleanup(void)
- static int amd_pstate_set_driver(int mode_idx)
- {
- 	if (mode_idx >= AMD_PSTATE_DISABLE && mode_idx < AMD_PSTATE_MAX) {
-+		if (mode_idx == AMD_PSTATE_ACTIVE && !epp_supported) {
-+			pr_debug("EPP is not supported by this processor\n");
-+			return -ENODEV;
-+		}
- 		cppc_state = mode_idx;
- 		if (cppc_state == AMD_PSTATE_DISABLE)
- 			pr_info("driver is explicitly disabled\n");
-@@ -2222,6 +2229,22 @@ static bool amd_cppc_supported(void)
- 	return true;
- }
- 
-+static bool amd_pstate_epp_supported(void)
-+{
-+	unsigned int cpu = cpumask_first(cpu_online_mask);
-+	u64 epp;
-+	int ret;
-+
-+	ret = cppc_get_epp_perf(cpu, &epp);
-+	if (!ret)
-+		return true;
-+
-+	if (ret != -EOPNOTSUPP)
-+		pr_warn("Unable to determine EPP capability: %d\n", ret);
-+
-+	return false;
-+}
-+
- static int __init amd_pstate_init(void)
- {
- 	struct device *dev_root;
-@@ -2274,6 +2297,12 @@ static int __init amd_pstate_init(void)
- 		return -ENODEV;
- 	}
- 
-+	epp_supported = amd_pstate_epp_supported();
-+	if (cppc_state == AMD_PSTATE_ACTIVE && !epp_supported) {
-+		pr_warn("EPP not supported, falling back to passive mode\n");
-+		cppc_state = AMD_PSTATE_PASSIVE;
-+	}
-+
- 	/* capability check */
- 	if (cpu_feature_enabled(X86_FEATURE_CPPC)) {
- 		pr_debug("AMD CPPC MSR based functionality is supported\n");
--- 
-2.54.0
+Best regards,
+Alexey
 
