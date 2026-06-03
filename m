@@ -1,85 +1,87 @@
-Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
+Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0382C326945
-	for <linux-pm@vger.kernel.org>; Wed,  3 Jun 2026 13:32:22 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3F6EE33BBD9
+	for <linux-pm@vger.kernel.org>; Wed,  3 Jun 2026 13:52:19 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.180.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1780493544; cv=none; b=h3xikwqh6WK7DLncuJUdvUpQsZKZCFChV+XHJMo4jE3c8oH7MIEw6lIhmqC3vcTVaBzDokFtPY9ksY4CLmXU8JObUseFFwRHjOuUL32W9CspNbnGNps3j10kTQ4JfQePJlwrNLvY40hkrk+LLCAOtE6LxCLYmX+mRoAQBwNWaEI=
+	t=1780494741; cv=none; b=FQfV7xijGP+lO4bxvTJgp4/tP/cJTEhYEjv86ZBfp4aDSVcBz/Ndmr2eYrJ8KbsdU61F5wRn2JOgV7Z8h2rURLA3ph+wy/Pyb1BfMbMv417ySaddn36edJzby80ugtGjYFKe8XGR9Kx8Luv2T79uEF+jLuk3RtfZlpOmBlTohZk=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1780493544; c=relaxed/simple;
-	bh=nLwiq4xLtUJvJgZgyHsKU2B4tkPgwFhc/bYlFS6fzwU=;
+	s=arc-20240116; t=1780494741; c=relaxed/simple;
+	bh=ZBUnzIuE5caU3n+ALkCmwprayNcweissEzZE5XjZcJQ=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=dM6afpGh8Y7pxjVmw6sYhg8xJmEHS1l/KtPebkNi47vq6UPbeCDjbt/6ACYBCdxj8XIYNYSASXg3NPxVUYLFGau6z8IjPg2ZxlDKOAKE8hoVWSy5GF6jmI5bDQXKDuCeeKxGuKMK43a3du/j2cigWpDQ21sak0dOv8ifwUedVVY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=bDXvSyam; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=FCdol5jx; arc=none smtp.client-ip=205.220.168.131
+	 In-Reply-To:Content-Type; b=XMSFUGIPkGx9L7rfhhjWOuv83E+0bR3nboiiL7dKZIDe34ydiAdMAFjln1N902RzdCZF0hsO3G1spJtn5BipqYweyTCWAuQmv2D9lNDR+IOzNP+eaZG+AHN9Aiq6l2IAbwvanlW2FyvVnVPKmFPNXkwOkgReehlzoW5btA76v5o=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=N1LJs9lF; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=OX+3lpOE; arc=none smtp.client-ip=205.220.180.131
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="bDXvSyam";
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="FCdol5jx"
-Received: from pps.filterd (m0279862.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 653AAxQH3552128
-	for <linux-pm@vger.kernel.org>; Wed, 3 Jun 2026 13:32:22 GMT
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="N1LJs9lF";
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="OX+3lpOE"
+Received: from pps.filterd (m0279869.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 65395oWY780679
+	for <linux-pm@vger.kernel.org>; Wed, 3 Jun 2026 13:52:19 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
 	cc:content-transfer-encoding:content-type:date:from:in-reply-to
 	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	SY9USAL7RV9vl/lzt+LH5AuybCAQ9ymalWYSS6pIv/E=; b=bDXvSyamrgGSWzjq
-	AnXHZpkLtP5xQ0WFs3KZq34u7+xbgIp5xs7fceduy7C/Ira9gtuETM1tZHJ7DIVE
-	IocjDuTDHEAYK+/XxCYmoLfKcbrZChLO8KWpbyeoTZnFdcwfsc69Xfw+xWkvai+Q
-	fWueQkKDidvqCLYkcjH5lryxZmKoWgxFaEaHZgSN8FTpCZaw37S8XHrtNJseZOQt
-	almutLV0AmsqcP0DEUo5WUBivWvde7KVLDSWq7tVkWBM+T3U8T6jng97p6X6Eh2f
-	ajPBkdxVQXlW9JPbnBq70F4VJWaW/WgfxnYEJUgs0rW3IFRVGqWyfia/rNuIUYS7
-	fBXkog==
-Received: from mail-pl1-f197.google.com (mail-pl1-f197.google.com [209.85.214.197])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4ejj9mrqqj-1
+	cX6TPXUE1peyJYkOCelKbormU6F0p0ner0qoZZq9DzU=; b=N1LJs9lFhenchwKx
+	84Ym1C9Xtq2lxuOItYGwmRUUeflCQWi86u8fSsGyykNmIycc+klm8FX0e0xmX/NQ
+	rwok4u4HtsMdUa6JoUvhfy0gKZRt0Gru09GZ1usVzO03CT3nRCfziUX0XvufQCdp
+	RA2yjt9sNKC0rtXtSuGOnqzkFzdyKTMTiwrYqg6+GDH+XJxwuiVvGsaroxzBR+mL
+	uVTfE9Vv+MRAoLFfNVJ3wLSS82o4f8KTV0LuLdOB8Zizdk4Bf2fBfzioFc9Ls62H
+	ujNUu2TVvt5dsSjClXBMoF5hN6bJ4QelvJjhbsn4POLvX4z+KSNN+9hY31bEJuxT
+	n5iT9Q==
+Received: from mail-pj1-f72.google.com (mail-pj1-f72.google.com [209.85.216.72])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4ejhbb12ff-1
 	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Wed, 03 Jun 2026 13:32:22 +0000 (GMT)
-Received: by mail-pl1-f197.google.com with SMTP id d9443c01a7336-2bf004bf8beso83224535ad.3
-        for <linux-pm@vger.kernel.org>; Wed, 03 Jun 2026 06:32:22 -0700 (PDT)
+	for <linux-pm@vger.kernel.org>; Wed, 03 Jun 2026 13:52:19 +0000 (GMT)
+Received: by mail-pj1-f72.google.com with SMTP id 98e67ed59e1d1-36d98b76d12so2849536a91.2
+        for <linux-pm@vger.kernel.org>; Wed, 03 Jun 2026 06:52:18 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1780493541; x=1781098341; darn=vger.kernel.org;
+        d=oss.qualcomm.com; s=google; t=1780494738; x=1781099538; darn=vger.kernel.org;
         h=content-transfer-encoding:in-reply-to:from:content-language
          :references:cc:to:subject:user-agent:mime-version:date:message-id
          :from:to:cc:subject:date:message-id:reply-to;
-        bh=SY9USAL7RV9vl/lzt+LH5AuybCAQ9ymalWYSS6pIv/E=;
-        b=FCdol5jxp+wct7bkM8LYT/MyZehr9HBaFio8V6aFHYn0Fz60DozNMyUAd06+wjmH7z
-         U4jvd/NQ3k66fzXdbs0LcEEJURTd0tTyTAVMkLWRcH7iSFfdBRmpYVnxT4Z7hmSJSxzz
-         pRwUixgb73pza8wZ9lkl2S/3vVxbsvN21w8QPFrcImDpQBE29BpdEIA/ayy/uFb/6Uyf
-         VQ03FpTtog8aLnizvkgskuKp6tcZQHY2zcqzlV1B4EWy76z4vXs+zKBIwLzNTaK/CMiw
-         KvwvZk3KQbrTMFhiWZgEO//P58N7ptc0rWdVe02A2HOkiv+x3Q3pT9hNWdsyqgiWt9Z+
-         f8rA==
+        bh=cX6TPXUE1peyJYkOCelKbormU6F0p0ner0qoZZq9DzU=;
+        b=OX+3lpOEOGWWesaAJ/V1f6vOXLBmL2eL/nOGPWStj8v6Jr3lYJmmHb3Fhr3c0DfXfX
+         DeGEfmmJPpomwYP/s4AdXM3xY0EAhqpEH8gpz6cGCeOQdj+JqOH861eqBqk6U/D5IZ6V
+         rCzYcJjeHHGujjhzlk5rQII4z6MJCSP9tSBwq4M0QMfaK59m4aBgpVqRKKasaw9f2wXH
+         wQX2WlwKDlj8YhGvBsF8ryTh0GAwMWMSOFz8Bbc9lzJwOLC+ToOipaWZEPk1i3cekwpd
+         QsC25Avk7PpUSZR9hahHzJJihBJtS1COnYVk1zynITSsHkf2OwwJsRTron+8bkO5CHUu
+         PGXw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1780493541; x=1781098341;
+        d=1e100.net; s=20251104; t=1780494738; x=1781099538;
         h=content-transfer-encoding:in-reply-to:from:content-language
          :references:cc:to:subject:user-agent:mime-version:date:message-id
          :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=SY9USAL7RV9vl/lzt+LH5AuybCAQ9ymalWYSS6pIv/E=;
-        b=BjOA3iE6kZSFl4Q0qei71N2P8NVYNJ1nthZDQLuJ5SGdPKzn6zNgOtStsoJUInJSFD
-         1lPz/b5ZCHP2X5uX58v9Tur2dZ1HxI1RmVg+Z7sju9CyCTzBbgBAG5Y7KYOasdVZMXJ5
-         6HQcxb4NivAQjmmxiCil5BGeZhKoh1rouJij9BmfuooyHzQ0ea98UsJRjk64HgoVh6wY
-         5tYiotMk71DJCvzRxv7+cfdJtiiD/UE8Err6Bl46hgMyEICPnoxrlOmSFz/l3818bIK/
-         9w8T3waiPhFtUvLW8fe2l7uJMVOdnEyjTMFyl2aXVjGBGPmGzQYbjdlTUY2PpqR2F36G
-         TxMw==
-X-Gm-Message-State: AOJu0Yxy6/CMMnnF9vH54F+11Co5BpWhgCnbnU2wVDi9VSWVN1UM9dGZ
-	n5+3UYbQSR1q4oM7Xr8mksYocrV8Qn3n2zxUeX9DzJHZz11V3s0cZZt/EblqAS6P/m8iHb1jVVu
-	sbm01/Gbm23r6Qg5cSXzL8V5xDzwQkIa9erHZGH3RPUlyRHHj4jsQWAod+8Xuow==
-X-Gm-Gg: Acq92OHtl9DOgmW0T0M15b42S/EXg8GS1zfbfzeDJxupLl+qELPBk7Q7+Y1lnD2Dzsd
-	ReTRetFkLba+XGoHGUTeOfov/wwAENWBarexTw0GOpvjJwC/5d2BvspbdqrDHu0cg1ilPi3sFHT
-	wRxYuK+l4M7W4cXR/Hv/KihzNtI5Nkx+O0+KClEqWV/LhcUvVkEZx4DgUI+pUndhRZMZgkquHUt
-	FGRCJVRwnd8lCYLtDQACrENywssLB+Myher06DX6FG2Z/JA8RsE5imwG9oIevwbU751iNo6H4YW
-	1epEvBwwzzlM8p+Vu44QJ7fEVvcS4DcmkGXyfYHghoeLDZoPn2zDeQcSoUz8OxIwcjTWP65ydXj
-	sNgxiPNAlQRY1nxdZxDmEnCqdYfVgXYeof2M1MgnFTTEtw3ZQKZjB1vu89gB7IA==
-X-Received: by 2002:a17:902:ce87:b0:2c0:d8ee:7d66 with SMTP id d9443c01a7336-2c1644cadb2mr32345495ad.36.1780493541377;
-        Wed, 03 Jun 2026 06:32:21 -0700 (PDT)
-X-Received: by 2002:a17:902:ce87:b0:2c0:d8ee:7d66 with SMTP id d9443c01a7336-2c1644cadb2mr32345135ad.36.1780493540949;
-        Wed, 03 Jun 2026 06:32:20 -0700 (PDT)
-Received: from [10.239.132.168] ([114.94.8.21])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2c164f890b2sm26663615ad.26.2026.06.03.06.31.59
+        bh=cX6TPXUE1peyJYkOCelKbormU6F0p0ner0qoZZq9DzU=;
+        b=XmKrdKR16l5oAWeXDr8QKAYcnyUcakrTlpPOB1GZvtnE9lwEpoT/sT39jvrAJL340I
+         TmR7k2BQg3gXltBb6LjBRB7+siAC80Xr7FBNEA0m7IZCtntfeGiGlvaqi4FeT2uPJ3s/
+         BF2l7dDmWJrmbyeLXo3o/6mbOqwRo0tPWu0Ka8MffyhTOZviGTkvHamm5pWK/v9bzy+k
+         XjSC+9T3kQFogKs+OjtQgua8Cq55ttqJHG/bdGyN84t/EoYXmYfe4SWtwkzEHIKzRzCe
+         EDlYB7XtY6wdzI4qzju3dtlZEUrHs6iIm13kAm427I6t0RDyXFGKxQyYZoId7p2idcgh
+         DT5w==
+X-Forwarded-Encrypted: i=1; AFNElJ8tb1FceBciykuntMMCqn8RGjRJEq8t05X/gAuBfAw3WVUJoHR0HFAxpWGOtEInP+Th/9D26j+wjA==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yzy5fe/0wMnk/hDGOkuinznZklJyB1fj+s6qL7YJzNARFM6Tztl
+	Cl2bKuGp1oi+2xWkpISgTZSc/EXhGA2tNOLtsnZyXRnPCQrL+386ks13y4fWsDjmNtfpKaH76xX
+	soqxe8jblUFauGpnWT8qkkpOQHi02BmtrKLuwbjnf3c9eki2U51cPfv4lSpKjig==
+X-Gm-Gg: Acq92OEAfSgNRe5DPdYy7jtobwZ32AyCOl3HQL8jkNuub6wA3WinI6fSRDVCuqCfSI8
+	RnemK2Ba9dJOpis4yGRKCSUxShtf6ozfgvVqVWoNJMkz8eJhe+62cG/GIFN5dmJW2BC1tYCa2lv
+	8wBwRKXt/y4hCUmKCD3x11W6NNu+XTyDyq1W+imXnK9KlSoV8ri3VT/bQg0uvmfngOUoAHxf6Um
+	/y94CiRDQPQehBkvn3DgHQ73C2XeaZi5DGC9v3ONNgN6ELU9myuOLm6LaeTRUCShXVoRJuGMypn
+	klqvQobh0lkQRRuOibIO3VETl+xj8zcTmUYTzSxMbk30HEpRO24mh8UmMWE0cjV+j3r99Y3ZYtT
+	Q0cJmTaqZ4OOknddZ7Z/e0l4htoyHJ3mWf/2li6L8saOuC+Y1l8fGT5X0lUOcoGBKo2qjQXcVD2
+	GN2PeGT1OKJIFIhVshQchLxEtOVrj9
+X-Received: by 2002:a17:90b:2d46:b0:36b:218c:719e with SMTP id 98e67ed59e1d1-36e32f1667dmr3315043a91.21.1780494738016;
+        Wed, 03 Jun 2026 06:52:18 -0700 (PDT)
+X-Received: by 2002:a17:90b:2d46:b0:36b:218c:719e with SMTP id 98e67ed59e1d1-36e32f1667dmr3315016a91.21.1780494737567;
+        Wed, 03 Jun 2026 06:52:17 -0700 (PDT)
+Received: from [10.133.33.112] (tpe-colo-wan-fw-bordernet.qualcomm.com. [103.229.16.4])
+        by smtp.gmail.com with ESMTPSA id 41be03b00d2f7-c85df0341f6sm2453859a12.7.2026.06.03.06.52.14
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Wed, 03 Jun 2026 06:32:20 -0700 (PDT)
-Message-ID: <210cefc5-c9f2-49e2-b2f6-2a3c1a42218a@oss.qualcomm.com>
-Date: Wed, 3 Jun 2026 21:31:50 +0800
+        Wed, 03 Jun 2026 06:52:17 -0700 (PDT)
+Message-ID: <b02e6e6e-bee2-4f17-a048-cacab8ceb473@oss.qualcomm.com>
+Date: Wed, 3 Jun 2026 21:52:12 +0800
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -87,90 +89,138 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2] cpufreq: Documentation: fix freq_step description
-To: Pengjie Zhang <zhangpengjie2@huawei.com>, rafael@kernel.org,
-        viresh.kumar@linaro.org, corbet@lwn.net, skhan@linuxfoundation.org
-Cc: linux-pm@vger.kernel.org, linux-doc@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linuxarm@huawei.com,
-        zhanjie9@hisilicon.com, prime.zeng@hisilicon.com,
-        wanghuiqiang@huawei.com, xuwei5@huawei.com, lihuisong@huawei.com,
-        zhenglifeng1@huawei.com, yubowen8@huawei.com, wangzhi12@huawei.com,
+Subject: Re: [PATCH v5 1/1] cpufreq: ti: Add EPROBE_DEFER for K3 SoCs
+To: Akashdeep Kaur <a-kaur@ti.com>, praneeth@ti.com, nm@ti.com,
+        vigneshr@ti.com, rafael@kernel.org, viresh.kumar@linaro.org,
+        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: vishalm@ti.com, sebin.francis@ti.com, k-willis@ti.com,
         zhongqiu.han@oss.qualcomm.com
-References: <20260603055635.1549943-1-zhangpengjie2@huawei.com>
+References: <20260603072438.1199527-1-a-kaur@ti.com>
+ <20260603072438.1199527-2-a-kaur@ti.com>
 Content-Language: en-US
 From: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>
-In-Reply-To: <20260603055635.1549943-1-zhangpengjie2@huawei.com>
+In-Reply-To: <20260603072438.1199527-2-a-kaur@ti.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Proofpoint-GUID: 4cFMcbYxkJziJD1uMcKBfziBne0lirSQ
-X-Authority-Analysis: v=2.4 cv=XK0AjwhE c=1 sm=1 tr=0 ts=6a202ce6 cx=c_pps
- a=cmESyDAEBpBGqyK7t0alAg==:117 a=Uz3yg00KUFJ2y2WijEJ4bw==:17
+X-Proofpoint-GUID: orCTcKlgwrMt8a502mmzxxIYIYkV78XP
+X-Authority-Analysis: v=2.4 cv=R74z39RX c=1 sm=1 tr=0 ts=6a203193 cx=c_pps
+ a=RP+M6JBNLl+fLTcSJhASfg==:117 a=nuhDOHQX5FNHPW3J6Bj6AA==:17
  a=IkcTkHD0fZMA:10 a=FelO9ux0wxsA:10 a=s4-Qcg_JpJYA:10
- a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=_K5XuSEh1TEqbUxoQ0s3:22
- a=VwQbUJbxAAAA:8 a=i0EeH86SAAAA:8 a=EUspDBNiAAAA:8 a=Zyhr3UL3YfEZVkCPdFoA:9
- a=QEXdDO2ut3YA:10 a=1OuFwYUASf3TG4hYMiVC:22
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNjAzMDEzMCBTYWx0ZWRfX/puoleKDqnuN
- HKoaM0F8nAQG+pq0gNNWxYZazEFSaIX6gfz3/T8jgx6UEHHOfErKcUCrqjrd2hafeS9F2hVP5B3
- YZwA6b6oYzKBqtuFGRSPbUF1jWTvaKE5/sHs0mKaRBYOnKSIKvKt7V/fddjYt7JpCL8BTIrW95D
- Ty3/X3o/E48Uaiz/+9tYIjWQN3keJZtExMyiwX8Y7BuUhGM/abUSxiozvATund989aG/wtiJB1H
- OHm8UP9KXzWbg13+bk2k33DM6t74ndiLqzZKOC5uZteo2gcpRVL8R7dId0SLFe6o23IKNmCtqAI
- 9f1UDoOEaKg2bspQdS7b6p+pCv03qQUbdxGm4nYR9qklVSPbbJT7wGJM4LeYKgcfgtmZlSy4pPL
- 6J9S3MzrF+vAe8lDxD+pjwrmlYNR7L3hDPEzgLDCSGdd2BORhZ9A8gfu2JI7YCv9IJucVPIAc+h
- 060O7O2PCRRBYhds+ig==
-X-Proofpoint-ORIG-GUID: 4cFMcbYxkJziJD1uMcKBfziBne0lirSQ
+ a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=_glEPmIy2e8OvE2BGh3C:22
+ a=sozttTNsAAAA:8 a=EUspDBNiAAAA:8 a=uyaOEz7BPLmrWLbuK_kA:9 a=QEXdDO2ut3YA:10
+ a=iS9zxrgQBfv6-_F4QbHw:22
+X-Proofpoint-ORIG-GUID: orCTcKlgwrMt8a502mmzxxIYIYkV78XP
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNjAzMDEzMyBTYWx0ZWRfXzns42gaJyeYT
+ nPdnfEid6gfFUjnpV5lEHCs/JExE9iDsatLHYIyvknljDFQPrG1HKywz5ZpctZ43k8kuQW+omm3
+ Ibv9pEF1ldGVXzAGeFdstgIzci3+RjmSeoic1xeAiBq/GwBNff8ba+1i2JAqPrWY8vipASzbCXF
+ eQXPOQltcRPhlCOjV8ny0850LZQb3JlBKA5oA6BZHounlKbJraTchGC6me78fsZtYgVJdUTNnwr
+ 8iLOQOG9x7XbeKOzQ+ThkmB2bhDDNI1Ykc7Jp6904Sik0LDKxuPhAvjRiSi79QiZQvinRrx9u67
+ Op1UdNIWkdkZhEwLnWDR7Jk3wsNvEwApBnnZEXFsO6hxwChrvZhWw6HHFxH1+MybcTvNnme03+u
+ jiaf+SZdPLn6t9O24OnkjrUSjFac+p+AhHlO5bkhafiRXa0wdL4N8wh7zggFPTgi/rr9/pmQ1jn
+ 6yWe8i3JdOUEsV7Hb6A==
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.125,FMLib:17.12.100.49
  definitions=2026-06-03_04,2026-05-28_03,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- clxscore=1015 adultscore=0 priorityscore=1501 bulkscore=0 suspectscore=0
- phishscore=0 malwarescore=0 spamscore=0 lowpriorityscore=0 impostorscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2605210000 definitions=main-2606030130
+ suspectscore=0 clxscore=1015 lowpriorityscore=0 impostorscore=0
+ priorityscore=1501 malwarescore=0 adultscore=0 phishscore=0 bulkscore=0
+ spamscore=0 classifier=typeunknown authscore=0 authtc= authcc= route=outbound
+ adjust=0 reason=mlx scancount=1 engine=8.22.0-2605210000
+ definitions=main-2606030133
 
-On 6/3/2026 1:56 PM, Pengjie Zhang wrote:
-> The conservative governor documentation incorrectly states that setting
-> freq_step to 0 will use the default 5% frequency step. In reality, since
-> at least commit 8e677ce83bf4 ("[CPUFREQ] conservative: fixup governor to
-> function more like ondemand logic"), freq_step=0 has always caused the
-> governor to skip frequency updates entirely.
+On 6/3/2026 3:24 PM, Akashdeep Kaur wrote:
+> On K3 SoCs, ti-cpufreq relies on k3-socinfo to register the SoC
+> device before soc_device_match() can return valid revision
+> information. If ti-cpufreq probes before k3-socinfo,
+> soc_device_match() returns NULL, leading to incorrect CPU frequency
+> scaling behavior.
 > 
-> Correct the documentation to reflect the actual behavior: freq_step=0
-> disables frequency changes by the governor entirely.
+> Add a needs_k3_socinfo flag to ti_cpufreq_soc_data (similar to
+> the existing multi_regulator pattern) to defer probe when k3-socinfo
+> hasn't registered the SoC device yet.
 > 
-> Fixes: 2a0e49279850 ("cpufreq: User/admin documentation update and consolidation")
-> Signed-off-by: Pengjie Zhang <zhangpengjie2@huawei.com>
-> ---
-> Changes in v2:
-> - Update commit message to reference the correct historical commit
->    8e677ce83bf4 instead of b9170836d1aa, as the original implementation
->    had asymmetric behavior for freq_step=0 (suggested by Zhongqiu Han).
-> - Link to v1:https://lore.kernel.org/all/20260529111122.3321645-1-zhangpengjie2@huawei.com/
+> Signed-off-by: Akashdeep Kaur <a-kaur@ti.com>
 
 
-Looks good to me.
+Looks good to me with small one nit inline.
 
 Reviewed-by: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>
 
 
 > ---
->   Documentation/admin-guide/pm/cpufreq.rst | 4 ++--
->   1 file changed, 2 insertions(+), 2 deletions(-)
+>   drivers/cpufreq/ti-cpufreq.c | 10 ++++++++++
+>   1 file changed, 10 insertions(+)
 > 
-> diff --git a/Documentation/admin-guide/pm/cpufreq.rst b/Documentation/admin-guide/pm/cpufreq.rst
-> index dbe6d23a5d67..98c724d49047 100644
-> --- a/Documentation/admin-guide/pm/cpufreq.rst
-> +++ b/Documentation/admin-guide/pm/cpufreq.rst
-> @@ -586,8 +586,8 @@ This governor exposes the following tunables:
->   	100 (5 by default).
->   
->   	This is how much the frequency is allowed to change in one go.  Setting
-> -	it to 0 will cause the default frequency step (5 percent) to be used
-> -	and setting it to 100 effectively causes the governor to periodically
-> +	it to 0 disables frequency changes by the governor entirely and setting
-> +	it to 100 effectively causes the governor to periodically
->   	switch the frequency between the ``scaling_min_freq`` and
->   	``scaling_max_freq`` policy limits.
->   
+> diff --git a/drivers/cpufreq/ti-cpufreq.c b/drivers/cpufreq/ti-cpufreq.c
+> index a01abc1622eb..f2c8d9e3a1b5 100644
+> --- a/drivers/cpufreq/ti-cpufreq.c
+> +++ b/drivers/cpufreq/ti-cpufreq.c
+> @@ -99,6 +99,7 @@ struct ti_cpufreq_soc_data {
+>   	unsigned long efuse_shift;
+>   	unsigned long rev_offset;
+>   	bool multi_regulator;
+> +	bool needs_k3_socinfo;
+>   /* Backward compatibility hack: Might have missing syscon */
+>   #define TI_QUIRK_SYSCON_MAY_BE_MISSING	0x1
+>   /* Backward compatibility hack: new syscon size is 1 register wide */
+> @@ -347,6 +348,7 @@ static struct ti_cpufreq_soc_data am625_soc_data = {
+>   	.efuse_mask = 0x07c0,
+>   	.efuse_shift = 0x6,
+>   	.multi_regulator = false,
+> +	.needs_k3_socinfo = true,
+>   	.quirks = TI_QUIRK_SYSCON_IS_SINGLE_REG,
+>   };
+> 
+> @@ -356,6 +358,7 @@ static struct ti_cpufreq_soc_data am62a7_soc_data = {
+>   	.efuse_mask = 0x07c0,
+>   	.efuse_shift = 0x6,
+>   	.multi_regulator = false,
+> +	.needs_k3_socinfo = true,
+>   };
+> 
+>   static struct ti_cpufreq_soc_data am62l3_soc_data = {
+> @@ -364,6 +367,7 @@ static struct ti_cpufreq_soc_data am62l3_soc_data = {
+>   	.efuse_mask = 0x07c0,
+>   	.efuse_shift = 0x6,
+>   	.multi_regulator = false,
+> +	.needs_k3_socinfo = true,
+>   };
+> 
+>   static struct ti_cpufreq_soc_data am62p5_soc_data = {
+> @@ -372,6 +376,7 @@ static struct ti_cpufreq_soc_data am62p5_soc_data = {
+>   	.efuse_mask = 0x07c0,
+>   	.efuse_shift = 0x6,
+>   	.multi_regulator = false,
+> +	.needs_k3_socinfo = true,
+>   };
+> 
+>   /**
+> @@ -443,6 +448,11 @@ static int ti_cpufreq_get_rev(struct ti_cpufreq_data *opp_data,
+>   		goto done;
+>   	}
+> 
+> +	/* Defer if k3-socinfo hasn't registered the SoC device yet */
+> +	if (opp_data->soc_data->needs_k3_socinfo)
+> +		return dev_err_probe(opp_data->cpu_dev, -EPROBE_DEFER,
+> +				     "SoC device not registered by k3-socinfo\n");
+
+
+Nit: dev_err_probe() attaches the defer reason to cpu_dev instead of the
+ti-cpufreq platform device, so devices_deferred won't show it, right
+
+That said, this matches the existing pattern in ti_cpufreq_probe() where
+all dev_err/dev_dbg calls use opp_data->cpu_dev.
+
+If so, maybe it could be cleaned up in a separate patch.
+
+
+> +
+>   	ret = regmap_read(opp_data->syscon, opp_data->soc_data->rev_offset,
+>   			  &revision);
+>   	if (opp_data->soc_data->quirks & TI_QUIRK_SYSCON_MAY_BE_MISSING && ret == -EIO) {
+> --
+> 2.34.1
+> 
 
 
 -- 
