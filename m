@@ -1,220 +1,165 @@
-Received: from mail-lf1-f42.google.com (mail-lf1-f42.google.com [209.85.167.42])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from outbound7.mail.transip.nl (outbound7.mail.transip.nl [136.144.136.7])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 887263955DE
-	for <linux-pm@vger.kernel.org>; Wed,  3 Jun 2026 06:55:33 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.167.42
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1780469735; cv=pass; b=csqWWzd+cbXQmtVzbZUWl9ex09jmZLMVay8+F0t5wb1Cit0Hbp5bb73FGyMQgwlwGDgSmbRkAZPiRwsgdaoZEOhW/VaTbb1nQruotYeY5I89twmZnhoJogYPstA7da4u6oZdl2rpAKELEbiFkkdBuDNSokp8N3Gq4j21b0xfb7E=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1780469735; c=relaxed/simple;
-	bh=eMVHxMtbHCbUYEX8FNbdji2LBuN1ycDKpUMu2gGLVv0=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=hETIuGLq95UCqh5yf+GjwmTZBr+sC7k6khOoYvAT0Ti3+B2B1sCeTRRI9a/iZYoY8JfBWGmAA8fW7RV+h7V3EgSk1lHW5zkkc3n9PXqhmv5X7A9V++AfW9zK5WXRbq3o8ayEQo2SuGxg1EncD8LXITZgZ92KDG89j1zM/BYxEs0=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=chromium.org; spf=pass smtp.mailfrom=chromium.org; dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b=Pg+unfsQ; arc=pass smtp.client-ip=209.85.167.42
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=chromium.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=chromium.org
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C4FCC286D7D;
+	Wed,  3 Jun 2026 07:15:23 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=136.144.136.7
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1780470929; cv=none; b=Xwq9+5saE5HnMrHsH0BtbfjxHzb/iC/JlMnWggXWglYNUHPwnBlbMbY516gaYWAcIH44ZbonNR/iXfaTSY5WAw/YApCksrBEuLBBPnIw0wRHEf/9adljQdQaa5OpWGWEXUTAXScEs14ofyg3bIn3FYKSLjgR80UzlMose+MM7aQ=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1780470929; c=relaxed/simple;
+	bh=CBox3QeLB8bD5zr5Zk/ou2hsAHr1V3tPZbRM4BFKHsM=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=cGP9QSW3CVVYo7yR72oHCofejITeFBMyKifOhBsMo4OaIC0k5L4nC4siXzN7ubeSNAbDy3Gvr4jyBa2CRr9/o4ECeHk2HeI5niOMLosvbgjdmdplKOj9TFHj813T4UmjGM9VWSPOyTnmmTDnvI/uqISubqD6du6VLnK5pssDV1s=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=herrie.org; spf=pass smtp.mailfrom=herrie.org; dkim=pass (2048-bit key) header.d=herrie.org header.i=@herrie.org header.b=vweiJbfx; arc=none smtp.client-ip=136.144.136.7
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=herrie.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=herrie.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="Pg+unfsQ"
-Received: by mail-lf1-f42.google.com with SMTP id 2adb3069b0e04-5aa63628d26so3408024e87.0
-        for <linux-pm@vger.kernel.org>; Tue, 02 Jun 2026 23:55:33 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1780469732; cv=none;
-        d=google.com; s=arc-20240605;
-        b=N1FXTdz7fHflzOio9fAeEtUPHtb3KnvTWsXM2KDa/y9y/SobO4c0+pjZGxBRbSowba
-         eVmsVuFlHNMVp4RvawZSUT7wk5G4+fxOFn6lbCGkSPpD8quDQU2CRw5nelqeY8jupxpD
-         fF7YyHm2/55XZhMnBWYaLo9ppt0/8iAl2OFESxoam8agRx5e+qHGageOA0FRpoD65k6q
-         0GJRGSX0sOBdudlW/CV7zHbYDtuSOm/km7Xr0N6joxxxoFV4EtrmIWG8Nilkbasy+YYA
-         lynlpFa9uCafkGDa6SCwMB5G7ek+j63zk+QpJYr6p41qP8+eYc56Lp5n16JUFNDLgqr8
-         QRqg==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=eMVHxMtbHCbUYEX8FNbdji2LBuN1ycDKpUMu2gGLVv0=;
-        fh=PlvVvWNsnovQRv9CnGTYZjBMxqlX2tWv6DYDqWujcoI=;
-        b=HfxqkFlJvzw2+xZimLizdTPb9G0hfI4EmJs1oL9EmzXEjVtDkdBmRMIsrT3UF8TBoL
-         SJWMJn5a0vTHDkmZfjXe7fBGs6rX6cGtuzuxeXCgXtZ9Mk2GyCoHyLQF4PmvPvY22rl8
-         FVqO7iLggrxUsCd6QJ0fm008cgZUcPO11zdGk5mn/YCNtkF3kopXmnG7hmP9my79AC2Q
-         iHV9wr/vColjdUJ3EVkRWWRjeL1xk7AEH3MroN1uKUvp83wcZ0PR7cKyeRzYq85QGWxS
-         K9Gak1YAE4BDJ9onIeOcK2VCn+ESDqC6P2klSLrY6CspqzU46iyv+Rtcv3SXQMWckBdN
-         Et+Q==;
-        darn=vger.kernel.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=chromium.org; s=google; t=1780469732; x=1781074532; darn=vger.kernel.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=eMVHxMtbHCbUYEX8FNbdji2LBuN1ycDKpUMu2gGLVv0=;
-        b=Pg+unfsQIf2JKznDDrA5Wrd5+atGJSPKJv8JIxcNffuJnkxZBXq3v2zvCRrtJB8p8n
-         +DfPkluAPxFERGqdqRbCR/fJS0wagwDtEHXYCe8zNfxOObu93K2ulx6phcP84DimehJo
-         6vUPOq+AUez28slv12ZkQ3e2t9q5Bj6+QUIFk=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1780469732; x=1781074532;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=eMVHxMtbHCbUYEX8FNbdji2LBuN1ycDKpUMu2gGLVv0=;
-        b=JEFsv4oKUkaXslZoG5ltDrCUWbAd6IsY2yrjce3/7qpo7fEolUizH06cj/otrnOS0Q
-         tEnaUGMwWgrAh/sW4svo0NzSZGDY/v/ArUYfh5d6mQfx+XW3A0GQlgywYTRU22wEvR24
-         T080e5NjdouyubeZSdqX4ByaDOvnvKpFidpnv2tx3vg3SQXuoacRhrmalDxJMAJ0icMr
-         5Vtm2e15Qdw1d6ryLKnoj+5oS14zLqu5Y1BmdGSUU8VUPpR3Sswj3bH9Mcx01zXEKKdx
-         dcdhEWcQ9yS10KovfreEvnsXLV9JEIx9UcMRInRaKA9yJzLHg5KU9igNJ/A457pLAvsl
-         6ppA==
-X-Forwarded-Encrypted: i=1; AFNElJ95LaljYilk5+FYxOpZaWBN5Bjb30nfqyJC2NM/oXi9JXR21BWu1X+U9OIJNzuSfXJNyWvPXbARsQ==@vger.kernel.org
-X-Gm-Message-State: AOJu0YxB2clbU3lk+fmSfE8CZutsnVz7b+FQMiPZIkZKl6gklEja2ne4
-	SE1mzoGO8epJ+/IAup0oCrRxm+cYCStc5MKvnyZhUzUEjh4ditf4iwC2IYRZXfdiNQRB6nLXGjv
-	GGr9FhdMaHer+sx+qKp84lWeg8I3MvprDQW+mXgKdlzK7NZ2QBgY=
-X-Gm-Gg: Acq92OEvkOagFDEUghqxTlALeCOFEqrDGOQYjwpqBNAsps8sQt7nAcmH2aPPsGRwjbT
-	cl6bkS41MopCnKqKcsvDBcxWLz1LBqAXkWfRCRrWuyByF5faDdFRo2FIKmIVwlSl9IrFA5vPdQp
-	IwvhiWAhgegiG1yvJqc43gJO/mKklCoNPtpRrUpwUnUQGdL9FOC6xP6eKvldmVhpW4onKJW+Ua3
-	QM87x4zZGbNdbjbsIFGkOnrvITySRJLYY7ss/31IEG2S9i/hQXOXcJrEfxrXie9wasu/cfrdrmm
-	eQPi1IUmWOhf3UUVymykyS8XmIRmw7AL6Jnq5mt9spCeZVu1
-X-Received: by 2002:a05:6512:2310:b0:5aa:5f81:51cc with SMTP id
- 2adb3069b0e04-5aa7bfd939emr598153e87.0.1780469731666; Tue, 02 Jun 2026
- 23:55:31 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=herrie.org header.i=@herrie.org header.b="vweiJbfx"
+Received: from submission9.mail.transip.nl (unknown [10.103.8.160])
+	by outbound7.mail.transip.nl (Postfix) with ESMTP id 4gVf9P3pr7zQvtGC;
+	Wed,  3 Jun 2026 09:15:21 +0200 (CEST)
+Received: from herrie-desktop.. (180-93-184-31.ftth.glasoperator.nl [31.184.93.180])
+	by submission9.mail.transip.nl (Postfix) with ESMTPA id 4gVf9N71GPz3NZKgV;
+	Wed,  3 Jun 2026 09:15:20 +0200 (CEST)
+From: Herman van Hazendonk <github.com@herrie.org>
+To: sre@kernel.org
+Cc: robh@kernel.org,
+	krzk+dt@kernel.org,
+	conor+dt@kernel.org,
+	linux-pm@vger.kernel.org,
+	devicetree@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	Herman van Hazendonk <github.com@herrie.org>
+Subject: [PATCH 1/2] dt-bindings: power: supply: maxim,max8903: add DC and USB input current-limit controls
+Date: Wed,  3 Jun 2026 09:15:18 +0200
+Message-ID: <20260603071519.807604-2-github.com@herrie.org>
+X-Mailer: git-send-email 2.43.0
+In-Reply-To: <20260603071519.807604-1-github.com@herrie.org>
+References: <20260603071519.807604-1-github.com@herrie.org>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260515090149.3169406-1-wenst@chromium.org> <CAMRc=MdnjRRMVzxPkkrPhQ4dz7rsK8-HKUp9cQ0z11apL3escQ@mail.gmail.com>
- <CAGXv+5HC3dqgcE3KnKzakHHWFHB6m_X42orOkNUvZvp=SL_O8g@mail.gmail.com>
- <CAMRc=Med-_0GSYzoFBRiwFzBCK0DZqJD8_SEBxi+zwR20GS-HA@mail.gmail.com>
- <CAGXv+5GbW0bx3nKdZt2+tHuHyQ-J-1-Z79nMzHAwjmEPGKT02A@mail.gmail.com> <CAMRc=McADm0F4bwhj5qoigfUT-AV6CVpo+FAaqoBnZ3PrjBc7Q@mail.gmail.com>
-In-Reply-To: <CAMRc=McADm0F4bwhj5qoigfUT-AV6CVpo+FAaqoBnZ3PrjBc7Q@mail.gmail.com>
-From: Chen-Yu Tsai <wenst@chromium.org>
-Date: Wed, 3 Jun 2026 14:55:20 +0800
-X-Gm-Features: AVHnY4LlLDHphsEQE3sATrymTCUnapNz7ZFd_5P8UcLWbDeGGfHP5mUv-LY1yqE
-Message-ID: <CAGXv+5FhUuV_0fdOMDowffA-1jtUoNOcxZSZE-pd_T4V5Qg3Jg@mail.gmail.com>
-Subject: Re: [PATCH RFC 00/12] arm64: mediatek: Add M.2 E-key slot on Chromebooks
-To: Bartosz Golaszewski <brgl@kernel.org>
-Cc: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
-	Conor Dooley <conor+dt@kernel.org>, Matthias Brugger <matthias.bgg@gmail.com>, 
-	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>, linux-pm@vger.kernel.org, 
-	linux-usb@vger.kernel.org, devicetree@vger.kernel.org, 
-	linux-mediatek@lists.infradead.org, linux-arm-kernel@lists.infradead.org, 
-	linux-kernel@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
-	Manivannan Sadhasivam <mani@kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
+X-Scanned-By: ClueGetter at submission9.mail.transip.nl
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+ s=transip-a; d=herrie.org; t=1780470921; h=from:subject:to:cc:
+ references:in-reply-to:date:mime-version;
+ bh=etAnj7fgonFdKVbkoiHP4F3EeQb64hWRqIT01hc+eX4=;
+ b=vweiJbfx0EdZUupXRNc053qs50nOGApHgUkaQzWHesG2QhLBI/TTfBsbDGR/u+SdI45jEG
+ iIdlE7LTS5JfHkKq0cClDKAa8OTkfY8B42TZg9yCD3ZXculZ96nRFz3ipw17Y0zPx8GrO3
+ 4iPiAdSHZt+/V15TMzUvYmxsUucXcbP//4HYDiO2iVWoZX8aUljEJIWC400pntntNXDTWX
+ Zc/738zbX5Nn/EdyQ1ekZNB8LjceSQcpBFr4U0+khC47dLugRsDopnW2jv4qydz6zaK1p9
+ Jtf3LaRy9g3n0Uq4pl3El411Q9PfztpliP3pVfR227ja2sAYlH8BWrfPnv3zIA==
+X-Report-Abuse-To: abuse@transip.nl
 
-On Thu, May 28, 2026 at 4:33=E2=80=AFPM Bartosz Golaszewski <brgl@kernel.or=
-g> wrote:
->
-> On Wed, 27 May 2026 18:21:00 +0200, Chen-Yu Tsai <wenst@chromium.org> sai=
-d:
-> > On Tue, May 26, 2026 at 11:48=E2=80=AFAM Bartosz Golaszewski <brgl@kern=
-el.org> wrote:
-> >>
-> >> On Sun, May 24, 2026 at 10:06=E2=80=AFAM Chen-Yu Tsai <wenst@chromium.=
-org> wrote:
-> >> >
-> >> > > >
-> >> > > > I expect some discussion on this patch, because a) it adds some
-> >> > > > OF-specific code into an otherwise generic (core) driver, and
-> >> > > > b) it doesn't yet handle USB 2.0 / 3.x shared ports; it ends up =
-powering
-> >> > > > on the port twice, which negates the port reset part.
-> >> > > >
-> >> > >
-> >> > > I understand that you do this because the port device has no OF no=
-de
-> >> > > assigned. If we wanted to call pwrseq_get() for the port device, i=
-s
-> >> > > there really no other way to associate it with the correct pwrseq
-> >> > > provider?
-> >> >
-> >> > I suppose we could tie the "port@X" node to the usb port device, but
-> >> > AFAIK no other subsystem does this so we would be introducing a new
-> >> > pattern.
-> >> >
-> >> > In the M.2 pwrseq driver, we would have to match by port node instea=
-d
-> >> > of its parent device node. We may end up with different behavior for
-> >> > the USB target vs the other targets.
-> >> >
-> >>
-> >> I imagine, we can check the bus type of the parent device to know if
-> >> this is USB?
-> >
-> > The "bus type" type is probably not exported. However since the DT bind=
-ing
-> > explicitly says which port on the M.2 slot is for which connection type=
-,
-> > I think the matching can do a special case check for the USB port.
-> > The next obstacle is that the target string is not given to the provide=
-r
-> > match function.
-> >
-> >> > Also, the "port@X" nodes only exist for the OF graph connections to
-> >> > connectors and/or muxes (this series doesn't deal with the latter).
-> >> > For directly connected devices, there is a "device@X" child node
-> >> > directly under the USB hub node. That node is what gets tied to the
-> >> > the USB device.
-> >> >
-> >>
-> >> Is this a problem? I don't think I understand what you're saying here.
-> >
-> > It shouldn't be. I'm just saying there would be different behavior on
-> > the USB side for connectors vs onboard devices (like hubs) device nodes=
-.
-> >
-> > I talked to Greg earlier, and he said not to touch the hub driver; the
-> > hub driver should only deal with features from the USB spec. The
-> > "onboard USB devices" driver is what should be used. And this would
-> > be a proper case of adding an auxiliary device to the M.2 slot driver.
-> >
->
-> The onboard USB device is what initially inspired the PCI pwrctl code so =
-it
-> doesn't surprise me we circle back to it.
->
-> > However this seems to completely decouple the power sequencing from the
-> > USB core. Take the USB A connector for example, it was recently added t=
-o
-> > the onboard USB devices driver. However the connector has a device node
-> > that is not a child node of any USB host controller or hub; it is conne=
-cted
-> > through OF graph. At the same time, since it typically sits at the top
-> > level of the device tree, a platform device is directly created and the
-> > driver subsequently binds to that device. This is totally different fro=
-m
-> > how the hub and other directly connected onboard USB devices work. In
-> > the onboard device case, the device node is a child node of the USB hub
-> > or controller, and the corresponding platform device only gets created
-> > when the USB hub driver probes, thereby sort of tying it into the USB
-> > device topology.
-> >
->
-> Which is precisely what we do for PCI pwrctl. Though I'm not sure how we =
-could
-> replicate this behavior without touching the hub driver.
->
-> > If the power sequencing ends up not connected to the USB subsystem, the=
-n
-> > maybe the M.2 slot driver could just check if the USB port (port@3) was
-> > used, and just enable the USB / BT pwrseq target at probe time? That
-> > would mean less changes needed.
-> >
->
-> That sounds sane to me.
+Add four optional properties to the MAX8903 charger binding to
+describe board-level GPIO control of the DC and USB input current
+limits:
 
-Mani seems to be against this idea though, since as I mentioned it decouple=
-s
-the timing of the power sequencing from the USB subsystem completely.
+DC input (TA / DOK pin):
+  - dc-current-limit-gpios (1..4 GPIOs): mux control lines feeding
+    the MAX8903 IDC resistor mux;
+  - dc-current-limit-mapping (uint32-matrix of {microamps,
+    gpio_bit_pattern} pairs): the available current levels and the
+    GPIO bit pattern that selects each level.
 
-Ideally we want them to be linked.
+USB input (USB / UOK pin):
+  - usb-current-limit-gpios: a single GPIO driving the IUSB
+    tri-state pin (low / high);
+  - usb-current-limit-values: the two microamp values that the IUSB
+    pin selects.
 
-So I will take a stab at option one for now, incorporating changes you
-requested:
+These let userspace clamp the input draw via the standard
+POWER_SUPPLY_PROP_INPUT_CURRENT_LIMIT power_supply attribute. The HP
+TouchPad uses both: two TLMM lines select between 0.5 A, 1.0 A,
+1.5 A and 2.0 A DC input current limits behind the MAX8903B
+charger, and a third TLMM line picks the IUSB 100 mA / 500 mA
+limit.
 
-- Drop the pwrseq API change
-- Use the firmware node API instead of the OF API
-- Tie the usb_port device to the "port@N" node
+These are purely additive; existing platforms remain unaffected.
 
-And we'll see how the USB folks like or dislike it.
+Signed-off-by: Herman van Hazendonk <github.com@herrie.org>
+---
+ .../bindings/power/supply/maxim,max8903.yaml  | 58 +++++++++++++++++++
+ 1 file changed, 58 insertions(+)
 
+diff --git a/Documentation/devicetree/bindings/power/supply/maxim,max8903.yaml b/Documentation/devicetree/bindings/power/supply/maxim,max8903.yaml
+index 86af38378999..5e970ebc08df 100644
+--- a/Documentation/devicetree/bindings/power/supply/maxim,max8903.yaml
++++ b/Documentation/devicetree/bindings/power/supply/maxim,max8903.yaml
+@@ -44,6 +44,41 @@ properties:
+     maxItems: 1
+     description: USB suspend pin (active high, output)
+ 
++  dc-current-limit-gpios:
++    minItems: 1
++    maxItems: 4
++    description:
++      GPIOs controlling DC input current limit via resistor mux.
++      Used with dc-current-limit-mapping to select charging current.
++
++  dc-current-limit-mapping:
++    $ref: /schemas/types.yaml#/definitions/uint32-matrix
++    minItems: 2
++    maxItems: 16
++    description: |
++      Array of (current_microamps, gpio_bit_pattern) pairs defining available
++      DC current limits. The gpio_bit_pattern is applied to dc-current-limit-gpios
++      to select that current level.
++    items:
++      items:
++        - description: Current limit in microamps
++        - description: GPIO bit pattern value
++
++  usb-current-limit-gpios:
++    maxItems: 1
++    description:
++      GPIO controlling USB input current limit.
++      Low = usb-current-limit-values[0], High = usb-current-limit-values[1].
++
++  usb-current-limit-values:
++    $ref: /schemas/types.yaml#/definitions/uint32-array
++    minItems: 2
++    maxItems: 2
++    default: [100000, 500000]
++    description:
++      USB current limits in microamps for GPIO low and high states.
++      Default is 100mA (low) and 500mA (high) per USB specification.
++
+ required:
+   - compatible
+ 
+@@ -65,3 +100,26 @@ examples:
+       chg-gpios = <&gpio3 15 GPIO_ACTIVE_LOW>;
+       cen-gpios = <&gpio2 5 GPIO_ACTIVE_LOW>;
+     };
++  - |
++    /* Example with DC and USB current limit control */
++    #include <dt-bindings/gpio/gpio.h>
++    charger-with-current-limit {
++      compatible = "maxim,max8903";
++      dok-gpios = <&gpio2 3 GPIO_ACTIVE_LOW>;
++      flt-gpios = <&gpio2 2 GPIO_ACTIVE_LOW>;
++      chg-gpios = <&gpio3 15 GPIO_ACTIVE_LOW>;
++      cen-gpios = <&gpio2 5 GPIO_ACTIVE_LOW>;
++      dcm-gpios = <&gpio2 6 GPIO_ACTIVE_HIGH>;
++
++      /* DC input current limit via IDC resistor mux */
++      dc-current-limit-gpios = <&gpio1 0 GPIO_ACTIVE_HIGH>,
++                               <&gpio1 1 GPIO_ACTIVE_HIGH>;
++      dc-current-limit-mapping = <750000 0>,  /* GPIO[1:0]=0b00 */
++                                 <900000 1>,  /* GPIO[1:0]=0b01 */
++                                 <1400000 3>, /* GPIO[1:0]=0b11 */
++                                 <2000000 2>; /* GPIO[1:0]=0b10 */
++
++      /* USB current control */
++      usb-current-limit-gpios = <&gpio1 2 GPIO_ACTIVE_HIGH>;
++      usb-current-limit-values = <100000 500000>; /* 100mA / 500mA */
++    };
+-- 
+2.43.0
 
-Thanks
-ChenYu
