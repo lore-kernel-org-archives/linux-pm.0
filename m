@@ -1,114 +1,96 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from outbound11.mail.transip.nl (outbound11.mail.transip.nl [136.144.136.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 75D893DD53E;
-	Wed,  3 Jun 2026 15:56:45 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CD4DF39A079;
+	Wed,  3 Jun 2026 16:34:13 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=136.144.136.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1780502205; cv=none; b=pHgy5v/6QPnum76TVuAJ3hVtix4OUWxTgUt3ZvzYdv6/IGTWaEpTGZe/K+KAPiky7524PMTb1vhUd/PiU88ShIlDuMmT+CcIo+rGLTtpfplI900rr3T+c9Hn7ibxgl6M0Zl7nbAO0YK8sK6WGwYVt8Rzh18BhUtU7pMttyCNdiY=
+	t=1780504459; cv=none; b=cXtqQpCdL6AN0/2SHNZ5lss7FdbT9N6pmUztk6/IKT29R5braRWpniS+0HXnIyIogayUrJkVF3QoXkOkiyG4wwbLnHUFvGduvwHE3gRuukCV9wkGryN5vFxVTb1gA/IH9D8slpttfVKVoYDTAqwT4BN33taTudoeUjLeM4d2pRg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1780502205; c=relaxed/simple;
-	bh=nWtiWxbs9tvtWNadYoIPsgP9JmcACOg4egKziZJamEE=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=mSAjXIHlfARrs5vkoJzloW41vXkw+EsAWqvvoGHF3iOU6yq8hjxJyX+DYm829il/0+B/pZ/s58QJuvQO8vSzjRbttdPS8uRaS2qGHBiogGz2IiTGlvt0o0iT+TJCzgsbozrqmtWXSuBPJe/Ywatz7jClyATka7dwECHfJYD4wDA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=u4FkIudM; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1780504459; c=relaxed/simple;
+	bh=Ls9YNOyjqv9xby3NHUrvlbaMuhPviQdZ1jA4wXVtXcQ=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=WW/8CXnklShBjRs3IgRVeKlOgpGYHPCzpcYstXUJVs4IYvT55qWZ0+9badYEMJtah2a7vQV2azAMTt+jZW4xJevMIHXJ8bKRkWTxCVNv2TOmTnML3m8nURUtUsatObzgr0XjUPnKeYkHDMDgBFmQDr3u7aYseIdx7OiLBhdkJjU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=herrie.org; spf=pass smtp.mailfrom=herrie.org; dkim=pass (2048-bit key) header.d=herrie.org header.i=@herrie.org header.b=QYtq8dt0; arc=none smtp.client-ip=136.144.136.18
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=herrie.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=herrie.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="u4FkIudM"
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 3490BC2BCC6;
-	Wed,  3 Jun 2026 15:56:45 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1780502205;
-	bh=nWtiWxbs9tvtWNadYoIPsgP9JmcACOg4egKziZJamEE=;
-	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
-	b=u4FkIudM/1I8vM4HV9SGoa/cVsQ1Xzy1dGpc/otUANR5iPjR2UmjzU+ts8kiP8214
-	 bXgfX4uHqRz0RLVqU1Z4LQimtlgo+/Pv7gRd6dWAVIGpspKiasQ07KGlrhzwG+rFY4
-	 5nbQ+TeGaakifCUV4DkUBh5F7cCLQvXV91sPte6DR0az/6sLEpMsKQeUDSh3obUTvH
-	 N+qSa95ub9UNuA84n9yxnt8TZxGPUvQvZoKeMiNzyzWe6EqO8JMChAOVGl6ozRfRxY
-	 8W9Z0J1VZQEfFKMUZEJ+TskPZO0kH5QbDMnDTH9oTsqSNypjFvTCa+VFA34lS0WHwx
-	 lgUv1DCp5euWQ==
-Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1B01BCD6E55;
-	Wed,  3 Jun 2026 15:56:45 +0000 (UTC)
-From: Markus Probst via B4 Relay <devnull+markus.probst.posteo.de@kernel.org>
-Date: Wed, 03 Jun 2026 17:56:41 +0200
-Subject: [PATCH v12 3/3] MAINTAINERS: serdev: Add self for serdev
+	dkim=pass (2048-bit key) header.d=herrie.org header.i=@herrie.org header.b="QYtq8dt0"
+Received: from submission3.mail.transip.nl (unknown [10.100.4.72])
+	by outbound11.mail.transip.nl (Postfix) with ESMTP id 4gVtZC4YVkzkQNbM;
+	Wed,  3 Jun 2026 18:34:11 +0200 (CEST)
+Received: from herrie-desktop.. (180-93-184-31.ftth.glasoperator.nl [31.184.93.180])
+	by submission3.mail.transip.nl (Postfix) with ESMTPA id 4gVtZC0gbrzf52bM;
+	Wed,  3 Jun 2026 18:34:11 +0200 (CEST)
+From: Herman van Hazendonk <github.com@herrie.org>
+To: djakov@kernel.org
+Cc: robh@kernel.org,
+	krzk+dt@kernel.org,
+	conor+dt@kernel.org,
+	linux-pm@vger.kernel.org,
+	linux-arm-msm@vger.kernel.org,
+	devicetree@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	Herman van Hazendonk <github.com@herrie.org>
+Subject: [PATCH 0/2] interconnect: qcom: add MSM8x60 (MSM8660/APQ8060) NoC driver
+Date: Wed,  3 Jun 2026 18:34:08 +0200
+Message-ID: <20260603163410.2312712-1-github.com@herrie.org>
+X-Mailer: git-send-email 2.43.0
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20260603-rust_serdev-v12-3-3400ffb88b12@posteo.de>
-References: <20260603-rust_serdev-v12-0-3400ffb88b12@posteo.de>
-In-Reply-To: <20260603-rust_serdev-v12-0-3400ffb88b12@posteo.de>
-To: Rob Herring <robh@kernel.org>, 
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
- Jiri Slaby <jirislaby@kernel.org>, Miguel Ojeda <ojeda@kernel.org>, 
- Gary Guo <gary@garyguo.net>, 
- =?utf-8?q?Bj=C3=B6rn_Roy_Baron?= <bjorn3_gh@protonmail.com>, 
- Benno Lossin <lossin@kernel.org>, Andreas Hindborg <a.hindborg@kernel.org>, 
- Alice Ryhl <aliceryhl@google.com>, Trevor Gross <tmgross@umich.edu>, 
- Danilo Krummrich <dakr@kernel.org>, 
- Kari Argillander <kari.argillander@gmail.com>, 
- "Rafael J. Wysocki" <rafael@kernel.org>, 
- Viresh Kumar <viresh.kumar@linaro.org>, Boqun Feng <boqun@kernel.org>, 
- David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>, 
- Boqun Feng <boqun@kernel.org>
-Cc: linux-serial@vger.kernel.org, linux-kernel@vger.kernel.org, 
- rust-for-linux@vger.kernel.org, linux-pm@vger.kernel.org, 
- driver-core@lists.linux.dev, dri-devel@lists.freedesktop.org, 
- Markus Probst <markus.probst@posteo.de>
-X-Mailer: b4 0.15.2
-X-Developer-Signature: v=1; a=openpgp-sha256; l=838;
- i=markus.probst@posteo.de; h=from:subject:message-id;
- bh=qsfz+Nm+cALqBgF4yy3YFD9abHHV2IjzdqJIYuW/9vo=;
- b=owEBiQJ2/ZANAwAIATR2H/jnrUPSAcsmYgBqIE67A50dgZMxw9e71+OBgdsu3wwfdXOKEPw/o
- zt1R2EG1RKJAk8EAAEIADkWIQSCdBjE9KxY53IwxHM0dh/4561D0gUCaiBOuxsUgAAAAAAEAA5t
- YW51MiwyLjUrMS4xMiwyLDIACgkQNHYf+OetQ9IfpRAAnxApU7aU7REpSwd0w7WygzKbhWtSr+o
- IdmKAt/c1HMNLiI2UtH5Uy7M2sCiW5mIUJaEER+vlY92KwVTfNiUQs4dSjPKpQl3FFRN9yQKz28
- BMR300Rrfy+1ql2GM/VhO7fZ+KHtfel4Wt9W6zIVOcOnz0QWmiaChS/iblAEqqSMIfIa2zEOe/s
- fXPzslcN0b7HycbQCm9nFOTFMT+Z7sOR93MWKFbfGbgu3VCh5CCVk37zVDh/m5Km6wGyDMg5MNd
- NmgpGuxqSv9JFXs5hknbLOYd1Tc/mRNRukt++7SskXEKzG1kL87FpNdU7Q6YO4niX4z3PIY3+Wk
- UbhDQQOm60yqnt+CUHm3YiWOhPPz2QhXz+TA3Zchb2DQy+r0QIc8Q4UEZFiibDg0ptsCEcBh8W1
- TSIHKld4sP9k27r+LRgNBXFT8WLlRnkpa9XEEyOarU0vsiCvlw2jfAAo+NgrxfREeiKkHsQPG7y
- //VpWyqLz2tacEsdAwiv1Z9AejIpzZ269EHso2dfdrQOLjFBQwSH9H7RdU+OesKXVlFryeLF/Wp
- L9EjF3KSoA4F2UjIcAYmYwbaHCch/aqEpV7bqlB2IrvdGhKEVX9JMco+Cqj67Txm/4yjAAx/L4v
- yfst5hVLD3IJSx6R3UuTgkRH7tRRupzC1J9+6Wq2f7fNtpfKFLDg=
-X-Developer-Key: i=markus.probst@posteo.de; a=openpgp;
- fpr=827418C4F4AC58E77230C47334761FF8E7AD43D2
-X-Endpoint-Received: by B4 Relay for markus.probst@posteo.de/default with
- auth_id=680
-X-Original-From: Markus Probst <markus.probst@posteo.de>
-Reply-To: markus.probst@posteo.de
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-Scanned-By: ClueGetter at submission3.mail.transip.nl
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+ s=transip-a; d=herrie.org; t=1780504451; h=from:subject:to:cc:date:
+ mime-version:content-type;
+ bh=jjeoKzD/DVr/ENOQbG3qxugLqPPqGCnMqtxH85Fdlsc=;
+ b=QYtq8dt0YlGMjuNFg3/C7t+T/EpEahJNsZqntn5e3s0bXM7tsSRG2cBwPc9Vp5AuOIR9nJ
+ wKF5azVnfx8lebPdwCHgScTtzQjUspv0t1NCVbITOdn0rzP4XJx1daMgCZAq5z75I0S5Uj
+ Dv+kKVUgpkvGCImd6TEGptOj9pqDhMUDTMganMf28BRhEuU24W6ahUo8dx3k2LOeEMRB+I
+ wWOvsfyoBrMfrp2lYX3ezjGADog3uJ1GsaR5V14+ha+j/saUMyOHyHA3f3xs4WE5sQJJ7B
+ OHugFKHMVjyEWDaXSwvbatvZ98bWZ/D1UogdlgFee+uorN1Oei+30vR7rMOL5w==
+X-Report-Abuse-To: abuse@transip.nl
 
-From: Markus Probst <markus.probst@posteo.de>
+Add interconnect support for the MSM8x60 family (MSM8260, MSM8660,
+APQ8060) — Qualcomm's Scorpion dual-core SoC generation used in devices
+like the HP TouchPad, HTC EVO 3D and HTC Sensation.
 
-Rob mentioned he needs to find someone else to maintain serdev.
+The chip's Network-on-Chip fabric is divided into four sub-fabrics:
 
-Link: https://lore.kernel.org/rust-for-linux/20260430195858.GA1650658-robh@kernel.org/
-Link: https://lore.kernel.org/rust-for-linux/da85ceb81f51079d4a8248a1ffde6a27d2ef24ad.camel@posteo.de/
-Signed-off-by: Markus Probst <markus.probst@posteo.de>
----
- MAINTAINERS | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+  AFAB  - Applications fabric: Scorpion CPU + L2 cache, paths to EBI
+  SFAB  - System fabric: DMA engines, SPS, USB HS, LPASS, MSS
+  MMFAB - Multimedia fabric: MDP, GPU, camera (VFE/JPEG), video codec
+  DFAB  - Daytona fabric: eMMC/SD (SDC), ADM DMA, USB voter
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 3b995cb6e902..200f0ab09f9b 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -24271,7 +24271,7 @@ F:	drivers/iio/chemical/sps30_i2c.c
- F:	drivers/iio/chemical/sps30_serial.c
- 
- SERIAL DEVICE BUS
--M:	Rob Herring <robh@kernel.org>
-+M:	Markus Probst <markus.probst@posteo.de>
- L:	linux-serial@vger.kernel.org
- S:	Maintained
- F:	Documentation/devicetree/bindings/serial/serial.yaml
+Bandwidth requests are committed to the RPM firmware via its shared-memory
+arbitration tables using the qcom-rpm driver backend; each fabric also has
+a bus clock whose rate is derived from the aggregated bandwidth.
 
+The driver includes a 384 MHz bus clock floor, replacing the previous
+266 MHz minimum that caused USB starvation on real hardware, and careful
+devm/device_link lifecycle to handle EPROBE_DEFER from both RPM and
+clock lookups without leaking clock prepare/enable references.
+
+Signed-off-by: Herman van Hazendonk <github.com@herrie.org>
+
+Herman van Hazendonk (2):
+  dt-bindings: interconnect: qcom: add msm8660 fabric IDs
+  interconnect: qcom: add MSM8x60 NoC driver
+
+ drivers/interconnect/qcom/Kconfig             |   14 +
+ drivers/interconnect/qcom/Makefile            |    2 +
+ drivers/interconnect/qcom/msm8660.c           | 1147 +++++++++++++++++
+ .../dt-bindings/interconnect/qcom,msm8660.h   |  156 +++
+ 4 files changed, 1319 insertions(+)
+ create mode 100644 drivers/interconnect/qcom/msm8660.c
+ create mode 100644 include/dt-bindings/interconnect/qcom,msm8660.h
+
+
+base-commit: 944125b4c454b58d2fe6e35f1087a932b2050dff
 -- 
-2.53.0
-
+2.43.0
 
