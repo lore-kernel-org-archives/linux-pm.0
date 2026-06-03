@@ -1,87 +1,194 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 833F54657C0
-	for <linux-pm@vger.kernel.org>; Wed,  3 Jun 2026 18:57:39 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3A20D175A86;
+	Wed,  3 Jun 2026 18:58:54 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1780513060; cv=none; b=LmIEDtHnkDJrM9nYXsp2oR+FVmHLeQa6O6MGtR2oXaVU6s1HeNFYPACXUIzihFEUPjOEFCD8X9SEzmqCcn6VUbTm8zeW9JQQAR4ftLaCRy2EIJhS9p11xwGZ+173LKiHI58DZz/BlK11WjyVcJyP3x6o26IgrenlQMfyTexXg1o=
+	t=1780513135; cv=none; b=nON8L3rxZad4TkihF6bwdNjBzL3XOJo0S0lFowY0EaKFIm2LZOAymyxTn1/nzyreMn/IdjQJZmtG7zu0QguAdKZbj2Btvf8mhW1CJh+AOu6SiSZLaJJJMg97+sw4sUCeUw4x8vYzaFXFAR/pS9ZBiuwBAg5Q7Q8I+7b+59qkkv8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1780513060; c=relaxed/simple;
-	bh=SiSt8hzbmakPRnV2hYaVnDksCH6hLKmZrGANCxDcjRI=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=retAYHqc62d77wvrlycJcRGHPS9SX6d1RXMnm6ZW7NbX+nZpJXpPGhSYd54dxJFN4737BvEMCMVN93ujWA7Hr+RBKfg3l4X4BS1hSDb3ckvozrec5L2fL2ObYa5AlTpYxrEyG+G1+EuC16+yPuBDQo0E+diWba6XzERPW9OQx9E=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=hh/9bV69; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1780513135; c=relaxed/simple;
+	bh=J+TlwXD7dOlvOSdHXvi7ugjYUf2PrQZJf8lyb1a9oPI=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=I0d+z7IHDAZ/f1jkq1PGvEOqE1FXjOkdBqZ0nThnyd5OB4K57PfdbTwV9SRXNvcvgUcvN6gLhzecffmA0uMEztuznD7O6DCJ1E7Z16VODYqSG3Z6NmODQr1R3Fg1GijNjXi9k7i1t6E23f/Jo6pJ+RCzzXxoRmnnjizIHdwHN24=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=FGsrNp4V; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="hh/9bV69"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id F30FF1F00893;
-	Wed,  3 Jun 2026 18:57:38 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="FGsrNp4V"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id E559A1F00893;
+	Wed,  3 Jun 2026 18:58:51 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1780513059;
-	bh=RX4d74f04pepuZEZJcA0ouLh0KVGVghTY0anwHnl4Tk=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To;
-	b=hh/9bV69EVBuhDHu90HITcwQlCmpoacIztc7OLK9M+haohvn2WMOkX2DXl7HTLCGI
-	 NsYXG43bFSKgOiGGnq2UCtch3bKyCsO6Wg8Y9d/1WfTQwx54afsg5Qs43iXxSr9Zqd
-	 Aluf2gmIprsbz/VImR9xfo/7R6lkqExhbxsfBovVRKroeyyw8yjsa/BCapz5d/DSSd
-	 XoSwFDLOhvD2F0r9bRK8pDYnT2bDrHFOnjqZaR89f6c0UHvxXGcc7rHXgQrtWVnEWV
-	 eUa3Z7IoqJZFae1QWZ0hOsmv2CDPuI/Fyc4iGdDKJPxvdGb9DLHvI6CBr/DE/luyIT
-	 kzJI/aoFqgRzg==
-Message-ID: <57ac3334-a7c4-41f3-ac9b-99993162ae55@kernel.org>
-Date: Wed, 3 Jun 2026 13:57:38 -0500
+	s=k20260515; t=1780513133;
+	bh=U7NW7GBbndKKy+0XI/JSnMfnKxb8c9R/OkuZ5OvLGXI=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=FGsrNp4Vc2QMRZcccyTX2RnTiuRZ0l5wgp2+kPbOnGRkZHVclJobF4pcYjuyt4H0J
+	 Q+8jplS7HCL/TPG/UEWSqpFougpcC07AxrW4FNJEgy8Wuw0YVNVJIp9D06lIhl/xBL
+	 7oV2LJZRP/i54zmx+8j5y0I5EdINUQh89qMMotviHkrYDGrsCiir9khVNVlvat+f5c
+	 8Iw5tjqYi2zGEy4tEDKkpBZ+eY55Ce+aT/Sz8qzZGqj4QBBe13WSI8yLMualo2KMhs
+	 stVjTHlcVqE58+WKekHjLX0IVOb0nCE2lgVOg1tik7I5u+c/5WrcUtCl28scHSAfM2
+	 Ac+upOUDWzP4w==
+Date: Wed, 3 Jun 2026 18:58:50 +0000
+From: Yosry Ahmed <yosry@kernel.org>
+To: Nhat Pham <nphamcs@gmail.com>
+Cc: kasong@tencent.com, Liam.Howlett@oracle.com, akpm@linux-foundation.org, 
+	apopple@nvidia.com, axelrasmussen@google.com, baohua@kernel.org, 
+	baolin.wang@linux.alibaba.com, bhe@redhat.com, byungchul@sk.com, cgroups@vger.kernel.org, 
+	chengming.zhou@linux.dev, chrisl@kernel.org, corbet@lwn.net, david@kernel.org, 
+	dev.jain@arm.com, gourry@gourry.net, hannes@cmpxchg.org, hughd@google.com, 
+	jannh@google.com, joshua.hahnjy@gmail.com, lance.yang@linux.dev, lenb@kernel.org, 
+	linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-mm@kvack.org, 
+	linux-pm@vger.kernel.org, lorenzo.stoakes@oracle.com, matthew.brost@intel.com, 
+	mhocko@suse.com, muchun.song@linux.dev, npache@redhat.com, pavel@kernel.org, 
+	peterx@redhat.com, peterz@infradead.org, pfalcato@suse.de, rafael@kernel.org, 
+	rakie.kim@sk.com, roman.gushchin@linux.dev, rppt@kernel.org, ryan.roberts@arm.com, 
+	shakeel.butt@linux.dev, shikemeng@huaweicloud.com, surenb@google.com, tglx@kernel.org, 
+	vbabka@suse.cz, weixugc@google.com, ying.huang@linux.alibaba.com, 
+	yosry.ahmed@linux.dev, yuanchu@google.com, zhengqi.arch@bytedance.com, ziy@nvidia.com, 
+	kernel-team@meta.com, riel@surriel.com, haowenchao22@gmail.com
+Subject: Re: [RFC PATCH 0/5] mm, swap: Virtual Swap Space (Swap Table Edition)
+Message-ID: <aiB2sHqxcBAJrTkP@google.com>
+References: <20260528212955.1912856-1-nphamcs@gmail.com>
+ <ah-A2gQ0GPgerXop@google.com>
+ <CAKEwX=MWX9KkSFAoN4xEMg3b+gZUN9=yd7rirAWG5NOBf26eAg@mail.gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [GIT PULL] amd-pstate fixes for 7.1 (2026/06/02)
-Content-Language: en-US
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: "open list:CPU FREQUENCY SCALING FRAMEWORK" <linux-pm@vger.kernel.org>
-References: <2167c764-6159-4a51-b3f0-f0fbf6c147ce@kernel.org>
- <CAJZ5v0ghALXyU8tf0gcT+qirhde7ah8_rQ9+FryuArfbLTe01A@mail.gmail.com>
-From: Mario Limonciello <superm1@kernel.org>
-In-Reply-To: <CAJZ5v0ghALXyU8tf0gcT+qirhde7ah8_rQ9+FryuArfbLTe01A@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <CAKEwX=MWX9KkSFAoN4xEMg3b+gZUN9=yd7rirAWG5NOBf26eAg@mail.gmail.com>
 
-On 6/3/26 13:49, Rafael J. Wysocki wrote:
-> On Wed, Jun 3, 2026 at 8:36 PM Mario Limonciello <superm1@kernel.org> wrote:
->>
->> The following changes since commit e7ae89a0c97ce2b68b0983cd01eda67cf373517d:
->>
->>     Linux 7.1-rc5 (2026-05-24 13:48:06 -0700)
->>
->> are available in the Git repository at:
->>
->>
->> ssh://git@gitolite.kernel.org/pub/scm/linux/kernel/git/superm1/linux.git
->> tags/amd-pstate-v7.1-2026-06-02
->>
->> for you to fetch changes up to 5629eec1a2829871d496f3042884cdc267612f6a:
->>
->>     cpufreq/amd-pstate: Fix setting EPP in performance mode (2026-06-02
->> 12:32:06 -0500)
->>
->> ----------------------------------------------------------------
->> amd-pstate fixes for 7.1 (2026-06-02)
->>
->> * Fix a kdoc issue
->> * Fix an issue setting performance state in EPP mode introduced earlier in
->>     the cycle from new 7.1 content
->>
->> ----------------------------------------------------------------
->> Mario Limonciello (AMD) (1):
->>         cpufreq/amd-pstate: Fix setting EPP in performance mode
->>
->> Zhan Xusheng (1):
->>         cpufreq/amd-pstate: drop stale @epp_cached kdoc
->>
->>    drivers/cpufreq/amd-pstate.c | 2 +-
->>    drivers/cpufreq/amd-pstate.h | 1 -
->>    2 files changed, 1 insertion(+), 2 deletions(-)
+> > I assume the main reason here is to avoid the extra overhead if
+> > everything uses vswap, which would mainly be the reverse mapping
+> > overhead? I guess there's also some simplicity that comes from reusing
+> > the swap info infra as a whole, including the swap table.
 > 
-> I won't be able to pull it this week, so it will become post-rc7 material.
+> Yeah it helps a lot that we don't have to rewrite the whole allocator
+> and swap entry reference counting logic again :)
 
-OK!  Thanks for letting me know.
+I specifically meant using a full swap info thing for the physical swap
+device even when it's behind vswap. That seems like an overkill, and we
+don't need things like the swap entry reference coutning. We probably
+just need a bitmap and a reverse mapping.
+
+So I am assuming the main reason why we are not doing that (at least for
+now) is simplicity?
+
+> >
+> > I don't like that the code bifurcates for vswap vs. normal swap entries
+> > though. Not sure if this is an issue that can be fixed with proper
+> > abstractions to hide it, or if the design needs modifications. I was
+> > honestly really hoping we don't end up with this. I was hoping that the
+> > physical swap device no longer uses a full swap table and all, and
+> > everything goes through vswap.
+> >
+> > I hoping that if redirection isn't needed (e.g. zswap is disabled),
+> > vswap can directly encode the physical swap slot so that the reverse
+> > mapping isn't needed -- so we avoid the overhead without keeping the
+> > physical swap device using a fully-fledged swap table.
+> 
+> Can you expand on "vswap can directly encode the physical swap slot"?
+> I'm not sure I follow here.
+
+I meant that if redirection is not needed (e.g. zswap is disabled), then
+instead of having a vswap device pointing at a physical swap device, we
+can just the data (e.g. phyiscal swap slot) in the vswap device
+directly. Then we don't need a full swap info thing and swap table for
+the physical swap device.
+
+This directly ties into my question above, about why we have a
+fully-fledged swap info thing for the physical swap device when using
+vswap.
+
+> >
+> > All that being said, perhaps I am too out of touch with the code to
+> > realize it's simply not possible.
+> >
+> > Honestly, if the main reason we can't have a single swap table for vswap
+> > is saving 8 bytes on the reverse mapping, it sounds like a weak-ish
+> > argument, even if we can't optimize the reverse mapping away. But maybe
+> > I am also out of touch with RAM prices :)
+> 
+> In terms of the space overhead I do agree, FWIW :)
+> 
+> I think the other concern is the indirection overhead with going
+> through the xarray for every swap operation, hence the per-CPU vswap
+> cluster lookup caching idea:
+> 
+> https://lore.kernel.org/all/20260505153854.1612033-23-nphamcs@gmail.com/
+
+Right, but we should already avoid the xarray with the swap table
+design, right? We just have one swap table pointing to another
+essentially?
+
+> >
+> > I at least hope that, the current design is not painting us into a
+> > corner (e.g. through userspace interfaces), and we can still achieve a
+> > vswap-for-all implementation in the future (maybe that's what you have
+> > in mind already?).
+> 
+> That's still my plan. Operationally speaking, I want to make this
+> completely transparent to users, with minimal to no performance
+> overhead.
+
+So if CONFIG_VSWAP is set all swap devices are vswap by default, right?
+Would it help with testing if it's controlled by a boot param?
+
+> 
+> The next action item is to optimize for vswap-on-fast-swapfile case -
+> that was Kairui's main concerns regarding performance. I spent a lot
+> of time perfing and fixing issues for this case in v6. The issues with
+> the most egregious effects and simplest fix (vswap-less
+> swap-cache-only check for e.g) are already fixed in this new design,
+> and eventually I will move the rest (lookup caching) and more to here.
+
+So is the end goal to have vswap be the default rather than a special
+swap device? It would certainly help to include some details about that.
+
+> >
+> > Aside from the swap code, the only sticking point for me is the logic
+> > bifurcation in zswap. Why does zswap need to handle vswap vs. not vswap?
+> > I thought the point of the design is to use vswap when zswap is used,
+> > and otherwise use a normal swap table. In a way, one of the goals is to
+> > make zswap a first class swap citizen, but it doesn't seem like we are
+> > achieving that?
+> 
+> We already have all the machinery to make zswap completely
+> independent. Right now, if you use vswap, you'll skip the zswap's
+> internal xarray entirely, and just store a zswap entry in the virtual
+> swap cluster's vtable.
+> 
+> I just haven't removed the old code for 2 reasons:
+> 
+> 1. Reduce the delta on this RFC, to ease the burden for reviewers (and
+> definitely not because I'm lazy :P)
+> 
+> 2. The only other practical reason is so that we can let users compile
+> with !CONFIG_VSWAP and still uses zswap on top of the old swapfile
+> setup during the transition/experimentation period for now.
+> 
+> But logically and conceptually speaking, there is no reason I can come
+> up with to use zswap on without vswap. The CPU indirection overhead is
+> already partially there (since zswap uses an xarray) and further
+> optimized (cluster loopup caching etc.), as well as the space overhead
+> (vswap replaces the zswap xarray). I actually wrote a whole paragraph
+> about how we should always go for vswap if we're using zswap, but then
+> decide to remove it since there's no code for it yet.
+> 
+> If folks like it, what I can do is have CONFIG_ZSWAP depends on
+> CONFIG_VSWAP, removes all the non-vswap logic, and call it a day? :)
+> Then, on the swap allocation side, if vswap allocation fail and zswap
+> writeback is disabled, we can error out early.
+
+Hmm maybe we can keep it around for now and do that after vswap
+stabilizes? It ultimately depend on how much complexity we maintain by
+allowing both.
+
+I think another problem is 32-bit, technically zswap can be used on
+32-bit now, right? So vswap not supporitng 32-bit is a problem.
+
+General question (for both zswap and general swap code), would a boot
+param make implementation simpler? Right now we seem to key off the swap
+device having the "vswap" flag, would it help if it was a runtime
+constant?
