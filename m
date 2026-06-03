@@ -1,210 +1,234 @@
-Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
+Received: from DM5PR21CU001.outbound.protection.outlook.com (mail-centralusazon11011037.outbound.protection.outlook.com [52.101.62.37])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9B63C477E53
-	for <linux-pm@vger.kernel.org>; Wed,  3 Jun 2026 18:51:47 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1780512708; cv=none; b=IXGmcaZ3lxEM+1+pXtPaBgdT7n+YaSNMeARMAn5CHPzK+AEFkpZatlpFIflC/boHwNAzZa2fy+RaDLsYYTCylCWDY2+GmcsNWSMuWY14NgNkWQmTDwa8mCKXJ22KBtFL+826FOKcUoE9tFkYjJgistZjOVnS/KFLG30B6iDN4IM=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1780512708; c=relaxed/simple;
-	bh=SlqtCY60mHsDAVgQllPjTztuC7AhA5LchoyFVMWeoAI=;
-	h=Message-ID:Date:MIME-Version:Subject:From:To:Cc:References:
-	 In-Reply-To:Content-Type; b=UMORRj53eZF3ZSwsT+5TgA3YhGoVAAmfJFqz2Nr+H/rD3u4222O/4bfGCJm0Tve19/zYYKXSoIi6dICHuFJSuL2abVEEsI7Ac2nVKA6y7W39VWuaUJP3aImjDQq+b1AgOfTlhMhHJK3tMEAnLpn5tEGUmljnwpwBXlfBWQvRmqc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=DSSI+Cfa; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=dhak67tu; arc=none smtp.client-ip=205.220.168.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6D9AA4657C0;
+	Wed,  3 Jun 2026 18:53:27 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.62.37
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1780512808; cv=fail; b=B0kzPujO2bP9iH/8nn5QbRY2AecnjessAkn70ziwiSHqwQL/qrf4gy8wqcxcFxj9zmkwzgoMkYzZlSLyigwqzZExeUHoUBDnlB/TsuFwqWRsT8f11f1uOFJE+81hfakMwaPQt+CXf9g3YRs7H1fcMs1XUd27uokMgK06AeS9k0I=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1780512808; c=relaxed/simple;
+	bh=fNRMoulCQaKoHipS1M3GheAkDg4GUIHdjtT5ieMGjbk=;
+	h=Message-ID:Date:Subject:To:Cc:References:From:In-Reply-To:
+	 Content-Type:MIME-Version; b=Yga/B8eUxWOoBOec1AAN1D44JofYG/O1XBoEacUENCxfP35d+9wCx3xzdeSJa6dQhv6Mmc9R6yoIMSjNQWHXuY87z8AiyNXhPY6dpjR18wbusbMduqdH3FQoz6CHmxnX3JCF5I0Z/zkfN1+b5kzW3uMmnhvGENbkYKxJQ3nO20Y=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com; spf=fail smtp.mailfrom=amd.com; dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b=sd0fXd0N; arc=fail smtp.client-ip=52.101.62.37
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com
+Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=amd.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="DSSI+Cfa";
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="dhak67tu"
-Received: from pps.filterd (m0279865.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 653C2QlZ3077833
-	for <linux-pm@vger.kernel.org>; Wed, 3 Jun 2026 18:51:47 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	Lv8EJ1diTsBXv/odiyMibLViRdzTqWcOuv6X6cwVhSU=; b=DSSI+CfaYqpxskZn
-	Rjdu0PKMxKG+Uyb5wU5NB9fqm72SMVzbOmy2uhC5y9v/y+sCaoGLbzawaI459RbP
-	hoi/XvgnEXXW/2ssP3yYhRcjsvLsX3MfeoK0vqc/ySRCgF+McqG1MnlU5mXZ4WPX
-	KNS8sC2gxJ7tN2eDYdrTDeKDhl38WehZSfh+tC2OCggjSosgizvYsdngF2Gu0LtO
-	QLltNj/mW7ziAPRoNPpeB1ySABpukGjr0OEWQeIuFwEn5GrXF3i6N9BD1KrbV8l0
-	PyFseuIbl3VM1V6nkXBlSqw/7K/jRsNHMs/RoeO6Yzu7Q1uQyR7Z6lIbjypUqzd0
-	oKV4Dg==
-Received: from mail-pj1-f70.google.com (mail-pj1-f70.google.com [209.85.216.70])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4ejabbv5cp-1
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Wed, 03 Jun 2026 18:51:46 +0000 (GMT)
-Received: by mail-pj1-f70.google.com with SMTP id 98e67ed59e1d1-36b9d265308so5195744a91.2
-        for <linux-pm@vger.kernel.org>; Wed, 03 Jun 2026 11:51:46 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1780512706; x=1781117506; darn=vger.kernel.org;
-        h=content-transfer-encoding:in-reply-to:content-language:references
-         :cc:to:from:subject:user-agent:mime-version:date:message-id:from:to
-         :cc:subject:date:message-id:reply-to;
-        bh=Lv8EJ1diTsBXv/odiyMibLViRdzTqWcOuv6X6cwVhSU=;
-        b=dhak67tunAJjuAMrReSHbLCjz5Etk4uFOvDcDh1HnWzC4E+YtMWi3H4Wx47DWfnY91
-         fMr8iRCUswu1a/ta9yDu7XdXLkj21t4bSRpgIrZbPjcuIXvcaVZMdrhh0TLdem/sMXXW
-         jlW4dGvWN75hnIHV1xBTJEu049kEoeESTvOGqWlcl6oqUHasFZGQtKrXMUPFY7mttRoJ
-         JkKWwlUD+fj7ekk1EwWffjafSRBZc9exEtXH+ItzX5GrHY6mdSEvKkqCUkHq4L8qLSuC
-         fbHwoxt+yx4LqyCoiYBKPMi3JpcQ2k+ROAHyj1BOra2YoHLT2N6aPZJXRw/9U8YPkIxQ
-         a0Lw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1780512706; x=1781117506;
-        h=content-transfer-encoding:in-reply-to:content-language:references
-         :cc:to:from:subject:user-agent:mime-version:date:message-id:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=Lv8EJ1diTsBXv/odiyMibLViRdzTqWcOuv6X6cwVhSU=;
-        b=WRtvgnlLT5lD1h3vwCUNy/BQT82jdtiwmPC5bW4/qxmNHtyhq34zqg2HSeQhc3Xr1W
-         rrUAcxA9TJIyxIXHPUb72JOmJZRs/Nvwdg3PXh3S5CKf8n1MdXTFmN0K+wUDbyG0Htk5
-         hfOU7K7ckA2taW4xHStYUUSjFyrlhKUOVTs28RXbcb9Q+/BGEZpAQRFg7u7Rd77d1C57
-         QVcLMvHGH8VLKMqKNTIg60lGXD30NrqkgnLA//8Orh1FE3cvRPf1FE8JsHewYk2Gr6oR
-         a9rdQ/kr5smQpqD6xXl4yRYly6v51ZSoxxcrsK8oyDo525vSB/B3HZ935Bggys4l5IG/
-         eklQ==
-X-Forwarded-Encrypted: i=1; AFNElJ9zTSBBUvBeJ8da9aJWuxQ+n5dH7u0jF1eAwQ/LFzEf/WHd8HQMsFDYzQ4IHlNL7RFBAHwe+zH61Q==@vger.kernel.org
-X-Gm-Message-State: AOJu0YxcxhtQidTgpdH6yJfoZuliDibS6enqtOGqNCox8EIFxFR7TzGf
-	9lvr3g015u+JFQLotEdaDm6Sx2/hBYMU+LASBCAbBZHAYiZL6gN+KlBZtO20XeYgjUu/OHFNoUO
-	HwNe4qXGXxYvVvj0GuWwB0x3jYw3oY+Nf69YdZs+kJGAJaCNXmXgXEOU2i/0HiQ==
-X-Gm-Gg: Acq92OGKcryXn1QFNNBLcobCLZkoDSHX9GZJryu5m7xRags9b1PQtlyi8yXW8zPRmEM
-	nkfIeIGlb2ff8dXlmcKupejawdmHPgOd3kdbcptbBm8Tg29XinTGp+XJpewDkc23tLBZFCrWalc
-	wE4i1DkGpJ/ZzewROHKO0tjUBere0gRupQy8zph625itaKiRdL5fve1bxvEWUBE8mAyrkUCUWg2
-	7PQKL3gEeCIwLqvkZgmnadG5agW6DDt6GKCHsEnBmP6FM0WH68AzhSXaBULumogBP1B8zlEyxOU
-	j6B0LXNzxTGlzuQQQrD6aEuVtcrOoATD45MxHuZKwlEzXquMYDXqvtZDHzCGNnQoQ7JYPlIXEIu
-	ybFWaxO4ziEwMdYLgwPkP1dYWn3sI84c76yN4s6Lp9m3C3qK+i9tHjBInLAIl5aKWnh/V
-X-Received: by 2002:a17:90b:2d8d:b0:36d:ae6a:22fe with SMTP id 98e67ed59e1d1-36e32288dc4mr4701726a91.16.1780512706180;
-        Wed, 03 Jun 2026 11:51:46 -0700 (PDT)
-X-Received: by 2002:a17:90b:2d8d:b0:36d:ae6a:22fe with SMTP id 98e67ed59e1d1-36e32288dc4mr4701693a91.16.1780512705590;
-        Wed, 03 Jun 2026 11:51:45 -0700 (PDT)
-Received: from [192.168.29.31] ([49.43.225.172])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-36e6d169abdsm2001534a91.0.2026.06.03.11.51.34
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Wed, 03 Jun 2026 11:51:45 -0700 (PDT)
-Message-ID: <81680397-3bbd-4f66-9166-546c8fe753fc@oss.qualcomm.com>
-Date: Thu, 4 Jun 2026 00:21:32 +0530
+	dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b="sd0fXd0N"
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=J4cqAUs9r0aLgDpYN0qbePldFj+LNdAhLX/hlsg4/2hImq15HLz+nI5Ifa4wrj98TENwxVm7nC5cgTTS2b6tEMD4tLr4VE21JqFscK06JyOiPBRzEpmFdXXzQW9H1ZUELw9TmAQqp70mqehqxeeZw8FfMHMoKgOtnVsdUCT+8ZHIvYRi2iF1IueyhdYtQUx703P2w7t+7tUdWTwbGHlwSW8VkzxzOWEbj0RXJlW2gBIzutrXtUk0zj7lC1S7U72pNaKSUrt0uPNW9/AysXwCyawdXBKRvurzqs2wK3ot93KzvOcx4qC9/jruSbIDFXEIcGxqsX6waOhR23EMYL98vw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=ZiBwmemA3Nntw6usqWudkfL/lFRxtxyQjpgVtyQuphE=;
+ b=Ob8UmqUy0jrln1HE0oMkUQEimgNl/76ue6tHYMvsJHOLTQzPAGuHCj5ozoVIttIMbWYagTaHFElYfXMid65uYOIc4UvyGrLHkxr2cKopIVbCrSPwiH3e+pmAh2q4LIFr1tC6vkM8ghvh4QUF2AN6O8A8N5Z02QaZJI1fbZ8jKbty5Wzl2C86Lzsl/sa9JTNLvXzmPZH6zbWZzGCACSOK6b2fvL29kvLBitkLoeOJn8FFjjtiFbmTX/WRX0zYjrkSksSVqho4EzH3uKBA5Qn+NErxiZkQRYa4oEyl1bCBNUTc19oX4NAw8ltQZ5aI0ZRP3rq3fVDxHEI9mw5TOvCGvw==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=amd.com; dmarc=pass action=none header.from=amd.com; dkim=pass
+ header.d=amd.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=ZiBwmemA3Nntw6usqWudkfL/lFRxtxyQjpgVtyQuphE=;
+ b=sd0fXd0N0pG4d/wwRy1ilpuKLhz8TPpV8EvfDl7JZxDW/qGU3Pr5gIcL++xHSmbIvkbGjXzgx0Ll3jVUsul6dsFEnKpRzhyyTGE/YUhFBRt/rTNIbfu08x18vuBHYCpb+GumFVMQs1XVNwWvH+yRZEZMDq03DVVO+XNwRvOgYog=
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=amd.com;
+Received: from PH8PR12MB6914.namprd12.prod.outlook.com (2603:10b6:510:1cb::21)
+ by LVUPR12MB999159.namprd12.prod.outlook.com (2603:10b6:408:3a4::15) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9891.15; Wed, 3 Jun
+ 2026 18:53:23 +0000
+Received: from PH8PR12MB6914.namprd12.prod.outlook.com
+ ([fe80::2893:177a:72b0:6000]) by PH8PR12MB6914.namprd12.prod.outlook.com
+ ([fe80::2893:177a:72b0:6000%6]) with mapi id 15.21.0092.006; Wed, 3 Jun 2026
+ 18:53:23 +0000
+Message-ID: <2e3a5f9a-69fe-4790-8b8b-2d1622977a2f@amd.com>
+Date: Wed, 3 Jun 2026 13:53:18 -0500
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v2 1/2] cpufreq/amd-pstate: Fix EPP initialization for
+ shared memory systems
+Content-Language: en-US
+To: Marco Scardovi <scardracs@disroot.org>, kprateek.nayak@amd.com
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+ perry.yuan@amd.com, rafael@kernel.org, ray.huang@amd.com,
+ stuartmeckle@gmail.com, viresh.kumar@linaro.org, wyes.karny@amd.com
+References: <4cb9459c-f471-478a-9670-58d898619f45@amd.com>
+ <20260603120121.25772-1-scardracs@disroot.org>
+ <20260603120121.25772-2-scardracs@disroot.org>
+From: Mario Limonciello <mario.limonciello@amd.com>
+In-Reply-To: <20260603120121.25772-2-scardracs@disroot.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-ClientProxiedBy: CH0PR03CA0002.namprd03.prod.outlook.com
+ (2603:10b6:610:b0::7) To PH8PR12MB6914.namprd12.prod.outlook.com
+ (2603:10b6:510:1cb::21)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v22 08/13] mfd: core: Add firmware-node support to MFD
- cells
-From: Shivendra Pratap <shivendra.pratap@oss.qualcomm.com>
-To: Lee Jones <lee@kernel.org>, Bartosz Golaszewski <brgl@kernel.org>
-Cc: Sebastian Reichel <sre@kernel.org>, Mark Rutland <mark.rutland@arm.com>,
-        Lorenzo Pieralisi <lpieralisi@kernel.org>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Daniel Lezcano <daniel.lezcano@kernel.org>,
-        Christian Loehle <christian.loehle@arm.com>,
-        Ulf Hansson <ulfh@kernel.org>, Rob Herring <robh@kernel.org>,
-        Krzysztof Kozlowski <krzk+dt@kernel.org>,
-        Conor Dooley <conor+dt@kernel.org>,
-        Bjorn Andersson <andersson@kernel.org>,
-        Konrad Dybcio <konradybcio@kernel.org>, Arnd Bergmann <arnd@arndb.de>,
-        Souvik Chakravarty <Souvik.Chakravarty@arm.com>,
-        Andy Yan <andy.yan@rock-chips.com>,
-        Matthias Brugger
- <matthias.bgg@gmail.com>,
-        John Stultz <john.stultz@linaro.org>,
-        Moritz Fischer <moritz.fischer@ettus.com>,
-        Sudeep Holla <sudeep.holla@kernel.org>, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org,
-        Florian Fainelli <florian.fainelli@broadcom.com>,
-        Krzysztof Kozlowski <krzk@kernel.org>,
-        Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>,
-        Mukesh Ojha <mukesh.ojha@oss.qualcomm.com>,
-        Andre Draszik <andre.draszik@linaro.org>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Kathiravan Thirumoorthy <kathiravan.thirumoorthy@oss.qualcomm.com>,
-        Srinivas Kandagatla <srini@kernel.org>,
-        Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
-References: <20260514-arm-psci-system_reset2-vendor-reboots-v22-0-28a5bde07483@oss.qualcomm.com>
- <20260514-arm-psci-system_reset2-vendor-reboots-v22-8-28a5bde07483@oss.qualcomm.com>
- <20260521112638.GD2921053@google.com>
- <CAMRc=MfqaCjiALZyVBHQs=Taft1M9xmNTFvQHWPrd5PgcTfJDQ@mail.gmail.com>
- <20260521132419.GA3591266@google.com>
- <CAMRc=Me5QS4xA3PJWXNuRP1N_C+w3sP9ZvqH36GNh2Ebc9hwcw@mail.gmail.com>
- <20260521162705.GH3591266@google.com>
- <CAMRc=MdiwwX_XH7JFW8HuLvYA_ao50fjj0Oip2WMM4QROHRiFA@mail.gmail.com>
- <c034a7c5-7215-4e96-80cf-ef0c51f8291b@oss.qualcomm.com>
-Content-Language: en-US
-In-Reply-To: <c034a7c5-7215-4e96-80cf-ef0c51f8291b@oss.qualcomm.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNjAzMDE4MyBTYWx0ZWRfX5qy9TDKwFlcH
- 1MELZIcBZOX5GtpBEy743En2EprgBYeGkfPhukjDf05zAdRXV4wwluqcUEgBnlbc1dxZskG4Trn
- xBG4m/oRhncSZXMWp3ZnecBJhn4f3bUwXtYiXDh6Yc3iJFgIoFiNJD/MJ1X0MhofMo6vz4YxYET
- +Bq6C4Y4ta63m8DAoAIZqIqBCwBf/Q3HDAyMGi1Kufb38t6tdNKU0SA7VA/7KTWO2sWNr+R+KzU
- 8Xjd/vvhlUtMAvMhpI/SK/Ucukdfs9IBzbG1r6bvXZ6EWDQC80W1tbTVTLzd5THbmMFErMNqjTw
- dc7buWFgVSx5r9BAQuxPujuQRyW7KwSzB1SxaYmWHXJNcx0GdgcHEcB87XpuHFryYJF2wC0hSUf
- +Pv6AvIBKvpSpls7oQA+m/tORK1qcZbrvbNvx+ewMUHexVSARwZC7aJRbkXuLI5BLOh9OfWeY3u
- 23KZMaIQTsmI1GN9y/Q==
-X-Authority-Analysis: v=2.4 cv=UqZT8ewB c=1 sm=1 tr=0 ts=6a2077c2 cx=c_pps
- a=0uOsjrqzRL749jD1oC5vDA==:117 a=eYGGw6GSBUcLogt407YXxQ==:17
- a=IkcTkHD0fZMA:10 a=FelO9ux0wxsA:10 a=s4-Qcg_JpJYA:10
- a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=Um2Pa8k9VHT-vaBCBUpS:22
- a=VwQbUJbxAAAA:8 a=7l-9YH0O8PdptT7AxrwA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
- a=mQ_c8vxmzFEMiUWkPHU9:22
-X-Proofpoint-ORIG-GUID: 8n3Ox2PKMAuVcSzjE03vv6iKYC_ckxXD
-X-Proofpoint-GUID: 8n3Ox2PKMAuVcSzjE03vv6iKYC_ckxXD
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.125,FMLib:17.12.100.49
- definitions=2026-06-03_05,2026-05-28_03,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- adultscore=0 malwarescore=0 lowpriorityscore=0 priorityscore=1501
- impostorscore=0 bulkscore=0 clxscore=1015 spamscore=0 suspectscore=0
- phishscore=0 classifier=typeunknown authscore=0 authtc= authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2605210000
- definitions=main-2606030183
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: PH8PR12MB6914:EE_|LVUPR12MB999159:EE_
+X-MS-Office365-Filtering-Correlation-Id: 7fb5db94-5274-4c6c-0361-08dec1a1625d
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|376014|1800799024|366016|5023799004|11063799006|4143699003|6133799003|56012099006|22082099003|18002099003;
+X-Microsoft-Antispam-Message-Info:
+	uyTyQXzVxVKez3eAHubKnKT+BZWiBeVE5tn3pFJqZv6rvHX00EoNkozcbKxVXSrs4pDR4dX7sO1gUxqT09C+iU50w7e6tv10HyQIfPcXvGjAmdTWwbeMhEwN6rBsP0znZYGqDKyYvS42HM+Y90P54dG7AOeJWdI2EhxqoIhc/50RIjFDT4oiwQfMR4NheqS3rh2ntijSLF86WagAXA+qJvPHmdczahopbKfQD6wCbpFZL36MX3Rd3O0kJ6+tgJsOWRax3kW+GU3x2ijI+kNnMP7ENJaH5DhZsF0twsoVLmpy5tzPaIoMynSwqHRrdzievHslxyjATjsNeHjMVH4NhklPdyoKj/5iotmKGGVrcYuiz/LJy0MIMRipAvmcS7slnDyPEY9uULJtLxCPHsQwgFUVaNWnzJTctJVTRC3j1hGvxzalvyG7bzzkhQ/n6/kQgN6ATcvNkRhKsFfZwknRA6BhydILCLTMxX5WCdbRI5ILkwqUZaOZCO9xu+wJ8ONvYX8spDKWBaWBggUSEFqnhBAKmrhrim5irY71/r9scdD7Dpy10LQiidNl3jsNPwts0DdY4eF8Qt0/lFAtH9CaCYeXtplZuYQI2tAdh+hUY+d1QkSJzNsr/htuDgtv2AvLxVX7H48W1CKzElZDI+vigaGsnc4NEYTnpoMgbTu8aTABluafSa/pcG7y6Z35UrZulArZ2r/iv8cL8UIpVEct0Q==
+X-Forefront-Antispam-Report:
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:PH8PR12MB6914.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(376014)(1800799024)(366016)(5023799004)(11063799006)(4143699003)(6133799003)(56012099006)(22082099003)(18002099003);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	=?utf-8?B?RHVLQVZGVVdydVZqK2xyRWlDbHNRS3ZrSGdMQlN1ZzhYK0xqK0d3QmxqMm1s?=
+ =?utf-8?B?aS82VDZvSHRyTjhCRVBOM0dSWmsvZENadWkyMjVlV01BWFBrZHhTZ0k4d0xU?=
+ =?utf-8?B?Q09jQWVxZDd5R05qSEV2cWNpQWI0OGh3ZDFxNDZ3aDA3QmRwa2ZJRHdYeGcz?=
+ =?utf-8?B?ZnVnbjE3NVJ0U1VSR0dXMFhEUGFZNmJXWFZMZ3ZIUGl4cGxySzRUMlpzQnRO?=
+ =?utf-8?B?VmdtT1BpM1lvVUlQUkhPYldDTVh4a29zOFp6TlFqRmpVVzNpc043WWI0VGhx?=
+ =?utf-8?B?c3JtRTFiSW9VaExhM1IrU1g3K2YzUUFqY2U4UDNvZnl2YXFtUks2NW9BTmpx?=
+ =?utf-8?B?aTcwdHo5bksrQWR5bVc5c1l2NkZBK09FdVJDUnZhRDZFNmhkY21BaHVnZXNl?=
+ =?utf-8?B?OXk1R3U4aTQ4NkN6NVVSOHhvRU14cFdwODJSOEtuOUxiRnNYbVMvbGNuQjBK?=
+ =?utf-8?B?cXlkbkttY3JpcEQzZUhmUjJUZ1NtOEJscDhtOS9CditldW1raXFxcWJwdW5o?=
+ =?utf-8?B?eWZSb2k2alVaS3Rqc2t5ZTVFSnE1VVAvaTFYUDBPMm1DRzZ3a0krU1BPQTVV?=
+ =?utf-8?B?YzBXSndwT0ZZMFZsL0lTNXczckJmR0NVbXdSSUtVRjRqVFdNTnFCN3Z4N3BZ?=
+ =?utf-8?B?Mk9wNXhHUllQbUVjd2ZSdVhlMnNrUFd4TFNOUS8yaW9GRGNjOUw2THBKWVJ3?=
+ =?utf-8?B?THRLTFhaNk1KUlMzUnE5bGVjOEhFcGVzVWsxR3BjUWsyL0tPTzdkWUxqdGtU?=
+ =?utf-8?B?emdxQThUN0tFRVlpWU9EL0tiU01seE9TRXk4OUl3ZEFubWo4dllDUmZneUJ2?=
+ =?utf-8?B?NTNmL0gzZitYOEhoVHhXdnVZQzdqYkJWd0N5WWpaZHZxaHhaUFlRUGlYNExT?=
+ =?utf-8?B?TnQzKytnMHhib1J1cnd6MS9BeDJTQ205TjlvdmlaQktXOUltT0cydXROK1Vp?=
+ =?utf-8?B?ZGEvK3JLQVo0My9xUzM0dDJrZUUrTUg5RThpVlQ0R3RmMXd1SDdLNzdjSjRC?=
+ =?utf-8?B?S0FpSU1aa2djNDBpMzhPQ0kyMERIRDlTay9VZ1kyVXNtMkM5bkZqWVZJeUNK?=
+ =?utf-8?B?MFM4ZVRobCtub0dkZ2xRTk12dzRDK0VmWnZyTnFOMmIrYkl0ekJJM1J5UkE3?=
+ =?utf-8?B?U3ZDeWtEWkJ3aVNvT0xzRTRhdTF6MnhubFZyaER0eEJHalRTakxzdDhhc1B3?=
+ =?utf-8?B?RG0yWXlIRjU3RmkyN2xBS0J3elByRUliNFNTd1dqaHZTL1hybnBaZU9ndFpV?=
+ =?utf-8?B?TFFPazI2WklEeUNvc1prZWNzNUNNM3E0UjMrOTE1bVRpblVtM3h4TUJ1dXFP?=
+ =?utf-8?B?UURRSVhkRXp0Y1VYWGp4L1RXdGdub0tkcFMvOGhYbG9PdlM3TDk4aTYvbFNu?=
+ =?utf-8?B?L00rc0Z2aUttcy9PMm9pYWlUNm9yQkkxTjN4Nm5PNkdWMXdmRTI4dlo2R1J0?=
+ =?utf-8?B?RWN6SEc2YjU3dXdVN0pCVy9XTHJiTnN6Vm9kK21tckx5NG81amsvUlFVZHZr?=
+ =?utf-8?B?YWZ1ZFBiRzRmcmNFZUM5T2twMzRiWEZwRWltQ0FRSHdnWW8yTHNNOHpOaDNS?=
+ =?utf-8?B?cWp2cktqd2dUSnNYanhXS0FSZWhtZ1B6dlU4UXN2d1h6WU9jS2UzWXpCWjd2?=
+ =?utf-8?B?Qm5KMW9xcENXcHZacWlVZVozSVE4WWE4ZzM0ejFsNnVDM3ZrdFkva3ZmcVd2?=
+ =?utf-8?B?QmJZV0ZsL0RjTmkveVhvOEd3a2VGN01ZdGk4VVJFVG40NERkbGFBdFBsQVZW?=
+ =?utf-8?B?K29LaERLV0crTkhJL1RERUhTbkVicmFuQkw3Q3ltVjlRT1hLM2g0QkY0S0xo?=
+ =?utf-8?B?UmVSeHhsWGJpaGh0UzJKT0grMGtoUW9qcGQ2Wk8ycEplcjNUdzBadVRLWDNC?=
+ =?utf-8?B?d2tiUjFrbGVzcmNKLzIzNFBYdmk5QVZYMXQyMGhBWjhkV0VGczdjTW5zNXhB?=
+ =?utf-8?B?SzI5WlZ3UEkzRWpiR1FobFBDSXArOW1BQXY1QnNGSkdFenJFTkw1R3NkZm1K?=
+ =?utf-8?B?Njh2Zzl4M3lSMGhNK3NsR3hINDNCbGsrVSs2Mm5nWEFwc0dTWEN1RlpkSFFp?=
+ =?utf-8?B?Z2JhTUtJVHNmVTFQYzJpc0NXWUI4VkpGQldScFVzRFBDMktIMitnQTBxWmF1?=
+ =?utf-8?B?M0hXRk4zODVNY0JOcWI3RTF0VzlOdSs4ZTlacWhhcmFndUJXOHVNNEdud2hZ?=
+ =?utf-8?B?QmVDdTdRRWxMcmhWMndybEhvdGF0THJIYmpmNFI2UUd3c1dyN2w1REw1eTRR?=
+ =?utf-8?B?Rk9kOVkzQ3pVcE1uSW9kcnZhRzhUeXU2eFJLcXlYdE5vV3lTc3E2WU1mY3N2?=
+ =?utf-8?Q?6Qx6lzQUNDyb9wB3OI?=
+X-OriginatorOrg: amd.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 7fb5db94-5274-4c6c-0361-08dec1a1625d
+X-MS-Exchange-CrossTenant-AuthSource: PH8PR12MB6914.namprd12.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 03 Jun 2026 18:53:22.7812
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: 0dUSdzMDv4ggMq7oJ1HaTLRn7V+ZVfBW9Ob5+DNK/Bf8vA8lIT7UL4lAt/u1PrW+Rkg/w5XJHQuq4292dqeVxw==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: LVUPR12MB999159
 
 
 
-On 25-05-2026 15:04, Shivendra Pratap wrote:
+On 6/3/26 06:56, Marco Scardovi wrote:
+> At CPU boot/initialization, the private cpudata structure is allocated
+> via kzalloc, which means cpudata->cppc_req_cached is initialized to 0.
+> This makes the default cached EPP value 0 (AMD_CPPC_EPP_PERFORMANCE).
 > 
+> When initializing a system that defaults to performance EPP, the driver
+> attempts to configure the EPP via shmem_set_epp(policy, 0). Because the
+> requested EPP (0) matches the uninitialized cached value (0), the early
+> return check (epp == epp_cached) triggers, and the driver skips writing
+> to the hardware.
 > 
-> On 22-05-2026 14:38, Bartosz Golaszewski wrote:
->> On Thu, May 21, 2026 at 6:27 PM Lee Jones <lee@kernel.org> wrote:
->>>
->>> On Thu, 21 May 2026, Bartosz Golaszewski wrote:
->>>
->>>> On Thu, May 21, 2026 at 3:24 PM Lee Jones <lee@kernel.org> wrote:
->>>>>
->>>>>>
->>>>>> I suggested it because of its flexibility. The alternative I had in
->>>>>> mind is something like a new field in mfd_cell:
->>>>>>
->>>>>>      const char *cell_node_name;
->>>>>>
->>>>>> Which - if set - would tell MFD to look up an fwnode that's a 
->>>>>> child of
->>>>>> the parent device's node by name - as it may not have a compatible.
->>>>>
->>>>> Remind me why the chlid device can't look-up its own fwnode?
->>>>>
->>>>
->>>> Oh sure it can, but should it? I'm not sure it's logically sound to
->>>> have the child device reach into the parent, look up the fwnode and
->>>> then assign it to itself after it's already attached to the driver.
->>>> This should be done at the subsystem level before the device is
->>>> registered.
->>>
->>> Leaf drivers reach back into the parent all the time.
->>>
->>
->> But drivers don't generally assign firmware nodes to devices they are
->> already bound to. This is racy as in probe() the device is already
->> visible to the system. There's no synchronization of device property
->> access - properties are assumed to be read-only for a registered
->> device.
+> The cppc_set_epp_perf() helper is responsible for writing both the EPP
+> register and the CPPC autonomous mode enable register (auto_sel). Skipping
+> the EPP write on initialization due to the false cache hit consequently
+> skips setting auto_sel to 1, leaving the CPU in non-autonomous mode. This
+> prevents the hardware from boosting and leaves the CPU frequency stuck at
+> the lowest non-linear frequency (1.7GHz).
 > 
-> thanks Bart/Lee. Any pointers to take this from here?
+> Fix this by introducing an `epp_hw_programmed` flag in struct amd_cpudata
+> to track whether EPP has been configured on the hardware. Bypass the early
+> return check in shmem_set_epp() if EPP has not yet been programmed on the
+> hardware. Once EPP has been successfully programmed once, the cached EPP
+> value becomes authoritative (representing driver intent rather than dynamic
+> firmware state), allowing subsequent runtime mode transitions to use the
+> cache guard optimization safely.
+> 
+> Fixes: ffa5096a7c33 ("cpufreq: amd-pstate: implement Pstate EPP support for the AMD processors")
+> Link: https://bugzilla.kernel.org/show_bug.cgi?id=221473
+> Assisted-by: Antigravity:gemini-3.5-flash
+> Signed-off-by: Marco Scardovi <scardracs@disroot.org>
+> ---
+>   drivers/cpufreq/amd-pstate.c | 9 ++++++++-
+>   drivers/cpufreq/amd-pstate.h | 2 ++
+>   2 files changed, 10 insertions(+), 1 deletion(-)
+> 
+> diff --git a/drivers/cpufreq/amd-pstate.c b/drivers/cpufreq/amd-pstate.c
+> index 8d55e2be825b..e8057f3dfb1e 100644
+> --- a/drivers/cpufreq/amd-pstate.c
+> +++ b/drivers/cpufreq/amd-pstate.c
+> @@ -424,7 +424,13 @@ static int shmem_set_epp(struct cpufreq_policy *policy, u8 epp)
+>   					  epp != epp_cached);
+>   	}
+>   
+> -	if (epp == epp_cached)
+> +	/*
+> +	 * After the first successful programming, the cached EPP value
+> +	 * becomes authoritative (representing driver intent rather than
+> +	 * dynamic firmware state), allowing us to skip redundant hardware
+> +	 * writes when the EPP value is unchanged.
+> +	 */
+> +	if (cpudata->epp_hw_programmed && epp == epp_cached)
+>   		return 0;
+>   
+>   	perf_ctrls.energy_perf = epp;
+> @@ -434,6 +440,7 @@ static int shmem_set_epp(struct cpufreq_policy *policy, u8 epp)
+>   		return ret;
+>   	}
+>   
+> +	cpudata->epp_hw_programmed = true;
+>   	value = READ_ONCE(cpudata->cppc_req_cached);
+>   	FIELD_MODIFY(AMD_CPPC_EPP_PERF_MASK, &value, epp);
+>   	WRITE_ONCE(cpudata->cppc_req_cached, value);
+> diff --git a/drivers/cpufreq/amd-pstate.h b/drivers/cpufreq/amd-pstate.h
+> index e4722e54387b..fc6cd4b873f6 100644
+> --- a/drivers/cpufreq/amd-pstate.h
+> +++ b/drivers/cpufreq/amd-pstate.h
+> @@ -128,6 +128,8 @@ struct amd_cpudata {
+>   	u8	epp_default_dc;
+>   	bool	dynamic_epp;
+>   	bool	raw_epp;
+> +	/* Indicates that EPP has been successfully programmed at least once since boot. */
+> +	bool	epp_hw_programmed;
+>   	struct notifier_block power_nb;
+>   
+>   	/* platform profile */
 
-Hi Lee,
+I'm having a hard time following why this is needed.  Let me explain my 
+chain of thought.
 
-To take this patchset forward, it would be helpful to get your views on 
-fwnode based addition in mfd-core. Maybe, a member like "*named_fwnode" 
-in mfd-core and then a lookup logic, or any alternatives?
+We start at amd_pstate_epp_cpu_init().
+* cpudata (and thus cppc_req_cached) is initalized to 0 via kzalloc()
+    - On a server we initialize "epp_default" via a lookup to the HW 
+(amd_pstate_get_epp).
+    - On a non-server we initialize "epp_default" to 0x80.
+* we call amd_pstate_set_epp() with epp_deafult as the argument.
 
-thanks,
-Shivendra
+Now in the shared mem backend (shmem_set_epp) we do a lookup of 
+epp_cached and it should be 0.  We do a comparison of the argument sent 
+to the function, and this should be 0x80.
+
+So how do we get into a case that amd_pstate_set_epp() is actually 
+called with 0?
+
+There are some trace points specifically for this purpose - you could 
+confirm there really is such a call by using them at bootup (or by 
+starting in passive and with a mode change to active at runtime).
+
+Then we call amd_pstate_set_epp() with that epp_default value.
+
