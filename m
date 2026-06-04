@@ -1,256 +1,421 @@
-Received: from PH7PR06CU001.outbound.protection.outlook.com (mail-westus3azon11010024.outbound.protection.outlook.com [52.101.201.24])
+Received: from outbound0.mail.transip.nl (outbound0.mail.transip.nl [149.210.149.69])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 50A6023507C;
-	Thu,  4 Jun 2026 18:43:41 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.201.24
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1780598622; cv=fail; b=j05Dkm3XaA2DaFXToMqkQJm3dmGPssbVuJUIEzvSW8fTAgElUjAhCgqSA2fD0d+DULXzv+wvjNIfykc8UzjZNa/94wtcFFrbucGtP14DQ60HZ0sUyJfc+2MK7yGfKWAd50k5VuoTovcutHEIzV5x3e2w3FOSS+V9u5/DikdAgfQ=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1780598622; c=relaxed/simple;
-	bh=ni382DyGVNGc0wjWtGlG9C1JyOiyqje1KnD+/woT1eA=;
-	h=Message-ID:Date:Subject:To:Cc:References:From:In-Reply-To:
-	 Content-Type:MIME-Version; b=f2VodVeXYybAzB+soZTYR8fo1y2QEpt6NND6RiKpVB7FWlWN7GHo/qoAlaNI6CnpjezChY5CEQXh5FIOTWL1Ut1Ynm+CCCKFMI+DmN8FXm5GnuO9lsi0a+n4opiTweidCt4G5Ivi4wWloc/CAkRjzoci/1VekK5ae5LEBTTtFQM=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com; spf=fail smtp.mailfrom=amd.com; dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b=aVjXZBv/; arc=fail smtp.client-ip=52.101.201.24
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com
-Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=amd.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 397FD39D6F6;
+	Thu,  4 Jun 2026 18:44:04 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=149.210.149.69
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1780598652; cv=none; b=Xsi/OwgvD6uT2hP08ROxc9EcTHynKhf2ts1A4HwVwKfYYBg6f127/BvuofHpnKVjsHOuR/Zu0Dc1RJvFlJwi7TvNXj/FOAquJEcSmSP+LGJJLKMsPCurURQLo5EDmDRkGaE9415YQ33sPBhqKtlDHZn4WKYc+xFSVMF2AHJHvsw=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1780598652; c=relaxed/simple;
+	bh=mhEDrQD1J+fsKlnVFpBs+dSejSPFNy2VFwuyp3gXt8k=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=fYCz5BjBYiqP8oH62ofc95LGBmDZjQCmR9dcVg2q0CupeMZGDTtHUR359+bDpZ1eqULkTpxtz7vtDVGoHhWnPrrLnJHMHwPIQHJRMNKit5hJOPib5Mb7+pc1gcrtwQHxOebH2GZ9MdrGmXXqD0Q7ffwnUS4Vdtq+mXnl5BgVuD4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=herrie.org; spf=pass smtp.mailfrom=herrie.org; dkim=pass (2048-bit key) header.d=herrie.org header.i=@herrie.org header.b=d2/FqvLX; arc=none smtp.client-ip=149.210.149.69
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=herrie.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=herrie.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b="aVjXZBv/"
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=LTfNNmtUJHkd82cDwwYMu3Pej6FK8mfKWXG0dXsJirXwUwVZK9nfDOLvfz+asLbbevmIrsmCUv6C+Vwg3M0S5evLPmCcFNiY6L3E8uASyGU1nujIY8LRS8L2zEU89UMjJS22uWUWiIOULI8xTAWC7MCqq25gw7Y8L+VVLdF04/l6LyOlIruQlLJwfUsunOA/gy0WtX0T5VLouj2xy5TXPPSPQnmKvn6Rpz9XRyDz1Rf3A3PnXYNM1AzB00Tjbtfg1FnmDp971QpifGhRltAKkEKXq7yJnENtRF1tQPop2eOajfXt9ZiBgWc63i0jBmArASBqtiaDtd5HbagXGc11Lw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=ATY48Y7oWjpOTIqA+UhRQGpjm/qt2KIBhp0bEdkGklk=;
- b=BX8BbYFmQo1YDu3B8uAJmHXbe54XDHpGRh4uzAcz2Usy4d9yEy0HPGQ+g7KMOYkaTEWiPWgLW/fKq9fk4DF36PWsxBxwNFMtIAclF4ir49frUV+cAFPFHj4NALmvXK8QicBhjg9I3YF9MZkBZ13bZaSWOlvx2HqmMTh1qqVjm0baLuwHIeKAvyey1Oku/LKNcMhUeHRV+GOtHSnBkBVD3yJrsIMXPqgOzwGgABhS0k0wI8wbt/BHsxCJsKyk1dKuA+/ioF04CSiK134fg+b4MHSx4JnXH5C6MPMldGv0CDsRaXqUIUlaL+5XFSKOagApwHBaeplG+/5cqOHPLOWgKg==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=amd.com; dmarc=pass action=none header.from=amd.com; dkim=pass
- header.d=amd.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=ATY48Y7oWjpOTIqA+UhRQGpjm/qt2KIBhp0bEdkGklk=;
- b=aVjXZBv/zRmGt79VXAe83bZD/h28+pBvgKR8x4YYRVLFbO0UqIZL/UyTeiSMunoE0AHzTkAL1XC2Nr4uyadXW+8wFuyEa4YzB4up9L+fpQrYNj/ydrs8heI8ntZEVx1+nM3EL6gYv+G7X28YU2YuM5csqI2jDfeDUFSn4y2KZms=
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=amd.com;
-Received: from PH8PR12MB6914.namprd12.prod.outlook.com (2603:10b6:510:1cb::21)
- by CH3PR12MB8457.namprd12.prod.outlook.com (2603:10b6:610:154::21) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.92.8; Thu, 4 Jun 2026
- 18:43:36 +0000
-Received: from PH8PR12MB6914.namprd12.prod.outlook.com
- ([fe80::2893:177a:72b0:6000]) by PH8PR12MB6914.namprd12.prod.outlook.com
- ([fe80::2893:177a:72b0:6000%6]) with mapi id 15.21.0092.006; Thu, 4 Jun 2026
- 18:43:35 +0000
-Message-ID: <cb4d800a-f5e4-4207-a36a-fde42d0a006f@amd.com>
-Date: Thu, 4 Jun 2026 13:43:33 -0500
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 1/2] cpufreq/amd-pstate: Fix EPP initialization for
- shared memory systems
-Content-Language: en-US
-To: Marco Scardovi <scardracs@disroot.org>,
- K Prateek Nayak <kprateek.nayak@amd.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
- perry.yuan@amd.com, rafael@kernel.org, ray.huang@amd.com,
- stuartmeckle@gmail.com, viresh.kumar@linaro.org, wyes.karny@amd.com
-References: <4cb9459c-f471-478a-9670-58d898619f45@amd.com>
- <2e3a5f9a-69fe-4790-8b8b-2d1622977a2f@amd.com>
- <b4e23498-492a-40b2-8517-6d44eaec8502@amd.com>
- <CO-q9BQiTf6GLfZiYh_W4g@disroot.org>
-From: Mario Limonciello <mario.limonciello@amd.com>
-In-Reply-To: <CO-q9BQiTf6GLfZiYh_W4g@disroot.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-ClientProxiedBy: SN7PR04CA0217.namprd04.prod.outlook.com
- (2603:10b6:806:127::12) To PH8PR12MB6914.namprd12.prod.outlook.com
- (2603:10b6:510:1cb::21)
+	dkim=pass (2048-bit key) header.d=herrie.org header.i=@herrie.org header.b="d2/FqvLX"
+Received: from submission0.mail.transip.nl (unknown [10.100.4.69])
+	by outbound0.mail.transip.nl (Postfix) with ESMTP id 4gWYPZ6zZKzxNq9;
+	Thu,  4 Jun 2026 20:44:02 +0200 (CEST)
+Received: from herrie-desktop.. (180-93-184-31.ftth.glasoperator.nl [31.184.93.180])
+	by submission0.mail.transip.nl (Postfix) with ESMTPA id 4gWYPY4V5JzZyxry;
+	Thu,  4 Jun 2026 20:44:01 +0200 (CEST)
+From: Herman van Hazendonk <github.com@herrie.org>
+To: djakov@kernel.org
+Cc: dmitry.baryshkov@oss.qualcomm.com,
+	konrad.dybcio@oss.qualcomm.com,
+	odelu.kukatla@oss.qualcomm.com,
+	raviteja.laggyshetty@oss.qualcomm.com,
+	luca.weiss@fairphone.com,
+	abel.vesa@oss.qualcomm.com,
+	jie.gan@oss.qualcomm.com,
+	robh@kernel.org,
+	krzk+dt@kernel.org,
+	conor+dt@kernel.org,
+	linux-arm-msm@vger.kernel.org,
+	linux-pm@vger.kernel.org,
+	devicetree@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	Herman van Hazendonk <github.com@herrie.org>
+Subject: [PATCH v2 1/2] dt-bindings: interconnect: qcom: add msm8660 NoC
+Date: Thu,  4 Jun 2026 20:43:59 +0200
+Message-ID: <20260604184400.801543-2-github.com@herrie.org>
+X-Mailer: git-send-email 2.43.0
+In-Reply-To: <20260604184400.801543-1-github.com@herrie.org>
+References: <20260604184400.801543-1-github.com@herrie.org>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: PH8PR12MB6914:EE_|CH3PR12MB8457:EE_
-X-MS-Office365-Filtering-Correlation-Id: 26e66327-f2db-40fd-d5f6-08dec2692f74
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|366016|376014|1800799024|22082099003|18002099003|6133799003|56012099006|4143699003|5023799004|11063799006;
-X-Microsoft-Antispam-Message-Info:
-	UqgSX3spVfIcExQgyj2So2wAavntbjgMEZ1zE3QE0MXe1qGJ71T3tN7iAczFPOcupiMbp/RuQ5bE84u0katikYOMmoFf35fw9JoD9b6Cr0XR2p4YDhf3W7hwDOVALgAeDTolro9zV0AJqGftxWVa6daIxGkwxA2pZBwlLxzxs5skI4xcMEzWunhsNZBIE+VBjFK34QYcrgJ6uy8WoNA73XRBZ/MAecDdwDwBIC5GWAtWZ+Vg5alkMNjQFpoTKOaKO9AzHoLNKHUj0lDlYHBVNSgBfzavZGjpMhYI6qO0RjrFUa1eKNvGw6ggRj07Jka8zVeRaSLOl0SrD1CN/UQqqx6SXC2Zi5OliqpJQRV7w2Rkvad2KFUgrqC4KTlMfzqif382QioLDMqyUSu1KqPx85yctDcjSgLlAAsXslgm9iyxtgIxyrpNeCQIyMfjkj6Ueb5LzW2PaODNUHCwWsJfR1fE0oBoSbEkr5x9de0VA5HiIrUCwr3ZZHcYt3yHA6BUj2pC+vn63dA40g20oKTxOHIyC4hNzRvyk/07xV1HIz99dfy1EtWrPkR/Y08D4V+e+MG9n0+Q6nFefL3/Kia6BHZ3hmeVbMd/WHitHtInrAq/JX6XOc5bHiY+Gyebvlu7VzQAZbyaQ0PEeXJr3K1haYjmQs4/BxEUNMbbxWXFoAu4MAc2LzA04ReTmNn9tGg0
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:PH8PR12MB6914.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(376014)(1800799024)(22082099003)(18002099003)(6133799003)(56012099006)(4143699003)(5023799004)(11063799006);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?utf-8?B?NkRrenBGWjFWU1FrdmxLWTU1V2d5RWMya1ZkSjl3YjZJM1Q4RUo0Sm1mOGVO?=
- =?utf-8?B?WTcxN3F0TEtwS3BFOHZsZVZDQW5CQms2cUpNanVUUFJyN3h2Z3pSbk1wVjhl?=
- =?utf-8?B?dDJRVWJOdWhXNy9DQXVVbDRMZWtOaFF0bjBNeUt6c25NMVFoUUt3OUVIc3NC?=
- =?utf-8?B?TVo5NWhqSGY3VEVLeGlRMWNQR1VKcll6WFE4dzhxQ0k2MGxPcURNdGdmak56?=
- =?utf-8?B?VEpKK29qa3B2NzRuVWFVUnJ1OTVUSmtWVXRZQzZrSVgxSnA1ZEpsWTlTZFNp?=
- =?utf-8?B?cXlxaHViYmExZ3hRbkZ2TExoaVhLOG5xL2pFRncvaTc5S2JINGVKb2hGZ1N4?=
- =?utf-8?B?VGkwa1F3b0xQVGNIYS9KTm9lN3d6Y2h5dkZsU0RDd3l0Y3JEMU9WOXcyeFNP?=
- =?utf-8?B?c0xtNTV3R09xUSt1UU5CcURjajEyL3B1anREeEh6Nk9pWFl6R3ZhZmF3YVgz?=
- =?utf-8?B?d0RWUGNGbGVwY21TcEhqZnYwVW9hbnhEZmZyVmZtZ1kxNjhpQkxMcnlTeDhT?=
- =?utf-8?B?Q216dTl4eWgzak1Mek5kOE1jb3N2OHFNdTlwbHJZVXlsTWVaaEFMcTBpbUE3?=
- =?utf-8?B?Q09lQlFnOGhHVFcvQUxoc3djUlVrV1psK3VpWUtQRGVEdi9GZ0VJUHNVdnZ3?=
- =?utf-8?B?N1dMMXUzdXgxM1V1M0pNM2FyK3JLMzNJUXUwamR2THFFT1RvTUZnZFZyNk9n?=
- =?utf-8?B?c3BwWjZJUEMvbHMycnIvL3Q3YlBrSWh3YzdLYXlkNEtoRGs2cmhubUxVZ3p6?=
- =?utf-8?B?SW05K3dTZlhHbUNycjRhT1R1V0hOQy9SV0RBSE5ybER3dTJraFg1bVhNVlFa?=
- =?utf-8?B?dm0wYW9NV3RPdWpIRFdod3Y5Q3kzV2J3bU9INVpkbmtVMW5Qb3Q5SmczTGoz?=
- =?utf-8?B?TGxESWVrNm1FL2Q2RDZNREZpOWdwZFk2aEtWdStvR2hTZ1BQQkZBNmpOVkFz?=
- =?utf-8?B?RkQ0SUZKd1ovUW11SWhjZXlJUXBHTEM2eHBmUG8rQW9QVW9KZWM4Vlh1YWQw?=
- =?utf-8?B?YUk1cmhGQTRVL0xOdXMvMlRXOGNFWDlZbkNtS1RBUFFwcjc3TWYxL0d5azlT?=
- =?utf-8?B?R0l6ZzEyR0U2Q3FSbDBFRzVHTVJxNUJDNFEvUHl2cThleUVBS1NWOWZoTG1D?=
- =?utf-8?B?cTNMN05WNmkvbTB3UFI4S3JoSS8zOGFhMkptUm4zem1NKzZINVJPNnlwWXR5?=
- =?utf-8?B?ejZ3eUxSb0dJaVplYU45cldXTDhYRVp4VFpNZEJmRkx6MndPcE5SQk1sTE0v?=
- =?utf-8?B?OEpqbzVHVjEyOXhDb0RpU1FJbkliMFlnckNLOUZYM0ZaYTllcU4zZnJVNGlR?=
- =?utf-8?B?bEVRclY3SVpxUmZlSllLRVlVYUlUQnNrSXFZMlpEYWVJUjJrTVN2dlB2VWpy?=
- =?utf-8?B?RHhsdlluWXRLZjRva05XeUcrb2pkam1OV1hkQlpTSFFLdTVmSklERlA2M0tX?=
- =?utf-8?B?aDhyeFhhZzdvOXFuS0FUMDNvZW9sQmNEdFdkdDI2WVFWeldpeFErNkpTQk9r?=
- =?utf-8?B?UHA3cWROVUJ6S3F0ZVFmNnV4SHN6WXJsOHZKb1BzUUorcWdiTzl4SHUxeG12?=
- =?utf-8?B?WFVEZ3Y3bEROaG12Q1NLZlppK2x3dXZ4bjNoem93aittcHc5QWxJcTlKdlEv?=
- =?utf-8?B?WUhielBNWXRHZ2pyWkdMOHFONXhDYkJjbFFmWVg4amFBQzBhaGhNY2FmY0R1?=
- =?utf-8?B?QVJXM1dzcEdSbG5BeE1qWjBGRUx6OUxIU0lxQjcxL3Q3V28yYklrclIvZDFL?=
- =?utf-8?B?TGJBMkxzSDcxblUwaEgxeUJwQnVYYk1qVW42S1RWMlpQQ3ppR2tnNHhFNTNF?=
- =?utf-8?B?amQra2Y3eUR2cnkyQUh2WHdGazNmMkhpTm9LSHV0RGZoWlQxUC93V0NsUVFs?=
- =?utf-8?B?SVg2a3dUbklTM1JiZVp3aHNlRXl5ejdZdWJOOWIvYW9WbWN3a3JKQUpYcnlM?=
- =?utf-8?B?THFFRlFEODMzMkxJcDREWS96RjNLeDBSOFhKYkVoSDU3M3lRRkxENGp1NkZt?=
- =?utf-8?B?VmVuTElRbnFNZFovSFRRQndhUEJZdTlqWkk4NnY2Zy9SQm5GMGRuMGtLSkxK?=
- =?utf-8?B?cWdJMUFJN09qZjMySWNwVjI0b1NqczlsemZndEZUUUxTaEZ6VEd2aW5HaGVI?=
- =?utf-8?B?TkhzcStYWmxaMXR1cjdMNTR6N09nZmlxcy9UbURnamZyRFNGck5tK2Ewc255?=
- =?utf-8?B?cmpRTnZGbDlvRG5MTTROdlZXeFNzOG9TNXBON3k4bEp2UWY0cWMwYTNWK2t3?=
- =?utf-8?B?SDdueVdlc2U1T1FOTmRPemMwbUsvZ0RCU1JoV0Z0c0ZMcDVyVy9sYlBmME9V?=
- =?utf-8?B?YlJqTFN0UWlsVGhYL2srRWRWOTY5Z1lHZjArUlFiMSs2TGtCOXArdz09?=
-X-OriginatorOrg: amd.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 26e66327-f2db-40fd-d5f6-08dec2692f74
-X-MS-Exchange-CrossTenant-AuthSource: PH8PR12MB6914.namprd12.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 04 Jun 2026 18:43:35.8646
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: dcyw85nGG0VaFTK0bU5yFMGFlIlE7cNY2OeInlFzLE1Z5g9t9h1VCDxewUp5LJNBuoU9ah2gHdU6hOF2T7MzUw==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: CH3PR12MB8457
+Content-Transfer-Encoding: 8bit
+X-Scanned-By: ClueGetter at submission0.mail.transip.nl
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+ s=transip-a; d=herrie.org; t=1780598642; h=from:subject:to:cc:
+ references:in-reply-to:date:mime-version;
+ bh=YL75CYXfsYf7GcStmEcNxsCNXSU0PmQvMCGXdsmQ8FA=;
+ b=d2/FqvLXepGM4afz1j3TB4YXW3WZxMUkVMyXJ/s1jlyfORbiMXr3xsYogd7XsUe/LTVK76
+ QaWCNGJpIJzlqvNh9kU7+vPfX47NSSLSY4e0ZDBCA8ku6/giBKFf03HNa50j2y+yQTGhI2
+ 0ukE2Gx8anCJ0JbHBy+vrbiNNbCdP6MCyRVHK/z7O4JsXR5p7u4p8mLRAROwI0flS/9jcq
+ AwERDmknthng/uSsuXa71v3aTffkOCJp6Um0zGcxDGVBPGz8WKdBlUfkcgjCA33jDCMGtY
+ sll4km49XC5mDkAL8c+2jjM3AaolzU+EQwGYUaJi5EO4BMI9Y7X44d4+n3uPjw==
+X-Report-Abuse-To: abuse@transip.nl
 
+Add a dt-binding schema and an interconnect master/slave ID header for
+the MSM8x60 family (MSM8260/MSM8660/APQ8060) Network-on-Chip.  The
+chip exposes four NoC fabrics that the qnoc-msm8660 driver models:
 
+  AFAB  - Applications fabric (Scorpion CPU + L2)
+  SFAB  - System fabric (DMA, SPS, security)
+  MMFAB - Multimedia fabric (MDP, GPU, camera, video, rotator)
+  DFAB  - Daytona fabric (SDC, ADM master/slave)
 
-On 6/4/26 01:56, Marco Scardovi wrote:
-> In data giovedì 4 giugno 2026 05:56:20 Ora legale dell’Europa centrale, K
-> Prateek Nayak ha scritto:
->> Hello Mario,
->>
->> On 6/4/2026 12:23 AM, Mario Limonciello wrote:
->>>> --- a/drivers/cpufreq/amd-pstate.h
->>>> +++ b/drivers/cpufreq/amd-pstate.h
->>>> @@ -128,6 +128,8 @@ struct amd_cpudata {
->>>>        u8    epp_default_dc;
->>>>        bool    dynamic_epp;
->>>>        bool    raw_epp;
->>>> +    /* Indicates that EPP has been successfully programmed at least once
->>>> since boot. */ +    bool    epp_hw_programmed;
->>>>        struct notifier_block power_nb;
->>>>          /* platform profile */
->>>
->>> I'm having a hard time following why this is needed.  Let me explain my
->>> chain of thought.
->>>
->>> We start at amd_pstate_epp_cpu_init().
->>> * cpudata (and thus cppc_req_cached) is initalized to 0 via kzalloc()
->>>     - On a server we initialize "epp_default" via a lookup to the HW
->>> (amd_pstate_get_epp). - On a non-server we initialize "epp_default" to
->>> 0x80.
->>> * we call amd_pstate_set_epp() with epp_deafult as the argument.
->>>
->>> Now in the shared mem backend (shmem_set_epp) we do a lookup of epp_cached
->>> and it should be 0.  We do a comparison of the argument sent to the
->>> function, and this should be 0x80.
->>>
->>> So how do we get into a case that amd_pstate_set_epp() is actually called
->>> with 0?
->> This was the path I traced yesterday considering amd_dynamic_epp enabled for
->> a shared memory system that is plugged into the wall:
->>
->>    amd_pstate_epp_cpu_init()
->>      cpudata->epp_default_ac = AMD_CPPC_EPP_PERFORMANCE;
->>      cpudata->epp_default_dc = AMD_CPPC_EPP_BALANCE_PERFORMANCE;
->>      cpudata->current_profile = PLATFORM_PROFILE_BALANCED;
->>
->>      /* cpudata->cppc_req_cached has epp_cached as 0 */
->>
->>      amd_pstate_set_dynamic_epp(policy)
->>        epp = amd_pstate_get_balanced_epp(policy); /* returns
->> cpudata->epp_default_ac which is EPP_PERFORMANCE */
->>
->>        amd_pstate_set_epp(policy, epp /* AMD_CPPC_EPP_PERFORMANCE */)
->>          if (epp == epp_cached)
->>            return;
->>
->>          /*
->>           * Skips cppc_set_epp_perf(cpudata->cpu, &perf_ctrls, 1)
->>           * where the last argument "enable" enables EPP via the
->>           * AUTO_SEL_ENABLE path.
->>           */
->>
->>> There are some trace points specifically for this purpose - you could
->>> confirm there really is such a call by using them at bootup (or by
->>> starting in passive and with a mode change to active at runtime).
->> It should show up in the traces yes!
->>
->>> Then we call amd_pstate_set_epp() with that epp_default value.
->>
->> I think this patch has some merit, although the second patch, I'm not
->> too sure of. After some digging, it seems we always had AUTO_SEL_ENABLE
->> and ENERGY_PERF right from the time CPPC was introduced (including Zen1
->> systems that had CPPC support).
->>
->> Marco, do you have actually have a system that neither has
->> AUTO_SEL_ENABLE, nor ENERGY_PERF? Seems very unlikely a configuration
->> like that made it out.
-> 
-> Hi Prateek, Mario,
-> 
-> No, I don't have a system lacking AUTO_SEL_ENABLE or ENERGY_PERF support.
-> The only AMD system I currently have access to is an 8940HX.
-> 
-> I think I understand the reasoning behind both of your comments. My
-> understanding is that the main question is whether there is a real boot path
-> where amd_pstate_set_epp() returns early before EPP has ever been programmed
-> in hardware, which would justify tracking that state separately from the
-> cached EPP value.
-> 
-> However, I'm not familiar enough with this part of the driver to confidently
-> turn that reasoning into a correct implementation, so I'd prefer to defer to
-> your judgement on whether the additional state tracking is the right approach.
-> 
-> Thanks,
-> Marco
-> 
-> 
-> 
+The schema covers all four compatible strings, per-fabric clock-name
+lists (bus / bus_a / ebi1 / ebi1_a for AFAB; bus / bus_a / smi /
+smi_a for MMFAB; bus / bus_a for SFAB and DFAB), the required
+qcom,rpm phandle through which the provider hands the arbitration
+buffer to RPM firmware, and #interconnect-cells = <1>.
 
-So at least for patch 1 if you run dynamic epp, and are plugged into a 
-wall you start out on EPP 0, but I'm pretty sure that's usually the 
-firmware default anyway.  But this gives me a (better?) idea.  How about 
-we just read the EPP from the firmware initially at startup?
+The ID header lists per-fabric master / slave / gateway indices
+derived from the legacy vendor msm_bus_board_8660.c enums,
+normalised to the upstream interconnect-framework naming convention.
 
-Something like this:
+Signed-off-by: Herman van Hazendonk <github.com@herrie.org>
+---
+ .../bindings/interconnect/qcom,msm8660.yaml   | 157 ++++++++++++++++++
+ .../dt-bindings/interconnect/qcom,msm8660.h   | 156 +++++++++++++++++
+ 2 files changed, 313 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/interconnect/qcom,msm8660.yaml
+ create mode 100644 include/dt-bindings/interconnect/qcom,msm8660.h
 
-╰─❯ git diff
-diff --git a/drivers/cpufreq/amd-pstate.c b/drivers/cpufreq/amd-pstate.c
-index 3f06e33f47120..0e32f7f92651b 100644
---- a/drivers/cpufreq/amd-pstate.c
-+++ b/drivers/cpufreq/amd-pstate.c
-@@ -1939,6 +1939,8 @@ static int amd_pstate_epp_cpu_init(struct 
-cpufreq_policy *policy)
-
-         policy->boost_supported = READ_ONCE(cpudata->boost_supported);
-
-+       WRITE_ONCE(cpudata->cppc_req_cached, 
-FIELD_PREP(AMD_CPPC_EPP_PERF_MASK, amd_pstate_get_epp(cpudata)));
+diff --git a/Documentation/devicetree/bindings/interconnect/qcom,msm8660.yaml b/Documentation/devicetree/bindings/interconnect/qcom,msm8660.yaml
+new file mode 100644
+index 000000000000..f8b3a05d5ba1
+--- /dev/null
++++ b/Documentation/devicetree/bindings/interconnect/qcom,msm8660.yaml
+@@ -0,0 +1,157 @@
++# SPDX-License-Identifier: (GPL-2.0 OR BSD-2-Clause)
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/interconnect/qcom,msm8660.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
 +
-         /*
-          * Set the policy to provide a valid fallback value in case
-          * the default cpufreq governor is neither powersave nor 
-performance.
++title: Qualcomm MSM8x60 family Network-On-Chip interconnect
++
++maintainers:
++  - Herman van Hazendonk <github.com@herrie.org>
++
++description: |
++  The Qualcomm MSM8x60 family (MSM8260/MSM8660/APQ8060) NoC is split into
++  four fabrics, each modelled as a separate interconnect provider:
++
++    APPSS fabric    Scorpion CPU cluster, L2 cache, EBI (DDR) memory.
++    System fabric   DMA controllers, modem and LPASS cross-domain links,
++                    security peripherals.
++    Multimedia fab  Display (MDP), GPU, camera (VFE), video codec (VPE),
++                    JPEG, with the SMI scratchpad as the local slave.
++    Daytona fabric  SDC1..SDC5 controllers and ADM master/slave channels.
++
++  Each provider programs fabric arbitration (per-master priority tier and
++  per-slave bandwidth vote) through RPM firmware via the qcom,rpm parent
++  controller, in addition to scaling its bus clocks via clk_set_rate.
++
++properties:
++  compatible:
++    enum:
++      - qcom,msm8660-apps-fabric
++      - qcom,msm8660-system-fabric
++      - qcom,msm8660-mmss-fabric
++      - qcom,msm8660-daytona-fabric
++
++  clocks:
++    minItems: 2
++    maxItems: 4
++
++  clock-names:
++    minItems: 2
++    maxItems: 4
++
++  qcom,rpm:
++    $ref: /schemas/types.yaml#/definitions/phandle
++    description:
++      Phandle to the qcom,rpm node.  The interconnect provider hands the
++      per-fabric arbitration buffer to RPM firmware through this resource,
++      so a production device tree must point at the system RPM.
++
++required:
++  - compatible
++  - clocks
++  - clock-names
++  - qcom,rpm
++  - '#interconnect-cells'
++
++allOf:
++  - $ref: qcom,rpm-common.yaml#
++  - if:
++      properties:
++        compatible:
++          const: qcom,msm8660-apps-fabric
++    then:
++      properties:
++        clocks:
++          items:
++            - description: APPSS fabric bus clock (active vote)
++            - description: APPSS fabric bus clock (active+sleep vote)
++            - description: EBI1 (DDR) channel clock (active vote)
++            - description: EBI1 (DDR) channel clock (active+sleep vote)
++        clock-names:
++          items:
++            - const: bus
++            - const: bus_a
++            - const: ebi1
++            - const: ebi1_a
++  - if:
++      properties:
++        compatible:
++          enum:
++            - qcom,msm8660-system-fabric
++            - qcom,msm8660-daytona-fabric
++    then:
++      properties:
++        clocks:
++          items:
++            - description: Fabric bus clock (active vote)
++            - description: Fabric bus clock (active+sleep vote)
++        clock-names:
++          items:
++            - const: bus
++            - const: bus_a
++  - if:
++      properties:
++        compatible:
++          const: qcom,msm8660-mmss-fabric
++    then:
++      properties:
++        clocks:
++          items:
++            - description: MMSS fabric bus clock (active vote)
++            - description: MMSS fabric bus clock (active+sleep vote)
++            - description: SMI scratchpad clock (active vote)
++            - description: SMI scratchpad clock (active+sleep vote)
++        clock-names:
++          items:
++            - const: bus
++            - const: bus_a
++            - const: smi
++            - const: smi_a
++
++unevaluatedProperties: false
++
++examples:
++  - |
++    #include <dt-bindings/clock/qcom,rpmcc.h>
++
++    interconnect-afab {
++        compatible = "qcom,msm8660-apps-fabric";
++        clocks = <&rpmcc RPM_APPS_FABRIC_CLK>,
++                 <&rpmcc RPM_APPS_FABRIC_A_CLK>,
++                 <&rpmcc RPM_EBI1_CLK>,
++                 <&rpmcc RPM_EBI1_A_CLK>;
++        clock-names = "bus", "bus_a", "ebi1", "ebi1_a";
++        qcom,rpm = <&rpm>;
++        #interconnect-cells = <1>;
++    };
++
++    interconnect-sfab {
++        compatible = "qcom,msm8660-system-fabric";
++        clocks = <&rpmcc RPM_SYS_FABRIC_CLK>,
++                 <&rpmcc RPM_SYS_FABRIC_A_CLK>;
++        clock-names = "bus", "bus_a";
++        qcom,rpm = <&rpm>;
++        #interconnect-cells = <1>;
++    };
++
++    interconnect-mmfab {
++        compatible = "qcom,msm8660-mmss-fabric";
++        clocks = <&rpmcc RPM_MM_FABRIC_CLK>,
++                 <&rpmcc RPM_MM_FABRIC_A_CLK>,
++                 <&rpmcc RPM_SMI_CLK>,
++                 <&rpmcc RPM_SMI_A_CLK>;
++        clock-names = "bus", "bus_a", "smi", "smi_a";
++        qcom,rpm = <&rpm>;
++        #interconnect-cells = <1>;
++    };
++
++    interconnect-dfab {
++        compatible = "qcom,msm8660-daytona-fabric";
++        clocks = <&rpmcc RPM_DAYTONA_FABRIC_CLK>,
++                 <&rpmcc RPM_DAYTONA_FABRIC_A_CLK>;
++        clock-names = "bus", "bus_a";
++        qcom,rpm = <&rpm>;
++        #interconnect-cells = <1>;
++    };
++...
+diff --git a/include/dt-bindings/interconnect/qcom,msm8660.h b/include/dt-bindings/interconnect/qcom,msm8660.h
+new file mode 100644
+index 000000000000..c9ce3f5a5276
+--- /dev/null
++++ b/include/dt-bindings/interconnect/qcom,msm8660.h
+@@ -0,0 +1,156 @@
++/* SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause) */
++/*
++ * Qualcomm MSM8x60 family (MSM8260/MSM8660/APQ8060) interconnect IDs
++ *
++ * Copyright (c) 2026 Herman van Hazendonk <github.com@herrie.org>
++ *
++ * Based on webOS kernel msm_bus_board_8660.c
++ * Copyright (c) 2010-2011, Code Aurora Forum. All rights reserved.
++ */
++
++#ifndef __DT_BINDINGS_INTERCONNECT_QCOM_MSM8660_H
++#define __DT_BINDINGS_INTERCONNECT_QCOM_MSM8660_H
++
++/*
++ * MSM8x60 has a fabric-based bus architecture:
++ * - APPSS Fabric: CPU and memory interface
++ * - System Fabric: System peripherals and DMA
++ * - MMSS Fabric: Multimedia subsystem (display, camera, video)
++ * - Daytona Fabric: Peripheral bus (SDCC, ADM DMA)
++ * - System FPB: System Fast Peripheral Bus
++ * - CPSS FPB: CPU Subsystem Fast Peripheral Bus
++ */
++
++/* APPSS Fabric - Apps processor fabric */
++#define AFAB_MAS_AMPSS_M0		0
++#define AFAB_MAS_AMPSS_M1		1
++#define AFAB_SLV_EBI_CH0		2
++#define AFAB_SLV_AMPSS_L2		3
++#define AFAB_TO_MMSS			4
++#define AFAB_TO_SYSTEM			5
++
++/* System Fabric - System bus */
++#define SFAB_MAS_APPSS			0
++#define SFAB_MAS_SPS			1
++#define SFAB_MAS_ADM0_PORT0		2
++#define SFAB_MAS_ADM0_PORT1		3
++#define SFAB_MAS_ADM1_PORT0		4
++#define SFAB_MAS_ADM1_PORT1		5
++#define SFAB_MAS_LPASS_PROC		6
++#define SFAB_MAS_MSS_PROCI		7
++#define SFAB_MAS_MSS_PROCD		8
++#define SFAB_MAS_MSS_MDM_PORT0		9
++#define SFAB_MAS_LPASS			10
++#define SFAB_MAS_MMSS_FPB		11
++#define SFAB_MAS_ADM1_CI		12
++#define SFAB_MAS_ADM0_CI		13
++#define SFAB_MAS_MSS_MDM_PORT1		14
++#define SFAB_MAS_USB_HS			15
++#define SFAB_TO_APPSS			16
++#define SFAB_TO_SYSTEM_FPB		17
++#define SFAB_TO_CPSS_FPB		18
++#define SFAB_SLV_SPS			19
++#define SFAB_SLV_SYSTEM_IMEM		20
++#define SFAB_SLV_AMPSS			21
++#define SFAB_SLV_MSS			22
++#define SFAB_SLV_LPASS			23
++#define SFAB_SLV_MMSS_FPB		24
++#define SFAB_TO_DFAB			25
++
++/* MMSS Fabric - Multimedia subsystem */
++#define MMFAB_MAS_MDP_PORT0		0
++#define MMFAB_MAS_MDP_PORT1		1
++#define MMFAB_MAS_ADM1_PORT0		2
++#define MMFAB_MAS_ROTATOR		3
++#define MMFAB_MAS_GRAPHICS_3D		4
++#define MMFAB_MAS_JPEG_DEC		5
++#define MMFAB_MAS_GRAPHICS_2D_CORE0	6
++#define MMFAB_MAS_VFE			7
++#define MMFAB_MAS_VPE			8
++#define MMFAB_MAS_JPEG_ENC		9
++#define MMFAB_MAS_GRAPHICS_2D_CORE1	10
++#define MMFAB_MAS_HD_CODEC_PORT0	11
++#define MMFAB_MAS_HD_CODEC_PORT1	12
++#define MMFAB_TO_APPSS			13
++#define MMFAB_SLV_SMI			14
++#define MMFAB_SLV_MM_IMEM		15
++
++/*
++ * Daytona Fabric (DFAB) - Peripheral bus
++ *
++ * DFAB connects slower peripherals (SDCC, ADM DMA) to the system fabric.
++ * The webOS kernel managed DFAB bandwidth via voter clocks (dfab_sdc*_clk,
++ * dfab_usb_hs_clk). In mainline, this is handled by the interconnect framework.
++ *
++ * USB HS is included as a DFAB voter for compatibility with the legacy clock
++ * voting mechanism. The webOS kernel comment said: "if usb link is in sps
++ * there is no need for usb pclk as daytona fabric clock will be used instead".
++ * This keeps DFAB clock stable when USB is active.
++ */
++#define DFAB_MAS_SDC1			0
++#define DFAB_MAS_SDC2			1
++#define DFAB_MAS_SDC3			2
++#define DFAB_MAS_SDC4			3
++#define DFAB_MAS_SDC5			4
++#define DFAB_MAS_ADM0_MASTER		5
++#define DFAB_MAS_ADM1_MASTER		6
++#define DFAB_TO_SFAB			7
++#define DFAB_SLV_SDC1			8
++#define DFAB_SLV_SDC2			9
++#define DFAB_SLV_SDC3			10
++#define DFAB_SLV_SDC4			11
++#define DFAB_SLV_SDC5			12
++#define DFAB_MAS_USB_HS			13
++#define DFAB_MAS_DSPS			14
++
++/* System FPB - Slow peripheral bus for system */
++#define SFPB_MAS_SYSTEM			0
++#define SFPB_MAS_SPDM			1
++#define SFPB_MAS_RPM			2
++#define SFPB_SLV_SPDM			3
++#define SFPB_SLV_RPM			4
++#define SFPB_SLV_RPM_MSG_RAM		5
++#define SFPB_SLV_MPM			6
++#define SFPB_SLV_PMIC1_SSBI1_A		7
++#define SFPB_SLV_PMIC1_SSBI1_B		8
++#define SFPB_SLV_PMIC1_SSBI1_C		9
++#define SFPB_SLV_PMIC2_SSBI2_A		10
++#define SFPB_SLV_PMIC2_SSBI2_B		11
++
++/* CPSS FPB - CPU subsystem fast peripheral bus */
++#define CFPB_MAS_SYSTEM			0
++#define CFPB_SLV_GSBI1_UART		1
++#define CFPB_SLV_GSBI2_UART		2
++#define CFPB_SLV_GSBI3_UART		3
++#define CFPB_SLV_GSBI4_UART		4
++#define CFPB_SLV_GSBI5_UART		5
++#define CFPB_SLV_GSBI6_UART		6
++#define CFPB_SLV_GSBI7_UART		7
++#define CFPB_SLV_GSBI8_UART		8
++#define CFPB_SLV_GSBI9_UART		9
++#define CFPB_SLV_GSBI10_UART		10
++#define CFPB_SLV_GSBI11_UART		11
++#define CFPB_SLV_GSBI12_UART		12
++#define CFPB_SLV_GSBI1_QUP		13
++#define CFPB_SLV_GSBI2_QUP		14
++#define CFPB_SLV_GSBI3_QUP		15
++#define CFPB_SLV_GSBI4_QUP		16
++#define CFPB_SLV_GSBI5_QUP		17
++#define CFPB_SLV_GSBI6_QUP		18
++#define CFPB_SLV_GSBI7_QUP		19
++#define CFPB_SLV_GSBI8_QUP		20
++#define CFPB_SLV_GSBI9_QUP		21
++#define CFPB_SLV_GSBI10_QUP		22
++#define CFPB_SLV_GSBI11_QUP		23
++#define CFPB_SLV_GSBI12_QUP		24
++#define CFPB_SLV_EBI2_NAND		25
++#define CFPB_SLV_USB_FS1		26
++#define CFPB_SLV_USB_FS2		27
++#define CFPB_SLV_TSIF			28
++#define CFPB_SLV_MSM_TSSC		29
++#define CFPB_SLV_MSM_PDM		30
++#define CFPB_SLV_MSM_DIMEM		31
++#define CFPB_SLV_MSM_TCSR		32
++#define CFPB_SLV_MSM_PRNG		33
++
++#endif /* __DT_BINDINGS_INTERCONNECT_QCOM_MSM8660_H */
+-- 
+2.43.0
 
