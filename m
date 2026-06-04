@@ -1,30 +1,31 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7E3253F1664;
-	Thu,  4 Jun 2026 09:08:37 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 030C33FE371;
+	Thu,  4 Jun 2026 09:08:39 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1780564118; cv=none; b=Dwg2PZgpKgjnj4GS+A6FaqTW8PQQboly+PmSdto+Ama2NiyQ4tBBvetb+lIgJuRxMjNIJfjc7MW1yNVLQxfetg9br07DCMLH63et4uc7wG+GowUV/L0mRDUUhUkah1mE1saqRVq7kZeGLqGHPHCTlSP6hBERl68mIPk6t869UnQ=
+	t=1780564120; cv=none; b=fY7Cj0JJ6LUEWDS6cbhB5RYlxyrhIriTCOcph72Cs0IduaA/YpLEA0xv9MulqAA1XRsvj5mVbqO0Zqx4hzpAJyuyNoDl+IxD09lE7veuu52AcJ5aCK2ZfjkMAKi06tlbRF5TP1ACdPoFwnENr9Hr5pZmxyeKKM1cqHXi8f+9Ho4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1780564118; c=relaxed/simple;
-	bh=gR/tI7V1xtGpHTVg4yxmUFL8pTB/bPH3uiuf6LSiPWw=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=I4WtBECZ2r0gckUcjqc6DiRNESm4WMqtSKW6h1RvWkXe4oiJsKy9RY6fHn1vxMZtRVVEdlBc0BwSLiblceCxBABrONoWtoZI857VFFQ/Nq6Hen2fXlkvmlbVZUI31WnMBPfBBfEPikFtztIWTlNfJ057gWiGTVoSpQBFHx0QfWA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=bSrJple5; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1780564120; c=relaxed/simple;
+	bh=FCXKfyK3R7amxWftCypNVPwpWp03jMbMSnB/igxBliw=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=KnMIEslcOeR4J/zuyJz1roHmNzQy7lKyjEHeZIUtfJttDyrN1d82zGjhitlPCMq1HESrcv6jWA9iqFFZeqcV1JPKxYfHAHh2v26HrgjoGLSHxu03E3gDLxdPUxkYecSDMB9+hRj3j+s72ex62Jg+M/+FNmrCbDycCmtCwUYatjI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=l7qL07e3; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="bSrJple5"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id E1EF51F00893;
-	Thu,  4 Jun 2026 09:08:34 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="l7qL07e3"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7723B1F00899;
+	Thu,  4 Jun 2026 09:08:37 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1780564117;
-	bh=dkAMsc4FtFAFIxdfhhEA2HI+PsCBrhGiEI43ClSKD38=;
-	h=From:To:Cc:Subject:Date;
-	b=bSrJple5UEHRiYRMgaEedWY3bUB8hEriDHRSfO0TWUuj/MeLm8tifhnYuFYvVfXut
-	 PF1NKEWRxW17QKnrYl1nVTHV4FgpZ17ny/t2afpK8J+LD4xfWI0TMLuBTY7N7OojtX
-	 mHzms+UmaNkt9d9vnHLEJVQ6dpzFrzKYSbEu/kuP76NCYU000onpO1Q+OYnN/vJmvW
-	 gp8mJpq/4pnq0Ci6S9cxDXEhjmCe5JUINcW+i9gMD2PuYUYSKDWKCIAAl6NI6QGXMH
-	 XTkZR4D2KUPhTTWbhLuy1kOsM/Ul1jJkNoNPEBMg3e4DOuWA7j+9seVAloQHXm3qqb
-	 Q7BUykLiZ00zQ==
+	s=k20260515; t=1780564119;
+	bh=LpfiuMeakI0p1/O+txo784HcmLdX0vSFzINtraQdAVQ=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References;
+	b=l7qL07e3iQ1+gfuH+MVn0bVSjMRq3fXIcrWZISnHpPiAzl0WN5CVKdaj1vtKoTI9H
+	 /kMc23h2MR/LIROwCqSS3QL5BmYQ7BGWE0aGxNLaGhlPfNrjlYpdKqBuvHrYls/f3t
+	 uV0aan1arHJtw6fsgOxnltASh8rJj2gFJAWOhxToAMfOSGalgYmV7ANaQXKfj2nbj1
+	 cMzkSXqle657c0lizK9W3VMN9XKsCiSMztje2WPlBp4GRknZdqIskVZJan6eTISQj/
+	 1QfwwnBrleyCDH8pFF/2S9MSbEbJbX5/tlwIIsnmnVBBSu33AaEYoP/zOWiWO3RvfA
+	 +ugcqCI/AasxQ==
 From: Tzung-Bi Shih <tzungbi@kernel.org>
 To: Jonathan Corbet <corbet@lwn.net>,
 	"Rafael J. Wysocki" <rafael@kernel.org>,
@@ -40,10 +41,12 @@ Cc: Shuah Khan <skhan@linuxfoundation.org>,
 	driver-core@lists.linux.dev,
 	tfiga@chromium.org,
 	senozhatsky@chromium.org
-Subject: [PATCH v2 0/3] PM: dpm_watchdog: Improve DPM watchdog configurability
-Date: Thu,  4 Jun 2026 09:07:48 +0000
-Message-ID: <20260604090756.2884671-1-tzungbi@kernel.org>
+Subject: [PATCH v2 1/3] PM: core: Rename module parameters prefix to "power"
+Date: Thu,  4 Jun 2026 09:07:49 +0000
+Message-ID: <20260604090756.2884671-2-tzungbi@kernel.org>
 X-Mailer: git-send-email 2.54.0.1032.g2f8565e1d1-goog
+In-Reply-To: <20260604090756.2884671-1-tzungbi@kernel.org>
+References: <20260604090756.2884671-1-tzungbi@kernel.org>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -52,42 +55,39 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-This series improves the configurability of the DPM watchdog.
+Currently, the module parameters defined in drivers/base/power/main.c
+use the default prefix "main" (derived from the filename).  The prefix
+"main" is too generic and non-descriptive for power management
+parameters.
 
-Currently, the DPM watchdog timeouts are fixed at compile time, and the
-watchdog is always enabled if compiled in.  Also, the module parameters
-defined in drivers/base/power/main.c use the generic and non-descriptive
-"main" prefix.
+Redefine MODULE_PARAM_PREFIX to "power." at the beginning of the file
+to group the module parameters under the "power" namespace instead.
+This makes the parameters more descriptive.
 
-This series addresses these limitations.
-
-Patch 1 renames the module parameter prefix for drivers/base/power/main.c
-from "main" to "power".
-
-Patch 2 introduces the CONFIG_DPM_WATCHDOG_DEFAULT_ENABLED to allow the DPM
-watchdog to be disabled by default at compile time.  It also exposes the
-"power.dpm_watchdog_enabled" module parameter to allow enabling/disabling
-the watchdog at boot time and runtime.
-
-Patch 3 introduces sysctl knobs under /proc/sys/kernel/ to allow
-configuring the DPM watchdog timeouts at runtime.
-
+Signed-off-by: Tzung-Bi Shih <tzungbi@kernel.org>
 ---
 v2:
-- Form a new series.
+- New to the series.
 
 v1: Doesn't exist.
 
-Tzung-Bi Shih (3):
-  PM: core: Rename module parameters prefix to "power"
-  PM: dpm_watchdog: Allow disabling DPM watchdog by default
-  PM: dpm_watchdog: Add sysctl interface for DPM watchdog timeouts
+ drivers/base/power/main.c | 3 +++
+ 1 file changed, 3 insertions(+)
 
- .../admin-guide/kernel-parameters.txt         |  8 ++
- drivers/base/power/main.c                     | 75 ++++++++++++++++++-
- kernel/power/Kconfig                          |  9 +++
- 3 files changed, 88 insertions(+), 4 deletions(-)
-
+diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
+index ed48c292f575..cd864f3a2799 100644
+--- a/drivers/base/power/main.c
++++ b/drivers/base/power/main.c
+@@ -40,6 +40,9 @@
+ #include "../base.h"
+ #include "power.h"
+ 
++#undef MODULE_PARAM_PREFIX
++#define MODULE_PARAM_PREFIX "power."
++
+ typedef int (*pm_callback_t)(struct device *);
+ 
+ /*
 -- 
 2.54.0.1032.g2f8565e1d1-goog
 
