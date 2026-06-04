@@ -1,205 +1,236 @@
-Received: from mail-ed1-f46.google.com (mail-ed1-f46.google.com [209.85.208.46])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 77788413D99
-	for <linux-pm@vger.kernel.org>; Thu,  4 Jun 2026 11:23:19 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.208.46
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1780572201; cv=pass; b=FUd0ku6paAEAYPovEQ2LxLBTjoZTgs459maNcrVkbw2hcIcqjflM2OMFIWsjP8ynW1ckuEOfvrarY8LsPoMgm/iXbkVi3CiR+0TOqD06ltE9JpdB1C4OBnNM5iZis3idk9oU/0yHIsYLnaN35TpSadsZjdp0FKgES8UFXGyd4OA=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1780572201; c=relaxed/simple;
-	bh=G9nFh7v8j7acwr3OyC0fVYembfzlnZt3C5JR+74mpZQ=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=Q7B2rNmMVFAJC1Q9fZ/2LLP8WebTJ9l8zXsvDfERevcm1uU27WrsdqI90wWr5kjijFxkP8afm98yDTeB8/8vmbE65y34KPRQh5RPESp/SWspSwNeVuQ/mOPjgH9rzhWNsfgykRWn2IULedAa6BIgU+1whRbTq/Re4q1wDgGXRtU=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=Dvx6AsfG; arc=pass smtp.client-ip=209.85.208.46
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5FDB43F1678
+	for <linux-pm@vger.kernel.org>; Thu,  4 Jun 2026 11:43:50 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1780573433; cv=none; b=Om30o2zpwqNxAKY8vqqWhfhGPfdL1q29TztBGdBrJZJWLFU4xOB/GY4tAPUNj86FZRJ9nE/fniQg/nusLVkl8s599B9ghq+NCF9ebeI+V3oF8wVp7lBzW2Zsggh7cFU0IAqAsqXtVAmkT2RHCPlLdNfQ+t/dEtJK7xKaB++hFCw=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1780573433; c=relaxed/simple;
+	bh=UlgOiZzolv21k+Fs4BDGLvH4PmZAmdU4z4XhtlR+T1Y=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=eGmCeeEtOcv89d986HX3JNJ/+6qSHsar+875QoZWIGGLwRCR+JsFnSplQV2sEyw6AsbzRprVVjajsI3jSnPtq0Emp6fG6c3n7VN45Nuf2wGp8vvvPFR/zG4HVnGhsIm6yMJIzvhUY8Z2lzhajvOS8GgMLqXIEsn3Nva1jVCzClY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=HQXsVSCX; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=ZYcjIsvP; arc=none smtp.client-ip=205.220.168.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="Dvx6AsfG"
-Received: by mail-ed1-f46.google.com with SMTP id 4fb4d7f45d1cf-68c32f3c6d6so574114a12.3
-        for <linux-pm@vger.kernel.org>; Thu, 04 Jun 2026 04:23:19 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1780572198; cv=none;
-        d=google.com; s=arc-20240605;
-        b=fLyzK2cOLqN7TW2T3V4KEobH7U7mwsIPfPTxgS7/gWU0OkiDCMndowx7nWFf4/WmEQ
-         gAHxkPrZUDnF/18Yfq1RI7Sy4e52QOy4gLVJVHhvuiwpxgkrMkAurvSnWAjk/iL6JPBa
-         5xNn4pk7v9A2ZcKwQZOSlMsaIh0l7/7Fcf2C7tbNfvT+Q+uXJHDDtgewNE+xHAK/KbDc
-         zYHeOSCK3+kUtlmNu3NNJcjq1EM+xiY122y6IofxBXdENPNS8aMWNeFhTBH51Zlm/toa
-         S5xpp2crs9vuaIKJZv3WH3oKdHUKwH7C38RBqIWmc6ZNOoC4f+eEow3tfB+cEjefIw5P
-         xPUw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:dkim-signature;
-        bh=zSZAPul0pXkxx09T12pErJ7HwDU4RDxf16+6acHgaAM=;
-        fh=5eJwXNBm8wEqoDxHLiNgsXMPfRaie/5oksME8sf7REA=;
-        b=iHDTZW+lqWd8TYPBJMiaq+Cm3QYGwH+YaQbWO4df2PrTGMVDQNw/0CcXFYBabgSBpZ
-         FgIDitaOp2QhjG2TcPCnhW0KECcim6oz2mrfENZEwGot9nMATSJGvN+QLKbuA209aUtQ
-         MmxvenVTIfxGrwonutp4QHRKOsqdf424fZTgzcQ9iR4UQ8p7bt50d2A/OJ7nr51Ru8oc
-         yoccOYIFreSLsV93xE0zujWxl/PhKOn1nt8baDIrvktrpt8x3/bFo6FTVUdy1msZXYnY
-         X8q9JUO9iq4wBt8/W+VtwcojmV3a7X3SQp35H2ECpW+qeWIa6cqPyimEWGwX+J/icZX9
-         jVMA==;
-        darn=vger.kernel.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="HQXsVSCX";
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="ZYcjIsvP"
+Received: from pps.filterd (m0279865.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 654B4Oco1039343
+	for <linux-pm@vger.kernel.org>; Thu, 4 Jun 2026 11:43:49 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
+	DCkHbluDcNWeIl3FDcfNeAqYdv70fCJloE9NrbQf6xU=; b=HQXsVSCXl5YnZ39s
+	Z6HwZNxa62yrZ+FYgJMbw/MqV1apYJzb2GokYok3AnIaskHrQJSMtKEfeOTtSwFC
+	EgGxAuTfawbek02gZ9llI6Nwf4EU3rNdcZ8ZPalUCN7MynASJb6G6d4K0Tkp0HlX
+	5P7d4pUwUUBzdnThtX88k/tX+NtsoyyAtciRLPTmtB+iGQM8tesxBEKZ7kR0hWQd
+	6LEVxSjyLx8FK1kY+gclzdXalKvaGIIsuqh1ulfr+FMgILtJIn4EAbv6V0PPKXwQ
+	FXjBkRAy2ee6GOYwn5XvY/q9U2bUH2fOBc1Zorbla7Ui8OXYUji5oso3Pocx3he2
+	27qo5g==
+Received: from mail-pl1-f198.google.com (mail-pl1-f198.google.com [209.85.214.198])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4ejtj8k5hf-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <linux-pm@vger.kernel.org>; Thu, 04 Jun 2026 11:43:49 +0000 (GMT)
+Received: by mail-pl1-f198.google.com with SMTP id d9443c01a7336-2bf55c3f44aso14342885ad.0
+        for <linux-pm@vger.kernel.org>; Thu, 04 Jun 2026 04:43:49 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1780572198; x=1781176998; darn=vger.kernel.org;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:from:to:cc:subject:date:message-id:reply-to;
-        bh=zSZAPul0pXkxx09T12pErJ7HwDU4RDxf16+6acHgaAM=;
-        b=Dvx6AsfGD02bweAo0ZEINt0kOaCQzPJ1S2+optCdZlXmIr23h/q3YrAsWtupnJ7l45
-         c98RGB5NER11WyEenOQEJiqhh0Iy88ubfgMHy7ZCJvzG2v1t15JKlK6T9311q8noIq+t
-         CIZFHD1fklBLj0B/CUVGk6CwALZ5FSxxbvzILufg+xELUDVYcg7x8Dzt4jUQgXPvImP0
-         asnJzap0HrzweOPVSCBiRJoqC/iBCnwf872TLf/em3etyORjPOjuF6gZ+HpaBwCgLQoX
-         tRYik6X8LflxAyu8m7Z91oJSEuFcJ5WhN2i2BEU/P/RNYSQjh2eEM0nx19hgLjtmepPp
-         Xv7A==
+        d=oss.qualcomm.com; s=google; t=1780573429; x=1781178229; darn=vger.kernel.org;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=DCkHbluDcNWeIl3FDcfNeAqYdv70fCJloE9NrbQf6xU=;
+        b=ZYcjIsvPTbyWGPH2DJJGR1RQyZHifuOYfH49TnuKQ14VrxDB0GGD56wlx/sAe8Ejnd
+         7L0PjRGYNcCrTDxj1sHh2NYfTG/uFEhoJHOVmVU49MtM8VrrWsX2AaKKsW9iqOEd5Aeq
+         8jYgl3X2YuQ1ui26YP3xj7eLqDs8JeLoOcCnFE0GyMzXxkzw2ELwN7rvKGLhIBcyhUqZ
+         wLCsQdHNZe0rLTXUYHLUSJWSR7QR1P3yOm87f0lcc7kuO/yih0Ol6L66iFX3ncuM3hOw
+         GJZQUZqfVrJux7dJDTBgX2Jcyuw1caybL7/fmlwjXULmGX2IbxXaiyXDs29zb26YnUL1
+         IQtg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1780572198; x=1781176998;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=zSZAPul0pXkxx09T12pErJ7HwDU4RDxf16+6acHgaAM=;
-        b=FAB0B+j2rrw6EIcHdFImIKHni5UhWtFgCQtTMZbYqpDZhcEFGCe9gDoEa7NCZaHM0f
-         SY3dz5M8cnymKMJUudzLutNpl7h3QfMGO1M+Fg9BVNpvYlVirdvjMfFFSwrnsHr8ZUle
-         tiY5FaD1yPm3wXze2sdXnU7C8sQUJA5GarA7Gkll7WYz7l+DuQZ6mS9dOtsi//NUKwlo
-         mBNnUu0PiV0zzAzX2bvJK1f4+DNOkPaRXiUlFPZb0x3SJD0qve06fqddrf+ffnOdNIlo
-         dMGyBGGq1qcfqtdqG8YrgjnWOQewDAbV5cFv5E/YySSSGfKuJFkabcx6VA5T08KtRMUt
-         4Unw==
-X-Forwarded-Encrypted: i=1; AFNElJ/WqvCRiRQBA/OGGuVpM0UQFyxvQNJ+pTsvPdkvOaHrXvL+rBuPyvDcDAByDqkuPCsxLQF9gf4shw==@vger.kernel.org
-X-Gm-Message-State: AOJu0YwLB3D71x7dQ4wUbppm5hshHS3wTnnHefpmuX1KNX56ZqNlIlFf
-	dystVlooTcZnstbBYCARF9v3SN0itDFY0paYWNNP5W7sM8PQc4QSTPeO+R0DdKb2j7vjXrrMNIr
-	KmFqq3HOQxQaoMT7gsWcde2qN95sSIUQgj7SQIy1Z7A==
-X-Gm-Gg: Acq92OHjP1iuuW0YF+jkY4baN0/jyP7Fw5/+SmH4KzATM0kcjRQP9m4vg8ZvXSuWRJ7
-	bC79qTD99HTFxkR5H9voTYv/9f3G+Ld1GxVQvDRWiVURewZLAjDu/M5eYYPH8JvIAwss21jPV1i
-	W7JGzEjlJN+69Ebe81dhtzw3bznmeuWI7RM3T/7+tnygc8QkoBGOv7N37nCAHODuqt+vocSNTkd
-	h3Jny0haEu6dvWrRG3E7PD/p12uHJ8OfLVNDjrAbcwKxubsSZ3oWVwf6fLW3oO3oHAOcPEYdK6W
-	2kbFBUHkisIZn9OQWcioihAwY0JUB2y/AaWbZ+3TrM5SMY/w
-X-Received: by 2002:a05:6402:3215:b0:68b:539c:d269 with SMTP id
- 4fb4d7f45d1cf-68e710ebc51mr4043117a12.12.1780572197841; Thu, 04 Jun 2026
- 04:23:17 -0700 (PDT)
+        d=1e100.net; s=20251104; t=1780573429; x=1781178229;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=DCkHbluDcNWeIl3FDcfNeAqYdv70fCJloE9NrbQf6xU=;
+        b=oFoY01YTQ5KHwOw/pfbbMwIkrheOVQB6ING1Qa+zHq2wfwoMeDYRNTmk20vCYOF71f
+         c2rZUz+1GOZMmYzK7WokVjj6NmLZ4X25f/2Itm+Pz/Jmhx8l1Voo+3eENWv2oTPo4N6f
+         Hnf3cHYm9qPd9FbFv2M3MkMULB/JlrglaUJug/jPgrqCkyNeKq36FcCAu9uevg4GeOM6
+         atpn97IWOyN/G4LSQLbHRVphUXMFJF8PLzL08zbjjgv5RiIA6IZOgmusIz8G59YnYV4V
+         OAaASGOrpXOnFGu8jJN4ohPLEvfr1yEHRvY/smftL0EY0XgkTJ/U3fAQtCzWdWM81Lvi
+         5vGg==
+X-Gm-Message-State: AOJu0Yz6dyEnH4iCXEdwmRXi71L0ZDH1ziOb0T7yut+ZPFJ5gepq0aOw
+	bD1P/TbBJ9rW5WwFM8yxgsHZ5bdJA7xmb++xkRYDbJJ0PudOmvIGSqEV/HS4jZASqzRa2MpzrKI
+	ytmUnKcEyKM1nglrvAlH13bhGgG39pEiitDk3wWru2hjQ1CfDs62k8mUvarVv/g==
+X-Gm-Gg: Acq92OH4LTkOyRD9DjZGzoR5qNByDT0mDYeUUmjXC9aXXukrjAhjupadminTUXeObRX
+	eCakLKIOQvUmF+UTYq0NwkYpNN5GnKinDFtlwDnLB0LssMXknnVqvNynH7Ltixx0kwGDZYkcfSF
+	wY2Oox7HJfjmtmPKPGGlrsZc6FPuIIfRTPIUUOfROMO6SJU0c5vqjXp9cULNUvtRWA7AtB8k4CK
+	i5j07j/hES2ikcx4kOoM8cT1lJaRUPrgFNAXnag8cKg8OJ6sb1u+h0k4A8DRzK/RGNMipW7nN7m
+	+Mjzb59gLQYczzOTwOn63sGOUe6Tm8H8ll2d762JCCFt4z0+ZC4YdALKG9CHKd/pMjXVqxrc09i
+	HMsv3ZlYN+vCELvsLKoeZMkDGeDq2lcWCqMGZkmC0L0C7QWqcneUhM8bFvPs8iSfWES2CV/fIzC
+	1E+5z28tMmrxo3pW/0c7ulugAOY1v5
+X-Received: by 2002:a17:902:e84f:b0:2bd:d7c5:927c with SMTP id d9443c01a7336-2c197ea5564mr32376485ad.20.1780573428874;
+        Thu, 04 Jun 2026 04:43:48 -0700 (PDT)
+X-Received: by 2002:a17:902:e84f:b0:2bd:d7c5:927c with SMTP id d9443c01a7336-2c197ea5564mr32376085ad.20.1780573428363;
+        Thu, 04 Jun 2026 04:43:48 -0700 (PDT)
+Received: from [10.133.33.112] (tpe-colo-wan-fw-bordernet.qualcomm.com. [103.229.16.4])
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2c164f70660sm55923615ad.11.2026.06.04.04.43.43
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Thu, 04 Jun 2026 04:43:47 -0700 (PDT)
+Message-ID: <ee06f1c2-b47e-407c-ab33-9d4f2661b3ad@oss.qualcomm.com>
+Date: Thu, 4 Jun 2026 19:43:41 +0800
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260603-acpm-tmu-v8-0-0f1810a356e6@linaro.org> <20260603-acpm-tmu-v8-1-0f1810a356e6@linaro.org>
-In-Reply-To: <20260603-acpm-tmu-v8-1-0f1810a356e6@linaro.org>
-From: Peter Griffin <peter.griffin@linaro.org>
-Date: Thu, 4 Jun 2026 12:23:06 +0100
-X-Gm-Features: AVHnY4Ia0mw8gm7Hj0ZlJv6TfIxLHonorNGMBp2ITPuIwQPM__6LAPjP3GLorns
-Message-ID: <CADrjBPqhrnMv0xoMK+K=rMmd9jKAHYqFkn6y7EKoqm=i9o656A@mail.gmail.com>
-Subject: Re: [PATCH v8 1/5] dt-bindings: thermal: Add Google GS101 TMU
-To: Tudor Ambarus <tudor.ambarus@linaro.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Daniel Lezcano <daniel.lezcano@kernel.org>, 
-	Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>, Rob Herring <robh@kernel.org>, 
-	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
-	Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, Krzysztof Kozlowski <krzk@kernel.org>, Kees Cook <kees@kernel.org>, 
-	"Gustavo A. R. Silva" <gustavoars@kernel.org>, =?UTF-8?Q?Andr=C3=A9_Draszik?= <andre.draszik@linaro.org>, 
-	Alim Akhtar <alim.akhtar@samsung.com>, jyescas@google.com, linux-kernel@vger.kernel.org, 
-	linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, 
-	devicetree@vger.kernel.org, linux-hardening@vger.kernel.org, 
-	linux-arm-kernel@lists.infradead.org, 
-	Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
-Content-Type: text/plain; charset="UTF-8"
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] cpufreq: Documentation: fix freq_step description
+To: Pengjie Zhang <zhangpengjie2@huawei.com>, rafael@kernel.org,
+        viresh.kumar@linaro.org, corbet@lwn.net, skhan@linuxfoundation.org
+Cc: linux-pm@vger.kernel.org, linux-doc@vger.kernel.org,
+        linux-kernel@vger.kernel.org, zhanjie9@hisilicon.com,
+        prime.zeng@hisilicon.com, wanghuiqiang@huawei.com, xuwei5@huawei.com,
+        lihuisong@huawei.com, zhenglifeng1@huawei.com, yubowen8@huawei.com,
+        wangzhi12@huawei.com, zhongqiu.han@oss.qualcomm.com
+References: <20260529111122.3321645-1-zhangpengjie2@huawei.com>
+ <f598e862-8120-4922-9d04-6e3729187420@oss.qualcomm.com>
+ <2712839c-fb9b-4717-a36f-a0f922115be8@huawei.com>
+Content-Language: en-US
+From: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>
+In-Reply-To: <2712839c-fb9b-4717-a36f-a0f922115be8@huawei.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-Proofpoint-ORIG-GUID: D1vUOeJaIMR8Mz2smd3IV57eTl82Ou3h
+X-Proofpoint-GUID: D1vUOeJaIMR8Mz2smd3IV57eTl82Ou3h
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNjA0MDExMyBTYWx0ZWRfX9E6dESgYgQDi
+ joVJt0CtWvqW+ozW1dhKIssoH/Tpm+vffd91niNwjv6Nl30JKm6m8C+74Fx8cDuU+d21SOkI+tc
+ LlaUCRpu0zeHwC61e3gIpnKEM9nmtQaGS0uJSIoOGO/ASp7vpWZ0s+CxGjnYY69UFORncUVOXLY
+ UYzriKiOhubsHLmH3EoMLQBFnlrGea9POhigI6QdRNViL6hpwRoHYCUq7a+ASAJ/hKRSIf5bSE3
+ c1Sf8s/gP5RRGPhbxyC38KtdpD5m7hEFHHZx7um6NTGfQruIW4VBr5X4NCsWef+enNUpyVrQwqB
+ p49s09ix55Yooj63lQDoOhEB1YT8v/PPfLjRaw1l9r4XK1gJrIUH9mB998L3+2vkTmzC0WEUrmd
+ 9Pr+FVIsecAk1KdQOYoLtKla759KPP+BQxKCFTXF9Z5dWAcLtgV6gTVWQPDmwbbP+5LUGGgf7Ul
+ ZVM++hcm4Wpgd80k9gA==
+X-Authority-Analysis: v=2.4 cv=f4p4wuyM c=1 sm=1 tr=0 ts=6a2164f5 cx=c_pps
+ a=MTSHoo12Qbhz2p7MsH1ifg==:117 a=nuhDOHQX5FNHPW3J6Bj6AA==:17
+ a=IkcTkHD0fZMA:10 a=FelO9ux0wxsA:10 a=s4-Qcg_JpJYA:10
+ a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=Um2Pa8k9VHT-vaBCBUpS:22
+ a=i0EeH86SAAAA:8 a=4SKoMZd7SZ04T4ZP5QkA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
+ a=GvdueXVYPmCkWapjIL-Q:22
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.125,FMLib:17.12.100.49
+ definitions=2026-06-04_03,2026-05-28_03,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ spamscore=0 suspectscore=0 phishscore=0 bulkscore=0 clxscore=1015
+ adultscore=0 priorityscore=1501 impostorscore=0 malwarescore=0
+ lowpriorityscore=0 classifier=typeunknown authscore=0 authtc= authcc=
+ route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2605210000
+ definitions=main-2606040113
 
-On Wed, 3 Jun 2026 at 14:00, Tudor Ambarus <tudor.ambarus@linaro.org> wrote:
->
-> Document the Thermal Management Unit (TMU) found on the Google GS101 SoC.
->
-> The GS101 TMU utilizes a hybrid control model shared between the
-> Application Processor (AP) and the ACPM (Alive Clock and Power Manager)
-> firmware. This hybrid ACPM TMU architecture is also present on other
-> Samsung Exynos SoCs (e.g., AutoV920, Exynos850).
->
-> While the TMU is a standard memory-mapped IP block, on this platform
-> the AP's direct register access is restricted to the interrupt pending
-> (INTPEND) registers for event identification. High-level functional
-> tasks, such as sensor initialization, threshold programming, and
-> temperature reads, are delegated to the ACPM firmware.
->
-> Signed-off-by: Tudor Ambarus <tudor.ambarus@linaro.org>
-> Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
-> ---
+On 6/1/2026 10:04 AM, Pengjie Zhang wrote:
+> 
+> On 5/30/2026 10:36 PM, Zhongqiu Han wrote:
+>> On 5/29/2026 7:11 PM, Pengjie Zhang wrote:
+>>> The conservative governor documentation incorrectly states that setting
+>>> freq_step to 0 will use the default 5% frequency step. In reality, since
+>>> the governor's initial implementation
+>>> commit b9170836d1aa ("[CPUFREQ] Conservative cpufreq governer"),
+>>> freq_step=0 has always caused the governor to skip frequency updates
+>>> entirely.
+>>
+>> Hi Pengjie,
+>>
+>> Thanks for the patch.
+>>
+>> The documentation fix looks correct: in the current code,
+>> cs_dbs_update() has an early goto out when freq_step == 0, which skips
+>> the call to get_freq_step() and all subsequent frequency change logic.
+>>
+>> However, the commit message's historical claim appears to be inaccurate.
+>> In the original implementation (b9170836d1aa), freq_step=0 had
+>> asymmetric behavior: frequency decreases were skipped (early return),
+>> but frequency increases still used the hardcoded 5% fallback (freq_step
+>> = 5 after the unlikely(freq_step == 0) check).
+>>
+>> If so, would it make sense to remove/update the historical claim to
+>> avoid the incorrect historical claim?
+>>
+> Thanks for the careful review.
+> 
+> Agreed. The correct commit for the symmetric freq_step=0 behavior
+> should be 8e677ce83bf4 ("[CPUFREQ] conservative: fixup governor to
+> function more like ondemand logic"), not b9170836d1aa.
+> 
+> I'll fix the commit message in v2.
+> 
+> On a related note, I have a quick question regarding code readability in
+> this area. Currently, the code uses the name "freq_step" for two different
+> concepts:
+> 
+> 1. `cs_tuners->freq_step`: The tunable exposed via sysfs/documentation,
+>     which represents a percentage.
+> 2. `freq_step = get_freq_step(...)`: The local variable representing the
+>     actual calculated frequency step (in kHz). The `if 
+> (unlikely(freq_step == 0))`
+>     check also applies to this absolute value.
+> 
+> Since mixing a percentage and an absolute kHz value under the same name
+> might be slightly confusing for readers, would it make sense to rename the
+> local variable (e.g., to `freq_step_khz`) to clearly distinguish the two?
 
-Reviewed-by: Peter Griffin <peter.griffin@linaro.org>
+Hi Pengjie,
 
->  .../bindings/thermal/google,gs101-tmu-top.yaml     | 69 ++++++++++++++++++++++
->  1 file changed, 69 insertions(+)
->
-> diff --git a/Documentation/devicetree/bindings/thermal/google,gs101-tmu-top.yaml b/Documentation/devicetree/bindings/thermal/google,gs101-tmu-top.yaml
-> new file mode 100644
-> index 000000000000..75560ebca48d
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/thermal/google,gs101-tmu-top.yaml
-> @@ -0,0 +1,69 @@
-> +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
-> +%YAML 1.2
-> +---
-> +$id: http://devicetree.org/schemas/thermal/google,gs101-tmu-top.yaml#
-> +$schema: http://devicetree.org/meta-schemas/core.yaml#
-> +
-> +title: Samsung Exynos ACPM Thermal Management Unit (TMU)
-> +
-> +maintainers:
-> +  - Tudor Ambarus <tudor.ambarus@linaro.org>
-> +
-> +description:
-> +  The Samsung Exynos ACPM TMU is a thermal sensor block found on Exynos
-> +  based platforms (such as Google GS101 and Exynos850). It supports
-> +  both direct register-level access and firmware-mediated management
-> +  via the ACPM (Alive Clock and Power Manager) firmware.
-> +
-> +  On these platforms, the hardware is managed in a hybrid fashion. The
-> +  Application Processor (AP) maintains direct memory-mapped access
-> +  exclusively to the interrupt pending registers to identify thermal
-> +  events. All other functional aspects - including sensor
-> +  initialization, threshold configuration, and temperature acquisition
-> +  - are handled by the ACPM firmware. The AP coordinates these
-> +  operations through the ACPM IPC protocol.
-> +
-> +properties:
-> +  compatible:
-> +    const: google,gs101-tmu-top
-> +
-> +  reg:
-> +    maxItems: 1
-> +
-> +  clocks:
-> +    items:
-> +      - description: APB peripheral clock (PCLK) for TMU register access.
-> +
-> +  interrupts:
-> +    maxItems: 1
-> +
-> +  "#thermal-sensor-cells":
-> +    const: 1
-> +
-> +  samsung,acpm-ipc:
-> +    $ref: /schemas/types.yaml#/definitions/phandle
-> +    description: Phandle to the ACPM IPC node.
-> +
-> +required:
-> +  - compatible
-> +  - reg
-> +  - clocks
-> +  - interrupts
-> +  - "#thermal-sensor-cells"
-> +  - samsung,acpm-ipc
-> +
-> +additionalProperties: false
-> +
-> +examples:
-> +  - |
-> +    #include <dt-bindings/interrupt-controller/arm-gic.h>
-> +    #include <dt-bindings/clock/google,gs101.h>
-> +
-> +    thermal-sensor@100a0000 {
-> +        compatible = "google,gs101-tmu-top";
-> +        reg = <0x100a0000 0x800>;
-> +        clocks = <&cmu_misc CLK_GOUT_MISC_TMU_TOP_PCLK>;
-> +        interrupts = <GIC_SPI 769 IRQ_TYPE_LEVEL_HIGH 0>;
-> +        #thermal-sensor-cells = <1>;
-> +        samsung,acpm-ipc = <&acpm_ipc>;
-> +    };
->
-> --
-> 2.54.0.1013.g208068f2d8-goog
->
+Agreed, the shadowing is confusing. That said, renaming just the local
+variable alone might be a bit too small to warrant a separate patch
+-- but while you're looking at this area, you might want to consider
+DEF_FREQUENCY_STEP itself as well, which seems to be overloaded:
+
+   - In cs_init() it is used as a percentage (the default 5% tunable).
+   - In get_freq_step() it is assigned to a kHz-valued variable as a
+     fallback, where "5" means "5 kHz".
+
+As a suggestion, you could fix both while you're at it.
+
+> 
+> Cheers,
+>      Pengjie
+> 
+>>>
+>>> Correct the documentation to reflect the actual behavior: freq_step=0
+>>> disables frequency changes by the governor entirely.
+>>>
+>>> Fixes: 2a0e49279850 ("cpufreq: User/admin documentation update and 
+>>> consolidation")
+>>> Signed-off-by: Pengjie Zhang <zhangpengjie2@huawei.com>
+>>> ---
+>>>   Documentation/admin-guide/pm/cpufreq.rst | 4 ++--
+>>>   1 file changed, 2 insertions(+), 2 deletions(-)
+>>>
+>>> diff --git a/Documentation/admin-guide/pm/cpufreq.rst b/ 
+>>> Documentation/admin-guide/pm/cpufreq.rst
+>>> index dbe6d23a5d67..98c724d49047 100644
+>>> --- a/Documentation/admin-guide/pm/cpufreq.rst
+>>> +++ b/Documentation/admin-guide/pm/cpufreq.rst
+>>> @@ -586,8 +586,8 @@ This governor exposes the following tunables:
+>>>       100 (5 by default).
+>>>         This is how much the frequency is allowed to change in one 
+>>> go.  Setting
+>>> -    it to 0 will cause the default frequency step (5 percent) to be 
+>>> used
+>>> -    and setting it to 100 effectively causes the governor to 
+>>> periodically
+>>> +    it to 0 disables frequency changes by the governor entirely and 
+>>> setting
+>>> +    it to 100 effectively causes the governor to periodically
+>>>       switch the frequency between the ``scaling_min_freq`` and
+>>>       ``scaling_max_freq`` policy limits.
+>>
+>>
+
+
+-- 
+Thx and BRs,
+Zhongqiu Han
