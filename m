@@ -1,250 +1,150 @@
-Received: from mail-ed1-f48.google.com (mail-ed1-f48.google.com [209.85.208.48])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1B6E633EF
-	for <linux-pm@vger.kernel.org>; Thu,  4 Jun 2026 10:08:31 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.208.48
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1780567713; cv=pass; b=jzIFLxijaV6VT9/pZ1EhyqMYFulVwEvwuSWS4rNLxKWbxN6Qsf927dj15LAut8NrrcKNuTEaAQLfw4bm9/EdfXGZhVirGzhBXmxcQlH83jyEd+oJceN1PULvKUQLllg0s0gVBDK0hXuPPM5qCn4RIguvyU6c4Xr/o5twBoEwHOc=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1780567713; c=relaxed/simple;
-	bh=HhLuT634S1bGovGmEL58Hy4xmsxqY6iHFcACo8SPT6w=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=oL5+Dnfq6SAWK8eu8Lfq09PKTJpNRBldf1p40rqxPKGYDy32A1zg2ZQ9HDv81YZvpAg0QAyeeOeY0o2gDLxnizbdL3f13CGVUPAc/MpTPGscTDksJemb5E13rNWe+XVrU+9X0nmlZ1Kq80/NhosRUub+VQaXaWHzG2eYNFBNX24=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=ndN5//xf; arc=pass smtp.client-ip=209.85.208.48
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1C6A52ED848;
+	Thu,  4 Jun 2026 10:46:44 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1780570005; cv=none; b=UJdCrwoccockq0P1B99yzgG7p0zbSOvgGmtyOjW0UoJSdgbpx44YYwHdgCpksz/MOgjRs9grW/ff/0rqZmsgx5R9PZ3XX6HkV4NHQa1bLVPIbEGVjYKH2J+E8rg/Jv68RPLF6Tih2+pnd7Wz2c9e2dAC7P5UsAIfj0p8zygdjd0=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1780570005; c=relaxed/simple;
+	bh=biiRY84vnYMb5PbMnT2Tgh+oJNQYMtRjO3yfY9cGl2Q=;
+	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=W7YVBotgT4byVakg6R1WZk/Tu1KfSA2JOo1RK2XQebTsJA0KpfFd/xTHAt5dUPcp+Q9PEyDIehPSbb6ZRHkekGXnnLggTdngwQvsLPqBj1a+bExcxxmAR7gySwFvy7mc8tXCnZY15hhKTH83zouIl0OVzfBjSBsL0gJDwgs5Qik=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=mMFNHt72; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="ndN5//xf"
-Received: by mail-ed1-f48.google.com with SMTP id 4fb4d7f45d1cf-687ed9aabb3so1005020a12.1
-        for <linux-pm@vger.kernel.org>; Thu, 04 Jun 2026 03:08:31 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1780567710; cv=none;
-        d=google.com; s=arc-20240605;
-        b=haqTMjyIoPwCE+aCDPQ8FRHX/0Rj0huKfDTY8CjITbAXj3MUy/CDB1BZERHwV7W3rc
-         0W9UZaVBAvV3tzWCWcygA1uSm84/dGrvuVOWSvWUq3tXxB3mmJkgG4sC7Du318XanevZ
-         h2xhBVoYdSkly7DQCdW6cDnccHs+pJR28HlCJr25IQea8dwPpUP9lpMW9kS+X2hjTsQ1
-         9Y0clqc9ZGclsimTFnZGQcrvQZJRw+fE+2bB6QqtpyqY4Td9f92oYE01XA9QkOxaJYNE
-         dOYi/kGg7UA/kkzPpbMkttNK/+k74BtieSTC3JUtplsChtELDb23/FoE1Xry14r3iU5f
-         +N2g==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:dkim-signature;
-        bh=fH6LccfX1e1gs0wpfFU/BGTTT70TciQb7KsL8WGA1xY=;
-        fh=3Qj7f0hkY4UFW2abCBEX/uy0gzGLdfOaTObuNpfkTeQ=;
-        b=lN8jQow14F/o6SIXd9ScCRSdwvAc5S9JSO/ZjFhN2T6eoNNSe8iyBkz7+fEcQUD/3S
-         PclZpSfTPTAPjYPZ4ujgfbfqelSXXEyku1JAmu2IfKK0dkvKPZ8TkV5SDAIxaY+RZS7J
-         XB3LOOAOhRmTyfoGdvd0NjwncL3eYPhsy0aWUVoNvYH0ZHPMeNjRnHr0qVX+/Y/H/qa4
-         My6otFGezsxTss2U3nZmV1vdKRQyr/+LbYl2phdSIiAs5w7ki/Xw0tWxkeJBo/IYZ+di
-         dLt9cp1dJnWcTpZ2tZv1q5PDyCGGlHytk6OREy0uoBYv3ZMto1ikMf2y7aD060AHJ9Iw
-         MmaQ==;
-        darn=vger.kernel.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1780567710; x=1781172510; darn=vger.kernel.org;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:from:to:cc:subject:date:message-id:reply-to;
-        bh=fH6LccfX1e1gs0wpfFU/BGTTT70TciQb7KsL8WGA1xY=;
-        b=ndN5//xfr1DM2DAFeUiJJjhva1Bsm5pJSDF55ywWXRYKDXn5J5PFLaTK9f1HP5Kni0
-         LQ0/tX+Qty11+ZM3Dfqguh+aBm4dnhtZorc69dQ95Y95Qhuu70fnPDXPnSW88yjIXZny
-         1kIaEKRhvo4yTBnpBkBtbaKC6A5dMiCHK6W/bSb0n+Hot7ix8NRhSlT0M2X6bFrkonxR
-         mvqR/1fXJ7Vp/ur8RjmuD4pUbI0+qLA7vom0TCjyne0ZuPO+c1Z0joLkGVqc7Y4sRB9O
-         RztRBdWfuUjLCa2PdkjodFwEszgOzyVMRu6ig028lHSsg+Q9VxiQrRINz+IvsOSnfeFt
-         ysJg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1780567710; x=1781172510;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=fH6LccfX1e1gs0wpfFU/BGTTT70TciQb7KsL8WGA1xY=;
-        b=k2L1tdhnVrwnzqRu+n6bLeuPnGE5tCEB/AobPzUZM/x9heucoYTVZlpZFz3rgFdZm9
-         79AavGCJEmkITkSmADIEU3y/VcCB+LRkFOKXoizpdhlj688+7B8KVYE3UTX3o1E7joQv
-         Xnczkmd852j99tF/ND+KZNVhK0hSwDF0cjJWfRUDlickzvMKSmqv7v4jrpq4atiul2I1
-         gw+iI1VVMeIJlXG7ybzLOtj0U8J2O4DgLgfhcjNebZqxoyCY5muT8T9XrR45UjBvY212
-         KxMH9YrOJw6fyKI/pZErrQDALRHrWpeh+N4uZnEGoaqAHxJxdM7R1SBGAGmKHZ6qyvrB
-         lsOw==
-X-Forwarded-Encrypted: i=1; AFNElJ+0O1SUSgny8NIv4hemFqfczD3qVhK/aHGI1QnaPxullSnVZzw4123FNO+g47QQsN9gU6KB4ZSRhg==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yza07PzV4wPPFGfLz4TUdTdXcSy9Jb6vabTeVb3pQOCDwFTyY6R
-	Egffzr7khGX+C7LakUCTupv39+nj9IKzGzdavaHuwTZtTVdu/K5P8BtXXWDDIea+pqQxqxf6Z1O
-	Ly7e7NeZvAoas6kaY34DRDhpR4bpDIQ7pNQdyqVx+xQ==
-X-Gm-Gg: Acq92OHJfrVpLMzhi8w5R3ACDR0rpa0jydTtJErI+OCEN5cpArx/NxRxCogmyGvdorV
-	ILn+dr8KQMSqPnpIUOkN0lMiAH4NKmQKVGm4yqzN6qrrVKPjBoXzSDVHMvQ5fXWlhWndmYCa1Bx
-	Dpa32kBtP0nOOUt2vZJ20dQDH6S/N1UzHk2uOcJMYSC7//j7cVFA0so7llOgvZ888Qhns9Tw+Og
-	z9PGdGr+D2tKYpQyWlREiauIoTuwzgWyGa/EZ/nSdmh77MEN54E7LnSK8nn5mMIB/8a9MOk46uw
-	lzjKVrNqs8SIJjce0ci7iQc3OMenHCLqs/DpkyX8cDAXUzE=
-X-Received: by 2002:a05:6402:5111:b0:68d:651f:ccf8 with SMTP id
- 4fb4d7f45d1cf-68e6e446730mr3687652a12.3.1780567710402; Thu, 04 Jun 2026
- 03:08:30 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="mMFNHt72"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 52C4B1F00893;
+	Thu,  4 Jun 2026 10:46:35 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1780570003;
+	bh=FOme6FGys2fI4Tk2hmHNWSvY6xaDpJ6qGZkN/RcDCTI=;
+	h=Date:From:To:Cc:Subject:In-Reply-To:References;
+	b=mMFNHt72qrquxGmmCXZZA1e8HzZncvYR4s1rKQ9JJ7E51LqzroMv6dUPl/+EvHRRX
+	 +i060RL4+TDq293fspO/Hw5ew2qhYVvA/+j7Mv1Igbqe7Nd71abJ3mgjgbTg/xLgVR
+	 dpzX2hTBerXvJMQC+ODxYhAleonMuvSg28Uj/Yrf8uwd7myg0Jk/IUrvmP7tTfrr1N
+	 MjLary/2OxvlHx81VZN6zzGmHZg+XVBZf7jEZHdANpKaHDGUXkvwklru3BuSYDYQym
+	 9LzBH9SwgAPmilj/Br2v0WpO04kHdj0o54METH9DenfuuzrVGQXhyzsrHTLeKfO9Se
+	 GQrLsDToVaesA==
+Date: Thu, 4 Jun 2026 11:46:30 +0100
+From: Jonathan Cameron <jic23@kernel.org>
+To: Andy Shevchenko <andriy.shevchenko@intel.com>
+Cc: Jishnu Prakash <jishnu.prakash@oss.qualcomm.com>, David Lechner
+ <dlechner@baylibre.com>, Nuno =?UTF-8?B?U8Oh?= <nuno.sa@analog.com>, Andy
+ Shevchenko <andy@kernel.org>, Amit Kucheria <amitk@kernel.org>, Thara
+ Gopinath <thara.gopinath@gmail.com>, "Rafael J. Wysocki"
+ <rafael@kernel.org>, Daniel Lezcano <daniel.lezcano@kernel.org>, Zhang Rui
+ <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>,
+ linux-arm-msm@vger.kernel.org, linux-iio@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Kamal Wadhwa
+ <kamal.wadhwa@oss.qualcomm.com>, David Collins
+ <david.collins@oss.qualcomm.com>, Anjelique Melendez
+ <anjelique.melendez@oss.qualcomm.com>, Neil Armstrong
+ <neil.armstrong@linaro.org>, Stephan Gerhold <stephan.gerhold@linaro.org>
+Subject: Re: [PATCH v2 1/2] iio: adc: qcom-spmi-adc5-gen3: Share SDAM0 IRQ
+ with ADC_TM auxiliary driver
+Message-ID: <20260604114630.23ca427a@jic23-huawei>
+In-Reply-To: <ah9ouLQFI7VtHCWL@ashevche-desk.local>
+References: <20260526-gen3_adc_tm-v2-0-702fbac919ac@oss.qualcomm.com>
+	<20260526-gen3_adc_tm-v2-1-702fbac919ac@oss.qualcomm.com>
+	<ah9ouLQFI7VtHCWL@ashevche-desk.local>
+X-Mailer: Claws Mail 4.4.0 (GTK 3.24.52; x86_64-pc-linux-gnu)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260504020003.71306-1-qyousef@layalina.io> <20260504020003.71306-5-qyousef@layalina.io>
-In-Reply-To: <20260504020003.71306-5-qyousef@layalina.io>
-From: Vincent Guittot <vincent.guittot@linaro.org>
-Date: Thu, 4 Jun 2026 12:08:18 +0200
-X-Gm-Features: AVHnY4JFEsVnu0GqIITqslXdsdJ6wV6bf5Vg5qpu_CwD0h_rhH33NtOvdMmuKBA
-Message-ID: <CAKfTPtBKpFPS4AfsF_ihjW-m-FqcSXgg1fO_ZBV_Qjvr++iTHw@mail.gmail.com>
-Subject: Re: [PATCH v2 04/13] sched/fair: Remove magic hardcoded margin in fits_capacity()
-To: Qais Yousef <qyousef@layalina.io>
-Cc: Ingo Molnar <mingo@kernel.org>, Peter Zijlstra <peterz@infradead.org>, 
-	"Rafael J. Wysocki" <rafael@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, 
-	Juri Lelli <juri.lelli@redhat.com>, Steven Rostedt <rostedt@goodmis.org>, 
-	John Stultz <jstultz@google.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, 
-	Tim Chen <tim.c.chen@linux.intel.com>, "Chen, Yu C" <yu.c.chen@intel.com>, 
-	Thomas Gleixner <tglx@kernel.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 
-On Mon, 4 May 2026 at 04:00, Qais Yousef <qyousef@layalina.io> wrote:
->
-> Replace hardcoded margin value in fits_capacity() with better dynamic
-> logic.
->
-> 80% margin is a magic value that has served its purpose for now, but it
-> no longer fits the variety of systems that exist today. If a system is
-> over powered specifically, this 80% will mean we leave a lot of capacity
-> unused before we decide to upmigrate on HMP system.
->
-> On many systems the little cores are under powered and ability to
-> migrate faster away from them is desired.
->
-> Redefine misfit migration to mean the utilization threshold at which the
-> task would become misfit at the next load balance event assuming it
+On Wed, 3 Jun 2026 02:35:20 +0300
+Andy Shevchenko <andriy.shevchenko@intel.com> wrote:
 
-Do you mean at the next tick?
+> On Tue, May 26, 2026 at 04:26:09PM +0530, Jishnu Prakash wrote:
+> > The SDAM0 IRQ can be triggered for both EOC (end of conversion) events for
+> > immediate ADC reads done in this driver and for threshold violation events,
+> > based on ADC_TM thresholds configured from the auxiliary ADC_TM driver on
+> > TM channels on the first SDAM.
+> > 
+> > At present, this interrupt is handled only in the ISR in the main ADC driver.
+> > When the ISR is triggered for an ADC_TM event, this driver notifies the ADC_TM
+> > driver by calling a notifier callback exposed from it for this purpose.
+> > 
+> > To simplify the interrupt handling in both drivers, share the interrupt between
+> > the drivers. With this, ADC_TM interrupts on SDAM0 will be handled directly in
+> > the ADC_TM driver, so remove the notifier callback and all TM interrupt
+> > handling in the main ADC ISR.  
+> 
+> ...
+> 
+> > +	/*
+> > +	 * This interrupt is shared with the ADC_TM auxiliary driver, which
+> > +	 * is threaded and uses IRQF_ONESHOT. Since shared interrupts need
+> > +	 * to agree on IRQF_ONESHOT configuration and there is a kernel
+> > +	 * warning for using IRQF_ONESHOT with non-threaded interrupts,
+> > +	 * make this also a threaded IRQ.
+> > +	 */
+> > +
+> > +	ret = devm_request_threaded_irq(dev, adc->dev_data.base[ADC5_GEN3_VADC_SDAM].irq,
+> > +					NULL, adc5_gen3_isr, IRQF_ONESHOT | IRQF_SHARED,
+> > +					adc->dev_data.base[ADC5_GEN3_VADC_SDAM].irq_name,
+> > +					adc);
+> >  	if (ret)
+> >  		return dev_err_probe(dev, ret,
+> >  				     "Failed to request SDAM%d irq\n",  
+> 
+> Also add a patch to drop this duplicate message.
+> 
 
-> becomes an always running task.
->
-> To calculate this threshold, we use the new approximate_util_avg()
-> function to find out the threshold, based on arch_scale_cpu_capacity()
-> the task will be misfit if it continues to run for a TICK_USEC which is
-> our worst case scenario for when misfit migration will kick in.
->
-> Signed-off-by: Qais Yousef <qyousef@layalina.io>
-> ---
->  kernel/sched/core.c  |  1 +
->  kernel/sched/fair.c  | 40 ++++++++++++++++++++++++++++++++--------
->  kernel/sched/sched.h |  1 +
->  3 files changed, 34 insertions(+), 8 deletions(-)
->
-> diff --git a/kernel/sched/core.c b/kernel/sched/core.c
-> index 49cd5d217161..47ec8ea7c52e 100644
-> --- a/kernel/sched/core.c
-> +++ b/kernel/sched/core.c
-> @@ -8921,6 +8921,7 @@ void __init sched_init(void)
->                 rq->sd = NULL;
->                 rq->rd = NULL;
->                 rq->cpu_capacity = SCHED_CAPACITY_SCALE;
-> +               rq->fits_capacity_threshold = SCHED_CAPACITY_SCALE;
->                 rq->balance_callback = &balance_push_callback;
->                 rq->active_balance = 0;
->                 rq->next_balance = jiffies;
-> diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-> index f179faf7a6a1..4e1ed3c7f96e 100644
-> --- a/kernel/sched/fair.c
-> +++ b/kernel/sched/fair.c
-> @@ -97,11 +97,15 @@ int __weak arch_asym_cpu_priority(int cpu)
->  }
->
->  /*
-> - * The margin used when comparing utilization with CPU capacity.
-> - *
-> - * (default: ~20%)
-> + * fits_capacity() must ensure that a task will not be 'stuck' on a CPU with
-> + * lower capacity for too long. This the threshold is the util value at which
-> + * if a task becomes always busy it could miss misfit migration load balance
-> + * event. So we consider a task is misfit before it reaches this point.
->   */
-> -#define fits_capacity(cap, max)        ((cap) * 1280 < (max) * 1024)
-> +static inline bool fits_capacity(unsigned long util, int cpu)
-> +{
-> +       return util < cpu_rq(cpu)->fits_capacity_threshold;
-> +}
->
->  /*
->   * The margin used when comparing CPU capacities.
-> @@ -5180,14 +5184,13 @@ static inline int util_fits_cpu(unsigned long util,
->                                 unsigned long uclamp_max,
->                                 int cpu)
->  {
-> -       unsigned long capacity = capacity_of(cpu);
->         unsigned long capacity_orig;
->         bool fits, uclamp_max_fits;
->
->         /*
->          * Check if the real util fits without any uclamp boost/cap applied.
->          */
-> -       fits = fits_capacity(util, capacity);
-> +       fits = fits_capacity(util, cpu);
->
->         if (!uclamp_is_used())
->                 return fits;
-> @@ -10299,12 +10302,33 @@ static void update_cpu_capacity(struct sched_domain *sd, int cpu)
->  {
->         unsigned long capacity = scale_rt_capacity(cpu);
->         struct sched_group *sdg = sd->groups;
-> +       struct rq *rq = cpu_rq(cpu);
-> +       u64 limit;
->
->         if (!capacity)
->                 capacity = 1;
->
-> -       cpu_rq(cpu)->cpu_capacity = capacity;
-> -       trace_sched_cpu_capacity_tp(cpu_rq(cpu));
-> +       rq->cpu_capacity = capacity;
-> +       trace_sched_cpu_capacity_tp(rq);
-> +
-> +       /*
-> +        * Calculate the util at which the task must be considered a misfit.
-> +        *
-> +        * We must ensure that a task experiences the same ramp-up time to
-> +        * reach max performance point of the system regardless of the CPU it
-> +        * is running on (due to invariance, time will stretch and task will
-> +        * take longer to achieve the same util value compared to a task
-> +        * running on a big CPU) and a delay in misfit migration which depends
-> +        * on TICK doesn't end up hurting it as it can happen after we would
-> +        * have crossed this threshold.
-> +        *
-> +        * To ensure that invaraince is taken into account, we don't scale time
-> +        * and use it as-is, approximate_util_avg() will then let us know the
-> +        * our threshold.
-> +        */
-> +       limit = approximate_runtime(arch_scale_cpu_capacity(cpu)) * USEC_PER_MSEC;
-> +       limit -= TICK_USEC; /* sd->balance_interval is more accurate */
-> +       rq->fits_capacity_threshold = approximate_util_avg(0, limit);
+There is another thread going on this.  It might not be duplicate
+if -EPROBE_DEFER is returned.  The message won't be printed but it
+will be logged for helping debug deferred probe reasons.
 
-update_cpu_capacity() is called in build_sched_domain() and also
-during periodic load balancing, but fits_capacity_threshold is fixed
-and should be set once
+So maybe we have been a little too energetic in removing these.
 
-I'm not sure to get what you want to do here. Do you want to get a
-tick margin at max compute capacity compared to
-arch_scale_cpu_capacity() ?
+static void __dev_probe_failed(const struct device *dev, int err, bool fatal,
+			       const char *fmt, va_list vargsp)
+{
+	struct va_format vaf;
+	va_list vargs;
 
-On the big core (1024), this means a threshold of 1023 which sounds reasonable.
-On the little core (280), this means a threshold of 268 (1ms tick).
-However, reaching 268 at max freq on the little core requires 41ms,
-whereas the task will be at 602 after 41ms running on the big core
+	/*
+	 * On x86_64 and possibly on other architectures, va_list is actually a
+	 * size-1 array containing a structure.  As a result, function parameter
+	 * vargsp decays from T[1] to T*, and &vargsp has type T** rather than
+	 * T(*)[1], which is expected by its assignment to vaf.va below.
+	 *
+	 * One standard way to solve this mess is by creating a copy in a local
+	 * variable of type va_list and then using a pointer to that local copy
+	 * instead, which is the approach employed here.
+	 */
+	va_copy(vargs, vargsp);
 
+	vaf.fmt = fmt;
+	vaf.va = &vargs;
 
+	switch (err) {
+	case -EPROBE_DEFER:
+		device_set_deferred_probe_reason(dev, &vaf);
+//this call.
+		dev_dbg(dev, "error %pe: %pV", ERR_PTR(err), &vaf);
+		break;
 
+	case -ENOMEM:
+		/* Don't print anything on -ENOMEM, there's already enough output */
+		break;
 
->
->         sdg->sgc->capacity = capacity;
->         sdg->sgc->min_capacity = capacity;
-> diff --git a/kernel/sched/sched.h b/kernel/sched/sched.h
-> index a445add5cc3a..24008f1ec812 100644
-> --- a/kernel/sched/sched.h
-> +++ b/kernel/sched/sched.h
-> @@ -1236,6 +1236,7 @@ struct rq {
->         unsigned char           nohz_idle_balance;
->         unsigned char           idle_balance;
->
-> +       unsigned long           fits_capacity_threshold;
->         unsigned long           misfit_task_load;
->
->         /* For active balancing */
-> --
-> 2.34.1
->
+	default:
+		/* Log fatal final failures as errors, otherwise produce warnings */
+		if (fatal)
+			dev_err(dev, "error %pe: %pV", ERR_PTR(err), &vaf);
+		else
+			dev_warn(dev, "error %pe: %pV", ERR_PTR(err), &vaf);
+		break;
+	}
+
+	va_end(vargs);
+}
+
+Jonathan
