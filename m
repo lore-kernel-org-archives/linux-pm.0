@@ -1,310 +1,182 @@
-Received: from mail-pf1-f172.google.com (mail-pf1-f172.google.com [209.85.210.172])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from CY7PR03CU001.outbound.protection.outlook.com (mail-westcentralusazon11010062.outbound.protection.outlook.com [40.93.198.62])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1691C223DE9
-	for <linux-pm@vger.kernel.org>; Thu,  4 Jun 2026 01:42:53 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.210.172
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1780537375; cv=none; b=REml5fAixtrYIBf9qGP8+B7nlCM79JduGX8aGbQTQGXTsF3vqDbPueL3issYT7eIOF5JXQj3V2R3++geHmD3Y+2U6PTuWXhlJ07RY9WZQLqL7Y6fKE7xHGl4OzbkkpBXkSkJ7lIhqx2KaxCj3qCUnWUu2EBCd5z96oNFdC5QQBA=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1780537375; c=relaxed/simple;
-	bh=BE+DGdAbW/QfyBCBRhkx1zHdr4Mm28zjPjW+NfTpbx4=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=WGuhAgqia87WA5ijaBI3G0fL5tybknK0TJeFwiWedXxzKz8Bi/EJoCSwDmoyAy9ArJqiD9NYljddD6zShzYHoMMGgkH3iCmP58w1NTzMXjuV1Hini2amVYbgxa3X3c7zNAh9N59P1MYNjYjNKffye5RPMlpGmlNz5Ju8WOG2Los=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=d1yOas0Y; arc=none smtp.client-ip=209.85.210.172
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BBA1E303C83;
+	Thu,  4 Jun 2026 03:56:31 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.93.198.62
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1780545393; cv=fail; b=qiIO2DHGbLcKGP1A57I5SIArkLLbGdc6cNTMogj+1nWYsG+TM3CfXMYWKzJH9rybKK/6b8P+ke064OekOwB/0BcArMIAiVgP3lHVkE3lGfOlh0mYDJjhzjTizS5uYHJYxlFMJSkBl3vgbjxC/EHJ5IONw0gfnU1SYXvd5gf+6RE=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1780545393; c=relaxed/simple;
+	bh=1HKToh9eiEMzlsMvOusutQHCUUYs+wHri9FKymfQ5Zc=;
+	h=Message-ID:Date:MIME-Version:Subject:To:CC:References:From:
+	 In-Reply-To:Content-Type; b=b38iAj8FNk36j0lx4I6E3fIq1uCNvBb8cdc5gzlAFLxPYuEKiBHBIgwHm66xTmrXo36md0plFAsAmpmZn3F35lOFGVg2WtewqfjIGIADfu4URwbxR3VQnHk9zJeol5fCtae2LvF6aoG/pUKV1R48czBylEzEulF9ztawvxj7QCE=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com; spf=fail smtp.mailfrom=amd.com; dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b=4yGwJdcP; arc=fail smtp.client-ip=40.93.198.62
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com
+Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=amd.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="d1yOas0Y"
-Received: by mail-pf1-f172.google.com with SMTP id d2e1a72fcca58-8423f1d8902so57909b3a.1
-        for <linux-pm@vger.kernel.org>; Wed, 03 Jun 2026 18:42:53 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1780537373; x=1781142173; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=4lpnYjV8Ig/zZCSkvQJauvrjccH7UfxeEgfbLG6AD0g=;
-        b=d1yOas0Yq+QVqqEpkMmOTUrQu8augJXaZjq590TxxryU++4idSP+5EhNPK6oXrsfZ3
-         Z2snazMCGAc0N3ueZWxp7KBK7JzvFoZAq3st9YwvLhGTdd63RfvR7anO495Mhf1Gre9p
-         uZKmjEKJ6CMGxER8bl0eqD0aNrwHfXQPtNJayxw4v+wTSBlgLC2uEtKU8UKeYtFP2jim
-         8LlQyWYfpXDKRkQrfZsUDlV7Stk0H1mFOut2psnancCSDLBB5AaxbNFX/uxVa1Uo7YrS
-         YNjtoWKBPySw1KyDumDlyNu0VeRyjJkarQOQLKDiUE+5a9ny3Y9r1yDLP5e5OG5jUGU/
-         XPJg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1780537373; x=1781142173;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=4lpnYjV8Ig/zZCSkvQJauvrjccH7UfxeEgfbLG6AD0g=;
-        b=D+x8kLZPSZn83yJMOKgSBdW1fL1B5l97dcvVOEGTHuJDHTajgkAehZs86UK7wvhQTf
-         Lv8CvmUJy4RmIMwOvEO8pMX1kL1NwNKLcc8+qb09utzoLRd5jj1D89NUEK788Uz/cWXW
-         eoevxMIrayLb9PFije7AIawnT+3aMCgkUrW9jtJ46gXidC/CC5Nk23SjQjcpMTeA1v+5
-         T7V/I7iEUgkn+RDo/aqEa+BubCtEp1d4P6KVm4oTbSfQXyYOCcc2xWislZYvjFs91rUf
-         K6YGXDhmIC3wRvEH4FaOvMKE4rn89saBVA5OpOrt6XcanYGjfIndf0Uy6Snl3wLUMLYC
-         0z5Q==
-X-Gm-Message-State: AOJu0Yy9wSyuZYidP7M4LRsWp0zNzpmM2CZFT14eSXv+hbw1Weei4iXb
-	uifUi7C2sXEwufto2YjEvbARdFe1BeIXxNu1pPOXpy5REbZINu/5WSfAc9V8h29D
-X-Gm-Gg: Acq92OEhi1VmDNm6cjwXGxFqlcj3cjoSJj21QrtJhIDYD6/e5r3H47YGUNJNCp9MmQl
-	t9ZjBtwYSn7KKs/p/fo9eBD9SD5B+OmPErXFRd5uLnUq3X64QssBizcK1eDih3IjsY1zK1q33N/
-	ZuJSCzKldrNVACWw1YnDUzLhvtSHeGSL3y+jILLRcHDIwNfDGtn+wyImrmIlvHee+DQ/JxDPLB1
-	62HY8/wXjm1SrnYOs409ykqmQ1yXErwa5oATbxb3rSM+64J9rPdYBfHEzXlCa9YF60tiyH3vfXu
-	sJ7WzTMOPVx8gsRMMwG8efuTXyFt/dM8CSiZA5lUpdlwkLSwyGPC2oRnfKZsiQV+exeLkWXydad
-	KwICfyTTlNhE5rVpREfM+IggGykwYDbwvfwuGz5XYNG9rbuVpEd1PI53EtdnFvKf1RGPwB70e/d
-	i+A7YjIbECpYaUa0wtKXffqIJtNhUPk5L7dOcizaSb1nq2FPlezhVZBVffTSIFJPpRZPcR3AiOV
-	rdnke52YrA6KcwpfpAG6kZbG8Lq1+pozv5Vwd2I5XtzuQ==
-X-Received: by 2002:a05:6a00:17a9:b0:841:dc7d:306a with SMTP id d2e1a72fcca58-84284f5fedemr5522133b3a.25.1780537373220;
-        Wed, 03 Jun 2026 18:42:53 -0700 (PDT)
-Received: from ryzen ([2601:644:8000:5b5d:7285:c2ff:fe45:8a32])
-        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-84282375f2dsm4603728b3a.19.2026.06.03.18.42.51
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 03 Jun 2026 18:42:52 -0700 (PDT)
-From: Rosen Penev <rosenp@gmail.com>
-To: linux-pm@vger.kernel.org
-Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-	Krzysztof Kozlowski <krzk@kernel.org>,
-	"Rafael J. Wysocki" <rafael@kernel.org>,
-	Daniel Lezcano <daniel.lezcano@kernel.org>,
-	Zhang Rui <rui.zhang@intel.com>,
-	Lukasz Luba <lukasz.luba@arm.com>,
-	Peter Griffin <peter.griffin@linaro.org>,
-	Alim Akhtar <alim.akhtar@samsung.com>,
-	linux-samsung-soc@vger.kernel.org (open list:SAMSUNG THERMAL DRIVER),
-	linux-arm-kernel@lists.infradead.org (moderated list:ARM/SAMSUNG S3C, S5P AND EXYNOS ARM ARCHITECTURES),
-	linux-kernel@vger.kernel.org (open list)
-Subject: [PATCHv2] thermal/drivers/exynos: fix clock ordering race and shared IRQ handling
-Date: Wed,  3 Jun 2026 18:42:35 -0700
-Message-ID: <20260604014235.39303-1-rosenp@gmail.com>
-X-Mailer: git-send-email 2.54.0
+	dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b="4yGwJdcP"
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=aTpk89fypDFzLAYVkOsTvmcVqwPiJUgZr5HIkuzELykPm8bduVgQ++Ig/ZF3URWhpBwUYtPLZuTMLqdeP6MvQgAkQvUOYd9cG1Omud3PPyjv3wN9sWQzD8HjxzFGPZ20TxiuYlvLaWWardsU1ps75RPziY3jKGZ+Vby6nrFAk6VdjQxDw/nXyN6LJ3qv0sEDf9Vy0VTdOFZfeY2aFD58NPFggkTmb2d9ieEmV57rUcyQT4hVLsthQnSSQkKOS4HcjRpYQT1r/DPlMDZA5m3SZZ0FAlVAj77nwNefDhyyLz6t1Qg4j7qg7RwGNak5PjuazhcNjox+eAjiQbenHoeK9w==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=ksyVGkZTf+0R1qvW1NijjvaxMC2o9xsYnEjW0RaHSDs=;
+ b=tt4jm62tsWmX6O1Of0017MD36pBEk7smAnEed6TUJp93apAu+4pRwRbjuauN42jONM4o0DXseuqpnvaYtMXqhqaaMNxc2Ufe6zvsjaA/RR/lNJGhtmToTxQhfQi3Frc6JSyvqhTAeCNoMZ5YrcYE0BedAXMVFqKAEmdf0Jfq3XV/NHLl9gVlr76XRU/VeIFdiywlzN+TfWyYoEkTAbC2k+iaJkcaSWGKUYPBclw5c76SXN7HlHP6RjXztnSorlmWgga+JIPUYR5YjXaGeH3RpEY9/6onLoQLa+pWc1mM6gjkjfaQK8wBjvPFaw4To4nlRSvgXt8WZ5oThvqNFVpF0Q==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
+ 165.204.84.17) smtp.rcpttodomain=disroot.org smtp.mailfrom=amd.com;
+ dmarc=pass (p=quarantine sp=quarantine pct=100) action=none
+ header.from=amd.com; dkim=none (message not signed); arc=none (0)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=ksyVGkZTf+0R1qvW1NijjvaxMC2o9xsYnEjW0RaHSDs=;
+ b=4yGwJdcPFwG88BV97hlRRxl7aPlRJ+UvFF5o6VumfcUoNJ/Gxz+Ej19PPp2XjfowTiVUKSCcZQNg2udAhRoTMaZz07WRU6JHxbwdR3UVciFAxu0QWcGEQX0EuAlBbMRYFZzD9/rlYlRdesiyPFcdex33wS098vJSwOdnljfMG1k=
+Received: from BY5PR04CA0007.namprd04.prod.outlook.com (2603:10b6:a03:1d0::17)
+ by IA0PR12MB8864.namprd12.prod.outlook.com (2603:10b6:208:485::16) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.92.7; Thu, 4 Jun 2026
+ 03:56:28 +0000
+Received: from MWH0EPF000A6732.namprd04.prod.outlook.com
+ (2603:10b6:a03:1d0:cafe::3c) by BY5PR04CA0007.outlook.office365.com
+ (2603:10b6:a03:1d0::17) with Microsoft SMTP Server (version=TLS1_3,
+ cipher=TLS_AES_256_GCM_SHA384) id 15.21.92.7 via Frontend Transport; Thu, 4
+ Jun 2026 03:56:25 +0000
+X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 165.204.84.17)
+ smtp.mailfrom=amd.com; dkim=none (message not signed)
+ header.d=none;dmarc=pass action=none header.from=amd.com;
+Received-SPF: Pass (protection.outlook.com: domain of amd.com designates
+ 165.204.84.17 as permitted sender) receiver=protection.outlook.com;
+ client-ip=165.204.84.17; helo=satlexmb08.amd.com; pr=C
+Received: from satlexmb08.amd.com (165.204.84.17) by
+ MWH0EPF000A6732.mail.protection.outlook.com (10.167.249.24) with Microsoft
+ SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.21.92.5 via Frontend Transport; Thu, 4 Jun 2026 03:56:24 +0000
+Received: from satlexmb08.amd.com (10.181.42.217) by satlexmb08.amd.com
+ (10.181.42.217) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.41; Wed, 3 Jun
+ 2026 22:56:24 -0500
+Received: from [10.136.33.4] (10.180.168.240) by satlexmb08.amd.com
+ (10.181.42.217) with Microsoft SMTP Server id 15.2.2562.41 via Frontend
+ Transport; Wed, 3 Jun 2026 22:56:21 -0500
+Message-ID: <b4e23498-492a-40b2-8517-6d44eaec8502@amd.com>
+Date: Thu, 4 Jun 2026 09:26:20 +0530
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v2 1/2] cpufreq/amd-pstate: Fix EPP initialization for
+ shared memory systems
+To: Mario Limonciello <mario.limonciello@amd.com>, Marco Scardovi
+	<scardracs@disroot.org>
+CC: <linux-kernel@vger.kernel.org>, <linux-pm@vger.kernel.org>,
+	<perry.yuan@amd.com>, <rafael@kernel.org>, <ray.huang@amd.com>,
+	<stuartmeckle@gmail.com>, <viresh.kumar@linaro.org>, <wyes.karny@amd.com>
+References: <4cb9459c-f471-478a-9670-58d898619f45@amd.com>
+ <20260603120121.25772-1-scardracs@disroot.org>
+ <20260603120121.25772-2-scardracs@disroot.org>
+ <2e3a5f9a-69fe-4790-8b8b-2d1622977a2f@amd.com>
+Content-Language: en-US
+From: K Prateek Nayak <kprateek.nayak@amd.com>
+In-Reply-To: <2e3a5f9a-69fe-4790-8b8b-2d1622977a2f@amd.com>
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 8bit
+X-EOPAttributedMessage: 0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: MWH0EPF000A6732:EE_|IA0PR12MB8864:EE_
+X-MS-Office365-Filtering-Correlation-Id: 8b40d831-adac-4b76-114e-08dec1ed3f66
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|36860700016|82310400026|376014|1800799024|18002099003|22082099003|56012099006|4143699003|11063799006|5023799004|6133799003;
+X-Microsoft-Antispam-Message-Info:
+	RPzXnRvpuDmeNAGCMQOOyOfEDi0y8Zz+hxFgoQwDWmviXhc6v2vhKczv29UMsUXBRW8DcPmwvwipVKs5EMRgMJUF+qrvKHciwM+QU4MqhvY0qSMgWRMmlNkvx3OB1Rbl7OLfGh9s0cyu/6b5PZliIkg5N0Uk9iH6NzBuJhijRTc2pYx5nYZ/yhemk7M3YoZ0iZ24WkGPA37OevhBmYRtOwMd5M+KFFabZkmmTrq/ShwUHeZEIAeoAIVh03D8Q4jA5TkOdrnQbnabYLeAfHedxuGuIeQmwUJTCG4z3k4fXFIqCL8K1TV7FNVfhentuRACehguPYFCImRHEYXXIBU0f2SmUAw7glsTS2Qpq8yjo/JqpayQHnL67xENK8/rTMLE2/lYQiy+zOWI10DIOk8Y37+Kv1rPtWsZraEAOEc3ob2+gv/w9FLDM1Ni/rtTpQ67jMb75UVy2hodIyZtpEv1D2JVlqm8xQT6g9kdVsHelwjAoR6PUJtWixrxllyStaaZ3tBgefvQaZtnCc6JQ5bzNYUaq+x1PNnINygyfzDJZXiMVQ8UcpOdyzkdKyf2ShUgsLaFvXarVzebdGkO2OL2L3ipB1GebxlfjVKuAWup71StHCJqSXWXqMG+neC1YRX3TgbTsVELpnTNuR0xex7MqJ+oeUszBP8bF8Zz4IEpK0Khi5VMLREv61qmGQIpmsCviYzllAqxnMqCfUMQ0shDvPIr2RFca4cAlnjPp4MUPVI=
+X-Forefront-Antispam-Report:
+	CIP:165.204.84.17;CTRY:US;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:satlexmb08.amd.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230040)(36860700016)(82310400026)(376014)(1800799024)(18002099003)(22082099003)(56012099006)(4143699003)(11063799006)(5023799004)(6133799003);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	YEm2Cl8NCCFTq+POzNomcs43hWFGAvsGZo9ssNYLAAQoajX5EZv/krRQjWHN/B6HCUEKnyfwoAZJbK5zverLZOg8ZZqxmqJdnis+ZTH4xwn21imHTR8vzDyZF+M1gQ3+sbFkzYq+sqCDFFTgsuM61HFOSM8CCopw8DmuUylxtYw9c4efXQ6GsTK83Vr0ryAr0cnhQBm5y4vArUeTtEOKSzIDn2lbl3FlXtYAPZPSHTF5qO7//LrgzmIrCgkc/WEYSgkDBsRgnpf4JrqEiWXep0wK6lKyGRaQRSYRdqG4PIA7BkaFKFIF0B5ekf1i9sfYQOds1mjTONHjwphN3uCGbCtThlnhbhDUzG9/6k7Nlob0WIULwNBIivSBNDGTOCNA6Ucp3tFIGWbHo7q1ODeCHgXc0zTH2hkH+QSd3ETjpwumOmMClYNeuoJnmfNzt5M6
+X-OriginatorOrg: amd.com
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 04 Jun 2026 03:56:24.7417
+ (UTC)
+X-MS-Exchange-CrossTenant-Network-Message-Id: 8b40d831-adac-4b76-114e-08dec1ed3f66
+X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
+X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=3dd8961f-e488-4e60-8e11-a82d994e183d;Ip=[165.204.84.17];Helo=[satlexmb08.amd.com]
+X-MS-Exchange-CrossTenant-AuthSource:
+	MWH0EPF000A6732.namprd04.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Anonymous
+X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: IA0PR12MB8864
 
-Fix two pre-existing issues in exynos_tmu_probe/remove:
+Hello Mario,
 
-1. Clock ordering race: The driver manually unprepares clocks in
-   exynos_tmu_remove() and the probe error path, but the IRQ handler and
-   thermal zone are devm-managed and remain active until after the manual
-   cleanup.  If the shared IRQ fires or the thermal zone is polled in that
-   window, clk_enable() is called on an unprepared clock, which is illegal.
-   Replace devm_clk_get() + manual clk_prepare() with devm_clk_get_prepared(),
-   and devm_clk_get() + manual clk_prepare_enable() with
-   devm_clk_get_enabled(), so clock unprepare is tied to the devm lifetime
-   and happens after the IRQ and thermal zone are released.  Remove the
-   now-redundant manual cleanup from the error path and remove function.
+On 6/4/2026 12:23 AM, Mario Limonciello wrote:
+>> --- a/drivers/cpufreq/amd-pstate.h
+>> +++ b/drivers/cpufreq/amd-pstate.h
+>> @@ -128,6 +128,8 @@ struct amd_cpudata {
+>>       u8    epp_default_dc;
+>>       bool    dynamic_epp;
+>>       bool    raw_epp;
+>> +    /* Indicates that EPP has been successfully programmed at least once since boot. */
+>> +    bool    epp_hw_programmed;
+>>       struct notifier_block power_nb;
+>>         /* platform profile */
+> 
+> I'm having a hard time following why this is needed.  Let me explain my chain of thought.
+> 
+> We start at amd_pstate_epp_cpu_init().
+> * cpudata (and thus cppc_req_cached) is initalized to 0 via kzalloc()
+>    - On a server we initialize "epp_default" via a lookup to the HW (amd_pstate_get_epp).
+>    - On a non-server we initialize "epp_default" to 0x80.
+> * we call amd_pstate_set_epp() with epp_deafult as the argument.
+> 
+> Now in the shared mem backend (shmem_set_epp) we do a lookup of epp_cached and it should be 0.  We do a comparison of the argument sent to the function, and this should be 0x80.
+> 
+> So how do we get into a case that amd_pstate_set_epp() is actually called with 0?
 
-2. Shared IRQ handling: The driver requests a shared IRQ (IRQF_SHARED) with
-   NULL as the hardirq handler, causing irq_default_primary_handler to wake
-   the threaded handler for every interrupt on the shared line and, combined
-   with IRQF_ONESHOT, mask the line until the thread completes.  Replace the
-   NULL handler with a hardirq handler that reads the TMU interrupt status
-   register and returns IRQ_NONE when the TMU is not the interrupt source,
-   so other devices on the shared line are not delayed.  Also return IRQ_NONE
-   from the threaded handler as a safety net if the interrupt was already
-   handled or cleared between the hardirq and threaded handler.
+This was the path I traced yesterday considering amd_dynamic_epp enabled for
+a shared memory system that is plugged into the wall:
 
-Assisted-by: opencode:big-pickle
-Signed-off-by: Rosen Penev <rosenp@gmail.com>
----
- v2: fixed sashiko comments and moved TODO.
- drivers/thermal/samsung/exynos_tmu.c | 104 ++++++++++++---------------
- 1 file changed, 46 insertions(+), 58 deletions(-)
+  amd_pstate_epp_cpu_init()
+    cpudata->epp_default_ac = AMD_CPPC_EPP_PERFORMANCE;
+    cpudata->epp_default_dc = AMD_CPPC_EPP_BALANCE_PERFORMANCE;
+    cpudata->current_profile = PLATFORM_PROFILE_BALANCED;
 
-diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/samsung/exynos_tmu.c
-index 47a99b3c5395..11b2f1e2670c 100644
---- a/drivers/thermal/samsung/exynos_tmu.c
-+++ b/drivers/thermal/samsung/exynos_tmu.c
-@@ -196,7 +196,7 @@ struct exynos_tmu_data {
- 	void (*tmu_control)(struct platform_device *pdev, bool on);
- 	int (*tmu_read)(struct exynos_tmu_data *data);
- 	void (*tmu_set_emulation)(struct exynos_tmu_data *data, int temp);
--	void (*tmu_clear_irqs)(struct exynos_tmu_data *data);
-+	u32 (*tmu_clear_irqs)(struct exynos_tmu_data *data);
- };
+    /* cpudata->cppc_req_cached has epp_cached as 0 */
 
- /*
-@@ -756,28 +756,53 @@ static int exynos7_tmu_read(struct exynos_tmu_data *data)
- 		EXYNOS7_TMU_TEMP_MASK;
- }
+    amd_pstate_set_dynamic_epp(policy)
+      epp = amd_pstate_get_balanced_epp(policy); /* returns cpudata->epp_default_ac which is EPP_PERFORMANCE */
 
--static irqreturn_t exynos_tmu_threaded_irq(int irq, void *id)
-+static u32 exynos_tmu_intstat_offset(struct exynos_tmu_data *data)
-+{
-+	if (data->soc == SOC_ARCH_EXYNOS5260)
-+		return EXYNOS5260_TMU_REG_INTSTAT;
-+	if (data->soc == SOC_ARCH_EXYNOS7)
-+		return EXYNOS7_TMU_REG_INTPEND;
-+	if (data->soc == SOC_ARCH_EXYNOS5433)
-+		return EXYNOS5433_TMU_REG_INTPEND;
-+	return EXYNOS_TMU_REG_INTSTAT;
-+}
-+
-+static irqreturn_t exynos_tmu_irq(int irq, void *id)
- {
- 	struct exynos_tmu_data *data = id;
+      amd_pstate_set_epp(policy, epp /* AMD_CPPC_EPP_PERFORMANCE */)
+        if (epp == epp_cached)
+          return;
 
--	thermal_zone_device_update(data->tzd, THERMAL_EVENT_UNSPECIFIED);
-+	if (!readl(data->base + exynos_tmu_intstat_offset(data)))
-+		return IRQ_NONE;
-+
-+	return IRQ_WAKE_THREAD;
-+}
-+
-+static irqreturn_t exynos_tmu_threaded_irq(int irq, void *id)
-+{
-+	struct exynos_tmu_data *data = id;
+        /*
+         * Skips cppc_set_epp_perf(cpudata->cpu, &perf_ctrls, 1)
+         * where the last argument "enable" enables EPP via the
+         * AUTO_SEL_ENABLE path.
+         */
 
- 	mutex_lock(&data->lock);
- 	clk_enable(data->clk);
+> 
+> There are some trace points specifically for this purpose - you could confirm there really is such a call by using them at bootup (or by starting in passive and with a mode change to active at runtime).
 
- 	/* TODO: take action based on particular interrupt */
--	data->tmu_clear_irqs(data);
-+
-+	if (!data->tmu_clear_irqs(data)) {
-+		clk_disable(data->clk);
-+		mutex_unlock(&data->lock);
-+		return IRQ_NONE;
-+	}
+It should show up in the traces yes!
 
- 	clk_disable(data->clk);
- 	mutex_unlock(&data->lock);
+> 
+> Then we call amd_pstate_set_epp() with that epp_default value.
 
-+	thermal_zone_device_update(data->tzd, THERMAL_EVENT_UNSPECIFIED);
-+
- 	return IRQ_HANDLED;
- }
+I think this patch has some merit, although the second patch, I'm not
+too sure of. After some digging, it seems we always had AUTO_SEL_ENABLE
+and ENERGY_PERF right from the time CPPC was introduced (including Zen1
+systems that had CPPC support).
 
--static void exynos4210_tmu_clear_irqs(struct exynos_tmu_data *data)
-+static u32 exynos4210_tmu_clear_irqs(struct exynos_tmu_data *data)
- {
--	unsigned int val_irq;
--	u32 tmu_intstat, tmu_intclear;
-+	u32 val_irq, tmu_intstat, tmu_intclear;
+Marco, do you have actually have a system that neither has
+AUTO_SEL_ENABLE, nor ENERGY_PERF? Seems very unlikely a configuration
+like that made it out.
 
- 	if (data->soc == SOC_ARCH_EXYNOS5260) {
- 		tmu_intstat = EXYNOS5260_TMU_REG_INTSTAT;
-@@ -803,6 +828,8 @@ static void exynos4210_tmu_clear_irqs(struct exynos_tmu_data *data)
- 	 * support FALL IRQs at all).
- 	 */
- 	writel(val_irq, data->base + tmu_intclear);
-+
-+	return val_irq;
- }
-
- static const struct of_device_id exynos_tmu_match[] = {
-@@ -1036,43 +1063,22 @@ static int exynos_tmu_probe(struct platform_device *pdev)
- 	if (ret)
- 		return ret;
-
--	data->clk = devm_clk_get(dev, "tmu_apbif");
-+	data->clk = devm_clk_get_prepared(dev, "tmu_apbif");
- 	if (IS_ERR(data->clk))
- 		return dev_err_probe(dev, PTR_ERR(data->clk), "Failed to get clock\n");
-
--	data->clk_sec = devm_clk_get(dev, "tmu_triminfo_apbif");
--	if (IS_ERR(data->clk_sec)) {
-+	data->clk_sec = devm_clk_get_prepared(dev, "tmu_triminfo_apbif");
-+	if (IS_ERR(data->clk_sec))
- 		if (data->soc == SOC_ARCH_EXYNOS5420_TRIMINFO)
- 			return dev_err_probe(dev, PTR_ERR(data->clk_sec),
- 					     "Failed to get triminfo clock\n");
--	} else {
--		ret = clk_prepare(data->clk_sec);
--		if (ret) {
--			dev_err(dev, "Failed to get clock\n");
--			return ret;
--		}
--	}
--
--	ret = clk_prepare(data->clk);
--	if (ret) {
--		dev_err(dev, "Failed to get clock\n");
--		goto err_clk_sec;
--	}
-
- 	switch (data->soc) {
- 	case SOC_ARCH_EXYNOS5433:
- 	case SOC_ARCH_EXYNOS7:
--		data->sclk = devm_clk_get(dev, "tmu_sclk");
--		if (IS_ERR(data->sclk)) {
--			ret = dev_err_probe(dev, PTR_ERR(data->sclk), "Failed to get sclk\n");
--			goto err_clk;
--		} else {
--			ret = clk_prepare_enable(data->sclk);
--			if (ret) {
--				dev_err(dev, "Failed to enable sclk\n");
--				goto err_clk;
--			}
--		}
-+		data->sclk = devm_clk_get_enabled(dev, "tmu_sclk");
-+		if (IS_ERR(data->sclk))
-+			return dev_err_probe(dev, PTR_ERR(data->sclk), "Failed to get sclk\n");
- 		break;
- 	default:
- 		break;
-@@ -1081,55 +1087,37 @@ static int exynos_tmu_probe(struct platform_device *pdev)
- 	ret = exynos_tmu_initialize(pdev);
- 	if (ret) {
- 		dev_err(dev, "Failed to initialize TMU\n");
--		goto err_sclk;
-+		return ret;
- 	}
-
- 	data->tzd = devm_thermal_of_zone_register(dev, 0, data,
- 						  &exynos_sensor_ops);
--	if (IS_ERR(data->tzd)) {
--		ret = dev_err_probe(dev, PTR_ERR(data->tzd), "Failed to register sensor\n");
--		goto err_sclk;
--	}
-+	if (IS_ERR(data->tzd))
-+		return dev_err_probe(dev, PTR_ERR(data->tzd), "Failed to register sensor\n");
-
- 	ret = exynos_thermal_zone_configure(pdev);
- 	if (ret) {
- 		dev_err(dev, "Failed to configure the thermal zone\n");
--		goto err_sclk;
-+		return ret;
- 	}
-
--	ret = devm_request_threaded_irq(dev, data->irq, NULL,
-+	ret = devm_request_threaded_irq(dev, data->irq, exynos_tmu_irq,
- 					exynos_tmu_threaded_irq,
- 					IRQF_TRIGGER_RISING
- 						| IRQF_SHARED | IRQF_ONESHOT,
- 					dev_name(dev), data);
- 	if (ret) {
- 		dev_err(dev, "Failed to request irq: %d\n", data->irq);
--		goto err_sclk;
-+		return ret;
- 	}
-
- 	exynos_tmu_control(pdev, true);
- 	return 0;
--
--err_sclk:
--	clk_disable_unprepare(data->sclk);
--err_clk:
--	clk_unprepare(data->clk);
--err_clk_sec:
--	if (!IS_ERR(data->clk_sec))
--		clk_unprepare(data->clk_sec);
--	return ret;
- }
-
- static void exynos_tmu_remove(struct platform_device *pdev)
- {
--	struct exynos_tmu_data *data = platform_get_drvdata(pdev);
--
- 	exynos_tmu_control(pdev, false);
--
--	clk_disable_unprepare(data->sclk);
--	clk_unprepare(data->clk);
--	if (!IS_ERR(data->clk_sec))
--		clk_unprepare(data->clk_sec);
- }
-
- #ifdef CONFIG_PM_SLEEP
---
-2.54.0
+-- 
+Thanks and Regards,
+Prateek
 
