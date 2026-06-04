@@ -1,122 +1,115 @@
-Received: from mail-wr1-f49.google.com (mail-wr1-f49.google.com [209.85.221.49])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.14])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 497D1480942
-	for <linux-pm@vger.kernel.org>; Thu,  4 Jun 2026 13:52:22 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.49
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EC54E421A0A;
+	Thu,  4 Jun 2026 14:44:10 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.14
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1780581143; cv=none; b=kjfF3nsRXEiwj0D4sgabTtVIOmTOs+gRpChfwTbsYXqXL36icUyaPxeucz6qEreAJHjAYYpNtdEGl/ZPRquX3NaHsSMu748RfvqF9bBL1D93xBDbsFHqpOd9yLVj1wjXVLHyzETj+I+D5STtNpf4W7ty21KHZQeSMAihq7lLgTU=
+	t=1780584252; cv=none; b=XmAIN+q1IrnrvwIdqFmCb8OV7Kmn0T0YlBZRRGww+vDDZqPTlIPqp5BU1vdTeyPqdN8SEkZu3aDo8NbmtIKXZmNVyvNtM1oANyhERbY8+0uJxMHYDSpaSkLC2/FAgjY42f68z2uUTnq61gkxMzrhQmPP904CHTa+eSW2lZXLiKc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1780581143; c=relaxed/simple;
-	bh=ZaY5vFxG9aYZCmRrkh4G6IJ/GRp154Miry9zwaOYwzM=;
-	h=Mime-Version:Content-Type:Date:Message-Id:Cc:Subject:From:To:
-	 References:In-Reply-To; b=dBUGiwzME1HoL7HPB1oSYSIHkXfZQnTUDeS2eWX+R0/DWGykC5P24bgf5rEEsHan4Ub/qVs0x41HiWVqzB0voqLgOukKJIz/6NEbfBVCuozPqV74Et5OTWzDGeTVT6w1S5SaYnJoPzSjTFl8AKnC32nOt+XiS5HHIdYrA6An2bY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=q9mp3cGz; arc=none smtp.client-ip=209.85.221.49
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
+	s=arc-20240116; t=1780584252; c=relaxed/simple;
+	bh=xioSgrx/0cKagkWYlTbbGauf4MvUTEbfEnnI6ugY9Ww=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=O5YIRN13Ke3BugP3zn9cpEmkMpRZTkDg5acTwED3SB4I5nOOKaolk8OQeCP4qIaoyMut9MquumOgDWryP4RaQNrM23UVgT8BwDlkzJJdLglfr1Xxm3xAcnNk6Xn2LRfl65V759WhlkLkhz6crGeMDayQ4Y+xwu1s4/vKwNC5i/s=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=h+2LmGsX; arc=none smtp.client-ip=198.175.65.14
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="q9mp3cGz"
-Received: by mail-wr1-f49.google.com with SMTP id ffacd0b85a97d-45fd45e596cso392023f8f.1
-        for <linux-pm@vger.kernel.org>; Thu, 04 Jun 2026 06:52:22 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1780581141; x=1781185941; darn=vger.kernel.org;
-        h=in-reply-to:references:to:from:subject:cc:message-id:date
-         :content-transfer-encoding:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=tr8tJV7XonRe9aqon2KQXf6etaodi+ES5SfBfdU6e68=;
-        b=q9mp3cGzn3h2MhRK6XrbG8QMIeXE841LVChyHfXx/v/cDtiOssHcUex4ij4no+uRjD
-         vddVlYmG1cGOuUAPBPAAeEF7trsMjG71cu3014VC6TONpgcIj1tfJxm+IdvBzCIOTh05
-         M3n0i60J28z1Ii7Y3YtDSm5BTi5YGXjyJv6FzBUPCcPbLeOPPlZ5kWC1qstA4yjSUd7S
-         Ix+TjKzndwrHsTgVOoV4H3gD/CKW6WTGMfofWnUiiizqAwpyJwfybW5wO42UJWRMqLhZ
-         sb0s8gZAEPhxeUmOfnXRW+dYbPpJ8rbeKjc5knoo4qBC1CJRnHtGd4yJim9yf/MWcxhM
-         SyCA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1780581141; x=1781185941;
-        h=in-reply-to:references:to:from:subject:cc:message-id:date
-         :content-transfer-encoding:mime-version:x-gm-gg:x-gm-message-state
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=tr8tJV7XonRe9aqon2KQXf6etaodi+ES5SfBfdU6e68=;
-        b=AmhT1j6rfQfjLGzcdyoYy0HdFYSOSwmxogdX6SVabmYSkSx04HXQFAN2Ii/amOcFJ/
-         GHEOBrHKaHT2TSwPsrOtJsVrzWkzgaraClWni55pKvclLkMc5/0b6zu+JL3cyxO6OrmL
-         N9FjboOKNaOJ5tMDxae4JyjbLwA5q+JPb5AThSsc1M0UxNLDtOc4ylU0NaO8y6xn27G5
-         AJzwKT1jgwjUTbjTzwSxv4brPb5ZiuuW3VTKD/EBhySCLkU9D7bX3vIcmEU0wlrnpIVy
-         FyVOe2cpw9raslkVs5eEm6zWG+cEhptc3Kv0rihWtuvLxvTuLLagINrxy3esCM7SEUYl
-         Xtew==
-X-Forwarded-Encrypted: i=1; AFNElJ+PmKbKW/06M73+EAhAvHRWnxXgdY5lYx92Y1TI/LXc/BoEG2AjRCNXXF/2DeLGZETo58xHGkfSOA==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yxq7Xva9dUyH+QpzwTlzik2KxNg3TNzFgo/UUhEaZBOY2lZ5IIN
-	lusJu/mTJwg6OxRg0qn29no6SZ9p7ArqZC2EZqNTaUarGu3LyYuNfpX7G41HrwjfOX0=
-X-Gm-Gg: Acq92OEsREfNgoakRKQx13mxq0CgpI1vQ53iqiLaXh76UZ4AVT6hIrY9BSE/hNRWuDr
-	aprHD1Uz9lFyrY5ES9379thLksr/wfmRy5fW+0/id6JjLYV1EBK0JBUYHdISRxXdkwMJZn0uZrs
-	CMEnVomqBj0ecTsXWVwSXJylHA1fKpSmcZ35aIm+lE9svnDwBWaeABepo3L0IvjDfbotXpT91zK
-	G5+VvJakvi5uO49wBg/lM5c6Eq92Co+ymWZzteAv4E7U4owEDkWgA4HIhPe5CHVnYOKqr8SeVHC
-	lsQOU+oI3/wcamikoUXYTyDfrw9YMzAgryJbY+ra6hUisbkVeOABviGvbFsSmnilecPKRK01jJo
-	4ottVpbJrWth6rX2gEqilZTEMJusE74jk1MDjTOQhu6saqVnIN7xZtPsGtocXhq2Yufj3T/PUJ+
-	dHyokGwKIH+vRKTK/WHTHCWXg8vDCl+4QwFeeIa7DpzkUV9pTg7TY7lm38BPZbiTXwsAsickjce
-	BxvG5NvktRgbeCavBshD8BQ
-X-Received: by 2002:a05:600c:3596:b0:490:44eb:c1ea with SMTP id 5b1f17b1804b1-490b5edd71amr146656455e9.24.1780581140625;
-        Thu, 04 Jun 2026 06:52:20 -0700 (PDT)
-Received: from localhost ([94.4.195.193])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-4601f351ac0sm27268044f8f.27.2026.06.04.06.52.19
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Thu, 04 Jun 2026 06:52:20 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="h+2LmGsX"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1780584251; x=1812120251;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=xioSgrx/0cKagkWYlTbbGauf4MvUTEbfEnnI6ugY9Ww=;
+  b=h+2LmGsXppVV+X9/K8yK8BCakiMO2WUlQZXX/CJ3KalCBTLQT14AmdjE
+   Z3yzB4/LgeSf3IZ3ovpbnVmPiQ6wJqkhnI82tjTTZ8Uz4iPhl4mjdheRR
+   1h9Xpcv1GUjmkh6uEzFBlVBhwoCgu++C1KbkVRbX2p3eGca8ZDhoLBEzW
+   u+uQvMQZImEiynlM3RkaSkdi8fIS9b2AAk8bb34nQvIjwQJFx599GP/gy
+   hMkYV4WQt2ZuPqCCIzObI14cU0KhMp9pY577aQf7xXyO86zbDvGRjqUdD
+   0/dnCeDYVD8U28boEcAl8uRItE9MCwJsBIs6fdgSBSghCDD0zRzM77bqo
+   A==;
+X-CSE-ConnectionGUID: cdOrCBJiTz22sGTfDB4E4A==
+X-CSE-MsgGUID: 7P/By35VQQ6RfRbsWBYurw==
+X-IronPort-AV: E=McAfee;i="6800,10657,11807"; a="85300355"
+X-IronPort-AV: E=Sophos;i="6.24,187,1774335600"; 
+   d="scan'208";a="85300355"
+Received: from orviesa003.jf.intel.com ([10.64.159.143])
+  by orvoesa106.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 04 Jun 2026 07:44:11 -0700
+X-CSE-ConnectionGUID: 04A6IfFOSwGhxExF+I7dyg==
+X-CSE-MsgGUID: CZajhtE/Sju25LYfF9GqxA==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.24,187,1774335600"; 
+   d="scan'208";a="248498955"
+Received: from ettammin-mobl3.ger.corp.intel.com (HELO localhost) ([10.245.245.47])
+  by ORVIESA003-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 04 Jun 2026 07:44:06 -0700
+Date: Thu, 4 Jun 2026 17:44:02 +0300
+From: Andy Shevchenko <andriy.shevchenko@intel.com>
+To: Jonathan Cameron <jic23@kernel.org>
+Cc: Jishnu Prakash <jishnu.prakash@oss.qualcomm.com>,
+	David Lechner <dlechner@baylibre.com>,
+	Nuno =?iso-8859-1?Q?S=E1?= <nuno.sa@analog.com>,
+	Andy Shevchenko <andy@kernel.org>, Amit Kucheria <amitk@kernel.org>,
+	Thara Gopinath <thara.gopinath@gmail.com>,
+	"Rafael J. Wysocki" <rafael@kernel.org>,
+	Daniel Lezcano <daniel.lezcano@kernel.org>,
+	Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>,
+	linux-arm-msm@vger.kernel.org, linux-iio@vger.kernel.org,
+	linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+	Kamal Wadhwa <kamal.wadhwa@oss.qualcomm.com>,
+	David Collins <david.collins@oss.qualcomm.com>,
+	Anjelique Melendez <anjelique.melendez@oss.qualcomm.com>,
+	Neil Armstrong <neil.armstrong@linaro.org>,
+	Stephan Gerhold <stephan.gerhold@linaro.org>
+Subject: Re: [PATCH v2 1/2] iio: adc: qcom-spmi-adc5-gen3: Share SDAM0 IRQ
+ with ADC_TM auxiliary driver
+Message-ID: <aiGPMqHcz_AkUezI@ashevche-desk.local>
+References: <20260526-gen3_adc_tm-v2-0-702fbac919ac@oss.qualcomm.com>
+ <20260526-gen3_adc_tm-v2-1-702fbac919ac@oss.qualcomm.com>
+ <ah9ouLQFI7VtHCWL@ashevche-desk.local>
+ <20260604114630.23ca427a@jic23-huawei>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
-Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset=UTF-8
-Date: Thu, 04 Jun 2026 14:52:19 +0100
-Message-Id: <DJ0BC2X0G04D.18CIJDSEP0PVP@linaro.org>
-Cc: <jyescas@google.com>, <linux-kernel@vger.kernel.org>,
- <linux-samsung-soc@vger.kernel.org>, <linux-pm@vger.kernel.org>,
- <devicetree@vger.kernel.org>, <linux-hardening@vger.kernel.org>,
- <linux-arm-kernel@lists.infradead.org>, "Krzysztof Kozlowski"
- <krzysztof.kozlowski@oss.qualcomm.com>
-Subject: Re: [PATCH v8 2/5] thermal: samsung: Add Exynos ACPM TMU driver
- GS101
-From: "Alexey Klimov" <alexey.klimov@linaro.org>
-To: "Tudor Ambarus" <tudor.ambarus@linaro.org>, "Rafael J. Wysocki"
- <rafael@kernel.org>, "Daniel Lezcano" <daniel.lezcano@kernel.org>, "Zhang
- Rui" <rui.zhang@intel.com>, "Lukasz Luba" <lukasz.luba@arm.com>, "Rob
- Herring" <robh@kernel.org>, "Krzysztof Kozlowski" <krzk+dt@kernel.org>,
- "Conor Dooley" <conor+dt@kernel.org>, "Bartlomiej Zolnierkiewicz"
- <bzolnier@gmail.com>, "Krzysztof Kozlowski" <krzk@kernel.org>, "Kees Cook"
- <kees@kernel.org>, "Gustavo A. R. Silva" <gustavoars@kernel.org>, "Peter
- Griffin" <peter.griffin@linaro.org>, =?utf-8?q?Andr=C3=A9_Draszik?=
- <andre.draszik@linaro.org>, "Alim Akhtar" <alim.akhtar@samsung.com>
-X-Mailer: aerc 0.21.0
-References: <20260603-acpm-tmu-v8-0-0f1810a356e6@linaro.org>
- <20260603-acpm-tmu-v8-2-0f1810a356e6@linaro.org>
-In-Reply-To: <20260603-acpm-tmu-v8-2-0f1810a356e6@linaro.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260604114630.23ca427a@jic23-huawei>
+Organization: Intel Finland Oy - BIC 0357606-4 - c/o Alberga Business Park, 6
+ krs, Bertel Jungin Aukio 5, 02600 Espoo
 
-On Wed Jun 3, 2026 at 2:00 PM BST, Tudor Ambarus wrote:
-> Add driver for the Thermal Management Unit (TMU) managed via the Alive
-> Clock and Power Manager (ACPM), found on Samsung Exynos SoCs such as
-> the Google GS101.
->
-> The TMU on the GS101 utilizes a hybrid management model shared between
-> the Application Processor (AP) and the ACPM firmware. The driver
-> maintains direct memory-mapped access to the TMU interrupt pending
-> registers to identify thermal events, while delegating functional
-> tasks - such as sensor initialization, threshold configuration, and
-> temperature acquisition, to the ACPM firmware via the ACPM IPC
-> protocol.
->
-> Signed-off-by: Tudor Ambarus <tudor.ambarus@linaro.org>
-> Acked-by: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
+On Thu, Jun 04, 2026 at 11:46:30AM +0100, Jonathan Cameron wrote:
+> On Wed, 3 Jun 2026 02:35:20 +0300
+> Andy Shevchenko <andriy.shevchenko@intel.com> wrote:
+> > On Tue, May 26, 2026 at 04:26:09PM +0530, Jishnu Prakash wrote:
 
-Reviewed-by: Alexey Klimov <alexey.klimov@linaro.org>
+...
 
-> ---
->  drivers/thermal/samsung/Kconfig    |  19 ++
->  drivers/thermal/samsung/Makefile   |   2 +
->  drivers/thermal/samsung/acpm-tmu.c | 651 +++++++++++++++++++++++++++++++=
-++++++
->  3 files changed, 672 insertions(+)
+> > > +	ret = devm_request_threaded_irq(dev, adc->dev_data.base[ADC5_GEN3_VADC_SDAM].irq,
+> > > +					NULL, adc5_gen3_isr, IRQF_ONESHOT | IRQF_SHARED,
+> > > +					adc->dev_data.base[ADC5_GEN3_VADC_SDAM].irq_name,
+> > > +					adc);
+> > >  	if (ret)
+> > >  		return dev_err_probe(dev, ret,
+> > >  				     "Failed to request SDAM%d irq\n",  
+> > 
+> > Also add a patch to drop this duplicate message.
+> 
+> There is another thread going on this.  It might not be duplicate
+> if -EPROBE_DEFER is returned.  The message won't be printed but it
+> will be logged for helping debug deferred probe reasons.
 
-[...]
+Yes, and I explained that it is duplicated as long as I understand current
+code base.
 
-Best regards,
-Alexey
+> So maybe we have been a little too energetic in removing these.
+
+Or maybe sashiko consumed a bit of LSD :-)
+
+-- 
+With Best Regards,
+Andy Shevchenko
+
+
