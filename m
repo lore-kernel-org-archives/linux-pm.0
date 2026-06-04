@@ -1,168 +1,122 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-wr1-f49.google.com (mail-wr1-f49.google.com [209.85.221.49])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3B38944BC92;
-	Thu,  4 Jun 2026 13:37:01 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 497D1480942
+	for <linux-pm@vger.kernel.org>; Thu,  4 Jun 2026 13:52:22 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.49
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1780580223; cv=none; b=PsUBxvbuq2SQtzTBLUqihPxG+gthET0iB4bXpDIFxQykGS2BH0avCVEqAafval2bwxrUcGsVNWC4u00onjL7LRx4Fo/09gQByX8g1aCIdSgvsOhznxKcIxPy7whe1emfG91nWaNMZB00OLUzIs0+5iWKVYxVpykrkbDHrIi+oyw=
+	t=1780581143; cv=none; b=kjfF3nsRXEiwj0D4sgabTtVIOmTOs+gRpChfwTbsYXqXL36icUyaPxeucz6qEreAJHjAYYpNtdEGl/ZPRquX3NaHsSMu748RfvqF9bBL1D93xBDbsFHqpOd9yLVj1wjXVLHyzETj+I+D5STtNpf4W7ty21KHZQeSMAihq7lLgTU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1780580223; c=relaxed/simple;
-	bh=6zZ1C+HKFWCNqdUSedsKN9vLa/1dmflJd1NHxfG53GI=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=Gw/nuyx+MeMnpmOs6x/U3BlmwhfjU/VxmBpm1SBc3HzfBzdPN3k1mcU5nz9A0DWQbSJUhXhA6dJin28BNe8tJBRh0UO0HxkxenkET6fz3T80RCGd119DGBgMhPPNWtLMSgcWY1QaTvfWoO9rrGr5dNYn0KitFvPksX//5IFNWQw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=LbdfQ7Ah; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1780581143; c=relaxed/simple;
+	bh=ZaY5vFxG9aYZCmRrkh4G6IJ/GRp154Miry9zwaOYwzM=;
+	h=Mime-Version:Content-Type:Date:Message-Id:Cc:Subject:From:To:
+	 References:In-Reply-To; b=dBUGiwzME1HoL7HPB1oSYSIHkXfZQnTUDeS2eWX+R0/DWGykC5P24bgf5rEEsHan4Ub/qVs0x41HiWVqzB0voqLgOukKJIz/6NEbfBVCuozPqV74Et5OTWzDGeTVT6w1S5SaYnJoPzSjTFl8AKnC32nOt+XiS5HHIdYrA6An2bY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=q9mp3cGz; arc=none smtp.client-ip=209.85.221.49
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="LbdfQ7Ah"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5C3041F00893;
-	Thu,  4 Jun 2026 13:37:01 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1780580221;
-	bh=xhxHYpcP5xU+30sYUujHC7DwMbxmJeYgd4kQm69Fvzs=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=LbdfQ7AhR2KAnWjMbyVDv4niw78Q8n+uY/Ye29QHgADY80Zko4t46rKoaQWS9iNS1
-	 o/wrGDSEn7VcB/zyWe8c3/n/lfoWNob5wXinhgBHhjxWjnkubgrSmlW1MThj/yuBcC
-	 y+1luRmBYsPvfWCCKsjaOufFgdZwJXLCxu2C3s04bNZepa94qZQlumwe/5+frPnSpQ
-	 hgR+gGR0xZr6XcYED74wXHRaWjoEfC9VMzPzl0DsGSpn5WEll4OYHqYg00VZ2mlJjc
-	 zRWqT54iPjZP1ULgU7GUt4Qm5Na4jjTZENIRuJ1SmSoZNlD8zxdJX+ex0BIefcmAq6
-	 oNP7jnJ2HuJOQ==
-Date: Thu, 4 Jun 2026 15:36:58 +0200
-From: Frederic Weisbecker <frederic@kernel.org>
-To: Christian Loehle <christian.loehle@arm.com>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-	Thomas Gleixner <tglx@linutronix.de>,
-	Anna-Maria Behnsen <anna-maria@linutronix.de>,
-	Sehee Jeong <sehee1.jeong@samsung.com>,
-	Qais Yousef <qyousef@layalina.io>, John Stultz <jstultz@google.com>,
-	"Rafael J. Wysocki" <rafael@kernel.org>,
-	Andrea Righi <arighi@nvidia.com>,
-	Dietmar Eggemann <dietmar.eggemann@arm.com>,
-	linux-pm <linux-pm@vger.kernel.org>
-Subject: Re: [PATCH 0/6] timers/migration: Handle heterogenous CPU capacities
-Message-ID: <aiF_eqFOXI2xEUoF@localhost.localdomain>
-References: <20260423165354.95152-1-frederic@kernel.org>
- <3b79338f-6cfc-4722-8062-9103db2c8ad1@arm.com>
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="q9mp3cGz"
+Received: by mail-wr1-f49.google.com with SMTP id ffacd0b85a97d-45fd45e596cso392023f8f.1
+        for <linux-pm@vger.kernel.org>; Thu, 04 Jun 2026 06:52:22 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1780581141; x=1781185941; darn=vger.kernel.org;
+        h=in-reply-to:references:to:from:subject:cc:message-id:date
+         :content-transfer-encoding:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=tr8tJV7XonRe9aqon2KQXf6etaodi+ES5SfBfdU6e68=;
+        b=q9mp3cGzn3h2MhRK6XrbG8QMIeXE841LVChyHfXx/v/cDtiOssHcUex4ij4no+uRjD
+         vddVlYmG1cGOuUAPBPAAeEF7trsMjG71cu3014VC6TONpgcIj1tfJxm+IdvBzCIOTh05
+         M3n0i60J28z1Ii7Y3YtDSm5BTi5YGXjyJv6FzBUPCcPbLeOPPlZ5kWC1qstA4yjSUd7S
+         Ix+TjKzndwrHsTgVOoV4H3gD/CKW6WTGMfofWnUiiizqAwpyJwfybW5wO42UJWRMqLhZ
+         sb0s8gZAEPhxeUmOfnXRW+dYbPpJ8rbeKjc5knoo4qBC1CJRnHtGd4yJim9yf/MWcxhM
+         SyCA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1780581141; x=1781185941;
+        h=in-reply-to:references:to:from:subject:cc:message-id:date
+         :content-transfer-encoding:mime-version:x-gm-gg:x-gm-message-state
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=tr8tJV7XonRe9aqon2KQXf6etaodi+ES5SfBfdU6e68=;
+        b=AmhT1j6rfQfjLGzcdyoYy0HdFYSOSwmxogdX6SVabmYSkSx04HXQFAN2Ii/amOcFJ/
+         GHEOBrHKaHT2TSwPsrOtJsVrzWkzgaraClWni55pKvclLkMc5/0b6zu+JL3cyxO6OrmL
+         N9FjboOKNaOJ5tMDxae4JyjbLwA5q+JPb5AThSsc1M0UxNLDtOc4ylU0NaO8y6xn27G5
+         AJzwKT1jgwjUTbjTzwSxv4brPb5ZiuuW3VTKD/EBhySCLkU9D7bX3vIcmEU0wlrnpIVy
+         FyVOe2cpw9raslkVs5eEm6zWG+cEhptc3Kv0rihWtuvLxvTuLLagINrxy3esCM7SEUYl
+         Xtew==
+X-Forwarded-Encrypted: i=1; AFNElJ+PmKbKW/06M73+EAhAvHRWnxXgdY5lYx92Y1TI/LXc/BoEG2AjRCNXXF/2DeLGZETo58xHGkfSOA==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yxq7Xva9dUyH+QpzwTlzik2KxNg3TNzFgo/UUhEaZBOY2lZ5IIN
+	lusJu/mTJwg6OxRg0qn29no6SZ9p7ArqZC2EZqNTaUarGu3LyYuNfpX7G41HrwjfOX0=
+X-Gm-Gg: Acq92OEsREfNgoakRKQx13mxq0CgpI1vQ53iqiLaXh76UZ4AVT6hIrY9BSE/hNRWuDr
+	aprHD1Uz9lFyrY5ES9379thLksr/wfmRy5fW+0/id6JjLYV1EBK0JBUYHdISRxXdkwMJZn0uZrs
+	CMEnVomqBj0ecTsXWVwSXJylHA1fKpSmcZ35aIm+lE9svnDwBWaeABepo3L0IvjDfbotXpT91zK
+	G5+VvJakvi5uO49wBg/lM5c6Eq92Co+ymWZzteAv4E7U4owEDkWgA4HIhPe5CHVnYOKqr8SeVHC
+	lsQOU+oI3/wcamikoUXYTyDfrw9YMzAgryJbY+ra6hUisbkVeOABviGvbFsSmnilecPKRK01jJo
+	4ottVpbJrWth6rX2gEqilZTEMJusE74jk1MDjTOQhu6saqVnIN7xZtPsGtocXhq2Yufj3T/PUJ+
+	dHyokGwKIH+vRKTK/WHTHCWXg8vDCl+4QwFeeIa7DpzkUV9pTg7TY7lm38BPZbiTXwsAsickjce
+	BxvG5NvktRgbeCavBshD8BQ
+X-Received: by 2002:a05:600c:3596:b0:490:44eb:c1ea with SMTP id 5b1f17b1804b1-490b5edd71amr146656455e9.24.1780581140625;
+        Thu, 04 Jun 2026 06:52:20 -0700 (PDT)
+Received: from localhost ([94.4.195.193])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-4601f351ac0sm27268044f8f.27.2026.06.04.06.52.19
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Thu, 04 Jun 2026 06:52:20 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <3b79338f-6cfc-4722-8062-9103db2c8ad1@arm.com>
+Mime-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=UTF-8
+Date: Thu, 04 Jun 2026 14:52:19 +0100
+Message-Id: <DJ0BC2X0G04D.18CIJDSEP0PVP@linaro.org>
+Cc: <jyescas@google.com>, <linux-kernel@vger.kernel.org>,
+ <linux-samsung-soc@vger.kernel.org>, <linux-pm@vger.kernel.org>,
+ <devicetree@vger.kernel.org>, <linux-hardening@vger.kernel.org>,
+ <linux-arm-kernel@lists.infradead.org>, "Krzysztof Kozlowski"
+ <krzysztof.kozlowski@oss.qualcomm.com>
+Subject: Re: [PATCH v8 2/5] thermal: samsung: Add Exynos ACPM TMU driver
+ GS101
+From: "Alexey Klimov" <alexey.klimov@linaro.org>
+To: "Tudor Ambarus" <tudor.ambarus@linaro.org>, "Rafael J. Wysocki"
+ <rafael@kernel.org>, "Daniel Lezcano" <daniel.lezcano@kernel.org>, "Zhang
+ Rui" <rui.zhang@intel.com>, "Lukasz Luba" <lukasz.luba@arm.com>, "Rob
+ Herring" <robh@kernel.org>, "Krzysztof Kozlowski" <krzk+dt@kernel.org>,
+ "Conor Dooley" <conor+dt@kernel.org>, "Bartlomiej Zolnierkiewicz"
+ <bzolnier@gmail.com>, "Krzysztof Kozlowski" <krzk@kernel.org>, "Kees Cook"
+ <kees@kernel.org>, "Gustavo A. R. Silva" <gustavoars@kernel.org>, "Peter
+ Griffin" <peter.griffin@linaro.org>, =?utf-8?q?Andr=C3=A9_Draszik?=
+ <andre.draszik@linaro.org>, "Alim Akhtar" <alim.akhtar@samsung.com>
+X-Mailer: aerc 0.21.0
+References: <20260603-acpm-tmu-v8-0-0f1810a356e6@linaro.org>
+ <20260603-acpm-tmu-v8-2-0f1810a356e6@linaro.org>
+In-Reply-To: <20260603-acpm-tmu-v8-2-0f1810a356e6@linaro.org>
 
-Le Wed, Jun 03, 2026 at 11:50:58PM +0100, Christian Loehle a écrit :
-> On 4/23/26 17:53, Frederic Weisbecker wrote:
-> > Hi,
-> > 
-> > This is a late follow-up after:
-> > 
-> > 	https://lore.kernel.org/lkml/20250910074251.8148-1-sehee1.jeong@samsung.com/
-> > 
-> > To summarize, heterogenous capacity CPUs migrate their timers
-> > indifferently between big and little CPUs. And this happens to be often
-> > migrated to big CPUs, increasing their idle target residency.
-> > 
-> > Thomas proposed to isolate the hierarchy between big and little CPUs.
-> > So here is a try. Note I haven't tested on real heterogenous hardware
-> > so if you have it, please test it!
-> > 
-> > git://git.kernel.org/pub/scm/linux/kernel/git/frederic/linux-dynticks.git
-> > 	timers/core
-> > 
-> > HEAD: f0a87af6dab6f3a6dd8a603a2b9d7dcc86fd50e4
-> > Thanks,
-> > 	Frederic
-> > ---
-> > 
-> > Frederic Weisbecker (6):
-> >       timers/migration: Fix another hotplug activation race
-> >       timers/migration: Abstract out hierarchy to prepare for CPU capacity awareness
-> >       timers/migration: Track CPUs in a hierarchy
-> >       timers/migration: Split per-capacity hierarchies
-> >       timers/migration: Handle capacity in connect tracepoints
-> >       scripts/timers: Add timer_migration_tree.py
-> > 
-> >  include/trace/events/timer_migration.h |  24 ++--
-> >  kernel/time/timer_migration.c          | 246 ++++++++++++++++++++++++---------
-> >  kernel/time/timer_migration.h          |  19 +++
-> >  scripts/timer_migration_tree.py        | 122 ++++++++++++++++
-> >  4 files changed, 337 insertions(+), 74 deletions(-)
-> 
-> Hi Frederic,
-> sorry for the late reaction to this, I completely missed it (CCing
-> linux-pm would have helped :) ).
+On Wed Jun 3, 2026 at 2:00 PM BST, Tudor Ambarus wrote:
+> Add driver for the Thermal Management Unit (TMU) managed via the Alive
+> Clock and Power Manager (ACPM), found on Samsung Exynos SoCs such as
+> the Google GS101.
+>
+> The TMU on the GS101 utilizes a hybrid management model shared between
+> the Application Processor (AP) and the ACPM firmware. The driver
+> maintains direct memory-mapped access to the TMU interrupt pending
+> registers to identify thermal events, while delegating functional
+> tasks - such as sensor initialization, threshold configuration, and
+> temperature acquisition, to the ACPM firmware via the ACPM IPC
+> protocol.
+>
+> Signed-off-by: Tudor Ambarus <tudor.ambarus@linaro.org>
+> Acked-by: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
 
-Good point, next time I'll do!
+Reviewed-by: Alexey Klimov <alexey.klimov@linaro.org>
 
-> 
-> I'm not convinced that unconditionally splitting the timer migration
-> hierarchy per-capacity is always the right tradeoff from a power point of
-> view. On some asymmetric systems we only have one or two CPUs in a given
-> capacity class. In that case the split can effectively remove most of the
-> useful timer migration opportunity for that class, even though allowing
-> migration across nearby capacities may still be better for idle residency.
-> 
-> I tested this on an Orion O6 system with the following topology:
-> 
-> online CPUs: 0-11
-> 
-> capacity 279:  CPUs 2,3,4,5
-> capacity 866:  CPUs 8,9
-> capacity 905:  CPUs 6,7
-> capacity 984:  CPUs 10,11
-> capacity 1024: CPUs 0,1
-> 
-> I compared the series up to and including the preparatory/refactoring
-> patch 3 against the full series including the per-capacity hierarchy split.
-> The numbers below are aggregate cpuidle residency deltas over a 600s run.
-> 
-> Idle workload:
-> 
-> variant    LPI-0     LPI-1     LPI-2     LPI-1+2
-> base       2298.7s   1253.8s   2817.0s   4070.8s
-> full       2298.8s   1306.1s   2758.7s   4064.7s
-> delta      +0.1s     +52.3s    -58.3s    -6.1s
-> 
-> Grouped by capacity class, the LPI-2 loss is mostly on the lower-capacity
-> CPUs:
-> 
-> group        base LPI-2   full LPI-2   delta full
-> 279          1073.5s      1031.9s      -41.6s
-> 866          502.5s       486.4s       -16.1s
-> 905          499.7s       490.4s       -9.3s
-> 984          488.8s       496.0s       +7.2s
-> 1024         252.5s       254.0s       +1.5s
-> 
-> For a light tbench run (tbench -R 20 -t 600 4), the result is more mixed:
-> 
-> variant    LPI-0     LPI-1     LPI-2     LPI-1+2
-> base       2593.5s   1483.4s   410.3s    1893.6s
-> full       2605.3s   1446.5s   416.6s    1863.1s
-> delta      +11.8s    -36.9s    +6.3s     -30.5s
-> 
-> So tbench gets a small increase in deepest idle, but loses more in
-> LPI-1+2 overall.
-> 
-> If we do wanna keep the per-capacity hierarchy split, maybe it's sufficient to
-> gate this behind there being either a small number of capacity classes or
-> ensuring that they all have >=4 CPUs before splitting?
+> ---
+>  drivers/thermal/samsung/Kconfig    |  19 ++
+>  drivers/thermal/samsung/Makefile   |   2 +
+>  drivers/thermal/samsung/acpm-tmu.c | 651 +++++++++++++++++++++++++++++++=
+++++++
+>  3 files changed, 672 insertions(+)
 
-Ok I was afraid of something like that, ie: it works for some usages but not
-on others.
+[...]
 
-And I don't know what to do. For example if I apply your suggested contraints,
-on which hierarchy should go those capacities with < 4 CPUs ?
-
-Thoughts?
-
-> 
-> Kind regards,
-> Christian
-> 
-
--- 
-Frederic Weisbecker
-SUSE Labs
+Best regards,
+Alexey
