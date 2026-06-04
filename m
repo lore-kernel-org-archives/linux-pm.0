@@ -1,115 +1,59 @@
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.14])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EC54E421A0A;
-	Thu,  4 Jun 2026 14:44:10 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.14
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DBFEB3ACA6E;
+	Thu,  4 Jun 2026 16:05:56 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1780584252; cv=none; b=XmAIN+q1IrnrvwIdqFmCb8OV7Kmn0T0YlBZRRGww+vDDZqPTlIPqp5BU1vdTeyPqdN8SEkZu3aDo8NbmtIKXZmNVyvNtM1oANyhERbY8+0uJxMHYDSpaSkLC2/FAgjY42f68z2uUTnq61gkxMzrhQmPP904CHTa+eSW2lZXLiKc=
+	t=1780589157; cv=none; b=J0EvfyhXT3O1rxiII1DNDmSgzUpPZIfxPWy7vEh+9e3OKhzPOKKFWwDKYfqq+YQ7WyDC7nvABhq3G+UKxTK0cyIff6KkgfWMRKFlAnyseKhakEnRdZbByzEC5jnCNVHAe9UQwPrN5OMj9mHJo2yYyUWVOa6pKY2RAo5zKsyTCjM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1780584252; c=relaxed/simple;
-	bh=xioSgrx/0cKagkWYlTbbGauf4MvUTEbfEnnI6ugY9Ww=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=O5YIRN13Ke3BugP3zn9cpEmkMpRZTkDg5acTwED3SB4I5nOOKaolk8OQeCP4qIaoyMut9MquumOgDWryP4RaQNrM23UVgT8BwDlkzJJdLglfr1Xxm3xAcnNk6Xn2LRfl65V759WhlkLkhz6crGeMDayQ4Y+xwu1s4/vKwNC5i/s=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=h+2LmGsX; arc=none smtp.client-ip=198.175.65.14
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="h+2LmGsX"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1780584251; x=1812120251;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=xioSgrx/0cKagkWYlTbbGauf4MvUTEbfEnnI6ugY9Ww=;
-  b=h+2LmGsXppVV+X9/K8yK8BCakiMO2WUlQZXX/CJ3KalCBTLQT14AmdjE
-   Z3yzB4/LgeSf3IZ3ovpbnVmPiQ6wJqkhnI82tjTTZ8Uz4iPhl4mjdheRR
-   1h9Xpcv1GUjmkh6uEzFBlVBhwoCgu++C1KbkVRbX2p3eGca8ZDhoLBEzW
-   u+uQvMQZImEiynlM3RkaSkdi8fIS9b2AAk8bb34nQvIjwQJFx599GP/gy
-   hMkYV4WQt2ZuPqCCIzObI14cU0KhMp9pY577aQf7xXyO86zbDvGRjqUdD
-   0/dnCeDYVD8U28boEcAl8uRItE9MCwJsBIs6fdgSBSghCDD0zRzM77bqo
-   A==;
-X-CSE-ConnectionGUID: cdOrCBJiTz22sGTfDB4E4A==
-X-CSE-MsgGUID: 7P/By35VQQ6RfRbsWBYurw==
-X-IronPort-AV: E=McAfee;i="6800,10657,11807"; a="85300355"
-X-IronPort-AV: E=Sophos;i="6.24,187,1774335600"; 
-   d="scan'208";a="85300355"
-Received: from orviesa003.jf.intel.com ([10.64.159.143])
-  by orvoesa106.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 04 Jun 2026 07:44:11 -0700
-X-CSE-ConnectionGUID: 04A6IfFOSwGhxExF+I7dyg==
-X-CSE-MsgGUID: CZajhtE/Sju25LYfF9GqxA==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.24,187,1774335600"; 
-   d="scan'208";a="248498955"
-Received: from ettammin-mobl3.ger.corp.intel.com (HELO localhost) ([10.245.245.47])
-  by ORVIESA003-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 04 Jun 2026 07:44:06 -0700
-Date: Thu, 4 Jun 2026 17:44:02 +0300
-From: Andy Shevchenko <andriy.shevchenko@intel.com>
-To: Jonathan Cameron <jic23@kernel.org>
-Cc: Jishnu Prakash <jishnu.prakash@oss.qualcomm.com>,
-	David Lechner <dlechner@baylibre.com>,
-	Nuno =?iso-8859-1?Q?S=E1?= <nuno.sa@analog.com>,
-	Andy Shevchenko <andy@kernel.org>, Amit Kucheria <amitk@kernel.org>,
-	Thara Gopinath <thara.gopinath@gmail.com>,
-	"Rafael J. Wysocki" <rafael@kernel.org>,
-	Daniel Lezcano <daniel.lezcano@kernel.org>,
-	Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>,
-	linux-arm-msm@vger.kernel.org, linux-iio@vger.kernel.org,
-	linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
-	Kamal Wadhwa <kamal.wadhwa@oss.qualcomm.com>,
-	David Collins <david.collins@oss.qualcomm.com>,
-	Anjelique Melendez <anjelique.melendez@oss.qualcomm.com>,
-	Neil Armstrong <neil.armstrong@linaro.org>,
-	Stephan Gerhold <stephan.gerhold@linaro.org>
-Subject: Re: [PATCH v2 1/2] iio: adc: qcom-spmi-adc5-gen3: Share SDAM0 IRQ
- with ADC_TM auxiliary driver
-Message-ID: <aiGPMqHcz_AkUezI@ashevche-desk.local>
-References: <20260526-gen3_adc_tm-v2-0-702fbac919ac@oss.qualcomm.com>
- <20260526-gen3_adc_tm-v2-1-702fbac919ac@oss.qualcomm.com>
- <ah9ouLQFI7VtHCWL@ashevche-desk.local>
- <20260604114630.23ca427a@jic23-huawei>
+	s=arc-20240116; t=1780589157; c=relaxed/simple;
+	bh=GwkbEHH7aEYOncu2D6n2F9/P5LqzvyyDOt+VBohz2ik=;
+	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
+	 MIME-Version:Content-Type; b=YdiqhDt/Sc1Y/qRiSbpYDqXaRrVADTWAV1+iiTKUVFTqNtbs96nupD+Gw3vU6a3zRSLV8Z5TdkCirf7dhdFSEMVTRudOo86aa4GHRvxxZ78S8GhsGeS2COuG7vo1q37YuYLwSzJChG3VnDRQ72rE/e0VNn/hBzFjvN4E+DtZNaA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6023B1F00898;
+	Thu,  4 Jun 2026 16:05:56 +0000 (UTC)
+Received: by venus (Postfix, from userid 1000)
+	id 2642F181D82; Thu, 04 Jun 2026 18:05:54 +0200 (CEST)
+From: Sebastian Reichel <sebastian.reichel@collabora.com>
+To: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+ Conor Dooley <conor+dt@kernel.org>, Sebastian Reichel <sre@kernel.org>, 
+ =?utf-8?q?Jonas_Schw=C3=B6bel?= <jonasschwoebel@yahoo.de>, 
+ Svyatoslav Ryhel <clamor95@gmail.com>
+Cc: devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
+ linux-pm@vger.kernel.org
+In-Reply-To: <20260507134608.76222-1-clamor95@gmail.com>
+References: <20260507134608.76222-1-clamor95@gmail.com>
+Subject: Re: [PATCH v4 0/2] power: supply: Add support for Surface RT
+ battery and charger
+Message-Id: <178058915412.2707129.13808686364711300875.b4-ty@collabora.com>
+Date: Thu, 04 Jun 2026 18:05:54 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260604114630.23ca427a@jic23-huawei>
-Organization: Intel Finland Oy - BIC 0357606-4 - c/o Alberga Business Park, 6
- krs, Bertel Jungin Aukio 5, 02600 Espoo
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-Mailer: b4 0.14.3
 
-On Thu, Jun 04, 2026 at 11:46:30AM +0100, Jonathan Cameron wrote:
-> On Wed, 3 Jun 2026 02:35:20 +0300
-> Andy Shevchenko <andriy.shevchenko@intel.com> wrote:
-> > On Tue, May 26, 2026 at 04:26:09PM +0530, Jishnu Prakash wrote:
 
-...
-
-> > > +	ret = devm_request_threaded_irq(dev, adc->dev_data.base[ADC5_GEN3_VADC_SDAM].irq,
-> > > +					NULL, adc5_gen3_isr, IRQF_ONESHOT | IRQF_SHARED,
-> > > +					adc->dev_data.base[ADC5_GEN3_VADC_SDAM].irq_name,
-> > > +					adc);
-> > >  	if (ret)
-> > >  		return dev_err_probe(dev, ret,
-> > >  				     "Failed to request SDAM%d irq\n",  
-> > 
-> > Also add a patch to drop this duplicate message.
+On Thu, 07 May 2026 16:46:05 +0300, Svyatoslav Ryhel wrote:
+> Add support for Embedded Controller found in the Microsoft Surface RT and
+> used to monitor battery cell and charger input status and properties.
+> Controller works both for UEFI and APX booting.
 > 
-> There is another thread going on this.  It might not be duplicate
-> if -EPROBE_DEFER is returned.  The message won't be printed but it
-> will be logged for helping debug deferred probe reasons.
 
-Yes, and I explained that it is duplicated as long as I understand current
-code base.
+Applied, thanks!
 
-> So maybe we have been a little too energetic in removing these.
+[1/2] dt-bindings: embedded-controller: Document Surface RT EC
+      commit: de296b53775cd1ccb6b448b4cc8d843c8858e1df
+[2/2] power: supply: Add support for Surface RT battery and charger
+      commit: 3d6529b837de49294cea0d4600144353f5f084dd
 
-Or maybe sashiko consumed a bit of LSD :-)
-
+Best regards,
 -- 
-With Best Regards,
-Andy Shevchenko
-
+Sebastian Reichel <sebastian.reichel@collabora.com>
 
