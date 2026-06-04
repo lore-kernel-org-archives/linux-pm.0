@@ -1,108 +1,218 @@
-Received: from stravinsky.debian.org (stravinsky.debian.org [82.195.75.108])
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7387737756F;
-	Thu,  4 Jun 2026 09:42:22 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=82.195.75.108
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C4313360EFB;
+	Thu,  4 Jun 2026 10:00:07 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.17
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1780566144; cv=none; b=OYLHPag4dwh7PhPRL/KRDZNNB76l4CCWqQmOHeJJTICF2AR7YDneVFmnoDOAyGL4+sb6JAJ4hycklyrDhrbfzR9YrZwduHwKQEMwnuRBZt8lSVXhowMGI9cj/+wS03tPAtjOLIJUAOAhBOAj2j/HUU/PizqA6Lf5bxL0548HadQ=
+	t=1780567209; cv=none; b=lexzcrKJnBSsRxZOF0JDKtS2e+wRX0Q+xCIOmes9va8eeXUolLYXezIpH094Nl5C8xq0A0SXqVjKbMPgONjk3y/kSGUaX+gpFKCSpwlQL7mKSXsogG7Pan0mHaM77dvbEAczjzsYx5l2ZcioC98zBypo6v6JuLHBOefEq46jXlA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1780566144; c=relaxed/simple;
-	bh=1jM0IDHr8rcwgeUz3Xxf6kPLSdd0L8Q/7S5zgog9N58=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=sn2F6pqbAqG1hCMpG5N408tuSYYsWDn7M0UBRrxWwRmnfuXynQEKxwUajHCN8efWR3h1alPR67tBtP6yJeIxhiZ9+OaqjyonWIiKrSVkpBHHa4z33Y62Wesqx3Voi73Ny5iZB+FE82MZhU9lL//CFy59Q/hIb9ovkM6L2gl7c/g=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=debian.org; spf=pass smtp.mailfrom=debian.org; dkim=pass (2048-bit key) header.d=debian.org header.i=@debian.org header.b=XyqCBQim; arc=none smtp.client-ip=82.195.75.108
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=debian.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=debian.org
+	s=arc-20240116; t=1780567209; c=relaxed/simple;
+	bh=hjxeQPXsQra0yLDrHOzeES6S6ocN/OciQR9875BDcbI=;
+	h=Date:From:To:Cc:Subject:Message-ID; b=s0qT7apMEbwZEwjHpHfDplWGgo63jfTUvyAAhJRM5mTkXe7CPvtbbCHxHq1V3Psf1uo3xve//fE+vnOLckMuAmjNtm8dIt8oPQYVsyXKtyWKqlUTu5vXxDPx1p7YVQrFU94p/sNv4l/HXE0Okdj8Dlc9zCq9lEiTerMavG6UUG0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=ccTMZ8cR; arc=none smtp.client-ip=192.198.163.17
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=debian.org header.i=@debian.org header.b="XyqCBQim"
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=debian.org;
-	s=smtpauto.stravinsky; h=X-Debian-User:In-Reply-To:Content-Type:MIME-Version:
-	References:Message-ID:Subject:Cc:To:From:Date:Reply-To:
-	Content-Transfer-Encoding:Content-ID:Content-Description;
-	bh=nyZGi977o/Z35bQOZClTizAiB3Nxdk09GSq+5nhrWGY=; b=XyqCBQimASE/GNulcxZYkp3lkc
-	r/IVWvbIS1KRJ45Ly/BXX5WKQ42AxMW88GOecwTuwBViaLHdE1ypW2d66KO5VOrNtdZBuRLVjmroK
-	4aUXWRZ0Ca3XPO5an2Kp1CBGSXNsbe8wpdwD514q/60eKynYxf5goFv0ZhxTOSKbDqZ0Gu1a/szwk
-	CcareQFTKoofqzB24Zy91Q2Q8/Ya8BwlMKN90biLoLQE2ux2hHEm+un8lC6BzHJ6EtWOhCpZnU6Ll
-	ZYVS+Kdttf0izE4Vq0T80BmzTL+F6cwbQMVU9LsXJJKjtG2Yjnat2+6c2i3ORX1jZnD9AMgI6qJh/
-	FTzFMJkQ==;
-Received: from authenticated-user
-	by stravinsky.debian.org with esmtpsa (TLS1.3:ECDHE_X25519__RSA_PSS_RSAE_SHA256__AES_256_GCM:256)
-	(Exim 4.96)
-	(envelope-from <leitao@debian.org>)
-	id 1wV4ae-004QLs-0O;
-	Thu, 04 Jun 2026 09:42:16 +0000
-Date: Thu, 4 Jun 2026 02:42:10 -0700
-From: Breno Leitao <leitao@debian.org>
-To: Jeremy Linton <jeremy.linton@arm.com>
-Cc: linux-pm@vger.kernel.org, sumitg@nvidia.com, pierre.gondois@arm.com, 
-	zhenglifeng1@huawei.com, zhanjie9@hisilicon.com, viresh.kumar@linaro.org, 
-	rafael@kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] cpufreq: cppc: Reduce cppc delivered perf sampling jitter
-Message-ID: <aiFHsZ_Ha1DKIm8N@gmail.com>
-References: <20260602212052.1278365-1-jeremy.linton@arm.com>
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="ccTMZ8cR"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1780567208; x=1812103208;
+  h=date:from:to:cc:subject:message-id;
+  bh=hjxeQPXsQra0yLDrHOzeES6S6ocN/OciQR9875BDcbI=;
+  b=ccTMZ8cRlL/mkPFZzdAvO5KzDeCpNsBN0jGXDdTijpkx8IwRSSaiAHm/
+   Mc56oa4HuSDW8zFOHshFjJdM0JqasjjebIptx/BuRJMz1LL0V3qp0LfvQ
+   PiqBF/e0wq1gFcCMFMyAqVsUmliO+jT6b4xY9y+wphw6oQ4pZm30KWDpC
+   Ba20fCKgDLZr02YvFNrnpZqlPruzMqbU1DxThVEmgwMJggNYjOzoGmBPQ
+   21Zega8TpdmEfyFt35vJVkhzHYHOFiXPM2J8NEM6HG9YgfpHYS+487P0T
+   2n5/e6Jb/QcFh+dOdRnmpA82vGdAxm1vTJuPTK6Tqq8O8L+Ro12k0zc+4
+   A==;
+X-CSE-ConnectionGUID: ttNI5qEJR+62831q4YihIA==
+X-CSE-MsgGUID: XQQC24TpTIuol/xQrIybpg==
+X-IronPort-AV: E=McAfee;i="6800,10657,11806"; a="81247531"
+X-IronPort-AV: E=Sophos;i="6.24,186,1774335600"; 
+   d="scan'208";a="81247531"
+Received: from fmviesa009.fm.intel.com ([10.60.135.149])
+  by fmvoesa111.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 04 Jun 2026 03:00:07 -0700
+X-CSE-ConnectionGUID: h5rOxZrGRqSGvx42xAxPFQ==
+X-CSE-MsgGUID: ARsDA11CT76ro64XKTiHaw==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.24,186,1774335600"; 
+   d="scan'208";a="238166772"
+Received: from lkp-server01.sh.intel.com (HELO f0d55cb201f0) ([10.239.97.150])
+  by fmviesa009.fm.intel.com with ESMTP; 04 Jun 2026 03:00:06 -0700
+Received: from kbuild by f0d55cb201f0 with local (Exim 4.98.2)
+	(envelope-from <lkp@intel.com>)
+	id 1wV4rr-00000000EZA-2MLp;
+	Thu, 04 Jun 2026 10:00:03 +0000
+Date: Thu, 04 Jun 2026 17:59:13 +0800
+From: kernel test robot <lkp@intel.com>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org
+Subject: [rafael-pm:bleeding-edge] BUILD SUCCESS
+ af69594f56f16ae017248f2465ddd175683ccf39
+Message-ID: <202606041704.A7Dqj5qr-lkp@intel.com>
+User-Agent: s-nail v14.9.25
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260602212052.1278365-1-jeremy.linton@arm.com>
-X-Debian-User: leitao
 
-On Tue, Jun 02, 2026 at 04:20:52PM -0500, Jeremy Linton wrote:
-> CPPC uses a pair of registers cycling at different frequencies to
-> determine an accumulated performance level. For userspace reporting we
-> want to convert this to an instantaneous CPU frequency, but over short
-> time periods small errors caused by CPPC counter reads can cause
-> fairly significant reported frequency variations even when the core
-> CPU clock isn't changing.
-> 
-> Reduce this by keeping a start sample fixed and retrying the end
-> sample until the counter deltas are large enough to reduce short
-> window error, or until adjacent delivered performance estimates are
-> within the CPU's observed CPPC read noise floor.
-> 
-> To begin, resample the initial pair a small fixed number of times
-> looking for matching delivered performance deltas.  This reduces the
-> chance that a disturbed start sample anchors the rest of the
-> calculation.
-> 
-> Then look for an end sample while updating the noise floor from the
-> best error seen between samples.  The floor remains zero on systems
-> with stable feedback reads, but lets noisy systems stop early once
-> another retry is unlikely to improve the result.  The retry loop is
-> capped at 200 iterations, giving an ~20 usec explicit delay budget
-> derived from ndelay(100).
-> 
-> Signed-off-by: Jeremy Linton <jeremy.linton@arm.com>
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git bleeding-edge
+branch HEAD: af69594f56f16ae017248f2465ddd175683ccf39  Merge branch 'experimental/acpi-driver-work' into bleeding-edge
 
-Tested-by: Breno Leitao <leitao@debian.org>
+elapsed time: 2187m
 
-I've tested this on my grace host, checking "cat
-/sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_cur_freq" thousand times,
-and the result is quite good, reducing the Std Dev by 5x, and getting
-a better value.
+configs tested: 141
+configs skipped: 14
 
-# cat /sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_max_freq
- 3339000
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-Baseline:
-	Average: 3505050.00
-	P50 (Median): 3388500.00
-	Std Dev: 462607.66
-	Min: 2709000.00
-	Max: 4464000.00
+tested configs:
+alpha                             allnoconfig    gcc-15.2.0
+alpha                            allyesconfig    gcc-15.2.0
+alpha                               defconfig    gcc-16.1.0
+arc                              allmodconfig    gcc-15.2.0
+arc                               allnoconfig    gcc-15.2.0
+arc                              allyesconfig    gcc-15.2.0
+arc                                 defconfig    gcc-16.1.0
+arc                   randconfig-001-20260604    gcc-10.5.0
+arc                   randconfig-002-20260604    gcc-16.1.0
+arm                               allnoconfig    clang-23
+arm                              allyesconfig    gcc-15.2.0
+arm                                 defconfig    clang-23
+arm                        keystone_defconfig    gcc-16.1.0
+arm                   randconfig-001-20260604    gcc-8.5.0
+arm                   randconfig-002-20260604    gcc-14.3.0
+arm                   randconfig-003-20260604    clang-23
+arm                   randconfig-004-20260604    clang-23
+arm64                            allmodconfig    clang-19
+arm64                             allnoconfig    gcc-15.2.0
+arm64                               defconfig    gcc-16.1.0
+arm64                 randconfig-001-20260604    clang-23
+arm64                 randconfig-002-20260604    clang-23
+arm64                 randconfig-003-20260604    clang-20
+arm64                 randconfig-004-20260604    clang-23
+csky                              allnoconfig    gcc-15.2.0
+csky                                defconfig    gcc-16.1.0
+csky                  randconfig-001-20260604    gcc-16.1.0
+csky                  randconfig-002-20260604    gcc-14.3.0
+hexagon                          allmodconfig    clang-17
+hexagon                           allnoconfig    clang-23
+hexagon                             defconfig    clang-23
+hexagon               randconfig-001-20260604    clang-23
+hexagon               randconfig-002-20260604    clang-23
+i386                             allmodconfig    gcc-14
+i386                              allnoconfig    gcc-14
+i386                             allyesconfig    gcc-14
+i386        buildonly-randconfig-001-20260604    clang-22
+i386        buildonly-randconfig-002-20260604    gcc-14
+i386        buildonly-randconfig-003-20260604    gcc-14
+i386        buildonly-randconfig-004-20260604    clang-22
+i386        buildonly-randconfig-005-20260604    gcc-14
+i386        buildonly-randconfig-006-20260604    clang-22
+i386                                defconfig    clang-22
+loongarch                        allmodconfig    clang-19
+loongarch                         allnoconfig    clang-23
+loongarch                           defconfig    clang-23
+loongarch             randconfig-001-20260604    clang-18
+loongarch             randconfig-002-20260604    gcc-16.1.0
+m68k                             allmodconfig    gcc-15.2.0
+m68k                              allnoconfig    gcc-15.2.0
+m68k                             allyesconfig    gcc-15.2.0
+m68k                                defconfig    gcc-16.1.0
+microblaze                        allnoconfig    gcc-15.2.0
+microblaze                       allyesconfig    gcc-15.2.0
+microblaze                          defconfig    gcc-16.1.0
+mips                             allmodconfig    gcc-15.2.0
+mips                              allnoconfig    gcc-15.2.0
+mips                             allyesconfig    gcc-15.2.0
+nios2                            allmodconfig    gcc-11.5.0
+nios2                             allnoconfig    gcc-11.5.0
+nios2                               defconfig    gcc-11.5.0
+nios2                 randconfig-001-20260604    gcc-8.5.0
+nios2                 randconfig-002-20260604    gcc-11.5.0
+openrisc                         allmodconfig    gcc-15.2.0
+openrisc                         allmodconfig    gcc-16.1.0
+openrisc                          allnoconfig    gcc-15.2.0
+openrisc                            defconfig    gcc-16.1.0
+parisc                           allmodconfig    gcc-15.2.0
+parisc                            allnoconfig    gcc-15.2.0
+parisc                           allyesconfig    gcc-15.2.0
+parisc                              defconfig    gcc-16.1.0
+parisc                         randconfig-001    gcc-8.5.0
+parisc                randconfig-001-20260604    gcc-11.5.0
+parisc                         randconfig-002    gcc-12.5.0
+parisc                randconfig-002-20260604    gcc-13.4.0
+parisc64                            defconfig    gcc-16.1.0
+powerpc                           allnoconfig    gcc-15.2.0
+powerpc                        randconfig-001    gcc-10.5.0
+powerpc               randconfig-001-20260604    clang-23
+powerpc                        randconfig-002    gcc-8.5.0
+powerpc               randconfig-002-20260604    clang-23
+powerpc64                      randconfig-001    clang-16
+powerpc64             randconfig-001-20260604    clang-23
+powerpc64                      randconfig-002    clang-23
+powerpc64             randconfig-002-20260604    clang-18
+riscv                            allmodconfig    clang-23
+riscv                             allnoconfig    gcc-15.2.0
+riscv                            allyesconfig    clang-16
+riscv                               defconfig    clang-23
+riscv                          randconfig-001    gcc-8.5.0
+riscv                 randconfig-001-20260604    clang-23
+riscv                          randconfig-002    clang-23
+riscv                 randconfig-002-20260604    clang-16
+s390                             allmodconfig    clang-18
+s390                              allnoconfig    clang-23
+s390                             allyesconfig    gcc-15.2.0
+s390                                defconfig    clang-18
+s390                           randconfig-001    gcc-11.5.0
+s390                  randconfig-001-20260604    clang-23
+s390                           randconfig-002    clang-23
+s390                  randconfig-002-20260604    clang-23
+sh                               allmodconfig    gcc-15.2.0
+sh                                allnoconfig    gcc-15.2.0
+sh                               allyesconfig    gcc-15.2.0
+sh                                  defconfig    gcc-16.1.0
+sh                             randconfig-001    gcc-16.1.0
+sh                    randconfig-001-20260604    gcc-16.1.0
+sh                             randconfig-002    gcc-14.3.0
+sh                    randconfig-002-20260604    gcc-16.1.0
+sparc                             allnoconfig    gcc-15.2.0
+sparc                               defconfig    gcc-16.1.0
+sparc                 randconfig-001-20260604    gcc-13.4.0
+sparc                 randconfig-002-20260604    gcc-11.5.0
+sparc64                          allmodconfig    clang-20
+sparc64                          allmodconfig    clang-23
+sparc64                             defconfig    clang-23
+sparc64               randconfig-001-20260604    gcc-9.5.0
+sparc64               randconfig-002-20260604    gcc-11.5.0
+um                               allmodconfig    clang-19
+um                                allnoconfig    clang-23
+um                               allyesconfig    gcc-14
+um                                  defconfig    clang-23
+um                             i386_defconfig    gcc-14
+um                    randconfig-001-20260604    clang-23
+um                    randconfig-002-20260604    clang-23
+um                           x86_64_defconfig    clang-23
+x86_64                           allmodconfig    clang-20
+x86_64                            allnoconfig    clang-20
+x86_64                           allyesconfig    clang-20
+x86_64               buildonly-randconfig-001    gcc-12
+x86_64      buildonly-randconfig-001-20260604    gcc-14
+x86_64               buildonly-randconfig-003    gcc-14
+x86_64      buildonly-randconfig-003-20260604    gcc-14
+x86_64               buildonly-randconfig-004    gcc-14
+x86_64               buildonly-randconfig-005    gcc-14
+x86_64                              defconfig    gcc-14
+x86_64                          rhel-9.4-rust    clang-20
+x86_64                          rhel-9.4-rust    clang-22
+xtensa                            allnoconfig    gcc-15.2.0
+xtensa                randconfig-001-20260604    gcc-13.4.0
+xtensa                randconfig-002-20260604    gcc-11.5.0
 
-
-Wth this patch:
-	Average: 2393550.00
-	P50 (Median): 2394000.00
-	Std Dev: 68629.06
-	Min: 2241000.00
-	Max: 2529000.00
-
-Thanks,
---breno
+--
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests/wiki
