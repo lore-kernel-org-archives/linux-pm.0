@@ -1,54 +1,53 @@
 Received: from sender4-op-o11.zoho.com (sender4-op-o11.zoho.com [136.143.188.11])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5A0931547C0;
-	Thu,  4 Jun 2026 16:39:42 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4F344480333;
+	Thu,  4 Jun 2026 17:01:59 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=136.143.188.11
 ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1780591183; cv=pass; b=HZd1RA0IExoMKkvsevEUmwaIfDjN0PtFi3vWOVB7gFQHQucdeQSzkLr0VRW8NPAZHzILmUsz6jXvGogMKp65rIBbUtdTK9hpGu1Ato1son4Orub5+NJ54oSdw6OVtPLAttdNNcAHO8E5jldhsi4NXDi9AsBGmd48GUEiFUCFvOw=
+	t=1780592521; cv=pass; b=tKD68Exg9QjMl5AB1hPappX61iC/bXpXPxw1X/PK9lt36NJM4fPLpTxPo4Eiwhl4SKeHNiEqs5AyGBRAz4ps9UqW1uoTRksj/xSRNhme3fNCti2VqfVVLC+R000SLzcYByrb/1zeHHtCX7pdm9vpjF72g69Q++V8qYMvE/yv0Bs=
 ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1780591183; c=relaxed/simple;
-	bh=IRmE3eY2MEBFJg7IBdlFlsnQfEgCgR5UqZTf25QOwx4=;
+	s=arc-20240116; t=1780592521; c=relaxed/simple;
+	bh=ulw4bYxl7A4dnEUGReRqHL4Dx19seTlEFvgiUAX9nhY=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=J5c0EgWXCu+dToa15Y0NCUmcrT+/t/7wpNlrZS2gtcChC7QjTKGj9+GUQuqWpBEG1d2kwBMjdtMhrrxgfWL9MPQVOobwhIk6lrdO6hfz7wp9F3hWBiJIgUKqBbNOtmsR/eXRKXwgt2geZlsA7ecHHfvjVJ+kOOt1XAVButGemBY=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (1024-bit key) header.d=collabora.com header.i=sebastian.reichel@collabora.com header.b=bxC/8isG; arc=pass smtp.client-ip=136.143.188.11
+	 Content-Type:Content-Disposition:In-Reply-To; b=O+ygmVouk2kmqTyZLYb1hUXB5k3dXGC4b/Pe8srLnqCgGM+0raApjAMtvsJCerUYOF10+NHR+QP0m1LhP0S4EM0C+tc11BeFt28GBSlGyb8tc8lxkn+BltsoguRPk9CK/ecII7pFttz0xd5+uPtbg8Fj/JqcXSgZDGac2SXdUJ4=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (1024-bit key) header.d=collabora.com header.i=sebastian.reichel@collabora.com header.b=BuAIj3rR; arc=pass smtp.client-ip=136.143.188.11
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=collabora.com header.i=sebastian.reichel@collabora.com header.b="bxC/8isG"
-ARC-Seal: i=1; a=rsa-sha256; t=1780591164; cv=none; 
+	dkim=pass (1024-bit key) header.d=collabora.com header.i=sebastian.reichel@collabora.com header.b="BuAIj3rR"
+ARC-Seal: i=1; a=rsa-sha256; t=1780592506; cv=none; 
 	d=zohomail.com; s=zohoarc; 
-	b=FcUJlJ/DTfBp4hkQwmuFWZAyrtDC4EA13iYjhpOdSvWzXvr25k86ZsrWeUx/uDBAJKzD599YfSjhQ9yu8xPz0VrmilIyZGrqwWN4gDQixBoTqhxS2jvJAComldRLvolVjMYnEexMzHnlo1f86s64BgHuekH18NzK4cdoysOY2DM=
+	b=lUhS9b/Ur/EfEu7aC60bEkCAQ1b0pLqUYQf3OSGM+ASx0Dlz7MkmpteDgOI+pxSk/2aZFknRfZiUzVDiG++66Sv014vn2HWngYVqR/LOCkIrIy//A4AsxtPZL5IzTtad2oZsnAXAPbEZhY0WZanyxf7JPuARR3CAU8TeQg9RpAE=
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=zohomail.com; s=zohoarc; 
-	t=1780591164; h=Content-Type:Cc:Cc:Date:Date:From:From:In-Reply-To:MIME-Version:Message-ID:References:Subject:Subject:To:To:Message-Id:Reply-To; 
-	bh=5ckcWefkVhHi1iXL41Jhysnfy8JhjMusBGeBhoPhgHA=; 
-	b=HI9u5yUNREmwqHznEQ5bKbWr+80x6KH3F6vRHUNtD1sGjSYb4wPoXt0wqJcabjYidbZly76T4lzEZrpPadbHGrNALWaOpZFr+D4dReS+faCbmc/0OpdQzxu7Hc4I+iAXlI49lndRLBPy1vkdFkzU/4x8vQ+rBDNIuYH97wOjYUc=
+	t=1780592506; h=Content-Type:Cc:Cc:Date:Date:From:From:In-Reply-To:MIME-Version:Message-ID:References:Subject:Subject:To:To:Message-Id:Reply-To; 
+	bh=+0J34Rp7ODzpOZH+ghPY3PieFCy8fxn1AB+uMTKMrIA=; 
+	b=NpffucHUPuf0RTloBGP8mptYighx9n2JrkejNuWx2kI4yDH3PBHBA4jQSn056nZSARDM2YK4szajqgKKnHwfJIhRiu+SrWEjSUV0LwTKi8wyalXCUf6LAKhx5uVKFzuIAP1qFLhuJTlucZAuOxrdLcvAqOKk/Ww6jss7NNefODY=
 ARC-Authentication-Results: i=1; mx.zohomail.com;
 	dkim=pass  header.i=collabora.com;
 	spf=pass  smtp.mailfrom=sebastian.reichel@collabora.com;
 	dmarc=pass header.from=<sebastian.reichel@collabora.com>
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; t=1780591163;
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; t=1780592506;
 	s=zohomail; d=collabora.com; i=sebastian.reichel@collabora.com;
 	h=Date:Date:From:From:To:To:Cc:Cc:Subject:Subject:Message-ID:References:MIME-Version:Content-Type:In-Reply-To:Message-Id:Reply-To;
-	bh=5ckcWefkVhHi1iXL41Jhysnfy8JhjMusBGeBhoPhgHA=;
-	b=bxC/8isGMHLiHQViSLdy7iHwsc2AfrIpZ6S9tUkMczAopPEC9KQ45vF3ZF9Qu17B
-	tlKqfhJ6Ebi+JEBW20kdbex4TrZC2SrhLr92RGH4eCsOxSZ//BbTyZCSDhkRDFIVBxM
-	QPi4bBeeJ2F9K9YEVdtszrBG9XX/A83nN7A5jMzk=
-Received: by mx.zohomail.com with SMTPS id 1780591161253801.0874003515125;
-	Thu, 4 Jun 2026 09:39:21 -0700 (PDT)
+	bh=+0J34Rp7ODzpOZH+ghPY3PieFCy8fxn1AB+uMTKMrIA=;
+	b=BuAIj3rRip8HOuRyFIpmMbfrHsk9Z80m4bT/ZGF26/z+1ikiS5fO0y5wO9F3rrdb
+	ZExk6HAoAmdvZHoKWDWRPtUO7B3Y/k594kJ9JzF5x6TCCK9IK/UwXvrpf04BIW6Adxc
+	f3zQbPd5k82kh3WvcS1R/daY1YCAQKusk3Et1ULk=
+Received: by mx.zohomail.com with SMTPS id 1780592503928741.7148016284211;
+	Thu, 4 Jun 2026 10:01:43 -0700 (PDT)
 Received: by venus (Postfix, from userid 1000)
-	id 65BD3181D80; Thu, 04 Jun 2026 18:39:18 +0200 (CEST)
-Date: Thu, 4 Jun 2026 18:39:18 +0200
+	id C90B6181D80; Thu, 04 Jun 2026 19:01:40 +0200 (CEST)
+Date: Thu, 4 Jun 2026 19:01:40 +0200
 From: Sebastian Reichel <sebastian.reichel@collabora.com>
-To: Vincent Cloutier <vincent.cloutier@icloud.com>
-Cc: Hans de Goede <hansg@kernel.org>, 
-	Krzysztof Kozlowski <krzk@kernel.org>, Marek Szyprowski <m.szyprowski@samsung.com>, 
-	Sebastian Krzyszkowiak <sebastian.krzyszkowiak@puri.sm>, Purism Kernel Team <kernel@puri.sm>, linux-pm@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, Vincent Cloutier <vincent@cloutier.co>
-Subject: Re: [PATCH v1 0/9] power: supply: max17042_battery: improve MAX17055
- support
-Message-ID: <aiGp30oIyDo04qtq@venus>
-References: <20260406205759.493288-1-vincent.cloutier@icloud.com>
+To: Jean-Michel Hautbois <jeanmichel.hautbois@yoseli.org>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>, 
+	Greg Ungerer <gerg@linux-m68k.org>, linux-m68k@lists.linux-m68k.org, linux-kernel@vger.kernel.org, 
+	linux-pm@vger.kernel.org
+Subject: Re: [PATCH 2/3] power: reset: add MCF5441x RCM power-on reason driver
+Message-ID: <aiGseFwWJkjCZrfB@venus>
+References: <20260602-coldfire-rcm-power-on-reason-v1-0-fbc3eab0c016@yoseli.org>
+ <20260602-coldfire-rcm-power-on-reason-v1-2-fbc3eab0c016@yoseli.org>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -56,102 +55,251 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="orhcyzfxle47u4o2"
+	protocol="application/pgp-signature"; boundary="weaaxdxhy55xrgky"
 Content-Disposition: inline
-In-Reply-To: <20260406205759.493288-1-vincent.cloutier@icloud.com>
+In-Reply-To: <20260602-coldfire-rcm-power-on-reason-v1-2-fbc3eab0c016@yoseli.org>
 X-Zoho-Virus-Status: 1
 X-Zoho-AV-Stamp: zmail-av-0.2.2.1.5.2/280.581.16
 X-ZohoMailClient: External
 
 
---orhcyzfxle47u4o2
+--weaaxdxhy55xrgky
 Content-Type: text/plain; protected-headers=v1; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
-Subject: Re: [PATCH v1 0/9] power: supply: max17042_battery: improve MAX17055
- support
+Subject: Re: [PATCH 2/3] power: reset: add MCF5441x RCM power-on reason driver
 MIME-Version: 1.0
 
 Hi,
 
-On Mon, Apr 06, 2026 at 04:57:48PM -0400, Vincent Cloutier wrote:
-> From: Vincent Cloutier <vincent@cloutier.co>
+On Tue, Jun 02, 2026 at 11:21:22AM +0200, Jean-Michel Hautbois wrote:
+> Add a driver that decodes the Reset Status Register (RSR) of the
+> Freescale ColdFire MCF5441x Reset Controller Module at probe time
+> and exposes the cause via the power_on_reason sysfs ABI.
 >=20
-> This series refreshes the Librem 5 MAX17055 fuel-gauge work for upstream
-> on top of current `mainline/master`.
+> The RSR can latch several cause bits simultaneously (Reference
+> Manual chapter 12.3.2); the driver picks one cause per a priority
+> that favours the most explanatory diagnostic.
 >=20
-> Original series:
-> https://lore.kernel.org/lkml/20220318001048.20922-1-sebastian.krzyszkowia=
-k@puri.sm/
+> Signed-off-by: Jean-Michel Hautbois <jeanmichel.hautbois@yoseli.org>
+> ---
+>  MAINTAINERS                         |   6 ++
+>  drivers/power/reset/Kconfig         |  12 ++++
+>  drivers/power/reset/Makefile        |   1 +
+>  drivers/power/reset/mcf-rcm-reset.c | 109 ++++++++++++++++++++++++++++++=
+++++++
+>  4 files changed, 128 insertions(+)
 >=20
-> Compared to the earlier posted version, the main follow-up changes are:
->=20
-> - keep the original arithmetic form of the fractional `MAX17042_*_LSB`
->   expressions while still moving the unit conversions into shared defines
-> - remove the unused board-file style platform-data wrapper from the driver
-> - factor the `monitored-battery` parser behind a generic
->   `devm_power_supply_get_battery_info()` helper so MAX17042 can read DT
->   battery data before registration
-> - keep `voltage-max-design-microvolt` as an explicit MAX17055
->   `ModelCfg.VChg` setting so batteries at or below 4.25 V clear the
->   default bit
->=20
-> The attribution split is intentional:
->=20
-> - patches 1, 2, and 7 preserve the original signed Purism downstream work
->   from Sebastian Krzyszkowiak
-> - the remaining patches are cleanups and follow-ups on top of current
->   mainline code
->=20
-> Tested on Librem 5.
->=20
-> Sebastian Krzyszkowiak (3):
->   power: supply: max17042_battery: Put LSB units into defines
->   power: supply: max17042_battery: Use Current register in get_status
->   power: supply: max17042_battery: use ModelCfg refresh on max17055
->=20
-> Vincent Cloutier (6):
->   power: supply: max17042_battery: Use dev_err_probe for power supply
->     registration
->   power: supply: max17042_battery: Route MAX17055 SOC alerts through
->     dSOCi
->   power: supply: max17042_battery: Keep only critical alerts during
->     suspend
->   power: supply: max17042_battery: Remove unused platform-data plumbing
->   power: supply: Read MAX17042 battery info before registration
->   power: supply: max17042_battery: Treat MAX17055 VChg as explicit DT
->     setting
->=20
->  drivers/power/supply/max17042_battery.c  | 428 ++++++++++++++---------
->  drivers/power/supply/power_supply_core.c | 188 ++++++----
->  include/linux/power/max17042_battery.h   |  33 +-
->  include/linux/power_supply.h             |  10 +
->  4 files changed, 393 insertions(+), 266 deletions(-)
+> diff --git a/MAINTAINERS b/MAINTAINERS
+> index 461a3eed6129..1109bff23ec1 100644
+> --- a/MAINTAINERS
+> +++ b/MAINTAINERS
+> @@ -10195,6 +10195,12 @@ S:	Maintained
+>  F:	drivers/mmc/host/sdhci-esdhc-mcf.c
+>  F:	include/linux/platform_data/mmc-esdhc-mcf.h
+> =20
+> +FREESCALE COLDFIRE M5441X RCM POWER-ON REASON DRIVER
+> +M:	Jean-Michel Hautbois <jeanmichel.hautbois@yoseli.org>
+> +L:	linux-m68k@lists.linux-m68k.org
+> +S:	Maintained
+> +F:	drivers/power/reset/mcf-rcm-reset.c
+> +
+>  FREESCALE DIU FRAMEBUFFER DRIVER
+>  M:	Timur Tabi <timur@kernel.org>
+>  L:	linux-fbdev@vger.kernel.org
+> diff --git a/drivers/power/reset/Kconfig b/drivers/power/reset/Kconfig
+> index 124afb99febe..003638f652fa 100644
+> --- a/drivers/power/reset/Kconfig
+> +++ b/drivers/power/reset/Kconfig
+> @@ -128,6 +128,18 @@ config POWER_RESET_LINKSTATION
+> =20
+>  	  Say Y here if you have a Buffalo LinkStation LS421D/E.
+> =20
+> +config POWER_RESET_MCF_RCM
+> +	tristate "Freescale ColdFire RCM power-on reason driver"
+> +	depends on M5441x
 
-I merged patches 1-7.
+If you describe the register layout in the driver, you
+could add "|| COMPILE_TEST" resulting in much better
+test coverage.
 
-Greetings,
+> +	depends on HAS_IOMEM
+> +	help
+> +	  This driver exposes the cause of the last reset on Freescale
+> +	  ColdFire 5441x SoCs through the standard power_on_reason sysfs
+> +	  ABI. It reads the Reset Status Register (RSR) of the Reset
+> +	  Controller Module once at probe time and reports a normalised
+> +	  string (regular power-up, reset button action, software reset
+> +	  or unknown reason).
+> +
+>  config POWER_RESET_MACSMC
+>  	tristate "Apple SMC reset/power-off driver"
+>  	depends on MFD_MACSMC
+> diff --git a/drivers/power/reset/Makefile b/drivers/power/reset/Makefile
+> index d7ae97241a83..e31cab4ba78e 100644
+> --- a/drivers/power/reset/Makefile
+> +++ b/drivers/power/reset/Makefile
+> @@ -13,6 +13,7 @@ obj-$(CONFIG_POWER_RESET_GPIO) +=3D gpio-poweroff.o
+>  obj-$(CONFIG_POWER_RESET_GPIO_RESTART) +=3D gpio-restart.o
+>  obj-$(CONFIG_POWER_RESET_HISI) +=3D hisi-reboot.o
+>  obj-$(CONFIG_POWER_RESET_LINKSTATION) +=3D linkstation-poweroff.o
+> +obj-$(CONFIG_POWER_RESET_MCF_RCM) +=3D mcf-rcm-reset.o
+>  obj-$(CONFIG_POWER_RESET_MACSMC) +=3D macsmc-reboot.o
+>  obj-$(CONFIG_POWER_RESET_MSM) +=3D msm-poweroff.o
+>  obj-$(CONFIG_POWER_RESET_MT6323) +=3D mt6323-poweroff.o
+> diff --git a/drivers/power/reset/mcf-rcm-reset.c b/drivers/power/reset/mc=
+f-rcm-reset.c
+> new file mode 100644
+> index 000000000000..666ae1455be1
+> --- /dev/null
+> +++ b/drivers/power/reset/mcf-rcm-reset.c
+> @@ -0,0 +1,109 @@
+> +// SPDX-License-Identifier: GPL-2.0
+> +/*
+> + * Freescale ColdFire MCF5441x RCM power-on reason driver
+> + *
+> + * Copyright (C) 2026 Jean-Michel Hautbois <jeanmichel.hautbois@yoseli.o=
+rg>
+> + */
+> +
+> +#include <linux/io.h>
+> +#include <linux/module.h>
+> +#include <linux/platform_device.h>
+> +#include <linux/power/power_on_reason.h>
+> +
+> +#include <asm/m5441xsim.h>
+> +
+> +#define MCF_RSR_KNOWN_CAUSES	(MCF_RSR_POR | MCF_RSR_EXT | MCF_RSR_WDRCOR=
+E | \
+> +				 MCF_RSR_LOC | MCF_RSR_LOL | MCF_RSR_SOFT)
+> +
+> +struct mcf_rcm {
+> +	const char *reason;
+> +};
+> +
+> +/*
+> + * Decode RSR into a power_on_reason string.
+> + *
+> + * The MCF5441x Reset Status Register can latch several cause bits at the
+> + * same time (Reference Manual chapter 12.3.2: "one or more status bits
+> + * may be set at the same time"). A power-on, for example, also resets
+> + * the PLL and may co-flag LOC and LOL during the boot sequence. The
+> + * power_on_reason ABI carries a single string, so this routine picks
+> + * one cause; the chosen priority surfaces the most explanatory one for
+> + * diagnostics:
+> + *
+> + *   POR              cold boot dominates any spurious co-flagged cause
+> + *   EXT              operator action via the RESET pin
+> + *   WDRCORE          core watchdog timeout, a fault to investigate
+> + *   LOC, LOL         PLL clock or lock failure, hardware fault
+> + *   SOFT             explicit software-requested reset
+> + */
+> +static const char *mcf_rcm_decode(u8 rsr)
+> +{
+> +	if (rsr & MCF_RSR_POR)
+> +		return POWER_ON_REASON_REGULAR;
+> +	if (rsr & MCF_RSR_EXT)
+> +		return POWER_ON_REASON_RST_BTN;
+> +	if (rsr & MCF_RSR_WDRCORE)
+> +		return POWER_ON_REASON_WATCHDOG;
+> +	if (rsr & (MCF_RSR_LOC | MCF_RSR_LOL))
+> +		return POWER_ON_REASON_CPU_CLK_FAIL;
+> +	if (rsr & MCF_RSR_SOFT)
+> +		return POWER_ON_REASON_SOFTWARE;
+> +	return POWER_ON_REASON_UNKNOWN;
+> +}
+> +
+> +static ssize_t power_on_reason_show(struct device *dev,
+> +				    struct device_attribute *attr, char *buf)
+> +{
+> +	struct mcf_rcm *rcm =3D platform_get_drvdata(to_platform_device(dev));
+> +
+> +	return sysfs_emit(buf, "%s\n", rcm->reason);
+> +}
+> +static DEVICE_ATTR_RO(power_on_reason);
+> +
+> +static struct attribute *mcf_rcm_attrs[] =3D {
+> +	&dev_attr_power_on_reason.attr,
+> +	NULL,
+> +};
+> +ATTRIBUTE_GROUPS(mcf_rcm);
+> +
+> +static int mcf_rcm_probe(struct platform_device *pdev)
+> +{
+> +	struct mcf_rcm *rcm;
+> +	void __iomem *base;
+> +	u8 rsr;
+> +
+> +	rcm =3D devm_kzalloc(&pdev->dev, sizeof(*rcm), GFP_KERNEL);
+> +	if (!rcm)
+> +		return -ENOMEM;
+> +
+> +	base =3D devm_platform_ioremap_resource(pdev, 0);
+> +	if (IS_ERR(base))
+> +		return PTR_ERR(base);
+> +
+> +	rsr =3D readb_relaxed(base);
+> +	rcm->reason =3D mcf_rcm_decode(rsr);
+> +
+> +	platform_set_drvdata(pdev, rcm);
+> +
+> +	if (!(rsr & MCF_RSR_KNOWN_CAUSES))
+> +		dev_warn(&pdev->dev, "Unknown reset cause (RSR=3D0x%02x)\n", rsr);
+> +	else
+> +		dev_info(&pdev->dev, "Starting after %s (RSR=3D0x%02x)\n",
+> +			 rcm->reason, rsr);
+> +
+> +	return 0;
+> +}
+
+static const struct platform_device_id mcf_rcm_id[] =3D {
+    { "mcf-rcm-reset", 0, },
+    { }
+};
+MODULE_DEVICE_TABLE(platform, mcf_rcm_id);
+
+> +static struct platform_driver mcf_rcm_driver =3D {
+> +	.probe =3D mcf_rcm_probe,
+> +	.driver =3D {
+> +		.name =3D "mcf-rcm-reset",
+> +		.dev_groups =3D mcf_rcm_groups,
+> +	},
+
+=2Eid_table =3D mcf_rcm_id,
+
+> +};
+> +module_platform_driver(mcf_rcm_driver);
+> +
+> +MODULE_AUTHOR("Jean-Michel Hautbois <jeanmichel.hautbois@yoseli.org>");
+> +MODULE_DESCRIPTION("Freescale ColdFire RCM power-on reason driver");
+> +MODULE_LICENSE("GPL");
+> +MODULE_ALIAS("platform:mcf-rcm-reset");
+
+You can drop the MODULE_ALIAS with the platform ID table being
+done properly.
+
+Otherwise LGTM.
 
 -- Sebastian
 
---orhcyzfxle47u4o2
+--weaaxdxhy55xrgky
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAmohqjYACgkQ2O7X88g7
-+pr0qxAAoHmLQi3rHnkV7JQgcsBOQkQkPfnCJF9T+D6TRvqoWANasjrOYdCgvJP6
-x2ERJydzyNHK/CGewlgGAE45zbctUCGv3V/mWWBNUZQ6xMKP6grDVpPjiiA1kik1
-v7aWOEYjpvPlbnIC3cTIzj6IWGGDTthmMQtOYlemXaOlHk6ymzzS7fGKb7S64blO
-FwKRKir3l2dEvkz7uCcyWVe4/jeXXpAglfYINMUhf3+5OXB8waU0Ll65JQDOhafp
-0UQ9dj5hdXoRtheuSE/azTKnD+t36vnFOfLQdEoLNDIphbej1NF+TQS7ZmgNwrin
-Yi6Gne/2vbb9icPo+9PunmFQyLA9It4+wusNpue0a2i9Cg1zWD8ZNT5NwHRQE7Fc
-DCniGugFQiplclb6mL6MmipFftLTzN6YRY3Bsk+5Vh+MtACXkvG1Y3m9MRGJGzLH
-AgOksGSbAb0Xket+MgC0XfC8W7MBDLRrjZTTG/AMrwECTmnyjkFeEW3XuV0HdtYE
-XD4j8CZdT0tUujVotR26GIEzoPcfm9Nrdz5u6dbBkl/ZS+ELeEbVauzjzV7fVkFN
-I4CLLRC3wQ2KpKklAr0EKh7Jw46MdwmDNjPiBzkXhSyZtpAo8Mf2zkgVDmC+8VLC
-/trUY2PW3IlymsF6PiWzbtDuJKWyKSqvHbAOCTIZnZBs5JM+PCY=
-=2O0K
+iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAmohr2gACgkQ2O7X88g7
++prA3xAAhtx7s9ZMrDvndLLu4dNHrOT72Dd8tdogegErykWXaQIf7Q83yb78wLG/
+kjXnJqnmzS8Fv25syQPWIgQbxfzQzr4Y4wCMo0FFSGfN0fAezhokxJ1H/rxJ53h3
+ZpiRaTGfwae4rfm/xaKaFabZoj2mSJYN4aZKQrqmg/3+73p8QZsWyInQViI0/Gah
+eQ3c6i0oX3bkePnyx2wVMSUxLAifTxJG2/tj2q87D1QAcgnQm9xXiyd6A+uqxGIs
+m6V9Xa6m5eIbSk6gD8LE9dHhGa2gpjeZpIjaMLKJhwqkQpWWUrplgOlSZRqc0xcl
+ssFbSWvkUNJepZlD54z4pvHTvQLw2l3gtUjObzYSZEkaP0mPq/c+s3VFCl/DmnNX
+evrH3hGaZUc7TJnk+6SDiyuk6sT7YbAsygcZKxeK783evgC+ZKy5TIlJ+NWAGTMu
+g/KcvecrUEtINz7VJEtYwMqIZHCMb8wAzqcTd8KhWj4KlEqR9FiIVSGmBPVJ/L63
+0a9AfnOgGWK0DpVzs0J2wFRo3EP0J3OXx1QQsZ8SkhigmGY0sxbeme8dHhpbjGPQ
+wxrXKLUggFtaXze0qAApT+mtKOXwfTi6n5oNOikPOAlIUrYDqEyQ6Z7Z6+QuKcAJ
+QkyqUKAmrSdGHfjfbLDvs/ck8mC2PjthApW+bR5gFxP10y1sElY=
+=Eg/S
 -----END PGP SIGNATURE-----
 
---orhcyzfxle47u4o2--
+--weaaxdxhy55xrgky--
