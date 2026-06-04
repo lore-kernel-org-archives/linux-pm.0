@@ -1,185 +1,310 @@
-Received: from sender4-pp-f112.zoho.com (sender4-pp-f112.zoho.com [136.143.188.112])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pf1-f172.google.com (mail-pf1-f172.google.com [209.85.210.172])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1A14E192B75;
-	Thu,  4 Jun 2026 01:05:10 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=136.143.188.112
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1780535112; cv=pass; b=XXNbUyPSajODtRgY5qEnryYpSC3IzjHwlqKfH5MkkD4zXYsGiqh+IVeMW+BiRTx0f8XfIA2GRVhc4XbQzcm/4vmmq3F8dQk6DD2b5ifElSqWqIcD2f5s7qibOseh6s+T2EcIDPbGaZIouZcaOXjjPi/VFC/aA4jt3pj2p7qO9/Y=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1780535112; c=relaxed/simple;
-	bh=lKa+RtutWmljXsD0Ee84wr6eBHGct7VV6vBqziJ5e94=;
-	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=obg4V1mCjMgBqeeuVC3T53wP4LuWQyxrd4/b9MoiQeN6KML7sSRWqif6jE+e0Ce/01KK80e/EKaVxWQjd4WDN/19Dy69mGPpb+JV4/SBBmMiAtjVnlf0GIdyLcliDmURo3Bxk+S/oozV2TXafe0nA8sIK2p/8b5V57Wpo7wDnDc=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (1024-bit key) header.d=collabora.com header.i=nfraprado@collabora.com header.b=kllZyIXG; arc=pass smtp.client-ip=136.143.188.112
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1691C223DE9
+	for <linux-pm@vger.kernel.org>; Thu,  4 Jun 2026 01:42:53 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.210.172
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1780537375; cv=none; b=REml5fAixtrYIBf9qGP8+B7nlCM79JduGX8aGbQTQGXTsF3vqDbPueL3issYT7eIOF5JXQj3V2R3++geHmD3Y+2U6PTuWXhlJ07RY9WZQLqL7Y6fKE7xHGl4OzbkkpBXkSkJ7lIhqx2KaxCj3qCUnWUu2EBCd5z96oNFdC5QQBA=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1780537375; c=relaxed/simple;
+	bh=BE+DGdAbW/QfyBCBRhkx1zHdr4Mm28zjPjW+NfTpbx4=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=WGuhAgqia87WA5ijaBI3G0fL5tybknK0TJeFwiWedXxzKz8Bi/EJoCSwDmoyAy9ArJqiD9NYljddD6zShzYHoMMGgkH3iCmP58w1NTzMXjuV1Hini2amVYbgxa3X3c7zNAh9N59P1MYNjYjNKffye5RPMlpGmlNz5Ju8WOG2Los=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=d1yOas0Y; arc=none smtp.client-ip=209.85.210.172
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=collabora.com header.i=nfraprado@collabora.com header.b="kllZyIXG"
-ARC-Seal: i=1; a=rsa-sha256; t=1780535098; cv=none; 
-	d=zohomail.com; s=zohoarc; 
-	b=nIvTQibm1LOG3T1r9HUnFGOW+pw99ciEWQ+eMqTxFPCzxmApxULfjIL4c1iKpMtjutLv0xegYhauZ3iYdX/QCDXtR3gocJ6c3flDoVPRUZEfX+TagaTH8uaqdC3KoLA39ipVQD58+Jn80UBlR4yWzHVCWnjNMxIlSAerULpoDkk=
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=zohomail.com; s=zohoarc; 
-	t=1780535098; h=Content-Type:Content-Transfer-Encoding:Cc:Cc:Date:Date:From:From:In-Reply-To:MIME-Version:Message-ID:References:Subject:Subject:To:To:Message-Id:Reply-To; 
-	bh=lKa+RtutWmljXsD0Ee84wr6eBHGct7VV6vBqziJ5e94=; 
-	b=irzfAA7HBYTzgGXadke4wCQrOqHZ2kfOTl0a7z1NuTkxwR871ihccwl88M65DzDNUd3mAbmw6IWZXmgGY/IniJaf/1HqhYF3bIi7ATI+pNZ/Py12uieb5qM8iFesEXeohwKnGUx2+NIxQmkia1rtaVCUqbIxSyiCgjsIZIloKG8=
-ARC-Authentication-Results: i=1; mx.zohomail.com;
-	dkim=pass  header.i=collabora.com;
-	spf=pass  smtp.mailfrom=nfraprado@collabora.com;
-	dmarc=pass header.from=<nfraprado@collabora.com>
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; t=1780535098;
-	s=zohomail; d=collabora.com; i=nfraprado@collabora.com;
-	h=Message-ID:Subject:Subject:From:From:To:To:Cc:Cc:Date:Date:In-Reply-To:References:Content-Type:Content-Transfer-Encoding:MIME-Version:Message-Id:Reply-To;
-	bh=lKa+RtutWmljXsD0Ee84wr6eBHGct7VV6vBqziJ5e94=;
-	b=kllZyIXG8ZpdR+zbW+e5KS2Diosb55gD5OVYc+wRUuBKoeBS6goZtPJqQck5DLQt
-	/W25IYy/HVnwi+zacVmrNbnuvevCkr716c2nwKszpXPB+8YEAvupaqMFT2QuyrbyzlE
-	KcKWHnyD/j9OZTX4MNEly++WTshMJMkDSxJbV8Lg=
-Received: by mx.zohomail.com with SMTPS id 1780535095790481.16791850006507;
-	Wed, 3 Jun 2026 18:04:55 -0700 (PDT)
-Message-ID: <a32ed33592cb3acd426dc69f819f64e443f4ea54.camel@collabora.com>
-Subject: Re: [PATCH 3/3] PM: hibernate: Allow disabling zero page check in
- copy_data_pages()
-From: =?ISO-8859-1?Q?N=EDcolas?= "F. R. A. Prado" <nfraprado@collabora.com>
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Len Brown <lenb@kernel.org>, Pavel Machek <pavel@kernel.org>, Brian
- Geffon	 <bgeffon@google.com>, kernel@collabora.com,
- linux-pm@vger.kernel.org, 	linux-kernel@vger.kernel.org
-Date: Wed, 03 Jun 2026 21:04:54 -0400
-In-Reply-To: <CAJZ5v0hMKKAuM0LxaTubjMLO1_XUs7V-o6FfYYF6cD=prKZOXA@mail.gmail.com>
-References: 
-	<20260518-hibernation-decrease-time-in-copy-data-pages-v1-0-3998bdf90ee5@collabora.com>
-	 <20260518-hibernation-decrease-time-in-copy-data-pages-v1-3-3998bdf90ee5@collabora.com>
-	 <CAJZ5v0iHezk28gWu+wNni01wi73bV7vkqmVKXD14Gtk+CKyGDg@mail.gmail.com>
-	 <c4176f8a63cd537a1ced7325079f5e7da30fb7fe.camel@collabora.com>
-	 <CAJZ5v0hMKKAuM0LxaTubjMLO1_XUs7V-o6FfYYF6cD=prKZOXA@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-User-Agent: Evolution 3.56.2-9 
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="d1yOas0Y"
+Received: by mail-pf1-f172.google.com with SMTP id d2e1a72fcca58-8423f1d8902so57909b3a.1
+        for <linux-pm@vger.kernel.org>; Wed, 03 Jun 2026 18:42:53 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1780537373; x=1781142173; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=4lpnYjV8Ig/zZCSkvQJauvrjccH7UfxeEgfbLG6AD0g=;
+        b=d1yOas0Yq+QVqqEpkMmOTUrQu8augJXaZjq590TxxryU++4idSP+5EhNPK6oXrsfZ3
+         Z2snazMCGAc0N3ueZWxp7KBK7JzvFoZAq3st9YwvLhGTdd63RfvR7anO495Mhf1Gre9p
+         uZKmjEKJ6CMGxER8bl0eqD0aNrwHfXQPtNJayxw4v+wTSBlgLC2uEtKU8UKeYtFP2jim
+         8LlQyWYfpXDKRkQrfZsUDlV7Stk0H1mFOut2psnancCSDLBB5AaxbNFX/uxVa1Uo7YrS
+         YNjtoWKBPySw1KyDumDlyNu0VeRyjJkarQOQLKDiUE+5a9ny3Y9r1yDLP5e5OG5jUGU/
+         XPJg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1780537373; x=1781142173;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=4lpnYjV8Ig/zZCSkvQJauvrjccH7UfxeEgfbLG6AD0g=;
+        b=D+x8kLZPSZn83yJMOKgSBdW1fL1B5l97dcvVOEGTHuJDHTajgkAehZs86UK7wvhQTf
+         Lv8CvmUJy4RmIMwOvEO8pMX1kL1NwNKLcc8+qb09utzoLRd5jj1D89NUEK788Uz/cWXW
+         eoevxMIrayLb9PFije7AIawnT+3aMCgkUrW9jtJ46gXidC/CC5Nk23SjQjcpMTeA1v+5
+         T7V/I7iEUgkn+RDo/aqEa+BubCtEp1d4P6KVm4oTbSfQXyYOCcc2xWislZYvjFs91rUf
+         K6YGXDhmIC3wRvEH4FaOvMKE4rn89saBVA5OpOrt6XcanYGjfIndf0Uy6Snl3wLUMLYC
+         0z5Q==
+X-Gm-Message-State: AOJu0Yy9wSyuZYidP7M4LRsWp0zNzpmM2CZFT14eSXv+hbw1Weei4iXb
+	uifUi7C2sXEwufto2YjEvbARdFe1BeIXxNu1pPOXpy5REbZINu/5WSfAc9V8h29D
+X-Gm-Gg: Acq92OEhi1VmDNm6cjwXGxFqlcj3cjoSJj21QrtJhIDYD6/e5r3H47YGUNJNCp9MmQl
+	t9ZjBtwYSn7KKs/p/fo9eBD9SD5B+OmPErXFRd5uLnUq3X64QssBizcK1eDih3IjsY1zK1q33N/
+	ZuJSCzKldrNVACWw1YnDUzLhvtSHeGSL3y+jILLRcHDIwNfDGtn+wyImrmIlvHee+DQ/JxDPLB1
+	62HY8/wXjm1SrnYOs409ykqmQ1yXErwa5oATbxb3rSM+64J9rPdYBfHEzXlCa9YF60tiyH3vfXu
+	sJ7WzTMOPVx8gsRMMwG8efuTXyFt/dM8CSiZA5lUpdlwkLSwyGPC2oRnfKZsiQV+exeLkWXydad
+	KwICfyTTlNhE5rVpREfM+IggGykwYDbwvfwuGz5XYNG9rbuVpEd1PI53EtdnFvKf1RGPwB70e/d
+	i+A7YjIbECpYaUa0wtKXffqIJtNhUPk5L7dOcizaSb1nq2FPlezhVZBVffTSIFJPpRZPcR3AiOV
+	rdnke52YrA6KcwpfpAG6kZbG8Lq1+pozv5Vwd2I5XtzuQ==
+X-Received: by 2002:a05:6a00:17a9:b0:841:dc7d:306a with SMTP id d2e1a72fcca58-84284f5fedemr5522133b3a.25.1780537373220;
+        Wed, 03 Jun 2026 18:42:53 -0700 (PDT)
+Received: from ryzen ([2601:644:8000:5b5d:7285:c2ff:fe45:8a32])
+        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-84282375f2dsm4603728b3a.19.2026.06.03.18.42.51
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 03 Jun 2026 18:42:52 -0700 (PDT)
+From: Rosen Penev <rosenp@gmail.com>
+To: linux-pm@vger.kernel.org
+Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+	Krzysztof Kozlowski <krzk@kernel.org>,
+	"Rafael J. Wysocki" <rafael@kernel.org>,
+	Daniel Lezcano <daniel.lezcano@kernel.org>,
+	Zhang Rui <rui.zhang@intel.com>,
+	Lukasz Luba <lukasz.luba@arm.com>,
+	Peter Griffin <peter.griffin@linaro.org>,
+	Alim Akhtar <alim.akhtar@samsung.com>,
+	linux-samsung-soc@vger.kernel.org (open list:SAMSUNG THERMAL DRIVER),
+	linux-arm-kernel@lists.infradead.org (moderated list:ARM/SAMSUNG S3C, S5P AND EXYNOS ARM ARCHITECTURES),
+	linux-kernel@vger.kernel.org (open list)
+Subject: [PATCHv2] thermal/drivers/exynos: fix clock ordering race and shared IRQ handling
+Date: Wed,  3 Jun 2026 18:42:35 -0700
+Message-ID: <20260604014235.39303-1-rosenp@gmail.com>
+X-Mailer: git-send-email 2.54.0
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-ZohoMailClient: External
+Content-Transfer-Encoding: 8bit
 
-On Tue, 2026-06-02 at 10:04 +0200, Rafael J. Wysocki wrote:
-> On Tue, Jun 2, 2026 at 12:52=E2=80=AFAM N=C3=ADcolas F. R. A. Prado
-> <nfraprado@collabora.com> wrote:
-> >=20
-> > On Tue, 2026-05-26 at 13:53 +0200, Rafael J. Wysocki wrote:
-> > > On Mon, May 18, 2026 at 11:34=E2=80=AFPM N=C3=ADcolas F. R. A. Prado
-> > > <nfraprado@collabora.com> wrote:
-> > > >=20
-> > > > The current implementation of copy_data_pages() has at its
-> > > > center
-> > > > do_copy_page(), which copies data of all saveable pages in a
-> > > > loop
-> > > > one
-> > > > long at a time, while checking whether the page is fully zero
-> > > > to
-> > > > allow
-> > > > it to not be saved in the hibernation image.
-> > > >=20
-> > > > As the comment above do_copy_page() mentions, this loop was
-> > > > used
-> > > > instead
-> > > > of the more optimized copy_page() and memcpy() due to them
-> > > > depending on
-> > > > fpu_begin()/fpu_end() (see [1] and commit 95018f7c94cb
-> > > > ("[PATCH]
-> > > > swsusp:
-> > > > do not use memcpy for snapshotting memory")). However, since
-> > > > commit
-> > > > c6dbd3e5e69c ("x86/mmx_32: Remove X86_USE_3DNOW"), this
-> > > > limitation
-> > > > no
-> > > > longer holds, and it only affected x86-32 in the first place.
-> > > >=20
-> > > > From testing it is clear that removing the zero page check and
-> > > > using
-> > > > copy_page() makes it almost 3 times quicker:
-> > > > - Current:
-> > > > =C2=A0=C2=A0=C2=A0 PM: hibernation: Copied 4940240 kbytes in 11.33 =
-seconds
-> > > > (436.03
-> > > > MB/s)
-> > > > - With just the zero check removed:
-> > > > =C2=A0=C2=A0=C2=A0 PM: hibernation: Copied 4974664 kbytes in 9.03 s=
-econds
-> > > > (550.90
-> > > > MB/s)
-> > > > - With the zero check removed and using copy_page() instead:
-> > > > =C2=A0=C2=A0=C2=A0 PM: hibernation: Copied 6275216 kbytes in 3.96 s=
-econds
-> > > > (1584.65
-> > > > MB/s)
-> > > >=20
-> > > > Given that copy_data_pages() runs inside a critical section
-> > > > where
-> > > > only
-> > > > a single CPU is online and syscore is suspended, it should be
-> > > > kept
-> > > > as
-> > > > short as possible to keep the system responsive.
-> > >=20
-> > > I'm not sure if being responsive during hibernation is all that
-> > > important.
-> > >=20
-> > > Also, the change is about using copy_page() to reduce the time
-> > > spent
-> > > in syscore_suspend(), so the subject is a bit confusing.
-> > >=20
-> > > > While switching from the loop to copy_page() brings big speed
-> > > > improvements, it also makes the zero page check much costlier
-> > > > since
-> > > > it
-> > > > can no longer be done in the middle of the copy. In fact upon
-> > > > testing
-> > > > adding the zero check alongside copy_page() made it slower than
-> > > > the
-> > > > current code.
-> > >=20
-> > > Guess what, CPUs have caches.
-> > >=20
-> > > > The following shows a rough comparison of a few more metrics
-> > > > between the
-> > > > current code and when both copy_page() is used and the zero
-> > > > page
-> > > > check
-> > > > is disabled:
-> > > > - Total time to hibernate:
-> > > > =C2=A0 - before: 13.77s
-> > > > =C2=A0 - after: 14.13s
-> > >=20
-> > > Score for the current code.
-> > >=20
-> > > > - Total time to resume:
-> > > > =C2=A0 - before: 5.85s
-> > > > =C2=A0 - after: 5.85s
-> > > > - Total time in syscore_suspend():
-> > > > =C2=A0 - before: 11.3s
-> > > > =C2=A0 - after: 4.08s
-> > >=20
-> > > Why does this matter?
-> >=20
-> > Reducing the time spent here means reduced time between
-> > pm_wakeup_pending() checks, which ultimately means the kernel is
-> > quicker to abort hibernation in reaction to a pending wakeup.
->=20
-> That could be spelled out more directly in the patch changelog.
->=20
-> I'm still unsure why it matters though.=C2=A0 Hibernation is slow pretty
-> much by definition, so why would anyone expect a fast response to a
-> wakeup event during hibernation?=C2=A0 If they have latency constraints,
-> shouldn't they use suspend instead?
+Fix two pre-existing issues in exynos_tmu_probe/remove:
 
-We can't just rely on suspend because battery life also matters.
+1. Clock ordering race: The driver manually unprepares clocks in
+   exynos_tmu_remove() and the probe error path, but the IRQ handler and
+   thermal zone are devm-managed and remain active until after the manual
+   cleanup.  If the shared IRQ fires or the thermal zone is polled in that
+   window, clk_enable() is called on an unprepared clock, which is illegal.
+   Replace devm_clk_get() + manual clk_prepare() with devm_clk_get_prepared(),
+   and devm_clk_get() + manual clk_prepare_enable() with
+   devm_clk_get_enabled(), so clock unprepare is tied to the devm lifetime
+   and happens after the IRQ and thermal zone are released.  Remove the
+   now-redundant manual cleanup from the error path and remove function.
 
-Indeed hibernation is slow, but if it can be made faster, or at least
-quicker to respond to wakeup events, then why not?
+2. Shared IRQ handling: The driver requests a shared IRQ (IRQF_SHARED) with
+   NULL as the hardirq handler, causing irq_default_primary_handler to wake
+   the threaded handler for every interrupt on the shared line and, combined
+   with IRQF_ONESHOT, mask the line until the thread completes.  Replace the
+   NULL handler with a hardirq handler that reads the TMU interrupt status
+   register and returns IRQ_NONE when the TMU is not the interrupt source,
+   so other devices on the shared line are not delayed.  Also return IRQ_NONE
+   from the threaded handler as a safety net if the interrupt was already
+   handled or cleared between the hardirq and threaded handler.
 
---=20
-Thanks,
+Assisted-by: opencode:big-pickle
+Signed-off-by: Rosen Penev <rosenp@gmail.com>
+---
+ v2: fixed sashiko comments and moved TODO.
+ drivers/thermal/samsung/exynos_tmu.c | 104 ++++++++++++---------------
+ 1 file changed, 46 insertions(+), 58 deletions(-)
 
-N=C3=ADcolas
+diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/samsung/exynos_tmu.c
+index 47a99b3c5395..11b2f1e2670c 100644
+--- a/drivers/thermal/samsung/exynos_tmu.c
++++ b/drivers/thermal/samsung/exynos_tmu.c
+@@ -196,7 +196,7 @@ struct exynos_tmu_data {
+ 	void (*tmu_control)(struct platform_device *pdev, bool on);
+ 	int (*tmu_read)(struct exynos_tmu_data *data);
+ 	void (*tmu_set_emulation)(struct exynos_tmu_data *data, int temp);
+-	void (*tmu_clear_irqs)(struct exynos_tmu_data *data);
++	u32 (*tmu_clear_irqs)(struct exynos_tmu_data *data);
+ };
+
+ /*
+@@ -756,28 +756,53 @@ static int exynos7_tmu_read(struct exynos_tmu_data *data)
+ 		EXYNOS7_TMU_TEMP_MASK;
+ }
+
+-static irqreturn_t exynos_tmu_threaded_irq(int irq, void *id)
++static u32 exynos_tmu_intstat_offset(struct exynos_tmu_data *data)
++{
++	if (data->soc == SOC_ARCH_EXYNOS5260)
++		return EXYNOS5260_TMU_REG_INTSTAT;
++	if (data->soc == SOC_ARCH_EXYNOS7)
++		return EXYNOS7_TMU_REG_INTPEND;
++	if (data->soc == SOC_ARCH_EXYNOS5433)
++		return EXYNOS5433_TMU_REG_INTPEND;
++	return EXYNOS_TMU_REG_INTSTAT;
++}
++
++static irqreturn_t exynos_tmu_irq(int irq, void *id)
+ {
+ 	struct exynos_tmu_data *data = id;
+
+-	thermal_zone_device_update(data->tzd, THERMAL_EVENT_UNSPECIFIED);
++	if (!readl(data->base + exynos_tmu_intstat_offset(data)))
++		return IRQ_NONE;
++
++	return IRQ_WAKE_THREAD;
++}
++
++static irqreturn_t exynos_tmu_threaded_irq(int irq, void *id)
++{
++	struct exynos_tmu_data *data = id;
+
+ 	mutex_lock(&data->lock);
+ 	clk_enable(data->clk);
+
+ 	/* TODO: take action based on particular interrupt */
+-	data->tmu_clear_irqs(data);
++
++	if (!data->tmu_clear_irqs(data)) {
++		clk_disable(data->clk);
++		mutex_unlock(&data->lock);
++		return IRQ_NONE;
++	}
+
+ 	clk_disable(data->clk);
+ 	mutex_unlock(&data->lock);
+
++	thermal_zone_device_update(data->tzd, THERMAL_EVENT_UNSPECIFIED);
++
+ 	return IRQ_HANDLED;
+ }
+
+-static void exynos4210_tmu_clear_irqs(struct exynos_tmu_data *data)
++static u32 exynos4210_tmu_clear_irqs(struct exynos_tmu_data *data)
+ {
+-	unsigned int val_irq;
+-	u32 tmu_intstat, tmu_intclear;
++	u32 val_irq, tmu_intstat, tmu_intclear;
+
+ 	if (data->soc == SOC_ARCH_EXYNOS5260) {
+ 		tmu_intstat = EXYNOS5260_TMU_REG_INTSTAT;
+@@ -803,6 +828,8 @@ static void exynos4210_tmu_clear_irqs(struct exynos_tmu_data *data)
+ 	 * support FALL IRQs at all).
+ 	 */
+ 	writel(val_irq, data->base + tmu_intclear);
++
++	return val_irq;
+ }
+
+ static const struct of_device_id exynos_tmu_match[] = {
+@@ -1036,43 +1063,22 @@ static int exynos_tmu_probe(struct platform_device *pdev)
+ 	if (ret)
+ 		return ret;
+
+-	data->clk = devm_clk_get(dev, "tmu_apbif");
++	data->clk = devm_clk_get_prepared(dev, "tmu_apbif");
+ 	if (IS_ERR(data->clk))
+ 		return dev_err_probe(dev, PTR_ERR(data->clk), "Failed to get clock\n");
+
+-	data->clk_sec = devm_clk_get(dev, "tmu_triminfo_apbif");
+-	if (IS_ERR(data->clk_sec)) {
++	data->clk_sec = devm_clk_get_prepared(dev, "tmu_triminfo_apbif");
++	if (IS_ERR(data->clk_sec))
+ 		if (data->soc == SOC_ARCH_EXYNOS5420_TRIMINFO)
+ 			return dev_err_probe(dev, PTR_ERR(data->clk_sec),
+ 					     "Failed to get triminfo clock\n");
+-	} else {
+-		ret = clk_prepare(data->clk_sec);
+-		if (ret) {
+-			dev_err(dev, "Failed to get clock\n");
+-			return ret;
+-		}
+-	}
+-
+-	ret = clk_prepare(data->clk);
+-	if (ret) {
+-		dev_err(dev, "Failed to get clock\n");
+-		goto err_clk_sec;
+-	}
+
+ 	switch (data->soc) {
+ 	case SOC_ARCH_EXYNOS5433:
+ 	case SOC_ARCH_EXYNOS7:
+-		data->sclk = devm_clk_get(dev, "tmu_sclk");
+-		if (IS_ERR(data->sclk)) {
+-			ret = dev_err_probe(dev, PTR_ERR(data->sclk), "Failed to get sclk\n");
+-			goto err_clk;
+-		} else {
+-			ret = clk_prepare_enable(data->sclk);
+-			if (ret) {
+-				dev_err(dev, "Failed to enable sclk\n");
+-				goto err_clk;
+-			}
+-		}
++		data->sclk = devm_clk_get_enabled(dev, "tmu_sclk");
++		if (IS_ERR(data->sclk))
++			return dev_err_probe(dev, PTR_ERR(data->sclk), "Failed to get sclk\n");
+ 		break;
+ 	default:
+ 		break;
+@@ -1081,55 +1087,37 @@ static int exynos_tmu_probe(struct platform_device *pdev)
+ 	ret = exynos_tmu_initialize(pdev);
+ 	if (ret) {
+ 		dev_err(dev, "Failed to initialize TMU\n");
+-		goto err_sclk;
++		return ret;
+ 	}
+
+ 	data->tzd = devm_thermal_of_zone_register(dev, 0, data,
+ 						  &exynos_sensor_ops);
+-	if (IS_ERR(data->tzd)) {
+-		ret = dev_err_probe(dev, PTR_ERR(data->tzd), "Failed to register sensor\n");
+-		goto err_sclk;
+-	}
++	if (IS_ERR(data->tzd))
++		return dev_err_probe(dev, PTR_ERR(data->tzd), "Failed to register sensor\n");
+
+ 	ret = exynos_thermal_zone_configure(pdev);
+ 	if (ret) {
+ 		dev_err(dev, "Failed to configure the thermal zone\n");
+-		goto err_sclk;
++		return ret;
+ 	}
+
+-	ret = devm_request_threaded_irq(dev, data->irq, NULL,
++	ret = devm_request_threaded_irq(dev, data->irq, exynos_tmu_irq,
+ 					exynos_tmu_threaded_irq,
+ 					IRQF_TRIGGER_RISING
+ 						| IRQF_SHARED | IRQF_ONESHOT,
+ 					dev_name(dev), data);
+ 	if (ret) {
+ 		dev_err(dev, "Failed to request irq: %d\n", data->irq);
+-		goto err_sclk;
++		return ret;
+ 	}
+
+ 	exynos_tmu_control(pdev, true);
+ 	return 0;
+-
+-err_sclk:
+-	clk_disable_unprepare(data->sclk);
+-err_clk:
+-	clk_unprepare(data->clk);
+-err_clk_sec:
+-	if (!IS_ERR(data->clk_sec))
+-		clk_unprepare(data->clk_sec);
+-	return ret;
+ }
+
+ static void exynos_tmu_remove(struct platform_device *pdev)
+ {
+-	struct exynos_tmu_data *data = platform_get_drvdata(pdev);
+-
+ 	exynos_tmu_control(pdev, false);
+-
+-	clk_disable_unprepare(data->sclk);
+-	clk_unprepare(data->clk);
+-	if (!IS_ERR(data->clk_sec))
+-		clk_unprepare(data->clk_sec);
+ }
+
+ #ifdef CONFIG_PM_SLEEP
+--
+2.54.0
+
