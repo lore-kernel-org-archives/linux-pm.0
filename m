@@ -1,142 +1,73 @@
-Received: from layka.disroot.org (layka.disroot.org [178.21.23.139])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from casper.infradead.org (casper.infradead.org [90.155.50.34])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3BE7541362D;
-	Fri,  5 Jun 2026 10:31:53 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=178.21.23.139
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C7AE63FAE0D;
+	Fri,  5 Jun 2026 10:43:35 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=90.155.50.34
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1780655518; cv=none; b=pJ0J9x8DJRQa6LPRZPV01JAy+aJS4gmW98zvS/RZNcZtWPKcaz3P4DXbkcLbtD9Pasbr5C/RxjGVtsciSuvdOcWU6Gcs0g1cx1rA7H3r3zIf9iW6Ig0qydKPWUNHeVkaeLxkNSApZ3ydv7YqzbpDRvWCqmXBYtHQe+FJ8p7EnjY=
+	t=1780656218; cv=none; b=hTjRGfHt49OK85IuqZgHj1ebtcSZRWt1nb7MVZrfXYjBi4Q1b3Sjl9VCWDkF9rEgo/vV0xmNA5kMLinsiea/32LrppEEwskWkCGbFqFeJt4jlmxh6gGj7IiDKlwcD8oPACAzg7W4JTw8DA+FKXTlj3MGoy+yDRXyfsNSu8jDPiU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1780655518; c=relaxed/simple;
-	bh=2MyZ0clnYFR9GCrg62eX6NeTiC2Md9CrGs/71+aZcTc=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=fbL0AnSuwk3uAkkFNEZOXEqnccJGs6+tN8uoJn2sZ7X9/+JQBeC1rWV5Sj0o/UxUIm+N3KVUWc6vsLRKyyVOnY3Qv1aBzFvUrM3pFxgmuAelkxPM+EFKBas/YKSY23erkqy2U1urJT7dwBcPQOeglUn7g7BibZaaOY6GKdRXqNU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=disroot.org; spf=pass smtp.mailfrom=disroot.org; dkim=pass (2048-bit key) header.d=disroot.org header.i=@disroot.org header.b=FfWyntSP; arc=none smtp.client-ip=178.21.23.139
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=disroot.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=disroot.org
+	s=arc-20240116; t=1780656218; c=relaxed/simple;
+	bh=OTS5g35FWuBOcvT7/jsfviRXgLY8FI8pl6EFyMYP1Fs=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=DVT/gil9JvI1aOttb02L3WLIoXVfBWBWVklyyS+s7lbBVC9a7SruJrMb9faPtSilPwAwkQDCBzLexxJS/qwyEflVqlFuH6L2jSAZPyRL5WCVIl8TtbXhmAiyhWM7AcmDwKB4kqhRdGv6XqWWpuEPkY53ldJQPn4Hxyd5rin+SmQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=infradead.org; spf=pass smtp.mailfrom=infradead.org; dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b=eVFXeXCx; arc=none smtp.client-ip=90.155.50.34
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=infradead.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=infradead.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=disroot.org header.i=@disroot.org header.b="FfWyntSP"
-Received: from mail01.disroot.lan (localhost [127.0.0.1])
-	by disroot.org (Postfix) with ESMTP id 5E1272767F;
-	Fri,  5 Jun 2026 12:31:46 +0200 (CEST)
-X-Virus-Scanned: SPAM Filter at disroot.org
-Received: from layka.disroot.org ([127.0.0.1])
- by localhost (disroot.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 9-h2MRNGLucR; Fri,  5 Jun 2026 12:31:45 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=disroot.org; s=mail;
-	t=1780655505; bh=2MyZ0clnYFR9GCrg62eX6NeTiC2Md9CrGs/71+aZcTc=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References;
-	b=FfWyntSPj55S4bE+SnIyg7KsRaL7MPVLOCYZSdGcKEAgSK53ceGLsuIM0Tku/0L0R
-	 qDtXPKClBal+kNlHsnfiUSVzUYzrjWZNR3uERWENieSEolLzHcMFadXI/phN+fbupl
-	 2nIS88MP2J5tstj2RP3BwBckHJ4ROfGsDRrxsmPLiHkxGC7P5MSOUX0iEvBDM0Pkta
-	 ONrFX1UMlBMIcEL2/lc5Z1zVynTDNaH82+uBRjL2poMs60oZZTKrK8V4kQUe754wVA
-	 eJfR3sKxt6Qiy8iZ8/R3uA+91nw8YhNc4/vheYO5HWZJbirwWz1JzIwJLpZMVbdmJ/
-	 XIybGnUuVq4xA==
-From: Marco Scardovi <scardracs@disroot.org>
-To: Mario Limonciello <mario.limonciello@amd.com>,
-	K Prateek Nayak <kprateek.nayak@amd.com>
-Cc: linux-kernel@vger.kernel.org,
-	linux-pm@vger.kernel.org,
-	perry.yuan@amd.com,
-	rafael@kernel.org,
-	ray.huang@amd.com,
-	stuartmeckle@gmail.com,
-	viresh.kumar@linaro.org,
-	wyes.karny@amd.com
-Subject: [PATCH v3 1/1] cpufreq/amd-pstate: Fix EPP initialization for shared memory systems
-Date: Fri,  5 Jun 2026 12:26:26 +0200
-Message-ID: <20260605103131.88711-2-scardracs@disroot.org>
-In-Reply-To: <20260605103131.88711-1-scardracs@disroot.org>
-References: <20260605103131.88711-1-scardracs@disroot.org>
+	dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="eVFXeXCx"
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=infradead.org; s=casper.20170209; h=In-Reply-To:Content-Type:MIME-Version:
+	References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
+	Content-Transfer-Encoding:Content-ID:Content-Description;
+	bh=QNhFaIMM0QqeQZWZaAPyaKmERxsimT4coORq325LaBI=; b=eVFXeXCxKBaWB2uCG8Cj2TEpQ9
+	XEpAgSuM47UDi5d4WJ4UxkHMOt0d1pMv0RwJxeGS2YfJt3WUyDCh4wT0/Lni/VCEdrNz2b2g5RMW0
+	4+qou+usyRfKZrFpD4qUIUKMOUsMT9uY8vo+/ySZ3ZDCFi9EtrtULjPmvD8nOlbSf0QYepWAFiBiZ
+	nlGWEvT3pDC8ILUZObyZItOJ0N6QCmiicwj8iNx5E1kTjGshykbgE0VqytxYTxnO5WGpibPpycE2m
+	71jqrMmeht+y7tvvyOYcWRjkFnS0w+8Mhb37FwF392DdJ6/Hh9+P4gI5X2wEmNEdFwZ8aWebLuffK
+	pU2fOFoQ==;
+Received: from 77-249-17-252.cable.dynamic.v4.ziggo.nl ([77.249.17.252] helo=noisy.programming.kicks-ass.net)
+	by casper.infradead.org with esmtpsa (Exim 4.99.1 #2 (Red Hat Linux))
+	id 1wVS1U-00000007m3S-27QN;
+	Fri, 05 Jun 2026 10:43:33 +0000
+Received: by noisy.programming.kicks-ass.net (Postfix, from userid 1000)
+	id 1FE30300339; Fri, 05 Jun 2026 12:43:31 +0200 (CEST)
+Date: Fri, 5 Jun 2026 12:43:30 +0200
+From: Peter Zijlstra <peterz@infradead.org>
+To: Sneh Mankad <sneh.mankad@oss.qualcomm.com>
+Cc: Thomas Gleixner <tglx@kernel.org>,
+	Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>,
+	"Rafael J. Wysocki" <rafael@kernel.org>,
+	Pavel Machek <pavel@kernel.org>, Len Brown <lenb@kernel.org>,
+	linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linux-pm@vger.kernel.org
+Subject: Re: [PATCH] kernel/cpu: Disallow offlining boot CPU based on config
+Message-ID: <20260605104330.GX3102624@noisy.programming.kicks-ass.net>
+References: <20260605-disable_boot_cpu_offline-v1-1-4c68fe1a6cf8@oss.qualcomm.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260605-disable_boot_cpu_offline-v1-1-4c68fe1a6cf8@oss.qualcomm.com>
 
-At CPU initialization, the private cpudata structure is allocated via
-kzalloc, which means cpudata->cppc_req_cached is initialized to 0. This
-makes the default cached EPP value 0 (AMD_CPPC_EPP_PERFORMANCE).
+On Fri, Jun 05, 2026 at 04:00:46PM +0530, Sneh Mankad wrote:
+> The Qualcomm SoCs like LeMans, Monaco support suspend to ram which leads
+> the SoC to ACPI S3 similar state where SoC is turned off and DDR is
+> retained.
+> The hardware design on these SoCs forces a constraint to suspend and
+> resume the system on boot CPU / CPU0.
+> 
+> If CPU0 is already offline before starting suspend to ram the
+> freeze_secondary_cpus() picks alternate CPU as primary / last CPU and
+> proceed further to invoke PSCI SYSTEM_SUSPEND.
+> This leads to a system crash.
+> 
+> In order to prevent such an issue introduce PM_SLEEP_SMP_CPU_ZERO_STRICT
+> config and when enabled prohibit the CPU0 to be offline.
 
-When initializing a system that defaults to performance EPP, the driver
-attempts to configure the EPP via amd_pstate_set_epp(). Because the
-requested EPP (0) matches the uninitialized cached value (0), the cache
-guard check triggers, and the driver skips writing to the hardware.
-
-On shared memory systems, the EPP write via cppc_set_epp_perf() is also
-responsible for toggling on the autonomous selection register (auto_sel).
-Skipping the EPP write consequently skips enabling auto_sel, leaving the
-CPU in non-autonomous mode. This prevents the hardware from boosting and
-leaves the CPU frequency stuck at the lowest non-linear frequency (1.7GHz).
-
-Fix this by:
-1. Cache the firmware programmed default EPP value in cppc_req_cached
-   during CPU EPP initialization.
-2. Explicitly toggle the AUTO_SEL_ENABLE register to 1 during EPP CPU
-   initialization for shared memory systems, independent of whether the EPP
-   write is skipped due to a cache match.
-
-Fixes: ffa5096a7c33 ("cpufreq: amd-pstate: implement Pstate EPP support for the AMD processors")
-Link: https://bugzilla.kernel.org/show_bug.cgi?id=221473
-Suggested-by: Mario Limonciello <mario.limonciello@amd.com>
-Suggested-by: K Prateek Nayak <kprateek.nayak@amd.com>
-Assisted-by: Antigravity:gemini-3.5-flash
-Signed-off-by: Marco Scardovi <scardracs@disroot.org>
----
- drivers/cpufreq/amd-pstate.c | 24 +++++++++++++++++++++++-
- 1 file changed, 23 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/cpufreq/amd-pstate.c b/drivers/cpufreq/amd-pstate.c
-index 8d55e2be825b..8e0099eba512 100644
---- a/drivers/cpufreq/amd-pstate.c
-+++ b/drivers/cpufreq/amd-pstate.c
-@@ -1877,6 +1877,7 @@ static int amd_pstate_epp_cpu_init(struct cpufreq_policy *policy)
- 	struct amd_cpudata *cpudata;
- 	union perf_cached perf;
- 	struct device *dev;
-+	s16 default_epp;
- 	int ret;
- 
- 	/*
-@@ -1926,6 +1927,27 @@ static int amd_pstate_epp_cpu_init(struct cpufreq_policy *policy)
- 
- 	policy->boost_supported = READ_ONCE(cpudata->boost_supported);
- 
-+	/* Cache the firmware programmed EPP */
-+	default_epp = amd_pstate_get_epp(cpudata);
-+	if (default_epp < 0) {
-+		ret = default_epp;
-+		goto free_cpudata1;
-+	}
-+	FIELD_MODIFY(AMD_CPPC_EPP_PERF_MASK, &cpudata->cppc_req_cached, default_epp);
-+
-+	/*
-+	 * Shared memory based systems may require the AUTO_SEL_ENABLE register
-+	 * to be toggled on to function correctly. Since the first call to
-+	 * amd_pstate_set_epp() may bail out early if the desired EPP is
-+	 * same as the one configured by the firmware, attempt to toggle the
-+	 * AUTO_SEL_ENABLE here, independent of EPP programming.
-+	 */
-+	if (!cpu_feature_enabled(X86_FEATURE_CPPC)) {
-+		ret = cppc_set_auto_sel(policy->cpu, 1);
-+		if (ret)
-+			pr_warn("failed to enable auto_sel for cpu %d: %d\n", policy->cpu, ret);
-+	}
-+
- 	/*
- 	 * Set the policy to provide a valid fallback value in case
- 	 * the default cpufreq governor is neither powersave nor performance.
-@@ -1933,7 +1955,7 @@ static int amd_pstate_epp_cpu_init(struct cpufreq_policy *policy)
- 	if (amd_pstate_acpi_pm_profile_server() ||
- 	    amd_pstate_acpi_pm_profile_undefined()) {
- 		policy->policy = CPUFREQ_POLICY_PERFORMANCE;
--		cpudata->epp_default_ac = cpudata->epp_default_dc = amd_pstate_get_epp(cpudata);
-+		cpudata->epp_default_ac = cpudata->epp_default_dc = default_epp;
- 		cpudata->current_profile = PLATFORM_PROFILE_PERFORMANCE;
- 	} else {
- 		policy->policy = CPUFREQ_POLICY_POWERSAVE;
--- 
-2.54.0
-
+Why do this in generic code? Why can't this live in arch code.
+Specifically, x86 can't typically unplug CPU0 at all either.
