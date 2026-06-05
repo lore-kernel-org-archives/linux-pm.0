@@ -1,293 +1,685 @@
-Received: from mail-ej1-f50.google.com (mail-ej1-f50.google.com [209.85.218.50])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D88714BC020
-	for <linux-pm@vger.kernel.org>; Fri,  5 Jun 2026 09:13:45 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.218.50
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 82C2F346E4E;
+	Fri,  5 Jun 2026 09:18:13 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1780650827; cv=none; b=K+tEit59mPW6y3pozR+WmEBOJSU5eSwDbziXhp1VtaEVhwt2PAuu0S/zq26CbdAhhgfLM0U8aDA5+JENwv8KFEIljjg13Lwz0G0frNeimgvsRja5SAbpZTpZMi46UDFXoYCiH6vzXZ/6ynqdicZneyluMzqfdTSkoxxc8Wi9FRw=
+	t=1780651093; cv=none; b=qlNBiOjuACYtLh13iSx6LSWkZdG2J6+tXfAIy/dh+E6VlI+sWaKtan1IVsjESVtFkRKmpEuupOQVK0HACNaHJZTTIHfltkf2TAH62Xp8PP2hHjA81ImEKsxZduJ03qpPNEHR2aTieaVNPivCkzFFnz0Dqa+c1DeZsU0Ak7UJF7I=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1780650827; c=relaxed/simple;
-	bh=nJkm/qohzyKgVwdvjSNXbLFtH3gLY88R0T5pEAJzFs0=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=qQMR3E7+LWdz8lNt2x+l1rNAeMd6Iom9sdYVitpEEtJ9Gy6Qjl0cB9VAKdLdT8qQVTw5VbKwYo2s5UsJoLtUAboJr0zTZztm7iJv3O19ddY0v4+E1jV+v4J1KhVnkMvAmpBYv6DXBuOsNhdl4zrH2qaaFIYWX48q2CpmPSIthi0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com; spf=pass smtp.mailfrom=suse.com; dkim=pass (2048-bit key) header.d=suse.com header.i=@suse.com header.b=D/PCZ7j/; arc=none smtp.client-ip=209.85.218.50
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.com
+	s=arc-20240116; t=1780651093; c=relaxed/simple;
+	bh=JbXaYRTKnlJF/1sOjXUEr9fGh8qocn7y1RvX8OaroTw=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=FVehfIXrNHPW/gqGwjphRDW8+4p4sNm1R2P0ZX2Lu6mt77G4ZMQYoUtYGwtrgAPOxjq5uIcu3qcrTAqUy0KWHrXHHqfChHwk94wZZGN7H0bwvLfvWSbZ+zTfIPEgG8JrO1TDjDJRZ/XabDlBas+lKX1lPtOzcGJ1iZ3pbFkizJA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=QTH7qJhV; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=suse.com header.i=@suse.com header.b="D/PCZ7j/"
-Received: by mail-ej1-f50.google.com with SMTP id a640c23a62f3a-beb1bee8c16so215444066b.0
-        for <linux-pm@vger.kernel.org>; Fri, 05 Jun 2026 02:13:45 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=suse.com; s=google; t=1780650824; x=1781255624; darn=vger.kernel.org;
-        h=in-reply-to:autocrypt:from:content-language:references:cc:to
-         :subject:user-agent:mime-version:date:message-id:from:to:cc:subject
-         :date:message-id:reply-to;
-        bh=nJkm/qohzyKgVwdvjSNXbLFtH3gLY88R0T5pEAJzFs0=;
-        b=D/PCZ7j/XK+o1GUMy/S7o/jRIqkyq5k93qf/Rb04Iwg/ao9l6S6icGoSvl2C70DHuB
-         py+OABVqa3z4uZtnpiRQYu+RNePhcLPZx95z/h/bbsbMsua/3LkeZ2oJ6ZVgz1608oOk
-         GG5OHA2Z1k2LNGfH8alcofjQeCTS2SJeoTZzNSxaW6sCv1iGYDZMFE5whBmqeOeq2IsC
-         y+dx68l6x/SJxBs0cxQEt2YnZZEDfN5OIdBnv9FnYap7WSw2IqquhuAzcjNf/Wu4d1lq
-         MlPoa7zDklrezEDe6SQ+UA5IodxhXM+Rzcgs6aeWjXugF0blS1iHiNiJks6TVXPKnCya
-         SM3A==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1780650824; x=1781255624;
-        h=in-reply-to:autocrypt:from:content-language:references:cc:to
-         :subject:user-agent:mime-version:date:message-id:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=nJkm/qohzyKgVwdvjSNXbLFtH3gLY88R0T5pEAJzFs0=;
-        b=fPWy1KitOBWGBNbidrtx0l9WQRLP8qx9Um1DVDaKD2kvoaKA/C012kX83PZc0y79Ss
-         QM1maobCxbAHUDS9cZkl0bsTdilHRGyEIxUwI4GB1VRzqMJylSFpQtXby/H8vDiL4VSR
-         3bjtt/8MRFr7i+HUhAMP7oYFAQiNj3nIc8C2gwmTw1yKGbWGuOvZN8s3wnBlb6+2I4Dj
-         /VR8cqIV/B4Qbon4sVFZBmwKVzZz2YKrsRtgUSusTcjBePoXJZLXI6yDBxV4/wy20aX1
-         5n1tb6yPNENUyBlrkCpAdyfoK6UM3/Ew0ST7k+izGMhYf5PC2ioKjxT9yZunaYHE9AGl
-         8BTg==
-X-Forwarded-Encrypted: i=1; AFNElJ8VWUuNWkQvDQMuyI7LZIw+eId6ZDG6UxR6UYB9p+u39KoOtt4NoErtOe9kEGyIayD+ls5WP1tVPw==@vger.kernel.org
-X-Gm-Message-State: AOJu0YwHRExVajBRz/1BFai+oBImsfa0Te+wxQM8Y5FTSgkmwUa/zA0g
-	S2aYle7GxOpgVtetXcXwNO7E5IEc5qfVJ8bpx24OyPotRe3EjflFP41s/QtZREyzNqg=
-X-Gm-Gg: Acq92OHDOFqN6AjnrEIUrZL38KGR97Bbq2RciTCndS5tdRd5ll9gi9tR4YqHUVTyU+z
-	DSGjLlzawtH0ytCYki3GNu6gweTw5MazE9Oh1Kq0lz+E2V0if3zRq+IjLTLyfAE7DE+WA8CykTk
-	x3lq/bJUcSu0P4zBA2HiRQIkOK+bj16vLtPJuOkKrIdMVjUP6+RNUQx3w1Yh+4ADmxT2ej+SAJy
-	hQX6rnuMgNRUqGM2b0BJAejZ+Pappc978cmGNk7aKq1xGE7JJK391sq0QjId2dGIfFnQ31a+UrH
-	UlaDqe7nONjjFd8kRDWjjYa6N3dvaYmdCvUsaQWUXsGJ1YKji9M/216av15YjBe+3SVS0IR97sM
-	UGx9Oa1QeT377qhZzS/gTH6fsH7wxhSPIA+C/KKHgwNKgMr1toWJ2iY6wiGYsmnn2QXg15NFjcH
-	QdFO4FvS0ih3w6EUE36gUUocN2jREycH8TP08QyRqcwkW4qlo4fNdsd5krIAkvKUdU87FEkfBGp
-	84H8A+Z33DZRx8Crb+MwEDjMPQXx8/U/QGxsS4vOQ7oR5PeuIFltDKuCZpVUNfB
-X-Received: by 2002:a17:907:a4a:b0:bee:7c9b:fbd1 with SMTP id a640c23a62f3a-bf3a68ee6f6mr84450566b.1.1780650824273;
-        Fri, 05 Jun 2026 02:13:44 -0700 (PDT)
-Received: from ?IPV6:2a00:12d0:af5d:ad01:5d3f:14e6:9bcb:5112? (2a00-12d0-af5d-ad01-5d3f-14e6-9bcb-5112.ip.tng.de. [2a00:12d0:af5d:ad01:5d3f:14e6:9bcb:5112])
-        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-bf0559f1f62sm435537866b.57.2026.06.05.02.13.43
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Fri, 05 Jun 2026 02:13:43 -0700 (PDT)
-Message-ID: <a477aefe-e1c8-4652-b263-86c4cce09eba@suse.com>
-Date: Fri, 5 Jun 2026 11:13:42 +0200
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="QTH7qJhV"
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 58665C2BCF5;
+	Fri,  5 Jun 2026 09:18:13 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1780651093;
+	bh=JbXaYRTKnlJF/1sOjXUEr9fGh8qocn7y1RvX8OaroTw=;
+	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
+	b=QTH7qJhVUzgeYifbzdxEAriXcGFT/u3cRPb+LMbqYdFSlSYQgbRdWoaRWFlwAdqUj
+	 uehWVgaTx7YSJphZPESFYzgh7tDZowMt+vdI00/uiH+CkrzswDkkcpaRbOBhyNafYj
+	 YhmR2OSuLa4ju/tqQjpVMjeSClvTp/2H84JIYkmnr5ReHxNLf2J1WC8Yuz0aT6V6z3
+	 NvI+0CG/iYmqv5Ph+kkGeS5HZB6so/nYnL5YVmqSEYKMCMWqLF4HBru53jJzP/UiXr
+	 pmup3QQqjLgcOR31Oz2VtfICeBbaFo4myK8IdcPPh0QT0SeV9g8vEb2taawnbjXxCr
+	 2rA/E2/UtS1lw==
+Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 40832CD6E7B;
+	Fri,  5 Jun 2026 09:18:13 +0000 (UTC)
+From: Herman van Hazendonk via B4 Relay <devnull+github.com.herrie.org@kernel.org>
+Date: Fri, 05 Jun 2026 11:18:13 +0200
+Subject: [PATCH v2 2/2] power: supply: max8903: add DC and USB input
+ current-limit GPIO controls
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 0/8] x86/msr: Drop 32-bit variants of *_on_cpu() MSR
- functions
-To: Ingo Molnar <mingo@kernel.org>
-Cc: linux-kernel@vger.kernel.org, x86@kernel.org, linux-edac@vger.kernel.org,
- linux-pm@vger.kernel.org, linux-hwmon@vger.kernel.org,
- linux-perf-users@vger.kernel.org, platform-driver-x86@vger.kernel.org,
- linux-acpi@vger.kernel.org, Thomas Gleixner <tglx@kernel.org>,
- Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>,
- Dave Hansen <dave.hansen@linux.intel.com>, "H. Peter Anvin" <hpa@zytor.com>,
- Tony Luck <tony.luck@intel.com>, "Rafael J. Wysocki" <rafael@kernel.org>,
- Viresh Kumar <viresh.kumar@linaro.org>, Guenter Roeck <linux@roeck-us.net>,
- Daniel Lezcano <daniel.lezcano@kernel.org>, Zhang Rui <rui.zhang@intel.com>,
- Lukasz Luba <lukasz.luba@arm.com>, Peter Zijlstra <peterz@infradead.org>,
- Arnaldo Carvalho de Melo <acme@kernel.org>,
- Namhyung Kim <namhyung@kernel.org>, Mark Rutland <mark.rutland@arm.com>,
- Alexander Shishkin <alexander.shishkin@linux.intel.com>,
- Jiri Olsa <jolsa@kernel.org>, Ian Rogers <irogers@google.com>,
- Adrian Hunter <adrian.hunter@intel.com>, James Clark
- <james.clark@linaro.org>, Huang Rui <ray.huang@amd.com>,
- Mario Limonciello <mario.limonciello@amd.com>,
- Perry Yuan <perry.yuan@amd.com>, K Prateek Nayak <kprateek.nayak@amd.com>,
- Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
- Len Brown <lenb@kernel.org>, Hans de Goede <hansg@kernel.org>,
- =?UTF-8?Q?Ilpo_J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>
-References: <20260605070826.2995913-1-jgross@suse.com>
- <aiKRbRHyDCjmqvGB@gmail.com>
-Content-Language: en-US
-From: =?UTF-8?B?SsO8cmdlbiBHcm/Dnw==?= <jgross@suse.com>
-Autocrypt: addr=jgross@suse.com; keydata=
- xsBNBFOMcBYBCACgGjqjoGvbEouQZw/ToiBg9W98AlM2QHV+iNHsEs7kxWhKMjrioyspZKOB
- ycWxw3ie3j9uvg9EOB3aN4xiTv4qbnGiTr3oJhkB1gsb6ToJQZ8uxGq2kaV2KL9650I1SJve
- dYm8Of8Zd621lSmoKOwlNClALZNew72NjJLEzTalU1OdT7/i1TXkH09XSSI8mEQ/ouNcMvIJ
- NwQpd369y9bfIhWUiVXEK7MlRgUG6MvIj6Y3Am/BBLUVbDa4+gmzDC9ezlZkTZG2t14zWPvx
- XP3FAp2pkW0xqG7/377qptDmrk42GlSKN4z76ELnLxussxc7I2hx18NUcbP8+uty4bMxABEB
- AAHNH0p1ZXJnZW4gR3Jvc3MgPGpncm9zc0BzdXNlLmNvbT7CwHkEEwECACMFAlOMcK8CGwMH
- CwkIBwMCAQYVCAIJCgsEFgIDAQIeAQIXgAAKCRCw3p3WKL8TL8eZB/9G0juS/kDY9LhEXseh
- mE9U+iA1VsLhgDqVbsOtZ/S14LRFHczNd/Lqkn7souCSoyWsBs3/wO+OjPvxf7m+Ef+sMtr0
- G5lCWEWa9wa0IXx5HRPW/ScL+e4AVUbL7rurYMfwCzco+7TfjhMEOkC+va5gzi1KrErgNRHH
- kg3PhlnRY0Udyqx++UYkAsN4TQuEhNN32MvN0Np3WlBJOgKcuXpIElmMM5f1BBzJSKBkW0Jc
- Wy3h2Wy912vHKpPV/Xv7ZwVJ27v7KcuZcErtptDevAljxJtE7aJG6WiBzm+v9EswyWxwMCIO
- RoVBYuiocc51872tRGywc03xaQydB+9R7BHPzsBNBFOMcBYBCADLMfoA44MwGOB9YT1V4KCy
- vAfd7E0BTfaAurbG+Olacciz3yd09QOmejFZC6AnoykydyvTFLAWYcSCdISMr88COmmCbJzn
- sHAogjexXiif6ANUUlHpjxlHCCcELmZUzomNDnEOTxZFeWMTFF9Rf2k2F0Tl4E5kmsNGgtSa
- aMO0rNZoOEiD/7UfPP3dfh8JCQ1VtUUsQtT1sxos8Eb/HmriJhnaTZ7Hp3jtgTVkV0ybpgFg
- w6WMaRkrBh17mV0z2ajjmabB7SJxcouSkR0hcpNl4oM74d2/VqoW4BxxxOD1FcNCObCELfIS
- auZx+XT6s+CE7Qi/c44ibBMR7hyjdzWbABEBAAHCwF8EGAECAAkFAlOMcBYCGwwACgkQsN6d
- 1ii/Ey9D+Af/WFr3q+bg/8v5tCknCtn92d5lyYTBNt7xgWzDZX8G6/pngzKyWfedArllp0Pn
- fgIXtMNV+3t8Li1Tg843EXkP7+2+CQ98MB8XvvPLYAfW8nNDV85TyVgWlldNcgdv7nn1Sq8g
- HwB2BHdIAkYce3hEoDQXt/mKlgEGsLpzJcnLKimtPXQQy9TxUaLBe9PInPd+Ohix0XOlY+Uk
- QFEx50Ki3rSDl2Zt2tnkNYKUCvTJq7jvOlaPd6d/W0tZqpyy7KVay+K4aMobDsodB3dvEAs6
- ScCnh03dDAFgIq5nsB11j3KPKdVoPlfucX2c7kGNH+LUMbzqV6beIENfNexkOfxHfw==
-In-Reply-To: <aiKRbRHyDCjmqvGB@gmail.com>
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature";
- boundary="------------42g0lK7RCjA0V5Hpk0wwPtog"
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Message-Id: <20260605-submit-power-max8903-dc-limit-v2-2-0c5396e98f14@herrie.org>
+References: <20260605-submit-power-max8903-dc-limit-v2-0-0c5396e98f14@herrie.org>
+In-Reply-To: <20260605-submit-power-max8903-dc-limit-v2-0-0c5396e98f14@herrie.org>
+To: Sebastian Reichel <sre@kernel.org>, Rob Herring <robh@kernel.org>, 
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+ Conor Dooley <conor+dt@kernel.org>
+Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org, 
+ linux-kernel@vger.kernel.org, 
+ Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
+X-Mailer: b4 0.13.0
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1780651091; l=22790;
+ i=github.com@herrie.org; s=20240417; h=from:subject:message-id;
+ bh=1OtbQaVpa+0OPsaIlA+iXEvHV7q8kYPoNmQaFjwLI7I=;
+ b=jEfufUPDN91dQ2E1v8jPlw5sLD8JJeJJbDcwC0fcxpEQIH8xg//f55ZhNqKfg+PXpW614Ywxk
+ CosJ5ukGsCHBi4p50XCEwyP57/wehqgBlZLsTZl+P83O/VWNZ2mDS5d
+X-Developer-Key: i=github.com@herrie.org; a=ed25519;
+ pk=YYxdq8fb5O9vhkW3n2dCH044FPZZO5718v/du7fRhFw=
+X-Endpoint-Received: by B4 Relay for github.com@herrie.org/20240417 with
+ auth_id=809
+X-Original-From: Herman van Hazendonk <github.com@herrie.org>
+Reply-To: github.com@herrie.org
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---------------42g0lK7RCjA0V5Hpk0wwPtog
-Content-Type: multipart/mixed; boundary="------------W8k45yeHavmrtS79YNqNh771";
- protected-headers="v1"
-From: =?UTF-8?B?SsO8cmdlbiBHcm/Dnw==?= <jgross@suse.com>
-To: Ingo Molnar <mingo@kernel.org>
-Cc: linux-kernel@vger.kernel.org, x86@kernel.org, linux-edac@vger.kernel.org,
- linux-pm@vger.kernel.org, linux-hwmon@vger.kernel.org,
- linux-perf-users@vger.kernel.org, platform-driver-x86@vger.kernel.org,
- linux-acpi@vger.kernel.org, Thomas Gleixner <tglx@kernel.org>,
- Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>,
- Dave Hansen <dave.hansen@linux.intel.com>, "H. Peter Anvin" <hpa@zytor.com>,
- Tony Luck <tony.luck@intel.com>, "Rafael J. Wysocki" <rafael@kernel.org>,
- Viresh Kumar <viresh.kumar@linaro.org>, Guenter Roeck <linux@roeck-us.net>,
- Daniel Lezcano <daniel.lezcano@kernel.org>, Zhang Rui <rui.zhang@intel.com>,
- Lukasz Luba <lukasz.luba@arm.com>, Peter Zijlstra <peterz@infradead.org>,
- Arnaldo Carvalho de Melo <acme@kernel.org>,
- Namhyung Kim <namhyung@kernel.org>, Mark Rutland <mark.rutland@arm.com>,
- Alexander Shishkin <alexander.shishkin@linux.intel.com>,
- Jiri Olsa <jolsa@kernel.org>, Ian Rogers <irogers@google.com>,
- Adrian Hunter <adrian.hunter@intel.com>, James Clark
- <james.clark@linaro.org>, Huang Rui <ray.huang@amd.com>,
- Mario Limonciello <mario.limonciello@amd.com>,
- Perry Yuan <perry.yuan@amd.com>, K Prateek Nayak <kprateek.nayak@amd.com>,
- Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
- Len Brown <lenb@kernel.org>, Hans de Goede <hansg@kernel.org>,
- =?UTF-8?Q?Ilpo_J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>
-Message-ID: <a477aefe-e1c8-4652-b263-86c4cce09eba@suse.com>
-Subject: Re: [PATCH 0/8] x86/msr: Drop 32-bit variants of *_on_cpu() MSR
- functions
-References: <20260605070826.2995913-1-jgross@suse.com>
- <aiKRbRHyDCjmqvGB@gmail.com>
-In-Reply-To: <aiKRbRHyDCjmqvGB@gmail.com>
+From: Herman van Hazendonk <github.com@herrie.org>
 
---------------W8k45yeHavmrtS79YNqNh771
-Content-Type: multipart/mixed; boundary="------------PLHK4mnGD0P23Fm2MyNO99EN"
+Add two optional current-limit knobs surfaced through
+POWER_SUPPLY_PROP_INPUT_CURRENT_LIMIT, selected by which input source
+is currently online:
 
---------------PLHK4mnGD0P23Fm2MyNO99EN
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: base64
+  - DC (DOK / TA-IN): a "dc-current-limit-gpios" array drives the
+    GPIOs of an external resistor mux connected to the MAX8903 IDC pin
+    (DC Current-Limit Set Input, pin 11). The IDC pin programs the
+    step-down DC input current limit from 0.5 A to 2 A via R_IDC when
+    the DCM mode pin is logic-high. The DT property
+    "dc-current-limit-mapping" describes the (current_ua, gpio_value)
+    pairs the board can program; the driver picks the largest entry
+    whose limit is <= the requested limit. A 0 uA entry, used to
+    stop drawing DC current, is selectable by issuing a 0 uA request
+    (the selection uses a -1 "not found" sentinel rather than
+    tracking best_limit > 0, so the all-zero entry can win).
 
-T24gMDUuMDYuMjYgMTE6MDUsIEluZ28gTW9sbmFyIHdyb3RlOg0KPiANCj4gKiBKdWVyZ2Vu
-IEdyb3NzIDxqZ3Jvc3NAc3VzZS5jb20+IHdyb3RlOg0KPiANCj4+IERyb3AgdGhlIHZhcmlh
-bnRzIHVzaW5nIDIgMzItYml0IHZhbHVlcyBpbnN0ZWFkIG9mIGEgc2luZ2xlIDY0LWJpdCBv
-bmUNCj4+IG9mIHRoZSAqX29uX2NwdSgpIE1TUiBhY2Nlc3MgZnVuY3Rpb25zLg0KPj4NCj4+
-IEp1ZXJnZW4gR3Jvc3MgKDgpOg0KPj4gICAgeDg2L21zcjogU3dpdGNoIHJkbXNyX29uX2Nw
-dSgpIHRvIHJldHVybiBhIDY0LWJpdCBxdWFudGl0eQ0KPj4gICAgeDg2L21zcjogU3dpdGNo
-IGFsbCBjYWxsZXJzIG9mIHJkbXNycV9vbl9jcHUoKSB0byB1c2UgcmRtc3Jfb25fY3B1KCkN
-Cj4+ICAgIHg4Ni9tc3I6IFN3aXRjaCB3cm1zcl9vbl9jcHUoKSB0byB1c2UgYSA2NC1iaXQg
-cXVhbnRpdHkNCj4+ICAgIHg4Ni9tc3I6IFN3aXRjaCBhbGwgY2FsbGVycyBvZiB3cm1zcnFf
-b25fY3B1KCkgdG8gdXNlIHdybXNyX29uX2NwdSgpDQo+PiAgICB4ODYvbXNyOiBTd2l0Y2gg
-cmRtc3Jfc2FmZV9vbl9jcHUoKSB0byByZXR1cm4gYSA2NC1iaXQgcXVhbnRpdHkNCj4+ICAg
-IHg4Ni9tc3I6IFN3aXRjaCBhbGwgY2FsbGVycyBvZiByZG1zcnFfc2FmZV9vbl9jcHUoKSB0
-byB1c2UgcmRtc3Jfc2FmZV9vbl9jcHUoKQ0KPj4gICAgeDg2L21zcjogU3dpdGNoIHdybXNy
-X3NhZmVfb25fY3B1KCkgdG8gdXNlIGEgNjQtYml0IHF1YW50aXR5DQo+PiAgICB4ODYvbXNy
-OiBTd2l0Y2ggYWxsIGNhbGxlcnMgb2Ygd3Jtc3JxX3NhZmVfb25fY3B1KCkgdG8gdXNlICB3
-cm1zcl9zYWZlX29uX2NwdSgpDQo+IA0KPiBUbyBzdW0gdXAgbXkgcmV2aWV3IGZlZWRiYWNr
-IGZvciB0aGUgaW52aWRpZHVhbCBwYXRjaGVzLCB3ZSB3YW50DQo+IHRvIGRvIHRoaXMgaW5z
-dGVhZDoNCj4gDQo+ICAgIHg4Ni9tc3I6IENvbnZlcnQgcmRtc3JsX29uX2NwdSgpIHVzZXJz
-IHRvIHJkbXNycV9vbl9jcHUoKQ0KPiAgICB4ODYvbXNyOiBEcm9wIHRoZSByZG1zcmxfb25f
-Y3B1KCkgYWxpYXMgdG8gcmRtc3JxX29uX2NwdSgpDQo+IA0KPiAgICB4ODYvbXNyOiBTd2l0
-Y2ggYWxsIGNhbGxlcnMgb2YgcmRtc3Jfb25fY3B1KCkgdG8gdXNlIHJkbXNycV9vbl9jcHUo
-KQ0KPiAgICB4ODYvbXNyOiBSZW1vdmUgdGhlIHVudXNlZCByZG1zcl9vbl9jcHUoKSBBUEkN
-Cj4gDQo+ICAgIHg4Ni9tc3I6IFN3aXRjaCBhbGwgY2FsbGVycyBvZiB3cm1zcl9vbl9jcHUo
-KSB0byB1c2Ugd3Jtc3JxX29uX2NwdSgpDQo+ICAgIHg4Ni9tc3I6IFJlbW92ZSB1bnVzZWQg
-d3Jtc3Jfb25fY3B1KCkgQVBJDQo+IA0KPiAgICB4ODYvbXNyOiBTd2l0Y2ggYWxsIGNhbGxl
-cnMgb2YgcmRtc3Jfc2FmZV9vbl9jcHUoKSB0byB1c2UgcmRtc3JxX3NhZmVfb25fY3B1KCkN
-Cj4gICAgeDg2L21zcjogUmVtb3ZlIHVudXNlZCByZG1zcl9zYWZlX29uX2NwdSgpIEFQSQ0K
-PiANCj4gICAgeDg2L21zcjogU3dpdGNoIGFsbCBjYWxsZXJzIG9mIHdybXNyX3NhZmVfb25f
-Y3B1KCkgdG8gdXNlIHdybXNycV9zYWZlX29uX2NwdSgpDQo+ICAgIHg4Ni9tcnM6IFJlbW92
-ZSB1bnVzZWQgd3Jtc3JxX3NhZmVfb25fY3B1KCkgQVBJDQo+IA0KPiBOb3RlIGhvdyB0aGVy
-ZSdzIG5vICJjb252ZXJzaW9uIiBvZiB0aGUgMzItYml0IEFQSSBpdHNlbGYgaW4gdGhpcw0K
-PiBhcHByb2FjaCwgd2UganVzdCBkbyBhIHN0cmFpZ2h0Zm9yd2FyZCBtaWdyYXRpb24gb2Yg
-dGhlIHVzZXJzIHRvDQo+IHRoZSBhbHJlYWR5IGV4aXN0aW5nIDY0LWJpdCBBUElzLCB0aGVu
-IHJlbW92ZSBhbnkgdW51c2VkIEFQSXMuDQoNCkZpbmUgd2l0aCBtZSwgYnV0IEkganVzdCB3
-YW50ZWQgdG8gZ2V0IHJpZCBvZiB0aGUgInEiIGFuZCAibCIgc3VmZmljZXMNCmNvbXBsZXRl
-bHksIGFzIHRoZXkgc2VydmUgbm8gc3BlY2lhbCBwdXJwb3NlIGFmdGVyIGRyb3BwaW5nIGFs
-bCBvdGhlcg0KdmFyaWFudHMuDQoNCk9UT0ggaWYgd2FudGVkIHN1Y2ggYSBzd2l0Y2ggY291
-bGQgYmUgZG9uZSBsYXRlciBlYXNpbHkuDQoNCg0KSnVlcmdlbg0K
---------------PLHK4mnGD0P23Fm2MyNO99EN
-Content-Type: application/pgp-keys; name="OpenPGP_0xB0DE9DD628BF132F.asc"
-Content-Disposition: attachment; filename="OpenPGP_0xB0DE9DD628BF132F.asc"
-Content-Description: OpenPGP public key
-Content-Transfer-Encoding: quoted-printable
+  - USB (UOK / USB-IN): a single "usb-current-limit-gpio" drives the
+    MAX8903 IUSB pin (USB Current-Limit Set Input, pin 7). The IUSB
+    pin is silicon-fixed per the MAX8903 datasheet Pin Description:
+    logic-low selects 100 mA, logic-high selects 500 mA. The two
+    values are encoded as MAX8903_USB_CURRENT_LIMIT_{LOW,HIGH}_UA
+    #defines with the datasheet quote in a header comment. The
+    requested limit picks HIGH if it can absorb 500 mA, else LOW,
+    else returns -EINVAL rather than silently programming a higher
+    current that would violate the system power budget. Mirroring
+    the DC-priority policy in the get path: when ta_in is asserted
+    the part draws from DC regardless of USB state, so the set path
+    only routes to USB when DC is not online.
 
------BEGIN PGP PUBLIC KEY BLOCK-----
+The dispatch in max8903_set_property() to the DC vs USB path needs to
+match the active source flag set by the corresponding *_ok GPIO IRQ
+handler; both update sites take a new struct mutex source_lock so the
+check and the resulting hardware write cannot be torn by a concurrent
+IRQ flipping the source-online flag mid-decision. The DOK/UOK IRQ
+handlers hold source_lock across the full read-modify-evaluate block
+(line sampling, ta_in/usb_in update, dcm/cen GPIO writes, psy type
+update) so the cen enable calculation reads a stable other-source
+flag rather than racing with the peer IRQ. The IRQs are requested
+with IRQF_ONESHOT (threaded), so a sleepable lock is the right
+primitive in both contexts. max8903_get_property() also takes
+source_lock briefly to snapshot the source flags and current-limit
+values so userspace never observes a torn pair of
+(source-online flag, current-limit ua).
 
-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
-kt+z4drzFUyEjLM1vVvIMjkUoJs=3D
-=3DeeAB
------END PGP PUBLIC KEY BLOCK-----
+dc-current-limit-mapping gpio_value entries are validated at parse
+against the GPIO array width so a malformed DT value is rejected
+instead of being silently truncated by gpiod_set_array_value() and
+selecting the wrong mux level. ndescs is also bounded to
+< BITS_PER_TYPE(u32) to keep BIT(ndescs) well-defined on 32-bit.
+The mapping is additionally required to contain a gpio_value=0
+entry: devm_gpiod_get_array_optional() asks for GPIOD_OUT_LOW, so
+the hardware mux starts at gpio_value 0, and the driver seeds
+dc_current_limit_ua from the matching map entry. A DT lacking the
+all-zero entry is rejected with -EINVAL because otherwise the
+reported INPUT_CURRENT_LIMIT could disagree with the mux state
+until a set_property write picks a real value.
 
---------------PLHK4mnGD0P23Fm2MyNO99EN--
+Negative INPUT_CURRENT_LIMIT requests are rejected at the
+set_property entry: val->intval is signed, the set_*_current_limit()
+helpers take a u32, and a negative cast would silently widen to a
+huge unsigned value, bypass the upper-bound guard and program the
+maximum permitted current.
 
---------------W8k45yeHavmrtS79YNqNh771--
+Signed-off-by: Herman van Hazendonk <github.com@herrie.org>
+---
+ drivers/power/supply/max8903_charger.c | 415 +++++++++++++++++++++++++++++++--
+ 1 file changed, 398 insertions(+), 17 deletions(-)
 
---------------42g0lK7RCjA0V5Hpk0wwPtog
-Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="OpenPGP_signature.asc"
+diff --git a/drivers/power/supply/max8903_charger.c b/drivers/power/supply/max8903_charger.c
+index 45fbaad6c647..97bd85f87eae 100644
+--- a/drivers/power/supply/max8903_charger.c
++++ b/drivers/power/supply/max8903_charger.c
+@@ -9,11 +9,29 @@
+ #include <linux/gpio/consumer.h>
+ #include <linux/interrupt.h>
+ #include <linux/module.h>
++#include <linux/mutex.h>
+ #include <linux/of.h>
++#include <linux/property.h>
+ #include <linux/slab.h>
+ #include <linux/power_supply.h>
+ #include <linux/platform_device.h>
+ 
++/*
++ * IUSB pin: hardcoded by silicon to 100 mA (low) / 500 mA (high).
++ * MAX8903A/B/C/D/E/F/G/H/I datasheet, "Pin Description" table:
++ *   "USB Current-Limit Set Input. Drive IUSB logic-low to set the
++ *    USB current limit to 100mA. Drive IUSB logic-high to set the
++ *    USB current limit to 500mA."
++ * Not a board parameter - never DT-configurable.
++ */
++#define MAX8903_USB_CURRENT_LIMIT_LOW_UA	100000
++#define MAX8903_USB_CURRENT_LIMIT_HIGH_UA	500000
++
++struct max8903_current_limit_mapping {
++	u32 limit_ua;		/* Current limit in microamps */
++	u32 gpio_value;		/* GPIO bit pattern */
++};
++
+ struct max8903_data {
+ 	struct device *dev;
+ 	struct power_supply *psy;
+@@ -31,6 +49,25 @@ struct max8903_data {
+ 	struct gpio_desc *flt; /* Fault output */
+ 	struct gpio_desc *dcm; /* Current-Limit Mode input (1: DC, 2: USB) */
+ 	struct gpio_desc *usus; /* USB Suspend Input (1: suspended) */
++
++	/* DC current limit control (ISET pins) */
++	struct gpio_descs *dc_current_limit_gpios;
++	struct max8903_current_limit_mapping *dc_current_limit_map;
++	u32 dc_current_limit_map_size;
++	u32 dc_current_limit_ua;	/* Current setting in uA */
++
++	/* USB current limit control (IUSB pin) */
++	struct gpio_desc *usb_current_limit_gpio;
++	u32 usb_current_limit_ua;	/* Current setting in uA */
++
++	/*
++	 * Serialises ta_in / usb_in updates against
++	 * max8903_set_property() which steers the current-limit write to
++	 * the DC or USB path based on which source is currently online.
++	 * The IRQ handlers are requested with IRQF_ONESHOT (threaded), so
++	 * a sleepable mutex is the right primitive in both contexts.
++	 */
++	struct mutex source_lock;
+ 	bool fault;
+ 	bool usb_in;
+ 	bool ta_in;
+@@ -40,6 +77,7 @@ static enum power_supply_property max8903_charger_props[] = {
+ 	POWER_SUPPLY_PROP_STATUS, /* Charger status output */
+ 	POWER_SUPPLY_PROP_ONLINE, /* External power source */
+ 	POWER_SUPPLY_PROP_HEALTH, /* Fault or OK */
++	POWER_SUPPLY_PROP_INPUT_CURRENT_LIMIT, /* Input current limit */
+ };
+ 
+ static int max8903_get_property(struct power_supply *psy,
+@@ -47,6 +85,24 @@ static int max8903_get_property(struct power_supply *psy,
+ 		union power_supply_propval *val)
+ {
+ 	struct max8903_data *data = power_supply_get_drvdata(psy);
++	bool ta_in, usb_in;
++	u32 dc_limit, usb_limit;
++
++	/*
++	 * Snapshot the source flags and current-limit settings under the
++	 * source_lock that the IRQs (max8903_dcin / max8903_usbin) and
++	 * max8903_set_property() take when updating them, so we never
++	 * observe a torn pair of (source-online flag, current-limit ua).
++	 * The gpiod_get_value() reads further down deliberately stay
++	 * outside the lock — they hit the GPIO controller, not driver
++	 * state, and the IRQs do not touch them under the lock either.
++	 */
++	mutex_lock(&data->source_lock);
++	ta_in = data->ta_in;
++	usb_in = data->usb_in;
++	dc_limit = data->dc_current_limit_ua;
++	usb_limit = data->usb_current_limit_ua;
++	mutex_unlock(&data->source_lock);
+ 
+ 	switch (psp) {
+ 	case POWER_SUPPLY_PROP_STATUS:
+@@ -55,21 +111,42 @@ static int max8903_get_property(struct power_supply *psy,
+ 			if (gpiod_get_value(data->chg))
+ 				/* CHG asserted */
+ 				val->intval = POWER_SUPPLY_STATUS_CHARGING;
+-			else if (data->usb_in || data->ta_in)
++			else if (usb_in || ta_in)
+ 				val->intval = POWER_SUPPLY_STATUS_NOT_CHARGING;
+ 			else
+ 				val->intval = POWER_SUPPLY_STATUS_DISCHARGING;
+ 		}
+ 		break;
+ 	case POWER_SUPPLY_PROP_ONLINE:
+-		val->intval = 0;
+-		if (data->usb_in || data->ta_in)
+-			val->intval = 1;
++		val->intval = (ta_in || usb_in) ? 1 : 0;
+ 		break;
+ 	case POWER_SUPPLY_PROP_HEALTH:
+-		val->intval = POWER_SUPPLY_HEALTH_GOOD;
+-		if (data->fault)
+-			val->intval = POWER_SUPPLY_HEALTH_UNSPEC_FAILURE;
++		/*
++		 * data->fault is a single bool toggled from one IRQ
++		 * handler, so a torn read is not possible; no need to
++		 * extend source_lock coverage here.
++		 */
++		val->intval = data->fault ? POWER_SUPPLY_HEALTH_UNSPEC_FAILURE
++					  : POWER_SUPPLY_HEALTH_GOOD;
++		break;
++	case POWER_SUPPLY_PROP_INPUT_CURRENT_LIMIT:
++		/*
++		 * Hardware prioritises DC over USB - when ta_in is asserted
++		 * the part draws from the DC input regardless of USB state.
++		 * So always report the DC-side limit when DC is online, and
++		 * refuse rather than silently fall back to the USB cap if
++		 * the DC GPIOs are not configured - that would mis-describe
++		 * the active source. Same policy applies in the set path.
++		 */
++		if (ta_in) {
++			if (!data->dc_current_limit_gpios)
++				return -ENODATA;
++			val->intval = dc_limit;
++		} else if (usb_in && data->usb_current_limit_gpio) {
++			val->intval = usb_limit;
++		} else {
++			return -ENODATA;
++		}
+ 		break;
+ 	default:
+ 		return -EINVAL;
+@@ -78,6 +155,144 @@ static int max8903_get_property(struct power_supply *psy,
+ 	return 0;
+ }
+ 
++static int max8903_set_dc_current_limit(struct max8903_data *data, u32 limit_ua)
++{
++	int i, best_idx = -1;
++	/*
++	 * The mapping's gpio_value fits in the lowest ndescs bits of one
++	 * unsigned long (parse_dc_current_limit enforces ndescs < 32 and
++	 * gpio_value < BIT(ndescs)); a single-word bitmap is sufficient
++	 * on both 32- and 64-bit builds. Don't use bitmap_from_arr32() -
++	 * that macro reinterprets its source pointer as unsigned long on
++	 * 64-bit and would read past the on-stack u32.
++	 */
++	DECLARE_BITMAP(values, BITS_PER_TYPE(u32));
++
++	if (!data->dc_current_limit_gpios)
++		return -EOPNOTSUPP;
++
++	/*
++	 * Find the highest supported current <= requested. Use a -1
++	 * "not found" sentinel rather than tracking best_limit > 0 so
++	 * that a 0 uA entry (used to disable charging) can be selected
++	 * by a 0 uA request.
++	 */
++	for (i = 0; i < data->dc_current_limit_map_size; i++) {
++		if (data->dc_current_limit_map[i].limit_ua > limit_ua)
++			continue;
++		if (best_idx < 0 ||
++		    data->dc_current_limit_map[i].limit_ua >
++				data->dc_current_limit_map[best_idx].limit_ua)
++			best_idx = i;
++	}
++
++	if (best_idx < 0)
++		return -EINVAL;
++
++	bitmap_zero(values, BITS_PER_TYPE(u32));
++	values[0] = data->dc_current_limit_map[best_idx].gpio_value;
++	gpiod_set_array_value_cansleep(data->dc_current_limit_gpios->ndescs,
++				       data->dc_current_limit_gpios->desc,
++				       data->dc_current_limit_gpios->info,
++				       values);
++
++	data->dc_current_limit_ua = data->dc_current_limit_map[best_idx].limit_ua;
++	dev_dbg(data->dev, "DC current limit set to %u uA\n",
++		data->dc_current_limit_ua);
++
++	return 0;
++}
++
++static int max8903_set_usb_current_limit(struct max8903_data *data, u32 limit_ua)
++{
++	u32 selected;
++	int gpio_val;
++
++	if (!data->usb_current_limit_gpio)
++		return -EOPNOTSUPP;
++
++	/*
++	 * IUSB is a single-bit input with two silicon-fixed settings;
++	 * pick HIGH (500 mA) iff the caller's cap can absorb it, else
++	 * LOW (100 mA), else refuse rather than program a higher current
++	 * than the request allows.
++	 */
++	if (limit_ua >= MAX8903_USB_CURRENT_LIMIT_HIGH_UA) {
++		selected = MAX8903_USB_CURRENT_LIMIT_HIGH_UA;
++		gpio_val = 1;
++	} else if (limit_ua >= MAX8903_USB_CURRENT_LIMIT_LOW_UA) {
++		selected = MAX8903_USB_CURRENT_LIMIT_LOW_UA;
++		gpio_val = 0;
++	} else {
++		return -EINVAL;
++	}
++
++	gpiod_set_value_cansleep(data->usb_current_limit_gpio, gpio_val);
++	data->usb_current_limit_ua = selected;
++
++	dev_dbg(data->dev, "USB current limit set to %u uA\n",
++		data->usb_current_limit_ua);
++
++	return 0;
++}
++
++static int max8903_set_property(struct power_supply *psy,
++		enum power_supply_property psp,
++		const union power_supply_propval *val)
++{
++	struct max8903_data *data = power_supply_get_drvdata(psy);
++	int ret;
++
++	switch (psp) {
++	case POWER_SUPPLY_PROP_INPUT_CURRENT_LIMIT:
++		/*
++		 * val->intval is signed; the set_*_current_limit() helpers
++		 * take a u32. Reject negatives explicitly so a negative
++		 * request cannot widen into a huge unsigned value, bypass
++		 * the "limit <= cap" bounds check inside the helper, and
++		 * silently program the maximum permitted current.
++		 */
++		if (val->intval < 0)
++			return -EINVAL;
++		/*
++		 * Hold source_lock across the source check and the
++		 * resulting hardware write so the IRQ handler cannot
++		 * flip ta_in/usb_in between them and have us program the
++		 * limit for a source that has just gone offline. Mirror
++		 * the DC-priority policy of the get path: if DC is online
++		 * route to the DC helper (refuse if DC GPIOs aren't
++		 * configured) rather than fall through to USB.
++		 */
++		mutex_lock(&data->source_lock);
++		if (data->ta_in)
++			ret = data->dc_current_limit_gpios ?
++			      max8903_set_dc_current_limit(data, val->intval) :
++			      -ENODEV;
++		else if (data->usb_in && data->usb_current_limit_gpio)
++			ret = max8903_set_usb_current_limit(data, val->intval);
++		else
++			ret = -EINVAL;
++		mutex_unlock(&data->source_lock);
++		return ret;
++	default:
++		return -EINVAL;
++	}
++}
++
++static int max8903_property_is_writeable(struct power_supply *psy,
++		enum power_supply_property psp)
++{
++	struct max8903_data *data = power_supply_get_drvdata(psy);
++
++	switch (psp) {
++	case POWER_SUPPLY_PROP_INPUT_CURRENT_LIMIT:
++		return data->dc_current_limit_gpios ||
++		       data->usb_current_limit_gpio;
++	default:
++		return 0;
++	}
++}
++
+ static irqreturn_t max8903_dcin(int irq, void *_data)
+ {
+ 	struct max8903_data *data = _data;
+@@ -91,10 +306,21 @@ static irqreturn_t max8903_dcin(int irq, void *_data)
+ 	 * library as the line should be flagged GPIO_ACTIVE_LOW in the device
+ 	 * tree.
+ 	 */
++	/*
++	 * Hold source_lock across the full read-modify-evaluate block:
++	 *   - so a concurrent max8903_set_property() sees a consistent
++	 *     state (lock release would otherwise expose a window where
++	 *     data->ta_in is updated but the cen/dcm writes still pend);
++	 *   - so the cen enable calculation reads a stable data->usb_in
++	 *     rather than racing with max8903_usbin() and writing the
++	 *     wrong enable state.
++	 */
++	mutex_lock(&data->source_lock);
+ 	ta_in = gpiod_get_value(data->dok);
+-
+-	if (ta_in == data->ta_in)
++	if (ta_in == data->ta_in) {
++		mutex_unlock(&data->source_lock);
+ 		return IRQ_HANDLED;
++	}
+ 
+ 	data->ta_in = ta_in;
+ 
+@@ -119,9 +345,6 @@ static irqreturn_t max8903_dcin(int irq, void *_data)
+ 		gpiod_set_value(data->cen, val);
+ 	}
+ 
+-	dev_dbg(data->dev, "TA(DC-IN) Charger %s.\n", ta_in ?
+-			"Connected" : "Disconnected");
+-
+ 	old_type = data->psy_desc.type;
+ 
+ 	if (data->ta_in)
+@@ -130,6 +353,10 @@ static irqreturn_t max8903_dcin(int irq, void *_data)
+ 		data->psy_desc.type = POWER_SUPPLY_TYPE_USB;
+ 	else
+ 		data->psy_desc.type = POWER_SUPPLY_TYPE_BATTERY;
++	mutex_unlock(&data->source_lock);
++
++	dev_dbg(data->dev, "TA(DC-IN) Charger %s.\n", ta_in ?
++			"Connected" : "Disconnected");
+ 
+ 	if (old_type != data->psy_desc.type)
+ 		power_supply_changed(data->psy);
+@@ -150,10 +377,13 @@ static irqreturn_t max8903_usbin(int irq, void *_data)
+ 	 * library as the line should be flagged GPIO_ACTIVE_LOW in the device
+ 	 * tree.
+ 	 */
++	/* See max8903_dcin(): hold the lock across the full update. */
++	mutex_lock(&data->source_lock);
+ 	usb_in = gpiod_get_value(data->uok);
+-
+-	if (usb_in == data->usb_in)
++	if (usb_in == data->usb_in) {
++		mutex_unlock(&data->source_lock);
+ 		return IRQ_HANDLED;
++	}
+ 
+ 	data->usb_in = usb_in;
+ 
+@@ -176,9 +406,6 @@ static irqreturn_t max8903_usbin(int irq, void *_data)
+ 		gpiod_set_value(data->cen, val);
+ 	}
+ 
+-	dev_dbg(data->dev, "USB Charger %s.\n", usb_in ?
+-			"Connected" : "Disconnected");
+-
+ 	old_type = data->psy_desc.type;
+ 
+ 	if (data->ta_in)
+@@ -187,6 +414,10 @@ static irqreturn_t max8903_usbin(int irq, void *_data)
+ 		data->psy_desc.type = POWER_SUPPLY_TYPE_USB;
+ 	else
+ 		data->psy_desc.type = POWER_SUPPLY_TYPE_BATTERY;
++	mutex_unlock(&data->source_lock);
++
++	dev_dbg(data->dev, "USB Charger %s.\n", usb_in ?
++			"Connected" : "Disconnected");
+ 
+ 	if (old_type != data->psy_desc.type)
+ 		power_supply_changed(data->psy);
+@@ -221,6 +452,145 @@ static irqreturn_t max8903_fault(int irq, void *_data)
+ 	return IRQ_HANDLED;
+ }
+ 
++static int max8903_parse_dc_current_limit(struct platform_device *pdev,
++					  struct max8903_data *data)
++{
++	struct device *dev = &pdev->dev;
++	int ret, i, map_size;
++	u32 *map;
++
++	data->dc_current_limit_gpios = devm_gpiod_get_array_optional(dev,
++					"dc-current-limit", GPIOD_OUT_LOW);
++	if (IS_ERR(data->dc_current_limit_gpios))
++		return dev_err_probe(dev, PTR_ERR(data->dc_current_limit_gpios),
++				     "failed to get DC current limit GPIOs");
++
++	if (!data->dc_current_limit_gpios)
++		return 0;	/* Optional feature not present */
++
++	/*
++	 * gpio_value entries below are bit patterns indexed into the
++	 * dc-current-limit GPIO array. The driver represents them in
++	 * a single unsigned long for gpiod_set_array_value_cansleep(),
++	 * and BIT(ndescs) further down assumes ndescs fits in a u32
++	 * shift; reject pathological DTs at parse time instead of
++	 * relying on undefined-behaviour-free dtschema. The binding
++	 * already caps maxItems at 4 so this is purely defensive.
++	 */
++	if (data->dc_current_limit_gpios->ndescs >= BITS_PER_TYPE(u32)) {
++		dev_err(dev, "dc-current-limit-gpios: %u GPIOs exceeds %u-bit cap\n",
++			data->dc_current_limit_gpios->ndescs,
++			(unsigned int)BITS_PER_TYPE(u32));
++		return -EINVAL;
++	}
++
++	/* Parse mapping: pairs of (current_ua, gpio_value) */
++	map_size = device_property_count_u32(dev, "dc-current-limit-mapping");
++	if (map_size <= 0 || map_size % 2) {
++		dev_err(dev, "invalid dc-current-limit-mapping\n");
++		return -EINVAL;
++	}
++
++	/*
++	 * map[] is a scratch buffer used only inside this function to
++	 * read the property and unpack it into data->dc_current_limit_map.
++	 * Use a plain kmalloc + kfree rather than devm_*: there is no
++	 * reason to keep the raw mirror around for the lifetime of the
++	 * device.
++	 */
++	map = kmalloc_array(map_size, sizeof(*map), GFP_KERNEL);
++	if (!map)
++		return -ENOMEM;
++
++	ret = device_property_read_u32_array(dev, "dc-current-limit-mapping",
++					     map, map_size);
++	if (ret) {
++		dev_err(dev, "failed to read dc-current-limit-mapping\n");
++		kfree(map);
++		return ret;
++	}
++
++	data->dc_current_limit_map_size = map_size / 2;
++	data->dc_current_limit_map = devm_kcalloc(dev,
++					data->dc_current_limit_map_size,
++					sizeof(*data->dc_current_limit_map),
++					GFP_KERNEL);
++	if (!data->dc_current_limit_map) {
++		kfree(map);
++		return -ENOMEM;
++	}
++
++	for (i = 0; i < data->dc_current_limit_map_size; i++) {
++		u32 gpio_value = map[i * 2 + 1];
++
++		/*
++		 * gpio_value is the bitmap programmed across the
++		 * dc-current-limit GPIOs, so it cannot represent more
++		 * bits than the GPIO array width. A larger value would
++		 * be silently truncated by gpiod_set_array_value() and
++		 * select the wrong limit; reject it at parse time so
++		 * the bogus DT is visible to the integrator.
++		 */
++		if (gpio_value >= BIT(data->dc_current_limit_gpios->ndescs)) {
++			dev_err(dev,
++				"dc-current-limit-mapping entry %d: gpio_value 0x%x exceeds %u-GPIO range\n",
++				i, gpio_value,
++				data->dc_current_limit_gpios->ndescs);
++			kfree(map);
++			return -EINVAL;
++		}
++		data->dc_current_limit_map[i].limit_ua = map[i * 2];
++		data->dc_current_limit_map[i].gpio_value = gpio_value;
++	}
++
++	kfree(map);
++
++	/*
++	 * devm_gpiod_get_array_optional() above asked for GPIOD_OUT_LOW,
++	 * so the hardware mux starts at gpio_value 0. Require the DT
++	 * mapping to include a gpio_value=0 entry so the software
++	 * current-limit state has a definite initial value matching the
++	 * hardware. Without this entry we would have to guess and the
++	 * reported INPUT_CURRENT_LIMIT could disagree with what the
++	 * mux is actually wired to until a set_property write picks a
++	 * real value.
++	 */
++	for (i = 0; i < data->dc_current_limit_map_size; i++)
++		if (data->dc_current_limit_map[i].gpio_value == 0)
++			break;
++	if (i == data->dc_current_limit_map_size) {
++		dev_err(dev,
++			"dc-current-limit-mapping must include a gpio_value=0 entry to describe the boot-time mux state\n");
++		return -EINVAL;
++	}
++	data->dc_current_limit_ua = data->dc_current_limit_map[i].limit_ua;
++
++	dev_dbg(dev, "DC current limit control: %d levels available, initial %u uA\n",
++		data->dc_current_limit_map_size, data->dc_current_limit_ua);
++
++	return 0;
++}
++
++static int max8903_parse_usb_current_limit(struct platform_device *pdev,
++					   struct max8903_data *data)
++{
++	struct device *dev = &pdev->dev;
++
++	data->usb_current_limit_gpio = devm_gpiod_get_optional(dev,
++					"usb-current-limit", GPIOD_OUT_LOW);
++	if (IS_ERR(data->usb_current_limit_gpio))
++		return dev_err_probe(dev, PTR_ERR(data->usb_current_limit_gpio),
++				     "failed to get USB current limit GPIO");
++
++	if (!data->usb_current_limit_gpio)
++		return 0;	/* Optional feature not present */
++
++	/* Start at low current (IUSB low = 100 mA) for safety */
++	data->usb_current_limit_ua = MAX8903_USB_CURRENT_LIMIT_LOW_UA;
++
++	return 0;
++}
++
+ static int max8903_setup_gpios(struct platform_device *pdev)
+ {
+ 	struct max8903_data *data = platform_get_drvdata(pdev);
+@@ -335,17 +705,28 @@ static int max8903_probe(struct platform_device *pdev)
+ 		return -ENOMEM;
+ 
+ 	data->dev = dev;
++	mutex_init(&data->source_lock);
+ 	platform_set_drvdata(pdev, data);
+ 
+ 	ret = max8903_setup_gpios(pdev);
+ 	if (ret)
+ 		return ret;
+ 
++	ret = max8903_parse_dc_current_limit(pdev, data);
++	if (ret)
++		return ret;
++
++	ret = max8903_parse_usb_current_limit(pdev, data);
++	if (ret)
++		return ret;
++
+ 	data->psy_desc.name = "max8903_charger";
+ 	data->psy_desc.type = (data->ta_in) ? POWER_SUPPLY_TYPE_MAINS :
+ 			((data->usb_in) ? POWER_SUPPLY_TYPE_USB :
+ 			 POWER_SUPPLY_TYPE_BATTERY);
+ 	data->psy_desc.get_property = max8903_get_property;
++	data->psy_desc.set_property = max8903_set_property;
++	data->psy_desc.property_is_writeable = max8903_property_is_writeable;
+ 	data->psy_desc.properties = max8903_charger_props;
+ 	data->psy_desc.num_properties = ARRAY_SIZE(max8903_charger_props);
+ 
 
------BEGIN PGP SIGNATURE-----
+-- 
+2.43.0
 
-wsB5BAABCAAjFiEEhRJncuj2BJSl0Jf3sN6d1ii/Ey8FAmoik0YFAwAAAAAACgkQsN6d1ii/Ey+V
-wgf+NMO5uSXAzCwVh1HiRnL6y5gmgho87+zE3OFdKKZfXPKixPyfDzIns61vfrPUB6hQmhr3fvvb
-QLaH79wLvjdkIKLt/NOBVCKzOw3hdFSwi3lsM1iOgQHLRlia4CuNXwizJh6+qBDKfKoDDPcS2hDt
-DO/TV5MU+wo1pxcmJaTFNGIdcm6UX/00rV7/2QW4NzDekaW13wTJ7kysm9ZYBEaH2rmkVvdUQ/oO
-f5SGzSgSO2I1u75qJZm/8HizWClX466fIh0mqZfQiptFciajPMj2/w+7gqIUCNNHbK01h+bzVBZI
-I+kvvaHNq8H3Cb9jSH9KtCzwSDCuAaBmHsmpZWaIaA==
-=zn+n
------END PGP SIGNATURE-----
 
---------------42g0lK7RCjA0V5Hpk0wwPtog--
