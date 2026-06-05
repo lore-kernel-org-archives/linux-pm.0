@@ -1,179 +1,134 @@
-Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DF32D368D75;
-	Fri,  5 Jun 2026 04:53:13 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.137.202.133
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 191173B5835;
+	Fri,  5 Jun 2026 05:52:34 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1780635195; cv=none; b=FNsWdPsza54cc0Lp12keMCk5rtwt5UbzNcrGI8shhiEXCVOhk8ZSXIZam3dzWHmTbhhxCCi9NzmoYeeLAxgaMWgVmehMYE2MEWVUENmZhYNollI7hoBYTV6MedilIeWcHIwn6TgTblR9twWQUvAGH/hrUfQrDtljFtAtD3GiYUY=
+	t=1780638757; cv=none; b=t71RTWzOT+8cn5zxooIIM3OOeJ9MaQCs1eDPvyJ+373AiJ6PM4ldKsRJ9fiI7oKeQKn2uujeWJlFeWquRNpUCP8VSThxaMbaJdShX3ftaruAN+S8k4neAotdGsFm2v/TOUBU6aqbdIzXW9iXVS9jWSvo0PlOFR67exWMoc0ghn4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1780635195; c=relaxed/simple;
-	bh=CLvg2uy4UzL2Ky0Kq5T+JVLnh3GvVbzAkwFSuFuYMmA=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=B5QTT9mRFZ6O6VVxJIedt05fNHHd0jo88EeXGotFnrygHOGI/HotE9fKprjSfNC9QOcRT3wZIdgpZTdLHtB/M5pOYOgumw0qNh2pC0QhiKaI9+dpFLdpq42HJuKBM8CYQfJmpV+jnog/tRQaAAR/0bYGnxzPcx7omQ6gh7jTKLE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=infradead.org; spf=pass smtp.mailfrom=infradead.org; dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b=oV6D0wZF; arc=none smtp.client-ip=198.137.202.133
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=infradead.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=infradead.org
+	s=arc-20240116; t=1780638757; c=relaxed/simple;
+	bh=bP5tNSZNLgHvo3fNrwnO3hqLOKKjLHqWasbuWuv3sVc=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:To:Cc; b=hesixCNM+9cASwPpBSIKuTgmw3cpIxpfn9z7SImFW0ru2jBGaGvdk/6TQYgG6hai78HdX0jkmdLX11iATfgZhelPH1u/c7ZipaVsPur6mjyEtTUtHLiiOFnnj9w5jySuZMadm0c0xOf+ClriMIVIp1kOm8H1dK++u0bOG1lisfY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=dICLL7bS; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="oV6D0wZF"
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=infradead.org; s=bombadil.20210309; h=Content-Transfer-Encoding:
-	Content-Type:In-Reply-To:From:References:Cc:To:Subject:MIME-Version:Date:
-	Message-ID:Sender:Reply-To:Content-ID:Content-Description;
-	bh=AVjMntonTKwkpZPMAQhk4yRR4MgCRMTSSg9MmjTAhOM=; b=oV6D0wZF0u4O1FlGzAyjSVnSVv
-	xyOwQxUl3s2aA7EM82tq/ah//8guYXte7gBCwCRTwCU+O39wgssG9TagYtZo6lhnk7tD5GPYUulYy
-	eylN4EtZjLGC7+db9BiQQsUaaAawOa8Rph9/wtDRK93GTGxKPDNmH2BClDQNP0M2ucyA5bJ8lz0+g
-	EbRORcB/URnLXeDFFZFRryW0fFX/mB/brB7XcoB5UUhb+7hyY2jqtOM4QCZQdSDnZ39g0FohvseIE
-	WlAijI+A/fBCJzSfsZkM+Otdm8CNWAdEzFPDgoLaD9Imb0ummEy/Pb71h96mRXY5MVo1H3cE1fKUn
-	db/uQL/Q==;
-Received: from [50.53.43.113] (helo=[192.168.254.34])
-	by bombadil.infradead.org with esmtpsa (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wVMYT-000000005AZ-1Ke3;
-	Fri, 05 Jun 2026 04:53:13 +0000
-Message-ID: <32fda49e-f246-4fae-9e4e-05c12fdb3ea6@infradead.org>
-Date: Thu, 4 Jun 2026 21:53:11 -0700
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="dICLL7bS"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id B98611F00893;
+	Fri,  5 Jun 2026 05:52:32 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1780638754;
+	bh=v6DYK4RgVU1B+Cg+Edv/FttlEEvwAbId7aUFrj6ggb8=;
+	h=From:Date:Subject:To:Cc;
+	b=dICLL7bSxXTCGv6RusfV6Zl3iRLcyNZGEZY95DUn5KAzkCls/LynkNrvw9xH115/P
+	 qgL7949UJgYwusxM/6cHyxOn70qZtoOydMJAnta+w0kl5EZ923hQtjn3Cm2UnT+B8f
+	 2i6Kaz6w0U4gTlxJ2Lae+ZjrchWXDWc8ewDAHC01wQNP2iZaTrwU8n0+J71B/JmzNp
+	 1wTCfBfttLg4KnnnQXi3x3gOPLC3JVCJ8cSGOerpx+su500latAwJJxNctQqCXIx2q
+	 WxoQuZ+PETVDjLrZsF/zNczqAy6C/xox80d0aKu2ykl5cZjyzixwoTn8B1F8JeeP2Q
+	 RG5jCNnvqZg1Q==
+From: Nathan Chancellor <nathan@kernel.org>
+Date: Thu, 04 Jun 2026 22:52:28 -0700
+Subject: [PATCH] power: supply: max17042_battery: Use modern PM ops to
+ clear up warning
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 2/3] PM: dpm_watchdog: Allow disabling DPM watchdog by
- default
-To: Tzung-Bi Shih <tzungbi@kernel.org>, Jonathan Corbet <corbet@lwn.net>,
- "Rafael J. Wysocki" <rafael@kernel.org>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Danilo Krummrich <dakr@kernel.org>
-Cc: Shuah Khan <skhan@linuxfoundation.org>, Pavel Machek <pavel@kernel.org>,
- Len Brown <lenb@kernel.org>, linux-doc@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
- driver-core@lists.linux.dev, tfiga@chromium.org, senozhatsky@chromium.org
-References: <20260604090756.2884671-1-tzungbi@kernel.org>
- <20260604090756.2884671-3-tzungbi@kernel.org>
-Content-Language: en-US
-From: Randy Dunlap <rdunlap@infradead.org>
-In-Reply-To: <20260604090756.2884671-3-tzungbi@kernel.org>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Message-Id: <20260604-max17042_battery-fix-unused-suspend_soc_alerts-v1-1-3562a68e6f36@kernel.org>
+X-B4-Tracking: v=1; b=H4sIAAAAAAAC/yXNywrCMBCF4Vcps3YgSUMtvopIyGXUiKYlk5RK6
+ bsbdfktzvk3YMqRGE7dBpmWyHFKDfLQgb/bdCOMoRmUUIMYhMaXXeVRaGWcLYXyG69xxZoqU0C
+ uPFMKhidv7JNyYeyVE6Pr9ei8hHY6Z2qDX/B8+Zure5Av3wrs+wdFUJzqkgAAAA==
+X-Change-ID: 20260604-max17042_battery-fix-unused-suspend_soc_alerts-32b08b348bc1
+To: Sebastian Reichel <sre@kernel.org>
+Cc: Hans de Goede <hansg@kernel.org>, Krzysztof Kozlowski <krzk@kernel.org>, 
+ Marek Szyprowski <m.szyprowski@samsung.com>, 
+ Sebastian Krzyszkowiak <sebastian.krzyszkowiak@puri.sm>, 
+ Purism Kernel Team <kernel@puri.sm>, Vincent Cloutier <vincent@cloutier.co>, 
+ linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
+ Nathan Chancellor <nathan@kernel.org>
+X-Mailer: b4 0.16-dev
+X-Developer-Signature: v=1; a=openpgp-sha256; l=2763; i=nathan@kernel.org;
+ h=from:subject:message-id; bh=bP5tNSZNLgHvo3fNrwnO3hqLOKKjLHqWasbuWuv3sVc=;
+ b=kA0DAAoWHWsmkXHAGpYByyZiAGoiZCCifuKA7nOHI9ND7OhK2gDjJho4L02ey3xEYgOEYhRbw
+ 4h1BAAWCgAdFiEEe+MlxzExnM0B2MqSHWsmkXHAGpYFAmoiZCAACgkQHWsmkXHAGpbZawD+K/RP
+ qbB3O0zoZibpQm4Y3tQ1YwuU+RW3tVablSBB5boA/jLVrknK5dKhx4nTd6lv2VK+Xk1fqY3Y3fv
+ 9OYs86OkG
+X-Developer-Key: i=nathan@kernel.org; a=openpgp;
+ fpr=2437CB76E544CB6AB3D9DFD399739260CB6CB716
 
-Hi--
+When building for a platform that does not have power management, such
+as s390, there is an unused function warning, as
+max17042_suspend_soc_alerts() is only used in max17042_suspend(), which
+is under a CONFIG_PM_SLEEP #ifdef.
 
-On 6/4/26 2:07 AM, Tzung-Bi Shih wrote:
-> Introduce the CONFIG_DPM_WATCHDOG_DEFAULT_ENABLED Kconfig option to
-> allow the device suspend/resume watchdog (DPM watchdog) to be disabled
-> by default at compile time.
-> 
-> Additionally, introduce the "dpm_watchdog_enabled" module parameter to
-> allow the watchdog to be enabled or disabled at boot time (via
-> "power.dpm_watchdog_enabled") and at runtime (via sysfs).
-> 
-> This provides flexibility for systems that want the watchdog code
-> compiled in but inactive by default, allowing it to be enabled only when
-> needed.
-> 
-> Signed-off-by: Tzung-Bi Shih <tzungbi@kernel.org>
-> ---
-> v2:
-> - Use module parameter and bool for dpm_watchdog_enabled.
-> - Use IS_ENABLED().
-> 
-> v1: https://lore.kernel.org/all/20260528103215.505795-1-tzungbi@kernel.org
-> 
->  Documentation/admin-guide/kernel-parameters.txt |  8 ++++++++
->  drivers/base/power/main.c                       | 11 +++++++++++
->  kernel/power/Kconfig                            |  9 +++++++++
->  3 files changed, 28 insertions(+)
-> 
-> diff --git a/Documentation/admin-guide/kernel-parameters.txt b/Documentation/admin-guide/kernel-parameters.txt
-> index 00375193bd26..0a0d5340b0c7 100644
-> --- a/Documentation/admin-guide/kernel-parameters.txt
-> +++ b/Documentation/admin-guide/kernel-parameters.txt
-> @@ -5399,6 +5399,14 @@ Kernel parameters
->  			function to NULL. On Idle the CPU just reduces
->  			execution priority.
->  
-> +	power.dpm_watchdog_enabled=
-> +			[KNL] Enable or disable the device suspend/resume
+  drivers/power/supply/max17042_battery.c:957:13: error: 'max17042_suspend_soc_alerts' defined but not used [-Werror=unused-function]
+    957 | static void max17042_suspend_soc_alerts(struct max17042_chip *chip)
+        |             ^~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-I think that [KNL] isn't very useful here (nor in many of its uses in
-kernel-parameters.txt).
-What is required to use this option are:
-  CONFIG_PM_SLEEP, CONFIG_DPM_WATCHDOG
-You should convey that information somehow.
+Use the modern DEFINE_SIMPLE_DEV_PM_OPS(), which allows the compiler to
+see the functions as used while allowing it to eliminate them as unused
+during the optimization phase. Use pm_ptr() to allow the compiler to
+drop max17042_pm_ops when there is no PM support.
 
-Also, in kernel-parameters.txt, "pm_async=" is only valid when [PM]
-is enabled, but "PM" is not defined/described anywhere.
-That should be added near the beginning of kernel-parameters.txt (in
-alphabetical order).
+Fixes: 601885ffb5e9 ("power: supply: max17042_battery: Keep only critical alerts during suspend")
+Signed-off-by: Nathan Chancellor <nathan@kernel.org>
+---
+ drivers/power/supply/max17042_battery.c | 10 ++++------
+ 1 file changed, 4 insertions(+), 6 deletions(-)
 
+diff --git a/drivers/power/supply/max17042_battery.c b/drivers/power/supply/max17042_battery.c
+index 0fb46c1c203f..639dacdb9b31 100644
+--- a/drivers/power/supply/max17042_battery.c
++++ b/drivers/power/supply/max17042_battery.c
+@@ -1296,7 +1296,6 @@ static int max17042_platform_probe(struct platform_device *pdev)
+ 	return max17042_probe(i2c, dev, irq, id->driver_data);
+ }
+ 
+-#ifdef CONFIG_PM_SLEEP
+ static int max17042_suspend(struct device *dev)
+ {
+ 	struct max17042_chip *chip = dev_get_drvdata(dev);
+@@ -1327,10 +1326,9 @@ static int max17042_resume(struct device *dev)
+ 
+ 	return 0;
+ }
+-#endif
+ 
+-static SIMPLE_DEV_PM_OPS(max17042_pm_ops, max17042_suspend,
+-			max17042_resume);
++static DEFINE_SIMPLE_DEV_PM_OPS(max17042_pm_ops, max17042_suspend,
++				max17042_resume);
+ 
+ #ifdef CONFIG_ACPI
+ static const struct acpi_device_id max17042_acpi_match[] = {
+@@ -1397,7 +1395,7 @@ static struct i2c_driver max17042_i2c_driver = {
+ 		.name	= "max17042",
+ 		.acpi_match_table = ACPI_PTR(max17042_acpi_match),
+ 		.of_match_table = of_match_ptr(max17042_dt_match),
+-		.pm	= &max17042_pm_ops,
++		.pm	= pm_ptr(&max17042_pm_ops),
+ 	},
+ 	.probe		= max17042_i2c_probe,
+ 	.id_table	= max17042_id,
+@@ -1407,7 +1405,7 @@ static struct platform_driver max17042_platform_driver = {
+ 	.driver	= {
+ 		.name	= "max17042",
+ 		.acpi_match_table = ACPI_PTR(max17042_acpi_match),
+-		.pm	= &max17042_pm_ops,
++		.pm	= pm_ptr(&max17042_pm_ops),
+ 	},
+ 	.probe		= max17042_platform_probe,
+ 	.id_table	= max17042_platform_id,
 
-> +			watchdog (DPM watchdog).
-> +			Format: {"0" | "1"}
-> +			0: disable
-> +			1: enable
-> +			Default value is set by CONFIG_DPM_WATCHDOG_DEFAULT_ENABLED.
-> +
->  	ppc_strict_facility_enable
->  			[PPC,ENABLE] This option catches any kernel floating point,
->  			Altivec, VSX and SPE outside of regions specifically
-> diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
-> index cd864f3a2799..7822c29b7c8d 100644
-> --- a/drivers/base/power/main.c
-> +++ b/drivers/base/power/main.c
-> @@ -534,6 +534,11 @@ module_param(dpm_watchdog_all_cpu_backtrace, bool, 0644);
->  MODULE_PARM_DESC(dpm_watchdog_all_cpu_backtrace,
->  		 "Backtrace all CPUs on DPM watchdog timeout");
->  
-> +static bool __read_mostly dpm_watchdog_enabled =
-> +				IS_ENABLED(CONFIG_DPM_WATCHDOG_DEFAULT_ENABLED);
-> +module_param(dpm_watchdog_enabled, bool, 0644);
-> +MODULE_PARM_DESC(dpm_watchdog_enabled, "Enable DPM watchdog");
-> +
->  /**
->   * dpm_watchdog_handler - Driver suspend / resume watchdog handler.
->   * @t: The timer that PM watchdog depends on.
-> @@ -577,6 +582,9 @@ static void dpm_watchdog_set(struct dpm_watchdog *wd, struct device *dev)
->  {
->  	struct timer_list *timer = &wd->timer;
->  
-> +	if (!dpm_watchdog_enabled)
-> +		return;
-> +
->  	wd->dev = dev;
->  	wd->tsk = current;
->  	wd->fatal = CONFIG_DPM_WATCHDOG_TIMEOUT == CONFIG_DPM_WATCHDOG_WARNING_TIMEOUT;
-> @@ -595,6 +603,9 @@ static void dpm_watchdog_clear(struct dpm_watchdog *wd)
->  {
->  	struct timer_list *timer = &wd->timer;
->  
-> +	if (!dpm_watchdog_enabled)
-> +		return;
-> +
->  	timer_delete_sync(timer);
->  	timer_destroy_on_stack(timer);
->  }
-> diff --git a/kernel/power/Kconfig b/kernel/power/Kconfig
-> index 530c897311d4..12a4a66d48d4 100644
-> --- a/kernel/power/Kconfig
-> +++ b/kernel/power/Kconfig
-> @@ -268,6 +268,15 @@ config DPM_WATCHDOG
->  	  captured in pstore device for inspection in subsequent
->  	  boot session.
->  
-> +config DPM_WATCHDOG_DEFAULT_ENABLED
-> +	bool "Enable DPM watchdog by default"
-> +	depends on DPM_WATCHDOG
-> +	default y
-> +	help
-> +	  If you say Y here, the DPM watchdog will be enabled by default.
-> +	  If you say N, it will be compiled in but disabled, requiring a
-> +	  boot parameter to activate.
-> +
->  config DPM_WATCHDOG_TIMEOUT
->  	int "Watchdog timeout to panic in seconds"
->  	range 1 120
+---
+base-commit: 7e541f6dbd05921d0bbb99646028cb9982535707
+change-id: 20260604-max17042_battery-fix-unused-suspend_soc_alerts-32b08b348bc1
 
--- 
-~Randy
+Best regards,
+--  
+Cheers,
+Nathan
 
