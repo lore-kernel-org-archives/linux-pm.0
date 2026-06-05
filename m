@@ -1,142 +1,172 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.223.131])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2B6EA42EEC4;
-	Fri,  5 Jun 2026 07:00:07 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 79A1235A39D
+	for <linux-pm@vger.kernel.org>; Fri,  5 Jun 2026 07:08:31 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1780642817; cv=none; b=RoE34PfVM0qak9wgXNL8q8hyxaySKJ0ZKFZ+yv2TrNzJpzvz482DOSqeFWdIC9TdrRB6FPsZSi5LZ2aU59faDK8F2HLc3EBcBPqpzLao0DxHU8bfLiZ5Qcm6NHYB8Ij3l/sGl2uwQIFRWY2cR4CGm0AP2Murd1T6XCGdqNTAw+s=
+	t=1780643314; cv=none; b=N6PpxgTGjWasbZCubxlKtftvDIKyeukYWfP8p3fJsOLqI/EI7c00rQUqz63zKZGh9t5/IvOjRbrgF9rzLa1Oe3uN8aVKiDngC8nFNc1IpyiJpFF+ooaFByYXz/86pFhlqMRbQcIoN/1JGykJuzuqeRs+QxqGqb+uB2gWKAOBtnc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1780642817; c=relaxed/simple;
-	bh=DdINVUBttw6klrnTn+6VWBp4sfhuGwvaqZSXK6B9SXw=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=qsaTldnqQNAiY7PbHIEI8P9KORqrMiu6M/YG/x1J7nkIoHb1LblzXC/Ixyma9fSaC2H0C7L+eU6TYzxF2pv5419XUFTpN/DGb6U+6PVG/GjKv3s7aGQzZ6B7IPSD/dZGvQVLxRJtf2ctHtf1nVJfxe77zoehbhyIBIOrM3Qlbg8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=YsZyfuH0; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1780643314; c=relaxed/simple;
+	bh=4hvsRn9Kp2CzHPwth+eNDSeQOsWa/Ckcpaciuv5v3HU=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=nF2lyj7Go6pfoSRiPi6q1WmPDv0wLnuoHROkcP27ZswP1NM16n8nSDmTlVKrrh+7hidC0hDwTK/UR5NWrh4WURgODttODgrkpQU+otma1bEzLDd7R8TCw5r41S06X6ToAsm7R3zD5tzA9rRYz4HMkv9J12YZykl6XPtM8BLdLGc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com; spf=pass smtp.mailfrom=suse.com; dkim=pass (1024-bit key) header.d=suse.com header.i=@suse.com header.b=iKjYggke; dkim=pass (1024-bit key) header.d=suse.com header.i=@suse.com header.b=iKjYggke; arc=none smtp.client-ip=195.135.223.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="YsZyfuH0"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id AF3B51F00893;
-	Fri,  5 Jun 2026 06:59:55 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1780642807;
-	bh=mLaeht+14OltYjlKRnSLpPtYOk2E9Ea1Lx7tk/hcws8=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=YsZyfuH0DNQ7mv7u3TjtJz2xyIwZsrK8oVaqlPhk64DT+j0rV42P72G1+i/iwKkjR
-	 NRcuOWYnbQoyKyo3l2FM69tbt1G6e/HuNgC0tjlGYq95rMPDSYtqVOPYzvnqYUPxmO
-	 AWjPhYcJZ6wydfSYXF/XBNDK3f5d8IIgdI55O1W1HwIefukk8kexEUl8N5fsDeXx2z
-	 4BExZj5mf+2VTADoOZFYWQlBUHvbteLd4O8xGa6QVu9YQUtYookUrNQ3mqvO9CAt4H
-	 08LnpIh0I2Rne5hZA1mQuw5b6DWAlajftwY4jPb1w8G4b6cEGfnkYFO9vhRvcAILg8
-	 LyUNuKdCiw8wA==
-Date: Fri, 5 Jun 2026 14:59:53 +0800
-From: "Peter Chen (CIX)" <peter.chen@kernel.org>
-To: Bartosz Golaszewski <brgl@kernel.org>
-Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
-	Lee Jones <lee@kernel.org>,
-	Mark Brown <broonie@opensource.wolfsonmicro.com>,
-	Thierry Reding <thierry.reding@avionic-design.de>,
-	Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>,
-	Andrew Lunn <andrew+netdev@lunn.ch>,
-	"David S. Miller" <davem@davemloft.net>,
-	Eric Dumazet <edumazet@google.com>,
-	Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
-	Srinivas Kandagatla <srini@kernel.org>,
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	Vinod Koul <vkoul@kernel.org>,
-	"Rafael J. Wysocki" <rafael@kernel.org>,
-	Danilo Krummrich <dakr@kernel.org>, Rob Herring <robh@kernel.org>,
-	Saravana Kannan <saravanak@kernel.org>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-	Andi Shyti <andi.shyti@kernel.org>, Joerg Roedel <joro@8bytes.org>,
-	Will Deacon <will@kernel.org>, Robin Murphy <robin.murphy@arm.com>,
-	Doug Berger <opendmb@gmail.com>,
-	Florian Fainelli <florian.fainelli@broadcom.com>,
-	Broadcom internal kernel review list <bcm-kernel-feedback-list@broadcom.com>,
-	Ulf Hansson <ulfh@kernel.org>, Frank Li <Frank.Li@nxp.com>,
-	Sascha Hauer <s.hauer@pengutronix.de>,
-	Pengutronix Kernel Team <kernel@pengutronix.de>,
-	Fabio Estevam <festevam@gmail.com>,
-	Matthew Brost <matthew.brost@intel.com>,
-	Thomas =?utf-8?Q?Hellstr=C3=B6m?= <thomas.hellstrom@linux.intel.com>,
-	Rodrigo Vivi <rodrigo.vivi@intel.com>,
-	David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>,
-	Paul Cercueil <paul@crapouillou.net>, Bin Liu <b-liu@ti.com>,
-	Philipp Zabel <p.zabel@pengutronix.de>,
-	Maximilian Luz <luzmaximilian@gmail.com>,
-	Hans de Goede <hansg@kernel.org>,
-	Ilpo =?utf-8?B?SsOkcnZpbmVu?= <ilpo.jarvinen@linux.intel.com>,
-	Krzysztof Kozlowski <krzk@kernel.org>,
-	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-	linux-arm-msm@vger.kernel.org, linux-sound@vger.kernel.org,
-	driver-core@lists.linux.dev, devicetree@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org, linux-i2c@vger.kernel.org,
-	iommu@lists.linux.dev, linux-pm@vger.kernel.org,
-	imx@lists.linux.dev, linux-arm-kernel@lists.infradead.org,
-	intel-xe@lists.freedesktop.org, dri-devel@lists.freedesktop.org,
-	linux-usb@vger.kernel.org, linux-mips@vger.kernel.org,
+	dkim=pass (1024-bit key) header.d=suse.com header.i=@suse.com header.b="iKjYggke";
+	dkim=pass (1024-bit key) header.d=suse.com header.i=@suse.com header.b="iKjYggke"
+Received: from imap1.dmz-prg2.suse.org (unknown [10.150.64.97])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by smtp-out2.suse.de (Postfix) with ESMTPS id D92917593A;
+	Fri,  5 Jun 2026 07:08:29 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.com; s=susede1;
+	t=1780643309; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
+	bh=WN+1EqgKbEGm+Jlqz5BJMqJKAPMrZfGWpmYbaOaSum4=;
+	b=iKjYggkeyd0GZUzAqkFLB4pGtPXBaZx1IpDKUVmqabC2LXYHwd8cAz/lMSJhTNLRDz9g8g
+	WTjB7GUVsJ+bh6Z/izkQLAcxuwkp0XFoNejvkxa6k1y17q+fOyPepOPVR7+PK5t/W5JQy3
+	ZOdYdIo1fEJ6ZuGbWmbYAdHMt3mUxH8=
+Authentication-Results: smtp-out2.suse.de;
+	none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.com; s=susede1;
+	t=1780643309; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
+	bh=WN+1EqgKbEGm+Jlqz5BJMqJKAPMrZfGWpmYbaOaSum4=;
+	b=iKjYggkeyd0GZUzAqkFLB4pGtPXBaZx1IpDKUVmqabC2LXYHwd8cAz/lMSJhTNLRDz9g8g
+	WTjB7GUVsJ+bh6Z/izkQLAcxuwkp0XFoNejvkxa6k1y17q+fOyPepOPVR7+PK5t/W5JQy3
+	ZOdYdIo1fEJ6ZuGbWmbYAdHMt3mUxH8=
+Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 142B2779A8;
+	Fri,  5 Jun 2026 07:08:29 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
+	by imap1.dmz-prg2.suse.org with ESMTPSA
+	id 5/G9A+11ImqDHQAAD6G6ig
+	(envelope-from <jgross@suse.com>); Fri, 05 Jun 2026 07:08:29 +0000
+From: Juergen Gross <jgross@suse.com>
+To: linux-kernel@vger.kernel.org,
+	x86@kernel.org,
+	linux-edac@vger.kernel.org,
+	linux-pm@vger.kernel.org,
+	linux-hwmon@vger.kernel.org,
+	linux-perf-users@vger.kernel.org,
 	platform-driver-x86@vger.kernel.org,
-	Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
-Subject: Re: [PATCH 20/23] usb: chipidea: use
- platform_device_set_of_node_from_dev()
-Message-ID: <aiJz6Ys4gE998ULp@nchen-desktop>
-References: <20260521-pdev-fwnode-ref-v1-0-88c324a1b8d2@oss.qualcomm.com>
- <20260521-pdev-fwnode-ref-v1-20-88c324a1b8d2@oss.qualcomm.com>
- <ah9P6Xt9SyKgc2oJ@ashevche-desk.local>
- <CAMRc=MdhjZhGL9tEx9WEjn2f95d=ObNM0AtBNpcevm6aHgpj+Q@mail.gmail.com>
+	linux-acpi@vger.kernel.org
+Cc: Juergen Gross <jgross@suse.com>,
+	Thomas Gleixner <tglx@kernel.org>,
+	Ingo Molnar <mingo@redhat.com>,
+	Borislav Petkov <bp@alien8.de>,
+	Dave Hansen <dave.hansen@linux.intel.com>,
+	"H. Peter Anvin" <hpa@zytor.com>,
+	Tony Luck <tony.luck@intel.com>,
+	"Rafael J. Wysocki" <rafael@kernel.org>,
+	Viresh Kumar <viresh.kumar@linaro.org>,
+	Guenter Roeck <linux@roeck-us.net>,
+	Daniel Lezcano <daniel.lezcano@kernel.org>,
+	Zhang Rui <rui.zhang@intel.com>,
+	Lukasz Luba <lukasz.luba@arm.com>,
+	Peter Zijlstra <peterz@infradead.org>,
+	Arnaldo Carvalho de Melo <acme@kernel.org>,
+	Namhyung Kim <namhyung@kernel.org>,
+	Mark Rutland <mark.rutland@arm.com>,
+	Alexander Shishkin <alexander.shishkin@linux.intel.com>,
+	Jiri Olsa <jolsa@kernel.org>,
+	Ian Rogers <irogers@google.com>,
+	Adrian Hunter <adrian.hunter@intel.com>,
+	James Clark <james.clark@linaro.org>,
+	Huang Rui <ray.huang@amd.com>,
+	Mario Limonciello <mario.limonciello@amd.com>,
+	Perry Yuan <perry.yuan@amd.com>,
+	K Prateek Nayak <kprateek.nayak@amd.com>,
+	Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
+	Len Brown <lenb@kernel.org>,
+	Hans de Goede <hansg@kernel.org>,
+	=?UTF-8?q?Ilpo=20J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>
+Subject: [PATCH 0/8] x86/msr: Drop 32-bit variants of *_on_cpu() MSR functions
+Date: Fri,  5 Jun 2026 09:08:18 +0200
+Message-ID: <20260605070826.2995913-1-jgross@suse.com>
+X-Mailer: git-send-email 2.54.0
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <CAMRc=MdhjZhGL9tEx9WEjn2f95d=ObNM0AtBNpcevm6aHgpj+Q@mail.gmail.com>
+Content-Transfer-Encoding: 8bit
+X-Spam-Flag: NO
+X-Spamd-Result: default: False [-2.80 / 50.00];
+	BAYES_HAM(-3.00)[100.00%];
+	MID_CONTAINS_FROM(1.00)[];
+	NEURAL_HAM_LONG(-1.00)[-1.000];
+	R_MISSING_CHARSET(0.50)[];
+	NEURAL_HAM_SHORT(-0.20)[-1.000];
+	MIME_GOOD(-0.10)[text/plain];
+	TO_MATCH_ENVRCPT_ALL(0.00)[];
+	FROM_HAS_DN(0.00)[];
+	ARC_NA(0.00)[];
+	MIME_TRACE(0.00)[0:+];
+	TO_DN_SOME(0.00)[];
+	RCPT_COUNT_TWELVE(0.00)[38];
+	DBL_BLOCKED_OPENRESOLVER(0.00)[suse.com:mid,imap1.dmz-prg2.suse.org:helo];
+	RCVD_VIA_SMTP_AUTH(0.00)[];
+	FROM_EQ_ENVFROM(0.00)[];
+	RCVD_COUNT_TWO(0.00)[2];
+	FUZZY_RATELIMITED(0.00)[rspamd.com];
+	DKIM_SIGNED(0.00)[suse.com:s=susede1];
+	R_RATELIMIT(0.00)[to_ip_from(RLfdszjqhz8kzzb9uwpzdm8png)];
+	RCVD_TLS_ALL(0.00)[]
+X-Spam-Level: 
+X-Spam-Score: -2.80
 
-On 26-06-04 08:34:16, Bartosz Golaszewski wrote:
-> On Tue, 2 Jun 2026 23:49:29 +0200, Andy Shevchenko
-> <andriy.shevchenko@linux.intel.com> said:
-> > On Thu, May 21, 2026 at 10:36:43AM +0200, Bartosz Golaszewski wrote:
-> >> Ahead of reworking the reference counting logic for platform devices,
-> >> encapsulate the assignment of the OF node from another device for
-> >> dynamically allocated platform devices with the provided helper.
-> >
-> > ...
-> >
-> >>  	pdev->dev.parent = dev;
-> >> -	device_set_of_node_from_dev(&pdev->dev, dev);
-> >> +	platform_device_set_of_node_from_dev(pdev, dev);
-> >
-> > Why do they even do that? Do they have a USB connected pin control?
-> >
-> 
-> I don't know. I can't test it so I don't want to break it. If they don't need
-> it, the person who can test it, can remove it later.
-> 
+Drop the variants using 2 32-bit values instead of a single 64-bit one
+of the *_on_cpu() MSR access functions.
 
-It was introduced by below commits:
+Juergen Gross (8):
+  x86/msr: Switch rdmsr_on_cpu() to return a 64-bit quantity
+  x86/msr: Switch all callers of rdmsrq_on_cpu() to use rdmsr_on_cpu()
+  x86/msr: Switch wrmsr_on_cpu() to use a 64-bit quantity
+  x86/msr: Switch all callers of wrmsrq_on_cpu() to use wrmsr_on_cpu()
+  x86/msr: Switch rdmsr_safe_on_cpu() to return a 64-bit quantity
+  x86/msr: Switch all callers of rdmsrq_safe_on_cpu() to use
+    rdmsr_safe_on_cpu()
+  x86/msr: Switch wrmsr_safe_on_cpu() to use a 64-bit quantity
+  x86/msr: Switch all callers of wrmsrq_safe_on_cpu() to use
+    wrmsr_safe_on_cpu()
 
-commit 0f153a1b8193ce768be4df0400aeb2c8f2a3b3da
-Author: Rob Herring <robh@kernel.org>
-Date:   Wed Dec 15 16:56:46 2021 -0600
-
-    usb: chipidea: Set the DT node on the child device
-
-    The ChipIdea glue drivers just copy the glue resources to the "ci_hdrc"
-    child device. Instead, set the child device's DT node pointer to the
-    parent device's node so that platform_get_irq() can find the IRQ
-    resources in the DT. This removes the need for statically populating the
-    IRQ resources from the DT which has been deprecated for some time.
-
-    Acked-by: Peter Chen <peter.chen@kernel.org>
-    Signed-off-by: Rob Herring <robh@kernel.org>
-    Link: https://lore.kernel.org/r/20211215225646.1997946-1-robh@kernel.org
-    Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-
+ arch/x86/events/intel/ds.c                    | 11 +--
+ arch/x86/events/intel/pt.c                    |  2 +-
+ arch/x86/events/intel/uncore_discovery.c      |  2 +-
+ arch/x86/events/intel/uncore_snbep.c          |  2 +-
+ arch/x86/include/asm/msr.h                    | 44 +++--------
+ arch/x86/kernel/acpi/cppc.c                   |  8 +-
+ arch/x86/kernel/cpu/intel_epb.c               |  8 +-
+ arch/x86/kernel/cpu/mce/amd.c                 |  6 +-
+ arch/x86/kernel/cpu/mce/inject.c              | 12 +--
+ arch/x86/kernel/cpu/microcode/intel.c         |  2 +-
+ arch/x86/kernel/msr.c                         |  8 +-
+ arch/x86/lib/msr-smp.c                        | 79 ++-----------------
+ drivers/cpufreq/acpi-cpufreq.c                |  4 +-
+ drivers/cpufreq/amd-pstate-ut.c               |  2 +-
+ drivers/cpufreq/amd-pstate.c                  | 21 +++--
+ drivers/cpufreq/amd_freq_sensitivity.c        |  4 +-
+ drivers/cpufreq/intel_pstate.c                | 64 +++++++--------
+ drivers/cpufreq/p4-clockmod.c                 | 32 ++++----
+ drivers/cpufreq/speedstep-centrino.c          | 27 ++++---
+ drivers/hwmon/coretemp.c                      | 44 +++++------
+ drivers/hwmon/via-cputemp.c                   | 16 ++--
+ drivers/platform/x86/amd/hfi/hfi.c            |  4 +-
+ .../intel/speed_select_if/isst_if_common.c    | 13 ++-
+ .../intel/uncore-frequency/uncore-frequency.c | 12 +--
+ drivers/powercap/intel_rapl_msr.c             |  2 +-
+ drivers/thermal/intel/intel_tcc.c             | 43 +++++-----
+ drivers/thermal/intel/x86_pkg_temp_thermal.c  | 22 +++---
+ 27 files changed, 203 insertions(+), 291 deletions(-)
 
 -- 
+2.54.0
 
-Best regards,
-Peter
