@@ -1,31 +1,30 @@
-Received: from outbound11.mail.transip.nl (outbound11.mail.transip.nl [136.144.136.18])
+Received: from outbound6.mail.transip.nl (outbound6.mail.transip.nl [136.144.136.128])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8D1C235B631;
-	Sat,  6 Jun 2026 12:34:35 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=136.144.136.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 92D7D3859F6;
+	Sat,  6 Jun 2026 12:34:54 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=136.144.136.128
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1780749284; cv=none; b=OhmGuZ9hSgAb5NGn4/ndkm9NrA0U2Kjv8/WHy+0jOzzjrR5kpxgsUA6zigA2lkF1VCFzXHNI9ooG3J1vLN5QXA7KUCfxcwox7Z8w4bDg60ovEspSdYP4rBOUkjiVoQna7dpot1VlA6pg/aFdDCk57spEz2jbwYOBezn1qiyhQNY=
+	t=1780749299; cv=none; b=asvXBtYGjvvU8r0vHWUNHQ+rroi4RVpwyssmfMjeDvaaP3DtfX9W0+RBZbwY2J11i8sLoiTeny6Bj/nBv0cLSxs9DxXtpmWPGvcftFYFnCLx9jKzDAP9ttwxRpM4EIAUXFSBMa7aS00R6aoLC9eO3T2g0MqAwBWUdntZXG7mgyE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1780749284; c=relaxed/simple;
-	bh=DSEE5W+bUq/qz4HSuUOBsJojBrNkZwP6W5Me/2XZooo=;
+	s=arc-20240116; t=1780749299; c=relaxed/simple;
+	bh=wOHgojj+2hvNeN6aXFDWR9C6s7RuNs95fwMK/G3icDM=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=LSH11fagiLruDqcWDFHNgPK01V9+W1mZElJeP/76oNTqFDH5WkLQ6FBUIHeEN9Efewvc3VALdZWaKnm638YyGPdImKu2ko9MiZjO0DCh+FHnN0zi3lZfKxK9Ngo5wxixaB/8urxIpAHvij9HE+aLYTTx1+7doICh+zpNTx7iZy0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=herrie.org; spf=pass smtp.mailfrom=herrie.org; dkim=pass (2048-bit key) header.d=herrie.org header.i=@herrie.org header.b=tcGjbA4D; arc=none smtp.client-ip=136.144.136.18
+	 In-Reply-To:To:Cc; b=Ov2FrZs+e5EqlCW7qIesAl6QY1jdMpSQ8FD+31YZL1e5NqG1pv5XSlcxaDrJNH2SMrptLzqYJE4SWxo+FX+AflxKGj5PPXwf9jUaXi95Y0oIwDLP610b/U4JFaNzWA2FYUJce54VYKUhgprIPI+h9BwlnUKiPOwVqzT9TGvIYKo=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=herrie.org; spf=pass smtp.mailfrom=herrie.org; dkim=pass (2048-bit key) header.d=herrie.org header.i=@herrie.org header.b=bLhkERr6; arc=none smtp.client-ip=136.144.136.128
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=herrie.org
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=herrie.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=herrie.org header.i=@herrie.org header.b="tcGjbA4D"
-Received: from submission1.mail.transip.nl (unknown [10.100.4.70])
-	by outbound11.mail.transip.nl (Postfix) with ESMTP id 4gXd6C58G0zkQNln;
-	Sat,  6 Jun 2026 14:34:27 +0200 (CEST)
+	dkim=pass (2048-bit key) header.d=herrie.org header.i=@herrie.org header.b="bLhkERr6"
+Received: from submission2.mail.transip.nl (unknown [10.100.4.71])
+	by outbound6.mail.transip.nl (Postfix) with ESMTP id 4gXd6h6fmFzwLHKF;
+	Sat,  6 Jun 2026 14:34:52 +0200 (CEST)
 Received: from [127.0.1.1] (180-93-184-31.ftth.glasoperator.nl [31.184.93.180])
-	by submission1.mail.transip.nl (Postfix) with ESMTPA id 4gXd6C03XnzJjhYM;
-	Sat,  6 Jun 2026 14:34:26 +0200 (CEST)
+	by submission2.mail.transip.nl (Postfix) with ESMTPA id 4gXd6g4XszzJjhYC;
+	Sat,  6 Jun 2026 14:34:51 +0200 (CEST)
 From: Herman van Hazendonk <github.com@herrie.org>
-Date: Sat, 06 Jun 2026 14:34:26 +0200
-Subject: [PATCH v2 1/2] clk: qcom: gdsc: add LEGACY_FOOTSWITCH support for
- MSM8x60
+Date: Sat, 06 Jun 2026 14:34:51 +0200
+Subject: [PATCH v3 2/2] interconnect: qcom: add MSM8x60 NoC driver
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -33,511 +32,1825 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20260606-submit-clk-gdsc-msm8x60-legacy-v2-1-187a32d2f015@herrie.org>
-References: <20260606-submit-clk-gdsc-msm8x60-legacy-v2-0-187a32d2f015@herrie.org>
-In-Reply-To: <20260606-submit-clk-gdsc-msm8x60-legacy-v2-0-187a32d2f015@herrie.org>
-To: Bjorn Andersson <andersson@kernel.org>, 
- Konrad Dybcio <konradybcio@kernel.org>, Stephen Boyd <sboyd@kernel.org>, 
- Michael Turquette <mturquette@baylibre.com>
-Cc: linux-arm-msm@vger.kernel.org, linux-clk@vger.kernel.org, 
- linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
+Content-Transfer-Encoding: 8bit
+Message-Id: <20260606-submit-interconnect-msm8660-v3-2-f9da0158cdf8@herrie.org>
+References: <20260606-submit-interconnect-msm8660-v3-0-f9da0158cdf8@herrie.org>
+In-Reply-To: <20260606-submit-interconnect-msm8660-v3-0-f9da0158cdf8@herrie.org>
+To: Georgi Djakov <djakov@kernel.org>, 
+ Bjorn Andersson <andersson@kernel.org>, 
+ Konrad Dybcio <konradybcio@kernel.org>, Rob Herring <robh@kernel.org>, 
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+ Conor Dooley <conor+dt@kernel.org>
+Cc: linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, 
+ devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
  Herman van Hazendonk <github.com@herrie.org>
 X-Mailer: b4 0.13.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1780749266; l=17570;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1780749289; l=58832;
  i=github.com@herrie.org; s=20240417; h=from:subject:message-id;
- bh=DSEE5W+bUq/qz4HSuUOBsJojBrNkZwP6W5Me/2XZooo=;
- b=QUvLveF2BYHpMrW9XxreCBfkn3jumUiycHuB7LexC5MyM7gypAn1DH6gcsIXaNoOtSZOMLW3k
- K13Qk6pXvgNBQpRPba3yv/C+l2RW7wnwBkAzKclcOedLu0Zx1vKQ8bk
+ bh=wOHgojj+2hvNeN6aXFDWR9C6s7RuNs95fwMK/G3icDM=;
+ b=3BOdeBkf/kG9pX0Fieh2/YiTSvqfBIJpBN9aUYUXN0bboiH/c9DMaxGAXczhWPQO1Ifa4nYl+
+ h3uPGaanrzHA8JnSiItrHjukOHqD/9zvaDglejYoDmX7wxZ8oQn8QB2
 X-Developer-Key: i=github.com@herrie.org; a=ed25519;
  pk=YYxdq8fb5O9vhkW3n2dCH044FPZZO5718v/du7fRhFw=
-X-Scanned-By: ClueGetter at submission1.mail.transip.nl
+X-Scanned-By: ClueGetter at submission2.mail.transip.nl
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
- s=transip-a; d=herrie.org; t=1780749267; h=from:subject:to:cc:
+ s=transip-a; d=herrie.org; t=1780749291; h=from:subject:to:cc:
  references:in-reply-to:date:mime-version:content-type;
- bh=zO2CAJBh9pdl2OXKCjRyvHeHsuKRc1CG5wQZ8yl072M=;
- b=tcGjbA4DP4Wjt679IpwIceLvre6yDUi6uX4mRfyqYbKiVLVbm1Zni8DPasGPrj6r8ZwTkl
- kqPMYlqhP53NLlIEXSmQfGwhHQRd8c+qKD6tByJ+H/VZidcoNk33LxoXQUUeHmjT8IV4+f
- 3CkYwhT6wF191JRQbAs/EQIYsCc8Ml2t3m+X/2zsyQDQRqTdXDhsHuo/sAfQnz44oiz9tJ
- uIZ/scww+HNi3P9yd00fo2Mt/IvKEpzTSh6tIwzxM//JZlNY00M8y+aKT9/10ItNhp4hul
- TSPNBHO6ZXaTxMnL6vUhk46dOg8mCoLe8TDfsbcZiTCEkEUtIuiX/eFA60U8Wg==
+ bh=N9ACUWieXyEfpCjzpafeH2D/EzPWOcCofsExt4kuDN8=;
+ b=bLhkERr6e+cGDJBtAvXZFGbGa14n0fE5e5QtrrYbRuVcQR4bdRGn2Cz/W+1xVBpj+TyhQA
+ U6CYvnp6leIxTQIr9TW15llCqRdzbOw6KA3ETLPvPLkXFVBdhoNw2m7BEWBj1n1YyhDHnV
+ Vdk0dANSvceXc3W26X2m3lw8RbNQ23UEN4Wwv9ecy5Ui80iUWSAbvEL3IU3H2K0m81W/JM
+ 44C1XCwAuxbGthDpmB/5dmHjlIQRZbRAGJSTwXWFnDKmr7H3fHj4dIITK4HLCC6mHRH06E
+ x6BWtsXi4sUoB/jZVuGrCwO7OM6iG3JwDhX/tzrf6ModtRvJmXsJZJEwrhCYXg==
 X-Report-Abuse-To: abuse@transip.nl
 
-The MSM8x60 family (MSM8260, MSM8660, APQ8060) ships an older
-footswitch (FS / "GFS") block that pre-dates the GDSC programming
-model the existing driver was designed around. Adding GDSC entries
-for that family's MMCC power domains needs the driver to understand
-the legacy register layout:
+Add a Qualcomm interconnect driver for the MSM8x60 family modelling the
+four NoC fabrics (APPSS, System, MMSS, Daytona) that connect masters
+and slaves on these Scorpion-class SoCs.  The driver implements the
+interconnect-provider API to manage bandwidth between specific masters
+and slaves via the RPM arbitration tables.
 
-  - the CLAMP, ENABLE and RETENTION bits live in the main GDSCR
-    register rather than in a separate clamp_io_ctrl;
-  - there is no power-status bit, so software cannot poll for the
-    transition completing and has to gate progress on a fixed
-    udelay() after toggling ENABLE;
-  - ENABLE is positive-logic (set to power up, clear to collapse)
-    rather than the modern inverted SW_COLLAPSE semantics;
-  - none of the modern wait-time / HW-trigger / SW-override fields
-    are present, so gdsc_init() must skip the wait-config
-    programming block entirely.
+Each fabric carries:
+  - A bus clock (managed via clk_bulk APIs) whose rate is the maximum
+    per-node rate across the provider, following the icc-rpm.c
+    convention.  Summing all provider nodes would overcount, because
+    the framework writes each path's bandwidth onto every node it
+    traverses; taking the max picks the hottest single node, which is
+    the correct fabric throughput requirement.  A minimum floor of
+    384 MHz keeps the bus alive during concurrent USB and MDP activity
+    (266 MHz was empirically insufficient).
+  - An RPM arbitration buffer (arb / bwsum) that the RPM firmware
+    consumes via its shared-memory protocol; commits go via the
+    qcom-rpm driver's set_resource API.
 
-Introduce a LEGACY_FOOTSWITCH flag and the matching code paths in
-gdsc_check_status(), gdsc_update_collapse_bit(), gdsc_enable(),
-gdsc_disable() and gdsc_init(). The enable / disable sequences
-mirror what the downstream vendor footswitch driver did on these
-SoCs, with the regulator hand-off normally done by
-gdsc_toggle_logic() spliced in at the matching points so a legacy
-domain that has a parent regulator still gets voted up/down:
+Nodes follow the icc-rpmh-style pattern: each qnode is a static
+struct with a flexible link_nodes[] array of qnode pointers, ICC IDs
+are assigned dynamically via icc_node_create_dyn(), and links are
+established with icc_link_nodes() at probe time.  The dt-bindings
+header IDs remain per-fabric indices into the of_icc_xlate_onecell
+data array.
 
-  enable:  regulator_enable -> assert resets -> set ENABLE ->
-           2us settle -> deassert resets -> clear CLAMP ->
-           5us settle
-  disable: assert resets -> set CLAMP -> clear ENABLE ->
-           regulator_disable
-
-Every register-write failure inside the sequence walks the partial
-state back to a defined endpoint before returning the error, so a
-mid-sequence failure cannot strand the block in "rail powered but
-clamped + in reset" (or the symmetric "clamped + reset asserted +
-ENABLE still set"). The two pwrsts == PWRSTS_ON short-circuits at
-the top of gdsc_enable() / gdsc_disable() are gated on
-!(sc->flags & LEGACY_FOOTSWITCH) for the same reason: a legacy
-footswitch declared PWRSTS_ON still has a real rail and clamp,
-which the reset-only fast path would silently skip. gdsc_init()'s
-PWRSTS_ON force-enable goes through gdsc_enable() for legacy
-domains for the same reason.
-
-In gdsc_init(), clear the RETENTION bit (BIT 9) before jumping to
-the common state-sync block. The vendor MSM8x60 footswitch driver
-does the same one-shot clear at probe for every footswitch; without
-it the reset-default value is unspecified per board and a stuck-set
-retention bit would leave the rail draining power while looking
-collapsed in software.
-
-This patch only adds the infrastructure; the MSM8x60 MMCC driver
-that consumes it lands in a follow-up series.
+msm8660_get_rpm() pins the supplier with device_link_add() before
+reading drvdata so an unbind/rebind window cannot leave a stale
+qcom_rpm pointer; the EPROBE_DEFER paths route through
+dev_err_ptr_probe() for proper deferred-probe accounting.
+clk_bulk_prepare_enable() is paired with a devm_add_action_or_reset()
+cleanup so an EPROBE_DEFER from the RPM lookup does not leak the
+prepare/enable refcount across retries.  The fabric rate cap uses
+min_t(u64,...) so a bandwidth request exceeding 4 GiB/s cannot wrap
+through u32 truncation into a near-zero clock rate that would halt
+the interconnect.
 
 Assisted-by: Claude:claude-opus-4-7 Sashiko:claude-haiku-4-5
 Signed-off-by: Herman van Hazendonk <github.com@herrie.org>
 ---
- drivers/clk/qcom/gdsc.c | 323 ++++++++++++++++++++++++++++++++++++++++++++++--
- drivers/clk/qcom/gdsc.h |   7 ++
- 2 files changed, 321 insertions(+), 9 deletions(-)
+ drivers/interconnect/qcom/Kconfig               |   14 +
+ drivers/interconnect/qcom/Makefile              |    2 +
+ drivers/interconnect/qcom/msm8660.c             | 1663 +++++++++++++++++++++++
+ include/dt-bindings/interconnect/qcom,msm8660.h |    6 +-
+ 4 files changed, 1682 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/clk/qcom/gdsc.c b/drivers/clk/qcom/gdsc.c
-index 95aa07120245..1f80bebe88c7 100644
---- a/drivers/clk/qcom/gdsc.c
-+++ b/drivers/clk/qcom/gdsc.c
-@@ -27,6 +27,11 @@
- #define GMEM_CLAMP_IO_MASK	BIT(0)
- #define GMEM_RESET_MASK		BIT(4)
+diff --git a/drivers/interconnect/qcom/Kconfig b/drivers/interconnect/qcom/Kconfig
+index 786b4eda44b4..579a4e3ea33e 100644
+--- a/drivers/interconnect/qcom/Kconfig
++++ b/drivers/interconnect/qcom/Kconfig
+@@ -80,6 +80,20 @@ config INTERCONNECT_QCOM_MSM8953
+ 	  This is a driver for the Qualcomm Network-on-Chip on msm8953-based
+ 	  platforms.
  
-+/* Legacy MSM8x60 footswitch register bits (single register layout) */
-+#define LEGACY_FS_CLAMP_MASK		BIT(5)
-+#define LEGACY_FS_ENABLE_MASK		BIT(8)
-+#define LEGACY_FS_RETENTION_MASK	BIT(9)
++config INTERCONNECT_QCOM_MSM8660
++	# bool, not tristate: this provider must be registered at
++	# core_initcall to be ready before icc_init (subsys_initcall) walks
++	# devicetree consumers; a loadable module cannot satisfy that
++	# ordering. Build-in only.
++	bool "Qualcomm MSM8x60 interconnect driver"
++	depends on INTERCONNECT_QCOM=y
++	depends on MFD_QCOM_RPM=y
++	help
++	  This is a driver for the Qualcomm fabric-based bus interconnect
++	  on MSM8x60 family (MSM8260/MSM8660/APQ8060) platforms (e.g., HP TouchPad).
++	  The driver manages APPSS, System, and MMSS fabrics and sends
++	  per-port bandwidth arbitration requests to RPM firmware.
 +
- /* CFG_GDSCR */
- #define GDSC_POWER_UP_COMPLETE		BIT(16)
- #define GDSC_POWER_DOWN_COMPLETE	BIT(15)
-@@ -63,6 +68,32 @@ static int gdsc_check_status(struct gdsc *sc, enum gdsc_status status)
- 	u32 val;
- 	int ret;
- 
-+	/*
-+	 * Legacy footswitches have no power-status bit: software has to
-+	 * infer the state from the ENABLE bit it just wrote.
-+	 */
-+	if (sc->flags & LEGACY_FOOTSWITCH) {
-+		ret = regmap_read(sc->regmap, sc->gdscr, &val);
-+		if (ret)
-+			return ret;
-+		/*
-+		 * A block with ENABLE=1 but CLAMP=1 is electrically isolated:
-+		 * the rail is powered but all I/O is clamped. The downstream
-+		 * vendor footswitch driver (footswitch-8x60.c) treats the block
-+		 * as "ON" only when ENABLE is set AND CLAMP is clear -- mirror
-+		 * that convention so callers don't mistake a clamped-but-
-+		 * powered block for a fully usable one.
-+		 */
-+		switch (status) {
-+		case GDSC_ON:
-+			return (val & (LEGACY_FS_ENABLE_MASK | LEGACY_FS_CLAMP_MASK))
-+			       == LEGACY_FS_ENABLE_MASK;
-+		case GDSC_OFF:
-+			return !(val & LEGACY_FS_ENABLE_MASK);
-+		}
-+		return -EINVAL;
-+	}
-+
- 	if (sc->flags & POLL_CFG_GDSCR)
- 		reg = sc->gdscr + CFG_GDSCR_OFFSET;
- 	else if (sc->gds_hw_ctrl)
-@@ -121,6 +152,18 @@ static int gdsc_update_collapse_bit(struct gdsc *sc, bool val)
- 	u32 reg, mask;
- 	int ret;
- 
-+	/*
-+	 * Legacy footswitches do not have an inverted SW_COLLAPSE bit;
-+	 * instead the same bit means ENABLE: clear to disable the rail,
-+	 * set to enable it. Invert the caller's "collapse" intent.
-+	 */
-+	if (sc->flags & LEGACY_FOOTSWITCH) {
-+		reg = sc->gdscr;
-+		mask = LEGACY_FS_ENABLE_MASK;
-+		return regmap_update_bits(sc->regmap, reg, mask,
-+					  val ? 0 : mask);
-+	}
-+
- 	if (sc->collapse_mask) {
- 		reg = sc->collapse_ctrl;
- 		mask = sc->collapse_mask;
-@@ -240,6 +283,23 @@ static inline void gdsc_assert_clamp_io(struct gdsc *sc)
- 			   GMEM_CLAMP_IO_MASK, 1);
- }
- 
+ config INTERCONNECT_QCOM_MSM8974
+ 	tristate "Qualcomm MSM8974 interconnect driver"
+ 	depends on INTERCONNECT_QCOM
+diff --git a/drivers/interconnect/qcom/Makefile b/drivers/interconnect/qcom/Makefile
+index cdf2c6c9fbf3..0c849c30a907 100644
+--- a/drivers/interconnect/qcom/Makefile
++++ b/drivers/interconnect/qcom/Makefile
+@@ -13,6 +13,7 @@ qnoc-msm8916-objs			:= msm8916.o
+ qnoc-msm8937-objs			:= msm8937.o
+ qnoc-msm8939-objs			:= msm8939.o
+ qnoc-msm8953-objs			:= msm8953.o
++qnoc-msm8660-objs			:= msm8660.o
+ qnoc-msm8974-objs			:= msm8974.o
+ qnoc-msm8976-objs			:= msm8976.o
+ qnoc-msm8996-objs			:= msm8996.o
+@@ -58,6 +59,7 @@ obj-$(CONFIG_INTERCONNECT_QCOM_MSM8916) += qnoc-msm8916.o
+ obj-$(CONFIG_INTERCONNECT_QCOM_MSM8937) += qnoc-msm8937.o
+ obj-$(CONFIG_INTERCONNECT_QCOM_MSM8939) += qnoc-msm8939.o
+ obj-$(CONFIG_INTERCONNECT_QCOM_MSM8953) += qnoc-msm8953.o
++obj-$(CONFIG_INTERCONNECT_QCOM_MSM8660) += qnoc-msm8660.o
+ obj-$(CONFIG_INTERCONNECT_QCOM_MSM8974) += qnoc-msm8974.o
+ obj-$(CONFIG_INTERCONNECT_QCOM_MSM8976) += qnoc-msm8976.o
+ obj-$(CONFIG_INTERCONNECT_QCOM_MSM8996) += qnoc-msm8996.o
+diff --git a/drivers/interconnect/qcom/msm8660.c b/drivers/interconnect/qcom/msm8660.c
+new file mode 100644
+index 000000000000..f7e7bd0374f9
+--- /dev/null
++++ b/drivers/interconnect/qcom/msm8660.c
+@@ -0,0 +1,1663 @@
++// SPDX-License-Identifier: GPL-2.0
 +/*
-+ * Legacy MSM8x60 footswitches keep the I/O clamp bit in the main GDSCR
-+ * (no separate clamp_io_ctrl register), so the helpers here use sc->gdscr.
++ * Qualcomm MSM8x60 family (MSM8260/MSM8660/APQ8060) interconnect driver
++ *
++ * Copyright (c) 2026 Herman van Hazendonk <github.com@herrie.org>
++ *
++ * Based on msm8974.c by Brian Masney <masneyb@onstation.org>
++ * and legacy vendor kernel msm_bus_board_8660.c / msm_bus_fabric.c
++ * Copyright (c) 2010-2011, Code Aurora Forum. All rights reserved.
++ *
++ * MSM8x60 has a fabric-based bus architecture:
++ *
++ *              +------------------+
++ *              |   APPSS Fabric   |  (CPU, L2, Memory)
++ *              +--------+---------+
++ *                       |
++ *         +-------------+-------------+
++ *         |                           |
++ *  +------+------+            +-------+-------+
++ *  | MMSS Fabric |            | System Fabric |
++ *  | (Display,   |            | (Peripherals, |
++ *  |  Camera,    |            |  DMA, etc)    |
++ *  |  Video)     |            +-------+-------+
++ *  +-------------+                    |
++ *                           +---------+---------+
++ *                           |                   |
++ *                    +------+------+     +------+------+
++ *                    | System FPB  |     |  CPSS FPB   |
++ *                    | (RPM, PMIC) |     | (GSBI, USB) |
++ *                    +-------------+     +-------------+
++ *
++ * Each fabric has an RPM arbitration interface that programs per-port
++ * bandwidth and priority tier via MM_FABRIC_ARB / SYS_FABRIC_ARB /
++ * APPS_FABRIC_ARB registers.  The legacy vendor kernel sent these as packed
++ * u16 arrays (bwsum + arb) through msm_rpm_set().  This driver uses
++ * the mainline qcom_rpm_write() interface to do the same.
 + */
-+static inline int legacy_fs_deassert_clamp(struct gdsc *sc)
-+{
-+	return regmap_update_bits(sc->regmap, sc->gdscr,
-+				  LEGACY_FS_CLAMP_MASK, 0);
-+}
 +
-+static inline int legacy_fs_assert_clamp(struct gdsc *sc)
-+{
-+	return regmap_update_bits(sc->regmap, sc->gdscr,
-+				  LEGACY_FS_CLAMP_MASK,
-+				  LEGACY_FS_CLAMP_MASK);
-+}
++#include <dt-bindings/interconnect/qcom,msm8660.h>
++#include <dt-bindings/mfd/qcom-rpm.h>
 +
- static inline void gdsc_assert_reset_aon(struct gdsc *sc)
- {
- 	regmap_update_bits(sc->regmap, sc->clamp_io_ctrl,
-@@ -259,11 +319,121 @@ static void gdsc_retain_ff_on(struct gdsc *sc)
- static int gdsc_enable(struct generic_pm_domain *domain)
- {
- 	struct gdsc *sc = domain_to_gdsc(domain);
--	int ret;
-+	int ret, rc;
- 
--	if (sc->pwrsts == PWRSTS_ON)
++#include <linux/cleanup.h>
++#include <linux/clk.h>
++#include <linux/device.h>
++#include <linux/interconnect-provider.h>
++#include <linux/io.h>
++#include <linux/mfd/qcom_rpm.h>
++#include <linux/module.h>
++#include <linux/mutex.h>
++#include <linux/of.h>
++#include <linux/of_platform.h>
++#include <linux/platform_device.h>
++#include <linux/slab.h>
++
++#define to_msm8660_icc_provider(_provider) \
++	container_of(_provider, struct msm8660_icc_provider, provider)
++
++/*
++ * Minimum fabric clock rate to prevent bus starvation.
++ *
++ * When no consumers request bandwidth, the rate calculation yields 0,
++ * causing fabric clocks to drop to minimum. This creates bimodal
++ * performance: fast when other subsystems (like display) happen to
++ * request bandwidth, slow otherwise.
++ *
++ * 384 MHz keeps fabric fast during concurrent MDP display scanout
++ * and USB gadget traffic. legacy vendor kernel docs: "AXI bus frequency needs to be
++ * kept at maximum value while USB data transfers are happening."
++ * 266 MHz was insufficient - USB crashed during display activity.
++ */
++#define MSM8660_FABRIC_MIN_RATE		384000000UL	/* 384 MHz */
++
++/*
++ * Maximum RPM ARB buffer size across all fabrics.
++ * MM fabric is largest at 23 u32 words.
++ */
++#define MSM8660_MAX_RPM_BUF		23
++
++/*
++ * RPM fabric arbitration data format (from legacy vendor kernel msm_bus_fabric.c):
++ *
++ * Each u16 arb entry: bit 15 = tier (1=TIER1 high priority), bits 14-0 = BW
++ * Bandwidth is in 128KB units (bytes >> 17).
++ * Two u16 values are packed into each u32 RPM register word.
++ *
++ * Buffer layout: [bwsum pairs] [arb pairs]
++ * bwsum[slave_port] = total bandwidth to that slave
++ * arb[(tier-1)*nmasters + master_port] = per-master arbitration entry
++ */
++#define ARB_BWMASK		0x7FFF
++#define ARB_TIERMASK		0x8000
++#define ARB_TIER1		1
++#define ARB_TIER2		2
++
++static const struct clk_bulk_data msm8660_afab_clocks[] = {
++	{ .id = "bus" },
++	{ .id = "bus_a" },
++	{ .id = "ebi1" },
++	{ .id = "ebi1_a" },
++};
++
++static const struct clk_bulk_data msm8660_sfab_clocks[] = {
++	{ .id = "bus" },
++	{ .id = "bus_a" },
++};
++
++static const struct clk_bulk_data msm8660_mmfab_clocks[] = {
++	{ .id = "bus" },
++	{ .id = "bus_a" },
++	{ .id = "smi" },
++	{ .id = "smi_a" },
++};
++
++static const struct clk_bulk_data msm8660_dfab_clocks[] = {
++	{ .id = "bus" },
++	{ .id = "bus_a" },
++};
++
++/**
++ * struct msm8660_icc_node - MSM8660 specific interconnect nodes
++ * @name: the node name used in debugfs
++ * @node: backing icc_node pointer, populated at probe via icc_node_create_dyn()
++ * @num_links: the total number of @link_nodes
++ * @buswidth: width of the interconnect between a node and the bus (bytes)
++ * @mas_port: master port index for RPM ARB (-1 if not a master)
++ * @slv_port: slave port index for RPM bwsum (-1 if not a slave)
++ * @mas_tier: master priority tier (ARB_TIER1 or ARB_TIER2, 0 if N/A)
++ * @link_nodes: flexible array of pointers to qnodes reachable from this node
++ */
++struct msm8660_icc_node {
++	const char *name;
++	struct icc_node *node;
++	u16 num_links;
++	u16 buswidth;
++	s8 mas_port;
++	s8 slv_port;
++	u8 mas_tier;
++	struct msm8660_icc_node *link_nodes[];
++};
++
++/**
++ * struct msm8660_icc_desc - Fabric descriptor
++ * @nodes: array of node pointers
++ * @num_nodes: number of nodes
++ * @bus_clks: clock definitions
++ * @num_clks: number of clocks
++ * @rpm_resource: QCOM_RPM_*_FABRIC_ARB constant, or -1 for no ARB
++ * @nmasters: number of master ports in this fabric (for ARB array sizing)
++ * @nslaves: number of slave ports in this fabric (for bwsum array sizing)
++ * @ntieredslaves: number of tiered slaves (ARB rows)
++ * @default_tiered_slave: 1-based index of default tiered slave for masters
++ * @rpm_buf_size: number of u32 words for RPM write
++ * @bus_width: representative fabric bus width in bytes, used as the
++ *             divisor for translating aggregate bytes/sec into a single
++ *             clock rate that drives the whole fabric
++ */
++struct msm8660_icc_desc {
++	struct msm8660_icc_node * const *nodes;
++	size_t num_nodes;
++	const struct clk_bulk_data *bus_clks;
++	size_t num_clks;
++	int rpm_resource;
++	u8 nmasters;
++	u8 nslaves;
++	u8 ntieredslaves;
++	u8 default_tiered_slave;
++	u8 rpm_buf_size;
++	u8 bus_width;
++};
++
++/**
++ * struct msm8660_icc_provider - MSM8660 specific interconnect provider
++ * @provider: generic interconnect provider
++ * @bus_clks: the clk_bulk_data table of bus clocks
++ * @num_clks: the total number of clk_bulk_data entries
++ * @rpm: RPM handle for fabric arbitration writes
++ * @desc: fabric descriptor with RPM metadata
++ * @arb: pre-allocated arbitration array (nmasters * ntieredslaves u16 entries)
++ * @bwsum: pre-allocated bandwidth sum array (nslaves u16 entries)
++ * @rpm_buf: pre-allocated RPM write buffer (rpm_buf_size u32 entries)
++ * @rate: last clock rate applied to the fabric bus_clks, used as the
++ *        single source of truth for whether the rate actually needs to
++ *        be reprogrammed (per-node caching would desync when different
++ *        masters update at different times)
++ * @commit_lock: serialises msm8660_rpm_commit(). The ICC core can dispatch
++ *        provider->set concurrently from different CPUs; without this lock
++ *        the shared @arb / @bwsum / @rpm_buf scratch buffers would race
++ *        (interleaved memset() and overlapping per-node writes), corrupting
++ *        the packet handed to qcom_rpm_write() and producing malformed
++ *        fabric arbitration on the wire.
++ */
++struct msm8660_icc_provider {
++	struct icc_provider provider;
++	struct clk_bulk_data *bus_clks;
++	int num_clks;
++	struct qcom_rpm *rpm;
++	const struct msm8660_icc_desc *desc;
++	u16 *arb;
++	u16 *bwsum;
++	u32 *rpm_buf;
++	u32 rate;
++	struct mutex commit_lock;
++};
++
++/*
++ * Forward declarations for all qnodes.
++ *
++ * Because qnode definitions now use pointer-based .link_nodes = { &foo, ... }
++ * with a flexible array member, every qnode that appears as a link target
++ * must be visible at the point of use. Forward-declaring all qnodes up front
++ * keeps the order-of-definition concern out of the per-fabric sections and
++ * mirrors the pattern used by drivers/interconnect/qcom/sa8775p.c.
++ */
++/* APPSS Fabric */
++static struct msm8660_icc_node mas_ampss_m0;
++static struct msm8660_icc_node mas_ampss_m1;
++static struct msm8660_icc_node slv_ebi_ch0;
++static struct msm8660_icc_node slv_ampss_l2;
++static struct msm8660_icc_node afab_to_mmss;
++static struct msm8660_icc_node afab_to_system;
++
++/* System Fabric */
++static struct msm8660_icc_node sfab_mas_appss;
++static struct msm8660_icc_node sfab_mas_sps;
++static struct msm8660_icc_node sfab_mas_adm0_port0;
++static struct msm8660_icc_node sfab_mas_adm0_port1;
++static struct msm8660_icc_node sfab_mas_adm1_port0;
++static struct msm8660_icc_node sfab_mas_adm1_port1;
++static struct msm8660_icc_node sfab_mas_lpass_proc;
++static struct msm8660_icc_node sfab_mas_mss_proci;
++static struct msm8660_icc_node sfab_mas_mss_procd;
++static struct msm8660_icc_node sfab_mas_mss_mdm_port0;
++static struct msm8660_icc_node sfab_mas_lpass;
++static struct msm8660_icc_node sfab_mas_mmss_fpb;
++static struct msm8660_icc_node sfab_mas_adm1_ci;
++static struct msm8660_icc_node sfab_mas_adm0_ci;
++static struct msm8660_icc_node sfab_mas_mss_mdm_port1;
++static struct msm8660_icc_node sfab_mas_usb_hs;
++static struct msm8660_icc_node sfab_to_appss;
++static struct msm8660_icc_node sfab_to_system_fpb;
++static struct msm8660_icc_node sfab_to_cpss_fpb;
++static struct msm8660_icc_node sfab_slv_sps;
++static struct msm8660_icc_node sfab_slv_system_imem;
++static struct msm8660_icc_node sfab_slv_ampss;
++static struct msm8660_icc_node sfab_slv_mss;
++static struct msm8660_icc_node sfab_slv_lpass;
++static struct msm8660_icc_node sfab_slv_mmss_fpb;
++static struct msm8660_icc_node sfab_to_dfab;
++
++/* MMSS Fabric */
++static struct msm8660_icc_node mmfab_mas_mdp_port0;
++static struct msm8660_icc_node mmfab_mas_mdp_port1;
++static struct msm8660_icc_node mmfab_mas_adm1_port0;
++static struct msm8660_icc_node mmfab_mas_rotator;
++static struct msm8660_icc_node mmfab_mas_graphics_3d;
++static struct msm8660_icc_node mmfab_mas_jpeg_dec;
++static struct msm8660_icc_node mmfab_mas_graphics_2d_core0;
++static struct msm8660_icc_node mmfab_mas_vfe;
++static struct msm8660_icc_node mmfab_mas_vpe;
++static struct msm8660_icc_node mmfab_mas_jpeg_enc;
++static struct msm8660_icc_node mmfab_mas_graphics_2d_core1;
++static struct msm8660_icc_node mmfab_mas_hd_codec_port0;
++static struct msm8660_icc_node mmfab_mas_hd_codec_port1;
++static struct msm8660_icc_node mmfab_to_appss;
++static struct msm8660_icc_node mmfab_slv_smi;
++static struct msm8660_icc_node mmfab_slv_mm_imem;
++
++/* Daytona Fabric (DFAB) */
++static struct msm8660_icc_node dfab_mas_sdc1;
++static struct msm8660_icc_node dfab_mas_sdc2;
++static struct msm8660_icc_node dfab_mas_sdc3;
++static struct msm8660_icc_node dfab_mas_sdc4;
++static struct msm8660_icc_node dfab_mas_sdc5;
++static struct msm8660_icc_node dfab_mas_adm0_master;
++static struct msm8660_icc_node dfab_mas_adm1_master;
++static struct msm8660_icc_node dfab_to_sfab;
++static struct msm8660_icc_node dfab_slv_sdc1;
++static struct msm8660_icc_node dfab_slv_sdc2;
++static struct msm8660_icc_node dfab_slv_sdc3;
++static struct msm8660_icc_node dfab_slv_sdc4;
++static struct msm8660_icc_node dfab_slv_sdc5;
++static struct msm8660_icc_node dfab_mas_usb_hs;
++static struct msm8660_icc_node dfab_mas_dsps;
++
++/*
++ * =========================================================================
++ * APPSS Fabric nodes
++ *
++ * 4 masters, 4 slaves, 2 tiered slaves
++ * Master ports: SMPSS_M0=0, SMPSS_M1=1, FAB_MMSS=2, FAB_SYSTEM=3
++ * Slave ports:  EBI_CH0=0, SMPSS_L2=1, MMSS_FAB=2, SYSTEM_FAB=3
++ * Default target: tiered slave 1 (EBI_CH0)
++ * =========================================================================
++ */
++static struct msm8660_icc_node mas_ampss_m0 = {
++	.name = "mas_ampss_m0",
++	.num_links = 3,
++	.buswidth = 8,
++	.mas_port = 0,
++	.slv_port = -1,
++	.mas_tier = ARB_TIER2,
++	.link_nodes = { &slv_ebi_ch0, &afab_to_mmss, &afab_to_system },
++};
++
++static struct msm8660_icc_node mas_ampss_m1 = {
++	.name = "mas_ampss_m1",
++	.num_links = 3,
++	.buswidth = 8,
++	.mas_port = 1,
++	.slv_port = -1,
++	.mas_tier = ARB_TIER2,
++	.link_nodes = { &slv_ebi_ch0, &afab_to_mmss, &afab_to_system },
++};
++
++static struct msm8660_icc_node slv_ebi_ch0 = {
++	.name = "slv_ebi_ch0",
++	.num_links = 0,
++	.buswidth = 8,
++	.mas_port = -1,
++	.slv_port = 0,
++	.mas_tier = 0,
++};
++
++static struct msm8660_icc_node slv_ampss_l2 = {
++	.name = "slv_ampss_l2",
++	.num_links = 0,
++	.buswidth = 8,
++	.mas_port = -1,
++	.slv_port = 1,
++	.mas_tier = 0,
++};
++
++/*
++ * Gateway nodes need links to both the cross-fabric gateway AND the memory
++ * slave to enable cross-fabric paths. Without link to EBI_CH0, path_find()
++ * can't route from MMSS/System fabric masters to main memory.
++ *
++ * AFAB_TO_MMSS doubles as AFAB master port 2 (the FAB_MMSS master). MDP
++ * scanout and GPU traffic enter AFAB through this gateway. Mark it
++ * ARB_TIER1 so display/multimedia traffic keeps priority over CPU L2
++ * misses inside the APPSS fabric — without this, MDP TIER1 priority
++ * earned in MMFAB is dropped at the AFAB boundary and MDP fetches lose
++ * arbitration to CPU traffic, producing PRIMARY_INTF_UDERRUN.
++ */
++static struct msm8660_icc_node afab_to_mmss = {
++	.name = "afab_to_mmss",
++	.num_links = 2,
++	.buswidth = 8,
++	.mas_port = 2,
++	.slv_port = 2,
++	.mas_tier = ARB_TIER1,
++	.link_nodes = { &mmfab_to_appss, &slv_ebi_ch0 },
++};
++
++static struct msm8660_icc_node afab_to_system = {
++	.name = "afab_to_system",
++	.num_links = 2,
++	.buswidth = 8,
++	.mas_port = 3,
++	.slv_port = 3,
++	.mas_tier = ARB_TIER2,
++	.link_nodes = { &sfab_to_appss, &slv_ebi_ch0 },
++};
++
++static struct msm8660_icc_node * const msm8660_afab_nodes[] = {
++	[AFAB_MAS_AMPSS_M0] = &mas_ampss_m0,
++	[AFAB_MAS_AMPSS_M1] = &mas_ampss_m1,
++	[AFAB_SLV_EBI_CH0] = &slv_ebi_ch0,
++	[AFAB_SLV_AMPSS_L2] = &slv_ampss_l2,
++	[AFAB_TO_MMSS] = &afab_to_mmss,
++	[AFAB_TO_SYSTEM] = &afab_to_system,
++};
++
++static const struct msm8660_icc_desc msm8660_afab = {
++	.nodes = msm8660_afab_nodes,
++	.num_nodes = ARRAY_SIZE(msm8660_afab_nodes),
++	.bus_clks = msm8660_afab_clocks,
++	.num_clks = ARRAY_SIZE(msm8660_afab_clocks),
++	.rpm_resource = QCOM_RPM_APPS_FABRIC_ARB,
++	.nmasters = 4,
++	.nslaves = 4,
++	.ntieredslaves = 2,
++	.default_tiered_slave = 1,	/* EBI_CH0 */
++	.rpm_buf_size = 6,
++	.bus_width = 8,			/* 64-bit APPSS fabric datapath */
++};
++
++/*
++ * =========================================================================
++ * System Fabric nodes
++ *
++ * 17 masters, 9 slaves, 2 tiered slaves
++ * Master ports: see enum msm_bus_8660_master_ports_type in legacy vendor kernel
++ * Slave ports:  APPSS_FAB=0, SPS=1, SYSTEM_IMEM=2, SMPSS=3, MSS=4,
++ *               LPASS=5, CPSS_FPB=6, SYSTEM_FPB=7, MMSS_FPB=8
++ * Default target: tiered slave 1 (APPSS gateway)
++ * =========================================================================
++ */
++static struct msm8660_icc_node sfab_mas_appss = {
++	.name = "sfab_mas_appss",
++	.num_links = 1,
++	.buswidth = 8,
++	.mas_port = 0,
++	.slv_port = -1,
++	.mas_tier = ARB_TIER2,
++	.link_nodes = { &afab_to_system },
++};
++
++static struct msm8660_icc_node sfab_mas_sps = {
++	.name = "sfab_mas_sps",
++	.num_links = 1,
++	.buswidth = 8,
++	.mas_port = 1,
++	.slv_port = -1,
++	.mas_tier = ARB_TIER2,
++	.link_nodes = { &sfab_slv_sps },
++};
++
++/*
++ * ADM DMA masters - route through SFAB_TO_APPSS to reach EBI memory.
++ * Path: ADM -> SFAB_TO_APPSS -> AFAB_TO_SYSTEM -> AFAB_SLV_EBI_CH0
++ * This enables proper EBI bandwidth voting for DMA operations.
++ */
++static struct msm8660_icc_node sfab_mas_adm0_port0 = {
++	.name = "sfab_mas_adm0_port0",
++	.num_links = 1,
++	.buswidth = 8,
++	.mas_port = 2,
++	.slv_port = -1,
++	.mas_tier = ARB_TIER2,
++	.link_nodes = { &sfab_to_appss },
++};
++
++static struct msm8660_icc_node sfab_mas_adm0_port1 = {
++	.name = "sfab_mas_adm0_port1",
++	.num_links = 1,
++	.buswidth = 8,
++	.mas_port = 3,
++	.slv_port = -1,
++	.mas_tier = ARB_TIER2,
++	.link_nodes = { &sfab_to_appss },
++};
++
++static struct msm8660_icc_node sfab_mas_adm1_port0 = {
++	.name = "sfab_mas_adm1_port0",
++	.num_links = 1,
++	.buswidth = 8,
++	.mas_port = 4,
++	.slv_port = -1,
++	.mas_tier = ARB_TIER2,
++	.link_nodes = { &sfab_to_appss },
++};
++
++static struct msm8660_icc_node sfab_mas_adm1_port1 = {
++	.name = "sfab_mas_adm1_port1",
++	.num_links = 1,
++	.buswidth = 8,
++	.mas_port = 5,
++	.slv_port = -1,
++	.mas_tier = ARB_TIER2,
++	.link_nodes = { &sfab_to_appss },
++};
++
++static struct msm8660_icc_node sfab_mas_lpass_proc = {
++	.name = "sfab_mas_lpass_proc",
++	.num_links = 0,
++	.buswidth = 8,
++	.mas_port = 6,
++	.slv_port = -1,
++	.mas_tier = ARB_TIER2,
++};
++
++static struct msm8660_icc_node sfab_mas_mss_proci = {
++	.name = "sfab_mas_mss_proci",
++	.num_links = 0,
++	.buswidth = 8,
++	.mas_port = 7,
++	.slv_port = -1,
++	.mas_tier = ARB_TIER2,
++};
++
++static struct msm8660_icc_node sfab_mas_mss_procd = {
++	.name = "sfab_mas_mss_procd",
++	.num_links = 0,
++	.buswidth = 8,
++	.mas_port = 8,
++	.slv_port = -1,
++	.mas_tier = ARB_TIER2,
++};
++
++static struct msm8660_icc_node sfab_mas_mss_mdm_port0 = {
++	.name = "sfab_mas_mss_mdm_port0",
++	.num_links = 0,
++	.buswidth = 8,
++	.mas_port = 9,
++	.slv_port = -1,
++	.mas_tier = ARB_TIER2,
++};
++
++static struct msm8660_icc_node sfab_mas_lpass = {
++	.name = "sfab_mas_lpass",
++	.num_links = 0,
++	.buswidth = 8,
++	.mas_port = 10,
++	.slv_port = -1,
++	.mas_tier = ARB_TIER2,
++};
++
++static struct msm8660_icc_node sfab_mas_mmss_fpb = {
++	.name = "sfab_mas_mmss_fpb",
++	.num_links = 0,
++	.buswidth = 8,
++	.mas_port = 13,
++	.slv_port = -1,
++	.mas_tier = ARB_TIER2,
++};
++
++static struct msm8660_icc_node sfab_mas_adm1_ci = {
++	.name = "sfab_mas_adm1_ci",
++	.num_links = 0,
++	.buswidth = 8,
++	.mas_port = 14,
++	.slv_port = -1,
++	.mas_tier = ARB_TIER2,
++};
++
++static struct msm8660_icc_node sfab_mas_adm0_ci = {
++	.name = "sfab_mas_adm0_ci",
++	.num_links = 0,
++	.buswidth = 8,
++	.mas_port = 15,
++	.slv_port = -1,
++	.mas_tier = ARB_TIER2,
++};
++
++static struct msm8660_icc_node sfab_mas_mss_mdm_port1 = {
++	.name = "sfab_mas_mss_mdm_port1",
++	.num_links = 0,
++	.buswidth = 8,
++	.mas_port = 16,
++	.slv_port = -1,
++	.mas_tier = ARB_TIER2,
++};
++
++/* USB HS has no dedicated master port in legacy vendor kernel SFAB - bandwidth voting only */
++static struct msm8660_icc_node sfab_mas_usb_hs = {
++	.name = "sfab_mas_usb_hs",
++	.num_links = 1,
++	.buswidth = 8,
++	.mas_port = -1,
++	.slv_port = -1,
++	.mas_tier = 0,
++	.link_nodes = { &sfab_to_appss },
++};
++
++static struct msm8660_icc_node sfab_to_appss = {
++	.name = "sfab_to_appss",
++	.num_links = 1,
++	.buswidth = 8,
++	.mas_port = -1,
++	.slv_port = 0,
++	.mas_tier = 0,
++	.link_nodes = { &afab_to_system },
++};
++
++static struct msm8660_icc_node sfab_to_system_fpb = {
++	.name = "sfab_to_system_fpb",
++	.num_links = 0,
++	.buswidth = 4,
++	.mas_port = -1,
++	.slv_port = 7,
++	.mas_tier = 0,
++};
++
++static struct msm8660_icc_node sfab_to_cpss_fpb = {
++	.name = "sfab_to_cpss_fpb",
++	.num_links = 0,
++	.buswidth = 4,
++	.mas_port = -1,
++	.slv_port = 6,
++	.mas_tier = 0,
++};
++
++static struct msm8660_icc_node sfab_slv_sps = {
++	.name = "sfab_slv_sps",
++	.num_links = 0,
++	.buswidth = 8,
++	.mas_port = -1,
++	.slv_port = 1,
++	.mas_tier = 0,
++};
++
++static struct msm8660_icc_node sfab_slv_system_imem = {
++	.name = "sfab_slv_system_imem",
++	.num_links = 0,
++	.buswidth = 8,
++	.mas_port = -1,
++	.slv_port = 2,
++	.mas_tier = 0,
++};
++
++static struct msm8660_icc_node sfab_slv_ampss = {
++	.name = "sfab_slv_ampss",
++	.num_links = 0,
++	.buswidth = 8,
++	.mas_port = -1,
++	.slv_port = 3,
++	.mas_tier = 0,
++};
++
++static struct msm8660_icc_node sfab_slv_mss = {
++	.name = "sfab_slv_mss",
++	.num_links = 0,
++	.buswidth = 8,
++	.mas_port = -1,
++	.slv_port = 4,
++	.mas_tier = 0,
++};
++
++static struct msm8660_icc_node sfab_slv_lpass = {
++	.name = "sfab_slv_lpass",
++	.num_links = 0,
++	.buswidth = 8,
++	.mas_port = -1,
++	.slv_port = 5,
++	.mas_tier = 0,
++};
++
++static struct msm8660_icc_node sfab_slv_mmss_fpb = {
++	.name = "sfab_slv_mmss_fpb",
++	.num_links = 0,
++	.buswidth = 8,
++	.mas_port = -1,
++	.slv_port = 8,
++	.mas_tier = 0,
++};
++
++/*
++ * Gateway to DFAB: links to DFAB_TO_SFAB for path traversal.
++ * Also links to SFAB_TO_APPSS to enable DFAB->SFAB->AFAB->memory paths.
++ * No slave port in legacy vendor kernel SFAB config (DFAB is separate fabric).
++ */
++static struct msm8660_icc_node sfab_to_dfab = {
++	.name = "sfab_to_dfab",
++	.num_links = 2,
++	.buswidth = 8,
++	.mas_port = -1,
++	.slv_port = -1,
++	.mas_tier = 0,
++	.link_nodes = { &dfab_to_sfab, &sfab_to_appss },
++};
++
++static struct msm8660_icc_node * const msm8660_sfab_nodes[] = {
++	[SFAB_MAS_APPSS] = &sfab_mas_appss,
++	[SFAB_MAS_SPS] = &sfab_mas_sps,
++	[SFAB_MAS_ADM0_PORT0] = &sfab_mas_adm0_port0,
++	[SFAB_MAS_ADM0_PORT1] = &sfab_mas_adm0_port1,
++	[SFAB_MAS_ADM1_PORT0] = &sfab_mas_adm1_port0,
++	[SFAB_MAS_ADM1_PORT1] = &sfab_mas_adm1_port1,
++	[SFAB_MAS_LPASS_PROC] = &sfab_mas_lpass_proc,
++	[SFAB_MAS_MSS_PROCI] = &sfab_mas_mss_proci,
++	[SFAB_MAS_MSS_PROCD] = &sfab_mas_mss_procd,
++	[SFAB_MAS_MSS_MDM_PORT0] = &sfab_mas_mss_mdm_port0,
++	[SFAB_MAS_LPASS] = &sfab_mas_lpass,
++	[SFAB_MAS_MMSS_FPB] = &sfab_mas_mmss_fpb,
++	[SFAB_MAS_ADM1_CI] = &sfab_mas_adm1_ci,
++	[SFAB_MAS_ADM0_CI] = &sfab_mas_adm0_ci,
++	[SFAB_MAS_MSS_MDM_PORT1] = &sfab_mas_mss_mdm_port1,
++	[SFAB_MAS_USB_HS] = &sfab_mas_usb_hs,
++	[SFAB_TO_APPSS] = &sfab_to_appss,
++	[SFAB_TO_SYSTEM_FPB] = &sfab_to_system_fpb,
++	[SFAB_TO_CPSS_FPB] = &sfab_to_cpss_fpb,
++	[SFAB_SLV_SPS] = &sfab_slv_sps,
++	[SFAB_SLV_SYSTEM_IMEM] = &sfab_slv_system_imem,
++	[SFAB_SLV_AMPSS] = &sfab_slv_ampss,
++	[SFAB_SLV_MSS] = &sfab_slv_mss,
++	[SFAB_SLV_LPASS] = &sfab_slv_lpass,
++	[SFAB_SLV_MMSS_FPB] = &sfab_slv_mmss_fpb,
++	[SFAB_TO_DFAB] = &sfab_to_dfab,
++};
++
++static const struct msm8660_icc_desc msm8660_sfab = {
++	.nodes = msm8660_sfab_nodes,
++	.num_nodes = ARRAY_SIZE(msm8660_sfab_nodes),
++	.bus_clks = msm8660_sfab_clocks,
++	.num_clks = ARRAY_SIZE(msm8660_sfab_clocks),
++	.rpm_resource = QCOM_RPM_SYS_FABRIC_ARB,
++	.nmasters = 17,
++	.nslaves = 9,
++	.ntieredslaves = 2,
++	.default_tiered_slave = 1,	/* APPSS gateway */
++	.rpm_buf_size = 22,
++	.bus_width = 8,			/* 64-bit System fabric datapath */
++};
++
++/*
++ * =========================================================================
++ * MMSS Fabric nodes - Multimedia subsystem (MDP, camera, video, GPU)
++ *
++ * 14 masters, 4 slaves, 3 tiered slaves
++ * Master ports: MDP0=0, MDP1=1, ADM1=2, ROT=3, 3D=4, JPEG_DEC=5,
++ *               2D_CORE0=6, VFE=7, VPE=8, JPEG_ENC=9, 2D_CORE1=10,
++ *               (APPS_FAB=11), HD_CODEC0=12, HD_CODEC1=13
++ * Slave ports:  SMI=0, APPSS_FAB=1, (APPSS_FAB_1=2), MM_IMEM=3
++ * Tiered slaves: SMI=1, APPSS_FAB=2, MM_IMEM=3
++ * Default target: tiered slave 2 (APPSS gateway -> main memory)
++ *
++ * MDP ports get TIER1 (high priority) for guaranteed display refresh.
++ * All other masters get TIER2 (default priority).
++ * =========================================================================
++ */
++static struct msm8660_icc_node mmfab_mas_mdp_port0 = {
++	.name = "mmfab_mas_mdp_port0",
++	.num_links = 2,
++	.buswidth = 16,
++	.mas_port = 0,
++	.slv_port = -1,
++	.mas_tier = ARB_TIER1,
++	.link_nodes = { &mmfab_slv_smi, &mmfab_to_appss },
++};
++
++static struct msm8660_icc_node mmfab_mas_mdp_port1 = {
++	.name = "mmfab_mas_mdp_port1",
++	.num_links = 2,
++	.buswidth = 16,
++	.mas_port = 1,
++	.slv_port = -1,
++	.mas_tier = ARB_TIER1,
++	.link_nodes = { &mmfab_slv_smi, &mmfab_to_appss },
++};
++
++static struct msm8660_icc_node mmfab_mas_adm1_port0 = {
++	.name = "mmfab_mas_adm1_port0",
++	.num_links = 0,
++	.buswidth = 8,
++	.mas_port = 2,
++	.slv_port = -1,
++	.mas_tier = ARB_TIER2,
++};
++
++static struct msm8660_icc_node mmfab_mas_rotator = {
++	.name = "mmfab_mas_rotator",
++	.num_links = 2,
++	.buswidth = 16,
++	.mas_port = 3,
++	.slv_port = -1,
++	.mas_tier = ARB_TIER2,
++	.link_nodes = { &mmfab_slv_smi, &mmfab_to_appss },
++};
++
++static struct msm8660_icc_node mmfab_mas_graphics_3d = {
++	.name = "mmfab_mas_graphics_3d",
++	.num_links = 2,
++	.buswidth = 16,
++	.mas_port = 4,
++	.slv_port = -1,
++	.mas_tier = ARB_TIER2,
++	.link_nodes = { &mmfab_slv_smi, &mmfab_to_appss },
++};
++
++static struct msm8660_icc_node mmfab_mas_jpeg_dec = {
++	.name = "mmfab_mas_jpeg_dec",
++	.num_links = 2,
++	.buswidth = 16,
++	.mas_port = 5,
++	.slv_port = -1,
++	.mas_tier = ARB_TIER2,
++	.link_nodes = { &mmfab_slv_smi, &mmfab_to_appss },
++};
++
++static struct msm8660_icc_node mmfab_mas_graphics_2d_core0 = {
++	.name = "mmfab_mas_graphics_2d_core0",
++	.num_links = 2,
++	.buswidth = 16,
++	.mas_port = 6,
++	.slv_port = -1,
++	.mas_tier = ARB_TIER2,
++	.link_nodes = { &mmfab_slv_smi, &mmfab_to_appss },
++};
++
++static struct msm8660_icc_node mmfab_mas_vfe = {
++	.name = "mmfab_mas_vfe",
++	.num_links = 2,
++	.buswidth = 16,
++	.mas_port = 7,
++	.slv_port = -1,
++	.mas_tier = ARB_TIER2,
++	.link_nodes = { &mmfab_slv_smi, &mmfab_to_appss },
++};
++
++static struct msm8660_icc_node mmfab_mas_vpe = {
++	.name = "mmfab_mas_vpe",
++	.num_links = 2,
++	.buswidth = 16,
++	.mas_port = 8,
++	.slv_port = -1,
++	.mas_tier = ARB_TIER2,
++	.link_nodes = { &mmfab_slv_smi, &mmfab_to_appss },
++};
++
++static struct msm8660_icc_node mmfab_mas_jpeg_enc = {
++	.name = "mmfab_mas_jpeg_enc",
++	.num_links = 2,
++	.buswidth = 16,
++	.mas_port = 9,
++	.slv_port = -1,
++	.mas_tier = ARB_TIER2,
++	.link_nodes = { &mmfab_slv_smi, &mmfab_to_appss },
++};
++
++static struct msm8660_icc_node mmfab_mas_graphics_2d_core1 = {
++	.name = "mmfab_mas_graphics_2d_core1",
++	.num_links = 2,
++	.buswidth = 16,
++	.mas_port = 10,
++	.slv_port = -1,
++	.mas_tier = ARB_TIER2,
++	.link_nodes = { &mmfab_slv_smi, &mmfab_to_appss },
++};
++
++static struct msm8660_icc_node mmfab_mas_hd_codec_port0 = {
++	.name = "mmfab_mas_hd_codec_port0",
++	.num_links = 2,
++	.buswidth = 16,
++	.mas_port = 12,
++	.slv_port = -1,
++	.mas_tier = ARB_TIER2,
++	.link_nodes = { &mmfab_slv_smi, &mmfab_to_appss },
++};
++
++static struct msm8660_icc_node mmfab_mas_hd_codec_port1 = {
++	.name = "mmfab_mas_hd_codec_port1",
++	.num_links = 2,
++	.buswidth = 16,
++	.mas_port = 13,
++	.slv_port = -1,
++	.mas_tier = ARB_TIER2,
++	.link_nodes = { &mmfab_slv_smi, &mmfab_to_appss },
++};
++
++/*
++ * Gateway from APPSS into MMSS: slave (port 1) for outbound traffic
++ * leaving MMSS, AND master (port 2) for inbound traffic arriving from
++ * APPSS (e.g. CPU memremap_wc accesses to SMI BOs). Without the master
++ * port and the forward links into MMFAB slaves (SMI / MM_IMEM), the
++ * ICC path-finder has no route from AMPSS_M0 to MMFAB_SLV_SMI; the
++ * cross-fabric gateway only worked for outbound traffic (MMSS masters
++ * reaching APPSS slaves like EBI).
++ *
++ * ARB_TIER1 keeps AMPSS->SMI traffic high-priority within MMFAB so
++ * CPU mmap reads/writes to SMI BOs don't get starved by MDP scanout.
++ */
++static struct msm8660_icc_node mmfab_to_appss = {
++	.name = "mmfab_to_appss",
++	.num_links = 3,
++	.buswidth = 8,
++	.mas_port = 11,
++	.slv_port = 1,
++	.mas_tier = ARB_TIER1,
++	.link_nodes = { &afab_to_mmss, &mmfab_slv_smi, &mmfab_slv_mm_imem },
++};
++
++static struct msm8660_icc_node mmfab_slv_smi = {
++	.name = "mmfab_slv_smi",
++	.num_links = 0,
++	.buswidth = 16,
++	.mas_port = -1,
++	.slv_port = 0,
++	.mas_tier = 0,
++};
++
++static struct msm8660_icc_node mmfab_slv_mm_imem = {
++	.name = "mmfab_slv_mm_imem",
++	.num_links = 0,
++	.buswidth = 8,
++	.mas_port = -1,
++	.slv_port = 3,
++	.mas_tier = 0,
++};
++
++static struct msm8660_icc_node * const msm8660_mmfab_nodes[] = {
++	[MMFAB_MAS_MDP_PORT0] = &mmfab_mas_mdp_port0,
++	[MMFAB_MAS_MDP_PORT1] = &mmfab_mas_mdp_port1,
++	[MMFAB_MAS_ADM1_PORT0] = &mmfab_mas_adm1_port0,
++	[MMFAB_MAS_ROTATOR] = &mmfab_mas_rotator,
++	[MMFAB_MAS_GRAPHICS_3D] = &mmfab_mas_graphics_3d,
++	[MMFAB_MAS_JPEG_DEC] = &mmfab_mas_jpeg_dec,
++	[MMFAB_MAS_GRAPHICS_2D_CORE0] = &mmfab_mas_graphics_2d_core0,
++	[MMFAB_MAS_VFE] = &mmfab_mas_vfe,
++	[MMFAB_MAS_VPE] = &mmfab_mas_vpe,
++	[MMFAB_MAS_JPEG_ENC] = &mmfab_mas_jpeg_enc,
++	[MMFAB_MAS_GRAPHICS_2D_CORE1] = &mmfab_mas_graphics_2d_core1,
++	[MMFAB_MAS_HD_CODEC_PORT0] = &mmfab_mas_hd_codec_port0,
++	[MMFAB_MAS_HD_CODEC_PORT1] = &mmfab_mas_hd_codec_port1,
++	[MMFAB_TO_APPSS] = &mmfab_to_appss,
++	[MMFAB_SLV_SMI] = &mmfab_slv_smi,
++	[MMFAB_SLV_MM_IMEM] = &mmfab_slv_mm_imem,
++};
++
++static const struct msm8660_icc_desc msm8660_mmfab = {
++	.nodes = msm8660_mmfab_nodes,
++	.num_nodes = ARRAY_SIZE(msm8660_mmfab_nodes),
++	.bus_clks = msm8660_mmfab_clocks,
++	.num_clks = ARRAY_SIZE(msm8660_mmfab_clocks),
++	.rpm_resource = QCOM_RPM_MM_FABRIC_ARB,
++	.nmasters = 14,
++	.nslaves = 4,
++	.ntieredslaves = 3,
++	.default_tiered_slave = 2,	/* APPSS gateway */
++	.rpm_buf_size = 23,
++	.bus_width = 16,		/* 128-bit Multimedia fabric datapath */
++};
++
++/*
++ * =========================================================================
++ * Daytona Fabric (DFAB) nodes - peripheral bus for SDCC and ADM DMA
++ *
++ * DFAB connects slower peripherals to SFAB via the DFAB_TO_SFAB gateway.
++ * SDCC controllers (eMMC, SD card) connect here.
++ *
++ * No RPM ARB for DFAB - it's a simple peripheral bus with clock-only control.
++ *
++ * USB HS is included as a DFAB voter for compatibility with the legacy
++ * legacy vendor kernel clock voting mechanism.
++ * =========================================================================
++ */
++static struct msm8660_icc_node dfab_mas_sdc1 = {
++	.name = "dfab_mas_sdc1",
++	.num_links = 1,
++	.buswidth = 8,
++	.mas_port = -1,
++	.slv_port = -1,
++	.mas_tier = 0,
++	.link_nodes = { &dfab_to_sfab },
++};
++
++static struct msm8660_icc_node dfab_mas_sdc2 = {
++	.name = "dfab_mas_sdc2",
++	.num_links = 1,
++	.buswidth = 8,
++	.mas_port = -1,
++	.slv_port = -1,
++	.mas_tier = 0,
++	.link_nodes = { &dfab_to_sfab },
++};
++
++static struct msm8660_icc_node dfab_mas_sdc3 = {
++	.name = "dfab_mas_sdc3",
++	.num_links = 1,
++	.buswidth = 8,
++	.mas_port = -1,
++	.slv_port = -1,
++	.mas_tier = 0,
++	.link_nodes = { &dfab_to_sfab },
++};
++
++static struct msm8660_icc_node dfab_mas_sdc4 = {
++	.name = "dfab_mas_sdc4",
++	.num_links = 1,
++	.buswidth = 8,
++	.mas_port = -1,
++	.slv_port = -1,
++	.mas_tier = 0,
++	.link_nodes = { &dfab_to_sfab },
++};
++
++static struct msm8660_icc_node dfab_mas_sdc5 = {
++	.name = "dfab_mas_sdc5",
++	.num_links = 1,
++	.buswidth = 8,
++	.mas_port = -1,
++	.slv_port = -1,
++	.mas_tier = 0,
++	.link_nodes = { &dfab_to_sfab },
++};
++
++static struct msm8660_icc_node dfab_mas_adm0_master = {
++	.name = "dfab_mas_adm0_master",
++	.num_links = 1,
++	.buswidth = 8,
++	.mas_port = -1,
++	.slv_port = -1,
++	.mas_tier = 0,
++	.link_nodes = { &dfab_to_sfab },
++};
++
++static struct msm8660_icc_node dfab_mas_adm1_master = {
++	.name = "dfab_mas_adm1_master",
++	.num_links = 1,
++	.buswidth = 8,
++	.mas_port = -1,
++	.slv_port = -1,
++	.mas_tier = 0,
++	.link_nodes = { &dfab_to_sfab },
++};
++
++static struct msm8660_icc_node dfab_to_sfab = {
++	.name = "dfab_to_sfab",
++	.num_links = 1,
++	.buswidth = 8,
++	.mas_port = -1,
++	.slv_port = -1,
++	.mas_tier = 0,
++	.link_nodes = { &sfab_to_dfab },
++};
++
++static struct msm8660_icc_node dfab_slv_sdc1 = {
++	.name = "dfab_slv_sdc1",
++	.num_links = 0,
++	.buswidth = 8,
++	.mas_port = -1,
++	.slv_port = -1,
++	.mas_tier = 0,
++};
++
++static struct msm8660_icc_node dfab_slv_sdc2 = {
++	.name = "dfab_slv_sdc2",
++	.num_links = 0,
++	.buswidth = 8,
++	.mas_port = -1,
++	.slv_port = -1,
++	.mas_tier = 0,
++};
++
++static struct msm8660_icc_node dfab_slv_sdc3 = {
++	.name = "dfab_slv_sdc3",
++	.num_links = 0,
++	.buswidth = 8,
++	.mas_port = -1,
++	.slv_port = -1,
++	.mas_tier = 0,
++};
++
++static struct msm8660_icc_node dfab_slv_sdc4 = {
++	.name = "dfab_slv_sdc4",
++	.num_links = 0,
++	.buswidth = 8,
++	.mas_port = -1,
++	.slv_port = -1,
++	.mas_tier = 0,
++};
++
++static struct msm8660_icc_node dfab_slv_sdc5 = {
++	.name = "dfab_slv_sdc5",
++	.num_links = 0,
++	.buswidth = 8,
++	.mas_port = -1,
++	.slv_port = -1,
++	.mas_tier = 0,
++};
++
++/* USB HS DFAB voter - keeps DFAB clock stable during USB activity */
++static struct msm8660_icc_node dfab_mas_usb_hs = {
++	.name = "dfab_mas_usb_hs",
++	.num_links = 1,
++	.buswidth = 8,
++	.mas_port = -1,
++	.slv_port = -1,
++	.mas_tier = 0,
++	.link_nodes = { &dfab_to_sfab },
++};
++
++/* DSPS DFAB voter - keeps DFAB clock stable during sensor activity */
++static struct msm8660_icc_node dfab_mas_dsps = {
++	.name = "dfab_mas_dsps",
++	.num_links = 1,
++	.buswidth = 8,
++	.mas_port = -1,
++	.slv_port = -1,
++	.mas_tier = 0,
++	.link_nodes = { &dfab_to_sfab },
++};
++
++static struct msm8660_icc_node * const msm8660_dfab_nodes[] = {
++	[DFAB_MAS_SDC1] = &dfab_mas_sdc1,
++	[DFAB_MAS_SDC2] = &dfab_mas_sdc2,
++	[DFAB_MAS_SDC3] = &dfab_mas_sdc3,
++	[DFAB_MAS_SDC4] = &dfab_mas_sdc4,
++	[DFAB_MAS_SDC5] = &dfab_mas_sdc5,
++	[DFAB_MAS_ADM0_MASTER] = &dfab_mas_adm0_master,
++	[DFAB_MAS_ADM1_MASTER] = &dfab_mas_adm1_master,
++	[DFAB_TO_SFAB] = &dfab_to_sfab,
++	[DFAB_SLV_SDC1] = &dfab_slv_sdc1,
++	[DFAB_SLV_SDC2] = &dfab_slv_sdc2,
++	[DFAB_SLV_SDC3] = &dfab_slv_sdc3,
++	[DFAB_SLV_SDC4] = &dfab_slv_sdc4,
++	[DFAB_SLV_SDC5] = &dfab_slv_sdc5,
++	[DFAB_MAS_USB_HS] = &dfab_mas_usb_hs,
++	[DFAB_MAS_DSPS] = &dfab_mas_dsps,
++};
++
++static const struct msm8660_icc_desc msm8660_dfab = {
++	.nodes = msm8660_dfab_nodes,
++	.num_nodes = ARRAY_SIZE(msm8660_dfab_nodes),
++	.bus_clks = msm8660_dfab_clocks,
++	.num_clks = ARRAY_SIZE(msm8660_dfab_clocks),
++	.rpm_resource = -1,		/* No RPM ARB for DFAB */
++	.bus_width = 8,			/* 64-bit Daytona fabric datapath */
++};
++
++/*
++ * Pack bwsum[] and arb[] arrays into the u32 RPM buffer.
++ *
++ * Two u16 values are packed per u32 word: lower 16 bits first, upper 16 next.
++ * Layout: [bwsum pairs] then [arb pairs], handling odd boundaries.
++ *
++ * This matches the legacy vendor kernel msm_bus_fabric_rpm_commit() packing algorithm.
++ */
++static void msm8660_pack_rpm_data(const u16 *bwsum, int nslaves,
++				  const u16 *arb, int arb_size,
++				  u32 *buf)
++{
++	int i, index = 0;
++
++	/* Pack bwsum pairs */
++	for (i = 0; i + 1 < nslaves; i += 2) {
++		buf[index] = ((u32)bwsum[i + 1] << 16) | bwsum[i];
++		index++;
++	}
++
 +	/*
-+	 * Modern PWRSTS_ON-only GDSCs are pure reset-controllers: there
-+	 * is no rail to bring up so only the reset deassert is needed.
-+	 * Legacy footswitches always need the full power-up + clamp-
-+	 * release sequence below, even when declared PWRSTS_ON, so they
-+	 * must not take this short-circuit.
++	 * Handle boundary between bwsum and arb for odd nslaves. When the
++	 * fabric has no master ports (arb_size == 0) the arb[0] access would
++	 * read out of bounds; pad the lone bwsum into the low half of the
++	 * word instead.
 +	 */
-+	if (sc->pwrsts == PWRSTS_ON && !(sc->flags & LEGACY_FOOTSWITCH))
- 		return gdsc_deassert_reset(sc);
- 
++	if (nslaves & 1) {
++		if (arb_size > 0) {
++			buf[index] = ((u32)arb[0] << 16) | bwsum[i];
++			i = 1;
++		} else {
++			buf[index] = bwsum[i];
++			i = 0;
++		}
++		index++;
++	} else {
++		i = 0;
++	}
++
++	/* Pack arb pairs */
++	for (; i + 1 < arb_size; i += 2) {
++		buf[index] = ((u32)arb[i + 1] << 16) | arb[i];
++		index++;
++	}
++
++	/* Handle odd arb entry at end */
++	if (i < arb_size) {
++		buf[index] = arb[i];
++		index++;
++	}
++}
++
++/*
++ * Send fabric arbitration data to RPM.
++ *
++ * Iterates over all ICC nodes in the provider, builds bwsum/arb arrays
++ * from their aggregated bandwidth, and sends the packed data to RPM.
++ */
++static void msm8660_rpm_commit(struct msm8660_icc_provider *qp)
++{
++	const struct msm8660_icc_desc *desc = qp->desc;
++	struct icc_provider *provider = &qp->provider;
++	int nm = desc->nmasters;
++	int ns = desc->nslaves;
++	int nts = desc->ntieredslaves;
++	int arb_size = nm * nts;
++	int def_ts = desc->default_tiered_slave;
++	struct icc_node *n;
++	int ret;
++
++	memset(qp->bwsum, 0, ns * sizeof(u16));
++	memset(qp->arb, 0, arb_size * sizeof(u16));
++	memset(qp->rpm_buf, 0, desc->rpm_buf_size * sizeof(u32));
++
++	list_for_each_entry(n, &provider->nodes, node_list) {
++		struct msm8660_icc_node *qn = n->data;
++		u64 bw_bytes;
++		u16 bw_128k;
++
++		/* Use max of avg and peak bandwidth, convert to 128KB units */
++		bw_bytes = max(icc_units_to_bps(n->avg_bw),
++			       icc_units_to_bps(n->peak_bw));
++		bw_128k = (u16)min_t(u64, bw_bytes >> 17, ARB_BWMASK);
++
++		/* Set arb entry for masters at their default tiered slave */
++		if (qn->mas_port >= 0 && qn->mas_port < nm && def_ts > 0) {
++			int idx = (def_ts - 1) * nm + qn->mas_port;
++			u8 tier;
++
++			if (idx < arb_size) {
++				tier = bw_128k ? qn->mas_tier : ARB_TIER2;
++				qp->arb[idx] = (tier == ARB_TIER1 ? ARB_TIERMASK : 0)
++					       | (bw_128k & ARB_BWMASK);
++			}
++		}
++
++		/* Set bwsum for slaves */
++		if (qn->slv_port >= 0 && qn->slv_port < ns)
++			qp->bwsum[qn->slv_port] = bw_128k;
++	}
++
++	msm8660_pack_rpm_data(qp->bwsum, ns, qp->arb, arb_size, qp->rpm_buf);
++
++	ret = qcom_rpm_write(qp->rpm, QCOM_RPM_ACTIVE_STATE,
++			     desc->rpm_resource, qp->rpm_buf,
++			     desc->rpm_buf_size);
++	if (ret)
++		dev_err_ratelimited(provider->dev,
++				    "RPM fabric ARB write failed: %d\n", ret);
++}
++
++/*
++ * u64-safe replacement for icc_std_aggregate(): the standard helper sums
++ * average bandwidth into a u32, which can wrap around when summed across
++ * many high-bandwidth nodes. We accumulate in u64 internally and saturate
++ * back to U32_MAX on overflow rather than wrapping silently to a small
++ * value that would underclock the fabric.
++ */
++static int msm8660_icc_aggregate(struct icc_node *node, u32 tag,
++				 u32 avg_bw, u32 peak_bw,
++				 u32 *agg_avg, u32 *agg_peak)
++{
++	u64 new_avg = (u64)*agg_avg + avg_bw;
++
++	*agg_avg = (new_avg > U32_MAX) ? U32_MAX : (u32)new_avg;
++	*agg_peak = max(*agg_peak, peak_bw);
++	return 0;
++}
++
++static int msm8660_icc_set(struct icc_node *src, struct icc_node *dst)
++{
++	struct msm8660_icc_provider *qp;
++	struct icc_provider *provider;
++	struct icc_node *n;
++	u64 rate = 0;
++	int ret, i;
++
++	provider = src->provider;
++	qp = to_msm8660_icc_provider(provider);
++
 +	/*
-+	 * Legacy MSM8x60 footswitch enable sequence:
-+	 *   0. enable the parent regulator supply (if any)
-+	 *   1. assert per-block resets (if SW_RESET)
-+	 *   2. set ENABLE in GDSCR to power up the rail
-+	 *   3. wait 2us for the rail to fully charge
-+	 *   4. deassert resets
-+	 *   5. clear CLAMP in GDSCR to release the I/O clamp
-+	 *   6. wait 5us for clamps to release and signals to settle
++	 * Per icc-rpm.c convention (qcom_icc_bus_aggregate): take the max
++	 * per-node rate across the provider; do not sum, because the framework
++	 * writes each path's bw to every node it traverses, so summing all
++	 * provider nodes overcounts shared-node bandwidth. Taking the max
++	 * gives the hottest single node, which is the correct fabric
++	 * throughput requirement.
++	 */
++	list_for_each_entry(n, &provider->nodes, node_list) {
++		u64 node_bw = max(icc_units_to_bps(n->avg_bw),
++				  icc_units_to_bps(n->peak_bw));
++		u64 node_rate = div_u64(node_bw, qp->desc->bus_width);
++
++		rate = max(rate, node_rate);
++	}
++
++	/* Apply minimum floor to prevent bus starvation */
++	rate = max_t(u64, rate, MSM8660_FABRIC_MIN_RATE);
++	/*
++	 * Cap at INT_MAX in u64 space; min_t(u32, ...) would cast the u64
++	 * down to u32 BEFORE comparing, so a request above 4 GiB/s could
++	 * wrap to a near-zero value below INT_MAX and pass through, then
++	 * be programmed as a near-zero clock rate that effectively halts
++	 * the interconnect fabric.
++	 */
++	rate = min_t(u64, rate, INT_MAX);
++
++	if (qp->rate != rate) {
++		for (i = 0; i < qp->num_clks; i++) {
++			ret = clk_set_rate(qp->bus_clks[i].clk, rate);
++			if (ret) {
++				dev_err(provider->dev,
++					"%s clk_set_rate(%llu) error: %d\n",
++					qp->bus_clks[i].id, rate, ret);
++				/*
++				 * Bail without updating qp->rate so the next
++				 * icc_set call will retry the rate change
++				 * rather than treating it as cached-applied.
++				 */
++				return ret;
++			}
++		}
++		qp->rate = rate;
++	}
++
++	/* Send RPM fabric arbitration if available */
++	if (qp->rpm && qp->desc->rpm_resource >= 0) {
++		guard(mutex)(&qp->commit_lock);
++		msm8660_rpm_commit(qp);
++	}
++
++	return 0;
++}
++
++static int msm8660_get_bw(struct icc_node *node, u32 *avg, u32 *peak)
++{
++	*avg = 0;
++	*peak = 0;
++	return 0;
++}
++
++/*
++ * devm cleanup paired with clk_bulk_prepare_enable() in probe. Registered
++ * via devm_add_action_or_reset() so any subsequent probe error path
++ * (including -EPROBE_DEFER from msm8660_get_rpm()) reliably releases the
++ * prepare/enable reference rather than leaking it across the retry.
++ */
++static void msm8660_icc_clk_release(void *data)
++{
++	struct msm8660_icc_provider *qp = data;
++
++	clk_bulk_disable_unprepare(qp->num_clks, qp->bus_clks);
++}
++
++/*
++ * Look up the RPM that owns fabric arbitration writes.
++ *
++ * Returns NULL if the DT does not have a "qcom,rpm" phandle (in which
++ * case the caller silently drops RPM ARB and runs the fabric purely
++ * via clk_set_rate).
++ *
++ * Returns ERR_PTR(-EPROBE_DEFER) if the RPM device exists in DT but
++ * its driver has not finished probing yet, or if device_link_add()
++ * fails. The caller is expected to propagate this so the interconnect
++ * driver gets retried once the RPM is ready.
++ *
++ * On success returns the qcom_rpm handle and pins the RPM device
++ * lifetime to ours via a consumer-supplier device link, so the
++ * devres-allocated qcom_rpm cannot be freed while we still hold a
++ * pointer to it.
++ */
++static struct qcom_rpm *msm8660_get_rpm(struct device *dev)
++{
++	struct device_node *rpm_np;
++	struct platform_device *rpm_pdev;
++	struct device_link *link;
++	struct qcom_rpm *rpm;
++
++	rpm_np = of_parse_phandle(dev->of_node, "qcom,rpm", 0);
++	if (!rpm_np) {
++		dev_dbg(dev, "no qcom,rpm phandle, RPM ARB disabled\n");
++		return NULL;
++	}
++
++	rpm_pdev = of_find_device_by_node(rpm_np);
++	of_node_put(rpm_np);
++	if (!rpm_pdev)
++		return dev_err_ptr_probe(dev, -EPROBE_DEFER,
++					 "RPM device not found yet\n");
++
++	/*
++	 * Pin the supplier BEFORE reading its drvdata. The device link
++	 * (MANAGED, the default state) prevents the RPM driver from being
++	 * unbound while we hold the link, which closes the window where a
++	 * concurrent unbind+rebind could free the qcom_rpm pointer between
++	 * dev_get_drvdata() and the link being established. If the link
++	 * cannot be added (e.g. supplier is in the process of being
++	 * removed) we defer and retry.
++	 */
++	link = device_link_add(dev, &rpm_pdev->dev,
++			       DL_FLAG_AUTOREMOVE_CONSUMER);
++	put_device(&rpm_pdev->dev);
++	if (!link)
++		return dev_err_ptr_probe(dev, -EPROBE_DEFER,
++					 "failed to add device link to RPM\n");
++
++	/*
++	 * Safe to read drvdata now: the device link pins the supplier so
++	 * it cannot be unbound until our consumer (this interconnect
++	 * provider) is unbound first.
 +	 *
-+	 * No status-bit polling -- the hardware does not expose one, so
-+	 * the fixed delays below are the only safe synchronisation point.
++	 * On the deferred-probe path below we don't (and must not) call
++	 * device_link_remove(): the link is MANAGED with
++	 * DL_FLAG_AUTOREMOVE_CONSUMER, so the driver core releases its
++	 * reference automatically when our probe returns the error and the
++	 * consumer device is unbound. A manual remove would drop an extra
++	 * kref on the link kobject and risk a use-after-free.
 +	 */
-+	if (sc->flags & LEGACY_FOOTSWITCH) {
-+		if (sc->rsupply) {
-+			ret = regulator_enable(sc->rsupply);
-+			if (ret < 0)
++	rpm = dev_get_drvdata(&rpm_pdev->dev);
++	if (!rpm)
++		return dev_err_ptr_probe(dev, -EPROBE_DEFER,
++					 "RPM not ready\n");
++
++	return rpm;
++}
++
++/*
++ * Drop cached icc_node * pointers stored in the static qnode templates.
++ * icc_nodes_remove() / icc_node_destroy() frees the icc_node memory, but
++ * because @qnodes is a const array of pointers into long-lived static
++ * storage, the ->node field outlives a probe failure and a subsequent
++ * unbind/rebind cycle. Without this clear, the next probe's
++ * "if (!qn->node) icc_node_create_dyn();" check sees the dangling cached
++ * pointer, skips re-allocation and hands the freed pointer back to the
++ * interconnect core -- use-after-free. icc_link_nodes() can also populate
++ * a target qnode's ->node mid-loop, so we always walk the full array.
++ */
++static void msm8660_clear_node_cache(struct msm8660_icc_node * const *qnodes,
++				     size_t num_nodes)
++{
++	size_t i;
++
++	for (i = 0; i < num_nodes; i++)
++		if (qnodes[i])
++			qnodes[i]->node = NULL;
++}
++
++static int msm8660_icc_probe(struct platform_device *pdev)
++{
++	const struct msm8660_icc_desc *desc;
++	struct msm8660_icc_node * const *qnodes;
++	struct msm8660_icc_provider *qp;
++	struct device *dev = &pdev->dev;
++	struct icc_onecell_data *data;
++	struct icc_provider *provider;
++	struct icc_node *node;
++	size_t num_nodes, i;
++	int ret;
++
++	desc = of_device_get_match_data(dev);
++	if (!desc)
++		return -EINVAL;
++
++	qnodes = desc->nodes;
++	num_nodes = desc->num_nodes;
++
++	qp = devm_kzalloc(dev, sizeof(*qp), GFP_KERNEL);
++	if (!qp)
++		return -ENOMEM;
++
++	ret = devm_mutex_init(dev, &qp->commit_lock);
++	if (ret)
++		return ret;
++
++	data = devm_kzalloc(dev, struct_size(data, nodes, num_nodes),
++			    GFP_KERNEL);
++	if (!data)
++		return -ENOMEM;
++	data->num_nodes = num_nodes;
++
++	qp->bus_clks = devm_kmemdup(dev, desc->bus_clks,
++				    desc->num_clks * sizeof(*desc->bus_clks),
++				    GFP_KERNEL);
++	if (!qp->bus_clks)
++		return -ENOMEM;
++
++	qp->num_clks = desc->num_clks;
++
++	/*
++	 * Per-clock -ENOENT is silently masked to a NULL handle by
++	 * clk_bulk_get_optional(); clk_*() then no-op on those entries.
++	 * The aggregate return is therefore only non-zero on real errors
++	 * (most commonly -EPROBE_DEFER while the mmcc-msm8660 clock
++	 * controller is still binding); propagate them.
++	 */
++	ret = devm_clk_bulk_get_optional(dev, qp->num_clks, qp->bus_clks);
++	if (ret)
++		return ret;
++
++	if (qp->num_clks) {
++		ret = clk_bulk_prepare_enable(qp->num_clks, qp->bus_clks);
++		if (ret) {
++			dev_warn(dev, "Failed to enable bus clocks: %d\n", ret);
++			qp->num_clks = 0;
++		} else {
++			/*
++			 * Register the cleanup right after a successful
++			 * prepare_enable so any later -EPROBE_DEFER or other
++			 * probe error path (e.g. msm8660_get_rpm failing
++			 * with -EPROBE_DEFER below) does not leak a clock
++			 * prepare/enable reference across the retry.
++			 */
++			ret = devm_add_action_or_reset(dev,
++				msm8660_icc_clk_release, qp);
++			if (ret)
 +				return ret;
 +		}
++	}
 +
-+		if (sc->flags & SW_RESET) {
-+			gdsc_assert_reset(sc);
-+			/*
-+			 * Wait for synchronous resets to propagate before
-+			 * raising ENABLE: matches footswitch-8x60.c's
-+			 * udelay(RESET_DELAY_US) between assert and enable.
-+			 */
-+			udelay(1);
-+		}
++	/* Set up RPM fabric arbitration */
++	qp->desc = desc;
++	if (desc->rpm_resource >= 0) {
++		qp->rpm = msm8660_get_rpm(dev);
++		if (IS_ERR(qp->rpm))
++			return PTR_ERR(qp->rpm);
++		if (qp->rpm) {
++			int arb_size = desc->nmasters * desc->ntieredslaves;
 +
-+		ret = gdsc_update_collapse_bit(sc, false);
-+		if (ret) {
-+			/*
-+			 * Power-up write failed -- release the reset we
-+			 * just asserted so the block does not stay stuck
-+			 * in reset for the rest of the system's lifetime,
-+			 * and roll back the regulator vote we just took.
-+			 */
-+			if (sc->flags & SW_RESET)
-+				gdsc_deassert_reset(sc);
-+			if (sc->rsupply)
-+				regulator_disable(sc->rsupply);
-+			return ret;
-+		}
-+
-+		udelay(2);
-+
-+		/*
-+		 * Release the I/O clamp BEFORE deasserting resets: the
-+		 * downstream vendor footswitch driver (footswitch-8x60.c)
-+		 * always clears CLAMP_BIT first, then deasserts per-block
-+		 * resets. This lets the block's outputs settle in a known
-+		 * reset state before they become visible to consumers.
-+		 */
-+		ret = legacy_fs_deassert_clamp(sc);
-+		if (ret) {
-+			/*
-+			 * Rail is already powered up; if we cannot release
-+			 * the I/O clamp, collapse the rail again to avoid
-+			 * leaving the block live but isolated, re-assert
-+			 * the reset so the block ends in a defined
-+			 * power-off state, and undo the regulator vote.
-+			 * Errors from these best-effort rollback steps are
-+			 * reported but do not override the original error
-+			 * returned to the caller -- the secondary failure
-+			 * means the hardware state is already indeterminate
-+			 * and the regulator vote must still be released.
-+			 */
-+			rc = gdsc_update_collapse_bit(sc, true);
-+			if (rc) {
-+				/*
-+				 * Collapse also failed: the rail is still ON.
-+				 * Do NOT call regulator_disable() -- the rail
-+				 * is still drawing from the supply and cutting
-+				 * it while ENABLE is set risks hardware damage.
-+				 * Mirror gdsc_disable()'s collapse-failure path
-+				 * which deliberately skips regulator_disable()
-+				 * when the rail did not collapse.
-+				 */
-+				pr_err("%s: rail collapse rollback failed (%d) after clamp release failure (%d); rail may be ON, regulator vote leaked\n",
-+				       sc->pd.name, rc, ret);
++			qp->bwsum = devm_kcalloc(dev, desc->nslaves,
++						 sizeof(u16), GFP_KERNEL);
++			qp->arb = devm_kcalloc(dev, arb_size,
++					       sizeof(u16), GFP_KERNEL);
++			qp->rpm_buf = devm_kcalloc(dev, desc->rpm_buf_size,
++						   sizeof(u32), GFP_KERNEL);
++			if (!qp->bwsum || !qp->arb || !qp->rpm_buf) {
++				dev_warn(dev, "RPM buffer alloc failed, ARB disabled\n");
++				qp->rpm = NULL;
 +			} else {
-+				if (sc->flags & SW_RESET)
-+					gdsc_assert_reset(sc);
-+				if (sc->rsupply) {
-+					rc = regulator_disable(sc->rsupply);
-+					if (rc)
-+						pr_err("%s: regulator_disable failed (%d) in clamp-release rollback\n",
-+						       sc->pd.name, rc);
-+				}
-+			}
-+			return ret;
-+		}
++				int rc;
 +
-+		/* Deassert resets now that clamp is released (vendor order). */
-+		if (sc->flags & SW_RESET)
-+			gdsc_deassert_reset(sc);
++				dev_info(dev, "RPM fabric ARB enabled (%d masters, %d slaves, %d tiered)\n",
++					 desc->nmasters, desc->nslaves,
++					 desc->ntieredslaves);
 +
-+		udelay(5);
-+
-+		return 0;
-+	}
-+
- 	if (sc->flags & SW_RESET) {
- 		gdsc_assert_reset(sc);
- 		udelay(1);
-@@ -317,11 +487,91 @@ static int gdsc_enable(struct generic_pm_domain *domain)
- static int gdsc_disable(struct generic_pm_domain *domain)
- {
- 	struct gdsc *sc = domain_to_gdsc(domain);
--	int ret;
-+	int ret, rc;
- 
--	if (sc->pwrsts == PWRSTS_ON)
-+	/*
-+	 * Symmetric to gdsc_enable: modern PWRSTS_ON-only GDSCs only
-+	 * need a reset assert, but legacy footswitches with PWRSTS_ON
-+	 * still need to clamp I/O and collapse the rail explicitly so
-+	 * they must not take this short-circuit.
-+	 */
-+	if (sc->pwrsts == PWRSTS_ON && !(sc->flags & LEGACY_FOOTSWITCH))
- 		return gdsc_assert_reset(sc);
- 
-+	/*
-+	 * Legacy MSM8x60 footswitch disable sequence:
-+	 *   1. assert per-block resets (if SW_RESET)
-+	 *   2. set CLAMP in GDSCR to hold I/O at safe values across collapse
-+	 *   3. clear ENABLE in GDSCR to collapse the rail
-+	 *   4. drop the parent regulator vote (if any)
-+	 */
-+	if (sc->flags & LEGACY_FOOTSWITCH) {
-+		if (sc->flags & SW_RESET) {
-+			gdsc_assert_reset(sc);
-+			/*
-+			 * Wait for synchronous resets to propagate before
-+			 * clamping I/O: footswitch-8x60.c udelay(RESET_DELAY_US)
-+			 * between assert and CLAMP_BIT set.
-+			 */
-+			udelay(1);
-+		}
-+
-+		ret = legacy_fs_assert_clamp(sc);
-+		if (ret) {
-+			/*
-+			 * Clamp programming failed -- release the reset we
-+			 * just asserted so the block is not stranded in
-+			 * reset, then surface the error.
-+			 */
-+			if (sc->flags & SW_RESET)
-+				gdsc_deassert_reset(sc);
-+			return ret;
-+		}
-+
-+		ret = gdsc_update_collapse_bit(sc, true);
-+		if (ret) {
-+			/*
-+			 * Collapse failed -- the rail is still ON. Walk
-+			 * back the clamp and reset so the block returns
-+			 * to its enabled state rather than being stranded
-+			 * in the half-disabled "clamped + reset + on"
-+			 * state; the regulator vote stays in place because
-+			 * the rail is still drawing from it. A secondary
-+			 * failure of the clamp release is reported but
-+			 * cannot override the original error: the rail is
-+			 * still ON, so the caller's view ("disable failed,
-+			 * leave ON") is the correct outcome regardless.
-+			 */
-+			rc = legacy_fs_deassert_clamp(sc);
-+			if (rc)
-+				pr_err("%s: clamp release rollback failed (%d) after rail collapse failure (%d); hw may be clamped+ON\n",
-+				       sc->pd.name, rc, ret);
-+			if (sc->flags & SW_RESET)
-+				gdsc_deassert_reset(sc);
-+			return ret;
-+		}
-+
-+		if (sc->rsupply) {
-+			ret = regulator_disable(sc->rsupply);
-+			if (ret < 0) {
 +				/*
-+				 * The rail is already collapsed. Reporting
-+				 * the regulator error to genpd would leave it
-+				 * thinking the domain is still ON when the
-+				 * silicon is in fact off; the next consumer
-+				 * enable would then be no-op'd by genpd and
-+				 * hit dead hardware. Better to leak the
-+				 * regulator vote (visible via /sys/.../
-+				 * regulator) than to corrupt genpd state.
++				 * One-shot sleep-context vote of zero bandwidth.
++				 * Without an explicit SLEEP_STATE write, RPM has no
++				 * fabric bandwidth target for deep-sleep and may
++				 * keep the active vote applied indefinitely,
++				 * preventing DDR from dropping its rate when CPUs
++				 * power-collapse. The buffer is devm_kcalloc'd so
++				 * it is all-zero at this point — written before
++				 * any consumer can drive an active vote that would
++				 * dirty it.
++				 *
++				 * msm8660_rpm_commit() writes ACTIVE_STATE only;
++				 * SLEEP_STATE remains zero for the provider's
++				 * lifetime, so this vote does not need refreshing.
 +				 */
-+				pr_err("%s: regulator_disable failed (%d) after rail collapse; vote leaked, genpd state kept consistent with silicon\n",
-+				       sc->pd.name, ret);
++				rc = qcom_rpm_write(qp->rpm,
++						    QCOM_RPM_SLEEP_STATE,
++						    desc->rpm_resource,
++						    qp->rpm_buf,
++						    desc->rpm_buf_size);
++				if (rc)
++					dev_warn(dev, "RPM fabric sleep vote failed: %d\n",
++						 rc);
 +			}
 +		}
-+
-+		return 0;
 +	}
 +
- 	/* Turn off HW trigger mode if supported */
- 	if (sc->flags & HW_CTRL) {
- 		ret = gdsc_hwctrl(sc, false);
-@@ -403,7 +653,28 @@ static bool gdsc_get_hwmode(struct generic_pm_domain *domain, struct device *dev
- static int gdsc_init(struct gdsc *sc)
- {
- 	u32 mask, val;
--	int on, ret;
-+	int initial_on, on, ret;
++	provider = &qp->provider;
++	provider->dev = dev;
++	provider->set = msm8660_icc_set;
++	provider->aggregate = msm8660_icc_aggregate;
++	provider->xlate = of_icc_xlate_onecell;
++	provider->data = data;
++	provider->get_bw = msm8660_get_bw;
 +
-+	/*
-+	 * Legacy MSM8x60 footswitches share none of the modern GDSC
-+	 * wait-time fields and have no HW trigger / SW override bits at
-+	 * all, so skip the wait-config programming and jump straight to
-+	 * the common state-sync block below.
-+	 *
-+	 * Clear the retention bit (BIT 9) so subsequent disable actually
-+	 * power-collapses the rail rather than holding state. The vendor
-+	 * MSM8x60 footswitch driver does the same one-shot clear at probe
-+	 * for every footswitch; without it the reset-default value is
-+	 * unspecified per board and a stuck-set retention bit would leave
-+	 * the rail draining power while looking collapsed in software.
-+	 */
-+	if (sc->flags & LEGACY_FOOTSWITCH) {
-+		ret = regmap_update_bits(sc->regmap, sc->gdscr,
-+					 LEGACY_FS_RETENTION_MASK, 0);
-+		if (ret)
-+			return ret;
-+		goto skip_wait_config;
++	icc_provider_init(provider);
++
++	for (i = 0; i < num_nodes; i++) {
++		size_t j;
++
++		if (!qnodes[i])
++			continue;
++
++		if (!qnodes[i]->node)
++			qnodes[i]->node = icc_node_create_dyn();
++		node = qnodes[i]->node;
++		if (IS_ERR(node)) {
++			ret = PTR_ERR(node);
++			goto err_remove_nodes;
++		}
++
++		ret = icc_node_set_name(node, provider, qnodes[i]->name);
++		if (ret) {
++			icc_node_destroy(node->id);
++			goto err_remove_nodes;
++		}
++
++		node->data = qnodes[i];
++		icc_node_add(node, provider);
++
++		for (j = 0; j < qnodes[i]->num_links; j++) {
++			ret = icc_link_nodes(node,
++					     &qnodes[i]->link_nodes[j]->node);
++			if (ret)
++				goto err_remove_nodes;
++		}
++
++		data->nodes[i] = node;
 +	}
- 
- 	/*
- 	 * Disable HW trigger: collapse/restore occur based on registers writes.
-@@ -428,9 +699,31 @@ static int gdsc_init(struct gdsc *sc)
- 	if (ret)
- 		return ret;
- 
--	/* Force gdsc ON if only ON state is supported */
-+skip_wait_config:
-+	/*
-+	 * Sample the GDSC power state BEFORE any probe-time enable below
-+	 * so the "sync the kernel state" regulator vote only runs when the
-+	 * GDSC was already on at probe (bootloader handoff). For the
-+	 * PWRSTS_ON / ALWAYS_ON force-enable paths, gdsc_enable() and
-+	 * gdsc_toggle_logic() take the vote themselves -- re-voting from
-+	 * the sync block would double-vote rsupply and leak a reference.
-+	 */
-+	initial_on = gdsc_check_status(sc, GDSC_ON);
-+	if (initial_on < 0)
-+		return initial_on;
 +
++	ret = icc_provider_register(provider);
++	if (ret)
++		goto err_remove_nodes;
++
++	platform_set_drvdata(pdev, qp);
++
++	dev_info(dev, "MSM8660 interconnect provider registered\n");
++
++	return 0;
++
++err_remove_nodes:
++	icc_nodes_remove(provider);
++	msm8660_clear_node_cache(qnodes, num_nodes);
 +	/*
-+	 * Force gdsc ON if only ON state is supported. For legacy
-+	 * footswitches, gdsc_toggle_logic() would only flip the ENABLE
-+	 * bit and skip the I/O-clamp release + settle delay that the
-+	 * MSM8x60 power-up sequence requires; call gdsc_enable() instead
-+	 * so the full legacy sequence runs.
++	 * Do NOT call clk_bulk_disable_unprepare() here: the devm cleanup
++	 * action registered after clk_bulk_prepare_enable() will run
++	 * automatically when probe returns an error and devres unwinds.
++	 * Calling it manually would double-unprepare and corrupt the
++	 * clock-framework refcount.
 +	 */
- 	if (sc->pwrsts == PWRSTS_ON) {
--		ret = gdsc_toggle_logic(sc, GDSC_ON, false);
-+		if (sc->flags & LEGACY_FOOTSWITCH)
-+			ret = gdsc_enable(&sc->pd);
-+		else
-+			ret = gdsc_toggle_logic(sc, GDSC_ON, false);
- 		if (ret)
- 			return ret;
- 	}
-@@ -440,8 +733,20 @@ static int gdsc_init(struct gdsc *sc)
- 		return on;
- 
- 	if (on) {
--		/* The regulator must be on, sync the kernel state */
--		if (sc->rsupply) {
-+		/*
-+		 * Sync the kernel regulator state only if the GDSC was
-+		 * already on at probe; if we just enabled it above, the
-+		 * vote was taken inside gdsc_enable() / gdsc_toggle_logic().
-+		 *
-+		 * Special case: PWRSTS_ON + LEGACY_FOOTSWITCH always routes
-+		 * through gdsc_enable() above (lines around the PWRSTS_ON
-+		 * block), which calls regulator_enable() unconditionally on
-+		 * the legacy path. Skip the sync vote in that case to avoid
-+		 * a double-vote that gdsc_disable() only unwinds once.
-+		 */
-+		if (sc->rsupply && initial_on &&
-+		    !(sc->pwrsts == PWRSTS_ON &&
-+		      (sc->flags & LEGACY_FOOTSWITCH))) {
- 			ret = regulator_enable(sc->rsupply);
- 			if (ret < 0)
- 				return ret;
-diff --git a/drivers/clk/qcom/gdsc.h b/drivers/clk/qcom/gdsc.h
-index dd843e86c05b..13ca09f93a01 100644
---- a/drivers/clk/qcom/gdsc.h
-+++ b/drivers/clk/qcom/gdsc.h
-@@ -68,6 +68,13 @@ struct gdsc {
- #define RETAIN_FF_ENABLE	BIT(7)
- #define NO_RET_PERIPH	BIT(8)
- #define HW_CTRL_TRIGGER	BIT(9)
++	return ret;
++}
++
++static void msm8660_icc_remove(struct platform_device *pdev)
++{
++	struct msm8660_icc_provider *qp = platform_get_drvdata(pdev);
++	const struct msm8660_icc_desc *desc = of_device_get_match_data(&pdev->dev);
++
++	icc_provider_deregister(&qp->provider);
++	icc_nodes_remove(&qp->provider);
++	if (desc)
++		msm8660_clear_node_cache(desc->nodes, desc->num_nodes);
++	/* clk cleanup happens via devm_add_action_or_reset on remove. */
++}
++
++static const struct of_device_id msm8660_noc_of_match[] = {
++	{ .compatible = "qcom,msm8660-apps-fabric", .data = &msm8660_afab },
++	{ .compatible = "qcom,msm8660-system-fabric", .data = &msm8660_sfab },
++	{ .compatible = "qcom,msm8660-mmss-fabric", .data = &msm8660_mmfab },
++	{ .compatible = "qcom,msm8660-daytona-fabric", .data = &msm8660_dfab },
++	{ },
++};
++MODULE_DEVICE_TABLE(of, msm8660_noc_of_match);
++
++static struct platform_driver msm8660_noc_driver = {
++	.probe = msm8660_icc_probe,
++	.remove = msm8660_icc_remove,
++	.driver = {
++		.name = "qnoc-msm8660",
++		.of_match_table = msm8660_noc_of_match,
++		.sync_state = icc_sync_state,
++	},
++};
 +/*
-+ * Legacy MSM8x60-family footswitch (a.k.a. "GFS"). Different register layout
-+ * from the modern GDSC blocks: CLAMP at bit 5, ENABLE at bit 8, RETENTION at
-+ * bit 9, and there is no power-status bit so software has to assume the
-+ * transition completed after a fixed delay rather than polling status.
++ * Register the NOC provider at core_initcall, matching the mainline pattern
++ * used by newer Qualcomm SoCs (sm8450, glymur, qdu1000, sc8280xp, sm8750).
++ *
++ * Why not module_platform_driver (device_initcall)?  drivers/Makefile lists
++ * drivers/interconnect/ at position 189, *after* every ICC-consumer subdir
++ * (clk/ @40, soc/ @46, gpu/ @68, base/mfd/ @76, spmi/ @89, usb/ @106,
++ * i2c/ @116, mmc/ @133, remoteproc/ @158).  Within a single initcall level
++ * execution order = link order, so a device_initcall registration here runs
++ * *after* every consumer has already tried to probe.  Mainline relies on
++ * deferred-probe retry to recover from that, but in this tree some consumer
++ * (apcs-msm8660 + cpufreq cascade suspected) fails to recover within
++ * deferred_probe_timeout=5 and boot dies at the Tux splash with no rootfs.
++ * Empirically confirmed 2026-05-29 with module_platform_driver (commits
++ * 99275d8a8ae9 + ca35c591854c, reverted).
++ *
++ * icc_provider_register does not require icc_init to have run first --
++ * the framework's locks are statically DEFINE_MUTEX'd -- so registering
++ * the provider at core_initcall (before icc_init at subsys_initcall) is
++ * safe, same as mainline sm8450 etc.
 + */
-+#define LEGACY_FOOTSWITCH	BIT(10)
- 	struct reset_controller_dev	*rcdev;
- 	unsigned int			*resets;
- 	unsigned int			reset_count;
++static int __init msm8660_noc_driver_init(void)
++{
++	return platform_driver_register(&msm8660_noc_driver);
++}
++core_initcall(msm8660_noc_driver_init);
++
++/*
++ * No module_exit: Kconfig is bool, the driver is built-in only, and
++ * unbind/unload paths are not exercised. core_initcall + module_exit
++ * mix badly anyway (you cannot unload something registered earlier
++ * than module_init level).
++ */
++
++MODULE_DESCRIPTION("Qualcomm MSM8x60 interconnect driver");
++MODULE_LICENSE("GPL v2");
+diff --git a/include/dt-bindings/interconnect/qcom,msm8660.h b/include/dt-bindings/interconnect/qcom,msm8660.h
+index c9ce3f5a5276..bac9fc423da2 100644
+--- a/include/dt-bindings/interconnect/qcom,msm8660.h
++++ b/include/dt-bindings/interconnect/qcom,msm8660.h
+@@ -4,7 +4,7 @@
+  *
+  * Copyright (c) 2026 Herman van Hazendonk <github.com@herrie.org>
+  *
+- * Based on webOS kernel msm_bus_board_8660.c
++ * Based on legacy vendor kernel msm_bus_board_8660.c
+  * Copyright (c) 2010-2011, Code Aurora Forum. All rights reserved.
+  */
+ 
+@@ -79,11 +79,11 @@
+  * Daytona Fabric (DFAB) - Peripheral bus
+  *
+  * DFAB connects slower peripherals (SDCC, ADM DMA) to the system fabric.
+- * The webOS kernel managed DFAB bandwidth via voter clocks (dfab_sdc*_clk,
++ * The legacy vendor kernel managed DFAB bandwidth via voter clocks (dfab_sdc*_clk,
+  * dfab_usb_hs_clk). In mainline, this is handled by the interconnect framework.
+  *
+  * USB HS is included as a DFAB voter for compatibility with the legacy clock
+- * voting mechanism. The webOS kernel comment said: "if usb link is in sps
++ * voting mechanism. The legacy vendor kernel comment said: "if usb link is in sps
+  * there is no need for usb pclk as daytona fabric clock will be used instead".
+  * This keeps DFAB clock stable when USB is active.
+  */
 
 -- 
 2.43.0
