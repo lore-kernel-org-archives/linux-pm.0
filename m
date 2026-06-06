@@ -1,30 +1,31 @@
-Received: from outbound6.mail.transip.nl (outbound6.mail.transip.nl [136.144.136.128])
+Received: from outbound8.mail.transip.nl (outbound8.mail.transip.nl [136.144.136.8])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A323B376497;
-	Sat,  6 Jun 2026 12:34:35 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=136.144.136.128
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 23C301E376C;
+	Sat,  6 Jun 2026 12:34:34 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=136.144.136.8
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1780749280; cv=none; b=msUD4/bPkZtAbMgv/mDAr1Rls7d/UT6P4T5ChIDIgIusCoHOWG5ZGedXlzhtob+WuDeQGxns9oGnZwzNXVEX12W0T/3ck088Xc9ABOvVmeStLe5CO3QQrnISRWGB+RLR0vEUdJumie2dd3BZN+NdgDdK+dvtXm0NXBkvHc7Rocc=
+	t=1780749281; cv=none; b=jB5uLuXZNP1mca8wRLrUxkus9rJO5ktFO3OhqYsl9BBRtUqOflll47mKQ0ZeQWkqefKD69rvChbQv0xVrLpMcg7UChB23l+Jcuk8AVMaubokJ8gDYuqcFipjSdYG052Cw61dOOMIiGUXHI3H3/uKjxLlqTY/MTPMnCBw0hAQbhQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1780749280; c=relaxed/simple;
-	bh=LzvzZKmNu1BSB5msNlu9m3rhENlsdqQSZlFNw6binx4=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=qZ+ObhNV1Z0UK5LPUayxDEYgipBdM3cymJN/GpL4n8SaQFiTSvhw4xnqmEY4s3zYBIjPDwkmRFm798857s/nZw+mOFDgAEjBpI4X3CYsMudPGhXkgwaYhLDazALGbzO215vX/No9qc3O9v5b9qDJTJosBoT0xOmLbZqJcZEIeQE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=herrie.org; spf=pass smtp.mailfrom=herrie.org; dkim=pass (2048-bit key) header.d=herrie.org header.i=@herrie.org header.b=Onljp8uL; arc=none smtp.client-ip=136.144.136.128
+	s=arc-20240116; t=1780749281; c=relaxed/simple;
+	bh=hgk/JsgCpMXpD1kgHnjMQw+KScZgIAnIClXZj+rpQ0c=;
+	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=OGKWwWNlDZqUsc9IHmMhmY2eJHioLbjl5X0vdpZD/cK9dVZUh0C7rhYQHvusqXjrzo489sYewaajraPJJV4LBfEZD1c3XxVazBHe3+IkZdUXpEAOYXFeihzKbtLBByfGcoKTz38FeEtOxx4ZDmQDj1QmlPYN2XuoGgNZjNhYOsg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=herrie.org; spf=pass smtp.mailfrom=herrie.org; dkim=pass (2048-bit key) header.d=herrie.org header.i=@herrie.org header.b=OJSFSOAK; arc=none smtp.client-ip=136.144.136.8
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=herrie.org
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=herrie.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=herrie.org header.i=@herrie.org header.b="Onljp8uL"
+	dkim=pass (2048-bit key) header.d=herrie.org header.i=@herrie.org header.b="OJSFSOAK"
 Received: from submission1.mail.transip.nl (unknown [10.100.4.70])
-	by outbound6.mail.transip.nl (Postfix) with ESMTP id 4gXd6D29rczwLHKF;
-	Sat,  6 Jun 2026 14:34:28 +0200 (CEST)
-Received: from [127.0.1.1] (180-93-184-31.ftth.glasoperator.nl [31.184.93.180])
-	by submission1.mail.transip.nl (Postfix) with ESMTPA id 4gXd6C5D0HzJjhYL;
+	by outbound8.mail.transip.nl (Postfix) with ESMTP id 4gXd6C00pRzY76X0;
 	Sat,  6 Jun 2026 14:34:27 +0200 (CEST)
+Received: from [127.0.1.1] (180-93-184-31.ftth.glasoperator.nl [31.184.93.180])
+	by submission1.mail.transip.nl (Postfix) with ESMTPA id 4gXd6B1HjdzJjhYK;
+	Sat,  6 Jun 2026 14:34:26 +0200 (CEST)
 From: Herman van Hazendonk <github.com@herrie.org>
-Date: Sat, 06 Jun 2026 14:34:27 +0200
-Subject: [PATCH v2 2/2] clk: qcom: gdsc: add RPM_ALWAYS_ON flag
+Subject: [PATCH v2 0/2] clk: qcom: gdsc: add MSM8x60 LEGACY_FOOTSWITCH +
+ RPM_ALWAYS_ON support
+Date: Sat, 06 Jun 2026 14:34:25 +0200
+Message-Id: <20260606-submit-clk-gdsc-msm8x60-legacy-v2-0-187a32d2f015@herrie.org>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -33,9 +34,9 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260606-submit-clk-gdsc-msm8x60-legacy-v2-2-187a32d2f015@herrie.org>
-References: <20260606-submit-clk-gdsc-msm8x60-legacy-v2-0-187a32d2f015@herrie.org>
-In-Reply-To: <20260606-submit-clk-gdsc-msm8x60-legacy-v2-0-187a32d2f015@herrie.org>
+X-B4-Tracking: v=1; b=H4sIANETJGoC/x2NwQqDMBAFf0X23IU0liD+SunBJK/porElq2IR/
+ 72hzGkuMwcpikCpbw4q2ETlPVexl4bCa5gTWGJ1ssY6U2FdfZaFwzRyiho4a+52Z3hCGsKXr+j
+ izbetAzzVyKfgKft/cH+c5w/RRcZTcAAAAA==
 To: Bjorn Andersson <andersson@kernel.org>, 
  Konrad Dybcio <konradybcio@kernel.org>, Stephen Boyd <sboyd@kernel.org>, 
  Michael Turquette <mturquette@baylibre.com>
@@ -43,122 +44,109 @@ Cc: linux-arm-msm@vger.kernel.org, linux-clk@vger.kernel.org,
  linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
  Herman van Hazendonk <github.com@herrie.org>
 X-Mailer: b4 0.13.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1780749266; l=4171;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1780749266; l=3995;
  i=github.com@herrie.org; s=20240417; h=from:subject:message-id;
- bh=LzvzZKmNu1BSB5msNlu9m3rhENlsdqQSZlFNw6binx4=;
- b=Ssu9KUA/LX8wD8/C3T6ykEBpfByQKBjqjdM2WK9ppfDvJRI40d9Q7jLDH/HW5Jg0YZRH8ejcg
- Dr1o5/XfaiIDS59eUyEwsA4y1HY53Wa8zYuhJzPdWSLznrcPTNFhDnT
+ bh=hgk/JsgCpMXpD1kgHnjMQw+KScZgIAnIClXZj+rpQ0c=;
+ b=fLbirAMHvtS0Shy6FvJdyfQwUhrEGx6Vc8PGsjZebqaR3J1Q+uzB7I2TMYHwDiGoiRAXtiGGq
+ YpvC3o1E9RaBHnpymqXmKeSh9k+WmIakKR+j2w0XjqzxBeFk2ypxUvc
 X-Developer-Key: i=github.com@herrie.org; a=ed25519;
  pk=YYxdq8fb5O9vhkW3n2dCH044FPZZO5718v/du7fRhFw=
 X-Scanned-By: ClueGetter at submission1.mail.transip.nl
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
- s=transip-a; d=herrie.org; t=1780749267; h=from:subject:to:cc:
- references:in-reply-to:date:mime-version:content-type;
- bh=Q0oQqrHUfpO+gdshMA+ahrF6Af1d6WXHr7563kjZMYU=;
- b=Onljp8uL+x9Rt+NkN8iixcVKSTqNNxr8vD7bEgAOcdWJefYh4mdWi9X8Ii3zTrnH03+0Uq
- 2aQMHk8FVst+3NfbBwy3DDG1l5fW/xt6phMBDYIGSmzWkXX1TYzPti1waYdZcQcZsqMqlT
- vrTULDmshqlgPI1KUDfETTSQtMZiCvMUjEhGU9UTdKCDQT63TIxXAt2RzVRlk1voBhT+0c
- my7S8fZ/JZvHXfvFv9+/BjIvY0e3ZOV3I30o2xiUV2UgoMqHLQL7c93U8WXZKpa73NRmQ+
- zFSaeDJnpLBRiV6+t4kipawvTVkCcdFrYZtlQsjGkVTeGH8EGi2dEY/2MieuiQ==
+ s=transip-a; d=herrie.org; t=1780749266; h=from:subject:to:cc:date:
+ mime-version:content-type;
+ bh=WZb3PZhfqkfQ5lawbj7nw/mnMBgdkG8MrHg1p8EFY18=;
+ b=OJSFSOAKG60wNMyoTpXd7i7O72zWp2YBQ5+aCmBYtVT/fpQfvI/HHgahEsa2Iwd75r+DLI
+ q4mKQqqYgMc0DRNLpX4vGP4V0i+ESGD2WagGUglMJ96jsMYoDsbSI3tdRLdT5jCKxL8TNW
+ n46Ja+liNEF8/Y+++n886A8hlGhC6VgF4CxUGoW74wzLO+rZ8EeQnqO3qoXCIhiKgdpG0O
+ /6EmDqEeUV3W1ppJa+OS1b854hdy6WExo75qI1TWhaNS1drqQYxfWng/7JVgIsDJJ7AY3c
+ yLlACUa3uE1+mpCpBIWsYpvA4eyByclOWMcBgXHEMFoj/r2p6veWxyqP/LCpDg==
 X-Report-Abuse-To: abuse@transip.nl
 
-Some power domains need to stay powered across runtime PM even though
-their clocks may still gate, and only collapse on full system suspend.
-Add an RPM_ALWAYS_ON flag that maps to the existing
-GENPD_FLAG_RPM_ALWAYS_ON on the underlying generic_pm_domain.
+The MSM8x60 family (MSM8260 / MSM8660 / APQ8060) uses a pre-modern
+"footswitch" power-domain block (GFS) for its multimedia GDSCs that
+predates the modern qcom GDSC programming model. The legacy block has
+a single-register layout (ENABLE / CLAMP / RETENTION at fixed bits in
+the GDSCR) instead of the modern split GDSCR / CFG_GDSCR pair, no
+power-status bit (state has to be inferred from ENABLE + CLAMP), and a
+fixed-delay handoff sequence with no completion register to poll.
 
-This is distinct from the existing ALWAYS_ON flag (which keeps the
-domain permanently enabled and prevents collapse even during system
-suspend) and from leaving the flag unset (which allows the domain to
-collapse on every runtime-idle transition).
+Patch 1 adds a LEGACY_FOOTSWITCH flag plus the supporting helpers
+(legacy enable / disable sequencing, gdsc_check_status fallback,
+legacy clamp helpers). Patch 2 adds an RPM_ALWAYS_ON flag wiring the
+PWRSTS_ON ALWAYS_ON paths to GENPD_FLAG_RPM_ALWAYS_ON; this is needed
+because some MSM8x60 GDSCs are managed by RPM firmware and the kernel
+must keep its genpd vote alive across runtime PM transitions.
 
-GENPD_FLAG_RPM_ALWAYS_ON, like GENPD_FLAG_ALWAYS_ON, requires the
-underlying genpd to be in the ON state at pm_genpd_init() time --
-the framework rejects registration otherwise. Fold RPM_ALWAYS_ON
-into the gdsc_init() block that already force-enables ALWAYS_ON
-GDSCs found powered down at sync time so the flag combination is
-honoured consistently.
+v2 folds 2 High Sashiko findings on the v1 patchset, both vote-balance
+bugs in gdsc_init() (see below). Both folds verified on HW; no
+regulator-imbalance WARNs in dmesg post-fix.
 
-The first user is the upcoming MSM8x60 MMCC driver, which needs
-RPM_ALWAYS_ON on the a2xx (Adreno 220) GFX3D footswitch: cold-cycling
-the GPU rail on every runtime idle forces an a2xx_hw_init microcode
-reload whose MMIO burst can stall the shared MMSS AXI fabric when it
-coincides with an MDP display client-switch underrun, hard-hanging
-the SoC. Letting the rail stay up during runtime PM (clocks still
-gate, idle power is still saved) and only collapsing on system
-suspend avoids the corner case while still allowing full power-down
-during deep sleep.
-
-Assisted-by: Claude:claude-opus-4-7 Sashiko:claude-haiku-4-5
 Signed-off-by: Herman van Hazendonk <github.com@herrie.org>
 ---
- drivers/clk/qcom/gdsc.c | 21 ++++++++++++++++++---
- drivers/clk/qcom/gdsc.h | 12 ++++++++++++
- 2 files changed, 30 insertions(+), 3 deletions(-)
+Changes in v2:
 
-diff --git a/drivers/clk/qcom/gdsc.c b/drivers/clk/qcom/gdsc.c
-index 1f80bebe88c7..0622bb23d17b 100644
---- a/drivers/clk/qcom/gdsc.c
-+++ b/drivers/clk/qcom/gdsc.c
-@@ -777,9 +777,22 @@ static int gdsc_init(struct gdsc *sc)
- 				goto err_disable_supply;
- 		}
- 
--	} else if (sc->flags & ALWAYS_ON) {
--		/* If ALWAYS_ON GDSCs are not ON, turn them ON */
--		gdsc_enable(&sc->pd);
-+	} else if (sc->flags & (ALWAYS_ON | RPM_ALWAYS_ON)) {
-+		/*
-+		 * Both GENPD_FLAG_ALWAYS_ON and GENPD_FLAG_RPM_ALWAYS_ON
-+		 * require the domain to be ON at pm_genpd_init() time --
-+		 * the framework rejects registration otherwise. Bring up
-+		 * any such GDSC that is currently off so the genpd flags
-+		 * we set below match the silicon state.
-+		 *
-+		 * Propagate the gdsc_enable() return so a failure here does
-+		 * not silently set on=true and leak a vote through the
-+		 * err_disable_supply path (which would unwind a vote that
-+		 * was never actually taken).
-+		 */
-+		ret = gdsc_enable(&sc->pd);
-+		if (ret)
-+			return ret;
- 		on = true;
- 	}
- 
-@@ -790,6 +803,8 @@ static int gdsc_init(struct gdsc *sc)
- 
- 	if (sc->flags & ALWAYS_ON)
- 		sc->pd.flags |= GENPD_FLAG_ALWAYS_ON;
-+	if (sc->flags & RPM_ALWAYS_ON)
-+		sc->pd.flags |= GENPD_FLAG_RPM_ALWAYS_ON;
- 	if (!sc->pd.power_off)
- 		sc->pd.power_off = gdsc_disable;
- 	if (!sc->pd.power_on)
-diff --git a/drivers/clk/qcom/gdsc.h b/drivers/clk/qcom/gdsc.h
-index 13ca09f93a01..27acf20e8d68 100644
---- a/drivers/clk/qcom/gdsc.h
-+++ b/drivers/clk/qcom/gdsc.h
-@@ -75,6 +75,18 @@ struct gdsc {
-  * transition completed after a fixed delay rather than polling status.
-  */
- #define LEGACY_FOOTSWITCH	BIT(10)
-+/*
-+ * Keep the domain powered across runtime PM (its clocks may still gate via
-+ * the clock framework) and only allow it to power-collapse on system
-+ * suspend. Maps to GENPD_FLAG_RPM_ALWAYS_ON on the underlying genpd. Useful
-+ * for blocks whose cold-start sequence is expensive enough that runtime
-+ * power cycling causes user-visible latency or hardware corner-case bugs --
-+ * e.g. the MSM8x60 a2xx (Adreno 220) graphics footswitch, whose first
-+ * power-up after collapse forces a full microcode reload that can stall
-+ * the shared MMSS AXI fabric when it coincides with an MDP display
-+ * underrun.
-+ */
-+#define RPM_ALWAYS_ON	BIT(11)
- 	struct reset_controller_dev	*rcdev;
- 	unsigned int			*resets;
- 	unsigned int			reset_count;
+Both Sashiko findings folded:
 
+  - [High] gdsc_init() PWRSTS_ON + LEGACY_FOOTSWITCH + initial_on
+    triple condition: the PWRSTS_ON block calls gdsc_enable() above,
+    which on the legacy path takes a regulator_enable() vote
+    unconditionally. The downstream "sync" block at line ~737 then
+    voted *again* because initial_on=true, while gdsc_disable() only
+    unwinds the vote once -> permanent +1 ref-count imbalance per
+    probe. Skip the sync vote when
+    (pwrsts == PWRSTS_ON && LEGACY_FOOTSWITCH).
+    Folded into patch 1 (LEGACY_FOOTSWITCH support).
+
+  - [High] gdsc_init() ALWAYS_ON / RPM_ALWAYS_ON block: the
+    unconditional gdsc_enable() call ignored its return value and
+    unconditionally set on=true. If gdsc_enable() failed (e.g. an
+    internal regulator_enable failure) the subsequent
+    pm_genpd_init() error path would call regulator_disable() for a
+    vote that was never actually taken -> regulator ref-count
+    underflow and vote leak. Propagate the gdsc_enable() return
+    immediately. Folded into patch 2 (RPM_ALWAYS_ON flag).
+
+Test results (v2, HP TouchPad APQ8060, kernel 7.1.0-rc1):
+
+  - Boot clean. All MSM8x60 GDSCs probe and reach their expected
+    initial state: vfe / ved / rot / mdp / gfx3d on (bootloader
+    handoff); ijpeg / vpe / gfx2d0 / gfx2d1 off-0 (kernel-managed).
+
+  - Camera stream stress (20x rapid pix640 + pix1280 + 60s
+    unbind/rebind race on mt9m113 -> exercises vfe domain off/on
+    cycles + ved bringup): zero regulator-imbalance WARNs, zero
+    "Unbalanced disable" messages from regulator/core.c, zero
+    clk-refcount underflow WARNs.
+
+  - 120s concurrent multi-subsystem load (camera stream loop + dd
+    to eMMC + /dev/urandom + filesystem walk): all GDSCs stay in
+    expected state, no genpd warnings, USB stayed up, MDP stayed
+    active. Driver still bound at the end.
+
+  - dmesg post-load: 0 WARN, 0 BUG, 0 Oops from gdsc /
+    regulator / clk frameworks. The only routine "CSIPHY1:
+    usleep 10-15ms for GDSC stabilize" info lines (camss
+    pre-existing chatter, not gdsc-related) are visible.
+
+  - Kernel build clean (ARCH=arm, CONFIG_QCOM_GDSC=y,
+    CONFIG_QCOM_CLK_RPM=y, CONFIG_MSM_MMCC_8660=y).
+
+- Link to v1: https://lore.kernel.org/r/20260602050840.435933-1-github.com@herrie.org
+
+---
+Herman van Hazendonk (2):
+      clk: qcom: gdsc: add LEGACY_FOOTSWITCH support for MSM8x60
+      clk: qcom: gdsc: add RPM_ALWAYS_ON flag
+
+ drivers/clk/qcom/gdsc.c | 344 ++++++++++++++++++++++++++++++++++++++++++++++--
+ drivers/clk/qcom/gdsc.h |  19 +++
+ 2 files changed, 351 insertions(+), 12 deletions(-)
+---
+base-commit: 944125b4c454b58d2fe6e35f1087a932b2050dff
+change-id: 20260606-submit-clk-gdsc-msm8x60-legacy-1e8d4b336eeb
+
+Best regards,
 -- 
-2.43.0
+Herman van Hazendonk <github.com@herrie.org>
 
