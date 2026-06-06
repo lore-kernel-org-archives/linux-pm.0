@@ -1,120 +1,122 @@
-Received: from mail-wm1-f45.google.com (mail-wm1-f45.google.com [209.85.128.45])
+Received: from mail-wm1-f51.google.com (mail-wm1-f51.google.com [209.85.128.51])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A86DE2E5429
-	for <linux-pm@vger.kernel.org>; Sat,  6 Jun 2026 16:12:35 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.45
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 48A0D2F7F18
+	for <linux-pm@vger.kernel.org>; Sat,  6 Jun 2026 21:05:15 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.51
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1780762357; cv=none; b=g7Ne1+IvarjWrntl8kliTIoCHM8F65GNHn0vEzeTbaIU5e9/dXP67ZQTIAKidI/YHBWzn5xnU0vkf6NAfUsrLL7B583w4LMqTxOu3lv7zc97miY+ysdGelCt540+KBfufwWQJPO/71g1izSIgpe9BeGCs3oMa9cbHrYrFhwK7yM=
+	t=1780779916; cv=none; b=FDl1BHkMl3V511CP4QNZLLP0p8ecXkcpbkHrp8vNLdtQq6L8DQclRwvnMRotTsJdq/ciSx/4PSIApAn1bbPAmR0YYrgc4g+aBVja3YA/Kh5qaQhSDrGmRcLtkc5V7hmGbsSVW9ed1crz+2b5FWVUXyOvNtfgLcJ3COVx5WHg4/o=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1780762357; c=relaxed/simple;
-	bh=ZMwFfW/OnNS76RKrxvcjqzoBO6HaGBvVOop9vDkJb40=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=fMfayJhv5Arq4x+dd4ASmF/OVCWlJBWwZuNnyTd8UOo86uPNWCWvFzMd/kg5JL2hFtDJedgli1O4M40avWHT5uTx76gXoMuc0c90Qsne1hU0I4vQZ51aniTg54d64an3Vtoz8ru4JKyYhJ+czUGfA5ueTjlMVrlRDL8F4Ovb14o=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=fjkKuziZ; arc=none smtp.client-ip=209.85.128.45
+	s=arc-20240116; t=1780779916; c=relaxed/simple;
+	bh=XvJ8iwzXt1UHbWadRF6VFNlg3KOsXG3iQ2zFCLx1qnM=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=Vif+M4UWTf3AXPINeRZzlFII+eDa3FxIwYJQLqyEkJMXebQyJwTTMp+DHE2oKqiqGXt+B/WGlmcPY3iHuhUzFcx20cHah2iNV/YmDna0ZLLp/pFalDCsO8OLxCKaJtPmTZsv0gLNL3HXwZEhRkVyqNGDVtzikCaBY/kuuvg40Z0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=XTq7FoR6; arc=none smtp.client-ip=209.85.128.51
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="fjkKuziZ"
-Received: by mail-wm1-f45.google.com with SMTP id 5b1f17b1804b1-490abf12f0fso14919715e9.0
-        for <linux-pm@vger.kernel.org>; Sat, 06 Jun 2026 09:12:35 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="XTq7FoR6"
+Received: by mail-wm1-f51.google.com with SMTP id 5b1f17b1804b1-490ac357c55so35968785e9.1
+        for <linux-pm@vger.kernel.org>; Sat, 06 Jun 2026 14:05:15 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1780762354; x=1781367154; darn=vger.kernel.org;
-        h=in-reply-to:content-transfer-encoding:content-disposition
-         :mime-version:references:message-id:subject:cc:to:from:date:from:to
-         :cc:subject:date:message-id:reply-to;
-        bh=idiSA+6YNFwfUhg3z0UQAPb+z0scpCL3CjgKFNNg31w=;
-        b=fjkKuziZ2PTDkc5GVcL4PSP/Bm9O5kPWpQVaOolP3ypEAWdsT5fwplosTktt6uwSc+
-         +exlvcxtMRGB08hgVyfZFdne6pgovbNlbR1Q9XcBBbiOzjAqacKGASFH78uQo8HMVhB0
-         jlRqnp4XtnDgI4JsmqciMtQp34hSKLoSfk7N1V9lnL3GNA5ckGeMnHdzsdS+pwtHkEZx
-         Y3PWhHkF71I+GTL3y9FReeLFLsafgQw1qs96lh0adm9Ds6brOtrZmQWcl03W1ByRytzx
-         o615ljDZSrrHjC7UXroDE5W8BdyqeqS6e2RMlaC8o2AiztK26QWxp1/AyPDwt9tw7Sg4
-         M8rw==
+        d=gmail.com; s=20251104; t=1780779914; x=1781384714; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=/PKEFcZ4g7H6rAqtTcj0u3uyo4pWRrH0e5YYMUDpufY=;
+        b=XTq7FoR6aYaHCf117SFCg6hTdHXBDqo84rvEbtIwn7jnK+pMSuCTjtI3pHbkDaFgvV
+         13km3oANJ/6iatv6gemiwwl0KdqCinJ1zKVnT7rUTlzksr1lxrhQeXIosMEywVzkOMg7
+         oOnmO/hymCmkqalaC/TrgBHs/XWOOTk7h6b3yAFmVjkBtGMZJd3rHbH5JyvHbQKh3bcn
+         fBjUxjQs5fJq6dTVy9eURIvcZRgHCia4VIqlXs5VtW9hP6jWmZz0EvMT5hfmc1UXOJMR
+         esXsXhFRc03Y+OWZbCHNZOglzjs9JwpMYiFJgCOk5ctW3VuUVLQJpUEZ1ZRwT39Ispjt
+         o21g==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1780762354; x=1781367154;
-        h=in-reply-to:content-transfer-encoding:content-disposition
-         :mime-version:references:message-id:subject:cc:to:from:date:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=idiSA+6YNFwfUhg3z0UQAPb+z0scpCL3CjgKFNNg31w=;
-        b=oWsffhEP+RMbleOmbIiUlnLZnjlxoWCsbTdsUGu3duFN4rLxuLcFuUpNzSfSbfG6Mi
-         +1XfJxE2aNgJDvpJrArspVx1wuba891P+hqVKsLvv3TuHPTiZ15WZnlac2OTtNvU8H2Z
-         Tw3b5AYdGikQ5ZneyYFTbRHnSaElNxLMowEL58T9LneLqP/prk1nRP1GZvFsE4G/CaiT
-         eIaM1ginL5emDn0+hfAi1vlbcGS0K5myTrZqua8c17M+7iJND1mmOYgBq5IxK03xiX0o
-         Ll8KsBRf7kXW+wqs4NbMXMQXh38ngPON1SqWS+GkVWwf8B1IrFV8HWGHoQu6rWk2GtD1
-         8rOA==
-X-Forwarded-Encrypted: i=1; AFNElJ8fZ4XcXRG2Eapk5jXWkq84zGAXRDKpFBGLpIrG7Z83Lb3iBCnzPV4mDV3nnKI6EOE7eE/qNZOHFQ==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yw4Ln5PkDBwoGyHsgauokXCSYk7RuyoPCUI66oZK439mSFQKuJ2
-	rfV3jY8aCFsMN1T3OPx3Q9vUL94qh3G6qGFxTOaj7CIg9DyjGou7wDWT
-X-Gm-Gg: Acq92OG7RqlWMJrO50bC14ElSwiMfkdQ5jNiwEhyQ9hcGGaPyN2V2kItIKLGuOJu6iA
-	OocEa21V8qUUBZBPknmiFI48RonOpjCi8irPrkeUmwNAkav5bV5fD2doitcN9sZyskf76tJMkLs
-	9XJ/88NEFAT0eXDFJ+JAaycchJ3g60uiKw2bP6P/hPBkJuaZwwuJVYCXV+YzlPg1x7B7gRCG0C3
-	ythNuUHpdCm5y8p1a9SKe3KijMqE61FQmG0Bj8uokj2SzYcJ0bTsapjF1ElgDRqnlr6OKwCxX72
-	ZPXhVsWp1RmhBV3tFjNwJzMo6ikSq5RFO0rS8po8c8slkOcqG9WSm/G+41I80jNh4ldxlX6FUTp
-	IDIYFGzVOCY7QLUUu9nMV7Lr3LOdRFgShvoxnmcXPv4BnkCI+sD+1AHuDZABnDFL2uz5ltyyt3B
-	TAT+EDW0K4+GnmWxqGbippruTiHj6I9A==
-X-Received: by 2002:a05:600c:1986:b0:489:32b:ac0b with SMTP id 5b1f17b1804b1-490c2cc27bdmr113047235e9.6.1780762353840;
-        Sat, 06 Jun 2026 09:12:33 -0700 (PDT)
-Received: from localhost ([196.207.164.177])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-490c2d2d11asm164981765e9.1.2026.06.06.09.12.32
+        d=1e100.net; s=20251104; t=1780779914; x=1781384714;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=/PKEFcZ4g7H6rAqtTcj0u3uyo4pWRrH0e5YYMUDpufY=;
+        b=ZYF5cU0vNMbDhb75Gk1ql+GE3BiFERIKl102XCLjz+EOUEX0Lgi3G7THMAIblIqzHG
+         UsbUv4ahNyA2Cx+8z+9z+kMtabeBEswAMI3zxqw6hFOHSG5TFebuwRZw1PVJ/A7vMirj
+         PfiL1h/WEvTs9TMcSf+X/rsQ2xPsqEZpcQF3tzhRer8MckVw44yFbnKfB0weSBiXCEET
+         axUQMFdbarhfmms4HATbDPzEM+j65YgTtwxQtFy8CTYlp9OI38EuLpbWq4tmUsOpdF4T
+         gDu5KkxYYAlhLxuYOJdgpfP9Nmx374fOJ7Y6X4Zyp0s2mmDae4ppvPP5kbQaFeEDgRGM
+         mAlg==
+X-Gm-Message-State: AOJu0Ywy3RD2FQ+wf54IdSIenoJ2ZdOPWpPCEdGZRZnbVG4+PzxKhXy3
+	iR5eRC7kHkJxwFybfDV6DahkwQuX0aBFBUa2+GfBjCJD6xchv96x7xMj
+X-Gm-Gg: Acq92OE4MiST4mHD1dvsH06TJY/wiVB5hR6GbPDLc5U56Ykz0l0b4arXmiD+ViE7JWi
+	u7aCwRBJzncQ7NZxzoICh7DiiPY3rpXosLaeQaXiX2P3FmZ+DXq/yMdiDLYj97wlAe3OByxV3Z/
+	q112GZ8ZoPMOyGum/7rRjX3qjB9hLgMpASewUITX1IqZI/EDZYyecaddM6+fMb9HUNbtt83B3eL
+	RV5uqQP3O1ILIQ3j2xfkM5Xf2x1UuZgNc1hsSLfIn623I+F5ywtlIPCi9RIRJuLG/NVXd/svWW0
+	QpIDO+JNJgwsxi3Oe3j8vzQWzDjVi+WPGGpns4rXg9AHvLJkV7AUQMfJKshpAUFW5XcfsnpFuOz
+	642A/lrbx5WuLboWiaTPu1Q2fH9DB/oh3JnH+JUlNj+WFmz6u/B3nY3pelLuc8Vdwupn5S9zEIz
+	ihNFB64eUSXBIJIPq24a0ZGjfr6T349WV7p1BXQWDw5b0=
+X-Received: by 2002:a05:600c:529b:b0:490:5380:f2cb with SMTP id 5b1f17b1804b1-490c2528b6amr153469415e9.0.1780779913470;
+        Sat, 06 Jun 2026 14:05:13 -0700 (PDT)
+Received: from ws-linux01 ([86.124.200.154])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-4601f35fb24sm39444226f8f.34.2026.06.06.14.05.12
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 06 Jun 2026 09:12:33 -0700 (PDT)
-Date: Sat, 6 Jun 2026 19:12:29 +0300
-From: Dan Carpenter <error27@gmail.com>
-To: Vincent Cloutier <vincent.cloutier@icloud.com>
-Cc: Sebastian Reichel <sre@kernel.org>, Hans de Goede <hansg@kernel.org>,
-	Krzysztof Kozlowski <krzk@kernel.org>,
-	Marek Szyprowski <m.szyprowski@samsung.com>,
-	Sebastian Krzyszkowiak <sebastian.krzyszkowiak@puri.sm>,
-	Purism Kernel Team <kernel@puri.sm>, linux-pm@vger.kernel.org,
+        Sat, 06 Jun 2026 14:05:13 -0700 (PDT)
+From: Ovidiu Panait <ovidiu.panait.oss@gmail.com>
+To: rafael@kernel.org,
+	daniel.lezcano@kernel.org,
+	rui.zhang@intel.com,
+	lukasz.luba@arm.com
+Cc: linux-pm@vger.kernel.org,
 	linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v1 1/9] power: supply: max17042_battery: Put LSB units
- into defines
-Message-ID: <aiRG7djdLTNoRyZr@stanley.mountain>
-References: <20260406205759.493288-1-vincent.cloutier@icloud.com>
- <20260406205759.493288-2-vincent.cloutier@icloud.com>
+Subject: [PATCH 1/3] thermal: testing: Avoid NULL pointer dereference on missing arg
+Date: Sun,  7 Jun 2026 00:04:18 +0300
+Message-ID: <20260606210420.2311145-1-ovidiu.panait.oss@gmail.com>
+X-Mailer: git-send-email 2.53.0
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <20260406205759.493288-2-vincent.cloutier@icloud.com>
 
-On Mon, Apr 06, 2026 at 04:57:49PM -0400, Vincent Cloutier wrote:
-> From: Sebastian Krzyszkowiak <sebastian.krzyszkowiak@puri.sm>
-> 
-> Signed-off-by: Sebastian Krzyszkowiak <sebastian.krzyszkowiak@puri.sm>
-> ---
->  drivers/power/supply/max17042_battery.c | 36 ++++++++++++++-----------
->  1 file changed, 21 insertions(+), 15 deletions(-)
-> 
-> diff --git a/drivers/power/supply/max17042_battery.c b/drivers/power/supply/max17042_battery.c
-> index acea176101fa..a6798b9a1c82 100644
-> --- a/drivers/power/supply/max17042_battery.c
-> +++ b/drivers/power/supply/max17042_battery.c
-> @@ -52,6 +52,13 @@
->  
->  #define MAX17042_VMAX_TOLERANCE		50 /* 50 mV */
->  
-> +#define MAX17042_CURRENT_LSB		1562500ll /* 1.5625µV/Rsense */
-> +#define MAX17042_CAPACITY_LSB		5000000ll /* 5.0µVH/Rsense */
-> +#define MAX17042_TIME_LSB		5625 / 1000 /* s */
-> +#define MAX17042_VOLTAGE_LSB		625 / 8 /* µV */
-> +#define MAX17042_RESISTANCE_LSB	1 / 4096 /* Ω */
-> +#define MAX17042_TEMPERATURE_LSB	1 / 256 /* °C */
+Commands such as deltz expect an argument after the ":" separator.
+When the separator is missing, arg gets set to NULL, which is fed
+directly to sscanf(). This causes a NULL ptr dereference:
 
-Checkpatch complains about this:
+$ echo deltz > /sys/kernel/debug/thermal-testing/command
+BUG: kernel NULL pointer dereference, address: 0000000000000000
+...
+sscanf+0x57/0x80
+tt_del_tz+0x39/0x1e0
+tt_command_write+0x115/0x140
+full_proxy_write+0x5d/0x90
+vfs_write+0xd2/0x480
+? srso_alias_return_thunk+0x5/0xfbef5
+? count_memcg_events+0x8b/0x1a0
+? srso_alias_return_thunk+0x5/0xfbef5
+ksys_write+0x75/0xf0
+__x64_sys_write+0x1d/0x30
+x64_sys_call+0x223/0x1dd0
+do_syscall_64+0x97/0x4b0
+entry_SYSCALL_64_after_hwframe+0x76/0x7e
 
-    ERROR: Macros with complex values should be enclosed in parentheses
+To fix this, make arg an empty string instead of leaving it NULL when the
+separator is missing. sscanf() then fails correctly with -EINVAL on it.
 
-But the macros rely on the fact that the parentheses are missing.  You're
-going to get one patch per year until the end of time which tries to add
-the parentheses and eventually you will come to hate this bit of
-cleverness.
+Fixes: f6a034f2df42 ("thermal: Introduce a debugfs-based testing facility")
+Signed-off-by: Ovidiu Panait <ovidiu.panait.oss@gmail.com>
+---
+ drivers/thermal/testing/command.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-regards,
-dan carpenter
+diff --git a/drivers/thermal/testing/command.c b/drivers/thermal/testing/command.c
+index 1159ecea57e7..5513a26feed7 100644
+--- a/drivers/thermal/testing/command.c
++++ b/drivers/thermal/testing/command.c
+@@ -150,6 +150,8 @@ static ssize_t tt_command_process(char *s)
+ 	if (arg) {
+ 		*arg = '\0';
+ 		arg++;
++	} else {
++		arg = s + strlen(s);
+ 	}
+ 
+ 	for (i = 0; i < ARRAY_SIZE(tt_command_strings); i++) {
+-- 
+2.53.0
 
