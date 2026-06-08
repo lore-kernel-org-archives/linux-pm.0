@@ -1,69 +1,71 @@
-Received: from mail-pf1-f196.google.com (mail-pf1-f196.google.com [209.85.210.196])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from bali.collaboradmins.com (bali.collaboradmins.com [148.251.105.195])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EE6E83C1413
-	for <linux-pm@vger.kernel.org>; Mon,  8 Jun 2026 10:08:19 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.210.196
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E1DA83BED46;
+	Mon,  8 Jun 2026 10:10:44 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=148.251.105.195
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1780913301; cv=none; b=uM/6unpy+U1zX8IgR1Pj/OnjM9mDCgMPVaOtMiZWPkliCj77+oCpRPqAMbJWX5RnMfEMuJL+7KIyo4lutfQ4T5G2V1CDBGbdUC22ec/Gap3gXY/MAK4+SsBRB6DVyCuHoZE4A+QWVLU8pd8ZwXY9HTD4xonpKQBblSYJU/5lWKE=
+	t=1780913446; cv=none; b=ZCBX1uYM6JQbr68G2HfrQO6QGj+p7DXtjwSDL4/xVc6ScJBt6TmK03Tik4dyGcHZDR9RR4qIqlgsl+N8/vgIZ8X6GuCv1vllmPIE8XGMF6DJ9KbEUoGiD7t4cEosW4k7PoDDfHHCzuCQfywZ3ixO1p+hkG4tfy8Gvh2wgyJ55ww=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1780913301; c=relaxed/simple;
-	bh=QHom6DQvb3qerfbJujSJ+h7UCEEi/UjYiKCob5IRFFM=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=llazFNOZRIN7NatSWZiInJMBSIvUoWP+UShW0wW/34G7crEcKfwVxiTuT0ySmQ72cfJLFLNF+YFsxqzPf7efbKQUqwYKM4xa+PJ2nQwh30nBBPPeVrlqhuyn7cQAk9WSZ7yiBhUl4AE9FpmuPfhHNC7df2MivOb4OcvZwD214q0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kylinos.cn; spf=pass smtp.mailfrom=gmail.com; arc=none smtp.client-ip=209.85.210.196
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kylinos.cn
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
-Received: by mail-pf1-f196.google.com with SMTP id d2e1a72fcca58-84234c83142so1608289b3a.1
-        for <linux-pm@vger.kernel.org>; Mon, 08 Jun 2026 03:08:19 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1780913299; x=1781518099;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=bXzO+pAA1x56vEHUEe2bZreHvS4ZZVbejiMV5h8V3nM=;
-        b=BawHLQVk2goRrRcgR2xMo+AeHejHXFDR9uM/bztXxwngx4PSZCbMh+khAuabRjLKHy
-         rO4r36Qd+Az68JtFrMlWT2kRAd5vtRschkugLdMHIKife2I4ipQAThEspt673Ky4yXss
-         3ffBiz6kuhlr2EEVuwg3VUebFT601WdiwdmFv/0/ZF7fWepI0pE3FdLdr4K7gLQThL21
-         NSDE+M/LCFFu4ARZ+qFSofHkK9jplYFcWLudAro1ZMU+OQfDsxf6/VK04K77ajNJdlOX
-         MOiWOuwQ1p0tQjlOWj9iCgWe0deDLCMJP/N1Ycw+p/3t1aH2mbFSNHpnbmXiEJ2y0y8u
-         XNMg==
-X-Forwarded-Encrypted: i=1; AFNElJ+U/GQY9uDjOfogQgaQ7i5Szrr5F1j/Mvclk0pvRiqWxblDTrCwn+4KKlU5465tMUVNySp4WVj5IQ==@vger.kernel.org
-X-Gm-Message-State: AOJu0YyR99IxNk9eFOKYQN67LRN6j7CDKB6ROCvd09BtT4Tuaog4yELM
-	/Hjxs3wmXDbngoaCV5IKuh9spWYiyJvX1J79KW/2xnaEzVWfX2DTatY/
-X-Gm-Gg: Acq92OFNzxR2d7ICBnXglRrlkRQoh5bzazZEoxZMRePt/rZfX85/RqGvX/B6G3hZDgR
-	HUa0lvWjlJnUbYGqRllT+rJxQt/4e2A/Ux3YiaVCNiZsuCj6tS73TCPwyu3Xli2/keHTbUufxi7
-	b1Iza3p286V4fMm26ng7gKuowyH1gZC9csu+Eoo2cP/7Pp2jy4vVWbenkyq71emQjgmd538x8bs
-	U08X5QVegUL9vqU4cn8ot1x/0YBRwAaOAyEF+M9JKnMZPNW43zAPpeAkHAwMM+5Usb0opJrNG33
-	YAEx+lcCaT/nl5mY1zDhu77nz30LA+UQlnqHzuVFYojyKtxCEzhjpVpw5tOJ+z5zM840rGU8JR/
-	G69fCOQIrq5f7Ml1jrn/lRcFcuEJXqCLuwYYRjpXXfDpTRVzD6znBz8VV85rjJkH3PSNKaR3T6W
-	fftHNd1VQMApWdRbK50MDSIH97bufe/kpoC3B1YFNKx4IVMBbev+5VQlg=
-X-Received: by 2002:a05:6a00:808f:b0:838:127d:a167 with SMTP id d2e1a72fcca58-842b0e6bb0bmr14186571b3a.16.1780913299347;
-        Mon, 08 Jun 2026 03:08:19 -0700 (PDT)
-Received: from kylin-XiaoXinPro-16-AHP9.. ([116.128.244.171])
-        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-84282883647sm20431045b3a.36.2026.06.08.03.08.14
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 08 Jun 2026 03:08:19 -0700 (PDT)
-From: Xueqin Luo <luoxueqin@kylinos.cn>
-To: sudeep.holla@kernel.org,
+	s=arc-20240116; t=1780913446; c=relaxed/simple;
+	bh=M5UXKaMfETrz6E26tWRl5gIpH3jAc4LIAHlSmkOSPa4=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=ceRI/SFSOILYg5N4VCxtChb+LP3xrNxyJhMkShtVajqavgWl5tIWWcJiLWDzH7Uip6QD18rIKBGid72sOClqmBmKJRmhFqVdspY79sTgC7e82xkYkK/rO412RkhxZ87yZIlrje/gvJs5hbVd0rTaVWENMDv0yeKbwseQkWYOQf4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b=TjhTcf9f; arc=none smtp.client-ip=148.251.105.195
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b="TjhTcf9f"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
+	s=mail; t=1780913442;
+	bh=M5UXKaMfETrz6E26tWRl5gIpH3jAc4LIAHlSmkOSPa4=;
+	h=From:To:Cc:Subject:Date:From;
+	b=TjhTcf9f2pOMVaNu3++83LIGFbobok0MruiMp9BxuuH8dM14TInCKktDPX5uhHMll
+	 8XSABqM+AnQImDRbAI7mIkVJFPWegqZt3fFkFxhSaATTklaQJvQmpXHMfeLEBQyvJW
+	 hEXskdNqB5/8Z5trjwzNjUSa3JQTHZ3IKHX2gRbIDlfP56GdDS/x5uRAKqpUzMYxDl
+	 2lm1P2SBF801FrJieMCQIsF4YLDeyErdHldehfv4F2moE3Sok5lHcP4zh9TqrJGoZq
+	 rEzgGyexuQdQN6S1jtcYaR/7G5Ic4rmHvVAmIRz36Y54FBQP7U+0pMy5ySJBZUkzuP
+	 3zBI5YstbvY9g==
+Received: from IcarusMOD.eternityproject.eu (unknown [100.64.1.21])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	(Authenticated sender: kholk11)
+	by bali.collaboradmins.com (Postfix) with ESMTPSA id CBBD017E00C2;
+	Mon,  8 Jun 2026 12:10:41 +0200 (CEST)
+From: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
+To: jic23@kernel.org
+Cc: dlechner@baylibre.com,
+	nuno.sa@analog.com,
+	andy@kernel.org,
+	arnd@arndb.de,
 	gregkh@linuxfoundation.org,
-	rafael@kernel.org,
-	dakr@kernel.org,
-	viresh.kumar@linaro.org,
-	zhanjie9@hisilicon.com,
-	zhenglifeng1@huawei.com,
-	pierre.gondois@arm.com,
-	sumitg@nvidia.com,
+	srini@kernel.org,
+	vkoul@kernel.org,
+	neil.armstrong@linaro.org,
+	sre@kernel.org,
+	sboyd@kernel.org,
+	angelogioacchino.delregno@collabora.com,
+	krzk@kernel.org,
+	dmitry.baryshkov@oss.qualcomm.com,
+	quic_wcheng@quicinc.com,
+	melody.olvera@oss.qualcomm.com,
+	quic_nsekar@quicinc.com,
+	ivo.ivanov.ivanov1@gmail.com,
+	abelvesa@kernel.org,
+	luca.weiss@fairphone.com,
+	konrad.dybcio@oss.qualcomm.com,
+	mitltlatltl@gmail.com,
+	krishna.kurapati@oss.qualcomm.com,
+	linux-arm-msm@vger.kernel.org,
+	linux-iio@vger.kernel.org,
 	linux-kernel@vger.kernel.org,
-	driver-core@lists.linux.dev,
-	linux-pm@vger.kernel.org
-Cc: Xueqin Luo <luoxueqin@kylinos.cn>
-Subject: [PATCH v4 3/3] arch_topology: Add topology_update_cpu_capacity() for runtime updates
-Date: Mon,  8 Jun 2026 18:07:46 +0800
-Message-ID: <20260608100746.372535-4-luoxueqin@kylinos.cn>
-X-Mailer: git-send-email 2.43.0
-In-Reply-To: <20260608100746.372535-1-luoxueqin@kylinos.cn>
-References: <20260608100746.372535-1-luoxueqin@kylinos.cn>
+	linux-phy@lists.infradead.org,
+	linux-pm@vger.kernel.org,
+	kernel@collabora.com
+Subject: [PATCH v9 00/10]  SPMI: Implement sub-devices and migrate drivers
+Date: Mon,  8 Jun 2026 12:09:39 +0200
+Message-ID: <20260608100949.36309-1-angelogioacchino.delregno@collabora.com>
+X-Mailer: git-send-email 2.54.0
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -72,150 +74,161 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-When the CPPC Highest Performance register changes at runtime
-(e.g. via ACPI Notify(0x85)), the scheduler's view of CPU capacity
-and the frequency invariance engine's reference values become stale,
-as topology_init_cpu_capacity_cppc() is only called once during boot.
+Changes in v9:
+ - Added check for dev->parent where missing (Sashiko)
+ - Changed %d to %u in dev_set_name() call as arg is unsigned (Sashiko)
+ - Propagating error code from devm_regmap_init_spmi_ext() instead of
+   returning -ENODEV in phy-qcom-eusb2-repeater.c (Sashiko) 
 
-Keep raw_capacity allocated after CPPC init instead of freeing it,
-and introduce topology_update_cpu_capacity() to update per-CPU
-raw_capacity, capacity_freq_ref, and the normalized CPU capacity
-scale at runtime.
+Changes in v8:
+ - Renamed *res to *sub_sdev in devm_spmi_subdevice_remove() (Andy)
+ - Changed kerneldoc wording to "error pointer" for function
+   spmi_subdevice_alloc_and_add() (Andy)
+ - Shuffled around some assignments in spmi_subdevice_alloc_and_add() (Andy)
+ - Used device_property_read_u32() instead of of_property_read_u32()
+   in all of the migrated drivers (Andy)
+ - Changed .max_register field in all of the migrated drivers from
+   0x100 to 0xff (Andy)
+ - Kept `sta1` declaration in reversed xmas tree order in function
+   iadc_poll_wait_eoc() of qcom-spmi-iadc.c (Andy)
 
-Call this new function from cppc_cpufreq_update_limits() so that
-highest_perf changes are immediately reflected in the topology
-subsystem.
+Changes in v7:
+ - Added commit to cleanup redundant dev_name() in the pre-existing
+   spmi_device_add() function
+ - Added commit removing unneeded goto and improving spmi_device_add()
+   readability by returning error in error path, and explicitly zero
+   for success at the end.
 
-Signed-off-by: Xueqin Luo <luoxueqin@kylinos.cn>
----
- drivers/base/arch_topology.c   | 63 ++++++++++++++++++++++++++++++++++
- drivers/cpufreq/cppc_cpufreq.c |  7 ++++
- include/linux/arch_topology.h  |  6 ++++
- 3 files changed, 76 insertions(+)
+Changes in v6:
+ - Added commit to convert spmi.c to %pe error format and used
+   %pe error format in spmi_subdevice code as wanted by Uwe Kleine-Konig
 
-diff --git a/drivers/base/arch_topology.c b/drivers/base/arch_topology.c
-index 8c5e47c28d9a..c9594540b6f2 100644
---- a/drivers/base/arch_topology.c
-+++ b/drivers/base/arch_topology.c
-@@ -229,6 +229,7 @@ static void update_topology_flags_workfn(struct work_struct *work)
- }
- 
- static u32 *raw_capacity;
-+static DEFINE_MUTEX(raw_capacity_lock);
- 
- static int free_raw_capacity(void)
- {
-@@ -372,13 +373,75 @@ static inline void topology_init_cpu_capacity_cppc(void)
- 	schedule_work(&update_topology_flags_work);
- 	pr_debug("cpu_capacity: cpu_capacity initialization done\n");
- 
-+	/*
-+	 * Keep raw_capacity for runtime updates via
-+	 * topology_update_cpu_capacity().
-+	 */
-+	return;
-+
- exit:
- 	free_raw_capacity();
- }
-+
- void acpi_processor_init_invariance_cppc(void)
- {
- 	topology_init_cpu_capacity_cppc();
- }
-+
-+/**
-+ * topology_update_cpu_capacity - Update CPU capacity after highest_perf change
-+ * @cpu: CPU whose highest performance changed
-+ * @perf_caps: Updated CPPC performance capabilities for @cpu
-+ *
-+ * When the CPPC Highest Performance register changes at runtime
-+ * (e.g. via Notify(0x85)), the scheduler's view of CPU capacity
-+ * and the frequency invariance engine's reference values become
-+ * stale. This function updates them.
-+ *
-+ */
-+void topology_update_cpu_capacity(unsigned int cpu,
-+				  struct cppc_perf_caps *perf_caps)
-+{
-+	u64 highest_perf = perf_caps->highest_perf;
-+	u64 capacity, capacity_scale = 0;
-+	int c;
-+
-+	if (!raw_capacity || cpu >= num_possible_cpus())
-+		return;
-+
-+	/*
-+	 * Serialize concurrent updates from multiple CPUs receiving
-+	 * Notify(0x85) simultaneously. The normalization loop reads
-+	 * raw_capacity[] for all CPUs, so concurrent writes would
-+	 * cause torn reads and inconsistent capacity values.
-+	 */
-+	guard(mutex)(&raw_capacity_lock);
-+
-+	pr_debug("cpu_capacity: CPU%d cpu_capacity=%u -> %llu (raw)\n",
-+		 cpu, raw_capacity[cpu], highest_perf);
-+
-+	raw_capacity[cpu] = highest_perf;
-+	per_cpu(capacity_freq_ref, cpu) =
-+		cppc_perf_to_khz(perf_caps, highest_perf);
-+	freq_inv_set_max_ratio(cpu,
-+			       per_cpu(capacity_freq_ref, cpu) * HZ_PER_KHZ);
-+
-+	/* Re-normalize all CPUs: capacity is relative. */
-+	for_each_possible_cpu(c)
-+		capacity_scale = max_t(u64, capacity_scale, raw_capacity[c]);
-+
-+	for_each_possible_cpu(c) {
-+		capacity = raw_capacity[c];
-+		capacity = div64_u64(capacity << SCHED_CAPACITY_SHIFT,
-+				     capacity_scale);
-+		topology_set_cpu_scale(c, capacity);
-+		pr_debug("cpu_capacity: CPU%d cpu_capacity=%lu\n",
-+			 c, topology_get_cpu_scale(c));
-+	}
-+
-+	schedule_work(&update_topology_flags_work);
-+}
-+EXPORT_SYMBOL_GPL(topology_update_cpu_capacity);
- #endif
- 
- #ifdef CONFIG_CPU_FREQ
-diff --git a/drivers/cpufreq/cppc_cpufreq.c b/drivers/cpufreq/cppc_cpufreq.c
-index 80a44a9a29fa..9fe96fa44435 100644
---- a/drivers/cpufreq/cppc_cpufreq.c
-+++ b/drivers/cpufreq/cppc_cpufreq.c
-@@ -901,6 +901,13 @@ static void cppc_cpufreq_update_limits(struct cpufreq_policy *policy)
- 	policy->boost_supported = highest_perf >
- 				  cpu_data->perf_caps.nominal_perf;
- 
-+	/*
-+	 * Update the topology capacity to reflect the changed
-+	 * highest performance so that the scheduler and the
-+	 * frequency invariance engine use up-to-date values.
-+	 */
-+	topology_update_cpu_capacity(policy->cpu, &cpu_data->perf_caps);
-+
- 	policy->cpuinfo.max_freq = cppc_perf_to_khz(&cpu_data->perf_caps,
- 			policy->boost_enabled ?
- 			highest_perf : cpu_data->perf_caps.nominal_perf);
-diff --git a/include/linux/arch_topology.h b/include/linux/arch_topology.h
-index ebd7f8935f96..fc0dbab76b36 100644
---- a/include/linux/arch_topology.h
-+++ b/include/linux/arch_topology.h
-@@ -11,6 +11,12 @@
- void topology_normalize_cpu_scale(void);
- int topology_update_cpu_topology(void);
- 
-+#ifdef CONFIG_ACPI_CPPC_LIB
-+struct cppc_perf_caps;
-+void topology_update_cpu_capacity(unsigned int cpu,
-+				  struct cppc_perf_caps *perf_caps);
-+#endif
-+
- struct device_node;
- bool topology_parse_cpu_capacity(struct device_node *cpu_node, int cpu);
- 
+Changes in v5:
+ - Changed dev_err to dev_err_probe in qcom-spmi-sdam (and done
+   that even though I disagree - because I wanted this series to
+   *exclusively* introduce the minimum required changes to
+   migrate to the new API, but okay, whatever....!);
+ - Added missing REGMAP dependency in Kconfig for qcom-spmi-sdam,
+   phy-qcom-eusb2-repeater and qcom-coincell to resolve build
+   issues when the already allowed COMPILE_TEST is enabled
+   as pointed out by the test robot's randconfig builds.
+
+Changes in v4:
+ - Added selection of REGMAP_SPMI in Kconfig for qcom-coincell and
+   for phy-qcom-eusb2-repeater to resolve undefined references when
+   compiled with some randconfig
+
+Changes in v3:
+ - Fixed importing "SPMI" namespace in spmi-devres.c
+ - Removed all instances of defensive programming, as pointed out by
+   jic23 and Sebastian
+ - Removed explicit casting as pointed out by jic23
+ - Moved ida_free call to spmi_subdev_release() and simplified error
+   handling in spmi_subdevice_alloc_and_add() as pointed out by jic23
+
+Changes in v2:
+ - Fixed missing `sparent` initialization in phy-qcom-eusb2-repeater
+ - Changed val_bits to 8 in all Qualcomm drivers to ensure
+   compatibility as suggested by Casey
+ - Added struct device pointer in all conversion commits as suggested
+   by Andy
+ - Exported newly introduced functions with a new "SPMI" namespace
+   and imported the same in all converted drivers as suggested by Andy
+ - Added missing error checking for dev_set_name() call in spmi.c
+   as suggested by Andy
+ - Added comma to last entry of regmap_config as suggested by Andy
+
+While adding support for newer MediaTek platforms, featuring complex
+SPMI PMICs, I've seen that those SPMI-connected chips are internally
+divided in various IP blocks, reachable in specific contiguous address
+ranges... more or less like a MMIO, but over a slow SPMI bus instead.
+
+I recalled that Qualcomm had something similar... and upon checking a
+couple of devicetrees, yeah - indeed it's the same over there.
+
+What I've seen then is a common pattern of reading the "reg" property
+from devicetree in a struct member and then either
+ A. Wrapping regmap_{read/write/etc}() calls in a function that adds
+    the register base with "base + ..register", like it's done with
+    writel()/readl() calls; or
+ B. Doing the same as A. but without wrapper functions.
+
+Even though that works just fine, in my opinion it's wrong.
+
+The regmap API is way more complex than MMIO-only readl()/writel()
+functions for multiple reasons (including supporting multiple busses
+like SPMI, of course) - but everyone seemed to forget that regmap
+can manage register base offsets transparently and automatically in
+its API functions by simply adding a `reg_base` to the regmap_config
+structure, which is used for initializing a `struct regmap`.
+
+So, here we go: this series implements the software concept of an SPMI
+Sub-Device (which, well, also reflects how Qualcomm and MediaTek's
+actual hardware is laid out anyway).
+
+               SPMI Controller
+                     |                ______
+                     |               /       Sub-Device 1
+                     V              /
+              SPMI Device (PMIC) ----------- Sub-Device 2
+                                    \
+                                     \______ Sub-Device 3
+
+As per this implementation, an SPMI Sub-Device can be allocated/created
+and added in any driver that implements a... well.. subdevice (!) with
+an SPMI "main" device as its parent: this allows to create and finally
+to correctly configure a regmap that is specific to the sub-device,
+operating on its specific address range and reading, and writing, to
+its registers with the regmap API taking care of adding the base address
+of a sub-device's registers as per regmap API design.
+
+All of the SPMI Sub-Devices are therefore added as children of the SPMI
+Device (usually a PMIC), as communication depends on the PMIC's SPMI bus
+to be available (and the PMIC to be up and running, of course).
+
+Summarizing the dependency chain (which is obvious to whoever knows what
+is going on with Qualcomm and/or MediaTek SPMI PMICs):
+    "SPMI Sub-Device x...N" are children "SPMI Device"
+    "SPMI Device" is a child of "SPMI Controller"
+
+(that was just another way to say the same thing as the graph above anyway).
+
+Along with the new SPMI Sub-Device registration functions, I have also
+performed a conversion of some Qualcomm SPMI drivers and only where the
+actual conversion was trivial.
+
+I haven't included any conversion of more complex Qualcomm SPMI drivers
+because I don't have the required bandwidth to do so (and besides, I think,
+but haven't exactly verified, that some of those require SoCs that I don't
+have for testing anyway).
+
+AngeloGioacchino Del Regno (10):
+  spmi: Remove redundant dev_name() print in spmi_device_add()
+  spmi: Print error status with %pe format
+  spmi: Remove unneeded goto in spmi_device_add() error path
+  spmi: Implement spmi_subdevice_alloc_and_add() and devm variant
+  nvmem: qcom-spmi-sdam: Migrate to devm_spmi_subdevice_alloc_and_add()
+  power: reset: qcom-pon: Migrate to devm_spmi_subdevice_alloc_and_add()
+  phy: qualcomm: eusb2-repeater: Migrate to
+    devm_spmi_subdevice_alloc_and_add()
+  misc: qcom-coincell: Migrate to devm_spmi_subdevice_alloc_and_add()
+  iio: adc: qcom-spmi-iadc: Migrate to
+    devm_spmi_subdevice_alloc_and_add()
+  iio: adc: qcom-spmi-iadc: Remove regmap R/W wrapper functions
+
+ drivers/iio/adc/qcom-spmi-iadc.c              | 118 ++++++++----------
+ drivers/misc/Kconfig                          |   2 +
+ drivers/misc/qcom-coincell.c                  |  45 +++++--
+ drivers/nvmem/Kconfig                         |   1 +
+ drivers/nvmem/qcom-spmi-sdam.c                |  38 ++++--
+ drivers/phy/qualcomm/Kconfig                  |   2 +
+ .../phy/qualcomm/phy-qcom-eusb2-repeater.c    |  54 ++++----
+ drivers/power/reset/qcom-pon.c                |  33 +++--
+ drivers/spmi/spmi-devres.c                    |  24 ++++
+ drivers/spmi/spmi.c                           |  95 ++++++++++++--
+ include/linux/spmi.h                          |  16 +++
+ 11 files changed, 299 insertions(+), 129 deletions(-)
+
 -- 
-2.43.0
+2.54.0
 
