@@ -1,120 +1,117 @@
-Received: from mail-pf1-f194.google.com (mail-pf1-f194.google.com [209.85.210.194])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 66A5D3921D6
-	for <linux-pm@vger.kernel.org>; Mon,  8 Jun 2026 10:07:58 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.210.194
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 77E6B33688B;
+	Mon,  8 Jun 2026 10:08:03 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1780913280; cv=none; b=fUXWKbRqFtx/4h26snsIk0EMky9wT5OiJD0O+x4VRl6/Q40as0oM2f5IWk1cCrOX06u0G8JiK0RDbQ/vCALO7Rr9kXkdNijxy+kz8B2Qxw2oXq60gRrLTIM4tJVGeR5/qOkXBTIYrso2OlfF7yqjO4q1Vao1oG3hsSWpwt/IuLU=
+	t=1780913284; cv=none; b=KwtBRYrWUXmCB1pK1/RZCUZnNyGxugQtIAEXzLkTVsA5YTeIxvMO59CBZuDqstE/fRGXDEwrBudEYqpzYzbmWAbX0suwVs8QOFdtt5wW8+AO5SnziiuG6gPiuyddnt8Uc1wxNOoWDtG++OlKb5VdtC/CyDu6vmIt5t/cHhOyeXA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1780913280; c=relaxed/simple;
-	bh=Yw+W/qioUG9yU2+3izlSbI4IPjGfS4xG5QBPpXJmRwY=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=p9EGMX/+ISLrkAApICrh+vTX3haEOp6H1HlCvsgsRe+yGgb047vUlfpJYdYw9jYI6XOwy5Z2SmjveSJI3/gE0wUxykqOXhbKORH1BEtYLtbsn74yT//OI2ZWp5c9oIPU/0CRcBMGAB9sCWmPOM8ya4idFO3/Rfa0RtadDgBqdG0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kylinos.cn; spf=pass smtp.mailfrom=gmail.com; arc=none smtp.client-ip=209.85.210.194
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kylinos.cn
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
-Received: by mail-pf1-f194.google.com with SMTP id d2e1a72fcca58-842273a2c4dso2762952b3a.3
-        for <linux-pm@vger.kernel.org>; Mon, 08 Jun 2026 03:07:58 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1780913278; x=1781518078;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=gr2Etc6DY6whRRAl0EvZrQnXUAexb6Hs0g7hYvwQ+2s=;
-        b=iz1LHPTnM0O9SaCdbvffEvrgw1evzoRC792WmuI4NFsQ1Gt6WPVYexxM5JZkQYsDLn
-         NkmPKhfMk4RIoTWuyV7rABYeGe7G6dDhe/HuB8nIV8oPMxHWACBUAuUhD9n5l2jaEZfP
-         bVN9WUSYZNLmREoBrq6Uu7aza4vjLu+wtcyCiNFAe9bTYBi7ZHRF+SEVLhjA9yCjaKhi
-         Xd2f389Ei91eGvBV7gRUl8CQyDqD8Vsi4AFo8YPdSpJsL2EpzrOcqjtXfxnt7Dy5zMYM
-         t+334xb9JbgaI8eJG6Jxb++ulthQ+OupJj2sbI7A/0rMG7gXagEao0ACs01lQdnAAmvZ
-         FUGQ==
-X-Forwarded-Encrypted: i=1; AFNElJ9mRbI1DuSSABzQ6TCnf0y+ipjkrhHvmyekgy3ehJ3Ebn/CLG3kElmnks/LaVqL2N3hPb24oQoNnA==@vger.kernel.org
-X-Gm-Message-State: AOJu0YyH99iaOOq4sWVoJZ4dksRaX+FGZPX3ze89iwUIiUUK2NoDakYl
-	85/C2b2UJ1QM2uEFQVfcAplTk5TyQLtDPNjlwZ82d2COPb2j2i6C8r0V
-X-Gm-Gg: Acq92OEvTzpnAbf9UkNm/ogoGNuwLhBdkB/bwbac2xjRAwJc4W/fJCaCXCPqKcMBo/T
-	q308x7df/Jzg8c7LFHAjuJxwWfSqOIBqjDvH9TOvpgt+fiHHr/R9IRZW54JyxzIWS2BXewE/arm
-	FrPi8kCysX1Fh8qnZQMC3h4eX29+JHU4b+KcaExiCEgMCH+wBbyMepqMh6+IveR3V0UfPtIF2G9
-	wRpon+AUsu6WVv3BBNeWJIEbfCy3unSKLCxZwg/CsUsdtEJOBSsnuFSM+f3tHtiu31yBsORNLRR
-	gmm5W2N9rUYepRERq7JM6kWTa0z0MtUa4tpu7BmHEb+1s28yqHYWMD+xFNi3dOapdyjClEb88LR
-	T7O+Y2vc6Rh1jjssP2RmUpYoyFHlU+9Gcu83aIcUc+xusG8y41x6Abn9vjtG0UZ13O+oAwgwBF4
-	3f8lhzx3IqjTxLMpCsCJAnMCJJWacigGl4h4B4NQKWEtgAHMuun23+gVd60f7bu+SRqw==
-X-Received: by 2002:a05:6a00:3e07:b0:842:6419:3ed2 with SMTP id d2e1a72fcca58-842b0eecc85mr14728522b3a.33.1780913277678;
-        Mon, 08 Jun 2026 03:07:57 -0700 (PDT)
-Received: from kylin-XiaoXinPro-16-AHP9.. ([116.128.244.171])
-        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-84282883647sm20431045b3a.36.2026.06.08.03.07.52
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 08 Jun 2026 03:07:57 -0700 (PDT)
-From: Xueqin Luo <luoxueqin@kylinos.cn>
-To: sudeep.holla@kernel.org,
-	gregkh@linuxfoundation.org,
-	rafael@kernel.org,
-	dakr@kernel.org,
-	viresh.kumar@linaro.org,
-	zhanjie9@hisilicon.com,
-	zhenglifeng1@huawei.com,
-	pierre.gondois@arm.com,
-	sumitg@nvidia.com,
-	linux-kernel@vger.kernel.org,
-	driver-core@lists.linux.dev,
-	linux-pm@vger.kernel.org
-Cc: Xueqin Luo <luoxueqin@kylinos.cn>
-Subject: [PATCH v4 0/3] cpufreq: cppc: Handle Highest Performance changes at runtime
-Date: Mon,  8 Jun 2026 18:07:43 +0800
-Message-ID: <20260608100746.372535-1-luoxueqin@kylinos.cn>
-X-Mailer: git-send-email 2.43.0
+	s=arc-20240116; t=1780913284; c=relaxed/simple;
+	bh=0WAZOkwh1M04H1c0YVum0mSxyq9dqMkuIAOwausNF/4=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=SNgAjq8ea2dkcZaLc8bQthPhDQaQuzgHLAIeAJ7e3NxIoRew8pv17lvd+0LzKWw0JqjHwXyn6F3nFNvTi74SpJRQsV063wTNT0gk1UlwQgzzyEhT+54X3s7StlZJqBx082G9zAtVypJgi7sL3cOWH+ZX6RnWJnT30va4G3RX/3I=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=RXnT4uaM; arc=none smtp.client-ip=100.103.45.18
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="RXnT4uaM"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 460841F00893;
+	Mon,  8 Jun 2026 10:08:01 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1780913283;
+	bh=rVBSLeID+xxuzIUnmbvTiFn8KX8C7lbOTIFzb+QeLGs=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=RXnT4uaMgFi6ipFBh3wPhIQCNm8yuExJotY0hKUy1F1DDlMPMHGnIKu3sikVOkftg
+	 hSxpDXEtTZ8OF4azNz8+ojGEWQVT65DLx+6xm0RrQ2BKOMd58VfKpvlKQhZgCLTnf0
+	 IiP530duViStlyQ/ci2R7GS7jqMdiZBh5CokrTw4ZIfn4LUnjqRKG5RXoxYZIKuBs/
+	 e7G0LzScAGWxqg1aqcc3gG+tid+/qKbbI5DSEdzuvCQDKnKGdC3X3Lv1yu42sehbwi
+	 ZnW88gPg9XvbBu1OLN3CXjk0WEs/7XjAuzP1mu57SK8IajnyIuM5uqLZ8AehFZWwFz
+	 O7EXf4UNIg6yQ==
+Date: Mon, 8 Jun 2026 12:07:59 +0200
+From: Krzysztof Kozlowski <krzk@kernel.org>
+To: Sachin Gupta <sachin.gupta@oss.qualcomm.com>
+Cc: Lee Jones <lee@kernel.org>, Rob Herring <robh@kernel.org>, 
+	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
+	"Rafael J. Wysocki" <rafael@kernel.org>, Daniel Lezcano <daniel.lezcano@kernel.org>, 
+	Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>, 
+	Stephen Boyd <sboyd@kernel.org>, Jishnu Prakash <jishnu.prakash@oss.qualcomm.com>, 
+	Kamal Wadhwa <kamal.wadhwa@oss.qualcomm.com>, Amit Kucheria <amitk@kernel.org>, 
+	Thara Gopinath <thara.gopinath@gmail.com>, linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, 
+	Satya Priya Kakitapalli <quic_skakitap@quicinc.com>, Ajit Pandey <ajit.pandey@oss.qualcomm.com>, 
+	Imran Shaik <imran.shaik@oss.qualcomm.com>, Taniya Das <taniya.das@oss.qualcomm.com>, 
+	Jagadeesh Kona <jagadeesh.kona@oss.qualcomm.com>
+Subject: Re: [PATCH 1/2] dt-bindings: thermal: Add Qualcomm MBG thermal
+ monitor support
+Message-ID: <20260608-sweet-powerful-ibis-8b2adb@quoll>
+References: <20260601-spmi-mbg-driver-v1-0-b4892b55a17f@oss.qualcomm.com>
+ <20260601-spmi-mbg-driver-v1-1-b4892b55a17f@oss.qualcomm.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20260601-spmi-mbg-driver-v1-1-b4892b55a17f@oss.qualcomm.com>
 
-Hi Rafael, Pierre,
+On Mon, Jun 01, 2026 at 04:31:18PM +0530, Sachin Gupta wrote:
+> From: Satya Priya Kakitapalli <quic_skakitap@quicinc.com>
+> 
+> Add bindings for the Qualcomm MBG (Master Bandgap) temperature alarm peripheral
 
-This series adds support for handling ACPI CPPC Highest Performance
-register changes at runtime, triggered by Notify(0x85) on a processor
-device.
+Feels unwrapped.
 
-When the platform changes the Highest Performance value (e.g. due to
-thermal or power budget adjustments), the OSPM must re-evaluate the
-cached capability and propagate the change to the cpufreq policy,
-the scheduler's CPU capacity model, and the frequency invariance
-engine.
+Please wrap commit message according to Linux coding style / submission
+process (neither too early nor over the limit):
+https://elixir.bootlin.com/linux/v6.4-rc1/source/Documentation/process/submitting-patches.rst#L597
 
-The series is split into three patches:
-  Patch 1: Core update_limits callback implementation.
-  Patch 2: Refactor autonomous perf bounds into a reusable helper
-           and wire it into update_limits with error logging.
-  Patch 3: Topology subsystem runtime capacity updates with
-           concurrent-safe normalization.
 
-v3 -> v4:
-  - Do not set policy->max directly; use refresh_frequency_limits()
-    to let the cpufreq core update it through cpufreq_set_policy()
-    (Rafael)
-  - Re-evaluate policy->boost_supported when highest_perf changes,
-    as boost capability depends on highest_perf > nominal_perf
-    (Rafael)
-  - Add topology capacity runtime update: introduce
-    topology_update_cpu_capacity() to refresh raw_capacity,
-    capacity_freq_ref, and the normalized CPU capacity scale
-    (Pierre)
-  - Refactor autonomous selection performance bounds programming
-    into cppc_cpufreq_set_autonomous_perf() helper, reused by both
-    store_auto_select() and update_limits()
-  - Add pr_debug error logging when autonomous perf update fails
+> found on the PM8775 PMIC. Unlike the existing SPMI temp alarm peripheral,
+> the MBG peripheral supports both hot and cold threshold monitoring across
+> two programmable levels (LVL1 and LVL2), with interrupt status reported via
+> a fault status register over SPMI.
+> 
+> Signed-off-by: Satya Priya Kakitapalli <quic_skakitap@quicinc.com>
+> Co-developed-by: Sachin Gupta <sachin.gupta@oss.qualcomm.com>
+> Signed-off-by: Sachin Gupta <sachin.gupta@oss.qualcomm.com>
+> ---
+>  .../devicetree/bindings/mfd/qcom,spmi-pmic.yaml    |  4 ++
+>  .../bindings/thermal/qcom-spmi-mbg-tm.yaml         | 72 ++++++++++++++++++++++
+>  2 files changed, 76 insertions(+)
+> 
+> diff --git a/Documentation/devicetree/bindings/mfd/qcom,spmi-pmic.yaml b/Documentation/devicetree/bindings/mfd/qcom,spmi-pmic.yaml
+> index 644c42b5e2e5..5f409fe700b2 100644
+> --- a/Documentation/devicetree/bindings/mfd/qcom,spmi-pmic.yaml
+> +++ b/Documentation/devicetree/bindings/mfd/qcom,spmi-pmic.yaml
+> @@ -193,6 +193,10 @@ patternProperties:
+>      type: object
+>      $ref: /schemas/thermal/qcom,spmi-temp-alarm.yaml#
+>  
+> +  "^temperature-sensor@[0-9a-f]+$":
+> +    type: object
+> +    $ref: /schemas/thermal/qcom-spmi-mbg-tm.yaml#
+> +
+>    "^typec@[0-9a-f]+$":
+>      type: object
+>      $ref: /schemas/usb/qcom,pmic-typec.yaml#
+> diff --git a/Documentation/devicetree/bindings/thermal/qcom-spmi-mbg-tm.yaml b/Documentation/devicetree/bindings/thermal/qcom-spmi-mbg-tm.yaml
+> new file mode 100644
+> index 000000000000..a0ecc9f35cf6
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/thermal/qcom-spmi-mbg-tm.yaml
 
-Xueqin Luo (3):
-  cpufreq: cppc: Add update_limits support for Highest Performance
-    changes
-  cpufreq: cppc: Refactor autonomous perf bounds into helper
-  arch_topology: Add topology_update_cpu_capacity() for runtime updates
+Filename must match compatible.
 
- drivers/base/arch_topology.c   |  70 ++++++++++++++++++++++
- drivers/cpufreq/cppc_cpufreq.c | 102 ++++++++++++++++++++++++++++-----
- include/linux/arch_topology.h  |   4 ++
- 3 files changed, 163 insertions(+), 13 deletions(-)
+> @@ -0,0 +1,72 @@
+> +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
+> +%YAML 1.2
+> +---
+> +$id: http://devicetree.org/schemas/thermal/qcom-spmi-mbg-tm.yaml#
+> +$schema: http://devicetree.org/meta-schemas/core.yaml#
+> +
+> +title: Qualcomm's SPMI PMIC MBG Thermal Monitoring
 
--- 
-2.43.0
+Best regards,
+Krzysztof
 
