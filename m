@@ -1,37 +1,37 @@
 Received: from layka.disroot.org (layka.disroot.org [178.21.23.139])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 77731391E55;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 55247390CBF;
 	Mon,  8 Jun 2026 07:36:40 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=178.21.23.139
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1780904202; cv=none; b=kp90kXeRNUPaXaHIARsykt2mECQ7hkrKTZvIBVB/h6sblEp+oV4QN1K5vjYOJcU2v9AH/PqgzEwJQLri0D3rddHpbWwKMmFoaxdMo0fbq50rys0blXJO9ngkBH/JzhvdNSeWr9BKBiFUgcGaHBCrQl4z1baSEGYpTKs2lm6WBbo=
+	t=1780904202; cv=none; b=ITA4d8i8O2XyfRfFCpWSbTN7QuAuHJJ5Zu3GStNkDfclc63Ytctpw1Q2WSqmt2geYRkyFz+Zfr1YHggk1vNwHohzAPwBJnHqzU5lfGBlgS8Seh82A6Ni4KJkVbCH1gdU32x7UmcnS4JJSAXkHDcDNrJ03eSxPBTBn076oMLI9DI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1780904202; c=relaxed/simple;
-	bh=mWUT3Tkb9GS4qGr2pSBOwD/Xn4wBDULKAkhmq5qlbjA=;
+	bh=wv5BCToSISG6yggP25rP+NA7FDd5RuN5lOZqbt43AuU=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=ESSPjhYvEbTN+TPPIKHA8FRWBc47IGqOQr/4CNeIYSVvGZAcx62+UnO07rHfyhX7SNNTYp7Wwtu+EKzgukeBBEPXzeiPCbXvt/4bu4VlQz6OVF3+HS0vMc/FYBO/a/Q68CVzzAEXjLLQ5Vv2aNEoeAtolr42BO/QSTfr403aHUk=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=disroot.org; spf=pass smtp.mailfrom=disroot.org; dkim=pass (2048-bit key) header.d=disroot.org header.i=@disroot.org header.b=bWZCDfz7; arc=none smtp.client-ip=178.21.23.139
+	 MIME-Version; b=muXYh2vehYIeDdJ70vJhbiN9/q2PoysYSnJCIAQdiZ/3kpK8nBi87MXUeIIHF3jCZe+7CFXuRFW4ig+pvKBgOc48glhdQlf+DIM+T9ikeZrkO8XXItto/Z/pRrsg7236wyP7uRCC07V5dovvyPfqhiJTGxkbp8KQ9e7yq4AyvGQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=disroot.org; spf=pass smtp.mailfrom=disroot.org; dkim=pass (2048-bit key) header.d=disroot.org header.i=@disroot.org header.b=DFW7QWNs; arc=none smtp.client-ip=178.21.23.139
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=disroot.org
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=disroot.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=disroot.org header.i=@disroot.org header.b="bWZCDfz7"
+	dkim=pass (2048-bit key) header.d=disroot.org header.i=@disroot.org header.b="DFW7QWNs"
 Received: from mail01.disroot.lan (localhost [127.0.0.1])
-	by disroot.org (Postfix) with ESMTP id 4661E2789B;
-	Mon,  8 Jun 2026 09:36:39 +0200 (CEST)
+	by disroot.org (Postfix) with ESMTP id B4FCE27622;
+	Mon,  8 Jun 2026 09:36:38 +0200 (CEST)
 X-Virus-Scanned: SPAM Filter at disroot.org
 Received: from layka.disroot.org ([127.0.0.1])
  by localhost (disroot.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id aLkbLRrQOV8y; Mon,  8 Jun 2026 09:36:38 +0200 (CEST)
+ id GB53__dkvk7r; Mon,  8 Jun 2026 09:36:38 +0200 (CEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=disroot.org; s=mail;
-	t=1780904198; bh=mWUT3Tkb9GS4qGr2pSBOwD/Xn4wBDULKAkhmq5qlbjA=;
+	t=1780904198; bh=wv5BCToSISG6yggP25rP+NA7FDd5RuN5lOZqbt43AuU=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References;
-	b=bWZCDfz7HwpJYFeStGGxDf7Z7kydzM6b2IafylyR4+/6r9pqQk+3I3sFd+1faKpiP
-	 hFeNi8gLlVnZhCBcSeF9eurCGCzoAD+I8hUUox6t75q5nhh7v+GSbXL1ApMqB05JTk
-	 9Br58CjGbybVcFWRGBcKPYLMI9r7Kz293AeoHoeTQVcH0G13lywurqjdWG1SEPq+yQ
-	 4jK31nBPMR7VFcJrV8pDuT/KaRBO9nFyMdcHWpGj2+Y7rT2cFphOyKCRS9dW1BbfY6
-	 PNrEFYVFINOC7zR7MJv8SaxvCrqNHO7h/A+tYZ8lskm+fbUsCWM1Y7FMnszN9kRevM
-	 jowyk/EiSgLyg==
+	b=DFW7QWNs2ck6i72uALirbQncRN45NrADhipFtZU10SdjI6KCOtU/jstTAapiwOLZc
+	 5CcoFQMdXGtwF429BX2FBiL/GMRaEXSLbmwjqLq6j7lTEisONAEAubk7SKkXfi/bpP
+	 v3FzoSRfvDUvkuwADWoOgZP9zIyg8JgRt5V9sRG3mE5vE89yLelvjekqCIwEIkOX8W
+	 uJXhwBylvjVZoTNbkHjocximkZY0bDJonhBIw2mtnGLmQfWrnXOfT/NPljYZBGABRC
+	 NtT64ExRDPc4kiqAgEU0nat/x4ThfnCRUiyY9PeqzSyeS+iyNE3YwXgIZXVWwBd7zF
+	 z6odg53VbACMw==
 From: Marco Scardovi <scardracs@disroot.org>
 To: kprateek.nayak@amd.com
 Cc: linux-kernel@vger.kernel.org,
@@ -43,12 +43,11 @@ Cc: linux-kernel@vger.kernel.org,
 	scardracs@disroot.org,
 	stuartmeckle@gmail.com,
 	viresh.kumar@linaro.org
-Subject: [PATCH v5 1/3] cpufreq/amd-pstate: Fix EPP return type and handle errors during initialization
-Date: Mon,  8 Jun 2026 09:31:01 +0200
-Message-ID: <20260608073614.5738-2-scardracs@disroot.org>
-In-Reply-To: <20260608073614.5738-1-scardracs@disroot.org>
+Subject: [PATCH v5 0/3] cpufreq/amd-pstate: Fix EPP and auto_sel initialization
+Date: Mon,  8 Jun 2026 09:31:00 +0200
+Message-ID: <20260608073614.5738-1-scardracs@disroot.org>
+In-Reply-To: <c97c81f1-1254-44fe-80b2-89f82fec73f6@amd.com>
 References: <c97c81f1-1254-44fe-80b2-89f82fec73f6@amd.com>
- <20260608073614.5738-1-scardracs@disroot.org>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -57,86 +56,62 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Currently, the EPP getter helper functions (msr_get_epp, shmem_get_epp, and
-the static call wrapper amd_pstate_get_epp) return u8 or s16. This makes it
-difficult to correctly propagate negative error values returned by the
-underlying MSR read or CPPC helpers (such as rdmsrq_on_cpu or
-cppc_get_epp_perf).
+Hi Mario, Prateek,
 
-Modify the return type of these functions to int, allowing them to return
-negative error codes properly.
+I don't mind splitting in more patches as far as it works and make things
+easier for you on backporting and verification.
 
-Additionally, in amd_pstate_epp_cpu_init(), fetch the firmware-programmed
-default EPP value and validate it before assigning it to the EPP variables.
-If amd_pstate_get_epp() returns an error code, propagate the error and abort
-the CPU initialization to prevent subsequent configuration failures.
+Changes in v5:
+- Split the unified patch into a 3-patch series:
+  - Patch 1: Change EPP helper return types to signed int and add error handling
+    in amd_pstate_epp_cpu_init().
+  - Patch 2: Remove the active-mode early return check in shmem_init_perf() to
+    ensure auto_sel is properly toggled on shared memory systems.
+  - Patch 3: Cache the initial firmware programmed EPP value in cppc_req_cached.
 
-Fixes: 555bbe67a622 ("cpufreq/amd-pstate: Convert all perf values to u8")
-Assisted-by: Antigravity:gemini-3.5-flash
-Signed-off-by: Marco Scardovi <scardracs@disroot.org>
----
- drivers/cpufreq/amd-pstate.c | 16 ++++++++++++----
- 1 file changed, 12 insertions(+), 4 deletions(-)
+Changes in v4:
+- Refactor EPP getter helper functions (msr_get_epp, shmem_get_epp, and
+  amd_pstate_get_epp) to return int, conforming to standard kernel practice
+  for value-or-negative-errno helpers.
+- Clean up commit message description to link error propagation directly to
+  EPP caching.
+- Execute the remaining shared-memory initialization path even when booting
+  in active mode, rather than bypassing it through an early return.
 
-diff --git a/drivers/cpufreq/amd-pstate.c b/drivers/cpufreq/amd-pstate.c
-index 8d55e2be825b..77261c31d81d 100644
---- a/drivers/cpufreq/amd-pstate.c
-+++ b/drivers/cpufreq/amd-pstate.c
-@@ -199,7 +199,7 @@ static inline int get_mode_idx_from_str(const char *str, size_t size)
- 
- static DEFINE_MUTEX(amd_pstate_driver_lock);
- 
--static u8 msr_get_epp(struct amd_cpudata *cpudata)
-+static int msr_get_epp(struct amd_cpudata *cpudata)
- {
- 	u64 value;
- 	int ret;
-@@ -215,12 +215,12 @@ static u8 msr_get_epp(struct amd_cpudata *cpudata)
- 
- DEFINE_STATIC_CALL(amd_pstate_get_epp, msr_get_epp);
- 
--static inline s16 amd_pstate_get_epp(struct amd_cpudata *cpudata)
-+static inline int amd_pstate_get_epp(struct amd_cpudata *cpudata)
- {
- 	return static_call(amd_pstate_get_epp)(cpudata);
- }
- 
--static u8 shmem_get_epp(struct amd_cpudata *cpudata)
-+static int shmem_get_epp(struct amd_cpudata *cpudata)
- {
- 	u64 epp;
- 	int ret;
-@@ -1877,6 +1877,7 @@ static int amd_pstate_epp_cpu_init(struct cpufreq_policy *policy)
- 	struct amd_cpudata *cpudata;
- 	union perf_cached perf;
- 	struct device *dev;
-+	int default_epp;
- 	int ret;
- 
- 	/*
-@@ -1926,6 +1927,13 @@ static int amd_pstate_epp_cpu_init(struct cpufreq_policy *policy)
- 
- 	policy->boost_supported = READ_ONCE(cpudata->boost_supported);
- 
-+	/* Fetch the firmware programmed default EPP value */
-+	default_epp = amd_pstate_get_epp(cpudata);
-+	if (default_epp < 0) {
-+		ret = default_epp;
-+		goto free_cpudata1;
-+	}
-+
- 	/*
- 	 * Set the policy to provide a valid fallback value in case
- 	 * the default cpufreq governor is neither powersave nor performance.
-@@ -1933,7 +1941,7 @@ static int amd_pstate_epp_cpu_init(struct cpufreq_policy *policy)
- 	if (amd_pstate_acpi_pm_profile_server() ||
- 	    amd_pstate_acpi_pm_profile_undefined()) {
- 		policy->policy = CPUFREQ_POLICY_PERFORMANCE;
--		cpudata->epp_default_ac = cpudata->epp_default_dc = amd_pstate_get_epp(cpudata);
-+		cpudata->epp_default_ac = cpudata->epp_default_dc = default_epp;
- 		cpudata->current_profile = PLATFORM_PROFILE_PERFORMANCE;
- 	} else {
- 		policy->policy = CPUFREQ_POLICY_POWERSAVE;
+Changes in v3:
+- Patch 1: Cache the firmware-programmed default EPP value at CPU EPP
+  initialization (resolving the boot-time false cache hit) and explicitly
+  toggle the AUTO_SEL_ENABLE register to 1 on shared memory systems,
+  rather than utilizing a state-tracking flag as proposed in v2.
+- Patch 2: Dropped as CPPC systems universally support EPP.
+
+Changes in v2:
+- Patch 1: Rename `epp_initialized` to `epp_hw_programmed` and add a comment
+  documenting the EPP cache guard optimization behavior.
+- Patch 2: Add comments explaining the uniform CPU capability check on x86,
+  handle EPP capability check errors robustly (only treat -EOPNOTSUPP as
+  unsupported, warn and assume supported for other errors to avoid false
+  negatives), and reject runtime active mode transitions at sysfs store time
+  (preventing the driver from being left in an unregistered state).
+
+Changes in v1:
+- Fix the boot-time CPPC EPP/auto_sel initialization regression in
+  shmem_set_epp() using a state tracking flag while preserving runtime
+  cache optimization.
+- Add an EPP capability check helper during initialization.
+- Fall back to passive mode at boot if EPP is not supported, and reject
+  transitions to active mode at runtime if EPP is not supported.
+
+Marco Scardovi (3):
+  cpufreq/amd-pstate: Fix EPP return type and handle errors during
+    initialization
+  cpufreq/amd-pstate: Toggle auto_sel in active mode on shared memory
+    systems
+  cpufreq/amd-pstate: Cache the firmware programmed EPP value
+
+ drivers/cpufreq/amd-pstate.c | 20 +++++++++++++-------
+ 1 file changed, 13 insertions(+), 7 deletions(-)
+
 -- 
 2.54.0
 
