@@ -1,76 +1,39 @@
-Received: from bali.collaboradmins.com (bali.collaboradmins.com [148.251.105.195])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 234DC3DC861;
-	Mon,  8 Jun 2026 10:10:56 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=148.251.105.195
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 69EBE3655F5;
+	Mon,  8 Jun 2026 11:25:58 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1780913458; cv=none; b=maCPW2Xtj3J6JjoFDSRjeIilwd270EZAlmAsvk2H7E0GHz/wHAXB+NgkYMWsdlQPYKE2TODzVXqOPo1lPWiuAp8ujq7GpBwc+QXJC0RV/jS5w4/vhhA0gQ7yI4xLY/1TFQ1ITUD5OvdQMwBi2Dl4JZalWQ4u/o4JNYvr3wSSvbo=
+	t=1780917959; cv=none; b=u/TOJVQr0HSD1W0SmeHZcFpPLB02GkrxyoALIly0K2vf3IlHCVnqNUUcKCQq7WgRc7m4S5Jg2+ADtfzquPs643N1BXEJjNX2HMacaSb0BWtMMDI5uS7igSNWcbQsmr61aqCGEdiIPNpALPFhrhXDB1IBdaHeJNs98Rbhoy4967s=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1780913458; c=relaxed/simple;
-	bh=ocBR4DK3N5YI3SCULMPVftw8BGWTTDX62cB4q/nsdYI=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=E0YiV91cyBXJs5WOrKnL4KvUzvTBNZOoM8HFEuIEVtF787//tT4T6y5zFzzxvU9J7G+d+eLMcq1sL4ll/Bo8UZYEiPGYZgg/0bUcPpcpcMnKz5+Tic5Qxw18ZUQe+J1CxDgcrh3Sy7vcs0NXK5p9od9vh2M8aCqOStOO/gUFPrQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b=P/w6l/vj; arc=none smtp.client-ip=148.251.105.195
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
+	s=arc-20240116; t=1780917959; c=relaxed/simple;
+	bh=5bRegsiAkTvaQ/G3RW1MOpw36kHnaCqlxNJrqbhin0M=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=F3JJD8OOqx419gZEhX2MxDXdMDRubbNw6lSS2p4kIH9Fbcsi6/c1iWO8mBLr98OOWTy6lvydqtkh9fAG4GSSAoPKdy0fim+dy8ESc914MFhFkKRKvaN+US4ogAJkCXiSe+iUypaS9UYLLIgRBi/oXf1QM93spvYLRBtOLjFCigE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=JKNMERMx; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b="P/w6l/vj"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
-	s=mail; t=1780913455;
-	bh=ocBR4DK3N5YI3SCULMPVftw8BGWTTDX62cB4q/nsdYI=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=P/w6l/vj/VXslD8EaFC1dGZjEtFneSYTAYGMO9y1/Sdqpz9Yd0irRgVpvcwEK1fgJ
-	 WyhqLa0MRQLsTZIHYDtFZapi6JP743xrMHFHYMtZApcJmySQZ7i4YKdWei0qO5KDEQ
-	 Tb/eVHJnhDeZ+uYX958jELSMq/KEZayJpyWYqUThxWZ/1TGANlmTZlwkebM+4MjPY/
-	 RDsOHSA2xMR2y2ATsbSipfPYueGZYQLcmQRU3VCvWrmdPdpdd/HjK3e3qPMkeOSReV
-	 RDcyKRzBauE22VML81KpNeYjdNilsEeEa0SPtXAa4N0thiKS/XeD8kylZOav30dQwR
-	 MdVTMlK9qlZfQ==
-Received: from IcarusMOD.eternityproject.eu (unknown [100.64.1.21])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	(Authenticated sender: kholk11)
-	by bali.collaboradmins.com (Postfix) with ESMTPSA id 6A62E17E05FC;
-	Mon,  8 Jun 2026 12:10:54 +0200 (CEST)
-From: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
-To: jic23@kernel.org
-Cc: dlechner@baylibre.com,
-	nuno.sa@analog.com,
-	andy@kernel.org,
-	arnd@arndb.de,
-	gregkh@linuxfoundation.org,
-	srini@kernel.org,
-	vkoul@kernel.org,
-	neil.armstrong@linaro.org,
-	sre@kernel.org,
-	sboyd@kernel.org,
-	angelogioacchino.delregno@collabora.com,
-	krzk@kernel.org,
-	dmitry.baryshkov@oss.qualcomm.com,
-	quic_wcheng@quicinc.com,
-	melody.olvera@oss.qualcomm.com,
-	quic_nsekar@quicinc.com,
-	ivo.ivanov.ivanov1@gmail.com,
-	abelvesa@kernel.org,
-	luca.weiss@fairphone.com,
-	konrad.dybcio@oss.qualcomm.com,
-	mitltlatltl@gmail.com,
-	krishna.kurapati@oss.qualcomm.com,
-	linux-arm-msm@vger.kernel.org,
-	linux-iio@vger.kernel.org,
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="JKNMERMx"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 595661F00899;
+	Mon,  8 Jun 2026 11:25:57 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1780917958;
+	bh=kyno88n0dt4fFHl3JZL3xwMSurbqExnZRHyfl7cu0zA=;
+	h=From:To:Cc:Subject:Date;
+	b=JKNMERMxAM0kIyZscYP1rUKz8+di/kj5cFdGdA/ciHnuSZms0ESE1X6ws7MdwwMM2
+	 /q4Xk8UBHqnZFgYJ2HVaIis/7cXgq1mA4feXCHLiNjMU1PMsKhVEjyenLhK8fNS0fL
+	 hOE8O1UmALw84GfymhjqbW5zyB6lDuF4fe6KU5LH5R5yrMxmYrY35KquL+A2wgoiVK
+	 UVckkb3jOi6PSJa+BftcRA1ncUZCHfQw8Bn6MdVuP3h9nyUjItHYvmxDaNjRCS1Kte
+	 cg6QtFIxf4dG78K8vE9JeXTB+u4HrTe4rAfZ9ZebA88xUpIfVsHw4nvM5tjYuDTYpV
+	 dX4p3KaNVUgZA==
+From: Georgi Djakov <djakov@kernel.org>
+To: gregkh@linuxfoundation.org
+Cc: linux-pm@vger.kernel.org,
 	linux-kernel@vger.kernel.org,
-	linux-phy@lists.infradead.org,
-	linux-pm@vger.kernel.org,
-	kernel@collabora.com,
-	Jonathan Cameron <jonathan.cameron@huawei.com>,
-	Andy Shevchenko <andriy.shevchenko@intel.com>
-Subject: [PATCH v9 10/10] iio: adc: qcom-spmi-iadc: Remove regmap R/W wrapper functions
-Date: Mon,  8 Jun 2026 12:09:49 +0200
-Message-ID: <20260608100949.36309-11-angelogioacchino.delregno@collabora.com>
-X-Mailer: git-send-email 2.54.0
-In-Reply-To: <20260608100949.36309-1-angelogioacchino.delregno@collabora.com>
-References: <20260608100949.36309-1-angelogioacchino.delregno@collabora.com>
+	djakov@kernel.org
+Subject: [GIT PULL] interconnect changes for 7.2
+Date: Mon,  8 Jun 2026 14:25:37 +0300
+Message-Id: <20260608112537.2701425-1-djakov@kernel.org>
+X-Mailer: git-send-email 2.34.1
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -79,263 +42,105 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-This driver doesn't need to add any register base address to any
-regmap call anymore since it was migrated to register as a SPMI
-subdevice with its own regmap reg_base, which makes the regmap
-API to automatically add such base address internally.
+Hello Greg,
 
-Since the iadc_{read,write,read_result}() functions now only do
-call regmap_{read,write,bulk_read}() and nothing else, simplify
-the driver by removing them and by calling regmap APIs directly.
+This is the pull request with interconnect changes for the v7.2-rc1
+merge window. As always, the short summary is in the signed tag.
 
-Reviewed-by: Jonathan Cameron <jonathan.cameron@huawei.com>
-Tested-by: Neil Armstrong <neil.armstrong@linaro.org> # on SM8650-QRD
-Reviewed-by: Andy Shevchenko <andriy.shevchenko@intel.com>
-Signed-off-by: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
----
- drivers/iio/adc/qcom-spmi-iadc.c | 89 ++++++++++++--------------------
- 1 file changed, 33 insertions(+), 56 deletions(-)
+All patches have been in linux-next for two full weeks. There are
+currently no reported issues. Please pull into char-misc-next when
+possible.
 
-diff --git a/drivers/iio/adc/qcom-spmi-iadc.c b/drivers/iio/adc/qcom-spmi-iadc.c
-index ad66bb92fe19..29e71e6ac374 100644
---- a/drivers/iio/adc/qcom-spmi-iadc.c
-+++ b/drivers/iio/adc/qcom-spmi-iadc.c
-@@ -113,77 +113,59 @@ struct iadc_chip {
- 	struct completion complete;
- };
- 
--static int iadc_read(struct iadc_chip *iadc, u16 offset, u8 *data)
--{
--	unsigned int val;
--	int ret;
--
--	ret = regmap_read(iadc->regmap, offset, &val);
--	if (ret < 0)
--		return ret;
--
--	*data = val;
--	return 0;
--}
--
--static int iadc_write(struct iadc_chip *iadc, u16 offset, u8 data)
--{
--	return regmap_write(iadc->regmap, offset, data);
--}
--
- static int iadc_reset(struct iadc_chip *iadc)
- {
--	u8 data;
-+	u32 data;
- 	int ret;
- 
--	ret = iadc_write(iadc, IADC_SEC_ACCESS, IADC_SEC_ACCESS_DATA);
-+	ret = regmap_write(iadc->regmap, IADC_SEC_ACCESS, IADC_SEC_ACCESS_DATA);
- 	if (ret < 0)
- 		return ret;
- 
--	ret = iadc_read(iadc, IADC_PERH_RESET_CTL3, &data);
-+	ret = regmap_read(iadc->regmap, IADC_PERH_RESET_CTL3, &data);
- 	if (ret < 0)
- 		return ret;
- 
--	ret = iadc_write(iadc, IADC_SEC_ACCESS, IADC_SEC_ACCESS_DATA);
-+	ret = regmap_write(iadc->regmap, IADC_SEC_ACCESS, IADC_SEC_ACCESS_DATA);
- 	if (ret < 0)
- 		return ret;
- 
- 	data |= IADC_FOLLOW_WARM_RB;
- 
--	return iadc_write(iadc, IADC_PERH_RESET_CTL3, data);
-+	return regmap_write(iadc->regmap, IADC_PERH_RESET_CTL3, data);
- }
- 
- static int iadc_set_state(struct iadc_chip *iadc, bool state)
- {
--	return iadc_write(iadc, IADC_EN_CTL1, state ? IADC_EN_CTL1_SET : 0);
-+	return regmap_write(iadc->regmap, IADC_EN_CTL1, state ? IADC_EN_CTL1_SET : 0);
- }
- 
- static void iadc_status_show(struct iadc_chip *iadc)
- {
--	u8 mode, sta1, chan, dig, en, req;
-+	u32 mode, sta1, chan, dig, en, req;
- 	int ret;
- 
--	ret = iadc_read(iadc, IADC_MODE_CTL, &mode);
-+	ret = regmap_read(iadc->regmap, IADC_MODE_CTL, &mode);
- 	if (ret < 0)
- 		return;
- 
--	ret = iadc_read(iadc, IADC_DIG_PARAM, &dig);
-+	ret = regmap_read(iadc->regmap, IADC_DIG_PARAM, &dig);
- 	if (ret < 0)
- 		return;
- 
--	ret = iadc_read(iadc, IADC_CH_SEL_CTL, &chan);
-+	ret = regmap_read(iadc->regmap, IADC_CH_SEL_CTL, &chan);
- 	if (ret < 0)
- 		return;
- 
--	ret = iadc_read(iadc, IADC_CONV_REQ, &req);
-+	ret = regmap_read(iadc->regmap, IADC_CONV_REQ, &req);
- 	if (ret < 0)
- 		return;
- 
--	ret = iadc_read(iadc, IADC_STATUS1, &sta1);
-+	ret = regmap_read(iadc->regmap, IADC_STATUS1, &sta1);
- 	if (ret < 0)
- 		return;
- 
--	ret = iadc_read(iadc, IADC_EN_CTL1, &en);
-+	ret = regmap_read(iadc->regmap, IADC_EN_CTL1, &en);
- 	if (ret < 0)
- 		return;
- 
-@@ -199,34 +181,34 @@ static int iadc_configure(struct iadc_chip *iadc, int channel)
- 
- 	/* Mode selection */
- 	mode = (IADC_OP_MODE_NORMAL << IADC_OP_MODE_SHIFT) | IADC_TRIM_EN;
--	ret = iadc_write(iadc, IADC_MODE_CTL, mode);
-+	ret = regmap_write(iadc->regmap, IADC_MODE_CTL, mode);
- 	if (ret < 0)
- 		return ret;
- 
- 	/* Channel selection */
--	ret = iadc_write(iadc, IADC_CH_SEL_CTL, channel);
-+	ret = regmap_write(iadc->regmap, IADC_CH_SEL_CTL, channel);
- 	if (ret < 0)
- 		return ret;
- 
- 	/* Digital parameter setup */
- 	decim = IADC_DEF_DECIMATION << IADC_DIG_DEC_RATIO_SEL_SHIFT;
--	ret = iadc_write(iadc, IADC_DIG_PARAM, decim);
-+	ret = regmap_write(iadc->regmap, IADC_DIG_PARAM, decim);
- 	if (ret < 0)
- 		return ret;
- 
- 	/* HW settle time delay */
--	ret = iadc_write(iadc, IADC_HW_SETTLE_DELAY, IADC_DEF_HW_SETTLE_TIME);
-+	ret = regmap_write(iadc->regmap, IADC_HW_SETTLE_DELAY, IADC_DEF_HW_SETTLE_TIME);
- 	if (ret < 0)
- 		return ret;
- 
--	ret = iadc_write(iadc, IADC_FAST_AVG_CTL, IADC_DEF_AVG_SAMPLES);
-+	ret = regmap_write(iadc->regmap, IADC_FAST_AVG_CTL, IADC_DEF_AVG_SAMPLES);
- 	if (ret < 0)
- 		return ret;
- 
- 	if (IADC_DEF_AVG_SAMPLES)
--		ret = iadc_write(iadc, IADC_FAST_AVG_EN, IADC_FAST_AVG_EN_SET);
-+		ret = regmap_write(iadc->regmap, IADC_FAST_AVG_EN, IADC_FAST_AVG_EN_SET);
- 	else
--		ret = iadc_write(iadc, IADC_FAST_AVG_EN, 0);
-+		ret = regmap_write(iadc->regmap, IADC_FAST_AVG_EN, 0);
- 
- 	if (ret < 0)
- 		return ret;
-@@ -239,19 +221,19 @@ static int iadc_configure(struct iadc_chip *iadc, int channel)
- 		return ret;
- 
- 	/* Request conversion */
--	return iadc_write(iadc, IADC_CONV_REQ, IADC_CONV_REQ_SET);
-+	return regmap_write(iadc->regmap, IADC_CONV_REQ, IADC_CONV_REQ_SET);
- }
- 
- static int iadc_poll_wait_eoc(struct iadc_chip *iadc, unsigned int interval_us)
- {
- 	unsigned int count, retry;
-+	u32 sta1;
- 	int ret;
--	u8 sta1;
- 
- 	retry = interval_us / IADC_CONV_TIME_MIN_US;
- 
- 	for (count = 0; count < retry; count++) {
--		ret = iadc_read(iadc, IADC_STATUS1, &sta1);
-+		ret = regmap_read(iadc->regmap, IADC_STATUS1, &sta1);
- 		if (ret < 0)
- 			return ret;
- 
-@@ -267,11 +249,6 @@ static int iadc_poll_wait_eoc(struct iadc_chip *iadc, unsigned int interval_us)
- 	return -ETIMEDOUT;
- }
- 
--static int iadc_read_result(struct iadc_chip *iadc, u16 *data)
--{
--	return regmap_bulk_read(iadc->regmap, IADC_DATA, data, 2);
--}
--
- static int iadc_do_conversion(struct iadc_chip *iadc, int chan, u16 *data)
- {
- 	unsigned int wait;
-@@ -296,7 +273,7 @@ static int iadc_do_conversion(struct iadc_chip *iadc, int chan, u16 *data)
- 	}
- 
- 	if (!ret)
--		ret = iadc_read_result(iadc, data);
-+		ret = regmap_bulk_read(iadc->regmap, IADC_DATA, data, sizeof(*data));
- exit:
- 	iadc_set_state(iadc, false);
- 	if (ret < 0)
-@@ -392,33 +369,33 @@ static int iadc_update_offset(struct iadc_chip *iadc)
- 
- static int iadc_version_check(struct iadc_chip *iadc)
- {
--	u8 val;
-+	u32 val;
- 	int ret;
- 
--	ret = iadc_read(iadc, IADC_PERPH_TYPE, &val);
-+	ret = regmap_read(iadc->regmap, IADC_PERPH_TYPE, &val);
- 	if (ret < 0)
- 		return ret;
- 
- 	if (val < IADC_PERPH_TYPE_ADC) {
--		dev_err(iadc->dev, "%d is not ADC\n", val);
-+		dev_err(iadc->dev, "%u is not ADC\n", val);
- 		return -EINVAL;
- 	}
- 
--	ret = iadc_read(iadc, IADC_PERPH_SUBTYPE, &val);
-+	ret = regmap_read(iadc->regmap, IADC_PERPH_SUBTYPE, &val);
- 	if (ret < 0)
- 		return ret;
- 
- 	if (val < IADC_PERPH_SUBTYPE_IADC) {
--		dev_err(iadc->dev, "%d is not IADC\n", val);
-+		dev_err(iadc->dev, "%u is not IADC\n", val);
- 		return -EINVAL;
- 	}
- 
--	ret = iadc_read(iadc, IADC_REVISION2, &val);
-+	ret = regmap_read(iadc->regmap, IADC_REVISION2, &val);
- 	if (ret < 0)
- 		return ret;
- 
- 	if (val < IADC_REVISION2_SUPPORTED_IADC) {
--		dev_err(iadc->dev, "revision %d not supported\n", val);
-+		dev_err(iadc->dev, "revision %u not supported\n", val);
- 		return -EINVAL;
- 	}
- 
-@@ -428,7 +405,7 @@ static int iadc_version_check(struct iadc_chip *iadc)
- static int iadc_rsense_read(struct iadc_chip *iadc, struct device_node *node)
- {
- 	int ret, sign, int_sense;
--	u8 deviation;
-+	u32 deviation;
- 
- 	ret = of_property_read_u32(node, "qcom,external-resistor-micro-ohms",
- 				   &iadc->rsense[IADC_EXT_RSENSE]);
-@@ -440,7 +417,7 @@ static int iadc_rsense_read(struct iadc_chip *iadc, struct device_node *node)
- 		return -EINVAL;
- 	}
- 
--	ret = iadc_read(iadc, IADC_NOMINAL_RSENSE, &deviation);
-+	ret = regmap_read(iadc->regmap, IADC_NOMINAL_RSENSE, &deviation);
- 	if (ret < 0)
- 		return ret;
- 
--- 
-2.54.0
+Thanks,
+Georgi
 
+
+The following changes since commit 254f49634ee16a731174d2ae34bc50bd5f45e731:
+
+  Linux 7.1-rc1 (2026-04-26 14:19:00 -0700)
+
+are available in the Git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/djakov/icc.git tags/icc-7.2-rc1
+
+for you to fetch changes up to 94fe92d2f662b990da2ef9788bbe3bdcfe086731:
+
+  Merge branch 'icc-misc' into icc-next (2026-05-22 10:41:01 +0300)
+
+----------------------------------------------------------------
+This pull request contains the following interconnect updates for
+the 7.2-rc1 merge window:
+
+- New driver for Shikra SoC
+- New driver for Nord SoC
+- New driver for Hawi SoC including CPU/LLCC bwmon support
+- Add missing SDCC nodes for Eliza SoC
+- Misc cleanups and fixes.
+
+Signed-off-by: Georgi Djakov <djakov@kernel.org>
+
+----------------------------------------------------------------
+Abel Vesa (2):
+      dt-bindings: interconnect: qcom,eliza-rpmh: Add SDCC1 slave
+      interconnect: qcom: eliza: Add SDCC1 slave node
+
+Georgi Djakov (5):
+      Merge branch 'icc-shikra' into icc-next
+      Merge branch 'icc-nord' into icc-next
+      Merge branch 'icc-eliza' into icc-next
+      Merge branch 'icc-hawi' into icc-next
+      Merge branch 'icc-misc' into icc-next
+
+Krzysztof Kozlowski (7):
+      interconnect: Do not create empty devres on missing interconnects
+      interconnect: Move MODULE_DEVICE_TABLE next to the table itself
+      dt-bindings: interconnect: qcom,sdm660: Disallow clocks when appropriate
+      dt-bindings: interconnect: qcom,sm6115: Drop incorrect children if:then: block
+      dt-bindings: interconnect: qcom,sm6115: Restrict children and clocks
+      interconnect: qcom: Fix indentation
+      interconnect: qcom: Restrict drivers per ARM/ARM64
+
+Mukesh Ojha (2):
+      dt-bindings: interconnect: qcom-bwmon: Add Hawi cpu-bwmon compatible
+      dt-bindings: interconnect: qcom-bwmon: Add Hawi llcc-bwmon compatible
+
+Odelu Kukatla (2):
+      dt-bindings: interconnect: Document RPMh Network-On-Chip for Qualcomm Nord SoC
+      interconnect: qcom: Add interconnect provider driver for Nord SoC
+
+Raviteja Laggyshetty (2):
+      dt-bindings: interconnect: document the RPM Network-On-Chip interconnect in Shikra SoC
+      interconnect: qcom: add Shikra interconnect provider driver
+
+Vivek Aknurwar (2):
+      dt-bindings: interconnect: qcom: document the RPMh NoC for Hawi SoC
+      interconnect: qcom: add Hawi interconnect provider driver
+
+ .../devicetree/bindings/interconnect/qcom,hawi-rpmh.yaml       |  131 +
+ .../devicetree/bindings/interconnect/qcom,msm8998-bwmon.yaml   |    2 +
+ .../devicetree/bindings/interconnect/qcom,nord-rpmh.yaml       |  131 +
+ .../devicetree/bindings/interconnect/qcom,sdm660.yaml          |   13 +
+ .../devicetree/bindings/interconnect/qcom,shikra.yaml          |  134 +
+ .../devicetree/bindings/interconnect/qcom,sm6115.yaml          |   33 +-
+ drivers/interconnect/core.c                                    |    2 +-
+ drivers/interconnect/qcom/Kconfig                              |   95 +-
+ drivers/interconnect/qcom/Makefile                             |    6 +
+ drivers/interconnect/qcom/eliza.c                              |   15 +-
+ drivers/interconnect/qcom/hawi.c                               | 2028 ++++++
+ drivers/interconnect/qcom/msm8953.c                            |    2 +-
+ drivers/interconnect/qcom/nord.c                               | 2682 ++++++++
+ drivers/interconnect/qcom/shikra.c                             | 1837 +++++
+ include/dt-bindings/interconnect/qcom,eliza-rpmh.h             |    1 +
+ include/dt-bindings/interconnect/qcom,hawi-rpmh.h              |  165 +
+ include/dt-bindings/interconnect/qcom,nord-rpmh.h              |  217 +
+ include/dt-bindings/interconnect/qcom,shikra.h                 |  121 +
+ 18 files changed, 7577 insertions(+), 38 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/interconnect/qcom,hawi-rpmh.yaml
+ create mode 100644 Documentation/devicetree/bindings/interconnect/qcom,nord-rpmh.yaml
+ create mode 100644 Documentation/devicetree/bindings/interconnect/qcom,shikra.yaml
+ create mode 100644 drivers/interconnect/qcom/hawi.c
+ create mode 100644 drivers/interconnect/qcom/nord.c
+ create mode 100644 drivers/interconnect/qcom/shikra.c
+ create mode 100644 include/dt-bindings/interconnect/qcom,hawi-rpmh.h
+ create mode 100644 include/dt-bindings/interconnect/qcom,nord-rpmh.h
+ create mode 100644 include/dt-bindings/interconnect/qcom,shikra.h
