@@ -1,286 +1,133 @@
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.223.131])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DCCFD3AFB1F
-	for <linux-pm@vger.kernel.org>; Mon,  8 Jun 2026 08:28:32 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.131
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 21C2F3C4573
+	for <linux-pm@vger.kernel.org>; Mon,  8 Jun 2026 08:40:57 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1780907316; cv=none; b=i4o/38DPH0jiUch2xGUAyyXJ1+SNte/GFajZM7IeMcT7VQGtxh/3DXOKk9YFqGCaMz1At3hJpn2ZYPV7Tj9nZ4j5pAec/y8ETm+LyNpZPHc0rLfOX/U5UTKA6Mq/FtjC5hgJrgEWiuOUHgk2Pl06xRTRJl6KFDZp/MEU133c9CY=
+	t=1780908058; cv=none; b=tNb4yjxwZGkNfrKHIzQHTszUbzS4a85XgVb3DFu7x8iAaN8KkV0y/LrZjAfrckFH3BFFvupN3xNiXis+E18xSxt+Vw/oUrpBcsa+gKd6y8MxJSlb1u48di5gOiOHeHVQxl0QIL27egik/mAgt4gbN6i5wm15bG9sfeqF8DOaT0k=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1780907316; c=relaxed/simple;
-	bh=bF0CN4dvt4Sppb42MYhcdPxZ1fiT60JCiQNZ4zt/wbg=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=g/qiXwn1y43Hi6ozyH28qK76oDY41Je7IhhRTzZX5ieG8iqwQJaK87iT+KoGWQZZ8gWj0Vd43AbLIOyBk2rL0fxeN8jyuK8Up/IEVBIBRBjEB33p9xkvj/jPYuHW6imhbPJoqXm9SUmtESA0HmhqUfuwS01tHZmRDH4ZZ9BJXDY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com; spf=pass smtp.mailfrom=suse.com; dkim=pass (1024-bit key) header.d=suse.com header.i=@suse.com header.b=dnVEbYS1; dkim=pass (1024-bit key) header.d=suse.com header.i=@suse.com header.b=Vv9QmD8t; arc=none smtp.client-ip=195.135.223.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.com
+	s=arc-20240116; t=1780908058; c=relaxed/simple;
+	bh=Z1tpQiF5SlWYkxPC/pBiynkFWvlAzchlifLEFft0XF8=;
+	h=From:In-Reply-To:MIME-Version:References:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=Wuz68i3hziOPv7uMzKw0Ml+T7KcZ9bTHylFVlfO+yPKE1LQbYWsgc5C7v5CWhhkJ2BJvbllmUaBsJvkTNfEL0OBT+tQc6TLiQPCo0HRmfcMIbUeeaT3Bu+5WHce+vz04gY4RLwidXDPemKNn4KsCKddCY2z4iVf63Cxv+j6Xx6A=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=UtAzf/TG; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=suse.com header.i=@suse.com header.b="dnVEbYS1";
-	dkim=pass (1024-bit key) header.d=suse.com header.i=@suse.com header.b="Vv9QmD8t"
-Received: from imap1.dmz-prg2.suse.org (unknown [10.150.64.97])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by smtp-out2.suse.de (Postfix) with ESMTPS id 1867A7598F;
-	Mon,  8 Jun 2026 08:28:30 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.com; s=susede1;
-	t=1780907311; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=jePKORN7IjeteIZRE4yjl1edIOKQNskQBUw6TTuCsCU=;
-	b=dnVEbYS1UDkYPsYGNY265WYQjgc3eonU5DDrgHxwCK+kOgET1PSXp8T7davywjT4x4jbyy
-	bujpvcjtsuqHpfib6pjI2TIpjmaTe0ymt6S5q3tXjP2sfGVDc5fbQ9ovLQ3+WpVxnu1guC
-	MZW0tX+5XeOD1o8uNys/TMRxfsTj2j4=
-Authentication-Results: smtp-out2.suse.de;
-	none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.com; s=susede1;
-	t=1780907310; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=jePKORN7IjeteIZRE4yjl1edIOKQNskQBUw6TTuCsCU=;
-	b=Vv9QmD8tS8/iaAy+dU7vrQ+gTbbD/TJdczJsGLmIfExLMmCV0p2vKpwhQs3pnrvSabK9TF
-	Vye4trZhEYVPlfth82iicWmyiNLmshccCMlA7dqKTk+ZI9PssHG50nh1soK8Jqs7704DhR
-	dWDFgalMYNr8PrHES9FFcpc3stNPpN8=
-Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 445A7779A7;
-	Mon,  8 Jun 2026 08:28:29 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
-	by imap1.dmz-prg2.suse.org with ESMTPSA
-	id 02CADy19JmpNSAAAD6G6ig
-	(envelope-from <jgross@suse.com>); Mon, 08 Jun 2026 08:28:29 +0000
-From: Juergen Gross <jgross@suse.com>
-To: linux-kernel@vger.kernel.org,
-	x86@kernel.org,
-	linux-perf-users@vger.kernel.org,
-	kvm@vger.kernel.org,
-	linux-coco@lists.linux.dev,
-	linux-hyperv@vger.kernel.org,
-	linux-pm@vger.kernel.org
-Cc: Juergen Gross <jgross@suse.com>,
-	Peter Zijlstra <peterz@infradead.org>,
-	Ingo Molnar <mingo@redhat.com>,
-	Arnaldo Carvalho de Melo <acme@kernel.org>,
-	Namhyung Kim <namhyung@kernel.org>,
-	Mark Rutland <mark.rutland@arm.com>,
-	Alexander Shishkin <alexander.shishkin@linux.intel.com>,
-	Jiri Olsa <jolsa@kernel.org>,
-	Ian Rogers <irogers@google.com>,
-	Adrian Hunter <adrian.hunter@intel.com>,
-	James Clark <james.clark@linaro.org>,
-	Thomas Gleixner <tglx@kernel.org>,
-	Borislav Petkov <bp@alien8.de>,
-	Dave Hansen <dave.hansen@linux.intel.com>,
-	"H. Peter Anvin" <hpa@zytor.com>,
-	Tony Luck <tony.luck@intel.com>,
-	Reinette Chatre <reinette.chatre@intel.com>,
-	Dave Martin <Dave.Martin@arm.com>,
-	James Morse <james.morse@arm.com>,
-	Babu Moger <babu.moger@amd.com>,
-	Sean Christopherson <seanjc@google.com>,
-	Paolo Bonzini <pbonzini@redhat.com>,
-	Kiryl Shutsemau <kas@kernel.org>,
-	Rick Edgecombe <rick.p.edgecombe@intel.com>,
-	"K. Y. Srinivasan" <kys@microsoft.com>,
-	Haiyang Zhang <haiyangz@microsoft.com>,
-	Wei Liu <wei.liu@kernel.org>,
-	Dexuan Cui <decui@microsoft.com>,
-	Long Li <longli@microsoft.com>,
-	"Rafael J. Wysocki" <rafael@kernel.org>,
-	Artem Bityutskiy <artem.bityutskiy@linux.intel.com>,
-	Artem Bityutskiy <dedekind1@gmail.com>,
-	Len Brown <lenb@kernel.org>
-Subject: [PATCH 3/4] x86/msr: Switch wrmsrl() users to wrmsrq()
-Date: Mon,  8 Jun 2026 10:28:08 +0200
-Message-ID: <20260608082809.3492719-4-jgross@suse.com>
-X-Mailer: git-send-email 2.54.0
-In-Reply-To: <20260608082809.3492719-1-jgross@suse.com>
-References: <20260608082809.3492719-1-jgross@suse.com>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="UtAzf/TG"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id C85F91F0089E
+	for <linux-pm@vger.kernel.org>; Mon,  8 Jun 2026 08:40:55 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1780908055;
+	bh=4HoT9KIsnYIDd0zvedKTYCGFgVE6ChDhK5tVcTIkXrs=;
+	h=From:In-Reply-To:References:Date:Subject:To:Cc;
+	b=UtAzf/TGWJfwCsNV2Ue5iolZ68yf3f30P6b6WmVzMzBqmmPCvh444Q2e4wBR9DYZC
+	 AnxUpcvEVn2Om/u9TmAeMRVOIJcAlsFT0YmOWjrVMVfIRbPKrc9iGS0/Jgf4Qr2NYD
+	 MBwOdTvIy/zAkvHr4quF7Wwq4FMCmIDH4DB7ddcjbeIN5xVcDXorm2J96nVOaL/XCC
+	 r8l2OPZPij1DKq+wHQbblb/+Tt2+7PzogxDLKgACcK819/76HiKDbpBS0bXE4RuGEG
+	 d69BNA98i9BydLxFP1a+/yqre2Wxr8M5vsK9LaX6cTvPy5TevPtps1emBN/QIKPBDS
+	 nJrnvZt+BYY4w==
+Received: by mail-lf1-f51.google.com with SMTP id 2adb3069b0e04-5aa61e3d3f3so3788919e87.0
+        for <linux-pm@vger.kernel.org>; Mon, 08 Jun 2026 01:40:55 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AFNElJ9bogdSkQ2uZP+rKN+OiqIoSk2FeWuCv8C1Kvo1nPhNzrZuxCZetPEMkZUFZChsCrIsRxOReFasuQ==@vger.kernel.org
+X-Gm-Message-State: AOJu0YyfYfLHCkrq8HL8H/2v/FqJM5xakIeTQYUxZ244grJsidPlJGM7
+	Qe88fcCD7x9u4NFs3NfWoCNwyWJpYaMTKPN3kGZvDJL27KQRV3h+OERps8rQ4zPWnFeDCh9k3+I
+	QC2eGjsRTMSAApHjJrNx34GKE0m6642skgtpzcHy2JA==
+X-Received: by 2002:a05:6512:8046:b0:5aa:6dff:cf0d with SMTP id
+ 2adb3069b0e04-5aa87bc2279mr2524415e87.28.1780908053800; Mon, 08 Jun 2026
+ 01:40:53 -0700 (PDT)
+Received: from 969154062570 named unknown by gmailapi.google.com with
+ HTTPREST; Mon, 8 Jun 2026 01:40:52 -0700
+Received: from 969154062570 named unknown by gmailapi.google.com with
+ HTTPREST; Mon, 8 Jun 2026 01:40:52 -0700
+From: Bartosz Golaszewski <brgl@kernel.org>
+In-Reply-To: <20260521-pdev-fwnode-ref-v1-5-88c324a1b8d2@oss.qualcomm.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Spam-Flag: NO
-X-Spamd-Result: default: False [-2.80 / 50.00];
-	BAYES_HAM(-3.00)[100.00%];
-	MID_CONTAINS_FROM(1.00)[];
-	NEURAL_HAM_LONG(-1.00)[-1.000];
-	R_MISSING_CHARSET(0.50)[];
-	NEURAL_HAM_SHORT(-0.20)[-0.977];
-	MIME_GOOD(-0.10)[text/plain];
-	TO_MATCH_ENVRCPT_ALL(0.00)[];
-	FREEMAIL_CC(0.00)[suse.com,infradead.org,redhat.com,kernel.org,arm.com,linux.intel.com,google.com,intel.com,linaro.org,alien8.de,zytor.com,amd.com,microsoft.com,gmail.com];
-	ARC_NA(0.00)[];
-	RCVD_VIA_SMTP_AUTH(0.00)[];
-	MIME_TRACE(0.00)[0:+];
-	TO_DN_SOME(0.00)[];
-	RCPT_COUNT_TWELVE(0.00)[40];
-	DBL_BLOCKED_OPENRESOLVER(0.00)[imap1.dmz-prg2.suse.org:helo,suse.com:email,suse.com:mid];
-	FUZZY_RATELIMITED(0.00)[rspamd.com];
-	FROM_HAS_DN(0.00)[];
-	RCVD_COUNT_TWO(0.00)[2];
-	RCVD_TLS_ALL(0.00)[];
-	FROM_EQ_ENVFROM(0.00)[];
-	R_RATELIMIT(0.00)[to_ip_from(RLfdszjqhz8kzzb9uwpzdm8png)];
-	DKIM_SIGNED(0.00)[suse.com:s=susede1];
-	FREEMAIL_ENVRCPT(0.00)[gmail.com]
-X-Spam-Level: 
-X-Spam-Score: -2.80
+References: <20260521-pdev-fwnode-ref-v1-0-88c324a1b8d2@oss.qualcomm.com> <20260521-pdev-fwnode-ref-v1-5-88c324a1b8d2@oss.qualcomm.com>
+Date: Mon, 8 Jun 2026 01:40:52 -0700
+X-Gmail-Original-Message-ID: <CAMRc=MdrfyUUyk9sMGVCedyug_JmZQZEQHuK5T6+BRv3AvNT6g@mail.gmail.com>
+X-Gm-Features: AVVi8CchM9VaksLWvpKbwHirniTnl6glReoNd3-xvchi05VK9oh9JtbFGYTDxqA
+Message-ID: <CAMRc=MdrfyUUyk9sMGVCedyug_JmZQZEQHuK5T6+BRv3AvNT6g@mail.gmail.com>
+Subject: Re: [PATCH 05/23] powerpc/powermac: fix OF node refcount
+To: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
+Cc: brgl@kernel.org, linux-kernel@vger.kernel.org, netdev@vger.kernel.org, 
+	linux-arm-msm@vger.kernel.org, linux-sound@vger.kernel.org, 
+	driver-core@lists.linux.dev, devicetree@vger.kernel.org, 
+	linuxppc-dev@lists.ozlabs.org, linux-i2c@vger.kernel.org, 
+	iommu@lists.linux.dev, linux-pm@vger.kernel.org, imx@lists.linux.dev, 
+	linux-arm-kernel@lists.infradead.org, intel-xe@lists.freedesktop.org, 
+	dri-devel@lists.freedesktop.org, linux-usb@vger.kernel.org, 
+	linux-mips@vger.kernel.org, platform-driver-x86@vger.kernel.org, 
+	stable@vger.kernel.org, Lee Jones <lee@kernel.org>, 
+	Mark Brown <broonie@opensource.wolfsonmicro.com>, 
+	Thierry Reding <thierry.reding@avionic-design.de>, 
+	Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Andrew Lunn <andrew+netdev@lunn.ch>, 
+	"David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>, 
+	Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, 
+	Srinivas Kandagatla <srini@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
+	Vinod Koul <vkoul@kernel.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Danilo Krummrich <dakr@kernel.org>, 
+	Rob Herring <robh@kernel.org>, Saravana Kannan <saravanak@kernel.org>, 
+	Madhavan Srinivasan <maddy@linux.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>, 
+	Nicholas Piggin <npiggin@gmail.com>, "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, 
+	Andi Shyti <andi.shyti@kernel.org>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, 
+	Joerg Roedel <joro@8bytes.org>, Will Deacon <will@kernel.org>, Robin Murphy <robin.murphy@arm.com>, 
+	Doug Berger <opendmb@gmail.com>, Florian Fainelli <florian.fainelli@broadcom.com>, 
+	Broadcom internal kernel review list <bcm-kernel-feedback-list@broadcom.com>, Ulf Hansson <ulfh@kernel.org>, 
+	Frank Li <Frank.Li@nxp.com>, Sascha Hauer <s.hauer@pengutronix.de>, 
+	Pengutronix Kernel Team <kernel@pengutronix.de>, Fabio Estevam <festevam@gmail.com>, 
+	Matthew Brost <matthew.brost@intel.com>, 
+	=?UTF-8?Q?Thomas_Hellstr=C3=B6m?= <thomas.hellstrom@linux.intel.com>, 
+	Rodrigo Vivi <rodrigo.vivi@intel.com>, David Airlie <airlied@gmail.com>, 
+	Simona Vetter <simona@ffwll.ch>, Peter Chen <peter.chen@kernel.org>, 
+	Paul Cercueil <paul@crapouillou.net>, Bin Liu <b-liu@ti.com>, 
+	Philipp Zabel <p.zabel@pengutronix.de>, Maximilian Luz <luzmaximilian@gmail.com>, 
+	Hans de Goede <hansg@kernel.org>, =?UTF-8?Q?Ilpo_J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>, 
+	Krzysztof Kozlowski <krzk@kernel.org>, Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Content-Type: text/plain; charset="UTF-8"
 
-wrmsrl() is a deprecated synonym for wrmsrq(). Switch its users to
-wrmsrq().
+On Thu, 21 May 2026 10:36:28 +0200, Bartosz Golaszewski
+<bartosz.golaszewski@oss.qualcomm.com> said:
+> Platform devices created with platform_device_alloc() call
+> platform_device_release() when the last reference to the device's
+> kobject is dropped. This function calls of_node_put() unconditionally.
+> This works fine for devices created with platform_device_register_full()
+> but users of the split approach (platform_device_alloc() +
+> platform_device_add()) must bump the reference of the of_node they
+> assign manually. Add the missing call to of_node_get().
+>
+> Cc: stable@vger.kernel.org
+> Fixes: 81e5d8646ff6 ("i2c/powermac: Register i2c devices from device-tree")
+> Signed-off-by: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
+> ---
+>  arch/powerpc/platforms/powermac/low_i2c.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> diff --git a/arch/powerpc/platforms/powermac/low_i2c.c b/arch/powerpc/platforms/powermac/low_i2c.c
+> index da72a30ab8657e6dc7e6f3437af612155783d8f9..973f58771d9636605ed5d3e91b45008543b584d3 100644
+> --- a/arch/powerpc/platforms/powermac/low_i2c.c
+> +++ b/arch/powerpc/platforms/powermac/low_i2c.c
+> @@ -1471,7 +1471,7 @@ static int __init pmac_i2c_create_platform_devices(void)
+>  		if (bus->platform_dev == NULL)
+>  			return -ENOMEM;
+>  		bus->platform_dev->dev.platform_data = bus;
+> -		bus->platform_dev->dev.of_node = bus->busnode;
+> +		bus->platform_dev->dev.of_node = of_node_get(bus->busnode);
+>  		platform_device_add(bus->platform_dev);
+>  	}
+>
+>
+> --
+> 2.47.3
+>
+>
 
-Signed-off-by: Juergen Gross <jgross@suse.com>
----
- arch/x86/events/amd/uncore.c          | 2 +-
- arch/x86/events/intel/core.c          | 4 ++--
- arch/x86/kernel/cpu/resctrl/monitor.c | 2 +-
- arch/x86/kernel/process_64.c          | 2 +-
- arch/x86/kvm/pmu.c                    | 6 +++---
- arch/x86/kvm/vmx/tdx.c                | 6 +++---
- drivers/hv/mshv_vtl_main.c            | 2 +-
- drivers/idle/intel_idle.c             | 2 +-
- 8 files changed, 13 insertions(+), 13 deletions(-)
+Hi!
 
-diff --git a/arch/x86/events/amd/uncore.c b/arch/x86/events/amd/uncore.c
-index 98ef4bf9911a..7dc6af4231cc 100644
---- a/arch/x86/events/amd/uncore.c
-+++ b/arch/x86/events/amd/uncore.c
-@@ -975,7 +975,7 @@ static void amd_uncore_umc_read(struct perf_event *event)
- 	 * that the counter never gets a chance to saturate.
- 	 */
- 	if (new & BIT_ULL(63 - COUNTER_SHIFT)) {
--		wrmsrl(hwc->event_base, 0);
-+		wrmsrq(hwc->event_base, 0);
- 		local64_set(&hwc->prev_count, 0);
- 	} else {
- 		local64_set(&hwc->prev_count, new);
-diff --git a/arch/x86/events/intel/core.c b/arch/x86/events/intel/core.c
-index dd1e3aa75ee9..e9baa64dc962 100644
---- a/arch/x86/events/intel/core.c
-+++ b/arch/x86/events/intel/core.c
-@@ -3166,12 +3166,12 @@ static void intel_pmu_config_acr(int idx, u64 mask, u32 reload)
- 	}
- 
- 	if (cpuc->acr_cfg_b[idx] != mask) {
--		wrmsrl(msr_b + msr_offset, mask);
-+		wrmsrq(msr_b + msr_offset, mask);
- 		cpuc->acr_cfg_b[idx] = mask;
- 	}
- 	/* Only need to update the reload value when there is a valid config value. */
- 	if (mask && cpuc->acr_cfg_c[idx] != reload) {
--		wrmsrl(msr_c + msr_offset, reload);
-+		wrmsrq(msr_c + msr_offset, reload);
- 		cpuc->acr_cfg_c[idx] = reload;
- 	}
- }
-diff --git a/arch/x86/kernel/cpu/resctrl/monitor.c b/arch/x86/kernel/cpu/resctrl/monitor.c
-index c5ed0bc1f831..e4918c32a822 100644
---- a/arch/x86/kernel/cpu/resctrl/monitor.c
-+++ b/arch/x86/kernel/cpu/resctrl/monitor.c
-@@ -532,7 +532,7 @@ static void resctrl_abmc_config_one_amd(void *info)
- {
- 	union l3_qos_abmc_cfg *abmc_cfg = info;
- 
--	wrmsrl(MSR_IA32_L3_QOS_ABMC_CFG, abmc_cfg->full);
-+	wrmsrq(MSR_IA32_L3_QOS_ABMC_CFG, abmc_cfg->full);
- }
- 
- /*
-diff --git a/arch/x86/kernel/process_64.c b/arch/x86/kernel/process_64.c
-index b85e715ebb30..d44afbe005bb 100644
---- a/arch/x86/kernel/process_64.c
-+++ b/arch/x86/kernel/process_64.c
-@@ -708,7 +708,7 @@ __switch_to(struct task_struct *prev_p, struct task_struct *next_p)
- 
- 	/* Reset hw history on AMD CPUs */
- 	if (cpu_feature_enabled(X86_FEATURE_AMD_WORKLOAD_CLASS))
--		wrmsrl(MSR_AMD_WORKLOAD_HRST, 0x1);
-+		wrmsrq(MSR_AMD_WORKLOAD_HRST, 0x1);
- 
- 	return prev_p;
- }
-diff --git a/arch/x86/kvm/pmu.c b/arch/x86/kvm/pmu.c
-index e218352e3423..aee70e5dc15d 100644
---- a/arch/x86/kvm/pmu.c
-+++ b/arch/x86/kvm/pmu.c
-@@ -1313,14 +1313,14 @@ static void kvm_pmu_load_guest_pmcs(struct kvm_vcpu *vcpu)
- 		pmc = &pmu->gp_counters[i];
- 
- 		if (pmc->counter != rdpmc(i))
--			wrmsrl(gp_counter_msr(i), pmc->counter);
--		wrmsrl(gp_eventsel_msr(i), pmc->eventsel_hw);
-+			wrmsrq(gp_counter_msr(i), pmc->counter);
-+		wrmsrq(gp_eventsel_msr(i), pmc->eventsel_hw);
- 	}
- 	for (i = 0; i < pmu->nr_arch_fixed_counters; i++) {
- 		pmc = &pmu->fixed_counters[i];
- 
- 		if (pmc->counter != rdpmc(INTEL_PMC_FIXED_RDPMC_BASE | i))
--			wrmsrl(fixed_counter_msr(i), pmc->counter);
-+			wrmsrq(fixed_counter_msr(i), pmc->counter);
- 	}
- }
- 
-diff --git a/arch/x86/kvm/vmx/tdx.c b/arch/x86/kvm/vmx/tdx.c
-index 04ce321ebdf3..cb50e23c39ca 100644
---- a/arch/x86/kvm/vmx/tdx.c
-+++ b/arch/x86/kvm/vmx/tdx.c
-@@ -823,7 +823,7 @@ static void tdx_prepare_switch_to_host(struct kvm_vcpu *vcpu)
- 		return;
- 
- 	++vcpu->stat.host_state_reload;
--	wrmsrl(MSR_KERNEL_GS_BASE, vt->msr_host_kernel_gs_base);
-+	wrmsrq(MSR_KERNEL_GS_BASE, vt->msr_host_kernel_gs_base);
- 
- 	vt->guest_state_loaded = false;
- }
-@@ -1048,10 +1048,10 @@ static void tdx_load_host_xsave_state(struct kvm_vcpu *vcpu)
- 
- 	/*
- 	 * Likewise, even if a TDX hosts didn't support XSS both arms of
--	 * the comparison would be 0 and the wrmsrl would be skipped.
-+	 * the comparison would be 0 and the wrmsrq would be skipped.
- 	 */
- 	if (kvm_host.xss != (kvm_tdx->xfam & kvm_caps.supported_xss))
--		wrmsrl(MSR_IA32_XSS, kvm_host.xss);
-+		wrmsrq(MSR_IA32_XSS, kvm_host.xss);
- }
- 
- #define TDX_DEBUGCTL_PRESERVED (DEBUGCTLMSR_BTF | \
-diff --git a/drivers/hv/mshv_vtl_main.c b/drivers/hv/mshv_vtl_main.c
-index f5d27f28d6ad..0d3d4161974f 100644
---- a/drivers/hv/mshv_vtl_main.c
-+++ b/drivers/hv/mshv_vtl_main.c
-@@ -596,7 +596,7 @@ static int mshv_vtl_get_set_reg(struct hv_register_assoc *regs, bool set)
- 		} else {
- 			/* Handle MSRs */
- 			if (set)
--				wrmsrl(reg_table[i].msr_addr, *reg64);
-+				wrmsrq(reg_table[i].msr_addr, *reg64);
- 			else
- 				rdmsrq(reg_table[i].msr_addr, *reg64);
- 		}
-diff --git a/drivers/idle/intel_idle.c b/drivers/idle/intel_idle.c
-index 15c698291b32..67d5993c7387 100644
---- a/drivers/idle/intel_idle.c
-+++ b/drivers/idle/intel_idle.c
-@@ -2379,7 +2379,7 @@ static void intel_c1_demotion_toggle(void *enable)
- 		msr_val |= NHM_C1_AUTO_DEMOTE | SNB_C1_AUTO_UNDEMOTE;
- 	else
- 		msr_val &= ~(NHM_C1_AUTO_DEMOTE | SNB_C1_AUTO_UNDEMOTE);
--	wrmsrl(MSR_PKG_CST_CONFIG_CONTROL, msr_val);
-+	wrmsrq(MSR_PKG_CST_CONFIG_CONTROL, msr_val);
- }
- 
- static ssize_t intel_c1_demotion_store(struct device *dev,
--- 
-2.54.0
+Gentle ping for that fix. Can we get this landed for v7.1 or early v7.2 and
+make getting the rest of the series upstream easier next cycle?
 
+Bart
