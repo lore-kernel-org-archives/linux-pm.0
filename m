@@ -1,134 +1,89 @@
-Received: from mail-wm1-f54.google.com (mail-wm1-f54.google.com [209.85.128.54])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3959F2D949F
-	for <linux-pm@vger.kernel.org>; Sun,  7 Jun 2026 20:47:04 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.54
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DC4DF29B8CF;
+	Mon,  8 Jun 2026 01:04:34 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.137.202.133
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1780865226; cv=none; b=HjaiJ6qXnWDuDnBfYO+oV0diTIsVQBMWQNsVuS0UPMAx0eaIMlzaETIYHaOl1tg/oTTPHWztuHMSU/HvHyX4WiS9fEfkvO0X9AUiubDndxSqOMouZge8Ta+mt0TGOMxQFKcbJo5letobEpzCVe46RA0LhbZtryW5BfvikAyAzHE=
+	t=1780880676; cv=none; b=QrRpV/NxyVskvnd86i3WU35jlVW8jAc0Yz6+6f0tZlo7ePSyZ8Yth+iWdSCTOFRM+F4lYwKELsnKmcAHJDAqpSdOnUh3sm0qks2afv2mmO9QZ4wWftpPesvf0fYAO1rV8TYC7BBxZWmyDYn3kXEIbKhswkOyzoy0w94XB+xfDGA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1780865226; c=relaxed/simple;
-	bh=ad1hq5JNhLtXzY7IPHT3fS14o1GnWbOaJ778Mf40PiI=;
-	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=jVkujmitZ8om6SkIgthPvJpKAh3EI+RHRLf0FWHZPHfgNROK7+SJbIEX0sUQS1cHiF+d0Mqcup1BjOY2t8ueBwWKeeTUxwY10zJaAM/EE9nOUaiEwkIvqmeZU6AIrF2R1Mt/SLAVnee99tcobxCNri/wezcNK/MYUXQ4zZJQS5E=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=RMDQzDnE; arc=none smtp.client-ip=209.85.128.54
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1780880676; c=relaxed/simple;
+	bh=iEywT9iZ7M9GAZW3M3sgb/XD2i+6PVC4a4SEXz2ufGg=;
+	h=Message-ID:Date:MIME-Version:Subject:From:To:Cc:References:
+	 In-Reply-To:Content-Type; b=eW99TwpPj0qaB++/J5z8KQD8pLoaA8ZkI8Tf0QP/MnsEkRaf4Q/16JgGyJTop8MP/sYKfr7QgYOdLXIlpYUOkNPdaMlUjFkYq5S1BN+6nZgIjoaoJRu7xplFulaAvlKG8Ktq/udblGLUel95cKNpFdD3EVhttq4zWpxn58lazW8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=infradead.org; spf=pass smtp.mailfrom=infradead.org; dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b=rEeR9dli; arc=none smtp.client-ip=198.137.202.133
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=infradead.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=infradead.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="RMDQzDnE"
-Received: by mail-wm1-f54.google.com with SMTP id 5b1f17b1804b1-490b12270b3so21660615e9.1
-        for <linux-pm@vger.kernel.org>; Sun, 07 Jun 2026 13:47:03 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1780865223; x=1781470023; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:subject:cc:to:from:date:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=E0fGqOLKGiTBs4GzJtJROxaA/ChE132hfn8KfuQAtzY=;
-        b=RMDQzDnEMZPtO7WHex3XB+RyYhJo/U6JTe0NPjDhCcVPJR1x2QVYMCJg42YlITmpQv
-         SemgIA9DEidSFpMOLygDC0fi2rDagksRwddSjC1HPDisPvRl1WS1HZRk4PgHQenOOTpP
-         +PL5WNVyal5Bya6NXih9QsH+a4hO1sHsqjs7hGN19KazA734abQx7Qs39woN8w0uAfSC
-         JEwgo8gRZUdYc9blRwsos4xtUfy/HOVqU4JMgbsAm/ZyXgyC+CCK6sBtEWd35YNsKr7p
-         4Evy4ejoNlHObTglzI8LGJBXyuolEn1bBNq3aYRbrSosE5iTLkvn8XKsej7Oi+K584Mc
-         8/vQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1780865223; x=1781470023;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=E0fGqOLKGiTBs4GzJtJROxaA/ChE132hfn8KfuQAtzY=;
-        b=aLI4K1E0lRKs+gohyd9FxKruqNzsqCRMNgIXoDtVGb42euCFWATqObkBwFqprNrlaN
-         4MWyORf061QWi9HBXQUBXxqaHcFhAj7cV9P5CwA8Gei2phblmHAJk5EzFQWBaogxOlt8
-         71vO7tJDgfbO4vk6Dn2mMrrh4x57r9Kp9iAz2JjSxhgVG+KmBF44evEcd1tYoO3AD0tA
-         iBRwmpBqJr4AbFOHyo1r8MJQV+88W2knZIQ4aVHVs2u1lP6zZagNwIVgBtA8ANdqZFst
-         gPGY2WDhcXqKmHfmvB7ZICLNjmkeZAruzPuBMJAmPB0EkHF0qp3AG+6lb7P557QCblEB
-         WUNw==
-X-Forwarded-Encrypted: i=1; AFNElJ9SrlX6RSOtidoS3+1u61R11z4qOJRvVjHsVauNlr6D2rj10HDWvgRZj0RCLKyZ+iFKarykKCsTiQ==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yw9fGpdHP11WJivCauNuPldZiCih5cRL+LNGYi+Fb0i/dGM8OoR
-	eSZOQbuSeXfMdFmxrA/bsmS0tQRhjn7nteSy4WxQ/57JTbPJG905ODof
-X-Gm-Gg: Acq92OEvQb9exLMkQa01Thr4kl7+8i7jxC5fdmug8TV78K2epUijY0pMue5/6cTj+aw
-	seLE8Trk1/W3F/AY22XkBBKsU9mUYewSsAnlbuaYiSAGGfsd9eatRGRKKBhZ1spqjyUh5lHQx/Q
-	rlV2C7xKgpv5nmAb1p/VRzgwnCVF7lpaCVnokBS9scS9XbvijI1ocbuZdsJPCLRtQWi5TXJa7nI
-	osJxYMg/q0yscK8RWJDcN0InXbn+g6t1nHfTenhSY+E7RELAbreBsRqs3sUhlfdeaRDzmr/IoZ/
-	xowB6XcD78eoSYAJhN1SHcuBnnbt3XKbHA2a3mQZxkevqOLdpP/9vWrX5rJxYOv/b0Yx2NkXG7C
-	ZfM6YpcwglCvhkL1kNk3kH3CmDwcSDBmQkhSB1hmgYN30FpaPRLwwOW+WeljzXNtfSitzX3Azu7
-	fGedK+CYSgwfIjpcZoZ2wqjNStHNbmIvyYsxOMq2EDwFVMqxn5LcGNxZFqGBVWnCYjfLoV39w=
-X-Received: by 2002:a05:600c:620f:b0:490:5074:651e with SMTP id 5b1f17b1804b1-490c2612cb7mr187071515e9.25.1780865222444;
-        Sun, 07 Jun 2026 13:47:02 -0700 (PDT)
-Received: from pumpkin (82-69-66-36.dsl.in-addr.zen.co.uk. [82.69.66.36])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-490c2c9ebeesm182835285e9.0.2026.06.07.13.47.01
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 07 Jun 2026 13:47:02 -0700 (PDT)
-Date: Sun, 7 Jun 2026 21:47:00 +0100
-From: David Laight <david.laight.linux@gmail.com>
-To: Guru Das Srinagesh <linux@gurudas.dev>
-Cc: Ovidiu Panait <ovidiu.panait.oss@gmail.com>, rafael@kernel.org,
- daniel.lezcano@kernel.org, rui.zhang@intel.com, lukasz.luba@arm.com,
- linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/3] thermal: testing: Avoid NULL pointer dereference on
- missing arg
-Message-ID: <20260607214700.5c5e88b6@pumpkin>
-In-Reply-To: <aiXMoaYaRlTsMwqd@gurudas.dev>
-References: <20260606210420.2311145-1-ovidiu.panait.oss@gmail.com>
-	<aiTdAQ6uCuFenv7N@shakti>
-	<20260607122318.40696a11@pumpkin>
-	<aiXMoaYaRlTsMwqd@gurudas.dev>
-X-Mailer: Claws Mail 4.1.1 (GTK 3.24.38; arm-unknown-linux-gnueabihf)
+	dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="rEeR9dli"
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=infradead.org; s=bombadil.20210309; h=Content-Transfer-Encoding:
+	Content-Type:In-Reply-To:References:Cc:To:From:Subject:MIME-Version:Date:
+	Message-ID:Sender:Reply-To:Content-ID:Content-Description;
+	bh=7KUxNK4roQZlfzNGNej2nyL3RkJMcfEGaNe2y2Xztxo=; b=rEeR9dlixXYsxc8Vx4w9d6kp1p
+	WTo7tuklDVjPcR4/I53cjP/PWOVyTdI7R9kSI5puqS+jw+3vk1frGcqLe7rWUtu8WF+X5TzXMyGTZ
+	mHbXMaGY/eE+6QxMenRt2Jf4lxnQqeHSiQLBHHEmMH1ZUXKM3QiqLFeO9ZuCa4z0lfQfSbvyw+DZ0
+	cLizJg6SDEwbCXTQbUcAiqT0YadCF29KWONJBfIDS3bnIIsRXwbxAKcI5eiz9jtLipbk3+RTXl4bQ
+	tuD3eFTFeGDQ/8quneoDRGGjPHjR4sWHQLae7Wtbc5Ldp0ymz6CzXt1lD1KQUYwFZNUJ+a5Fo8oj9
+	r1fvGAlQ==;
+Received: from [50.53.43.113] (helo=[192.168.254.34])
+	by bombadil.infradead.org with esmtpsa (Exim 4.99.1 #2 (Red Hat Linux))
+	id 1wWOPp-00000002fYy-3ACl;
+	Mon, 08 Jun 2026 01:04:33 +0000
+Message-ID: <60949d0c-fe4d-4a26-80e4-224e6060d24e@infradead.org>
+Date: Sun, 7 Jun 2026 18:04:33 -0700
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] Documentation: ABI: sysfs-class-reboot-mode-reboot_modes:
+ fix doc warnings
+From: Randy Dunlap <rdunlap@infradead.org>
+To: Bartosz Golaszewski <brgl@kernel.org>
+Cc: linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ Sebastian Reichel <sebastian.reichel@collabora.com>,
+ Shivendra Pratap <shivendra.pratap@oss.qualcomm.com>,
+ linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <20260426232705.422938-1-rdunlap@infradead.org>
+ <CAMRc=McUr8Tuv9+LNQ0=ufj1z4Tstp_ujmL=r7bXrLaBXg4E5g@mail.gmail.com>
+ <d7cd7bb3-520f-4e80-8242-583f689f60db@infradead.org>
+Content-Language: en-US
+In-Reply-To: <d7cd7bb3-520f-4e80-8242-583f689f60db@infradead.org>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 
-On Sun, 7 Jun 2026 12:55:13 -0700
-Guru Das Srinagesh <linux@gurudas.dev> wrote:
 
-> On Sun, Jun 07, 2026 at 12:23:18PM +0100, David Laight wrote:
-> > On Sat, 6 Jun 2026 19:52:49 -0700
-> > Guru Das Srinagesh <linux@gurudas.dev> wrote:
-> >   
-> > > On Sun, Jun 07, 2026 at 12:04:18AM +0300, Ovidiu Panait wrote:
-> > > [...]  
-> > > > To fix this, make arg an empty string instead of leaving it NULL when the
-> > > > separator is missing. sscanf() then fails correctly with -EINVAL on it.    
-> > > [...]  
-> > > > ---
-> > > >  drivers/thermal/testing/command.c | 2 ++
-> > > >  1 file changed, 2 insertions(+)
-> > > > 
-> > > > diff --git a/drivers/thermal/testing/command.c b/drivers/thermal/testing/command.c
-> > > > index 1159ecea57e7..5513a26feed7 100644
-> > > > --- a/drivers/thermal/testing/command.c
-> > > > +++ b/drivers/thermal/testing/command.c
-> > > > @@ -150,6 +150,8 @@ static ssize_t tt_command_process(char *s)
-> > > >  	if (arg) {
-> > > >  		*arg = '\0';
-> > > >  		arg++;
-> > > > +	} else {
-> > > > +		arg = s + strlen(s);
-> > > >  	}    
-> > > 
-> > > Here, `arg` is made to point to the NUL terminator of s. Couldn't this be simplified to:
-> > > 
-> > > 	arg = "";
-> > > 
-> > > to make the intent clearer? Since `tt_command_exec()` takes in arg as `const char *`,
-> > > pointing `arg` to a string literal is fine.
-> > >   
-> > 
-> > Except that 'arg' itself must be 'char *' otherwise the '*arg = 0'
-> > higher up will fail.  
+
+On 5/24/26 3:48 PM, Randy Dunlap wrote:
+> Sebastian,
 > 
-> Sorry, could you please clarify the concern further?
+> On 4/27/26 2:11 AM, Bartosz Golaszewski wrote:
+>> On Mon, 27 Apr 2026 01:27:05 +0200, Randy Dunlap <rdunlap@infradead.org> said:
+>>> Repair the docs build warnings in this file by unindenting the description,
+>>> adding blank lines, and using `` to quote *arg.
+>>>
+>>> WARNING: Documentation/ABI/testing/sysfs-class-reboot-mode-reboot_modes:36: abi_sys_class_reboot_mode_driver_reboot_modes doesn't have a description
+>>> Documentation/ABI/testing/sysfs-class-reboot-mode-reboot_modes:1: ERROR: Unexpected indentation. [docutils]
+>>> Documentation/ABI/testing/sysfs-class-reboot-mode-reboot_modes:1: ERROR: Unexpected indentation. [docutils]
+>>> Documentation/ABI/testing/sysfs-class-reboot-mode-reboot_modes:1: WARNING: Inline emphasis start-string without end-string. [docutils]
+>>> Documentation/ABI/testing/sysfs-class-reboot-mode-reboot_modes:1: ERROR: Unexpected indentation. [docutils]
+>>>
+>>> Fixes: d3da03025e6d ("Documentation: ABI: Add sysfs-class-reboot-mode-reboot_modes")
+>>> Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
+>>> ---
+>>
+>> Reviewed-by: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
 > 
-> `arg` is already `char *` (line 144), and I verified that my suggestion compiles fine.
+> This build warning is now in mainline.
+> Will you be merging this patch soon?
 
-But "" is 'const char *'.
-Which is usually a compile error.
-Unless the kernel is compiled with some permissive compilation options...
+ping.
 
--- David
+> thanks.
 
+-- 
+~Randy
 
