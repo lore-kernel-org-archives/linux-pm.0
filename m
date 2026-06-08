@@ -1,181 +1,170 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pf1-f174.google.com (mail-pf1-f174.google.com [209.85.210.174])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AC63634E763
-	for <linux-pm@vger.kernel.org>; Mon,  8 Jun 2026 16:50:20 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DC222330D4C
+	for <linux-pm@vger.kernel.org>; Mon,  8 Jun 2026 17:02:52 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.210.174
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1780937423; cv=none; b=JZnWfAE0vG62djO90x+LYEO+mJ4yxU39KUn204tdNLhIdj8nUX0jin+Kr/hj01cpmZwWGdMp+nSUn3ETuZdAEO2hlTKLJ0ApghvUJmvh51Cvg6uuqPJsiBgz+Qlq0Tl6wILLyL4WgO3q82BPGmGRV463EuwyWXhdEtqzHnpRAnQ=
+	t=1780938174; cv=none; b=a+JzmOyPJwvn4GX/NxKhO2YT5WAveWBF1DC8iyfgbinI48rdC2gRtGpLa7+R4Gy07YmzWJokzJyp4/AbE7rr0nVignXzV48cLyYriczz+0gQbWS72DwH9ll9YhOHXUvUkrG0zDfuGDwM2cDcW2Smt1SOVaAujkYqhgfEB8H9r9A=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1780937423; c=relaxed/simple;
-	bh=4lxaymcvpRvTb+P4rhHZMiRlDZAoiqemYjKpznBeLVQ=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=SGX0W8fK9pARUGcgq3va1+8biUBaZ2s31yollBkUgOC/cufU3mTdaq+29FLT1v4DsM/3tQ+mPbsPrtKE3V4iWyjZiW6iPsbqUBKTPLFx1EpMVxSheV4ufZjh/Dz7i6gn9XS/lJQtHw83oJE9uYbLa24FPIInMBvaWJl/6x+4FGc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=HT2IVy3e; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1780938174; c=relaxed/simple;
+	bh=TeGUevqJjKKdHILxWcVaQKAnxXmxLmDs6VfY4SGfpoE=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=a3iysy0nsvKtQrHToK3YVIRsgG2JuJuuDqd/7j4/YBaTYZBzHElwVvZqEJKvME/hQ/0f+cBAfdNC0Z/H8GmgApxLhGJupOCeQ9KdcdmA27R7XVTMgYEE1rZK+WkXcKsNn2E9JyLPBR2CsQD3IjDIALEugQKPB4YPlLYjQHzYCmI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=JvCB2X5d; arc=none smtp.client-ip=209.85.210.174
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="HT2IVy3e"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 72E8C1F008A4
-	for <linux-pm@vger.kernel.org>; Mon,  8 Jun 2026 16:50:20 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1780937420;
-	bh=npHWDqU6yjbT+OwbndMJs/FFPuIRk81q7S8clauz25k=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc;
-	b=HT2IVy3eeze5yh4BI7BGaoBZEg44QRKJCSXMjCV+7WeIMGaddZsUGq5i2C347mYa6
-	 Zic/NKR8wutbg5oU17SwIt8dxGwZcfiXaNW5IHKN7vGwsmfMwqHWGJW9wTMthN0fdA
-	 7OrTlkL983bhxe1J7T3QSgIlU7CFYnuCLVoCSROXYgSk0s49Qud+HEPajg9vHmBnQV
-	 KjVyHHKSj18sI1vZbdjZoOlBWg3UplvgumocHjJdA30DiX6l+BYKX4hWIvjqh7DrWe
-	 xFU7reeSazzc2DrIL+/Fl7QAX81EeuoFoWwXJrz3cpFdz5B51gRErZ+qlZRwyx41v7
-	 GtCpDWTgkyAIA==
-Received: by mail-lf1-f46.google.com with SMTP id 2adb3069b0e04-5aa69131836so3946966e87.3
-        for <linux-pm@vger.kernel.org>; Mon, 08 Jun 2026 09:50:20 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AFNElJ/471xh5JnO7umWUdn320fJC2vD2pG0QcWOPTRKpE/W3GMJKNzEDL6qE3r1yutLEB9jz9UaM9IRwA==@vger.kernel.org
-X-Gm-Message-State: AOJu0YzJPVVfru4viSjYiywIoGwl3+6Cg0x9adslJ2p0HWHK4VqK+uH1
-	MuvP4sRP3dWS/nr1wxtsnjfsUgD8tyhqwg7tylRFcSZMnEJlGwwRVNJ0eKowppfrjx5asSBOEh7
-	XJTsSJf7FVtVcr9+bSi/jje6OZQEUud4=
-X-Received: by 2002:a05:6512:61d9:10b0:5aa:75f2:c996 with SMTP id
- 2adb3069b0e04-5aa87bb9a8emr3078487e87.16.1780937418842; Mon, 08 Jun 2026
- 09:50:18 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="JvCB2X5d"
+Received: by mail-pf1-f174.google.com with SMTP id d2e1a72fcca58-8423610ec93so3581630b3a.2
+        for <linux-pm@vger.kernel.org>; Mon, 08 Jun 2026 10:02:52 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1780938172; x=1781542972; darn=vger.kernel.org;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=IVjaYMlS8AytKKUy6WaMPwOlFtLwcyoaO4rV2Eiq+9U=;
+        b=JvCB2X5dTOa3Nvr99o9JynwvR/EvPlMw6DKZ9Uxiu2FOq1yE3p220Oau7WPNhJzyFv
+         FyP56qxQatasAXgHeNlh76D7NfkrDz4vSgtrUwbzzXbOsdCp0YehabQwqiV052VO7FXP
+         N63a3fTkQj4z3l1FDBrio29wYsNWQLQMJKIM1jJGGzCBqq0yDXrfK41l39juX9EgFD5A
+         qqqPiX9Qm+/4Cmm8drUONklQEW3g12KZ/QlB1MltoJcrErB26nTMaNzuP1P/QQdBg2jO
+         mtFIxb/qVOv2VlFYNPybchqnjd4G1rcUSOEr5oLsWnGcNhEHo+iAi4f36wTI4lJh7qPb
+         t46Q==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1780938172; x=1781542972;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=IVjaYMlS8AytKKUy6WaMPwOlFtLwcyoaO4rV2Eiq+9U=;
+        b=n+oGswikLtqKp5bBhJ/yIe2H8D3r3pPfbXqEO3oaO8JyRzhfrpGsjIPFSkEeDZgreq
+         oweR3+SZTtyXxDTxOzUX9qQ1qRyE/e7+zmxUFOtv9l9gp78D4QykbVZznM5LYi7GlA8+
+         MJJlOOuJVWSQBfJYguCuvtAhZ007HqNDpbrYZKLT8az+QNYKvT4yoAauAY6DRBJot46T
+         UrDiDTa2FfttF9FhajbZ8Kh364H6JWhzqFSq1c4EI5Li66OgEiEBWBdsj2nwGqcXE8IO
+         PyB7Pr+uFKI2RAXPUSKOKRpYa3ew/LP7tksuWszmHq7uaqjG7yOTL4TOeHOMIhXXuzud
+         l9Vg==
+X-Forwarded-Encrypted: i=1; AFNElJ/FUdWPzhpe4iPUTbanP8Oj9Mp6q+D3Kpg3tAD5L6dPUpgZsMfmCBbx7b7zpTx3sZfB7EOher1D7Q==@vger.kernel.org
+X-Gm-Message-State: AOJu0YwJ4KC4m+wGRBcDzRWepq8t7sshkEizuGsVYUZh4GxZhqIhy02i
+	eoSAPNeiEXhhn7MmGor3UsJeW+TinXbxaELAWKJoUAEhueUpDZiz+G3yiU6WI4kBoPA=
+X-Gm-Gg: Acq92OFlsJVlMOClj5k8uAkR85F4FGUjGQ6Zvz9IYSQcoI/l8VOGSG2mLH80o0+UIR+
+	ofhaBe9mtG/ocIU1+irUQ8IYCUHZyH+wv/vp1NipkTQ6Vkrw923nRnaJ5GQqVl9crDP7NtKjFYh
+	zq9Bp6sIdg3XoJbJTe9W7pFo/JkzS3JO+d1oZkyjXljYyAvp6L2uLQAvvo4TiD2p7dOj7ziZtWR
+	/mZuPepFCPKtz8WiEUXyVnNgmhOEF6x8lXqSa1NJ8zrFJsoiF6peFgmjoWpKJzGWrAZJLlbeZsr
+	5oY8j7UBEaUbAeUWKErM7vVhewkw+ov5UWXKWL7NQUvAsCdADB8vV8GS5SmC0PBY/S+b9+2r3y7
+	DtoLG0JYsHvlgygTK+x93MZK4HeKoazYimwm4Rb31HpyFH4nNYmrT64RxWW25sUhWNZMzxah1Pf
+	rv1dV0KGNn6jaQv1oePtp3spfh9yTFfJzsi6e+
+X-Received: by 2002:a05:6a00:94d8:b0:832:e65:ddcd with SMTP id d2e1a72fcca58-842b0f4278cmr16028206b3a.45.1780938172116;
+        Mon, 08 Jun 2026 10:02:52 -0700 (PDT)
+Received: from google.com ([2402:7500:498:d80a:6ed1:11c1:50ff:fc30])
+        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-842820e8e6asm18289053b3a.0.2026.06.08.10.02.49
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 08 Jun 2026 10:02:51 -0700 (PDT)
+Date: Tue, 9 Jun 2026 01:02:47 +0800
+From: Kuan-Wei Chiu <visitorckw@gmail.com>
+To: djakov@kernel.org
+Cc: gregkh@linuxfoundation.org, marscheng@google.com, wllee@google.com,
+	aarontian@google.com, jserv@ccns.ncku.edu.tw, eleanor15x@gmail.com,
+	linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+	stable@vger.kernel.org
+Subject: Re: [PATCH] interconnect: Fix use after free in icc_get() and
+ of_icc_get_by_index()
+Message-ID: <aib1t4SWw0aiJyv2@google.com>
+References: <20260416190840.1753468-1-visitorckw@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260528090913.2759118-1-pierre.gondois@arm.com>
- <20260528090913.2759118-4-pierre.gondois@arm.com> <CAJZ5v0hwYcvYZJ1jCSo_5vpynOLBciW-4-KeracQTyUCw7fSGw@mail.gmail.com>
- <6447f46d-5a60-45a2-b585-9835c9c26893@arm.com>
-In-Reply-To: <6447f46d-5a60-45a2-b585-9835c9c26893@arm.com>
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Date: Mon, 8 Jun 2026 18:50:07 +0200
-X-Gmail-Original-Message-ID: <CAJZ5v0hqjdd79J-Hi=mSLMm2Fxhia+xa6iguJwZy2-pRBSJ6gA@mail.gmail.com>
-X-Gm-Features: AVVi8CeORZeGIlAC3kCCNf5xvinM_kGWNcToWxlEjA_NxQU5ebuMifvlZvQHeDc
-Message-ID: <CAJZ5v0hqjdd79J-Hi=mSLMm2Fxhia+xa6iguJwZy2-pRBSJ6gA@mail.gmail.com>
-Subject: Re: [PATCH v3 3/4] cpufreq: Remove driver default policy->min/max init
-To: Pierre Gondois <pierre.gondois@arm.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, linux-kernel@vger.kernel.org, 
-	Jie Zhan <zhanjie9@hisilicon.com>, Lifeng Zheng <zhenglifeng1@huawei.com>, 
-	Ionela Voinescu <ionela.voinescu@arm.com>, Sumit Gupta <sumitg@nvidia.com>, 
-	Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>, Viresh Kumar <viresh.kumar@linaro.org>, 
-	Jonathan Corbet <corbet@lwn.net>, Shuah Khan <skhan@linuxfoundation.org>, 
-	Huang Rui <ray.huang@amd.com>, Mario Limonciello <mario.limonciello@amd.com>, 
-	Perry Yuan <perry.yuan@amd.com>, K Prateek Nayak <kprateek.nayak@amd.com>, 
-	Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Len Brown <lenb@kernel.org>, 
-	Saravana Kannan <saravanak@kernel.org>, linux-pm@vger.kernel.org, linux-doc@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260416190840.1753468-1-visitorckw@gmail.com>
 
-Hi,
+Hi Georgi,
 
-On Wed, Jun 3, 2026 at 9:49=E2=80=AFAM Pierre Gondois <pierre.gondois@arm.c=
-om> wrote:
->
-> Hello Rafael,
->
-> On 6/1/26 20:08, Rafael J. Wysocki wrote:
-> > On Thu, May 28, 2026 at 11:10=E2=80=AFAM Pierre Gondois <pierre.gondois=
-@arm.com> wrote:
-> >> Prior to [1], drivers were setting policy->min/max and
-> >> the value was used as a QoS constraint. After that change,
-> >> the values were only temporarily used: cpufreq_set_policy()
-> >> ultimately overriding them through:
-> >> cpufreq_policy_online()
-> >> \-cpufreq_init_policy()
-> >>    \-cpufreq_set_policy()
-> >>      \-/* Set policy->min/max */
-> >>
-> >> This patch reinstate the initial behaviour. This will allow
-> >> drivers to request min/max QoS frequencies if desired.
-> >> For instance, the cppc driver advertises a lowest non-linear
-> >> frequency, which should be used as a min QoS value.
-> >>
-> >> To avoid having drivers setting policy->min/max to default
-> >> values which are considered as QoS values (i.e. the reason
-> >> why [1] was introduced), remove the initialization of
-> >> policy->min/max in .init() callbacks wherever the
-> >> policy->min/max values are identical to the
-> >> policy->cpuinfo.min/max_freq.
-> >>
-> >> Indeed, the previous patch ("cpufreq: Set default
-> >> policy->min/max values for all drivers") makes this initialization
-> >> redundant.
-> >>
-> >> The only drivers where these values are different are:
-> >> - gx-suspmod.c (min)
-> >> - cppc-cpufreq.c (min)
-> >> - longrun.c
-> >>
-> >> [1]
-> >> commit 521223d8b3ec ("cpufreq: Fix initialization of min and
-> >> max frequency QoS requests")
-> >>
-> >> Signed-off-by: Pierre Gondois <pierre.gondois@arm.com>
-> >> Acked-by: Jie Zhan <zhanjie9@hisilicon.com>
-> > sashiko.dev has some feedback on this patch and appears to have a point=
-:
-> >
-> > https://sashiko.dev/#/patchset/20260528090913.2759118-1-pierre.gondois%=
-40arm.com
-> >
-> > Can you have a look at it please?
-> >
-> [sashiko]
->
->  > Does removing the policy->max =3D max_freq assignment here break UAPI
->  > expectations by exposing the unlisted boost frequency in
-> scaling_max_freq?
->  >
->  > Commit 538b0188da4653 intentionally allowed drivers like acpi-cpufreq
-> to set
->  > policy->cpuinfo.max_freq to a higher boost frequency while relying on
->  > cpufreq_frequency_table_cpuinfo() to clamp policy->max to the frequenc=
-y
->  > table's nominal maximum (max_freq). This ensured that user-space
-> tools saw
->  > the nominal maximum in scaling_max_freq.
->  >
->  > Although commit 521223d8b3ec temporarily disrupted this by defaulting
-> the QoS
->  > max to -1, a subsequent patch in this series changes the core to
-> initialize
->  > the QoS request using policy->max.
->
-> Effectively PATCH [4/4] cpufreq: Use policy->min/max init as QoS request
-> now uses the policy->max value set by the .init() callback to set
-> the max_freq_req QoS constraint.
->
->  >
->  > If the policy->max =3D max_freq assignment were preserved, the subsequ=
-ent
->  > patch would successfully use the nominal frequency as the QoS max
-> request,
->  > restoring the correct clamping behavior.
->
-> IIUC this suggests to use the nominal freq. as the QoS max request.
-> This was behaving like that prior to 521223d8b3ec. However doing
-> that would mean that if boost is enabled and the max_freq_req sysfs
-> is not updated, then the frequency would still be clamped by
-> the max_freq_req. 521223d8b3ec intended to correct that.
->
-> Sashiko seems to suggest modifications to come back to the
-> pre-521223d8b3ec behaviour, but I think 521223d8b3ec is correct
-> and we should conserve this behaviour.
+On Thu, Apr 16, 2026 at 07:08:40PM +0000, Kuan-Wei Chiu wrote:
+> In of_icc_get_by_index() and icc_get(), if the dynamic allocation for
+> path->name fails via kasprintf(), the error handling path directly
+> calls kfree(path) to free the path object and returns an error.
+> 
+> However, prior to this point, path_find() calls path_init(), which
+> already links the path's requests into the req_list of the respective
+> interconnect nodes via hlist_add_head(). Directly invoking kfree(path)
+> leaves dangling pointers in the hlist. A subsequent call to icc_get()
+> or icc_set_bw() will traverse or modify these corrupted lists, triggering
+> a slab use afterfree.
+> 
+> KASAN report showing the vulnerability when reproducing via debugfs:
+> 
+>   BUG: KASAN: slab-use-after-free in path_find+0x6f8/0xcfc
+>   Write of size 8 at addr fff000000d43f748 by task sh/1
+>   ...
+>   Call trace:
+>    kasan_report+0xac/0xfc
+>    path_find+0x6f8/0xcfc
+>    icc_get+0x148/0x380
+>    icc_get_set+0xf8/0x2d0
+>   ...
+>   Freed by task 1:
+>    kfree+0x1a0/0x4a4
+>    icc_get+0x2cc/0x380
+>    icc_get_set+0xf8/0x2d0
+> 
+> Fix this by replacing kfree(path) with the proper teardown function,
+> icc_put(path), which safely removes the requests from the req_list using
+> hlist_del() and drops the provider usage references before freeing the
+> memory.
+> 
+> Additionally, in icc_get(), ensure that the icc_lock mutex is released
+> prior to calling icc_put(path) to avoid a deadlock, as icc_put()
+> internally acquires the same lock.
+> 
+> Fixes: 3791163602f7 ("interconnect: Handle memory allocation errors")
+> Cc: stable@vger.kernel.org
+> Signed-off-by: Kuan-Wei Chiu <visitorckw@gmail.com>
 
-So there is some confusion in the patch changelogs of this series, but
-not in the code, regarding the role of the last argument of
-freq_qos_add_request().  Namely, that argument is the initial request
-value for the given request object which is subsequently managed by
-user space.  User space may in fact change it to whatever value it
-wants (either lower or higher) and it is only taken into account along
-with the other requests in the given chain.  IMV it is better to
-clarify that, so I have updated the changelogs when applying the
-patches.
+I haven't seen this patch show up in linux-next yet.
+Since the merge window is approaching, I was wondering if you had any
+comments on this?
 
-Please see
+Regards,
+Kuan-Wei
 
-https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git/commit/=
-?h=3Dbleeding-edge&id=3D8c83947c5dbbd49b36d08bb99e344327c6278781
-
-and its ancestors and let me know if there's anything missing in the
-changelogs thereof.
-
-Thanks!
+> ---
+> I discovered this bug while reviewing Krzysztof's patch [1]. 
+> To verify my hypothesis, I injected an artificial kasprintf() failure
+> into  the source code and wrote a minimal dummy icc provider module.
+> This allowed  me to successfully trigger the use after free via the
+> debugfs client and catch it with KASAN, confirming the issue.
+> 
+> [1]: https://lore.kernel.org/lkml/20260416130912.375013-2-krzysztof.kozlowski@oss.qualcomm.com/
+> 
+>  drivers/interconnect/core.c | 7 ++++---
+>  1 file changed, 4 insertions(+), 3 deletions(-)
+> 
+> diff --git a/drivers/interconnect/core.c b/drivers/interconnect/core.c
+> index 8569b78a1851..e14280ced381 100644
+> --- a/drivers/interconnect/core.c
+> +++ b/drivers/interconnect/core.c
+> @@ -528,7 +528,7 @@ struct icc_path *of_icc_get_by_index(struct device *dev, int idx)
+>  	path->name = kasprintf(GFP_KERNEL, "%s-%s",
+>  			       src_data->node->name, dst_data->node->name);
+>  	if (!path->name) {
+> -		kfree(path);
+> +		icc_put(path);
+>  		path = ERR_PTR(-ENOMEM);
+>  	}
+>  
+> @@ -626,8 +626,9 @@ struct icc_path *icc_get(struct device *dev, const char *src, const char *dst)
+>  
+>  	path->name = kasprintf(GFP_KERNEL, "%s-%s", src_node->name, dst_node->name);
+>  	if (!path->name) {
+> -		kfree(path);
+> -		path = ERR_PTR(-ENOMEM);
+> +		mutex_unlock(&icc_lock);
+> +		icc_put(path);
+> +		return ERR_PTR(-ENOMEM);
+>  	}
+>  out:
+>  	mutex_unlock(&icc_lock);
+> -- 
+> 2.54.0.rc1.555.g9c883467ad-goog
+> 
