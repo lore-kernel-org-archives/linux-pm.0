@@ -1,103 +1,65 @@
-Received: from layka.disroot.org (layka.disroot.org [178.21.23.139])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id ABD7D282F02;
-	Mon,  8 Jun 2026 07:36:41 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=178.21.23.139
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2623839020C;
+	Mon,  8 Jun 2026 08:02:53 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1780904203; cv=none; b=lEFX9+3T/lSb0Lq6UK5vyakJr7XghBgfXIcZWWhpbMfB6VVqD339n8DXn1/8ucFK7XO09/sMvwzYRWCWtYs5Mo89yyiHr382no67PXHQTjv5dnU8mnNBtO1vj0WsdPcQXlSBG6zy5jo4TztnsDAJQ5BbhbFsW3flDn6dVkkX5gg=
+	t=1780905775; cv=none; b=NvIvoC3wySddiMgvu4jow/FB1gqRXjuEwuc04UTg8aymyilUe8X4A0rAVNv7/NOXMYNxMCpDPfopxQc/9mOpq9ZAh6CQV+17aEdl8dHkQFVfVgzY7MrGOBwLVWo2vA+F6weRcgbUlwSkXk/koK/gnMiNfsAyM8EHOn35QFefSL0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1780904203; c=relaxed/simple;
-	bh=qs/5O9k00C/iDn81REg1rQH/ynCYx5bssNKl4VPA10c=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=MQEi4vovv+knAuoHQpn2rp5fzl80yW/6CCy7Tpo9zz8c1GWlj5kviFsZ4SNPr+ODfITKBqOYJ/JxV+QvpQZ6VEDOVhRBJXntFQipnImtfJD7LVLB2MVICJoPhSIbfesTltBp6+9Lhe1g7sPafuZMB46QAtI3qf1wnKSHwIYJ37o=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=disroot.org; spf=pass smtp.mailfrom=disroot.org; dkim=pass (2048-bit key) header.d=disroot.org header.i=@disroot.org header.b=Mt3NUDes; arc=none smtp.client-ip=178.21.23.139
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=disroot.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=disroot.org
+	s=arc-20240116; t=1780905775; c=relaxed/simple;
+	bh=1tSDoXNhb7SgjEIkhqIL13GKP2qY5vWoJASiCw4GsNM=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=SS/NT0RmOXbcncm5y4i2g1T1fncrUpn8DjFkjtDVcJmzwzLu2zf5UZSmsa8C3F8slhUaoiNx6moFUG8WUENb1XxPb2f36/PwTK6oYcfh+eUfMVTXzOaK6p70jrLu+JGKmuDQnSNZHRUYEZ1j8goaAAJDZsswHWKOeZ3MB/RHDYs=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=H3OYe+dy; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=disroot.org header.i=@disroot.org header.b="Mt3NUDes"
-Received: from mail01.disroot.lan (localhost [127.0.0.1])
-	by disroot.org (Postfix) with ESMTP id 7601927888;
-	Mon,  8 Jun 2026 09:36:40 +0200 (CEST)
-X-Virus-Scanned: SPAM Filter at disroot.org
-Received: from layka.disroot.org ([127.0.0.1])
- by localhost (disroot.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 88qnt85QJ2N7; Mon,  8 Jun 2026 09:36:40 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=disroot.org; s=mail;
-	t=1780904199; bh=qs/5O9k00C/iDn81REg1rQH/ynCYx5bssNKl4VPA10c=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References;
-	b=Mt3NUDesO0xeyONvZ8iKK65LeVyL5/IWbhONaFxDenpnQUVSNI2MS2haptkj40+BQ
-	 hXmL9tc9FcKlev79qK054S3pEf2HOP4rfaEwlhe4/I7wy65bxXpP1on25xg/perZpm
-	 SkFwwrWQdK0348H3LzaHlgvNZdZgzxDB1QmzXNFsrjyqKypNu6U8uPD1Ikk/jrI3TR
-	 WYDXgEVOt2fRKldQgga95XmMpNuL9g8dKh4qmPh1FQlYzDdIdCXVYJFo04+hEbhLwG
-	 T8SAhClBJ5jGm0bETDsyRD1HgIerBlJ9HgraJ9jZ0vyBYglqtcac+qvlIKpyhSp8/o
-	 VKhJ3TRNMMqAQ==
-From: Marco Scardovi <scardracs@disroot.org>
-To: kprateek.nayak@amd.com
-Cc: linux-kernel@vger.kernel.org,
-	linux-pm@vger.kernel.org,
-	mario.limonciello@amd.com,
-	perry.yuan@amd.com,
-	rafael@kernel.org,
-	ray.huang@amd.com,
-	scardracs@disroot.org,
-	stuartmeckle@gmail.com,
-	viresh.kumar@linaro.org
-Subject: [PATCH v5 3/3] cpufreq/amd-pstate: Cache the firmware programmed EPP value
-Date: Mon,  8 Jun 2026 09:31:03 +0200
-Message-ID: <20260608073614.5738-4-scardracs@disroot.org>
-In-Reply-To: <20260608073614.5738-1-scardracs@disroot.org>
-References: <c97c81f1-1254-44fe-80b2-89f82fec73f6@amd.com>
- <20260608073614.5738-1-scardracs@disroot.org>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="H3OYe+dy"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id C46291F00898;
+	Mon,  8 Jun 2026 08:02:52 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1780905773;
+	bh=PvD9dkZIb+vT8pHtc0tPSxPCksAIeVFAwjLoPDEvWlw=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=H3OYe+dyxWjKyPlwpIV57pf1eQnkyB5PPrVqVOwRnUWORSOZkd5hrQSw5QRCJwdKg
+	 x//+kR+KpWnD4kH6SG3314GobXto9WtGdsflenBo8KW3SRBC0cc07Ky3Uhl7EbpkhO
+	 xUmZSUEajaGs2sm75WZUOiovPeOPT8HlzzesiJl6yFGLirQBYfk6hctv9/QkrY4Qq/
+	 AjMKhcUT+i45b/PPlqr3copOZIe0sD77NMZtwyuBU7UB98FX8IRHqIu4Hv+TyOwDbi
+	 MIjPLZwpC0PRVLCoGf3QrghiljmDXZrmk+obRUpB5z2NJcpD34ouDJM9AlG1zhwU0d
+	 srlyQJRagAY2Q==
+Date: Mon, 8 Jun 2026 10:02:49 +0200
+From: Krzysztof Kozlowski <krzk@kernel.org>
+To: Yijie Yang <yijie.yang@oss.qualcomm.com>
+Cc: Georgi Djakov <djakov@kernel.org>, Rob Herring <robh@kernel.org>, 
+	Conor Dooley <conor+dt@kernel.org>, linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, 
+	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v2] dt-bindings: interconnect: qcom-bwmon: Add Maili
+ cpu-bwmon compatible
+Message-ID: <20260608-statuesque-strange-bumblebee-c7a95b@quoll>
+References: <20260602-bwmon-v2-1-d4a851c45f37@oss.qualcomm.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20260602-bwmon-v2-1-d4a851c45f37@oss.qualcomm.com>
 
-At CPU EPP initialization, the private cpudata structure is allocated via
-kzalloc, which means cpudata->cppc_req_cached is initialized to 0. This
-makes the default cached EPP value 0 (AMD_CPPC_EPP_PERFORMANCE).
+On Tue, Jun 02, 2026 at 02:54:13PM +0800, Yijie Yang wrote:
+> Add the Qualcomm Maili SoC compatible string for the CPU bandwidth
+> monitor (BWMONv4). This falls back to the sdm845-bwmon compatible,
+> consistent with the existing pattern used by other recent SoCs such as
+> sm8750 and kaanapali.
+> 
+> Signed-off-by: Yijie Yang <yijie.yang@oss.qualcomm.com>
+> ---
+> Changes in v2:
+> - Drop Assisted-by tag; no functional change.
+> - Link to v1: https://patch.msgid.link/20260525-bwmon-v1-1-b8f6e189c3e3@oss.qualcomm.com
 
-When initializing a system that defaults to performance EPP, the driver
-attempts to configure the EPP via amd_pstate_set_epp(). Because the
-requested EPP (0) matches the uninitialized cached value (0), the cache
-guard check triggers, and the driver skips writing to the hardware.
+Acked-by: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
 
-On shared memory systems, skipping the EPP write consequently skips
-enabling auto_sel, leaving the CPU in non-autonomous mode.
-
-Cache the firmware-programmed default EPP value in cppc_req_cached during
-CPU EPP initialization. This saves on an unnecessary reprogramming later
-when the EPP is first set.
-
-Assisted-by: Antigravity:gemini-3.5-flash
-Signed-off-by: Marco Scardovi <scardracs@disroot.org>
----
- drivers/cpufreq/amd-pstate.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/cpufreq/amd-pstate.c b/drivers/cpufreq/amd-pstate.c
-index 7982f9d0f634..d1ed53a0f119 100644
---- a/drivers/cpufreq/amd-pstate.c
-+++ b/drivers/cpufreq/amd-pstate.c
-@@ -1924,12 +1924,13 @@ static int amd_pstate_epp_cpu_init(struct cpufreq_policy *policy)
- 
- 	policy->boost_supported = READ_ONCE(cpudata->boost_supported);
- 
--	/* Fetch the firmware programmed default EPP value */
-+	/* Cache the firmware programmed EPP */
- 	default_epp = amd_pstate_get_epp(cpudata);
- 	if (default_epp < 0) {
- 		ret = default_epp;
- 		goto free_cpudata1;
- 	}
-+	FIELD_MODIFY(AMD_CPPC_EPP_PERF_MASK, &cpudata->cppc_req_cached, default_epp);
- 
- 	/*
- 	 * Set the policy to provide a valid fallback value in case
--- 
-2.54.0
+Best regards,
+Krzysztof
 
