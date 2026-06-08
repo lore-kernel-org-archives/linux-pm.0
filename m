@@ -1,211 +1,90 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 81C9F3D4135
-	for <linux-pm@vger.kernel.org>; Mon,  8 Jun 2026 14:22:56 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 014403D3CFD
+	for <linux-pm@vger.kernel.org>; Mon,  8 Jun 2026 14:25:09 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1780928578; cv=none; b=mDnG3BPekf6XGHX+Ec7A7cxVpVsGub8giIvBDK3z7g5VQ4vrMUP5u0/duIF0tshr/4+MMB2EHU3xpKO5lVk9PdMbkkt0wdVyF7DlOHH4cL5iSM+BY+poX6N4DUW0NMB3mKGXkwbyd++hpoxKbHfpYgnfTjEE9594VKm4npQpCZ4=
+	t=1780928710; cv=none; b=Str7nD/sSxRGgYbGfKVOeYdyNOTVmB2Ce+7l9ULmHXbNpyTY30bzG9wVf4ZMbvohXaUQUBde1iZeN93RJZ00i/zimWpT83KzyBBidu0+8uVWZbH+usCX3BQ+tKzk5zE3vhYSpVMW8T6QxEhmO959HdqjCnK/meo2aPBZ/gPnXH8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1780928578; c=relaxed/simple;
-	bh=VuB9xCUPG5CPdshkBpreNadVER9e5F8P16Kq7nsXLLU=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=Z0gv7JbIS5ZnWc1r2A/CDsn6okfZCbTrYj8Yzhq198BJ3Qyhhl/9D89znSFSv5kvCtR0gC7xQbbDHKmapq9ZhxBd02NhmH7WC2Xo30acAzX8JU3HIvTbnrc0eisYTahGU2QD4hlzRbTfgHm8gozJpUy9LZygMxjp20S9h3b47fI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=hiAoJxMY; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1780928710; c=relaxed/simple;
+	bh=r39JWjk3eEXkxQF9LVlH6CaX8c7vjwP9g4eg5PVmHzo=;
+	h=From:In-Reply-To:MIME-Version:References:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=iLh7YaXJNf93B3RJICHNe6Owdjd5P57qtFIMYZeLrCBMrmIu3f4oSzJKbgBbMtGlBhlgiryagstB07zdKQfW0SL/dQy3bSG3gsy+KcZeIX736Vjv2TPppb8abA76i7iOtXN0BwjkHuI11AaCvHd0/gsCP8ef9kTmguS15sYkHmU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=C7WJPTtF; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="hiAoJxMY"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3DF741F00A02
-	for <linux-pm@vger.kernel.org>; Mon,  8 Jun 2026 14:22:56 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="C7WJPTtF"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id A09A71F0089D
+	for <linux-pm@vger.kernel.org>; Mon,  8 Jun 2026 14:25:09 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1780928576;
-	bh=H+mBsB5jor7WTQVPkKZI+SdiyFIv/mhsg/57Abzj2VU=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc;
-	b=hiAoJxMYV7sPhK9RrLF3qNIQDo2wu8lwwWLX2mRmh4fzd9njzCvF5WXMnZXbTydwA
-	 Sgrn+e+aCfIWwsCwALwj2Oq5Bk9+rU4W35mvI41pAyezquKdRsjsWpVTlf8TAVBpEE
-	 NZqm2ELIO+D1gbqKjllDusFN1aIjAMGcC3EJ+pg10x9rtplSqirGiJ0FkC1xdY3PmY
-	 qUGdZ0a5V0/5DJpkQ/Kaxt74l5iTb/8jdVmeiDIy6WgvEZzK3vAZh1OBUITdrYPKo9
-	 QjHOUHwy1CIIhGGtIY+xYQzEp396Dg4nUBF/BIdjKYga/nPEniy4XIxA1lGqbhx0/I
-	 +UlH0hLsEx9Rg==
-Received: by mail-lf1-f50.google.com with SMTP id 2adb3069b0e04-5aa68e66128so4451285e87.2
-        for <linux-pm@vger.kernel.org>; Mon, 08 Jun 2026 07:22:56 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AFNElJ95LAYi1qCUCL4a9HUBsrLS//y8iWdmYNf6bEy3U5YgEeOFeaKNEb3+N5bu7S26WbqgNOwa7WV3jw==@vger.kernel.org
-X-Gm-Message-State: AOJu0YzdQy52vgXDyX0aHYCIf7w/Hx5Rn1coG8xJdkkm7InMTaC58qAw
-	WCsPkYkHk0JxZfYIuSzxunbLJsK3E4QLRmRrBoq84T1ZcyKP3ZInhBFpsH++Hw2CY1oMaVIF/rT
-	oauwzLHQTjIy8lpkdoYb4uMYOmGwNgX8=
-X-Received: by 2002:a05:6512:140d:b0:5aa:7779:803b with SMTP id
- 2adb3069b0e04-5aa87b8a6b6mr4500005e87.5.1780928574579; Mon, 08 Jun 2026
- 07:22:54 -0700 (PDT)
+	s=k20260515; t=1780928709;
+	bh=r39JWjk3eEXkxQF9LVlH6CaX8c7vjwP9g4eg5PVmHzo=;
+	h=From:In-Reply-To:References:Date:Subject:To:Cc;
+	b=C7WJPTtF168w0LXhxWPp6pmkxAbRRbddws71GFa8KOBA6y4dP24N6TENZ6Dy30Jqy
+	 4Z1OK6zEd5Bw3yrGpNswhH+WusL6GAlPzDD1T88ODHfSLO1/jdVoc+YlGcpkkFw5II
+	 fYBZCPdvPeECvoB0U87xeX1++A2oJHUSsr883bTMPsDQp1yhqOWg+Yp88UWPfku9eC
+	 TXV7RICLa9cwAcu0xm2CKjfRHWTqKDNq31OYtetRUgzOHEURE0KzV7pCNKKy5lIWta
+	 Q7NhbszK6JLM13KrXn4uJb5lC8XIwM1vOS7A2WXsSu5hQRe3wmwcWxSQswI5SjxIkP
+	 VMOyrBMShmzoQ==
+Received: by mail-dl1-f53.google.com with SMTP id a92af1059eb24-1382c509485so621583c88.1
+        for <linux-pm@vger.kernel.org>; Mon, 08 Jun 2026 07:25:09 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AFNElJ9sj8p1YEp5tN39xfiS0ZicpaJzXhnnZv4sq+2vv3zTq6OmR0Ek4bfiUYebeTmSSx1Y5hi5e3SGeQ==@vger.kernel.org
+X-Gm-Message-State: AOJu0YyPzmhXd5SgDG+QPnC7L7Wevy9Jdw1xWU9UHWK1f8fjHk+83Oy+
+	Go95zFso+qoE0AQQAhWyLLaOKDdlHyUW9m1bGpFwjdF/IBxpMDIegbrxa+vTbCX7WXyd8j85LHm
+	6Hwe4bBZ868OwiR95W1lDhAWzgWXel8/BbabKGb0JUg==
+X-Received: by 2002:a05:7022:62a3:b0:135:d749:574f with SMTP id
+ a92af1059eb24-138066d530cmr7679756c88.13.1780928709070; Mon, 08 Jun 2026
+ 07:25:09 -0700 (PDT)
+Received: from 969154062570 named unknown by gmailapi.google.com with
+ HTTPREST; Mon, 8 Jun 2026 07:25:06 -0700
+Received: from 969154062570 named unknown by gmailapi.google.com with
+ HTTPREST; Mon, 8 Jun 2026 07:25:05 -0700
+From: Bartosz Golaszewski <brgl@kernel.org>
+In-Reply-To: <20260608091702.3797437-3-wei.deng@oss.qualcomm.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260608021526.1023248-1-tzungbi@kernel.org> <20260608021526.1023248-4-tzungbi@kernel.org>
-In-Reply-To: <20260608021526.1023248-4-tzungbi@kernel.org>
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Date: Mon, 8 Jun 2026 16:22:35 +0200
-X-Gmail-Original-Message-ID: <CAJZ5v0j=Uey90jN-TiUkx+FEPKtNUWhDGrfhxke65Em_ycbc+w@mail.gmail.com>
-X-Gm-Features: AVVi8CekT83yVQauQvXIw2JTKFETj3NWRq4IFI_tZjKdEJQmv1ylGzWwl8d1-MA
-Message-ID: <CAJZ5v0j=Uey90jN-TiUkx+FEPKtNUWhDGrfhxke65Em_ycbc+w@mail.gmail.com>
-Subject: Re: [PATCH v3 3/3] PM: dpm_watchdog: Add sysctl interface for DPM
- watchdog timeouts
-To: Tzung-Bi Shih <tzungbi@kernel.org>
-Cc: Jonathan Corbet <corbet@lwn.net>, "Rafael J. Wysocki" <rafael@kernel.org>, 
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Danilo Krummrich <dakr@kernel.org>, 
-	Shuah Khan <skhan@linuxfoundation.org>, Pavel Machek <pavel@kernel.org>, 
-	Len Brown <lenb@kernel.org>, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	linux-pm@vger.kernel.org, driver-core@lists.linux.dev, tfiga@chromium.org, 
-	senozhatsky@chromium.org, Randy Dunlap <rdunlap@infradead.org>
+References: <20260608091702.3797437-1-wei.deng@oss.qualcomm.com> <20260608091702.3797437-3-wei.deng@oss.qualcomm.com>
+Date: Mon, 8 Jun 2026 07:25:05 -0700
+X-Gmail-Original-Message-ID: <CAMRc=Mdiih9kFj9mWe_9cqd5T4B4Q0ekd-5YhJ6X+dgiqwLtLQ@mail.gmail.com>
+X-Gm-Features: AVVi8CeA1Wijm5yAWA_-v3VlKzCbZNsMunOIP4iwNyh2boGjmtB7gJWUNbsUdIY
+Message-ID: <CAMRc=Mdiih9kFj9mWe_9cqd5T4B4Q0ekd-5YhJ6X+dgiqwLtLQ@mail.gmail.com>
+Subject: Re: [PATCH 2/2] arm64: dts: qcom: lemans-evk: Describe the PCIe M.2
+ Key E connector
+To: Wei Deng <wei.deng@oss.qualcomm.com>
+Cc: linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org, 
+	linux-pm@vger.kernel.org, quic_chezhou@quicinc.com, 
+	cheng.jiang@oss.qualcomm.com, shuai.zhang@oss.qualcomm.com, 
+	jinwang.li@oss.qualcomm.com, xiuzhuo.shang@oss.qualcomm.com, 
+	mengshi.wu@oss.qualcomm.com, Bjorn Andersson <andersson@kernel.org>, 
+	Konrad Dybcio <konradybcio@kernel.org>, Rob Herring <robh@kernel.org>, 
+	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
+	Manivannan Sadhasivam <mani@kernel.org>, Bartosz Golaszewski <brgl@kernel.org>
 Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
 
-On Mon, Jun 8, 2026 at 4:16=E2=80=AFAM Tzung-Bi Shih <tzungbi@kernel.org> w=
-rote:
+On Mon, 8 Jun 2026 11:17:02 +0200, Wei Deng <wei.deng@oss.qualcomm.com> said:
+> The lemans EVK has the PCIe M.2 Mechanical Key E connector to connect
+> wireless connectivity cards over PCIe and UART interfaces. Hence,
+> describe the connector node and link it with the PCIe 0 Root Port and
+> UART17 nodes through graph port/endpoint.
 >
-> Introduce sysctl knobs to allow configuring DPM watchdog timeouts at
-> runtime.
+> Also add 'compatible = "pciclass,0604"' to the pcieport0 node in
+> lemans.dtsi to allow the PCI subsystem to associate the DT node with
+> the PCI-to-PCI bridge device.
 >
-> Currently, these timeouts are fixed at compile time via
-> CONFIG_DPM_WATCHDOG_TIMEOUT and CONFIG_DPM_WATCHDOG_WARNING_TIMEOUT.
-> This limits flexibility if the timeouts need to be adjusted for
-> different testing scenarios or hardware behaviors without rebuilding
-> the kernel.
+> The M.2 Key E connector is powered by a 3.3V fixed regulator
+> (vreg_wcn_3p3) which is sourced from the board's 12V DC input rail
+> (vreg_dcin_12v). Both regulators are always-on and are required by the
+> pcie-m2-e-connector binding.
 >
-> Add the following sysctl files under /proc/sys/kernel/:
-> - dpm_watchdog_timeout_secs: The total timeout before panic. The
->   maximum value is capped at CONFIG_DPM_WATCHDOG_TIMEOUT to prevent
->   unreasonably large timeouts.
-> - dpm_watchdog_warning_timeout_secs: The warning timeout. The maximum
->   value is capped at the current dpm_watchdog_timeout_secs.
-> Both sysctls have a minimum value of 1.
+> Also add the serial1 = &uart17 alias, which is required for the
+> Bluetooth serdev device to be enumerated on the UART17 interface.
 >
-> Signed-off-by: Tzung-Bi Shih <tzungbi@kernel.org>
+> Signed-off-by: Wei Deng <wei.deng@oss.qualcomm.com>
 > ---
-> v3:
-> - No changes.
->
-> v2: https://lore.kernel.org/all/20260604090756.2884671-4-tzungbi@kernel.o=
-rg
-> - New to the series.
->
-> v1: Doesn't exist.
->
->  drivers/base/power/main.c | 61 ++++++++++++++++++++++++++++++++++++---
->  1 file changed, 57 insertions(+), 4 deletions(-)
->
-> diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
-> index 7822c29b7c8d..c1a4b30fafb2 100644
-> --- a/drivers/base/power/main.c
-> +++ b/drivers/base/power/main.c
-> @@ -28,6 +28,7 @@
->  #include <linux/interrupt.h>
->  #include <linux/sched.h>
->  #include <linux/sched/debug.h>
-> +#include <linux/sysctl.h>
->  #include <linux/async.h>
->  #include <linux/suspend.h>
->  #include <trace/events/power.h>
-> @@ -539,6 +540,58 @@ static bool __read_mostly dpm_watchdog_enabled =3D
->  module_param(dpm_watchdog_enabled, bool, 0644);
->  MODULE_PARM_DESC(dpm_watchdog_enabled, "Enable DPM watchdog");
->
-> +static unsigned int __read_mostly dpm_watchdog_timeout =3D CONFIG_DPM_WA=
-TCHDOG_TIMEOUT;
-> +static unsigned int __read_mostly dpm_watchdog_warning_timeout =3D
-> +                                               CONFIG_DPM_WATCHDOG_WARNI=
-NG_TIMEOUT;
-> +static const unsigned int dpm_watchdog_timeout_max =3D CONFIG_DPM_WATCHD=
-OG_TIMEOUT;
-> +
-> +static int proc_dodpm_watchdog_timeout_secs(const struct ctl_table *tabl=
-e,
-> +                                           int write, void *buffer,
-> +                                           size_t *lenp, loff_t *ppos)
-> +{
-> +       struct ctl_table ctl =3D *table;
-> +       unsigned int val =3D dpm_watchdog_timeout;
-> +       int ret;
-> +
-> +       ctl.data =3D &val;
-> +       ret =3D proc_douintvec_minmax(&ctl, write, buffer, lenp, ppos);
-> +       if (ret || !write)
-> +               return ret;
-> +
-> +       if (val < dpm_watchdog_warning_timeout)
-> +               dpm_watchdog_warning_timeout =3D val;
-> +       dpm_watchdog_timeout =3D val;
-> +
-> +       return 0;
-> +}
-> +
-> +static const struct ctl_table dpm_watchdog_sysctls[] =3D {
-> +       {
-> +               .procname       =3D "dpm_watchdog_timeout_secs",
-> +               .maxlen         =3D sizeof(unsigned int),
-> +               .mode           =3D 0644,
-> +               .proc_handler   =3D proc_dodpm_watchdog_timeout_secs,
-> +               .extra1         =3D SYSCTL_ONE,
-> +               .extra2         =3D (void *)&dpm_watchdog_timeout_max,
-> +       },
-> +       {
-> +               .procname       =3D "dpm_watchdog_warning_timeout_secs",
-> +               .data           =3D &dpm_watchdog_warning_timeout,
-> +               .maxlen         =3D sizeof(unsigned int),
-> +               .mode           =3D 0644,
-> +               .proc_handler   =3D proc_douintvec_minmax,
-> +               .extra1         =3D SYSCTL_ONE,
-> +               .extra2         =3D (void *)&dpm_watchdog_timeout,
-> +       },
-> +};
-> +
-> +static int __init dpm_watchdog_sysctl_init(void)
-> +{
-> +       register_sysctl_init("kernel", dpm_watchdog_sysctls);
-> +       return 0;
-> +}
-> +subsys_initcall(dpm_watchdog_sysctl_init);
-> +
->  /**
->   * dpm_watchdog_handler - Driver suspend / resume watchdog handler.
->   * @t: The timer that PM watchdog depends on.
-> @@ -564,9 +617,9 @@ static void dpm_watchdog_handler(struct timer_list *t=
-)
->                         dev_driver_string(wd->dev), dev_name(wd->dev));
->         }
->
-> -       time_left =3D CONFIG_DPM_WATCHDOG_TIMEOUT - CONFIG_DPM_WATCHDOG_W=
-ARNING_TIMEOUT;
-> +       time_left =3D dpm_watchdog_timeout - dpm_watchdog_warning_timeout=
-;
->         dev_warn(wd->dev, "**** DPM device timeout after %u seconds; %u s=
-econds until panic ****\n",
-> -                CONFIG_DPM_WATCHDOG_WARNING_TIMEOUT, time_left);
-> +                dpm_watchdog_warning_timeout, time_left);
->         show_stack(wd->tsk, NULL, KERN_WARNING);
->
->         wd->fatal =3D true;
-> @@ -587,11 +640,11 @@ static void dpm_watchdog_set(struct dpm_watchdog *w=
-d, struct device *dev)
->
->         wd->dev =3D dev;
->         wd->tsk =3D current;
-> -       wd->fatal =3D CONFIG_DPM_WATCHDOG_TIMEOUT =3D=3D CONFIG_DPM_WATCH=
-DOG_WARNING_TIMEOUT;
-> +       wd->fatal =3D dpm_watchdog_timeout =3D=3D dpm_watchdog_warning_ti=
-meout;
->
->         timer_setup_on_stack(timer, dpm_watchdog_handler, 0);
->         /* use same timeout value for both suspend and resume */
-> -       timer->expires =3D jiffies + HZ * CONFIG_DPM_WATCHDOG_WARNING_TIM=
-EOUT;
-> +       timer->expires =3D jiffies + HZ * dpm_watchdog_warning_timeout;
->         add_timer(timer);
->  }
->
-> --
 
-I think that this can be applied without the other two patches in the
-series, so please let me know if you want me to apply it separately.
-
-Thanks!
+Reviewed-by: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
