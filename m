@@ -1,31 +1,31 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D3D4122576E;
-	Mon,  8 Jun 2026 02:16:06 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8F7801DF74F;
+	Mon,  8 Jun 2026 02:16:09 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1780884968; cv=none; b=Ea1ubQcugF6nXskhq3uTNILSxAXBJO1xxEPO/Y6zC/MCIXQgTDpWNa7lI4DEqDN9NVHlwcVN2SRW5mU2F6zi2hYp0c2tsSGo42igIAAc/UdSMiKRu5yYcFvIk3XRgAA4YtenFDMqxWdC/pHhooE3AzteWGCsgVbUuH6pf4X6R50=
+	t=1780884970; cv=none; b=CqJ8lgMV5etcdu1vjC2DsdcY2U/ruom/0Oql+cxJNrR0U+YfowS44YHzF4e4Uq9y80HcYz75ejzOsJ/eBn8GpOs8tiTALcLtR4wsNw+psW5yTysUtGpRkGbNvAGgURhIKuBI1qCro/2g/ch68NzPhoqzqWYn3+dayLZJdLQXgLw=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1780884968; c=relaxed/simple;
-	bh=V40FzwuJ4auWfOPOTLCRLRlOJYDi214a7nSsjHUBmqM=;
+	s=arc-20240116; t=1780884970; c=relaxed/simple;
+	bh=aJNNxC6IXDdS28KGccYnRiv3asfTGIEdXwVdfY80BEE=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=m6+2bxrM3bcVbnqLGEvgavdO297EkSN1FaitD1BejdEQzk+VjsPbaDhglSTT4CbWSzxvwhkcwur4Uni8A2bqxwltR/blKmf04SVendct27Khfq9Mr9Rk7wwZlOz6p25xkOpNvFCR+EY53QxzSQsiyqQrtJqJDZbt5LrIbFfNcqo=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=l8SywiJ0; arc=none smtp.client-ip=100.103.45.18
+	 MIME-Version; b=k2CM0mJcDerBgcPSgKSe3KYdz1qD9ioz/kiJR638aUuYmgpEWDMyUgzaShCDDMqkj7UdAXZZB5zSZEixP4QKrW/e1osQP974dchWSeGHL4fC9Uel/+KcfS9azEUHOQFVWct/Dk2BePS3d24W995/R4QREvEqap/n+Lsq6RCEALE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=j7bdxwu8; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="l8SywiJ0"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 314401F00898;
-	Mon,  8 Jun 2026 02:16:04 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="j7bdxwu8"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id D92A81F00893;
+	Mon,  8 Jun 2026 02:16:06 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1780884966;
-	bh=wrCZkdcsWyfEfNrxi0taPAzIJ7QBcBW5AHiMFmIBp1U=;
+	s=k20260515; t=1780884969;
+	bh=QfKetB0CvB/6gCtppxMCr7hrqMdVrjFzeKGdJojD+XU=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References;
-	b=l8SywiJ0uDmt3SGupxi8m70XWD2tMqh+gOK+l5wnyZaDmRmceJUxLuM4c8QKW6M7P
-	 vgMV2+PeG+NOpMvwm2UfDqM+brPclOiC5MIaIgPCR7bgxbPwIQrOf73MUfH/NzMieq
-	 AZCDApVz8AcjZ4oqK0O3H1KBX+apv7th4fGLcKpzh/WevyfR9e7/BsOBLI4+RLE4Ym
-	 Ka2P77/8bjPi2AHm5o9OkULGGW//Gw7qOb0mn6hSFC9Isynxhh5sBbcBqMNPrhO712
-	 QDS12rkZMlJWqsV1i4slRwj5zr5WzbbVdj5EKAs5G8+m48ThQJqlvCbNDI3e2Bed7B
-	 5xlYVbmIpObIQ==
+	b=j7bdxwu89d7fRJA1DyAlghx8qzYCtnZqxJr2eHKQi3rKHaMRGhN7uJzqBOQJmUcJS
+	 gMjvElCUaUWdeRhWWBXBdxzn6h/VmNs5n2CJBmU8NX8YK0H4iI9YT+yPJ0HfX/pk6K
+	 GGdPFq66tG4Bkr5CfxnIl34jzZjTXLHF6AroeaTEeUNu0bzKMPpQt3PVBCAKBAIarx
+	 UnnQKs3qXcHslcQjNLURI+ildPXYH1rD1GXldKQGa7zYFCtmPCMM2sYkfkPNqCc1K7
+	 aWeYN8F4aTSfbiUXV0dHk+qX1yyJDB1kbqfRWnJ+jEEC99suZGbASym6sn0gs0oApL
+	 zPIhdZNPXJMhA==
 From: Tzung-Bi Shih <tzungbi@kernel.org>
 To: Jonathan Corbet <corbet@lwn.net>,
 	"Rafael J. Wysocki" <rafael@kernel.org>,
@@ -42,9 +42,9 @@ Cc: Shuah Khan <skhan@linuxfoundation.org>,
 	tfiga@chromium.org,
 	senozhatsky@chromium.org,
 	Randy Dunlap <rdunlap@infradead.org>
-Subject: [PATCH v3 2/3] PM: dpm_watchdog: Allow disabling DPM watchdog by default
-Date: Mon,  8 Jun 2026 02:15:25 +0000
-Message-ID: <20260608021526.1023248-3-tzungbi@kernel.org>
+Subject: [PATCH v3 3/3] PM: dpm_watchdog: Add sysctl interface for DPM watchdog timeouts
+Date: Mon,  8 Jun 2026 02:15:26 +0000
+Message-ID: <20260608021526.1023248-4-tzungbi@kernel.org>
 X-Mailer: git-send-email 2.54.0.1099.g489fc7bff1-goog
 In-Reply-To: <20260608021526.1023248-1-tzungbi@kernel.org>
 References: <20260608021526.1023248-1-tzungbi@kernel.org>
@@ -56,120 +56,133 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Introduce the CONFIG_DPM_WATCHDOG_DEFAULT_ENABLED Kconfig option to
-allow the device suspend/resume watchdog (DPM watchdog) to be disabled
-by default at compile time.
+Introduce sysctl knobs to allow configuring DPM watchdog timeouts at
+runtime.
 
-Additionally, introduce the "dpm_watchdog_enabled" module parameter to
-allow the watchdog to be enabled or disabled at boot time (via
-"power.dpm_watchdog_enabled") and at runtime (via sysfs).
+Currently, these timeouts are fixed at compile time via
+CONFIG_DPM_WATCHDOG_TIMEOUT and CONFIG_DPM_WATCHDOG_WARNING_TIMEOUT.
+This limits flexibility if the timeouts need to be adjusted for
+different testing scenarios or hardware behaviors without rebuilding
+the kernel.
 
-This provides flexibility for systems that want the watchdog code
-compiled in but inactive by default, allowing it to be enabled only when
-needed.
+Add the following sysctl files under /proc/sys/kernel/:
+- dpm_watchdog_timeout_secs: The total timeout before panic. The
+  maximum value is capped at CONFIG_DPM_WATCHDOG_TIMEOUT to prevent
+  unreasonably large timeouts.
+- dpm_watchdog_warning_timeout_secs: The warning timeout. The maximum
+  value is capped at the current dpm_watchdog_timeout_secs.
+Both sysctls have a minimum value of 1.
 
 Signed-off-by: Tzung-Bi Shih <tzungbi@kernel.org>
 ---
 v3:
-- Add "PM" tag (was missing).
-- Update the format and specify dependencies in kernel-parameters.txt.
-- Update the help message in Kconfig to reflect that dpm_watchdog_enabled
-  can be set at runtime as well.
+- No changes.
 
-v2: https://lore.kernel.org/all/20260604090756.2884671-3-tzungbi@kernel.org
-- Use module parameter and bool for dpm_watchdog_enabled.
-- Use IS_ENABLED().
+v2: https://lore.kernel.org/all/20260604090756.2884671-4-tzungbi@kernel.org
+- New to the series.
 
-v1: https://lore.kernel.org/all/20260528103215.505795-1-tzungbi@kernel.org
+v1: Doesn't exist.
 
- Documentation/admin-guide/kernel-parameters.txt |  8 ++++++++
- drivers/base/power/main.c                       | 11 +++++++++++
- kernel/power/Kconfig                            | 10 ++++++++++
- 3 files changed, 29 insertions(+)
+ drivers/base/power/main.c | 61 ++++++++++++++++++++++++++++++++++++---
+ 1 file changed, 57 insertions(+), 4 deletions(-)
 
-diff --git a/Documentation/admin-guide/kernel-parameters.txt b/Documentation/admin-guide/kernel-parameters.txt
-index 00375193bd26..f2620764c28e 100644
---- a/Documentation/admin-guide/kernel-parameters.txt
-+++ b/Documentation/admin-guide/kernel-parameters.txt
-@@ -47,6 +47,7 @@
- 	PCI	PCI bus support is enabled.
- 	PCIE	PCI Express support is enabled.
- 	PCMCIA	The PCMCIA subsystem is enabled.
-+	PM	Power Management support is enabled.
- 	PNP	Plug & Play support is enabled.
- 	PPC	PowerPC architecture is enabled.
- 	PPT	Parallel port support is enabled.
-@@ -5399,6 +5400,13 @@ Kernel parameters
- 			function to NULL. On Idle the CPU just reduces
- 			execution priority.
- 
-+	power.dpm_watchdog_enabled=
-+			[PM] Enable or disable the device suspend/resume
-+			watchdog (DPM watchdog).  Requires CONFIG_PM_SLEEP and
-+			CONFIG_DPM_WATCHDOG enabled.
-+			Format: <bool>
-+			Default value is set by CONFIG_DPM_WATCHDOG_DEFAULT_ENABLED.
-+
- 	ppc_strict_facility_enable
- 			[PPC,ENABLE] This option catches any kernel floating point,
- 			Altivec, VSX and SPE outside of regions specifically
 diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
-index cd864f3a2799..7822c29b7c8d 100644
+index 7822c29b7c8d..c1a4b30fafb2 100644
 --- a/drivers/base/power/main.c
 +++ b/drivers/base/power/main.c
-@@ -534,6 +534,11 @@ module_param(dpm_watchdog_all_cpu_backtrace, bool, 0644);
- MODULE_PARM_DESC(dpm_watchdog_all_cpu_backtrace,
- 		 "Backtrace all CPUs on DPM watchdog timeout");
+@@ -28,6 +28,7 @@
+ #include <linux/interrupt.h>
+ #include <linux/sched.h>
+ #include <linux/sched/debug.h>
++#include <linux/sysctl.h>
+ #include <linux/async.h>
+ #include <linux/suspend.h>
+ #include <trace/events/power.h>
+@@ -539,6 +540,58 @@ static bool __read_mostly dpm_watchdog_enabled =
+ module_param(dpm_watchdog_enabled, bool, 0644);
+ MODULE_PARM_DESC(dpm_watchdog_enabled, "Enable DPM watchdog");
  
-+static bool __read_mostly dpm_watchdog_enabled =
-+				IS_ENABLED(CONFIG_DPM_WATCHDOG_DEFAULT_ENABLED);
-+module_param(dpm_watchdog_enabled, bool, 0644);
-+MODULE_PARM_DESC(dpm_watchdog_enabled, "Enable DPM watchdog");
++static unsigned int __read_mostly dpm_watchdog_timeout = CONFIG_DPM_WATCHDOG_TIMEOUT;
++static unsigned int __read_mostly dpm_watchdog_warning_timeout =
++						CONFIG_DPM_WATCHDOG_WARNING_TIMEOUT;
++static const unsigned int dpm_watchdog_timeout_max = CONFIG_DPM_WATCHDOG_TIMEOUT;
++
++static int proc_dodpm_watchdog_timeout_secs(const struct ctl_table *table,
++					    int write, void *buffer,
++					    size_t *lenp, loff_t *ppos)
++{
++	struct ctl_table ctl = *table;
++	unsigned int val = dpm_watchdog_timeout;
++	int ret;
++
++	ctl.data = &val;
++	ret = proc_douintvec_minmax(&ctl, write, buffer, lenp, ppos);
++	if (ret || !write)
++		return ret;
++
++	if (val < dpm_watchdog_warning_timeout)
++		dpm_watchdog_warning_timeout = val;
++	dpm_watchdog_timeout = val;
++
++	return 0;
++}
++
++static const struct ctl_table dpm_watchdog_sysctls[] = {
++	{
++		.procname	= "dpm_watchdog_timeout_secs",
++		.maxlen		= sizeof(unsigned int),
++		.mode		= 0644,
++		.proc_handler	= proc_dodpm_watchdog_timeout_secs,
++		.extra1		= SYSCTL_ONE,
++		.extra2		= (void *)&dpm_watchdog_timeout_max,
++	},
++	{
++		.procname	= "dpm_watchdog_warning_timeout_secs",
++		.data		= &dpm_watchdog_warning_timeout,
++		.maxlen		= sizeof(unsigned int),
++		.mode		= 0644,
++		.proc_handler	= proc_douintvec_minmax,
++		.extra1		= SYSCTL_ONE,
++		.extra2		= (void *)&dpm_watchdog_timeout,
++	},
++};
++
++static int __init dpm_watchdog_sysctl_init(void)
++{
++	register_sysctl_init("kernel", dpm_watchdog_sysctls);
++	return 0;
++}
++subsys_initcall(dpm_watchdog_sysctl_init);
 +
  /**
   * dpm_watchdog_handler - Driver suspend / resume watchdog handler.
   * @t: The timer that PM watchdog depends on.
-@@ -577,6 +582,9 @@ static void dpm_watchdog_set(struct dpm_watchdog *wd, struct device *dev)
- {
- 	struct timer_list *timer = &wd->timer;
+@@ -564,9 +617,9 @@ static void dpm_watchdog_handler(struct timer_list *t)
+ 			dev_driver_string(wd->dev), dev_name(wd->dev));
+ 	}
  
-+	if (!dpm_watchdog_enabled)
-+		return;
-+
+-	time_left = CONFIG_DPM_WATCHDOG_TIMEOUT - CONFIG_DPM_WATCHDOG_WARNING_TIMEOUT;
++	time_left = dpm_watchdog_timeout - dpm_watchdog_warning_timeout;
+ 	dev_warn(wd->dev, "**** DPM device timeout after %u seconds; %u seconds until panic ****\n",
+-		 CONFIG_DPM_WATCHDOG_WARNING_TIMEOUT, time_left);
++		 dpm_watchdog_warning_timeout, time_left);
+ 	show_stack(wd->tsk, NULL, KERN_WARNING);
+ 
+ 	wd->fatal = true;
+@@ -587,11 +640,11 @@ static void dpm_watchdog_set(struct dpm_watchdog *wd, struct device *dev)
+ 
  	wd->dev = dev;
  	wd->tsk = current;
- 	wd->fatal = CONFIG_DPM_WATCHDOG_TIMEOUT == CONFIG_DPM_WATCHDOG_WARNING_TIMEOUT;
-@@ -595,6 +603,9 @@ static void dpm_watchdog_clear(struct dpm_watchdog *wd)
- {
- 	struct timer_list *timer = &wd->timer;
+-	wd->fatal = CONFIG_DPM_WATCHDOG_TIMEOUT == CONFIG_DPM_WATCHDOG_WARNING_TIMEOUT;
++	wd->fatal = dpm_watchdog_timeout == dpm_watchdog_warning_timeout;
  
-+	if (!dpm_watchdog_enabled)
-+		return;
-+
- 	timer_delete_sync(timer);
- 	timer_destroy_on_stack(timer);
+ 	timer_setup_on_stack(timer, dpm_watchdog_handler, 0);
+ 	/* use same timeout value for both suspend and resume */
+-	timer->expires = jiffies + HZ * CONFIG_DPM_WATCHDOG_WARNING_TIMEOUT;
++	timer->expires = jiffies + HZ * dpm_watchdog_warning_timeout;
+ 	add_timer(timer);
  }
-diff --git a/kernel/power/Kconfig b/kernel/power/Kconfig
-index 530c897311d4..b16bd159074a 100644
---- a/kernel/power/Kconfig
-+++ b/kernel/power/Kconfig
-@@ -268,6 +268,16 @@ config DPM_WATCHDOG
- 	  captured in pstore device for inspection in subsequent
- 	  boot session.
  
-+config DPM_WATCHDOG_DEFAULT_ENABLED
-+	bool "Enable DPM watchdog by default"
-+	depends on DPM_WATCHDOG
-+	default y
-+	help
-+	  If you say Y here, the DPM watchdog will be enabled by default.
-+	  If you say N, it will be compiled in but disabled.  It can be
-+	  enabled at boot time via the "power.dpm_watchdog_enabled" kernel
-+	  parameter or at runtime via sysfs.
-+
- config DPM_WATCHDOG_TIMEOUT
- 	int "Watchdog timeout to panic in seconds"
- 	range 1 120
 -- 
 2.54.0.1099.g489fc7bff1-goog
 
