@@ -1,90 +1,112 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 347DE378D78;
-	Tue,  9 Jun 2026 16:12:49 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1E794377ECF
+	for <linux-pm@vger.kernel.org>; Tue,  9 Jun 2026 16:13:27 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1781021571; cv=none; b=aOzCPF2tXxrQxqv/OkUdND/bEx1foteQ7YcLGkOpNDEK6XuA3si7oao0tR/u47l90Qy6bGO2QRaXbvEQCyUm7rrJK10KGr47dvfOsPxLmN0oPvR47nZ4OPAtvTNoakwpmEGyncfgla4UfKvS/bgr22sWN9gY9SusMfC6CBkcpQc=
+	t=1781021609; cv=none; b=OsiV909zSOHa7noEB/+1dvQFE1fbFzNQhm85zuCGSk6Fz7KXVvUiSOOFppzKt4jlV3/jwXR7qQS4QBp4S7F7YoaFlgK6eCKDmn7nhXWLEu89lbyl2uELo8DOvuKsoDC+npYCOYflXN9GKO70GsVimS1BdN7C6U4aoOlDredoXF8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1781021571; c=relaxed/simple;
-	bh=3rllqHtSZlQ3+eTYOxV4cCxNx9fbZfUu8XWpwEcj5RE=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=jKaFYBHK2Mj/x+JzEwnNuIJJ7LyAdnBUDbmZL6ZBf722HDwN2vcoNxNFt/AYYozGnQ4DrwHZSgVRnBvz7pZ7LakkFcqre6srkKyAhJUBruVWWE0iii+iNROgdzlKN8FzYdYtAE1ldeZg6EY6OzmFmjHmIc/ObbYqHA6oS3Hw6po=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=gQvvyx2p; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1781021609; c=relaxed/simple;
+	bh=m8vQxDVWtiKXGUumN8w4wGGIz1jGRtHOxYQUtL3aKzk=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=sMhMb0DuVV2WDvnSgalLU3FLdmjeZswW9j7gByaY+rLdihZZiuFyKtPTQ1lP04nQWFQPgQV6ORnYmVnDKVOQ+34pFi0p3E/OQYMxtk2qmC8C+Rr4mEq5J0NFJyuDGoGlErUKyqelfQN9Q+DLIL7hXZscALlXLi6bDHFZk1c0O64=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=mFZtoq9G; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="gQvvyx2p"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8D5CB1F00893;
-	Tue,  9 Jun 2026 16:12:49 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="mFZtoq9G"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id C805C1F00893
+	for <linux-pm@vger.kernel.org>; Tue,  9 Jun 2026 16:13:27 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1781021569;
-	bh=bPqQ6uth3gPaAJwu37Rm70J2rM+vQopDdeskULmpciA=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=gQvvyx2prbGt7/Gzx7ZiSbc1lEfON7wLOfqL4aIRhEJE+QRqBAviXG1ZLPkbCLogJ
-	 X400cgzYRkpHKwtKJDF76pZlr8+IQSmLJRUW6a4iAMjrY1oL7cQ0zXdxEPZajW+rAA
-	 Mw/FdobYcMzaclJEuluMMQ9QJsgOKFoUqAMwqhwSxTn9xgKdYtaio4J+eG9PVoaXN/
-	 x/7Jsbvk/yjPL9WjqfvWrCIGgCVE8T20MHPQqZnx1oxF0m4robpW8x11nE9WNwL4uz
-	 SyWFt+zCnEkztq2STrJzdSB6WXVoueBgtIyO84Hs88x8e5TkGwi7UeO9jaHlYL+yOQ
-	 EdKZWnwt8YDsQ==
-Received: from johan by xi.lan with local (Exim 4.99.3)
-	(envelope-from <johan@kernel.org>)
-	id 1wWz4J-000000012LU-1XXM;
-	Tue, 09 Jun 2026 18:12:47 +0200
-Date: Tue, 9 Jun 2026 18:12:47 +0200
-From: Johan Hovold <johan@kernel.org>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Ulf Hansson <ulfh@kernel.org>, linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	Linux-Renesas <linux-renesas-soc@vger.kernel.org>
-Subject: Re: [PATCH] pmdomain: core: switch to dynamic root device
-Message-ID: <aig7f5rCZCbRyR9B@hovoldconsulting.com>
-References: <20260424104050.2617041-1-johan@kernel.org>
- <CAMuHMdUHabMGJyJ7e7yp7DLC+JJc9k6NK9p4anj2wRKNuwZUng@mail.gmail.com>
+	s=k20260515; t=1781021607;
+	bh=oy+wkqTvrdjrZQOe1xdJca6UguwVA7jPuTT15gL03os=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc;
+	b=mFZtoq9Gtd/CfVbYZt9TtroIzuWCj6CFSw5KPwdJBZ2aBJxkYuifypWmFkUCbxAW1
+	 wUiilI0b+2v2ZwCtBIoIjDtaM5VbLlnNylHtcMb3/HIKv8j94lqJ/G3Mk2uMSWDwfj
+	 Y6iJXGly744sf/zVrbcdsIHbsI09IWUGGCmS5t0SUxMuzuuA3YCM5zF/dXXYz3zG49
+	 0ieHHLMFSbRx2Ew0yHuJMC64SrGBKs2SO0wxbxBuhuM4Yp6vyB9VgP+rPP+1aUHiKX
+	 l9toA6EMnYNuKDRB6gAIqXcvtLBBLgZEnEnT50gd77FzdmO4XgGrfS6JSRsnWE/Idu
+	 YSnoXOBtpZgHw==
+Received: by mail-lj1-f174.google.com with SMTP id 38308e7fff4ca-3967725a77fso56942341fa.1
+        for <linux-pm@vger.kernel.org>; Tue, 09 Jun 2026 09:13:27 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AFNElJ/s4IvUilfmgCeB7nS+rDXPrKYE3626W/FUGgmwkTqTT2gHSNprDMk9XfTkFXZGRk9HdrjeBAgJAg==@vger.kernel.org
+X-Gm-Message-State: AOJu0YzPbqyiquh0OZDfry3JCZGYGxQ6VfmyNTLIyxjO25jiCP/XSt8w
+	Wlb7fR15Yx9Y+VaPUv1m5VVlnVKwwSkqJs6lyoPTvAZC6+bx6+2cOfgiNphPa0Pr5s3ThrFGHJB
+	1y6bxEvEqYEEoW/UClqTMMCsAg2c2GeA=
+X-Received: by 2002:a05:6512:10ca:b0:5aa:5025:3189 with SMTP id
+ 2adb3069b0e04-5acf8b8dbdbmr1018134e87.42.1781021606215; Tue, 09 Jun 2026
+ 09:13:26 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <CAMuHMdUHabMGJyJ7e7yp7DLC+JJc9k6NK9p4anj2wRKNuwZUng@mail.gmail.com>
+References: <20260608170748.82273-1-dbgh9129@gmail.com>
+In-Reply-To: <20260608170748.82273-1-dbgh9129@gmail.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Date: Tue, 9 Jun 2026 18:13:13 +0200
+X-Gmail-Original-Message-ID: <CAJZ5v0iR6UuFYoTWnaTRtJtk+6N6JFLtVSD6BYZsrRkO9H1M2Q@mail.gmail.com>
+X-Gm-Features: AVVi8Ce5NG7-T71vTa3POMZyoPpX9waqW5gk5pey3bI4ZRYU57atvvgBhQZrcic
+Message-ID: <CAJZ5v0iR6UuFYoTWnaTRtJtk+6N6JFLtVSD6BYZsrRkO9H1M2Q@mail.gmail.com>
+Subject: Re: [PATCH v1] PM: QoS: Fix misc device registration unwind
+To: Yuho Choi <dbgh9129@gmail.com>
+Cc: "Rafael J . Wysocki" <rafael@kernel.org>, Len Brown <lenb@kernel.org>, Pavel Machek <pavel@kernel.org>, 
+	linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Hi Geert,
+On Mon, Jun 8, 2026 at 7:08=E2=80=AFPM Yuho Choi <dbgh9129@gmail.com> wrote=
+:
+>
+> cpu_latency_qos_init() registers cpu_dma_latency first and, when
+> CONFIG_PM_QOS_CPU_SYSTEM_WAKEUP is enabled, registers cpu_wakeup_latency
+> afterwards. The second registration overwrites the first return value.
+>
+> As a result, a failure to register cpu_dma_latency can be masked if the
+> second registration succeeds. Conversely, if cpu_dma_latency succeeds and
+> cpu_wakeup_latency fails, the function returns an error while leaving the
+> first misc device registered.
+>
+> Return immediately on the first registration failure and deregister
+> cpu_dma_latency if the second registration fails.
+>
+> Fixes: a4e6512a79d8 ("PM: QoS: Introduce a CPU system wakeup QoS limit")
+> Signed-off-by: Yuho Choi <dbgh9129@gmail.com>
+> ---
+>  kernel/power/qos.c | 11 ++++++++---
+>  1 file changed, 8 insertions(+), 3 deletions(-)
+>
+> diff --git a/kernel/power/qos.c b/kernel/power/qos.c
+> index 398b994b73aa..1944dbeb0d4c 100644
+> --- a/kernel/power/qos.c
+> +++ b/kernel/power/qos.c
+> @@ -519,18 +519,23 @@ static int __init cpu_latency_qos_init(void)
+>         int ret;
+>
+>         ret =3D misc_register(&cpu_latency_qos_miscdev);
+> -       if (ret < 0)
+> +       if (ret < 0) {
+>                 pr_err("%s: %s setup failed\n", __func__,
+>                        cpu_latency_qos_miscdev.name);
+> +               return ret;
+> +       }
+>
+>  #ifdef CONFIG_PM_QOS_CPU_SYSTEM_WAKEUP
+>         ret =3D misc_register(&cpu_wakeup_latency_qos_miscdev);
+> -       if (ret < 0)
+> +       if (ret < 0) {
+>                 pr_err("%s: %s setup failed\n", __func__,
+>                        cpu_wakeup_latency_qos_miscdev.name);
+> +               misc_deregister(&cpu_latency_qos_miscdev);
+> +               return ret;
+> +       }
+>  #endif
+>
+> -       return ret;
+> +       return 0;
+>  }
+>  late_initcall(cpu_latency_qos_init);
+>  #endif /* CONFIG_CPU_IDLE */
+> --
 
-On Tue, Jun 09, 2026 at 12:53:59PM +0200, Geert Uytterhoeven wrote:
-
-> On Fri, 24 Apr 2026 at 12:41, Johan Hovold <johan@kernel.org> wrote:
-> > Driver core expects devices to be dynamically allocated and will, for
-> > example, complain loudly if a device that lacks a release function is
-> > ever freed.
-> >
-> > Use root_device_register() to allocate and register the root device
-> > instead of open coding using a static device.
-> >
-> > Signed-off-by: Johan Hovold <johan@kernel.org>
-> 
-> Thanks for your patch, which is now commit a96e40f4afdcb52a
-> ("pmdomain: core: switch to dynamic root device") in pmdomain/next.
-> On e.g. R-Car H1, R-Car M2-W, and R-Car H3, this causes scary messages
-> when systemd-journald.service is started:
-> 
->     synth uevent: /always-on: failed to send uevent
->     genpd_provider always-on: uevent: failed to send synthetic uevent: -22
->     synth uevent: /ca15-cpu0: failed to send uevent
->     genpd_provider ca15-cpu0: uevent: failed to send synthetic uevent: -22
->     [...]
-> 
-> Reverting the commit fixes the issue.
-
-Thanks for the report and sorry about the breakage.
-
-I mistakenly convinced myself that this would not be an issue due to the
-pmdomain code making sure that the bus has been registered but missed
-the two-step initialisation.
-
-I just sent a fix here if you want to give it a spin:
-
-	https://lore.kernel.org/lkml/20260609160634.246526-1-johan@kernel.org/
-
-Johan
+Applied as 7.2 material, thanks!
