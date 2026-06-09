@@ -1,129 +1,145 @@
-Received: from mail-dy1-f178.google.com (mail-dy1-f178.google.com [74.125.82.178])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 16795327C13
-	for <linux-pm@vger.kernel.org>; Tue,  9 Jun 2026 14:11:14 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=74.125.82.178
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1781014276; cv=pass; b=uUg+k6Ry8lukNhQtHCMRoaeBwbrSr0q4Xv86ImvGVU+xtW/+G0gyUG10g7p3B+jXSFnFfjdfOWzdO594d//h5y6n12Yb0GEO93bxI36xCS1/a3Vn4u+OIRNr/PUiTJDCD7maRpXv64X3oE7UeVYvUBysdJKPN4ZAo4Dd8FqkffI=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1781014276; c=relaxed/simple;
-	bh=O7/vXOHmBuDEN6iYoEcXZX9SQVUOxuFM9K3LUsWI6j0=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=ZIcn2G9x/RP+cJTydHerC33qcXMZPz583ccjkspcxoe7wOAtyN3kFg1/Mw2yRM/CKZHMVMz1hlPZIlI67E7Z5hc+yOsAgNGPNedA+gXc4rDtvk0ZXhpbGgkLLgHAliRiHzB0eZZEbyUYuTiG2gcX1gZTVixq5qUf4YtOFahV4Ws=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=pO6mb/Mj; arc=pass smtp.client-ip=74.125.82.178
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 12A0B31986C;
+	Tue,  9 Jun 2026 14:11:40 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=148.163.158.5
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1781014302; cv=none; b=IWI/rYtkuq5AxvjiOejrs8nA0bE5fMapxyTzMxsMbMUsV5wLq3fTs4V0oa0Dl/65s06iDrzhDal1k3WnmohQpzHtngrfdBhUELI3w77ggXA4Rkbtdi8uYoUDiGgwQm45FSkIgUTtlIiPWFALnOAyHpx47prNyqdvzThvVS/9C7A=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1781014302; c=relaxed/simple;
+	bh=8h5yT93e2dlD2MIOvzgVKpndjqsGDKzs+AolZYJc+VQ=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=hd/2jem7FDFfy8fTFTeGjnFzmZQTVPrwSZ3vzgcQSfMRyoScH7yxWpVb6fltHMJKZRiSZWzfJIuxweTJAOKOYXpGODs0XTqM2UGSxahOHkuntFKXn9bpAx/RFnORIkkxs3qbDWOBcOpPgTVtrQEyJWu3Rji2MsVr9ZzqHllevhQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; spf=pass smtp.mailfrom=linux.ibm.com; dkim=pass (2048-bit key) header.d=ibm.com header.i=@ibm.com header.b=QH5j3hf1; arc=none smtp.client-ip=148.163.158.5
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.ibm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="pO6mb/Mj"
-Received: by mail-dy1-f178.google.com with SMTP id 5a478bee46e88-3042a99f0ceso652505eec.0
-        for <linux-pm@vger.kernel.org>; Tue, 09 Jun 2026 07:11:14 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1781014274; cv=none;
-        d=google.com; s=arc-20240605;
-        b=KEK0Ob8lUCbjYL4w+e2PcAI61F5/TW64pIaVdbEqYO/21F5wdkwG9s2VISb2rLP55p
-         Zry8mMydFEUwGicC0qeoOXlodifviFO22zG4y4ra7GPz9ZIW6KcoFxH8Moj4/1yhq3Ze
-         OdzaqaeRRgItM5nuebMeonsOYZRaZ44+3V0//JD/pMVeTPKQcLcayZtS8iOSRCKK/py8
-         ra87DCjB+W+6mtyXh5iMXqwG/7UBFy6m5a3t75mq0526b/bhWIpWQq5qkVpQN/NQTQ0t
-         CYxLxOMeDRtzkKuAy0Vd1ibzN7keUu7rAyw+07hannOBsz4CxDpwHXZv3O3JZbf7z5Fu
-         ywfg==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=nhjDW0OszKJAGtPcPLD3bV8YMBm1E7bkkVTPi52pFmI=;
-        fh=Kwi67TUoPlq57dIgX930qkZMGzdbqOPFsVMCdnFArfA=;
-        b=Yma5DM7VQSKVlmVd/0ZDBkTcoAolqLfU/wo57saNFNvkUSZzRVisgT6bfRNqPAuy5q
-         Tfj04h1EJtZpsf6HBRsab0dgTHwcKBFZzj4WwHQpbQ3jmpWKeoYVpzW7npiM4rW0ypor
-         ooOa5hIVynl7n7P70b2FBksoCPpaQViNwTVLFyNysB+jyBQ7gQjYiH3iISHa89IxJNo4
-         3DUomyIG3upVHP/J4trshvVV4VkHKabwS7MeBsFpeKXWy1KgxMcy4OHLj03T0pIps37K
-         0P89BgOyVzcn31k0nAW35ybUt0j3wuL7hEcWoONOA1q/YGLFAAolg9c9HZ+S6JSuFdm9
-         76Vw==;
-        darn=vger.kernel.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1781014274; x=1781619074; darn=vger.kernel.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=nhjDW0OszKJAGtPcPLD3bV8YMBm1E7bkkVTPi52pFmI=;
-        b=pO6mb/MjV7+9Lyoy7qKEe8jyrmAVmp1sVk9ZAQekGJY/qcYqRSPwEAedKazW1YDjAo
-         daWkJzVnMyQBtO7fmggjHQ1cPEQGXHlt3VIr6I1Kj1CO/2HtnymY1aGpvzlRB8OH+ilA
-         890WtpQyksZUJj37x9K37O3XCrrKWsg/O8Y8q+MGEolHuY3O9nF+Mz46OcSl6XEeAyYn
-         PpKFuaWCdq+j/LCZ8xHOrMCCjyi8dyUYIO1ZCC3Qs9hwAGz+a0asgrLpY7oQ6QrXmnr+
-         SzEi2Ndcvrsr6lg0pp6Uccf0k7gE8QI2hRsXCNfmZx5mer8km0ZAI5cl8BunKE5GWZwg
-         VvlQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1781014274; x=1781619074;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=nhjDW0OszKJAGtPcPLD3bV8YMBm1E7bkkVTPi52pFmI=;
-        b=EJaFY8GSn331N4aIMWLow91/b/Rq9vOgfPwvaBZfcvtcHDxICGBMixRkYGny3akM9Y
-         0xVGxJPn3sV5+ZMnRQhE4kQmwabQRd6Kmmf/g7V6pOZ0F+AJ9SNQJBhWaC5TyTUDNH0T
-         Pis6ktsHHlybmpT3HogkbgKWGJIZJO2fZluBTORM2NEXu4AnUReKwnR2vFVLbE8gbRPe
-         OqKSCu3prudSYynsyCcO9UlhuUdlvhMhPRaf4XLLLpXcSMjAEctziIKXnMkPtrgX63p3
-         PrJqqcdZ9F1Q1p4Zv2jZGk1tjoe6GPcBlIN0/U8Z4LhkkcVwNFzuWEb/gYA8PWlS36u0
-         AWxA==
-X-Forwarded-Encrypted: i=1; AFNElJ/WctSWmhMMlQI8X9wGXxlSOYfgE17HUayj35J/Tb1ygNaBOlusWIcPFLEunuBFyUFa39eS871hcw==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yy1s0VMe23eTwNL/b0W1CQYpRdJ6wzcpE/9ZjOa7b7398eo5zaj
-	9YoPolXqRQceAOEFevO8iJXDIRgBl1UOw2VmyuPZn6tgfhuHVeqU5RmdjdoHNSA5u20LoWtOD9V
-	mCRBtHDLXk4ogop6mnjx5AeQBX5JAB88=
-X-Gm-Gg: Acq92OEE9DGq8OSirqYoDsrfuVb9vTM/azensqeLFDaI1mFV+JpyhMy2Y7FTjexSnRT
-	E0ceSbaAJG/xwsmVinWRy10kSuqS8e2Km5+DdiaTOyyG7Edw/BBSedzdzrqI5MiXT8EFoweoBwQ
-	o6bkvhVmiIhTWtYs0eostNeGzrfR+n1mq2GaY742Z4D1nFq43BOtlCCTKbwa0QxhF8CdWoeiZPL
-	ylo1rbFEZ16K3JCtk/Bq/ccMyWT8O8Zy8DYoDLyGCU3tNkl+j4Nzp/HR+fBD1KLjZi+lZ4TquNU
-	1iOVWSo2Rrv9aRJC6sV43As4XYgBdQh4+PrRSNzWURWV3kjtppbMy/ld8KSdna2SajEw/heVXMu
-	c4SHvqQWKj6E1muVR1pmYEdaZ7/nH6dfvTQ==
-X-Received: by 2002:a05:693c:3749:b0:304:8860:74d6 with SMTP id
- 5a478bee46e88-3077b21ea10mr6213247eec.1.1781014274135; Tue, 09 Jun 2026
- 07:11:14 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=ibm.com header.i=@ibm.com header.b="QH5j3hf1"
+Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6598B2ol1266651;
+	Tue, 9 Jun 2026 14:11:33 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-type:date:from:in-reply-to:message-id:mime-version
+	:references:subject:to; s=pp1; bh=F9riTq8/qJjTUby5Le27Usq6dpwIUG
+	01u9LcRHaLfPQ=; b=QH5j3hf1utjBMfHoFbfYBOD19VqyhSVNRiuGoa75KbIcRB
+	GiptnOQpx2QjAbZLuYlaB+SfeNk52yJ2b329QIhiiqbHwRjeN96iTymLXWlceLoK
+	dSGve8saKLOaWag+EpCN5lqJtW/jm2MH28dtYD+koHAzAWEkNBIN6KnCuo17TUkr
+	Mx9z3+3sAMOktibAYaahJ7YyCvdosS77gw9wZRC1Xr0LWqqaR1RmIOo4ImEkscS0
+	uFe/91sXqwK3kY77n6s5YaoJti5401I13QU097QZ7siamFetmwpypNw4I/cKBsYG
+	Nn33y16XUhlSX+a9aUxX42ymFk44Lg8uKoffoKqw==
+Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4em9ye4cfe-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 09 Jun 2026 14:11:33 +0000 (GMT)
+Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma22.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 659E4oAN032222;
+	Tue, 9 Jun 2026 14:11:32 GMT
+Received: from smtprelay01.fra02v.mail.ibm.com ([9.218.2.227])
+	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4emx8w2e0k-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 09 Jun 2026 14:11:32 +0000 (GMT)
+Received: from smtpav03.fra02v.mail.ibm.com (smtpav03.fra02v.mail.ibm.com [10.20.54.102])
+	by smtprelay01.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 659EBTbr43057602
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Tue, 9 Jun 2026 14:11:29 GMT
+Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id DA80F20043;
+	Tue,  9 Jun 2026 14:11:28 +0000 (GMT)
+Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 2C62D20040;
+	Tue,  9 Jun 2026 14:11:28 +0000 (GMT)
+Received: from osiris (unknown [9.111.52.116])
+	by smtpav03.fra02v.mail.ibm.com (Postfix) with ESMTPS;
+	Tue,  9 Jun 2026 14:11:28 +0000 (GMT)
+Date: Tue, 9 Jun 2026 16:11:26 +0200
+From: Heiko Carstens <hca@linux.ibm.com>
+To: Mete Durlu <meted@linux.ibm.com>
+Cc: Vasily Gorbik <gor@linux.ibm.com>,
+        Alexander Gordeev <agordeev@linux.ibm.com>,
+        Sven Schnelle <svens@linux.ibm.com>,
+        Anna-Maria Behnsen <anna-maria@linutronix.de>,
+        Frederic Weisbecker <frederic@kernel.org>,
+        Ingo Molnar <mingo@kernel.org>, Thomas Gleixner <tglx@kernel.org>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Daniel Lezcano <daniel.lezcano@kernel.org>,
+        Christian Loehle <christian.loehle@arm.com>,
+        Christian Borntraeger <borntraeger@linux.ibm.com>,
+        Ilya Leoshkevich <iii@linux.ibm.com>, linux-s390@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Subject: Re: [PATCH v2 0/5] s390/idle: CPU idle driver
+Message-ID: <20260609141126.9217Gf8-hca@linux.ibm.com>
+References: <20260609-idledriver-v2-0-21c2f581d11f@linux.ibm.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260604-unique-ref-v17-0-7b4c3d2930b9@kernel.org>
-In-Reply-To: <20260604-unique-ref-v17-0-7b4c3d2930b9@kernel.org>
-From: Miguel Ojeda <miguel.ojeda.sandonis@gmail.com>
-Date: Tue, 9 Jun 2026 16:11:01 +0200
-X-Gm-Features: AVVi8CfNPwpEZxw0N5nqXBfBlOCze0ATuinL6YIsUVP51KJlhLB9xVsEvEDqHhw
-Message-ID: <CANiq72nkYJnztntLzB5jNwi_oRY+V7UMpf6AuKM07aGH9FwPdg@mail.gmail.com>
-Subject: Re: [PATCH v17 00/10] rust: add `Ownable` trait and `Owned` type
-To: Andreas Hindborg <a.hindborg@kernel.org>
-Cc: Miguel Ojeda <ojeda@kernel.org>, Gary Guo <gary@garyguo.net>, 
-	=?UTF-8?Q?Bj=C3=B6rn_Roy_Baron?= <bjorn3_gh@protonmail.com>, 
-	Benno Lossin <lossin@kernel.org>, Alice Ryhl <aliceryhl@google.com>, 
-	Trevor Gross <tmgross@umich.edu>, Danilo Krummrich <dakr@kernel.org>, 
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Dave Ertman <david.m.ertman@intel.com>, 
-	Ira Weiny <ira.weiny@intel.com>, Leon Romanovsky <leon@kernel.org>, Paul Moore <paul@paul-moore.com>, 
-	Serge Hallyn <sergeh@kernel.org>, "Rafael J. Wysocki" <rafael@kernel.org>, David Airlie <airlied@gmail.com>, 
-	Simona Vetter <simona@ffwll.ch>, Alexander Viro <viro@zeniv.linux.org.uk>, 
-	Christian Brauner <brauner@kernel.org>, Jan Kara <jack@suse.cz>, 
-	Daniel Almeida <daniel.almeida@collabora.com>, Viresh Kumar <vireshk@kernel.org>, 
-	Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, 
-	=?UTF-8?Q?Krzysztof_Wilczy=C5=84ski?= <kwilczynski@kernel.org>, 
-	Boqun Feng <boqun@kernel.org>, Uladzislau Rezki <urezki@gmail.com>, Lorenzo Stoakes <ljs@kernel.org>, 
-	Vlastimil Babka <vbabka@kernel.org>, "Liam R. Howlett" <liam@infradead.org>, 
-	Igor Korotin <igor.korotin@linux.dev>, Pavel Tikhomirov <ptikhomirov@virtuozzo.com>, 
-	linux-kernel@vger.kernel.org, rust-for-linux@vger.kernel.org, 
-	linux-block@vger.kernel.org, linux-security-module@vger.kernel.org, 
-	dri-devel@lists.freedesktop.org, linux-fsdevel@vger.kernel.org, 
-	linux-mm@kvack.org, linux-pm@vger.kernel.org, linux-pci@vger.kernel.org, 
-	driver-core@lists.linux.dev, Asahi Lina <lina+kernel@asahilina.net>, 
-	Oliver Mangold <oliver.mangold@pm.me>, Viresh Kumar <viresh.kumar@linaro.org>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260609-idledriver-v2-0-21c2f581d11f@linux.ibm.com>
+X-TM-AS-GCONF: 00
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNjA5MDEzNCBTYWx0ZWRfX7cOHGb4yYmQU
+ UWBzo6rm/eMBefjPYW/OZYlCV3uku6HiU0m3iCkf5bNfBUMwT0/rU5EYO2WuAJmAeHy3MqqIkTN
+ 4wkhRxnvn+QinS7ROEZd4dcSXXwop0F+mkVw5E08aGwTC3tWcTVvv3YwD1IJIZ2ag+zTzz9JRyA
+ cqUZHusl0iPNq9HbOThxK2bJPOVrRjpsEy5Gmxs70GK2skZtVAPE8vcXlq+VjLkERM43ar59eyf
+ zw9cwA8/Pv21jYnHW3ZA4oWIfsF23ljgiXxa43R9Lgtj3Mr8e+RXrN8LvUoINfOpMKCdwr8T0NB
+ r7NWSXbr85VwXd3r0oOlVHAYhIN1nNlX/8ACgiACBiGQHTAqpnVJ8KsYydOOZZargb3D1/DbCye
+ v6GSc/HeXPlisChYGsfKpfj8wWLA4A+/9Rqshf52QctirfoudDtSGoDThuivMojnaJCAcX0FfD5
+ ET3TcfIc18IkWn5duPg==
+X-Authority-Analysis: v=2.4 cv=QKhYgALL c=1 sm=1 tr=0 ts=6a281f15 cx=c_pps
+ a=5BHTudwdYE3Te8bg5FgnPg==:117 a=5BHTudwdYE3Te8bg5FgnPg==:17
+ a=kj9zAlcOel0A:10 a=FelO9ux0wxsA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=V8glGbnc2Ofi9Qvn3v5h:22 a=VnNF1IyMAAAA:8
+ a=7TjuNBi8Wp6cLl_tVUMA:9 a=CjuIK1q_8ugA:10
+X-Proofpoint-GUID: N8el8hY51p8ujlNCOLrQiRgqMUm5Rzox
+X-Proofpoint-ORIG-GUID: N8el8hY51p8ujlNCOLrQiRgqMUm5Rzox
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.125,FMLib:17.12.100.49
+ definitions=2026-06-09_03,2026-06-09_02,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501 lowpriorityscore=0 bulkscore=0 adultscore=0 phishscore=0
+ malwarescore=0 impostorscore=0 suspectscore=0 spamscore=0 clxscore=1011
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2605210000 definitions=main-2606090134
 
-On Thu, Jun 4, 2026 at 10:13=E2=80=AFPM Andreas Hindborg <a.hindborg@kernel=
-.org> wrote:
->
->       rust: page: update formatting of `use` statements
->       rust: aref: update formatting of use statements
+On Tue, Jun 09, 2026 at 03:24:20PM +0200, Mete Durlu wrote:
+> v1 -> v2:
+> 
+> * Add idle driver enteries to MAINTAINERS file (Christian Loehle)
+> * Remove extra line break left in drivers/cpuidle/Kconfig.s390
+>   (Christian Loehle)
+> 
+> This patch series introduces a CPU idle driver for s390
+> architecture that leverages the existing cpu idle infrastructure and
+> TEO (Timer Events Oriented) governor to optimize idle state selection
+> based on timer events and interrupt patterns.
+...
 
-Applied these to `rust-next` to get them out of the way already since
-I have another similar one for `str` I am applying too -- thanks!
+> Mete Durlu (5):
+>       s390/tick: Remove CIF_NOHZ_DELAY flag
+>       tick: Remove arch_needs_cpu
+>       s390: Enable TIF_POLLING_NRFLAG
+>       s390/idle: Introduce cpuidle for s390
+>       s390/configs: Enable cpuidle driver on s390
+> 
+>  MAINTAINERS                         |   8 +++
+>  arch/s390/Kconfig                   |   5 ++
+>  arch/s390/configs/debug_defconfig   |   2 +
+>  arch/s390/configs/defconfig         |   2 +
+>  arch/s390/include/asm/processor.h   |   4 --
+>  arch/s390/include/asm/thread_info.h |   1 +
+>  arch/s390/kernel/idle.c             |   1 -
+>  arch/s390/kernel/irq.c              |   4 --
+>  arch/s390/kernel/smp.c              |   1 -
+>  drivers/cpuidle/Kconfig             |   5 ++
+>  drivers/cpuidle/Kconfig.s390        |  11 ++++
+>  drivers/cpuidle/Makefile            |   4 ++
+>  drivers/cpuidle/cpuidle-s390.c      | 104 ++++++++++++++++++++++++++++++++++++
+>  include/linux/tick.h                |   3 --
+>  kernel/time/tick-sched.c            |   7 ++-
+>  15 files changed, 145 insertions(+), 17 deletions(-)
 
-    [ Picked from larger series and reworded. - Miguel ]
-
-Cheers,
-Miguel
+Looks all good to me.
+Reviewed-by: Heiko Carstens <hca@linux.ibm.com>
