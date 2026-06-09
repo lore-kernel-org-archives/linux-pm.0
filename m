@@ -1,87 +1,86 @@
 Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1B88A3F164F
-	for <linux-pm@vger.kernel.org>; Tue,  9 Jun 2026 10:23:23 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E29DD3EFFC1
+	for <linux-pm@vger.kernel.org>; Tue,  9 Jun 2026 10:23:29 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1781000604; cv=none; b=smyy2zIZeWl1TnUfLlOq4tV0Ehhz5C48VV90BwXQmao7SdFQR66UAvz3TEzX+Hw0Ct6iM5aUaa1xeFgOGDnNybNVAC4pq9UzP8+r+hivLOBbpjOm2QfvhXOw0zkzBSAxMVXciPYJIQxU6d8r1/Kj5f0ZHst4q36zax8RY1aDytY=
+	t=1781000612; cv=none; b=dw5k1AniblIp/kFcBVjVtSGclM4G1fYgrFNKmphXT3all3+dO8ZU3ZQnWobQ48PpyEczpbXktEhDLB8N1ZMTCxmuCrbVGZoJ2dOuArcT43gsjbU8mcCps26PCudH5pCjr3jigg346tR0lPuvZ19bGaFX6LAeyzpQxHKQMBmxMb0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1781000604; c=relaxed/simple;
-	bh=QJT8DDYNM9+tXaQYnEtfZjV54zYFg9aRhXLBf3w5u+0=;
+	s=arc-20240116; t=1781000612; c=relaxed/simple;
+	bh=BvxkuRTTc6RczDjBRdbesg57KP2U9uES1GTmsj/95pw=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=QZLnW/2t1+3388Ux4Mb+B0y8plLJnGaV8D/oD22WG3Iu7p4tNZ3+sTVgFDDtIusOYle+Zruc51EXw/4yA+UmKbNN67FLQCLSJjP4kgOTCECvThDdS50ZAG3xuixFdzI8TRtoyUcfqVOsV0YBZOleDivXmKhx2HgwaLkPzKxwM9w=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=lU5JAjXN; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=BMrU/pi4; arc=none smtp.client-ip=205.220.168.131
+	 In-Reply-To:To:Cc; b=n1VJzKZG/Vo/tBD22e+fX0mGxHptu8NCt83pWen5C2D9b+5C1tT8wfV0WfTINypgjjMdolvvq1ENMhWtZwD6MlIkq6CjMEp4nWgCH4HJbVOcHZM1jDLgaADyGame3flaDLisLvB0pQ0f+4jDS1XV2rBW5eb/46KtaCOHDVXZAf4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=BPWiBrBF; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=O6kJfgRX; arc=none smtp.client-ip=205.220.168.131
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="lU5JAjXN";
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="BMrU/pi4"
-Received: from pps.filterd (m0279865.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6599vDR3264342
-	for <linux-pm@vger.kernel.org>; Tue, 9 Jun 2026 10:23:22 GMT
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="BPWiBrBF";
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="O6kJfgRX"
+Received: from pps.filterd (m0279863.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6599vDqc1868517
+	for <linux-pm@vger.kernel.org>; Tue, 9 Jun 2026 10:23:29 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
 	cc:content-transfer-encoding:content-type:date:from:in-reply-to
 	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	yMkSNONUnm2KHs8hF/QzNax1t2KsrzGvrxMSvAbRTlo=; b=lU5JAjXN7tzqZFdH
-	oQ/Fx2PtL2lysTlRsVCS6GZLXdza5QZNba5SpBiel4RkMVW5dEJeheTQNMwn85Hn
-	868AXxwJxOG5adRM+PFe0qapjGS5dEqIHqTQ3xO0veKoCKg3pzFifsvOWMutHHJY
-	xtgK6Pcdsc9Pi1HE+jXTcsIXxkZ55a703VqI8OuuSZtxX4/jjjV5RBoMeKF0ysjr
-	d+LC5SHpXxjVh+9fZqPud/yObUHgu1KPcAUYGQkQCHUZ0H0LymftEULt5i3osxJt
-	ljanmoac/p28fJxdqUnAvg4J+ySkSbqbxcBnnQ239buxchBsns5dWsF1ue9+HWcA
-	lVzpBw==
-Received: from mail-pl1-f197.google.com (mail-pl1-f197.google.com [209.85.214.197])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4epf0srj7f-1
+	CBp4YmVCo2tb2Dr4iSGajxExEgZ8osIa+4o52mx3Le0=; b=BPWiBrBFvdZFMzqd
+	M/VOxLgQdF8PrCjGF1Ze0JNiqNrUrXbJNc0JuA4f6kme1EV1kVsxX1flis6JtOMN
+	9ysY4ztqq00nV5hhpBwfOpIo8+JTOS9Uug5KDD/f7iHfPNIk6bwHbmLhMEGh2q0/
+	PSkTkcja0NaugZ9KByw92J+MhULXVW8/WElVOkwakAjsx1SgnEzLNF36YV0RXn89
+	It1NLK8L0dgK/+AihUKV+8hMQm1N0otd1OuSTO2HiutD2MztsFLAHgZ6qFFII6rO
+	UfKW2mCweQzleyF4kjlzuzHKqlLw4pB7J4xLQhISIkAtqvoHOeFQi09IDNLbS0HA
+	12EhoQ==
+Received: from mail-pl1-f200.google.com (mail-pl1-f200.google.com [209.85.214.200])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4epg3wg7rs-1
 	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Tue, 09 Jun 2026 10:23:22 +0000 (GMT)
-Received: by mail-pl1-f197.google.com with SMTP id d9443c01a7336-2bf1845bddfso64372725ad.1
-        for <linux-pm@vger.kernel.org>; Tue, 09 Jun 2026 03:23:22 -0700 (PDT)
+	for <linux-pm@vger.kernel.org>; Tue, 09 Jun 2026 10:23:28 +0000 (GMT)
+Received: by mail-pl1-f200.google.com with SMTP id d9443c01a7336-2c0c1e112dfso75210565ad.0
+        for <linux-pm@vger.kernel.org>; Tue, 09 Jun 2026 03:23:28 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1781000602; x=1781605402; darn=vger.kernel.org;
+        d=oss.qualcomm.com; s=google; t=1781000608; x=1781605408; darn=vger.kernel.org;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :mime-version:subject:date:from:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=yMkSNONUnm2KHs8hF/QzNax1t2KsrzGvrxMSvAbRTlo=;
-        b=BMrU/pi4oFskVnRHfEWJviCtRc1YNBm9brTkCspkA/HQ/E2xX3fe5Lu6Mo0CFCzft1
-         adrvgpEpabHH7fnLaVTAryswwg0fv0vnpI+TGmq5eLbE9s8bgJ3bbuf62e/Y13PLPpaG
-         R1KQ5/bP9HY/3jxmnfxitmmCn+gkwApp6celfDzIRL9rXiEaLIPIAcexsS81SSzlHoZP
-         1t31i7mV3XQGHrIst+IT4FeNasLNNs2Op7tKwnYdbMLru9upzCs5cPW0cMBwuuFBEcQK
-         2w36LLrko+1Q9w76NtE1LjQQAUxizH+AL8K885MLOPi4l1htOyDJ1A8dez6BQQNHI0aB
-         Pslg==
+        bh=CBp4YmVCo2tb2Dr4iSGajxExEgZ8osIa+4o52mx3Le0=;
+        b=O6kJfgRX2WfYLqOViFyBJO5ps9jbx2i7lxDoNrM4RzhoG44utgDq729E3Dqg2NecWT
+         iOW2/N4opyU1viyosBorLfcbNpt/1bHmGFqcUSxT0l3iDIYIqQimugXmoywazveSuOFA
+         xHrBJR3cB59PI33/Fs7tkMj8MSKkFrYEjbsJc/+nWO84ZW2TVm7PJlO1sfG1lE8OfnXA
+         t72Ieli1Pviqj0O1qWNZnev8PlEE86wpPhRVR45RkfWYw1lfvWr8xRQ+caNg0xAapmO4
+         VcMOukaw6qDtUGFvzvgipq6/xXKen240AriwyDk/RhBk3LNoS7b3FT4QGv9ocNQyR2uN
+         8pUg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1781000602; x=1781605402;
+        d=1e100.net; s=20251104; t=1781000608; x=1781605408;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :mime-version:subject:date:from:x-gm-gg:x-gm-message-state:from:to
          :cc:subject:date:message-id:reply-to;
-        bh=yMkSNONUnm2KHs8hF/QzNax1t2KsrzGvrxMSvAbRTlo=;
-        b=eOoAdq19wemTBqd2cIiVUfE+aX8WF9U8Qa/6gINRP+9H53XOIrYFrIgw9DHDKT6FPM
-         jv6LJkfu+I6kyLIHimSQS8tkgud2VX4fnknGuAlTeeohPCifupOBsBSzFeUczU9X0qvT
-         18xSZZF/7bslguJvK62x+qdKQm0m4kvvFbb4NaUhf+MOqKfn4WQWawzpNhA1sjw4M8JU
-         rW6Sf3xpJKS4SPcvlsz+4kyCxV5E8Q5CpghsHMdpZ4OavQ0LS/V+OVMgYxXVbxbNuG7X
-         gNId6f+jkyXgwEGvZtMubtInBINUyctHFMZ5yOnlSutdAXVjQenR+6pJy1MLs1LD4LzD
-         qj1g==
-X-Forwarded-Encrypted: i=1; AFNElJ9TXos/kY17jGtUPFou5dQdfzY05sMYE/AXC8uBjddkovTJzsrFOA9BV9QjNWqvqVwMD2pI9K5xhQ==@vger.kernel.org
-X-Gm-Message-State: AOJu0YzSXVDOVAVVertoY8LekKCIWD8fNkx0WygYJen0oZAP4iYBsFJq
-	tSA2XgXs9gI3J7GOYmskbkHhGXjvXca/U78381oiXQSkVgtyfKMSC1LxWY1Pb0Qkh5pauu0MdYD
-	Nft2lv4ComhgyE+4emWcB4RRDIRVGmV3YYfVkyKLX/NKaBxMEFF0daaahJaJoRQ==
-X-Gm-Gg: Acq92OG0y4ARnjVkZi4m+bJTcwjKh/6Soy7h6QO4zVwea4GLrWyyXVPBqSm118CL67F
-	BcM6f3C5Eq1YotpA/edi4xYYVT8l/YR6iVBKXbexIAayjiiOpbmWQIcpugNYJvnfQgXSSmdzmF1
-	2qoTIT2su713yILSEuR8a9RlZx9M1pxor4eQHQI60UIRbI4xFd1LLFlSTY72lCHaIAO+azNpDQJ
-	463rEtWwSlcO3ruWatNxuVzADhE4CFqLJDY21WhVXFgylj2ALOfz+dLlHesiRvoXN0Y8GifT67b
-	TWSakhie02Qc21C7W6GsKxv95+bn1OgXOYuq5Krgoj+mdZdc1Jf/BCLNpJ5/ksmmLEDlUiNk3YL
-	PPAUKYXq2lDH8UXipoIKqQm2oX5cXn+0x4r27BcA4sDkJ0fEnZd49abj+BU9KnA==
-X-Received: by 2002:a17:902:ce92:b0:2c0:db23:4a4 with SMTP id d9443c01a7336-2c1e85d210amr216325935ad.36.1781000601658;
-        Tue, 09 Jun 2026 03:23:21 -0700 (PDT)
-X-Received: by 2002:a17:902:ce92:b0:2c0:db23:4a4 with SMTP id d9443c01a7336-2c1e85d210amr216325535ad.36.1781000601193;
-        Tue, 09 Jun 2026 03:23:21 -0700 (PDT)
+        bh=CBp4YmVCo2tb2Dr4iSGajxExEgZ8osIa+4o52mx3Le0=;
+        b=VWXWzx+RHhByMNgO8GACthygYfUqRWVf/y0N4De1R7kNVal+OPa65OsM2NtacIC46x
+         37xJHJ0SsPzyP23d09qaJbGow2qFvc2ppeYbnlEoY4Q+DhgsTQfXFCffg/bYRxtM8oTs
+         vAyNaoVPdu00ni5xFoiFhvz9HnKZZ2SYS3KTB8kwv5it4Z7yHeJkag+AjxclGxAK521d
+         VJPOfk2upiZNzVuI14nCn3RCiYqOA34c8I4V/F5cZ27ObDripPGs+1N/G1cGhSsiYoJu
+         sz5sGjqaBVLv90CRNX9W7z6KTJxnjzNt3WH9SUixhIDJGiSzws1j6DI+24/OWNaMg8HM
+         +jJQ==
+X-Forwarded-Encrypted: i=1; AFNElJ+/2NUCTb2QGEzSMkwfHm4k+EFQjyxpRhqVcnF2eNknKHVodxAkVsR/eoEzgWBaqstmwbkCV4E2mw==@vger.kernel.org
+X-Gm-Message-State: AOJu0YxY+gYDNzvDYWIfqXSvLFQdnj7pZtWL+wWxVOPzs7D8ZzU1msCY
+	cwJcYAB3Xl5lEoOjz8lBH0V+jK4uZ7bW4WEnim7+cdPEbTw4gTPmtedkecua+LgtBc8v+b4tedA
+	GJnJsBrKAJGGsQMvA2cp/e5H+O6TTOp3i825QuRmdFnfgVal2pQwEYzHmwZ6ZSQ==
+X-Gm-Gg: Acq92OFWr0YL9KiG26BbgluY7Gxy9UObbYF3jDhYh1oZE2Tz7msZXVCnTRzuL4auOxG
+	z92opsGA+gIVY7Wn283sEfsCsGM3JZxzHnZF5vKB9ZZ+YSg/MGx0GEYAMfsHPLaian9SoaQ0KCy
+	CfsTg1EKGgG6W69wlEaNpuM9YMOEJQRIRufuXV8FG5M2G73qfBtg4JMi5KIRx27vNhWcVEdnRU9
+	Ue51d4SyNdUlxT8TbyGozp/PmVHCRGdiFWAdlFhIKI5cYJuw1ha8UebS3XE5oqKTzbkCn8h4sZA
+	16xEhhEQizw40As0NxqDVMbGF78mRG567rMwnauNJ7U6W2zf0FZkk6dV6ELofwm13S1mdHzFO/z
+	9FYXQXzKJxtsPfn9ZyHawWg1+wvb5fZTrrNld5yYWqP7AWK+4m2HgSru6zlVNng==
+X-Received: by 2002:a17:902:f745:b0:2c2:2a8a:af69 with SMTP id d9443c01a7336-2c22a8ab1a9mr170322225ad.9.1781000608107;
+        Tue, 09 Jun 2026 03:23:28 -0700 (PDT)
+X-Received: by 2002:a17:902:f745:b0:2c2:2a8a:af69 with SMTP id d9443c01a7336-2c22a8ab1a9mr170321755ad.9.1781000607575;
+        Tue, 09 Jun 2026 03:23:27 -0700 (PDT)
 Received: from hu-gkohli-hyd.qualcomm.com ([202.46.23.25])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2c2a4a64e22sm14738915ad.61.2026.06.09.03.23.15
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2c2a4a64e22sm14738915ad.61.2026.06.09.03.23.21
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 09 Jun 2026 03:23:20 -0700 (PDT)
+        Tue, 09 Jun 2026 03:23:27 -0700 (PDT)
 From: Gaurav Kohli <gaurav.kohli@oss.qualcomm.com>
-Date: Tue, 09 Jun 2026 15:52:56 +0530
-Subject: [PATCH v3 1/8] dt-bindings: remoteproc: qcom,pas: add thermal
- mitigation properties
+Date: Tue, 09 Jun 2026 15:52:57 +0530
+Subject: [PATCH v3 2/8] soc: qcom: Add support for QMI TMD cooling devices
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -90,7 +89,7 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260609-qmi-tmd-v3-1-291a2ff4c634@oss.qualcomm.com>
+Message-Id: <20260609-qmi-tmd-v3-2-291a2ff4c634@oss.qualcomm.com>
 References: <20260609-qmi-tmd-v3-0-291a2ff4c634@oss.qualcomm.com>
 In-Reply-To: <20260609-qmi-tmd-v3-0-291a2ff4c634@oss.qualcomm.com>
 To: Bjorn Andersson <andersson@kernel.org>,
@@ -109,78 +108,767 @@ To: Bjorn Andersson <andersson@kernel.org>,
 Cc: linux-arm-msm@vger.kernel.org, linux-remoteproc@vger.kernel.org,
         devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
         linux-pm@vger.kernel.org, linux-hardening@vger.kernel.org,
-        Manaf Meethalavalappu Pallikunhi <manaf.pallikunhi@oss.qualcomm.com>
+        Manaf Meethalavalappu Pallikunhi <manaf.pallikunhi@oss.qualcomm.com>,
+        Casey Connolly <casey.connolly@linaro.org>
 X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1781000588; l=1339;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1781000588; l=20731;
  i=gaurav.kohli@oss.qualcomm.com; s=20260302; h=from:subject:message-id;
- bh=QJT8DDYNM9+tXaQYnEtfZjV54zYFg9aRhXLBf3w5u+0=;
- b=3h0mZAEUpF/rhebZrXu+hNdRzw8FWH+U67b2o2lspttI2wRaKXiA/eU9w27Mwj57HyPoDSpbc
- VjtQqfyRQuzD+5rXX6IRk0QiC8ta27G/AqOqHViUeWZH/VExq3rRW1D
+ bh=LfLWpK6/5X04uNpHzv0+wA4kNUoD/RsII6vsCeiT7gA=;
+ b=bWTaM49xEAb7+3xnTjmu30tAPAMX4m+oZQhK4J44CiSEFRkAphFWDOb5qDb4SUuwJG80ZUFzJ
+ 9q4FRid1kVTB+aj4l+62r7BtzCgkSC5Enz5V4Joo+FV8MsUEgkedJVM
 X-Developer-Key: i=gaurav.kohli@oss.qualcomm.com; a=ed25519;
  pk=IdNsqe8rWsF6dbpGHfwPEH9zM0nbOdRH72HxUT9qPak=
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNjA5MDA5NyBTYWx0ZWRfX3t9fSbRkTsqA
- Yhzn1lvCqEWLd05mck5eQWVJGXwiu/SdePYv1Ol/RR2yiSrKx9KINKzVXeKGZvxIzWdLjPJHEqR
- xiNcTkQcVGfbOKJ65ZSvsXomxcxaNCmAatp6eX5dum5YmNEW8omAelCaN6doCN1QnuY073ToLst
- H9xSN91dNtnuDPuQcFEqldj+iMUfUyF66sG/R9HL4y1A0V7NgNuS5jLLSZV3pQ4GeD75BUXNDo7
- +3DI8loYxnngcFe5SYwDnejAJuz0f9FtAuGzl6uSUVla0L3+c8Q4MJfueSmFNyFIdCLUAnc88ti
- 7ZfKJhguU439Xo3Kw4UCccGm1YBZUa1MFAMlTMza2ioWhVZQyb0ieeAnzjcXFfoWNVW/s2YYfBY
- MGeT3AFEMP52IKOm+iBL/SKXmKggvxdq3tit3pyrBk9zRZrZ5SmdJR11tdygrK5BYfaknBOztOZ
- 8BoChyarb4LnPemY2bw==
-X-Proofpoint-ORIG-GUID: kGKSVAdqJUP69zKiVrQ__9Wx8Cbou1Lb
-X-Proofpoint-GUID: kGKSVAdqJUP69zKiVrQ__9Wx8Cbou1Lb
-X-Authority-Analysis: v=2.4 cv=GeonWwXL c=1 sm=1 tr=0 ts=6a27e99a cx=c_pps
- a=cmESyDAEBpBGqyK7t0alAg==:117 a=ZePRamnt/+rB5gQjfz0u9A==:17
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNjA5MDA5NyBTYWx0ZWRfXzJuRDqOG6PzE
+ Ba7UEdVCsFBM7IR02gDXZVKVh1iKS0VJsakpcqVmpQhsNC2QfqRP2zW09m2M6bN0l1GnssQJm9T
+ kHDQLfk6r+DNW3B/cRRJeZ6wx43NonQo/lQOLfYVSAb8kzzdmrLqFHK2XYRLCQeTKdSae3PezaH
+ 04uI3k95Q8rjqV5dYGOd5+J0lnSocxlufo+EA8QLsW2JbxumtecRJVsm1J6TM0D5USVi1urJmuz
+ g3HVAFYwPh5h9kSqOGYvYMwWMfIPJFinMXazYcuRmUVHk1sq//5G3Sl1iclSf4BhMYRQpdALq83
+ WorTPtHVTOtNA5on5XlLCioNn3wg22B9p3MadoU2f+1uaBGHqjXAssLwngAR05jXemWcqV/RWvR
+ vvRc0LAEUXrMe/i3/k2hoQDtOvkMHr0TS+0J6BrZ5xfqv4x5RRlIMc8UCp70bWLdBoLNatz0+Hg
+ LSo7YkX6sT0vmNpsvFA==
+X-Authority-Analysis: v=2.4 cv=csWrVV4i c=1 sm=1 tr=0 ts=6a27e9a1 cx=c_pps
+ a=IZJwPbhc+fLeJZngyXXI0A==:117 a=ZePRamnt/+rB5gQjfz0u9A==:17
  a=IkcTkHD0fZMA:10 a=FelO9ux0wxsA:10 a=s4-Qcg_JpJYA:10
- a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=Um2Pa8k9VHT-vaBCBUpS:22
- a=EUspDBNiAAAA:8 a=qfTCltTXssArUCRCFzsA:9 a=QEXdDO2ut3YA:10
- a=1OuFwYUASf3TG4hYMiVC:22
+ a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=yOCtJkima9RkubShWh1s:22
+ a=KKAkSRfTAAAA:8 a=EUspDBNiAAAA:8 a=VwQbUJbxAAAA:8 a=pGLkceISAAAA:8
+ a=gbibrS9mvRCYIXANk9gA:9 a=QEXdDO2ut3YA:10 a=uG9DUKGECoFWVXl0Dc02:22
+ a=cvBusfyB2V15izCimMoJ:22
+X-Proofpoint-GUID: 3FUZVpCGnumPH_FX8FBLXuAJ3QXXmzct
+X-Proofpoint-ORIG-GUID: 3FUZVpCGnumPH_FX8FBLXuAJ3QXXmzct
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.125,FMLib:17.12.100.49
  definitions=2026-06-09_02,2026-06-09_02,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- bulkscore=0 adultscore=0 malwarescore=0 clxscore=1015 spamscore=0
- lowpriorityscore=0 impostorscore=0 priorityscore=1501 suspectscore=0
- phishscore=0 classifier=typeunknown authscore=0 authtc= authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2605210000
- definitions=main-2606090097
+ priorityscore=1501 clxscore=1015 spamscore=0 adultscore=0 lowpriorityscore=0
+ malwarescore=0 impostorscore=0 phishscore=0 suspectscore=0 bulkscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2605210000 definitions=main-2606090097
 
-Document Qualcomm PAS remoteproc thermal mitigation properties used for
-QMI-based throttling.
+From: Casey Connolly <casey.connolly@linaro.org>
 
-Add:
-- #cooling-cells (2 or 3)
-- tmd-names (thermal mitigation device names)
+Add a Qualcomm QMI Thermal Mitigation Device (TMD) to support thermal
+cooling devices backed by remote subsystems.
 
+On several Qualcomm platforms, remote processors (for example modem and
+CDSP) expose thermal mitigation controls through the TMD QMI service.
+Client drivers need a way to discover that service, map DT thermal
+mitigation endpoints to cooling devices, and forward cooling state
+updates to the remote subsystem.
+
+Co-developed-by: Gaurav Kohli <gaurav.kohli@oss.qualcomm.com>
 Signed-off-by: Gaurav Kohli <gaurav.kohli@oss.qualcomm.com>
+Signed-off-by: Casey Connolly <casey.connolly@linaro.org>
+Signed-off-by: Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>
 ---
- .../devicetree/bindings/remoteproc/qcom,pas-common.yaml    | 14 ++++++++++++++
- 1 file changed, 14 insertions(+)
+ MAINTAINERS                      |   6 +
+ drivers/soc/qcom/Kconfig         |  10 +
+ drivers/soc/qcom/Makefile        |   1 +
+ drivers/soc/qcom/qmi_tmd.c       | 604 +++++++++++++++++++++++++++++++++++++++
+ include/linux/soc/qcom/qmi.h     |   1 +
+ include/linux/soc/qcom/qmi_tmd.h |  23 ++
+ 6 files changed, 645 insertions(+)
 
-diff --git a/Documentation/devicetree/bindings/remoteproc/qcom,pas-common.yaml b/Documentation/devicetree/bindings/remoteproc/qcom,pas-common.yaml
-index 4607b459131b..0d07a0750762 100644
---- a/Documentation/devicetree/bindings/remoteproc/qcom,pas-common.yaml
-+++ b/Documentation/devicetree/bindings/remoteproc/qcom,pas-common.yaml
-@@ -79,6 +79,20 @@ properties:
-       channels and devices related to the ADSP.
-     unevaluatedProperties: false
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 57656ec0e9d5..3d60702a655a 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -22286,6 +22286,12 @@ F:	Documentation/devicetree/bindings/net/qcom,ipq9574-ppe.yaml
+ F:	Documentation/networking/device_drivers/ethernet/qualcomm/ppe/ppe.rst
+ F:	drivers/net/ethernet/qualcomm/ppe/
  
-+  '#cooling-cells':
-+    description:
-+      Number of cooling cells; 2 for min/max cooling state and 3 when
-+      selecting a thermal mitigation device index.
-+    enum: [2, 3]
++QUALCOMM QMI (REMOTEPROC THERMAL MITIGATION) TMD
++M:	Gaurav Kohli <gaurav.kohli@oss.qualcomm.com>
++L:	linux-arm-msm@vger.kernel.org
++L:	linux-pm@vger.kernel.org
++F:	drivers/soc/qcom/qmi_tmd.c
 +
-+  tmd-names:
-+    $ref: /schemas/types.yaml#/definitions/string-array
-+    description:
-+      Names of the thermal mitigation devices available in remote processor
-+      subsystem.
-+    minItems: 1
-+    maxItems: 5
+ QUALCOMM QSEECOM DRIVER
+ M:	Maximilian Luz <luzmaximilian@gmail.com>
+ L:	linux-arm-msm@vger.kernel.org
+diff --git a/drivers/soc/qcom/Kconfig b/drivers/soc/qcom/Kconfig
+index 2caadbbcf830..a292ce57fd4a 100644
+--- a/drivers/soc/qcom/Kconfig
++++ b/drivers/soc/qcom/Kconfig
+@@ -128,6 +128,16 @@ config QCOM_QMI_HELPERS
+ 	tristate
+ 	depends on NET
+ 
++config QCOM_QMI_TMD
++	bool "Qualcomm QMI TMD library" if COMPILE_TEST
++	depends on ARCH_QCOM
++	select QCOM_QMI_HELPERS
++	help
++	  This enables the QMI-based Thermal Mitigation Device (TMD) library
++	  for Qualcomm remote subsystems. The library manages TMD messaging and
++	  handles QMI communication with remote processors (modem, CDSP) to
++	  exchange mitigation state and apply thermal mitigation requests.
 +
-   glink-edge:
-     $ref: /schemas/remoteproc/qcom,glink-edge.yaml#
-     description:
+ config QCOM_RAMP_CTRL
+ 	tristate "Qualcomm Ramp Controller driver"
+ 	depends on ARCH_QCOM || COMPILE_TEST
+diff --git a/drivers/soc/qcom/Makefile b/drivers/soc/qcom/Makefile
+index b7f1d2a57367..4544e61c74e7 100644
+--- a/drivers/soc/qcom/Makefile
++++ b/drivers/soc/qcom/Makefile
+@@ -14,6 +14,7 @@ obj-$(CONFIG_QCOM_PMIC_GLINK)	+= pmic_glink.o
+ obj-$(CONFIG_QCOM_PMIC_GLINK)	+= pmic_glink_altmode.o
+ obj-$(CONFIG_QCOM_PMIC_PDCHARGER_ULOG)	+= pmic_pdcharger_ulog.o
+ CFLAGS_pmic_pdcharger_ulog.o	:=  -I$(src)
++obj-$(CONFIG_QCOM_QMI_TMD) += qmi_tmd.o
+ obj-$(CONFIG_QCOM_QMI_HELPERS)	+= qmi_helpers.o
+ qmi_helpers-y	+= qmi_encdec.o qmi_interface.o
+ obj-$(CONFIG_QCOM_RAMP_CTRL)	+= ramp_controller.o
+diff --git a/drivers/soc/qcom/qmi_tmd.c b/drivers/soc/qcom/qmi_tmd.c
+new file mode 100644
+index 000000000000..9d88ae48c864
+--- /dev/null
++++ b/drivers/soc/qcom/qmi_tmd.c
+@@ -0,0 +1,604 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * Copyright (c) 2025, Linaro Limited
++ * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
++ *
++ * QMI Thermal Mitigation Device (TMD) library.
++ * This library provides cooling device support for remote subsystems
++ * (modem and CDSP) running the TMD service via QMI.
++ */
++#include <linux/cleanup.h>
++#include <linux/device.h>
++#include <linux/err.h>
++#include <linux/module.h>
++#include <linux/net.h>
++#include <linux/of.h>
++#include <linux/slab.h>
++#include <linux/soc/qcom/qmi.h>
++#include <linux/soc/qcom/qmi_tmd.h>
++#include <linux/thermal.h>
++
++#define QMI_TMD_INSTANCE_MODEM	0x0
++#define QMI_TMD_INSTANCE_CDSP	0x43
++#define QMI_TMD_INSTANCE_CDSP1	0x44
++
++#define QMI_TMD_SERVICE_VERS_V01 0x01
++
++#define QMI_TMD_SET_LEVEL_REQ 0x0021
++#define QMI_TMD_GET_DEV_LIST_REQ 0x0020
++
++#define QMI_TMD_DEV_ID_LEN_MAX 32
++#define QMI_TMD_DEV_LIST_MAX 32
++#define QMI_TMD_RESP_TIMEOUT	msecs_to_jiffies(100)
++#define TMD_GET_LEVEL_REQ_MAX_LEN 36
++#define TMD_SET_LEVEL_REQ_MAX_LEN 40
++
++#define TMD_GET_DEV_LIST_REQ_MAX_LEN 0
++#define TMD_GET_DEV_LIST_RESP_MAX_LEN 1099
++
++struct tmd_dev_id {
++	char mitigation_dev_id[QMI_TMD_DEV_ID_LEN_MAX + 1];
++};
++
++static const struct qmi_elem_info tmd_dev_id_ei[] = {
++	{
++		.data_type = QMI_STRING,
++		.elem_len = QMI_TMD_DEV_ID_LEN_MAX + 1,
++		.elem_size = sizeof(char),
++		.array_type = NO_ARRAY,
++		.tlv_type = 0,
++		.offset = offsetof(struct tmd_dev_id,
++				   mitigation_dev_id),
++	},
++	{
++		.data_type = QMI_EOTI,
++		.array_type = NO_ARRAY,
++		.tlv_type = QMI_COMMON_TLV_TYPE,
++	},
++};
++
++struct tmd_dev_list {
++	struct tmd_dev_id mitigation_dev_id;
++	u8 max_mitigation_level;
++};
++
++static const struct qmi_elem_info tmd_dev_list_ei[] = {
++	{
++		.data_type = QMI_STRUCT,
++		.elem_len = 1,
++		.elem_size = sizeof(struct tmd_dev_id),
++		.array_type = NO_ARRAY,
++		.tlv_type = 0,
++		.offset = offsetof(struct tmd_dev_list,
++				   mitigation_dev_id),
++		.ei_array = tmd_dev_id_ei,
++	},
++	{
++		.data_type = QMI_UNSIGNED_1_BYTE,
++		.elem_len = 1,
++		.elem_size = sizeof(uint8_t),
++		.array_type = NO_ARRAY,
++		.tlv_type = 0,
++		.offset = offsetof(struct tmd_dev_list,
++				   max_mitigation_level),
++	},
++	{
++		.data_type = QMI_EOTI,
++		.array_type = NO_ARRAY,
++		.tlv_type = QMI_COMMON_TLV_TYPE,
++	},
++};
++
++struct tmd_get_dev_list_req {
++	char placeholder;
++};
++
++static const struct qmi_elem_info tmd_get_dev_list_req_ei[] = {
++	{
++		.data_type = QMI_EOTI,
++		.array_type = NO_ARRAY,
++		.tlv_type = QMI_COMMON_TLV_TYPE,
++	},
++};
++
++struct tmd_get_dev_list_resp {
++	struct qmi_response_type_v01 resp;
++	u8 mitigation_device_list_valid;
++	u32 mitigation_device_list_len;
++	struct tmd_dev_list
++		mitigation_device_list[QMI_TMD_DEV_LIST_MAX];
++};
++
++static const struct qmi_elem_info tmd_get_dev_list_resp_ei[] = {
++	{
++		.data_type = QMI_STRUCT,
++		.elem_len = 1,
++		.elem_size = sizeof(struct qmi_response_type_v01),
++		.array_type = NO_ARRAY,
++		.tlv_type = 0x02,
++		.offset = offsetof(struct tmd_get_dev_list_resp,
++				   resp),
++		.ei_array = qmi_response_type_v01_ei,
++	},
++	{
++		.data_type = QMI_OPT_FLAG,
++		.elem_len = 1,
++		.elem_size = sizeof(uint8_t),
++		.array_type = NO_ARRAY,
++		.tlv_type = 0x10,
++		.offset = offsetof(struct tmd_get_dev_list_resp,
++				   mitigation_device_list_valid),
++	},
++	{
++		.data_type = QMI_DATA_LEN,
++		.elem_len = 1,
++		.elem_size = sizeof(uint8_t),
++		.array_type = NO_ARRAY,
++		.tlv_type = 0x10,
++		.offset = offsetof(struct tmd_get_dev_list_resp,
++				   mitigation_device_list_len),
++	},
++	{
++		.data_type = QMI_STRUCT,
++		.elem_len = QMI_TMD_DEV_LIST_MAX,
++		.elem_size = sizeof(struct tmd_dev_list),
++		.array_type = VAR_LEN_ARRAY,
++		.tlv_type = 0x10,
++		.offset = offsetof(struct tmd_get_dev_list_resp,
++				   mitigation_device_list),
++		.ei_array = tmd_dev_list_ei,
++	},
++	{
++		.data_type = QMI_EOTI,
++		.array_type = NO_ARRAY,
++		.tlv_type = QMI_COMMON_TLV_TYPE,
++	},
++};
++
++struct tmd_set_level_req {
++	struct tmd_dev_id mitigation_dev_id;
++	u8 mitigation_level;
++};
++
++static const struct qmi_elem_info tmd_set_level_req_ei[] = {
++	{
++		.data_type = QMI_STRUCT,
++		.elem_len = 1,
++		.elem_size = sizeof(struct tmd_dev_id),
++		.array_type = NO_ARRAY,
++		.tlv_type = 0x01,
++		.offset = offsetof(struct tmd_set_level_req,
++				   mitigation_dev_id),
++		.ei_array = tmd_dev_id_ei,
++	},
++	{
++		.data_type = QMI_UNSIGNED_1_BYTE,
++		.elem_len = 1,
++		.elem_size = sizeof(uint8_t),
++		.array_type = NO_ARRAY,
++		.tlv_type = 0x02,
++		.offset = offsetof(struct tmd_set_level_req,
++				   mitigation_level),
++	},
++	{
++		.data_type = QMI_EOTI,
++		.array_type = NO_ARRAY,
++		.tlv_type = QMI_COMMON_TLV_TYPE,
++	},
++};
++
++struct tmd_set_level_resp {
++	struct qmi_response_type_v01 resp;
++};
++
++static const struct qmi_elem_info tmd_set_level_resp_ei[] = {
++	{
++		.data_type = QMI_STRUCT,
++		.elem_len = 1,
++		.elem_size = sizeof(struct qmi_response_type_v01),
++		.array_type = NO_ARRAY,
++		.tlv_type = 0x02,
++		.offset = offsetof(struct tmd_set_level_resp, resp),
++		.ei_array = qmi_response_type_v01_ei,
++	},
++	{
++		.data_type = QMI_EOTI,
++		.array_type = NO_ARRAY,
++		.tlv_type = QMI_COMMON_TLV_TYPE,
++	},
++};
++
++/**
++ * struct qmi_tmd - A TMD cooling device
++ * @name:	The name of this tmd shared by the remote subsystem
++ * @cdev:	Thermal cooling device handle
++ * @cur_state:	The current mitigation state
++ * @max_state:	The maximum state
++ * @qmi_tmd_cli:	Parent QMI TMD client
++ */
++struct qmi_tmd {
++	const char *name;
++	struct thermal_cooling_device *cdev;
++	unsigned int cur_state;
++	unsigned int max_state;
++	struct qmi_tmd_client *qmi_tmd_cli;
++};
++
++/**
++ * struct qmi_tmd_client - QMI TMD client state
++ * @dev:		Device associated with this instance
++ * @handle:		QMI connection handle
++ * @mutex:		Lock to synchronise QMI communication
++ * @connection_active:	Whether or not we're connected to the QMI TMD service
++ * @svc_arrive_work:	Work item for initialising when the TMD service starts
++ * @num_tmds:		Number of tmds described in the device tree
++ * @tmds:		An array of tmd structures
++ */
++struct qmi_tmd_client {
++	struct device *dev;
++	struct qmi_handle handle;
++	/* protects QMI transactions and connection_active */
++	struct mutex mutex;
++	bool connection_active;
++	struct work_struct svc_arrive_work;
++	int num_tmds;
++	struct qmi_tmd tmds[] __counted_by(num_tmds);
++};
++
++/* Notify the remote subsystem of the requested cooling state */
++static int qmi_tmd_send_state_request(struct qmi_tmd *tmd, int state)
++{
++	struct tmd_set_level_resp resp = { 0 };
++	struct tmd_set_level_req req = { 0 };
++	struct qmi_tmd_client *qmi_tmd_cli = tmd->qmi_tmd_cli;
++	struct qmi_txn txn;
++	int ret = 0;
++
++	guard(mutex)(&qmi_tmd_cli->mutex);
++
++	if (!qmi_tmd_cli->connection_active)
++		return 0;
++
++	strscpy(req.mitigation_dev_id.mitigation_dev_id, tmd->name,
++		QMI_TMD_DEV_ID_LEN_MAX + 1);
++	req.mitigation_level = state;
++
++	ret = qmi_txn_init(&qmi_tmd_cli->handle, &txn,
++			   tmd_set_level_resp_ei, &resp);
++	if (ret < 0) {
++		dev_err(qmi_tmd_cli->dev, "qmi set state %d txn init failed for %s ret %d\n",
++			state, tmd->name, ret);
++		return ret;
++	}
++
++	ret = qmi_send_request(&qmi_tmd_cli->handle, NULL, &txn,
++			       QMI_TMD_SET_LEVEL_REQ,
++			       TMD_SET_LEVEL_REQ_MAX_LEN,
++			       tmd_set_level_req_ei, &req);
++	if (ret < 0) {
++		dev_err(qmi_tmd_cli->dev, "qmi set state %d txn send failed for %s ret %d\n",
++			state, tmd->name, ret);
++		qmi_txn_cancel(&txn);
++		return ret;
++	}
++
++	ret = qmi_txn_wait(&txn, QMI_TMD_RESP_TIMEOUT);
++	if (ret < 0) {
++		dev_err(qmi_tmd_cli->dev, "qmi set state %d txn wait failed for %s ret %d\n",
++			state, tmd->name, ret);
++		return ret;
++	}
++
++	if (resp.resp.result != QMI_RESULT_SUCCESS_V01) {
++		dev_err(qmi_tmd_cli->dev,
++			"qmi set state %d failed for %s result %#x error %#x\n",
++			state, tmd->name,
++			resp.resp.result, resp.resp.error);
++		return -EREMOTEIO;
++	}
++
++	dev_dbg(qmi_tmd_cli->dev, "Requested state %d/%d for %s\n", state,
++		tmd->max_state, tmd->name);
++
++	return 0;
++}
++
++static int qmi_tmd_get_max_state(struct thermal_cooling_device *cdev,
++				 unsigned long *state)
++{
++	struct qmi_tmd *tmd = cdev->devdata;
++
++	*state = tmd->max_state;
++
++	return 0;
++}
++
++static int qmi_tmd_get_cur_state(struct thermal_cooling_device *cdev,
++				 unsigned long *state)
++{
++	struct qmi_tmd *tmd = cdev->devdata;
++
++	*state = tmd->cur_state;
++
++	return 0;
++}
++
++static int qmi_tmd_set_cur_state(struct thermal_cooling_device *cdev,
++				 unsigned long state)
++{
++	struct qmi_tmd *tmd = cdev->devdata;
++	int ret;
++
++	if (state > tmd->max_state)
++		return -EINVAL;
++
++	if (tmd->cur_state == state)
++		return 0;
++
++	ret = qmi_tmd_send_state_request(tmd, state);
++	if (!ret)
++		tmd->cur_state = state;
++
++	return ret;
++}
++
++static const struct thermal_cooling_device_ops qmi_tmd_cooling_ops = {
++	.get_max_state = qmi_tmd_get_max_state,
++	.get_cur_state = qmi_tmd_get_cur_state,
++	.set_cur_state = qmi_tmd_set_cur_state,
++};
++
++static int qmi_tmd_register(struct qmi_tmd_client *qmi_tmd_cli,
++			    const char *label, u8 max_state)
++{
++	struct device *dev = qmi_tmd_cli->dev;
++	struct qmi_tmd *tmd;
++	int index;
++
++	for (index = 0; index < qmi_tmd_cli->num_tmds; index++) {
++		tmd = &qmi_tmd_cli->tmds[index];
++
++		if (!strncasecmp(tmd->name, label,
++				 QMI_TMD_DEV_ID_LEN_MAX + 1))
++			goto found;
++	}
++
++	dev_dbg(qmi_tmd_cli->dev,
++		"TMD '%s' available in firmware but not specified in DT\n",
++		label);
++	return 0;
++
++found:
++	tmd->max_state = max_state;
++
++	/*
++	 * If the cooling device already exists then the QMI service went away and
++	 * came back. So just make sure the current cooling device state is
++	 * reflected on the remote side and then return.
++	 */
++	if (tmd->cdev)
++		return qmi_tmd_send_state_request(tmd, tmd->cur_state);
++
++	tmd->cdev = thermal_of_cooling_device_register(dev->of_node, index,
++						       label, tmd, &qmi_tmd_cooling_ops);
++	if (IS_ERR(tmd->cdev))
++		return PTR_ERR(tmd->cdev);
++
++	return 0;
++}
++
++static void qmi_tmd_unregister(struct qmi_tmd_client *qmi_tmd_cli)
++{
++	struct qmi_tmd *tmd;
++	int index;
++
++	for (index = 0; index < qmi_tmd_cli->num_tmds; index++) {
++		tmd = &qmi_tmd_cli->tmds[index];
++
++		if (!tmd->cdev)
++			continue;
++
++		thermal_cooling_device_unregister(tmd->cdev);
++		tmd->cdev = NULL;
++	}
++}
++
++static void qmi_tmd_svc_arrive(struct work_struct *work)
++{
++	struct qmi_tmd_client *qmi_tmd_cli =
++		container_of(work, struct qmi_tmd_client, svc_arrive_work);
++
++	struct tmd_get_dev_list_req req = { 0 };
++	struct tmd_get_dev_list_resp *resp __free(kfree) = NULL;
++	int ret, i;
++	struct qmi_txn txn;
++
++	resp = kzalloc_obj(*resp, GFP_KERNEL);
++	if (!resp) {
++		ret = -ENOMEM;
++		goto out;
++	}
++
++	scoped_guard(mutex, &qmi_tmd_cli->mutex) {
++		ret = qmi_txn_init(&qmi_tmd_cli->handle, &txn,
++				   tmd_get_dev_list_resp_ei, resp);
++		if (ret < 0)
++			goto out;
++
++		ret = qmi_send_request(&qmi_tmd_cli->handle, NULL, &txn,
++				       QMI_TMD_GET_DEV_LIST_REQ,
++				TMD_GET_DEV_LIST_REQ_MAX_LEN,
++				tmd_get_dev_list_req_ei, &req);
++		if (ret < 0) {
++			qmi_txn_cancel(&txn);
++			goto out;
++		}
++
++		ret = qmi_txn_wait(&txn, QMI_TMD_RESP_TIMEOUT);
++		if (ret < 0)
++			goto out;
++
++		if (resp->resp.result != QMI_RESULT_SUCCESS_V01) {
++			ret = -EPROTO;
++			goto out;
++		}
++
++		qmi_tmd_cli->connection_active = true;
++	}
++
++	for (i = 0; i < resp->mitigation_device_list_len; i++) {
++		struct tmd_dev_list *device =
++			&resp->mitigation_device_list[i];
++
++		ret = qmi_tmd_register(qmi_tmd_cli,
++				       device->mitigation_dev_id.mitigation_dev_id,
++				       device->max_mitigation_level);
++		if (ret)
++			break;
++	}
++
++out:
++	if (ret)
++		dev_err(qmi_tmd_cli->dev, "Failed to initialize TMD service: %d\n", ret);
++}
++
++static void qmi_tmd_del_server(struct qmi_handle *qmi, struct qmi_service *service)
++{
++	struct qmi_tmd_client *qmi_tmd_cli =
++		container_of(qmi, struct qmi_tmd_client, handle);
++
++	kernel_sock_shutdown(qmi->sock, SHUT_RDWR);
++
++	scoped_guard(mutex, &qmi_tmd_cli->mutex)
++		qmi_tmd_cli->connection_active = false;
++}
++
++static int qmi_tmd_new_server(struct qmi_handle *qmi, struct qmi_service *service)
++{
++	struct sockaddr_qrtr sq = { AF_QIPCRTR, service->node, service->port };
++	struct qmi_tmd_client *qmi_tmd_cli;
++	int ret;
++
++	qmi_tmd_cli = container_of(qmi, struct qmi_tmd_client, handle);
++
++	scoped_guard(mutex, &qmi_tmd_cli->mutex) {
++		ret = kernel_connect(qmi->sock, (struct sockaddr_unsized *)&sq,
++				     sizeof(sq), 0);
++	}
++
++	if (ret < 0) {
++		dev_err(qmi_tmd_cli->dev, "QMI connect failed for node %u port %u: %d\n",
++			service->node, service->port, ret);
++		return ret;
++	}
++
++	queue_work(system_highpri_wq, &qmi_tmd_cli->svc_arrive_work);
++
++	return 0;
++}
++
++static const struct qmi_ops qmi_tmd_ops = {
++	.new_server = qmi_tmd_new_server,
++	.del_server = qmi_tmd_del_server,
++};
++
++static int qmi_tmd_get_instance_id(const char *remoteproc_name)
++{
++	if (!strcmp(remoteproc_name, "modem"))
++		return QMI_TMD_INSTANCE_MODEM;
++
++	if (!strcmp(remoteproc_name, "cdsp"))
++		return QMI_TMD_INSTANCE_CDSP;
++
++	if (!strcmp(remoteproc_name, "cdsp1"))
++		return QMI_TMD_INSTANCE_CDSP1;
++
++	return -ENODEV;
++}
++
++/**
++ * qmi_tmd_init() - Initialize QMI TMD instance
++ * @dev: Device pointer
++ * @remoteproc_name: Remoteproc name (for example modem, cdsp)
++ * @tmd_names: Array of TMD names
++ * @num_tmds: Number of TMD names
++ *
++ * Return: Pointer to qmi_tmd_client on success, ERR_PTR on failure
++ */
++struct qmi_tmd_client *qmi_tmd_init(struct device *dev,
++				    const char *remoteproc_name,
++				    const char * const *tmd_names,
++				    int num_tmds)
++{
++	struct qmi_tmd_client *qmi_tmd_cli;
++	int ret, i, instance_id;
++
++	if (!dev || !remoteproc_name || !tmd_names || num_tmds <= 0)
++		return ERR_PTR(-EINVAL);
++
++	instance_id = qmi_tmd_get_instance_id(remoteproc_name);
++	if (instance_id < 0) {
++		dev_err(dev, "Unsupported remoteproc name '%s' for TMD lookup\n",
++			remoteproc_name);
++		return ERR_PTR(instance_id);
++	}
++
++	qmi_tmd_cli = devm_kzalloc(dev, struct_size(qmi_tmd_cli, tmds, num_tmds), GFP_KERNEL);
++	if (!qmi_tmd_cli)
++		return ERR_PTR(-ENOMEM);
++
++	qmi_tmd_cli->dev = dev;
++	qmi_tmd_cli->num_tmds = num_tmds;
++	mutex_init(&qmi_tmd_cli->mutex);
++	INIT_WORK(&qmi_tmd_cli->svc_arrive_work, qmi_tmd_svc_arrive);
++
++	/* Initialize TMD structures */
++	for (i = 0; i < num_tmds; i++) {
++		qmi_tmd_cli->tmds[i].name = tmd_names[i];
++		qmi_tmd_cli->tmds[i].qmi_tmd_cli = qmi_tmd_cli;
++	}
++
++	ret = qmi_handle_init(&qmi_tmd_cli->handle,
++			      TMD_GET_DEV_LIST_RESP_MAX_LEN,
++			      &qmi_tmd_ops, NULL);
++	if (ret < 0) {
++		dev_err(dev, "QMI handle init failed: %d\n", ret);
++		return ERR_PTR(ret);
++	}
++
++	ret = qmi_add_lookup(&qmi_tmd_cli->handle, QMI_SERVICE_ID_TMD,
++			     QMI_TMD_SERVICE_VERS_V01, instance_id);
++	if (ret < 0) {
++		dev_err(dev, "QMI add lookup failed: %d\n", ret);
++		goto err_release_handle;
++	}
++
++	return qmi_tmd_cli;
++
++err_release_handle:
++	qmi_handle_release(&qmi_tmd_cli->handle);
++
++	return ERR_PTR(ret);
++}
++EXPORT_SYMBOL_GPL(qmi_tmd_init);
++
++/**
++ * qmi_tmd_exit() - Deinitialize QMI TMD instance
++ * @qmi_tmd_cli: QMI TMD client to deinitialize
++ */
++void qmi_tmd_exit(struct qmi_tmd_client *qmi_tmd_cli)
++{
++	if (!qmi_tmd_cli)
++		return;
++
++	cancel_work_sync(&qmi_tmd_cli->svc_arrive_work);
++	qmi_handle_release(&qmi_tmd_cli->handle);
++	qmi_tmd_unregister(qmi_tmd_cli);
++
++	scoped_guard(mutex, &qmi_tmd_cli->mutex)
++		qmi_tmd_cli->connection_active = false;
++}
++EXPORT_SYMBOL_GPL(qmi_tmd_exit);
++
++MODULE_LICENSE("GPL");
++MODULE_DESCRIPTION("Qualcomm QMI Thermal Mitigation library");
+diff --git a/include/linux/soc/qcom/qmi.h b/include/linux/soc/qcom/qmi.h
+index b9dcb437a0be..683d27cee413 100644
+--- a/include/linux/soc/qcom/qmi.h
++++ b/include/linux/soc/qcom/qmi.h
+@@ -96,6 +96,7 @@ struct qmi_elem_info {
+  * Enumerate the IDs of the QMI services
+  */
+ #define QMI_SERVICE_ID_TEST		0x0f	/*   15 */
++#define QMI_SERVICE_ID_TMD		0x18	/*   24 */
+ #define QMI_SERVICE_ID_SSCTL		0x2b	/*   43 */
+ #define QMI_SERVICE_ID_IPA		0x31	/*   49 */
+ #define QMI_SERVICE_ID_SERVREG_LOC	0x40	/*   64 */
+diff --git a/include/linux/soc/qcom/qmi_tmd.h b/include/linux/soc/qcom/qmi_tmd.h
+new file mode 100644
+index 000000000000..75373eb09d61
+--- /dev/null
++++ b/include/linux/soc/qcom/qmi_tmd.h
+@@ -0,0 +1,23 @@
++/* SPDX-License-Identifier: GPL-2.0-only */
++/*
++ * Copyright (c) 2025, Linaro Limited
++ * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
++ *
++ * QMI Thermal Mitigation Device (TMD) library header.
++ */
++
++#ifndef __QMI_TMD_H__
++#define __QMI_TMD_H__
++
++struct device;
++struct qmi_tmd_client;
++
++struct qmi_tmd_client *qmi_tmd_init(struct device *dev,
++				    const char *remoteproc_name,
++				    const char * const *tmd_names,
++				    int num_tmds);
++
++void qmi_tmd_exit(struct qmi_tmd_client *tmd_cli);
++
++#endif /* __QMI_TMD_H__ */
++
 
 -- 
 2.34.1
