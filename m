@@ -1,277 +1,144 @@
-Received: from GVXPR05CU001.outbound.protection.outlook.com (mail-swedencentralazon11013022.outbound.protection.outlook.com [52.101.83.22])
+Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 47D8C2F7462;
-	Tue,  9 Jun 2026 06:53:23 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.83.22
-ARC-Seal:i=3; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1780988008; cv=fail; b=KNRwnU+SKbmHDtUK3XMv3GW1lAWGij1frfEBxMVceed31FL1aOWxd2hWpBaVQlqNC4oRdrBZBYfusBe/NWd6c4DjGUcsTxdDeTK9d5r60NxThBgMGwI5HvHEUn5nVtZ8cStui1qDnTtH4uFpXy1jo24lHVV5C61UmPGXq9OSWMg=
-ARC-Message-Signature:i=3; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1780988008; c=relaxed/simple;
-	bh=1O5GMcLg5UPcw1zqzAJVCm+OwcSUVJzTLFx4uFQQhz0=;
-	h=Message-ID:Date:Subject:To:Cc:References:From:In-Reply-To:
-	 Content-Type:MIME-Version; b=V5NfKoJ3ypAVDaKV2080oZscngt5csraw8Xzvuf3VDGrTliVWEN+xEocRqFPSbHWmkmD8QMyxA4ia8CczdSRmn6cL5FgUoEUEdJfjKEm8MFDzuUU9dXLtTa/+gdgPGc8TS5Z1gfTDt8oP+5kVVO/UT+Rn1ANkPtFA4pepgM2YTQ=
-ARC-Authentication-Results:i=3; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=X74zCroc; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=X74zCroc; arc=fail smtp.client-ip=52.101.83.22
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0302D383C66
+	for <linux-pm@vger.kernel.org>; Tue,  9 Jun 2026 06:54:56 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1780988098; cv=none; b=Dg2eUp1+AhzQSJRQK9CUOMTcwzusCHxJ1rbkgFViJTRKbK0usvKpfH6nD9bt4DnZa6rUfyYbGZ/3bLZID5njj4ee0hpmkA0RIb1I97q7RZNA9C1mBm26rhv4PJ09Q9PWas9e9BaIZsmJYOvwxuVXYHRmoSmWiXd8EurSc7DmM18=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1780988098; c=relaxed/simple;
+	bh=P0Rvy7ba8na9OOAKgVTrVcNkZDLvIMoxbJGmhR9MCic=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=Kwt2LYGKXhaqM6NH8tyG5SwJg8d2msMDHhPFynitfJfGMzWznAe3SQAJU70lisjj1PhQI2vJkuTrzG0i5oIez2wSn+aw/bgAM0nxjPBxkis39Bv/HY1EoWlgEnZh2nX4/543MeYyuoW2hDUt52HkVvyyTtDgqzrg+REm2MGoOh8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=cccoHyIf; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=Haesl7O2; arc=none smtp.client-ip=205.220.168.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="X74zCroc";
-	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="X74zCroc"
-ARC-Seal: i=2; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=pass;
- b=OoYNbdG7zYvV9bjY8mFEcddokEfNTNQrGwXpG7fuBJG8ivXQBJGPOhViJFtN041Zmy3Vhysf2qynou3Lp2vTI42r5gjJG+zLfSb3EvRgPWL2nYAQHN4cJp1jq4M1Lig5WmQmT3pVaSdqdQDkcgIg/9OzY4I99tZQGMVO2UnOAYrrXbsPOQ3fEnqodakcz7NBK82OQtzrtLCpv/Y6j7J5uIt3PUYsX1XAsZ9UWyhS5Qt+hH27wt+q2rqEwo7Qnnr0vbA34d0GXseTQkLgWbLT/s5Nh+WrW6JKV3E2zdd22XxbQJFSYp2XUdeMjg5VE2xJx26Lf45Ty6GeyPl/hLRvUQ==
-ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=TWBkBdV68EUyHC5r/fGOslrfPNEBJzokRE9P04jIW9Y=;
- b=YrZVj4QysBaQWB2kA6wE27t/6TneATq3NIVkvRbVmMbEe+Ce/hPmqffkF5E4laqXlA4f78yKjhodg1jCUTNd/f8Ild0v0sU/Iz9gCHv2JmDngUyVN8mko/n42lOlL9/2Lb2bAixDfQXacey3JPL0avadHwLy7GG/4nhCxHft2QergSAX6500NTOh2k80tJHHK7tkSs8JxhbuWF/eWB5qIfGNCK7pamHKZdo3OMZ7T/bzxrhWDAzDs8J2BQLayqHaht5q/NolixQiMdHeqThP2tkz2m/U/KYDCbUtyo9W/P3ZqXOAlN95ROL6kW4sYPcO5n6KaTR4n5Hg02gHDlkH2A==
-ARC-Authentication-Results: i=2; mx.microsoft.com 1; spf=pass (sender ip is
- 4.158.2.129) smtp.rcpttodomain=kernel.org smtp.mailfrom=arm.com; dmarc=pass
- (p=none sp=none pct=100) action=none header.from=arm.com; dkim=pass
- (signature was verified) header.d=arm.com; arc=pass (0 oda=1 ltdi=1
- spf=[1,1,smtp.mailfrom=arm.com] dkim=[1,1,header.d=arm.com]
- dmarc=[1,1,header.from=arm.com])
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=arm.com; s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=TWBkBdV68EUyHC5r/fGOslrfPNEBJzokRE9P04jIW9Y=;
- b=X74zCrocWQR6Q/acyi+CpkaB6K7wbIQF1wHhIKxx39PbEcyxBbC80vLWXDSjN57/hd+pFZDUndktDMAK6G222HvuAi1uHGqMpd0nZpTiY+mEzIUasrzXLLHOB6MRjME38UY3HAWH+fRj4hfekg1i9v6o9HUZ2eCQuKrK28mS2kk=
-Received: from DUZPR01CA0149.eurprd01.prod.exchangelabs.com
- (2603:10a6:10:4bd::25) by AS2PR08MB8926.eurprd08.prod.outlook.com
- (2603:10a6:20b:5f9::15) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.92.11; Tue, 9 Jun 2026
- 06:53:16 +0000
-Received: from DU6PEPF0000B61D.eurprd02.prod.outlook.com
- (2603:10a6:10:4bd:cafe::b) by DUZPR01CA0149.outlook.office365.com
- (2603:10a6:10:4bd::25) with Microsoft SMTP Server (version=TLS1_3,
- cipher=TLS_AES_256_GCM_SHA384) id 15.21.92.14 via Frontend Transport; Tue, 9
- Jun 2026 06:53:16 +0000
-X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 4.158.2.129)
- smtp.mailfrom=arm.com; dkim=pass (signature was verified)
- header.d=arm.com;dmarc=pass action=none header.from=arm.com;
-Received-SPF: Pass (protection.outlook.com: domain of arm.com designates
- 4.158.2.129 as permitted sender) receiver=protection.outlook.com;
- client-ip=4.158.2.129; helo=outbound-uk1.az.dlp.m.darktrace.com; pr=C
-Received: from outbound-uk1.az.dlp.m.darktrace.com (4.158.2.129) by
- DU6PEPF0000B61D.mail.protection.outlook.com (10.167.8.137) with Microsoft
- SMTP Server (version=TLS1_3, cipher=TLS_AES_256_GCM_SHA384) id 15.21.113.7
- via Frontend Transport; Tue, 9 Jun 2026 06:53:16 +0000
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=L6pWKDV9hqBftfpd/VnRjpWNXCaw7qtwzOo6hRhNRqMe37pZ6qhfYGKqCva7ygp++UeRXkoRaqd/AdwOasBdhC+Hw/7vhOGSi6AUbE1M2H5ECgHgCcMv2wJoNIMa+u2sOd6mw57YyzfZTvlO3vMYsblxtNgQ5X3SlaxZ/K3UjcyH9xwawyqaOYhwlv7b9hU+lu94ZwLGqhGMVX2heXs+CJwiRf50rULwyxFdnINkvPdPDBh/vX3AzzGcspxN/SDiR1r2mT8FBruZYTmF69RuEfNgfMwhTntdk5+oRNO6sXU8rcZ0wti4Q4Q/WEwb2pK77hsD65LyGb1atZVAJX0PmA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=TWBkBdV68EUyHC5r/fGOslrfPNEBJzokRE9P04jIW9Y=;
- b=jl1OY4A3N+xofV+PerhqO5iABWU7Lh4LVIWbDswEt85XqbqNEJksEjfUpXfo3YF5S2fKeJNsPULAlAGe+ybKHf48JlAAyUygpqPh+8nkZd+1jtBGViZdpwFnJTBVD/7di3bKRW1hSP7a/orQvD1NwM9PdTyS2ptEBLKThg5U7p6RfTJve31g2loL/GV653mFeCYMkf2PrfYfAzfm4wpzX6hV190p1TlEHAbLgfPHRIqZsddcyIh0v32Q1Syk26nyu6mUzf2Z7CBHD2AYOHnb5VoXl6JbMeNMVLFBVD6iLiPd1tXjN1p/P2/A/owOEsYUbRl0jQgvvXIh0injjBnawQ==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=arm.com; dmarc=pass action=none header.from=arm.com; dkim=pass
- header.d=arm.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=arm.com; s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=TWBkBdV68EUyHC5r/fGOslrfPNEBJzokRE9P04jIW9Y=;
- b=X74zCrocWQR6Q/acyi+CpkaB6K7wbIQF1wHhIKxx39PbEcyxBbC80vLWXDSjN57/hd+pFZDUndktDMAK6G222HvuAi1uHGqMpd0nZpTiY+mEzIUasrzXLLHOB6MRjME38UY3HAWH+fRj4hfekg1i9v6o9HUZ2eCQuKrK28mS2kk=
-Authentication-Results-Original: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=arm.com;
-Received: from VI0PR08MB10391.eurprd08.prod.outlook.com (2603:10a6:800:20c::6)
- by AS2PR08MB9690.eurprd08.prod.outlook.com (2603:10a6:20b:606::18) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.92.14; Tue, 9 Jun 2026
- 06:52:04 +0000
-Received: from VI0PR08MB10391.eurprd08.prod.outlook.com
- ([fe80::fa6b:9ba8:5c2f:ac91]) by VI0PR08MB10391.eurprd08.prod.outlook.com
- ([fe80::fa6b:9ba8:5c2f:ac91%3]) with mapi id 15.21.0092.011; Tue, 9 Jun 2026
- 06:52:03 +0000
-Message-ID: <a9b432d9-c79f-4ece-8416-6bb2d17261c4@arm.com>
-Date: Tue, 9 Jun 2026 08:52:00 +0200
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v3 3/4] cpufreq: Remove driver default policy->min/max
- init
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: linux-kernel@vger.kernel.org, Jie Zhan <zhanjie9@hisilicon.com>,
- Lifeng Zheng <zhenglifeng1@huawei.com>,
- Ionela Voinescu <ionela.voinescu@arm.com>, Sumit Gupta <sumitg@nvidia.com>,
- Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>,
- Viresh Kumar <viresh.kumar@linaro.org>, Jonathan Corbet <corbet@lwn.net>,
- Shuah Khan <skhan@linuxfoundation.org>, Huang Rui <ray.huang@amd.com>,
- Mario Limonciello <mario.limonciello@amd.com>,
- Perry Yuan <perry.yuan@amd.com>, K Prateek Nayak <kprateek.nayak@amd.com>,
- Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
- Len Brown <lenb@kernel.org>, Saravana Kannan <saravanak@kernel.org>,
- linux-pm@vger.kernel.org, linux-doc@vger.kernel.org
-References: <20260528090913.2759118-1-pierre.gondois@arm.com>
- <20260528090913.2759118-4-pierre.gondois@arm.com>
- <CAJZ5v0hwYcvYZJ1jCSo_5vpynOLBciW-4-KeracQTyUCw7fSGw@mail.gmail.com>
- <6447f46d-5a60-45a2-b585-9835c9c26893@arm.com>
- <CAJZ5v0hqjdd79J-Hi=mSLMm2Fxhia+xa6iguJwZy2-pRBSJ6gA@mail.gmail.com>
-Content-Language: en-US
-From: Pierre Gondois <pierre.gondois@arm.com>
-In-Reply-To: <CAJZ5v0hqjdd79J-Hi=mSLMm2Fxhia+xa6iguJwZy2-pRBSJ6gA@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-ClientProxiedBy: LO4P265CA0036.GBRP265.PROD.OUTLOOK.COM
- (2603:10a6:600:2ae::12) To VI0PR08MB10391.eurprd08.prod.outlook.com
- (2603:10a6:800:20c::6)
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="cccoHyIf";
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="Haesl7O2"
+Received: from pps.filterd (m0279866.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6596HeHm1364864
+	for <linux-pm@vger.kernel.org>; Tue, 9 Jun 2026 06:54:56 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-transfer-encoding:date:from:message-id:mime-version
+	:subject:to; s=qcppdkim1; bh=JjS4922Wi791YeO2uSYBt3QldN53otSS5AL
+	ybDv890E=; b=cccoHyIf40ir2AIAkPBP0bGxzMWaLzlOWLrM9NlKUdgirVWi2q/
+	yUbJyx7XIxoftX1VRtds7/JNL6Fjqvi8q/DBrWxSPRt72H2ep7y6pv5/shk4CbHC
+	89SzIzxBIe5wQfrWW93p6yS0cksBeTwvDE3L/g22BC25St2PEl7FEmXTorqW93dR
+	3Fe4ReUX0Gbf8id0yESlmFkYvJlgCwKitrjb4U8u2Kb7MjrShlfk+GOV22Il2JB+
+	VLVABIbb7j86CNMo14BF3FC/u//sMdmYpKVIl0JqaycGMY2ydiQckktbieCFlm+P
+	TlxUsSH0XpkxgU0H6u/ts149edNG48b+DxA==
+Received: from mail-pj1-f70.google.com (mail-pj1-f70.google.com [209.85.216.70])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4epdeer51m-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <linux-pm@vger.kernel.org>; Tue, 09 Jun 2026 06:54:56 +0000 (GMT)
+Received: by mail-pj1-f70.google.com with SMTP id 98e67ed59e1d1-36d98b5a68fso9259324a91.2
+        for <linux-pm@vger.kernel.org>; Mon, 08 Jun 2026 23:54:56 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=oss.qualcomm.com; s=google; t=1780988096; x=1781592896; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=JjS4922Wi791YeO2uSYBt3QldN53otSS5ALybDv890E=;
+        b=Haesl7O2JZa3JLOZxDrtQphnTYlb8Qs6wDjYSRiAcCGzSMK/B2YG+YL3iKT8p50IQH
+         v7rfn/eJJ2sEv3bePZ+mJEVifzRPWR1jKKHcgXxt6ThNBhq2LJ/dxAIq1AQMTJZN1shD
+         qT7GF/nkP0qv1m01oAPossJIlKlLMiJeE/xbOF1TF99RxPED9wakQwFPC3hcWIf+sVYu
+         5JLMhY4eNXJ0GKPj2c6ehFrnUz56xYJ+degKmhSZE7Az+SY49PyPFgNAEuuMeUQVwGgR
+         WPm/zG1FGD/zQlTq3U0xPBpOAXWJqnMHNv+epAhgVAvNNhYV6NVBnEtdVj4iDjS/QJBo
+         YuTQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1780988096; x=1781592896;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=JjS4922Wi791YeO2uSYBt3QldN53otSS5ALybDv890E=;
+        b=G/HBdPnqzSxD8lMNuqP3w/B0YStGjH8F9YRP2AxGLnfaB/J7Cc9AbGWbAkqmJ9xjKd
+         e9r6iIUcb4OqsWZXPiYuXkwIxAH5Q6U+80fwDe6rORsOTOKc+hQiTT9rGKBj9v1alrKd
+         geaz34OZtuf7VFOCHTLpqn8/c0q8RJOazK8vKsIn/tNA9gh3E7EyF47cIKHOU2Ttn5+2
+         tMa6FHbuU4hlyoSwMbOw8T9alpxauByqlapv+8uBmih+x2WZWHucWudGorR8+VBmzsC9
+         zKSP48Elo/xOmi6bAspo8jIpN943VCKm0Wd+s49dKwtIVjcCnBxJvwnQql23kV4UhCpe
+         /Ixg==
+X-Forwarded-Encrypted: i=1; AFNElJ9ZkbeW4Kf9FaRjgx5wvWBRk5fAHnzXE9sRRT+we5zMBYDvvRo5B+0YCGYUKDCGC5hi5OfoRYCe4Q==@vger.kernel.org
+X-Gm-Message-State: AOJu0YwZB9Caei3WnxDvppZiCHBB4AcJ6cXlC7oMKQ3PYdVTrKSbqnAh
+	XLyBJuYG51es5Yq2VOg01H/EfIV9vw3tzdSKdbN3IrjcYcw4/7l3nb8CyVLWWkCfcqJizuXXyxz
+	0GbIpNzgvfcZ1Rb/5wiL/KpWCKIzNRnzp4lgr8heljXK6zeDwDRCE/bIWxCSMGQ==
+X-Gm-Gg: Acq92OFADLC49lr+CCZWdV4QT/i09BS8ikckkx9I8mLwBEdIrvBqWE3lSgeuf1frDSB
+	CWYFlhDGJVdKTY6bW2DCZ6iS0uJN6DYWq21tpbwHH9maDCWMqqU/BMPbk02v+W0Znoc5D+wqutG
+	XF0ZPmirmZfJjZ2sAwpo9dcpQbuklImdDWn57wyLXv00iADDSSkP4LR+7ZgnEfXTnHZvUlbPUtr
+	MBRGp7S6GtdDdjnF6KA+QPwYEuHBnRMVbHXY/BxWX7H4xDMRsJ8vd4xq6B84yzcB5UAESlXk/2K
+	s66c3kKBCu/nJbkhem+BPWvvb4TzyugCXAhqs0kMbCC84w2mRHUnbgJc8zsaGIsYNbVMuQUOk8i
+	NDRe7TndT7Dmc9UUU8AOuDW7yKfAZNPtcVcAv32ZrbqPwiMmszb1Lp0u3elF6+eicsRB+zyetKd
+	Kt1S33dJxv0BXfURaf4kuaremG6GveEWKAVEuEr+dbc6Vyn2bfELeIKV/3lvzAUg==
+X-Received: by 2002:a17:90b:5906:b0:36a:5d1f:7ac with SMTP id 98e67ed59e1d1-370ee344dc4mr19888007a91.3.1780988095709;
+        Mon, 08 Jun 2026 23:54:55 -0700 (PDT)
+X-Received: by 2002:a17:90b:5906:b0:36a:5d1f:7ac with SMTP id 98e67ed59e1d1-370ee344dc4mr19887989a91.3.1780988095328;
+        Mon, 08 Jun 2026 23:54:55 -0700 (PDT)
+Received: from hu-varada-blr.qualcomm.com (blr-bdr-fw-01_GlobalNAT_AllZones-Outside.qualcomm.com. [103.229.18.19])
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-3712fcb3a9fsm8607926a91.0.2026.06.08.23.54.50
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 08 Jun 2026 23:54:54 -0700 (PDT)
+From: Varadarajan Narayanan <varadarajan.narayanan@oss.qualcomm.com>
+To: amitk@kernel.org, thara.gopinath@gmail.com, rafael@kernel.org,
+        daniel.lezcano@kernel.org, rui.zhang@intel.com, lukasz.luba@arm.com,
+        robh@kernel.org, krzk+dt@kernel.org, conor+dt@kernel.org,
+        linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Varadarajan Narayanan <varadarajan.narayanan@oss.qualcomm.com>
+Subject: [PATCH PREVIEW v2 0/2] Add support tsens in ipq5210 & ipq9650
+Date: Tue,  9 Jun 2026 12:24:45 +0530
+Message-Id: <20260609065447.4024695-1-varadarajan.narayanan@oss.qualcomm.com>
+X-Mailer: git-send-email 2.34.1
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-MS-TrafficTypeDiagnostic:
-	VI0PR08MB10391:EE_|AS2PR08MB9690:EE_|DU6PEPF0000B61D:EE_|AS2PR08MB8926:EE_
-X-MS-Office365-Filtering-Correlation-Id: 764db73f-4b56-4c0d-f9bf-08dec5f3c871
-x-checkrecipientrouted: true
-NoDisclaimer: true
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam-Untrusted:
- BCL:0;ARA:13230040|376014|1800799024|7416014|366016|3023799007|6133799003|56012099006|11063799006|4143699003|18002099003|22082099003;
-X-Microsoft-Antispam-Message-Info-Original:
- Mn+HPRcNnQw/Oe5BxuzP/PyWPiJW71BSoxyg7CRHAgHWBgHwSBGppZC86AUcpKt/uYNaY+i3yX2tN3s7NI6rLQwiVNFkVG7tJzRQplNUoQEmoScjK2xrhk3sVFGqqUrM1XfwwvcUhzOilDQtgQUitEmf64dpH5O9zKiyKBvFuPUgPVQhjRPu4KQyzh66VRvaC7oHFdYNa4wikZ92yjHohqUx3SY85lk4lVQOPGHE4fqcLoySXsOt5ehjnfx+/XzpC6/9eaqTqYd+VZ5vrSlWLYwWX4V+gmTqPOvT5VZ0XFAKwi4P365yHd5Q7CvsQld5gszXg3oCKNztYbGVTTtACjGMRhmzRz/y+SgAnncIqDr/DvocT5Wm5fNI2RjPjeONSihEvGNleUnPQYhAzsn9ymdXOzDHXVsSCNaX6z3MUZQu1YdNbjC0m1O8ZheFnPFlBJV+syOqVsDv72BFY8Gv09u4JFEP+wgu6LbnE2hntooOwHHvNwzTjWLaRGEqm7pSqE65j5DWjaXxBgKynKhhzcpKq51QsTbeUdDiEIZX11qHoewN9szEbvdty9UIDG52j61Xq7NXiLlQNc/hFILQMwCOvfyTCmayjwjnWc/PCf3E878kW2wvHO3DLPmKXa0LXrsEzExF1ythuGAjUo6iAQ==
-X-Forefront-Antispam-Report-Untrusted:
- CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:VI0PR08MB10391.eurprd08.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(376014)(1800799024)(7416014)(366016)(3023799007)(6133799003)(56012099006)(11063799006)(4143699003)(18002099003)(22082099003);DIR:OUT;SFP:1101;
-X-Exchange-RoutingPolicyChecked:
- WMJVh4iRfaBqyObvvaTiCxJ5ILhizo+xIPbO/Fq4L7kQEpCCq16jUGAgGMD2Z8y6a/E3gDxTvOFDQBUDcspUQwHfqHttbsCHnscfrOHbgXi9VzwNrExXId6YzT3hgCN/8nl2bNvjA//yMDRbfx1HPHUlCWk3wr8fK3Of8KBNnNcFMw5gvUDolSKth2tIcV9//u/4d9TKgm/4kLf4oO0CVuAQTn9gygEM/vmGf5CT3vLkOa8Js6r0vSoT8hDEnvT/6RWWYsLDqd0aIS/LJHvSdznC34yC74jX8tJfqTcC5x4Es18BVRbYfzyV7B3RJta1pHfYh0saoOdsWammPVCG3g==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: AS2PR08MB9690
-X-EOPAttributedMessage: 0
-X-MS-Exchange-Transport-CrossTenantHeadersStripped:
- DU6PEPF0000B61D.eurprd02.prod.outlook.com
-X-MS-PublicTrafficType: Email
-X-MS-Office365-Filtering-Correlation-Id-Prvs:
-	b421b909-fea3-4859-e699-08dec5f39ce3
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|1800799024|14060799003|35042699022|36860700016|376014|7416014|82310400026|22082099003|18002099003|11063799006|6133799003|4143699003|56012099006|3023799007;
-X-Microsoft-Antispam-Message-Info:
-	4Wah1/ZarxFNva+g+qoExgAVeatUjzQF159esPoIlvGjD8+HPlWhvK12NogRlrvUxesVUMwWo2rTU3krrYmzEU4BGBf2n3dnG0DC1s7Mbw4x6dvBXNwGJ4in6l4Ny/wkQnKpsqP7DUqCDX4sfSmKc4so6e9PEYx5X26m8gaj41BSjEaPeM3XooRdusDPWp5VZdTDNFIOL3rpkmKY0eHoE3dWgqMOiHz5iM/VDvFMiizMhk1NSiw0Y+/mO/w4vq0ZaITnb5J4jhIie39gPtpuIk7u0uPg9/xFoKmUjV0j0KAvsOJ+KL3OIHSE/eIpLzSqT2sbKDAeRuQx49sfdq1R+ew/ly9VQE/E9OwxRICW9yClcNCSVWu6nUWPdiBXI35kGw+/+cneRmcfln6PVixUZwWwOntNKOXWVjzb6kgMeybXi1ui+Vx8de4upLx4Uh47jRWjlCjZNsrWNAg7xG8cc0Ayi7HcRHQ3c1KWivvmPjELJgKeKi7B7V0ZLHzAqi6YUaQaKv8+jnywo9BMEcq+edjoK1JuMwGMpuNJ7qeMsPqADkmajZAIN1Iq9ZpkgPQYqgqI9+lG4YkskD6QGl+RSYhBlXAKQ0a4T6I4/R4ApSd0q7p6Wq8s4TfQ3KBCcgxE+xn6v3/Si2dvFG4nohgmMmfnL1HziuWqxv9R2yGHuKtHUhSPCPH1rh4Vqh9RgNW8
-X-Forefront-Antispam-Report:
-	CIP:4.158.2.129;CTRY:GB;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:outbound-uk1.az.dlp.m.darktrace.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230040)(1800799024)(14060799003)(35042699022)(36860700016)(376014)(7416014)(82310400026)(22082099003)(18002099003)(11063799006)(6133799003)(4143699003)(56012099006)(3023799007);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	+lLgZ4use8ij45aT0ExS6G3TssXauTj2x2JoWjTObpFjZ9SkIbXwGBPA2HgbG1quVxGq4EV8BXJwfqo7KnG8tZ8C5kkcJne7iqtGyq5u5E0c7WqBqjDCO3ul1AhqceE1J/EoxQOlYNouQtS7Vew4105atgQlRFKrdJHobUV6JN7DvvM4vkY81V8JmkehittB+0T1tB2pY44l0WYTSRI/E+buiD3xxzQq+1/PMyH0Dcf69aw+G9hOvMDUR7zAowBhE2MO4xH3P8cHn54dZ19W4xiYdISd1rjmh4LACClRktVqZ1MgStl8zyiuIVbXStX4/JsQBjeX/LMYMVzlUCr/ZZB+eLfnYJ3T5booE9WUzb4rBX6q2e1gtuc8iUn5KjmbqjvdvddZ2WrhVBo62navEoUBzyU+nmtN6e74Id4uk2jKH2xEId0arnL2PKfFw1z0
-X-OriginatorOrg: arm.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 09 Jun 2026 06:53:16.2621
- (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: 764db73f-4b56-4c0d-f9bf-08dec5f3c871
-X-MS-Exchange-CrossTenant-Id: f34e5979-57d9-4aaa-ad4d-b122a662184d
-X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=f34e5979-57d9-4aaa-ad4d-b122a662184d;Ip=[4.158.2.129];Helo=[outbound-uk1.az.dlp.m.darktrace.com]
-X-MS-Exchange-CrossTenant-AuthSource:
-	DU6PEPF0000B61D.eurprd02.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Anonymous
-X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: AS2PR08MB8926
+Content-Transfer-Encoding: 8bit
+X-Authority-Analysis: v=2.4 cv=H+DrBeYi c=1 sm=1 tr=0 ts=6a27b8c0 cx=c_pps
+ a=0uOsjrqzRL749jD1oC5vDA==:117 a=Ou0eQOY4+eZoSc0qltEV5Q==:17
+ a=FelO9ux0wxsA:10 a=s4-Qcg_JpJYA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=u7WPNUs3qKkmUXheDGA7:22 a=YMgV9FUhrdKAYTUUvYB2:22 a=VwQbUJbxAAAA:8
+ a=EUspDBNiAAAA:8 a=O98__aPPj8GWcYWuEFUA:9 a=mQ_c8vxmzFEMiUWkPHU9:22
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNjA5MDA2MyBTYWx0ZWRfX5jzGeaGNWNze
+ vWaUMygEquWMPleQmgXugCVt51FFNpLkzmQEPckgivk9cePa/4+IYjqWWbEFqwksgzuLCKhFva3
+ ykR88V8+evHWbLWr5mFVowQzzz5n0g5Zjyt6wVeiY7DWNkjjQGg9UgPqGt2xA8HZYwr2RAeZfaT
+ gXhYB486D3xdO9eAI3KWuTZ7cbzNnx47+6dfHcn4ugOPfGOu/LpYwSUX7TYvVg8fxEz5cc84BjI
+ j4uB/NWm0IFuVaxl84PqLEMB4MoajpqOdSdoaP6QxuoLwZKAfR4TgTQrB9ovLghaWor6YB/YdIZ
+ jzqpj2E5RM1M5rtP8z5QAF+JFBJkgrxMnqMryzNcpkuUEUxhvp6YzdOZeIWbzrulqbhaPu1DVBR
+ lge3VR0XEPxBXE7fShri65G+5EsQ5JTUT9i1DEkCKZpbzqJ+tgTsH9HtbC54qG5iXU/f+zY+5bU
+ N/+Mgnns7Gszml7vRsQ==
+X-Proofpoint-ORIG-GUID: Xuevr8SSiL26F7FReGMa0yy9dtuUkotE
+X-Proofpoint-GUID: Xuevr8SSiL26F7FReGMa0yy9dtuUkotE
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.125,FMLib:17.12.100.49
+ definitions=2026-06-09_01,2026-06-09_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ suspectscore=0 bulkscore=0 clxscore=1015 adultscore=0 malwarescore=0
+ spamscore=0 lowpriorityscore=0 priorityscore=1501 impostorscore=0
+ phishscore=0 classifier=typeunknown authscore=0 authtc= authcc=
+ route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2605210000
+ definitions=main-2606090063
 
-Hello Rafael,
+ipq5210 and ipq9560 have the Qualcomm tsens-v2 IP. The tsens framework
+in these two SoCs are similar to the one found in ipq5332. This series
+adds the sensor data to the tsens-v2 driver.
 
-On 6/8/26 18:50, Rafael J. Wysocki wrote:
-> Hi,
->
-> On Wed, Jun 3, 2026 at 9:49 AM Pierre Gondois <pierre.gondois@arm.com> wrote:
->> Hello Rafael,
->>
->> On 6/1/26 20:08, Rafael J. Wysocki wrote:
->>> On Thu, May 28, 2026 at 11:10 AM Pierre Gondois <pierre.gondois@arm.com> wrote:
->>>> Prior to [1], drivers were setting policy->min/max and
->>>> the value was used as a QoS constraint. After that change,
->>>> the values were only temporarily used: cpufreq_set_policy()
->>>> ultimately overriding them through:
->>>> cpufreq_policy_online()
->>>> \-cpufreq_init_policy()
->>>>     \-cpufreq_set_policy()
->>>>       \-/* Set policy->min/max */
->>>>
->>>> This patch reinstate the initial behaviour. This will allow
->>>> drivers to request min/max QoS frequencies if desired.
->>>> For instance, the cppc driver advertises a lowest non-linear
->>>> frequency, which should be used as a min QoS value.
->>>>
->>>> To avoid having drivers setting policy->min/max to default
->>>> values which are considered as QoS values (i.e. the reason
->>>> why [1] was introduced), remove the initialization of
->>>> policy->min/max in .init() callbacks wherever the
->>>> policy->min/max values are identical to the
->>>> policy->cpuinfo.min/max_freq.
->>>>
->>>> Indeed, the previous patch ("cpufreq: Set default
->>>> policy->min/max values for all drivers") makes this initialization
->>>> redundant.
->>>>
->>>> The only drivers where these values are different are:
->>>> - gx-suspmod.c (min)
->>>> - cppc-cpufreq.c (min)
->>>> - longrun.c
->>>>
->>>> [1]
->>>> commit 521223d8b3ec ("cpufreq: Fix initialization of min and
->>>> max frequency QoS requests")
->>>>
->>>> Signed-off-by: Pierre Gondois <pierre.gondois@arm.com>
->>>> Acked-by: Jie Zhan <zhanjie9@hisilicon.com>
->>> sashiko.dev has some feedback on this patch and appears to have a point:
->>>
->>> https://sashiko.dev/#/patchset/20260528090913.2759118-1-pierre.gondois%40arm.com
->>>
->>> Can you have a look at it please?
->>>
->> [sashiko]
->>
->>   > Does removing the policy->max = max_freq assignment here break UAPI
->>   > expectations by exposing the unlisted boost frequency in
->> scaling_max_freq?
->>   >
->>   > Commit 538b0188da4653 intentionally allowed drivers like acpi-cpufreq
->> to set
->>   > policy->cpuinfo.max_freq to a higher boost frequency while relying on
->>   > cpufreq_frequency_table_cpuinfo() to clamp policy->max to the frequency
->>   > table's nominal maximum (max_freq). This ensured that user-space
->> tools saw
->>   > the nominal maximum in scaling_max_freq.
->>   >
->>   > Although commit 521223d8b3ec temporarily disrupted this by defaulting
->> the QoS
->>   > max to -1, a subsequent patch in this series changes the core to
->> initialize
->>   > the QoS request using policy->max.
->>
->> Effectively PATCH [4/4] cpufreq: Use policy->min/max init as QoS request
->> now uses the policy->max value set by the .init() callback to set
->> the max_freq_req QoS constraint.
->>
->>   >
->>   > If the policy->max = max_freq assignment were preserved, the subsequent
->>   > patch would successfully use the nominal frequency as the QoS max
->> request,
->>   > restoring the correct clamping behavior.
->>
->> IIUC this suggests to use the nominal freq. as the QoS max request.
->> This was behaving like that prior to 521223d8b3ec. However doing
->> that would mean that if boost is enabled and the max_freq_req sysfs
->> is not updated, then the frequency would still be clamped by
->> the max_freq_req. 521223d8b3ec intended to correct that.
->>
->> Sashiko seems to suggest modifications to come back to the
->> pre-521223d8b3ec behaviour, but I think 521223d8b3ec is correct
->> and we should conserve this behaviour.
-> So there is some confusion in the patch changelogs of this series, but
-> not in the code, regarding the role of the last argument of
-> freq_qos_add_request().  Namely, that argument is the initial request
-> value for the given request object which is subsequently managed by
-> user space.  User space may in fact change it to whatever value it
-> wants (either lower or higher) and it is only taken into account along
-> with the other requests in the given chain.  IMV it is better to
-> clarify that, so I have updated the changelogs when applying the
-> patches.
->
-> Please see
->
-> https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git/commit/?h=bleeding-edge&id=8c83947c5dbbd49b36d08bb99e344327c6278781
->
-> and its ancestors and let me know if there's anything missing in the
-> changelogs thereof.
+v2: Combine bindings and driver patches
+    Use fallback for ipq5210 and dropped the driver changes
 
-The new commit message is indeed clearer.
-Thanks for the update.
+v1: bindings - https://lore.kernel.org/linux-arm-msm/20260515-tsens-yaml-v1-1-8039c62cc249@oss.qualcomm.com/
+    driver - https://lore.kernel.org/linux-arm-msm/20260515-tsens-driver-v1-0-015ca76f1418@oss.qualcomm.com/
 
-Regards,
+Varadarajan Narayanan (2):
+  dt-bindings: thermal: tsens: add ipq5210 & ipq9650 compatible
+  thermal/drivers/qcom/tsens: Add support for ipq9650 tsens
 
-Pierre
+ Documentation/devicetree/bindings/thermal/qcom-tsens.yaml | 7 +++++++
+ drivers/thermal/qcom/tsens-v2.c                           | 8 ++++++++
+ drivers/thermal/qcom/tsens.c                              | 3 +++
+ drivers/thermal/qcom/tsens.h                              | 2 +-
+ 4 files changed, 19 insertions(+), 1 deletion(-)
 
+-- 
+2.34.1
 
-> Thanks!
