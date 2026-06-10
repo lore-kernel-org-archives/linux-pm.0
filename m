@@ -1,205 +1,442 @@
-Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pf1-f174.google.com (mail-pf1-f174.google.com [209.85.210.174])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C3DA540D580
-	for <linux-pm@vger.kernel.org>; Wed, 10 Jun 2026 21:19:13 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=205.220.180.131
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1DAB0331EA0
+	for <linux-pm@vger.kernel.org>; Wed, 10 Jun 2026 21:20:52 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.210.174
 ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1781126355; cv=pass; b=shCfwi1Ou6qRvtEMGQNRzS4DQPnS0vKDiSCcq3a9c2M6zjlsT2I1iacCDx2TsFNHwicdBdkiQqr0TWTqHsI+kig2ltH6IRbCQEE1ORSGgH7BJLG9+xQnj6Vufwc4N/ObxM2GUvlLspHWURv2IfV/2UiZXyBcZXLTrs0xASit140=
+	t=1781126453; cv=pass; b=T7WegCbeqUpyylvuKQ8G+1oWagPLxOn2EcdjbLLy7ayvFVXOcMeP0+ig3EK3YrbSKim87jz/bfJv+jczQTluf1/ezZ1gPwa3E2qvprIBbc9QnwmzNiLvxWDV4R9YSTB1k+ddWehoB7tN+ZxTjv4YFU6cCgWmczi096lpNzzWICw=
 ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1781126355; c=relaxed/simple;
-	bh=yP/7Z8uhlGur14MsiODOWmZoOOgIez3bqWFTNdQVt5M=;
+	s=arc-20240116; t=1781126453; c=relaxed/simple;
+	bh=kZ/h7s0QKrVqCDG88jTuzopNiMrSDuzysn1W6V5Wi5Q=;
 	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=Px+7dAdLZ3yiCus9lMLATpPPHB8klCE/i1AF3CxvA5YzfOfGYZ966soNNAFg/7beuD7awCkVRQrkIIezVj1+Qbue/2gvdauh5WOPjpRXGV4qDCLoRSOWusnEBg+sBFUxONFNytmyn07+JwmEw0mVJCvCNI1HmxEFGXN/UzwdGKQ=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=eUTXz/9P; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=OjjA2/wr; arc=pass smtp.client-ip=205.220.180.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
+	 To:Cc:Content-Type; b=qiAcdmRQ2EHslGh55vCtuTQm/P1xQ9DpnHIEqJ56P1jSEpZlEt9+5SFPy/8uhncqo+QVyuk/gvH6NNAIKruh9gdo+hlVZbtL9Ee7dBUGZmryvVDkLIAlxfj9L91t0qj9o1DjktCe6XPTwtQpBr1DXAPIrNDHbRcx/BB3Z4ItwhU=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=QmrkxRF6; arc=pass smtp.client-ip=209.85.210.174
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="eUTXz/9P";
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="OjjA2/wr"
-Received: from pps.filterd (m0279873.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 65AJYUFl2618955
-	for <linux-pm@vger.kernel.org>; Wed, 10 Jun 2026 21:19:12 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	6V4y4jrUDwaCAqSrUfft1cggY0gZCCPi3cFlIDDpz7g=; b=eUTXz/9PyeeWGGRQ
-	F/xmLrVU0+E7Bsmp9FuUwsS4unYUEKK9J68Bt5wYawjDO+gQfvU3E5DH/ezXSOE9
-	yaQqYqmWldYsHKqCOWVMO29yduGC9KWMmTyw0GSTh38AWpTblYVb5qO2HhJwcZx9
-	ITZ8zc1Ckk0lclIqvJEsjnxwCu7P5qMlRwSdZBGN66h8dagKnRSwLZ625ikpOydD
-	p1fqkbuJSQ7JJwqLtK00XAh1UrWd6EljdzH010+nSPJXhohhBNhIpA2MKrd3o6Mi
-	FhmXHR3YUxNzD5cGY1AcRlLskiMD6z0QqUlqpobhaulCBm/vytHWVwLlDsuvcQQ5
-	ZAFRAA==
-Received: from mail-qv1-f70.google.com (mail-qv1-f70.google.com [209.85.219.70])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4eqe6sgdw2-1
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Wed, 10 Jun 2026 21:19:12 +0000 (GMT)
-Received: by mail-qv1-f70.google.com with SMTP id 6a1803df08f44-8ccebf7e86aso8118176d6.0
-        for <linux-pm@vger.kernel.org>; Wed, 10 Jun 2026 14:19:12 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1781126352; cv=none;
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="QmrkxRF6"
+Received: by mail-pf1-f174.google.com with SMTP id d2e1a72fcca58-84236f9b638so3471183b3a.2
+        for <linux-pm@vger.kernel.org>; Wed, 10 Jun 2026 14:20:51 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1781126451; cv=none;
         d=google.com; s=arc-20240605;
-        b=VNp3xocqX/INDtr26omrJl2QLPBccg12ce1uEx1IbAxin60FYTxPUc4b09OkE2jZjU
-         470idEzDX+zE8SyNzyIFPM7C5gqbCwdsj7B7r/Or0fyBeH2s+MwUQgeiy4dSvrMTQTIw
-         BHLuhk2ksluvHxRHS8yl1LPJ5VH87eJ1DPXJoDo49BAHglnQNnKxAttddR4DkTMvHXCK
-         ObHU1duDvhSCfFtZaJK1G27DUGUEpk9jlNO8PUBMn1ze2CdhHv2bRoHBMQkogqkKS/uf
-         X21OMyJwwuYakZARI578+FAUPCbSMFel8GNeEbqUEnGoTcuadYmjRma3DMVQr7Y8toVz
-         +cgQ==
+        b=B6Pea1Q0MyWgQ2uanSba+9tb03BQ+2tuEEwHSJWJmkAMBf7rcnZp/gjNpzDUtiPxbv
+         rruky6rngT+SFKtkcsLaxmxo9R9fHwTaJTmHYXojqXp7tcjW15Jf4HtEurAFchnFDs83
+         6bS35dp3NjeN/2Y1cknMTAtMR6jdtohGiJgKpkpfdJv5qsb8yV8CJlr/epPBGvTJxWmw
+         zFBE8JKXbrcLQ0Rafjg5aNxIsKwRq7yx5r0/vvKMtIAKWmMG6HuhuyUF7rj8a4VVW5sD
+         tzOLYy7bv3zmUmE3azOIXVhNHidkm1ncsKjUFfk5PRQ/4EFdcdn0Vi9OPGBmq7e7ArQ3
+         5EhQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
         h=content-transfer-encoding:cc:to:subject:message-id:date:from
          :in-reply-to:references:mime-version:dkim-signature;
-        bh=6V4y4jrUDwaCAqSrUfft1cggY0gZCCPi3cFlIDDpz7g=;
-        fh=yg4zl5QI9E7N2IRklq757LtGQpN+KNe2QEH0jK3wz6I=;
-        b=epyUveG1/5uLUC3sGfW5Q+zlwsGwHX/y/TnUHvf0RE3mVSZvlynrecMVkcd9hRZTfC
-         IHorRGqieaWAaP1ICj2c0m7z/amAfeKrtq/sKFUeULuEtI9Nk47Muo1AHcIZ+wlMo4h4
-         EQoKy/7veIKhw614hpbVMPf7IMoSml/LcQ2JvaKZv1f/n26VvbYtEuI4U5yIIHkLicQ2
-         jOxIgO/RE9XQ/359tw7fr1mjGLLTEjhKo8rblCLQqs+1ENUm+SH6B9C1dEDmZDbB7/0n
-         M36vIGJwAf7Q14YDhwMxsE0p7kwtGjPViZvToqiuII1WM/n0IG1gwGUmC8d/aQ8v2Y2e
-         VvtQ==;
+        bh=FkDjXc3gIUMpsaf8DKZKBhFvjDNJW75eyNisA5Kcxqs=;
+        fh=PsdP/64j9A09npEElSOi/5BBeAdvzZJ9mwC3X3jtuvs=;
+        b=cBFQ0SKa4y7yn8C8GhVnBBpVMkfOE6fcPtjp+1uMu/tTc3nvFWiukU5Zt9sm4hhi1e
+         otQZTswmiyK9PP65BT5meeTDm8j3J2SBUP8QAqLxHXaAYhdTTzgl8293OHjDSM/Ft12O
+         m1/qpDU2FatutFFNFk4uDizOBYMAKcDReywsbbkxTyJctShpw+RuBBHAJ6ewxIiKlM/a
+         D1wcLk25Fi1Pvwl1GqSnW8UNi+ZxmkB8MyhmwlbuGwHa0fUw4hc48lTRKomul6QfBD4w
+         nuxW146CIKjeUioRb6BYuZy+pEU4Nwq7dpfe/p/HA6wd2yKQhv+e6+i5L5jD3sBsavL3
+         nVAQ==;
         darn=vger.kernel.org
 ARC-Authentication-Results: i=1; mx.google.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1781126352; x=1781731152; darn=vger.kernel.org;
+        d=gmail.com; s=20251104; t=1781126451; x=1781731251; darn=vger.kernel.org;
         h=content-transfer-encoding:cc:to:subject:message-id:date:from
          :in-reply-to:references:mime-version:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=6V4y4jrUDwaCAqSrUfft1cggY0gZCCPi3cFlIDDpz7g=;
-        b=OjjA2/wrasJ8QfUPN2bf1ZBxAYbAd1iZY3OWcgnvJEyZsH5wWBb8dxhlh/Bvu4xmzm
-         V+2un+7Rbxn0mLygScrDgRSjkDMK5h766H1QFuzHm5p0xduDWwStrhR+iytmOi6jQHkC
-         47GoOR6RH9Sj9QhjxciCRFjma+7fqWWGdnvOM1RTDpqQE+zijtAw5Ri4T2j5ew6kBPcS
-         9quIR9yBI+GJ4wFqr5JikfWQz2EpWCXmTeOyx6lP4dwvFHscS6ySxzLhxb0vMowDzwm8
-         BdHLb05DC1TGkmaPwF1eLlt9bYUBeJ8L+/Ta53+ZUlbbXT2KuOIkqyHvmiEt5tqllPIm
-         YqrQ==
+        bh=FkDjXc3gIUMpsaf8DKZKBhFvjDNJW75eyNisA5Kcxqs=;
+        b=QmrkxRF6ZT5VZaEO9of2RUqHTgXpyBRiVbgaqekWdZ9DaO7jllzj5OwXG2uxf5MLJ1
+         iPpF7YnCQBUyQfUIQVe20Vq48CpRHusRlXjGVVJROai5gE/9Kjl1Y6j4/tgigJWaNXSS
+         k/aAjlk+sDGdUB5wAU5sAmIl111ds3IRbTxC2DcVkxYY1dmHc0LHDL9mvJV5R9jqQEKu
+         1k5KaFJCMnKuWQ/nJUaJaS+nOL1ywhWw7ioYY2S7/DVghi+fAz8haAtksjhS8UaqqcDD
+         3H+AoCH5/06Fe6pwLOxjJ9YPtwHcr0sCJaEa4TkNbaES6f7JCDk7HaYrq/ghaQiPefpV
+         F7SA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1781126352; x=1781731152;
+        d=1e100.net; s=20251104; t=1781126451; x=1781731251;
         h=content-transfer-encoding:cc:to:subject:message-id:date:from
          :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to;
-        bh=6V4y4jrUDwaCAqSrUfft1cggY0gZCCPi3cFlIDDpz7g=;
-        b=sffvN6eMas7o5Vyt4lNkvSB3VYnFDefALRo1dT6KR5w4KxbDorErCxdOXu0jJd+sFJ
-         QVVvXnxOoiIyBV8lVU0d+tVOGlP9MS00LB506wrzQRHwhkJBpUh96yL5D0yHe4fiaRpJ
-         yY52RtkR9kVRsnSCb5ubmwThdMh2M5xf9FKu4LPTA8RFcKEk7DvhFDyuHIGBy4fn3JPA
-         FGcQfyCukeOWwqtgygxzgPQvchIpt+hI6PLK97m1EFfTTNrV5ISNjo3P3RkI040qD5oV
-         GDOq+ryZju5FZ/WcQMr1VYro0dsPxRXa2GBdSyYpGCBUUlVK8DULfaPRSp7FrD8eN4/K
-         PBpQ==
-X-Forwarded-Encrypted: i=1; AFNElJ+HygWEO0zFnnKCWgl+apvoSSGs4dZ7bdQmG48IZs/HrsFo05mqXPUtMyZXTE4d5ymuyYhd7jR4LA==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yy3UI6gvBe14u2uLBZVpS6iy+OGPG+mzgFW6b7IZmhoMhHVkpLM
-	eHww995XuxadN1Qpc/xesxw+W/YfpwKDk4CYt5a/IWdi2P+U7Ka7590x2aT7CQFuNlHERHnuyr2
-	fzUq9YeExMEJO25NkLkQNokJzzGBIVKOgGl1jCV5WtiV1kTu1syUBmXgvUCdS2EEZTOKw80oJe5
-	imC+aJudx8Jwx1C02thDabs4zTScCJLOjI6BT6cH1crV+B
-X-Gm-Gg: Acq92OFpjaE8sOVzOzxf+yRz7QkJxMolZdSckJ2Hj6/4Fp1p/HlDlhO4QXpcDtQSASV
-	D8jXPE5vPbZk760yjEjCTWyRSylcOD4O1s9i6dxmcpoiHmWjSnZU6XoqJUCO5EEerA703Rrx/C2
-	XoB/mdEqmPvfyJedhA31TK8gxEF/V+5V4rH2Y+Qixg46cfCSB9aiVobI4VG/aDIG1RHoeLgpQHF
-	m+9QsmNcKhPFPxnbQ==
-X-Received: by 2002:a05:6214:400c:b0:8ae:6293:78ca with SMTP id 6a1803df08f44-8d1b0d8f6admr6649606d6.18.1781126351992;
-        Wed, 10 Jun 2026 14:19:11 -0700 (PDT)
-X-Received: by 2002:a05:6214:400c:b0:8ae:6293:78ca with SMTP id
- 6a1803df08f44-8d1b0d8f6admr6649316d6.18.1781126351597; Wed, 10 Jun 2026
- 14:19:11 -0700 (PDT)
+        bh=FkDjXc3gIUMpsaf8DKZKBhFvjDNJW75eyNisA5Kcxqs=;
+        b=Gqf97W+F42UigLCCE2JoMVDoGMpmEUAjE1lk0/uRPFJS+Rpp5qzw0MuSF0pMlE1K61
+         5DKrw5syLkLmS+fuM3/q9GioJhkFcYPeQAKokvMmiOuT5YPLnABPDjaFWDiH2VPIdBT9
+         T8BBEVBv6nDFJzKLkQIVuS2/DYhHQ3ts3LrzIb5sH23pWqK7k8E6SQ7+ZtQdbXRgmRq8
+         tRdWL+Wc5HREYASnv3qJJfxE3x4h0s6QWTTPWqTn9g9h9OzTPW6xMHt3S+iB0UPQdakw
+         7Cy12/Bbn13mcRQAxXmp9oTUkdWGi7BUskKBFrr65F17JXf4coMNqpqxJiNOepMUe0hE
+         fryg==
+X-Forwarded-Encrypted: i=1; AFNElJ8ILFSna1wP3KLB+xpT5lPh25DNItFTZCLIJ7e8mIyyr5PsmplKNKXllwBs0E1r/NxBxS8nr1kulQ==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yx6bThje79cVHHQ/xaG3RLdEvGRNO+cIVtwaMFmc0+D5YbcX1pB
+	+e7fccv+blXFCjUjguYgZcZDxF7LUqwznlNqIAvmU1blg94ZxAYd9+vmWEYE23TPUO+DMH4I/Ui
+	ZPpeLqR+eXCxiZZlWosaCx8PyZjRA7hM=
+X-Gm-Gg: Acq92OEHD5ooqN+0Cpq2CT0nqkziRq/9f1uku0Sq3p+qJ5p8l8m2l/MQOfATCJhS/fh
+	Nt5AX8FM+rI40nxKAm9TwPZp9onDHZN5+ZH9rusVTy69bICKj22l+ifZaWnBZ/CTwRB4gZCtSl1
+	KBAyFdk1jCPIHw688JENdEzRKnNpSerWbEIGFu63fnzJawuH+OtchABZr8lbRokNt/2oXoIBRy/
+	znh2+u7JiTGGCpCObL1XTC36vwvLIBAxgbjgKropbjlh25iymv3fZbA9P88BEN4bV6L8xmtZixt
+	xcqvbS8UZqClppJa/fpfgHQu6y3OoqE+82tVErm9U+FGQjoEM+jPQkWTjwhzoZJfYVN4zJbpo80
+	qkhJiEqA9P8ITmkWjwPledv86MxjbkZjSCw8=
+X-Received: by 2002:a05:6a00:b911:b0:842:6849:2180 with SMTP id
+ d2e1a72fcca58-842b0fbb5ffmr24171655b3a.37.1781126451307; Wed, 10 Jun 2026
+ 14:20:51 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260609160634.246526-1-johan@kernel.org>
-In-Reply-To: <20260609160634.246526-1-johan@kernel.org>
-From: Ulf Hansson <ulf.hansson@oss.qualcomm.com>
-Date: Wed, 10 Jun 2026 23:18:59 +0200
-X-Gm-Features: AVVi8CeOXfi9JqEDnpFPZwBVwat-QjZxOlixTxLyqo7ZoBnvsHhB1ckfIAbny_4
-Message-ID: <CAPx+jO9Mm=uVYugv641eiB-m2=jgHx2aGt33XoZC8=18ZNbckw@mail.gmail.com>
-Subject: Re: [PATCH] pmdomain: fix early domain registration
-To: Johan Hovold <johan@kernel.org>
-Cc: Ulf Hansson <ulfh@kernel.org>, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org,
-        Geert Uytterhoeven <geert@linux-m68k.org>
+References: <CAFdvZNt+mRTE9Q+utn=T8GzU7s_09ULhUtzTMMa9dgGCsE+r9A@mail.gmail.com>
+ <c982caf3-f855-41ad-80cd-3ce9598913ab@amd.com> <CAFdvZNs9jNxnqqaPhDXBt555hqgTHQizV4ORPp_8xg1D=XD4TA@mail.gmail.com>
+ <44bd3c12-b8d6-45c8-a7cf-12ea47716461@amd.com>
+In-Reply-To: <44bd3c12-b8d6-45c8-a7cf-12ea47716461@amd.com>
+From: Lenart Kos <koslenart@gmail.com>
+Date: Wed, 10 Jun 2026 23:20:39 +0200
+X-Gm-Features: AVVi8CcyYq3w30_X_nrZfw8uMliv6NRs0ItHiIo7T54aUztKKw_viGbkGK7JPt0
+Message-ID: <CAFdvZNvWSVCphSyQCVNHx7j0WApsbr0KekVsA-rVLO0eqV0X9w@mail.gmail.com>
+Subject: Re: pinctrl: amd: spurious immediate resume from S3/s2idle via
+ BIOS-armed wake GPIO with no ACPI owner (Lenovo Legion Pro 5 16ARX8)
+To: Mario Limonciello <mario.limonciello@amd.com>
+Cc: Basavaraj Natikar <Basavaraj.Natikar@amd.com>, Shyam Sundar S K <Shyam-sundar.S-k@amd.com>, 
+	Linus Walleij <linusw@kernel.org>, linux-gpio@vger.kernel.org, linux-pm@vger.kernel.org, 
+	linux-kernel@vger.kernel.org
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
-X-Proofpoint-GUID: TQOdfp2DuZA9NlSkvKQUjViefFKC18BF
-X-Proofpoint-Spam-Info: AW1haW4tMjYwNjEwMDIwNCBTYWx0ZWRfXxBUDBTKVVSFG
- T3c8JF0yMGkABAqVDY0GXsGdK4Vuw1aqvtGSag28L4otMAZWB+b4KUAy31MWbIyO1XuDU0t1hz9
- kIhxMUIg4ZUBj2K0eo2v/iasgyHbXGU=
-X-Proofpoint-ORIG-GUID: TQOdfp2DuZA9NlSkvKQUjViefFKC18BF
-X-Authority-Analysis: v=2.4 cv=Kux9H2WN c=1 sm=1 tr=0 ts=6a29d4d0 cx=c_pps
- a=oc9J++0uMp73DTRD5QyR2A==:117 a=IkcTkHD0fZMA:10 a=FelO9ux0wxsA:10
- a=s4-Qcg_JpJYA:10 a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22
- a=rJkE3RaqiGZ5pbrm-msn:22 a=VwQbUJbxAAAA:8 a=pGLkceISAAAA:8 a=tBb2bbeoAAAA:8
- a=7R_twnYr9fBWtDXhySAA:9 a=QEXdDO2ut3YA:10 a=iYH6xdkBrDN1Jqds4HTS:22
- a=Oj-tNtZlA1e06AYgeCfH:22
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNjEwMDIwNCBTYWx0ZWRfX6Iz9QK7VdWFX
- wWK8Tl4ZCn5xVx5z6STt/rTRRgViZyLAI1Q6qUazEvmxOWYXoLLXlJ1vH9CJHRb4l/irmvns6YY
- FTU6neuEw5woli/H08Y4sMPCqQvBerNNKrkhpXe68A+rv+2j5mE+U9JAJj3b+2vsYgeS+4bQGbq
- K8pWY+ssXgTaQNDZvYcxIlTyVwwBXeDKOd6kZv1JAKiPM0ATA73hg1Q58F/mdidR9DwjuwwEyLn
- OLp3LXHPobx+K2xkmCPZPWVQVqP53sCfxh8fq/+XxSztCiyRSeVByH1S3hm5hlH5SAiTewE2AJB
- GftPny94hzFE0nih9ZjyrjM8Jeek1LWC/U3FdPQvG4YyaFV52DNRPQU6L64yjvgwy06xQ6OhL0E
- /1Q0X4g0IaJZ7TLJwL1M7h/FOIZ0nVMQg1vcRyK+d3uR2o+JKEpb1G3xTK+lflu+6RFIrHL+Ien
- rmfaF36KAYnM/KELY9w==
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.125,FMLib:17.12.100.49
- definitions=2026-06-10_04,2026-06-09_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- adultscore=0 malwarescore=0 phishscore=0 spamscore=0 bulkscore=0
- clxscore=1015 suspectscore=0 lowpriorityscore=0 priorityscore=1501
- impostorscore=0 classifier=typeunknown authscore=0 authtc= authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2606040000
- definitions=main-2606100204
 
-On Tue, Jun 9, 2026 at 6:07=E2=80=AFPM Johan Hovold <johan@kernel.org> wrot=
-e:
->
-> A recent change switching to a dynamically allocated root device broke
-> platforms like rcar-sysc that registers PM domains before the PM domain
-> bus itself has been registered (cf. commit c5ae5a0c6112 ("pmdomain:
-> renesas: rcar-sysc: Add genpd OF provider at postcore_initcall")).
->
-> Defer the assignment of the parent root device until the domain is
-> registered with driver core to avoid it being left unset.
->
-> Fixes: a96e40f4afdc ("pmdomain: core: switch to dynamic root device")
-> Reported-by: Geert Uytterhoeven <geert@linux-m68k.org>
-> Link: https://lore.kernel.org/r/CAMuHMdUHabMGJyJ7e7yp7DLC+JJc9k6NK9p4anj2=
-wRKNuwZUng@mail.gmail.com
-> Signed-off-by: Johan Hovold <johan@kernel.org>
+I have checked all the bios settings and the closest to modifying
+sleep behaviour was a setting that enables opening the lid turning on
+the laptop which was already disabled, so no, there are no sleep
+settings.
 
-Applied for next, thanks!
+Regarding the HDMI port, it is connected to the Nvidia card. Only the
+built-in screen is connected to the AMD card with eDP. I have not
+reported this anywhere else yet, only here and the before mentioned
+forum post. If this is an Nvidia issue I can report it to them as
+well.
 
-Kind regards
-Uffe
+The HPD theory is pure guesswork done by LLM. What I can be certain of
+is that disabling those specific pins
+(https://github.com/Lenart12/legion-nowake/blob/6b599aad7afd1431e8104827310=
+6c5526561764b/legion_nowake.c#L59-L62)
+did solve the problem, as to why and in what way, I would not bet on.
+So the statements about HPD and your questions about them are maybe in
+vain. What would be the best way to figure out if HPD is actually
+attached to those pins?
 
-> ---
->  drivers/pmdomain/core.c | 3 ++-
->  1 file changed, 2 insertions(+), 1 deletion(-)
+FWIW I think that it is in fact not HPD as I have checked the GPIO
+states when the monitor cable is connected or not and it seems to be
+gpio #131 not #2 or #4. I have asked Claude to expand on what it knows
+and what it assumes, this may be of help to you:
+---
+What I have measured (facts):
+* The resume is triggered by the AMD GPIO controller:
+/sys/power/pm_wakeup_irq =3D 7 (pinctrl_amd), and the post=E2=80=91resume l=
+og
+shows GPIO 4 is active: 0x30057c00 with the wake=E2=80=91status bit latched
+and the S3 wake=E2=80=91enable bit (bit 14) set.
+* In /sys/kernel/debug/gpio, pins #2 and #4 are the only pins with
+S0i3/S3 wake=E2=80=91enable bits set and an interrupt enabled. (Pin #89 has=
+ an
+interrupt but no wake bits =E2=80=94 not a wake source.)
+* These wake bits have no ACPI owner: decompiling the DSDT and all 16
+SSDTs yields zero GpioInt / GpioIo / _AEI resources. Nothing in ACPI
+references these pins.
+* Empirically: suspend instant=E2=80=91wakes only when an external display =
+is
+connected (reproduced over both HDMI and USB=E2=80=91C/DP); with no display=
+,
+suspend holds. In the HDMI case, pin #4 is the one that latches the
+wake.
+* Clearing the S=E2=80=91state wake=E2=80=91enable bits (13/14/15) on pins =
+#2 and #4
+fixes it (verified across multiple suspends). Interrupt=E2=80=91enable bits
+left intact; no other wake source touched.
+* GPIO #131 is the actual monitor=E2=80=91presence line =E2=80=94 its level=
+ cleanly
+tracks plug/unplug (active=E2=80=91low: LOW when a monitor is attached, HIG=
+H
+when not, confirmed across plug=E2=86=92unplug=E2=86=92replug). But #131 ha=
+s no
+interrupt and no wake bits =E2=80=94 it does not wake the system.
+* Pins #2 and #4 do not change level when the monitor is
+plugged/unplugged (both steady while awake).
+
+What I am inferring (not proven):
+* Because #4's level is steady while awake yet the wake only occurs
+with a display connected, my working model is that #4 transitions
+during the dGPU's suspend power=E2=80=91down sequence, and that transition
+only happens when the dGPU was actively driving an external display.
+This is a plausible explanation of the display correlation, not a
+verified one.
+* The precise electrical function of pins #2/#4 is unknown without
+schematics or a scope. They are not the monitor=E2=80=91presence/HPD line
+(that is the unarmed #131). I previously guessed "HPD"; the #131 data
+contradicts that, so I'm withdrawing it.
+
+Unknown: what #2/#4 physically are, and why the firmware arms them as
+sleep wake sources with no ACPI description.
+
+Net: a bare, firmware=E2=80=91armed pinctrl-amd wake pin with no ACPI
+description, which no existing in=E2=80=91tree mechanism can disarm
+(gpiolib_acpi.ignore_wake=3D needs an ACPI event; power/wakeup needs a
+device owner; /dev/mem is blocked by IO_STRICT_DEVMEM).
+---
+
+I have not filed a bugzilla report yet.
+
+I hope I addressed your questions.
+
+On Wed, Jun 10, 2026 at 10:23=E2=80=AFPM Mario Limonciello
+<mario.limonciello@amd.com> wrote:
 >
-> diff --git a/drivers/pmdomain/core.c b/drivers/pmdomain/core.c
-> index 3f265b57158a..19eaee1819c8 100644
-> --- a/drivers/pmdomain/core.c
-> +++ b/drivers/pmdomain/core.c
-> @@ -2323,7 +2323,6 @@ static int genpd_alloc_data(struct generic_pm_domai=
-n *genpd)
->         device_initialize(&genpd->dev);
->         genpd->dev.release =3D genpd_provider_release;
->         genpd->dev.bus =3D &genpd_provider_bus_type;
-> -       genpd->dev.parent =3D genpd_provider_bus;
 >
->         if (!genpd_is_dev_name_fw(genpd)) {
->                 dev_set_name(&genpd->dev, "%s", genpd->name);
-> @@ -2688,6 +2687,7 @@ int of_genpd_add_provider_simple(struct device_node=
- *np,
->         if (!genpd_present(genpd))
->                 return -EINVAL;
 >
-> +       genpd->dev.parent =3D genpd_provider_bus;
->         genpd->dev.of_node =3D np;
+> On 6/10/26 15:18, Lenart Kos wrote:
+> > Thanks for taking your time for this. To answer your questions:
+> >
+> > S3 path:
+> > AFAIK it was on [deep] since my system was installed and I strongly
+> > remember being it as so, although it is possible that I misremembered
+> > since I have been debugging this sleep issue since January. In any
+> > case I have also tried setting sleep to [s2idle] before and it did not
+> > fix the waking issue even if set in s2 sleep mode.
+> > The firmware is not modified, everything is installed from Fedora
+> > sources without modification.
 >
->         fwnode =3D of_fwnode_handle(np);
-> @@ -2782,6 +2782,7 @@ int of_genpd_add_provider_onecell(struct device_nod=
-e *np,
->                 if (!genpd_present(genpd))
->                         goto error;
+> Can you please check in Lenovo's BIOS setup if there is a sleep mode for
+> this platform?  If there isn't that's fine, I want to confirm what
+> Lenovo actually presented before making further assumptions.
 >
-> +               genpd->dev.parent =3D genpd_provider_bus;
->                 genpd->dev.of_node =3D np;
+> If there is such a setting, what options does it offer?  If you change
+> it does the behavior change?
 >
->                 if (sync_state && !genpd_is_no_sync_state(genpd)) {
-> --
-> 2.53.0
+> Furthermore if this issue is only happening when connected to the HDMI
+> port, that's the one connected to NVIDIA, right?  Have you started a
+> conversation with them?  Assuming the HPD theory that has been presented
+> is correct their driver should be in control of HPD behavior.
 >
+> >
+> > Methodology:
+> > Yes you are correct about LLMs, I have thrown every bit of my
+> > knowledge and time that I have available for this without success and
+> > Claude has finally solved this after a few months being irritated by
+> > this. I had decided to forward most of the information I received from
+> > LLM in the hopes it was useful to an expert in the area, but in
+> > hindsight I can see this was a mistake without AI disclosure, I'm
+> > sorry. So for your other questions regarding why this assumption was
+> > made or why was something done a certain way - I don't know, but I am
+> > willing to assist with testing. Apologies for this mess, it's my first
+> > time filing a bug to the LKML.
+>
+> No worries; as long as I'm talking to a human about a problem not an
+> LLM, I'm fine to work with you to see what we can come up with for a
+> solution.
+>
+> I've got various inline comments/questions below.  Can you please
+> address them?
+>
+> >
+> > On Wed, Jun 10, 2026 at 9:59=E2=80=AFPM Mario Limonciello
+> > <mario.limonciello@amd.com> wrote:
+> >>
+> >> First off -
+> >>
+> >> How did you get into an S3 path?  These systems that ship with only
+> >> Modern Standby / s2idle normally shouldn't be able to get into S3.
+> >>
+> >> =E2=95=B0=E2=94=80=E2=9D=AF cat /sys/power/mem_sleep
+> >> [s2idle]
+> >>
+> >> Have you modified the firmware in some way to try to enable an
+> >> unvalidated path?
+> >>
+> >> I have some more questions about your methodology below because when
+> >> debugging a kernel issue an LLM can sometimes make WILD assumptions th=
+at
+> >> are totally a house of cards.
+> >>
+> >> On 6/10/26 14:32, Lenart Kos wrote:
+> >>> ## Summary
+> >>>
+> >>> On the Lenovo Legion Pro 5 16ARX8, suspending (S3 *or* s2idle) with a=
+n external
+> >>> display connected resumes the machine after ~1 second. The wake is de=
+livered by
+> >>> the AMD GPIO controller (`pinctrl_amd`, IRQ 7) from GPIO pin **#4**
+> >>> (and pin #2 for
+> >>> the USB=E2=80=91C/DP path), which the **BIOS has armed as an S0i3/S3 =
+wake
+> >>> source directly
+> >>> in the FCH GPIO register**, with **no ACPI description**
+> >>> (`_AEI`/`GpioInt`/`_PRW`)
+> >>> anywhere in the DSDT or the 16 SSDTs. Because there is no ACPI owner,
+> >>> none of the
+> >>> existing override mechanisms (`gpiolib_acpi.ignore_wake=3D`, device
+> >>> `power/wakeup`)
+> >>> can reach it, and `IO_STRICT_DEVMEM` blocks any userspace register
+> >>> write. The pin
+> >>> is an external=E2=80=91display HPD line, so the edge produced while t=
+he GPU
+> >>> powers down on
+> >>> the way into sleep immediately wakes the system.
+> >>>
+> >>> ## Affected system
+> >>>
+> >>> ```
+> >>> DMI sys_vendor LENOVO
+> >>> DMI product_name 82WM
+> >>> DMI product_version Legion Pro 5 16ARX8
+> >>> DMI board_name LNVNB161216
+> >>> BIOS LPCN62WW (2025-06-17) # latest available; does NOT fix this
+> >>> SoC AMD Ryzen 7 7745HX (Raphael), GPIO ctrl AMDI0030 @ 0xFED81500
+> >>> GPU NVIDIA RTX 4060 Mobile (HDMI) + AMD Raphael iGPU (USB-C DP)
+> >>> Kernel 6.17+ through 7.0.x (reproduced on Fedora 43/44)
+> >>> ```
+> >>>
+> >>> ## Symptom / evidence
+> >>>
+> >>> Failed-suspend kernel log (verbose PM):
+> >>> ```
+> >>> PM: suspend entry (deep)
+> >>> ...
+> >>> amd_gpio AMDI0030:00: ... Clearing debounce for GPIO #2 during suspen=
+d.
+> >>> amd_gpio AMDI0030:00: ... Clearing debounce for GPIO #4 during suspen=
+d.
+> >>> amd_gpio AMDI0030:00: ... Disabling GPIO #89 interrupt for suspend. #
+> >>> not a wake src
+> >>> ACPI: PM: Preparing to enter system sleep state S3
+> >>> Timekeeping suspended for 1.384 seconds
+> >>> PM: Triggering wakeup from IRQ 7 # IRQ 7 =3D pinctrl_amd
+> >>> ...
+> >>> GPIO 4 is active: 0x30057c00 # bit 14 (WAKE_CNTRL_S3) + bit 29 (wake =
+latched)
+> >>> ```
+> >>> `/sys/power/pm_wakeup_irq` =3D `7`.
+> >>>
+> >>> `/sys/kernel/debug/gpio` (relevant rows) shows pins #2 and #4 armed f=
+or S0i3+S3
+> >>> wake with their interrupt enabled, while #89 has no wake bits:
+> >>> ```
+> >>> #2 =F0=9F=98=9B| =E2=86=93 | edge |=E2=8F=B0|=E2=8F=B0| | | ... 0x147=
+ae0
+> >>> #4 =F0=9F=98=9B| b | edge |=E2=8F=B0|=E2=8F=B0| | | ... 0x57ce0 <- bo=
+th-edge HPD, S0i3+S3 wake set
+> >>
+> >> How did you determine this is an HPD line?  Is that a pure guess?  Or
+> >> did you look at a schematic/trace etc?
+> >>
+> >>> #89 =F0=9F=98=9B| =E2=86=93 | level| | | | | ... 0x151b00 <- no wake =
+bits (red herring)
+> >>> ```
+> >>>
+> >>> ## Root cause
+> >>>
+> >>> 1. The external=E2=80=91display HPD lines are routed to SoC GPIO #2 (=
+USB=E2=80=91C/DP) and #4
+> >>> (HDMI/dGPU).
+> >>
+> >> How do you know?
+> >>
+> >>> 2. The BIOS sets `WAKE_CNTRL_S0I3`/`WAKE_CNTRL_S3` (bits 13/14) on
+> >>> those pins in the
+> >>> FCH GPIO register block and **never describes them in ACPI** =E2=80=
+=94 decompiling the
+> >>> DSDT and all 16 SSDTs yields **zero** `GpioInt`/`GpioIo`/`_AEI` resou=
+rces.
+> >>> 3. `pinctrl_amd` correctly preserves hardware-armed wake pins across
+> >>> suspend, so the
+> >>> HPD edge generated during the suspend transition wakes the system imm=
+ediately.
+> >>>
+> >>> This is effectively an unvalidated firmware S3 path (the platform shi=
+ps as
+> >>> Modern-Standby-only); but note **both** the S0i3 and S3 wake bits are=
+ set, so
+> >>> s2idle is affected too.
+> >>
+> >> So how did you get into S3?
+> >>
+> >>>
+> >>> ## Why existing mechanisms don't help
+> >>>
+> >>> - `/proc/acpi/wakeup`, PCI/ACPI `power/wakeup` =E2=80=94 wrong layer;=
+ this is
+> >>> not a PCIe PME.
+> >>> Disabling wakeup on the GPP bridges / GPU has no effect (verified).
+> >>> - `gpiolib_acpi.ignore_wake=3D` / `ignore_interrupt=3D` =E2=80=94 onl=
+y match
+> >>> **ACPI-declared**
+> >>> GPIO events; this pin has no ACPI declaration, so they cannot target =
+it.
+> >>> - `/dev/mem` register write =E2=80=94 blocked by `CONFIG_IO_STRICT_DE=
+VMEM=3Dy`
+> >>> (the region is
+> >>> claimed by pinctrl_amd).
+> >>>
+> >>> There is currently **no way, in-tree, to disarm a bare (non-ACPI) fir=
+mware-armed
+> >>> pinctrl-amd wake pin.** That is the gap.
+> >>>
+> >>> ## Suggested fix (maintainers' choice)
+> >>>
+> >>> A working out-of-tree reference implementation (clears bits 13/14/15
+> >>> on pins #2/#4
+> >>> at probe and on `PM_SUSPEND_PREPARE`) is here:
+> >>> **https://github.com/Lenart12/legion-nowake** =E2=80=94 please feel f=
+ree to reuse.
+> >>
+> >> Why not use /dev/gpiochipX devices to change GPIOs?
+> >>
+> >>>
+> >>> Possible in-tree directions:
+> >>> 1. **DMI-matched quirk in `pinctrl-amd`** that clears the S-state
+> >>> wake-enable bits
+> >>> for the affected pins at probe (smallest change; precedent exists for=
+ AMD GPIO
+> >>> wake quirks).
+> >>> 2. **A generic override** for bare pins, e.g. a
+> >>> `pinctrl_amd.ignore_wake=3D<pin,...>`
+> >>> module parameter, analogous to `gpiolib_acpi.ignore_wake=3D` but for
+> >>> hardware-armed
+> >>> pins without ACPI events. This would help the broader class of AMD la=
+ptops that
+> >>> hit firmware-armed spurious wakes.
+> >>>
+> >>> ## Reproduction
+> >>>
+> >>> 1. AMD laptop where a display HPD is wired to a GPIO the BIOS arms fo=
+r wake.
+> >>> 2. Connect an external monitor, `systemctl suspend`.
+> >>> 3. Observe resume after ~1s; `pm_wakeup_irq` =3D the `pinctrl_amd` IR=
+Q;
+> >>> the offending
+> >>> pin shows `wake latched` in the post-resume `GPIO N is active` log.
+> >>
+> >> On the presumption that this is correct about being an HPD pin doesn't
+> >> this actually point at a GPU driver bug?
+> >>
+> >>>
+> >>> ## Public discussion / full diagnostics
+> >>>
+> >>> Fedora Discussion (complete diagnostic walkthrough, ACPI dumps, gpio =
+table):
+> >>> https://discussion.fedoraproject.org/t/immediate-wake-from-s3-sleep-w=
+hen-hdmi-is-connected-irq-7-pinctrl-amd
+> >>>
+> >>> ## Attachments to include when filing
+> >>>
+> >>> - `acpidump` output (or note: DSDT + all SSDTs contain no GpioInt/_AE=
+I).
+> >>> - Full verbose-PM `dmesg` of one failed suspend (`pm_debug_messages=
+=3D1`).
+> >>> - `sudo cat /sys/kernel/debug/gpio`.
+> >>> - `cat /sys/class/dmi/id/{sys_vendor,product_name,product_version,boa=
+rd_name,bios_version}`.
+> >>
+> >> Where is the kernel bugzilla that you attached all these artifacts?
+> >>
+> >
+> >
+>
+
+
+--=20
+Lep pozdrav,
+Lenart Arvo Kos
