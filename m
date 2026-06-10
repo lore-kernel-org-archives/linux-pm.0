@@ -1,93 +1,94 @@
-Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
+Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2E1C33A7829
-	for <linux-pm@vger.kernel.org>; Wed, 10 Jun 2026 08:12:55 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CF04D3A5995
+	for <linux-pm@vger.kernel.org>; Wed, 10 Jun 2026 08:13:02 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.180.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1781079178; cv=none; b=DCEg9FEPrUY3Zev5dpX2n475USHQBf/JqN7XpVFBdOZGlQghn7EMKQJtJGDAIBj2HL352KjOei3RBW2lr5DC7669SqOMDIBS47SGZQNPvGKHl2GOgcIz+60BzVUgObwg84wWOZwX5WaqUZMLms9YX7TLHtZcW7W0PvV8WWeNLa8=
+	t=1781079184; cv=none; b=A7dxdfe/EW9xLiBiQreMD5VbLjMh0CGAXWAz8H3INqafZU2I0hGYAoBS1/+AR/0MJbJ28Ufg7yXp/8TFgZoQ4GqdvpDjiNjoM295YBoAE2GlsDNzskicaH/J0CBzENc2IuKpeZxW6gqg4EpcPM0ThcSzLeSbXKar8CQYxx76uFE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1781079178; c=relaxed/simple;
-	bh=7DFnNTv28IGdngqta0O1QHu/B/uxIDqYYhl0XGm2Pb4=;
+	s=arc-20240116; t=1781079184; c=relaxed/simple;
+	bh=v5y2S4KEuK9ll8FKbt2wx7n2tKCwSSz3NBpnzhwlnk4=;
 	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=Lf5GtgqB2e+6u+AtHlQDf03rs6q6K2GpyKKLfCN+ovsICJlGOH7rs0RX9PzhWrCVy3dkfbyqipPjOevD95tnk/LjqVAhjT5UopPJrubQAyMGGDk75cIdrctw95jsFtS5OI/8kxEmAac5Z8P2IqEc8V29ZtwMK30JzkhYqdwuQmY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=nnVo1AW9; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=cxLOkHFt; arc=none smtp.client-ip=205.220.168.131
+	 MIME-Version; b=IuqwEBiSmqtGe0qZ5vbQqbFPNM347ROy9ZIhEjQpRw9Z7MzauCiByooLYxd674GJHpWTQE1CethDX8ael9g5carEbJAK38mVMg97LKIJ0VVrF5x5AYTJ2MC3yKfnG5kTc6TQ9rwreGo9Kmq7+hDxdt0/eFEzqOvXGykXxNDw0lU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=XgO8IG/I; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=bbAkNIiN; arc=none smtp.client-ip=205.220.180.131
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="nnVo1AW9";
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="cxLOkHFt"
-Received: from pps.filterd (m0279862.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 65A7igbW471736
-	for <linux-pm@vger.kernel.org>; Wed, 10 Jun 2026 08:12:55 GMT
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="XgO8IG/I";
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="bbAkNIiN"
+Received: from pps.filterd (m0279870.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 65A7iKl3992605
+	for <linux-pm@vger.kernel.org>; Wed, 10 Jun 2026 08:13:02 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
 	cc:content-transfer-encoding:date:from:in-reply-to:message-id
-	:mime-version:references:subject:to; s=qcppdkim1; bh=ZnAhfc9juLM
-	6ofZhbvJAs+UfN8U7vmcczY7bB1K8lAI=; b=nnVo1AW92QHI1QBLZVnYiv5DFeU
-	BUap/wJYPT3AOIOt1PIIX8Ze3aT/99m4x/QWPkiyuMnlJN1/Y/9tjtIwfXs6rWSQ
-	QumP55HpsF1TQkA/Db8wLTHnO7CGtHMhHIUSSsdQFF+TFOTCNZ0t8s9J8/NkgJdt
-	NRpJ3U804lCR16ztInjq+P3Jl+SWjoiTt4Pjaxj9aL3WCb44kRiyGwrcVpGMzwbE
-	amBUO1cCpxYMb7V1CH7Lgcyu2NwAM/XdVuJtiTJaeHzN02+/CPbBrcd9WYrUTN/a
-	nIdQCTBPdFKgAHYLFB5nYAGdRLAh0BPimrtn1q4A6vtOx5w61AvXBRJ+QKw==
-Received: from mail-pl1-f197.google.com (mail-pl1-f197.google.com [209.85.214.197])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4epxuvh6gs-1
+	:mime-version:references:subject:to; s=qcppdkim1; bh=bmrPzwjDfZQ
+	LqRIOrgrQTwpDk+/Ro0GV+O0RqY/iaOE=; b=XgO8IG/IfJI5VGjZtkEFnUEJqIv
+	xIVrLsjMFpAZw3bd4WFNtb1R8d86+dxzPN6+0oFyJ2z2UZJ8ZAaTNsQAUpWQ4aKT
+	ixaIpgQIf4ewB2X6Snpor73T+SAwjNK7RIGYxLrpjrLlM0a0NaYXPMtBoiuxAlyp
+	ey2DW7aSCnVDerqeuMMnfvogsgLAFckXOQX3Fm1+vRMqF9WhMKbGbzIs0hqnnJpl
+	fTJbcNktNlW5bOuZNZQSAav0tBws//JqHVXGmiz4CiL6I90dq3QU7xVdKkzYGrM9
+	Cv62hrZ1+Bv+FvhcfS2krLx36Pw2qdGHeBy4h53L545djGX+zdJnC+f7Jow==
+Received: from mail-pl1-f198.google.com (mail-pl1-f198.google.com [209.85.214.198])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4eq1tg0k68-1
 	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Wed, 10 Jun 2026 08:12:55 +0000 (GMT)
-Received: by mail-pl1-f197.google.com with SMTP id d9443c01a7336-2c0a99db8dfso70847425ad.3
-        for <linux-pm@vger.kernel.org>; Wed, 10 Jun 2026 01:12:55 -0700 (PDT)
+	for <linux-pm@vger.kernel.org>; Wed, 10 Jun 2026 08:13:01 +0000 (GMT)
+Received: by mail-pl1-f198.google.com with SMTP id d9443c01a7336-2bf1dece2ecso66716155ad.1
+        for <linux-pm@vger.kernel.org>; Wed, 10 Jun 2026 01:13:01 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1781079175; x=1781683975; darn=vger.kernel.org;
+        d=oss.qualcomm.com; s=google; t=1781079180; x=1781683980; darn=vger.kernel.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=ZnAhfc9juLM6ofZhbvJAs+UfN8U7vmcczY7bB1K8lAI=;
-        b=cxLOkHFtp7iLYnDdUuvf0HtW9xj+qaHEouvzopRWZqC3YAge5MVYeuFpeCacamAE6W
-         E/9lI03zHiYrssqYwFr8gX1K+8hunJIV8pGg4krsVCUecW+JgBFszmlHUazlcgbw5uV4
-         lFTG24/OsrE7UzHl6tFqncfEdM9sY23PbDE+jXpODamTq35CxAlJS3rsBqZjxfVF+84C
-         8Q2Y4DJ3IAYyWqYeyK709LJ5mdRpU3Qqdj1rzcSwNhdZqw/2+SglRVLHyHTRZKTN5rTf
-         iAey4DESfE+uOPY4rGSgIzp2LwDdUJghU9hUBxxBbrtxKS6ZH2AgXJcZiLAKCTV8yuJd
-         +VRQ==
+        bh=bmrPzwjDfZQLqRIOrgrQTwpDk+/Ro0GV+O0RqY/iaOE=;
+        b=bbAkNIiNawCJ3k0hyHLY6JcQtQ1/tQDvucrgFd6I2eVtEdiJaa6HchpN0IN9xqR+wP
+         AAVBIgnWyRfwhlDhQOwH+/LPe2HHaJupRTed9AIIHNXrSqM2mF7zy1tFyxRFlK+x3sDr
+         1xHYt2vv9AVYGcxofZQOd0txV1/9mWT9q6CAc+R1Y6Qb8jH9JtoFkId0pwhuJIc3YI0c
+         mSQBgvBjZ3+GxIWhh/D2TkRvHqypEpVITWK7mERSm3gu69jtg5Hgj/xwo1TxQxyMvKUH
+         Fii+vgUdFXCQYEAwvrYlT4dsEvrZJiWyN4DHKIGfR91uSGqaCgRSS0SqIrCHCiypuZh1
+         vYlA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1781079175; x=1781683975;
+        d=1e100.net; s=20251104; t=1781079180; x=1781683980;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to;
-        bh=ZnAhfc9juLM6ofZhbvJAs+UfN8U7vmcczY7bB1K8lAI=;
-        b=mrFCpGeODmLeLlHS3GwIAz5RwRsjX7exKUx5bSA7mMIwiaXc8e4WXchzbJXeFbVRrX
-         Oll9COdL+pHkz0gqzPEian/eJWUdva+Xdn/j9QBjqSKRHez6D2cTuz6UXu0IYD79Eukh
-         q7B7K9e3vySBrzg+sCq5dVSJULrCutKLgghbGWRnpdPrIiYBeex7yNxdct4dE9HW0rWO
-         TD+oVtL3DiUug23zSRg5Ys+/BZwlMdBPwNfenHCdkgwS4xQJrzRRbM7tAXcouE7C2UG9
-         VFLe8Uxn+srORGFUxehJob1b/zUd8xmFp8ZQMiRacOP5mG5hj9Ejn+JO3mGCfTQ3d5H+
-         xAZA==
-X-Forwarded-Encrypted: i=1; AFNElJ+KnxSeDM7LOrJdWU6zSh9pPLrSC1Kx1MNYXBYCstQ2kV5Kyp9hoRtmFT1hDer99RX14/HuCU/pdQ==@vger.kernel.org
-X-Gm-Message-State: AOJu0YwMtRYtsSfVBK/CzeumdMfo5ObA1YwDShPI2bLtV/R9riZGpBMk
-	koScH9sMIve2yhBMzUsWoSpgl3qD2b3SFCEpKS3HAyc5eO+l1FEwPzHtUrViU/3p6cJg3iyRuxz
-	EuEd20gPPmKxnhI2BW1CwI29Hzik4qlpxs3qxoBNR2MZRVzIE8xRjXnEdD+AGkA==
-X-Gm-Gg: Acq92OHEJD53bhFKF0ZAXx/MB750y6nsHkXSxDkYMeN4ISV51b+swD7TlFNkBhXcNIB
-	mbBoVIMCeonfiRW96KTFq6eMX2veI7yosOENlND/uoSqKq0bS7fRRTVkotdudBBQ1hm3dnTjFe+
-	aarCu9btCgbKL09NOMLnwRTFahRzW2UhaSfpdQ+zCdTAcLRdRAjTeqveUOlXZLJjoPtbn3l3SV+
-	IsLXjABPOT7X7vmO4PA/8qMyNPDOlQ6JDwKYtSKaoGoQ2zbeWP3MvBntqwCxbNkOOenI4OB16MU
-	qs8P2/XthVJ1KCpjjz/z+DhWwck69Ts1aTeqHSsLWAnqCgzXJlMhbMjTTJN8NNNwgUSZUIWxkCJ
-	PKPM1KXf1ZosZCppu+bdZg0JIv/ouUSwEfmHkGhuKI0NTPcfpCobZafakKP0/hjUX1IgyyTJPVR
-	K2bIA08OkzysLOZ7HwQ2mU0XZTpBMZxwR66dFDQwqnwZUu+WhWvmEYMw+M315enA==
-X-Received: by 2002:a17:903:3504:b0:2c0:ab82:6b9d with SMTP id d9443c01a7336-2c1e80edc43mr270505335ad.29.1781079174753;
-        Wed, 10 Jun 2026 01:12:54 -0700 (PDT)
-X-Received: by 2002:a17:903:3504:b0:2c0:ab82:6b9d with SMTP id d9443c01a7336-2c1e80edc43mr270505155ad.29.1781079174334;
-        Wed, 10 Jun 2026 01:12:54 -0700 (PDT)
+        bh=bmrPzwjDfZQLqRIOrgrQTwpDk+/Ro0GV+O0RqY/iaOE=;
+        b=SjCNjS3w/iXkjv41qghivDs++msadzgne0Auvaoi5qr5SP0/0O2PI5Vh5EQrvVhfpI
+         78D4OgqskFUef3EK6F1hkfPd4FzyWW9ulFc952y4YnOPE4syvE90JmDx6XiZUANzrEzQ
+         L2RYon+Fen5l17X0Q+WBrzktqqOzfflekC/LJOotVEZoPyrLLa21odoCq0qbbwlhgCkQ
+         BiDl7E4c0/tBOLjrCWFiF4V++XuXwLW2CaVqFYGL2Cb5CCR/RTG0xYkUWxJOEP7bmHDJ
+         7qMzj1qa8NcG82AGKY35ck18NClEhoztY88uBihxCD9tv4A2C9sYHLj/QiPj/o0Dlnh9
+         2Piw==
+X-Forwarded-Encrypted: i=1; AFNElJ+E1+/wJJll5xdyTdk0mRNKYRy+u9qGqMBpRdSUrWhW6RxKTjR7H9Zmy6pmxcB9cz+xDXwXJQhTfw==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yx09z7u/Qm5l5dF53yxqQ3S4yp3YChqifrksIy9F7rDoM1LWArJ
+	eZtl2H71m2OLJunZFTGH89NxcW+mTusL4lVWSFo4vioRoMabdgB4uQ+6Tif+zF3s56onjPADCB8
+	2Sk0nHKOOO2Uz8IRw2BDLuu7/tqTRvVExeKOSiYYQNPbqNzIZP0tzD2+/chbhLg==
+X-Gm-Gg: Acq92OGbIopl62vbclLaFjPUJUlFZt409z8wd4gIhX65+X6Er6E5o6Rquqwnp0UZzdT
+	PgBac07eXTUVeLF4Tz2KjjFkcQA0f6ee0XHyvm8OBufsVgq6CX5+BCI83qfqiLS5ZY+7evP5IZs
+	IKaF8nUGya29L+YJiEboDA+wIVNWDdNpWoh74t1aSolaaGjHCMpm7WH8l90WcYqjaA2GLHeDyQw
+	gUOpqLedt6/ZlMuwApnkn+fr7GmxoLDMchuyekbeetDk0lE3LfMCXQnTMcQ2xNMa6Terx3IsTmT
+	lcwaqkuhlL3pslre8SameDvjus9GkzQLnLkEe5rrQk+qboKtab45TXX6RXmfJIXCClZ3BaJZJ98
+	WqluYSzALrHAGKh52txAyZt9UVPTyUZLutjrQPd38/4LTF/pmluFTXV009eKYgp/CbqmuZJixvu
+	XULtpeEMtgYtlGGYxd0ratY5pR+e1b87Bq17/gUSmZBw7YTTMN9NASJ2u6oATEiw==
+X-Received: by 2002:a17:902:e5ca:b0:2c0:b932:867d with SMTP id d9443c01a7336-2c1e893d0b9mr270665345ad.29.1781079180106;
+        Wed, 10 Jun 2026 01:13:00 -0700 (PDT)
+X-Received: by 2002:a17:902:e5ca:b0:2c0:b932:867d with SMTP id d9443c01a7336-2c1e893d0b9mr270665045ad.29.1781079179556;
+        Wed, 10 Jun 2026 01:12:59 -0700 (PDT)
 Received: from hu-varada-blr.qualcomm.com (blr-bdr-fw-01_GlobalNAT_AllZones-Outside.qualcomm.com. [103.229.18.19])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2c164f8679esm228858575ad.21.2026.06.10.01.12.49
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2c164f8679esm228858575ad.21.2026.06.10.01.12.54
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 10 Jun 2026 01:12:54 -0700 (PDT)
+        Wed, 10 Jun 2026 01:12:59 -0700 (PDT)
 From: Varadarajan Narayanan <varadarajan.narayanan@oss.qualcomm.com>
 To: amitk@kernel.org, thara.gopinath@gmail.com, rafael@kernel.org,
         daniel.lezcano@kernel.org, rui.zhang@intel.com, lukasz.luba@arm.com,
         robh@kernel.org, krzk+dt@kernel.org, conor+dt@kernel.org,
         linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org,
         devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Varadarajan Narayanan <varadarajan.narayanan@oss.qualcomm.com>
-Subject: [PATCH v2 1/2] dt-bindings: thermal: tsens: add ipq5210 & ipq9650 compatible
-Date: Wed, 10 Jun 2026 13:42:40 +0530
-Message-Id: <20260610081241.1468507-2-varadarajan.narayanan@oss.qualcomm.com>
+Cc: Varadarajan Narayanan <varadarajan.narayanan@oss.qualcomm.com>,
+        Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
+Subject: [PATCH v2 2/2] thermal/drivers/qcom/tsens: Add support for ipq9650 tsens
+Date: Wed, 10 Jun 2026 13:42:41 +0530
+Message-Id: <20260610081241.1468507-3-varadarajan.narayanan@oss.qualcomm.com>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20260610081241.1468507-1-varadarajan.narayanan@oss.qualcomm.com>
 References: <20260610081241.1468507-1-varadarajan.narayanan@oss.qualcomm.com>
@@ -98,76 +99,87 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-Proofpoint-GUID: RO8vF3UwXvRnZpiBDDYXxWgzcp7U73fh
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNjEwMDA3NiBTYWx0ZWRfX2ubHC7OUxhg9
- JdBU2u6Jp0RYPvQekLWLljDr6bwLznl1mrf93VNfxAzWo1ng4c5aRkrgSTP8LlnIm2bUCl9OAHJ
- mPlwa0aXrm/ozaHsacoNshcee4q/zRQZxwNmSqTxG1Yo0DuMr6600jA2bq5qbxbL6S1NDYcBnGy
- mg09UO4uZKopPlLiXvA+NSDDJJgUIMYwWK6JBcvTC/ibmQvtDaLHxCPLlNuvyM4cOEc4xIUxQNg
- OWnFkoWH3MbJKVkJBqzj6nUac0b1nUQpg5FK6f9XTMGjhaHImdlebDSYarr/8x92gQHViJrdBeg
- x4R/qyDyEwNII8nbrmW56XI+TrB2kIpFau0xZ74EM0YH+kInvsWosDa6r8tKo24COSqD0S7bGTL
- R0Ad3MlVOyWcX3kyW8H4QhSnKjpq0dH0b/mEoE/8tZBBl0HGWqkpXlEg59J1GWHQd2rVJv3+n+y
- 6jXHLkaEuAxbHr4Y60w==
-X-Authority-Analysis: v=2.4 cv=Co+PtH4D c=1 sm=1 tr=0 ts=6a291c87 cx=c_pps
- a=cmESyDAEBpBGqyK7t0alAg==:117 a=Ou0eQOY4+eZoSc0qltEV5Q==:17
+X-Proofpoint-GUID: MBKRW4B0-WJt3Xun4iChPrKWhYSR6_Qg
+X-Authority-Analysis: v=2.4 cv=dLmWXuZb c=1 sm=1 tr=0 ts=6a291c8d cx=c_pps
+ a=MTSHoo12Qbhz2p7MsH1ifg==:117 a=Ou0eQOY4+eZoSc0qltEV5Q==:17
  a=FelO9ux0wxsA:10 a=s4-Qcg_JpJYA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=u7WPNUs3qKkmUXheDGA7:22 a=_K5XuSEh1TEqbUxoQ0s3:22 a=EUspDBNiAAAA:8
- a=Cj70nMFs6DzugLwqs6cA:9 a=1OuFwYUASf3TG4hYMiVC:22
-X-Proofpoint-ORIG-GUID: RO8vF3UwXvRnZpiBDDYXxWgzcp7U73fh
+ a=u7WPNUs3qKkmUXheDGA7:22 a=gowsoOTTUOVcmtlkKump:22 a=EUspDBNiAAAA:8
+ a=nMt2SIcdhh0IZDtwxJkA:9 a=GvdueXVYPmCkWapjIL-Q:22
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNjEwMDA3NiBTYWx0ZWRfX2XXCJZwDVFCf
+ iWb4b3o+R0ve5+r+p2YZmVXKYaHoV9OFZVwGv9hmXQkClv87GqNEh3IiehzUKdOasX+mUjkJdJv
+ cYETPz/b9H3Xxn49ikTeIfnHBkS7IXj19hH+x20ZUWhz3H9LBG7sRQrnZgbnCpatNEyehwSfz2d
+ 22DPoS1ucl9rOJ8JRd4hqgkV9X84tH9fx5fjCTMMe0uhhhsasJFnKpw9QTq7YYrVC2UrGmgmCKG
+ 00OD1w1N4cwgbR5xpznABsYnSPafv4yANgSHSrUpTOmlQm3keI4QtKgCY7zM+GBdivgOzxxa6EI
+ aNY0CqWQULkVFG27Dq4yyP5V2voQ2eqit0IvDJWY4uNlj6SeCZHYy2sWSfr2Ezk4OHQr1FkzWwd
+ 4HihW8/Dcmcx3Rpd2ETmTW8+deZG8xxfIAaXFqW1UsC0KMo2vqjvtcmKl6ZMnNQvBnYgR26XZ2m
+ ubWzrwcZ/kEhe16e1DQ==
+X-Proofpoint-ORIG-GUID: MBKRW4B0-WJt3Xun4iChPrKWhYSR6_Qg
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.125,FMLib:17.12.100.49
  definitions=2026-06-10_02,2026-06-09_02,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- phishscore=0 lowpriorityscore=0 bulkscore=0 priorityscore=1501 adultscore=0
- spamscore=0 clxscore=1015 impostorscore=0 suspectscore=0 malwarescore=0
+ malwarescore=0 impostorscore=0 spamscore=0 clxscore=1015 lowpriorityscore=0
+ phishscore=0 adultscore=0 suspectscore=0 priorityscore=1501 bulkscore=0
  classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
  reason=mlx scancount=1 engine=8.22.0-2605210000 definitions=main-2606100076
 
-Add the compatible for the thermal sensors on the ipq5210 and ipq9650. The
-ipq5210 uses ipq5332-tsens as a fallback, while ipq9650 is added as a
-standalone v2 TSENS compatible with combined interrupt.
+ipq9650's tsens is similar to ipq5332 tsens but has different number of
+sensors. Re-use the ipq5332 data for ipq9650 and modify the sensor related
+information.
 
+Reviewed-by: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
 Signed-off-by: Varadarajan Narayanan <varadarajan.narayanan@oss.qualcomm.com>
 ---
-v2: Fix fallback definition
-    Include ipq9650 to all applicable constraints
----
- .../devicetree/bindings/thermal/qcom-tsens.yaml          | 9 +++++++++
- 1 file changed, 9 insertions(+)
+ drivers/thermal/qcom/tsens-v2.c | 8 ++++++++
+ drivers/thermal/qcom/tsens.c    | 3 +++
+ drivers/thermal/qcom/tsens.h    | 2 +-
+ 3 files changed, 12 insertions(+), 1 deletion(-)
 
-diff --git a/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml b/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml
-index 7d34ba00e684..5d782c9952c6 100644
---- a/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml
-+++ b/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml
-@@ -92,6 +92,13 @@ properties:
-           - qcom,ipq5332-tsens
-           - qcom,ipq5424-tsens
-           - qcom,ipq8074-tsens
-+          - qcom,ipq9650-tsens
-+
-+      - description: v2 of TSENS with combined interrupt
-+        items:
-+          - enum:
-+              - qcom,ipq5210-tsens
-+          - const: qcom,ipq5332-tsens
+diff --git a/drivers/thermal/qcom/tsens-v2.c b/drivers/thermal/qcom/tsens-v2.c
+index 8d9698ea3ec4..ef1fee2266a3 100644
+--- a/drivers/thermal/qcom/tsens-v2.c
++++ b/drivers/thermal/qcom/tsens-v2.c
+@@ -300,6 +300,14 @@ const struct tsens_plat_data data_ipq5424 = {
+ 	.fields		= tsens_v2_regfields,
+ };
  
-       - description: v2 of TSENS with combined interrupt
-         items:
-@@ -303,6 +310,7 @@ allOf:
-               - qcom,ipq5332-tsens
-               - qcom,ipq5424-tsens
-               - qcom,ipq8074-tsens
-+              - qcom,ipq9650-tsens
-     then:
-       properties:
-         interrupts:
-@@ -320,6 +328,7 @@ allOf:
-               - qcom,ipq5332-tsens
-               - qcom,ipq5424-tsens
-               - qcom,ipq8074-tsens
-+              - qcom,ipq9650-tsens
-               - qcom,tsens-v0_1
-               - qcom,tsens-v1
-               - qcom,tsens-v2
++const struct tsens_plat_data data_ipq9650 = {
++	.num_sensors	= 11,
++	.ops		= &ops_ipq5332,
++	.hw_ids		= (unsigned int []){5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15},
++	.feat		= &ipq5332_feat,
++	.fields		= tsens_v2_regfields,
++};
++
+ /* Kept around for backward compatibility with old msm8996.dtsi */
+ struct tsens_plat_data data_8996 = {
+ 	.num_sensors	= 13,
+diff --git a/drivers/thermal/qcom/tsens.c b/drivers/thermal/qcom/tsens.c
+index a2422ebee816..e7bc622891ca 100644
+--- a/drivers/thermal/qcom/tsens.c
++++ b/drivers/thermal/qcom/tsens.c
+@@ -1122,6 +1122,9 @@ static const struct of_device_id tsens_table[] = {
+ 	}, {
+ 		.compatible = "qcom,ipq8074-tsens",
+ 		.data = &data_ipq8074,
++	}, {
++		.compatible = "qcom,ipq9650-tsens",
++		.data = &data_ipq9650,
+ 	}, {
+ 		.compatible = "qcom,mdm9607-tsens",
+ 		.data = &data_9607,
+diff --git a/drivers/thermal/qcom/tsens.h b/drivers/thermal/qcom/tsens.h
+index 2a7afa4c899b..d9d50d32c962 100644
+--- a/drivers/thermal/qcom/tsens.h
++++ b/drivers/thermal/qcom/tsens.h
+@@ -657,6 +657,6 @@ extern const struct tsens_plat_data data_ipq5018;
+ 
+ /* TSENS v2 targets */
+ extern struct tsens_plat_data data_8996, data_ipq8074, data_tsens_v2;
+-extern const struct tsens_plat_data data_ipq5332, data_ipq5424;
++extern const struct tsens_plat_data data_ipq5332, data_ipq5424, data_ipq9650;
+ 
+ #endif /* __QCOM_TSENS_H__ */
 -- 
 2.34.1
 
