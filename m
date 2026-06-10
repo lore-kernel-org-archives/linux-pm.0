@@ -1,179 +1,205 @@
-Received: from mail-yw1-f180.google.com (mail-yw1-f180.google.com [209.85.128.180])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 45D413AE1AF
-	for <linux-pm@vger.kernel.org>; Wed, 10 Jun 2026 21:06:30 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.128.180
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C3DA540D580
+	for <linux-pm@vger.kernel.org>; Wed, 10 Jun 2026 21:19:13 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=205.220.180.131
 ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1781125592; cv=pass; b=UMkA+7gdBh+N+1VySZFe8skNGFam3N8hBCIVCuq2VpYu6qwdcbfYthEuxnk451iVHO2QxGcbEvjuc8JCH3+7/Fb70D0+kGf1VnROlN4NaND6KEObaYRMSqE4TseyF1s1JQebj7VhKHM1B8drO2xHCi2956F5Re8PiU6FRb6I8JI=
+	t=1781126355; cv=pass; b=shCfwi1Ou6qRvtEMGQNRzS4DQPnS0vKDiSCcq3a9c2M6zjlsT2I1iacCDx2TsFNHwicdBdkiQqr0TWTqHsI+kig2ltH6IRbCQEE1ORSGgH7BJLG9+xQnj6Vufwc4N/ObxM2GUvlLspHWURv2IfV/2UiZXyBcZXLTrs0xASit140=
 ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1781125592; c=relaxed/simple;
-	bh=8SPk+9kPUL0DQYsfiU6U+3rhy9CmKqHE6O0qDp+jLZI=;
+	s=arc-20240116; t=1781126355; c=relaxed/simple;
+	bh=yP/7Z8uhlGur14MsiODOWmZoOOgIez3bqWFTNdQVt5M=;
 	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=JE+infZQo0e7XqEX1cMLlgnkeQY3HiYjkkMARWm0RG6sJawm52XbUEbvksKqoSYGLE0TE8i1yewhSqqWdQqLaU1SIz7yPRtgT3W1/b+M4jMHSDwSLoRqY0ycL5fwtUIFZb9t8R/DM/XQqvSXXfVeUqFE2e+xDosPoISqZWASVII=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=jWOwKwlS; arc=pass smtp.client-ip=209.85.128.180
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	 To:Cc:Content-Type; b=Px+7dAdLZ3yiCus9lMLATpPPHB8klCE/i1AF3CxvA5YzfOfGYZ966soNNAFg/7beuD7awCkVRQrkIIezVj1+Qbue/2gvdauh5WOPjpRXGV4qDCLoRSOWusnEBg+sBFUxONFNytmyn07+JwmEw0mVJCvCNI1HmxEFGXN/UzwdGKQ=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=eUTXz/9P; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=OjjA2/wr; arc=pass smtp.client-ip=205.220.180.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="jWOwKwlS"
-Received: by mail-yw1-f180.google.com with SMTP id 00721157ae682-7f5eb760240so6968257b3.0
-        for <linux-pm@vger.kernel.org>; Wed, 10 Jun 2026 14:06:30 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1781125589; cv=none;
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="eUTXz/9P";
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="OjjA2/wr"
+Received: from pps.filterd (m0279873.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 65AJYUFl2618955
+	for <linux-pm@vger.kernel.org>; Wed, 10 Jun 2026 21:19:12 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
+	6V4y4jrUDwaCAqSrUfft1cggY0gZCCPi3cFlIDDpz7g=; b=eUTXz/9PyeeWGGRQ
+	F/xmLrVU0+E7Bsmp9FuUwsS4unYUEKK9J68Bt5wYawjDO+gQfvU3E5DH/ezXSOE9
+	yaQqYqmWldYsHKqCOWVMO29yduGC9KWMmTyw0GSTh38AWpTblYVb5qO2HhJwcZx9
+	ITZ8zc1Ckk0lclIqvJEsjnxwCu7P5qMlRwSdZBGN66h8dagKnRSwLZ625ikpOydD
+	p1fqkbuJSQ7JJwqLtK00XAh1UrWd6EljdzH010+nSPJXhohhBNhIpA2MKrd3o6Mi
+	FhmXHR3YUxNzD5cGY1AcRlLskiMD6z0QqUlqpobhaulCBm/vytHWVwLlDsuvcQQ5
+	ZAFRAA==
+Received: from mail-qv1-f70.google.com (mail-qv1-f70.google.com [209.85.219.70])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4eqe6sgdw2-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <linux-pm@vger.kernel.org>; Wed, 10 Jun 2026 21:19:12 +0000 (GMT)
+Received: by mail-qv1-f70.google.com with SMTP id 6a1803df08f44-8ccebf7e86aso8118176d6.0
+        for <linux-pm@vger.kernel.org>; Wed, 10 Jun 2026 14:19:12 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1781126352; cv=none;
         d=google.com; s=arc-20240605;
-        b=E2201b9DvdqQwbYibtv16YoyX+xftaYtPs5qzUxOtzVDAkfmUIXvaTTylG6pIqJLWR
-         vkWqb0DQKIFrGcB3xPa1LkwsTXXQBph++Uq8Wltwkql46VVVRh2iIdZcprG4dyDiOV8h
-         YAO/MdK51YdWmo39izRVS0GI4GwRSLNdCWwnthbV0J1hsLf5pRKDGRUR761kKHXykz+N
-         y/F4lKyrNp0JVJAAGfmZ2eAgGnhn3DMU4rmx3J5TYJ/upUoqJTsnULXQlZ9dCLmi5zjs
-         LJQcLq9R5qs8XZrrS9rg50d04/htxFd956bpoIZmKpvuUzzveiqEdWxNLLzzFcSZORUa
-         Ns5w==
+        b=VNp3xocqX/INDtr26omrJl2QLPBccg12ce1uEx1IbAxin60FYTxPUc4b09OkE2jZjU
+         470idEzDX+zE8SyNzyIFPM7C5gqbCwdsj7B7r/Or0fyBeH2s+MwUQgeiy4dSvrMTQTIw
+         BHLuhk2ksluvHxRHS8yl1LPJ5VH87eJ1DPXJoDo49BAHglnQNnKxAttddR4DkTMvHXCK
+         ObHU1duDvhSCfFtZaJK1G27DUGUEpk9jlNO8PUBMn1ze2CdhHv2bRoHBMQkogqkKS/uf
+         X21OMyJwwuYakZARI578+FAUPCbSMFel8GNeEbqUEnGoTcuadYmjRma3DMVQr7Y8toVz
+         +cgQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
         h=content-transfer-encoding:cc:to:subject:message-id:date:from
          :in-reply-to:references:mime-version:dkim-signature;
-        bh=96czj6yri6D29TEjjpnrX0Ms962E0G1MVyGNh2o55HQ=;
-        fh=3JGEHxsKicTdPH80lfesIqLCBBpEMnc34hldBJnXlSQ=;
-        b=kkCpW06L87wheLU91l7qctfi8lzMMjnyjXnSKggBAmJ8I9TDktmxcsotDv7N3P3nTS
-         joyks5NBZq3dB4rLO8+O+JVt4t312O7lj3s4Jjnqqmyz/Up93hBhM1Qxb4PfPDmUwkmj
-         aAjKbAHJKzSSURIM5kBxlwTDKc8anUWhqQ6j/gxLUthhWmXiyLADomXUg6hq5amI0JMR
-         UfQSUAeULjqofmiLBrL0fHX0UIaWogfZwUQnjnEReJVcXnnSWQ0bvQ6JdIBl0Y0miDI6
-         TNHqqfid3llOKMS4Pj/J4GnQ2UqF1GSQ4gDA+x0PwXpNeEYT5L/3yKUYbmwwaRypq+XN
-         qQ/w==;
+        bh=6V4y4jrUDwaCAqSrUfft1cggY0gZCCPi3cFlIDDpz7g=;
+        fh=yg4zl5QI9E7N2IRklq757LtGQpN+KNe2QEH0jK3wz6I=;
+        b=epyUveG1/5uLUC3sGfW5Q+zlwsGwHX/y/TnUHvf0RE3mVSZvlynrecMVkcd9hRZTfC
+         IHorRGqieaWAaP1ICj2c0m7z/amAfeKrtq/sKFUeULuEtI9Nk47Muo1AHcIZ+wlMo4h4
+         EQoKy/7veIKhw614hpbVMPf7IMoSml/LcQ2JvaKZv1f/n26VvbYtEuI4U5yIIHkLicQ2
+         jOxIgO/RE9XQ/359tw7fr1mjGLLTEjhKo8rblCLQqs+1ENUm+SH6B9C1dEDmZDbB7/0n
+         M36vIGJwAf7Q14YDhwMxsE0p7kwtGjPViZvToqiuII1WM/n0IG1gwGUmC8d/aQ8v2Y2e
+         VvtQ==;
         darn=vger.kernel.org
 ARC-Authentication-Results: i=1; mx.google.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1781125589; x=1781730389; darn=vger.kernel.org;
+        d=oss.qualcomm.com; s=google; t=1781126352; x=1781731152; darn=vger.kernel.org;
         h=content-transfer-encoding:cc:to:subject:message-id:date:from
          :in-reply-to:references:mime-version:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=96czj6yri6D29TEjjpnrX0Ms962E0G1MVyGNh2o55HQ=;
-        b=jWOwKwlStXwGgUAXfngBzfebepF/l+Iz4nUi1RY4ZFUDUceLV7UGbSPy/9QVHif4B8
-         ZPz1O75qxMy7MzdeNnHDuLBQRANDqdgtNr4gpz1YjTbGBhWiD5oYWhkIc+R75zzFDCkO
-         Meumk/PL2hxGiDTi1EoFtI5Rjo6hDtBgNs4khoSmLMvoD3D6m4fDnyZeU2/SVa8Rl3Nq
-         Np8qgXa+5CNjzN4wJqgw9w2Dk9ZrR505dzxMLNWm5lQRAcJlwSMMAmfpaaFKXCI38Fkc
-         kL00/uRMaIP0VLi90TJNN5Ph1pRYS3cFKXlldKH1fiRvxQ998TEqxSQ9HgBoZT5xJce+
-         N+TQ==
+        bh=6V4y4jrUDwaCAqSrUfft1cggY0gZCCPi3cFlIDDpz7g=;
+        b=OjjA2/wrasJ8QfUPN2bf1ZBxAYbAd1iZY3OWcgnvJEyZsH5wWBb8dxhlh/Bvu4xmzm
+         V+2un+7Rbxn0mLygScrDgRSjkDMK5h766H1QFuzHm5p0xduDWwStrhR+iytmOi6jQHkC
+         47GoOR6RH9Sj9QhjxciCRFjma+7fqWWGdnvOM1RTDpqQE+zijtAw5Ri4T2j5ew6kBPcS
+         9quIR9yBI+GJ4wFqr5JikfWQz2EpWCXmTeOyx6lP4dwvFHscS6ySxzLhxb0vMowDzwm8
+         BdHLb05DC1TGkmaPwF1eLlt9bYUBeJ8L+/Ta53+ZUlbbXT2KuOIkqyHvmiEt5tqllPIm
+         YqrQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1781125589; x=1781730389;
+        d=1e100.net; s=20251104; t=1781126352; x=1781731152;
         h=content-transfer-encoding:cc:to:subject:message-id:date:from
          :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to;
-        bh=96czj6yri6D29TEjjpnrX0Ms962E0G1MVyGNh2o55HQ=;
-        b=NJShv89J2eUqBd+WyWtgNVHMc+x833jzACdPu8/pau78IiYVRLuetzK8ZYgDcQCIul
-         lPai/23ySWgbPZ3vOcuUhns6/t1GWiKdPdeqZ3CtCuk8bUdxXUGFKJNpHabkoDjJOkeT
-         oVEEL+DSYJRTE0v6gg9UZtq31DAmTssf2yHV2RbQOr2hQ5emoMqqKaPjT5+RqWtvybd/
-         /CLOGJM4bODCnUK0tdvBQTJJwmDyFmt6S3nL5gBzkWdittIOVSZj0E9Dtr9O7S2e5BEW
-         U0tQav2QJ+UqhE8cOWs4LPeXkXDNsmFrNBWlTgD25jB22OVabj1MNSHYg//7wrUjCeVR
-         3S+w==
-X-Forwarded-Encrypted: i=1; AFNElJ8V3yncDN0XQx8PVaM4DoWsfOVyNSX31V9L+A2uOVZKpYHMKqDdYEBtuRW54vy0pq9XH+WY/+sQ8g==@vger.kernel.org
-X-Gm-Message-State: AOJu0YylFt0iwyZOvBz+wld3c2EEN8aYQinIbStUhgunEW87J59jBSwB
-	k0kpC0AvM7t3+vDbtT1TZwK77dAmJsI/LN8Tp4YYCDO2z2GsVS1fb1JC3IDex8kjKTMX2piCzc6
-	m328hklLHq/AECBXtM4R7D9LKnnyq23w=
-X-Gm-Gg: Acq92OES21+6YA6vkPnDC9c/weDdUAlxZbkZhBCuHV6sOanr3MDWqYt+lGgGOKZrI+A
-	2ldSxnPY/Dtjffnbe0W0GBpMIhy++7nNU9L8uks8aLxgd2INXE6PgdeBF0c+vQ9xnNYv0bv/Oap
-	4TzrdfFEH+X7n5A1KA/+LSOiJgpSDTO/bpwZL/usYWz8M/Oyy9/0EnOMK1/dw/PP0ABuB1u3K1z
-	sp//AYB3qjGC1ySDuD1w80AIzc+RFFeT86H30NIhOr3K3BHc4J6g/7EDoZwEaUXGMC6RypLAGjH
-	dwWlp0PVBkJmVV6gm1hg1QmVig==
-X-Received: by 2002:a05:690c:45c5:b0:7e9:ab56:3c99 with SMTP id
- 00721157ae682-7ed0adbb616mr276188567b3.6.1781125589039; Wed, 10 Jun 2026
- 14:06:29 -0700 (PDT)
+        bh=6V4y4jrUDwaCAqSrUfft1cggY0gZCCPi3cFlIDDpz7g=;
+        b=sffvN6eMas7o5Vyt4lNkvSB3VYnFDefALRo1dT6KR5w4KxbDorErCxdOXu0jJd+sFJ
+         QVVvXnxOoiIyBV8lVU0d+tVOGlP9MS00LB506wrzQRHwhkJBpUh96yL5D0yHe4fiaRpJ
+         yY52RtkR9kVRsnSCb5ubmwThdMh2M5xf9FKu4LPTA8RFcKEk7DvhFDyuHIGBy4fn3JPA
+         FGcQfyCukeOWwqtgygxzgPQvchIpt+hI6PLK97m1EFfTTNrV5ISNjo3P3RkI040qD5oV
+         GDOq+ryZju5FZ/WcQMr1VYro0dsPxRXa2GBdSyYpGCBUUlVK8DULfaPRSp7FrD8eN4/K
+         PBpQ==
+X-Forwarded-Encrypted: i=1; AFNElJ+HygWEO0zFnnKCWgl+apvoSSGs4dZ7bdQmG48IZs/HrsFo05mqXPUtMyZXTE4d5ymuyYhd7jR4LA==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yy3UI6gvBe14u2uLBZVpS6iy+OGPG+mzgFW6b7IZmhoMhHVkpLM
+	eHww995XuxadN1Qpc/xesxw+W/YfpwKDk4CYt5a/IWdi2P+U7Ka7590x2aT7CQFuNlHERHnuyr2
+	fzUq9YeExMEJO25NkLkQNokJzzGBIVKOgGl1jCV5WtiV1kTu1syUBmXgvUCdS2EEZTOKw80oJe5
+	imC+aJudx8Jwx1C02thDabs4zTScCJLOjI6BT6cH1crV+B
+X-Gm-Gg: Acq92OFpjaE8sOVzOzxf+yRz7QkJxMolZdSckJ2Hj6/4Fp1p/HlDlhO4QXpcDtQSASV
+	D8jXPE5vPbZk760yjEjCTWyRSylcOD4O1s9i6dxmcpoiHmWjSnZU6XoqJUCO5EEerA703Rrx/C2
+	XoB/mdEqmPvfyJedhA31TK8gxEF/V+5V4rH2Y+Qixg46cfCSB9aiVobI4VG/aDIG1RHoeLgpQHF
+	m+9QsmNcKhPFPxnbQ==
+X-Received: by 2002:a05:6214:400c:b0:8ae:6293:78ca with SMTP id 6a1803df08f44-8d1b0d8f6admr6649606d6.18.1781126351992;
+        Wed, 10 Jun 2026 14:19:11 -0700 (PDT)
+X-Received: by 2002:a05:6214:400c:b0:8ae:6293:78ca with SMTP id
+ 6a1803df08f44-8d1b0d8f6admr6649316d6.18.1781126351597; Wed, 10 Jun 2026
+ 14:19:11 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260521133315.work.845-kees@kernel.org> <20260521133326.2465264-4-kees@kernel.org>
- <da358ae1-91b4-4a16-ac76-ffab99c230b9@suse.com>
-In-Reply-To: <da358ae1-91b4-4a16-ac76-ffab99c230b9@suse.com>
-From: jim.cromie@gmail.com
-Date: Wed, 10 Jun 2026 15:06:02 -0600
-X-Gm-Features: AVVi8CcLXClq9Fijm8VjZF47hQWmos5q_iXrehNZDw9kSOby-E_cMxEQI0SK-hU
-Message-ID: <CAJfuBxwRuT1K=rjPX+sdNyYurEJ=OjqbJaSa_S6JnY6yzTwTvQ@mail.gmail.com>
-Subject: Re: [PATCH 04/11] treewide: Convert struct kernel_param_ops
- initializers to DEFINE_KERNEL_PARAM_OPS
-To: Petr Pavlu <petr.pavlu@suse.com>
-Cc: Kees Cook <kees@kernel.org>, Luis Chamberlain <mcgrof@kernel.org>, 
-	Pengpeng Hou <pengpeng@iscas.ac.cn>, Richard Weinberger <richard@nod.at>, 
-	Anton Ivanov <anton.ivanov@cambridgegreys.com>, Johannes Berg <johannes@sipsolutions.net>, 
-	"Rafael J. Wysocki" <rafael@kernel.org>, Len Brown <lenb@kernel.org>, Corey Minyard <corey@minyard.net>, 
-	Gabriel Somlo <somlo@cmu.edu>, "Michael S. Tsirkin" <mst@redhat.com>, 
-	Jani Nikula <jani.nikula@linux.intel.com>, 
-	Joonas Lahtinen <joonas.lahtinen@linux.intel.com>, Rodrigo Vivi <rodrigo.vivi@intel.com>, 
-	Tvrtko Ursulin <tursulin@ursulin.net>, David Airlie <airlied@gmail.com>, 
-	Simona Vetter <simona@ffwll.ch>, Bart Van Assche <bvanassche@acm.org>, Jason Gunthorpe <jgg@ziepe.ca>, 
-	Leon Romanovsky <leon@kernel.org>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, 
-	Hans de Goede <hansg@kernel.org>, Mauro Carvalho Chehab <mchehab@kernel.org>, 
-	Bjorn Helgaas <bhelgaas@google.com>, Hannes Reinecke <hare@suse.de>, 
-	"James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>, 
-	"Martin K. Petersen" <martin.petersen@oracle.com>, Daniel Lezcano <daniel.lezcano@kernel.org>, 
-	Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>, 
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jiri Slaby <jirislaby@kernel.org>, 
-	Alan Stern <stern@rowland.harvard.edu>, Jason Wang <jasowang@redhat.com>, 
-	Xuan Zhuo <xuanzhuo@linux.alibaba.com>, =?UTF-8?Q?Eugenio_P=C3=A9rez?= <eperezma@redhat.com>, 
-	Jason Baron <jbaron@akamai.com>, Tiwei Bie <tiwei.btw@antgroup.com>, 
-	Benjamin Berg <benjamin.berg@intel.com>, =?UTF-8?Q?Ilpo_J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>, 
-	"David E. Box" <david.e.box@linux.intel.com>, "Maciej W. Rozycki" <macro@orcam.me.uk>, 
-	Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Peter Zijlstra <peterz@infradead.org>, 
-	Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>, 
-	Sean Christopherson <seanjc@google.com>, Paolo Bonzini <pbonzini@redhat.com>, 
-	Thomas Gleixner <tglx@kernel.org>, Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, 
-	Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org, 
-	"H. Peter Anvin" <hpa@zytor.com>, Vinod Koul <vkoul@kernel.org>, Frank Li <Frank.Li@kernel.org>, 
-	Daniel Gomez <da.gomez@kernel.org>, Sami Tolvanen <samitolvanen@google.com>, 
-	Aaron Tomlin <atomlin@atomlin.com>, Alexander Potapenko <glider@google.com>, Marco Elver <elver@google.com>, 
-	Dmitry Vyukov <dvyukov@google.com>, Andrew Morton <akpm@linux-foundation.org>, 
-	John Johansen <john.johansen@canonical.com>, Paul Moore <paul@paul-moore.com>, 
-	James Morris <jmorris@namei.org>, "Serge E. Hallyn" <serge@hallyn.com>, 
-	Andy Shevchenko <andriy.shevchenko@linux.intel.com>, 
-	Georgia Garcia <georgia.garcia@canonical.com>, kvm@vger.kernel.org, 
-	dmaengine@vger.kernel.org, linux-modules@vger.kernel.org, 
-	kasan-dev@googlegroups.com, linux-mm@kvack.org, apparmor@lists.ubuntu.com, 
-	linux-security-module@vger.kernel.org, linux-um@lists.infradead.org, 
-	linux-acpi@vger.kernel.org, openipmi-developer@lists.sourceforge.net, 
-	qemu-devel@nongnu.org, intel-gfx@lists.freedesktop.org, 
-	dri-devel@lists.freedesktop.org, linux-rdma@vger.kernel.org, 
-	linux-media@vger.kernel.org, linux-pci@vger.kernel.org, 
-	linux-scsi@vger.kernel.org, linux-pm@vger.kernel.org, 
-	linuxppc-dev@lists.ozlabs.org, linux-serial@vger.kernel.org, 
-	linux-usb@vger.kernel.org, usb-storage@lists.one-eyed-alien.net, 
-	virtualization@lists.linux.dev, linux-kernel@vger.kernel.org, 
-	linux-arch@vger.kernel.org, netdev@vger.kernel.org, 
-	linux-fsdevel@vger.kernel.org, linux-hardening@vger.kernel.org
+References: <20260609160634.246526-1-johan@kernel.org>
+In-Reply-To: <20260609160634.246526-1-johan@kernel.org>
+From: Ulf Hansson <ulf.hansson@oss.qualcomm.com>
+Date: Wed, 10 Jun 2026 23:18:59 +0200
+X-Gm-Features: AVVi8CeOXfi9JqEDnpFPZwBVwat-QjZxOlixTxLyqo7ZoBnvsHhB1ckfIAbny_4
+Message-ID: <CAPx+jO9Mm=uVYugv641eiB-m2=jgHx2aGt33XoZC8=18ZNbckw@mail.gmail.com>
+Subject: Re: [PATCH] pmdomain: fix early domain registration
+To: Johan Hovold <johan@kernel.org>
+Cc: Ulf Hansson <ulfh@kernel.org>, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org,
+        Geert Uytterhoeven <geert@linux-m68k.org>
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
+X-Proofpoint-GUID: TQOdfp2DuZA9NlSkvKQUjViefFKC18BF
+X-Proofpoint-Spam-Info: AW1haW4tMjYwNjEwMDIwNCBTYWx0ZWRfXxBUDBTKVVSFG
+ T3c8JF0yMGkABAqVDY0GXsGdK4Vuw1aqvtGSag28L4otMAZWB+b4KUAy31MWbIyO1XuDU0t1hz9
+ kIhxMUIg4ZUBj2K0eo2v/iasgyHbXGU=
+X-Proofpoint-ORIG-GUID: TQOdfp2DuZA9NlSkvKQUjViefFKC18BF
+X-Authority-Analysis: v=2.4 cv=Kux9H2WN c=1 sm=1 tr=0 ts=6a29d4d0 cx=c_pps
+ a=oc9J++0uMp73DTRD5QyR2A==:117 a=IkcTkHD0fZMA:10 a=FelO9ux0wxsA:10
+ a=s4-Qcg_JpJYA:10 a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22
+ a=rJkE3RaqiGZ5pbrm-msn:22 a=VwQbUJbxAAAA:8 a=pGLkceISAAAA:8 a=tBb2bbeoAAAA:8
+ a=7R_twnYr9fBWtDXhySAA:9 a=QEXdDO2ut3YA:10 a=iYH6xdkBrDN1Jqds4HTS:22
+ a=Oj-tNtZlA1e06AYgeCfH:22
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNjEwMDIwNCBTYWx0ZWRfX6Iz9QK7VdWFX
+ wWK8Tl4ZCn5xVx5z6STt/rTRRgViZyLAI1Q6qUazEvmxOWYXoLLXlJ1vH9CJHRb4l/irmvns6YY
+ FTU6neuEw5woli/H08Y4sMPCqQvBerNNKrkhpXe68A+rv+2j5mE+U9JAJj3b+2vsYgeS+4bQGbq
+ K8pWY+ssXgTaQNDZvYcxIlTyVwwBXeDKOd6kZv1JAKiPM0ATA73hg1Q58F/mdidR9DwjuwwEyLn
+ OLp3LXHPobx+K2xkmCPZPWVQVqP53sCfxh8fq/+XxSztCiyRSeVByH1S3hm5hlH5SAiTewE2AJB
+ GftPny94hzFE0nih9ZjyrjM8Jeek1LWC/U3FdPQvG4YyaFV52DNRPQU6L64yjvgwy06xQ6OhL0E
+ /1Q0X4g0IaJZ7TLJwL1M7h/FOIZ0nVMQg1vcRyK+d3uR2o+JKEpb1G3xTK+lflu+6RFIrHL+Ien
+ rmfaF36KAYnM/KELY9w==
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.125,FMLib:17.12.100.49
+ definitions=2026-06-10_04,2026-06-09_02,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ adultscore=0 malwarescore=0 phishscore=0 spamscore=0 bulkscore=0
+ clxscore=1015 suspectscore=0 lowpriorityscore=0 priorityscore=1501
+ impostorscore=0 classifier=typeunknown authscore=0 authtc= authcc=
+ route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2606040000
+ definitions=main-2606100204
 
-On Mon, May 25, 2026 at 7:35=E2=80=AFAM Petr Pavlu <petr.pavlu@suse.com> wr=
-ote:
+On Tue, Jun 9, 2026 at 6:07=E2=80=AFPM Johan Hovold <johan@kernel.org> wrot=
+e:
 >
-> On 5/21/26 3:33 PM, Kees Cook wrote:
-> > Using Coccinelle, rewrite every struct kernel_param_ops initializer tha=
-t
-> > sets .get into a DEFINE_KERNEL_PARAM_OPS-family macro invocation,
-> > for example:
-> >
-> > @@
-> > declarer name DEFINE_KERNEL_PARAM_OPS;
-> > identifier OPS;
-> > expression SET, GET;
-> > @@
-> > - const struct kernel_param_ops OPS =3D {
-> > -       .set =3D SET,
-> > -       .get =3D GET,
-> > - };
-> > + DEFINE_KERNEL_PARAM_OPS(OPS, SET, GET);
-> >
-> > Using the macro for initialization means future changes can manipulate
-> > the struct layout and callback prototypes without having to change ever=
-y
-> > initializer.
+> A recent change switching to a dynamically allocated root device broke
+> platforms like rcar-sysc that registers PM domains before the PM domain
+> bus itself has been registered (cf. commit c5ae5a0c6112 ("pmdomain:
+> renesas: rcar-sysc: Add genpd OF provider at postcore_initcall")).
 >
-> Nit: For consistency, I suggest also converting the few remaining
-> kernel_param_ops instances that specify only .set and no .get, such as
-> simdisk_param_ops_filename.
+> Defer the assignment of the parent root device until the domain is
+> registered with driver core to avoid it being left unset.
 >
+> Fixes: a96e40f4afdc ("pmdomain: core: switch to dynamic root device")
+> Reported-by: Geert Uytterhoeven <geert@linux-m68k.org>
+> Link: https://lore.kernel.org/r/CAMuHMdUHabMGJyJ7e7yp7DLC+JJc9k6NK9p4anj2=
+wRKNuwZUng@mail.gmail.com
+> Signed-off-by: Johan Hovold <johan@kernel.org>
+
+Applied for next, thanks!
+
+Kind regards
+Uffe
+
+> ---
+>  drivers/pmdomain/core.c | 3 ++-
+>  1 file changed, 2 insertions(+), 1 deletion(-)
+>
+> diff --git a/drivers/pmdomain/core.c b/drivers/pmdomain/core.c
+> index 3f265b57158a..19eaee1819c8 100644
+> --- a/drivers/pmdomain/core.c
+> +++ b/drivers/pmdomain/core.c
+> @@ -2323,7 +2323,6 @@ static int genpd_alloc_data(struct generic_pm_domai=
+n *genpd)
+>         device_initialize(&genpd->dev);
+>         genpd->dev.release =3D genpd_provider_release;
+>         genpd->dev.bus =3D &genpd_provider_bus_type;
+> -       genpd->dev.parent =3D genpd_provider_bus;
+>
+>         if (!genpd_is_dev_name_fw(genpd)) {
+>                 dev_set_name(&genpd->dev, "%s", genpd->name);
+> @@ -2688,6 +2687,7 @@ int of_genpd_add_provider_simple(struct device_node=
+ *np,
+>         if (!genpd_present(genpd))
+>                 return -EINVAL;
+>
+> +       genpd->dev.parent =3D genpd_provider_bus;
+>         genpd->dev.of_node =3D np;
+>
+>         fwnode =3D of_fwnode_handle(np);
+> @@ -2782,6 +2782,7 @@ int of_genpd_add_provider_onecell(struct device_nod=
+e *np,
+>                 if (!genpd_present(genpd))
+>                         goto error;
+>
+> +               genpd->dev.parent =3D genpd_provider_bus;
+>                 genpd->dev.of_node =3D np;
+>
+>                 if (sync_state && !genpd_is_no_sync_state(genpd)) {
 > --
-> Thanks,
-> Petr
-
-for the dynamic-debug changes
-
-Reviewed-by: Jim Cromie <jim.cromie@gmail.com>
+> 2.53.0
+>
