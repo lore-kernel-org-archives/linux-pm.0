@@ -1,303 +1,163 @@
-Received: from mail-pg1-f177.google.com (mail-pg1-f177.google.com [209.85.215.177])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from DUZPR83CU001.outbound.protection.outlook.com (mail-northeuropeazon11012070.outbound.protection.outlook.com [52.101.66.70])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0EF3C309EF2
-	for <linux-pm@vger.kernel.org>; Tue,  9 Jun 2026 23:16:45 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.215.177
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1781047007; cv=none; b=o48mrKTm3pzOYE+QSsXwUCoLH/544Pp6iC3Os71kSprbA5coS/ah1Z7yHo6uwVnHnnW0qIIyTnAQA5hToINdq7Vu/23qGtagVIwcjaczYMVW75XSyx5ZlKXPmPDcFcq8PKwF/FdrEl1lomyUGQfElMBPBtGodU5QPy/Pw+DUM9w=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1781047007; c=relaxed/simple;
-	bh=u1AdhdsV0mwi/EmpLL5f6ETgvddK1j8cv3P2wA1xfGA=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=Ap+kXDLGFDZqubHU/HFB/8ZCyAcSxjIwB4/+KaU+z8cP0acAS25fjbtjFhmcM+aq4MkHD7UL1+WkBrqC8FQWCUHWzgWDeOC/YR/E8N+YF6WFXP69pR1UI0Oqnv0ujTXW6jKraadYHijDud7pthaZC2nCdz2ov1oUYRlgu8OF/N4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=dOesBdNP; arc=none smtp.client-ip=209.85.215.177
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AE1A11A5B9D;
+	Wed, 10 Jun 2026 03:45:44 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.66.70
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1781063145; cv=fail; b=LocR+CrDq73FzG9bPRTPD2EpdzlCygkmlmOZjQe32Xu1SaQIJglHabrx/djhltwu3ThWaPmkTL0c208ajboDPOo0n+f7Tt6Vdmcx6TdS0l9efPqkiSOJ2LxwxaAaSh/Lbab4lrse8wbRldCuWCCWxdUq9p3E6DzrhD+w1TFXESU=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1781063145; c=relaxed/simple;
+	bh=uL5bq685H2xp8Z0bLfLIDZNQtosdZ7b7vBBXsTqtPGE=;
+	h=From:To:CC:Subject:Date:Message-ID:References:In-Reply-To:
+	 Content-Type:MIME-Version; b=Wf473gYS0FbMEN9+/L43RGoFEKla0JXZ1tBpUDiEHyaz/fyPdepV2BsEGlrEtw0cry9ADXYCnqnyFjIFsczgEfrt418r1SpkHptGFOXLaV06UPLc8qP7u2wLcaM5vbTuKp2bpyUDONWsdpWfXz5sRKowX578PK/7lXOHo0+7S68=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=oss.nxp.com; spf=pass smtp.mailfrom=oss.nxp.com; dkim=pass (2048-bit key) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.b=jD69GRZ5; arc=fail smtp.client-ip=52.101.66.70
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=oss.nxp.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.nxp.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="dOesBdNP"
-Received: by mail-pg1-f177.google.com with SMTP id 41be03b00d2f7-c85b73ffb52so2579812a12.3
-        for <linux-pm@vger.kernel.org>; Tue, 09 Jun 2026 16:16:45 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1781047005; x=1781651805; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=BEyMjwR1iJDcTluKt4LdLmsJ40U+xuFM1tMeziy7aTw=;
-        b=dOesBdNPm+pmHnOBcLtw7lwHHRGdWgA7Fdw2oycMyMMfa/AD8gC7fIBqfMEPi229ZE
-         a+Qa8ZhX8fqZcNtUku725E7R4oCm4FCxEA/anGV8u4VfZChLt/dJfzMAB5AOHikRI873
-         GEYM5TjdXnEhGG5pV6gtsEiDPttoShn5IZ7pX96k9/xMYdsQTbgeLNExH3RIpKsXQXfu
-         PtuTuBe8nzzxqU7R4PDUN+0hQA9wY8YHzJaG2ZVXUp5al7kn2nYfPrYKir/DbMTBuZKg
-         R6SdXkJJOAKq4TksZ+FjemijtIj0QIOOyYdULuc1ReCZD9oJDKFhLebVDg9xoM4G6XDW
-         g1Gg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1781047005; x=1781651805;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=BEyMjwR1iJDcTluKt4LdLmsJ40U+xuFM1tMeziy7aTw=;
-        b=K7eUSgfp+YoE4BT/UujN4wZJeq2MpKl+5RiVbKLVyU73jijPSefgiLyY41a4doVnBt
-         +wPKg3rESjk9jVSAOCPD7BwR5Zpv7uLuh2a4hpikjvZr5JiNuBMJhbu0RIVxucktChpx
-         pnzkbl536R1E6HQFEO/z3/AkJa0cxlFHOgDh/TmyKtfGQa7pBI4TsgpC7lC82ZRVROpe
-         Ic0/MmDFnFP/sjW+PC6BKK4j/0VCq53zUL56FoXeJpLT/GBE4VtbcPP7qTlQCrQvwI7s
-         jdO6mDszxK/5zwF2roGhv1ehQnfIpr9LFvTVO5Dvl2QtHxMvawdw7pGVp8PXnsPAF5Wt
-         53XA==
-X-Forwarded-Encrypted: i=1; AFNElJ/1gD8nfDArVxzIlrKUtLiTmukzZYWmDcxNzRM5zpvrOPjb43Y0lmh+nt0rv0QFjJXCnyGDjItVcg==@vger.kernel.org
-X-Gm-Message-State: AOJu0YwwHMa5Gtnyp0AuZZ+WaU+fJR9hVcx8XgDf4frR8MzDubw5sWXh
-	3/Bqix/mu5aS9Tg0M5rtzaUvhXTg/zPJZo7mZU96M4w/KVmRb0JFAQWv
-X-Gm-Gg: Acq92OHW6P+560XTYQQK2YwW8AZNhRXZXTZQpGqXFtMlTB+wpcl0Yv/i57r9W+BAWsI
-	xKdcsGSJhg80x6uCgT33bHkHHbK/htdTOA3Dkgd0A/zfu2EfkIA6OtElDURpMIBFdkozg5IHMeD
-	4bmmMGzFDZIGWEI+mWN32XxK6HpgQd3VZi7XBcwPP7u6xyaOROkLzYUbsKFZ6qtI2YKt9yX+/0q
-	nPoqbO3+JM/iNdW6s4maOdfePU/2Nk30nHO5KBHFUakH+nTBVd9XgiqJgC4ucM++0ipyY3g4Vrw
-	nNYz5VgEuZyuBt3IMOz2AYAYc5o/9qORBfZUO4KCjbcxbLNS5/WZ5X5cHLAANdU4iD3WqQ3X3r5
-	xMKIfKUHNqyF6BTuMusb5a8daPslTcyA4aQ5NxoN2jn12MLJOyJ6lmWPnLX6VGduG61V3+PW2ym
-	ibYD2Yizf3fS//NDsd0TGIIx4f6nFg0UriD2j4ykzh2UItcCtg3SGTHCdZpermpOlfVO97sGNKx
-	AD3HeLTXbUP6RfWzBmWeiVK4HMIJPigxaJH+v3ZUlnWOxcKL1RHddH+GngixvqrKtVMfPWSVpZV
-	6y/jivbVqpDeXQROC4O/iy378MsCZYu55jk+4xvUU7TQJs7GDu+U
-X-Received: by 2002:a05:6a20:3d1f:b0:3a1:ed2a:1a4f with SMTP id adf61e73a8af0-3b4ccd6ac48mr26822178637.16.1781047005127;
-        Tue, 09 Jun 2026 16:16:45 -0700 (PDT)
-Received: from debian13.localdomain (bb219-75-96-14.singnet.com.sg. [219.75.96.14])
-        by smtp.gmail.com with ESMTPSA id 41be03b00d2f7-c85df04311bsm18941479a12.9.2026.06.09.16.16.41
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 09 Jun 2026 16:16:44 -0700 (PDT)
-From: Adi Nata <adinata.softwareengineer@gmail.com>
-To: rafael@kernel.org
-Cc: linux-kernel-mentees@lists.linux.dev,
-	Adi Nata <adinata.softwareengineer@gmail.com>,
-	Pavel Machek <pavel@kernel.org>,
-	Len Brown <lenb@kernel.org>,
-	linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-Subject: [PATCH] PM: hibernate: Mark undocumented snapshot helpers as non-kernel-doc
-Date: Wed, 10 Jun 2026 07:16:26 +0800
-Message-ID: <20260609231626.38839-1-adinata.softwareengineer@gmail.com>
-X-Mailer: git-send-email 2.47.3
+	dkim=pass (2048-bit key) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.b="jD69GRZ5"
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=EYTxwaI5w/uD/720azr85urAEHWnU59DLtn20+A7ElF6j51qLabPsEXJfp7aSCjmg4V5fcwdGKhsvQsecU1GToj0XsrUb7hyuSJWTptsKlrkOdPvh1D+iViu2H5ITujxQaokODGOPqwB2LOV/U48g5IDPdui6Y7k0Ano/h5Q06RaX6rPnhAmuTsxjPA3uJTOtQYxsSw0i/W2+INY5FTj6a7BiEQnNZl9rp0W5RoflU1HFwuLRsTJJr3/eq4VdQigVyUvmhQZMBKK5pHiRTMil05sarvLu+2xY0bUvXi3tvbCQ+OlNrz8qSwx8ukPdtsHqnIPLzyZPfy6O7EzNgjrug==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=uL5bq685H2xp8Z0bLfLIDZNQtosdZ7b7vBBXsTqtPGE=;
+ b=w88d3tXOnLMNk8IeuGT3JMQnmqGkLY0Yby4a7iuXg8OU1ARA2/gxsFdXbWnfvittmIcwgrESXOKLEQs3YKEGka9j2t5MZ4d9eALVCq+SmPa80LUH/VO5yD/iNk6Eh/+/yo3JyGSuNyfNJRsCnMubG1mX1m/hlnR0JxtdijfJSmaFenjDYAx0CXsK+33hIRY8OJdRMBC9a5R0zWhFENpJfCzQEHm8NwEjjLZRrcQDRXXH6MXpoah1OWgyC1IdNtqWGqs7cOEijhG71p48eqLsLbEXu4qT75mbRtP+PuFfCOnpJIpcAFMP2xNofXHDHJIrUUEXkOQj0nLbEuQhh+LoCw==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=oss.nxp.com; dmarc=pass action=none header.from=oss.nxp.com;
+ dkim=pass header.d=oss.nxp.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=NXP1.onmicrosoft.com;
+ s=selector1-NXP1-onmicrosoft-com;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=uL5bq685H2xp8Z0bLfLIDZNQtosdZ7b7vBBXsTqtPGE=;
+ b=jD69GRZ5T3bTWKSQU1+hE3u1Xz8bI4TIW+r7hpQKc1rqHRMHZUBtEjBsw9sjDbAqyi7a1KKxnsk3XFLs6NK9lCEoU2IoULPAoZYo5e/b/RZGio2D/PXdc+TEjBY41eWamBRlUPgpOxd1rRVXlgeR8bDVNDmbiOhTpDQP7O81eBOPxOm1oGuQoTiGcouKCvuOFpvjhZ35WZtKHb9i7bye5kDY6ySPdKE6UAXDc3tA092FN41IFDHA7z8lIXmUauFO9DD3AXoTMgG9INmSA5VRYEaWLqvdlBObWi7X+cE07G53DldUVMxZzPf0Gr6DnJmy5oUqYCCzH9ZTJgkxjzPpJQ==
+Received: from MRWPR04MB12330.eurprd04.prod.outlook.com (2603:10a6:501:7f::23)
+ by DU0PR04MB9322.eurprd04.prod.outlook.com (2603:10a6:10:355::17) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.113.11; Wed, 10 Jun
+ 2026 03:45:41 +0000
+Received: from MRWPR04MB12330.eurprd04.prod.outlook.com
+ ([fe80::ca22:f8c8:6aca:7889]) by MRWPR04MB12330.eurprd04.prod.outlook.com
+ ([fe80::ca22:f8c8:6aca:7889%6]) with mapi id 15.21.0113.011; Wed, 10 Jun 2026
+ 03:45:41 +0000
+From: "Peng Fan (OSS)" <peng.fan@oss.nxp.com>
+To: "G.N. Zhou (OSS)" <guoniu.zhou@oss.nxp.com>, Rob Herring
+	<robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
+	<conor+dt@kernel.org>, Frank Li <frank.li@nxp.com>, Sascha Hauer
+	<s.hauer@pengutronix.de>, Pengutronix Kernel Team <kernel@pengutronix.de>,
+	Fabio Estevam <festevam@gmail.com>, Ulf Hansson <ulfh@kernel.org>, Shawn Guo
+	<shawnguo@kernel.org>
+CC: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+	"imx@lists.linux.dev" <imx@lists.linux.dev>,
+	"linux-arm-kernel@lists.infradead.org"
+	<linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org"
+	<linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org"
+	<linux-pm@vger.kernel.org>, "stable@vger.kernel.org" <stable@vger.kernel.org>
+Subject: RE: [PATCH 0/2] pmdomain: imx93: Fix shared MIPI PHY resource
+ management
+Thread-Topic: [PATCH 0/2] pmdomain: imx93: Fix shared MIPI PHY resource
+ management
+Thread-Index: AQHc99iQirbmN/B1zkexhX5Lo13qcbY3J2uA
+Date: Wed, 10 Jun 2026 03:45:40 +0000
+Message-ID:
+ <MRWPR04MB123302A067E06A3B7F8A18B57881A2@MRWPR04MB12330.eurprd04.prod.outlook.com>
+References: <20260609-pm_imx93-v1-0-d06c004b0f51@oss.nxp.com>
+In-Reply-To: <20260609-pm_imx93-v1-0-d06c004b0f51@oss.nxp.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach:
+X-MS-TNEF-Correlator:
+authentication-results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=oss.nxp.com;
+x-ms-exchange-messagesentrepresentingtype: 1
+x-ms-publictraffictype: Email
+x-ms-traffictypediagnostic: MRWPR04MB12330:EE_|DU0PR04MB9322:EE_
+x-ms-office365-filtering-correlation-id: 8b5ed6d8-b652-476d-a65f-08dec6a2be1d
+x-ms-exchange-sharedmailbox-routingagent-processed: True
+x-ms-exchange-senderadcheck: 1
+x-ms-exchange-antispam-relay: 0
+x-microsoft-antispam:
+ BCL:0;ARA:13230040|23010399003|376014|19092799006|7416014|366016|1800799024|921020|38070700021|56012099006|11063799006|22082099003|18002099003;
+x-microsoft-antispam-message-info:
+ w/3vcjXw8GmgjKB9y5JXfPdvarNmIS8yCQDksol1S21Ecwz7C9CRQ6cdL6f/SXmqMZjIMk5F3UlBhCAupYc88fhzLrmZ1ldr98Y4CowqSvVhPxrsjcK8iSzMNfDRLoJeG9TzCjlH3k+GCUbyf+af4fQguJlF+fRqjK4eh7t32CLKERgjnO+GpznwKq6oEgQ4hwgYHsRwLO/9/vN9l0HAOJAufFCE9eLsGYQbr1hjv4T2JHJ/0mvwVpWoQTfmhgdv6B/RszwpIokvqloix1rHsn46dhNnwf7qKzHChjCA0//IMwZ4vUx6Gti53d/at1+BzrchgAU2ylo8t65psIDxmhkNWyS+HdVy/oeAhqaViJYF6OON7e+Z2qRI0ob0Okg4e3F1MRFHvjaXpZJfADHMyjeWusw7aWyOmYvk72z+ObTH+TGqe4IMKRuWr9zRTWdouPa1/+aKoOX4aNZsVxB0NGSyv7P8pkykuWylPZRsVcIqv6MuvnMUypK9ITM3pCCZlGV+LwFr5kRxjijY4jm2/5hFD7k/1yNEbMa7ijmUOb4FJT2wIH4UH9UHpyqP0GIkaeq0YS24xuvyLbCW0ft+IjSVwwk+90TprabzBS6DBN2N/WubyABGk7MTS4saKc6AylJWdddRLIi6w2cSkNDSj1VB9MOa5r+PWvPh3myrcX5byqrycPRSiEe2hQ8Pun0VI93cP51R3vk6ia3N6QlIKA6J+6T9X07bGik3xdXujvNYLp8IHsmCwSiaEvWnannlNie21sRxnd/eGU+Gto0HVw==
+x-forefront-antispam-report:
+ CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:MRWPR04MB12330.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(23010399003)(376014)(19092799006)(7416014)(366016)(1800799024)(921020)(38070700021)(56012099006)(11063799006)(22082099003)(18002099003);DIR:OUT;SFP:1101;
+x-ms-exchange-antispam-messagedata-chunkcount: 1
+x-ms-exchange-antispam-messagedata-0:
+ =?utf-8?B?SDJSQjJ3SWxVZWZOeEtwYnBIbUpCTWM2dFByOStJa2k1ZGhvMGEwbE1FZzl2?=
+ =?utf-8?B?NE0yYkUxN2VuQVRDRTYvbWowWW01MEs0TzdYa1g3SUJoVVNMYUE0YXNXTFJL?=
+ =?utf-8?B?VHVNRXJGV01iOGhWMG83L3FsVGpZNXZYcTNYd2JPdWpEalU5K1U0TExHenhJ?=
+ =?utf-8?B?RUpNZWc1ZFJpRFRYZmdhd1hheFFFQ2x1Rm9MWVpTSGNCUjJiQklNMmZxdWk5?=
+ =?utf-8?B?dDA5QlJ1QkRjUDMvaHREb253NXlpVU91STVXQ1htNVFaTHdlZUF0T1YyUVJT?=
+ =?utf-8?B?bGV4bzRvaVlPa0lBZllua0loMW5xM1Q4VE9BU2tHeU4zSDhpaC9ZT0lFTG9y?=
+ =?utf-8?B?NGtCdmpxODBXbWYrZ0t6dWQ1MytzTkpKeHgvMzBnejJrWjNMZjM1alhrNFFa?=
+ =?utf-8?B?YkpLbmV4aEhZY0wzVVNIUm80NzJGUUV0b3BmdytMekNBQWdjdVdOaXYvZ3dj?=
+ =?utf-8?B?T3g4VFhVakxBdFlRK0M3ekMreUI1dUlCaS90MkxhTTZmN1hRNUlTcFVXYXdj?=
+ =?utf-8?B?WU45NDJPTDZKRnJUbm54OU1MMkU5bkhubUVOQzZNZEt1a2UrbEFwWk5wb3pv?=
+ =?utf-8?B?Q29lT0V3U2pJZXg5Y0ZENU9WeDlRT21FT2JDVzVlYnJFWmZYR2UvdUNObEhF?=
+ =?utf-8?B?Ni9icG1Nckt3b0hEUWM5Y1R5cEdHelhodEhhVWRlMmt1aTZSQllPUHVFV1Fv?=
+ =?utf-8?B?eHFIemN3cGFxV0lsTjVJZnZQb3c1YzlpK0FkQXpLVXJNVGptWWg4V3RwUWsx?=
+ =?utf-8?B?YS9GTGhiNmNkVHoyOE1HbndZTmdtNU9qSnFSMm0xZFg1RzB2cFJPa1NuZ2NS?=
+ =?utf-8?B?UWQxWWdCcWdqTWVib21pZHRVamtpNGxpemRZaWpsU0pQb2tDdUpjWWl5TUg1?=
+ =?utf-8?B?SjE3SnpTVDQvV05wNkUyb1R6T3NTQXpLMGd3M2RWOVh5NDF6djFBalE0ZXE3?=
+ =?utf-8?B?eGF1QmNOblc1YWhqdmRIWWtMRStGVzRyNzBsNG9BT085bzNMaFd5NWZUT1FP?=
+ =?utf-8?B?MkpWN1BDNVI5SDg2djJTM2MrOElDTEQybDRNb3VhVnI2Wm5XeklBZTJBbWFE?=
+ =?utf-8?B?TUJoaGdjcXRwSkJOSzZXYW9McWtna0pBVnhJbUpuMy9zblJONnpMVEZhcyta?=
+ =?utf-8?B?alY0cGRyNHlxSlp3WVM0cUFzbEM0cFRyaEg2V2hOSnpNN2grckNIWEEvaGtq?=
+ =?utf-8?B?NVFnU2oyeXV6ZkYyYk04cUxRQStuNy9GNXUzRDZFOXdJREJsTVpoVFJrL3Bz?=
+ =?utf-8?B?dXJKeStGTThRcWZ4Z0w3bURpZjhHRzlvbUlPL3JYY3BTZDZVdjlEdXd5QU9Q?=
+ =?utf-8?B?UzdJUVp3RXU2NkJ1N1pOZEYzSXRJZ3kyRDlQY3NoVEtvdEVoT2RpOGxMWW05?=
+ =?utf-8?B?ajFsYkZwYnE1cXE2OWI2T3djSDhrL1ZtMzhFU0FxVzM0d3VVYWZwbVZQSWtO?=
+ =?utf-8?B?eDhVK2NCeDRmRkpMTEJXSFNYaDZ3NVRxL1MvQ2x1RkkzUTZLUkZoeGZsT3U5?=
+ =?utf-8?B?dkFDOTVINWx0MldxZ2FvWmp5akZxUGtpNmtDL2dXeEd2ZUV4S3M1VDF6Vzc1?=
+ =?utf-8?B?NXJleXcvVGJ5c1k1Z2JrNEJGeXlVK3BabVFDY0tYZnIyN2ZSTEtqaWRNY0s4?=
+ =?utf-8?B?dEYwSUhhMU91Y1liYWFHZWhrV0NTQjRXWlJuRXZPTXVwZFFJQjJhWWFzNUtn?=
+ =?utf-8?B?M01sSW5tU3hTeUd3VVR6MFhvS2xTTzI0dVNzTlA1MzF0WnBOVEh2eUZjcVN4?=
+ =?utf-8?B?Q3hQdU1UNU9QLzg5OWhTSWJoTG9KdEI1NnN1eFludWNuWm4zUFE0MW5lRWZs?=
+ =?utf-8?B?NWNkVHUrOUg4Y2RYRUF2NzRGZG5UclhnUEY0d0lic1FteHA3eGtIaTAxdEFH?=
+ =?utf-8?B?emlVUzcwcHVaZDJvUlM3Q2ZLenNIekFqUDFyL0RpblVrK2lNVjU1YldGNEVi?=
+ =?utf-8?B?WHhwOVdSMEk1ZjFoZFMrQUErbmpobzc1TGJMbXMvUzNsRVFUT1RTLzFCNVVs?=
+ =?utf-8?B?Rnd5NENTTm5iSUNpYTY2SGZLVkttR2NJQy9oOWJURG1lQlpOdW0vckx1SUp5?=
+ =?utf-8?B?eHlsc0FzbXc2OFdFUm5sMUYyNlZwM2w3S3dpSWpUeG8zT2R2RDkxSGU1c3ky?=
+ =?utf-8?B?L2JtT244cXQrbGs3YWEvOW9RNm1acUg5ZnlaWWFpQVhjcGJMSEJxNnl2YWE0?=
+ =?utf-8?B?UmdRV0p6aFVsdWZ1YlRzeks1RTl6WFhWbTIvVEdOSGRjYnp6RXRGUXFVdFhj?=
+ =?utf-8?B?T2pub25aSTJwQkN2OTRPdHd3bUxWandXM1NLdHNqK0M0S29mUnNSa2NhZGxU?=
+ =?utf-8?Q?UwIRuHzrbjHPNu2S8y?=
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+X-OriginatorOrg: oss.nxp.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-AuthSource: MRWPR04MB12330.eurprd04.prod.outlook.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 8b5ed6d8-b652-476d-a65f-08dec6a2be1d
+X-MS-Exchange-CrossTenant-originalarrivaltime: 10 Jun 2026 03:45:40.9396
+ (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
+X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
+X-MS-Exchange-CrossTenant-userprincipalname: F8Vb1decCgsfd2xmfXhW43Otm8ugmXR3PhUTKpOIfOHitFvBcLfx5EtpWbDwMPQ2107Y769W7ckzoJl1dX/+Mg==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: DU0PR04MB9322
 
-Several helpers in snapshot.c are introduced with kernel-doc (/**)
-comment blocks but do not describe their parameters with @param
-tags.This emits warnings when building
-with extra warnings enabled (make W=1), for example:
-kernel/power/snapshot.c:469: warning: Function parameter or member
-    'zone' not described in 'add_rtree_block'
-kernel/power/snapshot.c:469: warning: Function parameter or member
-    'gfp_mask' not described in 'add_rtree_block'
-kernel/power/snapshot.c:469: warning: Function parameter or member
-    'safe_needed' not described in 'add_rtree_block'
-kernel/power/snapshot.c:469: warning: Function parameter or member
-    'ca' not described in 'add_rtree_block'
-
-These are file-local implementation details, not part of the
-exported kernel API documented under Documentation/. Replace the
-kernel-doc markers with plain block comments for the affected
-functions.
-
-Properly documented symbols such as
-alloc_rtree_node(), snapshot_read_next() and snapshot_write_next()
-remain unchanged.
-
-Signed-off-by: Adi Nata <adinata.softwareengineer@gmail.com>
----
- kernel/power/snapshot.c | 42 ++++++++++++++++++++---------------------
- 1 file changed, 21 insertions(+), 21 deletions(-)
-
-diff --git a/kernel/power/snapshot.c b/kernel/power/snapshot.c
-index a564650734dc..552958f58359 100644
---- a/kernel/power/snapshot.c
-+++ b/kernel/power/snapshot.c
-@@ -458,7 +458,7 @@ static struct rtree_node *alloc_rtree_node(gfp_t gfp_mask, int safe_needed,
- 	return node;
- }
- 
--/**
-+/*
-  * add_rtree_block - Add a new leave node to the radix tree.
-  *
-  * The leave nodes need to be allocated in order to keep the leaves
-@@ -528,7 +528,7 @@ static int add_rtree_block(struct mem_zone_bm_rtree *zone, gfp_t gfp_mask,
- static void free_zone_bm_rtree(struct mem_zone_bm_rtree *zone,
- 			       int clear_nosave_free);
- 
--/**
-+/*
-  * create_zone_bm_rtree - Create a radix tree for one zone.
-  *
-  * Allocated the mem_zone_bm_rtree structure and initializes it.
-@@ -566,7 +566,7 @@ static struct mem_zone_bm_rtree *create_zone_bm_rtree(gfp_t gfp_mask,
- 	return zone;
- }
- 
--/**
-+/*
-  * free_zone_bm_rtree - Free the memory of the radix tree.
-  *
-  * Free all node pages of the radix tree. The mem_zone_bm_rtree
-@@ -678,7 +678,7 @@ static int create_mem_extents(struct list_head *list, gfp_t gfp_mask)
- 	return 0;
- }
- 
--/**
-+/*
-  * memory_bm_create - Allocate memory for a memory bitmap.
-  */
- static int memory_bm_create(struct memory_bitmap *bm, gfp_t gfp_mask,
-@@ -720,7 +720,7 @@ static int memory_bm_create(struct memory_bitmap *bm, gfp_t gfp_mask,
- 	goto Exit;
- }
- 
--/**
-+/*
-  * memory_bm_free - Free memory occupied by the memory bitmap.
-  * @bm: Memory bitmap.
-  */
-@@ -736,7 +736,7 @@ static void memory_bm_free(struct memory_bitmap *bm, int clear_nosave_free)
- 	INIT_LIST_HEAD(&bm->zones);
- }
- 
--/**
-+/*
-  * memory_bm_find_bit - Find the bit for a given PFN in a memory bitmap.
-  *
-  * Find the bit in memory bitmap @bm that corresponds to the given PFN.
-@@ -988,7 +988,7 @@ static void memory_bm_recycle(struct memory_bitmap *bm)
- 	}
- }
- 
--/**
-+/*
-  * register_nosave_region - Register a region of unsaveable memory.
-  *
-  * Register a range of page frames the contents of which should not be saved
-@@ -1305,7 +1305,7 @@ static unsigned int count_free_highmem_pages(void)
- 	return cnt;
- }
- 
--/**
-+/*
-  * saveable_highmem_page - Check if a highmem page is saveable.
-  *
-  * Determine whether a highmem page should be included in a hibernation image.
-@@ -1362,7 +1362,7 @@ static unsigned int count_highmem_pages(void)
- }
- #endif /* CONFIG_HIGHMEM */
- 
--/**
-+/*
-  * saveable_page - Check if the given page is saveable.
-  *
-  * Determine whether a non-highmem page should be included in a hibernation
-@@ -1440,7 +1440,7 @@ static inline bool do_copy_page(long *dst, long *src)
- 	return !z;
- }
- 
--/**
-+/*
-  * safe_copy_page - Copy a page in a safe way.
-  *
-  * Check if the page we are going to copy is marked as present in the kernel
-@@ -1687,7 +1687,7 @@ static unsigned long preallocate_image_highmem(unsigned long nr_pages)
- 	return preallocate_image_pages(nr_pages, GFP_IMAGE | __GFP_HIGHMEM);
- }
- 
--/**
-+/*
-  *  __fraction - Compute (an approximation of) x * (multiplier / base).
-  */
- static unsigned long __fraction(u64 x, u64 multiplier, u64 base)
-@@ -1982,7 +1982,7 @@ int hibernate_preallocate_memory(void)
- }
- 
- #ifdef CONFIG_HIGHMEM
--/**
-+/*
-  * count_pages_for_highmem - Count non-highmem pages needed for copying highmem.
-  *
-  * Compute the number of non-highmem pages that will be necessary for creating
-@@ -2003,7 +2003,7 @@ static unsigned int count_pages_for_highmem(unsigned int nr_highmem)
- static unsigned int count_pages_for_highmem(unsigned int nr_highmem) { return 0; }
- #endif /* CONFIG_HIGHMEM */
- 
--/**
-+/*
-  * enough_free_mem - Check if there is enough free memory for the image.
-  */
- static int enough_free_mem(unsigned int nr_pages, unsigned int nr_highmem)
-@@ -2023,7 +2023,7 @@ static int enough_free_mem(unsigned int nr_pages, unsigned int nr_highmem)
- }
- 
- #ifdef CONFIG_HIGHMEM
--/**
-+/*
-  * get_highmem_buffer - Allocate a buffer for highmem pages.
-  *
-  * If there are some highmem pages in the hibernation image, we may need a
-@@ -2035,7 +2035,7 @@ static inline int get_highmem_buffer(int safe_needed)
- 	return buffer ? 0 : -ENOMEM;
- }
- 
--/**
-+/*
-  * alloc_highmem_pages - Allocate some highmem pages for the image.
-  *
-  * Try to allocate as many pages as needed, but if the number of free highmem
-@@ -2065,7 +2065,7 @@ static inline unsigned int alloc_highmem_pages(struct memory_bitmap *bm,
- 					       unsigned int n) { return 0; }
- #endif /* CONFIG_HIGHMEM */
- 
--/**
-+/*
-  * swsusp_alloc - Allocate memory for hibernation image.
-  *
-  * We first try to allocate as many highmem pages as there are
-@@ -2292,7 +2292,7 @@ static void duplicate_memory_bitmap(struct memory_bitmap *dst,
- 	}
- }
- 
--/**
-+/*
-  * mark_unsafe_pages - Mark pages that were used before hibernation.
-  *
-  * Mark the pages that cannot be used for storing the image during restoration,
-@@ -2330,7 +2330,7 @@ static int check_header(struct swsusp_info *info)
- 	return 0;
- }
- 
--/**
-+/*
-  * load_header - Check the image header and copy the data from it.
-  */
- static int load_header(struct swsusp_info *info)
-@@ -2483,7 +2483,7 @@ static int prepare_highmem_image(struct memory_bitmap *bm,
- 
- static struct page *last_highmem_page;
- 
--/**
-+/*
-  * get_highmem_page_buffer - Prepare a buffer to store a highmem image page.
-  *
-  * For a given highmem image page get a buffer that suspend_write_next() should
-@@ -2706,7 +2706,7 @@ static int prepare_image(struct memory_bitmap *new_bm, struct memory_bitmap *bm,
- 	return error;
- }
- 
--/**
-+/*
-  * get_buffer - Get the address to store the next image data page.
-  *
-  * Get the address that snapshot_write_next() should return to its caller to
-@@ -2843,7 +2843,7 @@ int snapshot_write_next(struct snapshot_handle *handle)
- 	return PAGE_SIZE;
- }
- 
--/**
-+/*
-  * snapshot_write_finalize - Complete the loading of a hibernation image.
-  *
-  * Must be called after the last call to snapshot_write_next() in case the last
--- 
-2.47.3
-
+PiBTdWJqZWN0OiBbUEFUQ0ggMC8yXSBwbWRvbWFpbjogaW14OTM6IEZpeCBzaGFyZWQgTUlQSSBQ
+SFkgcmVzb3VyY2UNCj4gbWFuYWdlbWVudA0KPiANCj4gVGhlIGkuTVg5MyBNSVBJIERTSSBhbmQg
+Q1NJIGRvbWFpbnMgc2hhcmUgY29udHJvbCBiaXRzIGZvciBjbG9jayBhbmQNCj4gcmVzZXQgaW4g
+dGhlIG1lZGlhIGJsb2NrIGNvbnRyb2xsZXIuIFRoaXMgY3JlYXRlcyBhIHJlc291cmNlIGNvbmZs
+aWN0DQo+IHdoZXJlIG9uZSBkb21haW4gY2FuIGluYWR2ZXJ0ZW50bHkgZGlzYWJsZSBzaGFyZWQg
+cmVzb3VyY2VzIHdoaWxlDQo+IHRoZSBvdGhlciBkb21haW4gaXMgc3RpbGwgYWN0aXZlLCBsZWFk
+aW5nIHRvIHN5c3RlbSBpbnN0YWJpbGl0eS4NCj4gDQo+IFRoaXMgc2VyaWVzIGZpeGVzIHRoZSBp
+c3N1ZSBieSBpbnRyb2R1Y2luZyBhIGRlZGljYXRlZCBNSVBJIFBIWSBwb3dlcg0KPiBkb21haW4g
+dGhhdCBvd25zIHRoZSBzaGFyZWQgY2xvY2sgYW5kIHJlc2V0IGNvbnRyb2wgYml0cy4gVGhlIERT
+SSBhbmQNCj4gQ1NJIGRvbWFpbnMgYXJlIHRoZW4gbWFkZSBzdWJkb21haW5zIG9mIHRoaXMgUEhZ
+IGRvbWFpbiwgZW5zdXJpbmcNCj4gcHJvcGVyIHJlZmVyZW5jZSBjb3VudGluZyBhbmQgcHJldmVu
+dGluZyBwcmVtYXR1cmUgcmVzb3VyY2UNCj4gc2h1dGRvd24uDQo+IA0KPiBUZXN0ZWQgb24gaS5N
+WDkzIEVWSyB3aXRoIGNvbmN1cnJlbnQgRFNJIGFuZCBDU0kgb3BlcmF0aW9ucy4NCj4gDQo+IFNp
+Z25lZC1vZmYtYnk6IEd1b25pdSBaaG91IDxndW9uaXUuemhvdUBvc3MubnhwLmNvbT4NCj4gLS0t
+DQo+IEd1b25pdSBaaG91ICgyKToNCj4gICAgICAgZHQtYmluZGluZ3M6IHBvd2VyOiBpbXg5Mzog
+QWRkIE1JUEkgUEhZIHBvd2VyIGRvbWFpbg0KPiAgICAgICBwbWRvbWFpbjogaW14OTMtYmxrLWN0
+cmw6IEV4dHJhY3QgUEhZIGFzIHNoYXJlZCBkb21haW4gZm9yDQo+IERTSS9DU0kNCg0KUmV2aWV3
+ZWQtYnk6IFBlbmcgRmFuIDxwZW5nLmZhbkBueHAuY29tPg0K
