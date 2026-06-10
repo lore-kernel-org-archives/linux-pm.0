@@ -1,244 +1,789 @@
-Received: from mail-pl1-f181.google.com (mail-pl1-f181.google.com [209.85.214.181])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 06FEE17BB21
-	for <linux-pm@vger.kernel.org>; Wed, 10 Jun 2026 19:32:35 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.214.181
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1781119957; cv=pass; b=T52mxjnpP6SWcKTtYIy6aVwJwKcmueD7JU8CP0/YG/kQgevDo6h8UmRVVE1itFvrt455COhZ5ziXJRdaR8xrz7teylQPb3+8CwLqN2KjXKNK2PeakWuyx2pu0z95dBpWg4lhdIu4M8WagrWOhdFHQaHAB4VEcASlsNGQl2fjWyQ=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1781119957; c=relaxed/simple;
-	bh=yw4QQiR2BjNKk1Xh/n7ZzdpxWwXGfRSGZ/a9t2e1ars=;
-	h=MIME-Version:From:Date:Message-ID:Subject:To:Cc:Content-Type; b=A/0WG88qfXpYwlKTVgeSkoHRiJjLkswzthhJ3OUmcicGoeda2JPycfV5FtDVXGFc/sg4uPGJuB2NBl30I1xtfJ9knQ/5pu4MkYNbqf3QzJ5ddTyGTL/WWKwuQTF4F/xFahHEf8MMQTTNHjwIL5+QyZ3k6y+a7fD3WgNB33xjMhc=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=Z6fowfpM; arc=pass smtp.client-ip=209.85.214.181
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8A16DF9E8
+	for <linux-pm@vger.kernel.org>; Wed, 10 Jun 2026 19:39:42 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.180.131
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1781120384; cv=none; b=a9e4bJh/LkSjth9QegXcbZJDN1jyo+nmSsxT4by6zgTC2jYhZQuXKa3nwQDmRfCg8oKxejACAJoVhAFHoYehiCLAxtqswCvQQ/JO9Wnq5nQz0lm4H3zfpIKPHZe+EXw1tpXEdlAONzZPQBsWBQ/wbde8u9277AjH0ShiPUM3xko=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1781120384; c=relaxed/simple;
+	bh=g5/Ofsl03+8N0WvSMiLEwq5x8smVDUw0THHJiGfC8jc=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=d0ygmZ3thtYtIKp8Mk2YRuKcHpv8JFfShFT2aZPsRiMDgkYyxl7F9lSgjJMaMJOZeK/o4L88MMNGmvvI80Lxbv9WfXvDy4A1Xfv3ww7cFdFKQugDLF94MHwS/I1p6TVe8H9k0VTh6Yt/j/5z1VYeWCOZqt04EnkNrcNR90zucqY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=j01KYfzd; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=KdZzZfaC; arc=none smtp.client-ip=205.220.180.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Z6fowfpM"
-Received: by mail-pl1-f181.google.com with SMTP id d9443c01a7336-2c0c379e8ffso49649625ad.3
-        for <linux-pm@vger.kernel.org>; Wed, 10 Jun 2026 12:32:35 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1781119955; cv=none;
-        d=google.com; s=arc-20240605;
-        b=eJBrrqJSvQkz5b0tcmLCcVS7+Ss2QE/dGoMtIQTliQsEDlFBKQ4Vcw5eapXnBNZVw3
-         yB4SjqAyWf5jeb8t5UfhWbokH2GCVwt+CIJkqHuJ5t/aj6r59hR5jYUbb3EiF41jxtoo
-         58LGPvXBpAUasCooNk9B+oW0AADQmCENEwgUcAn52CgqQEhMFk57Gxd3mgqyloc92QIF
-         XDBP3sokqg5N7K6wV1mNhrF3elNOYygppqboykcDzVX0lRXIz5TAf3wqttMsX53kfxLS
-         blJeyhVCFqHoaBmjOA2UduTMVpTMCaZsd4bz3FgyOMYMxqpMm5LwBjAUZK0WpHdCy/Av
-         nDmQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :mime-version:dkim-signature;
-        bh=yw4QQiR2BjNKk1Xh/n7ZzdpxWwXGfRSGZ/a9t2e1ars=;
-        fh=Bd5zsD0eK0P+88dOZ7WSKgDL+8Fz96comWV6eTNozpo=;
-        b=dsp3zN5cfAif316AgeJV6BnYhUXSzPMmgnatuQdbiIdX8yOHRcLZdYi7eXCI/RxC1F
-         0BlOaBeggfi7gZ5qLo812zfBLuzEGwFi3vXiH6VjQPWcOnVkstWigg0pA7sW038dvLbn
-         fHxY6HBTzRAv55QZYwxXRhTyaTaTm7h/n1v8fk1/8UFK0/G1iKXHPit8sLWS/Tl3mkSP
-         RGGmCPNvg8QptHaUF0um2cTV3DvjbL7TyDjK00F6ws8Hk/MhbW9OQ8mVl7KMs07vl4oX
-         WhWUPcHMc0oxgdgyay6gLitLnoJJ+wsNB3aGDj66+m+SYnLsATk68IHKxUzPcL0am/O0
-         o+hA==;
-        darn=vger.kernel.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="j01KYfzd";
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="KdZzZfaC"
+Received: from pps.filterd (m0279868.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 65AJYgpD2472071
+	for <linux-pm@vger.kernel.org>; Wed, 10 Jun 2026 19:39:41 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
+	7SUFEKWjPsAnYpOR216K/K8sFu8L1tKoAtfRugZJ46k=; b=j01KYfzdPTEEOwRX
+	Jb2QeJdNzuIHGh/9lf7iopypRa3CCk3jiuXdfnKLVR+0BFBW34tF+3R3jFSLYhBV
+	vMOE8zjHR71ZRI3lwIGRVccVrqnOu+fnleUCJmShEFKfelncb3WuUk/fc0sZT4Rj
+	z/2kIPNn246qPh8M9EI7rpIB1PBSwrwZSQoE8Z5lhdqBOUDPaIap4J9mlKIsGD3V
+	k/qurQnA6JxkjX8gQI5ZiQLKJBl8Gh3PGMhXcfYZhOxFYlyVbXjpLRoIHdScGzbq
+	h8i4OHsfnXP+rmqkAPv8EUpx1eBi7mIxk86ycamqrpg9XysiLYPP3btSHCMFgiQ9
+	UJiEWw==
+Received: from mail-dy1-f200.google.com (mail-dy1-f200.google.com [74.125.82.200])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4eqe6u80k9-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <linux-pm@vger.kernel.org>; Wed, 10 Jun 2026 19:39:41 +0000 (GMT)
+Received: by mail-dy1-f200.google.com with SMTP id 5a478bee46e88-3075fa5a407so12949179eec.1
+        for <linux-pm@vger.kernel.org>; Wed, 10 Jun 2026 12:39:41 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1781119955; x=1781724755; darn=vger.kernel.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :mime-version:from:to:cc:subject:date:message-id:reply-to;
-        bh=yw4QQiR2BjNKk1Xh/n7ZzdpxWwXGfRSGZ/a9t2e1ars=;
-        b=Z6fowfpM1mnQBJopS/+44NmH4PpJIrXNcxKUyt3FznCGMCcWKrqUosMxlTe3fDdPt/
-         GSfIYbq/QKeedIyttdfq3s4pYP/oiWeRgla7edzK+0WvzLG/+DZ/fCQeTORFnBEe7Q+1
-         qaAyh1R1l13d/sIFBR4O/JQHuNteascChhyJFY/zJSkHRcNwynV4XNe6aGj2cNmkKHCr
-         FkC5F+1gfLOVRpAN+isH5gL7abJp8OhTr95U+9FWz9AWKwfsW4dTeES79tRY+vy45iqm
-         S0KBLvOxDFQI4+JEg70lJsZGRBG/0r6UFDiGMStRpxlvACBDKWXkefq2XpFffs8Kwho0
-         7Ysw==
+        d=oss.qualcomm.com; s=google; t=1781120380; x=1781725180; darn=vger.kernel.org;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=7SUFEKWjPsAnYpOR216K/K8sFu8L1tKoAtfRugZJ46k=;
+        b=KdZzZfaCY+kD0wpVY3QgkG56Zn8Le6cgimscWJfh+aCxUVoqHesdVC2fZDymlZq9Lo
+         52aqt7hdxgWuXBzsKa+dKUnPrs+PoI84fB89lt6bSLJEB3+jNphIDFGRhLxHwT7CIAyW
+         5jOupSJOW8OCXP2y+D7/gVLWWDu1QI7io1cIvKUYFur4iTEYN1klhT2x+d5GA9NFuPyw
+         uQSLmbYKytJ24z3oAn5JxS73r892BLcC3sSYUjnfMXT+Jkpop7H183CjVap1gsvsE5xf
+         QmiW5CCoL1Vo53weV2xoidzpwrS5zMT0ltNmoPP9WTqDxEB62QkrWu9qY84jMH82OnTv
+         Tz+A==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1781119955; x=1781724755;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :mime-version:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=yw4QQiR2BjNKk1Xh/n7ZzdpxWwXGfRSGZ/a9t2e1ars=;
-        b=OLURWogL79dElGoI/5bAWcPF0WFm30Vvu2OTxH0gQG2worA3A2LRfl7IZajWFu6//e
-         oUSoNHbZ/QAsXdrYtAqAwbtFM4Gpr7EhvtPyZ+go+AA5QgfF1YEZH0xsDWnSFw3IbRd5
-         mbFHmIyqAeiijfyP5Ij8wqioJx9+04DE+NccN/IeYejU67HRHUmjsA+KM4lqAcr5HLC2
-         zpfV++iY4UoJ0C2HxmJeq4Eq5OszQ4hW3Yn9aAnkxBupkduUOt4Gc2ah/5kMcptwbuow
-         BChLxbqn7MIjwIUUrPT1rB+0N/j/pkKoh6qW7H4aMmKv/w9/IG+DTsCtzq+T8o5T8KvE
-         pPWg==
-X-Forwarded-Encrypted: i=1; AFNElJ8/LSDefiEn7pQxVBcR2FH1Ax1eKDg62jR7E149mNXkw0OKO/0aAAGTKZr38uczcx8gRyYQv3085A==@vger.kernel.org
-X-Gm-Message-State: AOJu0YyrKAUsdY3qniHjEh4mHIumhXZTmDeidkgD7DcQNOhY8o8jtrg1
-	M0PoXbvlqzfXNaSdCEclrro2YQUUzuqQyyijh/FqT6VZ4EfL7XMvYfYr+Kr8skf34O5HEUYx507
-	8M5V07G9JPeelEL8wvETzW5DglBQUOXY=
-X-Gm-Gg: Acq92OG8J0Q5PO4zCCw5aZSRb6UKPoHmGUgi8T88+apjAqnJPuX/ysPA4UrCR1MTyau
-	bJAzE8ZJ3mvhuW+I84ANwDGZZr+VsipqgqimqlGObFzyiMXMRmjqoXH7Jd/35NcMqy9zENS9+Xl
-	maTya0gcBti+e/VOYxzV9N7eHQgPaFoSKlDQ5W4JP2HzYC/tWQ0jMeDOKrchR6pVCATnEngDCPw
-	eHJVXKt8vqD6gyef4po3fna2ip378ihQFxsdu4ZrrgBLohccQd/Sj7RQ/4+wrbl4qTC7ZcQXaZm
-	XyPBAtkr0brujyyN+VLhL+C7XaDPu8D/CC0tuihV3jOcaZgjKR4e+XZg47TqtEga5vxw9m8WjxG
-	Wqcpl8N5onVFc3ANIODnmna3Ut5NDohTgfbNgCDsAXUZpqw==
-X-Received: by 2002:a17:903:1813:b0:2c0:c262:b919 with SMTP id
- d9443c01a7336-2c1e78e4e97mr177445565ad.5.1781119955351; Wed, 10 Jun 2026
- 12:32:35 -0700 (PDT)
+        d=1e100.net; s=20251104; t=1781120380; x=1781725180;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=7SUFEKWjPsAnYpOR216K/K8sFu8L1tKoAtfRugZJ46k=;
+        b=MASrtr552dq5woxG331YeN0PIc7lHZ3Vxgo4R63/Iut7lTQqmQijNcOdglA6xDQk4j
+         LC9tUkiVk9Kt6XSwVgTifYhy85BfiQg7cFydmxi3fw4afLUk5QEuJlkowEyuy91XkV5K
+         bWfLzzTQ4aYEMN55f6j/Xf5vLO8fGBcRjeLuUGGx/Jz6KiG6w4NZ0FdRHWKT1FS+uEvk
+         OB1/oC2Jv29RgO2SlHg5YQeuKSd0Z/9ORpGzzQFpPv4N47IiUohjTFbCumx318tTlqHs
+         Rp4oHNrf8nasvLXkySBPXW6hQi1kLn3LBzEGZuR5sd3rcMhW99fj5A4w+zjWmBAdTnpq
+         HYkg==
+X-Forwarded-Encrypted: i=1; AFNElJ9IFytFCE8odvhMBRM77eJuVy5m+7013nLGBmyRXMPvn0dS89+FmjFLMQBlxfsstRbRKrjFtGWGFw==@vger.kernel.org
+X-Gm-Message-State: AOJu0YyaQBDazHSH0ze+ebHC+y7v4lb4GZQpqbUJq/A2H32DPtG8bJ2J
+	SshDCxWDi1H8I1uXcbzs4GQIMLgfNJTAvMK/sRm3nGYL/zcCdAIsQYqjqSrBherISo4ECsnk9ff
+	EGE88DEJRXZnuNwTdlZI6HCg8QELFvk/yP4sYaS+A/wkgzcwV7GSabRjPbq241w==
+X-Gm-Gg: Acq92OHZ8Zeq8x5P12G91zZY1nszqNUjNOFgfLtk9ptEybsa4293msRgx7z74GR3VRc
+	QOsd7CP7s1U7PSrBV3BKjicnFRN3fmUiWyi5RxKelBsUynP8CYUOSd3Fd4L1cerbrdHZDVAaish
+	ZmM1E5V1zRyHyJ7pJq55+k11miU0aX5ECn08KbEO5VKNXgyyilbmVNx3Yucg4pW4FZe7JrgxU3s
+	9oU8KzY1JSfkeFs5OxSJGVnbIBoeQI5Ks4auS64vNyzzym2usO9ITtp98/V5dOxdAuFX+Gbg3u0
+	kU75swQw0ojQn+OqrgInJsX9iEDAJAwGNInf46QwZepXQfz/rHUUEI2pBHTBAMdiDbLXLMpiwx5
+	MsAZRw6rsrCLLU4M6O8DOrovL6j7YIGqGJxEM0pi/U4QWGpgccYwDV/pEOy6HTZsL
+X-Received: by 2002:a05:6a20:6a20:b0:398:837a:7af0 with SMTP id adf61e73a8af0-3b4ccf82d99mr31713261637.30.1781120008708;
+        Wed, 10 Jun 2026 12:33:28 -0700 (PDT)
+X-Received: by 2002:a05:6a20:6a20:b0:398:837a:7af0 with SMTP id adf61e73a8af0-3b4ccf82d99mr31713213637.30.1781120007955;
+        Wed, 10 Jun 2026 12:33:27 -0700 (PDT)
+Received: from [192.168.2.6] ([49.204.16.15])
+        by smtp.gmail.com with ESMTPSA id 41be03b00d2f7-c864874da11sm2947108a12.20.2026.06.10.12.33.23
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Wed, 10 Jun 2026 12:33:27 -0700 (PDT)
+Message-ID: <4417c3f9-854a-4613-bf14-777181daeff3@oss.qualcomm.com>
+Date: Thu, 11 Jun 2026 01:03:21 +0530
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-From: Lenart Kos <koslenart@gmail.com>
-Date: Wed, 10 Jun 2026 21:32:22 +0200
-X-Gm-Features: AVVi8CckacFZHS5PZVju8CNzuQgqAd6nCYOpcgzhfIxMNlSkxtXD9ZnJXCv75SA
-Message-ID: <CAFdvZNt+mRTE9Q+utn=T8GzU7s_09ULhUtzTMMa9dgGCsE+r9A@mail.gmail.com>
-Subject: pinctrl: amd: spurious immediate resume from S3/s2idle via BIOS-armed
- wake GPIO with no ACPI owner (Lenovo Legion Pro 5 16ARX8)
-To: Basavaraj Natikar <Basavaraj.Natikar@amd.com>, Shyam Sundar S K <Shyam-sundar.S-k@amd.com>, 
-	Linus Walleij <linusw@kernel.org>
-Cc: Mario Limonciello <mario.limonciello@amd.com>, linux-gpio@vger.kernel.org, 
-	linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 2/3] powercap: qcom: Add SPEL powercap driver
+To: Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>,
+        Rob Herring <robh@kernel.org>,
+        Krzysztof Kozlowski <krzk+dt@kernel.org>,
+        Conor Dooley <conor+dt@kernel.org>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Bjorn Andersson <andersson@kernel.org>,
+        Konrad Dybcio <konradybcio@kernel.org>
+Cc: linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+        Gaurav Kohli <gaurav.kohli@oss.qualcomm.com>
+References: <20260519-qcom_spel_driver_upstream-v1-0-75356d1b7f94@oss.qualcomm.com>
+ <20260519-qcom_spel_driver_upstream-v1-2-75356d1b7f94@oss.qualcomm.com>
+ <a1b599f9-44a8-4cd6-b4ea-5c28eef9f221@oss.qualcomm.com>
+Content-Language: en-US
+From: Manaf Meethalavalappu Pallikunhi <manaf.pallikunhi@oss.qualcomm.com>
+In-Reply-To: <a1b599f9-44a8-4cd6-b4ea-5c28eef9f221@oss.qualcomm.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-Proofpoint-Spam-Info: AW1haW4tMjYwNjEwMDE4NyBTYWx0ZWRfX8EntasJIOT7P
+ KVvvTZrT5ntYg1oj4vTyS4NlZhAa5RpMMe/FYkE0jXWgJt6RvoMQKMxMLDS/LiMqVuLtqICqHJh
+ sZdoGKrszV0wftX8TlkQ+C4kzcZRkOU=
+X-Authority-Analysis: v=2.4 cv=atOCzyZV c=1 sm=1 tr=0 ts=6a29bd7d cx=c_pps
+ a=PfFC4Oe2JQzmKTvty2cRDw==:117 a=80DA36llApf5Npk0Bpmn+g==:17
+ a=IkcTkHD0fZMA:10 a=FelO9ux0wxsA:10 a=s4-Qcg_JpJYA:10
+ a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=ZpdpYltYx_vBUK5n70dp:22
+ a=EUspDBNiAAAA:8 a=VwQbUJbxAAAA:8 a=COk6AnOGAAAA:8 a=XCvaPOw2vJVSrvyNqp8A:9
+ a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10 a=6Ab_bkdmUrQuMsNx7PHu:22
+ a=TjNXssC_j7lpFel5tvFf:22
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNjEwMDE4NyBTYWx0ZWRfXwmYG2EMKP2ZI
+ BGSDAbeYntCm5dHa5Mu0SfLjATq05uSIRVsxyyGUDLhnIzK7KU16Q/HtJxe8LTV3mDIJAxGCrb4
+ Z7ZXeN4Y+77IgszXAHU8x3cX7sdUlXap8pZk+uIZQTd5VgdHTiL01o8TI9mJVmqexXI7LG7Y1wT
+ W7P75KgRSOoSjhVBNkK8qkjXiLiQfOeX/6NF8dc7jxzAynQVTsWPqAeVjao9J3YLblp0/W8jvcz
+ 5k84rc4reYu73tT5kRJp6LigGfn1MKAqmYXey9EQwhnyEvico68yUL552AOrNUUHHt9QKBCyccy
+ PQIlUWGkzyopYR8hvBoebd5c+q3L/L9reCAm3IkD/nPemDd90f0YHxRa0RXpQZaevEs+DgGNDLF
+ l7pRpKJDpGzMhxcXjh2baFIeIJvs0g==
+X-Proofpoint-GUID: jbOsHdFMBBwcBAfiGN0XhPoPvCV_lbDZ
+X-Proofpoint-ORIG-GUID: jbOsHdFMBBwcBAfiGN0XhPoPvCV_lbDZ
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.125,FMLib:17.12.100.49
+ definitions=2026-06-10_04,2026-06-09_02,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ adultscore=0 bulkscore=0 spamscore=0 malwarescore=0 phishscore=0
+ suspectscore=0 lowpriorityscore=0 classifier=typeunknown authscore=0 authtc=
+ authcc= route=outbound adjust=0 reason=mlx scancount=1
+ engine=8.22.0-2606040000 definitions=main-2606100187
 
-## Summary
+Hi Daniel,
 
-On the Lenovo Legion Pro 5 16ARX8, suspending (S3 *or* s2idle) with an exte=
-rnal
-display connected resumes the machine after ~1 second. The wake is delivere=
-d by
-the AMD GPIO controller (`pinctrl_amd`, IRQ 7) from GPIO pin **#4**
-(and pin #2 for
-the USB=E2=80=91C/DP path), which the **BIOS has armed as an S0i3/S3 wake
-source directly
-in the FCH GPIO register**, with **no ACPI description**
-(`_AEI`/`GpioInt`/`_PRW`)
-anywhere in the DSDT or the 16 SSDTs. Because there is no ACPI owner,
-none of the
-existing override mechanisms (`gpiolib_acpi.ignore_wake=3D`, device
-`power/wakeup`)
-can reach it, and `IO_STRICT_DEVMEM` blocks any userspace register
-write. The pin
-is an external=E2=80=91display HPD line, so the edge produced while the GPU
-powers down on
-the way into sleep immediately wakes the system.
 
-## Affected system
+On 5/27/2026 12:06 AM, Daniel Lezcano wrote:
+> On 5/19/26 12:49, Manaf Meethalavalappu Pallikunhi wrote:
+>> The Qualcomm SoC Power and Electrical Limits (SPEL) provides hardware
+>> based power monitoring and limiting capabilities for various power
+>> domains including System, SoC, CPU clusters, GPU, and various other
+>> subsystems.
+>>
+>> The driver integrates with the Linux powercap framework, exposing SPEL
+>> capabilities through powercap sysfs interfaces.
+>>
+>> Signed-off-by: Manaf Meethalavalappu Pallikunhi 
+>> <manaf.pallikunhi@oss.qualcomm.com>
+>> ---
+>>   MAINTAINERS                  |   1 +
+>>   drivers/powercap/Kconfig     |  13 +
+>>   drivers/powercap/Makefile    |   1 +
+>>   drivers/powercap/qcom_spel.c | 787 +++++++++++++++++++++++++++++++++ 
+>> ++++++++++
+>>   4 files changed, 802 insertions(+)
+>>
+>> diff --git a/MAINTAINERS b/MAINTAINERS
+>> index c63f147e8c54..5c7542754ab6 100644
+>> --- a/MAINTAINERS
+>> +++ b/MAINTAINERS
+>> @@ -22238,6 +22238,7 @@ M:    Manaf Meethalavalappu Pallikunhi 
+>> <manaf.pallikunhi@oss.qualcomm.com>
+>>   L:    linux-arm-msm@vger.kernel.org
+>>   S:    Maintained
+>>   F:    Documentation/devicetree/bindings/power/limits/qcom,spel.yaml
+>> +F:    drivers/powercap/qcom_spel.c
+>>   QUALCOMM PPE DRIVER
+>>   M:    Luo Jie <quic_luoj@quicinc.com>
+>> diff --git a/drivers/powercap/Kconfig b/drivers/powercap/Kconfig
+>> index 03c4c796d993..e3a47c653499 100644
+>> --- a/drivers/powercap/Kconfig
+>> +++ b/drivers/powercap/Kconfig
+>> @@ -93,4 +93,17 @@ config DTPM_DEVFREQ
+>>       help
+>>         This enables support for device power limitation based on
+>>         energy model.
+>> +
+>> +config QCOM_SPEL
+>> +    tristate "Qualcomm SPEL Powercap driver"
+>> +    depends on ARM64 || COMPILE_TEST
+>> +    help
+>> +      This enables support for the Qualcomm SoC Power and Electrical
+>> +      Limits (SPEL) hardware, which allows power limits to be
+>> +      enforced and monitored on Qualcomm SoCs.
+>> +
+>> +      SPEL provides energy monitoring and power capping for multiple
+>> +      domains including system, SoC, CPU clusters, GPU, and various
+>> +      other subsystems.
+>> +
+>>   endif
+>> diff --git a/drivers/powercap/Makefile b/drivers/powercap/Makefile
+>> index 5ab0dce565b9..8235fb9d3df6 100644
+>> --- a/drivers/powercap/Makefile
+>> +++ b/drivers/powercap/Makefile
+>> @@ -8,3 +8,4 @@ obj-$(CONFIG_INTEL_RAPL) += intel_rapl_msr.o
+>>   obj-$(CONFIG_INTEL_RAPL_TPMI) += intel_rapl_tpmi.o
+>>   obj-$(CONFIG_IDLE_INJECT) += idle_inject.o
+>>   obj-$(CONFIG_ARM_SCMI_POWERCAP) += arm_scmi_powercap.o
+>> +obj-$(CONFIG_QCOM_SPEL) += qcom_spel.o
+>> diff --git a/drivers/powercap/qcom_spel.c b/drivers/powercap/qcom_spel.c
+>> new file mode 100644
+>> index 000000000000..fed5647959a5
+>> --- /dev/null
+>> +++ b/drivers/powercap/qcom_spel.c
+>> @@ -0,0 +1,787 @@
+>> +// SPDX-License-Identifier: GPL-2.0-only
+>> +/*
+>> + * Qualcomm SPEL (SoC Power and Electrical Limits) Driver
+>> + *
+>> + * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
+>> + */
+>> +
+>> +#include <linux/bitmap.h>
+>> +#include <linux/device.h>
+>> +#include <linux/io.h>
+>> +#include <linux/kernel.h>
+>> +#include <linux/module.h>
+>> +#include <linux/mod_devicetable.h>
+>> +#include <linux/mutex.h>
+>> +#include <linux/platform_device.h>
+>> +#include <linux/powercap.h>
+>> +#include <linux/slab.h>
+>> +#include <linux/types.h>
+>> +
+>> +/* SPEL register bitmasks */
+>> +#define ENERGY_STATUS_MASK        0xFFFFFFFF
+>> +
+>> +#define POWER_LIMIT_MASK        0x00007FFF
+>> +#define POWER_LIMIT_ENABLE        BIT(31)
+>> +
+>> +#define TIME_WINDOW_MASK_L        0x00007FFF    /* bits [14:0] */
+>> +#define TIME_WINDOW_MASK_H        0x007F0000    /* bits [22:16] */
+>> +
+>> +#define ENERGY_UNIT_OFFSET        16
+>> +#define ENERGY_UNIT_MASK        0xF0000
+>> +
+>> +#define TIME_UNIT_OFFSET        8
+>> +#define TIME_UNIT_MASK            0xF00
+>> +
+>> +#define POWER_UNIT_OFFSET        0
+>> +#define POWER_UNIT_MASK            0x7
+>> +
+>> +#define LIMITS_CAPABILITY_OFFSET    0x20
+>> +#define ENERGY_RPT_UNIT_OFFSET        0x04
+>> +
+>> +#define ENERGY_UNIT_SCALE        1000
+>> +
+>> +#define SPEL_DOMAIN_NAME_LENGTH        16
+>> +
+>> +/* Domain types */
+>> +enum spel_domain_type {
+>> +    SPEL_DOMAIN_SYS,
+>> +    SPEL_DOMAIN_SOC,
+>> +    SPEL_DOMAIN_CL0,
+>> +    SPEL_DOMAIN_CL1,
+>> +    SPEL_DOMAIN_CL2,
+>> +    SPEL_DOMAIN_IGPU,
+>> +    SPEL_DOMAIN_DGPU,
+>> +    SPEL_DOMAIN_NSP,
+>> +    SPEL_DOMAIN_MMCX,
+>> +    SPEL_DOMAIN_INFRA,
+>> +    SPEL_DOMAIN_DRAM,
+>> +    SPEL_DOMAIN_MDM,
+>> +    SPEL_DOMAIN_WLAN,
+>> +    SPEL_DOMAIN_USB1,
+>> +    SPEL_DOMAIN_USB2,
+>> +    SPEL_DOMAIN_USB3,
+>> +    SPEL_DOMAIN_MAX,
+>> +};
+>> +
+>> +/* Power limit IDs */
+>> +enum spel_power_limit_id {
+>> +    POWER_LIMIT1,
+>> +    POWER_LIMIT2,
+>> +    POWER_LIMIT3,
+>> +    POWER_LIMIT4,
+>> +    NR_POWER_LIMITS,
+>> +};
+>> +
+>> +/* Unit types for conversion */
+>> +enum unit_type {
+>> +    POWER_UNIT,
+>> +    ENERGY_UNIT,
+>> +    TIME_UNIT,
+>> +};
+>> +
+>> +/* Power limit operation types */
+>> +enum pl_ops_type {
+>> +    PL_LIMIT,
+>> +    PL_TIME_WINDOW,
+>> +};
+>> +
+>> +static const char *pl_names[NR_POWER_LIMITS] = {
+>> +    [POWER_LIMIT1] = "pl1",
+>> +    [POWER_LIMIT2] = "pl2",
+>> +    [POWER_LIMIT3] = "pl3",
+>> +    [POWER_LIMIT4] = "pl4",
+>> +};
+> 
+> Do you want to use NR_POWER_LIMITS instead of ARRAY_SIZE() ?
 
-```
-DMI sys_vendor LENOVO
-DMI product_name 82WM
-DMI product_version Legion Pro 5 16ARX8
-DMI board_name LNVNB161216
-BIOS LPCN62WW (2025-06-17) # latest available; does NOT fix this
-SoC AMD Ryzen 7 7745HX (Raphael), GPIO ctrl AMDI0030 @ 0xFED81500
-GPU NVIDIA RTX 4060 Mobile (HDMI) + AMD Raphael iGPU (USB-C DP)
-Kernel 6.17+ through 7.0.x (reproduced on Fedora 43/44)
-```
+ACK, I will move to ARRAY_SIZE>
+> Please unify the naming NR_POWER_LIMITS -> POWER_LIMITS_MAX
 
-## Symptom / evidence
+ACK
 
-Failed-suspend kernel log (verbose PM):
-```
-PM: suspend entry (deep)
-...
-amd_gpio AMDI0030:00: ... Clearing debounce for GPIO #2 during suspend.
-amd_gpio AMDI0030:00: ... Clearing debounce for GPIO #4 during suspend.
-amd_gpio AMDI0030:00: ... Disabling GPIO #89 interrupt for suspend. #
-not a wake src
-ACPI: PM: Preparing to enter system sleep state S3
-Timekeeping suspended for 1.384 seconds
-PM: Triggering wakeup from IRQ 7 # IRQ 7 =3D pinctrl_amd
-...
-GPIO 4 is active: 0x30057c00 # bit 14 (WAKE_CNTRL_S3) + bit 29 (wake latche=
-d)
-```
-`/sys/power/pm_wakeup_irq` =3D `7`.
+> 
+>> +static const char *const spel_domain_names[] = {
+>> +    "sys", "soc", "cl0", "cl1", "cl2", "igpu", "dgpu", "nsp",
+>> +    "mmcx", "infra", "dram", "mdm", "wlan", "usb1", "usb2", "usb3",
+>> +};
+>> +
+>> +/* Domain register offsets in node base */
+>> +static const u32 domain_offsets[SPEL_DOMAIN_MAX] = {
+>> +    [SPEL_DOMAIN_SYS]    = 0x40,
+>> +    [SPEL_DOMAIN_SOC]    = 0x00,
+>> +    [SPEL_DOMAIN_CL0]    = 0x5C,
+>> +    [SPEL_DOMAIN_CL1]    = 0x60,
+>> +    [SPEL_DOMAIN_CL2]    = 0x64,
+>> +    [SPEL_DOMAIN_IGPU]    = 0x08,
+>> +    [SPEL_DOMAIN_DGPU]    = 0x44,
+>> +    [SPEL_DOMAIN_NSP]    = 0x0C,
+>> +    [SPEL_DOMAIN_MMCX]    = 0x10,
+>> +    [SPEL_DOMAIN_INFRA]    = 0x18,
+>> +    [SPEL_DOMAIN_DRAM]    = 0x1C,
+>> +    [SPEL_DOMAIN_MDM]    = 0x48,
+>> +    [SPEL_DOMAIN_WLAN]    = 0x4C,
+>> +    [SPEL_DOMAIN_USB1]    = 0x50,
+>> +    [SPEL_DOMAIN_USB2]    = 0x54,
+>> +    [SPEL_DOMAIN_USB3]    = 0x58,
+>> +};
+> 
+> Same comment
 
-`/sys/kernel/debug/gpio` (relevant rows) shows pins #2 and #4 armed for S0i=
-3+S3
-wake with their interrupt enabled, while #89 has no wake bits:
-```
-#2 =F0=9F=98=9B| =E2=86=93 | edge |=E2=8F=B0|=E2=8F=B0| | | ... 0x147ae0
-#4 =F0=9F=98=9B| b | edge |=E2=8F=B0|=E2=8F=B0| | | ... 0x57ce0 <- both-edg=
-e HPD, S0i3+S3 wake set
-#89 =F0=9F=98=9B| =E2=86=93 | level| | | | | ... 0x151b00 <- no wake bits (=
-red herring)
-```
+ACK
 
-## Root cause
+> 
+>> +/**
+>> + * struct spel_constraint_info - Power limit constraint information
+>> + * @limit_offset:    Register offset for power limit value
+>> + * @time_window_offset:    Register offset for time window
+>> + * @supported_mask:    Bit mask in capability register
+> 
+> Where is 'supported_mask' initialized?
 
-1. The external=E2=80=91display HPD lines are routed to SoC GPIO #2 (USB=E2=
-=80=91C/DP) and #4
-(HDMI/dGPU).
-2. The BIOS sets `WAKE_CNTRL_S0I3`/`WAKE_CNTRL_S3` (bits 13/14) on
-those pins in the
-FCH GPIO register block and **never describes them in ACPI** =E2=80=94 deco=
-mpiling the
-DSDT and all 16 SSDTs yields **zero** `GpioInt`/`GpioIo`/`_AEI` resources.
-3. `pinctrl_amd` correctly preserves hardware-armed wake pins across
-suspend, so the
-HPD edge generated during the suspend transition wakes the system immediate=
-ly.
+It is part of constraint_info table and used as bit mask to compare 
+againt capability config register value during init for each PL for 
+different domains.
 
-This is effectively an unvalidated firmware S3 path (the platform ships as
-Modern-Standby-only); but note **both** the S0i3 and S3 wake bits are set, =
-so
-s2idle is affected too.
+> 
+>> + * @domain_id:        Domain this constraint applies to
+>> + * @pl_id:        Power limit ID (PL1, PL2, etc.)
+> 
+> [ ... ]
+> 
+>> +
+>> +/**
+>> + * struct spel_domain - SPEL power domain
+>> + * @power_zone:        Powercap zone
+>> + * @lock:        Mutex protecting register access
+>> + * @sp:            Parent system
+>> + * @status_reg:        Energy counter register
+>> + * @pl_name:        Power limit names
+>> + * @name:        Domain name
+>> + * @id:            Domain type ID
+>> + */
+>> +struct spel_domain {
+> 
+> [ ... ]
+> 
+>> +    struct spel_system *sp;
+> 
+> [ ... ]
+> 
+>> +struct spel_system {
+>> +    struct spel_domain *domains;
+> 
+> [ ... ]
+> 
+>> +};
+> 
+> There is a cyclic dependency between struct spel_system <-> struct 
+> spel_domain. Could it be solved ?
 
-## Why existing mechanisms don't help
+ACK
 
-- `/proc/acpi/wakeup`, PCI/ACPI `power/wakeup` =E2=80=94 wrong layer; this =
-is
-not a PCIe PME.
-Disabling wakeup on the GPP bridges / GPU has no effect (verified).
-- `gpiolib_acpi.ignore_wake=3D` / `ignore_interrupt=3D` =E2=80=94 only matc=
-h
-**ACPI-declared**
-GPIO events; this pin has no ACPI declaration, so they cannot target it.
-- `/dev/mem` register write =E2=80=94 blocked by `CONFIG_IO_STRICT_DEVMEM=
-=3Dy`
-(the region is
-claimed by pinctrl_amd).
+> 
+>> +#define power_zone_to_spel_domain(_zone) \
+>> +    container_of(_zone, struct spel_domain, power_zone)
+>> +
+>> +/* Helper functions */
+>> +static bool is_pl_valid(struct spel_domain *sd, int pl)
+>> +{
+>> +    if (pl < POWER_LIMIT1 || pl >= NR_POWER_LIMITS)
+>> +        return false;
+> 
+> The call to this function is strange. It is like you don't trust your 
+> own code.
 
-There is currently **no way, in-tree, to disarm a bare (non-ACPI) firmware-=
-armed
-pinctrl-amd wake pin.** That is the gap.
+ACK, I will remove it in v2
 
-## Suggested fix (maintainers' choice)
+> 
+>> +    return sd->pl_name[pl] ? true : false;
+>> +}
+>> +
+> 
+> [ ... ]
+> 
+>> +
+>> +    switch (pl_op) {
+>> +    case PL_LIMIT:
+>> +        value &= POWER_LIMIT_MASK;
+>> +        if (xlate)
+>> +            *data = spel_unit_xlate(sd, POWER_UNIT, value, 0);
+>> +        else
+>> +            *data = value;
+>> +        break;
+>> +    case PL_TIME_WINDOW:
+>> +        /* Decode time window: bits [22:16] are upper 7 bits, [14:0] 
+>> are lower 15 bits */
+>> +        value = ((value & TIME_WINDOW_MASK_H) >> 16 << 15) |
+>> +            (value & TIME_WINDOW_MASK_L);
+> 
+> [ ... ]
+> 
+>> +        reg_val = (reg_val & ~POWER_LIMIT_MASK) | new_val;
+>> +
+> 
+> [ ... ]
+> 
+>> +        if (new_val == 0)
+>> +            reg_val &= ~POWER_LIMIT_ENABLE;
+>> +        else
+>> +            reg_val |= POWER_LIMIT_ENABLE;
+>> +        break;
+> 
+> [ ... ]
+> 
+>> +    case PL_TIME_WINDOW:
+>> +        /*
+>> +         * Encode time window: upper 7 bits to [22:16], lower 15 bits 
+>> to [14:0]
+>> +         * Time window register is separate from limit register 
+>> (different offset),
+>> +         * so we write only the time window bits without preserving 
+>> any enable bit.
+>> +         */
+>> +        new_val = spel_unit_xlate(sd, TIME_UNIT, value, 1);
+>> +        reg_val = (((new_val >> 15) & 0x7F) << 16) |
+>> +              (new_val & 0x7FFF);
+> 
+> 
+> The trend today is to use the FIELD_* macros for bits ops
 
-A working out-of-tree reference implementation (clears bits 13/14/15
-on pins #2/#4
-at probe and on `PM_SUSPEND_PREPARE`) is here:
-**https://github.com/Lenart12/legion-nowake** =E2=80=94 please feel free to=
- reuse.
+ACK
 
-Possible in-tree directions:
-1. **DMI-matched quirk in `pinctrl-amd`** that clears the S-state
-wake-enable bits
-for the affected pins at probe (smallest change; precedent exists for AMD G=
-PIO
-wake quirks).
-2. **A generic override** for bare pins, e.g. a
-`pinctrl_amd.ignore_wake=3D<pin,...>`
-module parameter, analogous to `gpiolib_acpi.ignore_wake=3D` but for
-hardware-armed
-pins without ACPI events. This would help the broader class of AMD laptops =
-that
-hit firmware-armed spurious wakes.
+> 
+>> +        break;
+>> +    default:
+>> +        return -EINVAL;
+>> +    }
+>> +
+>> +    writel(reg_val, reg_addr);
+>> +    return 0;
+>> +}
+>> +
+>> +/* Powercap zone operations */
+>> +static int spel_get_energy_counter(struct powercap_zone *power_zone, 
+>> u64 *energy_raw)
+>> +{
+>> +    struct spel_domain *sd = power_zone_to_spel_domain(power_zone);
+>> +    u64 value;
+>> +
+>> +    value = readl(sd->status_reg);
+> 
+> nit: seems an line in between would help for the readability
 
-## Reproduction
+ACK
 
-1. AMD laptop where a display HPD is wired to a GPIO the BIOS arms for wake=
-.
-2. Connect an external monitor, `systemctl suspend`.
-3. Observe resume after ~1s; `pm_wakeup_irq` =3D the `pinctrl_amd` IRQ;
-the offending
-pin shows `wake latched` in the post-resume `GPIO N is active` log.
+> 
+>> +    *energy_raw = spel_unit_xlate(sd, ENERGY_UNIT, value, 0);
+>> +
+>> +    return 0;
+>> +}
+>> +
+>> +static int spel_get_max_energy_counter(struct powercap_zone *pcd_dev, 
+>> u64 *energy)
+>> +{
+>> +    struct spel_domain *sd = power_zone_to_spel_domain(pcd_dev);
+>> +
+>> +    *energy = spel_unit_xlate(sd, ENERGY_UNIT, ENERGY_STATUS_MASK, 0);
+> 
+> nit: missing line
 
-## Public discussion / full diagnostics
+ACK>
+>> +    return 0;
+>> +}
+>> +
+>> +static int spel_release_zone(struct powercap_zone *power_zone)
+>> +{
+>> +    return 0;
+>> +}
+>> +
+>> +static int spel_find_nr_power_limit(struct spel_domain *sd)
+>> +{
+>> +    int i, nr_pl = 0;
+>> +
+>> +    for (i = 0; i < NR_POWER_LIMITS; i++) {
+>> +        if (is_pl_valid(sd, i))
+>> +            nr_pl++;
+>> +    }
+>> +
+>> +    return nr_pl;
+>> +}
+>> +
+>> +static const struct powercap_zone_ops zone_ops = {
+>> +    .get_energy_uj = spel_get_energy_counter,
+>> +    .get_max_energy_range_uj = spel_get_max_energy_counter,
+>> +    .release = spel_release_zone,
+>> +};
+>> +
+>> +/* Constraint operations */
+>> +static int spel_constraint_to_pl(struct spel_domain *sd, int cid)
+>> +{
+>> +    int i, j;
+> 
+> 'j' name is misleading because it is usually used for nested 'for' blocks
 
-Fedora Discussion (complete diagnostic walkthrough, ACPI dumps, gpio table)=
-:
-https://discussion.fedoraproject.org/t/immediate-wake-from-s3-sleep-when-hd=
-mi-is-connected-irq-7-pinctrl-amd
+ACK
 
-## Attachments to include when filing
+> 
+>> +    for (i = POWER_LIMIT1, j = 0; i < NR_POWER_LIMITS; i++) {
+> 
+> Do not rely on POWER_LIMIT1 because if someday it is moved in the enum, 
+> all the code assuming it is zero will be broken
 
-- `acpidump` output (or note: DSDT + all SSDTs contain no GpioInt/_AEI).
-- Full verbose-PM `dmesg` of one failed suspend (`pm_debug_messages=3D1`).
-- `sudo cat /sys/kernel/debug/gpio`.
-- `cat /sys/class/dmi/id/{sys_vendor,product_name,product_version,board_nam=
-e,bios_version}`.
+ACK
+
+> 
+>> +        if (is_pl_valid(sd, i) && j++ == cid)
+>  > +            return i;> +    }
+>> +
+>> +    return -EINVAL;
+>> +}
+>> +
+>> +static int spel_set_power_limit(struct powercap_zone *power_zone, int 
+>> cid,
+>> +                u64 power_limit)
+>> +{
+>> +    struct spel_domain *sd = power_zone_to_spel_domain(power_zone);
+>> +    int id;
+>> +
+>> +    id = spel_constraint_to_pl(sd, cid);
+>> +    if (id < 0)
+>> +        return id;
+>> +
+>> +    return spel_write_pl_data(sd, id, PL_LIMIT, power_limit);
+>> +}
+>> +
+>> +static int spel_get_power_limit(struct powercap_zone *power_zone, int 
+>> cid,
+>> +                u64 *data)
+>> +{
+>> +    struct spel_domain *sd = power_zone_to_spel_domain(power_zone);
+>> +    u64 val;
+>> +    int ret, id;
+>> +
+>> +    id = spel_constraint_to_pl(sd, cid);
+>> +    if (id < 0)
+>> +        return id;
+>> +
+>> +    ret = spel_read_pl_data(sd, id, PL_LIMIT, true, &val);
+>> +    if (!ret)
+>> +        *data = val;
+>> +
+>> +    return ret;
+>> +}
+>> +
+>> +static int spel_set_time_window(struct powercap_zone *power_zone, int 
+>> cid,
+>> +                u64 window)
+>> +{
+>> +    struct spel_domain *sd = power_zone_to_spel_domain(power_zone);
+>> +    int id;
+>> +
+>> +    id = spel_constraint_to_pl(sd, cid);
+>> +    if (id < 0)
+>> +        return id;
+>> +
+>> +    return spel_write_pl_data(sd, id, PL_TIME_WINDOW, window);
+>> +}
+>> +
+>> +static int spel_get_time_window(struct powercap_zone *power_zone, int 
+>> cid,
+>> +                u64 *data)
+>> +{
+>> +    struct spel_domain *sd = power_zone_to_spel_domain(power_zone);
+>> +    u64 val;
+>> +    int ret, id;
+>> +
+>> +    id = spel_constraint_to_pl(sd, cid);
+>> +    if (id < 0)
+>> +        return id;
+>> +
+>> +    ret = spel_read_pl_data(sd, id, PL_TIME_WINDOW, true, &val);
+>> +    if (!ret)
+>> +        *data = val;
+>> +
+>> +    return ret;
+>> +}
+>> +
+>> +static const char *spel_get_constraint_name(struct powercap_zone 
+>> *power_zone,
+>> +                        int cid)
+>> +{
+>> +    struct spel_domain *sd = power_zone_to_spel_domain(power_zone);
+>> +    int id;
+>> +
+>> +    id = spel_constraint_to_pl(sd, cid);
+>> +    if (id >= 0)
+>> +        return sd->pl_name[id];
+>> +
+>> +    return NULL;
+>> +}
+>> +
+>> +static const struct powercap_zone_constraint_ops constraint_ops = {
+>> +    .set_power_limit_uw = spel_set_power_limit,
+>> +    .get_power_limit_uw = spel_get_power_limit,
+>> +    .set_time_window_us = spel_set_time_window,
+>> +    .get_time_window_us = spel_get_time_window,
+>> +    .get_name = spel_get_constraint_name,
+>> +};
+>> +
+>> +static void spel_init_domains(struct spel_system *sp)
+>> +{
+>> +    unsigned int i;
+>> +
+>> +    for (i = 0; i < SPEL_DOMAIN_MAX; i++) {
+>> +        struct spel_domain *sd = &sp->domains[i];
+>> +
+>> +        sd->sp = sp;
+>> +        snprintf(sd->name, SPEL_DOMAIN_NAME_LENGTH, "%s",
+>> +             spel_domain_names[i]);
+>> +        sd->id = i;
+>> +        sd->status_reg = sp->node_base + domain_offsets[i];
+>> +
+>> +        /* PL1 is always supported (required for powercap 
+>> registration) */
+>> +        sp->limits[i] = BIT(POWER_LIMIT1);
+>> +        sd->pl_name[POWER_LIMIT1] = pl_names[POWER_LIMIT1];
+>> +    }
+>> +}
+>> +
+>> +static int spel_check_unit(struct spel_system *sp)
+>> +{
+>> +    u32 value, shift;
+>> +
+>> +    /* Read power_unit and time_unit from offset 0x0 */
+>> +    value = readl(sp->config_base);
+>> +
+>> +    /*
+>> +     * Unit calculation: 1 / (2^shift)
+>> +     * Masks limit: TIME_UNIT (4 bits, max 15), POWER_UNIT (3 bits, 
+>> max 7).
+>> +     */
+>> +    shift = (value & POWER_UNIT_MASK) >> POWER_UNIT_OFFSET;
+>> +    sp->power_unit = 1000000 / (1 << shift);
+>> +
+>> +    shift = (value & TIME_UNIT_MASK) >> TIME_UNIT_OFFSET;
+>> +    sp->time_unit = 1000000 / (1 << shift);
+>> +
+>> +    /* Read energy_unit from ENERGY_RPT_UNIT_OFFSET */
+>> +    value = readl(sp->config_base + ENERGY_RPT_UNIT_OFFSET);
+>> +
+>> +    /*
+>> +     * Unit calculation: 1 / (2^shift)
+>> +     * Masks limit: ENERGY_UNIT (4 bits, max 15).
+>> +     */
+>> +    shift = (value & ENERGY_UNIT_MASK) >> ENERGY_UNIT_OFFSET;
+>> +    sp->energy_unit = ENERGY_UNIT_SCALE * 1000000 / (1 << shift);
+>> +
+>> +    dev_dbg(sp->dev, "Units: energy=%dnJ, time=%dus, power=%duW\n",
+>> +        sp->energy_unit, sp->time_unit, sp->power_unit);
+>> +
+>> +    return 0;
+>> +}
+>> +
+>> +static void spel_detect_powerlimit(struct spel_domain *sd)
+>> +{
+>> +    struct spel_system *sp = sd->sp;
+>> +    u32 capabilities;
+>> +    int i, j;
+>> +
+>> +    capabilities = readl(sp->config_base + LIMITS_CAPABILITY_OFFSET);
+>> +
+>> +    /* Detect power limits from hardware capabilities */
+>> +    for (i = POWER_LIMIT2; i < NR_POWER_LIMITS; i++) {
+> 
+> For my understanding, why is it starting at POWER_LIMIT2 ?
+
+Since It is failing to register a powercap zone with 0 constraint, I 
+need to add alteast one constraint for each domain. PL1 is added by 
+default for all domains.
+
+> 
+>> +        for (j = 0; j < ARRAY_SIZE(constraints); j++) {
+>> +            struct spel_constraint_info *ci = &constraints[j];
+>> +
+>> +            if (ci->domain_id == sd->id && ci->pl_id == i) {
+>> +                if (capabilities & ci->supported_mask) {
+>> +                    sp->limits[sd->id] |= BIT(i);
+>> +                    sd->pl_name[i] = pl_names[i];
+> 
+> So, that explains the is_pl_valid()
+> 
+> Please do not use duplicated array with non-NULL pointer checks
+> 
+> Or sd->pl_name[] contains all the *valids* power limits, so its size is 
+> different than (or equal to) pl_names. Or it is a fixed array with a 
+> structure containing a flag telling if it is enabled or not.
+> 
+> No need to duplicate the array
+
+ACK
+
+> 
+>> +                }
+>> +                break;
+>> +            }
+>> +        }
+>> +    }
+>> +}
+>> +
+> 
+> [ ... ]
+> 
+>> +static void spel_remove(struct platform_device *pdev)
+>> +{
+>> +    struct spel_system *sp = platform_get_drvdata(pdev);
+>> +    int i;
+>> +
+>> +    if (!sp)
+>> +        return;
+> 
+> Why test if the value is correct? There is no reason it changed after 
+> 'probe' was successful
+
+ACK
+
+Thanks,
+Manaf
+
+> 
+>> +
+>> +    /* Unregister in reverse order: children first, then SOC, then 
+>> SYS */
+>> +    for (i = SPEL_DOMAIN_MAX - 1; i >= 0; i--)
+>> +        powercap_unregister_zone(sp->control_type, &sp- 
+>> >domains[i].power_zone);
+>> +
+>> +    powercap_unregister_control_type(sp->control_type);
+>> +}
+>> +
+>> +static const struct of_device_id spel_of_match[] = {
+>> +    { .compatible = "qcom,spel" },
+>> +    { }
+>> +};
+>> +MODULE_DEVICE_TABLE(of, spel_of_match);
+>> +
+>> +static struct platform_driver spel_driver = {
+>> +    .probe = spel_probe,
+>> +    .remove = spel_remove,
+>> +    .driver = {
+>> +        .name = "qcom_spel",
+>> +        .of_match_table = spel_of_match,
+>> +    },
+>> +};
+>> +
+>> +module_platform_driver(spel_driver);
+>> +
+>> +MODULE_DESCRIPTION("Qualcomm SPEL Powercap Driver");
+>> +MODULE_LICENSE("GPL");
+>>
+> 
+
