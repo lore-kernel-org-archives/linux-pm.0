@@ -1,188 +1,236 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.10])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B0799349CCD;
-	Wed, 10 Jun 2026 18:42:38 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B21FE30ACE3;
+	Wed, 10 Jun 2026 19:13:47 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.10
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1781116959; cv=none; b=NhLTnDyiK5A5jI1rJ4NkWALlpKpf4ZQ0hro1GvCXFdco8/u/OZ+DnUwIL75ncdOkp35JD8B8UgDXPvem9T0gjk4pDrexEBuiz1c77yAoX5Y+1gqJOFhD96bNlgn0J6JyekZ5Sqb3ewbhikKX/Mq3O1EmknObZN8hXYodTwEj7Do=
+	t=1781118830; cv=none; b=UO2Za2aMTzW1apkap2A5yWKxHkcXfGyAVEMN5VUwdQY8TZgcUbzu59vQ1HpbL04d5LHhsyoxuA7MHSmipMLrcvSRGmLbC5o+1ca1EBfVJDYPtA0QVEa8AKKNnls1yFLD2iQTgHYIf4WIRUSz8Bd2y9RuteGtlcMYF/7oc+J6iRI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1781116959; c=relaxed/simple;
-	bh=bncw1kp2XmKdNd9PZSqbZND3nV3QuAke+Or/JDyh2x8=;
-	h=Date:From:To:Cc:Subject:Message-ID:MIME-Version:Content-Type:
-	 Content-Disposition:In-Reply-To; b=X4rF3xbIfLD+ScSOzpfX2PaE8Qlcdwp2MeqQd4amiHGbOTTm3Ln4aisLPUkkd6LV/H4VWkOo46Aekdogk8FmaGjEC7+awHQEn7u1Q5pejtBzQIdvsz7p0nnfj25nNiD3fH75iWR+AZFjdI3Nj94cqF0DdatG6TIvr/B+2DeIWjE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=gpyZegFr; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1781118830; c=relaxed/simple;
+	bh=NXHt2YkWAkyXw25c73aZqHvYPnFS2k+1OG2KBDhMJGA=;
+	h=Date:From:To:Cc:Subject:Message-ID; b=HbkwTms0Vi78cxwJSeiGanNMzRAYN3IQze8/n+imkbKAD/NJmQ5vBvuc6epOewErlXMoFGW2zXGHtCTsMFRWGU1HrrU+T9i+wLCGV1Kmd/xHa1ip8aPQC6l7fdP19RMEuZJ98fCFyYcv/NikQ51axRpyqm1k2ZcQ30Ollq3cA0o=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=MrZ8swFb; arc=none smtp.client-ip=198.175.65.10
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="gpyZegFr"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2812E1F00893;
-	Wed, 10 Jun 2026 18:42:38 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1781116958;
-	bh=xnrO31LLlSXPRgDvDd03PEdMDaXIr+aCbScw5GFqWuU=;
-	h=Date:From:To:Cc:Subject:In-Reply-To;
-	b=gpyZegFrsmlQCERexafvFL8huHGeATz3YXutJXCy3MFp08VXEsP/Tx8O3Hp3qUhlp
-	 HNY4ULM+9Sx/MlKcfrKbjfVKXQNpZs5FX5JNUbwrvgyPjDRXjHryZKNDe76hI0JVIE
-	 jUYTffFgdsfo8plKCaZPsVlldj2JtoqJHMO5ecLfUs5gZvlZ0U/GMBLuv/MUY1F4X4
-	 xFkQbfBYV1bDTRz54GDZxSuOFTlGMPIGRmHEaBUVUHB9/U8hg6djZB95N7AKe0FvqM
-	 0DB/0stigbLyXUHWSulkgaf03pnMZjUnOpieehIb6JBD3KpCyHqF6DPyjw5msHmrIq
-	 YgDuFmUZxz2SA==
-Date: Wed, 10 Jun 2026 13:42:36 -0500
-From: Bjorn Helgaas <helgaas@kernel.org>
-To: Jose Ignacio Tornos Martinez <jtornosm@redhat.com>
-Cc: bhelgaas@google.com, alex@shazbot.org, jjohnson@kernel.org,
-	mani@kernel.org, linux-pci@vger.kernel.org,
-	linux-wireless@vger.kernel.org, ath11k@lists.infradead.org,
-	ath12k@lists.infradead.org, mhi@lists.linux.dev,
-	linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-Subject: Re: [PATCH v7 1/3] PCI: Add d3cold as general reset method
-Message-ID: <20260610184236.GA236984@bhelgaas>
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="MrZ8swFb"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1781118827; x=1812654827;
+  h=date:from:to:cc:subject:message-id;
+  bh=NXHt2YkWAkyXw25c73aZqHvYPnFS2k+1OG2KBDhMJGA=;
+  b=MrZ8swFbQUPmzFzghwPZ+o70yRTZkB+b1VHHZjQzK1Q3oamWLtF7Vu9d
+   iaXd7Qawgq2ybhFU8eP9GHU2IZu8fmQzB7Cwb9DowFxhtXx1IEw4JZ6rv
+   XMViKX3cneZ6Sn1ZWH8n+5Oy302Fm7MUrnmsB6JKFT9H3eVeX9M+MIGFv
+   brFtljNp3+1x2+3n3lUckkx2sSAaJHrJLv0m3RozrdjDntKm86/k3rtwO
+   bljp0WfD/jZKxIF4Xum9lJId9KeBl3f6HKP5pGgKj/0uVD6xlXM7ZHvhW
+   Sfr0Sot4mm8Hk6umdsTz8XdJBdiOlv0eOEbBPWv5X/7uawiiXg5b3t7zK
+   A==;
+X-CSE-ConnectionGUID: 6pRWHWXHSp+FQcf4fYM+DQ==
+X-CSE-MsgGUID: SINygpmHTLmiRAjYgyIupQ==
+X-IronPort-AV: E=McAfee;i="6800,10657,11813"; a="99344408"
+X-IronPort-AV: E=Sophos;i="6.24,197,1774335600"; 
+   d="scan'208";a="99344408"
+Received: from fmviesa002.fm.intel.com ([10.60.135.142])
+  by orvoesa102.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 10 Jun 2026 12:13:46 -0700
+X-CSE-ConnectionGUID: nkq+b9E2QIWBbR3Ea+n8Og==
+X-CSE-MsgGUID: twjmf6XDQqu8cxUe1Lv6yA==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.24,197,1774335600"; 
+   d="scan'208";a="269942930"
+Received: from lkp-server01.sh.intel.com (HELO f0d55cb201f0) ([10.239.97.150])
+  by fmviesa002.fm.intel.com with ESMTP; 10 Jun 2026 12:13:45 -0700
+Received: from kbuild by f0d55cb201f0 with local (Exim 4.98.2)
+	(envelope-from <lkp@intel.com>)
+	id 1wXOMw-00000000LnK-2SJz;
+	Wed, 10 Jun 2026 19:13:42 +0000
+Date: Thu, 11 Jun 2026 03:13:39 +0800
+From: kernel test robot <lkp@intel.com>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org
+Subject: [rafael-pm:fixes] BUILD SUCCESS
+ 6100a82e34cb75571feba920a9c18f60698d598a
+Message-ID: <202606110330.oSiBKAKk-lkp@intel.com>
+User-Agent: s-nail v14.9.25
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260603105853.326290-2-jtornosm@redhat.com>
 
-[+cc linux-pm]
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git fixes
+branch HEAD: 6100a82e34cb75571feba920a9c18f60698d598a  Merge tag 'amd-pstate-v7.1-2026-06-02' of ssh://gitolite.kernel.org/pub/scm/linux/kernel/git/superm1/linux
 
-On Wed, Jun 03, 2026 at 12:58:51PM +0200, Jose Ignacio Tornos Martinez wrote:
-> Add D3cold power cycle as a general PCI reset method for single-function
-> devices on platforms with ACPI _PR3 power resources. This provides true
-> power cycle reset capability when the platform can physically cut power
-> to the device.
-> 
-> The implementation strictly requires _PR3 to be present - the platform
-> must be able to control device power. This ensures d3cold only attempts
-> true power cycling, not falling back to D3hot transitions.
-> 
-> D3cold reset is placed at the end of the reset hierarchy since it requires
-> specific platform support and should be tried after standard methods.
-> 
-> Reset hierarchy with this change:
-> 1. device_specific
-> 2. acpi
-> 3. flr
-> 4. af_flr
-> 5. pm (D3hot via config space, checks NoSoftRst)
-> 6. bus (SBR)
-> 7. cxl_bus
-> 8. d3cold (NEW - true power cycle, requires _PR3)
-> 
-> This benefits:
-> - Platforms with _PR3 support
-> - Single-function devices needing true power cycle
-> - VFIO passthrough scenarios where FLR/PM unavailable
+elapsed time: 2567m
 
-I assume you have some specific device(s) in mind here; can we mention
-any examples so this is more than just theoretically useful?
+configs tested: 159
+configs skipped: 10
 
-> Signed-off-by: Jose Ignacio Tornos Martinez <jtornosm@redhat.com>
-> ---
-> v7: code unchanged from v6
-> v6: https://lore.kernel.org/all/20260602160024.1171949-2-jtornosm@redhat.com/
-> 
->  drivers/pci/pci.c   | 50 +++++++++++++++++++++++++++++++++++++++++++++
->  include/linux/pci.h |  2 +-
->  2 files changed, 51 insertions(+), 1 deletion(-)
-> 
-> diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
-> index 8f7cfcc00090..096868f80cd4 100644
-> --- a/drivers/pci/pci.c
-> +++ b/drivers/pci/pci.c
-> @@ -4491,6 +4491,55 @@ static int pci_pm_reset(struct pci_dev *dev, bool probe)
->  	return ret;
->  }
->  
-> +/**
-> + * pci_d3cold_reset - Put device into D3cold and back to D0 for reset
-> + * @dev: PCI device to reset
-> + * @probe: if true, check if D3cold reset is supported; if false, perform reset
-> + *
-> + * Reset the device by transitioning through D3cold (actual power removal via
-> + * platform power control) and back to D0. This requires ACPI _PR3 power
-> + * resources to be present - the platform must be able to physically cut power
-> + * to the device.
-> + *
-> + * Only available for single-function devices to avoid affecting other
-> + * functions in multi-function devices.
-> + *
-> + * Returns 0 if device can be/was reset this way, -ENOTTY if not supported,
-> + * or other negative error code on failure.
-> + */
-> +static int pci_d3cold_reset(struct pci_dev *dev, bool probe)
-> +{
-> +	int ret;
-> +
-> +	if (dev->multifunction)
-> +		return -ENOTTY;
-> +
-> +	if (!pci_pr3_present(dev))
-> +		return -ENOTTY;
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-platform_pci_set_power_state() is currently only implemented for MID
-and ACPI, but we're starting to see DT systems with power control for
-devices, so I assume it may someday be extended to support them.
+tested configs:
+alpha                             allnoconfig    gcc-16.1.0
+alpha                            allyesconfig    gcc-16.1.0
+alpha                               defconfig    gcc-16.1.0
+arc                              allmodconfig    gcc-16.1.0
+arc                               allnoconfig    gcc-16.1.0
+arc                              allyesconfig    gcc-16.1.0
+arc                                 defconfig    gcc-16.1.0
+arc                   randconfig-001-20260610    gcc-8.5.0
+arc                   randconfig-002-20260610    gcc-9.5.0
+arm                               allnoconfig    clang-23
+arm                               allnoconfig    gcc-16.1.0
+arm                              allyesconfig    gcc-16.1.0
+arm                                 defconfig    clang-23
+arm                   randconfig-001-20260610    clang-23
+arm                   randconfig-002-20260610    clang-20
+arm                   randconfig-003-20260610    clang-23
+arm                   randconfig-004-20260610    clang-23
+arm64                            allmodconfig    clang-23
+arm64                             allnoconfig    gcc-16.1.0
+arm64                               defconfig    gcc-16.1.0
+arm64                 randconfig-001-20260610    gcc-11.5.0
+arm64                 randconfig-002-20260610    gcc-9.5.0
+arm64                 randconfig-003-20260610    gcc-8.5.0
+arm64                 randconfig-004-20260610    clang-23
+csky                             allmodconfig    gcc-16.1.0
+csky                              allnoconfig    gcc-16.1.0
+csky                                defconfig    gcc-16.1.0
+csky                  randconfig-001-20260610    gcc-9.5.0
+csky                  randconfig-002-20260610    gcc-11.5.0
+hexagon                          allmodconfig    clang-23
+hexagon                           allnoconfig    gcc-16.1.0
+hexagon                             defconfig    clang-23
+hexagon               randconfig-001-20260610    clang-23
+hexagon               randconfig-002-20260610    clang-22
+i386                             allmodconfig    gcc-14
+i386                              allnoconfig    gcc-14
+i386                              allnoconfig    gcc-16.1.0
+i386                             allyesconfig    gcc-14
+i386                                defconfig    clang-22
+i386                  randconfig-001-20260610    gcc-14
+i386                  randconfig-002-20260610    gcc-14
+i386                  randconfig-003-20260610    clang-22
+i386                  randconfig-004-20260610    gcc-14
+i386                  randconfig-005-20260610    clang-22
+i386                  randconfig-006-20260610    gcc-14
+i386                  randconfig-007-20260610    gcc-14
+i386                  randconfig-011-20260610    clang-22
+i386                  randconfig-012-20260610    clang-22
+i386                  randconfig-013-20260610    clang-22
+i386                  randconfig-014-20260610    clang-22
+i386                  randconfig-015-20260610    clang-22
+i386                  randconfig-016-20260610    clang-22
+i386                  randconfig-017-20260610    gcc-14
+loongarch                        allmodconfig    clang-19
+loongarch                         allnoconfig    clang-20
+loongarch                         allnoconfig    gcc-16.1.0
+loongarch                           defconfig    clang-23
+loongarch             randconfig-001-20260610    gcc-16.1.0
+loongarch             randconfig-002-20260610    gcc-16.1.0
+m68k                             allmodconfig    gcc-16.1.0
+m68k                              allnoconfig    gcc-16.1.0
+m68k                             allyesconfig    gcc-16.1.0
+m68k                                defconfig    gcc-16.1.0
+microblaze                        allnoconfig    gcc-16.1.0
+microblaze                       allyesconfig    gcc-16.1.0
+microblaze                          defconfig    gcc-16.1.0
+mips                             allmodconfig    gcc-16.1.0
+mips                              allnoconfig    gcc-16.1.0
+mips                             allyesconfig    gcc-16.1.0
+nios2                         10m50_defconfig    gcc-11.5.0
+nios2                            allmodconfig    gcc-11.5.0
+nios2                             allnoconfig    clang-23
+nios2                             allnoconfig    gcc-11.5.0
+nios2                               defconfig    gcc-11.5.0
+nios2                 randconfig-001-20260610    gcc-11.5.0
+nios2                 randconfig-002-20260610    gcc-11.5.0
+openrisc                         allmodconfig    gcc-16.1.0
+openrisc                          allnoconfig    clang-23
+openrisc                          allnoconfig    gcc-16.1.0
+openrisc                            defconfig    gcc-16.1.0
+parisc                           allmodconfig    gcc-16.1.0
+parisc                            allnoconfig    clang-23
+parisc                            allnoconfig    gcc-16.1.0
+parisc                           allyesconfig    gcc-16.1.0
+parisc                              defconfig    gcc-16.1.0
+parisc                randconfig-001-20260610    gcc-8.5.0
+parisc                randconfig-002-20260610    gcc-8.5.0
+parisc64                            defconfig    gcc-16.1.0
+powerpc                          allmodconfig    gcc-16.1.0
+powerpc                           allnoconfig    clang-23
+powerpc                           allnoconfig    gcc-16.1.0
+powerpc               randconfig-001-20260610    gcc-9.5.0
+powerpc               randconfig-002-20260610    clang-23
+powerpc64             randconfig-001-20260610    clang-23
+powerpc64             randconfig-002-20260610    gcc-10.5.0
+riscv                            allmodconfig    clang-23
+riscv                             allnoconfig    clang-23
+riscv                             allnoconfig    gcc-16.1.0
+riscv                            allyesconfig    clang-23
+riscv                               defconfig    clang-23
+riscv                 randconfig-001-20260610    gcc-15.2.0
+riscv                 randconfig-002-20260610    gcc-8.5.0
+s390                             allmodconfig    clang-23
+s390                              allnoconfig    clang-23
+s390                             allyesconfig    gcc-16.1.0
+s390                                defconfig    clang-18
+s390                  randconfig-001-20260610    clang-23
+s390                  randconfig-002-20260610    clang-23
+sh                               allmodconfig    gcc-16.1.0
+sh                                allnoconfig    clang-23
+sh                                allnoconfig    gcc-16.1.0
+sh                               allyesconfig    gcc-16.1.0
+sh                                  defconfig    gcc-14
+sh                                  defconfig    gcc-16.1.0
+sh                    randconfig-001-20260610    gcc-16.1.0
+sh                    randconfig-002-20260610    gcc-16.1.0
+sparc                             allnoconfig    clang-23
+sparc                             allnoconfig    gcc-16.1.0
+sparc                               defconfig    gcc-16.1.0
+sparc                 randconfig-001-20260610    gcc-8.5.0
+sparc                 randconfig-002-20260610    gcc-14.3.0
+sparc64                          allmodconfig    clang-20
+sparc64                             defconfig    clang-23
+sparc64                             defconfig    gcc-14
+sparc64               randconfig-001-20260610    gcc-12.5.0
+sparc64               randconfig-002-20260610    clang-23
+um                               allmodconfig    clang-23
+um                                allnoconfig    clang-16
+um                                allnoconfig    clang-23
+um                               allyesconfig    gcc-14
+um                                  defconfig    clang-23
+um                                  defconfig    gcc-14
+um                             i386_defconfig    gcc-14
+um                    randconfig-001-20260610    clang-23
+um                    randconfig-002-20260610    clang-18
+um                           x86_64_defconfig    clang-23
+um                           x86_64_defconfig    gcc-14
+x86_64                           allmodconfig    clang-22
+x86_64                            allnoconfig    clang-22
+x86_64                            allnoconfig    clang-23
+x86_64                           allyesconfig    clang-22
+x86_64      buildonly-randconfig-004-20260610    clang-22
+x86_64      buildonly-randconfig-005-20260610    gcc-14
+x86_64      buildonly-randconfig-006-20260610    gcc-14
+x86_64                              defconfig    gcc-14
+x86_64                randconfig-001-20260610    clang-22
+x86_64                randconfig-003-20260610    gcc-13
+x86_64                randconfig-011-20260610    gcc-12
+x86_64                randconfig-012-20260610    gcc-12
+x86_64                randconfig-013-20260610    gcc-14
+x86_64                randconfig-014-20260610    gcc-12
+x86_64                randconfig-015-20260610    gcc-14
+x86_64                randconfig-016-20260610    gcc-14
+x86_64                          rhel-9.4-rust    clang-22
+xtensa                            allnoconfig    clang-23
+xtensa                            allnoconfig    gcc-16.1.0
+xtensa                           allyesconfig    gcc-16.1.0
+xtensa                randconfig-001-20260610    gcc-8.5.0
+xtensa                randconfig-002-20260610    gcc-8.5.0
 
-Checking pci_pr3_present() seems wrong to me because it assumes ACPI.  
-
-On ACPI systems, it seems like pci_set_power_state(PCI_D3cold) should
-return an error if the necessary ACPI methods are not present, and we
-wouldn't need this check.  Is that not the case?
-
-Or is this _PR3 check here just to support the "probe"?  I don't know
-if there's a generic interface to tell us whether we can control the
-power to a device.
-
-> +	if (probe)
-> +		return 0;
-> +
-> +	if (dev->current_state != PCI_D0)
-> +		return -EINVAL;
-> +
-> +	ret = pci_dev_reset_iommu_prepare(dev);
-> +	if (ret) {
-> +		pci_err(dev, "failed to stop IOMMU for a PCI reset: %d\n", ret);
-> +		return ret;
-> +	}
-> +
-> +	ret = pci_set_power_state(dev, PCI_D3cold);
-> +	if (ret)
-> +		goto done;
-> +
-> +	ret = pci_set_power_state(dev, PCI_D0);
-> +
-> +done:
-> +	pci_dev_reset_iommu_done(dev);
-> +	return ret;
-> +}
-> +
->  /**
->   * pcie_wait_for_link_status - Wait for link status change
->   * @pdev: Device whose link to wait for.
-> @@ -5065,6 +5114,7 @@ const struct pci_reset_fn_method pci_reset_fn_methods[] = {
->  	{ pci_pm_reset, .name = "pm" },
->  	{ pci_reset_bus_function, .name = "bus" },
->  	{ cxl_reset_bus_function, .name = "cxl_bus" },
-> +	{ pci_d3cold_reset, .name = "d3cold" },
->  };
->  
->  /**
-> diff --git a/include/linux/pci.h b/include/linux/pci.h
-> index 2c4454583c11..1ca7b880ead7 100644
-> --- a/include/linux/pci.h
-> +++ b/include/linux/pci.h
-> @@ -51,7 +51,7 @@
->  			       PCI_STATUS_PARITY)
->  
->  /* Number of reset methods used in pci_reset_fn_methods array in pci.c */
-> -#define PCI_NUM_RESET_METHODS 8
-> +#define PCI_NUM_RESET_METHODS 9
->  
->  #define PCI_RESET_PROBE		true
->  #define PCI_RESET_DO_RESET	false
-> -- 
-> 2.54.0
-> 
+--
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests/wiki
