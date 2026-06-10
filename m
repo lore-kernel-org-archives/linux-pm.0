@@ -1,97 +1,88 @@
-Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pl1-f175.google.com (mail-pl1-f175.google.com [209.85.214.175])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CF04D3A5995
-	for <linux-pm@vger.kernel.org>; Wed, 10 Jun 2026 08:13:02 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.180.131
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A04C53AFD08
+	for <linux-pm@vger.kernel.org>; Wed, 10 Jun 2026 08:41:19 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.175
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1781079184; cv=none; b=A7dxdfe/EW9xLiBiQreMD5VbLjMh0CGAXWAz8H3INqafZU2I0hGYAoBS1/+AR/0MJbJ28Ufg7yXp/8TFgZoQ4GqdvpDjiNjoM295YBoAE2GlsDNzskicaH/J0CBzENc2IuKpeZxW6gqg4EpcPM0ThcSzLeSbXKar8CQYxx76uFE=
+	t=1781080881; cv=none; b=injhlSwCGsnqSRHzv5QlY4sqMEvgsScOdKL1O8L0SPI5WIC+IYtQX4v0NN/LpJQqNdG7YsMl3DewN9OOz+Ok/Ko72xtIsyS5/6xXCCCigNBsay/AZUR0/X18xLh3L0/fNeWOecWphxkKsJ7NMKPZvmYVcWeJc4zcmutxl31NdVU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1781079184; c=relaxed/simple;
-	bh=v5y2S4KEuK9ll8FKbt2wx7n2tKCwSSz3NBpnzhwlnk4=;
-	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=IuqwEBiSmqtGe0qZ5vbQqbFPNM347ROy9ZIhEjQpRw9Z7MzauCiByooLYxd674GJHpWTQE1CethDX8ael9g5carEbJAK38mVMg97LKIJ0VVrF5x5AYTJ2MC3yKfnG5kTc6TQ9rwreGo9Kmq7+hDxdt0/eFEzqOvXGykXxNDw0lU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=XgO8IG/I; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=bbAkNIiN; arc=none smtp.client-ip=205.220.180.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
+	s=arc-20240116; t=1781080881; c=relaxed/simple;
+	bh=ZuOVxM6SCrtrNZ59Qzz16xkLgZG0V6ly6c5cBQo7Q3g=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=fGotmUjUhrhxEjq8f08DuEPd/MBjtqcJiD9p7uKH+3/In3T9razpFosU/oTFwLENXQ9pSIwgRfcuUaGP82Z8CceoNXjv3E2N/uOGr+V/mEehP4iT4fFj3LWDGw0uFxj8fBX71w63pf1ctuHIIpJ8MQkO4S0gj6NUskjlEjKfn7M=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=chromium.org; spf=pass smtp.mailfrom=chromium.org; dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b=JPrvhs+W; arc=none smtp.client-ip=209.85.214.175
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=chromium.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=chromium.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="XgO8IG/I";
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="bbAkNIiN"
-Received: from pps.filterd (m0279870.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 65A7iKl3992605
-	for <linux-pm@vger.kernel.org>; Wed, 10 Jun 2026 08:13:02 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:date:from:in-reply-to:message-id
-	:mime-version:references:subject:to; s=qcppdkim1; bh=bmrPzwjDfZQ
-	LqRIOrgrQTwpDk+/Ro0GV+O0RqY/iaOE=; b=XgO8IG/IfJI5VGjZtkEFnUEJqIv
-	xIVrLsjMFpAZw3bd4WFNtb1R8d86+dxzPN6+0oFyJ2z2UZJ8ZAaTNsQAUpWQ4aKT
-	ixaIpgQIf4ewB2X6Snpor73T+SAwjNK7RIGYxLrpjrLlM0a0NaYXPMtBoiuxAlyp
-	ey2DW7aSCnVDerqeuMMnfvogsgLAFckXOQX3Fm1+vRMqF9WhMKbGbzIs0hqnnJpl
-	fTJbcNktNlW5bOuZNZQSAav0tBws//JqHVXGmiz4CiL6I90dq3QU7xVdKkzYGrM9
-	Cv62hrZ1+Bv+FvhcfS2krLx36Pw2qdGHeBy4h53L545djGX+zdJnC+f7Jow==
-Received: from mail-pl1-f198.google.com (mail-pl1-f198.google.com [209.85.214.198])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4eq1tg0k68-1
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Wed, 10 Jun 2026 08:13:01 +0000 (GMT)
-Received: by mail-pl1-f198.google.com with SMTP id d9443c01a7336-2bf1dece2ecso66716155ad.1
-        for <linux-pm@vger.kernel.org>; Wed, 10 Jun 2026 01:13:01 -0700 (PDT)
+	dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="JPrvhs+W"
+Received: by mail-pl1-f175.google.com with SMTP id d9443c01a7336-2c0c2d792c8so43476585ad.1
+        for <linux-pm@vger.kernel.org>; Wed, 10 Jun 2026 01:41:19 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1781079180; x=1781683980; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=bmrPzwjDfZQLqRIOrgrQTwpDk+/Ro0GV+O0RqY/iaOE=;
-        b=bbAkNIiNawCJ3k0hyHLY6JcQtQ1/tQDvucrgFd6I2eVtEdiJaa6HchpN0IN9xqR+wP
-         AAVBIgnWyRfwhlDhQOwH+/LPe2HHaJupRTed9AIIHNXrSqM2mF7zy1tFyxRFlK+x3sDr
-         1xHYt2vv9AVYGcxofZQOd0txV1/9mWT9q6CAc+R1Y6Qb8jH9JtoFkId0pwhuJIc3YI0c
-         mSQBgvBjZ3+GxIWhh/D2TkRvHqypEpVITWK7mERSm3gu69jtg5Hgj/xwo1TxQxyMvKUH
-         Fii+vgUdFXCQYEAwvrYlT4dsEvrZJiWyN4DHKIGfR91uSGqaCgRSS0SqIrCHCiypuZh1
-         vYlA==
+        d=chromium.org; s=google; t=1781080879; x=1781685679; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=t8gJIv7IXV+GGLqttV7BJHv8HtnJej0L7a6gfaEYMf4=;
+        b=JPrvhs+WDBmaJ7x/7TbuEcdDiDOj22yLg0O0dBD5qyuIhw5WZmsrJWUUChf06pzpjH
+         CPNICFAopld2sYS+9Dgf2rVSXAs5gN72yUWQ21E6BWmUoQjPnadHthKi7bDZOzDPDdp8
+         eM39MpbZ1fRRATKGSSt7NlKThB0pugnmLnH/I=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1781079180; x=1781683980;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=bmrPzwjDfZQLqRIOrgrQTwpDk+/Ro0GV+O0RqY/iaOE=;
-        b=SjCNjS3w/iXkjv41qghivDs++msadzgne0Auvaoi5qr5SP0/0O2PI5Vh5EQrvVhfpI
-         78D4OgqskFUef3EK6F1hkfPd4FzyWW9ulFc952y4YnOPE4syvE90JmDx6XiZUANzrEzQ
-         L2RYon+Fen5l17X0Q+WBrzktqqOzfflekC/LJOotVEZoPyrLLa21odoCq0qbbwlhgCkQ
-         BiDl7E4c0/tBOLjrCWFiF4V++XuXwLW2CaVqFYGL2Cb5CCR/RTG0xYkUWxJOEP7bmHDJ
-         7qMzj1qa8NcG82AGKY35ck18NClEhoztY88uBihxCD9tv4A2C9sYHLj/QiPj/o0Dlnh9
-         2Piw==
-X-Forwarded-Encrypted: i=1; AFNElJ+E1+/wJJll5xdyTdk0mRNKYRy+u9qGqMBpRdSUrWhW6RxKTjR7H9Zmy6pmxcB9cz+xDXwXJQhTfw==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yx09z7u/Qm5l5dF53yxqQ3S4yp3YChqifrksIy9F7rDoM1LWArJ
-	eZtl2H71m2OLJunZFTGH89NxcW+mTusL4lVWSFo4vioRoMabdgB4uQ+6Tif+zF3s56onjPADCB8
-	2Sk0nHKOOO2Uz8IRw2BDLuu7/tqTRvVExeKOSiYYQNPbqNzIZP0tzD2+/chbhLg==
-X-Gm-Gg: Acq92OGbIopl62vbclLaFjPUJUlFZt409z8wd4gIhX65+X6Er6E5o6Rquqwnp0UZzdT
-	PgBac07eXTUVeLF4Tz2KjjFkcQA0f6ee0XHyvm8OBufsVgq6CX5+BCI83qfqiLS5ZY+7evP5IZs
-	IKaF8nUGya29L+YJiEboDA+wIVNWDdNpWoh74t1aSolaaGjHCMpm7WH8l90WcYqjaA2GLHeDyQw
-	gUOpqLedt6/ZlMuwApnkn+fr7GmxoLDMchuyekbeetDk0lE3LfMCXQnTMcQ2xNMa6Terx3IsTmT
-	lcwaqkuhlL3pslre8SameDvjus9GkzQLnLkEe5rrQk+qboKtab45TXX6RXmfJIXCClZ3BaJZJ98
-	WqluYSzALrHAGKh52txAyZt9UVPTyUZLutjrQPd38/4LTF/pmluFTXV009eKYgp/CbqmuZJixvu
-	XULtpeEMtgYtlGGYxd0ratY5pR+e1b87Bq17/gUSmZBw7YTTMN9NASJ2u6oATEiw==
-X-Received: by 2002:a17:902:e5ca:b0:2c0:b932:867d with SMTP id d9443c01a7336-2c1e893d0b9mr270665345ad.29.1781079180106;
-        Wed, 10 Jun 2026 01:13:00 -0700 (PDT)
-X-Received: by 2002:a17:902:e5ca:b0:2c0:b932:867d with SMTP id d9443c01a7336-2c1e893d0b9mr270665045ad.29.1781079179556;
-        Wed, 10 Jun 2026 01:12:59 -0700 (PDT)
-Received: from hu-varada-blr.qualcomm.com (blr-bdr-fw-01_GlobalNAT_AllZones-Outside.qualcomm.com. [103.229.18.19])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2c164f8679esm228858575ad.21.2026.06.10.01.12.54
+        d=1e100.net; s=20251104; t=1781080879; x=1781685679;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=t8gJIv7IXV+GGLqttV7BJHv8HtnJej0L7a6gfaEYMf4=;
+        b=KhHj3nC4vNWMJlI994C6K2SkS2DFQGGL/3NXy3andGiZOv9tsd/5u/b/ldwSsrobXj
+         rEc6fiGoKmGrdk0pHg93ZkuurjUYTlrjN3hiyTU+3u4JlVF8etxSQWo1Q6c/5vAIgOtn
+         ipwVP+lKY9eggtSGCG82AKFIYFmgU1BT44XoNchhHeSuaB7AStwBY57qg71HyRtFpqFh
+         0c96fYllMdlMxspqvVCvPxiCbKldW2ZUe/8KWIu9KliLVnHmvxiPg2Eo7pTLYcfnzof3
+         i/6d486DRjVEKKh85cnkKIwSDa4ybjtEjPmdWpSRv7yKLZ+Iz+hRkTJcsf1VU8v+oues
+         Kkkw==
+X-Forwarded-Encrypted: i=1; AFNElJ9Yu9r5hM95spVo7SmIrHjIqs8wusBU23Yc5IVuJ5aL+1UhZ2kGw92Xn+wroUdFPhuZGfwQUIYZOQ==@vger.kernel.org
+X-Gm-Message-State: AOJu0YyJFbHf6wTu+wbLKc6BUlcgR9PRKb3oJFK1fzDeeRPXTqtcNtHZ
+	7spKSFuLVu1HCS3O6Ba1sWD9cXIAf963t+uWiJNDXEgpkcnTpbS1M2sAcdRVLGFwgQ==
+X-Gm-Gg: Acq92OEl3ys9JO819lCIQNkR3dX/Bo4rxaRLE5V1FkDMLG17THB9CVFQEhx9RpJ+o3t
+	Myr/EeSr9MM+w3vQGC34rr6HAUEq6lYLe572PxSYe9rXD8U3JQ4UOzo3d7PmX/OytGQUeOhEywg
+	clX1ejdwkHUxVJ0BCPHrO1LVL2bxSwZza5L5pD+XSLUOT1ES13eSWFSz4Pwo6KBOG+GJK9vufZ7
+	LJHFL7dPKdCKhO5O7Hcn1XHzvqO3YI+ofjScVu13cE7Fhkl1k2v4yAfBu0kXHUUZFRD8d9v6be5
+	ATkdCkODQ0xoHxaJQJVeVv+dV33H0izopVPDai5BvpmNty3iQfmcVd/KHhx0sBA4XBHSkFWUpal
+	0qu6Na0+fz6UrRY+BmY9H9lk3RFSkmpq7mA2sU2WJiAXEEA7opcpfj0B4JrHyGD12K52cOPuwvk
+	8VinKx1AxtNMOV/5fSHEYR+sVCrgBtDa+0kmmchLc+dOUaYssDVBwEaZUP/N7CPNTRkmlq5BYFg
+	vJbZDCwDYE7teNiYw==
+X-Received: by 2002:a17:903:1b67:b0:2c2:c0db:964a with SMTP id d9443c01a7336-2c2c0db9991mr33186765ad.26.1781080878941;
+        Wed, 10 Jun 2026 01:41:18 -0700 (PDT)
+Received: from wenstp920.tpe.corp.google.com ([2a00:79e0:201d:8:3870:6325:16c:d35c])
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2c164f890b2sm239223725ad.26.2026.06.10.01.41.14
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 10 Jun 2026 01:12:59 -0700 (PDT)
-From: Varadarajan Narayanan <varadarajan.narayanan@oss.qualcomm.com>
-To: amitk@kernel.org, thara.gopinath@gmail.com, rafael@kernel.org,
-        daniel.lezcano@kernel.org, rui.zhang@intel.com, lukasz.luba@arm.com,
-        robh@kernel.org, krzk+dt@kernel.org, conor+dt@kernel.org,
-        linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Varadarajan Narayanan <varadarajan.narayanan@oss.qualcomm.com>,
-        Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
-Subject: [PATCH v2 2/2] thermal/drivers/qcom/tsens: Add support for ipq9650 tsens
-Date: Wed, 10 Jun 2026 13:42:41 +0530
-Message-Id: <20260610081241.1468507-3-varadarajan.narayanan@oss.qualcomm.com>
-X-Mailer: git-send-email 2.34.1
-In-Reply-To: <20260610081241.1468507-1-varadarajan.narayanan@oss.qualcomm.com>
-References: <20260610081241.1468507-1-varadarajan.narayanan@oss.qualcomm.com>
+        Wed, 10 Jun 2026 01:41:18 -0700 (PDT)
+From: Chen-Yu Tsai <wenst@chromium.org>
+To: Bartosz Golaszewski <brgl@kernel.org>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+	Daniel Scally <djrscally@gmail.com>,
+	Heikki Krogerus <heikki.krogerus@linux.intel.com>,
+	Sakari Ailus <sakari.ailus@linux.intel.com>,
+	"Rafael J. Wysocki" <rafael@kernel.org>,
+	Danilo Krummrich <dakr@kernel.org>,
+	Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	Matthias Brugger <matthias.bgg@gmail.com>,
+	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
+Cc: Alan Stern <stern@rowland.harvard.edu>,
+	Chen-Yu Tsai <wenst@chromium.org>,
+	linux-acpi@vger.kernel.org,
+	driver-core@lists.linux.dev,
+	linux-pm@vger.kernel.org,
+	linux-usb@vger.kernel.org,
+	devicetree@vger.kernel.org,
+	linux-mediatek@lists.infradead.org,
+	linux-arm-kernel@lists.infradead.org,
+	linux-kernel@vger.kernel.org,
+	Manivannan Sadhasivam <mani@kernel.org>
+Subject: [PATCH v2 00/16] arm64: mediatek: Add M.2 E-key slot on Chromebooks
+Date: Wed, 10 Jun 2026 16:40:34 +0800
+Message-ID: <20260610084053.2059858-1-wenst@chromium.org>
+X-Mailer: git-send-email 2.54.0.1099.g489fc7bff1-goog
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -99,87 +90,144 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-Proofpoint-GUID: MBKRW4B0-WJt3Xun4iChPrKWhYSR6_Qg
-X-Authority-Analysis: v=2.4 cv=dLmWXuZb c=1 sm=1 tr=0 ts=6a291c8d cx=c_pps
- a=MTSHoo12Qbhz2p7MsH1ifg==:117 a=Ou0eQOY4+eZoSc0qltEV5Q==:17
- a=FelO9ux0wxsA:10 a=s4-Qcg_JpJYA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=u7WPNUs3qKkmUXheDGA7:22 a=gowsoOTTUOVcmtlkKump:22 a=EUspDBNiAAAA:8
- a=nMt2SIcdhh0IZDtwxJkA:9 a=GvdueXVYPmCkWapjIL-Q:22
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNjEwMDA3NiBTYWx0ZWRfX2XXCJZwDVFCf
- iWb4b3o+R0ve5+r+p2YZmVXKYaHoV9OFZVwGv9hmXQkClv87GqNEh3IiehzUKdOasX+mUjkJdJv
- cYETPz/b9H3Xxn49ikTeIfnHBkS7IXj19hH+x20ZUWhz3H9LBG7sRQrnZgbnCpatNEyehwSfz2d
- 22DPoS1ucl9rOJ8JRd4hqgkV9X84tH9fx5fjCTMMe0uhhhsasJFnKpw9QTq7YYrVC2UrGmgmCKG
- 00OD1w1N4cwgbR5xpznABsYnSPafv4yANgSHSrUpTOmlQm3keI4QtKgCY7zM+GBdivgOzxxa6EI
- aNY0CqWQULkVFG27Dq4yyP5V2voQ2eqit0IvDJWY4uNlj6SeCZHYy2sWSfr2Ezk4OHQr1FkzWwd
- 4HihW8/Dcmcx3Rpd2ETmTW8+deZG8xxfIAaXFqW1UsC0KMo2vqjvtcmKl6ZMnNQvBnYgR26XZ2m
- ubWzrwcZ/kEhe16e1DQ==
-X-Proofpoint-ORIG-GUID: MBKRW4B0-WJt3Xun4iChPrKWhYSR6_Qg
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.125,FMLib:17.12.100.49
- definitions=2026-06-10_02,2026-06-09_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- malwarescore=0 impostorscore=0 spamscore=0 clxscore=1015 lowpriorityscore=0
- phishscore=0 adultscore=0 suspectscore=0 priorityscore=1501 bulkscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2605210000 definitions=main-2606100076
 
-ipq9650's tsens is similar to ipq5332 tsens but has different number of
-sensors. Re-use the ipq5332 data for ipq9650 and modify the sensor related
-information.
+Hi everyone,
 
-Reviewed-by: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
-Signed-off-by: Varadarajan Narayanan <varadarajan.narayanan@oss.qualcomm.com>
----
- drivers/thermal/qcom/tsens-v2.c | 8 ++++++++
- drivers/thermal/qcom/tsens.c    | 3 +++
- drivers/thermal/qcom/tsens.h    | 2 +-
- 3 files changed, 12 insertions(+), 1 deletion(-)
+This is v2 of my attempt at integrating the power sequencing API into
+the USB core to support the USB connection on M.2 E-key slots. M.2
+E-key was enabled in v7.1-rc1 with just PCIe and UART supported [1].
 
-diff --git a/drivers/thermal/qcom/tsens-v2.c b/drivers/thermal/qcom/tsens-v2.c
-index 8d9698ea3ec4..ef1fee2266a3 100644
---- a/drivers/thermal/qcom/tsens-v2.c
-+++ b/drivers/thermal/qcom/tsens-v2.c
-@@ -300,6 +300,14 @@ const struct tsens_plat_data data_ipq5424 = {
- 	.fields		= tsens_v2_regfields,
- };
- 
-+const struct tsens_plat_data data_ipq9650 = {
-+	.num_sensors	= 11,
-+	.ops		= &ops_ipq5332,
-+	.hw_ids		= (unsigned int []){5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15},
-+	.feat		= &ipq5332_feat,
-+	.fields		= tsens_v2_regfields,
-+};
-+
- /* Kept around for backward compatibility with old msm8996.dtsi */
- struct tsens_plat_data data_8996 = {
- 	.num_sensors	= 13,
-diff --git a/drivers/thermal/qcom/tsens.c b/drivers/thermal/qcom/tsens.c
-index a2422ebee816..e7bc622891ca 100644
---- a/drivers/thermal/qcom/tsens.c
-+++ b/drivers/thermal/qcom/tsens.c
-@@ -1122,6 +1122,9 @@ static const struct of_device_id tsens_table[] = {
- 	}, {
- 		.compatible = "qcom,ipq8074-tsens",
- 		.data = &data_ipq8074,
-+	}, {
-+		.compatible = "qcom,ipq9650-tsens",
-+		.data = &data_ipq9650,
- 	}, {
- 		.compatible = "qcom,mdm9607-tsens",
- 		.data = &data_9607,
-diff --git a/drivers/thermal/qcom/tsens.h b/drivers/thermal/qcom/tsens.h
-index 2a7afa4c899b..d9d50d32c962 100644
---- a/drivers/thermal/qcom/tsens.h
-+++ b/drivers/thermal/qcom/tsens.h
-@@ -657,6 +657,6 @@ extern const struct tsens_plat_data data_ipq5018;
- 
- /* TSENS v2 targets */
- extern struct tsens_plat_data data_8996, data_ipq8074, data_tsens_v2;
--extern const struct tsens_plat_data data_ipq5332, data_ipq5424;
-+extern const struct tsens_plat_data data_ipq5332, data_ipq5424, data_ipq9650;
- 
- #endif /* __QCOM_TSENS_H__ */
+Major changes since v1:
+- No longer adding the "index" parameter the power sequencing API
+- Switched from OF graph to fwnode graph APIs
+- Tie "port@" node to usb_port device, and use this device as consumer
+  to acquire power sequencing descriptor
+- Power sequencing descriptor now only tied to USB 2.0 port to avoid
+  double reference
+- Power sequencing state tracking added
+- Link to v1
+  https://lore.kernel.org/all/20260515090149.3169406-1-wenst@chromium.org/
+
+The series is based on next-20260608.
+
+
+Patch 1 and 2 add new fwnode graph helpers. These are used by the patch
+5 and 7, respectively.
+
+Patch 3 changes the power sequencing framework's Kconfig symbol from
+tristate to bool. This is needed as the USB core is bool. And since a
+later patch introduces power sequencing API usage to the USB core, the
+power sequencing framework cannot be built as a module anymore. This
+patch needs to go in with "usb: hub: Power on connected M.2 E-key
+connectors", or we will get allmodconfig build failures.
+
+Patch 4 reworks the USB hub driver to return the actual error code from
+hub_configure() in hub_probe(). This is needed in the next patch to
+correctly return -EPROBE_DEFER returned by pwrseq_get() in patch 7.
+
+Patch 5 makes the USB port device associated with a "port@" fwnode if
+available. This depends on patch 1.
+
+Patch 6 changes usb_port_is_power_on() so that |struct usb_port*| is
+passed in instead of |struct usb_hub*|. This patch does not change any
+functionality.
+
+Patch 7 lets the USB hub driver look for power sequencers for each port.
+Currently this only works for M.2 E-key connections, but it could be
+extended to cover other cases. It should also make port reset via turning
+off the port VBUS work, even when VBUS is not directly controlled by the
+hub. This depends on patch 2 (for the new helper) and patch 3 (to avoid
+allmodconfig link failures).
+
+Patch 8 reverts an incorrectly modeled OF graph connection for the
+MediaTek XHCI controller.
+
+Patch 9 then adds a proper representation.
+
+Patch 10 adds matching pwrseq consumer by "port@" node to the M.2 slot
+driver. This is only used for the USB target, but there is no attempt
+to differentiate the connection type. The driver simply tries matching
+the "port@" node first, then falling back to the port parent or device's
+node.
+
+Patch 11 reworks the power sequencing targets for the E-key connector in
+the pcie-m2 driver to add targets for USB and SDIO. The former is used
+later on in this series.
+
+Patches 12 through 16 enable the M.2 E-key slots (used for WiFi/BT) and
+USB type-A connectors found on MediaTek-based Chromebooks. These are
+provided in this series for reference. The USB type-A connector changes,
+while not directly related, have overlapping context, and was easier to
+include. They were also used to test some extra local changes I tried
+to convert the USB A connector from an onboard USB device to a power
+sequencing provider.
+
+
+This series unfortunately spans multiple trees. The way I see it:
+
+  - Patch 1 and 2 go through the driver core, and an immutable tag is
+    provided to be merged together with the USB patches.
+
+  - Patch 3 gets an ack from Bartosz, and goes through the USB tree.
+
+  - Patch 4 through 9 (all the USB related ones) go through the USB
+    tree, along with the dependencies above.
+
+  - Patch 10 and 11 go through the power sequencing tree.
+
+  - Patch 12 through 16 (device tree only) go through the soc tree via
+    the mediatek tree.
+
+Some of us discussed v1 at Embedded Recipes, and I believe Bartosz, Mani
+and I agree on this approach. The debate is likely going to be on
+whether this should be integrated into the USB core or not. I believe it
+should, so that the power sequencing timing is tied to the USB port
+being brought up. I do have a fallback option of just enabling the USB
+power sequencing target inside the M.2 slot driver if a valid OF graph
+connection is seen. But this is less desired for the reason given above.
+
+Please have a look and share your thoughts.
+
+
+Thanks
+ChenYu
+
+
+[1] https://lore.kernel.org/all/20260326-pci-m2-e-v7-0-43324a7866e6@oss.qualcomm.com/
+
+Chen-Yu Tsai (16):
+  device property: Add fwnode_graph_get_port_by_id()
+  device property: Add fwnode_graph_get_next_port_endpoint()
+  power: sequencing: Change CONFIG_POWER_SEQUENCING to bool
+  usb: hub: Return actual error from hub_configure() in hub_probe()
+  usb: hub: Associate port@ fwnode with USB port device
+  usb: hub: Pass |struct usb_port*| to usb_port_is_power_on()
+  usb: hub: Power on connected M.2 E-key connectors
+  Revert "dt-bindings: usb: mediatek,mtk-xhci: Add port for SuperSpeed
+    EP"
+  dt-bindings: usb: mediatek,mtk-xhci: Allow ports for USB connections
+  power: sequencing: pcie-m2: support matching on remote "port" node
+  power: sequencing: pcie-m2: Add usb and sdio targets for E-key
+    connector
+  arm64: dts: mediatek: mt8192-asurada: Add USB type-A connector
+  arm64: dts: mediatek: mt8192-asurada: Add M.2 E-key slot
+  arm64: dts: mediatek: mt8195-cherry: Add M.2 E-key slot
+  arm64: dts: mediatek: mt8195-cherry: Add USB type-A connector
+  arm64: dts: mediatek: mt8188-geralt: Add WiFi/BT as M.2 E-key slot
+
+ .../bindings/usb/mediatek,mtk-xhci.yaml       |  17 +-
+ .../boot/dts/mediatek/mt8188-geralt.dtsi      |  93 ++++++++++-
+ .../boot/dts/mediatek/mt8192-asurada.dtsi     | 139 +++++++++++++++--
+ .../boot/dts/mediatek/mt8195-cherry.dtsi      | 147 +++++++++++++++++-
+ drivers/base/property.c                       |  55 +++++++
+ drivers/power/sequencing/Kconfig              |   2 +-
+ drivers/power/sequencing/pwrseq-pcie-m2.c     |  50 ++++--
+ drivers/usb/core/hub.c                        |  55 +++++--
+ drivers/usb/core/hub.h                        |   6 +-
+ drivers/usb/core/port.c                       |  72 ++++++++-
+ include/linux/property.h                      |   3 +
+ 11 files changed, 583 insertions(+), 56 deletions(-)
+
 -- 
-2.34.1
+2.54.0.1099.g489fc7bff1-goog
 
