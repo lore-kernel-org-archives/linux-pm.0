@@ -1,351 +1,204 @@
-Received: from BYAPR05CU005.outbound.protection.outlook.com (mail-westusazon11010037.outbound.protection.outlook.com [52.101.85.37])
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5A27B343D86;
-	Wed, 10 Jun 2026 20:23:11 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.85.37
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1781122993; cv=fail; b=HkNab5VYZMg5/sl3UrqcrmidoynWFHRQnz3vdIBMY5spRmJf5T5gSXM9Rw8qD6wir8Qb6UeM2KZmvV53rWO1VG41OKW/OiGeKkdUh4uRbyxPVQODyQtH/MwN5kErfC7Jm2+CnP9DlPkmrkzKdqtXVhg451lidjfzpsA5yFT1pIg=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1781122993; c=relaxed/simple;
-	bh=wK623yRvGIb9MIhfcZdhyoY5q7rcqkvhGlovQHh+klo=;
-	h=Message-ID:Date:Subject:To:Cc:References:From:In-Reply-To:
-	 Content-Type:MIME-Version; b=MdQzHmrbBUUCYK6jEKyHR0DT/RO12i7ZyH24RPZ2LBpL/Um+QtLuq8fhqP7D7Zb4leJ4LSQDcv42562zneaWfvcm6cNpcFlcq/dUb6mMOhpcz7VKpKMdAJ86RUjsyn5+n+zRgaiSAC1Zty64RjOty5EtxqCfCG+4QkRzfcGO4NM=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com; spf=fail smtp.mailfrom=amd.com; dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b=jEVu8CFa; arc=fail smtp.client-ip=52.101.85.37
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com
-Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=amd.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 36D5937BE86;
+	Wed, 10 Jun 2026 20:24:21 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=148.163.158.5
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1781123063; cv=none; b=qAcFAFjGBlCn3Cxiy4jAVpdza0F0hYlDQpe9ksblQzbJehbOL80vIYzFgmxiCDB7P/gZNfeaoDpHw37md+gL8ksxGyTSb0clx54Wsk8hBj19zdUpunY0df/6NmC2EUzNGf0Dw1MksT/Grr5VxJ+aVwiU4nlU4mLHfGWh0YZPUcA=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1781123063; c=relaxed/simple;
+	bh=ZX8/DGWMK8mrWMc84OmpS7gL/zo3tphrttM5gpWyj/E=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=e5FBPlPsJrzIjKKVTmuTUjWVRplftaP8WYJFDD3mtwxKMJ0h0Jon8xh4iQ/sazgR3OPazr6IlUT/8crRQQzKOKb/w28qrcsvNXbqcDCpsmZiC6tXOiT11qlRJkkL7VPM8liZXyCMDBEoxkdl5tF7yvdTNzAUCDkAXXopOlcTlao=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; spf=pass smtp.mailfrom=linux.ibm.com; dkim=pass (2048-bit key) header.d=ibm.com header.i=@ibm.com header.b=KPM0oCIx; arc=none smtp.client-ip=148.163.158.5
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.ibm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b="jEVu8CFa"
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=lTvcrRP2jY6uqwKLBKtaqiFQcavscu0+IgxgMZu1iz7NY7FuxSzrd5EDDQTeQ5gGP75vjB3uCH8kB590rYMbYB2cPFbZDvyzZIqtFQKFttRMMVnAED5JGYvCDRAopbBZLAfgp6neHsiMAmbqaPfe2oXqL4bpH2dAGLYSeYI5hDmGLjzJH59A3FO25PGvWYARUycb5uPDgeTIlm89/Zq4eH/FfE3P50dlNB4AlhfDFErWKCaUpMFWR4ImfmfyzjeCF2tysJi4YpKcqpvdCBqxgHIYZ5B4XDb44VGrjz7vdZ/iNc+EEhw1TaFUHAzqXtbLF4CsmS+DqMIJsUuLP4HLDA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=7Mml4eaqxKJoK480dcR8LzAhdnmkiYgHc8/4mdAtwWU=;
- b=fpwTzN7Y6RbMlg2dDyfKsjFLcGhttJ+oSft2/aqss0f1vSd9uXE+Dfq6EBcIDrvjXzugo31zUOGqaqgrX/X7QJBy/4t7SAa8d6Ge61qMVv7XGasw7BN4C/23uCptBOrSR7adnuBMInolX68bRIHwBJzkR8Ec2H1q7GhsUeAytCYmbJgM6CX+QiV4qGuhgI6ykg1F7UT3yKHuV+KlT+3QnqD4oTu5ItDFfe6yboXeyA+SvI3wzpWxSMiBsMrFrWMJciLen7gVVndhyHnbMN+e5LaJr1fmIar5+TZOyonG2N6jXAbmB1mOvAAuLeWZ0VVo+JQkRFczl2d/PJ7cVW7Itg==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=amd.com; dmarc=pass action=none header.from=amd.com; dkim=pass
- header.d=amd.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=7Mml4eaqxKJoK480dcR8LzAhdnmkiYgHc8/4mdAtwWU=;
- b=jEVu8CFacnvV7Ay74x7zuLR05DBrJSr1lwKMCV4LChZEQ2cMslnBOf24o40vvvTOr9MhQjIRZEF6Cn26aOOGLEDupVbc+Y9VlHC7Rv2ioVQJoJcxOZv/fHwrQ4Nxg7oYCt7BuGdr+hT5H+WPadKEZnT0X0I2TEYJHwcTlSuorbk=
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=amd.com;
-Received: from PH8PR12MB6914.namprd12.prod.outlook.com (2603:10b6:510:1cb::21)
- by DS0PR12MB6558.namprd12.prod.outlook.com (2603:10b6:8:d2::16) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.92.14; Wed, 10 Jun
- 2026 20:23:05 +0000
-Received: from PH8PR12MB6914.namprd12.prod.outlook.com
- ([fe80::2893:177a:72b0:6000]) by PH8PR12MB6914.namprd12.prod.outlook.com
- ([fe80::2893:177a:72b0:6000%6]) with mapi id 15.21.0092.011; Wed, 10 Jun 2026
- 20:23:05 +0000
-Message-ID: <44bd3c12-b8d6-45c8-a7cf-12ea47716461@amd.com>
-Date: Wed, 10 Jun 2026 15:23:03 -0500
-User-Agent: Mozilla Thunderbird
-Subject: Re: pinctrl: amd: spurious immediate resume from S3/s2idle via
- BIOS-armed wake GPIO with no ACPI owner (Lenovo Legion Pro 5 16ARX8)
-Content-Language: en-US
-To: Lenart Kos <koslenart@gmail.com>
-Cc: Basavaraj Natikar <Basavaraj.Natikar@amd.com>,
- Shyam Sundar S K <Shyam-sundar.S-k@amd.com>,
- Linus Walleij <linusw@kernel.org>, linux-gpio@vger.kernel.org,
- linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <CAFdvZNt+mRTE9Q+utn=T8GzU7s_09ULhUtzTMMa9dgGCsE+r9A@mail.gmail.com>
- <c982caf3-f855-41ad-80cd-3ce9598913ab@amd.com>
- <CAFdvZNs9jNxnqqaPhDXBt555hqgTHQizV4ORPp_8xg1D=XD4TA@mail.gmail.com>
-From: Mario Limonciello <mario.limonciello@amd.com>
-In-Reply-To: <CAFdvZNs9jNxnqqaPhDXBt555hqgTHQizV4ORPp_8xg1D=XD4TA@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-ClientProxiedBy: SA1PR03CA0008.namprd03.prod.outlook.com
- (2603:10b6:806:2d3::7) To PH8PR12MB6914.namprd12.prod.outlook.com
- (2603:10b6:510:1cb::21)
+	dkim=pass (2048-bit key) header.d=ibm.com header.i=@ibm.com header.b="KPM0oCIx"
+Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 65AJu4ok677350;
+	Wed, 10 Jun 2026 20:24:02 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=rGoHMk
+	mZH/+Ju66MkY4hMuu+MyzHUnqEhxPvRkPn6ps=; b=KPM0oCIxxJVIhiIjZGJwuY
+	J4u6NdAbGkATWt9862CnevNRkcYzAZZX9swHAxJi8DDRfrIhnvZ2fXVc9A2xKRCq
+	T9wK6Zry0T/GU57EQI+mLK93GcvYeDhbZFgH0QAr+8TLQI47MzICDcv2Wn96Jf7l
+	Yy6ejn0n9yM0dlpHsqHQgDR1bI5o6gi0QqkUAJMvETRrnxCK+lZT/Khl8wlV+SIS
+	HkVKNJqcpgksbTxtqJqjiokCrnbafWnh3z5eZreoj/Pa4M3Za3nCrcmzHNCD1QPh
+	8Z1CGyEaCxn9z5BtyhYnBE/sHNPQF0Dr1uxMD0mUhJ+f6JVRswKwRTxvjA1CebpQ
+	==
+Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4eqe8ag58h-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 10 Jun 2026 20:24:02 +0000 (GMT)
+Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma11.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 65AKK6Rj011529;
+	Wed, 10 Jun 2026 20:24:01 GMT
+Received: from smtprelay07.fra02v.mail.ibm.com ([9.218.2.229])
+	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 4eqe09g792-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 10 Jun 2026 20:24:01 +0000 (GMT)
+Received: from smtpav06.fra02v.mail.ibm.com (smtpav06.fra02v.mail.ibm.com [10.20.54.105])
+	by smtprelay07.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 65AKNwFR50528604
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Wed, 10 Jun 2026 20:23:58 GMT
+Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id ED27B20049;
+	Wed, 10 Jun 2026 20:23:57 +0000 (GMT)
+Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 14B9320040;
+	Wed, 10 Jun 2026 20:23:57 +0000 (GMT)
+Received: from [9.111.33.159] (unknown [9.111.33.159])
+	by smtpav06.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Wed, 10 Jun 2026 20:23:56 +0000 (GMT)
+Message-ID: <93743121-2f6f-441b-8675-4eaa92647b4d@linux.ibm.com>
+Date: Wed, 10 Jun 2026 22:23:56 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: PH8PR12MB6914:EE_|DS0PR12MB6558:EE_
-X-MS-Office365-Filtering-Correlation-Id: ce26e472-7d88-4c10-3252-08dec72e13c3
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|376014|1800799024|366016|23010399003|18002099003|22082099003|6133799003|3023799007|4143699003|11063799006|56012099006;
-X-Microsoft-Antispam-Message-Info:
-	HJ00bob5LGbPpdeSu9D7/2o9hrm949uXchlZUkIe3CapBorxDD6QfOW6U96s+k5BBbdrbXNr79S0iCHkC7wBrq0vUOsOhVzJeq4O3o2c36IIcY0Dgw3rclrYbyFNpyWwO0ZCx2u1ecIE15PzKA475JrZWYX9Vpdn/aGgye9rpQ26B1BZXY7Q6yWAqLof3ZLZ04g2KwnAxiw2nyqCLu0EPP12JsWfnX/cFihTQdWib+ZzOIkKR/AZGWjJmbvHB6eQiGyngptfeNFqM+aFwhGXrxqihWYz36Q1Xtd1N1TH53sqPwz5MqJyszeDoN/DKFF41FnnEdiV3oE6zjwN6On6Q8iGtnwoMFLWyTvH38Nfo+KhmjmuL6jwMJ+260OtBWdMn4GZF6gh6y61TbCWbCjzjET0w3u/FwBSfYE4UpZ47y6AdygPuu3xiypcVNfLkY+WJAIFw8/sdqpC/tDYNkwZgcZDrNpUm3j+fQKO/P2H8RsyRpFU0WsICVYxZwkhfNPOx2XSHu9BR17LqvBc41CFHic1lgeNaY05+rp1nOaky7xlK3Pn/93KuqTmnpgnHghphfiRpIxx9yN+3Xb1KrKa/ZL+HX43TZ+HoMisKlApGgwMaZk23TUGikLbJSkE/ZxSVOGTnlSGHcbQ7mNigYqigNdVVXMxl2m2/ZRqnaq+Ds8QgaF826bbeCgduxUEXB6U
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:PH8PR12MB6914.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(376014)(1800799024)(366016)(23010399003)(18002099003)(22082099003)(6133799003)(3023799007)(4143699003)(11063799006)(56012099006);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?utf-8?B?eWNXanJWREpuR0grbTdTOVkyQlFWYVV2YmxpckxkZ1FHS1BxZTdTdGhxN1Nm?=
- =?utf-8?B?ZUlqWStvNjF3bGlHWDVXbEpNbDN3bEFldFBBa0U4NGIxR3BJaG5tN3dMMkJs?=
- =?utf-8?B?SnI2RCtuTkYwUnRxekRnSXNvZktFSUhXVkorWEI5VmpESWpMV1BwS2pUalZy?=
- =?utf-8?B?RE00NHhhbEZPZXZ2QmxLTFpXM2UvNkJObm4wUVRNT0RjK0U1WVlPZ1ZvakVP?=
- =?utf-8?B?OGVyOG9qR1Btc0dsUnNBQzlrUW9JRFV6TmJ1eGFwdUIvbmRFKytzTlJ3M1JT?=
- =?utf-8?B?cWdMS29sNHA2SlhtUDlLT29IRE5wdUllK0lrV01DL0svRC9ub2psQlVaSmh5?=
- =?utf-8?B?QjU5dWt1VVFZNkVyWHk0TkpoNEo0NlJJUk1zaHRnbDVJL20rMVcyNGFXbUU3?=
- =?utf-8?B?ZnB3STNnVW8vOGVEN2QzQTMrazZrbWhCczY5S3VTRUtKOUlQQmxJWTRRRUZR?=
- =?utf-8?B?RmszV0JLMXNlcHZaVVFHZ0J2RmsxODFPVGJKVlEyL0E3SjFaWTI1QnpVQklH?=
- =?utf-8?B?VGtGWVo3WHJtM2QreUpJRUpMZkFrWjYvTkIrOG9SNm92Sk96NUdFRXBNSzU1?=
- =?utf-8?B?ZXVTa21ZU244RHVHMFNrNlJJQVlPVjRVaHJkUnZVd3h5ZXdlU25tZ25UTEVO?=
- =?utf-8?B?RC8wcGM0eWZybXR4MmtTMHhXYjhpRnJtcHNPdEFzOW4vWlhKcUJVYXgvOU5h?=
- =?utf-8?B?a2dxUHB6Z3ZnY0k2ekYvd1pobmh6Mkg5ZCtkN3c2cFluWXVpdnZsZzRPL3p4?=
- =?utf-8?B?YnZkdm5nNk55d3cyL29YTUpCQ3ZwOGdEOEl5UEI2SE9iZzhPa3pVYTM0MjhP?=
- =?utf-8?B?VVhEVGJEOHQwQWxpWW53UUJHbnRncjV5bG8zWjhsOWYrSFltalZHYWdSbjB4?=
- =?utf-8?B?bGNYTVlBTHBCYTh6NXlBeW9GaHlHNWlZSHlrcnhtOVhFQlF1R0ZGOHZGbEJm?=
- =?utf-8?B?dUNmSHJPMlZsNW5lSC9GRU5pYUQ3Y1gvRHJQa0d3aS8yNDI3SmZNSU42OXhy?=
- =?utf-8?B?Rzd0TjRkQUN3cUpBODRhMzFRaStOQkVXaFdkcUxCMFExS1BzbWJYd0dCY1Vk?=
- =?utf-8?B?Qyt5SzdWZThWK3lNQnNpUjNKZG5oREVtSTlrSndBT3FrSFg2a2x0NW52Z3Jw?=
- =?utf-8?B?VmJtM201R0NyWFNvL2h2V2NTTlRPZXBCWXo4OTZIZDR6K1lGdHg2QTFHRyth?=
- =?utf-8?B?bnJmYUFHeVdXc0xqY1dKTVZqT3RHYUVYNDNNRHRabk5WUCtlalY3K1E2aG1o?=
- =?utf-8?B?T0NhdDBvU3BnU3pJeHF1dVhsZG1BblhSYytrRjBkdzhKbXBuS0J5QlJjRXAw?=
- =?utf-8?B?dFhxaytvNjY2RkdySXR2U1hUVTFrLzZVSmwvRnhsS2lVRExpZmxTQWdzRmEz?=
- =?utf-8?B?WGJvd0JiM25LZHpOYkcwdzNHS2hidU5hL0ZKUUIwK1BzR1ZHUXJuQzZvU2tC?=
- =?utf-8?B?WnBGWVFDYlNBUDFablRYOGQzcGZDbjBkbHg0ZklXWXNIMVBpdmpTMHYvY1pk?=
- =?utf-8?B?ZVpFOVZ6QUU0M2xvcVBrNHVzdFZKbHBReU5kNTBRZENOVXdCN20zeWc1aUZC?=
- =?utf-8?B?UEx0WHNUbzgzUWF2NDU4dXErVzhBeWE4ZlM5emdYZE1kbEN4aHBuY2NDVjU4?=
- =?utf-8?B?bkdNZmVwUGNFSlpQUlFnTDNkOGhuSlVBWnliTHB4N29OaW1RN1VOSk1GUjIy?=
- =?utf-8?B?UjREaGtHenA3d1JLK1YyMmpTUCt4THFtMG0vMmtITEtQTFZVUzFaKy84WkJq?=
- =?utf-8?B?RzQ5bDVqVEVtUHNTelNYYURZMXdMWjN6bjNQRDUzNjJpRHdaYjhScXV5cXVG?=
- =?utf-8?B?WnRrRmdsYU80MkJvdm00ckk1YUVzTmwrT3YrSURHeXVjck5HUkE3N0lmU1N0?=
- =?utf-8?B?RGFoT0Q2eGFRRFhMZXVMUUdEanlHYnNQWm9IK3VKTHZUV0hTaGh6ejdTVmxk?=
- =?utf-8?B?M2xhV0NKdVo3dGJxbEFJWW9YeG1UeDJoQ2dDK2czcE53Rm95NUlVc0Rzb3lz?=
- =?utf-8?B?WGRic0c0S1RGdGU4anZhUHlPQlQ0ZS83UjVJZmZSczN2cFhYODFWRmxKazky?=
- =?utf-8?B?SE5BclhuR0FMeHBnTlVxY054NXV6b21GK0xSdjVtaittQTJyUzZjSGYyRXUv?=
- =?utf-8?B?SXd6SVcwcExlNEZ3R1dBbGpkVUR5clR2Q3pqTkduRVJHVWZwaUFGdzFuMEs3?=
- =?utf-8?B?M3ZqMVhTR1MwbGdmUW5tcExaaDc5Rlc5MXdGQVNxY3RiRVhHQUt4T2gxV0sr?=
- =?utf-8?B?Mi81SG9yZkpBTmRKYUkvd2gvR1J0YTNDa3U0R3NndlI3UlV1cFhuaG5EUHRw?=
- =?utf-8?Q?82SCIH9qGvJacJNpp7?=
-X-OriginatorOrg: amd.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: ce26e472-7d88-4c10-3252-08dec72e13c3
-X-MS-Exchange-CrossTenant-AuthSource: PH8PR12MB6914.namprd12.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 10 Jun 2026 20:23:05.0538
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: K86eoqAS1nis7IKKiznhgG2tOrfGgYNDN7L4EVtvJuxa/nF91K8to1gOKUjyGRKw6SpQM8Q5thwMPUhY+hleAg==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: DS0PR12MB6558
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v2 0/5] s390/idle: CPU idle driver
+To: Christian Loehle <christian.loehle@arm.com>,
+        Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>,
+        Alexander Gordeev <agordeev@linux.ibm.com>,
+        Sven Schnelle <svens@linux.ibm.com>,
+        Anna-Maria Behnsen <anna-maria@linutronix.de>,
+        Frederic Weisbecker <frederic@kernel.org>,
+        Ingo Molnar <mingo@kernel.org>, Thomas Gleixner <tglx@kernel.org>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Daniel Lezcano <daniel.lezcano@kernel.org>
+Cc: Christian Borntraeger <borntraeger@linux.ibm.com>,
+        Ilya Leoshkevich <iii@linux.ibm.com>, linux-s390@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+References: <20260609-idledriver-v2-0-21c2f581d11f@linux.ibm.com>
+ <0e6ff23c-b509-40eb-87f3-7b04fb066edf@arm.com>
+Content-Language: en-US
+From: Mete Durlu <meted@linux.ibm.com>
+In-Reply-To: <0e6ff23c-b509-40eb-87f3-7b04fb066edf@arm.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-ORIG-GUID: a64jb7OPVaPTb9YW1SlOnVKfaxn_65Q7
+X-Authority-Analysis: v=2.4 cv=TdKmcxQh c=1 sm=1 tr=0 ts=6a29c7e2 cx=c_pps
+ a=aDMHemPKRhS1OARIsFnwRA==:117 a=aDMHemPKRhS1OARIsFnwRA==:17
+ a=IkcTkHD0fZMA:10 a=FelO9ux0wxsA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=RzCfie-kr_QcCd8fBx8p:22 a=sbA5G8EigutXl4nyLPcA:9
+ a=QEXdDO2ut3YA:10
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNjEwMDE5MSBTYWx0ZWRfX82fPQqibcwq1
+ zVKuSQDWHwssRo+7rMM2zfPJmcuxZWwBOQyq55AQAHpa/R0cIsY3BWiBgT50s4D9/kmD5nU5t+x
+ KeSn76MgjXWLMeYeVObFkYpU7QPHnuSHDxRtiBju2Qb7fqoLALbSIbYB+jN6MOwclg6V+xEimDL
+ TgrRr1DecbpIiptZ8ovqcnfiY5wPax58TOYIEySmwuqFzs7jU5OOZm9TIEdyfLgIJyR+BICUKn4
+ o06XmJatBYSAM0rZ/M26GubCT6YJ8DdzCB3oXR/UySoX5wC1Wgvp8MD0L9+elsAwcykR652cD46
+ fXcf/0peVZHrB/8VRLuRDeM6Z+VweRfX3eU+5IXtI6N4LA7bhkQIFI0i0pmp1s5pMU8LunONbH1
+ aIhVzFaby5bP+JlnLwmGaab6e/tP1ophxK4HI7lf4Jk4HYzdT5l4m1E7+3T98FOP1Z40dPmI7Lq
+ VOUkCA6qyTkszA0BIrw==
+X-Proofpoint-GUID: a64jb7OPVaPTb9YW1SlOnVKfaxn_65Q7
+X-Proofpoint-Spam-Info: AW1haW4tMjYwNjEwMDE5MSBTYWx0ZWRfX2ioqo2TlI/gY
+ 380HWgVJQ+llyAzWWRCfS9SE+z+rmh7E5lt5b0QeJATBo3XeAQeiv4Q36Ms1sc0hLrQ6yuJlfXN
+ IirYCk6SpKzj9jHRXNTUoYY7vinSPiM=
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.125,FMLib:17.12.100.49
+ definitions=2026-06-10_04,2026-06-09_02,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ phishscore=0 malwarescore=0 clxscore=1015 impostorscore=0 adultscore=0
+ bulkscore=0 priorityscore=1501 lowpriorityscore=0 spamscore=0 suspectscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2606040000 definitions=main-2606100191
 
-
-
-On 6/10/26 15:18, Lenart Kos wrote:
-> Thanks for taking your time for this. To answer your questions:
+On 6/9/26 5:47 PM, Christian Loehle wrote:
+> On 6/9/26 14:24, Mete Durlu wrote:
+>> v1 -> v2:
+>>
+>> * Add idle driver enteries to MAINTAINERS file (Christian Loehle)
+>> * Remove extra line break left in drivers/cpuidle/Kconfig.s390
+>>    (Christian Loehle)
+>>
+>> This patch series introduces a CPU idle driver for s390
+>> architecture that leverages the existing cpu idle infrastructure and
+>> TEO (Timer Events Oriented) governor to optimize idle state selection
+>> based on timer events and interrupt patterns.
 > 
-> S3 path:
-> AFAIK it was on [deep] since my system was installed and I strongly
-> remember being it as so, although it is possible that I misremembered
-> since I have been debugging this sleep issue since January. In any
-> case I have also tried setting sleep to [s2idle] before and it did not
-> fix the waking issue even if set in s2 sleep mode.
-> The firmware is not modified, everything is installed from Fedora
-> sources without modification.
+> So if (according to v1) there's no data (yet) that teo is much preferred,
+> I would remove all mentions of it in code and patch descriptions?
+> A cpuidle driver requiring a specific governor sort-of violates the
+> abstraction.
 
-Can you please check in Lenovo's BIOS setup if there is a sleep mode for 
-this platform?  If there isn't that's fine, I want to confirm what 
-Lenovo actually presented before making further assumptions.
+True, s/TEO governor/idle governor/g + s/TEO/idle governor/g should
+be good enough.
 
-If there is such a setting, what options does it offer?  If you change 
-it does the behavior change?
-
-Furthermore if this issue is only happening when connected to the HDMI 
-port, that's the one connected to NVIDIA, right?  Have you started a 
-conversation with them?  Assuming the HPD theory that has been presented 
-is correct their driver should be in control of HPD behavior.
-
+> In case teo does work much better for you, which I wouldn't doubt for
+> a second from what your system looks like, it would be nice to present
+> some data on it. Additionally I think setting it in the defconfig alone
+> is probably enough?
 > 
-> Methodology:
-> Yes you are correct about LLMs, I have thrown every bit of my
-> knowledge and time that I have available for this without success and
-> Claude has finally solved this after a few months being irritated by
-> this. I had decided to forward most of the information I received from
-> LLM in the hopes it was useful to an expert in the area, but in
-> hindsight I can see this was a mistake without AI disclosure, I'm
-> sorry. So for your other questions regarding why this assumption was
-> made or why was something done a certain way - I don't know, but I am
-> willing to assist with testing. Apologies for this mess, it's my first
-> time filing a bug to the LKML.
 
-No worries; as long as I'm talking to a human about a problem not an 
-LLM, I'm fine to work with you to see what we can come up with for a 
-solution.
+I ran a quick menu vs teo run on an LPAR.
+There was no significant change between the results of the benchmarks
+except for slightly higher cpu utilization when using menu governor. I
+can put it down to the cover letter. The only noticeable change is on my
+micro benchmark where I use epoll_wait() to make two threads on
+different cores ping each other.
 
-I've got various inline comments/questions below.  Can you please 
-address them?
+micro-benchmark |   teo    |   menu
+-------------------------------------
+avg time        | ~21.6sec | ~24.3sec
 
-> 
-> On Wed, Jun 10, 2026 at 9:59 PM Mario Limonciello
-> <mario.limonciello@amd.com> wrote:
+Idle framework tries to find the specified governor in the driver struct
+but if it can't find it or no governor was specified it uses the next
+available one, so setting teo on defconfig and disabling rest of the
+governors can be good enough to pick teo.
+
+
+>> - Configuration
+>> -----------------------------------------------------------------------
 >>
->> First off -
+>> Idle state parameters are tuned per hypervisor type after benchmarks:
 >>
->> How did you get into an S3 path?  These systems that ship with only
->> Modern Standby / s2idle normally shouldn't be able to get into S3.
+>> **LPAR:**
+>> - Polling: 5us target residency, 0us exit latency
+>> - EW: 5us target residency, 5us exit latency
 >>
->> ╰─❯ cat /sys/power/mem_sleep
->> [s2idle]
+>> **KVM/z/VM:**
+>> - Polling: 1us target residency, 0us exit latency
+>> - EW: 1us target residency, 1us exit latency
 >>
->> Have you modified the firmware in some way to try to enable an
->> unvalidated path?
->>
->> I have some more questions about your methodology below because when
->> debugging a kernel issue an LLM can sometimes make WILD assumptions that
->> are totally a house of cards.
->>
->> On 6/10/26 14:32, Lenart Kos wrote:
->>> ## Summary
->>>
->>> On the Lenovo Legion Pro 5 16ARX8, suspending (S3 *or* s2idle) with an external
->>> display connected resumes the machine after ~1 second. The wake is delivered by
->>> the AMD GPIO controller (`pinctrl_amd`, IRQ 7) from GPIO pin **#4**
->>> (and pin #2 for
->>> the USB‑C/DP path), which the **BIOS has armed as an S0i3/S3 wake
->>> source directly
->>> in the FCH GPIO register**, with **no ACPI description**
->>> (`_AEI`/`GpioInt`/`_PRW`)
->>> anywhere in the DSDT or the 16 SSDTs. Because there is no ACPI owner,
->>> none of the
->>> existing override mechanisms (`gpiolib_acpi.ignore_wake=`, device
->>> `power/wakeup`)
->>> can reach it, and `IO_STRICT_DEVMEM` blocks any userspace register
->>> write. The pin
->>> is an external‑display HPD line, so the edge produced while the GPU
->>> powers down on
->>> the way into sleep immediately wakes the system.
->>>
->>> ## Affected system
->>>
->>> ```
->>> DMI sys_vendor LENOVO
->>> DMI product_name 82WM
->>> DMI product_version Legion Pro 5 16ARX8
->>> DMI board_name LNVNB161216
->>> BIOS LPCN62WW (2025-06-17) # latest available; does NOT fix this
->>> SoC AMD Ryzen 7 7745HX (Raphael), GPIO ctrl AMDI0030 @ 0xFED81500
->>> GPU NVIDIA RTX 4060 Mobile (HDMI) + AMD Raphael iGPU (USB-C DP)
->>> Kernel 6.17+ through 7.0.x (reproduced on Fedora 43/44)
->>> ```
->>>
->>> ## Symptom / evidence
->>>
->>> Failed-suspend kernel log (verbose PM):
->>> ```
->>> PM: suspend entry (deep)
->>> ...
->>> amd_gpio AMDI0030:00: ... Clearing debounce for GPIO #2 during suspend.
->>> amd_gpio AMDI0030:00: ... Clearing debounce for GPIO #4 during suspend.
->>> amd_gpio AMDI0030:00: ... Disabling GPIO #89 interrupt for suspend. #
->>> not a wake src
->>> ACPI: PM: Preparing to enter system sleep state S3
->>> Timekeeping suspended for 1.384 seconds
->>> PM: Triggering wakeup from IRQ 7 # IRQ 7 = pinctrl_amd
->>> ...
->>> GPIO 4 is active: 0x30057c00 # bit 14 (WAKE_CNTRL_S3) + bit 29 (wake latched)
->>> ```
->>> `/sys/power/pm_wakeup_irq` = `7`.
->>>
->>> `/sys/kernel/debug/gpio` (relevant rows) shows pins #2 and #4 armed for S0i3+S3
->>> wake with their interrupt enabled, while #89 has no wake bits:
->>> ```
->>> #2 😛| ↓ | edge |⏰|⏰| | | ... 0x147ae0
->>> #4 😛| b | edge |⏰|⏰| | | ... 0x57ce0 <- both-edge HPD, S0i3+S3 wake set
->>
->> How did you determine this is an HPD line?  Is that a pure guess?  Or
->> did you look at a schematic/trace etc?
->>
->>> #89 😛| ↓ | level| | | | | ... 0x151b00 <- no wake bits (red herring)
->>> ```
->>>
->>> ## Root cause
->>>
->>> 1. The external‑display HPD lines are routed to SoC GPIO #2 (USB‑C/DP) and #4
->>> (HDMI/dGPU).
->>
->> How do you know?
->>
->>> 2. The BIOS sets `WAKE_CNTRL_S0I3`/`WAKE_CNTRL_S3` (bits 13/14) on
->>> those pins in the
->>> FCH GPIO register block and **never describes them in ACPI** — decompiling the
->>> DSDT and all 16 SSDTs yields **zero** `GpioInt`/`GpioIo`/`_AEI` resources.
->>> 3. `pinctrl_amd` correctly preserves hardware-armed wake pins across
->>> suspend, so the
->>> HPD edge generated during the suspend transition wakes the system immediately.
->>>
->>> This is effectively an unvalidated firmware S3 path (the platform ships as
->>> Modern-Standby-only); but note **both** the S0i3 and S3 wake bits are set, so
->>> s2idle is affected too.
->>
->> So how did you get into S3?
->>
->>>
->>> ## Why existing mechanisms don't help
->>>
->>> - `/proc/acpi/wakeup`, PCI/ACPI `power/wakeup` — wrong layer; this is
->>> not a PCIe PME.
->>> Disabling wakeup on the GPP bridges / GPU has no effect (verified).
->>> - `gpiolib_acpi.ignore_wake=` / `ignore_interrupt=` — only match
->>> **ACPI-declared**
->>> GPIO events; this pin has no ACPI declaration, so they cannot target it.
->>> - `/dev/mem` register write — blocked by `CONFIG_IO_STRICT_DEVMEM=y`
->>> (the region is
->>> claimed by pinctrl_amd).
->>>
->>> There is currently **no way, in-tree, to disarm a bare (non-ACPI) firmware-armed
->>> pinctrl-amd wake pin.** That is the gap.
->>>
->>> ## Suggested fix (maintainers' choice)
->>>
->>> A working out-of-tree reference implementation (clears bits 13/14/15
->>> on pins #2/#4
->>> at probe and on `PM_SUSPEND_PREPARE`) is here:
->>> **https://github.com/Lenart12/legion-nowake** — please feel free to reuse.
->>
->> Why not use /dev/gpiochipX devices to change GPIOs?
->>
->>>
->>> Possible in-tree directions:
->>> 1. **DMI-matched quirk in `pinctrl-amd`** that clears the S-state
->>> wake-enable bits
->>> for the affected pins at probe (smallest change; precedent exists for AMD GPIO
->>> wake quirks).
->>> 2. **A generic override** for bare pins, e.g. a
->>> `pinctrl_amd.ignore_wake=<pin,...>`
->>> module parameter, analogous to `gpiolib_acpi.ignore_wake=` but for
->>> hardware-armed
->>> pins without ACPI events. This would help the broader class of AMD laptops that
->>> hit firmware-armed spurious wakes.
->>>
->>> ## Reproduction
->>>
->>> 1. AMD laptop where a display HPD is wired to a GPIO the BIOS arms for wake.
->>> 2. Connect an external monitor, `systemctl suspend`.
->>> 3. Observe resume after ~1s; `pm_wakeup_irq` = the `pinctrl_amd` IRQ;
->>> the offending
->>> pin shows `wake latched` in the post-resume `GPIO N is active` log.
->>
->> On the presumption that this is correct about being an HPD pin doesn't
->> this actually point at a GPU driver bug?
->>
->>>
->>> ## Public discussion / full diagnostics
->>>
->>> Fedora Discussion (complete diagnostic walkthrough, ACPI dumps, gpio table):
->>> https://discussion.fedoraproject.org/t/immediate-wake-from-s3-sleep-when-hdmi-is-connected-irq-7-pinctrl-amd
->>>
->>> ## Attachments to include when filing
->>>
->>> - `acpidump` output (or note: DSDT + all SSDTs contain no GpioInt/_AEI).
->>> - Full verbose-PM `dmesg` of one failed suspend (`pm_debug_messages=1`).
->>> - `sudo cat /sys/kernel/debug/gpio`.
->>> - `cat /sys/class/dmi/id/{sys_vendor,product_name,product_version,board_name,bios_version}`.
->>
->> Where is the kernel bugzilla that you attached all these artifacts?
->>
-> 
-> 
+> I think this would also be useful in cpuidle-s390.c in particular the
+> different residency+latency values for LPAR and KVM/z/VM and what they aim
+> to achieve for you.
+
+We can put down a comment like below;
+
+/*
+  * After various benchmark runs the tuneables for idle driver has shown
+  * the best performance with the following values;
+  * for LPAR:
+  * - Polling: 5us target residency, 0us exit latency
+  * - EW: 5us target residency, 5us exit latency
+  *
+  * for KVM/z/VM:
+  * - Polling: 1us target residency, 0us exit latency
+  * - EW: 1us target residency, 1us exit latency
+  */
+
+Is that what you are looking for or something more extensive to cover
+what sort of behavior it causes and why it benefits the performance?
+I wouldn't really like to put down lengthy comments here to be honest.
+
+> Additionally polling is initialised to 0/0 by poll_state.c, so I don't know
+> where you're taking these values from?
+
+Having a look at the implementation of poll_idle() in poll_state.c.
+The polling time limit (target_residency) is acquired from
+cpuidle_poll_time(), which tries to find an enabled state deeper than
+polling state and returns its target_residency. Since we only have two
+states, it automatically means EW state's target_residency, or
+IDLE_POLL_MAX if it is disabled.
+
+If I am not mistaken governor also uses the next enabled state
+to calculate the target_residency of the polling state.
 
