@@ -1,180 +1,202 @@
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.17])
+Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CA8993E5EE3;
-	Wed, 10 Jun 2026 10:11:33 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.17
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4679740489A
+	for <linux-pm@vger.kernel.org>; Wed, 10 Jun 2026 12:02:40 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.180.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1781086295; cv=none; b=DWdVzcbXP0bbYtgRRR/9HAy7VVxtYpUCtq8WjMt74vvkPVsYi/nf5xg/jLIT+G/UJCzCCUv7SGyOrLvNN6Ov95H/t+RT9CxiIzNIruoiP6+eXLioaUK/0YB0RWSdnFuCCTuEbw+MKlZafGWPKC6IX18iutlR1QPclrsrCrXjbbE=
+	t=1781092961; cv=none; b=HAyed8FGJImq/Yu7eGWNXF+PWJvnntOUH5Wx5Dtn+ftOY9lsoBkc0zMZ6LsYD/ES3Y5hzhGPRcfVe15eZscvgQGd1HTwGqaSAHntgoz+rUuJaPBr0ygmTuE8s/l/bRecj4CnHRojvDHq+UfLer2HeGPKtYmcXVod1rAvbgya+fA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1781086295; c=relaxed/simple;
-	bh=jk+5CodvWS8vMKEk4hr1Gpd+jUeusCfMoA/WEoiopmY=;
-	h=Date:From:To:Cc:Subject:Message-ID; b=WFHioKG9iqUN9cm1lZaz4s1zHtyUO6u8XVQ6ZqtbcOQS0ziPAdGK69m5Bsts8nm2bZHF8QmrA89B/6gdZ8z5t+RmDSJOHOTJNGEkvmhWarKBaoO9HbPbQblf75uiVRAP4daE4ih24pXNhnZCMy4UssRX7IRERZD46iDzowXHBxU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=Y5YB7xXo; arc=none smtp.client-ip=198.175.65.17
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
+	s=arc-20240116; t=1781092961; c=relaxed/simple;
+	bh=6N+clulkPZ4b+YW1h7cMHtrZN8QWlpzXaaiZ3uRZxwY=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=XELSIF2fzWl3fWluY5qzMR+6ebyC1MLmAsrPbsTIM2hwHx1T0SKRhaDpXCxJRm9EnQBtcQ1vI++LieMiegpsYrWjus9h2OmzQ3DtY8XYcwaXzhz3r0vi4ZvWKE4kpJre8ZncTqmO/n3HYeRaT7olq2sr01A8kIwW10zlHcRZ4CM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=dUWXN/28; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=BVI2hfG1; arc=none smtp.client-ip=205.220.180.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="Y5YB7xXo"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1781086293; x=1812622293;
-  h=date:from:to:cc:subject:message-id;
-  bh=jk+5CodvWS8vMKEk4hr1Gpd+jUeusCfMoA/WEoiopmY=;
-  b=Y5YB7xXoIZPJ7/edFgdCew98g5uqSGY94g7u6GbbAA7+6NMzw3e1Y+Q5
-   eTk8XDpvIFB22t1nm6/ZsZ4q9iiFd0edY1ZcrFUEiSo9/yL4X7uRibE/v
-   o9/fTFqBjTdrIUpVNWvqnC4GcG62zYRahZ/hl3J/R9dZeJ2/rAEV37lN9
-   mvPlzeaYHoKDJbEBgO+72fGFpl+GquZnCJfCfwQN8VPc4ZetqDoJJoC/v
-   l+NFHwkpuCT0tClzL9dX1toeX1b+jugYJCYsLjqYg8x7sznB0Xfs3LIxm
-   8LELTpB39CAkvqf7PClFi+LFVA90yqZJTgshcg2mukFH+/fHK7pprUTwx
-   w==;
-X-CSE-ConnectionGUID: gYW3U3bXQoyYfLAKEh04gA==
-X-CSE-MsgGUID: pOJdz+JlQFS1jTNQ0dvZGQ==
-X-IronPort-AV: E=McAfee;i="6800,10657,11812"; a="81878187"
-X-IronPort-AV: E=Sophos;i="6.24,197,1774335600"; 
-   d="scan'208";a="81878187"
-Received: from fmviesa010.fm.intel.com ([10.60.135.150])
-  by orvoesa109.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 10 Jun 2026 03:11:33 -0700
-X-CSE-ConnectionGUID: DzRi2LABTvqXcMJvJqhtOg==
-X-CSE-MsgGUID: bYvVWRcNQ0GBbu9QsbiJbQ==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.24,197,1774335600"; 
-   d="scan'208";a="241995185"
-Received: from lkp-server01.sh.intel.com (HELO f0d55cb201f0) ([10.239.97.150])
-  by fmviesa010.fm.intel.com with ESMTP; 10 Jun 2026 03:11:31 -0700
-Received: from kbuild by f0d55cb201f0 with local (Exim 4.98.2)
-	(envelope-from <lkp@intel.com>)
-	id 1wXFuC-00000000LH0-41dD;
-	Wed, 10 Jun 2026 10:11:28 +0000
-Date: Wed, 10 Jun 2026 18:10:41 +0800
-From: kernel test robot <lkp@intel.com>
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org
-Subject: [rafael-pm:bleeding-edge] BUILD SUCCESS
- 92610ce13187e9289ab0f7ca7366e68c717a02a9
-Message-ID: <202606101832.1ojrbJQN-lkp@intel.com>
-User-Agent: s-nail v14.9.25
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="dUWXN/28";
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="BVI2hfG1"
+Received: from pps.filterd (m0279870.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 65ABNY4j1494361
+	for <linux-pm@vger.kernel.org>; Wed, 10 Jun 2026 12:02:39 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
+	Ol5IR1Aip1z35CTe1ZZdvuNeCl8yaycEOk4X8EMNnRs=; b=dUWXN/28H3Gtxug4
+	ks41kiAke4JNBhKpMulTZDdrUnKYWHXkPzGTYn1fkasbP/PdAoYD5hX++Xc1kWwZ
+	VMauhM3cYii9mZnp4PGhes7AfCoR8jGROnUt/GtpuDSsTm/eIMDDzLu5mtwrgVf3
+	jPP+SCpIPoxKKLWeDucqIrr15Vn/9wVJo4VHekjxaYOMbZvJ+FSZc6dJPR9Dnhyv
+	LlitetEZNfFG2feFczsldwHOu1lV/EHndPCsVzh8b+1oj6wIuqiMiD6EClifE7Xl
+	SoSeMda94TdwCrgjgeuteZlc/LejPc07cqR9JY6GutmOO9K9zvOGCiAp5ivZlcqu
+	em2RlA==
+Received: from mail-pf1-f198.google.com (mail-pf1-f198.google.com [209.85.210.198])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4eq1tg1fk9-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <linux-pm@vger.kernel.org>; Wed, 10 Jun 2026 12:02:38 +0000 (GMT)
+Received: by mail-pf1-f198.google.com with SMTP id d2e1a72fcca58-8421f5d76aaso4502450b3a.2
+        for <linux-pm@vger.kernel.org>; Wed, 10 Jun 2026 05:02:38 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=oss.qualcomm.com; s=google; t=1781092958; x=1781697758; darn=vger.kernel.org;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=Ol5IR1Aip1z35CTe1ZZdvuNeCl8yaycEOk4X8EMNnRs=;
+        b=BVI2hfG1nOkhEPRVx/XK2gbeUTQD4AaSG4vYKqzqPQ7BY+I3ovlNwMwhRlxv4HBArX
+         g8gF0BRENIkJptWWGnqPAwRfIhgt1LI7orioK+YP1dAv6gGhe466qyBQ/+R8apRV/aNh
+         JVBZVcWAbRjbBaeIc8pAAZuBfRecpi9IufsQVA8JQMn/AxyZSmgT71K2mZOOILFv/q78
+         oO/Nn+PHKuPs7BS/aATozu9eLTRsv6szwnxhTs6xAO41Bmz9/FTbl75Sdmz5QOOu9d1O
+         WxSlnadDaEkl7qhEPEvYFjpHH2zYAd1B9AY7Ykwq4AW+K78XAKNbeMhFJaXkVcW+h/KP
+         GywQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1781092958; x=1781697758;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=Ol5IR1Aip1z35CTe1ZZdvuNeCl8yaycEOk4X8EMNnRs=;
+        b=ZgLkdiwNYusn1Zzfb4RouSBZV1+4A+5KbWT2O6EPyXWFqC+KamjYae7kQFS5GI5cpR
+         ZEd1uwpQKK+XdTICT+kcbLxnDXS/hM+9VSPrtPI4Idpfv/JR5VmkeLdgawr0YCtxw5Cu
+         SJr1pYAViCwMGLelus5+BbyxrihKdyeGFJFzY9CcEWawvjEgY2OlWhmyrlJeQaXjewSy
+         I1BmE92dINUqqjxWWLtjGmNt/YGuDrfN7xwvJZ7B946NEcpZCbxJUCCxzef7DHQOP40P
+         EPC2VIlE8xCECPfWi6IfTSPM4SHt7lwnhc/i16mDuoIvEVuEKv47h12iCsQrOscRHLLd
+         d4Fw==
+X-Forwarded-Encrypted: i=1; AFNElJ+hqGPZVEmIf5g5sRWIsBDfTU9iwnslfDhe90dDb6FwezJDVo8T1vUwe7HF8xGxN+PZOYz2ZcBBbw==@vger.kernel.org
+X-Gm-Message-State: AOJu0YygOmY8zl+/XS+rTCabRCIlyevL81LKGnTGhnikROmD90/HWM37
+	vzI1yFWXTRI4i+2/lDL+nTZDIQKBepsH2OwgWXxRxTyZDtqgZ2iVJGEc3HBoty3dWLof9YYoO1R
+	yr6G7HZUDCXg/e/MSGLGpnxpdJkuTEBIVu5dtm8kDsbKMlfqYzExDTGLp6SuOxA==
+X-Gm-Gg: Acq92OE8oUBgnCywPNhTU2nYAyXYNT/SBeRXQ2CuYTo1VC4MYWoQIIyZbXrzkFnhCl5
+	Ql3IPwnSj5jY3ibLSq7vSnBlt6AFWsrbtq+FJaoYJuU6L/pM/dfk+H5yRXQFTO0Lvuol1ffVdZl
+	yhCYeyn/JqyMYTqR0ePfSusV7gzLbaNIB3TBPfWryzSo2Mr4UqDDqRGJwB3sdHqrdtYUrTxghyW
+	t2xLFWDKfTwtOU3m6e3AYVZ7C7m0YqTJxZ8UtYb+LSXOHY/yBNdk6xpuQKo4W0rWQhvdUdItbz7
+	kQN+999wPJrE8GjdRNVWzfS/B/HTrXm6vhHcsTYnEoN+hU/HZ+CH143EqmaOPFfIoqP7TZjN0VQ
+	/Ym+yreUF2JEWZjFjs0mNFFjO5eeWlwn4ZsLWgKIFwhu1amUV/7I30A+3SRQr4DU=
+X-Received: by 2002:a05:6a00:c91:b0:842:4327:6cfb with SMTP id d2e1a72fcca58-842b0feb656mr25453845b3a.46.1781092956756;
+        Wed, 10 Jun 2026 05:02:36 -0700 (PDT)
+X-Received: by 2002:a05:6a00:c91:b0:842:4327:6cfb with SMTP id d2e1a72fcca58-842b0feb656mr25453772b3a.46.1781092956257;
+        Wed, 10 Jun 2026 05:02:36 -0700 (PDT)
+Received: from [192.168.1.13] ([106.222.231.34])
+        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-8428221cc3dsm24523372b3a.1.2026.06.10.05.02.30
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Wed, 10 Jun 2026 05:02:35 -0700 (PDT)
+Message-ID: <0593ec29-b670-46e6-8eaf-a146e96a719f@oss.qualcomm.com>
+Date: Wed, 10 Jun 2026 17:32:28 +0530
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
+MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v3 1/8] dt-bindings: remoteproc: qcom,pas: add thermal
+ mitigation properties
+To: Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>
+Cc: Bjorn Andersson <andersson@kernel.org>,
+        Mathieu Poirier <mathieu.poirier@linaro.org>,
+        Rob Herring <robh@kernel.org>,
+        Krzysztof Kozlowski <krzk+dt@kernel.org>,
+        Conor Dooley
+ <conor+dt@kernel.org>,
+        Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>,
+        Amit Kucheria <amit.kucheria@oss.qualcomm.com>,
+        Manivannan Sadhasivam <mani@kernel.org>,
+        Konrad Dybcio <konradybcio@kernel.org>, Kees Cook <kees@kernel.org>,
+        "Gustavo A. R. Silva" <gustavoars@kernel.org>,
+        cros-qcom-dts-watchers@chromium.org, linux-arm-msm@vger.kernel.org,
+        linux-remoteproc@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+        linux-hardening@vger.kernel.org,
+        Manaf Meethalavalappu Pallikunhi <manaf.pallikunhi@oss.qualcomm.com>
+References: <20260609-qmi-tmd-v3-0-291a2ff4c634@oss.qualcomm.com>
+ <20260609-qmi-tmd-v3-1-291a2ff4c634@oss.qualcomm.com>
+ <ujf53zya6hes3hkddhsmgu4wyabodnyg3zdwarxmcsoy6p5h3c@ild34ppiyvre>
+Content-Language: en-US
+From: Gaurav Kohli <gaurav.kohli@oss.qualcomm.com>
+In-Reply-To: <ujf53zya6hes3hkddhsmgu4wyabodnyg3zdwarxmcsoy6p5h3c@ild34ppiyvre>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Proofpoint-GUID: FPfMMMYIKh6916EQno7KV_qR-WycpSmN
+X-Authority-Analysis: v=2.4 cv=dLmWXuZb c=1 sm=1 tr=0 ts=6a29525f cx=c_pps
+ a=m5Vt/hrsBiPMCU0y4gIsQw==:117 a=JaHktJlP2QtFIg7UHuVw+g==:17
+ a=IkcTkHD0fZMA:10 a=FelO9ux0wxsA:10 a=s4-Qcg_JpJYA:10
+ a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=gowsoOTTUOVcmtlkKump:22
+ a=EUspDBNiAAAA:8 a=AQWUehsJRALLLA6uX2EA:9 a=QEXdDO2ut3YA:10
+ a=IoOABgeZipijB_acs4fv:22
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNjEwMDExNCBTYWx0ZWRfX1yPNkf56Mn5A
+ Y85Y24/h15svMwA8FA5H+fdftnolxtiQJ1HIUoqZjkUb7nWjJBDCO0ONrZFCzrIqwJY9HwfrSek
+ li5kTEtKxKQuMJCrePgfNa2vaVeajxwUk7D81OP8fqi6L78JUtCxhT79EnaiQO0k2vb1mc1zuaU
+ FE8fo3glYfNDUdTTjSPQgA9eialYiR9J+xDxw8EdsLavk3EBH7CBnIc/x4vo09SfWQznkO/XM3g
+ wFIIcBm/ozki3Emyd2PuQ/3fcBzlvlVWPx1hNoQSkG5zsoqusIfDeUukY8p1K/NYVC715iFAtkr
+ 8ljfNnB1q/gC0g6qBMVjgRLSvZ/eRAdT4qcOHEWGx3tEZia9fznigZp4unxLu1Qhmx2m1Aq/5c8
+ 125yBMPRdevhkQNANLJjIt9lRUdAu9pyclGMF7wTMRwUTUFp99JRFK3nIJhsmcGSs+6ZGmOqodH
+ GzC1DgfqbGdgcLAG7TQ==
+X-Proofpoint-ORIG-GUID: FPfMMMYIKh6916EQno7KV_qR-WycpSmN
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.125,FMLib:17.12.100.49
+ definitions=2026-06-10_02,2026-06-09_02,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ malwarescore=0 impostorscore=0 spamscore=0 clxscore=1015 lowpriorityscore=0
+ phishscore=0 adultscore=0 suspectscore=0 priorityscore=1501 bulkscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2605210000 definitions=main-2606100114
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git bleeding-edge
-branch HEAD: 92610ce13187e9289ab0f7ca7366e68c717a02a9  Merge branches 'pm-sleep' and 'pm-qos' into bleeding-edge
 
-elapsed time: 958m
 
-configs tested: 103
-configs skipped: 5
+On 6/9/2026 4:17 PM, Dmitry Baryshkov wrote:
+> On Tue, Jun 09, 2026 at 03:52:56PM +0530, Gaurav Kohli wrote:
+>> Document Qualcomm PAS remoteproc thermal mitigation properties used for
+>> QMI-based throttling.
+>>
+>> Add:
+>> - #cooling-cells (2 or 3)
+>> - tmd-names (thermal mitigation device names)
+> 
+> Describe _why_ you are performing these changes. For example. why do we
+> need to handle two different cases for the #cooling-cells?
+> 
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+Thanks Dmitry for review, Ack.
 
-tested configs:
-alpha                             allnoconfig    gcc-16.1.0
-alpha                            allyesconfig    gcc-16.1.0
-arc                              allmodconfig    gcc-16.1.0
-arc                               allnoconfig    gcc-16.1.0
-arc                              allyesconfig    gcc-16.1.0
-arm                               allnoconfig    clang-23
-arm                              allyesconfig    gcc-16.1.0
-arm64                            allmodconfig    clang-23
-arm64                             allnoconfig    gcc-16.1.0
-arm64                 randconfig-002-20260610    gcc-9.5.0
-csky                             allmodconfig    gcc-16.1.0
-csky                              allnoconfig    gcc-16.1.0
-hexagon                           allnoconfig    clang-23
-hexagon                        randconfig-001    clang-23
-hexagon               randconfig-001-20260610    clang-23
-hexagon                        randconfig-002    clang-23
-hexagon               randconfig-002-20260610    clang-22
-i386                             allmodconfig    gcc-14
-i386                              allnoconfig    gcc-14
-i386                             allyesconfig    gcc-14
-i386        buildonly-randconfig-004-20260610    gcc-14
-loongarch                         allnoconfig    clang-20
-loongarch                      randconfig-001    clang-23
-loongarch             randconfig-001-20260610    gcc-16.1.0
-loongarch                      randconfig-002    gcc-16.1.0
-loongarch             randconfig-002-20260610    gcc-16.1.0
-m68k                             allmodconfig    gcc-16.1.0
-m68k                              allnoconfig    gcc-16.1.0
-m68k                             allyesconfig    gcc-16.1.0
-microblaze                        allnoconfig    gcc-16.1.0
-microblaze                       allyesconfig    gcc-16.1.0
-mips                             allmodconfig    gcc-16.1.0
-mips                              allnoconfig    gcc-16.1.0
-mips                             allyesconfig    gcc-16.1.0
-nios2                            allmodconfig    gcc-11.5.0
-nios2                             allnoconfig    gcc-11.5.0
-nios2                          randconfig-001    gcc-11.5.0
-nios2                 randconfig-001-20260610    gcc-11.5.0
-nios2                          randconfig-002    gcc-8.5.0
-nios2                 randconfig-002-20260610    gcc-11.5.0
-openrisc                          allnoconfig    gcc-16.1.0
-openrisc                            defconfig    gcc-16.1.0
-parisc                           allmodconfig    gcc-16.1.0
-parisc                            allnoconfig    gcc-16.1.0
-parisc                           allyesconfig    gcc-16.1.0
-parisc                              defconfig    gcc-16.1.0
-parisc                randconfig-001-20260610    gcc-8.5.0
-powerpc                          allmodconfig    gcc-16.1.0
-powerpc                           allnoconfig    gcc-16.1.0
-riscv                            allmodconfig    clang-23
-riscv                             allnoconfig    gcc-16.1.0
-riscv                            allyesconfig    clang-23
-riscv                 randconfig-001-20260610    gcc-15.2.0
-riscv                 randconfig-002-20260610    gcc-8.5.0
-s390                             allmodconfig    clang-23
-s390                              allnoconfig    clang-23
-s390                             allyesconfig    gcc-16.1.0
-s390                  randconfig-001-20260610    clang-23
-s390                  randconfig-002-20260610    clang-23
-sh                               allmodconfig    gcc-16.1.0
-sh                                allnoconfig    gcc-16.1.0
-sh                               allyesconfig    gcc-16.1.0
-sh                    randconfig-001-20260610    gcc-16.1.0
-sh                    randconfig-002-20260610    gcc-16.1.0
-sparc                             allnoconfig    gcc-16.1.0
-sparc                               defconfig    gcc-16.1.0
-sparc                          randconfig-001    gcc-16.1.0
-sparc                 randconfig-001-20260610    gcc-8.5.0
-sparc                          randconfig-002    gcc-11.5.0
-sparc                 randconfig-002-20260610    gcc-14.3.0
-sparc64                          allmodconfig    clang-20
-sparc64                        randconfig-001    gcc-12.5.0
-sparc64               randconfig-001-20260610    gcc-12.5.0
-sparc64                        randconfig-002    clang-20
-sparc64               randconfig-002-20260610    clang-23
-um                               allmodconfig    clang-23
-um                                allnoconfig    clang-16
-um                               allyesconfig    gcc-14
-um                             randconfig-002    clang-23
-x86_64                           allmodconfig    clang-22
-x86_64                            allnoconfig    clang-22
-x86_64                           allyesconfig    clang-22
-x86_64               buildonly-randconfig-001    gcc-12
-x86_64      buildonly-randconfig-001-20260610    clang-22
-x86_64               buildonly-randconfig-002    clang-22
-x86_64      buildonly-randconfig-002-20260610    gcc-14
-x86_64               buildonly-randconfig-003    gcc-14
-x86_64      buildonly-randconfig-003-20260610    clang-22
-x86_64               buildonly-randconfig-004    gcc-14
-x86_64      buildonly-randconfig-004-20260610    clang-22
-x86_64               buildonly-randconfig-005    gcc-14
-x86_64      buildonly-randconfig-005-20260610    gcc-14
-x86_64               buildonly-randconfig-006    clang-22
-x86_64      buildonly-randconfig-006-20260610    gcc-14
-x86_64                randconfig-001-20260610    clang-22
-x86_64                randconfig-002-20260610    clang-22
-x86_64                randconfig-003-20260610    gcc-13
-x86_64                randconfig-004-20260610    clang-22
-x86_64                randconfig-005-20260610    clang-22
-x86_64                randconfig-006-20260610    gcc-13
-x86_64                          rhel-9.4-rust    clang-22
-xtensa                            allnoconfig    gcc-16.1.0
-xtensa                         randconfig-001    gcc-8.5.0
+>>
+>> Signed-off-by: Gaurav Kohli <gaurav.kohli@oss.qualcomm.com>
+>> ---
+>>   .../devicetree/bindings/remoteproc/qcom,pas-common.yaml    | 14 ++++++++++++++
+>>   1 file changed, 14 insertions(+)
+>>
+>> diff --git a/Documentation/devicetree/bindings/remoteproc/qcom,pas-common.yaml b/Documentation/devicetree/bindings/remoteproc/qcom,pas-common.yaml
+>> index 4607b459131b..0d07a0750762 100644
+>> --- a/Documentation/devicetree/bindings/remoteproc/qcom,pas-common.yaml
+>> +++ b/Documentation/devicetree/bindings/remoteproc/qcom,pas-common.yaml
+>> @@ -79,6 +79,20 @@ properties:
+>>         channels and devices related to the ADSP.
+>>       unevaluatedProperties: false
+>>   
+>> +  '#cooling-cells':
+>> +    description:
+>> +      Number of cooling cells; 2 for min/max cooling state and 3 when
+>> +      selecting a thermal mitigation device index.
+>> +    enum: [2, 3]
+>> +
+>> +  tmd-names:
+>> +    $ref: /schemas/types.yaml#/definitions/string-array
+>> +    description:
+>> +      Names of the thermal mitigation devices available in remote processor
+>> +      subsystem.
+>> +    minItems: 1
+>> +    maxItems: 5
+> 
+> Missing example with these properties.
+> 
 
---
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
+Thanks, will add example.
+
+>> +
+>>     glink-edge:
+>>       $ref: /schemas/remoteproc/qcom,glink-edge.yaml#
+>>       description:
+>>
+>> -- 
+>> 2.34.1
+>>
+> 
+
