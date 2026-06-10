@@ -1,96 +1,188 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 54C48332909
-	for <linux-pm@vger.kernel.org>; Wed, 10 Jun 2026 17:40:17 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B0799349CCD;
+	Wed, 10 Jun 2026 18:42:38 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1781113218; cv=none; b=aaKAciQuES0rw3SaHfaBgxRDLkk3Pk4WqZQpcetJUzNEcTGhnV23QhxB5rtF76BDGMMSWVKWutoxVtUy8UIuaj0rAmKvtYLYEHhe2BvFonTQzmpkxyeKhMBrhPXG1zinlw9lB/7Y4j/BbaeY8ondcD4s8UudC25e7Vva8W8+zXU=
+	t=1781116959; cv=none; b=NhLTnDyiK5A5jI1rJ4NkWALlpKpf4ZQ0hro1GvCXFdco8/u/OZ+DnUwIL75ncdOkp35JD8B8UgDXPvem9T0gjk4pDrexEBuiz1c77yAoX5Y+1gqJOFhD96bNlgn0J6JyekZ5Sqb3ewbhikKX/Mq3O1EmknObZN8hXYodTwEj7Do=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1781113218; c=relaxed/simple;
-	bh=iiV4jaKhEQihoed1PI5aj6NUixaofnS1Xz8KldVRC3g=;
-	h=MIME-Version:From:Date:Message-ID:Subject:To:Cc:Content-Type; b=RIYrZoK2ak7+qFiFN7kUQewIv4lu6GahaY6WERARUWNHV7UzcMHt4S3kSii1Z8XXUf0W4lFsxcLtAsfjCEqnyyRiJfzWD7gE1aNWjuQzR0AjyyiW5bWJCRYBLXD7+M7K5vzYDwqo23zgk2mEixNcR/DVQLyGb7yHNRIbu+9zJDQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=jyksPnKD; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1781116959; c=relaxed/simple;
+	bh=bncw1kp2XmKdNd9PZSqbZND3nV3QuAke+Or/JDyh2x8=;
+	h=Date:From:To:Cc:Subject:Message-ID:MIME-Version:Content-Type:
+	 Content-Disposition:In-Reply-To; b=X4rF3xbIfLD+ScSOzpfX2PaE8Qlcdwp2MeqQd4amiHGbOTTm3Ln4aisLPUkkd6LV/H4VWkOo46Aekdogk8FmaGjEC7+awHQEn7u1Q5pejtBzQIdvsz7p0nnfj25nNiD3fH75iWR+AZFjdI3Nj94cqF0DdatG6TIvr/B+2DeIWjE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=gpyZegFr; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="jyksPnKD"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 19A4D1F0089A
-	for <linux-pm@vger.kernel.org>; Wed, 10 Jun 2026 17:40:17 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="gpyZegFr"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2812E1F00893;
+	Wed, 10 Jun 2026 18:42:38 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1781113217;
-	bh=0AzttZyJrnnJXhfX2JsnWXprYH6UK7E486JcHPjHg5M=;
-	h=From:Date:Subject:To:Cc;
-	b=jyksPnKDskUoQrfUfOtwjkgToySWqCs0IkGJQ/eZBYpvTlmD/y/Evii61fAjma2ic
-	 q8gy1OYmIR6so6O8wefciG48K4rOcEGoW9mkOWpl+VUczSjaX5yvNGX73evig0KoDB
-	 hxPQ0mKFx7x+CAGzOFNYSTzAHYIU9Oc2pw/6NIZGn3QboQ5WPWJOVfcFxWPJIzm1pt
-	 FFibtFFOb4pZOtSHACEk/HxQop+FAquiYP2Yugt1MW9XOQ4h00Lfi3rVFJ49cNJKyT
-	 CJqyljFpZ2KFpe81408cDGGnAPJ+QgYoo7geZKea+nTGBjXzNNqcnTBwPzLESsQY6Q
-	 eDsmd3hVEAbxQ==
-Received: by mail-lf1-f47.google.com with SMTP id 2adb3069b0e04-5aa619653e4so96801e87.1
-        for <linux-pm@vger.kernel.org>; Wed, 10 Jun 2026 10:40:17 -0700 (PDT)
-X-Gm-Message-State: AOJu0YwwIOP7woZugNEkAHM04VpFPQnAZeurQE1pHbDZ0AZ1SxHcpmEA
-	j7WuQo6CatMJoxInUwcgu87rl3bEyZ5fAv+c0VENUzRNlLL/5S/FDyqVxqljmSF6wZEE3wt2lRk
-	SfOv/WQ38R2WNguNSzTUdMtqwZ0xtPTw=
-X-Received: by 2002:a05:6512:ad5:b0:5aa:4a98:bdb0 with SMTP id
- 2adb3069b0e04-5aa8865b583mr7783956e87.4.1781113215511; Wed, 10 Jun 2026
- 10:40:15 -0700 (PDT)
+	s=k20260515; t=1781116958;
+	bh=xnrO31LLlSXPRgDvDd03PEdMDaXIr+aCbScw5GFqWuU=;
+	h=Date:From:To:Cc:Subject:In-Reply-To;
+	b=gpyZegFrsmlQCERexafvFL8huHGeATz3YXutJXCy3MFp08VXEsP/Tx8O3Hp3qUhlp
+	 HNY4ULM+9Sx/MlKcfrKbjfVKXQNpZs5FX5JNUbwrvgyPjDRXjHryZKNDe76hI0JVIE
+	 jUYTffFgdsfo8plKCaZPsVlldj2JtoqJHMO5ecLfUs5gZvlZ0U/GMBLuv/MUY1F4X4
+	 xFkQbfBYV1bDTRz54GDZxSuOFTlGMPIGRmHEaBUVUHB9/U8hg6djZB95N7AKe0FvqM
+	 0DB/0stigbLyXUHWSulkgaf03pnMZjUnOpieehIb6JBD3KpCyHqF6DPyjw5msHmrIq
+	 YgDuFmUZxz2SA==
+Date: Wed, 10 Jun 2026 13:42:36 -0500
+From: Bjorn Helgaas <helgaas@kernel.org>
+To: Jose Ignacio Tornos Martinez <jtornosm@redhat.com>
+Cc: bhelgaas@google.com, alex@shazbot.org, jjohnson@kernel.org,
+	mani@kernel.org, linux-pci@vger.kernel.org,
+	linux-wireless@vger.kernel.org, ath11k@lists.infradead.org,
+	ath12k@lists.infradead.org, mhi@lists.linux.dev,
+	linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Subject: Re: [PATCH v7 1/3] PCI: Add d3cold as general reset method
+Message-ID: <20260610184236.GA236984@bhelgaas>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Date: Wed, 10 Jun 2026 19:40:04 +0200
-X-Gmail-Original-Message-ID: <CAJZ5v0iYVY_Xjt5v7GFuOp4CoMC4_TMdvYKr9+TspVUw4h-gyA@mail.gmail.com>
-X-Gm-Features: AVVi8CcUZSjR_4_gu1VzlYovcHNKxVNEuZOfYfonVkg6lVtZkl78Vg5i6vIs1HY
-Message-ID: <CAJZ5v0iYVY_Xjt5v7GFuOp4CoMC4_TMdvYKr9+TspVUw4h-gyA@mail.gmail.com>
-Subject: [GIT PULL] Power management fixes for final 7.1
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Linux PM <linux-pm@vger.kernel.org>, 
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Mario Limonciello <superm1@kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260603105853.326290-2-jtornosm@redhat.com>
 
-Hi Linus,
+[+cc linux-pm]
 
-Please pull from the tag
+On Wed, Jun 03, 2026 at 12:58:51PM +0200, Jose Ignacio Tornos Martinez wrote:
+> Add D3cold power cycle as a general PCI reset method for single-function
+> devices on platforms with ACPI _PR3 power resources. This provides true
+> power cycle reset capability when the platform can physically cut power
+> to the device.
+> 
+> The implementation strictly requires _PR3 to be present - the platform
+> must be able to control device power. This ensures d3cold only attempts
+> true power cycling, not falling back to D3hot transitions.
+> 
+> D3cold reset is placed at the end of the reset hierarchy since it requires
+> specific platform support and should be tried after standard methods.
+> 
+> Reset hierarchy with this change:
+> 1. device_specific
+> 2. acpi
+> 3. flr
+> 4. af_flr
+> 5. pm (D3hot via config space, checks NoSoftRst)
+> 6. bus (SBR)
+> 7. cxl_bus
+> 8. d3cold (NEW - true power cycle, requires _PR3)
+> 
+> This benefits:
+> - Platforms with _PR3 support
+> - Single-function devices needing true power cycle
+> - VFIO passthrough scenarios where FLR/PM unavailable
 
- git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
- pm-7.1-rc8
+I assume you have some specific device(s) in mind here; can we mention
+any examples so this is more than just theoretically useful?
 
-with top-most commit 6100a82e34cb75571feba920a9c18f60698d598a
+> Signed-off-by: Jose Ignacio Tornos Martinez <jtornosm@redhat.com>
+> ---
+> v7: code unchanged from v6
+> v6: https://lore.kernel.org/all/20260602160024.1171949-2-jtornosm@redhat.com/
+> 
+>  drivers/pci/pci.c   | 50 +++++++++++++++++++++++++++++++++++++++++++++
+>  include/linux/pci.h |  2 +-
+>  2 files changed, 51 insertions(+), 1 deletion(-)
+> 
+> diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
+> index 8f7cfcc00090..096868f80cd4 100644
+> --- a/drivers/pci/pci.c
+> +++ b/drivers/pci/pci.c
+> @@ -4491,6 +4491,55 @@ static int pci_pm_reset(struct pci_dev *dev, bool probe)
+>  	return ret;
+>  }
+>  
+> +/**
+> + * pci_d3cold_reset - Put device into D3cold and back to D0 for reset
+> + * @dev: PCI device to reset
+> + * @probe: if true, check if D3cold reset is supported; if false, perform reset
+> + *
+> + * Reset the device by transitioning through D3cold (actual power removal via
+> + * platform power control) and back to D0. This requires ACPI _PR3 power
+> + * resources to be present - the platform must be able to physically cut power
+> + * to the device.
+> + *
+> + * Only available for single-function devices to avoid affecting other
+> + * functions in multi-function devices.
+> + *
+> + * Returns 0 if device can be/was reset this way, -ENOTTY if not supported,
+> + * or other negative error code on failure.
+> + */
+> +static int pci_d3cold_reset(struct pci_dev *dev, bool probe)
+> +{
+> +	int ret;
+> +
+> +	if (dev->multifunction)
+> +		return -ENOTTY;
+> +
+> +	if (!pci_pr3_present(dev))
+> +		return -ENOTTY;
 
- Merge tag 'amd-pstate-v7.1-2026-06-02' of
-ssh://gitolite.kernel.org/pub/scm/linux/kernel/git/superm1/linux
+platform_pci_set_power_state() is currently only implemented for MID
+and ACPI, but we're starting to see DT systems with power control for
+devices, so I assume it may someday be extended to support them.
 
-on top of commit df488cac6140aa04ae52af9b4507d8f99a3762be
+Checking pci_pr3_present() seems wrong to me because it assumes ACPI.  
 
- cpufreq/amd-pstate-ut: Disable dynamic_epp after the mode switch
+On ACPI systems, it seems like pci_set_power_state(PCI_D3cold) should
+return an error if the necessary ACPI methods are not present, and we
+wouldn't need this check.  Is that not the case?
 
-to receive power management fixes for final 7.1.
+Or is this _PR3 check here just to support the "probe"?  I don't know
+if there's a generic interface to tell us whether we can control the
+power to a device.
 
-These address some remaining fallout after introducing dynamic EPP
-support in the amd-pstate driver during the current development cycle:
-
- - Restore allowing writing EPP of 0 when in performance mode in the
-   amd-pstate driver which was unnecessarily disallowed by one of the
-   recent updates (Mario Limonciello)
-
- - Remove stale documentation of the epp_cached field in struct
-   amd_cpudata that has been dropped recently (Zhan Xusheng)
-
-Thanks!
-
-
----------------
-
-Mario Limonciello (AMD) (1):
-      cpufreq/amd-pstate: Fix setting EPP in performance mode
-
-Zhan Xusheng (1):
-      cpufreq/amd-pstate: drop stale @epp_cached kdoc
-
----------------
-
- drivers/cpufreq/amd-pstate.c | 2 +-
- drivers/cpufreq/amd-pstate.h | 1 -
- 2 files changed, 1 insertion(+), 2 deletions(-)
+> +	if (probe)
+> +		return 0;
+> +
+> +	if (dev->current_state != PCI_D0)
+> +		return -EINVAL;
+> +
+> +	ret = pci_dev_reset_iommu_prepare(dev);
+> +	if (ret) {
+> +		pci_err(dev, "failed to stop IOMMU for a PCI reset: %d\n", ret);
+> +		return ret;
+> +	}
+> +
+> +	ret = pci_set_power_state(dev, PCI_D3cold);
+> +	if (ret)
+> +		goto done;
+> +
+> +	ret = pci_set_power_state(dev, PCI_D0);
+> +
+> +done:
+> +	pci_dev_reset_iommu_done(dev);
+> +	return ret;
+> +}
+> +
+>  /**
+>   * pcie_wait_for_link_status - Wait for link status change
+>   * @pdev: Device whose link to wait for.
+> @@ -5065,6 +5114,7 @@ const struct pci_reset_fn_method pci_reset_fn_methods[] = {
+>  	{ pci_pm_reset, .name = "pm" },
+>  	{ pci_reset_bus_function, .name = "bus" },
+>  	{ cxl_reset_bus_function, .name = "cxl_bus" },
+> +	{ pci_d3cold_reset, .name = "d3cold" },
+>  };
+>  
+>  /**
+> diff --git a/include/linux/pci.h b/include/linux/pci.h
+> index 2c4454583c11..1ca7b880ead7 100644
+> --- a/include/linux/pci.h
+> +++ b/include/linux/pci.h
+> @@ -51,7 +51,7 @@
+>  			       PCI_STATUS_PARITY)
+>  
+>  /* Number of reset methods used in pci_reset_fn_methods array in pci.c */
+> -#define PCI_NUM_RESET_METHODS 8
+> +#define PCI_NUM_RESET_METHODS 9
+>  
+>  #define PCI_RESET_PROBE		true
+>  #define PCI_RESET_DO_RESET	false
+> -- 
+> 2.54.0
+> 
