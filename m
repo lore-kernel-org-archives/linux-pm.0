@@ -1,96 +1,108 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-ua1-f53.google.com (mail-ua1-f53.google.com [209.85.222.53])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2B7083A5989;
-	Wed, 10 Jun 2026 09:04:41 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CC1C53B42FB
+	for <linux-pm@vger.kernel.org>; Wed, 10 Jun 2026 09:12:32 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.222.53
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1781082282; cv=none; b=D5PDZg7OYnShU6ppsGNGcbUf+kGESupl9JSUytNIXU+3dF4P7QWdUXS9ixtp8RaUh6eEZpfAwHBaSMhb5x+RpFYBchkd5itT960MPhAz5ggxNQ9kBDMhmU3CvmlkHWspgn9ZQJ3sCn5WvQWyo+vWe8fUzbwW20AW4lxJ5bTstGY=
+	t=1781082754; cv=none; b=ndzy5LiO6/Q8TYEQrnJNIxA/f/noPPacoUftKjMcFnJQffDHErMmItXWYt31picOzmiGMUQmKbW/5Z63Qjrq4WgUOt3W0Mc1oaO/TwxNjC2KoNMB+tH7KqoPW7ojWFqkoR/TZ6ZpNxbQaNXszSOz6dTKSIqY9s1NXNAwukl3ac4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1781082282; c=relaxed/simple;
-	bh=cZpLybn4x4f1p8M7Je1eNrs+9z6NVu2xigKvChxzG3s=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=thzX9N6AHSZSbBoTIfz5mv19hb0zTwX8/CI1mrAIsVoOeOA0/ZzHk/KvKfnxYeK0k5q8BuUXvltib9BPUtlX+hcNk07+GakQCIwdwI9D9q81go2/vtlEb9huTgfN/lpj2IqZCFdrIy/ks8XrH9MiPd1+KkpvDSrDW5Ww7dfFuio=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=AqhxLFDj; arc=none smtp.client-ip=100.103.45.18
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="AqhxLFDj"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 38ADB1F00898;
-	Wed, 10 Jun 2026 09:04:40 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1781082281;
-	bh=rX6O3bKY03wuV/N+jcdbUzTrtTw5gMO+dKrOQtLnSfc=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=AqhxLFDjqlJ5DjcMHkebMyL5qBFeuhZMmitIDJwJ49uFS13iWvQeC/7TCt/D+QcIP
-	 Fr9uIXXN5V/t71/siF7hwDAKxP0FRtKoDzNmr5GEZU4jZtxieIiUvxSrYvYF1zF3xI
-	 fcN3skscwg+N3V6Fs1zp+Ylkcx9iaWehgzeAlnFX1uPMNJIqP9ilR2sbMRHLPYkC4b
-	 lPcfv6G6mbiLbe8uH/OYZUpjV0aHgau55WyRi5FydGKpeKkvG/CNZY58Jk12OM+deX
-	 8rCdFe6gPfQKXfkBj1vJ290SqN5OZQHml6uG/7TQUNscGJH5AmMLnGKsP7xsFOXfr+
-	 d763QXfIygTlA==
-Date: Wed, 10 Jun 2026 11:04:37 +0200
-From: Krzysztof Kozlowski <krzk@kernel.org>
-To: DhruvinRajpura <dhruvin.rajpura@oss.qualcomm.com>
-Cc: Bjorn Andersson <andersson@kernel.org>, 
-	Konrad Dybcio <konradybcio@kernel.org>, Rob Herring <robh@kernel.org>, 
-	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
-	Sebastian Reichel <sre@kernel.org>, linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, kamal.wadhwa@oss.qualcomm.com, 
-	jishnu.prakash@oss.qualcomm.com, Dhruvin Rajpura <drajpura@qti.qualcomm.com>
-Subject: Re: [PATCH 1/2] bindings: power: supply: qcom,pmic-glink: Document
- thermal-mitigation
-Message-ID: <20260610-gracious-badger-of-debate-6ad0ec@quoll>
-References: <20260609-cooling_device_reg-v1-0-e15bddcb0086@qti.qualcomm.com>
- <20260609-cooling_device_reg-v1-1-e15bddcb0086@qti.qualcomm.com>
+	s=arc-20240116; t=1781082754; c=relaxed/simple;
+	bh=ghK6aF6aETbxP54GDjHQxquaNVQAGy5VaoplYO1SdZ8=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=PTxnt8pf223C+RCJKEGii/I4omKgKHli9ktFH+07W/HbGe4ejNT+PxTspz9BAAQjaGeASfO0v52dTiJ7s1CPm6bRs6HPt7hCcxGXeozP1QEwQnV1hEtoMSKJCuU5aTXGH8Sz5khu3Eprhh0IrQTwAw2UJ/dpsDyv+RjG6+g/h+k=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org; spf=pass smtp.mailfrom=gmail.com; arc=none smtp.client-ip=209.85.222.53
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+Received: by mail-ua1-f53.google.com with SMTP id a1e0cc1a2514c-963a722ed58so3876404241.0
+        for <linux-pm@vger.kernel.org>; Wed, 10 Jun 2026 02:12:32 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1781082752; x=1781687552;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=vvSiPxRSSuyA2Tu0Q5BTWv5ByEu4oB1xOvuu6Hi/THA=;
+        b=ULGmQ98Jy2eh+NWWdG0flhnpLyOdoHS7B6tdw99olEEmARuIj2/9sCbpjcJ3x7ycuR
+         jp7IQRoHJK95yJvbKkWr38y/VfZBjjgDSeH87/bqiMz8R8OmnmC/cHl+02G8MeMsYk3u
+         F50oAsMDHMx+HuJylKhy68wRsfaZIy1JEnAjHbBd3Iq1zHXY/x3oECn3VeQOe3QfmENd
+         QUmrtnv0y0QO3K4rzFqmxGKIH6ZJrtmDacp9Mc+QkmvMaYLkLVXy6a4ymQ4yubU09M75
+         ugapgEQenqG+XUPJrqYbu54tHwOUNOwrd4BUyqDd26N989+5OnY638i9kbMXP5Wuot2p
+         xE2g==
+X-Forwarded-Encrypted: i=1; AFNElJ9qI9KlPXN9zF18CDY2BLSUOy4kosntkxc0jbKvv6SIXps8gtJnH1HHsGegCkCMY7epyvFiTFanMQ==@vger.kernel.org
+X-Gm-Message-State: AOJu0YxyMll5Jp+dsguUJB6nOszfATdZjqR5SgITq2mlqHMZzec7dwVd
+	WsMLSdpr0BxqlDnuOxfxkOrat42OHHYiVegviRssJFESgNJ9xOF19Nmq7PAAGPo6Guw=
+X-Gm-Gg: Acq92OE3SF2J0ljMesmnb7cHKfxcFMMhxzlXLcZJ/tnaTNXoNTLXod2gj/WtqFr7mLS
+	0lAwLsQET+/QAOYg8oMNQ02ZlWqUbWFKnSgsivNXZYKNYGuVwGPyJTfXOd2q8VP7VSa7HAVHcUk
+	V54ibW6SyRaOZRhNtbHV1W6cZIDE3991MV/CDewlo/ZxXh5aRsxe1BK6Cv2WntbMMokdVdVMKaW
+	9DcrkfIPpTL/MQ+CA2oZwujmD8c8pBjG+JEVTP3fcksZDVWQqspPzNFsTsbwb06YpXdeOIUXHb+
+	vhpp2yuk3tlXkXlLhcEMzDyQzLZafIH+AiIaYq0BGZVfM0CVvftIQC4nsZtz1LqzGT2HlzrB9km
+	rWKGkVotTYx/O5Ki81pIl7tVMi5BEfFBUR3WrgPt5zHcg8ALvteU3UTxF+T4BUrbs/gGHrtRV1h
+	rHAUqRo8bvz+JzlJ+MVji3UGTFFKRWKAeKuVUeZeIkInO1ET0ZCYEMub0uoibjRDweUmu2hgcJi
+	i4=
+X-Received: by 2002:a05:6102:6886:b0:633:c6c4:b321 with SMTP id ada2fe7eead31-6fef853029dmr15202785137.18.1781082751777;
+        Wed, 10 Jun 2026 02:12:31 -0700 (PDT)
+Received: from mail-vk1-f172.google.com (mail-vk1-f172.google.com. [209.85.221.172])
+        by smtp.gmail.com with ESMTPSA id ada2fe7eead31-6eb5549144csm19438738137.3.2026.06.10.02.12.31
+        for <linux-pm@vger.kernel.org>
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Wed, 10 Jun 2026 02:12:31 -0700 (PDT)
+Received: by mail-vk1-f172.google.com with SMTP id 71dfb90a1353d-59d4aa96ef2so4647987e0c.1
+        for <linux-pm@vger.kernel.org>; Wed, 10 Jun 2026 02:12:31 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AFNElJ+dbV9FBFpU/TCbDrpgjDtMJ4MKgD+pWkJ4kdfO1TzLaI4BnhmDx8J//zeOafgKVaRYhe6Zap2nLA==@vger.kernel.org
+X-Received: by 2002:a05:6122:c8b:b0:576:1a8d:8989 with SMTP id
+ 71dfb90a1353d-5ac48b8c8ebmr13425310e0c.0.1781082751415; Wed, 10 Jun 2026
+ 02:12:31 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20260609-cooling_device_reg-v1-1-e15bddcb0086@qti.qualcomm.com>
+References: <20260609160634.246526-1-johan@kernel.org>
+In-Reply-To: <20260609160634.246526-1-johan@kernel.org>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Wed, 10 Jun 2026 11:12:19 +0200
+X-Gmail-Original-Message-ID: <CAMuHMdVyRq7fT_m_gWtVKkkaTZQvSUvkMamQHb44x+Ed0jNbMQ@mail.gmail.com>
+X-Gm-Features: AVVi8Cf3V4HusrebWQc7qKyySkLkeCjwskLNcCaeFmQk0clX5eufjcOE9wWHUEM
+Message-ID: <CAMuHMdVyRq7fT_m_gWtVKkkaTZQvSUvkMamQHb44x+Ed0jNbMQ@mail.gmail.com>
+Subject: Re: [PATCH] pmdomain: fix early domain registration
+To: Johan Hovold <johan@kernel.org>
+Cc: Ulf Hansson <ulfh@kernel.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
 
-On Tue, Jun 09, 2026 at 02:46:42PM +0530, DhruvinRajpura wrote:
-> From: Dhruvin Rajpura <drajpura@qti.qualcomm.com>
-> 
-> The qcom,thermal-mitigation property allows platforms to define
-> discrete fast charge current limits used by the thermal framework
-> to throttle battery charging in response to thermal events.
-> 
-> Document the qcom,thermal-mitigation property to describe the array
-> of fast charge current limits in microamps that map to thermal
-> cooling states.
-> 
-> Signed-off-by: Dhruvin Rajpura <drajpura@qti.qualcomm.com>
-> ---
->  .../devicetree/bindings/soc/qcom/qcom,pmic-glink.yaml          | 10 ++++++++++
->  1 file changed, 10 insertions(+)
-> 
-> diff --git a/Documentation/devicetree/bindings/soc/qcom/qcom,pmic-glink.yaml b/Documentation/devicetree/bindings/soc/qcom/qcom,pmic-glink.yaml
-> index ff01d2f3ee5b..fcb69ebaa7cb 100644
-> --- a/Documentation/devicetree/bindings/soc/qcom/qcom,pmic-glink.yaml
-> +++ b/Documentation/devicetree/bindings/soc/qcom/qcom,pmic-glink.yaml
-> @@ -58,6 +58,16 @@ properties:
->        The array should contain a gpio entry for each PMIC Glink connector, in reg order.
->        It is defined that GPIO active level means "CC2" or Reversed/Flipped orientation.
->  
-> +  qcom,thermal-mitigation:
+Hi Johan,
 
-Use proper suffixes, see writing bindings.
+On Tue, 9 Jun 2026 at 18:07, Johan Hovold <johan@kernel.org> wrote:
+> A recent change switching to a dynamically allocated root device broke
+> platforms like rcar-sysc that registers PM domains before the PM domain
+> bus itself has been registered (cf. commit c5ae5a0c6112 ("pmdomain:
+> renesas: rcar-sysc: Add genpd OF provider at postcore_initcall")).
+>
+> Defer the assignment of the parent root device until the domain is
+> registered with driver core to avoid it being left unset.
 
-Also, name looks too much as policy. Describe the hardware.
+Thanks for your patch!
 
-> +    $ref: /schemas/types.yaml#/definitions/uint32-array
-> +    description:
-> +      Array of fast charge current limit values for different system thermal
-> +      mitigation levels. This should be a flat array that denotes the maximum
-> +      charging current (in uA) for each thermal level. Elements should be listed
-> +      in monotonically decreasing (non-increasing) order.
+> Fixes: a96e40f4afdc ("pmdomain: core: switch to dynamic root device")
+> Reported-by: Geert Uytterhoeven <geert@linux-m68k.org>
+> Link: https://lore.kernel.org/r/CAMuHMdUHabMGJyJ7e7yp7DLC+JJc9k6NK9p4anj2wRKNuwZUng@mail.gmail.com
 
-What is a thermal level? How do you define it? How does it map to
-thermal bindings?
+s/Link/Closes/
 
+> Signed-off-by: Johan Hovold <johan@kernel.org>
 
-Best regards,
-Krzysztof
+This fixes the issue on R-Car H1, M2-W, H3 ES2.0, and on RZ/A1H.
+No regressions seen on SH-Mobile AG5, R-Mobile A1, and R-Car V4M.
 
+Tested-by: Geert Uytterhoeven <geert+renesas@glider.be>
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
+-- 
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
