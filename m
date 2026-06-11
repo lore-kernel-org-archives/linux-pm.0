@@ -1,59 +1,58 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5DAE13BB112
-	for <linux-pm@vger.kernel.org>; Thu, 11 Jun 2026 08:57:08 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B08733A2559
+	for <linux-pm@vger.kernel.org>; Thu, 11 Jun 2026 09:11:51 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1781168229; cv=none; b=HVxX+brR0dJ1MwuamMp0Ceic2ZdaQUZCA4pgNr5XJ1n91GG+TD8Hag4Z4wC4itwIH1j5vH3WSBYrUNwuXXbcox2NTSbFbl6kcmwBQw7CyKJ/hrbl4Z30zbj0iIESBDrxVLeaduN3VfVsgl7n4ON6kWHUC8iYKfZlO3AnktX8VXw=
+	t=1781169112; cv=none; b=LwcrsGhHjUq6mfAffuecEafPKPqFGC6l9/uvD3Gherneb9bVUyxza9CFI9yW9rFGEOLL0Jk4mzuY+XbbETFLZIIMRx4GJkW+jZJGGsRs3iXa+rkgg5RjvMLVVHCmpq/U5Hue2O6gWln5vQkzdVyI9mP0KkogQ387SXXe98NEqko=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1781168229; c=relaxed/simple;
-	bh=DZUL55pfekAnXESqd14ABzPRjbkHUYXBXBngBC6u3ko=;
+	s=arc-20240116; t=1781169112; c=relaxed/simple;
+	bh=B1t0eMpqsT9YaBJXmjRvQgx584lO6Eznqq7E3RTSQxs=;
 	h=From:In-Reply-To:MIME-Version:References:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=L66HJ6YnsxoBCkN64IyCtbcA3wWNAttLKgzjuHQK9hWi/Cl8fiqQpY5Gk3PamLySoMC6K1u5eg6qkZNQBUBxg1wsHd8muwJmZg4qFC2MSXZkuMZP82BuJtOdISU74QYnqWwTtxfhR4eUKMjgBZWCJIVX3OgSz1xyZinj1DPStnQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Cx8nueHu; arc=none smtp.client-ip=100.103.45.18
+	 To:Cc:Content-Type; b=K+FB2rNBT8Ay3A2kkOIsR4ARvLO7d/3Yk0ZLiL30MomrggvUXkHpOAjsvzVrOoHJmM4PgVNZjnbXftHOyK9EL2x4SwWRVgp9DE0zOqdPMoahPYcVzZGXdB3OE3QEsTDGQsUqFJDefuVfY1xGXCRhPElS0+rqODx+wZfD8b0U/9s=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=bSUSCOOl; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Cx8nueHu"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1F60C1F008A0
-	for <linux-pm@vger.kernel.org>; Thu, 11 Jun 2026 08:57:08 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="bSUSCOOl"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6B92C1F00898
+	for <linux-pm@vger.kernel.org>; Thu, 11 Jun 2026 09:11:51 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1781168228;
-	bh=DZUL55pfekAnXESqd14ABzPRjbkHUYXBXBngBC6u3ko=;
+	s=k20260515; t=1781169111;
+	bh=B1t0eMpqsT9YaBJXmjRvQgx584lO6Eznqq7E3RTSQxs=;
 	h=From:In-Reply-To:References:Date:Subject:To:Cc;
-	b=Cx8nueHu4fYirKSLCXETsXEVv1xXfDm500rY3WLLSdyDbQhSYqJmUOojpbivEE/CT
-	 vBWo6FlB+FwcBjVJ2fxzU/tv07PbSafuRUsgc3+XHWz0XOs/OyAIts4l0VVVwXoBBx
-	 1nlR+LTv2okHUf/NrrroYh3AP6YF05JtVR4/JO/ZBE/M0DYnVaP00cDcRhTm8Xz5Ur
-	 MeNQzpGLEOxsniUIR5sxT3BT9GuN6+WFJLRE1fG6cLump1Q3nhpsCvUttR8PjSnUGK
-	 4nJzgjsOX8+nFt+hqulZmzXGi+eFB7TN5QShe60fODh3CZN25IeWzOOFy5xJHSnlh/
-	 spujFhoK32ejQ==
-Received: by mail-lj1-f182.google.com with SMTP id 38308e7fff4ca-3967726bc47so70656601fa.1
-        for <linux-pm@vger.kernel.org>; Thu, 11 Jun 2026 01:57:08 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AFNElJ8wVadpod0hIpStq7ZaaFvhCOoDcpDp2OQN3AvX5tjIaiEXciA2ENbzCQUW+7Q5QYlD4rVv7dAzhw==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yw77f79VYtGVcBmRKgswyQbO8WGF4dTMRNCBpmksR0yzdrAKR/e
-	UmCy67k7CY7QboTDyhI4whpA5sjAC8/rctMb7ZMGhmlkyK12B8usAtetDLKj3x252ZMh+zsjiKM
-	aOw528dnx1h10LAzEaYJaLhIt156lk2KKt2lfz0u4kA==
-X-Received: by 2002:a2e:bd88:0:b0:396:954c:3536 with SMTP id
- 38308e7fff4ca-3991a1d57b1mr5490001fa.28.1781168226843; Thu, 11 Jun 2026
- 01:57:06 -0700 (PDT)
+	b=bSUSCOOlUoqkjxfDipdP4ZN06c+kGoam+HOQDbIvwgi3CyDkonEwORRznXaYiPTg3
+	 LYiVzvjqTLedwOJohBXfEpJGHs0daYzk4JuF/vsucz8NGce0N4CCtgT+b0VuWlIVF2
+	 Nm5xBnbizAA8pmP9frj9IdPeljD4n7wwJruC5jnaHkJ/YXmiMxC2u6kXjQIbT4TKwq
+	 k/tCiNYYQLbiHyx0O5zC1cDUbv2OJF9a6wrVlbTHgu8Wb+ZYP7Kf1b8YjmSXXg9oHm
+	 9O+RhqNu2KRj0vB3DiSTCkVshTiw2TU9x4iLP0mHiJn/4iTPM5PrRTjO8Yz5wzvIpi
+	 RlGk03VX6ULGA==
+Received: by mail-lj1-f180.google.com with SMTP id 38308e7fff4ca-396775c26e0so71045981fa.2
+        for <linux-pm@vger.kernel.org>; Thu, 11 Jun 2026 02:11:51 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AFNElJ9CliD1xVvQ+/+4JalGWJrrCqm3tRJtH/YupvzdK2i0vSZgLWB4zC2EKYz+XbvJPqjN77Tc6y9U0A==@vger.kernel.org
+X-Gm-Message-State: AOJu0YyAjSAA6vECy2Y/rsFNGu6GAmDRtoWen5hby9vYAZOdqc73I3Bh
+	R2sR4SYlcAMj5kncFybrSrE29BhA6Hcs+wKrC0nhfjbNcpgOdTqsoY9hqoEkV3/u0Jpyjt/zO1k
+	y6ipVQ881jfElkmR47RVQUdGJeas0S7XpVLnxCiWe7Q==
+X-Received: by 2002:a05:651c:1545:b0:396:7fa2:e095 with SMTP id
+ 38308e7fff4ca-39919f96cbbmr4986331fa.6.1781169110130; Thu, 11 Jun 2026
+ 02:11:50 -0700 (PDT)
 Received: from 969154062570 named unknown by gmailapi.google.com with
- HTTPREST; Thu, 11 Jun 2026 04:57:04 -0400
+ HTTPREST; Thu, 11 Jun 2026 05:11:46 -0400
 Received: from 969154062570 named unknown by gmailapi.google.com with
- HTTPREST; Thu, 11 Jun 2026 04:57:04 -0400
+ HTTPREST; Thu, 11 Jun 2026 05:11:46 -0400
 From: Bartosz Golaszewski <brgl@kernel.org>
-In-Reply-To: <20260610084053.2059858-9-wenst@chromium.org>
+In-Reply-To: <20260610084053.2059858-8-wenst@chromium.org>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260610084053.2059858-1-wenst@chromium.org> <20260610084053.2059858-9-wenst@chromium.org>
-Date: Thu, 11 Jun 2026 04:57:04 -0400
-X-Gmail-Original-Message-ID: <CAMRc=McEd7HbUsyuqM3tr6Uu6Z2hSmL_hMNXgCOT-yHTM2FAqg@mail.gmail.com>
-X-Gm-Features: AVVi8CfiEyvWm7heKsTNAZ-cli_fcxMC9z08AYGILVkLB8mgt-RjTQC7sfys9CA
-Message-ID: <CAMRc=McEd7HbUsyuqM3tr6Uu6Z2hSmL_hMNXgCOT-yHTM2FAqg@mail.gmail.com>
-Subject: Re: [PATCH v2 08/16] Revert "dt-bindings: usb: mediatek,mtk-xhci: Add
- port for SuperSpeed EP"
+References: <20260610084053.2059858-1-wenst@chromium.org> <20260610084053.2059858-8-wenst@chromium.org>
+Date: Thu, 11 Jun 2026 05:11:46 -0400
+X-Gmail-Original-Message-ID: <CAMRc=Mc3DqGb2MsvM4tjcqFuRraAO+EftO1UrtNFvR5dMRXmVA@mail.gmail.com>
+X-Gm-Features: AVVi8Cf4NRlpEgfQOjedOZVIy3kDaaZ8Xbtl_Xw4Hfg6m7nAFQEWNEvJmcMEnDE
+Message-ID: <CAMRc=Mc3DqGb2MsvM4tjcqFuRraAO+EftO1UrtNFvR5dMRXmVA@mail.gmail.com>
+Subject: Re: [PATCH v2 07/16] usb: hub: Power on connected M.2 E-key connectors
 To: Chen-Yu Tsai <wenst@chromium.org>
 Cc: Alan Stern <stern@rowland.harvard.edu>, linux-acpi@vger.kernel.org, 
 	driver-core@lists.linux.dev, linux-pm@vger.kernel.org, 
@@ -70,21 +69,49 @@ Cc: Alan Stern <stern@rowland.harvard.edu>, linux-acpi@vger.kernel.org,
 	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
 Content-Type: text/plain; charset="UTF-8"
 
-On Wed, 10 Jun 2026 10:40:42 +0200, Chen-Yu Tsai <wenst@chromium.org> said:
-> This reverts commit 454a1e3cd36c113341d7b71e8e691c6e47ab4a8a.
+On Wed, 10 Jun 2026 10:40:41 +0200, Chen-Yu Tsai <wenst@chromium.org> said:
+> The new M.2 E-key connector can have a USB connection. For the USB device
+> on this connector to work, its power must be enabled and the W_DISABLE2#
+> signal deasserted. The connector driver handles this and provides a
+> toggle over the power sequencing API.
 >
-> mtk-xhci handles both USB 2.0 High Speed (HS) and USB 3.x SuperSpeed
-> (SS) host connections. And there are USB 2.0 only mtk-xhci blocks.
-> The SSUSB controller handles the device or gadget mode. Saying that
-> SSUSB handles the HS portion is wrong.
+> This feature currently only supports a directly connected (no mux in
+> between) M.2 E-key connector. Existing USB connector types are not
+> covered. The USB A connector was recently added to the onboard devices
+> driver. USB B connectors have historically been managed by the USB
+> gadget or dual-role device controller drivers. USB C connectors are
+> handled by TCPM drivers.
 >
-> Fixes: 454a1e3cd36c ("dt-bindings: usb: mediatek,mtk-xhci: Add port for SuperSpeed EP")
-> Cc: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
-> Signed-off-by: Chen-Yu Tsai <wenst@chromium.org>
-> ---
+> The power sequencing API does not know whether a power sequence provider
+> is not needed or not available yet, so we only request it for connectors
+> that we know need it, which at this time is just the E-key connector.
+>
+> On the USB side, the port firmware node (if present) is tied to the
+> usb_port device. This device is used to acquire the power sequencing
+> descriptor. This allows the provider to tell the different ports on one
+> hub apart.
+>
+> This feature is not implemented in the onboard USB devices driver. The
+> power sequencing API expects the consumer device to make the request,
+> but there is no device node to instantiate a platform device to tie
+> the driver to. The connector is not a child node of the USB host or
+> hub, and the graph connection is from a USB port to the connector.
+> And the connector itself already has a driver.
+>
+> Power sequencing is not directly enabled in the connector driver as
+> that would completely decouple the timing of it from the USB subsystem.
+> It would not be possible for the USB subsystem to toggle the power
+> for a power cycle or to disable the port.
+>
+> This change depends on another change to make the power sequencing
+> framework bool instead of tristate. The USB core and hub driver are
+> bool, so if the power sequencing framework is built as a module, the
+> kernel will fail to link.
+>
 
-Reviewed-by: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
+That bit needs to go away I suppose?
 
-Maybe put it in the front of the series?
+I see Andy has some suggestions but in general I like this approach much better
+than adding the pwrseq_get_index() function. Thanks!
 
-Bart
+Bartosz
