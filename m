@@ -1,112 +1,117 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D387E3BCD3A
-	for <linux-pm@vger.kernel.org>; Thu, 11 Jun 2026 09:35:28 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8D9CB3CA4B9;
+	Thu, 11 Jun 2026 10:21:36 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1781170530; cv=none; b=F2rsUDTruhhV/2y+qXOPrsqcXyH7ohD2dpOCy4rO+e3Uy3/BFC+W1BldHDLdevXoiVQ5kKg+WAxRKIG0QaB7zeTtjcsL0LGekfbmJedomcaMnCH1t0T7d8TiQJ9L5s++VE1yrtJhm0tDvxDCVWBPkzQlOdGqc7WVzJuxAmWQK1E=
+	t=1781173296; cv=none; b=C9pubApv7IXdYGN9IFOe1BudN+cEKbeAF3cA2DfuHOfKFisX2hjjZkdIsY+OK25AfBRo111iKPgEERbjYyFaVx+eo4togNC5rSzznJka3u3M0XQHGxvLJXFhyndxtkfcGB+DDRguNcwQo3skt/1GeyW92bdYwzey4oP6/zAokLw=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1781170530; c=relaxed/simple;
-	bh=Ov574hmILB3pdxYdVww1k57wi7RZAzJuxmEZc5khEpc=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=FzOEHwTeqgzM9F8XtzKzWxPe8oa0MTZwsN8S/bnAsAyp6H7oXNWgiGks43yOSG9cnUPPuR8bx9jP+2CeU0JG7qCswlnimYLMFjyiyp0+nn5m+Ov18MW5B/kmWl43Xj1kflDTpnEVjiEtN31bGLaxPeLUzTEdirWIhqRDYfcEGoU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=A1/pVACi; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1781173296; c=relaxed/simple;
+	bh=Tvmqx4pYtJuxtoQ3R62SMg0IdP8UogvEPTr0AvaCegU=;
+	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=iKZ50svvnjpx85UwI/hN9LzRL1vhxAEh2X1mGTBx6AqBjIyadInXFzyXmMf2Ox5/JOeJjzM2C1FfWk5PPGbuBywb/r4kc3B7+RaMPBtqWeRdhm2j6/0F+gTRWONyw1gYEEWMsBjkRlEbTmiFhQtEOExB0IAh9RaOWOF6ofXFkjs=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=slKqyvkT; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="A1/pVACi"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 90FB81F008A5
-	for <linux-pm@vger.kernel.org>; Thu, 11 Jun 2026 09:35:28 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1781170528;
-	bh=Ov574hmILB3pdxYdVww1k57wi7RZAzJuxmEZc5khEpc=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc;
-	b=A1/pVACiTZRAyvqSvqEomemy4em1jq1mn10xf+YddyDmO+LQsyXzcnpO+6OdkAUdi
-	 yt34E2hgTuHynVkbQ+G7v+YhIYRTHl0CedAwB54FM/vhiIG2jKUJde3lnJAjtuutTM
-	 nbOC+ZA9BDBl9yKwb6CLfM/2miWpqts62qkiO5uoMkBFw5qMVp+gNi9r4ypV7ZdXXy
-	 utPeojc90hX3TyUAtfygwQFWHYpvCz7deOF+NgKmVqcR3EJtoPqp+B54tJBAAkZYgF
-	 poIqSVcChK12wjfXWVIP8xYLTHrHTRdakNyGwz6XbRWEH9G1GPXNksQKqmu5S1kjSx
-	 kOI/cBXt1aO1g==
-Received: by mail-lj1-f181.google.com with SMTP id 38308e7fff4ca-396753f343aso77104931fa.2
-        for <linux-pm@vger.kernel.org>; Thu, 11 Jun 2026 02:35:28 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AFNElJ97SV6uFCpeAw3pJlZ1pcYtnEildwBoFgFRfoiUONAoauhh+e2f3vaM5JQrcDjQkKcPtBTXvHQ8RA==@vger.kernel.org
-X-Gm-Message-State: AOJu0YwaBU8LD1Yy0qJPpAwXUnRfva8tpuLGE2bn2dZy4Y8hVUUQuRRX
-	ro5T/ma0oLo4jsZ7KDiEgm40cCi+irsxkorjdbxrrU5DyUH4tHv7VhPcwnYTiakQ03cdcL3hQHi
-	AKoZtPhMK6NOXeiUrE2I5BbsZZj6AYNn5fmsZV45KFQ==
-X-Received: by 2002:a05:651c:248:b0:395:6085:a15f with SMTP id
- 38308e7fff4ca-3991a037f82mr5814191fa.9.1781170527256; Thu, 11 Jun 2026
- 02:35:27 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="slKqyvkT"
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 2DAD3C2BCB8;
+	Thu, 11 Jun 2026 10:21:36 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1781173296;
+	bh=Tvmqx4pYtJuxtoQ3R62SMg0IdP8UogvEPTr0AvaCegU=;
+	h=From:Subject:Date:To:Cc:Reply-To:From;
+	b=slKqyvkTYrfzKN5d/aJE5DFcGmfalGKJ3HBfJrB6YNvv4vLONkqy1mIB8AYz1t5Gf
+	 mG5DfJW0HccIEmOi9JbRKg89sszrHi8MB9I13CGeHUDNsKYcqvDpX9ETqMO5kJNsv/
+	 uy0rl2Wp1qeZG0m/WmTFWFW63wxr+KiYVN1WBqGEetf91Qex+RZgUpu7KzBFpdTVzK
+	 KknCOx0+b4/FIF/AbhuNVtKqo9Wcl7KtVk5lrUOr26urp6saPfI+msJua9rD81gF4y
+	 nLW5WailNMuNy7T6GEEVrJTZO2g7g23BabiOeKLIErSUR3v5IEfZDWITpaWzLjcp2o
+	 jeA1xIrnSWX7w==
+Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1390FCD98C7;
+	Thu, 11 Jun 2026 10:21:36 +0000 (UTC)
+From: Roman Vivchar via B4 Relay <devnull+rva333.protonmail.com@kernel.org>
+Subject: [PATCH 0/4] nvmem: add support for the MediaTek mt6323 PMIC
+Date: Thu, 11 Jun 2026 13:20:28 +0300
+Message-Id: <20260611-mt6323-nvmem-v1-0-b5e1b9ce51f2@protonmail.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260610084053.2059858-1-wenst@chromium.org> <20260610084053.2059858-6-wenst@chromium.org>
- <ailxrP-_9_NL8qnN@ashevche-desk.local> <CAMRc=MdiwQM6yk8FXcc+RisVP2iqWKWzVsn2-Yy6dyJXt-1X=Q@mail.gmail.com>
- <aipz2zMFcdnZYTxS@ashevche-desk.local>
-In-Reply-To: <aipz2zMFcdnZYTxS@ashevche-desk.local>
-From: Bartosz Golaszewski <brgl@kernel.org>
-Date: Thu, 11 Jun 2026 11:35:13 +0200
-X-Gmail-Original-Message-ID: <CAMRc=MdRN7YitmMX8PknbzLh+MdsWm+dDg0MLtCVYOorqNobTw@mail.gmail.com>
-X-Gm-Features: AVVi8CfSg10E0UvFAW373K-Jcv4BNuLaPDP9X_vJcmiaG1CmuHb8KO5g7-SqyaM
-Message-ID: <CAMRc=MdRN7YitmMX8PknbzLh+MdsWm+dDg0MLtCVYOorqNobTw@mail.gmail.com>
-Subject: Re: [PATCH v2 05/16] usb: hub: Associate port@ fwnode with USB port device
-To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Daniel Scally <djrscally@gmail.com>, 
-	Heikki Krogerus <heikki.krogerus@linux.intel.com>, 
-	Sakari Ailus <sakari.ailus@linux.intel.com>, "Rafael J. Wysocki" <rafael@kernel.org>, 
-	Danilo Krummrich <dakr@kernel.org>, Rob Herring <robh@kernel.org>, 
-	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
-	Matthias Brugger <matthias.bgg@gmail.com>, 
-	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>, 
-	Alan Stern <stern@rowland.harvard.edu>, linux-acpi@vger.kernel.org, 
-	driver-core@lists.linux.dev, linux-pm@vger.kernel.org, 
-	linux-usb@vger.kernel.org, devicetree@vger.kernel.org, 
-	linux-mediatek@lists.infradead.org, linux-arm-kernel@lists.infradead.org, 
-	linux-kernel@vger.kernel.org, Manivannan Sadhasivam <mani@kernel.org>, 
-	Chen-Yu Tsai <wenst@chromium.org>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-B4-Tracking: v=1; b=H4sIAAAAAAAC/yXMQQqAIBBA0avErBPUSqirRAuzsSbQQiuC6O5ZL
+ d/i/wsiBsIITXZBwIMiLT5B5BmYSfsRGQ3JILlUXAnB3KYKWTB/OHSMm6rU3EqrawspWQNaOr9
+ d2/2Oez+j2d4H3PcDKOQeZnAAAAA=
+X-Change-ID: 20260611-mt6323-nvmem-0c54a0f2fa9f
+To: Sen Chu <sen.chu@mediatek.com>, Sean Wang <sean.wang@mediatek.com>, 
+ Macpaul Lin <macpaul.lin@mediatek.com>, Lee Jones <lee@kernel.org>, 
+ Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+ Conor Dooley <conor+dt@kernel.org>, 
+ Matthias Brugger <matthias.bgg@gmail.com>, 
+ AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>, 
+ Srinivas Kandagatla <srini@kernel.org>, 
+ Roman Vivchar <rva333@protonmail.com>
+Cc: Andy Shevchenko <andy@kernel.org>, Jonathan Cameron <jic23@kernel.org>, 
+ linux-pm@vger.kernel.org, devicetree@vger.kernel.org, 
+ linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
+ linux-mediatek@lists.infradead.org, Ben Grisdale <bengris32@protonmail.ch>
+X-Mailer: b4 0.15.2
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1781173294; l=1828;
+ i=rva333@protonmail.com; s=20260510; h=from:subject:message-id;
+ bh=Tvmqx4pYtJuxtoQ3R62SMg0IdP8UogvEPTr0AvaCegU=;
+ b=r+iAeji7kO+0TGOzXiqhQcf+A5+3fkeYjjq9gerPbtOc6rQDDxklu44EumjyyX7+Qw++70LJk
+ 3kn+In2w6bUA0Kyok20FAN1TDGDf2JlVcLxmzPTL5uSJT28arb66KhH
+X-Developer-Key: i=rva333@protonmail.com; a=ed25519;
+ pk=zww/nWjBGoQ4POXCG0BV6fx2iuXK6jx77rsKPA5YK5Y=
+X-Endpoint-Received: by B4 Relay for rva333@protonmail.com/20260510 with
+ auth_id=777
+X-Original-From: Roman Vivchar <rva333@protonmail.com>
+Reply-To: rva333@protonmail.com
 
-On Thu, Jun 11, 2026 at 10:37=E2=80=AFAM Andy Shevchenko
-<andriy.shevchenko@linux.intel.com> wrote:
->
-> On Thu, Jun 11, 2026 at 04:20:58AM -0400, Bartosz Golaszewski wrote:
-> > On Wed, 10 Jun 2026 16:16:12 +0200, Andy Shevchenko
-> > <andriy.shevchenko@linux.intel.com> said:
-> > > On Wed, Jun 10, 2026 at 04:40:39PM +0800, Chen-Yu Tsai wrote:
-> > >> When a USB hub port is connected to a connector in a firmware node
-> > >> graph, the port itself has a node in the graph.
-> > >>
-> > >> Associate the port's firmware node with the USB port's device,
-> > >> usb_port::dev. This is used in later changes for the M.2 slot power
-> > >> sequencing provider to match against the requesting port.
-> > >
-> > > Okay, would this affect ACPI-based systems? if so, how?
-> > > Can you elaborate on that, please?
-> >
-> > Is it possible that there's an ACPI device node associated with the por=
-t like
-> > on some DT systems? I don't think so and there should be no impact IMO =
-but I
-> > also don't know enough about ACPI.
->
-> The API is agnostic. There is a possibility to have software nodes associ=
-ated
-> with the port. I think the best is to be sure that ACPI-aware people who =
-are
-> experts in USB will check this (Heikki?).
->
+This series adds support for the EFUSE found on the MediaTek mt6323 PMIC.
 
-Even if there is a software node - it shouldn't really matter. It will
-just be assigned to the port device.
+The previous version of the series for all AUXADC, EFUSE and thermal
+drivers was split after Krzysztof's comment [1].
+    
+Tested on the MediaTek mt6572 and mt8163 SoCs (Ben), both paired with a
+mt6323.
 
-Bart
+[1]: https://lore.kernel.org/linux-mediatek/20260504-mt6323-v1-0-799b58b355ff@protonmail.com/T/#med30fad67a090be35f549231336b2dec295233f6
 
-> Also note Sashiko complain on reference count leakage.
->
-> --
-> With Best Regards,
-> Andy Shevchenko
->
->
+Tested-by: Ben Grisdale <bengris32@protonmail.ch> # Amazon Echo Dot (2nd Generation)
+Signed-off-by: Roman Vivchar <rva333@protonmail.com>
+
+---
+Changes after split:
+- EFUSE driver:
+    - Remove 'linux/errno.h' header (Andy)
+    - Remove explicit cast to u16 in the 'mt6323_efuse_read' (Andy)
+    - Reword comment in the 'mt6323_efuse_read'
+    - Capitalize MediaTek in the module description
+- Link to a previous series: https://patch.msgid.link/20260512-mt6323-v2-0-3efcba579e88@protonmail.com
+
+---
+Roman Vivchar (4):
+      dt-bindings: mfd: mediatek: mt6397: add mt6323 PMIC EFUSE
+      nvmem: add mt6323 PMIC EFUSE driver
+      mfd: mt6397-core: add mt6323 EFUSE support
+      ARM: dts: mediatek: mt6323: add EFUSE support
+
+ .../devicetree/bindings/mfd/mediatek,mt6397.yaml   | 21 ++++++
+ MAINTAINERS                                        |  5 ++
+ arch/arm/boot/dts/mediatek/mt6323.dtsi             |  4 +
+ drivers/mfd/mt6397-core.c                          |  3 +
+ drivers/nvmem/Kconfig                              | 11 +++
+ drivers/nvmem/Makefile                             |  2 +
+ drivers/nvmem/mt6323-efuse.c                       | 85 ++++++++++++++++++++++
+ 7 files changed, 131 insertions(+)
+---
+base-commit: 028ef9c96e96197026887c0f092424679298aae8
+change-id: 20260611-mt6323-nvmem-0c54a0f2fa9f
+
+Best regards,
+--  
+Roman Vivchar <rva333@protonmail.com>
+
+
