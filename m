@@ -1,137 +1,151 @@
-Received: from smtp.forwardemail.net (smtp.forwardemail.net [121.127.44.66])
+Received: from mail-pl1-f171.google.com (mail-pl1-f171.google.com [209.85.214.171])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7BDB82DA74C
-	for <linux-pm@vger.kernel.org>; Thu, 11 Jun 2026 19:10:55 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=121.127.44.66
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7C797348C74
+	for <linux-pm@vger.kernel.org>; Thu, 11 Jun 2026 19:33:43 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.171
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1781205057; cv=none; b=NJpNfJxOsnICFE6XN+Vosk9bucMSqy/S4Jg8AWxBbM2rCSdtn7DYQ2WF7G6F3891J+CE5oitgLVDrrF6VHTAYrhsXqBT449J50osxirbQtXyGdbKVJjLjbzyn9DAbDm58rPuHH7abwuT68aMrBW1q9uMZuorn9ECBx9zN78Zwdg=
+	t=1781206425; cv=none; b=NjJqLvBofoKOTSkjA1AMphdB3U330AL40MQ1O2cwGNYg08LOaxe1y0pk4Q3MtmNZNN+m8JHiV+w+fQwsOcUqav9j8vIBvSwSx8fBVv71QXgCOsCaCHsgl3VzgZ5joFYXALtKvdl1HpK7UjnXQ4zxEgOzgePhwCqLnT3O8UD9YIk=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1781205057; c=relaxed/simple;
-	bh=0TCn90LGl4aorULAmlbgfL/XCcWB2bkKndfvp6wcr80=;
-	h=Mime-Version:Content-Type:Date:Message-Id:Cc:Subject:From:To:
-	 References:In-Reply-To; b=g21aTYoholy9pnQXxsWOvb/0FSWV1Ni9TPdYx3+4yE0NC454s+t//X6JbEgTkhXdkavPGY90h5d6g5aEICP0JNKfHVKQrQRr4XVohRSDqF5HmCd2H6L8Cjc6els5vwEQbzWzLCnYUDWlDNksTAWteiLZfiHOpVOAGPl8sW78z+U=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=ubuntu.com; spf=pass smtp.mailfrom=fe-bounces.ubuntu.com; dkim=pass (2048-bit key) header.d=ubuntu.com header.i=@ubuntu.com header.b=f+DNgbbY; arc=none smtp.client-ip=121.127.44.66
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=ubuntu.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=fe-bounces.ubuntu.com
+	s=arc-20240116; t=1781206425; c=relaxed/simple;
+	bh=j2tVtu5wHDHndIUHO2IwR5Uecq6De3dwqEjLMAlWDGI=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
+	 MIME-Version:Content-Type; b=i7ovU2rhtIvmX3919xWjpgTDq95HrsMVeEjn++QnR3/oHbWBNTRaYszShND2FAnaYLfLPij++SD8CBnEpYpS5vjNlfTRfwj/fmh5X51uh87WeOF1MkRJj+hiGhTuaghU7Zo2d5sVfFNrLuh88U9NOXXNANCE0ORyA0OVohh+Y7g=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com; spf=pass smtp.mailfrom=baylibre.com; dkim=pass (2048-bit key) header.d=baylibre.com header.i=@baylibre.com header.b=P4hz9DA3; arc=none smtp.client-ip=209.85.214.171
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=baylibre.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=ubuntu.com header.i=@ubuntu.com header.b="f+DNgbbY"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ubuntu.com;
- h=In-Reply-To: References: To: From: Subject: Cc: Message-Id: Date:
- Content-Type: Content-Transfer-Encoding: Mime-Version; q=dns/txt;
- s=fe-953a8a3ca9; t=1781205049;
- bh=xY2cNNY93Hd/aQF2aaDrGjqQhuUcLY6qtCu0ziUky+g=;
- b=f+DNgbbYWp5lWf+xjRqnDPOCUQbcNhQ/TqDVM6nFg6ja7rirAL8fq0dqNZEnQXuES5PdcH3iW
- 5U5LVseDVXgFHLWV4PR5RlmD3weU8+BkcaoN+M8Xv9rznytY8wvkNDHzXnoELHu6di8Q7HCKSnv
- 1YX00c3lrYKJH+dfoNIXZi/c/p9Sy/Mg8bOL5K0iYxa8W7mtLAenrSyw5Nmtx063Fely9nFAUGr
- zcEO7zLrB0jUfMuUWe+VQgeYAjf4Q9ctyLWm5IGPyTt+Q7BELbWExOBz3bD5Ni38VtkEmYvHzM3
- 0umJrjKgjoMAtohkSd3Qxq/wtLj4xJY+D09sWAaJjH8g==
-X-Forward-Email-ID: 6a2b0837e66afcd719ced683
-X-Forward-Email-Sender: rfc822; jpeisach@ubuntu.com, smtp.forwardemail.net,
- 121.127.44.66
-X-Forward-Email-Version: 2.8.26
-X-Forward-Email-Website: https://forwardemail.net
-X-Complaints-To: abuse@forwardemail.net
-X-Report-Abuse: abuse@forwardemail.net
-X-Report-Abuse-To: abuse@forwardemail.net
+	dkim=pass (2048-bit key) header.d=baylibre.com header.i=@baylibre.com header.b="P4hz9DA3"
+Received: by mail-pl1-f171.google.com with SMTP id d9443c01a7336-2c0c379e8ffso2008235ad.3
+        for <linux-pm@vger.kernel.org>; Thu, 11 Jun 2026 12:33:43 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=baylibre.com; s=google; t=1781206423; x=1781811223; darn=vger.kernel.org;
+        h=mime-version:message-id:date:references:in-reply-to:subject:cc:to
+         :from:from:to:cc:subject:date:message-id:reply-to;
+        bh=bVsJ8++utKin3mieaJdECv9juBLFJR0FTwftyuevdnI=;
+        b=P4hz9DA3yP37qWsRBz+VdgBxw6DhfxBnlesTSCp5CV5FZ7ep5b4ZxWEsfGmjEtYU8o
+         tjaiRTs9Y2jb7rcKj5thhLGto5iNY8FVclm1idJNHPRK2J0XyOS8q5WtYSd9glpsDNm3
+         vRFb1QaZczSmGMte0DhwE2l0t5MvK3Yg14t1DO6D+CMOxHUj2G7m/zNvHT0aEeARNLKX
+         lWctadtRcNMq5v6qaiO7k9gg6RW+jc3N0WsvedaY2e4yiq0IHkm36JOQRslp0vNX26XM
+         0neZlQEC71bGoYYgSoqkIls+u0MGeMfKYOui/D7zgiuIs3QoGOfXTa19OJxg4jUtYtZj
+         VevA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1781206423; x=1781811223;
+        h=mime-version:message-id:date:references:in-reply-to:subject:cc:to
+         :from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=bVsJ8++utKin3mieaJdECv9juBLFJR0FTwftyuevdnI=;
+        b=ARyZXxuYvKqn0o8sSXGuectqhrPtERQx3pGpx3o8BDPyc5QO8NQEEpUhN1J9cbi+My
+         HsijU++nUHyW0O+2DIkwVrgIOgmWHC++sziUbxj/oURbzThOkNhb4piNVvuzrX+ynfnA
+         eYfkznsUzntFisJezGfp43q+tTAAU2mjFE9WFZ7uEeF5lrfpPmQfU5tpQqCDzhRgjlTm
+         QlP2zDEQCRIK/CpV1hlyVSzyD3kI0PE6iOVIoIYqkFlkhXIQWs0qUOdiJts2rKojG4Qc
+         Sncxi66FG3N2cUykiboOKDYOEDDh+OhPobFRp3CfB5l2aZlhxqjfCAwEtuVdaZnnCyOS
+         0LYw==
+X-Forwarded-Encrypted: i=1; AFNElJ+MCllWCVmLGEjcEldnYIf/S7S+WKhFjlXULrRr9GOF4teAF1iUb3F0s2aVfaMq+1QGWTg1+TLyEA==@vger.kernel.org
+X-Gm-Message-State: AOJu0YzUmWvVHkGYEdD/NoTn337ztu63IKiUGk3juna/iYZVMUoD/5Bd
+	g0TbdiZvm+6SAt7fSI/APKJhABaNibeWr2VP240CDdK12Kzihd2fJX53/A+dIq86oNM=
+X-Gm-Gg: Acq92OENQFgiDq6fv+CTe+OhyR5YxLgUs2QA+iEbxk8QpFiTfXT1JHhs1aGhJX8PHpN
+	P3ntrucf+BGCwxR5cXz/IcGfy1FXZlzaAMcdvvBg/C+LnHPQJvXDQNyNohAlDg0k27M/ZAjNuLp
+	5WJghPHudtZrvHeM2QSYQEFqbSJ7iTEbmlTYoWqdqFRQj2kswm6iivhW8sXFfx5BBAwZBQbmf/C
+	2sMpOsly00YSkDJe8CWO22ygE4lnWV0JWjXsFmGQs4ktHz4SF2ln5Qyrr2aO9UW+uJMmf1wHjW2
+	FmxXW+fUSKy1YS8Wpl9MMN67GGkQetYzL6I0ixuO1FLYfwZFPIXv3NX+Bbce1fQ/6stMM71hkFN
+	lof+pUGukeswhUFXH+JC3z+S7KPj45xispDjYnsYw9oEEBdt0ixN+clB3CzpR6RggZgkjhQTF0Q
+	+e16gHQtKVYy9gzDtq8gkVZLTY9gBu52I=
+X-Received: by 2002:a17:903:1663:b0:2c0:d99a:2fc with SMTP id d9443c01a7336-2c2f18e291cmr55173755ad.2.1781206422730;
+        Thu, 11 Jun 2026 12:33:42 -0700 (PDT)
+Received: from localhost ([71.212.202.210])
+        by smtp.gmail.com with UTF8SMTPSA id d9443c01a7336-2c1664ad172sm289256475ad.83.2026.06.11.12.33.41
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 11 Jun 2026 12:33:42 -0700 (PDT)
+From: Kevin Hilman <khilman@baylibre.com>
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, linux-pm@vger.kernel.org,
+ Dhruva Gole <d-gole@ti.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v2 3/3] pmdommain: add support system-wide resume
+ latency constraints
+In-Reply-To: <CAPDyKFrqT6DPUk5yWBDfnebHKTm4rGZp-8ZBRdcvp4r5Vu-PoA@mail.gmail.com>
+References: <20260205-topic-lpm-pmdomain-device-constraints-v2-0-61f7be7d35ac@baylibre.com>
+ <20260205-topic-lpm-pmdomain-device-constraints-v2-3-61f7be7d35ac@baylibre.com>
+ <CAPDyKFrqT6DPUk5yWBDfnebHKTm4rGZp-8ZBRdcvp4r5Vu-PoA@mail.gmail.com>
+Date: Thu, 11 Jun 2026 12:33:41 -0700
+Message-ID: <7hy0gklvmy.fsf@baylibre.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
-Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset=UTF-8; format=Flowed
-Date: Thu, 11 Jun 2026 15:10:44 -0400
-Message-Id: <DJ6GHP5KU65S.32864AWLH5DGT@ubuntu.com>
-Cc: <asahi@lists.linux.dev>, <linux-arm-kernel@lists.infradead.org>,
- <linux-pm@vger.kernel.org>, <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] power: supply: macsmc: Support macOS 27 SMC firmware
-From: "Joshua Peisach" <jpeisach@ubuntu.com>
-To: "Sasha Finkelstein" <k@chaosmail.tech>, "Sven Peter" <sven@kernel.org>,
- "Janne Grunau" <j@jannau.net>, "Neal Gompa" <neal@gompa.dev>, "Sebastian
- Reichel" <sre@kernel.org>
-X-Mailer: aerc 0.21.0
-References: <20260611-gate-power-v1-1-8a62721086c7@chaosmail.tech>
-In-Reply-To: <20260611-gate-power-v1-1-8a62721086c7@chaosmail.tech>
+MIME-Version: 1.0
+Content-Type: text/plain
 
-On Thu Jun 11, 2026 at 12:49 PM EDT, Sasha Finkelstein wrote:
-> The SMC firmware included in macOS 27 changed the size of BCF0 key from
-> 4 to 1 bytes. This key is used for indicating that battery state is
-> critically low.
+Ulf Hansson <ulf.hansson@linaro.org> writes:
+
+> On Fri, 6 Feb 2026 at 01:30, Kevin Hilman (TI) <khilman@baylibre.com> wrote:
+>>
+>> In addition to checking for CPU latency constraints when checking if
+>> OK to power down a domain, also check for QoS latency constraints in
+>> all devices of a domain and use that in determining the final latency
+>> constraint to use for the domain.
+>>
+>> Since cpu_system_power_down_ok() is used for system-wide suspend, the
+>> per-device constratints are only relevant if the LATENCY_SYS QoS flag
+>> is set.
+>>
+>> Signed-off-by: Kevin Hilman (TI) <khilman@baylibre.com>
+>> ---
+>>  drivers/pmdomain/governor.c | 45 +++++++++++++++++++++++++++++++++++++++++++++
+>>  1 file changed, 45 insertions(+)
+>>
+>> diff --git a/drivers/pmdomain/governor.c b/drivers/pmdomain/governor.c
+>> index 96737abbb496..bbf59b93c8b6 100644
+>> --- a/drivers/pmdomain/governor.c
+>> +++ b/drivers/pmdomain/governor.c
+>> @@ -13,6 +13,8 @@
+>>  #include <linux/cpumask.h>
+>>  #include <linux/ktime.h>
+>>
+>> +#include "core.h"
+>> +
+>>  static int dev_update_qos_constraint(struct device *dev, void *data)
+>>  {
+>>         s64 *constraint_ns_p = data;
+>> @@ -425,17 +427,60 @@ static bool cpu_power_down_ok(struct dev_pm_domain *pd)
+>>         return true;
+>>  }
+>>
+>> +/**
+>> + * check_device_qos_latency - Callback to check device QoS latency constraints
+>> + * @dev: Device to check
+>> + * @data: Pointer to s32 variable holding minimum latency found so far
+>> + *
+>> + * This callback checks if the device has a system-wide resume latency QoS
+>> + * constraint and updates the minimum latency if this device has a stricter
+>> + * constraint.
+>> + *
+>> + * Returns: 0 to continue iteration.
+>> + */
+>> +static int check_device_qos_latency(struct device *dev, void *data)
+>> +{
+>> +       s32 *min_dev_latency = data;
+>> +       enum pm_qos_flags_status flag_status;
+>> +       s32 dev_latency;
+>> +
+>> +       dev_latency = dev_pm_qos_read_value(dev, DEV_PM_QOS_RESUME_LATENCY);
 >
-> Signed-off-by: Sasha Finkelstein <k@chaosmail.tech>
-> ---
->  drivers/power/supply/macsmc-power.c | 34 +++++++++++++++++++++++++++++++=
----
->  1 file changed, 31 insertions(+), 3 deletions(-)
+> ->cpu_system_power_down_ok() executes in atomic context on a
+> PREEMPT_RT configured system.
+
+Oh, right.  Good point.  Thanks for pointing that out!
+
+> dev_pm_qos_read_value() uses spinlocks, which sleep in that configuration.
 >
-> diff --git a/drivers/power/supply/macsmc-power.c b/drivers/power/supply/m=
-acsmc-power.c
-> index 33ca07460f3a..650dc8740f71 100644
-> --- a/drivers/power/supply/macsmc-power.c
-> +++ b/drivers/power/supply/macsmc-power.c
-> @@ -86,6 +86,7 @@ struct macsmc_power {
->  	bool has_ch0i; /* Force discharge (Older firmware) */
->  	bool has_ch0c; /* Inhibit charge (Older firmware) */
->  	bool has_chte; /* Inhibit charge (Modern firmware) */
-> +	bool bcf0_1byte; /* Battery critical */
-> =20
->  	u8 num_cells;
->  	int nominal_voltage_mv;
-> @@ -273,6 +274,18 @@ static int macsmc_battery_get_date(const char *s, in=
-t *out)
->  	return 0;
->  }
-> =20
-> +static int macsmc_battery_read_bcf0(struct macsmc_power *power, u32 *val=
-)
-> +{
-> +	u8 tval;
-> +	int ret;
-> +
-> +	if (!power->bcf0_1byte)
-> +		return apple_smc_read_u32(power->smc, SMC_KEY(BCF0), val);
-> +	ret =3D apple_smc_read_u8(power->smc, SMC_KEY(BCF0), &tval);
+> I don't know the best approach to fix this. Perhaps add a specific
+> dev_pm_qos interface that can be used here? Or re-work the code so it
+> only applies for !PREEMPT_RT?
 
-Would I be ridiculous to suggest adding a newline after the return
-statement?
+There's already a "raw" lockless helper to read the resume latench
+(dev_pm_qos_raw_resume_latency), so I'll use that, as well as add a
+similar lockless read for the flags.
 
-> +	*val =3D tval;
-> +	return ret;
-> +}
-> +
->  static int macsmc_battery_get_capacity_level(struct macsmc_power *power)
->  {
->  	bool flag;
-> @@ -280,7 +293,7 @@ static int macsmc_battery_get_capacity_level(struct m=
-acsmc_power *power)
->  	int ret;
-> =20
->  	/* Check for emergency shutdown condition */
-> -	if (apple_smc_read_u32(power->smc, SMC_KEY(BCF0), &val) >=3D 0 && val)
-> +	if (macsmc_battery_read_bcf0(power, &val) >=3D 0 && val)
->  		return POWER_SUPPLY_CAPACITY_LEVEL_CRITICAL;
-> =20
->  	/* Check AC status for whether we could boot in this state */
-> @@ -577,7 +590,7 @@ static void macsmc_power_critical_work(struct work_st=
-ruct *wrk)
->  	 * Check if SMC flagged the battery as empty.
->  	 * We trigger a graceful shutdown to let the OS save data.
->  	 */
-> -	if (apple_smc_read_u32(power->smc, SMC_KEY(BCF0), &bcf0) =3D=3D 0 && bc=
-f0 !=3D 0) {
-> +	if (macsmc_battery_read_bcf0(power, &bcf0) =3D=3D 0 && bcf0 !=3D 0) {
->  		power->orderly_shutdown_triggered =3D true;
->  		dev_crit(power->dev, "Battery critical (empty flag set). Triggering or=
-derly shutdown.\n");
->  		orderly_poweroff(true);
-> @@ -616,6 +629,7 @@ static int macsmc_power_probe(struct platform_device =
-*pdev)
->  	struct device *dev =3D &pdev->dev;
->  	struct apple_smc *smc =3D dev_get_drvdata(pdev->dev.parent);
->  	struct power_supply_config psy_cfg =3D {};
-> +	struct apple_smc_key_info info;
->  	struct macsmc_power *power;
->  	bool has_battery =3D false;
->  	bool has_ac_adapter =3D false;
+Thanks for the review,
+
+Kevin
