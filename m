@@ -1,63 +1,63 @@
-Received: from mail-wr1-f49.google.com (mail-wr1-f49.google.com [209.85.221.49])
+Received: from mail-wr1-f42.google.com (mail-wr1-f42.google.com [209.85.221.42])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5FEBB44BC91
-	for <linux-pm@vger.kernel.org>; Thu, 11 Jun 2026 20:47:04 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.49
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D053D4D2EF6
+	for <linux-pm@vger.kernel.org>; Thu, 11 Jun 2026 20:47:05 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.42
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1781210825; cv=none; b=cc975mO4anaUv6l5zXXk6TAcYYxQGanR28fnCOA6hwQf3x9FaGnr/gxbO7f/Akayqf0q+/37YvLU7nr2lsKhSm25aHHO1hMrOW7ZGkGwGsHmNnQPeDmK118OYB/dHo8c7JJ0TisZo+0XsIlcgmNXk6JXOlu4CuxKOWpcmSa0E6E=
+	t=1781210827; cv=none; b=F5CdL4QnfAlbACf/Jh9ffF1LY0TRRsvdu9dXcjE+lUR7vcR5JvzLDh84SlbmT8XBCGJ+DpgeBogxIE85GyOjpqO6vG8VEBK2gr8OgCvQaaFdWpYZ+Fy68KmFUx5V2efzROmFX9D3YpZhd8SXNcnfXWCM7NOrEmbLAVotCtncUvc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1781210825; c=relaxed/simple;
-	bh=b93JfrcRQx0CTzQvkuR+kUrMWsWAsGLNNjPAew/7MUM=;
+	s=arc-20240116; t=1781210827; c=relaxed/simple;
+	bh=7Mwo+iIqdQx8E6U6qCCbr1Gq9IaDaII2ThvLIrQQF9k=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=Q+q2vZ5tGr1W6G149MRmT/jl27fIgY1otuT3NTh+YUi/KYN/3KpBSz9UxFQf5glRDznH7tGfEsI2GU1HQcQ50XzP4qRbgAtjbSHo8vAvcbYU39iwVUNXuesIraqnJlYcriUP3jr9axlLyamaEhHzbrsFzBG6e0kzbmdeCMuSEjQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=n1/c0rmj; arc=none smtp.client-ip=209.85.221.49
+	 MIME-Version:Content-Type; b=CABunNpqAeEgl2ehnqmMKlxdn9f7l2nHz1vs7EI0rVVL2HZB2TJ97HSipWrfqom9sCOvjKgNL+L6qstiTfVv0EeI1j+UZgQULbKE/G0Je6aD4k1reiRZTYgHTrmNCADihfYtVMYf5QKf5625/2Agqircm5MYfjuVdviowM6/nIs=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=s5XZ+kR7; arc=none smtp.client-ip=209.85.221.42
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="n1/c0rmj"
-Received: by mail-wr1-f49.google.com with SMTP id ffacd0b85a97d-45efb698ef2so121714f8f.3
-        for <linux-pm@vger.kernel.org>; Thu, 11 Jun 2026 13:47:04 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="s5XZ+kR7"
+Received: by mail-wr1-f42.google.com with SMTP id ffacd0b85a97d-460662fcb4eso183599f8f.0
+        for <linux-pm@vger.kernel.org>; Thu, 11 Jun 2026 13:47:05 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1781210823; x=1781815623; darn=vger.kernel.org;
+        d=gmail.com; s=20251104; t=1781210824; x=1781815624; darn=vger.kernel.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=aQkhjHws1rHibd0xf6qIemlx9VV/9yCLceOtf0Xc8T4=;
-        b=n1/c0rmjwEHueIGzBIYvic2BFKgU9VE/6+CDaxjQYy3vxT1gUQf+m6sSjttfRLETg+
-         H8MZhOraFmPxczWSlCjhVqr8H+sfstddtU+SXOTbVqKtT17P7o08CCs1QrOo5dkz/Hqu
-         rjZX6CdRCgrOStA5g8I6fnSOYkWYb/q1+sKAfbuNjB+zmNdjCQsdZ9D9KNDg4kCW1ubr
-         ib1tgEldPZ0Sy5DQjYF4iLw7JSsBFj/DriT5H/q3DGj0jKxCM+VAilpxkVaHRHha5/tp
-         HLdNnePB13m4U3zQE1v/NyvCG9ST9saqp5dxSfMe2VNZ3FyQt6PymKqxDRupJu/h12YG
-         zZog==
+        bh=mdCZ9G/0ajheplZaMy2X4Fl2JukUf3RvZhBEz4Soe+w=;
+        b=s5XZ+kR7J/dOzoB7pMEJOl8NTAb0c8qpKcgZrGo80Av7/DONx8gW+sp47lTaXNnTFs
+         G8zr6HYUE3IaI+h5PXR5PpAzmxqoJ4JRsZBmlMtfdRkNET9ewXTvvdKFlLNlmccCYjg8
+         Ojt4/fheTpLCIrVsdBx20AQHXLtH8b3M78OVgsArOdvQVLzaR8mVR8MyhJ5Y4h9O9Akj
+         uD9X8JOb10P1SDEpaMr9RCpoNnXRE3fMm1OvYygakMw2tM4uf9r+pgsHh1VHXAQXYYSa
+         j3yWpc8PqwRsSBIklAJNAe/+uCIeJVRsNVlRo5QNPpawkGYWbOlkTuIBYRVzWNYcIjWe
+         qBFg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1781210823; x=1781815623;
+        d=1e100.net; s=20251104; t=1781210824; x=1781815624;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to;
-        bh=aQkhjHws1rHibd0xf6qIemlx9VV/9yCLceOtf0Xc8T4=;
-        b=Ig5UYnQCTHiz0aZBqsx+mbom9ebTLdMY+STPPYydAWfaI+SJWhLCrV5YHndZll8zhO
-         7bX9RMNxUK/oVTtgzdnwiHRqtBRJpeFTf//wL+USrYTMhEngWgQxCOkUvIO9KOAwhLg+
-         6uTNVaOheESlITHl73aXgxVaAB0A1Q63eCOzB3QaJpu5gQf1RrDEg6P2v6PBrco+tYgV
-         X1DFb4q1M/K/rCJpqDrlLlqiwWc4DwEMZcZfbJgc1iTyrgtj87W/IlCGgEgdgAuwJ5Mm
-         xOk8zvDAmPOGCYUvlrarrIVOntdn4uEdApE9chR+LUs9xXdgRxFtSCldxu3m7SG79k5n
-         2x3Q==
-X-Gm-Message-State: AOJu0YxcMp36bmlckUJSLCrjgAIqdW0B6SHIcxzL9W2aja68JFlo5J1W
-	31KsFs+OIkxkvJmcx80HA2hrn3ijF/N11gX95QvgcZOOnEaFQPBKq82JC14+DW1h
-X-Gm-Gg: Acq92OGgw9CsAvHoQ5eiOLzgoPtlKpV+T5rLffNmyKqVjDJUhZnpyrW2vJNNBxPhbTs
-	09E8EOIFSqQ0ZdEqLbvBGMUNr+UXc2maH/Qe8RYUMjWXgyfAIXpVAgTUOKmnY5NzSASyVoJK2aA
-	C/lMCeAvWvZJe8cUVuxROH8gBoVBIbKLnvOdQJ3uEj8FawYfFfU1tNVsqz29t2QLPoTV4hnndkD
-	VxfRxyCp2NxW5PGv4XzUkOtOmlrhx6Owt/D8WWQiRXaZSUrf4sRWmZwzHuYkyA1xvLXH2TT4O/2
-	gI3mJdksfjQ3igdwFdPCju2VCsyMPDRwBeu3T++claw9orAEoJbvsOPo8dLZFrg4gZPA7mlPAA+
-	Je3RUtyTepmR1cLNybkiHpYV25/qMFMOVhAs/WTykbXO8vCslKAOEuU9LM3gWIpfyCHYRdSbwfW
-	xZGegiU8m3IutqpgFbat3IP/c3NJfxVtALqM3Qn3aiOb/QfDgY+dfw0MarQeQnpB039bCEqoa3B
-	QddnoBbKnXAFIixxlo4AgSUe4InH+RDTS8xG+jJQg==
-X-Received: by 2002:a5d:64e1:0:b0:45e:e1a4:c4c3 with SMTP id ffacd0b85a97d-4606da66f9amr53784f8f.15.1781210822740;
-        Thu, 11 Jun 2026 13:47:02 -0700 (PDT)
+        bh=mdCZ9G/0ajheplZaMy2X4Fl2JukUf3RvZhBEz4Soe+w=;
+        b=EE/qG8R/cJWiNmaRb2arZ84ufLeBXEUGFKo/BQFdcCDpt/IgIsr3KBgTsiXeGXwuKg
+         QLXpErX7hK+JPyNkX2jA4Vbk6FzHkTLnh6prIu/SgrxvbBpoN4U2dUC7PqGZD0TYe5Sb
+         Zw8jmY8+OKm+DStHRL0NTWRpUWZnSYWXw2tNWrCT1Wge5fYlnV/pDjZA+FZy5p5lppTs
+         fP7yLHF3M+5XNEziGuMzGBB7FAbkQALbU6OTgMR7v4kM6OkpxcntmqoZyiMuUMhtflRT
+         btzpJPxDBQGgMYwsT0bXD2Y85/3FBfmxpNKEiSrd3tnGmDVUCpgKUx3ObcALRkaOhqF9
+         9ODQ==
+X-Gm-Message-State: AOJu0YyV30T3k5JJuhwcmjPtOvPE+JbGYx+SBE8pTsJPODCfIPSrRzJg
+	AA/OiZpsW9mBUuP+0hxEe85n0aOlf2Ii3/BJu05gkOFn1FiUqAufd4lPFVYXpf+o
+X-Gm-Gg: Acq92OG2fAluCFzMpTSwWf/qtzdlQk4JfOOZfU3r8R9Fv8YLjWj0C9W1Ke3E6UTS1nc
+	Tay9lj8Yg0SDIJuz//4w9W/PIE8LxB8ufodoMdUs0iW8IQr8bUa42xe+xN3GO86PbEeXHXqmdzO
+	997FBF7CJPKLcCM1OR71+x6wOTYL+YVpsoFMkAHnKz+DuWGBFORLA14YW/ATl35mxcuUmlzFlI8
+	EwzM6xZpCWn3omI77Pgf3RhxgoHGkT2DjgdmRoBaV8+AhxbVyXGvyTIULiWJtDkruTTwbfLX7Ac
+	ijlO5iRwHpyObBjoeHz9LvRoMfMpuL3WkVPddDCYOpXs4ZUgHQeZ1lfX1mUHope8t+YnEfldWO8
+	/dWE803NEPQCL6MmJZNBLWQgkTMsu5xmhCD476r7G9iv890aNOoCEkMLJOaezPa9ftq212NxY5X
+	O7pq/nEiDWnn/KvWnquYMwRJdbZNk8mq53ulZCXX5e5Y1NJKQkG9EArMzZ84iSZyDW0ct6QBquk
+	CNLB+sv21dAdqajgROgwuNGD0/q/aJvOEiH1S2mvA==
+X-Received: by 2002:a05:6000:228a:b0:43c:ffee:ee94 with SMTP id ffacd0b85a97d-4606db8c6c6mr34423f8f.11.1781210824158;
+        Thu, 11 Jun 2026 13:47:04 -0700 (PDT)
 Received: from MBP-Elazar-Leibovich.civet-hops.ts.net (bzq-85-130-200-168.static.bezeqint.net. [85.130.200.168])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-4606c0d0947sm1727493f8f.16.2026.06.11.13.47.01
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-4606c0d0947sm1727493f8f.16.2026.06.11.13.47.02
         (version=TLS1_3 cipher=TLS_CHACHA20_POLY1305_SHA256 bits=256/256);
-        Thu, 11 Jun 2026 13:47:02 -0700 (PDT)
+        Thu, 11 Jun 2026 13:47:03 -0700 (PDT)
 From: Elazar Leibovich <elazarl@gmail.com>
 To: linux-pm@vger.kernel.org
 Cc: "Rafael J . Wysocki" <rafael@kernel.org>,
@@ -65,9 +65,9 @@ Cc: "Rafael J . Wysocki" <rafael@kernel.org>,
 	linux-kernel@vger.kernel.org,
 	Sivan Zohar-Kotzer <sivany32@gmail.com>,
 	Elazar Leibovich <elazarl@gmail.com>
-Subject: [PATCH 1/2] powercap: dtpm_cpu: Guard em_cpu_get() against NULL return in sysfs callbacks
-Date: Thu, 11 Jun 2026 23:46:57 +0300
-Message-ID: <20260611204658.47987-2-elazarl@gmail.com>
+Subject: [PATCH 2/2] powercap: dtpm_devfreq: Guard em_pd_get() against NULL return in callbacks
+Date: Thu, 11 Jun 2026 23:46:58 +0300
+Message-ID: <20260611204658.47987-3-elazarl@gmail.com>
 X-Mailer: git-send-email 2.50.1
 In-Reply-To: <20260611204658.47987-1-elazarl@gmail.com>
 References: <20260611204658.47987-1-elazarl@gmail.com>
@@ -82,53 +82,70 @@ Content-Transfer-Encoding: 8bit
 
 From: Sivan Zohar-Kotzer <sivany32@gmail.com>
 
-em_cpu_get() can return NULL when the CPU has no energy model registered
-(e.g. during hotplug races or initialization failures). Two call sites
-miss the NULL test:
+em_pd_get() returns NULL when the device has no energy model
+registered. All three dtpm callbacks dereference the perf domain
+without checking it:
 
 1. set_pd_power_limit() — reachable from sysfs via the powercap
    constraint power_limit_uw store path. If NULL, return the current
    power limit unchanged (no-op) instead of crashing.
 
-2. update_pd_power_uw() — called from CPU hotplug handlers via
-   dtpm_update_power(). Return -EINVAL if the EM is absent, since this
-   is an internal consistency failure that should not be swallowed.
+2. get_pd_power_uw() — reachable from sysfs via the power_uw read
+   path. Return 0 if the EM is absent.
 
-The other sysfs-reachable path, get_pd_power_uw(), already has a NULL
-guard returning 0.
+3. update_pd_power_uw() — called via dtpm_update_power(). Return
+   -EINVAL if the EM is absent.
 
-Fixes: 0e8f68d7f048 ("powercap/drivers/dtpm: Add CPU energy model based support")
+This mirrors the equivalent NULL checks in dtpm_cpu.c.
+
+Note this only handles the case where the EM is already gone (or was
+never registered) when the callback starts. A callback racing with
+em_dev_unregister_perf_domain() can still observe a non-NULL perf
+domain that is freed underneath it; closing that race requires
+lifetime guarantees from the EM core and is addressed separately.
+
+Fixes: e44655617317 ("powercap/drivers/dtpm: Add dtpm devfreq with energy model support")
 Signed-off-by: Sivan Zohar-Kotzer <sivany32@gmail.com>
 Co-developed-by: Elazar Leibovich <elazarl@gmail.com>
 Signed-off-by: Elazar Leibovich <elazarl@gmail.com>
 ---
- drivers/powercap/dtpm_cpu.c | 6 ++++++
- 1 file changed, 6 insertions(+)
+ drivers/powercap/dtpm_devfreq.c | 9 +++++++++
+ 1 file changed, 9 insertions(+)
 
-diff --git a/drivers/powercap/dtpm_cpu.c b/drivers/powercap/dtpm_cpu.c
-index 99390ec1481f..0a460f97bf15 100644
---- a/drivers/powercap/dtpm_cpu.c
-+++ b/drivers/powercap/dtpm_cpu.c
-@@ -47,6 +47,9 @@ static u64 set_pd_power_limit(struct dtpm *dtpm, u64 power_limit)
- 	u64 power;
- 	int i, nr_cpus;
+diff --git a/drivers/powercap/dtpm_devfreq.c b/drivers/powercap/dtpm_devfreq.c
+index d1dff6ccab12..cf16e2756481 100644
+--- a/drivers/powercap/dtpm_devfreq.c
++++ b/drivers/powercap/dtpm_devfreq.c
+@@ -39,6 +39,9 @@ static int update_pd_power_uw(struct dtpm *dtpm)
+ 	struct em_perf_domain *pd = em_pd_get(dev);
+ 	struct em_perf_state *table;
+ 
++	if (!pd)
++		return -EINVAL;
++
+ 	rcu_read_lock();
+ 	table = em_perf_state_from_pd(pd);
+ 
+@@ -60,6 +63,9 @@ static u64 set_pd_power_limit(struct dtpm *dtpm, u64 power_limit)
+ 	unsigned long freq;
+ 	int i;
  
 +	if (!pd)
 +		return dtpm->power_limit;
 +
- 	nr_cpus = cpumask_weight_and(cpu_online_mask, to_cpumask(pd->cpus));
- 
  	rcu_read_lock();
-@@ -125,6 +128,9 @@ static int update_pd_power_uw(struct dtpm *dtpm)
- 	struct em_perf_state *table;
- 	int nr_cpus;
+ 	table = em_perf_state_from_pd(pd);
+ 	for (i = 0; i < pd->nr_perf_states; i++) {
+@@ -102,6 +108,9 @@ static u64 get_pd_power_uw(struct dtpm *dtpm)
+ 	u64 power = 0;
+ 	int i;
  
-+	if (!em)
-+		return -EINVAL;
++	if (!pd)
++		return 0;
 +
- 	nr_cpus = cpumask_weight_and(cpu_online_mask, to_cpumask(em->cpus));
- 
- 	rcu_read_lock();
+ 	mutex_lock(&devfreq->lock);
+ 	status = devfreq->last_status;
+ 	mutex_unlock(&devfreq->lock);
 -- 
 2.50.1 (Apple Git-155)
 
