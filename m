@@ -1,509 +1,194 @@
-Received: from BN8PR05CU002.outbound.protection.outlook.com (mail-eastus2azon11011006.outbound.protection.outlook.com [52.101.57.6])
+Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6757D283FE6;
-	Thu, 11 Jun 2026 04:34:42 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.57.6
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1781152484; cv=fail; b=VHw5qbHUsHuHymG+6edSl71vNNtXVyGCEynQxTO1fAxPjw796JkSR8phPo8TzkI3QEyfxXcrggsMpqY3RlgcaqoK/lfIc+rmp72ywO83CqtIb3pouviWn2V2oegSLM6A7F3jPOvKS9HGTISBirk4fDLK+f77iiZmGMn5H3lZYKg=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1781152484; c=relaxed/simple;
-	bh=Ju3qhDRjU3ETsn0O1vVZW2LtGsQQCaaR3AEwH8iC5YM=;
-	h=Message-ID:Date:Subject:To:Cc:References:From:In-Reply-To:
-	 Content-Type:MIME-Version; b=KTvpcBQHQIBZcM5O8ne4+sbADNWAjeRgtOBUklA9d1IvKK4KagncnWF/ZKqcmbRR2ZIJZ+110tUahA7WxfOjY4e2mP/r6YxiTHH+C8mzhzWGTlTIpQ/Q6IO9kQQRr445r8jHsxJz+sYsghEoSzmedFJll5P+xCqvMR1enoqpP3o=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com; spf=fail smtp.mailfrom=amd.com; dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b=n+FkU+Ft; arc=fail smtp.client-ip=52.101.57.6
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com
-Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=amd.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 357292FE066
+	for <linux-pm@vger.kernel.org>; Thu, 11 Jun 2026 04:45:40 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1781153141; cv=none; b=PmJT0J2meNcCvZy8S4j41smgFZCRQCTLvDNsOhGKLhldZJJBk+9Dk7Tcae9lKwqQE1nFLzXK//3FflTVXn5PHj7S/aZfHBnkvlotbbY9y4hYkzUd0995PHbz19yRbNRaDXx2EOVb1JongnpEbgq7yXFkAi/Eu8/bVd9Mttm0eNY=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1781153141; c=relaxed/simple;
+	bh=wDZgTVz/oZs6fHMeDkBQJjN738mapPf0RtpZObfLSGo=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=UtehA0QnB4+thXgajg38DD2Hr9T5kYHem2iLPSp+BGj5DR5qP1GENNI1lrbHUGiRarvbRKj+POHIITWD6Qc/OWA/hybDfevKQ0WIqof6oUFgWjNimNB/tudn/jOfnPyFQoKTVn+1ZY+1r/M5ZByHw71RixwLwE5SBwMKScileCo=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=eUCmfE5X; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=G8QPs6Ma; arc=none smtp.client-ip=205.220.168.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b="n+FkU+Ft"
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=nSGsSPMnRSNHvwh8zWHkiIjeevuQS8OvHJa8IRbTQD9T8paVfKOEFnGa5aS2jsEk1WPmE1yE+VDSJJZ+WnRJ9HdR2yF9AE/A6/Klr5CU6Pz6o+TyYGRdNzGstngSyTuVGJcnnz4ocLnyS8j9sgd6BDFe65ZTEnzQGGC9GolVnLHzvqMrdqCXmptnUyDEAR38ANKofiMgr786o5g7wJx7fiDnLm7/pimclvCu6vqtIyUpd5P7zS+hlS0cBdipIFpSRsHhhpKMiVnC1xAaEsdixFqeIjOQqTiNR/uvmHJd1xmY3aosdSnJPUlZaM4BSdNzrPSbwwGMl6Gzd/bf/kjG9g==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=cVCROw1sImVNnYge7zVYpzdAclPgpHmNFe0LYx/H85k=;
- b=inky6To6xTsECRCmwV0kl7uR9kxW42kg3cXfm6dA/+B+Sill1iu+k+KhOVJd6oa6G+6EJEIwpHDWJWf+0XBEzJFUzG8QBatEYp94hatMhBJgb4UqTbYOQKZXM/LX9SZnfz7L+pnzJlvegnmz4pEcsC8iU1vojnah8yp+lCIKX5lk4+SNwwhqWrPHqYKemj5wng4JTOjBtxu9xZ1xKGZd37l+RipHgtx6uby5mplAeSEGE0uxwQgOpHrjslRUodsO1vJEKc8vtd/gHdajDUN2VqO9BAdSVikCEqbwfXly1XK6xmxfikeWG8u5cReuQ/kfHvwRRzBq8jObz3ZXSXev+A==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=amd.com; dmarc=pass action=none header.from=amd.com; dkim=pass
- header.d=amd.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=cVCROw1sImVNnYge7zVYpzdAclPgpHmNFe0LYx/H85k=;
- b=n+FkU+FthHwEBo5OPWd+leZ+0TDwuArwZCP20DjgsVny7uPV2ZYDC6YB7mnco/sqPvwUWODizyQKhHB6+lvya/t6LPLhp54Ur/0UiUp4Hi/aqWVL8JpAIjkYdX1V4Z5AF4WwerIQ1nzOBzETkPD4BLD4dzbcQIwcikV4TSUDeIE=
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=amd.com;
-Received: from PH8PR12MB6914.namprd12.prod.outlook.com (2603:10b6:510:1cb::21)
- by DM4PR12MB5745.namprd12.prod.outlook.com (2603:10b6:8:5c::7) with Microsoft
- SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.21.92.13; Thu, 11 Jun 2026 04:34:36 +0000
-Received: from PH8PR12MB6914.namprd12.prod.outlook.com
- ([fe80::2893:177a:72b0:6000]) by PH8PR12MB6914.namprd12.prod.outlook.com
- ([fe80::2893:177a:72b0:6000%6]) with mapi id 15.21.0092.016; Thu, 11 Jun 2026
- 04:34:36 +0000
-Message-ID: <e098847d-fc71-440f-9572-5b3c99035c76@amd.com>
-Date: Wed, 10 Jun 2026 23:34:33 -0500
-User-Agent: Mozilla Thunderbird
-Subject: Re: pinctrl: amd: spurious immediate resume from S3/s2idle via
- BIOS-armed wake GPIO with no ACPI owner (Lenovo Legion Pro 5 16ARX8)
-Content-Language: en-US
-To: Lenart Kos <koslenart@gmail.com>
-Cc: Basavaraj Natikar <Basavaraj.Natikar@amd.com>,
- Shyam Sundar S K <Shyam-sundar.S-k@amd.com>,
- Linus Walleij <linusw@kernel.org>, linux-gpio@vger.kernel.org,
- linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <CAFdvZNt+mRTE9Q+utn=T8GzU7s_09ULhUtzTMMa9dgGCsE+r9A@mail.gmail.com>
- <c982caf3-f855-41ad-80cd-3ce9598913ab@amd.com>
- <CAFdvZNs9jNxnqqaPhDXBt555hqgTHQizV4ORPp_8xg1D=XD4TA@mail.gmail.com>
- <44bd3c12-b8d6-45c8-a7cf-12ea47716461@amd.com>
- <CAFdvZNvWSVCphSyQCVNHx7j0WApsbr0KekVsA-rVLO0eqV0X9w@mail.gmail.com>
- <ef1d3b86-f5c1-4ac5-ad09-821624044ca1@amd.com>
- <CAFdvZNvj2Gkik6de1Wtw1++S+MiVsRyyXwo7cPQ4RnDCnKYNDA@mail.gmail.com>
-From: Mario Limonciello <mario.limonciello@amd.com>
-In-Reply-To: <CAFdvZNvj2Gkik6de1Wtw1++S+MiVsRyyXwo7cPQ4RnDCnKYNDA@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-ClientProxiedBy: DSSP221CA0011.NAMP221.PROD.OUTLOOK.COM (2603:10b6:8:3d5::8)
- To PH8PR12MB6914.namprd12.prod.outlook.com (2603:10b6:510:1cb::21)
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="eUCmfE5X";
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="G8QPs6Ma"
+Received: from pps.filterd (m0279862.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 65B0NxuZ3092333
+	for <linux-pm@vger.kernel.org>; Thu, 11 Jun 2026 04:45:39 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
+	8ks7xcs4CcsvhpxQlRnY7mYEmf/7lZqBcXTDU2LX0qM=; b=eUCmfE5XNyddAO+D
+	0dw0SQBchcu20RPqbpJtWlc+F9af0uhK8DgWGreLf/IcuIAHWstGYcvZE1wBjWrP
+	pOk3mE3TS7UAxtT2EbgtxlrfPWeHICyUpm/5ME2ncJCLlfHIEkDFMKo87wiJVxO9
+	xTRl7wT+haxpU2/pecsGphJf0QdP8yTcuqM4gLs+mnNA/qOkCCwHBtEa4p3C2t/a
+	269c2KgniB28cCu/RNw0PeGLnEqdXZ44WFMg8+cnx3oaU84JBeBc7z2zZvjNgkcL
+	iJo0IJ4q4XAnWtTK5FJhCjIk5z/Zc8YSJ+yDMcDVAAVw5i6mMneD3B0oA02EzWKe
+	yJjCVw==
+Received: from mail-pg1-f199.google.com (mail-pg1-f199.google.com [209.85.215.199])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4eqe6v9k9f-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <linux-pm@vger.kernel.org>; Thu, 11 Jun 2026 04:45:39 +0000 (GMT)
+Received: by mail-pg1-f199.google.com with SMTP id 41be03b00d2f7-c85dcdbe502so4939490a12.2
+        for <linux-pm@vger.kernel.org>; Wed, 10 Jun 2026 21:45:39 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=oss.qualcomm.com; s=google; t=1781153139; x=1781757939; darn=vger.kernel.org;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=8ks7xcs4CcsvhpxQlRnY7mYEmf/7lZqBcXTDU2LX0qM=;
+        b=G8QPs6MaIde05IkbfG0Ekp9B3NYDtG+Wikvx63NT4Z3ZspkYV3dy4uEl8bzfL11in6
+         MLrStFDGJVnFYS7e3PchvWDQELTzfFWBcKPMEcT0uJmIW6/2cA5gVXWBiuarZPMHIOv6
+         DH4FbNHrI0Kzt4mlea1EjE5uzodvXYHLFnyWTepjmVGo6dxe0zzm9bNhzJNxc7snDicz
+         O+jUMC/PFR7No/YfTxFjLT7KTnCxl9XXLTtob0AmixFFU4+P4OKHozQ9/KP0mA40d3ae
+         ZXKat/xJchAJ7PuNas9iqqq1gewWuWipGGxLiKW/NBP7NyV3B+R61qq8gTSPNyLU86zl
+         ATng==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1781153139; x=1781757939;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=8ks7xcs4CcsvhpxQlRnY7mYEmf/7lZqBcXTDU2LX0qM=;
+        b=BB7B66i17eWZk8HbisIuph8/N5HyXnZPcCZSZ8Vj9D/vpDNF537heX+uB2sXbxpThH
+         kcxuIk3GVqsZd55/wviq1p0aMcQ9m8Fd5MQ4R1Eb0krSxEQDkQoRafbEFJzRf+9ZxgU7
+         lW8DplSJrXOAGz/LoY9JIMUT3TraSemrRi354zP3etSTCUD/NjL0SlUxJgque+bdptyR
+         /GqGmEZVFq/dt2AZ+Y3N1N7R1S2UeXyUjK3oOOosiK5CQecaIPHk0neE5ux5grS8TWK9
+         QpRMDoEfRPQewwGKqzAR5q0VYJ818U3O2wrfaEGO/WqApNcRPdBB+8KFAGcHNqLOwHQc
+         KsTg==
+X-Forwarded-Encrypted: i=1; AFNElJ/drsuSzD3EwBMjKRio0hLwA9Tyxu9aZgrFAjD+CjPQ+lmCbouy9Uo4xRCABEZ0Q/qk8NkuQAjWnw==@vger.kernel.org
+X-Gm-Message-State: AOJu0YwFtNCmoqVBAdnRwpMGM1Xdl9pxJKshZZReb0zvAJfVofQ2lI2O
+	b0e4XqQ2FfYh/8GSCPeLIoOF7Yiy5sZ80tN9ls+rplF5656kBSgKy8TI7f7TFvb1ceZ93ga7USq
+	vy0nu/CDWUvNoiFII7Rl4BCPusfv8onNR8QgQILcL6/gagcukXT8sTldGPbXsSg==
+X-Gm-Gg: Acq92OF7MfrD6Wl7Hm3xHz7KIdU3m/eZIfylQQFqIMDhlN4Q6UsuXV08dbj4iu2fb3F
+	U1bM/hCzpveAxQeNMpRJxj6USqg+u6QhOFEaaGcqHeH8YFkRsrNwmqgD7AhAQdJJiIjFHLMKhdJ
+	26pZ7bGbD7C7ZPzbGnuIwlhSBrih0m0FUo0WZCMUE0tQJELqjkKdur5Z1h1KCIOP5M+1X9DK8Ri
+	x87iK7zIVgM72hshOpaTFLuJasoVQ4stxyC6eFgykneaq55PMh1CfRTJ+UAckG0ffEefgFdBinb
+	6W5G7qi/uUcx/kjVwa9f8jxuwvXNvukiZ+LW1KmHI3iCM0QaCcPiaDnHaclZzGJ6yxHaFQfuScz
+	C36HirliP7srTuJ2YVoFi8Scham9edMK7AyMZFc2/QvffA4oOlPHQsl5drlax6pY=
+X-Received: by 2002:a05:6a00:bd89:b0:842:5ea5:5fdd with SMTP id d2e1a72fcca58-84336bc6f14mr1290369b3a.40.1781153138778;
+        Wed, 10 Jun 2026 21:45:38 -0700 (PDT)
+X-Received: by 2002:a05:6a00:bd89:b0:842:5ea5:5fdd with SMTP id d2e1a72fcca58-84336bc6f14mr1290333b3a.40.1781153138304;
+        Wed, 10 Jun 2026 21:45:38 -0700 (PDT)
+Received: from [10.217.199.117] ([202.46.22.19])
+        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-843383197e5sm467576b3a.52.2026.06.10.21.45.32
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Wed, 10 Jun 2026 21:45:37 -0700 (PDT)
+Message-ID: <cb244225-5375-4925-8d20-232cae9da672@oss.qualcomm.com>
+Date: Thu, 11 Jun 2026 10:15:30 +0530
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: PH8PR12MB6914:EE_|DM4PR12MB5745:EE_
-X-MS-Office365-Filtering-Correlation-Id: 2579f2ba-c9ac-48a7-5310-08dec772be03
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|23010399003|376014|1800799024|366016|13003099007|6133799003|3023799007|4143699003|5023799004|22082099003|18002099003|11063799006|56012099006;
-X-Microsoft-Antispam-Message-Info:
-	Ngd7eoV7MqTpnUcfFwXc/w+HemWvqgVDfLVImEu85r+w+PTfDpvY36GzHQn7dRPSAVC4s/BxONlW6c+RnvpHF2FZfDdSwlWBxBDtC0Enn12ECliVI/HkRX2u6Sd38fZkCnYzYelqNYyR4REjPjg0HkddatfM2MXhjQ7CjrCPAZ8v8q5mg4DALZC9TJeQlqjdqrQepRPrCV/sp3AQXxfnms6/WG1VkMLW9GTAwdXvoSG5WZCII+f4Fx6f50SBVMo3ueDvPGA53ProwtDWJdJ9tLtII1TwTbzbdYLYUTKILjrjQ/F023aOxh3yPlQVIQwf5RUuV/52wACkzA4leyhisgm+REqfP4oCYHiF3esp02un3DEPpN8o3qCpFJsGOwPPs6e6xxiTPLXthOhOEgEY3+8rc90yc+y56LVa6L6vN1tW/LmoZ2JerFGGoKBv9K0nAlWdcdkuuH8q8IKsbUvm3pytXoKBZNwNADU7s3B1GN4MeO2XK9zbJyhmXmOwD3nImIpv0n/DVu2uZ526cOb4ob+yY4bWgH0lgaqvnZFz49mkd1oDv6JgP697SrnNG0udGSByrpRlfxCgRGs5mPDnv2lOOpq7Gvj+JqlFnLa0KotPNl0mZ1f2pgGAI5iWr0X6WGdng387LhMsAmXXn96J2GbBxTIlIHG7KeKHhnSPUdfV6RJYe0HBtgIywKFApjfF
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:PH8PR12MB6914.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(23010399003)(376014)(1800799024)(366016)(13003099007)(6133799003)(3023799007)(4143699003)(5023799004)(22082099003)(18002099003)(11063799006)(56012099006);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?utf-8?B?eFZUQkJhMlhLOE9QQzdkODh6RWM1TG5OK09wSEpqYS9sY1dNcmFDTmx4aHlp?=
- =?utf-8?B?MDNWd0FUNE8vUVNYRlNvOThzeWU5NDhocDMvcDVPbUppSytrcFBjUnh5cXU5?=
- =?utf-8?B?b1VjVndHMkRiNGtMUnEwcmY3R3dQeCtIZk5Mdms1TUNGdW80U1JLMCtNTk1t?=
- =?utf-8?B?U29adGZuOXU3L3lTRThKRllNR0tmM3dJQVBPbUp6L2R3dXJDY0Y2eDJyYmhl?=
- =?utf-8?B?V0RUMmVlSVZQSjVLY1hQRUdwNExSdnhWQVM1U1p2SGR3OHJYK1k4bDFkY3hk?=
- =?utf-8?B?RkphOTVnMVhSM2tFblhrRWhKL2ZCai9FZUpqVUFnRGpmQWxVUUxQNkM2S0Ey?=
- =?utf-8?B?VGFLWFZxMllraVZFQ0V3WGdibFB6YzlSMlp0NG1IbWZ1UERSV3Z0dUZnK0oy?=
- =?utf-8?B?MVF3QlpmM0JNZi9jTlZPV1VKdU9uQXh3Rm80bVZaMkJ2azYwNy9lNVNkTDdE?=
- =?utf-8?B?NnVxRWtZeE8renFjalZMaW5FYURtRTNiTllRNFhQbEE5UjRYOGRzeUhJMW1D?=
- =?utf-8?B?WFo0T2o4aGpqUUkyTTQ1S1lGckozZEhZT1BlRFdaSG9BQkMveURrVjZobEt1?=
- =?utf-8?B?Y3pTeVdFRWZVRzhJcmlCNEtkMytrNk5DZmtvc1AraUlnMnBnQUw1b3J0SkZE?=
- =?utf-8?B?a1EvQ0NYeXA3S0t3dG95bXFFV1pQWWRGbklod0Fjb01DZmZZeE90ZUVvTmFs?=
- =?utf-8?B?SUwyd1ZSWnhEOHFiU3prOS8yTEZSQnp5Qm4vWExYRStPY1BZSUJ0TzdNWm9u?=
- =?utf-8?B?SUpwRk9lL2laSXp5Z1BkM25PTE9UbXV2VG5SMTdrRnM4a1VRcTZSbk42U1N0?=
- =?utf-8?B?UzJuR0w4Z01WTGpzY1EvRW1tUGVwbGpocFpaUDA0YU9YQ3FtOTVwd0RQOTVV?=
- =?utf-8?B?UEZRdVBKeVNzYmNTZUlEYkxqNjF6OWFwemh0QXQ1alkreERQQlN2RzRGMkhB?=
- =?utf-8?B?NlIzOWFSaWdFVXhOL3RJc2IzRlUyemp5T04wZkhTQWhRWHFUQlZSSThtdTVX?=
- =?utf-8?B?dnRydVFiMUhGRGVXRE8rWU52Vkc1ZldCRThUdmZ6dGp6d0xINGE0L28rZTFF?=
- =?utf-8?B?c0hNd0RBeTRrTkV5NTJHYklzUzk1dWovVzYveVRONU1QM1dWVXRQNlBQZ3pw?=
- =?utf-8?B?d01DbnJybU5NbDJham9sdE4rQkJvSDNyZExKcXZ3MWFHQW5DeUFVUEorVHhp?=
- =?utf-8?B?VHN4Um1pRlFkNFVjOFl4b1N0RlZ5VGlhdldqeUdYUlpHVzYrVEtZQVZYOE0y?=
- =?utf-8?B?cEppTW1VQi8zMGZLSUlMTlNHd0daeVJuSEl5a1RpeVFtemNnWXovVnpFZzZN?=
- =?utf-8?B?bFlzQ0YvcDF3MFdrMXFYU3AxN3J3K0M3Vk5YdWRFajYyZHFGc0xOSk14T3JK?=
- =?utf-8?B?YWs3ZXk0V3ZacGt1cHBWQlJLSmp5cm9ZeDdEOWZxakxRQ2ZZYXNVRmFaRzlj?=
- =?utf-8?B?WW56UjRVbnhZNmd0U0x1ZkRJbURXdE5oYlpjOWVKWEVBWjEwL1BCdGc3WWJZ?=
- =?utf-8?B?WTBDWFJESUJxKyswWG9iQTRUeU5aVFpyMjBJNXhFMk9FMW5DZnpVeVdiVll1?=
- =?utf-8?B?S2V1WGFRNWVLWnpIcnBZdzJWSDM5ZmY1TStTNEZJYWk4WjhGNjEzYlRuOGht?=
- =?utf-8?B?TU1vTjVCTVVnS05OdGFmcVQzQTlTU0VMMmEzTUUzb1REQW83dExlditDVlNv?=
- =?utf-8?B?UDBmNmRxN0FPb3ZNeUpISk8wSHUzTTVhTndnVE8rSEVpNUdJMGlqRllwcGcw?=
- =?utf-8?B?MmhLWGNwd0lscVlTdUVpaTB4ZG1YcDVFd09YbVNRUVYwby84OGcrVHkxcFlq?=
- =?utf-8?B?ODRWdjFaVTQ3ZS9XS1FzcFE5VFhxaFIrVGpHdUErV1BlNjhNYTdhUTJsbksv?=
- =?utf-8?B?YkhwODBSbzd1TmRHSk1CL3M5bzVPS1dQNktyY3VYeGNrQjk5REVFVVZic3Nz?=
- =?utf-8?B?Q2tLT1MxUFZJcFo3N0h2eTNzY2dwMHAxRndVNlZYSG96V0VzVlJGaHg1SXE3?=
- =?utf-8?B?dTFpM3ZkWk0wTGhhUHZtQkhXMzNENVp3YXU4NU1sOEVCaFBiWnpkdkVrTTlC?=
- =?utf-8?B?a29Rbzl5bWV0Y3N5eDB2SUtEZUw0alNGTE11dzZ4ci8zLzF6Q09rSjVTSXdX?=
- =?utf-8?B?dXJTSkNDdFJXbWJwQXp0Mkxmd2crWEZhQXFlNlVSOFpvTkYxM0tQMi93OEUw?=
- =?utf-8?B?QnRrejBXaFJ5T1lncXgxMjdwN3NncXQwbDR1WGMxdTNnaE40S2tNUGIxYVRz?=
- =?utf-8?B?Z0NCTDc3djdVM3dVMGlFb09iWDMwanZlS3M2REZadXU2UnM4SGNMMERrZ2xO?=
- =?utf-8?Q?fLwY2eEc8WgiTpV6r7?=
-X-OriginatorOrg: amd.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 2579f2ba-c9ac-48a7-5310-08dec772be03
-X-MS-Exchange-CrossTenant-AuthSource: PH8PR12MB6914.namprd12.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 11 Jun 2026 04:34:36.3768
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: 9zAoGg15dFOVwn6iO9tpDNbwSPB6EaqejKNXfOMMtmZWrG0G/hV1jpe9N+9Q+QgwC0XPicOoyK5DulvFN1Omww==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: DM4PR12MB5745
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v3 3/8] remoteproc: qcom: pas: register TMD thermal
+ cooling devices
+To: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>,
+        Bjorn Andersson <andersson@kernel.org>,
+        Mathieu Poirier <mathieu.poirier@linaro.org>,
+        Rob Herring <robh@kernel.org>,
+        Krzysztof Kozlowski <krzk+dt@kernel.org>,
+        Conor Dooley
+ <conor+dt@kernel.org>,
+        Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>,
+        Amit Kucheria <amit.kucheria@oss.qualcomm.com>,
+        Manivannan Sadhasivam <mani@kernel.org>,
+        Konrad Dybcio <konradybcio@kernel.org>, Kees Cook <kees@kernel.org>,
+        "Gustavo A. R. Silva" <gustavoars@kernel.org>,
+        cros-qcom-dts-watchers@chromium.org
+Cc: linux-arm-msm@vger.kernel.org, linux-remoteproc@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-pm@vger.kernel.org, linux-hardening@vger.kernel.org,
+        Manaf Meethalavalappu Pallikunhi <manaf.pallikunhi@oss.qualcomm.com>
+References: <20260609-qmi-tmd-v3-0-291a2ff4c634@oss.qualcomm.com>
+ <20260609-qmi-tmd-v3-3-291a2ff4c634@oss.qualcomm.com>
+ <e9573827-81b5-4c75-9d1a-d59a4809300c@oss.qualcomm.com>
+Content-Language: en-US
+From: Gaurav Kohli <gaurav.kohli@oss.qualcomm.com>
+In-Reply-To: <e9573827-81b5-4c75-9d1a-d59a4809300c@oss.qualcomm.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Proofpoint-ORIG-GUID: Ds0ZaE73BFqPkFR_Lavwmqaq47CMf2-A
+X-Proofpoint-Spam-Info: AW1haW4tMjYwNjExMDA0MyBTYWx0ZWRfX9UJQ4kIDhHwW
+ SY65/IB+NK0fGNC0CDQCyFndfseC7Jd7CEAjTZRO/7aO6x4HcS4Mh+lzwnPZDqZJfzPqBPXd6Ui
+ /g7sJ7Vjee+CQNwsHkvdSGAoLA23ACU=
+X-Proofpoint-GUID: Ds0ZaE73BFqPkFR_Lavwmqaq47CMf2-A
+X-Authority-Analysis: v=2.4 cv=UsRT8ewB c=1 sm=1 tr=0 ts=6a2a3d73 cx=c_pps
+ a=Oh5Dbbf/trHjhBongsHeRQ==:117 a=fChuTYTh2wq5r3m49p7fHw==:17
+ a=IkcTkHD0fZMA:10 a=FelO9ux0wxsA:10 a=s4-Qcg_JpJYA:10
+ a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=_K5XuSEh1TEqbUxoQ0s3:22
+ a=EUspDBNiAAAA:8 a=cgKxsijKBzv_CCWCEVYA:9 a=QEXdDO2ut3YA:10
+ a=_Vgx9l1VpLgwpw_dHYaR:22
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNjExMDA0MyBTYWx0ZWRfXzPOmThwxikB9
+ UsXrCDSUabPWJoN4o2W1jk9tlx6u2gxlXrZagYkePuEGvUnuz5TAYnuGwtJQbwbCXYFUC09TEB4
+ J1iYf4G9ep8imBdiDqe8tLVcr1w60qvgpCaE+hQJpe4x9uTPTMiN04QVmCRfOVMK7wJazP5kqff
+ bHUPSn/3EaM3wngdVRIPJFd5W7CHjgEE1zpndXMpgOMWRIHnphryOIMfnu55jZfQ+r6Uh05OHQ9
+ 8+AmjihGvcBJFrjT0zfZDsq/0QYp0fxJ2ZOoV0oT6BmykgJlYu2sZUDUXqPjHYvKELMdzO11Tfd
+ QJeudCLgGSMjMX9zDT6brWid+j5OGVIpCHLsvVZOlF3vbQLlDnblZqNVwq8/4dyg/4pqWuS8Mu9
+ W4/syWCuDUU2X6BpzzITJ0JPcnqVq6abc0DxdcNrxJQGgtcioBDtBvr+CsCdOqp8x+y/G93c2Tq
+ NcfiR1r17MqakQWf6Kg==
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.125,FMLib:17.12.100.49
+ definitions=2026-06-11_01,2026-06-09_02,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501 phishscore=0 clxscore=1015 lowpriorityscore=0 spamscore=0
+ adultscore=0 bulkscore=0 suspectscore=0 impostorscore=0 malwarescore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2606040000 definitions=main-2606110043
 
 
 
-On 6/10/26 17:13, Lenart Kos wrote:
-> While debugging with /dev/gpiochip I found out there is actually an
-> acpi event attached to both #2 and #4 so the report about there being
-> no _AEI resources was wrong...
+On 6/9/2026 5:33 PM, Konrad Dybcio wrote:
+> On 6/9/26 12:22 PM, Gaurav Kohli wrote:
+>> Add support for Thermal Mitigation Devices (TMDs) to enable
+>> thermal throttling of remote processors through QMI.
+>>
+>> This enables the thermal framework to request mitigation when remote
+>> subsystems (modem, CDSP) contribute to thermal issues.
+>>
+>> Signed-off-by: Gaurav Kohli <gaurav.kohli@oss.qualcomm.com>
+>> Signed-off-by: Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>
 > 
-> The _EVT handler shows what pin 4 is:
-> * Case (0x04): Notify(_SB.PCI0.GPP0.PEGP, 0x81) // "Information
-> Change" -> dGPU (NVIDIA)
-> * Case (0x0A): Notify(_SB.UBTC, 0x80) // USB Type-C status change
+> There's no other signs of Daniel in this patch, please fix the
+> tags chain
 > 
-> Testing with cmdline
-> gpiolib_acpi.ignore_wake=AMDI0030:00@2,AMDI0030:00@4 it fixed the
-> issue as well. Maybe this can be added to gpiolib_acpi_quirks or
-> should this be fixed in Nvidia drivers? If you could kindly direct me
-> in the correct direction since this does not look like an AMD problem
-> anymore.
-
-This should not be quirked, there is something wrong with the NVIDIA 
-software stack if it's asserting this GPIO over suspend.
-
-I would suggest you contact NVIDIA for a solution.
-
-But you at least have a workaround now.
-
-FWIW I do think that this debugging sequence you went through to 
-determine the root cause and how to implement and discover this 
-workaround is useful to add a paragraph to 
-https://docs.kernel.org/arch/x86/amd-debugging.html.
-
-If you're willing to write up a patch to the documentation, I'm happy to 
-review it.
-
+> [...]
 > 
+
+Thanks Konrad for review, will fix this.
+
+>> +static int qcom_pas_setup_tmd(struct qcom_pas *pas)
+>> +{
+>> +	struct device *dev = pas->dev;
+>> +	struct device_node *np = dev->of_node;
+>> +	const char **tmd_names;
+>> +	int num_tmds, ret, i;
+>> +
+>> +	if (!of_find_property(np, "tmd-names", NULL))
 > 
-> On Wed, Jun 10, 2026 at 11:30 PM Mario Limonciello
-> <mario.limonciello@amd.com> wrote:
->>
->> On 6/10/26 16:20, Lenart Kos wrote:
->>> I have checked all the bios settings and the closest to modifying
->>> sleep behaviour was a setting that enables opening the lid turning on
->>> the laptop which was already disabled, so no, there are no sleep
->>> settings.
->>
->> OK - then the LLM statement that this is a modern standby system sounds
->> categorically wrong.
->>
->> It sounds like this is actually a system that only support S3.
->>
->>>
->>> Regarding the HDMI port, it is connected to the Nvidia card. Only the
->>> built-in screen is connected to the AMD card with eDP. I have not
->>> reported this anywhere else yet, only here and the before mentioned
->>> forum post. If this is an Nvidia issue I can report it to them as
->>> well.
->>
->> As the behavior only happens with something connected to the HDMI port,
->> I think you should discuss this with NVIDIA before we make any quirk
->> decisions in the kernel.
->>
->> This really sounds like a driver bug to me if it's tied to that behavior.
->>
->> I personally would not be against more debugging infrastructure, but I
->> would think that /dev/gpiochipX is enough for users to debug with.
->>
->> You can work with an LLM to try to come up with a solution that uses
->> /dev/gpiochipX.
->>
->> I would certainly welcome a new section in
->> https://docs.kernel.org/arch/x86/amd-debugging.html to explain how you
->> used it if it's effective for debugging this problem.
->>
->>>
->>> The HPD theory is pure guesswork done by LLM. What I can be certain of
->>> is that disabling those specific pins
->>> (https://github.com/Lenart12/legion-nowake/blob/6b599aad7afd1431e81048273106c5526561764b/legion_nowake.c#L59-L62)
->>> did solve the problem, as to why and in what way, I would not bet on.
->>> So the statements about HPD and your questions about them are maybe in
->>> vain. What would be the best way to figure out if HPD is actually
->>> attached to those pins?
->>
->> You can add some debugging statements specifically for when those GPIOs
->> are firing interrupts.  Unplug/plug and see if/when those GPIOs change.
->>
->> Maybe they're monitor presence lines?  Maybe NVIDIA can tell you.
->>
->>>
->>> FWIW I think that it is in fact not HPD as I have checked the GPIO
->>> states when the monitor cable is connected or not and it seems to be
->>> gpio #131 not #2 or #4. I have asked Claude to expand on what it knows
->>> and what it assumes, this may be of help to you:
->>> ---
->>> What I have measured (facts):
->>> * The resume is triggered by the AMD GPIO controller:
->>> /sys/power/pm_wakeup_irq = 7 (pinctrl_amd), and the post‑resume log
->>> shows GPIO 4 is active: 0x30057c00 with the wake‑status bit latched
->>> and the S3 wake‑enable bit (bit 14) set.
->>> * In /sys/kernel/debug/gpio, pins #2 and #4 are the only pins with
->>> S0i3/S3 wake‑enable bits set and an interrupt enabled. (Pin #89 has an
->>> interrupt but no wake bits — not a wake source.)
->>> * These wake bits have no ACPI owner: decompiling the DSDT and all 16
->>> SSDTs yields zero GpioInt / GpioIo / _AEI resources. Nothing in ACPI
->>> references these pins.
->>
->> At least for AMD this is specifically more common in systems that
->> support S3 (no _AEI resources).
->>
->>> * Empirically: suspend instant‑wakes only when an external display is
->>> connected (reproduced over both HDMI and USB‑C/DP); with no display,
->>> suspend holds. In the HDMI case, pin #4 is the one that latches the
->>> wake.
->>> * Clearing the S‑state wake‑enable bits (13/14/15) on pins #2 and #4
->>> fixes it (verified across multiple suspends). Interrupt‑enable bits
->>> left intact; no other wake source touched.
->>> * GPIO #131 is the actual monitor‑presence line — its level cleanly
->>> tracks plug/unplug (active‑low: LOW when a monitor is attached, HIGH
->>> when not, confirmed across plug→unplug→replug). But #131 has no
->>> interrupt and no wake bits — it does not wake the system.
->>> * Pins #2 and #4 do not change level when the monitor is
->>> plugged/unplugged (both steady while awake).
->>>
->>> What I am inferring (not proven):
->>> * Because #4's level is steady while awake yet the wake only occurs
->>> with a display connected, my working model is that #4 transitions
->>> during the dGPU's suspend power‑down sequence, and that transition
->>> only happens when the dGPU was actively driving an external display.
->>> This is a plausible explanation of the display correlation, not a
->>> verified one.
->>> * The precise electrical function of pins #2/#4 is unknown without
->>> schematics or a scope. They are not the monitor‑presence/HPD line
->>> (that is the unarmed #131). I previously guessed "HPD"; the #131 data
->>> contradicts that, so I'm withdrawing it.
->>>
->>> Unknown: what #2/#4 physically are, and why the firmware arms them as
->>> sleep wake sources with no ACPI description.
->>>
->>> Net: a bare, firmware‑armed pinctrl-amd wake pin with no ACPI
->>> description, which no existing in‑tree mechanism can disarm
->>> (gpiolib_acpi.ignore_wake= needs an ACPI event; power/wakeup needs a
->>> device owner; /dev/mem is blocked by IO_STRICT_DEVMEM).
->>> ---
->>>
->>> I have not filed a bugzilla report yet.
->>>
->>> I hope I addressed your questions.
->>>
->>> On Wed, Jun 10, 2026 at 10:23 PM Mario Limonciello
->>> <mario.limonciello@amd.com> wrote:
->>>>
->>>>
->>>>
->>>> On 6/10/26 15:18, Lenart Kos wrote:
->>>>> Thanks for taking your time for this. To answer your questions:
->>>>>
->>>>> S3 path:
->>>>> AFAIK it was on [deep] since my system was installed and I strongly
->>>>> remember being it as so, although it is possible that I misremembered
->>>>> since I have been debugging this sleep issue since January. In any
->>>>> case I have also tried setting sleep to [s2idle] before and it did not
->>>>> fix the waking issue even if set in s2 sleep mode.
->>>>> The firmware is not modified, everything is installed from Fedora
->>>>> sources without modification.
->>>>
->>>> Can you please check in Lenovo's BIOS setup if there is a sleep mode for
->>>> this platform?  If there isn't that's fine, I want to confirm what
->>>> Lenovo actually presented before making further assumptions.
->>>>
->>>> If there is such a setting, what options does it offer?  If you change
->>>> it does the behavior change?
->>>>
->>>> Furthermore if this issue is only happening when connected to the HDMI
->>>> port, that's the one connected to NVIDIA, right?  Have you started a
->>>> conversation with them?  Assuming the HPD theory that has been presented
->>>> is correct their driver should be in control of HPD behavior.
->>>>
->>>>>
->>>>> Methodology:
->>>>> Yes you are correct about LLMs, I have thrown every bit of my
->>>>> knowledge and time that I have available for this without success and
->>>>> Claude has finally solved this after a few months being irritated by
->>>>> this. I had decided to forward most of the information I received from
->>>>> LLM in the hopes it was useful to an expert in the area, but in
->>>>> hindsight I can see this was a mistake without AI disclosure, I'm
->>>>> sorry. So for your other questions regarding why this assumption was
->>>>> made or why was something done a certain way - I don't know, but I am
->>>>> willing to assist with testing. Apologies for this mess, it's my first
->>>>> time filing a bug to the LKML.
->>>>
->>>> No worries; as long as I'm talking to a human about a problem not an
->>>> LLM, I'm fine to work with you to see what we can come up with for a
->>>> solution.
->>>>
->>>> I've got various inline comments/questions below.  Can you please
->>>> address them?
->>>>
->>>>>
->>>>> On Wed, Jun 10, 2026 at 9:59 PM Mario Limonciello
->>>>> <mario.limonciello@amd.com> wrote:
->>>>>>
->>>>>> First off -
->>>>>>
->>>>>> How did you get into an S3 path?  These systems that ship with only
->>>>>> Modern Standby / s2idle normally shouldn't be able to get into S3.
->>>>>>
->>>>>> ╰─❯ cat /sys/power/mem_sleep
->>>>>> [s2idle]
->>>>>>
->>>>>> Have you modified the firmware in some way to try to enable an
->>>>>> unvalidated path?
->>>>>>
->>>>>> I have some more questions about your methodology below because when
->>>>>> debugging a kernel issue an LLM can sometimes make WILD assumptions that
->>>>>> are totally a house of cards.
->>>>>>
->>>>>> On 6/10/26 14:32, Lenart Kos wrote:
->>>>>>> ## Summary
->>>>>>>
->>>>>>> On the Lenovo Legion Pro 5 16ARX8, suspending (S3 *or* s2idle) with an external
->>>>>>> display connected resumes the machine after ~1 second. The wake is delivered by
->>>>>>> the AMD GPIO controller (`pinctrl_amd`, IRQ 7) from GPIO pin **#4**
->>>>>>> (and pin #2 for
->>>>>>> the USB‑C/DP path), which the **BIOS has armed as an S0i3/S3 wake
->>>>>>> source directly
->>>>>>> in the FCH GPIO register**, with **no ACPI description**
->>>>>>> (`_AEI`/`GpioInt`/`_PRW`)
->>>>>>> anywhere in the DSDT or the 16 SSDTs. Because there is no ACPI owner,
->>>>>>> none of the
->>>>>>> existing override mechanisms (`gpiolib_acpi.ignore_wake=`, device
->>>>>>> `power/wakeup`)
->>>>>>> can reach it, and `IO_STRICT_DEVMEM` blocks any userspace register
->>>>>>> write. The pin
->>>>>>> is an external‑display HPD line, so the edge produced while the GPU
->>>>>>> powers down on
->>>>>>> the way into sleep immediately wakes the system.
->>>>>>>
->>>>>>> ## Affected system
->>>>>>>
->>>>>>> ```
->>>>>>> DMI sys_vendor LENOVO
->>>>>>> DMI product_name 82WM
->>>>>>> DMI product_version Legion Pro 5 16ARX8
->>>>>>> DMI board_name LNVNB161216
->>>>>>> BIOS LPCN62WW (2025-06-17) # latest available; does NOT fix this
->>>>>>> SoC AMD Ryzen 7 7745HX (Raphael), GPIO ctrl AMDI0030 @ 0xFED81500
->>>>>>> GPU NVIDIA RTX 4060 Mobile (HDMI) + AMD Raphael iGPU (USB-C DP)
->>>>>>> Kernel 6.17+ through 7.0.x (reproduced on Fedora 43/44)
->>>>>>> ```
->>>>>>>
->>>>>>> ## Symptom / evidence
->>>>>>>
->>>>>>> Failed-suspend kernel log (verbose PM):
->>>>>>> ```
->>>>>>> PM: suspend entry (deep)
->>>>>>> ...
->>>>>>> amd_gpio AMDI0030:00: ... Clearing debounce for GPIO #2 during suspend.
->>>>>>> amd_gpio AMDI0030:00: ... Clearing debounce for GPIO #4 during suspend.
->>>>>>> amd_gpio AMDI0030:00: ... Disabling GPIO #89 interrupt for suspend. #
->>>>>>> not a wake src
->>>>>>> ACPI: PM: Preparing to enter system sleep state S3
->>>>>>> Timekeeping suspended for 1.384 seconds
->>>>>>> PM: Triggering wakeup from IRQ 7 # IRQ 7 = pinctrl_amd
->>>>>>> ...
->>>>>>> GPIO 4 is active: 0x30057c00 # bit 14 (WAKE_CNTRL_S3) + bit 29 (wake latched)
->>>>>>> ```
->>>>>>> `/sys/power/pm_wakeup_irq` = `7`.
->>>>>>>
->>>>>>> `/sys/kernel/debug/gpio` (relevant rows) shows pins #2 and #4 armed for S0i3+S3
->>>>>>> wake with their interrupt enabled, while #89 has no wake bits:
->>>>>>> ```
->>>>>>> #2 😛| ↓ | edge |⏰|⏰| | | ... 0x147ae0
->>>>>>> #4 😛| b | edge |⏰|⏰| | | ... 0x57ce0 <- both-edge HPD, S0i3+S3 wake set
->>>>>>
->>>>>> How did you determine this is an HPD line?  Is that a pure guess?  Or
->>>>>> did you look at a schematic/trace etc?
->>>>>>
->>>>>>> #89 😛| ↓ | level| | | | | ... 0x151b00 <- no wake bits (red herring)
->>>>>>> ```
->>>>>>>
->>>>>>> ## Root cause
->>>>>>>
->>>>>>> 1. The external‑display HPD lines are routed to SoC GPIO #2 (USB‑C/DP) and #4
->>>>>>> (HDMI/dGPU).
->>>>>>
->>>>>> How do you know?
->>>>>>
->>>>>>> 2. The BIOS sets `WAKE_CNTRL_S0I3`/`WAKE_CNTRL_S3` (bits 13/14) on
->>>>>>> those pins in the
->>>>>>> FCH GPIO register block and **never describes them in ACPI** — decompiling the
->>>>>>> DSDT and all 16 SSDTs yields **zero** `GpioInt`/`GpioIo`/`_AEI` resources.
->>>>>>> 3. `pinctrl_amd` correctly preserves hardware-armed wake pins across
->>>>>>> suspend, so the
->>>>>>> HPD edge generated during the suspend transition wakes the system immediately.
->>>>>>>
->>>>>>> This is effectively an unvalidated firmware S3 path (the platform ships as
->>>>>>> Modern-Standby-only); but note **both** the S0i3 and S3 wake bits are set, so
->>>>>>> s2idle is affected too.
->>>>>>
->>>>>> So how did you get into S3?
->>>>>>
->>>>>>>
->>>>>>> ## Why existing mechanisms don't help
->>>>>>>
->>>>>>> - `/proc/acpi/wakeup`, PCI/ACPI `power/wakeup` — wrong layer; this is
->>>>>>> not a PCIe PME.
->>>>>>> Disabling wakeup on the GPP bridges / GPU has no effect (verified).
->>>>>>> - `gpiolib_acpi.ignore_wake=` / `ignore_interrupt=` — only match
->>>>>>> **ACPI-declared**
->>>>>>> GPIO events; this pin has no ACPI declaration, so they cannot target it.
->>>>>>> - `/dev/mem` register write — blocked by `CONFIG_IO_STRICT_DEVMEM=y`
->>>>>>> (the region is
->>>>>>> claimed by pinctrl_amd).
->>>>>>>
->>>>>>> There is currently **no way, in-tree, to disarm a bare (non-ACPI) firmware-armed
->>>>>>> pinctrl-amd wake pin.** That is the gap.
->>>>>>>
->>>>>>> ## Suggested fix (maintainers' choice)
->>>>>>>
->>>>>>> A working out-of-tree reference implementation (clears bits 13/14/15
->>>>>>> on pins #2/#4
->>>>>>> at probe and on `PM_SUSPEND_PREPARE`) is here:
->>>>>>> **https://github.com/Lenart12/legion-nowake** — please feel free to reuse.
->>>>>>
->>>>>> Why not use /dev/gpiochipX devices to change GPIOs?
->>>>>>
->>>>>>>
->>>>>>> Possible in-tree directions:
->>>>>>> 1. **DMI-matched quirk in `pinctrl-amd`** that clears the S-state
->>>>>>> wake-enable bits
->>>>>>> for the affected pins at probe (smallest change; precedent exists for AMD GPIO
->>>>>>> wake quirks).
->>>>>>> 2. **A generic override** for bare pins, e.g. a
->>>>>>> `pinctrl_amd.ignore_wake=<pin,...>`
->>>>>>> module parameter, analogous to `gpiolib_acpi.ignore_wake=` but for
->>>>>>> hardware-armed
->>>>>>> pins without ACPI events. This would help the broader class of AMD laptops that
->>>>>>> hit firmware-armed spurious wakes.
->>>>>>>
->>>>>>> ## Reproduction
->>>>>>>
->>>>>>> 1. AMD laptop where a display HPD is wired to a GPIO the BIOS arms for wake.
->>>>>>> 2. Connect an external monitor, `systemctl suspend`.
->>>>>>> 3. Observe resume after ~1s; `pm_wakeup_irq` = the `pinctrl_amd` IRQ;
->>>>>>> the offending
->>>>>>> pin shows `wake latched` in the post-resume `GPIO N is active` log.
->>>>>>
->>>>>> On the presumption that this is correct about being an HPD pin doesn't
->>>>>> this actually point at a GPU driver bug?
->>>>>>
->>>>>>>
->>>>>>> ## Public discussion / full diagnostics
->>>>>>>
->>>>>>> Fedora Discussion (complete diagnostic walkthrough, ACPI dumps, gpio table):
->>>>>>> https://discussion.fedoraproject.org/t/immediate-wake-from-s3-sleep-when-hdmi-is-connected-irq-7-pinctrl-amd
->>>>>>>
->>>>>>> ## Attachments to include when filing
->>>>>>>
->>>>>>> - `acpidump` output (or note: DSDT + all SSDTs contain no GpioInt/_AEI).
->>>>>>> - Full verbose-PM `dmesg` of one failed suspend (`pm_debug_messages=1`).
->>>>>>> - `sudo cat /sys/kernel/debug/gpio`.
->>>>>>> - `cat /sys/class/dmi/id/{sys_vendor,product_name,product_version,board_name,bios_version}`.
->>>>>>
->>>>>> Where is the kernel bugzilla that you attached all these artifacts?
->>>>>>
->>>>>
->>>>>
->>>>
->>>
->>>
->>
+> Let's use device_property_present() instead
 > 
+
+Ack.
+
+>> +		return 0;
+>> +
+>> +	/* Get the TMD names array */
+>> +	num_tmds = of_property_count_strings(np, "tmd-names");
 > 
+> Is this something we can stuff into platform_data for a given rproc on a
+> given SoC (for which we already store *some* data in the PAS driver)?
+> 
+
+Without tmd-names in DT, it is unclear which index corresponds to which 
+binding. With #cooling-cells, tmd-names in DT provides an explicit 
+name-to-index mapping. Please suggest.
+> Konrad
 
