@@ -1,58 +1,59 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 224B22D9787
-	for <linux-pm@vger.kernel.org>; Thu, 11 Jun 2026 08:15:28 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9273C373C1D
+	for <linux-pm@vger.kernel.org>; Thu, 11 Jun 2026 08:17:54 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1781165729; cv=none; b=go01vimZ8O552Ijl3vJ45rmFuldOtFYckpzWl8cez2FzoaeH6+ukjuiCwCCcSUK8hiRFxBAEVToFIDNWcdbN0L1Od0RQNNQVJqga+E4vpCJGRbmg8ex4XWoAJKUZrN8gWGLXuq8O/qsEjORdGoTzlwj5oqgKddswY4mTFVOOQnk=
+	t=1781165875; cv=none; b=uoou6DSHeZVyoyd9ZmX2bFt8SWdEGN/uA37RiT4CpgKLe6NhqXavNN7QOy9FJdR/3vTUNZuzWoXGcv6TDx3mI5+2KCgDskN6NBzPvA1alJx9+nJOe9foElotk6+k9wnCGklU163L5CLAw0dPxcxM4IOW+w8+D37hcgEd2e0llcY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1781165729; c=relaxed/simple;
-	bh=3IU3Izek11DlTn3+eMp02gjkvoPAVU9+fiOHobFbbBk=;
+	s=arc-20240116; t=1781165875; c=relaxed/simple;
+	bh=qaWx8ntXsuM96Pn2hdwxwXAPPKnzorenweIrZzy4GK8=;
 	h=From:In-Reply-To:MIME-Version:References:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=ZcPoslYpXO07kMIUqjGcRPJEuKFM72XmdGvJ1bKnNiaQ+aseQrtQ5tQfFoAhMBlfR9EFxIW7DUIkUW+dyme36vw3Qe1E6N0JI5PduVMzdoBFBeT98um288v5Lv8tCiInL6NcAv7aBvmIyLPcdYj0XGkdvzCl6N59iPNzkrPWSPo=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=nI/avuyh; arc=none smtp.client-ip=100.103.45.18
+	 To:Cc:Content-Type; b=Qoy+nzj69/aI0osGHpS3Zzhkd7rkM36NPbV7rYHHCMeNZbpsaV5mlWFvxyWtR+iCQ7GARu2XiRYxFkbY9pdbqgoV/N3ZJ3GI7k9BM2SHFu2dgkJcvtYy9fKuU03YSXotlmaG9L3XgXzN2R0y/Y6Bkdo9FP4p0RdwtMcKpevBkUk=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=ax9Ae/gZ; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="nI/avuyh"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id DD58F1F008A1
-	for <linux-pm@vger.kernel.org>; Thu, 11 Jun 2026 08:15:27 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="ax9Ae/gZ"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 77E6F1F0089C
+	for <linux-pm@vger.kernel.org>; Thu, 11 Jun 2026 08:17:54 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1781165727;
-	bh=3IU3Izek11DlTn3+eMp02gjkvoPAVU9+fiOHobFbbBk=;
+	s=k20260515; t=1781165874;
+	bh=qaWx8ntXsuM96Pn2hdwxwXAPPKnzorenweIrZzy4GK8=;
 	h=From:In-Reply-To:References:Date:Subject:To:Cc;
-	b=nI/avuyh3YSIOPmXXn1nMjWH5uVZJu7d3qrMRHzvD3hNAVJbywKbxH0sNOXHdMJcA
-	 MXxijJQfzhFP1PaFpNUOOonu56SHOL7OHcCbUnGflcum1wXmROR6AkSoFv5san8l9/
-	 GUR0uCNeb3ZWB53wyI1EvI8LXQbb/3Pp37lgxiuqK0R5qAdySknzUCJ0Cqo1H4MB2S
-	 jEbBAlP+CU8Ckz9JYKQLM37OAeFGxfRQcnXFATT7EsrPPcwAM6ZZpTPdwdsB0pxedK
-	 R/VqD1KtHQMdpol48+XxbfBw0dd8kHz5cJ2Qg9ak5y9Jghbo7igPlqGn8IXZSCJEvY
-	 yWGQJY9yUVxOQ==
-Received: by mail-lf1-f49.google.com with SMTP id 2adb3069b0e04-5aa66893e9fso9215756e87.1
-        for <linux-pm@vger.kernel.org>; Thu, 11 Jun 2026 01:15:27 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AFNElJ+omlw5LjZsdo2qK7OzXAyBrh/AS7f92hvPoJL5eOBgh+1yMiqyiYBwiMdGaBpbIyi+b4l5aGdgDA==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yymf/kpwO+Snzfg54NxhJfmm+al8aQAT2ccTGMCVeMq7G0adD7c
-	r4t5Ia2YEDnQxyEI6ZJ6Nw+LdhFKFzsxQq1dH522tXBOinQzVQ8jznCm9XGFL3y2J7nmSVfkKug
-	9th5juJE+CDZmWkxcJYIElW+B8RwKJ5cCdIuOJn93fA==
-X-Received: by 2002:a05:6512:220b:b0:5ad:a04:e62b with SMTP id
- 2adb3069b0e04-5ad27cd1f4dmr556504e87.32.1781165726578; Thu, 11 Jun 2026
- 01:15:26 -0700 (PDT)
+	b=ax9Ae/gZHGie3gCb7JuI+NSQ7kHM1EM/qVFJxb9aiciImMjST6c8o4cvWd5PjHPZR
+	 uvlWZyjcj+1jBOXZjE6f9Ba8KlQlCsw3LEZ1hNXrr9UNGe+OsOSmAhKm5JovN14xeV
+	 b7HQMQzLknvP/w469emCcWdYGQsdjKsy+Z5ZKRt/N8Y4tJSZiTFjafcXoLHsryuHhr
+	 6phpOMgR0i/eWnpNpDbsXI6evj3LdC3Jw5bsUm8Dezhsb5aalPtVIPq0udQecodlWg
+	 SORzDhPk3xukvwagHUsvRIT1rZF2oF+GFJN7oWyVnKAUT+wyHZQQpWl88Au9a4d1C9
+	 N0829CZP/trWg==
+Received: by mail-lf1-f46.google.com with SMTP id 2adb3069b0e04-5aa624ff3cbso7979271e87.3
+        for <linux-pm@vger.kernel.org>; Thu, 11 Jun 2026 01:17:54 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AFNElJ9G+g3xS4FN4FcflBLCm/XBwby6/gIDxfPViajH4EX+qUrSCyRuLjHTs8gINp5U7TIgZ0gLS7IH9A==@vger.kernel.org
+X-Gm-Message-State: AOJu0YwLH22sKgSOl9LmwqZ8imPchvWzCmDd81G7gnsrISvNboxTRnSB
+	t+G7eZpV1L5XAcLFl/dL8WBy7/Ig+G2d1bWo+j82figeijwWvuUXbNqfTwWfQmN2X1zrdurbfKi
+	+lsysrd1vJ9njtBgKP1E9S4Hycf6HRCtuvtAnrqaiaA==
+X-Received: by 2002:a05:6512:33d0:b0:5aa:5f06:b01a with SMTP id
+ 2adb3069b0e04-5ad27fb2c6dmr485526e87.25.1781165873117; Thu, 11 Jun 2026
+ 01:17:53 -0700 (PDT)
 Received: from 969154062570 named unknown by gmailapi.google.com with
- HTTPREST; Thu, 11 Jun 2026 04:15:24 -0400
+ HTTPREST; Thu, 11 Jun 2026 03:17:51 -0500
 Received: from 969154062570 named unknown by gmailapi.google.com with
- HTTPREST; Thu, 11 Jun 2026 04:15:24 -0400
+ HTTPREST; Thu, 11 Jun 2026 03:17:51 -0500
 From: Bartosz Golaszewski <brgl@kernel.org>
-In-Reply-To: <20260610084053.2059858-2-wenst@chromium.org>
+In-Reply-To: <20260610084053.2059858-5-wenst@chromium.org>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260610084053.2059858-1-wenst@chromium.org> <20260610084053.2059858-2-wenst@chromium.org>
-Date: Thu, 11 Jun 2026 04:15:24 -0400
-X-Gmail-Original-Message-ID: <CAMRc=Me0zQYLLuiyYBOtD5quL_LeK_Zg+WoL0vzXDhjB5e+gzw@mail.gmail.com>
-X-Gm-Features: AVVi8CebXQLKBQMIYKPsMbHoISglCZVr32F3LvdIki_eZQgsmFxJVcEwTR4qpYo
-Message-ID: <CAMRc=Me0zQYLLuiyYBOtD5quL_LeK_Zg+WoL0vzXDhjB5e+gzw@mail.gmail.com>
-Subject: Re: [PATCH v2 01/16] device property: Add fwnode_graph_get_port_by_id()
+References: <20260610084053.2059858-1-wenst@chromium.org> <20260610084053.2059858-5-wenst@chromium.org>
+Date: Thu, 11 Jun 2026 03:17:51 -0500
+X-Gmail-Original-Message-ID: <CAMRc=MduBaCYzB40+b35ogxKgBx6zkB5WMV_zBPkZpec6O1Grw@mail.gmail.com>
+X-Gm-Features: AVVi8Ccelzelin4KP3uByrL3JP8Pe5yqhtuz-V7A9LSr5BQSCNVmXC1yUbrpp3k
+Message-ID: <CAMRc=MduBaCYzB40+b35ogxKgBx6zkB5WMV_zBPkZpec6O1Grw@mail.gmail.com>
+Subject: Re: [PATCH v2 04/16] usb: hub: Return actual error from
+ hub_configure() in hub_probe()
 To: Chen-Yu Tsai <wenst@chromium.org>
 Cc: Alan Stern <stern@rowland.harvard.edu>, linux-acpi@vger.kernel.org, 
 	driver-core@lists.linux.dev, linux-pm@vger.kernel.org, 
@@ -69,13 +70,13 @@ Cc: Alan Stern <stern@rowland.harvard.edu>, linux-acpi@vger.kernel.org,
 	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
 Content-Type: text/plain; charset="UTF-8"
 
-On Wed, 10 Jun 2026 10:40:35 +0200, Chen-Yu Tsai <wenst@chromium.org> said:
-> In some cases the driver needs a reference to the port firmware node.
-> Once such case is the upcoming USB power sequencing integration. The
-> USB hub port is tied to the corresponding port firmware node if it
-> exists.
+On Wed, 10 Jun 2026 10:40:38 +0200, Chen-Yu Tsai <wenst@chromium.org> said:
+> The addition of power sequencing descriptor handling in the USB hub code
+> requires dealing with deferred probing from pwrseq_get(). The power
+> sequencing provider may not yet be available when the USB hub probes.
 >
-> Provide a helper for this.
+> Return the actual error code from hub_configure() when it fails, so that
+> the driver core can notice the deferred probe request.
 >
 > Signed-off-by: Chen-Yu Tsai <wenst@chromium.org>
 > ---
