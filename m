@@ -1,151 +1,127 @@
-Received: from mail-pl1-f171.google.com (mail-pl1-f171.google.com [209.85.214.171])
+Received: from mail-pf1-f174.google.com (mail-pf1-f174.google.com [209.85.210.174])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7C797348C74
-	for <linux-pm@vger.kernel.org>; Thu, 11 Jun 2026 19:33:43 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.171
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2ECAB36165C
+	for <linux-pm@vger.kernel.org>; Thu, 11 Jun 2026 19:59:48 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.210.174
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1781206425; cv=none; b=NjJqLvBofoKOTSkjA1AMphdB3U330AL40MQ1O2cwGNYg08LOaxe1y0pk4Q3MtmNZNN+m8JHiV+w+fQwsOcUqav9j8vIBvSwSx8fBVv71QXgCOsCaCHsgl3VzgZ5joFYXALtKvdl1HpK7UjnXQ4zxEgOzgePhwCqLnT3O8UD9YIk=
+	t=1781207989; cv=none; b=h0XyBVEl/j6Tx4EXLEFJuQBi6LeiawGcPFqCS8m+dca4JLAKzbtlpM+nNKHP6dRjKS2WMPwIJZ2xdw+ziOrgTsFu017Oh1eXkIK5peO2ryvgZjHDrAiahlETxcrwvh4JWIS7M+e4RpfZpD8yDez8Fa3wcqmaLi6W+wV5CVktAFE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1781206425; c=relaxed/simple;
-	bh=j2tVtu5wHDHndIUHO2IwR5Uecq6De3dwqEjLMAlWDGI=;
-	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
-	 MIME-Version:Content-Type; b=i7ovU2rhtIvmX3919xWjpgTDq95HrsMVeEjn++QnR3/oHbWBNTRaYszShND2FAnaYLfLPij++SD8CBnEpYpS5vjNlfTRfwj/fmh5X51uh87WeOF1MkRJj+hiGhTuaghU7Zo2d5sVfFNrLuh88U9NOXXNANCE0ORyA0OVohh+Y7g=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com; spf=pass smtp.mailfrom=baylibre.com; dkim=pass (2048-bit key) header.d=baylibre.com header.i=@baylibre.com header.b=P4hz9DA3; arc=none smtp.client-ip=209.85.214.171
+	s=arc-20240116; t=1781207989; c=relaxed/simple;
+	bh=ZRTeKE9L28SSClA6R8MmhIQyoSwY0qQWWZ4jOPVVcJQ=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=ktV52Xdh59kgJ0TMYXT9QDZ/OkdySJ1L1IYclCCSrB9WrCaF9rab0a/q+iJa2elfknGtHS+hcQHJ3srYey9PFfMYZwV5DDwXZrm4lHDpAfIzuh0iSkq9TOvRhf2y6z5ga86iMWchakGpyhOHjF6T5fM2S2i9eG6fHAwjPqGl2Uk=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com; spf=pass smtp.mailfrom=baylibre.com; dkim=pass (2048-bit key) header.d=baylibre.com header.i=@baylibre.com header.b=OOI2bveD; arc=none smtp.client-ip=209.85.210.174
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=baylibre.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=baylibre.com header.i=@baylibre.com header.b="P4hz9DA3"
-Received: by mail-pl1-f171.google.com with SMTP id d9443c01a7336-2c0c379e8ffso2008235ad.3
-        for <linux-pm@vger.kernel.org>; Thu, 11 Jun 2026 12:33:43 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=baylibre.com header.i=@baylibre.com header.b="OOI2bveD"
+Received: by mail-pf1-f174.google.com with SMTP id d2e1a72fcca58-8422f395a4aso257801b3a.0
+        for <linux-pm@vger.kernel.org>; Thu, 11 Jun 2026 12:59:48 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=baylibre.com; s=google; t=1781206423; x=1781811223; darn=vger.kernel.org;
-        h=mime-version:message-id:date:references:in-reply-to:subject:cc:to
-         :from:from:to:cc:subject:date:message-id:reply-to;
-        bh=bVsJ8++utKin3mieaJdECv9juBLFJR0FTwftyuevdnI=;
-        b=P4hz9DA3yP37qWsRBz+VdgBxw6DhfxBnlesTSCp5CV5FZ7ep5b4ZxWEsfGmjEtYU8o
-         tjaiRTs9Y2jb7rcKj5thhLGto5iNY8FVclm1idJNHPRK2J0XyOS8q5WtYSd9glpsDNm3
-         vRFb1QaZczSmGMte0DhwE2l0t5MvK3Yg14t1DO6D+CMOxHUj2G7m/zNvHT0aEeARNLKX
-         lWctadtRcNMq5v6qaiO7k9gg6RW+jc3N0WsvedaY2e4yiq0IHkm36JOQRslp0vNX26XM
-         0neZlQEC71bGoYYgSoqkIls+u0MGeMfKYOui/D7zgiuIs3QoGOfXTa19OJxg4jUtYtZj
-         VevA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1781206423; x=1781811223;
-        h=mime-version:message-id:date:references:in-reply-to:subject:cc:to
-         :from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
+        d=baylibre.com; s=google; t=1781207987; x=1781812787; darn=vger.kernel.org;
+        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
+         :mime-version:subject:date:from:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=bVsJ8++utKin3mieaJdECv9juBLFJR0FTwftyuevdnI=;
-        b=ARyZXxuYvKqn0o8sSXGuectqhrPtERQx3pGpx3o8BDPyc5QO8NQEEpUhN1J9cbi+My
-         HsijU++nUHyW0O+2DIkwVrgIOgmWHC++sziUbxj/oURbzThOkNhb4piNVvuzrX+ynfnA
-         eYfkznsUzntFisJezGfp43q+tTAAU2mjFE9WFZ7uEeF5lrfpPmQfU5tpQqCDzhRgjlTm
-         QlP2zDEQCRIK/CpV1hlyVSzyD3kI0PE6iOVIoIYqkFlkhXIQWs0qUOdiJts2rKojG4Qc
-         Sncxi66FG3N2cUykiboOKDYOEDDh+OhPobFRp3CfB5l2aZlhxqjfCAwEtuVdaZnnCyOS
-         0LYw==
-X-Forwarded-Encrypted: i=1; AFNElJ+MCllWCVmLGEjcEldnYIf/S7S+WKhFjlXULrRr9GOF4teAF1iUb3F0s2aVfaMq+1QGWTg1+TLyEA==@vger.kernel.org
-X-Gm-Message-State: AOJu0YzUmWvVHkGYEdD/NoTn337ztu63IKiUGk3juna/iYZVMUoD/5Bd
-	g0TbdiZvm+6SAt7fSI/APKJhABaNibeWr2VP240CDdK12Kzihd2fJX53/A+dIq86oNM=
-X-Gm-Gg: Acq92OENQFgiDq6fv+CTe+OhyR5YxLgUs2QA+iEbxk8QpFiTfXT1JHhs1aGhJX8PHpN
-	P3ntrucf+BGCwxR5cXz/IcGfy1FXZlzaAMcdvvBg/C+LnHPQJvXDQNyNohAlDg0k27M/ZAjNuLp
-	5WJghPHudtZrvHeM2QSYQEFqbSJ7iTEbmlTYoWqdqFRQj2kswm6iivhW8sXFfx5BBAwZBQbmf/C
-	2sMpOsly00YSkDJe8CWO22ygE4lnWV0JWjXsFmGQs4ktHz4SF2ln5Qyrr2aO9UW+uJMmf1wHjW2
-	FmxXW+fUSKy1YS8Wpl9MMN67GGkQetYzL6I0ixuO1FLYfwZFPIXv3NX+Bbce1fQ/6stMM71hkFN
-	lof+pUGukeswhUFXH+JC3z+S7KPj45xispDjYnsYw9oEEBdt0ixN+clB3CzpR6RggZgkjhQTF0Q
-	+e16gHQtKVYy9gzDtq8gkVZLTY9gBu52I=
-X-Received: by 2002:a17:903:1663:b0:2c0:d99a:2fc with SMTP id d9443c01a7336-2c2f18e291cmr55173755ad.2.1781206422730;
-        Thu, 11 Jun 2026 12:33:42 -0700 (PDT)
+        bh=xUBSfKa41ClVExPzLchTVHN/6r9ZIx4CRl6lZXXhjbE=;
+        b=OOI2bveDoiv8/h0YLhB9U2UJL6soQaNHBqmhAXBYbn7Dk/c76quUMaG4KJgoH66rpJ
+         hnO4Sj1qF4hSUPcFrfxbZNBWrunhCjqJR07mmYNO/NfGTgfOmV4d5gf3YwXT4uWwHJvF
+         StAjDFclePk05ECyt6L7XIPR+oJ4O+uHCXqDRs8GmWItvTzRAY/0CLJcI0typOrnxsB/
+         td0DMJ8XmM2+WGFTfwdbBhK6RS8D0lz8rUVQHyDoiCS4YBcqj3oqRLAuk9UWp+fgm7Xi
+         qkik4i7hlec+B3jtOyworoGck0lTo6hUyIEt5Wxsb+a9gh3y4jHmvUXIPQwuEPSMETaT
+         3G+Q==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1781207987; x=1781812787;
+        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
+         :mime-version:subject:date:from:x-gm-gg:x-gm-message-state:from:to
+         :cc:subject:date:message-id:reply-to;
+        bh=xUBSfKa41ClVExPzLchTVHN/6r9ZIx4CRl6lZXXhjbE=;
+        b=JfxGX/dwPnvSFzFUFkFCHEg3xLFgdM1VcSpaIS3LV1qokCSzXKQy4uFTpYMaDpdlIs
+         EppEFoL3skui3VVG0abDRP/az9TjS05WW4oIwOdd6FYrXEbd5w6UfjHwJ8DlI+inMKkS
+         b4MzL8LuZMGexKkv822teZASgUsrIJTcC1ZAaZp3+Pv2igQ0wMdDh4g035p/0iMO5giE
+         VOtxYSo5dZ0I3gAv4vCpaddbDy2/A+ELqELOKJhwbvhKAAiQ80+zveYyjyNaKiHAkNsM
+         +s8kHSnjR2J1PS5quEy/tGlnRz+RRUpSI5Gr5uvRcRM0cgHYFXkAyhyrKcjxZTlNk4OA
+         bK1Q==
+X-Forwarded-Encrypted: i=1; AFNElJ9Ite83vApRcjf/zFTbM8kB+E4HxQ2fUP4aoiBwawf6c/IHRUkiETQ3FhBIDHXPrgM+sQ/4262bsw==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yxy+rZHeMYyU0L8wIsa+eEEavwf7ZjgjSZZphXh2W445w93B72N
+	NDCkYGJnkAMIOE2KpIGluyiIFIVCJBStkfww/Tm3Z8jJBZt4OqVyLtAinumsit6Uy1PJRSldmx8
+	G1VNLDbU=
+X-Gm-Gg: Acq92OG1B393cbOqcCsQlPRGHGT3EugpjdA+w157bv5pd6vaRH++QW9xYMKBrEkhNtV
+	zY4ugG1v8iqM1fqFcBpHCN6CS8L1dTRlx2ERfwNWRXUrN0ZybSxkTGTuZ9opjDfASYhsRlI60Tm
+	T/i4r6P7xoaPrQh1drJ8kcFQcxtCZlloNB9PxBAXxlO89SLyeJUcGdNwxYrGq2UK3TqlvPSouyj
+	V2E8/Gka+yY7WtDqQ6lFkVtwTLFzNxrgJg0cmLztANwlixgB9avXv8wxfDjXETkyjo2oUFmS97W
+	kNxNwpwzBoFp1TBwKAH+wZXUuv6djUCbeENrkQoY66HfcMRGfOWKoAcxirKgdEt46lcNnHHdYem
+	GCM6tKRUf2LAtqvY2YQXfobzMxL5vYbqcaU7JHZhXcNWNWGujMy2/e4tizlfk2UsY1TLtUhlfgF
+	plIZg3kIerLbgOVD517Jo1xln5IHUF7oM=
+X-Received: by 2002:a05:6a00:2395:b0:842:499d:450e with SMTP id d2e1a72fcca58-843497500b4mr141035b3a.20.1781207987606;
+        Thu, 11 Jun 2026 12:59:47 -0700 (PDT)
 Received: from localhost ([71.212.202.210])
-        by smtp.gmail.com with UTF8SMTPSA id d9443c01a7336-2c1664ad172sm289256475ad.83.2026.06.11.12.33.41
+        by smtp.gmail.com with UTF8SMTPSA id d2e1a72fcca58-84337b8fbdcsm2873353b3a.6.2026.06.11.12.59.47
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 11 Jun 2026 12:33:42 -0700 (PDT)
-From: Kevin Hilman <khilman@baylibre.com>
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, linux-pm@vger.kernel.org,
- Dhruva Gole <d-gole@ti.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v2 3/3] pmdommain: add support system-wide resume
- latency constraints
-In-Reply-To: <CAPDyKFrqT6DPUk5yWBDfnebHKTm4rGZp-8ZBRdcvp4r5Vu-PoA@mail.gmail.com>
-References: <20260205-topic-lpm-pmdomain-device-constraints-v2-0-61f7be7d35ac@baylibre.com>
- <20260205-topic-lpm-pmdomain-device-constraints-v2-3-61f7be7d35ac@baylibre.com>
- <CAPDyKFrqT6DPUk5yWBDfnebHKTm4rGZp-8ZBRdcvp4r5Vu-PoA@mail.gmail.com>
-Date: Thu, 11 Jun 2026 12:33:41 -0700
-Message-ID: <7hy0gklvmy.fsf@baylibre.com>
+        Thu, 11 Jun 2026 12:59:47 -0700 (PDT)
+From: "Kevin Hilman (TI)" <khilman@baylibre.com>
+Date: Thu, 11 Jun 2026 12:59:37 -0700
+Subject: [PATCH v3 1/4] PM / QoS: add flag to indicate latency applies
+ system-wide
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20260611-topic-lpm-pmdomain-device-constraints-v3-1-75d69438518b@baylibre.com>
+References: <20260611-topic-lpm-pmdomain-device-constraints-v3-0-75d69438518b@baylibre.com>
+In-Reply-To: <20260611-topic-lpm-pmdomain-device-constraints-v3-0-75d69438518b@baylibre.com>
+To: "Rafael J. Wysocki" <rafael@kernel.org>, linux-pm@vger.kernel.org, 
+ Ulf Hansson <ulfh@kernel.org>
+Cc: Dhruva Gole <d-gole@ti.com>, linux-kernel@vger.kernel.org
+X-Mailer: b4 0.15.2
+X-Developer-Signature: v=1; a=openpgp-sha256; l=907; i=khilman@baylibre.com;
+ h=from:subject:message-id; bh=ZRTeKE9L28SSClA6R8MmhIQyoSwY0qQWWZ4jOPVVcJQ=;
+ b=owEBbQKS/ZANAwAIAVk3GJrT+8ZlAcsmYgBqKxOx8MPc4peo/m/A+4QQzFeWFqW29a9qrnBGl
+ Eon8REsyAaJAjMEAAEIAB0WIQR7h0YOFpJ/qfW/8QxZNxia0/vGZQUCaisTsQAKCRBZNxia0/vG
+ ZfSXEACGicZ2l6RS8eZsh05W0BOtggrmSgo2owTBxVFjclon4LzKT1SsxLR6L8zj3siE/83Imly
+ +GfCVfFe7Xr7lTX7e1PVRM0rywxpBIr56nDrWfJ9VXs8vvqft3mxviEUKP7hJbArpuuJALBeqVu
+ KdVm41XlqWtAuGPKFRDn7I7Y9d0fWgrqOX6TCIn+yTwncSu3+Pb5EaTsCSQlacwo3G/n4pDir4Y
+ LS3tcx4RZ0lm5GugjysvNpnBnfI9IekNkenIyp0y3s4Xwlihn7xWerWPCjEgjdU2N+qtMKz7J8X
+ lxCX2ImNr9KtzKpuz4Mt3eVowWTtIUTuQY/fvD9JSwTEFo7gZDXRbTjXEjEgq+IKbiOMaauMeqR
+ rGMZq1gott1141LhlU4+qT+Tyab63rbR+yjxpSuNj++sMKUHqom29MSDYviXdqZzcMnhb1TLEVn
+ LtEPpGUJwPd9e+ngPZPX/CQzVlfGb26hD1LYYrW/2vN7dTSWt8EEGWhXAyOwgokBcfuk2FOOmVK
+ LgELvk+qLpveawp6KGDxXnJ7WIKA9Z7rBfP0rh6RJjMMw5Piif3uJGSjBH8rv5yHtU+UGaoRP1l
+ X4TwY1mQm6FMWTJNvC1bOpBPGs4Jb2s595jk+vJdxyM21hDq4m4g40+kB3JOTYBSKacA6dV+4WH
+ 3EPcWdBzaep6+uA==
+X-Developer-Key: i=khilman@baylibre.com; a=openpgp;
+ fpr=7B87460E16927FA9F5BFF10C5937189AD3FBC665
 
-Ulf Hansson <ulf.hansson@linaro.org> writes:
+By default, the QoS resume latency currenly only applied to runtime PM
+decisions.
 
-> On Fri, 6 Feb 2026 at 01:30, Kevin Hilman (TI) <khilman@baylibre.com> wrote:
->>
->> In addition to checking for CPU latency constraints when checking if
->> OK to power down a domain, also check for QoS latency constraints in
->> all devices of a domain and use that in determining the final latency
->> constraint to use for the domain.
->>
->> Since cpu_system_power_down_ok() is used for system-wide suspend, the
->> per-device constratints are only relevant if the LATENCY_SYS QoS flag
->> is set.
->>
->> Signed-off-by: Kevin Hilman (TI) <khilman@baylibre.com>
->> ---
->>  drivers/pmdomain/governor.c | 45 +++++++++++++++++++++++++++++++++++++++++++++
->>  1 file changed, 45 insertions(+)
->>
->> diff --git a/drivers/pmdomain/governor.c b/drivers/pmdomain/governor.c
->> index 96737abbb496..bbf59b93c8b6 100644
->> --- a/drivers/pmdomain/governor.c
->> +++ b/drivers/pmdomain/governor.c
->> @@ -13,6 +13,8 @@
->>  #include <linux/cpumask.h>
->>  #include <linux/ktime.h>
->>
->> +#include "core.h"
->> +
->>  static int dev_update_qos_constraint(struct device *dev, void *data)
->>  {
->>         s64 *constraint_ns_p = data;
->> @@ -425,17 +427,60 @@ static bool cpu_power_down_ok(struct dev_pm_domain *pd)
->>         return true;
->>  }
->>
->> +/**
->> + * check_device_qos_latency - Callback to check device QoS latency constraints
->> + * @dev: Device to check
->> + * @data: Pointer to s32 variable holding minimum latency found so far
->> + *
->> + * This callback checks if the device has a system-wide resume latency QoS
->> + * constraint and updates the minimum latency if this device has a stricter
->> + * constraint.
->> + *
->> + * Returns: 0 to continue iteration.
->> + */
->> +static int check_device_qos_latency(struct device *dev, void *data)
->> +{
->> +       s32 *min_dev_latency = data;
->> +       enum pm_qos_flags_status flag_status;
->> +       s32 dev_latency;
->> +
->> +       dev_latency = dev_pm_qos_read_value(dev, DEV_PM_QOS_RESUME_LATENCY);
->
-> ->cpu_system_power_down_ok() executes in atomic context on a
-> PREEMPT_RT configured system.
+Add new PM_QOS_FLAG_LATENCY_SYS flag to indicate that the
+resume latency QoS constraint should be applied to system-wide
+PM *in addition to* runtime PM.
 
-Oh, right.  Good point.  Thanks for pointing that out!
+Acked-by: Rafael J. Wysocki (Intel) <rafael@kernel.org>
+Signed-off-by: Kevin Hilman (TI) <khilman@baylibre.com>
+---
+ include/linux/pm_qos.h | 2 ++
+ 1 file changed, 2 insertions(+)
 
-> dev_pm_qos_read_value() uses spinlocks, which sleep in that configuration.
->
-> I don't know the best approach to fix this. Perhaps add a specific
-> dev_pm_qos interface that can be used here? Or re-work the code so it
-> only applies for !PREEMPT_RT?
+diff --git a/include/linux/pm_qos.h b/include/linux/pm_qos.h
+index 6cea4455f867..aededda52b6b 100644
+--- a/include/linux/pm_qos.h
++++ b/include/linux/pm_qos.h
+@@ -37,6 +37,8 @@ enum pm_qos_flags_status {
+ #define PM_QOS_LATENCY_TOLERANCE_NO_CONSTRAINT	(-1)
+ 
+ #define PM_QOS_FLAG_NO_POWER_OFF	(1 << 0)
++/* latency value applies to system-wide suspend/s2idle */
++#define PM_QOS_FLAG_LATENCY_SYS		(2 << 0)
+ 
+ enum pm_qos_type {
+ 	PM_QOS_UNITIALIZED,
 
-There's already a "raw" lockless helper to read the resume latench
-(dev_pm_qos_raw_resume_latency), so I'll use that, as well as add a
-similar lockless read for the flags.
+-- 
+2.47.3
 
-Thanks for the review,
-
-Kevin
