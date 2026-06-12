@@ -1,314 +1,239 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.7])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 059A830C165
-	for <linux-pm@vger.kernel.org>; Fri, 12 Jun 2026 17:48:42 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 78B4B36AB4B;
+	Fri, 12 Jun 2026 17:55:10 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.7
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1781286524; cv=none; b=SDDElBGwI6noRyLNoqFn5m+BAR2ejg+tGoSRx8T9GqWhGCRjgHUsnojGFkTLgJy0b9TpiUwHzQpYzJXgsD9W10BRp8oqRh+HncPeC01XW/0wddEmx/oSGYuaMPzK96YiuMVtAR26nwxEOefk1SYAosXNdHP0L1zjWK/aOR4wKcg=
+	t=1781286911; cv=none; b=FwEYsR5lyE8/2kyoHONeEs+GKi8YBabYbSXSKWgyPE7FdTd2FFwpGtNE9clEtH0XZfS99eFJqO038UdO3ill+BjZJoChqD5DojT0rKA9rA0b+jHbQFlH5BIhcXePPF0feI+tky9Y4Ts8E+zCGT2HdlibF40Ts9h2kEUtXjNapuk=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1781286524; c=relaxed/simple;
-	bh=pa9Ln7Mg1Jpz1M0648w+5WJwj+qcn+Fl8nL6ALDGjyE=;
-	h=MIME-Version:From:Date:Message-ID:Subject:To:Cc:Content-Type; b=D6V+YhCM2Gk9/ly7FhSBFGCu9keNhGRQHmmuWjerWfg5iZEHL7i5ix09rxPICvKZpiYYZi2CidAxlVooCgccMNRkhFFYhhXLze6pT1xEM3lDFezNwqEbv/3X/D6vrC7+GeW5ndIthes4twUgCnCdCOWaWikgWG5bZzoZoep9GwQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Je7bHH1l; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1781286911; c=relaxed/simple;
+	bh=wXtD1O2QRhqtuZVuhb41OrsA3ailylCWjE3VxsJztzg=;
+	h=Date:From:To:Cc:Subject:Message-ID; b=Uc0pwSh11iTM+zoruIwrN8HZBDXPc5dNAhzfs85Y05x7XrVlPGBbBjprmH3MRi2itrHM3oEMSHf9T8ReAiCcKAP3T7kGtSenUmeyWubVFcCpcwjk92qwuSkv/Wjthd/mkB+UByPMtY0CiX38sTiiMint0RQjIObaadYLcZuhw5A=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=XCX/3M+x; arc=none smtp.client-ip=192.198.163.7
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Je7bHH1l"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id C29791F00A3E
-	for <linux-pm@vger.kernel.org>; Fri, 12 Jun 2026 17:48:42 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1781286522;
-	bh=Cq1j5ZwPnwoAm/fY4M+K8cnb2rkNGdbG5s3Gh3ScygM=;
-	h=From:Date:Subject:To:Cc;
-	b=Je7bHH1lYpHxd609UEW6cOcOny1XC7mS7B3yMP2FERNv4ZGajjzs3GNuAByJ3rKPp
-	 +W3wDWx2bIVB6YfJbpre6/XXnhyPmVa4oTiHxbWILbksGL8Yyzrz3KHBAs/h30LSZa
-	 JSC59SHHdbmzyydqnV9U7fzoht0Y9s9KQOjXbt9ClKbH5pHkNHSODryQmzikohxTk0
-	 6jbHzWlzx875dhQY7fhO0WGa4wYEpuVBp0bhet0OMZy+7zJVuSxjzgMOwyjBM9vWyF
-	 +yEXva/zyQgJtcPq6DmsfWS59qTstT6NRSfebDGFFxUYqcjDiKuqghOggjnula58D/
-	 Jf2tgnMKrEc5Q==
-Received: by mail-lf1-f53.google.com with SMTP id 2adb3069b0e04-5aa68d65d24so1208166e87.1
-        for <linux-pm@vger.kernel.org>; Fri, 12 Jun 2026 10:48:42 -0700 (PDT)
-X-Gm-Message-State: AOJu0Yy2mi2KqQcSyduj3qeRKfmW4aVBV6zp4pTao6rbkfej+fStGc/p
-	olmKqI5MtjHoB0aKMLvOiv0ftqFClO9AB5GxynJfjFQDKce/+DVVcQE/SSMEtheC88s8v+Kr1xX
-	nb0pQ093AGc7wk6n9GrkMgz0+AZY5XaA=
-X-Received: by 2002:ac2:59c7:0:b0:5aa:6c7c:65d2 with SMTP id
- 2adb3069b0e04-5ad2db29588mr871864e87.11.1781286521183; Fri, 12 Jun 2026
- 10:48:41 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="XCX/3M+x"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1781286910; x=1812822910;
+  h=date:from:to:cc:subject:message-id;
+  bh=wXtD1O2QRhqtuZVuhb41OrsA3ailylCWjE3VxsJztzg=;
+  b=XCX/3M+xK1RhmTDBU0Lc7KvD9B/T8u5C02YfKQOaez7+rwfc2aiJqyxf
+   F6nepsj04n3CotFsifrFZSiTfmT0JyrlVvBOHZm3FadY0dhQm+q4j4V9O
+   jihsM+ZA80xiXuQx5WL/f8NQC7eRhzIl/xV8zfAyzUBBTOX0GHNU1Y0gL
+   F1DHoGRKcdSxmn7xpupeq3+IYhFUvqDjN+thy6rbvICLsq+1jPF0Ew/EH
+   Jpe7iSvWZj9jqUO01ZK7l//AyuqbD6V2QYR3SMXXNhjXmFCEqplOYLi7z
+   QJxjPSNNJgpIIObSwexgitoHQLZsoIVui1ME0d5tbPkIKHx0ERyqNbSG4
+   Q==;
+X-CSE-ConnectionGUID: SKu03FU/RVSpQ+NmD4ujoA==
+X-CSE-MsgGUID: yIVLX/CHR0S+OidDSx0THw==
+X-IronPort-AV: E=McAfee;i="6800,10657,11815"; a="107557108"
+X-IronPort-AV: E=Sophos;i="6.24,201,1774335600"; 
+   d="scan'208";a="107557108"
+Received: from fmviesa006.fm.intel.com ([10.60.135.146])
+  by fmvoesa101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 12 Jun 2026 10:55:10 -0700
+X-CSE-ConnectionGUID: PeSWqG3OQfSXkJipZ8mLzg==
+X-CSE-MsgGUID: YwV44SXWTqqFj2RCrK1ALg==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.24,201,1774335600"; 
+   d="scan'208";a="242503415"
+Received: from lkp-server01.sh.intel.com (HELO f0d55cb201f0) ([10.239.97.150])
+  by fmviesa006.fm.intel.com with ESMTP; 12 Jun 2026 10:55:08 -0700
+Received: from kbuild by f0d55cb201f0 with local (Exim 4.98.2)
+	(envelope-from <lkp@intel.com>)
+	id 1wY65y-00000000P9t-1L3b;
+	Fri, 12 Jun 2026 17:55:06 +0000
+Date: Sat, 13 Jun 2026 01:55:02 +0800
+From: kernel test robot <lkp@intel.com>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org
+Subject: [rafael-pm:bleeding-edge] BUILD SUCCESS
+ 058cd2920302bb1478643b44f9dcc9d6d8e542b9
+Message-ID: <202606130153.HYbUWhS3-lkp@intel.com>
+User-Agent: s-nail v14.9.25
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
-MIME-Version: 1.0
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Date: Fri, 12 Jun 2026 19:48:27 +0200
-X-Gmail-Original-Message-ID: <CAJZ5v0iKw2Vso0t19pq-ktLFGsyiHK4t2D1wyYL+r=nUt0_ksA@mail.gmail.com>
-X-Gm-Features: AVVi8Cf8thDP0PDO7E2W5NbpVztIeldalepqzs819fV3yTnB6pTHKn5gaTXqi4E
-Message-ID: <CAJZ5v0iKw2Vso0t19pq-ktLFGsyiHK4t2D1wyYL+r=nUt0_ksA@mail.gmail.com>
-Subject: [GIT PULL] Power management updates for 7.2-rc1
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Linux PM <linux-pm@vger.kernel.org>, 
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
 
-Hi Linus,
-
-This goes early for your convenience.
-
-Please pull from the tag
-
- git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
- pm-7.2-rc1
-
-with top-most commit 5ca48f6f2afc0a0c3f0584f95843451042ffc5ca
-
- Merge branches 'pm-sleep', 'pm-powercap' and 'pm-tools'
-
-on top of commit 9716c086c8e8b141d35aa61f2e96a2e83de212a7
-
- Merge tag 'pm-7.1-rc8' of
-git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm
-
-to receive power management updates for 7.2-rc1.
-
-Over a half of the changes here are cpufreq updates that include
-core modifications, fixes of the old-style governors, new hardware
-support in drivers, assorded driver fixes and cleanups, and the
-removal of one driver (AMD Elan SC4*).
-
-Apart from that, the intel_idle driver will now be able to avoid
-exposing redundant C-states if PC6 is disabled and there are new
-sysctl knobs for device suspend/resume watchdog timeouts, hibernation
-gets built-in LZ4 support for image compression and there is the usual
-collection of assorted fixes and cleanups.
-
-Specifics:
-
- - Fix a race between cpufreq suspend and CPU hotplug during system
-   shutdown (Tianxiang Chen)
-
- - Avoid redundant target() calls for unchanged limits and fix a typo
-   in a comment in the cpufreq core (Viresh Kumar)
-
- - Fix concurrency issues related to sysfs attributes access that affect
-   cpufreq governors using the common governor code (Zhongqiu Han)
-
- - Simplify frequency limit handling in the conservative cpufreq
-   governor (Lifeng Zheng)
-
- - Fix descriptions of the conservative governor freq_step tunable and
-   the ondemand governor sampling_down_factor tunable in the cpufreq
-   documentation (Pengjie Zhang)
-
- - Fix use-after-free and double free during _OSC evaluation in the PCC
-   cpufreq driver (Yuho Choi)
-
- - Rework the handling of policy min and max frequency values in the
-   cpufreq core to allow drivers to specify special initial values for
-   the scaling_min_freq and scaling_max_freq sysfs attributes (Pierre
-   Gondois)
-
- - Add cpufreq scaling support for Qualcomm Shikra SoC (Taniya Das,
-   Imran Shaik).
-
- - Improve the warning message on HWP-disabled hybrid processors printed
-   by the intel_pstate driver and sync policy->cur during CPU offline in
-   it (Yohei Kojima, Fushuai Wang)
-
- - Drop cpufreq support for AMD Elan SC4* (Sean Young)
-
- - Minor fixes for cpufreq drivers (Krzysztof Kozlowski, Akashdeep Kaur,
-   Hans Zhang, Guangshuo Li, Xueqin Luo)
-
- - Clean up dead dependencies on X86 in the cpufreq Kconfig (Julian
-   Braha)
-
- - Allow the intel_idle driver to avoid exposing C-states that are
-   redundant when PC6 is disabled (Artem Bityutskiy)
-
- - Fix memory leak and a potential race in the OPP core (Abdun Nihaal,
-   Di Shen)
-
- - Mark Rust OPP methods as inline (Nicol=C3=A1s Antinori)
-
- - Fix misc device registration failure path in the PM QoS core (Yuho
-   Choi)
-
- - Add sysctl interface for DPM watchdog timeouts (Tzung-Bi Shih)
-
- - Use complete() instead of complete_all() in device_pm_sleep_init() to
-   avoid a false-positive warning from lockdep_assert_RT_in_threaded_ctx()
-   when CONFIG_PROVE_RAW_LOCK_NESTING is enabled (Jiakai Xu)
-
- - Use a flexible array for CRC uncompressed buffers during hibernation
-   image saving (Rosen Penev)
-
- - Make the LZ4 algorithm available for hibernation compression (l1rox3)
-
- - Move the preallocate_image() call during hibernation after the
-   "prepare" phase of the "freeze" transition (Matthew Leach)
-
- - Fix a memory leak in rapl_add_package_cpuslocked() in the intel_rapl
-   power capping driver and use sysfs_emit() in cpumask_show() in that
-   driver (Sumeet Pawnikar, Yury Norov)
-
- - Fix ValueError when parsing incomplete device properties in the
-   pm-graph utility (Gongwei Li)
-
-There were two merge conflicts of the cpufreq changes with the tip tree
-in linux-next:
-
-https://lore.kernel.org/lkml/ahRZy0wqaUFv6xO9@sirena.org.uk/
-https://lore.kernel.org/lkml/aiAs8hIzpPzvCjw5@sirena.org.uk/
-
-Thanks!
-
-
----------------
-
-Abdun Nihaal (1):
-      OPP: of: Fix potential memory leak in opp_parse_supplies()
-
-Akashdeep Kaur (1):
-      cpufreq: ti: Add EPROBE_DEFER for K3 SoCs
-
-Artem Bityutskiy (3):
-      intel_idle: Add constants for MSR_PKG_CST_CONFIG_CONTROL
-      intel_idle: Introduce a helper for checking PC6
-      intel_idle: Drop C-states redundant when PC6 is disabled
-
-Di Shen (1):
-      OPP: Fix race between OPP addition and lookup
-
-Fushuai Wang (1):
-      cpufreq: intel_pstate: Sync policy->cur during CPU offline
-
-Gongwei Li (1):
-      PM: tools: pm-graph: fix ValueError when parsing incomplete
-device properties
-
-Guangshuo Li (1):
-      cpufreq: qcom-cpufreq-hw: Fix possible double free
-
-Hans Zhang (2):
-      cpufreq/amd-pstate: Use FIELD_MODIFY()
-      cpufreq: apple-soc: Use FIELD_MODIFY()
-
-Imran Shaik (1):
-      dt-bindings: cpufreq: Document Qualcomm Shikra SoC EPSS
-
-Jiakai Xu (1):
-      PM: sleep: Use complete() in device_pm_sleep_init()
-
-Julian Braha (1):
-      cpufreq: clean up dead dependencies on X86 in Kconfig
-
-Krzysztof Kozlowski (1):
-      cpufreq: qcom: Unify user-visible "Qualcomm" name
-
-Lifeng Zheng (1):
-      cpufreq: conservative: Simplify frequency limit handling
-
-Matthew Leach (1):
-      PM: hibernate: call preallocate_image() after freeze prepare
-
-Nicol=C3=A1s Antinori (1):
-      opp: rust: mark OPP methods as inline
-
-Pengjie Zhang (2):
-      cpufreq: Documentation: fix sampling_down_factor range
-      cpufreq: Documentation: fix conservative governor freq_step descripti=
-on
-
-Pierre Gondois (4):
-      cpufreq: Extract cpufreq_policy_init_qos() function
-      cpufreq: Set default policy->min/max values for all drivers
-      cpufreq: Remove driver default policy->min/max init
-      cpufreq: Use policy->min/max init as QoS request
-
-Rosen Penev (1):
-      PM: hibernate: Use flexible array for CRC uncompressed buffers
-
-Sean Young (1):
-      cpufreq: elanfreq: Drop support for AMD Elan SC4*
-
-Sumeet Pawnikar (1):
-      powercap: intel_rapl: Fix memory leak in rapl_add_package_cpuslocked(=
-)
-
-Taniya Das (1):
-      cpufreq: qcom: Add cpufreq scaling support for Qualcomm Shikra SoC
-
-Tianxiang Chen (1):
-      cpufreq: Fix hotplug-suspend race during reboot
-
-Tzung-Bi Shih (1):
-      PM: dpm_watchdog: Add sysctl interface for DPM watchdog timeouts
-
-Viresh Kumar (2):
-      cpufreq: Fix typo in comment
-      cpufreq: Avoid redundant target() calls for unchanged limits
-
-Xueqin Luo (1):
-      cpufreq: cppc: mask Desired_Excursion when autonomous selection is en=
-abled
-
-Yohei Kojima (1):
-      cpufreq: intel_pstate: Improve warning message on HWP-disabled hybrid=
- CPUs
-
-Yuho Choi (2):
-      cpufreq: pcc: fix use-after-free and double free in _OSC evaluation
-      PM: QoS: Fix misc device registration unwind
-
-Yury Norov (1):
-      powercap: intel_rapl: Use sysfs_emit() in cpumask_show()
-
-Zhongqiu Han (2):
-      cpufreq: governor: Fix data races on per-CPU idle/nice baselines
-      cpufreq: governor: Fix stale prev_cpu_nice spike when enabling
-ignore_nice_load
-
-l1rox3 (1):
-      PM: hibernate: make LZ4 available for hibernation compression
-
----------------
-
- Documentation/admin-guide/kernel-parameters.txt    |   4 -
- Documentation/admin-guide/pm/cpufreq.rst           |   6 +-
- Documentation/cpu-freq/cpu-drivers.rst             |   9 +-
- .../bindings/cpufreq/qcom,shikra-epss.yaml         |  96 +++++++++
- drivers/base/power/main.c                          |  67 +++++-
- drivers/cpufreq/Kconfig.arm                        |   2 +-
- drivers/cpufreq/Kconfig.x86                        |  20 +-
- drivers/cpufreq/Makefile                           |   1 -
- drivers/cpufreq/amd-pstate.c                       |  40 ++--
- drivers/cpufreq/apple-soc-cpufreq.c                |   6 +-
- drivers/cpufreq/cppc_cpufreq.c                     |  34 +++-
- drivers/cpufreq/cpufreq-nforce2.c                  |   4 +-
- drivers/cpufreq/cpufreq.c                          | 101 ++++++---
- drivers/cpufreq/cpufreq_conservative.c             |  12 +-
- drivers/cpufreq/cpufreq_governor.c                 |  42 ++--
- drivers/cpufreq/elanfreq.c                         | 226 -----------------=
-----
- drivers/cpufreq/freq_table.c                       |   7 +-
- drivers/cpufreq/gx-suspmod.c                       |   2 +-
- drivers/cpufreq/intel_pstate.c                     |  15 +-
- drivers/cpufreq/pcc-cpufreq.c                      |  12 +-
- drivers/cpufreq/pxa3xx-cpufreq.c                   |   5 +-
- drivers/cpufreq/qcom-cpufreq-hw.c                  |  24 ++-
- drivers/cpufreq/sh-cpufreq.c                       |   6 +-
- drivers/cpufreq/ti-cpufreq.c                       |  10 +
- drivers/cpufreq/virtual-cpufreq.c                  |   5 +-
- drivers/idle/intel_idle.c                          | 104 +++++++---
- drivers/opp/core.c                                 |   5 +-
- drivers/opp/of.c                                   |   3 +-
- drivers/powercap/intel_rapl_common.c               |   5 +-
- include/linux/cpufreq.h                            |   5 +-
- kernel/power/Kconfig                               |   1 +
- kernel/power/hibernate.c                           |  46 +----
- kernel/power/qos.c                                 |  11 +-
- kernel/power/swap.c                                |  13 +-
- rust/kernel/opp.rs                                 |   3 +
- tools/power/pm-graph/sleepgraph.py                 |   2 +-
- 36 files changed, 493 insertions(+), 461 deletions(-)
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git bleeding-edge
+branch HEAD: 058cd2920302bb1478643b44f9dcc9d6d8e542b9  Merge branch 'experimental/acpi-driver-work' into bleeding-edge
+
+elapsed time: 966m
+
+configs tested: 162
+configs skipped: 13
+
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+tested configs:
+alpha                             allnoconfig    gcc-16.1.0
+alpha                            allyesconfig    gcc-16.1.0
+alpha                               defconfig    gcc-16.1.0
+arc                              allmodconfig    gcc-16.1.0
+arc                               allnoconfig    gcc-16.1.0
+arc                              allyesconfig    gcc-16.1.0
+arc                                 defconfig    gcc-16.1.0
+arc                   randconfig-001-20260612    gcc-13.4.0
+arc                   randconfig-002-20260612    gcc-15.2.0
+arm                               allnoconfig    clang-23
+arm                              allyesconfig    gcc-16.1.0
+arm                                 defconfig    clang-23
+arm                   randconfig-001-20260612    gcc-11.5.0
+arm                   randconfig-002-20260612    gcc-10.5.0
+arm                   randconfig-003-20260612    gcc-11.5.0
+arm                   randconfig-004-20260612    gcc-13.4.0
+arm64                             allnoconfig    gcc-16.1.0
+arm64                               defconfig    gcc-16.1.0
+arm64                 randconfig-001-20260612    gcc-13.4.0
+arm64                 randconfig-002-20260612    clang-23
+arm64                 randconfig-003-20260612    gcc-9.5.0
+arm64                 randconfig-004-20260612    gcc-11.5.0
+csky                             allmodconfig    gcc-16.1.0
+csky                              allnoconfig    gcc-16.1.0
+csky                                defconfig    gcc-16.1.0
+csky                  randconfig-001-20260612    gcc-11.5.0
+csky                  randconfig-002-20260612    gcc-13.4.0
+hexagon                          allmodconfig    clang-23
+hexagon                           allnoconfig    clang-23
+hexagon                             defconfig    clang-23
+hexagon               randconfig-001-20260612    clang-23
+hexagon               randconfig-002-20260612    clang-23
+i386                             allmodconfig    gcc-14
+i386                              allnoconfig    gcc-14
+i386                             allyesconfig    gcc-14
+i386        buildonly-randconfig-001-20260612    clang-22
+i386        buildonly-randconfig-002-20260612    gcc-14
+i386        buildonly-randconfig-003-20260612    gcc-14
+i386        buildonly-randconfig-004-20260612    gcc-14
+i386        buildonly-randconfig-005-20260612    gcc-14
+i386        buildonly-randconfig-006-20260612    clang-22
+i386                                defconfig    clang-22
+i386                  randconfig-001-20260612    gcc-14
+i386                  randconfig-002-20260612    clang-22
+i386                  randconfig-003-20260612    gcc-14
+i386                  randconfig-004-20260612    gcc-14
+i386                  randconfig-005-20260612    clang-22
+i386                  randconfig-006-20260612    clang-22
+i386                  randconfig-007-20260612    gcc-12
+i386                  randconfig-011-20260612    clang-22
+i386                  randconfig-012-20260612    clang-22
+i386                  randconfig-013-20260612    clang-22
+i386                  randconfig-014-20260612    clang-22
+i386                  randconfig-015-20260612    gcc-14
+i386                  randconfig-016-20260612    gcc-14
+i386                  randconfig-017-20260612    clang-22
+loongarch                         allnoconfig    clang-20
+loongarch                           defconfig    clang-23
+loongarch             randconfig-001-20260612    clang-23
+loongarch             randconfig-002-20260612    gcc-16.1.0
+m68k                             allmodconfig    gcc-16.1.0
+m68k                              allnoconfig    gcc-16.1.0
+m68k                             allyesconfig    gcc-16.1.0
+m68k                                defconfig    gcc-16.1.0
+microblaze                        allnoconfig    gcc-16.1.0
+microblaze                       allyesconfig    gcc-16.1.0
+microblaze                          defconfig    gcc-16.1.0
+mips                             allmodconfig    gcc-16.1.0
+mips                              allnoconfig    gcc-16.1.0
+mips                             allyesconfig    gcc-16.1.0
+nios2                            allmodconfig    gcc-11.5.0
+nios2                             allnoconfig    gcc-11.5.0
+nios2                               defconfig    gcc-11.5.0
+nios2                 randconfig-001-20260612    gcc-11.5.0
+nios2                 randconfig-002-20260612    gcc-11.5.0
+openrisc                         allmodconfig    gcc-16.1.0
+openrisc                          allnoconfig    gcc-16.1.0
+openrisc                            defconfig    gcc-16.1.0
+parisc                           allmodconfig    gcc-16.1.0
+parisc                            allnoconfig    gcc-16.1.0
+parisc                           allyesconfig    gcc-16.1.0
+parisc                              defconfig    gcc-16.1.0
+parisc                randconfig-001-20260612    gcc-12.5.0
+parisc                randconfig-002-20260612    gcc-14.3.0
+parisc64                            defconfig    gcc-16.1.0
+powerpc                          allmodconfig    gcc-16.1.0
+powerpc                           allnoconfig    gcc-16.1.0
+powerpc                     mpc5200_defconfig    clang-23
+powerpc64             randconfig-001-20260612    gcc-8.5.0
+powerpc64             randconfig-002-20260612    gcc-11.5.0
+riscv                            allmodconfig    clang-23
+riscv                             allnoconfig    gcc-16.1.0
+riscv                            allyesconfig    clang-23
+riscv                               defconfig    clang-23
+riscv                 randconfig-001-20260612    gcc-13.4.0
+riscv                 randconfig-002-20260612    clang-23
+s390                             allmodconfig    clang-23
+s390                              allnoconfig    clang-23
+s390                             allyesconfig    gcc-16.1.0
+s390                                defconfig    clang-18
+s390                  randconfig-001-20260612    clang-23
+s390                  randconfig-002-20260612    gcc-8.5.0
+sh                               allmodconfig    gcc-16.1.0
+sh                                allnoconfig    gcc-16.1.0
+sh                               allyesconfig    gcc-16.1.0
+sh                                  defconfig    gcc-16.1.0
+sh                    randconfig-001-20260612    gcc-11.5.0
+sh                    randconfig-002-20260612    gcc-13.4.0
+sparc                             allnoconfig    gcc-16.1.0
+sparc                               defconfig    gcc-16.1.0
+sparc                 randconfig-001-20260612    gcc-8.5.0
+sparc                 randconfig-002-20260612    gcc-8.5.0
+sparc64                          allmodconfig    clang-20
+sparc64                             defconfig    clang-23
+sparc64               randconfig-001-20260612    clang-20
+sparc64               randconfig-002-20260612    gcc-12.5.0
+um                               allmodconfig    clang-23
+um                                allnoconfig    clang-16
+um                               allyesconfig    gcc-14
+um                                  defconfig    clang-23
+um                             i386_defconfig    gcc-14
+um                    randconfig-001-20260612    gcc-14
+um                    randconfig-002-20260612    clang-23
+um                           x86_64_defconfig    clang-23
+x86_64                           allmodconfig    clang-22
+x86_64                            allnoconfig    clang-22
+x86_64                           allyesconfig    clang-22
+x86_64               buildonly-randconfig-001    gcc-12
+x86_64      buildonly-randconfig-001-20260612    clang-22
+x86_64               buildonly-randconfig-002    clang-22
+x86_64      buildonly-randconfig-002-20260612    gcc-14
+x86_64               buildonly-randconfig-003    gcc-14
+x86_64      buildonly-randconfig-003-20260612    clang-22
+x86_64               buildonly-randconfig-004    gcc-14
+x86_64      buildonly-randconfig-004-20260612    clang-22
+x86_64               buildonly-randconfig-005    gcc-14
+x86_64      buildonly-randconfig-005-20260612    clang-22
+x86_64               buildonly-randconfig-006    clang-22
+x86_64      buildonly-randconfig-006-20260612    gcc-14
+x86_64                              defconfig    gcc-14
+x86_64                randconfig-001-20260612    clang-22
+x86_64                randconfig-002-20260612    gcc-14
+x86_64                randconfig-003-20260612    gcc-14
+x86_64                randconfig-004-20260612    gcc-14
+x86_64                randconfig-005-20260612    gcc-14
+x86_64                randconfig-006-20260612    clang-22
+x86_64                randconfig-011-20260612    gcc-14
+x86_64                randconfig-012-20260612    clang-22
+x86_64                randconfig-013-20260612    clang-22
+x86_64                randconfig-014-20260612    gcc-14
+x86_64                randconfig-015-20260612    gcc-14
+x86_64                randconfig-016-20260612    gcc-14
+x86_64                randconfig-071-20260612    gcc-14
+x86_64                randconfig-072-20260612    gcc-12
+x86_64                randconfig-073-20260612    clang-22
+x86_64                randconfig-074-20260612    clang-22
+x86_64                randconfig-075-20260612    clang-22
+x86_64                randconfig-076-20260612    clang-22
+x86_64                          rhel-9.4-rust    clang-22
+xtensa                            allnoconfig    gcc-16.1.0
+xtensa                randconfig-001-20260612    gcc-10.5.0
+xtensa                randconfig-002-20260612    gcc-12.5.0
+
+--
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests/wiki
