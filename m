@@ -1,39 +1,38 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7D2B5405C49
-	for <linux-pm@vger.kernel.org>; Fri, 12 Jun 2026 17:41:21 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7B18038AC92
+	for <linux-pm@vger.kernel.org>; Fri, 12 Jun 2026 17:43:03 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1781286083; cv=none; b=qJIzrzDyiQBTaHJ1zU/+Rk5KgeA53t+fGuT6N4Gg/q1EJJbRiUYTpyzxr9bgBAZhWa+tWk/fILVawtWhKafYyFmG5gnAX9pbZxSAUe6BOjVtpt8IOajCYM14mllZQ5MBoj60LRlfy1gXgGZAP/BNboQHGaVR/AkhM+vKNvT6c3c=
+	t=1781286184; cv=none; b=TNWKbFCZs07Lu8BjZ0qUNrCqIlcHwyp5dzxnG/FcOt+AKDuWc5/dNj58iJTIYD7LEk77m5aavff8tAW99gps7ul0Y11nWlYY660FHpBYXhOt75nBKJ4b+KHhmhEDkeYH5bohn+lEl1SsOvxyxssJSHVhUz5MLKnyO8EdwAdL+Ls=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1781286083; c=relaxed/simple;
-	bh=d9jPJifz4hAKw+SYOfOd18PCixk8ZeN/GEGO1BIKFn8=;
-	h=MIME-Version:From:Date:Message-ID:Subject:To:Cc:Content-Type; b=aNyv8a2fUbTeX6BJJ7mQ0qWGln97Our0jtrMOlE+zqTuRAeIaJRCS9IGmKFGafmTVZVf5zKJnR/ltaxTseS/dAGHfdxxjk9aFanbrrgCr5nMr2mp4MzuoX31W2n7zGtkfG93eyTONLQpL9ErBTVni/o1j92gcXx+PuBiweUPdzs=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=WZIpOdOC; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1781286184; c=relaxed/simple;
+	bh=PtFAFCmt02fbXmYJpMB4N8Wu1tDzwc319RGRDW7DpgU=;
+	h=MIME-Version:From:Date:Message-ID:Subject:To:Cc:Content-Type; b=CqVHQYM7LQieFX2hgwvnzJRiYykIUTuwOckFW96EbtTVe8mpkF/wzYEF7n/fhmOGUtsnECqHHa/AeSGKPaeIzbd5of/Uhcjc3Y0WMchFzFsUBmOhh4DxwCiJ382Mi5wMOfe6ygjyN/BJ2fatigwx7BxzMiRWiOZ0EcHPrtANHY4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=jNvdaKlH; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="WZIpOdOC"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 196B71F00A3A
-	for <linux-pm@vger.kernel.org>; Fri, 12 Jun 2026 17:41:21 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="jNvdaKlH"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3202B1F00A3A
+	for <linux-pm@vger.kernel.org>; Fri, 12 Jun 2026 17:43:03 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1781286081;
-	bh=a7rzPO/ehFDp404FL0EfUXMd4z06a2t8oLlGkxHLWHE=;
+	s=k20260515; t=1781286183;
+	bh=s7kUrardtG+S+UY6NjGt62Mkpr1hGx2P5s2UZvgjnq0=;
 	h=From:Date:Subject:To:Cc;
-	b=WZIpOdOCAwTpj7TylCqfmL5CwFm8iKfueTXI9MnEodFgaHHhf2kkoDhUeiT4jiSxH
-	 aia1GY30vPfDasLaVqf1k8mk29vh2uxmFMj+7IaGWHwieLdNZgT0THmHHhH0s1pL9r
-	 g796YZmp6RRjy+8BCu5jQkjDqUBnGOJI5/G6sXrupwqkbz4j8ZcLfO634NIX580idv
-	 bUneVPxTatzo2KPjRvUjtC9q8q/CfSU+nal4/5QLchyeSNGmptMoDmDsgjyFJ5ieLj
-	 QnL0BvdXujgVJJJiCh4M8iDl8IpHM1zryvSAzsQcN0IL+2n+6n/5ocXzNexnf0smpO
-	 m6pbCpMpRSeXA==
-Received: by mail-lf1-f41.google.com with SMTP id 2adb3069b0e04-5aa63daf2a5so737460e87.3
-        for <linux-pm@vger.kernel.org>; Fri, 12 Jun 2026 10:41:21 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AFNElJ+9wiG18t2WQhM/lW34SSiN1gPt9A4D/CAKk6VoJcxb1vRQrnb+hPvfHgmvULI1b0pIPSQReeMlNw==@vger.kernel.org
-X-Gm-Message-State: AOJu0YwHlvWKEcb6PAgRr9zRc7zEEptJtnDZsZ1CTQkTxNJmNqcouPzM
-	noQ2bvxjrmYjJ7p/w1dWrtBR3XOlzmnHXfuUGh4rAMxg0mJqcDjMsrwL0+ajxwG/8o8w/x61jKU
-	ZkP9vTYSO6/96ibExVG4hmF1pJc5xw2w=
-X-Received: by 2002:a05:6512:3409:b0:5ad:1b59:fd74 with SMTP id
- 2adb3069b0e04-5ad2db2458fmr1315859e87.1.1781286079487; Fri, 12 Jun 2026
- 10:41:19 -0700 (PDT)
+	b=jNvdaKlHrxloiaCCv+1aFb1Z9vcC55rCpdx1sP8vuzNA35ieX/gwbtGPqCSHczOMe
+	 ZRFNOSA99i2lXWfLBJIidfhbD6mS40r9y7MuU0xAhl8mmjXX3hD1aXzY+tE+S5mOJE
+	 bXD9cYuiJViWXLXx8+LZ6wpMCjI+gYH/ERVPhDJZyRZI0dXjX3uQBcPZnkpLim/qz+
+	 0EgoavxwNMu+yH19O38sg+Op+nDyJaFTtsHVAGOCfYbkUrA42Y4cDo/vpiVehCrrMK
+	 XeMPN/Saf2WlW+N6YjAejHP8QqN4HSLpS1A2G6RdJTHoouxoc+t9HfT9HqNVJifsGh
+	 x+6rntNkOHY7w==
+Received: by mail-lf1-f43.google.com with SMTP id 2adb3069b0e04-5aa88b4f792so1685778e87.1
+        for <linux-pm@vger.kernel.org>; Fri, 12 Jun 2026 10:43:03 -0700 (PDT)
+X-Gm-Message-State: AOJu0YyTJbQt3sp+MEchGTUFG0L/HpqERPIKI2ag248Zvaiu6DN/2vMX
+	PrrZeWCsDisTrw5WYVWe3ItiVLMohdJiuhT5XsNLu6uTT2ONVscT3Uvh6ggA4Mv4YscWlA5t5R9
+	72B2MYiHcq6n9oVGPe5ZxvLfLdJUuLBw=
+X-Received: by 2002:a05:6512:3b85:b0:5aa:7083:51bf with SMTP id
+ 2adb3069b0e04-5ad2d49fdd8mr964713e87.7.1781286181644; Fri, 12 Jun 2026
+ 10:43:01 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -41,14 +40,15 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 From: "Rafael J. Wysocki" <rafael@kernel.org>
-Date: Fri, 12 Jun 2026 19:41:06 +0200
-X-Gmail-Original-Message-ID: <CAJZ5v0h-9HOj9ar1sa2oeJ1SJQ-CbtTj03EyLpuhpQOPHa2fSA@mail.gmail.com>
-X-Gm-Features: AVVi8CdbylZLJyBRMjr_f8UTupYDsKNvnIQHo7O5HwhvcoeRouDpDooiREZJI6o
-Message-ID: <CAJZ5v0h-9HOj9ar1sa2oeJ1SJQ-CbtTj03EyLpuhpQOPHa2fSA@mail.gmail.com>
-Subject: [GIT PULL] ACPI support updates for 7.2-rc1
+Date: Fri, 12 Jun 2026 19:42:49 +0200
+X-Gmail-Original-Message-ID: <CAJZ5v0gO6vETP0+054J4pSdPH8ehn_1zY2rRqX2Znc9jeD-4RQ@mail.gmail.com>
+X-Gm-Features: AVVi8CcLYv-gTt-CXnqd_Osd9nvER4hDFqdcN_SCT965JAw5fg6OL2-1npx_uf8
+Message-ID: <CAJZ5v0gO6vETP0+054J4pSdPH8ehn_1zY2rRqX2Znc9jeD-4RQ@mail.gmail.com>
+Subject: [GIT PULL] Thermal control updates for 7.2-rc1
 To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, 
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: Linux PM <linux-pm@vger.kernel.org>, 
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Daniel Lezcano <daniel.lezcano@kernel.org>, 
+	Lukasz Luba <lukasz.luba@arm.com>
 Content-Type: text/plain; charset="UTF-8"
 
 Hi Linus,
@@ -58,403 +58,251 @@ This goes early for your convenience.
 Please pull from the tag
 
  git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
- acpi-7.2-rc1
+ thermal-7.2-rc1
 
-with top-most commit 615f90d3b1b7900d591a9162793f616b051f07b8
+with top-most commit bc1c872ce0ab3984f5fcefeb952541a802b891e7
 
- Merge branches 'acpi-processor', 'acpi-cppc' and 'acpi-pci'
+ Merge branch 'thermal-testing'
 
-on top of commit 4549871118cf616eecdd2d939f78e3b9e1dddc48
+on top of commit e7ae89a0c97ce2b68b0983cd01eda67cf373517d
 
- Linux 7.1-rc7
+ Linux 7.1-rc5
 
-to receive ACPI support updates for 7.2-rc1.
+to receive thermal control updates for 7.2-rc1.
 
-These update the ACPICA code in the kernel to upstream version 20260408,
-introduce support for devres-based management of ACPI notify handlers
-and update some core ACPI device drivers on top of that (which includes
-some fixes and cleanups), add _DEP support for PCI/CXL roots and Intel
-CVS devices, fix a couple of assorted issues and clean up code:
+These add new hardware support (i.MX93 TMU, Amlogic T7, Intel Arrow
+Lake, QCom Nord, Shikra and Hawi), fix issues in a number of places
+in the thermal control core and drivers, clean up code and refactor
+it in preparation for future changes:
 
- - Fix multiple issues related to probe, removal and missing NVDIMM
-   device notifications in the ACPI NFIT driver (Rafael Wysocki)
+ - Rework the initialization and cleanup of thermal class cooling
+   devices to separate DT-based cooling device registration and
+   cooling device registration without DT (Daniel Lezcano, Ovidiu
+   Panait)
 
- - Add support for devres-based management of ACPI notify handlers to
-   the ACPI core (Rafael Wysocki)
+ - Update the cooling device DT bindings to support 3-cell cooling
+   device representation, where the additional cell holds an ID to
+   select a cooling mechanism for devices that offer multiple cooling
+   mechanisms, and adjust the cooling device registration code
+   accordingly (Gaurav Kohli, Daniel Lezcano)
 
- - Switch multiple core ACPI device drivers (including the ACPI PAD,
-   ACPI video bus, ACPI HED, ACPI thermal zone, ACPI AC, ACPI battery,
-   and ACPI NFIT drivers) over to using devres-based resource management
-   during probe (Rafael Wysocki)
+ - Remove dead code from two functions in the thermal core and simplify
+   the unregistration of thermal governors (Rafael Wysocki)
 
- - Replace mutex_lock/unlock() with guard()/scoped_guard() in the ACPI
-   PMIC driver (Maxwell Doose)
+ - Fix critical temperature attribute removal handling in the generic
+   thermal zone hwmon support code and rework that code to register a
+   separate hwmon class device for each thermal zone (instead of using
+   one hwmon class device for all thermal zones of the same type) to
+   address thermal zone removal deadlocks (Rafael Wysocki)
 
- - Fix message kref handling in the dead device path of the ACPI IPMI
-   address space handler (Yuho Choi)
+ - Use attribute groups for adding temperature attributes to hwmon class
+   devices associated with thermal zones (Rafael Wysocki)
 
- - Use sysfs_emit() in idlecpus_show() in the ACPI processor aggregator
-   device (PAD) driver (Yury Norov)
+ - Pass WQ_UNBOUND when allocating the thermal workqueue (Marco
+   Crivellari)
 
- - Clean up device_id_scheme initialization in the ACPI video bus driver
-   (Jean-Ralph Aviles)
+ - Fix potential shift overflow in ptc_mmio_write() and improve error
+   handling in proc_thermal_ptc_add() in the int340x thermal control
+   driver (Aravind Anilraj)
 
- - Clean up lid handling in the ACPI button driver and
-   acpi_button_probe(), reorganize installing and removing event
-   handlers in that driver and switch it over to using devres-based
-   resource management during probe (Rafael Wysocki)
+ - Use sysfs_emit() for cpumask printing in the Intel powerclamp thermal
+   driver (Yury Norov)
 
- - Add support for the Legacy Virtual Register (LVR) field in I2C serial
-   bus resource descriptors to ACPICA (Akhil R)
+ - Add Arrow Lake CPU models to the intel_tcc_cooling driver (Srinivas
+   Pandruvada)
 
- - Fix multiple issues related to bounds checks, input validation,
-   use-after-free, and integer overflow checks in the AML interpreter
-   in ACPICA (ikaros)
+ - Add QCom Nord, Shikra and Hawi temperature sensor DT bindings (Deepti
+   Jaggi, Gaurav Kohli, Dipa Ramesh Mantre)
 
- - Update the copyright year to 2026 in ACPICA files and make minor
-   changes related to ACPI 6.6 support (Pawel Chmielewski)
+ - Use devm_add_action_or_reset() for clock disable on the NVidia
+   soctherm and switch it to devm cooling device registration version
+   (Daniel Lezcano)
 
- - Remove spurious precision from format used to dump parse trees in
-   ACPICA (David Laight)
+ - Add the Amlogic T7 thermal sensor along with thermal calibration
+   data read from SMC calls (Ronald Claveau)
 
- - Add modern standby DSM GUIDs to ACPICA header files (Daniel Schaefer)
+ - Fix atomic temperature read in the QCom tsens driver to comply with
+   hardware documentation (Priyansh Jain)
 
- - Fix FADT 32/64X length mismatch warning in ACPICA (Abdelkader Boudih)
+ - Add SpacemiT K1 thermal sensor support (Shuwei Wu)
 
- - Update D3hot/cold device power states definitions in ACPICA header
-   files (Aymeric Wibo)
+ - Add i.MX93 temperature sensor support and filter out the invalid
+   temperature (Jacky Bai)
 
- - Fix NULL pointer dereference in acpi_ns_custom_package() (Weiming
-   Shi)
+ - Enable by default the TMU (Thermal Monitoring Unit) on Exynos
+   platform (Krzysztof Kozlowski)
 
- - Update ACPICA version to 20260408 (Saket Dumbre)
+ - Rework interrupt initialization in the Tsens driver and add the
+   optional wakeup source (Priyansh Jain)
 
- - Add cpuidle driver check in acpi_processor_register_idle_driver() to
-   avoid evaluating _CST unnecessarily (Tony W Wang-oc)
+ - Fix typo in a comment in the TSens QCom driver (Jinseok Kim)
 
- - Suppress UBSAN warning caused by field misuse during PCC-based
-   register access in the ACPI CPPC library (Jeremy Linton)
+ - Fix trailing whitespace and repeated word in the OF code, remove
+   quoted string splitting across lines from the iMX7 driver, and remove
+   a stray space from the thermal_trip_of_attr() macro definition (Mayur
+   Kumar)
 
- - Add support for CPPC v4 to the ACPI CPPC library (Sumit Gupta)
-
- - Update the ACPI device enumeration code to honor _DEP for ACPI0016
-   PCI/CXL host bridges and make the ACPI PCI root driver clear _DEP
-   dependencies for PCI roots that have become operational (Chen Pei)
+ - Update the thermal testing facility code to avoid NULL pointer
+   dereferences by rejecting missing command arguments and replace
+   sscanf() with kstrtoint() or kstrtoul() in that code (Ovidiu Panait,
+   Samuel Moelius)
 
 Thanks!
 
 
 ---------------
 
-Abdelkader Boudih (1):
-      ACPICA: Fix FADT 32/64X length mismatch warning
+Aravind Anilraj (2):
+      thermal: intel: int340x: Fix potential shift overflow in ptc_mmio_write()
+      thermal: intel: int340x: Check return value of ptc_create_groups()
 
-Akhil R (5):
-      ACPICA: Add LVR to acrestyp.h
-      ACPICA: Fetch LVR I2C resource descriptor
-      ACPICA: Change LVR to 8 bit value
-      ACPICA: Mention the LVR bits
-      ACPICA: fix I2C LVR item count in the conversion table
+Daniel Lezcano (18):
+      thermal/core: Add dedicated release callback for cooling devices
+      thermal/core: Add dedicated release callback for thermal zones
+      thermal/core: Allocate the thermal class dynamically
+      thermal/core: Use the thermal class pointer as init guard
+      thermal/core: Split __thermal_cooling_device_register() into two functions
+      thermal/drivers/tegra/soctherm: Use devm_add_action_or_reset()
+for clock disable
+      thermal/drivers/tegra/soctherma: Switch to devm cooling device
+registration
+      thermal/core: Use devm_add_action_or_reset() when registering a
+cooling device
+      thermal/core: Introduce non-OF thermal_cooling_device_register()
+      thermal/core: Add devm_thermal_cooling_device_register()
+      hwmon: Use non-OF thermal cooling device registration API
+      thermal/of: Move cooling device OF helpers out of thermal core
+      thermal/core: Make cooling device OF node conditional on CONFIG_THERMAL_OF
+      thermal/of: Rename the devm_thermal_of_cooling_device_register() function
+      thermal/of: Add cooling device ID support
+      thermal/of: Pass cdev_id and introduce devm registration helper
+      thermal/of: Support cooling device ID in cooling-spec
+      thermal/core: Fix missing stub for devm_thermal_cooling_device_register
 
-Aymeric Wibo (1):
-      ACPICA: actypes: Distinguish between D3hot/cold
+Deepti Jaggi (1):
+      dt-bindings: thermal: qcom-tsens: Document Nord Temperature Sensor
 
-Chen Pei (2):
-      ACPI: PCI: Clear _DEP dependencies after PCI root bridge attach
-      ACPI: scan: Honor _DEP for ACPI0016 PCI/CXL host bridge
+Dipa Ramesh Mantre (1):
+      dt-bindings: thermal: qcom-tsens: Document the Hawi Temperature Sensor
 
-Daniel Schaefer (1):
-      ACPICA: Add modern standby DSM GUIDs
+Gaurav Kohli (2):
+      dt-bindings: thermal: qcom-tsens: Document the Shikra Temperature Sensor
+      dt-bindings: thermal: cooling-devices: Update support for 3
+cells cooling device
 
-David Laight (1):
-      ACPICA: Remove spurious precision from format used to dump parse trees
+Jacky Bai (3):
+      dt-bindings: thermal: qoriq: Add compatible string for imx93
+      thermal/drivers/qoriq: Add i.MX93 tmu support
+      thermal/driver/qoriq: Workaround unexpected temperature readings from tmu
 
-Jean-Ralph Aviles (1):
-      ACPI: video: Do not initialise device_id_scheme directly
+Jinseok Kim (1):
+      thermal/drivers/qcom: Fix typo in comment
 
-Jeremy Linton (1):
-      ACPI: CPPC: Suppress UBSAN warning caused by field misuse
+Krzysztof Kozlowski (1):
+      thermal/drivers/samsung: Enable TMU by default
 
-Maxwell Doose (1):
-      ACPI: PMIC: Replace mutex_lock/unlock() with guard()/scoped_guard()
+Marco Crivellari (1):
+      thermal: core: Add WQ_UNBOUND to alloc_workqueue() users
 
-Miguel Vadillo (1):
-      ACPI: scan: Honor _DEP for Intel CVS devices
+Mayur Kumar (3):
+      thermal: sysfs: remove space before tab in macro
+      thermal/of: Fix trailing whitespace and repeated word
+      thermal/drivers/imx: Do not split quoted string across lines
 
-Pawel Chmielewski (2):
-      ACPICA: actbl2.h: ACPI 6.6: Updates for MADT MPWakeup
-      ACPICA: Update the copyright year to 2026
+Ovidiu Panait (3):
+      thermal/core: Populate max_state before setting up cooling dev sysfs
+      thermal: testing: Replace sscanf() with kstrtoint()
+      thermal: sysfs: Replace sscanf() with kstrtoul()
 
-Rafael J. Wysocki (37):
-      ACPI: bus: Introduce devm_acpi_install_notify_handler()
-      ACPI: NFIT: core: Use devm_acpi_install_notify_handler()
-      ACPI: AC: Switch over to devres-based resource management
-      ACPI: battery: Switch over to devres-based resource management
-      ACPI: HED: Refine guarding against adding a second instance
-      ACPI: HED: Switch over to devres-based resource management
-      ACPI: thermal: Switch over to devres-based resource management
-      ACPI: PAD: Rearrange acpi_pad_notify()
-      ACPI: PAD: Pass struct device pointer to acpi_pad_notify()
-      ACPI: PAD: Fix teardown ordering in acpi_pad_remove()
-      ACPI: PAD: Switch over to devres-based resource management
-      ACPI: video: Reduce the number of auxiliary device dereferences
-      ACPI: video: Rearrange probe and remove code
-      ACPI: video: Use devm action for video bus object cleanup
-      ACPI: video: Use devm action for freeing video devices
-      ACPI: video: Use devm for video->entry and backlight cleanup
-      ACPI: video: Switch over to devres-based resource management
-      ACPI: button: Fix lid_device value leak past driver removal
-      ACPI: button: Pass ACPI handle to acpi_lid_evaluate_state()
-      ACPI: button: Improve warning message regarding lid state
-      ACPI: button: Use bool for representing boolean values
-      ACPI: button: Eliminate ternary operator from acpi_lid_evaluate_state()
-      ACPI: button: Change return type of two functions to void
-      ACPI: button: Eliminate redundant conditional statement
-      ACPI: button: Use local pointer to platform device dev field in probe
-      ACPI: button: Rework device verification during probe
-      ACPI: button: Drop redundant variable from acpi_button_probe()
-      ACPI: button: Merge two switch () statements in acpi_button_probe()
-      ACPI: button: Clean up adding and removing lid procfs interface
-      ACPI: button: Use string literals for generating netlink messages
-      ACPI: button: Reorganize installing and removing event handlers
-      ACPI: button: Switch over to devres-based resource management
-      ACPI: bus: Clean up devm_acpi_install_notify_handler()
-      ACPI: NFIT: core: Fix possible NULL pointer dereference
-      ACPI: NFIT: core: Fix acpi_nfit_init() error cleanup
-      ACPI: NFIT: core: Eliminate redundant local variable
-      ACPI: NFIT: core: Fix possible deadlock and missing notifications
+Priyansh Jain (3):
+      thermal/drivers/qcom/tsens: Atomic temperature read with
+hardware-guided retries
+      thermal/drivers/qcom/tsens: Switch wake IRQ handling to PM callbacks
+      thermal/drivers/qcom/tsens: Disable wakeup interrupt setup on
+automotive targets
 
-Saket Dumbre (1):
-      ACPICA: Update version to 20260408
+Rafael J. Wysocki (5):
+      thermal: core: Remove dead code from two functions
+      thermal: core: Simplify unregistration of governors
+      thermal: hwmon: Fix critical temperature attribute removal
+      thermal: hwmon: Register a hwmon device for each thermal zone
+      thermal: hwmon: Use extra_groups for adding temperature attributes
 
-Sumit Gupta (1):
-      ACPI: CPPC: Add support for CPPC v4
+Ronald Claveau (5):
+      dt-bindings: thermal: amlogic: Add support for T7
+      firmware: meson: sm: Thermal calibration read via secure monitor
+      firmware: meson: sm: Add thermal calibration SMC call
+      thermal/drivers/amlogic: Add missing dependency on MESON_SM
+      thermal/drivers/amlogic: Add support for secure monitor
+calibration readout
 
-Tony W Wang-oc (1):
-      ACPI: processor: Add cpuidle driver check in
-acpi_processor_register_idle_driver()
+Samuel Moelius (1):
+      thermal: testing: reject missing command arguments
 
-Weiming Shi (1):
-      ACPICA: Fix NULL pointer dereference in acpi_ns_custom_package()
+Shuwei Wu (2):
+      dt-bindings: thermal: Add SpacemiT K1 thermal sensor
+      thermal/drivers/spacemit/k1: Add thermal sensor support
 
-Yuho Choi (1):
-      ACPI: IPMI: Fix message kref handling on dead device
+Srinivas Pandruvada (1):
+      thermal: intel: intel_tcc_cooling: Add Arrow Lake CPU models
 
 Yury Norov (1):
-      ACPI: PAD: Use sysfs_emit() in idlecpus_show()
-
-ikaros (14):
-      ACPICA: Fix condition check in acpi_ps_parse_loop()
-      ACPICA: Add alias node support in namespace handling
-      ACPICA: Fix use-after-free in acpi_ds_terminate_control_method()
-      ACPICA: validate byte_count in acpi_ps_get_next_package_length()
-      ACPICA: add boundary checks in acpi_ps_get_next_field()
-      ACPICA: Prevent adding invalid references
-      ACPICA: Fix integer overflow in acpi_ex_opcode_3A_1T_1R() (mid_op)
-      ACPICA: Improve argument parsing in acpi_ps_get_next_simple_arg()
-      ACPICA: validate handler object type in two places
-      ACPICA: Add validation for node in acpi_ns_build_normalized_path()
-      ACPICA: Enhance buffer validation in acpi_ut_walk_aml_resources()
-      ACPICA: Enhance OEM ID and Table ID validation in acpi_ex_load_table_op()
-      ACPICA: Add package limit checks in parser functions
-      ACPICA: add boundary checks in two places
+      thermal: intel: Use sysfs_emit() for powerclamp cpumask
 
 ---------------
 
- drivers/acpi/ac.c                                  |  37 +-
- drivers/acpi/acpi_ipmi.c                           |   2 +-
- drivers/acpi/acpi_pad.c                            |  38 +-
- drivers/acpi/acpi_video.c                          | 139 ++++---
- drivers/acpi/acpica/acapps.h                       |   4 +-
- drivers/acpi/acpica/accommon.h                     |   2 +-
- drivers/acpi/acpica/acconvert.h                    |   2 +-
- drivers/acpi/acpica/acdebug.h                      |   2 +-
- drivers/acpi/acpica/acdispat.h                     |   2 +-
- drivers/acpi/acpica/acevents.h                     |   2 +-
- drivers/acpi/acpica/acglobal.h                     |   2 +-
- drivers/acpi/acpica/achware.h                      |   2 +-
- drivers/acpi/acpica/acinterp.h                     |   2 +-
- drivers/acpi/acpica/aclocal.h                      |   3 +-
- drivers/acpi/acpica/acmacros.h                     |   2 +-
- drivers/acpi/acpica/acnamesp.h                     |   2 +-
- drivers/acpi/acpica/acobject.h                     |   2 +-
- drivers/acpi/acpica/acopcode.h                     |   2 +-
- drivers/acpi/acpica/acparser.h                     |   2 +-
- drivers/acpi/acpica/acpredef.h                     |   2 +-
- drivers/acpi/acpica/acresrc.h                      |   2 +-
- drivers/acpi/acpica/acstruct.h                     |   2 +-
- drivers/acpi/acpica/actables.h                     |   2 +-
- drivers/acpi/acpica/acutils.h                      |   2 +-
- drivers/acpi/acpica/amlcode.h                      |   2 +-
- drivers/acpi/acpica/amlresrc.h                     |   2 +-
- drivers/acpi/acpica/dbhistry.c                     |   2 +-
- drivers/acpi/acpica/dsargs.c                       |   2 +-
- drivers/acpi/acpica/dscontrol.c                    |   2 +-
- drivers/acpi/acpica/dsdebug.c                      |   2 +-
- drivers/acpi/acpica/dsfield.c                      |   2 +-
- drivers/acpi/acpica/dsinit.c                       |   2 +-
- drivers/acpi/acpica/dsmethod.c                     |  45 +-
- drivers/acpi/acpica/dsobject.c                     |   2 +-
- drivers/acpi/acpica/dsopcode.c                     |   2 +-
- drivers/acpi/acpica/dspkginit.c                    |   2 +-
- drivers/acpi/acpica/dswexec.c                      |   2 +-
- drivers/acpi/acpica/dswload.c                      |   2 +-
- drivers/acpi/acpica/dswload2.c                     |   2 +-
- drivers/acpi/acpica/dswscope.c                     |   2 +-
- drivers/acpi/acpica/dswstate.c                     |   2 +-
- drivers/acpi/acpica/evevent.c                      |   2 +-
- drivers/acpi/acpica/evglock.c                      |   2 +-
- drivers/acpi/acpica/evgpe.c                        |   2 +-
- drivers/acpi/acpica/evgpeblk.c                     |   2 +-
- drivers/acpi/acpica/evgpeinit.c                    |   2 +-
- drivers/acpi/acpica/evgpeutil.c                    |   2 +-
- drivers/acpi/acpica/evhandler.c                    |  13 +-
- drivers/acpi/acpica/evmisc.c                       |   2 +-
- drivers/acpi/acpica/evregion.c                     |   2 +-
- drivers/acpi/acpica/evrgnini.c                     |   2 +-
- drivers/acpi/acpica/evxface.c                      |   2 +-
- drivers/acpi/acpica/evxfevnt.c                     |   2 +-
- drivers/acpi/acpica/evxfgpe.c                      |   2 +-
- drivers/acpi/acpica/evxfregn.c                     |   2 +-
- drivers/acpi/acpica/exconcat.c                     |   2 +-
- drivers/acpi/acpica/exconfig.c                     |  28 +-
- drivers/acpi/acpica/exconvrt.c                     |   2 +-
- drivers/acpi/acpica/excreate.c                     |   2 +-
- drivers/acpi/acpica/exdebug.c                      |   2 +-
- drivers/acpi/acpica/exdump.c                       |   2 +-
- drivers/acpi/acpica/exfield.c                      |   2 +-
- drivers/acpi/acpica/exfldio.c                      |   2 +-
- drivers/acpi/acpica/exmisc.c                       |   2 +-
- drivers/acpi/acpica/exmutex.c                      |   2 +-
- drivers/acpi/acpica/exnames.c                      |   2 +-
- drivers/acpi/acpica/exoparg1.c                     |   2 +-
- drivers/acpi/acpica/exoparg2.c                     |   2 +-
- drivers/acpi/acpica/exoparg3.c                     |   4 +-
- drivers/acpi/acpica/exoparg6.c                     |   2 +-
- drivers/acpi/acpica/exprep.c                       |   2 +-
- drivers/acpi/acpica/exregion.c                     |   2 +-
- drivers/acpi/acpica/exresnte.c                     |   2 +-
- drivers/acpi/acpica/exresolv.c                     |   2 +-
- drivers/acpi/acpica/exresop.c                      |   2 +-
- drivers/acpi/acpica/exserial.c                     |   2 +-
- drivers/acpi/acpica/exstore.c                      |   2 +-
- drivers/acpi/acpica/exstoren.c                     |   2 +-
- drivers/acpi/acpica/exstorob.c                     |   2 +-
- drivers/acpi/acpica/exsystem.c                     |   2 +-
- drivers/acpi/acpica/extrace.c                      |   2 +-
- drivers/acpi/acpica/exutils.c                      |   2 +-
- drivers/acpi/acpica/hwacpi.c                       |   2 +-
- drivers/acpi/acpica/hwesleep.c                     |   2 +-
- drivers/acpi/acpica/hwgpe.c                        |   2 +-
- drivers/acpi/acpica/hwsleep.c                      |   2 +-
- drivers/acpi/acpica/hwtimer.c                      |   2 +-
- drivers/acpi/acpica/hwvalid.c                      |   2 +-
- drivers/acpi/acpica/hwxface.c                      |   2 +-
- drivers/acpi/acpica/hwxfsleep.c                    |   2 +-
- drivers/acpi/acpica/nsarguments.c                  |   2 +-
- drivers/acpi/acpica/nsconvert.c                    |   2 +-
- drivers/acpi/acpica/nsdump.c                       |   2 +-
- drivers/acpi/acpica/nsdumpdv.c                     |   2 +-
- drivers/acpi/acpica/nsinit.c                       |   2 +-
- drivers/acpi/acpica/nsload.c                       |   2 +-
- drivers/acpi/acpica/nsnames.c                      |   6 +
- drivers/acpi/acpica/nsobject.c                     |   6 +
- drivers/acpi/acpica/nsparse.c                      |   2 +-
- drivers/acpi/acpica/nspredef.c                     |   2 +-
- drivers/acpi/acpica/nsprepkg.c                     |   9 +-
- drivers/acpi/acpica/nsrepair.c                     |   2 +-
- drivers/acpi/acpica/nsrepair2.c                    |   2 +-
- drivers/acpi/acpica/nsutils.c                      |   2 +-
- drivers/acpi/acpica/nswalk.c                       |   2 +-
- drivers/acpi/acpica/nsxfname.c                     |   6 +-
- drivers/acpi/acpica/psargs.c                       | 136 ++++++-
- drivers/acpi/acpica/psloop.c                       |  32 +-
- drivers/acpi/acpica/psobject.c                     |   2 +-
- drivers/acpi/acpica/psopcode.c                     |   2 +-
- drivers/acpi/acpica/psopinfo.c                     |   2 +-
- drivers/acpi/acpica/psparse.c                      |  16 +-
- drivers/acpi/acpica/psscope.c                      |   2 +-
- drivers/acpi/acpica/pstree.c                       |   2 +-
- drivers/acpi/acpica/psutils.c                      |   2 +-
- drivers/acpi/acpica/pswalk.c                       |   6 +-
- drivers/acpi/acpica/psxface.c                      |   2 +-
- drivers/acpi/acpica/rsserial.c                     |   7 +-
- drivers/acpi/acpica/tbdata.c                       |   2 +-
- drivers/acpi/acpica/tbfadt.c                       |   5 +-
- drivers/acpi/acpica/tbfind.c                       |   2 +-
- drivers/acpi/acpica/tbinstal.c                     |   2 +-
- drivers/acpi/acpica/tbprint.c                      |   2 +-
- drivers/acpi/acpica/tbutils.c                      |   2 +-
- drivers/acpi/acpica/tbxface.c                      |   2 +-
- drivers/acpi/acpica/tbxfload.c                     |   2 +-
- drivers/acpi/acpica/tbxfroot.c                     |   2 +-
- drivers/acpi/acpica/utaddress.c                    |   2 +-
- drivers/acpi/acpica/utalloc.c                      |   2 +-
- drivers/acpi/acpica/utascii.c                      |   2 +-
- drivers/acpi/acpica/utbuffer.c                     |   2 +-
- drivers/acpi/acpica/utcache.c                      |   2 +-
- drivers/acpi/acpica/utcksum.c                      |   2 +-
- drivers/acpi/acpica/utcopy.c                       |  12 +-
- drivers/acpi/acpica/utdebug.c                      |   2 +-
- drivers/acpi/acpica/utdecode.c                     |   2 +-
- drivers/acpi/acpica/uteval.c                       |   2 +-
- drivers/acpi/acpica/utglobal.c                     |   2 +-
- drivers/acpi/acpica/uthex.c                        |   2 +-
- drivers/acpi/acpica/utids.c                        |   2 +-
- drivers/acpi/acpica/utinit.c                       |   2 +-
- drivers/acpi/acpica/utlock.c                       |   2 +-
- drivers/acpi/acpica/utobject.c                     |   2 +-
- drivers/acpi/acpica/utosi.c                        |   2 +-
- drivers/acpi/acpica/utpredef.c                     |   2 +-
- drivers/acpi/acpica/utprint.c                      |   2 +-
- drivers/acpi/acpica/utresrc.c                      |  30 ++
- drivers/acpi/acpica/uttrack.c                      |   2 +-
- drivers/acpi/acpica/utuuid.c                       |   2 +-
- drivers/acpi/acpica/utxface.c                      |   2 +-
- drivers/acpi/acpica/utxfinit.c                     |   2 +-
- drivers/acpi/battery.c                             |  75 ++--
- drivers/acpi/bus.c                                 |  67 +++
- drivers/acpi/button.c                              | 452 +++++++++++----------
- drivers/acpi/cppc_acpi.c                           |  34 +-
- drivers/acpi/hed.c                                 |  25 +-
- drivers/acpi/nfit/core.c                           | 102 +++--
- drivers/acpi/pci_root.c                            |   4 +
- drivers/acpi/pmic/intel_pmic.c                     |  37 +-
- drivers/acpi/processor_idle.c                      |   9 +
- drivers/acpi/scan.c                                |   6 +-
- drivers/acpi/thermal.c                             |  53 +--
- include/acpi/acbuffer.h                            |   2 +-
- include/acpi/acconfig.h                            |   2 +-
- include/acpi/acexcep.h                             |   2 +-
- include/acpi/acnames.h                             |   2 +-
- include/acpi/acoutput.h                            |   2 +-
- include/acpi/acpi.h                                |   2 +-
- include/acpi/acpi_bus.h                            |   2 +
- include/acpi/acpiosxf.h                            |   2 +-
- include/acpi/acpixf.h                              |   4 +-
- include/acpi/acrestyp.h                            |   3 +-
- include/acpi/actbl.h                               |   2 +-
- include/acpi/actbl1.h                              |   2 +-
- include/acpi/actbl2.h                              |   4 +-
- include/acpi/actbl3.h                              |   2 +-
- include/acpi/actypes.h                             |   8 +-
- include/acpi/acuuid.h                              |   7 +-
- include/acpi/cppc_acpi.h                           |   8 +-
- include/acpi/platform/acenv.h                      |   2 +-
- include/acpi/platform/acenvex.h                    |   2 +-
- include/acpi/platform/acgcc.h                      |   2 +-
- include/acpi/platform/acgccex.h                    |   2 +-
- include/acpi/platform/aclinux.h                    |   2 +-
- include/acpi/platform/aclinuxex.h                  |   2 +-
- include/acpi/platform/aczephyr.h                   |   2 +-
- tools/power/acpi/common/cmfsize.c                  |   2 +-
- tools/power/acpi/common/getopt.c                   |   2 +-
- .../acpi/os_specific/service_layers/oslinuxtbl.c   |   2 +-
- .../acpi/os_specific/service_layers/osunixdir.c    |   2 +-
- .../acpi/os_specific/service_layers/osunixmap.c    |   2 +-
- .../acpi/os_specific/service_layers/osunixxf.c     |   2 +-
- tools/power/acpi/tools/acpidump/acpidump.h         |   2 +-
- tools/power/acpi/tools/acpidump/apdump.c           |   2 +-
- tools/power/acpi/tools/acpidump/apfiles.c          |   2 +-
- tools/power/acpi/tools/acpidump/apmain.c           |   2 +-
- 196 files changed, 1109 insertions(+), 687 deletions(-)
+ .../devicetree/bindings/hwmon/pwm-fan.yaml         |   3 +-
+ .../bindings/thermal/amlogic,thermal.yaml          |  37 ++-
+ .../devicetree/bindings/thermal/qcom-tsens.yaml    |   3 +
+ .../devicetree/bindings/thermal/qoriq-thermal.yaml |   1 +
+ .../bindings/thermal/spacemit,k1-tsensor.yaml      |  76 +++++
+ .../bindings/thermal/thermal-cooling-devices.yaml  |   8 +-
+ .../devicetree/bindings/thermal/thermal-zones.yaml |   3 +-
+ drivers/firmware/meson/meson_sm.c                  |  28 +-
+ drivers/gpu/drm/etnaviv/etnaviv_gpu.c              |   5 +-
+ drivers/hwmon/amc6821.c                            |   2 +-
+ drivers/hwmon/aspeed-pwm-tacho.c                   |   5 +-
+ drivers/hwmon/cros_ec_hwmon.c                      |   4 +-
+ drivers/hwmon/dell-smm-hwmon.c                     |   4 +-
+ drivers/hwmon/emc2305.c                            |   6 +-
+ drivers/hwmon/gpio-fan.c                           |   6 +-
+ drivers/hwmon/hwmon.c                              |   6 +-
+ drivers/hwmon/max6650.c                            |   6 +-
+ drivers/hwmon/mlxreg-fan.c                         |   4 +-
+ drivers/hwmon/npcm750-pwm-fan.c                    |   6 +-
+ drivers/hwmon/pwm-fan.c                            |   5 +-
+ drivers/hwmon/qnap-mcu-hwmon.c                     |   6 +-
+ drivers/hwmon/tc654.c                              |   5 +-
+ drivers/memory/tegra/tegra210-emc-core.c           |   4 +-
+ drivers/soc/qcom/qcom_aoss.c                       |   2 +-
+ drivers/thermal/Kconfig                            |   3 +
+ drivers/thermal/Makefile                           |   1 +
+ drivers/thermal/amlogic_thermal.c                  | 112 +++++--
+ drivers/thermal/cpufreq_cooling.c                  |   2 +-
+ drivers/thermal/cpuidle_cooling.c                  |   2 +-
+ drivers/thermal/devfreq_cooling.c                  |   2 +-
+ drivers/thermal/imx_thermal.c                      |   4 +-
+ .../int340x_thermal/platform_temperature_control.c |  12 +-
+ drivers/thermal/intel/intel_powerclamp.c           |   2 +-
+ drivers/thermal/intel/intel_tcc_cooling.c          |   3 +
+ drivers/thermal/khadas_mcu_fan.c                   |   7 +-
+ drivers/thermal/qcom/tsens-v2.c                    |   9 +-
+ drivers/thermal/qcom/tsens.c                       | 183 ++++++++---
+ drivers/thermal/qcom/tsens.h                       |  24 +-
+ drivers/thermal/qoriq_thermal.c                    |  71 ++++-
+ drivers/thermal/samsung/Kconfig                    |   1 +
+ drivers/thermal/spacemit/Kconfig                   |  19 ++
+ drivers/thermal/spacemit/Makefile                  |   3 +
+ drivers/thermal/spacemit/k1_tsensor.c              | 280 +++++++++++++++++
+ drivers/thermal/tegra/soctherm.c                   |  34 +-
+ drivers/thermal/testing/command.c                  |  12 +
+ drivers/thermal/testing/zone.c                     |  12 +-
+ drivers/thermal/thermal_core.c                     | 347 ++++++++-------------
+ drivers/thermal/thermal_core.h                     |   7 +-
+ drivers/thermal/thermal_hwmon.c                    | 220 ++++---------
+ drivers/thermal/thermal_of.c                       | 152 ++++++++-
+ drivers/thermal/thermal_sysfs.c                    |  10 +-
+ include/linux/firmware/meson/meson_sm.h            |   3 +
+ include/linux/hwmon.h                              |   3 +-
+ include/linux/thermal.h                            |  71 +++--
+ 54 files changed, 1279 insertions(+), 567 deletions(-)
