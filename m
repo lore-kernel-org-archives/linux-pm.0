@@ -1,149 +1,202 @@
-Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-yw1-f179.google.com (mail-yw1-f179.google.com [209.85.128.179])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 680C03E0245
-	for <linux-pm@vger.kernel.org>; Fri, 12 Jun 2026 07:11:29 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.180.131
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1781248293; cv=none; b=p9u+fQKPZ5msy/ZsFK9Kka9uNJ+N/JybQGEEp0L3IT2FTTR5FIeTLtklKYr9DBTKC5KVNpZJrIFAHV9CehaatTrY2kmbxKD9VNtUBmD3cVff0n4veeESkmNaW8QXjzIFTBGFdyHpJC85+JOq92Dx1wGUk++k7AitzdLxTZJe3eE=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1781248293; c=relaxed/simple;
-	bh=F+L6o6Tr4+wSTemLWchDyR6SdCI9Noc5GlbpDkNWfpg=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=MCdmbP4S540KANjmseGUkyR/sFCuvjuv+q1UkTvyA6uj3n5KYFGE2qWiAJmOKCMLuJNV0yQjdi2f+jM3a6WM7erxU1o//D9+XV/T3ijF5zS1KfuwwBhG1kemZnVBlmNNuVPatQ7GJSrnthlur57KHQDtRWv7WT9mXWlXIxY05nI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=TGu8hlJ4; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=hyIkT550; arc=none smtp.client-ip=205.220.180.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D2C6F27FB05
+	for <linux-pm@vger.kernel.org>; Fri, 12 Jun 2026 07:20:30 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.128.179
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1781248832; cv=pass; b=BJa3WFhEgUPkHNONQ75ltr+GtDUiPWZ+wRm2cgfQvhOc+UHk/W6ncI1THvsJdMxAmO9+MfpoP9MNmCQ3tDc1ze6n6oJEz8fsYFHL3xne+hbiFrB9LMMYkibOzOt9kEilarT1pVS/hx431pwZwwm/R97ZDocI6C4Qpm4trpagVyk=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1781248832; c=relaxed/simple;
+	bh=IkWHCCFQX7aMDTxBgQKIawFEFZfCBBbHv2LydgIraqk=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=f0V+z6E3I82AjbRZKjK9vpIju555hwybl1l0vbzgaP+Q1mDg5afjOget8ItGpKPvaiSM+CSKbnUHrdwT1d6Flc82nT3QgzZot7xT4oQZfxCeXQXDvS3XYdWsbSt8JOI2YSqTk6lz8vSVnQBJYpw+FqsMfK8CIoMgug9jNPSRHao=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=chromium.org; spf=pass smtp.mailfrom=chromium.org; dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b=Oj4GuGzD; arc=pass smtp.client-ip=209.85.128.179
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=chromium.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=chromium.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="TGu8hlJ4";
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="hyIkT550"
-Received: from pps.filterd (m0279872.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 65C3BteQ2451851
-	for <linux-pm@vger.kernel.org>; Fri, 12 Jun 2026 07:11:28 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-type:date:from:in-reply-to:message-id:mime-version
-	:references:subject:to; s=qcppdkim1; bh=sgRxjNUG7aBzL0yQw8/6avKR
-	8LOtMiVPpCqbd9rfu0U=; b=TGu8hlJ4+AWlsPwF81/bDqSYT853ut/uuVsNkDtE
-	TAy54zGaPsO5NajMyiDFuAiKir1W1NvYXyh9M5Xd8kOZ0A/wyoszzbDt82RVBoMi
-	KNj5ZAYIxIxV19PwHIgMmuOVS8P8xzc/JUWL+89UpS0Z13AiAI3Jed/3WLW7NQHJ
-	QxEJBGQhRAUwoafFhqOcCvdC2vgvshSR7KdEzZTXi9jGzWamyhBs06o7F6+rnz2p
-	NGvi5XKF8echIbhMQnw6xUyIvnFRARFGI7eEnEJ639SjbPddeVXLMLQwaKBXFqT2
-	dJt7nNxArsabCQNuRvPiBFnrWkmnAi7oW8SvudxMhRNjyg==
-Received: from mail-qt1-f200.google.com (mail-qt1-f200.google.com [209.85.160.200])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4er1xcj977-1
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Fri, 12 Jun 2026 07:11:28 +0000 (GMT)
-Received: by mail-qt1-f200.google.com with SMTP id d75a77b69052e-517dadd84f8so12804111cf.0
-        for <linux-pm@vger.kernel.org>; Fri, 12 Jun 2026 00:11:28 -0700 (PDT)
+	dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="Oj4GuGzD"
+Received: by mail-yw1-f179.google.com with SMTP id 00721157ae682-7e16f05fd79so7315427b3.1
+        for <linux-pm@vger.kernel.org>; Fri, 12 Jun 2026 00:20:30 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1781248830; cv=none;
+        d=google.com; s=arc-20240605;
+        b=DB15v0/W1rrUGEewhMtsYHEqEljzT2POgJbhqm1OLuuOR9rSLKmjQ85zSFSUftnQ+9
+         o7c5+Yt/JlJtukVioJlBmmStAAlqzIN/5szzKCnmaVa3T6DJLKdLi2ZJBqKa2C4IvdVv
+         9Uzdtpc/Fu1Oz5L0PiH6iS0LGd8SUvJvr7/s9gRSwQXvpHV7qgYraDgNtmY6uXBji0FG
+         s17KR7Zm8fBbGWSRrIeKzessV1y9aV78mIfy7GLO1eh973QhUTg7tGk5KHwwqdk+SrKz
+         ETR5UH1O0KE4Fd4pHZ04gmD1pDIS95dMa9NrerxLAtLlk33Qy6JsJ81L+781jJ6508dy
+         6r2g==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=PEcj4bZjlu2HtgA6/DpQKuZoEr9jILxBgREI+9hl/bg=;
+        fh=zXMP8cQWK0agwN/KlDljwYWC0hUjsJEPfeTu5WwtXzk=;
+        b=ES+5DzO0TS5/fbTH65cFeRpz5o4jKoiwRsDUcYeZwwdV1OIThAQF96QFyukT/5lFxZ
+         eGO+f5df1EiE/DHBSa5+8v10PkulkU9lguYTnD7pCpJlgDF7FodqNZque1q1dhVLrr7t
+         yT6kwnLrVAXBTB2pzNfnw3SATp13w+lnOjlKZ/WcJkeGervJ+XES66Df+w5LKGC8IprC
+         wZ1hX4nGoSxs4zEu4grE3iCSEMM4rijfcS4H9vHRK+lZe4irinEU9UMNHyYkowHYb3PC
+         5dngf/8WQv8uhCqtwoYFWeldSjNwRKWiEhMcsZcB/5rLlpKG4wdsSI2vda1wep+GIPa5
+         2XCg==;
+        darn=vger.kernel.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1781248287; x=1781853087; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=sgRxjNUG7aBzL0yQw8/6avKR8LOtMiVPpCqbd9rfu0U=;
-        b=hyIkT550VkgTNR0z58SzqTCwVGcX7z1UM3bkgtR9uki/wVXLuZ/aEfDryHd6Y26Eyi
-         /JJ4mjjfzfcF67FyfetgOy/dnoKyY6bb8bqO03QWp9g8IA2mTXKH6tSQxYCsYXsKnTOh
-         ROwLTrNyKGZLc6XLkE5LJ7EbbdLiV3RfljmqSLku6p2Km9cuSKfWuAf6H1J+CHo2QIq6
-         UHeWm6O2PzhfNpmXLMyj/zx3a8hDxKrSpoFSV6GF3jZli0z14idclQk5MrPwlA1fabWI
-         zO7lGETZb2qxqkh1PuF4pC4m8mZmGJSFwZEXEL5SRs9L3uC8VE5Mn/qH9n3068Mw/r7U
-         E3sg==
+        d=chromium.org; s=google; t=1781248830; x=1781853630; darn=vger.kernel.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=PEcj4bZjlu2HtgA6/DpQKuZoEr9jILxBgREI+9hl/bg=;
+        b=Oj4GuGzDu9GI26DqlprSNV/s5e3UxGAX3WAvF5EG3Eog+1hSTDfzsXpVg87iTTjNlf
+         v8jWX1Dd+SPcZvi25Y2OkVchGb6xU6Sg8YfVmgsfJ99CLZH8s5qOmu3/P68rcrtYPtxS
+         k85chdfol8gkgjb95XHASHkvZ+YTtvZKmW/tU=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1781248287; x=1781853087;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=sgRxjNUG7aBzL0yQw8/6avKR8LOtMiVPpCqbd9rfu0U=;
-        b=I/wfkkelfidFloAuBpAWdXYK15Pk7l1itcl1rqdq/WchbbUggVVRif7rvf4m0hWR6E
-         QF6yjRTOsxZdHfhlOkIk4MG7wQcaBuBqMWoEFzruEGDDGnvMseCqj7qeVBi3CdWdGypQ
-         5UNBDUxU9la3ZhmQ9IpKmsbzHnJzA1opLz4Ao7HB8ZrYhth+Br7zeC8ADNNAIRNe+WQv
-         UofxFqOOhkf732+n8T9nQmX+jkPRrp+PkgAasVSlDL4RAENRTyMdTmSkBT3J4GE1Kcmc
-         BruL/+q4eD56zazEnb8Uk4oJ9LUJRgcQUG/4wykDAD401kZKPvE+ob8t+2z7wP3ZR4Dj
-         2bPg==
-X-Forwarded-Encrypted: i=1; AFNElJ+gGLloq2pDNXbcLVwMEghRftrprL9aV7+u6SktA6y1/Of25CCAFmRf5OjiGX70YMUr321u/a0P2w==@vger.kernel.org
-X-Gm-Message-State: AOJu0YzB1IVKgSwL60StZqc9j/l2NMnAMAZVvJLfF+cq3MfKctQ1uFhF
-	5tGmhGzlUPfQw/u5K/fZEhi7A6PC8pPXEiYtbmdmXm8IJAu74Hl2gwfvFtx7CehZdYRis0ZvQ4F
-	F7WsSXgK/jEdMyQEJy8fJnIsY7keN6AYxJqSQzEMaMvQJeoHkoDKIgqVNWfsn0Q==
-X-Gm-Gg: Acq92OF7ijg2wDcvEUvjCKEMKy/JZx28byDEi6us2pdg8QEwGrKU6ldFBsZ+kXLfUB5
-	DwT7eDVbysdGKVAQjCpDcWmR4VFXzzjgHbXsaZeSHxmH7LX0u+ArIHYEc5TBpWHiedBVs6r3TNX
-	h6BlNl2VY9eEXCAQA05d4xYNhVCzG1/m6SvcshgIcuOYMfjLgo+UISSEiH43LIPFoKXo1Qs3koY
-	0EUge1SWjI0N7YgzwB+nN2rHniyW7n5Q2JVL4+Pq9xaGHG397r4iFYINaoeT2h3GTz5+5Toba0u
-	VafgcXZxn0bo8SCIoYMq3CFb94mgMNPoKhxxW/rBAM/XE/LMWoGy1NIlA/JYEDkg6xMVXyQf4UB
-	FQqDXY6/yXvaFl9tmMmv+qqfmpmlkG2PZa7qeOQPxcV9oUx8eVmxXiHepxS1asGASatU59xl1K1
-	zb+vOebDAQshFd97kVHtRcmz1HhJWnHmPYZ6E=
-X-Received: by 2002:a05:622a:1191:b0:517:5b2c:6aae with SMTP id d75a77b69052e-517fe1de684mr18947771cf.13.1781248287482;
-        Fri, 12 Jun 2026 00:11:27 -0700 (PDT)
-X-Received: by 2002:a05:622a:1191:b0:517:5b2c:6aae with SMTP id d75a77b69052e-517fe1de684mr18947451cf.13.1781248287053;
-        Fri, 12 Jun 2026 00:11:27 -0700 (PDT)
-Received: from umbar.lan (2001-14ba-a073-af00-264b-feff-fe8b-be8a.rev.dnainternet.fi. [2001:14ba:a073:af00:264b:feff:fe8b:be8a])
-        by smtp.gmail.com with ESMTPSA id 2adb3069b0e04-5ad2e1a7333sm281464e87.52.2026.06.12.00.11.25
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 12 Jun 2026 00:11:25 -0700 (PDT)
-Date: Fri, 12 Jun 2026 10:11:23 +0300
-From: Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>
-To: Varadarajan Narayanan <varadarajan.narayanan@oss.qualcomm.com>
-Cc: amitk@kernel.org, thara.gopinath@gmail.com, rafael@kernel.org,
-        daniel.lezcano@kernel.org, rui.zhang@intel.com, lukasz.luba@arm.com,
-        robh@kernel.org, krzk+dt@kernel.org, conor+dt@kernel.org,
-        linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-        Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
-Subject: Re: [PATCH v2 2/2] thermal/drivers/qcom/tsens: Add support for
- ipq9650 tsens
-Message-ID: <yi5jzdqmmynosrfdkdwz2btesbkyv2vwpkwvpf3yyp3exavipb@2z2gvgg6p5p6>
-References: <20260610081241.1468507-1-varadarajan.narayanan@oss.qualcomm.com>
- <20260610081241.1468507-3-varadarajan.narayanan@oss.qualcomm.com>
+        d=1e100.net; s=20251104; t=1781248830; x=1781853630;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=PEcj4bZjlu2HtgA6/DpQKuZoEr9jILxBgREI+9hl/bg=;
+        b=cjkeIFFrruM6WB8mGZObwCqnOFtDuWALrnUOm7EtKYfPd9C+yrHxxiGtsSWxvmHJWj
+         xYMgkD5FbQviA0YKhgkoE6H+PzGTfK2xwfpgJZwooxp30Kaw8WGW6h0a8bCkLgwuGAKa
+         hdYBdFUx0BO7qCgrJgmLz8TcLVlTCVwP/NJC7DAoEbDULLOqx9WNd2321ocd4pTjSKxA
+         dRkprQirTFeSif5XEQyi7V7DYdVWVoOLxUBLDyDXwl4+v8zwGjUiJtjMsnhNBYP0MJxS
+         Zu32hwd9mRDKwbY1RnjErCGraOV5EFHUm0ngV/LNtbVVTEHQqGVqh3U6dOgnHa3u25kO
+         hkIQ==
+X-Forwarded-Encrypted: i=1; AFNElJ8B3QDfGcN/irQ32kcXlCXLYxeIqgAzYgCKvayLQX0qPygrEL8eqO7t5B2CdVvwy4zV9HOH40wYPQ==@vger.kernel.org
+X-Gm-Message-State: AOJu0YzEyBxW/+7cQqRi+zk2SFE54VIMrpcmwgf2tGKDdjMMopkKK6u6
+	JpDWml5GCAMjLOCfEeVgiuR3PGvLRsYKYEVEjjEBJg3PCzGP1dG7ZOEoUHnUMtthRmRS30IAG5J
+	p8g/I8TsadiYeujBA9w5RdHeseg9IqVXeCHBvrNG9
+X-Gm-Gg: Acq92OEKGQEZWr8M9upIupqHTy7MOOX8KobsWwLbZRHakQHFG/24O/OGE5Lpij+B/Yv
+	xidpgalfm6TNHivOLApPG/+vsh0DCiQa2KMk8mClDVgQzEaWj0J5IrBwfrtsDifzyZmbwcN/2iN
+	m2By2IYgMDnvOZlTHVq+FyhYXOIlAvOApf51w/5JoZvAcXA2gxn0MZx83Zotw4TbfmttPqDJRtU
+	USghH5J09CAFESLmviyGS9RUwv5+wRLRjJ4XNnM8zZ8bgJ+dH/QtMbQhuulZTmWPolp+Fa/AzQC
+	gc/K4Gza
+X-Received: by 2002:a05:690c:c4ce:b0:7ef:81dc:c0e7 with SMTP id
+ 00721157ae682-7f7b6242881mr15277067b3.19.1781248829675; Fri, 12 Jun 2026
+ 00:20:29 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260610081241.1468507-3-varadarajan.narayanan@oss.qualcomm.com>
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNjEyMDA2MyBTYWx0ZWRfX6eTGZSK+Fk2/
- cM04RvnZgMpsYin8XV4VIFTeNp8R5o2PDXaeNSYjM6VZ05LUBcWqThokFmNJrgJgHvgP8p5lIDo
- WAKdYTLYnTQ7NBKkTbIFZRYB1vz3RiYFltFqMy+HZvhQVXDyHdquavoi1xOgJTfd0jZ8qoHQys3
- UgF8ymCUJX5/eHhT4Hvs154lR54LrxkK+ffgF/SFgmwOWx1NqlO0Pz7OWlkbwwIDSKijBSVcTW1
- MF9eIznHIXAAbUGQMuXw96zu0o/3bbCXCv8BYlMAVEtdF9Tbqmp4u+e2qtH2xITQ2wEv80gchNI
- gKhSnU+N4lxC7by7iB+HXM22GZvZJNt654T8nx7prli93vfBc0W4npc8YarP4G8JyBVJrALWQyM
- WGel4/mE1ryTVVS+9sU+e6mrFtD8sS1yFmlK9AO0zzTP2uKaAhyj/L9J22PL4/Jq4SKTJ9OdbQD
- 4Q1hMx4+rqf5RDk0h+A==
-X-Proofpoint-GUID: QNQpMSwWa7L1RZcqihe0pFH2B7-puS_q
-X-Proofpoint-ORIG-GUID: QNQpMSwWa7L1RZcqihe0pFH2B7-puS_q
-X-Authority-Analysis: v=2.4 cv=NZPWEWD4 c=1 sm=1 tr=0 ts=6a2bb120 cx=c_pps
- a=JbAStetqSzwMeJznSMzCyw==:117 a=xqWC_Br6kY4A:10 a=kj9zAlcOel0A:10
- a=FelO9ux0wxsA:10 a=s4-Qcg_JpJYA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=u7WPNUs3qKkmUXheDGA7:22 a=yx91gb_oNiZeI1HMLzn7:22 a=EUspDBNiAAAA:8
- a=Br5ujosB-dOo-FGV42YA:9 a=CjuIK1q_8ugA:10 a=uxP6HrT_eTzRwkO_Te1X:22
-X-Proofpoint-Spam-Info: AW1haW4tMjYwNjEyMDA2MyBTYWx0ZWRfX5CFGaONuCwF3
- 8CJUyeH1P6zgsdXzDNpmZ2rjnaDAu+w959fGbMKxrefowfOypwhBm5CMv9Uvst7aEUsBe0hhEU0
- HzrB+hhiotJN0TPSAaKwHn3ULFjW8i4=
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.125,FMLib:17.12.100.49
- definitions=2026-06-12_01,2026-06-11_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- phishscore=0 suspectscore=0 adultscore=0 lowpriorityscore=0 clxscore=1015
- priorityscore=1501 malwarescore=0 bulkscore=0 spamscore=0 impostorscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2606040000 definitions=main-2606120063
+References: <20260610084053.2059858-1-wenst@chromium.org> <20260610084053.2059858-3-wenst@chromium.org>
+ <ailv8HpnrCH3Zb8C@ashevche-desk.local>
+In-Reply-To: <ailv8HpnrCH3Zb8C@ashevche-desk.local>
+From: Chen-Yu Tsai <wenst@chromium.org>
+Date: Fri, 12 Jun 2026 16:20:18 +0900
+X-Gm-Features: AVVi8Cfix6rlRxpmlL_G61si3smqjEz2qk3oIH1X9DTqc3HutmT3uL6lEMZg0_I
+Message-ID: <CAGXv+5EHHWfiWgqPpf-RMKoSQLc2cd9OA4Z36SNoL5C53kVh2g@mail.gmail.com>
+Subject: Re: [PATCH v2 02/16] device property: Add fwnode_graph_get_next_port_endpoint()
+To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Cc: Bartosz Golaszewski <brgl@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
+	Daniel Scally <djrscally@gmail.com>, Heikki Krogerus <heikki.krogerus@linux.intel.com>, 
+	Sakari Ailus <sakari.ailus@linux.intel.com>, "Rafael J. Wysocki" <rafael@kernel.org>, 
+	Danilo Krummrich <dakr@kernel.org>, Rob Herring <robh@kernel.org>, 
+	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
+	Matthias Brugger <matthias.bgg@gmail.com>, 
+	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>, 
+	Alan Stern <stern@rowland.harvard.edu>, linux-acpi@vger.kernel.org, 
+	driver-core@lists.linux.dev, linux-pm@vger.kernel.org, 
+	linux-usb@vger.kernel.org, devicetree@vger.kernel.org, 
+	linux-mediatek@lists.infradead.org, linux-arm-kernel@lists.infradead.org, 
+	linux-kernel@vger.kernel.org, Manivannan Sadhasivam <mani@kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-On Wed, Jun 10, 2026 at 01:42:41PM +0530, Varadarajan Narayanan wrote:
-> ipq9650's tsens is similar to ipq5332 tsens but has different number of
-> sensors. Re-use the ipq5332 data for ipq9650 and modify the sensor related
-> information.
-> 
-> Reviewed-by: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
-> Signed-off-by: Varadarajan Narayanan <varadarajan.narayanan@oss.qualcomm.com>
-> ---
->  drivers/thermal/qcom/tsens-v2.c | 8 ++++++++
->  drivers/thermal/qcom/tsens.c    | 3 +++
->  drivers/thermal/qcom/tsens.h    | 2 +-
->  3 files changed, 12 insertions(+), 1 deletion(-)
-> 
+On Wed, Jun 10, 2026 at 11:08=E2=80=AFPM Andy Shevchenko
+<andriy.shevchenko@linux.intel.com> wrote:
+>
+> On Wed, Jun 10, 2026 at 04:40:36PM +0800, Chen-Yu Tsai wrote:
+> > Due to design constraints of the power sequencing API, the consumer
+> > must first be sure that the other side is actually a provider, or it
+> > will continually get -EPROBE_DEFER when requesting the power
+> > sequencing descriptor.
+> >
+> > In the upcoming USB power sequencing integration, the USB hub driver
+> > first needs to check whether a graph connection exists, and whether
+> > the other side of the connection is a supported connector type. The
+> > USB port is tied to a "port" firmware node, and this new helper will
+> > be used to get the endpoint under the known "port" firmware node.
+>
+> ...
+>
+> > +/**
+> > + * fwnode_graph_get_next_port_endpoint - Get next endpoint firmware no=
+de in port
+> > + * @port: Pointer to the target port firmware node
+> > + * @prev: Previous endpoint node or %NULL to get the first
+> > + *
+> > + * The caller is responsible for calling fwnode_handle_put() on the re=
+turned
+> > + * fwnode pointer. Note that this function also puts a reference to @p=
+rev
+> > + * unconditionally.
+> > + *
+> > + * Return: an endpoint firmware node pointer or %NULL if no more endpo=
+ints
+> > + * are available.
+>
+> Yeah, you see, even here is inconsistency with previously added kernel-do=
+c.
+>
+> > + */
+> > +struct fwnode_handle *fwnode_graph_get_next_port_endpoint(const struct=
+ fwnode_handle *port,
+> > +                                                       struct fwnode_h=
+andle *prev)
+> > +{
+> > +     struct fwnode_handle *ep;
+>
+> Unused?
+>
+> > +     while (1) {
+>
+> This is usually harder to read and follow. It's like "pay much attention =
+on
+> the code", but here no rocket science, no code to really pay attention to=
+.
+>
+> > +             prev =3D fwnode_get_next_child_node(port, prev);
+> > +             if (!prev)
+> > +                     break;
+> > +
+> > +             if (WARN(!fwnode_name_eq(prev, "endpoint"),
+> > +                      "non endpoint node is used (%pfw)", prev))
+> > +                     continue;
+> > +
+> > +             break;
+> > +     }
+> > +
+> > +     return prev;
+> > +}
+>
+> So, this can be rewritten as
+>
+>         ep =3D prev;
+>         do {
+>                 ep =3D fwnode_get_next_child_node(port, ep);
+>                 if (fwnode_name_eq(ep, "endpoint"))
+>                         break;
+>
+>                 WARN_ON(ep, ...);
+>         } while (ep);
+>
+>         return ep;
+>
+> But also big question why? to WARN*(). There is no use in the entire
+> property.c.
 
-Reviewed-by: Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>
+Will drop. This function was lifted from drivers/of/property.c then
+adapted to the fwnode APIs, so it still has the structure of its
+origin. With the WARN() gone, rewriting it as do {} while() becomes:
+
+do {
+        prev =3D fwnode_get_next_child_node(port, prev);
+        if (prev && fwnode_name_eq(prev, "endpoint"))
+                break;
+} while (prev);
+
+return prev;
 
 
--- 
-With best wishes
-Dmitry
+Thanks
+ChenYu
