@@ -1,239 +1,169 @@
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.7])
+Received: from chaosmail.tech (chaosmail.tech [77.81.229.115])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 78B4B36AB4B;
-	Fri, 12 Jun 2026 17:55:10 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.7
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B36D437D132;
+	Fri, 12 Jun 2026 18:36:14 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=77.81.229.115
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1781286911; cv=none; b=FwEYsR5lyE8/2kyoHONeEs+GKi8YBabYbSXSKWgyPE7FdTd2FFwpGtNE9clEtH0XZfS99eFJqO038UdO3ill+BjZJoChqD5DojT0rKA9rA0b+jHbQFlH5BIhcXePPF0feI+tky9Y4Ts8E+zCGT2HdlibF40Ts9h2kEUtXjNapuk=
+	t=1781289377; cv=none; b=aBmzULDWzPLEdvTk+TUw2Sebje82zDrA8bOqL3GqyJN0TyVqW1+0Cp4a6F/YmB1DwbtSekC2e3VXe7Y/ftSnUXsXa/GtKMvyDOht2VAH8wUcCm8k6vRU+GI06306oniQdqURaaaahdqLf/a19c/FNlqNwz+XeHl3gBmz0He7U6s=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1781286911; c=relaxed/simple;
-	bh=wXtD1O2QRhqtuZVuhb41OrsA3ailylCWjE3VxsJztzg=;
-	h=Date:From:To:Cc:Subject:Message-ID; b=Uc0pwSh11iTM+zoruIwrN8HZBDXPc5dNAhzfs85Y05x7XrVlPGBbBjprmH3MRi2itrHM3oEMSHf9T8ReAiCcKAP3T7kGtSenUmeyWubVFcCpcwjk92qwuSkv/Wjthd/mkB+UByPMtY0CiX38sTiiMint0RQjIObaadYLcZuhw5A=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=XCX/3M+x; arc=none smtp.client-ip=192.198.163.7
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
+	s=arc-20240116; t=1781289377; c=relaxed/simple;
+	bh=4A/C+EOHO465w2u8xamdqNmkNqrHgUkGdvhtrLwE2lg=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:To:Cc; b=BWO5VVjLg2lQdSxuwRcwvuKA4NlglaYgTQTAxt8cKJVjjhJBYfxYud6jiTb0VxatlLipSJyJrPjFPlccQokfUFbcPoAHWeao6xjUDfjgsxxGnar4KxMcqu9ub1woFoyBftc73moJzCZ7L6juxeZ28Sn6MrpDVbX61tmoVNL4ESE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=chaosmail.tech; spf=pass smtp.mailfrom=chaosmail.tech; dkim=pass (1024-bit key) header.d=chaosmail.tech header.i=@chaosmail.tech header.b=cLzecYpO; arc=none smtp.client-ip=77.81.229.115
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=chaosmail.tech
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=chaosmail.tech
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="XCX/3M+x"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1781286910; x=1812822910;
-  h=date:from:to:cc:subject:message-id;
-  bh=wXtD1O2QRhqtuZVuhb41OrsA3ailylCWjE3VxsJztzg=;
-  b=XCX/3M+xK1RhmTDBU0Lc7KvD9B/T8u5C02YfKQOaez7+rwfc2aiJqyxf
-   F6nepsj04n3CotFsifrFZSiTfmT0JyrlVvBOHZm3FadY0dhQm+q4j4V9O
-   jihsM+ZA80xiXuQx5WL/f8NQC7eRhzIl/xV8zfAyzUBBTOX0GHNU1Y0gL
-   F1DHoGRKcdSxmn7xpupeq3+IYhFUvqDjN+thy6rbvICLsq+1jPF0Ew/EH
-   Jpe7iSvWZj9jqUO01ZK7l//AyuqbD6V2QYR3SMXXNhjXmFCEqplOYLi7z
-   QJxjPSNNJgpIIObSwexgitoHQLZsoIVui1ME0d5tbPkIKHx0ERyqNbSG4
-   Q==;
-X-CSE-ConnectionGUID: SKu03FU/RVSpQ+NmD4ujoA==
-X-CSE-MsgGUID: yIVLX/CHR0S+OidDSx0THw==
-X-IronPort-AV: E=McAfee;i="6800,10657,11815"; a="107557108"
-X-IronPort-AV: E=Sophos;i="6.24,201,1774335600"; 
-   d="scan'208";a="107557108"
-Received: from fmviesa006.fm.intel.com ([10.60.135.146])
-  by fmvoesa101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 12 Jun 2026 10:55:10 -0700
-X-CSE-ConnectionGUID: PeSWqG3OQfSXkJipZ8mLzg==
-X-CSE-MsgGUID: YwV44SXWTqqFj2RCrK1ALg==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.24,201,1774335600"; 
-   d="scan'208";a="242503415"
-Received: from lkp-server01.sh.intel.com (HELO f0d55cb201f0) ([10.239.97.150])
-  by fmviesa006.fm.intel.com with ESMTP; 12 Jun 2026 10:55:08 -0700
-Received: from kbuild by f0d55cb201f0 with local (Exim 4.98.2)
-	(envelope-from <lkp@intel.com>)
-	id 1wY65y-00000000P9t-1L3b;
-	Fri, 12 Jun 2026 17:55:06 +0000
-Date: Sat, 13 Jun 2026 01:55:02 +0800
-From: kernel test robot <lkp@intel.com>
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org
-Subject: [rafael-pm:bleeding-edge] BUILD SUCCESS
- 058cd2920302bb1478643b44f9dcc9d6d8e542b9
-Message-ID: <202606130153.HYbUWhS3-lkp@intel.com>
-User-Agent: s-nail v14.9.25
+	dkim=pass (1024-bit key) header.d=chaosmail.tech header.i=@chaosmail.tech header.b="cLzecYpO"
+Received: by chaosmail.tech (Postfix) id D91181C962C;
+	Fri, 12 Jun 2026 18:36:06 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=chaosmail.tech;
+	s=mail; t=1781289367;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding;
+	bh=UsS4dqSrxqQyi+VfVrN7/Fkk7cMDG+DRbrc2q63ns0c=;
+	b=cLzecYpO3379MUQW5o4pE5ay4aiiwjREr51eLEUYK5B9Fjqj/B8pT253oF/WYXImOw608/
+	c/2u9eUo3N4l4n7ubKhjj2JaAuoVXFEOdtfo6lskWibWlFFuTB1Lu3K4LbgrTa1aWEbD/G
+	1RjTTtWduTKCFzYnhIBgh7oX8e0uaNk=
+From: Sasha Finkelstein <k@chaosmail.tech>
+Date: Fri, 12 Jun 2026 20:36:03 +0200
+Subject: [PATCH v2] power: supply: macsmc: Support macOS 27 SMC firmware
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20260612-gate-power-v2-1-de76cb9bb7ef@chaosmail.tech>
+X-B4-Tracking: v=1; b=H4sIAAAAAAAC/22OQQ7CIBREr9L8tRhgAY0r72G6QPgt32hpAFHT9
+ O5C3bp8ycybWSFhJExw6laIWChRmCvIQwfWm3lCRq4ySC4VV0KwyWRkS3hhZHZ0WipnudMj1MI
+ ScaT3LrsMP07P6w1tboaW8JRyiJ99rYiW+ysuggnWGyW1FLxXVp/rl5Aehu7HjNbDsG3bF3Ss9
+ 4O7AAAA
+X-Change-ID: 20260611-gate-power-cfd726dc0d7f
+To: Sven Peter <sven@kernel.org>, Janne Grunau <j@jannau.net>, 
+ Neal Gompa <neal@gompa.dev>, Sebastian Reichel <sre@kernel.org>
+Cc: asahi@lists.linux.dev, linux-arm-kernel@lists.infradead.org, 
+ linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
+ Sasha Finkelstein <k@chaosmail.tech>
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1781289366; l=4184;
+ i=k@chaosmail.tech; s=20241124; h=from:subject:message-id;
+ bh=4A/C+EOHO465w2u8xamdqNmkNqrHgUkGdvhtrLwE2lg=;
+ b=zoMPXpuIXjYSJqYFvYM9W4fKfd3tt2rqG5nEEW941D4Q6fM6tY3egLexCairjGf7a9qLa561Q
+ Av/sJno8GlRDap+GJsoD0s/1O+VMCwdXvjt3giaYCF88YDj7S4MQbQl
+X-Developer-Key: i=k@chaosmail.tech; a=ed25519;
+ pk=aSkp1PdZ+eF4jpMO6oLvz/YfT5XkBUneWwyhQrOgmsU=
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git bleeding-edge
-branch HEAD: 058cd2920302bb1478643b44f9dcc9d6d8e542b9  Merge branch 'experimental/acpi-driver-work' into bleeding-edge
+The SMC firmware included in macOS 27 changed the size of BCF0 key from
+4 to 1 bytes. This key is used for indicating that battery state is
+critically low.
 
-elapsed time: 966m
+Reviewed-by: Sven Peter <sven@kernel.org>
+Signed-off-by: Sasha Finkelstein <k@chaosmail.tech>
+---
+Changes in v2:
+- Addressing review feedback
+- Link to v1: https://patch.msgid.link/20260611-gate-power-v1-1-8a62721086c7@chaosmail.tech
+---
+ drivers/power/supply/macsmc-power.c | 35 ++++++++++++++++++++++++++++++++---
+ 1 file changed, 32 insertions(+), 3 deletions(-)
 
-configs tested: 162
-configs skipped: 13
+diff --git a/drivers/power/supply/macsmc-power.c b/drivers/power/supply/macsmc-power.c
+index 33ca07460f3a..747315e372bc 100644
+--- a/drivers/power/supply/macsmc-power.c
++++ b/drivers/power/supply/macsmc-power.c
+@@ -86,6 +86,7 @@ struct macsmc_power {
+ 	bool has_ch0i; /* Force discharge (Older firmware) */
+ 	bool has_ch0c; /* Inhibit charge (Older firmware) */
+ 	bool has_chte; /* Inhibit charge (Modern firmware) */
++	bool bcf0_1byte; /* Battery critical key is 1 byte (Modern firmware) */
+ 
+ 	u8 num_cells;
+ 	int nominal_voltage_mv;
+@@ -273,6 +274,19 @@ static int macsmc_battery_get_date(const char *s, int *out)
+ 	return 0;
+ }
+ 
++static int macsmc_battery_read_bcf0(struct macsmc_power *power, u32 *val)
++{
++	u8 tval = 0;
++	int ret;
++
++	if (!power->bcf0_1byte)
++		return apple_smc_read_u32(power->smc, SMC_KEY(BCF0), val);
++
++	ret = apple_smc_read_u8(power->smc, SMC_KEY(BCF0), &tval);
++	*val = tval;
++	return ret;
++}
++
+ static int macsmc_battery_get_capacity_level(struct macsmc_power *power)
+ {
+ 	bool flag;
+@@ -280,7 +294,7 @@ static int macsmc_battery_get_capacity_level(struct macsmc_power *power)
+ 	int ret;
+ 
+ 	/* Check for emergency shutdown condition */
+-	if (apple_smc_read_u32(power->smc, SMC_KEY(BCF0), &val) >= 0 && val)
++	if (macsmc_battery_read_bcf0(power, &val) >= 0 && val)
+ 		return POWER_SUPPLY_CAPACITY_LEVEL_CRITICAL;
+ 
+ 	/* Check AC status for whether we could boot in this state */
+@@ -577,7 +591,7 @@ static void macsmc_power_critical_work(struct work_struct *wrk)
+ 	 * Check if SMC flagged the battery as empty.
+ 	 * We trigger a graceful shutdown to let the OS save data.
+ 	 */
+-	if (apple_smc_read_u32(power->smc, SMC_KEY(BCF0), &bcf0) == 0 && bcf0 != 0) {
++	if (macsmc_battery_read_bcf0(power, &bcf0) == 0 && bcf0 != 0) {
+ 		power->orderly_shutdown_triggered = true;
+ 		dev_crit(power->dev, "Battery critical (empty flag set). Triggering orderly shutdown.\n");
+ 		orderly_poweroff(true);
+@@ -616,6 +630,7 @@ static int macsmc_power_probe(struct platform_device *pdev)
+ 	struct device *dev = &pdev->dev;
+ 	struct apple_smc *smc = dev_get_drvdata(pdev->dev.parent);
+ 	struct power_supply_config psy_cfg = {};
++	struct apple_smc_key_info info;
+ 	struct macsmc_power *power;
+ 	bool has_battery = false;
+ 	bool has_ac_adapter = false;
+@@ -714,6 +729,20 @@ static int macsmc_power_probe(struct platform_device *pdev)
+ 		if (apple_smc_key_exists(smc, SMC_KEY(CH0I)))
+ 			power->has_ch0i = true;
+ 
++		ret = apple_smc_get_key_info(power->smc, SMC_KEY(BCF0), &info);
++		if (ret) {
++			dev_err(&pdev->dev, "Failed to determine BCF0 key size\n");
++			return ret;
++		}
++		if (info.size == 1)
++			power->bcf0_1byte = true;
++		else if (info.size == 4)
++			power->bcf0_1byte = false;
++		else {
++			dev_err(&pdev->dev, "Unexpected BCF0 key size %d\n", info.size);
++			return -EIO;
++		}
++
+ 		/* Reset "Optimised Battery Charging" flags to default state */
+ 		if (power->has_chte)
+ 			apple_smc_write_u32(smc, SMC_KEY(CHTE), 0);
+@@ -766,7 +795,7 @@ static int macsmc_power_probe(struct platform_device *pdev)
+ 		power->nominal_voltage_mv = MACSMC_NOMINAL_CELL_VOLTAGE_MV * power->num_cells;
+ 
+ 		/* Enable critical shutdown notifications by reading status once */
+-		apple_smc_read_u32(power->smc, SMC_KEY(BCF0), &val32);
++		macsmc_battery_read_bcf0(power, &val32);
+ 
+ 		psy_cfg.drv_data = power;
+ 		power->batt = devm_power_supply_register(dev, &power->batt_desc, &psy_cfg);
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+---
+base-commit: 9716c086c8e8b141d35aa61f2e96a2e83de212a7
+change-id: 20260611-gate-power-cfd726dc0d7f
 
-tested configs:
-alpha                             allnoconfig    gcc-16.1.0
-alpha                            allyesconfig    gcc-16.1.0
-alpha                               defconfig    gcc-16.1.0
-arc                              allmodconfig    gcc-16.1.0
-arc                               allnoconfig    gcc-16.1.0
-arc                              allyesconfig    gcc-16.1.0
-arc                                 defconfig    gcc-16.1.0
-arc                   randconfig-001-20260612    gcc-13.4.0
-arc                   randconfig-002-20260612    gcc-15.2.0
-arm                               allnoconfig    clang-23
-arm                              allyesconfig    gcc-16.1.0
-arm                                 defconfig    clang-23
-arm                   randconfig-001-20260612    gcc-11.5.0
-arm                   randconfig-002-20260612    gcc-10.5.0
-arm                   randconfig-003-20260612    gcc-11.5.0
-arm                   randconfig-004-20260612    gcc-13.4.0
-arm64                             allnoconfig    gcc-16.1.0
-arm64                               defconfig    gcc-16.1.0
-arm64                 randconfig-001-20260612    gcc-13.4.0
-arm64                 randconfig-002-20260612    clang-23
-arm64                 randconfig-003-20260612    gcc-9.5.0
-arm64                 randconfig-004-20260612    gcc-11.5.0
-csky                             allmodconfig    gcc-16.1.0
-csky                              allnoconfig    gcc-16.1.0
-csky                                defconfig    gcc-16.1.0
-csky                  randconfig-001-20260612    gcc-11.5.0
-csky                  randconfig-002-20260612    gcc-13.4.0
-hexagon                          allmodconfig    clang-23
-hexagon                           allnoconfig    clang-23
-hexagon                             defconfig    clang-23
-hexagon               randconfig-001-20260612    clang-23
-hexagon               randconfig-002-20260612    clang-23
-i386                             allmodconfig    gcc-14
-i386                              allnoconfig    gcc-14
-i386                             allyesconfig    gcc-14
-i386        buildonly-randconfig-001-20260612    clang-22
-i386        buildonly-randconfig-002-20260612    gcc-14
-i386        buildonly-randconfig-003-20260612    gcc-14
-i386        buildonly-randconfig-004-20260612    gcc-14
-i386        buildonly-randconfig-005-20260612    gcc-14
-i386        buildonly-randconfig-006-20260612    clang-22
-i386                                defconfig    clang-22
-i386                  randconfig-001-20260612    gcc-14
-i386                  randconfig-002-20260612    clang-22
-i386                  randconfig-003-20260612    gcc-14
-i386                  randconfig-004-20260612    gcc-14
-i386                  randconfig-005-20260612    clang-22
-i386                  randconfig-006-20260612    clang-22
-i386                  randconfig-007-20260612    gcc-12
-i386                  randconfig-011-20260612    clang-22
-i386                  randconfig-012-20260612    clang-22
-i386                  randconfig-013-20260612    clang-22
-i386                  randconfig-014-20260612    clang-22
-i386                  randconfig-015-20260612    gcc-14
-i386                  randconfig-016-20260612    gcc-14
-i386                  randconfig-017-20260612    clang-22
-loongarch                         allnoconfig    clang-20
-loongarch                           defconfig    clang-23
-loongarch             randconfig-001-20260612    clang-23
-loongarch             randconfig-002-20260612    gcc-16.1.0
-m68k                             allmodconfig    gcc-16.1.0
-m68k                              allnoconfig    gcc-16.1.0
-m68k                             allyesconfig    gcc-16.1.0
-m68k                                defconfig    gcc-16.1.0
-microblaze                        allnoconfig    gcc-16.1.0
-microblaze                       allyesconfig    gcc-16.1.0
-microblaze                          defconfig    gcc-16.1.0
-mips                             allmodconfig    gcc-16.1.0
-mips                              allnoconfig    gcc-16.1.0
-mips                             allyesconfig    gcc-16.1.0
-nios2                            allmodconfig    gcc-11.5.0
-nios2                             allnoconfig    gcc-11.5.0
-nios2                               defconfig    gcc-11.5.0
-nios2                 randconfig-001-20260612    gcc-11.5.0
-nios2                 randconfig-002-20260612    gcc-11.5.0
-openrisc                         allmodconfig    gcc-16.1.0
-openrisc                          allnoconfig    gcc-16.1.0
-openrisc                            defconfig    gcc-16.1.0
-parisc                           allmodconfig    gcc-16.1.0
-parisc                            allnoconfig    gcc-16.1.0
-parisc                           allyesconfig    gcc-16.1.0
-parisc                              defconfig    gcc-16.1.0
-parisc                randconfig-001-20260612    gcc-12.5.0
-parisc                randconfig-002-20260612    gcc-14.3.0
-parisc64                            defconfig    gcc-16.1.0
-powerpc                          allmodconfig    gcc-16.1.0
-powerpc                           allnoconfig    gcc-16.1.0
-powerpc                     mpc5200_defconfig    clang-23
-powerpc64             randconfig-001-20260612    gcc-8.5.0
-powerpc64             randconfig-002-20260612    gcc-11.5.0
-riscv                            allmodconfig    clang-23
-riscv                             allnoconfig    gcc-16.1.0
-riscv                            allyesconfig    clang-23
-riscv                               defconfig    clang-23
-riscv                 randconfig-001-20260612    gcc-13.4.0
-riscv                 randconfig-002-20260612    clang-23
-s390                             allmodconfig    clang-23
-s390                              allnoconfig    clang-23
-s390                             allyesconfig    gcc-16.1.0
-s390                                defconfig    clang-18
-s390                  randconfig-001-20260612    clang-23
-s390                  randconfig-002-20260612    gcc-8.5.0
-sh                               allmodconfig    gcc-16.1.0
-sh                                allnoconfig    gcc-16.1.0
-sh                               allyesconfig    gcc-16.1.0
-sh                                  defconfig    gcc-16.1.0
-sh                    randconfig-001-20260612    gcc-11.5.0
-sh                    randconfig-002-20260612    gcc-13.4.0
-sparc                             allnoconfig    gcc-16.1.0
-sparc                               defconfig    gcc-16.1.0
-sparc                 randconfig-001-20260612    gcc-8.5.0
-sparc                 randconfig-002-20260612    gcc-8.5.0
-sparc64                          allmodconfig    clang-20
-sparc64                             defconfig    clang-23
-sparc64               randconfig-001-20260612    clang-20
-sparc64               randconfig-002-20260612    gcc-12.5.0
-um                               allmodconfig    clang-23
-um                                allnoconfig    clang-16
-um                               allyesconfig    gcc-14
-um                                  defconfig    clang-23
-um                             i386_defconfig    gcc-14
-um                    randconfig-001-20260612    gcc-14
-um                    randconfig-002-20260612    clang-23
-um                           x86_64_defconfig    clang-23
-x86_64                           allmodconfig    clang-22
-x86_64                            allnoconfig    clang-22
-x86_64                           allyesconfig    clang-22
-x86_64               buildonly-randconfig-001    gcc-12
-x86_64      buildonly-randconfig-001-20260612    clang-22
-x86_64               buildonly-randconfig-002    clang-22
-x86_64      buildonly-randconfig-002-20260612    gcc-14
-x86_64               buildonly-randconfig-003    gcc-14
-x86_64      buildonly-randconfig-003-20260612    clang-22
-x86_64               buildonly-randconfig-004    gcc-14
-x86_64      buildonly-randconfig-004-20260612    clang-22
-x86_64               buildonly-randconfig-005    gcc-14
-x86_64      buildonly-randconfig-005-20260612    clang-22
-x86_64               buildonly-randconfig-006    clang-22
-x86_64      buildonly-randconfig-006-20260612    gcc-14
-x86_64                              defconfig    gcc-14
-x86_64                randconfig-001-20260612    clang-22
-x86_64                randconfig-002-20260612    gcc-14
-x86_64                randconfig-003-20260612    gcc-14
-x86_64                randconfig-004-20260612    gcc-14
-x86_64                randconfig-005-20260612    gcc-14
-x86_64                randconfig-006-20260612    clang-22
-x86_64                randconfig-011-20260612    gcc-14
-x86_64                randconfig-012-20260612    clang-22
-x86_64                randconfig-013-20260612    clang-22
-x86_64                randconfig-014-20260612    gcc-14
-x86_64                randconfig-015-20260612    gcc-14
-x86_64                randconfig-016-20260612    gcc-14
-x86_64                randconfig-071-20260612    gcc-14
-x86_64                randconfig-072-20260612    gcc-12
-x86_64                randconfig-073-20260612    clang-22
-x86_64                randconfig-074-20260612    clang-22
-x86_64                randconfig-075-20260612    clang-22
-x86_64                randconfig-076-20260612    clang-22
-x86_64                          rhel-9.4-rust    clang-22
-xtensa                            allnoconfig    gcc-16.1.0
-xtensa                randconfig-001-20260612    gcc-10.5.0
-xtensa                randconfig-002-20260612    gcc-12.5.0
+Best regards,
+--  
+Sasha Finkelstein <k@chaosmail.tech>
 
---
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
