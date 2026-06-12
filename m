@@ -1,214 +1,122 @@
-Received: from mail-yw1-f170.google.com (mail-yw1-f170.google.com [209.85.128.170])
+Received: from mail-wm1-f46.google.com (mail-wm1-f46.google.com [209.85.128.46])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6AAD62F1FED
-	for <linux-pm@vger.kernel.org>; Fri, 12 Jun 2026 05:46:38 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.128.170
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1781243199; cv=pass; b=jYUgQ0/i7955ebh6t7DRxjCqZuaKGuPIOUy61KI1gXEU0rH+Q0gxhYq1Vx9jAxgnoG5yE2C0eyfybX1FsmhCIjixIBOpoglx83ZSN3h8wAMPsLywN4uWrjNXJjVaK1UBLyxBWbnCVmGLUPctBkoJNWLVVuU/ZtjOZimXkM5ZhZg=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1781243199; c=relaxed/simple;
-	bh=uxhicmxU+8eIG2C29hx4vflsMsbZnUfDPDvn7qOTo6g=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=ktY5HWKWH9LmAkpw1YgJMGP4OntFS3iNq6XNsWAXa0qfCHzqzZSpF6qMqx/Hu5tAJyQkA0wpr0/1O8P/qcPjszc7kvxdGRVjQUsn/fj/Fw7fHlFV8K9d938ETSowe/MTwVsYs5E/Hh7x1brJmc+edSEh3216H1GN99sIqih1G1A=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=chromium.org; spf=pass smtp.mailfrom=chromium.org; dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b=fZo+warr; arc=pass smtp.client-ip=209.85.128.170
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=chromium.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=chromium.org
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BD3D5391E4B
+	for <linux-pm@vger.kernel.org>; Fri, 12 Jun 2026 06:25:43 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.46
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1781245545; cv=none; b=JMkciH5feFK1H1ltmiizIAP96d74cBDgX8NFsKqh5HtnkDW3uNWWXsLxNq0k8jY2/1QcKl8HYPx38pQQyN5hhMkcQ2flBGgA9AGaZ/qlvzTEUBIYXpnRkygTJX5QVnJDxXI4VbVeDT0i/YDBh2jkcMNroYAa0z0/q2vGgarm4TE=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1781245545; c=relaxed/simple;
+	bh=eDJalkhcwszTgqWkt5k6Xiv4V3wvMrx9KlBasD0915U=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=UT6KalbV0vhPtqagTVo2UZ6XHdbKYplinLcebgU9BEY9hXd0cxv11iozZgOFOGKJIK6prYDZZ1HfDpYgTu2nFJJMI8h6kG3k8QTDDIx+TNcOf8iP4yaA5yj4Z3ECyYEQd/h7rZzDpTHjrzGZb3vD6NDQ/FVTpS4r2cbZzce5+dg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=iKr7BkRQ; arc=none smtp.client-ip=209.85.128.46
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="fZo+warr"
-Received: by mail-yw1-f170.google.com with SMTP id 00721157ae682-7e053987001so20169347b3.0
-        for <linux-pm@vger.kernel.org>; Thu, 11 Jun 2026 22:46:38 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1781243197; cv=none;
-        d=google.com; s=arc-20240605;
-        b=a/4CSj2SYyxNljpvxH1Ghlwm7SABL/7KHav9j50I9TuHi1zc4tKtp058vmZtEPLD/u
-         dQCJDWzxhOb/kC1UFhLq/l1/+BSYC8PZKZkZ877sXn+tQgxHzfpOd2C5wlHW3xd77mVE
-         uOSV0IKZLJ+TyacZY8HB3sFAthLn1+LM5Y9vJbCSBhOHbrA0vmasgWhkE3SItdc/qIOP
-         bJ/T9dxoPemMQAw1MVr85Qls87fVw5xrzTxxb/lF0QHAb6dBozBOsXkqRQv9kIsidktm
-         Y92ykyXIm7UupWjeYfc/+OIikGf/6foeH35oxwy19EV4QkuBPsH3/a32lWMBkU8jMrH/
-         LhdA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=MHHVj+Zx0+/vBQAJBv7r1n57GCFzoErkyz4ZsU3+esc=;
-        fh=nB5RMPliLixC+N92knohQ2g6C5l6AwC6ai6roJdh+MA=;
-        b=eSg3Gypjg1bM6CkEL39vuXBoJD5nJspMXHlUogiw5x9YWu2V+Qgy94pvdOXw+wFYDn
-         kxaG85eIIV76/pAYyr0VemohWGP8a+zdwE9YDrbkSRq6+zFsuDGAGUGkiKRJBQX/ngAE
-         OGzclNmaBwzhXnDpuKqyf5P62jyRv/1tRglGnTo0xuJ9vtUWClsdGDmqFxbUpn4N+fEU
-         sUcO6vFzqv9LtamVwrlVORvTZtKAdxzht9ADO8uOLbIh7t1tr3xajGO2Usr8m3ELmni4
-         sHLq2nnLsoZWrgeSmXXXwfL2i7wq1s8TtWHmc9wqBbMSdQNqSc+sML+iW19vJIytSesO
-         fY9A==;
-        darn=vger.kernel.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="iKr7BkRQ"
+Received: by mail-wm1-f46.google.com with SMTP id 5b1f17b1804b1-490b211ee6aso3787235e9.3
+        for <linux-pm@vger.kernel.org>; Thu, 11 Jun 2026 23:25:43 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=chromium.org; s=google; t=1781243197; x=1781847997; darn=vger.kernel.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
+        d=gmail.com; s=20251104; t=1781245542; x=1781850342; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=MHHVj+Zx0+/vBQAJBv7r1n57GCFzoErkyz4ZsU3+esc=;
-        b=fZo+warrrCYk1a41/ryhx5xh3MVD3vgwycLGsaleyAecG4cRy2k4u8MiUX6+LC8b/t
-         D4MczgmKUGOjpZE1Dz7V7xrUOCZSG7PBGNlAj2xhqCkIMgqYmcDOuiuuOd2+bRWNssq7
-         YbD3pZJ7HT6EUUZK64WOhdFga6L8gjyWea8TQ=
+        bh=r7iYg2CGSj66UuoTzJIguPRNGdJgDxZ5bFJ2MXxl5FU=;
+        b=iKr7BkRQCEIMdbmg109iupOhCDzIUsZP65HS5Xf+OlRU1aZXCAYGLDBxmbQ6dVJtvM
+         20XMJiTaP2INWbIAKNklqtTTtdZyzNvxc3P2bF4WuoUtrowqpiG9QLYRH6A23jase44h
+         4hejb+2u3Upc//iGsNLcXhCx76FzVMLtJeIqg0XQLIngxe3P0Yc6QeMpfTtodPoLk49q
+         zCRieJ7cx/e2jXvd/HNb0+3PckleSfYkqnKXuDVxwjSBs+b8Qg053dObGhJgnBhGKUeo
+         H/tAAlesNTAGHOT3qqUuKLbWaMHPMs6IJzWGWLtRzar9iUsiyIwUNiPyEreiU5cDx3lo
+         7Phw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1781243197; x=1781847997;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
+        d=1e100.net; s=20251104; t=1781245542; x=1781850342;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to;
-        bh=MHHVj+Zx0+/vBQAJBv7r1n57GCFzoErkyz4ZsU3+esc=;
-        b=h2e7/CxU2m1K2RBzBEKY0Tmju41BRcqU9hm5s7RCg4j+wCAqx/4GdYssFWUiLCwT0g
-         ssoHTZ9nNCGZ20M1GVFr47FyOBSyf6Kjf8UilF6/82p/7kXs5CvCwcbR3o0dWvBHvgPi
-         gOey0ROV5IOylKC6L4PsXA7oWcVXYfwK8tBlC7gE1uvh/R9XN1gA56PK5paHh2aeXPOa
-         lMK4CsqXLs4mHlnC24i9NQtIY+9okCMXRMvkme9D1/TRmLuzO5RlH7YCGjzCK5eKErCP
-         OlTZE4HSVlcyy0WHajteIxKedvYHklx/+kghv9yqNuGHGkQRC9cqImHOhF9iBTBrz6vN
-         3SOA==
-X-Forwarded-Encrypted: i=1; AFNElJ/Ykn+EVOknJnjfCD5c/AyRzfLs3VJNL2CRSvHbHUyoKadxuc/+Q8lq/8DoNxGQhEbPYTr8RO60RA==@vger.kernel.org
-X-Gm-Message-State: AOJu0Ywn/+Vou6vzTmv2USMYNkJhgwgD5i0W3+WPHEttPVUM0DyqsKeh
-	GneGcGhmIJABeJE01AMGCDEj7IN+ovs3v5XbvZN9s06noZwexxHei5Li1sKjno5EZZpH5bfuK+R
-	MDRGFEFGDjCBZFlpJJLGJszb+3jnz1ObHbV+J2U4rawis6TUe8+gYqA==
-X-Gm-Gg: Acq92OEZirrLHei1c2pfb3TkZP/0SCcZdfSpu+6b85tX/I9TBoGz708/p1be7LHZpz7
-	tkb2I/PfYMmBwbdtjYKZPmUt38qVmr2UOifQHawL2LXe4CAF1uG/JOvuKcMI4viL1WKKI6lEW2m
-	pkXr0pq6IoiPopaHqa2pcDdHPi5cpm5/vTocph5EtnOE9nVd+Ekj+OUqQToLZwXQVWCqNBu1/Xv
-	IaiWRU7AD1un8g6w/SH5IdBlfhZPWAC6MohkdE49PEkQ34SbO3F6DY/uSs5tc5+pHtiliNq+OF+
-	NMF/CN+j
-X-Received: by 2002:a05:690c:4441:b0:7cb:93d1:d804 with SMTP id
- 00721157ae682-7f7cc52611amr7898237b3.7.1781243197392; Thu, 11 Jun 2026
- 22:46:37 -0700 (PDT)
+        bh=r7iYg2CGSj66UuoTzJIguPRNGdJgDxZ5bFJ2MXxl5FU=;
+        b=tE8xhlK+rnSDsKPir+rV75DJHs1nTlj5k3xBKx6YXJ2sOARQ/fjnHmzcO81zW4pGn6
+         lf/T3fTOJIsbpY8IVv24lD311sCGHNGiGWYeB2JwiWZFgoIvfdtuv06D5CvW4DbLwQZO
+         RwIZF4LcyRlJzChzHHwgBSGqXrqKncJdE8qaKv9aGG0TJR8DPV/5Op7QsS9TUbvSDcQ1
+         Zkj1J6TfzBwFbYe3oik8TjpNKXxHsoj0wLF+L5Pd4/5Y1MaRvLf0axyLG8ts7PpcEo7v
+         F1CZkytWwq1vL8eA15lSQFCBjFvjKIdOZ2dY/uIrMGcITaP0HfBasJ0YvrCUO5nw1HzT
+         aPjw==
+X-Gm-Message-State: AOJu0YwmASACHzsKH+cNIkLx31dUqoYQfyMWGAwACDtHklgII06U4ymi
+	BeHQqnihWzVNVcS++ONkMWkmqgmZ26Vl+yBNvQ8cr3FyFuT5/GpPObtPoKif3bKUOzM=
+X-Gm-Gg: Acq92OG772g0q05nhJRVvtBRHkdhgG6DppYt2hZ5mXNyfv471CtaGsfRJ/QE+YTTKph
+	yg6SEFZkV/psr5wksUkilaTEazZfdRWLOuPQ2YzVW/Yd58kGPDGdJemOYSDj6uaSBqJFwbeKPym
+	dEDtKVkRh7csuiIvpcGXTumVe6oZ7nrz5ezrkaaZKse77McRyZ3psRZcvcD6yuY5yIFt0OENGmz
+	FnZA7GkKOIoyw6sRk5nyAoASefBAh+dVvuPCD2xqqyoi13H+4SvWVs05vmarHznQjTXJvc37vXd
+	bLpdrN9V+kMvPT9WNVhrprd04eHOYBAj00aMoqXOmExy812QlYpJJrbs6pd5tZjrW04zAQ6CbG1
+	LfRbvf98Z0eMJ68CnF4zT2EqXi7fj5WNwr1mWMdTXhHAR/9NzMlPrChbiV4XS1Fmo8rNDIAWxnM
+	/tXO2zu1T392aFf3mpuMBpus098t/S0i07/K42HD0r8Uyak50ORxR1T2i7CRFOgf1nqz4ZAFdHs
+	7iUAFVf+ThzT0VwePgKKTw1f/oNR4X1vrIrlKpzbWnOig==
+X-Received: by 2002:a05:600c:500d:b0:490:469c:556b with SMTP id 5b1f17b1804b1-490ec4b6176mr16866885e9.12.1781245541950;
+        Thu, 11 Jun 2026 23:25:41 -0700 (PDT)
+Received: from MBP-Elazar-Leibovich.civet-hops.ts.net (bzq-85-130-200-168.static-ip.bezeqint.net. [85.130.200.168])
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-490ea83d8dasm52501375e9.11.2026.06.11.23.25.40
+        (version=TLS1_3 cipher=TLS_CHACHA20_POLY1305_SHA256 bits=256/256);
+        Thu, 11 Jun 2026 23:25:41 -0700 (PDT)
+From: Elazar Leibovich <elazarl@gmail.com>
+To: linux-pm@vger.kernel.org
+Cc: "Rafael J . Wysocki" <rafael@kernel.org>,
+	Daniel Lezcano <daniel.lezcano@kernel.org>,
+	Lukasz Luba <lukasz.luba@arm.com>,
+	linux-kernel@vger.kernel.org,
+	Sivan Zohar-Kotzer <sivany32@gmail.com>,
+	Elazar Leibovich <elazarl@gmail.com>
+Subject: [PATCH 1/2] powercap: dtpm_cpu: Fix out-of-bounds read in set_pd_power_limit()
+Date: Fri, 12 Jun 2026 09:25:35 +0300
+Message-ID: <20260612062536.9147-2-elazarl@gmail.com>
+X-Mailer: git-send-email 2.50.1
+In-Reply-To: <20260612062536.9147-1-elazarl@gmail.com>
+References: <20260612062536.9147-1-elazarl@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260610084053.2059858-1-wenst@chromium.org> <20260610084053.2059858-6-wenst@chromium.org>
- <ailxrP-_9_NL8qnN@ashevche-desk.local> <CAMRc=MdiwQM6yk8FXcc+RisVP2iqWKWzVsn2-Yy6dyJXt-1X=Q@mail.gmail.com>
- <aipz2zMFcdnZYTxS@ashevche-desk.local> <CAMRc=MdRN7YitmMX8PknbzLh+MdsWm+dDg0MLtCVYOorqNobTw@mail.gmail.com>
- <airY6IMz2KFz_z9j@kuha> <aisEccAOm3qoXjxd@ashevche-desk.local>
-In-Reply-To: <aisEccAOm3qoXjxd@ashevche-desk.local>
-From: Chen-Yu Tsai <wenst@chromium.org>
-Date: Fri, 12 Jun 2026 14:46:26 +0900
-X-Gm-Features: AVVi8CcqLILhEQ5p8_o0FiDM5Wwe_hy_cZp3NZb3BqN3lFzIwdQDiPu3OCyJS60
-Message-ID: <CAGXv+5Hf_V4=mkAc3pN8_K9i+FfH2Wv7HVJBq71-f8sMFYL3fA@mail.gmail.com>
-Subject: Re: [PATCH v2 05/16] usb: hub: Associate port@ fwnode with USB port device
-To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Cc: Heikki Krogerus <heikki.krogerus@linux.intel.com>, Bartosz Golaszewski <brgl@kernel.org>, 
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Daniel Scally <djrscally@gmail.com>, 
-	Sakari Ailus <sakari.ailus@linux.intel.com>, "Rafael J. Wysocki" <rafael@kernel.org>, 
-	Danilo Krummrich <dakr@kernel.org>, Rob Herring <robh@kernel.org>, 
-	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
-	Matthias Brugger <matthias.bgg@gmail.com>, 
-	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>, 
-	Alan Stern <stern@rowland.harvard.edu>, linux-acpi@vger.kernel.org, 
-	driver-core@lists.linux.dev, linux-pm@vger.kernel.org, 
-	linux-usb@vger.kernel.org, devicetree@vger.kernel.org, 
-	linux-mediatek@lists.infradead.org, linux-arm-kernel@lists.infradead.org, 
-	linux-kernel@vger.kernel.org, Manivannan Sadhasivam <mani@kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
 
-On Fri, Jun 12, 2026 at 3:54=E2=80=AFAM Andy Shevchenko
-<andriy.shevchenko@linux.intel.com> wrote:
->
-> On Thu, Jun 11, 2026 at 06:48:56PM +0300, Heikki Krogerus wrote:
-> > On Thu, Jun 11, 2026 at 11:35:13AM +0200, Bartosz Golaszewski wrote:
-> > > On Thu, Jun 11, 2026 at 10:37=E2=80=AFAM Andy Shevchenko
-> > > <andriy.shevchenko@linux.intel.com> wrote:
-> > > > On Thu, Jun 11, 2026 at 04:20:58AM -0400, Bartosz Golaszewski wrote=
-:
-> > > > > On Wed, 10 Jun 2026 16:16:12 +0200, Andy Shevchenko
-> > > > > <andriy.shevchenko@linux.intel.com> said:
-> > > > > > On Wed, Jun 10, 2026 at 04:40:39PM +0800, Chen-Yu Tsai wrote:
-> > > > > >> When a USB hub port is connected to a connector in a firmware =
-node
-> > > > > >> graph, the port itself has a node in the graph.
-> > > > > >>
-> > > > > >> Associate the port's firmware node with the USB port's device,
-> > > > > >> usb_port::dev. This is used in later changes for the M.2 slot =
-power
-> > > > > >> sequencing provider to match against the requesting port.
-> > > > > >
-> > > > > > Okay, would this affect ACPI-based systems? if so, how?
-> > > > > > Can you elaborate on that, please?
-> > > > >
-> > > > > Is it possible that there's an ACPI device node associated with t=
-he port like
-> > > > > on some DT systems? I don't think so and there should be no impac=
-t IMO but I
-> > > > > also don't know enough about ACPI.
-> >
-> > There are device nodes for the USB ports in ACPI, and I think they get
-> > always assigned in drivers/usb/core/usb-acpi.c.
-> >
-> > > > The API is agnostic. There is a possibility to have software nodes =
-associated
-> > > > with the port. I think the best is to be sure that ACPI-aware peopl=
-e who are
-> > > > experts in USB will check this (Heikki?).
-> >
-> > I can't say what's the impact from this patch - I'm not an expert with
-> > this side of USB. Is there a danger that we end up overwriting the
-> > ACPI node for the port, or something else?
->
-> Exactly this one is my worrying, but I haven't checked the actual flow.
+From: Sivan Zohar-Kotzer <sivany32@gmail.com>
 
-Looking through ACPI code, ACPI_COMPANION_SET() is used, which boils
-down to
+The loop in set_pd_power_limit() looks for the first perf state whose
+power exceeds the requested limit, then uses table[i - 1]. If the very
+first perf state already exceeds the limit, the loop breaks at i == 0
+and table[-1] is read out of bounds.
 
-    set_primary_fwnode(dev, acpi_fwnode_handle(acpi_dev))
+The powercap core clamps the requested limit to dtpm->power_min, but
+power_min was computed by update_pd_power_uw() with the number of
+online CPUs at that time. If CPUs have come online since the last
+update, the clamped limit can still be below table[0].power * nr_cpus,
+making the underflow reachable.
 
-This is called through
+Start the scan at index 1 so the lowest perf state is used as the
+fallback when even it exceeds the requested limit.
 
-usb_hub_create_port_device()
-  device_register()
-    device_add()
-      device_platform_notify()
-        acpi_device_notify()
-          usb_acpi_find_companion()
-            usb_acpi_find_companion_for_port()
-          acpi_bind_one()
-            ACPI_COMPANION_SET()
-              set_primary_fwnode()
+Fixes: 0e8f68d7f048 ("powercap/drivers/dtpm: Add CPU energy model based support")
+Signed-off-by: Sivan Zohar-Kotzer <sivany32@gmail.com>
+Co-developed-by: Elazar Leibovich <elazarl@gmail.com>
+Signed-off-by: Elazar Leibovich <elazarl@gmail.com>
+---
+ drivers/powercap/dtpm_cpu.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Looking at device_add_software_node(), all swnodes are secondary.
+diff --git a/drivers/powercap/dtpm_cpu.c b/drivers/powercap/dtpm_cpu.c
+index 0a460f97bf15..5e06909ae4fc 100644
+--- a/drivers/powercap/dtpm_cpu.c
++++ b/drivers/powercap/dtpm_cpu.c
+@@ -54,7 +54,7 @@ static u64 set_pd_power_limit(struct dtpm *dtpm, u64 power_limit)
+ 
+ 	rcu_read_lock();
+ 	table = em_perf_state_from_pd(pd);
+-	for (i = 0; i < pd->nr_perf_states; i++) {
++	for (i = 1; i < pd->nr_perf_states; i++) {
+ 
+ 		power = table[i].power * nr_cpus;
+ 
+-- 
+2.50.1 (Apple Git-155)
 
-set_primary_fwnode() seems to be able to make the ACPI handle / fwnode
-the primary, keeping any existing fwnode as the secondary. However
-if we do end up assigning a primary fwnode to the device using
-device_set_node() as in this patch, set_primary_fwnode() is going
-to complain loudly.
-
-On another front, the ACPI representation of the USB ports looks nothing
-like the OF graphs, at least on my X1 Carbon:
-
-For a usb port device on the root hub such as
-
-  /sys/bus/usb/devices/4-0:1.0/usb4-port1/firmware_node/path
-
-looks like
-
-  \_SB_.PC00.XHCI.RHUB.SS01
-
-while a usb port's firmware node link
-
-  /sys/bus/usb/devices/4-0:1.0/usb4-port1//firmware_node
-
-resolves to
-
-  /sys/devices/LNXSYSTM:00/LNXSYBUS:00/PNP0A08:00/device:19/device:1a/devic=
-e:29
-
-Neither looks anything like the graph "port" / "endpoint" node names.
-So maybe we're in the clear here.
-
-Besides the loud warning from set_primary_fwnode(), the major issue stemmin=
-g
-from a wrong node is that power management (through ACPI) is likely to fail=
-.
-
-If we're still concerned, I think we can skip the assignment if the fwnode
-is an ACPI node, i.e. check it with is_acpi_node().
-
-
-I've never worked on ACPI systems, so this is just me checking the code.
-
-
-Thanks
-ChenYu
