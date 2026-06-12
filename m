@@ -1,67 +1,68 @@
-Received: from mail-wm1-f44.google.com (mail-wm1-f44.google.com [209.85.128.44])
+Received: from mail-wm1-f49.google.com (mail-wm1-f49.google.com [209.85.128.49])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 64DE21D61B7
-	for <linux-pm@vger.kernel.org>; Fri, 12 Jun 2026 04:34:10 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.44
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6300B397B1B
+	for <linux-pm@vger.kernel.org>; Fri, 12 Jun 2026 04:34:13 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.49
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1781238854; cv=none; b=K+84dRTNJfcJ1hnAL0wukqCOt64YuTLlV7tVqy1YXinMvF0ZHScEpngnrscrcjE0vstVnCkYta9lnq9kYHZCH6qVu3ndQ/xoCryeQZDvczgCtgKmM/ukKdUFfeY5yFZG4+A1pMEzWBSZ11mhVa066+H7WsSpJUYj4mZiCloIXX0=
+	t=1781238855; cv=none; b=VnEX+WLYcTP09MsdJStqSwmDLgD6I/czAYZw+n2CmJP1OyAgR0msr7oNenkRro0+3wIqbQ0LWQm9VygYEij/eAq7Y7rAsL/yUTQZ3yB7QvIWo2NQOs7BCZ6c1xXGBx8NL89sjOtyyK9EGLIHZTA3mnslEQzbikW25TNFuhOewoU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1781238854; c=relaxed/simple;
-	bh=NF/qmdhWCjpqkBvOLZ31n1hI4ONAkar+Wm+ahERpCrM=;
-	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=YpDBlgGoJ5UZhGSmH9zwe/vIErrvd5Ea8kMcVdo7XHPDvJH9tKioA/m8vsi3R34EioGJNenCT0twwi6NGzKrbAaKLyzdra09xh19Y0y1NRDDXtGfjYWJofov+QuMa1m+HFx7IGR2YX+4JEFZCoKKhlwRlYIfjHeFdSoiSnA6Raw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=EeDGigb8; arc=none smtp.client-ip=209.85.128.44
+	s=arc-20240116; t=1781238855; c=relaxed/simple;
+	bh=lvfJKU3OdNs7E4fSf7JASKUsJlVAskD5AP0iAuO+yuU=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=qW0OA0PA1pAJciPH7XbbV7s8ERmZDBz+gyiVzKT3hOSNLTRvQ4G8UxLqHv+vojFHCf8jPcTGYktnA5hOTScQ1zWo3J4NrrZnh0ioaV98AIS0zP7EnlAO273FomcTtol5evheLRltsbzr9cvRJEULRoqhjNvyaXBmI3320isy5P8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=vet1HPcT; arc=none smtp.client-ip=209.85.128.49
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="EeDGigb8"
-Received: by mail-wm1-f44.google.com with SMTP id 5b1f17b1804b1-490ac10e337so3039105e9.3
-        for <linux-pm@vger.kernel.org>; Thu, 11 Jun 2026 21:34:10 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="vet1HPcT"
+Received: by mail-wm1-f49.google.com with SMTP id 5b1f17b1804b1-490c0c92cffso2957595e9.2
+        for <linux-pm@vger.kernel.org>; Thu, 11 Jun 2026 21:34:13 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1781238849; x=1781843649; darn=vger.kernel.org;
-        h=cc:to:content-transfer-encoding:mime-version:message-id:date
-         :subject:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=vvM7pahAjxlhrr61LEyDzqcCT+Fc1a/WkHWS05sPsSE=;
-        b=EeDGigb8AYUgBjsoGX23h0fk/hCGhXTozbHvYihhowfM6muU6bf/I281KstmcHRIOc
-         8l/gAUOf7+Wi2GxMctZAkTDxluF0kNbufsZoTchme0Bnk3ObtNKhZNkGafRrmYC3PwqV
-         hpDCgy2mFL2Lfz5dfZjoX7P+F1j+g3ukfT4rjoWQKpS45pEDTr5rkHBg+K0keizo53BI
-         N4U/Qtwez2zFsUrDH5OYV7/YmGPC6f5FHoEqJ+9tWpt4oxwrgQzs/Ra2bfDDA1WZ9A/+
-         GXFoO63G65kuEB8UXAgjYY28YY8jpYEqGVqjsy/ZuY+FeFpZP7gVmuYPG1TRFrkDejtZ
-         NuhA==
+        d=linaro.org; s=google; t=1781238852; x=1781843652; darn=vger.kernel.org;
+        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
+         :mime-version:subject:date:from:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=VEV7Awuq7KVMhz5bMmZCK2peLPBiWMiT9VBdMWpRmIY=;
+        b=vet1HPcT4HhGoNXFWiArW4OxYmR49V7fQyaMxaR5p5wKBzMCfE7ygO67M6zMRhHRpf
+         Erb0mY4Po0qmVB41mour+fCeaDkzb6TiNbMI17U6rISNjTuf3+syxqS9e7OafjcvwS5k
+         uOMFBhBmKXtKHFtg1AxZf/X0tce4ljOkft9sLp2hRzcNJLhu4oFwMLoTM/IpNCv6/COu
+         rTpRU/WQYPXULFhKoKvgQtICytIbncS1T+ZXcI+uLrUabrafgsR13wb2wB87CjQW4HgU
+         8IbfxX2mZCnuzKvHfV0RwHxTsfkDnlpVrO2Y2U5hBZfxezN8AnDqhsb45uRc8R+X2bt7
+         JrFg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1781238849; x=1781843649;
-        h=cc:to:content-transfer-encoding:mime-version:message-id:date
-         :subject:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=vvM7pahAjxlhrr61LEyDzqcCT+Fc1a/WkHWS05sPsSE=;
-        b=BRgeRCE4jIXXXb+2Z5893H/bT29M8832VnJI0E4lEjtbJwyoMFhxh0B5iMNLPr47H1
-         Qlvb76NFR7exHSkXGzlbX7CNrGIMQ+bVkCUFVb1OJjK42Qhv+XpuC57X7HpxOUG+XDdG
-         /0L1qAoP4l5ogiBNp81OHQKWWoXEg4E48kELKNSCkseBBeXnC4nowaBnxX/nygPR+4Lk
-         N4skTUUUFB8nnPEiqiJ9tVgdT6OZzLlUo8zFnVX0WOcviHN4XSb8cs0xwapqFlD2qqqL
-         1T6RY+CYw4Pt+jQSAlDl1CuJysp9L5/TU05hJz2c8XBUL52XsEQypxI2gGnba/CH6Q5t
-         vAoA==
-X-Forwarded-Encrypted: i=1; AFNElJ/kNgn2cwLEQbFBTWvIZOxTbfSDICZyorcKArRWGCaYgsDeigUE/ey+FKJWvWX3OlPLHb1XNe28Sw==@vger.kernel.org
-X-Gm-Message-State: AOJu0YzJIOrbkCbYyebMYwKbg7J36cZ5UWYGS2Xx+oj/EruidcQ5ylwF
-	VMA8HUqI+kYkMKeIjtYOPUnVK/a7FtrAc9nN/FyuqkcfeMzWiqeEaSThsmFOsQS+TgY=
-X-Gm-Gg: Acq92OECYXrTJBjVnn5qcCeHdmArvjF+d+RAf1tNu5lcWK2han+LBuhD7N4DaHWKf37
-	oHW8OoEg2TJ8YHF2QZDqn4JrywuUtdzrfBh6ZDLadFaHohPpjw722LKXo3exnnVdG2ucyUI+wCI
-	tUFWW5YsLJkNBI/+iSiU/37UaHzsb7VbNJeFWvQs43NJPxvcemGCIRXC2/TawLVriz0lApLEamZ
-	IsxHhWrxvU2h+Ii/pq6lMENs2nprf8PY5nZbEFAZRzVM2mh4ML5T8RJtVWIjgyYVkRYkdGxRsu/
-	HX3IYf5LPFPVoKC4kAfB/G+eRXJ3ukR8heqSG1a32cnHv+eTfIQ7jxZbFC7zqpCidK5QdlswAgd
-	hq+bTPO+ZUfIyMHJA1gKQA4JcXNe0chtKvs0spZHliUgoSMS3euYygq/yFw7JxuURuJip8O3BkS
-	tlefjc8sSXEAJfMtb511BdINYZ94XKbgC9ASrEZRXXNEyIl2UsqzYQXkhqx703uRwtpw9HmD1fk
-	5IQWELjcpami58T
-X-Received: by 2002:a05:600c:83ca:b0:490:aef9:aa3b with SMTP id 5b1f17b1804b1-490ec523ef7mr8700565e9.32.1781238848787;
-        Thu, 11 Jun 2026 21:34:08 -0700 (PDT)
+        d=1e100.net; s=20251104; t=1781238852; x=1781843652;
+        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
+         :mime-version:subject:date:from:x-gm-gg:x-gm-message-state:from:to
+         :cc:subject:date:message-id:reply-to;
+        bh=VEV7Awuq7KVMhz5bMmZCK2peLPBiWMiT9VBdMWpRmIY=;
+        b=NB6JHKx+X7zk5kdB1UmS8nXrle8198Wz3HX3uTMUIah49TefBEwHgmGB2SdLMWkV+a
+         GC/VVsvqjR+JEOqHsp+1k/5LzNh+Lyetdvat7tiPhd5s6UXZTH6599u54qDZGgxiBz25
+         jnIzzyACefEfgluNzyhdtiTkUnyTh8ZxzAqaoj/vNgmqgMjep7x93L9qeXAGOyrrkT9c
+         T5UFHR1dWUrkhjFXU9vah6Fh4GqWbO7Vc5h9/HSgXZg1kKXNDHRwKzWp+waqHYvyG5TK
+         Ha79vlNyYkYkcLSUbPABCki+PYDPWyE/ZiCViNSX9iyB7SRcTecgSHIpNqrtKueE2sZp
+         gI9g==
+X-Forwarded-Encrypted: i=1; AFNElJ8o0+3gKNjYVtbSq3Aooq7vhnPrhlh/6Vs0tMsjTNdSuh6AYidyCa26Eh4Vd825Xx7eEHWzFByToA==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yz/O8j08//H1DPtt96HwsAA04ckuvryTaWzyQdj0NidqcVch0ZX
+	VoTEzSA/EmerfFLtf4FB5msFNis1NSv2E6i5e3J7j8//xOzDjh1jOqC6JJiyPSxR2bE=
+X-Gm-Gg: Acq92OH904mobkStWOr0N4h6+EzY8q16KuAUvKEYqt8IjVPFe6Yt/wHPKYj63LWlk/j
+	+S12XjJimlFO/XOv+dEMeKdqC/gGDqz3oRI03nHk4k5GsmP8mXYQLy5sqenxESRiqGy1fx4NRnF
+	nxiE7U08+YrAUjb6NyQBj5z17jh3rOE6oxnzqNHMTcPGD9eR1OCriQYrk1FA5SX4XPW4AASglVW
+	mL6DbqlJVCzT6lGyqzcIQ8tU6Dah36ds6kIaUTKM6cfkAI/nad4sn+0+kAt5wv84Y3Q+5re4Rac
+	V2yLgI6wGl3y2EDnstCpKWi2PfEw6OErzeHoe/QNwPajlTSvptTYSAkMMwHUnWF9DdmzWqHcFOh
+	6/sIn5aNbn+SwXJ6fZrurdAGjcrxHtjaafSR5KLJmy32l3UhL+GkiPAI6XWBBJznA3anIqT0fPu
+	twv0sBeglMaKG6VHTj9afoy09ktArto+FiUFJxX62GBwKMTdMGXXOTBFH8DxQVn0Nt1pcX2tlX6
+	n79kcdjzVY9/Gv2
+X-Received: by 2002:a05:600c:4595:b0:48f:d5b8:5b07 with SMTP id 5b1f17b1804b1-490ec4fb683mr9831835e9.20.1781238851699;
+        Thu, 11 Jun 2026 21:34:11 -0700 (PDT)
 Received: from [127.0.1.1] ([94.4.195.193])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-490ea83da91sm36134865e9.10.2026.06.11.21.34.07
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-490ea83da91sm36134865e9.10.2026.06.11.21.34.10
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 11 Jun 2026 21:34:07 -0700 (PDT)
+        Thu, 11 Jun 2026 21:34:10 -0700 (PDT)
 From: Alexey Klimov <alexey.klimov@linaro.org>
-Subject: [PATCH 0/2] ACPM cpufreq with fast_switch support, fast path xfer
- in ACPM
-Date: Fri, 12 Jun 2026 05:34:00 +0100
-Message-Id: <20260612-acpm-fast-xfer-v1-0-1aa6cd2268ba@linaro.org>
+Date: Fri, 12 Jun 2026 05:34:02 +0100
+Subject: [PATCH 2/2] cpufreq: add ACPM-based CPU DVFS driver for Exynos
+ SoCs
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -69,11 +70,10 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-X-B4-Tracking: v=1; b=H4sIADmMK2oC/6tWKk4tykwtVrJSqFYqSi3LLM7MzwNyDHUUlJIzE
- vPSU3UzU4B8JSMDIzMDM0Mj3cTkglzdtMTiEt2KtNQiXQuzZJOUVHOLZCODJCWgpoKi1LTMCrC
- B0bG1tQB8iyBQYAAAAA==
-X-Change-ID: 20260612-acpm-fast-xfer-86c4de78c20b
+Content-Transfer-Encoding: 7bit
+Message-Id: <20260612-acpm-fast-xfer-v1-2-1aa6cd2268ba@linaro.org>
+References: <20260612-acpm-fast-xfer-v1-0-1aa6cd2268ba@linaro.org>
+In-Reply-To: <20260612-acpm-fast-xfer-v1-0-1aa6cd2268ba@linaro.org>
 To: Tudor Ambarus <tudor.ambarus@linaro.org>, 
  Sam Protsenko <semen.protsenko@linaro.org>, 
  Krzysztof Kozlowski <krzk@kernel.org>, 
@@ -87,195 +87,276 @@ Cc: Sudeep Holla <sudeep.holla@kernel.org>,
  linux-kernel@vger.kernel.org, Alexey Klimov <alexey.klimov@linaro.org>
 X-Mailer: b4 0.14.3
 
-The series implements acpm_do_xfer_fast() that does as little
-as possible to make it usabe in atomic context to eventually
-use it in cpufreq path with ->fast_switch(). That's basically it.
-Cpufreq deals directly with ACPM dvfs instead of going through
-clk framework.
+Exynos-based SoCs (e.g., Exynos850, gs101) manage CPU DVFS via an
+ACPM co-processor (sometimes co-processor specifically called APM).
+Historically, routing CPU frequencies through the clock framework
+breaks fast frequency switching as it is implemented in cpufreq-dt.
+The clk_set_rate() uses mutexes, which prevents the scheduler to
+utilize schedutil's fast path.
 
-This series is Work-In-Progress / RFC.
-This is currently a working prototype, but I am sending it as an RFC to
-get feedback on the approach — specifically the ACPM fast path of sending
-messages. If ACPM part is no-go then cpufreq is not needed.
+Introduce a dedicated ACPM-based cpufreq driver that bypasses the clock
+framework and communicates directly with the ACPM firmware protocol.
+It implements ->fast_switch() to rely on acpm_dvfs_set_rate_fast(),
+enabling faster frequency transitions.
 
-Known TODO items:
- -- rx/tx channels locks rework;
- -- initial frequency fetching: Exynos850 firmware currently lacks a
-    clean get_rate, so the driver falls back to dump defaults until the
-    first freq transition.
- -- potential mailbox channels re-implementation.
-
-Any thoughts, testing, or feedback on the architecture would be greatly
-appreciated.
-
-This was tested on Exynos850 with example of DT nodes described
-in [1] and [2].
-
-Dependencies are different series that adds Exynos850 ACPM support:
--- ACPM mailbox support for Exynos850:
-https://lore.kernel.org/linux-samsung-soc/20260429-exynos850-mbox-dts-v1-1-7f3ad27ed4f4@linaro.org/
--- sram DT node:
-https://lore.kernel.org/linux-samsung-soc/20260413-exynos850_sram-v1-1-7fda5b7fb7d4@linaro.org/
--- ACPM support on Exynos850: 
-https://lore.kernel.org/linux-samsung-soc/20260513-exynos850-acpm-firmware-support-v1-0-3858d097e433@linaro.org/
-
-(the above dependencies pull some other series as well)
-
-[1]:
-
-cpu0: cpu@0 {
-	device_type = "cpu";
-	compatible = "arm,cortex-a55";
-	reg = <0x0>;
-	clocks = <&acpm_ipc E850_CLK_ACPM_DVFS_CPUCL0>;
-	enable-method = "psci";
-	operating-points-v2 = <&cpucl0_opp_table>;
-	capacity-dmips-mhz = <250>;
-	dynamic-power-coefficient = <70>;
-};
-
-[2]:
-
-	cpucl0_opp_table: opp-table-0 {
-		compatible = "operating-points-v2";
-		opp-shared;
-
-		opp-130000000 {
-			opp-hz = /bits/ 64 <130000000>;
-			opp-microvolt = <625000>;
-			clock-latency-ns = <500000>;
-		};
-
-		opp-182000000 {
-			opp-hz = /bits/ 64 <182000000>;
-			opp-microvolt = <625000>;
-			clock-latency-ns = <500000>;
-		};
-
-		opp-247000000 {
-			opp-hz = /bits/ 64 <247000000>;
-			opp-microvolt = <625000>;
-			clock-latency-ns = <500000>;
-		};
-
-		opp-351000000 {
-			opp-hz = /bits/ 64 <351000000>;
-			opp-microvolt = <625000>;
-			clock-latency-ns = <500000>;
-		};
-
-		opp-442000000 {
-			opp-hz = /bits/ 64 <442000000>;
-			opp-microvolt = <625000>;
-			clock-latency-ns = <500000>;
-		};
-
-		opp-546000000 {
-			opp-hz = /bits/ 64 <546000000>;
-			opp-microvolt = <625000>;
-			clock-latency-ns = <500000>;
-		};
-
-		opp-650000000 {
-			opp-hz = /bits/ 64 <650000000>;
-			opp-microvolt = <625000>;
-			clock-latency-ns = <500000>;
-		};
-
-		opp-806000000 {
-			opp-hz = /bits/ 64 <806000000>;
-			opp-microvolt = <656250>;
-			clock-latency-ns = <500000>;
-		};
-
-		opp-949000000 {
-			opp-hz = /bits/ 64 <949000000>;
-			opp-microvolt = <681250>;
-			clock-latency-ns = <500000>;
-		};
-
-		opp-1053000000 {
-			opp-hz = /bits/ 64 <1053000000>;
-			opp-microvolt = <706250>;
-			clock-latency-ns = <500000>;
-		};
-
-		opp-1157000000 {
-			opp-hz = /bits/ 64 <1157000000>;
-			opp-microvolt = <737500>;
-			clock-latency-ns = <500000>;
-		};
-
-		opp-1300000000 {
-			opp-hz = /bits/ 64 <1300000000>;
-			opp-microvolt = <781250>;
-			clock-latency-ns = <500000>;
-		};
-
-		opp-1456000000 {
-			opp-hz = /bits/ 64 <1456000000>;
-			opp-microvolt = <825000>;
-			clock-latency-ns = <500000>;
-		};
-
-		opp-1586000000 {
-			opp-hz = /bits/ 64 <1586000000>;
-			opp-microvolt = <875000>;
-			clock-latency-ns = <500000>;
-		};
-
-		opp-1742000000 {
-			opp-hz = /bits/ 64 <1742000000>;
-			opp-microvolt = <937500>;
-			clock-latency-ns = <500000>;
-		};
-
-		opp-1846000000 {
-			opp-hz = /bits/ 64 <1846000000>;
-			opp-microvolt = <981250>;
-			clock-latency-ns = <500000>;
-		};
-
-		opp-2002000000 {
-			opp-hz = /bits/ 64 <2002000000>;
-			opp-microvolt = <1050000>;
-			clock-latency-ns = <500000>;
-		};
-
-		opp-2106000000 {
-			opp-hz = /bits/ 64 <2106000000>;
-			opp-microvolt = <1106250>;
-			clock-latency-ns = <500000>;
-		};
-
-		opp-2210000000 {
-			opp-hz = /bits/ 64 <2210000000>;
-			opp-microvolt = <1181250>;
-			clock-latency-ns = <500000>;
-		};
-	};
+Add Google gs101 and Samsung exynos850 to the cpufreq-dt-platdev
+blocklist to prevent driver cpufreq-dt initialisation.
 
 Signed-off-by: Alexey Klimov <alexey.klimov@linaro.org>
 ---
-Alexey Klimov (2):
-      firmware: samsung: acpm: add fire-and-forget xfer support
-      cpufreq: add ACPM-based CPU DVFS driver for Exynos SoCs
+ drivers/cpufreq/Kconfig.arm          |   8 ++
+ drivers/cpufreq/Makefile             |   1 +
+ drivers/cpufreq/acpm-cpufreq.c       | 195 +++++++++++++++++++++++++++++++++++
+ drivers/cpufreq/cpufreq-dt-platdev.c |   3 +
+ 4 files changed, 207 insertions(+)
 
- drivers/cpufreq/Kconfig.arm                        |   8 +
- drivers/cpufreq/Makefile                           |   1 +
- drivers/cpufreq/acpm-cpufreq.c                     | 195 +++++++++++++++++++++
- drivers/cpufreq/cpufreq-dt-platdev.c               |   3 +
- drivers/firmware/samsung/exynos-acpm-dvfs.c        |  14 ++
- drivers/firmware/samsung/exynos-acpm-dvfs.h        |   3 +
- drivers/firmware/samsung/exynos-acpm.c             | 142 +++++++++++++--
- drivers/firmware/samsung/exynos-acpm.h             |   3 +
- .../linux/firmware/samsung/exynos-acpm-protocol.h  |   2 +
- 9 files changed, 361 insertions(+), 10 deletions(-)
----
-base-commit: ec039126b7fac4e3af35ebccaa7c6f9b6875ba81
-change-id: 20260612-acpm-fast-xfer-86c4de78c20b
+diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
+index a441668f9e0c..891ff4b6ec22 100644
+--- a/drivers/cpufreq/Kconfig.arm
++++ b/drivers/cpufreq/Kconfig.arm
+@@ -24,6 +24,14 @@ config ARM_AIROHA_SOC_CPUFREQ
+ 	help
+ 	  This adds the CPUFreq driver for Airoha EN7581 SoCs.
+ 
++config ARM_ACPM_CPUFREQ
++	tristate "ACPM based CPUFreq support"
++	depends on ARCH_EXYNOS || (COMPILE_TEST && 64BIT)
++	select PM_OPP
++	help
++	  This adds the CPUFreq driver for Exynos-based machines
++	  with ACPM firmware.
++
+ config ARM_APPLE_SOC_CPUFREQ
+ 	tristate "Apple Silicon SoC CPUFreq support"
+ 	depends on ARCH_APPLE || (COMPILE_TEST && 64BIT)
+diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
+index 6c7a39b7f8d2..c54d2dd6629d 100644
+--- a/drivers/cpufreq/Makefile
++++ b/drivers/cpufreq/Makefile
+@@ -54,6 +54,7 @@ obj-$(CONFIG_X86_AMD_FREQ_SENSITIVITY)	+= amd_freq_sensitivity.o
+ ##################################################################################
+ # ARM SoC drivers
+ obj-$(CONFIG_ARM_AIROHA_SOC_CPUFREQ)	+= airoha-cpufreq.o
++obj-$(CONFIG_ARM_ACPM_CPUFREQ)		+= acpm-cpufreq.o
+ obj-$(CONFIG_ARM_APPLE_SOC_CPUFREQ)	+= apple-soc-cpufreq.o
+ obj-$(CONFIG_ARM_ARMADA_37XX_CPUFREQ)	+= armada-37xx-cpufreq.o
+ obj-$(CONFIG_ARM_ARMADA_8K_CPUFREQ)	+= armada-8k-cpufreq.o
+diff --git a/drivers/cpufreq/acpm-cpufreq.c b/drivers/cpufreq/acpm-cpufreq.c
+new file mode 100644
+index 000000000000..20fb79169993
+--- /dev/null
++++ b/drivers/cpufreq/acpm-cpufreq.c
+@@ -0,0 +1,195 @@
++// SPDX-License-Identifier: GPL-2.0-only
++/*
++ * Exynos ACPM-based CPUFreq DVFS driver
++ */
++
++#include <linux/cpu.h>
++#include <linux/cpufreq.h>
++#include <linux/err.h>
++#include <linux/module.h>
++#include <linux/of.h>
++#include <linux/pm_opp.h>
++#include <linux/slab.h>
++
++#include <linux/firmware/samsung/exynos-acpm-protocol.h>
++
++#define ACPM_DVFS_TRANSITION_TIMEOUT 400
++
++struct acpm_cpu_priv {
++	struct device *cpu_dev;
++	struct acpm_handle *handle;
++	unsigned int acpm_chan_id;
++	unsigned int clk_id;
++};
++
++static unsigned int acpm_soc_cpufreq_get_rate(unsigned int cpu)
++{
++	struct cpufreq_policy *policy = cpufreq_cpu_get_raw(cpu);
++	struct acpm_cpu_priv *priv;
++
++	if (unlikely(!policy))
++		return 0;
++
++	priv = policy->driver_data;
++
++	/* return priv->handle->ops->dvfs.get_rate(priv->handle, priv->acpm_chan_id,
++	 *					priv->clk_id) / 1000;
++	 */
++
++	/* TODO: FIXME. Exynos850 doesn't return rate via ACPM */
++	return policy->cur;
++}
++
++static int acpm_soc_cpufreq_set_target(struct cpufreq_policy *policy,
++				       unsigned int index)
++{
++	struct acpm_cpu_priv *priv = policy->driver_data;
++	unsigned long freq_khz = policy->freq_table[index].frequency;
++
++	/* standard slow path */
++	return priv->handle->ops->dvfs.set_rate(priv->handle, priv->acpm_chan_id,
++						priv->clk_id, freq_khz * 1000);
++}
++
++static unsigned int acpm_soc_cpufreq_fast_switch(struct cpufreq_policy *policy,
++						 unsigned int target_freq)
++{
++	struct acpm_cpu_priv *priv = policy->driver_data;
++	int ret;
++
++	ret = priv->handle->ops->dvfs.set_rate_fast(priv->handle, priv->acpm_chan_id,
++						    priv->clk_id, target_freq * 1000);
++	if (ret < 0)
++		return 0;
++
++	return target_freq;
++}
++
++static int acpm_soc_cpufreq_init(struct cpufreq_policy *policy)
++{
++	struct device *cpu_dev = get_cpu_device(policy->cpu);
++	struct cpufreq_frequency_table *freq_table;
++	struct acpm_cpu_priv *priv;
++	struct of_phandle_args args;
++	unsigned int transition_latency;
++	int ret;
++
++	if (!cpu_dev)
++		return -ENODEV;
++
++	priv = kzalloc(sizeof(*priv), GFP_KERNEL);
++	if (!priv)
++		return -ENOMEM;
++
++	ret = of_parse_phandle_with_args(cpu_dev->of_node, "clocks",
++					 "#clock-cells", 0, &args);
++	if (ret) {
++		dev_err(cpu_dev, "failed to parse clocks property\n");
++		goto out_free_priv;
++	}
++
++	priv->clk_id = args.args[0];
++
++	/*
++	 * DVFS communication is expected to happen only via channel 0
++	 * for now for known SoCs with ACPM firmware. Hardcoding.
++	 */
++	priv->acpm_chan_id = 0;
++
++	priv->handle = devm_acpm_get_by_node(cpu_dev, args.np);
++	of_node_put(args.np);
++
++	if (IS_ERR(priv->handle)) {
++		ret = PTR_ERR(priv->handle);
++		goto out_free_priv;
++	}
++
++	priv->cpu_dev = cpu_dev;
++
++	ret = dev_pm_opp_of_add_table(cpu_dev);
++	if (ret < 0) {
++		dev_err(cpu_dev, "failed to add OPP table: %d\n", ret);
++		goto out_free_priv;
++	}
++
++	dev_pm_opp_of_get_sharing_cpus(cpu_dev, policy->cpus);
++
++	ret = dev_pm_opp_get_opp_count(cpu_dev);
++	if (ret <= 0) {
++		ret = -EPROBE_DEFER;
++		goto out_remove_table;
++	}
++
++	ret = dev_pm_opp_init_cpufreq_table(cpu_dev, &freq_table);
++	if (ret) {
++		dev_err(cpu_dev, "failed to init cpufreq table: %d\n", ret);
++		goto out_remove_table;
++	}
++
++	policy->driver_data = priv;
++	policy->freq_table = freq_table;
++
++	transition_latency = dev_pm_opp_get_max_transition_latency(cpu_dev);
++	if (!transition_latency)
++		transition_latency = ACPM_DVFS_TRANSITION_TIMEOUT * NSEC_PER_USEC;
++
++	policy->cpuinfo.transition_latency = transition_latency;
++	policy->dvfs_possible_from_any_cpu = true;
++	policy->fast_switch_possible = true;
++	policy->suspend_freq = freq_table[0].frequency;
++
++	/* TODO: FIXME. Exynos850 doesn't expose rate of clocks via ACPM  (get_rate doesn't work) */
++	policy->cur = freq_table[0].frequency;
++
++	return 0;
++
++out_remove_table:
++	dev_pm_opp_of_remove_table(cpu_dev);
++out_free_priv:
++	kfree(priv);
++	return ret;
++}
++
++static void acpm_soc_cpufreq_exit(struct cpufreq_policy *policy)
++{
++	struct acpm_cpu_priv *priv = policy->driver_data;
++
++	dev_pm_opp_free_cpufreq_table(priv->cpu_dev, &policy->freq_table);
++	dev_pm_opp_of_remove_table(priv->cpu_dev);
++	kfree(priv);
++}
++
++static struct cpufreq_driver acpm_soc_cpufreq_driver = {
++	.name		= "acpm-cpufreq",
++	.flags		= CPUFREQ_HAVE_GOVERNOR_PER_POLICY |
++			  CPUFREQ_NEED_INITIAL_FREQ_CHECK | CPUFREQ_IS_COOLING_DEV,
++	.verify		= cpufreq_generic_frequency_table_verify,
++	.get		= acpm_soc_cpufreq_get_rate,
++	.init		= acpm_soc_cpufreq_init,
++	.exit		= acpm_soc_cpufreq_exit,
++	.target_index	= acpm_soc_cpufreq_set_target,
++	.fast_switch	= acpm_soc_cpufreq_fast_switch,
++	.register_em	= cpufreq_register_em_with_opp,
++	.set_boost	= cpufreq_boost_set_sw,
++	.suspend	= cpufreq_generic_suspend,
++};
++
++static int __init acpm_soc_cpufreq_module_init(void)
++{
++	if (!of_machine_is_compatible("google,gs101") &&
++	    !of_machine_is_compatible("samsung,exynos850"))
++		return -ENODEV;
++
++	return cpufreq_register_driver(&acpm_soc_cpufreq_driver);
++}
++module_init(acpm_soc_cpufreq_module_init);
++
++static void __exit acpm_soc_cpufreq_module_exit(void)
++{
++	cpufreq_unregister_driver(&acpm_soc_cpufreq_driver);
++}
++module_exit(acpm_soc_cpufreq_module_exit);
++
++MODULE_AUTHOR("Alexey Klimov <alexey.klimov@linaro.org>");
++MODULE_DESCRIPTION("ACPM-based CPUfreq DVFS driver");
++MODULE_LICENSE("GPL");
+diff --git a/drivers/cpufreq/cpufreq-dt-platdev.c b/drivers/cpufreq/cpufreq-dt-platdev.c
+index ff1204c666b1..ae58aa92fc40 100644
+--- a/drivers/cpufreq/cpufreq-dt-platdev.c
++++ b/drivers/cpufreq/cpufreq-dt-platdev.c
+@@ -186,6 +186,9 @@ static const struct of_device_id blocklist[] __initconst = {
+ 	{ .compatible = "qcom,sm8550", },
+ 	{ .compatible = "qcom,sm8650", },
+ 
++	{ .compatible = "google,gs101", },
++	{ .compatible = "samsung,exynos850", },
++
+ 	{ .compatible = "st,stih407", },
+ 	{ .compatible = "st,stih410", },
+ 	{ .compatible = "st,stih418", },
 
-Best regards,
 -- 
-Alexey Klimov <alexey.klimov@linaro.org>
+2.51.0
 
