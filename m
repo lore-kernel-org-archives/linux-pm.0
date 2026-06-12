@@ -1,382 +1,286 @@
-Received: from mail-pj1-f54.google.com (mail-pj1-f54.google.com [209.85.216.54])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DDAB73DDDB9
-	for <linux-pm@vger.kernel.org>; Fri, 12 Jun 2026 07:39:09 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.216.54
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 85BD53E2750
+	for <linux-pm@vger.kernel.org>; Fri, 12 Jun 2026 07:50:52 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1781249953; cv=none; b=XpATvVa02386QyGcDLe18b5XKxSgTzdRfJDMcgEOxRPqM4H7iOMcXJPKhSzlwEeAKlDtlObydUTOApXlH2fwYsdEPxGEKJwwfun5M2HypAiuhBm9eDms07cT16qdlLtLBNguBccpHizB+mVo4VGmth43F4MW8vadzUyS1w4uHUU=
+	t=1781250657; cv=none; b=WWkzWEptPqEKD3z0McbtrvWcfelq44tJsc4BXIHkuCbLJFXIbXup4FURUYW2TbGwMQZwfDNkdpy4OFy7QA9ZDC6Sf4bZEFGlPurCy6HYmjGsMcyv4Cqz/kHLyGHWDmQugfa2Tr8wE7dyHCLl1+qNLMtT3HomApwk6tstavV5jJM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1781249953; c=relaxed/simple;
-	bh=z9QRWjpF4mbZ5QQNhCSkNyl2RjyVBn8VQoPBXaspdM8=;
+	s=arc-20240116; t=1781250657; c=relaxed/simple;
+	bh=XtBD7I/wcbfYFMlmpNh0CZUl/vymWdbw1dvgjEpRpE4=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=IiwaWXeQLVQCrC6y4CCrrRMkhJ6MP4C0SVx179tc+QXuEA8a4PNkgUk0oMCeN4Hng7tFsAzObG0WHqaGgnUYwJRe8sIfD13cS4e6+AXfE6Bek8IBtPCAJBszJ85GYxeMN+7yJ7uljoxV4cuy5EpqqVLolkNepywqSxcd56atvYI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=O/46NIXP; arc=none smtp.client-ip=209.85.216.54
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
+	 Content-Type:Content-Disposition:In-Reply-To; b=d+8TFjQWjb/6tWV5uKjioi0jSUTzda4A22QPu+EAJcDkDRcffY2hnnZOGB5TIQ1kmAoodwokj8kK411dSWpPa384cmiWYSDJJHYg9fqHIYpKNTIaRB3E2i2BfMmeEtxvms02UpzGdD5LEB4GggGuj7XD+oRsBbcBOOGa06xh3HQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=I5SEIU8T; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=b/fD+se7; arc=none smtp.client-ip=205.220.168.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="O/46NIXP"
-Received: by mail-pj1-f54.google.com with SMTP id 98e67ed59e1d1-372b4330deeso492318a91.0
-        for <linux-pm@vger.kernel.org>; Fri, 12 Jun 2026 00:39:09 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="I5SEIU8T";
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="b/fD+se7"
+Received: from pps.filterd (m0279864.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 65C39md12516646
+	for <linux-pm@vger.kernel.org>; Fri, 12 Jun 2026 07:50:51 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
+	zFFhwvPhE9ToJAkALCoRS5tzqSMrukK5siAZ9HiB+88=; b=I5SEIU8T6owUNrWo
+	7lurTImZJii/gc5Mf0jzvxW7UqhsFA5cVrnBaqFBPSjaY06gqzKZTB+4SdfruYUC
+	kMYRJEE3l52lRmxqI+W3GSv5/WouxM3m1tAt5AM+nxQXr5i0zBRHk3Jtkp2v9RYV
+	Yscf3ql3ztSfnVNMFMLjEtU/wfTrGL2L7DZstLvXHQdNyMbzbvEYHyU09ZBiit8C
+	B8HIjZjsKXjLkJN82bcUSfA2Ebu32GssC2VGL3oepHtcMH70SmyWRs5VJbLr4/WQ
+	BoayNG+aQYgmnPJlmquSgnd7HWQ/vzksBMqZcUaqZw5vYpv0TIKZ7laa0ne5UkSY
+	GiEFuw==
+Received: from mail-vs1-f72.google.com (mail-vs1-f72.google.com [209.85.217.72])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4er2r724qw-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <linux-pm@vger.kernel.org>; Fri, 12 Jun 2026 07:50:51 +0000 (GMT)
+Received: by mail-vs1-f72.google.com with SMTP id ada2fe7eead31-6c77c80d967so632166137.1
+        for <linux-pm@vger.kernel.org>; Fri, 12 Jun 2026 00:50:49 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1781249949; x=1781854749; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=iwAzsKuG98i0XaLphIm9C7P5riFyScOebLVPU4KDGKQ=;
-        b=O/46NIXPIFSAZHb7jNQrMvppvNiOQZwIAB5jiTJ25Vv3MMvN7bKgZ0EqcWJhTwtyMc
-         7Rdq+EafzLlEi+CvFWnoLLvoK8uDJo2GBdOduHAmibHj6EA6mgm+l8xyte9xlWqO+7zn
-         O/WPQD55VC0xcdDxxYUsfyV6h55I6TG2fjzfdpN5IPopPglKPVo6eYXYWCOpTnhTzOpI
-         2rxhKPDXxbrXcZ72RutUzTA9dDJJgUKd1PQ7Bb5tP4lN9518tTV+/t+jMBNGxAU56bvl
-         SpLkzLJincEoLalt6aYjcq+OfBQW5S0fV3cYbD1CMCqKWoK6yosF0IpWNRFTP7JkqMoY
-         Erbg==
+        d=oss.qualcomm.com; s=google; t=1781250649; x=1781855449; darn=vger.kernel.org;
+        h=in-reply-to:content-transfer-encoding:content-disposition
+         :mime-version:references:message-id:subject:cc:to:from:date:from:to
+         :cc:subject:date:message-id:reply-to;
+        bh=zFFhwvPhE9ToJAkALCoRS5tzqSMrukK5siAZ9HiB+88=;
+        b=b/fD+se7Furt1IGKi47J9FXtXkcYT1hzxe+1xtiODsTad9jB+6NZCeTer2UT9CRjdV
+         ymWcbuFwpih/OyywB1SX22PSM+IJozgNO43zEjPT+NwV/5eIB0EW+z4WtpUcldrxfyFN
+         mNyvsDeo4ua0uCOTqgSFM2dXlU71flYbdoMBT1vFSAVLp4LCCGqMWu0uS5oOugJW2yd6
+         RuLrSWqI/cQk2QDeX/0llUkP4OC65grntKgR5kkHPzZHXvWQ/WXgH91y2a3UOT0qYQuW
+         xa5u67gGOBAOs1JwgQaLGvy6/E5EgoPx8D7UioESfylwF84ytmcO+YFaOhAvJP2mVWnN
+         Q1rw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1781249949; x=1781854749;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=iwAzsKuG98i0XaLphIm9C7P5riFyScOebLVPU4KDGKQ=;
-        b=Hg0xv6Fp9eKRE1Hil9IpQy1eHLsh6yC2R6lJKyximV8QqBdr91fvsr4WBkUF30Xh/o
-         ogNjhD5c10YOfyQRX1vuWNQbCATJl85KWwQ69MzdIfDxVQJO/OjzTc99CtbGyEYVNXbM
-         40eNha10C8R8IQQPBVblTGg7u54Q8DBjP4tT9wkRcGFY1qiTpys4o2NkDnt0TTXsgKnA
-         98EL44datfpnbQxiaV83cmm4rmWEfbyw0Xan4otxqaNDSAKhZ2EoGLiTvPPitlC08nYR
-         zi/h0q+c1dmN3cCWPVZSiN3DYwB0axTz134FRPW5aTIjJe+CSZbHXu8ugD0l2X3sTg5p
-         6aiw==
-X-Forwarded-Encrypted: i=1; AFNElJ9Lt4ruAhlVHAgQtT0mcn/4bthX3V6rHnTiUCDpeX7Za4HzuMT+noMMIwGA54kgUi6jE3jIHpFdsQ==@vger.kernel.org
-X-Gm-Message-State: AOJu0YxDJ/02YRNLhOxG/SVVDpbjUGMA6KJW8ZXAd6zgWUrqqX/wdnmo
-	8V1+hZGPBiLUnMjXhnmpC3yU0raLM8fWbGtnZvg/HvasaMOK0oHXVBw5n27SrqWC1uAyYwW3gMm
-	73n6Z
-X-Gm-Gg: Acq92OFIGm/hIj+WqVscekCtGfkTRmUpGKdcTrHeFQkzfSEdiLT39JQVGnKYHYQvRPH
-	QCMIexCRScf7DmrC34cFOcVagbsWP9mHfQfp6rAP8MoFG4joyEnt/byuyrSAo4jEtt+oHYYIzNR
-	WOrImxS+WAFcOo9GqoyBYBuK8scsOV+sFr1iBylKBWlVoHn0AYR+wNCQVUV5p2qnTpbEhSnMbue
-	zfJTwu9GW/eqdo3UODKXBXwxjuuX7WLI1DZjhenmc8P/CIipqA6rbZ6oVEzihrdnmlIfrQvTQSR
-	roPWuugQb3SUKxnKmffdXlPDk7LLuXN09bdgnthIiNtMrVctDPbGQ3EXYAIj3Ch4ixjHHHKG463
-	taV7CuobAJepxoJYFaa0ih4wMQPY+DEldk1SlJY0T6cyDhWjZ1zpW8YnjnhbZbuY95UAqvZp7fu
-	QmGsl4thdbalbU5CdIW6FKS1w=
-X-Received: by 2002:a17:90b:2f4b:b0:36a:6ac2:8bc8 with SMTP id 98e67ed59e1d1-37a037e2876mr1910045a91.14.1781249948578;
-        Fri, 12 Jun 2026 00:39:08 -0700 (PDT)
-Received: from localhost ([122.172.82.94])
-        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-8434ac9c474sm1268869b3a.2.2026.06.12.00.39.07
+        d=1e100.net; s=20251104; t=1781250649; x=1781855449;
+        h=in-reply-to:content-transfer-encoding:content-disposition
+         :mime-version:references:message-id:subject:cc:to:from:date:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=zFFhwvPhE9ToJAkALCoRS5tzqSMrukK5siAZ9HiB+88=;
+        b=VABEaiQwn80zzEkhGFBWivOlVAN0xh4sLPGaw034qsodOEu8UjW129Z57oLEQuwWjr
+         DHhKSLAXGkl6EAPhYZgYRrxb1lHgIYQKCaQ9duThAZcDjke31jGMUyI3VTCckeAl4Gvd
+         NkUdwl1GuKS9lXmWgzJ1TJqOOJdteYFyZh9ficTht/EmNCPG8YOCVDAz2nDGlmfGN74M
+         n49eotB87aS9UtHJOSPNRY47bEg6o0KzdRJD+OvIhSj22qou9KL9a8hru1rEELqGW+nP
+         71rBhhN1PMlqHDomFICDH3jTHJ/bNDxn43+OLEQ2i8pNfgkON1WrB55v9ImpFpmcjmuV
+         7EKw==
+X-Forwarded-Encrypted: i=1; AFNElJ/H87oA7B8+O9aGUWsOcLjSOGm7I0zawNkGf3J7EhEPFEq3M/3O0R98Lc/gVw65OOfRs3s7NwTJZg==@vger.kernel.org
+X-Gm-Message-State: AOJu0YyZ2wTeWBw/sYTUvvIbIien6jq/1HgcwB73RRp7tEsRm90F4XLl
+	19/XdU6sKSySB9XmpOWv52sDmr8iiixrJebfkhzp5PnREtLOuxkiy0Cbd40MxGWtwqoGJNASM5r
+	ZANUWLgbrdIGgD5tzYe7ZxKVmyZMdXF6VyZiL8Gao4bYHBlDQfqqUL3c3KPHU6g==
+X-Gm-Gg: Acq92OE2x/w6CHU20D+dnBb678i8v4Pb3XsKVufnZzWgF6NPOQCLiNAkHp9lw1TbUTv
+	2fAaUWu/Uw408KP3Net7NCftTC3+Xnf1/68wtFKdplgbS6XjpuIdoWWvO//uvQPt3MZI47ZWP5f
+	Vy1eyhA8xRn5rtm/VkKAIde7eH1zlB740sO6Duk4Fx+QR+b0BECVx4LsFv3pzDud3/Gx6O1kR5F
+	GkVRxai3bnOym2dgiXKq+1rVgil3PMpy89uBtznYORHvmeT3uZeafBIFeWIw7c8aUAv6a13YEi0
+	ItbqC6YETZwESx5DXv5e+4kAJl/VYOJ3mkV3Ao7Sp2DcWSZT0QEzS1hcHhX6K83tfq/+wYGltjE
+	pdIcmEdKpWhFyGekTZg9VQf+dl8eLDG3fShgm59XxZLTdAh/NbgJgmpRUU1gu6+TB2tW2GCTFaJ
+	NMHndn/QyG8Mz1SfPTXv+7X+8vZe8mPuJp1Rg=
+X-Received: by 2002:a05:6102:5e88:b0:631:4580:6a46 with SMTP id ada2fe7eead31-71e88c4f8c1mr731829137.17.1781250648983;
+        Fri, 12 Jun 2026 00:50:48 -0700 (PDT)
+X-Received: by 2002:a05:6102:5e88:b0:631:4580:6a46 with SMTP id ada2fe7eead31-71e88c4f8c1mr731821137.17.1781250648555;
+        Fri, 12 Jun 2026 00:50:48 -0700 (PDT)
+Received: from umbar.lan (2001-14ba-a073-af00-264b-feff-fe8b-be8a.rev.dnainternet.fi. [2001:14ba:a073:af00:264b:feff:fe8b:be8a])
+        by smtp.gmail.com with ESMTPSA id 38308e7fff4ca-39929c6c9f7sm3928361fa.18.2026.06.12.00.50.45
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 12 Jun 2026 00:39:07 -0700 (PDT)
-Date: Fri, 12 Jun 2026 13:09:05 +0530
-From: Viresh Kumar <viresh.kumar@linaro.org>
-To: Alexey Klimov <alexey.klimov@linaro.org>
-Cc: Tudor Ambarus <tudor.ambarus@linaro.org>, 
-	Sam Protsenko <semen.protsenko@linaro.org>, Krzysztof Kozlowski <krzk@kernel.org>, 
-	Peter Griffin <peter.griffin@linaro.org>, Alim Akhtar <alim.akhtar@samsung.com>, 
-	"Rafael J. Wysocki" <rafael@kernel.org>, Sudeep Holla <sudeep.holla@kernel.org>, 
-	linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, 
-	kernel-team@android.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/2] cpufreq: add ACPM-based CPU DVFS driver for Exynos
- SoCs
-Message-ID: <xruckzvdmox4ewgc4shrhrfrq3a3rjl4zqa3rh46oaqezbmir2@yt7oxm2sy4q2>
-References: <20260612-acpm-fast-xfer-v1-0-1aa6cd2268ba@linaro.org>
- <20260612-acpm-fast-xfer-v1-2-1aa6cd2268ba@linaro.org>
+        Fri, 12 Jun 2026 00:50:47 -0700 (PDT)
+Date: Fri, 12 Jun 2026 10:50:44 +0300
+From: Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>
+To: Manivannan Sadhasivam <mani@kernel.org>
+Cc: Stephan Gerhold <stephan.gerhold@linaro.org>,
+        Mark Pearson <mpearson-lenovo@squebb.ca>,
+        Rob Herring <robh@kernel.org>,
+        Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>,
+        Greg KH <gregkh@linuxfoundation.org>,
+        Jiri Slaby <jirislaby@kernel.org>,
+        Nathan Chancellor <nathan@kernel.org>,
+        Nicolas Schier <nicolas.schier@linux.dev>,
+        Hans de Goede <hansg@kernel.org>,
+        Ilpo =?utf-8?B?SsOkcnZpbmVu?= <ilpo.jarvinen@linux.intel.com>,
+        "Derek J . Clark" <derekjohn.clark@gmail.com>,
+        Krzysztof Kozlowski <krzk+dt@kernel.org>,
+        Conor Dooley <conor+dt@kernel.org>,
+        Marcel Holtmann <marcel@holtmann.org>,
+        Luiz Augusto von Dentz <luiz.dentz@gmail.com>,
+        Bartosz Golaszewski <brgl@bgdev.pl>,
+        Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+        Bartosz Golaszewski <brgl@kernel.org>, linux-serial@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-kbuild@vger.kernel.org,
+        "platform-driver-x86@vger.kernel.org" <platform-driver-x86@vger.kernel.org>,
+        linux-pci@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-arm-msm@vger.kernel.org, linux-bluetooth@vger.kernel.org,
+        linux-pm@vger.kernel.org,
+        "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>
+Subject: Re: [PATCH v6 6/9] dt-bindings: connector: m2: Add M.2 1620 LGA
+ soldered down connector
+Message-ID: <ttik5qwtbdqgtuu2hsnqsuok75ofs5itlnkzevawazw7lckuem@l5ogmc4b4u42>
+References: <CAL_JsqJXrHCJt770bJkMmAUhirSF3kHjYwSzkG7cXp7-eys8Rg@mail.gmail.com>
+ <6aef3xxjjd4nbgrfx6jc6jt6rpqmttoui6hil5zqgdpas2j6gj@ie6j72orenou>
+ <fsvmmgoe5wslmxebhrrwmdg2ldcmhzvj53gjkdfnfg2m2rz2lw@dcfboaakz7ae>
+ <bguhzabwryayyqkv4ilzwr3ixwv6bzxncblo3ircz2wm3fs52k@66zvcrfcb4oe>
+ <blhm4csjyw6r667cleljgzd6rpwagttjo5rau7wjrlnjakq2qm@ekyhc4jvwmwf>
+ <m44mupdmg7kgco62n4evcviagqo7wwgyt3gybugbxwesd4ekjz@o24r6v4tpezc>
+ <3faffec9-dc9d-4eec-a652-a84d30d85c96@app.fastmail.com>
+ <cvqdbqnzjmzoowxkvz2lyv4avropu5jw7h2r6zng3ecf245hgg@fsysjqflqd35>
+ <acv2f1qbqu4PlSL1@linaro.org>
+ <eftahohsx3bbvmgxuciofjjcrybnsm2qc752hwyt65rb2uwaon@h32nh5fcpo7p>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20260612-acpm-fast-xfer-v1-2-1aa6cd2268ba@linaro.org>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <eftahohsx3bbvmgxuciofjjcrybnsm2qc752hwyt65rb2uwaon@h32nh5fcpo7p>
+X-Proofpoint-ORIG-GUID: 1Hf1K093Z-HJfDZSBMGP1bujlbR8nICu
+X-Authority-Analysis: v=2.4 cv=RJGD2Yi+ c=1 sm=1 tr=0 ts=6a2bba5b cx=c_pps
+ a=DUEm7b3gzWu7BqY5nP7+9g==:117 a=xqWC_Br6kY4A:10 a=IkcTkHD0fZMA:10
+ a=FelO9ux0wxsA:10 a=s4-Qcg_JpJYA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=u7WPNUs3qKkmUXheDGA7:22 a=DJpcGTmdVt4CTyJn9g5Z:22 a=GUbesZiWAAAA:8
+ a=VwQbUJbxAAAA:8 a=XDz2VUyccH_bepKxGScA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
+ a=-aSRE8QhW-JAV6biHavz:22 a=-cUrBSrepuC47jtK_ZRV:22
+X-Proofpoint-GUID: 1Hf1K093Z-HJfDZSBMGP1bujlbR8nICu
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNjEyMDA2OSBTYWx0ZWRfX+69j6YnRgJ5V
+ oRdbz2qpdVn1feIbGA5/eXJtTUKHTkEGvrDi8r3sp6QCZIlmvZlq5b9UfShn9ySCZwT4vymjBni
+ QCxWlVuqyV8jrpbh3g5Ajb9g/rmBdf2pteuW5VitaQ5S6r3pXWYPr5t6HMBmvoQ0NiZw6lKWnyc
+ jj84bHzhi+vVK3IeOy85dc2XBhroxSiEDGLIW0Hc1/NZ9QCpo7g8oYJCkMQYXpZB+G++eszvdu+
+ d+7v02BWdA1D5nIn5WV6wk3ISC8dMYSxrz5EjprzAs8BsuMblqogCslZy7n40JBz/yTHKYzcFVQ
+ iuccg4irPjZ7ngWsiEi5ZeGtFsx0r3HWcQmHQKCoVEs5iwATYwrfFRuIxDsEVrQVDm3vEnEWg5u
+ GZN91O+66loQ8Vc+upteL9rYOPEL/jmDMwQ+c2TJSPNhZIsgQ+Au3SjmOSVVvMt1SsO6Pgl2q5a
+ 6c/jvDmqKiaS+b1h5qg==
+X-Proofpoint-Spam-Info: AW1haW4tMjYwNjEyMDA2OSBTYWx0ZWRfX2uKb3fVQBwJg
+ /VNZIazjb2QzWJnSCEYQCYS9G/ZR8f4WEvx/d/J62kRf35WDQz70CS4cy+FJ8V4JjqQz1TXsAES
+ HzcbCekHeRfIDyY5qq2fsd06fjdfttA=
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.125,FMLib:17.12.100.49
+ definitions=2026-06-12_01,2026-06-11_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ suspectscore=0 phishscore=0 spamscore=0 adultscore=0 lowpriorityscore=0
+ malwarescore=0 priorityscore=1501 impostorscore=0 bulkscore=0 clxscore=1015
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2606040000 definitions=main-2606120069
 
-On 12-06-26, 05:34, Alexey Klimov wrote:
-> Exynos-based SoCs (e.g., Exynos850, gs101) manage CPU DVFS via an
-> ACPM co-processor (sometimes co-processor specifically called APM).
-> Historically, routing CPU frequencies through the clock framework
-> breaks fast frequency switching as it is implemented in cpufreq-dt.
-> The clk_set_rate() uses mutexes, which prevents the scheduler to
-> utilize schedutil's fast path.
-
-The OPP core can be configured with a "config_clks" helper, which can let you
-call a custom callback instead of clk_set_rate(). With that you can still use
-cpufreq-dt ? This may need minor update in OPP core though, as we don't allow
-the custom callback for single clocks for now.
-
-> Introduce a dedicated ACPM-based cpufreq driver that bypasses the clock
-> framework and communicates directly with the ACPM firmware protocol.
-> It implements ->fast_switch() to rely on acpm_dvfs_set_rate_fast(),
-> enabling faster frequency transitions.
+On Wed, Jun 10, 2026 at 06:44:59PM +0200, Manivannan Sadhasivam wrote:
+> On Tue, Mar 31, 2026 at 06:29:51PM +0200, Stephan Gerhold wrote:
+> > On Wed, Mar 25, 2026 at 05:36:08PM +0530, Manivannan Sadhasivam wrote:
+> > > On Mon, Mar 23, 2026 at 01:23:07PM -0400, Mark Pearson wrote:
+> > > > On Mon, Mar 23, 2026, at 12:52 PM, Manivannan Sadhasivam wrote:
+> > > > > On Mon, Mar 23, 2026 at 06:45:15PM +0200, Dmitry Baryshkov wrote:
+> > > > >> On Mon, Mar 23, 2026 at 09:26:04PM +0530, Manivannan Sadhasivam wrote:
+> > > > >> > On Mon, Mar 23, 2026 at 05:14:30PM +0200, Dmitry Baryshkov wrote:
+> > > > >> > > On Mon, Mar 23, 2026 at 07:14:25PM +0530, Manivannan Sadhasivam wrote:
+> > > > >> > > > On Mon, Mar 23, 2026 at 08:39:55AM -0500, Rob Herring wrote:
+> > > > >> > > > > On Mon, Mar 23, 2026 at 7:16 AM Manivannan Sadhasivam <mani@kernel.org> wrote:
+> > > > >> > > > > >
+> > > > >> > > > > > On Sun, Mar 22, 2026 at 06:37:13PM -0500, Rob Herring wrote:
+> > > > >> > > > > > > On Tue, Mar 17, 2026 at 09:59:56AM +0530, Manivannan Sadhasivam wrote:
+> > > > >> > > > > > > > Lenovo Thinkpad T14s is found to have a soldered down version of M.2 1620
+> > > > >> > > > > > > > LGA connector. Though, there is no 1620 LGA form factor defined in the M.2
+> > > > >> > > > > > > > spec, it looks very similar to the M.2 Key E connector. So add the
+> > > > >> > > > > > > > "pcie-m2-1620-lga-connector" compatible with "pcie-m2-e-connector" fallback
+> > > > >> > > > > > > > to reuse the Key E binding.
+> > > > >> > > > > > >
+> > > > >> > > > > > > What is LGA?
+> > > > >> > > > > > >
+> > > > >> > > > > >
+> > > > >> > > > > > Land Grid Array
+> > > > >> > > > > >
+> > > > >> > > > > > > If not in the spec, is it really something generic?
+> > > > >> > > > > > >
+> > > > >> > > > > >
+> > > > >> > > > > > Good question. Yes and No! LGA is not something that Lenovo only uses. Other
+> > > > >> > > > > > vendors may also use this form factor. PCIe connectors are full of innovation as
+> > > > >> > > > > > the spec gives room for hardware designers to be as innovative as possible to
+> > > > >> > > > > > save the BOM cost.
+> > > > >> > > > > 
+> > > > >> > > > > innovation == incompatible changes
+> > > > >> > > > > 
+> > > > >> > > > 
+> > > > >> > > > Yes, I was trying to sound nice :)
+> > > > >> > > > 
+> > > > >> > > > > > This is why I do not want to make it Lenovo specific. But if you prefer that, I
+> > > > >> > > > > > can name it as "lenovo,pcie-m2-1620-lga-connector".
+> > > > >> > > > > 
+> > > > >> > > > > Depends if you think that s/w needs to know the differences. Hard to
+> > > > >> > > > > say with a sample size of 1.
+> > > > >> > > > > 
+> > > > >> > > > 
+> > > > >> > > > Sure. Will add the 'lenovo' prefix then.
+> > > > >> > > 
+> > > > >> > > Is it really Lenovo? Or is it some other module vendor, whose LGAs are
+> > > > >> > > being used by Lenovo?
+> > > > >> > > 
+> > > > >> > > I remember that DB820c also used some kind of a module for the WiFi card
+> > > > >> > > (which might be M.2 compatible or might not, I can't find exact docs at
+> > > > >> > > this point).
+> > > > >> > > 
+> > > > >> > 
+> > > > >> > I don't know. These kind of designs might be reused by several vendors. But
+> > > > >> > considering that we should not make it generic, I'd go with Lenovo as that's
+> > > > >> > the only vendor we know as of now.
+> > > > >> 
+> > > > >> ... and later we learn that other vendors use the same idea /pinout,
+> > > > >> then nothing stops us from still telling that it's a
+> > > > >> "lenovo,pcie-m2-something-lga". 
+> > > > >> 
+> > > > >
+> > > > > How do you possibly know whether a single vendor has introduced this form factor
+> > > > > or reused by multiple ones? Atleast, I don't have access to such a source to
+> > > > > confirm.
+> > > > >
+> > > > I've not really been following this thread/patchset in detail; but want me to try and check with the T14s platform team if this device is specifically made for us (Lenovo) or not?
+> > > > I doubt it is - we just don't do that usually, but I can go and ask the question if it will help resolve this (with the caveat that it could hold up the review for a bit and I may not be able to get a straight answer)
+> > > > 
+> > > 
+> > > I can drop this specific patch in the meantime.
+> > > 
+> > > > My vote (for what little it's worth) would be to make it non-Lenovo specific. Then when the same part causes issues on another vendors platform I won't get asked questions about why Lenovo is breaking <other vendor> :)
+> > > > 
+> > > 
+> > > Even if Lenovo prefix is used, it won't break other vendors. Just that we will
+> > > end up adding more compatibles.
+> > > 
+> > > Anyhow, I'll wait for your reply and drop this patch for next revision.
+> > > 
+> > 
+> > If you need a vendor prefix, I think "qcom," would be more appropriate
+> > than Lenovo. This form factor is used by most vendors for recent
+> > soldered Qualcomm-based wireless cards, not just Lenovo:
+> > 
+> >  - Dell XPS 13 9345 has exactly the same soldered M.2 card, I assume
+> >    there are several other vendors as well.
+> > 
+> >  - https://www.sparklan.com/product/wnsq-290be/ is a third-party
+> >    (Qualcomm-based) M.2 LGA 1620 card, in the block diagram the
+> >    pinout is called "QM.2 1620 LGA 168pin".
+> > 
+> >  - If you press F9 while booting the ThinkPad T14s, you should get to a
+> >    screen with "Regulatory Information". For the T14s, this screen says
+> >    "Contains FCC ID: J9C-QCNCM825". This is the WiFi/BT module in the
+> >    soldered form factor. If you look that up on the FCC website, the
+> >    applicant for this module is "Qualcomm Technologies, Inc.". This
+> >    seems to be some kind of "modular certification" that vendors can
+> >    reuse/adapt without going through the whole process again.
+> > 
+> > Perhaps you should ask around inside Qualcomm? :-)
+> > 
 > 
-> Add Google gs101 and Samsung exynos850 to the cpufreq-dt-platdev
-> blocklist to prevent driver cpufreq-dt initialisation.
+> Sorry for getting back after this long. I did ask around, but our HW folks are
+> saying that Qcom is not the first one to use LGA M.2 modules. They claim that
+> other vendors also do that.
+
+I think, the idea was that there is no single standard for LGA modules
+(please correct me if I'm wrong, I haven't checked the latest PCIe
+standards).
+
 > 
-> Signed-off-by: Alexey Klimov <alexey.klimov@linaro.org>
-> ---
->  drivers/cpufreq/Kconfig.arm          |   8 ++
->  drivers/cpufreq/Makefile             |   1 +
->  drivers/cpufreq/acpm-cpufreq.c       | 195 +++++++++++++++++++++++++++++++++++
->  drivers/cpufreq/cpufreq-dt-platdev.c |   3 +
->  4 files changed, 207 insertions(+)
+> But for this specific card, it should be fine to use the 'qcom' prefix as
+> apparently the module was supplied by Qcom.
 > 
-> diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
-> index a441668f9e0c..891ff4b6ec22 100644
-> --- a/drivers/cpufreq/Kconfig.arm
-> +++ b/drivers/cpufreq/Kconfig.arm
-> @@ -24,6 +24,14 @@ config ARM_AIROHA_SOC_CPUFREQ
->  	help
->  	  This adds the CPUFreq driver for Airoha EN7581 SoCs.
->  
-> +config ARM_ACPM_CPUFREQ
-> +	tristate "ACPM based CPUFreq support"
-> +	depends on ARCH_EXYNOS || (COMPILE_TEST && 64BIT)
-> +	select PM_OPP
-> +	help
-> +	  This adds the CPUFreq driver for Exynos-based machines
-> +	  with ACPM firmware.
-> +
->  config ARM_APPLE_SOC_CPUFREQ
->  	tristate "Apple Silicon SoC CPUFreq support"
->  	depends on ARCH_APPLE || (COMPILE_TEST && 64BIT)
-> diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
-> index 6c7a39b7f8d2..c54d2dd6629d 100644
-> --- a/drivers/cpufreq/Makefile
-> +++ b/drivers/cpufreq/Makefile
-> @@ -54,6 +54,7 @@ obj-$(CONFIG_X86_AMD_FREQ_SENSITIVITY)	+= amd_freq_sensitivity.o
->  ##################################################################################
->  # ARM SoC drivers
->  obj-$(CONFIG_ARM_AIROHA_SOC_CPUFREQ)	+= airoha-cpufreq.o
-> +obj-$(CONFIG_ARM_ACPM_CPUFREQ)		+= acpm-cpufreq.o
->  obj-$(CONFIG_ARM_APPLE_SOC_CPUFREQ)	+= apple-soc-cpufreq.o
->  obj-$(CONFIG_ARM_ARMADA_37XX_CPUFREQ)	+= armada-37xx-cpufreq.o
->  obj-$(CONFIG_ARM_ARMADA_8K_CPUFREQ)	+= armada-8k-cpufreq.o
-> diff --git a/drivers/cpufreq/acpm-cpufreq.c b/drivers/cpufreq/acpm-cpufreq.c
-> new file mode 100644
-> index 000000000000..20fb79169993
-> --- /dev/null
-> +++ b/drivers/cpufreq/acpm-cpufreq.c
-> @@ -0,0 +1,195 @@
-> +// SPDX-License-Identifier: GPL-2.0-only
-> +/*
-> + * Exynos ACPM-based CPUFreq DVFS driver
-> + */
-> +
-> +#include <linux/cpu.h>
-> +#include <linux/cpufreq.h>
-> +#include <linux/err.h>
-> +#include <linux/module.h>
-> +#include <linux/of.h>
-> +#include <linux/pm_opp.h>
-> +#include <linux/slab.h>
-> +
-> +#include <linux/firmware/samsung/exynos-acpm-protocol.h>
-
-Add this within the earlier list in alphabetic order.
-
-> +#define ACPM_DVFS_TRANSITION_TIMEOUT 400
-> +
-> +struct acpm_cpu_priv {
-> +	struct device *cpu_dev;
-> +	struct acpm_handle *handle;
-> +	unsigned int acpm_chan_id;
-> +	unsigned int clk_id;
-> +};
-> +
-> +static unsigned int acpm_soc_cpufreq_get_rate(unsigned int cpu)
-> +{
-> +	struct cpufreq_policy *policy = cpufreq_cpu_get_raw(cpu);
-> +	struct acpm_cpu_priv *priv;
-> +
-> +	if (unlikely(!policy))
-> +		return 0;
-> +
-> +	priv = policy->driver_data;
-> +
-> +	/* return priv->handle->ops->dvfs.get_rate(priv->handle, priv->acpm_chan_id,
-> +	 *					priv->clk_id) / 1000;
-> +	 */
-
-Wrong multiline comment format.
-
-> +
-> +	/* TODO: FIXME. Exynos850 doesn't return rate via ACPM */
-
-:(
-
-> +	return policy->cur;
-> +}
-> +
-> +static int acpm_soc_cpufreq_set_target(struct cpufreq_policy *policy,
-> +				       unsigned int index)
-> +{
-> +	struct acpm_cpu_priv *priv = policy->driver_data;
-> +	unsigned long freq_khz = policy->freq_table[index].frequency;
-> +
-> +	/* standard slow path */
-> +	return priv->handle->ops->dvfs.set_rate(priv->handle, priv->acpm_chan_id,
-> +						priv->clk_id, freq_khz * 1000);
-> +}
-> +
-> +static unsigned int acpm_soc_cpufreq_fast_switch(struct cpufreq_policy *policy,
-> +						 unsigned int target_freq)
-> +{
-> +	struct acpm_cpu_priv *priv = policy->driver_data;
-> +	int ret;
-> +
-> +	ret = priv->handle->ops->dvfs.set_rate_fast(priv->handle, priv->acpm_chan_id,
-> +						    priv->clk_id, target_freq * 1000);
-> +	if (ret < 0)
-> +		return 0;
-> +
-> +	return target_freq;
-> +}
-> +
-> +static int acpm_soc_cpufreq_init(struct cpufreq_policy *policy)
-> +{
-> +	struct device *cpu_dev = get_cpu_device(policy->cpu);
-> +	struct cpufreq_frequency_table *freq_table;
-> +	struct acpm_cpu_priv *priv;
-> +	struct of_phandle_args args;
-> +	unsigned int transition_latency;
-> +	int ret;
-> +
-> +	if (!cpu_dev)
-> +		return -ENODEV;
-> +
-> +	priv = kzalloc(sizeof(*priv), GFP_KERNEL);
-> +	if (!priv)
-> +		return -ENOMEM;
-> +
-> +	ret = of_parse_phandle_with_args(cpu_dev->of_node, "clocks",
-> +					 "#clock-cells", 0, &args);
-> +	if (ret) {
-> +		dev_err(cpu_dev, "failed to parse clocks property\n");
-> +		goto out_free_priv;
-> +	}
-> +
-> +	priv->clk_id = args.args[0];
-> +
-> +	/*
-> +	 * DVFS communication is expected to happen only via channel 0
-> +	 * for now for known SoCs with ACPM firmware. Hardcoding.
-> +	 */
-> +	priv->acpm_chan_id = 0;
-> +
-> +	priv->handle = devm_acpm_get_by_node(cpu_dev, args.np);
-
-devm on CPU node is incorrect. The resource won't be freed if you remove this
-driver's module.
-
-> +	of_node_put(args.np);
-> +
-> +	if (IS_ERR(priv->handle)) {
-> +		ret = PTR_ERR(priv->handle);
-> +		goto out_free_priv;
-> +	}
-> +
-> +	priv->cpu_dev = cpu_dev;
-> +
-> +	ret = dev_pm_opp_of_add_table(cpu_dev);
-> +	if (ret < 0) {
-> +		dev_err(cpu_dev, "failed to add OPP table: %d\n", ret);
-> +		goto out_free_priv;
-> +	}
-> +
-> +	dev_pm_opp_of_get_sharing_cpus(cpu_dev, policy->cpus);
-
-Check count before this ?
-
-> +	ret = dev_pm_opp_get_opp_count(cpu_dev);
-> +	if (ret <= 0) {
-> +		ret = -EPROBE_DEFER;
-> +		goto out_remove_table;
-> +	}
-> +
-> +	ret = dev_pm_opp_init_cpufreq_table(cpu_dev, &freq_table);
-> +	if (ret) {
-> +		dev_err(cpu_dev, "failed to init cpufreq table: %d\n", ret);
-> +		goto out_remove_table;
-> +	}
-> +
-> +	policy->driver_data = priv;
-> +	policy->freq_table = freq_table;
-> +
-> +	transition_latency = dev_pm_opp_get_max_transition_latency(cpu_dev);
-> +	if (!transition_latency)
-> +		transition_latency = ACPM_DVFS_TRANSITION_TIMEOUT * NSEC_PER_USEC;
-> +
-> +	policy->cpuinfo.transition_latency = transition_latency;
-> +	policy->dvfs_possible_from_any_cpu = true;
-> +	policy->fast_switch_possible = true;
-> +	policy->suspend_freq = freq_table[0].frequency;
-> +
-> +	/* TODO: FIXME. Exynos850 doesn't expose rate of clocks via ACPM  (get_rate doesn't work) */
-
-This makes the driver broken. I don't think we can merge with this.
-
-> +	policy->cur = freq_table[0].frequency;
-> +
-> +	return 0;
-> +
-> +out_remove_table:
-> +	dev_pm_opp_of_remove_table(cpu_dev);
-> +out_free_priv:
-> +	kfree(priv);
-> +	return ret;
-> +}
-> +
-> +static void acpm_soc_cpufreq_exit(struct cpufreq_policy *policy)
-> +{
-> +	struct acpm_cpu_priv *priv = policy->driver_data;
-> +
-> +	dev_pm_opp_free_cpufreq_table(priv->cpu_dev, &policy->freq_table);
-> +	dev_pm_opp_of_remove_table(priv->cpu_dev);
-> +	kfree(priv);
-> +}
-> +
-> +static struct cpufreq_driver acpm_soc_cpufreq_driver = {
-> +	.name		= "acpm-cpufreq",
-> +	.flags		= CPUFREQ_HAVE_GOVERNOR_PER_POLICY |
-> +			  CPUFREQ_NEED_INITIAL_FREQ_CHECK | CPUFREQ_IS_COOLING_DEV,
-> +	.verify		= cpufreq_generic_frequency_table_verify,
-> +	.get		= acpm_soc_cpufreq_get_rate,
-> +	.init		= acpm_soc_cpufreq_init,
-> +	.exit		= acpm_soc_cpufreq_exit,
-> +	.target_index	= acpm_soc_cpufreq_set_target,
-> +	.fast_switch	= acpm_soc_cpufreq_fast_switch,
-> +	.register_em	= cpufreq_register_em_with_opp,
-> +	.set_boost	= cpufreq_boost_set_sw,
-> +	.suspend	= cpufreq_generic_suspend,
-> +};
-> +
-> +static int __init acpm_soc_cpufreq_module_init(void)
-> +{
-> +	if (!of_machine_is_compatible("google,gs101") &&
-> +	    !of_machine_is_compatible("samsung,exynos850"))
-> +		return -ENODEV;
-> +
-> +	return cpufreq_register_driver(&acpm_soc_cpufreq_driver);
-> +}
-> +module_init(acpm_soc_cpufreq_module_init);
-> +
-> +static void __exit acpm_soc_cpufreq_module_exit(void)
-> +{
-> +	cpufreq_unregister_driver(&acpm_soc_cpufreq_driver);
-> +}
-> +module_exit(acpm_soc_cpufreq_module_exit);
-> +
-> +MODULE_AUTHOR("Alexey Klimov <alexey.klimov@linaro.org>");
-> +MODULE_DESCRIPTION("ACPM-based CPUfreq DVFS driver");
-> +MODULE_LICENSE("GPL");
-> diff --git a/drivers/cpufreq/cpufreq-dt-platdev.c b/drivers/cpufreq/cpufreq-dt-platdev.c
-> index ff1204c666b1..ae58aa92fc40 100644
-> --- a/drivers/cpufreq/cpufreq-dt-platdev.c
-> +++ b/drivers/cpufreq/cpufreq-dt-platdev.c
-> @@ -186,6 +186,9 @@ static const struct of_device_id blocklist[] __initconst = {
->  	{ .compatible = "qcom,sm8550", },
->  	{ .compatible = "qcom,sm8650", },
->  
-> +	{ .compatible = "google,gs101", },
-> +	{ .compatible = "samsung,exynos850", },
-> +
->  	{ .compatible = "st,stih407", },
->  	{ .compatible = "st,stih410", },
->  	{ .compatible = "st,stih418", },
+> I'll submit the bindings patch together with DTS change for T14s.
+> 
+> - Mani
 > 
 > -- 
-> 2.51.0
+> மணிவண்ணன் சதாசிவம்
 
 -- 
-viresh
+With best wishes
+Dmitry
