@@ -1,76 +1,76 @@
-Received: from chaosmail.tech (chaosmail.tech [77.81.229.115])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from smtp.forwardemail.net (smtp.forwardemail.net [121.127.44.66])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9C3DE381AE7;
-	Fri, 12 Jun 2026 19:42:25 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=77.81.229.115
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B63F93932DB
+	for <linux-pm@vger.kernel.org>; Fri, 12 Jun 2026 19:53:39 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=121.127.44.66
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1781293347; cv=none; b=gv1Bh14Mla9zDmKnsCUPsoovixQsq7JAbd959IMWFIAXd2q8VXm4Qy7jY0YfiHN/rZLAbVVZZxHwZ7IMHXmjB6pKsxK9Te4gVCrl63UTnZpfOMBeaXumEMxJhwRmDRsBSw/NZxQeHPYdGTTAqOu6RAGmDKV1/pfYHkELxAazLVQ=
+	t=1781294022; cv=none; b=Tk3jg+2dHGWHqJBoSsXXBbsGOJtYeoe59bOJRwVk0YCrqPFNTfCpL2823TdyMvv3cC+DUOGCKuzzIyGxmPdm4mQ43riTArNvFYCD/+PhGixk2kQK9YxZCJuiWFfNx3cEDkUphm/r67Ko8jAEpqCNvZwW8JzTxoG+DL3xoG9EZbI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1781293347; c=relaxed/simple;
-	bh=/0FVu1vR6IhVJ9oa0xemnl6UMomIhZwqDxkrle3Q5k4=;
-	h=Content-Type:MIME-Version:Subject:From:In-Reply-To:Date:Cc:
-	 Message-Id:References:To; b=BTjEd7I1AZ6TV8DeUwKjXoZZFUto4J26mT0iUiarKmrF1tb3nLFfPsqt2aIqDUzjsgllTj5BDECdVtCWfPSpWE2DuWQbGZ9R6kum/fQvBL4MFfukB1cVzU+OEVKF+k5WGu1/m4HRKPibaCzzpAmY/Gpk6EYzhMzGWom0HXIbIe8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=chaosmail.tech; spf=pass smtp.mailfrom=chaosmail.tech; dkim=pass (1024-bit key) header.d=chaosmail.tech header.i=@chaosmail.tech header.b=en68+gmG; arc=none smtp.client-ip=77.81.229.115
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=chaosmail.tech
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=chaosmail.tech
+	s=arc-20240116; t=1781294022; c=relaxed/simple;
+	bh=6ycOKslm6ox7fWEYdeXlmaXfYBqt/AvVmZ/iOnK6L0k=;
+	h=Mime-Version:Content-Type:Date:Message-Id:Subject:From:To:Cc:
+	 References:In-Reply-To; b=vCBvMnxLTtUISQN+EKWdZ6/FSyZ0x4D1E9MiDvQo2+m4XYbJZY+KpWLr1N0FvK0Q/fiPn/1Sku9Xb32sdZw6XTu9fL3rcZwL5aMxsDC7L4K2kwwTkyi8l82UkcrPqZd0SdahEtcO5Bkp+huJJ1Cx0w15CussWhCpkceVeGxg7ks=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=ubuntu.com; spf=pass smtp.mailfrom=fe-bounces.ubuntu.com; dkim=pass (2048-bit key) header.d=ubuntu.com header.i=@ubuntu.com header.b=WMkHyU8d; arc=none smtp.client-ip=121.127.44.66
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=ubuntu.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=fe-bounces.ubuntu.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=chaosmail.tech header.i=@chaosmail.tech header.b="en68+gmG"
-Received: by chaosmail.tech (Postfix) id 80FA01C962C;
-	Fri, 12 Jun 2026 19:42:23 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=chaosmail.tech;
-	s=mail; t=1781293343;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=VCaoWzQZZYJ5HrMTb4wHgOTXwSO+AIoqNwLYxwe8Syc=;
-	b=en68+gmGmIX+JwO4AQIZGwNJeHwJmwpMxEtdB2m6A5NFGX9e5Ct7FmS3PdDe/1HIofXECp
-	OIyg9oZkWUBLvbknN1GEwf2CG5b9aeHftMcDPpjPcGf8/AuDt9Pyhho4JHVrOaUck0JRE/
-	Bs6SguVq6ZwB210LJQ1AsdNL2hfIZgY=
-Content-Type: text/plain;
-	charset=us-ascii
+	dkim=pass (2048-bit key) header.d=ubuntu.com header.i=@ubuntu.com header.b="WMkHyU8d"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ubuntu.com;
+ h=In-Reply-To: References: Cc: To: From: Subject: Message-Id: Date:
+ Content-Type: Content-Transfer-Encoding: Mime-Version; q=dns/txt;
+ s=fe-953a8a3ca9; t=1781294013;
+ bh=pPU7Ldw4ipIoEcVrCmQaXXpe58uZWSTdE8XRrKsUz/U=;
+ b=WMkHyU8d2J2ySI7kRHeBMgvakumTxei7u+EDmIrUp0Q4Bz4xNUOBGyjbuCW90lR0AywLcbYKk
+ nS/2cxlHZKUcQa6stIovYQYMb4bpkZOgVATAtLm95NzdIXkeipeCpxMlt2CuwvnshFr8ejL2e1c
+ 7WrTD0Mvgeur4xOy5H7rYO7ZeAk2LPhjgNzhp6tGoM+FROBvfI1fv5PU2p8RDXcHv+WDFA9XgO/
+ pssc5YdEVBEPYJZZT+ykccV7bZU2UIdpVuNXH59mFoQ1YxzbWSQDEaLK1PuU6JgY8772Xr5rgzu
+ DrtA9IJFb3kvNs0Gr9ZLcjxkZflZ1Au2bkhSs1POCiAA==
+X-Forward-Email-ID: 6a2c63b8edbf0df789293751
+X-Forward-Email-Sender: rfc822; jpeisach@ubuntu.com, smtp.forwardemail.net,
+ 121.127.44.66
+X-Forward-Email-Version: 2.8.26
+X-Forward-Email-Website: https://forwardemail.net
+X-Complaints-To: abuse@forwardemail.net
+X-Report-Abuse: abuse@forwardemail.net
+X-Report-Abuse-To: abuse@forwardemail.net
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
-MIME-Version: 1.0
+Mime-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=UTF-8; format=Flowed
+Date: Fri, 12 Jun 2026 15:53:27 -0400
+Message-Id: <DJ7C0Y4EREJC.3ISWKDCT9I07R@ubuntu.com>
 Subject: Re: [PATCH v2] power: supply: macsmc: Support macOS 27 SMC firmware
-From: Sasha Finkelstein <k@chaosmail.tech>
-In-Reply-To: <20260612193353.GA7993@robin.jannau.net>
-Date: Fri, 12 Jun 2026 21:42:12 +0200
-Cc: Sven Peter <sven@kernel.org>,
- Neal Gompa <neal@gompa.dev>,
- Sebastian Reichel <sre@kernel.org>,
- asahi@lists.linux.dev,
- linux-arm-kernel@lists.infradead.org,
- linux-pm@vger.kernel.org,
- linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 7bit
-Message-Id: <18396D14-17AF-4B43-AD6D-A88D2E7C44D3@chaosmail.tech>
+From: "Joshua Peisach" <jpeisach@ubuntu.com>
+To: "Sasha Finkelstein" <k@chaosmail.tech>, "Sven Peter" <sven@kernel.org>,
+ "Janne Grunau" <j@jannau.net>, "Neal Gompa" <neal@gompa.dev>, "Sebastian
+ Reichel" <sre@kernel.org>
+Cc: <asahi@lists.linux.dev>, <linux-arm-kernel@lists.infradead.org>,
+ <linux-pm@vger.kernel.org>, <linux-kernel@vger.kernel.org>
+X-Mailer: aerc 0.21.0
 References: <20260612-gate-power-v2-1-de76cb9bb7ef@chaosmail.tech>
- <20260612193353.GA7993@robin.jannau.net>
-To: Janne Grunau <j@jannau.net>
+In-Reply-To: <20260612-gate-power-v2-1-de76cb9bb7ef@chaosmail.tech>
 
+On Fri Jun 12, 2026 at 2:36 PM EDT, Sasha Finkelstein wrote:
+> The SMC firmware included in macOS 27 changed the size of BCF0 key from
+> 4 to 1 bytes. This key is used for indicating that battery state is
+> critically low.
+>
+> Reviewed-by: Sven Peter <sven@kernel.org>
+> Signed-off-by: Sasha Finkelstein <k@chaosmail.tech>
+> ---
+> Changes in v2:
+> - Addressing review feedback
+> - Link to v1: https://patch.msgid.link/20260611-gate-power-v1-1-8a6272108=
+6c7@chaosmail.tech
+> ---
+>  drivers/power/supply/macsmc-power.c | 35 +++++++++++++++++++++++++++++++=
++---
+>  1 file changed, 32 insertions(+), 3 deletions(-)
+>
 
-> On Jun 12, 2026, at 21:33, Janne Grunau <j@jannau.net> wrote:
-> 
-> I think the following is slightly easier to read
-> 
-> {
-> if (power->bcf0_1byte) {
-> u8 tval = 0;
-> int ret = apple_smc_read_u8(power->smc, SMC_KEY(BCF0), &tval);
-> *val = tval;
-> return ret;
-> }
-> 
-> return apple_smc_read_u32(power->smc, SMC_KEY(BCF0), val);
-> }
-
-I personally prefer using early returns as much as possible, as it makes
-it easier for me to read in linear order and due to line length reasons.
-But no strong opinion either way.
-
-
+Reviewed-by: Joshua Peisach <jpeisach@ubuntu.com>
