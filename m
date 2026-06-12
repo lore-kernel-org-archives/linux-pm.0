@@ -1,104 +1,126 @@
-Received: from mail-pf1-f174.google.com (mail-pf1-f174.google.com [209.85.210.174])
+Received: from mail-ed1-f42.google.com (mail-ed1-f42.google.com [209.85.208.42])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 73C7C33F5BF
-	for <linux-pm@vger.kernel.org>; Fri, 12 Jun 2026 23:16:22 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.210.174
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1781306183; cv=none; b=mZ3lAjEUkAf+1/E9ETnhCZ0mQqAJKU6Lc/r1N0ebN2PsHZzJt+mcxezPC+3TnDrl+w9DlIuPnhVG2BIIjG9ZfkdSNood3Ph2KkaqyvLeS7JFP2kqE6myppp72VaLbfpGmd4+udRLtIGhhliptvcNBX3OF/fKVsaYx9XK1gh53+o=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1781306183; c=relaxed/simple;
-	bh=kQUjd2Nr/ZmFSNCyyYEmJ1U7nO+nmqD2qxm41xOlNvQ=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=UmaU8v7m1h1tvcLuc1IToiyDe4aThXmCaNGIGr2s72eJKnSeif7H2X8XHoeVuaJ9jQ5d0qJlbz8Yd8E/XK8akN6aTmESSCKUlX1SqdaBrG4drovGEFjaT0fDBwQ3YN5rrEf6rXZxP15Ax6+fw8EmlvM+kvFzz0LqGV/fZWb6D2c=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=rmGBFfrx; arc=none smtp.client-ip=209.85.210.174
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A36393D5672
+	for <linux-pm@vger.kernel.org>; Fri, 12 Jun 2026 23:22:02 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.208.42
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1781306525; cv=pass; b=YDoYBlXe4o7aGJLOwzmpK1au9wpxRfvnUrOk/gFoanQ8+Pqe+jqx66ayslBggHrkBgKa2c/glZVSQ88Fz87fCq7DDQRBFixW9bws68vv1PCQuVRyKk2Cwa2aLYmGAM/SeFM2P/JO2FCIKEsnhj043ehT/yt0a3H8IrNvGUiI61U=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1781306525; c=relaxed/simple;
+	bh=PsxMqZs+xPaFSRfacdS8ILHCyyJFZ6pgXvkJ1KRhrEc=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=s2h7rtGhABnj3FNMgljnJ/WHBYVvSVfOmbFOyk2f01nM72oXGBaxbkFQATkI2Dq5uUtbnA4yUSszRzYQPqwsg6qtYAF7IJYRAI/5QvxuS3QqP4abonuJOXNFspgqTd8xMAykO3ZpONGMoExJIPzdPm0stOkTBG2wA7aJ8/y+ISQ=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com; spf=pass smtp.mailfrom=google.com; dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b=YL15ZvZC; arc=pass smtp.client-ip=209.85.208.42
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=google.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="rmGBFfrx"
-Received: by mail-pf1-f174.google.com with SMTP id d2e1a72fcca58-84275887a3fso1841376b3a.1
-        for <linux-pm@vger.kernel.org>; Fri, 12 Jun 2026 16:16:22 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b="YL15ZvZC"
+Received: by mail-ed1-f42.google.com with SMTP id 4fb4d7f45d1cf-68bd7ec2371so1871a12.1
+        for <linux-pm@vger.kernel.org>; Fri, 12 Jun 2026 16:22:02 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1781306521; cv=none;
+        d=google.com; s=arc-20240605;
+        b=ePNHp7UMSiZ1SFsFQoKdxTbqzOyiR7oEZ0+IgiedgcSfdNck/qHkLXnxgB5W/NyAwL
+         qCFKAN/dNCXIdXVUDr4vQwMAzJHqcGT6e9Ea9HntDB9s3dQXJZ6CiasyiUTyyYl7UZ0E
+         qUZsJD9cgiu8F31HuvqCZKR2EuQEK80P1lT+RH9rV2F5H3FBhQKvMPLoKi/Vd9qHq+E1
+         0uy3NCarfw+jYYSOregeU4XR7qjrtgVojwajWY60u6h/lzUy/yjF60nTf//z6CBSuDeW
+         kLoLHEkBYh6aZnfQN5mAXkFrLO+fxb+9XaXMMQb89xddP6H1OnvTsK6BUNkAUTRtvUGM
+         Tg9g==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=PsxMqZs+xPaFSRfacdS8ILHCyyJFZ6pgXvkJ1KRhrEc=;
+        fh=3dX+joz6Uk/Fo6E4iFc2fmgTEMDtJSvNFWt9VL39dSs=;
+        b=eBkHNO0xMWjmFcuPxozIRc43tfVrwY6MZx3HwE2gpFuYTggfIudRi6EkD0o2UAh4zx
+         fwOjx4pBcw+wKeX/dr+grbZ+pqwhE24fiA+ymeWKUyOQm3WF51Ew44hBX5xbDKeCJJoB
+         wEU4dNaoFs1ILLlzomm4Zae4wvFX3VM2GgppPHog4Hx3k+El0JCaBMwW2XFEtOA7R7uY
+         3aaHVrQiVDreGZKsp9XiilOHDXN5GCY9wUQdj9KBGuhPuI5XzBolG6Sv1sTIR7QSTpbi
+         EcKW6HySwvKLs7VSmB2y8dQImOCe+GKtfb28mAvllZbtp0yT3okHngVEm9z4ndykfZjk
+         LeVg==;
+        darn=vger.kernel.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1781306181; x=1781910981; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=rQeqMrR7LVhilVEaUk2CBoXP3LxmpSJ6nJ8KAubQS2A=;
-        b=rmGBFfrxpdmkWKgYKbfwiAtgPCh5017AWcWCDlE9gldUBvMWOJZhqolt7EV3DR/BNt
-         9WlrbJr6t16O1UTGMID/73cc0/ZUtno09+5toGiWJ9FvSri9MDNRJuaFdOcXtfALWSXs
-         TJtbI6TC2dzrJr1JP0JHBOmh9MrjgZs3IDwCXv4LxqRPIuZjZnFv+NCf6R3xIYXSfw2L
-         fQjCyYCEam+Tr7wJbDUThJl+o/Gi/a1pi475Sll7/096ibs9vDA4x5+jWuNI8P9/jwK0
-         PvJd2RpnxVZt97xF1eLy9aTR0CTkrUnC0aVRrP0ySJrKHHcELvK4cC9p4tvwsx8qTHqi
-         W4aA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1781306181; x=1781910981;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+        d=google.com; s=20251104; t=1781306521; x=1781911321; darn=vger.kernel.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=rQeqMrR7LVhilVEaUk2CBoXP3LxmpSJ6nJ8KAubQS2A=;
-        b=Vsargc3wnXu+sTzMW8w53AjhP0rO0NV3xLYRuk/RjuscaTvfjYPBFC18gXMIhNl8gw
-         +mZHFG3UmwFQil1g9dw1agBm+Gp4fC05DAWx/Bur5fP5/RqMZl0fW3XOPnTMWgj/YnEy
-         hLQljcXljp+/++CJZJHU/ywyWvtlISVTtOk93Ck7cS2lbC115sS9Nh4OY5p6ttkE+lD9
-         dUouSBpm9s6P77krYSxX3J2VlWk8A/eelK5HNtyuzgx6MR5Nj7oH9UnNrYe35V6HNL8Z
-         x35MnQULoZs+l5qszEjl8iU375Rk7ZZQ9flefuNk0w8x5CKOKaGVm0kA7tn7jYFAMETc
-         vcDQ==
-X-Gm-Message-State: AOJu0YyuoXUumrTQR9hVfy6Qy1hRy9YgtqHvzBU19pZm4xKEfnp3pE+V
-	+oSHO7b5snWxazfBSuGANjUwiM4/snTKc5nyZgpqcvsQ3ErBpl5o/+OD
-X-Gm-Gg: Acq92OGv15MGlyQW146P20yKANWldIVzIdHLDu+lfzBWXxYHzmYpaOa74+aYcLSvijV
-	hX/DUZFMCKwHLWLnsotlfhWqOoitEEPfzjurnpPsE7s8bx/Dny1PC8PaySfAPmq/5zJh2Fem1DD
-	O/8AW8PxCsqQmVFML3OHcKcZf6LJbeDFAvPGBH13AjYaAUjNt1ABHWOTyAvyWZm+JUWe84nRNxX
-	54S57eiGMnH5jT7xJFMg8msLWzFqoaDQAKpBVVSBu5w2RsE+nOSDtk7MSQT2+2uEG3LYsyYIFXy
-	+rqtb/uyY4Er9j8Eb2lbI6FiTWKAuUhWCb+5BgV2OcaJg6OceK/rLPE27AJAfL1o26tgsIU15hf
-	EqIdkjji6tbZnH8BtuLPivGovYhTLkq0RJgOllCKz+AG8LHD142awpJ5KNFCk5bQTIN4mXW3ekW
-	teQlaGb9vqQQ7UzF1FnKKDzdgpsnP8vAdLIei8eTsegAI0uvVGnkNKdZJ6kTzt2JIpJt9WFsNPR
-	OZO5JDSCno5aEwLo5fkGA==
-X-Received: by 2002:a05:6a21:1343:b0:3b3:9f77:2e45 with SMTP id adf61e73a8af0-3b7855fd72bmr4320685637.1.1781306180696;
-        Fri, 12 Jun 2026 16:16:20 -0700 (PDT)
-Received: from bloom (S010680dac2bce256.cg.shawcable.net. [174.0.186.197])
-        by smtp.gmail.com with ESMTPSA id 41be03b00d2f7-c8665186828sm2688072a12.21.2026.06.12.16.16.19
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 12 Jun 2026 16:16:20 -0700 (PDT)
-From: Jack Lee <skunkolee@gmail.com>
-To: rafael@kernel.org,
-	viresh.kumar@linaro.org
-Cc: linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	Jack Lee <skunkolee@gmail.com>
-Subject: [PATCH] cpufreq: powernow-k6: replace symbolic permissions with octal
-Date: Fri, 12 Jun 2026 17:16:12 -0600
-Message-ID: <20260612231612.206356-1-skunkolee@gmail.com>
-X-Mailer: git-send-email 2.54.0
+        bh=PsxMqZs+xPaFSRfacdS8ILHCyyJFZ6pgXvkJ1KRhrEc=;
+        b=YL15ZvZC0HK43C+j2xVMK74yRgKAhVRyaZFTWiEXDxf6Uc0yBBVQhsymxCqNE31g6U
+         IeY2T3VvofmBsr81KxHxCETTEmxibvsfj8nYHcX8V6ZdNd6OKDic40yEsTNu7f01l0cN
+         trDrtukylm8FngzxSswYEDnsCvux4pbmW3/XluszKCxaK5Ys4U3LhCw+cboHRxA6GzvY
+         kk/mtvwskfKio9xwpju9qpp0v0HL7NNkgJ0np3zL4T3Wstxt4nZ/GWQrKMGqCMtjOJ/C
+         76bLQsdJa7WQVnBdr6gzLa98SoJMo+aJn12qGcxbfj3paCBFXby5sreLoPuSROka60os
+         ublA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1781306521; x=1781911321;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=PsxMqZs+xPaFSRfacdS8ILHCyyJFZ6pgXvkJ1KRhrEc=;
+        b=eeld8qh4wFccEn6yZnq5jXgvF7/OiHu/AhV68/1aSVn94xI0rWLa0JRS5M1KMknMkU
+         fB5Kot6l2U1OxuwpJYtZZTf+0xZu/tVhxY3rIyjyADZkg08OjJhR1gH52dC2Y9ZSPc+j
+         bc0/1NvZ4ibV43Ojch/nQVPb4Z82lZ4RfTnL5pOkAvaEDwBFeZkKvi1OsYZeby8SRzL7
+         UM/ay3RN6NESZNYAjPKwDeVIcvwZ2JK/dn3e6Kc5K/liwdHvRalYdmlqYC8sjBGs/B6h
+         0myyRgXrwGeFTbnd9V9mFlb9VQCpnn0LeVA5QlMJ2MgtPQvgrAeJhkC/3WV1hRYXFQvQ
+         qrfQ==
+X-Forwarded-Encrypted: i=1; AFNElJ/H2VGw/DOyoPf+2yUvpfi/9Ax+RnPuAnkNfytCTvYFI8CshyuUEyabtrvJEX2Kl9shtceeI0GylQ==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yz7qUNNo0fQBlKYbvz/xxkfH9CFjHtVF5+GNcM7nyR42y4X8mxm
+	JUYFbS1JGvWfzXA5E/q2OG0S2uJpmmb9z7qEmMFkImPi1ZMAsALS4Ns+3++m14dki7JKYIIahcS
+	A3FZhDCg0sw53glaeB2XR1gsOwe62AqS/FZrXk6xg2LlaldpxWwyuKf2rqgM=
+X-Gm-Gg: Acq92OHWEsdHDX7hR+eYRQwY8ME9lqGhSVaFs2H4L8LW9nZRaet5qkapbVt0LsRqIwr
+	shJ293Jp6mQiuDZWXJfVtYe2QUn+hOkAR/Zo/V66C0ZBkRCsCtjJkLUrZZ5q8SlZK0t2FsUcfi1
+	sWrGAJ/nCbh2V1q1zKBDpEDERMeXuBr5/eA0PFlc/9xm+/wRJ5I23QhGCymQu4IMt1OAImPjoTZ
+	1l5pRTw5BNr80ZHkUEEuef2wllJkgeFLOQYSKcINEReLtfIhDDPQkfI3kpBNtVOLIkpOXLWpWN6
+	ox8RD3Hhxzpk3fj6EQ==
+X-Received: by 2002:aa7:c516:0:b0:668:c2b6:9fa2 with SMTP id
+ 4fb4d7f45d1cf-693d19bffcbmr6682a12.7.1781306520361; Fri, 12 Jun 2026 16:22:00
+ -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+References: <20260612215729.1532175-1-jmattson@google.com> <ced074e6-0316-4e12-848f-52a15a4e0389@citrix.com>
+In-Reply-To: <ced074e6-0316-4e12-848f-52a15a4e0389@citrix.com>
+From: Jim Mattson <jmattson@google.com>
+Date: Fri, 12 Jun 2026 16:21:48 -0700
+X-Gm-Features: AVVi8Cdne-pAC51QRpLesV8hpEBuM8acXP5rJu67F_mIn6ixnXClT4gLXWDAfb4
+Message-ID: <CALMp9eQaiS-ga0hW4vPS7SuDWXwYgNKOxeHiFttdsBQv6K1AWQ@mail.gmail.com>
+Subject: Re: [PATCH v2 0/3] Fix three racy updates to MSR_K7_HWCR
+To: Andrew Cooper <andrew.cooper3@citrix.com>
+Cc: bp@alien8.de, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, 
+	rafael@kernel.org, tglx@kernel.org, viresh.kumar@linaro.org, x86@kernel.org, 
+	yosry@kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Symbolic permissions S_IRUGO are deprecated in favor of octal
-permissions. Replace S_IRUGO with 0444.
+On Fri, Jun 12, 2026 at 4:01=E2=80=AFPM Andrew Cooper <andrew.cooper3@citri=
+x.com> wrote:
+>
+> > hoists the HWCR update logic out
+> > into a new helper, amd_update_hwcr(), which performs the read-modify-wr=
+ite
+> > with interrupts disabled
+>
+> Add some `perf` to your test scenario and these bugs will reappear, this
+> time caused by NMIs.
+>
+> I don't have any good suggestions. Core scope MSRs are horrible because
+> you can't update them atomically.
 
-Signed-off-by: Jack Lee <skunkolee@gmail.com>
----
- drivers/cpufreq/powernow-k6.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+I agree, but I spot-checked a couple of (Zen1+) PPRs, and I thought
+they said that HWCR has thread scope. For example, in
+https://www.amd.com/content/dam/amd/en/documents/processor-tech-docs/progra=
+mmer-references/56255_OSRR.pdf
+has:
 
-diff --git a/drivers/cpufreq/powernow-k6.c b/drivers/cpufreq/powernow-k6.c
-index 99d2244e03b0..764907b04c04 100644
---- a/drivers/cpufreq/powernow-k6.c
-+++ b/drivers/cpufreq/powernow-k6.c
-@@ -29,10 +29,10 @@ static unsigned int                     max_multiplier;
- static unsigned int			param_busfreq = 0;
- static unsigned int			param_max_multiplier = 0;
- 
--module_param_named(max_multiplier, param_max_multiplier, uint, S_IRUGO);
-+module_param_named(max_multiplier, param_max_multiplier, uint, 0444);
- MODULE_PARM_DESC(max_multiplier, "Maximum multiplier (allowed values: 20 30 35 40 45 50 55 60)");
- 
--module_param_named(bus_frequency, param_busfreq, uint, S_IRUGO);
-+module_param_named(bus_frequency, param_busfreq, uint, 0444);
- MODULE_PARM_DESC(bus_frequency, "Bus frequency in kHz");
- 
- /* Clock ratio multiplied by 10 - see table 27 in AMD#23446 */
--- 
-2.54.0
+> _lthree[1:0]_core[3:0]_thread[1:0]; MSRC0010015
 
+And, earlier:
+
+> The absence of the instance parameter _thread[1:0] signifies that there i=
+s not a specific instance of said register per thread and thus the register=
+ is shared between thread 1 and thread 0.
+
+Was it core-shared on older platforms?
