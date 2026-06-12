@@ -1,119 +1,205 @@
-Received: from fout-a8-smtp.messagingengine.com (fout-a8-smtp.messagingengine.com [103.168.172.151])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-wm1-f42.google.com (mail-wm1-f42.google.com [209.85.128.42])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5D8831D63F0;
-	Fri, 12 Jun 2026 19:56:30 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=103.168.172.151
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C448C3A0B3B
+	for <linux-pm@vger.kernel.org>; Fri, 12 Jun 2026 20:26:03 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.42
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1781294191; cv=none; b=EzeG7t+S7jVxxnBngqGvUuEffj4tehALGPuVXE47gqVpoUbnmSQcoBMKMcQdmIxPqbLAZpNg7fN8j8RrKuYxV+ORbqZFV/VtVzEwx5kfIr9QgxS9YJYSpwEyiHLraQLG3MrFbs1bUFMewUk5H6VMo+cYPXzLyI9c5oOg/8/cCQM=
+	t=1781295966; cv=none; b=GNJ52oSd21Jin3H6Z9jNmbCMMIIDii3SnO2CsofxbHzIiPH38cy1ZKNuSprOYAhNkEDqJfqlo4M/oYUbxb9wykopdD9M84zxnmP+4trPMJPgn+ZD54C5t5KlskZuaLySYLQFU6OnQatmkFfVyiZ8LrRyqBknorjy2yfYhqcZzpw=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1781294191; c=relaxed/simple;
-	bh=atpCt5iq+n5E6TxrkJFopl9tTt8b7HM+kTlUKoIhd7M=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=dLosRkfKr4TqtNKnWJHKbtDzjedz2mJuMGucHobz/BE96d00k5D0i4+ifw2xMSloSHWtNos22jP2lqmh0LVBGkRzyUq8zAnJxP4xXEI710eCCt06tsVFYRibdzLR16WThlRNKXkjxRU94i1tmr1Bk4zVq8RzFNAR2edz+QzPt5M=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=jannau.net; spf=pass smtp.mailfrom=jannau.net; dkim=pass (2048-bit key) header.d=jannau.net header.i=@jannau.net header.b=sZgQhVu5; dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b=Kjt1XIlc; arc=none smtp.client-ip=103.168.172.151
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=jannau.net
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=jannau.net
+	s=arc-20240116; t=1781295966; c=relaxed/simple;
+	bh=Cq8cPoBkI+FB/GEbDx3WtxRVRdZkRoFA54OCpSDtqJE=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=ejdwqo4m3bp/J3VkQlPs1XGen3vr8x4DqOwfgBuhvIKIq0AGrwjZddW1W5ylA4XuV39QW/gaQ6Aioo20E/FJrJcnN+EM4aeSz8Wz1qwxTptaCXUjQsnzO9lmGyn8iMVWnJkxTxWdiUei2EQCpCwiBHF4+0o/TzoCrXViXcgKOEY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=K8y6RWvg; arc=none smtp.client-ip=209.85.128.42
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=jannau.net header.i=@jannau.net header.b="sZgQhVu5";
-	dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b="Kjt1XIlc"
-Received: from phl-compute-04.internal (phl-compute-04.internal [10.202.2.44])
-	by mailfout.phl.internal (Postfix) with ESMTP id A6969EC01EF;
-	Fri, 12 Jun 2026 15:56:29 -0400 (EDT)
-Received: from phl-frontend-03 ([10.202.2.162])
-  by phl-compute-04.internal (MEProxy); Fri, 12 Jun 2026 15:56:29 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=jannau.net; h=cc
-	:cc:content-type:content-type:date:date:from:from:in-reply-to
-	:in-reply-to:message-id:mime-version:references:reply-to:subject
-	:subject:to:to; s=fm3; t=1781294189; x=1781380589; bh=/VBnOtclHq
-	Qu8WUbzo4nkQz4Q8rlxK7VwsYBiEgNET4=; b=sZgQhVu5HGcn53/mvBAl2slZlz
-	HZqh8b4vUmoyAcucTZwqV0O/jgPDWmGEaRmuocdKU9JYtZkzrUhOtxW3OoGd/Mmb
-	zAOqOWva6nLZnvu9AGaYXGzzPvcyhZSexCtrDATzptFfpV+NdHwW8V1ToLmb98kP
-	V5Y85ynzUoOqaWFzIJwfQtAdetzFy2a81KuSN9ujSsvVDeJpIddddo57m0xAkjAB
-	gNyWq55Uffb+pyyKCsV+BBdrQ47f+wVwNoGTKSByoEtFaTvj3EqLkp9yc/rNKCKA
-	Ttu9ePKEp+sJ3L70SUq3erwCEC/36YWoVAMf7sbZ6nkq/Zfuio/5m7f4IDwg==
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
-	messagingengine.com; h=cc:cc:content-type:content-type:date:date
-	:feedback-id:feedback-id:from:from:in-reply-to:in-reply-to
-	:message-id:mime-version:references:reply-to:subject:subject:to
-	:to:x-me-proxy:x-me-sender:x-me-sender:x-sasl-enc; s=fm1; t=
-	1781294189; x=1781380589; bh=/VBnOtclHqQu8WUbzo4nkQz4Q8rlxK7VwsY
-	BiEgNET4=; b=Kjt1XIlc8EN7VdAua8vEKfUr5g2wXF4RxDnNac5cWj72LhyA9KM
-	0cpVdtUO69OFM2+4jpm37zsTKp4/WbSgaVubZgiw3MEE5pZyiqtm1JYnvHODwlV8
-	xFlbeJlokhZsU9AIZ+VKBh+q2EzT+4FMapCwc6bSw2WSGnwCvRbbqSQDUDmNMtLZ
-	EQN5hkGVeYI/xAfJnIskbKpsPMBv+/pBVdDUIf9kcfjuqBpV+cfbwEztrtrROqJA
-	We5RWkDzFM0UxvwtS74MTb8bMzl1zg8ct6E9oz3vBKfe2WckvRu25AOt/9biXdaD
-	cO5EcL8ODv6Or2/PMYlM8t2riBMCuJFENwg==
-X-ME-Sender: <xms:bWQsaoge0RMrcFAWJXg8Z84yw2Csw01ngQir0QgI1hvvusz5mk_9Ig>
-    <xme:bWQsajkQjJkiLXqumeBGVhd7m2PEFGeXcQK8-1ewUZ6nIo8HUZl4tLQ7-t0ek5KOq
-    W9ECBIqXfGOQRETBaJ25N9jYeqKOV8SnsuU5hpHkOohxlxevLvnxnk>
-X-ME-Received: <xmr:bWQsajvz3yBUNkfPg8ep4516mRTCxr9Wxy3JBHMKfoUHEZQxj2QtunDCC7zhAIVYC8pGJLrRcKt157onMGa0CRvDeTct2tS7ygU>
-X-ME-Proxy-Cause: dmFkZTEYSH4UO5YuL41xdLEJP/iBMLlNcYTfRr55mxPjS8nSyhazv8Tf8YZsVZlUvD8yuM
-    lUgjHR4KfHn0kRMmgOHaOe5Oh7pC64waq8rH0ekOImoTive8zdtlxl0vJdaaH9HEEFzB26
-    SPTW7gyhcQV59/VG/1prinomI6KGuIu8jf48OEgR2LZWcGcqzQXPu7+vkNpuT1qZZSYm5D
-    9msR8K8YtYpVJ0xTcoGPDVEswDZF4/zwX/hmbH3yuMhglaKWkf0wo8Qs7zSkl3rrKKIH2M
-    5vnpj/HWcohpJMXUPgX6q0nXnE9lJisi6ySeo+yGI3/qAwioKmf6fl48CVOiw3UyZy9tE9
-    lCTXG0sdPpuLgDHC6GmEacqHXFkLrmEsjNl0NJ1GkSsogQ1btfyvx2s/nqT7j27DkH1ReW
-    uFTmpeUHZzIuZ7CvFmbBTOuWS+sXrKWVgKxzfnqYX+dD2upRlQBH7/8e8lXTNdQ7GClZWs
-    7b2w8/cPk2oAjMcLqIWyoDmFro1fj4pETq35Q+DU7NWcufrr4nv//m6gw9UgcmypDixf/j
-    FS6I/2upmvpPLN74pKO6eRBVcpzJfLNB9OjpNbkkz6KgfcyZKSXSE0vUr0wnxa0hWSSCcP
-    EjhGR2qcQrrt2G5AdLfWh0Np9+vVArLoKO8tFXgzfopQUenvipaR5JqfMIyA
-X-ME-Proxy: <xmx:bWQsapZH0qVIiYR6He5AA81UNUzz32TL9lXAcdDQU87Si7SjL6hygA>
-    <xmx:bWQsarBuoRq5y3jcbEc0FtBbswirJ3FAI1QR7HWN9nK1YjiTvjfqhw>
-    <xmx:bWQsah_3DxyI1lfgRXgepma81wSo81ajTdABBuOE7c5MYR6cDSD-cw>
-    <xmx:bWQsanQObcYWAWmy6yInHg44Gq4J7KV_qr4Okok0wG7WvRmWkARhtA>
-    <xmx:bWQsakGsNxg_5LybkbHGxNzFKX2Bz26Tlm0cVfgnYfj8iBF2IMejT1tO>
-Feedback-ID: i47b949f6:Fastmail
-Received: by mail.messagingengine.com (Postfix) with ESMTPA; Fri,
- 12 Jun 2026 15:56:28 -0400 (EDT)
-Date: Fri, 12 Jun 2026 21:56:27 +0200
-From: Janne Grunau <j@jannau.net>
-To: Sasha Finkelstein <k@chaosmail.tech>
-Cc: Sven Peter <sven@kernel.org>, Neal Gompa <neal@gompa.dev>,
-	Sebastian Reichel <sre@kernel.org>, asahi@lists.linux.dev,
-	linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v2] power: supply: macsmc: Support macOS 27 SMC firmware
-Message-ID: <20260612195627.GB7993@robin.jannau.net>
-References: <20260612-gate-power-v2-1-de76cb9bb7ef@chaosmail.tech>
- <20260612193353.GA7993@robin.jannau.net>
- <18396D14-17AF-4B43-AD6D-A88D2E7C44D3@chaosmail.tech>
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="K8y6RWvg"
+Received: by mail-wm1-f42.google.com with SMTP id 5b1f17b1804b1-4921eed3fa2so3086265e9.0
+        for <linux-pm@vger.kernel.org>; Fri, 12 Jun 2026 13:26:03 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1781295962; x=1781900762; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=8rQCLAIxALSz/Z8tD2vL5V4eDD0YacOILyc6cFmNdB8=;
+        b=K8y6RWvg4tLzpXJq9RPzKhkwQeFOMPJRyo/S4I5hrUVeP7lIYA5GAwBMDiA3P9Uz9h
+         UlrIzRUGhST1MO055UjF7IOp4NYiJUTGjHHNvzGJWTzbDXKR7PMgvzxjgvLuxhiqIavz
+         aBFwyR8Mbhxl6FLkDyK7B9snr/G0mKvokym4bhDLm/Jv73Dnudp3b3A0xT9H1M1E9YxW
+         XVW8tZZA0BVKsxpESC2T1D8OJwMyFPy7HLGTD2eRXW77nZ+s6cIjqNVdhzLnnygq8Vhi
+         g+Sgsv8hMXIsfAc5GEU4RPlcHjipzeuhpDusCG1QqRUbuGWpVt7jCJyZNFR6daOJpoTE
+         wCwQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1781295962; x=1781900762;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=8rQCLAIxALSz/Z8tD2vL5V4eDD0YacOILyc6cFmNdB8=;
+        b=kZafgLULXDsRF/6It5AtLaVSCioLLIuc2KxtsN3PNghN3klZjczq9liYqJ0/GlEAU8
+         iEDhn0aYkoziZtWecuSjwR3H8L+oRgS1xKgXjqsmoNAHjtFHf6nphsATV/83alwpMsa8
+         8wCBjmwP7+1Okk+GfiZLzIKuC+4jvSfSCIkKwxKrml10FwrcUyVe0bUy5JaLdnb2nFDN
+         m9kJ23i8OjL1QLZVTfsr5I3IsoyWT+kc0P41R9trNBH1I66bug2e4soe+hMTXht4Ixrt
+         fzEbdFFxFDcYFY5HV/ifgGQqbn91iE5dDJiIIOPwDbPCvnmqGLEZfQ1md4ZIR2BIJ2p7
+         W8hA==
+X-Forwarded-Encrypted: i=1; AFNElJ/fj1yce82Yk1XwQr2Ro4KksV4wA1gN7EDrEZsyyNCIhhewDRHylqcVETxMPCJL5aCp/WMIpAeCtw==@vger.kernel.org
+X-Gm-Message-State: AOJu0YxPhemKJKxS0vvnpiksvyJODN20Yw0a1LmcArFTx3U6x3MCEF+B
+	j4xnB9ZpG7270QasoTJJQ9j/95AZU+T9IzgUsSBJl9+uwi1nGHZM4ESR
+X-Gm-Gg: Acq92OE7iiajBDz9SpsjDBKr2AN6vL2RV82+XrDnDXUxhu0ywd1d4SdaC3698gQ/ZP/
+	B3MF2PfLhL0pVv5oDIGwTcHFlIdGq+XGS/vw8yS/GlinwlgE8nt1NWra2VYaZrvlSfn4lTOpqVJ
+	TzTTcP7YLlpi/XSES/bh0xExQbyHQQHQbFLGsY7jtsWoEbovHF4BxSwA1VSkug8yl4YosvLJe44
+	kDcgi/4shV0iv7M0wbEpuPQ1C0jAT9D5pFxCBjINAUHsQZ5LUml4ziciO6lyJ4S1pG2BW3jKPBH
+	aeI+E0UUpFgBWI5eYyd3P8WmhafuZDtudio15nmZtCAZIH8+zdqavzdMZ2aM8CIu5xHAkzJ/chj
+	UwzBm9Ze8m2ce05gcditpcoiZaqQ1/PCNiS+6LCPYhmR2alMk4iEV7baKuGuREUwjSLpbKG+u01
+	ICcFKbnDqBtQIBCwU6
+X-Received: by 2002:a05:600c:3585:b0:490:b642:ce29 with SMTP id 5b1f17b1804b1-490ec4d4f71mr59232905e9.8.1781295962029;
+        Fri, 12 Jun 2026 13:26:02 -0700 (PDT)
+Received: from luca-vm.. ([81.56.18.151])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-4606f26434dsm9173261f8f.1.2026.06.12.13.26.00
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 12 Jun 2026 13:26:01 -0700 (PDT)
+From: Luca Leonardo Scorcia <l.scorcia@gmail.com>
+To: linux-mediatek@lists.infradead.org
+Cc: Luca Leonardo Scorcia <l.scorcia@gmail.com>,
+	Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+	Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	Sen Chu <sen.chu@mediatek.com>,
+	Sean Wang <sean.wang@mediatek.com>,
+	Macpaul Lin <macpaul.lin@mediatek.com>,
+	Lee Jones <lee@kernel.org>,
+	Matthias Brugger <matthias.bgg@gmail.com>,
+	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>,
+	Linus Walleij <linusw@kernel.org>,
+	Julien Massot <julien.massot@collabora.com>,
+	Louis-Alexis Eyraud <louisalexis.eyraud@collabora.com>,
+	Val Packett <val@packett.cool>,
+	Fabien Parent <parent.f@gmail.com>,
+	Akari Tsuyukusa <akkun11.open@gmail.com>,
+	Chen Zhong <chen.zhong@mediatek.com>,
+	linux-input@vger.kernel.org,
+	devicetree@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	linux-pm@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org,
+	linux-gpio@vger.kernel.org
+Subject: [PATCH v6 0/7] Add support for MT6392 PMIC
+Date: Fri, 12 Jun 2026 22:04:05 +0200
+Message-ID: <20260612200717.361018-1-l.scorcia@gmail.com>
+X-Mailer: git-send-email 2.43.0
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <18396D14-17AF-4B43-AD6D-A88D2E7C44D3@chaosmail.tech>
+Content-Transfer-Encoding: 8bit
 
-On Fri, Jun 12, 2026 at 09:42:12PM +0200, Sasha Finkelstein wrote:
-> 
-> > On Jun 12, 2026, at 21:33, Janne Grunau <j@jannau.net> wrote:
-> > 
-> > I think the following is slightly easier to read
-> > 
-> > {
-> > if (power->bcf0_1byte) {
-> > u8 tval = 0;
-> > int ret = apple_smc_read_u8(power->smc, SMC_KEY(BCF0), &tval);
-> > *val = tval;
-> > return ret;
-> > }
-> > 
-> > return apple_smc_read_u32(power->smc, SMC_KEY(BCF0), val);
-> > }
-> 
-> I personally prefer using early returns as much as possible, as it makes
-> it easier for me to read in linear order and due to line length reasons.
-> But no strong opinion either way.
+The MediaTek MT6392 PMIC is usually found on devices powered by
+the MT8516/MT8167 SoC and is yet another MT6323/MT6397 variant.
 
-I don't disagree in general but in this case the code inside the 4 lines
-inside the if are not much more complex than the early return. It
-limits the scope of the local variables and avois a not on the
-condition.
-I can live with either version and the strength of my opinion will be
-depleted by writing this reply.
+This series is mostly based around patches submitted a couple
+years ago by Fabien Parent and not merged and from Val Packett's
+submission from Jan 2025 that included extra cleanups, fixes, and a
+new dtsi file similar to ones that exist for other PMICs. Some
+comments weren't addressed and the series was ultimately not merged.
 
-Janne
+These patches only enable three functions: keys, pinctrl and RTC.
+Regulators and speaker amp will follow later as I still need to further
+improve those two, but getting the main PMIC in will make the series
+easier to review.
+
+I added a handful of device tree improvements to fix some dtbs_check
+errors, added support for the pinctrl device and addressed the comments
+from last year's reviews.
+
+Please note that patch 0005 depends on patch 0004 as they both need the
+registers.h file, but they belong to different driver areas. I'm not sure
+if I'm supposed to squash them even if they belong to different driver
+areas of if it's fine like this. Any advice is welcome.
+
+The series has been tested on Xiaomi Mi Smart Clock X04G and on the
+Lenovo Smart Clock 2.
+
+Changes in v6:
+- Dropped the regulators driver for the moment
+- Explained the FCHR key name origin in the commit message
+- Introduced the MFD_CELL_* macro in the sub-devices definitions.
+  A separate, independent commit introduced MFD_CELL_* to all the
+  subdevices in the mt6397-core.c file for consistency
+- Replaced of_device_get_match_data with device_get_match_data
+- Removed the mfd_match_data enum in favor of the preexisting
+  chip_id enum
+- Adjusted the error message if the device is unsupported
+
+Changes in v5 [5]:
+- Double checked regulator driver with data sheet and Android sources.
+  The data sheet I have misses a lot of register descriptions, but
+  Android sources have been helpful to fill the gaps
+- Reintroduced the required attribute for the regulator compatible
+  in the bindings
+- Fixed the missing reference to the MT6392 schema
+- Fixed casts/unused vars reported by kernel test robot
+- Removed Reviewed-by tags from the regulator patches as they have been
+  modified in this version
+
+Changes in v4 [4]:
+- Dropped usage of the regulator compatible
+- Fixed commit messages text to properly reference the target subsystem
+- Added supply rails to the regulator
+- Reworked the regulator schema and PMIC dtsi. Now all supplies are
+  documented and the schema no longer includes voltage information
+- Removed redundant ldo- / buck- prefixes
+- Renamed the pinfunc header to mediatek,mt6392-pinfunc.h
+- Modified the MFD driver to use a simple identifier in the of_match
+  data properties
+
+Changes in v3 [3]:
+- Added pinctrl device
+- Changed mt6397-rtc fallback to mt6323-rtc
+- Added schema for regulators
+- Fixed checkpatch issues
+
+Changes in v2 [2]:
+- Replaced explicit compatibles with fallbacks
+
+Initial version: [1]
+
+[1] https://lore.kernel.org/linux-mediatek/cover.1771865014.git.l.scorcia@gmail.com/
+[2] https://lore.kernel.org/linux-mediatek/20260306120521.163654-1-l.scorcia@gmail.com/
+[3] https://lore.kernel.org/linux-mediatek/20260317184507.523060-1-l.scorcia@gmail.com/
+[4] https://lore.kernel.org/linux-mediatek/20260330083429.359819-1-l.scorcia@gmail.com/
+[5] https://lore.kernel.org/linux-mediatek/20260420213529.1645560-1-l.scorcia@gmail.com/
+
+Fabien Parent (3):
+  dt-bindings: mfd: mt6397: Add MT6392 PMIC
+  dt-bindings: input: mtk-pmic-keys: Add MT6392 PMIC keys
+  mfd: mt6397: Add support for MT6392 PMIC
+
+Luca Leonardo Scorcia (2):
+  mfd: mt6397: Use MFD_CELL_* to describe sub-devices
+  pinctrl: mediatek: mt6397: Add MediaTek MT6392
+
+Val Packett (2):
+  input: keyboard: mtk-pmic-keys: Add MT6392 support
+  arm64: dts: mediatek: Add MediaTek MT6392 PMIC dtsi
+
+ .../bindings/input/mediatek,pmic-keys.yaml    |   1 +
+ .../bindings/mfd/mediatek,mt6397.yaml         |   8 +
+ arch/arm64/boot/dts/mediatek/mt6392.dtsi      |  41 ++
+ drivers/input/keyboard/mtk-pmic-keys.c        |  17 +
+ drivers/mfd/mt6397-core.c                     | 294 +++++------
+ drivers/mfd/mt6397-irq.c                      |   8 +
+ drivers/pinctrl/mediatek/pinctrl-mt6397.c     |  37 +-
+ drivers/pinctrl/mediatek/pinctrl-mtk-mt6392.h |  64 +++
+ include/linux/mfd/mt6392/core.h               |  43 ++
+ include/linux/mfd/mt6392/registers.h          | 488 ++++++++++++++++++
+ include/linux/mfd/mt6397/core.h               |   1 +
+ 11 files changed, 840 insertions(+), 162 deletions(-)
+ create mode 100644 arch/arm64/boot/dts/mediatek/mt6392.dtsi
+ create mode 100644 drivers/pinctrl/mediatek/pinctrl-mtk-mt6392.h
+ create mode 100644 include/linux/mfd/mt6392/core.h
+ create mode 100644 include/linux/mfd/mt6392/registers.h
+
+-- 
+2.43.0
+
