@@ -1,63 +1,63 @@
-Received: from mail-wm1-f53.google.com (mail-wm1-f53.google.com [209.85.128.53])
+Received: from mail-wm1-f49.google.com (mail-wm1-f49.google.com [209.85.128.49])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1E05F396590
-	for <linux-pm@vger.kernel.org>; Sat, 13 Jun 2026 06:58:42 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.53
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AAA5539BFE1
+	for <linux-pm@vger.kernel.org>; Sat, 13 Jun 2026 06:58:45 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.49
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1781333926; cv=none; b=Sch2p2kTq9731X+8vR1kUcQIhPG8n5bgsD3v/kWQVLlRIP3QIvvOw1255jhfH7Fl4PP3NC5HDaoNlfE66MwnVFQgSMwlsc/EHpenzMkmHTMbKijESCU8JDG2m/jLk/Yb7qD6dO9WfNy9ZBV4FsYg3HloK0V3ep4YzjWmcMV94aw=
+	t=1781333930; cv=none; b=CU7KsHDyqZLGUYe3+EHacOV2+vf8oAEpYD+z3SVW68897kdAUrp2Fq3gBG4sIIkp4p3Hv6tegrzweeZc7WclFQ85urk0col7CJeMXG89oFbee+/RaTUluM13M3BxxE7Ajmap0lUBi5Z4B80Uf23xJ3L+wtMwA//EVsj6HaIGnSg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1781333926; c=relaxed/simple;
-	bh=zamBZHvXT+SrkZYZqomb0TPLxTZiVMFSO+6rV6o1c+s=;
+	s=arc-20240116; t=1781333930; c=relaxed/simple;
+	bh=+oC/cphUq61z1tUYe/It2wm8zgDiOcsdp+YquhThWMc=;
 	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=RHh15gKsKQqKEcgL5fKuPmHN/ybOLpx0S9lCqvzjaK8+ig1hzGXCKX4VBnJLrpDLMkHSP0odOGNu3ER6i+5/RBDHf1BBpRnykSfk6/eAluDoj64gwAWowmCf4qTjUYU3LlxpCd6B4SFP0DokR6x39JCwL9ykiqZO4XR5AP/bXyo=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=E+pqKl3r; arc=none smtp.client-ip=209.85.128.53
+	 MIME-Version; b=d/6ld39jIFxazcGDQoMr+Q92pCG6C3ZXRw5nb+VUB1wxNU0J+L6TTtZVl2WB179F1apLkoNgLbtr4jtp/uWSrUacw6EMIrD7RFLFJLQuYgXdmsJ4laHz8i3W+jrOoVhCgCgAT2XnfnNvTVPaI5RaME25UpSkMbtFh2RsyV0Qqmk=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=Dqkxvb1x; arc=none smtp.client-ip=209.85.128.49
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="E+pqKl3r"
-Received: by mail-wm1-f53.google.com with SMTP id 5b1f17b1804b1-490b64c8311so17694655e9.3
-        for <linux-pm@vger.kernel.org>; Fri, 12 Jun 2026 23:58:42 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Dqkxvb1x"
+Received: by mail-wm1-f49.google.com with SMTP id 5b1f17b1804b1-491b390f9e9so9842265e9.0
+        for <linux-pm@vger.kernel.org>; Fri, 12 Jun 2026 23:58:45 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1781333921; x=1781938721; darn=vger.kernel.org;
+        d=gmail.com; s=20251104; t=1781333924; x=1781938724; darn=vger.kernel.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=ExjVQvO4/iWqbTjsUJjExpq/Pad0yGuPxgZEv8g/Xlo=;
-        b=E+pqKl3rIT9k60v9M78O5W038+7/3FkhnidutvlLT2NignySnGVjWStw6hXsYISClt
-         QzwI9jVigAxaLaAL0JQZ/wL4C4QIty+GSays1YWxaYmjxe0qMArxkXqB0e4ckz+rrRXi
-         KnmaDSID2K3/mVVDa3mAdC81RBmrbVZaZhUnd5zTN2iwd3jtlLCd6FeBdb75by0dXg/5
-         bD8fekeMWaQe9gXIYVyPzVFr7cH+LwwjEFMb+4qePW8OU21SBeX6fTO7nZ+slnkK/2+J
-         Dzk0fo0sRywr17XGM2EL2G6uRlB3x5N28Up46nSHvypH2ope45QlHgc3Z18Omhgjvc3l
-         LLhg==
+        bh=6qXDWY05NWH/jJuuAS5m9EpuxlsKXS/Zj0XFrGsO4MM=;
+        b=Dqkxvb1xPdmE/QivkU0Tep8gUL6/WD4MmKfUCtrgNDooB2RHfshyYYkXYndpy+BVlO
+         H5ycKTW3luL+Vm2DsNGh866zz1NAMBj0WQIzrrOMZdOaiML64q3QeAGQQmoWqLjrodxo
+         d3vuSFeE/8eRR3NiFWyrYVw7d3jNuQC6+9mUlKfJuhPwkTg/JLGEzqM5BjasBGr/jgbN
+         IQhRp4xg/89+FG8GcomlLt7v8fXaD8LLQ0p4Cjl4H3oe1Nwyg05sq8Ud3BmioLiYs+Hx
+         YwbjzdpCO4po64DJzKSLidxm0ZBLr872i9boDOEk19PHKeJU/slYDMvpkxHE1QFwYrf3
+         dK2Q==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1781333921; x=1781938721;
+        d=1e100.net; s=20251104; t=1781333924; x=1781938724;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to;
-        bh=ExjVQvO4/iWqbTjsUJjExpq/Pad0yGuPxgZEv8g/Xlo=;
-        b=qEdOZ+c7udn7DPGKPUHEfHTh2wD1GPB4bSRottwpOnZ4W/1Res3MfS5m0/b8Zk4niQ
-         gwrTx0OrFhLVKYU3jHt9Rl8Vjc7DTvKOrwWEqG3pek07QBJhLloKhO4RSIk56C0/g5pn
-         5FytVKx0McllcTE2Icl1r5j5ueq1PNeW1YuBrh17vAsxXoiyuhiosSZDax+xIU1LUOLQ
-         Dslw4jqNNs0H6419yT/dDyMP06Dq+UsNqf+BandZXtPUd76qSOi/McQL3NdiEYljFnBk
-         6bUScoMehbSuC+rEbztoKtUQpmlXOq+qMU0OdjOBRraiIpyauWDsqSykuAfPdzVBHd0f
-         RO4w==
-X-Forwarded-Encrypted: i=1; AFNElJ/na8NpBXiiHT699wZxsuGR7yxvUbQmWv8wJl+hsz/ZWnfDXoYjqkS1F1sEF4dSMTzLCI+cMepdjQ==@vger.kernel.org
-X-Gm-Message-State: AOJu0Ywp5QnSMlzkglyHG71R1Lx0qVRiy957lUXbd5wnmkB1pcB5hdBh
-	Nu4AobFkXfS2LTa0W8pGRJlLcpD+ggxsZ7gGZp6EJ/0PYP3gQ3B9fkbu
-X-Gm-Gg: Acq92OHvZqXoCOHcO0dLL4DrZZAFi2bPtIYWTNT5HjzOfIssghIdsTfRIu0LjcPxYWc
-	9EX/AvmcwNIE7kRvnAy7SQ7mw7hWlcfhN/i5AD+GNOUTUs0b5M2bnL07f978lsgAn53I8j/wOvT
-	eFS5x66GnRLvBbhyRx52DV9Jru0SxLRhKRVltO/GAF8S1Avexnkfk77pljqq1kbtTk8GWE8Apeh
-	RyFU79E/Hy043PL27d7qC3Zyve7piT3d0EGcxkcErcNakTs+zk/uNeTG0Xna5jnb0c009BIwcs9
-	2vJgxddbVVXl6SDGEX3c9qgGe/2xfHU9cYQmDZJi3XynVy0TiJtsSpLNmqD+lqzzlkWjxhj/5YM
-	JkzRBpzhvvniUfWwGxURpEcQ/PXRxy/UlmfABqk0VnyUq0C61I2it0kPzSYO/bb56P/olZQ2ZJX
-	KDcrn4xwngNrowKB773NYhdpOc4r6v/wBOlA8IkV1Dhg==
-X-Received: by 2002:a05:600c:a47:b0:490:52c0:744c with SMTP id 5b1f17b1804b1-490ec4ee63cmr73748795e9.20.1781333920798;
-        Fri, 12 Jun 2026 23:58:40 -0700 (PDT)
+        bh=6qXDWY05NWH/jJuuAS5m9EpuxlsKXS/Zj0XFrGsO4MM=;
+        b=CmNU25ikMPYGbLO4G+lNC1egkbTIAF26SWIuibfeBx4G2NR9BIG3iaqbVVKLWfObLp
+         R9YEVCK3SAKK1SpFFBvWsqIkQSyjhMMnA0FoZHOgWGxHjg8Tpm9ciIWqazsvVYF04+0l
+         ERd/G+1tg/VLo8lCpXGNWuIyI6Vp5HNLMFquJS2QiJI6gL/gA3sJBat01rg8oTz4+mUR
+         ded0Vfkegc0J22QRX8S38KUm+ng+4hCP+z3y8FXbE1D0ONqA1uk2icaHtw2xFtBSQa6f
+         nhydQeBEBz9ReNkjWVCiG4ND/1hx9ai3QU85YcZisvJEqE5AqTjF/oX5bOOx+w9xor/h
+         WeUA==
+X-Forwarded-Encrypted: i=1; AFNElJ9HRCpeN1suab+KDwakLPSQ+I0WJGmvD2w/xhZZLQDCEsft4GnsYIeX0GsrVHWkyTAtwlmjUFkuzA==@vger.kernel.org
+X-Gm-Message-State: AOJu0YwWCY3ZB+foojvqU8c9T2hn1bM0bAULo1Y3yKEoJWoGUgK/YHql
+	s2HpLmkQxV3YJE5GizIUAQNCrccXufDWvXgFY382c0yRXn1kcn4DVPr+
+X-Gm-Gg: Acq92OHERnDfj0j/1/usm30crRMdRzOkJQ3IYwdcvY0dfP6RbSFzQr8s9NJyq/JDhU5
+	Zp8n5u9cWtvr/Dz4Ver7tU/Ya0Aravzt/AqJ8s0wBqAUWQ39GuSy+w9DVvjN3My5tyQ2NYNq+9M
+	+AGfJar9J7EbadAx6Sat9p0Mt2SA5OFsreu9lbzqyIAGvckbAfQ8trfqSnh8cJy5U+MnwyBsAPs
+	ml6pB/djWdfYwJKxws2y7IjjH2C/nWEAvmJJ+YNxOiQ1qg86A4R2cqduhMGqKWBjBF80mx5avct
+	ZjmKNemVkmyql23UAYfm7Xi+M7rWmxKaeRM/4hQriQPJ0lpp9YPhcBdq6n3OuPX2cPe8S6qks0u
+	78gOS/70JOFDlsClJ28uimNt62kkcyWwdtOB+n7wqohFOkWZHeW3GmzdM00WfcCN0tlK/oIJ0/y
+	lu8OAx4PdmPdeUKGhhBT4y3Q/CREjJGhTzvXFEB6UBAQ==
+X-Received: by 2002:a05:600c:46c4:b0:490:b355:9c8c with SMTP id 5b1f17b1804b1-490ec4fbcb7mr81233115e9.23.1781333924116;
+        Fri, 12 Jun 2026 23:58:44 -0700 (PDT)
 Received: from debian.tailb81abf.ts.net ([2a01:e0a:104a:4d80:14c0:9448:1c38:77df])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-492202e5cbasm42917705e9.2.2026.06.12.23.58.40
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-492202e5cbasm42917705e9.2.2026.06.12.23.58.43
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 12 Jun 2026 23:58:40 -0700 (PDT)
+        Fri, 12 Jun 2026 23:58:43 -0700 (PDT)
 From: MidG971 <midgy971@gmail.com>
 To: tomeu@tomeuvizoso.net,
 	ogabbay@kernel.org,
@@ -79,9 +79,9 @@ Cc: dri-devel@lists.freedesktop.org,
 	diederik@cknow-tech.com,
 	jonas@kwiboo.se,
 	Midgy BALON <midgy971@gmail.com>
-Subject: [RFC PATCH v4 7/9] arm64: dts: rockchip: rk356x: Add the NPU and its IOMMU
-Date: Sat, 13 Jun 2026 09:01:14 +0200
-Message-Id: <20260613070116.438906-8-midgy971@gmail.com>
+Subject: [RFC PATCH v4 9/9] pmdomain: rockchip: Add a regulator to the RK3568 NPU power domain
+Date: Sat, 13 Jun 2026 09:01:16 +0200
+Message-Id: <20260613070116.438906-10-midgy971@gmail.com>
 X-Mailer: git-send-email 2.39.5
 In-Reply-To: <20260613070116.438906-1-midgy971@gmail.com>
 References: <20260613070116.438906-1-midgy971@gmail.com>
@@ -95,79 +95,79 @@ Content-Transfer-Encoding: 8bit
 
 From: Midgy BALON <midgy971@gmail.com>
 
-The RK3568 has an NVDLA-derived NPU at fde40000 with its own IOMMU at
-fde4b000. Add both nodes (disabled by default) and the NPU power-domain
-child under the PMU power-controller, and point rockchip,pmu at the PMU
-syscon that controls the NPU NoC bus-idle.
+The RK3568 NPU rail (vdd_npu) needs to be enabled before the domain is
+powered on and disabled after it is powered off. Give DOMAIN_RK3568 a
+regulator parameter (like DOMAIN_RK3588 already has) so the NPU domain
+can set need_regulator, letting genpd manage the rail wired up as the
+domain's domain-supply instead of marking it always-on in DT.
 
-Besides the SCMI compute clock, assign the CRU CLK_NPU so the NPU AXI
-bus clock comes up at 200 MHz rather than the 12 MHz boot default.
-
-The power-domain deliberately carries no pm_qos: qos_npu sits behind the
-NPU NoC, which is gated until the NPU is brought up, so a genpd power-off
-QoS save would fault reading it.
-
+Suggested-by: Chaoyi Chen <chaoyi.chen@rock-chips.com>
 Signed-off-by: Midgy BALON <midgy971@gmail.com>
 ---
- arch/arm64/boot/dts/rockchip/rk356x-base.dtsi | 38 +++++++++++++++++++
- 1 file changed, 38 insertions(+)
+ drivers/pmdomain/rockchip/pm-domains.c | 36 ++++++++++++++++++--------
+ 1 file changed, 25 insertions(+), 11 deletions(-)
 
-diff --git a/arch/arm64/boot/dts/rockchip/rk356x-base.dtsi b/arch/arm64/boot/dts/rockchip/rk356x-base.dtsi
-index 64bdd8b7754b5..313db59c1aed8 100644
---- a/arch/arm64/boot/dts/rockchip/rk356x-base.dtsi
-+++ b/arch/arm64/boot/dts/rockchip/rk356x-base.dtsi
-@@ -512,6 +512,13 @@ power-domain@RK3568_PD_GPU {
- 				#power-domain-cells = <0>;
- 			};
+diff --git a/drivers/pmdomain/rockchip/pm-domains.c b/drivers/pmdomain/rockchip/pm-domains.c
+index 490bbb1d1d8e8..19db307e3811d 100644
+--- a/drivers/pmdomain/rockchip/pm-domains.c
++++ b/drivers/pmdomain/rockchip/pm-domains.c
+@@ -138,6 +138,20 @@ struct rockchip_pmu {
+ 	.active_wakeup = wakeup,			\
+ }
  
-+			pd_npu: power-domain@RK3568_PD_NPU {
-+				reg = <RK3568_PD_NPU>;
-+				clocks = <&cru ACLK_NPU_PRE>,
-+					 <&cru HCLK_NPU_PRE>;
-+				#power-domain-cells = <0>;
-+			};
++#define DOMAIN_M_R(_name, pwr, status, req, idle, ack, wakeup, regulator)	\
++{							\
++	.name = _name,				\
++	.pwr_w_mask = (pwr) << 16,			\
++	.pwr_mask = (pwr),				\
++	.status_mask = (status),			\
++	.req_w_mask = (req) << 16,			\
++	.req_mask = (req),				\
++	.idle_mask = (idle),				\
++	.ack_mask = (ack),				\
++	.active_wakeup = wakeup,			\
++	.need_regulator = regulator,			\
++}
 +
- 			/* These power domains are grouped by VD_LOGIC */
- 			power-domain@RK3568_PD_VI {
- 				reg = <RK3568_PD_VI>;
-@@ -572,6 +579,37 @@ power-domain@RK3568_PD_RKVENC {
- 		};
- 	};
+ #define DOMAIN_M_G(_name, pwr, status, req, idle, ack, g_mask, wakeup, keepon)	\
+ {							\
+ 	.name = _name,					\
+@@ -241,8 +255,8 @@ struct rockchip_pmu {
+ #define DOMAIN_RK3562(name, pwr, req, g_mask, mem, wakeup)		\
+ 	DOMAIN_M_G_SD(name, pwr, pwr, req, req, req, g_mask, mem, wakeup, false)
  
-+	rknn_core_0: npu@fde40000 {
-+		compatible = "rockchip,rk3568-rknn-core";
-+		reg = <0x0 0xfde40000 0x0 0x1000>,
-+		      <0x0 0xfde41000 0x0 0x1000>,
-+		      <0x0 0xfde43000 0x0 0x1000>;
-+		reg-names = "pc", "cna", "core";
-+		interrupts = <GIC_SPI 151 IRQ_TYPE_LEVEL_HIGH>;
-+		clocks = <&cru ACLK_NPU>, <&cru HCLK_NPU>,
-+			 <&scmi_clk SCMI_CLK_NPU>, <&cru PCLK_NPU_PRE>;
-+		clock-names = "aclk", "hclk", "npu", "pclk";
-+		assigned-clocks = <&scmi_clk SCMI_CLK_NPU>, <&cru CLK_NPU>;
-+		assigned-clock-rates = <200000000>, <600000000>;
-+		resets = <&cru SRST_A_NPU>, <&cru SRST_H_NPU>;
-+		reset-names = "srst_a", "srst_h";
-+		power-domains = <&power RK3568_PD_NPU>;
-+		rockchip,pmu = <&pmu>;
-+		iommus = <&rknn_mmu_0>;
-+		status = "disabled";
-+	};
-+
-+	rknn_mmu_0: iommu@fde4b000 {
-+		compatible = "rockchip,iommu";
-+		reg = <0x0 0xfde4b000 0x0 0x40>;
-+		interrupts = <GIC_SPI 151 IRQ_TYPE_LEVEL_HIGH>;
-+		clock-names = "aclk", "iface";
-+		clocks = <&cru ACLK_NPU>, <&cru HCLK_NPU>;
-+		power-domains = <&power RK3568_PD_NPU>;
-+		#iommu-cells = <0>;
-+		status = "disabled";
-+	};
-+
- 	gpu: gpu@fde60000 {
- 		compatible = "rockchip,rk3568-mali", "arm,mali-bifrost";
- 		reg = <0x0 0xfde60000 0x0 0x4000>;
+-#define DOMAIN_RK3568(name, pwr, req, wakeup)		\
+-	DOMAIN_M(name, pwr, pwr, req, req, req, wakeup)
++#define DOMAIN_RK3568(name, pwr, req, wakeup, regulator)		\
++	DOMAIN_M_R(name, pwr, pwr, req, req, req, wakeup, regulator)
+ 
+ #define DOMAIN_RK3576(name, p_offset, pwr, status, r_status, r_offset, req, idle, g_mask, wakeup)	\
+ 	DOMAIN_M_O_R_G(name, p_offset, pwr, status, 0, r_status, r_status, r_offset, req, idle, idle, g_mask, wakeup)
+@@ -1274,15 +1288,15 @@ static const struct rockchip_domain_info rk3562_pm_domains[] = {
+ };
+ 
+ static const struct rockchip_domain_info rk3568_pm_domains[] = {
+-	[RK3568_PD_NPU]		= DOMAIN_RK3568("npu",  BIT(1), BIT(2),  false),
+-	[RK3568_PD_GPU]		= DOMAIN_RK3568("gpu",  BIT(0), BIT(1),  false),
+-	[RK3568_PD_VI]		= DOMAIN_RK3568("vi",   BIT(6), BIT(3),  false),
+-	[RK3568_PD_VO]		= DOMAIN_RK3568("vo",   BIT(7), BIT(4),  false),
+-	[RK3568_PD_RGA]		= DOMAIN_RK3568("rga",  BIT(5), BIT(5),  false),
+-	[RK3568_PD_VPU]		= DOMAIN_RK3568("vpu",  BIT(2), BIT(6),  false),
+-	[RK3568_PD_RKVDEC]	= DOMAIN_RK3568("vdec", BIT(4), BIT(8),  false),
+-	[RK3568_PD_RKVENC]	= DOMAIN_RK3568("venc", BIT(3), BIT(7),  false),
+-	[RK3568_PD_PIPE]	= DOMAIN_RK3568("pipe", BIT(8), BIT(11), false),
++	[RK3568_PD_NPU]		= DOMAIN_RK3568("npu",  BIT(1), BIT(2),  false, true),
++	[RK3568_PD_GPU]		= DOMAIN_RK3568("gpu",  BIT(0), BIT(1),  false, false),
++	[RK3568_PD_VI]		= DOMAIN_RK3568("vi",   BIT(6), BIT(3),  false, false),
++	[RK3568_PD_VO]		= DOMAIN_RK3568("vo",   BIT(7), BIT(4),  false, false),
++	[RK3568_PD_RGA]		= DOMAIN_RK3568("rga",  BIT(5), BIT(5),  false, false),
++	[RK3568_PD_VPU]		= DOMAIN_RK3568("vpu",  BIT(2), BIT(6),  false, false),
++	[RK3568_PD_RKVDEC]	= DOMAIN_RK3568("vdec", BIT(4), BIT(8),  false, false),
++	[RK3568_PD_RKVENC]	= DOMAIN_RK3568("venc", BIT(3), BIT(7),  false, false),
++	[RK3568_PD_PIPE]	= DOMAIN_RK3568("pipe", BIT(8), BIT(11), false, false),
+ };
+ 
+ static const struct rockchip_domain_info rk3576_pm_domains[] = {
 -- 
 2.39.5
 
