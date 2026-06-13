@@ -1,124 +1,109 @@
-Received: from mail-ed1-f52.google.com (mail-ed1-f52.google.com [209.85.208.52])
+Received: from mail-pj1-f44.google.com (mail-pj1-f44.google.com [209.85.216.44])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BB8AE223DCE
-	for <linux-pm@vger.kernel.org>; Sat, 13 Jun 2026 15:09:29 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.208.52
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1781363371; cv=pass; b=O0QaXfQzMO5fbHnYdN6VLp26qCPY+bVfsQUxG3u3RAPd/kGq2rOKSL6poG+jy2xxGBJQjBNSNKVFezxUH50hB/9CfyuOK/7MNgnSE5zhJpHL7wKO8W2McP3PMngGn6y1NaFdo712W8M8iSITWhFsHLIp8qu9PewyjwEeUUYf5kI=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1781363371; c=relaxed/simple;
-	bh=S4Zow9ulYfL0fAiSU5mq1YiOXlIBHlgZy7hq/LbV2E8=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=BdwwWtEh2E4T3JfgNhBqc7Do3xHnTnVFoPcAaO5PpxO6FxTNoBPoeAHuuKCJ/dTCLW1Dg7sMkXV2k3uE0UAgGzBcr1pZpMp/velL2BYAgA92yoZKuMcZV6c4m26iqRvyqZaaSdy1cG9MJppfNN50VaT2AB/XSIOwR1xw9qV/7uw=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com; spf=pass smtp.mailfrom=google.com; dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b=k1+cxIHX; arc=pass smtp.client-ip=209.85.208.52
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=google.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D5AB72741B6
+	for <linux-pm@vger.kernel.org>; Sat, 13 Jun 2026 17:16:18 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.216.44
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1781370979; cv=none; b=URdf8GD/SV+BD5WNf90XSLdfIX94cCC6X58nUMfy/G0bfpglUjLwVDDgwaVLnDRE7AqnOuuIlStYTIyXk926P6KrHvVXnI+upoHtQtYvWvwAhRbSjqnMnJDiYZMoJ24kf55sKRtK11G4CFtT2S40Woclyl0YeQ2NjXV4nE8uI5E=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1781370979; c=relaxed/simple;
+	bh=11UNlnIIJRXDoCKTM+VHTBTqUB7BwG8U2LkeOEZp7qY=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=Nl9SiUWfE6hGVX7JLBeBIXaQ9NiGOGKkbevD3BJTiJCLqIg761RBD1Jn4vBP/sFdS2vB1QCeSc9Rpn1pgJpq/W6OIfT36dIyOsELK0qZFrldynpHwdzOA4PUj1ZHJzMWxiwZdx/Sed3nDo4fPflYOGvr0hCGsjB9so3o2c/GLao=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=gZ0atN32; arc=none smtp.client-ip=209.85.216.44
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b="k1+cxIHX"
-Received: by mail-ed1-f52.google.com with SMTP id 4fb4d7f45d1cf-68bd7ec2371so3706a12.1
-        for <linux-pm@vger.kernel.org>; Sat, 13 Jun 2026 08:09:29 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1781363368; cv=none;
-        d=google.com; s=arc-20240605;
-        b=WwIjVt3hceCMpo3yNzNwII5EPtdyCFyGDfYVLrfJncJl3eqryIXJCoY9p2s1SVnv0+
-         iBS+ieKaLUmhnaSHPqgcWzOCSwFGkFHNIWP59xviJhfUGvQvCbsDwxmNq2CckZxqzzYK
-         eih7WEMYJmZ8TF1AwP+ewiqjUZZs2K0uTwZlUfnMSYWk0Ma768bOqngGf+VTRcQzojHE
-         2CYWANGzOzL4FGu58BNJCRSiDE2kqi614p6eh4DHBwwgByd61jbY9ks3ehnjBq2nS3KZ
-         vLfi6VMF98BQY8j+GpafmnyOnkOiidld3DMz1Le5CeVo4LSWSbhM0n7n5vb6R1e9KkdW
-         aTAg==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=S4Zow9ulYfL0fAiSU5mq1YiOXlIBHlgZy7hq/LbV2E8=;
-        fh=WZK5z7Nbw09NkqF6E4V9FnXXFRH1j7UlPLT/f6rgnTs=;
-        b=eNzca6GVqXmRLv1kkSUbIGrmUPunudY2fXYidVLhvbuPuH8gzv2ytTeGFLSwQfxXmZ
-         khZOxhquhEaDHCCMJt47TBK+4wE0H+1/9L918WVnYhSS5sceNTBmng0fiZWTKSeRipXu
-         p/CGs/fq9YkaKRSKo/qHaPBuiYPo7FKTK33q9W1I2bAyyE87aPxM7q1HEHenMOl/s0Rv
-         mDeseA2oV1QvAXoDyIK08bQn/e6y9LTbIEAujehlB515ym0M+RZiDWEDWKIrxy3ehXzw
-         NwR2vaB7OcD3wGsiq5EottpahVZyJy7/FssqLahizH0liBSuK04AihqF70ekQMnpBnt7
-         fvRQ==;
-        darn=vger.kernel.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="gZ0atN32"
+Received: by mail-pj1-f44.google.com with SMTP id 98e67ed59e1d1-36d98c9b596so1274991a91.3
+        for <linux-pm@vger.kernel.org>; Sat, 13 Jun 2026 10:16:18 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20251104; t=1781363368; x=1781968168; darn=vger.kernel.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
+        d=gmail.com; s=20251104; t=1781370978; x=1781975778; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=S4Zow9ulYfL0fAiSU5mq1YiOXlIBHlgZy7hq/LbV2E8=;
-        b=k1+cxIHXYmKjTNlw28K+TGoNctEhNKsjnNo3ac6CITxKtJtGaUgkUatoQYn3JiJ9pE
-         teNHXi5/42Q4sVMXosfo/YydEukbwPnLXPJOwSxlgZMF8DkjRdzMM0XLsvOgMvC7KigK
-         CqG7Np7yud7j4vD96QwBGfy0hWS4CbO6/jGUtyVWRMofCaKY2Rc8KsxBa6m/TWuMrPGW
-         WDIKDUmqTrPUjnsWg3B1wA3UKXWgKnJzdJoRkT4nSCNpc9L4ynR11rZqWShzC2cIyON+
-         s3w7Sc0SwmWhng2icwpm/0R/bKty+krjftuRAfotOjdum1FWrHNurbUUzm0iMJ7Z3w7C
-         /CIg==
+        bh=DHnjrYe71b0/9xawuiMitiqCxEUiRYNpMNNAG+kyN10=;
+        b=gZ0atN321OLsQN96RyfZOO8gCwUaIwBhjtPwV3TbVSEk3leDmdr9F/YAaOvEl7Perv
+         Eqr5N8KY4aqSQjwMs6UfVIbEEF4MX+2lGwiJqNJewkCr3f8v/zigF9puQuXOS07Uj78N
+         DTsFEoN0doKvd2gIisW+bmyA6zNcFK5nCnj3nnLYjMFI5Qt6KZioAlYAcIch3GWL5cyo
+         hyjU5PagTuq7wcuH3Zvbn0yfzPPAClTqBdfb3OV+5XV8vtNDKrEnCQWwivmxBITN7nSn
+         NLTJhSpmWBLgTp1l0qFFaS3XhOEy2oTC2QGeIwSRTyZvWTYFX6WsQUqgmfOgLdkRoVmZ
+         Imig==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1781363368; x=1781968168;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
+        d=1e100.net; s=20251104; t=1781370978; x=1781975778;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to;
-        bh=S4Zow9ulYfL0fAiSU5mq1YiOXlIBHlgZy7hq/LbV2E8=;
-        b=JsytQWJEm8+d8uN+NVFmCXkacZ2rmRSj8bnQsX2pU3/E7D4YgpC+vdj5lUkRIX1TEU
-         EHeK77TN31pJ/NNZVe/aW+pJePdjaJ3zMBEkUZPKGBYpqonFhmxEVsNsp4fSy4mpQWrW
-         JEdXchoyyX045RN7T3Vuulbymo+jMn31nYuLwPlC24K+YsLJi3rLvogAqYiGPknkj61H
-         m/zzFKNxhXS7EJRLqVAa/7LR/n6M8HKqvxCWSDJuSBliRJ/Km3c+9m9QH8afd4iSwl1y
-         SGQLHT45VbK9qv8qXeFCEuMz1Z6TQR2E+tQoOl9xQxoj5edJQBIPaJSX0Pfa2J4XyUrI
-         nPMA==
-X-Forwarded-Encrypted: i=1; AFNElJ8re2B+JymaeCWvm0c/b6Xx+/VvtGpqx5m0vDny4NrqrV/mfeF11ItZ7rQY989qMDS7jhRzw9FsDg==@vger.kernel.org
-X-Gm-Message-State: AOJu0YxBagp4xGX4ksf36UKTTpdHFuI5cNAqYkciecTmttkZ29THJM4q
-	g226NFAeAX5X/hGyOQv+omdUXyPsEndbjyHYixLBcLPd8caKcMrBIpZVqNIWr7JWysoe+mp/EtN
-	OWdi3UwZYeyVn3K8W73fnpeyhinCz4PelrD6I5W/9
-X-Gm-Gg: Acq92OEG5RV/Ysv4b08oH93dMehZX9EwXqQGJ4UV3XtI3HJS5biARKKwyEpubBBDPuh
-	oy5+KDAqxEOWlsRT0KyLG4Y6wvBY2HzzVlg8eQhsgcOyO6B2hMeOo4HVG0Gia3I7Xgs+0E+/foo
-	SmudYDxVrOTyZhe/7yrum6Xw71I5pZ7aLFMmAbyqw92F5N7Axu6j8mEG7BO6f7n11FQPNDLs0Ok
-	TwBRuqa5Jn/3+JbN5Zw12bVBVu7lyzvoxmqZdWjCGfOYtTIbmw5/xDLA9JF6mRAUdpEoKkji7yE
-	IU6QRjM=
-X-Received: by 2002:a05:6402:a0d2:b0:683:33ae:8689 with SMTP id
- 4fb4d7f45d1cf-693c6a6bcfcmr40065a12.4.1781363367753; Sat, 13 Jun 2026
- 08:09:27 -0700 (PDT)
+        bh=DHnjrYe71b0/9xawuiMitiqCxEUiRYNpMNNAG+kyN10=;
+        b=FtdrtOTuMvgE912H3QmKOpsNoekFqOjpwu0/qkF7El4UvIYlZbuBdPZE8qZN2penCg
+         kFnzH9NxmLVZsjtGUmIdKc/ruznkaKdpMaX5kzmaUFEivjMQ7St+JTqEo+2vqofTAUVT
+         jviqw4lHeIrEds25/0si+Uu2Lo26DWgS7vNzY6V4b4oW+H+XvQO8bSuW+VhxkWcQL3KJ
+         p3wPb4sEuuTGGyLwxp0LzVAFFZvJcwzyHJonTOWaB7ZL8ZOuSjTnFn0+EsPicSBypZG2
+         Bz3haa3pkowEduCaMpNQxI5Zkfl3sfC+e8kCrdpSV/KllLWmM5uoOFLGzdZbV4tGQgUc
+         FAsw==
+X-Gm-Message-State: AOJu0YySFaXcBxLCwEPG1AwI1AZMohh/E2USVTElRXIzEbAYvSmQVxI7
+	T5IWszAIvxyYlO6TDtuugUqVldvNl2U+ZuJS+WgaXBz+1w7p3a17PMcS
+X-Gm-Gg: Acq92OFnwjdFmrJywz9az+ZWwlm2ygrC9x8msN79hSddkZyaPSJwtcAAGyB9nH0iP0I
+	UKuutrDSmnaAGOR2mJMGYq3zqvYsvZo9WDBLZcGZArdTVjI/QE7YK4v61fjmyfsmjp4HLVfVp4h
+	c1tO2uIIodNATJiWkAPMH0FJwmgaodI9Tb1Q6pWqbBFRdr3pdNRlOMVMMsaUoGmxTKW6JBtx2CA
+	aJtlRFY0lYUCDzMr4jw9EW0hXkRsAYkduG5nB0pAbPzuq0MEzb9c8fh7v9tdhCofcBfXXpxTOtW
+	bUchJp7BKrJb/ZisSQnWQ/DospPO20WN6hI0CJ4JNKYuQ7WrrAoVjwWMuvmIo63NTRqGkCn/wly
+	QILyDGdlPWYoqowrjZzFccXkep7TChXB8gKM15JO/8glYCpGsDRYfRsUtCRpVMgJcNgDhZhaDpg
+	+V4iD+OazQu1kO/lo8K63vHTjpNnZamifYjfKHGqUWRY8aFxcYqJK/RwC/yd/7FA04a6ZdiUsMN
+	9eMjaHWrEQ=
+X-Received: by 2002:a17:90b:1dc3:b0:366:3ac:f730 with SMTP id 98e67ed59e1d1-37a041aea48mr7976711a91.25.1781370978172;
+        Sat, 13 Jun 2026 10:16:18 -0700 (PDT)
+Received: from bloom (S010680dac2bce256.cg.shawcable.net. [174.0.186.197])
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-379e810f98fsm2588542a91.2.2026.06.13.10.16.16
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sat, 13 Jun 2026 10:16:17 -0700 (PDT)
+From: Jack Lee <skunkolee@gmail.com>
+To: rafael@kernel.org,
+	viresh.kumar@linaro.org
+Cc: linux-pm@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	zhongqiu.han@oss.qualcomm.com,
+	Jack Lee <skunkolee@gmail.com>
+Subject: [PATCH] cpufreq: powernow-k6: replace symbolic permissions with octal
+Date: Sat, 13 Jun 2026 11:15:59 -0600
+Message-ID: <20260613171559.43079-1-skunkolee@gmail.com>
+X-Mailer: git-send-email 2.54.0
+In-Reply-To: <12116e07-040c-4536-958a-d55d04d163c8@oss.qualcomm.com>
+References: <12116e07-040c-4536-958a-d55d04d163c8@oss.qualcomm.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <CAKSQd8XPUHe3VLMwrwTWjDwqsQAxkSj802vo0-c5C1i6Aoh=yA@mail.gmail.com>
-In-Reply-To: <CAKSQd8XPUHe3VLMwrwTWjDwqsQAxkSj802vo0-c5C1i6Aoh=yA@mail.gmail.com>
-From: Jim Mattson <jmattson@google.com>
-Date: Sat, 13 Jun 2026 08:09:15 -0700
-X-Gm-Features: AVVi8Cc9WnxbUNBHE-XxqxvfKL6AnSW1fdfORcD8zuVmbzpVWqdzNTCug5spU8Y
-Message-ID: <CALMp9eQXKEqV5TwhCW-CN7ZgJyNNacvG1zPO1RLbc2R5SV40=A@mail.gmail.com>
-Subject: Re: [PATCH v2 0/3] Fix three racy updates to MSR_K7_HWCR
-To: ludloff@gmail.com
-Cc: Andrew Cooper <andrew.cooper3@citrix.com>, bp@alien8.de, linux-kernel@vger.kernel.org, 
-	linux-pm@vger.kernel.org, rafael@kernel.org, tglx@kernel.org, 
-	viresh.kumar@linaro.org, x86@kernel.org, yosry@kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
 
-On Fri, Jun 12, 2026 at 6:56=E2=80=AFPM Christian Ludloff <ludloff@gmail.co=
-m> wrote:
->
-> > Was it [HWCR] core-shared on older platforms?
->
-> Fam 15h (BD/PD/SR/XV) BKDG #42301-3.14 Jan 2013
-> section 2.4.1.1 says:
->
-> "Some MSRs are implemented one copy per compute unit instead of per
-> core; these MSRs are designated as SharedC (shared coherent) or
-> SharedNC (shared non-coherent). The absence of SharedC/SharedNC
-> implies not-shared, which is the normal per-core instance programming
-> model for RDMSR/WRMSR."
->
-> In table 8 it then does *not* list HWCR =E2=80=93 so it's "not-shared".
+Symbolic permissions S_IRUGO are not preferred. Replace with octal
+permissions 0444 as recommended by checkpatch.
 
-Amd in that document, "compute unit" =3D=3D core and "core" =3D=3D thread, =
-right?
+Signed-off-by: Jack Lee <skunkolee@gmail.com>
+---
+ drivers/cpufreq/powernow-k6.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-> Naturally running with non-identical values is... a bit exciting.
+diff --git a/drivers/cpufreq/powernow-k6.c b/drivers/cpufreq/powernow-k6.c
+index 99d2244e03b0..764907b04c04 100644
+--- a/drivers/cpufreq/powernow-k6.c
++++ b/drivers/cpufreq/powernow-k6.c
+@@ -29,10 +29,10 @@ static unsigned int                     max_multiplier;
+ static unsigned int			param_busfreq = 0;
+ static unsigned int			param_max_multiplier = 0;
+ 
+-module_param_named(max_multiplier, param_max_multiplier, uint, S_IRUGO);
++module_param_named(max_multiplier, param_max_multiplier, uint, 0444);
+ MODULE_PARM_DESC(max_multiplier, "Maximum multiplier (allowed values: 20 30 35 40 45 50 55 60)");
+ 
+-module_param_named(bus_frequency, param_busfreq, uint, S_IRUGO);
++module_param_named(bus_frequency, param_busfreq, uint, 0444);
+ MODULE_PARM_DESC(bus_frequency, "Bus frequency in kHz");
+ 
+ /* Clock ratio multiplied by 10 - see table 27 in AMD#23446 */
+-- 
+2.54.0
 
-That depends on the bit. Non-identical values are quite natural for,
-say CPUID faulting at CPL>0, which is admittedly quite new.
-
-On the earth movers, I assume one would want non-identical values for
-MONITOR/MWAIT user mode enable, especially in the days before L1TF
-forced us to adopt core-aware scheduling.
