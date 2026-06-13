@@ -1,52 +1,52 @@
 Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 62A2A374E43;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0719D3A6411;
 	Sat, 13 Jun 2026 22:07:14 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.17
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1781388435; cv=none; b=BOsA+bC0vNkB0Xzjfth0aCNkRKVNPAMMH5C3SxCURITyHMhJbmp6Ycr0hNo3iX1tUpzlDet6GuSBI3WYvSkLkRObDn9LC8DH/dG07tzzqkMhmtYKWKHccdiNS106atVY0px+g7CfjQSdstLCbw6s+j3UZvPGPNHp3ycmz55cWvk=
+	t=1781388436; cv=none; b=d2MNtrt+Z6g7Dc47cZJcbryqGBTbyifteHNgozDMZKj/EkJHk55rpOtIeRyCC5M+MbgGNkv4A7yHuoYpsKgXzSD1wemvnn1WaNznrUIUE9wkY34EDAEig8NXv7imVchubZaWpj+Ov0dcuiQisdJLuDfX4mnmMVfFHrYm0CLIFOk=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1781388435; c=relaxed/simple;
-	bh=StcGvNzhGAmHNtmfcblncLMfexDOq04lgNGUhRQ/2cY=;
+	s=arc-20240116; t=1781388436; c=relaxed/simple;
+	bh=tXctir45E9TTexbNRcmHf/Op7hhINEpCT1wTF9KbATI=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=enc793Qfnylv123EbX7atRjTY9NUs0pneq4m5VhDhRpCmSwt+dN427A7w9bSQLFejL3yg3KjYrvvpgJapWP7XQXeoYw+DUPZ4FormoJ6tE+V2MCxKVEKM6/OffhhykjYW3LV8ZjDsvuocutVEKaZuvPYf0uMDpk3F0bImY2WY40=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=pass smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=On1OPEur; arc=none smtp.client-ip=192.198.163.17
+	 In-Reply-To:To:Cc; b=p9h4/q8HbSf8a9YqB4r7uftzQwF6DjljaKlbZJO+wTThBPEGUZp51r2HzysGizFPwkKSrbpxa2F2d5B1C4eF7Jy2MkT+JoDfIe0lBYEX5h7iFPGvbfZrDAobG5aEmCbKpTdU4nRWVSRDcg5No2/ZCDbhfd4dGNkH7IiBsJMAdME=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=pass smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=O0PMd1QU; arc=none smtp.client-ip=192.198.163.17
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="On1OPEur"
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="O0PMd1QU"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1781388434; x=1812924434;
+  t=1781388435; x=1812924435;
   h=from:date:subject:mime-version:content-transfer-encoding:
    message-id:references:in-reply-to:to:cc;
-  bh=StcGvNzhGAmHNtmfcblncLMfexDOq04lgNGUhRQ/2cY=;
-  b=On1OPEur5IvfJU0oWNOzq5bT5ktGsXoUjiUiCfp06trlMi5EYR7hn05C
-   N7wJMGxCSXD9YFMP0FrrlwFqd/+B9BHTIviZJrBjB6siwmt+kDJXHA953
-   cMk3NLwoD+KbGaKaGyeP7AX16yikSSR/WSFTLGSPLCPh7r5hXQhhtq2BU
-   R00uT9s6HoURkJ5SU9ko1IKi4+tN6MTs+3gxVTBMrOh9RwUJXCxOp+L8i
-   exb/+vYiADnueeLmUdCo0C48ybvzui9sYpshYHtqxUiimCC9bZbNJLE/C
-   SdXkYbdlixOqoPO/G54Bv6ru3D95f0oFPTOwytw9QPak4OHohqUjTJPF7
+  bh=tXctir45E9TTexbNRcmHf/Op7hhINEpCT1wTF9KbATI=;
+  b=O0PMd1QUJxmRldx582WWLm5HoxgHuZLQM3+qpZ4wYrOuVfUHcNfIwdBL
+   sjrNlQ0VXbxvsY3p9eIH0QpM/w1tlHi0SOYoOVrFQn9DbVov2O4YrRgaI
+   nxTPlHQQI20BX7sMVdSZ7IGX9qlKOFzObLlP0MHPhyPZml87w0cgCWiCe
+   8orhx6FoHl4zb/zaNVMTMttELMDMXItp8hSWYHLvFbiKiVW7Z3tgsRAuC
+   h22VloiJqyEZG6g5Vpof56reqb1O2WZSWa60NHK8uwWM7h7CC0DxDZLM6
+   4n718bRjX4fbqGz/oyKB7NGBLtPsAq8CUsZGJnaf7HdjCGMMXkZwawgB0
    Q==;
-X-CSE-ConnectionGUID: h2KhC9wvTyGRJtgMKpl4Cw==
-X-CSE-MsgGUID: 7vVlCCFFRKyJ7HK2zNMSzg==
-X-IronPort-AV: E=McAfee;i="6800,10657,11816"; a="82029415"
+X-CSE-ConnectionGUID: 4l4l+cY0RdqgqVFTHy9r2w==
+X-CSE-MsgGUID: r0xm4ewjR3m81Kx3XtMaSw==
+X-IronPort-AV: E=McAfee;i="6800,10657,11816"; a="82029418"
 X-IronPort-AV: E=Sophos;i="6.24,203,1774335600"; 
-   d="scan'208";a="82029415"
+   d="scan'208";a="82029418"
 Received: from fmviesa005.fm.intel.com ([10.60.135.145])
   by fmvoesa111.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 13 Jun 2026 15:07:11 -0700
-X-CSE-ConnectionGUID: ienhfYh/TxauX7mKi7FgUg==
-X-CSE-MsgGUID: 6KhnwWohRR++1/zOxTBnow==
+X-CSE-ConnectionGUID: KXZ4RKAiRciRdRBep5O/Ew==
+X-CSE-MsgGUID: GSv+QseqSCGpQJoI0mL/MQ==
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="6.24,203,1774335600"; 
-   d="scan'208";a="252221845"
+   d="scan'208";a="252221849"
 Received: from unknown (HELO [172.25.112.21]) ([172.25.112.21])
   by fmviesa005.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 13 Jun 2026 15:07:10 -0700
 From: Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
-Date: Sat, 13 Jun 2026 15:17:47 -0700
-Subject: [PATCH v3 1/6] thermal: intel: Fix dangling resources on
- thermal_throttle_online() failure
+Date: Sat, 13 Jun 2026 15:17:48 -0700
+Subject: [PATCH v3 2/6] x86/thermal: Add bit definitions for Intel Directed
+ Package Thermal Interrupt
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -55,7 +55,7 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260613-rneri-directed-therm-intr-v3-1-3a26d1e47fc8@linux.intel.com>
+Message-Id: <20260613-rneri-directed-therm-intr-v3-2-3a26d1e47fc8@linux.intel.com>
 References: <20260613-rneri-directed-therm-intr-v3-0-3a26d1e47fc8@linux.intel.com>
 In-Reply-To: <20260613-rneri-directed-therm-intr-v3-0-3a26d1e47fc8@linux.intel.com>
 To: "Rafael J. Wysocki" <rafael@kernel.org>, 
@@ -67,62 +67,72 @@ Cc: x86@kernel.org,
  linux-pm@vger.kernel.org, Ricardo Neri <ricardo.neri@intel.com>, 
  Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
 X-Mailer: b4 0.13.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1781389088; l=1702;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1781389088; l=2437;
  i=ricardo.neri-calderon@linux.intel.com; s=20250602;
- h=from:subject:message-id; bh=StcGvNzhGAmHNtmfcblncLMfexDOq04lgNGUhRQ/2cY=;
- b=9GyH6V5wE4DGgny1iBTgcHCy72t7S41hOpTDFnHdhSnHSU3w9MOS5iA1hMPzI0dwmdWmhTFKQ
- llEfpTNlNYvDQIqhHTepcwoWRF4tg3Y3X7f3GIStY44hQtlMUGpvH/o
+ h=from:subject:message-id; bh=tXctir45E9TTexbNRcmHf/Op7hhINEpCT1wTF9KbATI=;
+ b=oPdzia4MZNNNwcY8TeXzp/ZKdIKrsBF4GqcrH2yEk7xQhRHn750LJoHqY7Cm6YBdhAt1bsg0A
+ ecLf2dX9IX/DwiPAYIi2YZAdDHwFxcAJPXuyekt2+vAlW3bb5Ro4V+3
 X-Developer-Key: i=ricardo.neri-calderon@linux.intel.com; a=ed25519;
  pk=NfZw5SyQ2lxVfmNMaMR6KUj3+0OhcwDPyRzFDH9gY2w=
 
-The function thermal_throttle_add_dev() may fail and abort a CPU hotplug
-online operation. Since the failure occurs within the online callback,
-thermal_throttle_online(), the CPU hotplug framework does not invoke the
-corresponding offline callback. As a result, the hardware and software
-resources set up during the failed operation are not torn down.
+Add CPUID and MSR bit definitions required to support Intel Directed
+Package Thermal Interrupt.
 
-Since only thermal_throttle_add_dev() can fail, call it before setting up
-the rest of the resources.
+A CPU requests directed package-level thermal interrupts by setting bit 25
+in IA32_THERM_INTERRUPT. Hardware acknowledges by setting bit 25 in
+IA32_PACKAGE_THERM_STATUS, indicating that only CPUs that opted in will
+receive the interrupt. If no CPU in the package requests it, delivery
+falls back to broadcast.
 
-Fixes: f6656208f04e ("x86/mce/therm_throt: Optimize notifications of thermal throttle")
 Signed-off-by: Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
 ---
 Changes in v3:
  * None
 
 Changes in v2:
- * Introduced this patch.
+ * Added an empty line to denote a hole in the feature definitions. (Boris)
+ * Renamed definitions (Boris):
+   X86_FEATURE_DIRECTED_PKG_THRM_INTR => X86_FEATURE_DPTI
+   THERM_DIRECTED_INTR_ENABLE => THERM_INT_DPTI_ENABLE
+   PACKAGE_THERM_STATUS_DIRECTED_INTR_ACK => PACKAGE_THERM_STATUS_DPTI_ACK
 ---
- drivers/thermal/intel/therm_throt.c | 7 ++++++-
- 1 file changed, 6 insertions(+), 1 deletion(-)
+ arch/x86/include/asm/cpufeatures.h | 2 ++
+ arch/x86/include/asm/msr-index.h   | 2 ++
+ 2 files changed, 4 insertions(+)
 
-diff --git a/drivers/thermal/intel/therm_throt.c b/drivers/thermal/intel/therm_throt.c
-index 44fa4dd15dd1..45a8ef4a608b 100644
---- a/drivers/thermal/intel/therm_throt.c
-+++ b/drivers/thermal/intel/therm_throt.c
-@@ -529,8 +529,13 @@ static int thermal_throttle_online(unsigned int cpu)
- {
- 	struct thermal_state *state = &per_cpu(thermal_state, cpu);
- 	struct device *dev = get_cpu_device(cpu);
-+	int err;
- 	u32 l;
+diff --git a/arch/x86/include/asm/cpufeatures.h b/arch/x86/include/asm/cpufeatures.h
+index 1d506e5d6f46..ead68fb9913b 100644
+--- a/arch/x86/include/asm/cpufeatures.h
++++ b/arch/x86/include/asm/cpufeatures.h
+@@ -365,6 +365,8 @@
+ #define X86_FEATURE_HWP_HIGHEST_PERF_CHANGE (14*32+15) /* HWP Highest perf change */
+ #define X86_FEATURE_HFI			(14*32+19) /* "hfi" Hardware Feedback Interface */
  
-+	err = thermal_throttle_add_dev(dev, cpu);
-+	if (err)
-+		return err;
++#define X86_FEATURE_DPTI		(14*32+24) /* Intel Directed Package Thermal Interrupt */
 +
- 	state->package_throttle.level = PACKAGE_LEVEL;
- 	state->core_throttle.level = CORE_LEVEL;
+ /* AMD SVM Feature Identification, CPUID level 0x8000000a (EDX), word 15 */
+ #define X86_FEATURE_NPT			(15*32+ 0) /* "npt" Nested Page Table support */
+ #define X86_FEATURE_LBRV		(15*32+ 1) /* "lbrv" LBR Virtualization support */
+diff --git a/arch/x86/include/asm/msr-index.h b/arch/x86/include/asm/msr-index.h
+index 86554de9a3f5..b67d90f46263 100644
+--- a/arch/x86/include/asm/msr-index.h
++++ b/arch/x86/include/asm/msr-index.h
+@@ -1006,6 +1006,7 @@
+ #define THERM_INT_HIGH_ENABLE		(1 << 0)
+ #define THERM_INT_LOW_ENABLE		(1 << 1)
+ #define THERM_INT_PLN_ENABLE		(1 << 24)
++#define THERM_INT_DPTI_ENABLE		(1 << 25)
  
-@@ -548,7 +553,7 @@ static int thermal_throttle_online(unsigned int cpu)
- 	l = apic_read(APIC_LVTTHMR);
- 	apic_write(APIC_LVTTHMR, l & ~APIC_LVT_MASKED);
+ #define MSR_IA32_THERM_STATUS		0x0000019c
  
--	return thermal_throttle_add_dev(dev, cpu);
-+	return err;
- }
+@@ -1035,6 +1036,7 @@
  
- static int thermal_throttle_offline(unsigned int cpu)
+ #define PACKAGE_THERM_STATUS_PROCHOT		(1 << 0)
+ #define PACKAGE_THERM_STATUS_POWER_LIMIT	(1 << 10)
++#define PACKAGE_THERM_STATUS_DPTI_ACK		(1 << 25)
+ #define PACKAGE_THERM_STATUS_HFI_UPDATED	(1 << 26)
+ 
+ #define MSR_IA32_PACKAGE_THERM_INTERRUPT	0x000001b2
 
 -- 
 2.43.0
