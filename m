@@ -1,33 +1,41 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from smtp.forwardemail.net (smtp.forwardemail.net [121.127.44.66])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C0F6B3AD534;
-	Sat, 13 Jun 2026 07:47:34 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A906E368D6C
+	for <linux-pm@vger.kernel.org>; Sat, 13 Jun 2026 08:18:19 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=121.127.44.66
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1781336859; cv=none; b=hqEZoTTQE2JObdoHAFfCUPCE6l2KSEhH5COg8L8Zo9hRWIekZkSPigy4QYQBUDxP/wEq8EmjfKLSeVur7xZHpSwn4yO95vaVdJ/NOa5IuzRdWrRoUHf7e17COupsW3ex/1iBR5Yx1Y7DEUi3XzWqrp3/MMpA9qZwEnr3A77ocp4=
+	t=1781338701; cv=none; b=KdghpcvWa+mg66q2gJxz8o0i9SSPcO9LKk57tlZ9WdNLkn01X/3lgjfZu8bYU6ppxh0nSardxRNKTHjB+hEm9SG2KeKRSa6HtABok+F2GIdouAnZDDdCHjlac4iDLSELYchYUkj8C0aLIrnp/oDY4jI8eZLJ0Y/c9EsaEAEQoJU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1781336859; c=relaxed/simple;
-	bh=gQ5m3KUzb5DV/Lyrds+XlQ1XS92VjVfiRjnv1woplHc=;
+	s=arc-20240116; t=1781338701; c=relaxed/simple;
+	bh=E1P/mosDI0v9P4PQ9JaDFS3TLFgzbFmLVuCWgYJ1TEw=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=gTaamRaUtkTQnIf2GAWp62/NTAYJ/bUKK5Z6Od+doHwzjwT/KBmYeayxcIg25Pl+XV9UtX1FoSxX6HaUMwCDMbyYbYSIB6p86FshshcPGiTYo9KAy6Npyp+DduhgSNHNuFbYQk0xeeSG17cE4iKl9lPXvXk3NZOmkQkgRNaw9nk=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=MliIwHrI; arc=none smtp.client-ip=100.103.45.18
+	 In-Reply-To:Content-Type; b=hlTN6N7ASQdsxfDEXgLTRx5jlDStsKZABL+hQJP1Sw14+5hJDC4Mls6vvDfyT2ht0pD+1QjtIKoa7leWwpopcS0fmTmIQH3nU+XaEdBQOxj9P0dtww5EOvikPr29J7lOOQyrUtRx3tq57BPSC82HXaBMLTSNR6hAejKv+RA37U4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=kwiboo.se; spf=pass smtp.mailfrom=fe-bounces.kwiboo.se; dkim=pass (2048-bit key) header.d=kwiboo.se header.i=@kwiboo.se header.b=X5fjC+zi; arc=none smtp.client-ip=121.127.44.66
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=kwiboo.se
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=fe-bounces.kwiboo.se
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="MliIwHrI"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6CE051F000E9;
-	Sat, 13 Jun 2026 07:47:32 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1781336854;
-	bh=zZcgj3O3Xe6AmCnD931Mnu5s9oDegS1TUeI/p86WTx0=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To;
-	b=MliIwHrIdP7ikYWct9u52KLjzS0zngcsYdEXsZU6Bkqn/SingQ7bYpAVztv96IVCm
-	 1WMXMWHXsmOv7M0gJMLacO9RO+WakI627ieKcucyfmeyuLk9JzYOPDMN7n91ULiI+F
-	 YjG1i0WrB4noH7sYfLqvx/rcYdU5oWF084MqHFEtGTIK2Cwh9XAmFXv/REVlht+mHo
-	 Sa1Vfs3qI4CypI0l6/eAtYXwt0Ii2HwWxLKaYcbMLctEDlQ/AXfr4m0buNWchvpm7g
-	 gF1CgYRtMNFjix3pmBQq0zsItT3DI793pPqk5xFO46mtPOoT8k+ojbncGTCiTWTBqg
-	 mREUGkoFzFgEg==
-Message-ID: <1deb0868-7443-450f-9b08-68ce5d7ae7f6@kernel.org>
-Date: Sat, 13 Jun 2026 09:47:30 +0200
+	dkim=pass (2048-bit key) header.d=kwiboo.se header.i=@kwiboo.se header.b="X5fjC+zi"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kwiboo.se;
+ h=Content-Transfer-Encoding: Content-Type: In-Reply-To: From: References:
+ Cc: To: Subject: MIME-Version: Date: Message-ID; q=dns/txt;
+ s=fe-e1b5cab7be; t=1781338699;
+ bh=xpDULfvSGqlETs98W87UX/kuF4lM1kjk45D89odlqmI=;
+ b=X5fjC+ziC1Tp7J9/jCcFYMh7EsUfQ1EA79wuHrYHFqtDINtkUha1MB3GOK8C2UqLBFjsmVVL7
+ Y3IiRYWOydCzYRJ4j+V2qG7hzPcQ+EnSltfgIhD8r0lAsiDK80LEfTwZSL4N3HbBO3t9yqhxwSU
+ w8AYkNuNOSNsFwP15HdHXGhmSQTkI/yzhDnj5woEBdqqqJXyqcMNcdSDFAc+1yc8YYuh1xeTjn0
+ Fu11P5jcBM7cGRlYhp9aFEb2/NlcaNPqZdz1K3pny+3nVTGBavyr9Wc06wLTSbvmC1SLHXph/3x
+ 8ZDaN6F+xsBqTVPIqPXAN4uvKPnvMuH4nXu9RT+0aQKA==
+X-Forward-Email-ID: 6a2d12469b8e0435f022b519
+X-Forward-Email-Sender: rfc822; jonas@kwiboo.se, smtp.forwardemail.net,
+ 121.127.44.66
+X-Forward-Email-Version: 2.8.26
+X-Forward-Email-Website: https://forwardemail.net
+X-Complaints-To: abuse@forwardemail.net
+X-Report-Abuse: abuse@forwardemail.net
+X-Report-Abuse-To: abuse@forwardemail.net
+Message-ID: <0e6466aa-a153-446b-b31c-e9b331573358@kwiboo.se>
+Date: Sat, 13 Jun 2026 10:18:09 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -35,81 +43,121 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] power: supply: Match DT value types
-To: "Rob Herring (Arm)" <robh@kernel.org>, Sebastian Reichel
- <sre@kernel.org>, Hans de Goede <hansg@kernel.org>,
- Marek Szyprowski <m.szyprowski@samsung.com>,
- Sebastian Krzyszkowiak <sebastian.krzyszkowiak@puri.sm>,
- Purism Kernel Team <kernel@puri.sm>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <20260612215308.1888834-1-robh@kernel.org>
-From: Krzysztof Kozlowski <krzk@kernel.org>
+Subject: Re: [RFC PATCH v4 7/9] arm64: dts: rockchip: rk356x: Add the NPU and
+ its IOMMU
+To: MidG971 <midgy971@gmail.com>
+Cc: tomeu@tomeuvizoso.net, ogabbay@kernel.org, heiko@sntech.de,
+ robh@kernel.org, krzk+dt@kernel.org, conor+dt@kernel.org,
+ ulf.hansson@linaro.org, dri-devel@lists.freedesktop.org,
+ linux-rockchip@lists.infradead.org, devicetree@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org,
+ iommu@lists.linux.dev, linux-kernel@vger.kernel.org, xxm@rock-chips.com,
+ chaoyi.chen@rock-chips.com, finley.xiao@rock-chips.com,
+ diederik@cknow-tech.com
+References: <20260613070116.438906-1-midgy971@gmail.com>
+ <20260613070116.438906-8-midgy971@gmail.com>
 Content-Language: en-US
-Autocrypt: addr=krzk@kernel.org; keydata=
- xsFNBFVDQq4BEAC6KeLOfFsAvFMBsrCrJ2bCalhPv5+KQF2PS2+iwZI8BpRZoV+Bd5kWvN79
- cFgcqTTuNHjAvxtUG8pQgGTHAObYs6xeYJtjUH0ZX6ndJ33FJYf5V3yXqqjcZ30FgHzJCFUu
- JMp7PSyMPzpUXfU12yfcRYVEMQrmplNZssmYhiTeVicuOOypWugZKVLGNm0IweVCaZ/DJDIH
- gNbpvVwjcKYrx85m9cBVEBUGaQP6AT7qlVCkrf50v8bofSIyVa2xmubbAwwFA1oxoOusjPIE
- J3iadrwpFvsZjF5uHAKS+7wHLoW9hVzOnLbX6ajk5Hf8Pb1m+VH/E8bPBNNYKkfTtypTDUCj
- NYcd27tjnXfG+SDs/EXNUAIRefCyvaRG7oRYF3Ec+2RgQDRnmmjCjoQNbFrJvJkFHlPeHaeS
- BosGY+XWKydnmsfY7SSnjAzLUGAFhLd/XDVpb1Een2XucPpKvt9ORF+48gy12FA5GduRLhQU
- vK4tU7ojoem/G23PcowM1CwPurC8sAVsQb9KmwTGh7rVz3ks3w/zfGBy3+WmLg++C2Wct6nM
- Pd8/6CBVjEWqD06/RjI2AnjIq5fSEH/BIfXXfC68nMp9BZoy3So4ZsbOlBmtAPvMYX6U8VwD
- TNeBxJu5Ex0Izf1NV9CzC3nNaFUYOY8KfN01X5SExAoVTr09ewARAQABzSVLcnp5c3p0b2Yg
- S296bG93c2tpIDxrcnprQGtlcm5lbC5vcmc+wsGPBBMBCgA5AhsDBgsJCAcDAgYVCAIJCgsE
- FgIDAQIeAQIXgBYhBJvQfg4MUfjVlne3VBuTQ307QWKbBQJp2mE8AAoJEBuTQ307QWKbeaIP
- /ihHTkTW4KsN/DQ945JJbyu5tI0J80Wue7QyyLPglyKfhgb5cLLNPpOC8cCIJsc7+W3i2P38
- s2c1cOH6CYGE7E9ur3Vfme8NW2S2I/Z8VC7bZnzyS23wT17LrsdS/qCpx4o8U+pt/xdXDKph
- EGRYrIEmMpUWvyYzyYKGIe25FtaayIIKpq8eZYyFcp2f/sG5IkOW5uZzHPMPdcm87jU7fyuQ
- rAU2vx9r+ulUfQ/q9Z2roC/ode3l7t2pN7BCBCsUDp6JCrUyZrtT1e7EbA0ZRP3aOBNk2P2E
- DQOgJGjGdO5Yx2Y9LFtltu6JbsBJHi1syGRX3AtQYOMc4Y1WGoeZJmMlvKj2ZqqXNkcWi2DS
- IQEWB0uW6CqFsBBIMGDa+6OzdaVO/uAVXWDWml02Men3CILdI1MbVjoh8ECqYUY7OQ+JJvNN
- vnliuq5WM3Ghd3jg/LZZrxXjdIginRHFQCjIJYLKpLZWm1/iDFedcfzqRNYmTtqscdCNHW41
- oT3Z7BmO9xwdjuwBS6nmS6JJwkbf5Ot2QR4pB/DRU7ZwjT1qHe+9r9gF32wXVQatHNGK/VVu
- sfwOnkdxCWkp/qb2gdQRmZh+SedStWshigH6sNfuHBloF/q+hjMRc8b2m326OZdrbSHwY1Sz
- vti8Hn7n8NjdHO9LKB7BIdjkA9DA5WsqOuVCzsFNBFVDXDQBEADNkrQYSREUL4D3Gws46JEo
- Z9HEQOKtkrwjrzlw/tCmqVzERRPvz2Xg8n7+HRCrgqnodIYoUh5WsU84N03KlLueMNsWLJBv
- BaubYN4JuJIdRr4dS4oyF1/fQAQPHh8Thpiz0SAZFx6iWKB7Qrz3OrGCjTPcW6eiOMheesVS
- 5hxietSmlin+SilmIAPZHx7n242u6kdHOh+/SyLImKn/dh9RzatVpUKbv34eP1wAGldWsRxb
- f3WP9pFNObSzI/Bo3kA89Xx2rO2roC+Gq4LeHvo7ptzcLcrqaHUAcZ3CgFG88CnA6z6lBZn0
- WyewEcPOPdcUB2Q7D/NiUY+HDiV99rAYPJztjeTrBSTnHeSBPb+qn5ZZGQwIdUW9YegxWKvX
- XHTwB5eMzo/RB6vffwqcnHDoe0q7VgzRRZJwpi6aMIXLfeWZ5Wrwaw2zldFuO4Dt91pFzBSO
- IpeMtfgb/Pfe/a1WJ/GgaIRIBE+NUqckM+3zJHGmVPqJP/h2Iwv6nw8U+7Yyl6gUBLHFTg2h
- YnLFJI4Xjg+AX1hHFVKmvl3VBHIsBv0oDcsQWXqY+NaFahT0lRPjYtrTa1v3tem/JoFzZ4B0
- p27K+qQCF2R96hVvuEyjzBmdq2esyE6zIqftdo4MOJho8uctOiWbwNNq2U9pPWmu4vXVFBYI
- GmpyNPYzRm0QPwARAQABwsF2BBgBCgAgAhsMFiEEm9B+DgxR+NWWd7dUG5NDfTtBYpsFAmna
- YUkACgkQG5NDfTtBYptX+BAApg32CkxwNucNEi8WfWA8oKkW0y8YDuY6ORMo9FWNGiT/OTy0
- vyJrLocrpn86zwfjVp+eCrssPYh8eqJfnWqmYv6ACQtHPYzPZQ3mSo8H97Z01oUxITzCxpXm
- ZkLgPIqtDPcC2E3dPM/fVxcyowM8XsaMA9wcsaUYrta8toOq2b9tKcjleKMfMrm0gQ9u7wUc
- QbLkwj6TCLOwucb07GXzLTNF9PZmaDUpKAZjMjmrW+le+SFvQbhamx0rxLWPR0NWntXpbCn+
- +ACch03p/JyTBVktxFsFyCt7pTPE1kEaeuXBTe/a2D9iQvRxRW19LvuO2e59/u1wYUiH/orz
- wbIC2S4dBsPAPihL3ztOU1yE86GPyQtSE0kU+/7snnLt4QGi6PChf3t5gnNjAzjUUovO8rgI
- c+5yN5heq5loYHgK6OQ9OlHzsPHO9e9MOQcKlFycs1pyijFGzDwdNUm/SchK8iWT2QApTx4A
- K9bCVaboTA2T77QYkRcRJYSsO1alGX0ome/hMLD1daXlkrNUp1HWa3K4iytLRXjCSIorWiGs
- n+q3krnpXu3TFkA8qtOFZMdnIiFuiq1yLT8hptsV5xh1TA2nsVvSYiaCr3q4s4BKjS/KrLDb
- qoxzw8ISjdUp4pA85vb6YLCmb39NgidD+7PmAr65lBNveIFynTgsja1rRQ4=
-In-Reply-To: <20260612215308.1888834-1-robh@kernel.org>
+From: Jonas Karlman <jonas@kwiboo.se>
+In-Reply-To: <20260613070116.438906-8-midgy971@gmail.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 
-On 12/06/2026 23:53, Rob Herring (Arm) wrote:
-> The battery drivers read properties whose bindings use signed values
-> for temperature thresholds and unsigned values for voltage thresholds.
-> Some helpers used the opposite signedness, which makes property type
-> checking report real mismatches.
+Hi Midgy,
+
+On 6/13/2026 9:01 AM, MidG971 wrote:
+> From: Midgy BALON <midgy971@gmail.com>
 > 
-> Use signed helpers where the binding and DTS allow negative values, and
-> use unsigned helpers for voltage properties documented as uint32 cells.
+> The RK3568 has an NVDLA-derived NPU at fde40000 with its own IOMMU at
+> fde4b000. Add both nodes (disabled by default) and the NPU power-domain
+> child under the PMU power-controller, and point rockchip,pmu at the PMU
+> syscon that controls the NPU NoC bus-idle.
 > 
-> Assisted-by: Codex:gpt-5-5
-> Signed-off-by: Rob Herring (Arm) <robh@kernel.org>
+> Besides the SCMI compute clock, assign the CRU CLK_NPU so the NPU AXI
+> bus clock comes up at 200 MHz rather than the 12 MHz boot default.
+> 
+> The power-domain deliberately carries no pm_qos: qos_npu sits behind the
+> NPU NoC, which is gated until the NPU is brought up, so a genpd power-off
+> QoS save would fault reading it.
+> 
+> Signed-off-by: Midgy BALON <midgy971@gmail.com>
 > ---
->  drivers/power/supply/ltc2941-battery-gauge.c | 2 +-
->  drivers/power/supply/max17042_battery.c      | 8 ++++++--
->  2 files changed, 7 insertions(+), 3 deletions(-)
+>  arch/arm64/boot/dts/rockchip/rk356x-base.dtsi | 38 +++++++++++++++++++
+>  1 file changed, 38 insertions(+)
 > 
+> diff --git a/arch/arm64/boot/dts/rockchip/rk356x-base.dtsi b/arch/arm64/boot/dts/rockchip/rk356x-base.dtsi
+> index 64bdd8b7754b5..313db59c1aed8 100644
+> --- a/arch/arm64/boot/dts/rockchip/rk356x-base.dtsi
+> +++ b/arch/arm64/boot/dts/rockchip/rk356x-base.dtsi
+> @@ -512,6 +512,13 @@ power-domain@RK3568_PD_GPU {
+>  				#power-domain-cells = <0>;
+>  			};
+>  
+> +			pd_npu: power-domain@RK3568_PD_NPU {
+> +				reg = <RK3568_PD_NPU>;
+> +				clocks = <&cru ACLK_NPU_PRE>,
+> +					 <&cru HCLK_NPU_PRE>;
+> +				#power-domain-cells = <0>;
+> +			};
+> +
+>  			/* These power domains are grouped by VD_LOGIC */
+>  			power-domain@RK3568_PD_VI {
+>  				reg = <RK3568_PD_VI>;
+> @@ -572,6 +579,37 @@ power-domain@RK3568_PD_RKVENC {
+>  		};
+>  	};
+>  
+> +	rknn_core_0: npu@fde40000 {
+> +		compatible = "rockchip,rk3568-rknn-core";
+> +		reg = <0x0 0xfde40000 0x0 0x1000>,
+> +		      <0x0 0xfde41000 0x0 0x1000>,
+> +		      <0x0 0xfde43000 0x0 0x1000>;
+> +		reg-names = "pc", "cna", "core";
+> +		interrupts = <GIC_SPI 151 IRQ_TYPE_LEVEL_HIGH>;
+> +		clocks = <&cru ACLK_NPU>, <&cru HCLK_NPU>,
+> +			 <&scmi_clk SCMI_CLK_NPU>, <&cru PCLK_NPU_PRE>;
+> +		clock-names = "aclk", "hclk", "npu", "pclk";
+> +		assigned-clocks = <&scmi_clk SCMI_CLK_NPU>, <&cru CLK_NPU>;
+> +		assigned-clock-rates = <200000000>, <600000000>;
 
-Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
+This looks strange, the SCMI clk can be seen as a virtual clock that
+changes between normal CRU NPU clk and a PVTPLL NPU clk (depending on
+rate). 200 MHz, a typical opp-suspend value (switch to CRU clk instead
+of PVTPLL), will set the CLK_NPU rate to 200 MHz, then setting CLK_NPU
+to 600 MHz (the lowest rate that activates PVTPLL mode) outside of SCMI
+control looks strange.
 
-Best regards,
-Krzysztof
+Suggest you only set SCMI NPU clk rate to 200 or 400 MHz and drop any
+special handling, e.g. noc_init, to closer match RK3588 and defer any
+use of PVTPLL clk to a future series that also adds OPP support.
+
+> +		resets = <&cru SRST_A_NPU>, <&cru SRST_H_NPU>;
+> +		reset-names = "srst_a", "srst_h";
+> +		power-domains = <&power RK3568_PD_NPU>;
+> +		rockchip,pmu = <&pmu>;
+
+This looks wrong, the rockchip,pmu prop is typically used to reference
+PMU GRF, see i.e. pinctrl node, not the power-management that is seem to
+be correctly abstracted using power-domains above, please drop this prop.
+
+Regards,
+Jonas
+
+> +		iommus = <&rknn_mmu_0>;
+> +		status = "disabled";
+> +	};
+> +
+> +	rknn_mmu_0: iommu@fde4b000 {
+> +		compatible = "rockchip,iommu";
+> +		reg = <0x0 0xfde4b000 0x0 0x40>;
+> +		interrupts = <GIC_SPI 151 IRQ_TYPE_LEVEL_HIGH>;
+> +		clock-names = "aclk", "iface";
+> +		clocks = <&cru ACLK_NPU>, <&cru HCLK_NPU>;
+> +		power-domains = <&power RK3568_PD_NPU>;
+> +		#iommu-cells = <0>;
+> +		status = "disabled";
+> +	};
+> +
+>  	gpu: gpu@fde60000 {
+>  		compatible = "rockchip,rk3568-mali", "arm,mali-bifrost";
+>  		reg = <0x0 0xfde60000 0x0 0x4000>;
+
