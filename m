@@ -1,41 +1,33 @@
-Received: from smtp.forwardemail.net (smtp.forwardemail.net [121.127.44.66])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6957F3382F0
-	for <linux-pm@vger.kernel.org>; Sat, 13 Jun 2026 07:40:57 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=121.127.44.66
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0108F319852;
+	Sat, 13 Jun 2026 07:41:54 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1781336459; cv=none; b=d6uai75mzBX9Y1a/j/f9lUn75a/Ohl2DAVDobOKQ3qXibsVyFXnJE8sJNi/vSc4uazlkGs8eZwux5CNRulzcdvg4fTpncTVZ/ulaeuBA7r0cClHm4yJg2dXbF/DdsXRAFCtfhEev/ciJd6ooM09Ke5U/HS1YHEe8uXtin9q3ziA=
+	t=1781336516; cv=none; b=uti0s52XjCTh1vM1b1FxiaK7RYJFvOB02MYU3emGH8LRwDudRDdPx6yxot015jjj5ZHbbzKpcV2NkMsz3vWUzcMEGCUsfCZCTOjxje5yBvbfMFX+lVbMtq+5qfKNV7N1d8WjRKh3qRtEniuGq13OqbGkS/SVjibmSE9iGweElF8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1781336459; c=relaxed/simple;
-	bh=vKxsuOnHElxYLABaCL+A4fJkjVhRZLYiku7c7WLPJOM=;
+	s=arc-20240116; t=1781336516; c=relaxed/simple;
+	bh=/hcsLk1V6Ngby5CfiTulzkiqKYBFSoET/hvDV+H8KDY=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=HYnN8dI435M/Z1SZxRpszbcAs/eXtEfH3y89u6EMaZjpZe2qjKHSWXFiwwof1g26qryjHvHLYoMVVkvej7dQ+5M3vfP8BKIRdeXWibcwMns6GonpbYnA+W6taEjmZtXN4VhT1lnnRVCsWyBQ2n3rQxqzUDljeGdxInRVn01y5bw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=kwiboo.se; spf=pass smtp.mailfrom=fe-bounces.kwiboo.se; dkim=pass (2048-bit key) header.d=kwiboo.se header.i=@kwiboo.se header.b=izYoQy9t; arc=none smtp.client-ip=121.127.44.66
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=kwiboo.se
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=fe-bounces.kwiboo.se
+	 In-Reply-To:Content-Type; b=D6OPWvBiQHU14e1mgHNeAZNR8XCbFnC7I1VwcZtGGSBrKEm9p4KECYf+1MFEomTlT371xJ9TLnYrwfhfN4F8hv/I9Go/fKSD1h1jTgLld+UFMDofKaDCe7qF8VR45x0zOgLVDI87it46fezlJphsSF8/p/G61WU9dVkRtW7MhXY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=BwK6FT19; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kwiboo.se header.i=@kwiboo.se header.b="izYoQy9t"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kwiboo.se;
- h=Content-Transfer-Encoding: Content-Type: In-Reply-To: From: References:
- Cc: To: Subject: MIME-Version: Date: Message-ID; q=dns/txt;
- s=fe-e1b5cab7be; t=1781336457;
- bh=qHK4xcuZuyY3VWkKdAkc6bfYV2q4RPDKWtvw4p7wT+w=;
- b=izYoQy9tka7D95JBeXUBaGij0aYBCXQjYJNKT8Bezea1Qhfd4ABk/TVnW4QAvkAM3ZPmnjeGs
- JievOJnC4fZeyec9iG4rZmFOEEV+jGvfsfNjE6+q18F2NybRH7P2cfAdgAKh259aMUujPvSpQlZ
- lOL9l0+1DcjmCv2BvYPFEMoPeDCj3RvgAXDwwfHIDGMStDZ5cj2+v4e9W50wr81veRuiAxhw41o
- MhNTU7oVwjRoCjpHot7Art/3M6sBJHzxBywOadGqfR2MlZ64fikqQ+A2NM+az8SfdtykvmLhrvK
- TlQdn/q8aZ0hfDGvHw2xuNdQ8cBq7k50UvleoSXQR0sg==
-X-Forward-Email-ID: 6a2d09837f2a6d9c19af5dbd
-X-Forward-Email-Sender: rfc822; jonas@kwiboo.se, smtp.forwardemail.net,
- 121.127.44.66
-X-Forward-Email-Version: 2.8.26
-X-Forward-Email-Website: https://forwardemail.net
-X-Complaints-To: abuse@forwardemail.net
-X-Report-Abuse: abuse@forwardemail.net
-X-Report-Abuse-To: abuse@forwardemail.net
-Message-ID: <e0f044df-9d34-4e6e-aa48-9e4227b4bdf7@kwiboo.se>
-Date: Sat, 13 Jun 2026 09:40:46 +0200
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="BwK6FT19"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 33A771F000E9;
+	Sat, 13 Jun 2026 07:41:50 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1781336514;
+	bh=2cw3WEl8qFceDsWwYnqsUnwAPOOKfYdIOk82bDCdpeY=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To;
+	b=BwK6FT19KnoeonsICbwiO/JQcqL3vwKIPymITE8fxur6a7uSiRZAHq74TnRhZbV/K
+	 Mks1vqb6EfiVgi7wUh9SrCOudLewMgDzt/gFFTERkFebNjgVaJe9ePVHLTx5wLEaDx
+	 Rvz7v8LlwPp6lOZ+W5+AMeMzwZv+e6wuo4R9zraxMS/D3JxO4sWV51RhMIn8FpS59C
+	 3HOc6lxLLIXjHu56KLjJ+5zS33JfjTC8C59e8dTgt3/55PHgEauDiPPjP8pc9Vpncz
+	 heR37yD6w/ziEktzmfmLoFwgxrn6aC49rWDj9/3tGuEhZsCnl5+ZeOScLL9V+9elNY
+	 rcPPaVFQIwG1Q==
+Message-ID: <fcf93e0f-a2f0-4070-86ec-8a34e9344b76@kernel.org>
+Date: Sat, 13 Jun 2026 09:41:48 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -43,114 +35,133 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [RFC PATCH v4 8/9] arm64: dts: rockchip: rk3568-rock-3b: Enable
- the NPU
-To: MidG971 <midgy971@gmail.com>
-Cc: "tomeu@tomeuvizoso.net" <tomeu@tomeuvizoso.net>,
- "ogabbay@kernel.org" <ogabbay@kernel.org>, "heiko@sntech.de"
- <heiko@sntech.de>, "robh@kernel.org" <robh@kernel.org>,
- "krzk+dt@kernel.org" <krzk+dt@kernel.org>,
- "conor+dt@kernel.org" <conor+dt@kernel.org>,
- "ulf.hansson@linaro.org" <ulf.hansson@linaro.org>,
- "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>,
- "linux-rockchip@lists.infradead.org" <linux-rockchip@lists.infradead.org>,
- "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- "linux-arm-kernel@lists.infradead.org"
- <linux-arm-kernel@lists.infradead.org>,
- "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
- "iommu@lists.linux.dev" <iommu@lists.linux.dev>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "xxm@rock-chips.com" <xxm@rock-chips.com>,
- "chaoyi.chen@rock-chips.com" <chaoyi.chen@rock-chips.com>,
- "finley.xiao@rock-chips.com" <finley.xiao@rock-chips.com>,
- "diederik@cknow-tech.com" <diederik@cknow-tech.com>
-References: <20260613070116.438906-1-midgy971@gmail.com>
- <20260613070116.438906-9-midgy971@gmail.com>
+Subject: Re: [PATCH v3 1/8] dt-bindings: remoteproc: qcom,pas: add thermal
+ mitigation properties
+To: Gaurav Kohli <gaurav.kohli@oss.qualcomm.com>
+Cc: Bjorn Andersson <andersson@kernel.org>,
+ Mathieu Poirier <mathieu.poirier@linaro.org>, Rob Herring <robh@kernel.org>,
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
+ <conor+dt@kernel.org>, Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>,
+ Amit Kucheria <amit.kucheria@oss.qualcomm.com>,
+ Manivannan Sadhasivam <mani@kernel.org>,
+ Konrad Dybcio <konradybcio@kernel.org>, Kees Cook <kees@kernel.org>,
+ "Gustavo A. R. Silva" <gustavoars@kernel.org>,
+ cros-qcom-dts-watchers@chromium.org, linux-arm-msm@vger.kernel.org,
+ linux-remoteproc@vger.kernel.org, devicetree@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+ linux-hardening@vger.kernel.org,
+ Manaf Meethalavalappu Pallikunhi <manaf.pallikunhi@oss.qualcomm.com>
+References: <20260609-qmi-tmd-v3-0-291a2ff4c634@oss.qualcomm.com>
+ <20260609-qmi-tmd-v3-1-291a2ff4c634@oss.qualcomm.com>
+ <20260610-ocelot-of-stimulating-excellence-bcb0fe@quoll>
+ <03d863ee-2caa-41f2-94b5-7332fc930b42@oss.qualcomm.com>
+ <d81bc78e-2c1d-45fd-90c9-f7ec462183a0@kernel.org>
+ <7f1e46fb-15e3-4638-9930-8abc1dd5a778@oss.qualcomm.com>
+From: Krzysztof Kozlowski <krzk@kernel.org>
 Content-Language: en-US
-From: Jonas Karlman <jonas@kwiboo.se>
-In-Reply-To: <20260613070116.438906-9-midgy971@gmail.com>
+Autocrypt: addr=krzk@kernel.org; keydata=
+ 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
+In-Reply-To: <7f1e46fb-15e3-4638-9930-8abc1dd5a778@oss.qualcomm.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 
-Hi Midgy,
-
-On 6/13/2026 9:01 AM, MidG971 wrote:
-> From: Midgy BALON <midgy971@gmail.com>
+On 12/06/2026 15:52, Gaurav Kohli wrote:
 > 
-> Enable the NPU and its IOMMU on ROCK 3B and wire vdd_npu as the NPU
-> power domain's domain-supply, so genpd brings the rail up and down with
-> the domain (the domain is marked need_regulator). The PVTPLL compute
-> clock is brought up later by the driver.
 > 
-> The rail is no longer kept always-on, so pin it to 1000 mV (the NPU's
-> 1 GHz operating voltage; the driver runs a fixed compute rate with no
-> devfreq voltage scaling) and mark it boot-on, so it is up before the
-> power domain de-idles the NPU NoC at power-on.
+> On 6/11/2026 5:53 PM, Krzysztof Kozlowski wrote:
+>> On 11/06/2026 13:12, Gaurav Kohli wrote:
+>>>> Why? And where is this generic property defined? You cannot just
+>>>> sprinkle generic properties in random bindings.
+>>>>
+>>>
+>>> Ack, will add why part.
+>>> These names are matched with the thermal mitigation device identifiers
+>>> populated by remote firmware over QMI and define mitigation devices are
+>>> exposed as cooling devices.
+>>
+>> No, -names correspond to values passed via DT, not some remote firmware.
+>> The remote firmware should give you interface which is explicit and does
+>> not need such properties.
 > 
-> Signed-off-by: Midgy BALON <midgy971@gmail.com>
-> ---
->  .../arm64/boot/dts/rockchip/rk3568-rock-3b.dts | 18 ++++++++++++++++--
->  1 file changed, 16 insertions(+), 2 deletions(-)
+> thanks Krzysztof for review, We need tmd-names because of following reasons:
 > 
-> diff --git a/arch/arm64/boot/dts/rockchip/rk3568-rock-3b.dts b/arch/arm64/boot/dts/rockchip/rk3568-rock-3b.dts
-> index 69001e453732e..d3f9776c2bdc3 100644
-> --- a/arch/arm64/boot/dts/rockchip/rk3568-rock-3b.dts
-> +++ b/arch/arm64/boot/dts/rockchip/rk3568-rock-3b.dts
-> @@ -330,9 +330,10 @@ regulator-state-mem {
->  
->  			vdd_npu: DCDC_REG4 {
->  				regulator-name = "vdd_npu";
-> +				regulator-boot-on;
+> Following Daniel's series [1], the thermal framework supports
+> mapping multiple cooling devices per remoteproc/device via indexed 
+> cooling-cells.
+> 
+> 1) The thermal framework's cooling-maps reference
+> cooling devices by index (for #cooling-cells = <3>). Without tmd-names,
+> there's no way to know which index corresponds to which TMD, as firmware 
+> may return tmd-names in any order.
+> 
+> below are the changes post new thermal mapping changes:
+> DT: tmd-names = "cdsp_sw", "xyz";
+> Firmware: ["cdsp_sw", "xyz1", "xyz2",]
+> Driver registers: Only "cdsp_sw" (index 0) and "xyz" (index 1)
 
-There is no need for the NPU in the bootloader, do not use DT as a
-workaround for software issues.
+names property are not to instruct drivers to register or not to
+register something.
 
-This series mention the PVTPLL NPU clk and seem to contains some
-workarounds related to how the PVTPLL clock is handled in TF-A.
+I don't understand the problem and explanation in the binding is
+basically non-existing.
 
-The PVTPLL block typically require the pclk and power domain enabled to
-function, and this series seem to add workarounds to try and ensure this,
-e.g. with noc_init to activate PVTPLL usage.
+Remember that all lists and indices ARE FIXED, so driver knows exactly
+which index means what.
 
-I would suggest that you do not involve the PVTPLL clock in this initial
-NPU support for RK3568, set CLK_NPU to 400 MHz and use it instead of the
-SCMI clock, or keep SCMI clk rate less than or equal to 400 MHz to
-disable PVTPLL_NEED mode in TF-A.
 
-In a future series you can extend Linux with a proper PVTPLL clk driver
-and OPP support for the rocket driver to correctly ensure pclk and pd is
-enabled when a PVTPLL clock is managed.
+> 
+> This allows cooling-maps like below:
+> cooling-device = <&remoteproc 0 ...>  // "cdsp_sw"
+> cooling-device = <&remoteproc 1 ...>  // "xyz"
+> 
+> 2) Not all firmware-provided TMDs should be
+> exposed as cooling devices. The tmd-names property acts as a filter,
+> allowing board-specific DT to select only the relevant TMDs for that
+> platform.
 
->  				regulator-initial-mode = <0x2>;
-> -				regulator-min-microvolt = <500000>;
-> -				regulator-max-microvolt = <1350000>;
-> +				regulator-min-microvolt = <1000000>;
-> +				regulator-max-microvolt = <1000000>;
+And driver filters, no need for DT property.
 
-Please describe the HW, do not add workarounds for software issues or
-shortcomings.
 
-Regards,
-Jonas
-
->  				regulator-ramp-delay = <6001>;
->  
->  				regulator-state-mem {
-> @@ -787,3 +788,16 @@ vp0_out_hdmi: endpoint@ROCKCHIP_VOP2_EP_HDMI0 {
->  		remote-endpoint = <&hdmi_in_vp0>;
->  	};
->  };
-> +
-> +&pd_npu {
-> +	domain-supply = <&vdd_npu>;
-> +};
-> +
-> +&rknn_core_0 {
-> +	npu-supply = <&vdd_npu>;
-> +	status = "okay";
-> +};
-> +
-> +&rknn_mmu_0 {
-> +	status = "okay";
-> +};
-
+Best regards,
+Krzysztof
