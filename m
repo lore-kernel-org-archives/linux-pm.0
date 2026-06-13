@@ -1,33 +1,33 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0108F319852;
-	Sat, 13 Jun 2026 07:41:54 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C0F6B3AD534;
+	Sat, 13 Jun 2026 07:47:34 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1781336516; cv=none; b=uti0s52XjCTh1vM1b1FxiaK7RYJFvOB02MYU3emGH8LRwDudRDdPx6yxot015jjj5ZHbbzKpcV2NkMsz3vWUzcMEGCUsfCZCTOjxje5yBvbfMFX+lVbMtq+5qfKNV7N1d8WjRKh3qRtEniuGq13OqbGkS/SVjibmSE9iGweElF8=
+	t=1781336859; cv=none; b=hqEZoTTQE2JObdoHAFfCUPCE6l2KSEhH5COg8L8Zo9hRWIekZkSPigy4QYQBUDxP/wEq8EmjfKLSeVur7xZHpSwn4yO95vaVdJ/NOa5IuzRdWrRoUHf7e17COupsW3ex/1iBR5Yx1Y7DEUi3XzWqrp3/MMpA9qZwEnr3A77ocp4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1781336516; c=relaxed/simple;
-	bh=/hcsLk1V6Ngby5CfiTulzkiqKYBFSoET/hvDV+H8KDY=;
+	s=arc-20240116; t=1781336859; c=relaxed/simple;
+	bh=gQ5m3KUzb5DV/Lyrds+XlQ1XS92VjVfiRjnv1woplHc=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=D6OPWvBiQHU14e1mgHNeAZNR8XCbFnC7I1VwcZtGGSBrKEm9p4KECYf+1MFEomTlT371xJ9TLnYrwfhfN4F8hv/I9Go/fKSD1h1jTgLld+UFMDofKaDCe7qF8VR45x0zOgLVDI87it46fezlJphsSF8/p/G61WU9dVkRtW7MhXY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=BwK6FT19; arc=none smtp.client-ip=100.103.45.18
+	 In-Reply-To:Content-Type; b=gTaamRaUtkTQnIf2GAWp62/NTAYJ/bUKK5Z6Od+doHwzjwT/KBmYeayxcIg25Pl+XV9UtX1FoSxX6HaUMwCDMbyYbYSIB6p86FshshcPGiTYo9KAy6Npyp+DduhgSNHNuFbYQk0xeeSG17cE4iKl9lPXvXk3NZOmkQkgRNaw9nk=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=MliIwHrI; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="BwK6FT19"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 33A771F000E9;
-	Sat, 13 Jun 2026 07:41:50 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="MliIwHrI"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6CE051F000E9;
+	Sat, 13 Jun 2026 07:47:32 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1781336514;
-	bh=2cw3WEl8qFceDsWwYnqsUnwAPOOKfYdIOk82bDCdpeY=;
+	s=k20260515; t=1781336854;
+	bh=zZcgj3O3Xe6AmCnD931Mnu5s9oDegS1TUeI/p86WTx0=;
 	h=Date:Subject:To:Cc:References:From:In-Reply-To;
-	b=BwK6FT19KnoeonsICbwiO/JQcqL3vwKIPymITE8fxur6a7uSiRZAHq74TnRhZbV/K
-	 Mks1vqb6EfiVgi7wUh9SrCOudLewMgDzt/gFFTERkFebNjgVaJe9ePVHLTx5wLEaDx
-	 Rvz7v8LlwPp6lOZ+W5+AMeMzwZv+e6wuo4R9zraxMS/D3JxO4sWV51RhMIn8FpS59C
-	 3HOc6lxLLIXjHu56KLjJ+5zS33JfjTC8C59e8dTgt3/55PHgEauDiPPjP8pc9Vpncz
-	 heR37yD6w/ziEktzmfmLoFwgxrn6aC49rWDj9/3tGuEhZsCnl5+ZeOScLL9V+9elNY
-	 rcPPaVFQIwG1Q==
-Message-ID: <fcf93e0f-a2f0-4070-86ec-8a34e9344b76@kernel.org>
-Date: Sat, 13 Jun 2026 09:41:48 +0200
+	b=MliIwHrIdP7ikYWct9u52KLjzS0zngcsYdEXsZU6Bkqn/SingQ7bYpAVztv96IVCm
+	 1WMXMWHXsmOv7M0gJMLacO9RO+WakI627ieKcucyfmeyuLk9JzYOPDMN7n91ULiI+F
+	 YjG1i0WrB4noH7sYfLqvx/rcYdU5oWF084MqHFEtGTIK2Cwh9XAmFXv/REVlht+mHo
+	 Sa1Vfs3qI4CypI0l6/eAtYXwt0Ii2HwWxLKaYcbMLctEDlQ/AXfr4m0buNWchvpm7g
+	 gF1CgYRtMNFjix3pmBQq0zsItT3DI793pPqk5xFO46mtPOoT8k+ojbncGTCiTWTBqg
+	 mREUGkoFzFgEg==
+Message-ID: <1deb0868-7443-450f-9b08-68ce5d7ae7f6@kernel.org>
+Date: Sat, 13 Jun 2026 09:47:30 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -35,28 +35,14 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v3 1/8] dt-bindings: remoteproc: qcom,pas: add thermal
- mitigation properties
-To: Gaurav Kohli <gaurav.kohli@oss.qualcomm.com>
-Cc: Bjorn Andersson <andersson@kernel.org>,
- Mathieu Poirier <mathieu.poirier@linaro.org>, Rob Herring <robh@kernel.org>,
- Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
- <conor+dt@kernel.org>, Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>,
- Amit Kucheria <amit.kucheria@oss.qualcomm.com>,
- Manivannan Sadhasivam <mani@kernel.org>,
- Konrad Dybcio <konradybcio@kernel.org>, Kees Cook <kees@kernel.org>,
- "Gustavo A. R. Silva" <gustavoars@kernel.org>,
- cros-qcom-dts-watchers@chromium.org, linux-arm-msm@vger.kernel.org,
- linux-remoteproc@vger.kernel.org, devicetree@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
- linux-hardening@vger.kernel.org,
- Manaf Meethalavalappu Pallikunhi <manaf.pallikunhi@oss.qualcomm.com>
-References: <20260609-qmi-tmd-v3-0-291a2ff4c634@oss.qualcomm.com>
- <20260609-qmi-tmd-v3-1-291a2ff4c634@oss.qualcomm.com>
- <20260610-ocelot-of-stimulating-excellence-bcb0fe@quoll>
- <03d863ee-2caa-41f2-94b5-7332fc930b42@oss.qualcomm.com>
- <d81bc78e-2c1d-45fd-90c9-f7ec462183a0@kernel.org>
- <7f1e46fb-15e3-4638-9930-8abc1dd5a778@oss.qualcomm.com>
+Subject: Re: [PATCH] power: supply: Match DT value types
+To: "Rob Herring (Arm)" <robh@kernel.org>, Sebastian Reichel
+ <sre@kernel.org>, Hans de Goede <hansg@kernel.org>,
+ Marek Szyprowski <m.szyprowski@samsung.com>,
+ Sebastian Krzyszkowiak <sebastian.krzyszkowiak@puri.sm>,
+ Purism Kernel Team <kernel@puri.sm>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <20260612215308.1888834-1-robh@kernel.org>
 From: Krzysztof Kozlowski <krzk@kernel.org>
 Content-Language: en-US
 Autocrypt: addr=krzk@kernel.org; keydata=
@@ -102,66 +88,28 @@ Autocrypt: addr=krzk@kernel.org; keydata=
  K9bCVaboTA2T77QYkRcRJYSsO1alGX0ome/hMLD1daXlkrNUp1HWa3K4iytLRXjCSIorWiGs
  n+q3krnpXu3TFkA8qtOFZMdnIiFuiq1yLT8hptsV5xh1TA2nsVvSYiaCr3q4s4BKjS/KrLDb
  qoxzw8ISjdUp4pA85vb6YLCmb39NgidD+7PmAr65lBNveIFynTgsja1rRQ4=
-In-Reply-To: <7f1e46fb-15e3-4638-9930-8abc1dd5a778@oss.qualcomm.com>
+In-Reply-To: <20260612215308.1888834-1-robh@kernel.org>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 
-On 12/06/2026 15:52, Gaurav Kohli wrote:
+On 12/06/2026 23:53, Rob Herring (Arm) wrote:
+> The battery drivers read properties whose bindings use signed values
+> for temperature thresholds and unsigned values for voltage thresholds.
+> Some helpers used the opposite signedness, which makes property type
+> checking report real mismatches.
 > 
+> Use signed helpers where the binding and DTS allow negative values, and
+> use unsigned helpers for voltage properties documented as uint32 cells.
 > 
-> On 6/11/2026 5:53 PM, Krzysztof Kozlowski wrote:
->> On 11/06/2026 13:12, Gaurav Kohli wrote:
->>>> Why? And where is this generic property defined? You cannot just
->>>> sprinkle generic properties in random bindings.
->>>>
->>>
->>> Ack, will add why part.
->>> These names are matched with the thermal mitigation device identifiers
->>> populated by remote firmware over QMI and define mitigation devices are
->>> exposed as cooling devices.
->>
->> No, -names correspond to values passed via DT, not some remote firmware.
->> The remote firmware should give you interface which is explicit and does
->> not need such properties.
+> Assisted-by: Codex:gpt-5-5
+> Signed-off-by: Rob Herring (Arm) <robh@kernel.org>
+> ---
+>  drivers/power/supply/ltc2941-battery-gauge.c | 2 +-
+>  drivers/power/supply/max17042_battery.c      | 8 ++++++--
+>  2 files changed, 7 insertions(+), 3 deletions(-)
 > 
-> thanks Krzysztof for review, We need tmd-names because of following reasons:
-> 
-> Following Daniel's series [1], the thermal framework supports
-> mapping multiple cooling devices per remoteproc/device via indexed 
-> cooling-cells.
-> 
-> 1) The thermal framework's cooling-maps reference
-> cooling devices by index (for #cooling-cells = <3>). Without tmd-names,
-> there's no way to know which index corresponds to which TMD, as firmware 
-> may return tmd-names in any order.
-> 
-> below are the changes post new thermal mapping changes:
-> DT: tmd-names = "cdsp_sw", "xyz";
-> Firmware: ["cdsp_sw", "xyz1", "xyz2",]
-> Driver registers: Only "cdsp_sw" (index 0) and "xyz" (index 1)
 
-names property are not to instruct drivers to register or not to
-register something.
-
-I don't understand the problem and explanation in the binding is
-basically non-existing.
-
-Remember that all lists and indices ARE FIXED, so driver knows exactly
-which index means what.
-
-
-> 
-> This allows cooling-maps like below:
-> cooling-device = <&remoteproc 0 ...>  // "cdsp_sw"
-> cooling-device = <&remoteproc 1 ...>  // "xyz"
-> 
-> 2) Not all firmware-provided TMDs should be
-> exposed as cooling devices. The tmd-names property acts as a filter,
-> allowing board-specific DT to select only the relevant TMDs for that
-> platform.
-
-And driver filters, no need for DT property.
-
+Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
 
 Best regards,
 Krzysztof
