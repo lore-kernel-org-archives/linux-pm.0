@@ -1,105 +1,168 @@
-Received: from mail-pl1-f181.google.com (mail-pl1-f181.google.com [209.85.214.181])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp5-g21.free.fr (smtp5-g21.free.fr [212.27.42.5])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9B81E23D2B1
-	for <linux-pm@vger.kernel.org>; Sun, 14 Jun 2026 00:15:19 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.181
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A0E8D3890F9;
+	Sun, 14 Jun 2026 06:50:33 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.27.42.5
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1781396120; cv=none; b=h2J/qAZ2g+nUxAchvJtOvEuZVs2iHdu/5RC+eVA/IqNNUzJ80pUt1rLqhgG7revXRBoQdzHwj6mFzi8UNwK64InY8s06CPPLl7QJDB/AqKAMffoBzSMvrhaqcM7GDGhnW3uD871PICyMyoxE5VoZlv818O89LIONli2bbGnSWis=
+	t=1781419836; cv=none; b=Yk16gIif/nFtiE9bWU54Lbr+WA3BZyoHsjl5hlcrvjDNdbvAWt0G/+2z26fHE7FiioaBmdAGtckXJbch8Bfk8puKRS3PFtkAc8lGzYCqhSdbnap0n17fImatUqwcAom2YhWG2onnLUZkJB/84SBsaUetANNE8uE01op7rIWcsKQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1781396120; c=relaxed/simple;
-	bh=Pj+C8pUwwWVRJegU5jsK8XKHgnSgNejqKj/GqWErzXA=;
-	h=Message-ID:From:Date:Subject:To:Cc; b=Yi84j6Mr5xbq16+w2FATZ269LY7BGFT1eJSQKpaP5A842kxxH3rQvXpxsWkabgIMumsHmmRx+4ydneNo4SrSds96eEjt4cv4bsxklpBycJlPYVaqOg5qVqKGAnz3wfPTZi9PvN+ukcIIljPGFksFBbO5Ly1AuaTaNXbwFtkV92A=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=BS6H67dJ; arc=none smtp.client-ip=209.85.214.181
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="BS6H67dJ"
-Received: by mail-pl1-f181.google.com with SMTP id d9443c01a7336-2bf18c30bb2so16665955ad.0
-        for <linux-pm@vger.kernel.org>; Sat, 13 Jun 2026 17:15:19 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1781396119; x=1782000919; darn=vger.kernel.org;
-        h=cc:to:subject:date:from:message-id:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=0HX3ZYLkpoP4OKdcJqiss02RhOC7aeNFTtkhTsIn3N8=;
-        b=BS6H67dJSdUr3Q/83vOMAGDSjN4Y7qcSm4B86mb8wAbXbkhLeipWm9qrpDa2V3doB4
-         q/vdczjK/hkP6h++VeTrWPmJK+05+AsEQQymn/jvuZ3rbVwYI8Rf/9Fqx5GWaaCT17OU
-         80ZApjVNQ588oSOS1PSl9jo3CuZaFPaIyBX6H0vbsqNWeWLnkcVPYM8AaSlK8U1KsXZk
-         3V3LuO3AomDkwTfjfivGySz5akilRhPbU8+Cs8Nl4u6x0nJnIFk7lFRxUG4ItbhqQe0o
-         hCAKneTPt1DETQVpvX50zvR40p9f4heWV3U4ywtIlb/2G3AI4bHIim/GMf6qr/cxQpHf
-         PCmQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1781396119; x=1782000919;
-        h=cc:to:subject:date:from:message-id:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=0HX3ZYLkpoP4OKdcJqiss02RhOC7aeNFTtkhTsIn3N8=;
-        b=BVuC4UkQ0bmEGQooMFIkDnTNCyMg4jVaFGxoecMFKugEE5LjoM8Hhnu44TBAXk3ZB/
-         YIfQcmXBNTIXkfy3xLhr7j5nYML3PlnRCAHr4947N1dq463kWuzjskO31t+i9yGFrJy4
-         wMyoNt2DTSf2+TH8SCbHgktjavnlDawPh0d8ScMp56Y2OskOswGv3mTgNlC91eVnhNtx
-         /L5hYbuSNGdBV6ltL/SiMN3J0e/RE7tVZCFyga2pwC+HsKukLjDeQkAsaiEI/7CPrijK
-         m56d9WWplp5XODU9cPZ8q5OjWjCIvYlk/o56otV3AgoXMr9zmmuOWR7hiAswF/duD/Z7
-         hZWg==
-X-Gm-Message-State: AOJu0Yx1M2UBXPqBeT7Wyw53dofGsjuMjgv+3S+dfJq9nXWy032Fv5Su
-	hil+jU9BSBJ8+kNN4+58GsxKOVu7t9hQXcuTtZoVk9pY2Nod8VYJcbYgFxpY7vychlg=
-X-Gm-Gg: Acq92OEzaz0VpL85bk7vWh9StDlJx6T6N6dMiddHBUvOnwKn2ooa+7UYLQ1PTmGPOWa
-	Eo1mdelLdBLbH9mVK5VEJsimC2603JpOqHLJwNrYFgCs5BCGDf9Q5JOd4d/IADNoGbPbvD0AYv7
-	LUKiLR7NUVCz4iVcdUtQmsrCypSzKtSWlkltA4ahb/h059U/6jlz4bo2DjcuJ4aJhhowGpl29na
-	UgclJFOXfOTqkPEXwNe5xFq24KHRiqe0SMRIpYW0gmiwsYb+Df/2Di5lRfJCqYkcJngfjD0AXBV
-	o78meEvfdVMZ36eU9zlzWs2W7w9mtYuAAtrWH42PQ/3p9qG9evNX0qqB44rWIbqLAlG1b+jJT6e
-	Neo3D04FBIatgLH+s+7+h00lYDZw2hwrSYpRTQ+3rvpsYi4NozQKrKBKhEBH0hJL3wwW0AY9wtv
-	JAU0mEuZaDuznrjvIz
-X-Received: by 2002:a17:902:f610:b0:2c1:88a1:983c with SMTP id d9443c01a7336-2c6642a7bafmr56205255ad.28.1781396119131;
-        Sat, 13 Jun 2026 17:15:19 -0700 (PDT)
-Received: from [127.0.1.1] ([47.253.114.73])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2c4330782b2sm63552385ad.67.2026.06.13.17.15.15
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 13 Jun 2026 17:15:18 -0700 (PDT)
-Message-ID: <6a2df296.6b2684af.263065.8200@mx.google.com>
-From: "Wayen.Yan" <win847@gmail.com>
-Date: Sun, 14 Jun 2026 08:14:11 +0800
-Subject: [PATCH] thermal/drivers/airoha: Fix low trip clamp using wrong
- variable
-To: linux-pm@vger.kernel.org
-Cc: Rafael J. Wysocki <rafael@kernel.org>, Daniel Lezcano <daniel.lezcano@kernel.org>, Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>, Christian Marangi <ansuelsmth@gmail.com>, Lorenzo Bianconi <lorenzo@kernel.org>, linux-kernel@vger.kernel.org, linux-mediatek@lists.infradead.org
+	s=arc-20240116; t=1781419836; c=relaxed/simple;
+	bh=dbYFjebjj2Q3VC4QtrLPpI34tWuFEhiwLP2eLYJqCaQ=;
+	h=Content-Type:Message-ID:Date:MIME-Version:From:Subject:To:
+	 In-Reply-To:Cc; b=ec2lsdhJS6fkF3cbBtn5WxGXofMg8/riJILvnRFjOhMwmaAhLlNXIt5oKJJa+HHQcLDp2HPt278UB2Gs7cAGimCliitswT46FhcrHaZ3hhP0EBUkH1G9vVlzm/TZ/PAkG7ZzD1CCRvxrLOQuXMJySx93POyq64WuERDwOabf3Ks=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=online.fr; spf=pass smtp.mailfrom=online.fr; arc=none smtp.client-ip=212.27.42.5
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=online.fr
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=online.fr
+Received: from [10.0.0.2] (unknown [82.65.243.93])
+	(Authenticated sender: legoll@free.fr)
+	by smtp5-g21.free.fr (Postfix) with ESMTPSA id 9AC466012D;
+	Sun, 14 Jun 2026 08:50:14 +0200 (CEST)
+Content-Type: multipart/mixed; boundary="------------RVgHdrMwKXEsVedW0RgSV6O5"
+Message-ID: <f031e13e-d9f5-414a-b90e-a3d5a60b8d05@online.fr>
+Date: Sun, 14 Jun 2026 08:50:13 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
+MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+From: Vincent Legoll <legoll@online.fr>
+Subject: [PATCH] riscv: dts: spacemit: orangepi-rv2: Add cpu scaling for K1,
+ SoC
+To: Shuwei Wu <shuwei.wu@mailbox.org>, "Rafael J. Wysocki"
+ <rafael@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>,
+ Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
+ Conor Dooley <conor+dt@kernel.org>, Paul Walmsley <pjw@kernel.org>,
+ Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>,
+ Alexandre Ghiti <alex@ghiti.fr>, Yixun Lan <dlan@kernel.org>,
+ Yixun Lan <dlan@kernel.org>
+Content-Language: en-US
+In-Reply-To: <20260612-shadow-deps-v3-0-2f3ba88611ff@mailbox.org>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linux-riscv@lists.infradead.org, spacemit@lists.linux.dev,
+ devicetree@vger.kernel.org
 
-In airoha_thermal_set_trips(), the low trip validation incorrectly
-clamps 'high' instead of 'low':
+This is a multi-part message in MIME format.
+--------------RVgHdrMwKXEsVedW0RgSV6O5
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 
-  low = clamp_t(int, high, RAW_TO_TEMP(priv, 0), ...);
+[RESEND] as I cannot see yesterday's
 
-This causes TEMPOFFSETL to receive the clamped high-temperature value
-instead of the requested low-temperature value, making the low-temperature
-alert threshold identical to the high-temperature threshold. As a result,
-low-temperature interrupts can never fire independently.
 
-Fix by replacing 'high' with 'low' in the clamp expression, matching
-the symmetric pattern used for the high trip on line 264.
+Hello,
 
-Fixes: 42de37f40e1b ("thermal/drivers: Add support for Airoha EN7581 thermal sensor")
-Signed-off-by: Wayen <win847@gmail.com>
----
- drivers/thermal/airoha_thermal.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/thermal/airoha_thermal.c b/drivers/thermal/airoha_thermal.c
-index b9fd6bfc88..439aa011b7 100644
---- a/drivers/thermal/airoha_thermal.c
-+++ b/drivers/thermal/airoha_thermal.c
-@@ -273,7 +273,7 @@ static int airoha_thermal_set_trips(struct thermal_zone_device *tz, int low,
- 
- 	if (low != -INT_MAX) {
- 		/* Validate low and clamp it to a supported value */
--		low = clamp_t(int, high, RAW_TO_TEMP(priv, 0),
-+		low = clamp_t(int, low, RAW_TO_TEMP(priv, 0),
- 			      RAW_TO_TEMP(priv, FIELD_MAX(EN7581_DOUT_TADC_MASK)));
- 
- 		/* We offset the low temp of 1°C to trigger correct event */
+
+I tested (on OrangePi RV2) the attached patch applied over
+
+spacemit/for-next + Shuwei Wu's V3 series.
+
+
+This is a copy/paste of Shuwei Wu's work, so I don't know
+
+if I can submit this with my SoB or if it should be done
+
+differently, please advise.
+
+
+Anyways, you can add my:
+
+Tested-by: Vincent Legoll <vincent.legoll@gmail.com> # OrangePi-RV2
+
+
+To the relevant patches from your series, if that's useful,
+
+because it looks like it is working properly:
+
+
+On Void linux (musl libc):
+
+
+uname -a
+Linux opirv2 7.1.0-rc1-00043-gb860bca13be4 #14 SMP PREEMPT Sat Jun 13 
+11:02:13 CEST 2026 riscv64 GNU/Linux
+
+awk --version | head -1
+GNU Awk 5.3.2, API 4.0
+
+echo userspace > /sys/devices/system/cpu/cpufreq/policy0/scaling_governor
+
+echo 1600000 > /sys/devices/system/cpu/cpu0/cpufreq/scaling_setspeed
+time awk 'BEGIN{for(i=0;i<1000000;i++){}}'
+real    0m0.300s
+user    0m0.299s
+sys     0m0.001s
+
+echo 1228800 > /sys/devices/system/cpu/cpu0/cpufreq/scaling_setspeed
+time awk 'BEGIN{for(i=0;i<1000000;i++){}}'
+real    0m0.432s
+user    0m0.429s
+sys     0m0.004s
+
+echo 1000000 > /sys/devices/system/cpu/cpu0/cpufreq/scaling_setspeed
+time awk 'BEGIN{for(i=0;i<1000000;i++){}}'
+real    0m0.476s
+user    0m0.476s
+sys     0m0.001s
+
+echo 819000 > /sys/devices/system/cpu/cpu0/cpufreq/scaling_setspeed
+time awk 'BEGIN{for(i=0;i<1000000;i++){}}'
+real    0m0.582s
+user    0m0.581s
+sys     0m0.001s
+
+echo 614400 > /sys/devices/system/cpu/cpu0/cpufreq/scaling_setspeed
+time awk 'BEGIN{for(i=0;i<1000000;i++){}}'
+real    0m0.778s
+user    0m0.773s
+sys     0m0.005s
+
 -- 
-2.51.0
+
+Vincent Legoll
 
 
+--------------RVgHdrMwKXEsVedW0RgSV6O5
+Content-Type: text/x-patch; charset=UTF-8;
+ name="0001-riscv-dts-spacemit-orangepi-rv2-Add-cpu-scaling-for-.patch"
+Content-Disposition: attachment;
+ filename*0="0001-riscv-dts-spacemit-orangepi-rv2-Add-cpu-scaling-for-.pa";
+ filename*1="tch"
+Content-Transfer-Encoding: base64
+
+RnJvbSA5OTI0Nzg5NjU1YWU1ZjRmOThlN2E1Y2RjM2RmM2YzNGU3YmZiNjU5IE1vbiBTZXAg
+MTcgMDA6MDA6MDAgMjAwMQpGcm9tOiBWaW5jZW50IExlZ29sbCA8dmluY2VudC5sZWdvbGxA
+Z21haWwuY29tPgpEYXRlOiBTYXQsIDEzIEp1biAyMDI2IDEwOjQ5OjM0ICswMjAwClN1Ympl
+Y3Q6IFtQQVRDSF0gcmlzY3Y6IGR0czogc3BhY2VtaXQ6IG9yYW5nZXBpLXJ2MjogQWRkIGNw
+dSBzY2FsaW5nIGZvciBLMQogU29DCgpFbmFibGUgQ1BVIERWRlMgb24gT3JhbmdlUGkgUlYy
+CgpUaGlzIGlzIGEgY29weS9wYXN0ZSBmcm9tIFNodXdlaSBXdSdzIEJQSS1GMyBEVFMgbW9k
+aWZpY2F0aW9ucwoKU2lnbmVkLW9mZi1ieTogVmluY2VudCBMZWdvbGwgPHZpbmNlbnQubGVn
+b2xsQGdtYWlsLmNvbT4KLS0tCiAuLi4vYm9vdC9kdHMvc3BhY2VtaXQvazEtb3JhbmdlcGkt
+cnYyLmR0cyAgICAgfCAzNSArKysrKysrKysrKysrKysrKystCiAxIGZpbGUgY2hhbmdlZCwg
+MzQgaW5zZXJ0aW9ucygrKSwgMSBkZWxldGlvbigtKQoKZGlmZiAtLWdpdCBhL2FyY2gvcmlz
+Y3YvYm9vdC9kdHMvc3BhY2VtaXQvazEtb3JhbmdlcGktcnYyLmR0cyBiL2FyY2gvcmlzY3Yv
+Ym9vdC9kdHMvc3BhY2VtaXQvazEtb3JhbmdlcGktcnYyLmR0cwppbmRleCA3YzQ5YmNlNDI3
+ZjMuLjYyZDI1ZjU3OWFmNiAxMDA2NDQKLS0tIGEvYXJjaC9yaXNjdi9ib290L2R0cy9zcGFj
+ZW1pdC9rMS1vcmFuZ2VwaS1ydjIuZHRzCisrKyBiL2FyY2gvcmlzY3YvYm9vdC9kdHMvc3Bh
+Y2VtaXQvazEtb3JhbmdlcGktcnYyLmR0cwpAQCAtOCw2ICs4LDcgQEAKIAogI2luY2x1ZGUg
+ImsxLmR0c2kiCiAjaW5jbHVkZSAiazEtcGluY3RybC5kdHNpIgorI2luY2x1ZGUgImsxLW9w
+cC5kdHNpIgogCiAvIHsKIAltb2RlbCA9ICJPcmFuZ2VQaSBSVjIiOwpAQCAtODAsNiArODEs
+MzggQEAgJmNvbWJvX3BoeSB7CiAJc3RhdHVzID0gIm9rYXkiOwogfTsKIAorJmNwdV8wIHsK
+KyAgICAgICBjcHUtc3VwcGx5ID0gPCZidWNrMV8wdjk+OworfTsKKworJmNwdV8xIHsKKyAg
+ICAgICBjcHUtc3VwcGx5ID0gPCZidWNrMV8wdjk+OworfTsKKworJmNwdV8yIHsKKyAgICAg
+ICBjcHUtc3VwcGx5ID0gPCZidWNrMV8wdjk+OworfTsKKworJmNwdV8zIHsKKyAgICAgICBj
+cHUtc3VwcGx5ID0gPCZidWNrMV8wdjk+OworfTsKKworJmNwdV80IHsKKyAgICAgICBjcHUt
+c3VwcGx5ID0gPCZidWNrMV8wdjk+OworfTsKKworJmNwdV81IHsKKyAgICAgICBjcHUtc3Vw
+cGx5ID0gPCZidWNrMV8wdjk+OworfTsKKworJmNwdV82IHsKKyAgICAgICBjcHUtc3VwcGx5
+ID0gPCZidWNrMV8wdjk+OworfTsKKworJmNwdV83IHsKKyAgICAgICBjcHUtc3VwcGx5ID0g
+PCZidWNrMV8wdjk+OworfTsKKwogJmVtbWMgewogCWJ1cy13aWR0aCA9IDw4PjsKIAltbWMt
+aHM0MDAtMV84djsKQEAgLTE2Miw3ICsxOTUsNyBAQCBwbWljQDQxIHsKIAkJZGxkb2luMi1z
+dXBwbHkgPSA8JmJ1Y2s1PjsKIAogCQlyZWd1bGF0b3JzIHsKLQkJCWJ1Y2sxIHsKKwkJCWJ1
+Y2sxXzB2OTogYnVjazEgewogCQkJCXJlZ3VsYXRvci1taW4tbWljcm92b2x0ID0gPDUwMDAw
+MD47CiAJCQkJcmVndWxhdG9yLW1heC1taWNyb3ZvbHQgPSA8MzQ1MDAwMD47CiAJCQkJcmVn
+dWxhdG9yLXJhbXAtZGVsYXkgPSA8NTAwMD47Ci0tIAoyLjU0LjAKCg==
+
+--------------RVgHdrMwKXEsVedW0RgSV6O5--
