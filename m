@@ -1,138 +1,132 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.19])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5832C23AE62;
-	Sun, 14 Jun 2026 19:06:42 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CF7D63264D6;
+	Sun, 14 Jun 2026 20:31:47 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.19
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1781464003; cv=none; b=ei+MJEEu/YYPENPAqTreLnUe6HIeUt8Whu22DNKfQN9DtPwtkjQvvb+Q3T4+YpHwmyqnLy2e7DLfLCuDjN5Ql/R+tsg2ljLRlqBHTftKgCzhf4enuBA/Men6SMGY+OjDNCMPHHvqIVPmQJU/qXsKK38Pyb7w7iksv42IKpEinr4=
+	t=1781469111; cv=none; b=m25AwlIbeQ+lOhfZlG8+n1ilPp0ZjTUpz87YgFdHRtreRVOBOke3QsyLE0pSQAKGrPTyrxJ5SEYujd65yo2+J+yq4P52ewq7jxrADQBMXZGhoDl7c95XjXEHBfXKjvV6NeVPBicjPOxbFEOWF9sUil1gq52uaxrft3A8SHv67pU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1781464003; c=relaxed/simple;
-	bh=hhKZmyCl1nlGbiSgRi6ImyY7Yqw8WFjGuQaj8NpEvnE=;
-	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=csvn11MjKHZRsXETTuWvIDFmDrTxMp2OvCGtbTBTJsxZiAStPnpFZa9lWvPBxzcvlH8y2+njSeqiSgh9TIQIw4B0NWNCwmnIQCCS/MbiUn0TDvSjzAk1Tt3X+15CByyiSd3sDzFz4BQx9spZEtp6y80NIGo0P6YnDG1hwvXeuTM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=JvGXkcTy; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1781469111; c=relaxed/simple;
+	bh=cBWaHdoxmiq6brTd1QAtT75checZ+82ruIMMfjYriyA=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=FCr+rwsErpDfvmmrydtePn0jRvIfMYi2KZyTInuIWDyjKIvaYWJlvlayCwY1PqSvWT1H8slGC1ctHzCDreyp0Zz4AOXJ4mM0YOQSKZ+YOVLRnKRjlul8PE3zsnqeUHZYmoHltmA0uqcHJdyQedK0l2timZWyn9XYhWbqEMUwIuE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=R8QdGKfg; arc=none smtp.client-ip=192.198.163.19
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="JvGXkcTy"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5B1241F000E9;
-	Sun, 14 Jun 2026 19:06:34 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1781464002;
-	bh=/VXI67DOMw8cHtqaIo95wnFIHVXV1YBH75iWiT6gYus=;
-	h=Date:From:To:Cc:Subject:In-Reply-To:References;
-	b=JvGXkcTyauddm+aN+4xKc5839Gd9wa/VspObJOABk7DcvqpnvBBuk3Hv+SoI8OMFW
-	 r8N/bO9tT8PuZyYqdNh+py/lfqHFqMc98n79O5xqpybLrEHAIw2WDmqRdMZyqrnZwA
-	 5ohztof/Sg2BKNQv9qVF2jTzRvOf1f1GPxZ7yHfslrMEkCDiopxnRxSOgiX9gD7E1F
-	 xle7//iqSPS7BKLakB5h6K1IxPafP5IYGx0dATU1yObrKiCuXBeexud/CJNllzH7eE
-	 BbPel9Y/WBOhzh64JYFx0VbvzE4qGQti5HQiEG6juDEhZF25h5EBwvQdm1FTg5ZgLi
-	 ifNwcTh3pNtEQ==
-Date: Sun, 14 Jun 2026 20:06:30 +0100
-From: Jonathan Cameron <jic23@kernel.org>
-To: Jishnu Prakash <jishnu.prakash@oss.qualcomm.com>
-Cc: David Lechner <dlechner@baylibre.com>, Nuno =?UTF-8?B?U8Oh?=
- <nuno.sa@analog.com>, Andy Shevchenko <andy@kernel.org>, Amit Kucheria
- <amitk@kernel.org>, Thara Gopinath <thara.gopinath@gmail.com>, "Rafael J.
- Wysocki" <rafael@kernel.org>, Daniel Lezcano <daniel.lezcano@kernel.org>,
- Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>,
- linux-arm-msm@vger.kernel.org, linux-iio@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Kamal Wadhwa
- <kamal.wadhwa@oss.qualcomm.com>, David Collins
- <david.collins@oss.qualcomm.com>, Anjelique Melendez
- <anjelique.melendez@oss.qualcomm.com>, Neil Armstrong
- <neil.armstrong@linaro.org>, Stephan Gerhold <stephan.gerhold@linaro.org>
-Subject: Re: [PATCH v2 2/2] thermal: qcom: add support for PMIC5 Gen3 ADC
- thermal monitoring
-Message-ID: <20260614200630.2ea04817@jic23-huawei>
-In-Reply-To: <27631a0f-b5ba-4181-94f9-aa7726a4054b@oss.qualcomm.com>
-References: <20260526-gen3_adc_tm-v2-0-702fbac919ac@oss.qualcomm.com>
-	<20260526-gen3_adc_tm-v2-2-702fbac919ac@oss.qualcomm.com>
-	<20260527124220.39ac0b64@jic23-huawei>
-	<27631a0f-b5ba-4181-94f9-aa7726a4054b@oss.qualcomm.com>
-X-Mailer: Claws Mail 4.4.0 (GTK 3.24.52; x86_64-pc-linux-gnu)
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="R8QdGKfg"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1781469108; x=1813005108;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=cBWaHdoxmiq6brTd1QAtT75checZ+82ruIMMfjYriyA=;
+  b=R8QdGKfgKVl8U4E6fq5qAdJA8Elg+afsgn5pl/gpgu3B/eFPqugGolz9
+   rbopakomM9gYarNPKIgh9mh5iS+kfHhEBgT7sf3mqP+IVXSpBAZP2Bud3
+   pLu18LrHHadX5ryAEYsKHBF41Qa4HS1hCwl63C03zp3Al3zZWuWzWim6E
+   NQkqpQ+uYgOhzXjWzvxuXgCwY2b/ulu5se5LIklYaoy3HYiQtDNeXRI9q
+   geCQEAX3aRMpGAPGwFA9EACsENxmHJCvqn+X4y8bhogxTLLdelqQaiyjE
+   ZCTXdd+3oXgUzDNmkQeNOGqBlu21IQar60IUJX4qPegz0t10IzQj7YRqh
+   w==;
+X-CSE-ConnectionGUID: F1GpVEuSRUuKLXXFcnD96w==
+X-CSE-MsgGUID: Gq9QTcIaSKyaFnmicGTpgA==
+X-IronPort-AV: E=McAfee;i="6800,10657,11817"; a="81231542"
+X-IronPort-AV: E=Sophos;i="6.24,205,1774335600"; 
+   d="scan'208";a="81231542"
+Received: from orviesa008.jf.intel.com ([10.64.159.148])
+  by fmvoesa113.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 14 Jun 2026 13:31:47 -0700
+X-CSE-ConnectionGUID: FmQOavtWS36NSancMwtHBA==
+X-CSE-MsgGUID: k7zjGeMxQayDDF18rv4Y5Q==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.24,205,1774335600"; 
+   d="scan'208";a="247175398"
+Received: from lkp-server01.sh.intel.com (HELO f0d55cb201f0) ([10.239.97.150])
+  by orviesa008.jf.intel.com with ESMTP; 14 Jun 2026 13:31:45 -0700
+Received: from kbuild by f0d55cb201f0 with local (Exim 4.98.2)
+	(envelope-from <lkp@intel.com>)
+	id 1wYrUc-00000000RBu-17nQ;
+	Sun, 14 Jun 2026 20:31:42 +0000
+Date: Mon, 15 Jun 2026 04:31:12 +0800
+From: kernel test robot <lkp@intel.com>
+To: Ronan Marchal <ronanmarchal29@gmail.com>, rafael@kernel.org
+Cc: llvm@lists.linux.dev, oe-kbuild-all@lists.linux.dev, pavel@kernel.org,
+	lenb@kernel.org, linux-pm@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	Ronan Marchal <ronanmarchal29@gmail.com>
+Subject: Re: [PATCH] kernel/power/snapshot: Add missing kernel-doc parameter
+ descriptions
+Message-ID: <202606150431.R9kR0q9p-lkp@intel.com>
+References: <20260614144158.82751-1-ronanmarchal29@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260614144158.82751-1-ronanmarchal29@gmail.com>
+
+Hi Ronan,
+
+kernel test robot noticed the following build errors:
+
+[auto build test ERROR on amd-pstate/linux-next]
+[also build test ERROR on amd-pstate/bleeding-edge linus/master v7.1 next-20260612]
+[If your patch is applied to the wrong git tree, kindly drop us a note.
+And when submitting patch, we suggest to use '--base' as documented in
+https://git-scm.com/docs/git-format-patch#_base_tree_information]
+
+url:    https://github.com/intel-lab-lkp/linux/commits/Ronan-Marchal/kernel-power-snapshot-Add-missing-kernel-doc-parameter-descriptions/20260614-224612
+base:   https://git.kernel.org/pub/scm/linux/kernel/git/superm1/linux.git linux-next
+patch link:    https://lore.kernel.org/r/20260614144158.82751-1-ronanmarchal29%40gmail.com
+patch subject: [PATCH] kernel/power/snapshot: Add missing kernel-doc parameter descriptions
+config: x86_64-kexec (https://download.01.org/0day-ci/archive/20260615/202606150431.R9kR0q9p-lkp@intel.com/config)
+compiler: clang version 22.1.3 (https://github.com/llvm/llvm-project e9846648fd6183ee6d8cbdb4502213fcf902a211)
+reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20260615/202606150431.R9kR0q9p-lkp@intel.com/reproduce)
+
+If you fix the issue in a separate patch/commit (i.e. not just a new version of
+the same patch/commit), kindly add following tags
+| Reported-by: kernel test robot <lkp@intel.com>
+| Closes: https://lore.kernel.org/oe-kbuild-all/202606150431.R9kR0q9p-lkp@intel.com/
+
+All errors (new ones prefixed by >>):
+
+>> kernel/power/snapshot.c:2042:1: error: unknown type name 'c'
+    2042 | c/**
+         | ^
+   1 error generated.
 
 
-> >> +static irqreturn_t adctm5_gen3_isr_thread(int irq, void *dev_id)
-> >> +{
-> >> +	struct adc_tm5_gen3_chip *adc_tm5 = dev_id;
-> >> +	int sdam_index = -1;
-> >> +	u8 tm_status[2] = { };
-> >> +	u8 buf[16] = { };
-> >> +
-> >> +	for (int i = 0; i < adc_tm5->nchannels; i++) {
-> >> +		struct adc_tm5_gen3_channel_props *chan_prop = &adc_tm5->chan_props[i];
-> >> +		int offset = chan_prop->tm_chan_index;
-> >> +		bool upper_set, lower_set;
-> >> +		int ret;
-> >> +
-> >> +		scoped_guard(adc5_gen3, adc_tm5) {
-> >> +			if (chan_prop->sdam_index != sdam_index) {
-> >> +				sdam_index = chan_prop->sdam_index;
-> >> +				ret = adc5_gen3_tm_status_check(adc_tm5, sdam_index,
-> >> +								tm_status, buf);  
-> > 
-> > I think the clear of other sdam interrupt status that sashiko was pointing out
-> > is here as somewhat unexpectedly a function called status_check clears as well.
-> >   
-> 
-> This is the full comment from Sashiko at this point:
-> 
-> > "Does the threaded handler clear statuses across all SDAMs indiscriminately?  
-> 
-> > Since this thread loops over all channels and clears the high status on any
-> > SDAM with an active event, could it clear a pending event on a different SDAM
-> > than the one that triggered the IRQ?  
-> 
-> > Because each SDAM has its own independent IRQ line, if the thread clears a
-> > pending event on SDAM 1 while servicing SDAM 0, couldn't SDAM 1's subsequent
-> > hardirq read a status of 0 and return IRQ_NONE? Could repeated IRQ_NONE
-> > returns cause the IRQ subsystem to shut down SDAM 1's interrupt line as a
-> > spurious interrupt storm?"  
-> 
-> This sequence of events can happen, but it should not be an issue.
-> 
-> It is possible that the threaded handler is called for servicing an
-> interrupt on SDAM0, and in the loop there is a violation detected on
-> a TM channel on SDAM1, and the SDAM1 TM status is cleared. But in this
-> case, this violation would also be handled after we notify the thermal
-> framework at the end of the loop, by some threshold update or disablement.
-> 
-> Even if the subsequent hardirq fires for SDAM1 and it returns IRQ_NONE
-> as the TM status was cleared, the violation would have been handled
-> by some threshold update, so the interrupt would not keep getting
-> triggered afterwards for the same threshold's violation.
-> 
-> 
-> I also checked the conditions from note_interrupt() in kernel/irq/spurious.c,
-> for enough repeated IRQ_NONE returns to happen to cause a spurious interrupt
-> disablement. 
-> It looks like there needs to be more than one interrupts returning IRQ_NONE
-> within 0.1 second to increment the irqs_unhandled counter once, but there can be
-> at most one TM interrupt in one second since we set the time period of
-> recurring TM measurement as one second here in the probe:
-> 
-> 		adc_tm5->chan_props[i].timer = MEAS_INT_1S;
-> 
-> So a spurious interrupt storm is not possible here.
+vim +/c +2042 kernel/power/snapshot.c
 
-Whilst sounds valid, it's a convoluted argument given it relies
-on us getting spurious interrupts reported, but not enough to trigger
-the stuff to stop interrupt storms. The rules around that may change
-in future given it's a heuristic to stop us seeing problems on dodgy
-hardware.
+  2041	
+> 2042	c/**
+  2043	 * enough_free_mem - Check if there is enough free memory for the image.
+  2044	 * @nr_pages: Number of non-highmem pages to copy.
+  2045	 * @nr_highmem: Number of highmem pages to copy.
+  2046	 *
+  2047	 * Check if there are enough free non-highmem pages available to save
+  2048	 * the hibernation image.
+  2049	 */
+  2050	static int enough_free_mem(unsigned int nr_pages, unsigned int nr_highmem)
+  2051	{
+  2052		struct zone *zone;
+  2053		unsigned int free = alloc_normal;
+  2054	
+  2055		for_each_populated_zone(zone)
+  2056			if (!is_highmem(zone))
+  2057				free += zone_page_state(zone, NR_FREE_PAGES);
+  2058	
+  2059		nr_pages += count_pages_for_highmem(nr_highmem);
+  2060		pr_debug("Normal pages needed: %u + %u, available pages: %u\n",
+  2061			 nr_pages, PAGES_FOR_IO, free);
+  2062	
+  2063		return free > nr_pages + PAGES_FOR_IO;
+  2064	}
+  2065	
 
-Can we just avoid handling interrupts for SDAMs that weren't the one that
-triggered this particular interrupt?
-
-Thanks,
-
-Jonathan
-
-
+--
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests/wiki
