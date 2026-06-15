@@ -1,93 +1,105 @@
-Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
+Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2642E4014A9
-	for <linux-pm@vger.kernel.org>; Mon, 15 Jun 2026 15:25:41 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 51DDC405C44
+	for <linux-pm@vger.kernel.org>; Mon, 15 Jun 2026 15:33:20 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.180.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1781537142; cv=none; b=XwpIM116tb72vbLmL8GwPnww2Ngv2Zy/c8Jj2PjkKHWxbNeCEJnx7r24Mj5kLmZ6qewY6Db86KXbZ2NbgI9VDnrKcUQaHR6M+OedLciOqgDBKcO+fny5O+C0pz/NXxLrPvRAUvuszDZ9rFPO5iI7ciI6iTnT2PHfXsIJev9aQDM=
+	t=1781537601; cv=none; b=IwfrR6D0V0iubLcnRQF8ck/5lGatdiB+Q/b/ELZsOZC632XIG7NNEY1/HX+dcAdAZV/OeS8BqTCVDe8cAkg5Xb3c3/534UA3ndD0fa0+4UkZGDsuBd5Zhf7NTf/UKdRYik6HZ9jWtGmsH5Ji/y81hF9k9zLHDWFOlPeI6K8TXKs=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1781537142; c=relaxed/simple;
-	bh=pXCNxxs1mjxtAFSmX6jArvznuLHZysx3NusI3L+39Pw=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=DChw1tRhLXqkotSlDOt5qp+9PXUpHFvfWzYSTrmBl4338mah51DFLYn97HoSrcDX01Vrw6nW9ws8cmRODwizEMHmuX4atSWmd7nZoYCP8Xll7Ubw7WmBKMMEC1BrewoVR01YX95fq7iWn1W1Chpyzp/lJvrb8scc7HEW9tkIW4g=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=l4M/MlVP; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=A6V4p5Ch; arc=none smtp.client-ip=205.220.168.131
+	s=arc-20240116; t=1781537601; c=relaxed/simple;
+	bh=KwUenCCTGlmgA/VcqQxmvfMpJVnf0YViC+wBXBgr9oQ=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=Tos2f7PBjDGCmH4/b7aAlhczK+s2OSC5XyVMvVUUIL2ockvfd0zE6+mXroHFEZZ6E9goOuOhN0UyzcgTUelAdg+XgQo60T3kHPDMLSoRrMFZ/FqR9pWTWZQyuo8CL3DBRy8z8y00+XCgAZFXqLH7e97JMIXpVjfgFl4Kn7UuCTk=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=ACi9lPJz; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=G4FVspkn; arc=none smtp.client-ip=205.220.180.131
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="l4M/MlVP";
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="A6V4p5Ch"
-Received: from pps.filterd (m0279867.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 65FFJsaQ398973
-	for <linux-pm@vger.kernel.org>; Mon, 15 Jun 2026 15:25:40 GMT
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="ACi9lPJz";
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="G4FVspkn"
+Received: from pps.filterd (m0279869.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 65FFLoHY943116
+	for <linux-pm@vger.kernel.org>; Mon, 15 Jun 2026 15:33:19 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
 	cc:content-transfer-encoding:content-type:date:from:in-reply-to
 	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	KlkMVStFd7TWXdQCQgPLMRWEvG6VtN6Kkt81Xs5cI7Q=; b=l4M/MlVPuoz7uIWz
-	L8uDQx0ogLGUSABWffL7prFfnmiR9DH52U3Fa5627ssYiDIgBtx9vYSyWu/KPabe
-	p3JDNBGaIAzzh50jazHiWyVdV/CmSfsWshguFQeB+/iJQkxNO+uiIEgabJVVZUB5
-	yz8EU02w+Wjda5Wc8qaVkB+9WDVqJXOHO+R9powEEtTURySoWlVd1MnaZ8B34+7R
-	r9bUVIAgpxuOE1zlU+j5TlTdSSX+898RdvdRD381yMfbEELtvoC/lIc4n4f12rRH
-	dMBQPHw2rZ1Xr8typfCR3evcK7VHDIzxjpdzindbGHVeAR1APCBgo4gj/mpKSOGc
-	qnsWRQ==
-Received: from mail-vs1-f71.google.com (mail-vs1-f71.google.com [209.85.217.71])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4etfa71axq-1
+	OwMQO0LcqR49s8kdpKn9p05zdjYBTA9VDNonkRXI1Ww=; b=ACi9lPJzRqm6Ft+O
+	dQs5XME/f76WWxRbnjH7GJ7yfRAJ2lHzskCTVl96VVuuwqmcqBRtVMUqPQwW3fwS
+	5F9ZAoMx6bOYAxIPNQlAWCSXjLoJ4Um3P8BhymdqZ2s17XAFb4Kao6Of/JHgdHUE
+	RRvkmeUAi1K/Hu99t6ZtQ7AJOh2FiEv3YyIrtJV7JS8h0jxdJV4ijb0mzl+w9tKL
+	FUpM643/Y29wQJ3odnMZPs0FD3oeVVC6ozRBJ9OmCs5L15B0NNVkHRkkzAVhExJq
+	RWspUUlJU1bFkheNdOxoMzD1T7sL4hrierQXWZ0N1FFreFhI9v/FL/0U6kwB81US
+	d4yZwQ==
+Received: from mail-vk1-f200.google.com (mail-vk1-f200.google.com [209.85.221.200])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4etgvhgysw-1
 	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Mon, 15 Jun 2026 15:25:40 +0000 (GMT)
-Received: by mail-vs1-f71.google.com with SMTP id ada2fe7eead31-71b5daaf011so1195669137.3
-        for <linux-pm@vger.kernel.org>; Mon, 15 Jun 2026 08:25:40 -0700 (PDT)
+	for <linux-pm@vger.kernel.org>; Mon, 15 Jun 2026 15:33:19 +0000 (GMT)
+Received: by mail-vk1-f200.google.com with SMTP id 71dfb90a1353d-59d595bfd94so1813096e0c.3
+        for <linux-pm@vger.kernel.org>; Mon, 15 Jun 2026 08:33:19 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1781537139; x=1782141939; darn=vger.kernel.org;
-        h=in-reply-to:content-transfer-encoding:content-disposition
-         :mime-version:references:message-id:subject:cc:to:from:date:from:to
-         :cc:subject:date:message-id:reply-to;
-        bh=KlkMVStFd7TWXdQCQgPLMRWEvG6VtN6Kkt81Xs5cI7Q=;
-        b=A6V4p5Ch8blpMBWBDM19iotY4dQfgAxzJQgYmnYyuWOIcWsMag+VhUJUrThga2D2RM
-         IpOfp4Cd2LvMzo15Fhtnp4ZsDdNjy9j+qJOVCpnOp18BUrzpkY3vkGPcJ7H9y8zAIBas
-         iSjNu3FlyDdWtFLZyDXskEB3Kz6t+uKFxOjKx9YjrAtZKvOGqCwjqj3UX0LFoG43Qi/A
-         yAQ+H2B2g5NUQkLgb4hQ4dwsxCHa816D3mNxyWmBkhChzF73lk0vrrZMzbXetUZhKroC
-         iAEIF1pOyhlJjF1VS5nGFMPk9z+kYeSolqlonGn1SGcujXB9s7m4AHozQoVLKnpTJTS/
-         0C9g==
+        d=oss.qualcomm.com; s=google; t=1781537598; x=1782142398; darn=vger.kernel.org;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=OwMQO0LcqR49s8kdpKn9p05zdjYBTA9VDNonkRXI1Ww=;
+        b=G4FVspknmIx4qVoSmnuMkxSLBE9M1h+QgmFvJXAkA0MM+xpJ291axmz6HFAZwv3vbV
+         OA36TNKiRxVHTbo7dpXJzXXQYWeJTuBTZ1hqm2lHvt/9iZvBNUxbsq90/joqunGa1tI0
+         FitYOUNVbGxNZ5cHkGgZZAW/4QU3R4bZycwOYedYlfHLqWULuA++qFJirzs/TqpUqJ7I
+         l3ZaIjh9+Wu8rECSW+EBsEUzFlvSysEKDRwcJ2XnuMOKfP7Z3+961fcu70S0aP5wCFxi
+         1ypytZIQmWUr7zKNG1K+y5kP/WtElpaK2bR6QnqO2xa5G7pa/erQJ2+KA2OY0/4yjccJ
+         HNxQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1781537139; x=1782141939;
-        h=in-reply-to:content-transfer-encoding:content-disposition
-         :mime-version:references:message-id:subject:cc:to:from:date:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=KlkMVStFd7TWXdQCQgPLMRWEvG6VtN6Kkt81Xs5cI7Q=;
-        b=OdxtRqsyFEfcWyi6woygdeip9uPcs2ZI1QeZ227qNX/cw/SFyH82huxvNHoE8UwhSb
-         aKtOC0GE7li/ilPmb1asp7JgOCIgCaDjNghztNmcyBtgRhCvVzZQY8exL+oznOvfyJm+
-         dZp35pg2EOoRdHDaxYdIEMqTYx/pL+5w85EZd8FfarhHP2/P0rroVJXWLCDH+JmFW9+a
-         FCad+SnSS+w1QlqWHS46iIWBgeSE8Rgl74Q0UFzY8FfTwojMzjnWzSgJl4JdmzwyUuR4
-         AzvcEekXd+SIPU4j1ZcIMriDYcogi+dbzVsD9dN8G2Q0mAelLpQyezy1QcAR99xnleCR
-         mRFg==
-X-Forwarded-Encrypted: i=1; AFNElJ/xccNCEQAKrx3zn4kr7akMVVqIsHNeY9Q4JHy8Hgqtl5K+zXChljS6oXTDdkGAoymGijKrV15ecQ==@vger.kernel.org
-X-Gm-Message-State: AOJu0YzTrdjjrDpdZweR/+FibbyHOcd1qBHNwmh6H8gwNWQQTIzD8n7i
-	SaZDd7+KIdq9bK/EI0MqO0eMi9vR96Ire8xjDqvTRW6PyYuwQ2v6aj2qram8PlbUj7swZ/I3qHX
-	0mhN04Y91tiFw9CV45eUPYf/P57Bgjbq/dNuFZyrAIpkAMdHIee4kmKK+30f47g==
-X-Gm-Gg: Acq92OF8pNECp9NRSq7quObMuPzFbvNiPuNPzMu5nUb86xCYBO/ff/coJV6OjglNo8M
-	pxE77uAZsKkxWVZeAUwDJRRu47BCnh558zbVEcrTykcq15q/xSXx9RJ84GDred9m8RQdF2RTY2g
-	Mbl8lFdC1S9fjFb2YXWIxc+fgnIRgWyENfbkiy/dC8MguGyxWY9VcxFr08/uNbVR5PtuzMOncfX
-	7+BpzE9PqFLGrjqh3qMsK3CcnIzWKCKcDTWLeapkwhYBFzTN5zWKTOzYYZu34NFudqXdClCotK2
-	1nKeATb/kmDrjfTryK3aYOJsRm7X7BX+XPexpm8F3U6D5aamWHx6vdeRaVbWl9IiymiOFetbN+V
-	P1D4dO8XljNXeyyP4J8FtLRhH/uv88WwiPXBLGnsDv7yfax01Ex405PRdOSdJVWFv/0aBNfDReB
-	KRsumYJs9lyP2Z8g5XCqARQuki4eGzh6XpMOU=
-X-Received: by 2002:a05:6102:5124:b0:605:ead:8f38 with SMTP id ada2fe7eead31-71e88e0ca67mr7376534137.29.1781537139225;
-        Mon, 15 Jun 2026 08:25:39 -0700 (PDT)
-X-Received: by 2002:a05:6102:5124:b0:605:ead:8f38 with SMTP id ada2fe7eead31-71e88e0ca67mr7376497137.29.1781537138656;
-        Mon, 15 Jun 2026 08:25:38 -0700 (PDT)
-Received: from umbar.lan (2001-14ba-a073-af00-264b-feff-fe8b-be8a.rev.dnainternet.fi. [2001:14ba:a073:af00:264b:feff:fe8b:be8a])
-        by smtp.gmail.com with ESMTPSA id 38308e7fff4ca-3995c19aba4sm178721fa.30.2026.06.15.08.25.35
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 15 Jun 2026 08:25:37 -0700 (PDT)
-Date: Mon, 15 Jun 2026 18:25:33 +0300
-From: Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>
-To: Gaurav Kohli <gaurav.kohli@oss.qualcomm.com>
-Cc: Bjorn Andersson <andersson@kernel.org>,
+        d=1e100.net; s=20251104; t=1781537598; x=1782142398;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=OwMQO0LcqR49s8kdpKn9p05zdjYBTA9VDNonkRXI1Ww=;
+        b=kA94d9/6z0LCEBH5/ZY+AAd/0Q18KuQ6oHVL1rVJiGfj7KYF6zyupVDlQ3xXF7QM50
+         bca3JZoCWOdU+kV6wy010wYI2e0E3PRHHbOX3HuqP9mRcHpuf/Vq+i6epg1xDt/nOfon
+         dpug1zkcrodgs4LO5gi0zcvKJRvhKAOTeKoTdNDn+xJIqW8UbQtfVaDYWIO3tGE+HyXS
+         73f6XhfrPQSMtcJrlXyNwMNTv/EHbnFSPGac5+3Gwe5mlHe1o8tD6P94FIZYkXrfAwuQ
+         p99ou/p2EVuLCQEP4CTZbzUH3uKYxIL0fK146y1fNSyQq0djUkSvitreiKEwkxxlPG18
+         yELw==
+X-Forwarded-Encrypted: i=1; AFNElJ/eqXtV7HPaJYnqP7lmpKmykt9JSz7KVww5ZjkFwvyrzbir7BWUG3OPq/lfzdECArwJdtVYDOe+Tg==@vger.kernel.org
+X-Gm-Message-State: AOJu0YyeAvuDmffYJpkMtgXuppmokTAaJFLZm/f96iqQmw/eqX9TfKGA
+	nc6hTfhad1oF0MVWAWK43pCFHbakRJsVKKqsTSU80cQeoMuep9BFdzAFndCjZtamrJ6K6HUpDJ7
+	myzpoxdvv7DfyeLQ6ls4Qm+qD+r14JsiYuD+5XXqh2mAwu23UlwhjAibOTtZcUg==
+X-Gm-Gg: Acq92OEXqWGM9eveThX4sjCl5HZkTBjRIbGJHnFcX6xlg9tzwfCMxXFEOud1iVOxIAu
+	eWmvomYlHYOkNOcmRzB5ZrJH2hcauxhRxPWXeNyJgrf9WzaQ+Cxxc/n3ASHjNojOZRWyiv6DHMv
+	t4SSq9gEkfNJGbdSPA/P49GhLHEA8uujdhVDzhrUmZQvYx0M1JCSsPm0JpEsIP8dqnx4+VVjozC
+	NSwUIMG45yYWd6bLrfmVRof1ikFbagIirYycHNsLj+uFg326EvEBxFxYwanBIWiFaUcsHTjsaDz
+	ztNGvuXiHGJ0QpGHdeb9bhqA6rooN2weJfeJ+oJcQYIN8GXf+DXAx1UlhNC4lv+Q/oFgNoaK5Vs
+	3RlOpL+Y+g2qG5xp26NNtWWYNIqKM0DphID3svZBVkUcmFmk1Wekf9XGhDdxw6SQ/yujqkltIWS
+	pSckMF4OpIWjlzwQ==
+X-Received: by 2002:a05:6122:907:b0:5a0:9ad4:7016 with SMTP id 71dfb90a1353d-5bb6c13290fmr6584835e0c.10.1781537598504;
+        Mon, 15 Jun 2026 08:33:18 -0700 (PDT)
+X-Received: by 2002:a05:6122:907:b0:5a0:9ad4:7016 with SMTP id 71dfb90a1353d-5bb6c13290fmr6584791e0c.10.1781537597998;
+        Mon, 15 Jun 2026 08:33:17 -0700 (PDT)
+Received: from ?IPV6:2a05:6e02:1041:c10:b0eb:75fa:2a81:cf30? ([2a05:6e02:1041:c10:b0eb:75fa:2a81:cf30])
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4922fa51440sm739885e9.9.2026.06.15.08.33.16
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Mon, 15 Jun 2026 08:33:16 -0700 (PDT)
+Message-ID: <dcdfe9f4-aeec-4d85-92a1-a42592fe11c8@oss.qualcomm.com>
+Date: Mon, 15 Jun 2026 17:33:15 +0200
+Precedence: bulk
+X-Mailing-List: linux-pm@vger.kernel.org
+List-Id: <linux-pm.vger.kernel.org>
+List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
+List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
+MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v3 1/8] dt-bindings: remoteproc: qcom,pas: add thermal
+ mitigation properties
+To: Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>
+Cc: Gaurav Kohli <gaurav.kohli@oss.qualcomm.com>,
+        Krzysztof Kozlowski <krzk@kernel.org>,
+        Bjorn Andersson
+ <andersson@kernel.org>,
         Mathieu Poirier <mathieu.poirier@linaro.org>,
         Rob Herring <robh@kernel.org>,
         Krzysztof Kozlowski <krzk+dt@kernel.org>,
         Conor Dooley <conor+dt@kernel.org>,
-        Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>,
         Amit Kucheria <amit.kucheria@oss.qualcomm.com>,
         Manivannan Sadhasivam <mani@kernel.org>,
         Konrad Dybcio <konradybcio@kernel.org>, Kees Cook <kees@kernel.org>,
@@ -97,233 +109,199 @@ Cc: Bjorn Andersson <andersson@kernel.org>,
         linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
         linux-hardening@vger.kernel.org,
         Manaf Meethalavalappu Pallikunhi <manaf.pallikunhi@oss.qualcomm.com>
-Subject: Re: [PATCH v3 4/8] arm64: dts: qcom: kodiak: Enable CDSP & Modem
- cooling
-Message-ID: <ezggulsc6wvd3gbgnm6tepvtcnvwkeyvva4szrrwbcksxgcesg@qo5l5pjtz77n>
-References: <20260609-qmi-tmd-v3-0-291a2ff4c634@oss.qualcomm.com>
- <20260609-qmi-tmd-v3-4-291a2ff4c634@oss.qualcomm.com>
- <pf6rymdtbfcqqzt6vnn6gc3uuod4vlfpw42dxxag33aom7lltu@6ymibirvwfnc>
- <4006d16f-a159-4f1b-ba80-f19bef8f4c5c@oss.qualcomm.com>
-Precedence: bulk
-X-Mailing-List: linux-pm@vger.kernel.org
-List-Id: <linux-pm.vger.kernel.org>
-List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
-List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
+References: <03d863ee-2caa-41f2-94b5-7332fc930b42@oss.qualcomm.com>
+ <d81bc78e-2c1d-45fd-90c9-f7ec462183a0@kernel.org>
+ <7f1e46fb-15e3-4638-9930-8abc1dd5a778@oss.qualcomm.com>
+ <fcf93e0f-a2f0-4070-86ec-8a34e9344b76@kernel.org>
+ <ec65893d-873a-4a62-b0e2-5008b2130545@oss.qualcomm.com>
+ <3cbcaf8c-357e-42d2-91c1-9d1a32c55ed0@oss.qualcomm.com>
+ <ae43a691-4879-4bfa-8c7c-1be16945480c@oss.qualcomm.com>
+ <9a31bb29-75d7-42fa-b8a8-4155cf85cadf@oss.qualcomm.com>
+ <hebyboondtxyyetwuwggoiysurz335xzn7asf6yit3qrexap3x@kngk2m5xum3x>
+ <93e7251c-c75d-4e43-9ae2-bf485af58de3@oss.qualcomm.com>
+ <mp2hl67rupxrssa43dcy36m3dwatlxsu7n27l7qdqsguo5i3bp@bo6sdzxglxt2>
+Content-Language: en-US
+From: Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>
+In-Reply-To: <mp2hl67rupxrssa43dcy36m3dwatlxsu7n27l7qdqsguo5i3bp@bo6sdzxglxt2>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <4006d16f-a159-4f1b-ba80-f19bef8f4c5c@oss.qualcomm.com>
-X-Proofpoint-ORIG-GUID: K9_aAOyzzaKNv3SeMop2eFdYFDTN6Tgo
-X-Proofpoint-Spam-Info: AW1haW4tMjYwNjE1MDE2MSBTYWx0ZWRfXyANxdDOGomxO
- F5tMXbcQXwly8s2/o2dAsJvQuQrJIXjW5cl8nUvJ/w1a4XgdxyKexn95lf/nlAmRq2TcCx/ru/s
- c2LN0h7ZUroM7lgQYoyyqNKiebSnQF8=
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNjE1MDE2MSBTYWx0ZWRfX7oNiUNcyunUL
- O0gg4k/SxXdG2fGZX5/osTnHYN4Fq5NA+TobRD3arF97G6lvUcFABNPB0UD6zSNz7fdbqp13eiJ
- d1x57SXqjQd5UuXtOOJH/mXZSskk9R2zR4SRmRtQWA713x67mNCyU3lvMxbWpwe0vAWhRVDUXGi
- nWO5JCOxeaTUiZsL6CyI6f2S5eLSl216iTetPm+f1YVhsZAdAAmztd+xR8uLFsiQLfIZ4NarE+D
- hDHS8GWmRxQ+1pUspDpUrjSF5d2aensQ16ZUIPvMSvfbZ6EiZFz2oEveWrnQxZvo+C61/LfiXUd
- 82+2Cr+0HGgBZEsEfdhB6umAdbZsv47PjIFMjhUoEG2jq+yclCKwnxns+QxwQnzym8zynurTvjr
- hTvP1+2Ru6GEm7IoukRFl+TNWxT5XRGG7pZSSFkO2EIh8X9UE0+yOOO+1DyX8eVs0sjCW68+0YC
- my4Nr2TKEG6699DHNQA==
-X-Proofpoint-GUID: K9_aAOyzzaKNv3SeMop2eFdYFDTN6Tgo
-X-Authority-Analysis: v=2.4 cv=AN2yTM5Z c=1 sm=1 tr=0 ts=6a301974 cx=c_pps
- a=P2rfLEam3zuxRRdjJWA2cw==:117 a=xqWC_Br6kY4A:10 a=8nJEP1OIZ-IA:10
+X-Proofpoint-Spam-Info: AW1haW4tMjYwNjE1MDE2NCBTYWx0ZWRfX6XMDgwQ1qKl1
+ ZnHReGznrjfo3c2XW69ghcuITL/XJuEsB4Iz00QPe0GahN2Z4mKYg1gL7qgW7ofRFXHDy1XTQJf
+ Wcq9+KTxfJ0T5xpucdrrpeQ6q7oE/Yg=
+X-Authority-Analysis: v=2.4 cv=Zqnd7d7G c=1 sm=1 tr=0 ts=6a301b3f cx=c_pps
+ a=wuOIiItHwq1biOnFUQQHKA==:117 a=xqWC_Br6kY4A:10 a=IkcTkHD0fZMA:10
  a=FelO9ux0wxsA:10 a=s4-Qcg_JpJYA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=u7WPNUs3qKkmUXheDGA7:22 a=eoimf2acIAo5FJnRuUoq:22 a=VwQbUJbxAAAA:8
- a=EUspDBNiAAAA:8 a=NIeLh5r5xWi6Lh3APS4A:9 a=3ZKOabzyN94A:10 a=wPNLvfGTeEIA:10
- a=ODZdjJIeia2B_SHc_B0f:22
+ a=u7WPNUs3qKkmUXheDGA7:22 a=_glEPmIy2e8OvE2BGh3C:22 a=UGbA0b5lBdDrEDKOv_UA:9
+ a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10 a=XD7yVLdPMpWraOa8Un9W:22
+X-Proofpoint-GUID: zUxvtgtIBYzK-yBuzT2BFYqf0FhS6Uhi
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNjE1MDE2NCBTYWx0ZWRfXwNFSAVym2ule
+ xNc7e15yWqPI2P7tMSw4NrYNsj0CYuuy8KUwVtH8Jq9k97e8FDMKcKUtHbTGiVK5DpUoYRmE1Yv
+ vnO3VhbDunhXnaWeF/+bWnKskmvgNBvVTyNclMjLM7xpxaLK/uPjcW7OJO7gql5OWY0AMqXvgRA
+ Pkz6GkU1uOsADOcALYWHpxMdCvdjrd76MaPCNvUQOCGDcVdmltWZHaN/9aCpV1F1CZkaR7VZVvs
+ j80u15Ug3J+LzUsJbt8yJVg2cZa7fLO/aGTaQQvoAxxbIMAyNbCLWoOcJ30gqLHtpAaVetJnaip
+ L6oOdkXTpj2jgPO4yLRR/nzh/CbuZJRWFYOopIBm4fSgfC27qqFMEtCZQFTAlFJ8t63MeJl5gAW
+ P05Om4wE/tjXl6HafOVlnJyZ/bcCwK3C138kTY59HGDxnJwIhTE1uaQ0jj8fTwFiM3sExh4lIGO
+ aOnNovsynC6+Vu55VwQ==
+X-Proofpoint-ORIG-GUID: zUxvtgtIBYzK-yBuzT2BFYqf0FhS6Uhi
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.125,FMLib:17.12.100.49
  definitions=2026-06-15_03,2026-06-15_04,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- impostorscore=0 priorityscore=1501 phishscore=0 adultscore=0 malwarescore=0
- clxscore=1015 suspectscore=0 lowpriorityscore=0 bulkscore=0 spamscore=0
+ phishscore=0 spamscore=0 priorityscore=1501 suspectscore=0 lowpriorityscore=0
+ adultscore=0 malwarescore=0 clxscore=1015 impostorscore=0 bulkscore=0
  classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2606040000 definitions=main-2606150161
+ reason=mlx scancount=1 engine=8.22.0-2606040000 definitions=main-2606150164
 
-On Mon, Jun 15, 2026 at 11:02:22AM +0530, Gaurav Kohli wrote:
-> 
-> 
-> On 6/9/2026 4:27 PM, Dmitry Baryshkov wrote:
-> > On Tue, Jun 09, 2026 at 03:52:59PM +0530, Gaurav Kohli wrote:
-> > > Unlike the CPU, the CDSP/Modem does not throttle its speed automatically
-> > > when it reaches high temperatures in kodiak.
-> > > 
-> > > Set up CDSP cooling by throttling the cdsp when it reaches 100�C and
-> > > for modem when it reaches to 95�C.
-> > > 
-> > > Remove inherited mdmss cooling-map nodes for Non Modem kodiak variant.
-> > 
-> > Why? If it is a GNSS-only MPSS, does it not provide any thermal
-> > mitigation mechanisms? Does ADSP provide those? WPSS?
-> > 
-> 
-> Hi Dmitry,
-> 
-> Thank you for the review.
-> 
-> Since the remoteproc_mpss node doesn't exist on these boards, the
-> cooling-maps that reference it cause DT compilation errors. That's why
-> we need to remove the inherited cooling-maps from the SoC DTSI.
->  /delete-node/ &remoteproc_mpss;
 
-Ok. Explain that in the commit message. And maybe we need to fix those
-boards to provide mpss instead.
 
+Le 15/06/2026 à 17:14, Dmitry Baryshkov a écrit :
+> On Mon, Jun 15, 2026 at 04:33:38PM +0200, Daniel Lezcano wrote:
+>>
+>>
+>> Le 15/06/2026 à 16:11, Dmitry Baryshkov a écrit :
+>>> On Mon, Jun 15, 2026 at 02:30:49PM +0200, Daniel Lezcano wrote:
+>>>> Hi Gaurav,
+>>>>
+>>>> Le 15/06/2026 à 14:12, Gaurav Kohli a écrit :
+>>>>>
+>>>>>
+>>>>> On 6/15/2026 4:04 PM, Daniel Lezcano wrote:
+>>>>>> On 6/13/26 13:05, Gaurav Kohli wrote:
+>>>>>>>
+>>>>>>>
+>>>>>>> On 6/13/2026 1:11 PM, Krzysztof Kozlowski wrote:
+>>>>>>>> On 12/06/2026 15:52, Gaurav Kohli wrote:
+>>>>>>>>>
+>>>>>>>>>
+>>>>>>>>> On 6/11/2026 5:53 PM, Krzysztof Kozlowski wrote:
+>>>>>>>>>> On 11/06/2026 13:12, Gaurav Kohli wrote:
+>>>>>>>>>>>> Why? And where is this generic property defined? You cannot just
+>>>>>>>>>>>> sprinkle generic properties in random bindings.
+>>>>>>>>>>>>
+>>>>>>>>>>>
+>>>>>>>>>>> Ack, will add why part.
+>>>>>>>>>>> These names are matched with the thermal
+>>>>>>>>>>> mitigation device identifiers
+>>>>>>>>>>> populated by remote firmware over QMI and define
+>>>>>>>>>>> mitigation devices are
+>>>>>>>>>>> exposed as cooling devices.
+>>>>>>>>>>
+>>>>>>>>>> No, -names correspond to values passed via DT, not
+>>>>>>>>>> some remote firmware.
+>>>>>>>>>> The remote firmware should give you interface which
+>>>>>>>>>> is explicit and does
+>>>>>>>>>> not need such properties.
+>>>>>>>>>
+>>>>>>>>> thanks Krzysztof for review, We need tmd-names because
+>>>>>>>>> of following reasons:
+>>>>>>>>>
+>>>>>>>>> Following Daniel's series [1], the thermal framework supports
+>>>>>>>>> mapping multiple cooling devices per remoteproc/device via indexed
+>>>>>>>>> cooling-cells.
+>>>>>>>>>
+>>>>>>>>> 1) The thermal framework's cooling-maps reference
+>>>>>>>>> cooling devices by index (for #cooling-cells = <3>).
+>>>>>>>>> Without tmd- names,
+>>>>>>>>> there's no way to know which index corresponds to which
+>>>>>>>>> TMD, as firmware
+>>>>>>>>> may return tmd-names in any order.
+>>>>>>>>>
+>>>>>>>>> below are the changes post new thermal mapping changes:
+>>>>>>>>> DT: tmd-names = "cdsp_sw", "xyz";
+>>>>>>>>> Firmware: ["cdsp_sw", "xyz1", "xyz2",]
+>>>>>>>>> Driver registers: Only "cdsp_sw" (index 0) and "xyz" (index 1)
+>>>>>>>>
+>>>>>>>> names property are not to instruct drivers to register or not to
+>>>>>>>> register something.
+>>>>>>>>
+>>>>>>>> I don't understand the problem and explanation in the binding is
+>>>>>>>> basically non-existing.
+>>>>>>>>
+>>>>>>>> Remember that all lists and indices ARE FIXED, so driver knows exactly
+>>>>>>>> which index means what.
+>>>>>>>>
+>>>>>>>
+>>>>>>> thanks for review, shall i use driver data, which is basically
+>>>>>>> pas data structure like below:
+>>>>>>>
+>>>>>>> static const struct qcom_pas_data {
+>>>>>>>        .crash_reason_smem = 601,
+>>>>>>>        .firmware_name = "cdsp.mdt",
+>>>>>>>        .tmd_names = (const char *[]){"xyz", NULL},
+>>>>>>>        .num_tmds = 1,
+>>>>>>>
+>>>>>>> Is something like above acceptable? and this will also help to
+>>>>>>> filter tmd names as well?
+>>>>>>
+>>>>>>
+>>>>>> How the thermal framework will bind the thermal zone with the TMD ?
+>>>>>> (node pointer, id) ?
+>>>>>>
+>>>>>
+>>>>> Hi Daniel,
+>>>>>
+>>>>> thanks for review.
+>>>>>
+>>>>> With id only, in this case instead of taking tmd names from device tree,
+>>>>> qmi_tmd will take tmd name from pas_data(driver) and register with the
+>>>>> cooling framework with id only. Please let us know if this looks fine.
+>>>> May be I'm missing something but:
+>>>>
+>>>>    - The QMI TMD returns a list of names, not ids
+>>>>    - The QMI TMD may return the list in different order than assumed
+>>>>    - The cooling map index points to the name of the TMD in the DT
+>>>>    - This name is used to match the name in the aformentionned list
+>>>>    - The index in the list and the id in the DT can differ
+>>>
+>>> Would it be better if we define standard indices for the standard names?
+>>> This way we decouple the actual firmware strings from the DT.
+>>
+>> I don't think so, it seems to me too fragile and prone to error.
+>>
+>> It is a remote proc, an external subsystem. The contract between the client
+>> and the server is the protocol. The protocol specifies the identifier as
+>> named strings, the TMD names, not numerical identifiers.
+>>
+>> When asking for the list of TMDs, we get a list of strings. But as it is an
+>> external subsystems, may be tomorrow someone decide to send list ordered
+>> alphabetically, or per number of states, or whatever.
+>>
+>> With hardcoded id the QMI TMD clients break
 > 
-> Regarding thermal mitigation for other subsystems:
-> ->CDSP and Modem are the primary heat sources based on our internal
->   thermal testing and evaluation.
-> ->ADSP and WPSS have lower power consumption and don't typically reach
->   thermal thresholds that require active mitigation
-> ->For this, I'm checking with our internal team to confirm if ADSP/WPSS
->   provide any TMD mechanism across all targets.
+> I was thinking about something like:
+> 
+> #define QCOM_TMD_DSP	0
+> #define QCOM_TMD_PA	1
 
-They do. I've posted the dump of qrtr-lookup somewhere.
+Ah ok, it is correct if:
 
-> 
-> > > 
-> > > Signed-off-by: Gaurav Kohli <gaurav.kohli@oss.qualcomm.com>
-> > > ---
-> > >   arch/arm64/boot/dts/qcom/kodiak.dtsi               | 127 ++++++++++++++++++++-
-> > >   .../boot/dts/qcom/qcs6490-radxa-dragon-q6a.dts     |  17 +++
-> > 
-> > So, you removed those for Radxa Q6A, but not forRB3 Gen2. Why?
-> > 
-> 
-> Ack, this is a miss. will fix this.
-> 
-> > >   .../dts/qcom/qcs6490-thundercomm-minipc-g1iot.dts  |  17 +++
-> > >   .../boot/dts/qcom/qcs6490-thundercomm-rubikpi3.dts |  17 +++
-> > >   .../boot/dts/qcom/sc7280-herobrine-lte-sku.dtsi    |  18 +++
-> > >   .../boot/dts/qcom/sc7280-herobrine-wifi-sku.dtsi   |  16 +++
-> > >   6 files changed, 208 insertions(+), 4 deletions(-)
-> > > 
-> > > diff --git a/arch/arm64/boot/dts/qcom/kodiak.dtsi b/arch/arm64/boot/dts/qcom/kodiak.dtsi
-> > > index fa540d8c2615..d345add2d8c8 100644
-> > > --- a/arch/arm64/boot/dts/qcom/kodiak.dtsi
-> > > +++ b/arch/arm64/boot/dts/qcom/kodiak.dtsi
-> > > @@ -3427,6 +3427,9 @@ remoteproc_mpss: remoteproc@4080000 {
-> > >   			qcom,smem-states = <&modem_smp2p_out 0>;
-> > >   			qcom,smem-state-names = "stop";
-> > > +			#cooling-cells = <3>;
-> > > +			tmd-names = "pa", "modem";
-> > > +
-> > >   			status = "disabled";
-> > >   			glink-edge {
-> > > @@ -4787,6 +4790,9 @@ remoteproc_cdsp: remoteproc@a300000 {
-> > >   			qcom,smem-states = <&cdsp_smp2p_out 0>;
-> > >   			qcom,smem-state-names = "stop";
-> > > +			#cooling-cells = <2>;
-> > > +			tmd-names = "cdsp_sw";
-> > 
-> > I'm going to review only this DT, the comments apply to the rest of
-> > them.
-> > 
-> > So, we have two cases, CDSP and MPSS. Why does CDSP have only 2 cells?
-> > Just because tmd-names has only one name? What if we add another
-> > mitigation (which can be added in the firmware), do we suddenly have to
-> > change number of cells and all the cooling devices to reflect it?
-> > 
-> 
-> As Cdsp has only one relevant tmd to mitigate, so we have used cooling cells
-> as 2. But i will change this to 3 as this is backward compatible.
-> 
-> > Finally. If I understand correctly, these mitigtion mechanisms are
-> > provided by the firmware. Firmware differs between the boards. Vendors
-> > (in theory) can change them. Why do we list these names here, in the SoC
-> > DT?
-> > 
-> 
-> Below are the main reason for this, replied in other thread also.
-> Please guide, if i can use qcom_pas_data to define names.
-> 
-> Following Daniel's series [1], the thermal framework supports
-> mapping multiple cooling devices per remoteproc/device via indexed
-> cooling-cells.
-> 
-> 1) The thermal framework's cooling-maps reference
-> cooling devices by index (for #cooling-cells = <3>). Without tmd-names,
-> there's no way to know which index corresponds to which TMD, as firmware
-> may return tmd-names in any order.
+tmd-names = "dsp", "pa"
 
-You can #define the indices to the well known names, turning those into
-bindings.
+Or
 
-> 
-> below are the changes post new thermal mapping changes:
-> DT: tmd-names = "cdsp_sw", "xyz";
-> Firmware: ["cdsp_sw", "xyz1", "xyz2",]
-> Driver registers: Only "cdsp_sw" (index 0) and "xyz" (index 1)
+#define QCOM_TMD_PA	0
+#define QCOM_TMD_DSP	1
 
-What if the DT has "cdsp_sw", but the firmware doesn't report it? That's
-an error, as it seems.
+tmd-names = "pa", "dsp"
 
+> cooling-maps {
+> 	map0 {
+> 		cooling-device = <&remoteproc_cdsp QCOM_TMD_DSP 0 2>;
+> 	};
+> 	map1 {
+> 		cooling-device = <&remoteproc_mpss QCOM_TMD_DSP 0 2>;
+> 	};
+> 	map2 {
+> 		cooling-device = <&remoteproc_mpss QCOM_TMD_PA 0 2>;
+> 	};
+> };
 > 
-> This allows cooling-maps like below:
-> cooling-device = <&remoteproc 0 ...>  // "cdsp_sw"
-> cooling-device = <&remoteproc 1 ...>  // "xyz"
 > 
-> 2) Not all firmware-provided TMDs should be
-> exposed as cooling devices. The tmd-names property acts as a filter,
-> allowing board-specific DT to select only the relevant TMDs for that
-> platform.
-
-But then the properties should be defined in the board DT rather than
-the platform DT.
-
-> 
-> [1]
-> https://lore.kernel.org/all/20260526140802.1059293-12-daniel.lezcano@oss.qualcomm.com/
-> 
-> Shall i use pas data to define tmd-names instead of dt ?
-
-Let's settle in the thread with Daniel.
-
-> 
-> > > +
-> > >   			status = "disabled";
-> > >   			glink-edge {
-> > > +			cooling-maps {
-> > > +				map0 {
-> > > +					trip = <&mdmss0_alert1>;
-> > > +					cooling-device = <&remoteproc_mpss 0 0 2>;
-> > 
-> > What does this mean? I assume that the first cell is one of the
-> > mechanisms. What is the difference between them? Do we really need to
-> > list them one by one here?
-> > 
-> 
-> Let me check, if i can document different tmd's somewhere:
-> 
-> -> modem tmd used for Modem Processor mitigation.
-> -> pa is used for Power Amplifier mitigation.
-
-What does that mean?
-
-> 
-> And we need to list them for binding purpose mainly.
-> 
-> > What do other cells mean? Why are they 0 and 2 rather than
-> > THERMAL_NO_LIMIT? How does one come with those values? This should all
-> > be documented and explained somewhere.
-> > 
-> 
-> Will change to THERMAL_NO_LIMIT. Let me check, if i can use
-> qli doc for documentation.
-> 
-> > > +				};
-> > > +
-> > > +				map1 {
-> > > +					trip = <&mdmss0_alert1>;
-> > > +					cooling-device = <&remoteproc_mpss 1 0 2>;
-> > > +				};
-> > > +			};
-> > >   		};
-> > 
+>>
+>>>> Krzysztof , I don't get why having the TMD names as properties is wrong,
+>>>> they describes the existing TMDs on the system and the cooling maps index
+>>>> points to the one to be connected with thermal zone.
+>>>
+>>
 > 
 
--- 
-With best wishes
-Dmitry
