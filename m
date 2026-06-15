@@ -1,233 +1,110 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pl1-f179.google.com (mail-pl1-f179.google.com [209.85.214.179])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 90C711C84D0;
-	Mon, 15 Jun 2026 00:41:11 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4809023F431
+	for <linux-pm@vger.kernel.org>; Mon, 15 Jun 2026 04:53:56 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.179
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1781484072; cv=none; b=b3wErO2zUiUGQta177qIYjq2WKWwyGYg9YM3gMIVj/oo2bOkqIPUNhJlU9qSalW3KD/fZc7olwkYoEAIzjt2DAU9R+lo6HRgZGQkH5yBN0Gxh9Azs+5NuvoUQ4ds34Y+v4z5sAAXEB6DnAn6KVV3sO1DbNEnbCjiO176iYFUhCU=
+	t=1781499237; cv=none; b=uKVsZSXYO4n/IbOLODOBpMXPgNXo67rCPaoTBWioIHFgThN6PvNg7FaZTAsVyZK25QVwSVChWxnYIhfA0kJjjl/RqOiENWKlcK3zmJSrOO21DU5iW34gx5cTf/8mZ6jFarZXylyXoQ0lDp+MJ/ya1/Wn75TP4dl0ocvxoFrLMts=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1781484072; c=relaxed/simple;
-	bh=rHW7iSFM1/5SccAkwiz04HAQ0dgWkBSTJyHysQPm/6E=;
+	s=arc-20240116; t=1781499237; c=relaxed/simple;
+	bh=oduFAIUeGAEDQZ1phnxCBWnCFFGd1w7xegjQ3UpP6bE=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=H8aDCBFe46rfCAOhhkwE9QknPzH/HlX1UOXLBBEtHSykpMiRNVN0ddPH/Mo5VXhWx+j2TlxzHA0oko1acDf/8SHA6ViDrsdfxK258mqMc5TOzMXDsxZk9+x4xKelu0LR331V1YsDjLAu2/F94WH2v5aeW+CbbVDc0Gb9SWqS2KY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=BDJkSnLb; arc=none smtp.client-ip=100.103.45.18
+	 Content-Type:Content-Disposition:In-Reply-To; b=Wcdwyq/3GS/HCgod5gI6GRjxuvWCLU0ezTm9WRPHjqV7c4zf5lVyFyIP7hEJXh21gyDNRPXoFs0zD32Wcoj40VIlFjsXIfArkICFJgk453iSRbfvZp3s6IqFx085es4DXdxwVt12dHd4qDWSQ+SP2vY4j+cWNB2sK3Nr+iMlfzo=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=Fkr3ajWN; arc=none smtp.client-ip=209.85.214.179
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="BDJkSnLb"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9A3C51F000E9;
-	Mon, 15 Jun 2026 00:41:10 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1781484071;
-	bh=wO+xhrsIY7D9Za7HFA+jcdc+uFRy9vZxo0r3ijKBOMc=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=BDJkSnLbAydbROsU/w2Ao1u7vkhvlnf3yIcWpGa1NWsj8v5WM9EcqfOVe4YyBmuVI
-	 4TAIi1DEyQLis8OJ2a9o0m5m/5xOttqUMDDlZMifak7lBIF0OvzDkrSn0xkPHuPy3D
-	 GDRpDK9IqkFHPoQdtRfP3Xm7F2ZokVnFtiKhx1LR0bF4rFQXVa3IQE9QKo4F1WJ9cc
-	 Q54rzjNKu05r57NAcppKGIdufMCywYyjJmCW+weODbbymyxXpkZUgA3W4snx1b7506
-	 zgp8fr53R27uqgBTo6+a+pjfv6bgiCzQ23MC5KWviAUGYoqtxE9TJnluyFbC7FGXPb
-	 iQuEX01208Vrw==
-Date: Mon, 15 Jun 2026 00:41:08 +0000
-From: Yixun Lan <dlan@kernel.org>
-To: Vincent Legoll <legoll@online.fr>
-Cc: Shuwei Wu <shuwei.wu@mailbox.org>,
-	"Rafael J. Wysocki" <rafael@kernel.org>,
-	Viresh Kumar <viresh.kumar@linaro.org>,
-	Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>, Paul Walmsley <pjw@kernel.org>,
-	Palmer Dabbelt <palmer@dabbelt.com>,
-	Albert Ou <aou@eecs.berkeley.edu>, Alexandre Ghiti <alex@ghiti.fr>,
-	linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linux-riscv@lists.infradead.org, spacemit@lists.linux.dev,
-	devicetree@vger.kernel.org
-Subject: Re: [PATCH] riscv: dts: spacemit: orangepi-rv2: Add cpu scaling for
- K1, SoC
-Message-ID: <20260615004108-GKA1002079@kernel.org>
-References: <20260612-shadow-deps-v3-0-2f3ba88611ff@mailbox.org>
- <f031e13e-d9f5-414a-b90e-a3d5a60b8d05@online.fr>
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="Fkr3ajWN"
+Received: by mail-pl1-f179.google.com with SMTP id d9443c01a7336-2bf1f074a12so29127765ad.0
+        for <linux-pm@vger.kernel.org>; Sun, 14 Jun 2026 21:53:56 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1781499236; x=1782104036; darn=vger.kernel.org;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=ldG7OKmPYAJSsAgvGSM91j+vuJuEOnf6Cy+DpvB+JCQ=;
+        b=Fkr3ajWNePGGBsXQxChDFZUgy1MuHnaIHF5sl60c90ptewxzfoVyIHneI4Sdxpmnrr
+         r8pyP79JtjQROAXZrbLcj0PPo4c+eQBnYyWGjZksFMU4QJviYcIvqqJ+0biNh9f43S1X
+         rNgfiGiu9iw5XM1kfYTBFkalzp7IjrKyvL6waEWBxpcYzs0gZlcZNgNfWJJHZHMF2xQq
+         maDNIdZ4CvmwSjUjRJh9C0165pWyBgpna5IQfjWvcjH3YQoppA58Fw9YglbYBChKZLA7
+         GwVfg5jH+d0Ik7CC/CpmRZXORDUdLyUar3NcpzEDNVcF5Wtcirz2wT1C6xgdLGyH4o4F
+         IP3g==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1781499236; x=1782104036;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=ldG7OKmPYAJSsAgvGSM91j+vuJuEOnf6Cy+DpvB+JCQ=;
+        b=khN0Ie1wLScXdlL02byiwHxoBBYY92PsqE2sTTPxol4JvSEIyc7MoonD071aq7GiAA
+         qpZdPvEHFWKoB6CTPnxZua8+mJ987e4nQwxPPCoQd8ZV8OnllVXP3k65XYSuH/oVW8iC
+         ZWtasAIifVCyxsH1PB5cCuX820Qh59c0EWHnVkhLeCC3nm3fTGLW1EEVCLeXijvN0FXr
+         GyJ1ZN183KddTE81tHHFBzVUJ3EgryT8UFdLNnF9kW3Born1Zfyqc+zCwmFQmLn0DlCI
+         bfD7ttJLiQxdtSa3qYDxMMu3z4tIRZV3uTnMj5i5oSLuRn7ZGduysiRtjNpAlYbjGmtx
+         51/A==
+X-Forwarded-Encrypted: i=1; AFNElJ+wTvDcEqHt9tQGRBWEfMe3VtNFlHh74zQAzng56YCU9XmgyliQKXihJdRTtuGWFs1e7Hby+eFe6g==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yw/HQvDOP3TCa0N3YguoQbRgRTepIm7c2+U4HzpNOYAhCwZpUEM
+	kphDaAiK/hDbjfR+x/NhrX5UP/Ei+bZyhplbnLpSI8OLuUbMiZt5e8yLe5WgCk/I47Q=
+X-Gm-Gg: Acq92OHq2K/WueicnijKc1m1oQoIYDsB+lwzIJ9MrmqPUiBzd2qzdwX7T1l/NOFZmBZ
+	dZCECI96a9+gA/8qBV3OJ9BggcEJT5Z0lgMoYMucPEmYoCNJ3OHOWC2UwppDD6MQhJbf0ud6vpC
+	Lbc7ocoUeVMLxS6j2xUGCGiuaYjVtwSKjSkv4Hwp1TyiSOIpLXoN8PC/6vW4IUczh8FczjoWspA
+	gDDFum4TuVBv4ounOf8Zf/YQL99VxUR2izkTkcmShYxeKoOBEYMUiHAdWf/mR+ObWRWVI/ImGjH
+	hKT8upYKLaAvsBxsjr8T0otpyDu4oaVTLbHKIWKT71L/3vJfpv4hS68C94PnH64ZZrO9P9u21Gh
+	z6w0va+2a6thZQu9gIomo2o9jfnI2vJ5YCoF6IoYrE25CeQh9pFVWBIUdIDpMWhAGcHUdH1MFNk
+	i84j+540pk6ludTbrQlvTZ/K8=
+X-Received: by 2002:a17:903:2cc:b0:2c1:1a22:7c43 with SMTP id d9443c01a7336-2c412360000mr139205545ad.24.1781499235045;
+        Sun, 14 Jun 2026 21:53:55 -0700 (PDT)
+Received: from localhost ([122.172.82.94])
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2c42fbb4424sm86687015ad.31.2026.06.14.21.53.53
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sun, 14 Jun 2026 21:53:54 -0700 (PDT)
+Date: Mon, 15 Jun 2026 10:23:51 +0530
+From: Viresh Kumar <viresh.kumar@linaro.org>
+To: Jack Lee <skunkolee@gmail.com>
+Cc: rafael@kernel.org, linux-pm@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, zhongqiu.han@oss.qualcomm.com
+Subject: Re: [PATCH] cpufreq: powernow-k6: replace symbolic permissions with
+ octal
+Message-ID: <6ouaf6u7cphc4mva73wvqeqrcndeo7sg625iv6fqs4hpiqcchd@ofbdcufipyzf>
+References: <12116e07-040c-4536-958a-d55d04d163c8@oss.qualcomm.com>
+ <20260613171559.43079-1-skunkolee@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <f031e13e-d9f5-414a-b90e-a3d5a60b8d05@online.fr>
+In-Reply-To: <20260613171559.43079-1-skunkolee@gmail.com>
 
-Hi Vincent,
-
- Please send the patch directly instead of attached file, it's more
-easy for people to review and apply, suggest to use b4, or
- "git send-email" (old way)
-
-
-On 08:50 Sun 14 Jun     , Vincent Legoll wrote:
-> [RESEND] as I cannot see yesterday's
+On 13-06-26, 11:15, Jack Lee wrote:
+> Symbolic permissions S_IRUGO are not preferred. Replace with octal
+> permissions 0444 as recommended by checkpatch.
 > 
-> 
-> Hello,
-> 
-> 
-> 
-> I tested (on OrangePi RV2) the attached patch applied over
-> 
-> spacemit/for-next + Shuwei Wu's V3 series.
-> 
-> 
-> This is a copy/paste of Shuwei Wu's work, so I don't know
-> 
-> if I can submit this with my SoB or if it should be done
-> 
-It's ok to add your SoB while adding support for new board
-
-> differently, please advise.
-> 
-> 
-> Anyways, you can add my:
-> 
-> Tested-by: Vincent Legoll <vincent.legoll@gmail.com> # OrangePi-RV2
-> 
-> 
-> To the relevant patches from your series, if that's useful,
-> 
-> because it looks like it is working properly:
-> 
-> 
-> On Void linux (musl libc):
-> 
-> 
-> uname -a
-> Linux opirv2 7.1.0-rc1-00043-gb860bca13be4 #14 SMP PREEMPT Sat Jun 13 
-> 11:02:13 CEST 2026 riscv64 GNU/Linux
-> 
-> awk --version | head -1
-> GNU Awk 5.3.2, API 4.0
-> 
-> echo userspace > /sys/devices/system/cpu/cpufreq/policy0/scaling_governor
-> 
-> echo 1600000 > /sys/devices/system/cpu/cpu0/cpufreq/scaling_setspeed
-> time awk 'BEGIN{for(i=0;i<1000000;i++){}}'
-> real    0m0.300s
-> user    0m0.299s
-> sys     0m0.001s
-> 
-> echo 1228800 > /sys/devices/system/cpu/cpu0/cpufreq/scaling_setspeed
-> time awk 'BEGIN{for(i=0;i<1000000;i++){}}'
-> real    0m0.432s
-> user    0m0.429s
-> sys     0m0.004s
-> 
-> echo 1000000 > /sys/devices/system/cpu/cpu0/cpufreq/scaling_setspeed
-> time awk 'BEGIN{for(i=0;i<1000000;i++){}}'
-> real    0m0.476s
-> user    0m0.476s
-> sys     0m0.001s
-> 
-> echo 819000 > /sys/devices/system/cpu/cpu0/cpufreq/scaling_setspeed
-> time awk 'BEGIN{for(i=0;i<1000000;i++){}}'
-> real    0m0.582s
-> user    0m0.581s
-> sys     0m0.001s
-> 
-> echo 614400 > /sys/devices/system/cpu/cpu0/cpufreq/scaling_setspeed
-> time awk 'BEGIN{for(i=0;i<1000000;i++){}}'
-> real    0m0.778s
-> user    0m0.773s
-> sys     0m0.005s
-> 
-> -- 
-> 
-> Vincent Legoll
-> 
-
-> From 9924789655ae5f4f98e7a5cdc3df3f34e7bfb659 Mon Sep 17 00:00:00 2001
-> From: Vincent Legoll <vincent.legoll@gmail.com>
-> Date: Sat, 13 Jun 2026 10:49:34 +0200
-> Subject: [PATCH] riscv: dts: spacemit: orangepi-rv2: Add cpu scaling for K1
->  SoC
-> 
-> Enable CPU DVFS on OrangePi RV2
-> 
-..
-> This is a copy/paste from Shuwei Wu's BPI-F3 DTS modifications
-> 
-It's quite common that people do copy/paste for additional board
-support, no need to mention it in commit message which I think it
-isn't really useful
-
-
-> Signed-off-by: Vincent Legoll <vincent.legoll@gmail.com>
+> Signed-off-by: Jack Lee <skunkolee@gmail.com>
 > ---
->  .../boot/dts/spacemit/k1-orangepi-rv2.dts     | 35 ++++++++++++++++++-
->  1 file changed, 34 insertions(+), 1 deletion(-)
+>  drivers/cpufreq/powernow-k6.c | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
 > 
-> diff --git a/arch/riscv/boot/dts/spacemit/k1-orangepi-rv2.dts b/arch/riscv/boot/dts/spacemit/k1-orangepi-rv2.dts
-> index 7c49bce427f3..62d25f579af6 100644
-> --- a/arch/riscv/boot/dts/spacemit/k1-orangepi-rv2.dts
-> +++ b/arch/riscv/boot/dts/spacemit/k1-orangepi-rv2.dts
-> @@ -8,6 +8,7 @@
+> diff --git a/drivers/cpufreq/powernow-k6.c b/drivers/cpufreq/powernow-k6.c
+> index 99d2244e03b0..764907b04c04 100644
+> --- a/drivers/cpufreq/powernow-k6.c
+> +++ b/drivers/cpufreq/powernow-k6.c
+> @@ -29,10 +29,10 @@ static unsigned int                     max_multiplier;
+>  static unsigned int			param_busfreq = 0;
+>  static unsigned int			param_max_multiplier = 0;
 >  
->  #include "k1.dtsi"
->  #include "k1-pinctrl.dtsi"
-> +#include "k1-opp.dtsi"
-keep alphabet sorted
+> -module_param_named(max_multiplier, param_max_multiplier, uint, S_IRUGO);
+> +module_param_named(max_multiplier, param_max_multiplier, uint, 0444);
+>  MODULE_PARM_DESC(max_multiplier, "Maximum multiplier (allowed values: 20 30 35 40 45 50 55 60)");
 >  
->  / {
->  	model = "OrangePi RV2";
-> @@ -80,6 +81,38 @@ &combo_phy {
->  	status = "okay";
->  };
+> -module_param_named(bus_frequency, param_busfreq, uint, S_IRUGO);
+> +module_param_named(bus_frequency, param_busfreq, uint, 0444);
+>  MODULE_PARM_DESC(bus_frequency, "Bus frequency in kHz");
 >  
-> +&cpu_0 {
-> +       cpu-supply = <&buck1_0v9>;
-> +};
-> +
-> +&cpu_1 {
-> +       cpu-supply = <&buck1_0v9>;
-> +};
-> +
-> +&cpu_2 {
-> +       cpu-supply = <&buck1_0v9>;
-> +};
-> +
-> +&cpu_3 {
-> +       cpu-supply = <&buck1_0v9>;
-> +};
-> +
-> +&cpu_4 {
-> +       cpu-supply = <&buck1_0v9>;
-> +};
-> +
-> +&cpu_5 {
-> +       cpu-supply = <&buck1_0v9>;
-> +};
-> +
-> +&cpu_6 {
-> +       cpu-supply = <&buck1_0v9>;
-> +};
-> +
-> +&cpu_7 {
-> +       cpu-supply = <&buck1_0v9>;
-> +};
-> +
->  &emmc {
->  	bus-width = <8>;
->  	mmc-hs400-1_8v;
-> @@ -162,7 +195,7 @@ pmic@41 {
->  		dldoin2-supply = <&buck5>;
->  
->  		regulators {
-> -			buck1 {
-> +			buck1_0v9: buck1 {
->  				regulator-min-microvolt = <500000>;
->  				regulator-max-microvolt = <3450000>;
->  				regulator-ramp-delay = <5000>;
-> -- 
-> 2.54.0
-> 
+>  /* Clock ratio multiplied by 10 - see table 27 in AMD#23446 */
 
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
 -- 
-Yixun Lan (dlan)
+viresh
