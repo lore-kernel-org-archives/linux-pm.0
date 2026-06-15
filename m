@@ -1,192 +1,146 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DEB773CCFD9
-	for <linux-pm@vger.kernel.org>; Mon, 15 Jun 2026 09:00:29 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6FD523D25B6;
+	Mon, 15 Jun 2026 09:04:08 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1781514034; cv=none; b=kb4Ba7IVjDFk7iuZ3Ws9d8pO68atinfs6kB9S0m91tQqDH49mff0pqr/EL1UHOxRDdgzQ1rCgpxVibJnNSngm8T/ckT53Py5N8TEcbMP+qtKOUkL6+b1idF3pRk/7/LieZbaiNEjfD3rx5STjXoX2DyivmqKyYx1oH0n+e18kCQ=
+	t=1781514248; cv=none; b=mTHpV4S8RLWcD0en2Y+4C4b24Y5xOYXO3gxl1ygyqMcTvguNCFUrUcquX2dAf4yK9mHpPz0fmN3A1I1Zrl3XxJwh1674ATh99qJnk8u9+VPNXeQihKKfNlw3fxpgNcNRCnWmcm41gZEYjgBQCLnl4rOAEM9vw4VkOoPf+sCzmdM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1781514034; c=relaxed/simple;
-	bh=zptfEDyMadO7RIg87idlmH3VtLqOE7S9qnR+nkIv14Y=;
-	h=From:In-Reply-To:MIME-Version:References:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=ko2KV9JWvsI30rYAk5kDHQDAMxhJsPJdKBqIjqnXiUzx/H02GMOYQ2jpyHWkC8SaeNofeo9EtSjPRWqFWUs863r1nXf06jXVPGM+Gdud/CpHHQAcjsOq+/8bizq1ljdkmedwienG1Pp2swBW/mya7ap5ukCbdfgTC/HsH0rFAC4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Jyn7pVSq; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1781514248; c=relaxed/simple;
+	bh=Jofc1H+1312/IfX3WE9//NhWj3CD9rDK2y4SwuQZcMg=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:To:Cc; b=X/q27LGaUU7iyiOcBqER/uLazIUmy9vPqNPt+GICI+dDK60k//5yTq4OO8FT4hP6Qz7WQseTjuxyt2b1VlkzlHO+SJVcE/JgxCr9THLrYPGSU08YYvpByIsg0bOFcRem7fPRHYyJmwM5m1xg2MlwiKnWHCu1lPphAgXJnbHzR1U=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=i/5JN659; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Jyn7pVSq"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 64B271F0155A
-	for <linux-pm@vger.kernel.org>; Mon, 15 Jun 2026 09:00:29 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1781514029;
-	bh=kO1E9F7wgo/77mIm8rZU5i8TCq+arHzjaWY5F0pap6s=;
-	h=From:In-Reply-To:References:Date:Subject:To:Cc;
-	b=Jyn7pVSq85LsQmK/q0tyyFAHEfg8UAN4YckNlIfPsCFOWmtcOiwbMENAt2D6pI9lZ
-	 1ZorXAjBJjrkQz8owCkA4UA4UCls87SqapCtOpTjavhlpFhAWsyKP2BqohWLJK7DkY
-	 MrYZV3Cl7tRD/0xwTljASOpfcNSQn92Cepxz5NPg5BPXxvPIDeToSaPQ+HcehqiSJ9
-	 hQTBvUnmcKv+I1kJiRvWlWP2+bDGjG3X0QrpTadESyGemGgW0o3BCPfo+Xlko62peE
-	 OKTPMIABFzTo4x0+O0u5e+/RnwbJvxWzMEOQJBMGE8JtTPfG5COXJjHKljhzLU4nbW
-	 7EwntvamoA/UA==
-Received: by mail-lf1-f41.google.com with SMTP id 2adb3069b0e04-5aa63628d26so2851071e87.0
-        for <linux-pm@vger.kernel.org>; Mon, 15 Jun 2026 02:00:29 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AFNElJ8rBMoR2hFUh9wxYn0GZfoRBO+zjRuw1Or83v4bwkYA4bRhcWxccS2MewSQ10yjzipnCMY1sa0Ozg==@vger.kernel.org
-X-Gm-Message-State: AOJu0YzeJDrVIVTOHT6IAALJKmdxZbIZY4t3NlRd/YGwi8y/6wfxBdZ1
-	BzkHfhMWh1g+dMIhjUM7xBX1WfULEirLZAjFulkXx1dNfr/5SyfS2ivm50xRAcTx3AWcb2Jzfhb
-	1v4ELqPmPW2Rh+peeMTKxewUcyF5GfAmZ76jplF0l8Q==
-X-Received: by 2002:a05:6512:40b:b0:5aa:8822:c944 with SMTP id
- 2adb3069b0e04-5ad30dd50aamr1888691e87.46.1781514027973; Mon, 15 Jun 2026
- 02:00:27 -0700 (PDT)
-Received: from 969154062570 named unknown by gmailapi.google.com with
- HTTPREST; Mon, 15 Jun 2026 02:00:26 -0700
-Received: from 969154062570 named unknown by gmailapi.google.com with
- HTTPREST; Mon, 15 Jun 2026 02:00:26 -0700
-From: Bartosz Golaszewski <brgl@kernel.org>
-In-Reply-To: <CAGXv+5Hf_V4=mkAc3pN8_K9i+FfH2Wv7HVJBq71-f8sMFYL3fA@mail.gmail.com>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="i/5JN659"
+Received: by smtp.kernel.org (Postfix) with ESMTPS id B475EC2BCB4;
+	Mon, 15 Jun 2026 09:04:07 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1781514247;
+	bh=Jofc1H+1312/IfX3WE9//NhWj3CD9rDK2y4SwuQZcMg=;
+	h=From:Date:Subject:To:Cc:Reply-To:From;
+	b=i/5JN6598bIH3/2zQrAXf0sZMjTXRa76W2XkdR3IUWADvfVSdN9lWJe4+GWN8yQEI
+	 VWvda8E118eKmFFDfj+3TzpBzO5DppLACVdioeIofCuAay2Mtd/VrvlQ6Igl4d/tAZ
+	 mOJBHldC30+KefNFnh5P4mhTTjJp8cbANskkfILrj0MzghxkGfXUNlewP6C7+TruyJ
+	 f/s8V1+aZQDvlzHQB02zP6HZmiXBx+7+MWsUFFFc1ZHd5jZbgV3t20yzPbtwZ0V6KI
+	 FwUfyPY1wf28qT0xhif+hIPQRLhD0QypAsiVUJss7UEMEVGB8CD0DzurMBGyrN7qcs
+	 1rcGrIHDJHErA==
+Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 92F34CD98DA;
+	Mon, 15 Jun 2026 09:04:07 +0000 (UTC)
+From: Bryam Vargas via B4 Relay <devnull+hexlabsecurity.proton.me@kernel.org>
+Date: Mon, 15 Jun 2026 04:04:07 -0500
+Subject: [PATCH] power: supply: cros_usbpd-charger: bound the EC-reported
+ port count
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260610084053.2059858-1-wenst@chromium.org> <20260610084053.2059858-6-wenst@chromium.org>
- <ailxrP-_9_NL8qnN@ashevche-desk.local> <CAMRc=MdiwQM6yk8FXcc+RisVP2iqWKWzVsn2-Yy6dyJXt-1X=Q@mail.gmail.com>
- <aipz2zMFcdnZYTxS@ashevche-desk.local> <CAMRc=MdRN7YitmMX8PknbzLh+MdsWm+dDg0MLtCVYOorqNobTw@mail.gmail.com>
- <airY6IMz2KFz_z9j@kuha> <aisEccAOm3qoXjxd@ashevche-desk.local> <CAGXv+5Hf_V4=mkAc3pN8_K9i+FfH2Wv7HVJBq71-f8sMFYL3fA@mail.gmail.com>
-Date: Mon, 15 Jun 2026 02:00:26 -0700
-X-Gmail-Original-Message-ID: <CAMRc=Mcr2oMRQv_FPds=7QEF=7Q6+keqo_AzJ4iNBnhL+v_NNg@mail.gmail.com>
-X-Gm-Features: AVVi8CfllpqpnNK5oNjDe5YaMrrIp_PMpqlIec8MT94CN56JvkF5jdb538qT0FI
-Message-ID: <CAMRc=Mcr2oMRQv_FPds=7QEF=7Q6+keqo_AzJ4iNBnhL+v_NNg@mail.gmail.com>
-Subject: Re: [PATCH v2 05/16] usb: hub: Associate port@ fwnode with USB port device
-To: Chen-Yu Tsai <wenst@chromium.org>
-Cc: Heikki Krogerus <heikki.krogerus@linux.intel.com>, Bartosz Golaszewski <brgl@kernel.org>, 
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Daniel Scally <djrscally@gmail.com>, 
-	Sakari Ailus <sakari.ailus@linux.intel.com>, "Rafael J. Wysocki" <rafael@kernel.org>, 
-	Danilo Krummrich <dakr@kernel.org>, Rob Herring <robh@kernel.org>, 
-	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
-	Matthias Brugger <matthias.bgg@gmail.com>, 
-	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>, 
-	Alan Stern <stern@rowland.harvard.edu>, linux-acpi@vger.kernel.org, 
-	driver-core@lists.linux.dev, linux-pm@vger.kernel.org, 
-	linux-usb@vger.kernel.org, devicetree@vger.kernel.org, 
-	linux-mediatek@lists.infradead.org, linux-arm-kernel@lists.infradead.org, 
-	linux-kernel@vger.kernel.org, Manivannan Sadhasivam <mani@kernel.org>, 
-	Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20260615-b4-disp-e0930b21-v1-1-c9ffbac7c9bb@proton.me>
+X-B4-Tracking: v=1; b=H4sIAAbAL2oC/x3MQQqAIBBA0avIrBtQx4S6SrTQnGo2JQoRRHdPW
+ r7F/w9ULsIVRvVA4UuqnEeD6RQsezg2RknNYLX12pseo8MkNSPrgXS0Bim5NXiTeiKCluXCq9z
+ /cprf9wPHlSpYYgAAAA==
+To: Benson Leung <bleung@chromium.org>, Sebastian Reichel <sre@kernel.org>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
+ Guenter Roeck <groeck@chromium.org>, chrome-platform@lists.linux.dev
+X-Mailer: b4 0.13.0
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1781514246; l=3500;
+ i=hexlabsecurity@proton.me; s=proton; h=from:subject:message-id;
+ bh=yPt7u+U8eCmHsmxpMUGj6fRYLczl25g094dvindrHeU=;
+ b=7ytic+wtqut+SKPmmLRIyueeBWkUWnu2RDPlY8dKa2D5gez8KoMEziHBuK+q6Vv8Y4217lWaY
+ mCUkEHmkKpAA16/+cZUb/N5nSWUpqPneb9cSvIE7wiAgWFrUylJrMNy
+X-Developer-Key: i=hexlabsecurity@proton.me; a=ed25519;
+ pk=dmppBMZNLLoPzxHi9l8tZDzEZUunPbgsYqIZYXeUrL0=
+X-Endpoint-Received: by B4 Relay for hexlabsecurity@proton.me/proton with
+ auth_id=814
+X-Original-From: Bryam Vargas <hexlabsecurity@proton.me>
+Reply-To: hexlabsecurity@proton.me
 
-On Fri, 12 Jun 2026 07:46:26 +0200, Chen-Yu Tsai <wenst@chromium.org> said:
-> On Fri, Jun 12, 2026 at 3:54=E2=80=AFAM Andy Shevchenko
-> <andriy.shevchenko@linux.intel.com> wrote:
->>
->> On Thu, Jun 11, 2026 at 06:48:56PM +0300, Heikki Krogerus wrote:
->> > On Thu, Jun 11, 2026 at 11:35:13AM +0200, Bartosz Golaszewski wrote:
->> > > On Thu, Jun 11, 2026 at 10:37=E2=80=AFAM Andy Shevchenko
->> > > <andriy.shevchenko@linux.intel.com> wrote:
->> > > > On Thu, Jun 11, 2026 at 04:20:58AM -0400, Bartosz Golaszewski wrot=
-e:
->> > > > > On Wed, 10 Jun 2026 16:16:12 +0200, Andy Shevchenko
->> > > > > <andriy.shevchenko@linux.intel.com> said:
->> > > > > > On Wed, Jun 10, 2026 at 04:40:39PM +0800, Chen-Yu Tsai wrote:
->> > > > > >> When a USB hub port is connected to a connector in a firmware=
- node
->> > > > > >> graph, the port itself has a node in the graph.
->> > > > > >>
->> > > > > >> Associate the port's firmware node with the USB port's device=
-,
->> > > > > >> usb_port::dev. This is used in later changes for the M.2 slot=
- power
->> > > > > >> sequencing provider to match against the requesting port.
->> > > > > >
->> > > > > > Okay, would this affect ACPI-based systems? if so, how?
->> > > > > > Can you elaborate on that, please?
->> > > > >
->> > > > > Is it possible that there's an ACPI device node associated with =
-the port like
->> > > > > on some DT systems? I don't think so and there should be no impa=
-ct IMO but I
->> > > > > also don't know enough about ACPI.
->> >
->> > There are device nodes for the USB ports in ACPI, and I think they get
->> > always assigned in drivers/usb/core/usb-acpi.c.
->> >
->> > > > The API is agnostic. There is a possibility to have software nodes=
- associated
->> > > > with the port. I think the best is to be sure that ACPI-aware peop=
-le who are
->> > > > experts in USB will check this (Heikki?).
->> >
->> > I can't say what's the impact from this patch - I'm not an expert with
->> > this side of USB. Is there a danger that we end up overwriting the
->> > ACPI node for the port, or something else?
->>
->> Exactly this one is my worrying, but I haven't checked the actual flow.
->
-> Looking through ACPI code, ACPI_COMPANION_SET() is used, which boils
-> down to
->
->     set_primary_fwnode(dev, acpi_fwnode_handle(acpi_dev))
->
-> This is called through
->
-> usb_hub_create_port_device()
->   device_register()
->     device_add()
->       device_platform_notify()
->         acpi_device_notify()
->           usb_acpi_find_companion()
->             usb_acpi_find_companion_for_port()
->           acpi_bind_one()
->             ACPI_COMPANION_SET()
->               set_primary_fwnode()
->
-> Looking at device_add_software_node(), all swnodes are secondary.
->
-> set_primary_fwnode() seems to be able to make the ACPI handle / fwnode
-> the primary, keeping any existing fwnode as the secondary. However
-> if we do end up assigning a primary fwnode to the device using
-> device_set_node() as in this patch, set_primary_fwnode() is going
-> to complain loudly.
->
-> On another front, the ACPI representation of the USB ports looks nothing
-> like the OF graphs, at least on my X1 Carbon:
->
-> For a usb port device on the root hub such as
->
->   /sys/bus/usb/devices/4-0:1.0/usb4-port1/firmware_node/path
->
-> looks like
->
->   \_SB_.PC00.XHCI.RHUB.SS01
->
-> while a usb port's firmware node link
->
->   /sys/bus/usb/devices/4-0:1.0/usb4-port1//firmware_node
->
-> resolves to
->
->   /sys/devices/LNXSYSTM:00/LNXSYBUS:00/PNP0A08:00/device:19/device:1a/dev=
-ice:29
->
-> Neither looks anything like the graph "port" / "endpoint" node names.
-> So maybe we're in the clear here.
->
-> Besides the loud warning from set_primary_fwnode(), the major issue stemm=
-ing
-> from a wrong node is that power management (through ACPI) is likely to fa=
-il.
->
-> If we're still concerned, I think we can skip the assignment if the fwnod=
-e
-> is an ACPI node, i.e. check it with is_acpi_node().
->
+From: Bryam Vargas <hexlabsecurity@proton.me>
 
-Agreed, I think this is a good compromise.
+cros_usbpd_charger_probe() reads two port counts from the EC and uses
+one of them, num_charger_ports, as the loop bound when populating a
+fixed-size array:
 
-Bart
+	struct port_data *ports[EC_USB_PD_MAX_PORTS];	/* 8 entries */
+	...
+	for (i = 0; i < charger->num_charger_ports; i++)
+		charger->ports[charger->num_registered_psy++] = port;
 
->
-> I've never worked on ACPI systems, so this is just me checking the code.
->
->
-> Thanks
-> ChenYu
->
+Both num_usbpd_ports (from EC_CMD_USB_PD_PORTS) and num_charger_ports
+(from EC_CMD_CHARGE_PORT_COUNT) are u8 values reported by the EC. The
+only validation is a sanity check that compares the two EC-reported
+values against each other:
+
+	if (num_charger_ports < num_usbpd_ports ||
+	    num_charger_ports > num_usbpd_ports + 1)
+		return -EPROTO;
+
+It never checks either count against EC_USB_PD_MAX_PORTS, the size of
+the ports[] array. A malfunctioning, malicious or compromised EC that
+reports num_usbpd_ports == num_charger_ports == N for any N > 8 (for
+example both 255) passes this check, and the loop then writes N pointers
+into the 8-entry ports[] array embedded in the devm_kzalloc()'d
+charger_data, overflowing it by up to 255 - 8 = 247 entries (~1976
+bytes): a slab out-of-bounds write.
+
+Reject a port count larger than the ports[] array can hold.
+
+Fixes: f68b883e8fad ("power: supply: add cros-ec USBPD charger driver.")
+Cc: stable@vger.kernel.org
+Signed-off-by: Bryam Vargas <hexlabsecurity@proton.me>
+---
+I reproduced the out-of-bounds write with an in-kernel test that drives
+the cros_usbpd_charger_probe() geometry verbatim under KASAN - a
+devm_kzalloc()'d charger_data with the 8-entry ports[] array, the
+EC-value cross-check, and the population loop - with the device-supplied
+port counts:
+
+  num_charger_ports = num_usbpd_ports = 12, no bound:
+    BUG: KASAN: slab-out-of-bounds in ...probe
+    Write of size 8 ... cache kmalloc-128 ... 0 bytes to the right of the
+    allocated 128-byte region   (ports[8..11] past the 8-entry array)
+  with this patch (count > EC_USB_PD_MAX_PORTS rejected): -EPROTO, no
+    KASAN report.
+  a well-formed count (<= EC_USB_PD_MAX_PORTS) is unaffected, no report.
+
+The full device range - both counts reported as 255, writing 247
+pointers (~1976 bytes) past the array - reproduces the same way under
+userspace AddressSanitizer on both -m32 and -m64.
+---
+ drivers/power/supply/cros_usbpd-charger.c | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/power/supply/cros_usbpd-charger.c b/drivers/power/supply/cros_usbpd-charger.c
+index 7d3e676a951c..d639957f9775 100644
+--- a/drivers/power/supply/cros_usbpd-charger.c
++++ b/drivers/power/supply/cros_usbpd-charger.c
+@@ -589,10 +589,12 @@ static int cros_usbpd_charger_probe(struct platform_device *pd)
+ 
+ 	/*
+ 	 * Sanity checks on the number of ports:
+-	 *  there should be at most 1 dedicated port
++	 *  there should be at most 1 dedicated port, and the count is
++	 *  reported by the EC, so it must not exceed the ports[] array.
+ 	 */
+ 	if (charger->num_charger_ports < charger->num_usbpd_ports ||
+-	    charger->num_charger_ports > (charger->num_usbpd_ports + 1)) {
++	    charger->num_charger_ports > (charger->num_usbpd_ports + 1) ||
++	    charger->num_charger_ports > EC_USB_PD_MAX_PORTS) {
+ 		dev_err(dev, "Unexpected number of charge port count\n");
+ 		ret = -EPROTO;
+ 		goto fail_nowarn;
+
+---
+base-commit: 8e65320d91cdc3b241d4b94855c88459b91abf66
+change-id: 20260615-b4-disp-e0930b21-3d4fa61d5333
+
+Best regards,
+-- 
+Bryam Vargas <hexlabsecurity@proton.me>
+
+
