@@ -1,53 +1,53 @@
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.14])
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.11])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A41C63F8223;
-	Mon, 15 Jun 2026 14:13:49 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.14
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C290A3E5587;
+	Mon, 15 Jun 2026 14:24:50 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.11
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1781532833; cv=none; b=XgRy0kVjFqh002AV/8epfIrOSEbSYhw484e/zVJgL9qNzbbbt++nmzlIqotFmZWKfb2WXuhPGy5zvqiYJTvMEphCLWI6USk/XM42K+fR7OiXlwXBKdN8nYulURoISPln7OgSneNQc6F0LHgbg2Zj0/aQPeJFY822IWoMs93bNa8=
+	t=1781533493; cv=none; b=fLdaApPrNHjHUwOoIGM2zM8dw6lOPbzMDdGkKV/MmeiRbfbrhxXXcUXj0KdkeszCPp/IHN2HvJyvNthSZGGakoMrCNjRJgCXLHWn3ZT5jKKu88vomRpV+eI4tVI6Sv9KqADQmSTO0F7rY022ZhYLegfQjFSIMyrM1SbgQ4W0y10=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1781532833; c=relaxed/simple;
-	bh=UhIxYzM+nmjixm9TqBLlIkQ1xDmIaFeaik95b7qTF1o=;
+	s=arc-20240116; t=1781533493; c=relaxed/simple;
+	bh=xWmzfFk9cjQIE716I7Hu4jxNGr0hOL1BNbnX5sO/6fc=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=P6gF49ka3vre+s72p67jr2V0Gv01ten2ez+74xFfrTk99toN1G5kW6iWrJn6J9jqL/6EiENIawr39v227xTUUf3m72cdqkn6iRNOsDlEG4UBEENpCrt5zTmxS+isieY7NPWf5kzxa2sMQA9peqVT2u71VEyL6sZqJqZlV7xb8fo=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=HVDd25KT; arc=none smtp.client-ip=198.175.65.14
+	 Content-Type:Content-Disposition:In-Reply-To; b=f2pQM6R4cDHSIjne4vnhT3NOuWt+UZO3k9HsLMvgOCSSBnAoXJ9Llg7chjjiLSswC/JuzGzxODESb8OWdIKwekRXetV0Pp+evxt/SoTXrdrxXcCWowwZ074q2zyM7ug6QVPyAeJX0q8v5lEVV9twVatBcJKt1ROeS2GiK+ZQW5Y=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=lTX8XjW3; arc=none smtp.client-ip=198.175.65.11
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="HVDd25KT"
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="lTX8XjW3"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1781532829; x=1813068829;
+  t=1781533491; x=1813069491;
   h=date:from:to:cc:subject:message-id:references:
    mime-version:content-transfer-encoding:in-reply-to;
-  bh=UhIxYzM+nmjixm9TqBLlIkQ1xDmIaFeaik95b7qTF1o=;
-  b=HVDd25KTGiRduVan81GBLmjh4Bu9aikMV31eKMBh+OZ0U62sx6yiI9nv
-   Hk+nluCZ5Wxh3XMw5LvoeqAt99L2aLKLLS7GLrlKRL/5QTOiv7WvcjQcq
-   hIo8LLzGAdrxGnnX/zHk6oXuem3puUnLr++AXHAJ1VKU+Y+dc00tXn9eU
-   cJ2aoxoHjQC8L3Kkbh/P8eaexiKht6d3x4CGzKFUKcXhRJITmWkca/4AF
-   w/JbUm2/amwBaZSF3KInTew/ihijEe4XEK9Y/8pVmYxiiZ8xKi5jiIpw8
-   dCmUAj5U4wRFCllUxNeSMZCeRIz9nsjQulyYy/8GCfR40+AWepU3XvKSl
-   w==;
-X-CSE-ConnectionGUID: 24mSp0Z+QT2kosnUiRKXSg==
-X-CSE-MsgGUID: m82/x7EHTbeaol/i+brJNw==
-X-IronPort-AV: E=McAfee;i="6800,10657,11818"; a="86173814"
+  bh=xWmzfFk9cjQIE716I7Hu4jxNGr0hOL1BNbnX5sO/6fc=;
+  b=lTX8XjW3C3P2T/f1xZzs3K5IBIgQwnX9PidatXt83oprrfkrU5DTlzAi
+   g5lQKFxAt6PGkG3PHpUM6+g8bMBYMJ4jSomqCsg0f9GlM6m/kkZZjnI0q
+   E4kApyhjczQKakuEEg8cEbDTQHgOiVnVYZvnSvk9RpKCZSiq55d+7fYmh
+   KCl9AR3P36VI3+0YUDudEAb3WVS/DWbffRWGKpJFdEYlJ1PaKDaTXgv0w
+   ujtelM/Demxuej8Ludqh9TOVZC9fKA43ErP2kRHdPuNtpu0a3ZCC3Z1p0
+   T10Sq9grcwcJXF42Xf1k0ODUrH98GesW0Ez6GmRWapo6ATOBTu/qILWLl
+   g==;
+X-CSE-ConnectionGUID: 8ivwpw6SQgaD0XmYm9EdSw==
+X-CSE-MsgGUID: lRTyj/qgRTu2xS07b75UTA==
+X-IronPort-AV: E=McAfee;i="6800,10657,11818"; a="92592353"
 X-IronPort-AV: E=Sophos;i="6.24,206,1774335600"; 
-   d="scan'208";a="86173814"
-Received: from orviesa002.jf.intel.com ([10.64.159.142])
-  by orvoesa106.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 15 Jun 2026 07:13:49 -0700
-X-CSE-ConnectionGUID: YMWbUiJtSUSreFBjEnDNmw==
-X-CSE-MsgGUID: oJXFyqPpQxekNpkbAoCuFA==
+   d="scan'208";a="92592353"
+Received: from fmviesa009.fm.intel.com ([10.60.135.149])
+  by orvoesa103.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 15 Jun 2026 07:24:50 -0700
+X-CSE-ConnectionGUID: 4TsW4wr/SnmyqlcrytQVLQ==
+X-CSE-MsgGUID: 0waCTAC6R1eZ3ZEHTZ0yoQ==
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="6.24,206,1774335600"; 
-   d="scan'208";a="277689445"
+   d="scan'208";a="241117966"
 Received: from igk-lkp-server01.igk.intel.com (HELO 892db79562d4) ([10.211.93.152])
-  by orviesa002.jf.intel.com with ESMTP; 15 Jun 2026 07:13:46 -0700
+  by fmviesa009.fm.intel.com with ESMTP; 15 Jun 2026 07:24:47 -0700
 Received: from kbuild by 892db79562d4 with local (Exim 4.98.2)
 	(envelope-from <lkp@intel.com>)
-	id 1wZ84N-000000004uH-46ZF;
-	Mon, 15 Jun 2026 14:13:43 +0000
-Date: Mon, 15 Jun 2026 16:13:39 +0200
+	id 1wZ8F2-000000004uT-2c3K;
+	Mon, 15 Jun 2026 14:24:44 +0000
+Date: Mon, 15 Jun 2026 16:24:05 +0200
 From: kernel test robot <lkp@intel.com>
 To: Pengpeng Hou <pengpeng@iscas.ac.cn>,
 	"Rafael J. Wysocki" <rafael@kernel.org>,
@@ -59,9 +59,10 @@ To: Pengpeng Hou <pengpeng@iscas.ac.cn>,
 	Miquel Raynal <miquel.raynal@bootlin.com>,
 	Christophe JAILLET <christophe.jaillet@wanadoo.fr>,
 	linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: oe-kbuild-all@lists.linux.dev, pengpeng@iscas.ac.cn
+Cc: llvm@lists.linux.dev, oe-kbuild-all@lists.linux.dev,
+	pengpeng@iscas.ac.cn
 Subject: Re: [PATCH] thermal: intel: int3400: clean up ODVP on probe failures
-Message-ID: <202606151651.DIcwd7KD-lkp@intel.com>
+Message-ID: <202606151653.EEZuR06P-lkp@intel.com>
 References: <20260615070326.71761-1-pengpeng@iscas.ac.cn>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
@@ -88,27 +89,27 @@ url:    https://github.com/intel-lab-lkp/linux/commits/Pengpeng-Hou/thermal-inte
 base:   https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git thermal
 patch link:    https://lore.kernel.org/r/20260615070326.71761-1-pengpeng%40iscas.ac.cn
 patch subject: [PATCH] thermal: intel: int3400: clean up ODVP on probe failures
-config: x86_64-rhel-9.4-ltp (https://download.01.org/0day-ci/archive/20260615/202606151651.DIcwd7KD-lkp@intel.com/config)
-compiler: gcc-14 (Debian 14.2.0-19) 14.2.0
-reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20260615/202606151651.DIcwd7KD-lkp@intel.com/reproduce)
+config: x86_64-rhel-9.4-rust (https://download.01.org/0day-ci/archive/20260615/202606151653.EEZuR06P-lkp@intel.com/config)
+compiler: clang version 22.0.0git (https://github.com/llvm/llvm-project f43d6834093b19baf79beda8c0337ab020ac5f17)
+reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20260615/202606151653.EEZuR06P-lkp@intel.com/reproduce)
 
 If you fix the issue in a separate patch/commit (i.e. not just a new version of
 the same patch/commit), kindly add following tags
 | Reported-by: kernel test robot <lkp@intel.com>
-| Closes: https://lore.kernel.org/oe-kbuild-all/202606151651.DIcwd7KD-lkp@intel.com/
+| Closes: https://lore.kernel.org/oe-kbuild-all/202606151653.EEZuR06P-lkp@intel.com/
 
 All warnings (new ones prefixed by >>):
 
-   drivers/thermal/intel/int340x_thermal/int3400_thermal.c: In function 'int3400_thermal_probe':
->> drivers/thermal/intel/int340x_thermal/int3400_thermal.c:659:1: warning: label 'free_art_trt' defined but not used [-Wunused-label]
-     659 | free_art_trt:
-         | ^~~~~~~~~~~~
->> drivers/thermal/intel/int340x_thermal/int3400_thermal.c:651:1: warning: label 'free_imok' defined but not used [-Wunused-label]
+>> drivers/thermal/intel/int340x_thermal/int3400_thermal.c:651:1: warning: unused label 'free_imok' [-Wunused-label]
      651 | free_imok:
-         | ^~~~~~~~~
+         | ^~~~~~~~~~
+>> drivers/thermal/intel/int340x_thermal/int3400_thermal.c:659:1: warning: unused label 'free_art_trt' [-Wunused-label]
+     659 | free_art_trt:
+         | ^~~~~~~~~~~~~
+   2 warnings generated.
 
 
-vim +/free_art_trt +659 drivers/thermal/intel/int340x_thermal/int3400_thermal.c
+vim +/free_imok +651 drivers/thermal/intel/int340x_thermal/int3400_thermal.c
 
 0ba13c763aacb2 drivers/thermal/intel/int340x_thermal/int3400_thermal.c Matthew Garrett     2020-04-13  556  
 816cab931f288c drivers/thermal/int340x_thermal/int3400_thermal.c       Zhang Rui           2014-03-14  557  static int int3400_thermal_probe(struct platform_device *pdev)
