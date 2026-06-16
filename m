@@ -1,68 +1,92 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 745493D88FE;
-	Tue, 16 Jun 2026 05:59:41 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 00082231A41;
+	Tue, 16 Jun 2026 06:19:34 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1781589582; cv=none; b=Ycmfq4jIJ8uo66PubnPCCwGvrJRNrA9G4BkSGbZQhXS1hWRqlu1a2w5wYQHntuXJNdBdJ+LiYGm1oeGTstyQpFF84Ma7kHZcWnJUZpB+jMzC8X/eshONh2a+JbqF9Opga6PMoJrvZ5jyLFyY3ObXSLo7vvfX0GNKZRzu86WgEdI=
+	t=1781590775; cv=none; b=D9GXi3VtBIarZmSEuJR2wFhNlLbeZBLm1X/PVLhdwxxwQKLaVCfFXw4bBOPt0fHyQZ/ZSW1nKfYuQdHzu56wv49InQflWIERrJay7fggcEr/zziWsIGV/H23xulkGfqDbmfH0d86CBm2PLld5lER6JWEnayl7uduMP/b/qfmC0s=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1781589582; c=relaxed/simple;
-	bh=FORDhV96tdHAtuehrNe9uRAGj2+EE9JY3eY5E1wbhGg=;
+	s=arc-20240116; t=1781590775; c=relaxed/simple;
+	bh=ADBGzy9XP1K2Nq52f/TB17HnKxbUAS1HFXejK/xTlLI=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=aXlbJ6V7gyvDiK0opa7/pg8Hnzj+pPIoxXchj3ECmSOFUQzVMbKDRrK8SzkxBD/PLhNQKuacS/efVspWrG7apz06xh1bwgZjo2w2xVC+ZfOb3PF/zDpBrRs1PFHbkksPlhoMW5e4d+uavz79mr/1YbVbpRwEqCqEtvZMyU9I3JE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=F0LiBs4D; arc=none smtp.client-ip=100.103.45.18
+	 Content-Type:Content-Disposition:In-Reply-To; b=tSbK8DW0QUBCadap6AdOuzoQXstsNaFPDj5HbTYymws3YeMruQNOTH/BouDBdzMWociiXvM5o+AvhIhzDMLiKifDacMNdQ4xWXaDBAUSQ+wS0+ToatuCMDA/jzmIxLN6tZEaVdJyZM/qqCmroA+81+2wNgw4Pw+pbMohjhgquuw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=E0PDeBZ2; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="F0LiBs4D"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 40DF21F000E9;
-	Tue, 16 Jun 2026 05:59:40 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="E0PDeBZ2"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 53E561F000E9;
+	Tue, 16 Jun 2026 06:19:30 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1781589581;
-	bh=i32F6IcVlEV6y4PPf1ZL03Yo1piH7IqR+iTxHu5YPYY=;
+	s=k20260515; t=1781590774;
+	bh=U9l2UDzmbwgAF+rN4FBnX/q5SgDOTT2NxviVVoTgSkk=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=F0LiBs4DEwdLshrybaFYa1AIHGMXFkFPT7N4Y8CXQGusJskh+tDlz3TB5YaftBOMC
-	 ZPWmxR/vHfkIRFi87CUw7LWEobq6Mxb5xoxDw7YdqWrgh6lrqUjDUP1mn6qbiFclV9
-	 KcJx73FRyOItc2yr7dAS8WSXaSyoRz3S/DhCae0SuarBZRFVRWxUO+vr+SiKRxPzSB
-	 Y1cfd0HFwq+VuS2iU4sonNXGMp+AHqCOl8IbxZvlwSTrGrxvgeufNyRPOHqrCiqem7
-	 Xa7wr3GWvLCy/2+ZGLHg3x2nR40Ih3aGHLN8pEky5WDFgV1CIFnpfVk7NgtXWUEr9D
-	 8EGbXFha+nExg==
-Date: Tue, 16 Jun 2026 05:59:38 +0000
-From: Tzung-Bi Shih <tzungbi@kernel.org>
-To: Pengpeng Hou <pengpeng@iscas.ac.cn>
-Cc: Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org, Benson Leung <bleung@chromium.org>,
-	Guenter Roeck <groeck@chromium.org>,
-	chrome-platform@lists.linux.dev
-Subject: Re: [PATCH] power: supply: cros_peripheral_charger: unregister EC
- notifier
-Message-ID: <ajDmSuK-eahNO1xu@google.com>
-References: <20260615063105.39152-1-pengpeng@iscas.ac.cn>
+	b=E0PDeBZ2sUlNxPKsNZzORywiUJ4fS8OL87rkx2ufcp7EGVxEwsnQPGLNTWSZUiqSy
+	 yVv4W2n2lvLax5itgxUxBU6WteXnNxwWTs0lBWGERCgkKva6W7oTpawHbOev1EP2RE
+	 b/PQ31P9gSigYLG1tkxbfSfdEGWvzDc0OC4AhixUzmwFkmxi/ill+cbByxmld7ycpV
+	 FMAeRZ38BAsvDuD1tra4G6t1DdGc5MciWdutX8j5iIy9A3vyIY8BJptnSbPqBG3Vmq
+	 zicULhgc6+UO0etmJkq/USbjKlBxFPn8oGuYkpniDh76rvyPZ0GaW4bdUKtD5tLWfB
+	 Jmt6cmhfUy1Gg==
+Date: Tue, 16 Jun 2026 08:19:26 +0200
+From: Manivannan Sadhasivam <mani@kernel.org>
+To: Wei Deng <wei.deng@oss.qualcomm.com>
+Cc: Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>, 
+	Bartosz Golaszewski <brgl@kernel.org>, Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>, 
+	linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
+	quic_chezhou@quicinc.com, cheng.jiang@oss.qualcomm.com, shuai.zhang@oss.qualcomm.com, 
+	jinwang.li@oss.qualcomm.com, xiuzhuo.shang@oss.qualcomm.com, mengshi.wu@oss.qualcomm.com
+Subject: Re: [PATCH] power: sequencing: pcie-m2: Sort PCI device IDs in
+ ascending order
+Message-ID: <2rt76zesdfy55odwxdhltvj3eef2ridnj3uvetzgcrjuv5wkm3@m342xffhjr3o>
+References: <hndyeomouu754rwevoigc2ai4ywtz5lhodizj4amjuyn4azjhq@f6ixgilydtg2>
+ <20260616025632.3697863-1-wei.deng@oss.qualcomm.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20260615063105.39152-1-pengpeng@iscas.ac.cn>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20260616025632.3697863-1-wei.deng@oss.qualcomm.com>
 
-On Mon, Jun 15, 2026 at 02:31:05PM +0800, Pengpeng Hou wrote:
-> cros_pchg_probe() registers an EC event notifier whose callback uses the
-> devm-allocated charger_data via container_of().  The driver has no
-> remove callback and does not unregister the notifier, so the notifier
-> chain can retain a pointer to freed driver state after unbind or probe
-> cleanup.
+On Tue, Jun 16, 2026 at 08:26:32AM +0530, Wei Deng wrote:
+> Sort the entries in pwrseq_m2_pci_ids[] by device ID in ascending order:
+> 0x1103 (WCN6855) before 0x1107 (WCN7850).
 > 
-> Register a devm cleanup action immediately after the notifier is
-> installed so the notifier is unregistered before the driver state is
-> released.  Also fail probe if the notifier cannot be registered, instead
-> of leaving a charger device that cannot receive EC events.
+> Fixes: 2abcfdd91e6a ("power: sequencing: pcie-m2: Add PCI ID 0x1103 for WCN6855 Bluetooth")
+> Signed-off-by: Wei Deng <wei.deng@oss.qualcomm.com>
+
+Reviewed-by: Manivannan Sadhasivam <mani@kernel.org>
+
+Don't send patches as a reply to other patches. You should send them separately.
+
+- Mani
+
+> ---
+>  drivers/power/sequencing/pwrseq-pcie-m2.c | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
 > 
-> Signed-off-by: Pengpeng Hou <pengpeng@iscas.ac.cn>
+> diff --git a/drivers/power/sequencing/pwrseq-pcie-m2.c b/drivers/power/sequencing/pwrseq-pcie-m2.c
+> index 94c3f4b7ee36..b5ed80d03953 100644
+> --- a/drivers/power/sequencing/pwrseq-pcie-m2.c
+> +++ b/drivers/power/sequencing/pwrseq-pcie-m2.c
+> @@ -186,10 +186,10 @@ static int pwrseq_pcie_m2_match(struct pwrseq_device *pwrseq,
+>  }
+>  
+>  static const struct pci_device_id pwrseq_m2_pci_ids[] = {
+> -	{ PCI_DEVICE(PCI_VENDOR_ID_QCOM, 0x1107),
+> -	  .driver_data = (kernel_ulong_t)"qcom,wcn7850-bt" },
+>  	{ PCI_DEVICE(PCI_VENDOR_ID_QCOM, 0x1103),
+>  	  .driver_data = (kernel_ulong_t)"qcom,wcn6855-bt" },
+> +	{ PCI_DEVICE(PCI_VENDOR_ID_QCOM, 0x1107),
+> +	  .driver_data = (kernel_ulong_t)"qcom,wcn7850-bt" },
+>  	{ } /* Sentinel */
+>  };
+>  
+> -- 
+> 2.34.1
+> 
 
-A possible nit is to use s/cros_peripheral_charger/cros_pchg/ in the patch
-subject to leave more space for the summary.
-
-With or without this,
-Reviewed-by: Tzung-Bi Shih <tzungbi@kernel.org>
+-- 
+மணிவண்ணன் சதாசிவம்
