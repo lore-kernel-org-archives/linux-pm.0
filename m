@@ -1,63 +1,87 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from cstnet.cn (smtp81.cstnet.cn [159.226.251.81])
+	(using TLSv1.2 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 48EE33B2FC7;
-	Tue, 16 Jun 2026 02:11:47 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BB10823EAB2;
+	Tue, 16 Jun 2026 02:22:44 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=159.226.251.81
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1781575908; cv=none; b=MCArFk+Srvg5lvC/DON3qphpJ9fbd3boCWEzS7J7iken6g5GJvLI+Ar1wyFhaMPrZ8/nUUBd6IkzlZeiOnpI/YSPks2NkNK9IyCZA44IpnCbd0rsnk+Lux8h0a0GK3T5DWlEUMnd7k9mo44kO7Dmum1DjeSYfVYK5+I59zIrQAE=
+	t=1781576568; cv=none; b=VLIB/OUB7/DOR+BfcHqknKCbLG8Zeaz8/il+pL+ElX32CLmTWu2Jkbnt0lYQHr5/+mdWQTrNeCOTR00rzhvKjkU45Lap0liP0QqxhXPcEs12II3p+EGd4ZKzydNX2x7i+tzpeffa/Y7jwRH7RWtP+vLjL/wii0AA6+ZHrxWGF0Y=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1781575908; c=relaxed/simple;
-	bh=juBGnO/XwLTn+/o64DkZHQv5Nrbo/oRhELcYPIWUp9M=;
-	h=Subject:From:In-Reply-To:References:Message-Id:Date:To:Cc; b=WAl4FPgctWutxHpV74DVfgWdAMZxvidUpVEq1qNZrvbn8CrpTidWPKla8Lg22D8tUB1p6ZoYFoxjt1CV8VtyomKiR3nFxGcFzgZriJriWsEWZy01y98/620mVGYsxN6lpbbIuZCEBsxagd0bIYWlVv6PvVT5ABTQLuO8fk6NzgA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=JRDH3AS+; arc=none smtp.client-ip=100.103.45.18
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="JRDH3AS+"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2FD591F000E9;
-	Tue, 16 Jun 2026 02:11:47 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1781575907;
-	bh=U5s8/SQuNV8nPv8r/jq0Hgi6cjzqeGmttpSZAyvMZeI=;
-	h=Subject:From:In-Reply-To:References:Date:To:Cc;
-	b=JRDH3AS+vlCaJhuB8S+Q5UmBVFdPOIW3frDle78rgqxxj4b3uczmMfM8a4nGKBR6L
-	 m8wBOJ1sVo5H5iOU6KN7xoMHYYFmelh2HiAdLhzgHjymiTUvVKmoYtgmfAZvCejcMl
-	 Lnt7fVdjLo6NPliu23oFIrVuZYwsg0cOu5xmqkppjCG6j/UOQS7M/bvJcktJBmu3AB
-	 STlUyC6BNdiU3ka6fs5AEWZi2YL5oQpame1OlgzI6hnhnTCPgm9vGI8jJ3OA7hZSgt
-	 IYVneQCr7qAmv8vN+z9p5gF7S/01zOuQ+3iV9CTWuDJRumFEQzONzhZVbyAA1PN/PN
-	 9mSiu3YyBZUZg==
-Received: from [10.30.226.235] (localhost [IPv6:::1])
-	by aws-us-west-2-korg-oddjob-rhel9-1.codeaurora.org (Postfix) with ESMTP id 568AF3839A26;
-	Tue, 16 Jun 2026 02:11:43 +0000 (UTC)
-Subject: Re: [GIT PULL] power sequencing updates for v7.2-rc1
-From: pr-tracker-bot@kernel.org
-In-Reply-To: <20260615083214.38846-1-bartosz.golaszewski@oss.qualcomm.com>
-References: <20260615083214.38846-1-bartosz.golaszewski@oss.qualcomm.com>
-X-PR-Tracked-List-Id: <linux-pm.vger.kernel.org>
-X-PR-Tracked-Message-Id: <20260615083214.38846-1-bartosz.golaszewski@oss.qualcomm.com>
-X-PR-Tracked-Remote: git://git.kernel.org/pub/scm/linux/kernel/git/brgl/linux.git tags/pwrseq-updates-for-v7.2-rc1
-X-PR-Tracked-Commit-Id: 2abcfdd91e6acc9999c1a38a6a077835a9db380c
-X-PR-Merge-Tree: torvalds/linux.git
-X-PR-Merge-Refname: refs/heads/master
-X-PR-Merge-Commit-Id: 31e6aeafcdde965aa10e10e93ee186520555ec3d
-Message-Id: <178157590192.390807.2827322974576168111.pr-tracker-bot@kernel.org>
-Date: Tue, 16 Jun 2026 02:11:41 +0000
-To: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, brgl@kernel.org, Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
+	s=arc-20240116; t=1781576568; c=relaxed/simple;
+	bh=S3mz17AhE2+LTLaXrzCJePSSSnwKBwPr5tsB0ra3wVI=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=GfGxoEqmuxfRkFum0xWkzX5lwU7AV41PSvBp4yMjo76+dgsAbVoqpjwBPiJPl4pyUUiMpu05cvJb/cXJ0EGyltFSo6FHGfcLYACen9MlyaUsNYgSl8jm413d7lAkxA7HaWv/gYKgZotKzOcn1Nd88xx4ERaVcn21/7+hziQsDK0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=iscas.ac.cn; spf=pass smtp.mailfrom=iscas.ac.cn; arc=none smtp.client-ip=159.226.251.81
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=iscas.ac.cn
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=iscas.ac.cn
+Received: from dfae2b116770.home.arpa (unknown [36.110.52.2])
+	by APP-03 (Coremail) with SMTP id rQCowAAHJt1xszBqCv7gFA--.37987S2;
+	Tue, 16 Jun 2026 10:22:41 +0800 (CST)
+From: Wentao Liang <vulab@iscas.ac.cn>
+To: brgl@kernel.org
+Cc: linux-pm@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	Wentao Liang <vulab@iscas.ac.cn>,
+	stable@vger.kernel.org
+Subject: [PATCH] pwrseq: core: fix use-after-free in pwrseq_debugfs_seq_next()
+Date: Tue, 16 Jun 2026 02:22:26 +0000
+Message-Id: <20260616022226.1655762-1-vulab@iscas.ac.cn>
+X-Mailer: git-send-email 2.34.1
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+X-CM-TRANSID:rQCowAAHJt1xszBqCv7gFA--.37987S2
+X-Coremail-Antispam: 1UD129KBjvJXoW7JryfKFyxKw1kXw1fCry8Xwb_yoW8JrWrp3
+	98G3sYyrWUWF47tF45tFW7XFy5Aa17J34fua9ruwnYvw15Xa4jyry5ArW5XryjyFy8ZFy3
+	tr1Iga48uryj9rJanT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
+	9KBjDU0xBIdaVrnRJUUUkE14x267AKxVWUJVW8JwAFc2x0x2IEx4CE42xK8VAvwI8IcIk0
+	rVWrJVCq3wAFIxvE14AKwVWUJVWUGwA2ocxC64kIII0Yj41l84x0c7CEw4AK67xGY2AK02
+	1l84ACjcxK6xIIjxv20xvE14v26F1j6w1UM28EF7xvwVC0I7IYx2IY6xkF7I0E14v26F4j
+	6r4UJwA2z4x0Y4vEx4A2jsIE14v26F4UJVW0owA2z4x0Y4vEx4A2jsIEc7CjxVAFwI0_Cr
+	1j6rxdM2AIxVAIcxkEcVAq07x20xvEncxIr21l5I8CrVACY4xI64kE6c02F40Ex7xfMcIj
+	6xIIjxv20xvE14v26r126r1DMcIj6I8E87Iv67AKxVW8Jr0_Cr1UMcvjeVCFs4IE7xkEbV
+	WUJVW8JwACjcxG0xvY0x0EwIxGrwACjI8F5VA0II8E6IAqYI8I648v4I1lc7CjxVAaw2AF
+	wI0_JF0_Jw1l42xK82IYc2Ij64vIr41l4I8I3I0E4IkC6x0Yz7v_Jr0_Gr1lx2IqxVAqx4
+	xG67AKxVWUJVWUGwC20s026x8GjcxK67AKxVWUGVWUWwC2zVAF1VAY17CE14v26r126r1D
+	MIIYrxkI7VAKI48JMIIF0xvE2Ix0cI8IcVAFwI0_Jr0_JF4lIxAIcVC0I7IYx2IY6xkF7I
+	0E14v26r1j6r4UMIIF0xvE42xK8VAvwI8IcIk0rVWUJVWUCwCI42IY6I8E87Iv67AKxVWU
+	JVW8JwCI42IY6I8E87Iv6xkF7I0E14v26r1j6r4UYxBIdaVFxhVjvjDU0xZFpf9x0JUg4S
+	rUUUUU=
+X-CM-SenderInfo: pyxotu46lvutnvoduhdfq/1tbiDAYTA2owFOcJPwADsG
 
-The pull request you sent on Mon, 15 Jun 2026 10:32:14 +0200:
+pwrseq_debugfs_seq_next() declares the 'next' device pointer with
+__free(put_device), which causes put_device() to drop the reference
+as soon as the variable goes out of scope. Returning 'next' directly
+thus gives the caller a pointer whose reference has already been
+decremented, resulting in a use-after-free.
 
-> git://git.kernel.org/pub/scm/linux/kernel/git/brgl/linux.git tags/pwrseq-updates-for-v7.2-rc1
+Fix this by returning no_free_ptr(next) so that the automatic
+cleanup is suppressed and ownership is properly transferred to
+the caller.
 
-has been merged into torvalds/linux.git:
-https://git.kernel.org/torvalds/c/31e6aeafcdde965aa10e10e93ee186520555ec3d
+Cc: stable@vger.kernel.org
+Fixes: 249ebf3f65f8 ("power: sequencing: implement the pwrseq core")
+Signed-off-by: Wentao Liang <vulab@iscas.ac.cn>
+---
+ drivers/power/sequencing/core.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Thank you!
-
+diff --git a/drivers/power/sequencing/core.c b/drivers/power/sequencing/core.c
+index 4dff71be11b6..1ec4f393994d 100644
+--- a/drivers/power/sequencing/core.c
++++ b/drivers/power/sequencing/core.c
+@@ -1010,7 +1010,7 @@ static void *pwrseq_debugfs_seq_next(struct seq_file *seq, void *data,
+ 
+ 	struct device *next __free(put_device) =
+ 			bus_find_next_device(&pwrseq_bus, curr);
+-	return next;
++	return_ptr(next);
+ }
+ 
+ static void pwrseq_debugfs_seq_show_target(struct seq_file *seq,
 -- 
-Deet-doot-dot, I am a bot.
-https://korg.docs.kernel.org/prtracker.html
+2.34.1
+
