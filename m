@@ -1,87 +1,136 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-dy1-f174.google.com (mail-dy1-f174.google.com [74.125.82.174])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 006A947D93F
-	for <linux-pm@vger.kernel.org>; Tue, 16 Jun 2026 18:57:14 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E1CD7391842
+	for <linux-pm@vger.kernel.org>; Tue, 16 Jun 2026 21:23:32 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.82.174
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1781636236; cv=none; b=ECmFubNV6JIqLtp03oZztJvtfLp5oXUKOArDGJb6hMy6xDu+PR4oT1+ZxNmj2LVTRq7XieSS+VR3lIiCkDhrsA1fJY4tMdKAwjploLDPhoggHSNle6z2BwXRbC6PQcP3YWJ9p8K8kTaPSS+2sDN/vx/Drlc+Zr3eFQcU6VqebhE=
+	t=1781645014; cv=none; b=G2Ih36z6t1yjd2y3DOxOrFDT2xPoRazljUnrYCjA/Ytsdjte5Hjn9s+hlQGmIhD09+FW5yzsPa4IXWyGwLjxJzF7pSDhpTrJcGBYXxAkLf1/OGMBs1b+7472J4p8qC7gELFjwwk8WrA6hXo3SlxYgt2lpwSmHEO0hqS5NUL+knU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1781636236; c=relaxed/simple;
-	bh=6/bCaUbtfCncrtxzychO2vuRtHH/oCHj4qDutkWacWw=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=AkIKGVp3tRiS4sIz8U4ZcJ3ttdIaDn6d3USu6azPOzQoFCstdxbG74yyX6TLEQbZMxq/BSfElHAzbwNquj7nvWeJ/k3NBr5rU1kOkJDbBmbOcEJvbR5gZsUlQLh1IJ8tJQ3AhykA9oOnUpBQVT3En+Ng0LlBlDt4zYaSzP3xzis=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=luQxn9cl; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1781645014; c=relaxed/simple;
+	bh=tOJ0BjM0ldVhSsSRHlSMBhHPNTPDe2oSS1RBcYunUGY=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=BHsOk/pKJLpqY+kRGw5iIyS6lq4t3x+5q1bPm9Bwon1v1mdBF4tLNpBn5GDRek10IKYIugGcUFoC81MhNYacbbVhSLWX8XZGDsIeBgsimVONq7OmJdaO8lWb/QBUARAH9I2FAmbZJtqjJXOORtESxnMvpuKQ3IQpcsxwq81H9D0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=b19JHsqJ; arc=none smtp.client-ip=74.125.82.174
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="luQxn9cl"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id D1BF31F01562
-	for <linux-pm@vger.kernel.org>; Tue, 16 Jun 2026 18:57:14 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1781636234;
-	bh=Kg5urtXwHhG5NTd2I1ePWdoMCidQs7lsiIoCNc/Lh1Q=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc;
-	b=luQxn9claLnfUGUe4BPO/rKUJCKvbYkdDQ+j2wsHIRz6AQVNGuQHOD9FBHPCskdqe
-	 Talz+wHwrzepupIp3d+SdJigCtw9Lh4qC8oi7IQpB9SCoXxl+LgU4f66IuqYKOZtf5
-	 tieRGEMDoKYR2r5sJZGKvXFJ3dDoywYVOh4JEgDYatvyfewTCFwCT8sbizwxy+HVbk
-	 rsBMS51Q/mz88WQrG5h+I90N7HeVmYm0ykIqXd5MmHWUHpLkCkLf8+fuCfQ0j6EYWU
-	 WkKYh5OPblH6nMNoAMO8dNfO4Ja8DM3ZVM3VCiavzuHNaL4KlPW3pK3MdD6JQMeQT1
-	 1u5RACOzy2rzg==
-Received: by mail-ed1-f44.google.com with SMTP id 4fb4d7f45d1cf-68c32f3c6d6so4971774a12.3
-        for <linux-pm@vger.kernel.org>; Tue, 16 Jun 2026 11:57:14 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AFNElJ+6fiSINXPJuN7RsubCN3DP2OO92vO+SPVoDN4j6+Df88dS6tFO6Qd8hQhdIn/d9F9SOSFxuiaPCQ==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yx0+8//UdwcXZdEIaiHTKzeHuCGiX7fKW16NfyKcKfLI01xzBT6
-	uHEI5rIJpxo1d+xA9fcS+oNwkvc1SDpNULz4eyWIf3N6oHrtslEzX2qs6ACLPsvFXq368sX2V3h
-	pkBsp7dhLTQwaD5aNYE0ibdZFXlAlNA==
-X-Received: by 2002:a17:907:aaa:b0:c04:1977:1025 with SMTP id
- a640c23a62f3a-c05a128a414mr47141766b.0.1781636233441; Tue, 16 Jun 2026
- 11:57:13 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="b19JHsqJ"
+Received: by mail-dy1-f174.google.com with SMTP id 5a478bee46e88-30b6dad2382so5401741eec.0
+        for <linux-pm@vger.kernel.org>; Tue, 16 Jun 2026 14:23:32 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1781645012; x=1782249812; darn=vger.kernel.org;
+        h=in-reply-to:content-transfer-encoding:content-disposition
+         :mime-version:references:message-id:subject:cc:to:from:date:from:to
+         :cc:subject:date:message-id:reply-to;
+        bh=kVGHWnnJ0bnpjfbLQ9kiQcWUR79CsLTM1nJ13tFxcHw=;
+        b=b19JHsqJ5m57yk8F1Ppz9Zz8y5Vvmz7mf6EkhSHLdJr0HbRrL5ZLsstiM9H/54Am4w
+         Iwat9IWtbxJpgbsREgmnTza00VP9dVTBfIt1Y/QeyA5yV+im30tVKzekbRH34ghNxk6d
+         AmyxXW1NQXNCu+IqPdtV3aTKtM1anr/yJAr7ZYmyh5MO8ReVE3MEPTLYfGIvPthn0X0Q
+         Ur7FLNAACsrCKrUdzE/kDpmisHP/l5sgjWjHZQV444AUMXnE2ZYxJWYngNjXWs3HBANP
+         lpMViTDfIK81/XszIWqAyOvPrq+gnj0CGM5WGwAA8hbVUFSM6H4tcafNnm25myTJcMVo
+         d9wQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1781645012; x=1782249812;
+        h=in-reply-to:content-transfer-encoding:content-disposition
+         :mime-version:references:message-id:subject:cc:to:from:date:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=kVGHWnnJ0bnpjfbLQ9kiQcWUR79CsLTM1nJ13tFxcHw=;
+        b=jkJ2lm7p9oUuvU3kQQl/vJ3oYAmcKMpEn42PNVX6gLR9xExg5+o5Ek9zpSMtWn342u
+         A86s40y8sLUECrESHUVf3Bu/VPle3tPrTEUW72l6uF01qq3G0ILrAS/mmaWKKGutH+Af
+         5uX6S/rr0imozHtjFIFBBoJnJclqq5VsELAq3NxonKNKsWRkIgGhWxPRY2bRC9RrVNkU
+         t7qCceWV2gU/b9Y6ZzR4kh/2163V2h8OsghMQkpIMZzpi3f1bEb9Bnb0T3nGzoUE2p2L
+         O28dV3kAH2BF3q/OQY8No6DHHLCrhhGNtSnfqKCHOF/R52e3hpHSjrAFhY1wPLFO+vuI
+         s2ew==
+X-Forwarded-Encrypted: i=1; AFNElJ/v44DGiTbaYIZd1i2pLhzL+13OAN9sLiYRiHkLpAS8mQigdWxXGslYMLNrvI5zQvkSqFR/6N4p5A==@vger.kernel.org
+X-Gm-Message-State: AOJu0YwKRrNuI88UfVabCy4J2RGwPrMAwE/fNGsvyHkoDgk3lmErBTiK
+	yVEkAR9IsNmEtpPzK27mfKTaXIFk9Jf60twJf7wBGQfLqEuyoWWVV1QCZdfRkA==
+X-Gm-Gg: Acq92OFmr0uP4wNXIxWtEWppGDDAbBNOhZX96x2oJU9oWNphK5CgeWtaZVIL9FObD4L
+	h7NF8AQYS9m3Ks5UO4MkAD4+uuiUtQoOwKs59i5M45iMOga9eTjFkS+3x+GtMzydaYnjWZhdAs5
+	E+uIhl+h7RfC6ZAnCayR42iACoXQpH+Zs76ots75CJe4R66Pv7gs8LSkgmPwKQO3ZHf0G0o5B/3
+	9843LpZSgquzedmY5QBu3Kf4ommGBWLeDN+ugMMBGZvKDRYoVcSf+uWKyGIIDrDiUtMhPIfAS0c
+	pbKtZ+p7lRPKujINl8gn/TjMvsXUig/LQhd5DfZFd1HT/XSMveEk80Ujp5d1h5iLIhqscerSnVU
+	MU/Y3NZDHGHGVlW0RtOJ+mqWauUH0gTt64SRimV+388nMYR13K35EZ8IfKeD+TSWXu9d+KGROG6
+	3UOZ71X4Kt4NKf8qExgY2kR4tYMMYaE1Z6O7mmCeUeCKuortEx784tmahgJl+Mf20=
+X-Received: by 2002:a05:7300:8c85:b0:2f0:5605:466e with SMTP id 5a478bee46e88-30bca92de91mr522312eec.9.1781645012000;
+        Tue, 16 Jun 2026 14:23:32 -0700 (PDT)
+Received: from google.com ([2a00:79e0:2ebe:8:cbae:d24:189c:2cb9])
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-30bd0deead6sm109387eec.26.2026.06.16.14.23.30
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 16 Jun 2026 14:23:30 -0700 (PDT)
+Date: Tue, 16 Jun 2026 14:23:27 -0700
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Svyatoslav Ryhel <clamor95@gmail.com>
+Cc: Rob Herring <robh@kernel.org>, 
+	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, Lee Jones <lee@kernel.org>, 
+	Pavel Machek <pavel@kernel.org>, Sebastian Reichel <sre@kernel.org>, 
+	Ion Agorria <ion@agorria.com>, =?utf-8?B?TWljaGHFgiBNaXJvc8WCYXc=?= <mirq-linux@rere.qmqm.pl>, 
+	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-input@vger.kernel.org, 
+	linux-leds@vger.kernel.org, linux-pm@vger.kernel.org
+Subject: Re: [PATCH v8 4/7] input: keyboard: Add driver for ASUS Transformer
+ dock multimedia keys
+Message-ID: <ajGyejCSRMhY4G2R@google.com>
+References: <20260528053203.9339-1-clamor95@gmail.com>
+ <20260528053203.9339-5-clamor95@gmail.com>
+ <ajDPtOyr8GJYaVYQ@google.com>
+ <CAPVz0n2fnM6zYtP9bCtsY9mcLdce_R+1UPmMo0o4JRgjnhuhKA@mail.gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260615071836.362883-1-l.scorcia@gmail.com> <20260615071836.362883-10-l.scorcia@gmail.com>
- <20260616133918.GA2335264-robh@kernel.org> <CAORyz2LiMHnaTK6QnsLxJDtw0fZ_N9LELw0iCorOZwHuWXus0g@mail.gmail.com>
-In-Reply-To: <CAORyz2LiMHnaTK6QnsLxJDtw0fZ_N9LELw0iCorOZwHuWXus0g@mail.gmail.com>
-From: Rob Herring <robh@kernel.org>
-Date: Tue, 16 Jun 2026 13:57:01 -0500
-X-Gmail-Original-Message-ID: <CAL_JsqLGqqyDoGskgmRLzQC=UkFEXgW=cDazc=frO2KBaSri=w@mail.gmail.com>
-X-Gm-Features: AVVi8CcwnrM4llpoEzOBnyyyWauL3xCmDN5lvRxGwwKA_noSBsMx_Zki1jU8Teg
-Message-ID: <CAL_JsqLGqqyDoGskgmRLzQC=UkFEXgW=cDazc=frO2KBaSri=w@mail.gmail.com>
-Subject: Re: [PATCH v7 9/9] arm64: dts: mediatek: Add MediaTek MT6392 PMIC dtsi
-To: Luca Leonardo Scorcia <l.scorcia@gmail.com>
-Cc: linux-mediatek@lists.infradead.org, Val Packett <val@packett.cool>, 
-	Dmitry Torokhov <dmitry.torokhov@gmail.com>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
-	Conor Dooley <conor+dt@kernel.org>, Sen Chu <sen.chu@mediatek.com>, 
-	Sean Wang <sean.wang@mediatek.com>, Macpaul Lin <macpaul.lin@mediatek.com>, 
-	Lee Jones <lee@kernel.org>, Matthias Brugger <matthias.bgg@gmail.com>, 
-	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>, 
-	Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, 
-	Linus Walleij <linusw@kernel.org>, Louis-Alexis Eyraud <louisalexis.eyraud@collabora.com>, 
-	Julien Massot <julien.massot@collabora.com>, Fabien Parent <parent.f@gmail.com>, 
-	Akari Tsuyukusa <akkun11.open@gmail.com>, Chen Zhong <chen.zhong@mediatek.com>, 
-	linux-input@vger.kernel.org, devicetree@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, 
-	linux-arm-kernel@lists.infradead.org, linux-gpio@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <CAPVz0n2fnM6zYtP9bCtsY9mcLdce_R+1UPmMo0o4JRgjnhuhKA@mail.gmail.com>
 
-On Tue, Jun 16, 2026 at 10:32=E2=80=AFAM Luca Leonardo Scorcia
-<l.scorcia@gmail.com> wrote:
->
-> > >  arch/arm64/boot/dts/mediatek/mt6392.dtsi | 75 ++++++++++++++++++++++=
-++
+On Tue, Jun 16, 2026 at 09:25:25AM +0300, Svyatoslav Ryhel wrote:
+> вт, 16 черв. 2026 р. о 07:26 Dmitry Torokhov <dmitry.torokhov@gmail.com> пише:
 > >
-> > Nothing is using this so it is a dead file that doesn't get tested.
->
-> Hi, it's not referenced as the dtsi inclusion was removed in the
-> original patch from 2019 for an easier merging of support for mt8516
-> pumpkin boards [1][2].
-> If you prefer in the next revision I can add another patch to readd it
-> to the existing pumpkin board.
+> > Hi Svyatoslav,
+> >
+> > On Thu, May 28, 2026 at 08:32:00AM +0300, Svyatoslav Ryhel wrote:
+> > > From: Michał Mirosław <mirq-linux@rere.qmqm.pl>
+> > >
+> > > Add support for multimedia top button row of ASUS Transformer's Mobile
+> > > Dock keyboard. Driver is made that function keys (F1-F12) are used by
+> > > default which suits average Linux use better and with pressing
+> > > ScreenLock + AltGr function keys layout is switched to multimedia keys.
+> > > Since this only modifies codes sent by asus-ec-keys it doesn't affect
+> > > normal keyboards at all.
+> >
+> > I think using input handler to intercept ScreenLock + AltGr is quite
+> > awkward. I think this also passes the original key events (unless you
+> > make it a filter not a regular handler).
+> >
+> > I do not see benefit for reacting to AltGr+ScreenLock on other keyboards
+> > to activate the special mode on this one. So given the fact that you
+> > already mange the data stream when you split it into "serio" ports,
+> > maybe just intercept this key combo right there and create the input
+> > device and signal input events right there?
+> >
+> 
+> Though it seems awkward at a first glance, media keys are integrated
+> with a standard keyboard in a detachable dock. It is highly unlikely
+> that media keys will be used with a different keyboard then the one
+> that is integrated with dock. Additionally, the ScreenLock key has a
+> code specific to this driver and is not in general use, so even if any
+> standard keyboard has AltGr but none has ScreenLock specific to this
+> driver except the dock itself. Handler is also set as observer so it
+> should not interfere with work of other input devices.
 
-That or move this patch to the series for the board(s). If the board
-is already upstream, then add the include in *this* patch.
+I am not concerned about it interfering with other drivers, I am
+concerned about it unnecessarily connecting to unrelated devices
+(anything that declares EV_KEY).
 
-Rob
+Again, I think having input handler is not appropriate here. I would
+fold this patch into the patch that introduces the 2 serio ports,
+enhanced the data stream analysis to detect your key combo, and then
+report through this new input device. You do not need to have the round
+trip through atkbd and the new input handler for this.
+
+Thanks.
+
+-- 
+Dmitry
