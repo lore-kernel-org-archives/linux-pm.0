@@ -1,163 +1,68 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BFD7F2F8EB1;
-	Tue, 16 Jun 2026 04:35:11 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 745493D88FE;
+	Tue, 16 Jun 2026 05:59:41 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1781584512; cv=none; b=l6NsOdZr4/vYZCqVK6EDqg48R2kHeMtqOgxEFThODKvKv1mW2f2cLej7NvQ/33ipBOXPOBU07UxOpXAJ14SX/vDmo32nkKO0jgEGjC+lPXa4ZkJDE4DXsBQY2Yh291J1XluFDB9iRavKmPKr4ruh4fXlDErjQySE6BMYBwcgrYs=
+	t=1781589582; cv=none; b=Ycmfq4jIJ8uo66PubnPCCwGvrJRNrA9G4BkSGbZQhXS1hWRqlu1a2w5wYQHntuXJNdBdJ+LiYGm1oeGTstyQpFF84Ma7kHZcWnJUZpB+jMzC8X/eshONh2a+JbqF9Opga6PMoJrvZ5jyLFyY3ObXSLo7vvfX0GNKZRzu86WgEdI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1781584512; c=relaxed/simple;
-	bh=5UgtEP+QyFejcT8eeIm277qLebgCIeYnp+kE83ww2ro=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=ZB/WH21jOdlmmKnJOJAohhBaeVpaafFu+rgvOVidEk7VDvaQb9QohRZfAvDs0w9PBTyHWqvtW5gHJFrvJVp/3Y7QaVkN/eMwE3UuWpzvqFnukvwN0/Ln/3N0qdb9RZZrt3xigk6p0Ftd1NO0XZ++M7ZvP/aaPp1l1c2YXTu1LUc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=VlN5oMQo; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1781589582; c=relaxed/simple;
+	bh=FORDhV96tdHAtuehrNe9uRAGj2+EE9JY3eY5E1wbhGg=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=aXlbJ6V7gyvDiK0opa7/pg8Hnzj+pPIoxXchj3ECmSOFUQzVMbKDRrK8SzkxBD/PLhNQKuacS/efVspWrG7apz06xh1bwgZjo2w2xVC+ZfOb3PF/zDpBrRs1PFHbkksPlhoMW5e4d+uavz79mr/1YbVbpRwEqCqEtvZMyU9I3JE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=F0LiBs4D; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="VlN5oMQo"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 90BA61F00A3A;
-	Tue, 16 Jun 2026 04:35:05 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="F0LiBs4D"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 40DF21F000E9;
+	Tue, 16 Jun 2026 05:59:40 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1781584511;
-	bh=LSBcYKhXpH02N4AhhqZp9VHPL95GOy3Nmk4mp/PEf40=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To;
-	b=VlN5oMQoPjqKD1iRcBKgdRFknm4+VKu+lkPR8KdWRJKAAlcKnL3m8c6ii48TdXLAy
-	 zKsurifUlMvZZ/eskwJBpHelSvNP6lPTXj58+cfqLNP/lcQb+4wky5XlLphWW2DV+4
-	 VxDY/ijjj9UeXMUPAWuYCFFSanp00qaOr+nx/HExnBjmRawBcDjaJ/mMxI/sa8ydxB
-	 CoDLWMvrV7mafRXcJWTUxBQpUtgO0BI8J2xryp0WUAEN46dZpCYcVpz4Z/tIOrm6N5
-	 G3w0wnSWpDTwuW+lgYztSwgd89oSFIqW99JrnJWw/tvuo2JIip5ZJw+320PHbfyaFO
-	 UUXb5jlom7Cwg==
-Message-ID: <9ec90be4-81b1-4a90-a7ac-62af4175f5f7@kernel.org>
-Date: Tue, 16 Jun 2026 06:35:02 +0200
+	s=k20260515; t=1781589581;
+	bh=i32F6IcVlEV6y4PPf1ZL03Yo1piH7IqR+iTxHu5YPYY=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=F0LiBs4DEwdLshrybaFYa1AIHGMXFkFPT7N4Y8CXQGusJskh+tDlz3TB5YaftBOMC
+	 ZPWmxR/vHfkIRFi87CUw7LWEobq6Mxb5xoxDw7YdqWrgh6lrqUjDUP1mn6qbiFclV9
+	 KcJx73FRyOItc2yr7dAS8WSXaSyoRz3S/DhCae0SuarBZRFVRWxUO+vr+SiKRxPzSB
+	 Y1cfd0HFwq+VuS2iU4sonNXGMp+AHqCOl8IbxZvlwSTrGrxvgeufNyRPOHqrCiqem7
+	 Xa7wr3GWvLCy/2+ZGLHg3x2nR40Ih3aGHLN8pEky5WDFgV1CIFnpfVk7NgtXWUEr9D
+	 8EGbXFha+nExg==
+Date: Tue, 16 Jun 2026 05:59:38 +0000
+From: Tzung-Bi Shih <tzungbi@kernel.org>
+To: Pengpeng Hou <pengpeng@iscas.ac.cn>
+Cc: Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org,
+	linux-kernel@vger.kernel.org, Benson Leung <bleung@chromium.org>,
+	Guenter Roeck <groeck@chromium.org>,
+	chrome-platform@lists.linux.dev
+Subject: Re: [PATCH] power: supply: cros_peripheral_charger: unregister EC
+ notifier
+Message-ID: <ajDmSuK-eahNO1xu@google.com>
+References: <20260615063105.39152-1-pengpeng@iscas.ac.cn>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 1/2] bindings: power: supply: qcom,pmic-glink: Document
- thermal-mitigation
-To: Dhruvin Rajpura <dhruvin.rajpura@oss.qualcomm.com>,
- Daniel Lezcano <daniel.lezcano@kernel.org>, Zhang Rui <rui.zhang@intel.com>,
- Lukasz Luba <lukasz.luba@arm.com>
-Cc: Bjorn Andersson <andersson@kernel.org>,
- Konrad Dybcio <konradybcio@kernel.org>, Rob Herring <robh@kernel.org>,
- Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
- <conor+dt@kernel.org>, Sebastian Reichel <sre@kernel.org>,
- linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
- kamal.wadhwa@oss.qualcomm.com, jishnu.prakash@oss.qualcomm.com,
- Dhruvin Rajpura <drajpura@qti.qualcomm.com>
-References: <20260609-cooling_device_reg-v1-0-e15bddcb0086@qti.qualcomm.com>
- <20260609-cooling_device_reg-v1-1-e15bddcb0086@qti.qualcomm.com>
- <20260610-gracious-badger-of-debate-6ad0ec@quoll>
- <CAB8MRjTwN6J3oSFVeF-w7WpZQamEyyQ6Ckyd=TAB=-N22b8k1g@mail.gmail.com>
-From: Krzysztof Kozlowski <krzk@kernel.org>
-Content-Language: en-US
-Autocrypt: addr=krzk@kernel.org; keydata=
- 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
-In-Reply-To: <CAB8MRjTwN6J3oSFVeF-w7WpZQamEyyQ6Ckyd=TAB=-N22b8k1g@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260615063105.39152-1-pengpeng@iscas.ac.cn>
 
-On 15/06/2026 12:46, Dhruvin Rajpura wrote:
-> On Wed, Jun 10, 2026 at 2:34 PM Krzysztof Kozlowski <krzk@kernel.org> wrote:
+On Mon, Jun 15, 2026 at 02:31:05PM +0800, Pengpeng Hou wrote:
+> cros_pchg_probe() registers an EC event notifier whose callback uses the
+> devm-allocated charger_data via container_of().  The driver has no
+> remove callback and does not unregister the notifier, so the notifier
+> chain can retain a pointer to freed driver state after unbind or probe
+> cleanup.
 > 
->>
->>> +    $ref: /schemas/types.yaml#/definitions/uint32-array
->>> +    description:
->>> +      Array of fast charge current limit values for different system
->> thermal
->>> +      mitigation levels. This should be a flat array that denotes the
->> maximum
->>> +      charging current (in uA) for each thermal level. Elements should
->> be listed
->>> +      in monotonically decreasing (non-increasing) order.
->>
->> What is a thermal level? How do you define it? How does it map to
->> thermal bindings?
->>
+> Register a devm cleanup action immediately after the notifier is
+> installed so the notifier is unregistered before the driver state is
+> released.  Also fail probe if the notifier cannot be registered, instead
+> of leaving a charger device that cannot receive EC events.
 > 
-> A thermal level corresponds to a cooling state in the Linux
-> thermal framework. The driver registers a thermal cooling device
-> with N states, where state 0 represents no throttling (hardware
-> maximum FCC queried from firmware via BATT_CHG_CTRL_LIM_MAX)
-> and states 1..N map to the array entries in decreasing current
-> order.
-> 
-> When a thermal zone trips, the thermal framework calls
-> set_cur_state(N) which sends the corresponding current value
-> to the firmware via BATT_CHG_CTRL_LIM over PMIC GLink,
-> limiting the battery charging current to reduce heat generation.
-> 
-> The array must be monotonically decreasing since higher cooling
-> states represent more aggressive throttling requiring lower
-> charging currents.
-> 
-> Will add this explanation to the binding patch commit message
-> in the next version.
+> Signed-off-by: Pengpeng Hou <pengpeng@iscas.ac.cn>
 
+A possible nit is to use s/cros_peripheral_charger/cros_pchg/ in the patch
+subject to leave more space for the summary.
 
-+Cc Daniel, Zhang and Lukasz,
-
-This feels like broader problem, so should not be done only in this one
-aspect for Qualcomm device. IMO, there should be a generic binding for
-defining charging constraints and mapping them to thermal zones. That's
-not only about current, but might be about voltage or charging level
-speed (consider quick charging with lower amps but higher voltage).  Or
-actually power is the factor here, not even current and voltage.
-
-This should be solved in generic way. Both from the point of charger's
-OPP-like data but also cooling cells for the charger.
-
-One more thing:
-Please use subject prefixes matching the subsystem. You can get them for
-example with `git log --oneline -- DIRECTORY_OR_FILE` on the directory
-your patch is touching. For bindings, the preferred subjects are
-explained here:
-https://www.kernel.org/doc/html/latest/devicetree/bindings/submitting-patches.html#i-for-patch-submitters
-
-
-Best regards,
-Krzysztof
+With or without this,
+Reviewed-by: Tzung-Bi Shih <tzungbi@kernel.org>
