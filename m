@@ -1,174 +1,111 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-dy1-f174.google.com (mail-dy1-f174.google.com [74.125.82.174])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9EAAD3C8C52;
-	Tue, 16 Jun 2026 04:21:48 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 28BB6373BEC
+	for <linux-pm@vger.kernel.org>; Tue, 16 Jun 2026 04:26:34 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.82.174
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1781583709; cv=none; b=Iic771b7BNz8D0P7xVOuUFBLiGv5nPSs1IOEew0RmqE+wvKLrKou2F7uUdPz3/wOxcyySTcp7ABcGeC0pMlOCDDAyFyZExtWHAIbUe+QL+AZtmgv1Jq6ZeY6T3un/K2/zDfF46e/ZzGdp8AlB7/rC59jKbYuQNLeptaL1ITxMq4=
+	t=1781583995; cv=none; b=uoDps+G3pifiT9JuUI4YeF4uMroT8C4rVQT3T4jEtSsOx5/ig8AcCYT5KIMpjOngxqywW4xJpJqN/5AJfl5Cka0LZ4a/DydjAV+t56kBwCiqaLf/TrsspoWi+MmjXGP0MZ1ICDsx1d+XFte6rhxZrBaX3H6BJXgiVbj7PpB2Fsk=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1781583709; c=relaxed/simple;
-	bh=BIJC9nGJVTskXqPkP2HZIC03/YGTlGrgxfduSTCRuoU=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=ZAkLhpyTYdk+JSAgWlLbfYWpD2p0fOxPJIYvWOm2v+bFoq6Anr6+28ZBt9+u/VxZJPSinwBCYXHDCQjjmfsmpYrEf5CCdcho6nosW1D2mZFJ5m+83NxlSX/yjEhFYEIiWc5wYRjtaXV9Qo/cPBwKsMxkw03wQgEvVpWbpY4bbt0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=nqH3gPma; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1781583995; c=relaxed/simple;
+	bh=oo4tfyy8/lTcDz9sLBYLwqwvpecf+BueTrMqZlBkdJA=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=fzfrFadUOOnaOkrNgbq7KxvZ/oY1Pjd4vMNlrvWJzSXjwDpfC3rPA//jZ5ZGrlbYmjHm149xb970uNsVlbDNmnoBcDKVdzWu3PaFjnrwHKvc406SaeMAx2//qS16LZr6iMNiARFsh1wlJOTUc4Uc1fXI843NTx9d8Qq2qhDClUE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=IxVDiETX; arc=none smtp.client-ip=74.125.82.174
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="nqH3gPma"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 80F311F000E9;
-	Tue, 16 Jun 2026 04:21:41 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1781583708;
-	bh=pIFC0N4/T+x1YfWpeU1JbH1iDzDnnxHDvj6vks2DFuo=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To;
-	b=nqH3gPmaVOHQpLYstqjcsrwMvJYaEBFW1jX4lCeG68DgDhITTdd2KSWdWVvHzIe+h
-	 C1uKSIsthOznsTe/UKS1bRW6WmtxJIHr27LqCo5q42/LnfOAduU64/B1t968wYsurR
-	 GHByYnScmvBePofmvy8BOhaRD/zqjpzsCzs7IG17QWTyrzji5kug4PQ6Oc+hA3hbqV
-	 FUNTe0OdiAe/Jiniiaim1MBchdS/ZRvLycvC8D2JOfJKbLb2HNBmAbTbN7OPaoFjSj
-	 Lzd0evNy8drEJaqNdvksMdhnTYWVrSddw1/SCvV8Vj3l6ND76gzItboUhrpT4uDrE3
-	 mxTkPeta6ZzLQ==
-Message-ID: <c32e263c-ba4e-4899-a935-e129de0f1269@kernel.org>
-Date: Tue, 16 Jun 2026 06:21:38 +0200
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="IxVDiETX"
+Received: by mail-dy1-f174.google.com with SMTP id 5a478bee46e88-3075ce9c05aso10415130eec.1
+        for <linux-pm@vger.kernel.org>; Mon, 15 Jun 2026 21:26:34 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1781583993; x=1782188793; darn=vger.kernel.org;
+        h=in-reply-to:content-transfer-encoding:content-disposition
+         :mime-version:references:message-id:subject:cc:to:from:date:from:to
+         :cc:subject:date:message-id:reply-to;
+        bh=bY4/S5kAo7rT958o4WJs5aY2AIH3N1nSwFvgkKoR7DU=;
+        b=IxVDiETXMu9w5l/RPm4LuK+2KnGgZJ4HOIUnfo+bHinIg1ulcPcR687NvE/6dW/bpW
+         OUj9Zha+X20RjcukD7hNlxX1Mx4L73AaoG/42u1t24jnj4I/Osg5U58zAsqd48u0g3S7
+         ZhKNWf7hVdxeLjAzciO+KqM/h7phqeedB3yslKahoB4OIco23FB56/ox1h9BW4GSiQPz
+         iAWYZLtvTkfcIBn0QiH3UaMXnVhddQ07NHNGrxdfoAz3PouEPmNBqG6EplQeJWbZJskm
+         E0Z4+758FRO22vnty66xXhAY3oq3jFe4AUvEmkPH2ifCNR2+hjz8OnTtFw6KWskZRyW4
+         vgUg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1781583993; x=1782188793;
+        h=in-reply-to:content-transfer-encoding:content-disposition
+         :mime-version:references:message-id:subject:cc:to:from:date:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=bY4/S5kAo7rT958o4WJs5aY2AIH3N1nSwFvgkKoR7DU=;
+        b=Sgm7g/v9Wjh73dN4HN/5mIoQ+AuXJq/bqqpD4/cuyhCIe57EPMAt/TGFbBU9WWer68
+         S9LCr3Nwgzuju3aviKyUb4Se9iauFzatH6pxl/0b2gIK+SvfLmvr/mWpm2UJE6GLy+TH
+         6B9ztwGyR5SNv0NNMqTz7KozpXfPDgX3R4vMY5XiZz2C0Y3C2c6gMr8MBd82kcy7Q766
+         lexmFVGbUoflk9l08BCLNkLnnJLa97Njxl4LPsPe4VXtV7LEm6N+eFYqt8RiQZNQg7W7
+         SX+l+UwOeizf5asC4C6RNMHE+pZRbgvyu1fzmrNcXKnf5pUeCcXSiIrHeOx8pL8tmQr3
+         pbBQ==
+X-Forwarded-Encrypted: i=1; AFNElJ/THjDHgYOl6QiSQdjpb6IPG8mWxQD/nTbtHm1ZDIxv6R3eqrgq9wU937tmsxhqCkIptuwPUs7kqQ==@vger.kernel.org
+X-Gm-Message-State: AOJu0YyaBdmzmtd7o+ejn2Z4QN5IIQESutAZTcpswLW8LWAq+sfjZ4Wf
+	xiQsHq1u9ahhXe9l93lyEg1Yb5mwp9rSsnkkmJfJKlXPd4IgJCqI9cAa
+X-Gm-Gg: Acq92OFh5LyetYYOzj6wiGpQoR8WKYiw2/qRRnWtj6qvjCv9EQw//4Vran6xBmL+/1b
+	2KsPfEeLrP3hZPhFRWpA4BcaU0OhVQxwuYu0zww64znqRl3bFi8YsnjR25xAbusbm1keoacoA44
+	xR8eOia+eODzuxMyllnEFf2fkh5u6hCQpigxPYDLBci6wCxVYM/l6Fy0Yqc7AMmTN8FB3DEMF5L
+	yg/+loI6GmpyktzQGD0iO2tSKSPEnjF9Nfsn8YaufZKPcknvYmav9Jwb+L487SKHI047WXwEh+z
+	1SQkTMBshuH04TryyRioF63aFba1wU0QlQ3H3gxKz6MFvMN8ruFnc9f44+E6z0XtKktl+P53G26
+	qPCPWSnVAh2Tg7qi6z3UNHzo8EJ1TuXqhrLdimMIie2MdOWe3/8UgDmjzY/38ifxp7M+bbc+2RQ
+	d207lUVRqSr0OXTf7IJJQfteRVzKRzxI8t/6Nd1ZcbUPM9nAw7XSDmp8JsANjL4k1g
+X-Received: by 2002:a05:7300:3b28:b0:304:e72a:d4d1 with SMTP id 5a478bee46e88-30ba5f4b95emr1163025eec.30.1781583993222;
+        Mon, 15 Jun 2026 21:26:33 -0700 (PDT)
+Received: from google.com ([2a00:79e0:2ebe:8:3714:f5c2:9b83:3df1])
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-3081eb8f8b2sm17660379eec.27.2026.06.15.21.26.31
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 15 Jun 2026 21:26:32 -0700 (PDT)
+Date: Mon, 15 Jun 2026 21:26:29 -0700
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Svyatoslav Ryhel <clamor95@gmail.com>
+Cc: Rob Herring <robh@kernel.org>, 
+	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, Lee Jones <lee@kernel.org>, 
+	Pavel Machek <pavel@kernel.org>, Sebastian Reichel <sre@kernel.org>, 
+	Ion Agorria <ion@agorria.com>, =?utf-8?B?TWljaGHFgiBNaXJvc8WCYXc=?= <mirq-linux@rere.qmqm.pl>, 
+	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-input@vger.kernel.org, 
+	linux-leds@vger.kernel.org, linux-pm@vger.kernel.org
+Subject: Re: [PATCH v8 4/7] input: keyboard: Add driver for ASUS Transformer
+ dock multimedia keys
+Message-ID: <ajDPtOyr8GJYaVYQ@google.com>
+References: <20260528053203.9339-1-clamor95@gmail.com>
+ <20260528053203.9339-5-clamor95@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v3 1/8] dt-bindings: remoteproc: qcom,pas: add thermal
- mitigation properties
-To: Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>,
- Gaurav Kohli <gaurav.kohli@oss.qualcomm.com>
-Cc: Bjorn Andersson <andersson@kernel.org>,
- Mathieu Poirier <mathieu.poirier@linaro.org>, Rob Herring <robh@kernel.org>,
- Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
- <conor+dt@kernel.org>, Amit Kucheria <amit.kucheria@oss.qualcomm.com>,
- Manivannan Sadhasivam <mani@kernel.org>,
- Konrad Dybcio <konradybcio@kernel.org>, Kees Cook <kees@kernel.org>,
- "Gustavo A. R. Silva" <gustavoars@kernel.org>,
- cros-qcom-dts-watchers@chromium.org, linux-arm-msm@vger.kernel.org,
- linux-remoteproc@vger.kernel.org, devicetree@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
- linux-hardening@vger.kernel.org,
- Manaf Meethalavalappu Pallikunhi <manaf.pallikunhi@oss.qualcomm.com>
-References: <20260609-qmi-tmd-v3-0-291a2ff4c634@oss.qualcomm.com>
- <20260609-qmi-tmd-v3-1-291a2ff4c634@oss.qualcomm.com>
- <20260610-ocelot-of-stimulating-excellence-bcb0fe@quoll>
- <03d863ee-2caa-41f2-94b5-7332fc930b42@oss.qualcomm.com>
- <d81bc78e-2c1d-45fd-90c9-f7ec462183a0@kernel.org>
- <7f1e46fb-15e3-4638-9930-8abc1dd5a778@oss.qualcomm.com>
- <fcf93e0f-a2f0-4070-86ec-8a34e9344b76@kernel.org>
- <ec65893d-873a-4a62-b0e2-5008b2130545@oss.qualcomm.com>
- <3cbcaf8c-357e-42d2-91c1-9d1a32c55ed0@oss.qualcomm.com>
- <ae43a691-4879-4bfa-8c7c-1be16945480c@oss.qualcomm.com>
- <9a31bb29-75d7-42fa-b8a8-4155cf85cadf@oss.qualcomm.com>
-From: Krzysztof Kozlowski <krzk@kernel.org>
-Content-Language: en-US
-Autocrypt: addr=krzk@kernel.org; keydata=
- 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
-In-Reply-To: <9a31bb29-75d7-42fa-b8a8-4155cf85cadf@oss.qualcomm.com>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
+In-Reply-To: <20260528053203.9339-5-clamor95@gmail.com>
 
-On 15/06/2026 14:30, Daniel Lezcano wrote:
-> Hi Gaurav,
->>>> thanks for review, shall i use driver data, which is basically pas 
->>>> data structure like below:
->>>>
->>>> static const struct qcom_pas_data {
->>>>      .crash_reason_smem = 601,
->>>>      .firmware_name = "cdsp.mdt",
->>>>      .tmd_names = (const char *[]){"xyz", NULL},
->>>>      .num_tmds = 1,
->>>>
->>>> Is something like above acceptable? and this will also help to filter 
->>>> tmd names as well?
->>>
->>>
->>> How the thermal framework will bind the thermal zone with the TMD ? 
->>> (node pointer, id) ?
->>>
->>
->> Hi Daniel,
->>
->> thanks for review.
->>
->> With id only, in this case instead of taking tmd names from device tree, 
->> qmi_tmd will take tmd name from pas_data(driver) and register with the 
->> cooling framework with id only. Please let us know if this looks fine.
-> May be I'm missing something but:
+Hi Svyatoslav,
+
+On Thu, May 28, 2026 at 08:32:00AM +0300, Svyatoslav Ryhel wrote:
+> From: Michał Mirosław <mirq-linux@rere.qmqm.pl>
 > 
->   - The QMI TMD returns a list of names, not ids
->   - The QMI TMD may return the list in different order than assumed
->   - The cooling map index points to the name of the TMD in the DT
->   - This name is used to match the name in the aformentionned list
->   - The index in the list and the id in the DT can differ
-> 
-> Krzysztof , I don't get why having the TMD names as properties is wrong, 
-> they describes the existing TMDs on the system and the cooling maps 
-> index points to the one to be connected with thermal zone.
+> Add support for multimedia top button row of ASUS Transformer's Mobile
+> Dock keyboard. Driver is made that function keys (F1-F12) are used by
+> default which suits average Linux use better and with pressing
+> ScreenLock + AltGr function keys layout is switched to multimedia keys.
+> Since this only modifies codes sent by asus-ec-keys it doesn't affect
+> normal keyboards at all.
 
+I think using input handler to intercept ScreenLock + AltGr is quite
+awkward. I think this also passes the original key events (unless you
+make it a filter not a regular handler).
 
-'xxx-names' have a fixed meaning in DT by convention - assign
-identifiable strings to the 'xxx'. I miss the property 'tmd' in such
-case - its definition and meaning. Where is it?
+I do not see benefit for reacting to AltGr+ScreenLock on other keyboards
+to activate the special mode on this one. So given the fact that you
+already mange the data stream when you split it into "serio" ports,
+maybe just intercept this key combo right there and create the input
+device and signal input events right there?
 
-But maybe you just want list of strings, so I am open to discuss it - I
-don't understand the need for this property and commit and property
-description tell me nothing.
+Thanks.
 
-Really, this commit message is basically non-existing. It explains what
-it did and provides that much explanation WHY:
-
-"- tmd-names (thermal mitigation device names)"
-
-Really? This is the explanation why this change is being made, why this
-property is needed?
-
-So sure, describe the problem being solved and WHY this problem is being
-solved that way. Maybe it will fit DT.
-
-
-Best regards,
-Krzysztof
+-- 
+Dmitry
