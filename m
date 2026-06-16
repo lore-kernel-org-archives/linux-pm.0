@@ -1,171 +1,87 @@
-Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A5CF143E9CE
-	for <linux-pm@vger.kernel.org>; Tue, 16 Jun 2026 15:47:42 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.180.131
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 006A947D93F
+	for <linux-pm@vger.kernel.org>; Tue, 16 Jun 2026 18:57:14 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1781624863; cv=none; b=hRqaxys+d5GAjeS9215gPIQNLmGpt3UDcLjkegjXenRUYCnyihIIqunaro0j9dkRZKHL/8rOU/6XuCmi6Gkd21cSWX5TAkFcvjJAYWYf1nK75xu9aCYEMeNUO3xIDXWhHphn6pEQcUX16RcOQ8jhJrUE2rbcqm0joC9hgfHn6Bc=
+	t=1781636236; cv=none; b=ECmFubNV6JIqLtp03oZztJvtfLp5oXUKOArDGJb6hMy6xDu+PR4oT1+ZxNmj2LVTRq7XieSS+VR3lIiCkDhrsA1fJY4tMdKAwjploLDPhoggHSNle6z2BwXRbC6PQcP3YWJ9p8K8kTaPSS+2sDN/vx/Drlc+Zr3eFQcU6VqebhE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1781624863; c=relaxed/simple;
-	bh=e1pGdssdQsaRpIBh+4JFRNHi4dhtOKvcr+672dc0fYo=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=u2asWVSAfrxR8wrqKuG8zppLy2apVzh+EM9Gio1Nte/xvBdI/mqzvjdZ1U69Uux9Wim0NN3XcUH5MTeutysIIpBYfbChGiDQ+QaFa1lY7wBw/JPrWjrSWO7SqL5c08NTJSrtIQd1PeIUY4iY0f7ANcUbkYnyTOTbaZy0VwPZAyA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=EC372epp; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=YndHConh; arc=none smtp.client-ip=205.220.180.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
+	s=arc-20240116; t=1781636236; c=relaxed/simple;
+	bh=6/bCaUbtfCncrtxzychO2vuRtHH/oCHj4qDutkWacWw=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=AkIKGVp3tRiS4sIz8U4ZcJ3ttdIaDn6d3USu6azPOzQoFCstdxbG74yyX6TLEQbZMxq/BSfElHAzbwNquj7nvWeJ/k3NBr5rU1kOkJDbBmbOcEJvbR5gZsUlQLh1IJ8tJQ3AhykA9oOnUpBQVT3En+Ng0LlBlDt4zYaSzP3xzis=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=luQxn9cl; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="EC372epp";
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="YndHConh"
-Received: from pps.filterd (m0279868.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 65GFdYv93997162
-	for <linux-pm@vger.kernel.org>; Tue, 16 Jun 2026 15:47:41 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:date:from:message-id:mime-version
-	:subject:to; s=qcppdkim1; bh=eJW0DORVNViUcs7XgxbuIXaC6bb6dBOgIPg
-	icankNzk=; b=EC372eppeUcYA6AlOW+1agnLRrMAoU89X2U8ZHgfWSmNA4GWZcP
-	+VnthYRIZ0fpePnfUj5NPG20VD3QShj+Bmpe9BnBHUqad+ioYma2cQ5c+0VVY4wB
-	vxQCrrMZYIwMYNmqF+4nFqC7TZi50/kIcJtPk8XHYH0JAxuFAm3wOsYf4Q/Id0Pl
-	sObjOeSJmXLYuSBfaIZfIYm61dpqDT+fHHQRUn8V0n3TBL/jfOkVZtZ8yW2XqizR
-	m8V+mZK1micVsP6UBOcalPA8oxZPVDdT0OK+jVPtj6gfhZDSUeW/iLdkpG6vBHIa
-	LCzcJcvgbSS2Vg+keGzrzSoQKGUwgaWH0Ew==
-Received: from mail-pg1-f200.google.com (mail-pg1-f200.google.com [209.85.215.200])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4eu09kap11-1
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Tue, 16 Jun 2026 15:47:41 +0000 (GMT)
-Received: by mail-pg1-f200.google.com with SMTP id 41be03b00d2f7-c858e0cbc89so2552527a12.0
-        for <linux-pm@vger.kernel.org>; Tue, 16 Jun 2026 08:47:41 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1781624860; x=1782229660; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=eJW0DORVNViUcs7XgxbuIXaC6bb6dBOgIPgicankNzk=;
-        b=YndHConhzteEAwY9buYp4JKDwcchkQeoritQfWJxCJ5VBMH94FtPJ9tONbDH+uoulX
-         QzE68Zw1QMCwEj/aiZ+y2pfbzK124Y/F9A6LfKCM0qs2vu9Pc/9t8G2DU97Na6KoNsK/
-         yUc5YbSo/OfPOwBdENIeHb/j1U4HsqnpzOmIT/msQKdva2HdzE76PqUI29t06mN0QqjY
-         es+BAuCKo6Zmm3pDLW9pvzZD0oSi555E5hVwcZvrxyJXdmPJMmd5BlJwwyuncFjNy79Y
-         oc2KBrx/zIIHeXT5ibUiKin39EOAUig2Rej7+K5DfOQoIkeVWWwzLngv51qn5N7+KwDh
-         AVOg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1781624860; x=1782229660;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=eJW0DORVNViUcs7XgxbuIXaC6bb6dBOgIPgicankNzk=;
-        b=ic6mOd/4vIdukqYXyrcEaHKScRugSRvJw5OgufacIf1Pwo/6rxS+KJbcdty0uKU/ze
-         v2HSZx6Gky3OmbBNG160+K+CQEfhKqOajTL1x53FbXdfs921rhynrVs4Czdx3uJgu0P/
-         qhYoUB1uMBl9fchx4/zEFCyCw4gtSINeFQhnjKOirHS30ND3a1XLWthap9wPpxDUIMul
-         ae/1qBUNoyjxRqi6D0E1tS7iz2lOqxzigcGEWyC4gDtY/CtldHMdccCB6ya2IwIDWtmD
-         RDxY2HmCTCXTuQrs0zhoEEixFYmUWdEtOr1plsTK+IXNxAgLry/fVvgLPj/dIj1QwUib
-         cHUg==
-X-Gm-Message-State: AOJu0Yz5kMwVMExmiJ26AwuQv+u4t9bonDX6KRDdWzSKpXbjMpkjBtco
-	ShTi2/AkBlb4+aLbslprOQbt3XNsaaxQTLppz7IusZdK8NSNZ5yueJ+qMmFL/Rf35sc+IYtpNzG
-	n29c3WjX6MUuzSGPyVd4Kbef4qbel3KSpT/Um4ejdJQFP53MCuMV1tkY/MwKiHA==
-X-Gm-Gg: Acq92OE47VipueOck+ufgeMca4xG6q64wlmrUHJi70416TylXzDusI3RpUYPJI4gs2u
-	WXtJp45qfaQWjQz8JrJR8Zo+8yxkvTxr3JxqKbr1Ikj0SlUBU59JnkTwg4FfNEF5dj4D+iYBgAr
-	lBleCq2Ks56tvMIU75HccL9sqU23+BrKluPdfqfXdUR2EAELeNlWsT2evjINl2Y1p7FEAUoMpv6
-	fQqtA9Y4OBwcjulg4T6ChIhZYsH11I28gKJ1e+e4QVpHsQvrhVhdgEQOmET1TNrKfjtWMMxTq6L
-	5IwDfPYKXv2z+jYhu7hXkP1AVh4C8CoHw4ZunT0JBCFne83NzW8rpyG11Nm0Q1WR1LsYIrs3ktO
-	KjHsFSoz0AvuXnEOACEzvKxKCJ6nipA4d0Acnd/h32fxKsyxntlMcOM/ritRaonS7k5rIGM7cvz
-	UsYqQMnKAf3iRG
-X-Received: by 2002:a05:6a00:3a16:b0:842:33f3:da68 with SMTP id d2e1a72fcca58-8434cd0b4d2mr20606356b3a.8.1781624860395;
-        Tue, 16 Jun 2026 08:47:40 -0700 (PDT)
-X-Received: by 2002:a05:6a00:3a16:b0:842:33f3:da68 with SMTP id d2e1a72fcca58-8434cd0b4d2mr20606306b3a.8.1781624859917;
-        Tue, 16 Jun 2026 08:47:39 -0700 (PDT)
-Received: from zhonhan-gv.qualcomm.com (tpe-colo-wan-fw-bordernet.qualcomm.com. [103.229.16.4])
-        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-8434acf039fsm13163418b3a.20.2026.06.16.08.47.35
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 16 Jun 2026 08:47:39 -0700 (PDT)
-From: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>
-To: rafael@kernel.org, viresh.kumar@linaro.org, mingo@redhat.com,
-        peterz@infradead.org, juri.lelli@redhat.com,
-        vincent.guittot@linaro.org, dietmar.eggemann@arm.com,
-        rostedt@goodmis.org, bsegall@google.com, mgorman@suse.de,
-        vschneid@redhat.com, kprateek.nayak@amd.com, christian.loehle@arm.com
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        zhongqiu.han@oss.qualcomm.com, stable@vger.kernel.org
-Subject: [PATCH] cpufreq: schedutil: Fix uncleared need_freq_update on the adjust_perf path
-Date: Tue, 16 Jun 2026 23:47:33 +0800
-Message-ID: <20260616154733.2405236-1-zhongqiu.han@oss.qualcomm.com>
-X-Mailer: git-send-email 2.43.0
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="luQxn9cl"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id D1BF31F01562
+	for <linux-pm@vger.kernel.org>; Tue, 16 Jun 2026 18:57:14 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1781636234;
+	bh=Kg5urtXwHhG5NTd2I1ePWdoMCidQs7lsiIoCNc/Lh1Q=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc;
+	b=luQxn9claLnfUGUe4BPO/rKUJCKvbYkdDQ+j2wsHIRz6AQVNGuQHOD9FBHPCskdqe
+	 Talz+wHwrzepupIp3d+SdJigCtw9Lh4qC8oi7IQpB9SCoXxl+LgU4f66IuqYKOZtf5
+	 tieRGEMDoKYR2r5sJZGKvXFJ3dDoywYVOh4JEgDYatvyfewTCFwCT8sbizwxy+HVbk
+	 rsBMS51Q/mz88WQrG5h+I90N7HeVmYm0ykIqXd5MmHWUHpLkCkLf8+fuCfQ0j6EYWU
+	 WkKYh5OPblH6nMNoAMO8dNfO4Ja8DM3ZVM3VCiavzuHNaL4KlPW3pK3MdD6JQMeQT1
+	 1u5RACOzy2rzg==
+Received: by mail-ed1-f44.google.com with SMTP id 4fb4d7f45d1cf-68c32f3c6d6so4971774a12.3
+        for <linux-pm@vger.kernel.org>; Tue, 16 Jun 2026 11:57:14 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AFNElJ+6fiSINXPJuN7RsubCN3DP2OO92vO+SPVoDN4j6+Df88dS6tFO6Qd8hQhdIn/d9F9SOSFxuiaPCQ==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yx0+8//UdwcXZdEIaiHTKzeHuCGiX7fKW16NfyKcKfLI01xzBT6
+	uHEI5rIJpxo1d+xA9fcS+oNwkvc1SDpNULz4eyWIf3N6oHrtslEzX2qs6ACLPsvFXq368sX2V3h
+	pkBsp7dhLTQwaD5aNYE0ibdZFXlAlNA==
+X-Received: by 2002:a17:907:aaa:b0:c04:1977:1025 with SMTP id
+ a640c23a62f3a-c05a128a414mr47141766b.0.1781636233441; Tue, 16 Jun 2026
+ 11:57:13 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Proofpoint-Spam-Info: AW1haW4tMjYwNjE2MDE2MCBTYWx0ZWRfXzmW7/hAMXAzg
- Gpl+eamizaT+PKPg3tNJfwJtX+b4ruegTPnjEKMzqB/6eKUr9LDDkB0FPHo6EQSNqODKXXFUvXB
- JTW4kniT13kLBVH4jiiRptOItMsS3qA=
-X-Proofpoint-GUID: OufY_vetyWk4ZBPs_pJThBOxTSPmHCOF
-X-Authority-Analysis: v=2.4 cv=DoZmPm/+ c=1 sm=1 tr=0 ts=6a31701d cx=c_pps
- a=oF/VQ+ItUULfLr/lQ2/icg==:117 a=nuhDOHQX5FNHPW3J6Bj6AA==:17
- a=FelO9ux0wxsA:10 a=s4-Qcg_JpJYA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=u7WPNUs3qKkmUXheDGA7:22 a=ZpdpYltYx_vBUK5n70dp:22 a=VwQbUJbxAAAA:8
- a=EUspDBNiAAAA:8 a=4H1OJQDQ-noEIwH9yNQA:9 a=3WC7DwWrALyhR5TkjVHa:22
-X-Proofpoint-ORIG-GUID: OufY_vetyWk4ZBPs_pJThBOxTSPmHCOF
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNjE2MDE2MCBTYWx0ZWRfXxbIKpQaQ2mGh
- 9ap/eiYH+C6IZglgF015nc01Z6cGpoulzrMJSBqF7CaZBpUot+/8oLHXc4VPnF73iazenTr64HG
- PmPiyfzkwk9d431MYfJh0/GLblI94z0On5diY2xVUh2vtcsZ0p7g4tXNQvG45vnQbJDiCNB4h6t
- QjSxsmiEWMHk+Lk10LmFCdu6QnL/i+NU7deEZp7RNGcJlMQH9BP7QQ/SxnSTQD/95yD/twlcw2X
- r/kzszf/Gwyd3HZ3u9xfNJ8vt7RRoJfJCQuVCp+CNMy1idWXmmdhDCJEQ/6RohRRpgMf51LtuJB
- AFrZOL+b5+kwicotjpDD5wpTPcatJIBffT31JJjjQiRZ9XQJXtuVbDddCcxSOK9fhMnnHX5FzQm
- AVKUKNNh0a3Z4G8cV/2uO5HW0iDGWIh4ND2RkYKBji+0tLm0yFQ8/z5jiLMXIPKp7KKXkL9ozpC
- sb2rMM1r8x14BPBi7UA==
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.125,FMLib:17.12.100.49
- definitions=2026-06-16_05,2026-06-15_04,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- clxscore=1015 malwarescore=0 phishscore=0 adultscore=0 impostorscore=0
- suspectscore=0 priorityscore=1501 spamscore=0 bulkscore=0 lowpriorityscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2606040000 definitions=main-2606160160
+References: <20260615071836.362883-1-l.scorcia@gmail.com> <20260615071836.362883-10-l.scorcia@gmail.com>
+ <20260616133918.GA2335264-robh@kernel.org> <CAORyz2LiMHnaTK6QnsLxJDtw0fZ_N9LELw0iCorOZwHuWXus0g@mail.gmail.com>
+In-Reply-To: <CAORyz2LiMHnaTK6QnsLxJDtw0fZ_N9LELw0iCorOZwHuWXus0g@mail.gmail.com>
+From: Rob Herring <robh@kernel.org>
+Date: Tue, 16 Jun 2026 13:57:01 -0500
+X-Gmail-Original-Message-ID: <CAL_JsqLGqqyDoGskgmRLzQC=UkFEXgW=cDazc=frO2KBaSri=w@mail.gmail.com>
+X-Gm-Features: AVVi8CcwnrM4llpoEzOBnyyyWauL3xCmDN5lvRxGwwKA_noSBsMx_Zki1jU8Teg
+Message-ID: <CAL_JsqLGqqyDoGskgmRLzQC=UkFEXgW=cDazc=frO2KBaSri=w@mail.gmail.com>
+Subject: Re: [PATCH v7 9/9] arm64: dts: mediatek: Add MediaTek MT6392 PMIC dtsi
+To: Luca Leonardo Scorcia <l.scorcia@gmail.com>
+Cc: linux-mediatek@lists.infradead.org, Val Packett <val@packett.cool>, 
+	Dmitry Torokhov <dmitry.torokhov@gmail.com>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+	Conor Dooley <conor+dt@kernel.org>, Sen Chu <sen.chu@mediatek.com>, 
+	Sean Wang <sean.wang@mediatek.com>, Macpaul Lin <macpaul.lin@mediatek.com>, 
+	Lee Jones <lee@kernel.org>, Matthias Brugger <matthias.bgg@gmail.com>, 
+	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>, 
+	Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, 
+	Linus Walleij <linusw@kernel.org>, Louis-Alexis Eyraud <louisalexis.eyraud@collabora.com>, 
+	Julien Massot <julien.massot@collabora.com>, Fabien Parent <parent.f@gmail.com>, 
+	Akari Tsuyukusa <akkun11.open@gmail.com>, Chen Zhong <chen.zhong@mediatek.com>, 
+	linux-input@vger.kernel.org, devicetree@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, 
+	linux-arm-kernel@lists.infradead.org, linux-gpio@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-The need_freq_update flag makes sugov_should_update_freq() return true
-regardless of the rate_limit_us throttling, and is cleared in
-sugov_update_next_freq(). sugov_update_single_freq() and
-sugov_update_shared() go through that helper, so the flag does not
-persist there.
+On Tue, Jun 16, 2026 at 10:32=E2=80=AFAM Luca Leonardo Scorcia
+<l.scorcia@gmail.com> wrote:
+>
+> > >  arch/arm64/boot/dts/mediatek/mt6392.dtsi | 75 ++++++++++++++++++++++=
+++
+> >
+> > Nothing is using this so it is a dead file that doesn't get tested.
+>
+> Hi, it's not referenced as the dtsi inclusion was removed in the
+> original patch from 2019 for an easier merging of support for mt8516
+> pumpkin boards [1][2].
+> If you prefer in the next revision I can add another patch to readd it
+> to the existing pumpkin board.
 
-However, sugov_update_single_perf() (used by drivers implementing the
-->adjust_perf() callback, e.g. intel_pstate or amd-pstate in passive mode)
-calls cpufreq_driver_adjust_perf() directly and never goes through
-sugov_update_next_freq(), so the need_freq_update flag is not cleared in
-that path.
+That or move this patch to the series for the board(s). If the board
+is already upstream, then add the include in *this* patch.
 
-Before commit 75da043d8f88 ("cpufreq/sched: Set need_freq_update in
-ignore_dl_rate_limit()"), this was effectively harmless because
-sugov_should_update_freq() still honoured the rate limit even when
-need_freq_update was set. After that change, the flag forces
-sugov_should_update_freq() to always return true, so once set, it stays
-effective indefinitely on the adjust_perf path.
-
-As a result, cpufreq_driver_adjust_perf() gets called on every scheduler
-utilization update (with the runqueue lock held) rather than being
-throttled by rate_limit_us, even if the driver itself may skip redundant
-hardware updates.
-
-Clear need_freq_update at the end of the adjust_perf path as well.
-
-Fixes: 75da043d8f88 ("cpufreq/sched: Set need_freq_update in ignore_dl_rate_limit()")
-Cc: stable@vger.kernel.org
-Signed-off-by: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>
----
- kernel/sched/cpufreq_schedutil.c | 1 +
- 1 file changed, 1 insertion(+)
-
-diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
-index ae9fd211cec1..a4e689eefdfb 100644
---- a/kernel/sched/cpufreq_schedutil.c
-+++ b/kernel/sched/cpufreq_schedutil.c
-@@ -486,6 +486,7 @@ static void sugov_update_single_perf(struct update_util_data *hook, u64 time,
- 	cpufreq_driver_adjust_perf(sg_policy->policy, sg_cpu->bw_min,
- 				   sg_cpu->util, max_cap);
- 
-+	sg_policy->need_freq_update = false;
- 	sg_policy->last_freq_update_time = time;
- }
- 
--- 
-2.43.0
-
+Rob
