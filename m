@@ -1,37 +1,37 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 35F391AAE28;
-	Wed, 17 Jun 2026 04:34:32 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6FDB536C5B2;
+	Wed, 17 Jun 2026 04:59:46 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1781670873; cv=none; b=BDPbFoIbZKIM9+UPt6hB3KYX1TISMGo8G5k8lMdjiNxLWx+FAxzeNi7/xKXM1/vQ4ZpAbbYFZCDMs0UTVQKw9RBH9q/Am+30U2tntV9WNeAZxb/2wW51jJRT5hwn5jsCgyEpiBo1wCll0BmkXwhN8smV6xBPNskk6wJythf0XiA=
+	t=1781672386; cv=none; b=hI4TP49C8qyrinDhsEEdeA/WLjH62wd/tx3CFZAObz+nbOYH5fOU6haKgiu+lqjXVSIW3xkf38ufcGBRA/03/qJoDgiUWvrKI9BmfyWmTTVdl9JRaQV0ciQvpkcGGHRSpJIBqbqRC3qeUkrDP5Wy2uiAq81MLOYu2B5WKqjrBLE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1781670873; c=relaxed/simple;
-	bh=he2cJBBB7awj2DWdAOcbOCB54bWPkkIoNu372dVit/0=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:To:Cc; b=QeRlATRB7N9TQHrOwY2paqVuV4xqkk/Hpv5dzcgqpVHU+PtTnpSKq+/tu9+ix4s+LCH2RcwhIJNV1uySzj6fzoOpvigcJoqPmO/Z3YMZMx0Tjj9aG1ugtzOlYI4FwR+hTNIoHkCx4c2SHWsAgn5nxuJhK/8Zlo95kt9Wz35YiFA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=FKHvKp0Q; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1781672386; c=relaxed/simple;
+	bh=l/Fk+JyOYgAMqTDacByIVhp11LO6kD2UWi/aLQrCZ6s=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:To:Cc; b=Rgv4sWp0M4i33NL6UaNXtENrKeHl/Ojn3QmOmcSFVb+77stNfTAWmbRyBlaBBqgtfeTgpq/yLzEnty7Q/XghMzsaNjpj8JQMFCgVzVGERAFUynKJYcvhqlInwP2Kkr/eLLocXsgE43g1wRr9Spj4MPW0XlS9SEAEcByWpGMve+4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Yr3STMBO; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="FKHvKp0Q"
-Received: by smtp.kernel.org (Postfix) with ESMTPS id BFCE6C2BCB0;
-	Wed, 17 Jun 2026 04:34:32 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Yr3STMBO"
+Received: by smtp.kernel.org (Postfix) with ESMTPS id A816FC2BCB0;
+	Wed, 17 Jun 2026 04:59:45 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1781670872;
-	bh=he2cJBBB7awj2DWdAOcbOCB54bWPkkIoNu372dVit/0=;
+	s=k20201202; t=1781672385;
+	bh=l/Fk+JyOYgAMqTDacByIVhp11LO6kD2UWi/aLQrCZ6s=;
 	h=From:Date:Subject:To:Cc:Reply-To:From;
-	b=FKHvKp0QGCo0D7Tu6+u8mbduWgCbx0IS/mM3EL0P+WbdiB7ePmN4fi/+dWJJ/w1Gp
-	 4Ykpo1DUj/q4dlkLDd1jtq7fbFkpfv1r9Pe9Qjh+xZAICcLytMLR8B6gIFFDrgLooJ
-	 hSgizQXcojtGVGeaZYmdsCPJdStzR4795/+y0ebq4YmXefx61///4d/uQrEu2UYslz
-	 m03PEkW5miRwDqs0zRvjh0Na8xBOVIO2AaL/pEFD1fXppCWWxIygcW+EdkjdRfJFIO
-	 ES+ULyfqIY+cBay7pZiLUbcNKgI7g4Me97wiFcaQgnGldR9b2rwR5vXlOL3LhBNZwh
-	 XIxyCCPAo0DWA==
+	b=Yr3STMBOrvgRsexzdTeGYUxoiwUMYw4KQFU4wM89tW3YJtcs2yg6G8ZLif2zTbFSk
+	 3p4BUR4e9zTK57B69OEWa6ded1EMOL+SD0b6YR12Cmvv+9/TxUCUl1c38qGcdhUCnM
+	 +McSVPfwhL6ShIwI+9S0j+0QbueQmjauBXRfJebkp9wIU9D8hIF3P1oBpLKq1K79Uk
+	 lZdXXypdIRZNUB6K1YpldN6QlcpzLbcjmmpRKwm7ub2r+eSKdQu+ZuoJTx3oZ4y5+z
+	 C9rIyHKTgbn0btWgg5fsfKSvo5s6+fVQusei7jjgZkmJ5tM5qp5/cRNHkxLP3LH1Hp
+	 8zKfw4QZJk1xw==
 Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B06D8CD98E1;
-	Wed, 17 Jun 2026 04:34:32 +0000 (UTC)
-From: Haritha S K via B4 Relay <devnull+haritha.k.oss.qualcomm.com@kernel.org>
-Date: Wed, 17 Jun 2026 10:04:24 +0530
-Subject: [PATCH] dt-bindings: thermal: qcom-tsens: Document the maili
- Temperature Sensor
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5CF90CD98EE;
+	Wed, 17 Jun 2026 04:59:45 +0000 (UTC)
+From: Bryam Vargas via B4 Relay <devnull+hexlabsecurity.proton.me@kernel.org>
+Date: Tue, 16 Jun 2026 23:59:45 -0500
+Subject: [PATCH v2] power: supply: cros_usbpd-charger: bound the
+ EC-reported port count
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -40,63 +40,117 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260617-b4-maili-upstream-3-v1-1-1b8cb7e425d8@oss.qualcomm.com>
-X-B4-Tracking: v=1; b=H4sIAM8jMmoC/yXMTQqEMAxA4atI1hOwOhQ7V5FZpE7UyPhDoyKId
- 7fq8lu8t4NyEFb4JDsEXkVlHCLMK4GqpaFhlF80ZGlmU2ss+jf2JH/BZdI5MPWYozeuIKLCWVd
- DLKfAtWz3tfw+1sV3XM3XCo7jBEFi7Md3AAAA
-X-Change-ID: 20260616-b4-maili-upstream-3-b198aaa8969f
-To: Amit Kucheria <amitk@kernel.org>, 
- Thara Gopinath <thara.gopinath@gmail.com>, 
- "Rafael J. Wysocki" <rafael@kernel.org>, 
- Daniel Lezcano <daniel.lezcano@kernel.org>, Zhang Rui <rui.zhang@intel.com>, 
- Lukasz Luba <lukasz.luba@arm.com>, Rob Herring <robh@kernel.org>, 
- Krzysztof Kozlowski <krzk+dt@kernel.org>, 
- Conor Dooley <conor+dt@kernel.org>
-Cc: linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org, 
- devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
- manaf.pallikunhi@oss.qualcomm.com, gaurav.kohli@oss.qualcomm.com, 
- Haritha S K <haritha.k@oss.qualcomm.com>
-X-Mailer: b4 0.15.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1781670871; l=998;
- i=haritha.k@oss.qualcomm.com; s=20260422; h=from:subject:message-id;
- bh=QERCdXGosQegGLSoxEuG9NnIUKptP7q6k2ZKHvSRHas=;
- b=WAotvr0uQcjTXhUxvjBHdPDShW9EAAwzrDzxorB7YjD+4SbubRzRH12mhY67qkUAsKJrpgBOH
- yveHkcYVqh7BLc2W1oKlUfxaVrBbi/gxPisO0eOnLjmdAx71izFrH6F
-X-Developer-Key: i=haritha.k@oss.qualcomm.com; a=ed25519;
- pk=ivp2P9RgsC6IkOe8JaqweeahT9pd0BVtL2d1YD8ICSg=
-X-Endpoint-Received: by B4 Relay for haritha.k@oss.qualcomm.com/20260422
- with auth_id=745
-X-Original-From: Haritha S K <haritha.k@oss.qualcomm.com>
-Reply-To: haritha.k@oss.qualcomm.com
+Message-Id: <20260616-b4-disp-5e197080-v2-1-8aa5bffce945@proton.me>
+X-B4-Tracking: v=1; b=H4sIAMApMmoC/x3MTQqAIBBA4avIrBtQacy6SrToZ6rZlChEIN49a
+ fkt3suQOAonGFSGyI8kua8K2yhYz/k6GGWrBqut0844XFrcJAUkNn2nvcaW9tnTYpnIQM1C5F3
+ efzlOpXy8PTAlYgAAAA==
+To: Tzung-Bi Shih <tzungbi@kernel.org>, Benson Leung <bleung@chromium.org>, 
+ Sebastian Reichel <sre@kernel.org>
+Cc: chrome-platform@lists.linux.dev, linux-pm@vger.kernel.org, 
+ Guenter Roeck <groeck@chromium.org>, linux-kernel@vger.kernel.org
+X-Mailer: b4 0.13.0
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1781672384; l=3873;
+ i=hexlabsecurity@proton.me; s=proton; h=from:subject:message-id;
+ bh=vPz9/pW6U5P0Sxc9eiv+I7NjKeYRGkRNB5Df/kBDu5I=;
+ b=NFsa2KOzhEQDsjkdSRtr8D8fNJ9soVqK/oPxzxazG+t/t2oN4lmyUrYz7UGO+lA65sqpMHbht
+ 572k5ZGKGfiAAVlwiKrUuOrDA8v1L4TKHUJuDDDJI6Ag3IuQrYYxCZI
+X-Developer-Key: i=hexlabsecurity@proton.me; a=ed25519;
+ pk=dmppBMZNLLoPzxHi9l8tZDzEZUunPbgsYqIZYXeUrL0=
+X-Endpoint-Received: by B4 Relay for hexlabsecurity@proton.me/proton with
+ auth_id=814
+X-Original-From: Bryam Vargas <hexlabsecurity@proton.me>
+Reply-To: hexlabsecurity@proton.me
 
-From: Haritha S K <haritha.k@oss.qualcomm.com>
+From: Bryam Vargas <hexlabsecurity@proton.me>
 
-Document the Temperature Sensor (TSENS) on the Qualcomm maili SoC.
+cros_usbpd_charger_probe() reads two port counts from the EC and uses
+one of them, num_charger_ports, as the loop bound when populating a
+fixed-size array:
 
-Signed-off-by: Haritha S K <haritha.k@oss.qualcomm.com>
+	struct port_data *ports[EC_USB_PD_MAX_PORTS];	/* 8 entries */
+	...
+	for (i = 0; i < charger->num_charger_ports; i++)
+		charger->ports[charger->num_registered_psy++] = port;
+
+Both num_usbpd_ports (from EC_CMD_USB_PD_PORTS) and num_charger_ports
+(from EC_CMD_CHARGE_PORT_COUNT) are u8 values reported by the EC. The
+only validation is a sanity check that compares the two EC-reported
+values against each other:
+
+	if (num_charger_ports < num_usbpd_ports ||
+	    num_charger_ports > num_usbpd_ports + 1)
+		return -EPROTO;
+
+It never checks either count against EC_USB_PD_MAX_PORTS, the size of
+the ports[] array. A malfunctioning, malicious or compromised EC that
+reports num_usbpd_ports == num_charger_ports == N for any N > 8 (for
+example both 255) passes this check, and the loop then writes N pointers
+into the 8-entry ports[] array embedded in the devm_kzalloc()'d
+charger_data, overflowing it by up to 255 - 8 = 247 entries (~1976
+bytes): a slab out-of-bounds write.
+
+Reject a port count larger than the ports[] array can hold.
+
+Fixes: f68b883e8fad ("power: supply: add cros-ec USBPD charger driver.")
+Cc: stable@vger.kernel.org
+Signed-off-by: Bryam Vargas <hexlabsecurity@proton.me>
+Reviewed-by: Tzung-Bi Shih <tzungbi@kernel.org>
 ---
- Documentation/devicetree/bindings/thermal/qcom-tsens.yaml | 1 +
- 1 file changed, 1 insertion(+)
+v2:
+ - Reword the added comment per Tzung-Bi Shih: drop the redundant "the
+   count is reported by the EC" and name the bound, EC_USB_PD_MAX_PORTS.
+   No functional change.
+ - Add Reviewed-by: Tzung-Bi Shih.
+ v1: https://lore.kernel.org/all/20260615-b4-disp-e0930b21-v1-1-c9ffbac7c9bb@proton.me
 
-diff --git a/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml b/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml
-index f0efaa8349ee..5a8f7673e730 100644
---- a/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml
-+++ b/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml
-@@ -58,6 +58,7 @@ properties:
-               - qcom,glymur-tsens
-               - qcom,hawi-tsens
-               - qcom,kaanapali-tsens
-+              - qcom,maili-tsens
-               - qcom,milos-tsens
-               - qcom,nord-tsens
-               - qcom,msm8953-tsens
+I reproduced the out-of-bounds write with an in-kernel test that drives
+the cros_usbpd_charger_probe() geometry verbatim under KASAN - a
+devm_kzalloc()'d charger_data with the 8-entry ports[] array, the
+EC-value cross-check, and the population loop - with the device-supplied
+port counts:
+
+  num_charger_ports = num_usbpd_ports = 12, no bound:
+    BUG: KASAN: slab-out-of-bounds in ...probe
+    Write of size 8 ... cache kmalloc-128 ... 0 bytes to the right of the
+    allocated 128-byte region   (ports[8..11] past the 8-entry array)
+  with this patch (count > EC_USB_PD_MAX_PORTS rejected): -EPROTO, no
+    KASAN report.
+  a well-formed count (<= EC_USB_PD_MAX_PORTS) is unaffected, no report.
+
+The full device range - both counts reported as 255, writing 247
+pointers (~1976 bytes) past the array - reproduces the same way under
+userspace AddressSanitizer on both -m32 and -m64.
+---
+ drivers/power/supply/cros_usbpd-charger.c | 7 +++++--
+ 1 file changed, 5 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/power/supply/cros_usbpd-charger.c b/drivers/power/supply/cros_usbpd-charger.c
+index 7d3e676a951c..45a87f5baac6 100644
+--- a/drivers/power/supply/cros_usbpd-charger.c
++++ b/drivers/power/supply/cros_usbpd-charger.c
+@@ -589,10 +589,13 @@ static int cros_usbpd_charger_probe(struct platform_device *pd)
+ 
+ 	/*
+ 	 * Sanity checks on the number of ports:
+-	 *  there should be at most 1 dedicated port
++	 *  there should be at most 1 dedicated port, and the count must
++	 *  not exceed the maximum number of supported ports
++	 *  (EC_USB_PD_MAX_PORTS).
+ 	 */
+ 	if (charger->num_charger_ports < charger->num_usbpd_ports ||
+-	    charger->num_charger_ports > (charger->num_usbpd_ports + 1)) {
++	    charger->num_charger_ports > (charger->num_usbpd_ports + 1) ||
++	    charger->num_charger_ports > EC_USB_PD_MAX_PORTS) {
+ 		dev_err(dev, "Unexpected number of charge port count\n");
+ 		ret = -EPROTO;
+ 		goto fail_nowarn;
 
 ---
-base-commit: a76326dca329a7a738ba367529868dfbafb4a403
-change-id: 20260616-b4-maili-upstream-3-b198aaa8969f
+base-commit: 8e65320d91cdc3b241d4b94855c88459b91abf66
+change-id: 20260616-b4-disp-5e197080-45fa85b2e551
 
 Best regards,
---  
-Haritha S K <haritha.k@oss.qualcomm.com>
+-- 
+Bryam Vargas <hexlabsecurity@proton.me>
 
 
