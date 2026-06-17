@@ -1,156 +1,110 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6FDB536C5B2;
-	Wed, 17 Jun 2026 04:59:46 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 38F1846B5;
+	Wed, 17 Jun 2026 06:33:27 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1781672386; cv=none; b=hI4TP49C8qyrinDhsEEdeA/WLjH62wd/tx3CFZAObz+nbOYH5fOU6haKgiu+lqjXVSIW3xkf38ufcGBRA/03/qJoDgiUWvrKI9BmfyWmTTVdl9JRaQV0ciQvpkcGGHRSpJIBqbqRC3qeUkrDP5Wy2uiAq81MLOYu2B5WKqjrBLE=
+	t=1781678009; cv=none; b=VE7o2wWLMaDpiSWzawWOopHFDJA1/Dx/zFdyhX6eKcma7m6XrFxMs5945wlR+rgk2OUSd/KnePqjRL1jO4SYYHKkcTe0yueZI794ltfb6eaGHn5tRUJJZ0XafeUznQopLFeZNr0bY7hpROodeQnv3wLiYE6XobHXJFOVoUyum5U=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1781672386; c=relaxed/simple;
-	bh=l/Fk+JyOYgAMqTDacByIVhp11LO6kD2UWi/aLQrCZ6s=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:To:Cc; b=Rgv4sWp0M4i33NL6UaNXtENrKeHl/Ojn3QmOmcSFVb+77stNfTAWmbRyBlaBBqgtfeTgpq/yLzEnty7Q/XghMzsaNjpj8JQMFCgVzVGERAFUynKJYcvhqlInwP2Kkr/eLLocXsgE43g1wRr9Spj4MPW0XlS9SEAEcByWpGMve+4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Yr3STMBO; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1781678009; c=relaxed/simple;
+	bh=L+Z8DnxGDNO6d1OYUwrzMZ5qurHWJ+V8JdZLMMjJhYc=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=o38HFiT9iN3aCv+Dw9MqDgTiUiiGfOkLEosyjE0Xip2KucjMhEmCJid/HfC1jnGH0SZ8FW4KUtMIzIXYkSFfzpr28tlhymnut7Ve6ecsl4POx+/zDe2vR+uFsbhqYgd2JfzA4zlF5HYAby81AE0n1KoNmMB6T/hFtcrVW/TmClU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=jn3CVSef; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Yr3STMBO"
-Received: by smtp.kernel.org (Postfix) with ESMTPS id A816FC2BCB0;
-	Wed, 17 Jun 2026 04:59:45 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1781672385;
-	bh=l/Fk+JyOYgAMqTDacByIVhp11LO6kD2UWi/aLQrCZ6s=;
-	h=From:Date:Subject:To:Cc:Reply-To:From;
-	b=Yr3STMBOrvgRsexzdTeGYUxoiwUMYw4KQFU4wM89tW3YJtcs2yg6G8ZLif2zTbFSk
-	 3p4BUR4e9zTK57B69OEWa6ded1EMOL+SD0b6YR12Cmvv+9/TxUCUl1c38qGcdhUCnM
-	 +McSVPfwhL6ShIwI+9S0j+0QbueQmjauBXRfJebkp9wIU9D8hIF3P1oBpLKq1K79Uk
-	 lZdXXypdIRZNUB6K1YpldN6QlcpzLbcjmmpRKwm7ub2r+eSKdQu+ZuoJTx3oZ4y5+z
-	 C9rIyHKTgbn0btWgg5fsfKSvo5s6+fVQusei7jjgZkmJ5tM5qp5/cRNHkxLP3LH1Hp
-	 8zKfw4QZJk1xw==
-Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5CF90CD98EE;
-	Wed, 17 Jun 2026 04:59:45 +0000 (UTC)
-From: Bryam Vargas via B4 Relay <devnull+hexlabsecurity.proton.me@kernel.org>
-Date: Tue, 16 Jun 2026 23:59:45 -0500
-Subject: [PATCH v2] power: supply: cros_usbpd-charger: bound the
- EC-reported port count
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="jn3CVSef"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 64E141F000E9;
+	Wed, 17 Jun 2026 06:33:22 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1781678007;
+	bh=s5w9QebeU8Px/1kwe24LOvkJnmJtt7NhmchPMcLTqbU=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To;
+	b=jn3CVSefoAgYR4svktDMvnB/YsBA01gAbzPj9HrMn5CUVegXv8RTuEAYHwDqAk01Z
+	 SxBnOhOT+S6v/KygeHAsURw499qm+UmkwsQbUZemX0ONnOEtHDy7FoBqJnxd0p1IGa
+	 PKE/egWoefHc6sZbXhsAFiBaiNEtQ07HnqP3S/VHNhNAIMS7NDfGNOft+J5EtyAKMG
+	 fX2vJUQhcf7zUOQQgANUOT2kFlUWleLreR4BnPxj0ClfosOYUJpK0uGxvLoKaFbEC3
+	 cB6QeMHVX1Z4s6JhxwabrlSyEv19zJ4vd8UQL9y7Ojx1vd+jx3xCNaEU6eALJnPEJe
+	 y3uMS3xm3tH/Q==
+Message-ID: <bdcfff41-0e2c-41de-b0c6-c824e54336f3@kernel.org>
+Date: Wed, 17 Jun 2026 08:33:19 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] dt-bindings: thermal: qcom-tsens: Document the maili
+ Temperature Sensor
+To: haritha.k@oss.qualcomm.com, Amit Kucheria <amitk@kernel.org>,
+ Thara Gopinath <thara.gopinath@gmail.com>,
+ "Rafael J. Wysocki" <rafael@kernel.org>,
+ Daniel Lezcano <daniel.lezcano@kernel.org>, Zhang Rui <rui.zhang@intel.com>,
+ Lukasz Luba <lukasz.luba@arm.com>, Rob Herring <robh@kernel.org>,
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>
+Cc: linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org,
+ devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+ manaf.pallikunhi@oss.qualcomm.com, gaurav.kohli@oss.qualcomm.com
+References: <20260617-b4-maili-upstream-3-v1-1-1b8cb7e425d8@oss.qualcomm.com>
+From: Krzysztof Kozlowski <krzk@kernel.org>
+Content-Language: en-US
+Autocrypt: addr=krzk@kernel.org; keydata=
+ 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
+In-Reply-To: <20260617-b4-maili-upstream-3-v1-1-1b8cb7e425d8@oss.qualcomm.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260616-b4-disp-5e197080-v2-1-8aa5bffce945@proton.me>
-X-B4-Tracking: v=1; b=H4sIAMApMmoC/x3MTQqAIBBA4avIrBtQacy6SrToZ6rZlChEIN49a
- fkt3suQOAonGFSGyI8kua8K2yhYz/k6GGWrBqut0844XFrcJAUkNn2nvcaW9tnTYpnIQM1C5F3
- efzlOpXy8PTAlYgAAAA==
-To: Tzung-Bi Shih <tzungbi@kernel.org>, Benson Leung <bleung@chromium.org>, 
- Sebastian Reichel <sre@kernel.org>
-Cc: chrome-platform@lists.linux.dev, linux-pm@vger.kernel.org, 
- Guenter Roeck <groeck@chromium.org>, linux-kernel@vger.kernel.org
-X-Mailer: b4 0.13.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1781672384; l=3873;
- i=hexlabsecurity@proton.me; s=proton; h=from:subject:message-id;
- bh=vPz9/pW6U5P0Sxc9eiv+I7NjKeYRGkRNB5Df/kBDu5I=;
- b=NFsa2KOzhEQDsjkdSRtr8D8fNJ9soVqK/oPxzxazG+t/t2oN4lmyUrYz7UGO+lA65sqpMHbht
- 572k5ZGKGfiAAVlwiKrUuOrDA8v1L4TKHUJuDDDJI6Ag3IuQrYYxCZI
-X-Developer-Key: i=hexlabsecurity@proton.me; a=ed25519;
- pk=dmppBMZNLLoPzxHi9l8tZDzEZUunPbgsYqIZYXeUrL0=
-X-Endpoint-Received: by B4 Relay for hexlabsecurity@proton.me/proton with
- auth_id=814
-X-Original-From: Bryam Vargas <hexlabsecurity@proton.me>
-Reply-To: hexlabsecurity@proton.me
 
-From: Bryam Vargas <hexlabsecurity@proton.me>
+On 17/06/2026 06:34, Haritha S K via B4 Relay wrote:
+> From: Haritha S K <haritha.k@oss.qualcomm.com>
+> 
+> Document the Temperature Sensor (TSENS) on the Qualcomm maili SoC.
 
-cros_usbpd_charger_probe() reads two port counts from the EC and uses
-one of them, num_charger_ports, as the loop bound when populating a
-fixed-size array:
+s/maili/Maili/
 
-	struct port_data *ports[EC_USB_PD_MAX_PORTS];	/* 8 entries */
-	...
-	for (i = 0; i < charger->num_charger_ports; i++)
-		charger->ports[charger->num_registered_psy++] = port;
 
-Both num_usbpd_ports (from EC_CMD_USB_PD_PORTS) and num_charger_ports
-(from EC_CMD_CHARGE_PORT_COUNT) are u8 values reported by the EC. The
-only validation is a sanity check that compares the two EC-reported
-values against each other:
-
-	if (num_charger_ports < num_usbpd_ports ||
-	    num_charger_ports > num_usbpd_ports + 1)
-		return -EPROTO;
-
-It never checks either count against EC_USB_PD_MAX_PORTS, the size of
-the ports[] array. A malfunctioning, malicious or compromised EC that
-reports num_usbpd_ports == num_charger_ports == N for any N > 8 (for
-example both 255) passes this check, and the loop then writes N pointers
-into the 8-entry ports[] array embedded in the devm_kzalloc()'d
-charger_data, overflowing it by up to 255 - 8 = 247 entries (~1976
-bytes): a slab out-of-bounds write.
-
-Reject a port count larger than the ports[] array can hold.
-
-Fixes: f68b883e8fad ("power: supply: add cros-ec USBPD charger driver.")
-Cc: stable@vger.kernel.org
-Signed-off-by: Bryam Vargas <hexlabsecurity@proton.me>
-Reviewed-by: Tzung-Bi Shih <tzungbi@kernel.org>
----
-v2:
- - Reword the added comment per Tzung-Bi Shih: drop the redundant "the
-   count is reported by the EC" and name the bound, EC_USB_PD_MAX_PORTS.
-   No functional change.
- - Add Reviewed-by: Tzung-Bi Shih.
- v1: https://lore.kernel.org/all/20260615-b4-disp-e0930b21-v1-1-c9ffbac7c9bb@proton.me
-
-I reproduced the out-of-bounds write with an in-kernel test that drives
-the cros_usbpd_charger_probe() geometry verbatim under KASAN - a
-devm_kzalloc()'d charger_data with the 8-entry ports[] array, the
-EC-value cross-check, and the population loop - with the device-supplied
-port counts:
-
-  num_charger_ports = num_usbpd_ports = 12, no bound:
-    BUG: KASAN: slab-out-of-bounds in ...probe
-    Write of size 8 ... cache kmalloc-128 ... 0 bytes to the right of the
-    allocated 128-byte region   (ports[8..11] past the 8-entry array)
-  with this patch (count > EC_USB_PD_MAX_PORTS rejected): -EPROTO, no
-    KASAN report.
-  a well-formed count (<= EC_USB_PD_MAX_PORTS) is unaffected, no report.
-
-The full device range - both counts reported as 255, writing 247
-pointers (~1976 bytes) past the array - reproduces the same way under
-userspace AddressSanitizer on both -m32 and -m64.
----
- drivers/power/supply/cros_usbpd-charger.c | 7 +++++--
- 1 file changed, 5 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/power/supply/cros_usbpd-charger.c b/drivers/power/supply/cros_usbpd-charger.c
-index 7d3e676a951c..45a87f5baac6 100644
---- a/drivers/power/supply/cros_usbpd-charger.c
-+++ b/drivers/power/supply/cros_usbpd-charger.c
-@@ -589,10 +589,13 @@ static int cros_usbpd_charger_probe(struct platform_device *pd)
- 
- 	/*
- 	 * Sanity checks on the number of ports:
--	 *  there should be at most 1 dedicated port
-+	 *  there should be at most 1 dedicated port, and the count must
-+	 *  not exceed the maximum number of supported ports
-+	 *  (EC_USB_PD_MAX_PORTS).
- 	 */
- 	if (charger->num_charger_ports < charger->num_usbpd_ports ||
--	    charger->num_charger_ports > (charger->num_usbpd_ports + 1)) {
-+	    charger->num_charger_ports > (charger->num_usbpd_ports + 1) ||
-+	    charger->num_charger_ports > EC_USB_PD_MAX_PORTS) {
- 		dev_err(dev, "Unexpected number of charge port count\n");
- 		ret = -EPROTO;
- 		goto fail_nowarn;
-
----
-base-commit: 8e65320d91cdc3b241d4b94855c88459b91abf66
-change-id: 20260616-b4-disp-5e197080-45fa85b2e551
+Acked-by: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
 
 Best regards,
--- 
-Bryam Vargas <hexlabsecurity@proton.me>
-
-
+Krzysztof
