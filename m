@@ -1,126 +1,136 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 57BF348C8AE
-	for <linux-pm@vger.kernel.org>; Wed, 17 Jun 2026 17:10:13 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 551B7318EFF
+	for <linux-pm@vger.kernel.org>; Wed, 17 Jun 2026 18:09:43 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1781716216; cv=none; b=d7cfvEy32tfN7ZcxIleiEMWBTI8gIV0x1Kwcp36eUZF6MNFu6z2XOrNqX9SRBxCVE1ccg4JUpohhmUoSOb73lOZGDTSmjYCYpFnMRQlOAhxY5Rp5hQrCtMFocUlOMkIY4MTCebZezT+aUV5tiJdqUII7ZhVX4RMG9arWi+Sj3Hw=
+	t=1781719784; cv=none; b=C7UKXFNoSwUrOZBiRkU/3WTMwxYO/UlOtV+M7djyDpVtsXp+KG/TyTEzhmWxJufuiD7NxoUuUvBwSdcIGnMA/dYMUtEd5VEvwQ5odhVXTYr2IKtGmQLs8dWJxIOdExgU80RcN5dMcF2z2gGKraSxUCLXU+Ht0Hkl9y+Cufw8NFY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1781716216; c=relaxed/simple;
-	bh=X28F3Hl05lwR6wgeMUHHK+ZBDLYoJUsWLiqcQ18Z8Xc=;
+	s=arc-20240116; t=1781719784; c=relaxed/simple;
+	bh=D/h9L/UU5IrLAgPpZD9DokP02h4MaKEMa+ynTC5wr5Y=;
 	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=iOPWv5YZ/Qon3EXVvwhbrnG94htZ2usWFP+ynRUy6UFmKdxa9Ixbyyd2P3hADmM+FqU4a4aXIIB8mjWcqyy+xYZGvX3jM0ZYkgtjpErtNEme82Qmbp2EHMA1SRnlkhX8lvevujAWLm0R7gFu9rDjlADxpm0v9QrwTulBb6rjRBI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Ej3QDQJz; arc=none smtp.client-ip=100.103.45.18
+	 To:Cc:Content-Type; b=bmW3vXl155QaCl0TmCX1DNzoTbMm72yrbdqfB09lewDE9AO43uu7UiORISgpzEamsuJd9I5MeSakpFjEDZtdVZ6sD2l0SWtMBVXYWeTC9LILGpDVhwSgYZ1DuxWz7WNbWIzbP44BuYqpyv2ibTHVWIhmEpiqTOfDDGFm5wfQQmY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=P85CGUv6; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Ej3QDQJz"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id B63F21F00A3E
-	for <linux-pm@vger.kernel.org>; Wed, 17 Jun 2026 17:10:12 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="P85CGUv6"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 170DF1F00ACF
+	for <linux-pm@vger.kernel.org>; Wed, 17 Jun 2026 18:09:43 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1781716212;
-	bh=8y4MDUgvWdburveM+Qn/AQB/d71cSDhUUVHg/A13PSg=;
+	s=k20260515; t=1781719783;
+	bh=QnCTxMfzth94PQEfsdKbicmQyRbNjGL2DxZDY803+4I=;
 	h=References:In-Reply-To:From:Date:Subject:To:Cc;
-	b=Ej3QDQJzjV39zigyDV3lCuF7gzBLoJN5rAa8mCs6x7mBDnV4sex6nc+0S/1G9JvgE
-	 wSO31DZVqlIqWhC0xgOQGjto5BhcYqc4a09efLsi+/3qG0FFh5Hv26kbFhqij0gXnB
-	 XOrQAYBEjkqVgGVhsNhipDMOqTpunLXkZ6K+rS/+YECxBE5I4zJ8BMvcuktGHfT6Yk
-	 buFsXaNNZiH4tA3pmiI53mnUAuT88WtFXWgAvIE3Uk1U6hidB02HhdDqKtpwOjzdVw
-	 n69JtYTs+BSrZt15ARks6Z69SKOayE+0QJoGW47ZWfWZBSWk7Yc9cPEMFf3HASeHYP
-	 8+YGo5LER5Fwg==
-Received: by mail-lj1-f180.google.com with SMTP id 38308e7fff4ca-3996f80800bso8817741fa.1
-        for <linux-pm@vger.kernel.org>; Wed, 17 Jun 2026 10:10:12 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AFNElJ+5zSxRCRQG3d9W4nlfQ0J1EACWaqwGG9qqiFG/dBMk3MppiRdLz0+ltLL6F77fZzM2bYnzN2jV8g==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yzyvv1lHQusFfjQSqLQwdG/pU6WisecA/AgfQhRLvXszAR9QTEq
-	aBXUQkKLxsrTLIzgdXuvFWNoNtomfJiBvHABQtf2Jc9BH5NIaitrSAlzzXZcmNgKpdTcGdOhByy
-	JX43xU2h0uaU9pC7XBSrdvF74RSw8LIQ=
-X-Received: by 2002:a2e:ad13:0:b0:396:7f13:99f3 with SMTP id
- 38308e7fff4ca-399775ac396mr1035011fa.12.1781716211159; Wed, 17 Jun 2026
- 10:10:11 -0700 (PDT)
+	b=P85CGUv6if44gPxptsH0lnpEI9y8s4L7UlXzSvAiBqbWmCQyKWcPWcnIdwjodG86j
+	 1WNKWjfF+FD8FwBgHEwxnN7Wd5bZqfTfD0O/3TX67TDqR7C5zRLM/gjoRNDjgsnSpF
+	 GORS80QoFudpjmmFX578+77ig1s0SqgvoXuNa7pruYKZ7LLRqmYeY0LG7fQeqwWqV0
+	 cf9fCSe9UeUco6FnlTksU7hCp+gDlkQ40cFWiJdX5xp+pZ9+J4sSfKdMPZRReipEZt
+	 NPkGlMRBmFPflhU7c8wZpDGynXdPUz6DN+k9HSB1Q74Zw11C2rIKqONloOBikfRTmo
+	 MHZUICEE1WIgQ==
+Received: by mail-lj1-f170.google.com with SMTP id 38308e7fff4ca-39657d28132so922271fa.3
+        for <linux-pm@vger.kernel.org>; Wed, 17 Jun 2026 11:09:42 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AFNElJ9dlcw2+6vEEbmeOuASNEoB8rw9zTzhkTtRc+qcFeQvd3pKx4+vCcWJXhcbvw9L1pErpr7V5m9pig==@vger.kernel.org
+X-Gm-Message-State: AOJu0YwZ7yDsIoz2MFzAVuHU7q3HDCTGuaIOE1xjJAv1pghSh10fIbGD
+	8s2cCdX6fkU7gqYjpKOSHS6JXmTRz1DQbPVcmTjDJ9wqfLI4cQ8MZyj76QF2jI+ZyVmjJQlOGCb
+	amfiM+MJNs89xVH+LPeD0Dv5D5ATfJ9M=
+X-Received: by 2002:a05:651c:1582:b0:393:cb61:17e9 with SMTP id
+ 38308e7fff4ca-399777bf7b3mr1258941fa.17.1781719781538; Wed, 17 Jun 2026
+ 11:09:41 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <3444162.aeNJFYEL58@rafael.j.wysocki> <bc20f2a1-66ad-4655-99e0-ad59e597f831@arm.com>
-In-Reply-To: <bc20f2a1-66ad-4655-99e0-ad59e597f831@arm.com>
+References: <20260616154733.2405236-1-zhongqiu.han@oss.qualcomm.com>
+ <8d3ddc27-5024-4b9f-ac84-f3d92f35246a@transsion.com> <0767a224-d988-46d9-a535-2b490d990287@arm.com>
+In-Reply-To: <0767a224-d988-46d9-a535-2b490d990287@arm.com>
 From: "Rafael J. Wysocki" <rafael@kernel.org>
-Date: Wed, 17 Jun 2026 19:09:58 +0200
-X-Gmail-Original-Message-ID: <CAJZ5v0gtpcRMDo+U2-fa=SciQHPJwv-uqqzra__h7YzbS197DQ@mail.gmail.com>
-X-Gm-Features: AVVi8Ccg-ucTWCnrREim74ba8QldIRKgrn3lzUzqD2Fk0af6qsz1VqvS44BCwgc
-Message-ID: <CAJZ5v0gtpcRMDo+U2-fa=SciQHPJwv-uqqzra__h7YzbS197DQ@mail.gmail.com>
-Subject: Re: [PATCH v1] cpufreq: Allow exit latency to exceed target residency
-To: Christian Loehle <christian.loehle@arm.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Linux PM <linux-pm@vger.kernel.org>, 
-	LKML <linux-kernel@vger.kernel.org>
+Date: Wed, 17 Jun 2026 20:09:29 +0200
+X-Gmail-Original-Message-ID: <CAJZ5v0iS+NA81z6Z42e9d-frjON1QHi1bopBZg5OApObQ331PQ@mail.gmail.com>
+X-Gm-Features: AVVi8Ccr9VFwIcHGjWa3Cfm_lM0CuX9rYalmB8mJZe1VR8jyKlKfYV86_rLw7qc
+Message-ID: <CAJZ5v0iS+NA81z6Z42e9d-frjON1QHi1bopBZg5OApObQ331PQ@mail.gmail.com>
+Subject: Re: [PATCH] cpufreq: schedutil: Fix uncleared need_freq_update on the
+ adjust_perf path
+To: Christian Loehle <christian.loehle@arm.com>, Hongyan Xia <hongyan.xia@transsion.com>
+Cc: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>, 
+	"viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, "mingo@redhat.com" <mingo@redhat.com>, 
+	"peterz@infradead.org" <peterz@infradead.org>, "juri.lelli@redhat.com" <juri.lelli@redhat.com>, 
+	"vincent.guittot@linaro.org" <vincent.guittot@linaro.org>, 
+	"dietmar.eggemann@arm.com" <dietmar.eggemann@arm.com>, "rostedt@goodmis.org" <rostedt@goodmis.org>, 
+	"bsegall@google.com" <bsegall@google.com>, "mgorman@suse.de" <mgorman@suse.de>, 
+	"vschneid@redhat.com" <vschneid@redhat.com>, "kprateek.nayak@amd.com" <kprateek.nayak@amd.com>, 
+	"linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, 
+	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, 
+	"stable@vger.kernel.org" <stable@vger.kernel.org>
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Wed, Jun 17, 2026 at 6:31=E2=80=AFPM Christian Loehle
+On Wed, Jun 17, 2026 at 9:28=E2=80=AFAM Christian Loehle
 <christian.loehle@arm.com> wrote:
 >
-> On 6/17/26 17:16, Rafael J. Wysocki wrote:
-> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> On 6/17/26 05:06, Hongyan Xia wrote:
+> > On 6/16/2026 11:47 PM, Zhongqiu Han wrote:
+> >> The need_freq_update flag makes sugov_should_update_freq() return true
+> >> regardless of the rate_limit_us throttling, and is cleared in
+> >> sugov_update_next_freq(). sugov_update_single_freq() and
+> >> sugov_update_shared() go through that helper, so the flag does not
+> >> persist there.
+> >>
+> >> However, sugov_update_single_perf() (used by drivers implementing the
+> >> ->adjust_perf() callback, e.g. intel_pstate or amd-pstate in passive m=
+ode)
+> >> calls cpufreq_driver_adjust_perf() directly and never goes through
+> >> sugov_update_next_freq(), so the need_freq_update flag is not cleared =
+in
+> >> that path.
+> >>
+> >> Before commit 75da043d8f88 ("cpufreq/sched: Set need_freq_update in
+> >> ignore_dl_rate_limit()"), this was effectively harmless because
+> >> sugov_should_update_freq() still honoured the rate limit even when
+> >> need_freq_update was set. After that change, the flag forces
+> >> sugov_should_update_freq() to always return true, so once set, it stay=
+s
+> >> effective indefinitely on the adjust_perf path.
+> >>
+> >> As a result, cpufreq_driver_adjust_perf() gets called on every schedul=
+er
+> >> utilization update (with the runqueue lock held) rather than being
+> >> throttled by rate_limit_us, even if the driver itself may skip redunda=
+nt
+> >> hardware updates.
+> >>
+> >> Clear need_freq_update at the end of the adjust_perf path as well.
+> >>
+> >> Fixes: 75da043d8f88 ("cpufreq/sched: Set need_freq_update in ignore_dl=
+_rate_limit()")
+> >> Cc: stable@vger.kernel.org
+> >> Signed-off-by: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>
+> >> ---
+> >>   kernel/sched/cpufreq_schedutil.c | 1 +
+> >>   1 file changed, 1 insertion(+)
+> >>
+> >> diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_s=
+chedutil.c
+> >> index ae9fd211cec1..a4e689eefdfb 100644
+> >> --- a/kernel/sched/cpufreq_schedutil.c
+> >> +++ b/kernel/sched/cpufreq_schedutil.c
+> >> @@ -486,6 +486,7 @@ static void sugov_update_single_perf(struct update=
+_util_data *hook, u64 time,
+> >>      cpufreq_driver_adjust_perf(sg_policy->policy, sg_cpu->bw_min,
+> >>                                 sg_cpu->util, max_cap);
+> >>
+> >> +    sg_policy->need_freq_update =3D false;
+> >>      sg_policy->last_freq_update_time =3D time;
 > >
-> > Commit 76934e495cdc ("cpuidle: Add sanity check for exit latency and
-> > target residency") had added a check to prevent the exit latency of an
-> > idle state from exceeding its target residency that later was limited t=
-o
-> > printing a warning message in that case in commit 4bf944f3fcb6 ("cpuidl=
-e:
-> > Warn instead of bailing out if target residency check fails").
+> > Nice catch. Thanks.
 > >
-> > However, a thorough code inspection with that in mind leads to the
-> > conclusion that actually there are no assumptions in cpuidle regarding
-> > the relationship between the exit latency and target residency of a
-> > given idle state.  It is generally assumed that the idle states table
-> > provided by a cpuidle driver will be sorted by both the target residenc=
-y
-> > and exit latency in ascending order, but that's a different matter.
-> >
-> > Accordingly, drop the check in question along with the message printed
-> > when it triggers and the inaccurate comment preceding it.
-> >
-> > Fixes: 4bf944f3fcb6 ("cpuidle: Warn instead of bailing out if target re=
-sidency check fails")
-> > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > ---
-> >  drivers/cpuidle/driver.c           |    8 --------
-> >  drivers/cpuidle/governors/ladder.c |    2 ++
+> > It does seem to me that setting last_freq_update_time should then asser=
+t
+> > !need_freq_update, otherwise it doesn't make sense, but that's a
+> > different topic.
+> +1, feel free to submit that too.
 >
-> ladder.c?
-
-It looks like I forgot to refresh the patch.
-
-> >  2 files changed, 2 insertions(+), 8 deletions(-)
-> >
-> > --- a/drivers/cpuidle/driver.c
-> > +++ b/drivers/cpuidle/driver.c
-> > @@ -195,14 +195,6 @@ static void __cpuidle_driver_init(struct
-> >                       s->exit_latency_ns =3D  0;
-> >               else
-> >                       s->exit_latency =3D div_u64(s->exit_latency_ns, N=
-SEC_PER_USEC);
-> > -
-> > -             /*
-> > -              * Warn if the exit latency of a CPU idle state exceeds i=
-ts
-> > -              * target residency which is assumed to never happen in c=
-puidle
-> > -              * in multiple places.
-> > -              */
-> > -             if (s->exit_latency_ns > s->target_residency_ns)
-> > -                     pr_warn("Idle state %d target residency too low\n=
-", i);
-> >       }
-> >  }
-> >
-> >
->
-> Fine with me, but the title is cpufreq: instead of cpuidle.
-> If you'll fix it when applying:
-
-I will.
-
+> For $SUBJECT:
 > Reviewed-by: Christian Loehle <christian.loehle@arm.com>
 
-Thanks!
+Applied as 7.2-rc material, thanks!
