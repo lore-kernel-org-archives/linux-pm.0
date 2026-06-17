@@ -1,31 +1,31 @@
 Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id 5F57A3E1216;
-	Wed, 17 Jun 2026 10:00:00 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id 1C84F3E3D86;
+	Wed, 17 Jun 2026 10:00:02 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1781690402; cv=none; b=BJ2gor1NO0p+X49vvymTw2VHun9jdU26+acKOzby9VO+tGKkD2IDQi9Zm5bazt4tjw2z1Ft8RVWSycbr/Jp3HqesrFJqZw3szr6IYMNsMFsgLW34orvwq+jd66Qfua7UHtF9pa1E/nIfhjCiwbEyY1oyIQO+WOX2l1U472NaTCc=
+	t=1781690404; cv=none; b=KXjj3egYxk6CKerEcoxjdGU9s9N8+iJFyiuq7oyDAAm2d7KuHSgXwNMhv6JdYGNAs5NXEejJymYPU0MOTJbMxaf/cR+VP4DCC4foEt33FRZPSWOr1gkI/UiHn1QWI6uL8ZnCLFd2F6QPbQ54LoKzNzmo7cr/UQTV6qDsRqezUEc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1781690402; c=relaxed/simple;
-	bh=uQ2IxnI5PBbEK+vSVRZY0b0+hKZufqL3dFY/NKgEynE=;
+	s=arc-20240116; t=1781690404; c=relaxed/simple;
+	bh=ysAvUv+uQKD7SvxfHb5LUEwIT9/VWVtRXW6Ysv0mpjY=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=Iiy3BpX4CiFHwD1GyJSx8hIBHllaWU7k2iTrtooylgG9yHL67xOvEhMDNKpnQ84TGVFjJsx3epnIA64wGlHd+wIT2N4xE6In7CkATeORj4drH4uKsGNZvABcpggCdPTgKltY/Q3zOoiSMQo+v9W9jVkbHVNY/TcXVeWCPkBNAM0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=fb4KH2eg; arc=none smtp.client-ip=217.140.110.172
+	 MIME-Version; b=X+i65xNS5fVbt5oIQKK1ThTllELejPTKMaqpXUDesFuM9Z3VKoWTCQFc0VJOoOTQlGXCBgr6/6Rdk7kcjnLa0Uuka/ogOoa4IKYrCNXYFbp2bnZrZM6GpZS8yDJ1gYHVadpbB6YYXerW76qOikdQj79XgX1hERSZdTNB6Y4XmUQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=XBaCmaZH; arc=none smtp.client-ip=217.140.110.172
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="fb4KH2eg"
+	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="XBaCmaZH"
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 125F92E8E;
-	Wed, 17 Jun 2026 02:59:55 -0700 (PDT)
-Received: from donnerap.manchester.arm.com (donnerap.manchester.arm.com [10.33.8.81])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 63E6A3F915;
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id B7C1B2E8E;
 	Wed, 17 Jun 2026 02:59:57 -0700 (PDT)
+Received: from donnerap.manchester.arm.com (donnerap.manchester.arm.com [10.33.8.81])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 1511E3F915;
+	Wed, 17 Jun 2026 02:59:59 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1781690399; bh=uQ2IxnI5PBbEK+vSVRZY0b0+hKZufqL3dFY/NKgEynE=;
+	t=1781690402; bh=ysAvUv+uQKD7SvxfHb5LUEwIT9/VWVtRXW6Ysv0mpjY=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=fb4KH2egIRDRjwAOvCEK9JUixNmbOr4tnpIYvgtFlsXP0LvcktPpwHXUNErbHHcpr
-	 MJDY3O2zl8+vRW01sdRkB0sT9m7TlKVq10SmkeKi+FmBxCDG9zA8bZfHVN+ZO0/eko
-	 qU5wbefLXSocyDoXhnqPoG0PuG1jh2k0KNiSd7Uo=
+	b=XBaCmaZHYV/1Vq+XaHmiTF7v+sLjlJed8tDn3PmgDLPVjLmboaRsxR3PdwzgOgoxJ
+	 18r1ZNOu5Yh1oALXt7Kwxd2kpwFzKm9F+2VH0iOkNYkDUMJlP704J2jwHaZV/XROXk
+	 I3H6rYvqa6I8YXINDWyKIvx9ydyrqp0x1gxmAOS4=
 From: Philip Radford <philip.radford@arm.com>
 To: linux-kernel@vger.kernel.org,
 	linux-arm-kernel@lists.infradead.org,
@@ -43,9 +43,9 @@ Cc: sudeep.holla@arm.com,
 	d-gole@ti.com,
 	souvik.chakravarty@arm.com,
 	Philip Radford <philip.radford@arm.com>
-Subject: [PATCH v7 12/13] powercap: arm_scmi: Add get_power_uw to synthetic node
-Date: Wed, 17 Jun 2026 10:59:09 +0100
-Message-ID: <20260617095910.1963578-13-philip.radford@arm.com>
+Subject: [PATCH v7 13/13] powercap: arm_scmi: Synthetic zone enable/disable
+Date: Wed, 17 Jun 2026 10:59:10 +0100
+Message-ID: <20260617095910.1963578-14-philip.radford@arm.com>
 X-Mailer: git-send-email 2.47.3
 In-Reply-To: <20260617095910.1963578-1-philip.radford@arm.com>
 References: <20260617095910.1963578-1-philip.radford@arm.com>
@@ -57,76 +57,66 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Exposes the current power usage from the immediate children of the
-synthetic (root) powercap node. Iterates over pr->spzones and sums per-zone
-power.
+The synthetic instance root contols the same set of top-level SCMI domains
+already handled by the control-type enable/disable helpers previously
+introduced.
+
+Add synthetic zone enabled attribute to the existing per-instance helpers
+instead of duplicating the enable-state tracking and rollback logic.
 
 Signed-off-by: Philip Radford <philip.radford@arm.com>
 ---
 V6->V7
-- Fixed commit message length
+- Re-factored due to new control-type enable disable patch at the beginning
+  of the series
+- Prevent instance_root_get_enable() reporting a stale state
 V5->V6
-- Moved multiple u64 values to the same line
-- Reworked logic to walk SCMI zones and filter by parent
-- Added to_scmi_powercap_root macro
+- Added use of to_scmi_powercap_root macro
+- Changed instance_root_set_)enable_state to bail out on any error
+- Changed logic in instance_root_get_enable to not check child states
 ---
- drivers/powercap/arm_scmi_powercap.c | 35 ++++++++++++++++++++++++++--
- 1 file changed, 33 insertions(+), 2 deletions(-)
+ drivers/powercap/arm_scmi_powercap.c | 24 ++++++++++++++++++++++++
+ 1 file changed, 24 insertions(+)
 
 diff --git a/drivers/powercap/arm_scmi_powercap.c b/drivers/powercap/arm_scmi_powercap.c
-index d45e4af0cdc7..e1bad4b19990 100644
+index e1bad4b19990..23708f9934d4 100644
 --- a/drivers/powercap/arm_scmi_powercap.c
 +++ b/drivers/powercap/arm_scmi_powercap.c
-@@ -17,6 +17,9 @@
- #define to_scmi_powercap_zone(z)		\
- 	container_of(z, struct scmi_powercap_zone, zone)
- 
-+#define to_scmi_powercap_root(z)		\
-+	container_of(z, struct scmi_powercap_root, instance_root.zone)
-+
- static const struct scmi_powercap_proto_ops *powercap_ops;
- 
- struct scmi_powercap_zone {
-@@ -411,9 +414,37 @@ static int instance_root_release(struct powercap_zone *pz)
- 	return 0;
+@@ -458,10 +458,34 @@ static int instance_root_get_constraint(struct powercap_zone *pz, int cid, u64 *
+ 	return -EOPNOTSUPP;
  }
  
--static int instance_root_get_power_uw(struct powercap_zone *pz, u64 *v)
-+static int instance_root_get_power_uw(struct powercap_zone *pz, u64 *power_uw)
- {
--	*v = 0;
++static int instance_root_set_enable(struct powercap_zone *pz, bool mode)
++{
 +	struct scmi_powercap_root *pr = to_scmi_powercap_root(pz);
-+	struct scmi_powercap_zone *child;
 +
-+	u64 p, acc = 0;
-+	int i, ret;
++	return scmi_powercap_set_root_children_enable_state(pr, mode);
++}
 +
-+	if (!pz || !power_uw)
++static int instance_root_get_enable(struct powercap_zone *pz, bool *mode)
++{
++	struct scmi_powercap_root *pr = to_scmi_powercap_root(pz);
++	int ret;
++
++	if (!mode)
 +		return -EINVAL;
 +
-+	if (!pr)
-+		return -ENODEV;
++	ret = scmi_powercap_read_root_children_enable_state(pr, mode);
++	if (!ret)
++		pr->enabled = *mode;
 +
-+	for (i = 0; i < pr->num_zones; i++) {
-+		child = &pr->spzones[i];
++	return ret;
++}
 +
-+		if (!child->registered || child->invalid)
-+			continue;
-+
-+		if (child->info->parent_id != SCMI_POWERCAP_ROOT_ZONE_ID)
-+			continue;
-+
-+		ret = scmi_powercap_get_power_uw(&child->zone, &p);
-+		if (!ret)
-+			acc += p;
-+		else
-+			dev_dbg(child->dev, "Failed to read child power: %u\n", ret);
-+	}
-+
-+	*power_uw = acc;
- 	return 0;
- }
+ static const struct powercap_zone_ops instance_root_ops = {
+ 	.get_max_power_range_uw = scmi_powercap_get_max_power_range_uw,
+ 	.get_power_uw = instance_root_get_power_uw,
+ 	.release = instance_root_release,
++	.set_enable = instance_root_set_enable,
++	.get_enable = instance_root_get_enable,
+ };
  
+ static const struct powercap_zone_constraint_ops instance_root_const_ops = {
 -- 
 2.47.3
 
