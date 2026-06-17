@@ -1,31 +1,31 @@
 Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id 596E53BF69E;
-	Wed, 17 Jun 2026 09:59:30 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id 962A33D3CEC;
+	Wed, 17 Jun 2026 09:59:32 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1781690373; cv=none; b=Ly9q/ROZF/eSkS+dYs1h5ZaXt/1lVv3hs53uQu8eTCq2n1ALwpiB/simdfCtycIqe8SGZfuCqRVZ9qIuu7NGMZV8qFjW31qZSfwGrSoF+msvmrF2TPnyCN5A1erpmhZAVozEGicOh7k4pS05+SC4fc/F6qJuyDQej8RcRXPNjJU=
+	t=1781690375; cv=none; b=f/4w4mVkX8KXX69FU6AdRmx9JJJ4hJ+6pZufNcailDfbwbtDLRwWnwTO/OTONdSDyoCaONGDdoYtUWPSVt+9ZEQib5hItetqe0OTO0PrPVMlHC043VOlfuraSxbYUwsMdyAW9B03YvMxObRYoWnec1wCuX/tqy9QnlpOtohQDjI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1781690373; c=relaxed/simple;
-	bh=v4PQvJxXL6yAb8eVisl3HMvO3Ev5F2132vGHAZ1Y3G8=;
+	s=arc-20240116; t=1781690375; c=relaxed/simple;
+	bh=kb+faEBQwpa+6x5yiLQOyunnwPeV1UaGWYCXwUJdJ0k=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=VEdSLRD3HkxRVJ1vhKPQiKrQFhy0+QuVDlurMycSlIHlTpsJW6I7104EHalgQhgHYWKTWnKNVtGApUBc1p7/X0U2eSaTpTKapPwXyXns2jBIyaQHC3l67+Lz6QMKhCQ59qXQ4IlLMzrHxowCSzveCTvk9jKlvRGY+Xa25AScl/k=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=ocKnKrUN; arc=none smtp.client-ip=217.140.110.172
+	 MIME-Version; b=VkBHqrUgD8EOMHV/akJ9c2yBu/EW89nxst6NVthK66EVjNKW3tdKiQTAk7nk8q9Ge/K5PvqLM5j9/NMitsMC8camEuvivnNfKwQWrcAIbUB1d/zdE6i4OSH/tgmRpidk8ihn8qPoyMMDxxc6ohtL99oP/+kodK+R5aZNoGrWLIg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=Kc7lGPtR; arc=none smtp.client-ip=217.140.110.172
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="ocKnKrUN"
+	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="Kc7lGPtR"
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 7AB124800;
-	Wed, 17 Jun 2026 02:59:24 -0700 (PDT)
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 51F392E8E;
+	Wed, 17 Jun 2026 02:59:27 -0700 (PDT)
 Received: from donnerap.manchester.arm.com (donnerap.manchester.arm.com [10.33.8.81])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id CC1E13F915;
-	Wed, 17 Jun 2026 02:59:26 -0700 (PDT)
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 7D5DE3F915;
+	Wed, 17 Jun 2026 02:59:29 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1781690369; bh=v4PQvJxXL6yAb8eVisl3HMvO3Ev5F2132vGHAZ1Y3G8=;
+	t=1781690372; bh=kb+faEBQwpa+6x5yiLQOyunnwPeV1UaGWYCXwUJdJ0k=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=ocKnKrUNbDSGDgA+dgTEXWVBhPgJ7ntsBDPjrnt8OqAIa8r32N4spvPd7My6PyJvx
-	 TUxBfqGpcPYMnbZlDMMzfcrE7k6FOTS8URajgVXp6ldMHyNNAvzzeqHVTrDFGOVYvG
-	 rVE5k76a00UbE9b6wqoWjPYkuEkvXnNHaUL0XZxY=
+	b=Kc7lGPtRhEDKZSRTGxhg2k9a6y7tUwgejqrCwwnF8y1Rkk7Uow2Ns+INiI4du/GlE
+	 vU6p0y14ErcD8Yv8UQ5wvv69FObdNNK5pNktU0b7Ul9TxEo/4pq7iZcL+fZai2l0XM
+	 F37HvGbD8CkesJ98yfTG06IjJYJyg2NdQSe42I8k=
 From: Philip Radford <philip.radford@arm.com>
 To: linux-kernel@vger.kernel.org,
 	linux-arm-kernel@lists.infradead.org,
@@ -42,10 +42,11 @@ Cc: sudeep.holla@arm.com,
 	dan.carpenter@linaro.org,
 	d-gole@ti.com,
 	souvik.chakravarty@arm.com,
+	Cristian Marussi <cristian.marussi@arm.com>,
 	Philip Radford <philip.radford@arm.com>
-Subject: [PATCH v7 01/13] powercap: Add enable disable control-type
-Date: Wed, 17 Jun 2026 10:58:58 +0100
-Message-ID: <20260617095910.1963578-2-philip.radford@arm.com>
+Subject: [PATCH v7 02/13] firmware: arm_scmi: Add an optional custom parameter to fastchannel helpers
+Date: Wed, 17 Jun 2026 10:58:59 +0100
+Message-ID: <20260617095910.1963578-3-philip.radford@arm.com>
 X-Mailer: git-send-email 2.47.3
 In-Reply-To: <20260617095910.1963578-1-philip.radford@arm.com>
 References: <20260617095910.1963578-1-philip.radford@arm.com>
@@ -57,208 +58,150 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Add functionality to disable or enable the Powercap control-type by writing
-directly into sys/class/powercap/arm-scmi/enabled.
+From: Cristian Marussi <cristian.marussi@arm.com>
 
+Starting from SCMIv4.0 the protocols DESCRIBE_FASTCHANNEL commands allow
+to specify one additional per-protocol custom field in the outgoing message
+request in order to, optionally, further narrow down the scope of the
+fastchannel discovery request; the related message-reply format is instead
+unchanged.
+
+Add an optional custom protocol parameter to the common fastchannel helper
+so as to enable the caller to choose the kind of message to send based on
+the detected protocol version.
+
+Signed-off-by: Cristian Marussi <cristian.marussi@arm.com>
 Signed-off-by: Philip Radford <philip.radford@arm.com>
 ---
- drivers/powercap/arm_scmi_powercap.c | 155 ++++++++++++++++++++++++++-
- 1 file changed, 154 insertions(+), 1 deletion(-)
+ drivers/firmware/arm_scmi/driver.c    | 12 ++++++++++--
+ drivers/firmware/arm_scmi/perf.c      |  8 ++++----
+ drivers/firmware/arm_scmi/powercap.c  |  8 ++++----
+ drivers/firmware/arm_scmi/protocols.h |  2 +-
+ 4 files changed, 19 insertions(+), 11 deletions(-)
 
-diff --git a/drivers/powercap/arm_scmi_powercap.c b/drivers/powercap/arm_scmi_powercap.c
-index ab66e9a3b1e2..e33829d5c551 100644
---- a/drivers/powercap/arm_scmi_powercap.c
-+++ b/drivers/powercap/arm_scmi_powercap.c
-@@ -33,13 +33,151 @@ struct scmi_powercap_zone {
- 
- struct scmi_powercap_root {
- 	unsigned int num_zones;
-+	bool enabled;
-+	struct list_head node;
- 	struct scmi_powercap_zone *spzones;
- 	struct list_head *registered_zones;
- 	struct list_head scmi_zones;
+diff --git a/drivers/firmware/arm_scmi/driver.c b/drivers/firmware/arm_scmi/driver.c
+index f247e19cff87..53ae4cfa10b1 100644
+--- a/drivers/firmware/arm_scmi/driver.c
++++ b/drivers/firmware/arm_scmi/driver.c
+@@ -1872,6 +1872,11 @@ static int scmi_iterator_run(void *iter)
+ struct scmi_msg_get_fc_info {
+ 	__le32 domain;
+ 	__le32 message_id;
++	__le32 custom;
++#define MSG_FC_INFO_SZ_EXTENDED	\
++	(sizeof(struct scmi_msg_get_fc_info))
++#define MSG_FC_INFO_SZ		\
++	(sizeof(struct scmi_msg_get_fc_info) - sizeof(__le32))
  };
  
-+static LIST_HEAD(scmi_powercap_roots);
-+static DEFINE_MUTEX(scmi_powercap_roots_lock);
-+
- static struct powercap_control_type *scmi_top_pcntrl;
- 
-+static bool scmi_powercap_is_control_type_child(const struct scmi_powercap_zone *spz)
-+{
-+	return spz->registered && !spz->invalid &&
-+	       spz->info->parent_id == SCMI_POWERCAP_ROOT_ZONE_ID;
-+}
-+
-+static int
-+scmi_powercap_read_root_children_enable_state(struct scmi_powercap_root *pr, bool *mode)
-+{
-+	struct scmi_powercap_zone *spz;
-+	bool enabled;
-+	int i, ret;
-+
-+	*mode = true;
-+
-+	for (i = 0; i < pr->num_zones; i++) {
-+		spz = &pr->spzones[i];
-+
-+		if (!scmi_powercap_is_control_type_child(spz))
-+			continue;
-+
-+		ret = powercap_ops->cap_enable_get(spz->ph, spz->info->id, &enabled);
-+		if (ret)
-+			return ret;
-+
-+		if (!enabled) {
-+			*mode = false;
-+			return 0;
-+		}
-+	}
-+
-+	return 0;
-+}
-+
-+static int
-+scmi_powercap_set_root_children_enable_state(struct scmi_powercap_root *pr, bool enable)
-+{
-+	struct scmi_powercap_zone *spz;
-+	bool *prev_state;
-+	int i, ret;
-+
-+	prev_state = kcalloc(pr->num_zones, sizeof(*prev_state), GFP_KERNEL);
-+	if (!prev_state)
-+		return -ENOMEM;
-+
-+	for (i = 0; i < pr->num_zones; i++) {
-+		spz = &pr->spzones[i];
-+
-+		if (!scmi_powercap_is_control_type_child(spz))
-+			continue;
-+
-+		ret = powercap_ops->cap_enable_get(spz->ph, spz->info->id,
-+						   &prev_state[i]);
-+
-+		if (ret)
-+			goto revert;
-+
-+		if (prev_state[i] == enable)
-+			continue;
-+
-+		ret = powercap_ops->cap_enable_set(spz->ph, spz->info->id, enable);
-+		if (ret)
-+			goto revert;
-+	}
-+
-+	pr->enabled = enable;
-+	kfree(prev_state);
-+	return 0;
-+
-+revert:
-+	while (--i >= 0) {
-+		spz = &pr->spzones[i];
-+
-+		if (!scmi_powercap_is_control_type_child(spz))
-+			continue;
-+		if (!spz->info->powercap_cap_config)
-+			continue;
-+		if (prev_state[i] == enable)
-+			continue;
-+
-+		powercap_ops->cap_enable_set(spz->ph, spz->info->id, prev_state[i]);
-+	}
-+
-+	kfree(prev_state);
-+	return ret;
-+}
-+
-+static int
-+scmi_powercap_control_type_set_enable(struct powercap_control_type *pct, bool mode)
-+{
-+	struct scmi_powercap_root *pr;
-+	int ret = 0;
-+
-+	mutex_lock(&scmi_powercap_roots_lock);
-+	list_for_each_entry(pr, &scmi_powercap_roots, node) {
-+		ret = scmi_powercap_set_root_children_enable_state(pr, mode);
-+		if (ret)
-+			break;
-+	}
-+	mutex_unlock(&scmi_powercap_roots_lock);
-+
-+	return ret;
-+}
-+
-+static int
-+scmi_powercap_control_type_get_enable(struct powercap_control_type *pct, bool *mode)
-+{
-+	struct scmi_powercap_root *pr;
-+	int ret = 0;
-+
-+	*mode = true;
-+
-+	mutex_lock(&scmi_powercap_roots_lock);
-+	list_for_each_entry(pr, &scmi_powercap_roots, node) {
-+		ret = scmi_powercap_read_root_children_enable_state(pr, &pr->enabled);
-+
-+		if (ret)
-+			break;
-+		if (!pr->enabled) {
-+			*mode = false;
-+			break;
-+		}
-+	}
-+	mutex_unlock(&scmi_powercap_roots_lock);
-+
-+	return ret;
-+}
-+
-+static const struct powercap_control_type_ops scmi_powercap_control_type_ops = {
-+	.set_enable = scmi_powercap_control_type_set_enable,
-+	.get_enable = scmi_powercap_control_type_get_enable,
-+};
-+
- static int scmi_powercap_zone_release(struct powercap_zone *pz)
- {
- 	return 0;
-@@ -495,6 +633,16 @@ static int scmi_powercap_probe(struct scmi_device *sdev)
- 	if (ret)
- 		return ret;
- 
-+	INIT_LIST_HEAD(&pr->node);
-+
-+	ret = scmi_powercap_read_root_children_enable_state(pr, &pr->enabled);
-+	if (ret)
-+		return ret;
-+
-+	mutex_lock(&scmi_powercap_roots_lock);
-+	list_add_tail(&pr->node, &scmi_powercap_roots);
-+	mutex_unlock(&scmi_powercap_roots_lock);
-+
- 	dev_set_drvdata(dev, pr);
- 
- 	return ret;
-@@ -505,6 +653,10 @@ static void scmi_powercap_remove(struct scmi_device *sdev)
- 	struct device *dev = &sdev->dev;
- 	struct scmi_powercap_root *pr = dev_get_drvdata(dev);
- 
-+	mutex_lock(&scmi_powercap_roots_lock);
-+	list_del(&pr->node);
-+	mutex_unlock(&scmi_powercap_roots_lock);
-+
- 	scmi_powercap_unregister_all_zones(pr);
- }
- 
-@@ -525,7 +677,8 @@ static int __init scmi_powercap_init(void)
+ struct scmi_msg_resp_desc_fc {
+@@ -1900,7 +1905,7 @@ struct scmi_msg_resp_desc_fc {
+ static void
+ scmi_common_fastchannel_init(const struct scmi_protocol_handle *ph,
+ 			     u8 describe_id, u32 message_id, u32 valid_size,
+-			     u32 domain, void __iomem **p_addr,
++			     u32 domain, u32 *custom, void __iomem **p_addr,
+ 			     struct scmi_fc_db_info **p_db, u32 *rate_limit)
  {
  	int ret;
+@@ -1931,13 +1936,16 @@ scmi_common_fastchannel_init(const struct scmi_protocol_handle *ph,
+ 	}
  
--	scmi_top_pcntrl = powercap_register_control_type(NULL, "arm-scmi", NULL);
-+	scmi_top_pcntrl = powercap_register_control_type(NULL, "arm-scmi",
-+							 &scmi_powercap_control_type_ops);
- 	if (IS_ERR(scmi_top_pcntrl))
- 		return PTR_ERR(scmi_top_pcntrl);
+ 	ret = ph->xops->xfer_get_init(ph, describe_id,
+-				      sizeof(*info), sizeof(*resp), &t);
++				      custom ? MSG_FC_INFO_SZ_EXTENDED :
++				      MSG_FC_INFO_SZ, sizeof(*resp), &t);
+ 	if (ret)
+ 		goto err_out;
  
+ 	info = t->tx.buf;
+ 	info->domain = cpu_to_le32(domain);
+ 	info->message_id = cpu_to_le32(message_id);
++	if (custom)
++		info->custom = cpu_to_le32(*custom);
+ 
+ 	/*
+ 	 * Bail out on error leaving fc_info addresses zeroed; this includes
+diff --git a/drivers/firmware/arm_scmi/perf.c b/drivers/firmware/arm_scmi/perf.c
+index 4583d02bee1c..7f283f457e02 100644
+--- a/drivers/firmware/arm_scmi/perf.c
++++ b/drivers/firmware/arm_scmi/perf.c
+@@ -835,25 +835,25 @@ static void scmi_perf_domain_init_fc(const struct scmi_protocol_handle *ph,
+ 		return;
+ 
+ 	ph->hops->fastchannel_init(ph, PERF_DESCRIBE_FASTCHANNEL,
+-				   PERF_LEVEL_GET, 4, dom->id,
++				   PERF_LEVEL_GET, 4, dom->id, NULL,
+ 				   &fc[PERF_FC_LEVEL].get_addr, NULL,
+ 				   &fc[PERF_FC_LEVEL].rate_limit);
+ 
+ 	ph->hops->fastchannel_init(ph, PERF_DESCRIBE_FASTCHANNEL,
+-				   PERF_LIMITS_GET, 8, dom->id,
++				   PERF_LIMITS_GET, 8, dom->id, NULL,
+ 				   &fc[PERF_FC_LIMIT].get_addr, NULL,
+ 				   &fc[PERF_FC_LIMIT].rate_limit);
+ 
+ 	if (dom->info.set_perf)
+ 		ph->hops->fastchannel_init(ph, PERF_DESCRIBE_FASTCHANNEL,
+-					   PERF_LEVEL_SET, 4, dom->id,
++					   PERF_LEVEL_SET, 4, dom->id, NULL,
+ 					   &fc[PERF_FC_LEVEL].set_addr,
+ 					   &fc[PERF_FC_LEVEL].set_db,
+ 					   &fc[PERF_FC_LEVEL].rate_limit);
+ 
+ 	if (dom->set_limits)
+ 		ph->hops->fastchannel_init(ph, PERF_DESCRIBE_FASTCHANNEL,
+-					   PERF_LIMITS_SET, 8, dom->id,
++					   PERF_LIMITS_SET, 8, dom->id, NULL,
+ 					   &fc[PERF_FC_LIMIT].set_addr,
+ 					   &fc[PERF_FC_LIMIT].set_db,
+ 					   &fc[PERF_FC_LIMIT].rate_limit);
+diff --git a/drivers/firmware/arm_scmi/powercap.c b/drivers/firmware/arm_scmi/powercap.c
+index ab9733f4458b..22aff71c75e9 100644
+--- a/drivers/firmware/arm_scmi/powercap.c
++++ b/drivers/firmware/arm_scmi/powercap.c
+@@ -716,24 +716,24 @@ static void scmi_powercap_domain_init_fc(const struct scmi_protocol_handle *ph,
+ 		return;
+ 
+ 	ph->hops->fastchannel_init(ph, POWERCAP_DESCRIBE_FASTCHANNEL,
+-				   POWERCAP_CAP_SET, 4, domain,
++				   POWERCAP_CAP_SET, 4, domain, NULL,
+ 				   &fc[POWERCAP_FC_CAP].set_addr,
+ 				   &fc[POWERCAP_FC_CAP].set_db,
+ 				   &fc[POWERCAP_FC_CAP].rate_limit);
+ 
+ 	ph->hops->fastchannel_init(ph, POWERCAP_DESCRIBE_FASTCHANNEL,
+-				   POWERCAP_CAP_GET, 4, domain,
++				   POWERCAP_CAP_GET, 4, domain, NULL,
+ 				   &fc[POWERCAP_FC_CAP].get_addr, NULL,
+ 				   &fc[POWERCAP_FC_CAP].rate_limit);
+ 
+ 	ph->hops->fastchannel_init(ph, POWERCAP_DESCRIBE_FASTCHANNEL,
+-				   POWERCAP_PAI_SET, 4, domain,
++				   POWERCAP_PAI_SET, 4, domain, NULL,
+ 				   &fc[POWERCAP_FC_PAI].set_addr,
+ 				   &fc[POWERCAP_FC_PAI].set_db,
+ 				   &fc[POWERCAP_FC_PAI].rate_limit);
+ 
+ 	ph->hops->fastchannel_init(ph, POWERCAP_DESCRIBE_FASTCHANNEL,
+-				   POWERCAP_PAI_GET, 4, domain,
++				   POWERCAP_PAI_GET, 4, domain, NULL,
+ 				   &fc[POWERCAP_FC_PAI].get_addr, NULL,
+ 				   &fc[POWERCAP_FC_PAI].rate_limit);
+ 
+diff --git a/drivers/firmware/arm_scmi/protocols.h b/drivers/firmware/arm_scmi/protocols.h
+index f51245aca259..e618d3141c95 100644
+--- a/drivers/firmware/arm_scmi/protocols.h
++++ b/drivers/firmware/arm_scmi/protocols.h
+@@ -280,7 +280,7 @@ struct scmi_proto_helpers_ops {
+ 				  u32 message_id, u32 *attributes);
+ 	void (*fastchannel_init)(const struct scmi_protocol_handle *ph,
+ 				 u8 describe_id, u32 message_id,
+-				 u32 valid_size, u32 domain,
++				 u32 valid_size, u32 domain, u32 *custom,
+ 				 void __iomem **p_addr,
+ 				 struct scmi_fc_db_info **p_db,
+ 				 u32 *rate_limit);
 -- 
 2.47.3
 
