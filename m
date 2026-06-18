@@ -1,229 +1,276 @@
-Received: from AM0PR83CU005.outbound.protection.outlook.com (mail-westeuropeazon11010018.outbound.protection.outlook.com [52.101.69.18])
+Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3F43D2F7EEE;
-	Thu, 18 Jun 2026 18:37:38 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.69.18
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1781807859; cv=fail; b=ieeFiMqOlP9BgBswIZcdq+846g/u9UZrQjp6npCQzuySdfVr/X5+Vg5y0tdYMWetJAgmyVPtmZ/E/hn9PcdZieFgU4+bzQIMVQrnPtvMV0Gx4on+uC8DYuVDypAKQHtNgKu4FbSTcEuetgRLh3FyznMFommwCXOcyJ+VuBnEwHU=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1781807859; c=relaxed/simple;
-	bh=TbYaJEqpFQ3p5PJhPM2I7qZ0sZ3cYG8rJleRFtaBz+Y=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:Content-Type:
-	 Content-Disposition:In-Reply-To:MIME-Version; b=pWdPhJggdKytOKg6KTUqkwcmbjYYbm/vRYgUqlKjWpXbNp74sJc0VIhtVljLVMiAbM4rxIKTqpBMVwZlQG0WNRLYzgmqJGOUPiB86OPhGYJrgO7PPT6YhtOQcrimkBy0RDSJBmp+l6fu+1JLX71tl8+2ABDwb9J6iS0Hjru6y2U=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=oss.nxp.com; spf=pass smtp.mailfrom=oss.nxp.com; dkim=pass (2048-bit key) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.b=pxP7+Q48; arc=fail smtp.client-ip=52.101.69.18
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=oss.nxp.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.nxp.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 17182328255
+	for <linux-pm@vger.kernel.org>; Thu, 18 Jun 2026 20:31:17 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.180.131
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1781814679; cv=none; b=RWA/2EowzJAKV2MAXdlU5RFswvzt5R6lfSoug2zTnUam1c8kF3oJtT+Dgi88L4lu8CEjc0OHWOlrZm4egpK/GhMqikXwo2Fsrz2ZsvozKzNCzfU0LN8bIyTr5cpoEd5VThB+p6OvidzkabEoSelXF8jwIjHPkmZ4yzbrUfnj6cI=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1781814679; c=relaxed/simple;
+	bh=HLxQCCXxvKkwoegsbUnC3g4wlzqBB87zcGLg24R2AW4=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=uMHfWSRR0JkwmzHglvby1vY6t92Sf0k1TlQAAuOsWXfAL4Dh+nZkLLQtwQ3+N2yBUyt00rgR2EoIWaratCo+euFyISeop4hs5QIExtdrVqH3xKdsYJSpbbLswDGC1sh4j4677qZ5MMPvOP3Ur4auk7KPR7hw+YibjdGprFhKYNs=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=A9i66YWd; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=cKDgJ9Kr; arc=none smtp.client-ip=205.220.180.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.b="pxP7+Q48"
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=gtD7+9pB0hkkidth4S4G6rrsf3ZUZWrBpQDdoG1Co+xrnC8F/5jq31cROnxtMQ1j2GHg41cqhDnwD93Qgd3EdEugJZIwjnOmZ2JxXuzg25Qea3nNEzKoWXYAx/ZUhq0wX1i/RcNoGwI6ba5+sSBuhr8f3xbNU68T1g6W6V0Y2EduTxN9iAMcuA91hzvJmVO3vp0BvJslEfaS/PA6iUkLQYn9cRA4JCXxPyXTs85aqRKnhF24ekG9TM/eM90vqussRHobjIUuj2p8FrnJx6fLyZyDPK8D7wNQkvnY7Ajnr2wO7yT9HnlB4DysjUDvQaVBNkr1lmN+kkVgx6oJ/JoPUw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=24topQqO61YewG0no4HHCOE6b77HkVyOBmWuEoQtLo0=;
- b=C8mQBY00zhw6uR12oU3IOJD46OUTHqgzXpJ404argfuVQ70KjNnDgsY3YMvuTZoU3DCWESx7MHcYPLLcqpCGNgXiC3Q2rPdN7My+FSqhkNIXUbxGUAD3Xin/wk/kbsKWm8tNiO7/4l2w5wP0L3SXuLqFVZWOJ/hjxUUntiWJk7le1P/pt9/Tu77CHInOUykV/WIRS9N+fbqz89kunXetDvFF9Enhs2Vswi1xZpyNkpAFmDco5SZiybzSacASMNAy9sNmDu9D4tWkP9dT3Jxu4J9/vHJL96S+E3OnBxwQBeiP+8W59RVpa2+OvmHc8He87OvfthqXQ7HoDiljdUEfdA==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=oss.nxp.com; dmarc=pass action=none header.from=oss.nxp.com;
- dkim=pass header.d=oss.nxp.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=NXP1.onmicrosoft.com;
- s=selector1-NXP1-onmicrosoft-com;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=24topQqO61YewG0no4HHCOE6b77HkVyOBmWuEoQtLo0=;
- b=pxP7+Q483iz1q4Cw3LJUg1qmr14vPg8spNd/3CRiOTQgkXxyXfNInd6XD5S9yBR+sa5Zg3dgo58fY3q6CZfQXgj5+nVryr1J4hElM9hIVdnSfRcgZT2VNSoqg7qvpc5JTPTXeHr6+hgZB+4C4DoVZf5Jul4RbJ8rNuLNutp/SHuD3S8bec+5xzfr/hz/I9u3zmjSgCQqo85bH8j7ICuxKNKYvEg4K3HCuxHHAaPZyBfduS1V/1YRN7wrJPk4CaWSf0nvvqBv1zXNqZnX2vN9DOY1B5OTt5qYYuB4EV4SVdQVgRoXCLDmCf/5XKJEo5VJ9eBKC1KHhLhZh8+cbBO3Eg==
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=oss.nxp.com;
-Received: from GV2PR04MB11799.eurprd04.prod.outlook.com (2603:10a6:150:2cf::9)
- by VE1PR04MB7230.eurprd04.prod.outlook.com (2603:10a6:800:1ab::20) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.139.11; Thu, 18 Jun
- 2026 18:37:34 +0000
-Received: from GV2PR04MB11799.eurprd04.prod.outlook.com
- ([fe80::2146:83a2:5329:b7c]) by GV2PR04MB11799.eurprd04.prod.outlook.com
- ([fe80::2146:83a2:5329:b7c%6]) with mapi id 15.21.0113.015; Thu, 18 Jun 2026
- 18:37:34 +0000
-Date: Thu, 18 Jun 2026 13:37:21 -0500
-From: Frank Li <Frank.li@oss.nxp.com>
-To: "Sherry Sun (OSS)" <sherry.sun@oss.nxp.com>
-Cc: robh@kernel.org, krzk+dt@kernel.org, conor+dt@kernel.org,
-	Frank.Li@nxp.com, s.hauer@pengutronix.de, kernel@pengutronix.de,
-	festevam@gmail.com, amitkumar.karwar@nxp.com,
-	neeraj.sanjaykale@nxp.com, marcel@holtmann.org,
-	luiz.dentz@gmail.com, hongxing.zhu@nxp.com, l.stach@pengutronix.de,
-	lpieralisi@kernel.org, kwilczynski@kernel.org, mani@kernel.org,
-	bhelgaas@google.com, brgl@kernel.org, imx@lists.linux.dev,
-	linux-pci@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linux-bluetooth@vger.kernel.org, linux-pm@vger.kernel.org,
-	sherry.sun@nxp.com
-Subject: Re: [PATCH 1/8] PCI: imx6: Add skip_pwrctrl_off flag support
-Message-ID: <ajQ64ZswbmTceIGO@SMW015318>
-References: <20260618101047.4185497-1-sherry.sun@oss.nxp.com>
- <20260618101047.4185497-2-sherry.sun@oss.nxp.com>
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260618101047.4185497-2-sherry.sun@oss.nxp.com>
-X-ClientProxiedBy: SN7PR04CA0113.namprd04.prod.outlook.com
- (2603:10b6:806:122::28) To GV2PR04MB11799.eurprd04.prod.outlook.com
- (2603:10a6:150:2cf::9)
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="A9i66YWd";
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="cKDgJ9Kr"
+Received: from pps.filterd (m0279869.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 65IKTDlP2876155
+	for <linux-pm@vger.kernel.org>; Thu, 18 Jun 2026 20:31:17 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
+	mMV94ArRUWNb5oU3/kS47SDy5ZbaBXLZRnnNKRvZXFA=; b=A9i66YWdpU6YBRKd
+	Y/MBdL3leGrrJahi74KTM4KDUukQ+j5qURMvDHv/h26fAMH3YQ7DGji15TAnMGwL
+	USEPfEP8AD8iQcYvd1iG1lfmSmz7UW+zAngX+q6y2E0CUnCSI7j/tqtfhJrqkhqe
+	Bb7YKc+I5KSThSi349qRKDQodq8XXrVZwF8jlfC8noswCAbuAmfFSXFNt6pILgF2
+	eX7GqmBqg+WDX9b4uCvVGCkgfKaMMi1FrJfZJo0n6j3P5s0uMfYxkHKqzunR9kjq
+	QH8VKdbeCj2Uku3j8+w1XmjnU3du0rg0dmLmftvJ50lp7ioEz2fD83urICNDRRJs
+	2WsO5Q==
+Received: from mail-vs1-f71.google.com (mail-vs1-f71.google.com [209.85.217.71])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4evm2296ua-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <linux-pm@vger.kernel.org>; Thu, 18 Jun 2026 20:31:16 +0000 (GMT)
+Received: by mail-vs1-f71.google.com with SMTP id ada2fe7eead31-6cf37fe12faso606024137.0
+        for <linux-pm@vger.kernel.org>; Thu, 18 Jun 2026 13:31:16 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=oss.qualcomm.com; s=google; t=1781814676; x=1782419476; darn=vger.kernel.org;
+        h=content-transfer-encoding:in-reply-to:content-language:from
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=mMV94ArRUWNb5oU3/kS47SDy5ZbaBXLZRnnNKRvZXFA=;
+        b=cKDgJ9KrjXfgYkuAz0ahLGqygx6y96tTuM5gD3C6jnlyEPsEzOJG6rZPFM8HnOjgUr
+         mUUny6jmwB4C/3MTNm+teD5GdMiZP4WuTn4qqsJ5IwzrdGdmc1LMEd6BrdJug9uYUOH5
+         UjwoYLe660iDTEj3y+WbBF7B1rOWE/xxbvbgUh+iJNROoAE4T1ZJDGBbAOWbP0g0TKgS
+         TqF2WQuS+7G1kv8+QSLOrPaiarGne3IBo0DlY8/mkZYSMvM0Eu9mMTxPIJznjIbl4ekn
+         g6vBVFmRWSKHwZr6T7cU8YN0opsqUwy6g/ine6B3F6pss1S7DEZRDUXbkiD0E2sLaYvZ
+         V4tQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1781814676; x=1782419476;
+        h=content-transfer-encoding:in-reply-to:content-language:from
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=mMV94ArRUWNb5oU3/kS47SDy5ZbaBXLZRnnNKRvZXFA=;
+        b=L3vr8Q+cpR0O5Us+AjexOf2FFWtW7PkiGbhw9z8xzzdYNZfOReU4r7SEIk8p3YfBhB
+         +t89JVsiG2lubBqDqqYascugUxoBO2w7wIAjz4fxpcrRq1g6YZvjOTwJ6TUvRMfVsw5G
+         NoxQ51itUvavKKRjS1nhh7SgDuMif+kKc2KtC7/sMppP+yldKNl9a8L8bUU+GjI9x1Zp
+         TMnlsqgh4WrvKM4xS17w/BFLucH+ySL/ceavlSp9iLxWGcHQoiwIHe5DUZtwhM0Gc19u
+         62hORUmpbeU/19ubcNGPY3KbZ4FmLaSgDFIS4l9FsVXoXzLZNAeUQ3Hk56TlH8wSPQQG
+         EpJQ==
+X-Forwarded-Encrypted: i=1; AFNElJ8vM80clkc7mCu+DpxZFoty3QuwCMyq3YvPtDFhSEbqIpSiT3DCZEO2dsor79tY4VLyHVCjn12Xig==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yy7kXQTLoOV3BYis3LlPo2b1ODGZZYsRS8SKU/nufHcBSdXJ1Gn
+	prs2Xgcg2ifmhFaWn1PNGm2Sa7AZG31bDJEJwASb9cfeXvv8//WgT5HoD2px4YYbjS2d4gcekKl
+	aXrZ0ryWGoH2kil990NR2qCq46RKhtHOYdrWdAW56R2Gah+ULnbVXniTyShN9yg==
+X-Gm-Gg: AfdE7cmQ4b3zUaQWrvt64OwdohAUAe6vqubZls9lwy6a5bWoGTglY5HOSwoBWzuzcUE
+	qu/d3jWIc6OMs3FF5zr8phu2D7X/WmiQwL+QmSeYSORjYKX7FqtoGeeKExCCCgX59+ezzaYW8yA
+	tK0NdMruy9oz6X8ub1Xic3lgntUQkCECTxhdj37e5mJ56lR4LhnRVJMO1/KZWbahoCUgIs8+si3
+	dUlvN8GpM5ip4ElazHjuoXXYPXWQ5P7DlCIjGvtVKUHAch3FEOiHC3q3RhOsNdbbcO/pxopbkuM
+	acr+ru1a5q7kxuAUjCSPY1uYA4cUCmIL8sJQSu3e22Z7wmnhYtdfPoZmXEFFSqyC+APmOcz4jQ+
+	SGLnOYscr1qiTDaRZPoradviXkVJxB6UQyQnYfTvPazmJV1dscPoAEx3C6bjd+nhxRHTzWzcuUT
+	ysBufZDUkfOXUXblyqqr05kvONC2y9LQwiWoZxPY2xah6igj6KQ9TTpy4SaXhrQAxpJUreFk0Cm
+	0MO5A==
+X-Received: by 2002:a05:6102:448b:b0:650:aa33:5dd7 with SMTP id ada2fe7eead31-72a01884599mr1095698137.2.1781814676225;
+        Thu, 18 Jun 2026 13:31:16 -0700 (PDT)
+X-Received: by 2002:a05:6102:448b:b0:650:aa33:5dd7 with SMTP id ada2fe7eead31-72a01884599mr1095628137.2.1781814675743;
+        Thu, 18 Jun 2026 13:31:15 -0700 (PDT)
+Received: from ?IPV6:2001:1c00:c32:7800:5bfa:a036:83f0:f9ec? (2001-1c00-0c32-7800-5bfa-a036-83f0-f9ec.cable.dynamic.v6.ziggo.nl. [2001:1c00:c32:7800:5bfa:a036:83f0:f9ec])
+        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-c0a8490b104sm2351966b.14.2026.06.18.13.31.13
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Thu, 18 Jun 2026 13:31:14 -0700 (PDT)
+Message-ID: <8c2a4ae3-95cc-489a-a7a4-90a3ee2597e9@oss.qualcomm.com>
+Date: Thu, 18 Jun 2026 22:31:12 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: GV2PR04MB11799:EE_|VE1PR04MB7230:EE_
-X-MS-Office365-Filtering-Correlation-Id: 36bcf840-08fa-483a-e2cc-08decd68a99d
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|1800799024|23010399003|7416014|376014|19092799006|366016|56012099006|11063799006|4143699003|22082099003|18002099003;
-X-Microsoft-Antispam-Message-Info:
-	cVkp2BHagsNGmL9/GDFMjaiCIlWVtTMZWxuKwVa0Btct8dY1nYikn/IcXSup5ooNjYaz0SfqtH1eHtJhySfsmMLKT450EMA6HuNwS4NpQn2TIljl7foXkS0KcJUe8XiFIuILaLTsNgN4GAzSrxbMtFOZg/jdxAR7/mUlwdGPwjZ9JLn2fl6kxsDCjwsZrXdVmwyH1683Lt03hzVfXbg/VyIMnekN0rqL89u8prsjNdjYEOO9CYOLbSuVc2osuqGS4QfnUnK12zD6jVzMHmvc2awv6x7dMn5UsREpPCzbAwrdnaNhlEAoTgfzKGKrM2tyX66qf93cex2Xc5S/qtZwxnRNAy3GmLI3V4voYgnK5EOD1RhtQ0ROiDmVjP7PzIhQ3OJIBVacbyd1yQiIX7gC/Mvcqu2WZjZwPb4KxHJGEdwEWk0P0krdSRAx7CVMthzloAl66J7C6cct8tCRIKtCVBJ2gcDwfLztkAtLN5pAJsgcWgM7ZQSM+gMgpgSAjYx6dtzVJG7swnJ41kVrRbdDtnL/G1gQeQusoExl2LG53qExXvxzB4v3gr+5bu8LYcbyjmYSP/ZnVwM0GVTE/luDXef/nE9MOu94BcbP0H41252omWhBUTZFI1/QXDOOT4AlMsRhPPw/Vf3+0ZNuLlRV6Q9qIJ6umt7ShkAjhhOciifTjGwmz9sA3NIKJPJSmHNX
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:GV2PR04MB11799.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(1800799024)(23010399003)(7416014)(376014)(19092799006)(366016)(56012099006)(11063799006)(4143699003)(22082099003)(18002099003);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?us-ascii?Q?u1YCxVGwMF4Gf31tGGn0b9FqSwUpsABSWDOoyiN4RcyApQ6D0VtxbJpiqW0k?=
- =?us-ascii?Q?ZB+GfYxviLzJHdNYsHHBIuA5pni/QchMmrAgltdwrD4Z5U/JLMG4QCnEDTxq?=
- =?us-ascii?Q?E0kGcWc1gbmwVGpuXwfrHZBYt6xDHRyaRWutxrhi7p6eI4weL+0KflEiJaeG?=
- =?us-ascii?Q?atqmt0Ees8F7zgYEec4j1pDWSkNs9c9PW5oRNk5zkKX6ORb3ITPEJEWVc2lJ?=
- =?us-ascii?Q?z92chvyPzbJlnyr+ZjbQJMZbGL4yZHsmnzcn2lL3j+TMJn10EkbABz7D20zD?=
- =?us-ascii?Q?wfa7rXqmWb1Z29NL03qzuK4J9IPKwxZAN8tzqkfJuy+z95rOZ1w9xsYwE3sG?=
- =?us-ascii?Q?GbZUV0r8kzeSj27xvL1x0xIg97nrVM7fonn6Qt8XHI45P7Ag2135FHBwh/cA?=
- =?us-ascii?Q?MTI4IdwCYmOuHxK+12+3yvhYy7Rs/UroVNagNDxkJdV81f5gczNWD4q6FQJ3?=
- =?us-ascii?Q?ODFM0/UWjJjJwArVA4oDUL4EaoUvPRwb/292GNil59VaebindH2/T/+NqK1P?=
- =?us-ascii?Q?pXG87Jlu80EVWnhAxMzxANraxfH3gMOkkJgKxgHEHGvUXS/yGk5xqRqduXdl?=
- =?us-ascii?Q?G2wHTnw5jaDJMmqB2liAed5hP3c3UK/ZC+MKTMD+GK8qNjX1HXcj565gfXfm?=
- =?us-ascii?Q?LhsZeDUdywrrzLP4yE8fUjTBY8a0QIVJALQNYlr/pJ1ti2rlNPmDLFTfL8fA?=
- =?us-ascii?Q?/VwJ9h8xtDzqF35Bv8lfpZgz5JaTnE82uzEfAtHNxai0uV3e/0W0NNUTR/M9?=
- =?us-ascii?Q?bzNZAKKis1NDmGgFyBoflk3BnFarO3+eV9QrbZIdYq5eiYDukwptYpIp7oyg?=
- =?us-ascii?Q?cJ/0iY6sfds+CR6NaxYTnMthbb65rj+X5FPh2n3fYxIjoOy0yj0JIkWf9WII?=
- =?us-ascii?Q?O03YCbK0n1xTN6n2LyMCL9BQTmfhYrmaY8hWrJEIW97NM1AlZXbO/R3KH7Is?=
- =?us-ascii?Q?V+BhylqL+42kPwNjI/Z6xEP6H+7G2Ju5zv0sgF1gijCEMYgDDITha1WAX+xQ?=
- =?us-ascii?Q?TRvpfHs8C+k7mkPWGThBAAHvqS9w2CVxqHoK29lfkK5FP9Uurg4VKb3aIgS/?=
- =?us-ascii?Q?bbqjHzX5TEcswfUwexRRnshsqqC9ATWb1iD638mpxC0OA9ay9mJEs8eeNimI?=
- =?us-ascii?Q?wdaACiiWJdS7RNec1fyYCTT/nyB07uLZU4GjDUvtIzZCIP6TH1vJyp6f1/Vc?=
- =?us-ascii?Q?DGi/0Wayzupo/9eQuc+x5Z4qvzVeIU6+CqGoMt/gabX8zYQRVxWO7fm8yhao?=
- =?us-ascii?Q?DAhKSzjbBHO+GPDnVi1ICs1i5sLp7duE/bwVpj3b4dZ0mlPQKC7GKAfIfRyf?=
- =?us-ascii?Q?WWPKbXeyoZ4zazCxpyjwf9/E+vNPi4mbWe1XaDyoMKZRbaciqIJ2iPNpuEdr?=
- =?us-ascii?Q?+Eyy6nbl8QRf91HwyhnWP3rFCr8JVaz9C6m/QDMOneo/umLEoksCDe5NLCwU?=
- =?us-ascii?Q?GHjbFwPMOQC4l1W20m80zcWKQ57hd4nfpdb+oTLejUM8Xi8tPVaJa7liF6Ya?=
- =?us-ascii?Q?VKU5YpK5Gywb/P104MPqipyjJn4W7AwnfnAPSuTm56aUSWUcrSRoqno9Kl+b?=
- =?us-ascii?Q?3oDVlg6+Il7VTYlRtOZCCeLYNEP3MN/DinoHPk+zuxAsbH0fbtBGBPtgxSfR?=
- =?us-ascii?Q?Ndok5g3vtoRy2zEpC7PpJmZS6aFrLevE+rXu5tV8Av9lqaB5tg1yy5me/GCi?=
- =?us-ascii?Q?kOvWSAw7aiTZA0KqYbFpmvSRnjmKs3iEGk19ayKv7aouXlnr9dfPxHQ3bjsA?=
- =?us-ascii?Q?17jffCV6C26RbRsP0JcGitTzr/Yg3T9sn+qFoVtm5aqE04JS8l8x?=
-X-OriginatorOrg: oss.nxp.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 36bcf840-08fa-483a-e2cc-08decd68a99d
-X-MS-Exchange-CrossTenant-AuthSource: GV2PR04MB11799.eurprd04.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 18 Jun 2026 18:37:34.2038
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: 6NAFEKdADreiPf/FT17/edg7jw0brkJTfu+oQD3IB5liHZtXy8KXchL+H2hagFQ2VVtup85z6CE0yZVQ4DSfpYEDNGas44mZgCw22GaZOspk4wetak8jGr/MkVql15di
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: VE1PR04MB7230
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v2 0/2] firmware: arm_scmi: Ensure automatic module
+ loading
+To: Bjorn Andersson <bjorn.andersson@oss.qualcomm.com>,
+        Sudeep Holla <sudeep.holla@kernel.org>,
+        Cristian Marussi <cristian.marussi@arm.com>,
+        Nathan Chancellor <nathan@kernel.org>, Nicolas Schier <nsc@kernel.org>,
+        Michael Turquette <mturquette@baylibre.com>
+Cc: arm-scmi@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+        linux-kernel@vger.kernel.org, linux-kbuild@vger.kernel.org,
+        Stephen Boyd <sboyd@kernel.org>, Brian Masney <bmasney@redhat.com>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Viresh Kumar <viresh.kumar@linaro.org>, Frank Li <Frank.Li@nxp.com>,
+        Sascha Hauer <s.hauer@pengutronix.de>,
+        Pengutronix Kernel Team <kernel@pengutronix.de>,
+        Fabio Estevam <festevam@gmail.com>, Guenter Roeck <linux@roeck-us.net>,
+        Jyoti Bhayana <jbhayana@google.com>,
+        Jonathan Cameron <jic23@kernel.org>,
+        David Lechner <dlechner@baylibre.com>,
+        =?UTF-8?Q?Nuno_S=C3=A1?=
+ <nuno.sa@analog.com>,
+        Andy Shevchenko <andy@kernel.org>,
+        Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+        Ulf Hansson <ulfh@kernel.org>, Liam Girdwood <lgirdwood@gmail.com>,
+        Mark Brown <broonie@kernel.org>,
+        Philipp Zabel <p.zabel@pengutronix.de>,
+        Alexandre Belloni <alexandre.belloni@bootlin.com>,
+        linux-clk@vger.kernel.org, linux-pm@vger.kernel.org,
+        imx@lists.linux.dev, linux-hwmon@vger.kernel.org,
+        linux-iio@vger.kernel.org, linux-input@vger.kernel.org,
+        linux-rtc@vger.kernel.org
+References: <20260618-scmi-modalias-v2-0-8c7547c1be21@oss.qualcomm.com>
+From: Hans de Goede <johannes.goede@oss.qualcomm.com>
+Content-Language: en-US, nl
+In-Reply-To: <20260618-scmi-modalias-v2-0-8c7547c1be21@oss.qualcomm.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-Authority-Analysis: v=2.4 cv=YN+vDxGx c=1 sm=1 tr=0 ts=6a345595 cx=c_pps
+ a=P2rfLEam3zuxRRdjJWA2cw==:117 a=xqWC_Br6kY4A:10 a=IkcTkHD0fZMA:10
+ a=FelO9ux0wxsA:10 a=s4-Qcg_JpJYA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=u7WPNUs3qKkmUXheDGA7:22 a=_glEPmIy2e8OvE2BGh3C:22 a=bC-a23v3AAAA:8
+ a=EUspDBNiAAAA:8 a=VwQbUJbxAAAA:8 a=7CQSdrXTAAAA:8 a=IpJZQVW2AAAA:8
+ a=20KFwNOVAAAA:8 a=KKAkSRfTAAAA:8 a=8AirrxEcAAAA:8 a=pGLkceISAAAA:8
+ a=_jlGtV7tAAAA:8 a=1XWaLZrsAAAA:8 a=gAnH3GRIAAAA:8 a=P-IC7800AAAA:8
+ a=JfrnYn6hAAAA:8 a=5KGQkzpS6Bu23flkvY0A:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
+ a=ODZdjJIeia2B_SHc_B0f:22 a=FO4_E8m0qiDe52t0p3_H:22 a=a-qgeE7W1pNrGK8U0ZQC:22
+ a=IawgGOuG5U0WyFbmm1f5:22 a=cvBusfyB2V15izCimMoJ:22 a=ST-jHhOKWsTCqRlWije3:22
+ a=nlm17XC03S6CtCLSeiRr:22 a=d3PnA9EDa4IxuAV0gXij:22 a=1CNFftbPRP8L7MoqJWF3:22
+X-Proofpoint-GUID: MitvwoU-nUn4QwF6yh3Gej6T2D3EcYnX
+X-Proofpoint-Spam-Info: AW1haW4tMjYwNjE4MDE4NyBTYWx0ZWRfX7SjvtjUbA/PL
+ Nw6GzgcQ2zGraNR2Ujuv2Q+XUtszmygUsR5B0WlIM+vgBVf05M0hk+c/2KE+WHfp5RR4BTxOati
+ IGFaGJAHeN1xw8v2qqMaXzVFiwpKqqY=
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNjE4MDE4NyBTYWx0ZWRfX/65Iw8aVeQIo
+ YfgH7vygSIlVNGikYXKO+x+m3mg21xa92DAjMwe3PpFWTqiFkKV+S2K6u+Ybj6EBMKbB4/GROLS
+ vThpDd4xtQghQQBSPGm093FKxeCJCDVq4riQoMBUUJaSvg4Lu+lJssLvdINUJdeBI3eqXR9K4vM
+ 3+Rwcbz25rlWTUh2YY33f4gmx9H2sknMQwzfRvtQDJS7DucNVK2m/kAUJCuFPR+qy9JykTDC99Q
+ LKux+nptaxXW+hd0aAe4AIiQtyyfC2sGY7DcV89oOB/m2W/SzCBw5hV87zlMuqMCoMhrSmQ7ZCt
+ K0smeuPoxElnpeIJ9WqCoa6RUzOKWn/gNlxUocFj1Fp7Lf8C1gVrG7KGix5wvDukteRVOHCPJKR
+ ol13rsIUc/SyMi6QTiAl0ZUblblRfKW36N/XCyxbQbwHwfsL34jjF2iRzDwsyfvAJY9xRhZ7ZPA
+ hX5QOvjNnHl/0RZ5dLw==
+X-Proofpoint-ORIG-GUID: MitvwoU-nUn4QwF6yh3Gej6T2D3EcYnX
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.125,FMLib:17.12.100.49
+ definitions=2026-06-18_03,2026-06-18_03,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501 bulkscore=0 adultscore=0 clxscore=1015 impostorscore=0
+ phishscore=0 lowpriorityscore=0 malwarescore=0 spamscore=0 suspectscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2606180187
 
-On Thu, Jun 18, 2026 at 06:10:40PM +0800, Sherry Sun (OSS) wrote:
-> From: Sherry Sun <sherry.sun@nxp.com>
->
-> Use dw_pcie::skip_pwrctrl_off to avoid powering off devices during suspend
-> to preserve wakeup capability of the devices and also not to power on the
-> devices in the init path.
-> This allows controller power-off to be skipped when some devices(e.g. M.2
-> cards key E without auxiliary power) required to support PCIe L2 link state
-> and wake-up mechanisms.
->
-> Signed-off-by: Sherry Sun <sherry.sun@nxp.com>
+Hi,
+
+On 18-Jun-26 17:56, Bjorn Andersson wrote:
+> SCMI drivers such as the Arm SCMI CPUfreq driver are allowed to built as
+> modules, but they are then not automatically loaded. Rework the SCMI
+> device table alias support to make modpost consume the information from
+> MODULE_DEVICE_TABLE(scmi, ...) and allow drivers to be loaded based on
+> this information, if known. Also add a protocol-based alias to also
+> trigger driver loading when only the SCMI protocol id is known.
+> 
+> Signed-off-by: Bjorn Andersson <bjorn.andersson@oss.qualcomm.com>
+
+So I just gave this a test spin and unfortunately it does not work.
+
+The problem with Fedora's kernel-config / setup is that the
+request_module() from patch 2/2 runs from the initramfs, but
+the scmi_cpufreq module is only available in the rootfs.
+
+It does work if I explictly add the scmi_cpufreq module to
+the initramfs, then it does get autoloaded.
+
+We really need some place to put a uevent sysfs attr which then
+gets replayed when udev is restarted from the rootfs and then
+re-reads all the uevent files as part of its coldplug
+enumeration.
+
+I wonder if it is ok for a single uevent file to have
+multiple MODALIAS= lines in there.
+
+Regards,
+
+Hans
+
+
+
 > ---
->  drivers/pci/controller/dwc/pci-imx6.c | 36 +++++++++++++++++----------
->  1 file changed, 23 insertions(+), 13 deletions(-)
->
-> diff --git a/drivers/pci/controller/dwc/pci-imx6.c b/drivers/pci/controller/dwc/pci-imx6.c
-> index 0fa716d1ed75..ff5a9565dbbf 100644
-> --- a/drivers/pci/controller/dwc/pci-imx6.c
-> +++ b/drivers/pci/controller/dwc/pci-imx6.c
-> @@ -1382,16 +1382,20 @@ static int imx_pcie_host_init(struct dw_pcie_rp *pp)
->  		}
->  	}
->
-> -	ret = pci_pwrctrl_create_devices(dev);
-> -	if (ret) {
-> -		dev_err(dev, "failed to create pwrctrl devices\n");
-> -		goto err_reg_disable;
-> +	if (!pci->suspended) {
-> +		ret = pci_pwrctrl_create_devices(dev);
-> +		if (ret) {
-> +			dev_err(dev, "failed to create pwrctrl devices\n");
-> +			goto err_reg_disable;
-> +		}
+> Changes in v2:
+> - Use request_module_nowait()
+> - Drop #include <linux/mod_devicetable.h> from scmi_protocol.h
+> - Link to v1: https://patch.msgid.link/20260616-scmi-modalias-v1-0-662b8dd52ab2@oss.qualcomm.com
+> 
+> To: Sudeep Holla <sudeep.holla@kernel.org>
+> To: Cristian Marussi <cristian.marussi@arm.com>
+> To: Michael Turquette <mturquette@baylibre.com>
+> To: Nicolas Schier <nsc@kernel.org>
+> Cc: Stephen Boyd <sboyd@kernel.org>
+> Cc: Brian Masney <bmasney@redhat.com>
+> Cc: "Rafael J. Wysocki" <rafael@kernel.org>
+> Cc: Viresh Kumar <viresh.kumar@linaro.org>
+> Cc: Frank Li <Frank.Li@nxp.com>
+> Cc: Sascha Hauer <s.hauer@pengutronix.de>
+> Cc: Pengutronix Kernel Team <kernel@pengutronix.de>
+> Cc: Fabio Estevam <festevam@gmail.com>
+> Cc: Guenter Roeck <linux@roeck-us.net>
+> Cc: Jyoti Bhayana <jbhayana@google.com>
+> Cc: Jonathan Cameron <jic23@kernel.org>
+> Cc: David Lechner <dlechner@baylibre.com>
+> Cc: Nuno Sá <nuno.sa@analog.com>
+> Cc: Andy Shevchenko <andy@kernel.org>
+> Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+> Cc: Ulf Hansson <ulfh@kernel.org>
+> Cc: Liam Girdwood <lgirdwood@gmail.com>
+> Cc: Mark Brown <broonie@kernel.org>
+> Cc: Philipp Zabel <p.zabel@pengutronix.de>
+> Cc: Alexandre Belloni <alexandre.belloni@bootlin.com>
+> Cc: Nathan Chancellor <nathan@kernel.org>
+> Cc: arm-scmi@vger.kernel.org
+> Cc: linux-arm-kernel@lists.infradead.org
+> Cc: linux-clk@vger.kernel.org
+> Cc: linux-kernel@vger.kernel.org
+> Cc: linux-pm@vger.kernel.org
+> Cc: imx@lists.linux.dev
+> Cc: linux-hwmon@vger.kernel.org
+> Cc: linux-iio@vger.kernel.org
+> Cc: linux-input@vger.kernel.org
+> Cc: linux-rtc@vger.kernel.org
+> Cc: linux-kbuild@vger.kernel.org
+> 
+> ---
+> Bjorn Andersson (2):
+>       module: add SCMI device table alias support
+>       firmware: arm_scmi: request modules for discovered protocols
+> 
+>  drivers/clk/clk-scmi.c                         |  1 +
+>  drivers/cpufreq/scmi-cpufreq.c                 |  1 +
+>  drivers/firmware/arm_scmi/bus.c                | 20 ++++++++++----------
+>  drivers/firmware/arm_scmi/driver.c             |  3 +++
+>  drivers/firmware/arm_scmi/scmi_power_control.c |  1 +
+>  drivers/firmware/imx/sm-cpu.c                  |  1 +
+>  drivers/firmware/imx/sm-lmm.c                  |  1 +
+>  drivers/firmware/imx/sm-misc.c                 |  1 +
+>  drivers/hwmon/scmi-hwmon.c                     |  1 +
+>  drivers/iio/common/scmi_sensors/scmi_iio.c     |  1 +
+>  drivers/input/keyboard/imx-sm-bbm-key.c        |  1 +
+>  drivers/pmdomain/arm/scmi_perf_domain.c        |  1 +
+>  drivers/pmdomain/arm/scmi_pm_domain.c          |  1 +
+>  drivers/powercap/arm_scmi_powercap.c           |  1 +
+>  drivers/regulator/scmi-regulator.c             |  1 +
+>  drivers/reset/reset-scmi.c                     |  1 +
+>  drivers/rtc/rtc-imx-sm-bbm.c                   |  1 +
+>  include/linux/mod_devicetable.h                | 12 ++++++++++++
+>  include/linux/scmi_protocol.h                  |  5 +----
+>  scripts/mod/devicetable-offsets.c              |  4 ++++
+>  scripts/mod/file2alias.c                       | 13 +++++++++++++
+>  21 files changed, 58 insertions(+), 14 deletions(-)
+> ---
+> base-commit: 8d6dbbbe3ba62de0a63e962ee004afb848c8e3ac
+> change-id: 20260616-scmi-modalias-0f32421bd452
+> 
+> Best regards,
+> --  
+> Bjorn Andersson <bjorn.andersson@oss.qualcomm.com>
+> 
+> 
 
-supposed create_devices only do once.
-
-pci_pwrctrl_power_on_devices() controller on and off for difference case.
-
-Frank
->  	}
->
-> -	ret = pci_pwrctrl_power_on_devices(dev);
-> -	if (ret) {
-> -		dev_err(dev, "failed to power on pwrctrl devices\n");
-> -		goto err_pwrctrl_destroy;
-> +	if (!pp->skip_pwrctrl_off) {
-> +		ret = pci_pwrctrl_power_on_devices(dev);
-> +		if (ret) {
-> +			dev_err(dev, "failed to power on pwrctrl devices\n");
-> +			goto err_pwrctrl_destroy;
-> +		}
->  	}
->
->  	ret = imx_pcie_clk_enable(imx_pcie);
-> @@ -1460,9 +1464,10 @@ static int imx_pcie_host_init(struct dw_pcie_rp *pp)
->  err_clk_disable:
->  	imx_pcie_clk_disable(imx_pcie);
->  err_pwrctrl_power_off:
-> -	pci_pwrctrl_power_off_devices(dev);
-> +	if (!pp->skip_pwrctrl_off)
-> +		pci_pwrctrl_power_off_devices(dev);
->  err_pwrctrl_destroy:
-> -	if (ret != -EPROBE_DEFER)
-> +	if (ret != -EPROBE_DEFER && !pci->suspended)
->  		pci_pwrctrl_destroy_devices(dev);
->  err_reg_disable:
->  	if (imx_pcie->vpcie)
-> @@ -1482,7 +1487,8 @@ static void imx_pcie_host_exit(struct dw_pcie_rp *pp)
->  	}
->  	imx_pcie_clk_disable(imx_pcie);
->
-> -	pci_pwrctrl_power_off_devices(pci->dev);
-> +	if (!pci->pp.skip_pwrctrl_off)
-> +		pci_pwrctrl_power_off_devices(pci->dev);
->  	if (imx_pcie->vpcie)
->  		regulator_disable(imx_pcie->vpcie);
->  }
-> @@ -1990,12 +1996,16 @@ static int imx_pcie_probe(struct platform_device *pdev)
->  static void imx_pcie_shutdown(struct platform_device *pdev)
->  {
->  	struct imx_pcie *imx_pcie = platform_get_drvdata(pdev);
-> +	struct dw_pcie *pci = imx_pcie->pci;
-> +	struct dw_pcie_rp *pp = &pci->pp;
->
->  	/* bring down link, so bootloader gets clean state in case of reboot */
->  	imx_pcie_assert_core_reset(imx_pcie);
->  	imx_pcie_assert_perst(imx_pcie, true);
-> -	pci_pwrctrl_power_off_devices(&pdev->dev);
-> -	pci_pwrctrl_destroy_devices(&pdev->dev);
-> +	if (!pp->skip_pwrctrl_off)
-> +		pci_pwrctrl_power_off_devices(&pdev->dev);
-> +	if (!pci->suspended)
-> +		pci_pwrctrl_destroy_devices(&pdev->dev);
->  }
->
->  static const struct imx_pcie_drvdata drvdata[] = {
-> --
-> 2.50.1
->
->
