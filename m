@@ -1,236 +1,131 @@
-Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-dy1-f172.google.com (mail-dy1-f172.google.com [74.125.82.172])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2FF9A3ECBC8
-	for <linux-pm@vger.kernel.org>; Thu, 18 Jun 2026 10:22:38 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1781778166; cv=none; b=KE79VsZMOm5VsdleUNg2XyTmR+/tB6O0BOJNGDJ9PoqAz/rbQpgVU95lMOFJfHtzW4c0e1oj3KbNL3rJbgfrmw2LoxzIrfiQ6AQgMZXD9D4VxxXOTGVaICE8EgyW4EfEHiKpzi56NvEH3v8b67fMY86VQG9N+PbQfXVi8/+o+0U=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1781778166; c=relaxed/simple;
-	bh=DMLp0zDdJ/9XJpbbHtisG5K265zhnwPmo6k6Z4juAGg=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=BhvmxhyKG7seAB1Z/pEf0hsv5M7RupqfqFGjIqq3Su6W8BCWC1XL5ONQ+qdmB1HXmxSfsfFfX5nWKRCiNFt7iSwUqOm0BYwzwOY4clKEkG1QFpxzTnhuXDeC82d4P/gUy4pI29YiF3xbC56O958X46FIPBQunnMGPtBaZrH59zA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=Y7WCSuax; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=PSg0eGZG; arc=none smtp.client-ip=205.220.168.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4145A3ED3C3
+	for <linux-pm@vger.kernel.org>; Thu, 18 Jun 2026 10:40:28 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=74.125.82.172
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1781779230; cv=pass; b=OiSpC63ixUsDEBeBEp3DDe3PikyYRJjzILawBXMvaNbotmcbFc9DIb2Oa/3HO0riXYM1aFox1zrtuwppwtNaT5vsDUo6kVlHoIi7CkiGeUQTjoqxuoeUFD6iTO5x8X/jJxamsD+n4mWDV4mc60NqrvyFc5r3qPUWdEIDeLeyMCw=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1781779230; c=relaxed/simple;
+	bh=yhUtjbZV53eJ33+I5WWMx1PK7EZ98q+cI9GUW0pweEM=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=HNFLKNs1NDJr0F7/cbmCqliBqG/HWYCd844HjxtNg9KDLPz7a2Qqa9qGy5G4/DQLny0qvZ74niWp3PXTVJ2HWoe6fRMYjElgCfRmqDIAlcCGVDYTwwwuEFYnpcb68MxZQj4U4eErHCYP1ycgNJTARoBBApWWgejn3ZlxHuj+S3Y=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=ZDW4jrkf; arc=pass smtp.client-ip=74.125.82.172
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="Y7WCSuax";
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="PSg0eGZG"
-Received: from pps.filterd (m0279862.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 65I8E2d2573627
-	for <linux-pm@vger.kernel.org>; Thu, 18 Jun 2026 10:22:38 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	AcN2ezsmfuVyLx0id69tXIlCQ7vrpJyBzJwuPr7tn+U=; b=Y7WCSuax9fBD9T5P
-	pG05vgRzpQMSCoeZJJtqqcwU3+P7Sfo7+5jsgnAAdbWPDo232ek5XRTHCwtWqCDg
-	OlF3eSWOkCw8VNyJIB6tPfMU7upxT+eJGSanzIvJ2YPfJUHewsaPA0uGOE9IPts0
-	95Xfz91bY2MfcTo1aaXtefDHg9Bb3QayRpRL6suJ30HYuLU/Nt8OQm95C0Xe3n5H
-	4Ah/1o35QaS0YQCS0tHMV5UcSWgPu1Vmc9BMFxbKaAQPz1UNmx0xZ8pzsgtigwmV
-	Y1OtAEknyIb1xcTmSfRT8RUkAreNmRHkE+buUGgBzQ707Gf0Z+ntxWOKHN3Jh27m
-	sFreJw==
-Received: from mail-pf1-f198.google.com (mail-pf1-f198.google.com [209.85.210.198])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4euxt53t3g-1
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Thu, 18 Jun 2026 10:22:37 +0000 (GMT)
-Received: by mail-pf1-f198.google.com with SMTP id d2e1a72fcca58-8453cbd38c6so607919b3a.1
-        for <linux-pm@vger.kernel.org>; Thu, 18 Jun 2026 03:22:37 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="ZDW4jrkf"
+Received: by mail-dy1-f172.google.com with SMTP id 5a478bee46e88-30bda2cb796so49097eec.1
+        for <linux-pm@vger.kernel.org>; Thu, 18 Jun 2026 03:40:28 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1781779227; cv=none;
+        d=google.com; s=arc-20240605;
+        b=fq/0iMVxhfi/vJ0tV6CUWwkO8gHYE3DMcwfIBKDDytvjcJmvPMK1iM0EhkktiDeMUY
+         p1JB3G5RlL0dy+cYXJjiQ+zR3x6SHpyD7wl3V9VCXD/LJ2zkJtR6ot/vCiptYO8+1mrW
+         AgLTqUKFnP7L1HZgyJJMv4fkZ0jE5yDvWHAGKTEO/updyUPEpb0bfE94c0RHpms7+0X1
+         mYXS2FeIXhvYPBpeOpt2MeFZ5NpERFdFcMxKBBhOh0NZz6yWe1xXB0+Au6I6+anpd2tV
+         /PdpEoL88FrOwsrVGUyAd0Mw0JTOUNQd8CpDcXR4Urq5kBKXYmibcRMnyG0OjtcorNx8
+         wYuQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=7DUQbCb92xOvO01pv+r7iCHPQp0UAu27WllptLJOlB8=;
+        fh=sgHJn7sGIpC6So94tXp9NKFK9sI2sT/1hYQVB2cDx/U=;
+        b=BeKULiI1C3sGoUZRlvBjYny/doMHUGDrcKzCqn28UgN0PdZU4Bi25lb64346BDtovu
+         05txveupJ1xkHjh7kX24VBNShisBXcc9s5uOWWRAKVLOVOv864Ze9JDwgPAOUt3Q5L53
+         HYdnCCu3pxgD5FU1NnZbRgmsJ7Obiv7BKSfAfDB+w/HBJT24UXIUEU4S8q9VLTgYd3jR
+         IaOOCx/IfXpl0IQJzibvMgnuH2sIpgOeW1/X0BnOZ0c+vwu5eei1mF7EMlnGftHWpnZe
+         zaOjZOZwQKpbMD96jlejsTf4zAq84yClZg/AG+3TWOVNb6MNcJtcLt4RmnaqQpsANLxe
+         VAWA==;
+        darn=vger.kernel.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1781778157; x=1782382957; darn=vger.kernel.org;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=AcN2ezsmfuVyLx0id69tXIlCQ7vrpJyBzJwuPr7tn+U=;
-        b=PSg0eGZGuKGlHER5zvNbAorWtMqxTSr3LGL8iw/kVq2hQOhARRc78igiaho2ZvoB4D
-         tR5HrhPt6znxxMQfOf7MesDcSayOYfK12Z8fYdKEX2ecJHPqQBhZ0tEyfgqPiTbnGOUo
-         DeTtdGoe/RgOeb6fGidU3d73whMlaLnrdHqmNQiU1Q4Z2aG5H4BrqIdxGo5W3/iAx1Uk
-         X1TwRiXxlSn2bBbVm1npWGFh2Ikfy7cRZ5l6YhJkx6SZNlsVcXRihRHzaHcQrzHK9mod
-         sB7PdWFytqkiNmIJ5xaqK6nNaoL+7wBLLh1WIgD3yhF4467omacs92hP947Xjh94pYpd
-         Sl4w==
+        d=gmail.com; s=20251104; t=1781779227; x=1782384027; darn=vger.kernel.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=7DUQbCb92xOvO01pv+r7iCHPQp0UAu27WllptLJOlB8=;
+        b=ZDW4jrkfk3387CIo4fAM4NOExN7ZA+JSUepXfBLmjVA+9FSYPSR+jjJ6jViBSqlURM
+         S9V6LCLaqgcwgr9YDdt1Mgl6rSrPgLi8WYmsdwGZtGJJHr8fYYLDPOoydPJz4Ej2woKa
+         VGi8nER7rddQjktBGGDNpeu/TaA3SWCVmWzCouZBHU0fSB6Sdk7+0DOLfMz5Xd9t+1tq
+         4PPNM8eij0R9Mi9C35+amzk2T60DWvpon7MBlHRKPr54i4XVSTz2ulaIiuYX181sHbxm
+         yTzCEmnhvbEtgMB/vBKfM7I3+8rtXvucGfl2SYuH7oSYFK02IzPvqvDmqj2hgddxeFNX
+         K+CQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1781778157; x=1782382957;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=AcN2ezsmfuVyLx0id69tXIlCQ7vrpJyBzJwuPr7tn+U=;
-        b=cqrKwDiT946880nvtUo4cLJ2rDt/GS/2VmePCUp+slNfcHGAD43GvO3GELElKO9MLM
-         nyVpEJhEXDwg1grq0xR4OnGPZtt6L0kQyoc4u8UBSujpz0UMyTgJF6vwKnzMuEwQrl5I
-         4jmiq/IM/iEclKNPiMB1gSyUt+Uiw662VveOX/X9SDa3ivkjy3vqvfsff1Fcl0YggudS
-         x7afX8Jgn356UPhEQyvmjFegDbve4rekKg4GiZjHRHf2NmIg7z0mtNzt8qP8R7JhFV3B
-         L2CWUD0NX5LiZmdt3IkCMP+F01VQPsGrpAV/Mt1ACjErYPuIDVYBnBFjF5L2i7RtsTfN
-         /UrA==
-X-Forwarded-Encrypted: i=1; AFNElJ+dKu5Yr+j5kzclZBd+OrRZ1atBtt7uX5DdaD5n5MoYOgGuqgewLmvbAOow7XUCSnt1gYTrrU8Bzg==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yy+AjpDVQI9OeVhEeQM+P6xEpqDH1XB2GgHy7ckxnTaemsInJu+
-	y5YakwFsAaYqGyR8TPbY8fVv3Ef6y78DzO9HZjxDm0h69aJbLMi+o2iNsVblQQpnQtFHYyppQwL
-	NRhpPybH4iI1nqx5SdoU1IFOCygoDKyyvK66EnWTzlNysfGHFGseFODHWpQIA3A==
-X-Gm-Gg: AfdE7ckW1uK6XziMUwHPYvDvCTPQjpCse88Eg3pcmp/+0ILZ3TjkFkMMAuylNJCNcVe
-	57bPia0GQToKVFB6GPSzWYJtdfWui8bVM3uic/fxuplgT1o9SN+WRY0JfwOeHCU0TDeigOPeZCj
-	7StYe+xSO+qw9CQ/+loh3e7AgxYOJSOC/nzhDPdME7bOGsAB3iSQLAxiydC3UE4iD6w7deYcIiw
-	x0KW15KchgE/iptPj+OCiP4GeDjArmSfwVfmjfdEdDROmPTZS/pbc8mTwISvgyn2hZZArl5CfsD
-	wtzopkE93/fwk0ocN1LBsmMhsZUBCa5JoMTEghVGDl51Q0cPpgWNEUY0tSxvS+HIT+d2gS1ZctU
-	H9GqxI3kTvmVhXzJqxeNvhCFV6hqg4CfwFNzbhcNS
-X-Received: by 2002:a05:6a00:760a:b0:845:286d:4675 with SMTP id d2e1a72fcca58-845286d4993mr6180167b3a.10.1781778157297;
-        Thu, 18 Jun 2026 03:22:37 -0700 (PDT)
-X-Received: by 2002:a05:6a00:760a:b0:845:286d:4675 with SMTP id d2e1a72fcca58-845286d4993mr6180136b3a.10.1781778156810;
-        Thu, 18 Jun 2026 03:22:36 -0700 (PDT)
-Received: from [10.218.7.34] ([202.46.22.19])
-        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-8453a8c9770sm2293492b3a.40.2026.06.18.03.22.30
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Thu, 18 Jun 2026 03:22:36 -0700 (PDT)
-Message-ID: <8ea7d911-8522-43af-8a2f-81ea8479f049@oss.qualcomm.com>
-Date: Thu, 18 Jun 2026 15:52:29 +0530
+        d=1e100.net; s=20251104; t=1781779227; x=1782384027;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=7DUQbCb92xOvO01pv+r7iCHPQp0UAu27WllptLJOlB8=;
+        b=jNsEyufSTVtBz80n5/j8iHaAGkHJWwA8emH5KHMzOuRZ4GHBOIzOx3YRNBIZe39O8t
+         FGJsKLwio8W+U3uIgSNkAxEYonRb+C+PXxqWnep+6ewrdQmXYvHBfRDHcdxrO+RBu07Z
+         Y66o8xPqVGz7e4DXwI4GBQ9lG7UJsoeqoHzJ2kgCNXorO9zny1J3QSN/0x0zCRhcHpkl
+         s8mr1vtd6xOhoMfn/Vzq5rEGZkoAVX9mKYpUknNOeHkX/B1mK/ljYcJeJaIjhoFMzR3p
+         zjKcPh2kcStQW7EZgDd1lGBHeiQ9eySHjDQpZo+UI87f7Yd6HBiQIHQUg6UM6TFXaeOZ
+         MG4g==
+X-Forwarded-Encrypted: i=1; AFNElJ8B3olH5PGo7/sh0wup4KO1R33/pg6JJhvPFuybM3j6O2XmOWqHMeMxQJiPcFHWBwTb1T2pyrsfVA==@vger.kernel.org
+X-Gm-Message-State: AOJu0YxlO6bR+a5pfwamkEJgDiuLRAdswFAVo1JThBvryexcjEEBFYTf
+	xDbu3YCZAiDLnHNWk675U39JAsExWJFs3NP/mSo1rCeFQZ/4eVevFI8khBLoATTsRXGP94YVYql
+	tbQnni1X0paN+LK0d1M04JU20aNC1YBI=
+X-Gm-Gg: AfdE7cmU8w6AazV7AFf8AS/c0JBWT6nF408wpPGvLT9/k4lIXf+lXZgZb0Lk0SJ3v9l
+	mgdojRNEy8vn04wFyKBI3lnMQtbQKnZY1vsJhwtjR9hdARCBgeEhIAHV5AeABENh0jzQzRAZF2J
+	eVRoMIbNSKFUWhRWkEnVuU8oHSVJlDwgbsqmsjJ8h+nAWr4hPQmArx7M13xv0SuWU5wUmn9srhy
+	pwAAIcIxGOoe8a7CiKW12Y94nMrnzDVk+cngasLzNv9eKRL9XFl0g/jxortOJXjWhWpdQnULvIh
+	C3A1n3WSqLMdM1ln+jDFwg4jePlf/uTvDhzH4l+r6TrxLw35WmFNCsCO8jdEAMT9UTXptbNO/wm
+	VXQIM6ToV67K/
+X-Received: by 2002:a05:7300:ed85:b0:30b:c021:5045 with SMTP id
+ 5a478bee46e88-30bf09c4416mr1020403eec.5.1781779227291; Thu, 18 Jun 2026
+ 03:40:27 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 2/2] thermal: qcom: add support for PMIC5 Gen3 ADC
- thermal monitoring
-To: Jonathan Cameron <jic23@kernel.org>
-Cc: David Lechner <dlechner@baylibre.com>,
-        =?UTF-8?Q?Nuno_S=C3=A1?=
- <nuno.sa@analog.com>,
-        Andy Shevchenko <andy@kernel.org>, Amit Kucheria <amitk@kernel.org>,
-        Thara Gopinath <thara.gopinath@gmail.com>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Daniel Lezcano <daniel.lezcano@kernel.org>,
-        Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>,
-        linux-arm-msm@vger.kernel.org, linux-iio@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
-        Kamal Wadhwa <kamal.wadhwa@oss.qualcomm.com>,
-        David Collins <david.collins@oss.qualcomm.com>,
-        Anjelique Melendez <anjelique.melendez@oss.qualcomm.com>,
-        Neil Armstrong <neil.armstrong@linaro.org>,
-        Stephan Gerhold <stephan.gerhold@linaro.org>
-References: <20260526-gen3_adc_tm-v2-0-702fbac919ac@oss.qualcomm.com>
- <20260526-gen3_adc_tm-v2-2-702fbac919ac@oss.qualcomm.com>
- <20260527124220.39ac0b64@jic23-huawei>
- <27631a0f-b5ba-4181-94f9-aa7726a4054b@oss.qualcomm.com>
- <20260614200630.2ea04817@jic23-huawei>
-Content-Language: en-US
-From: Jishnu Prakash <jishnu.prakash@oss.qualcomm.com>
-In-Reply-To: <20260614200630.2ea04817@jic23-huawei>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-Proofpoint-GUID: _9GeYn_d9nekkDRAATgkwtfwQnjqmplw
-X-Proofpoint-Spam-Info: AW1haW4tMjYwNjE4MDA5NiBTYWx0ZWRfXza8NouoX6xaA
- QVyCbHGfcFIdtQcGelNnDs3hEGRyj+ls+iQY1BI+HqpPL3tG4ewCtYsQS8gzUEXx5Hcga8aYtgN
- 8LV7rzjo64co8mSAA0cqOHD+FPXrVE8=
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNjE4MDA5NiBTYWx0ZWRfXwHez1mKJdcd9
- JpSBrX9sH3t05IlbsFQxFiMLDJAi1dCaO7HS/dEmHgqhMkn6XAq50suhW216QrEcU7n/hLMJBao
- SvzblWY294doVONsBqMFdokHPIrtv6kgapXuX4e/lq584e6iEtLSfew8zZFnS6xJ4sqejCZ4fZA
- R2U6AmHJo/RMDrNvWqd8F+aYaxmg4oZFEjIR3uItfWYk7eaF38ATd8naE48tCucjNyXtTn1Lr5J
- dhtx/ZfD5EdcYVgcy2bi5a5+ikOW+eAHe1EuU+HahXpyDiOums87mN0gRIleI90wMN2yWtySno6
- Kkudn9+LKSTY+Mh8CIg84D6DSrrRFTJZ62wEiL8JPrPd4NXL8/DxGF40HPNi20X8H5/rXZXB9/W
- oaLIgf5AwuQXxOndwCmuUx6WPnS+1jQUd5+Cnrn4IUx9kLUQQTf1HbnF0zzDooLlwgEtQ/YRTm8
- sRz3olvo+VYCRgUgfWA==
-X-Authority-Analysis: v=2.4 cv=PMw/P/qC c=1 sm=1 tr=0 ts=6a33c6ee cx=c_pps
- a=m5Vt/hrsBiPMCU0y4gIsQw==:117 a=fChuTYTh2wq5r3m49p7fHw==:17
- a=IkcTkHD0fZMA:10 a=FelO9ux0wxsA:10 a=s4-Qcg_JpJYA:10
- a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=_K5XuSEh1TEqbUxoQ0s3:22
- a=DDJsQkWvfQMYwb-dyrcA:9 a=QEXdDO2ut3YA:10 a=IoOABgeZipijB_acs4fv:22
-X-Proofpoint-ORIG-GUID: _9GeYn_d9nekkDRAATgkwtfwQnjqmplw
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.125,FMLib:17.12.100.49
- definitions=2026-06-18_01,2026-06-17_03,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- phishscore=0 clxscore=1015 suspectscore=0 priorityscore=1501 bulkscore=0
- malwarescore=0 impostorscore=0 spamscore=0 lowpriorityscore=0 adultscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2606180096
+References: <20260618-clk-type-state-v4-0-8be082786080@collabora.com> <20260618-clk-type-state-v4-3-8be082786080@collabora.com>
+In-Reply-To: <20260618-clk-type-state-v4-3-8be082786080@collabora.com>
+From: Miguel Ojeda <miguel.ojeda.sandonis@gmail.com>
+Date: Thu, 18 Jun 2026 12:40:14 +0200
+X-Gm-Features: AVVi8CcKkRQ8t8MfiUD4gXtI1Y4DMiQAI7JLxiiYKqJ_3SsG98lF2VyIrlJ2k1o
+Message-ID: <CANiq72myoVT9npyaB0pVvbJ1v9ELzw68uAvSoAkdJJX2MJQ=kA@mail.gmail.com>
+Subject: Re: [PATCH v4 3/3] rust: clk: use 'kernel vertical style' for imports
+To: Daniel Almeida <daniel.almeida@collabora.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, 
+	Danilo Krummrich <dakr@kernel.org>, Alice Ryhl <aliceryhl@google.com>, 
+	Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, Maxime Ripard <mripard@kernel.org>, 
+	Thomas Zimmermann <tzimmermann@suse.de>, David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>, 
+	Drew Fustini <fustini@kernel.org>, Guo Ren <guoren@kernel.org>, Fu Wei <wefu@redhat.com>, 
+	=?UTF-8?Q?Uwe_Kleine=2DK=C3=B6nig?= <ukleinek@kernel.org>, 
+	Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@kernel.org>, 
+	Miguel Ojeda <ojeda@kernel.org>, Gary Guo <gary@garyguo.net>, 
+	=?UTF-8?Q?Bj=C3=B6rn_Roy_Baron?= <bjorn3_gh@protonmail.com>, 
+	Benno Lossin <lossin@kernel.org>, Andreas Hindborg <a.hindborg@kernel.org>, 
+	Trevor Gross <tmgross@umich.edu>, Michal Wilczynski <m.wilczynski@samsung.com>, 
+	Brian Masney <bmasney@redhat.com>, Boqun Feng <boqun@kernel.org>, linux-pm@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, 
+	linux-riscv@lists.infradead.org, linux-pwm@vger.kernel.org, 
+	linux-clk@vger.kernel.org, rust-for-linux@vger.kernel.org, 
+	Boris Brezillon <boris.brezillon@collabora.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Hi Jonathan,
+On Thu, Jun 18, 2026 at 5:48=E2=80=AFAM Daniel Almeida
+<daniel.almeida@collabora.com> wrote:
+>
+> +            Result, //
 
-On 6/15/2026 12:36 AM, Jonathan Cameron wrote:
-> 
->>>> +static irqreturn_t adctm5_gen3_isr_thread(int irq, void *dev_id)
->>>> +{
->>>> +	struct adc_tm5_gen3_chip *adc_tm5 = dev_id;
->>>> +	int sdam_index = -1;
->>>> +	u8 tm_status[2] = { };
->>>> +	u8 buf[16] = { };
->>>> +
->>>> +	for (int i = 0; i < adc_tm5->nchannels; i++) {
->>>> +		struct adc_tm5_gen3_channel_props *chan_prop = &adc_tm5->chan_props[i];
->>>> +		int offset = chan_prop->tm_chan_index;
->>>> +		bool upper_set, lower_set;
->>>> +		int ret;
->>>> +
->>>> +		scoped_guard(adc5_gen3, adc_tm5) {
->>>> +			if (chan_prop->sdam_index != sdam_index) {
->>>> +				sdam_index = chan_prop->sdam_index;
->>>> +				ret = adc5_gen3_tm_status_check(adc_tm5, sdam_index,
->>>> +								tm_status, buf);  
->>>
->>> I think the clear of other sdam interrupt status that sashiko was pointing out
->>> is here as somewhat unexpectedly a function called status_check clears as well.
->>>   
->>
->> This is the full comment from Sashiko at this point:
->>
->>> "Does the threaded handler clear statuses across all SDAMs indiscriminately?  
->>
->>> Since this thread loops over all channels and clears the high status on any
->>> SDAM with an active event, could it clear a pending event on a different SDAM
->>> than the one that triggered the IRQ?  
->>
->>> Because each SDAM has its own independent IRQ line, if the thread clears a
->>> pending event on SDAM 1 while servicing SDAM 0, couldn't SDAM 1's subsequent
->>> hardirq read a status of 0 and return IRQ_NONE? Could repeated IRQ_NONE
->>> returns cause the IRQ subsystem to shut down SDAM 1's interrupt line as a
->>> spurious interrupt storm?"  
->>
->> This sequence of events can happen, but it should not be an issue.
->>
->> It is possible that the threaded handler is called for servicing an
->> interrupt on SDAM0, and in the loop there is a violation detected on
->> a TM channel on SDAM1, and the SDAM1 TM status is cleared. But in this
->> case, this violation would also be handled after we notify the thermal
->> framework at the end of the loop, by some threshold update or disablement.
->>
->> Even if the subsequent hardirq fires for SDAM1 and it returns IRQ_NONE
->> as the TM status was cleared, the violation would have been handled
->> by some threshold update, so the interrupt would not keep getting
->> triggered afterwards for the same threshold's violation.
->>
->>
->> I also checked the conditions from note_interrupt() in kernel/irq/spurious.c,
->> for enough repeated IRQ_NONE returns to happen to cause a spurious interrupt
->> disablement. 
->> It looks like there needs to be more than one interrupts returning IRQ_NONE
->> within 0.1 second to increment the irqs_unhandled counter once, but there can be
->> at most one TM interrupt in one second since we set the time period of
->> recurring TM measurement as one second here in the probe:
->>
->> 		adc_tm5->chan_props[i].timer = MEAS_INT_1S;
->>
->> So a spurious interrupt storm is not possible here.
-> 
-> Whilst sounds valid, it's a convoluted argument given it relies
-> on us getting spurious interrupts reported, but not enough to trigger
-> the stuff to stop interrupt storms. The rules around that may change
-> in future given it's a heuristic to stop us seeing problems on dodgy
-> hardware.
-> 
-> Can we just avoid handling interrupts for SDAMs that weren't the one that
-> triggered this particular interrupt?
+Since you import the prelude, I think you can take the change to
+remove e.g. this one.
 
-Thinking more about it, this would be better. I overlooked it before, but
-we could get the right SDAM from the IRQ number and simplify the logic to
-handle only that SDAM's channels. I'll make this update in the next
-patch series.
+>          /// use kernel::error::Result;
 
-Thanks,
-JIshnu
+>      /// use kernel::error::Result;
 
-> 
-> Thanks,
-> 
-> Jonathan
-> 
-> 
+>      /// use kernel::error::Result;
 
+>          /// use kernel::error::Result;
+
+Similarly, the prelude is imported in doctests by default.
+
+Cheers,
+Miguel
