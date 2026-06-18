@@ -1,44 +1,44 @@
 Received: from sender4-op-o11.zoho.com (sender4-op-o11.zoho.com [136.143.188.11])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 083861A680E;
-	Thu, 18 Jun 2026 03:48:29 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 220A71A680E;
+	Thu, 18 Jun 2026 03:48:35 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=136.143.188.11
 ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1781754511; cv=pass; b=XlPKj8JTVcWBgHUngcEajxY4A5c7QQSX2MUr/PbEGOgnPyJ80hUbOEnXjxdzqSuqM538iDHhYqoD6WIPx+FdDtjsvWxinDDiP/6DHDSlDmF+fufod28IzXgLMBZubiykna3d2RaTQCs0f5FYpy4qF6R+txmrh4lwHkjGEKlvrPg=
+	t=1781754516; cv=pass; b=PHDfIwzJfaKuF3TERmSE5zEeT/Iib935Ql/qyhqXJ5YnTYU3iakVP7DD+9l4samnyYdT8kn9/CnsmODo0OWeWZ4dpcRXLyTAmuGzT2V/8OpZHaxbaGO6GgP7uQ5jex4GWJjvN9evJsQdRDNf4YvKYmXSUA8sFlr188anQxFMKuA=
 ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1781754511; c=relaxed/simple;
-	bh=6Cp3otGVigzclKCuk/nbBESEREfIgSidtmQQ4GBq43k=;
-	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=mL4FSjC7jl09HptAw4yh5qu5IwlKnKpiUj7R0vFeAMJMcP+UQjXv5hVpfTGSGTocb/N2muTWl8JmM4C5/mpA1B+ELr8601EOSARI1Hm4FtJ4FV8fH1kC+9wJ+Va/P0uiRgASYXhEyyHJtFQ1YYc3cMId5LB+LE/cFEb+yeZCn1A=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (1024-bit key) header.d=collabora.com header.i=daniel.almeida@collabora.com header.b=DfzxTsaU; arc=pass smtp.client-ip=136.143.188.11
+	s=arc-20240116; t=1781754516; c=relaxed/simple;
+	bh=K92vzeozg+SMr3UKF6yC0Ojt9r2rQ2iPC4WnligerkU=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=sFj8SkNCdAPRk7mA7lv30D837pw0/v95iQn5bN85D2TGIY2GqQ/HT5vEexniClyNsZppcxsA7iC+gN68Bobb2Q4ZyS1jX8Ajk4HWK1j2LsG9+u7ObXQjigXcKL+qKSTF4Pah3LA9z+4G6KAeF3zhRAeijzXq1gDMRe5MUOWS4YY=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (1024-bit key) header.d=collabora.com header.i=daniel.almeida@collabora.com header.b=Pt0xR7Z9; arc=pass smtp.client-ip=136.143.188.11
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=collabora.com header.i=daniel.almeida@collabora.com header.b="DfzxTsaU"
-ARC-Seal: i=1; a=rsa-sha256; t=1781754477; cv=none; 
+	dkim=pass (1024-bit key) header.d=collabora.com header.i=daniel.almeida@collabora.com header.b="Pt0xR7Z9"
+ARC-Seal: i=1; a=rsa-sha256; t=1781754491; cv=none; 
 	d=zohomail.com; s=zohoarc; 
-	b=BiSkO6X+CbSlyyv0PKWuBOBKBoJmBDBicT4zKkw9qKECHs/xzC+TrUR4g5ZjKsZ7UbiE/lSQI+riGcCdE2fR+WPH9U25hzFBcmiuTwg0dD4Wf+Rm8b3m3gqll8jIIWJHnyNYiU02KGBdIPv38MtP/q5SySm0H9dLAE9TN6ZAkgg=
+	b=e8XJdbebNb5ZqyLSgzsuJ5kUpz5BTTGNsTCyMxEIrLmYyyZPeK12AeUBDRtQo5egC8O+YB+UA3XgjM1t8WaXeIE1jrTFJf97ulB3D9FlWtEhVKlMyxT/lIe4o5DGlQaUCrflyZ/+92yUh9FoqqmRW9O747SMK+uk1BC/fjtR3+Y=
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=zohomail.com; s=zohoarc; 
-	t=1781754477; h=Content-Type:Content-Transfer-Encoding:Cc:Cc:Date:Date:From:From:MIME-Version:Message-ID:Subject:Subject:To:To:Message-Id:Reply-To; 
-	bh=a/FAuDcMrWGnOcei28EPEPjKA2Es2+JGZ7eG60Xhc2o=; 
-	b=Jzd+1ym5YIPHuJ1poP7RIsrqz2mE/cGEZfwakFIPf0ETEdyCGBgP4JwgY/F3sHdAEGhJZfVh0/FGL3Yc2j5g0f7PpideF7GX4Htxat4sh1GodcN9Ft02aUPg+wfiEV+M1IRga6pPDg4EPEUPBktFmn8OdmrPC0vGHyc8b2aztOA=
+	t=1781754491; h=Content-Type:Content-Transfer-Encoding:Cc:Cc:Date:Date:From:From:In-Reply-To:MIME-Version:Message-ID:References:Subject:Subject:To:To:Message-Id:Reply-To; 
+	bh=B+7IWRo1JL0H3u9ZN7rfcBGr3kSsxqV+wwvQWMVfHts=; 
+	b=X6qnfqbMQZZl+Lzf/oejQHA+ukw8KbphpXUUaerYwOBkgc1KC38bRwFo4Zz1/NJ8aunDPWiiEm21Q3NjWi3XeILb+6ggVk2rVqgpZnWxvrRuINMs6gTiR19dAJyv1diprTNxfaOg9GnljKHXZ/nfGRt/jOeNMUKDWsMPj4oPufA=
 ARC-Authentication-Results: i=1; mx.zohomail.com;
 	dkim=pass  header.i=collabora.com;
 	spf=pass  smtp.mailfrom=daniel.almeida@collabora.com;
 	dmarc=pass header.from=<daniel.almeida@collabora.com>
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; t=1781754477;
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; t=1781754491;
 	s=zohomail; d=collabora.com; i=daniel.almeida@collabora.com;
-	h=From:From:Subject:Subject:Date:Date:Message-Id:Message-Id:MIME-Version:Content-Type:Content-Transfer-Encoding:To:To:Cc:Cc:Reply-To;
-	bh=a/FAuDcMrWGnOcei28EPEPjKA2Es2+JGZ7eG60Xhc2o=;
-	b=DfzxTsaUd3L6p936K2c7mZaX6NLwGPbFNWt8O68s6IqAdOfgLVUD91pVOyH7ciUq
-	OlPyHdHOWWwqPtQSUQ0kTE5bKaL+Fa9HouutzU0w6/OeeKJ5CTKf8hKyAXlI2kHK15V
-	KASwqBk0kUJ1KAEpbaQcfFO90zPA9bpSBnGeg88E=
-Received: by mx.zohomail.com with SMTPS id 1781754475220300.17079620644984;
-	Wed, 17 Jun 2026 20:47:55 -0700 (PDT)
+	h=From:From:Date:Date:Subject:Subject:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-Id:Message-Id:References:In-Reply-To:To:To:Cc:Cc:Reply-To;
+	bh=B+7IWRo1JL0H3u9ZN7rfcBGr3kSsxqV+wwvQWMVfHts=;
+	b=Pt0xR7Z9nRyDeIqOYI3KNR+9uauRv/jfznC6PmnoaX1VPH7XnLMQczfTn7xAnyMr
+	BIx4JUFTj9cAUu7Gn73TNejalfhPT3b6Q0gMqFGGD7GT2qJBeoZVFiogoYZR7YjYZzg
+	Pobi5Hbuw+tSgae/hiE0/TdOxl8Jd9V7sdwfchXs=
+Received: by mx.zohomail.com with SMTPS id 1781754488942419.2252700043547;
+	Wed, 17 Jun 2026 20:48:08 -0700 (PDT)
 From: Daniel Almeida <daniel.almeida@collabora.com>
-Subject: [PATCH v4 0/3] Clk improvements
-Date: Thu, 18 Jun 2026 00:46:34 -0300
-Message-Id: <20260618-clk-type-state-v4-0-8be082786080@collabora.com>
+Date: Thu, 18 Jun 2026 00:46:36 -0300
+Subject: [PATCH v4 2/3] rust: clk: add devres-managed clks
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -46,13 +46,10 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-X-B4-Tracking: v=1; b=H4sIAAAAAAAC/6XQTW7DIBAF4KtErDsVA8WErHqPqgt+xjGqE1KgV
- qPIdy9OWlWKl1m+xftg3oUVypEK220uLNMUS0zHFl6eNswP9rgniKFlJrhQ3HADfvyAej4RlGo
- rgedorQ5BKQyslU6Z+vh9Bd/eW+5zOkAdMtl/RosVMyEgbE3nlNxi12v36tM4WpeyffbpsMhDL
- DXl8/Wnk1j8R7TbPchXVQEc0BntEZ3rJN5Vl5sm+fd6x5HrFSEboXWQJImU8eKemG87Zfr8anv
- X37Hm+QcRS4DljQEAAA==
-X-Change-ID: 20250909-clk-type-state-c01aa7dd551d
+Content-Transfer-Encoding: 7bit
+Message-Id: <20260618-clk-type-state-v4-2-8be082786080@collabora.com>
+References: <20260618-clk-type-state-v4-0-8be082786080@collabora.com>
+In-Reply-To: <20260618-clk-type-state-v4-0-8be082786080@collabora.com>
 To: "Rafael J. Wysocki" <rafael@kernel.org>, 
  Viresh Kumar <viresh.kumar@linaro.org>, Danilo Krummrich <dakr@kernel.org>, 
  Alice Ryhl <aliceryhl@google.com>, 
@@ -80,122 +77,73 @@ Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
 X-Mailer: b4 0.15.2
 X-ZohoMailClient: External
 
-This series contains a few improvements that simplifies clock handling for
-drivers.
+The clk API allows fine-grained control, but some drivers might be
+more interested in a "set and forget" API.
 
-Patch 1 implements the same typestate pattern that has been used
-successfully for Regulators. This is needed because otherwise drivers
-will be responsible for unpreparing and disabling clocks themselves and
-ultimately handling the reference counts on their own. This is
-undesirable. The patch automatically encodes this information using the
-type system so that no misuse can occur.
+Expand the current API to support this. The clock will automatically be
+disabled, unprepared and freed when the device is unbound from the bus
+without further intervention by the driver.
 
-Patch 2 makes things more convenient by offering devres-managed APIs. This
-lets drivers set clock parameters once and forget about lifetime
-management.
-
-Patch 3 converts clk.rs to the newer kernel-vertical style in order to make
-future changes easier.
-
-Alice Ryhl's "rust: clk: implement Send and Sync" series, which this used to
-depend on, has since been merged, so this series now applies directly on
-clk-next.
-
+Signed-off-by: Daniel Almeida <daniel.almeida@collabora.com>
 ---
-Changes in v4:
-- Rebased onto clk-next. Alice Ryhl's "rust: clk: implement Send and Sync"
-  series is now merged upstream, so it is no longer carried as a dependency.
-- Fixed the build with CONFIG_CPUFREQ_DT_RUST=y. The generic DT cpufreq
-  driver only has the (unbound) per-CPU device, so it cannot hand a
-  &Device<Bound> to Policy::set_clk(). Added a pub(crate) Clk::get_unbound()
-  for the few in-tree abstractions that operate on a device outside a bind
-  scope; set_clk() now takes &Device and uses it. Clk::get()/get_optional()
-  and the devm_* helpers still require &Device<Bound>.
-- Added impl From<Error<State>> for kernel::error::Error, so the fallible
-  state transitions can be used with `?` (and chained) instead of
-  .map_err(|e| e.error).
-- Added Clk::<Prepared>::with_enabled(), which runs a closure with the clock
-  temporarily enabled, scoping the Enabled state without giving up the
-  prepared clock.
-- Documented how to change a clock's state at runtime via an enum, for
-  drivers that enable/disable across resume/suspend.
-- Link to v3: https://lore.kernel.org/r/20260107-clk-type-state-v3-0-77d3e3ee59c2@collabora.com
+ rust/kernel/clk.rs | 43 +++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 43 insertions(+)
 
-Changes in v3:
-- Rebased on top of 6.19-rc4
-- Dropped patch 1 (from Alice), added her series as a dependency instead
-- Fixed Tyr, PWM_TH1520 drivers
-- Changed clk.rs imports to kernel-vertical style
-- Added support get_optional shortcut for Prepared and Enabled (i.e.:
-  Clk::<Enabled>::get_optional())
-- Fixed misplaced #[inline] tag
+diff --git a/rust/kernel/clk.rs b/rust/kernel/clk.rs
+index a62e4c7e252e..692ee88ca772 100644
+--- a/rust/kernel/clk.rs
++++ b/rust/kernel/clk.rs
+@@ -95,6 +95,49 @@ impl Sealed for super::Prepared {}
+         impl Sealed for super::Enabled {}
+     }
+ 
++    /// Obtains and enables a [`devres`]-managed [`Clk`] for a bound device.
++    ///
++    /// [`devres`]: crate::devres::Devres
++    pub fn devm_enable(dev: &Device<Bound>, name: Option<&CStr>) -> Result {
++        let name = name.map_or(ptr::null(), |n| n.as_char_ptr());
++
++        // SAFETY: It is safe to call [`devm_clk_get_enabled`] with a valid
++        // device pointer.
++        from_err_ptr(unsafe { bindings::devm_clk_get_enabled(dev.as_raw(), name) })?;
++        Ok(())
++    }
++
++    /// Obtains and enables a [`devres`]-managed [`Clk`] for a bound device.
++    ///
++    /// This does not print any error messages if the clock is not found.
++    ///
++    /// [`devres`]: crate::devres::Devres
++    pub fn devm_enable_optional(dev: &Device<Bound>, name: Option<&CStr>) -> Result {
++        let name = name.map_or(ptr::null(), |n| n.as_char_ptr());
++
++        // SAFETY: It is safe to call [`devm_clk_get_optional_enabled`] with a
++        // valid device pointer.
++        from_err_ptr(unsafe { bindings::devm_clk_get_optional_enabled(dev.as_raw(), name) })?;
++        Ok(())
++    }
++
++    /// Same as [`devm_enable_optional`], but also sets the rate.
++    pub fn devm_enable_optional_with_rate(
++        dev: &Device<Bound>,
++        name: Option<&CStr>,
++        rate: Hertz,
++    ) -> Result {
++        let name = name.map_or(ptr::null(), |n| n.as_char_ptr());
++
++        // SAFETY: It is safe to call
++        // [`devm_clk_get_optional_enabled_with_rate`] with a valid device
++        // pointer.
++        from_err_ptr(unsafe {
++            bindings::devm_clk_get_optional_enabled_with_rate(dev.as_raw(), name, rate.as_hz())
++        })?;
++        Ok(())
++    }
++
+     /// A trait representing the different states that a [`Clk`] can be in.
+     pub trait ClkState: private::Sealed {
+         /// Whether the clock should be disabled when dropped.
 
-Thanks, Danilo {
-  - Moved the devres changes into its own patch
-  - Require &Device<Bound> for all functions where a &Device is used
-  - Account for con_in in SAFETY comments where applicable
-  - Added backticks
-}
-
-- Link to v2: https://lore.kernel.org/r/20250910-clk-type-state-v2-0-1b97c11bb631@collabora.com
-
-Changes in v2:
-- Added Alice's patch as patch 1, since it is a dependency.
-- Added devm helpers (like we did for Regulator<T>)
-- Fixed missing clk_put() call in Drop (Danilo)
-- Fixed missing parenthesis and wrong docs (Viresh)
-- Removed extra "dev" parameter from "shutdown" example (Danilo)
-- Removed useless type annotation from example (Danilo)
-- Link to v1: https://lore.kernel.org/rust-for-linux/20250729-clk-type-state-v1-1-896b53816f7b@collabora.com/#r
-
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-To: Viresh Kumar <viresh.kumar@linaro.org>
-To: Danilo Krummrich <dakr@kernel.org>
-To: Alice Ryhl <aliceryhl@google.com>
-To: Daniel Almeida <daniel.almeida@collabora.com>
-To: David Airlie <airlied@gmail.com>
-To: Simona Vetter <simona@ffwll.ch>
-To: Drew Fustini <fustini@kernel.org>
-To: Guo Ren <guoren@kernel.org>
-To: Fu Wei <wefu@redhat.com>
-To: Michal Wilczynski <m.wilczynski@samsung.com>
-To: Uwe Kleine-König <ukleinek@kernel.org>
-To: Michael Turquette <mturquette@baylibre.com>
-To: Stephen Boyd <sboyd@kernel.org>
-To: Brian Masney <bmasney@redhat.com>
-To: Miguel Ojeda <ojeda@kernel.org>
-To: Boqun Feng <boqun@kernel.org>
-To: Gary Guo <gary@garyguo.net>
-To: Björn Roy Baron <bjorn3_gh@protonmail.com>
-To: Benno Lossin <lossin@kernel.org>
-To: Andreas Hindborg <a.hindborg@kernel.org>
-To: Trevor Gross <tmgross@umich.edu>
-Cc: linux-pm@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Cc: dri-devel@lists.freedesktop.org
-Cc: linux-riscv@lists.infradead.org
-Cc: linux-pwm@vger.kernel.org
-Cc: linux-clk@vger.kernel.org
-Cc: rust-for-linux@vger.kernel.org
-Cc: Boris Brezillon <boris.brezillon@collabora.com>
-
----
-Daniel Almeida (3):
-      rust: clk: use the type-state pattern
-      rust: clk: add devres-managed clks
-      rust: clk: use 'kernel vertical style' for imports
-
- drivers/cpufreq/rcpufreq_dt.rs |   2 +-
- drivers/gpu/drm/tyr/driver.rs  |  31 +--
- drivers/pwm/pwm_th1520.rs      |  17 +-
- rust/kernel/clk.rs             | 595 +++++++++++++++++++++++++++++++----------
- rust/kernel/cpufreq.rs         |   8 +-
- 5 files changed, 477 insertions(+), 176 deletions(-)
----
-base-commit: 8d03cc42a42b1a3f1535757f65bfb74a9753953f
-change-id: 20250909-clk-type-state-c01aa7dd551d
-
-Best regards,
---  
-Daniel Almeida <daniel.almeida@collabora.com>
+-- 
+2.54.0
 
