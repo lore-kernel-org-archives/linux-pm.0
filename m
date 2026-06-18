@@ -1,54 +1,54 @@
-Received: from mail-pg1-f201.google.com (mail-pg1-f201.google.com [209.85.215.201])
+Received: from mail-pj1-f73.google.com (mail-pj1-f73.google.com [209.85.216.73])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E079334D3B0
-	for <linux-pm@vger.kernel.org>; Thu, 18 Jun 2026 22:45:43 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.215.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id ECC68352014
+	for <linux-pm@vger.kernel.org>; Thu, 18 Jun 2026 22:45:44 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.216.73
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1781822745; cv=none; b=Z37mm0C1KFvAIgjgiW17fiYw2FK0ZbxyROGHwbz6HaY+CiU3MmhKrZW3lgGoN5TfsceNWP296cU1pysCym5eukWzkbLsZZBo3iFXSz5EwfvehF+lFXIenL0sSZ7HD8CP+snSiLPjMt95TnmIQo8EKE+6JXcrsTSP6iN3fdMT3oI=
+	t=1781822746; cv=none; b=CXT5/cTJW1yYfhTveNFnXGoJmpBB0ZMRX1fPCxKc/9Hj7K+3z7JAhr0jYP6Qc02Qux5EhhuSp2nt1SVd1855zdK+uIKUB/RC5eb/WQYWHTYc6XxeEHMd9zKkybgHXWjAo6i5A7Jp+SS1MgMMXGSrbSa9NqDkPevBnJM2CxruR6U=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1781822745; c=relaxed/simple;
-	bh=H+cAxBHJd4fZaA9Qkzfp9V6DYmmmJCJHfF1TvznEyVk=;
+	s=arc-20240116; t=1781822746; c=relaxed/simple;
+	bh=p77TveDbpp7HNftGzvjzpX7z4GilKjxHXs0y5CuWHI8=;
 	h=Date:In-Reply-To:Mime-Version:References:Message-ID:Subject:From:
-	 To:Cc:Content-Type; b=r8w3nRkURF7x1fNju+hParW9PYZf/Zju41sovIBt/gCzATM3QYF+0hJAHfDTb0yL5v+Iv7qxiB7NtdKzw3qd7LLMtANf82bJoiA2p1e5B08pKx/B/6oboRBy34fjuzzxeWuzuTVsilBO5/z3m7D8vQq4NxIezmKxRw1rPcuTk7s=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com; spf=pass smtp.mailfrom=flex--jmattson.bounces.google.com; dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b=kG+s1mEv; arc=none smtp.client-ip=209.85.215.201
+	 To:Cc:Content-Type; b=ACObrR6sE27cwKqJuUK/BrZj99Hl0gaPtGt4EawdsVzyGVzPr7jXjz7ic61aaGEGNG0d3NUe0BiNPYavbCQLBusfvYJPX0BeFUGicfezG7Z4Kh9E6HWIWLPagaqtx1jkSed5aLRLGlzM5yfuN/JDPZSu86EWhFg/ijdKFNMW3dE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com; spf=pass smtp.mailfrom=flex--jmattson.bounces.google.com; dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b=JnCYX2oU; arc=none smtp.client-ip=209.85.216.73
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=flex--jmattson.bounces.google.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b="kG+s1mEv"
-Received: by mail-pg1-f201.google.com with SMTP id 41be03b00d2f7-c89956023dbso679567a12.0
-        for <linux-pm@vger.kernel.org>; Thu, 18 Jun 2026 15:45:43 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b="JnCYX2oU"
+Received: by mail-pj1-f73.google.com with SMTP id 98e67ed59e1d1-37c648d3ab9so1025739a91.3
+        for <linux-pm@vger.kernel.org>; Thu, 18 Jun 2026 15:45:44 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20251104; t=1781822743; x=1782427543; darn=vger.kernel.org;
+        d=google.com; s=20251104; t=1781822744; x=1782427544; darn=vger.kernel.org;
         h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
          :date:from:to:cc:subject:date:message-id:reply-to;
-        bh=u1jvwhNjvq2Is/V87dzOQZ0MYgc6uXTrarn3nSsMDgc=;
-        b=kG+s1mEvr5s3JHPth8hhh1jU40br79RWuJ6ogiVYnVVOaX14kWhDBDljqzk7VrGFlg
-         7ParWVt02doQZ0GUcJ9VGQJALc5VdsPUFrH/GuLP1S5NzPYOeKT7V1AbvLDBUFlJDu5c
-         DE3be4QeY6sJTS7T9eS0+DVHmokm2BV5UcLZS/scs8EEReT1V3cCt4+Jt0tNyg+en2zX
-         N64/sX7NyBD1T9TrGPA4hXC0JbYkrlR+aS0oeLsKTRlZb8DzrZJbq/ajUufRG4JasT0K
-         H+cza1TqBx2A4FAX2D7qhr7X85LAbKwp7o0b/PLzkU5bnW3r3OTE+kBbm9VORwIyIxK4
-         285g==
+        bh=yzcC92EHb91544uEP740BS0GbTjYgwTgsbLMNqy+GD0=;
+        b=JnCYX2oUh0ter0I8W+s0+pqY8qc0OmYYEWZ7BrMviJtxrA+e8SwMxTbG3VIrx4nzx6
+         i1+uhTdUcLbBH4VCm1YkZSObE70ea0FqTZwthVPPtcxmKrMRFE9LOx1oQETns0uS8thv
+         pMl9SDU0RKG8Vj6TxC5Vki9rCoawxxssHy7hmTSgwKNneFgyvMmA8AsOluVYuVZTPvC4
+         oPqb1ruoeh2pXtHVCkrv78kHso5ofXJ5YdMBS0nGdV+FSNuiweFqllD8Ga3soPPeEziH
+         LFJXjuhEGYn7u764vLJ93Du0TtsEDP9dvUN4FykKXicwAbg1Woy1b5UPXLWzj+0MxW20
+         0+AA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1781822743; x=1782427543;
+        d=1e100.net; s=20251104; t=1781822744; x=1782427544;
         h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
          :date:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=u1jvwhNjvq2Is/V87dzOQZ0MYgc6uXTrarn3nSsMDgc=;
-        b=GjUJ6eYqHrcrLU+sPh+QAWf5wJW9CJNe/waDxn1UmS8EIZEmIuhFEPb7E4vqMDTfuo
-         7jEs5YSf1i+mq9Zlz/70BWlskOjT67nEnqx8M0cgO47q331neU2iIJisOpEIPoLV9zjl
-         4XIhJua3yRH8kA62WwLzIERKSsajPU7vifcqsoEV1pfdXDN9Oq5I+xEvzDcrtq6bgCsy
-         YWZ01Kncm3pZwQ6CMeJCf92xlaTPbzZM4DCja3YSRGNk8llqtaIcLF6/Q4333g74qLmE
-         Pi3qChI64xFEF5Wk66W/ZFwNfGlnxqkIVYC2V7zkZIwZbPMIKkjR0r4sk17RarQdnsxf
-         qTxA==
-X-Forwarded-Encrypted: i=1; AFNElJ9I2nqXdcTJEjEiR4feU7BmMVLaECOHFiqVJhuf6unAcwiDA6ZmxZIJ36ZP5P1+B+FHe9r66GuWdQ==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yx6YZwQRa/I7VcclSoPgpBCD8r7tzjBXW3u1fdHfzdJRS3qCJKj
-	I71BMGBxtgu8uz/f0Cjq8NlEfXgLJ4KH0EnOguLGl0CdBZ3q2SqGB7PT9njlL4EAYfgWqVj1ngX
-	77uyCBXoHvzYv6g==
-X-Received: from pgcv2.prod.google.com ([2002:a05:6a02:5302:b0:c89:a67b:d71f])
+        bh=yzcC92EHb91544uEP740BS0GbTjYgwTgsbLMNqy+GD0=;
+        b=jz5OBEYx4ZqyiFGWohqHGUgjKEiwj1CyFSbEofYOGgcbzT/J4hJZRXH3w6CfMMBrUN
+         dTG1Zv5L+Wu+pDxpPUtEabw5YHpJkojn0tEOK2iEx09V1RFSdJTALYl0bMcgh77zwIV8
+         pNI2cfjr45HwaQSS5OyNqxUw1ivls9Hg7mfTbk00jXd3VvFX8OVrDkLb065NvCXzv4jI
+         4S6bnatEw4ZcVO87rXZJV1rSQXOvdm9XNhvaY/xNC1TLn/rsXV5lvNwhd5cXJ7fP7ZtW
+         vP9lU6mdVQaYKxFZ7hVbVO+sVSHyi+rxG6o2XKhWTm7gpNdwgzwbcugussbonKVXn5U3
+         kQFA==
+X-Forwarded-Encrypted: i=1; AFNElJ9VL/QUqt6XkZ7CgQ0petjyF4CeYJhFcEXruzE/IUEcBlWLn5zBMmzFCxm/2LhvF9l4c4GLw1qkzQ==@vger.kernel.org
+X-Gm-Message-State: AOJu0YzyU8xEPNUq7832NlFOLGViABJyBlpLwdHt9oS5cih7SHGQ3VIl
+	9423Au8m3GW6qiT+suU1LLeyiMeWfHZFWxl7sQyQdxGSQfbka1eNx7MIgFYLURC5lK2mjYk7Mf1
+	DmGXQC/JIY3WXpw==
+X-Received: from pjbpm10.prod.google.com ([2002:a17:90b:3c4a:b0:36b:d4f1:5505])
  (user=jmattson job=prod-delivery.src-stubby-dispatcher) by
- 2002:a05:6a20:cf86:b0:3b3:bdf5:117e with SMTP id adf61e73a8af0-3bb33952b8amr1171897637.27.1781822743201;
- Thu, 18 Jun 2026 15:45:43 -0700 (PDT)
-Date: Thu, 18 Jun 2026 15:45:26 -0700
+ 2002:a17:90a:f950:b0:36b:79aa:cda4 with SMTP id 98e67ed59e1d1-37d160481fcmr1576750a91.8.1781822744068;
+ Thu, 18 Jun 2026 15:45:44 -0700 (PDT)
+Date: Thu, 18 Jun 2026 15:45:27 -0700
 In-Reply-To: <20260618224527.1506419-1-jmattson@google.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
@@ -58,60 +58,41 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 Mime-Version: 1.0
 References: <20260618224527.1506419-1-jmattson@google.com>
 X-Mailer: git-send-email 2.55.0.rc0.799.gd6f94ed593-goog
-Message-ID: <20260618224527.1506419-4-jmattson@google.com>
-Subject: [PATCH v3 3/4] cpufreq: ACPI: Use IPI to update boost MSR in cpufreq_boost_down_prep()
+Message-ID: <20260618224527.1506419-5-jmattson@google.com>
+Subject: [PATCH v3 4/4] cpufreq: ACPI: Use amd_update_hwcr() for MSR_K7_HWCR updates
 From: Jim Mattson <jmattson@google.com>
 To: bp@alien8.de, tglx@kernel.org, x86@kernel.org, rafael@kernel.org, 
 	viresh.kumar@linaro.org, yosry@kernel.org, andrew.cooper3@citrix.com, 
 	ludloff@gmail.com
 Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, 
-	Jim Mattson <jmattson@google.com>, Sashiko <sashiko-bot@kernel.org>
+	Jim Mattson <jmattson@google.com>
 Content-Type: text/plain; charset="UTF-8"
 
-During driver exit or CPU hotplug, acpi_cpufreq_cpu_exit() calls
-cpufreq_boost_down_prep() to re-enable boost on the target CPU.  However,
-cpufreq_boost_down_prep() ignores the target CPU parameter and calls
-boost_set_msr(1) locally. Since this runs in an unbound process context, it
-updates the local CPU's MSR while leaving the target CPU's boost state
-unchanged.
+For consistency and maintainability, update boost_set_msr() to use
+the centralized amd_update_hwcr() helper when modifying MSR_K7_HWCR.
 
-On Intel platforms, the open-coded read-modify-write of
-MSR_IA32_MISC_ENABLE in boost_set_msr() is vulnerable to preemption and
-thread migration if executed in process context.
-
-Fix both issues by routing the MSR update through
-smp_call_function_single() to execute boost_set_msr() synchronously on the
-target CPU. This ensures the correct CPU is updated and that the RMW
-sequence on Intel executes safely in IPI context with interrupts disabled.
-
-Fixes: a3605c46e0c0 ("cpufreq: acpi-cpufreq: drop rdmsr_on_cpus() usage")
-Reported-by: Sashiko <sashiko-bot@kernel.org>
-Closes: https://sashiko.dev/#/patchset/20260612215729.1532175-1-jmattson%40google.com
+Suggested-by: Borislav Petkov <bp@alien8.de>
 Assisted-by: Gemini:gemini-3.5-pro
 Signed-off-by: Jim Mattson <jmattson@google.com>
 ---
- drivers/cpufreq/acpi-cpufreq.c | 7 ++++---
- 1 file changed, 4 insertions(+), 3 deletions(-)
+ drivers/cpufreq/acpi-cpufreq.c | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
 
 diff --git a/drivers/cpufreq/acpi-cpufreq.c b/drivers/cpufreq/acpi-cpufreq.c
-index 21639d9ac753..48d678812fd6 100644
+index 48d678812fd6..b3e058dd6b4b 100644
 --- a/drivers/cpufreq/acpi-cpufreq.c
 +++ b/drivers/cpufreq/acpi-cpufreq.c
-@@ -528,10 +528,11 @@ static void free_acpi_perf_data(void)
- static int cpufreq_boost_down_prep(unsigned int cpu)
- {
- 	/*
--	 * Clear the boost-disable bit on the CPU_DOWN path so that
--	 * this cpu cannot block the remaining ones from boosting.
-+	 * Clear the boost-disable bit on the target CPU so that
-+	 * it cannot block the remaining ones from boosting.
- 	 */
--	return boost_set_msr(1);
-+	return smp_call_function_single(cpu, boost_set_msr_each,
-+					(void *)1L, 1);
- }
- 
- /*
+@@ -103,9 +103,7 @@ static int boost_set_msr(bool enable)
+ 		break;
+ 	case X86_VENDOR_HYGON:
+ 	case X86_VENDOR_AMD:
+-		msr_addr = MSR_K7_HWCR;
+-		msr_mask = MSR_K7_HWCR_CPB_DIS;
+-		break;
++		return amd_update_hwcr(MSR_K7_HWCR_CPB_DIS_BIT, !enable);
+ 	default:
+ 		return -EINVAL;
+ 	}
 -- 
 2.55.0.rc0.799.gd6f94ed593-goog
 
