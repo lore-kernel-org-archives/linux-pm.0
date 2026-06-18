@@ -1,145 +1,201 @@
-Received: from smtpbguseast1.qq.com (smtpbguseast1.qq.com [54.204.34.129])
+Received: from sender4-op-o11.zoho.com (sender4-op-o11.zoho.com [136.143.188.11])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9FF1A2D9EE4;
-	Thu, 18 Jun 2026 01:32:12 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=54.204.34.129
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1781746335; cv=none; b=XiT7jasN7P2ofBtIqteLcnV7yOAerZn5apV09pWGEzDpgw9gUgmvaX94dOtcdkw2vi7Ke9179s4Veszb+ETcJTqoKfSDOAYjzfrBnM3Cf54FehWpGI+6YaH1Q/63zMGrPF43f4GUtA36EAso8m0J98k/cfo+fKU6SbrkuaocTRk=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1781746335; c=relaxed/simple;
-	bh=2gr6RnPWlqfowu2APd9UT+JaBUmNi2S9q1Qj8h8PPWs=;
-	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=ID5mJ0Keex3lMip/2D0YuM+FD1s9SZybT234vni/HJSEZRMcDdd/+4qGtmVXvz6G2xd0nal5IoN5VBUAKjTbJBlmTElnYYj/eeet3UYIB1BUoLgCHh+ViAFUePEQdnopUDNFYsAFcTljdWMSZwiCAbK2HjsgvAPb7aRfsj80IKA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=uniontech.com; spf=pass smtp.mailfrom=uniontech.com; dkim=pass (1024-bit key) header.d=uniontech.com header.i=@uniontech.com header.b=c26MEkLL; arc=none smtp.client-ip=54.204.34.129
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=uniontech.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=uniontech.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 083861A680E;
+	Thu, 18 Jun 2026 03:48:29 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=136.143.188.11
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1781754511; cv=pass; b=XlPKj8JTVcWBgHUngcEajxY4A5c7QQSX2MUr/PbEGOgnPyJ80hUbOEnXjxdzqSuqM538iDHhYqoD6WIPx+FdDtjsvWxinDDiP/6DHDSlDmF+fufod28IzXgLMBZubiykna3d2RaTQCs0f5FYpy4qF6R+txmrh4lwHkjGEKlvrPg=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1781754511; c=relaxed/simple;
+	bh=6Cp3otGVigzclKCuk/nbBESEREfIgSidtmQQ4GBq43k=;
+	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=mL4FSjC7jl09HptAw4yh5qu5IwlKnKpiUj7R0vFeAMJMcP+UQjXv5hVpfTGSGTocb/N2muTWl8JmM4C5/mpA1B+ELr8601EOSARI1Hm4FtJ4FV8fH1kC+9wJ+Va/P0uiRgASYXhEyyHJtFQ1YYc3cMId5LB+LE/cFEb+yeZCn1A=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (1024-bit key) header.d=collabora.com header.i=daniel.almeida@collabora.com header.b=DfzxTsaU; arc=pass smtp.client-ip=136.143.188.11
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=uniontech.com header.i=@uniontech.com header.b="c26MEkLL"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=uniontech.com;
-	s=onoh2408; t=1781746329;
-	bh=IJJqRoaJn1UGNs+9V5J1PVXcLQf6UF9/UcB48PE0U4M=;
-	h=From:To:Subject:Date:Message-Id:MIME-Version;
-	b=c26MEkLLzc4B6JI9ktoaQunXCSmtDX3dGaCiTsCx9V3t+xam7d9FTnwHQfVMMlU9w
-	 f2dQ+sdLuaajOFGfTVxqV9whyOKZxbVG9AO/xWDO87cZyqstqzxlvGzB6jYT2JFdvm
-	 vSAHexN7fMH6LDdoS3RDkB8PNKsMiqf3+2zbNRy0=
-X-QQ-mid: esmtpsz10t1781746320tc3798f72
-X-QQ-Originating-IP: lrrYilJAl45jPMuEjtLcMdeb/zzIeyM440DdwcO7wec=
-Received: from localhost.localdomain ( [113.57.152.160])
-	by bizesmtp.qq.com (ESMTP) with 
-	id ; Thu, 18 Jun 2026 09:31:56 +0800 (CST)
-X-QQ-SSF: 0000000000000000000000000000000
-X-QQ-GoodBg: 1
-X-BIZMAIL-ID: 1632563843144384507
-EX-QQ-RecipientCnt: 15
-From: Haowen Tu <tuhaowen@uniontech.com>
-To: rafael@kernel.org
-Cc: tuhaowen@uniontech.com,
-	gregkh@linuxfoundation.org,
-	hansg@kernel.org,
-	kernel@uniontech.com,
-	laurent.pinchart@ideasonboard.com,
-	lenb@kernel.org,
-	linux-kernel@vger.kernel.org,
-	linux-media@vger.kernel.org,
-	linux-pm@vger.kernel.org,
-	linux-usb@vger.kernel.org,
-	mchehab@kernel.org,
-	oneukum@suse.com,
-	pavel@kernel.org,
-	stern@rowland.harvard.edu
-Subject: [PATCH v3 3/3] media: uvcvideo: skip streaming restart after hibernation snapshot
-Date: Thu, 18 Jun 2026 09:31:33 +0800
-Message-Id: <20260618013133.1047270-4-tuhaowen@uniontech.com>
-X-Mailer: git-send-email 2.20.1
-In-Reply-To: <20260618013133.1047270-1-tuhaowen@uniontech.com>
-References: <20260602032413.1540166-1-tuhaowen@uniontech.com>
- <20260618013133.1047270-1-tuhaowen@uniontech.com>
+	dkim=pass (1024-bit key) header.d=collabora.com header.i=daniel.almeida@collabora.com header.b="DfzxTsaU"
+ARC-Seal: i=1; a=rsa-sha256; t=1781754477; cv=none; 
+	d=zohomail.com; s=zohoarc; 
+	b=BiSkO6X+CbSlyyv0PKWuBOBKBoJmBDBicT4zKkw9qKECHs/xzC+TrUR4g5ZjKsZ7UbiE/lSQI+riGcCdE2fR+WPH9U25hzFBcmiuTwg0dD4Wf+Rm8b3m3gqll8jIIWJHnyNYiU02KGBdIPv38MtP/q5SySm0H9dLAE9TN6ZAkgg=
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=zohomail.com; s=zohoarc; 
+	t=1781754477; h=Content-Type:Content-Transfer-Encoding:Cc:Cc:Date:Date:From:From:MIME-Version:Message-ID:Subject:Subject:To:To:Message-Id:Reply-To; 
+	bh=a/FAuDcMrWGnOcei28EPEPjKA2Es2+JGZ7eG60Xhc2o=; 
+	b=Jzd+1ym5YIPHuJ1poP7RIsrqz2mE/cGEZfwakFIPf0ETEdyCGBgP4JwgY/F3sHdAEGhJZfVh0/FGL3Yc2j5g0f7PpideF7GX4Htxat4sh1GodcN9Ft02aUPg+wfiEV+M1IRga6pPDg4EPEUPBktFmn8OdmrPC0vGHyc8b2aztOA=
+ARC-Authentication-Results: i=1; mx.zohomail.com;
+	dkim=pass  header.i=collabora.com;
+	spf=pass  smtp.mailfrom=daniel.almeida@collabora.com;
+	dmarc=pass header.from=<daniel.almeida@collabora.com>
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; t=1781754477;
+	s=zohomail; d=collabora.com; i=daniel.almeida@collabora.com;
+	h=From:From:Subject:Subject:Date:Date:Message-Id:Message-Id:MIME-Version:Content-Type:Content-Transfer-Encoding:To:To:Cc:Cc:Reply-To;
+	bh=a/FAuDcMrWGnOcei28EPEPjKA2Es2+JGZ7eG60Xhc2o=;
+	b=DfzxTsaUd3L6p936K2c7mZaX6NLwGPbFNWt8O68s6IqAdOfgLVUD91pVOyH7ciUq
+	OlPyHdHOWWwqPtQSUQ0kTE5bKaL+Fa9HouutzU0w6/OeeKJ5CTKf8hKyAXlI2kHK15V
+	KASwqBk0kUJ1KAEpbaQcfFO90zPA9bpSBnGeg88E=
+Received: by mx.zohomail.com with SMTPS id 1781754475220300.17079620644984;
+	Wed, 17 Jun 2026 20:47:55 -0700 (PDT)
+From: Daniel Almeida <daniel.almeida@collabora.com>
+Subject: [PATCH v4 0/3] Clk improvements
+Date: Thu, 18 Jun 2026 00:46:34 -0300
+Message-Id: <20260618-clk-type-state-v4-0-8be082786080@collabora.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-X-QQ-SENDSIZE: 520
-Feedback-ID: esmtpsz:uniontech.com:qybglogicsvrsz:qybglogicsvrsz3b-0
-X-QQ-XMAILINFO: OYMEOeTae7ml0htRwYqZzVrpBuOjNfauwX4TaBEmwv1BlxDiACpfk67E
-	KE4ZD6pgn5JH7cJAaUc3zX07o6RXF4MTX6wGEDOeSTO6NE3wGfvhy3Btgwsf60GhEegc5x7
-	5ung55hp+wKpiFfqaHS4byfvbtSraKHf6sVkthC51jyT+iGHytLgmQ0BVi4HfC+7XGcVPPm
-	YMLYzXVCg6bd1/22B18VnkfLr+iBTeI60/kNn5gVngBu5jNJxWalX85qLC/neoj43G7VGwf
-	qtdd1odJOgDWVHKYBm0SGn3kimAgZ5gpX/gcTTGNLQEjqcsBsIpxR0FqSrcdihiqD+cFih0
-	LEndi0hdWxWwSDd6pqkV9QBzZ6ywATsLfP5fMtDunAXpejBeqPfECqRkeSks4pWHdSgDi8o
-	tZOX1zk9yyC6tiMCeoCkBbNCQ9XOqFnbs1XIuEm06wtVFy1GBb+YhXp9+rFki9XewQn3KeO
-	KzOd5nKrc7rJ//iDF5j4CSRMdnxCI4qod7XE6p0PcCmQ7/BAjEEUIUWzsaVLtBMg86or3iN
-	ggKzoON27msX4VwurT2xHPkmKy5hnor+2bdhf3Aq8iNAKrNZNhCTlfnCIE9Y5gAM0OzbsVJ
-	G4loAP7mVacNJOb+wS1sFzA3pk/KnQlCHWlvsP7eY3y6UXcrBdwfK4tulm4ZsyJd7WgaMMv
-	7KOA5mv94Wu/msS6syKzvE9UiTqFjcMlP9+8xSohA70opl0bbY7akACBFKcEFSqwR3WYEwM
-	8ypey7hNHih7PIpjIAkHOKbvXRKTI97ZD1uBO//rfpfRDzZu65WzpYnFyt4EQH9mbZnEU6c
-	o1ovhPeaT531/Z357llmJDrIkP9igKFqPONRBxLHSha2agpLgrxPZhkkwD6SoUv5zQvlkYL
-	c0bnnrgs9G6nIWuEhPQyJaEU1sJMwpy/Nv9fSFHIoqWVI6ec/+B8N9TNn368ePvAcMa+N5e
-	EQVMH3HM69NefKod/d9laUK1W8Ks1tZaOhVdla8KZCQzZyCm0cTnAnD/2z46FgziKZUhmUL
-	Y6KKGxy8/txpK5fxpX/YBRge0MdJwgbXZ7lL1v1QuJNxwFTIOTHbX8F1WR3v8=
-X-QQ-XMRINFO: MPJ6Tf5t3I/ylTmHUqvI8+Wpn+Gzalws3A==
-X-QQ-RECHKSPAM: 0
+X-B4-Tracking: v=1; b=H4sIAAAAAAAC/6XQTW7DIBAF4KtErDsVA8WErHqPqgt+xjGqE1KgV
+ qPIdy9OWlWKl1m+xftg3oUVypEK220uLNMUS0zHFl6eNswP9rgniKFlJrhQ3HADfvyAej4RlGo
+ rgedorQ5BKQyslU6Z+vh9Bd/eW+5zOkAdMtl/RosVMyEgbE3nlNxi12v36tM4WpeyffbpsMhDL
+ DXl8/Wnk1j8R7TbPchXVQEc0BntEZ3rJN5Vl5sm+fd6x5HrFSEboXWQJImU8eKemG87Zfr8anv
+ X37Hm+QcRS4DljQEAAA==
+X-Change-ID: 20250909-clk-type-state-c01aa7dd551d
+To: "Rafael J. Wysocki" <rafael@kernel.org>, 
+ Viresh Kumar <viresh.kumar@linaro.org>, Danilo Krummrich <dakr@kernel.org>, 
+ Alice Ryhl <aliceryhl@google.com>, 
+ Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, 
+ Maxime Ripard <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>, 
+ David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>, 
+ Drew Fustini <fustini@kernel.org>, Guo Ren <guoren@kernel.org>, 
+ Fu Wei <wefu@redhat.com>, 
+ =?utf-8?q?Uwe_Kleine-K=C3=B6nig?= <ukleinek@kernel.org>, 
+ Michael Turquette <mturquette@baylibre.com>, 
+ Stephen Boyd <sboyd@kernel.org>, Miguel Ojeda <ojeda@kernel.org>, 
+ Gary Guo <gary@garyguo.net>, 
+ =?utf-8?q?Bj=C3=B6rn_Roy_Baron?= <bjorn3_gh@protonmail.com>, 
+ Benno Lossin <lossin@kernel.org>, Andreas Hindborg <a.hindborg@kernel.org>, 
+ Trevor Gross <tmgross@umich.edu>, 
+ Daniel Almeida <daniel.almeida@collabora.com>, 
+ Michal Wilczynski <m.wilczynski@samsung.com>, 
+ Brian Masney <bmasney@redhat.com>, Boqun Feng <boqun@kernel.org>, 
+ Boqun Feng <boqun@kernel.org>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
+ dri-devel@lists.freedesktop.org, linux-riscv@lists.infradead.org, 
+ linux-pwm@vger.kernel.org, linux-clk@vger.kernel.org, 
+ rust-for-linux@vger.kernel.org, 
+ Boris Brezillon <boris.brezillon@collabora.com>
+X-Mailer: b4 0.15.2
+X-ZohoMailClient: External
 
-After the hibernation snapshot is created, devices are resumed with
-PMSG_THAW before the image is written and the system is powered off.
-Restarting an active UVC stream during this phase reinitializes the
-camera and visibly turns its indicator LED back on.
+This series contains a few improvements that simplifies clock handling for
+drivers.
 
-Skip only the UVC streaming hardware restart while the snapshot is
-available.  The driver's frozen state and clock are still updated before
-the check, and a subsequent UVC suspend can stop the stream and select
-alternate setting 0 as usual.  uvcvideo does not provide a shutdown
-callback that requires the streaming hardware to be restarted first.
+Patch 1 implements the same typestate pattern that has been used
+successfully for Regulators. This is needed because otherwise drivers
+will be responsible for unpreparing and disabling clocks themselves and
+ultimately handling the reference counts on their own. This is
+undesirable. The patch automatically encodes this information using the
+type system so that no misuse can occur.
 
-This is a device-specific use of pm_hibernation_snapshot_done().  The
-helper does not cause other drivers or USB core to skip THAW resume.
+Patch 2 makes things more convenient by offering devres-managed APIs. This
+lets drivers set clock parameters once and forget about lifetime
+management.
 
-Tested with hibernation image written to local storage and resumed from
-disk on a system with a USB UVC camera attached; the camera LED remains
-off during image writing and the video stream resumes correctly after
-restore.
+Patch 3 converts clk.rs to the newer kernel-vertical style in order to make
+future changes easier.
 
-Signed-off-by: Haowen Tu <tuhaowen@uniontech.com>
+Alice Ryhl's "rust: clk: implement Send and Sync" series, which this used to
+depend on, has since been merged, so this series now applies directly on
+clk-next.
+
 ---
+Changes in v4:
+- Rebased onto clk-next. Alice Ryhl's "rust: clk: implement Send and Sync"
+  series is now merged upstream, so it is no longer carried as a dependency.
+- Fixed the build with CONFIG_CPUFREQ_DT_RUST=y. The generic DT cpufreq
+  driver only has the (unbound) per-CPU device, so it cannot hand a
+  &Device<Bound> to Policy::set_clk(). Added a pub(crate) Clk::get_unbound()
+  for the few in-tree abstractions that operate on a device outside a bind
+  scope; set_clk() now takes &Device and uses it. Clk::get()/get_optional()
+  and the devm_* helpers still require &Device<Bound>.
+- Added impl From<Error<State>> for kernel::error::Error, so the fallible
+  state transitions can be used with `?` (and chained) instead of
+  .map_err(|e| e.error).
+- Added Clk::<Prepared>::with_enabled(), which runs a closure with the clock
+  temporarily enabled, scoping the Enabled state without giving up the
+  prepared clock.
+- Documented how to change a clock's state at runtime via an enum, for
+  drivers that enable/disable across resume/suspend.
+- Link to v3: https://lore.kernel.org/r/20260107-clk-type-state-v3-0-77d3e3ee59c2@collabora.com
+
 Changes in v3:
-- Clarify that only the UVC streaming hardware restart is skipped.
-- Explain the subsequent UVC suspend and shutdown handling.
+- Rebased on top of 6.19-rc4
+- Dropped patch 1 (from Alice), added her series as a dependency instead
+- Fixed Tyr, PWM_TH1520 drivers
+- Changed clk.rs imports to kernel-vertical style
+- Added support get_optional shortcut for Prepared and Enabled (i.e.:
+  Clk::<Enabled>::get_optional())
+- Fixed misplaced #[inline] tag
+
+Thanks, Danilo {
+  - Moved the devres changes into its own patch
+  - Require &Device<Bound> for all functions where a &Device is used
+  - Account for con_in in SAFETY comments where applicable
+  - Added backticks
+}
+
+- Link to v2: https://lore.kernel.org/r/20250910-clk-type-state-v2-0-1b97c11bb631@collabora.com
 
 Changes in v2:
-- Use pm_hibernation_snapshot_done() after the PM helper was renamed.
-- Move the check after clearing the frozen state and resetting the clock.
+- Added Alice's patch as patch 1, since it is a dependency.
+- Added devm helpers (like we did for Regulator<T>)
+- Fixed missing clk_put() call in Drop (Danilo)
+- Fixed missing parenthesis and wrong docs (Viresh)
+- Removed extra "dev" parameter from "shutdown" example (Danilo)
+- Removed useless type annotation from example (Danilo)
+- Link to v1: https://lore.kernel.org/rust-for-linux/20250729-clk-type-state-v1-1-896b53816f7b@collabora.com/#r
 
- drivers/media/usb/uvc/uvc_video.c | 8 ++++++++
- 1 file changed, 8 insertions(+)
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+To: Danilo Krummrich <dakr@kernel.org>
+To: Alice Ryhl <aliceryhl@google.com>
+To: Daniel Almeida <daniel.almeida@collabora.com>
+To: David Airlie <airlied@gmail.com>
+To: Simona Vetter <simona@ffwll.ch>
+To: Drew Fustini <fustini@kernel.org>
+To: Guo Ren <guoren@kernel.org>
+To: Fu Wei <wefu@redhat.com>
+To: Michal Wilczynski <m.wilczynski@samsung.com>
+To: Uwe Kleine-König <ukleinek@kernel.org>
+To: Michael Turquette <mturquette@baylibre.com>
+To: Stephen Boyd <sboyd@kernel.org>
+To: Brian Masney <bmasney@redhat.com>
+To: Miguel Ojeda <ojeda@kernel.org>
+To: Boqun Feng <boqun@kernel.org>
+To: Gary Guo <gary@garyguo.net>
+To: Björn Roy Baron <bjorn3_gh@protonmail.com>
+To: Benno Lossin <lossin@kernel.org>
+To: Andreas Hindborg <a.hindborg@kernel.org>
+To: Trevor Gross <tmgross@umich.edu>
+Cc: linux-pm@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Cc: dri-devel@lists.freedesktop.org
+Cc: linux-riscv@lists.infradead.org
+Cc: linux-pwm@vger.kernel.org
+Cc: linux-clk@vger.kernel.org
+Cc: rust-for-linux@vger.kernel.org
+Cc: Boris Brezillon <boris.brezillon@collabora.com>
 
-diff --git a/drivers/media/usb/uvc/uvc_video.c b/drivers/media/usb/uvc/uvc_video.c
-index f6c8e3223796..1744298f4b1f 100644
---- a/drivers/media/usb/uvc/uvc_video.c
-+++ b/drivers/media/usb/uvc/uvc_video.c
-@@ -12,6 +12,7 @@
- #include <linux/list.h>
- #include <linux/module.h>
- #include <linux/slab.h>
-+#include <linux/suspend.h>
- #include <linux/usb.h>
- #include <linux/usb/hcd.h>
- #include <linux/videodev2.h>
-@@ -2151,6 +2152,13 @@ int uvc_video_resume(struct uvc_streaming *stream, int reset)
- 	if (!uvc_queue_streaming(&stream->queue))
- 		return 0;
- 
-+	/*
-+	 * Avoid restarting the streaming hardware during the transient THAW
-+	 * phase after a hibernation snapshot has been created.
-+	 */
-+	if (pm_hibernation_snapshot_done())
-+		return 0;
-+
- 	ret = uvc_commit_video(stream, &stream->ctrl);
- 	if (ret < 0)
- 		return ret;
--- 
-2.20.1
+---
+Daniel Almeida (3):
+      rust: clk: use the type-state pattern
+      rust: clk: add devres-managed clks
+      rust: clk: use 'kernel vertical style' for imports
+
+ drivers/cpufreq/rcpufreq_dt.rs |   2 +-
+ drivers/gpu/drm/tyr/driver.rs  |  31 +--
+ drivers/pwm/pwm_th1520.rs      |  17 +-
+ rust/kernel/clk.rs             | 595 +++++++++++++++++++++++++++++++----------
+ rust/kernel/cpufreq.rs         |   8 +-
+ 5 files changed, 477 insertions(+), 176 deletions(-)
+---
+base-commit: 8d03cc42a42b1a3f1535757f65bfb74a9753953f
+change-id: 20250909-clk-type-state-c01aa7dd551d
+
+Best regards,
+--  
+Daniel Almeida <daniel.almeida@collabora.com>
+
