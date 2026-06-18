@@ -1,98 +1,89 @@
-Received: from CWXP265CU010.outbound.protection.outlook.com (mail-ukwestazon11022084.outbound.protection.outlook.com [52.101.101.84])
+Received: from OSPPR02CU001.outbound.protection.outlook.com (mail-norwayeastazon11013019.outbound.protection.outlook.com [40.107.159.19])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C26953E5A0B;
-	Thu, 18 Jun 2026 17:05:02 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.101.84
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9EC9EEED8;
+	Thu, 18 Jun 2026 18:17:06 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.107.159.19
 ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1781802304; cv=fail; b=uqWeKi0FmCiXrslcnIis8oK8kYk58R+5F7QrZvkQ+Gajo1xgFTAwEu/6vGUgsPE6QEXsCGfDj5HM4xVmu0ocjBKYYa0kfz0gUSUu4qNJa1m8tSbGmYIqFL500OfPrfLgm7l+Lx6TlXzD8M7CvhR6j+w0gXeRydbgsFJI7OCBUds=
+	t=1781806627; cv=fail; b=SS5GoAZgbkkEsVVbqAztuh/ZrCGXYmO0+iXdQ7is84wi9dwZQpJLuDSHb1ymvCOgck1EouVLw2iXNnb0fNw4FcDrIH9j2uhl8J36VFI4N4YM0VvbADBAWdgPum7hopo8VJpLkYUy7VpqJUca1a5E6tmCkAxaevSSF03/46odnOo=
 ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1781802304; c=relaxed/simple;
-	bh=A0ywXdGf02/pqWfOcql1b083Co7opyezNY57GOUfVeM=;
-	h=From:Date:Subject:Content-Type:Message-Id:References:In-Reply-To:
-	 To:Cc:MIME-Version; b=pPRocZYR0WpkdA+/PvLwFIq1zYO3L4sI7H4oNYSoqam9iqPI7pQ3sjDSwpsCxZ/wmCymGrUtZ+dcHf+CZD/FnZKKnLXhm6KUBpI7H5L1DfCy57sZhJH2kKgtCewncM05hey2K9WmnJSfvmmZQzDxY/M10dUsphIgWmp29VlDQ+c=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=garyguo.net; spf=pass smtp.mailfrom=garyguo.net; dkim=pass (1024-bit key) header.d=garyguo.net header.i=@garyguo.net header.b=b0xRUOtK; arc=fail smtp.client-ip=52.101.101.84
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=garyguo.net
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=garyguo.net
+	s=arc-20240116; t=1781806627; c=relaxed/simple;
+	bh=yvbGydKxmvbYQNxupNWR+TZTG3xSdYfsbfxyAEIdTKw=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:Content-Type:
+	 Content-Disposition:In-Reply-To:MIME-Version; b=IEux22IBouTS2p7UbLi4bLuaOUmVGOTIazv/Hg9fQyZYhbONOmqUlk37J1LHUmIve8+8lwieptpqPetaQvjsXj4jbxuTsW0gt1E1j09PU8X74K1MBB8PgCb1skQSt45b2rVOvwz89ltAu8Bms+fcINNOGg5fENT+ECSvNp6fElc=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=oss.nxp.com; spf=pass smtp.mailfrom=oss.nxp.com; dkim=pass (2048-bit key) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.b=tOrLgIQr; arc=fail smtp.client-ip=40.107.159.19
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=oss.nxp.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.nxp.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=garyguo.net header.i=@garyguo.net header.b="b0xRUOtK"
+	dkim=pass (2048-bit key) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.b="tOrLgIQr"
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=mZAaaFMYU3nIlOZpNHmvOsSK8NNKLTQfLg2NjV1xVJybAxfl8xbF558q4sy0JqWI8vLVGQqVfiWCNlJNVav181E16BIJEoalIo7nRvdWtX8vHVP9otwohNlItssoFVoS7dDIdUtDYqf4I3RtDbKAblZmVBmNSbRVFjJqceKo5w8bhcztahcaSZ3vzmstrIa6exeXcSp6KjxsjSjK1VQRM44zeTGBDVQIuWwLO3V8RjI9ziwnDuGZHGANnhtxN1SwG+b0xTMimgvTLjvJQtdcmmX1jcxsjrGRVcwi9YmyJxZHeSKExU+n1auxF7HKwV8D/Hxs0BT6Bv6JlkqSZEr8Cg==
+ b=ZW3xkg+vUflfA4mpisQ25mngWB6Ss7ZgBMmxzNcE5wSpimRoc2B1giiukMVWjNWlz62JnGAw6Lmn6U3B65fIzINN/tTouXykDqXBnLuMPXbL3tXlUKhE8y7tLy2Lxhp0kLzLJLpHezbktIGztdlT0X/Mc7FCb5EVa9+KIEhSbJcle3X2gWSMTXyK+foYyJeRBKBvu7eRB7Ug7VL9WLS5Tr6+qAf/WVsBwkn2UjpCHqDSh/9RHQ3ZXykyM87BdJ+rRuGnxZOWvvX1ulSywNKlQMSq+KSRemEO3IAgrsPer9DxB1vo8TRNfIKXmUuW/fR2gqF9rtxxLGvVki213D3snQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector10001;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=U1sc6qMCXeEMau8ZRnfo41X1a57ZKivnNqCpzABICd8=;
- b=Nl+x5eL7wg0FspeOIYlUa+jOQBE76AoZgpWFwt7EbODWaUBtKImOZ4Y6dAQ9/54kkopUtq2CNCtAKFHFLTNgxOk+kehfE9KLxhCh6BUJ0XBEp0E/tari1Fn3GAKD5Ks7H4zzQeb0/cAINhfDwhEkTIF445hDd7KIYwjt0aCA0m7RXzRD8l27QJEe6dLHVfJOSwcQFYPmfKD/gMT6Kpsawso4MYyJZ2yZqwGY/Ptyxysdo0HgZxzTkWkJCBY5Npt3842+mbp0hZuTdhX/zcYt/KmWGkBy4ELqJWQZHaMTVGwi/LxkZ59CkD+r93A94x0mOBrXL8Dd7XH6bIJxrfh/4Q==
+ bh=yvbGydKxmvbYQNxupNWR+TZTG3xSdYfsbfxyAEIdTKw=;
+ b=mzkxkwXpUwk1PTPHJWoswqDlgtPa5ABka9f5HvbTcj4Te8Ln98KSvzaytngEtFBE73ThjdiC0G74tf22gun5pUx7ArL3EPBFESxfiaCuL6DAUz86AItFYGVyIiiLCOOekT5NVapRTAw9OFvWOVUjroHZ+ogldwC5DdN20jNmSs/6QGkBF4HlyA3uDHz7fR5JOLozeMb8uowsFcg2x4qle0KJU9freA5DxLxjC2OZTO/01s845GWT1i3jEzLQJN4ncq1kAnVRgkdmXU9uMJC6HZKEHQYFGmkHCBp3TM8ttH6xGvRyTW4QESXjUwOmtzyha2uzhr/5OL3dv1hS2jcyEA==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=garyguo.net; dmarc=pass action=none header.from=garyguo.net;
- dkim=pass header.d=garyguo.net; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=garyguo.net;
- s=selector1;
+ smtp.mailfrom=oss.nxp.com; dmarc=pass action=none header.from=oss.nxp.com;
+ dkim=pass header.d=oss.nxp.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=NXP1.onmicrosoft.com;
+ s=selector1-NXP1-onmicrosoft-com;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=U1sc6qMCXeEMau8ZRnfo41X1a57ZKivnNqCpzABICd8=;
- b=b0xRUOtKp6JBHFSir6fXCcRkcB20Zr8bI5bvVeFUQGjkkFkgK31Woz6aHb+9JsMi4qHCrBw51PGRgiiqpIFppUAtZ0b4YlsNWOvERRT+iM9wNNh6Wa3Yg/njXofT5WAO4PKtzqKDXKU5ns7vnef+Sihu5EymwkHRGKxz7SDqISM=
+ bh=yvbGydKxmvbYQNxupNWR+TZTG3xSdYfsbfxyAEIdTKw=;
+ b=tOrLgIQr70ZnFVfTf+oSIV96J8wnuWIuqHnsw7I2MVFDd3vglgWJC7Xgc2+Fvi0ozG/YWy38iRTKQqrtyzcHyki9CvKX08MkfxzlFa3v7l9POoRlh/z9dV87JjXpDx6NhkfEk18EkwKo9LMMmyJZKTEDAjAQw/SneIqVnV31ElCHcpgVzY6kO0Ow9VWbyL8CFmM9dMpjO8MVfWOjWSUdSSU5k30LE00YNvpWYv51u3SLLlep4zWs9d3tuTo7+4N/o51zx3xweePwAXd81j+wdAmzWesNYMRUNItHp1FN48wQLchAGpWSk+Utslvbew8E+ichS2uAJhjCknq8L/Rj3Q==
 Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=garyguo.net;
-Received: from LOVP265MB8871.GBRP265.PROD.OUTLOOK.COM (2603:10a6:600:488::16)
- by LO4P265MB6966.GBRP265.PROD.OUTLOOK.COM (2603:10a6:600:34d::8) with
+ header.d=none;dmarc=none action=none header.from=oss.nxp.com;
+Received: from GV2PR04MB11799.eurprd04.prod.outlook.com (2603:10a6:150:2cf::9)
+ by VI0PR04MB12185.eurprd04.prod.outlook.com (2603:10a6:800:334::7) with
  Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.139.11; Thu, 18 Jun
- 2026 17:04:49 +0000
-Received: from LOVP265MB8871.GBRP265.PROD.OUTLOOK.COM
- ([fe80::1c3:ceba:21b4:9986]) by LOVP265MB8871.GBRP265.PROD.OUTLOOK.COM
- ([fe80::1c3:ceba:21b4:9986%4]) with mapi id 15.21.0139.009; Thu, 18 Jun 2026
- 17:04:49 +0000
-From: Gary Guo <gary@garyguo.net>
-Date: Thu, 18 Jun 2026 18:03:47 +0100
-Subject: [PATCH 10/10] RFC: rust: driver: support map-like syntax for ID
- table
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20260618-id_info-v1-10-96af1e559ef9@garyguo.net>
-References: <20260618-id_info-v1-0-96af1e559ef9@garyguo.net>
-In-Reply-To: <20260618-id_info-v1-0-96af1e559ef9@garyguo.net>
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
- "Rafael J. Wysocki" <rafael@kernel.org>, Danilo Krummrich <dakr@kernel.org>, 
- Miguel Ojeda <ojeda@kernel.org>, Boqun Feng <boqun@kernel.org>, 
- =?utf-8?q?Bj=C3=B6rn_Roy_Baron?= <bjorn3_gh@protonmail.com>, 
- Benno Lossin <lossin@kernel.org>, Andreas Hindborg <a.hindborg@kernel.org>, 
- Alice Ryhl <aliceryhl@google.com>, Trevor Gross <tmgross@umich.edu>, 
- Daniel Almeida <daniel.almeida@collabora.com>, 
- Tamir Duberstein <tamird@kernel.org>, 
- Alexandre Courbot <acourbot@nvidia.com>, 
- =?utf-8?q?Onur_=C3=96zkan?= <work@onurozkan.dev>, 
- FUJITA Tomonori <fujita.tomonori@gmail.com>, 
- David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>, 
- Bjorn Helgaas <bhelgaas@google.com>, 
- =?utf-8?q?Krzysztof_Wilczy=C5=84ski?= <kwilczynski@kernel.org>, 
- Abdiel Janulgue <abdiel.janulgue@gmail.com>, 
- Robin Murphy <robin.murphy@arm.com>, Dave Ertman <david.m.ertman@intel.com>, 
- Ira Weiny <iweiny@kernel.org>, Leon Romanovsky <leon@kernel.org>, 
- Len Brown <lenb@kernel.org>, Igor Korotin <igor.korotin@linux.dev>, 
- Rob Herring <robh@kernel.org>, Saravana Kannan <saravanak@kernel.org>, 
- Viresh Kumar <viresh.kumar@linaro.org>, 
- Michal Wilczynski <m.wilczynski@samsung.com>, 
- Drew Fustini <fustini@kernel.org>, Guo Ren <guoren@kernel.org>, 
- Fu Wei <wefu@redhat.com>, 
- =?utf-8?q?Uwe_Kleine-K=C3=B6nig?= <ukleinek@kernel.org>
-Cc: driver-core@lists.linux.dev, rust-for-linux@vger.kernel.org, 
- linux-kernel@vger.kernel.org, netdev@vger.kernel.org, 
- nova-gpu@lists.linux.dev, dri-devel@lists.freedesktop.org, 
- linux-pci@vger.kernel.org, linux-acpi@vger.kernel.org, 
- devicetree@vger.kernel.org, linux-pm@vger.kernel.org, 
- linux-riscv@lists.infradead.org, linux-pwm@vger.kernel.org, 
- Gary Guo <gary@garyguo.net>
-X-Mailer: b4 0.15.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1781802282; l=1753;
- i=gary@garyguo.net; s=20221204; h=from:subject:message-id;
- bh=A0ywXdGf02/pqWfOcql1b083Co7opyezNY57GOUfVeM=;
- b=xj5GhBjIYVuoC0phxbQlVjreyyGtDNgJPrJPqTGL7Nr7TwKpc+9p1wDMt1NR9cDa/pM/lNlFG
- U8loSS9DoPdCo1m33rcwrc5RnyZnPCDLdP/IrcK3/TS2N/Ql+97hqaK
-X-Developer-Key: i=gary@garyguo.net; a=ed25519;
- pk=vB3uIX95SM4eVrIqo1DWNWKDKD2xzB+yLLLr0yOPYMo=
-X-ClientProxiedBy: LO4P123CA0548.GBRP123.PROD.OUTLOOK.COM
- (2603:10a6:600:319::11) To LOVP265MB8871.GBRP265.PROD.OUTLOOK.COM
- (2603:10a6:600:488::16)
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.113.18; Thu, 18 Jun
+ 2026 18:17:02 +0000
+Received: from GV2PR04MB11799.eurprd04.prod.outlook.com
+ ([fe80::2146:83a2:5329:b7c]) by GV2PR04MB11799.eurprd04.prod.outlook.com
+ ([fe80::2146:83a2:5329:b7c%6]) with mapi id 15.21.0113.015; Thu, 18 Jun 2026
+ 18:17:02 +0000
+Date: Thu, 18 Jun 2026 13:16:46 -0500
+From: Frank Li <Frank.li@oss.nxp.com>
+To: Bjorn Andersson <bjorn.andersson@oss.qualcomm.com>
+Cc: Sudeep Holla <sudeep.holla@kernel.org>,
+	Cristian Marussi <cristian.marussi@arm.com>,
+	Nathan Chancellor <nathan@kernel.org>,
+	Nicolas Schier <nsc@kernel.org>,
+	Michael Turquette <mturquette@baylibre.com>,
+	arm-scmi@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+	linux-kernel@vger.kernel.org, linux-kbuild@vger.kernel.org,
+	Hans de Goede <johannes.goede@oss.qualcomm.com>,
+	Stephen Boyd <sboyd@kernel.org>, Brian Masney <bmasney@redhat.com>,
+	"Rafael J. Wysocki" <rafael@kernel.org>,
+	Viresh Kumar <viresh.kumar@linaro.org>, Frank Li <Frank.Li@nxp.com>,
+	Sascha Hauer <s.hauer@pengutronix.de>,
+	Pengutronix Kernel Team <kernel@pengutronix.de>,
+	Fabio Estevam <festevam@gmail.com>,
+	Guenter Roeck <linux@roeck-us.net>,
+	Jyoti Bhayana <jbhayana@google.com>,
+	Jonathan Cameron <jic23@kernel.org>,
+	David Lechner <dlechner@baylibre.com>,
+	Nuno =?iso-8859-1?Q?S=E1?= <nuno.sa@analog.com>,
+	Andy Shevchenko <andy@kernel.org>,
+	Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+	Ulf Hansson <ulfh@kernel.org>, Liam Girdwood <lgirdwood@gmail.com>,
+	Mark Brown <broonie@kernel.org>,
+	Philipp Zabel <p.zabel@pengutronix.de>,
+	Alexandre Belloni <alexandre.belloni@bootlin.com>,
+	linux-clk@vger.kernel.org, linux-pm@vger.kernel.org,
+	imx@lists.linux.dev, linux-hwmon@vger.kernel.org,
+	linux-iio@vger.kernel.org, linux-input@vger.kernel.org,
+	linux-rtc@vger.kernel.org
+Subject: Re: [PATCH v2 1/2] module: add SCMI device table alias support
+Message-ID: <ajQ2Dt17PamZ8Ssp@SMW015318>
+References: <20260618-scmi-modalias-v2-0-8c7547c1be21@oss.qualcomm.com>
+ <20260618-scmi-modalias-v2-1-8c7547c1be21@oss.qualcomm.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260618-scmi-modalias-v2-1-8c7547c1be21@oss.qualcomm.com>
+X-ClientProxiedBy: SA1P222CA0094.NAMP222.PROD.OUTLOOK.COM
+ (2603:10b6:806:35e::14) To GV2PR04MB11799.eurprd04.prod.outlook.com
+ (2603:10a6:150:2cf::9)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -100,119 +91,78 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: LOVP265MB8871:EE_|LO4P265MB6966:EE_
-X-MS-Office365-Filtering-Correlation-Id: fbbbe4c8-d618-4554-48e1-08decd5bb4fe
+X-MS-TrafficTypeDiagnostic: GV2PR04MB11799:EE_|VI0PR04MB12185:EE_
+X-MS-Office365-Filtering-Correlation-Id: ca68df37-0da0-4b71-5ee1-08decd65cb35
 X-MS-Exchange-SenderADCheck: 1
 X-MS-Exchange-AntiSpam-Relay: 0
 X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|10070799003|23010399003|1800799024|376014|366016|7416014|921020|56012099006|22082099003|18002099003;
+	BCL:0;ARA:13230040|376014|1800799024|7416014|366016|19092799006|23010399003|6133799003|22082099003|18002099003|3023799007|4143699003|56012099006|11063799006;
 X-Microsoft-Antispam-Message-Info:
-	Ehw/ZqUdUcvXQOIPbOVZQ6VmDsrYbcb2TEhcdYlFr5g38vpuDBKF6TViT0WiWqDKAw4Y82pA05ZgZsQa4xcmSDLjYBRyKd7J9a5XkY5Q22kGJ6Rx8VcmGZm9BjEbrnAzCUkBTie8ozhlrENCrS8rLLmx1mRylYQPl3nP8aVUTwf9MTIrRu8yuehdOgbghzXVQvIyq5bM2XZS3olQdbWSH14U9NUwHXNgtZFsZk7KY4wLon+fX4hvjEkT7gXGdTJiYgUCA9x7nhVuczItzxZZO1gW+IBAvIRDjifDtlBWA9wMDGj5OCdx1a6YPnAJMBqqjW6LGHJn/UM6IODeCODfiBOCLfEXQWPGXLRbqFf5eoIVkjwAWZzDBzZd8aKOCUW/G6KksXNP8mmF3DVleVmmxHdbUPouk8wlbXtxdiF9nBEjbBQaU3sSwnABYp0/onEP9y5CAWJ53tCtg87XVYlX1ba3+m/B5XeDOlc4C15bZMD0GZ20iaAGVwPbHbm9Bje4KS9/V6Q2MiKVJhwtPlZcTkrndmbFVk+adie9eEiDPaWx3WCBA3PD/SBAafsChNDxsj4RnkZCM+Mqa+deTxoUFmivM47BCtBFmPFiTDZgqJihUvdbaGSea46HgvKa/2NXdZ172+WNrCmJwVNr/t2DpR0qsp1ROU43GE94xdMUI7M7jlFf+J4lNmFPE/WOaM4Et55eCP3GWTEwxyi6Hm9WMzSBEmKKbzxilKa3PvQQW5g=
+	G/djns1553n4FlgRtUIoHrp2ptF8jJwPnDvke4VXZ69MsOqO+uFSezZCrV4D3qD0QbbHDduN9cnyb05+QmOFm1b6iRrU8iinKy8+xkqa5tlS6Ilv7dW0HXG3BUpwY3my+pjrG3oeHY8szo9Jakxv5657tMnYkTgAIaOxCBYBm3IsGp3IXv8tzWuJkCUAsSMhBXvwHdESQxMvWNXWQXDbdoo4XhPHcVEb8XlXPJpzq0X9X6oFE31+6ZMrcCPQ1Q+HZwbjaSsS75tQdMDXEZ4Lk7SAoYd/elZXyNLFARNqylRm+YZj4MxqT9Ra1niILdI8LWSvIln7KOQmsYo3q0Akfx3qIiPkwFnxgaEpMoRiMx0Dmr77mpbARskWWFnYkVg1PHcgP5lOc/S0k06xnp/kFWtiOOV4mphpxPi+Idkng8EPWzP0l2A2y/30dfeU6Q6mPPEwWI+uCdai6gHyOPDBiNEpWgp6/ri0Wj7fIg3LAbp1D9aqaPKTETopGKTeaZfD0snN4TGjAl3VtMH4Z4b456o8SAQ6i/aJsIuiJHCq482/4qEgvj+MMUVRsIc1ElKWmXdqOZUL5u49D/Y49eJU2H1tUujLyUdIu6GXx3p6wya3tVy33V0JGotAyllnF0gdwbD+1+nYjI9fQWLdeHXB6/Eri0sqruqRhBKeyf600QD/bcuDB1jUyrbA5PvHDLgo
 X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:LOVP265MB8871.GBRP265.PROD.OUTLOOK.COM;PTR:;CAT:NONE;SFS:(13230040)(10070799003)(23010399003)(1800799024)(376014)(366016)(7416014)(921020)(56012099006)(22082099003)(18002099003);DIR:OUT;SFP:1102;
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:GV2PR04MB11799.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(376014)(1800799024)(7416014)(366016)(19092799006)(23010399003)(6133799003)(22082099003)(18002099003)(3023799007)(4143699003)(56012099006)(11063799006);DIR:OUT;SFP:1101;
 X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
 X-MS-Exchange-AntiSpam-MessageData-0:
-	=?utf-8?B?eUtaSWcwSG0vZThhL2hVS3RNaTh0eEJEY2ZXODd4WlJ4MlZlUkRTaXRjNVZ4?=
- =?utf-8?B?NE5DaUpqd2hmWENKOVM3bXpIRmh3aDE3Skx4U25Lc3dGWnVLb2xJcEhaZURX?=
- =?utf-8?B?bllwOHJIQ0NrTXdiRENEUmlmR3hIYVAyQzdIQkE3OStEK01RN1ZDV3lIdG5h?=
- =?utf-8?B?QkdRYkdKcWZVOHRrVndJdFJMRFY4ekYrMzJ1dWQ0ek00cVVSbkR0VWF0QWNO?=
- =?utf-8?B?eEQ1bVpFMmRJdy9jMWNPTEZVVzc2WGNwa2J6Y2Z2WXFFRFpjV08vMmI0a3FN?=
- =?utf-8?B?MXdoRXZrZlp4Ri8zWTkxZy9PYTlxZUVaYUtoUmNCVW1PMjF3YmdYd0RaMzQz?=
- =?utf-8?B?cXJOUHpKS3NmTSs2SEdZNldNQzRQNXYrMEQyb25ibE13SjRvSkFkWUtleW1P?=
- =?utf-8?B?VEltVDNwcldyNnF6MDBwOGp3SjRZclV5SWJvci9zVFRRWUVvMzZFdGVuc2h4?=
- =?utf-8?B?TVJDTi9XMlhjOUgrZ2p1TkY5R3BNMTlId2dTZXNWZW1qZktlZXhLcGZKTVpL?=
- =?utf-8?B?R2Uza0FqZnVhYXdVUjlHaVhEZHdQR0xvaGNYUnlNZEtRL2s0M01GNExJQ3Z3?=
- =?utf-8?B?c1ZjR29lbEVhNnRFWEVGMVZEMklJb1lOM2hhb253YWdsVDdXeGZ0U3JtWFMv?=
- =?utf-8?B?Y3grb0M4ZFhZQkYrNDVIM090UHQ1YXcrUlNLRk9CNmtNdDloVGV4dHFGMko0?=
- =?utf-8?B?YWRIeTdwN25lZndlUFdUeTc4OVVVaGMyM0xZZ1hraG80ZklUcUQ1d3ZTc1dp?=
- =?utf-8?B?YzNIUmRNa3E4UFUwTVQ5YW4rK2ViZExXQ21kLzNMaHRkQ24rdldzbktBbU5n?=
- =?utf-8?B?Ry8zL3lMK1pRQ1lUZWZZdEpOTk5ISnNMcHN0dW1CRUZ6cHpXb1BBeUF4NG1U?=
- =?utf-8?B?R01TNHRWVmpERU4xNUZTZ1RPRFVJKzh6MTBHWFlHd3A4TktQcUN5TWlPdmUx?=
- =?utf-8?B?eVE0MjlVVjBKcEp3WC90dE1lWE41WnZaRXpjSk1waWhnL05kdldGOTlZeXNj?=
- =?utf-8?B?bXNqTUtpaXV4ekx5d3JUT3hPN1dVdGdsQko1RjZteWh3V1dpTXIrUU5nVERW?=
- =?utf-8?B?SzZ2YnFFUmFvdDhuUzNKeU04QmdMMjdtMm1aVEFrU0drNmxpTWpYQVN0ZElj?=
- =?utf-8?B?VVlrMGZreVlKV3VPTjZYdHJmUDdPV2s1bGtRaWRPaDNMeVNoMlNyVXRHTDZ5?=
- =?utf-8?B?aHoxYUhkeVZBa1pDSlFReExpQjlJd0ZQQUlqZlFYeHErUDEzY3lsa1psZGs4?=
- =?utf-8?B?UVRFTDFsN1hseXg2OWRWRC9naFVJMUx6cURMMGpKd2hjNVF6Lzk5RlQ1cDZa?=
- =?utf-8?B?Q2pHUFlNejkzb0FGRlpBbTRKSHNjajNVUlhSSmxYL2ViYURONDdNQks4UU5W?=
- =?utf-8?B?UjhDT1IvYmF6TXRUZThsSFYwT1VEL2R4TXplMHE3OVIrREdVOTlTdHdNRkRG?=
- =?utf-8?B?Y2tZZHBlZGlYUy9SaU92c1BocCs4UnpLbmh1TTM4ZlNadmVwbTlsK3RWK0VO?=
- =?utf-8?B?c3hvZnQ2MXJ6dXcxd2lFVm41aTFMTFppdXY5NElWc0lORlpOMzdTMi9hZUs2?=
- =?utf-8?B?Y3R5emh4QS9JZ3ZDUU00SUhNaWIxbVY2eU1mcDZ1cllGdWdGak1Ga2pYTnFI?=
- =?utf-8?B?b29GRUVUSXc0MHRnT0psdUI2cEZwOXAyWS9tSUtVek1xODQ1RHRKRzdxaDQ5?=
- =?utf-8?B?RVdBNENRZTRLaWszV2txdkFYS3BpRUN0WXNQSjNpUWtCQ1lhV0Q5Z3ZZRTM2?=
- =?utf-8?B?dXFmOWNnMGVweUowWDFybUViYzhhN1lISWlCN0d3SkFHcU9pTVJiQW8xNzBh?=
- =?utf-8?B?YUFCT1hhOTZsL1hLQkNkZ3E0S0dxdi9Fbmw2S0ZGME1HSHZZYmdQSVVvZ0Jy?=
- =?utf-8?B?QUx3Q0d1MDhNdzhabDFWazU0VEdVNDlseXNIdTRDenY1emhvbWxydVdnVll2?=
- =?utf-8?B?YkJpeGdyYTFEaUpMTlowQVBodEp4Z3pnUEJNcHNvcVlDSzBCVmRUdDJObUtY?=
- =?utf-8?B?UkhUeEN2NmlvYUdXN3QzUm9YLzVCdUw2MHBTM0QxRENPM3hBbyswWEsvcEdr?=
- =?utf-8?B?Z0ZicFBmc01raUVOUUJGRjhYa1psVi9XSFJCK09Ldy9NOEdQY2diZStsalRI?=
- =?utf-8?B?eDJodFI0YTFkNzFieERtMThKbzJqZ1dkRlhIL3FydDI2SkRYdGFaNUxnUERL?=
- =?utf-8?B?RWdZdmFlS2M5VnJSQVU5VHQ1Skw0R0NSYXdPTSttMWppaXpyMFZSamRUdUQ1?=
- =?utf-8?B?Szc4OForYlJSSFJUeHpRbU5GWWdCV05uZXhVTFRXcEovTU5GR0lQZFdkdklV?=
- =?utf-8?B?eU5EVDhKdHFvdlNrRTA1YU5aWnJuNWtrNnRpVDRHZmIrdEdaT1V0Zz09?=
-X-OriginatorOrg: garyguo.net
-X-MS-Exchange-CrossTenant-Network-Message-Id: fbbbe4c8-d618-4554-48e1-08decd5bb4fe
-X-MS-Exchange-CrossTenant-AuthSource: LOVP265MB8871.GBRP265.PROD.OUTLOOK.COM
+	=?us-ascii?Q?lrNfEEzEOIPfiN2ff742/PDvpwT7tlZIDjV0BsYra+6qeiS8YCus9E6sOy2y?=
+ =?us-ascii?Q?CxW1JuSoIRwgXxS7fr1q4gh/biOdtGd/gqXdDdnH6/xptE+5ipki7hXKuFpC?=
+ =?us-ascii?Q?YKRZa43xtISl88nzDwRlmWSCg4Hnv5ybVUTFMomdoLIU5Pc4vPXe4iszZLaC?=
+ =?us-ascii?Q?GPejhH9jwpWnna5YO7eWudvfJJIE+HUZvyPGGkT6/wl6Yv7/Acmqr94+zH51?=
+ =?us-ascii?Q?aZ8ifMcG60ZbLVpBmNcBUixLUS2dTtgVf7pubs9xqt/e3udNft5hRPAiBfzR?=
+ =?us-ascii?Q?D32XVT5l6mjrURtFsNsW65xLblo43bXndXzOcJqjn3uFxLp2d4LLEIpWpEX+?=
+ =?us-ascii?Q?vtiOKTdP+zIc//nEH7ehIqbWrcyMeE3kWWFVgg2a2KkSDtNDFwywOLI/WcUW?=
+ =?us-ascii?Q?0i21veU2G1/uS9A7aspHicXefJbAA+bMxFtGpQamHY+JwwV8MbCkzrcuWcLt?=
+ =?us-ascii?Q?Vx75bXh2le3RxZEJRuGP35Be4CXB6r3ZQUW8ULBEBc6eDgJKefjZ2YK84rKW?=
+ =?us-ascii?Q?EV6okSOx7W+dp0WtHDUZPKcAT5YxqB8f7Y6Awvy/4L/t8B0bqBIsZEzGHFXU?=
+ =?us-ascii?Q?TseR6+9+AQG49HdRfRdKefdkUPRvArzA1LRd+ifm6UGEBgTlhyD8lYlsDKJy?=
+ =?us-ascii?Q?HDUBhfvY86DqE41W8nmeBq4tEHHHREIB58f4SxOw07SP+3fc2DpJW6P0R8KV?=
+ =?us-ascii?Q?eL7oB3iOYjgEUcMG2sSpGkNT/5k09hB57jFMFkt+B5pVrc1OW+ta/4kdhigS?=
+ =?us-ascii?Q?9NxbspvjILxrIFfix9tOxwGjDP4Tkx4k+10pJCw+NKHYsf119OZKZxmfYrbs?=
+ =?us-ascii?Q?wRBYuS75oCHngGwQxKcyOdD6Ry+bpe2tcnzjKCgKhWmSkC4DCHtGunuJGPQa?=
+ =?us-ascii?Q?Ju6k1SMkx3j2jA78o6LRoXXCTEI3DKcQVhVyRhCJ0mFGPTXIjlhbzZq5Aruh?=
+ =?us-ascii?Q?7nhgjGcmv+K2pIWZwZ23/zu80YTzPdcN4b4o+90OO2bSyIuxhLBnAlJjA+pz?=
+ =?us-ascii?Q?RkGnfTE55cSW92b9mRFt3sD5Sf60C4OQPYG5SPpjZ0a1kNrXOvNKfQ10HsOM?=
+ =?us-ascii?Q?pXSOeK3fe+WjnBSAQB2/C7wBT8WKmIPChrChPCWRJPfM/H7qtdyGSaLQANNq?=
+ =?us-ascii?Q?rSAVVDqXSo5IHrac/2LJ/1NwwA12RTJIrIpiN237gqsjsVZYmbcWOwlNAotF?=
+ =?us-ascii?Q?f8+Daoi4Ir9Vrh276L1DWhJzT+pVe+kCDK23pRQ5sB9Tpm6VwI2xXzXku5p7?=
+ =?us-ascii?Q?G2WYI2QwJEIDOEALXhyIi2SuPB5dEc8JUucAcAyGa42dB6GyUU41ykhp0o+H?=
+ =?us-ascii?Q?F6B65PUtc6Hm/98unHW99KMlXXGKdCJ1wd83NiQDld8ZS9he8XrVUL3smGNB?=
+ =?us-ascii?Q?g4VJySEVCHBmqf+qNsYmJQgaw3Aiw7/sNlD2l0tU8iw4fupRS1V2gXacN26K?=
+ =?us-ascii?Q?01BESj3XjxGwKcCTEzpTWRZtC66BTnpZudyewmmwtx0bBn2C0q6lwnn3QEts?=
+ =?us-ascii?Q?c4c7NnvKG8f1j6+pJdt8hWgE6J+nW6T/DfCZqZeSv6FVZb1VpdajTDiBUqoV?=
+ =?us-ascii?Q?MXOy5PphkyfqLjyOZFNBaND6L+NWT1iQVHlKB5hI3QXFItkgcPyBdino6rc4?=
+ =?us-ascii?Q?GTWeyHqmlBJrP20HfLI80EwYq3DUHUzVP0hSx7RcHYnB3caKZDb2sgR5N/oV?=
+ =?us-ascii?Q?nnrkg3GQXs35ZhMWzC/S8Czxan+4TXz4zl0eeRxapV1vN1Q76ziQdoJZnNLz?=
+ =?us-ascii?Q?HQOnPuyC3wZfa/sY4Nnm2zZsqQuKfzIwA5zYmUq/eNm89zFerEEE?=
+X-OriginatorOrg: oss.nxp.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: ca68df37-0da0-4b71-5ee1-08decd65cb35
+X-MS-Exchange-CrossTenant-AuthSource: GV2PR04MB11799.eurprd04.prod.outlook.com
 X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 18 Jun 2026 17:04:49.6298
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 18 Jun 2026 18:17:02.0602
  (UTC)
 X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: bbc898ad-b10f-4e10-8552-d9377b823d45
+X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
 X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: NjgpGG3fjnJ60VsWSKnltPjHnIGmV0RvNRmDQGgC10DJPu5bf9dRSZkoM/Zag6to58RbNFglJvWq13riTiVcaw==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: LO4P265MB6966
+X-MS-Exchange-CrossTenant-UserPrincipalName: Nl7I5slZrKlGy1HY5DIzpDS3Xi5VlSVkIjtjGqVQUv9vTnoXqjBnPglQp7U2+VyTrj00BYqm2rY3YfKxPCWGsH2bJRHQco2N3c97I6IQNt8fWF8cyoINsLeAmYOeDgXh
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: VI0PR04MB12185
 
-The device ID table and its associated info is really just a map. Add a
-syntax to `module_device_table` macro that reflects that.
+On Thu, Jun 18, 2026 at 03:56:34PM +0000, Bjorn Andersson wrote:
+>
+> SCMI client drivers already describe their bus match data with
+> MODULE_DEVICE_TABLE(scmi, ...), but modpost does not know how to consume
+> SCMI device tables. As a result, SCMI modules do not get generated module
+> aliases from their id tables.
+>
+> Move struct scmi_device_id to mod_devicetable.h so it has a fixed layout
+> visible to modpost, add the corresponding generated offsets and teach
+> file2alias to emit scmi:<protocol>:<name> aliases.
+>
+> Use the same stable alias format for SCMI device uevents and sysfs
+> modaliases. The previous string included the instance-specific device
+> name, which is not useful for matching modules.
+>
+> Assisted-by: Codex:GPT-5.5
+> Reviewed-by: Hans de Goede <johannes.goede@oss.qualcomm.com>
+> Signed-off-by: Bjorn Andersson <bjorn.andersson@oss.qualcomm.com>
+> ---
 
-Signed-off-by: Gary Guo <gary@garyguo.net>
----
- rust/kernel/device_id.rs        | 11 +++++++++++
- samples/rust/rust_driver_pci.rs |  7 +++----
- 2 files changed, 14 insertions(+), 4 deletions(-)
-
-diff --git a/rust/kernel/device_id.rs b/rust/kernel/device_id.rs
-index 26618bcda276..7c61cdcc9427 100644
---- a/rust/kernel/device_id.rs
-+++ b/rust/kernel/device_id.rs
-@@ -183,6 +183,17 @@ macro_rules! module_device_table {
-         $table_type: literal, $device_id_ty: ty,
-         $table_name: ident, $id_info_type: ty,
-         [$(($id: expr, $info:expr $(,)?)),* $(,)?]
-+    ) => {
-+        $crate::module_device_table!(
-+            $table_type, $device_id_ty, $table_name, $id_info_type,
-+            {$($id=>$info,)*}
-+        );
-+    };
-+
-+    (
-+        $table_type: literal, $device_id_ty: ty,
-+        $table_name: ident, $id_info_type: ty,
-+        {$($id: expr => $info:expr),* $(,)?}
-     ) => {
-         #[export_name =
-             concat!("__mod_device_table__", line!(),
-diff --git a/samples/rust/rust_driver_pci.rs b/samples/rust/rust_driver_pci.rs
-index 2282191e6292..652819dff082 100644
---- a/samples/rust/rust_driver_pci.rs
-+++ b/samples/rust/rust_driver_pci.rs
-@@ -75,10 +75,9 @@ struct SampleDriverData<'bound> {
- kernel::pci_device_table!(
-     PCI_TABLE,
-     <SampleDriver as pci::Driver>::IdInfo,
--    [(
--        pci::DeviceId::from_id(pci::Vendor::REDHAT, 0x5),
--        TestIndex::NO_EVENTFD
--    )]
-+    {
-+        pci::DeviceId::from_id(pci::Vendor::REDHAT, 0x5) => TestIndex::NO_EVENTFD,
-+    }
- );
- 
- impl SampleDriverData<'_> {
-
--- 
-2.54.0
-
+Reviewed-by: Frank Li <Frank.Li@nxp.com>
