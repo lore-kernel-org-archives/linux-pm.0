@@ -1,493 +1,131 @@
-Received: from mail-dy1-f176.google.com (mail-dy1-f176.google.com [74.125.82.176])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7E0B43BBFCC
-	for <linux-pm@vger.kernel.org>; Thu, 18 Jun 2026 12:54:53 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=74.125.82.176
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1781787295; cv=pass; b=ZKcVwRhwpxjMd15FqiG/sRDNtF9ZIhVd4vTp2B/3QPUTjx8kOb9DiFf+WR4vWk6bm/7S0a+hbos9cXJSN4WHbfJlXfFEga5rPI0G+pBeHPach55XvEnnxX9/rIeeVL+XbJ7ETIRLC6oRYp4B6MtXpnn47Lezlcu40Q/BsqIC+Jg=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1781787295; c=relaxed/simple;
-	bh=J7eeWyqbGcyQ83kRIeqIYu9zZpto9qa/3uEOVb05eGw=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=lCW6vICNKjqbyymw2yxvpeKMtWCyCGWVTpk7MErPp/rQArM9M9POYhrkBmn1iuFeI44K22ZGffvVvJ6EElo/AM8veC7GkmQ/h0j7lrAh9gVy53ncavCvyjQTOz+me3ozaVTQHNVxNXLBr2dIOVYQo2fKd4ObPwckD8z6B6mA248=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=hJy5wH0J; arc=pass smtp.client-ip=74.125.82.176
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 812BF221540;
+	Thu, 18 Jun 2026 13:19:01 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=148.163.158.5
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1781788742; cv=none; b=u47wQerfWW2NCyW6dn0ZMk3P2f8co+wYi88zMh0sF1QKsa+KttW/oBq9it93RGr3EUNsa+MPcQSxY/ndDQNPPrf3bB7GiiCMrZuFf3jATULJiK1/Mb/hkSivsoktnl83AZkS2fMd/AUfA9In9rAmsV4ezmlG6t5qyUqmXG1wIbE=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1781788742; c=relaxed/simple;
+	bh=5/dXrMCyL9YkUGpo/csus8MFYhDSupfYFxAo8TsJsH4=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=k7THpITK8eQc2Odo3/eXWCG7Foc9FnABpGTenz6W1N4t+Hq6yQ1mZRJzE2iypNwCN7EKkLU4rhc+tw+3x6G8aANhdmGgdVRLLANO5oK77Ec+aNzj5J4sjklRWmyhd3OGp+qxkD6+S6jizz4NijvYOhdTZrQLu6k1WUPmlyVTRos=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; spf=pass smtp.mailfrom=linux.ibm.com; dkim=pass (2048-bit key) header.d=ibm.com header.i=@ibm.com header.b=iuaeVyGF; arc=none smtp.client-ip=148.163.158.5
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.ibm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="hJy5wH0J"
-Received: by mail-dy1-f176.google.com with SMTP id 5a478bee46e88-30bbe98c3f0so747988eec.0
-        for <linux-pm@vger.kernel.org>; Thu, 18 Jun 2026 05:54:53 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1781787292; cv=none;
-        d=google.com; s=arc-20240605;
-        b=OZh2IbDBOWS1eqvGq4dZVTP5jDGCImyWPn1RBD0dq+KER99m9K2o/UvgMH8BoR3GHf
-         j7kRsKc6f31VPOAc6X+imRBMit98Hz5Go+0iUMsYRWsYgpJujaNmB1Kr7EqlzXO0uAen
-         f1eh9enuXjjfpGWaTs2ThmVtdhStTBvb32hedSWNpYCLIefdCjmgtUGfrgW8C5n0mXAU
-         8TtAk6BCZz4lMquHgPtga3jkPW9ejPDT2f3FGdDokVZilhPMRioOe7KA4yZP0oht9H6i
-         a5ozzjCbwrvEq1TkQ+ik3R9PHASG654t5pEGnGMwxGD4Tfr59QEMmRW+X+iSreQh5fLK
-         JfVg==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=TCZ2aNL11hbP4R4kkuDPj9FfQ/WKus/j+epI04FrrLM=;
-        fh=YTzdSCYlGH06ucNCwxi1qx6SvrwaLA62BG1HYwsmBLk=;
-        b=OpRrk7TlCJnQ9YHuZOr4h6U8oI9lzptgZ2oOXTaBNv87FMcj7yHPsv5qOYno7PU9I6
-         JB6dtqwsPMyTt0Qtemq0G38I81hs/0hdsXTi99uTiZCMbyCuwYqwOBNYhe98R4ZE42EA
-         /ZDzTdt62uekLKnSH74XjATM8jc3exlTaS3j5xlHZj0Zk/UeihJSU8zc3vL3YXhaxLBX
-         LoVnKW27BWefoM5Ng8h6pu1Mm0/IVy5wxkXvB8g8hTyis8H49tjjQL8hkapMjFM9IcxJ
-         Eax/6DYE3HebVkbrmyGgQNo7X5rTp6x9poqMARlFLG8gweedDP9V+jEeAFrTv6agtqTC
-         cPNw==;
-        darn=vger.kernel.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1781787292; x=1782392092; darn=vger.kernel.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=TCZ2aNL11hbP4R4kkuDPj9FfQ/WKus/j+epI04FrrLM=;
-        b=hJy5wH0JUl3DgQQXDNw/4JEpQa/D8t5EiFqXSuau9gq9K5KY+LEXa2R33bjjw5p8l2
-         E/pqcPtSbmxnu2rHTkka7GpMnOoHgEEZirOA0kZdgS7wIHFPBGh84K9BHKaPKGpGTbcR
-         F5ArIeqG41vW5iYw1in+X7zGprR92MzdBvi0+erJBAZueS7YAR02h1d3MKpxoKNr4mS4
-         4PVfhiiNQ17XEbs3GcJ44VVUocWWiQ8juHHfYInXY73jJ4mPE7Mn/eM3ZRFTjkeuJDQC
-         BLGqcHVRXlwibsrXXj+ylzIyGfjYFS4rM3c8tOQbqjgfq3ALxU4ctfY8l0fCh17kE9ZL
-         Igbg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1781787292; x=1782392092;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=TCZ2aNL11hbP4R4kkuDPj9FfQ/WKus/j+epI04FrrLM=;
-        b=jI4cde5T5bdNmXoE1nLiQFJX+JNmmfMlbDNos4z0Qf29c0dME4N9FL65+F1ipLOfuH
-         S+uyt0QgsYz86TpOLnX0SubibM5FecKsbjU5bmyOYjFFiz2q9G3ADILwAyx7CVeBa8CJ
-         T6RhKiMg5KQ0coEmzJjExsyqawoV/SsYDX7dbA18u80DnSjik6DAaT4a3fZsvq3IvrM+
-         6yz+UASgsj2qHD4oFWNCwRvyDxJ3k/XpvONf6ZzZkmP6Q+wRfnEBh+Hmp4MdtY17FMlA
-         c7+cSk4I2zlt9NmV5ryUhMvJ4ASTDLAFVsAT/TGTR3PtFHEf8WJdjNAFeIjym3KVkA8I
-         btJw==
-X-Forwarded-Encrypted: i=1; AFNElJ8TLWEPHhg9yPKBOfKy+FAzMQ/6sLyKsyjW+Y43rvQA47NBR16O9LDrbblXARdLBK0tabDKLrCLIw==@vger.kernel.org
-X-Gm-Message-State: AOJu0YxNKWydKuaPOVcHjttKJormWyI++mVhNhBkuks3e7jdvBAQJ3jo
-	qFIulaXOGQlnwBjlwyHwktPNRfWsM12dIVVT5VTgUDWd0Ae6paBKXvPvrQsn4+t5m8c9giBAVzH
-	5o1Aj312RW86U4I4QkB7kzuPDP7P45ncBxBmiXjU=
-X-Gm-Gg: AfdE7cmMGpt2b1bE3WcH+6zi9yejHSH5N4O7/QNC9dcwrUmV+baHDvhNst80JE9M0QP
-	pdwxBHMs6/ycQnJmM4Zm8hNvioVtEfZmNqKF0zwOgj8VIaJ9zdvu+5Dz2HQyDQ2Sj5+DhNvV3tu
-	ibCfDPra3gQiMCj8Ot5nWXhc7MUjsakViR+UucVPuCYuI9Lbr+PYy8lShHTczN+2+gJpyQKAq9o
-	0HhFEycOlcWUdYcecJdHia0g3QN74//AFc62qjMWRtc2PaRrPUM5dW4UYOEYL2nhrh1AHS7Ow==
-X-Received: by 2002:a05:7301:1298:b0:30b:ab02:9e52 with SMTP id
- 5a478bee46e88-30bca0f5296mr4761901eec.30.1781787292416; Thu, 18 Jun 2026
- 05:54:52 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=ibm.com header.i=@ibm.com header.b="iuaeVyGF"
+Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 65IDImTv3429198;
+	Thu, 18 Jun 2026 13:18:48 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=r/iDAN
+	fVNPy+cn4KUTHwZUn0v89cOJr5dhoJXSDwovg=; b=iuaeVyGFJGX/1MEKEpySJ/
+	e1PETx18d57olwyEFDJB3a0eS4rxZoayVRQByy7540W5SAI9g5Qid/kKjpTz4B83
+	JvWGzDlx4ngkmTLYWxU0qQEPu7dQEyw5g82TnW+4pOv87xp8cNJS1oDinZBg29L7
+	15FS6tSO8kM+jRVrXpQl/XvS/awNVPmA6yIRc+Id/ROCYe/mzcCFkj+lzDEKPyTt
+	QznDyiXZ8cMsiXK7gGHw/SJr3Cc4ebh7MbX+swu2XIbHV3INLjROelviRbVhNG8Y
+	Gx92LXPfB6ZbUd3UCPQLhuIQi0THUZ5lwJRQfq1N8rfyJCZeLRf5m/EeYrtR6fuw
+	==
+Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4eueqx86uc-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 18 Jun 2026 13:18:48 +0000 (GMT)
+Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma23.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 65ICnqY3013364;
+	Thu, 18 Jun 2026 13:18:47 GMT
+Received: from smtprelay05.fra02v.mail.ibm.com ([9.218.2.225])
+	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4ev172bvf4-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 18 Jun 2026 13:18:47 +0000 (GMT)
+Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
+	by smtprelay05.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 65IDIhJq48759280
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Thu, 18 Jun 2026 13:18:43 GMT
+Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 6AEC520043;
+	Thu, 18 Jun 2026 13:18:43 +0000 (GMT)
+Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 199B22004E;
+	Thu, 18 Jun 2026 13:18:43 +0000 (GMT)
+Received: from [9.224.77.173] (unknown [9.224.77.173])
+	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Thu, 18 Jun 2026 13:18:43 +0000 (GMT)
+Message-ID: <c2898295-8597-4a64-8321-2a5a2ef3d744@linux.ibm.com>
+Date: Thu, 18 Jun 2026 15:18:42 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260528053203.9339-1-clamor95@gmail.com> <20260528053203.9339-3-clamor95@gmail.com>
- <20260611111732.GN4151951@google.com> <CAPVz0n0caBBt6A+AFeUpGdxvb3Qhoui7khLCt3747bPUKmMXhQ@mail.gmail.com>
- <20260618122605.GH1672911@google.com>
-In-Reply-To: <20260618122605.GH1672911@google.com>
-From: Svyatoslav Ryhel <clamor95@gmail.com>
-Date: Thu, 18 Jun 2026 15:54:40 +0300
-X-Gm-Features: AVVi8CfTnDAfpuPP0d_Z_jltkx8Vj-c5slqF9qsZ7cxFL8qnNDx9bMszb50n8ZE
-Message-ID: <CAPVz0n3ZiWVLstiZat7-Tp06G_Tji=d_C45V8iqO4PgH9zfj+Q@mail.gmail.com>
-Subject: Re: [PATCH v8 2/7] mfd: Add driver for ASUS Transformer embedded controller
-To: Lee Jones <lee@kernel.org>
-Cc: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
-	Conor Dooley <conor+dt@kernel.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, 
-	Pavel Machek <pavel@kernel.org>, Sebastian Reichel <sre@kernel.org>, Ion Agorria <ion@agorria.com>, 
-	=?UTF-8?B?TWljaGHFgiBNaXJvc8WCYXc=?= <mirq-linux@rere.qmqm.pl>, 
-	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	linux-input@vger.kernel.org, linux-leds@vger.kernel.org, 
-	linux-pm@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v3 5/5] s390/configs: Enable cpuidle driver on s390
+To: Mete Durlu <meted@linux.ibm.com>, Heiko Carstens <hca@linux.ibm.com>,
+        Vasily Gorbik <gor@linux.ibm.com>,
+        Alexander Gordeev
+ <agordeev@linux.ibm.com>,
+        Sven Schnelle <svens@linux.ibm.com>,
+        Anna-Maria Behnsen <anna-maria@linutronix.de>,
+        Frederic Weisbecker <frederic@kernel.org>,
+        Ingo Molnar <mingo@kernel.org>, Thomas Gleixner <tglx@kernel.org>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Daniel Lezcano <daniel.lezcano@kernel.org>,
+        Christian Loehle <christian.loehle@arm.com>
+Cc: Ilya Leoshkevich <iii@linux.ibm.com>, linux-s390@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+References: <20260618-idledriver-v3-0-684061eecbcb@linux.ibm.com>
+ <20260618-idledriver-v3-5-684061eecbcb@linux.ibm.com>
+Content-Language: en-US
+From: Christian Borntraeger <borntraeger@linux.ibm.com>
+In-Reply-To: <20260618-idledriver-v3-5-684061eecbcb@linux.ibm.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: QWPR-BJNy9Mr6UZnBDcLc_lR47rHWDAV
+X-Authority-Analysis: v=2.4 cv=Le0MLDfi c=1 sm=1 tr=0 ts=6a33f038 cx=c_pps
+ a=3Bg1Hr4SwmMryq2xdFQyZA==:117 a=3Bg1Hr4SwmMryq2xdFQyZA==:17
+ a=IkcTkHD0fZMA:10 a=FelO9ux0wxsA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=RzCfie-kr_QcCd8fBx8p:22 a=VnNF1IyMAAAA:8
+ a=pKUbLZqC3JEykceJ2MQA:9 a=QEXdDO2ut3YA:10
+X-Proofpoint-Spam-Info: AW1haW4tMjYwNjE4MDEyNCBTYWx0ZWRfX76kBXkfcM2xn
+ PBfg8EFczfGAVWmLciSdTJam1qbBkrcoHzmtxseq8tpRkKYu1+XFKLf8TwQYmVzs4Y/AOZo2M99
+ vdaJr8MsoANs9oAbsTcfNK/r03IB4S8=
+X-Proofpoint-ORIG-GUID: QWPR-BJNy9Mr6UZnBDcLc_lR47rHWDAV
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNjE4MDEyNCBTYWx0ZWRfX4AmbcxC6v3aj
+ 0cZb68HuLAdNvdmdA3V8Ef+dqkoMs+yv5jgAqoMlonBpJ0Tk/q7izYipp83IkdEwCwHM9fhyeBq
+ xRenyQfGkMjPMsitLpbF2bEbTyUwHudnzIXo9lx5sfmtt4uo8PhXFAtS3wMcYo8l0ZcuPJ7zkLN
+ 7X43LVrugYjMxtamzhjL5pLotb6tTRa8IFIuEgHHnnhzM7rgseZDGbwmg1Mphz9/4fYlu2ZvofS
+ 71j/8hwpFOEt7IJmhq0FbbwqiyEoiLBLFQrfttV99hUX2MckRLRocdBvbB4NXEkpdURIqy3CRTI
+ QTxCWIBiAGgWRYBuyMJ96gU8ziWmVjB/kiDBvSfy5mXa2KkpxszQLbtxRNbsQYJvS0T2gQcCYA9
+ TJ8NbH4az/ldCsVTbZAGjF43IYHiv46vp9o5AwizsWqwEJQ8MIOUzGZcfWqQt4odrE7rtnD2S5e
+ N3L8ceWsPnsSD7cs5NA==
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.125,FMLib:17.12.100.49
+ definitions=2026-06-18_01,2026-06-18_02,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ clxscore=1011 priorityscore=1501 malwarescore=0 spamscore=0 suspectscore=0
+ impostorscore=0 phishscore=0 lowpriorityscore=0 bulkscore=0 adultscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2606180124
 
-=D1=87=D1=82, 18 =D1=87=D0=B5=D1=80=D0=B2. 2026=E2=80=AF=D1=80. =D0=BE 15:2=
-6 Lee Jones <lee@kernel.org> =D0=BF=D0=B8=D1=88=D0=B5:
->
-> On Thu, 11 Jun 2026, Svyatoslav Ryhel wrote:
->
-> > =D1=87=D1=82, 11 =D1=87=D0=B5=D1=80=D0=B2. 2026=E2=80=AF=D1=80. =D0=BE =
-14:17 Lee Jones <lee@kernel.org> =D0=BF=D0=B8=D1=88=D0=B5:
-> > >
-> > > On Thu, 28 May 2026, Svyatoslav Ryhel wrote:
-> > > > From: Micha=C5=82 Miros=C5=82aw <mirq-linux@rere.qmqm.pl>
-> > > >
-> > > > Support Nuvoton NPCE795-based ECs as used in Asus Transformer TF201=
-,
-> > > > TF300T, TF300TG, TF300TL and TF700T pad and dock, as well as TF101 =
-dock
-> > > > and TF600T, P1801-T and TF701T pad. This is a glue driver handling
-> > > > detection and common operations for EC's functions.
-> > > >
-> > > > Co-developed-by: Svyatoslav Ryhel <clamor95@gmail.com>
-> > > > Signed-off-by: Svyatoslav Ryhel <clamor95@gmail.com>
-> > > > Signed-off-by: Micha=C5=82 Miros=C5=82aw <mirq-linux@rere.qmqm.pl>
-> > > > ---
-> > > >  drivers/mfd/Kconfig                     |  16 +
-> > > >  drivers/mfd/Makefile                    |   1 +
-> > > >  drivers/mfd/asus-transformer-ec.c       | 542 ++++++++++++++++++++=
-++++
-> > > >  include/linux/mfd/asus-transformer-ec.h |  92 ++++
-> > > >  4 files changed, 651 insertions(+)
-> > > >  create mode 100644 drivers/mfd/asus-transformer-ec.c
-> > > >  create mode 100644 include/linux/mfd/asus-transformer-ec.h
->
-> [...]
->
-> > > > +static void asus_ec_clear_buffer(struct asus_ec_data *ddata)
-> > > > +{
-> > > > +     int ret, retry =3D ASUSEC_RSP_BUFFER_SIZE;
-> > > > +
-> > > > +     /*
-> > > > +      * Read the buffer till we get valid data by checking ASUSEC_=
-OBF_MASK
-> > > > +      * of the status byte or till we reach end of the 256 byte bu=
-ffer.
-> > > > +      */
-> > > > +     while (retry--) {
-> > > > +             ret =3D i2c_smbus_read_i2c_block_data(ddata->client, =
-ASUSEC_READ_BUF,
-> > > > +                                                 ASUSEC_ENTRY_SIZE=
-,
-> > > > +                                                 ddata->ec_buf);
-> > > > +             if (ret < ASUSEC_ENTRY_SIZE)
-> > > > +                     continue;
-> > > > +
-> > > > +             if (ddata->ec_buf[ASUSEC_IRQ_STATUS] & ASUSEC_OBF_MAS=
-K)
-> > > > +                     continue;
-> > > > +
-> > > > +             break;
-> > > > +     }
-> > > > +}
-> > > > +
-> > > > +static int asus_ec_log_info(struct asus_ec_data *ddata, unsigned i=
-nt reg,
-> > > > +                         const char *name, const char **out)
->
-> If we can avoid points to pointers, then please do.
->
-> We already have ddata, so we can just set the name?
->
-> It will remove a lot of the following complexity / ugliness.
->
-> > > > +{
-> > > > +     struct device *dev =3D &ddata->client->dev;
-> > > > +     u8 buf[ASUSEC_ENTRY_BUFSIZE];
-> > > > +     int ret;
-> > > > +
-> > > > +     memset(buf, 0, ASUSEC_ENTRY_BUFSIZE);
-> > > > +     ret =3D i2c_smbus_read_i2c_block_data(ddata->ec.dockram, reg,
-> > > > +                                         ASUSEC_ENTRY_SIZE, buf);
-> > > > +     if (ret < ASUSEC_ENTRY_SIZE)
-> > > > +             return ret;
-> > >
-> > > Same here.  These should be negative.
-> > >
-> >
-> > return ret < 0 ? ret : -EIO same as above
-> >
-> > > > +
-> > > > +     if (buf[0] > ASUSEC_ENTRY_SIZE) {
-> > > > +             dev_err(dev, "bad data len; buffer: %*ph; ret: %d\n",
-> > > > +                     ASUSEC_ENTRY_BUFSIZE, buf, ret);
-> > > > +             return -EPROTO;
-> > > > +     }
-> > > > +
-> > > > +     if (!ddata->logging_disabled) {
-> > > > +             dev_info(dev, "%-14s: %.*s\n", name, buf[0], buf + 1)=
-;
-> > > > +
-> > > > +             if (out) {
-> > > > +                     *out =3D devm_kasprintf(dev, GFP_KERNEL, "%.*=
-s",
-> > > > +                                           buf[0], buf + 1);
-> > > > +                     if (!*out)
-> > > > +                             return -ENOMEM;
-> > > > +             }
-> > > > +     }
-> > >
-> > > FWIW, I hate this!  What does it give you now that development is don=
-e?
-> > >
-> >
-> > We have already discussed this, and you agreed that EC and firmware
-> > prints may stay! This prints EC model and firmware info as well as EC
-> > firmware behavior. It allows identify possible new revisions of EC -
-> > Firmware combo and address possible regressions (check if it is chip
-> > malfunction or firmware needs a new programming model) without
-> > rebuilding kernel and digging downstream kernel for needed bits of
-> > code.
->
-> Right, so just print it out and remove all of the 'logging_disabled' and
-> 'out' nonsense.
->
-> > > > +     return 0;
-> > > > +}
-> > > > +
-> > > > +static int asus_ec_reset(struct asus_ec_data *ddata)
-> > > > +{
-> > > > +     int retry, ret;
-> > > > +
-> > > > +     guard(mutex)(&ddata->ecreq_lock);
-> > > > +
-> > > > +     for (retry =3D 0; retry < ASUSEC_RETRY_MAX; retry++) {
-> > >
-> > > for (int retry =3D ... is generally preferred for throwaway variables=
-.
-> > >
-> >
-> > Not that I care too much, but I am defining ret anyway, why not add
-> > retry too there?
->
-> This is the new and preferred way to use throw-away variables.
->
-> ret is not a throw-away variable.
->
-> [...]
->
-> > > > +static int asus_ec_set_factory_mode(struct asus_ec_data *ddata,
-> > > > +                                 enum asusec_mode fmode)
-> > > > +{
-> > > > +     dev_info(&ddata->client->dev, "Entering %s mode.\n",
-> > > > +              fmode =3D=3D ASUSEC_MODE_FACTORY ? "factory" : "norm=
-al");
-> > > > +
-> > > > +     return asus_dockram_access_ctl(ddata->ec.dockram, NULL,
-> > > > +                                    ASUSEC_CTL_FACTORY_MODE,
-> > > > +                                    fmode =3D=3D ASUSEC_MODE_FACTO=
-RY ?
-> > > > +                                    ASUSEC_CTL_FACTORY_MODE : 0);
-> > >
-> > > Why not create make:
-> > >
-> > > ASUSEC_MODE_FACTORY =3D=3D ASUSEC_CTL_FACTORY_MODE
-> > >
-> > > What happens to NORMAL?
-> > >
-> >
-> > ASUSEC_CTL_FACTORY_MODE is a bit in the ctl register. For NORMAL mode
->
-> I get that, but if the values can be shared, it make the code simpler.
->
-> > bit is cleared,
-> > for FACTORY bit it set, for NONE bit is ignored.
-> >
-> > > > +}
-> > > > +
-> > > > +static int asus_ec_detect(struct asus_ec_data *ddata)
-> > > > +{
-> > > > +     int ret;
-> > > > +
-> > > > +     ret =3D asus_ec_reset(ddata);
-> > > > +     if (ret)
-> > > > +             goto err_exit;
-> > > > +
-> > > > +     asus_ec_clear_buffer(ddata);
-> > > > +
-> > > > +     ret =3D asus_ec_log_info(ddata, ASUSEC_DOCKRAM_INFO_MODEL, "M=
-odel",
-> > > > +                            &ddata->ec.model);
->
-> Where is this model used?
->
+Am 18.06.26 um 14:00 schrieb Mete Durlu:
+> Enable cpuidle infrastructure, idle governor and s390 cpuidle driver by
+> default. They can be disabled via config options before compile or via
+> setting cpuidle.off kernel commandline option. When cpuidle.off=1 set,
+> given architecture's specific implementation is used as a fallback without
+> any governor or idle state support.
+> 
+> During runtime individual states of cpuidle driver can also be disabled
+> via sysfs attributes.
+> 
+> Ex:
+> echo 1 > /sys/devices/system/cpu<N>/cpuidle/state<M>/disable
+> 
+> Signed-off-by: Mete Durlu <meted@linux.ibm.com>
+> Reviewed-by: Heiko Carstens <hca@linux.ibm.com>
 
-Model is passed to cells to form names, particularly input device names.
+Acked-by: Christian Borntraeger <borntraeger@linux.ibm.com>
 
-> > > You can use 100-chars and make the code look beautiful! :)
-> > >
-> >
-> > Not every subsystem permits 100 chars, some stick to 80 as a strict
-> > rule, so it is better be safe.
->
-> Right, but we are forward thinking here.
->
-> You can and should use 100-chars in this subsystem.
->
-> > > > +     if (ret)
-> > > > +             goto err_exit;
-> > > > +
-> > > > +     ret =3D asus_ec_log_info(ddata, ASUSEC_DOCKRAM_INFO_FW, "FW v=
-ersion",
-> > > > +                            NULL);
-> > > > +     if (ret)
-> > > > +             goto err_exit;
-> > > > +
-> > > > +     ret =3D asus_ec_log_info(ddata, ASUSEC_DOCKRAM_INFO_CFGFMT, "=
-Config format",
-> > > > +                            NULL);
-> > > > +     if (ret)
-> > > > +             goto err_exit;
-> > > > +
-> > > > +     ret =3D asus_ec_log_info(ddata, ASUSEC_DOCKRAM_INFO_HW, "HW v=
-ersion",
-> > > > +                            NULL);
-> > > > +     if (ret)
-> > > > +             goto err_exit;
-> > > > +
-> > > > +     /* Disable logging on next EC request */
-> > >
-> > > Why, but why?
-> > >
-> >
-> > Cause EC requests are frequent (handshake/reset) and constant logging
-> > same data is not acceptable.
->
-> Then rid the prints entirely or do them at a more appropriate point like
-> during probe?
->
-> Or maybe consider dev_info_once() and friends.
->
-
-I totally forgot about dev_info_once(), thank you.
-
-> > > > +     ddata->logging_disabled =3D true;
-> > > > +
-> > > > +     /* Check and inform about EC firmware behavior */
-> > > > +     ret =3D asus_ec_susb_on_status(ddata);
-> > > > +     if (ret)
-> > > > +             goto err_exit;
-> > > > +
-> > > > +     ddata->ec.name =3D ddata->info->name;
-> > > > +
-> > > > +     /* Some EC require factory mode to be set normal on each requ=
-est */
-> > > > +     if (ddata->info->fmode)
-> > > > +             ret =3D asus_ec_set_factory_mode(ddata, ddata->info->=
-fmode);
-> > > > +
-> > > > +err_exit:
-> > > > +     if (ret)
-> > > > +             dev_err(&ddata->client->dev, "failed to access EC: %d=
-\n", ret);
-> > > > +
-> > > > +     return ret;
-> > > > +}
-> > > > +
-> > > > +static void asus_ec_handle_smi(struct asus_ec_data *ddata, unsigne=
-d int code)
-> > > > +{
-> > > > +     switch (code) {
-> > > > +     case ASUSEC_SMI_HANDSHAKE:
-> > > > +     case ASUSEC_SMI_RESET:
-> > > > +             asus_ec_detect(ddata);
-> > > > +             break;
-> > > > +     }
-> > > > +}
-> > > > +
-> > > > +static irqreturn_t asus_ec_interrupt(int irq, void *dev_id)
-> > > > +{
-> > > > +     struct asus_ec_data *ddata =3D dev_id;
-> > > > +     unsigned long notify_action;
-> > > > +     int ret;
-> > > > +
-> > > > +     ret =3D i2c_smbus_read_i2c_block_data(ddata->client, ASUSEC_R=
-EAD_BUF,
-> > > > +                                         ASUSEC_ENTRY_SIZE, ddata-=
->ec_buf);
-> > > > +     if (ret < ASUSEC_ENTRY_SIZE ||
-> > > > +         !(ddata->ec_buf[ASUSEC_IRQ_STATUS] & ASUSEC_OBF_MASK))
-> > >
-> > > Unwrap for readability.
-> > >
-> > > Also, I think a comment would be helpful.
-> > >
-> >
-> > if (ret < ASUSEC_ENTRY_SIZE)
-> >     return IRQ_NONE;
-> >
-> > ret =3D ddata->ec_buf[ASUSEC_IRQ_STATUS] & ASUSEC_OBF_MASK;
-> > if (!ret)
-> >     return IRQ_NONE;
-> >
-> > This would be acceptable? (I will add comments later on)
->
-> Yes, better.
->
-> If you're not using ret again, you could just put 'ddata.." inside the if=
-().
->
-
-I thought about this, but that would require combining it with (!)
-which will not help with readabilty.
-
-> > > > +             return IRQ_NONE;
-> > > > +
-> > > > +     notify_action =3D ddata->ec_buf[ASUSEC_IRQ_STATUS];
-> > > > +     if (notify_action & ASUSEC_SMI_MASK) {
-> > > > +             unsigned int code =3D ddata->ec_buf[ASUSEC_SMI_CODE];
-> > > > +
-> > > > +             asus_ec_handle_smi(ddata, code);
-> > > > +
-> > > > +             notify_action |=3D code << 8;
-> > > > +     }
-> > > > +
-> > > > +     blocking_notifier_call_chain(&ddata->ec.notify_list,
-> > > > +                                  notify_action, ddata->ec_buf);
-> > > > +
-> > > > +     return IRQ_HANDLED;
-> > > > +}
-> > > > +
-> > > > +static void asus_ec_release_dockram_dev(void *client)
-> > > > +{
-> > > > +     i2c_unregister_device(client);
-> > > > +}
-> > > > +
-> > > > +static struct i2c_client *devm_asus_dockram_get(struct device *dev=
-)
-> > > > +{
-> > > > +     struct i2c_client *parent =3D to_i2c_client(dev);
-> > > > +     struct i2c_client *dockram;
-> > > > +     struct dockram_ec_data *ddata;
-> > > > +     int ret;
-> > > > +
-> > > > +     dockram =3D i2c_new_ancillary_device(parent, "dockram",
-> > > > +                                        parent->addr + 2);
-> > >
-> > > Could we define a macro for the address offset '2' here to avoid usin=
-g a magic
-> > > number?
-> > >
-> >
-> > It seems that you are excessively concerned with "magic numbers".
->
-> Bingo!  I HATE magic numbers.
->
-> https://lore.kernel.org/all/?q=3D%22Lee+Jones%22+magic
->
-> ~900 messages!  =3D:-D
->
-
-AHAHAH, ok, this makes things clearer. Lemmy have a note about this quirk.
-
-> [...]
->
-> > > > +static const struct asus_ec_chip_info asus_ec_tf600t_pad_data =3D =
-{
-> > > > +     .name =3D "pad",
-> > > > +     .variant =3D ASUSEC_TF600T_PAD,
-> > > > +     .fmode =3D ASUSEC_MODE_NORMAL,
-> > > > +};
-> > >
-> > > Any reason not to just pass the identifier (variant) and add the name
-> > > and fmode attribues to the switch() above?
-> >
-> > Why not set it here, I am not passing any mfd or any other API via of d=
-ata.
->
-> I get that, and you're not breaking any of my golden rules.
->
-> However, I just think doing everything in one place, usually a which
-> based off of the 'variant' which you pass as a single value, is a nicer,
-> more consolidated way of doing things.
->
-
-Well, I would need to pass OF data regardless, so why not bundle it
-with all required info and leave probes switch for strictly mfd cell
-assignment. I suppose this is more a personal preference issue. I hope
-you will not mind if I leave this as it is?
-
-All other comments you have left and I did not answer directly were
-read and acknowledged. Thank you!
-
-> --
-> Lee Jones
