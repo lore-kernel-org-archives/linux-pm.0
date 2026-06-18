@@ -1,122 +1,166 @@
-Received: from m16.mail.163.com (m16.mail.163.com [220.197.31.3])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-dy1-f171.google.com (mail-dy1-f171.google.com [74.125.82.171])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E48112FD696;
-	Thu, 18 Jun 2026 09:08:23 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=220.197.31.3
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1781773708; cv=none; b=Lbedkaw4h0OTRwFHdk5JmDQKLCs5PAa0nu4BcB6r2RdVr2x81Q0eKiEvrpMWU1I+TK9Ox4+Nxc+MiapzLW8A8WQEx5kMWKVxjz8H4+pJ1+LUZqINRy0pxNilaZFtvF7FE2HWNZCEtkkCKPdTwmXam2FOmZcL/AzBrT8dq70C250=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1781773708; c=relaxed/simple;
-	bh=d70WQx/n/AVuK7JXgawnfxZsw9Rdcp0QKyX9m4DWYmc=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=aMdTWNQaCGBns7bXqSuD8wAG/TqR1Qdu9xlFoDdfZjJVXS4oDbHtwwhzfiuH83r8Q3oHz0R9bWBnYTZJapDfsxwY4Od+aqPPv1AffziDSALFQTi366tj/16muI+A6VjEsCn+0pRhltt+tkFiGj6WMBoeKEhZnPslUt2+SV95N78=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=163.com; spf=pass smtp.mailfrom=163.com; dkim=pass (1024-bit key) header.d=163.com header.i=@163.com header.b=oBrr+YUW; arc=none smtp.client-ip=220.197.31.3
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=163.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=163.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A690A3C3441
+	for <linux-pm@vger.kernel.org>; Thu, 18 Jun 2026 09:18:56 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=74.125.82.171
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1781774343; cv=pass; b=gnSkfw3bhVghSpH/0i7bqbZ35SucO4fqiKpCgE+FWsg9K0jpDRIWWdDEOsle4hkyLUktoWZ5Rs67uK6OwLuE/qld177dKmiZQIYY7Nki7Z4nFEUGiG82DaIyDUV64aGyyhJNBjA5OwP1ZXENMYJSOrNNQ1T560/UiVo1uvZBC3M=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1781774343; c=relaxed/simple;
+	bh=iXXS+DdvdpHDISQJAmld4xgdLVhKLH0Jazoj5E1xJKc=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=FhGTZNaQypvYJrfQm6RK6QjBiK/8sd1XBJmtk8aYTZTFSyzXT0HmcdqivSN7ibQ6yaSutMZCQEvaBeCc5nq6eFcvbxjJMeE3zOOI9xMqWURbyBcQ1xpkKKgdTnb/lwlNcm7Qv4ayMb3m4NFqDxm3EBfsJtugNbe4UN1qOe01/2M=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=svCHfmjW; arc=pass smtp.client-ip=74.125.82.171
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=163.com header.i=@163.com header.b="oBrr+YUW"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=163.com;
-	s=s110527; h=From:To:Subject:Date:Message-ID:MIME-Version; bh=U9
-	LYbpliEyA7kvkqFWLXwY8GVKQIfZ2rB1s2So+u1ns=; b=oBrr+YUWD7lwiohoK+
-	fwZUUc1NrlgsaVOGSpvOxzsMwWJa/90GA+BUSM8O2c1YdptOQlBVLUsr/psGyzeX
-	Ov5SzusWUHKsS3I30lZZqlXxj4y/dIrAZ/s7h0Ui/xB61vH+sm0u754lL7pPWjAv
-	W1xBUrcbicKjCOp+pgYcUwCLk=
-Received: from ubuntu.. (unknown [])
-	by gzsmtp5 (Coremail) with SMTP id QCgvCgCnMQdWtTNqaIBlCw--.16948S4;
-	Thu, 18 Jun 2026 17:07:38 +0800 (CST)
-From: Ma Ke <make_ruc2021@163.com>
-To: sre@kernel.org,
-	marex@denx.de,
-	hansg@kernel.org
-Cc: linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	akpm@linux-foundation.org,
-	Ma Ke <make_ruc2021@163.com>,
-	stable@vger.kernel.org
-Subject: [PATCH] power: supply: bq25890: Fix power_supply reference leak
-Date: Thu, 18 Jun 2026 17:07:26 +0800
-Message-ID: <20260618090726.2863439-1-make_ruc2021@163.com>
-X-Mailer: git-send-email 2.43.0
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="svCHfmjW"
+Received: by mail-dy1-f171.google.com with SMTP id 5a478bee46e88-30759632453so172941eec.1
+        for <linux-pm@vger.kernel.org>; Thu, 18 Jun 2026 02:18:56 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1781774335; cv=none;
+        d=google.com; s=arc-20240605;
+        b=JsgnlL0Y1EPKKfSdH7SwgXs5XpmwWxECRB+X/NdBSbOUGOWEwGpn+shZBc/LHgPg/y
+         9Ah6odh/jNG8ncg1vcnswx7G47XKGFd5RBoGRNkTdihPT7IlPxL6rEo0H/gtftBnoTPY
+         Erv7kX2UQa6h8PluCmZlVJ/dCuCMeTiGlV86XCwFFnDPiEDGLJWsSlrhfE8GyhEP/5SR
+         FFNkcEPFG8CKcmw2YtemB2K5je+YvAD14nJQFfLLJsckGRr6wR+EhzzWU5gdPAknrR2y
+         th5vA94DsLjo9daoXdTQwha1k0J/SB7qXJr/ftUamd9ZCI2nkDDApmqo/xZtPPDmrD+d
+         DYiw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=iXXS+DdvdpHDISQJAmld4xgdLVhKLH0Jazoj5E1xJKc=;
+        fh=c+8vjCUwGgM9OUsgvWPoKRvgpbOQ6e0ipzebNDUJ2ko=;
+        b=j/JRaG/ENkZw9jXlGJA2In2dlk3EbmDIFsEcVw0heuLYCVTqUxAdRp5ZOd7h969shS
+         6IrPA2wEilS4/YknBtECPMNJHC4/kkqRiDKVVJKVrzhVhhB5Pl0ocmyaM3DdtZ3Q0xOI
+         lijd0rjpdIfa7b4igYjmBqgInq3mcNEKMjk8JZhzZyOWTZyRGixQlJctUMCak4D545Aq
+         2uQ6B6aI5bYvNUoBUbFTo1fTXDZ3/sOO+EQRgn2/Fv8LlCbZ5wkzYl4QWXyk0MjM0cPR
+         iohuzy4iL8+X9A4ZFd7jFFJk1cUUC4gwa+5pJfrngpBogxWp2cU4Sec65JxPCWfatkuT
+         jhSA==;
+        darn=vger.kernel.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1781774335; x=1782379135; darn=vger.kernel.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=iXXS+DdvdpHDISQJAmld4xgdLVhKLH0Jazoj5E1xJKc=;
+        b=svCHfmjWdy9fVHTCYHHVhzuC4EYvs/qch4QmzwA/63gVMZiU4s3jVAoFEM0UM0UmSW
+         bwORU+3vBordIGCRTdOLg8jZxH2uuu/qW2lHQLlZkfZzHdoIFvZ0oZQ5sPe3m49HN88e
+         9MdPgT9CiKFwv9a3MwADBqK6FuKPdw1A602ShMH/PDErDAtZnXYC3Kh/oPHyu3LIUD+R
+         QkV9exODwC7oLGb8Yfj4f1eHMlGLnDyFAX2hvrBrqUtC9A+0ILgsmd9ODY8r6BmUkgUN
+         qUW4h/1nc3FNJvMdLzGQN4zQo/tgyYiOf1Hogt0Qnt1uLnORZ3c5h/nAOemQckpgi/jp
+         bpAw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1781774335; x=1782379135;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=iXXS+DdvdpHDISQJAmld4xgdLVhKLH0Jazoj5E1xJKc=;
+        b=gsHi8VzRTFVS+/2v2mbtaLNvZcIRGKQROfxwAtGeNTHvgHX2eMH8uQp/OxrbsEh1Fc
+         6ZvhF9+pcqFQ3n2F5E80cxIzmnHy5BaowkNIVqt2vz5YgIzro+TDwWzec64jycMNIbls
+         iHLf8fJsC5qfThE2yUggt/O2EjN/yW8t8NADmqtlj2XlDascb12t/EPoxLHjBChKBQ6k
+         EOYes3gEsvsu62EdWC032G1rAi2AwUjBfSzFgPDcIqrcmaIF2JA5gttYHGqdXnkKcdOi
+         TXxhIDY6AQO7jPfzsBiQa9w+R4BRrLdPaNrF/G/2BNMjwRqSBkKZsE2zvJiIbOIt26sG
+         LNpQ==
+X-Forwarded-Encrypted: i=1; AFNElJ9eNh0JUJz3v4imqGeEIFYAbmFD7aszcVrn5mjhL26c0fhf+sg6RVXW3Lm4BJrS3pmSEhfgnfNDOw==@vger.kernel.org
+X-Gm-Message-State: AOJu0YwzOofSeET/wgdomed1waEL5ZGcg1SDskqUr6kihU+H3U0NCt7Z
+	l45SeP0BhuK9gBUJ3j54xzCksNqdMEZlegJ7CSEp6ArQyLiovVSo3LthtJKdHVxRT9BptFa3bT5
+	HfI4CkZnERdHq3edH6tJt0gnUJ75d/ng=
+X-Gm-Gg: AfdE7cksDew5aD99ASbDoPWjettciFX6MTLfltx2StErBg1WIFlLoB6Iv3y1RXSsOOy
+	wbY51g9O9kMm4LSjG/1GUPZNCo8gm/6KJ0++4WldOIH3FCFPat0KmabUCvAW8n3MoYG7GLClnui
+	crA0yR7UYlC18gY68ypPzMLjIczhPfly5+uFIvut2W2NJBPL0e4roV/5B5p3twJTwQ8BQ6Bm/vd
+	q3zIROh9rAVcxyYGpnUZGhRRVPhd7qARk2XLqwMHTG8GoqFwm1g+eJE4pKSvcgcXfPlPbO2rg==
+X-Received: by 2002:a05:7300:730b:b0:304:dddb:f8 with SMTP id
+ 5a478bee46e88-30bca20f8damr5812502eec.35.1781774335449; Thu, 18 Jun 2026
+ 02:18:55 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-CM-TRANSID:QCgvCgCnMQdWtTNqaIBlCw--.16948S4
-X-Coremail-Antispam: 1Uf129KBjvJXoW7ZrW7Gr4UKw1UZryxuryUWrg_yoW8tFy8pF
-	Z5CF98Kr48XF4fAw4ktw1v9Fyak34xCFy3Ar1xGw1vqw13Jr1DXry8JFZaqry8Gr97GFs2
-	yw43tr4xCFnxGaDanT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
-	9KBjDUYxBIdaVFxhVjvjDU0xZFpf9x0pRkhLbUUUUU=
-X-CM-SenderInfo: 5pdnvshuxfjiisr6il2tof0z/xtbC0xrq9WoztVoUGAAA3s
+References: <20260528053203.9339-1-clamor95@gmail.com> <20260528053203.9339-5-clamor95@gmail.com>
+ <ajDPtOyr8GJYaVYQ@google.com> <CAPVz0n2fnM6zYtP9bCtsY9mcLdce_R+1UPmMo0o4JRgjnhuhKA@mail.gmail.com>
+ <ajGyejCSRMhY4G2R@google.com>
+In-Reply-To: <ajGyejCSRMhY4G2R@google.com>
+From: Svyatoslav Ryhel <clamor95@gmail.com>
+Date: Thu, 18 Jun 2026 12:18:42 +0300
+X-Gm-Features: AVVi8Cf9TbqQeyGuWNgkeGWahIsHp2X0krUtvBhwls2q1omyQtqvEQF6YkA0rCg
+Message-ID: <CAPVz0n0r-1SXH_dfS9HkQJrF7e-6+O5Me2bPjcscnizmfTfjZg@mail.gmail.com>
+Subject: Re: [PATCH v8 4/7] input: keyboard: Add driver for ASUS Transformer
+ dock multimedia keys
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+	Conor Dooley <conor+dt@kernel.org>, Lee Jones <lee@kernel.org>, Pavel Machek <pavel@kernel.org>, 
+	Sebastian Reichel <sre@kernel.org>, Ion Agorria <ion@agorria.com>, 
+	=?UTF-8?B?TWljaGHFgiBNaXJvc8WCYXc=?= <mirq-linux@rere.qmqm.pl>, 
+	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
+	linux-input@vger.kernel.org, linux-leds@vger.kernel.org, 
+	linux-pm@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-bq25890_fw_probe() acquires a reference to a secondary charger via
-power_supply_get_by_name(). This helper internally calls
-class_find_device() which gets a reference on the found device.
-However, the driver does not release this reference on error paths.
-The devm cleanup callback also does not put the reference, so normal
-driver unload leaks it as well.
+=D1=81=D1=80, 17 =D1=87=D0=B5=D1=80=D0=B2. 2026=E2=80=AF=D1=80. =D0=BE 00:2=
+3 Dmitry Torokhov <dmitry.torokhov@gmail.com> =D0=BF=D0=B8=D1=88=D0=B5:
+>
+> On Tue, Jun 16, 2026 at 09:25:25AM +0300, Svyatoslav Ryhel wrote:
+> > =D0=B2=D1=82, 16 =D1=87=D0=B5=D1=80=D0=B2. 2026=E2=80=AF=D1=80. =D0=BE =
+07:26 Dmitry Torokhov <dmitry.torokhov@gmail.com> =D0=BF=D0=B8=D1=88=D0=B5:
+> > >
+> > > Hi Svyatoslav,
+> > >
+> > > On Thu, May 28, 2026 at 08:32:00AM +0300, Svyatoslav Ryhel wrote:
+> > > > From: Micha=C5=82 Miros=C5=82aw <mirq-linux@rere.qmqm.pl>
+> > > >
+> > > > Add support for multimedia top button row of ASUS Transformer's Mob=
+ile
+> > > > Dock keyboard. Driver is made that function keys (F1-F12) are used =
+by
+> > > > default which suits average Linux use better and with pressing
+> > > > ScreenLock + AltGr function keys layout is switched to multimedia k=
+eys.
+> > > > Since this only modifies codes sent by asus-ec-keys it doesn't affe=
+ct
+> > > > normal keyboards at all.
+> > >
+> > > I think using input handler to intercept ScreenLock + AltGr is quite
+> > > awkward. I think this also passes the original key events (unless you
+> > > make it a filter not a regular handler).
+> > >
+> > > I do not see benefit for reacting to AltGr+ScreenLock on other keyboa=
+rds
+> > > to activate the special mode on this one. So given the fact that you
+> > > already mange the data stream when you split it into "serio" ports,
+> > > maybe just intercept this key combo right there and create the input
+> > > device and signal input events right there?
+> > >
+> >
+> > Though it seems awkward at a first glance, media keys are integrated
+> > with a standard keyboard in a detachable dock. It is highly unlikely
+> > that media keys will be used with a different keyboard then the one
+> > that is integrated with dock. Additionally, the ScreenLock key has a
+> > code specific to this driver and is not in general use, so even if any
+> > standard keyboard has AltGr but none has ScreenLock specific to this
+> > driver except the dock itself. Handler is also set as observer so it
+> > should not interfere with work of other input devices.
+>
+> I am not concerned about it interfering with other drivers, I am
+> concerned about it unnecessarily connecting to unrelated devices
+> (anything that declares EV_KEY).
+>
+> Again, I think having input handler is not appropriate here. I would
+> fold this patch into the patch that introduces the 2 serio ports,
+> enhanced the data stream analysis to detect your key combo, and then
+> report through this new input device. You do not need to have the round
+> trip through atkbd and the new input handler for this.
+>
 
-Fix the leak by adding a power_supply_put() call in the new error
-label of bq25890_fw_probe() and in the devm cleanup routine.
+I will try with filtering first if you don't mind. If that will not
+work I'll consider folding. Do you have any good examples of handler
+with filter to use as an inspiration? Thank you.
 
-Found by code review.
-
-Signed-off-by: Ma Ke <make_ruc2021@163.com>
-Cc: stable@vger.kernel.org
-Fixes: d54bf877fd87 ("power: supply: bq25890: Add support for having a secondary charger IC")
----
- drivers/power/supply/bq25890_charger.c | 17 +++++++++++++++--
- 1 file changed, 15 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/power/supply/bq25890_charger.c b/drivers/power/supply/bq25890_charger.c
-index 868e86e1749b..85318a06b66c 100644
---- a/drivers/power/supply/bq25890_charger.c
-+++ b/drivers/power/supply/bq25890_charger.c
-@@ -1411,7 +1411,8 @@ static int bq25890_fw_probe(struct bq25890_device *bq)
- 	if (ret == 0) {
- 		if (val > 100) {
- 			dev_err(bq->dev, "Error linux,iinlim-percentage %u > 100\n", val);
--			return -EINVAL;
-+			ret = -EINVAL;
-+			goto err_put_charger;
- 		}
- 		bq->iinlim_percentage = val;
- 	} else {
-@@ -1426,12 +1427,19 @@ static int bq25890_fw_probe(struct bq25890_device *bq)
- 
- 	ret = bq25890_fw_read_u32_props(bq);
- 	if (ret < 0)
--		return ret;
-+		goto err_put_charger;
- 
- 	init->ilim_en = device_property_read_bool(bq->dev, "ti,use-ilim-pin");
- 	init->boostf = device_property_read_bool(bq->dev, "ti,boost-low-freq");
- 
- 	return 0;
-+
-+err_put_charger:
-+	if (bq->secondary_chrg) {
-+		power_supply_put(bq->secondary_chrg);
-+		bq->secondary_chrg = NULL;
-+	}
-+	return ret;
- }
- 
- static void bq25890_non_devm_cleanup(void *data)
-@@ -1440,6 +1448,11 @@ static void bq25890_non_devm_cleanup(void *data)
- 
- 	cancel_delayed_work_sync(&bq->pump_express_work);
- 
-+	if (bq->secondary_chrg) {
-+		power_supply_put(bq->secondary_chrg);
-+		bq->secondary_chrg = NULL;
-+	}
-+
- 	if (bq->id >= 0) {
- 		mutex_lock(&bq25890_id_mutex);
- 		idr_remove(&bq25890_id, bq->id);
--- 
-2.43.0
-
+> Thanks.
+>
+> --
+> Dmitry
