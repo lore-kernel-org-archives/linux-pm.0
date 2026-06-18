@@ -1,46 +1,46 @@
-Received: from PA4PR04CU001.outbound.protection.outlook.com (mail-francecentralazon11013059.outbound.protection.outlook.com [40.107.162.59])
+Received: from AS8PR04CU009.outbound.protection.outlook.com (mail-westeuropeazon11011026.outbound.protection.outlook.com [52.101.70.26])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 87AE33911A8;
-	Thu, 18 Jun 2026 13:38:05 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.107.162.59
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id ABEC038D40D;
+	Thu, 18 Jun 2026 13:38:11 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.70.26
 ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1781789887; cv=fail; b=hnf1pRx9xAbbuSrJ6sIYPcPW8LJhUuUOiuLqFMR/LUhLKzNgV/sunYvrRINTP9JMkujm48Ye7E1UN498ch5vwhHhvn4jD5AR9XPy70wKJQdceTGSiMdaR1hX+j9P1Fl/ZPULYQylzCAKv5e0ZpYKiLoOq8aaA/eQbjASIpW/kLg=
+	t=1781789896; cv=fail; b=riWasxEIJJqeRH5q6pdCEROICORitIzTP7jIqFUlEix1ONKCb+QTov8Ve/Upxes3vfKUc3bc6rzSzXCbKODDPvkaGSegvk3Tss49p87vfFh3wWPiZKS0D1G0b1Dy6LRxNhRoEUGbqL4iQK+Hq76XlN81swvI+RevNSzw1hk7V74=
 ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1781789887; c=relaxed/simple;
-	bh=YKWBHF8xvyyHYq9brMKHv0t+G1RvYmcFcWcd18l0pYk=;
+	s=arc-20240116; t=1781789896; c=relaxed/simple;
+	bh=QK/ycybd/26Wx5Rb0xlidfcZjGKg08amNsdGVHm8hLI=;
 	h=From:To:CC:Subject:In-Reply-To:References:Message-ID:Date:
-	 MIME-Version:Content-Type; b=uC16wtLSEEuqhQ0Ft1w8qCXXgH9mYQLprQVpcvsay3mg2ThGZT6+d/3zRSz1YUEGQcNMwxPRbu/XvW3kM10RP6Txos5w/FlMUSeyIdsp9skJbcV7vyGQr39q3LdQtg4LN3D3lIGDPWEu25c8kNcJsI2A9PKGpLomg80IoHWIygo=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=axis.com; spf=pass smtp.mailfrom=axis.com; dkim=pass (1024-bit key) header.d=axis.com header.i=@axis.com header.b=lPVH0yj9; arc=fail smtp.client-ip=40.107.162.59
+	 MIME-Version:Content-Type; b=WFi3K3qTmLa3AL5XJs0DX2IYOCMHQMUKfXtZks6X/oxrlpvl0wg78v4jhdOHsUdgE1PDZgKMAmALvsxdv8CCSWeh8HURanak6tBDGymx/9pxEijo76bcxY35rU+TYFtxFgxR3cVJElFHNs9tCIg97lUUtLrcv6EDump29GpX5JM=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=axis.com; spf=pass smtp.mailfrom=axis.com; dkim=pass (1024-bit key) header.d=axis.com header.i=@axis.com header.b=AmrsxZdZ; arc=fail smtp.client-ip=52.101.70.26
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=axis.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=axis.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=axis.com header.i=@axis.com header.b="lPVH0yj9"
+	dkim=pass (1024-bit key) header.d=axis.com header.i=@axis.com header.b="AmrsxZdZ"
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=sIDocRC4O45kaMTsTgozBuIwsryAOrS5llht5ITCl5Y3wSntoY3T9HVg4Fan6U+DyLQlQvFgw9qpf4Ui5zPT64v/Z6qwxmO1Bs1Cucg50eI9B4042stsQu6lB41zhlAbmo9ETwRxxh/U9y2HGfdrOA5QZoGeB+1ruTLb96sZwqJvtiPCMU5Tp6HFUD9/g6DphEQvsd1kakeAEHW7+BPHCpD9O7tTHYIOQLggyfyAWnAcXhdXzjE191TIiumGWMhy/jyuhsdX7Bj+tzPsXtIHrnrobFTepkfCdaWoQN6LUSC5cmRCFKZ2nVMAch+wAKabvb5hYpQlq/vg3K75WnxftQ==
+ b=BvebF4jrCcKDwEfxq124P3Tao6ORlQgRrIc6dRf0/cxa5W5RZ0mhJbxAJU77KxBD/r1Wd6zCahO2IfndDGErBfgdz62MevD6X1KdEo12peW+sZGV6X7JDe1iP8NieVHGv+e7cF3vNzGr9mQg0amvtgIQopjbisVnBbHmsUd7h3FOzUxn0ke7NOhvlW2dnDwT/ZdGMBvyMltVXIJ96nuSliLnuSyvd1YStGcC3megLMWL4g3ezZLLqnAQw0R62y/J20mAEny6Fu8DmepZTz3LCaIMp0IAJh95pgS8a3J1GVzh6wK0eqldMOnYXUFfE/TF15BTtF/RY+ZJlD5KrDgHuw==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector10001;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=MGE2TGVpjAyGwyuhZ6SHdUa2SuVaQqctWRHa/0ut2Kc=;
- b=F8wEhY/0gyEyNqh/OWmoXUxVki8RLBaKaNRMzDhzFlmiQ0in8jybaqgW2fbtcgk4MZMHFoXPnB/pXNama3iJivBwRLfAZv7iuWL8cMxhdezEiQciDkdbydgA3v9Iqz5NIpHwsG+eJCozrJaoyv6SFM3AU529yGbnjH5KltOlfc868c2gU+XVQCHu0L9IzRxHXA9bBDP3jW5wSy7iZYI7nAQVZh0ThzikGuP9neBvoy2qan5brpcPs2eIW7zUUWfzgk+SEOxc4DD/5Z6SPfhiB+H7vFYVY01JgoQk4uswvswebTuokpoeTqe+Rt39nUlIKPOsEfewYRPTKYKx3uPcTQ==
+ bh=j4LaEr/OuHqxbcjWcl/2mpCUsVtP4ZhKoSzb7ITs6n4=;
+ b=RbG9RRSpkC4YLGoCe09bPOoIsfUoO6uTkNc1GcpV+6hvlGYZPv3ApXmb7MlhmdqIiNo9n/lSpfQyDpBL1pnf8VWl+cN8ahO0von0wCfTBBqRxorxwAvZRf7SYwRzCM3W5n6x7ffoMTOHXmYSEGMuQZmcOGRbShNjNOubUoX98p5X30Smo+sR3bh6EGhffVBB/604ON4Nrl0k78d2JDt8hsWAI64J3GYL5KMzEJx7G8GKemc9pc1U4v+hmaGXeQB7+oy+NgBOLzmUn0dYJadSn+RqgLoMC5wTAR8yu7zQmRhkISsNrxK+NqfpHG2B0RCJdMSj+pMQGaClxT4aTMJaoQ==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
  195.60.68.100) smtp.rcpttodomain=vger.kernel.org smtp.mailfrom=axis.com;
  dmarc=pass (p=none sp=none pct=100) action=none header.from=axis.com;
  dkim=none (message not signed); arc=none (0)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=axis.com; s=selector1;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=MGE2TGVpjAyGwyuhZ6SHdUa2SuVaQqctWRHa/0ut2Kc=;
- b=lPVH0yj9MU4cDhm9Oqlt1wHC0otaqncD8sklEcsEufkh9s2lsxPQGV7hbuB95GIcY0EERazaDHcjVUBQL0v2RDI4QOlKdoJ+hfORvUigQA9Sz3WGNdqNbrLZdcr7YD9UYJGDDHAcm2ryIOF9UINhOCHF8w0O4TfFMKF9g36R1/o=
-Received: from CWLP123CA0265.GBRP123.PROD.OUTLOOK.COM (2603:10a6:400:1d5::13)
- by PAXPR02MB7296.eurprd02.prod.outlook.com (2603:10a6:102:1bd::6) with
+ bh=j4LaEr/OuHqxbcjWcl/2mpCUsVtP4ZhKoSzb7ITs6n4=;
+ b=AmrsxZdZIHVxIDUGBaW6OxgcHyt408zmRcdUJ2zq8sED1CG5tKRO8Kj9WMPEkBz04IVNOe99zAg3GN71FWs8DjOnXmpzLYg9/LXdEOiqQYpWpiBX2mE5MEgEvKUjGNhoxLDwv3BkYlJwEzkM7J9ocRiZwH25Rig9GVY3QHtzrQY=
+Received: from CWLP123CA0270.GBRP123.PROD.OUTLOOK.COM (2603:10a6:400:1d5::17)
+ by GVX0PF9060FA358.eurprd02.prod.outlook.com (2603:10a6:158:401::b17) with
  Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.139.13; Thu, 18 Jun
- 2026 13:38:01 +0000
+ 2026 13:38:05 +0000
 Received: from AM4PEPF00027A62.eurprd04.prod.outlook.com
- (2603:10a6:400:1d5:cafe::86) by CWLP123CA0265.outlook.office365.com
- (2603:10a6:400:1d5::13) with Microsoft SMTP Server (version=TLS1_3,
- cipher=TLS_AES_256_GCM_SHA384) id 15.21.139.11 via Frontend Transport; Thu,
- 18 Jun 2026 13:38:01 +0000
+ (2603:10a6:400:1d5:cafe::97) by CWLP123CA0270.outlook.office365.com
+ (2603:10a6:400:1d5::17) with Microsoft SMTP Server (version=TLS1_3,
+ cipher=TLS_AES_256_GCM_SHA384) id 15.21.139.13 via Frontend Transport; Thu,
+ 18 Jun 2026 13:38:02 +0000
 X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 195.60.68.100)
  smtp.mailfrom=axis.com; dkim=none (message not signed)
  header.d=none;dmarc=pass action=none header.from=axis.com;
@@ -50,21 +50,20 @@ Received-SPF: Pass (protection.outlook.com: domain of axis.com designates
 Received: from mail.axis.com (195.60.68.100) by
  AM4PEPF00027A62.mail.protection.outlook.com (10.167.16.71) with Microsoft
  SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.21.139.8 via Frontend Transport; Thu, 18 Jun 2026 13:38:01 +0000
+ 15.21.139.8 via Frontend Transport; Thu, 18 Jun 2026 13:38:02 +0000
 Received: from pc67007-2609 (10.4.0.13) by se-mail10w.axis.com (10.20.40.10)
  with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1748.39; Thu, 18 Jun
  2026 15:37:59 +0200
 From: Waqar Hameed <waqar.hameed@axis.com>
-To: Sebastian Reichel <sre@kernel.org>, Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>
-CC: <kernel@axis.com>, <linux-pm@vger.kernel.org>,
-	<devicetree@vger.kernel.org>, <linux-kernel@vger.kernel.org>
-Subject: [PATCH v2 1/2] dt-bindings: power: supply: Add TI BQ25630 charger
+To: Sebastian Reichel <sre@kernel.org>
+CC: <kernel@axis.com>, <linux-kernel@vger.kernel.org>,
+	<linux-pm@vger.kernel.org>
+Subject: [PATCH v2 2/2] power: supply: Add driver for TI BQ25630 charger
 In-Reply-To: <cover.1781789320.git.waqarh@axis.com>
 References: <cover.1781789320.git.waqarh@axis.com>
 User-Agent: a.out
-Message-ID: <96b7d1a0aa0c00929f0fef2847db116b54079a30.1781789320.git.waqarh@axis.com>
+Message-ID: <b89846e3c581d90d1b9ac967d1b744e76244dc83.1781789320.git.waqarh@axis.com>
 Date: Thu, 18 Jun 2026 15:37:59 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
@@ -74,111 +73,1184 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
-X-ClientProxiedBy: se-mail11w.axis.com (10.20.40.11) To se-mail10w.axis.com
+X-ClientProxiedBy: se-mail10w.axis.com (10.20.40.10) To se-mail10w.axis.com
  (10.20.40.10)
 X-EOPAttributedMessage: 0
 X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: AM4PEPF00027A62:EE_|PAXPR02MB7296:EE_
-X-MS-Office365-Filtering-Correlation-Id: 1ecb45b7-a960-46b2-2d96-08decd3ed112
+X-MS-TrafficTypeDiagnostic: AM4PEPF00027A62:EE_|GVX0PF9060FA358:EE_
+X-MS-Office365-Filtering-Correlation-Id: 4bd6650d-8e0a-444b-6ecb-08decd3ed199
 X-MS-Exchange-SenderADCheck: 1
 X-MS-Exchange-AntiSpam-Relay: 0
 X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|36860700016|23010399003|376014|82310400026|1800799024|13003099007|22082099003|18002099003|11063799006|3023799007|56012099006;
+	BCL:0;ARA:13230040|1800799024|82310400026|23010399003|376014|36860700016|6133799003|3023799007|13003099007|5023799004|11063799006|56012099006|18002099003|22082099003;
 X-Microsoft-Antispam-Message-Info:
-	GJqMNnevOB7zmz/F1NMEQOb088AT6BegDST4CinnuaKZgBinnCHWm4SfuTngmsHR3hSrQ6BeQAj4xzhosMA623d6TPPZq6iFanYY1GL5bh54t/dGF5iIDqw3Ywy+iXHKdTk/MJwvhC381eImqN6VUeu09Ub1CmFsLRDGeLrxp/VKj4EVw/8Ti+XRlm/4VF30zVZxVwgjCAw5SBySYK/sv3LAuV/RTC00Ze2viCGqySwMbaxwSd2Rtm/5u6nTygE+8OfEyGcBupvAM48IDQj/nfxwYh1YOTqJx81i85rqbgM8xQSZvgMGj8wcYXY9btKh5t38GXAnEuHg+EqbTMnLYusWNDAAxtvLW5qDH++bgsrcN6nM5ZoNmRUJWgh58spmpoVNN/6fblOe4L7AMn9Z+cuSzhBEKBVfD8Y8+oljIwZTeTJnoE6uM0JTs1GD7yrF0hrHXCl0EwsfBLX6KR1qURr575FbuJpgtztedVhObYB2TxvdEGXBMXkmpwuXmpD5yFlIuW3OwhGqxciUJSjSCDyeJTRWAEJ0okhiN+ig5XOz58UlVWQ0whcwhJ3EGCEipYG90MELquAZDIbzhAMwLrbf6yejpFvlf4KW98A+bHGWOrT/1mVtK84LTPFgfj7wcU7Ln+aqXbPZu/CgAT5tSRB8uNsGlzYlyg3juVj2lkvZcRMzf+fcVwM3kcK2pdrh
+	rXpG6SePvvvO2wBLSjdttXIfgxypeUoajFF2UGhLD0Ms4R+ajmNFxUF31l/uxMACol7KQ3zAs2fjEztaROg+YGQKJn5mE3DbVHxp1gHmScETLPzshVN1pphj/JQGMgxEJOIL5G+g/PJ3kZwmKLeTGnJqV9NorKoXkMPQj0kRUGbGzQSEw/0VXpjJzCrsR2WzC1nnPvYwGjUAWKGmC6Eq4QAblivefE6L8un89w6FlQYUYfRZvfUAa3POGvnDFeVlQ+vf8lceuHn+Sv0fxif5Xw9o/PUcADNLeD1VwDP22xVpXcyZRjpE6OjADzYvtClOPGvsS2e0kkCnHxjDV/byzB4CLZIACdLjWSDH9ZIeOyq9VEK6kOUw0utrjQbFtp+8hKcJ3O0qMgPuuFb/mlin1I82Pt4FO50Ol5iPX7cYzPWfMWQALSceTCrmX+qHz56l3wpeGiq0E2kIPcVBbNiK/7a+QvwCSWVEDmusNTTxtgcG5e8wsCMYhPI+X/iltudsMwwi6NEPj1MRh3iHUpLTyBSu3T5jS5pQOyEMcIpFJAE5XkSrJyiGQ6TOsv/d7UTyWvLf3da0T03sWig9DpW/5R7n21ptZzSd5QiKZo1iFFdV486vXdr3XCU8HJSECCdrD+DjPgoGadCp80ResNbQjDiC6LHS0qVScuEzB7R5awVbRxO33H7eFHSvqa5PVLkWfFcQsX2+8szSxq/jbV63AEXDFkIH4+rZAzFTOff2XSM=
 X-Forefront-Antispam-Report:
-	CIP:195.60.68.100;CTRY:SE;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:mail.axis.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230040)(36860700016)(23010399003)(376014)(82310400026)(1800799024)(13003099007)(22082099003)(18002099003)(11063799006)(3023799007)(56012099006);DIR:OUT;SFP:1101;
+	CIP:195.60.68.100;CTRY:SE;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:mail.axis.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230040)(1800799024)(82310400026)(23010399003)(376014)(36860700016)(6133799003)(3023799007)(13003099007)(5023799004)(11063799006)(56012099006)(18002099003)(22082099003);DIR:OUT;SFP:1101;
 X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
 X-MS-Exchange-AntiSpam-MessageData-0:
-	73/YitcN1gjNyLoxjsw+vI/MxvawgFgFkiy+KxAgk4QDhLdpr0lFehgtIcDhCP+umdEWElSQR09duFJa6yK0rINWBAJh8TvGmfE8LwlRZjH5XgLUobUz5/TnNWMe6b816YIuBaJrC6Ac5Y17pRnOxMStf62jDof2Lws32C5R5/W7a5sp8n/7gXnyx+K5Dhh+HZnB8GRY+87c6wpoFUUs4nKeXvRT0/b1yEz9HGtCYoVBwLciO3or/ZrBer5jh08J8iQIkAgcn4ICwKCWDH2JICWvbTjaK8g04I7ACs7riZFv1qXHniANhVJ6aDx8W0NrQBIvQ/ZtXEWQP7FBKiR8ayy2aRv4F9LVa/drC8SW1LjUdiVHzQZ5VvyJAksoFF4sVwo/LwWniCVrklFCrLs12DJu6UXckz7HSeLBi2TelQ9tCUaP3+5+ifE0B+UMrD/c
+	4Q0pmhsr0BHdBhW0w9+pVIaiSMc6j31wcdXJRo9M6cTFKnYXr7GBc6eIF4UoTS7Cjz9qCkWRMnG4hilR/DUPyz47Z3jPNViY574svrWNfoz43QPdQuEx/nKpNkxZF99Vev6DcjxXRNpBJLZq6AcF//0xk44wyugAS4guMe7ywj1qiH12qMRNbkdaAdHqe67JHWBzXcxKZaUhFTeC+Hsz+jGEqOBsHrfGfSQ4AjZ9HVqJamqlqk0QXSXHHDUKVSAj0Vieimy8CSmKNvck1ArnhWvx5LoDY5frIQPTFfyMeMy0pIe5wx4Se183eW1Ry9EQaQtkCVvw9FCl6EFXIAp2z9GwBa4Ksvnwl2WFqVQYHVD8JBW9SlRDHOI/6WD5c7yaZ2O87RWCsLO4+UYahDetC0wUlKhY/EgejfxOHWkfpIfkgNYWB1+zfc+7Sd6x4TA7
 X-OriginatorOrg: axis.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 18 Jun 2026 13:38:01.2075
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 18 Jun 2026 13:38:02.0958
  (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: 1ecb45b7-a960-46b2-2d96-08decd3ed112
+X-MS-Exchange-CrossTenant-Network-Message-Id: 4bd6650d-8e0a-444b-6ecb-08decd3ed199
 X-MS-Exchange-CrossTenant-Id: 78703d3c-b907-432f-b066-88f7af9ca3af
 X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=78703d3c-b907-432f-b066-88f7af9ca3af;Ip=[195.60.68.100];Helo=[mail.axis.com]
 X-MS-Exchange-CrossTenant-AuthSource:
 	AM4PEPF00027A62.eurprd04.prod.outlook.com
 X-MS-Exchange-CrossTenant-AuthAs: Anonymous
 X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: PAXPR02MB7296
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: GVX0PF9060FA358
 
-Add devicetree bindings for the TI BQ25630 battery charger. It's I2C
-controlled and sends interrupts.
+TI BQ25630 is a battery charger that is I2C controlled. Despite its
+model name, it is rather different from the other devices in the BQ256xx
+family; it has a completely different register layout and some other
+additional functionality (see the datasheet for more details [1]).
 
+The most "annoying" thing is that it has two different register lengths:
+8-bit and 16-bit. Moreover, the 16-bit registers are further partitioned
+into either being little- or big-endian... Luckily, `regmap` has support
+for multiple `regmap_config`s (by setting unique names). Therefore, use
+three different `regmap_config`s for the corresponding registers. ADC
+functionality has been left out, due to it not having any real-world
+use-cases.
+
+The `enum power_supply_property` values are straightforward to map. Some
+properties are clamped (e.g. voltage/current ranges). Common
+`bq25630_read/write_limit()` functions for this are therefore suitable.
+
+Interrupts are sent whenever a state change is detected. Save the state
+status registers in `bq25630_data` and `memcmp()` this in order to
+decide if `power_supply_changed()` should be called or not. The actual
+state values are in (and fetched from) the other
+`power_supply_property`-mapped registers.
+
+[1] https://www.ti.com/lit/gpn/bq25630
+
+Change-Id: I286c7a2f279cc28375a0c611a490fe7c8f77c08a
 Signed-off-by: Waqar Hameed <waqar.hameed@axis.com>
 ---
- .../bindings/power/supply/ti,bq25630.yaml     | 59 +++++++++++++++++++
- 1 file changed, 59 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/power/supply/ti,bq256=
-30.yaml
+ drivers/power/supply/Kconfig           |    7 +
+ drivers/power/supply/Makefile          |    1 +
+ drivers/power/supply/bq25630_charger.c | 1073 ++++++++++++++++++++++++
+ 3 files changed, 1081 insertions(+)
+ create mode 100644 drivers/power/supply/bq25630_charger.c
 
-diff --git a/Documentation/devicetree/bindings/power/supply/ti,bq25630.yaml=
- b/Documentation/devicetree/bindings/power/supply/ti,bq25630.yaml
+diff --git a/drivers/power/supply/Kconfig b/drivers/power/supply/Kconfig
+index 83392ed6a8da9..0466bec6cddcd 100644
+--- a/drivers/power/supply/Kconfig
++++ b/drivers/power/supply/Kconfig
+@@ -839,6 +839,13 @@ config CHARGER_BQ25980
+ 	  Say Y to enable support for the TI BQ25980, BQ25975 and BQ25960
+ 	  series of fast battery chargers.
+=20
++config CHARGER_BQ25630
++	tristate "TI BQ25630 battery charger driver"
++	depends on I2C
++	select REGMAP_I2C
++	help
++	  Say Y to enable support for the TI BQ25630 battery charger.
++
+ config CHARGER_BQ256XX
+ 	tristate "TI BQ256XX battery charger driver"
+ 	depends on I2C
+diff --git a/drivers/power/supply/Makefile b/drivers/power/supply/Makefile
+index 7ee839dca7f33..8d9381366ceb6 100644
+--- a/drivers/power/supply/Makefile
++++ b/drivers/power/supply/Makefile
+@@ -105,6 +105,7 @@ obj-$(CONFIG_CHARGER_BQ2515X)	+=3D bq2515x_charger.o
+ obj-$(CONFIG_CHARGER_BQ257XX)	+=3D bq257xx_charger.o
+ obj-$(CONFIG_CHARGER_BQ25890)	+=3D bq25890_charger.o
+ obj-$(CONFIG_CHARGER_BQ25980)	+=3D bq25980_charger.o
++obj-$(CONFIG_CHARGER_BQ25630)	+=3D bq25630_charger.o
+ obj-$(CONFIG_CHARGER_BQ256XX)	+=3D bq256xx_charger.o
+ obj-$(CONFIG_CHARGER_RK817)	+=3D rk817_charger.o
+ obj-$(CONFIG_CHARGER_SMB347)	+=3D smb347-charger.o
+diff --git a/drivers/power/supply/bq25630_charger.c b/drivers/power/supply/=
+bq25630_charger.c
 new file mode 100644
-index 0000000000000..1e2c7aacb26d8
+index 0000000000000..4b65172f7b30e
 --- /dev/null
-+++ b/Documentation/devicetree/bindings/power/supply/ti,bq25630.yaml
-@@ -0,0 +1,59 @@
-+# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
-+%YAML 1.2
-+---
-+$id: http://devicetree.org/schemas/power/supply/ti,bq25630.yaml#
-+$schema: http://devicetree.org/meta-schemas/core.yaml#
++++ b/drivers/power/supply/bq25630_charger.c
+@@ -0,0 +1,1073 @@
++// SPDX-License-Identifier: GPL-2.0-only
++/*
++ * Driver for TI BQ25630 charger.
++ *
++ * Copyright (C) 2026 Axis Communications AB
++ */
 +
-+title: TI BQ25630 battery charger
++#include <linux/delay.h>
++#include <linux/device.h>
++#include <linux/i2c.h>
++#include <linux/module.h>
++#include <linux/regmap.h>
 +
-+maintainers:
-+  - Waqar Hameed <waqar.hameed@axis.com>
++#include <linux/power_supply.h>
 +
-+description: |
-+  I2C controlled single cell Li-ion and Li-polymer 5A buck charger.
-+  Datasheet: https://www.ti.com/lit/gpn/bq25630
++#define BQ25630_DRV_NAME "bq25630-charger"
 +
-+allOf:
-+  - $ref: power-supply.yaml#
++/* Registers. */
++#define BQ25630_REG_CHARGE_CURRENT_LIMIT	0x02
++#define BQ25630_REG_CHARGE_VOLTAGE_LIMIT	0x04
++#define BQ25630_REG_INPUT_CURRENT_LIMIT		0x06
++#define BQ25630_REG_INPUT_VOLTAGE_LIMIT		0x08
++#define BQ25630_REG_IOTG_REGULATION		0x0a
++#define BQ25630_REG_VOTG_REGULATION		0x0c
++#define BQ25630_REG_MINIMAL_SYSTEM_VOLTAGE	0x0e
++#define BQ25630_REG_PRECHARGE_CONTROL		0x10
++#define BQ25630_REG_TERMINATION_CONTROL		0x12
++#define BQ25630_REG_CHARGE_TIMER_CONTROL	0x14
++#define BQ25630_REG_CHARGER_CONTROL_0		0x15
++#define BQ25630_REG_CHARGER_CONTROL_1		0x16
++#define BQ25630_REG_CHARGER_CONTROL_2		0x17
++#define BQ25630_REG_CHARGER_CONTROL_3		0x18
++#define BQ25630_REG_CHARGER_CONTROL_4		0x19
++#define BQ25630_REG_CHARGER_CONTROL_5		0x1a
++#define BQ25630_REG_NTC_CONTROL_0		0x1b
++#define BQ25630_REG_NTC_CONTROL_1		0x1c
++#define BQ25630_REG_NTC_CONTROL_2		0x1d
++#define BQ25630_REG_NTC_CONTROL_3		0x1e
++#define BQ25630_REG_CHARGER_STATUS_0		0x1f
++#define BQ25630_REG_CHARGER_STATUS_1		0x20
++#define BQ25630_REG_CHARGER_STATUS_2		0x21
++#define BQ25630_REG_FAULT_STATUS		0x22
++#define BQ25630_REG_CHARGER_FLAG_0		0x23
++#define BQ25630_REG_CHARGER_FLAG_1		0x24
++#define BQ25630_REG_FAULT_FLAG			0x25
++#define BQ25630_REG_CHARGER_MASK_0		0x26
++#define BQ25630_REG_CHARGER_MASK_1		0x27
++#define BQ25630_REG_FAULT_MASK			0x28
++#define BQ25630_REG_ICO_CURRENT_LIMIT		0x29
++#define BQ25630_REG_ADC_CONTROL			0x2b
++#define BQ25630_REG_ADC_CHANNEL_DISABLE_1	0x2c
++#define BQ25630_REG_IBUS_ADC			0x32
++#define BQ25630_REG_IBAT_ADC			0x34
++#define BQ25630_REG_VBUS_ADC			0x36
++#define BQ25630_REG_VPMID_ADC			0x38
++#define BQ25630_REG_VBAT_ADC			0x3a
++#define BQ25630_REG_VSYS_ADC			0x3c
++#define BQ25630_REG_TS_ADC			0x3e
++#define BQ25630_REG_TDIE_ADC			0x40
++#define BQ25630_REG_USB_C_CONTROL_0		0x44
++#define BQ25630_REG_USB_C_CONTROL_1		0x45
++#define BQ25630_REG_LIQUID_CONTROL_0		0x46
++#define BQ25630_REG_LIQUID_CONTROL_1		0x47
++#define BQ25630_REG_USB_C_INFORMATION_0		0x48
++#define BQ25630_REG_USB_C_INFORMATION_1		0x49
++#define BQ25630_REG_USB_DAC_CONTROL_0		0x4a
++#define BQ25630_REG_USB_DAC_CONTROL_1		0x4b
++#define BQ25630_REG_PART_INFORMATION		0x4d
 +
-+properties:
-+  compatible:
-+    const: ti,bq25630
++#define BQ25630_NR_STAT_REGS \
++	(BQ25630_REG_FAULT_FLAG - BQ25630_REG_CHARGER_STATUS_0 + 1)
 +
-+  reg:
-+    const: 0x6b
-+    description:
-+      Device I2C address.
++/* Charge current limits. */
++#define BQ25630_ICHG_MIN_REGVAL 0x04
++#define BQ25630_ICHG_MIN 80000
++#define BQ25630_ICHG_MAX 5040000
++#define BQ25630_ICHG_STEP 20000
 +
-+  interrupts:
-+    maxItems: 1
-+    description: |
-+      Device sends active low 256 =C2=B5s pulse. Type should therefore be
-+      IRQ_TYPE_EDGE_FALLING.
++/* Charge voltage limits. */
++#define BQ25630_VREG_MIN_REGVAL 0x15e
++#define BQ25630_VREG_MIN 3500000
++#define BQ25630_VREG_MAX 4800000
++#define BQ25630_VREG_STEP 10000
 +
-+  monitored-battery: true
++/* Input current limits. */
++#define BQ25630_IINDPM_MIN_REGVAL 0x0a
++#define BQ25630_IINDPM_MIN 100000
++#define BQ25630_IINDPM_MAX 3200000
++#define BQ25630_IINDPM_STEP 10000
 +
-+required:
-+  - compatible
-+  - reg
-+  - interrupts
-+  - monitored-battery
++/* Input voltage limits. */
++#define BQ25630_VINDPM_MIN_REGVAL 0x5f
++#define BQ25630_VINDPM_MIN 3800000
++#define BQ25630_VINDPM_MAX 16800000
++#define BQ25630_VINDPM_STEP 40000
 +
-+additionalProperties: false
++/* Minimal system voltage limits. */
++#define BQ25630_VSYSMIN_MIN_REGVAL 0x20
++#define BQ25630_VSYSMIN_MIN 2560000
++#define BQ25630_VSYSMIN_MAX 4000000
++#define BQ25630_VSYSMIN_STEP 80000
 +
-+examples:
-+  - |
-+    #include <dt-bindings/interrupt-controller/irq.h>
++/* Pre-charge current limits. */
++#define BQ25630_IPRECHG_MIN_REGVAL 0x02
++#define BQ25630_IPRECHG_MIN 40000
++#define BQ25630_IPRECHG_MAX 1000000
++#define BQ25630_IPRECHG_STEP 20000
 +
-+    i2c {
-+        #address-cells =3D <1>;
-+        #size-cells =3D <0>;
++/* Termination current limits. */
++#define BQ25630_ITERM_MIN_REGVAL 0x03
++#define BQ25630_ITERM_MIN 30000
++#define BQ25630_ITERM_MAX 1000000
++#define BQ25630_ITERM_STEP 10000
 +
-+        charger@6b {
-+            compatible =3D "ti,bq25630";
-+            reg =3D <0x6b>;
-+            interrupts =3D <13 IRQ_TYPE_EDGE_FALLING>;
-+            monitored-battery =3D <&bat>;
-+        };
-+    };
-+...
++/* Charge types. */
++#define BQ25630_CHG_STAT_NOT_CHARGING	0x00
++#define BQ25630_CHG_STAT_TRICKLE_CHARGE 0x01
++#define BQ25630_CHG_STAT_PRE_CHARGE	0x02
++#define BQ25630_CHG_STAT_FAST_CHARGE	0x03
++#define BQ25630_CHG_STAT_TAPER_CHARGE	0x04
++#define BQ25630_CHG_STAT_TERMINATION	0x07
++
++/* USB types (VBUS). */
++#define BQ25630_VBUS_STAT_NONE		0x00
++#define BQ25630_VBUS_STAT_SDP		0x01
++#define BQ25630_VBUS_STAT_CDP		0x02
++#define BQ25630_VBUS_STAT_DCP		0x03
++#define BQ25630_VBUS_STAT_HVDCP		0x06
++#define BQ25630_VBUS_STAT_BOOST_OTG	0x07
++#define BQ25630_VBUS_STAT_USB_C_DEFAULT 0x08
++#define BQ25630_VBUS_STAT_USB_C_MEDIUM	0x09
++#define BQ25630_VBUS_STAT_USB_C_HIGH	0x0a
++
++/* Temperature status. */
++#define BQ25630_TS_STAT_NORMAL	0x00
++#define BQ25630_TS_STAT_COLD	0x01
++#define BQ25630_TS_STAT_HOT	0x02
++#define BQ25630_TS_STAT_COOL	0x03
++#define BQ25630_TS_STAT_WARM	0x04
++#define BQ25630_TS_STAT_PRECOOL 0x05
++#define BQ25630_TS_STAT_PREWARM 0x06
++
++/* Register fields. */
++enum bq25630_regfield {
++	/* Charge current limit. */
++	BQ25630_REGF_ICHG,
++	/* Charge voltage limit. */
++	BQ25630_REGF_VREG,
++	/* Input current limit. */
++	BQ25630_REGF_IINDPM,
++	/* Input voltage limit. */
++	BQ25630_REGF_VINDPM,
++	/* Minimal system voltage. */
++	BQ25630_REGF_VSYSMIN,
++	/* Pre-charge current limit. */
++	BQ25630_REGF_IPRECHG,
++	/* Termination current threshold. */
++	BQ25630_REGF_ITERM,
++
++	/* IBUS ADC reading. */
++	BQ25630_REGF_IBUS_ADC,
++	/* VBUS ADC reading. */
++	BQ25630_REGF_VBUS_ADC,
++
++	/* Watchdog timer. */
++	BQ25630_REGF_WATCHDOG,
++	/* Enable charger. */
++	BQ25630_REGF_EN_CHG,
++	/* Register reset. */
++	BQ25630_REGF_REG_RST,
++	/* BATFET control. */
++	BQ25630_REGF_BATFET_CTRL,
++	/* Power good indicator. */
++	BQ25630_REGF_PG_STAT,
++	/* Charge status. */
++	BQ25630_REGF_CHG_STAT,
++	/* VBUS status. */
++	BQ25630_REGF_VBUS_STAT,
++
++	/* Temperature zone. */
++	BQ25630_REGF_TS_STAT,
++	/* Temperature shutdwon. */
++	BQ25630_REGF_TSHUT_STAT,
++	/* OTG fault. */
++	BQ25630_REGF_OTG_FAULT_STAT,
++	/* System voltage fault. */
++	BQ25630_REGF_VSYS_FAULT_STAT,
++	/* Battery fault. */
++	BQ25630_REGF_BAT_FAULT_STAT,
++	/* VBUS fault. */
++	BQ25630_REGF_VBUS_FAULT_STAT,
++
++	/* Sentinel value. */
++	BQ25630_REGF_MAX
++};
++
++static const struct reg_field bq25630_regfields[] =3D {
++	[BQ25630_REGF_ICHG] =3D
++		REG_FIELD(BQ25630_REG_CHARGE_CURRENT_LIMIT, 4, 11),
++	[BQ25630_REGF_VREG] =3D
++		REG_FIELD(BQ25630_REG_CHARGE_VOLTAGE_LIMIT, 3, 11),
++	[BQ25630_REGF_IINDPM] =3D
++		REG_FIELD(BQ25630_REG_INPUT_CURRENT_LIMIT, 3, 11),
++	[BQ25630_REGF_VINDPM] =3D
++		REG_FIELD(BQ25630_REG_INPUT_VOLTAGE_LIMIT, 5, 13),
++
++	[BQ25630_REGF_VSYSMIN] =3D
++		REG_FIELD(BQ25630_REG_MINIMAL_SYSTEM_VOLTAGE, 6, 11),
++
++	[BQ25630_REGF_IPRECHG] =3D
++		REG_FIELD(BQ25630_REG_PRECHARGE_CONTROL, 4, 9),
++	[BQ25630_REGF_ITERM] =3D
++		REG_FIELD(BQ25630_REG_TERMINATION_CONTROL, 3, 9),
++
++	[BQ25630_REGF_IBUS_ADC] =3D REG_FIELD(BQ25630_REG_IBUS_ADC, 1, 15),
++	[BQ25630_REGF_VBUS_ADC] =3D REG_FIELD(BQ25630_REG_VBUS_ADC, 2, 14),
++
++	[BQ25630_REGF_WATCHDOG] =3D
++		REG_FIELD(BQ25630_REG_CHARGER_CONTROL_1, 0, 1),
++	[BQ25630_REGF_EN_CHG] =3D
++		REG_FIELD(BQ25630_REG_CHARGER_CONTROL_1, 5, 5),
++	[BQ25630_REGF_REG_RST] =3D
++		REG_FIELD(BQ25630_REG_CHARGER_CONTROL_2, 7, 7),
++	[BQ25630_REGF_BATFET_CTRL] =3D
++		REG_FIELD(BQ25630_REG_CHARGER_CONTROL_3, 0, 1),
++	[BQ25630_REGF_PG_STAT] =3D
++		REG_FIELD(BQ25630_REG_CHARGER_STATUS_0, 7, 7),
++	[BQ25630_REGF_CHG_STAT] =3D
++		REG_FIELD(BQ25630_REG_CHARGER_STATUS_1, 3, 5),
++	[BQ25630_REGF_VBUS_STAT] =3D
++		REG_FIELD(BQ25630_REG_CHARGER_STATUS_2, 4, 7),
++
++	[BQ25630_REGF_TS_STAT] =3D
++		REG_FIELD(BQ25630_REG_FAULT_STATUS, 0, 2),
++	[BQ25630_REGF_TSHUT_STAT] =3D
++		REG_FIELD(BQ25630_REG_FAULT_STATUS, 3, 3),
++	[BQ25630_REGF_OTG_FAULT_STAT] =3D
++		REG_FIELD(BQ25630_REG_FAULT_STATUS, 4, 4),
++	[BQ25630_REGF_VSYS_FAULT_STAT] =3D
++		REG_FIELD(BQ25630_REG_FAULT_STATUS, 5, 5),
++	[BQ25630_REGF_BAT_FAULT_STAT] =3D
++		REG_FIELD(BQ25630_REG_FAULT_STATUS, 6, 6),
++	[BQ25630_REGF_VBUS_FAULT_STAT] =3D
++		REG_FIELD(BQ25630_REG_FAULT_STATUS, 7, 7),
++};
++
++/* 8-bit value regmap. */
++static const struct regmap_range bq25630_read_reg_range8[] =3D {
++	regmap_reg_range(BQ25630_REG_CHARGE_TIMER_CONTROL,
++			 BQ25630_REG_FAULT_MASK),
++	regmap_reg_range(BQ25630_REG_ADC_CONTROL,
++			 BQ25630_REG_ADC_CHANNEL_DISABLE_1),
++	regmap_reg_range(BQ25630_REG_USB_C_CONTROL_0,
++			 BQ25630_REG_PART_INFORMATION),
++};
++
++static const struct regmap_range bq25630_write_reg_range8[] =3D {
++	regmap_reg_range(BQ25630_REG_CHARGE_TIMER_CONTROL,
++			 BQ25630_REG_NTC_CONTROL_3),
++	regmap_reg_range(BQ25630_REG_CHARGER_MASK_0,
++			 BQ25630_REG_FAULT_MASK),
++	regmap_reg_range(BQ25630_REG_ADC_CONTROL,
++			 BQ25630_REG_ADC_CHANNEL_DISABLE_1),
++	regmap_reg_range(BQ25630_REG_USB_C_CONTROL_0,
++			 BQ25630_REG_LIQUID_CONTROL_1),
++	regmap_reg_range(BQ25630_REG_USB_DAC_CONTROL_0,
++			 BQ25630_REG_USB_DAC_CONTROL_1),
++};
++
++static const struct regmap_access_table bq25630_read_reg_access_table8 =3D=
+ {
++	.yes_ranges =3D bq25630_read_reg_range8,
++	.n_yes_ranges =3D ARRAY_SIZE(bq25630_read_reg_range8),
++};
++
++static const struct regmap_access_table bq25630_write_reg_access_table8 =
+=3D {
++	.yes_ranges =3D bq25630_write_reg_range8,
++	.n_yes_ranges =3D ARRAY_SIZE(bq25630_write_reg_range8),
++};
++
++static const struct regmap_config bq25630_regmap_config8 =3D {
++	.name =3D BQ25630_DRV_NAME "-8bit",
++	.reg_bits =3D 8,
++	.val_bits =3D 8,
++	.max_register =3D BQ25630_REG_PART_INFORMATION,
++	.rd_table =3D &bq25630_read_reg_access_table8,
++	.wr_table =3D &bq25630_write_reg_access_table8,
++};
++
++/* 16-bit little-endian value regmap. */
++static const struct regmap_range bq25630_read_reg_range16le[] =3D {
++	regmap_reg_range(BQ25630_REG_CHARGE_CURRENT_LIMIT,
++			 BQ25630_REG_TERMINATION_CONTROL),
++	regmap_reg_range(BQ25630_REG_ICO_CURRENT_LIMIT,
++			 BQ25630_REG_ICO_CURRENT_LIMIT),
++};
++
++static const struct regmap_range bq25630_write_reg_range16le[] =3D {
++	regmap_reg_range(BQ25630_REG_CHARGE_CURRENT_LIMIT,
++			 BQ25630_REG_TERMINATION_CONTROL),
++	regmap_reg_range(BQ25630_REG_ICO_CURRENT_LIMIT,
++			 BQ25630_REG_ICO_CURRENT_LIMIT),
++};
++
++static const struct regmap_access_table bq25630_read_reg_access_table16le =
+=3D {
++	.yes_ranges =3D bq25630_read_reg_range16le,
++	.n_yes_ranges =3D ARRAY_SIZE(bq25630_read_reg_range16le),
++};
++
++static const struct regmap_access_table bq25630_write_reg_access_table16le=
+ =3D {
++	.yes_ranges =3D bq25630_write_reg_range16le,
++	.n_yes_ranges =3D ARRAY_SIZE(bq25630_write_reg_range16le),
++};
++
++static const struct regmap_config bq25630_regmap_config16le =3D {
++	.name =3D BQ25630_DRV_NAME "-16bit-le",
++	.reg_bits =3D 8,
++	.val_bits =3D 16,
++	.reg_stride =3D 2,
++	.val_format_endian =3D REGMAP_ENDIAN_LITTLE,
++	/*
++	 * Datasheet doesn't mention that this register is little-endian, but it
++	 * looks like it?
++	 */
++	.max_register =3D BQ25630_REG_TERMINATION_CONTROL,
++	.rd_table =3D &bq25630_read_reg_access_table16le,
++	.wr_table =3D &bq25630_write_reg_access_table16le,
++};
++
++/* 16-bit big-endian value regmap. */
++static const struct regmap_range bq25630_read_reg_range16be[] =3D {
++	regmap_reg_range(BQ25630_REG_IBUS_ADC,
++			 BQ25630_REG_TDIE_ADC),
++};
++
++static const struct regmap_access_table bq25630_read_reg_access_table16be =
+=3D {
++	.yes_ranges =3D bq25630_read_reg_range16be,
++	.n_yes_ranges =3D ARRAY_SIZE(bq25630_read_reg_range16be),
++};
++
++static const struct regmap_config bq25630_regmap_config16be =3D {
++	.name =3D BQ25630_DRV_NAME "-16bit-be",
++	.reg_bits =3D 8,
++	.val_bits =3D 16,
++	.reg_stride =3D 2,
++	.val_format_endian =3D REGMAP_ENDIAN_BIG,
++	.max_register =3D BQ25630_REG_TDIE_ADC,
++	.rd_table =3D &bq25630_read_reg_access_table16be,
++	.wr_table =3D NULL,
++};
++
++struct bq25630_data {
++	struct device *dev;
++	struct regmap *regmap8;
++	struct regmap *regmap16le;
++	struct regmap *regmap16be;
++	struct regmap_field *regfields[BQ25630_REGF_MAX];
++
++	struct power_supply *psy;
++	struct power_supply_battery_info *batinfo;
++
++	/* State status from IRQs. */
++	u8 statregs[BQ25630_NR_STAT_REGS];
++};
++
++static int bq25630_alloc_regfield_range(struct bq25630_data *data,
++					const enum bq25630_regfield from,
++					const enum bq25630_regfield to,
++					struct regmap *regmap)
++{
++	int i;
++
++	for (i =3D from; i <=3D to; ++i) {
++		data->regfields[i] =3D devm_regmap_field_alloc(
++			data->dev, regmap, bq25630_regfields[i]);
++		if (IS_ERR(data->regfields[i]))
++			return dev_err_probe(
++				data->dev, PTR_ERR(data->regfields[i]),
++				"Could not allocate register field %d\n", i);
++	}
++
++	return 0;
++}
++
++static irqreturn_t bq25630_irq_thread(int irq, void *dev_id)
++{
++	struct bq25630_data *data =3D dev_id;
++	u8 regbuf[BQ25630_NR_STAT_REGS];
++	int ret;
++
++	BUILD_BUG_ON(ARRAY_SIZE(regbuf) !=3D ARRAY_SIZE(data->statregs));
++
++	ret =3D regmap_bulk_read(data->regmap8, BQ25630_REG_CHARGER_STATUS_0,
++			       regbuf, ARRAY_SIZE(regbuf));
++	if (ret) {
++		dev_err(data->dev, "Could not bulk read IRQ registers (%d)\n",
++			ret);
++		goto out;
++	}
++
++	if (memcmp(data->statregs, regbuf, ARRAY_SIZE(data->statregs))) {
++		power_supply_changed(data->psy);
++		memcpy(data->statregs, regbuf, ARRAY_SIZE(data->statregs));
++	}
++
++out:
++	return IRQ_HANDLED;
++}
++
++static int bq25630_read_limit(struct bq25630_data *data,
++			      const enum bq25630_regfield regfield,
++			      const int minval, const int step,
++			      const int minregval, int *val)
++{
++	int ret;
++	unsigned int regval;
++
++	ret =3D regmap_field_read(data->regfields[regfield], &regval);
++	if (ret) {
++		dev_err(data->dev, "Could not read limit (%d)\n", ret);
++		return ret;
++	}
++
++	*val =3D minval + step * (regval - minregval);
++
++	return 0;
++}
++
++static int bq25630_write_limit(struct bq25630_data *data,
++			       const enum bq25630_regfield regfield,
++			       const int minval, const int maxval,
++			       const int step, const int minregval, int val)
++{
++	int ret;
++	unsigned int regval;
++
++	val =3D clamp(val, minval, maxval);
++	regval =3D minregval + ((val - minval) / step);
++	ret =3D regmap_field_write(data->regfields[regfield], regval);
++	if (ret) {
++		dev_err(data->dev, "Could not write limit (%d)\n", ret);
++		return ret;
++	}
++
++	return 0;
++}
++
++static int bq25630_read_charge_type(struct bq25630_data *data, int *val)
++{
++	int ret;
++	unsigned int regval;
++
++	ret =3D regmap_field_read(data->regfields[BQ25630_REGF_CHG_STAT],
++				&regval);
++	if (ret) {
++		dev_err(data->dev, "Could not read charge type (%d)\n", ret);
++		return ret;
++	}
++
++	switch (regval) {
++	case BQ25630_CHG_STAT_NOT_CHARGING:
++		*val =3D POWER_SUPPLY_CHARGE_TYPE_NONE;
++		break;
++	case BQ25630_CHG_STAT_TRICKLE_CHARGE:
++	case BQ25630_CHG_STAT_PRE_CHARGE:
++		*val =3D POWER_SUPPLY_CHARGE_TYPE_TRICKLE;
++		break;
++	case BQ25630_CHG_STAT_FAST_CHARGE:
++		*val =3D POWER_SUPPLY_CHARGE_TYPE_FAST;
++		break;
++	case BQ25630_CHG_STAT_TAPER_CHARGE:
++		*val =3D POWER_SUPPLY_CHARGE_TYPE_LONGLIFE;
++		break;
++	case BQ25630_CHG_STAT_TERMINATION:
++		*val =3D POWER_SUPPLY_CHARGE_TYPE_BYPASS;
++		break;
++	default:
++		*val =3D POWER_SUPPLY_CHARGE_TYPE_UNKNOWN;
++	}
++
++	return 0;
++}
++
++static int bq25630_read_health(struct bq25630_data *data, int *val)
++{
++	int ret;
++	u8 temp;
++	unsigned int regval;
++
++	ret =3D regmap_read(data->regmap8, BQ25630_REG_FAULT_STATUS, &regval);
++	if (ret) {
++		dev_err(data->dev, "Could not read fault status (%d)\n", ret);
++		return ret;
++	}
++
++	temp =3D regval & GENMASK(bq25630_regfields[BQ25630_REGF_TS_STAT].msb,
++				bq25630_regfields[BQ25630_REGF_TS_STAT].lsb);
++	if (regval &
++	    GENMASK(bq25630_regfields[BQ25630_REGF_VBUS_FAULT_STAT].msb,
++		    bq25630_regfields[BQ25630_REGF_VBUS_FAULT_STAT].lsb)) {
++		*val =3D POWER_SUPPLY_HEALTH_OVERVOLTAGE;
++	} else if (regval &
++		   GENMASK(bq25630_regfields[BQ25630_REGF_BAT_FAULT_STAT].msb,
++			   bq25630_regfields[BQ25630_REGF_BAT_FAULT_STAT].lsb)) {
++		/*
++		 * We can't differentiate between dead, under voltage or over
++		 * voltage.
++		 */
++		*val =3D POWER_SUPPLY_HEALTH_UNSPEC_FAILURE;
++	} else if (regval &
++		   GENMASK(bq25630_regfields[BQ25630_REGF_VSYS_FAULT_STAT].msb,
++			   bq25630_regfields[BQ25630_REGF_VSYS_FAULT_STAT].lsb)) {
++		/*
++		 * We can't differentiate between under voltage or over voltage.
++		 */
++		*val =3D POWER_SUPPLY_HEALTH_UNSPEC_FAILURE;
++	} else if (regval &
++		   GENMASK(bq25630_regfields[BQ25630_REGF_OTG_FAULT_STAT].msb,
++			   bq25630_regfields[BQ25630_REGF_OTG_FAULT_STAT].lsb)) {
++		/*
++		 * We can't differentiate between under voltage or over voltage.
++		 */
++		*val =3D POWER_SUPPLY_HEALTH_UNSPEC_FAILURE;
++	} else if (regval &
++		   GENMASK(bq25630_regfields[BQ25630_REGF_TSHUT_STAT].msb,
++			   bq25630_regfields[BQ25630_REGF_TSHUT_STAT].lsb)) {
++		/* Temperature shutdown is always due to hot temperatures. */
++		*val =3D POWER_SUPPLY_HEALTH_HOT;
++	} else if (temp) {
++		switch (temp) {
++		case BQ25630_TS_STAT_COLD:
++			*val =3D POWER_SUPPLY_HEALTH_COLD;
++			break;
++		case BQ25630_TS_STAT_COOL:
++			*val =3D POWER_SUPPLY_HEALTH_COOL;
++			break;
++		case BQ25630_TS_STAT_WARM:
++			*val =3D POWER_SUPPLY_HEALTH_WARM;
++			break;
++		case BQ25630_TS_STAT_HOT:
++			*val =3D POWER_SUPPLY_HEALTH_HOT;
++			break;
++		default:
++			/* Interpret PRECOOL and PREWARM as NORMAL. */
++			*val =3D POWER_SUPPLY_HEALTH_GOOD;
++		}
++	} else {
++		*val =3D POWER_SUPPLY_HEALTH_GOOD;
++	}
++
++	return 0;
++}
++
++static int bq25630_read_vbus(struct bq25630_data *data, int *val)
++{
++	unsigned int regval;
++	int ret;
++
++	ret =3D regmap_field_read(data->regfields[BQ25630_REGF_VBUS_STAT],
++				&regval);
++	if (ret) {
++		dev_err(data->dev, "Could not read VBUS (%d)\n", ret);
++		return ret;
++	}
++
++	switch (regval) {
++	case BQ25630_VBUS_STAT_NONE:
++		*val =3D -1;
++		break;
++	case BQ25630_VBUS_STAT_SDP:
++		*val =3D POWER_SUPPLY_USB_TYPE_SDP;
++		break;
++	case BQ25630_VBUS_STAT_CDP:
++		*val =3D POWER_SUPPLY_USB_TYPE_CDP;
++		break;
++	case BQ25630_VBUS_STAT_DCP:
++	case BQ25630_VBUS_STAT_HVDCP:
++		*val =3D POWER_SUPPLY_USB_TYPE_DCP;
++		break;
++	case BQ25630_VBUS_STAT_USB_C_DEFAULT:
++	case BQ25630_VBUS_STAT_USB_C_MEDIUM:
++	case BQ25630_VBUS_STAT_USB_C_HIGH:
++		*val =3D POWER_SUPPLY_USB_TYPE_C;
++		break;
++	default:
++		*val =3D POWER_SUPPLY_USB_TYPE_UNKNOWN;
++	}
++
++	return 0;
++}
++
++static int bq25630_get_status(struct bq25630_data *data, int *val)
++{
++	unsigned int regval;
++	int ret;
++
++	ret =3D regmap_field_read(data->regfields[BQ25630_REGF_PG_STAT], &regval);
++	if (ret) {
++		dev_err(data->dev, "Could not read PG status (%d)", ret);
++		return ret;
++	}
++
++	if (!regval) {
++		/* There is not enough power, battery must be discharging. */
++		*val =3D POWER_SUPPLY_STATUS_DISCHARGING;
++		return 0;
++	}
++
++	ret =3D regmap_field_read(data->regfields[BQ25630_REGF_EN_CHG], &regval);
++	if (ret) {
++		dev_err(data->dev, "Could not read charge status (%d)", ret);
++		return ret;
++	}
++
++	if (!regval) {
++		/* Charging is not enabled, battery must be discharging. */
++		*val =3D POWER_SUPPLY_STATUS_DISCHARGING;
++		return 0;
++	}
++
++	ret =3D bq25630_read_charge_type(data, val);
++	if (ret)
++		return ret;
++
++	switch (*val) {
++	case POWER_SUPPLY_CHARGE_TYPE_NONE:
++		*val =3D POWER_SUPPLY_STATUS_NOT_CHARGING;
++		break;
++	case POWER_SUPPLY_CHARGE_TYPE_BYPASS:
++		/* Corresponds to BQ25630_CHG_STAT_TERMINATION. */
++		*val =3D POWER_SUPPLY_STATUS_FULL;
++		break;
++	default:
++		*val =3D POWER_SUPPLY_STATUS_CHARGING;
++	}
++
++	return 0;
++}
++
++static int bq25630_reset(struct bq25630_data *data)
++{
++	unsigned int regval =3D 1;
++	int ret;
++
++	ret =3D regmap_field_force_write(data->regfields[BQ25630_REGF_REG_RST],
++				       regval);
++	if (ret) {
++		dev_err(data->dev,
++			"Could not force write reset register field (%d)\n",
++			ret);
++		return ret;
++	}
++
++	/*
++	 * After a successful register reset, the device signals by resetting
++	 * this register field to 0. Try reading it for some interrupt cycles.
++	 */
++	ret =3D regmap_field_read_poll_timeout(
++		data->regfields[BQ25630_REGF_REG_RST], regval, regval =3D=3D 0, 256,
++		100000);
++	if (ret) {
++		dev_err(data->dev, "Could not read reset register field (%d)\n",
++			ret);
++		return ret;
++	}
++
++	return 0;
++}
++
++static int bq25630_setup(struct bq25630_data *data)
++{
++	int ret;
++
++	ret =3D bq25630_reset(data);
++	if (ret) {
++		dev_err(data->dev, "Could not reset device (%d)\n", ret);
++		return ret;
++	}
++
++	/* Disable the watchdog. */
++	ret =3D regmap_field_write(data->regfields[BQ25630_REGF_WATCHDOG], 0);
++	if (ret) {
++		dev_err(data->dev, "Could not write watchdog timer (%d)\n",
++			ret);
++		return ret;
++	}
++
++	/*
++	 * Set values according to battery info. Warn on missing "dangerous"
++	 * properties.
++	 */
++	if (data->batinfo->voltage_min_design_uv >=3D 0) {
++		ret =3D bq25630_write_limit(data, BQ25630_REGF_VSYSMIN,
++					  BQ25630_VSYSMIN_MIN,
++					  BQ25630_VSYSMIN_MAX,
++					  BQ25630_VSYSMIN_STEP,
++					  BQ25630_VSYSMIN_MIN_REGVAL,
++					  data->batinfo->voltage_min_design_uv);
++		if (ret)
++			return ret;
++	} else
++		dev_warn(data->dev,
++			 "Using default value for minimum voltage\n");
++
++	if (data->batinfo->constant_charge_voltage_max_uv >=3D 0) {
++		ret =3D bq25630_write_limit(
++			data, BQ25630_REGF_VREG, BQ25630_VREG_MIN,
++			BQ25630_VREG_MAX, BQ25630_VREG_STEP,
++			BQ25630_VREG_MIN_REGVAL,
++			data->batinfo->constant_charge_voltage_max_uv);
++		if (ret)
++			return ret;
++	} else
++		dev_warn(data->dev,
++			 "Using default value for maximum constant charge voltage\n");
++
++	if (data->batinfo->constant_charge_current_max_ua >=3D 0) {
++		ret =3D bq25630_write_limit(
++			data, BQ25630_REGF_ICHG, BQ25630_ICHG_MIN,
++			BQ25630_ICHG_MAX, BQ25630_ICHG_STEP,
++			BQ25630_ICHG_MIN_REGVAL,
++			data->batinfo->constant_charge_current_max_ua);
++		if (ret)
++			return ret;
++	} else
++		dev_warn(data->dev,
++			 "Using default value for maximum constant charge current\n");
++
++	if (data->batinfo->charge_term_current_ua >=3D 0) {
++		ret =3D bq25630_write_limit(
++			data, BQ25630_REGF_ITERM, BQ25630_ITERM_MIN,
++			BQ25630_ITERM_MAX, BQ25630_ITERM_STEP,
++			BQ25630_ITERM_MIN_REGVAL,
++			data->batinfo->charge_term_current_ua);
++		if (ret)
++			return ret;
++	}
++
++	if (data->batinfo->precharge_current_ua >=3D 0) {
++		ret =3D bq25630_write_limit(data, BQ25630_REGF_IPRECHG,
++					  BQ25630_IPRECHG_MIN,
++					  BQ25630_IPRECHG_MAX,
++					  BQ25630_IPRECHG_STEP,
++					  BQ25630_IPRECHG_MIN_REGVAL,
++					  data->batinfo->precharge_current_ua);
++		if (ret)
++			return ret;
++	}
++
++	return 0;
++}
++
++static int bq25630_charger_get_property(struct power_supply *psy,
++					enum power_supply_property psp,
++					union power_supply_propval *val)
++{
++	struct bq25630_data *data =3D power_supply_get_drvdata(psy);
++	int ret =3D 0;
++
++	switch (psp) {
++	case POWER_SUPPLY_PROP_STATUS:
++		ret =3D bq25630_get_status(data, &val->intval);
++		break;
++	case POWER_SUPPLY_PROP_CHARGE_TYPE:
++	case POWER_SUPPLY_PROP_CHARGE_TYPES:
++		ret =3D bq25630_read_charge_type(data, &val->intval);
++		break;
++	case POWER_SUPPLY_PROP_HEALTH:
++		ret =3D bq25630_read_health(data, &val->intval);
++		break;
++	case POWER_SUPPLY_PROP_ONLINE:
++		ret =3D regmap_field_read(data->regfields[BQ25630_REGF_EN_CHG],
++					&val->intval);
++		if (ret || !val->intval) {
++			/* Charging is not even enabled. */
++			break;
++		}
++
++		ret =3D bq25630_read_vbus(data, &val->intval);
++		val->intval =3D val->intval >=3D 0;
++		break;
++	case POWER_SUPPLY_PROP_VOLTAGE_MIN:
++		ret =3D bq25630_read_limit(data, BQ25630_REGF_VSYSMIN,
++					 BQ25630_VSYSMIN_MIN,
++					 BQ25630_VSYSMIN_STEP,
++					 BQ25630_VSYSMIN_MIN_REGVAL,
++					 &val->intval);
++		break;
++	case POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT:
++		ret =3D bq25630_read_limit(data, BQ25630_REGF_ICHG,
++					 BQ25630_ICHG_MIN, BQ25630_ICHG_STEP,
++					 BQ25630_ICHG_MIN_REGVAL, &val->intval);
++		break;
++	case POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT_MAX:
++		val->intval =3D BQ25630_ICHG_MAX;
++		break;
++	case POWER_SUPPLY_PROP_CONSTANT_CHARGE_VOLTAGE:
++		ret =3D bq25630_read_limit(data, BQ25630_REGF_VREG,
++					 BQ25630_VREG_MIN, BQ25630_VREG_STEP,
++					 BQ25630_VREG_MIN_REGVAL, &val->intval);
++		break;
++	case POWER_SUPPLY_PROP_CONSTANT_CHARGE_VOLTAGE_MAX:
++		val->intval =3D BQ25630_VREG_MAX;
++		break;
++	case POWER_SUPPLY_PROP_INPUT_CURRENT_LIMIT:
++		ret =3D bq25630_read_limit(data, BQ25630_REGF_IINDPM,
++					 BQ25630_IINDPM_MIN,
++					 BQ25630_IINDPM_STEP,
++					 BQ25630_IINDPM_MIN_REGVAL,
++					 &val->intval);
++		break;
++	case POWER_SUPPLY_PROP_INPUT_VOLTAGE_LIMIT:
++		ret =3D bq25630_read_limit(data, BQ25630_REGF_VINDPM,
++					 BQ25630_VINDPM_MIN,
++					 BQ25630_VINDPM_STEP,
++					 BQ25630_VINDPM_MIN_REGVAL,
++					 &val->intval);
++		break;
++	case POWER_SUPPLY_PROP_USB_TYPE:
++		ret =3D bq25630_read_vbus(data, &val->intval);
++		if (!ret && val->intval < 0) {
++			/* Nothing connected. */
++			val->intval =3D POWER_SUPPLY_USB_TYPE_UNKNOWN;
++		}
++		break;
++	case POWER_SUPPLY_PROP_PRECHARGE_CURRENT:
++		ret =3D bq25630_read_limit(data, BQ25630_REGF_IPRECHG,
++					 BQ25630_IPRECHG_MIN,
++					 BQ25630_IPRECHG_STEP,
++					 BQ25630_IPRECHG_MIN_REGVAL,
++					 &val->intval);
++		break;
++	case POWER_SUPPLY_PROP_CHARGE_TERM_CURRENT:
++		ret =3D bq25630_read_limit(data, BQ25630_REGF_ITERM,
++					 BQ25630_ITERM_MIN, BQ25630_ITERM_STEP,
++					 BQ25630_ITERM_MIN_REGVAL,
++					 &val->intval);
++		break;
++	case POWER_SUPPLY_PROP_MODEL_NAME:
++		val->strval =3D "BQ25630";
++		break;
++	case POWER_SUPPLY_PROP_MANUFACTURER:
++		val->strval =3D "Texas Instruments";
++		break;
++	default:
++		return -EINVAL;
++	}
++
++	return ret;
++}
++
++static int bq25630_charger_set_property(struct power_supply *psy,
++					enum power_supply_property psp,
++					const union power_supply_propval *val)
++{
++	struct bq25630_data *data =3D power_supply_get_drvdata(psy);
++	int ret =3D 0;
++
++	switch (psp) {
++	case POWER_SUPPLY_PROP_ONLINE:
++		ret =3D regmap_field_write(data->regfields[BQ25630_REGF_EN_CHG],
++					 !!val->intval);
++		break;
++	case POWER_SUPPLY_PROP_VOLTAGE_MIN:
++		ret =3D bq25630_write_limit(
++			data, BQ25630_REGF_VSYSMIN, BQ25630_VSYSMIN_MIN,
++			BQ25630_VSYSMIN_MAX, BQ25630_VSYSMIN_STEP,
++			BQ25630_VSYSMIN_MIN_REGVAL, val->intval);
++		break;
++	case POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT:
++		ret =3D bq25630_write_limit(data, BQ25630_REGF_ICHG,
++					  BQ25630_ICHG_MIN, BQ25630_ICHG_MAX,
++					  BQ25630_ICHG_STEP,
++					  BQ25630_ICHG_MIN_REGVAL, val->intval);
++		break;
++	case POWER_SUPPLY_PROP_CONSTANT_CHARGE_VOLTAGE:
++		ret =3D bq25630_write_limit(data, BQ25630_REGF_VREG,
++					  BQ25630_VREG_MIN, BQ25630_VREG_MAX,
++					  BQ25630_VREG_STEP,
++					  BQ25630_VREG_MIN_REGVAL, val->intval);
++		break;
++	case POWER_SUPPLY_PROP_INPUT_CURRENT_LIMIT:
++		ret =3D bq25630_write_limit(
++			data, BQ25630_REGF_IINDPM, BQ25630_IINDPM_MIN,
++			BQ25630_IINDPM_MAX, BQ25630_IINDPM_STEP,
++			BQ25630_IINDPM_MIN_REGVAL, val->intval);
++		break;
++	case POWER_SUPPLY_PROP_INPUT_VOLTAGE_LIMIT:
++		ret =3D bq25630_write_limit(
++			data, BQ25630_REGF_VINDPM, BQ25630_VINDPM_MIN,
++			BQ25630_VINDPM_MAX, BQ25630_VINDPM_STEP,
++			BQ25630_VINDPM_MIN_REGVAL, val->intval);
++		break;
++	case POWER_SUPPLY_PROP_PRECHARGE_CURRENT:
++		ret =3D bq25630_write_limit(
++			data, BQ25630_REGF_IPRECHG, BQ25630_IPRECHG_MIN,
++			BQ25630_IPRECHG_MAX, BQ25630_IPRECHG_STEP,
++			BQ25630_IPRECHG_MIN_REGVAL, val->intval);
++		break;
++	case POWER_SUPPLY_PROP_CHARGE_TERM_CURRENT:
++		ret =3D bq25630_write_limit(data, BQ25630_REGF_ITERM,
++					  BQ25630_ITERM_MIN, BQ25630_ITERM_MAX,
++					  BQ25630_ITERM_STEP,
++					  BQ25630_ITERM_MIN_REGVAL,
++					  val->intval);
++		break;
++	default:
++		return -EINVAL;
++	}
++
++	return ret;
++}
++
++static int bq25630_charger_property_is_writeable(struct power_supply *psy,
++						 enum power_supply_property psp)
++{
++	switch (psp) {
++	case POWER_SUPPLY_PROP_ONLINE:
++	case POWER_SUPPLY_PROP_VOLTAGE_MIN:
++	case POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT:
++	case POWER_SUPPLY_PROP_CONSTANT_CHARGE_VOLTAGE:
++	case POWER_SUPPLY_PROP_INPUT_CURRENT_LIMIT:
++	case POWER_SUPPLY_PROP_INPUT_VOLTAGE_LIMIT:
++	case POWER_SUPPLY_PROP_PRECHARGE_CURRENT:
++	case POWER_SUPPLY_PROP_CHARGE_TERM_CURRENT:
++		return true;
++	default:
++		return false;
++	}
++}
++
++static const enum power_supply_property bq25630_charger_properties[] =3D {
++	POWER_SUPPLY_PROP_STATUS,
++	POWER_SUPPLY_PROP_CHARGE_TYPE,
++	POWER_SUPPLY_PROP_CHARGE_TYPES,
++	POWER_SUPPLY_PROP_HEALTH,
++	POWER_SUPPLY_PROP_ONLINE,
++	POWER_SUPPLY_PROP_VOLTAGE_MIN,
++	POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT,
++	POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT_MAX,
++	POWER_SUPPLY_PROP_CONSTANT_CHARGE_VOLTAGE,
++	POWER_SUPPLY_PROP_CONSTANT_CHARGE_VOLTAGE_MAX,
++	POWER_SUPPLY_PROP_INPUT_CURRENT_LIMIT,
++	POWER_SUPPLY_PROP_INPUT_VOLTAGE_LIMIT,
++	POWER_SUPPLY_PROP_USB_TYPE,
++	POWER_SUPPLY_PROP_PRECHARGE_CURRENT,
++	POWER_SUPPLY_PROP_CHARGE_TERM_CURRENT,
++	POWER_SUPPLY_PROP_MODEL_NAME,
++	POWER_SUPPLY_PROP_MANUFACTURER,
++};
++
++static const struct power_supply_desc bq25630_charger_psy_desc =3D {
++	.name =3D BQ25630_DRV_NAME,
++	.type =3D POWER_SUPPLY_TYPE_USB_TYPE_C,
++	.charge_types =3D BIT(POWER_SUPPLY_CHARGE_TYPE_NONE) |
++			BIT(POWER_SUPPLY_CHARGE_TYPE_TRICKLE) |
++			BIT(POWER_SUPPLY_CHARGE_TYPE_FAST) |
++			BIT(POWER_SUPPLY_CHARGE_TYPE_LONGLIFE) |
++			BIT(POWER_SUPPLY_CHARGE_TYPE_BYPASS) |
++			BIT(POWER_SUPPLY_CHARGE_TYPE_UNKNOWN),
++	.usb_types =3D BIT(POWER_SUPPLY_USB_TYPE_UNKNOWN) |
++		     BIT(POWER_SUPPLY_USB_TYPE_SDP) |
++		     BIT(POWER_SUPPLY_USB_TYPE_DCP) |
++		     BIT(POWER_SUPPLY_USB_TYPE_CDP) |
++		     BIT(POWER_SUPPLY_USB_TYPE_C),
++	.properties =3D bq25630_charger_properties,
++	.num_properties =3D ARRAY_SIZE(bq25630_charger_properties),
++	.get_property =3D bq25630_charger_get_property,
++	.set_property =3D bq25630_charger_set_property,
++	.property_is_writeable =3D bq25630_charger_property_is_writeable,
++};
++
++static int bq25630_probe(struct i2c_client *client)
++{
++	struct power_supply_config psy_cfg =3D {};
++	struct bq25630_data *data;
++	int ret;
++
++	data =3D devm_kzalloc(&client->dev, sizeof(*data), GFP_KERNEL);
++	if (!data)
++		return -ENOMEM;
++
++	data->dev =3D &client->dev;
++
++	data->regmap8 =3D devm_regmap_init_i2c(client, &bq25630_regmap_config8);
++	if (IS_ERR(data->regmap8))
++		return dev_err_probe(data->dev, PTR_ERR(data->regmap8),
++				     "Could not initialize regmap8\n");
++
++	ret =3D bq25630_alloc_regfield_range(data, BQ25630_REGF_WATCHDOG,
++					   BQ25630_REGF_TS_STAT,
++					   data->regmap8);
++	if (ret)
++		return ret;
++
++	data->regmap16le =3D
++		devm_regmap_init_i2c(client, &bq25630_regmap_config16le);
++	if (IS_ERR(data->regmap16le))
++		return dev_err_probe(data->dev, PTR_ERR(data->regmap16le),
++				     "Could not initialize regmap16le\n");
++
++	ret =3D bq25630_alloc_regfield_range(data, BQ25630_REGF_ICHG,
++					   BQ25630_REGF_ITERM,
++					   data->regmap16le);
++	if (ret)
++		return ret;
++
++	data->regmap16be =3D
++		devm_regmap_init_i2c(client, &bq25630_regmap_config16be);
++	if (IS_ERR(data->regmap16be))
++		return dev_err_probe(data->dev, PTR_ERR(data->regmap16be),
++				     "Could not initialize regmap16be\n");
++
++	ret =3D bq25630_alloc_regfield_range(data, BQ25630_REGF_IBUS_ADC,
++					   BQ25630_REGF_VBUS_ADC,
++					   data->regmap16be);
++	if (ret)
++		return ret;
++
++	psy_cfg.drv_data =3D data;
++	psy_cfg.fwnode =3D dev_fwnode(data->dev);
++	data->psy =3D devm_power_supply_register(
++		data->dev, &bq25630_charger_psy_desc, &psy_cfg);
++	if (IS_ERR(data->psy))
++		return dev_err_probe(data->dev, PTR_ERR(data->psy),
++			      "Could not register power supply\n");
++
++	ret =3D power_supply_get_battery_info(data->psy, &data->batinfo);
++	if (ret)
++		return dev_err_probe(data->dev, ret,
++				     "Could not get battery info\n");
++
++	/*
++	 * Device sends active low 256 =C2=B5s pulse to report status and fault.
++	 *
++	 * Note that we need to request this *after* registering the power
++	 * supply so devm destructs it correctly in the reverse order. Otherwise
++	 * spurious interrupts could call power_supply_changed() wrongly with a
++	 * uninitialized/deallocated power supply.
++	 */
++	ret =3D devm_request_threaded_irq(data->dev, client->irq, NULL,
++					bq25630_irq_thread,
++					IRQF_TRIGGER_FALLING | IRQF_ONESHOT,
++					NULL, data);
++	if (ret)
++		return dev_err_probe(data->dev, ret, "Could not request IRQ\n");
++
++	ret =3D bq25630_setup(data);
++	if (ret)
++		return ret;
++
++	return 0;
++}
++
++static const struct of_device_id bq25630_of_match[] =3D {
++	{
++		.compatible =3D "ti,bq25630",
++	},
++	{}
++};
++MODULE_DEVICE_TABLE(of, bq25630_of_match);
++
++static struct i2c_driver bq25630_driver =3D {
++	.driver =3D {
++		.name =3D BQ25630_DRV_NAME,
++		.of_match_table =3D bq25630_of_match,
++	},
++	.probe =3D bq25630_probe,
++};
++module_i2c_driver(bq25630_driver);
++
++MODULE_AUTHOR("Waqar Hameed <waqar.hameed@axis.com>");
++MODULE_DESCRIPTION("TI BQ25630 charger driver");
++MODULE_LICENSE("GPL");
 --=20
 2.43.0
 
