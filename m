@@ -1,114 +1,127 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D2D9739281D;
-	Fri, 19 Jun 2026 15:47:07 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 55A083B19D1;
+	Fri, 19 Jun 2026 17:46:06 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1781884028; cv=none; b=Sc1ooa6saxpnTUJZwXobDsMdkMtchiytqJnOlFR1XbW5jqltltFErlzueCVh2Xg7i+5Hu9nP6ecmgpqGj/uLWzgKkgvbOcgwL3nZTRKro3PI7ppDN2+8unPMEGDCJKTv8vbY23+8FlpNoPYsCkATC639y5AsJj7fSHydnP/Fz74=
+	t=1781891167; cv=none; b=AXnR8svZCd8gKUUXFYtabaVOPSh5z6IEiWqgUiR5KgcWLmupid3NH6R6PvYcyIwZDSv5Lj3XixXLU76H2gdJBx2bHMlCktbdoCEqx/c0s6ZuVExzeONyM7Z+e+xL3CfXnhhKlySXj3O14Iv/gUKxIQ15FW0fLB5OYmSwX5n6+fk=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1781884028; c=relaxed/simple;
-	bh=PJQLTLFNyJTetmfIGrR4jo+BqWwhP5eythFoJzttaj8=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=AqEd6kI19+AJWQKNTRunw7mcz+HIWtw0Gdh8BjP2E1fiPwB3xmMF/3Ihmvm+byrS4rUhpFXW+PfEpTaaRKn+nBaTUs4dI3EMhlEvEn20z8gFK2w/HOqDHkExVKr9XwyBgWEPrFixjit18AE/eKaz1q8ThaonAMCv8Y7V2tC3vAU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=jxNlqYdR; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1781891167; c=relaxed/simple;
+	bh=RWEOWnsrA3HI81PPpHcmRCsQs+IuFaUsxW6u+cVQXpY=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=SKr79dpGvnCk3FWRIcvZc4zok78K3wbkm/GNQf4ZA0yEq2jlUbhCq4tiQCrgHhP5p1c6ZJG8wH9JEnwfrYMkeRmda4FlYPTVGFRU7APGH7c2bFC4cuxfgCO8gQCo0NLTtCdsguFBeN6orlxKS2/eEenWHlO5bV8R8sRIbTwu6Dg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=CIOmWkyd; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="jxNlqYdR"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0FE721F000E9;
-	Fri, 19 Jun 2026 15:46:58 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="CIOmWkyd"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1D55C1F000E9;
+	Fri, 19 Jun 2026 17:46:04 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1781884027;
-	bh=jwzW1YZuf6s0XgJIN78yCoG6M9J094IzLAb0cLlAQno=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=jxNlqYdRPylC2g7Igqwh+Q2DuBxkAUPv2MPJRAuOoGOM+AFwq1YBi/LhXFPhnATTn
-	 1k7rsbW1i6dzTVtwsooWn6P/qd1HGvykH3Vr/4jZs/FXngf1JQWO00dET3HrZqbwNn
-	 KU3s37Z0yU7mW4Z0JLqpd+Id0Exmi4zghbIadQqJWG0SwQ0MIJ7XEQk7zaZVn1VLJR
-	 n/PEDLrAnpAdCDx4ldx4x90okkjxjsAqsKDX3nOfmSSENOpVDWXe4HkbDVKGILeE+g
-	 bzDrvDcdOultCSo02l7oGeDqiWnA3nwl5nCzc+utCUo+T+MFszwdYqolfiBtPEbcfH
-	 l9LjXQ65aLIJg==
-Date: Fri, 19 Jun 2026 17:46:56 +0200
-From: Lorenzo Pieralisi <lpieralisi@kernel.org>
-To: Shivendra Pratap <shivendra.pratap@oss.qualcomm.com>
-Cc: Arnd Bergmann <arnd@arndb.de>, linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org,
-	Florian Fainelli <florian.fainelli@broadcom.com>,
-	Krzysztof Kozlowski <krzk@kernel.org>,
-	Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>,
-	Mukesh Ojha <mukesh.ojha@oss.qualcomm.com>,
-	Andre Draszik <andre.draszik@linaro.org>,
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	Kathiravan Thirumoorthy <kathiravan.thirumoorthy@oss.qualcomm.com>,
-	Srinivas Kandagatla <srini@kernel.org>,
-	Sebastian Reichel <sebastian.reichel@collabora.com>,
-	Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>,
-	Song Xue <quic_songxue@quicinc.com>,
-	Sebastian Reichel <sre@kernel.org>,
-	Mark Rutland <mark.rutland@arm.com>,
-	"Rafael J. Wysocki" <rafael@kernel.org>,
-	Daniel Lezcano <daniel.lezcano@kernel.org>,
-	Christian Loehle <christian.loehle@arm.com>,
-	Ulf Hansson <ulfh@kernel.org>, Lee Jones <lee@kernel.org>,
-	Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Bjorn Andersson <andersson@kernel.org>,
-	Konrad Dybcio <konradybcio@kernel.org>,
-	Souvik Chakravarty <Souvik.Chakravarty@arm.com>,
-	Andy Yan <andy.yan@rock-chips.com>,
-	Matthias Brugger <matthias.bgg@gmail.com>,
-	John Stultz <john.stultz@linaro.org>,
-	Moritz Fischer <moritz.fischer@ettus.com>,
-	Bartosz Golaszewski <brgl@kernel.org>,
-	Sudeep Holla <sudeep.holla@kernel.org>
-Subject: Re: [PATCH v22 00/13] Implement PSCI reboot mode driver for PSCI
- resets
-Message-ID: <ajVkcD3pPIRcEPks@lpieralisi>
-References: <20260514-arm-psci-system_reset2-vendor-reboots-v22-0-28a5bde07483@oss.qualcomm.com>
- <0c6636b0-f6c7-49dc-b335-2b4fac16b848@oss.qualcomm.com>
- <f0336ce8-e5e0-4629-ac51-f3c42bf3d9a9@oss.qualcomm.com>
+	s=k20260515; t=1781891165;
+	bh=ZeWfL5j6jgN68jlol6NZaK8GYIZ1lyQxVIP1XkXLT9s=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References;
+	b=CIOmWkydZ+p1/dncUhUgsbyoarHkS5TP2VFADrqYH1Po0F8hintFEVoBK2Yie8EXn
+	 QulHZrdh8Tk6BY+eElVYIjSYsfsLW47gQ2tER+AqS7EQ5C1ej4kJ+Lfhcxn2ZFDzrV
+	 xJAVn/T4GGA5+JDtwQqrNgny9f3rU26lS3Q0iH7HrFPWYExN6MfjVQzDUU2IC8V0+f
+	 5it1RraGP0N8168BzFZcpXBeINGCLxIRCGBfdnY1gmd/TMPCZFvJPE1qi3rRQKWZtF
+	 3fisc5gfBGeUrIfVBmfeKvTKTIGCK6gZSNB8dvxfKlzA02r76nBdZZeBm6fSuIHXHs
+	 NJ8iasyvLKspA==
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+To: Linux PM <linux-pm@vger.kernel.org>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+ Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject:
+ [PATCH v2 6/6] cpufreq: intel_pstate: Move two functions closer to callers
+Date: Fri, 19 Jun 2026 19:45:19 +0200
+Message-ID: <2044603.PYKUYFuaPT@rafael.j.wysocki>
+Organization: Linux Kernel Development
+In-Reply-To: <6005456.DvuYhMxLoT@rafael.j.wysocki>
+References: <6005456.DvuYhMxLoT@rafael.j.wysocki>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <f0336ce8-e5e0-4629-ac51-f3c42bf3d9a9@oss.qualcomm.com>
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="UTF-8"
 
-On Wed, Jun 17, 2026 at 10:30:21PM +0530, Shivendra Pratap wrote:
-> 
-> 
-> On 29-05-2026 19:00, Shivendra Pratap wrote:
-> > 
-> > 
-> > On 14-05-2026 19:55, Shivendra Pratap wrote:
-> > > Userspace should be able to initiate device reboots using the various
-> > > PSCI SYSTEM_RESET and SYSTEM_RESET2 types defined by PSCI spec. This
-> > > patch series introduces psci-reboot-mode driver that will induce
-> > > command-based resets to psci driver for executing the device reset.
-> > > 
-> > > The PSCI system reset calls takes two arguments: reset_type and cookie.
-> > > It defines predefined reset types, such as warm and cold reset, and
-> > > vendor-specific reset types which are SoC vendor specific. To support
-> > > these requirements, the reboot-mode framework is enhanced in two key
-> > > ways:
-> > 
-> > Hi Lorenzo,
-> > 
-> > Can you please review the if its aligning towards the suggestion in v20?
-> > 
-> 
-> Hi Lorenzo,
-> 
-> Was planning to address the mfd, and other comments, for re-post. Any
-> feedbacks, that we should take care in next post?
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-I glanced over the code - it is better than it was but I could not find
-time for a proper review. Go ahead and repost we will take it from there.
+Move intel_pstate_set_pstate() and intel_pstate_set_min_pstate() that
+are not used on systems with HWP enabled, closer to their first
+callers.
 
-Apologies for the huge delay in reviewing it.
+No functional impact.
 
-Thanks,
-Lorenzo
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+
+v1 -> v2: New patch
+
+---
+ drivers/cpufreq/intel_pstate.c |   36 ++++++++++++++++++------------------
+ 1 file changed, 18 insertions(+), 18 deletions(-)
+
+--- a/drivers/cpufreq/intel_pstate.c
++++ b/drivers/cpufreq/intel_pstate.c
+@@ -2258,24 +2258,6 @@ static int hwp_get_cpu_scaling(int cpu)
+ 	return intel_pstate_cppc_get_scaling(cpu);
+ }
+ 
+-static void intel_pstate_set_pstate(struct cpudata *cpu, int pstate)
+-{
+-	trace_cpu_frequency(pstate * cpu->pstate.scaling, cpu->cpu);
+-	cpu->pstate.current_pstate = pstate;
+-	/*
+-	 * Generally, there is no guarantee that this code will always run on
+-	 * the CPU being updated, so force the register update to run on the
+-	 * right CPU.
+-	 */
+-	wrmsrq_on_cpu(cpu->cpu, MSR_IA32_PERF_CTL,
+-		      pstate_funcs.get_val(cpu, pstate));
+-}
+-
+-static void intel_pstate_set_min_pstate(struct cpudata *cpu)
+-{
+-	intel_pstate_set_pstate(cpu, cpu->pstate.min_pstate);
+-}
+-
+ static void intel_pstate_get_hwp_pstates(struct cpudata *cpu)
+ {
+ 	int perf_ctl_max_phys = cpu->pstate.max_pstate_physical;
+@@ -2869,6 +2851,19 @@ static void intel_pstate_update_perf_lim
+ 		 cpu->min_perf_ratio);
+ }
+ 
++static void intel_pstate_set_pstate(struct cpudata *cpu, int pstate)
++{
++	trace_cpu_frequency(pstate * cpu->pstate.scaling, cpu->cpu);
++	cpu->pstate.current_pstate = pstate;
++	/*
++	 * Generally, there is no guarantee that this code will always run on
++	 * the CPU being updated, so force the register update to run on the
++	 * right CPU.
++	 */
++	wrmsrq_on_cpu(cpu->cpu, MSR_IA32_PERF_CTL,
++		      pstate_funcs.get_val(cpu, pstate));
++}
++
+ static int intel_pstate_set_policy(struct cpufreq_policy *policy)
+ {
+ 	struct cpudata *cpu;
+@@ -2956,6 +2951,11 @@ static int intel_pstate_verify_policy(st
+ 	return 0;
+ }
+ 
++static void intel_pstate_set_min_pstate(struct cpudata *cpu)
++{
++	intel_pstate_set_pstate(cpu, cpu->pstate.min_pstate);
++}
++
+ static int intel_cpufreq_cpu_offline(struct cpufreq_policy *policy)
+ {
+ 	struct cpudata *cpu = all_cpu_data[policy->cpu];
+
+
+
