@@ -1,200 +1,182 @@
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Received: from AM0PR02CU008.outbound.protection.outlook.com (mail-westeuropeazon11013046.outbound.protection.outlook.com [52.101.72.46])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E18FB311940;
-	Fri, 19 Jun 2026 09:29:35 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=148.163.156.1
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1781861377; cv=none; b=LcPk8dMaCwo1EXznYCkh4lRTxKLvlEjmR0MO0P3JRq0OwYDX6kunjoQnc95Afo4gTH2u58zoF/Y5GgI7nPqXDyYPgIcL56qdAWaOCI+anapC0D9iYTEkICtevWSX6dvnG3rGm9emQdvr25uJO/AbROJAonHIqVpbHvH5ZYEKnc4=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1781861377; c=relaxed/simple;
-	bh=RPcm9jqK83pkNoe7lKbfWzVE+N3PB25ddsIZ5Zmzphk=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=WC2k2a88OJ3bdOavJonSZOjcwEng+OG/TrHtZ6MDdq+x0NROoZRp/fZeBey0McHTOg6898m92qViLs5Q3uNGEhQGSXGMJ1KwZQM2Dcy/NPUntafasgFxpUQFTDbFQ5rNBxS91/L+Q4lxpM+HF/KY8n/z6Ay2nGBZ4gGyTZH2pBc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; spf=pass smtp.mailfrom=linux.ibm.com; dkim=pass (2048-bit key) header.d=ibm.com header.i=@ibm.com header.b=ELuL3aMR; arc=none smtp.client-ip=148.163.156.1
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.ibm.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 05AB43655CC;
+	Fri, 19 Jun 2026 09:31:12 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.72.46
+ARC-Seal:i=3; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1781861476; cv=fail; b=bEx77sHeUNnXFMIVsisYhRLa6qe1hiGNXCcRjqTW+2+cXAXAQyd0kdgLidrlBOr0rl8gVt9u/8Y0NfAtgXA/stlTBBT+4nxJ2cukSrFmoLTSj7BjaIUp6uJSKjaLuYQXd5SN5spgjDbWU6tdzIWLFEosZVW+NIvFeDTKq6+agBg=
+ARC-Message-Signature:i=3; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1781861476; c=relaxed/simple;
+	bh=2spitZ1GBUr0pQ4u9XFWqvkAI9tzx3cOa/+PgShS6gM=;
+	h=Message-ID:Date:Subject:To:Cc:References:From:In-Reply-To:
+	 Content-Type:MIME-Version; b=D6kzy9NVjvhC0fG4GhgzPRYjV53zCw88g+JFRfntYmT9Wj4RlApwxUwa62AHXUyYAkoZgxuozmC3NvzgX4aLjRmBjDUGb64uM9tKafzFrPfJU9PmUdsYVqd3Gz0NX5g9NgVbXAnKgeUviPN7ZoSLqYGkQmz3tKjoQQJB741v30A=
+ARC-Authentication-Results:i=3; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=AvoWalXh; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=AvoWalXh; arc=fail smtp.client-ip=52.101.72.46
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=ibm.com header.i=@ibm.com header.b="ELuL3aMR"
-Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 65J7mUtm1674778;
-	Fri, 19 Jun 2026 09:29:28 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-type:date:from:in-reply-to:message-id:mime-version
-	:references:subject:to; s=pp1; bh=w+HCNlB3BxvJ4i5wrGEEEVQy2Vf6bz
-	9yHyNstGEYNog=; b=ELuL3aMRBE9q8AbTuRavLFrX4uKx9aL7VH2Wxw6pvXYte/
-	1MOXVhqrO8jWtoJ9qXW5VasT/Qf0RZkrqNNhtCNZyvAnlAJC2bg7cjnqQKnIXU7G
-	26BnNTyD3+1I0UwqI23mkYMJsANgM8K64nF/v0pJcFzhaRqhWtI03LK1v1glBIjg
-	OPBP86Rh2BZo3PYb6rGql89VWeW4VwJu3+gDZDQaoH0h8oyhWSRRMU8DTu7dRHwO
-	j5F0pcbrSxv0fhRLhFaQGhU32+5jmG0ObmoeXOrSA3IPhFl9uXs1rKp74H85BLNB
-	0t44IsMWzPEU7o37ewYzn7ErJKfxYlS9aupGM5rg==
-Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4eueqw4tt9-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 19 Jun 2026 09:29:27 +0000 (GMT)
-Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma11.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 65J9JbBN011019;
-	Fri, 19 Jun 2026 09:29:27 GMT
-Received: from smtprelay03.fra02v.mail.ibm.com ([9.218.2.224])
-	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 4ev17285ya-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 19 Jun 2026 09:29:26 +0000 (GMT)
-Received: from smtpav04.fra02v.mail.ibm.com (smtpav04.fra02v.mail.ibm.com [10.20.54.103])
-	by smtprelay03.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 65J9TNI156230360
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Fri, 19 Jun 2026 09:29:23 GMT
-Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 3DBBF20040;
-	Fri, 19 Jun 2026 09:29:23 +0000 (GMT)
-Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 37BA02004B;
-	Fri, 19 Jun 2026 09:29:22 +0000 (GMT)
-Received: from li-008a6a4c-3549-11b2-a85c-c5cc2836eea2.ibm.com (unknown [9.111.83.221])
-	by smtpav04.fra02v.mail.ibm.com (Postfix) with ESMTPS;
-	Fri, 19 Jun 2026 09:29:22 +0000 (GMT)
-Date: Fri, 19 Jun 2026 11:29:20 +0200
-From: Alexander Gordeev <agordeev@linux.ibm.com>
-To: Mete Durlu <meted@linux.ibm.com>
-Cc: Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>,
-        Sven Schnelle <svens@linux.ibm.com>,
-        Anna-Maria Behnsen <anna-maria@linutronix.de>,
-        Frederic Weisbecker <frederic@kernel.org>,
-        Ingo Molnar <mingo@kernel.org>, Thomas Gleixner <tglx@kernel.org>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Daniel Lezcano <daniel.lezcano@kernel.org>,
-        Christian Loehle <christian.loehle@arm.com>,
-        Christian Borntraeger <borntraeger@linux.ibm.com>,
-        Ilya Leoshkevich <iii@linux.ibm.com>, linux-s390@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-Subject: Re: [PATCH v3 0/5] s390/idle: CPU idle driver
-Message-ID: <e624cd2b-9b07-4e7e-bab3-0cf73e9f9db9-agordeev@linux.ibm.com>
-References: <20260618-idledriver-v3-0-684061eecbcb@linux.ibm.com>
+	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="AvoWalXh";
+	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="AvoWalXh"
+ARC-Seal: i=2; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=pass;
+ b=mrpIWcwx099LdbgOePsob5LCOYJM2q6ur0Difym1Nze6eSsEchbvlpgWD9iz8u74f/aj0El7LHqdCppXHzo+DZsEtA/owdUYs7k4zSFUl8h5c3JYzu0gQ6uVAw5Wui2beXOyy1+2rZy0lnno5KDCfXkztXNSQbFiqM1MxKSQz8kl+a0Gy+A7zMXCIXCxbqtPaaZ6enNwQqXpZp0MiE34hMnFe5eC90crjhDZ1hUPf+oDHGTqZRlRKyn1HmV2SOWN+qHZp2msHYBuaJjLDuhKI8MJbt9pblp5VOjc51mEBrnLvbpODww0g4Ln1PAUuT25meymkFEmzdSFTvds1ILFgQ==
+ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=2spitZ1GBUr0pQ4u9XFWqvkAI9tzx3cOa/+PgShS6gM=;
+ b=qV23b0GTom56uPZ1E0jfRUBtcSso748F+dubaoXMyRoynygsx9Jloax7yoEoC+K6U6JoYojn2xSq3lWDZXAaj47lH07BrprRaEAUf6EqQm37WKGoryygyFNhUniWFJZwJIp7sGec26FvaIVwyhSNmIASDHHpairOD8J9MZwl1ZIY91i/j+VjKSuw2ZjJTq0YT9yYASgMGec/K6qg12H3gNxJVJDy6asJvhQMRSPJ9L3nLYpty/S7ysZ4TmXfW6Y1Rv7ELVfPC/Xaixqq8kN25A+0kmFsOn7wV+1wJYZp6QTo5z6BAid3gCRZVC/T+j/6hXk7kSMngb6TFaeA+f13+Q==
+ARC-Authentication-Results: i=2; mx.microsoft.com 1; spf=pass (sender ip is
+ 4.158.2.129) smtp.rcpttodomain=linaro.org smtp.mailfrom=arm.com; dmarc=pass
+ (p=none sp=none pct=100) action=none header.from=arm.com; dkim=pass
+ (signature was verified) header.d=arm.com; arc=pass (0 oda=1 ltdi=1
+ spf=[1,1,smtp.mailfrom=arm.com] dkim=[1,1,header.d=arm.com]
+ dmarc=[1,1,header.from=arm.com])
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=arm.com; s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=2spitZ1GBUr0pQ4u9XFWqvkAI9tzx3cOa/+PgShS6gM=;
+ b=AvoWalXhrYMsYbZW+ZL5lKtlpH54Vu4a6KidxDubiYEb7+1t578Nm0QdlPAdw+otpolExFEQcTGtKr1sc+2mxi9jtWV9NUBsrR+8d7q3fmpYJmlkPEtAwL/1ixyxwwvc39BdEY7AweSSSx9Ir1uBJS7l+XFAMMfeYNsAAaBnyIU=
+Received: from AS9PR06CA0478.eurprd06.prod.outlook.com (2603:10a6:20b:49a::33)
+ by GVXPR08MB11182.eurprd08.prod.outlook.com (2603:10a6:150:1f7::8) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.113.18; Fri, 19 Jun
+ 2026 09:31:02 +0000
+Received: from AM4PEPF00027A64.eurprd04.prod.outlook.com
+ (2603:10a6:20b:49a:cafe::68) by AS9PR06CA0478.outlook.office365.com
+ (2603:10a6:20b:49a::33) with Microsoft SMTP Server (version=TLS1_3,
+ cipher=TLS_AES_256_GCM_SHA384) id 15.21.139.13 via Frontend Transport; Fri,
+ 19 Jun 2026 09:31:01 +0000
+X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 4.158.2.129)
+ smtp.mailfrom=arm.com; dkim=pass (signature was verified)
+ header.d=arm.com;dmarc=pass action=none header.from=arm.com;
+Received-SPF: Pass (protection.outlook.com: domain of arm.com designates
+ 4.158.2.129 as permitted sender) receiver=protection.outlook.com;
+ client-ip=4.158.2.129; helo=outbound-uk1.az.dlp.m.darktrace.com; pr=C
+Received: from outbound-uk1.az.dlp.m.darktrace.com (4.158.2.129) by
+ AM4PEPF00027A64.mail.protection.outlook.com (10.167.16.75) with Microsoft
+ SMTP Server (version=TLS1_3, cipher=TLS_AES_256_GCM_SHA384) id 15.21.139.8
+ via Frontend Transport; Fri, 19 Jun 2026 09:31:01 +0000
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=kKKThKQTv2S5iBAjAo/HKLqJ9hG+SROsfNsAt8Cxjp0wgzPqWvlRANCRoyXTgY8yXxYUnAgBysPHzq125jHREwWi2XmdshlFtPL44kRvZFzYhmxV5JhEthteU+ggnHvNUNn3/kSpSb8WEDWD3tctivMB9WIbBlwNv3Kvst4oFH4IROCdpcz4rpGwBZ1vIroRqUe2GHOAXBiHgoDrrYpadXxDzwQn96pdHj+ZYfK+ASFsbvCM7gMF8EU7GcqDZ5LPlDsBpXN+5brubdiyHLs7SODpiYSc6ZTQAtsRVxsxrwJb14JfgdFZf4S/nnL6oi3AarYuUlFsea3t4lXUqhkbpA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=2spitZ1GBUr0pQ4u9XFWqvkAI9tzx3cOa/+PgShS6gM=;
+ b=FEL+fSPExJKnm7LjGlBd0cmqaTMUCPz2yzLYhDtUGFw6Dbzn5g9x5ud87ZH68odbBCg7oSr/zUdSOcxcDvKwvSz8zoazxzwqQE1Od3ukW2j6TcoWq+E404K8s5x4DswYEeLequLGWoulwUEbbqVRv2DBG6A1cspLxwa1Nu34t85/osXIsO8x0fegjRgVbjKU+T41bEbamBqsN52E3dsU912kxr9FCEvwyr/CLBuxivHh5cR69v0b5utS4iv2bdGYsEi+A5mOdLoOUrMFbks/lWIG74I1vqe7MuXrqpTHxyq2K+F/hFe/JicWMffcnL9O8uwooPgi1EuTEm9I64wMoQ==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=arm.com; dmarc=pass action=none header.from=arm.com; dkim=pass
+ header.d=arm.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=arm.com; s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=2spitZ1GBUr0pQ4u9XFWqvkAI9tzx3cOa/+PgShS6gM=;
+ b=AvoWalXhrYMsYbZW+ZL5lKtlpH54Vu4a6KidxDubiYEb7+1t578Nm0QdlPAdw+otpolExFEQcTGtKr1sc+2mxi9jtWV9NUBsrR+8d7q3fmpYJmlkPEtAwL/1ixyxwwvc39BdEY7AweSSSx9Ir1uBJS7l+XFAMMfeYNsAAaBnyIU=
+Authentication-Results-Original: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=arm.com;
+Received: from VI0PR08MB10391.eurprd08.prod.outlook.com (2603:10a6:800:20c::6)
+ by PAVPR08MB8919.eurprd08.prod.outlook.com (2603:10a6:102:324::21) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.113.18; Fri, 19 Jun
+ 2026 09:29:55 +0000
+Received: from VI0PR08MB10391.eurprd08.prod.outlook.com
+ ([fe80::fa6b:9ba8:5c2f:ac91]) by VI0PR08MB10391.eurprd08.prod.outlook.com
+ ([fe80::fa6b:9ba8:5c2f:ac91%3]) with mapi id 15.21.0139.009; Fri, 19 Jun 2026
+ 09:29:54 +0000
+Message-ID: <35458c15-73b3-45f1-91fe-aa81d85a3efd@arm.com>
+Date: Fri, 19 Jun 2026 11:29:47 +0200
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v4 0/2] cpufreq: CPPC: add autonomous mode boot parameter
+ support
+To: Viresh Kumar <viresh.kumar@linaro.org>, Sumit Gupta <sumitg@nvidia.com>
+Cc: rafael@kernel.org, ionela.voinescu@arm.com, zhenglifeng1@huawei.com,
+ zhanjie9@hisilicon.com, corbet@lwn.net, skhan@linuxfoundation.org,
+ rdunlap@infradead.org, mario.limonciello@amd.com, linux-pm@vger.kernel.org,
+ linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linux-tegra@vger.kernel.org, treding@nvidia.com, jonathanh@nvidia.com,
+ vsethi@nvidia.com, ksitaraman@nvidia.com, sanjayc@nvidia.com,
+ mochs@nvidia.com, bbasu@nvidia.com
+References: <20260527202550.206828-1-sumitg@nvidia.com>
+ <eacc76aa-318c-4b41-b507-e91e322561de@nvidia.com>
+ <oxw5k2wad4vorehgmrduoxblequy3ynqufwy4sruclnh5d5wrb@awzmfafoucnn>
+Content-Language: en-US
+From: Pierre Gondois <pierre.gondois@arm.com>
+In-Reply-To: <oxw5k2wad4vorehgmrduoxblequy3ynqufwy4sruclnh5d5wrb@awzmfafoucnn>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-ClientProxiedBy: PAZP264CA0194.FRAP264.PROD.OUTLOOK.COM
+ (2603:10a6:102:237::27) To VI0PR08MB10391.eurprd08.prod.outlook.com
+ (2603:10a6:800:20c::6)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260618-idledriver-v3-0-684061eecbcb@linux.ibm.com>
-X-TM-AS-GCONF: 00
-X-Proofpoint-Spam-Info: AW1haW4tMjYwNjE5MDA4NiBTYWx0ZWRfX4ezXzYeVpJLz
- b/MZQ7TjblzDPAvAyZ1N8ybxBJQAv0P3nZMQNtqNx0j6OpgjJMp/YlQaQBGwHX2DXew7EK53fKF
- tExlV4vhN79hRNqmDhywPh8/EnqRrxs=
-X-Proofpoint-GUID: abg4Ryfq43opm4tU6yzG9rDjiSF8_WmZ
-X-Authority-Analysis: v=2.4 cv=bMgm5v+Z c=1 sm=1 tr=0 ts=6a350bf8 cx=c_pps
- a=aDMHemPKRhS1OARIsFnwRA==:117 a=aDMHemPKRhS1OARIsFnwRA==:17
- a=kj9zAlcOel0A:10 a=FelO9ux0wxsA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=U7nrCbtTmkRpXpFmAIza:22 a=VnNF1IyMAAAA:8
- a=qNUs5Gt8cy9_CmkmY6UA:9 a=CjuIK1q_8ugA:10
-X-Proofpoint-ORIG-GUID: abg4Ryfq43opm4tU6yzG9rDjiSF8_WmZ
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNjE5MDA4NiBTYWx0ZWRfX8w1vThKFGw0x
- KyA4fQtK/g03/5CYm8EI7zpFQ/9S1bOthfGT0O0vQa9HYUBGyW3IXWTGn7DFmin1Nnd5Jyp1yTL
- xTPY0spDLPo3NGTv221uWii0zPJSdzpetE19kOe+TFUladFNDjMhGQd5hnxHeVBbWWoJB3L7Ub4
- 9UfUR1Y8gIzmXlnwY1iNkSTeHw80bI8w0RV2LGemnGWiy1XuRkwRpCVC3LGu0a0Bd76tJlQxgfP
- 1NYDlyoFfbbiu8YIQYzTEcD0qNKkXftWGVeHkI0Is6qab8BCE6zwf4W8IrLG2I8OI/0+vGRRWSV
- FSmwmWB2T3g+z5zT+8XqxuTaq9/RtUsF4qapSnxqWg8uqmVNEfFC1VnyQtk9TB+RwxXvSKeR1YC
- f7mSHKkbrKr/3HbIZ2GWQIDZi+SivCcB6n+nHBm/U567BUlsCd/W25FqCXea2Fov7HvqZJI9YQx
- 73T05Zpl0yDyLWJfp4A==
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.125,FMLib:17.12.100.49
- definitions=2026-06-19_02,2026-06-18_03,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- suspectscore=0 impostorscore=0 malwarescore=0 adultscore=0 spamscore=0
- bulkscore=0 priorityscore=1501 phishscore=0 clxscore=1011 lowpriorityscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2606190086
+X-MS-TrafficTypeDiagnostic:
+	VI0PR08MB10391:EE_|PAVPR08MB8919:EE_|AM4PEPF00027A64:EE_|GVXPR08MB11182:EE_
+X-MS-Office365-Filtering-Correlation-Id: c7852656-982c-4c08-10a8-08decde57a11
+x-checkrecipientrouted: true
+NoDisclaimer: true
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam-Untrusted:
+ BCL:0;ARA:13230040|23010399003|1800799024|376014|7416014|10070799003|366016|3023799007|11063799006|4143699003|56012099006|18002099003|22082099003;
+X-Microsoft-Antispam-Message-Info-Original:
+ lYExSBEyX2yANpIqBahYBnh8MkmeXCI4asb1Jb7cO7r9N0U63LS70Vc2v5CkLbXxVWhZaTH3t4QSQ28CZWE43bytyP3HrzKcRK178VQynXoOp2l21qBZHJ1wbxQEGLv/g9y7HEgciIT/fyCfHqi+EAtg/sgy7plckfUs/hdfGCluejXuAUOm06+zTEQYJxpLDrWmh00aieTpiChHRApWTWVrVXKg1xd3cEoqZ7O151J1JkDctH2nFp89f/FBLF4nDquFDH/5HxOR7UR2NgMJIG0DP+OJmFt5LyeMyMA8lUkAStRU0Cl3+AOZWdEo2tZ4N92+70dn1G2oze67Ey6zOQHqNgc5dF8Qq/gT5I0JxhzS6x58n+mV8B2QGeivII9zALVWHnuKlrGx/q0EPPYTnL5dQbGSMc/EXO+PHfVg9LEGMvAi7a0q/HNC/Y1ILAL0U+W9BMFfofxohITGTCIS5X+rNTwpqN8VBqWR2oun6KNAAo5FJwHuQjgfWGzdhcHZfMqSlq6MXqHIe7uhi3ieoVNiqpnIqb8PWBBaC3pAy1h/KpLZwJtfGad86QACq0C5vW/dOw9x+KVnIvDs8nrjotVhRfY4IB84iNUxOmBiG0JfXj/CZmBySZpL+CRrdRjQPtXhcvZuwNxoySUeYQ9Jp1T2JlwhV82WWY3izoIhH7s=
+X-Forefront-Antispam-Report-Untrusted:
+ CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:VI0PR08MB10391.eurprd08.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(23010399003)(1800799024)(376014)(7416014)(10070799003)(366016)(3023799007)(11063799006)(4143699003)(56012099006)(18002099003)(22082099003);DIR:OUT;SFP:1101;
+X-Exchange-RoutingPolicyChecked:
+ nE87u5xEUr7JfdTsYEGJ/kwlZVVhdeEjH08k5PiFj2TLpHGGahd9w+q/8p37hrK5tSGdszNgbQUek/CfVnlEa/4hb8TZSSJg/lyuc0AN2P0OPzwCAawj5aH0vSV1rtdW9AtDLfkCIYEw5f8N0XKhbeJgSjluQj8Gkr+hO1OCu/1gG8hh/RwpuL5f1o86RUwYsfxTgrjJt9wfP0iWGqWAe0kN+Sw4aQ3pT8ojCfHY4PkYX6Iw4YhBot1fyrK0VvYOGMd6R7mz1fZoQoMZkWhWpcJTEVFwqpRPBzSNTlq+Kkwr04aNfaem4jLoZEpsc8OceixH09a0KFQevpdxUCSzzA==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: PAVPR08MB8919
+X-EOPAttributedMessage: 0
+X-MS-Exchange-Transport-CrossTenantHeadersStripped:
+ AM4PEPF00027A64.eurprd04.prod.outlook.com
+X-MS-PublicTrafficType: Email
+X-MS-Office365-Filtering-Correlation-Id-Prvs:
+	b7b4500d-b17e-4b0a-3a88-08decde55228
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|23010399003|1800799024|14060799003|376014|7416014|35042699022|82310400026|36860700016|3023799007|11063799006|4143699003|56012099006|13003099007|18002099003|22082099003;
+X-Microsoft-Antispam-Message-Info:
+	Jf3BoyRqf0GXBTAXUpKfOsWBfStyob/9U1a40kA5ums+rsTlEzkXQjlWkgOfT5AKw2RxY8Uz3OwQe5P8I+V+M89xj9xLJ8j26fqGBjKZbS+Z0SBjlLPRXcZfvfEjPRy7iwKpW4UarY095dgqydG9e5uiyJyCXC28mMkwZulN0P1IolZWWXV0FyC61lavXkvgybD5GqN1VUf+1YnYM5LkpONVwajQK+HVnCjlKJldgzhXh3mLopSwR5hPAVDeKvq/3mCfUuqIDqRxwSucUtbEyHzlI9nWUAqYJ+uMmamLUy+xW4abTOhXWoWtg6ZvOQeOFcjEgCvy/RVW+uw00sE80PLsECFdfjZ8hn2Esgn57kx7seDGVsvmh8t8YmPdQlOygGyviqenIJDyhq8pAX3LbtBpS3wa8nm2L7N09aiTSUefY8hk44hqtWcamz0rsBMox3/TTGCHYxAtSyGIXA5AdtKWwoYGajDDm+Czbdqir7cYcRsEe3syzB8ti7RFdmmyTu5aVklRZTgW1gXaOx4mkV/mdrcJlPbuts5yQoxMJgD+dl8ZaEKkkQVK1i7sC4ncXr0GxrU0pj05U9wQnK29z6SuGdxYUafmUzoB0H4S44VPGfxHcPutfDCbRxoTSa7CJMBmd8Ha+r3N7eYjxJGtUoWq8Ba/vN5MAPOUMYL0nX3VSTqlncGqzjfVKUO0jx35e2nKF/jH8JBMbSJH2Fhtxg==
+X-Forefront-Antispam-Report:
+	CIP:4.158.2.129;CTRY:GB;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:outbound-uk1.az.dlp.m.darktrace.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230040)(23010399003)(1800799024)(14060799003)(376014)(7416014)(35042699022)(82310400026)(36860700016)(3023799007)(11063799006)(4143699003)(56012099006)(13003099007)(18002099003)(22082099003);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	ffA8RQDcixFOsZ23LMY0nYCYdeNZr57wR3lUcbNk6DiPmH+EMeMYVGarJheyFrZDZVWF2pM+vAaaOupi++m8niZhkgb7ZtKfF6QTfL3Eqweej00KDDTYp7SO1BhS2P7B7R/EWcmHVmdocOT/32dpu7g/jfBPa1U5JTmc7uehUHkxEcjvim7G4Kq3W5iy3eh4kKpuuyvdeSOPDTSCXN3O3/uPaeIVNyC5KeP4/3p9N28j6Vq0aTgRlg3ZQ4vtEjp2Yd+FXXxEY54qLwAJ+K4nWx7Ni6t9gHSaOFKQDMVAXzS5uQyRVWkS6wbHFDGoT2j13ylOthX0lviILHXWcTheXTW4wndJAftx429uSQx/NK6GRipUxTtl6hzykYumfuHsPbkUIxlA+IfhCJAjUE0JVcfyrvWLn8O7YrPGVJreOJWy3vaXcuJS+rFkPRpW1qic
+X-OriginatorOrg: arm.com
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 19 Jun 2026 09:31:01.1345
+ (UTC)
+X-MS-Exchange-CrossTenant-Network-Message-Id: c7852656-982c-4c08-10a8-08decde57a11
+X-MS-Exchange-CrossTenant-Id: f34e5979-57d9-4aaa-ad4d-b122a662184d
+X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=f34e5979-57d9-4aaa-ad4d-b122a662184d;Ip=[4.158.2.129];Helo=[outbound-uk1.az.dlp.m.darktrace.com]
+X-MS-Exchange-CrossTenant-AuthSource:
+	AM4PEPF00027A64.eurprd04.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Anonymous
+X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: GVXPR08MB11182
 
-On Thu, Jun 18, 2026 at 02:00:14PM +0200, Mete Durlu wrote:
-...
-> This patch series introduces a CPU idle driver for s390 architecture
-> that leverages the existing cpu idle infrastructure and idle governor
-> to optimize idle state selection based on timer events and interrupt
-> patterns.
-> 
-> - Implementation Overview
-> -----------------------------------------------------------------------
-> 
-> The driver implements two idle states;
-> 
-> **Polling Idle (shallow state)**
-> - Busy-loop implementation that prevents SIE-exit during short idle periods
-> - Zero exit latency, optimized for latency-sensitive workloads
-> - Maintains CPU with the guest, improving response times
-> 
-> **Enabled Wait (deep state)**
-> - Traditional EW state that signals hypervisor availability
-> - Higher exit latency but more efficient for longer idle periods
-> 
-> The idle governor dynamically selects between these states by monitoring
-> next timer interrupts and system interrupt frequency, choosing the most
-> appropriate idle state for each situation.
-> 
-> - Performance Benefits
-> -----------------------------------------------------------------------
-> 
-> Benchmark results across LPAR, KVM, and z/VM guests demonstrate significant
-> improvements for latency-sensitive and scheduler-intensive workloads:
-> 
-> ```
-> Benchmark    | LPAR  | z/VM  | KVM   |
-> -----------------------------------------
-> cyclictest   | +45%  | +50%  | +30%  |
-> hackbench    | +5%   | +12%  | -     |
-> pgbench      | +2%   | +15%  | +2%   |
-> uperf        | +50%* | +-5%  | +-5%  |
-> ```
-> 
-> *Single-threaded uperf scenarios show 50-70% improvements on LPAR.
-> Multi-threaded results show slight improvements overall.
-> 
-> Additionally, fio and ioping tests show latency distribution shifts toward
-> lower values with reduced minimum and average latencies.
-> 
-> - Configuration
-> -----------------------------------------------------------------------
-> 
-> Target residency and exit latency values are benchmark estimates. Due to
-> s390's virtualized architecture, these values are non-deterministic.
-> Idle state parameters are tuned per hypervisor type after benchmarks:
-> 
-> **LPAR:**
-> - EW: 5us target residency, 5us exit latency
-> 
-> **KVM/z/VM:**
-> - EW: 1us target residency, 1us exit latency
-> 
-> ---
-> Mete Durlu (5):
->       s390/tick: Remove CIF_NOHZ_DELAY flag
->       tick: Remove arch_needs_cpu
->       s390: Enable TIF_POLLING_NRFLAG
->       s390/idle: Introduce cpuidle for s390
->       s390/configs: Enable cpuidle driver on s390
-> 
->  MAINTAINERS                         |   8 +++
->  arch/s390/Kconfig                   |   5 ++
->  arch/s390/configs/debug_defconfig   |   2 +
->  arch/s390/configs/defconfig         |   2 +
->  arch/s390/include/asm/processor.h   |   4 --
->  arch/s390/include/asm/thread_info.h |   1 +
->  arch/s390/kernel/idle.c             |   1 -
->  arch/s390/kernel/irq.c              |   4 --
->  arch/s390/kernel/smp.c              |   1 -
->  drivers/cpuidle/Kconfig             |   5 ++
->  drivers/cpuidle/Kconfig.s390        |  11 ++++
->  drivers/cpuidle/Makefile            |   4 ++
->  drivers/cpuidle/cpuidle-s390.c      | 115 ++++++++++++++++++++++++++++++++++++
->  include/linux/tick.h                |   3 -
->  kernel/time/tick-sched.c            |   7 +--
->  15 files changed, 156 insertions(+), 17 deletions(-)
-> ---
-> base-commit: 2d3090a8aeb596a26935db0955d46c9a5db5c6ce
-> change-id: 20260609-idledriver-217e2b2712a3
-> 
-> Best regards,
-> -- 
-> Mete Durlu <meted@linux.ibm.com>
 
-Applied, thanks!
+On 6/18/26 07:28, Viresh Kumar wrote:
+> On 16-06-26, 18:22, Sumit Gupta wrote:
+>> The dependency it was waiting on, the "cpufreq: Set policy->min and
+>> max as real QoS constraints" series, is now in linux-pm (linux-next).
+>> I rebased on top and verified autonomous mode works as expected, and
+>> it applies cleanly on the current linux-next.
+>>
+>> The [1] reference in patch 2/2 points to v2 of that series; the merged
+>> version is v3 [2].
+>>
+>> If there are no further comments, please consider acking and queuing
+>> this for the next cycle.
+> I was waiting for CPPC reviewers to provide some feedback.i
+>
+> Jie / Lifeng / Pierre ?
+>
+I think the patchset has the same issue described at:
+
+https://lore.kernel.org/all/86780f97-29ee-4a72-b311-38c89434b707@arm.com/
+
+I don't know if this is important to other persons,
+but IMO it would be preferable to have a solution to this issue
+before adding more functionalities relying on registers that are left
+in an unknown state.
+
+If there are any other opinion ?
+
