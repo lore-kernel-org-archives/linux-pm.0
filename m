@@ -1,98 +1,63 @@
-Received: from mail-pj1-f73.google.com (mail-pj1-f73.google.com [209.85.216.73])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id ECC68352014
-	for <linux-pm@vger.kernel.org>; Thu, 18 Jun 2026 22:45:44 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.216.73
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E6B4E17BA6;
+	Fri, 19 Jun 2026 00:09:54 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1781822746; cv=none; b=CXT5/cTJW1yYfhTveNFnXGoJmpBB0ZMRX1fPCxKc/9Hj7K+3z7JAhr0jYP6Qc02Qux5EhhuSp2nt1SVd1855zdK+uIKUB/RC5eb/WQYWHTYc6XxeEHMd9zKkybgHXWjAo6i5A7Jp+SS1MgMMXGSrbSa9NqDkPevBnJM2CxruR6U=
+	t=1781827795; cv=none; b=dHd1w6BDgIUg9aTBRc6enqR2VBLgfkr8Beli4nXP6MQSOntlHkX0P/PAYnZAtdpuiQSBgQpfcJtRZqOgLojralMnOcIjmGn2R5JUo+TWSeTnlGlnWmYvnXbrycemIYRlmfJBRsivUMmfAz39WN4Uc0jQedVtTdVox2ZD5Nizl3Q=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1781822746; c=relaxed/simple;
-	bh=p77TveDbpp7HNftGzvjzpX7z4GilKjxHXs0y5CuWHI8=;
-	h=Date:In-Reply-To:Mime-Version:References:Message-ID:Subject:From:
-	 To:Cc:Content-Type; b=ACObrR6sE27cwKqJuUK/BrZj99Hl0gaPtGt4EawdsVzyGVzPr7jXjz7ic61aaGEGNG0d3NUe0BiNPYavbCQLBusfvYJPX0BeFUGicfezG7Z4Kh9E6HWIWLPagaqtx1jkSed5aLRLGlzM5yfuN/JDPZSu86EWhFg/ijdKFNMW3dE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com; spf=pass smtp.mailfrom=flex--jmattson.bounces.google.com; dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b=JnCYX2oU; arc=none smtp.client-ip=209.85.216.73
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=flex--jmattson.bounces.google.com
+	s=arc-20240116; t=1781827795; c=relaxed/simple;
+	bh=U5JIPa4o8pOIb1dIZpIbBbfTD9M2QTWAM8bne0P+bAU=;
+	h=Subject:From:In-Reply-To:References:Message-Id:Date:To:Cc; b=al2Utqrcbjf1Rlg8pzEwTCHrBYC3KPSFS2IFTBNn+x1R8q11o/6L8D+02eRYQgyVQlVdgc1c6y+PF9yI35SOvo8UyuLLr66+dg8TewFi/NfrtSfa2aCdnUVfRc7Uwp3p4+crTi4mMRj7k5MTUXYgXRwZffzZQFhV5wlQIu/SVZ8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=ip+C5K6C; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b="JnCYX2oU"
-Received: by mail-pj1-f73.google.com with SMTP id 98e67ed59e1d1-37c648d3ab9so1025739a91.3
-        for <linux-pm@vger.kernel.org>; Thu, 18 Jun 2026 15:45:44 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20251104; t=1781822744; x=1782427544; darn=vger.kernel.org;
-        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
-         :date:from:to:cc:subject:date:message-id:reply-to;
-        bh=yzcC92EHb91544uEP740BS0GbTjYgwTgsbLMNqy+GD0=;
-        b=JnCYX2oUh0ter0I8W+s0+pqY8qc0OmYYEWZ7BrMviJtxrA+e8SwMxTbG3VIrx4nzx6
-         i1+uhTdUcLbBH4VCm1YkZSObE70ea0FqTZwthVPPtcxmKrMRFE9LOx1oQETns0uS8thv
-         pMl9SDU0RKG8Vj6TxC5Vki9rCoawxxssHy7hmTSgwKNneFgyvMmA8AsOluVYuVZTPvC4
-         oPqb1ruoeh2pXtHVCkrv78kHso5ofXJ5YdMBS0nGdV+FSNuiweFqllD8Ga3soPPeEziH
-         LFJXjuhEGYn7u764vLJ93Du0TtsEDP9dvUN4FykKXicwAbg1Woy1b5UPXLWzj+0MxW20
-         0+AA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1781822744; x=1782427544;
-        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
-         :date:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=yzcC92EHb91544uEP740BS0GbTjYgwTgsbLMNqy+GD0=;
-        b=jz5OBEYx4ZqyiFGWohqHGUgjKEiwj1CyFSbEofYOGgcbzT/J4hJZRXH3w6CfMMBrUN
-         dTG1Zv5L+Wu+pDxpPUtEabw5YHpJkojn0tEOK2iEx09V1RFSdJTALYl0bMcgh77zwIV8
-         pNI2cfjr45HwaQSS5OyNqxUw1ivls9Hg7mfTbk00jXd3VvFX8OVrDkLb065NvCXzv4jI
-         4S6bnatEw4ZcVO87rXZJV1rSQXOvdm9XNhvaY/xNC1TLn/rsXV5lvNwhd5cXJ7fP7ZtW
-         vP9lU6mdVQaYKxFZ7hVbVO+sVSHyi+rxG6o2XKhWTm7gpNdwgzwbcugussbonKVXn5U3
-         kQFA==
-X-Forwarded-Encrypted: i=1; AFNElJ9VL/QUqt6XkZ7CgQ0petjyF4CeYJhFcEXruzE/IUEcBlWLn5zBMmzFCxm/2LhvF9l4c4GLw1qkzQ==@vger.kernel.org
-X-Gm-Message-State: AOJu0YzyU8xEPNUq7832NlFOLGViABJyBlpLwdHt9oS5cih7SHGQ3VIl
-	9423Au8m3GW6qiT+suU1LLeyiMeWfHZFWxl7sQyQdxGSQfbka1eNx7MIgFYLURC5lK2mjYk7Mf1
-	DmGXQC/JIY3WXpw==
-X-Received: from pjbpm10.prod.google.com ([2002:a17:90b:3c4a:b0:36b:d4f1:5505])
- (user=jmattson job=prod-delivery.src-stubby-dispatcher) by
- 2002:a17:90a:f950:b0:36b:79aa:cda4 with SMTP id 98e67ed59e1d1-37d160481fcmr1576750a91.8.1781822744068;
- Thu, 18 Jun 2026 15:45:44 -0700 (PDT)
-Date: Thu, 18 Jun 2026 15:45:27 -0700
-In-Reply-To: <20260618224527.1506419-1-jmattson@google.com>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="ip+C5K6C"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8909D1F000E9;
+	Fri, 19 Jun 2026 00:09:54 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1781827794;
+	bh=RXDPYV6FaGofHC5e3LeKXG3SaYnogPbrvQqTOsV8EVw=;
+	h=Subject:From:In-Reply-To:References:Date:To:Cc;
+	b=ip+C5K6Ch/g4Mtfp4Eq5IlR9fYhfadgwbM43Ay6buwirtd3X1jKkGyvIPS2vIrs71
+	 JlGQNiK92Mw8ne2G5nwVWtdht5xqSdNNOvKvQU4mpj+y1itXZX/gb9DHTzENIEC2Tb
+	 4GKOc9Kgk3RHS5RBDnv+3V1Pwk1rdCKh7YPyE40K0vlhxed3MPRav5tgAiU9DGruqK
+	 VDSxqwOzG0S32G2HlReMJEsBBiHlIQYWKxQ0IbGuvpDc7Ss+EhNjhJrClQgyw64gTA
+	 Brrb3Q94u+XJEwAniy23Bj8PKF3ox4qpTQsI5GwK5agZvBa8XmYfzMDnlpMrcR3bKF
+	 Ta7WEQjewP5hg==
+Received: from [10.30.226.235] (localhost [IPv6:::1])
+	by aws-us-west-2-korg-oddjob-rhel9-1.codeaurora.org (Postfix) with ESMTP id 198693A5676C;
+	Fri, 19 Jun 2026 00:09:49 +0000 (UTC)
+Subject: Re: [GIT PULL] pmdomain updates for v7.2
+From: pr-tracker-bot@kernel.org
+In-Reply-To: <20260617090546.18688-1-ulf.hansson@oss.qualcomm.com>
+References: <20260617090546.18688-1-ulf.hansson@oss.qualcomm.com>
+X-PR-Tracked-List-Id: <linux-pm.vger.kernel.org>
+X-PR-Tracked-Message-Id: <20260617090546.18688-1-ulf.hansson@oss.qualcomm.com>
+X-PR-Tracked-Remote: git://git.kernel.org/pub/scm/linux/kernel/git/ulfh/linux-pm.git tags/pmdomain-v7.2
+X-PR-Tracked-Commit-Id: 528ad521a433cf873724893bda339df95d8ac1e0
+X-PR-Merge-Tree: torvalds/linux.git
+X-PR-Merge-Refname: refs/heads/master
+X-PR-Merge-Commit-Id: 7849ce38717e64213bf9cbb166d1cda14e05143f
+Message-Id: <178182778768.3120511.5297628949177706525.pr-tracker-bot@kernel.org>
+Date: Fri, 19 Jun 2026 00:09:47 +0000
+To: Ulf Hansson <ulf.hansson@oss.qualcomm.com>
+Cc: Linus <torvalds@linux-foundation.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Ulf Hansson <ulf.hansson@oss.qualcomm.com>, linux-arm-kernel@lists.infradead.org
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
-Mime-Version: 1.0
-References: <20260618224527.1506419-1-jmattson@google.com>
-X-Mailer: git-send-email 2.55.0.rc0.799.gd6f94ed593-goog
-Message-ID: <20260618224527.1506419-5-jmattson@google.com>
-Subject: [PATCH v3 4/4] cpufreq: ACPI: Use amd_update_hwcr() for MSR_K7_HWCR updates
-From: Jim Mattson <jmattson@google.com>
-To: bp@alien8.de, tglx@kernel.org, x86@kernel.org, rafael@kernel.org, 
-	viresh.kumar@linaro.org, yosry@kernel.org, andrew.cooper3@citrix.com, 
-	ludloff@gmail.com
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, 
-	Jim Mattson <jmattson@google.com>
-Content-Type: text/plain; charset="UTF-8"
 
-For consistency and maintainability, update boost_set_msr() to use
-the centralized amd_update_hwcr() helper when modifying MSR_K7_HWCR.
+The pull request you sent on Wed, 17 Jun 2026 11:05:46 +0200:
 
-Suggested-by: Borislav Petkov <bp@alien8.de>
-Assisted-by: Gemini:gemini-3.5-pro
-Signed-off-by: Jim Mattson <jmattson@google.com>
----
- drivers/cpufreq/acpi-cpufreq.c | 4 +---
- 1 file changed, 1 insertion(+), 3 deletions(-)
+> git://git.kernel.org/pub/scm/linux/kernel/git/ulfh/linux-pm.git tags/pmdomain-v7.2
 
-diff --git a/drivers/cpufreq/acpi-cpufreq.c b/drivers/cpufreq/acpi-cpufreq.c
-index 48d678812fd6..b3e058dd6b4b 100644
---- a/drivers/cpufreq/acpi-cpufreq.c
-+++ b/drivers/cpufreq/acpi-cpufreq.c
-@@ -103,9 +103,7 @@ static int boost_set_msr(bool enable)
- 		break;
- 	case X86_VENDOR_HYGON:
- 	case X86_VENDOR_AMD:
--		msr_addr = MSR_K7_HWCR;
--		msr_mask = MSR_K7_HWCR_CPB_DIS;
--		break;
-+		return amd_update_hwcr(MSR_K7_HWCR_CPB_DIS_BIT, !enable);
- 	default:
- 		return -EINVAL;
- 	}
+has been merged into torvalds/linux.git:
+https://git.kernel.org/torvalds/c/7849ce38717e64213bf9cbb166d1cda14e05143f
+
+Thank you!
+
 -- 
-2.55.0.rc0.799.gd6f94ed593-goog
-
+Deet-doot-dot, I am a bot.
+https://korg.docs.kernel.org/prtracker.html
