@@ -1,185 +1,240 @@
-Received: from fanzine2.igalia.com (fanzine2.igalia.com [213.97.179.56])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4535217745
-	for <linux-pm@vger.kernel.org>; Fri, 19 Jun 2026 13:57:51 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=213.97.179.56
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0764327467F;
+	Fri, 19 Jun 2026 14:52:12 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1781877475; cv=none; b=cB2lHJuauujThd+lzcnMghK64cYpkDI6u2ldtBjt5bonAkb1Y/sN2S7gN9YJnbxhD1zyJo7XgZAbssgPhQkNh9F40NHavbaYANbL9fxPAYP+4ixHkamaN6HaLxSGjGRAYgDW3e6WbA2gGRH4lDNav/e3VOF1+rfumOVqTf/8erA=
+	t=1781880734; cv=none; b=jp/ZWyvqASR6UtWRSHz8WCeOaM6DdccPixARv/6YV0cYrbZ88MZE6kEizPQ4eI3Nf2YWnVaiSarKxPX7b4/+Cr1BAHPQP4vTPyG1AsSw5mFE9f4/860v3OtnIX5gFpkaaDGgK+cLJoEEHludHp3Ghts4P9goQ5FeOhsgfWd2Mck=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1781877475; c=relaxed/simple;
-	bh=ZCIIne34ATTnxh3IYFHMgw2KmcSyxwdeBk7QsYWuOzE=;
-	h=Message-ID:Date:MIME-Version:Subject:From:To:Cc:References:
-	 In-Reply-To:Content-Type; b=TvVaSWGSG8c8dQ4vgyIKEoP+e6KWGYc8hpPKfUPUuCtPj+dHRNoMSvje6LOpY1jByrVaLHZ5dKddCP+HJRXOZbinrlaXzy/fg44W1BJbTFfr/Dvmb6OPZSjszK8FvZ3aEua6Z/uMBNY8gQPBSoDvrW3nJgl/+YoqH6X78P7QxMw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=igalia.com; spf=pass smtp.mailfrom=igalia.com; dkim=pass (2048-bit key) header.d=igalia.com header.i=@igalia.com header.b=AUKaAQrX; arc=none smtp.client-ip=213.97.179.56
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=igalia.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=igalia.com
+	s=arc-20240116; t=1781880734; c=relaxed/simple;
+	bh=1TKHOOgIi2B54S5F5zBztQ//B5Kzm+e8gYrFWEcvawA=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=PnIOPhlWb2ZXpmVzI8r2YplBciEmjH03yJ+BQXo6mM4Gcet9PQ9cSgviVXr6+mQ0TLv3BPDmkdphT5m2gum/yxSYqUMuV5rl3LAq8Y3so2rsYzQH3g0mdtLyJC6RQQx8QXuFX9/VWgby3JE3SjR9Vc59wYgYc4Cvhcg6BXaFsMA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Ztvcb7gK; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=igalia.com header.i=@igalia.com header.b="AUKaAQrX"
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=igalia.com;
-	s=20170329; h=Content-Transfer-Encoding:Content-Type:In-Reply-To:References:
-	Cc:To:From:Subject:MIME-Version:Date:Message-ID:Sender:Reply-To:Content-ID:
-	Content-Description:Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc
-	:Resent-Message-ID:List-Id:List-Help:List-Unsubscribe:List-Subscribe:
-	List-Post:List-Owner:List-Archive;
-	bh=YDBGFFmAFpsTzU7UDyTvMSWoP6bzsNKVuDtNoeT8GeY=; b=AUKaAQrX4mO9lunC7CbM4MvPR3
-	YZrHHtT9jGBUIHQuctZqJ6ZNkCAXtNdZbinF7VNl9MuRqVGT6oVFhg67xWwkyDI+mfh2AI1B431TR
-	qAcLn6PBoZp9jTdvUsNJ4Zm+6qrE9uPR7hj+4YKMjJb3CRiJEx5XkiWU4irfE8KDaFGNV96fZeprR
-	kEfWd8V3i2Gsud25LC5F9kZSXgRF4+rB2TSSzACvHPvYMZDl26TNdsX8gmdXY4UWwgZ1FoDTNARG0
-	oilb2dWUroKoT+l/ee8bP526hyaENBEd/8FkYr3/i4xp06l61VBU72TVScfVIz5lqNKLKkX6T58/d
-	BHI6/OiA==;
-Received: from [77.26.202.28] (helo=[10.0.20.253])
-	by fanzine2.igalia.com with esmtpsa 
-	(Cipher TLS1.3:ECDHE_X25519__RSA_PSS_RSAE_SHA256__AES_128_GCM:128) (Exim)
-	id 1waZj6-002XhJ-Nk; Fri, 19 Jun 2026 15:57:44 +0200
-Message-ID: <4af63689-e08c-406e-9ec3-f56dcbfb6f91@igalia.com>
-Date: Fri, 19 Jun 2026 15:57:40 +0200
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Ztvcb7gK"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id CB5411F000E9;
+	Fri, 19 Jun 2026 14:52:10 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1781880732;
+	bh=LUJ5P/oH3jsbOHH+ze6NU0xGCFjKU1qMIrAx9AtT24s=;
+	h=From:To:Cc:Subject:Date;
+	b=Ztvcb7gKIIW0IcaVJUIbmR5h+z+RMZANRpUC4qUnfJN0Ef+oZXe2JxtumV9q9Foe4
+	 pTpj06bDh9iOD1tFrRrqbnTmaKc2fbiz7URwPV1n91Juq+R6QHuKD7drU/TQtH9E1A
+	 5uzRIkeU47oKWxwYUhul84NCIekEdloAdo1cuMgszq2gfHVNXu6q2czwfKGHAHG8EN
+	 fKflnke8khfCqP4JMhEsCQIJj3vfURRNx4vSe1uBTFweVSWTB4RPWyYN1VJn0d/6BG
+	 UM79FCUzT2/Xwqp8J25PT3qcgJXhArlvNnEvg1UvcHuxu38DrAVhiirra4SlgjlSwY
+	 xbEIYdwBXskOA==
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+To: Linux PM <linux-pm@vger.kernel.org>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+ Viresh Kumar <viresh.kumar@linaro.org>,
+ Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
+ Christian Loehle <christian.loehle@arm.com>,
+ Peter Zijlstra <peterz@infradead.org>,
+ Vincent Guittot <vincent.guittot@linaro.org>,
+ Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>,
+ Mario Limonciello <superm1@kernel.org>
+Subject:
+ [PATCH v2] cpufreq: intel_pstate: Adjust the .adjust_perf() driver callback
+Date: Fri, 19 Jun 2026 16:52:08 +0200
+Message-ID: <6277654.lOV4Wx5bFT@rafael.j.wysocki>
+Organization: Linux Kernel Development
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] pmdomain: bcm: bcm2835-power: Raise ASB poll timeout to
- 100us
-From: =?UTF-8?Q?Ma=C3=ADra_Canal?= <mcanal@igalia.com>
-To: Stefan Wahren <wahrenst@gmx.net>, Ulf Hansson <ulfh@kernel.org>,
- Florian Fainelli <florian.fainelli@broadcom.com>,
- Broadcom internal kernel review list
- <bcm-kernel-feedback-list@broadcom.com>, Ray Jui <rjui@broadcom.com>,
- Scott Branden <sbranden@broadcom.com>
-Cc: linux-pm@vger.kernel.org, linux-rpi-kernel@lists.infradead.org,
- linux-arm-kernel@lists.infradead.org, kernel-dev@igalia.com
-References: <20260530204636.1115120-1-mcanal@igalia.com>
- <deecc409-02c1-4393-bc06-1852fc06e4d1@gmx.net>
- <eba66b9e-520e-4afc-8973-d54b22919d2c@igalia.com>
-Content-Language: en-US
-Autocrypt: addr=mcanal@igalia.com; keydata=
- xsBNBGcCwywBCADgTji02Sv9zjHo26LXKdCaumcSWglfnJ93rwOCNkHfPIBll85LL9G0J7H8
- /PmEL9y0LPo9/B3fhIpbD8VhSy9Sqz8qVl1oeqSe/rh3M+GceZbFUPpMSk5pNY9wr5raZ63d
- gJc1cs8XBhuj1EzeE8qbP6JAmsL+NMEmtkkNPfjhX14yqzHDVSqmAFEsh4Vmw6oaTMXvwQ40
- SkFjtl3sr20y07cJMDe++tFet2fsfKqQNxwiGBZJsjEMO2T+mW7DuV2pKHr9aifWjABY5EPw
- G7qbrh+hXgfT+njAVg5+BcLz7w9Ju/7iwDMiIY1hx64Ogrpwykj9bXav35GKobicCAwHABEB
- AAHNIE1hw61yYSBDYW5hbCA8bWNhbmFsQGlnYWxpYS5jb20+wsCRBBMBCAA7FiEE+ORdfQEW
- dwcppnfRP/MOinaI+qoFAmcCwywCGwMFCwkIBwICIgIGFQoJCAsCBBYCAwECHgcCF4AACgkQ
- P/MOinaI+qoUBQgAqz2gzUP7K3EBI24+a5FwFlruQGtim85GAJZXToBtzsfGLLVUSCL3aF/5
- O335Bh6ViSBgxmowIwVJlS/e+L95CkTGzIIMHgyUZfNefR2L3aZA6cgc9z8cfow62Wu8eXnq
- GM/+WWvrFQb/dBKKuohfBlpThqDWXxhozazCcJYYHradIuOM8zyMtCLDYwPW7Vqmewa+w994
- 7Lo4CgOhUXVI2jJSBq3sgHEPxiUBOGxvOt1YBg7H9C37BeZYZxFmU8vh7fbOsvhx7Aqu5xV7
- FG+1ZMfDkv+PixCuGtR5yPPaqU2XdjDC/9mlRWWQTPzg74RLEw5sz/tIHQPPm6ROCACFls7A
- TQRnAsMsAQgAxTU8dnqzK6vgODTCW2A6SAzcvKztxae4YjRwN1SuGhJR2isJgQHoOH6oCItW
- Xc1CGAWnci6doh1DJvbbB7uvkQlbeNxeIz0OzHSiB+pb1ssuT31Hz6QZFbX4q+crregPIhr+
- 0xeDi6Mtu+paYprI7USGFFjDUvJUf36kK0yuF2XUOBlF0beCQ7Jhc+UoI9Akmvl4sHUrZJzX
- LMeajARnSBXTcig6h6/NFVkr1mi1uuZfIRNCkxCE8QRYebZLSWxBVr3h7dtOUkq2CzL2kRCK
- T2rKkmYrvBJTqSvfK3Ba7QrDg3szEe+fENpL3gHtH6h/XQF92EOulm5S5o0I+ceREwARAQAB
- wsB2BBgBCAAgFiEE+ORdfQEWdwcppnfRP/MOinaI+qoFAmcCwywCGwwACgkQP/MOinaI+qpI
- zQf+NAcNDBXWHGA3lgvYvOU31+ik9bb30xZ7IqK9MIi6TpZqL7cxNwZ+FAK2GbUWhy+/gPkX
- it2gCAJsjo/QEKJi7Zh8IgHN+jfim942QZOkU+p/YEcvqBvXa0zqW0sYfyAxkrf/OZfTnNNE
- Tr+uBKNaQGO2vkn5AX5l8zMl9LCH3/Ieaboni35qEhoD/aM0Kpf93PhCvJGbD4n1DnRhrxm1
- uEdQ6HUjWghEjC+Jh9xUvJco2tUTepw4OwuPxOvtuPTUa1kgixYyG1Jck/67reJzMigeuYFt
- raV3P8t/6cmtawVjurhnCDuURyhUrjpRhgFp+lW8OGr6pepHol/WFIOQEg==
-In-Reply-To: <eba66b9e-520e-4afc-8973-d54b22919d2c@igalia.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="UTF-8"
 
-Hi,
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-On 31/05/26 09:18, Maíra Canal wrote:
-> Hi Stefan,
-> 
-> On 31/05/26 07:41, Stefan Wahren wrote:
->> Hi Maíra,
->>
->> Am 30.05.26 um 22:46 schrieb Maíra Canal:
->>> Commit 18605b1b936b ("pmdomain: bcm: bcm2835-power: Increase ASB control
->>> timeout") raised the ASB handshake polling budget from 1us to 5us.
->>> Surveying the pmdomain subsystem, 5us is still one of the smallest 
->>> polling
->>> budgets by a wide margin. Comparable handshakes in other drivers use:
->>>
->>>    - 100us : starfive jh71xx-pmu, apple pmgr-pwrstate
->>>    - 1ms   : renesas rcar-sysc, rmobile-sysc (power-on)
->>>    - 10ms  : renesas rcar-gen4-sysc, sunxi sun55i-pck600
->>>    - 1s    : mediatek mtk-pm-domains, mtk-scpsys
->>>
->>> Raise the BCM2835 timeout to 100us, matching analogous drivers. 100us is
->>> still negligible relative to a power-domain transition and gives the V3D
->>> master ASB substantially more headroom to drain under heavy workloads,
->>> assuring us that the timeout is enough for any scenario.
->> tbh I'm not convinced by this explanation. Starting with a timeout 
->> comparison across different pmdomain driver looks strange to me.
->>
->> My expectation that the reason for such a patch is that there is some 
->> kind of scenario to trigger unexpected timeouts.
->> If this is the case, please provide more information about the 
->> scenario (specific platform, scenario, link to the bug report).
-> 
-> The context: I was debugging this issue [1] and initially I had the
-> intuition that it could be related to a timeout in the ASB polling loop.
-> As I don't have access to the BCM2835 SoC datasheet (the public one
-> doesn't have PM information), I started to check other driver's
-> handshake timeout to see if ours was comparable to similar drivers. As
-> you can see, our timeout is much smaller.
-> 
-> In the end, issue [1] wasn't related to the pmdomain driver, so I don't
-> have a specific scenario to trigger this issue. Even though, I sent this
-> patch considering the comparison to other drivers with the goal to be
-> conservative and use a larger timeout that could accommodate an extreme
-> scenario. However, if you believe it's unreasonable, I'm okay dropping
-> this patch.
-> 
-> Ideally, it would be great to have information from Broadcom on what's
-> the largest possible time required to perform a power transition. Maybe
-> Florian could help us with that?
-> 
+In some cases, the processor may not actually stick to the "desired"
+performance level programmed through the driver's .adjust_perf()
+callback and may go above it, which may not be desirable (for instance,
+there may be a UCLAMP_MAX limit set for the task currently running on
+the given CPU which should be respected).
 
-Gentle ping, any ideas about this?
+Address that by adjusting the .adjust_perf() callback to take an
+additional argument, max_perf, representing the maximum allowed
+performance level of the CPU and update the intel_pstate driver to
+take that argument into account as appropriate.
 
-Best regards,
-- Maíra
+Accordingly, adjust cpufreq_driver_adjust_perf() and the other existing
+user of .adjust_perf(), which is the amd-pstate driver (but the behavior
+of that driver is not changed).
 
-> [1] https://lore.kernel.org/dri-devel/20260530-v3d-fix-rpi4-freezes- 
-> v1-0-c2c8307da6ce@igalia.com/T/
-> 
->>
->> I'm not against the change in general, but please start your commit 
->> message with the problem and not with the solution.
->>
->> A related question, does it make sense to add an error message here 
->> for the timeout case just like in the rest of the driver?
-> 
-> Before commit 18605b1b936b, I was getting a "Failed to disable ASB
-> master for v3d" error message, so I believe the error message already
-> exists where the function is called.
-> 
-> Thanks for your feedback!
-> 
-> Best regards,
-> - Maíra
-> 
->>
->> Best regards
->>
->>>
->>> Signed-off-by: Maíra Canal <mcanal@igalia.com>
->>> ---
->>>   drivers/pmdomain/bcm/bcm2835-power.c | 2 +-
->>>   1 file changed, 1 insertion(+), 1 deletion(-)
->>>
->>> diff --git a/drivers/pmdomain/bcm/bcm2835-power.c b/drivers/pmdomain/ 
->>> bcm/bcm2835-power.c
->>> index b76d74e3849b..d507bb675e29 100644
->>> --- a/drivers/pmdomain/bcm/bcm2835-power.c
->>> +++ b/drivers/pmdomain/bcm/bcm2835-power.c
->>> @@ -175,7 +175,7 @@ static int bcm2835_asb_control(struct 
->>> bcm2835_power *power, u32 reg, bool enable
->>>       writel(PM_PASSWORD | val, base + reg);
->>>       if (readl_poll_timeout_atomic(base + reg, val,
->>> -                      !!(val & ASB_ACK) != enable, 0, 5))
->>> +                      !!(val & ASB_ACK) != enable, 0, 100))
->>>           return -ETIMEDOUT;
->>>       return 0;
->>
-> 
+While at it, also update the cpufreq_driver_adjust_perf()
+documentation to reflect this change and some previous code
+changes that have not been taken into account in it.
+
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+
+This is an update of
+
+https://lore.kernel.org/linux-pm/14060154.uLZWGnKmhe@rafael.j.wysocki/
+
+sent mainly because the v1 did not update the Rust bindings by
+omission.  It also fixes a few typos present in the v1.
+
+Thanks!
+
+---
+ drivers/cpufreq/amd-pstate.c     |    1 +
+ drivers/cpufreq/cpufreq.c        |   14 +++++++++-----
+ drivers/cpufreq/intel_pstate.c   |    9 ++++++++-
+ include/linux/cpufreq.h          |    2 ++
+ kernel/sched/cpufreq_schedutil.c |    4 +++-
+ rust/kernel/cpufreq.rs           |    6 ++++--
+ 6 files changed, 27 insertions(+), 9 deletions(-)
+
+--- a/drivers/cpufreq/amd-pstate.c
++++ b/drivers/cpufreq/amd-pstate.c
+@@ -781,6 +781,7 @@ static unsigned int amd_pstate_fast_swit
+ static void amd_pstate_adjust_perf(struct cpufreq_policy *policy,
+ 				   unsigned long _min_perf,
+ 				   unsigned long target_perf,
++				   unsigned long _max_perf,
+ 				   unsigned long capacity)
+ {
+ 	u8 max_perf, min_perf, des_perf, cap_perf;
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -2252,14 +2252,17 @@ EXPORT_SYMBOL_GPL(cpufreq_driver_fast_sw
+  * @policy: cpufreq policy object of the target CPU.
+  * @min_perf: Minimum (required) performance level (units of @capacity).
+  * @target_perf: Target (desired) performance level (units of @capacity).
++ * @max_perf: Maximum (allowed) performance level (units of @capacity).
+  * @capacity: Capacity of the target CPU.
+  *
+- * Carry out a fast performance level switch of @cpu without sleeping.
++ * Carry out a fast performance level adjustment for the CPU represented by
++ * @policy without sleeping.
+  *
+  * The driver's ->adjust_perf() callback invoked by this function must be
+- * suitable for being called from within RCU-sched read-side critical sections
+- * and it is expected to select a suitable performance level equal to or above
+- * @min_perf and preferably equal to or below @target_perf.
++ * suitable for calling from within RCU-sched read-side critical sections and
++ * it is expected to program the processor to select suitable performance
++ * levels between @min_perf and @max_perf inclusive and preferably close to
++ * @target_perf going forward for the CPU represented by @policy.
+  *
+  * This function must not be called if policy->fast_switch_enabled is unset.
+  *
+@@ -2271,9 +2274,10 @@ EXPORT_SYMBOL_GPL(cpufreq_driver_fast_sw
+ void cpufreq_driver_adjust_perf(struct cpufreq_policy *policy,
+ 				 unsigned long min_perf,
+ 				 unsigned long target_perf,
++				 unsigned long max_perf,
+ 				 unsigned long capacity)
+ {
+-	cpufreq_driver->adjust_perf(policy, min_perf, target_perf, capacity);
++	cpufreq_driver->adjust_perf(policy, min_perf, target_perf, max_perf, capacity);
+ }
+ 
+ /**
+--- a/drivers/cpufreq/intel_pstate.c
++++ b/drivers/cpufreq/intel_pstate.c
+@@ -3241,6 +3241,7 @@ static unsigned int intel_cpufreq_fast_s
+ static void intel_cpufreq_adjust_perf(struct cpufreq_policy *policy,
+ 				      unsigned long min_perf,
+ 				      unsigned long target_perf,
++				      unsigned long max_perf,
+ 				      unsigned long capacity)
+ {
+ 	struct cpudata *cpu = all_cpu_data[policy->cpu];
+@@ -3271,7 +3272,13 @@ static void intel_cpufreq_adjust_perf(st
+ 	if (min_pstate > cpu->max_perf_ratio)
+ 		min_pstate = cpu->max_perf_ratio;
+ 
+-	max_pstate = min(cap_pstate, cpu->max_perf_ratio);
++	max_pstate = cap_pstate;
++	if (max_perf < capacity)
++		max_pstate = DIV_ROUND_UP(cap_pstate * max_perf, capacity);
++
++	if (max_pstate > cpu->max_perf_ratio)
++		max_pstate = cpu->max_perf_ratio;
++
+ 	if (max_pstate < min_pstate)
+ 		max_pstate = min_pstate;
+ 
+--- a/include/linux/cpufreq.h
++++ b/include/linux/cpufreq.h
+@@ -379,6 +379,7 @@ struct cpufreq_driver {
+ 	void		(*adjust_perf)(struct cpufreq_policy *policy,
+ 				       unsigned long min_perf,
+ 				       unsigned long target_perf,
++				       unsigned long max_perf,
+ 				       unsigned long capacity);
+ 
+ 	/*
+@@ -624,6 +625,7 @@ unsigned int cpufreq_driver_fast_switch(
+ void cpufreq_driver_adjust_perf(struct cpufreq_policy *policy,
+ 				unsigned long min_perf,
+ 				unsigned long target_perf,
++				unsigned long max_perf,
+ 				unsigned long capacity);
+ bool cpufreq_driver_has_adjust_perf(void);
+ int cpufreq_driver_target(struct cpufreq_policy *policy,
+--- a/kernel/sched/cpufreq_schedutil.c
++++ b/kernel/sched/cpufreq_schedutil.c
+@@ -50,6 +50,7 @@ struct sugov_cpu {
+ 
+ 	unsigned long		util;
+ 	unsigned long		bw_min;
++	unsigned long		bw_max;
+ 
+ 	/* The field below is for single-CPU policies only: */
+ #ifdef CONFIG_NO_HZ_COMMON
+@@ -232,6 +233,7 @@ static void sugov_get_util(struct sugov_
+ 	util = effective_cpu_util(sg_cpu->cpu, util, &min, &max);
+ 	util = max(util, boost);
+ 	sg_cpu->bw_min = min;
++	sg_cpu->bw_max = max;
+ 	sg_cpu->util = sugov_effective_cpu_perf(sg_cpu->cpu, util, min, max);
+ }
+ 
+@@ -484,7 +486,7 @@ static void sugov_update_single_perf(str
+ 		sg_cpu->util = prev_util;
+ 
+ 	cpufreq_driver_adjust_perf(sg_policy->policy, sg_cpu->bw_min,
+-				   sg_cpu->util, max_cap);
++				   sg_cpu->util, sg_cpu->bw_max, max_cap);
+ 
+ 	sg_policy->last_freq_update_time = time;
+ }
+--- a/rust/kernel/cpufreq.rs
++++ b/rust/kernel/cpufreq.rs
+@@ -792,7 +792,8 @@ pub trait Driver {
+     }
+ 
+     /// Driver's `adjust_perf` callback.
+-    fn adjust_perf(_policy: &mut Policy, _min_perf: usize, _target_perf: usize, _capacity: usize) {
++    fn adjust_perf(_policy: &mut Policy, _min_perf: usize, _target_perf: usize,
++                   _max_perf: usize, _capacity: usize) {
+         build_error!(VTABLE_DEFAULT_ERROR)
+     }
+ 
+@@ -1262,12 +1263,13 @@ impl<T: Driver> Registration<T> {
+         ptr: *mut bindings::cpufreq_policy,
+         min_perf: c_ulong,
+         target_perf: c_ulong,
++        max_perf: c_ulong,
+         capacity: c_ulong,
+     ) {
+         // SAFETY: The `ptr` is guaranteed to be valid by the contract with the C code for the
+         // lifetime of `policy`.
+         let policy = unsafe { Policy::from_raw_mut(ptr) };
+-        T::adjust_perf(policy, min_perf, target_perf, capacity);
++        T::adjust_perf(policy, min_perf, target_perf, max_perf, capacity);
+     }
+ 
+     /// Driver's `get_intermediate` callback.
+
+
 
