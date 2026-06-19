@@ -1,33 +1,39 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+Received: from fanzine2.igalia.com (fanzine2.igalia.com [213.97.179.56])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 81FBE392C21;
-	Fri, 19 Jun 2026 13:06:53 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4535217745
+	for <linux-pm@vger.kernel.org>; Fri, 19 Jun 2026 13:57:51 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=213.97.179.56
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1781874416; cv=none; b=Rg2Doiq4/ZyPnqMD6ZyEkabF5ZBSO9WXArvtFfOD/GqtwWdHh3gYf/LstBNP7HCfJQhPp7B0TlSd8pv+UXW76ZTpV1ysJXu20Faa48qrV2NXi5z0Q2UcJ6xNnqtphPdDz1nwAvtCSYqfuWwupx4IDG3HGfo/RMjjVQk+0C1txYU=
+	t=1781877475; cv=none; b=cB2lHJuauujThd+lzcnMghK64cYpkDI6u2ldtBjt5bonAkb1Y/sN2S7gN9YJnbxhD1zyJo7XgZAbssgPhQkNh9F40NHavbaYANbL9fxPAYP+4ixHkamaN6HaLxSGjGRAYgDW3e6WbA2gGRH4lDNav/e3VOF1+rfumOVqTf/8erA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1781874416; c=relaxed/simple;
-	bh=J0b6DNS1ZP/vmjQta70EhyK1Kpy/ZCSIPOJ8bIxPC/8=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=E5XoA3rLyIpwSoAo2kow3TMt67xId1tZtFjrqGbPkizsO6dHdjhKsjZenHIM819t1ogmidr1GbBx1SfX0r40T+BVbfVAzqIkosFDJQ26ezXg/4LLGY0t31Tyc8uBIE/LfxIavpFIQw510w6ZDZeUOS+Ga1NL//upYVpL2ard7J8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=FCJTi24Y; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1781877475; c=relaxed/simple;
+	bh=ZCIIne34ATTnxh3IYFHMgw2KmcSyxwdeBk7QsYWuOzE=;
+	h=Message-ID:Date:MIME-Version:Subject:From:To:Cc:References:
+	 In-Reply-To:Content-Type; b=TvVaSWGSG8c8dQ4vgyIKEoP+e6KWGYc8hpPKfUPUuCtPj+dHRNoMSvje6LOpY1jByrVaLHZ5dKddCP+HJRXOZbinrlaXzy/fg44W1BJbTFfr/Dvmb6OPZSjszK8FvZ3aEua6Z/uMBNY8gQPBSoDvrW3nJgl/+YoqH6X78P7QxMw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=igalia.com; spf=pass smtp.mailfrom=igalia.com; dkim=pass (2048-bit key) header.d=igalia.com header.i=@igalia.com header.b=AUKaAQrX; arc=none smtp.client-ip=213.97.179.56
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=igalia.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=igalia.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="FCJTi24Y"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 006B61F000E9;
-	Fri, 19 Jun 2026 13:06:42 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1781874412;
-	bh=rper6kcDjMkbfisQIl6MSRaeizD9Q4T7c8icbnfOpP0=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To;
-	b=FCJTi24Y41XfK6xF2bnHZSCwdzpQ/6vqYXV09E4CkpdbGwToIAnKu6fCjgpQY0Ddc
-	 0zOoNklLIfgQvtr3yM0HU21J9i2pHg1KoyzcoYY0FMeb0+oDJ+s3pTci9wsY+nUxpH
-	 VGHDvuEvssY3QVY0sMeTQedRsw+kUgoHbG4wNsWIwDDCVEWG/jL717NPd4nP2sm8Es
-	 OH5lvc91zNK0X2Yfdy3TyrzAfV1Niwk/3GfN2mjrgOdRzLjYA4+I+Dqt3+GZkRQvm3
-	 3zPnxEfDbjTEWmnxhjx1jdwS3ft7IkfkJDrJePkEn7GEynoqXTfwc/v6rzXw35wPng
-	 M8oVkBcCRTwJg==
-Message-ID: <97a16bfa-2315-47f7-ac5e-b130e7fdcf26@kernel.org>
-Date: Fri, 19 Jun 2026 15:06:39 +0200
+	dkim=pass (2048-bit key) header.d=igalia.com header.i=@igalia.com header.b="AUKaAQrX"
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=igalia.com;
+	s=20170329; h=Content-Transfer-Encoding:Content-Type:In-Reply-To:References:
+	Cc:To:From:Subject:MIME-Version:Date:Message-ID:Sender:Reply-To:Content-ID:
+	Content-Description:Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc
+	:Resent-Message-ID:List-Id:List-Help:List-Unsubscribe:List-Subscribe:
+	List-Post:List-Owner:List-Archive;
+	bh=YDBGFFmAFpsTzU7UDyTvMSWoP6bzsNKVuDtNoeT8GeY=; b=AUKaAQrX4mO9lunC7CbM4MvPR3
+	YZrHHtT9jGBUIHQuctZqJ6ZNkCAXtNdZbinF7VNl9MuRqVGT6oVFhg67xWwkyDI+mfh2AI1B431TR
+	qAcLn6PBoZp9jTdvUsNJ4Zm+6qrE9uPR7hj+4YKMjJb3CRiJEx5XkiWU4irfE8KDaFGNV96fZeprR
+	kEfWd8V3i2Gsud25LC5F9kZSXgRF4+rB2TSSzACvHPvYMZDl26TNdsX8gmdXY4UWwgZ1FoDTNARG0
+	oilb2dWUroKoT+l/ee8bP526hyaENBEd/8FkYr3/i4xp06l61VBU72TVScfVIz5lqNKLKkX6T58/d
+	BHI6/OiA==;
+Received: from [77.26.202.28] (helo=[10.0.20.253])
+	by fanzine2.igalia.com with esmtpsa 
+	(Cipher TLS1.3:ECDHE_X25519__RSA_PSS_RSAE_SHA256__AES_128_GCM:128) (Exim)
+	id 1waZj6-002XhJ-Nk; Fri, 19 Jun 2026 15:57:44 +0200
+Message-ID: <4af63689-e08c-406e-9ec3-f56dcbfb6f91@igalia.com>
+Date: Fri, 19 Jun 2026 15:57:40 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -35,94 +41,145 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 1/2] dt-bindings: thermal: Add Qualcomm MBG thermal
- monitor support
-To: Sachin Gupta <sachin.gupta@oss.qualcomm.com>
-Cc: Lee Jones <lee@kernel.org>, Rob Herring <robh@kernel.org>,
- Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
- <conor+dt@kernel.org>, "Rafael J. Wysocki" <rafael@kernel.org>,
- Daniel Lezcano <daniel.lezcano@kernel.org>, Zhang Rui <rui.zhang@intel.com>,
- Lukasz Luba <lukasz.luba@arm.com>, Stephen Boyd <sboyd@kernel.org>,
- Jishnu Prakash <jishnu.prakash@oss.qualcomm.com>,
- Kamal Wadhwa <kamal.wadhwa@oss.qualcomm.com>,
- Amit Kucheria <amitk@kernel.org>, Thara Gopinath <thara.gopinath@gmail.com>,
- linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
- Satya Priya Kakitapalli <quic_skakitap@quicinc.com>,
- Ajit Pandey <ajit.pandey@oss.qualcomm.com>,
- Imran Shaik <imran.shaik@oss.qualcomm.com>,
- Taniya Das <taniya.das@oss.qualcomm.com>,
- Jagadeesh Kona <jagadeesh.kona@oss.qualcomm.com>
-References: <20260601-spmi-mbg-driver-v1-0-b4892b55a17f@oss.qualcomm.com>
- <20260601-spmi-mbg-driver-v1-1-b4892b55a17f@oss.qualcomm.com>
- <20260608-sweet-powerful-ibis-8b2adb@quoll>
- <4d643a18-a044-4350-b7f9-2c61f50cb792@oss.qualcomm.com>
-From: Krzysztof Kozlowski <krzk@kernel.org>
+Subject: Re: [PATCH] pmdomain: bcm: bcm2835-power: Raise ASB poll timeout to
+ 100us
+From: =?UTF-8?Q?Ma=C3=ADra_Canal?= <mcanal@igalia.com>
+To: Stefan Wahren <wahrenst@gmx.net>, Ulf Hansson <ulfh@kernel.org>,
+ Florian Fainelli <florian.fainelli@broadcom.com>,
+ Broadcom internal kernel review list
+ <bcm-kernel-feedback-list@broadcom.com>, Ray Jui <rjui@broadcom.com>,
+ Scott Branden <sbranden@broadcom.com>
+Cc: linux-pm@vger.kernel.org, linux-rpi-kernel@lists.infradead.org,
+ linux-arm-kernel@lists.infradead.org, kernel-dev@igalia.com
+References: <20260530204636.1115120-1-mcanal@igalia.com>
+ <deecc409-02c1-4393-bc06-1852fc06e4d1@gmx.net>
+ <eba66b9e-520e-4afc-8973-d54b22919d2c@igalia.com>
 Content-Language: en-US
-Autocrypt: addr=krzk@kernel.org; keydata=
- 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
-In-Reply-To: <4d643a18-a044-4350-b7f9-2c61f50cb792@oss.qualcomm.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Autocrypt: addr=mcanal@igalia.com; keydata=
+ xsBNBGcCwywBCADgTji02Sv9zjHo26LXKdCaumcSWglfnJ93rwOCNkHfPIBll85LL9G0J7H8
+ /PmEL9y0LPo9/B3fhIpbD8VhSy9Sqz8qVl1oeqSe/rh3M+GceZbFUPpMSk5pNY9wr5raZ63d
+ gJc1cs8XBhuj1EzeE8qbP6JAmsL+NMEmtkkNPfjhX14yqzHDVSqmAFEsh4Vmw6oaTMXvwQ40
+ SkFjtl3sr20y07cJMDe++tFet2fsfKqQNxwiGBZJsjEMO2T+mW7DuV2pKHr9aifWjABY5EPw
+ G7qbrh+hXgfT+njAVg5+BcLz7w9Ju/7iwDMiIY1hx64Ogrpwykj9bXav35GKobicCAwHABEB
+ AAHNIE1hw61yYSBDYW5hbCA8bWNhbmFsQGlnYWxpYS5jb20+wsCRBBMBCAA7FiEE+ORdfQEW
+ dwcppnfRP/MOinaI+qoFAmcCwywCGwMFCwkIBwICIgIGFQoJCAsCBBYCAwECHgcCF4AACgkQ
+ P/MOinaI+qoUBQgAqz2gzUP7K3EBI24+a5FwFlruQGtim85GAJZXToBtzsfGLLVUSCL3aF/5
+ O335Bh6ViSBgxmowIwVJlS/e+L95CkTGzIIMHgyUZfNefR2L3aZA6cgc9z8cfow62Wu8eXnq
+ GM/+WWvrFQb/dBKKuohfBlpThqDWXxhozazCcJYYHradIuOM8zyMtCLDYwPW7Vqmewa+w994
+ 7Lo4CgOhUXVI2jJSBq3sgHEPxiUBOGxvOt1YBg7H9C37BeZYZxFmU8vh7fbOsvhx7Aqu5xV7
+ FG+1ZMfDkv+PixCuGtR5yPPaqU2XdjDC/9mlRWWQTPzg74RLEw5sz/tIHQPPm6ROCACFls7A
+ TQRnAsMsAQgAxTU8dnqzK6vgODTCW2A6SAzcvKztxae4YjRwN1SuGhJR2isJgQHoOH6oCItW
+ Xc1CGAWnci6doh1DJvbbB7uvkQlbeNxeIz0OzHSiB+pb1ssuT31Hz6QZFbX4q+crregPIhr+
+ 0xeDi6Mtu+paYprI7USGFFjDUvJUf36kK0yuF2XUOBlF0beCQ7Jhc+UoI9Akmvl4sHUrZJzX
+ LMeajARnSBXTcig6h6/NFVkr1mi1uuZfIRNCkxCE8QRYebZLSWxBVr3h7dtOUkq2CzL2kRCK
+ T2rKkmYrvBJTqSvfK3Ba7QrDg3szEe+fENpL3gHtH6h/XQF92EOulm5S5o0I+ceREwARAQAB
+ wsB2BBgBCAAgFiEE+ORdfQEWdwcppnfRP/MOinaI+qoFAmcCwywCGwwACgkQP/MOinaI+qpI
+ zQf+NAcNDBXWHGA3lgvYvOU31+ik9bb30xZ7IqK9MIi6TpZqL7cxNwZ+FAK2GbUWhy+/gPkX
+ it2gCAJsjo/QEKJi7Zh8IgHN+jfim942QZOkU+p/YEcvqBvXa0zqW0sYfyAxkrf/OZfTnNNE
+ Tr+uBKNaQGO2vkn5AX5l8zMl9LCH3/Ieaboni35qEhoD/aM0Kpf93PhCvJGbD4n1DnRhrxm1
+ uEdQ6HUjWghEjC+Jh9xUvJco2tUTepw4OwuPxOvtuPTUa1kgixYyG1Jck/67reJzMigeuYFt
+ raV3P8t/6cmtawVjurhnCDuURyhUrjpRhgFp+lW8OGr6pepHol/WFIOQEg==
+In-Reply-To: <eba66b9e-520e-4afc-8973-d54b22919d2c@igalia.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 
-On 19/06/2026 08:44, Sachin Gupta wrote:
->>> index 000000000000..a0ecc9f35cf6
->>> --- /dev/null
->>> +++ b/Documentation/devicetree/bindings/thermal/qcom-spmi-mbg-tm.yaml
->>
->> Filename must match compatible.
->>
+Hi,
+
+On 31/05/26 09:18, Maíra Canal wrote:
+> Hi Stefan,
 > 
-> Thanks for the review. I can rename this to match the compatible naming, 
-> but wanted your preference on scope:
+> On 31/05/26 07:41, Stefan Wahren wrote:
+>> Hi Maíra,
+>>
+>> Am 30.05.26 um 22:46 schrieb Maíra Canal:
+>>> Commit 18605b1b936b ("pmdomain: bcm: bcm2835-power: Increase ASB control
+>>> timeout") raised the ASB handshake polling budget from 1us to 5us.
+>>> Surveying the pmdomain subsystem, 5us is still one of the smallest 
+>>> polling
+>>> budgets by a wide margin. Comparable handshakes in other drivers use:
+>>>
+>>>    - 100us : starfive jh71xx-pmu, apple pmgr-pwrstate
+>>>    - 1ms   : renesas rcar-sysc, rmobile-sysc (power-on)
+>>>    - 10ms  : renesas rcar-gen4-sysc, sunxi sun55i-pck600
+>>>    - 1s    : mediatek mtk-pm-domains, mtk-scpsys
+>>>
+>>> Raise the BCM2835 timeout to 100us, matching analogous drivers. 100us is
+>>> still negligible relative to a power-domain transition and gives the V3D
+>>> master ASB substantially more headroom to drain under heavy workloads,
+>>> assuring us that the timeout is enough for any scenario.
+>> tbh I'm not convinced by this explanation. Starting with a timeout 
+>> comparison across different pmdomain driver looks strange to me.
+>>
+>> My expectation that the reason for such a patch is that there is some 
+>> kind of scenario to trigger unexpected timeouts.
+>> If this is the case, please provide more information about the 
+>> scenario (specific platform, scenario, link to the bug report).
 > 
-> Should I use a generic naming scheme (qcom,spmi-mbg-tm.yaml with 
-> matching compatible), or make it PMIC-specific (qcom,pm8775-mbg-tm.yaml).
+> The context: I was debugging this issue [1] and initially I had the
+> intuition that it could be related to a timeout in the ASB polling loop.
+> As I don't have access to the BCM2835 SoC datasheet (the public one
+> doesn't have PM information), I started to check other driver's
+> handshake timeout to see if ours was comparable to similar drivers. As
+> you can see, our timeout is much smaller.
+> 
+> In the end, issue [1] wasn't related to the pmdomain driver, so I don't
+> have a specific scenario to trigger this issue. Even though, I sent this
+> patch considering the comparison to other drivers with the goal to be
+> conservative and use a larger timeout that could accommodate an extreme
+> scenario. However, if you believe it's unreasonable, I'm okay dropping
+> this patch.
+> 
+> Ideally, it would be great to have information from Broadcom on what's
+> the largest possible time required to perform a power transition. Maybe
+> Florian could help us with that?
+> 
 
-The second one, please.
-
-
+Gentle ping, any ideas about this?
 
 Best regards,
-Krzysztof
+- Maíra
+
+> [1] https://lore.kernel.org/dri-devel/20260530-v3d-fix-rpi4-freezes- 
+> v1-0-c2c8307da6ce@igalia.com/T/
+> 
+>>
+>> I'm not against the change in general, but please start your commit 
+>> message with the problem and not with the solution.
+>>
+>> A related question, does it make sense to add an error message here 
+>> for the timeout case just like in the rest of the driver?
+> 
+> Before commit 18605b1b936b, I was getting a "Failed to disable ASB
+> master for v3d" error message, so I believe the error message already
+> exists where the function is called.
+> 
+> Thanks for your feedback!
+> 
+> Best regards,
+> - Maíra
+> 
+>>
+>> Best regards
+>>
+>>>
+>>> Signed-off-by: Maíra Canal <mcanal@igalia.com>
+>>> ---
+>>>   drivers/pmdomain/bcm/bcm2835-power.c | 2 +-
+>>>   1 file changed, 1 insertion(+), 1 deletion(-)
+>>>
+>>> diff --git a/drivers/pmdomain/bcm/bcm2835-power.c b/drivers/pmdomain/ 
+>>> bcm/bcm2835-power.c
+>>> index b76d74e3849b..d507bb675e29 100644
+>>> --- a/drivers/pmdomain/bcm/bcm2835-power.c
+>>> +++ b/drivers/pmdomain/bcm/bcm2835-power.c
+>>> @@ -175,7 +175,7 @@ static int bcm2835_asb_control(struct 
+>>> bcm2835_power *power, u32 reg, bool enable
+>>>       writel(PM_PASSWORD | val, base + reg);
+>>>       if (readl_poll_timeout_atomic(base + reg, val,
+>>> -                      !!(val & ASB_ACK) != enable, 0, 5))
+>>> +                      !!(val & ASB_ACK) != enable, 0, 100))
+>>>           return -ETIMEDOUT;
+>>>       return 0;
+>>
+> 
+
