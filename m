@@ -1,44 +1,37 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0764327467F;
-	Fri, 19 Jun 2026 14:52:12 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1C6023B19B1;
+	Fri, 19 Jun 2026 15:01:31 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1781880734; cv=none; b=jp/ZWyvqASR6UtWRSHz8WCeOaM6DdccPixARv/6YV0cYrbZ88MZE6kEizPQ4eI3Nf2YWnVaiSarKxPX7b4/+Cr1BAHPQP4vTPyG1AsSw5mFE9f4/860v3OtnIX5gFpkaaDGgK+cLJoEEHludHp3Ghts4P9goQ5FeOhsgfWd2Mck=
+	t=1781881296; cv=none; b=ohMCIsHJEEL49cFicgPHoGDd/X80JVAPr9De3qMDbw2Y7ZaCPWh/JDSfZziJpf46XNos1hJHUSjIJ/dD9B4y4ksmxZhRy/28C9mNeuqGNJkA9K5+p2C5fV+LmDMkx9v02sg+6gcefjBj9WMwtrBojSBREWjad5oYGEqcJxqYgk8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1781880734; c=relaxed/simple;
-	bh=1TKHOOgIi2B54S5F5zBztQ//B5Kzm+e8gYrFWEcvawA=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=PnIOPhlWb2ZXpmVzI8r2YplBciEmjH03yJ+BQXo6mM4Gcet9PQ9cSgviVXr6+mQ0TLv3BPDmkdphT5m2gum/yxSYqUMuV5rl3LAq8Y3so2rsYzQH3g0mdtLyJC6RQQx8QXuFX9/VWgby3JE3SjR9Vc59wYgYc4Cvhcg6BXaFsMA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Ztvcb7gK; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1781881296; c=relaxed/simple;
+	bh=8YmNzXUtBLt5fQ0nSx5bYZkHYbZ6y3lwmebZQNxre+w=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=iziP/DEkJ1v6ENjZED/KlTXP/GQw7nUIFRR7kGWOp7BLqHfMhjgGwbiKCwVKfDEg1ovVGBRb2rhzANoIleUcjBJeTzQCnm43OdlyjSdkU7OAX3qWZgwqszvKHS9AzgwIGl+GZ8rEMgc7DLss4am0kMsDs2hcrIXyabiU9Hxw1yI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=YRpHXrFm; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Ztvcb7gK"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id CB5411F000E9;
-	Fri, 19 Jun 2026 14:52:10 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="YRpHXrFm"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 39F411F000E9;
+	Fri, 19 Jun 2026 15:01:29 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1781880732;
-	bh=LUJ5P/oH3jsbOHH+ze6NU0xGCFjKU1qMIrAx9AtT24s=;
+	s=k20260515; t=1781881291;
+	bh=urhBa8/WM3+ZS+Yw7ttRz+fRIbqCK8QCPari98aCCEk=;
 	h=From:To:Cc:Subject:Date;
-	b=Ztvcb7gKIIW0IcaVJUIbmR5h+z+RMZANRpUC4qUnfJN0Ef+oZXe2JxtumV9q9Foe4
-	 pTpj06bDh9iOD1tFrRrqbnTmaKc2fbiz7URwPV1n91Juq+R6QHuKD7drU/TQtH9E1A
-	 5uzRIkeU47oKWxwYUhul84NCIekEdloAdo1cuMgszq2gfHVNXu6q2czwfKGHAHG8EN
-	 fKflnke8khfCqP4JMhEsCQIJj3vfURRNx4vSe1uBTFweVSWTB4RPWyYN1VJn0d/6BG
-	 UM79FCUzT2/Xwqp8J25PT3qcgJXhArlvNnEvg1UvcHuxu38DrAVhiirra4SlgjlSwY
-	 xbEIYdwBXskOA==
+	b=YRpHXrFmJkXNIUjOEt2Xdja7OejXcvF2waSNcxQ4k4lLmnEmHuomDM0MFZbG2wGna
+	 EjF8X8+ViqKQQfzDheccLxLqflX8L8+hqxt8wkLoSr55iix/cLWE4c1rclkKD7Ej1c
+	 Cu7ktbO+4lHjAfb+X+rAe8cUkYYt9v09Wr2lwEHR/IAbj9qFPOV0GlW59326Z0MfYf
+	 jFHC985Ir1WBPFBhKU7BuxR78c+3/TdToFGb57TBHmkpbpDx1M+Hg1Grwa0ZfxQPxJ
+	 9iu/Gwh95TzaZFrHv3QZs62RsqbOfhGPvYaYKR5/COtAX+lK4VxobGBDFQ3U6DqxuM
+	 e/08qQ6Uyam3Q==
 From: "Rafael J. Wysocki" <rafael@kernel.org>
 To: Linux PM <linux-pm@vger.kernel.org>
-Cc: LKML <linux-kernel@vger.kernel.org>,
- Viresh Kumar <viresh.kumar@linaro.org>,
- Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
- Christian Loehle <christian.loehle@arm.com>,
- Peter Zijlstra <peterz@infradead.org>,
- Vincent Guittot <vincent.guittot@linaro.org>,
- Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>,
- Mario Limonciello <superm1@kernel.org>
-Subject:
- [PATCH v2] cpufreq: intel_pstate: Adjust the .adjust_perf() driver callback
-Date: Fri, 19 Jun 2026 16:52:08 +0200
-Message-ID: <6277654.lOV4Wx5bFT@rafael.j.wysocki>
+Cc: LKML <linux-kernel@vger.kernel.org>, Lukasz Luba <lukasz.luba@arm.com>,
+ Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: [PATCH v2] thermal: testing: zone: Flush work items during cleanup
+Date: Fri, 19 Jun 2026 17:01:27 +0200
+Message-ID: <1959388.tdWV9SEqCh@rafael.j.wysocki>
 Organization: Linux Kernel Development
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
@@ -51,190 +44,145 @@ Content-Type: text/plain; charset="UTF-8"
 
 From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-In some cases, the processor may not actually stick to the "desired"
-performance level programmed through the driver's .adjust_perf()
-callback and may go above it, which may not be desirable (for instance,
-there may be a UCLAMP_MAX limit set for the task currently running on
-the given CPU which should be respected).
+To prevent freed module code from being executed during the thermal
+testing module unload, make it add a dedicated workqueue for thermal
+testing work items and flush it in thermal_testing_exit().
 
-Address that by adjusting the .adjust_perf() callback to take an
-additional argument, max_perf, representing the maximum allowed
-performance level of the CPU and update the intel_pstate driver to
-take that argument into account as appropriate.
-
-Accordingly, adjust cpufreq_driver_adjust_perf() and the other existing
-user of .adjust_perf(), which is the amd-pstate driver (but the behavior
-of that driver is not changed).
-
-While at it, also update the cpufreq_driver_adjust_perf()
-documentation to reflect this change and some previous code
-changes that have not been taken into account in it.
-
+Fixes: f6a034f2df42 ("thermal: Introduce a debugfs-based testing facility")
+Link: https://sashiko.dev/#/patchset/20260605185212.2491144-1-sam.moelius%40trailofbits.com
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
 
 This is an update of
 
-https://lore.kernel.org/linux-pm/14060154.uLZWGnKmhe@rafael.j.wysocki/
+https://lore.kernel.org/linux-pm/5107023.GXAFRqVoOG@rafael.j.wysocki/
 
-sent mainly because the v1 did not update the Rust bindings by
-omission.  It also fixes a few typos present in the v1.
+sent to address Sashiko feedback
+
+https://sashiko.dev/#/patchset/12941879.O9o76ZdvQC%40rafael.j.wysocki
+
+(and the first patch in the series is not really necessary, so it has been
+dropped).
 
 Thanks!
 
 ---
- drivers/cpufreq/amd-pstate.c     |    1 +
- drivers/cpufreq/cpufreq.c        |   14 +++++++++-----
- drivers/cpufreq/intel_pstate.c   |    9 ++++++++-
- include/linux/cpufreq.h          |    2 ++
- kernel/sched/cpufreq_schedutil.c |    4 +++-
- rust/kernel/cpufreq.rs           |    6 ++++--
- 6 files changed, 27 insertions(+), 9 deletions(-)
+ drivers/thermal/testing/command.c         |   35 ++++++++++++++++++++++++++----
+ drivers/thermal/testing/thermal_testing.h |    8 ++++++
+ drivers/thermal/testing/zone.c            |    7 ++----
+ 3 files changed, 42 insertions(+), 8 deletions(-)
 
---- a/drivers/cpufreq/amd-pstate.c
-+++ b/drivers/cpufreq/amd-pstate.c
-@@ -781,6 +781,7 @@ static unsigned int amd_pstate_fast_swit
- static void amd_pstate_adjust_perf(struct cpufreq_policy *policy,
- 				   unsigned long _min_perf,
- 				   unsigned long target_perf,
-+				   unsigned long _max_perf,
- 				   unsigned long capacity)
- {
- 	u8 max_perf, min_perf, des_perf, cap_perf;
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -2252,14 +2252,17 @@ EXPORT_SYMBOL_GPL(cpufreq_driver_fast_sw
-  * @policy: cpufreq policy object of the target CPU.
-  * @min_perf: Minimum (required) performance level (units of @capacity).
-  * @target_perf: Target (desired) performance level (units of @capacity).
-+ * @max_perf: Maximum (allowed) performance level (units of @capacity).
-  * @capacity: Capacity of the target CPU.
-  *
-- * Carry out a fast performance level switch of @cpu without sleeping.
-+ * Carry out a fast performance level adjustment for the CPU represented by
-+ * @policy without sleeping.
-  *
-  * The driver's ->adjust_perf() callback invoked by this function must be
-- * suitable for being called from within RCU-sched read-side critical sections
-- * and it is expected to select a suitable performance level equal to or above
-- * @min_perf and preferably equal to or below @target_perf.
-+ * suitable for calling from within RCU-sched read-side critical sections and
-+ * it is expected to program the processor to select suitable performance
-+ * levels between @min_perf and @max_perf inclusive and preferably close to
-+ * @target_perf going forward for the CPU represented by @policy.
-  *
-  * This function must not be called if policy->fast_switch_enabled is unset.
-  *
-@@ -2271,9 +2274,10 @@ EXPORT_SYMBOL_GPL(cpufreq_driver_fast_sw
- void cpufreq_driver_adjust_perf(struct cpufreq_policy *policy,
- 				 unsigned long min_perf,
- 				 unsigned long target_perf,
-+				 unsigned long max_perf,
- 				 unsigned long capacity)
- {
--	cpufreq_driver->adjust_perf(policy, min_perf, target_perf, capacity);
-+	cpufreq_driver->adjust_perf(policy, min_perf, target_perf, max_perf, capacity);
- }
+--- a/drivers/thermal/testing/command.c
++++ b/drivers/thermal/testing/command.c
+@@ -86,7 +86,9 @@
  
- /**
---- a/drivers/cpufreq/intel_pstate.c
-+++ b/drivers/cpufreq/intel_pstate.c
-@@ -3241,6 +3241,7 @@ static unsigned int intel_cpufreq_fast_s
- static void intel_cpufreq_adjust_perf(struct cpufreq_policy *policy,
- 				      unsigned long min_perf,
- 				      unsigned long target_perf,
-+				      unsigned long max_perf,
- 				      unsigned long capacity)
- {
- 	struct cpudata *cpu = all_cpu_data[policy->cpu];
-@@ -3271,7 +3272,13 @@ static void intel_cpufreq_adjust_perf(st
- 	if (min_pstate > cpu->max_perf_ratio)
- 		min_pstate = cpu->max_perf_ratio;
+ #include "thermal_testing.h"
  
--	max_pstate = min(cap_pstate, cpu->max_perf_ratio);
-+	max_pstate = cap_pstate;
-+	if (max_perf < capacity)
-+		max_pstate = DIV_ROUND_UP(cap_pstate * max_perf, capacity);
+-struct dentry *d_testing;
++struct workqueue_struct *tt_wq __ro_after_init;
 +
-+	if (max_pstate > cpu->max_perf_ratio)
-+		max_pstate = cpu->max_perf_ratio;
++struct dentry *d_testing, *d_command __ro_after_init;
+ 
+ #define TT_COMMAND_SIZE		16
+ 
+@@ -203,17 +205,42 @@ static const struct file_operations tt_c
+ 
+ static int __init thermal_testing_init(void)
+ {
++	int error;
 +
- 	if (max_pstate < min_pstate)
- 		max_pstate = min_pstate;
++	tt_wq = alloc_workqueue("thermal_testing", WQ_UNBOUND, 0);
++	if (!tt_wq)
++		return -ENOMEM;
++
+ 	d_testing = debugfs_create_dir("thermal-testing", NULL);
+-	if (!IS_ERR(d_testing))
+-		debugfs_create_file("command", 0200, d_testing, NULL,
+-				    &tt_command_fops);
++	if (IS_ERR(d_testing)) {
++		error = PTR_ERR(d_testing);
++		goto destroy_wq;
++	}
++
++	d_command = debugfs_create_file("command", 0200, d_testing, NULL, &tt_command_fops);
++	if (IS_ERR(d_command)) {
++		error = PTR_ERR(d_command);
++		goto remove_d_testing;
++	}
  
---- a/include/linux/cpufreq.h
-+++ b/include/linux/cpufreq.h
-@@ -379,6 +379,7 @@ struct cpufreq_driver {
- 	void		(*adjust_perf)(struct cpufreq_policy *policy,
- 				       unsigned long min_perf,
- 				       unsigned long target_perf,
-+				       unsigned long max_perf,
- 				       unsigned long capacity);
- 
- 	/*
-@@ -624,6 +625,7 @@ unsigned int cpufreq_driver_fast_switch(
- void cpufreq_driver_adjust_perf(struct cpufreq_policy *policy,
- 				unsigned long min_perf,
- 				unsigned long target_perf,
-+				unsigned long max_perf,
- 				unsigned long capacity);
- bool cpufreq_driver_has_adjust_perf(void);
- int cpufreq_driver_target(struct cpufreq_policy *policy,
---- a/kernel/sched/cpufreq_schedutil.c
-+++ b/kernel/sched/cpufreq_schedutil.c
-@@ -50,6 +50,7 @@ struct sugov_cpu {
- 
- 	unsigned long		util;
- 	unsigned long		bw_min;
-+	unsigned long		bw_max;
- 
- 	/* The field below is for single-CPU policies only: */
- #ifdef CONFIG_NO_HZ_COMMON
-@@ -232,6 +233,7 @@ static void sugov_get_util(struct sugov_
- 	util = effective_cpu_util(sg_cpu->cpu, util, &min, &max);
- 	util = max(util, boost);
- 	sg_cpu->bw_min = min;
-+	sg_cpu->bw_max = max;
- 	sg_cpu->util = sugov_effective_cpu_perf(sg_cpu->cpu, util, min, max);
+ 	return 0;
++
++remove_d_testing:
++	debugfs_remove(d_testing);
++destroy_wq:
++	destroy_workqueue(tt_wq);
++	return error;
  }
+ module_init(thermal_testing_init);
  
-@@ -484,7 +486,7 @@ static void sugov_update_single_perf(str
- 		sg_cpu->util = prev_util;
- 
- 	cpufreq_driver_adjust_perf(sg_policy->policy, sg_cpu->bw_min,
--				   sg_cpu->util, max_cap);
-+				   sg_cpu->util, sg_cpu->bw_max, max_cap);
- 
- 	sg_policy->last_freq_update_time = time;
+ static void __exit thermal_testing_exit(void)
+ {
++	/* First, prevent new commands from being entered. */
++	debugfs_remove(d_command);
++	/* Flush commands in progress (if any). */
++	flush_workqueue(tt_wq);
++	destroy_workqueue(tt_wq);
++	/* Remove the directory structure and clean up. */
+ 	debugfs_remove(d_testing);
+ 	tt_zone_cleanup();
  }
---- a/rust/kernel/cpufreq.rs
-+++ b/rust/kernel/cpufreq.rs
-@@ -792,7 +792,8 @@ pub trait Driver {
-     }
+--- a/drivers/thermal/testing/thermal_testing.h
++++ b/drivers/thermal/testing/thermal_testing.h
+@@ -1,4 +1,12 @@
+ /* SPDX-License-Identifier: GPL-2.0 */
++#include <linux/workqueue.h>
++
++extern struct workqueue_struct *tt_wq;
++
++static inline void tt_queue_work(struct work_struct *work)
++{
++	queue_work(tt_wq, work);
++}
  
-     /// Driver's `adjust_perf` callback.
--    fn adjust_perf(_policy: &mut Policy, _min_perf: usize, _target_perf: usize, _capacity: usize) {
-+    fn adjust_perf(_policy: &mut Policy, _min_perf: usize, _target_perf: usize,
-+                   _max_perf: usize, _capacity: usize) {
-         build_error!(VTABLE_DEFAULT_ERROR)
-     }
+ extern struct dentry *d_testing;
  
-@@ -1262,12 +1263,13 @@ impl<T: Driver> Registration<T> {
-         ptr: *mut bindings::cpufreq_policy,
-         min_perf: c_ulong,
-         target_perf: c_ulong,
-+        max_perf: c_ulong,
-         capacity: c_ulong,
-     ) {
-         // SAFETY: The `ptr` is guaranteed to be valid by the contract with the C code for the
-         // lifetime of `policy`.
-         let policy = unsafe { Policy::from_raw_mut(ptr) };
--        T::adjust_perf(policy, min_perf, target_perf, capacity);
-+        T::adjust_perf(policy, min_perf, target_perf, max_perf, capacity);
-     }
+--- a/drivers/thermal/testing/zone.c
++++ b/drivers/thermal/testing/zone.c
+@@ -13,7 +13,6 @@
+ #include <linux/idr.h>
+ #include <linux/list.h>
+ #include <linux/thermal.h>
+-#include <linux/workqueue.h>
  
-     /// Driver's `get_intermediate` callback.
+ #include "thermal_testing.h"
+ 
+@@ -207,7 +206,7 @@ int tt_add_tz(void)
+ 
+ 	INIT_WORK(&tt_work->work, tt_add_tz_work_fn);
+ 	tt_work->tt_zone = no_free_ptr(tt_zone);
+-	schedule_work(&(no_free_ptr(tt_work)->work));
++	tt_queue_work(&(no_free_ptr(tt_work)->work));
+ 
+ 	return 0;
+ }
+@@ -269,7 +268,7 @@ int tt_del_tz(const char *arg)
+ 
+ 	INIT_WORK(&tt_work->work, tt_del_tz_work_fn);
+ 	tt_work->tt_zone = tt_zone;
+-	schedule_work(&(no_free_ptr(tt_work)->work));
++	tt_queue_work(&(no_free_ptr(tt_work)->work));
+ 
+ 	return 0;
+ }
+@@ -358,7 +357,7 @@ int tt_zone_add_trip(const char *arg)
+ 	INIT_WORK(&tt_work->work, tt_zone_add_trip_work_fn);
+ 	tt_work->tt_zone = no_free_ptr(tt_zone);
+ 	tt_work->tt_trip = no_free_ptr(tt_trip);
+-	schedule_work(&(no_free_ptr(tt_work)->work));
++	tt_queue_work(&(no_free_ptr(tt_work)->work));
+ 
+ 	return 0;
+ }
 
 
 
