@@ -1,270 +1,128 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CE2F73845CD;
-	Fri, 19 Jun 2026 12:44:05 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 81FBE392C21;
+	Fri, 19 Jun 2026 13:06:53 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1781873047; cv=none; b=Z9DPwD+yMGlx5Wfklg71fD28TINV2o6hryRDt9BiYysWb6gZBZnhg8iIN9tGBs7yASxEoSxFRIAS7Rbr1tMoBcIMZ+CRlQtKrk40vDBTNmEZL+QXonLbt47eBhSG5XOZUpegs2yJy7YoiXtCPXR+bsnZr+Oncsgd8MLs/COykcw=
+	t=1781874416; cv=none; b=Rg2Doiq4/ZyPnqMD6ZyEkabF5ZBSO9WXArvtFfOD/GqtwWdHh3gYf/LstBNP7HCfJQhPp7B0TlSd8pv+UXW76ZTpV1ysJXu20Faa48qrV2NXi5z0Q2UcJ6xNnqtphPdDz1nwAvtCSYqfuWwupx4IDG3HGfo/RMjjVQk+0C1txYU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1781873047; c=relaxed/simple;
-	bh=mXL/xXZnRAQBi+iQsPmzOpU/Y8oNGKaS3lGh8AojZws=;
-	h=Date:From:To:Cc:Subject:Message-ID:MIME-Version:Content-Type:
-	 Content-Disposition; b=cZ6mVeWM1OM6+FgujeWqLUrzlxhbpnd4lJNpkpCmrnBHwntm+42pkEKZbsfik6bg7ea8O3h9Sbq5lTobfaP/KZRuUtwegEAiJLdI4uJ4EvWniFJtlbyCgbDxnnnovo2YeJp1DJ6sgb35pZqwUtQJuRjKRyC8TV1dJjGMNsihLC4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=T/rD8YcA; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1781874416; c=relaxed/simple;
+	bh=J0b6DNS1ZP/vmjQta70EhyK1Kpy/ZCSIPOJ8bIxPC/8=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=E5XoA3rLyIpwSoAo2kow3TMt67xId1tZtFjrqGbPkizsO6dHdjhKsjZenHIM819t1ogmidr1GbBx1SfX0r40T+BVbfVAzqIkosFDJQ26ezXg/4LLGY0t31Tyc8uBIE/LfxIavpFIQw510w6ZDZeUOS+Ga1NL//upYVpL2ard7J8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=FCJTi24Y; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="T/rD8YcA"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 559171F000E9;
-	Fri, 19 Jun 2026 12:44:05 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="FCJTi24Y"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 006B61F000E9;
+	Fri, 19 Jun 2026 13:06:42 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1781873045;
-	bh=pRlt42eYsNb65U+x2Cfqw56C+Z3g+uA00NlknT2pnyA=;
-	h=Date:From:To:Cc:Subject;
-	b=T/rD8YcA5Er8sGeGsYDJNpkEFk2j7aP2S59d0PQFrvlZvub/nWxcHCnYao2oNKDyL
-	 S8IWgG2ir4bZ6vPd9fXr6BD/aOl4RMVKdhlhCJnnUQO19DECXT1+xhZzS9IDbrM4uV
-	 j0//07npVI9tBfRhZAm5v4V0gp/nr8a/p/79C3cRFaPJpv736ZZ9QgUXX89ZzRc63N
-	 zrJXiGUTRkW8qQF/0i19YPY8nfWanluL5MVeSU+7Y++HBDqWjgZBDC7IUozO+HsAx7
-	 rhzalJYLQRZOAXPic0Bk2+Jco2kA/X6sWU41pjSs4nAc8sz33BXkjWCRd2q+MwfmJ+
-	 L6BY17j1uOmRg==
-Received: by venus (Postfix, from userid 1000)
-	id 1B5F21810FF; Fri, 19 Jun 2026 14:44:03 +0200 (CEST)
-Date: Fri, 19 Jun 2026 14:44:03 +0200
-From: Sebastian Reichel <sre@kernel.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-Subject: [GIT PULL] power-supply changes for 7.2
-Message-ID: <ajU34j9bIpuC_JkI@venus>
+	s=k20260515; t=1781874412;
+	bh=rper6kcDjMkbfisQIl6MSRaeizD9Q4T7c8icbnfOpP0=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To;
+	b=FCJTi24Y41XfK6xF2bnHZSCwdzpQ/6vqYXV09E4CkpdbGwToIAnKu6fCjgpQY0Ddc
+	 0zOoNklLIfgQvtr3yM0HU21J9i2pHg1KoyzcoYY0FMeb0+oDJ+s3pTci9wsY+nUxpH
+	 VGHDvuEvssY3QVY0sMeTQedRsw+kUgoHbG4wNsWIwDDCVEWG/jL717NPd4nP2sm8Es
+	 OH5lvc91zNK0X2Yfdy3TyrzAfV1Niwk/3GfN2mjrgOdRzLjYA4+I+Dqt3+GZkRQvm3
+	 3zPnxEfDbjTEWmnxhjx1jdwS3ft7IkfkJDrJePkEn7GEynoqXTfwc/v6rzXw35wPng
+	 M8oVkBcCRTwJg==
+Message-ID: <97a16bfa-2315-47f7-ac5e-b130e7fdcf26@kernel.org>
+Date: Fri, 19 Jun 2026 15:06:39 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="2l6kdjzkvxtfdkke"
-Content-Disposition: inline
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 1/2] dt-bindings: thermal: Add Qualcomm MBG thermal
+ monitor support
+To: Sachin Gupta <sachin.gupta@oss.qualcomm.com>
+Cc: Lee Jones <lee@kernel.org>, Rob Herring <robh@kernel.org>,
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
+ <conor+dt@kernel.org>, "Rafael J. Wysocki" <rafael@kernel.org>,
+ Daniel Lezcano <daniel.lezcano@kernel.org>, Zhang Rui <rui.zhang@intel.com>,
+ Lukasz Luba <lukasz.luba@arm.com>, Stephen Boyd <sboyd@kernel.org>,
+ Jishnu Prakash <jishnu.prakash@oss.qualcomm.com>,
+ Kamal Wadhwa <kamal.wadhwa@oss.qualcomm.com>,
+ Amit Kucheria <amitk@kernel.org>, Thara Gopinath <thara.gopinath@gmail.com>,
+ linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+ Satya Priya Kakitapalli <quic_skakitap@quicinc.com>,
+ Ajit Pandey <ajit.pandey@oss.qualcomm.com>,
+ Imran Shaik <imran.shaik@oss.qualcomm.com>,
+ Taniya Das <taniya.das@oss.qualcomm.com>,
+ Jagadeesh Kona <jagadeesh.kona@oss.qualcomm.com>
+References: <20260601-spmi-mbg-driver-v1-0-b4892b55a17f@oss.qualcomm.com>
+ <20260601-spmi-mbg-driver-v1-1-b4892b55a17f@oss.qualcomm.com>
+ <20260608-sweet-powerful-ibis-8b2adb@quoll>
+ <4d643a18-a044-4350-b7f9-2c61f50cb792@oss.qualcomm.com>
+From: Krzysztof Kozlowski <krzk@kernel.org>
+Content-Language: en-US
+Autocrypt: addr=krzk@kernel.org; keydata=
+ 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
+In-Reply-To: <4d643a18-a044-4350-b7f9-2c61f50cb792@oss.qualcomm.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+
+On 19/06/2026 08:44, Sachin Gupta wrote:
+>>> index 000000000000..a0ecc9f35cf6
+>>> --- /dev/null
+>>> +++ b/Documentation/devicetree/bindings/thermal/qcom-spmi-mbg-tm.yaml
+>>
+>> Filename must match compatible.
+>>
+> 
+> Thanks for the review. I can rename this to match the compatible naming, 
+> but wanted your preference on scope:
+> 
+> Should I use a generic naming scheme (qcom,spmi-mbg-tm.yaml with 
+> matching compatible), or make it PMIC-specific (qcom,pm8775-mbg-tm.yaml).
+
+The second one, please.
 
 
---2l6kdjzkvxtfdkke
-Content-Type: text/plain; protected-headers=v1; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-Subject: [GIT PULL] power-supply changes for 7.2
-MIME-Version: 1.0
 
-Hi Linus,
-
-Nothing special from the power-supply tree (no changes outside the
-tree, no merge conflicts in linux-next, no core changes). Please
-find the details below:
-
-The following changes since commit 254f49634ee16a731174d2ae34bc50bd5f45e731:
-
-  Linux 7.1-rc1 (2026-04-26 14:19:00 -0700)
-
-are available in the Git repository at:
-
-  https://git.kernel.org/pub/scm/linux/kernel/git/sre/linux-power-supply.gi=
-t tags/for-v7.2
-
-for you to fetch changes up to a888754e51e915731c8974c4d6d62709facb35d3:
-
-  Documentation: ABI: sysfs-class-reboot-mode-reboot_modes: fix doc warning=
-s (2026-06-13 00:01:26 +0200)
-
-----------------------------------------------------------------
-power supply and reset changes for the 7.2 series
-
- * power-supply drivers
-  - surface-rt-ec: new EC driver providing battery info for Microsoft Surfa=
-ce RT
-  - s2m-charger: new driver for battery charger in Samsung S2M PMICs
-  - max17042: rework driver
-  - bd71828: sysfs for auto input current limitation
-  - use named fields for struct platform_device_id and of_device_id entries
-  - misc. small cleanups and fixes
- * reset drivers
-  - use named fields for struct platform_device_id and of_device_id entries
-  - misc. small cleanups and fixes
-
-----------------------------------------------------------------
-Alexey Charkov (4):
-      power: supply: bq257xx: Fix VSYSMIN clamping logic
-      power: supply: bq257xx: Make the default current limit a per-chip att=
-ribute
-      power: supply: bq257xx: Consistently use indirect get/set helpers
-      power: supply: bq257xx: Add fields for 'charging' and 'overvoltage' s=
-tates
-
-Andreas Kemnade (1):
-      power: supply: bd71828: sysfs for auto input current limitation
-
-Costa Shulyupin (1):
-      power: supply: Remove unused jz4740-battery.h
-
-Johan Hovold (1):
-      power: supply: max17042: fix OF node reference imbalance
-
-Jonas Schw=F6bel (1):
-      power: supply: Add support for Surface RT battery and charger
-
-Kaustabh Chakraborty (1):
-      power: supply: add support for Samsung S2M series PMIC charger device
-
-Krzysztof Kozlowski (1):
-      power: supply: cros_charge-control: Move MODULE_DEVICE_TABLE next to =
-the table itself
-
-Lucas Tsai (1):
-      power: supply: core: fix supplied_from allocations
-
-Ma Ke (1):
-      power: supply: cpcap-battery: Fix missing nvmem_device_put() causing =
-reference leak
-
-Md Shofiqul Islam (1):
-      power: supply: ab8500_fg: Fix typos in comments
-
-Nathan Chancellor (1):
-      power: supply: max17042_battery: Use modern PM ops to clear up warning
-
-Otto Pfl=FCger (1):
-      power: reset: sc27xx: Add platform_device_id table
-
-Randy Dunlap (1):
-      Documentation: ABI: sysfs-class-reboot-mode-reboot_modes: fix doc war=
-nings
-
-Rosen Penev (1):
-      power: reset: st-poweroff: Use of_device_get_match_data()
-
-Sebastian Krzyszkowiak (3):
-      power: supply: max17042_battery: Put LSB units into defines
-      power: supply: max17042_battery: Use Current register in get_status
-      power: supply: max17042_battery: use ModelCfg refresh on max17055
-
-Svyatoslav Ryhel (1):
-      dt-bindings: embedded-controller: Document Surface RT EC
-
-Uwe Kleine-K=F6nig (The Capable Hub) (6):
-      power: Drop unused assignment of platform_device_id driver data
-      power: supply: max14577: Drop driver data in of and platform device i=
-d arrays
-      power: Use named initializers for platform_device_id arrays
-      power: supply: mt6360_charger: Use of match table unconditionally
-      power: Unify code style for platform_device_id arrays
-      power: supply: Use named initializers for arrays of i2c_device_data
-
-Vincent Cloutier (3):
-      power: supply: max17042_battery: Route MAX17055 SOC alerts through dS=
-OCi
-      power: supply: max17042_battery: Keep only critical alerts during sus=
-pend
-      power: supply: max17042_battery: Remove unused platform-data plumbing
-
-Vladimir Oltean (1):
-      power: supply: cpcap-charger: include missing <linux/property.h>
-
-WenTao Liang (1):
-      power: supply: charger-manager: fix refcount leak in is_full_charged()
-
-Wentao Liang (1):
-      power: reset: linkstation-poweroff: fix use-after-free in the linksta=
-tion_poweroff_init()
-
- .../ABI/testing/sysfs-class-power-bd71828          |  12 +
- .../testing/sysfs-class-reboot-mode-reboot_modes   |  13 +-
- .../microsoft,surface-rt-ec.yaml                   |  63 ++++
- drivers/power/reset/linkstation-poweroff.c         |   2 +-
- drivers/power/reset/qemu-virt-ctrl.c               |   2 +-
- drivers/power/reset/sc27xx-poweroff.c              |   8 +
- drivers/power/reset/spacemit-p1-reboot.c           |   4 +-
- drivers/power/reset/st-poweroff.c                  |   8 +-
- drivers/power/reset/tps65086-restart.c             |   2 +-
- drivers/power/supply/Kconfig                       |  21 ++
- drivers/power/supply/Makefile                      |   2 +
- drivers/power/supply/ab8500_fg.c                   |   2 +-
- drivers/power/supply/adp5061.c                     |   2 +-
- drivers/power/supply/axp288_charger.c              |   2 +-
- drivers/power/supply/axp288_fuel_gauge.c           |   2 +-
- drivers/power/supply/bd71828-power.c               |  77 +++-
- drivers/power/supply/bq2415x_charger.c             |  28 +-
- drivers/power/supply/bq24190_charger.c             |  16 +-
- drivers/power/supply/bq24257_charger.c             |   8 +-
- drivers/power/supply/bq24735-charger.c             |   4 +-
- drivers/power/supply/bq2515x_charger.c             |   6 +-
- drivers/power/supply/bq256xx_charger.c             |  16 +-
- drivers/power/supply/bq257xx_charger.c             |  52 ++-
- drivers/power/supply/bq25890_charger.c             |  10 +-
- drivers/power/supply/bq25980_charger.c             |   8 +-
- drivers/power/supply/bq27xxx_battery_i2c.c         |  64 ++--
- drivers/power/supply/charger-manager.c             |  10 +-
- drivers/power/supply/cpcap-battery.c               |  11 +-
- drivers/power/supply/cpcap-charger.c               |   1 +
- drivers/power/supply/cros_charge-control.c         |   6 +-
- drivers/power/supply/cros_peripheral_charger.c     |   4 +-
- drivers/power/supply/cros_usbpd-charger.c          |   4 +-
- drivers/power/supply/cw2015_battery.c              |   2 +-
- drivers/power/supply/ds2782_battery.c              |   6 +-
- drivers/power/supply/lp8727_charger.c              |   2 +-
- drivers/power/supply/ltc2941-battery-gauge.c       |  10 +-
- drivers/power/supply/ltc4162-l-charger.c           |   8 +-
- drivers/power/supply/macsmc-power.c                |   2 +-
- drivers/power/supply/max14577_charger.c            |  12 +-
- drivers/power/supply/max14656_charger_detector.c   |   4 +-
- drivers/power/supply/max17040_battery.c            |  18 +-
- drivers/power/supply/max17042_battery.c            | 402 +++++++++++------=
-----
- drivers/power/supply/max77693_charger.c            |   2 +-
- drivers/power/supply/max77759_charger.c            |   2 +-
- drivers/power/supply/max77976_charger.c            |   2 +-
- drivers/power/supply/max8971_charger.c             |   2 +-
- drivers/power/supply/max8997_charger.c             |   2 +-
- drivers/power/supply/max8998_charger.c             |   2 +-
- drivers/power/supply/mm8013.c                      |   4 +-
- drivers/power/supply/mt6360_charger.c              |   6 +-
- drivers/power/supply/pf1550-charger.c              |   2 +-
- drivers/power/supply/power_supply_core.c           |  11 +-
- drivers/power/supply/rt5033_battery.c              |   2 +-
- drivers/power/supply/rt5033_charger.c              |   2 +-
- drivers/power/supply/rt9455_charger.c              |   2 +-
- drivers/power/supply/s2m-charger.c                 | 313 ++++++++++++++++
- drivers/power/supply/sbs-battery.c                 |   8 +-
- drivers/power/supply/sbs-charger.c                 |   2 +-
- drivers/power/supply/sbs-manager.c                 |   4 +-
- drivers/power/supply/smb347-charger.c              |  10 +-
- drivers/power/supply/stc3117_fuel_gauge.c          |   2 +-
- drivers/power/supply/surface-rt-ec.c               | 389 +++++++++++++++++=
-+++
- drivers/power/supply/ug3105_battery.c              |   2 +-
- include/linux/power/jz4740-battery.h               |  15 -
- include/linux/power/max17042_battery.h             |  32 +-
- 65 files changed, 1323 insertions(+), 431 deletions(-)
- create mode 100644 Documentation/ABI/testing/sysfs-class-power-bd71828
- create mode 100644 Documentation/devicetree/bindings/embedded-controller/m=
-icrosoft,surface-rt-ec.yaml
- create mode 100644 drivers/power/supply/s2m-charger.c
- create mode 100644 drivers/power/supply/surface-rt-ec.c
- delete mode 100644 include/linux/power/jz4740-battery.h
-
---2l6kdjzkvxtfdkke
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIyBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAmo1OY8ACgkQ2O7X88g7
-+ppINw/4rwSt3y3TYIupeLQdc9pFUmyVWkU0LCRPQij+TcJNIaj3w9BkSq24UGBF
-P5R2E5kd5ktFsvVis00Y5w3nAGfEghBLeBwnJFw//ypsgx98bAqe+Ry4c185s4JC
-Bn2/nvXF4bTwhJG6gFa1S0YwzEJQ423UrP9OS7pxBoVbBWYaGJuAK0kuPIUypreZ
-o9woZhBEqHIVdIoms1enSu6ndzezv4YzOarF1HarjngSiixKs8w/FMAwcWC3PFtU
-79UdzvwY3gJTHWjHGP8KVlTvkXz6VZSPKQ2SfbBWB3nX4P0omYpHzJXv/GFivx5J
-1rzJ4Vbmj8KdQCEHMoTevBTrGH1ZTI7y4hyHEiu5zYEq3OJ0rN/eANJaLSDHq4/+
-S9vdg6s0lIku23Y+64S92UuumqZbVt35E0PvdP9UoqIM4YnVm5wKycYkhduWBbgs
-b6IyLC17ESKT9IFTMj6jWh0R6HjCecIvgnzUBmgV+9idSFYAdAXKYn26uproWvce
-PgR6lKj/H+OPPF4/8iaoplMOheXyT+OrBjomb3JN10kjZN7rz5rkuhewK0XmNIZQ
-msojXcAKiWNY/ziCKnip65vS5ayhieblTU+Fwmzcd6WrKqlRMR+JmNonhAnjapqf
-m0N4z9J3ToSlnEkq2i9pm0iJJQc8g3C6srCYsHxceWDbiHNzlw==
-=HeNg
------END PGP SIGNATURE-----
-
---2l6kdjzkvxtfdkke--
+Best regards,
+Krzysztof
