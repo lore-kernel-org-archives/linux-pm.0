@@ -1,63 +1,227 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E6B4E17BA6;
-	Fri, 19 Jun 2026 00:09:54 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9A36E3254A8
+	for <linux-pm@vger.kernel.org>; Fri, 19 Jun 2026 06:45:09 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1781827795; cv=none; b=dHd1w6BDgIUg9aTBRc6enqR2VBLgfkr8Beli4nXP6MQSOntlHkX0P/PAYnZAtdpuiQSBgQpfcJtRZqOgLojralMnOcIjmGn2R5JUo+TWSeTnlGlnWmYvnXbrycemIYRlmfJBRsivUMmfAz39WN4Uc0jQedVtTdVox2ZD5Nizl3Q=
+	t=1781851511; cv=none; b=eQJwM5m3DubTTP8gPYmWSBbZpDEcN99gceNzgD9Pth7UGSQ0zKRjhUJoJAGJEpVYNCus0sgSUEPIdMriodNjEOoK0alPDuIykv2mjfVm6y1kwakzFeIB+PHedyb7cO6t/H7RtYAADnY4pXZQiL40DqCNN0DKkvDt581eWjDXAbI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1781827795; c=relaxed/simple;
-	bh=U5JIPa4o8pOIb1dIZpIbBbfTD9M2QTWAM8bne0P+bAU=;
-	h=Subject:From:In-Reply-To:References:Message-Id:Date:To:Cc; b=al2Utqrcbjf1Rlg8pzEwTCHrBYC3KPSFS2IFTBNn+x1R8q11o/6L8D+02eRYQgyVQlVdgc1c6y+PF9yI35SOvo8UyuLLr66+dg8TewFi/NfrtSfa2aCdnUVfRc7Uwp3p4+crTi4mMRj7k5MTUXYgXRwZffzZQFhV5wlQIu/SVZ8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=ip+C5K6C; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1781851511; c=relaxed/simple;
+	bh=Hckp7srdJ2LRcrqr9h2hUZOxxARFEJYif+BcJ1ig0xs=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=kSHEZdQ/oId9xlmoq1Zt8nCPqKGvOO68wsviervblkidJ0prJa8JzZa+pqhhw+YTyspQocwQbfzLoujWouF6A0s1L+nEpyvYDeV/UhF2WZk9yGLFVN5ZJtZ5gElV9QBG9Knw3sTDSJIzhS8AFqg99eJcJZmWt4Pnn4nqHsTb3hE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=kYQmekwn; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=I9IBjaa6; arc=none smtp.client-ip=205.220.168.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="ip+C5K6C"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8909D1F000E9;
-	Fri, 19 Jun 2026 00:09:54 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1781827794;
-	bh=RXDPYV6FaGofHC5e3LeKXG3SaYnogPbrvQqTOsV8EVw=;
-	h=Subject:From:In-Reply-To:References:Date:To:Cc;
-	b=ip+C5K6Ch/g4Mtfp4Eq5IlR9fYhfadgwbM43Ay6buwirtd3X1jKkGyvIPS2vIrs71
-	 JlGQNiK92Mw8ne2G5nwVWtdht5xqSdNNOvKvQU4mpj+y1itXZX/gb9DHTzENIEC2Tb
-	 4GKOc9Kgk3RHS5RBDnv+3V1Pwk1rdCKh7YPyE40K0vlhxed3MPRav5tgAiU9DGruqK
-	 VDSxqwOzG0S32G2HlReMJEsBBiHlIQYWKxQ0IbGuvpDc7Ss+EhNjhJrClQgyw64gTA
-	 Brrb3Q94u+XJEwAniy23Bj8PKF3ox4qpTQsI5GwK5agZvBa8XmYfzMDnlpMrcR3bKF
-	 Ta7WEQjewP5hg==
-Received: from [10.30.226.235] (localhost [IPv6:::1])
-	by aws-us-west-2-korg-oddjob-rhel9-1.codeaurora.org (Postfix) with ESMTP id 198693A5676C;
-	Fri, 19 Jun 2026 00:09:49 +0000 (UTC)
-Subject: Re: [GIT PULL] pmdomain updates for v7.2
-From: pr-tracker-bot@kernel.org
-In-Reply-To: <20260617090546.18688-1-ulf.hansson@oss.qualcomm.com>
-References: <20260617090546.18688-1-ulf.hansson@oss.qualcomm.com>
-X-PR-Tracked-List-Id: <linux-pm.vger.kernel.org>
-X-PR-Tracked-Message-Id: <20260617090546.18688-1-ulf.hansson@oss.qualcomm.com>
-X-PR-Tracked-Remote: git://git.kernel.org/pub/scm/linux/kernel/git/ulfh/linux-pm.git tags/pmdomain-v7.2
-X-PR-Tracked-Commit-Id: 528ad521a433cf873724893bda339df95d8ac1e0
-X-PR-Merge-Tree: torvalds/linux.git
-X-PR-Merge-Refname: refs/heads/master
-X-PR-Merge-Commit-Id: 7849ce38717e64213bf9cbb166d1cda14e05143f
-Message-Id: <178182778768.3120511.5297628949177706525.pr-tracker-bot@kernel.org>
-Date: Fri, 19 Jun 2026 00:09:47 +0000
-To: Ulf Hansson <ulf.hansson@oss.qualcomm.com>
-Cc: Linus <torvalds@linux-foundation.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Ulf Hansson <ulf.hansson@oss.qualcomm.com>, linux-arm-kernel@lists.infradead.org
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="kYQmekwn";
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="I9IBjaa6"
+Received: from pps.filterd (m0279865.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 65J2sexE1675774
+	for <linux-pm@vger.kernel.org>; Fri, 19 Jun 2026 06:45:09 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
+	RIsplPTUbXHeA4Zorpq7Kgqnq1vnUxBBxXkBvDyePAU=; b=kYQmekwnm3YBbPvH
+	CHfD+dTq6/r0MDn4wLWtczltNYwWQ0Idv7CYwuwzksZ5uvOW7HR+xx4pBRV+Xz5e
+	ynAaBH78oH80nacHIdynm+vCDE0rxuM8r1ZmNJ03rfKKxzXDcraV+SCL+3HeGsxe
+	ng45KSy+CHR0MbWan2VErbHnS1NaHgq6CgnFsRXvNpxPsJCgPp4+aMFHShTSF1BX
+	TLy4hKFwpOInGQ4ImX/LkPGTgViJ8goBMcmub0GUJDIaj/C7EiIp+/ARo4GaRnt9
+	Cw0TjVa9L9S5/8Chlc1yxd2l7Z9vyH2Ps3zfaCjS6FCBbc4vD+1MoByp4JVDXQNv
+	Kpfcvg==
+Received: from mail-pg1-f199.google.com (mail-pg1-f199.google.com [209.85.215.199])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4evmyragj0-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <linux-pm@vger.kernel.org>; Fri, 19 Jun 2026 06:45:08 +0000 (GMT)
+Received: by mail-pg1-f199.google.com with SMTP id 41be03b00d2f7-c889d1eedcdso1331990a12.1
+        for <linux-pm@vger.kernel.org>; Thu, 18 Jun 2026 23:45:08 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=oss.qualcomm.com; s=google; t=1781851508; x=1782456308; darn=vger.kernel.org;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=RIsplPTUbXHeA4Zorpq7Kgqnq1vnUxBBxXkBvDyePAU=;
+        b=I9IBjaa6QW3SqEGNxALxONNauHdg4Itz/RxVdSzQlDd0lJtgjNLBbL9ahq6P+9FURQ
+         8cCh/0nUc6dFAyhE010oN7ykrSwJP6z9aGqpFGjQZi+vZ3QMnb1idweDd6fkPhfCwGuU
+         Xf81azcRv5MfC3kzwjWpT+ped/lt11SlnCUXp1N0crCM3DbrvbBRPcUyzlDfWdNdxl4S
+         CCfF6A73wewoCqdO9d2ee++PbNBnU81Ej6jCXmEashM7ZCnEsPqLdvltFLXuVDmLgAL/
+         DYlSvEbbSAaC4tGflXd64xaoNIYvnxXL07VI4lmZcE5I4uWlvbszDmlWSyWSRLtNtBIr
+         EFnQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1781851508; x=1782456308;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=RIsplPTUbXHeA4Zorpq7Kgqnq1vnUxBBxXkBvDyePAU=;
+        b=HiOEVkegmCM02vHQvBPLaUo6JYJZqa0oqEkCJUIWyWZ1NuKkfzuIe/13sDCuCnnIhM
+         Y06iDxSasbndtVnfRnLkTcqawrrEaUDr+9myifuS3kq7M+zac7NXdd5tpREcPmtN8P5E
+         W3RP5b8nR9XL4gp5HyxJGj7hWcpl7eu6WJWEKHueLTVNCsdqZ3K77D+/5bMVdtgGpY29
+         LkOe3W1MdHOKGTJjaHN6sUuGKXu4Sp1wPYKQ2RvD3vJf+HClPXc5PBvaHlBVxCNmP85F
+         7oHg2K7S0u9VJieZ1vw/77GN/arVkDdkbTOSAkF61qOqQqMoI7tVR9pRAyCrW8iCHKcP
+         SZ9w==
+X-Forwarded-Encrypted: i=1; AFNElJ8+r1t8l7d07NVGiib/9U1jBoFHxpQ4V2LiHEQWBOetCs+kDleSjfJ16NnDvTZQohztQAJ7xinJXQ==@vger.kernel.org
+X-Gm-Message-State: AOJu0Ywm8wDkRP+K4Zw6K6TLXnVry5ZQLYqNYbsn+VOGpeKQEYRBL6xZ
+	uXJhHarJ7EwlY/BNFz0fj30zevk0570KRUFeQfFIzlT0k6qa2s2PLBJ7J0YOax6iLymA6a7NbK+
+	QA6m3aAhx+huq4H2DElBFkNPLAENKDyyn70HQsZlapjPX985vAz51KRwqWLxiSQ==
+X-Gm-Gg: AfdE7cnELfo5Je67bP9TsRipbB5nEak1N34uoK3daeIAMbG+J9f7fzhpuMBNOIRH/fO
+	AE0qgSKhcAxzKMNoZQW6bWyg97VsheYcRDs6NAtMZmW0bnVNuRA502fb8fZlGhUPLLvjkwAjZlL
+	m1XHkOma4IbWYgeHS0Q3X2sBBwUOXBYfXKY7BmhERk7qjN63F6yth3b1aFn80jvM/ekERR3n6/l
+	mNqBc0FlNTtQ+omSCimz8+1PU9Oiv6URbJrum0QElRv90c9lCBxrJuXlA3oU0DpXZe4aB/c4B36
+	a8A1cNGu6UBe8TbO7rJ4j6OEvC1PVYVZfc4vUr9KWAi8/mK+5PVgQ3rzI+AdcBH6MCl8Ax3WL3M
+	/wPm/YcFhsWKa7lPFZsL4Lp/4VLiINY//uXPaBl2/
+X-Received: by 2002:a05:6a21:513:b0:398:b433:87ed with SMTP id adf61e73a8af0-3bb34a7d301mr2958748637.44.1781851508011;
+        Thu, 18 Jun 2026 23:45:08 -0700 (PDT)
+X-Received: by 2002:a05:6a21:513:b0:398:b433:87ed with SMTP id adf61e73a8af0-3bb34a7d301mr2958688637.44.1781851507509;
+        Thu, 18 Jun 2026 23:45:07 -0700 (PDT)
+Received: from [10.92.184.233] ([202.46.23.19])
+        by smtp.gmail.com with ESMTPSA id 41be03b00d2f7-c8a890ad726sm1286070a12.28.2026.06.18.23.45.00
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Thu, 18 Jun 2026 23:45:07 -0700 (PDT)
+Message-ID: <4d643a18-a044-4350-b7f9-2c61f50cb792@oss.qualcomm.com>
+Date: Fri, 19 Jun 2026 12:14:58 +0530
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
+MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 1/2] dt-bindings: thermal: Add Qualcomm MBG thermal
+ monitor support
+To: Krzysztof Kozlowski <krzk@kernel.org>
+Cc: Lee Jones <lee@kernel.org>, Rob Herring <robh@kernel.org>,
+        Krzysztof Kozlowski <krzk+dt@kernel.org>,
+        Conor Dooley
+ <conor+dt@kernel.org>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Daniel Lezcano <daniel.lezcano@kernel.org>,
+        Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>,
+        Stephen Boyd <sboyd@kernel.org>,
+        Jishnu Prakash <jishnu.prakash@oss.qualcomm.com>,
+        Kamal Wadhwa <kamal.wadhwa@oss.qualcomm.com>,
+        Amit Kucheria <amitk@kernel.org>,
+        Thara Gopinath <thara.gopinath@gmail.com>,
+        linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+        Satya Priya Kakitapalli <quic_skakitap@quicinc.com>,
+        Ajit Pandey <ajit.pandey@oss.qualcomm.com>,
+        Imran Shaik <imran.shaik@oss.qualcomm.com>,
+        Taniya Das <taniya.das@oss.qualcomm.com>,
+        Jagadeesh Kona <jagadeesh.kona@oss.qualcomm.com>
+References: <20260601-spmi-mbg-driver-v1-0-b4892b55a17f@oss.qualcomm.com>
+ <20260601-spmi-mbg-driver-v1-1-b4892b55a17f@oss.qualcomm.com>
+ <20260608-sweet-powerful-ibis-8b2adb@quoll>
+Content-Language: en-US
+From: Sachin Gupta <sachin.gupta@oss.qualcomm.com>
+In-Reply-To: <20260608-sweet-powerful-ibis-8b2adb@quoll>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Authority-Analysis: v=2.4 cv=RZWgzVtv c=1 sm=1 tr=0 ts=6a34e574 cx=c_pps
+ a=Oh5Dbbf/trHjhBongsHeRQ==:117 a=j4ogTh8yFefVWWEFDRgCtg==:17
+ a=IkcTkHD0fZMA:10 a=FelO9ux0wxsA:10 a=s4-Qcg_JpJYA:10
+ a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=Um2Pa8k9VHT-vaBCBUpS:22
+ a=P-IC7800AAAA:8 a=gEfo2CItAAAA:8 a=COk6AnOGAAAA:8 a=EUspDBNiAAAA:8
+ a=0qyGmKY7lCQY0vYQb8sA:9 a=QEXdDO2ut3YA:10 a=_Vgx9l1VpLgwpw_dHYaR:22
+ a=d3PnA9EDa4IxuAV0gXij:22 a=sptkURWiP4Gy88Gu7hUp:22 a=TjNXssC_j7lpFel5tvFf:22
+X-Proofpoint-ORIG-GUID: OzzxcSXbdCkk14WjB5hfa3S6XRmenCJS
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNjE5MDA2MCBTYWx0ZWRfX+KBUkBdvVpr7
+ KbjwoVInjzlrZGTuzbY6SoIbT2UzW2yqYo0NKErwUSAPCc6gKrptUg6UppHY4rLD5zZ326oLeww
+ mAd9jdHImLuXh8TnKJh+sVnaawnpKgNa5x/BySrbl2yvmoUUW8q/9xHjeaEkMOkiawa6eiBIudL
+ A1Ck/fdrbO/xc3jMw1dUWWqwmvcchZYgoiQ9aM/Mu5ma3AkiLmUqopZgCK6GdZT47iOodZOvHqd
+ E+IxQE9cKsgHY+dObBQB0r69bU2ml8Rrwg/PUcqFMkCEz6YSX88j0H5fqWdUy6UVeb33Q3LdR2o
+ YHyQMA/oWgbYmStFWia37b7lQIY8xvQZrtIXubZK6SbTBxv2vfu7/PeILIbQGY5d/q1imLdsuig
+ E4+esmgsgkljSr3ZsAYudcTZMBe9svG2OMtCrZOFDaVanFTV0ugz1p29rxLPSftdcJi5fEn72Vc
+ FbLs9kx6kNWwuRRappg==
+X-Proofpoint-GUID: OzzxcSXbdCkk14WjB5hfa3S6XRmenCJS
+X-Proofpoint-Spam-Info: AW1haW4tMjYwNjE5MDA2MCBTYWx0ZWRfX46nv3F7hxFuu
+ PpM8P3cr5/U3zxY2k8uYOqKwIJomptZ8En1DLRiDY/Sd7K+5nsKbaCNR0cHSzKgliecCK+v0e/L
+ 3vXaFiHvubS/OeUeGkTk5PVtJJdRgNE=
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.125,FMLib:17.12.100.49
+ definitions=2026-06-19_01,2026-06-18_03,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ impostorscore=0 malwarescore=0 clxscore=1015 suspectscore=0
+ lowpriorityscore=0 priorityscore=1501 adultscore=0 bulkscore=0 phishscore=0
+ spamscore=0 classifier=typeunknown authscore=0 authtc= authcc= route=outbound
+ adjust=0 reason=mlx scancount=1 engine=8.22.0-2606150000
+ definitions=main-2606190060
 
-The pull request you sent on Wed, 17 Jun 2026 11:05:46 +0200:
 
-> git://git.kernel.org/pub/scm/linux/kernel/git/ulfh/linux-pm.git tags/pmdomain-v7.2
 
-has been merged into torvalds/linux.git:
-https://git.kernel.org/torvalds/c/7849ce38717e64213bf9cbb166d1cda14e05143f
+On 6/8/2026 3:37 PM, Krzysztof Kozlowski wrote:
+> On Mon, Jun 01, 2026 at 04:31:18PM +0530, Sachin Gupta wrote:
+>> From: Satya Priya Kakitapalli <quic_skakitap@quicinc.com>
+>>
+>> Add bindings for the Qualcomm MBG (Master Bandgap) temperature alarm peripheral
+> 
+> Feels unwrapped.
+> 
+> Please wrap commit message according to Linux coding style / submission
+> process (neither too early nor over the limit):
+> https://elixir.bootlin.com/linux/v6.4-rc1/source/Documentation/process/submitting-patches.rst#L597
+> 
 
-Thank you!
+I will re-wrap the commit message in the next revision.
 
--- 
-Deet-doot-dot, I am a bot.
-https://korg.docs.kernel.org/prtracker.html
+> 
+>> found on the PM8775 PMIC. Unlike the existing SPMI temp alarm peripheral,
+>> the MBG peripheral supports both hot and cold threshold monitoring across
+>> two programmable levels (LVL1 and LVL2), with interrupt status reported via
+>> a fault status register over SPMI.
+>>
+>> Signed-off-by: Satya Priya Kakitapalli <quic_skakitap@quicinc.com>
+>> Co-developed-by: Sachin Gupta <sachin.gupta@oss.qualcomm.com>
+>> Signed-off-by: Sachin Gupta <sachin.gupta@oss.qualcomm.com>
+>> ---
+>>   .../devicetree/bindings/mfd/qcom,spmi-pmic.yaml    |  4 ++
+>>   .../bindings/thermal/qcom-spmi-mbg-tm.yaml         | 72 ++++++++++++++++++++++
+>>   2 files changed, 76 insertions(+)
+>>
+>> diff --git a/Documentation/devicetree/bindings/mfd/qcom,spmi-pmic.yaml b/Documentation/devicetree/bindings/mfd/qcom,spmi-pmic.yaml
+>> index 644c42b5e2e5..5f409fe700b2 100644
+>> --- a/Documentation/devicetree/bindings/mfd/qcom,spmi-pmic.yaml
+>> +++ b/Documentation/devicetree/bindings/mfd/qcom,spmi-pmic.yaml
+>> @@ -193,6 +193,10 @@ patternProperties:
+>>       type: object
+>>       $ref: /schemas/thermal/qcom,spmi-temp-alarm.yaml#
+>>   
+>> +  "^temperature-sensor@[0-9a-f]+$":
+>> +    type: object
+>> +    $ref: /schemas/thermal/qcom-spmi-mbg-tm.yaml#
+>> +
+>>     "^typec@[0-9a-f]+$":
+>>       type: object
+>>       $ref: /schemas/usb/qcom,pmic-typec.yaml#
+>> diff --git a/Documentation/devicetree/bindings/thermal/qcom-spmi-mbg-tm.yaml b/Documentation/devicetree/bindings/thermal/qcom-spmi-mbg-tm.yaml
+>> new file mode 100644
+>> index 000000000000..a0ecc9f35cf6
+>> --- /dev/null
+>> +++ b/Documentation/devicetree/bindings/thermal/qcom-spmi-mbg-tm.yaml
+> 
+> Filename must match compatible.
+> 
+
+Thanks for the review. I can rename this to match the compatible naming, 
+but wanted your preference on scope:
+
+Should I use a generic naming scheme (qcom,spmi-mbg-tm.yaml with 
+matching compatible), or make it PMIC-specific (qcom,pm8775-mbg-tm.yaml).
+
+Thanks,
+Sachin
+
+>> @@ -0,0 +1,72 @@
+>> +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
+>> +%YAML 1.2
+>> +---
+>> +$id: http://devicetree.org/schemas/thermal/qcom-spmi-mbg-tm.yaml#
+>> +$schema: http://devicetree.org/meta-schemas/core.yaml#
+>> +
+>> +title: Qualcomm's SPMI PMIC MBG Thermal Monitoring
+> 
+> Best regards,
+> Krzysztof
+> 
+
