@@ -1,227 +1,270 @@
-Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8B0EE2DD60E
-	for <linux-pm@vger.kernel.org>; Fri, 19 Jun 2026 12:31:39 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CE2F73845CD;
+	Fri, 19 Jun 2026 12:44:05 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1781872300; cv=none; b=SbyWL9AaFikeuIjmBBsaPvZiDgvV2SMqVHS/Vvx0CWonznPsPsPbrsoVVzhcNsqlgSoXmLX5rCgSlgpV9/usUk/VuFasBnpMUeW2sOKuyP12uAJ20KooyeKoJ6JETdcZSWIwls2B3N6voMxGILpitjOs+fUtF7yZX5bAHI6D+b0=
+	t=1781873047; cv=none; b=Z9DPwD+yMGlx5Wfklg71fD28TINV2o6hryRDt9BiYysWb6gZBZnhg8iIN9tGBs7yASxEoSxFRIAS7Rbr1tMoBcIMZ+CRlQtKrk40vDBTNmEZL+QXonLbt47eBhSG5XOZUpegs2yJy7YoiXtCPXR+bsnZr+Oncsgd8MLs/COykcw=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1781872300; c=relaxed/simple;
-	bh=L6z4k3QijNHTGXXT1fty9BWxZPIxToZssOMwBPutHeI=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=Y6eqY7tsWdfrH9wvmMyBvUTuXD6CuUu0UM+8bHNrmwjK4Q2YZkTdJcDq/1CSK1wZ6NE/KUXdgssqn+v+Ka17o/lpJ9ZF9gADs47EahQq0nrrS+DlgZKb9QfpAZBl8g2IVyh9gPFgrVVUUTJs/+RrCuRbD7fJ32fLJAKVWU36DTo=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=Pz/g6FMa; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=WZlcALdk; arc=none smtp.client-ip=205.220.168.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
+	s=arc-20240116; t=1781873047; c=relaxed/simple;
+	bh=mXL/xXZnRAQBi+iQsPmzOpU/Y8oNGKaS3lGh8AojZws=;
+	h=Date:From:To:Cc:Subject:Message-ID:MIME-Version:Content-Type:
+	 Content-Disposition; b=cZ6mVeWM1OM6+FgujeWqLUrzlxhbpnd4lJNpkpCmrnBHwntm+42pkEKZbsfik6bg7ea8O3h9Sbq5lTobfaP/KZRuUtwegEAiJLdI4uJ4EvWniFJtlbyCgbDxnnnovo2YeJp1DJ6sgb35pZqwUtQJuRjKRyC8TV1dJjGMNsihLC4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=T/rD8YcA; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="Pz/g6FMa";
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="WZlcALdk"
-Received: from pps.filterd (m0279862.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 65J7P5Ju3619125
-	for <linux-pm@vger.kernel.org>; Fri, 19 Jun 2026 12:31:39 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	TFcrLoU+u+djEDf0Ql04tP5oMolAVqMa7ZABzijFO+s=; b=Pz/g6FMaYoQlQk8+
-	3WjzmjdxjC4j44ms7bfVLBwq0rZdzNZoXBxTKXWdnGgXegvrabKGeUMCL5gh82IS
-	mOBo6SMiETuCVsq2tWK0CgwFkTRXj9REs7SkW13ibhHozaFEPLUHLQ9W4iUComHM
-	rwHUK+D7z5BBZvE2Ew4dk5h9E+6DbDEuU5eOCCWHVPIoTbUqFs78i8Qhd7ImUuFz
-	wEvJfUfSXjzJpKntcC//Z4nOzaYZW7T9t7lhTNQWluFTd03VGI2ppEPfzxCc32b3
-	BuSJuDbDUrDn4W5QbGWZPLorztFFBKLUydOf4M/NLcx7+OV4UGwIfA18xikEcBVa
-	3TSNhg==
-Received: from mail-pj1-f71.google.com (mail-pj1-f71.google.com [209.85.216.71])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4evkvf3s49-1
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Fri, 19 Jun 2026 12:31:38 +0000 (GMT)
-Received: by mail-pj1-f71.google.com with SMTP id 98e67ed59e1d1-37d125687b6so1240393a91.1
-        for <linux-pm@vger.kernel.org>; Fri, 19 Jun 2026 05:31:38 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1781872298; x=1782477098; darn=vger.kernel.org;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=TFcrLoU+u+djEDf0Ql04tP5oMolAVqMa7ZABzijFO+s=;
-        b=WZlcALdk0uMX4UtSKid6qww1GssGiwBONzf6Z23sxsNwn4Bx3C4BP8HNiU9XKaij6T
-         IrKynLmRbAGXz0UdPEyPvqY2YQN2HWeKXBDt1SNjI4yv6Y0Ef25fBNTzD6i/A5+68hXA
-         GZcxggzzDogJqrrdESFNpqpxXVwtxnJHVrNwRdFfl4XMNUTLwef0IDSTXjVHk5FhWYVm
-         3mUnhd9G6k2rCX03BgDeUa6bOntg1WBrvPa4LHuNwq4TeOTxXQLq3bhEgmr3pFl4lrzH
-         MvK0d1VrA4J+FKdqWCIAvPaGsybArJ71C7VU0x7icDJ8YQlW5gSTkFsa7CB4p6w8+tE9
-         9OqQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1781872298; x=1782477098;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=TFcrLoU+u+djEDf0Ql04tP5oMolAVqMa7ZABzijFO+s=;
-        b=d2uUaHFYwzgGfVr/q0mES0FLnCIyR6xUDq5/TmBbb9Mb3hU0z1gt2sv6OE2q5CFTeO
-         ltaA8HhAHtTqVstmPe46RpsSk51dv7H3x0doZ2q/4F51mUzzyupQa0w9sCn0wKsUM9jU
-         iRM8yUxQgUo9lFZ2t4fM3nceHWKpjSnCJAjwfPPl5c63222dqYO/eNK6hS8rBRXIufiX
-         8FXMp39CwcZFIUrCqkDpDKscFqipijUmVSqKMMEonRAXNeZmNXM0bZHvjlcR/8jR2KqO
-         U/v92t2nzVj60pDvlepyyEcrN7xkEhEoMHK8MtznQybcnZAkvDeYe1IPGAKRzP9gLOXk
-         rcAg==
-X-Forwarded-Encrypted: i=1; AFNElJ+XVGDEe4+I/Qufxk/HKJkVjE6pCu0fI4E5lqgphd7ulzBZkJUWemW5PuvbWMNee90oOCiRgoZV1A==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yz9mBOJumKyaQa2qn0xivT7RVQJlx5bqaj1fiaVLja4rJjNpUDG
-	/a1qE0m8kKE4duGatz3HSl+72tAhkaTV+riTYOiXDZWKfYba0OvNK1XRY8S5BUOnm10tsZEU7Su
-	PtnUuO/KgRYI6gzR+Hx8goMg7fP/WLXodZljsPR/Dc9HWw1gxHwR5HBVrNB7oVA==
-X-Gm-Gg: AfdE7cnHMw1S7rN+CwmCXUk6wTyKokasb1e8s51roraF3Cr3snkFkQlylLj7ccsCX5+
-	4gx6h9fGMkGqsY5GtKT+bcgXkju1irmRWF3JOZ74i98NW0qXeejqyzoD1Dnhb3rZIL2PfGAIR79
-	D3E9x4Zg73KgvU9mfrNCFsRDGbCSaJOvr2lLYV9oGMA7UrWGbxZ5EOiWfgg7NXbF3YAn81OfIOB
-	lWcg3CRPHZHCqSLo1L7ygQ+4CKWBvkzYiwlHKZ96/uzDGh6n5AKN/iHOlDUHnsUak7ZfSP8uW1C
-	K9iOldONMMBSQ0D73D0Gn4qO5nzULpCU18DlMaiwvUDg7cR+9DlluhdAx1OktPwBIij17X2JwFp
-	ukafqMYoWe4+8kElvz8NugYu4ak2kOtRXmnW/s8wgkC+AS8SQzCkIE6xKRD9LHSsWH1vMAGQuWt
-	vIyfuhfaCfMcJ3hFH8UkSmFOymZ6Xxmq2nXQ==
-X-Received: by 2002:a17:90b:17c5:b0:369:de03:29c8 with SMTP id 98e67ed59e1d1-37d1ea3ad49mr2456634a91.23.1781872298058;
-        Fri, 19 Jun 2026 05:31:38 -0700 (PDT)
-X-Received: by 2002:a17:90b:17c5:b0:369:de03:29c8 with SMTP id 98e67ed59e1d1-37d1ea3ad49mr2456595a91.23.1781872297615;
-        Fri, 19 Jun 2026 05:31:37 -0700 (PDT)
-Received: from [10.50.22.170] (blr-bdr-fw-01_GlobalNAT_AllZones-Outside.qualcomm.com. [103.229.18.19])
-        by smtp.gmail.com with ESMTPSA id 41be03b00d2f7-c8a8525f818sm2378163a12.9.2026.06.19.05.31.25
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Fri, 19 Jun 2026 05:31:36 -0700 (PDT)
-Message-ID: <8725caf9-cebb-49ce-b2c8-4960a6073322@oss.qualcomm.com>
-Date: Fri, 19 Jun 2026 18:01:23 +0530
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="T/rD8YcA"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 559171F000E9;
+	Fri, 19 Jun 2026 12:44:05 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1781873045;
+	bh=pRlt42eYsNb65U+x2Cfqw56C+Z3g+uA00NlknT2pnyA=;
+	h=Date:From:To:Cc:Subject;
+	b=T/rD8YcA5Er8sGeGsYDJNpkEFk2j7aP2S59d0PQFrvlZvub/nWxcHCnYao2oNKDyL
+	 S8IWgG2ir4bZ6vPd9fXr6BD/aOl4RMVKdhlhCJnnUQO19DECXT1+xhZzS9IDbrM4uV
+	 j0//07npVI9tBfRhZAm5v4V0gp/nr8a/p/79C3cRFaPJpv736ZZ9QgUXX89ZzRc63N
+	 zrJXiGUTRkW8qQF/0i19YPY8nfWanluL5MVeSU+7Y++HBDqWjgZBDC7IUozO+HsAx7
+	 rhzalJYLQRZOAXPic0Bk2+Jco2kA/X6sWU41pjSs4nAc8sz33BXkjWCRd2q+MwfmJ+
+	 L6BY17j1uOmRg==
+Received: by venus (Postfix, from userid 1000)
+	id 1B5F21810FF; Fri, 19 Jun 2026 14:44:03 +0200 (CEST)
+Date: Fri, 19 Jun 2026 14:44:03 +0200
+From: Sebastian Reichel <sre@kernel.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Subject: [GIT PULL] power-supply changes for 7.2
+Message-ID: <ajU34j9bIpuC_JkI@venus>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH RFC v7 0/9] firmware: arm_scmi: vendors: Qualcomm Generic
- Vendor Extensions
-To: Sudeep Holla <sudeep.holla@kernel.org>
-Cc: Cristian Marussi <cristian.marussi@arm.com>,
-        Rob Herring
- <robh@kernel.org>,
-        Krzysztof Kozlowski <krzk+dt@kernel.org>,
-        Conor Dooley <conor+dt@kernel.org>,
-        Sibi Sankar <sibi.sankar@oss.qualcomm.com>,
-        MyungJoo Ham <myungjoo.ham@samsung.com>,
-        Kyungmin Park <kyungmin.park@samsung.com>,
-        Chanwoo Choi <cw00.choi@samsung.com>,
-        Dmitry Osipenko <digetx@gmail.com>,
-        Thierry Reding <thierry.reding@kernel.org>,
-        Jonathan Hunter <jonathanh@nvidia.com>,
-        Bjorn Andersson <andersson@kernel.org>,
-        Konrad Dybcio <konradybcio@kernel.org>,
-        Rajendra Nayak <rajendra.nayak@oss.qualcomm.com>,
-        Pankaj Patil <pankaj.patil@oss.qualcomm.com>,
-        linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        arm-scmi@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-        devicetree@vger.kernel.org, linux-pm@vger.kernel.org,
-        linux-tegra@vger.kernel.org, Amir Vajid <amir.vajid@oss.qualcomm.com>,
-        Ramakrishna Gottimukkula <ramakrishna.gottimukkula@oss.qualcomm.com>
-References: <20260610-rfc_v7_scmi_memlat-v7-0-f3f68c608f25@oss.qualcomm.com>
- <20260616-responsible-junglefowl-of-chaos-7eda7d@sudeepholla>
-Content-Language: en-US
-From: Pragnesh Papaniya <pragnesh.papaniya@oss.qualcomm.com>
-In-Reply-To: <20260616-responsible-junglefowl-of-chaos-7eda7d@sudeepholla>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-Proofpoint-Spam-Info: AW1haW4tMjYwNjE5MDExNyBTYWx0ZWRfX7ojIk53UoNEg
- 7aSznGFLE8ErNFAZVtsp7XsE8E6t/rJiwmRDQfINiQ3s+kkDgPzETTQkvwaBOpqz3G4Hs5urWEt
- br6N546Dyf1A4BfTgOIKQH8A2uP36TA=
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNjE5MDExNyBTYWx0ZWRfX1pQvxQ9FYTdX
- yUhjEYetMPvVBZuwIxuECYl78FYdIxZkBxt8uHO39Xl7wGdPmneA0cSkd7bbC3zv+0khf9ap4Xo
- rMHej3PhbgtHWvAXFY8s4M+6eA/IFArcKqHBwyUy+HNsZnsxVtI7a61Uqft4+F6kYOiDE1PvzE7
- MCZ3oMZBXhRfpTuofK0X+zFy/ga7JfGUzqQrUu0upiPP7fTPkHz9i+joiqKFx8tLj4lPA4z3E7y
- 1PbDq75CjgzIOLPT0qwr1jj3ccqyT+FSyOstBl8LLlI70OlkkJnoSROipEGe/5Ewxm2qXFfEa51
- T1hSZ+nHU2vAZLvZALJIxS7kfIj9xHkO69JQhlBAs1yMSYVTpFc//800QKaNpTl044koMZ1Mpdr
- Cak4TBfq0ssjvQ2hUiB+2JF/qAfZhewb83pEeD54+mneiGa7stlsEexD9WC64C3Na53y4fLVeT9
- cgGQIUmcpaqC0yOI9cg==
-X-Authority-Analysis: v=2.4 cv=H/3rBeYi c=1 sm=1 tr=0 ts=6a3536aa cx=c_pps
- a=UNFcQwm+pnOIJct1K4W+Mw==:117 a=Ou0eQOY4+eZoSc0qltEV5Q==:17
- a=IkcTkHD0fZMA:10 a=FelO9ux0wxsA:10 a=s4-Qcg_JpJYA:10
- a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=_K5XuSEh1TEqbUxoQ0s3:22
- a=_HCkHYxhaP3GdHjqj7kA:9 a=QEXdDO2ut3YA:10 a=uKXjsCUrEbL0IQVhDsJ9:22
-X-Proofpoint-ORIG-GUID: Q-qORQKC3ykQEY4Bfc7_VAg8ELHQ_1i5
-X-Proofpoint-GUID: Q-qORQKC3ykQEY4Bfc7_VAg8ELHQ_1i5
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.125,FMLib:17.12.100.49
- definitions=2026-06-19_02,2026-06-18_03,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- lowpriorityscore=0 malwarescore=0 clxscore=1015 impostorscore=0 spamscore=0
- suspectscore=0 phishscore=0 bulkscore=0 adultscore=0 priorityscore=1501
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2606190117
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="2l6kdjzkvxtfdkke"
+Content-Disposition: inline
 
 
+--2l6kdjzkvxtfdkke
+Content-Type: text/plain; protected-headers=v1; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+Subject: [GIT PULL] power-supply changes for 7.2
+MIME-Version: 1.0
 
-On 16-Jun-26 1:57 PM, Sudeep Holla wrote:
-> On Wed, Jun 10, 2026 at 02:21:27PM +0530, Pragnesh Papaniya wrote:
->> The QCOM SCMI vendor protocol provides a generic way of exposing a number of
->> Qualcomm SoC specific features (like memory bus scaling) through a mixture of
->> pre-determined algorithm strings and param_id pairs hosted on the SCMI
->> controller. On Qualcomm Glymur and Hamoa SoCs, the memlat governor and the
->> mechanism to control the various caches and RAM is hosted on the CPU Control
->> Processor (CPUCP) and the method to tweak and start the governor is exposed
->> through the QCOM SCMI Generic Extension Protocol.
->>
->> This series introduces the devfreq SCMI client driver that uses the MEMLAT
->> algorithm string hosted on the QCOM SCMI Generic Extension Protocol to detect
->> memory latency workloads and control frequency/level of the various memory
->> buses (DDR/LLCC/DDR_QOS). DDR/LLCC/DDR_QOS are modelled as devfreq devices
->> using the remote devfreq governor. This provides basic insight into device
->> operation via trans_stat and lets userspace further tweak the parameters of
->> the remote governor.
->>
->> trans_stat data for DDR/LLCC/DDR_QOS is now available with this series:
->>
->>      From  :   To
->>    315000000 479000000 545000000 725000000 840000000  959000000 1090000000 1211000000   time(ms)
->>    315000000:         0         3         6         6         6         7         0        30    143956
->>    479000000:         2         0         7         1         1         1         0         3       356
->>    545000000:         7         6         0         5         5         0         0        10      1200
->>    725000000:         3         0         5         0         6         1         0         6      2172
->>    840000000:         8         2         3         2         0         4         0        12      1188
->>    959000000:         3         0         1         2         2         0         0        13       272
->>   1090000000:         0         0         0         0         0         0         0         0         0
->>   1211000000:        35         4        11         5        11         8         0         0     21684
->> Total transition : 253
->>
->> QCOM SCMI Generic Vendor protocol background:
->> A lot of the vendor protocol numbers used internally were for
->> debug/internal development purposes that were either highly SoC-specific
->> or had to be disabled because some features were fused out during
->> production. This led to a large number of vendor protocol numbers being
->> quickly consumed and never released. Using a single generic vendor
->> protocol with functionality abstracted behind algorithm strings gives us
->> the flexibility of letting such functionality exist during initial
->> development/debugging while still being able to expose mature features
->> (like MEMLAT) once they have stabilised. The param_ids are expected to
->> act as ABI for algorithm strings like MEMLAT.
->>
-> 
-> Not sure if it was discussed in the previous versions or not, it would be
-> good if you can capture why some of bus scaling doesn't work with the existing
-> SCMI performance protocol and the monitors don't fit the MPAM mode.
-> 
-> Please capture them in 1/9 as a motivation for this vendor protocol. It will
-> then help to understand it better as I am still struggling to. Sorry for that.
+Hi Linus,
 
-Thanks for the input!
+Nothing special from the power-supply tree (no changes outside the
+tree, no merge conflicts in linux-next, no core changes). Please
+find the details below:
 
-SCMI perf protocol exports perf domains to kernel where kernel can set
-the frequency but here the scaling governor runs on the SCP while kernel
-just observes frequency changes made by remote governor. While MPAM is
-not enabled/supported on all hardware (Hamoa). Here's the pseudo-code
-for remote governor on CPUCP to help you understand more:
+The following changes since commit 254f49634ee16a731174d2ae34bc50bd5f45e731:
 
-Barebone Memlat Pseudocode:
-Every sample window, get snapshot of latest AMU counters from each CPU and scale all the memory according to the map_table:
+  Linux 7.1-rc1 (2026-04-26 14:19:00 -0700)
 
-For each CPU
-    // Calculate IPM ( Instruction retired / cache miss count (L2 cache refills for LLCC voting and CPU RD miss counter for DDR))
-    If (IPM < IPM_CEIL)
-        Use CPU cycle counter to determine CPU frequency in the past N milliseconds
+are available in the Git repository at:
 
-LLCC_freq = lookup_llcc_freq(cpu_freq_max)
-DDR_freq = lookup_ddr_freq(cpu_freq_max)	
-DDR_QOS_freq = lookup_ddr_qos_freq(cpu_freq_max)
+  https://git.kernel.org/pub/scm/linux/kernel/git/sre/linux-power-supply.gi=
+t tags/for-v7.2
 
-// Scale all memories
-Scale_freq(Memory); // LLCC/DDR/DDR_QOS
+for you to fetch changes up to a888754e51e915731c8974c4d6d62709facb35d3:
 
-> 
+  Documentation: ABI: sysfs-class-reboot-mode-reboot_modes: fix doc warning=
+s (2026-06-13 00:01:26 +0200)
+
+----------------------------------------------------------------
+power supply and reset changes for the 7.2 series
+
+ * power-supply drivers
+  - surface-rt-ec: new EC driver providing battery info for Microsoft Surfa=
+ce RT
+  - s2m-charger: new driver for battery charger in Samsung S2M PMICs
+  - max17042: rework driver
+  - bd71828: sysfs for auto input current limitation
+  - use named fields for struct platform_device_id and of_device_id entries
+  - misc. small cleanups and fixes
+ * reset drivers
+  - use named fields for struct platform_device_id and of_device_id entries
+  - misc. small cleanups and fixes
+
+----------------------------------------------------------------
+Alexey Charkov (4):
+      power: supply: bq257xx: Fix VSYSMIN clamping logic
+      power: supply: bq257xx: Make the default current limit a per-chip att=
+ribute
+      power: supply: bq257xx: Consistently use indirect get/set helpers
+      power: supply: bq257xx: Add fields for 'charging' and 'overvoltage' s=
+tates
+
+Andreas Kemnade (1):
+      power: supply: bd71828: sysfs for auto input current limitation
+
+Costa Shulyupin (1):
+      power: supply: Remove unused jz4740-battery.h
+
+Johan Hovold (1):
+      power: supply: max17042: fix OF node reference imbalance
+
+Jonas Schw=F6bel (1):
+      power: supply: Add support for Surface RT battery and charger
+
+Kaustabh Chakraborty (1):
+      power: supply: add support for Samsung S2M series PMIC charger device
+
+Krzysztof Kozlowski (1):
+      power: supply: cros_charge-control: Move MODULE_DEVICE_TABLE next to =
+the table itself
+
+Lucas Tsai (1):
+      power: supply: core: fix supplied_from allocations
+
+Ma Ke (1):
+      power: supply: cpcap-battery: Fix missing nvmem_device_put() causing =
+reference leak
+
+Md Shofiqul Islam (1):
+      power: supply: ab8500_fg: Fix typos in comments
+
+Nathan Chancellor (1):
+      power: supply: max17042_battery: Use modern PM ops to clear up warning
+
+Otto Pfl=FCger (1):
+      power: reset: sc27xx: Add platform_device_id table
+
+Randy Dunlap (1):
+      Documentation: ABI: sysfs-class-reboot-mode-reboot_modes: fix doc war=
+nings
+
+Rosen Penev (1):
+      power: reset: st-poweroff: Use of_device_get_match_data()
+
+Sebastian Krzyszkowiak (3):
+      power: supply: max17042_battery: Put LSB units into defines
+      power: supply: max17042_battery: Use Current register in get_status
+      power: supply: max17042_battery: use ModelCfg refresh on max17055
+
+Svyatoslav Ryhel (1):
+      dt-bindings: embedded-controller: Document Surface RT EC
+
+Uwe Kleine-K=F6nig (The Capable Hub) (6):
+      power: Drop unused assignment of platform_device_id driver data
+      power: supply: max14577: Drop driver data in of and platform device i=
+d arrays
+      power: Use named initializers for platform_device_id arrays
+      power: supply: mt6360_charger: Use of match table unconditionally
+      power: Unify code style for platform_device_id arrays
+      power: supply: Use named initializers for arrays of i2c_device_data
+
+Vincent Cloutier (3):
+      power: supply: max17042_battery: Route MAX17055 SOC alerts through dS=
+OCi
+      power: supply: max17042_battery: Keep only critical alerts during sus=
+pend
+      power: supply: max17042_battery: Remove unused platform-data plumbing
+
+Vladimir Oltean (1):
+      power: supply: cpcap-charger: include missing <linux/property.h>
+
+WenTao Liang (1):
+      power: supply: charger-manager: fix refcount leak in is_full_charged()
+
+Wentao Liang (1):
+      power: reset: linkstation-poweroff: fix use-after-free in the linksta=
+tion_poweroff_init()
+
+ .../ABI/testing/sysfs-class-power-bd71828          |  12 +
+ .../testing/sysfs-class-reboot-mode-reboot_modes   |  13 +-
+ .../microsoft,surface-rt-ec.yaml                   |  63 ++++
+ drivers/power/reset/linkstation-poweroff.c         |   2 +-
+ drivers/power/reset/qemu-virt-ctrl.c               |   2 +-
+ drivers/power/reset/sc27xx-poweroff.c              |   8 +
+ drivers/power/reset/spacemit-p1-reboot.c           |   4 +-
+ drivers/power/reset/st-poweroff.c                  |   8 +-
+ drivers/power/reset/tps65086-restart.c             |   2 +-
+ drivers/power/supply/Kconfig                       |  21 ++
+ drivers/power/supply/Makefile                      |   2 +
+ drivers/power/supply/ab8500_fg.c                   |   2 +-
+ drivers/power/supply/adp5061.c                     |   2 +-
+ drivers/power/supply/axp288_charger.c              |   2 +-
+ drivers/power/supply/axp288_fuel_gauge.c           |   2 +-
+ drivers/power/supply/bd71828-power.c               |  77 +++-
+ drivers/power/supply/bq2415x_charger.c             |  28 +-
+ drivers/power/supply/bq24190_charger.c             |  16 +-
+ drivers/power/supply/bq24257_charger.c             |   8 +-
+ drivers/power/supply/bq24735-charger.c             |   4 +-
+ drivers/power/supply/bq2515x_charger.c             |   6 +-
+ drivers/power/supply/bq256xx_charger.c             |  16 +-
+ drivers/power/supply/bq257xx_charger.c             |  52 ++-
+ drivers/power/supply/bq25890_charger.c             |  10 +-
+ drivers/power/supply/bq25980_charger.c             |   8 +-
+ drivers/power/supply/bq27xxx_battery_i2c.c         |  64 ++--
+ drivers/power/supply/charger-manager.c             |  10 +-
+ drivers/power/supply/cpcap-battery.c               |  11 +-
+ drivers/power/supply/cpcap-charger.c               |   1 +
+ drivers/power/supply/cros_charge-control.c         |   6 +-
+ drivers/power/supply/cros_peripheral_charger.c     |   4 +-
+ drivers/power/supply/cros_usbpd-charger.c          |   4 +-
+ drivers/power/supply/cw2015_battery.c              |   2 +-
+ drivers/power/supply/ds2782_battery.c              |   6 +-
+ drivers/power/supply/lp8727_charger.c              |   2 +-
+ drivers/power/supply/ltc2941-battery-gauge.c       |  10 +-
+ drivers/power/supply/ltc4162-l-charger.c           |   8 +-
+ drivers/power/supply/macsmc-power.c                |   2 +-
+ drivers/power/supply/max14577_charger.c            |  12 +-
+ drivers/power/supply/max14656_charger_detector.c   |   4 +-
+ drivers/power/supply/max17040_battery.c            |  18 +-
+ drivers/power/supply/max17042_battery.c            | 402 +++++++++++------=
+----
+ drivers/power/supply/max77693_charger.c            |   2 +-
+ drivers/power/supply/max77759_charger.c            |   2 +-
+ drivers/power/supply/max77976_charger.c            |   2 +-
+ drivers/power/supply/max8971_charger.c             |   2 +-
+ drivers/power/supply/max8997_charger.c             |   2 +-
+ drivers/power/supply/max8998_charger.c             |   2 +-
+ drivers/power/supply/mm8013.c                      |   4 +-
+ drivers/power/supply/mt6360_charger.c              |   6 +-
+ drivers/power/supply/pf1550-charger.c              |   2 +-
+ drivers/power/supply/power_supply_core.c           |  11 +-
+ drivers/power/supply/rt5033_battery.c              |   2 +-
+ drivers/power/supply/rt5033_charger.c              |   2 +-
+ drivers/power/supply/rt9455_charger.c              |   2 +-
+ drivers/power/supply/s2m-charger.c                 | 313 ++++++++++++++++
+ drivers/power/supply/sbs-battery.c                 |   8 +-
+ drivers/power/supply/sbs-charger.c                 |   2 +-
+ drivers/power/supply/sbs-manager.c                 |   4 +-
+ drivers/power/supply/smb347-charger.c              |  10 +-
+ drivers/power/supply/stc3117_fuel_gauge.c          |   2 +-
+ drivers/power/supply/surface-rt-ec.c               | 389 +++++++++++++++++=
++++
+ drivers/power/supply/ug3105_battery.c              |   2 +-
+ include/linux/power/jz4740-battery.h               |  15 -
+ include/linux/power/max17042_battery.h             |  32 +-
+ 65 files changed, 1323 insertions(+), 431 deletions(-)
+ create mode 100644 Documentation/ABI/testing/sysfs-class-power-bd71828
+ create mode 100644 Documentation/devicetree/bindings/embedded-controller/m=
+icrosoft,surface-rt-ec.yaml
+ create mode 100644 drivers/power/supply/s2m-charger.c
+ create mode 100644 drivers/power/supply/surface-rt-ec.c
+ delete mode 100644 include/linux/power/jz4740-battery.h
+
+--2l6kdjzkvxtfdkke
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIyBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAmo1OY8ACgkQ2O7X88g7
++ppINw/4rwSt3y3TYIupeLQdc9pFUmyVWkU0LCRPQij+TcJNIaj3w9BkSq24UGBF
+P5R2E5kd5ktFsvVis00Y5w3nAGfEghBLeBwnJFw//ypsgx98bAqe+Ry4c185s4JC
+Bn2/nvXF4bTwhJG6gFa1S0YwzEJQ423UrP9OS7pxBoVbBWYaGJuAK0kuPIUypreZ
+o9woZhBEqHIVdIoms1enSu6ndzezv4YzOarF1HarjngSiixKs8w/FMAwcWC3PFtU
+79UdzvwY3gJTHWjHGP8KVlTvkXz6VZSPKQ2SfbBWB3nX4P0omYpHzJXv/GFivx5J
+1rzJ4Vbmj8KdQCEHMoTevBTrGH1ZTI7y4hyHEiu5zYEq3OJ0rN/eANJaLSDHq4/+
+S9vdg6s0lIku23Y+64S92UuumqZbVt35E0PvdP9UoqIM4YnVm5wKycYkhduWBbgs
+b6IyLC17ESKT9IFTMj6jWh0R6HjCecIvgnzUBmgV+9idSFYAdAXKYn26uproWvce
+PgR6lKj/H+OPPF4/8iaoplMOheXyT+OrBjomb3JN10kjZN7rz5rkuhewK0XmNIZQ
+msojXcAKiWNY/ziCKnip65vS5ayhieblTU+Fwmzcd6WrKqlRMR+JmNonhAnjapqf
+m0N4z9J3ToSlnEkq2i9pm0iJJQc8g3C6srCYsHxceWDbiHNzlw==
+=HeNg
+-----END PGP SIGNATURE-----
+
+--2l6kdjzkvxtfdkke--
