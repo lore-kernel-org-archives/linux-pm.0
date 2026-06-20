@@ -1,213 +1,98 @@
-Received: from posta.ukf.sk (posta.ukf.sk [193.87.12.33])
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.15])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6A24C9443;
-	Sat, 20 Jun 2026 09:27:55 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=193.87.12.33
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C59052C21C5;
+	Sat, 20 Jun 2026 12:27:15 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.15
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1781947679; cv=none; b=cI8VXZYWLKMQzJdlukTEVHBesunucw8jspRZGvGZL44QsxHEEpdcCBwGeru5kOR/5aAwvt4g2wBHU2q6U9MNdTZdi3NJbDlooI7UrP8VBm8vo00P5l1fTU/HRLlXlYuAY+EUoCHIeynesgz9XDi9N7z+q9RWz5rVi3a/aktHIcQ=
+	t=1781958437; cv=none; b=jKU4aEZGTrhEbLMQd0vfkAtAUpddNhMgMN/HO5L5SFftQPWyp/qkztaAc/FMU+jFWZl2IIwDYQD3Td3yNTj2tFHZaU8bXNmMGur+9h6zBNPNAhWM+qGR2jCFk3KuvzVt+kufstl1MNLySA/xs4yCOt1us3AYkZpHOr5tyoUmHws=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1781947679; c=relaxed/simple;
-	bh=yUTaiqO4VQNe/Xxl1ArksKh0Vra6Rk0rKHksfYOgiD8=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=q0jh2O5t00QJ/+0RaN57FqSXayTm8F7hwbAu2LT7TNQxKnReIWkzqU5aIVMzcB7UWhshlJTM1Kt5pxlicrnle3zxDlmcu2zwMws8uoglU09edlLQKmIaUzcWDsTtcfKWvexds1ETsMzGmq8wWrEwZo8BtRV5hfCGyUKliheuKTA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=ukf.sk; spf=pass smtp.mailfrom=ukf.sk; dkim=pass (1024-bit key) header.d=ukf.sk header.i=@ukf.sk header.b=BjbE8YTr; arc=none smtp.client-ip=193.87.12.33
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=ukf.sk
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=ukf.sk
+	s=arc-20240116; t=1781958437; c=relaxed/simple;
+	bh=cFyFxUnsV8+++M+qbntb9M8YMSdt83ZEj2FfXaAgMhA=;
+	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
+	 MIME-Version; b=Lqb05ieZuCLO5qXMcR6g1rXGUavpAibXTk1LpIWiXko9BIw9xgxXx70XRrtSo7hN2c4rxlP5nLNRFBDzVbQf4G66sGl7K1j1+Xbu4k1Wg0DMP/BQiPBRmDFv20yibsKOXCBtu4jmtTYCcFmW28Yg7fernEDBsZutNLjD06MUzds=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=ZAb+JSq9; arc=none smtp.client-ip=192.198.163.15
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=ukf.sk header.i=@ukf.sk header.b="BjbE8YTr"
-Received: from localhost (localhost [127.0.0.1])
-	by posta.ukf.sk (Postfix) with ESMTP id 73C5E42317D;
-	Sat, 20 Jun 2026 11:21:07 +0200 (CEST)
-Received: from posta.ukf.sk ([127.0.0.1])
-	by localhost (posta1.ukf.sk [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id IYGyUSGuem6T; Sat, 20 Jun 2026 11:21:06 +0200 (CEST)
-Received: from [10.8.1.254] (unknown [10.8.1.254])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
-	(No client certificate requested)
-	by posta.ukf.sk (Postfix) with ESMTPSA id 4C00C4230AA;
-	Sat, 20 Jun 2026 11:21:06 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ukf.sk; s=2022;
-	t=1781947266; bh=yUTaiqO4VQNe/Xxl1ArksKh0Vra6Rk0rKHksfYOgiD8=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=BjbE8YTrV+/fdwRr3cgbzWtUK5N4KNIjyVmHma2XwQnv4/T/D13aOarJKz970/y7B
-	 m7dCZsPprao6owen9Ec1ozQ5OOZJTFjEQgTRW8UErKAj81QfIhplPm6pMePEch3o5C
-	 QrzB19R3R1AIUIjED0IEoNdp31sJS45FBCdQb+jE=
-Message-ID: <53313572-0248-4dde-8f65-1dd2bdb679b0@ukf.sk>
-Date: Sat, 20 Jun 2026 11:20:57 +0200
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="ZAb+JSq9"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1781958436; x=1813494436;
+  h=from:to:cc:subject:date:message-id:in-reply-to:
+   references:mime-version:content-transfer-encoding;
+  bh=cFyFxUnsV8+++M+qbntb9M8YMSdt83ZEj2FfXaAgMhA=;
+  b=ZAb+JSq9IC3GGC/xSinc3kQDr34q3GN9OlTaBRQ2TeiZZxqVysOIsnj3
+   cKUKGojwONTyKj+XzKGt4gSjZu/zYNZk9KjaA8buwAm2DI8KmnAJF6FBC
+   1PES+2oAHcjJDz3en5yYzX4btx31m1qnaG3Ztzf6b2ymG8uBF8H5L4xzV
+   HLZoHdylVTf7db8KoZhe6YYfPuWJ8kIRdJ3PToPi16CClvY18I+zNaTEU
+   dkabDjHk4N6eTMswQjigLGjyQ585wgD680p10kYHFGcCyvVMd9n9bWq+A
+   cF5I4MKGiGdMPwO/hiGZ1jYRvctfZMV6kTGibtaQakAmxx4vLQsDXlgPl
+   A==;
+X-CSE-ConnectionGUID: R8x79cpoTPOI/MHzgAXbmg==
+X-CSE-MsgGUID: dCG/ic+HTrWvrxT/zs8aLw==
+X-IronPort-AV: E=McAfee;i="6800,10657,11822"; a="82875168"
+X-IronPort-AV: E=Sophos;i="6.24,215,1774335600"; 
+   d="scan'208";a="82875168"
+Received: from orviesa008.jf.intel.com ([10.64.159.148])
+  by fmvoesa109.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 20 Jun 2026 05:27:14 -0700
+X-CSE-ConnectionGUID: 7UubUoKxROishmj3eOTUWw==
+X-CSE-MsgGUID: tZaL2RdGQI+TI0y1bv1Ahw==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.24,215,1774335600"; 
+   d="scan'208";a="248670409"
+Received: from intel-proliant-dl380-gen9.iind.intel.com ([10.49.109.61])
+  by orviesa008.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 20 Jun 2026 05:27:12 -0700
+From: amarjeet@intel.com
+To: "Rafael J . Wysocki" <rafael@kernel.org>,
+	Daniel Lezcano <daniel.lezcano@kernel.org>
+Cc: Zhang Rui <rui.zhang@intel.com>,
+	Lukasz Luba <lukasz.luba@arm.com>,
+	linux-pm@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+Subject: [PATCH v2] tools/thermal/thermometer: close fd on realloc failure
+Date: Sat, 20 Jun 2026 17:56:37 +0530
+Message-Id: <20260620122637.1334927-1-amarjeet@intel.com>
+X-Mailer: git-send-email 2.34.1
+In-Reply-To: <20260620074157.1059161-1-amarjeet@intel.com>
+References: <20260620074157.1059161-1-amarjeet@intel.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 1/1] x86/power: only verify usable RAM regions during
- hibernation E820 check
-To: Marco Scardovi <scardracs@disroot.org>
-Cc: rafael@kernel.org, pavel@kernel.org, tglx@kernel.org, mingo@redhat.com,
- bp@alien8.de, dave.hansen@linux.intel.com, x86@kernel.org, hpa@zytor.com,
- crecklin@redhat.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
- regressions@leemhuis.info, regressions@lists.linux.dev
-References: <20260620081548.14143-1-scardracs@disroot.org>
- <20260620081548.14143-2-scardracs@disroot.org>
-Content-Language: sk-SK-Ascii, en-US
-From: Milan Oravec <moravec@ukf.sk>
-Organization: CIKT UKF Nitra
-In-Reply-To: <20260620081548.14143-2-scardracs@disroot.org>
-Content-Type: multipart/signed; protocol="application/pkcs7-signature"; micalg=sha-512; boundary="------------ms010703010107020706050909"
+Content-Transfer-Encoding: 8bit
 
-This is a cryptographically signed message in MIME format.
+From: Amarjeet <amarjeet@intel.com>
 
---------------ms010703010107020706050909
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: base64
+thermometer_add_tz() opens tz_path and then reallocates thermometer->tz.
+If realloc fails, the function returns without closing fd.
 
-SGFsbG8sIHRoYW5rIHlvdSB2ZXJ5IG11Y2ghIFRoaXMgcGF0Y2ggcmVzb2x2ZXMgdGhpcyBp
-c3N1ZSBvbiBteSBIUCANCk9tbmlCb29rIFggRmxpcCAtIGhpYmVybmF0aW9uIGlzIHdvcmtp
-bmcgYWdhaW4uDQoNCkJlc3QgcmVnYXJkcywNCg0KTWlsYW4gT3JhdmVjDQoNCkNJS1QgVUtG
-IE5pdHJhDQpNb2JpbC9TaWduYWw6ICs0MjE5MDc2NzAyNzANCmVtYWlsOiBtb3JhdmVjQHVr
-Zi5zaw0KDQotLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLQ0KDQpUdXRvIHNwcmF2dSBuZXByZXZlcmlsIHppYWRu
-eSBhbnRpdmlydXMgLSBuZWJvbG8gdHJlYmEuLi4NCg0KT24gNi8yMC8yNiAxMDoxNSwgTWFy
-Y28gU2NhcmRvdmkgd3JvdGU6DQo+IE9uIHNvbWUgVUVGSSBwbGF0Zm9ybXMgKHN1Y2ggYXMg
-dGhlIEhQIE9tbmlCb29rIFggRmxpcCksIHJlc3VtaW5nIGZyb20NCj4gaGliZXJuYXRpb24g
-ZmFpbHMgd2l0aCAnSGliZXJuYXRlIGluY29uc2lzdGVudCBtZW1vcnkgbWFwIGRldGVjdGVk
-IScNCj4gZXZlbiB0aG91Z2ggdGhlIHVzYWJsZSBzeXN0ZW0gUkFNIGNvbmZpZ3VyYXRpb24g
-aXMgaWRlbnRpY2FsLg0KPg0KPiBUaGlzIGhhcHBlbnMgYmVjYXVzZSB0aGUgVUVGSSBmaXJt
-d2FyZSBvciBib290bG9hZGVyIChsaWtlIEdSVUIpIG1ha2VzDQo+IG5vbi1kZXRlcm1pbmlz
-dGljIGFsbG9jYXRpb25zIG9yIHNoaWZ0cyByZXNlcnZlZC9BQ1BJIG1lbW9yeSByZWdpb25z
-DQo+IGR5bmFtaWNhbGx5IGFjcm9zcyBib290cywgd2hpY2ggY2hhbmdlcyB0aGUgQ1JDMzIg
-Y2hlY2tzdW0gY29tcHV0ZWQNCj4gb3ZlciB0aGUgZW50aXJlIEU4MjAgdGFibGUgKHdoaWNo
-IGluY2x1ZGVzIG5vbi1SQU0gdHlwZXMgbGlrZSByZXNlcnZlZCwNCj4gQUNQSSwgTlZTLCBh
-bmQgdW51c2FibGUgbWVtb3J5KS4NCj4NCj4gRml4IHRoaXMgYnkgbW9kaWZ5aW5nIGNvbXB1
-dGVfZTgyMF9jcmMzMigpIHRvIG9ubHkgY2FsY3VsYXRlIHRoZQ0KPiBjaGVja3N1bSBvdmVy
-IG1lbW9yeSBtYXAgZW50cmllcyBvZiB0eXBlIEU4MjBfVFlQRV9SQU0uIFVzYWJsZSBzeXN0
-ZW0NCj4gUkFNIGxheW91dCBpcyBzdGlsbCB2ZXJpZmllZCB0byBlbnN1cmUgZGF0YSBzYWZl
-dHksIGJ1dCBkeW5hbWljIHNoaWZ0cw0KPiBpbiBBQ1BJIGFuZCBvdGhlciByZXNlcnZlZCBy
-YW5nZXMgYXJlIGlnbm9yZWQuDQo+DQo+IENsb3NlczogaHR0cHM6Ly9idWd6aWxsYS5rZXJu
-ZWwub3JnL3Nob3dfYnVnLmNnaT9pZD0yMjE1NjkNCj4gRml4ZXM6IGY1ZDE0OTlhZTIwOSAo
-IlBNOiBoaWJlcm5hdGU6IHg4NjogVXNlIGNyYzMyIGluc3RlYWQgb2YgbWQ1IGZvciBoaWJl
-cm5hdGlvbiBlODIwIGludGVncml0eSBjaGVjayIpDQo+IEFzc2lzdGVkLWJ5OiBBbnRpZ3Jh
-dml0eTpnZW1pbmktMy41LWZsYXNoDQo+IFNpZ25lZC1vZmYtYnk6IE1hcmNvIFNjYXJkb3Zp
-IDxzY2FyZHJhY3NAZGlzcm9vdC5vcmc+DQo+IC0tLQ0KPiAgIGFyY2gveDg2L3Bvd2VyL2hp
-YmVybmF0ZS5jIHwgMTUgKysrKysrKysrKystLS0tDQo+ICAgMSBmaWxlIGNoYW5nZWQsIDEx
-IGluc2VydGlvbnMoKyksIDQgZGVsZXRpb25zKC0pDQo+DQo+IGRpZmYgLS1naXQgYS9hcmNo
-L3g4Ni9wb3dlci9oaWJlcm5hdGUuYyBiL2FyY2gveDg2L3Bvd2VyL2hpYmVybmF0ZS5jDQo+
-IGluZGV4IGEyMjk0YzE2NDlmNi4uNzUyYTQ5MGJjM2QyIDEwMDY0NA0KPiAtLS0gYS9hcmNo
-L3g4Ni9wb3dlci9oaWJlcm5hdGUuYw0KPiArKysgYi9hcmNoL3g4Ni9wb3dlci9oaWJlcm5h
-dGUuYw0KPiBAQCAtNzAsMTIgKzcwLDE5IEBAIHN0cnVjdCByZXN0b3JlX2RhdGFfcmVjb3Jk
-IHsNCj4gICAgKg0KPiAgICAqIFJldHVybjogdGhlIHJlc3VsdGluZyBjaGVja3N1bQ0KPiAg
-ICAqLw0KPiAtc3RhdGljIGlubGluZSB1MzIgY29tcHV0ZV9lODIwX2NyYzMyKHN0cnVjdCBl
-ODIwX3RhYmxlICp0YWJsZSkNCj4gK3N0YXRpYyB1MzIgY29tcHV0ZV9lODIwX2NyYzMyKHN0
-cnVjdCBlODIwX3RhYmxlICp0YWJsZSkNCj4gICB7DQo+IC0JaW50IHNpemUgPSBvZmZzZXRv
-ZihzdHJ1Y3QgZTgyMF90YWJsZSwgZW50cmllcykgKw0KPiAtCQlzaXplb2Yoc3RydWN0IGU4
-MjBfZW50cnkpICogdGFibGUtPm5yX2VudHJpZXM7DQo+ICsJdTMyIGNyYyA9IH4wOw0KPiAr
-CWludCBpOw0KPiArDQo+ICsJZm9yIChpID0gMDsgaSA8IHRhYmxlLT5ucl9lbnRyaWVzOyBp
-KyspIHsNCj4gKwkJaWYgKHRhYmxlLT5lbnRyaWVzW2ldLnR5cGUgPT0gRTgyMF9UWVBFX1JB
-TSkgew0KPiArCQkJY3JjID0gY3JjMzJfbGUoY3JjLCAodW5zaWduZWQgY2hhciBjb25zdCAq
-KSZ0YWJsZS0+ZW50cmllc1tpXSwNCj4gKwkJCQkgICAgICAgc2l6ZW9mKHN0cnVjdCBlODIw
-X2VudHJ5KSk7DQo+ICsJCX0NCj4gKwl9DQo+ICAgDQo+IC0JcmV0dXJuIH5jcmMzMl9sZSh+
-MCwgKHVuc2lnbmVkIGNoYXIgY29uc3QgKil0YWJsZSwgc2l6ZSk7DQo+ICsJcmV0dXJuIH5j
-cmM7DQo+ICAgfQ0KPiAgIA0KPiAgICNpZmRlZiBDT05GSUdfWDg2XzY0DQo=
+Close fd before returning on realloc failure to avoid leaking a file descriptor.
 
---------------ms010703010107020706050909
-Content-Type: application/pkcs7-signature; name="smime.p7s"
-Content-Transfer-Encoding: base64
-Content-Disposition: attachment; filename="smime.p7s"
-Content-Description: S/MIME Cryptographic Signature
+Signed-off-by: Amarjeet <amarjeet@intel.com>
 
-MIAGCSqGSIb3DQEHAqCAMIACAQExDzANBglghkgBZQMEAgMFADCABgkqhkiG9w0BBwEAAKCC
-DfAwggbmMIIEzqADAgECAhAxAnDUNb6bJJr4VtDh4oVJMA0GCSqGSIb3DQEBDAUAMIGIMQsw
-CQYDVQQGEwJVUzETMBEGA1UECBMKTmV3IEplcnNleTEUMBIGA1UEBxMLSmVyc2V5IENpdHkx
-HjAcBgNVBAoTFVRoZSBVU0VSVFJVU1QgTmV0d29yazEuMCwGA1UEAxMlVVNFUlRydXN0IFJT
-QSBDZXJ0aWZpY2F0aW9uIEF1dGhvcml0eTAeFw0yMDAyMTgwMDAwMDBaFw0zMzA1MDEyMzU5
-NTlaMEYxCzAJBgNVBAYTAk5MMRkwFwYDVQQKExBHRUFOVCBWZXJlbmlnaW5nMRwwGgYDVQQD
-ExNHRUFOVCBQZXJzb25hbCBDQSA0MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEA
-s0riIl4nW+kEWxQENTIgFK600jFAxs1QwB6hRMqvnkphfy2Q3mKbM2otpELKlgE8/3AQPYBo
-7p7yeORuPMnAuA+oMGRb2wbeSaLcZbpwXgfCvnKxmq97/kQkOFX706F9O7/h0yehHhDjUdyM
-yT0zMs4AMBDRrAFn/b2vR3j0BSYgoQs16oSqadM3p+d0vvH/YrRMtOhkvGpLuzL8m+LTAQWv
-QJ92NwCyKiHspoP4mLPJvVpEpDMnpDbRUQdftSpZzVKTNORvPrGPRLnJ0EEVCHR82LL6oz91
-5WkrgeCY9ImuulBn4uVsd9ZpubCgM/EXvVBlViKqusChSsZEn7juIsGIiDyaIhhLsd3amm8B
-S3bgK6AxdSMROND6hiHT182Lmf8C+gRHxQG9McvG35uUvRu8v7bPZiJRaT7ZC2f50P4lTlnb
-LvWpXv5yv7hheO8bMXltiyLweLB+VNvg+GnfL6TW3Aq1yF1yrZAZzR4MbpjTWdEdSLKvz8+0
-wCwscQ81nbDOwDt9vyZ+0eJXbRkWZiqScnwAg5/B1NUD4TrYlrI4n6zFp2pyYUOiuzP+as/A
-Znz63GvjFK69WODR2W/TK4D7VikEMhg18vhuRf4hxnWZOy0vhfDR/g3aJbdsGac+diahjEwz
-yB+UKJOCyzvecG8bZ/u/U8PsEMZg07iIPi8CAwEAAaOCAYswggGHMB8GA1UdIwQYMBaAFFN5
-v1qqK0rPVIDh2JvAnfKyA2bLMB0GA1UdDgQWBBRpAKHHIVj44MUbILAK3adRvxPZ5DAOBgNV
-HQ8BAf8EBAMCAYYwEgYDVR0TAQH/BAgwBgEB/wIBADAdBgNVHSUEFjAUBggrBgEFBQcDAgYI
-KwYBBQUHAwQwOAYDVR0gBDEwLzAtBgRVHSAAMCUwIwYIKwYBBQUHAgEWF2h0dHBzOi8vc2Vj
-dGlnby5jb20vQ1BTMFAGA1UdHwRJMEcwRaBDoEGGP2h0dHA6Ly9jcmwudXNlcnRydXN0LmNv
-bS9VU0VSVHJ1c3RSU0FDZXJ0aWZpY2F0aW9uQXV0aG9yaXR5LmNybDB2BggrBgEFBQcBAQRq
-MGgwPwYIKwYBBQUHMAKGM2h0dHA6Ly9jcnQudXNlcnRydXN0LmNvbS9VU0VSVHJ1c3RSU0FB
-ZGRUcnVzdENBLmNydDAlBggrBgEFBQcwAYYZaHR0cDovL29jc3AudXNlcnRydXN0LmNvbTAN
-BgkqhkiG9w0BAQwFAAOCAgEACgVOew2PHxM5AP1v7GLGw+3tF6rjAcx43D9Hl110Q+BABABg
-lkrPkES/VyMZsfuds8fcDGvGE3o5UfjSno4sij0xdKut8zMazv8/4VMKPCA3EUS0tDUoL01u
-gDdqwlyXuYizeXyH2ICAQfXMtS+raz7mf741CZvO50OxMUMxqljeRfVPDJQJNHOYi2pxuxgj
-KDYx4hdZ9G2o+oLlHhu5+anMDkE8g0tffjRKn8I1D1BmrDdWR/IdbBOj6870abYvqys1qYlP
-otv5N5dm+XxQ8vlrvY7+kfQaAYeO3rP1DM8BGdpEqyFVa+I0rpJPhaZkeWW7cImDQFerHW9b
-KzBrCC815a3WrEhNpxh72ZJZNs1HYJ+29NTB6uu4NJjaMxpk+g2puNSm4b9uVjBbPO9V6sFS
-G+IBqE9ckX/1XjzJtY8Grqoo4SiRb6zcHhp3mxj3oqWi8SKNohAOKnUc7RIP6ss1hqIFyv0x
-XZor4N9tnzD0Fo0JDIURjDPEgo5WTdti/MdGTmKFQNqxyZuT9uSI2Xvhz8p+4pCYkiZqpahZ
-lHqMFxdw9XRZQgrP+cgtOkWEaiNkRBbvtvLdp7MCL2OsQhQEdEbUvDM9slzZXdI7NjJokVBq
-3O4pls3VD2z3L/bHVBe0rBERjyM2C/HSIh84rfmAqBgklzIOqXhd+4RzadUwggcCMIIE6qAD
-AgECAhBaNFgxeGkgh2ZZg7n0Nh9IMA0GCSqGSIb3DQEBDAUAMEYxCzAJBgNVBAYTAk5MMRkw
-FwYDVQQKExBHRUFOVCBWZXJlbmlnaW5nMRwwGgYDVQQDExNHRUFOVCBQZXJzb25hbCBDQSA0
-MB4XDTIzMDgwMjAwMDAwMFoXDTI2MDgwMTIzNTk1OVowgZQxIDAeBgNVBAkTF1RyaWVkYSBB
-bmRyZWphIEhsaW5rdSAxMRgwFgYDVQQIEw9OaXRyaWFuc2t5IGtyYWoxCzAJBgNVBAYTAlNL
-MTIwMAYDVQQKDClVbml2ZXJ6aXRhIEtvbsWhdGFudMOtbmEgRmlsb3pvZmEgdiBOaXRyZTEV
-MBMGA1UEAxMMTWlsYW4gT3JhdmVjMIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEA
-q1KI/4Kzb4KoaDY5H4zzPvosZ0Boil4ZXvH3+2DYGQlXvsh/Deg8ljQko+b6V0Z4Q4sWdefq
-OUmfhqEVf2fXfkSfNT4w2zB3B7pH/NQMdoSvo90XnLJ2L6XaoRsH/Tq7u2JYwcEvWeady2Dt
-xDsAXHknqwQ6nkKQFc94XF2OmiSVuTAvGj9LMrpKPjVSmyoxibRZ4MX1pm4xVZP+Pc5MJUFU
-UPcTo1CaV7DtqnGxcRgCZIL70DN33Tn2l/E+A/KNckaCVU7H8ZH526Z4QzJQrrK3QuoqyWsI
-clCMKRiwrNTD+wseWb9GSMT/i+Ad7jdMIA5tcl3wOLKn1Kw5LY6QMBCHx/S9HaGvcn7ogMRO
-WDl5INN3Zp/9Pq9J32l+8Lud+wLvXs4FSw5aXHf0ZaO4r2M5UnWPqEn+Xi7MuR9wmCp2ffCQ
-jrU9oZ26xxk1hodVb1+iBtaY7DrcZEeQnpwZvytLfoDCp4JSQExC4tUHvoeUZx0XEwFIa05B
-QM8raY50nty6LuoAgz5hQWjQpwHUEh6zXjm7GVsTkv0zIpPhAeSbzyxUS5Dc+lPzmzaj6sz2
-tikcT7C75sdHVD2nfW/3Xw5u9Lix0rCA6Yt0z25tcNDdi5ELq4nlWbAfLP67UcKZY4d07i3+
-yrlwOzrsaHi/xLcxx4FTozB0N+CAHhBDDDsCAwEAAaOCAZswggGXMB8GA1UdIwQYMBaAFGkA
-occhWPjgxRsgsArdp1G/E9nkMB0GA1UdDgQWBBR3a7VTiE53dtbMFAlcqdc1Y9expzAOBgNV
-HQ8BAf8EBAMCBaAwDAYDVR0TAQH/BAIwADAdBgNVHSUEFjAUBggrBgEFBQcDBAYIKwYBBQUH
-AwIwPwYDVR0gBDgwNjA0BgsrBgEEAbIxAQICTzAlMCMGCCsGAQUFBwIBFhdodHRwczovL3Nl
-Y3RpZ28uY29tL0NQUzBCBgNVHR8EOzA5MDegNaAzhjFodHRwOi8vR0VBTlQuY3JsLnNlY3Rp
-Z28uY29tL0dFQU5UUGVyc29uYWxDQTQuY3JsMHgGCCsGAQUFBwEBBGwwajA9BggrBgEFBQcw
-AoYxaHR0cDovL0dFQU5ULmNydC5zZWN0aWdvLmNvbS9HRUFOVFBlcnNvbmFsQ0E0LmNydDAp
-BggrBgEFBQcwAYYdaHR0cDovL0dFQU5ULm9jc3Auc2VjdGlnby5jb20wGQYDVR0RBBIwEIEO
-bW9yYXZlY0B1a2Yuc2swDQYJKoZIhvcNAQEMBQADggIBAJ0zDjgaIyOlAnyN7aAb2Mf+N4op
-qCIh6Hep3o20nKfBWMgCM1xmnPaaEPwi6h0CMZW5GKZYGw0MpHNhSCtddznr5JZAkY07xsnT
-4gn8fQRi8n2LB3nEJSh7pT2+89KBFmee2k6vV25HsZ0YBIq4CRXrC7y21Bpy2WB8SQdNuCbY
-L5JByP4wfPBLKT7zPmdNWBTjJHpBzhANc0Vc6LzaKz75oK0g+GLUi84fS/S4sMyMqPbn7Xqp
-oMnCW4hqorhfubne1hlvdM/sU/VX1aUWWoSnPnN2HKRlrIiDjMmybJpTrE70jTsboR3Y15ti
-8mrRVN3iKKY5LRvDYlPJ9wYDPUSrJBUCDZarg8Er24a394TqmMSi+NyoKfR4UB6gMzXxUbvg
-jxkEhlgs0tI4Xd+m1eFgfeKIQ0ARtUVEHasXuWcI4BLwN4vjfvdPAjlqxUJHP51a9XI/VczC
-olQZnVkreJmZSG6DNFbBPy1zIfVZJHoM0d5ITKUBiadnF5GDH1mopIvqi1gH0oKRse/KnjKh
-gNzbMzGZfeLZjVlw7aO9w4Zm+EBTRhMdHnfKTBYZCoIcK+Dou1cyqMCxsysPDKldm6bwCLxX
-xRU4WtHq5KFs81cW4Rbs4ZXtxF23eIHJ8NgAHr3SPS7zzWwAJ+LMY6voi7/J+tK31UNz7xoT
-3avZsCqlMYIFRTCCBUECAQEwWjBGMQswCQYDVQQGEwJOTDEZMBcGA1UEChMQR0VBTlQgVmVy
-ZW5pZ2luZzEcMBoGA1UEAxMTR0VBTlQgUGVyc29uYWwgQ0EgNAIQWjRYMXhpIIdmWYO59DYf
-SDANBglghkgBZQMEAgMFAKCCArwwGAYJKoZIhvcNAQkDMQsGCSqGSIb3DQEHATAcBgkqhkiG
-9w0BCQUxDxcNMjYwNjIwMDkyMDU4WjBPBgkqhkiG9w0BCQQxQgRAX/7drrA+LZMAs/C2bvpE
-weeVY0RDk09dp3Nlq29ypJ3pSCutmHoY/M2EBngoK0/vW3TC0LG2XQeYjK1y4WwsuzBpBgkr
-BgEEAYI3EAQxXDBaMEYxCzAJBgNVBAYTAk5MMRkwFwYDVQQKExBHRUFOVCBWZXJlbmlnaW5n
-MRwwGgYDVQQDExNHRUFOVCBQZXJzb25hbCBDQSA0AhBaNFgxeGkgh2ZZg7n0Nh9IMGsGCyqG
-SIb3DQEJEAILMVygWjBGMQswCQYDVQQGEwJOTDEZMBcGA1UEChMQR0VBTlQgVmVyZW5pZ2lu
-ZzEcMBoGA1UEAxMTR0VBTlQgUGVyc29uYWwgQ0EgNAIQWjRYMXhpIIdmWYO59DYfSDCCAVcG
-CSqGSIb3DQEJDzGCAUgwggFEMAsGCWCGSAFlAwQBKjALBglghkgBZQMEAQIwCgYIKoZIhvcN
-AwcwDQYIKoZIhvcNAwICAQUwDQYIKoZIhvcNAwICAQUwBwYFKw4DAgcwDQYIKoZIhvcNAwIC
-AQUwBwYFKw4DAhowCwYJYIZIAWUDBAIBMAsGCWCGSAFlAwQCAjALBglghkgBZQMEAgMwCwYJ
-YIZIAWUDBAIEMAsGCWCGSAFlAwQCBzALBglghkgBZQMEAggwCwYJYIZIAWUDBAIJMAsGCWCG
-SAFlAwQCCjALBgkqhkiG9w0BAQEwCwYJK4EFEIZIPwACMAgGBiuBBAELADAIBgYrgQQBCwEw
-CAYGK4EEAQsCMAgGBiuBBAELAzALBgkrgQUQhkg/AAMwCAYGK4EEAQ4AMAgGBiuBBAEOATAI
-BgYrgQQBDgIwCAYGK4EEAQ4DMA0GCSqGSIb3DQEBAQUABIICAKcWPROR6g6+dP/vmBeq+qb0
-Xo0ufp+knmaMWVKT1WA1hZL3qmf1oEObiEQ3IzDqmSQysVEKEpPdXRoHRejVG/eLdseGlswC
-hUAVyTWIGCVGe1w5FOBamXKjLk97dA833kYGSDOqvGpQUScJdP4Q7BADDTcLNDDXVlU7OAMh
-L6nCyR/pDg6BN+WF3KUPSwhETi43Q2YY1RY/atMdNIFdUI63rKWCsIE997kP6t8Ljx6qQt1G
-DlwBwkljstEEtLZo8XJOwdGnyDLwx+pFTPcI+xeeMBOQkcTxd25aktVbBuaGhVPN1MlX/31S
-YM8TkdDde9JuIWRmv3RY+fan5NWvnl0P6aZ9bFM83tZ7COlIomgnbakn3sKagrOIQTgVxpFF
-tXwfPi/rr/S6Nc1IQVwp3B70EHY6etYWd7RsmLx0CIheNFEpCqvEZVIOWXx0aM/ajJzqXLIp
-xMhSL//opihw4y7dFARtlrxRk/SW8xbOjIOvtzXIWHX4571E0UiilH9qM1zo73haCNu5CQgp
-85YQlZ0pbxTEVp7lhliSZIIDogKwVfU9qRI9ti9kK74Rh+Q/7ITWb9Vnrrb1Stjirvua8zDr
-3+y/KHT5RO4Su4jJxsMvmY1eO3BCR+y9uIATUqV6rhjbXwdlF6/XSGJWiR/1Dl1fwi62z5oj
-ifbLhbFelpjvAAAAAAAA
---------------ms010703010107020706050909--
+---
+v2:
+- drop close(fd) on open() failure path
+- keep close(fd) only on realloc failure path
+---
+ tools/thermal/thermometer/thermometer.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/tools/thermal/thermometer/thermometer.c b/tools/thermal/thermometer/thermometer.c
+index 022865da8e3c..1ae6c3ecedb4 100644
+--- a/tools/thermal/thermometer/thermometer.c
++++ b/tools/thermal/thermometer/thermometer.c
+@@ -272,6 +272,7 @@ static int thermometer_add_tz(const char *path, const char *name, int polling,
+ 	tz = realloc(thermometer->tz, sizeof(*thermometer->tz) * (thermometer->nr_tz + 1));
+ 	if (!tz) {
+ 		ERROR("Failed to allocate thermometer->tz\n");
++		close(fd);
+ 		return -1;
+ 	}
+ 
+-- 
+2.34.1
+
