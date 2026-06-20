@@ -1,98 +1,186 @@
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.15])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pg1-f196.google.com (mail-pg1-f196.google.com [209.85.215.196])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C59052C21C5;
-	Sat, 20 Jun 2026 12:27:15 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.15
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4759C3242AC
+	for <linux-pm@vger.kernel.org>; Sat, 20 Jun 2026 14:23:54 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.215.196
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1781958437; cv=none; b=jKU4aEZGTrhEbLMQd0vfkAtAUpddNhMgMN/HO5L5SFftQPWyp/qkztaAc/FMU+jFWZl2IIwDYQD3Td3yNTj2tFHZaU8bXNmMGur+9h6zBNPNAhWM+qGR2jCFk3KuvzVt+kufstl1MNLySA/xs4yCOt1us3AYkZpHOr5tyoUmHws=
+	t=1781965437; cv=none; b=s537rs3MEIYlkXIt863g9q7/E7UyNUAwBxjDZf+OYnEhGvgrVhkND3GEUJBqGtK25XuoqyY0Iy0XSU4ha98VJ6zGCtUwXirTYe67Dq3pn38JnHhzgXPCuMVaYAYKOad50Xsqv+k7VtKaecKs7aIAn85fP/AZtYaA6nw6fs7h1QU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1781958437; c=relaxed/simple;
-	bh=cFyFxUnsV8+++M+qbntb9M8YMSdt83ZEj2FfXaAgMhA=;
-	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=Lqb05ieZuCLO5qXMcR6g1rXGUavpAibXTk1LpIWiXko9BIw9xgxXx70XRrtSo7hN2c4rxlP5nLNRFBDzVbQf4G66sGl7K1j1+Xbu4k1Wg0DMP/BQiPBRmDFv20yibsKOXCBtu4jmtTYCcFmW28Yg7fernEDBsZutNLjD06MUzds=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=ZAb+JSq9; arc=none smtp.client-ip=192.198.163.15
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
+	s=arc-20240116; t=1781965437; c=relaxed/simple;
+	bh=1A3yRBCyiXnf2+7dCdstiNNFsshcbr96SxsOGFDoLtY=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=guYcq/cfNe/0cpi1JLOlNeA9fbEWWISm8fE25mBxWtLcxQmfKAMowaiVwxCI+NEw7nNi06WUG2BFG1T7KBx4XxVzJCgESWGHzn1lxLiD86Pj3r4J4O20i1rAq4jIBKEy4Tf9we8iWLld78g6iQiO5cqJfp2tesAMM4rLsDdAoEc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=JX+0N1Fn; arc=none smtp.client-ip=209.85.215.196
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="ZAb+JSq9"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1781958436; x=1813494436;
-  h=from:to:cc:subject:date:message-id:in-reply-to:
-   references:mime-version:content-transfer-encoding;
-  bh=cFyFxUnsV8+++M+qbntb9M8YMSdt83ZEj2FfXaAgMhA=;
-  b=ZAb+JSq9IC3GGC/xSinc3kQDr34q3GN9OlTaBRQ2TeiZZxqVysOIsnj3
-   cKUKGojwONTyKj+XzKGt4gSjZu/zYNZk9KjaA8buwAm2DI8KmnAJF6FBC
-   1PES+2oAHcjJDz3en5yYzX4btx31m1qnaG3Ztzf6b2ymG8uBF8H5L4xzV
-   HLZoHdylVTf7db8KoZhe6YYfPuWJ8kIRdJ3PToPi16CClvY18I+zNaTEU
-   dkabDjHk4N6eTMswQjigLGjyQ585wgD680p10kYHFGcCyvVMd9n9bWq+A
-   cF5I4MKGiGdMPwO/hiGZ1jYRvctfZMV6kTGibtaQakAmxx4vLQsDXlgPl
-   A==;
-X-CSE-ConnectionGUID: R8x79cpoTPOI/MHzgAXbmg==
-X-CSE-MsgGUID: dCG/ic+HTrWvrxT/zs8aLw==
-X-IronPort-AV: E=McAfee;i="6800,10657,11822"; a="82875168"
-X-IronPort-AV: E=Sophos;i="6.24,215,1774335600"; 
-   d="scan'208";a="82875168"
-Received: from orviesa008.jf.intel.com ([10.64.159.148])
-  by fmvoesa109.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 20 Jun 2026 05:27:14 -0700
-X-CSE-ConnectionGUID: 7UubUoKxROishmj3eOTUWw==
-X-CSE-MsgGUID: tZaL2RdGQI+TI0y1bv1Ahw==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.24,215,1774335600"; 
-   d="scan'208";a="248670409"
-Received: from intel-proliant-dl380-gen9.iind.intel.com ([10.49.109.61])
-  by orviesa008.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 20 Jun 2026 05:27:12 -0700
-From: amarjeet@intel.com
-To: "Rafael J . Wysocki" <rafael@kernel.org>,
-	Daniel Lezcano <daniel.lezcano@kernel.org>
-Cc: Zhang Rui <rui.zhang@intel.com>,
-	Lukasz Luba <lukasz.luba@arm.com>,
-	linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-Subject: [PATCH v2] tools/thermal/thermometer: close fd on realloc failure
-Date: Sat, 20 Jun 2026 17:56:37 +0530
-Message-Id: <20260620122637.1334927-1-amarjeet@intel.com>
-X-Mailer: git-send-email 2.34.1
-In-Reply-To: <20260620074157.1059161-1-amarjeet@intel.com>
-References: <20260620074157.1059161-1-amarjeet@intel.com>
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="JX+0N1Fn"
+Received: by mail-pg1-f196.google.com with SMTP id 41be03b00d2f7-c88e3e82d81so1378053a12.2
+        for <linux-pm@vger.kernel.org>; Sat, 20 Jun 2026 07:23:54 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1781965434; x=1782570234; darn=vger.kernel.org;
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to:subject
+         :user-agent:mime-version:date:message-id:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=X2ppqhiXhC3WFA2wZf37Gep+L6TyBObHMBsyL7sziZw=;
+        b=JX+0N1FnhFQWBSzU2Yqy1Zxw8YcBFw6h/BRT2zeyCxx8DRyZxrdXUmwhb395gCxhqU
+         TJvvwhd+xBtA+vtf5IvqeR+uDnYWgUyeAy9QvflfV1uou6NUmV68hNkOZAPGk9F5i9v7
+         3WruKdJP5thLrp5AVku6m1GZsNsurdjIM6cMXpqiBl1cmTLNoBrlgyfrPLEbAng4vm/U
+         2tuJRquF6wY1b0OzNCd+N7BucQNLtaLNjwHbFvxAYWkw0FrJnPe6BoZZ9PBd2EVy+6+f
+         0nqT851W2Aao2jcKDCnbNaD1+UGdHtdZbOFolnFmphcYIlK9cO9ES1m3Ghxps1bOxLI6
+         ULBw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1781965434; x=1782570234;
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to:subject
+         :user-agent:mime-version:date:message-id:x-gm-gg:x-gm-message-state
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=X2ppqhiXhC3WFA2wZf37Gep+L6TyBObHMBsyL7sziZw=;
+        b=YVtuJ8egVfc2thjGdF3SOVjs1NqFhwjS7NYbVrfAculu7/CkIlTI5enxnpKM5YD1Sd
+         x5OAPHrNBaIgmQA7Pww/UqTPht2he5QhV6qUff6kmt/nFkqmucdNujjjyLBqFC50CDxS
+         NHXh1BtKtVVpaPtpetUY7OJIdq+B4Ycnb/bOM1uF85B3PjcjALAPMrzPJtKqCfMzVIFw
+         JmVRaGYZDXytE07RJxuuMqDTkG3RDAKIfT2PZOAG6ULnqomJR+GbtdJMx96o+pr0gjEI
+         4pJqLEHF/zhyWDLBGk1xbiQxFGWLGqb5RqPtrfx2iLF9honzun2K65OcQcX1VPiDp06n
+         hh3Q==
+X-Gm-Message-State: AOJu0Yyjr32GRcMPOhhTqnSnbF5ZdRY+gCatCazu9Weljg3XLf/7WZl/
+	MsLY+xwuXq/QudQvEc3Q+vg2nrgLOoH8jjbv9t7ifO3O6tSF9728drmi
+X-Gm-Gg: AfdE7cnT1eu88C05ZOS+tSCyHApB3lc0tDD8fdQpjmZPdIzIabo9ovAwEum/5o+GvQS
+	ShNzC2GcxEQqY4S6bgDdgatL5jMdewohDc/ZaeELgOrv2Ha4USo1DhdOb5SHmQUoM29vJuOUcHz
+	vKXHFHJAXxMLcxgHYvhiTEqNysOJAxOA/iFrJnyr5bp4KCX4UBCJ9UxbpUq1B5Q+ZfLeDrqNgfS
+	MfyGaamCzJa5RDH6Z6X6Ev4mYxObMsZnW0gv8Z5jqJ5OwqLzC9KFgmq2m5JuQyu+DwnycCDhJum
+	OeiozoN4lIpeG5WK7g+wWKZ9xf70gQa1UhY9uAjT4NZaQmGFaPGOfRfr+kjrPitZYcDg+HmL3fD
+	vMa71cp7BNnD1N7QdBGcptdDOrSNvnF/39x6Yp+5BwtSH9Ww3LmC+dkKQLxeK5/LrVOATp/z6YN
+	npp6+fj4dTpYnPYnwqOUYyDdWItkC3b/brouqCwiWc1qJJavd0Bal926Ra+Pvqvj5s
+X-Received: by 2002:a05:6a20:6a0f:b0:3b4:7c33:296b with SMTP id adf61e73a8af0-3bb3564431fmr7384251637.32.1781965433512;
+        Sat, 20 Jun 2026 07:23:53 -0700 (PDT)
+Received: from ?IPV6:240e:304:27f3:cf00:402d:ef5b:4082:aa65? ([240e:304:27f3:cf00:402d:ef5b:4082:aa65])
+        by smtp.gmail.com with ESMTPSA id 41be03b00d2f7-c8bc563c406sm2556778a12.19.2026.06.20.07.23.47
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Sat, 20 Jun 2026 07:23:52 -0700 (PDT)
+Message-ID: <bae98712-2d0c-4831-8142-bb1318d147b1@gmail.com>
+Date: Sat, 20 Jun 2026 22:23:44 +0800
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v3 0/2] cpufreq: spacemit: Add cpufreq support for K1 SoC
+To: Shuwei Wu <shuwei.wu@mailbox.org>, "Rafael J. Wysocki"
+ <rafael@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>,
+ Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
+ Conor Dooley <conor+dt@kernel.org>, Paul Walmsley <pjw@kernel.org>,
+ Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>,
+ Alexandre Ghiti <alex@ghiti.fr>, Yixun Lan <dlan@kernel.org>,
+ Vincent Legoll <legoll@online.fr>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linux-riscv@lists.infradead.org, spacemit@lists.linux.dev,
+ devicetree@vger.kernel.org
+References: <20260612-shadow-deps-v3-0-2f3ba88611ff@mailbox.org>
+From: Gong Shuai <gsh517025@gmail.com>
+In-Reply-To: <20260612-shadow-deps-v3-0-2f3ba88611ff@mailbox.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
-From: Amarjeet <amarjeet@intel.com>
+On 6/12/2026 5:51 PM, Shuwei Wu wrote:
+> This series enables CPU frequency scaling for the SpacemiT K1 SoC.
+> 
+> K1 has two CPU cluster clocks but one shared CPU voltage rail. Add a
+> small K1-specific cpufreq driver so the two clocks and the shared OPP
+> transition can be handled together.
+> 
+> Tested on Banana Pi BPI-F3. The system boots with all eight CPUs online,
+> the K1 cpufreq driver registers one policy for CPUs 0-7, and both CPU
+> cluster clocks follow the selected cpufreq rate.
+> 
+> ~ # cat /sys/devices/system/cpu/online
+> 0-7
+> 
+> ~ # ls /sys/devices/system/cpu/cpufreq
+> policy0
+> 
+> ~ # cat /sys/devices/system/cpu/cpufreq/policy0/affected_cpus
+> 0 1 2 3 4 5 6 7
+> 
+> ~ # cat /sys/devices/system/cpu/cpufreq/policy0/scaling_available_frequencies
+> 614400 819000 1000000 1228800 1600000
+> 
+> With the userspace governor:
+> ----------------------------------------------------------------------------
+> Frequency    | scaling_cur | cpu_c0_core | cpu_c1_core | Real    | User
+> (kHz)        | (kHz)       | (Hz)        | (Hz)        | (s)     | (s)
+> -------------+-------------+-------------+-------------+---------+----------
+> 1,600,000    | 1,600,000   | 1600000000  | 1600000000  | 1.80s   | 1.80s
+> 1,228,800    | 1,228,800   | 1228800000  | 1228800000  | 2.33s   | 2.33s
+> 1,000,000    | 1,000,000   | 1000000000  | 1000000000  | 2.88s   | 2.87s
+>    819,000    |   819,000   |  819200000  |  819200000  | 3.53s   | 3.52s
+>    614,400    |   614,400   |  614400000  |  614400000  | 4.72s   | 4.72s
+> ----------------------------------------------------------------------------
+> 
+> Signed-off-by: Shuwei Wu <shuwei.wu@mailbox.org>
+> ---
+> Changes in v3:
+> - Add a K1-specific cpufreq driver for the shared-rail, dual-clock topology
+> - Use one shared CPU OPP table and one cpufreq policy for all CPUs
+> - Link to v2: https://lore.kernel.org/r/20260410-shadow-deps-v2-0-4e16b8c0f60e@mailbox.org
+> 
+> Changes in v2:
+> - Move OPP tables to dedicated k1-opp.dtsi
+> - Enable OPP only on BPI-F3 with cpu-supply present
+> - Link to v1: https://lore.kernel.org/r/20260308-shadow-deps-v1-0-0ceb5c7c07eb@mailbox.org
+> 
+> ---
+> Shuwei Wu (2):
+>        cpufreq: spacemit: Add K1 cpufreq driver
+>        riscv: dts: spacemit: Add cpu scaling for K1 SoC
+> 
+>   arch/riscv/boot/dts/spacemit/k1-bananapi-f3.dts |  35 +++-
+>   arch/riscv/boot/dts/spacemit/k1-opp.dtsi        |  70 +++++++
+>   arch/riscv/boot/dts/spacemit/k1.dtsi            |   8 +
+>   drivers/cpufreq/Kconfig                         |   4 +
+>   drivers/cpufreq/Kconfig.riscv                   |  15 ++
+>   drivers/cpufreq/Makefile                        |   3 +
+>   drivers/cpufreq/cpufreq-dt-platdev.c            |   2 +
+>   drivers/cpufreq/spacemit-k1-cpufreq.c           | 251 ++++++++++++++++++++++++
+>   8 files changed, 387 insertions(+), 1 deletion(-)
+> ---
+> base-commit: 5164e95565d3fd508ca8a95351323f5716dfb695
+> change-id: 20260307-shadow-deps-3582a78aa756
+> prerequisite-patch-id: 154bd4f720ce5065d58b988de8f273207b44572e
+> prerequisite-message-id: <20260206-spacemit-p1-v4-0-8f695d93811e@riscstar.com>
+> prerequisite-patch-id: 5da3e75b18291a5540d4f66d7a0600fb8975ef62
+> prerequisite-patch-id: bcf41917414ecef8cf743095d130f6004c32f6a5
+> prerequisite-patch-id: cfe3800f8c791ec4c63e070af9628e88e0fc31b9
+> prerequisite-message-id: <20260305-k1-clk-fix-v1-1-abca85d6e266@mailbox.org>
+> prerequisite-patch-id: 7c7fb9f87dba019ece4c97c45750349a7cd28f3a
+> 
+> Best regards,
 
-thermometer_add_tz() opens tz_path and then reallocates thermometer->tz.
-If realloc fails, the function returns without closing fd.
 
-Close fd before returning on realloc failure to avoid leaking a file descriptor.
+Hi Shuwei and Vincent,
 
-Signed-off-by: Amarjeet <amarjeet@intel.com>
+I have tested this series on the OrangePi RV2 board (4GB) on top of
+linux-next (next-20260619), with the v3 cpufreq series and Vincent's
+patch "k1-orangepi-rv2: Add cpu scaling" applied.
 
----
-v2:
-- drop close(fd) on open() failure path
-- keep close(fd) only on realloc failure path
----
- tools/thermal/thermometer/thermometer.c | 1 +
- 1 file changed, 1 insertion(+)
+The driver works as expected: all 8 CPUs are online and share a single
+policy (policy0). Writing to
+/sys/devices/system/cpu/cpu0/cpufreq/scaling_setspeed
+correctly changes the frequency for all cores simultaneously, and all
+scaling_setspeed files show the same value. The frequency transitions
+are smooth, and performance (tested with a simple awk loop, following
+Vincent's approach) scales linearly with the set frequency.
 
-diff --git a/tools/thermal/thermometer/thermometer.c b/tools/thermal/thermometer/thermometer.c
-index 022865da8e3c..1ae6c3ecedb4 100644
---- a/tools/thermal/thermometer/thermometer.c
-+++ b/tools/thermal/thermometer/thermometer.c
-@@ -272,6 +272,7 @@ static int thermometer_add_tz(const char *path, const char *name, int polling,
- 	tz = realloc(thermometer->tz, sizeof(*thermometer->tz) * (thermometer->nr_tz + 1));
- 	if (!tz) {
- 		ERROR("Failed to allocate thermometer->tz\n");
-+		close(fd);
- 		return -1;
- 	}
- 
--- 
-2.34.1
+Both of you can add my tag:
+
+Tested-by: Gong Shuai <gsh517025@gmail.com> # OrangePi-RV2
+
+If you send a new version, I'm also willing to test it again.
+
+Thanks for the work.
+
+Regards,
+Shuai
+
 
