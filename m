@@ -1,58 +1,58 @@
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.11])
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 259F91DB92C;
-	Sun, 21 Jun 2026 21:38:59 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.11
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 65A547081A;
+	Sun, 21 Jun 2026 21:50:40 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.17
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1782077942; cv=none; b=CGSjYRdUdmfKcYnZ0PcBqARpSBGJGMjO8zLxn2CoT6dBr2Sq3C3PwRS1wN/85TFKXtUMOf/6/DNCkzwDcxlViAee4ZCbeGbmlbUBGFb61LEhqn2+ln9B1/AadIoqrsWb1VlyLZ5F42q6hfeVHTTwpwA7ckeibNsmxKS0da0B4os=
+	t=1782078641; cv=none; b=QASuKdzhkz8KATc9uMps3sEgHIPcXlkHi4G74fId2ECOIjjTXzUWUNIjkuYH1e2C7ry29lv+5sCS2MBIGsSmXa5nMiwdg5xyEF+2oZX73OFgy275wVUC0f0D6/C061Iv2jSA/2WRzOpSdBGgDd8Tjuf5FPUoTtZ+O2Wv7/e8U/Q=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1782077942; c=relaxed/simple;
-	bh=19AGkayRHXGw/ZUMIP1TvDM0OCp9hO35Ji8dT4MT7YA=;
+	s=arc-20240116; t=1782078641; c=relaxed/simple;
+	bh=/fJJkX/+8BvvzZo1p1vaUpSBU3H3Yn1TAUuW/XVtoHs=;
 	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=e+/WI6eK6wBTszm7kwm5mD4tRbGFqG1YQyfICCy1+ot1c1Y0uwrLA2cyt+1EYnhEmeIqKgJXMd3IMHU+pih+5XM/nfnLUCLXVx6iLlJkOnyPvuU3F5Pyc2nzDeD8kRm698ZHJtjqwKW+artKxB9vV3BKIqSGqYge4AmyLeDuBnk=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=pass smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=KRoL7QXq; arc=none smtp.client-ip=192.198.163.11
+	 Content-Type:MIME-Version; b=Vi1fwUwPAwYlPTkP+KxX9zZXQmd6i2IO3OA8kqE8h3VCICS1oqCeuYVToeWnCb2wS+CWc38Zl/xvn2pi/LvRJ7GHIfLV01ax3VoOEY8smIVGvKosDVECtg5cA8clAFhGsaomjxnu0VKJr417vF6YhS1lD1KJsJQeYKS4mjMhwjs=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=pass smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=m9GyS3KQ; arc=none smtp.client-ip=192.198.163.17
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="KRoL7QXq"
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="m9GyS3KQ"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1782077940; x=1813613940;
+  t=1782078640; x=1813614640;
   h=message-id:subject:from:to:cc:date:in-reply-to:
    references:content-transfer-encoding:mime-version;
-  bh=19AGkayRHXGw/ZUMIP1TvDM0OCp9hO35Ji8dT4MT7YA=;
-  b=KRoL7QXq3oXV5mz/odeoNyhFBmJb9fc7L+skHpVBMFoKcGkFmD+HLMEz
-   HGpkNnZJODOZMF7SrMClsm7yBawmEKhkCOx+gTuD1Etgj36cQDC5RklzU
-   n0nekK6pI0uELDL68aEFcsUMetMtDBpdIzRvJHI5AQ+4CR6Cj59TCOUO+
-   naKG6TuNOidC3LD0x8KtFoFNunttGL3dSXnB3cT6MYRF+FijzYImHfLqy
-   VCUGlwk1IZizn2bkU5yoxgpz9D5AEOObySh6177OGBFF84z+EHMOcThIi
-   05nuidGQmsZJyxtEWLxAyQaBDqj2G9sYhq2Ij543ZMB3sRR95sy8vBVOj
+  bh=/fJJkX/+8BvvzZo1p1vaUpSBU3H3Yn1TAUuW/XVtoHs=;
+  b=m9GyS3KQT+yla93SGrOEm+zXOmI3G6PBFLAGQWUM4SBO0XnjJkU4nFbo
+   y0BFXF5ekhj9xneK05KOqnyvqaRiflqaV4idmdLYbKMqWrZvcOA8Gr2bT
+   9gfzdK9/FU+PmlEv/dnjwgrkZ7KDZeUrpXDN3FX/Lh2+GiBksBy8tz6Rs
+   CgX5/1NJHQgjrDLycSlKBL6oyqxHyRrFFONKIZOzW1dh5Cp60lBTLcimp
+   keBtP/4FYS8hiSUVyeNmMMJ/h233qymTxTXEvc9hA9kt/xHK8GeeCqAPJ
+   V2TOAgAp2FBPgJypquR84fo4b2AZ46jkNXQ6WJtj/v13Pm0EO8kkrpulV
    Q==;
-X-CSE-ConnectionGUID: 50L+qaGJRqy4rz4cSJQsRw==
-X-CSE-MsgGUID: Eko/0i/GQjWL1eKc+KGgbA==
-X-IronPort-AV: E=McAfee;i="6800,10657,11824"; a="93407621"
+X-CSE-ConnectionGUID: SQMtNUGRRfiWYg+wKbMSAw==
+X-CSE-MsgGUID: II5Z1FI2S7itlV0mHxcJrA==
+X-IronPort-AV: E=McAfee;i="6800,10657,11824"; a="82683324"
 X-IronPort-AV: E=Sophos;i="6.24,217,1774335600"; 
-   d="scan'208";a="93407621"
-Received: from orviesa003.jf.intel.com ([10.64.159.143])
-  by fmvoesa105.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 21 Jun 2026 14:38:59 -0700
-X-CSE-ConnectionGUID: YSs/k/axQTy/6WwZ/cpgjw==
-X-CSE-MsgGUID: +6lVMKv5SOe2wdx40TvZSw==
+   d="scan'208";a="82683324"
+Received: from orviesa007.jf.intel.com ([10.64.159.147])
+  by fmvoesa111.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 21 Jun 2026 14:50:40 -0700
+X-CSE-ConnectionGUID: wuAlyXjpSj2bUCWne90h9Q==
+X-CSE-MsgGUID: a9KqFL1OQFSe6BX+GZt0VA==
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="6.24,217,1774335600"; 
-   d="scan'208";a="252970088"
+   d="scan'208";a="249122701"
 Received: from spandruv-desk.jf.intel.com ([10.54.55.20])
-  by ORVIESA003-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 21 Jun 2026 14:39:00 -0700
-Message-ID: <8ca52415dcb582b821475eb4bd428846b1861054.camel@linux.intel.com>
-Subject: Re: [PATCH v1] cpufreq: intel_pstate: Skip HWP_CAP reads in
- Broadwell mode
+  by orviesa007-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 21 Jun 2026 14:50:40 -0700
+Message-ID: <dd33bb24d2e8f048f2a10ea9536c9643572110fb.camel@linux.intel.com>
+Subject: Re: [PATCH v2 0/6] cpufreq: intel_pstate: Set cpuinfo_min_freq to a
+ lower value with HWP enabled plus cleanups
 From: srinivas pandruvada <srinivas.pandruvada@linux.intel.com>
 To: "Rafael J. Wysocki" <rafael@kernel.org>, Linux PM
  <linux-pm@vger.kernel.org>
-Cc: Chen Yu <yu.c.chen@intel.com>, LKML <linux-kernel@vger.kernel.org>
-Date: Sun, 21 Jun 2026 14:38:27 -0700
-In-Reply-To: <12920597.O9o76ZdvQC@rafael.j.wysocki>
-References: <12920597.O9o76ZdvQC@rafael.j.wysocki>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Date: Sun, 21 Jun 2026 14:50:39 -0700
+In-Reply-To: <6005456.DvuYhMxLoT@rafael.j.wysocki>
+References: <6005456.DvuYhMxLoT@rafael.j.wysocki>
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 User-Agent: Evolution 3.58.3 (3.58.3-1.fc43) 
@@ -63,47 +63,41 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 
-On Fri, 2026-06-19 at 21:24 +0200, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On Fri, 2026-06-19 at 19:31 +0200, Rafael J. Wysocki wrote:
+> Hi,
 >=20
-> When running in the Broadwell HWP mode, the turbo, max and min
-> P-state values are retrieved from MSR_PLATFORM_INFO, so reading
-> MSR_HWP_CAPABILITIES in that mode in order to update those values
-> is pointless.=C2=A0 Moreover, using the MSR_HWP_CAPABILITIES value for
-> updating them in the Broadwell mode may be harmful, so avoid doing
-> that altogether.
+> This is in v2 because technically it is an update of
 >=20
-> Fixes: de5bcf404ace ("cpufreq: intel_pstate: Clean up frequency
-> computations")
+> https://lore.kernel.org/linux-pm/2381464.iZASKD2KPV@rafael.j.wysocki/
+>=20
+> but it contains new patches.
+>=20
+> This series updates the intel_pstate driver to set cpuinfo_min_freq
+> to a lower
+> value when HWP is enabled to support systems in which CPUs can
+> actually run
+> at performance levels below the current minimum level.
+>=20
 
+Is this intentional?
 
-Can't apply this patch on the latest Linux master even after applying
-prior 6 patches.
-What is this based on?
+HWP_CAP: 0x10f163e
+MSR 0xce(platform_info: 0x804043df8811b00
+
+cpu0/cpufreq/cpuinfo_min_freq
+100000
+
+cpu0/cpufreq/scaling_min_freq
+400000
 
 Thanks,
 Srinivas
 
-> Link:
-> https://sashiko.dev/#/patchset/6005456.DvuYhMxLoT%40rafael.j.wysocki
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> Cc: All applicable <stable@vger.kernel.org>
-> ---
-> =C2=A0drivers/cpufreq/intel_pstate.c |=C2=A0=C2=A0=C2=A0 3 +++
-> =C2=A01 file changed, 3 insertions(+)
+> It also carries out some code cleanups, mostly related to HWP, either
+> in
+> preparation for the functional changes or top of them.
 >=20
-> --- a/drivers/cpufreq/intel_pstate.c
-> +++ b/drivers/cpufreq/intel_pstate.c
-> @@ -1197,6 +1197,9 @@ static void intel_pstate_get_hwp_cap(str
-> =C2=A0{
-> =C2=A0	int scaling =3D cpu->pstate.scaling;
-> =C2=A0
-> +	if (hwp_mode_bdw)
-> +		return;
-> +
-> =C2=A0	__intel_pstate_get_hwp_cap(cpu);
-> =C2=A0
-> =C2=A0	cpu->pstate.max_freq =3D cpu->pstate.max_pstate * scaling;
+> Thanks!
 >=20
 >=20
 >=20
