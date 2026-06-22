@@ -1,94 +1,51 @@
 Received: from sender4-op-o11.zoho.com (sender4-op-o11.zoho.com [136.143.188.11])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3389B33B6CC;
-	Mon, 22 Jun 2026 20:38:03 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EE51633B6CC;
+	Mon, 22 Jun 2026 20:39:34 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=136.143.188.11
 ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1782160684; cv=pass; b=dEWCxhcSPuFGjV5I31Hld3/evmZrknGQzrqJpt7F08Y9C/DTJ4B4xnwzFVweZFUdejQQ3yvRdOdyEOsGZoagj0P6PsWTiCpFAXtv1/j3lPuahzrv50iJW6pKt59vcqjoRSjK5V2IVZMvMgfUXeogHjx4VmNYFjnhlUCNpJrC+PE=
+	t=1782160776; cv=pass; b=GLJWbVgr+KhG+aC77J/RNOHgc4JSqEGdYJlqb4M2cH1Uo+WxTbqX2HgikzQAjN7tTkxwtn6OwDuumPYnDxG/AnJAp3+C0KYrvrc1tRCXeY1ganxPzH9otw/yFdfHTtR8VnplnE0dnliAKWngj2XhsC1brqVto2EOye4ixTQq7nA=
 ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1782160684; c=relaxed/simple;
-	bh=WsDcKuA1gvo2wPOxdvdHPc1d4sATgEmk4SH3WC2S+lA=;
+	s=arc-20240116; t=1782160776; c=relaxed/simple;
+	bh=8E+zo3epG5UbHIE6dvZd295ETNqsIe8nvkav0aVNdhE=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=AuHfawblQAsmmC2AS2ckOmnyll1we17CddoDP43mjee5zU4gwFUbOAS32xEbvuPlfRFBKn+iyPasQnVz5E/dOp1Jmubztoq7L9s/s7Wf7wvGxY9hL2JUhzlYVHEL0H4H1lO02i4GsRzZmKt1ZRbNbTlEEgtWYPM7RH5k/qNUpJo=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (1024-bit key) header.d=collabora.com header.i=sebastian.reichel@collabora.com header.b=ftenAF2p; arc=pass smtp.client-ip=136.143.188.11
+	 Content-Type:Content-Disposition:In-Reply-To; b=qWtCHk0IrQVy/n/C4O0XnsMErgn+q0fPWF5bTD6jWBwkKMDcZH+fCMdRFFJr886E1u81CrAp/VqO+zbtYivC58wKy4CZDkbemF0upU+x+Sbh0u64nIW8ZzjOXPvmOiTdsWcUAdfzTdupHzrpRYfZBK26TOntz9pQTOKcYzf732g=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (1024-bit key) header.d=collabora.com header.i=sebastian.reichel@collabora.com header.b=IGN0NqyZ; arc=pass smtp.client-ip=136.143.188.11
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=collabora.com header.i=sebastian.reichel@collabora.com header.b="ftenAF2p"
-ARC-Seal: i=1; a=rsa-sha256; t=1782160644; cv=none; 
+	dkim=pass (1024-bit key) header.d=collabora.com header.i=sebastian.reichel@collabora.com header.b="IGN0NqyZ"
+ARC-Seal: i=1; a=rsa-sha256; t=1782160770; cv=none; 
 	d=zohomail.com; s=zohoarc; 
-	b=NbZ03RwDUpsPUGMBrvUdLdu9YwvBtwbJnzp1KGgnOw8bmxFm308mN3AT9TQxGf0hTvg6NQG4C2vMqEG28Kk9TYtSAwUBIsPuLMENiboDJ821z6UtEvkeDwz5+Jcm+re9M7ZFaWtEkR9uOKdar4YVHKXBp3rQHmkoCuJ+yoWpc4o=
+	b=MyEiTQBnMJzL0iMpe5JQkqJswNbkR5aB8OVtvai0dqwsIFdMF20aMmJVXNPM3aP6p0Oh0FTlpQmedqjpt+9D3fm9iodegDnUhHrow9rquEIZJUiD3QxdS7JU3rYa/3LbFc9Fj0Efl++fIyMmSuSlSsZEQWYhRF7tI4a6tKciwro=
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=zohomail.com; s=zohoarc; 
-	t=1782160644; h=Content-Type:Cc:Cc:Date:Date:From:From:In-Reply-To:MIME-Version:Message-ID:References:Subject:Subject:To:To:Message-Id:Reply-To; 
-	bh=mN91JuTXlP9yH/fF2WAYmfPvIPkIj7NLhNIGrphtGFQ=; 
-	b=cdn/QOUYXHEVxnnOG0Xz+v5hgIFdWmFnUWGGBrXE0BkN+/Y/SSTnkF8DIdXeHmsun1N1bTnfVSATEUntE3qlia7Tu2OXutygr1K/pScuMkRUqb8jzru748kl9eSG9NgAF6EAKY/Eq7kqq5AHGgy4zYxnRNwUhOnHfiaIKQmZ7Ec=
+	t=1782160770; h=Content-Type:Cc:Cc:Date:Date:From:From:In-Reply-To:MIME-Version:Message-ID:References:Subject:Subject:To:To:Message-Id:Reply-To; 
+	bh=ZWV9XUGm7wyBv5OH0Inbg59Z0ZmiXoglZ0ddkdwp2Sg=; 
+	b=YNYOWa4zLsPb1J0VrAqJ7XROsaVbcz25CApp2LfIz6mipquIZOqMWMLu2Ahdgegq5g8NBHwFamlJYcZvIKKhsTPbNUd65bZUJFyOayRaYuzOWLgK9rdZHlIFRa0XX7K0FM7OFTcnaeOkHYVvmWy8UYt+FGmHxG3SewjC7Nckl/A=
 ARC-Authentication-Results: i=1; mx.zohomail.com;
 	dkim=pass  header.i=collabora.com;
 	spf=pass  smtp.mailfrom=sebastian.reichel@collabora.com;
 	dmarc=pass header.from=<sebastian.reichel@collabora.com>
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; t=1782160644;
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; t=1782160770;
 	s=zohomail; d=collabora.com; i=sebastian.reichel@collabora.com;
 	h=Date:Date:From:From:To:To:Cc:Cc:Subject:Subject:Message-ID:References:MIME-Version:Content-Type:In-Reply-To:Message-Id:Reply-To;
-	bh=mN91JuTXlP9yH/fF2WAYmfPvIPkIj7NLhNIGrphtGFQ=;
-	b=ftenAF2pLAzRlyNVRan8mKVLwnie2DhUAR+YqxoXAcc93rbXBpyH//u6VQz6uvu5
-	NVnB16FfAhcMzP72FH86ULWAFvMa3rYocIFntWDDFHxLa7uuG26U7HA2MLbmUYNgfOb
-	uJogOLlRuf0JNK3ahPODVSRWU84ISRiZWge9esxY=
-Received: by mx.zohomail.com with SMTPS id 1782160642430172.91971762131618;
-	Mon, 22 Jun 2026 13:37:22 -0700 (PDT)
+	bh=ZWV9XUGm7wyBv5OH0Inbg59Z0ZmiXoglZ0ddkdwp2Sg=;
+	b=IGN0NqyZ+SLpQ736cGvPlKtzQFqjvd5t3N2LQ3vrdpS1wh5E6ixElUg0HL7eY5QO
+	NLGbI3kb0I4KkITUWjjTHCq/geQPPFS3eWOEfr0nBBianS7AUyvJbkGdym/0rK0B/P3
+	H4X1LberhVMrBzdoqqoJHPXk7LEPLLmtrIMIGfd8=
+Received: by mx.zohomail.com with SMTPS id 1782160769019771.28670404611;
+	Mon, 22 Jun 2026 13:39:29 -0700 (PDT)
 Received: by venus (Postfix, from userid 1000)
-	id 6EF1E1824A2; Mon, 22 Jun 2026 22:37:11 +0200 (CEST)
-Date: Mon, 22 Jun 2026 22:37:11 +0200
+	id 5197E1824A2; Mon, 22 Jun 2026 22:39:26 +0200 (CEST)
+Date: Mon, 22 Jun 2026 22:39:26 +0200
 From: Sebastian Reichel <sebastian.reichel@collabora.com>
-To: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
-Cc: Bjorn Andersson <andersson@kernel.org>, 
-	Konrad Dybcio <konradybcio@kernel.org>, Rob Herring <robh@kernel.org>, 
-	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
-	Peter Griffin <peter.griffin@linaro.org>, Alim Akhtar <alim.akhtar@samsung.com>, 
-	Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@kernel.org>, 
-	Brian Masney <bmasney@redhat.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, 
-	Chanwoo Choi <cw00.choi@samsung.com>, Sam Protsenko <semen.protsenko@linaro.org>, 
-	Rob Clark <robin.clark@oss.qualcomm.com>, Dmitry Baryshkov <lumag@kernel.org>, 
-	Abhinav Kumar <abhinav.kumar@linux.dev>, Jessica Zhang <jesszhan0024@gmail.com>, 
-	Sean Paul <sean@poorly.run>, Marijn Suijten <marijn.suijten@somainline.org>, 
-	David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>, 
-	Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, Maxime Ripard <mripard@kernel.org>, 
-	Thomas Zimmermann <tzimmermann@suse.de>, Inki Dae <inki.dae@samsung.com>, 
-	Seung-Woo Kim <sw0312.kim@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, 
-	Andi Shyti <andi.shyti@kernel.org>, Georgi Djakov <djakov@kernel.org>, Lee Jones <lee@kernel.org>, 
-	Pavel Machek <pavel@kernel.org>, Hans Verkuil <hverkuil@kernel.org>, 
-	Mauro Carvalho Chehab <mchehab@kernel.org>, Ulf Hansson <ulfh@kernel.org>, Peter Rosin <peda@lysator.liu.se>, 
-	Vinod Koul <vkoul@kernel.org>, Neil Armstrong <neil.armstrong@linaro.org>, 
-	Linus Walleij <linusw@kernel.org>, Geert Uytterhoeven <geert+renesas@glider.be>, 
-	Magnus Damm <magnus.damm@gmail.com>, Javier Martinez Canillas <javier@dowhile0.org>, 
-	Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, 
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jiri Slaby <jirislaby@kernel.org>, 
-	Srinivas Kandagatla <srini@kernel.org>, Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, 
-	"Rafael J. Wysocki" <rafael@kernel.org>, Daniel Lezcano <daniel.lezcano@kernel.org>, 
-	Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>, 
-	Jonathan Marek <jonathan@marek.ca>, Taniya Das <quic_tdas@quicinc.com>, 
-	Robert Marko <robimarko@gmail.com>, Christian Marangi <ansuelsmth@gmail.com>, 
-	Stephan Gerhold <stephan@gerhold.net>, Adam Skladowski <a_skl39@protonmail.com>, 
-	Sireesh Kodali <sireeshkodali@protonmail.com>, Barnabas Czeman <barnabas.czeman@mainlining.org>, 
-	Imran Shaik <quic_imrashai@quicinc.com>, Sricharan Ramabadhran <quic_srichara@quicinc.com>, 
-	Anusha Rao <quic_anusha@quicinc.com>, Luo Jie <quic_luoj@quicinc.com>, 
-	Tomasz Figa <tomasz.figa@gmail.com>, Chanho Park <chanho61.park@samsung.com>, 
-	Sunyeal Hong <sunyeal.hong@samsung.com>, Shin Son <shin.son@samsung.com>, 
-	Krishna Manikandan <quic_mkrishn@quicinc.com>, Jacek Anaszewski <jacek.anaszewski@gmail.com>, 
-	Jaehoon Chung <jh80.chung@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, 
-	Alina Yu <alina_yu@richtek.com>, Andy Gross <agross@kernel.org>, 
-	Niklas =?utf-8?Q?S=C3=B6derlund?= <niklas.soderlund@ragnatech.se>, Wesley Cheng <quic_wcheng@quicinc.com>, 
-	linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, linux-clk@vger.kernel.org, 
-	dri-devel@lists.freedesktop.org, freedreno@lists.freedesktop.org, linux-i2c@vger.kernel.org, 
-	linux-pm@vger.kernel.org, linux-leds@vger.kernel.org, linux-media@vger.kernel.org, 
-	linux-mmc@vger.kernel.org, linux-phy@lists.infradead.org, linux-gpio@vger.kernel.org, 
-	linux-renesas-soc@vger.kernel.org, linux-serial@vger.kernel.org, linux-sound@vger.kernel.org, 
-	linux-usb@vger.kernel.org
-Subject: Re: [PATCH 2/2] dt-bindings: Drop incorrect usage of double '::'
-Message-ID: <ajmcsfEXiTfFh-XH@venus>
-References: <20260622101606.485961-3-krzysztof.kozlowski@oss.qualcomm.com>
- <20260622101606.485961-4-krzysztof.kozlowski@oss.qualcomm.com>
+To: Boris Shtrasman <borissh1983@gmail.com>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] power: supply: sbs-battery: Add PbAc, NiZn, RAM, and
+ ZnAr support
+Message-ID: <ajmc_naB7zYv0SPY@venus>
+References: <20260621145952.56720-1-borissh1983@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -96,70 +53,112 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="he6mgtsui5z5w5dr"
+	protocol="application/pgp-signature"; boundary="22tzcc2pyc72oi4u"
 Content-Disposition: inline
-In-Reply-To: <20260622101606.485961-4-krzysztof.kozlowski@oss.qualcomm.com>
+In-Reply-To: <20260621145952.56720-1-borissh1983@gmail.com>
 X-Zoho-Virus-Status: 1
 X-Zoho-AV-Stamp: zmail-av-0.2.10.1.5.2/282.152.77
 X-ZohoMailClient: External
 
 
---he6mgtsui5z5w5dr
+--22tzcc2pyc72oi4u
 Content-Type: text/plain; protected-headers=v1; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
-Subject: Re: [PATCH 2/2] dt-bindings: Drop incorrect usage of double '::'
+Subject: Re: [PATCH] power: supply: sbs-battery: Add PbAc, NiZn, RAM, and
+ ZnAr support
 MIME-Version: 1.0
 
 Hi,
 
-On Mon, Jun 22, 2026 at 12:16:08PM +0200, Krzysztof Kozlowski wrote:
-> There is no use of double colon '::' in YAML. OTOH, the literal style
-> block, e.g. using '|' treats all characters as content [1] therefore
-> single use of ':' in descriptions is perfectly fine, whenever '|' is
-> used.
+On Sun, Jun 21, 2026 at 05:59:52PM +0300, Boris Shtrasman wrote:
+> Add support for PbAc, NiZn, RAM, and ZnAr chemistries as defined in the
+> Smart Battery Data Specification v1.1 (Section 5.1.30 DeviceChemistry).
 >=20
-> Cleanup existing code, so the confusing style won't be re-used in new
-> contributions.
+> Currently, the sbs-battery driver only handles LION, LiP, NiCd and NiMH.
+> The Smart Battery specification defines 8 possible values:
+>  - Lead Acid (PbAc)
+>  - Lithium Ion (LION)
+>  - Nickel Cadmium (NiCd)
+>  - Nickel Metal Hydride (NiMH)
+>  - Nickel Zinc (NiZn)
+>  - Rechargeable Alkaline-Manganese (RAM)
+>  - Zinc Air (ZnAr)
+>  - Lithium Polymer (LiP)
 >=20
-> Link: https://yaml.org/spec/1.2.2/#literal-style [1]
-> Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
+> Map the missing specification values to their respective core kernel
+> POWER_SUPPLY_TECHNOLOGY definitions.
 >=20
+> Link: https://sbs-forum.org/specs/sbdat110.pdf
+> Signed-off-by: Boris Shtrasman <borissh1983@gmail.com>
 > ---
+>  drivers/power/supply/sbs-battery.c | 8 ++++++++
+>  include/linux/power_supply.h       | 4 ++++
+
+This should be two patches, one for the power-supply core and one
+for the SBS battery driver.
+
+>  2 files changed, 12 insertions(+)
 >=20
-> Intention for this patch is to go via Rob's tree.
-> ---
+> diff --git a/drivers/power/supply/sbs-battery.c b/drivers/power/supply/sb=
+s-battery.c
+> index 43c48196c167..42a941e99155 100644
+> --- a/drivers/power/supply/sbs-battery.c
+> +++ b/drivers/power/supply/sbs-battery.c
+> @@ -860,6 +860,14 @@ static int sbs_get_chemistry(struct sbs_info *chip,
+>  		chip->technology =3D POWER_SUPPLY_TECHNOLOGY_NiCd;
+>  	else if (!strncasecmp(chemistry, "NiMH", 4))
+>  		chip->technology =3D POWER_SUPPLY_TECHNOLOGY_NiMH;
+> +	else if (!strncasecmp(chemistry, "PbAc", 4))
+> +		chip->technology =3D POWER_SUPPLY_TECHNOLOGY_PbAc;
+> +	else if (!strncasecmp(chemistry, "NiZn", 4))
+> +		chip->technology =3D POWER_SUPPLY_TECHNOLOGY_NiZn;
+> +	else if (!strncasecmp(chemistry, "RAM", 3))
+> +		chip->technology =3D POWER_SUPPLY_TECHNOLOGY_RAM;
+> +	else if (!strncasecmp(chemistry, "ZnAr", 4))
+> +		chip->technology =3D POWER_SUPPLY_TECHNOLOGY_ZnAr;
+>  	else
+>  		chip->technology =3D POWER_SUPPLY_TECHNOLOGY_UNKNOWN;
+> =20
+> diff --git a/include/linux/power_supply.h b/include/linux/power_supply.h
+> index 7a5e4c3242a0..034800cd21da 100644
+> --- a/include/linux/power_supply.h
+> +++ b/include/linux/power_supply.h
+> @@ -83,6 +83,10 @@ enum {
+>  	POWER_SUPPLY_TECHNOLOGY_LiFe,
+>  	POWER_SUPPLY_TECHNOLOGY_NiCd,
+>  	POWER_SUPPLY_TECHNOLOGY_LiMn,
+> +	POWER_SUPPLY_TECHNOLOGY_PbAc,
+> +	POWER_SUPPLY_TECHNOLOGY_NiZn,
+> +	POWER_SUPPLY_TECHNOLOGY_RAM,
+> +	POWER_SUPPLY_TECHNOLOGY_ZnAr,
+>  };
 
-[...]
-
->  .../bindings/power/reset/restart-handler.yaml |  8 ++++----
-
-Acked-by: Sebastian Reichel <sebastian.reichel@collabora.com>
-
-[...]
+You need to update the ABI Documentation and the sysfs code to
+handle the new properties.
 
 Greetings,
 
 -- Sebastian
 
---he6mgtsui5z5w5dr
+--22tzcc2pyc72oi4u
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAmo5nPIACgkQ2O7X88g7
-+pqv2Q/+LMhPKKkmgsVnMejKBphG4p2N/zVrnMgxmg8lVO8rwgA7Kxo2wlLqu2H5
-iapTV4a2dMXB0SUw8UGbt9Lt6JjHaORZnybu95mZEZMS+G7HRl5M8DE+LWMJXLX0
-S+G43Cv1O/d5dV/rM2nJqOItOK+KIbHQI4+oY/O8P7ENnU2h3X2HxOtWxtg6+9gz
-UNPZgoZdEE38SJVzhHrCO1+NfGikbo7vUZC0BmyxiNuVTK9eFjie/eIS3ST4W5T9
-3v2n+F2fD7+xsfSzUyjRc3p+zLyweImjiS6J5GAmTf4qxL9hQ3nXEW2gtRQQvB2l
-W62s4eZt9jFlQjhXVjUeIkEPkORE4RrDInyktgSc6BKm/D5SylQgwytebDtJC2s4
-QceoYrV7CHNsQ0vr9oITDlBN4Ik2TTsqhK2Sw0/2P0W7VU7y8uoHsm2xHPkf17l+
-svy9/UvPf4f5kyBIPwySRFS4IUXcdP8MhscNstvyw1GJqxtCNNRfDX6z0isLIU6Q
-yfIbxBsgCdHQMyM3HekxaofPcGx9LRJtbbNt2YA4SbqEKnzci/ToUY+z8a2svvDM
-Ko5OrYJ/yAjPYjcoQ7ajynJC+BxvFRMTtfCEQmDLiaxN9+ueXJJMXe26hLYClF9g
-ADHM+PuYvQrF2GfU9DgvPXkJHh3yEtyPk1rE6O1f4Q9xvKZMblg=
-=cVKh
+iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAmo5nX0ACgkQ2O7X88g7
++ppwGhAAgWOl2IRnTLBI6k1PTFziIBQvK7t8wHwosJi6JXSNv/rCsNT1KUPmhBkF
+FFFW/deVUfia/IIoHzz11E3s5cIIVVvfxOyzl1YCM1HwD1fwj9U6WL81y2GpRUTT
+9cuKqpwABuoz+QGDk9NQIj/tHMmbRUSTaI2klsRFuubZVp4EWJjWvbMXtHrL8kZi
+ZGSp+Jodaofn+tIGStNIMM/De9XMWb67j+PSsa1Qm4bwLmqdZgMbAbEl5lB2iu6h
+MxW66DRZ2cFwDP2/ts+vsfyB9S0D0ULWRZvwAxw91ZgWp2WkqN8tsdQfyJnkjg9O
+C9VXo2HZ+TDWuT7GJmZ0pmNgeZ2jW7Nhp96zb5b5Mypwzr0WFlX9JoxHAnwBpDBY
+00TF0On+OhPxH8RdG6p+PaW9rtlY6y8uy3wl8Musu2xRKSgvipBcXjnqBRZYOf1X
+AETXJ+wRdvVIIbcXV0BuY6EuHj/ZbyevQviVDJTPT6aH3yoQT6w6enqCb0W1FXAs
+Ph5ZcCfJLBWE3H7ncKVHh8UEghdAl05mi3l9lx9YTXT51nnckmRnryFxKPKPt33F
+CTzB291YYaAmALMkyfLKyJtTb030XIlxwI8cVHIG7e/LB8LEFXkjIxIpwAMRos3C
+d1C47VcuQrIQ0/MjVxDXYwcJOfzfj+h3E3Ds2QubGaIU2Wr97eE=
+=jBQN
 -----END PGP SIGNATURE-----
 
---he6mgtsui5z5w5dr--
+--22tzcc2pyc72oi4u--
