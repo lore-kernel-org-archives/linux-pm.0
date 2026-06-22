@@ -1,147 +1,114 @@
-Received: from mail-wr1-f48.google.com (mail-wr1-f48.google.com [209.85.221.48])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DC69239C621
-	for <linux-pm@vger.kernel.org>; Mon, 22 Jun 2026 09:37:31 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.48
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E08C721ABC9;
+	Mon, 22 Jun 2026 10:02:27 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1782121053; cv=none; b=hMi9ashGH6lb0+2lD5XK89Ff2GWh0K/gXO1IdHaCbhFNlkWCg7ibVGSceNi9p5v25bSvTB3Xz1edPYxMoWc6L+bmq4ZqISJrq2JYS+OsYnvfhIRF74SQzNbqA60Brs9xTeB97rsGpmHZaemCIsvgENzaXbWDW+wyG0hoSSoKm24=
+	t=1782122548; cv=none; b=lVECKg+grQtFTC6oORTDFMR7t8E3y+uD1U2pinpC63jzzAO4Zg9SIjYhIXTAzg5s10N35+I7FP3FHoYFimeBCKCjRoxZj62Cm9iC7L98s9jKX/fDh95b+e59UqdBc0QVA94W3R8dczQLe2fltkK71SxobnAy9nj7EC86yT9hndk=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1782121053; c=relaxed/simple;
-	bh=BICkZlTsSMBUEIiJP3C8eGN+Xpq7rBa68RhPQ88ofA0=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=D3S02J+/wIGZQG0MGo3ddX0ZN4wJfZE6PQOcx/Sp4lbrc2LY0qyi6lWcSoGiznl8jplhZdoyjUwIdnrkBbxuEnSLqePbYkhZGjWwgmDQfIOIjPcrGraHzeBomm5WyjX9sIsKmg9wkJr7YlgadSJxAJE9XoOafXtO6B0gLT1X7sg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com; spf=pass smtp.mailfrom=baylibre.com; dkim=pass (2048-bit key) header.d=baylibre.com header.i=@baylibre.com header.b=OkCNM6OD; arc=none smtp.client-ip=209.85.221.48
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=baylibre.com
+	s=arc-20240116; t=1782122548; c=relaxed/simple;
+	bh=uMqtIObQAqDv1lgzwvSvQKtZBxKHOYzZdmppSPyl2HY=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=gwkPwmSk75doQhO2TQUdiXeIFsBPIvYPstthR9782swV4D12sxFBM43QiPdRugTfoCGGUjJldDwrkQUHjQWz1EBHFjtGOMaahoHZMIk7FnYfKDk4pF2ZbXsFPjx0159/e3O818JOYsrMbKcbmPRZNMrqPUB0llhOONKOZNdDS6s=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=RuU21bDv; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=baylibre.com header.i=@baylibre.com header.b="OkCNM6OD"
-Received: by mail-wr1-f48.google.com with SMTP id ffacd0b85a97d-46019edc13dso1840369f8f.1
-        for <linux-pm@vger.kernel.org>; Mon, 22 Jun 2026 02:37:31 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=baylibre.com; s=google; t=1782121050; x=1782725850; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=BICkZlTsSMBUEIiJP3C8eGN+Xpq7rBa68RhPQ88ofA0=;
-        b=OkCNM6ODQ2wfwIMTzsr9mBn+XLGNJxe2jqRhb0iwT8NegB16qZ+KsQtSE2X9PZrqmK
-         XkKsTkyOj6+Vu3AD1Btn6lLwX3yEpRULxeAmqIi3S5s5SY+bLKwGP8i4RAQ6M0qMMrI9
-         kRQ4ABTmNZwd7L36+kON/tdXmCrjHFGGK/LwohZIrHWuBWWl+CNmDkYCIhwobgAIjSS/
-         drQV8sqBWV5Mu2rvhsWlBG0Plnbnb7nyjtVS2MtQzvXx7fwr6qfSemf+E5IvN8F9huhm
-         g8HMBgKbGM/pQSyHacrT1UpPydzQ2oP7UPrXFEPU3Dk56Zi/Ab/JaCIAnRMyYi3nsqpa
-         YgOQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1782121050; x=1782725850;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=BICkZlTsSMBUEIiJP3C8eGN+Xpq7rBa68RhPQ88ofA0=;
-        b=iUZTLBPEgsnBelrMZ1uYpt/FELer88MbRfulPKwuMNAJ92/becL9eDV3GcEGDcnrT8
-         MKbd95s4IeIero3N2m1P4tn7Jb//Hy77WlVFqG1rNX0eKzef2gZsqNyBY3imgGXCIZMy
-         DTbm/Xz/5neyhIKrlFpBxCZwpABHLVxObYQFZBey4Q9tspM8zgJNur4pbczl/ekOmV6Y
-         HzZSpDNvyxlvyC9C1pfZycpMjYbZgjssKc9pl0u1Xt4vGzr3JYO5C6QNSGUgA0IjVBTy
-         +iqfb36TOP1LkaIxGGrrJXa4KxFCRVm3poJvKveOWbNwORIDIs3MPBBSC1dg7PTcJQeS
-         PNRA==
-X-Forwarded-Encrypted: i=1; AHgh+RohZUSQmOZ9Vwyx2KSG2HYy+sfOC7KNTDPqDf4zhLtwxW6f/JKPdjCBQuxZD6znuT4aocQdOxER4g==@vger.kernel.org
-X-Gm-Message-State: AOJu0YySLa7SIko/62ivWVu/zfa6UPOQ7/TrFLeA7RJMOIqQmClkiWuq
-	4vWCqBmkL7ZDPxyxIFaVh1ZsoGu59J9sL6cOuXbRMvAyciaqTOAZNp8j4S0sE9WFtPPsthTcuXz
-	02JF2
-X-Gm-Gg: AfdE7cloj1HiRPUtmmN3Ok0aMnOY/ysncnTkOquPoTsDpcyy3hUptsQQ+S+oOX5ucbt
-	OQJPwSfi4ib1kLahBISixhhjwN12PvRhMO4Crjcbn+UOmcQbacH45jtRQHCQnebEimF5GmWTfvO
-	WR41Zgu4H/h/IupyxS5X+RXTvMJ5egpYUKcTXs5zfp6spiZwuXNN1lBp+dSR0UvoX+r6H5CYIyR
-	FcCeB7sXMP9Fc8h3nm5DSyXQDe6DMOJB98y0T5Od3tHsRC8koQ/4scYTPOO6/iHojuBwhFtNfI8
-	xshhfRqudNwVR3Jvv5UpeaSoDzD9zlFIlpPyBKtrH1OBbFY9NiiM018oQIQeJOh3ffX4UIGMVzK
-	jcXbZY2zosEoMTULaz+2W3PCwz3vg02EpY0I/I+bZQ+qk+6b5rHXp0J1wAjJOhZN/883qbocATj
-	3Ekms3Xnmdi8xnbW+MJyqrUMr98oZeGQ8EGe7ewcWrGAnEpsXUz12KWqLs7b9MWWigUfi/DP1qG
-	4I=
-X-Received: by 2002:a05:6000:4286:b0:446:db72:e8ec with SMTP id ffacd0b85a97d-4656e0e69c2mr18760389f8f.23.1782121050161;
-        Mon, 22 Jun 2026 02:37:30 -0700 (PDT)
-Received: from localhost (p200300f65f47db0402a454298f09593b.dip0.t-ipconnect.de. [2003:f6:5f47:db04:2a4:5429:8f09:593b])
-        by smtp.gmail.com with UTF8SMTPSA id ffacd0b85a97d-466667881b4sm22878548f8f.24.2026.06.22.02.37.28
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 22 Jun 2026 02:37:28 -0700 (PDT)
-Date: Mon, 22 Jun 2026 11:37:27 +0200
-From: Uwe =?utf-8?Q?Kleine-K=C3=B6nig_=28The_Capable_Hub=29?= <u.kleine-koenig@baylibre.com>
-To: Maximilian Luz <luzmaximilian@gmail.com>
-Cc: Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org, 
-	platform-driver-x86@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v1] power: supply: surface_{battery,charger}:
- Consistently define ssam_device_ids using named initializers
-Message-ID: <ajkB7UUJt7JCA16c@monoceros>
-References: <bc8eff03b2f36c82af5a75fc7114c277228921db.1781526433.git.u.kleine-koenig@baylibre.com>
- <19647fe8-c520-4160-bf74-d398c6b642b4@gmail.com>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="RuU21bDv"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8872F1F00A3A;
+	Mon, 22 Jun 2026 10:02:20 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1782122547;
+	bh=ogGOxnJk3KR/bX75jN7D4WY6r2fkYbCdNtHYLbjUBEk=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To;
+	b=RuU21bDvD4zmuAag0rX45fLaeGE0rdORK1zDEZ4mzlk5cSClE+YuyCL2b7tuMxSfS
+	 RTWAzxS+Kja4TXEk0BedLZ1iocmvCtYZU22iOIgQmPBH1rgRk0Hx11VZardAoRUj/1
+	 P2h0OGQ3eqH+kNtx2HVOpt4bUVvQOz7CNwDsr0yYbRIJKR0XMjri7AK1LRElPi6Rbn
+	 vROH4ZGLhmRSkwrDE5EiFogmPCiJBft9rU9MozczaW2tlMVryZA4eW3NNq6y5vDw3G
+	 u9fVdl6w+OkKMKchmKb4r+EfaZTCazjChwyod8Tg6R0CtjKO0BLyYU/kdfKoQ1bQAb
+	 zWhuOXOnm3dUQ==
+Message-ID: <2e2a93c7-6bf9-49f2-95ed-f44cf767e9fd@kernel.org>
+Date: Mon, 22 Jun 2026 12:02:18 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="n64qcxyzm66nvlps"
-Content-Disposition: inline
-In-Reply-To: <19647fe8-c520-4160-bf74-d398c6b642b4@gmail.com>
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v5 1/8] dt-bindings: thermal: amlogic: Add support for T7
+To: linux-kernel-dev@aliel.fr, Guillaume La Roque <glaroque@baylibre.com>,
+ "Rafael J. Wysocki" <rafael@kernel.org>,
+ Daniel Lezcano <daniel.lezcano@kernel.org>, Zhang Rui <rui.zhang@intel.com>,
+ Lukasz Luba <lukasz.luba@arm.com>, Rob Herring <robh@kernel.org>,
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
+ <conor+dt@kernel.org>, Neil Armstrong <neil.armstrong@linaro.org>,
+ Kevin Hilman <khilman@baylibre.com>, Jerome Brunet <jbrunet@baylibre.com>,
+ Martin Blumenstingl <martin.blumenstingl@googlemail.com>
+Cc: linux-pm@vger.kernel.org, linux-amlogic@lists.infradead.org,
+ devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org,
+ Conor Dooley <conor.dooley@microchip.com>
+References: <20260424-add-thermal-t7-vim4-v5-0-9040ca36afe2@aliel.fr>
+ <20260424-add-thermal-t7-vim4-v5-1-9040ca36afe2@aliel.fr>
+From: Krzysztof Kozlowski <krzk@kernel.org>
+Content-Language: en-US
+Autocrypt: addr=krzk@kernel.org; keydata=
+ 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
+In-Reply-To: <20260424-add-thermal-t7-vim4-v5-1-9040ca36afe2@aliel.fr>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+
+On 24/04/2026 17:45, Ronald Claveau via B4 Relay wrote:
+> +  - |
+> +    temperature-sensor@20000 {
+> +        compatible = "amlogic,t7-thermal";
+> +        reg = <0x0 0x20000 0x0 0x50>;
+> +        interrupts = <GIC_SPI 31 IRQ_TYPE_LEVEL_HIGH>;
 
 
---n64qcxyzm66nvlps
-Content-Type: text/plain; protected-headers=v1; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-Subject: Re: [PATCH v1] power: supply: surface_{battery,charger}:
- Consistently define ssam_device_ids using named initializers
-MIME-Version: 1.0
+This wasn't ever even built! Really, it fails immediately. I will send
+fixes, but quite disappointing that contributor does not test its own code.-
 
-Hello Maximilian,
-
-On Sun, Jun 21, 2026 at 03:32:45PM +0200, Maximilian Luz wrote:
-> Am 15.06.2026 um 14:51 schrieb Uwe Kleine-K=F6nig (The Capable Hub):
-> > The .driver_data member of the the two struct ssam_device_id arrays were
-> > initialized by list expressions. This isn't easily readable if you don't
-> > work with the Surface System Aggregator core regularily. Using named
-> > initializers is more explicit and thus easier to parse and also more
-> > robust to changes of the struct definition. This robustness is relevant
-> > for a planned change to struct ssam_device_id replacing .driver_data
-> > by an anonymous union.
-> >=20
-> > While touching these arrays, also drop the comma after the list
-> > terminators.
-> >=20
-> > This change doesn't introduce changes to the compiled ssam_device_id
-> > arrays.
-> >=20
-> > Signed-off-by: Uwe Kleine-K=F6nig (The Capable Hub) <u.kleine-koenig@ba=
-ylibre.com>
-> > ---
-> > Hello,
-> >=20
-> > the mentioned change to ssam_device_id is similar to
-> > https://lore.kernel.org/all/cover.1779878004.git.u.kleine-koenig@baylib=
-re.com/.
-> >=20
-> > That allows to get rid of the casts in these two drivers and thus
-> > benefits a bit more of the (admittedly weak) type safety of C.
->=20
-> As in the prior patch: I assume that will be a separate change or am I
-> missing something in this patch?
-
-Yes, this can only happen when all drivers use a named initializer for
-=2Edriver_data. As this requires adaptions to many subsystems, it's not
-included here.
-
-Best regards
-Uwe
-
---n64qcxyzm66nvlps
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQEzBAABCgAdFiEEP4GsaTp6HlmJrf7Tj4D7WH0S/k4FAmo5AlUACgkQj4D7WH0S
-/k74Qwf+MKCOs6Z2AQ2AR9kA/WJ7f3u3nJ32l31uIDWg5NI7h1NPbH/BjSYaWaEU
-EdnMdGTkiyxYPzjj0sI0QEIaLPEVAnpWIlMO0W3r8wUOwuRQFGuEuSIyfXIgEqo/
-5ByA4iUBb+WvA6+iwt5TbaY6RoA352FIDBOW2bik4WHicegCm3wkHwl03gzNLz8K
-T2RrbZuGsVVXFBd7+n0k/UFVi2s6v4bz5WCjfpTju9LRHj29FEZdy9raCtkfZZxk
-jHCmvwjthk8eFgCjEqesXyVuzRnyoZ5rNgsgLSG8qqvhRZbdgkth3cTWPFHQAHqu
-rz3dopI1k4vDQvZS+ozEPQPtB0mzlg==
-=sC9O
------END PGP SIGNATURE-----
-
---n64qcxyzm66nvlps--
+Best regards,
+Krzysztof
