@@ -1,169 +1,165 @@
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.17])
+Received: from sender4-op-o11.zoho.com (sender4-op-o11.zoho.com [136.143.188.11])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A2D103546C1;
-	Mon, 22 Jun 2026 20:30:14 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.17
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1782160216; cv=none; b=JLpRf2cRgKhYrBPwKMob6Xi2btfDODDbbUAi4wYW0LXCchsTCyaBNOkvsXdaC0pem/8enGpEUkpNd9gLQJ3v2mY9zeg9kHpuwUN7p0Xhsu5B98D3Qt3v8ZdYjnRo4x+9Y2cDZELAadONco1yEYleLm4kO8L1BFPDE81A1htDkdI=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1782160216; c=relaxed/simple;
-	bh=EVo3w+MCyLztsp+OKJSS4dn6VYvqlUQJ9v5ad/NQIy8=;
-	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=QYBbCX7vixXH0q8aWBbhqJ8ouPcgNIuxLMwB8jBC71SZZQ6nUqSODE+wH4PTdG3q994d+TO9lmacMtkn0+mgBPoYeKSK4LdpLHmsLzwxTrokA2x86jq/E0qsMgZpowXcUZgnWJAvWqQg8qYZ6DbSsK1JbWhX6XhHzouIaz/vaaI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=pass smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=h1517bzh; arc=none smtp.client-ip=198.175.65.17
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.intel.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3389B33B6CC;
+	Mon, 22 Jun 2026 20:38:03 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=136.143.188.11
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1782160684; cv=pass; b=dEWCxhcSPuFGjV5I31Hld3/evmZrknGQzrqJpt7F08Y9C/DTJ4B4xnwzFVweZFUdejQQ3yvRdOdyEOsGZoagj0P6PsWTiCpFAXtv1/j3lPuahzrv50iJW6pKt59vcqjoRSjK5V2IVZMvMgfUXeogHjx4VmNYFjnhlUCNpJrC+PE=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1782160684; c=relaxed/simple;
+	bh=WsDcKuA1gvo2wPOxdvdHPc1d4sATgEmk4SH3WC2S+lA=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=AuHfawblQAsmmC2AS2ckOmnyll1we17CddoDP43mjee5zU4gwFUbOAS32xEbvuPlfRFBKn+iyPasQnVz5E/dOp1Jmubztoq7L9s/s7Wf7wvGxY9hL2JUhzlYVHEL0H4H1lO02i4GsRzZmKt1ZRbNbTlEEgtWYPM7RH5k/qNUpJo=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (1024-bit key) header.d=collabora.com header.i=sebastian.reichel@collabora.com header.b=ftenAF2p; arc=pass smtp.client-ip=136.143.188.11
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="h1517bzh"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1782160215; x=1813696215;
-  h=message-id:subject:from:to:cc:date:in-reply-to:
-   references:content-transfer-encoding:mime-version;
-  bh=EVo3w+MCyLztsp+OKJSS4dn6VYvqlUQJ9v5ad/NQIy8=;
-  b=h1517bzhw1kBACK0c8pLGDvwUz2OSMI2FPzxMIkmdsYUkIsyi1Pm3dyy
-   UrCbXaMiRzUP+4OfpWlXy6dEPK9y8uMzPBr4tkeJmXaxNLZmcMmXajM7Y
-   CfHBZCwufoZJCj6olRFWi63KjRao6rs1iN6j75vCA1bdBPqtNQQEi1ZD2
-   Uo52huNT3qB4U6MWI+SQWzZ+DMRhPU8zg0ulUDPEpfQIwvuYv2/+Kt58a
-   KHXwZxGl8v0pkTaMUafOc6h8MUvtdEB/2cgEsBoP6FAMXrFBR7bKfGc71
-   +dObjsGD3T/+nr9y36ZhMy5proPI2tziCe2dKz158dIn3wg38Xqdsgtm3
-   g==;
-X-CSE-ConnectionGUID: N7aeZUyETbaifCxBJnpFAQ==
-X-CSE-MsgGUID: Dgb1iFUcRyyLudUOGSxrXg==
-X-IronPort-AV: E=McAfee;i="6800,10657,11825"; a="82902990"
-X-IronPort-AV: E=Sophos;i="6.24,219,1774335600"; 
-   d="scan'208";a="82902990"
-Received: from orviesa001.jf.intel.com ([10.64.159.141])
-  by orvoesa109.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 22 Jun 2026 13:30:14 -0700
-X-CSE-ConnectionGUID: qulthIr4Q8WhLhWg6TbH+A==
-X-CSE-MsgGUID: naxSkq9hRtmDZLmg6z/Q6Q==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.24,219,1774335600"; 
-   d="scan'208";a="287451984"
-Received: from schen9-mobl4.amr.corp.intel.com (HELO [10.125.108.85]) ([10.125.108.85])
-  by smtpauth.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 22 Jun 2026 13:30:14 -0700
-Message-ID: <7ff5b6742c28da965eaf0a1175cf031d8786c1aa.camel@linux.intel.com>
-Subject: Re: [PATCH v2] thermal: intel: int3400: clean up ODVP files on
- probe failures
-From: srinivas pandruvada <srinivas.pandruvada@linux.intel.com>
-To: Pengpeng Hou <pengpeng@iscas.ac.cn>, "Rafael J . Wysocki"
-	 <rafael@kernel.org>, Daniel Lezcano <daniel.lezcano@kernel.org>, Zhang Rui
-	 <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>
-Cc: Kaushlendra Kumar <kaushlendra.kumar@intel.com>, Kees Cook
- <kees@kernel.org>,  Miquel Raynal <miquel.raynal@bootlin.com>, Christophe
- JAILLET <christophe.jaillet@wanadoo.fr>, kernel test robot <lkp@intel.com>,
- linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Date: Mon, 22 Jun 2026 13:30:13 -0700
-In-Reply-To: <20260622153306.79258-1-pengpeng@iscas.ac.cn>
-References: <20260622153306.79258-1-pengpeng@iscas.ac.cn>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-User-Agent: Evolution 3.58.3 (3.58.3-1.fc43) 
+	dkim=pass (1024-bit key) header.d=collabora.com header.i=sebastian.reichel@collabora.com header.b="ftenAF2p"
+ARC-Seal: i=1; a=rsa-sha256; t=1782160644; cv=none; 
+	d=zohomail.com; s=zohoarc; 
+	b=NbZ03RwDUpsPUGMBrvUdLdu9YwvBtwbJnzp1KGgnOw8bmxFm308mN3AT9TQxGf0hTvg6NQG4C2vMqEG28Kk9TYtSAwUBIsPuLMENiboDJ821z6UtEvkeDwz5+Jcm+re9M7ZFaWtEkR9uOKdar4YVHKXBp3rQHmkoCuJ+yoWpc4o=
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=zohomail.com; s=zohoarc; 
+	t=1782160644; h=Content-Type:Cc:Cc:Date:Date:From:From:In-Reply-To:MIME-Version:Message-ID:References:Subject:Subject:To:To:Message-Id:Reply-To; 
+	bh=mN91JuTXlP9yH/fF2WAYmfPvIPkIj7NLhNIGrphtGFQ=; 
+	b=cdn/QOUYXHEVxnnOG0Xz+v5hgIFdWmFnUWGGBrXE0BkN+/Y/SSTnkF8DIdXeHmsun1N1bTnfVSATEUntE3qlia7Tu2OXutygr1K/pScuMkRUqb8jzru748kl9eSG9NgAF6EAKY/Eq7kqq5AHGgy4zYxnRNwUhOnHfiaIKQmZ7Ec=
+ARC-Authentication-Results: i=1; mx.zohomail.com;
+	dkim=pass  header.i=collabora.com;
+	spf=pass  smtp.mailfrom=sebastian.reichel@collabora.com;
+	dmarc=pass header.from=<sebastian.reichel@collabora.com>
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; t=1782160644;
+	s=zohomail; d=collabora.com; i=sebastian.reichel@collabora.com;
+	h=Date:Date:From:From:To:To:Cc:Cc:Subject:Subject:Message-ID:References:MIME-Version:Content-Type:In-Reply-To:Message-Id:Reply-To;
+	bh=mN91JuTXlP9yH/fF2WAYmfPvIPkIj7NLhNIGrphtGFQ=;
+	b=ftenAF2pLAzRlyNVRan8mKVLwnie2DhUAR+YqxoXAcc93rbXBpyH//u6VQz6uvu5
+	NVnB16FfAhcMzP72FH86ULWAFvMa3rYocIFntWDDFHxLa7uuG26U7HA2MLbmUYNgfOb
+	uJogOLlRuf0JNK3ahPODVSRWU84ISRiZWge9esxY=
+Received: by mx.zohomail.com with SMTPS id 1782160642430172.91971762131618;
+	Mon, 22 Jun 2026 13:37:22 -0700 (PDT)
+Received: by venus (Postfix, from userid 1000)
+	id 6EF1E1824A2; Mon, 22 Jun 2026 22:37:11 +0200 (CEST)
+Date: Mon, 22 Jun 2026 22:37:11 +0200
+From: Sebastian Reichel <sebastian.reichel@collabora.com>
+To: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
+Cc: Bjorn Andersson <andersson@kernel.org>, 
+	Konrad Dybcio <konradybcio@kernel.org>, Rob Herring <robh@kernel.org>, 
+	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
+	Peter Griffin <peter.griffin@linaro.org>, Alim Akhtar <alim.akhtar@samsung.com>, 
+	Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@kernel.org>, 
+	Brian Masney <bmasney@redhat.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, 
+	Chanwoo Choi <cw00.choi@samsung.com>, Sam Protsenko <semen.protsenko@linaro.org>, 
+	Rob Clark <robin.clark@oss.qualcomm.com>, Dmitry Baryshkov <lumag@kernel.org>, 
+	Abhinav Kumar <abhinav.kumar@linux.dev>, Jessica Zhang <jesszhan0024@gmail.com>, 
+	Sean Paul <sean@poorly.run>, Marijn Suijten <marijn.suijten@somainline.org>, 
+	David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>, 
+	Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, Maxime Ripard <mripard@kernel.org>, 
+	Thomas Zimmermann <tzimmermann@suse.de>, Inki Dae <inki.dae@samsung.com>, 
+	Seung-Woo Kim <sw0312.kim@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, 
+	Andi Shyti <andi.shyti@kernel.org>, Georgi Djakov <djakov@kernel.org>, Lee Jones <lee@kernel.org>, 
+	Pavel Machek <pavel@kernel.org>, Hans Verkuil <hverkuil@kernel.org>, 
+	Mauro Carvalho Chehab <mchehab@kernel.org>, Ulf Hansson <ulfh@kernel.org>, Peter Rosin <peda@lysator.liu.se>, 
+	Vinod Koul <vkoul@kernel.org>, Neil Armstrong <neil.armstrong@linaro.org>, 
+	Linus Walleij <linusw@kernel.org>, Geert Uytterhoeven <geert+renesas@glider.be>, 
+	Magnus Damm <magnus.damm@gmail.com>, Javier Martinez Canillas <javier@dowhile0.org>, 
+	Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, 
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jiri Slaby <jirislaby@kernel.org>, 
+	Srinivas Kandagatla <srini@kernel.org>, Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, 
+	"Rafael J. Wysocki" <rafael@kernel.org>, Daniel Lezcano <daniel.lezcano@kernel.org>, 
+	Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>, 
+	Jonathan Marek <jonathan@marek.ca>, Taniya Das <quic_tdas@quicinc.com>, 
+	Robert Marko <robimarko@gmail.com>, Christian Marangi <ansuelsmth@gmail.com>, 
+	Stephan Gerhold <stephan@gerhold.net>, Adam Skladowski <a_skl39@protonmail.com>, 
+	Sireesh Kodali <sireeshkodali@protonmail.com>, Barnabas Czeman <barnabas.czeman@mainlining.org>, 
+	Imran Shaik <quic_imrashai@quicinc.com>, Sricharan Ramabadhran <quic_srichara@quicinc.com>, 
+	Anusha Rao <quic_anusha@quicinc.com>, Luo Jie <quic_luoj@quicinc.com>, 
+	Tomasz Figa <tomasz.figa@gmail.com>, Chanho Park <chanho61.park@samsung.com>, 
+	Sunyeal Hong <sunyeal.hong@samsung.com>, Shin Son <shin.son@samsung.com>, 
+	Krishna Manikandan <quic_mkrishn@quicinc.com>, Jacek Anaszewski <jacek.anaszewski@gmail.com>, 
+	Jaehoon Chung <jh80.chung@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, 
+	Alina Yu <alina_yu@richtek.com>, Andy Gross <agross@kernel.org>, 
+	Niklas =?utf-8?Q?S=C3=B6derlund?= <niklas.soderlund@ragnatech.se>, Wesley Cheng <quic_wcheng@quicinc.com>, 
+	linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
+	linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, linux-clk@vger.kernel.org, 
+	dri-devel@lists.freedesktop.org, freedreno@lists.freedesktop.org, linux-i2c@vger.kernel.org, 
+	linux-pm@vger.kernel.org, linux-leds@vger.kernel.org, linux-media@vger.kernel.org, 
+	linux-mmc@vger.kernel.org, linux-phy@lists.infradead.org, linux-gpio@vger.kernel.org, 
+	linux-renesas-soc@vger.kernel.org, linux-serial@vger.kernel.org, linux-sound@vger.kernel.org, 
+	linux-usb@vger.kernel.org
+Subject: Re: [PATCH 2/2] dt-bindings: Drop incorrect usage of double '::'
+Message-ID: <ajmcsfEXiTfFh-XH@venus>
+References: <20260622101606.485961-3-krzysztof.kozlowski@oss.qualcomm.com>
+ <20260622101606.485961-4-krzysztof.kozlowski@oss.qualcomm.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-
-Hi Hou,
-
-On Mon, 2026-06-22 at 23:33 +0800, Pengpeng Hou wrote:
-> int3400_thermal_probe() creates ODVP sysfs files before several later
-> probe steps can still fail.=C2=A0 The late error paths unregister the
-> thermal
-> zone and remove other sysfs groups, but they do not remove the ODVP
-> files
-> or free the ODVP attribute storage.
-
-OK, you added a  cleanup_odvp() after thermal_zone_device_unregister().
-But it will not cover thermal_tripless_zone_device_register() failure.
-
-You could have moved cleanup_odvp() instead of copy before free_priv:
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="he6mgtsui5z5w5dr"
+Content-Disposition: inline
+In-Reply-To: <20260622101606.485961-4-krzysztof.kozlowski@oss.qualcomm.com>
+X-Zoho-Virus-Status: 1
+X-Zoho-AV-Stamp: zmail-av-0.2.10.1.5.2/282.152.77
+X-ZohoMailClient: External
 
 
-You are also adding free for data_vault. There is no description of
-that. I suggest to add another change for that. Also that needs to be
-done for other error case also for example when free_imok.
+--he6mgtsui5z5w5dr
+Content-Type: text/plain; protected-headers=v1; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+Subject: Re: [PATCH 2/2] dt-bindings: Drop incorrect usage of double '::'
+MIME-Version: 1.0
 
+Hi,
 
-Thanks,
-Srinivas
-
+On Mon, Jun 22, 2026 at 12:16:08PM +0200, Krzysztof Kozlowski wrote:
+> There is no use of double colon '::' in YAML. OTOH, the literal style
+> block, e.g. using '|' treats all characters as content [1] therefore
+> single use of ':' in descriptions is perfectly fine, whenever '|' is
+> used.
 >=20
-> Run the ODVP cleanup from the existing post-ODVP error path, and
-> clear
-> the saved ODVP pointers after freeing them so the cleanup remains
-> safe
-> when reached after the later sysfs cleanup path has already removed
-> the
-> files.
+> Cleanup existing code, so the confusing style won't be re-used in new
+> contributions.
 >=20
-> Signed-off-by: Pengpeng Hou <pengpeng@iscas.ac.cn>
-> Reported-by: kernel test robot <lkp@intel.com>
-> Closes:
-> https://lore.kernel.org/oe-kbuild-all/202606152042.8kTVDHYg-lkp@intel.com=
-/
+> Link: https://yaml.org/spec/1.2.2/#literal-style [1]
+> Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
+>=20
 > ---
-> Changes since v1:
-> - Avoid adding new error labels; reuse the existing free_art_trt path
-> so
-> =C2=A0 W=3D1 builds do not report unused labels.
-> - Clear ODVP and data_vault pointers after freeing them.
-> - Free data_vault directly when bin-file creation fails.
 >=20
-> =C2=A0drivers/thermal/intel/int340x_thermal/int3400_thermal.c | 7 +++++++
-> =C2=A01 file changed, 7 insertions(+)
->=20
-> diff --git a/drivers/thermal/intel/int340x_thermal/int3400_thermal.c
-> b/drivers/thermal/intel/int340x_thermal/int3400_thermal.c
-> index 66db4b1effb4..5b59634bcc2e 100644
-> --- a/drivers/thermal/intel/int340x_thermal/int3400_thermal.c
-> +++ b/drivers/thermal/intel/int340x_thermal/int3400_thermal.c
-> @@ -357,7 +357,9 @@ static void cleanup_odvp(struct
-> int3400_thermal_priv *priv)
-> =C2=A0		}
-> =C2=A0		kfree(priv->odvp_attrs);
-> +		priv->odvp_attrs =3D NULL;
-> =C2=A0	}
-> =C2=A0	kfree(priv->odvp);
-> +	priv->odvp =3D NULL;
-> =C2=A0	priv->odvp_count =3D 0;
-> =C2=A0}
-> =C2=A0
-> @@ -620,6 +622,9 @@ static int int3400_thermal_probe(struct
-> platform_device *pdev)
-> =C2=A0	if (!ZERO_OR_NULL_PTR(priv->data_vault)) {
-> =C2=A0		result =3D device_create_bin_file(&pdev->dev,
-> &bin_attr_data_vault);
-> -		if (result)
-> +		if (result) {
-> +			kfree(priv->data_vault);
-> +			priv->data_vault =3D NULL;
-> =C2=A0			goto free_uuid;
-> +		}
-> =C2=A0	}
-> =C2=A0
-> @@ -651,8 +656,9 @@ static int int3400_thermal_probe(struct
-> platform_device *pdev)
-> =C2=A0free_sysfs:
-> =C2=A0	cleanup_odvp(priv);
-> =C2=A0	if (!ZERO_OR_NULL_PTR(priv->data_vault)) {
-> =C2=A0		device_remove_bin_file(&pdev->dev,
-> &bin_attr_data_vault);
-> =C2=A0		kfree(priv->data_vault);
-> +		priv->data_vault =3D NULL;
-> =C2=A0	}
-> =C2=A0free_uuid:
-> =C2=A0	sysfs_remove_group(&pdev->dev.kobj, &uuid_attribute_group);
-> @@ -667,6 +674,7 @@ static int int3400_thermal_probe(struct
-> platform_device *pdev)
-> =C2=A0	if (!priv->rel_misc_dev_res)
-> =C2=A0		acpi_thermal_rel_misc_device_remove(priv->adev-
-> >handle);
-> =C2=A0	thermal_zone_device_unregister(priv->thermal);
-> +	cleanup_odvp(priv);
-> =C2=A0free_art_trt:
-> =C2=A0	kfree(priv->trts);
-> =C2=A0	kfree(priv->arts);
+> Intention for this patch is to go via Rob's tree.
+> ---
+
+[...]
+
+>  .../bindings/power/reset/restart-handler.yaml |  8 ++++----
+
+Acked-by: Sebastian Reichel <sebastian.reichel@collabora.com>
+
+[...]
+
+Greetings,
+
+-- Sebastian
+
+--he6mgtsui5z5w5dr
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAmo5nPIACgkQ2O7X88g7
++pqv2Q/+LMhPKKkmgsVnMejKBphG4p2N/zVrnMgxmg8lVO8rwgA7Kxo2wlLqu2H5
+iapTV4a2dMXB0SUw8UGbt9Lt6JjHaORZnybu95mZEZMS+G7HRl5M8DE+LWMJXLX0
+S+G43Cv1O/d5dV/rM2nJqOItOK+KIbHQI4+oY/O8P7ENnU2h3X2HxOtWxtg6+9gz
+UNPZgoZdEE38SJVzhHrCO1+NfGikbo7vUZC0BmyxiNuVTK9eFjie/eIS3ST4W5T9
+3v2n+F2fD7+xsfSzUyjRc3p+zLyweImjiS6J5GAmTf4qxL9hQ3nXEW2gtRQQvB2l
+W62s4eZt9jFlQjhXVjUeIkEPkORE4RrDInyktgSc6BKm/D5SylQgwytebDtJC2s4
+QceoYrV7CHNsQ0vr9oITDlBN4Ik2TTsqhK2Sw0/2P0W7VU7y8uoHsm2xHPkf17l+
+svy9/UvPf4f5kyBIPwySRFS4IUXcdP8MhscNstvyw1GJqxtCNNRfDX6z0isLIU6Q
+yfIbxBsgCdHQMyM3HekxaofPcGx9LRJtbbNt2YA4SbqEKnzci/ToUY+z8a2svvDM
+Ko5OrYJ/yAjPYjcoQ7ajynJC+BxvFRMTtfCEQmDLiaxN9+ueXJJMXe26hLYClF9g
+ADHM+PuYvQrF2GfU9DgvPXkJHh3yEtyPk1rE6O1f4Q9xvKZMblg=
+=cVKh
+-----END PGP SIGNATURE-----
+
+--he6mgtsui5z5w5dr--
