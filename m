@@ -1,148 +1,272 @@
-Received: from mail-pl1-f181.google.com (mail-pl1-f181.google.com [209.85.214.181])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.9])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DEFAD3655DD
-	for <linux-pm@vger.kernel.org>; Mon, 22 Jun 2026 10:38:45 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.181
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 961B12E1746;
+	Mon, 22 Jun 2026 10:46:36 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.9
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1782124727; cv=none; b=iKTZ9oTyOhMgvLBYwWiGNGSzVr8xU2g33U9f/555MVf0OP8I89LF/ybexJ6ycOgTr5CnHx7erpTHFHEiLZsKUOAPq6+lnDNFULZ5LqH8a3hTCt/TM9mMdN8OWhgxUg85ToW5oigQEdaawljA6FytkPAGNmBjEiV2FVFEVuioBrY=
+	t=1782125198; cv=none; b=dgZlRRYEwgCL3MepyIsJLbjvMQetRZGhD4GjIQtkoglAXK0Ii7sEy185/W7VwLFjDVPiYVOSIlWpQFjF2nBj+eGCJf+W/bYamDEXpjTpe+ZS2sb7w8e0jXIQWXPBPHLO+PCCBUfRIxQMEA9Muq+3ReNAsJEfLZIKImeBlpECDPs=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1782124727; c=relaxed/simple;
-	bh=CTQXMUV+/UBVnNjzgtkJO88wjy6FOPIwK3y5DrpmBBk=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=pjJquyoYQ+vpLiU3p5Iqo4Et6DCFH01dSD9Dq4330Skviz85hHhl5sb+xbl+sLjfv5pBB08Jx2WN9SVXNPYz79/ruEJZ5WzNmWhTWjdjOuGMpm5nSSM8gmyyquMcjhzjfsKSEYMvzC8sZFmlaIP11nTRg3i8Cx4/r8r+/enn6ZY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org; spf=pass smtp.mailfrom=gmail.com; arc=none smtp.client-ip=209.85.214.181
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
-Received: by mail-pl1-f181.google.com with SMTP id d9443c01a7336-2c0c379e8ffso34552765ad.3
-        for <linux-pm@vger.kernel.org>; Mon, 22 Jun 2026 03:38:45 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1782124725; x=1782729525;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=6sEwup8vrGtzg0eQ+zIA6Kd2oTy+XBY9jxS2BNcFzC0=;
-        b=sJXdlFgBOKSjn9i5A4T8ql2cko0/gPxhvAxQNabdFA2fqTinWEN6Cz4eamAsgn5Cpm
-         Ph2dYpO1p1skPxD+N0dLhGRm23TlbraVdJGiKYcqhTYmrxFhgVsuMT6IFVe0hKv3qU5Q
-         84t+zZgLWkHgz0s86v6zgdLpxsO3kytB2aG/YsHiCvU1PV2563LHIvypHvHvKQ1kbcJP
-         tRkEzJWFvVM/f+XX3x2fal7LUEB18swp7q/fCdb0McZVZeAAxbQEoih1BYuqA5FpIysB
-         mzOo5MTw5dovUD/GnOo3yuCzQ3tPd0gF12NA3EMh8FcUkyR/t3kmj/XcCidCgvuxPhDL
-         7qrg==
-X-Forwarded-Encrypted: i=1; AHgh+Ro2s1zT49jz5bnnDQ+vBxkrVRpfWJ9miXb9lRKQlgrSnTo+rc0RUOiQW11iUBB3PDEc7l1W0OJDjA==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yyh7b0PO/USGmX/LEO6AGtbr9lrfqU1wBHh+BYwDdTFAuRvtW2L
-	6FHrVpoEn6TDtfYc50jUiiLSr1FCuk2h/aTT1g59idC+4/RbE5GAjFNDuccBfMAJ
-X-Gm-Gg: AfdE7cnx+GsQEGSJhLWACnG8P3xEyXrnsDBU/jH+698JKrt9w/THidw08gXQhROYzM8
-	NntRkGGkf4WfF2iWRaPsZ/BbdCmRzk3rsD27hgEMnKM8t75dtDrtIOyD7lDbSdMpcSI6UG+OR11
-	OSbQkjSoC+2PuvSM0NmZJvKa9hPyQ+ZC4uOSbW+SloCf0oDCQcRAFXwY6VmUictyD+qtuVnBgVQ
-	lRikcmUPFgCUwlNVaF1srN0Y3fJuah+JuAZXrxxuB869r1J/g2B9CieEKjJUSK/DNbuxCLb59yW
-	bTep8wB+SXDmAmmOUjPlzejb9q3JmSn4VOYgOclL0k6KYLCFHzC4jJu1dxJG0r6U9V621eG2YY/
-	a4w2UMh2apnG8Bncu+YUrUp4ecZwDCXTtMZbXxqoI/MjI2zhEp3wmI7K/g5TrM4x6O4tlqgXLvv
-	vljPyxuiwGsO6pEkcypILpMN5786RFdwPwkI5QbxKP5aP/XX2kYeBR
-X-Received: by 2002:a17:902:e947:b0:2c0:e7bb:9081 with SMTP id d9443c01a7336-2c71904bfdfmr143635925ad.33.1782124725169;
-        Mon, 22 Jun 2026 03:38:45 -0700 (PDT)
-Received: from mail-dy1-f181.google.com (mail-dy1-f181.google.com. [74.125.82.181])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2c7436de1fasm75713425ad.25.2026.06.22.03.38.44
-        for <linux-pm@vger.kernel.org>
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 22 Jun 2026 03:38:44 -0700 (PDT)
-Received: by mail-dy1-f181.google.com with SMTP id 5a478bee46e88-30bf854d5feso8261803eec.0
-        for <linux-pm@vger.kernel.org>; Mon, 22 Jun 2026 03:38:44 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AHgh+RpjkG8LFWGh7Z9HUxQn7x73AluLpD0qRzt6umwHMsYeJDMe1ji4Jw+mPyCGIpBP6yEdKRfhs6A2Jw==@vger.kernel.org
-X-Received: by 2002:a05:6102:3314:b0:6ef:f6cf:1b32 with SMTP id
- ada2fe7eead31-72a043c9af3mr8022945137.27.1782124344043; Mon, 22 Jun 2026
- 03:32:24 -0700 (PDT)
+	s=arc-20240116; t=1782125198; c=relaxed/simple;
+	bh=/hKgAevfumO8x7LfebeUyLh/erlFr2Hmr9kpKNVbH0Q=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=RXODWZKElkwNYpFJonxchYxL7m7+buIIWgUiJMAD0MYfyKNwNMLSslVv6yBoc/HcLQI6ALqaWoX3hI7BUhDfYNAOp/d/O61d+5hIwFcf2eExAjaRh+yyxF4FlmXcJqP/2R2L+iPy0pH17SBJrNaylwgCZ4MV+XxvZHUJxlT/gKM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=pass smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=nzU+mGOE; arc=none smtp.client-ip=192.198.163.9
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.intel.com
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="nzU+mGOE"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1782125197; x=1813661197;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:content-transfer-encoding:in-reply-to;
+  bh=/hKgAevfumO8x7LfebeUyLh/erlFr2Hmr9kpKNVbH0Q=;
+  b=nzU+mGOEqWcv1ZhOmQPh7A2Vpfo+LMNqc4tcIPxCOVAjg5E+B8987oJm
+   CRk7qHz3x3v+O+oG7cXujRDkzL1gtlG6mhDITbvghfqBqcfJ18psAc+PI
+   Tg6A1WV+wrBAYDeVjinRSZ8iVzEiuhmQJVGAURRe3kSmW2jMrs7sROlGE
+   u8+D/V9jaSTcCF1v2EIm0ssuPCon5Qce2IQ+52WID3KKCx1hIbTl0AP50
+   tBvVqFdniXMiI+R7HhzvDTzP1eZ59wlltT5mIxb+U8IVJjshC3XaerKJ+
+   nuUFkH1Xgheje/msjZOEt2IJ3ymfBjkuClzZN1MPvQKC7KGcG7O1ntKDW
+   A==;
+X-CSE-ConnectionGUID: RGyONYQVSea0+pxWnZOPdg==
+X-CSE-MsgGUID: tWucpBD+SQmz4hzgmxAYMg==
+X-IronPort-AV: E=McAfee;i="6800,10657,11824"; a="93506230"
+X-IronPort-AV: E=Sophos;i="6.24,218,1774335600"; 
+   d="scan'208";a="93506230"
+Received: from orviesa003.jf.intel.com ([10.64.159.143])
+  by fmvoesa103.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 22 Jun 2026 03:46:35 -0700
+X-CSE-ConnectionGUID: xNR2+KjtQLGBpSv9fyyNaQ==
+X-CSE-MsgGUID: i0RzaMPlRGCEVMh1muYCuA==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.24,218,1774335600"; 
+   d="scan'208";a="253099713"
+Received: from pgcooper-mobl3.ger.corp.intel.com (HELO localhost) ([10.245.245.152])
+  by ORVIESA003-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 22 Jun 2026 03:46:25 -0700
+Date: Mon, 22 Jun 2026 13:46:22 +0300
+From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+To: Kaitao Cheng <kaitao.cheng@linux.dev>
+Cc: Alexei Starovoitov <alexei.starovoitov@gmail.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	David Hildenbrand <david@kernel.org>, Jens Axboe <axboe@kernel.dk>,
+	Tejun Heo <tj@kernel.org>, Alexander Viro <viro@zeniv.linux.org.uk>,
+	Christian Brauner <brauner@kernel.org>,
+	Alexei Starovoitov <ast@kernel.org>,
+	Daniel Borkmann <daniel@iogearbox.net>,
+	Andrii Nakryiko <andrii@kernel.org>,
+	Johannes Weiner <hannes@cmpxchg.org>,
+	Peter Zijlstra <peterz@infradead.org>,
+	Ingo Molnar <mingo@redhat.com>,
+	Arnaldo Carvalho de Melo <acme@kernel.org>,
+	Namhyung Kim <namhyung@kernel.org>,
+	Thomas Gleixner <tglx@kernel.org>,
+	Juri Lelli <juri.lelli@redhat.com>,
+	Vincent Guittot <vincent.guittot@linaro.org>,
+	Paul Moore <paul@paul-moore.com>,
+	"Paul E. McKenney" <paulmck@kernel.org>,
+	Shakeel Butt <shakeel.butt@linux.dev>,
+	Christian =?iso-8859-1?Q?K=F6nig?= <christian.koenig@amd.com>,
+	David Howells <dhowells@redhat.com>,
+	Simona Vetter <simona.vetter@ffwll.ch>,
+	Randy Dunlap <rdunlap@infradead.org>,
+	Luca Ceresoli <luca.ceresoli@bootlin.com>,
+	Philipp Stanner <phasta@kernel.org>, linux-block@vger.kernel.org,
+	LKML <linux-kernel@vger.kernel.org>,
+	"open list:CONTROL GROUP (CGROUP)" <cgroups@vger.kernel.org>,
+	linux-ntfs-dev@lists.sourceforge.net,
+	Linux-Fsdevel <linux-fsdevel@vger.kernel.org>,
+	io-uring <io-uring@vger.kernel.org>, audit@vger.kernel.org,
+	bpf <bpf@vger.kernel.org>,
+	Network Development <netdev@vger.kernel.org>,
+	dri-devel@lists.freedesktop.org,
+	"linux-perf-use." <linux-perf-users@vger.kernel.org>,
+	linux-trace-kernel <linux-trace-kernel@vger.kernel.org>,
+	kexec@lists.infradead.org, live-patching@vger.kernel.org,
+	linux-modules@vger.kernel.org,
+	Linux Crypto Mailing List <linux-crypto@vger.kernel.org>,
+	Linux Power Management <linux-pm@vger.kernel.org>,
+	rcu@vger.kernel.org, sched-ext@lists.linux.dev,
+	linux-mm <linux-mm@kvack.org>, virtualization@lists.linux.dev,
+	damon@lists.linux.dev, clang-built-linux <llvm@lists.linux.dev>,
+	chengkaitao <chengkaitao@kylinos.cn>,
+	Muchun Song <muchun.song@linux.dev>
+Subject: Re: [PATCH v3 0/7] Prepare mutable list iterators to cache cursor
+ state
+Message-ID: <ajkSftEbdGoiJXYs@ashevche-desk.local>
+References: <20260622040533.29824-1-kaitao.cheng@linux.dev>
+ <CAADnVQJmPWFT01b7DuLdtafv=8FyB84GYHNZ8zSTck+9Aw0JpA@mail.gmail.com>
+ <8c8f1849-86d3-4c69-be27-30bbdffdf616@linux.dev>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260622101606.485961-3-krzysztof.kozlowski@oss.qualcomm.com> <20260622101606.485961-4-krzysztof.kozlowski@oss.qualcomm.com>
-In-Reply-To: <20260622101606.485961-4-krzysztof.kozlowski@oss.qualcomm.com>
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Mon, 22 Jun 2026 12:32:09 +0200
-X-Gmail-Original-Message-ID: <CAMuHMdWw4+-YZRx2icp_t3OQt3cb9osjac7gziiyRZcHa3zMbQ@mail.gmail.com>
-X-Gm-Features: AVVi8CeRh5uGKoGdWXUVe0e4sYYTgs7H91cw7cP665l5Rz_E8v79r8eSiiAY4SE
-Message-ID: <CAMuHMdWw4+-YZRx2icp_t3OQt3cb9osjac7gziiyRZcHa3zMbQ@mail.gmail.com>
-Subject: Re: [PATCH 2/2] dt-bindings: Drop incorrect usage of double '::'
-To: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
-Cc: Bjorn Andersson <andersson@kernel.org>, Konrad Dybcio <konradybcio@kernel.org>, 
-	Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
-	Peter Griffin <peter.griffin@linaro.org>, Alim Akhtar <alim.akhtar@samsung.com>, 
-	Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@kernel.org>, 
-	Brian Masney <bmasney@redhat.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, 
-	Chanwoo Choi <cw00.choi@samsung.com>, Sam Protsenko <semen.protsenko@linaro.org>, 
-	Rob Clark <robin.clark@oss.qualcomm.com>, Dmitry Baryshkov <lumag@kernel.org>, 
-	Abhinav Kumar <abhinav.kumar@linux.dev>, Jessica Zhang <jesszhan0024@gmail.com>, 
-	Sean Paul <sean@poorly.run>, Marijn Suijten <marijn.suijten@somainline.org>, 
-	David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>, 
-	Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, Maxime Ripard <mripard@kernel.org>, 
-	Thomas Zimmermann <tzimmermann@suse.de>, Inki Dae <inki.dae@samsung.com>, 
-	Seung-Woo Kim <sw0312.kim@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, 
-	Andi Shyti <andi.shyti@kernel.org>, Georgi Djakov <djakov@kernel.org>, Lee Jones <lee@kernel.org>, 
-	Pavel Machek <pavel@kernel.org>, Hans Verkuil <hverkuil@kernel.org>, 
-	Mauro Carvalho Chehab <mchehab@kernel.org>, Ulf Hansson <ulfh@kernel.org>, Peter Rosin <peda@lysator.liu.se>, 
-	Vinod Koul <vkoul@kernel.org>, Neil Armstrong <neil.armstrong@linaro.org>, 
-	Linus Walleij <linusw@kernel.org>, Geert Uytterhoeven <geert+renesas@glider.be>, 
-	Magnus Damm <magnus.damm@gmail.com>, Sebastian Reichel <sre@kernel.org>, 
-	Javier Martinez Canillas <javier@dowhile0.org>, Liam Girdwood <lgirdwood@gmail.com>, 
-	Mark Brown <broonie@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
-	Jiri Slaby <jirislaby@kernel.org>, Srinivas Kandagatla <srini@kernel.org>, 
-	Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, "Rafael J. Wysocki" <rafael@kernel.org>, 
-	Daniel Lezcano <daniel.lezcano@kernel.org>, Zhang Rui <rui.zhang@intel.com>, 
-	Lukasz Luba <lukasz.luba@arm.com>, Jonathan Marek <jonathan@marek.ca>, 
-	Taniya Das <quic_tdas@quicinc.com>, Robert Marko <robimarko@gmail.com>, 
-	Christian Marangi <ansuelsmth@gmail.com>, Stephan Gerhold <stephan@gerhold.net>, 
-	Adam Skladowski <a_skl39@protonmail.com>, Sireesh Kodali <sireeshkodali@protonmail.com>, 
-	Barnabas Czeman <barnabas.czeman@mainlining.org>, Imran Shaik <quic_imrashai@quicinc.com>, 
-	Sricharan Ramabadhran <quic_srichara@quicinc.com>, Anusha Rao <quic_anusha@quicinc.com>, 
-	Luo Jie <quic_luoj@quicinc.com>, Tomasz Figa <tomasz.figa@gmail.com>, 
-	Chanho Park <chanho61.park@samsung.com>, Sunyeal Hong <sunyeal.hong@samsung.com>, 
-	Shin Son <shin.son@samsung.com>, Krishna Manikandan <quic_mkrishn@quicinc.com>, 
-	Jacek Anaszewski <jacek.anaszewski@gmail.com>, Jaehoon Chung <jh80.chung@samsung.com>, 
-	Marek Szyprowski <m.szyprowski@samsung.com>, Alina Yu <alina_yu@richtek.com>, 
-	Andy Gross <agross@kernel.org>, =?UTF-8?Q?Niklas_S=C3=B6derlund?= <niklas.soderlund@ragnatech.se>, 
-	Wesley Cheng <quic_wcheng@quicinc.com>, linux-arm-msm@vger.kernel.org, 
-	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, 
-	linux-clk@vger.kernel.org, dri-devel@lists.freedesktop.org, 
-	freedreno@lists.freedesktop.org, linux-i2c@vger.kernel.org, 
-	linux-pm@vger.kernel.org, linux-leds@vger.kernel.org, 
-	linux-media@vger.kernel.org, linux-mmc@vger.kernel.org, 
-	linux-phy@lists.infradead.org, linux-gpio@vger.kernel.org, 
-	linux-renesas-soc@vger.kernel.org, linux-serial@vger.kernel.org, 
-	linux-sound@vger.kernel.org, linux-usb@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <8c8f1849-86d3-4c69-be27-30bbdffdf616@linux.dev>
+Organization: Intel Finland Oy - BIC 0357606-4 - c/o Alberga Business Park, 6
+ krs, Bertel Jungin Aukio 5, 02600 Espoo
 
-On Mon, 22 Jun 2026 at 12:16, Krzysztof Kozlowski
-<krzysztof.kozlowski@oss.qualcomm.com> wrote:
-> There is no use of double colon '::' in YAML. OTOH, the literal style
-> block, e.g. using '|' treats all characters as content [1] therefore
-> single use of ':' in descriptions is perfectly fine, whenever '|' is
-> used.
->
-> Cleanup existing code, so the confusing style won't be re-used in new
-> contributions.
->
-> Link: https://yaml.org/spec/1.2.2/#literal-style [1]
-> Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
->
-> ---
->
-> Intention for this patch is to go via Rob's tree.
+On Mon, Jun 22, 2026 at 02:15:01PM +0800, Kaitao Cheng wrote:
+> 在 2026/6/22 13:28, Alexei Starovoitov 写道:
+> > On Sun, Jun 21, 2026 at 9:06 PM Kaitao Cheng <kaitao.cheng@linux.dev> wrote:
 
->  .../bindings/power/renesas,rcar-sysc.yaml     |  2 +-
->  .../bindings/soc/renesas/renesas-soc.yaml     |  4 ++--
+...
 
-Acked-by: Geert Uytterhoeven <geert+renesas@glider.be> # renesas
+> >>  block/bfq-iosched.c                 |  17 +-
+> >>  block/blk-cgroup.c                  |  12 +-
+> >>  block/blk-flush.c                   |   4 +-
+> >>  block/blk-iocost.c                  |  18 +-
+> >>  block/blk-mq.c                      |   8 +-
+> >>  block/blk-throttle.c                |   4 +-
+> >>  block/kyber-iosched.c               |   4 +-
+> >>  block/partitions/ldm.c              |   8 +-
+> >>  block/sed-opal.c                    |   4 +-
+> >>  include/linux/list.h                | 269 ++++++++++++++++++++++++----
+> >>  include/linux/llist.h               |  81 +++++++--
+> >>  init/initramfs.c                    |   5 +-
+> >>  io_uring/cancel.c                   |   6 +-
+> >>  io_uring/poll.c                     |   3 +-
+> >>  io_uring/rw.c                       |   4 +-
+> >>  io_uring/timeout.c                  |   8 +-
+> >>  io_uring/uring_cmd.c                |   3 +-
+> >>  kernel/audit_tree.c                 |   4 +-
+> >>  kernel/audit_watch.c                |  16 +-
+> >>  kernel/auditfilter.c                |   4 +-
+> >>  kernel/auditsc.c                    |   4 +-
+> >>  kernel/bpf/arena.c                  |  10 +-
+> >>  kernel/bpf/arraymap.c               |   8 +-
+> >>  kernel/bpf/bpf_local_storage.c      |   3 +-
+> >>  kernel/bpf/bpf_lru_list.c           |  25 ++-
+> >>  kernel/bpf/btf.c                    |  18 +-
+> >>  kernel/bpf/cgroup.c                 |   7 +-
+> >>  kernel/bpf/cpumap.c                 |   4 +-
+> >>  kernel/bpf/devmap.c                 |  10 +-
+> >>  kernel/bpf/helpers.c                |   8 +-
+> >>  kernel/bpf/local_storage.c          |   4 +-
+> >>  kernel/bpf/memalloc.c               |  16 +-
+> >>  kernel/bpf/offload.c                |   8 +-
+> >>  kernel/bpf/states.c                 |   4 +-
+> >>  kernel/bpf/stream.c                 |   4 +-
+> >>  kernel/bpf/verifier.c               |   6 +-
+> >>  kernel/cgroup/cgroup-v1.c           |   4 +-
+> >>  kernel/cgroup/cgroup.c              |  54 +++---
+> >>  kernel/cgroup/dmem.c                |  12 +-
+> >>  kernel/cgroup/rdma.c                |   8 +-
+> >>  kernel/events/core.c                |  44 +++--
+> >>  kernel/events/uprobes.c             |  12 +-
+> >>  kernel/exit.c                       |   8 +-
+> >>  kernel/fail_function.c              |   4 +-
+> >>  kernel/gcov/clang.c                 |   4 +-
+> >>  kernel/irq_work.c                   |   4 +-
+> >>  kernel/kexec_core.c                 |   4 +-
+> >>  kernel/kprobes.c                    |  16 +-
+> >>  kernel/livepatch/core.c             |   4 +-
+> >>  kernel/livepatch/core.h             |   4 +-
+> >>  kernel/liveupdate/kho_block.c       |   4 +-
+> >>  kernel/liveupdate/luo_flb.c         |   4 +-
+> >>  kernel/locking/rwsem.c              |   2 +-
+> >>  kernel/locking/test-ww_mutex.c      |   2 +-
+> >>  kernel/module/main.c                |  11 +-
+> >>  kernel/padata.c                     |   4 +-
+> >>  kernel/power/snapshot.c             |   8 +-
+> >>  kernel/power/wakelock.c             |   4 +-
+> >>  kernel/printk/printk.c              |  11 +-
+> >>  kernel/ptrace.c                     |   4 +-
+> >>  kernel/rcu/rcutorture.c             |   3 +-
+> >>  kernel/rcu/tasks.h                  |   9 +-
+> >>  kernel/rcu/tree.c                   |   6 +-
+> >>  kernel/resource.c                   |   4 +-
+> >>  kernel/sched/core.c                 |   4 +-
+> >>  kernel/sched/ext.c                  |  22 +--
+> >>  kernel/sched/fair.c                 |  28 +--
+> >>  kernel/sched/topology.c             |   4 +-
+> >>  kernel/sched/wait.c                 |   4 +-
+> >>  kernel/seccomp.c                    |   4 +-
+> >>  kernel/signal.c                     |  11 +-
+> >>  kernel/smp.c                        |   4 +-
+> >>  kernel/taskstats.c                  |   8 +-
+> >>  kernel/time/clockevents.c           |   6 +-
+> >>  kernel/time/clocksource.c           |   4 +-
+> >>  kernel/time/posix-cpu-timers.c      |   4 +-
+> >>  kernel/time/posix-timers.c          |   3 +-
+> >>  kernel/torture.c                    |   3 +-
+> >>  kernel/trace/bpf_trace.c            |   4 +-
+> >>  kernel/trace/ftrace.c               |  49 +++--
+> >>  kernel/trace/ring_buffer.c          |  25 ++-
+> >>  kernel/trace/trace.c                |  12 +-
+> >>  kernel/trace/trace_dynevent.c       |   6 +-
+> >>  kernel/trace/trace_dynevent.h       |   5 +-
+> >>  kernel/trace/trace_events.c         |  35 ++--
+> >>  kernel/trace/trace_events_filter.c  |   4 +-
+> >>  kernel/trace/trace_events_hist.c    |   8 +-
+> >>  kernel/trace/trace_events_trigger.c |  17 +-
+> >>  kernel/trace/trace_events_user.c    |  16 +-
+> >>  kernel/trace/trace_stat.c           |   4 +-
+> >>  kernel/user-return-notifier.c       |   3 +-
+> >>  kernel/workqueue.c                  |  16 +-
+> >>  mm/backing-dev.c                    |   8 +-
+> >>  mm/balloon.c                        |   8 +-
+> >>  mm/cma.c                            |   4 +-
+> >>  mm/compaction.c                     |   4 +-
+> >>  mm/damon/core.c                     |   4 +-
+> >>  mm/damon/sysfs-schemes.c            |   4 +-
+> >>  mm/dmapool.c                        |   4 +-
+> >>  mm/huge_memory.c                    |   8 +-
+> >>  mm/hugetlb.c                        |  56 +++---
+> >>  mm/hugetlb_vmemmap.c                |  16 +-
+> >>  mm/khugepaged.c                     |  14 +-
+> >>  mm/kmemleak.c                       |   7 +-
+> >>  mm/ksm.c                            |  25 +--
+> >>  mm/list_lru.c                       |   4 +-
+> >>  mm/memcontrol-v1.c                  |   8 +-
+> >>  mm/memory-failure.c                 |  12 +-
+> >>  mm/memory-tiers.c                   |   4 +-
+> >>  mm/migrate.c                        |  23 ++-
+> >>  mm/mmu_notifier.c                   |   9 +-
+> >>  mm/page_alloc.c                     |   8 +-
+> >>  mm/page_reporting.c                 |   2 +-
+> >>  mm/percpu.c                         |  11 +-
+> >>  mm/pgtable-generic.c                |   4 +-
+> >>  mm/rmap.c                           |  10 +-
+> >>  mm/shmem.c                          |   9 +-
+> >>  mm/slab_common.c                    |  14 +-
+> >>  mm/slub.c                           |  33 ++--
+> >>  mm/swapfile.c                       |   4 +-
+> >>  mm/userfaultfd.c                    |  12 +-
+> >>  mm/vmalloc.c                        |  24 +--
+> >>  mm/vmscan.c                         |   7 +-
+> >>  mm/zsmalloc.c                       |   4 +-
+> >>  124 files changed, 875 insertions(+), 681 deletions(-)
+> > 
+> > Not sure what you were thinking, but this diff stat
+> > is not landable.
+> 
+> [PATCH v3 1/7] and [PATCH v3 2/7] contain the main logic and can
+> be merged directly. They are also compatible with the old API.
+> [PATCH v3 3/7] through [PATCH v3 7/7] are just simple interface
+> replacements and do not change any functional logic. They can be
+> left unmerged for now; individual modules can pick them up later
+> if needed.
+> 
+> In v2, Andy Shevchenko mentioned: "If it's done by Linus himself
+> during the day when he prepares -rc1, it's fine."
 
-Gr{oetje,eeting}s,
+Yes, but you need to get his blessing first to go with this.
+Have you communicated with him on this?
 
-                        Geert
+> Even so, the
+> changes in this patch series are indeed quite large and touch
+> almost every subsystem. I have only converted part of them for
+> now, so I wanted to send this out first and see what people think.
+
+That's why it's better to provide a script to convert (e.g., coccinelle)
+instead of tons of patches.
 
 -- 
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+With Best Regards,
+Andy Shevchenko
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+
