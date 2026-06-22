@@ -1,160 +1,131 @@
-Received: from mail-pl1-f226.google.com (mail-pl1-f226.google.com [209.85.214.226])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from cstnet.cn (smtp21.cstnet.cn [159.226.251.21])
+	(using TLSv1.2 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 629483911C9
-	for <linux-pm@vger.kernel.org>; Mon, 22 Jun 2026 15:30:02 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.226
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4CE413BCD2F;
+	Mon, 22 Jun 2026 15:33:17 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=159.226.251.21
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1782142203; cv=none; b=Y4wgfGmItktR/okSVFuQiqtXgU3qju3/BO5kTVfmaF7xGvQPc51J09PoU/qHZgUjQpt6XfZf/4zsHvRUcfYd4LPk9aNFC22D+J5EhlDgnncPJzxRBUMhXOBtHBpp9S462ew1HLVw/jXOSuR8QYt5rIIOKyvYU9E3/ICRusvtJWg=
+	t=1782142400; cv=none; b=q/3g6GbRd07/50ndv+qgrXAngZsSI3ejkAAgEsppas7Jn0cqNXTh+Dhz6Fq0zMPRDGREAM5gN9d+1jvhWQiT0VWKvXDQJuzzVhuf6/Fx3vMHWS+UzATPLIchmCSop/EyHOzyLjQNuC6mIbbpFwPW0KW30Ll05Ouguzk2eLXNAwc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1782142203; c=relaxed/simple;
-	bh=xI99615I0CTtUDBESuiSUBs+z7i6jN2i+CMwp4HJlUE=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=cIr0Lg3O3dMmcLtbzBgTBQC59fPkPYthJYSveCzLSUJdcfKb87r4oHgPqTkRD2We7LxHYIfdOg1d3Um036eA8AKzqh1e3oNvtZYmLc7vP4mp3cn0kw31krAQr71V6dRcX+Sv3Fc/3NtJ0q8B5fhZx/+NdBMiGwV6ondYHNY9X2c=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=broadcom.com; spf=fail smtp.mailfrom=broadcom.com; dkim=pass (1024-bit key) header.d=broadcom.com header.i=@broadcom.com header.b=emDmkrPp; arc=none smtp.client-ip=209.85.214.226
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=broadcom.com
-Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=broadcom.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=broadcom.com header.i=@broadcom.com header.b="emDmkrPp"
-Received: by mail-pl1-f226.google.com with SMTP id d9443c01a7336-2c6b67d5fa1so33461495ad.2
-        for <linux-pm@vger.kernel.org>; Mon, 22 Jun 2026 08:30:02 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1782142202; x=1782747002;
-        h=content-transfer-encoding:in-reply-to:autocrypt:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:dkim-signature:x-gm-gg:x-gm-message-state:from:to
-         :cc:subject:date:message-id:reply-to;
-        bh=IYUa0y2VQ6L5ucliJrlQD3LW1X+q2pOFWv7Ws428vpk=;
-        b=mqdk25IQlwctIZZvUJjskqXDlnUEP3Pe4oIQ/1VakohcSsnkEsh2jWMKerXZoU36oR
-         0zx1h0mqJWJz7Jju9kMZlUc9+sR57+sBiCT1ZZkK69yR3NeOOFfQPu/e4HqORlDXQuE5
-         UtU5eWXvvVL6mvOYB6V/Hfn56ha/+xVoCTRgqk1GJKHIkZjDmcKMPJRSkfXqF/jQ1vaH
-         tBHWD1i+cfhQ8E9GjGL7aXRfZwDnUUHxxUQ7Xbv4+uAstBVrsY8tjm5Xi6bFmkCXFtSl
-         TGrgHAc9otyyBTMy7Y+2siejGaH6VRiw9lFWGDTN6SRqg+lc/ivoPMXR3rdf5PYz96OG
-         i+6g==
-X-Gm-Message-State: AOJu0Yy7ysowskoj3prxij1Wtmhkf/7t0TayYsMd2WjHms7SpveBTB7X
-	1X+xGeX5tcsJKNuGqHr1SGPXJ9Er9BszsV/LZ0947myC2bYSXgWGcd0/7zS15XdELWX6BHxwUeZ
-	dXdT/j0AFoomUVsdNbNGso1rZXyV6atduxlt+zbsBJiTUrnrG2dQ9CVi4WbxfCqHdIX3UqMRMfb
-	MRPWOcx/VjKNKfuQMH8A78zVbMVctb690wXO3F3Ecpnu2yVPAMf9Knyk2ZIXOMjoh3srg1vFmwQ
-	e3Uisig+S8dr43/ZP2ld7SJ
-X-Gm-Gg: AfdE7cmynV914rpeGsFBjrjOxIE/cfUvuR38KfEPFDVp11/nI9GITwIGMBTfg5aCAB3
-	Q1UlwsurPj/EafuVV6MnE15VWtV2yt+2DCelYj0to0fAxUyWNk8XSYtkUE3K0m+Qdk93ezQaTom
-	S312rn8+aQhAfzeakbm293ok/wZGmcCQevRjnVRWdIw3e4LcqsNAl5VY2jaH2g3vyeh7IG1R7eB
-	u7wAZJ9g5dhlvxNe7gAG35R+PFgj1bJ7WoHkGlKjcFJH9PtxDvOqLTF0U6gDlDLIjvkzKLa4Ezc
-	ddnuGUta3uJkRehKyPEWyKke85SgSttrWr0f2/q2Ynchwthd6HKmeqxkmxOuXtGcMZndZyjfB9l
-	A0XSqGXIjO5OtUAfipRbio7kCw7BORBUjIhDu7w1fi3YLPIls3ht3IBGzzQ9kKhsqdg8jVY6SaO
-	Z7g+ZpQPOK/LmqyTA8JHwEExnzhmRKw+xcklsQoCkzBgl/x2m+eBw=
-X-Received: by 2002:a17:903:390d:b0:2c6:b38b:e75d with SMTP id d9443c01a7336-2c725d38359mr165760905ad.20.1782142201532;
-        Mon, 22 Jun 2026 08:30:01 -0700 (PDT)
-Received: from smtp-us-east1-p01-i01-si01.dlp.protect.broadcom.com (address-144-49-247-23.dlp.protect.broadcom.com. [144.49.247.23])
-        by smtp-relay.gmail.com with ESMTPS id d9443c01a7336-2c7439b1304sm6324335ad.16.2026.06.22.08.30.01
-        for <linux-pm@vger.kernel.org>
-        (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
-        Mon, 22 Jun 2026 08:30:01 -0700 (PDT)
-X-Relaying-Domain: broadcom.com
-X-CFilter-Loop: Reflected
-Received: by mail-dy1-f198.google.com with SMTP id 5a478bee46e88-30c0d568830so4712204eec.1
-        for <linux-pm@vger.kernel.org>; Mon, 22 Jun 2026 08:30:00 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=broadcom.com; s=google; t=1782142200; x=1782747000; darn=vger.kernel.org;
-        h=content-transfer-encoding:in-reply-to:autocrypt:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:from:to:cc:subject:date:message-id:reply-to;
-        bh=IYUa0y2VQ6L5ucliJrlQD3LW1X+q2pOFWv7Ws428vpk=;
-        b=emDmkrPpU1CHpajfNrmcTRjAnZOmCXjpBVH+/g4LLNlTAr5Y9XrNjGQ4lRTxQJv6kt
-         47dlsHnInJc9tRDPSLmEccSmnPy9tZsJEI5LVLD/mXgFfalXVQkzUiE4/z4H99epyZZa
-         jhAHU7O0um72yb7DxT8vi+TGj7HE5/OrijXeU=
-X-Received: by 2002:a05:7022:6890:b0:138:4023:8c1 with SMTP id a92af1059eb24-139a4eca6f2mr8433114c88.11.1782142199861;
-        Mon, 22 Jun 2026 08:29:59 -0700 (PDT)
-X-Received: by 2002:a05:7022:6890:b0:138:4023:8c1 with SMTP id a92af1059eb24-139a4eca6f2mr8433093c88.11.1782142199204;
-        Mon, 22 Jun 2026 08:29:59 -0700 (PDT)
-Received: from [10.178.4.71] ([192.19.176.219])
-        by smtp.gmail.com with ESMTPSA id a92af1059eb24-139adcb7aabsm9525774c88.5.2026.06.22.08.29.54
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 22 Jun 2026 08:29:58 -0700 (PDT)
-Message-ID: <dc06a108-342d-480f-849d-908b76fce2d3@broadcom.com>
-Date: Mon, 22 Jun 2026 16:29:54 +0100
+	s=arc-20240116; t=1782142400; c=relaxed/simple;
+	bh=OZOwJ1P5aM/YvZb3GYlK/QryFTE7KdxVNDq/XKw/L74=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=ktlR0euHlL5Nokuxki7+eGrZiRHFgrINRF3gFoknJ4v91J3UqFBGub/iRbo3Fu2ahwibnaOEODSYGeSdBp4tmJgO3qdspEI0dRB7cXda2yKm3tutQ8ZTcEvjGzg46w3NVT9pUTnOtpdRTg9wWMuPBeWkRXkpSm3N+nvcNgUXpJI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=iscas.ac.cn; spf=pass smtp.mailfrom=iscas.ac.cn; arc=none smtp.client-ip=159.226.251.21
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=iscas.ac.cn
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=iscas.ac.cn
+Received: from localhost.localdomain (unknown [111.196.245.140])
+	by APP-01 (Coremail) with SMTP id qwCowACXOtOzVTlqlsDBAg--.11361S2;
+	Mon, 22 Jun 2026 23:33:08 +0800 (CST)
+From: Pengpeng Hou <pengpeng@iscas.ac.cn>
+To: "Rafael J . Wysocki" <rafael@kernel.org>,
+	Daniel Lezcano <daniel.lezcano@kernel.org>,
+	Zhang Rui <rui.zhang@intel.com>,
+	Lukasz Luba <lukasz.luba@arm.com>
+Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
+	Kaushlendra Kumar <kaushlendra.kumar@intel.com>,
+	Kees Cook <kees@kernel.org>,
+	Miquel Raynal <miquel.raynal@bootlin.com>,
+	Christophe JAILLET <christophe.jaillet@wanadoo.fr>,
+	kernel test robot <lkp@intel.com>,
+	linux-pm@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	pengpeng@iscas.ac.cn
+Subject: [PATCH v2] thermal: intel: int3400: clean up ODVP files on probe failures
+Date: Mon, 22 Jun 2026 23:33:06 +0800
+Message-ID: <20260622153306.79258-1-pengpeng@iscas.ac.cn>
+X-Mailer: git-send-email 2.50.1
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] pmdomain: bcm: bcm2835-power: Raise ASB poll timeout to
- 100us
-To: =?UTF-8?Q?Ma=C3=ADra_Canal?= <mcanal@igalia.com>,
- Ulf Hansson <ulfh@kernel.org>,
- Broadcom internal kernel review list
- <bcm-kernel-feedback-list@broadcom.com>, Ray Jui <rjui@broadcom.com>,
- Scott Branden <sbranden@broadcom.com>, Stefan Wahren <wahrenst@gmx.net>
-Cc: linux-pm@vger.kernel.org, linux-rpi-kernel@lists.infradead.org,
- linux-arm-kernel@lists.infradead.org, kernel-dev@igalia.com
-References: <20260530204636.1115120-1-mcanal@igalia.com>
-Content-Language: en-US
-From: Florian Fainelli <florian.fainelli@broadcom.com>
-Autocrypt: addr=florian.fainelli@broadcom.com; keydata=
- xsBNBFPAG8ABCAC3EO02urEwipgbUNJ1r6oI2Vr/+uE389lSEShN2PmL3MVnzhViSAtrYxeT
- M0Txqn1tOWoIc4QUl6Ggqf5KP6FoRkCrgMMTnUAINsINYXK+3OLe7HjP10h2jDRX4Ajs4Ghs
- JrZOBru6rH0YrgAhr6O5gG7NE1jhly+EsOa2MpwOiXO4DE/YKZGuVe6Bh87WqmILs9KvnNrQ
- PcycQnYKTVpqE95d4M824M5cuRB6D1GrYovCsjA9uxo22kPdOoQRAu5gBBn3AdtALFyQj9DQ
- KQuc39/i/Kt6XLZ/RsBc6qLs+p+JnEuPJngTSfWvzGjpx0nkwCMi4yBb+xk7Hki4kEslABEB
- AAHNMEZsb3JpYW4gRmFpbmVsbGkgPGZsb3JpYW4uZmFpbmVsbGlAYnJvYWRjb20uY29tPsLB
- IQQQAQgAywUCZWl41AUJI+Jo+hcKAAG/SMv+fS3xUQWa0NryPuoRGjsA3SAUAAAAAAAWAAFr
- ZXktdXNhZ2UtbWFza0BwZ3AuY29tjDAUgAAAAAAgAAdwcmVmZXJyZWQtZW1haWwtZW5jb2Rp
- bmdAcGdwLmNvbXBncG1pbWUICwkIBwMCAQoFF4AAAAAZGGxkYXA6Ly9rZXlzLmJyb2FkY29t
- Lm5ldAUbAwAAAAMWAgEFHgEAAAAEFQgJChYhBNXZKpfnkVze1+R8aIExtcQpvGagAAoJEIEx
- tcQpvGagWPEH/2l0DNr9QkTwJUxOoP9wgHfmVhqc0ZlDsBFv91I3BbhGKI5UATbipKNqG13Z
- TsBrJHcrnCqnTRS+8n9/myOF0ng2A4YT0EJnayzHugXm+hrkO5O9UEPJ8a+0553VqyoFhHqA
- zjxj8fUu1px5cbb4R9G4UAySqyeLLeqnYLCKb4+GklGSBGsLMYvLmIDNYlkhMdnnzsSUAS61
- WJYW6jjnzMwuKJ0ZHv7xZvSHyhIsFRiYiEs44kiYjbUUMcXor/uLEuTIazGrE3MahuGdjpT2
- IOjoMiTsbMc0yfhHp6G/2E769oDXMVxCCbMVpA+LUtVIQEA+8Zr6mX0Yk4nDS7OiBlvOwE0E
- U8AbwQEIAKxr71oqe+0+MYCc7WafWEcpQHFUwvYLcdBoOnmJPxDwDRpvU5LhqSPvk/yJdh9k
- 4xUDQu3rm1qIW2I9Puk5n/Jz/lZsqGw8T13DKyu8eMcvaA/irm9lX9El27DPHy/0qsxmxVmU
- pu9y9S+BmaMb2CM9IuyxMWEl9ruWFS2jAWh/R8CrdnL6+zLk60R7XGzmSJqF09vYNlJ6Bdbs
- MWDXkYWWP5Ub1ZJGNJQ4qT7g8IN0qXxzLQsmz6tbgLMEHYBGx80bBF8AkdThd6SLhreCN7Uh
- IR/5NXGqotAZao2xlDpJLuOMQtoH9WVNuuxQQZHVd8if+yp6yRJ5DAmIUt5CCPcAEQEAAcLB
- gQQYAQIBKwUCU8AbwgUbDAAAAMBdIAQZAQgABgUCU8AbwQAKCRCTYAaomC8PVQ0VCACWk3n+
- obFABEp5Rg6Qvspi9kWXcwCcfZV41OIYWhXMoc57ssjCand5noZi8bKg0bxw4qsg+9cNgZ3P
- N/DFWcNKcAT3Z2/4fTnJqdJS//YcEhlr8uGs+ZWFcqAPbteFCM4dGDRruo69IrHfyyQGx16s
- CcFlrN8vD066RKevFepb/ml7eYEdN5SRALyEdQMKeCSf3mectdoECEqdF/MWpfWIYQ1hEfdm
- C2Kztm+h3Nkt9ZQLqc3wsPJZmbD9T0c9Rphfypgw/SfTf2/CHoYVkKqwUIzI59itl5Lze+R5
- wDByhWHx2Ud2R7SudmT9XK1e0x7W7a5z11Q6vrzuED5nQvkhAAoJEIExtcQpvGagugcIAJd5
- EYe6KM6Y6RvI6TvHp+QgbU5dxvjqSiSvam0Ms3QrLidCtantcGT2Wz/2PlbZqkoJxMQc40rb
- fXa4xQSvJYj0GWpadrDJUvUu3LEsunDCxdWrmbmwGRKqZraV2oG7YEddmDqOe0Xm/NxeSobc
- MIlnaE6V0U8f5zNHB7Y46yJjjYT/Ds1TJo3pvwevDWPvv6rdBeV07D9s43frUS6xYd1uFxHC
- 7dZYWJjZmyUf5evr1W1gCgwLXG0PEi9n3qmz1lelQ8lSocmvxBKtMbX/OKhAfuP/iIwnTsww
- 95A2SaPiQZA51NywV8OFgsN0ITl2PlZ4Tp9hHERDe6nQCsNI/Us=
-In-Reply-To: <20260530204636.1115120-1-mcanal@igalia.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
-X-DetectorID-Processed: b00c1d49-9d2e-4205-b15f-d015386d3d5e
+X-CM-TRANSID:qwCowACXOtOzVTlqlsDBAg--.11361S2
+X-Coremail-Antispam: 1UD129KBjvJXoWxWryxCFW3uF1rAF1xGw13CFg_yoW5Gw15pa
+	y5Ar1UGrWDWF10q34DA3W8Xa1Ut3WrKay5WFyfuay5J3WayrWftFyFyry5Xry0krWkKF4Y
+	y34YqrWUursrGrJanT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
+	9KBjDU0xBIdaVrnRJUUU9j14x267AKxVW8JVW5JwAFc2x0x2IEx4CE42xK8VAvwI8IcIk0
+	rVWrJVCq3wAFIxvE14AKwVWUJVWUGwA2ocxC64kIII0Yj41l84x0c7CEw4AK67xGY2AK02
+	1l84ACjcxK6xIIjxv20xvE14v26r4j6ryUM28EF7xvwVC0I7IYx2IY6xkF7I0E14v26r4j
+	6F4UM28EF7xvwVC2z280aVAFwI0_GcCE3s1l84ACjcxK6I8E87Iv6xkF7I0E14v26rxl6s
+	0DM2AIxVAIcxkEcVAq07x20xvEncxIr21l5I8CrVACY4xI64kE6c02F40Ex7xfMcIj6xII
+	jxv20xvE14v26r126r1DMcIj6I8E87Iv67AKxVWUJVW8JwAm72CE4IkC6x0Yz7v_Jr0_Gr
+	1lF7xvr2IYc2Ij64vIr41lF7I21c0EjII2zVCS5cI20VAGYxC7M4IIrI8v6xkF7I0E8cxa
+	n2IY04v7MxkF7I0En4kS14v26r1q6r43MxAIw28IcxkI7VAKI48JMxC20s026xCaFVCjc4
+	AY6r1j6r4UMI8I3I0E5I8CrVAFwI0_Jr0_Jr4lx2IqxVCjr7xvwVAFwI0_JrI_JrWlx4CE
+	17CEb7AF67AKxVWUtVW8ZwCIc40Y0x0EwIxGrwCI42IY6xIIjxv20xvE14v26r1j6r1xMI
+	IF0xvE2Ix0cI8IcVCY1x0267AKxVW8JVWxJwCI42IY6xAIw20EY4v20xvaj40_Jr0_JF4l
+	IxAIcVC2z280aVAFwI0_Jr0_Gr1lIxAIcVC2z280aVCY1x0267AKxVW8JVW8JrUvcSsGvf
+	C2KfnxnUUI43ZEXa7VUbtxhJUUUUU==
+X-CM-SenderInfo: pshqw1xhqjqxpvfd2hldfou0/
 
+int3400_thermal_probe() creates ODVP sysfs files before several later
+probe steps can still fail.  The late error paths unregister the thermal
+zone and remove other sysfs groups, but they do not remove the ODVP files
+or free the ODVP attribute storage.
 
+Run the ODVP cleanup from the existing post-ODVP error path, and clear
+the saved ODVP pointers after freeing them so the cleanup remains safe
+when reached after the later sysfs cleanup path has already removed the
+files.
 
-On 5/30/2026 9:46 PM, Maíra Canal wrote:
-> Commit 18605b1b936b ("pmdomain: bcm: bcm2835-power: Increase ASB control
-> timeout") raised the ASB handshake polling budget from 1us to 5us.
-> Surveying the pmdomain subsystem, 5us is still one of the smallest polling
-> budgets by a wide margin. Comparable handshakes in other drivers use:
-> 
->    - 100us : starfive jh71xx-pmu, apple pmgr-pwrstate
->    - 1ms   : renesas rcar-sysc, rmobile-sysc (power-on)
->    - 10ms  : renesas rcar-gen4-sysc, sunxi sun55i-pck600
->    - 1s    : mediatek mtk-pm-domains, mtk-scpsys
-> 
-> Raise the BCM2835 timeout to 100us, matching analogous drivers. 100us is
-> still negligible relative to a power-domain transition and gives the V3D
-> master ASB substantially more headroom to drain under heavy workloads,
-> assuring us that the timeout is enough for any scenario.
-> 
-> Signed-off-by: Maíra Canal <mcanal@igalia.com>
+Signed-off-by: Pengpeng Hou <pengpeng@iscas.ac.cn>
+Reported-by: kernel test robot <lkp@intel.com>
+Closes: https://lore.kernel.org/oe-kbuild-all/202606152042.8kTVDHYg-lkp@intel.com/
+---
+Changes since v1:
+- Avoid adding new error labels; reuse the existing free_art_trt path so
+  W=1 builds do not report unused labels.
+- Clear ODVP and data_vault pointers after freeing them.
+- Free data_vault directly when bin-file creation fails.
 
-Acked-by: Florian Fainelli <florian.fainelli@broadcom.com>
+ drivers/thermal/intel/int340x_thermal/int3400_thermal.c | 7 +++++++
+ 1 file changed, 7 insertions(+)
 
-The response I got from our design team is that turning of the the 
-"slave" should be immediate as it does not support multiple outstanding 
-transactions, it's the "master" that might requiring bleeding out 
-in-flight transactions and for which a longer timeout seems reasonable.
+diff --git a/drivers/thermal/intel/int340x_thermal/int3400_thermal.c b/drivers/thermal/intel/int340x_thermal/int3400_thermal.c
+index 66db4b1effb4..5b59634bcc2e 100644
+--- a/drivers/thermal/intel/int340x_thermal/int3400_thermal.c
++++ b/drivers/thermal/intel/int340x_thermal/int3400_thermal.c
+@@ -357,7 +357,9 @@ static void cleanup_odvp(struct int3400_thermal_priv *priv)
+ 		}
+ 		kfree(priv->odvp_attrs);
++		priv->odvp_attrs = NULL;
+ 	}
+ 	kfree(priv->odvp);
++	priv->odvp = NULL;
+ 	priv->odvp_count = 0;
+ }
+ 
+@@ -620,6 +622,9 @@ static int int3400_thermal_probe(struct platform_device *pdev)
+ 	if (!ZERO_OR_NULL_PTR(priv->data_vault)) {
+ 		result = device_create_bin_file(&pdev->dev, &bin_attr_data_vault);
+-		if (result)
++		if (result) {
++			kfree(priv->data_vault);
++			priv->data_vault = NULL;
+ 			goto free_uuid;
++		}
+ 	}
+ 
+@@ -651,8 +656,9 @@ static int int3400_thermal_probe(struct platform_device *pdev)
+ free_sysfs:
+ 	cleanup_odvp(priv);
+ 	if (!ZERO_OR_NULL_PTR(priv->data_vault)) {
+ 		device_remove_bin_file(&pdev->dev, &bin_attr_data_vault);
+ 		kfree(priv->data_vault);
++		priv->data_vault = NULL;
+ 	}
+ free_uuid:
+ 	sysfs_remove_group(&pdev->dev.kobj, &uuid_attribute_group);
+@@ -667,6 +674,7 @@ static int int3400_thermal_probe(struct platform_device *pdev)
+ 	if (!priv->rel_misc_dev_res)
+ 		acpi_thermal_rel_misc_device_remove(priv->adev->handle);
+ 	thermal_zone_device_unregister(priv->thermal);
++	cleanup_odvp(priv);
+ free_art_trt:
+ 	kfree(priv->trts);
+ 	kfree(priv->arts);
 -- 
-Florian
+2.50.1
 
