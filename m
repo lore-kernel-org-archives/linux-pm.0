@@ -1,90 +1,162 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6CB011E5207
-	for <linux-pm@vger.kernel.org>; Mon, 22 Jun 2026 16:34:22 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 56C562EBB8D
+	for <linux-pm@vger.kernel.org>; Mon, 22 Jun 2026 16:35:47 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1782146063; cv=none; b=AzefElZkhEgzjFIvnRRbIkEhHncd4RMvhPZp6Gz88X6iuTQJvQ+Wc+/tejl4pP7N/423fDmIBR754REL1c2wgy5/FBd0RaKNB0FUkBGgvQozQj4F90TY8Ibu/a+i8GWx5YhI1R5tQzN/GaDQI3ot9YkCbIVpIl7yc1h2iHc0XmQ=
+	t=1782146148; cv=none; b=YUiT9dJuupwpB/AQywYd0L7FIuhpRDGDbRj8kz/GEzTNL7VXGZphbIa74LAiIKULUM4uAyHFw01KP14qxdAJjZCcdcvitY5gW7SA5hO1u0SvA6Y/yX9RIllwrVqDpcEs4yxOx2tjLpkoe0fo9K3mU2MqZKjbWcGthumiyf1nFN8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1782146063; c=relaxed/simple;
-	bh=Q8kueLkjBSZDYGwUTBvUWYV5fGfUopwaBg6xtCreKYQ=;
+	s=arc-20240116; t=1782146148; c=relaxed/simple;
+	bh=k6AQbfhaI6uPUNf+Q61Dq/2wjinbai2FV1UBRsuCU2Y=;
 	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=djErh7zOH/BCo9kJK7o+flp7Poq52t9suSvZrpwNK/oPCw7e+3gRjYFY08ewiQUfdRXg3JBji/2l95AZpPaE9opL6L9obWk2MutInLv3nyRXqLJHPl3DicymI+VnVt2IgWP6J5eHv3xk6Yn5mmK50FQIBQv8hQpjMHkDvKIFDgo=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=RhFOA+GQ; arc=none smtp.client-ip=100.103.45.18
+	 To:Cc:Content-Type; b=ZrYjn6K/S3zODoz/4n5Ji4xLamMlmVSn3Pw/99zp091tEwKSEMzPXPizh9AYaA31WiHS5yjngWnL8VdDzvIFkSw+zmSbro5apmxB/ONCzzC2uyksu+buTrYd9Q8ldTo9c1g6Hf54N4ByfUYlqJRlsQGyK1xClC8/Aqt9IPqwqfE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=ESmSVR4k; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="RhFOA+GQ"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1250F1F00A3D
-	for <linux-pm@vger.kernel.org>; Mon, 22 Jun 2026 16:34:22 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="ESmSVR4k"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 414E11F00A3F
+	for <linux-pm@vger.kernel.org>; Mon, 22 Jun 2026 16:35:47 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1782146062;
-	bh=Q8kueLkjBSZDYGwUTBvUWYV5fGfUopwaBg6xtCreKYQ=;
+	s=k20260515; t=1782146147;
+	bh=Wt6W4AqxLOa7CLejhj/ZN3X/yBpborzmgrzV3FMbcZ0=;
 	h=References:In-Reply-To:From:Date:Subject:To:Cc;
-	b=RhFOA+GQNBCPcsZVN+P8G+ilg53PppinGSMYvbotrm2LcY89WaumLE8BK2bDKc/iC
-	 z3ASHLIS6wO9F0g+PtCU6grHcGwbQoJWtjUiPa21bPrjEZUugANrubYqZ3AE87NEnJ
-	 pJbc76GyAKEX//XU9kNK3Bar39AO3UACkefxfrZOGuSWiViIBg0wo1T4osq7SOQKWD
-	 ptchPsO5qruj7FUrXo2KvWywuXr9wzuwfjvJPRkV6YIlO6J7JmQ20o61uprFh4QlhF
-	 BrepJ5Dk8T7I8CFYHQ5dfLVl3vETbzh1pFJxfPQKq2K9ZGei2GM7P7n9LDGN0ZNtbF
-	 zTBdeNbXMJXGw==
-Received: by mail-vk1-f171.google.com with SMTP id 71dfb90a1353d-59ebde7d704so1513756e0c.2
-        for <linux-pm@vger.kernel.org>; Mon, 22 Jun 2026 09:34:22 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AFNElJ/z9fG3D9wUHzQyeKokre99cIaRQGIg4Y+TzdjFjJRh5rMFo8QsD6nDe7WaDkOLkdETaPtB7luP1A==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yz/OJdhvklWlgNwtueM2Eq+XBuZE7C/a9mTCbDJpgLGJYFey8US
-	OCXf4sxUx1YyMcQi2bcqDaYkltI1HSzySPcllW5dwGMwkWvEMt0vH+np24Pds3EFMVQF7EzS2oY
-	IwovF679gMmx2QsXLoosj7BHgYmkkBi8=
-X-Received: by 2002:a05:6122:907:b0:59f:1b5b:55db with SMTP id
- 71dfb90a1353d-5bbeb9d1e5emr7393046e0c.1.1782146061316; Mon, 22 Jun 2026
- 09:34:21 -0700 (PDT)
+	b=ESmSVR4kssXeM0XIptib4CQw8ZK0ZMbV+UVrY/Loa0h1byXys/H2NDKE/yg4UlfEe
+	 z8VXk7lBRQ7Vrto+ue81AcoIRk2xsyeL4hjz1RN30spBM4SbtgMUyA+2KgBTRUKHiq
+	 Zetq26+Jc84kzyYTxnpKO/LdsGclc4dgWW6AfGiWFge1iMTcUkFserLhnocWvz+BPU
+	 qqm6dzD8Cqvb5Ef9JMQiDwkBo4eLNschOrXKAB28CtP6FQOtD3QQOR1R2Vudt8/ZOC
+	 t/iqSJXOcyy2Muse0wWB2Dj+iFkXhhGuRlKfNVsvm7VEnUbMDhu1Vww5y+JU/ImuZz
+	 67mc7whYEZHEg==
+Received: by mail-vk1-f174.google.com with SMTP id 71dfb90a1353d-59d07df448bso3508977e0c.0
+        for <linux-pm@vger.kernel.org>; Mon, 22 Jun 2026 09:35:47 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AFNElJ+Ckti9356IpZnmZpNRPD2/QOalBrMXlytVbrwG7lDL5U0QuBe+BEKEJgLAsiEwPma6OBLRIFAI1g==@vger.kernel.org
+X-Gm-Message-State: AOJu0YwNqSPdS6QZDQomQrxNFTpOuyUOZ7urhwp8NH4Jzya7ebGFQT20
+	Dlevn02MmtcTCK1shsE/vILjvmW8wNF4Fl3ogw8FWwZa5l9rHWXU7GG6xe5oSwhjQgtZCQTtJsE
+	36aI9KPGc0DFXUseEZ7JW79Q1jJoyTKU=
+X-Received: by 2002:a05:6122:3a0b:b0:578:9e26:e439 with SMTP id
+ 71dfb90a1353d-5bbebbd5728mr7325434e0c.10.1782146146532; Mon, 22 Jun 2026
+ 09:35:46 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <6005456.DvuYhMxLoT@rafael.j.wysocki> <dd33bb24d2e8f048f2a10ea9536c9643572110fb.camel@linux.intel.com>
-In-Reply-To: <dd33bb24d2e8f048f2a10ea9536c9643572110fb.camel@linux.intel.com>
+References: <6005456.DvuYhMxLoT@rafael.j.wysocki> <001a01dd01d6$762c8080$62858180$@telus.net>
+In-Reply-To: <001a01dd01d6$762c8080$62858180$@telus.net>
 From: "Rafael J. Wysocki" <rafael@kernel.org>
-Date: Mon, 22 Jun 2026 18:34:04 +0200
-X-Gmail-Original-Message-ID: <CAJZ5v0iXs=7GsdFYtm_TpvTaJVx9o-5q=XY6vg2ofeirkY1Q6A@mail.gmail.com>
-X-Gm-Features: AVVi8CeuUHrHjBD33XcAGDDWY8IuNaIq7-_7WyAzND-yS4ZZVm2hCNX61j5h_8U
-Message-ID: <CAJZ5v0iXs=7GsdFYtm_TpvTaJVx9o-5q=XY6vg2ofeirkY1Q6A@mail.gmail.com>
+Date: Mon, 22 Jun 2026 18:35:29 +0200
+X-Gmail-Original-Message-ID: <CAJZ5v0iAOTCesNWNfc+9uxZi8HfXyDC=zHh+FgNiR8KcZBN+AA@mail.gmail.com>
+X-Gm-Features: AVVi8Cd8p89Cobbj9sOTr7jFu5I0Xdew9EUkbIz1i4NVBWYp7rc8T0HtTTdjeAo
+Message-ID: <CAJZ5v0iAOTCesNWNfc+9uxZi8HfXyDC=zHh+FgNiR8KcZBN+AA@mail.gmail.com>
 Subject: Re: [PATCH v2 0/6] cpufreq: intel_pstate: Set cpuinfo_min_freq to a
  lower value with HWP enabled plus cleanups
-To: srinivas pandruvada <srinivas.pandruvada@linux.intel.com>
+To: Doug Smythies <dsmythies@telus.net>
 Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Linux PM <linux-pm@vger.kernel.org>, 
-	LKML <linux-kernel@vger.kernel.org>
+	LKML <linux-kernel@vger.kernel.org>, 
+	Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Sun, Jun 21, 2026 at 11:50=E2=80=AFPM srinivas pandruvada
-<srinivas.pandruvada@linux.intel.com> wrote:
+On Mon, Jun 22, 2026 at 1:34=E2=80=AFAM Doug Smythies <dsmythies@telus.net>=
+ wrote:
 >
-> On Fri, 2026-06-19 at 19:31 +0200, Rafael J. Wysocki wrote:
-> > Hi,
-> >
+> On 2026.06.19 10:32 Rafael wrote:
+>
 > > This is in v2 because technically it is an update of
 > >
 > > https://lore.kernel.org/linux-pm/2381464.iZASKD2KPV@rafael.j.wysocki/
 > >
 > > but it contains new patches.
 > >
-> > This series updates the intel_pstate driver to set cpuinfo_min_freq
-> > to a lower
-> > value when HWP is enabled to support systems in which CPUs can
-> > actually run
+> > This series updates the intel_pstate driver to set cpuinfo_min_freq to =
+a lower
+> > value when HWP is enabled to support systems in which CPUs can actually=
+ run
 > > at performance levels below the current minimum level.
 > >
+> > It also carries out some code cleanups, mostly related to HWP, either i=
+n
+> > preparation for the functional changes or top of them.
+> >
+> > Thanks!
 >
-> Is this intentional?
+> Hi Rafael,
 >
-> HWP_CAP: 0x10f163e
-> MSR 0xce(platform_info: 0x804043df8811b00
->
-> cpu0/cpufreq/cpuinfo_min_freq
-> 100000
->
-> cpu0/cpufreq/scaling_min_freq
-> 400000
+> Is there a way to test this? I have tried everything I can think of and h=
+ave
+> been unable to get the processor frequency below the old minimum of 800 M=
+Hz.
 
-Yes, cpuinfo_min_freq comes from HWP_CAP and the scaling_min_freq
-value comes from PLATFORM_INFO if that's what you are asking about.
+So that's most likely the lowest level you can get on that system.
+
+> No matter what I do, I always see greater or equal to 8 for each CPU in t=
+he
+> IA32_PERF_STATUS register, or by looking at non stale entries in:
+>
+> grep . /sys/devices/system/cpu/cpu*/cpufreq/scaling_cur_freq
+>
+> Example:
+> doug@s19:~$ grep . /sys/devices/system/cpu/cpu*/cpufreq/scaling_cur_freq
+> /sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq:100000
+> /sys/devices/system/cpu/cpu10/cpufreq/scaling_cur_freq:100000
+> /sys/devices/system/cpu/cpu11/cpufreq/scaling_cur_freq:100000
+> /sys/devices/system/cpu/cpu1/cpufreq/scaling_cur_freq:800013
+> /sys/devices/system/cpu/cpu2/cpufreq/scaling_cur_freq:800014
+> /sys/devices/system/cpu/cpu3/cpufreq/scaling_cur_freq:799996
+> /sys/devices/system/cpu/cpu4/cpufreq/scaling_cur_freq:800023
+> /sys/devices/system/cpu/cpu5/cpufreq/scaling_cur_freq:800053
+> /sys/devices/system/cpu/cpu6/cpufreq/scaling_cur_freq:100000
+> /sys/devices/system/cpu/cpu7/cpufreq/scaling_cur_freq:100000
+> /sys/devices/system/cpu/cpu8/cpufreq/scaling_cur_freq:100000
+> /sys/devices/system/cpu/cpu9/cpufreq/scaling_cur_freq:100000
+>
+> Readers note:
+> Stale entries are just "scaling_min_freq".
+> Non-stale entries tend to be not nice round numbers.
+>
+> For me this patch set introduces confusion between min and max
+> frequency settings and what I actually get. I can set " scaling_min_freq"
+> to 100 MHz and "scaling_max_freq" to 100MHz, but never get them.
+> Before this patch set, I always got what I asked for.
+
+Fair enough.
+
+> Other details:
+> Processor: Intel(R) Core(TM) i5-10600K CPU @ 4.10GHz
+> MSR_PLATFORM_INFO (0x0ce) 808083af1012900
+> Other stuff from my msr0decoder program:
+> doug@s19:~$ sudo c/msr-decoder
+> How many CPUs?: 12
+> 8.) 0x198: IA32_PERF_STATUS     : CPU 11-0 :   8 :   8 :   8 :   8 :   8 =
+:   8 :   8 :   8 :   8 :   8 :   8 :   8 :
+> B.) 0x770: IA32_PM_ENABLE: 1 : HWP enable
+> 1.) 0x19C: IA32_THERM_STATUS: 88470000
+> 2.) 0x1AA: MSR_MISC_PWR_MGMT: 401CC0 EIST enabled Coordination enabled OO=
+B Bit 8 reset OOB Bit 18 reset
+> 3.) 0x1B1: IA32_PACKAGE_THERM_STATUS: 88450000
+> 4.) 0x64F: MSR_CORE_PERF_LIMIT_REASONS: 200000 RATLL
+> A.) 0x1FC: MSR_POWER_CTL: 3C005D : C1E disable : EEO disable : RHO disabl=
+e
+> 5.) 0x771: IA32_HWP_CAPABILITIES (performance): 10B2930 : high 48 : guara=
+nteed 41 : efficient 11 : lowest 1
+> 6.) 0x774: IA32_HWP_REQUEST:    CPU 11-0 :
+>     raw: 80010101 : 80010101 : 80010101 : 80010101 : 80010101 : 80010101 =
+: 80010101 : 80010101 : 80010101 : 80010101 : 80010101 : 80010101 :
+>     min:        1 :        1 :        1 :        1 :        1 :        1 =
+:        1 :        1 :        1 :        1 :        1 :        1 :
+>     max:        1 :        1 :        1 :        1 :        1 :        1 =
+:        1 :        1 :        1 :        1 :        1 :        1 :
+>     des:        1 :        1 :        1 :        1 :        1 :        1 =
+:        1 :        1 :        1 :        1 :        1 :        1 :
+>     epp:      128 :      128 :      128 :      128 :      128 :      128 =
+:      128 :      128 :      128 :      128 :      128 :      128 :
+>     act:        0 :        0 :        0 :        0 :        0 :        0 =
+:        0 :        0 :        0 :        0 :        0 :        0 :
+> 7.) 0x777: IA32_HWP_STATUS: 0 : high 0 : guaranteed 0 : efficient 0 : low=
+est 0
+>
+> The driver was intel_cpufreq, governor conservative (but I tried them all=
+). I also tried epp =3D 255 so as to slow down the processor response time.
+>
+> ... Doug
+>
