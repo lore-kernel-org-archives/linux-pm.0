@@ -1,267 +1,283 @@
-Received: from PA4PR04CU001.outbound.protection.outlook.com (mail-francecentralazon11013061.outbound.protection.outlook.com [40.107.162.61])
+Received: from out-181.mta0.migadu.com (out-181.mta0.migadu.com [91.218.175.181])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9BB3E13959D;
-	Mon, 22 Jun 2026 03:51:59 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.107.162.61
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1782100322; cv=fail; b=qA6Tcr1EvGrQg3SFVZeLfSZlWPGIfqrm5d0Lzq1tpDO00F59tvyCNxQRM4YvVReo/471+9yq9DQIjKe/BCYgux0Et2E4Aiof/JzKcCwvvmhw0YNlXuqUKo2HsWrwgwKSq9sIpBkXU4Tsc2jzkPDlTir926QQygQHWOOnyz772Ek=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1782100322; c=relaxed/simple;
-	bh=NhZjiB7vYSvakycBYYDs/Zxu+n9+ogt0Zyp1jYjTOYU=;
-	h=From:To:CC:Subject:Date:Message-ID:References:In-Reply-To:
-	 Content-Type:MIME-Version; b=VTtUNQf1lqQWVQi5YGulVD/WOyTJWLPzzEB4DGonHAZMztZyqNcgg2vPS7Jl66HrkoVpgc70uK0lsSHDjqRgarn14hHON2vGj9xEGhHvi+Ilp3IRzeUByOgNqHNoPBAPDVm6ALWMsb8cxXxvu3YlyyZsdUHd9Rjkx7TWI/BvyGo=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=nxp.com; spf=pass smtp.mailfrom=nxp.com; dkim=pass (2048-bit key) header.d=nxp.com header.i=@nxp.com header.b=eJKcEjAM; arc=fail smtp.client-ip=40.107.162.61
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=nxp.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=nxp.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 123343546CD;
+	Mon, 22 Jun 2026 04:06:49 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=91.218.175.181
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1782101214; cv=none; b=YBd1JxjWysvjbVWZ45eqsKKVKz5f+bYWSwnlAeDF3vcYRYIhJhAXsyz5lu7QPnJEobifiEddKFZ4u/g+9yEdelikEXZ2/h44a+UrcUkL8vdf95TnOkuwS0SGF6ToPWKId65ztl0bIkq+3xllqJTuklWH4ja5UB2wrgP90jM3/fE=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1782101214; c=relaxed/simple;
+	bh=sI2dRrm2rYzC5hsq52tWdXiGHIDaT9AxOFi7X+Rlza0=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=UneZaUXZEwYQqeBHz0JHaRxwLeSi9VNkQssYZk9ooW6pUDkjYjJZtjq8WZiqjrSMNkYExNmjbSnWLU4VJ+MGIRykyKMEqoQ8uqdmJYGp62MyKDxVx1rh8Cvfn9FP39eJRertR+zerTE68XIechv5gnEl20rGlq8dGom9LWYBNk8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.dev; spf=pass smtp.mailfrom=linux.dev; dkim=pass (1024-bit key) header.d=linux.dev header.i=@linux.dev header.b=oHrwj+Sj; arc=none smtp.client-ip=91.218.175.181
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.dev
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.dev
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=nxp.com header.i=@nxp.com header.b="eJKcEjAM"
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=Efa7mp21QgdbmYNK7dWlLhFlJqy1R9205AQA3UovJ9F9OObM64CiUaa/XUNDR7CspuvN8+Xk7LTyXZG3dK4dHhSww0JVgmkoJbtNAEsvZMRlhPt5bc8p0qsWR5h0MO7H5lUVNaAxS/1gbjdUYENhRln0uQgCzgfGBDP5FPx4aHA+ZQq6Udq1PTyLumx09nt5HBLS2xac3q+38oXesaPG7xVVJRZMZdIbaKC4swBPylzkidp/sIyi2bjlZP58DDaRepVxLFFPH5JCrj0LLtae4x/15PSa+soMYx5cUx9kzlGWq3heZ1mOB0sVvkxzi3txeI3gS6IJbtFde+QzlmbjaQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=YONSfQg8/VHx+wMt+17iFUZO0Gpsc1iHKxjmqzEyVTk=;
- b=bUsNpUPQ7pY+0AdJN4j30Fdn1eJVdK7WcgrjmVQV3iaRSD/LhKramfT9ZiziymehqFp9N2m/Ij8C/2Kb7JremNmXp7FDlEUXb7L9asSlgQzlj2e4vSYnGePTk/qO8gVvCO8Zz7XJ+0p00bq4Bu3E2rtm6DJgSYFP0frQmMwwbvLaBA3YrZmKxKKAgxt+K+15fdmDlhHh5Ug6L3Vvn8meCJbmgVA9xJ1fvVnMBX1P79A9W/ts0hvlWMMKlxCjSHq2Yc0xXSMqbyPvaKUG2m0xiG3fAecppRWfiIXwg4uluz+/6yYqG8lq4iQ+OKXQvvkvO75quRPVqhmZFas7tvfMsQ==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=nxp.com; dmarc=pass action=none header.from=nxp.com; dkim=pass
- header.d=nxp.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=YONSfQg8/VHx+wMt+17iFUZO0Gpsc1iHKxjmqzEyVTk=;
- b=eJKcEjAMCxXpSiEsgN3aEpEh8iDuc1ocpqrZiQw8CnwOyEbZQa/dsUr1ChQ7YSQg5r66xCPADpR7/Y2f0os/L1WOVnTWF/jryIiVREA12AHToLZfcc+kv0lN8g7nq0XpnX69arDejuO8rq7mKkhhMI+z8k7ybaUiFo0Jf2ZQ1ZrVGXLHS3h+nZi8qACBCHNgWO7OZFKedRCa6RrXWpXyUtlnWDNXCcqP7R+bn7hQWQG+AL2gnQwnsM405uRzfRuXY+KGc/R60/FbfQpnQp0wIJdzPTiTNm/fMvuY6k+T6wJ/4zoaua4uNI8Hotconblr8+QcFViSvDzJIjFmKa7Zdw==
-Received: from VI0PR04MB12114.eurprd04.prod.outlook.com
- (2603:10a6:800:315::13) by GV4PR04MB11751.eurprd04.prod.outlook.com
- (2603:10a6:150:2d8::14) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.113.15; Mon, 22 Jun
- 2026 03:51:54 +0000
-Received: from VI0PR04MB12114.eurprd04.prod.outlook.com
- ([fe80::feda:fd0e:147f:f994]) by VI0PR04MB12114.eurprd04.prod.outlook.com
- ([fe80::feda:fd0e:147f:f994%6]) with mapi id 15.21.0139.009; Mon, 22 Jun 2026
- 03:51:54 +0000
-From: Sherry Sun <sherry.sun@nxp.com>
-To: "Frank Li (OSS)" <frank.li@oss.nxp.com>, "Sherry Sun (OSS)"
-	<sherry.sun@oss.nxp.com>
-CC: "robh@kernel.org" <robh@kernel.org>, "krzk+dt@kernel.org"
-	<krzk+dt@kernel.org>, "conor+dt@kernel.org" <conor+dt@kernel.org>, Frank Li
-	<frank.li@nxp.com>, "s.hauer@pengutronix.de" <s.hauer@pengutronix.de>,
-	"kernel@pengutronix.de" <kernel@pengutronix.de>, "festevam@gmail.com"
-	<festevam@gmail.com>, Amitkumar Karwar <amitkumar.karwar@nxp.com>, Neeraj
- Sanjay Kale <neeraj.sanjaykale@nxp.com>, "marcel@holtmann.org"
-	<marcel@holtmann.org>, "luiz.dentz@gmail.com" <luiz.dentz@gmail.com>,
-	Hongxing Zhu <hongxing.zhu@nxp.com>, "l.stach@pengutronix.de"
-	<l.stach@pengutronix.de>, "lpieralisi@kernel.org" <lpieralisi@kernel.org>,
-	"kwilczynski@kernel.org" <kwilczynski@kernel.org>, "mani@kernel.org"
-	<mani@kernel.org>, "bhelgaas@google.com" <bhelgaas@google.com>,
-	"brgl@kernel.org" <brgl@kernel.org>, "imx@lists.linux.dev"
-	<imx@lists.linux.dev>, "linux-pci@vger.kernel.org"
-	<linux-pci@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org"
-	<linux-arm-kernel@lists.infradead.org>, "devicetree@vger.kernel.org"
-	<devicetree@vger.kernel.org>, "linux-kernel@vger.kernel.org"
-	<linux-kernel@vger.kernel.org>, "linux-bluetooth@vger.kernel.org"
-	<linux-bluetooth@vger.kernel.org>, "linux-pm@vger.kernel.org"
-	<linux-pm@vger.kernel.org>
-Subject: RE: [PATCH 3/8] Bluetooth: btnxpuart: Add M.2 Bluetooth device
- support using pwrseq
-Thread-Topic: [PATCH 3/8] Bluetooth: btnxpuart: Add M.2 Bluetooth device
- support using pwrseq
-Thread-Index: AQHc/wqF6j9CS1xPUkaamLsLC0p+KrZEojoAgAVUbKA=
-Date: Mon, 22 Jun 2026 03:51:54 +0000
-Message-ID:
- <VI0PR04MB121141C8A15758C0244AA351F92EF2@VI0PR04MB12114.eurprd04.prod.outlook.com>
-References: <20260618101047.4185497-1-sherry.sun@oss.nxp.com>
- <20260618101047.4185497-4-sherry.sun@oss.nxp.com>
- <ajQ4oBUNGOrhcPX5@SMW015318>
-In-Reply-To: <ajQ4oBUNGOrhcPX5@SMW015318>
-Accept-Language: zh-CN, en-US
-Content-Language: en-US
-X-MS-Has-Attach:
-X-MS-TNEF-Correlator:
-authentication-results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=nxp.com;
-x-ms-publictraffictype: Email
-x-ms-traffictypediagnostic: VI0PR04MB12114:EE_|GV4PR04MB11751:EE_
-x-ms-office365-filtering-correlation-id: 96e37632-3ca9-4b62-fe1d-08ded01199a0
-x-ms-exchange-senderadcheck: 1
-x-ms-exchange-antispam-relay: 0
-x-microsoft-antispam:
- BCL:0;ARA:13230040|19092799006|1800799024|23010399003|7416014|376014|366016|38070700021|22082099003|18002099003|11063799006|4143699003|6133799003|56012099006;
-x-microsoft-antispam-message-info:
- opra3rn5aQGUMwwB7r3tPKA7EcI8+BEyd0qQgwsu6QRyndd3e+DTC0Nry3gq/ZyEPFSHc1PUKS06k1qhGeoDhAG8lH3qtBLSFGVmWubRLq5wReb3mXF3flV2O4w1t71NJuQA8CzuHIYzEMk1Y1tosbyO901E35i9/MqeUf+K3TKAtfpexqgZSdUPPw0JciL9rCHqAQu+36rTu78grRu3Mf+93l6+in8DsaKJxq845m6FTozix4a+JaChfpcFPGC9IrwbX5L4IQERnEloRZz3nWT+sQ27A1KakfshGmQ2io/RbPlRFaYoqIXbsBHP3JayosUVu8zzOczSkgpchD+hTtYgstk343b67Lr9/lJv4PaqZkkOjQmwGywLJcfJjJzzY/6xV3tsCURtRLSpUU42T7LmRz+kiy4yWxDxXLBa6JRO+WgO9DKKWGPNfKDbpC95wsRDLjXMggm+cOm2ZcJQiq2atKqEkavmHBMKiyUlMR9ByGfESTTMTtddxBiwfyWpajS9JjoFiP41g4Hcuy7JzX+65XKHVuiqHisLjkQcBZM9ZJgTidNELZni3el5piT/iKgSkMwjT+Ou6EN/V8LEnv4mdhktKKDW41w+3noAZnwIpoaJ/1IH3aj2QxXMMP2HdrJsPhRklLN6Kt5kjUf5hurD84qPvekKC71RdZ/eeaY9lD9tb4bRvUbR7zBTIGqFhnY+6VijatEbFPog32FX7/zmHED/wYTFcRRyWVoDetY=
-x-forefront-antispam-report:
- CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:VI0PR04MB12114.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(19092799006)(1800799024)(23010399003)(7416014)(376014)(366016)(38070700021)(22082099003)(18002099003)(11063799006)(4143699003)(6133799003)(56012099006);DIR:OUT;SFP:1101;
-x-ms-exchange-antispam-messagedata-chunkcount: 1
-x-ms-exchange-antispam-messagedata-0:
- =?us-ascii?Q?oH7Go0Rk26CqbtvdUaAW5St81J54rLD6RFPgHBhQuwZLHzBI4v0mro1e9YSI?=
- =?us-ascii?Q?3uHf2kl+AZJSzGz5VBfeLtNcJ7kWtmEnWQzshOBf116fPTg32jkfi+pSYjEV?=
- =?us-ascii?Q?OlNZUJBsdUQaKr9FEN71tC7h4+aZjMsx0xnNGp/8oYGKtpQgbWV2pB//XEuO?=
- =?us-ascii?Q?2Hz4DwEoqgGeJmzbWclbLetw0v6CN4tr2fOpertGiis6gmNbSv1Nv9OY2boa?=
- =?us-ascii?Q?XkT9cPBXWjQWs5bkdtbkEwv1MZDa+5BNh1d1LLldAyndlR8mbpNbixRb9OfG?=
- =?us-ascii?Q?hPB7uZei0t82PcHw5WTgGb9b1dqvPjsgz8XzBRJ2JFV6BmpD5QMiuWYI215l?=
- =?us-ascii?Q?CIl07MHgVZFKEpHu7pn7fwRQSj4oXI2TPZ4rWaIcINe0BgdqXUWoCCTUZp6t?=
- =?us-ascii?Q?zYJT3eGqcKAumSDXgIASifoXx0AJiQTbNAMdQGe33+OdRAk7NHLfDSCNNfVb?=
- =?us-ascii?Q?Wq+rU7qf4FJUQRqplQtH4HXlW0N/t2EIgJNeNsVyt+eghmitZCQI4eGOZTxJ?=
- =?us-ascii?Q?kXQPSFuoAEbkoEy7jM8oYSg0oO1LDGa9nOj+nLNooW24vk1UcqaPd1tZYqV0?=
- =?us-ascii?Q?3Di+xRgA5hMcMR72G90O59En2rH7LKdoQTwe3VmZr8DmmKlLxkXT86ut/0QC?=
- =?us-ascii?Q?FR4o1jh9O2ZDiKEWIr6p7efeHHED9hcMDD3Wi4jgjho4cAYv17ZhqFwC7LFe?=
- =?us-ascii?Q?PmJxe9wizfy6CzNEW75lLFlB+BlZF1CGH2YCokV7+TZBfqV97WWDsGEAIUcD?=
- =?us-ascii?Q?b7RwGG12hQrLrzypihaYFq/AyzfyMwSZVt7WSqCijvjfbbL/fZicZMeapkqd?=
- =?us-ascii?Q?n+eI+aMDmGJb4HDmIF/DMFC02kRqZXiJerGwH2ZDBS6Y71ArGEoZzmxmUZqY?=
- =?us-ascii?Q?jDPXri8vZhzl2DP44EcA0jul2xSeLvaDnawyKLIXIGrdLwPXd6H+BYl6pq2b?=
- =?us-ascii?Q?hdH2I3px7iAysjrjXMUWBAaIh9WD8GxKKyay4YZ5a5Wbb59kUR8R0obOoCQd?=
- =?us-ascii?Q?kI87tNZ2A2HHUcYAlweoV2AtsIs3bpxQV18ljq1p3HjgUVLwU7Z1p6vp/fT+?=
- =?us-ascii?Q?HNKd4kc4M1jLtJekQA0n5X6I09p1TQEwRiCZVnoA/4v5sXQfNu/iHgkHrTda?=
- =?us-ascii?Q?c3++sGGTuwhmm8zwgLHqFiyEcMKmQ4jh5P7dAZD2JthTtEdxmsq2e0K3xPzB?=
- =?us-ascii?Q?wlEW3KsP9VR8imitNc+2TTM6Uf1QdCMoNKpNMdT8byczGOOUEj4YlmGNDd1b?=
- =?us-ascii?Q?stFKSfVTfi8nGhu9TVpCOrTy9ffh5CcVQnBa/22GWTUSOIIc2G/LyTPgf4YD?=
- =?us-ascii?Q?ytzG/pxpFXI27Gh6ceq6n3dQ3Q7SEjqcx5Wym1GOPOYzAXyFy90skxYfFdq6?=
- =?us-ascii?Q?8U2fyrZAwqc/DMbw5S1PSKkUAIooB/maVOVpY5IN8fty0JATyFmLgBM0cEei?=
- =?us-ascii?Q?IpNmEDYBLiGdL1Ts4Gh+GZ+WXxuI0+U0Va/5SRWcEZRSQPjQC08nEdUgg6IE?=
- =?us-ascii?Q?9QuUQRyVL9in4akkxk5TG4FrBUDw81oAz9K+fDe9s0gGeFhmvc1yvRyk6mGT?=
- =?us-ascii?Q?Fz8ObUURqtaJB22+nE3HudH+SqD2QN0XmcB6c5W3E7J57GOxyEf2X5JozFmq?=
- =?us-ascii?Q?mczPyDwd1NIZoLlIDLwiVsqX/1eVAJLvRQ2ibMaXFu2ihLIRHLC9L7QF2ihV?=
- =?us-ascii?Q?CQx4ebw4F2zr9BKXtY+hXntHd3DbTs5BSBXGGBep4rcfQfXn?=
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+	dkim=pass (1024-bit key) header.d=linux.dev header.i=@linux.dev header.b="oHrwj+Sj"
+X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
+	t=1782101196;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding;
+	bh=ZUWyFEvXeVLfLgRyqSt5dzUpDWIXdvcmv/YrGiPhDm0=;
+	b=oHrwj+SjzLCSYGSoHMsBlTyi/BPO1LYEAowZCiJy/BgfowxK1Nhv4wBnxGATzNJAQy2Usu
+	3Aui+a8Xl2VwYnUg4vaKt1jLEunHuuM12PdPzSO2e5i/XDE+X1RLFq1HeiZLctcF2EtPOU
+	pEKF/++lDxrY0G4TuBJvKoXJ/NqYwTU=
+From: Kaitao Cheng <kaitao.cheng@linux.dev>
+To: Andrew Morton <akpm@linux-foundation.org>,
+	David Hildenbrand <david@kernel.org>,
+	Jens Axboe <axboe@kernel.dk>,
+	Tejun Heo <tj@kernel.org>,
+	Alexander Viro <viro@zeniv.linux.org.uk>,
+	Christian Brauner <brauner@kernel.org>,
+	Alexei Starovoitov <ast@kernel.org>,
+	Daniel Borkmann <daniel@iogearbox.net>,
+	Andrii Nakryiko <andrii@kernel.org>,
+	Johannes Weiner <hannes@cmpxchg.org>,
+	Peter Zijlstra <peterz@infradead.org>,
+	Ingo Molnar <mingo@redhat.com>,
+	Arnaldo Carvalho de Melo <acme@kernel.org>,
+	Namhyung Kim <namhyung@kernel.org>,
+	Thomas Gleixner <tglx@kernel.org>,
+	Juri Lelli <juri.lelli@redhat.com>,
+	Vincent Guittot <vincent.guittot@linaro.org>,
+	Paul Moore <paul@paul-moore.com>,
+	Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+	"Paul E. McKenney" <paulmck@kernel.org>,
+	Shakeel Butt <shakeel.butt@linux.dev>,
+	=?UTF-8?q?Christian=20K=C3=B6nig?= <christian.koenig@amd.com>
+Cc: David Howells <dhowells@redhat.com>,
+	Simona Vetter <simona.vetter@ffwll.ch>,
+	Randy Dunlap <rdunlap@infradead.org>,
+	Luca Ceresoli <luca.ceresoli@bootlin.com>,
+	Philipp Stanner <phasta@kernel.org>,
+	linux-block@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	cgroups@vger.kernel.org,
+	linux-ntfs-dev@lists.sourceforge.net,
+	linux-fsdevel@vger.kernel.org,
+	io-uring@vger.kernel.org,
+	audit@vger.kernel.org,
+	bpf@vger.kernel.org,
+	netdev@vger.kernel.org,
+	dri-devel@lists.freedesktop.org,
+	linux-perf-users@vger.kernel.org,
+	linux-trace-kernel@vger.kernel.org,
+	kexec@lists.infradead.org,
+	live-patching@vger.kernel.org,
+	linux-modules@vger.kernel.org,
+	linux-crypto@vger.kernel.org,
+	linux-pm@vger.kernel.org,
+	rcu@vger.kernel.org,
+	sched-ext@lists.linux.dev,
+	linux-mm@kvack.org,
+	virtualization@lists.linux.dev,
+	damon@lists.linux.dev,
+	llvm@lists.linux.dev,
+	chengkaitao <chengkaitao@kylinos.cn>
+Subject: [PATCH v3 0/7] Prepare mutable list iterators to cache cursor state
+Date: Mon, 22 Jun 2026 12:05:30 +0800
+Message-ID: <20260622040533.29824-1-kaitao.cheng@linux.dev>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-OriginatorOrg: nxp.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-AuthSource: VI0PR04MB12114.eurprd04.prod.outlook.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 96e37632-3ca9-4b62-fe1d-08ded01199a0
-X-MS-Exchange-CrossTenant-originalarrivaltime: 22 Jun 2026 03:51:54.3589
- (UTC)
-X-MS-Exchange-CrossTenant-fromentityheader: Hosted
-X-MS-Exchange-CrossTenant-id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
-X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
-X-MS-Exchange-CrossTenant-userprincipalname: dIgcm/1Fc/G0TmwiYJtkgfju9fz9s0TkbdJiMUU36POazd6n07jUSDwWIpelXWQ0xHu1DdFtio+s/JPUnTvTWw==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: GV4PR04MB11751
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-Migadu-Flow: FLOW_OUT
 
-> On Thu, Jun 18, 2026 at 06:10:42PM +0800, Sherry Sun (OSS) wrote:
-> > From: Sherry Sun <sherry.sun@nxp.com>
-> >
-> > Power supply to the M.2 Bluetooth device attached to the host using
-> > M.2 connector is controlled using the 'uart' pwrseq device. So add
-> > support for getting the pwrseq device if the OF graph link is present.
-> > Once obtained, the existing pwrseq APIs can be used to control the
-> > power supplies of the
-> > M.2 card.
-> >
-> > Signed-off-by: Sherry Sun <sherry.sun@nxp.com>
-> > ---
-> >  drivers/bluetooth/btnxpuart.c | 33 ++++++++++++++++++++++++++++++---
-> >  1 file changed, 30 insertions(+), 3 deletions(-)
-> >
-> > diff --git a/drivers/bluetooth/btnxpuart.c
-> > b/drivers/bluetooth/btnxpuart.c index e7036a48ce48..1aa8972f0dab
-> > 100644
-> > --- a/drivers/bluetooth/btnxpuart.c
-> > +++ b/drivers/bluetooth/btnxpuart.c
-> > @@ -9,6 +9,8 @@
-> >
-> >  #include <linux/serdev.h>
-> >  #include <linux/of.h>
-> > +#include <linux/of_graph.h>
-> > +#include <linux/pwrseq/consumer.h>
-> >  #include <linux/skbuff.h>
-> >  #include <linux/unaligned.h>
-> >  #include <linux/firmware.h>
-> > @@ -211,6 +213,7 @@ struct btnxpuart_dev {
-> >
-> >  	struct ps_data psdata;
-> >  	struct btnxpuart_data *nxp_data;
-> > +	struct pwrseq_desc *pwrseq;
-> >  	struct reset_control *pdn;
-> >  	struct hci_uart hu;
-> >  };
-> > @@ -1866,11 +1869,27 @@ static int nxp_serdev_probe(struct
-> serdev_device *serdev)
-> >  		return err;
-> >  	}
-> >
-> > +	if (of_graph_is_present(dev_of_node(&serdev->ctrl->dev))) {
-> > +		struct pwrseq_desc *pwrseq;
-> > +
-> > +		pwrseq =3D devm_pwrseq_get(&serdev->ctrl->dev, "uart");
-> > +		if (IS_ERR(pwrseq))
-> > +			return PTR_ERR(pwrseq);
-> > +
-> > +		nxpdev->pwrseq =3D pwrseq;
-> > +		err =3D pwrseq_power_on(pwrseq);
-> > +		if (err) {
-> > +			dev_err(&serdev->dev, "Failed to power on
-> pwrseq\n");
-> > +			return err;
-> > +		}
->=20
-> Can you provide helper function like devm clk get and enabled?
-> like devm_pwrsq_get_on()
->=20
-> So simple below error handle.
+From: chengkaitao <chengkaitao@kylinos.cn>
 
-Ok, will try.
+The list_for_each*_safe() helpers are used when the loop body may remove
+the current entry.  Their current interface, however, forces every caller
+to define a temporary cursor outside the macro and pass it in, even when
+the caller never uses that cursor directly.  For most call sites this
+extra cursor is just boilerplate required by the macro implementation.
 
-Best Regards
-Sherry
+This is awkward because the saved next pointer is an internal detail of
+the iteration.  Callers that only remove or move the current entry do not
+need to spell it out.
 
->=20
-> > +	}
-> > +
-> >  	/* Initialize and register HCI device */
-> >  	hdev =3D hci_alloc_dev();
-> >  	if (!hdev) {
-> >  		dev_err(&serdev->dev, "Can't allocate HCI device\n");
-> > -		return -ENOMEM;
-> > +		err =3D -ENOMEM;
-> > +		goto err_pwrseq_power_off;
-> >  	}
-> >
-> >  	reset_control_deassert(nxpdev->pdn);
-> > @@ -1903,11 +1922,14 @@ static int nxp_serdev_probe(struct
-> > serdev_device *serdev)
-> >
-> >  	if (hci_register_dev(hdev) < 0) {
-> >  		dev_err(&serdev->dev, "Can't register HCI device\n");
-> > +		err =3D -ENODEV;
-> >  		goto probe_fail;
-> >  	}
-> >
-> > -	if (ps_setup(hdev))
-> > +	if (ps_setup(hdev)) {
-> > +		err =3D -ENODEV;
-> >  		goto probe_fail;
-> > +	}
-> >
-> >  	hci_devcd_register(hdev, nxp_coredump, nxp_coredump_hdr,
-> >  			   nxp_coredump_notify);
-> > @@ -1917,7 +1939,10 @@ static int nxp_serdev_probe(struct
-> > serdev_device *serdev)
-> >  probe_fail:
-> >  	reset_control_assert(nxpdev->pdn);
-> >  	hci_free_dev(hdev);
-> > -	return -ENODEV;
-> > +err_pwrseq_power_off:
-> > +	if (nxpdev->pwrseq)
-> > +		pwrseq_power_off(nxpdev->pwrseq);
-> > +	return err;
-> >  }
-> >
-> >  static void nxp_serdev_remove(struct serdev_device *serdev) @@
-> > -1944,6 +1969,8 @@ static void nxp_serdev_remove(struct serdev_device
-> *serdev)
-> >  	ps_cleanup(nxpdev);
-> >  	hci_unregister_dev(hdev);
-> >  	reset_control_assert(nxpdev->pdn);
-> > +	if (nxpdev->pwrseq)
-> > +		pwrseq_power_off(nxpdev->pwrseq);
-> >  	hci_free_dev(hdev);
-> >  }
-> >
-> > --
-> > 2.50.1
-> >
-> >
+The _safe() suffix has also caused confusion.  Christian Koenig pointed
+out that the name is easy to read as a thread-safe variant, especially
+for beginners, even though it only means that the iterator keeps enough
+state to tolerate removal of the current entry.  He suggested _mutable()
+as a clearer description of what the loop permits.
+
+Add *_mutable() iterator variants for list, hlist and llist.  The new
+helpers are variadic and support both forms.  In the common case, the
+caller omits the temporary cursor and the macro creates a unique internal
+cursor with typeof(pos) and __UNIQUE_ID().  If a loop really needs an
+explicit temporary cursor, the caller can still pass it and the helper
+keeps the existing *_safe() behaviour.
+
+For example, a call site may use the shorter form:
+
+  list_for_each_entry_mutable(pos, head, member)
+
+or keep the explicit temporary cursor form:
+
+  list_for_each_entry_mutable(pos, tmp, head, member)
+
+The existing *_safe() helpers remain available for compatibility.  This
+series only converts users in mm, block, kernel, init and io_uring.  If
+this approach looks acceptable, the remaining users can be converted in
+follow-up series.
+
+Changes in v3 (Christian König, Andy Shevchenko):
+- Convert safe list walks to mutable iterators
+
+Changes in v2 (Muchun Song, Andy Shevchenko):
+- Drop the list_for_each_entry_mutable*() helpers from v1 and make the
+  cursor change directly in the existing list_for_each_entry*() helpers.
+- Open-code special list walks that rely on updating the loop cursor in
+  the body, preserving their existing traversal semantics.
+
+Link to v2:
+https://lore.kernel.org/all/20260609061347.93688-1-kaitao.cheng@linux.dev/
+
+Link to v1:
+https://lore.kernel.org/all/20260529082149.76764-1-kaitao.cheng@linux.dev/
+
+Kaitao Cheng (7):
+  list: Add mutable iterator variants
+  llist: Add mutable iterator variants
+  mm: Use mutable list iterators
+  block: Use mutable list iterators
+  kernel: Use mutable list iterators
+  initramfs: Use mutable list iterator
+  io_uring: Use mutable list iterators
+
+ block/bfq-iosched.c                 |  17 +-
+ block/blk-cgroup.c                  |  12 +-
+ block/blk-flush.c                   |   4 +-
+ block/blk-iocost.c                  |  18 +-
+ block/blk-mq.c                      |   8 +-
+ block/blk-throttle.c                |   4 +-
+ block/kyber-iosched.c               |   4 +-
+ block/partitions/ldm.c              |   8 +-
+ block/sed-opal.c                    |   4 +-
+ include/linux/list.h                | 269 ++++++++++++++++++++++++----
+ include/linux/llist.h               |  81 +++++++--
+ init/initramfs.c                    |   5 +-
+ io_uring/cancel.c                   |   6 +-
+ io_uring/poll.c                     |   3 +-
+ io_uring/rw.c                       |   4 +-
+ io_uring/timeout.c                  |   8 +-
+ io_uring/uring_cmd.c                |   3 +-
+ kernel/audit_tree.c                 |   4 +-
+ kernel/audit_watch.c                |  16 +-
+ kernel/auditfilter.c                |   4 +-
+ kernel/auditsc.c                    |   4 +-
+ kernel/bpf/arena.c                  |  10 +-
+ kernel/bpf/arraymap.c               |   8 +-
+ kernel/bpf/bpf_local_storage.c      |   3 +-
+ kernel/bpf/bpf_lru_list.c           |  25 ++-
+ kernel/bpf/btf.c                    |  18 +-
+ kernel/bpf/cgroup.c                 |   7 +-
+ kernel/bpf/cpumap.c                 |   4 +-
+ kernel/bpf/devmap.c                 |  10 +-
+ kernel/bpf/helpers.c                |   8 +-
+ kernel/bpf/local_storage.c          |   4 +-
+ kernel/bpf/memalloc.c               |  16 +-
+ kernel/bpf/offload.c                |   8 +-
+ kernel/bpf/states.c                 |   4 +-
+ kernel/bpf/stream.c                 |   4 +-
+ kernel/bpf/verifier.c               |   6 +-
+ kernel/cgroup/cgroup-v1.c           |   4 +-
+ kernel/cgroup/cgroup.c              |  54 +++---
+ kernel/cgroup/dmem.c                |  12 +-
+ kernel/cgroup/rdma.c                |   8 +-
+ kernel/events/core.c                |  44 +++--
+ kernel/events/uprobes.c             |  12 +-
+ kernel/exit.c                       |   8 +-
+ kernel/fail_function.c              |   4 +-
+ kernel/gcov/clang.c                 |   4 +-
+ kernel/irq_work.c                   |   4 +-
+ kernel/kexec_core.c                 |   4 +-
+ kernel/kprobes.c                    |  16 +-
+ kernel/livepatch/core.c             |   4 +-
+ kernel/livepatch/core.h             |   4 +-
+ kernel/liveupdate/kho_block.c       |   4 +-
+ kernel/liveupdate/luo_flb.c         |   4 +-
+ kernel/locking/rwsem.c              |   2 +-
+ kernel/locking/test-ww_mutex.c      |   2 +-
+ kernel/module/main.c                |  11 +-
+ kernel/padata.c                     |   4 +-
+ kernel/power/snapshot.c             |   8 +-
+ kernel/power/wakelock.c             |   4 +-
+ kernel/printk/printk.c              |  11 +-
+ kernel/ptrace.c                     |   4 +-
+ kernel/rcu/rcutorture.c             |   3 +-
+ kernel/rcu/tasks.h                  |   9 +-
+ kernel/rcu/tree.c                   |   6 +-
+ kernel/resource.c                   |   4 +-
+ kernel/sched/core.c                 |   4 +-
+ kernel/sched/ext.c                  |  22 +--
+ kernel/sched/fair.c                 |  28 +--
+ kernel/sched/topology.c             |   4 +-
+ kernel/sched/wait.c                 |   4 +-
+ kernel/seccomp.c                    |   4 +-
+ kernel/signal.c                     |  11 +-
+ kernel/smp.c                        |   4 +-
+ kernel/taskstats.c                  |   8 +-
+ kernel/time/clockevents.c           |   6 +-
+ kernel/time/clocksource.c           |   4 +-
+ kernel/time/posix-cpu-timers.c      |   4 +-
+ kernel/time/posix-timers.c          |   3 +-
+ kernel/torture.c                    |   3 +-
+ kernel/trace/bpf_trace.c            |   4 +-
+ kernel/trace/ftrace.c               |  49 +++--
+ kernel/trace/ring_buffer.c          |  25 ++-
+ kernel/trace/trace.c                |  12 +-
+ kernel/trace/trace_dynevent.c       |   6 +-
+ kernel/trace/trace_dynevent.h       |   5 +-
+ kernel/trace/trace_events.c         |  35 ++--
+ kernel/trace/trace_events_filter.c  |   4 +-
+ kernel/trace/trace_events_hist.c    |   8 +-
+ kernel/trace/trace_events_trigger.c |  17 +-
+ kernel/trace/trace_events_user.c    |  16 +-
+ kernel/trace/trace_stat.c           |   4 +-
+ kernel/user-return-notifier.c       |   3 +-
+ kernel/workqueue.c                  |  16 +-
+ mm/backing-dev.c                    |   8 +-
+ mm/balloon.c                        |   8 +-
+ mm/cma.c                            |   4 +-
+ mm/compaction.c                     |   4 +-
+ mm/damon/core.c                     |   4 +-
+ mm/damon/sysfs-schemes.c            |   4 +-
+ mm/dmapool.c                        |   4 +-
+ mm/huge_memory.c                    |   8 +-
+ mm/hugetlb.c                        |  56 +++---
+ mm/hugetlb_vmemmap.c                |  16 +-
+ mm/khugepaged.c                     |  14 +-
+ mm/kmemleak.c                       |   7 +-
+ mm/ksm.c                            |  25 +--
+ mm/list_lru.c                       |   4 +-
+ mm/memcontrol-v1.c                  |   8 +-
+ mm/memory-failure.c                 |  12 +-
+ mm/memory-tiers.c                   |   4 +-
+ mm/migrate.c                        |  23 ++-
+ mm/mmu_notifier.c                   |   9 +-
+ mm/page_alloc.c                     |   8 +-
+ mm/page_reporting.c                 |   2 +-
+ mm/percpu.c                         |  11 +-
+ mm/pgtable-generic.c                |   4 +-
+ mm/rmap.c                           |  10 +-
+ mm/shmem.c                          |   9 +-
+ mm/slab_common.c                    |  14 +-
+ mm/slub.c                           |  33 ++--
+ mm/swapfile.c                       |   4 +-
+ mm/userfaultfd.c                    |  12 +-
+ mm/vmalloc.c                        |  24 +--
+ mm/vmscan.c                         |   7 +-
+ mm/zsmalloc.c                       |   4 +-
+ 124 files changed, 875 insertions(+), 681 deletions(-)
+
+-- 
+2.43.0
+
