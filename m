@@ -1,116 +1,48 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4E3042C21C7;
-	Mon, 22 Jun 2026 16:50:40 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C02EF1C2324;
+	Mon, 22 Jun 2026 17:00:38 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1782147041; cv=none; b=eqIBiaG/mG2MTj1hGJ5SZP4DdwYkcuiglX+WXSrQr0tqkSw1dKALFMpxQPoQ5CC+zYsy1D9txG5dQB2gcVkLmMN0jrQtZ4gFfeULofcYq87ZAFe8i/w+sTqhSuHSHzbkbPpprDNqOPgoCUP2UKAp3psGlJLQ/D5CxeRXN4yn4YI=
+	t=1782147641; cv=none; b=GWa9M5wCaqpAkWHtBXPspLJvScGJ/Dg13JacECBRq+8if4fYkdSl0EgEQOxRnXEBfR5XEl7reXuVUWFQIfVJ3Ms4AXkSYVDF2/zHm1s9G1OWQhEyxJzpLbMcGDjcoFDfJogfWRnzKxJhBdR1O49fKtxuwcl5dLlZNBrMUP3HD2E=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1782147041; c=relaxed/simple;
-	bh=JCsAnCKSCGIzOul+9K7QDhmU/8+tMp4yJTDsnabDyPE=;
+	s=arc-20240116; t=1782147641; c=relaxed/simple;
+	bh=FBPNSe4CPrmYI7tdrVEFFESNM2AQv28THAVOyYtFOEU=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=jJizMnPe9e3vaK9+r/JgvwU0+sIiZSkwKc1L2V1zptolKZ0JfSMmlrVqFyEIuN9hXfFz01WvBwCghrkfmUblgG4t4C+CeNLS/p7fRQJVnlQ9zZEcKsLFfXMbZxPmUwogDFMWtqbU4SdrMm9ll6Yh9gmzRy1ztHJxlz/jTLSgyDY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=TdiEOuR3; arc=none smtp.client-ip=100.103.45.18
+	 Content-Type:Content-Disposition:In-Reply-To; b=cG9Eq6bM5k8vdeOCL3e/g2mNYtv2JCeM4ProtlQfYedGTmOI7hHmf3QLJIBfwV4/qY34kAiCzgAzZcufLsGKtk8RPdBvrA4BN3+w1iadyFENDP1W4wQxJTpfAgJkbK+oB5rfBFbc50o1UaUMJtXiJXhA5H+yZzpuyLVgV2lZGd8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=n7sNwPJL; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="TdiEOuR3"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id A898E1F000E9;
-	Mon, 22 Jun 2026 16:50:23 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="n7sNwPJL"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 179101F00A3A;
+	Mon, 22 Jun 2026 17:00:34 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1782147039;
-	bh=JCsAnCKSCGIzOul+9K7QDhmU/8+tMp4yJTDsnabDyPE=;
+	s=k20260515; t=1782147638;
+	bh=FBPNSe4CPrmYI7tdrVEFFESNM2AQv28THAVOyYtFOEU=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=TdiEOuR38PfO/JHs84E85gCdwBYKdEwvGwn64x1QP3HF3u3b4f9/yczqdqAUPRAKj
-	 0N54McxrC1CqIkz+RB/iKUMdq4r+3nagg7bu5NO0mrFF8QCB85dhID2TvQmeOhAgzD
-	 feLz+1l7UD8MQHh4Pgnqo2bob7WoBedV8/HuVNjHzrAYvlizZpsYI4GLCaVX58LDu5
-	 61fqs0E/c1KgBRA1Y6OBgPHrFeNGZ4VJ/YuEnxsbWhNbFPvWiz9A9MckTXn+xz0QEs
-	 lfquX/fHU9mENWGrPxgWasMlwzELb5AqiWdewxzyfFJ65y6N4dcnWJPBQ7J9MnU+HL
-	 +NMAXZJ7MqSXg==
-Date: Mon, 22 Jun 2026 17:50:21 +0100
-From: Conor Dooley <conor@kernel.org>
-To: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
-Cc: Bjorn Andersson <andersson@kernel.org>,
-	Konrad Dybcio <konradybcio@kernel.org>,
-	Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Peter Griffin <peter.griffin@linaro.org>,
-	Alim Akhtar <alim.akhtar@samsung.com>,
-	Michael Turquette <mturquette@baylibre.com>,
-	Stephen Boyd <sboyd@kernel.org>, Brian Masney <bmasney@redhat.com>,
-	Sylwester Nawrocki <s.nawrocki@samsung.com>,
-	Chanwoo Choi <cw00.choi@samsung.com>,
-	Sam Protsenko <semen.protsenko@linaro.org>,
-	Rob Clark <robin.clark@oss.qualcomm.com>,
-	Dmitry Baryshkov <lumag@kernel.org>,
-	Abhinav Kumar <abhinav.kumar@linux.dev>,
-	Jessica Zhang <jesszhan0024@gmail.com>, Sean Paul <sean@poorly.run>,
-	Marijn Suijten <marijn.suijten@somainline.org>,
-	David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>,
+	b=n7sNwPJLODKiRXF3ckMys9a0madlZ0QlBOjYZTx2GavzrrW3/QRmV3JeyB24/EZv3
+	 BRHFAExyTS2FzXigFI8UDWdLfavBXWAuhHMrapEic0JLHIohNnMHnohCRjYK3PUPLC
+	 4Rl5EYkYprfryDf3jF89EjjuImusXvrM9H0WgPgEacIMbCPAxH7oPXuWbvPZrFUBVu
+	 GwWHT/ScgXSiGewELPxVxuIfWHGkNtWAVyT11/AJf0F/5CJIqeonNdRebDGYbCo6I9
+	 /AClqSuz6/0yFBwwPcQVSgR49SkKXOGd0x2fQ1S9mPE6/v767IrCuv0/SsYC25QLxd
+	 VRKBj0ZycUhpQ==
+Date: Mon, 22 Jun 2026 18:00:32 +0100
+From: Mark Brown <broonie@kernel.org>
+To: Linus Walleij <linusw@kernel.org>
+Cc: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>, Ulf Hansson <ulfh@kernel.org>,
 	Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
 	Maxime Ripard <mripard@kernel.org>,
 	Thomas Zimmermann <tzimmermann@suse.de>,
-	Inki Dae <inki.dae@samsung.com>,
-	Seung-Woo Kim <sw0312.kim@samsung.com>,
-	Kyungmin Park <kyungmin.park@samsung.com>,
-	Andi Shyti <andi.shyti@kernel.org>,
-	Georgi Djakov <djakov@kernel.org>, Lee Jones <lee@kernel.org>,
-	Pavel Machek <pavel@kernel.org>, Hans Verkuil <hverkuil@kernel.org>,
-	Mauro Carvalho Chehab <mchehab@kernel.org>,
-	Ulf Hansson <ulfh@kernel.org>, Peter Rosin <peda@lysator.liu.se>,
-	Vinod Koul <vkoul@kernel.org>,
-	Neil Armstrong <neil.armstrong@linaro.org>,
-	Linus Walleij <linusw@kernel.org>,
-	Geert Uytterhoeven <geert+renesas@glider.be>,
-	Magnus Damm <magnus.damm@gmail.com>,
-	Sebastian Reichel <sre@kernel.org>,
-	Javier Martinez Canillas <javier@dowhile0.org>,
-	Liam Girdwood <lgirdwood@gmail.com>,
-	Mark Brown <broonie@kernel.org>,
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	Jiri Slaby <jirislaby@kernel.org>,
-	Srinivas Kandagatla <srini@kernel.org>,
-	Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-	"Rafael J. Wysocki" <rafael@kernel.org>,
-	Daniel Lezcano <daniel.lezcano@kernel.org>,
-	Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>,
-	Jonathan Marek <jonathan@marek.ca>,
-	Taniya Das <quic_tdas@quicinc.com>,
-	Robert Marko <robimarko@gmail.com>,
-	Christian Marangi <ansuelsmth@gmail.com>,
-	Stephan Gerhold <stephan@gerhold.net>,
-	Adam Skladowski <a_skl39@protonmail.com>,
-	Sireesh Kodali <sireeshkodali@protonmail.com>,
-	Barnabas Czeman <barnabas.czeman@mainlining.org>,
-	Imran Shaik <quic_imrashai@quicinc.com>,
-	Sricharan Ramabadhran <quic_srichara@quicinc.com>,
-	Anusha Rao <quic_anusha@quicinc.com>,
-	Luo Jie <quic_luoj@quicinc.com>,
-	Tomasz Figa <tomasz.figa@gmail.com>,
-	Chanho Park <chanho61.park@samsung.com>,
-	Sunyeal Hong <sunyeal.hong@samsung.com>,
-	Shin Son <shin.son@samsung.com>,
-	Krishna Manikandan <quic_mkrishn@quicinc.com>,
-	Jacek Anaszewski <jacek.anaszewski@gmail.com>,
-	Jaehoon Chung <jh80.chung@samsung.com>,
-	Marek Szyprowski <m.szyprowski@samsung.com>,
-	Alina Yu <alina_yu@richtek.com>, Andy Gross <agross@kernel.org>,
-	Niklas =?iso-8859-1?Q?S=F6derlund?= <niklas.soderlund@ragnatech.se>,
-	Wesley Cheng <quic_wcheng@quicinc.com>,
-	linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org,
-	linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-	linux-samsung-soc@vger.kernel.org, linux-clk@vger.kernel.org,
-	dri-devel@lists.freedesktop.org, freedreno@lists.freedesktop.org,
-	linux-i2c@vger.kernel.org, linux-pm@vger.kernel.org,
-	linux-leds@vger.kernel.org, linux-media@vger.kernel.org,
-	linux-mmc@vger.kernel.org, linux-phy@lists.infradead.org,
-	linux-gpio@vger.kernel.org, linux-renesas-soc@vger.kernel.org,
-	linux-serial@vger.kernel.org, linux-sound@vger.kernel.org,
-	linux-usb@vger.kernel.org
-Subject: Re: [PATCH 1/2] dt-bindings: clock: Drop incorrect usage of double
- '::'
-Message-ID: <20260622-awkward-superman-77c1820980fd@spud>
-References: <20260622101606.485961-3-krzysztof.kozlowski@oss.qualcomm.com>
+	David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>,
+	Vinod Koul <vkoul@kernel.org>, Frank Li <Frank.Li@kernel.org>,
+	Lee Jones <lee@kernel.org>, linux-arm-kernel@lists.infradead.org,
+	devicetree@vger.kernel.org, linux-pm@vger.kernel.org,
+	dri-devel@lists.freedesktop.org, dmaengine@vger.kernel.org
+Subject: Re: [PATCH 09/11] regulator: db8500-prcmu: Remove EPOD regulators
+Message-ID: <70dd1974-3360-4169-8b3a-36e7e1cc4460@sirena.org.uk>
+References: <20260618-ux500-power-domains-v7-1-v1-0-eb5e50b1a588@kernel.org>
+ <20260618-ux500-power-domains-v7-1-v1-9-eb5e50b1a588@kernel.org>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -118,39 +50,34 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="ekjFkzmEIYkrCPca"
+	protocol="application/pgp-signature"; boundary="rGlF+30zJ9UqBxku"
 Content-Disposition: inline
-In-Reply-To: <20260622101606.485961-3-krzysztof.kozlowski@oss.qualcomm.com>
+In-Reply-To: <20260618-ux500-power-domains-v7-1-v1-9-eb5e50b1a588@kernel.org>
+X-Cookie: Now I am depressed ...
 
 
---ekjFkzmEIYkrCPca
+--rGlF+30zJ9UqBxku
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-On Mon, Jun 22, 2026 at 12:16:07PM +0200, Krzysztof Kozlowski wrote:
-> There is no use of double colon '::' in YAML. OTOH, the literal style
-> block, e.g. using '|' treats all characters as content [1] therefore
-> single use of ':' in descriptions is perfectly fine, whenever '|' is
-> used.
->=20
-> Cleanup existing code, so the confusing style won't be re-used in new
-> contributions.
->=20
-> Link: https://yaml.org/spec/1.2.2/#literal-style [1]
-> Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
+On Thu, Jun 18, 2026 at 07:00:55AM +0200, Linus Walleij wrote:
+> Remove the obsolete DB8500 PRCMU regulator drivers.
 
-Acked-by: Conor Dooley <conor.dooley@microchip.com>
+Acked-by: Mark Brown <broonie@kernel.org>
 
---ekjFkzmEIYkrCPca
-Content-Type: application/pgp-signature; name=signature.asc
+--rGlF+30zJ9UqBxku
+Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iHUEABYKAB0WIQRh246EGq/8RLhDjO14tDGHoIJi0gUCajlnzQAKCRB4tDGHoIJi
-0pm4AQDVA6W42Jd2yOWiv511GaumWdq9efHBBIFcwF+PLR8AcQD/U21p7Opovpsk
-KXGBfmks88NdCaBeEYOnPhOQGN7PYwA=
-=rDEr
+iQEzBAABCgAdFiEEreZoqmdXGLWf4p/qJNaLcl1Uh9AFAmo5ai8ACgkQJNaLcl1U
+h9BaJwf/cE6zFilqlprukQbzoS9v80E9/7Y2JJSaiLnvW6JjSjMvkSnz7MwKRKjV
+5YmmCXijisVfGbkgQLL3ad/7NkhLD//cJnPh11Mp4W8IA1IGV41qH9W5gUgwo7QE
+MHb+IChEB+Ba8VSWtCqsktqI6O3TNmd/SKnnheO8g88/ldpZ+keIlYk6Ox8zVVf4
+JmMuWMMFBJR2ybHy/L2ok0OshjgcUKGaQS0QpAhPBJTQ2/+NJYGliH322Y/irXhe
+exF9MfFUEJDjCI6RxKMOqAp+IChlNd2l9/5zJ4xG+1jPtgdCd8g8P/WMGjdebbhB
+mELR4oOXs2c5uPurZH8ILur5P+kN8w==
+=UUpz
 -----END PGP SIGNATURE-----
 
---ekjFkzmEIYkrCPca--
+--rGlF+30zJ9UqBxku--
