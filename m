@@ -1,120 +1,65 @@
-Received: from mail-dy1-f173.google.com (mail-dy1-f173.google.com [74.125.82.173])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.17])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1DCCA348866
-	for <linux-pm@vger.kernel.org>; Mon, 22 Jun 2026 19:03:54 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.82.173
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A2D103546C1;
+	Mon, 22 Jun 2026 20:30:14 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.17
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1782155035; cv=none; b=rBOgPzh2bLBtctne8aIgFt+elGr75eCF+xDBsN4exD7hWsECrzQVUYgEh00ebwres2d5DQVR9/WG7T6xf10r0M8xk/elqH6x3brr6yUXgu6gVXkUjSWI5rbGW5kN678UDfng4fxapgmrj/zjXFJHOxqDaj82OWuFKI3R+1Cgw1s=
+	t=1782160216; cv=none; b=JLpRf2cRgKhYrBPwKMob6Xi2btfDODDbbUAi4wYW0LXCchsTCyaBNOkvsXdaC0pem/8enGpEUkpNd9gLQJ3v2mY9zeg9kHpuwUN7p0Xhsu5B98D3Qt3v8ZdYjnRo4x+9Y2cDZELAadONco1yEYleLm4kO8L1BFPDE81A1htDkdI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1782155035; c=relaxed/simple;
-	bh=uM6rjwv+rWrcNEl8KjTKnVcDSG3oUNpsPUMqnFOcLeE=;
+	s=arc-20240116; t=1782160216; c=relaxed/simple;
+	bh=EVo3w+MCyLztsp+OKJSS4dn6VYvqlUQJ9v5ad/NQIy8=;
 	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=F8XfVL0JZ538CgPlZZ6gTwgXnmVB9ai4mZT3t1gMO6BPYUtw2388vIUWmpZznH1Dj0dJogIn7puvJzwM7ArdqI14JFbleRUG40v5PtlDBJDSbFM/mh/AiYWjjSf/czbsoV88jOVeZmoTT46RlJfsfymDWqgeShcCXivAPi2Q/gA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=LFiZE21b; arc=none smtp.client-ip=74.125.82.173
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	 Content-Type:MIME-Version; b=QYBbCX7vixXH0q8aWBbhqJ8ouPcgNIuxLMwB8jBC71SZZQ6nUqSODE+wH4PTdG3q994d+TO9lmacMtkn0+mgBPoYeKSK4LdpLHmsLzwxTrokA2x86jq/E0qsMgZpowXcUZgnWJAvWqQg8qYZ6DbSsK1JbWhX6XhHzouIaz/vaaI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=pass smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=h1517bzh; arc=none smtp.client-ip=198.175.65.17
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="LFiZE21b"
-Received: by mail-dy1-f173.google.com with SMTP id 5a478bee46e88-30c0a352e33so197594eec.0
-        for <linux-pm@vger.kernel.org>; Mon, 22 Jun 2026 12:03:53 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1782155033; x=1782759833; darn=vger.kernel.org;
-        h=mime-version:user-agent:content-transfer-encoding:references
-         :in-reply-to:date:cc:to:from:subject:message-id:from:to:cc:subject
-         :date:message-id:reply-to;
-        bh=uM6rjwv+rWrcNEl8KjTKnVcDSG3oUNpsPUMqnFOcLeE=;
-        b=LFiZE21bJOd27mvhUeQY65zQorGfroSNylZhnl5pr3qjxqG/eN1p6cReYMi7Y8XHb0
-         7P2yUKScTc7SL9KBMwdl8WT1nEKnGZf9ur45NKJJuEmRNsVr4TarSwghnJCBC39U5FT/
-         hbLMbAuZB7Uhid7P768tqQ5oB5rNa0UgEghjqL8I6E/OiecFdkW7XXJUCVzAvM2Bcvqj
-         aAAg70ofC8G+A3+uW7Vx2nk3e0tc12ATFJvEbWA6+4EjPe4CrUqJXP2Emg2HT57KZ67b
-         LsX6aiKqdjYFThFXLMKvM5eHENHiOf+kS4D8rdkQabgcObx3aWN/R9FVWrU0LGgqTlRe
-         mYGw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1782155033; x=1782759833;
-        h=mime-version:user-agent:content-transfer-encoding:references
-         :in-reply-to:date:cc:to:from:subject:message-id:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=uM6rjwv+rWrcNEl8KjTKnVcDSG3oUNpsPUMqnFOcLeE=;
-        b=pwpCKgcBGCcQyVV6S3+29Wq6hZY4rLbXpw6Tg6Q553Ik7IgoA9PVKsg2jr7BB5rXPy
-         Ztp/kxrwBpMPeO6MfF1CAUS3dmQl3zBvpU6PRVeOndytUDzMNkGncq3qIvYjzXj9XdUp
-         oTT6rKJyxSGaVhJEWoqrtEvIjOZ00I++AMGXJTr0MDl8fHFwRoN2wi719cYsDz9wiGPw
-         ueRo0iZ9RXoZb7bmF0n8xgGFC6fMNA7Y8N/+BhKZyZj4pLvb0EC0qYtgq5lQXNyjxX0I
-         pCF2kb1OQ43IOAjZR9p4vT1CYU/8/rzMpoCvxqXZj7Ge6/2N1mBBIqZIfE+WE0pBaM9l
-         Yj5Q==
-X-Forwarded-Encrypted: i=1; AHgh+RobfI0J8by9ZIkT+VsNhDL1rv2BdAvz1HObi7TchWCtv8fA5QUOLrJucKOTl0lLEFBIwRc/hSOa0A==@vger.kernel.org
-X-Gm-Message-State: AOJu0YzDvGcZ+PGW0YY2MliIxxPe/eHAWJz3lwtxkGlFQmtVqw/BPNrs
-	mCOQ5MV5+g3LX54bN+3Me9pFNhT3p0zdeCwU/DjXTE9GIcBSGQJcIrFU
-X-Gm-Gg: AfdE7clEZOQ+C76978gMLxLnlh70xcrOV4LJNAcdsraQSoqe1Bqw8vQRrLCMB6s8wgw
-	8o+UL0SfvadddjmnmSBViHqRDUInJ0T+RvtHYp4dL0ySQvXO8q8yVa/MRVHk00d0SMuEvO+cAxV
-	2xgEkzWIPtuMUqaFvJOfWuui70QIqGgq7YQSzbsVx4Kv2pcwM4LjYqRN6l6W8GLnchKOpTwLNXJ
-	dOSkVwDdwjqV1ARfOqPpuV+OyB+4qFH2k2Vs+tzDYPNd0S1Y4eyz0LRxoIE9JnidqsOhoq8j+U3
-	3giHh9N6hx5znbY+AScegdcVAqwx/qF6YQHrLMQQNMcdckWKhdODjRfpf+VbicwbQfqJc7vIfsF
-	QSI/4PeqZHmw9Y+DAeghKxDLvBVz3L8Hn1SvMztvcM86l3A//IH98z+YIL+FLi9/eqBqxsVMSYr
-	QQh1R9EucbcPLkpxoOLjGhda9sqIA4qukp3xo5ypGAqMYKJX+d/D361KHFQiryhEpdkB4=
-X-Received: by 2002:a05:693c:2887:b0:30b:cc4e:6396 with SMTP id 5a478bee46e88-30c5553b105mr382073eec.7.1782155033135;
-        Mon, 22 Jun 2026 12:03:53 -0700 (PDT)
-Received: from ?IPv6:2a03:83e0:115c:1:6e2:c699:67c:63fe? ([2620:10d:c090:500::1:5387])
-        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-30c1be4967fsm10549199eec.26.2026.06.22.12.03.47
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 22 Jun 2026 12:03:52 -0700 (PDT)
-Message-ID: <1979fc81ae7bdaabda8616cd9698a40ef8bbfaee.camel@gmail.com>
-Subject: Re: [PATCH v3 5/7] kernel: Use mutable list iterators
-From: Eduard Zingerman <eddyz87@gmail.com>
-To: Kaitao Cheng <kaitao.cheng@linux.dev>, Paul Moore <paul@paul-moore.com>,
-  Eric Paris <eparis@redhat.com>, Alexei Starovoitov <ast@kernel.org>,
- Daniel Borkmann	 <daniel@iogearbox.net>, Andrii Nakryiko
- <andrii@kernel.org>, Kumar Kartikeya Dwivedi <memxor@gmail.com>, "David S.
- Miller" <davem@davemloft.net>, Jakub Kicinski	 <kuba@kernel.org>, Jesper
- Dangaard Brouer <hawk@kernel.org>, John Fastabend	
- <john.fastabend@gmail.com>, Tejun Heo <tj@kernel.org>, Johannes Weiner	
- <hannes@cmpxchg.org>, Michal =?ISO-8859-1?Q?Koutn=FD?= <mkoutny@suse.com>, 
- Maarten Lankhorst	 <dev@lankhorst.se>, Maxime Ripard <mripard@kernel.org>,
- Natalie Vock	 <natalie.vock@gmx.de>, Peter Zijlstra <peterz@infradead.org>,
- Ingo Molnar	 <mingo@redhat.com>, Arnaldo Carvalho de Melo
- <acme@kernel.org>, Namhyung Kim	 <namhyung@kernel.org>, Masami Hiramatsu
- <mhiramat@kernel.org>, Oleg Nesterov	 <oleg@redhat.com>, Peter
- Oberparleiter <oberpar@linux.ibm.com>, Andrew Morton	
- <akpm@linux-foundation.org>, Baoquan He <baoquan.he@linux.dev>, Mike
- Rapoport	 <rppt@kernel.org>, Pasha Tatashin <pasha.tatashin@soleen.com>,
- Pratyush Yadav	 <pratyush@kernel.org>, Naveen N Rao <naveen@kernel.org>,
- Josh Poimboeuf	 <jpoimboe@kernel.org>, Jiri Kosina <jikos@kernel.org>,
- Miroslav Benes	 <mbenes@suse.cz>, Petr Mladek <pmladek@suse.com>, Will
- Deacon <will@kernel.org>,  Boqun Feng <boqun@kernel.org>, Luis Chamberlain
- <mcgrof@kernel.org>, Petr Pavlu <petr.pavlu@suse.com>,  Daniel Gomez
- <da.gomez@kernel.org>, Sami Tolvanen <samitolvanen@google.com>, Steffen
- Klassert	 <steffen.klassert@secunet.com>, Daniel Jordan
- <daniel.m.jordan@oracle.com>,  "Rafael J. Wysocki"	 <rafael@kernel.org>,
- Davidlohr Bueso <dave@stgolabs.net>, "Paul E. McKenney"	
- <paulmck@kernel.org>, Josh Triplett <josh@joshtriplett.org>, Frederic
- Weisbecker <frederic@kernel.org>, Neeraj Upadhyay
- <neeraj.upadhyay@kernel.org>, Joel Fernandes	 <joelagnelf@nvidia.com>,
- Uladzislau Rezki <urezki@gmail.com>, Juri Lelli	 <juri.lelli@redhat.com>,
- Vincent Guittot <vincent.guittot@linaro.org>, Kees Cook <kees@kernel.org>,
- Balbir Singh <bsingharora@gmail.com>, Anna-Maria Behnsen	
- <anna-maria@linutronix.de>, Thomas Gleixner <tglx@kernel.org>, John Stultz	
- <jstultz@google.com>, KP Singh <kpsingh@kernel.org>, Matt Bobrowski	
- <mattbobrowski@google.com>, Nathan Chancellor <nathan@kernel.org>, Martin
- KaFai Lau <martin.lau@linux.dev>, Song Liu <song@kernel.org>, Mark Rutland
- <mark.rutland@arm.com>,  Mathieu Desnoyers
- <mathieu.desnoyers@efficios.com>, Dietmar Eggemann
- <dietmar.eggemann@arm.com>, David Vernet	 <void@manifault.com>, Steven
- Rostedt <rostedt@goodmis.org>
-Cc: audit@vger.kernel.org, linux-kernel@vger.kernel.org,
- bpf@vger.kernel.org, 	netdev@vger.kernel.org, cgroups@vger.kernel.org,
- dri-devel@lists.freedesktop.org, 	linux-perf-users@vger.kernel.org,
- linux-trace-kernel@vger.kernel.org, 	kexec@lists.infradead.org,
- live-patching@vger.kernel.org, 	linux-modules@vger.kernel.org,
- linux-crypto@vger.kernel.org, 	linux-pm@vger.kernel.org,
- rcu@vger.kernel.org, sched-ext@lists.linux.dev, 	llvm@lists.linux.dev,
- Kaitao Cheng <chengkaitao@kylinos.cn>
-Date: Mon, 22 Jun 2026 12:03:46 -0700
-In-Reply-To: <20260622042811.31684-1-kaitao.cheng@linux.dev>
-References: <20260622040533.29824-1-kaitao.cheng@linux.dev>
-	 <20260622042811.31684-1-kaitao.cheng@linux.dev>
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="h1517bzh"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1782160215; x=1813696215;
+  h=message-id:subject:from:to:cc:date:in-reply-to:
+   references:content-transfer-encoding:mime-version;
+  bh=EVo3w+MCyLztsp+OKJSS4dn6VYvqlUQJ9v5ad/NQIy8=;
+  b=h1517bzhw1kBACK0c8pLGDvwUz2OSMI2FPzxMIkmdsYUkIsyi1Pm3dyy
+   UrCbXaMiRzUP+4OfpWlXy6dEPK9y8uMzPBr4tkeJmXaxNLZmcMmXajM7Y
+   CfHBZCwufoZJCj6olRFWi63KjRao6rs1iN6j75vCA1bdBPqtNQQEi1ZD2
+   Uo52huNT3qB4U6MWI+SQWzZ+DMRhPU8zg0ulUDPEpfQIwvuYv2/+Kt58a
+   KHXwZxGl8v0pkTaMUafOc6h8MUvtdEB/2cgEsBoP6FAMXrFBR7bKfGc71
+   +dObjsGD3T/+nr9y36ZhMy5proPI2tziCe2dKz158dIn3wg38Xqdsgtm3
+   g==;
+X-CSE-ConnectionGUID: N7aeZUyETbaifCxBJnpFAQ==
+X-CSE-MsgGUID: Dgb1iFUcRyyLudUOGSxrXg==
+X-IronPort-AV: E=McAfee;i="6800,10657,11825"; a="82902990"
+X-IronPort-AV: E=Sophos;i="6.24,219,1774335600"; 
+   d="scan'208";a="82902990"
+Received: from orviesa001.jf.intel.com ([10.64.159.141])
+  by orvoesa109.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 22 Jun 2026 13:30:14 -0700
+X-CSE-ConnectionGUID: qulthIr4Q8WhLhWg6TbH+A==
+X-CSE-MsgGUID: naxSkq9hRtmDZLmg6z/Q6Q==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.24,219,1774335600"; 
+   d="scan'208";a="287451984"
+Received: from schen9-mobl4.amr.corp.intel.com (HELO [10.125.108.85]) ([10.125.108.85])
+  by smtpauth.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 22 Jun 2026 13:30:14 -0700
+Message-ID: <7ff5b6742c28da965eaf0a1175cf031d8786c1aa.camel@linux.intel.com>
+Subject: Re: [PATCH v2] thermal: intel: int3400: clean up ODVP files on
+ probe failures
+From: srinivas pandruvada <srinivas.pandruvada@linux.intel.com>
+To: Pengpeng Hou <pengpeng@iscas.ac.cn>, "Rafael J . Wysocki"
+	 <rafael@kernel.org>, Daniel Lezcano <daniel.lezcano@kernel.org>, Zhang Rui
+	 <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>
+Cc: Kaushlendra Kumar <kaushlendra.kumar@intel.com>, Kees Cook
+ <kees@kernel.org>,  Miquel Raynal <miquel.raynal@bootlin.com>, Christophe
+ JAILLET <christophe.jaillet@wanadoo.fr>, kernel test robot <lkp@intel.com>,
+ linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Date: Mon, 22 Jun 2026 13:30:13 -0700
+In-Reply-To: <20260622153306.79258-1-pengpeng@iscas.ac.cn>
+References: <20260622153306.79258-1-pengpeng@iscas.ac.cn>
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
-User-Agent: Evolution 3.60.1 (3.60.1-1.fc44) 
+User-Agent: Evolution 3.58.3 (3.58.3-1.fc43) 
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -122,29 +67,103 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 
-On Mon, 2026-06-22 at 12:28 +0800, Kaitao Cheng wrote:
-> From: Kaitao Cheng <chengkaitao@kylinos.cn>
+Hi Hou,
+
+On Mon, 2026-06-22 at 23:33 +0800, Pengpeng Hou wrote:
+> int3400_thermal_probe() creates ODVP sysfs files before several later
+> probe steps can still fail.=C2=A0 The late error paths unregister the
+> thermal
+> zone and remove other sysfs groups, but they do not remove the ODVP
+> files
+> or free the ODVP attribute storage.
+
+OK, you added a  cleanup_odvp() after thermal_zone_device_unregister().
+But it will not cover thermal_tripless_zone_device_register() failure.
+
+You could have moved cleanup_odvp() instead of copy before free_priv:
+
+
+You are also adding free for data_vault. There is no description of
+that. I suggest to add another change for that. Also that needs to be
+done for other error case also for example when free_imok.
+
+
+Thanks,
+Srinivas
+
 >=20
-> The safe list iteration helpers require callers to provide a temporary
-> cursor even when the cursor is only used internally by the loop. This
-> leaves many functions with otherwise unused variables whose only purpose
-> is to satisfy the old iterator interface.
+> Run the ODVP cleanup from the existing post-ODVP error path, and
+> clear
+> the saved ODVP pointers after freeing them so the cleanup remains
+> safe
+> when reached after the later sysfs cleanup path has already removed
+> the
+> files.
 >=20
-> Use the mutable list iteration helpers for those cases. The mutable
-> helpers keep the same removal-safe traversal semantics, while allowing
-> the temporary cursor to be internal to the macro when the caller does
-> not need to observe it.
->=20
-> Convert list, hlist and llist users under kernel/ where the temporary
-> cursor is not used outside the iteration. Keep the explicit cursor form
-> where the next entry is still needed by the surrounding code.
->=20
-> No functional change intended.
->=20
-> Signed-off-by: Kaitao Cheng <chengkaitao@kylinos.cn>
+> Signed-off-by: Pengpeng Hou <pengpeng@iscas.ac.cn>
+> Reported-by: kernel test robot <lkp@intel.com>
+> Closes:
+> https://lore.kernel.org/oe-kbuild-all/202606152042.8kTVDHYg-lkp@intel.com=
+/
 > ---
-
-Beside the fact that this does not apply,
-I don't see a reason why is this needed for BPF sub-tree.
-
-[...]
+> Changes since v1:
+> - Avoid adding new error labels; reuse the existing free_art_trt path
+> so
+> =C2=A0 W=3D1 builds do not report unused labels.
+> - Clear ODVP and data_vault pointers after freeing them.
+> - Free data_vault directly when bin-file creation fails.
+>=20
+> =C2=A0drivers/thermal/intel/int340x_thermal/int3400_thermal.c | 7 +++++++
+> =C2=A01 file changed, 7 insertions(+)
+>=20
+> diff --git a/drivers/thermal/intel/int340x_thermal/int3400_thermal.c
+> b/drivers/thermal/intel/int340x_thermal/int3400_thermal.c
+> index 66db4b1effb4..5b59634bcc2e 100644
+> --- a/drivers/thermal/intel/int340x_thermal/int3400_thermal.c
+> +++ b/drivers/thermal/intel/int340x_thermal/int3400_thermal.c
+> @@ -357,7 +357,9 @@ static void cleanup_odvp(struct
+> int3400_thermal_priv *priv)
+> =C2=A0		}
+> =C2=A0		kfree(priv->odvp_attrs);
+> +		priv->odvp_attrs =3D NULL;
+> =C2=A0	}
+> =C2=A0	kfree(priv->odvp);
+> +	priv->odvp =3D NULL;
+> =C2=A0	priv->odvp_count =3D 0;
+> =C2=A0}
+> =C2=A0
+> @@ -620,6 +622,9 @@ static int int3400_thermal_probe(struct
+> platform_device *pdev)
+> =C2=A0	if (!ZERO_OR_NULL_PTR(priv->data_vault)) {
+> =C2=A0		result =3D device_create_bin_file(&pdev->dev,
+> &bin_attr_data_vault);
+> -		if (result)
+> +		if (result) {
+> +			kfree(priv->data_vault);
+> +			priv->data_vault =3D NULL;
+> =C2=A0			goto free_uuid;
+> +		}
+> =C2=A0	}
+> =C2=A0
+> @@ -651,8 +656,9 @@ static int int3400_thermal_probe(struct
+> platform_device *pdev)
+> =C2=A0free_sysfs:
+> =C2=A0	cleanup_odvp(priv);
+> =C2=A0	if (!ZERO_OR_NULL_PTR(priv->data_vault)) {
+> =C2=A0		device_remove_bin_file(&pdev->dev,
+> &bin_attr_data_vault);
+> =C2=A0		kfree(priv->data_vault);
+> +		priv->data_vault =3D NULL;
+> =C2=A0	}
+> =C2=A0free_uuid:
+> =C2=A0	sysfs_remove_group(&pdev->dev.kobj, &uuid_attribute_group);
+> @@ -667,6 +674,7 @@ static int int3400_thermal_probe(struct
+> platform_device *pdev)
+> =C2=A0	if (!priv->rel_misc_dev_res)
+> =C2=A0		acpi_thermal_rel_misc_device_remove(priv->adev-
+> >handle);
+> =C2=A0	thermal_zone_device_unregister(priv->thermal);
+> +	cleanup_odvp(priv);
+> =C2=A0free_art_trt:
+> =C2=A0	kfree(priv->trts);
+> =C2=A0	kfree(priv->arts);
