@@ -1,32 +1,32 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2A943356762;
-	Mon, 22 Jun 2026 06:52:29 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A4B9F24BBEB;
+	Mon, 22 Jun 2026 07:23:48 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1782111151; cv=none; b=TLaCC0s7AsGjcst7nDHC9e9He3xCOJQyopKN2yIKyahQJX3nXDsbTu8KLvGOzUFsge8NLigoPqZXfNII73HeqXLlcbfB6VhPX+UxFfP7rzXWcwB6Xm4UWMW1Co/dHIZdNQobo58OqmIu6vh8jg259yhe3+BJUE6yCmSD9aGmk3w=
+	t=1782113029; cv=none; b=Dj6+PA/dkX/xY7F7lEbxeLR01rRUQ3hrf3SW0EFBS2O0BWKL7v9rVacNWldMjm+DIJ2xXPDoiOdwKU/tXQ3ymKLpyY2e4JXAI56KaGxj4Q+AuJvC4rm776bXbl4VsiuhX9iTKpId1M/I9T4b7RIqOeVae5+k/BcNK+5X90Z6ank=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1782111151; c=relaxed/simple;
-	bh=4mO+JB9kWvCwCBFhPfdi368u+MzOhbrx/bSV/OR4/Pw=;
+	s=arc-20240116; t=1782113029; c=relaxed/simple;
+	bh=JlH1wjyeR9hst281iHpZ7KMz8PTyXk4RWziiIm/QnvQ=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=nJECqkJBnT8tU1EIXRjMvRt1/89WNPW6V1KKBUTCR9fKzFQyVq5TN6UXD+NhL1NBEYfQUCQNNjkHzLtqmvmdm7Wnb22AMaXaYzF0JyMt78JcVZL1h/wA5gy2EKG+fC03R6bh1JL+4hS7AUhkvEXFqst0wCKHZNvmnSGbO02Q4G8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=F1V+JVAD; arc=none smtp.client-ip=100.103.45.18
+	 Content-Type:Content-Disposition:In-Reply-To; b=XLlybEjmZBpnszCz5ZmbbXqq/sScPSeSDMq/qq+vfS0UC7PKq2qFMpf/OVVK+xbks/OK9wvWnRAS8MdmDrKICaam1S+0PL8gMDkL0+nV+PQA+UGWT3GxV9w8vkpigzTKSCGXwRStGPw+pZz+/MKiKGtN01DWK1ynThVSsCrkAK8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=mKmPMHJi; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="F1V+JVAD"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id D021F1F000E9;
-	Mon, 22 Jun 2026 06:52:28 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="mKmPMHJi"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7C9A21F000E9;
+	Mon, 22 Jun 2026 07:23:47 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1782111149;
-	bh=K9yXc4y5TjSK3lJ8YLzi5eKybWJ0QmDtjiJE8WrpXYk=;
+	s=k20260515; t=1782113028;
+	bh=it2a5Lhot1D6sJkUxvzSkxITZ69xCpsKj8U00d2pQtQ=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=F1V+JVAD9trv53sLLNI0iV+YhGCMKyzDcpRbwvmYVkSrS0sStVnE0N/AVl+aU9J6C
-	 k6IGomCbSWF/kXzQh/+Ajm5ON4aU/DE0hoL46Xmoccvz1Xl6HFq7LC5mSHofd6x/Sw
-	 F5Q1Ftzug8RO+ROJSUDM0GekGn83GU0hKcG3kNMMWClzSew0eDhJf/S4nrEAJ+ls25
-	 aKZe3b45rW9FUW1/4gwW/w6QyHMr8Aeb5nOQBqoQB3JnTlDG7iNsBYnm3mK2V+2hIf
-	 P1n72+fSuu6ih+qkkCgzm0UnOVOhITITjXCuIdF4sG3j5S9VyFlCwa/0WS51ZtwJIU
-	 6TH1T3MdhNojA==
-Date: Mon, 22 Jun 2026 08:52:25 +0200
+	b=mKmPMHJigyGKwHQvkfxGIk5bMlBXb+Wfu6oIr0wD7ulnBDBKafgQdovQuaa0JgT5Y
+	 Ani8ggNCaWkzN2T/5nsjvABt6uto+kYQpakYVpbjrtrrkeDu7uuFGNNMFtaIQkrHd0
+	 9l1Xpr48XFOuuCnRRve20afdEibkWJlShi6XC8KhTHt578TAj6iULqzJ2Uhjua1AbZ
+	 yg3P+909LS1gUZRS0+9ob2R9TFyrWFqYnctLqX4GTnDcPs2rQui3/cNc2zMug1SAFj
+	 YPIwO6jzfT10cNC9BZTv2sCri/WfAIvNicSogTwwBRyVzNMFOYI/o3dmi5ByCXvr4i
+	 eqOALBAX4VpNw==
+Date: Mon, 22 Jun 2026 09:23:45 +0200
 From: Krzysztof Kozlowski <krzk@kernel.org>
 To: Luca Leonardo Scorcia <l.scorcia@gmail.com>
 Cc: linux-mediatek@lists.infradead.org, 
@@ -37,15 +37,15 @@ Cc: linux-mediatek@lists.infradead.org,
 	Matthias Brugger <matthias.bgg@gmail.com>, 
 	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>, Liam Girdwood <lgirdwood@gmail.com>, 
 	Mark Brown <broonie@kernel.org>, Linus Walleij <linusw@kernel.org>, 
-	Val Packett <val@packett.cool>, Louis-Alexis Eyraud <louisalexis.eyraud@collabora.com>, 
-	Julien Massot <julien.massot@collabora.com>, Fabien Parent <parent.f@gmail.com>, 
+	Julien Massot <julien.massot@collabora.com>, Louis-Alexis Eyraud <louisalexis.eyraud@collabora.com>, 
+	Val Packett <val@packett.cool>, Fabien Parent <parent.f@gmail.com>, 
 	Akari Tsuyukusa <akkun11.open@gmail.com>, Chen Zhong <chen.zhong@mediatek.com>, 
 	linux-input@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
 	linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-gpio@vger.kernel.org
-Subject: Re: [PATCH v9 1/9] dt-bindings: mfd: mt6397: Add MT6392 PMIC
-Message-ID: <20260622-independent-auspicious-saluki-f9e6bb@quoll>
+Subject: Re: [PATCH v9 3/9] regulator: dt-bindings: Add MediaTek MT6392 PMIC
+Message-ID: <20260622-authentic-numbat-of-development-a98d4f@quoll>
 References: <20260621081634.467858-1-l.scorcia@gmail.com>
- <20260621081634.467858-2-l.scorcia@gmail.com>
+ <20260621081634.467858-4-l.scorcia@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -54,35 +54,19 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20260621081634.467858-2-l.scorcia@gmail.com>
+In-Reply-To: <20260621081634.467858-4-l.scorcia@gmail.com>
 
-On Sun, Jun 21, 2026 at 10:13:26AM +0200, Luca Leonardo Scorcia wrote:
->                - enum:
->                    - mediatek,mt6359-rtc
-> @@ -99,6 +107,7 @@ properties:
->                - mediatek,mt6331-regulator
->                - mediatek,mt6358-regulator
->                - mediatek,mt6359-regulator
-> +              - mediatek,mt6392-regulator
->                - mediatek,mt6397-regulator
->            - items:
->                - enum:
-> @@ -663,3 +672,69 @@ examples:
->              compatible = "mediatek,mt6397-rtc";
->          };
->      };
-> +
-> +  - |
-> +    #include <dt-bindings/input/input.h>
-> +    #include <dt-bindings/interrupt-controller/arm-gic.h>
-> +
-> +    pmic {
-> +        compatible = "mediatek,mt6392", "mediatek,mt6323";
-
-You already have three examples, that's rather close to max expected
-number of them. I suggest dropping.
-
-Anyway,
+On Sun, Jun 21, 2026 at 10:13:28AM +0200, Luca Leonardo Scorcia wrote:
+> Add bindings for the regulators found in the MediaTek MT6392 PMIC,
+> usually found in board designs using the MediaTek MT8516/MT8167 SoCs.
+> 
+> Signed-off-by: Luca Leonardo Scorcia <l.scorcia@gmail.com>
+> ---
+>  .../regulator/mediatek,mt6392-regulator.yaml  | 112 ++++++++++++++++++
+>  .../regulator/mediatek,mt6392-regulator.h     |  23 ++++
+>  2 files changed, 135 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/regulator/mediatek,mt6392-regulator.yaml
+>  create mode 100644 include/dt-bindings/regulator/mediatek,mt6392-regulator.h
 
 Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
 
