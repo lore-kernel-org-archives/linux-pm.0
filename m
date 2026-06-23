@@ -1,421 +1,199 @@
-Received: from BYAPR05CU005.outbound.protection.outlook.com (mail-westusazon11010054.outbound.protection.outlook.com [52.101.85.54])
+Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 39D54367F25;
-	Tue, 23 Jun 2026 09:54:29 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.85.54
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1782208471; cv=fail; b=YBOjcJpGmIuMgk32qPMp0o+O6yryBxU1utC2yaMsJoaADa95ZSLQTm8Kh/uLHfInZ1zYjejb090jxnHAM1aRzAXaHOtf0OmJ2lk51VV7oPVI9iKS77N48OFmTETjO3PmfZ7V3v3iSj2E0F+A7e3rVIEAdDmZf19GHRA3vSAxOzQ=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1782208471; c=relaxed/simple;
-	bh=wW58o7zEsyJy9DGbynKTTKavUhOYEK6cLD/tpgVXPok=;
-	h=From:To:CC:Subject:Date:Message-ID:MIME-Version:Content-Type; b=ngQtXFRvmWGwaVB5eNBD7kzNFEujDlICIOCwqgmtlSoXFQ2mx44+WIkeuwu6a3yRWcrG6KE1SRSA8V4KvWSMMoSF/LGnZa3SBe6TXh+gVasKqxE2PjgnAV7B8krDvQrhM6IcZ3oRe+HjiloaOuWLX6CpvFBSeixvv/oNztxR/8o=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com; spf=fail smtp.mailfrom=nvidia.com; dkim=pass (2048-bit key) header.d=Nvidia.com header.i=@Nvidia.com header.b=FXlpRS45; arc=fail smtp.client-ip=52.101.85.54
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com
-Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=nvidia.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id ED860370AD2
+	for <linux-pm@vger.kernel.org>; Tue, 23 Jun 2026 10:12:36 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1782209558; cv=none; b=kmO21YbQpy63Fxl4ohiSTvsT3G8IzrvFZ1ifcwGhrZ47m3GRMS+eplkNksCtTXXfcurYoXvNoPheFTeJQzeBL8k3a8UauQMvpQaPCt/+LY+ala5BmP+HDxGxauStHuvcDUGEBdw1ynveZnwjRkx6kxolSUBKLI6YQGlwUJ38QV8=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1782209558; c=relaxed/simple;
+	bh=Q48johTNqyvyTS3co9XgbDSXqXhNj9ySgShOWR3xwvo=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=Pj00QdaN+dbLN41LDV/KuDZc43dp2EtIqDcIxN5SzYBN8sFx2s+Gq8agyvHiDd/R2bL5JYMolSxgcqMG5RRv5mC4H9t2wxcrZ/N8fj9ief2V2xe81BpLSe+hmpOsTwaym0lZie5J+pTyJDOjIoyW5pgNjX7qsqWaXkUA9UvpzqE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=OTTe1sgz; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=Oz1bO6CE; arc=none smtp.client-ip=205.220.168.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=Nvidia.com header.i=@Nvidia.com header.b="FXlpRS45"
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=TrAyhG9pqDGGMIa2uGNVR1xn+ggPoh6hZ8WbZJyFB47xl2Ds6ZKqV0Cft6fUPMwYiXqtjFsHq3GzCPUrkhD7pk8wT8z7d79KzXvJ0H0GYttMOiiUhahiM+ZD6dM/nSYDNuJFP6JIG34XFO6ExY8lCAsh6YtJCCZ4oXeLGzSh0jBd07Cr74d7EdolQPktlAP+EhRtCP8jqY/kH3npdVkNiUDJEjEqq2XHfeM7mFYtIwwpKSvNTITqBdpIblRm8QDFUZ/cCj6HRpcyE29DkUhcJ5svYgwjGV+gbSf7UnWr3VOzpXjb1UNRhJRz+E2rlhd5uK9HcgcQxSAbSuia95OFLQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=nFCRGzauroMbOT3jYcUFL/yss9QweqaggDrH+LgalfA=;
- b=LZZT2mW7DFtX/dY6vvN7zXGu3G9ixV+E0/0Lj/7BQwy3LejJgklX89Fzu7VMGDQL3uRQSGiMD56qHqKZC+iJsXLR9GxiVFzIIfwJ0KwcFNAIoAtln8+mBXzgcRg3cxzo8pLH4XLW/K6iR1b4EjKALN0e0py/5ynwgDe/3Opy4TnNr3t0VdKEBWwDgOGRtnSxHDN096UPC/CZXk5uQzqyCQmMxZ/MNrP0Jfi44r27a90uxlSTt6G0Aouy9ywiuw+tcmX/Pc4Nc8ejnafj+6EbzSvoBBZidShBx/vQihYXRo5nTWwKiKtH8y9QGc1KJ1ugFSJcCrGsb4cNI1o5dBS9Zw==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
- 216.228.118.233) smtp.rcpttodomain=kernel.org smtp.mailfrom=nvidia.com;
- dmarc=pass (p=reject sp=reject pct=100) action=none header.from=nvidia.com;
- dkim=none (message not signed); arc=none (0)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
- s=selector2;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=nFCRGzauroMbOT3jYcUFL/yss9QweqaggDrH+LgalfA=;
- b=FXlpRS45Se9MB8uCcR3R4yoMH7y4DAXYIaZjv/C67zZ5wZeQuUUxzgj/m7wO3JFxxWUl5T9AC0QPZNqbK68HwKpzeLIXdu0X00Pr2+0Xc4Sj4ntPfn10xOrODhRBGwyNPcB3Yl3kCv+CAOgUdj6MuS/w3MPl7MnuVO4Y5XTU7yY0QMs/7ujNAFWux+MGy+7ZsNJD4ko7PIG9BVrrchlXd6lzlWhb7k9rT6zXfcidbxIkVJAaaFXuKXSToSm/I5+/DJS8c+NPLZ06Y4uxn2EO8p9Jwy5LQzKYowqrnkhE6cV+MkvZXGSZG0nIU1RdEWYXMJeae0qR/Kqf9rGa1qkoPA==
-Received: from SJ0PR05CA0116.namprd05.prod.outlook.com (2603:10b6:a03:334::31)
- by SJ2PR12MB8807.namprd12.prod.outlook.com (2603:10b6:a03:4d0::14) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.139.20; Tue, 23 Jun
- 2026 09:54:24 +0000
-Received: from SJ1PEPF00001CE6.namprd03.prod.outlook.com
- (2603:10b6:a03:334:cafe::4f) by SJ0PR05CA0116.outlook.office365.com
- (2603:10b6:a03:334::31) with Microsoft SMTP Server (version=TLS1_3,
- cipher=TLS_AES_256_GCM_SHA384) id 15.21.139.11 via Frontend Transport; Tue,
- 23 Jun 2026 09:54:23 +0000
-X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 216.228.118.233)
- smtp.mailfrom=nvidia.com; dkim=none (message not signed)
- header.d=none;dmarc=pass action=none header.from=nvidia.com;
-Received-SPF: Pass (protection.outlook.com: domain of nvidia.com designates
- 216.228.118.233 as permitted sender) receiver=protection.outlook.com;
- client-ip=216.228.118.233; helo=mail.nvidia.com; pr=C
-Received: from mail.nvidia.com (216.228.118.233) by
- SJ1PEPF00001CE6.mail.protection.outlook.com (10.167.242.22) with Microsoft
- SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.21.139.8 via Frontend Transport; Tue, 23 Jun 2026 09:54:23 +0000
-Received: from drhqmail203.nvidia.com (10.126.190.182) by mail.nvidia.com
- (10.127.129.6) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.20; Tue, 23 Jun
- 2026 02:54:14 -0700
-Received: from drhqmail203.nvidia.com (10.126.190.182) by
- drhqmail203.nvidia.com (10.126.190.182) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.2562.20; Tue, 23 Jun 2026 02:54:14 -0700
-Received: from sumitg-l4t.nvidia.com (10.127.8.14) by mail.nvidia.com
- (10.126.190.182) with Microsoft SMTP Server id 15.2.2562.20 via Frontend
- Transport; Tue, 23 Jun 2026 02:54:09 -0700
-From: Sumit Gupta <sumitg@nvidia.com>
-To: <rafael@kernel.org>, <viresh.kumar@linaro.org>, <pierre.gondois@arm.com>,
-	<ionela.voinescu@arm.com>, <zhenglifeng1@huawei.com>,
-	<zhanjie9@hisilicon.com>, <linux-kernel@vger.kernel.org>,
-	<linux-pm@vger.kernel.org>, <linux-tegra@vger.kernel.org>
-CC: <treding@nvidia.com>, <jonathanh@nvidia.com>, <vsethi@nvidia.com>,
-	<ksitaraman@nvidia.com>, <sanjayc@nvidia.com>, <mochs@nvidia.com>,
-	<bbasu@nvidia.com>, <sumitg@nvidia.com>
-Subject: [PATCH] cpufreq: CPPC: Preserve OSPM-set registers across hotplug and unload
-Date: Tue, 23 Jun 2026 15:24:03 +0530
-Message-ID: <20260623095403.3407436-1-sumitg@nvidia.com>
-X-Mailer: git-send-email 2.34.1
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="OTTe1sgz";
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="Oz1bO6CE"
+Received: from pps.filterd (m0279867.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 65N7krWe3228504
+	for <linux-pm@vger.kernel.org>; Tue, 23 Jun 2026 10:12:36 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
+	DXZEh/kSy7m60n4iWCnV+JVUfl7x1SxFuAddkvpHw6Q=; b=OTTe1sgzySdKtPsD
+	wnQmnQsQw1RG9FExhgN33mTthroMrFIXOu3EhM+QTlMctFzqUbwYo5MOCSFxm+yS
+	M3sFDwBg/ijjSxm5cbtcXjs3bq14bKG66AvoU90v7YxsBorF1wqY+0UnR/DaYzz+
+	Sw5XkYzdK7vhj8ZQ6Oae0/TuYQ2rSqNthZpzvPzythVj1RfA0HsrqJO9v7wJeDX9
+	JwDxWwfknbNB2r7JuJ7Cit3PuYBU3u2shInpeWRd4polUVQtkQ7n5PL7WFQmA8kO
+	HXbTE++kNUlHuNp80jN0ocPivXZmFadRxalS+OEL5KICSdo8NSe5TKw65ED7RdlR
+	w8NPbg==
+Received: from mail-qk1-f198.google.com (mail-qk1-f198.google.com [209.85.222.198])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4eyp29gmmw-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <linux-pm@vger.kernel.org>; Tue, 23 Jun 2026 10:12:35 +0000 (GMT)
+Received: by mail-qk1-f198.google.com with SMTP id af79cd13be357-9157db42dd8so1107293185a.2
+        for <linux-pm@vger.kernel.org>; Tue, 23 Jun 2026 03:12:35 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=oss.qualcomm.com; s=google; t=1782209554; x=1782814354; darn=vger.kernel.org;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=DXZEh/kSy7m60n4iWCnV+JVUfl7x1SxFuAddkvpHw6Q=;
+        b=Oz1bO6CE61FYMyzyQ1RZx1WQABat0C7NP05teUxEAghg+UC8BRL1AmoUyXbkr/a3sm
+         5QXkxp7fBWhjWydF/EVj0AGM5MW+qyNfXS6zxmjNm8DnJR0KyH4t2RueR2DVKZlLm5xY
+         6XFH+mwDD0jcOPtyQVkp+JZFLA+fTk+eIgEtyVGVXHeD7ZxWTVmYpM3P85tdd4fxR7Cz
+         3d3z/PWhEl9dYQPvhN/1EiNMBh7+ct3TRxS9ghZm7UhkMFmN/S9ivIMIE9ucmOWn2bKl
+         bkKZvAUiSM8c5ca6MULza1pqzz6PMgeiSgvghXHj7amL43LXi0XxFag6ihfxgs/JT380
+         uPzQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1782209554; x=1782814354;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=DXZEh/kSy7m60n4iWCnV+JVUfl7x1SxFuAddkvpHw6Q=;
+        b=aDQK22nQvuvcg4h/0nUNat3XNz03l3IHX9FLVg7YBHnd+vx0cCQeKHW0SoFecPuFjd
+         YaHZ4a87ZqieWWuWAwOptHGwIh+NV3Y+rFttX4MhmV4xSNGT0GtXrukIho5al5/oQ2Yl
+         6m1wdxzK3fq2QvCghgb+rVmQsGlgYEWtFLKjR8R0saX09k+GqoN5aZJkM6wu83144Xo4
+         AJcdtCpPjtJKsYhoyQECnFU5a77znYnqrP+MTOf6bqRMWjN29abSb81903+7GO+5AmbG
+         B6dATMhZNO0PTOfs7fJOQ9nZ3AAmZRdvgWrrlsxMzdGrV4RIE6U4an6R0nWQ0JmogWsH
+         k8Ng==
+X-Forwarded-Encrypted: i=1; AFNElJ+3KoYfmyhX1zNUOz4aJhXel83B343TUjOfMQtiS9nmEw8njbTBe3aZ3iDwyWgjQ4bzQgGb3r2zOA==@vger.kernel.org
+X-Gm-Message-State: AOJu0YyELmqqywfa00NOM8W5WHj9zqu3WGCThDXQ5mUdXDoFII+q0D/A
+	OaxCNfQfoSPChZTClFoW8CKIYfqfNSdNED7nBum+Wm3u3uTUp6fhdDTdNxbBqT32vPPTzhPA7rx
+	RGdL6xLGZ8/hzsrql5Q7MUJKWgWdjlHJ7dgo256BN94fBnlcFcnEduCIYB6hXEHc6Ee5eMA==
+X-Gm-Gg: AfdE7cliGjPKj8XLvlLOCcW5r3Dgqd3xgC2NpIfP45rvC3H45FmjqgbUC/J3+Q24BjP
+	wonrJSnp57yHbzn3qvEXUJgkOyyrZ7yoLUkBZtdlwEhcDVD8UUXdvliMijCUMy+/ryNpSTd5qx1
+	pvD7SOtq4IkI6F9OulbIQKWbjXkGljrPqT7vwHZkaPD9WPKZCcIGnQKrkGW2ZlhgwqIVz0Jl1lq
+	6shk6B2kdI1rKIJk8wCp7SsQbT8IJbgcWh5iXu9N1+TZTUofdk14QJ4TRDAZzFD+11Q2RjZ7Meq
+	yA1b88TGPjzPcacqCdCQvsPH9XgnUrtUj+NiBUYC4WSpy7fYo/ZD34bu02OnAhWhjH4yn41m12J
+	zJqJg8Zw0BsNjXSZXkBpfh9Wnu3Go4AJroekGHtc8O4LWIvSN4j3IyI+P/xrgKvDWE3U1aW9Lxw
+	==
+X-Received: by 2002:a05:620a:444c:b0:915:9efe:6de8 with SMTP id af79cd13be357-9266a033d5emr286817685a.58.1782209554237;
+        Tue, 23 Jun 2026 03:12:34 -0700 (PDT)
+X-Received: by 2002:a05:620a:444c:b0:915:9efe:6de8 with SMTP id af79cd13be357-9266a033d5emr286812785a.58.1782209553635;
+        Tue, 23 Jun 2026 03:12:33 -0700 (PDT)
+Received: from ?IPV6:2a05:6e02:1041:c10:21db:9254:19d9:645e? ([2a05:6e02:1041:c10:21db:9254:19d9:645e])
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4923fd15535sm399389615e9.3.2026.06.23.03.12.32
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Tue, 23 Jun 2026 03:12:32 -0700 (PDT)
+Message-ID: <60e8aeba-666c-453d-b2cb-3c45bb9723d2@oss.qualcomm.com>
+Date: Tue, 23 Jun 2026 12:12:32 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-NVConfidentiality: public
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 1/2] powercap: dtpm_cpu: Guard em_cpu_get() against NULL
+ return in sysfs callbacks
+To: Elazar Leibovich <elazarl@gmail.com>, linux-pm@vger.kernel.org
+Cc: "Rafael J . Wysocki" <rafael@kernel.org>,
+        Daniel Lezcano <daniel.lezcano@kernel.org>,
+        linux-kernel@vger.kernel.org, Sivan Zohar-Kotzer <sivany32@gmail.com>
+References: <20260611204658.47987-1-elazarl@gmail.com>
+ <20260611204658.47987-2-elazarl@gmail.com>
+Content-Language: en-US
+From: Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>
+In-Reply-To: <20260611204658.47987-2-elazarl@gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-NV-OnPremToCloud: ExternallySecured
-X-EOPAttributedMessage: 0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: SJ1PEPF00001CE6:EE_|SJ2PR12MB8807:EE_
-X-MS-Office365-Filtering-Correlation-Id: 23635bd5-331a-4ee8-195d-08ded10d675e
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|36860700016|376014|23010399003|1800799024|82310400026|18002099003|13003099007|5023799004|11063799006|56012099006;
-X-Microsoft-Antispam-Message-Info:
-	Fr0Zoc9DjbH65K7cVznfMprIOy3opiGKjGqI9qxfc79rd8zX50pQysbPUeikRC7UsBoxqn1AKePNGqGlinY7HzbooTTeQmvms365RF17xnK6xiyXHoXEWesIuRBD7A5OGAZtKxKonz12kzlKnYB5M4/BwtXStZBkak5TtF8blEfLzYP/ZatTHDwWRvohYDipgLBJkcinXGbgV8ysgAaX4et8Ve03WcqdEiGDDbF8ks4KY75ezfXq13vtRQqknVLY6XwdYjsxdGNk3rXAQuJ9GARRuwlvxxyP+e0Ekzq9ltiYj2o6debn7IblvM0Zx60XBdPuPhrZwkIwlMfrpnBb08ErILXTHpHEmgkFeggjBpvidcxjEwVybDuNAjX+qhWW5rJ+0rR77Bl8DKWqX0yQf7KiiNP5j9bgLS+OF9pKOCb9gYlZIlff22rQB2pZJ02d7OSNQWQTmc/wW/TSKlI4GeIXN7XZw5+aamK1NylZY37nOMvgyPA4emR9ubiFoFSprWblWfIlcH+bqaXbP704+QyFjcEo5puHrR0rIjMlbkIbM/aIbFFe5W8ORT2xzUhBcv/lVPUz0X5r6V9QhC9l7Y+3MnKlQWxhg0+G1P/iwkUJFFvZiwakFmE0vcrykLiqYSi7BjvQfldtggISzP6ANRkWtqtoUM3sYmTKtuE4F5dFDm/q+dX6pIjHNOYfFeSDhfB8UUspT2rdTZd115oxlw==
-X-Forefront-Antispam-Report:
-	CIP:216.228.118.233;CTRY:US;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:mail.nvidia.com;PTR:dc7edge2.nvidia.com;CAT:NONE;SFS:(13230040)(36860700016)(376014)(23010399003)(1800799024)(82310400026)(18002099003)(13003099007)(5023799004)(11063799006)(56012099006);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	lrhqngoUl4GrZHMDMlfEVWkDPCUGEpMUPv6655jKzKPjpvl20yYTubhFwW6g/me3WqfezKiuNLw8lrWpnN7C8IoiYN6TKXT/iB6FsjLJxdEn2/STwFSs1UzLW4ehKHrsgwCWW3e6OWawXaxHBEN8RDZijFMs17DTW7UzFts/mRIiD5+VgneOIcX58kNybzkdD8BjfoEoCP50Ob8ByR0Gsgmdf3TNHS4b0Q48R/bwgDQPaXblADrF1If8u3rxhISQGb4TCzIsPTF/eCtkOAUSJuvG3UTf80v2SwEPqEBZQVMRSlEEszF8CiFrfhQ5oBUTAXfuwR5yDbiPQdmwLxL9BrsD6rTWD3Kbdr/ZBV7Y8V03psMizje339fc75DF1PyNvGphbCWWUa473m+7X+s76+zV9n0Ry/oiHnngqADmi181q+CKXCGNCDhkqxmNQQ3m
-X-OriginatorOrg: Nvidia.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 23 Jun 2026 09:54:23.1897
- (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: 23635bd5-331a-4ee8-195d-08ded10d675e
-X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
-X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=43083d15-7273-40c1-b7db-39efd9ccc17a;Ip=[216.228.118.233];Helo=[mail.nvidia.com]
-X-MS-Exchange-CrossTenant-AuthSource:
-	SJ1PEPF00001CE6.namprd03.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Anonymous
-X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: SJ2PR12MB8807
+X-Authority-Analysis: v=2.4 cv=LdAMLDfi c=1 sm=1 tr=0 ts=6a3a5c13 cx=c_pps
+ a=qKBjSQ1v91RyAK45QCPf5w==:117 a=xqWC_Br6kY4A:10 a=IkcTkHD0fZMA:10
+ a=FelO9ux0wxsA:10 a=s4-Qcg_JpJYA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=u7WPNUs3qKkmUXheDGA7:22 a=eoimf2acIAo5FJnRuUoq:22 a=pGLkceISAAAA:8
+ a=Xzsr67MKrT1HMcM2bGYA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
+ a=NFOGd7dJGGMPyQGDc5-O:22
+X-Proofpoint-GUID: Rg5U3VmI2yHnOYSoScirC7xXkWUi5EIq
+X-Proofpoint-Spam-Info: AW1haW4tMjYwNjIzMDA4MiBTYWx0ZWRfX838LeVIiIINH
+ pNaYLYiV7HQNRvaha0kljBzfPshscsgT0mFEV9XV/jNWkIFQ2xBo01bYckUeKAXtr6LHVRWzBQu
+ wHK1ujYV2GZf5PzIjBtzv2mBdNbKurA=
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNjIzMDA4MiBTYWx0ZWRfX3bA4wriSROK/
+ f94ns7GMf18OwIs6Mf6S12SaybkiGAYIElPv4+qGEkHykVQVHrc7XLPfpieNbkcARC5cjf/9T9z
+ 86tgjBb7JtbtBY43i5fMzgGRX4QuXV3MMpJ4I97drr5nXWnWQTevbjGh+5tjmlJTlgsU5qhZeBY
+ 3SfZMsmvnA5oCQYG4RK/1WGIhtcAtASPS5npaLmphNej1LUIQfRJeOoXxhClFJP6GqDbWbnKFEw
+ hOk3/WBtVq5nLBxpY2BpbcJFf1rt0BCnQsRxSUGDJPYkqEJE3bsoKaAelrwGXfAGSJU7IQrL+xy
+ ONbQFwHGUb+0JrLW8qbjQ+1KH6vqxBfjdz61sviU9E4DRbs3fVnIuqDUvde0AXT57dtSYkmjsJY
+ e7v7dp7EbhDhGph/ih0AnIOVTlLpkg==
+X-Proofpoint-ORIG-GUID: Rg5U3VmI2yHnOYSoScirC7xXkWUi5EIq
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.125,FMLib:17.12.100.49
+ definitions=2026-06-23_02,2026-06-22_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ lowpriorityscore=0 malwarescore=0 suspectscore=0 spamscore=0 adultscore=0
+ phishscore=0 bulkscore=0 classifier=typeunknown authscore=0 authtc= authcc=
+ route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2606150000
+ definitions=main-2606230082
 
-Values written to OSPM-set CPPC registers (via sysfs or the autonomous
-boot parameter) can be lost in two ways:
 
-  - Across CPU hotplug: the platform may reset a CPU's registers when it
-    is offlined.
-  - On driver unload: the value the driver wrote is left in the register
-    instead of returning to its pre-driver state.
+Hi,
 
-Add a small table-driven mechanism that handles both:
+On 6/11/26 22:46, Elazar Leibovich wrote:
+> From: Sivan Zohar-Kotzer <sivany32@gmail.com>
+> 
+> em_cpu_get() can return NULL when the CPU has no energy model registered
+> (e.g. during hotplug races or initialization failures). Two call sites
+> miss the NULL test:
+> 
+> 1. set_pd_power_limit() — reachable from sysfs via the powercap
+>     constraint power_limit_uw store path. If NULL, return the current
+>     power limit unchanged (no-op) instead of crashing.
 
-  - Capture each register's firmware value when a CPU is first seen and
-    restore it on driver unload.
-  - Record the last value the driver set and reapply it from ->init()
-    when the policy is reactivated after CPU hotplug.
+If there is no energy model, then __dtpm_cpu_setup() fails and dtpm_ops 
+is not set. Consequently, set_pd_power_limit() can not be called.
 
-The firmware value is captured on a CPU's first activation rather than
-once at module load, so CPUs offline at boot or hot-added later are
-covered.
 
-Reapply is only needed on a full policy teardown and bring-up, which goes
-through ->init(). In a SHARED_TYPE_ANY policy, offlining a single CPU
-leaves the shared register untouched, so nothing is lost there.
+> 2. update_pd_power_uw() — called from CPU hotplug handlers via
+>     dtpm_update_power(). Return -EINVAL if the EM is absent, since this
+>     is an internal consistency failure that should not be swallowed.
 
-Cover the OSPM Nominal Performance, Autonomous Selection
-(auto_sel) and Energy Performance Preference (EPP) registers. For
-auto_sel it replaces the previous unconditional
-cppc_set_auto_sel(cpu, false) on unload with a restore of the firmware
-value captured at the CPU's first init.
+If there is no energy model, then __dtpm_cpu_setup() fails and 
+dtpm_per_cpu is not set and dtpm_update_power() is not called.
 
-Suggested-by: Pierre Gondois <pierre.gondois@arm.com>
-Signed-off-by: Sumit Gupta <sumitg@nvidia.com>
----
+online/offline:
 
-This applies on top of (not yet merged):
- [1] ACPI: CPPC: Add ospm_nominal_perf support
-     https://lore.kernel.org/lkml/20260615185934.2383514-1-sumitg@nvidia.com/
- [2] cpufreq: CPPC: add autonomous mode boot parameter support
-     https://lore.kernel.org/lkml/20260623080652.3353386-1-sumitg@nvidia.com/
+         if (dtpm_cpu)
+                 dtpm_update_power(&dtpm_cpu->dtpm);
 
- drivers/cpufreq/cppc_cpufreq.c | 194 +++++++++++++++++++++++++++++++--
- 1 file changed, 186 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/cpufreq/cppc_cpufreq.c b/drivers/cpufreq/cppc_cpufreq.c
-index a3fabfb07fbe..d6ea2cbde187 100644
---- a/drivers/cpufreq/cppc_cpufreq.c
-+++ b/drivers/cpufreq/cppc_cpufreq.c
-@@ -28,6 +28,174 @@
- 
- static struct cpufreq_driver cppc_cpufreq_driver;
- 
-+/*
-+ * OSPM-set CPPC registers tracked for save/restore. A value set via sysfs or
-+ * the autonomous boot parameter is reapplied across CPU hotplug, and the
-+ * firmware value is restored on driver unload.
-+ */
-+enum cppc_saved_reg_id {
-+	CPPC_SAVED_OSPM_NOMINAL_PERF,
-+	CPPC_SAVED_AUTO_SEL,
-+	CPPC_SAVED_EPP,
-+	CPPC_NR_SAVED_REGS,
-+};
-+
-+struct cppc_saved_reg {
-+	int (*get)(int cpu, u64 *val);
-+	int (*set)(int cpu, u64 val);
-+};
-+
-+/* u64 wrappers so the bool auto_sel register fits the table signatures. */
-+static int cppc_get_auto_sel_u64(int cpu, u64 *val)
-+{
-+	bool enable;
-+	int ret;
-+
-+	ret = cppc_get_auto_sel(cpu, &enable);
-+	if (ret)
-+		return ret;
-+
-+	*val = enable;
-+	return 0;
-+}
-+
-+static int cppc_set_auto_sel_u64(int cpu, u64 val)
-+{
-+	return cppc_set_auto_sel(cpu, !!val);
-+}
-+
-+static const struct cppc_saved_reg cppc_saved_regs[CPPC_NR_SAVED_REGS] = {
-+	[CPPC_SAVED_OSPM_NOMINAL_PERF] = {
-+		cppc_get_ospm_nominal_perf, cppc_set_ospm_nominal_perf,
-+	},
-+	[CPPC_SAVED_AUTO_SEL] = {
-+		cppc_get_auto_sel_u64, cppc_set_auto_sel_u64,
-+	},
-+	[CPPC_SAVED_EPP] = {
-+		cppc_get_epp_perf, cppc_set_epp,
-+	},
-+};
-+
-+/*
-+ * Per-CPU saved state for each register in cppc_saved_regs[]:
-+ *   firmware_val      - register value before the driver touched it, restored
-+ *                       on unload
-+ *   requested_val     - last value the driver set (sysfs or boot parameter),
-+ *                       reapplied on policy reactivation
-+ *   firmware_captured - whether firmware_val has been read, so a not-yet-seen
-+ *                       CPU isn't mistaken for one whose firmware value is 0
-+ */
-+struct cppc_saved_state {
-+	u64 firmware_val;
-+	u64 requested_val;
-+	bool firmware_captured;
-+};
-+
-+/*
-+ * Per-CPU and not tied to a policy, so the saved values survive policy
-+ * teardown/bring-up across CPU hotplug. cpu_data->perf_ctrls is per-policy
-+ * and freed on policy ->exit.
-+ */
-+static DEFINE_PER_CPU(struct cppc_saved_state[CPPC_NR_SAVED_REGS], cppc_saved_state);
-+
-+static void cppc_cache_perf_ctrls(struct cppc_cpudata *cpu_data,
-+				  enum cppc_saved_reg_id reg, u64 val)
-+{
-+	switch (reg) {
-+	case CPPC_SAVED_AUTO_SEL:
-+		cpu_data->perf_ctrls.auto_sel = val;
-+		break;
-+	case CPPC_SAVED_EPP:
-+		cpu_data->perf_ctrls.energy_perf = val;
-+		break;
-+	default:
-+		break;
-+	}
-+}
-+
-+/*
-+ * Save the requested value for the given register and CPU, to be reapplied when
-+ * the policy is reactivated after CPU hotplug. Also update the per-policy
-+ * perf_ctrls copy so the saved and current values stay in sync.
-+ */
-+static void cppc_save_requested(struct cppc_cpudata *cpu_data, unsigned int cpu,
-+				enum cppc_saved_reg_id reg, u64 val)
-+{
-+	per_cpu(cppc_saved_state, cpu)[reg].requested_val = val;
-+	cppc_cache_perf_ctrls(cpu_data, reg, val);
-+}
-+
-+/*
-+ * Reapply each register's last requested value from ->init(), so a value set
-+ * via sysfs or the boot parameter survives a policy teardown and bring-up
-+ * across CPU hotplug. Also keep perf_ctrls in sync with it.
-+ */
-+static void cppc_cpufreq_reapply_requested_regs(struct cpufreq_policy *policy)
-+{
-+	struct cppc_cpudata *cpu_data = policy->driver_data;
-+	unsigned int cpu, i;
-+	u64 val;
-+
-+	for_each_cpu(cpu, policy->cpus) {
-+		for (i = 0; i < CPPC_NR_SAVED_REGS; i++) {
-+			val = per_cpu(cppc_saved_state, cpu)[i].requested_val;
-+			if (val == U64_MAX)
-+				continue;
-+
-+			cppc_saved_regs[i].set(cpu, val);
-+
-+			/* Keep perf_ctrls in sync via the policy's CPU. */
-+			if (cpu == policy->cpu)
-+				cppc_cache_perf_ctrls(cpu_data, i, val);
-+		}
-+	}
-+}
-+
-+/*
-+ * On a CPU's first ->init(), capture each register's firmware value to be
-+ * restored on driver unload. Later calls for the same CPU are a no-op. Capturing
-+ * from ->init() rather than module load covers CPUs that appear later. Also seed
-+ * requested_val to U64_MAX so its zeroed default is not taken as a request for 0.
-+ */
-+static void cppc_cpufreq_save_firmware_regs(struct cpufreq_policy *policy)
-+{
-+	unsigned int cpu, i;
-+	u64 val;
-+
-+	for_each_cpu(cpu, policy->cpus) {
-+		for (i = 0; i < CPPC_NR_SAVED_REGS; i++) {
-+			struct cppc_saved_state *s =
-+				&per_cpu(cppc_saved_state, cpu)[i];
-+
-+			/* Capture once per CPU; skip if already recorded. */
-+			if (s->firmware_captured)
-+				continue;
-+
-+			if (cppc_saved_regs[i].get(cpu, &val))
-+				val = U64_MAX;
-+			s->firmware_val = val;
-+			s->requested_val = U64_MAX;
-+			s->firmware_captured = true;
-+		}
-+	}
-+}
-+
-+/* On driver unload, restore each captured CPU's firmware value. */
-+static void cppc_cpufreq_restore_firmware_regs(void)
-+{
-+	unsigned int cpu, i;
-+
-+	for_each_present_cpu(cpu) {
-+		for (i = 0; i < CPPC_NR_SAVED_REGS; i++) {
-+			struct cppc_saved_state *s =
-+				&per_cpu(cppc_saved_state, cpu)[i];
-+
-+			if (s->firmware_captured && s->firmware_val != U64_MAX)
-+				cppc_saved_regs[i].set(cpu, s->firmware_val);
-+		}
-+	}
-+}
-+
- /* Autonomous Selection boot parameter modes */
- enum {
- 	AUTO_SEL_DISABLED = 0,
-@@ -766,6 +934,9 @@ static int cppc_cpufreq_cpu_init(struct cpufreq_policy *policy)
- 	policy->cur = cppc_perf_to_khz(caps, caps->highest_perf);
- 	cpu_data->perf_ctrls.desired_perf =  caps->highest_perf;
- 
-+	/* Capture a CPU's firmware values on its first init, before any driver write. */
-+	cppc_cpufreq_save_firmware_regs(policy);
-+
- 	/*
- 	 * Enable autonomous mode on first init if boot param is set.
- 	 * Check last_governor to detect first init and skip if auto_sel
-@@ -812,7 +983,7 @@ static int cppc_cpufreq_cpu_init(struct cpufreq_policy *policy)
- 			if (ret && ret != -EOPNOTSUPP)
- 				pr_warn("Failed to set EPP for CPU%d (%d)\n", cpu, ret);
- 			else if (!ret)
--				cpu_data->perf_ctrls.energy_perf = epp;
-+				cppc_save_requested(cpu_data, cpu, CPPC_SAVED_EPP, epp);
- 		}
- 
- 		/* Program min/max/desired into CPPC regs (non-fatal on failure). */
-@@ -826,7 +997,7 @@ static int cppc_cpufreq_cpu_init(struct cpufreq_policy *policy)
- 			pr_warn("auto_sel CPU%d failed (%d); using OS mode\n",
- 				cpu, ret);
- 		else if (!ret)
--			cpu_data->perf_ctrls.auto_sel = true;
-+			cppc_save_requested(cpu_data, cpu, CPPC_SAVED_AUTO_SEL, true);
- 	}
- 
- 	if (cpu_data->perf_ctrls.auto_sel) {
-@@ -850,6 +1021,10 @@ static int cppc_cpufreq_cpu_init(struct cpufreq_policy *policy)
- 	}
- 
- 	cppc_cpufreq_cpu_fie_init(policy);
-+
-+	/* Reapply any saved values lost across a full policy teardown. */
-+	cppc_cpufreq_reapply_requested_regs(policy);
-+
- 	return 0;
- 
- out:
-@@ -1039,6 +1214,8 @@ static ssize_t store_auto_select(struct cpufreq_policy *policy,
- 		}
- 	}
- 
-+	cppc_save_requested(cpu_data, policy->cpu, CPPC_SAVED_AUTO_SEL, val);
-+
- 	return count;
- }
- 
-@@ -1111,7 +1288,7 @@ store_energy_performance_preference_val(struct cpufreq_policy *policy,
- 	if (ret)
- 		return ret;
- 
--	cpu_data->perf_ctrls.energy_perf = val;
-+	cppc_save_requested(cpu_data, policy->cpu, CPPC_SAVED_EPP, val);
- 
- 	return count;
- }
-@@ -1193,6 +1370,9 @@ static ssize_t store_ospm_nominal_freq(struct cpufreq_policy *policy,
- 		}
- 	}
- 
-+	for_each_cpu(sib, policy->cpus)
-+		cppc_save_requested(cpu_data, sib, CPPC_SAVED_OSPM_NOMINAL_PERF, perf);
-+
- 	return count;
- 
- rollback:
-@@ -1258,13 +1438,11 @@ static int __init cppc_cpufreq_init(void)
- 
- static void __exit cppc_cpufreq_exit(void)
- {
--	unsigned int cpu;
--
--	for_each_present_cpu(cpu)
--		cppc_set_auto_sel(cpu, false);
--
- 	cpufreq_unregister_driver(&cppc_cpufreq_driver);
- 	cppc_freq_invariance_exit();
-+
-+	/* Restore auto_sel and the other saved registers to their firmware value. */
-+	cppc_cpufreq_restore_firmware_regs();
- }
- 
- module_param_cb(auto_sel_mode, &auto_sel_mode_ops, &auto_sel_mode, 0444);
--- 
-2.34.1
+> The other sysfs-reachable path, get_pd_power_uw(), already has a NULL
+> guard returning 0.
+> 
+> Fixes: 0e8f68d7f048 ("powercap/drivers/dtpm: Add CPU energy model based support")
+> Signed-off-by: Sivan Zohar-Kotzer <sivany32@gmail.com>
+> Co-developed-by: Elazar Leibovich <elazarl@gmail.com>
+> Signed-off-by: Elazar Leibovich <elazarl@gmail.com>
+> ---
+>   drivers/powercap/dtpm_cpu.c | 6 ++++++
+>   1 file changed, 6 insertions(+)
+> 
+> diff --git a/drivers/powercap/dtpm_cpu.c b/drivers/powercap/dtpm_cpu.c
+> index 99390ec1481f..0a460f97bf15 100644
+> --- a/drivers/powercap/dtpm_cpu.c
+> +++ b/drivers/powercap/dtpm_cpu.c
+> @@ -47,6 +47,9 @@ static u64 set_pd_power_limit(struct dtpm *dtpm, u64 power_limit)
+>   	u64 power;
+>   	int i, nr_cpus;
+>   
+> +	if (!pd)
+> +		return dtpm->power_limit;
+> +
+>   	nr_cpus = cpumask_weight_and(cpu_online_mask, to_cpumask(pd->cpus));
+>   
+>   	rcu_read_lock();
+> @@ -125,6 +128,9 @@ static int update_pd_power_uw(struct dtpm *dtpm)
+>   	struct em_perf_state *table;
+>   	int nr_cpus;
+>   
+> +	if (!em)
+> +		return -EINVAL;
+> +
+>   	nr_cpus = cpumask_weight_and(cpu_online_mask, to_cpumask(em->cpus));
+>   
+>   	rcu_read_lock();
+
 
