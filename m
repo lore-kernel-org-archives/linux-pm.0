@@ -1,230 +1,126 @@
-Received: from posta.ukf.sk (posta.ukf.sk [193.87.12.33])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AC7E03D7D74;
-	Tue, 23 Jun 2026 15:11:32 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=193.87.12.33
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1782227497; cv=none; b=GiNfs28+vc9M9AYlW1D2p4Fd7vkNL3COBBuBA/yUYejwNNNH6/438KvCJjU3Ax5hOdagkVVWM7Wc39uky33peIWyIYHk9EAtLhe/vbGFxTWpXSASyuacs5tfRp3ro3ALC1tv3pxF3NGjStHgqDp2KX7bj8r6o++i+YuhNTBc7kE=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1782227497; c=relaxed/simple;
-	bh=8Pmf9XvSRAto0fGDLAf9dBGFpjll1k7hApWWpM8bsYY=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=pqgp/d6Dk5WBJAlSM1/VhcMDmRnMXrDlaoabd9bPwoZwu0mV57/arVHy4OdZeMo0XChAEsAOD2benuHWYbriZg86uGZsLq9NFd5NCFLuxjCoSlwwGm9rxlEq9RQ39CTx4DD6avahtME0qv8f8/qnMA4hawoOCYob4r7u2kWGZw8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=ukf.sk; spf=pass smtp.mailfrom=ukf.sk; dkim=pass (1024-bit key) header.d=ukf.sk header.i=@ukf.sk header.b=kHWH8d20; arc=none smtp.client-ip=193.87.12.33
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=ukf.sk
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=ukf.sk
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=ukf.sk header.i=@ukf.sk header.b="kHWH8d20"
-Received: from localhost (localhost [127.0.0.1])
-	by posta.ukf.sk (Postfix) with ESMTP id 0673B42327B;
-	Tue, 23 Jun 2026 17:11:27 +0200 (CEST)
-Received: from posta.ukf.sk ([127.0.0.1])
-	by localhost (posta1.ukf.sk [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id wLVp9ctadZOm; Tue, 23 Jun 2026 17:11:26 +0200 (CEST)
-Received: from [10.8.1.254] (unknown [10.8.1.254])
+Received: from layka.disroot.org (layka.disroot.org [178.21.23.139])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by posta.ukf.sk (Postfix) with ESMTPSA id 3AAF142325B;
-	Tue, 23 Jun 2026 17:11:24 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ukf.sk; s=2022;
-	t=1782227486; bh=8Pmf9XvSRAto0fGDLAf9dBGFpjll1k7hApWWpM8bsYY=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=kHWH8d201Us2PYKk1D0OW3Jy9AKnROZbvhZGz5Wx22W0+YaNsPS0ZDlJOoatmLN0K
-	 2P5+439g5SCDt5Q7RjvfmzBnoUCtZ/hY/ixTmBxm0+XE+2H7FtCRMl9EC2V/sHjGSP
-	 dyGp2bhrbF+DRY4GzkNDH/JjSwL4IY0X4nZfx+DE=
-Message-ID: <cd45c7c8-4df9-4963-b847-02cf72bcc039@ukf.sk>
-Date: Tue, 23 Jun 2026 17:11:19 +0200
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1427E327C09;
+	Tue, 23 Jun 2026 16:57:41 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=178.21.23.139
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1782233863; cv=none; b=gXpY6QCXueWQDGztqvbrhad5zkoQSH83mqdTPFg6vteGrvw6KoAbNQUrwFHoBtnJeRmlW90wCP48Z1H9KmjeSNCeouH2/OUqlYtCJZEMxd6SsMUzMg9CcZ1c+8H6AUntYPmuGzjub+jM6OlNKIFQ2QA0tPMeg4z8TV66KOmGgXk=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1782233863; c=relaxed/simple;
+	bh=5AeTwsvDNJM7u4Jhd6v4Rb0o3GL6O9eyZvuvTncwjEA=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=MOYsUpYaZ+ss1Ok/bqdo80l+pAyzerH7xIQTUzELA4GL3ZOstQ0jO4zFEc//FV0SkPGUavR6tMZpoGxIy+kwYdnQ3x03Ri9l06kV7IVUGHEGwuWJSa2wDiASalYpItWdV2kPTsBXM9MKLEy72B8cvyENV0NkdrKpU5YiOfTITCs=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=disroot.org; spf=pass smtp.mailfrom=disroot.org; dkim=pass (2048-bit key) header.d=disroot.org header.i=@disroot.org header.b=hsUdQwZi; arc=none smtp.client-ip=178.21.23.139
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=disroot.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=disroot.org
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=disroot.org header.i=@disroot.org header.b="hsUdQwZi"
+Received: from mail01.disroot.lan (localhost [127.0.0.1])
+	by disroot.org (Postfix) with ESMTP id C2A30261AB;
+	Tue, 23 Jun 2026 18:57:40 +0200 (CEST)
+X-Virus-Scanned: SPAM Filter at disroot.org
+Received: from layka.disroot.org ([127.0.0.1])
+ by localhost (disroot.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id UQN4X1_LCZvV; Tue, 23 Jun 2026 18:57:40 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=disroot.org; s=mail;
+	t=1782233860; bh=5AeTwsvDNJM7u4Jhd6v4Rb0o3GL6O9eyZvuvTncwjEA=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References;
+	b=hsUdQwZi0DnwcgqOQwZaSeKsxbKlpCiL4z8NyvzAH6fki79uEapA+E3NuAHcYlQJm
+	 Uz34aE74tRtZ84L5WGGchp3qxatUAk561jJhRg10svGxEiV6tkNErO0YR264j9wHix
+	 Qtg5d8GSwAaNHAq/mvWOiWu2//pMHV7hJg67t/tEik6aDfFrnh5EXWUeffr4LzOFGU
+	 Aq2onwy9+KuG41eENxavbCvjc7QUmHXRP0vNAJJocx4gG/9FodkGTIDgxXdMFAcYtY
+	 zWLVgvmN3pDGNFTMmbIjUlHLIAEO0Ertn14inCaTyzay0wuOHCS9bjtswk79dyFOd/
+	 QRdm+b03Tb3ug==
+From: Marco Scardovi <scardracs@disroot.org>
+To: moravec@ukf.sk
+Cc: bp@alien8.de,
+	crecklin@redhat.com,
+	dave.hansen@linux.intel.com,
+	hpa@zytor.com,
+	linux-kernel@vger.kernel.org,
+	linux-pm@vger.kernel.org,
+	mingo@redhat.com,
+	pavel@kernel.org,
+	rafael@kernel.org,
+	regressions@leemhuis.info,
+	regressions@lists.linux.dev,
+	scardracs@disroot.org,
+	tglx@kernel.org,
+	x86@kernel.org
+Subject: [PATCH v2 0/4] PM: hibernate: Add relaxed_memmap option for x86 E820 integrity check
+Date: Tue, 23 Jun 2026 18:47:26 +0200
+Message-ID: <20260623165724.10753-1-scardracs@disroot.org>
+In-Reply-To: <cd45c7c8-4df9-4963-b847-02cf72bcc039@ukf.sk>
+References: <cd45c7c8-4df9-4963-b847-02cf72bcc039@ukf.sk>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 1/1] x86/power: only verify usable RAM regions during
- hibernation E820 check
-To: "Rafael J. Wysocki" <rafael@kernel.org>,
- Marco Scardovi <scardracs@disroot.org>
-Cc: pavel@kernel.org, tglx@kernel.org, mingo@redhat.com, bp@alien8.de,
- dave.hansen@linux.intel.com, x86@kernel.org, hpa@zytor.com,
- crecklin@redhat.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
- regressions@leemhuis.info, regressions@lists.linux.dev
-References: <20260620081548.14143-1-scardracs@disroot.org>
- <20260620081548.14143-2-scardracs@disroot.org>
- <CAJZ5v0jmOj0WBtMTvbnaD+2b0bTFowA=JWrqRzaaCYpHpai1Nw@mail.gmail.com>
-Content-Language: sk-SK-Ascii, en-US
-From: Milan Oravec <moravec@ukf.sk>
-Organization: CIKT UKF Nitra
-In-Reply-To: <CAJZ5v0jmOj0WBtMTvbnaD+2b0bTFowA=JWrqRzaaCYpHpai1Nw@mail.gmail.com>
-Content-Type: multipart/signed; protocol="application/pkcs7-signature"; micalg=sha-512; boundary="------------ms030109040103050406090705"
+Content-Transfer-Encoding: 8bit
 
-This is a cryptographically signed message in MIME format.
+Hi Rafael, Milan,
 
---------------ms030109040103050406090705
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: base64
+> ...
+>
+> Hibernation in Linux simply cannot cope with a changing memory map in
+> general, sorry about that.
 
-SGVsbG/CoFJhZmFlbC4gT0ssIHdoYXQgaXMgcHJvcGVyIHNvbHV0aW9uIGZvciB0aGUgSGli
-ZXJuYXRlIGluY29uc2lzdGVudCANCm1lbW9yeSBtYXAgZGV0ZWN0ZWQhIHByb2JsZW0/DQoN
-ClRoYW5rIHlvdSwNCg0KYmVzdCByZWdhcmRzLA0KDQpNaWxhbiBPcmF2ZWMNCg0KQ0lLVCBV
-S0YgTml0cmENCk1vYmlsL1NpZ25hbDogKzQyMTkwNzY3MDI3MA0KZW1haWw6IG1vcmF2ZWNA
-dWtmLnNrDQoNCi0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tDQoNClR1dG8gc3ByYXZ1IG5lcHJldmVyaWwgemlh
-ZG55IGFudGl2aXJ1cyAtIG5lYm9sbyB0cmViYS4uLg0KDQpPbiA2LzIzLzI2IDE0OjU5LCBS
-YWZhZWwgSi4gV3lzb2NraSB3cm90ZToNCj4gT24gU2F0LCBKdW4gMjAsIDIwMjYgYXQgMTA6
-MTbigK9BTSBNYXJjbyBTY2FyZG92aSA8c2NhcmRyYWNzQGRpc3Jvb3Qub3JnPiB3cm90ZToN
-Cj4+IE9uIHNvbWUgVUVGSSBwbGF0Zm9ybXMgKHN1Y2ggYXMgdGhlIEhQIE9tbmlCb29rIFgg
-RmxpcCksIHJlc3VtaW5nIGZyb20NCj4+IGhpYmVybmF0aW9uIGZhaWxzIHdpdGggJ0hpYmVy
-bmF0ZSBpbmNvbnNpc3RlbnQgbWVtb3J5IG1hcCBkZXRlY3RlZCEnDQo+PiBldmVuIHRob3Vn
-aCB0aGUgdXNhYmxlIHN5c3RlbSBSQU0gY29uZmlndXJhdGlvbiBpcyBpZGVudGljYWwuDQo+
-IFRoYXQgbWF5IG5vdCBiZSBzdWZmaWNpZW50IGZvciB0aGUgaW1hZ2Uga2VybmVsIHRvIHdv
-cmsgYWZ0ZXIgcmVzdW1pbmcgdGhvdWdoLg0KPg0KPj4gVGhpcyBoYXBwZW5zIGJlY2F1c2Ug
-dGhlIFVFRkkgZmlybXdhcmUgb3IgYm9vdGxvYWRlciAobGlrZSBHUlVCKSBtYWtlcw0KPj4g
-bm9uLWRldGVybWluaXN0aWMgYWxsb2NhdGlvbnMgb3Igc2hpZnRzIHJlc2VydmVkL0FDUEkg
-bWVtb3J5IHJlZ2lvbnMNCj4+IGR5bmFtaWNhbGx5IGFjcm9zcyBib290cywNCj4gVGhlIGJv
-b3QgbG9hZGVyIGhhcyBub3RoaW5nIHRvIGRvIHdpdGggdGhpcywgdGhlIG1lbW9yeSBtYXAg
-Y29tZXMgZnJvbQ0KPiB0aGUgVUVGSSBmaXJtd2FyZS4NCj4NCj4+IHdoaWNoIGNoYW5nZXMg
-dGhlIENSQzMyIGNoZWNrc3VtIGNvbXB1dGVkDQo+PiBvdmVyIHRoZSBlbnRpcmUgRTgyMCB0
-YWJsZSAod2hpY2ggaW5jbHVkZXMgbm9uLVJBTSB0eXBlcyBsaWtlIHJlc2VydmVkLA0KPj4g
-QUNQSSwgTlZTLCBhbmQgdW51c2FibGUgbWVtb3J5KS4NCj4+DQo+PiBGaXggdGhpcyBieSBt
-b2RpZnlpbmcgY29tcHV0ZV9lODIwX2NyYzMyKCkgdG8gb25seSBjYWxjdWxhdGUgdGhlDQo+
-PiBjaGVja3N1bSBvdmVyIG1lbW9yeSBtYXAgZW50cmllcyBvZiB0eXBlIEU4MjBfVFlQRV9S
-QU0uIFVzYWJsZSBzeXN0ZW0NCj4+IFJBTSBsYXlvdXQgaXMgc3RpbGwgdmVyaWZpZWQgdG8g
-ZW5zdXJlIGRhdGEgc2FmZXR5LCBidXQgZHluYW1pYyBzaGlmdHMNCj4+IGluIEFDUEkgYW5k
-IG90aGVyIHJlc2VydmVkIHJhbmdlcyBhcmUgaWdub3JlZC4NCj4gV2hpY2ggaXMgcmlza3kg
-YmVjYXVzZSB0aGUgaW1hZ2Uga2VybmVsIG1heSBhY2Nlc3Mgc3R1ZmYgbG9jYXRlZCBpbg0K
-PiB0aG9zZSBub24tUkFNIG1lbW9yeSByZWdpb25zIChmb3IgaW5zdGFuY2UsIEFDUEkgdGFi
-bGVzLCBBTUwgb3BlcmF0aW9uDQo+IHJlZ2lvbnMsIFVFRkkgcnVudGltZSB2YXJpYWJsZXMs
-IGV0Yy4pLg0KPg0KPiBIaWJlcm5hdGlvbiBpbiBMaW51eCBzaW1wbHkgY2Fubm90IGNvcGUg
-d2l0aCBhIGNoYW5naW5nIG1lbW9yeSBtYXAgaW4NCj4gZ2VuZXJhbCwgc29ycnkgYWJvdXQg
-dGhhdC4NCj4NCj4+IENsb3NlczogaHR0cHM6Ly9idWd6aWxsYS5rZXJuZWwub3JnL3Nob3df
-YnVnLmNnaT9pZD0yMjE1NjkNCj4+IEZpeGVzOiBmNWQxNDk5YWUyMDkgKCJQTTogaGliZXJu
-YXRlOiB4ODY6IFVzZSBjcmMzMiBpbnN0ZWFkIG9mIG1kNSBmb3IgaGliZXJuYXRpb24gZTgy
-MCBpbnRlZ3JpdHkgY2hlY2siKQ0KPj4gQXNzaXN0ZWQtYnk6IEFudGlncmF2aXR5OmdlbWlu
-aS0zLjUtZmxhc2gNCj4+IFNpZ25lZC1vZmYtYnk6IE1hcmNvIFNjYXJkb3ZpIDxzY2FyZHJh
-Y3NAZGlzcm9vdC5vcmc+DQo+PiAtLS0NCj4+ICAgYXJjaC94ODYvcG93ZXIvaGliZXJuYXRl
-LmMgfCAxNSArKysrKysrKysrKy0tLS0NCj4+ICAgMSBmaWxlIGNoYW5nZWQsIDExIGluc2Vy
-dGlvbnMoKyksIDQgZGVsZXRpb25zKC0pDQo+Pg0KPj4gZGlmZiAtLWdpdCBhL2FyY2gveDg2
-L3Bvd2VyL2hpYmVybmF0ZS5jIGIvYXJjaC94ODYvcG93ZXIvaGliZXJuYXRlLmMNCj4+IGlu
-ZGV4IGEyMjk0YzE2NDlmNi4uNzUyYTQ5MGJjM2QyIDEwMDY0NA0KPj4gLS0tIGEvYXJjaC94
-ODYvcG93ZXIvaGliZXJuYXRlLmMNCj4+ICsrKyBiL2FyY2gveDg2L3Bvd2VyL2hpYmVybmF0
-ZS5jDQo+PiBAQCAtNzAsMTIgKzcwLDE5IEBAIHN0cnVjdCByZXN0b3JlX2RhdGFfcmVjb3Jk
-IHsNCj4+ICAgICoNCj4+ICAgICogUmV0dXJuOiB0aGUgcmVzdWx0aW5nIGNoZWNrc3VtDQo+
-PiAgICAqLw0KPj4gLXN0YXRpYyBpbmxpbmUgdTMyIGNvbXB1dGVfZTgyMF9jcmMzMihzdHJ1
-Y3QgZTgyMF90YWJsZSAqdGFibGUpDQo+PiArc3RhdGljIHUzMiBjb21wdXRlX2U4MjBfY3Jj
-MzIoc3RydWN0IGU4MjBfdGFibGUgKnRhYmxlKQ0KPj4gICB7DQo+PiAtICAgICAgIGludCBz
-aXplID0gb2Zmc2V0b2Yoc3RydWN0IGU4MjBfdGFibGUsIGVudHJpZXMpICsNCj4+IC0gICAg
-ICAgICAgICAgICBzaXplb2Yoc3RydWN0IGU4MjBfZW50cnkpICogdGFibGUtPm5yX2VudHJp
-ZXM7DQo+PiArICAgICAgIHUzMiBjcmMgPSB+MDsNCj4+ICsgICAgICAgaW50IGk7DQo+PiAr
-DQo+PiArICAgICAgIGZvciAoaSA9IDA7IGkgPCB0YWJsZS0+bnJfZW50cmllczsgaSsrKSB7
-DQo+PiArICAgICAgICAgICAgICAgaWYgKHRhYmxlLT5lbnRyaWVzW2ldLnR5cGUgPT0gRTgy
-MF9UWVBFX1JBTSkgew0KPj4gKyAgICAgICAgICAgICAgICAgICAgICAgY3JjID0gY3JjMzJf
-bGUoY3JjLCAodW5zaWduZWQgY2hhciBjb25zdCAqKSZ0YWJsZS0+ZW50cmllc1tpXSwNCj4+
-ICsgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIHNpemVvZihzdHJ1Y3Qg
-ZTgyMF9lbnRyeSkpOw0KPj4gKyAgICAgICAgICAgICAgIH0NCj4+ICsgICAgICAgfQ0KPj4N
-Cj4+IC0gICAgICAgcmV0dXJuIH5jcmMzMl9sZSh+MCwgKHVuc2lnbmVkIGNoYXIgY29uc3Qg
-Kil0YWJsZSwgc2l6ZSk7DQo+PiArICAgICAgIHJldHVybiB+Y3JjOw0KPj4gICB9DQo+Pg0K
-Pj4gICAjaWZkZWYgQ09ORklHX1g4Nl82NA0KPj4gLS0NCj4+IDIuNTQuMA0KPj4NCj4+DQo=
+You are totally agree. While mine is still a solution for these like @Milan
+with a buggy firmware, it's not a solution to make it unconditional for every
+device so I came with a solution to introduce the boot flag
+hybernate=relaxed_memmap. This is still a bit hacky and I don't like it at
+all at the end of the day but works better than nothing, at least until HP
+releases a proper firmware with it fixed.
 
+This v2 of the patch address hibernation E820 map integrity check failures
+on UEFI platforms where firmware dynamically shifts reserved or ACPI memory
+ranges across boots (such as the HP OmniBook X Flip).
 
---------------ms030109040103050406090705
-Content-Type: application/pkcs7-signature; name="smime.p7s"
-Content-Transfer-Encoding: base64
-Content-Disposition: attachment; filename="smime.p7s"
-Content-Description: S/MIME Cryptographic Signature
+In v1, I attempted to restrict the integrity check to only E820_TYPE_RAM
+ranges by default. As pointed out by Rafael, this is risky because the
+resumed kernel could attempt to access shifted ACPI tables or UEFI runtime
+services at stale addresses, leading to post-resume crashes or corruption.
 
-MIAGCSqGSIb3DQEHAqCAMIACAQExDzANBglghkgBZQMEAgMFADCABgkqhkiG9w0BBwEAAKCC
-DfAwggbmMIIEzqADAgECAhAxAnDUNb6bJJr4VtDh4oVJMA0GCSqGSIb3DQEBDAUAMIGIMQsw
-CQYDVQQGEwJVUzETMBEGA1UECBMKTmV3IEplcnNleTEUMBIGA1UEBxMLSmVyc2V5IENpdHkx
-HjAcBgNVBAoTFVRoZSBVU0VSVFJVU1QgTmV0d29yazEuMCwGA1UEAxMlVVNFUlRydXN0IFJT
-QSBDZXJ0aWZpY2F0aW9uIEF1dGhvcml0eTAeFw0yMDAyMTgwMDAwMDBaFw0zMzA1MDEyMzU5
-NTlaMEYxCzAJBgNVBAYTAk5MMRkwFwYDVQQKExBHRUFOVCBWZXJlbmlnaW5nMRwwGgYDVQQD
-ExNHRUFOVCBQZXJzb25hbCBDQSA0MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEA
-s0riIl4nW+kEWxQENTIgFK600jFAxs1QwB6hRMqvnkphfy2Q3mKbM2otpELKlgE8/3AQPYBo
-7p7yeORuPMnAuA+oMGRb2wbeSaLcZbpwXgfCvnKxmq97/kQkOFX706F9O7/h0yehHhDjUdyM
-yT0zMs4AMBDRrAFn/b2vR3j0BSYgoQs16oSqadM3p+d0vvH/YrRMtOhkvGpLuzL8m+LTAQWv
-QJ92NwCyKiHspoP4mLPJvVpEpDMnpDbRUQdftSpZzVKTNORvPrGPRLnJ0EEVCHR82LL6oz91
-5WkrgeCY9ImuulBn4uVsd9ZpubCgM/EXvVBlViKqusChSsZEn7juIsGIiDyaIhhLsd3amm8B
-S3bgK6AxdSMROND6hiHT182Lmf8C+gRHxQG9McvG35uUvRu8v7bPZiJRaT7ZC2f50P4lTlnb
-LvWpXv5yv7hheO8bMXltiyLweLB+VNvg+GnfL6TW3Aq1yF1yrZAZzR4MbpjTWdEdSLKvz8+0
-wCwscQ81nbDOwDt9vyZ+0eJXbRkWZiqScnwAg5/B1NUD4TrYlrI4n6zFp2pyYUOiuzP+as/A
-Znz63GvjFK69WODR2W/TK4D7VikEMhg18vhuRf4hxnWZOy0vhfDR/g3aJbdsGac+diahjEwz
-yB+UKJOCyzvecG8bZ/u/U8PsEMZg07iIPi8CAwEAAaOCAYswggGHMB8GA1UdIwQYMBaAFFN5
-v1qqK0rPVIDh2JvAnfKyA2bLMB0GA1UdDgQWBBRpAKHHIVj44MUbILAK3adRvxPZ5DAOBgNV
-HQ8BAf8EBAMCAYYwEgYDVR0TAQH/BAgwBgEB/wIBADAdBgNVHSUEFjAUBggrBgEFBQcDAgYI
-KwYBBQUHAwQwOAYDVR0gBDEwLzAtBgRVHSAAMCUwIwYIKwYBBQUHAgEWF2h0dHBzOi8vc2Vj
-dGlnby5jb20vQ1BTMFAGA1UdHwRJMEcwRaBDoEGGP2h0dHA6Ly9jcmwudXNlcnRydXN0LmNv
-bS9VU0VSVHJ1c3RSU0FDZXJ0aWZpY2F0aW9uQXV0aG9yaXR5LmNybDB2BggrBgEFBQcBAQRq
-MGgwPwYIKwYBBQUHMAKGM2h0dHA6Ly9jcnQudXNlcnRydXN0LmNvbS9VU0VSVHJ1c3RSU0FB
-ZGRUcnVzdENBLmNydDAlBggrBgEFBQcwAYYZaHR0cDovL29jc3AudXNlcnRydXN0LmNvbTAN
-BgkqhkiG9w0BAQwFAAOCAgEACgVOew2PHxM5AP1v7GLGw+3tF6rjAcx43D9Hl110Q+BABABg
-lkrPkES/VyMZsfuds8fcDGvGE3o5UfjSno4sij0xdKut8zMazv8/4VMKPCA3EUS0tDUoL01u
-gDdqwlyXuYizeXyH2ICAQfXMtS+raz7mf741CZvO50OxMUMxqljeRfVPDJQJNHOYi2pxuxgj
-KDYx4hdZ9G2o+oLlHhu5+anMDkE8g0tffjRKn8I1D1BmrDdWR/IdbBOj6870abYvqys1qYlP
-otv5N5dm+XxQ8vlrvY7+kfQaAYeO3rP1DM8BGdpEqyFVa+I0rpJPhaZkeWW7cImDQFerHW9b
-KzBrCC815a3WrEhNpxh72ZJZNs1HYJ+29NTB6uu4NJjaMxpk+g2puNSm4b9uVjBbPO9V6sFS
-G+IBqE9ckX/1XjzJtY8Grqoo4SiRb6zcHhp3mxj3oqWi8SKNohAOKnUc7RIP6ss1hqIFyv0x
-XZor4N9tnzD0Fo0JDIURjDPEgo5WTdti/MdGTmKFQNqxyZuT9uSI2Xvhz8p+4pCYkiZqpahZ
-lHqMFxdw9XRZQgrP+cgtOkWEaiNkRBbvtvLdp7MCL2OsQhQEdEbUvDM9slzZXdI7NjJokVBq
-3O4pls3VD2z3L/bHVBe0rBERjyM2C/HSIh84rfmAqBgklzIOqXhd+4RzadUwggcCMIIE6qAD
-AgECAhBaNFgxeGkgh2ZZg7n0Nh9IMA0GCSqGSIb3DQEBDAUAMEYxCzAJBgNVBAYTAk5MMRkw
-FwYDVQQKExBHRUFOVCBWZXJlbmlnaW5nMRwwGgYDVQQDExNHRUFOVCBQZXJzb25hbCBDQSA0
-MB4XDTIzMDgwMjAwMDAwMFoXDTI2MDgwMTIzNTk1OVowgZQxIDAeBgNVBAkTF1RyaWVkYSBB
-bmRyZWphIEhsaW5rdSAxMRgwFgYDVQQIEw9OaXRyaWFuc2t5IGtyYWoxCzAJBgNVBAYTAlNL
-MTIwMAYDVQQKDClVbml2ZXJ6aXRhIEtvbsWhdGFudMOtbmEgRmlsb3pvZmEgdiBOaXRyZTEV
-MBMGA1UEAxMMTWlsYW4gT3JhdmVjMIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEA
-q1KI/4Kzb4KoaDY5H4zzPvosZ0Boil4ZXvH3+2DYGQlXvsh/Deg8ljQko+b6V0Z4Q4sWdefq
-OUmfhqEVf2fXfkSfNT4w2zB3B7pH/NQMdoSvo90XnLJ2L6XaoRsH/Tq7u2JYwcEvWeady2Dt
-xDsAXHknqwQ6nkKQFc94XF2OmiSVuTAvGj9LMrpKPjVSmyoxibRZ4MX1pm4xVZP+Pc5MJUFU
-UPcTo1CaV7DtqnGxcRgCZIL70DN33Tn2l/E+A/KNckaCVU7H8ZH526Z4QzJQrrK3QuoqyWsI
-clCMKRiwrNTD+wseWb9GSMT/i+Ad7jdMIA5tcl3wOLKn1Kw5LY6QMBCHx/S9HaGvcn7ogMRO
-WDl5INN3Zp/9Pq9J32l+8Lud+wLvXs4FSw5aXHf0ZaO4r2M5UnWPqEn+Xi7MuR9wmCp2ffCQ
-jrU9oZ26xxk1hodVb1+iBtaY7DrcZEeQnpwZvytLfoDCp4JSQExC4tUHvoeUZx0XEwFIa05B
-QM8raY50nty6LuoAgz5hQWjQpwHUEh6zXjm7GVsTkv0zIpPhAeSbzyxUS5Dc+lPzmzaj6sz2
-tikcT7C75sdHVD2nfW/3Xw5u9Lix0rCA6Yt0z25tcNDdi5ELq4nlWbAfLP67UcKZY4d07i3+
-yrlwOzrsaHi/xLcxx4FTozB0N+CAHhBDDDsCAwEAAaOCAZswggGXMB8GA1UdIwQYMBaAFGkA
-occhWPjgxRsgsArdp1G/E9nkMB0GA1UdDgQWBBR3a7VTiE53dtbMFAlcqdc1Y9expzAOBgNV
-HQ8BAf8EBAMCBaAwDAYDVR0TAQH/BAIwADAdBgNVHSUEFjAUBggrBgEFBQcDBAYIKwYBBQUH
-AwIwPwYDVR0gBDgwNjA0BgsrBgEEAbIxAQICTzAlMCMGCCsGAQUFBwIBFhdodHRwczovL3Nl
-Y3RpZ28uY29tL0NQUzBCBgNVHR8EOzA5MDegNaAzhjFodHRwOi8vR0VBTlQuY3JsLnNlY3Rp
-Z28uY29tL0dFQU5UUGVyc29uYWxDQTQuY3JsMHgGCCsGAQUFBwEBBGwwajA9BggrBgEFBQcw
-AoYxaHR0cDovL0dFQU5ULmNydC5zZWN0aWdvLmNvbS9HRUFOVFBlcnNvbmFsQ0E0LmNydDAp
-BggrBgEFBQcwAYYdaHR0cDovL0dFQU5ULm9jc3Auc2VjdGlnby5jb20wGQYDVR0RBBIwEIEO
-bW9yYXZlY0B1a2Yuc2swDQYJKoZIhvcNAQEMBQADggIBAJ0zDjgaIyOlAnyN7aAb2Mf+N4op
-qCIh6Hep3o20nKfBWMgCM1xmnPaaEPwi6h0CMZW5GKZYGw0MpHNhSCtddznr5JZAkY07xsnT
-4gn8fQRi8n2LB3nEJSh7pT2+89KBFmee2k6vV25HsZ0YBIq4CRXrC7y21Bpy2WB8SQdNuCbY
-L5JByP4wfPBLKT7zPmdNWBTjJHpBzhANc0Vc6LzaKz75oK0g+GLUi84fS/S4sMyMqPbn7Xqp
-oMnCW4hqorhfubne1hlvdM/sU/VX1aUWWoSnPnN2HKRlrIiDjMmybJpTrE70jTsboR3Y15ti
-8mrRVN3iKKY5LRvDYlPJ9wYDPUSrJBUCDZarg8Er24a394TqmMSi+NyoKfR4UB6gMzXxUbvg
-jxkEhlgs0tI4Xd+m1eFgfeKIQ0ARtUVEHasXuWcI4BLwN4vjfvdPAjlqxUJHP51a9XI/VczC
-olQZnVkreJmZSG6DNFbBPy1zIfVZJHoM0d5ITKUBiadnF5GDH1mopIvqi1gH0oKRse/KnjKh
-gNzbMzGZfeLZjVlw7aO9w4Zm+EBTRhMdHnfKTBYZCoIcK+Dou1cyqMCxsysPDKldm6bwCLxX
-xRU4WtHq5KFs81cW4Rbs4ZXtxF23eIHJ8NgAHr3SPS7zzWwAJ+LMY6voi7/J+tK31UNz7xoT
-3avZsCqlMYIFRTCCBUECAQEwWjBGMQswCQYDVQQGEwJOTDEZMBcGA1UEChMQR0VBTlQgVmVy
-ZW5pZ2luZzEcMBoGA1UEAxMTR0VBTlQgUGVyc29uYWwgQ0EgNAIQWjRYMXhpIIdmWYO59DYf
-SDANBglghkgBZQMEAgMFAKCCArwwGAYJKoZIhvcNAQkDMQsGCSqGSIb3DQEHATAcBgkqhkiG
-9w0BCQUxDxcNMjYwNjIzMTUxMTE5WjBPBgkqhkiG9w0BCQQxQgRAH8FhmFJahnCI70hZpZbM
-3IYhI4Iqg8c8OF5kmcixyBE7sGkWOm9FsuPojawofRCM1bsCm/js/hWDSEix7UA6CjBpBgkr
-BgEEAYI3EAQxXDBaMEYxCzAJBgNVBAYTAk5MMRkwFwYDVQQKExBHRUFOVCBWZXJlbmlnaW5n
-MRwwGgYDVQQDExNHRUFOVCBQZXJzb25hbCBDQSA0AhBaNFgxeGkgh2ZZg7n0Nh9IMGsGCyqG
-SIb3DQEJEAILMVygWjBGMQswCQYDVQQGEwJOTDEZMBcGA1UEChMQR0VBTlQgVmVyZW5pZ2lu
-ZzEcMBoGA1UEAxMTR0VBTlQgUGVyc29uYWwgQ0EgNAIQWjRYMXhpIIdmWYO59DYfSDCCAVcG
-CSqGSIb3DQEJDzGCAUgwggFEMAsGCWCGSAFlAwQBKjALBglghkgBZQMEAQIwCgYIKoZIhvcN
-AwcwDQYIKoZIhvcNAwICAQUwDQYIKoZIhvcNAwICAQUwBwYFKw4DAgcwDQYIKoZIhvcNAwIC
-AQUwBwYFKw4DAhowCwYJYIZIAWUDBAIBMAsGCWCGSAFlAwQCAjALBglghkgBZQMEAgMwCwYJ
-YIZIAWUDBAIEMAsGCWCGSAFlAwQCBzALBglghkgBZQMEAggwCwYJYIZIAWUDBAIJMAsGCWCG
-SAFlAwQCCjALBgkqhkiG9w0BAQEwCwYJK4EFEIZIPwACMAgGBiuBBAELADAIBgYrgQQBCwEw
-CAYGK4EEAQsCMAgGBiuBBAELAzALBgkrgQUQhkg/AAMwCAYGK4EEAQ4AMAgGBiuBBAEOATAI
-BgYrgQQBDgIwCAYGK4EEAQ4DMA0GCSqGSIb3DQEBAQUABIICADpSH/xaLjANncZzbU8f8Apr
-c48wgiFR5pyCwniSmJDes90Lzj/QGZ1EdFAOhPGUW9PSH+7ehs4NGgwcgeXaog2qlgqtLFAn
-RLe5FocYReDh88x9ZrW2I8LGOT8DZtXVB+ZZwyg67kYy9uTzPdmbGz5wPGdmrvJyPLh6d7SA
-+QEVJR8MpQZ3CM628N1wSLUkgM4fRu0C4upWbX1Clw2cyxv3n91qbYDOp7GD1duCfw/c4qI1
-NHeMphcOX5l1OVAtJboLAvROYVpmbnDW3P2cfQ4SuxzsiXN465KeRiv8oijMnEglTS2kkgxo
-rLKExVZokEPHB05sraVDmgYyDoaPe2HN/+vx+4WAvE9JW7l+VyBFHlOjk5n2fC38MZ+v7NvU
-5XjBUoTwqwc0K9l7JhXDSBN3gvCsfHntJnwA6CIodwGgwFV9L/iiPOcyu/a+4tD/VisyOBMd
-E+pv5nexXBfHodzfZj9aKHp7+U3CUYAyMopimMSXkf9OeaqqMFXdfX44Hjh9Bzkb3Jnrer0u
-kOe49Ql+1QDbwFAI18Ru4Owd6/FYpUs+PcawqvuRhigSl7F65QUa/xrXoz7dV20m/0ukyTS1
-gfl7J5qtY4x7mN+yJJ7S/WCdb8AefpjTMT1D+udObAOMldKYAc0AdvZ8kMHxYwlx/GstMUwl
-KBw/QkqQTnVaAAAAAAAA
---------------ms030109040103050406090705--
+To address this feedback while still allowing hibernation to function on
+affected platforms, v2 introduces the 'hibernate=relaxed_memmap' command-line
+parameter.
+
+- Patch 1: Declare the 'hibernate_relaxed_memmap' flag in the PM core header.
+- Patch 2: Define the flag and add parsing logic to kernel/power/hibernate.c.
+- Patch 3: Implement the relaxed E820 memory map check on x86, which compares
+           a secondary RAM-only checksum if the main checksum mismatches,
+           warning the user but proceeding with resume.
+- Patch 4: Document the option in Documentation/admin-guide/kernel-parameters.txt.
+
+1. By default, the E820 checksum verification remains strict to ensure
+   safety for all systems.
+2. If 'hibernate=relaxed_memmap' is specified, the kernel will perform
+   a secondary check on only the usable RAM regions (E820_TYPE_RAM) if the
+   main E820 checksum mismatches.
+   - If the RAM regions differ, the resume is aborted (to prevent direct map
+     mismatches and kernel paging faults during page restoration).
+   - If the RAM regions match, the resume is allowed to proceed and a warning
+     is logged about the non-RAM changes.
+
+To support this, a secondary 'e820_ram_checksum' field is added to the
+x86-specific 'restore_data_record', and 'RESTORE_MAGIC' is incremented to
+signal the header layout change.
+
+Marco Scardovi (4):
+  PM: hibernate: Declare hibernate_relaxed_memmap
+  PM: hibernate: Define and parse hibernate=relaxed_memmap parameter
+  x86/power: Implement relaxed E820 memory map integrity check
+  Documentation: Document hibernate=relaxed_memmap parameter option
+
+ .../admin-guide/kernel-parameters.txt         |  5 +++
+ arch/x86/power/hibernate.c                    | 40 +++++++++++++++++--
+ include/linux/suspend.h                       |  1 +
+ kernel/power/hibernate.c                      |  3 ++
+ 4 files changed, 45 insertions(+), 4 deletions(-)
+
+-- 
+2.54.0
+
