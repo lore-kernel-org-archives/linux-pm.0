@@ -1,129 +1,110 @@
-Received: from mail-vk1-f181.google.com (mail-vk1-f181.google.com [209.85.221.181])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from bali.collaboradmins.com (bali.collaboradmins.com [148.251.105.195])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BEB1A3C9EEF
-	for <linux-pm@vger.kernel.org>; Tue, 23 Jun 2026 08:03:46 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.181
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 24FE63C9893;
+	Tue, 23 Jun 2026 08:06:38 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=148.251.105.195
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1782201829; cv=none; b=pthG32FBH6XhC5B9leANQYc9GZjbgbWxqoPZK7CPkeiQNDUnsDY9xqAreYrRnCJt2hag8x+OnkcmZE525VGh7ggI+GAw7sXoBXQlAiM5Fk9Ffr80aNuvSAb6K+Rp2KXXNzU2bN1sWdt3iP7HqfpRsn86whQ1NSyM67IbcfQiu4s=
+	t=1782202001; cv=none; b=mjbx9w6g40LKdVrLBTHQ7u1RH2kKuWvs+nZvZG0+UQdemrvCNqZeqMCvOqO7uBguoxW9NSSBvvTG6ni57mCuV6yrjwR0PPmHlUdPcf+Hw9FwpxZAVuEW3S8ZzCnQ5N38ZiluUJtLfzm4McRFTWkLRuvTl7Vuw1fHoupAbLbnY0s=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1782201829; c=relaxed/simple;
-	bh=9/9WurOzF9dwMznlkRpWinreZjoxe94EtrhFlkOjeOk=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=lpo1p8vKGMA/XuDxIV3prfeLeZRrVEIcNT6CMxgze0FseSb3X2xY8k2rLysmiUScXK4M8yG5oq3vg49sQt9QoQcegjmBBDYWhlk+7Odbx5xAPCiiBNeE0PsTkxLPSDXugDwjJJD/E0d0ot08Z+7BZwxru4MbtVOl3g2WG+0rsjs=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org; spf=pass smtp.mailfrom=gmail.com; arc=none smtp.client-ip=209.85.221.181
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
-Received: by mail-vk1-f181.google.com with SMTP id 71dfb90a1353d-5bbfc48715fso573887e0c.0
-        for <linux-pm@vger.kernel.org>; Tue, 23 Jun 2026 01:03:46 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1782201826; x=1782806626;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=c6Wevye877SnOLln/AlwHOkqlk8j8CTpCElmFHp1hxM=;
-        b=GAtsTJ1tZPGyDfsBmr/QzSVlkDax5eJSFZlOpvExuJZQDIhzMymrdEaKREI435RYd8
-         CQRVYZt4S3wGjGN/geIhb57NmmL9A2i8+5bZtzlIlUxz54c/IZVkbDqtx1EzlnOc9pDK
-         Xvrw7i96EE0/Ljc3lIqweds7glq1PikjTHyjFdLh7wXJ1xP+oG9tqMrlsWiU/dgKdN/v
-         1HbkikRrfccSXF3W0fx4AOgmRW3fQ8p5TCQHAoXdTFGp+lHlIYoN6HP8eeVMrvlk54Do
-         WPA3ho29S0Hf80oQgoW8fISu78vuzf00QwF7BcD4BOWs2ef42WKsanWdDBkDU16f6oHy
-         Q8zw==
-X-Forwarded-Encrypted: i=1; AFNElJ+DXvwLB2VrqhmuttXlFcK4fWjoifoy9Ssfwor8FfhihGYNWOy6ECVzUeGjJfWGMKxZVJW+Ooi9aA==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yyo31j1Dqx+KscIZe5ELyfM7cdLdCchzIapLwo8a3h4iUYPBhhH
-	3lpSkEdvTBeVDbog6cZpcJO/JUzSMBLfy0pgI5GvC0LKDXkTUmZ9d93OmpKJLBd0leQ=
-X-Gm-Gg: AfdE7cn1CxZHuZPtcs7mp4TFkmFlup41/55d2xL9m5lx8AQI997YAwhrdnqC+zN6dcs
-	AHnCwEk6+CquT3LAwvr7axNKLzffa3jWgnxLYSwA12PTuIpA69HbxO4hU/wStTK7Q5DxYyNsO3G
-	EXKnYjXyXA+ZZOEvG5D/8nn0csXsgOKtFBvlc75KC53qPYsQAVuBO1OjocjeyUkvlM337YQaVD9
-	qxElyF39S7qaZd9EWXMbs39PR0Q7PMg80ywR45bePEN7trSCMTimuCC7eADoVwElsupv0Y9O/aI
-	1688IFjguCciudA0PG6VWDUxJfoimecyjhMlt3Eeu7eeYEyIP9yFp5Wg9MbxOjCuV0uH/sFfHTi
-	rTqQ6Z+J9eWLz1vfFA//OlbTqnzAZ0gvGdr5PLU+UkK6ticsIAVMvZLs+odC03HYaESqANNAOJZ
-	aqpg45uVw6cM0R+sdqs6m/a9Bg3gWle+RUBqWG8qMuqdkDwA7Htg==
-X-Received: by 2002:a05:6123:b2:b0:575:39bc:c6d9 with SMTP id 71dfb90a1353d-5bc2aca615cmr1212674e0c.3.1782201825831;
-        Tue, 23 Jun 2026 01:03:45 -0700 (PDT)
-Received: from mail-ua1-f52.google.com (mail-ua1-f52.google.com. [209.85.222.52])
-        by smtp.gmail.com with ESMTPSA id 71dfb90a1353d-5bbfba73cfdsm8631414e0c.14.2026.06.23.01.03.45
-        for <linux-pm@vger.kernel.org>
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 23 Jun 2026 01:03:45 -0700 (PDT)
-Received: by mail-ua1-f52.google.com with SMTP id a1e0cc1a2514c-96387cf6335so518675241.1
-        for <linux-pm@vger.kernel.org>; Tue, 23 Jun 2026 01:03:45 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AFNElJ+n5S7QdpQuilMIace5TordCZ6LsaI5x0QiyuzzXKThrr2pi7r1q3iZqgvzv6ayc02ivI9o4ucMeQ==@vger.kernel.org
-X-Received: by 2002:a67:f993:0:b0:6cd:23a8:3a31 with SMTP id
- ada2fe7eead31-72f83501311mr955964137.1.1782201825012; Tue, 23 Jun 2026
- 01:03:45 -0700 (PDT)
+	s=arc-20240116; t=1782202001; c=relaxed/simple;
+	bh=CFLoo+JElQcgGHIJ+5atyHGSTdHrRYHY0TXbGVskXGE=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=Yl19T9qu7iYWcpsEG+ZMF1UNVIlKk17MGvQDK4dcCeANyt96ooeAHerdqKHukxpEX160A9ahb7lzE/DINosoF3reNZwKYrWgcBwQFrIwNu0gmGOgehCH9fYrZWOK8RPjzU19u35ZFfkb3aa4HWTzlucSxO4ozaqlOx51nnC1DZQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b=ATvV7J3P; arc=none smtp.client-ip=148.251.105.195
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b="ATvV7J3P"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
+	s=mail; t=1782201997;
+	bh=CFLoo+JElQcgGHIJ+5atyHGSTdHrRYHY0TXbGVskXGE=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=ATvV7J3PTiZSoi1eS2Z0yf2PLjDqV+7SoTJH2wfImUJxkhPq9Mt6uh5KaKTYMpil8
+	 EX2II1oU//x4nZgLUJot2ljtla8+/IJDMG0jypRnQDgN7cqk6g6e4nRMw+ulk2V67/
+	 i42quZxP9GleHrukZo+loXRmxHOmE2MtnkhWWY2dJ5X9bGIMoLm033l10nxS/qwkoG
+	 1vJfRl4HvceYfi5bGNEUGqmw1AJSbSNVo4et+8w/Mh13hA3jDcpGPIZMfv8H2NWO7g
+	 4Ids1AOXreutLps+CXnaDBAv1ScEPR+K9oRBuNkxRzoRt3Abvf9yNOpfGdnSavP48x
+	 KBlwfOwPgANsw==
+Received: from [100.64.1.21] (unknown [100.64.1.21])
+	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits))
+	(No client certificate requested)
+	(Authenticated sender: kholk11)
+	by bali.collaboradmins.com (Postfix) with ESMTPSA id B91AE17E023C;
+	Tue, 23 Jun 2026 10:06:36 +0200 (CEST)
+Message-ID: <74f3eec2-278a-417e-b2af-42cb4c38fa94@collabora.com>
+Date: Tue, 23 Jun 2026 10:06:36 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <ajo6iQ3VWvcxedA9@stanley.mountain>
-In-Reply-To: <ajo6iQ3VWvcxedA9@stanley.mountain>
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Tue, 23 Jun 2026 10:03:33 +0200
-X-Gmail-Original-Message-ID: <CAMuHMdUXkXCj7ijeQmOkK7OQSAGkYgBZJyMJoEV4i_XhamwDSQ@mail.gmail.com>
-X-Gm-Features: AVVi8CdbyX-JVUOWc5no0UNDnFuGEWPAevzQbiu2OWUTSFIMBurTqmBhzrOsCSk
-Message-ID: <CAMuHMdUXkXCj7ijeQmOkK7OQSAGkYgBZJyMJoEV4i_XhamwDSQ@mail.gmail.com>
-Subject: Re: [PATCH] thermal/drivers/rcar: add error checking in probe()
-To: Dan Carpenter <error27@gmail.com>
-Cc: =?UTF-8?Q?Niklas_S=C3=B6derlund?= <niklas.soderlund+renesas@ragnatech.se>, 
-	=?UTF-8?Q?Niklas_S=C3=B6derlund?= <niklas.soderlund@ragnatech.se>, 
-	"Rafael J. Wysocki" <rafael@kernel.org>, Daniel Lezcano <daniel.lezcano@kernel.org>, 
-	Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>, 
-	Magnus Damm <magnus.damm@gmail.com>, linux-renesas-soc@vger.kernel.org, 
-	linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	kernel-janitors@vger.kernel.org, 
-	Andrzej Pietrasiewicz <andrzej.p@collabora.com>
-Content-Type: text/plain; charset="UTF-8"
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 0/2] pmdomain: mediatek: Enable module support for
+ mtk-scpsys
+To: Justin Yeh <justin.yeh@mediatek.com>, Ulf Hansson <ulfh@kernel.org>,
+ Matthias Brugger <matthias.bgg@gmail.com>
+Cc: Project_Global_Chrome_Upstream_Group@mediatek.com,
+ linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, linux-mediatek@lists.infradead.org
+References: <20260603051200.1163226-1-justin.yeh@mediatek.com>
+From: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
+Content-Language: en-US
+In-Reply-To: <20260603051200.1163226-1-justin.yeh@mediatek.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
-Hi Dan,
+On 6/3/26 07:11, Justin Yeh wrote:
+> This series enables the MTK_SCPSYS driver to be built as a loadable
+> module for GKI (Generic Kernel Image) compliance.
+> 
+> This series depends on the following patches currently under review:
+>    - soc: mediatek: Allow MTK_INFRACFG to be built as module
+>    - soc: mediatek: mtk-infracfg: Export symbols for DDK modules
+> 
+> The MTK_SCPSYS driver depends on MTK_INFRACFG being available as a
+> module, which is enabled by these prerequisite patches.
+> 
+> Patch 1 converts the Kconfig option from bool to tristate, allowing
+> the driver to be built as either built-in or as a module.
+> 
+> Patch 2 adds MODULE_DESCRIPTION() and converts to module_platform_driver()
+> to complete the modularization and silence modpost warnings.
+> 
+> Together these changes allow the MediaTek SCPSYS power domain driver
+> to support modern Android GKI/vendor_dlkm module loading requirements
+> while maintaining backward compatibility with the traditional built-in
+> configuration.
+> 
 
-Thanks for your patch!
+The mtk-scpsys driver should disappear, really.
+This is something that was rewritten entirely and is called mtk-pm-domains now.
 
-On Tue, 23 Jun 2026 at 09:49, Dan Carpenter <error27@gmail.com> wrote:
-> The thermal_zone_device_register_with_trips() can fail for a number of
-> reasons, including allocation failures.  Check for error pointers to
-> avoid an error pointer dereference.
->
-> Fixes: 9d617949d490 ("thermal/drivers/renesas: Group all renesas thermal drivers together")
+This driver still contains support for some very old SoCs that were not migrated
+to the new mtk-pm-domains driver, but seriously, the strategy here should be to
+migrate those and let the mtk-scpsys driver be there just as a legacy one to not
+break the ABI for older devicetrees.
 
-This is not the commit you are looking for...
+Converting this as a module is probably a bad idea, because this one didn't get
+any real update for years now, and I'm not sure what is going to break by doing
+so - neither I have any way of testing it.
 
-Fixes: bbcf90c0646ac797 ("thermal: Explicitly enable non-changing
-thermal zone devices")
+I can say Reviewed-by if you can test booting MT2701, MT2712, MT7622, MT7623A
+(all of them, really) on a build that has this driver as module and check that
+all functionality is ok... but I guess you may also have difficulties in doing
+that (do you even have access to old devices with those SoCs?).
 
-> Signed-off-by: Dan Carpenter <error27@gmail.com>
+Cheers,
+Angelo
 
-> --- a/drivers/thermal/renesas/rcar_thermal.c
-> +++ b/drivers/thermal/renesas/rcar_thermal.c
-> @@ -492,6 +492,11 @@ static int rcar_thermal_probe(struct platform_device *pdev)
->                                 "rcar_thermal", trips, ARRAY_SIZE(trips), priv,
->                                                 &rcar_thermal_zone_ops, NULL, 0,
->                                                 idle);
-> +                       if (IS_ERR(priv->zone)) {
-> +                               ret = PTR_ERR(priv->zone);
-> +                               priv->zone = NULL;
-> +                               goto error_unregister;
-> +                       }
+> Justin Yeh (2):
+>    pmdomain: mediatek: Convert MTK_SCPSYS to tristate
+>    pmdomain: mediatek: Add MODULE_DESCRIPTION to mtk-scpsys
+> 
+>   drivers/pmdomain/mediatek/Kconfig      | 2 +-
+>   drivers/pmdomain/mediatek/mtk-scpsys.c | 5 ++++-
+>   2 files changed, 5 insertions(+), 2 deletions(-)
+> 
 
-This check is already present below (out of context), so it would be good
-to avoid duplicating it.
-
->
->                         ret = thermal_zone_device_enable(priv->zone);
->                         if (ret) {
-
-The issue is that this call was added before the error checking is done.
-So this should be moved below instead (to the else branch of the next
-chip->use_of_thermal test?).
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
--- 
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
