@@ -1,154 +1,100 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 897312D7380;
-	Tue, 23 Jun 2026 13:13:16 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DC56A218592
+	for <linux-pm@vger.kernel.org>; Tue, 23 Jun 2026 13:13:51 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1782220397; cv=none; b=lbASQqzh+4MWtyElVkgOWEb5Uj5sV3Zh59AUenW/UOQCi2LBNreMwri9cqH7lOj2IV9fmuCPTicazdv7gcc5bXJBnN5KLPaoAYph8D0ZNtaD4vnXhB8NuAI6vsxnbCnYLK7Jb8sqVby8OlQQbXS+4mGfc0C/iLQhVty/7glDJws=
+	t=1782220432; cv=none; b=cVDKefFemeGbOnxTduZSx+nliPrZAQrYU4MDmwo/egUaQbPTVjNMhhmAKyAVCiJnMZCrtXUg9awdoV9uX8uFKFsAB6TjU0XkkiY6OFiPtKrTVku8zGbTo5e16K//7SLdKkzQJ3lOYDDrewdXBd9B3NGWqhA+UNd3RbyCczOtvcw=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1782220397; c=relaxed/simple;
-	bh=8dJuTG3moqQRDNLrdEXwt7RTArjTm5ay6yfB3ta92Bo=;
-	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
-	 MIME-Version:Content-Type; b=eesMmrVbuQswD9mZdBiGdqCufTtaiuKVjrmFVlvg5JF44NwPmCb8VTh3vf1vlr/Kc3AqHFQvpS9yg3buFLdw9NS8zib4WAp0au8Y/n8EQFtG5f0snSSaknfd/jNWU1qxpubCOQYwBYhLp5TUjEid7vx3YIWksQobVdIMBSfdffA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=W/iifiGe; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1782220432; c=relaxed/simple;
+	bh=6kgQq1JR5YkDGHrK0Pb31Ys1zMbTatf4QlMOgLZjK0M=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=TkXvulkeSdsv/8Sk4ODFghC16HuHR2Hnb1ISpiiFfmv51Bt/Szun53/+YbgCrOxkSsf8J8UGifeohatDsQb20Yh0ki5GF5s1ahkMOYifMDI/moV/Ml26qX82ZNCKtkhQ7r+2pSobk7ue/xMZ0TKxyC0kSgwuCdOHO5lJV/I7QPE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=BuzwK7tZ; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="W/iifiGe"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2AF4D1F00A3A;
-	Tue, 23 Jun 2026 13:13:08 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="BuzwK7tZ"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 891FB1F00A3A
+	for <linux-pm@vger.kernel.org>; Tue, 23 Jun 2026 13:13:51 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1782220396;
-	bh=g5mc2seyBJ1pVIiIaXg4bERPFOr66pMuwtVwk9IXTQw=;
-	h=From:To:Cc:Subject:In-Reply-To:References:Date;
-	b=W/iifiGeQ+aI6lAeV71CEqax9mMJWJCFwgoBoQoIXt5uDLfWF2eopH8ndgqr5khmL
-	 ETCbgXqUuQLrRe0nw90m5Y1k/nWjyo/F9LvE0c0A9jPuFsW6g+yW9pteF6cL5KfxKm
-	 6gsTB1cF8sSKT8xWb9CUH7u2G+WpMr5QrWkbkcR/0vltXolw6QZiMIyDgOog42tKMz
-	 +FstpuzGaoX6FoBosQztfPgipJpx2kH42sKLMG8FKKd7zao4S1oih9afeLeAIwUgyI
-	 5IWt+x5Kqr9Gmam/rVWXq/uNF1ViiAoavSb7we+Cbe6vy6rHcUnEUYAx0VyPJTwgEp
-	 X8PyHtZfF+/Ew==
-From: Andreas Hindborg <a.hindborg@kernel.org>
-To: Alice Ryhl <aliceryhl@google.com>
-Cc: Miguel Ojeda <ojeda@kernel.org>, Gary Guo <gary@garyguo.net>,
- =?utf-8?Q?Bj=C3=B6rn?= Roy
- Baron <bjorn3_gh@protonmail.com>, Benno Lossin <lossin@kernel.org>, Trevor
- Gross <tmgross@umich.edu>, Danilo Krummrich <dakr@kernel.org>, Greg
- Kroah-Hartman <gregkh@linuxfoundation.org>, Dave Ertman
- <david.m.ertman@intel.com>, Ira Weiny <ira.weiny@intel.com>, Leon
- Romanovsky <leon@kernel.org>, Paul Moore <paul@paul-moore.com>, Serge
- Hallyn <sergeh@kernel.org>, "Rafael J. Wysocki" <rafael@kernel.org>, David
- Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>, Alexander
- Viro <viro@zeniv.linux.org.uk>, Christian Brauner <brauner@kernel.org>,
- Jan Kara <jack@suse.cz>, Daniel Almeida <daniel.almeida@collabora.com>,
- Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen
- Boyd <sboyd@kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, Krzysztof
- =?utf-8?Q?Wilczy=C5=84ski?= <kwilczynski@kernel.org>, Boqun Feng
- <boqun@kernel.org>,
- Uladzislau Rezki <urezki@gmail.com>, Lorenzo Stoakes <ljs@kernel.org>,
- Vlastimil Babka <vbabka@kernel.org>, "Liam R. Howlett"
- <liam@infradead.org>, Igor Korotin <igor.korotin@linux.dev>, Pavel
- Tikhomirov <ptikhomirov@virtuozzo.com>, linux-kernel@vger.kernel.org,
- rust-for-linux@vger.kernel.org, linux-block@vger.kernel.org,
- linux-security-module@vger.kernel.org, dri-devel@lists.freedesktop.org,
- linux-fsdevel@vger.kernel.org, linux-mm@kvack.org,
- linux-pm@vger.kernel.org, linux-pci@vger.kernel.org,
- driver-core@lists.linux.dev, Asahi Lina <lina+kernel@asahilina.net>,
- Oliver Mangold <oliver.mangold@pm.me>
-Subject: Re: [PATCH v17 02/10] rust: types: Add Ownable/Owned types
-In-Reply-To: <ajE5c-5gZtJRoadx@google.com>
-References: <20260604-unique-ref-v17-0-7b4c3d2930b9@kernel.org>
- <20260604-unique-ref-v17-2-7b4c3d2930b9@kernel.org>
- <ajE5c-5gZtJRoadx@google.com>
-Date: Tue, 23 Jun 2026 15:09:04 +0200
-Message-ID: <87h5mtpfnz.fsf@t14s.mail-host-address-is-not-set>
+	s=k20260515; t=1782220431;
+	bh=TghcwwMUvRBGyLlb29HLs1KGhiol/I5UcGjKQIeVCJc=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc;
+	b=BuzwK7tZM+S3Xk9p8eiBvEoazhqH793uLkhhVDUjPIK9+iUYad3/HQCIrTEZdMBlD
+	 Xc+7JfgDnWk8bzEO06k7zzsNCjHt+3kSjFwCQra75LGLtL7st/Cd0XOpnrbK0gZZIc
+	 DQoYwbYGpA9k+ODTH2ZZECSXe4vtBWppUsvVO8aoRYm1z3FFz02Xe+H+ly2CCDATjU
+	 1yf8kcTuc3VBs9yqxbquFqmqbH6FPxHsBGpQgKJ0C96BRe+shYhK4Teia5SFKdbrzh
+	 M6Uhes3txIbg0jZRkAtv1t/2VfZJ/shqz8tvhZZs4og+kqzqzpTeiwOEVa/W6+5tgK
+	 yWAF5mZL33lmA==
+Received: by mail-lf1-f45.google.com with SMTP id 2adb3069b0e04-5ad54546171so3524439e87.0
+        for <linux-pm@vger.kernel.org>; Tue, 23 Jun 2026 06:13:51 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AFNElJ9xjf4FBx7VV8KtwGAEtIkEgF3KQl+NqlDCfXzSSB/Y+9f8ErjAf18IDbVNDRuS04N1P7mSwdPNtQ==@vger.kernel.org
+X-Gm-Message-State: AOJu0YyaAzhaDbg8F1ZghV64GeauRKynxixqZvXl0GkGnJ6RE4097yxJ
+	gm39TL39RE4e2tzUWgYe1GesKtkJA73jyohVeRoqkBq6ffQ2QTUFHe4RfpmiTaBsQUKRyoF3Jgx
+	IAFYAkROPFGRXzNx6AYdlhcaLS02Drq4=
+X-Received: by 2002:a05:6512:6085:b0:5ab:bf4a:3637 with SMTP id
+ 2adb3069b0e04-5ae3510c6d5mr673632e87.31.1782220429975; Tue, 23 Jun 2026
+ 06:13:49 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain
+References: <12116e07-040c-4536-958a-d55d04d163c8@oss.qualcomm.com> <20260613171559.43079-1-skunkolee@gmail.com>
+In-Reply-To: <20260613171559.43079-1-skunkolee@gmail.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Date: Tue, 23 Jun 2026 15:13:37 +0200
+X-Gmail-Original-Message-ID: <CAJZ5v0iJynCmDM-uq3=UpQza1rUn_9uq30XGiy-RoVCetOspVQ@mail.gmail.com>
+X-Gm-Features: AVVi8Cfj2FqrXPaEU4G_INduNmR99cxrCVJAvmWsE33jCSgjEeZeAyMY_wBaOow
+Message-ID: <CAJZ5v0iJynCmDM-uq3=UpQza1rUn_9uq30XGiy-RoVCetOspVQ@mail.gmail.com>
+Subject: Re: [PATCH] cpufreq: powernow-k6: replace symbolic permissions with octal
+To: Jack Lee <skunkolee@gmail.com>
+Cc: rafael@kernel.org, viresh.kumar@linaro.org, linux-pm@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, zhongqiu.han@oss.qualcomm.com
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Alice Ryhl <aliceryhl@google.com> writes:
-
-> On Thu, Jun 04, 2026 at 10:11:14PM +0200, Andreas Hindborg wrote:
->> From: Asahi Lina <lina+kernel@asahilina.net>
->> 
->> By analogy to `AlwaysRefCounted` and `ARef`, an `Ownable` type is a
->> (typically C FFI) type that *may* be owned by Rust, but need not be. Unlike
->> `AlwaysRefCounted`, this mechanism expects the reference to be unique
->> within Rust, and does not allow cloning.
->> 
->> Conceptually, this is similar to a `KBox<T>`, except that it delegates
->> resource management to the `T` instead of using a generic allocator.
->> 
->> [ om:
->>   - Split code into separate file and `pub use` it from types.rs.
->>   - Make from_raw() and into_raw() public.
->>   - Remove OwnableMut, and make DerefMut dependent on Unpin instead.
->>   - Usage example/doctest for Ownable/Owned.
->>   - Fixes to documentation and commit message.
->> ]
->> 
->> Link: https://lore.kernel.org/all/20250202-rust-page-v1-1-e3170d7fe55e@asahilina.net/
->> Signed-off-by: Asahi Lina <lina+kernel@asahilina.net>
->> Co-developed-by: Oliver Mangold <oliver.mangold@pm.me>
->> Signed-off-by: Oliver Mangold <oliver.mangold@pm.me>
->> Reviewed-by: Boqun Feng <boqun.feng@gmail.com>
->> Reviewed-by: Daniel Almeida <daniel.almeida@collabora.com>
->> [ Andreas: Updated documentation, examples, and formatting. Change safety
->>   requirements, safety comments. Use a reference for `release`. ]
->> Reviewed-by: Gary Guo <gary@garyguo.net>
->> Co-developed-by: Andreas Hindborg <a.hindborg@kernel.org>
->> Signed-off-by: Andreas Hindborg <a.hindborg@kernel.org>
+On Sat, Jun 13, 2026 at 7:16=E2=80=AFPM Jack Lee <skunkolee@gmail.com> wrot=
+e:
 >
-> Overall looks good to me, but two nits below. With them fixed:
+> Symbolic permissions S_IRUGO are not preferred. Replace with octal
+> permissions 0444 as recommended by checkpatch.
 >
-> Reviewed-by: Alice Ryhl <aliceryhl@google.com>
+> Signed-off-by: Jack Lee <skunkolee@gmail.com>
+
+I don't see a good enough reason for making this change, sorry.
+
+First, checkpatch.pl messages regarding the existing code are irrelevant.
+
+Second, this particular driver is in a deep maintenance mode and the
+particular update in question is not significant enough for touching
+it IMV.
+
+> ---
+>  drivers/cpufreq/powernow-k6.c | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
 >
->> +pub trait Ownable {
->> +    /// Tear down this `Ownable`.
->> +    ///
->> +    /// Implementers of `Ownable` can use this function to clean up the use of `Self`. This can
->> +    /// include freeing the underlying object.
->> +    ///
->> +    /// # Safety
->> +    ///
->> +    /// Callers must ensure that the caller has exclusive ownership of `T`, and this ownership can
->> +    /// be transferred to the `release` method.
->> +    unsafe fn release(&mut self);
+> diff --git a/drivers/cpufreq/powernow-k6.c b/drivers/cpufreq/powernow-k6.=
+c
+> index 99d2244e03b0..764907b04c04 100644
+> --- a/drivers/cpufreq/powernow-k6.c
+> +++ b/drivers/cpufreq/powernow-k6.c
+> @@ -29,10 +29,10 @@ static unsigned int                     max_multiplie=
+r;
+>  static unsigned int                    param_busfreq =3D 0;
+>  static unsigned int                    param_max_multiplier =3D 0;
 >
-> I'd make this take a raw pointer because the pointer can be freed during
-> the execution of release(), which references don't allow.
-
-Ok.
-
+> -module_param_named(max_multiplier, param_max_multiplier, uint, S_IRUGO);
+> +module_param_named(max_multiplier, param_max_multiplier, uint, 0444);
+>  MODULE_PARM_DESC(max_multiplier, "Maximum multiplier (allowed values: 20=
+ 30 35 40 45 50 55 60)");
 >
->> diff --git a/rust/kernel/types.rs b/rust/kernel/types.rs
->> index 4329d3c2c2e5..4aec7b699269 100644
->> --- a/rust/kernel/types.rs
->> +++ b/rust/kernel/types.rs
->> @@ -11,6 +11,17 @@
->>  };
->>  use pin_init::{PinInit, Wrapper, Zeroable};
->>  
->> +pub use crate::{
->> +    owned::{
->> +        Ownable,
->> +        Owned, //
->> +    },
->> +    sync::aref::{
->> +        ARef,
->> +        AlwaysRefCounted, //
->> +    }, //
->> +};
+> -module_param_named(bus_frequency, param_busfreq, uint, S_IRUGO);
+> +module_param_named(bus_frequency, param_busfreq, uint, 0444);
+>  MODULE_PARM_DESC(bus_frequency, "Bus frequency in kHz");
 >
-> We removed the types::ARef re-export, so you shouldn't add it back.
-
-Looks like a rebase failure, I will remove it.
-
-
-Best regards,
-Andreas Hindborg
-
-
-
+>  /* Clock ratio multiplied by 10 - see table 27 in AMD#23446 */
+> --
+> 2.54.0
+>
