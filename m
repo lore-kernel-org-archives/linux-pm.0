@@ -1,40 +1,40 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 664FC390613;
-	Tue, 23 Jun 2026 17:35:50 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 788643932DB;
+	Tue, 23 Jun 2026 17:35:53 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1782236151; cv=none; b=auz2UY+GG0lDGsB0LyzGIgqwHgM2u1TIyqmPUkE0jPvXw8pg1+4hE+JI3cy90GBwx1lCnETB+uKutjBFISJPMrCtguHwqIfG2d7vNh2nWLL4cjd+B/rnXvq73/X1iVWqpjYcTZmsb6CzDYsQ5wwyDJK4Ptk53oyIVKs6LaLxehk=
+	t=1782236154; cv=none; b=t5t9ULobd0vRgeobWf9hWwB7BMZzeAVKQA1boXnzqCPJQJ6WJ84Npb+TUErtzkW16EOw1tM+bqFSbcRsGBxEUAZaqNMsvCS79yLW6X/MRSPtojxqGw2siKJr5e3Lh3YTH/t5DimWRk9HrA6TrnhJfxXp5j/iL1V4hkR2+JbtxXg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1782236151; c=relaxed/simple;
-	bh=0nZJO54LVAjwN8DFkWZiv8xtaYAml+W+ofxAojwRL88=;
+	s=arc-20240116; t=1782236154; c=relaxed/simple;
+	bh=NP/icPK2Gjr+ivcxtfnYc0/pDeEFDO8TyPuDHLWdMk0=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=LimEMqyGgv5tmvhQ2DavkT0UnFaPir4OjPQscanbe8GQ1FnlgvU8D9GgX9Um71Wf0nTwCQL/9SzGam86GqRN6SXQxfL7E0BOsUmyrGK4eKy3GqfcH7a6IooPRGRyMle8mK39rtBPS//rL2UN16wzei12Gqvpzd66LNrNnynY370=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=dCAFedxh; arc=none smtp.client-ip=100.103.45.18
+	 MIME-Version:Content-Type; b=CdGVyZ8F7v9l5G/yh5bzOs4rOfKfrT+wQusu+V1VX3+kebSfMWtBrq0Dxjyj2kFKFA/VIWrMPu67y/atJvkbg1hiIn7jR4k203s2PnHgUhSB8gqbooQvVlJcTgiH0Li2VggNhhiQdXcMy+4cav4KlIlr0VKvtkbncRjUot5siqU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=WMwgokWw; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="dCAFedxh"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 219B61F000E9;
-	Tue, 23 Jun 2026 17:35:48 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="WMwgokWw"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 664911F000E9;
+	Tue, 23 Jun 2026 17:35:52 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1782236150;
-	bh=dG7p4MSw3nEDDu37Jikie+veUFKSq59treBXEGwCfRI=;
+	s=k20260515; t=1782236153;
+	bh=zqQoIKzrrfNDhSSQ0Y79oRI+15/uJrJQE4BWsk9/Wsg=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References;
-	b=dCAFedxhAUgrgOaab2VHkvJQco23rlG5sMOeIZUqVOHtVx16nQ8z713I09/3sMxf4
-	 7FpLZjZoz4x602opZ2w0NFnkhgWg/CYX9KE22/5UzslVSizlOhyZe0dD1+Vga8Kk9D
-	 TzRNUH2CBco07HxMBZbxxqBveBB3cjGfDrBEFvo3mwBM9Sd7mTUVS3AqGq5uhYOPmc
-	 NCI6U9l+DuGHIL7Rf4bz0jq3R1puTNwvVu0xFNw1zujN4JdjnGRQJm2/AGLtNKQyFL
-	 LBLlAd+5tQREojVEsrbRN4UGQl/GDBgNEAajTmiHTZF8j6Qb/0uQaXGBcQhm6Huvpy
-	 3J4Ov22UA4gOA==
+	b=WMwgokWw09YdIj/zqXCzE3PGrYlR9LqFwODcmHRdfgQUor77Zoa0/awWzo0vtUGMg
+	 IDS3FbwshQ6Od2gkQ9gTIF6VY9tJb9zMezkRZ37QMi2kQaGrxbRdpxNgz9s+a1qPO3
+	 Wl7vilTckK7Lwo4d0xjODzJLpQdoBUr/WFrVA7yMvoG3EMLRGf7FcLBTyNbhAX2ltn
+	 St/CzXR4950gRh+iXeHmQ5s4Guyahqf5r+Rxacd42SeHy8dK+W539x293sf9yY9V0X
+	 jeHyNEPkuS1B2VgWyOHkww/jkPUegHYd+LBc5GV77RqZMlzeEBKa9W4inktvMHQAWA
+	 uhRPOxywt63Cg==
 From: "Rafael J. Wysocki" <rafael@kernel.org>
 To: Linux PM <linux-pm@vger.kernel.org>
 Cc: Chen Yu <yu.c.chen@intel.com>,
  Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
  LKML <linux-kernel@vger.kernel.org>
 Subject:
- [PATCH v1 2/2] cpufreq: intel_pstate: Rename INTEL_PSTATE_HWP_BROADWELL
-Date: Tue, 23 Jun 2026 19:34:47 +0200
-Message-ID: <3431755.44csPzL39Z@rafael.j.wysocki>
+ [PATCH v1 1/2] cpufreq: intel_pstate: Simplify HWP handling on Broadwell
+Date: Tue, 23 Jun 2026 19:34:40 +0200
+Message-ID: <3057514.e9J7NaK4W3@rafael.j.wysocki>
 Organization: Linux Kernel Development
 In-Reply-To: <6286434.lOV4Wx5bFT@rafael.j.wysocki>
 References: <6286434.lOV4Wx5bFT@rafael.j.wysocki>
@@ -49,38 +49,70 @@ Content-Type: text/plain; charset="UTF-8"
 
 From: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
 
-Since the only role of INTEL_PSTATE_HWP_BROADWELL is to indicate that
-hybrid HWP should not be used, rename it to INTEL_PSTATE_HWP_NOT_HYBRID.
+After commit de5bcf404ace ("cpufreq: intel_pstate: Clean up
+frequency computations"), the Broadwell HWP mode does not actually
+do anything useful because intel_pstate_get_hwp_cap() is called in
+intel_pstate_verify_cpu_policy() without checking the Broadwell mode
+and it overrides the initial turbo and max pstate values read from
+MSR_PLATFORM_INFO (the minimum P-state value still comes from
+MSR_PLATFORM_INFO if HWP is used even without the Broadwell mode).
 
-No functional impact.
+Moreover, hwp_cap_cached is used in some places for updating
+MSR_HWP_REQUEST without checking the Broadwell mode either.
 
+Effectively, the only difference made by the Broadwell HWP mode is
+skipping the hybrid initialization which may as well be achieved
+by avoiding to set pstate_funcs.get_cpu_scaling on Broadwell.
+
+Link: https://sashiko.dev/#/patchset/6005456.DvuYhMxLoT%40rafael.j.wysocki
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- drivers/cpufreq/intel_pstate.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+
+Applies on top of Linux 7.1.
+
+---
+ drivers/cpufreq/intel_pstate.c | 7 +++----
+ 1 file changed, 3 insertions(+), 4 deletions(-)
 
 diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-index 1cebd44a5f12..28c1da0f05c6 100644
+index 1f093e346430..1cebd44a5f12 100644
 --- a/drivers/cpufreq/intel_pstate.c
 +++ b/drivers/cpufreq/intel_pstate.c
-@@ -3674,14 +3674,14 @@ static inline bool intel_pstate_has_acpi_ppc(void) { return false; }
- static inline void intel_pstate_request_control_from_smm(void) {}
- #endif /* CONFIG_ACPI */
+@@ -299,7 +299,6 @@ struct pstate_funcs {
+ static struct pstate_funcs pstate_funcs __read_mostly;
  
--#define INTEL_PSTATE_HWP_BROADWELL	0x01
-+#define INTEL_PSTATE_HWP_NOT_HYBRID	0x01
+ static bool hwp_active __ro_after_init;
+-static int hwp_mode_bdw __ro_after_init;
+ static bool per_cpu_limits __ro_after_init;
+ static bool hwp_forced __ro_after_init;
+ static bool hwp_boost __read_mostly;
+@@ -2323,7 +2322,7 @@ static void intel_pstate_get_cpu_pstates(struct cpudata *cpu)
+ 	cpu->pstate.min_pstate = pstate_funcs.get_min(cpu->cpu);
+ 	cpu->pstate.perf_ctl_scaling = perf_ctl_scaling;
  
- #define X86_MATCH_HWP(vfm, hwp_mode)				\
- 	X86_MATCH_VFM_FEATURE(vfm, X86_FEATURE_HWP, hwp_mode)
+-	if (hwp_active && !hwp_mode_bdw) {
++	if (hwp_active) {
+ 		__intel_pstate_get_hwp_cap(cpu);
  
- static const struct x86_cpu_id hwp_support_ids[] __initconst = {
--	X86_MATCH_HWP(INTEL_BROADWELL_X,	INTEL_PSTATE_HWP_BROADWELL),
--	X86_MATCH_HWP(INTEL_BROADWELL_D,	INTEL_PSTATE_HWP_BROADWELL),
-+	X86_MATCH_HWP(INTEL_BROADWELL_X,	INTEL_PSTATE_HWP_NOT_HYBRID),
-+	X86_MATCH_HWP(INTEL_BROADWELL_D,	INTEL_PSTATE_HWP_NOT_HYBRID),
- 	X86_MATCH_HWP(INTEL_ANY,		0),
- 	{}
- };
+ 		if (pstate_funcs.get_cpu_scaling) {
+@@ -3807,7 +3806,6 @@ static int __init intel_pstate_init(void)
+ 
+ 		if (!no_hwp) {
+ 			hwp_active = true;
+-			hwp_mode_bdw = id->driver_data;
+ 			intel_pstate.attr = hwp_cpufreq_attrs;
+ 			intel_cpufreq.attr = hwp_cpufreq_attrs;
+ 			intel_cpufreq.flags |= CPUFREQ_NEED_UPDATE_LIMITS;
+@@ -3815,7 +3813,8 @@ static int __init intel_pstate_init(void)
+ 			if (!default_driver)
+ 				default_driver = &intel_pstate;
+ 
+-			pstate_funcs.get_cpu_scaling = hwp_get_cpu_scaling;
++			if (!id->driver_data)
++				pstate_funcs.get_cpu_scaling = hwp_get_cpu_scaling;
+ 
+ 			goto hwp_cpu_matched;
+ 		}
 -- 
 2.51.0
 
