@@ -1,141 +1,112 @@
-Received: from mail-ed1-f45.google.com (mail-ed1-f45.google.com [209.85.208.45])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from out-185.mta0.migadu.com (out-185.mta0.migadu.com [91.218.175.185])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5DA2818CBE1
-	for <linux-pm@vger.kernel.org>; Wed, 24 Jun 2026 13:03:15 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.208.45
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A5E583B0AFA;
+	Wed, 24 Jun 2026 13:06:09 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=91.218.175.185
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1782306196; cv=none; b=TjWrLpnu7gLIZrLT1atJ/AKv4yJLOt5U57flQ+95PItv36pq72jNx0Z1n+aYIS5Jyhc59KVZCeJPKI84aDI4F1JRtaQRF+m2Lp+0rawHK/4FkSLJwLyBH5Lp3wi55ByfL2ekSNuOj4przS6xgN9xhG5eeyOtnLoELajWWElZE2U=
+	t=1782306371; cv=none; b=XsFRbkTYaV58xEPsmF/f7QnvsFIADp8tSDCFT6wCb1mfxsFxSUHHOiUH+QIWxfOX6rvh9Y4LkFXh9h6cMbSH5dnX11S+yhDZn2OHhnTfVz4gbiDockdjDniAuB6Nk72wS9dJ2n49TpuLbVKxzbvZKR+/fJ6FATmQrSWlYK8Sdj4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1782306196; c=relaxed/simple;
-	bh=4wmUG9+jETW1+KM0ZXFsMsDz7lw3gBvAJtfCC3yXuug=;
-	h=Date:From:To:Cc:Subject:Message-ID:MIME-Version:Content-Type:
-	 Content-Disposition; b=tXaRpKa5H+PeGcEXS31Qhs+XQiV//PCiQHG0187oGjQpLfKHgqC0XAfGScJHLuh9a0ReYs+H1f4VHONjGXFcFdT1xh+p/mVkasAK6E5wwDOOXZICZ/z5z5gFf95yXkgbbBekk7qfnAVJjo83IdTkl+S7ppZIPmcwJ749TkulPTk=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=TPenzY8G; arc=none smtp.client-ip=209.85.208.45
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1782306371; c=relaxed/simple;
+	bh=DuA83fRrvg9FcK3+uKVtP7zDj3cARtxSAMCxIPj6Ris=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=isKrKv66aLcbXc3RyIKqUVQ08wM/kk4IT8Gxs/s3LtMkr+cskLDfvUbUeTi3I1A08gWu3aCptvNWpKPVSHfEdB4KkYoq++MHZJ4qLdyqIY59m7+leDIDscvxu7sBp976sVs4RT184PNe/Rk2K5x+0oLjKd/CiCT43whlZ0Gs62U=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.dev; spf=pass smtp.mailfrom=linux.dev; dkim=pass (1024-bit key) header.d=linux.dev header.i=@linux.dev header.b=t7N5AMoP; arc=none smtp.client-ip=91.218.175.185
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.dev
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.dev
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="TPenzY8G"
-Received: by mail-ed1-f45.google.com with SMTP id 4fb4d7f45d1cf-69531108f25so1728418a12.2
-        for <linux-pm@vger.kernel.org>; Wed, 24 Jun 2026 06:03:15 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1782306194; x=1782910994; darn=vger.kernel.org;
-        h=content-disposition:mime-version:message-id:subject:cc:to:from:date
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=IqbffuHROsrMfivcmxl/a0WRNEEypXicIfc5X1ORIW4=;
-        b=TPenzY8G603F2SfksgutFmXYP8R0NY6G/BLUwo5OsLTTpwrkAnUD5pFaGsGcH5cy6p
-         kh2lanK3JMuqDY5qK8Lg9K/Iccff7GNX2kKqGMC8onUe0KR3yrv+S506z0eur199+9ZN
-         tU4xcJXuQVakabMkXAEd9F30kAZ7QsXBojikXUi+aFQSdqlfjoVCygPbk/sKXNPCoaOU
-         fgKbS/BUbOs0itTRvXBnPIlaNkWQUB5Gp2KPb6fzKtX522bzT2mzd5a80BOmhiHQ3asO
-         KlYgLtjN8QUeAEqYuFjWu+rSbhoE4sqJxkx3uxYeLZmNJyx0eeFBLLbZSSbRxigQXLPf
-         sW3Q==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1782306194; x=1782910994;
-        h=content-disposition:mime-version:message-id:subject:cc:to:from:date
-         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=IqbffuHROsrMfivcmxl/a0WRNEEypXicIfc5X1ORIW4=;
-        b=M9GcpXhnaw4sXhbmBUnYFtTsHSUchYRNaN/a1lrUx3sCJiX9c0hGj087k7+btiU61B
-         J1P444SOgw4XWOtKG98XzPTAV0vjYsah7ijZy0csr3yGXCJJlRp4MWToCC9e0vt4s2Mx
-         YCuF+nj9gbiUcOEFTqFGl2QRbS2wU6DwO3wDCSqnRxQFJ2QAdb7bs/W3WdWB5MzeXqku
-         Q+UF6u2hhrJQnDnaBld8wG2RRyO0oH/B6zbkLWOMyVNcjsaxyz8b2CR59zVpHQQTjcvw
-         jEg/vidEFrnHLxFi0f69G9x+SnAwU6rQt7rpR6mT0Gj6OlijOU8gO98B4JqPl4cRBMw3
-         henQ==
-X-Forwarded-Encrypted: i=1; AFNElJ9QJ68EN2wnUqDpiVw85HlctkhM9GVl+JihXZy33GfCCB9B0LkaDplqMUqgwvWuBXRz4d+iRVIO/w==@vger.kernel.org
-X-Gm-Message-State: AOJu0YwU0GxPWiGAs1i/W5Dpt2IIjzdsAtqx6MIdlTiIgYF/CfrhwqPF
-	ZK2ZqiyO127rJCHAsVbsDuu2SRemBWhoKSh0S+4p1C5ECEIgvVhSkGe2
-X-Gm-Gg: AfdE7clScjiWuyVFqCF6DhiTIt2vBfYoa73GMWgouNktyjEBI43PqqR2HGiToY79FPL
-	gWvCnyqrPgt1nrjpshKlo+I35Tsh/DcTRwlx+bR+vU3zGTThrD44xnP401UQ4lwGnN3VO9UxTXR
-	I1bMgz1v4sZnMZ5ka33ExLhw3LJkiyHetnXXsMQKJa2eyTIhuMJoa8weOwMtyx0YOm79QRTN/SW
-	kvvM73v7ykf+0TcUWj5ZzCYVZzpREaO9HosU9iaJ+aK6XvhCZGtazSzPPbEjfkI3EgBckjArVBK
-	f5Kyt5NaKKUVHFouLp2y26jnoQm6KnqJc1DlLsA2JSxdCMFHoHCPmxbblQuXZSAX+f+1o9FAxO8
-	bCK2B8D8Ib+0PRpH00y/R5CmsPC7Bq4BUJJnmxobNFdW/pOY7ucwOuQs6nTEtTT2eSLQbCXdDg1
-	qlLSp9fU4g
-X-Received: by 2002:a17:906:2081:b0:c11:f023:8414 with SMTP id a640c23a62f3a-c11f0238ac8mr89463366b.22.1782306193376;
-        Wed, 24 Jun 2026 06:03:13 -0700 (PDT)
-Received: from localhost ([196.207.164.177])
-        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-c0c5e497e7dsm651298766b.5.2026.06.24.06.03.10
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 24 Jun 2026 06:03:12 -0700 (PDT)
-Date: Wed, 24 Jun 2026 16:02:53 +0300
-From: Dan Carpenter <error27@gmail.com>
-To: Andrzej Pietrasiewicz <andrzej.p@collabora.com>
-Cc: Niklas =?iso-8859-1?Q?S=F6derlund?= <niklas.soderlund@ragnatech.se>,
-	"Rafael J. Wysocki" <rafael@kernel.org>,
-	Daniel Lezcano <daniel.lezcano@kernel.org>,
-	Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>,
-	Geert Uytterhoeven <geert+renesas@glider.be>,
-	Magnus Damm <magnus.damm@gmail.com>,
-	Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
-	linux-renesas-soc@vger.kernel.org, linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: [PATCH v2] thermal/drivers/rcar: fix error checking in probe()
-Message-ID: <ajvVfSusxZfjNxVN@stanley.mountain>
+	dkim=pass (1024-bit key) header.d=linux.dev header.i=@linux.dev header.b="t7N5AMoP"
+Message-ID: <96334e07-dbd9-47a0-93f5-ac4762b7b919@linux.dev>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
+	t=1782306356;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=Z2iAFOHBRMR/Xa17pT7sXAqMACpdvIbkzmpfw9EGJVs=;
+	b=t7N5AMoP0/i8dFY3FrC7HO2yNmLfeZFETlWYqXUODrlmNpqyaftZywjo0y9UNn13O8QGRa
+	AXb39zIwwMhdHGGwdLIWZOxZlc/RB5gme76K1wm+eYFw8s2/p0wLK8vNz3AEO2CElTbLsC
+	uEFuGXWFUWXMM2nzKZ+r26KvGnuXTwQ=
+Date: Wed, 24 Jun 2026 21:05:32 +0800
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-X-Mailer: git-send-email haha only kidding
+Subject: Re: [PATCH v3 0/7] Prepare mutable list iterators to cache cursor
+ state
+To: Jani Nikula <jani.nikula@linux.intel.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ David Hildenbrand <david@kernel.org>, Jens Axboe <axboe@kernel.dk>,
+ Tejun Heo <tj@kernel.org>, Alexander Viro <viro@zeniv.linux.org.uk>,
+ Christian Brauner <brauner@kernel.org>, Alexei Starovoitov <ast@kernel.org>,
+ Daniel Borkmann <daniel@iogearbox.net>, Andrii Nakryiko <andrii@kernel.org>,
+ Johannes Weiner <hannes@cmpxchg.org>, Peter Zijlstra <peterz@infradead.org>,
+ Ingo Molnar <mingo@redhat.com>, Arnaldo Carvalho de Melo <acme@kernel.org>,
+ Namhyung Kim <namhyung@kernel.org>, Thomas Gleixner <tglx@kernel.org>,
+ Juri Lelli <juri.lelli@redhat.com>,
+ Vincent Guittot <vincent.guittot@linaro.org>,
+ Paul Moore <paul@paul-moore.com>,
+ Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+ "Paul E. McKenney" <paulmck@kernel.org>,
+ Shakeel Butt <shakeel.butt@linux.dev>,
+ =?UTF-8?Q?Christian_K=C3=B6nig?= <christian.koenig@amd.com>
+Cc: David Howells <dhowells@redhat.com>,
+ Simona Vetter <simona.vetter@ffwll.ch>, Randy Dunlap
+ <rdunlap@infradead.org>, Luca Ceresoli <luca.ceresoli@bootlin.com>,
+ Philipp Stanner <phasta@kernel.org>, linux-block@vger.kernel.org,
+ linux-kernel@vger.kernel.org, cgroups@vger.kernel.org,
+ linux-ntfs-dev@lists.sourceforge.net, linux-fsdevel@vger.kernel.org,
+ io-uring@vger.kernel.org, audit@vger.kernel.org, bpf@vger.kernel.org,
+ netdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+ linux-perf-users@vger.kernel.org, linux-trace-kernel@vger.kernel.org,
+ kexec@lists.infradead.org, live-patching@vger.kernel.org,
+ linux-modules@vger.kernel.org, linux-crypto@vger.kernel.org,
+ linux-pm@vger.kernel.org, rcu@vger.kernel.org, sched-ext@lists.linux.dev,
+ linux-mm@kvack.org, virtualization@lists.linux.dev, damon@lists.linux.dev,
+ llvm@lists.linux.dev, chengkaitao <chengkaitao@kylinos.cn>
+References: <20260622040533.29824-1-kaitao.cheng@linux.dev>
+ <88f34c7fa5a3d1700cc8005818751d6aa31f09df@intel.com>
+X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
+From: Kaitao Cheng <kaitao.cheng@linux.dev>
+In-Reply-To: <88f34c7fa5a3d1700cc8005818751d6aa31f09df@intel.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-Migadu-Flow: FLOW_OUT
 
-This code accidentally calls thermal_zone_device_enable() before checking
-whether thermal_zone_device_register_with_trips() failed.  Move the call
-until later to avoid an error pointer dereference of "priv->zone".
 
-The driver works differently depending on if we are using OF thermal or
-not.  We use thermal_add_hwmon_sysfs() if we are using OF thermal and
-call thermal_zone_device_enable() if not.
 
-Moving the thermal_zone_device_enable() call is a bit cleaner as well.
-The original code used a three step process to cleanup:
-1. Call thermal_zone_device_unregister() to cleanup.
-2. Set priv->zone to an error pointer to preserve the error code.
-3. Set priv->zone to NULL to avoid a second call to
-   thermal_zone_device_unregister() in the rcar_thermal_remove()
-   function.
+在 2026/6/22 16:37, Jani Nikula 写道:
+> On Mon, 22 Jun 2026, Kaitao Cheng <kaitao.cheng@linux.dev> wrote:
+>> Add *_mutable() iterator variants for list, hlist and llist.  The new
+>> helpers are variadic and support both forms.  In the common case, the
+>> caller omits the temporary cursor and the macro creates a unique internal
+>> cursor with typeof(pos) and __UNIQUE_ID().  If a loop really needs an
+>> explicit temporary cursor, the caller can still pass it and the helper
+>> keeps the existing *_safe() behaviour.
+>>
+>> For example, a call site may use the shorter form:
+>>
+>>   list_for_each_entry_mutable(pos, head, member)
+>>
+>> or keep the explicit temporary cursor form:
+>>
+>>   list_for_each_entry_mutable(pos, tmp, head, member)
+> 
+> I'm unconvinced it's a good idea to allow two forms with macro trickery,
+> *especially* when it's not the last argument you can omit. I think it's
+> a footgun.
+> 
+> IMO stick with the first form only, and there'll always be the _safe
+> variant that can be used when the temp pointer is needed.
 
-Now we can just do a direct goto error_unregister and rcar_thermal_remove()
-handles the cleanup properly.
+Could we go back to the v1 version? What do you think of that
+implementation approach?
 
-Fixes: bbcf90c0646a ("thermal: Explicitly enable non-changing thermal zone devices")
-Signed-off-by: Dan Carpenter <error27@gmail.com>
----
-v2: Use the correct fixes tag and re-write the check in a cleaner way.
+https://lore.kernel.org/all/20260529082149.76764-1-kaitao.cheng@linux.dev/
 
- drivers/thermal/renesas/rcar_thermal.c | 10 ++++------
- 1 file changed, 4 insertions(+), 6 deletions(-)
-
-diff --git a/drivers/thermal/renesas/rcar_thermal.c b/drivers/thermal/renesas/rcar_thermal.c
-index 6e5dcac5d47a..f8865b03ed23 100644
---- a/drivers/thermal/renesas/rcar_thermal.c
-+++ b/drivers/thermal/renesas/rcar_thermal.c
-@@ -492,12 +492,6 @@ static int rcar_thermal_probe(struct platform_device *pdev)
- 				"rcar_thermal", trips, ARRAY_SIZE(trips), priv,
- 						&rcar_thermal_zone_ops, NULL, 0,
- 						idle);
--
--			ret = thermal_zone_device_enable(priv->zone);
--			if (ret) {
--				thermal_zone_device_unregister(priv->zone);
--				priv->zone = ERR_PTR(ret);
--			}
- 		}
- 		if (IS_ERR(priv->zone)) {
- 			dev_err(dev, "can't register thermal zone\n");
-@@ -510,6 +504,10 @@ static int rcar_thermal_probe(struct platform_device *pdev)
- 			ret = thermal_add_hwmon_sysfs(priv->zone);
- 			if (ret)
- 				goto error_unregister;
-+		} else {
-+			ret = thermal_zone_device_enable(priv->zone);
-+			if (ret)
-+				goto error_unregister;
- 		}
- 
- 		rcar_thermal_irq_enable(priv);
 -- 
-2.53.0
+Thanks
+Kaitao Cheng
 
