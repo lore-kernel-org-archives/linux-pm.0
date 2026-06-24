@@ -1,480 +1,306 @@
-Received: from MW6PR02CU001.outbound.protection.outlook.com (mail-westus2azon11012021.outbound.protection.outlook.com [52.101.48.21])
+Received: from out-188.mta1.migadu.com (out-188.mta1.migadu.com [95.215.58.188])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C5A2E2F691D;
-	Wed, 24 Jun 2026 12:56:34 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.48.21
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1782305796; cv=fail; b=Vvo9IqYiYTDfm+48t25f4dAviEnj5wr8qzNyiOHrkw1TiRx+r2JvkbhsCAQjRL6kG95dB/4Q/n6RlC5iM+SW5dBvceoJjcVzob9TxAOKPAqmGPN+s2MIYAl37V7QkxWPbaP64zCQjc4mxWLqeoFJng1mWxnW5hLXIJkiuMVGh7U=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1782305796; c=relaxed/simple;
-	bh=xdkjMA/qSU6Ydvh2ctVQ5MBYWRZuTRghZ7LM/aKozWM=;
-	h=Message-ID:Date:Subject:To:Cc:References:From:In-Reply-To:
-	 Content-Type:MIME-Version; b=ZudHPsGjM5s3yc6FgoDuFdXKkYbo4vB+NMmkIe9cye8sRX/2u9HXr6fleq6fWt+duNSXtQ5GcF0xOuZhZecKKJrMpAt04TOprJ8FG8JLCmDpW3o15Bc4K4k0DBR906EFz56Ruu+lYCPWouX1GlJT+UNJobZamDzeUVcbXm0JfuQ=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com; spf=fail smtp.mailfrom=nvidia.com; dkim=pass (2048-bit key) header.d=Nvidia.com header.i=@Nvidia.com header.b=ap4UUMY6; arc=fail smtp.client-ip=52.101.48.21
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com
-Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=nvidia.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DD5FE3B2FFF;
+	Wed, 24 Jun 2026 12:59:24 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=95.215.58.188
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1782305967; cv=none; b=BVbpJC6guQlVpqHQGT1/I7Kpd+M7YCt3DGZ+vk57dMvw5XmQIBd93jcGanOoXPkU37Ioq8Kn4dSoGW+mcqbCqjYWMP1reuV3q+WHjXiwf+U9uIY0QwOl2j7kTLEG0wYuahmHFgy2NNaQgH0oVEiDX7pCz8120OdrGoPSZxTqC/Y=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1782305967; c=relaxed/simple;
+	bh=Hp21DabkdJmBrm5olpg71oNYzii2pCB3Ctg0A3bYMZg=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=mjk6g1RoVFmyfu+F9wlV1mox+rwt4eNP7vLwQr+9SVXlfWf7YRfUSX3zvJRsYGDhJeeyii2rLOT4zGTcfVMqaK6KZ4bHnXaVzAWyXxvZ/PKOmL+obLdtZwGNkNp4R4afAQNj/6m2CaZSdddYbfa55MRElJeUueFx3V6mgCsId5k=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.dev; spf=pass smtp.mailfrom=linux.dev; dkim=pass (1024-bit key) header.d=linux.dev header.i=@linux.dev header.b=NfHfWAOU; arc=none smtp.client-ip=95.215.58.188
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.dev
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.dev
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=Nvidia.com header.i=@Nvidia.com header.b="ap4UUMY6"
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=TZHgeE1lJ+4y7qJ12ipxVl/vexDbF8DzuFQtqecqBUQBLqkr3RTk7/dCExijLORIuTsHC5vOwwKoJrsuIe8IQ4bANwDHF4eWT49/5tGQZogMrojaLcF9pkP/jGPpKpEul8vMaxKg+PBnQHjpZletqlvS+qCKpIfQpwWWZgARGGXiw8sOqBhr1SD0/wVCxKiellDA211Hkc1duVU+QMLCcrNugLISq/HA2xgjRzucSZ1u4DgQZFLw0IDFpS68pEZNzKBK/aYqJe4V1bVrukCwdLsYHvKu0SUkrfhveHGY2wVFNxGimMSVdiJTf96vgmF8jvCf4dWhfvRk6KQwpqeT0Q==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=gV02EzyhiGYMto+bhr6Ebpw/806sAvOs+C5aBdb9pLM=;
- b=d9u25pDyXqT12dxd1k9mZ9ER1QSjhLTh/DxNnH/KtorU5euBqTkV5QkNPK6Jh3titbcKOLVJ4mxpnG6eITM+lyefrxgF2z+QvAXXZrv+puTgKr2xmbs7f8IxY/BTbmDSMM35cYaBo4dAI17fGrJiPp7vXhW/BrdMagvZdXRflUqvt0lBduYTQcZo2CSN8eVN3hukNdFjRSR6BjN+bt0wRtVn7T0qMr07rf2OaCvg5szKEtpgQBJPp2bNwke0NIYOJbdGpGkVUxdjZj3p1dpGpWyENu8bv2Q8zZzSu5NahZpy7uNhfL7ZbozMohqkqKjovbiDw1yBZf8oyQIRxk9EKQ==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=nvidia.com; dmarc=pass action=none header.from=nvidia.com;
- dkim=pass header.d=nvidia.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
- s=selector2;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=gV02EzyhiGYMto+bhr6Ebpw/806sAvOs+C5aBdb9pLM=;
- b=ap4UUMY6tYtN008NcLYztd2WMiOnhStfLQNqCYxh5XOn3yi50vXbSkYwimlELh9NhgPcHmCPKzIRFpiPayGWyCxY8/vjM7aCPYChlJuTwtkNnyZS38wPbB8ijofvrlaonK6IR5rA7vdIhzMlV7xJIObq5mcr+CDRo70D6JF/yW7ozicWVEbZa6esCEaqhvO9LvRGiriv6GOgRcCb4Um58TEoFqrrScf+mcLYF5hz9gI7Ny7wFliDAiQ1zDHBSXqQmhPz5DptpC/M/uBKB8UhHFkrKzMaL3iwi6W6pUFrEjUJShrPSqGvTtKoiKNw0bCvNa53aqR1cHWL59HG+icsDg==
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=nvidia.com;
-Received: from BN9PR12MB5179.namprd12.prod.outlook.com (2603:10b6:408:11c::18)
- by PH0PR12MB8098.namprd12.prod.outlook.com (2603:10b6:510:29a::17) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.159.12; Wed, 24 Jun
- 2026 12:56:24 +0000
-Received: from BN9PR12MB5179.namprd12.prod.outlook.com
- ([fe80::cf08:f59b:d016:c95f]) by BN9PR12MB5179.namprd12.prod.outlook.com
- ([fe80::cf08:f59b:d016:c95f%4]) with mapi id 15.21.0159.015; Wed, 24 Jun 2026
- 12:56:24 +0000
-Message-ID: <de03b23f-18a3-4e99-a15a-5044463ac484@nvidia.com>
-Date: Wed, 24 Jun 2026 18:26:15 +0530
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] cpufreq: CPPC: Preserve OSPM-set registers across hotplug
- and unload
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: viresh.kumar@linaro.org, pierre.gondois@arm.com, ionela.voinescu@arm.com,
- zhenglifeng1@huawei.com, zhanjie9@hisilicon.com,
- linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
- linux-tegra@vger.kernel.org, treding@nvidia.com, jonathanh@nvidia.com,
- vsethi@nvidia.com, ksitaraman@nvidia.com, sanjayc@nvidia.com,
- mochs@nvidia.com, bbasu@nvidia.com, sumitg@nvidia.com
-References: <20260623095403.3407436-1-sumitg@nvidia.com>
- <CAJZ5v0jvkNfx-1XChRCsGHJAcY7W4j41P+Xug6+TpPge7tHF7Q@mail.gmail.com>
-Content-Language: en-US
-From: Sumit Gupta <sumitg@nvidia.com>
-In-Reply-To: <CAJZ5v0jvkNfx-1XChRCsGHJAcY7W4j41P+Xug6+TpPge7tHF7Q@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-ClientProxiedBy: DS7PR03CA0337.namprd03.prod.outlook.com
- (2603:10b6:8:55::25) To BN9PR12MB5179.namprd12.prod.outlook.com
- (2603:10b6:408:11c::18)
+	dkim=pass (1024-bit key) header.d=linux.dev header.i=@linux.dev header.b="NfHfWAOU"
+Message-ID: <dbfce6fd-1a70-49e4-84f0-f8abe0b0686d@linux.dev>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
+	t=1782305952;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=w7mwncPJFc52L9GcJuLCemWszY1t/5oa8NDDGKNs5Xo=;
+	b=NfHfWAOUjme+ZS3K2cqW3zzBU9DDghXYBUACVwF1DP1IhHC7OpK5Dg+VG056EyHSeeXnq+
+	d2hck8f1B4+5aF6WEjOXUu98tizJ3d/dkoetmJwOT+C8sRL9MoCoWbRSgtT56dE5GZhUKK
+	23iu6/01orE+jSg9Lvj5Ccw4UnfNStE=
+Date: Wed, 24 Jun 2026 20:58:49 +0800
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: BN9PR12MB5179:EE_|PH0PR12MB8098:EE_
-X-MS-Office365-Filtering-Correlation-Id: 8fd0c74d-64e9-438e-6a20-08ded1efff09
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|23010399003|1800799024|366016|376014|18002099003|22082099003|56012099006|4143699003|11063799006|5023799004;
-X-Microsoft-Antispam-Message-Info:
-	k0htdu43VcfH4OknRnCFnWNew0hocrZa51Kpzhb8bie+vD48NFuXikxGTBtSLOw9GWZxxZdN8G6Zrgncw1ZgP7hUBQbZneRA3W9+JdDHqXPUBLXWdxHG8ieOosQkB9lszGoxH/uNdIKgLrQ2/Be09LXxb00hQPjM5RaW+0+Vn94Roycec+zsfFWg5x4B/UEGRa54P57o/FGfqErA3P7ik7lS5/WMwxQSt9oXikbcbmYbGcsieyYp0LCX+TPlvHRlPOx1cCogfuVSA8nBtr/5hsEGV3fVvsG6hc07bEzvrNfLMVZy/f+ztfwaVg2qKn5VlqqGfotSEFIRvvTmNYQJJQw/cwAK8+ZLpVysk+18XbSIcnbQTmsrI0b3VqoKdBBzfSryRTK1DFw3Khcw9SK2ftqeX1g9QCNr1oOO9vB9ELlMUsYKN2XUyrwURnhNyWPfksNz7874mwfmtVBvBM2KNyS+iA1LUUs6zUWqvRWwkqi0MeddiTsH8F5ZpZlzxUcIIcVHPx4LLD0aoc1hZw3yiAUoXqORm7d+qstqLaY4tH0tqvLctLVbBPXWNuJu4JyKr+M1Y1iAM/cUI3LIlXM+RT8ChEXdnsUZS7Bk1L0oPCo0xLMLBc10/NEnnlJtoEoGJJ+frHOAVPwWtV9ct3zuoRf+PqoaorcNXpfKzoC1i0I=
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:BN9PR12MB5179.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(23010399003)(1800799024)(366016)(376014)(18002099003)(22082099003)(56012099006)(4143699003)(11063799006)(5023799004);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?utf-8?B?eWVOYncvUE52QTAwR0FTODZnTFhGL2oxNkkvNjZ6Z1dTVTRTUFlKR0xJU3d4?=
- =?utf-8?B?REFpVStmTlB0V1Y0VGlReGk3VXdEQVVOdFBaamcwMVVBdi9PbjNVRWtWRlE5?=
- =?utf-8?B?QzV0M2hzYnhoS25RUXR5dWRMSGkxUXZYN1NkdlVoWE4wS09TNXUrTmJubzBX?=
- =?utf-8?B?WDc4bE0wVjN6QXdyd1NIeHNBakh5L3E3bndRNkQ1Q015N3o3SC9iMjk0UUpH?=
- =?utf-8?B?MmhPRkEvcndIa2lnMEJWMWFUdTRIVlorMWFhYm9Qd0ZaN21KTVhGSWQyb3pm?=
- =?utf-8?B?UFllYURzUnNMTzN4bllPeGM3Nlc3M3I5QUNHVlBGR2tSMU81TWh2UmhScVcw?=
- =?utf-8?B?RDNyeVdEZm9tNGdJWTYwdWE4aUdtOGltOHkvbkluMFdXN2lyait2ZUFWbjR5?=
- =?utf-8?B?MVI2dDh1OXBCV05GajhUZXJXdzlEcnhjbUZncE9GaTBpY0NUaTFFemlNOTZT?=
- =?utf-8?B?ZVY4OTRCMXZqWGphSHd1ckhuUFdJQ0JPRWZCU1NxZnVyOGFZVHYxQWgyWHJq?=
- =?utf-8?B?WENhS3d1U0Z6OHFmaEJkdVFqem1GaWNqZVd3Z0Z0QjRVTWNTZXJDNTFaNktJ?=
- =?utf-8?B?OHB0UDJlMCs3Nk1hellTcG8ybk1DcmhkY1BFSzFpZlZzUFpnVmIyK2JBYkFt?=
- =?utf-8?B?MTJJRW4rQmgzalN6RXZzOEpLQ2FVaFpnUDNFeHI3YVltUzdHWENHQnJXVC9q?=
- =?utf-8?B?cjUwcmNFQTUrcGdISnBPcTRlSW16Z2VMSCtLQ2syMGtkRm9UOVFlWW4xRVNU?=
- =?utf-8?B?b29hK2tQbnBXNWhtQXNRWlk3SHZiZW9xa083a3hhQnJHZ29Cck41VU5VOVh3?=
- =?utf-8?B?d3lBaUFxaE5vNTVCd2F2RWp4cjJxK1hzQ3djOUJRcWZDaVYxOHNDYU93V1NB?=
- =?utf-8?B?elI3SkJsWG9PZUR4ak1jZEFqNVFEWjErbEgvQnU4enNTRnpZTDY3d3NBU3hm?=
- =?utf-8?B?QTc2ZUxja2tSMTlBVFl0K3ltczlSOUN0NmJxZVBadGIwYlgyM0dkSEVvWXRl?=
- =?utf-8?B?c0tPVG5IZVdoZjFiZTZZRXVSUVFWem1pUnVlam8yV1pJMXZKYTlVQzZVbERv?=
- =?utf-8?B?NjcxOGJTMUx2SUhRMDhaUDFQUjRsZU96REp5NW5BR0dyaFZEa0pHVVVNMjNR?=
- =?utf-8?B?aGZGYk10ZGRSSldxODR2cFY2bC9xK2t0QWZoN2hBQXdid1N3U2FFbDlSNUJP?=
- =?utf-8?B?TXNqQ09zQjgrQ1NnejZWM2RwM05FcXIzcUJrMVg0eWdQaE5XK0o0VTBtaHA5?=
- =?utf-8?B?TU91NjRyRHBrdlZ3ZjB0K1IxeWJBbk1ZUVRrblMzYnN3aGFML0o1ZjgxZENT?=
- =?utf-8?B?aUhJLzVOd1NtZm1USUpkTVRncHZUdDVxZmhWeXBnTmM5cHpYM0ozS1hwSCtM?=
- =?utf-8?B?WW0vVktIYlg1UUNiTmQxMkNBVFhHNzJEZGw4ditDTTg4MDVOWStpQ0pOMnFO?=
- =?utf-8?B?SlhmVXRNYjFzWXhUcmlXSmZYdDNrMDJOcDcwTmxVK0MyL1RGaFlMSEsxOWNn?=
- =?utf-8?B?YTBvWlczR29YRkRHM1ExM2NtN1ZrSldhSGlPUXlKMW5USFg1YSs4bG8yTHNY?=
- =?utf-8?B?ZTlHbHBOTXhKM1lTOEhTd1FEMXNPODFwdWtwMDRGN0pqZ01QeGc0aW1GbS9y?=
- =?utf-8?B?ZFNxQ0poRWFmeW56TGV2bSt1cHRodUhvUHFWY3pvb2xoR1lxOHJVb2NHa3hk?=
- =?utf-8?B?bkloamJZMnUwWThzeE9GWmxmcnpnS2VVZU1rQ3NFV0FYenQrUVQzbVNuQURL?=
- =?utf-8?B?ekdZemRLM0J0azBmSEFGZTR5MmRNN2cyUVBlVDJDRTR3SVlBcFBmeTQ4MmZQ?=
- =?utf-8?B?U2JiVGIrekMvcTViOXRSNS9vMFp5SmcrdFd3aUw1aVhpRGVhbFc4QmhETVJK?=
- =?utf-8?B?bUVJVW1mZ2pkWEF4N0NEUHJoYXpzeEtlMzNUd0Mrbk1USmdLc2lGSGp1MTNV?=
- =?utf-8?B?VnFpWDNjTFUwQzRuTXYrb2FlaG5BUmRWcHZuRGQ2N3hlQ0J3ZUM4NW5Xalpw?=
- =?utf-8?B?eE9TcVRPSi8zeXdtVVc3aTduQUhKWWlCY2VISzEzdktrUjdoa3NZKzd3R3pI?=
- =?utf-8?B?TlRZUXkvb01Kdm0yb2VCT3p0QlhJbFF4ZTd3Q09ieG03dTRrb0tkdHlLNDkz?=
- =?utf-8?B?TXViZ1pSbVBBUmRLNEJoajgvV1JTSHJ5M2JRQWRxV3JRSnBFMVU3ajhNRFVu?=
- =?utf-8?B?S2c2a1B6NC9odUpaOEh1SlVvUEJEM29mOGxDYTJybVBXUU5XdTcvbEQ0V2h2?=
- =?utf-8?B?MGNvUGR4M0w3MHErMjlZc1dQVEhldUVBQ281eXphbm9iSlk2ZWxXanNkQzFp?=
- =?utf-8?Q?ZWHtgP73h337/Ra0cm?=
-X-OriginatorOrg: Nvidia.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 8fd0c74d-64e9-438e-6a20-08ded1efff09
-X-MS-Exchange-CrossTenant-AuthSource: BN9PR12MB5179.namprd12.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 24 Jun 2026 12:56:24.1020
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: dxPIZlMu1eIYMVxgegi9/ICSOmly2bGVxHh/MIcl+wLIGV0tZxwu1odlQ/L10Nmw1o6EeBQbxa3tHiFF/C48NA==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: PH0PR12MB8098
-
-Hi Rafael,
+Subject: Re: [PATCH v3 0/7] Prepare mutable list iterators to cache cursor
+ state
+To: "David Hildenbrand (Arm)" <david@kernel.org>,
+ Alexei Starovoitov <alexei.starovoitov@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Jens Axboe <axboe@kernel.dk>,
+ Tejun Heo <tj@kernel.org>, Alexander Viro <viro@zeniv.linux.org.uk>,
+ Christian Brauner <brauner@kernel.org>, Alexei Starovoitov <ast@kernel.org>,
+ Daniel Borkmann <daniel@iogearbox.net>, Andrii Nakryiko <andrii@kernel.org>,
+ Johannes Weiner <hannes@cmpxchg.org>, Peter Zijlstra <peterz@infradead.org>,
+ Ingo Molnar <mingo@redhat.com>, Arnaldo Carvalho de Melo <acme@kernel.org>,
+ Namhyung Kim <namhyung@kernel.org>, Thomas Gleixner <tglx@kernel.org>,
+ Juri Lelli <juri.lelli@redhat.com>,
+ Vincent Guittot <vincent.guittot@linaro.org>,
+ Paul Moore <paul@paul-moore.com>,
+ Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+ "Paul E. McKenney" <paulmck@kernel.org>,
+ Shakeel Butt <shakeel.butt@linux.dev>,
+ =?UTF-8?Q?Christian_K=C3=B6nig?= <christian.koenig@amd.com>,
+ David Howells <dhowells@redhat.com>, Simona Vetter <simona.vetter@ffwll.ch>,
+ Randy Dunlap <rdunlap@infradead.org>,
+ Luca Ceresoli <luca.ceresoli@bootlin.com>,
+ Philipp Stanner <phasta@kernel.org>, linux-block@vger.kernel.org,
+ LKML <linux-kernel@vger.kernel.org>,
+ "open list:CONTROL GROUP (CGROUP)" <cgroups@vger.kernel.org>,
+ linux-ntfs-dev@lists.sourceforge.net,
+ Linux-Fsdevel <linux-fsdevel@vger.kernel.org>,
+ io-uring <io-uring@vger.kernel.org>, audit@vger.kernel.org,
+ bpf <bpf@vger.kernel.org>, Network Development <netdev@vger.kernel.org>,
+ dri-devel@lists.freedesktop.org,
+ "linux-perf-use." <linux-perf-users@vger.kernel.org>,
+ linux-trace-kernel <linux-trace-kernel@vger.kernel.org>,
+ kexec@lists.infradead.org, live-patching@vger.kernel.org,
+ linux-modules@vger.kernel.org,
+ Linux Crypto Mailing List <linux-crypto@vger.kernel.org>,
+ Linux Power Management <linux-pm@vger.kernel.org>, rcu@vger.kernel.org,
+ sched-ext@lists.linux.dev, linux-mm <linux-mm@kvack.org>,
+ virtualization@lists.linux.dev, damon@lists.linux.dev,
+ clang-built-linux <llvm@lists.linux.dev>,
+ chengkaitao <chengkaitao@kylinos.cn>
+References: <20260622040533.29824-1-kaitao.cheng@linux.dev>
+ <CAADnVQJmPWFT01b7DuLdtafv=8FyB84GYHNZ8zSTck+9Aw0JpA@mail.gmail.com>
+ <8f98a3a6-f97b-4673-964f-fb09c8879e2e@kernel.org>
+X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
+From: Kaitao Cheng <kaitao.cheng@linux.dev>
+In-Reply-To: <8f98a3a6-f97b-4673-964f-fb09c8879e2e@kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-Migadu-Flow: FLOW_OUT
 
 
-On 23/06/26 16:30, Rafael J. Wysocki wrote:
-> External email: Use caution opening links or attachments
->
->
-> On Tue, Jun 23, 2026 at 11:54 AM Sumit Gupta <sumitg@nvidia.com> wrote:
->> Values written to OSPM-set CPPC registers (via sysfs or the autonomous
->> boot parameter) can be lost in two ways:
->>
->>    - Across CPU hotplug: the platform may reset a CPU's registers when it
->>      is offlined.
->>    - On driver unload: the value the driver wrote is left in the register
->>      instead of returning to its pre-driver state.
->>
->> Add a small table-driven mechanism that handles both:
->>
->>    - Capture each register's firmware value when a CPU is first seen and
->>      restore it on driver unload.
->>    - Record the last value the driver set and reapply it from ->init()
->>      when the policy is reactivated after CPU hotplug.
-> I'm not sure if this is a good idea TBH.
->
-> The overall system state when the CPU goes online may be completely
-> different from the system state when the CPU was online last time, so
-> there is no reason to restore its settings from before offline, at
-> least in principle.
 
-These are values userspace deliberately set, more like a frequency QoS
-request that persists until userspace changes it than transient state.
-It's platform dependent though, as the platform I test on preserves them
-across hotplug, but where the platform resets the register on offline
-the value is silently lost. Should the kernel re-apply it on online,
-or is that better left to userspace? If so, I will drop the hotplug reapply
-and keep only the restore on driver unload.
+在 2026/6/22 19:27, David Hildenbrand (Arm) 写道:
+> On 6/22/26 07:28, Alexei Starovoitov wrote:
+>> On Sun, Jun 21, 2026 at 9:06 PM Kaitao Cheng <kaitao.cheng@linux.dev> wrote:
+>>>
+>>> From: chengkaitao <chengkaitao@kylinos.cn>
+>>>
+>>> The list_for_each*_safe() helpers are used when the loop body may remove
+>>> the current entry.  Their current interface, however, forces every caller
+>>> to define a temporary cursor outside the macro and pass it in, even when
+>>> the caller never uses that cursor directly.  For most call sites this
+>>> extra cursor is just boilerplate required by the macro implementation.
+>>>
+>>> This is awkward because the saved next pointer is an internal detail of
+>>> the iteration.  Callers that only remove or move the current entry do not
+>>> need to spell it out.
+>>>
+>>> The _safe() suffix has also caused confusion.  Christian Koenig pointed
+>>> out that the name is easy to read as a thread-safe variant, especially
+>>> for beginners, even though it only means that the iterator keeps enough
+>>> state to tolerate removal of the current entry.  He suggested _mutable()
+>>> as a clearer description of what the loop permits.
+>>>
+>>> Add *_mutable() iterator variants for list, hlist and llist.  The new
+>>> helpers are variadic and support both forms.  In the common case, the
+>>> caller omits the temporary cursor and the macro creates a unique internal
+>>> cursor with typeof(pos) and __UNIQUE_ID().  If a loop really needs an
+>>> explicit temporary cursor, the caller can still pass it and the helper
+>>> keeps the existing *_safe() behaviour.
+>>>
+>>> For example, a call site may use the shorter form:
+>>>
+>>>   list_for_each_entry_mutable(pos, head, member)
+>>>
+>>> or keep the explicit temporary cursor form:
+>>>
+>>>   list_for_each_entry_mutable(pos, tmp, head, member)
+>>>
+>>> The existing *_safe() helpers remain available for compatibility.  This
+>>> series only converts users in mm, block, kernel, init and io_uring.  If
+>>> this approach looks acceptable, the remaining users can be converted in
+>>> follow-up series.
+>>>
+>>> Changes in v3 (Christian König, Andy Shevchenko):
+>>> - Convert safe list walks to mutable iterators
+>>>
+>>> Changes in v2 (Muchun Song, Andy Shevchenko):
+>>> - Drop the list_for_each_entry_mutable*() helpers from v1 and make the
+>>>   cursor change directly in the existing list_for_each_entry*() helpers.
+>>> - Open-code special list walks that rely on updating the loop cursor in
+>>>   the body, preserving their existing traversal semantics.
+>>>
+>>> Link to v2:
+>>> https://lore.kernel.org/all/20260609061347.93688-1-kaitao.cheng@linux.dev/
+>>>
+>>> Link to v1:
+>>> https://lore.kernel.org/all/20260529082149.76764-1-kaitao.cheng@linux.dev/
+>>>
+>>> Kaitao Cheng (7):
+>>>   list: Add mutable iterator variants
+>>>   llist: Add mutable iterator variants
+>>>   mm: Use mutable list iterators
+>>>   block: Use mutable list iterators
+>>>   kernel: Use mutable list iterators
+>>>   initramfs: Use mutable list iterator
+>>>   io_uring: Use mutable list iterators
+>>>
+>>>  block/bfq-iosched.c                 |  17 +-
+>>>  block/blk-cgroup.c                  |  12 +-
+>>>  block/blk-flush.c                   |   4 +-
+>>>  block/blk-iocost.c                  |  18 +-
+>>>  block/blk-mq.c                      |   8 +-
+>>>  block/blk-throttle.c                |   4 +-
+>>>  block/kyber-iosched.c               |   4 +-
+>>>  block/partitions/ldm.c              |   8 +-
+>>>  block/sed-opal.c                    |   4 +-
+>>>  include/linux/list.h                | 269 ++++++++++++++++++++++++----
+>>>  include/linux/llist.h               |  81 +++++++--
+>>>  init/initramfs.c                    |   5 +-
+>>>  io_uring/cancel.c                   |   6 +-
+>>>  io_uring/poll.c                     |   3 +-
+>>>  io_uring/rw.c                       |   4 +-
+>>>  io_uring/timeout.c                  |   8 +-
+>>>  io_uring/uring_cmd.c                |   3 +-
+>>>  kernel/audit_tree.c                 |   4 +-
+>>>  kernel/audit_watch.c                |  16 +-
+>>>  kernel/auditfilter.c                |   4 +-
+>>>  kernel/auditsc.c                    |   4 +-
+>>>  kernel/bpf/arena.c                  |  10 +-
+>>>  kernel/bpf/arraymap.c               |   8 +-
+>>>  kernel/bpf/bpf_local_storage.c      |   3 +-
+>>>  kernel/bpf/bpf_lru_list.c           |  25 ++-
+>>>  kernel/bpf/btf.c                    |  18 +-
+>>>  kernel/bpf/cgroup.c                 |   7 +-
+>>>  kernel/bpf/cpumap.c                 |   4 +-
+>>>  kernel/bpf/devmap.c                 |  10 +-
+>>>  kernel/bpf/helpers.c                |   8 +-
+>>>  kernel/bpf/local_storage.c          |   4 +-
+>>>  kernel/bpf/memalloc.c               |  16 +-
+>>>  kernel/bpf/offload.c                |   8 +-
+>>>  kernel/bpf/states.c                 |   4 +-
+>>>  kernel/bpf/stream.c                 |   4 +-
+>>>  kernel/bpf/verifier.c               |   6 +-
+>>>  kernel/cgroup/cgroup-v1.c           |   4 +-
+>>>  kernel/cgroup/cgroup.c              |  54 +++---
+>>>  kernel/cgroup/dmem.c                |  12 +-
+>>>  kernel/cgroup/rdma.c                |   8 +-
+>>>  kernel/events/core.c                |  44 +++--
+>>>  kernel/events/uprobes.c             |  12 +-
+>>>  kernel/exit.c                       |   8 +-
+>>>  kernel/fail_function.c              |   4 +-
+>>>  kernel/gcov/clang.c                 |   4 +-
+>>>  kernel/irq_work.c                   |   4 +-
+>>>  kernel/kexec_core.c                 |   4 +-
+>>>  kernel/kprobes.c                    |  16 +-
+>>>  kernel/livepatch/core.c             |   4 +-
+>>>  kernel/livepatch/core.h             |   4 +-
+>>>  kernel/liveupdate/kho_block.c       |   4 +-
+>>>  kernel/liveupdate/luo_flb.c         |   4 +-
+>>>  kernel/locking/rwsem.c              |   2 +-
+>>>  kernel/locking/test-ww_mutex.c      |   2 +-
+>>>  kernel/module/main.c                |  11 +-
+>>>  kernel/padata.c                     |   4 +-
+>>>  kernel/power/snapshot.c             |   8 +-
+>>>  kernel/power/wakelock.c             |   4 +-
+>>>  kernel/printk/printk.c              |  11 +-
+>>>  kernel/ptrace.c                     |   4 +-
+>>>  kernel/rcu/rcutorture.c             |   3 +-
+>>>  kernel/rcu/tasks.h                  |   9 +-
+>>>  kernel/rcu/tree.c                   |   6 +-
+>>>  kernel/resource.c                   |   4 +-
+>>>  kernel/sched/core.c                 |   4 +-
+>>>  kernel/sched/ext.c                  |  22 +--
+>>>  kernel/sched/fair.c                 |  28 +--
+>>>  kernel/sched/topology.c             |   4 +-
+>>>  kernel/sched/wait.c                 |   4 +-
+>>>  kernel/seccomp.c                    |   4 +-
+>>>  kernel/signal.c                     |  11 +-
+>>>  kernel/smp.c                        |   4 +-
+>>>  kernel/taskstats.c                  |   8 +-
+>>>  kernel/time/clockevents.c           |   6 +-
+>>>  kernel/time/clocksource.c           |   4 +-
+>>>  kernel/time/posix-cpu-timers.c      |   4 +-
+>>>  kernel/time/posix-timers.c          |   3 +-
+>>>  kernel/torture.c                    |   3 +-
+>>>  kernel/trace/bpf_trace.c            |   4 +-
+>>>  kernel/trace/ftrace.c               |  49 +++--
+>>>  kernel/trace/ring_buffer.c          |  25 ++-
+>>>  kernel/trace/trace.c                |  12 +-
+>>>  kernel/trace/trace_dynevent.c       |   6 +-
+>>>  kernel/trace/trace_dynevent.h       |   5 +-
+>>>  kernel/trace/trace_events.c         |  35 ++--
+>>>  kernel/trace/trace_events_filter.c  |   4 +-
+>>>  kernel/trace/trace_events_hist.c    |   8 +-
+>>>  kernel/trace/trace_events_trigger.c |  17 +-
+>>>  kernel/trace/trace_events_user.c    |  16 +-
+>>>  kernel/trace/trace_stat.c           |   4 +-
+>>>  kernel/user-return-notifier.c       |   3 +-
+>>>  kernel/workqueue.c                  |  16 +-
+>>>  mm/backing-dev.c                    |   8 +-
+>>>  mm/balloon.c                        |   8 +-
+>>>  mm/cma.c                            |   4 +-
+>>>  mm/compaction.c                     |   4 +-
+>>>  mm/damon/core.c                     |   4 +-
+>>>  mm/damon/sysfs-schemes.c            |   4 +-
+>>>  mm/dmapool.c                        |   4 +-
+>>>  mm/huge_memory.c                    |   8 +-
+>>>  mm/hugetlb.c                        |  56 +++---
+>>>  mm/hugetlb_vmemmap.c                |  16 +-
+>>>  mm/khugepaged.c                     |  14 +-
+>>>  mm/kmemleak.c                       |   7 +-
+>>>  mm/ksm.c                            |  25 +--
+>>>  mm/list_lru.c                       |   4 +-
+>>>  mm/memcontrol-v1.c                  |   8 +-
+>>>  mm/memory-failure.c                 |  12 +-
+>>>  mm/memory-tiers.c                   |   4 +-
+>>>  mm/migrate.c                        |  23 ++-
+>>>  mm/mmu_notifier.c                   |   9 +-
+>>>  mm/page_alloc.c                     |   8 +-
+>>>  mm/page_reporting.c                 |   2 +-
+>>>  mm/percpu.c                         |  11 +-
+>>>  mm/pgtable-generic.c                |   4 +-
+>>>  mm/rmap.c                           |  10 +-
+>>>  mm/shmem.c                          |   9 +-
+>>>  mm/slab_common.c                    |  14 +-
+>>>  mm/slub.c                           |  33 ++--
+>>>  mm/swapfile.c                       |   4 +-
+>>>  mm/userfaultfd.c                    |  12 +-
+>>>  mm/vmalloc.c                        |  24 +--
+>>>  mm/vmscan.c                         |   7 +-
+>>>  mm/zsmalloc.c                       |   4 +-
+>>>  124 files changed, 875 insertions(+), 681 deletions(-)
+>>
+>> Not sure what you were thinking, but this diff stat
+>> is not landable.
+> 
+> Agreed. If we decide we want this, I guess we should target per-subsystem
+> conversions.
+> 
+> If this goes through the MM tree, I would even appreciate doing this on a per-MM
+> component granularity.
+> 
+> (unless we have some magic "Linus converts all of them" script, which I doubt we
+> will have)
 
-intel_pstate and amd-pstate already re-sync these on CPU online, as they
-keep the policy across hotplug via ->online()/->offline(). So for them
-it's re-syncing the hardware, not restoring state from before offline.
+I strongly agree with the point above.
 
-cppc_cpufreq has no ->online()/->offline() today, so it fully tears the
-policy down and rebuilds it, which is why this reads as "restoring
-settings from before offline".
-Would adding ->online()/->offline() be acceptable, with policy preserved
-and ->online() just re-syncing the registers the platform reset?
+> Is there a way forward to replace list_for_each_*_safe entirely, possibly just
+> reusing the old name but simply the parameter?
 
-Thanks,
-Sumit
+David Laight, Christian König, and Jani Nikula do not agree with using
+clever macro syntax to support both calling forms at the same time,
+so for now it is not possible to keep the original macro name and only
+simplify the parameter. I may revert to the v1 version and ask everyone
+for their opinions again.
 
->> The firmware value is captured on a CPU's first activation rather than
->> once at module load, so CPUs offline at boot or hot-added later are
->> covered.
->>
->> Reapply is only needed on a full policy teardown and bring-up, which goes
->> through ->init(). In a SHARED_TYPE_ANY policy, offlining a single CPU
->> leaves the shared register untouched, so nothing is lost there.
->>
->> Cover the OSPM Nominal Performance, Autonomous Selection
->> (auto_sel) and Energy Performance Preference (EPP) registers. For
->> auto_sel it replaces the previous unconditional
->> cppc_set_auto_sel(cpu, false) on unload with a restore of the firmware
->> value captured at the CPU's first init.
->>
->> Suggested-by: Pierre Gondois <pierre.gondois@arm.com>
->> Signed-off-by: Sumit Gupta <sumitg@nvidia.com>
->> ---
->>
->> This applies on top of (not yet merged):
->>   [1] ACPI: CPPC: Add ospm_nominal_perf support
->>       https://lore.kernel.org/lkml/20260615185934.2383514-1-sumitg@nvidia.com/
->>   [2] cpufreq: CPPC: add autonomous mode boot parameter support
->>       https://lore.kernel.org/lkml/20260623080652.3353386-1-sumitg@nvidia.com/
->>
->>   drivers/cpufreq/cppc_cpufreq.c | 194 +++++++++++++++++++++++++++++++--
->>   1 file changed, 186 insertions(+), 8 deletions(-)
->>
->> diff --git a/drivers/cpufreq/cppc_cpufreq.c b/drivers/cpufreq/cppc_cpufreq.c
->> index a3fabfb07fbe..d6ea2cbde187 100644
->> --- a/drivers/cpufreq/cppc_cpufreq.c
->> +++ b/drivers/cpufreq/cppc_cpufreq.c
->> @@ -28,6 +28,174 @@
->>
->>   static struct cpufreq_driver cppc_cpufreq_driver;
->>
->> +/*
->> + * OSPM-set CPPC registers tracked for save/restore. A value set via sysfs or
->> + * the autonomous boot parameter is reapplied across CPU hotplug, and the
->> + * firmware value is restored on driver unload.
->> + */
->> +enum cppc_saved_reg_id {
->> +       CPPC_SAVED_OSPM_NOMINAL_PERF,
->> +       CPPC_SAVED_AUTO_SEL,
->> +       CPPC_SAVED_EPP,
->> +       CPPC_NR_SAVED_REGS,
->> +};
->> +
->> +struct cppc_saved_reg {
->> +       int (*get)(int cpu, u64 *val);
->> +       int (*set)(int cpu, u64 val);
->> +};
->> +
->> +/* u64 wrappers so the bool auto_sel register fits the table signatures. */
->> +static int cppc_get_auto_sel_u64(int cpu, u64 *val)
->> +{
->> +       bool enable;
->> +       int ret;
->> +
->> +       ret = cppc_get_auto_sel(cpu, &enable);
->> +       if (ret)
->> +               return ret;
->> +
->> +       *val = enable;
->> +       return 0;
->> +}
->> +
->> +static int cppc_set_auto_sel_u64(int cpu, u64 val)
->> +{
->> +       return cppc_set_auto_sel(cpu, !!val);
->> +}
->> +
->> +static const struct cppc_saved_reg cppc_saved_regs[CPPC_NR_SAVED_REGS] = {
->> +       [CPPC_SAVED_OSPM_NOMINAL_PERF] = {
->> +               cppc_get_ospm_nominal_perf, cppc_set_ospm_nominal_perf,
->> +       },
->> +       [CPPC_SAVED_AUTO_SEL] = {
->> +               cppc_get_auto_sel_u64, cppc_set_auto_sel_u64,
->> +       },
->> +       [CPPC_SAVED_EPP] = {
->> +               cppc_get_epp_perf, cppc_set_epp,
->> +       },
->> +};
->> +
->> +/*
->> + * Per-CPU saved state for each register in cppc_saved_regs[]:
->> + *   firmware_val      - register value before the driver touched it, restored
->> + *                       on unload
->> + *   requested_val     - last value the driver set (sysfs or boot parameter),
->> + *                       reapplied on policy reactivation
->> + *   firmware_captured - whether firmware_val has been read, so a not-yet-seen
->> + *                       CPU isn't mistaken for one whose firmware value is 0
->> + */
->> +struct cppc_saved_state {
->> +       u64 firmware_val;
->> +       u64 requested_val;
->> +       bool firmware_captured;
->> +};
->> +
->> +/*
->> + * Per-CPU and not tied to a policy, so the saved values survive policy
->> + * teardown/bring-up across CPU hotplug. cpu_data->perf_ctrls is per-policy
->> + * and freed on policy ->exit.
->> + */
->> +static DEFINE_PER_CPU(struct cppc_saved_state[CPPC_NR_SAVED_REGS], cppc_saved_state);
->> +
->> +static void cppc_cache_perf_ctrls(struct cppc_cpudata *cpu_data,
->> +                                 enum cppc_saved_reg_id reg, u64 val)
->> +{
->> +       switch (reg) {
->> +       case CPPC_SAVED_AUTO_SEL:
->> +               cpu_data->perf_ctrls.auto_sel = val;
->> +               break;
->> +       case CPPC_SAVED_EPP:
->> +               cpu_data->perf_ctrls.energy_perf = val;
->> +               break;
->> +       default:
->> +               break;
->> +       }
->> +}
->> +
->> +/*
->> + * Save the requested value for the given register and CPU, to be reapplied when
->> + * the policy is reactivated after CPU hotplug. Also update the per-policy
->> + * perf_ctrls copy so the saved and current values stay in sync.
->> + */
->> +static void cppc_save_requested(struct cppc_cpudata *cpu_data, unsigned int cpu,
->> +                               enum cppc_saved_reg_id reg, u64 val)
->> +{
->> +       per_cpu(cppc_saved_state, cpu)[reg].requested_val = val;
->> +       cppc_cache_perf_ctrls(cpu_data, reg, val);
->> +}
->> +
->> +/*
->> + * Reapply each register's last requested value from ->init(), so a value set
->> + * via sysfs or the boot parameter survives a policy teardown and bring-up
->> + * across CPU hotplug. Also keep perf_ctrls in sync with it.
->> + */
->> +static void cppc_cpufreq_reapply_requested_regs(struct cpufreq_policy *policy)
->> +{
->> +       struct cppc_cpudata *cpu_data = policy->driver_data;
->> +       unsigned int cpu, i;
->> +       u64 val;
->> +
->> +       for_each_cpu(cpu, policy->cpus) {
->> +               for (i = 0; i < CPPC_NR_SAVED_REGS; i++) {
->> +                       val = per_cpu(cppc_saved_state, cpu)[i].requested_val;
->> +                       if (val == U64_MAX)
->> +                               continue;
->> +
->> +                       cppc_saved_regs[i].set(cpu, val);
->> +
->> +                       /* Keep perf_ctrls in sync via the policy's CPU. */
->> +                       if (cpu == policy->cpu)
->> +                               cppc_cache_perf_ctrls(cpu_data, i, val);
->> +               }
->> +       }
->> +}
->> +
->> +/*
->> + * On a CPU's first ->init(), capture each register's firmware value to be
->> + * restored on driver unload. Later calls for the same CPU are a no-op. Capturing
->> + * from ->init() rather than module load covers CPUs that appear later. Also seed
->> + * requested_val to U64_MAX so its zeroed default is not taken as a request for 0.
->> + */
->> +static void cppc_cpufreq_save_firmware_regs(struct cpufreq_policy *policy)
->> +{
->> +       unsigned int cpu, i;
->> +       u64 val;
->> +
->> +       for_each_cpu(cpu, policy->cpus) {
->> +               for (i = 0; i < CPPC_NR_SAVED_REGS; i++) {
->> +                       struct cppc_saved_state *s =
->> +                               &per_cpu(cppc_saved_state, cpu)[i];
->> +
->> +                       /* Capture once per CPU; skip if already recorded. */
->> +                       if (s->firmware_captured)
->> +                               continue;
->> +
->> +                       if (cppc_saved_regs[i].get(cpu, &val))
->> +                               val = U64_MAX;
->> +                       s->firmware_val = val;
->> +                       s->requested_val = U64_MAX;
->> +                       s->firmware_captured = true;
->> +               }
->> +       }
->> +}
->> +
->> +/* On driver unload, restore each captured CPU's firmware value. */
->> +static void cppc_cpufreq_restore_firmware_regs(void)
->> +{
->> +       unsigned int cpu, i;
->> +
->> +       for_each_present_cpu(cpu) {
->> +               for (i = 0; i < CPPC_NR_SAVED_REGS; i++) {
->> +                       struct cppc_saved_state *s =
->> +                               &per_cpu(cppc_saved_state, cpu)[i];
->> +
->> +                       if (s->firmware_captured && s->firmware_val != U64_MAX)
->> +                               cppc_saved_regs[i].set(cpu, s->firmware_val);
->> +               }
->> +       }
->> +}
->> +
->>   /* Autonomous Selection boot parameter modes */
->>   enum {
->>          AUTO_SEL_DISABLED = 0,
->> @@ -766,6 +934,9 @@ static int cppc_cpufreq_cpu_init(struct cpufreq_policy *policy)
->>          policy->cur = cppc_perf_to_khz(caps, caps->highest_perf);
->>          cpu_data->perf_ctrls.desired_perf =  caps->highest_perf;
->>
->> +       /* Capture a CPU's firmware values on its first init, before any driver write. */
->> +       cppc_cpufreq_save_firmware_regs(policy);
->> +
->>          /*
->>           * Enable autonomous mode on first init if boot param is set.
->>           * Check last_governor to detect first init and skip if auto_sel
->> @@ -812,7 +983,7 @@ static int cppc_cpufreq_cpu_init(struct cpufreq_policy *policy)
->>                          if (ret && ret != -EOPNOTSUPP)
->>                                  pr_warn("Failed to set EPP for CPU%d (%d)\n", cpu, ret);
->>                          else if (!ret)
->> -                               cpu_data->perf_ctrls.energy_perf = epp;
->> +                               cppc_save_requested(cpu_data, cpu, CPPC_SAVED_EPP, epp);
->>                  }
->>
->>                  /* Program min/max/desired into CPPC regs (non-fatal on failure). */
->> @@ -826,7 +997,7 @@ static int cppc_cpufreq_cpu_init(struct cpufreq_policy *policy)
->>                          pr_warn("auto_sel CPU%d failed (%d); using OS mode\n",
->>                                  cpu, ret);
->>                  else if (!ret)
->> -                       cpu_data->perf_ctrls.auto_sel = true;
->> +                       cppc_save_requested(cpu_data, cpu, CPPC_SAVED_AUTO_SEL, true);
->>          }
->>
->>          if (cpu_data->perf_ctrls.auto_sel) {
->> @@ -850,6 +1021,10 @@ static int cppc_cpufreq_cpu_init(struct cpufreq_policy *policy)
->>          }
->>
->>          cppc_cpufreq_cpu_fie_init(policy);
->> +
->> +       /* Reapply any saved values lost across a full policy teardown. */
->> +       cppc_cpufreq_reapply_requested_regs(policy);
->> +
->>          return 0;
->>
->>   out:
->> @@ -1039,6 +1214,8 @@ static ssize_t store_auto_select(struct cpufreq_policy *policy,
->>                  }
->>          }
->>
->> +       cppc_save_requested(cpu_data, policy->cpu, CPPC_SAVED_AUTO_SEL, val);
->> +
->>          return count;
->>   }
->>
->> @@ -1111,7 +1288,7 @@ store_energy_performance_preference_val(struct cpufreq_policy *policy,
->>          if (ret)
->>                  return ret;
->>
->> -       cpu_data->perf_ctrls.energy_perf = val;
->> +       cppc_save_requested(cpu_data, policy->cpu, CPPC_SAVED_EPP, val);
->>
->>          return count;
->>   }
->> @@ -1193,6 +1370,9 @@ static ssize_t store_ospm_nominal_freq(struct cpufreq_policy *policy,
->>                  }
->>          }
->>
->> +       for_each_cpu(sib, policy->cpus)
->> +               cppc_save_requested(cpu_data, sib, CPPC_SAVED_OSPM_NOMINAL_PERF, perf);
->> +
->>          return count;
->>
->>   rollback:
->> @@ -1258,13 +1438,11 @@ static int __init cppc_cpufreq_init(void)
->>
->>   static void __exit cppc_cpufreq_exit(void)
->>   {
->> -       unsigned int cpu;
->> -
->> -       for_each_present_cpu(cpu)
->> -               cppc_set_auto_sel(cpu, false);
->> -
->>          cpufreq_unregister_driver(&cppc_cpufreq_driver);
->>          cppc_freq_invariance_exit();
->> +
->> +       /* Restore auto_sel and the other saved registers to their firmware value. */
->> +       cppc_cpufreq_restore_firmware_regs();
->>   }
->>
->>   module_param_cb(auto_sel_mode, &auto_sel_mode_ops, &auto_sel_mode, 0444);
->> --
->> 2.34.1
->>
->>
+-- 
+Thanks
+Kaitao Cheng
+
