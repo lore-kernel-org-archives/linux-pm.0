@@ -1,137 +1,74 @@
-Received: from mail-yw1-f174.google.com (mail-yw1-f174.google.com [209.85.128.174])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6E3922A1BF
-	for <linux-pm@vger.kernel.org>; Wed, 24 Jun 2026 12:31:56 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.174
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A4356199EAD;
+	Wed, 24 Jun 2026 12:53:17 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1782304317; cv=none; b=WeQrYJ4qBU4FnOY/xaqp4rBS1R70hogBzoanlQ54vT0nO8NvhZizqjQ2rayKB65YWs45qWoGABlJO5Hnwx6wztzO/TUWR6sfB8USRpUqiCN5xL7GRYtUGgOss4/oFPfs6WDfvlm6JSyUIDrbMdZLI+Gkz7fsBN7QdmecXl+Zv0s=
+	t=1782305598; cv=none; b=XyD9qEEvJ85bN1k6yeTOhNc+vXN9tjuXEd20Ktsw2Mgw5LAHIP2Kd3PO58qe6ScqzqwJ28cHpo222HSTrhiHBhASuGFIiwNmXS51hxBltCnScXfKoAL7ATuNnkJMzhxpnHX7N1jwPcEEPpUMEqA2tBzAwKPnmF1K19DlZQG57Kg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1782304317; c=relaxed/simple;
-	bh=msEno2fcYvrkHE9BPSN1njiooPdxcLdwdyC5c6EtgTk=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=FbBAgFbSmFQO5JXLIftsaEto9wQpGqwfcsDOSIeZwQnadtIT3aaDAfGiHS7jT7/neyyPRE17fuYGhuV7aEejGnINlgDUwSqBaVZ7KFfKrh21iF24XKkBTRmWoLlDS1tLzBYrJ7iVUEOonBjWZKSHYnsQgZ7Et1XBun/9SozGd1w=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=r7RXuR8k; arc=none smtp.client-ip=209.85.128.174
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1782305598; c=relaxed/simple;
+	bh=KahWTfQ6QzHVNxKce8Q1/jzulRXDPsDhkVoGTbwS14I=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=JsRKLrPk6I5yrEoeOM6hgl8p13BnXHuVftkLc+WHTwJCiONIFrFAEs9dI3uBbvAdADWL9WNNtpElt/DPSnPtwNklrQnA3/hIfUixLlbdam/a7N6VQXBuS+IQYrkjxn69gzb8eVZcB2wzK1NKpOStQTXX2gTSkhRyJfSY2g/U2Tc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=FqZe9GhH; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="r7RXuR8k"
-Received: by mail-yw1-f174.google.com with SMTP id 00721157ae682-804e46366d7so9840917b3.2
-        for <linux-pm@vger.kernel.org>; Wed, 24 Jun 2026 05:31:56 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1782304315; x=1782909115; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=BfglCRldKyGKtWJv5Dc453U1idIPlMCphiiJzvFVkKI=;
-        b=r7RXuR8kmMFkcg5y2jByb87BzTeFW4+kEAoThTtyikxCWqaLe7NjzO17TLwR90yu/F
-         FoN9MqkhIO/GkxLLZo2y2JkMOTULFecZMnMdVc1aOXzQ3QnVx2pvDhWmiEWW3DxREuyq
-         dN7bVqVe643e7Py71wXOQoDyEaCnXurLFYqJSwEP/nIpqFXSTvJpK0YaHEd3l0mfbOnu
-         bBrfM824KzA+c8cEegZfvcteeREL2G6EHG5ABxzvBXmxyyaylqua/5WjzEP4EcvtSBFX
-         iGa5ustSia/4zFAHih8NulbQDocVMsad/b7UdDJJ+uIPPgFSWijGOwtNF/mlm7tOZstV
-         wzBg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1782304315; x=1782909115;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=BfglCRldKyGKtWJv5Dc453U1idIPlMCphiiJzvFVkKI=;
-        b=GdYoW/7AtsqieXqL3Si03aEEUIjEMDbqiTbJ3JAOGDzJY5TeeC7qK/2NI8QOCPfJxL
-         wdnJYqM7g58IWLENq1dZOF9Rc4HDkUxBH1LeUVFndFOwVJBCL5JZHq5UrZYooYVnM8o/
-         aewwGiZalikTTjuwRkc4mGG7bXzNN0vQTisPRSdwbnXXMODLmUHi0dpL6hspUvWz18La
-         hO2Dja5a9yyjkU8mGy4ORVRApHmMQhp0c35dnpVaCtH3cn6u4v+xJ+D6VEPXoCQEGjUr
-         xffUsMzT8PtA2DyTcnKK/yrRkJ7z2cTvCVc5ZL8UZtPXOrIFeVDv4BSBJvProVa3XlZi
-         zAiw==
-X-Forwarded-Encrypted: i=1; AHgh+RqMzvKc00N/dCQ1pVdWe94chHsg+5H4o7xLCUNLF3npGJvZkpbxhHcO8Eeg/dOUqqWrMS/DSgp5xA==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yz6XXnqpresLOwhAamGRbGgME9bu1SgOwTclzxwGjccI4NxZpTP
-	O2RN7eh7c6TiVH0Ya/QTQMtA5wV1eDK6unI0Eq/wOk8TmHjQm7NgVLGj
-X-Gm-Gg: AfdE7cnn4fQRZH7ov/ExXq/WLqIHcrA+svwldLdLaBBsKiW0ecQbjw8p0K6QxnU0wEz
-	4+LKVl/DN4iEnCXmoZ4yMm8bQO3dvrZM0OyCEUPrDyt27KGDzJ1FXGYZKTtx9BUWq6MgTWU2koM
-	ar6Djcduv+k/Wz4YZdC3zllxcppW6wrnsIBqHgvspKIn+eobuFuLMTh9vtrxeEDwcuHzqPviQs+
-	Dmee6xiz3V0cNQGqDjK7VWrNxfhS32TZWYVRbgiI97NMrYdxt1enIqTKHL/eanCEG9WDW79ItfA
-	e7uKAJrbZiw70LKD0BjlF04R/q2eBHtZ9aJ7NV0oAnW6MydVIhLiGUywp3ROv282EW9bZtTUzJZ
-	XS16zANoYWPnpkln/sqC5QwC9fTb5jnW14FnVvscKCHVspSRTS6WeG9Nt3CeNbhaXHxvq9qvrda
-	T5AAEiXSaXTVjkFPS2fCwL/uRfyQ==
-X-Received: by 2002:a05:690c:586:b0:806:b1bb:75c with SMTP id 00721157ae682-806c17738afmr71319057b3.5.1782304315356;
-        Wed, 24 Jun 2026 05:31:55 -0700 (PDT)
-Received: from Dev-Null-MSI ([2a0d:3344:52ac:a808:98a4:4381:be45:536f])
-        by smtp.gmail.com with ESMTPSA id 00721157ae682-8025f8da5fbsm57535257b3.30.2026.06.24.05.31.53
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 24 Jun 2026 05:31:55 -0700 (PDT)
-From: Yousef Alhouseen <alhouseenyousef@gmail.com>
-To: ray.huang@amd.com,
-	mario.limonciello@amd.com,
-	perry.yuan@amd.com
-Cc: kprateek.nayak@amd.com,
-	linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	Yousef Alhouseen <alhouseenyousef@gmail.com>
-Subject: [PATCH] tools/power: amd_pstate_trace: fix help path dependencies
-Date: Wed, 24 Jun 2026 14:31:35 +0200
-Message-ID: <20260624123135.7193-1-alhouseenyousef@gmail.com>
-X-Mailer: git-send-email 2.54.0
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="FqZe9GhH"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 22B211F000E9;
+	Wed, 24 Jun 2026 12:53:17 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1782305597;
+	bh=HJKPKyjooasBtuw7pvPpV0lDfiXrWt987kFsIu3bzBw=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=FqZe9GhHzOTTWP54ShlMDrtjxg67FtUO8+DOBweU09ATTsnzg65sr+eaybs1z8tZr
+	 VGCHRpOaqd4kdSw3pNVpRUD2M8HyW/A0FQCcNYdp8C2avSfPntdSGU2igZ2Bj43QZR
+	 DzbTwUm4IkI7jJNbzNuPwerbyVEJ4NS9j3k70OjqVq3dD8Bu7TAqKA/5hNztaLUrkh
+	 fUrZ3at5KyDSTFAEhhSLHkS+mzmtNp1jxvLO5HehPR22q9bp8fWLtMzF3TFc24oREA
+	 kvpaHvQxg/ZRPXIVGOXUi+VXKn/J0IuKxJ6V3Lzu6RiPctu4sp6MftN5mTT0ERUOSq
+	 706522OnAGF8A==
+Date: Wed, 24 Jun 2026 07:53:16 -0500
+From: Rob Herring <robh@kernel.org>
+To: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
+Cc: Guillaume La Roque <glaroque@baylibre.com>,
+	"Rafael J. Wysocki" <rafael@kernel.org>,
+	Daniel Lezcano <daniel.lezcano@kernel.org>,
+	Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	Ronald Claveau <linux-kernel-dev@aliel.fr>,
+	linux-pm@vger.kernel.org, linux-amlogic@lists.infradead.org,
+	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/2] dt-bindings: thermal: amlogic: Fix missing header in
+ the example
+Message-ID: <20260624125316.GA4032772-robh@kernel.org>
+References: <20260622100231.438435-3-krzysztof.kozlowski@oss.qualcomm.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260622100231.438435-3-krzysztof.kozlowski@oss.qualcomm.com>
 
-amd_pstate_trace imports Gnuplot and numpy before parsing command-line
-options. As a result, even "-h" fails if those optional runtime modules are
-not installed.
+On Mon, Jun 22, 2026 at 12:02:32PM +0200, Krzysztof Kozlowski wrote:
+> Usage of defines from headers requires including relevant header,
+> otherwise dt_binding_check fails:
+> 
+>   Lexical error: Documentation/devicetree/bindings/thermal/amlogic,thermal.example.dts:59.27-34 Unexpected 'GIC_SPI'
+>   Lexical error: Documentation/devicetree/bindings/thermal/amlogic,thermal.example.dts:59.38-57 Unexpected 'IRQ_TYPE_LEVEL_HIGH'
+>   Lexical error: Documentation/devicetree/bindings/thermal/amlogic,thermal.example.dts:60.37-45 Unexpected 'CLKID_TS'
+> 
+> Fixes: b1c8ccdbd4e9 ("dt-bindings: thermal: amlogic: Add support for T7")
+> Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
+> 
+> ---
+> 
+> Fix for current RC - commit already pulled in merge window.
+> 
+> This should be applied fast to fix current RC, thus maybe Rob?
 
-It also handles "-h" by printing a blank line and exiting. Use the existing
-help printer for "-h", and move the numpy import to the path that needs it.
-The direct Gnuplot import is unused, so remove it.
+Both applied.
 
-Signed-off-by: Yousef Alhouseen <alhouseenyousef@gmail.com>
----
- tools/power/x86/amd_pstate_tracer/amd_pstate_trace.py | 11 +++++------
- 1 file changed, 5 insertions(+), 6 deletions(-)
-
-diff --git a/tools/power/x86/amd_pstate_tracer/amd_pstate_trace.py b/tools/power/x86/amd_pstate_tracer/amd_pstate_trace.py
-index 875b08655..b1b201b2e 100755
---- a/tools/power/x86/amd_pstate_tracer/amd_pstate_trace.py
-+++ b/tools/power/x86/amd_pstate_tracer/amd_pstate_trace.py
-@@ -27,8 +27,6 @@ import re
- import signal
- import sys
- import getopt
--import Gnuplot
--from numpy import *
- from decimal import *
- sys.path.append(os.path.join(os.path.dirname(__file__), "..", "intel_pstate_tracer"))
- import intel_pstate_tracer as ipt
-@@ -260,9 +258,6 @@ graph_data_present = False;
- valid1 = False
- valid2 = False
- 
--cpu_mask = zeros((MAX_CPUS,), dtype=int)
--
--
- try:
-     opts, args = getopt.getopt(sys.argv[1:],"ht:i:c:n:m:",["help","trace_file=","interval=","cpu=","name=","memory="])
- except getopt.GetoptError:
-@@ -270,7 +265,7 @@ except getopt.GetoptError:
-     sys.exit(2)
- for opt, arg in opts:
-     if opt == '-h':
--        print()
-+        ipt.print_help('amd_pstate')
-         sys.exit()
-     elif opt in ("-t", "--trace_file"):
-         valid1 = True
-@@ -291,6 +286,10 @@ if not (valid1 and valid2):
-     ipt.print_help('amd_pstate')
-     sys.exit()
- 
-+from numpy import zeros
-+
-+cpu_mask = zeros((MAX_CPUS,), dtype=int)
-+
- if cpu_list:
-     for p in re.split("[,]", cpu_list):
-         if int(p) < MAX_CPUS :
--- 
-2.54.0
-
+Rob
