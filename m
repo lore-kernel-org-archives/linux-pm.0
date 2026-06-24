@@ -1,112 +1,139 @@
-Received: from out-185.mta0.migadu.com (out-185.mta0.migadu.com [91.218.175.185])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-vk1-f173.google.com (mail-vk1-f173.google.com [209.85.221.173])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A5E583B0AFA;
-	Wed, 24 Jun 2026 13:06:09 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=91.218.175.185
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A32C3258EF3
+	for <linux-pm@vger.kernel.org>; Wed, 24 Jun 2026 13:13:02 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.173
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1782306371; cv=none; b=XsFRbkTYaV58xEPsmF/f7QnvsFIADp8tSDCFT6wCb1mfxsFxSUHHOiUH+QIWxfOX6rvh9Y4LkFXh9h6cMbSH5dnX11S+yhDZn2OHhnTfVz4gbiDockdjDniAuB6Nk72wS9dJ2n49TpuLbVKxzbvZKR+/fJ6FATmQrSWlYK8Sdj4=
+	t=1782306783; cv=none; b=L/PHPjRzwW++tCCCDOOjTaid2tiPSMsqDld/bTJr/q0uJ0ADhwur/6PfZ5MbtvcVNj1X5sQG69rxFrQllRqmGv0A513NdfXVLyg6Yhl5KE9WPfQ4ZPTCY0/mvtn66mN+KXgXuNW4JjruXCprDsYZTCSgUl4GNzym45DoAMerDoI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1782306371; c=relaxed/simple;
-	bh=DuA83fRrvg9FcK3+uKVtP7zDj3cARtxSAMCxIPj6Ris=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=isKrKv66aLcbXc3RyIKqUVQ08wM/kk4IT8Gxs/s3LtMkr+cskLDfvUbUeTi3I1A08gWu3aCptvNWpKPVSHfEdB4KkYoq++MHZJ4qLdyqIY59m7+leDIDscvxu7sBp976sVs4RT184PNe/Rk2K5x+0oLjKd/CiCT43whlZ0Gs62U=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.dev; spf=pass smtp.mailfrom=linux.dev; dkim=pass (1024-bit key) header.d=linux.dev header.i=@linux.dev header.b=t7N5AMoP; arc=none smtp.client-ip=91.218.175.185
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.dev
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.dev
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=linux.dev header.i=@linux.dev header.b="t7N5AMoP"
-Message-ID: <96334e07-dbd9-47a0-93f5-ac4762b7b919@linux.dev>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
-	t=1782306356;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=Z2iAFOHBRMR/Xa17pT7sXAqMACpdvIbkzmpfw9EGJVs=;
-	b=t7N5AMoP0/i8dFY3FrC7HO2yNmLfeZFETlWYqXUODrlmNpqyaftZywjo0y9UNn13O8QGRa
-	AXb39zIwwMhdHGGwdLIWZOxZlc/RB5gme76K1wm+eYFw8s2/p0wLK8vNz3AEO2CElTbLsC
-	uEFuGXWFUWXMM2nzKZ+r26KvGnuXTwQ=
-Date: Wed, 24 Jun 2026 21:05:32 +0800
+	s=arc-20240116; t=1782306783; c=relaxed/simple;
+	bh=vX50m4/9mpoS9OAgy/n0A8z7SSW5XduuDoWYLqcBObI=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=e6JGT/B2RVqiM3mGhH0qLXvFCGAPaKQ+XYGk7yJVrtZAwd7cGs090svl+fdVkkilUxjoenZ/xRCxAvvYKL7/AGM/fmHKcamR7w8T2q5qzNZxCeaYnbBwrCTnyISSlfGeugQLFXUwnbLIh9W3nn9BLFPm/QkU/sE3DkHJrQfUSbc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org; spf=pass smtp.mailfrom=gmail.com; arc=none smtp.client-ip=209.85.221.173
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+Received: by mail-vk1-f173.google.com with SMTP id 71dfb90a1353d-59d541955f8so377911e0c.1
+        for <linux-pm@vger.kernel.org>; Wed, 24 Jun 2026 06:13:02 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1782306782; x=1782911582;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=NVDJhQYbmltFvjjEnnmNhAk+/lIL15u/vSuc+udanW0=;
+        b=q6YLxH55bT132u9SUEmZEcWgBSJq+ZiCv1RZE1ZkMfWJWqbOCUZGPdSD9MQJ8ZKXjk
+         Tnjlfd67lGB7hwTQMDfsw9d9pPgPH02dC1lR39FQ0ztljXBCb694J3Qj4lPDeOmUb2tl
+         KiA2RlM2l4sFKo6hR0TXN0ZeR/iGRhtgy9kXstB5ejMfFlCzmEa1kxKG83vzODJOANGE
+         TywovGIpG01scic6DZjD+txcNXV6vU86evJyVqmlzyTEcwHVy95p6zfrx70g/cpZEU7/
+         RovcGbTwFGpfQ2eYir0QHdJlKBdYnY5QHQ3UKVX8a36dxOKuuIExKzJKnzOJR9h8JZE5
+         40Gw==
+X-Forwarded-Encrypted: i=1; AHgh+Rr6tkaG0FvguuIevdPfSChMi7XlCMoP5uxm0zv1lPwyL+G2PBEH6Wz+EmHzDAGfJMazqLAKRxfZMQ==@vger.kernel.org
+X-Gm-Message-State: AOJu0YwZJriOujZySLHq9+x3yyK0tnKIv8QKXHxC6rTgsVK2B8Lb3pxd
+	EPfjFj1Dqe/wj7JAm5BGWYIGJiWKQyp4CLRXyhsoPy0GxwgWczw0PQiyBDuDupRk
+X-Gm-Gg: AfdE7clhRBBaYB6umekGbr28xXyN4rK57/+yFiPBWT5vrF2M2qbmL+BzCQI3uDLpMG+
+	kX5yaNh6mWGJaPu52g0XAyXxFPXXomegnfoq16KDSlrsk73mnGNpnmXVAVWiWMf9nNLxZv909xU
+	2mKusz36ClKgjbSZTdI4FbsiPP6+Ky9abyzZLzlvqM3ClYn9RyAd2WRNBUxrT4M0cdwbuKbQhUL
+	LD0g4kKo/y4sn8ITpPRHZ3Ck7HjYJPs4gonJWF4GqhC3vLoKjHFCYea92Fh9OXmihZIaaVyitxw
+	wFNq41khELLkmlPhwFH1IbphTV+7t6zfAzLYC/ziV8coeB5Gj58kkdj0CyerNQ2vNzR5E97jUpJ
+	Tn+D5GE4S/yvlQuvoIsobIDf4UMKWCWsRX98f+nAgCbf1oRsatBDaQBJPHAOj5urFBCLJntK0uj
+	kH/+aUPd0BPj7wIcXHXgJnRwomg6jPcxzfDHGY0k04QdectCOu0A==
+X-Received: by 2002:a05:6122:2a53:b0:576:c4b:460a with SMTP id 71dfb90a1353d-5bbfbd95863mr10113104e0c.8.1782306781002;
+        Wed, 24 Jun 2026 06:13:01 -0700 (PDT)
+Received: from mail-vs1-f44.google.com (mail-vs1-f44.google.com. [209.85.217.44])
+        by smtp.gmail.com with ESMTPSA id 71dfb90a1353d-5bbfb890b7csm10343833e0c.7.2026.06.24.06.12.58
+        for <linux-pm@vger.kernel.org>
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Wed, 24 Jun 2026 06:12:58 -0700 (PDT)
+Received: by mail-vs1-f44.google.com with SMTP id ada2fe7eead31-728fa2ce6f9so357511137.1
+        for <linux-pm@vger.kernel.org>; Wed, 24 Jun 2026 06:12:58 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AHgh+RpHfcm+QNe0L9YtcrnkOvYyylK9/88AxkxGkpZEZWF8/5ZvGj/nBE0b5pKtJYYi8cVZhCQvToCAvw==@vger.kernel.org
+X-Received: by 2002:a05:6102:3309:b0:611:e0c2:1604 with SMTP id
+ ada2fe7eead31-72b671e931cmr10142508137.19.1782306778248; Wed, 24 Jun 2026
+ 06:12:58 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Subject: Re: [PATCH v3 0/7] Prepare mutable list iterators to cache cursor
- state
-To: Jani Nikula <jani.nikula@linux.intel.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- David Hildenbrand <david@kernel.org>, Jens Axboe <axboe@kernel.dk>,
- Tejun Heo <tj@kernel.org>, Alexander Viro <viro@zeniv.linux.org.uk>,
- Christian Brauner <brauner@kernel.org>, Alexei Starovoitov <ast@kernel.org>,
- Daniel Borkmann <daniel@iogearbox.net>, Andrii Nakryiko <andrii@kernel.org>,
- Johannes Weiner <hannes@cmpxchg.org>, Peter Zijlstra <peterz@infradead.org>,
- Ingo Molnar <mingo@redhat.com>, Arnaldo Carvalho de Melo <acme@kernel.org>,
- Namhyung Kim <namhyung@kernel.org>, Thomas Gleixner <tglx@kernel.org>,
- Juri Lelli <juri.lelli@redhat.com>,
- Vincent Guittot <vincent.guittot@linaro.org>,
- Paul Moore <paul@paul-moore.com>,
- Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
- "Paul E. McKenney" <paulmck@kernel.org>,
- Shakeel Butt <shakeel.butt@linux.dev>,
- =?UTF-8?Q?Christian_K=C3=B6nig?= <christian.koenig@amd.com>
-Cc: David Howells <dhowells@redhat.com>,
- Simona Vetter <simona.vetter@ffwll.ch>, Randy Dunlap
- <rdunlap@infradead.org>, Luca Ceresoli <luca.ceresoli@bootlin.com>,
- Philipp Stanner <phasta@kernel.org>, linux-block@vger.kernel.org,
- linux-kernel@vger.kernel.org, cgroups@vger.kernel.org,
- linux-ntfs-dev@lists.sourceforge.net, linux-fsdevel@vger.kernel.org,
- io-uring@vger.kernel.org, audit@vger.kernel.org, bpf@vger.kernel.org,
- netdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
- linux-perf-users@vger.kernel.org, linux-trace-kernel@vger.kernel.org,
- kexec@lists.infradead.org, live-patching@vger.kernel.org,
- linux-modules@vger.kernel.org, linux-crypto@vger.kernel.org,
- linux-pm@vger.kernel.org, rcu@vger.kernel.org, sched-ext@lists.linux.dev,
- linux-mm@kvack.org, virtualization@lists.linux.dev, damon@lists.linux.dev,
- llvm@lists.linux.dev, chengkaitao <chengkaitao@kylinos.cn>
-References: <20260622040533.29824-1-kaitao.cheng@linux.dev>
- <88f34c7fa5a3d1700cc8005818751d6aa31f09df@intel.com>
-X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
-From: Kaitao Cheng <kaitao.cheng@linux.dev>
-In-Reply-To: <88f34c7fa5a3d1700cc8005818751d6aa31f09df@intel.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-Migadu-Flow: FLOW_OUT
+References: <ajvVfSusxZfjNxVN@stanley.mountain>
+In-Reply-To: <ajvVfSusxZfjNxVN@stanley.mountain>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Wed, 24 Jun 2026 15:12:47 +0200
+X-Gmail-Original-Message-ID: <CAMuHMdUpnXGUHRNrT856RkBtsrO_So+0sxJ47cG0OihoChB+1A@mail.gmail.com>
+X-Gm-Features: AVVi8Cf8LN4jqx6II-ppStxUS-9RUJFFL6cy6NRwMFT9fQRCj9ODD57bZVky9AQ
+Message-ID: <CAMuHMdUpnXGUHRNrT856RkBtsrO_So+0sxJ47cG0OihoChB+1A@mail.gmail.com>
+Subject: Re: [PATCH v2] thermal/drivers/rcar: fix error checking in probe()
+To: Dan Carpenter <error27@gmail.com>
+Cc: Andrzej Pietrasiewicz <andrzej.p@collabora.com>, 
+	=?UTF-8?Q?Niklas_S=C3=B6derlund?= <niklas.soderlund@ragnatech.se>, 
+	"Rafael J. Wysocki" <rafael@kernel.org>, Daniel Lezcano <daniel.lezcano@kernel.org>, 
+	Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>, 
+	Geert Uytterhoeven <geert+renesas@glider.be>, Magnus Damm <magnus.damm@gmail.com>, 
+	Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-renesas-soc@vger.kernel.org, 
+	linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
+	kernel-janitors@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+
+Hi Dan,
+
+On Wed, 24 Jun 2026 at 15:03, Dan Carpenter <error27@gmail.com> wrote:
+> This code accidentally calls thermal_zone_device_enable() before checking
+> whether thermal_zone_device_register_with_trips() failed.  Move the call
+> until later to avoid an error pointer dereference of "priv->zone".
+>
+> The driver works differently depending on if we are using OF thermal or
+> not.  We use thermal_add_hwmon_sysfs() if we are using OF thermal and
+> call thermal_zone_device_enable() if not.
+>
+> Moving the thermal_zone_device_enable() call is a bit cleaner as well.
+> The original code used a three step process to cleanup:
+> 1. Call thermal_zone_device_unregister() to cleanup.
+> 2. Set priv->zone to an error pointer to preserve the error code.
+> 3. Set priv->zone to NULL to avoid a second call to
+>    thermal_zone_device_unregister() in the rcar_thermal_remove()
+>    function.
+>
+> Now we can just do a direct goto error_unregister and rcar_thermal_remove()
+> handles the cleanup properly.
+>
+> Fixes: bbcf90c0646a ("thermal: Explicitly enable non-changing thermal zone devices")
+> Signed-off-by: Dan Carpenter <error27@gmail.com>
+> ---
+> v2: Use the correct fixes tag and re-write the check in a cleaner way.
+
+Thanks for the update!
+
+Reviewed-by: Geert Uytterhoeven <geert+renesas@glider.be>
+
+> --- a/drivers/thermal/renesas/rcar_thermal.c
+> +++ b/drivers/thermal/renesas/rcar_thermal.c
+
+> @@ -510,6 +504,10 @@ static int rcar_thermal_probe(struct platform_device *pdev)
+>                         ret = thermal_add_hwmon_sysfs(priv->zone);
+>                         if (ret)
+>                                 goto error_unregister;
+> +               } else {
+> +                       ret = thermal_zone_device_enable(priv->zone);
+> +                       if (ret)
+> +                               goto error_unregister;
+
+This error path is the same in the other branch, so it could be shared
+after the if/else block.
+
+>                 }
+>
+>                 rcar_thermal_irq_enable(priv);
 
 
+Gr{oetje,eeting}s,
 
-在 2026/6/22 16:37, Jani Nikula 写道:
-> On Mon, 22 Jun 2026, Kaitao Cheng <kaitao.cheng@linux.dev> wrote:
->> Add *_mutable() iterator variants for list, hlist and llist.  The new
->> helpers are variadic and support both forms.  In the common case, the
->> caller omits the temporary cursor and the macro creates a unique internal
->> cursor with typeof(pos) and __UNIQUE_ID().  If a loop really needs an
->> explicit temporary cursor, the caller can still pass it and the helper
->> keeps the existing *_safe() behaviour.
->>
->> For example, a call site may use the shorter form:
->>
->>   list_for_each_entry_mutable(pos, head, member)
->>
->> or keep the explicit temporary cursor form:
->>
->>   list_for_each_entry_mutable(pos, tmp, head, member)
-> 
-> I'm unconvinced it's a good idea to allow two forms with macro trickery,
-> *especially* when it's not the last argument you can omit. I think it's
-> a footgun.
-> 
-> IMO stick with the first form only, and there'll always be the _safe
-> variant that can be used when the temp pointer is needed.
-
-Could we go back to the v1 version? What do you think of that
-implementation approach?
-
-https://lore.kernel.org/all/20260529082149.76764-1-kaitao.cheng@linux.dev/
+                        Geert
 
 -- 
-Thanks
-Kaitao Cheng
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
