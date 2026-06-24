@@ -1,139 +1,119 @@
-Received: from mail-ed1-f44.google.com (mail-ed1-f44.google.com [209.85.208.44])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 35807238C0A
-	for <linux-pm@vger.kernel.org>; Wed, 24 Jun 2026 13:15:56 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.208.44
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2F871370AED
+	for <linux-pm@vger.kernel.org>; Wed, 24 Jun 2026 13:20:47 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1782306957; cv=none; b=rotnfTwiJOoLHaWvzkIdnUsj9pmIXqEELk5FCxMGT7eLNHPZbB0sjYh1/fDl9N6y17Fbo1stI5XnBZgSvVpXvofICEX0Ww/vZm7royQ6rqu8+H9x/EKQK8AluOK0JHQKGS53zJA6ZMmwOiJiym2qb4BwGkBAxbxpVaPOsvHY9+g=
+	t=1782307249; cv=none; b=ByBnaX16avJ02MKp9j+m1j5a+EBKxaWGI8afLFiK09FXrvFfVJS0BvjENvp5vuYZ2srt8lcZS/mSMQkXgzX6FFCDusMXMrCc+fQzBenHHMFrGWrrKVmctDKM7/CIk/Gqk2q9jcSy4k/YnwNEi0rrerWWxyf5k8ij5vX5jXYXY+8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1782306957; c=relaxed/simple;
-	bh=/nqB0qbAotm7Tm2k6JejyL6c3R4u9JfzmCNWpnZVIno=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=DwcBPc9ElEsDkBSbhj8s/YcnCBCQvYMZ72LcSHOQ1pi8Y17K0dLOD7Vm+j5RfrFMUSgbzuD5I+NY+eqRWEyh/21mKZ/qhobVtTP7tE21+zVL85STi551rLu3jBI8oRMDd35oMgPjsTaXZwJif7tVKuTcXdkBXXqORsInkrGGk/Q=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=igRDAHUg; arc=none smtp.client-ip=209.85.208.44
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1782307249; c=relaxed/simple;
+	bh=8DHaxbNgIIQW1uUIJPmwfiBlnxrtvO2JWgpaOXClAms=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=KF1hvZMu9MDI4ZWIuc/bVDMsTYu7nVP0jqDabCErosCoOnoV8mWk73zP6WL6YdK5ELH7lflfQtCWAmeoDu9XWhW6sjvtwQWyU9j+gt/6ox5bOOyGKbYh8zpYFmIpWqkApEPVCbP8YroYpmA4VKn++o/QSZlepagD0IMnR0Y7ExU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=jiuew09A; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="igRDAHUg"
-Received: by mail-ed1-f44.google.com with SMTP id 4fb4d7f45d1cf-691c5776f35so1732943a12.3
-        for <linux-pm@vger.kernel.org>; Wed, 24 Jun 2026 06:15:55 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1782306955; x=1782911755; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=N8zJXNAOj3TRSQqWHWqJVCbZ12C/VejTSJ/Qsl8Vpsg=;
-        b=igRDAHUgYdSsbcEZaRHz/lszr/FDay4uqMsa+lrZw+BpH70CMnhrsFjJ20IvybXwK2
-         nwc1aNEtF2fgYZW7ceZVoXHntd6zGfI1h0WKeQvLR/HnpPMBllofsxRsTBI5k9Ealo29
-         hLEmYabCcInS3qngcMuPK9QtJsqYT0tx4NSIT7CKgcEoAJeUmPUemxTsvj6SVNemg9DU
-         vlgvJ9jfhz/aPgOP7sWK41/z+7Yu23/xG67LA5qht6Gd9ZJoIgwQGM0wlWsZpKoIuXsN
-         swQTyeJoOuKrGp3+HbjaIRlwM4K+9DnzR+yjmbNWm197GfMCcqFYJk+nKnyxOzKUujxi
-         tCCw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1782306955; x=1782911755;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=N8zJXNAOj3TRSQqWHWqJVCbZ12C/VejTSJ/Qsl8Vpsg=;
-        b=tRKQbc7nKhpuoVJhrrlwBFT2YfQhnSGqqMnqIVQVmA6p3nrqJZqcSBmSM/7IsQmZYB
-         HYgB9LmtomMKUr6aMO6rTp/S2ynYxG4GP2bFwzsjffz9ZP+xoGCzgM8LuJiWuGCm2S5V
-         UCblm/zogA1eRxlNqGzyQ5VZGPX7WdvlhNcFWgPnuD6k39H81qnysZ+z+l3dGcnVgiGc
-         1FY1VVZMHBl9JOMYW/boJu0rgkVh8IYE/58lHoaodN/tNXQctWp2200RnaN9LVnQVFtc
-         xJddfJh/NwyoDAtlLoCsm9BWRjl537VAGZf7T/1pXyV28AoS29EyAg2sNcgDpK0or06Q
-         YDKw==
-X-Forwarded-Encrypted: i=1; AHgh+RrgdcW4chPNJ5LECnOrBqMCxSRrjkgweLFtojsE0NwbXGmLiZZeuV6RHVUWLfOiyIGuR0sBNRoYHg==@vger.kernel.org
-X-Gm-Message-State: AOJu0YwP5iAjwKesg2cXYTFasuQ+75GPzIDVlweJnV2fwzLCiSUXUjnk
-	aofNS3CCCl1ZvUBDJGJ3V/jtr415KIuWVyUAUr1+EQEzrpmwdxlm1ROc
-X-Gm-Gg: AfdE7cndJhunGqwVZNM3m/+v9bHhNk4Qsv2Ez2QaN9MFhc81ckIjkgpicfHb3JJ11tu
-	oWUYX033PCKvoCAMfTuYsh4+hwC47mkMFdGPl2ZtCfVavrEzBXSyuoPuQn8C9e8b39PNKxmM2r/
-	6EIOAYrBRjSPponQy4BB5jR6VH9L8rk9VQmGgxtxieroiHpozlC+U+OvZrvPpL4MRJpcHB4H6tC
-	uVuTpT7GSMYEC5JNqcQXNrm6nvlNlLX5l2ERr8ITfjwNebr4K21czSTUwgi/IiTEjBLy+w/k5+Q
-	iTmETfIGlVgRzAOrQYaHvGA07aA3+bnJdtVJGsREEhnExsD9CR2nYy+keUIbCWdLK2+KE1z5JCf
-	w3gmvtQaFBAvfjqtL7CRABis6CUX0WdfNiWsjIQUwSeNN0lxUmBgccC/3cOst6mle3S90N3121K
-	Hlkk4tEWYN
-X-Received: by 2002:a05:6402:4591:b0:697:decc:7f9a with SMTP id 4fb4d7f45d1cf-697f387a521mr1657893a12.9.1782306954280;
-        Wed, 24 Jun 2026 06:15:54 -0700 (PDT)
-Received: from localhost ([196.207.164.177])
-        by smtp.gmail.com with ESMTPSA id 4fb4d7f45d1cf-697f3ade18esm1152759a12.7.2026.06.24.06.15.52
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 24 Jun 2026 06:15:53 -0700 (PDT)
-Date: Wed, 24 Jun 2026 16:15:49 +0300
-From: Dan Carpenter <error27@gmail.com>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Andrzej Pietrasiewicz <andrzej.p@collabora.com>,
-	Niklas =?iso-8859-1?Q?S=F6derlund?= <niklas.soderlund@ragnatech.se>,
-	"Rafael J. Wysocki" <rafael@kernel.org>,
-	Daniel Lezcano <daniel.lezcano@kernel.org>,
-	Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>,
-	Geert Uytterhoeven <geert+renesas@glider.be>,
-	Magnus Damm <magnus.damm@gmail.com>,
-	Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
-	linux-renesas-soc@vger.kernel.org, linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: Re: [PATCH v2] thermal/drivers/rcar: fix error checking in probe()
-Message-ID: <ajvYhfo-Y-zQ4Nuo@stanley.mountain>
-References: <ajvVfSusxZfjNxVN@stanley.mountain>
- <CAMuHMdUpnXGUHRNrT856RkBtsrO_So+0sxJ47cG0OihoChB+1A@mail.gmail.com>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="jiuew09A"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8E4871F0155C
+	for <linux-pm@vger.kernel.org>; Wed, 24 Jun 2026 13:20:47 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1782307247;
+	bh=6fbW+TrtaaiIQKs4Ca0srDSkiFnyZR7Y2v/8HFN2cUY=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc;
+	b=jiuew09A8So+7oq9KSxnUYPCbXYS6LkejJF29Mmia/Y7+TC/kn/U2gTfb3syJp41R
+	 a858bciIsq1q6lxCTtoARCs31k6Lsg+tME+v4IZhHaoBaDMj37Asg7CdC4TMYdbjo/
+	 8UTaWqx0tz7A4hLpyMd8/tEiW8UKKe7dtD7rxJMNnjy0QYfUWKXTvSTwolIityC1nR
+	 R3j5Kf4nr8nOANIvWUipJjoexxIqI6esEqMJpWTIRQFcRMRNcwF1tvSHqmxYhubK4a
+	 VpHN3YUrJZCtzzFV1BuBgZL8ba1T9IGtHf6IwmgTp+BQumtoArVP2kldbjT4aSRY+d
+	 BMr4ZfFaJpQrg==
+Received: by mail-lf1-f48.google.com with SMTP id 2adb3069b0e04-5aa7a7ad475so1154329e87.1
+        for <linux-pm@vger.kernel.org>; Wed, 24 Jun 2026 06:20:47 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AHgh+RoaZe9Jjg+a3uf8sYrGs8eRLBRZS5hNgdrBQb9f0PbbdW4Lk5ucO6hRWm+rh1imV9PY2yj/Wbha2g==@vger.kernel.org
+X-Gm-Message-State: AOJu0YxYJVv0jp0fQSJIWskMT0oKe7pP1Mv2oT5sYHiShVw7oDjyJZh6
+	6u94HrKPq356zi6UCb6K47qnfrQ7WAlARBelTynN0gRL+NUpq9Hp3aHZ9XeDcA7NZ/j08VEk3ir
+	FDmlPEJP2Ljbz3VORD21B3EqVtdZkjAQ=
+X-Received: by 2002:a05:6512:1598:b0:5ad:5017:607b with SMTP id
+ 2adb3069b0e04-5addb81cef5mr2114864e87.16.1782307245989; Wed, 24 Jun 2026
+ 06:20:45 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <CAMuHMdUpnXGUHRNrT856RkBtsrO_So+0sxJ47cG0OihoChB+1A@mail.gmail.com>
+References: <20260623095403.3407436-1-sumitg@nvidia.com> <CAJZ5v0jvkNfx-1XChRCsGHJAcY7W4j41P+Xug6+TpPge7tHF7Q@mail.gmail.com>
+ <de03b23f-18a3-4e99-a15a-5044463ac484@nvidia.com>
+In-Reply-To: <de03b23f-18a3-4e99-a15a-5044463ac484@nvidia.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Date: Wed, 24 Jun 2026 15:20:31 +0200
+X-Gmail-Original-Message-ID: <CAJZ5v0h+Fhj8+xLC=TAqx43+tQCPDUj-eP9YMW=BwKzn8CPUDw@mail.gmail.com>
+X-Gm-Features: AVVi8CcfwsbEPu4KJVmHRtDZ3Ns4YbY0dbagT4ehDXRu8LtT1ctdUEYbwy9jWpQ
+Message-ID: <CAJZ5v0h+Fhj8+xLC=TAqx43+tQCPDUj-eP9YMW=BwKzn8CPUDw@mail.gmail.com>
+Subject: Re: [PATCH] cpufreq: CPPC: Preserve OSPM-set registers across hotplug
+ and unload
+To: Sumit Gupta <sumitg@nvidia.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, viresh.kumar@linaro.org, pierre.gondois@arm.com, 
+	ionela.voinescu@arm.com, zhenglifeng1@huawei.com, zhanjie9@hisilicon.com, 
+	linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, 
+	linux-tegra@vger.kernel.org, treding@nvidia.com, jonathanh@nvidia.com, 
+	vsethi@nvidia.com, ksitaraman@nvidia.com, sanjayc@nvidia.com, 
+	mochs@nvidia.com, bbasu@nvidia.com
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-On Wed, Jun 24, 2026 at 03:12:47PM +0200, Geert Uytterhoeven wrote:
-> Hi Dan,
-> 
-> On Wed, 24 Jun 2026 at 15:03, Dan Carpenter <error27@gmail.com> wrote:
-> > This code accidentally calls thermal_zone_device_enable() before checking
-> > whether thermal_zone_device_register_with_trips() failed.  Move the call
-> > until later to avoid an error pointer dereference of "priv->zone".
+On Wed, Jun 24, 2026 at 2:56=E2=80=AFPM Sumit Gupta <sumitg@nvidia.com> wro=
+te:
+>
+> Hi Rafael,
+>
+>
+> On 23/06/26 16:30, Rafael J. Wysocki wrote:
+> > External email: Use caution opening links or attachments
 > >
-> > The driver works differently depending on if we are using OF thermal or
-> > not.  We use thermal_add_hwmon_sysfs() if we are using OF thermal and
-> > call thermal_zone_device_enable() if not.
 > >
-> > Moving the thermal_zone_device_enable() call is a bit cleaner as well.
-> > The original code used a three step process to cleanup:
-> > 1. Call thermal_zone_device_unregister() to cleanup.
-> > 2. Set priv->zone to an error pointer to preserve the error code.
-> > 3. Set priv->zone to NULL to avoid a second call to
-> >    thermal_zone_device_unregister() in the rcar_thermal_remove()
-> >    function.
+> > On Tue, Jun 23, 2026 at 11:54=E2=80=AFAM Sumit Gupta <sumitg@nvidia.com=
+> wrote:
+> >> Values written to OSPM-set CPPC registers (via sysfs or the autonomous
+> >> boot parameter) can be lost in two ways:
+> >>
+> >>    - Across CPU hotplug: the platform may reset a CPU's registers when=
+ it
+> >>      is offlined.
+> >>    - On driver unload: the value the driver wrote is left in the regis=
+ter
+> >>      instead of returning to its pre-driver state.
+> >>
+> >> Add a small table-driven mechanism that handles both:
+> >>
+> >>    - Capture each register's firmware value when a CPU is first seen a=
+nd
+> >>      restore it on driver unload.
+> >>    - Record the last value the driver set and reapply it from ->init()
+> >>      when the policy is reactivated after CPU hotplug.
+> > I'm not sure if this is a good idea TBH.
 > >
-> > Now we can just do a direct goto error_unregister and rcar_thermal_remove()
-> > handles the cleanup properly.
-> >
-> > Fixes: bbcf90c0646a ("thermal: Explicitly enable non-changing thermal zone devices")
-> > Signed-off-by: Dan Carpenter <error27@gmail.com>
-> > ---
-> > v2: Use the correct fixes tag and re-write the check in a cleaner way.
-> 
-> Thanks for the update!
-> 
-> Reviewed-by: Geert Uytterhoeven <geert+renesas@glider.be>
-> 
-> > --- a/drivers/thermal/renesas/rcar_thermal.c
-> > +++ b/drivers/thermal/renesas/rcar_thermal.c
-> 
-> > @@ -510,6 +504,10 @@ static int rcar_thermal_probe(struct platform_device *pdev)
-> >                         ret = thermal_add_hwmon_sysfs(priv->zone);
-> >                         if (ret)
-> >                                 goto error_unregister;
-> > +               } else {
-> > +                       ret = thermal_zone_device_enable(priv->zone);
-> > +                       if (ret)
-> > +                               goto error_unregister;
-> 
-> This error path is the same in the other branch, so it could be shared
-> after the if/else block.
-> 
+> > The overall system state when the CPU goes online may be completely
+> > different from the system state when the CPU was online last time, so
+> > there is no reason to restore its settings from before offline, at
+> > least in principle.
+>
+> These are values userspace deliberately set, more like a frequency QoS
+> request that persists until userspace changes it than transient state.
+> It's platform dependent though, as the platform I test on preserves them
+> across hotplug, but where the platform resets the register on offline
+> the value is silently lost. Should the kernel re-apply it on online,
+> or is that better left to userspace? If so, I will drop the hotplug reapp=
+ly
+> and keep only the restore on driver unload.
+>
+> intel_pstate and amd-pstate already re-sync these on CPU online, as they
+> keep the policy across hotplug via ->online()/->offline(). So for them
+> it's re-syncing the hardware, not restoring state from before offline.
+>
+> cppc_cpufreq has no ->online()/->offline() today, so it fully tears the
+> policy down and rebuilds it, which is why this reads as "restoring
+> settings from before offline".
+> Would adding ->online()/->offline() be acceptable, with policy preserved
+> and ->online() just re-syncing the registers the platform reset?
 
-Even better.  :)  v3 coming up.
-
-regards,
-dan carpenter
-
+That would be a better approach IMV.
