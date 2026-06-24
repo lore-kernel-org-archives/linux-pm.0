@@ -1,77 +1,125 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+Received: from m16.mail.163.com (m16.mail.163.com [220.197.31.5])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 25FAA3998A4;
-	Tue, 23 Jun 2026 20:26:53 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2C5B02F360A;
+	Wed, 24 Jun 2026 03:38:51 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=220.197.31.5
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1782246415; cv=none; b=fDCunhbSCUj1NpmFagp6EFmjOAVRnscpMgAMVyanPRI7oHUzp8Y5qZSS18R93kZkToV3g/76sQYvQSNLhGMl+/f4sWyPqqWjXUnnS5Jyx5OqJaS1KVE9DCaGVGKMv7SacEA0WglTDQRIMHgAfsVqnaQUEV+zvS9USoPWyK00b8E=
+	t=1782272336; cv=none; b=A999XBOjbIbBCy2WIKKsML14LpCDP/KH8TbMmKJPlMOAdLDDcQ8eszDWBNg/gx8m9CKYg0On5Dwe7MZTRWqCTKT53rbaNLM1soiGV+GbPNy9yKMbMj0bJVnR8Cp/xFy+tORLBlu9sl6fgOXyZa4pPGKEFANYeTtBNSUJGpCYa4E=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1782246415; c=relaxed/simple;
-	bh=/SK4QNgdunGn1N8wdLrCElrEdfOZM2pD0csWQG2dai4=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=H3C+fEzMjsQRCM/styMg0LGPr/aoC9P5PcVSj4m0MiTekMWfTFaXXs6McCMGBl7t/DCtFS8yIvhy5AMZsfcXJQn44RezZCaTOkBXTN1AoxJP4CWAr3ad6pOKEoBONAdNaB14k6kMSw4AQvKjjRPTzpJ1XLkhIjY1PPNmRHpgdZQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=SdV3vIl1; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1782272336; c=relaxed/simple;
+	bh=y5LZAiJERyeAfoe5CHZ7ra2UCNsHVHvTkAIdQBRaQr4=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=mTP3kM3GqKWX5Fv7MpYvPCGsaustBIKk/4xRrfc41hAflEjB12uReNGWEOhnlgRVNnmu1IJlWcXGQ8qAeijM8DmNQ72FMboNzLmWMH/lkc/Y89yK0KbdwwwIo9MGK6xcdtbPwe26wGyaw8umnbqHPUGRU3nqGlwXJ308Rn1/0To=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=163.com; spf=pass smtp.mailfrom=163.com; dkim=pass (1024-bit key) header.d=163.com header.i=@163.com header.b=a+Hzj8U3; arc=none smtp.client-ip=220.197.31.5
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=163.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=163.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="SdV3vIl1"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3FEB11F000E9;
-	Tue, 23 Jun 2026 20:26:53 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1782246413;
-	bh=ie03j2TujfKNZ9SmiUM47+g20ngBeN5app0Z2aJgO5o=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=SdV3vIl1abrSY17gzTT9hztTEbhwquYA6Vs7OUZpc94JI6ISBgsnmR1vFRzYAbNF7
-	 9Tr2FIHpVBlYa6NElHKrnxsvp4Pi62ZRiu6ZcNK/Ddnb9d+0N55yg70A7Sc3OAmmuo
-	 gGH+W4Rk+ut9YdHxepJ2JBs3Fgot++hdLbyAB+Ue1wEYl/JBrUyiS4KBsgbj99LLj1
-	 JuKTNkbso/iyDMuwzRNmR+ilwZL9W66z6iWVP0IYIXe4oSGIeh+mhOSbn0eoQ0BsNF
-	 pWx8lZpIIBAwvItYGkl8IE2xb8GXHH9TV3F1Zon8KTDKEA9NP2ugzAVfCv6XE10pKo
-	 tuRPBdR9JzcXw==
-Date: Tue, 23 Jun 2026 22:26:50 +0200
-From: Andi Shyti <andi.shyti@kernel.org>
-To: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
-Cc: linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
-	linux-samsung-soc@vger.kernel.org, linux-clk@vger.kernel.org, dri-devel@lists.freedesktop.org, 
-	freedreno@lists.freedesktop.org, linux-i2c@vger.kernel.org, linux-pm@vger.kernel.org, 
-	linux-leds@vger.kernel.org, linux-media@vger.kernel.org, linux-mmc@vger.kernel.org, 
-	linux-phy@lists.infradead.org, linux-gpio@vger.kernel.org, linux-renesas-soc@vger.kernel.org, 
-	linux-serial@vger.kernel.org, linux-sound@vger.kernel.org, linux-usb@vger.kernel.org
-Subject: Re: [PATCH v2 2/2] dt-bindings: Drop incorrect usage of double '::'
-Message-ID: <ajrr5pWNSmx4K-Dc@zenone.zhora.eu>
-References: <20260623054842.21831-3-krzysztof.kozlowski@oss.qualcomm.com>
- <20260623054842.21831-4-krzysztof.kozlowski@oss.qualcomm.com>
+	dkim=pass (1024-bit key) header.d=163.com header.i=@163.com header.b="a+Hzj8U3"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=163.com;
+	s=s110527; h=From:To:Subject:Date:Message-Id:MIME-Version; bh=vK
+	QDyIqON71tqGHwtM14GRZInKm8rV7IMf2eudX48bQ=; b=a+Hzj8U3KaEAZUvVQ7
+	w8dQPCYHc0D32wMXUPHBW7ThJhkQ5dHoopkPkfMmUmVHfjV14sWgfa6T5vtHKIPo
+	NgGHyBxHuUEdtuJQuvSrbPjGipYR1FguEZNYFLmDt7Sj+76wp7j6N0gYKqsUBh0U
+	aXYlQlCUJw+DTvWLeYfHD+igc=
+Received: from localhost.localdomain (unknown [])
+	by gzsmtp4 (Coremail) with SMTP id PygvCgBXGiYVUTtq3F9PDw--.36777S2;
+	Wed, 24 Jun 2026 11:37:59 +0800 (CST)
+From: Haoxiang Li <haoxiang_li2024@163.com>
+To: sven@kernel.org,
+	j@jannau.net,
+	neal@gompa.dev,
+	rafael@kernel.org,
+	viresh.kumar@linaro.org
+Cc: linux-arm-kernel@lists.infradead.org,
+	asahi@lists.linux.dev,
+	linux-pm@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	Haoxiang Li <haoxiang_li2024@163.com>
+Subject: [PATCH v2] cpufreq: apple-soc: Fix OPP table cleanup
+Date: Wed, 24 Jun 2026 11:37:56 +0800
+Message-Id: <20260624033756.2702021-1-haoxiang_li2024@163.com>
+X-Mailer: git-send-email 2.25.1
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <20260623054842.21831-4-krzysztof.kozlowski@oss.qualcomm.com>
+X-CM-TRANSID:PygvCgBXGiYVUTtq3F9PDw--.36777S2
+X-Coremail-Antispam: 1Uf129KBjvJXoW7AFy3tF4DZw43XFyxKryfZwb_yoW8Kw4UpF
+	W5WFZ09rn5tF1ktws5JF4j93W7tw1kGrW2gay7GwsavwnFvF1qqa48GFy7uF95Cr95JFy3
+	Cryrta47Zay8J3JanT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
+	9KBjDUYxBIdaVFxhVjvjDU0xZFpf9x0pRNTm3UUUUU=
+X-CM-SenderInfo: xkdr5xpdqjszblsqjki6rwjhhfrp/xtbC7RfCMWo7URfnnAAA3l
 
-Hi Krzysztof,
+dev_pm_opp_of_add_table() adds the DT OPP table but not all failure
+paths remove it. The driver also uses dev_pm_opp_remove_all_dynamic(),
+which is not the right cleanup helper for OPPs loaded from firmware.
 
-On Tue, Jun 23, 2026 at 07:48:44AM +0200, Krzysztof Kozlowski wrote:
-> There is no use of double colon '::' in YAML. OTOH, the literal style
-> block, e.g. using '|' treats all characters as content [1] therefore
-> single use of ':' in descriptions is perfectly fine, whenever '|' is
-> used.
-> 
-> Cleanup existing code, so the confusing style won't be re-used in new
-> contributions.
-> 
-> Link: https://yaml.org/spec/1.2.2/#literal-style [1]
-> Acked-by: Conor Dooley <conor.dooley@microchip.com>
-> Acked-by: Alim Akhtar <alim.akhtar@samsung.com>
-> Acked-by: Sebastian Reichel <sebastian.reichel@collabora.com>
-> Acked-by: Niklas Söderlund <niklas.soderlund+renesas@ragnatech.se>
-> Acked-by: Mark Brown <broonie@kernel.org>
-> Acked-by: Geert Uytterhoeven <geert+renesas@glider.be> # renesas
-> Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
+Remove the DT OPP table with dev_pm_opp_of_remove_table() on init
+failure paths and from apple_soc_cpufreq_exit().
 
-Acked-by: Andi Shyti <andi.shyti@kernel.org>
+Signed-off-by: Haoxiang Li <haoxiang_li2024@163.com>
+---
+Changes in v2:
+ - Remove unnecessary cleanup calls.
+ - Remove OPP table from apple_soc_cpufreq_exit(). Thanks, Viresh!
+---
+ drivers/cpufreq/apple-soc-cpufreq.c | 12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
 
-Thanks,
-Andi
+diff --git a/drivers/cpufreq/apple-soc-cpufreq.c b/drivers/cpufreq/apple-soc-cpufreq.c
+index 638e5bf72185..977d56fc4fa0 100644
+--- a/drivers/cpufreq/apple-soc-cpufreq.c
++++ b/drivers/cpufreq/apple-soc-cpufreq.c
+@@ -258,7 +258,7 @@ static int apple_soc_cpufreq_init(struct cpufreq_policy *policy)
+ 	ret = apple_soc_cpufreq_find_cluster(policy, &reg_base, &info);
+ 	if (ret) {
+ 		dev_err(cpu_dev, "%s: failed to get cluster info: %d\n", __func__, ret);
+-		return ret;
++		goto out_remove_opp_table;
+ 	}
+ 
+ 	ret = dev_pm_opp_set_sharing_cpus(cpu_dev, policy->cpus);
+@@ -271,13 +271,13 @@ static int apple_soc_cpufreq_init(struct cpufreq_policy *policy)
+ 	if (ret <= 0) {
+ 		dev_dbg(cpu_dev, "OPP table is not ready, deferring probe\n");
+ 		ret = -EPROBE_DEFER;
+-		goto out_free_opp;
++		goto out_iounmap;
+ 	}
+ 
+ 	priv = kzalloc_obj(*priv);
+ 	if (!priv) {
+ 		ret = -ENOMEM;
+-		goto out_free_opp;
++		goto out_iounmap;
+ 	}
+ 
+ 	ret = dev_pm_opp_init_cpufreq_table(cpu_dev, &freq_table);
+@@ -320,10 +320,10 @@ static int apple_soc_cpufreq_init(struct cpufreq_policy *policy)
+ 	dev_pm_opp_free_cpufreq_table(cpu_dev, &freq_table);
+ out_free_priv:
+ 	kfree(priv);
+-out_free_opp:
+-	dev_pm_opp_remove_all_dynamic(cpu_dev);
+ out_iounmap:
+ 	iounmap(reg_base);
++out_remove_opp_table:
++	dev_pm_opp_of_remove_table(cpu_dev);
+ 	return ret;
+ }
+ 
+@@ -332,7 +332,7 @@ static void apple_soc_cpufreq_exit(struct cpufreq_policy *policy)
+ 	struct apple_cpu_priv *priv = policy->driver_data;
+ 
+ 	dev_pm_opp_free_cpufreq_table(priv->cpu_dev, &policy->freq_table);
+-	dev_pm_opp_remove_all_dynamic(priv->cpu_dev);
++	dev_pm_opp_of_remove_table(priv->cpu_dev);
+ 	iounmap(priv->reg_base);
+ 	kfree(priv);
+ }
+-- 
+2.25.1
+
