@@ -1,123 +1,264 @@
-Received: from mail-wm1-f48.google.com (mail-wm1-f48.google.com [209.85.128.48])
+Received: from mail-wr1-f41.google.com (mail-wr1-f41.google.com [209.85.221.41])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A4E073B8BBB
-	for <linux-pm@vger.kernel.org>; Wed, 24 Jun 2026 13:59:07 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.48
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8A8FE3C13FE
+	for <linux-pm@vger.kernel.org>; Wed, 24 Jun 2026 14:23:28 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.41
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1782309549; cv=none; b=qs0TPVEg0DjiQPFe31sNvEDUVmaCL9jflnG10XC3v42g06iYLptV9lLr9yvIKIx+rI8uoDrzplDeBgcbO5U+ioL6FPdaYF2nrWtRkC14X1Zf/1HeL/tlJF2Fc7TU7xgcQ8kPuS5thwSmgzN/eHNpRu0kMWmF8c/MUHiyJGQtORw=
+	t=1782311011; cv=none; b=P08WAeW3zBi3krMBTRaSLRkvf5AZMQDAGXqtRqzXWAsqstpB4ywXYne7VXXzVSWDXrdlw01PKCy3uvrscCOiP9sjq6RPiuVztfYcukzsbSuOqP3i265gjZJyiipmc1vuEJ+pOpM0kUhhvUqg3BJFPnhGssYYWPDHGKlUFnRN7QQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1782309549; c=relaxed/simple;
-	bh=jLHVNY6cQEgKL3Q7WFwqzYEQ72tquerqepTpM8X9NFU=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=tVQlDBssaqhlKfTkmSwNWJX7RtTuie1yAoMDe7DhqGd7KFfkrnwr6cyn5YtQP0s3x0kuwT2fNEwXXgU41+Q5LP0CY2Epp0bXdTdNRUT8n3BEqZfRV4XxKgRG1xCtxx+xkCjmYNJlTdvRmJlz8QX0YDvgEAeBwm1DT8u7219TLY8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=BtPmQPIA; arc=none smtp.client-ip=209.85.128.48
+	s=arc-20240116; t=1782311011; c=relaxed/simple;
+	bh=ANcnDbJl1GrE6afhpUmaNktn53Zw0TE+IUnQR7Lyflk=;
+	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=UZe0F+CEM0Y+FcHXOnXA1y8Bbjw1BQRnTBQ77X5SUt5miWe/2UFu2z+MZboMk9NsMLfCO8JYbth9xgUrgBIB0+X1MdKy5UxIITLZ8XQBU61SIV+Opda4BLb4fxPsL1CrVGS24uiXZGJmabfAgXc4KMNnRswyqq5TgSsSO9nX0iE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=CK1QgHuI; arc=none smtp.client-ip=209.85.221.41
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="BtPmQPIA"
-Received: by mail-wm1-f48.google.com with SMTP id 5b1f17b1804b1-4923fb1f095so11116305e9.1
-        for <linux-pm@vger.kernel.org>; Wed, 24 Jun 2026 06:59:07 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="CK1QgHuI"
+Received: by mail-wr1-f41.google.com with SMTP id ffacd0b85a97d-46cdcec58c2so213786f8f.1
+        for <linux-pm@vger.kernel.org>; Wed, 24 Jun 2026 07:23:28 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1782309546; x=1782914346; darn=vger.kernel.org;
+        d=gmail.com; s=20251104; t=1782311007; x=1782915807; darn=vger.kernel.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+         :message-id:subject:cc:to:from:date:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=ke4xsnfQvAtj9HUGdRHxC0rQqe0tdop+3YHmyiDVwDY=;
-        b=BtPmQPIAdMiU0GA4mRA5grwqXptR6kXOHRDahxG3rnTyXIRRHN6dqPx7pnTnQqjRs9
-         IybfJKG++3yQn19zhAOFdu6BBaOP9RQkj/7Sx1jI9M92O8f8biP10UAzK+adSKAT+mgT
-         zZgggYo8pnrFzUFif16yo+05Uis7ufmKfCfQkNddaEFACzkayUsVZvocMsIfoNJjurtm
-         rOR8tdbJ6bEOTC5UCuucFHXNCT17eb9syJpTW4KeTsOvSV40esplm6pEPeyNWDm6befQ
-         0d6Wo1U6pBGhvicAY+g9e2qSFcolquIQXmHRhEnjEy6Zp7/bFFlZFAJZP2OxszIsviDg
-         aFHg==
+        bh=Per6MI6n5CBZ4jce2Yah0coKW3mXxHCaIKwWKmwmsgQ=;
+        b=CK1QgHuIU3L+Hoq9eyhLAP/tW60WuHCUI7tfWelD/UEnl2Wy0NhsVkfh8AA22XEOA2
+         hDg0I3Qw0c8thCpYKIRQF2GB97/jDtHq3N7sH/zC33OPWPVMkUtDc/wZajKMWaLEVhh+
+         9ZNJdTbT7ze+PrqZ/wGdLFb1rAwCCMVFvHdTBfoD6HTQegbltGhdwjkQ+PvECoQiudJB
+         SKRNGqOXEB2kF2ZVf2qCX1biZAaWtJawZh0E366EpIQ4SAIrWsXVO2ZBPpaWDzupv+RC
+         TaMQybC2UB1JHLVfYACnBxKWlff5n5TZv8mwnhHgObgWNzrtct1UvpEaaP+EMi+/wDnr
+         NuMA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1782309546; x=1782914346;
+        d=1e100.net; s=20251104; t=1782311007; x=1782915807;
         h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
+         :message-id:subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to;
-        bh=ke4xsnfQvAtj9HUGdRHxC0rQqe0tdop+3YHmyiDVwDY=;
-        b=pCvuUsSz0M9mh1Hd/3lTBQuixKsdb/I6rBRPYVpgOWxEHdcdj36ofk85CVtk7ZHA8q
-         u0KSVbhwdY/hXSrfeZ2zG4OUsDmT1mBE6x0Y9KBni6U72lbGy9NqqcUreNpc3x85gjPx
-         Ou7DC+U0oYJTuRc8N59z2ztpDSiAVMsFUNyFy8DgOPyMIl/LjL4L5HZYrORCL2Dp7ZS5
-         Fwn8+vvyW2JViGtrZFA7U5zZGSgvnu0NfO0I+DE+NGs7RsLcAwRH97KnWxffwDtauINd
-         gEKQ3+7Rij784cw97XUzoMpPlwndcT5DJgeghPUemHKhwntiAQjyBg6UPvvWO1vAzdQZ
-         mwaA==
-X-Gm-Message-State: AOJu0YwkIWX5g82NFLO1CCz9uE9cCSAXzSaI7Ybct9zps3tfahXGiXYX
-	EbKeX57QQk3gmn2P8Yrtj96CeqDpLq6DfnsEGh6F0OZYeRCmTaNbRJ3oP/tb89nK7zkRCFsg
-X-Gm-Gg: AfdE7cnww1Kc1BVH1y4f9wz/31XPYkRX78mTMV5sFqoOut/rwOtNlWcrN5XMX+Ijpid
-	BuGc+XjL7qCecIVsMc0H7FEl3P+1I12IiNLVrqIGO1SCEwgbv7psVQQh5hbEhNbQXZ8GgSWXpnw
-	CJAl0ZlUcFmVMgWiRarR3MUSxm6sYiRuqNKlsTN9veEiumwlSK5WCO+vE9LBOo2uBCVU2lSu8Sj
-	ZzxdXwKreQ9tQLIP30T4fZ5TB7V/9yMpYWKrhHlIXKnROOPEhF6nf09eyzqJabanVOPQXpMyw+U
-	g9ys2u9FL8fFeMi1wrPqXdT+xgEfAihJDZW0hG7uEDWo0LybNnLv1Hfo5Y84Uo1uxAHt29bb7/0
-	Cezez8NGBx4HsxEojsi/Km6yAVCBRvSu223eGjKS4BNg7M50kMAaWewYmhYJLuun4vAeUdQFSbX
-	8dCBGwJjv8DkiNsgZ56MZ+O+I=
-X-Received: by 2002:a05:600c:83c5:b0:492:3fc4:bd6b with SMTP id 5b1f17b1804b1-4925b34eab6mr121375675e9.7.1782309545981;
-        Wed, 24 Jun 2026 06:59:05 -0700 (PDT)
-Received: from beast.lan ([2a00:c281:1461:c400:bf16:e4f3:7fa:c2dc])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-46c221d93eesm6734311f8f.20.2026.06.24.06.59.04
+        bh=Per6MI6n5CBZ4jce2Yah0coKW3mXxHCaIKwWKmwmsgQ=;
+        b=OaAnyBreYNyzSyWqTRU0VngcxKnhdDEWN7tgjFm/Ilq5KRtu+7RDUp1rvU42pnygNM
+         bOJaSYiBfHYg30H4QfEnLwryDKnN5K5cV92j9USL3c3iAkzLeI4EvxMxpbS3J1W9zXu9
+         cQrbsG2WzQG1mf+RGGEQAUaMvUbq86qZmnB5EqqNTqgF9t18nzMRb2ZiTYFnHam4IX0g
+         fCebmvrltaquWy11aYaESFcjunI4Ket0kXN4u4VMttMNlvm+VO3PT3dY74nj0tQZPQMe
+         Zlmkh70eEg+RU7TSkhUMm9yGjr5vhHvdZ8JIiJZik0FjRG62e00YwHmolXAa8fbLqYK7
+         xftg==
+X-Forwarded-Encrypted: i=1; AHgh+RpEBxEQNg3LfE8cscnx91pOvE1ohQ5pCVCrGBi7LfR0wHA7Bqaf6yrZskvbgWTvtyz13yEH59msDw==@vger.kernel.org
+X-Gm-Message-State: AOJu0YzReM9p2JPXO80w9ds7QYOQPAQcrDlejftPhpV3/YQPO8BX3ez8
+	5gmAZdJvcCGILdqGzJhehUmFTSaOrxKZLnMc5BFizScxH7gqkVvwKxNQ
+X-Gm-Gg: AfdE7clSSXmwaZCK2RzH/Wb6Xo40kBPIv/p35ZTorX9e5723VqcrbwSnNvEdD4nFgF5
+	Rk8NKqCiNujsH5xwak9V0DodCPi1AuqTQM1Xw2mfXswT7NzGI9X5aMS0zWyl0LYQgWFboEFQVxc
+	dSg5JqCPDcByuqeim0hvpuGtT9qHan1T2saEvw+ftEif2TQuhudwWT0E8SObXEsWmn0tkFyyFS3
+	HZNZth0ZogH951p+onyF3AYaaQPJsdKP645ru7O+emoKL4jrmKOeHNMs1GySoIH0SQUkaXpfi4f
+	CGrBzaUg96ZiKwMef1ornvaH/3Vopb9gA2MoU0PF/H+dCPXzBWXNXebLrsp8upRirnwdrqSHFvP
+	QUuWgNjE/wVJK1nCTM84oRsLuOf8Qo3XQJ9Asc6on+uRD04+Y+e6MISw3wZxa8A+FnTYB0NzQYs
+	xACjjfgQ6ys7g+bQKoUHYpVg6xeT5KNRHH5/mS4eLtrh6jvcNQLQ==
+X-Received: by 2002:a05:6000:471a:b0:460:2e53:a6f6 with SMTP id ffacd0b85a97d-46d04583b35mr1261972f8f.12.1782311006854;
+        Wed, 24 Jun 2026 07:23:26 -0700 (PDT)
+Received: from pumpkin (82-69-66-36.dsl.in-addr.zen.co.uk. [82.69.66.36])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-46c221d9405sm8183744f8f.22.2026.06.24.07.23.25
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 24 Jun 2026 06:59:05 -0700 (PDT)
-From: Boris Shtrasman <borissh1983@gmail.com>
-To: Sebastian Reichel <sre@kernel.org>,
-	Shuah Khan <shuah@kernel.org>
-Cc: linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	linux-kselftest@vger.kernel.org,
-	linux-api@vger.kernel.org,
-	Boris Shtrasman <borissh1983@gmail.com>
-Subject: [PATCH v2 2/2] power: supply: sbs-battery: Add PbAc, NiZn, RAM, and ZnAr support
-Date: Wed, 24 Jun 2026 16:57:18 +0300
-Message-ID: <20260624135718.286771-3-borissh1983@gmail.com>
-X-Mailer: git-send-email 2.47.3
-In-Reply-To: <20260624135718.286771-1-borissh1983@gmail.com>
-References: <20260624135718.286771-1-borissh1983@gmail.com>
+        Wed, 24 Jun 2026 07:23:26 -0700 (PDT)
+Date: Wed, 24 Jun 2026 15:23:24 +0100
+From: David Laight <david.laight.linux@gmail.com>
+To: Christian =?UTF-8?B?S8O2bmln?= <christian.koenig@amd.com>
+Cc: Kaitao Cheng <kaitao.cheng@linux.dev>, Andrew Morton
+ <akpm@linux-foundation.org>, David Hildenbrand <david@kernel.org>, Jens
+ Axboe <axboe@kernel.dk>, Tejun Heo <tj@kernel.org>, Alexander Viro
+ <viro@zeniv.linux.org.uk>, Christian Brauner <brauner@kernel.org>, Alexei
+ Starovoitov <ast@kernel.org>, Daniel Borkmann <daniel@iogearbox.net>,
+ Andrii Nakryiko <andrii@kernel.org>, Johannes Weiner <hannes@cmpxchg.org>,
+ Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>,
+ Arnaldo Carvalho de Melo <acme@kernel.org>, Namhyung Kim
+ <namhyung@kernel.org>, Thomas Gleixner <tglx@kernel.org>, Juri Lelli
+ <juri.lelli@redhat.com>, Vincent Guittot <vincent.guittot@linaro.org>, Paul
+ Moore <paul@paul-moore.com>, Andy Shevchenko
+ <andriy.shevchenko@linux.intel.com>, "Paul E. McKenney"
+ <paulmck@kernel.org>, Shakeel Butt <shakeel.butt@linux.dev>, David Howells
+ <dhowells@redhat.com>, Simona Vetter <simona.vetter@ffwll.ch>, Randy Dunlap
+ <rdunlap@infradead.org>, Luca Ceresoli <luca.ceresoli@bootlin.com>, Philipp
+ Stanner <phasta@kernel.org>, linux-block@vger.kernel.org,
+ linux-kernel@vger.kernel.org, cgroups@vger.kernel.org,
+ linux-ntfs-dev@lists.sourceforge.net, linux-fsdevel@vger.kernel.org,
+ io-uring@vger.kernel.org, audit@vger.kernel.org, bpf@vger.kernel.org,
+ netdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+ linux-perf-users@vger.kernel.org, linux-trace-kernel@vger.kernel.org,
+ kexec@lists.infradead.org, live-patching@vger.kernel.org,
+ linux-modules@vger.kernel.org, linux-crypto@vger.kernel.org,
+ linux-pm@vger.kernel.org, rcu@vger.kernel.org, sched-ext@lists.linux.dev,
+ linux-mm@kvack.org, virtualization@lists.linux.dev, damon@lists.linux.dev,
+ llvm@lists.linux.dev, Kaitao Cheng <chengkaitao@kylinos.cn>
+Subject: Re: [PATCH v3 1/7] list: Add mutable iterator variants
+Message-ID: <20260624152324.3def88ce@pumpkin>
+In-Reply-To: <cf8467c7-b98f-44a5-9cf9-60b43b5da711@amd.com>
+References: <20260622040533.29824-1-kaitao.cheng@linux.dev>
+	<20260622040533.29824-2-kaitao.cheng@linux.dev>
+	<20260622094242.64531b9a@pumpkin>
+	<351a6b67-b394-4c58-aee2-88b6c8089ad5@linux.dev>
+	<cf8467c7-b98f-44a5-9cf9-60b43b5da711@amd.com>
+X-Mailer: Claws Mail 4.1.1 (GTK 3.24.38; arm-unknown-linux-gnueabihf)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-Add support for PbAc, NiZn, RAM, and ZnAr chemistries as defined in the
-Smart Battery Data Specification v1.1 (Section 5.1.30 DeviceChemistry).
+On Wed, 24 Jun 2026 15:23:47 +0200
+Christian K=C3=B6nig <christian.koenig@amd.com> wrote:
 
-Currently, the sbs-battery driver only handles LION, LiP, NiCd and NiMH.
-The Smart Battery specification defines 8 possible values:
- - Lead Acid (PbAc)
- - Lithium Ion (LION)
- - Nickel Cadmium (NiCd)
- - Nickel Metal Hydride (NiMH)
- - Nickel Zinc (NiZn)
- - Rechargeable Alkaline-Manganese (RAM)
- - Zinc Air (ZnAr)
- - Lithium Polymer (LiP)
+> On 6/24/26 15:14, Kaitao Cheng wrote:
+> >=20
+> >=20
+> > =E5=9C=A8 2026/6/22 16:42, David Laight =E5=86=99=E9=81=93: =20
+> >> On Mon, 22 Jun 2026 12:05:31 +0800
+> >> Kaitao Cheng <kaitao.cheng@linux.dev> wrote:
+> >> =20
+> >>> From: Kaitao Cheng <chengkaitao@kylinos.cn>
+> >>>
+> >>> The list_for_each*_safe() helpers are used when the loop body may
+> >>> remove the current entry.  Their API exposes the temporary cursor at
+> >>> every call site, even though most users only need it for the iterator
+> >>> implementation and never reference it in the loop body.
+> >>>
+> >>> Add *_mutable() variants for list and hlist iteration.  The new helpe=
+rs
+> >>> support both forms: callers may keep passing an explicit temporary cu=
+rsor
+> >>> when they need to inspect or reset it, or omit it and let the helper =
+use
+> >>> a unique internal cursor. =20
+> >>
+> >> I'm not really sure 'mutable' means anything either.
+> >> It is possible to make it valid for the loop body (or even other threa=
+ds)
+> >> to delete arbitrary list items - but that needs significant extra over=
+heads.
+> >>
+> >> It might be worth doing something that doesn't need the extra variable,
+> >> but there is little point doing all the churn just to rename things.
+> >> =20
+> >>>
+> >>> This makes call sites that only mutate the list through the current e=
+ntry
+> >>> less noisy, while keeping the existing *_safe() helpers available for
+> >>> compatibility.
+> >>>
+> >>> Signed-off-by: Kaitao Cheng <chengkaitao@kylinos.cn>
+> >>> ---
+> >>>  include/linux/list.h | 269 +++++++++++++++++++++++++++++++++++++----=
+--
+> >>>  1 file changed, 231 insertions(+), 38 deletions(-)
+> >>>
+> >>> diff --git a/include/linux/list.h b/include/linux/list.h
+> >>> index 09d979976b3b..1081def7cea9 100644
+> >>> --- a/include/linux/list.h
+> >>> +++ b/include/linux/list.h
+> >>> @@ -7,6 +7,7 @@
+> >>>  #include <linux/stddef.h>
+> >>>  #include <linux/poison.h>
+> >>>  #include <linux/const.h>
+> >>> +#include <linux/args.h>
+> >>> =20
+> >>>  #include <asm/barrier.h>
+> >>> =20
+> >>> @@ -763,28 +764,72 @@ static inline void list_splice_tail_init(struct=
+ list_head *list,
+> >>>  #define list_for_each_prev(pos, head) \
+> >>>  	for (pos =3D (head)->prev; !list_is_head(pos, (head)); pos =3D pos-=
+>prev)
+> >>> =20
+> >>> -/**
+> >>> - * list_for_each_safe - iterate over a list safe against removal of =
+list entry
+> >>> - * @pos:	the &struct list_head to use as a loop cursor.
+> >>> - * @n:		another &struct list_head to use as temporary storage
+> >>> - * @head:	the head for your list.
+> >>> +/*
+> >>> + * list_for_each_safe is an old interface, use list_for_each_mutable=
+ instead.
+> >>>   */
+> >>>  #define list_for_each_safe(pos, n, head) \
+> >>>  	for (pos =3D (head)->next, n =3D pos->next; \
+> >>>  	     !list_is_head(pos, (head)); \
+> >>>  	     pos =3D n, n =3D pos->next)
+> >>> =20
+> >>> +#define __list_for_each_mutable_internal(pos, tmp, head)		\
+> >>> +	for (typeof(pos) tmp =3D (pos =3D (head)->next)->next;		\ =20
+> >>
+> >> Use auto
+> >> =20
+> >>> +	     !list_is_head(pos, (head));				\
+> >>> +	     pos =3D tmp, tmp =3D pos->next)
+> >>> +
+> >>> +#define __list_for_each_mutable1(pos, head)				\
+> >>> +	__list_for_each_mutable_internal(pos, __UNIQUE_ID(next), head)
+> >>> +
+> >>> +#define __list_for_each_mutable2(pos, next, head)			\
+> >>> +	list_for_each_safe(pos, next, head)
+> >>> +
+> >>>  /**
+> >>> - * list_for_each_prev_safe - iterate over a list backwards safe agai=
+nst removal of list entry
+> >>> + * list_for_each_mutable - iterate over a list safe against entry re=
+moval
+> >>>   * @pos:	the &struct list_head to use as a loop cursor.
+> >>> - * @n:		another &struct list_head to use as temporary storage
+> >>> - * @head:	the head for your list.
+> >>> + * @...:	either (head) or (next, head)
+> >>> + *
+> >>> + * next:	another &struct list_head to use as optional temporary stor=
+age.
+> >>> + *		The temporary cursor is internal unless explicitly supplied by
+> >>> + *		the caller.
+> >>> + * head:	the head for your list.
+> >>> + */
+> >>> +#define list_for_each_mutable(pos, ...)					\
+> >>> +	CONCATENATE(__list_for_each_mutable, COUNT_ARGS(__VA_ARGS__))	\
+> >>> +		(pos, __VA_ARGS__) =20
+> >>
+> >> The variable argument count logic really just slows down compilation.
+> >> Maybe there aren't enough copies of this code to make that significant.
+> >> But just because you can do it doesn't mean it is a gooD idea.
+> >> I'm also not sure it really adds anything to the readability.
+> >>
+> >> And, it you are going to make the middle argument optional there is
+> >> no need to change the macro name. =20
+> >=20
+> > Christian K=C3=B6nig and Jani Nikula also disagree with the variadic-ar=
+gument
+> > implementation approach. If we abandon that method, it means we will
+> > inevitably need to add some new macros. If mutable is not a good name,
+> > suggestions for better alternatives would be welcome; coming up with a
+> > suitable name is indeed rather tricky. =20
+>=20
+> I don't think you need to add a new macro for the specific use case that =
+people want to modify the next element of the iteration.
+>=20
+> If I remember your numbers correctly that is a really corner case and kee=
+ping using the existing *_safe() macros for that sounds perfectly fine to m=
+e.
 
-Link: https://sbs-forum.org/specs/sbdat110.pdf
-Signed-off-by: Boris Shtrasman <borissh1983@gmail.com>
----
- drivers/power/supply/sbs-battery.c | 8 ++++++++
- 1 file changed, 8 insertions(+)
+IIRC currently you have a choice of either:
+	define               Item that can't be deleted
+	list_for_each()	     The current item.
+	list_for_each_safe() The next item.
+There is also likely to be code that updates the variables to allow
+for other scenarios.
 
-diff --git a/drivers/power/supply/sbs-battery.c b/drivers/power/supply/sbs-battery.c
-index 43c48196c167..42a941e99155 100644
---- a/drivers/power/supply/sbs-battery.c
-+++ b/drivers/power/supply/sbs-battery.c
-@@ -860,6 +860,14 @@ static int sbs_get_chemistry(struct sbs_info *chip,
- 		chip->technology = POWER_SUPPLY_TECHNOLOGY_NiCd;
- 	else if (!strncasecmp(chemistry, "NiMH", 4))
- 		chip->technology = POWER_SUPPLY_TECHNOLOGY_NiMH;
-+	else if (!strncasecmp(chemistry, "PbAc", 4))
-+		chip->technology = POWER_SUPPLY_TECHNOLOGY_PbAc;
-+	else if (!strncasecmp(chemistry, "NiZn", 4))
-+		chip->technology = POWER_SUPPLY_TECHNOLOGY_NiZn;
-+	else if (!strncasecmp(chemistry, "RAM", 3))
-+		chip->technology = POWER_SUPPLY_TECHNOLOGY_RAM;
-+	else if (!strncasecmp(chemistry, "ZnAr", 4))
-+		chip->technology = POWER_SUPPLY_TECHNOLOGY_ZnAr;
- 	else
- 		chip->technology = POWER_SUPPLY_TECHNOLOGY_UNKNOWN;
- 
--- 
-2.47.3
+Note that if increase a reference count and release a lock then list_for_ea=
+ch()
+is likely safer than list_for_each_safe() :-)
+
+list.h has 9 variants of the 'safe' loop.
+The bloat of another 9 is getting excessive.
+
+It has to be said that this is one of my least favourite type of list...
+
+	David
+
+>=20
+> Regards,
+> Christian.
 
