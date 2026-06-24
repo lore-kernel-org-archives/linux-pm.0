@@ -1,41 +1,41 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 637663DD519;
-	Wed, 24 Jun 2026 17:36:28 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 84D0A3DD53B;
+	Wed, 24 Jun 2026 17:36:31 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1782322589; cv=none; b=aRkIiooJWjHBfVYrWziT5R3xvIJsCHjOFQ5GOPBhXub7gWAlaCITMuPFXW3Z3jcAU+SateFqIHV9uvqJ151l3tUBTAxEO7sYOqx/m5e0toAMHtAOoQ+w8SOZgikYhpUFY9qFOKqDJo8UfmdJp+T48JW3bWDQQWU8u/0EjjaeIfA=
+	t=1782322592; cv=none; b=DCQ29GsjxkIO1S71VEOeOiXSP0iB1+GXvYP8eVY1GaSNNq9DLNQUizVNhGNLBrjGS6hlVcYjXwHOii8qTtRc9BQ1Sbw0umpSAiB3nF7BD/mx/4sU6M4lQ5/L99BI0cPH54pda/pujNQj5I7KRCk8LVIKzz/arJhS3hx1zR4gnDk=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1782322589; c=relaxed/simple;
-	bh=1zd1R62Mf8N1KIewdDdGgNrM0tAKC+wUkWYk4+DmVOo=;
+	s=arc-20240116; t=1782322592; c=relaxed/simple;
+	bh=zPZqX26sJN/XWAyecQ4Jul9qQnnr0HSzH0tfoFBi9Lk=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=cRYOZ+virddj1VCQNV6rp21Q13Rsh0zJbIr0Fwm4TWJNLgLZXjnaSfLtKUp1OO627dRgn7KgmqHx6nBryguyrrDo5+kcWStY7UJvaO0oovfbQPN6UWiW0bEyp5ofodIIBq7uVizx2Yavrgpy2yeTy035sXcgOUZVElHDz/USknM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=GNsdhy7m; arc=none smtp.client-ip=100.103.45.18
+	 MIME-Version:Content-Type; b=ZvWtmztJaGMf6IfW7WIb+5lqLkoe1h3mSlj4hfoayDVIWMAyYWn6eyeoOlGYea6hm79a0cKfVn3cYEeqvrduy9CP6gUZQLjZ22G9b/xRpeeR5JNwIEyyencWKSWUgFBjl1zLrSl2tyErMAFoIYfEi3ULoISgnLue/Gxyy1c7cvY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=LMeS1J74; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="GNsdhy7m"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0A9EA1F000E9;
-	Wed, 24 Jun 2026 17:36:26 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="LMeS1J74"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3490F1F000E9;
+	Wed, 24 Jun 2026 17:36:30 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1782322588;
-	bh=9nVY/c5wQhoTVgunSzgOhHkZ+PopC5sbBIi2Wc+GNYc=;
+	s=k20260515; t=1782322591;
+	bh=tG26nNdd4eiV6OGN8UrZfwgw4ikNUQbSG+vt/PYrgj4=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References;
-	b=GNsdhy7mDae76WObozdqUmqw5TRoQdDFEUemVEVwZ6fdWfjoDk7wvP3/vZ+9baQYs
-	 CaAwSvoBgIzc+tkhVdyz6d7RqzNzC29JfGfO46wjmHvkD3bZDNOV9EHJLA1sEJwOay
-	 mOiWRvUYMEpZf068lr1dsAJiAegis/DIi1ARdstnK0krIest3mnBvszJEZyMTGb3XK
-	 RElvWBIcGgXzumeZY3BZIUEoexEPX6nCVl2Z3fKqjbdptrooVc4gA7Ddu7WM8stfrG
-	 Q4usO4SNWj2PoDT61ihwSLfqtCrBZkaWIaab76JNPgsBZuE/IJTjT7fDNsRZuiOCV1
-	 1Gpeb44iM9RZA==
+	b=LMeS1J74+UjYQElXTvnCSsTJCZycWAbHmtxMcCC0H8NijJ3rKsGdP+HZVx7RBH8PW
+	 jubejtucIy9XCNwnmG0fvpe9u7oLjUY8dw4lqEceWwoJzGN4sNNAG8fYUIP/SVrNVS
+	 /wbUcPZ7+Lhm/W2yOpOcxtTh0thdRMA3R46hD9Ly9piYAOx/WUi1WhWqm2zlat3+pl
+	 drV+SmEKpsIakdIy5rWDG02zYCaBfKJSL/uuj58I1CGJrzkNR9BfY6bf9Bq4FiOY1/
+	 VwNELvYQMP1Jax/clNmXlS/YvU0lejIuJNyTTX5YXBdSgmW7yrTKzazlUOrvVar/d1
+	 qIH/XCNVD7FxA==
 From: "Rafael J. Wysocki" <rafael@kernel.org>
 To: Linux PM <linux-pm@vger.kernel.org>
 Cc: LKML <linux-kernel@vger.kernel.org>,
  Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
  Doug Smythies <dsmythies@telus.net>
 Subject:
- [PATCH v3 2/4] cpufreq: intel_pstate: Introduce
- intel_pstate_update_freq_limits()
-Date: Wed, 24 Jun 2026 19:34:10 +0200
-Message-ID: <2277328.irdbgypaU6@rafael.j.wysocki>
+ [PATCH v3 1/4] cpufreq: intel_pstate: Fix setting minimum P-state at init
+ time
+Date: Wed, 24 Jun 2026 19:33:08 +0200
+Message-ID: <5090465.GXAFRqVoOG@rafael.j.wysocki>
 Organization: Linux Kernel Development
 In-Reply-To: <4752842.LvFx2qVVIh@rafael.j.wysocki>
 References: <4752842.LvFx2qVVIh@rafael.j.wysocki>
@@ -50,90 +50,93 @@ Content-Type: text/plain; charset="UTF-8"
 
 From: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
 
-Introduce a new helper function, intel_pstate_update_freq_limits(),
-for updating the max and turbo frequency values for the given CPU after
-updating the corresponding P-states.
+If HWP is enabled, writes to MSR_IA32_PERF_CTL have no effect,
+so intel_pstate_get_cpu_pstates() should not attempt to call
+intel_pstate_set_min_pstate() to set the minimum P-state for the
+given CPU in that case.
 
-Use it in intel_pstate_get_hwp_cap() and intel_pstate_get_cpu_pstates(),
-in the latter case instead of the direct updates of the max and turbo
-frequency values in intel_pstate_hybrid_hwp_adjust().
+Accordingly, remove the intel_pstate_set_min_pstate()
+call from intel_pstate_get_cpu_pstates() and make both
+intel_pstate_cpu_init() and intel_cpufreq_cpu_init() call
+that function in their non-HWP code paths.
 
-No intentional functional impact.
+The HWP code path in intel_pstate_cpu_init() does not need to update
+the current P-state of the CPU directly at all because it is taken
+care of the processor automatically, but the HWP code path of
+intel_cpufreq_cpu_init() should update it in principle to
+initialize the DESIRED_PERF field in MSR_HWP_REQUEST.  For this
+purpose, make it call intel_cpufreq_hwp_update() and pass
+the minimum P-state limit to it as the current target value along
+with the current minimum and maximum limits.
 
+Fixes: f6ebbcf08f37 ("cpufreq: intel_pstate: Implement passive mode with HWP enabled")
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- drivers/cpufreq/intel_pstate.c | 36 +++++++++++++++++-----------------
- 1 file changed, 18 insertions(+), 18 deletions(-)
+ drivers/cpufreq/intel_pstate.c | 19 +++++++++++--------
+ 1 file changed, 11 insertions(+), 8 deletions(-)
 
 diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-index 95e41e975c45..e143c80a3215 100644
+index 1f093e346430..95e41e975c45 100644
 --- a/drivers/cpufreq/intel_pstate.c
 +++ b/drivers/cpufreq/intel_pstate.c
-@@ -587,11 +587,6 @@ static void intel_pstate_hybrid_hwp_adjust(struct cpudata *cpu)
+@@ -2354,8 +2354,6 @@ static void intel_pstate_get_cpu_pstates(struct cpudata *cpu)
  
- 	hwp_is_hybrid = true;
- 
--	cpu->pstate.turbo_freq = rounddown(cpu->pstate.turbo_pstate * scaling,
--					   perf_ctl_scaling);
--	cpu->pstate.max_freq = rounddown(cpu->pstate.max_pstate * scaling,
--					 perf_ctl_scaling);
+ 	if (pstate_funcs.get_vid)
+ 		pstate_funcs.get_vid(cpu);
 -
- 	freq = perf_ctl_max_phys * perf_ctl_scaling;
- 	cpu->pstate.max_pstate_physical = intel_pstate_freq_to_hwp(cpu, freq);
- 
-@@ -1183,6 +1178,22 @@ static bool hybrid_clear_max_perf_cpu(void)
- 	return ret;
+-	intel_pstate_set_min_pstate(cpu);
  }
  
-+static void intel_pstate_update_freq_limits(struct cpudata *cpu)
-+{
-+	int scaling = cpu->pstate.scaling;
-+	unsigned int turbo_freq = cpu->pstate.turbo_pstate * scaling;
-+	unsigned int max_freq = cpu->pstate.max_pstate * scaling;
-+	int perf_ctl_scaling = cpu->pstate.perf_ctl_scaling;
-+
-+	if (scaling != perf_ctl_scaling) {
-+		turbo_freq = rounddown(turbo_freq, perf_ctl_scaling);
-+		max_freq = rounddown(max_freq, perf_ctl_scaling);
-+	}
-+
-+	cpu->pstate.turbo_freq = turbo_freq;
-+	cpu->pstate.max_freq = max_freq;
-+}
-+
- static void __intel_pstate_get_hwp_cap(struct cpudata *cpu)
+ /*
+@@ -3062,6 +3060,7 @@ static int __intel_pstate_cpu_init(struct cpufreq_policy *policy)
+ static int intel_pstate_cpu_init(struct cpufreq_policy *policy)
  {
- 	u64 cap;
-@@ -1195,20 +1206,8 @@ static void __intel_pstate_get_hwp_cap(struct cpudata *cpu)
+ 	int ret = __intel_pstate_cpu_init(policy);
++	struct cpudata *cpu;
  
- static void intel_pstate_get_hwp_cap(struct cpudata *cpu)
- {
--	int scaling = cpu->pstate.scaling;
+ 	if (ret)
+ 		return ret;
+@@ -3072,11 +3071,11 @@ static int intel_pstate_cpu_init(struct cpufreq_policy *policy)
+ 	 */
+ 	policy->policy = CPUFREQ_POLICY_POWERSAVE;
+ 
+-	if (hwp_active) {
+-		struct cpudata *cpu = all_cpu_data[policy->cpu];
 -
- 	__intel_pstate_get_hwp_cap(cpu);
--
--	cpu->pstate.max_freq = cpu->pstate.max_pstate * scaling;
--	cpu->pstate.turbo_freq = cpu->pstate.turbo_pstate * scaling;
--	if (scaling != cpu->pstate.perf_ctl_scaling) {
--		int perf_ctl_scaling = cpu->pstate.perf_ctl_scaling;
--
--		cpu->pstate.max_freq = rounddown(cpu->pstate.max_freq,
--						 perf_ctl_scaling);
--		cpu->pstate.turbo_freq = rounddown(cpu->pstate.turbo_freq,
--						   perf_ctl_scaling);
++	cpu = all_cpu_data[policy->cpu];
++	if (hwp_active)
+ 		cpu->epp_cached = intel_pstate_get_epp(cpu, 0);
 -	}
-+	intel_pstate_update_freq_limits(cpu);
- }
++	else
++		intel_pstate_set_min_pstate(cpu);
  
- static void hybrid_update_capacity(struct cpudata *cpu)
-@@ -2329,6 +2328,7 @@ static void intel_pstate_get_cpu_pstates(struct cpudata *cpu)
- 		if (pstate_funcs.get_cpu_scaling) {
- 			cpu->pstate.scaling = pstate_funcs.get_cpu_scaling(cpu->cpu);
- 			intel_pstate_hybrid_hwp_adjust(cpu);
-+			intel_pstate_update_freq_limits(cpu);
- 		} else {
- 			cpu->pstate.scaling = perf_ctl_scaling;
- 		}
+ 	return 0;
+ }
+@@ -3300,8 +3299,6 @@ static int intel_cpufreq_cpu_init(struct cpufreq_policy *policy)
+ 		return ret;
+ 
+ 	policy->cpuinfo.transition_latency = INTEL_CPUFREQ_TRANSITION_LATENCY;
+-	/* This reflects the intel_pstate_get_cpu_pstates() setting. */
+-	policy->cur = policy->cpuinfo.min_freq;
+ 
+ 	req = kzalloc_objs(*req, 2);
+ 	if (!req) {
+@@ -3322,9 +3319,15 @@ static int intel_cpufreq_cpu_init(struct cpufreq_policy *policy)
+ 		WRITE_ONCE(cpu->hwp_req_cached, value);
+ 
+ 		cpu->epp_cached = intel_pstate_get_epp(cpu, value);
++
++		intel_cpufreq_hwp_update(cpu, cpu->pstate.min_pstate,
++					 cpu->pstate.max_pstate,
++					 cpu->pstate.min_pstate, false);
+ 	} else {
+ 		policy->transition_delay_us = INTEL_CPUFREQ_TRANSITION_DELAY;
++		intel_pstate_set_min_pstate(cpu);
+ 	}
++	policy->cur = policy->cpuinfo.min_freq;
+ 
+ 	freq = DIV_ROUND_UP(cpu->pstate.turbo_freq * global.min_perf_pct, 100);
+ 
 -- 
 2.51.0
 
