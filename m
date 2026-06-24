@@ -1,165 +1,261 @@
-Received: from mail-wm1-f45.google.com (mail-wm1-f45.google.com [209.85.128.45])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from out-187.mta1.migadu.com (out-187.mta1.migadu.com [95.215.58.187])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3423326B2CE
-	for <linux-pm@vger.kernel.org>; Wed, 24 Jun 2026 12:27:55 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.45
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 70F0B3AD524
+	for <linux-pm@vger.kernel.org>; Wed, 24 Jun 2026 12:30:09 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=95.215.58.187
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1782304076; cv=none; b=rDZPOO0iBZuCG/iCii53cbF1q8lmXu2A2rcTWNVKy071bY0HKB1/ET547cMaBrwEdGB/GnNiZS/5gl7k2XLVtZoeCuoh8886PdWt0/J6kupDfXbbo9IEZWBdWn2oPOgq+XnUg49i6n+atb4IX+Ax21yf1mH0zjtgL4kBIQQx2Lc=
+	t=1782304211; cv=none; b=a31FmW0Gt2rsDRVVn2GbX4GyvyWdZue6irIgs37T6GwX0sX8hkZzuCMRXMBaeZHmVfTj68Yx20O1hFqie72HRRCMQPmsSJbNBru+oBiLt2PA/iu3ErOGsZbtsvouWUUgoMlMVJZJ3gtPe9vTY2NMxPXd4gsNNWmiTy9ciXS8z7U=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1782304076; c=relaxed/simple;
-	bh=YYn8mVTTcYIWoMMAkYFeYKlkTCV34Gl2CDeYSuYyTcY=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=ljx1hr5ceyLPGbysTqluaXB7Quen/jpz0M6Q/JTkkVpOTY5aShB+x9KnPuxGQP2kfRzPwSnD6lO6uhU9jQjCsgsn99JnkQteToWtoV8Q66c3z5ue+pEL4hFqh92+CQR5GSoW+KJs74E5LLAmJDVBs8/EtuEPn/ZtUThNCW+dywI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=Y1bX1bqS; arc=none smtp.client-ip=209.85.128.45
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1782304211; c=relaxed/simple;
+	bh=x+wrByIgOH4VvEI96gvWujAPl3WM8xGYqVOhtQGJNvw=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=uD29StXT8KBuXsAVFLCZPlkAZexRlAMcVcNZ2gTb0dsqLkPU3wtnAPiAfpOL0xNKL5cbaJ/iLfxA/nuZxDiruel64fMc7E7MHrOh98SxNNiq5ckdfHOFCUe8jBH1D3CEjUHtaXEGAC+SCB/2Iz1dXC1SEUr0fC/QyH7qlEqm+Ro=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.dev; spf=pass smtp.mailfrom=linux.dev; dkim=pass (1024-bit key) header.d=linux.dev header.i=@linux.dev header.b=R0l5uaRB; arc=none smtp.client-ip=95.215.58.187
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.dev
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.dev
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Y1bX1bqS"
-Received: by mail-wm1-f45.google.com with SMTP id 5b1f17b1804b1-490b64c8311so12315185e9.3
-        for <linux-pm@vger.kernel.org>; Wed, 24 Jun 2026 05:27:54 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1782304074; x=1782908874; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=5CaDsK+4P6z3PRLs/CvELpKeDh2G5owhoOE7oUsOIuo=;
-        b=Y1bX1bqStu1ZIqbJV7TqQc7MnTDSZR5VfqmXhKfKVNPaSBZgg8e9/YD/QSlvqeO0DX
-         BEBbatw/QuiD/5f526DAaq98xpYLUP5Id70xj0gPFZAZO3VuVtdGoeRo+KRmtTgb8Vsf
-         F4cy6SLl4bIFlayIbwaTV0mshFysJfidu5UJ0nZSlDJV4m+4awQrqelHpmfjHAMrjKCp
-         +9GkZcEHkb8mEN8ySUaF/4CfOrh6+BC3BmnlEeFuWCFZewtpnJ0B+Gminw1vMnyh94oo
-         qbYCfmTQDSrbfRSq9lLryRg0js8WZjv6eHzhzcQiyuIX0W1zAPdusLHBdWYyOJa5Ew2V
-         BmIQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1782304074; x=1782908874;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=5CaDsK+4P6z3PRLs/CvELpKeDh2G5owhoOE7oUsOIuo=;
-        b=JLWLhpt2nsOzsNQjvaFWJx8sezgeU/B7mgQEpYq8wcytlQ4aeQ4AaUrupLuPSjhVwT
-         BMAKvV452Q5igXJbt5zhkueMUHmmx7zwIR/INbvAoNdKRnuCoi6yrSDrLSvYV9z7bB+n
-         nwlEmfaOxhtuYlGp/EgbVlPV1vMCpbBov6giXHcSUnMXOopkguxbvfTFvhZhxZSlwB/R
-         WIQNnQxhHAiqO/u75uNTizbweCIf/DYJhNRy9F9dgVgjG00FkI3IYBM21MxWQ/H9mH01
-         htQ9dTDsCkpoRrn5+9B7lMdik4Z+mePGCUiLcOls9yQvIA5PBTxnThPQZFsIxK9gjLzs
-         YSag==
-X-Forwarded-Encrypted: i=1; AFNElJ+cRNDLGoZOSl45DxjngaU1QH62nkp3eQfIrpujE9sykYn6Ze9/xX4ktyzQBC++1K86kzgGcQMkpg==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yy8B93iw7/RDDm1OLc62MhiWJS7ayocEY4MQfJ9eexd34XwyE9y
-	xsCs2P7BeKGkfzQLZPqNc3XP9uJz5cYTKlsxYbV06rTinjsLZutPyo4X
-X-Gm-Gg: AfdE7cnTU/jqmalgsjlB50c8yzf2JsxVeKpw/vBiPnuMTUdWoywY5yvc8lDgDHdGSQO
-	siY8ePnRJlp4cFMYB81mxAuONOSAIDkWTXLloTj2mwQ5uM5nQ4/dt0c+ppahrcNSUXmz/2wYFsq
-	7StJ7ucEzPr7iN2PUty8ef+v5tCztUIOHMvWc+jD+4bo74hs9O28pkgVf9kUDXihj2iY2+Bmszt
-	guwVWqBBwSu13hBOLcE21KlamLS6Y+olAxKJYDOM4mosHynwzwkbZ40trR+WSPFL+2UWFuNuAOO
-	j0NJXucs93EqR1TS5fUTuxGMJxmX+fisiGEIFE3T2XeL+Lwb/PDETwCA3vYiTlP3LUC/ezMMkBT
-	UAb4iq/mIsmq8lHrCdfwTa4G1YE7Bw5BpPvzplpoHdWDoB95yxRovb4Kxv67HzDUTIuT95z6b7Z
-	8bJF2DsY+QLbq4oGSt/Tlz3zE8KQ==
-X-Received: by 2002:a05:600c:4f93:b0:492:455e:a161 with SMTP id 5b1f17b1804b1-4926086d0e8mr44105575e9.20.1782304073202;
-        Wed, 24 Jun 2026 05:27:53 -0700 (PDT)
-Received: from Dev-Null-MSI ([2a0d:3344:52ac:a808:98a4:4381:be45:536f])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-49249455302sm373253855e9.15.2026.06.24.05.27.52
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 24 Jun 2026 05:27:52 -0700 (PDT)
-From: Yousef Alhouseen <alhouseenyousef@gmail.com>
-To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
-	Len Brown <lenb@kernel.org>
-Cc: "Rafael J . Wysocki" <rafael@kernel.org>,
-	linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	Yousef Alhouseen <alhouseenyousef@gmail.com>
-Subject: [PATCH] tools/power: intel_pstate_tracer: avoid optional imports for help
-Date: Wed, 24 Jun 2026 14:27:47 +0200
-Message-ID: <20260624122747.5418-1-alhouseenyousef@gmail.com>
-X-Mailer: git-send-email 2.54.0
+	dkim=pass (1024-bit key) header.d=linux.dev header.i=@linux.dev header.b="R0l5uaRB"
+Message-ID: <f99b70cc-e11c-42a9-a986-d20b3f232a31@linux.dev>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
+	t=1782304195;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=eNfuHxO86n8b93ev9jYNFJxXkathlRXlXpz1k/8S9nI=;
+	b=R0l5uaRBMcxiN2aXXeE7sJmbbWZ+nIwvYOIBg2hW4xeZNywWJj11l3PcvXG3Ip7YlbinqT
+	P/PQ6kfAvOv13VlW7fdMv2tpC85uXP91R5VJRz9HOOc6aZfnOL/SuWOVvCXI8elJq6bVmX
+	Hq88NW9qj4aWnLm21y4nDBq7fAgYa9M=
+Date: Wed, 24 Jun 2026 20:29:26 +0800
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+Subject: Re: [PATCH v3 0/7] Prepare mutable list iterators to cache cursor
+ state
+To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Cc: Alexei Starovoitov <alexei.starovoitov@gmail.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ David Hildenbrand <david@kernel.org>, Jens Axboe <axboe@kernel.dk>,
+ Tejun Heo <tj@kernel.org>, Alexander Viro <viro@zeniv.linux.org.uk>,
+ Christian Brauner <brauner@kernel.org>, Alexei Starovoitov <ast@kernel.org>,
+ Daniel Borkmann <daniel@iogearbox.net>, Andrii Nakryiko <andrii@kernel.org>,
+ Johannes Weiner <hannes@cmpxchg.org>, Peter Zijlstra <peterz@infradead.org>,
+ Ingo Molnar <mingo@redhat.com>, Arnaldo Carvalho de Melo <acme@kernel.org>,
+ Namhyung Kim <namhyung@kernel.org>, Thomas Gleixner <tglx@kernel.org>,
+ Juri Lelli <juri.lelli@redhat.com>,
+ Vincent Guittot <vincent.guittot@linaro.org>,
+ Paul Moore <paul@paul-moore.com>, "Paul E. McKenney" <paulmck@kernel.org>,
+ Shakeel Butt <shakeel.butt@linux.dev>,
+ =?UTF-8?Q?Christian_K=C3=B6nig?= <christian.koenig@amd.com>,
+ David Howells <dhowells@redhat.com>, Simona Vetter <simona.vetter@ffwll.ch>,
+ Randy Dunlap <rdunlap@infradead.org>,
+ Luca Ceresoli <luca.ceresoli@bootlin.com>,
+ Philipp Stanner <phasta@kernel.org>, linux-block@vger.kernel.org,
+ LKML <linux-kernel@vger.kernel.org>,
+ "open list:CONTROL GROUP (CGROUP)" <cgroups@vger.kernel.org>,
+ linux-ntfs-dev@lists.sourceforge.net,
+ Linux-Fsdevel <linux-fsdevel@vger.kernel.org>,
+ io-uring <io-uring@vger.kernel.org>, audit@vger.kernel.org,
+ bpf <bpf@vger.kernel.org>, Network Development <netdev@vger.kernel.org>,
+ dri-devel@lists.freedesktop.org,
+ "linux-perf-use." <linux-perf-users@vger.kernel.org>,
+ linux-trace-kernel <linux-trace-kernel@vger.kernel.org>,
+ kexec@lists.infradead.org, live-patching@vger.kernel.org,
+ linux-modules@vger.kernel.org,
+ Linux Crypto Mailing List <linux-crypto@vger.kernel.org>,
+ Linux Power Management <linux-pm@vger.kernel.org>, rcu@vger.kernel.org,
+ sched-ext@lists.linux.dev, linux-mm <linux-mm@kvack.org>,
+ virtualization@lists.linux.dev, damon@lists.linux.dev,
+ clang-built-linux <llvm@lists.linux.dev>,
+ chengkaitao <chengkaitao@kylinos.cn>, Muchun Song <muchun.song@linux.dev>
+References: <20260622040533.29824-1-kaitao.cheng@linux.dev>
+ <CAADnVQJmPWFT01b7DuLdtafv=8FyB84GYHNZ8zSTck+9Aw0JpA@mail.gmail.com>
+ <8c8f1849-86d3-4c69-be27-30bbdffdf616@linux.dev>
+ <ajkSftEbdGoiJXYs@ashevche-desk.local>
+X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
+From: Kaitao Cheng <kaitao.cheng@linux.dev>
+In-Reply-To: <ajkSftEbdGoiJXYs@ashevche-desk.local>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
+X-Migadu-Flow: FLOW_OUT
 
-intel_pstate_tracer imports Gnuplot and numpy before parsing command-line
-options. As a result, even "-h" fails if those optional runtime modules are
-not installed.
 
-Move the imports to the paths that need them. This lets the help and
-invalid-argument paths describe usage without requiring plotting/data
-dependencies. While there, fix a typo in the help text and matching
-comments.
 
-Signed-off-by: Yousef Alhouseen <alhouseenyousef@gmail.com>
----
- .../intel_pstate_tracer/intel_pstate_tracer.py | 18 ++++++++++--------
- 1 file changed, 10 insertions(+), 8 deletions(-)
+在 2026/6/22 18:46, Andy Shevchenko 写道:
+> On Mon, Jun 22, 2026 at 02:15:01PM +0800, Kaitao Cheng wrote:
+>> 在 2026/6/22 13:28, Alexei Starovoitov 写道:
+>>> On Sun, Jun 21, 2026 at 9:06 PM Kaitao Cheng <kaitao.cheng@linux.dev> wrote:
+> 
+> ...
+> 
+>>>>  block/bfq-iosched.c                 |  17 +-
+>>>>  block/blk-cgroup.c                  |  12 +-
+>>>>  block/blk-flush.c                   |   4 +-
+>>>>  block/blk-iocost.c                  |  18 +-
+>>>>  block/blk-mq.c                      |   8 +-
+>>>>  block/blk-throttle.c                |   4 +-
+>>>>  block/kyber-iosched.c               |   4 +-
+>>>>  block/partitions/ldm.c              |   8 +-
+>>>>  block/sed-opal.c                    |   4 +-
+>>>>  include/linux/list.h                | 269 ++++++++++++++++++++++++----
+>>>>  include/linux/llist.h               |  81 +++++++--
+>>>>  init/initramfs.c                    |   5 +-
+>>>>  io_uring/cancel.c                   |   6 +-
+>>>>  io_uring/poll.c                     |   3 +-
+>>>>  io_uring/rw.c                       |   4 +-
+>>>>  io_uring/timeout.c                  |   8 +-
+>>>>  io_uring/uring_cmd.c                |   3 +-
+>>>>  kernel/audit_tree.c                 |   4 +-
+>>>>  kernel/audit_watch.c                |  16 +-
+>>>>  kernel/auditfilter.c                |   4 +-
+>>>>  kernel/auditsc.c                    |   4 +-
+>>>>  kernel/bpf/arena.c                  |  10 +-
+>>>>  kernel/bpf/arraymap.c               |   8 +-
+>>>>  kernel/bpf/bpf_local_storage.c      |   3 +-
+>>>>  kernel/bpf/bpf_lru_list.c           |  25 ++-
+>>>>  kernel/bpf/btf.c                    |  18 +-
+>>>>  kernel/bpf/cgroup.c                 |   7 +-
+>>>>  kernel/bpf/cpumap.c                 |   4 +-
+>>>>  kernel/bpf/devmap.c                 |  10 +-
+>>>>  kernel/bpf/helpers.c                |   8 +-
+>>>>  kernel/bpf/local_storage.c          |   4 +-
+>>>>  kernel/bpf/memalloc.c               |  16 +-
+>>>>  kernel/bpf/offload.c                |   8 +-
+>>>>  kernel/bpf/states.c                 |   4 +-
+>>>>  kernel/bpf/stream.c                 |   4 +-
+>>>>  kernel/bpf/verifier.c               |   6 +-
+>>>>  kernel/cgroup/cgroup-v1.c           |   4 +-
+>>>>  kernel/cgroup/cgroup.c              |  54 +++---
+>>>>  kernel/cgroup/dmem.c                |  12 +-
+>>>>  kernel/cgroup/rdma.c                |   8 +-
+>>>>  kernel/events/core.c                |  44 +++--
+>>>>  kernel/events/uprobes.c             |  12 +-
+>>>>  kernel/exit.c                       |   8 +-
+>>>>  kernel/fail_function.c              |   4 +-
+>>>>  kernel/gcov/clang.c                 |   4 +-
+>>>>  kernel/irq_work.c                   |   4 +-
+>>>>  kernel/kexec_core.c                 |   4 +-
+>>>>  kernel/kprobes.c                    |  16 +-
+>>>>  kernel/livepatch/core.c             |   4 +-
+>>>>  kernel/livepatch/core.h             |   4 +-
+>>>>  kernel/liveupdate/kho_block.c       |   4 +-
+>>>>  kernel/liveupdate/luo_flb.c         |   4 +-
+>>>>  kernel/locking/rwsem.c              |   2 +-
+>>>>  kernel/locking/test-ww_mutex.c      |   2 +-
+>>>>  kernel/module/main.c                |  11 +-
+>>>>  kernel/padata.c                     |   4 +-
+>>>>  kernel/power/snapshot.c             |   8 +-
+>>>>  kernel/power/wakelock.c             |   4 +-
+>>>>  kernel/printk/printk.c              |  11 +-
+>>>>  kernel/ptrace.c                     |   4 +-
+>>>>  kernel/rcu/rcutorture.c             |   3 +-
+>>>>  kernel/rcu/tasks.h                  |   9 +-
+>>>>  kernel/rcu/tree.c                   |   6 +-
+>>>>  kernel/resource.c                   |   4 +-
+>>>>  kernel/sched/core.c                 |   4 +-
+>>>>  kernel/sched/ext.c                  |  22 +--
+>>>>  kernel/sched/fair.c                 |  28 +--
+>>>>  kernel/sched/topology.c             |   4 +-
+>>>>  kernel/sched/wait.c                 |   4 +-
+>>>>  kernel/seccomp.c                    |   4 +-
+>>>>  kernel/signal.c                     |  11 +-
+>>>>  kernel/smp.c                        |   4 +-
+>>>>  kernel/taskstats.c                  |   8 +-
+>>>>  kernel/time/clockevents.c           |   6 +-
+>>>>  kernel/time/clocksource.c           |   4 +-
+>>>>  kernel/time/posix-cpu-timers.c      |   4 +-
+>>>>  kernel/time/posix-timers.c          |   3 +-
+>>>>  kernel/torture.c                    |   3 +-
+>>>>  kernel/trace/bpf_trace.c            |   4 +-
+>>>>  kernel/trace/ftrace.c               |  49 +++--
+>>>>  kernel/trace/ring_buffer.c          |  25 ++-
+>>>>  kernel/trace/trace.c                |  12 +-
+>>>>  kernel/trace/trace_dynevent.c       |   6 +-
+>>>>  kernel/trace/trace_dynevent.h       |   5 +-
+>>>>  kernel/trace/trace_events.c         |  35 ++--
+>>>>  kernel/trace/trace_events_filter.c  |   4 +-
+>>>>  kernel/trace/trace_events_hist.c    |   8 +-
+>>>>  kernel/trace/trace_events_trigger.c |  17 +-
+>>>>  kernel/trace/trace_events_user.c    |  16 +-
+>>>>  kernel/trace/trace_stat.c           |   4 +-
+>>>>  kernel/user-return-notifier.c       |   3 +-
+>>>>  kernel/workqueue.c                  |  16 +-
+>>>>  mm/backing-dev.c                    |   8 +-
+>>>>  mm/balloon.c                        |   8 +-
+>>>>  mm/cma.c                            |   4 +-
+>>>>  mm/compaction.c                     |   4 +-
+>>>>  mm/damon/core.c                     |   4 +-
+>>>>  mm/damon/sysfs-schemes.c            |   4 +-
+>>>>  mm/dmapool.c                        |   4 +-
+>>>>  mm/huge_memory.c                    |   8 +-
+>>>>  mm/hugetlb.c                        |  56 +++---
+>>>>  mm/hugetlb_vmemmap.c                |  16 +-
+>>>>  mm/khugepaged.c                     |  14 +-
+>>>>  mm/kmemleak.c                       |   7 +-
+>>>>  mm/ksm.c                            |  25 +--
+>>>>  mm/list_lru.c                       |   4 +-
+>>>>  mm/memcontrol-v1.c                  |   8 +-
+>>>>  mm/memory-failure.c                 |  12 +-
+>>>>  mm/memory-tiers.c                   |   4 +-
+>>>>  mm/migrate.c                        |  23 ++-
+>>>>  mm/mmu_notifier.c                   |   9 +-
+>>>>  mm/page_alloc.c                     |   8 +-
+>>>>  mm/page_reporting.c                 |   2 +-
+>>>>  mm/percpu.c                         |  11 +-
+>>>>  mm/pgtable-generic.c                |   4 +-
+>>>>  mm/rmap.c                           |  10 +-
+>>>>  mm/shmem.c                          |   9 +-
+>>>>  mm/slab_common.c                    |  14 +-
+>>>>  mm/slub.c                           |  33 ++--
+>>>>  mm/swapfile.c                       |   4 +-
+>>>>  mm/userfaultfd.c                    |  12 +-
+>>>>  mm/vmalloc.c                        |  24 +--
+>>>>  mm/vmscan.c                         |   7 +-
+>>>>  mm/zsmalloc.c                       |   4 +-
+>>>>  124 files changed, 875 insertions(+), 681 deletions(-)
+>>>
+>>> Not sure what you were thinking, but this diff stat
+>>> is not landable.
+>>
+>> [PATCH v3 1/7] and [PATCH v3 2/7] contain the main logic and can
+>> be merged directly. They are also compatible with the old API.
+>> [PATCH v3 3/7] through [PATCH v3 7/7] are just simple interface
+>> replacements and do not change any functional logic. They can be
+>> left unmerged for now; individual modules can pick them up later
+>> if needed.
+>>
+>> In v2, Andy Shevchenko mentioned: "If it's done by Linus himself
+>> during the day when he prepares -rc1, it's fine."
+> 
+> Yes, but you need to get his blessing first to go with this.
+> Have you communicated with him on this?
 
-diff --git a/tools/power/x86/intel_pstate_tracer/intel_pstate_tracer.py b/tools/power/x86/intel_pstate_tracer/intel_pstate_tracer.py
-index 38cfbdcde..64001bc80 100755
---- a/tools/power/x86/intel_pstate_tracer/intel_pstate_tracer.py
-+++ b/tools/power/x86/intel_pstate_tracer/intel_pstate_tracer.py
-@@ -32,8 +32,6 @@ import re
- import signal
- import sys
- import getopt
--import Gnuplot
--from numpy import *
- from decimal import *
- 
- __author__ = "Srinivas Pandruvada"
-@@ -88,8 +86,8 @@ def print_help(driver_name):
-     print('      kbytes: Kilo bytes of memory per CPU to allocate to the trace buffer. Default: 10240')
-     print('  Output:')
-     print('    If not already present, creates a "results/test_name" folder in the current working directory with:')
--    print('      cpu.csv - comma seperated values file with trace contents and some additional calculations.')
--    print('      cpu???.csv - comma seperated values file for CPU number ???.')
-+    print('      cpu.csv - comma separated values file with trace contents and some additional calculations.')
-+    print('      cpu???.csv - comma separated values file for CPU number ???.')
-     print('      *.png - a variety of PNG format plot files created from the trace contents and the additional calculations.')
-     print('  Notes:')
-     print('    Avoid the use of _ (underscore) in test names, because in gnuplot it is a subscript directive.')
-@@ -295,6 +293,8 @@ def common_all_gnuplot_settings(output_png):
- def common_gnuplot_settings():
-     """ common gnuplot settings. """
- 
-+    import Gnuplot
-+
-     g_plot = Gnuplot.Gnuplot(persist=1)
- #   The following line is for rigor only. It seems to be assumed for .csv files
-     g_plot('set datafile separator \",\"')
-@@ -343,7 +343,7 @@ def store_csv(cpu_int, time_pre_dec, time_post_dec, core_busy, scaled, _from, _t
-     graph_data_present = True;
- 
- def split_csv(current_max_cpu, cpu_mask):
--    """ seperate the all csv file into per CPU csv files. """
-+    """ separate the main csv file into per CPU csv files. """
- 
-     if os.path.exists('cpu.csv'):
-         for index in range(0, current_max_cpu + 1):
-@@ -482,7 +482,7 @@ def read_trace_data(filename, cpu_mask):
-             if cpu_int > current_max_cpu:
-                 current_max_cpu = cpu_int
- # End of for each trace line loop
--# Now seperate the main overall csv file into per CPU csv files.
-+# Now separate the main overall csv file into per CPU csv files.
-     split_csv(current_max_cpu, cpu_mask)
- 
- def signal_handler(signal, frame):
-@@ -508,8 +508,6 @@ if __name__ == "__main__":
-     valid1 = False
-     valid2 = False
- 
--    cpu_mask = zeros((MAX_CPUS,), dtype=int)
--
-     try:
-         opts, args = getopt.getopt(sys.argv[1:],"ht:i:c:n:m:",["help","trace_file=","interval=","cpu=","name=","memory="])
-     except getopt.GetoptError:
-@@ -538,6 +536,10 @@ if __name__ == "__main__":
-         print_help('intel_pstate')
-         sys.exit()
- 
-+    from numpy import zeros
-+
-+    cpu_mask = zeros((MAX_CPUS,), dtype=int)
-+
-     if cpu_list:
-         for p in re.split("[,]", cpu_list):
-             if int(p) < MAX_CPUS :
+Not yet, because the overall approach is still not mature. People
+have different opinions on the implementation details and on how
+to move this forward, so I think we should iterate through a few
+versions first before making a final decision.
+
+>> Even so, the
+>> changes in this patch series are indeed quite large and touch
+>> almost every subsystem. I have only converted part of them for
+>> now, so I wanted to send this out first and see what people think.
+> 
+> That's why it's better to provide a script to convert (e.g., coccinelle)
+> instead of tons of patches.
+
+I tried writing conversion scripts with Coccinelle, but there were
+always cases that got missed. In contrast, I found that using AI
+for focused replacements was actually more efficient.
+
+As David Hildenbrand mentioned, "If we decide we want this, I guess
+we should target per-subsystem conversions." I would like to provide
+the new interface first; adapting each subsystem on demand later may
+be easier to achieve.
 -- 
-2.54.0
+Thanks
+Kaitao Cheng
 
