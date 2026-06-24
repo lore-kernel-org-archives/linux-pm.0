@@ -1,139 +1,190 @@
-Received: from mail-vk1-f173.google.com (mail-vk1-f173.google.com [209.85.221.173])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from out-172.mta0.migadu.com (out-172.mta0.migadu.com [91.218.175.172])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A32C3258EF3
-	for <linux-pm@vger.kernel.org>; Wed, 24 Jun 2026 13:13:02 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.173
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F22B33B2FDC;
+	Wed, 24 Jun 2026 13:15:26 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=91.218.175.172
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1782306783; cv=none; b=L/PHPjRzwW++tCCCDOOjTaid2tiPSMsqDld/bTJr/q0uJ0ADhwur/6PfZ5MbtvcVNj1X5sQG69rxFrQllRqmGv0A513NdfXVLyg6Yhl5KE9WPfQ4ZPTCY0/mvtn66mN+KXgXuNW4JjruXCprDsYZTCSgUl4GNzym45DoAMerDoI=
+	t=1782306928; cv=none; b=A7NOJ0/XfZDQ+km4I3tnPdTKjHUtXiRKzoR8IpGPDCRCT86zgDbHssQv6dcfxjAUEGA0Yky40q3ynJjW0PoVeuhMB/JW2Aib5xTNVkp1TVmBQ2uaYLGJXopdIjWRQm28fgJA8VzUDCK79qYsvfemBQvwDa8otJh/25EzHgcJ/5w=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1782306783; c=relaxed/simple;
-	bh=vX50m4/9mpoS9OAgy/n0A8z7SSW5XduuDoWYLqcBObI=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=e6JGT/B2RVqiM3mGhH0qLXvFCGAPaKQ+XYGk7yJVrtZAwd7cGs090svl+fdVkkilUxjoenZ/xRCxAvvYKL7/AGM/fmHKcamR7w8T2q5qzNZxCeaYnbBwrCTnyISSlfGeugQLFXUwnbLIh9W3nn9BLFPm/QkU/sE3DkHJrQfUSbc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org; spf=pass smtp.mailfrom=gmail.com; arc=none smtp.client-ip=209.85.221.173
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
-Received: by mail-vk1-f173.google.com with SMTP id 71dfb90a1353d-59d541955f8so377911e0c.1
-        for <linux-pm@vger.kernel.org>; Wed, 24 Jun 2026 06:13:02 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1782306782; x=1782911582;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=NVDJhQYbmltFvjjEnnmNhAk+/lIL15u/vSuc+udanW0=;
-        b=q6YLxH55bT132u9SUEmZEcWgBSJq+ZiCv1RZE1ZkMfWJWqbOCUZGPdSD9MQJ8ZKXjk
-         Tnjlfd67lGB7hwTQMDfsw9d9pPgPH02dC1lR39FQ0ztljXBCb694J3Qj4lPDeOmUb2tl
-         KiA2RlM2l4sFKo6hR0TXN0ZeR/iGRhtgy9kXstB5ejMfFlCzmEa1kxKG83vzODJOANGE
-         TywovGIpG01scic6DZjD+txcNXV6vU86evJyVqmlzyTEcwHVy95p6zfrx70g/cpZEU7/
-         RovcGbTwFGpfQ2eYir0QHdJlKBdYnY5QHQ3UKVX8a36dxOKuuIExKzJKnzOJR9h8JZE5
-         40Gw==
-X-Forwarded-Encrypted: i=1; AHgh+Rr6tkaG0FvguuIevdPfSChMi7XlCMoP5uxm0zv1lPwyL+G2PBEH6Wz+EmHzDAGfJMazqLAKRxfZMQ==@vger.kernel.org
-X-Gm-Message-State: AOJu0YwZJriOujZySLHq9+x3yyK0tnKIv8QKXHxC6rTgsVK2B8Lb3pxd
-	EPfjFj1Dqe/wj7JAm5BGWYIGJiWKQyp4CLRXyhsoPy0GxwgWczw0PQiyBDuDupRk
-X-Gm-Gg: AfdE7clhRBBaYB6umekGbr28xXyN4rK57/+yFiPBWT5vrF2M2qbmL+BzCQI3uDLpMG+
-	kX5yaNh6mWGJaPu52g0XAyXxFPXXomegnfoq16KDSlrsk73mnGNpnmXVAVWiWMf9nNLxZv909xU
-	2mKusz36ClKgjbSZTdI4FbsiPP6+Ky9abyzZLzlvqM3ClYn9RyAd2WRNBUxrT4M0cdwbuKbQhUL
-	LD0g4kKo/y4sn8ITpPRHZ3Ck7HjYJPs4gonJWF4GqhC3vLoKjHFCYea92Fh9OXmihZIaaVyitxw
-	wFNq41khELLkmlPhwFH1IbphTV+7t6zfAzLYC/ziV8coeB5Gj58kkdj0CyerNQ2vNzR5E97jUpJ
-	Tn+D5GE4S/yvlQuvoIsobIDf4UMKWCWsRX98f+nAgCbf1oRsatBDaQBJPHAOj5urFBCLJntK0uj
-	kH/+aUPd0BPj7wIcXHXgJnRwomg6jPcxzfDHGY0k04QdectCOu0A==
-X-Received: by 2002:a05:6122:2a53:b0:576:c4b:460a with SMTP id 71dfb90a1353d-5bbfbd95863mr10113104e0c.8.1782306781002;
-        Wed, 24 Jun 2026 06:13:01 -0700 (PDT)
-Received: from mail-vs1-f44.google.com (mail-vs1-f44.google.com. [209.85.217.44])
-        by smtp.gmail.com with ESMTPSA id 71dfb90a1353d-5bbfb890b7csm10343833e0c.7.2026.06.24.06.12.58
-        for <linux-pm@vger.kernel.org>
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Wed, 24 Jun 2026 06:12:58 -0700 (PDT)
-Received: by mail-vs1-f44.google.com with SMTP id ada2fe7eead31-728fa2ce6f9so357511137.1
-        for <linux-pm@vger.kernel.org>; Wed, 24 Jun 2026 06:12:58 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AHgh+RpHfcm+QNe0L9YtcrnkOvYyylK9/88AxkxGkpZEZWF8/5ZvGj/nBE0b5pKtJYYi8cVZhCQvToCAvw==@vger.kernel.org
-X-Received: by 2002:a05:6102:3309:b0:611:e0c2:1604 with SMTP id
- ada2fe7eead31-72b671e931cmr10142508137.19.1782306778248; Wed, 24 Jun 2026
- 06:12:58 -0700 (PDT)
+	s=arc-20240116; t=1782306928; c=relaxed/simple;
+	bh=moyOQIzaR6smZ9rBrd3W/NuwPZRv54jsj9HwphWn/HQ=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=KLd6GtpauGCNhDeGTku3OcQHwYSl5+vuhjC2jBpYHgdsrWZm9chvxNxEYC10tHv3xqi7ezyglgVjCVmsmpJL56czye2JeC0fl3GZzaqLZTbjEJtCqol0jj+sx0gU7fHvLJm9Qn94XgvNr2d5zsfsAWfEtJ+Q7vPg1DoEoOAQ240=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.dev; spf=pass smtp.mailfrom=linux.dev; dkim=pass (1024-bit key) header.d=linux.dev header.i=@linux.dev header.b=Kz4Q9rbh; arc=none smtp.client-ip=91.218.175.172
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.dev
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.dev
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (1024-bit key) header.d=linux.dev header.i=@linux.dev header.b="Kz4Q9rbh"
+Message-ID: <351a6b67-b394-4c58-aee2-88b6c8089ad5@linux.dev>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
+	t=1782306914;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=Jm5h4EGMu1/G65UxgDlhva2Uqze8a2QIkXsB3xVvPew=;
+	b=Kz4Q9rbh7etgj8euhlBLWO3TzYATCTCfu6njur0dxfGVJdMqB9UP/InGWtI0bOGTstOlHl
+	POIMRyO3mRJBT5/BeQDQV44BuugXQiS1AZGuvJ0EWei9+7fme1gtEeTZSwt1IwIDM7n5ZK
+	H6199we71vGASxf1nAZQvllBRzYOKVU=
+Date: Wed, 24 Jun 2026 21:14:50 +0800
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <ajvVfSusxZfjNxVN@stanley.mountain>
-In-Reply-To: <ajvVfSusxZfjNxVN@stanley.mountain>
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Wed, 24 Jun 2026 15:12:47 +0200
-X-Gmail-Original-Message-ID: <CAMuHMdUpnXGUHRNrT856RkBtsrO_So+0sxJ47cG0OihoChB+1A@mail.gmail.com>
-X-Gm-Features: AVVi8Cf8LN4jqx6II-ppStxUS-9RUJFFL6cy6NRwMFT9fQRCj9ODD57bZVky9AQ
-Message-ID: <CAMuHMdUpnXGUHRNrT856RkBtsrO_So+0sxJ47cG0OihoChB+1A@mail.gmail.com>
-Subject: Re: [PATCH v2] thermal/drivers/rcar: fix error checking in probe()
-To: Dan Carpenter <error27@gmail.com>
-Cc: Andrzej Pietrasiewicz <andrzej.p@collabora.com>, 
-	=?UTF-8?Q?Niklas_S=C3=B6derlund?= <niklas.soderlund@ragnatech.se>, 
-	"Rafael J. Wysocki" <rafael@kernel.org>, Daniel Lezcano <daniel.lezcano@kernel.org>, 
-	Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>, 
-	Geert Uytterhoeven <geert+renesas@glider.be>, Magnus Damm <magnus.damm@gmail.com>, 
-	Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-renesas-soc@vger.kernel.org, 
-	linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	kernel-janitors@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-
-Hi Dan,
-
-On Wed, 24 Jun 2026 at 15:03, Dan Carpenter <error27@gmail.com> wrote:
-> This code accidentally calls thermal_zone_device_enable() before checking
-> whether thermal_zone_device_register_with_trips() failed.  Move the call
-> until later to avoid an error pointer dereference of "priv->zone".
->
-> The driver works differently depending on if we are using OF thermal or
-> not.  We use thermal_add_hwmon_sysfs() if we are using OF thermal and
-> call thermal_zone_device_enable() if not.
->
-> Moving the thermal_zone_device_enable() call is a bit cleaner as well.
-> The original code used a three step process to cleanup:
-> 1. Call thermal_zone_device_unregister() to cleanup.
-> 2. Set priv->zone to an error pointer to preserve the error code.
-> 3. Set priv->zone to NULL to avoid a second call to
->    thermal_zone_device_unregister() in the rcar_thermal_remove()
->    function.
->
-> Now we can just do a direct goto error_unregister and rcar_thermal_remove()
-> handles the cleanup properly.
->
-> Fixes: bbcf90c0646a ("thermal: Explicitly enable non-changing thermal zone devices")
-> Signed-off-by: Dan Carpenter <error27@gmail.com>
-> ---
-> v2: Use the correct fixes tag and re-write the check in a cleaner way.
-
-Thanks for the update!
-
-Reviewed-by: Geert Uytterhoeven <geert+renesas@glider.be>
-
-> --- a/drivers/thermal/renesas/rcar_thermal.c
-> +++ b/drivers/thermal/renesas/rcar_thermal.c
-
-> @@ -510,6 +504,10 @@ static int rcar_thermal_probe(struct platform_device *pdev)
->                         ret = thermal_add_hwmon_sysfs(priv->zone);
->                         if (ret)
->                                 goto error_unregister;
-> +               } else {
-> +                       ret = thermal_zone_device_enable(priv->zone);
-> +                       if (ret)
-> +                               goto error_unregister;
-
-This error path is the same in the other branch, so it could be shared
-after the if/else block.
-
->                 }
->
->                 rcar_thermal_irq_enable(priv);
+Subject: Re: [PATCH v3 1/7] list: Add mutable iterator variants
+To: David Laight <david.laight.linux@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+ David Hildenbrand <david@kernel.org>, Jens Axboe <axboe@kernel.dk>,
+ Tejun Heo <tj@kernel.org>, Alexander Viro <viro@zeniv.linux.org.uk>,
+ Christian Brauner <brauner@kernel.org>, Alexei Starovoitov <ast@kernel.org>,
+ Daniel Borkmann <daniel@iogearbox.net>, Andrii Nakryiko <andrii@kernel.org>,
+ Johannes Weiner <hannes@cmpxchg.org>, Peter Zijlstra <peterz@infradead.org>,
+ Ingo Molnar <mingo@redhat.com>, Arnaldo Carvalho de Melo <acme@kernel.org>,
+ Namhyung Kim <namhyung@kernel.org>, Thomas Gleixner <tglx@kernel.org>,
+ Juri Lelli <juri.lelli@redhat.com>,
+ Vincent Guittot <vincent.guittot@linaro.org>,
+ Paul Moore <paul@paul-moore.com>,
+ Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+ "Paul E. McKenney" <paulmck@kernel.org>,
+ Shakeel Butt <shakeel.butt@linux.dev>,
+ =?UTF-8?Q?Christian_K=C3=B6nig?= <christian.koenig@amd.com>,
+ David Howells <dhowells@redhat.com>, Simona Vetter <simona.vetter@ffwll.ch>,
+ Randy Dunlap <rdunlap@infradead.org>,
+ Luca Ceresoli <luca.ceresoli@bootlin.com>,
+ Philipp Stanner <phasta@kernel.org>, linux-block@vger.kernel.org,
+ linux-kernel@vger.kernel.org, cgroups@vger.kernel.org,
+ linux-ntfs-dev@lists.sourceforge.net, linux-fsdevel@vger.kernel.org,
+ io-uring@vger.kernel.org, audit@vger.kernel.org, bpf@vger.kernel.org,
+ netdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+ linux-perf-users@vger.kernel.org, linux-trace-kernel@vger.kernel.org,
+ kexec@lists.infradead.org, live-patching@vger.kernel.org,
+ linux-modules@vger.kernel.org, linux-crypto@vger.kernel.org,
+ linux-pm@vger.kernel.org, rcu@vger.kernel.org, sched-ext@lists.linux.dev,
+ linux-mm@kvack.org, virtualization@lists.linux.dev, damon@lists.linux.dev,
+ llvm@lists.linux.dev, Kaitao Cheng <chengkaitao@kylinos.cn>
+References: <20260622040533.29824-1-kaitao.cheng@linux.dev>
+ <20260622040533.29824-2-kaitao.cheng@linux.dev>
+ <20260622094242.64531b9a@pumpkin>
+X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
+From: Kaitao Cheng <kaitao.cheng@linux.dev>
+In-Reply-To: <20260622094242.64531b9a@pumpkin>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-Migadu-Flow: FLOW_OUT
 
 
-Gr{oetje,eeting}s,
 
-                        Geert
+在 2026/6/22 16:42, David Laight 写道:
+> On Mon, 22 Jun 2026 12:05:31 +0800
+> Kaitao Cheng <kaitao.cheng@linux.dev> wrote:
+> 
+>> From: Kaitao Cheng <chengkaitao@kylinos.cn>
+>>
+>> The list_for_each*_safe() helpers are used when the loop body may
+>> remove the current entry.  Their API exposes the temporary cursor at
+>> every call site, even though most users only need it for the iterator
+>> implementation and never reference it in the loop body.
+>>
+>> Add *_mutable() variants for list and hlist iteration.  The new helpers
+>> support both forms: callers may keep passing an explicit temporary cursor
+>> when they need to inspect or reset it, or omit it and let the helper use
+>> a unique internal cursor.
+> 
+> I'm not really sure 'mutable' means anything either.
+> It is possible to make it valid for the loop body (or even other threads)
+> to delete arbitrary list items - but that needs significant extra overheads.
+> 
+> It might be worth doing something that doesn't need the extra variable,
+> but there is little point doing all the churn just to rename things.
+> 
+>>
+>> This makes call sites that only mutate the list through the current entry
+>> less noisy, while keeping the existing *_safe() helpers available for
+>> compatibility.
+>>
+>> Signed-off-by: Kaitao Cheng <chengkaitao@kylinos.cn>
+>> ---
+>>  include/linux/list.h | 269 +++++++++++++++++++++++++++++++++++++------
+>>  1 file changed, 231 insertions(+), 38 deletions(-)
+>>
+>> diff --git a/include/linux/list.h b/include/linux/list.h
+>> index 09d979976b3b..1081def7cea9 100644
+>> --- a/include/linux/list.h
+>> +++ b/include/linux/list.h
+>> @@ -7,6 +7,7 @@
+>>  #include <linux/stddef.h>
+>>  #include <linux/poison.h>
+>>  #include <linux/const.h>
+>> +#include <linux/args.h>
+>>  
+>>  #include <asm/barrier.h>
+>>  
+>> @@ -763,28 +764,72 @@ static inline void list_splice_tail_init(struct list_head *list,
+>>  #define list_for_each_prev(pos, head) \
+>>  	for (pos = (head)->prev; !list_is_head(pos, (head)); pos = pos->prev)
+>>  
+>> -/**
+>> - * list_for_each_safe - iterate over a list safe against removal of list entry
+>> - * @pos:	the &struct list_head to use as a loop cursor.
+>> - * @n:		another &struct list_head to use as temporary storage
+>> - * @head:	the head for your list.
+>> +/*
+>> + * list_for_each_safe is an old interface, use list_for_each_mutable instead.
+>>   */
+>>  #define list_for_each_safe(pos, n, head) \
+>>  	for (pos = (head)->next, n = pos->next; \
+>>  	     !list_is_head(pos, (head)); \
+>>  	     pos = n, n = pos->next)
+>>  
+>> +#define __list_for_each_mutable_internal(pos, tmp, head)		\
+>> +	for (typeof(pos) tmp = (pos = (head)->next)->next;		\
+> 
+> Use auto
+> 
+>> +	     !list_is_head(pos, (head));				\
+>> +	     pos = tmp, tmp = pos->next)
+>> +
+>> +#define __list_for_each_mutable1(pos, head)				\
+>> +	__list_for_each_mutable_internal(pos, __UNIQUE_ID(next), head)
+>> +
+>> +#define __list_for_each_mutable2(pos, next, head)			\
+>> +	list_for_each_safe(pos, next, head)
+>> +
+>>  /**
+>> - * list_for_each_prev_safe - iterate over a list backwards safe against removal of list entry
+>> + * list_for_each_mutable - iterate over a list safe against entry removal
+>>   * @pos:	the &struct list_head to use as a loop cursor.
+>> - * @n:		another &struct list_head to use as temporary storage
+>> - * @head:	the head for your list.
+>> + * @...:	either (head) or (next, head)
+>> + *
+>> + * next:	another &struct list_head to use as optional temporary storage.
+>> + *		The temporary cursor is internal unless explicitly supplied by
+>> + *		the caller.
+>> + * head:	the head for your list.
+>> + */
+>> +#define list_for_each_mutable(pos, ...)					\
+>> +	CONCATENATE(__list_for_each_mutable, COUNT_ARGS(__VA_ARGS__))	\
+>> +		(pos, __VA_ARGS__)
+> 
+> The variable argument count logic really just slows down compilation.
+> Maybe there aren't enough copies of this code to make that significant.
+> But just because you can do it doesn't mean it is a gooD idea.
+> I'm also not sure it really adds anything to the readability.
+> 
+> And, it you are going to make the middle argument optional there is
+> no need to change the macro name.
+
+Christian König and Jani Nikula also disagree with the variadic-argument
+implementation approach. If we abandon that method, it means we will
+inevitably need to add some new macros. If mutable is not a good name,
+suggestions for better alternatives would be welcome; coming up with a
+suitable name is indeed rather tricky.
 
 -- 
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+Thanks
+Kaitao Cheng
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
