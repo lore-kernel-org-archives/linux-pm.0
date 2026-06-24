@@ -1,171 +1,126 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-wm1-f49.google.com (mail-wm1-f49.google.com [209.85.128.49])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A3DC53B38B7
-	for <linux-pm@vger.kernel.org>; Wed, 24 Jun 2026 13:36:09 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D33563B892D
+	for <linux-pm@vger.kernel.org>; Wed, 24 Jun 2026 13:58:59 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.49
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1782308172; cv=none; b=ZSnBAPeA6Us6Aroyj6BqVykMlQN9u+y1eWqxKjo9+Mj+ypHLWEreLFJ2S8Vp1fih1WGa+M7/tbSynGsLyOG/JtuDewBBug5d6LGqqu/+YpvZ89i5QmCiUD7gT1fCel4CSohx3QVMTB4O/i5gjf0v2H6HtS7lNKprmuFMMK+QyWE=
+	t=1782309541; cv=none; b=XptqUj017IZVnb0XCJLy0miLwOzLDh9+c8OmqUtBDBXnGfBbPbNa44TY94ziDb7FOcZ1mqPSXBOBsKRTvJnKMjzl28Bm4lvLQMLov4wTXyxsPAHO8t6ujwLdVr3HaeLNxsiq0z0vXpo+v8KDW2lT4kG6SHyJO62H7dB4oheGQXc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1782308172; c=relaxed/simple;
-	bh=fJgYKuTeumlAmQBLTcqAa2MPjW0sx4rAMEED5KVoepw=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=hy3CY3fqEFhdHYcPkeEUd2PgLglaX3IrpWsA6ZMwBwAXQFJv8DvhaDn+8D9aYGxl4w4Kn0TI3YRnUx1io+DtrPqj1OCe3LsIzD7/4CR7srjhF1NtXksJ4MaLD1X5XhjGYW8lzUfnPIRv61pyk19yWJbGJ8aRQkrErVIzxXn8RHY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Lbx1wEQD; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1782309541; c=relaxed/simple;
+	bh=rZoy75d1F530K2+ThODvbmPdZCic8tHOaNMPkK37BVc=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=ntMEk7xnEqpyNey+uqA4c2/ZvMgW5IAumltaNx70WGbzpqU1g5tXv+SL3LLINobuVaLEnWS49GhO2RD1CL1iN79svwTmi1vKBNI1jI8jgxG9pYVOBs1ejfeSJrhgv8GZVlQY9Ux1ptWfN+qwUBJ5kiENaVMLPx182DebbDiiacQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=mV+//V+B; arc=none smtp.client-ip=209.85.128.49
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Lbx1wEQD"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 34C2E1F0155C
-	for <linux-pm@vger.kernel.org>; Wed, 24 Jun 2026 13:36:09 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1782308169;
-	bh=tuY+ZoOzQpLm5q0KFZmGWp6DKQmJ5wEe6PDOUs4cBS8=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc;
-	b=Lbx1wEQDN/6tu6DdJrei0THldtdNajIemSoHMGZ74tAvtdARIEa1uWCvC60qT+PL3
-	 x32Nqk35IL9kti0haTWoekJ/VItFyAbbqlqWKFmiepihScaoYJ+5JF/wmNVU7NSAYN
-	 LBxana5hcvvj+mZm1TVl/JJXD1JWIoyscDowc4WMQZgSMnYEKd+FAf2qyrBgifmU57
-	 +xRryF+BPwkPo+hM0GyEDgRJe/uPvCTVWpOlfopk5HFhFd4/T1rOk1+RdA2EkgNKIC
-	 OHARn9PlYeUvKEUV81cWUauTi9P4O5A+NtxVvw3l9SO8NZf7fB152JYhJ/u1JNg2V/
-	 sorAUls8jLrQg==
-Received: by mail-lf1-f42.google.com with SMTP id 2adb3069b0e04-5ad49c55ce1so800111e87.0
-        for <linux-pm@vger.kernel.org>; Wed, 24 Jun 2026 06:36:09 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AHgh+RrPr/hSOycDu5TKkxkDuBfGrdWZffrphiCnlZf65/hUzIuLMpm1ATNis6k64wNRRk5D6ihdplno8Q==@vger.kernel.org
-X-Gm-Message-State: AOJu0YyF8lVQMzzRScSVl2Z+MufTn03b+Yt9uju2B57P2qvUDV/MC+RU
-	cAeEKjX/4+39XBky9agDqt8susnbhgDr0E6/QwPgt9rwzBlZPvOorjsNAu7ThDbFHganPHQ41jl
-	VswLli7oBW34yakVdICLQAGrt5twx8VE=
-X-Received: by 2002:a05:6512:3991:b0:5a8:6e64:e88b with SMTP id
- 2adb3069b0e04-5ae9d54e5a5mr1085505e87.4.1782308167583; Wed, 24 Jun 2026
- 06:36:07 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="mV+//V+B"
+Received: by mail-wm1-f49.google.com with SMTP id 5b1f17b1804b1-49261a64cf4so3856125e9.2
+        for <linux-pm@vger.kernel.org>; Wed, 24 Jun 2026 06:58:59 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1782309538; x=1782914338; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=Xy3H6Mm52Vr1FVRw8xaYMztW/ew2mK+cmZQhwwKNUmw=;
+        b=mV+//V+BxCtvsA8WDrD8kQNm0frliGCNwyyCYDV8hBontCw8/MfgOGQFuCVQ0SzZ0v
+         CxwjOGpJaudlo/is3ejefrTocpsOJUeMmX2gEob60MBFOVvZrqaesYM4VQ0Qglv+caa3
+         CneBhX5rJzNtT1AWlUqi5qH73vLpAhrdpSJftBpbm4fR4JZO0pFo5G1V1pSlGp7iREAr
+         XYMSppk/b+f7lJ3FBPJor1mZ+3vyctxKtCOAXzvZuMN/Rp47/Orzg49uXLWOvDSoNyKe
+         fjafct5mrzdJLLFk4wCzkLS591BcnRuXuxXtoNcHo7qudWkXewbkTbcRK1GfDIVFRbk0
+         0hlA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1782309538; x=1782914338;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=Xy3H6Mm52Vr1FVRw8xaYMztW/ew2mK+cmZQhwwKNUmw=;
+        b=N7oeFzsCGo1RtItgaOVESimsB/lP0qYTMIu3wzw+d+m4swBiIQKZ6QWq0e5cL4cc0A
+         3gqIex4d7ChSkOFsFP7nNpAnFEOD0kaEVxIKKpdiU50dG8K8N71lq/V97eL05Z4ZZ3aF
+         MdoopQ8K2Md3ym1kcv+pa7D+zPEbcUfXpJnnZXhtkfm1STqcL2nNvfZI6H72UU0WKr3D
+         VHhyrvGzonIorwc0s4p4oHE22Eb8ES+QIg3F9+m6AdHSRdCFWIhO1qD6fVOqH6Zw+85r
+         0FCOQTYp4B2g8calS9rkHA6pDb6kXPU0bL4Vacy3UYEusEDK41+BBetFucakGtiY0cgk
+         oPtQ==
+X-Gm-Message-State: AOJu0YyEcj1+3fNp0gx13CrPZ/XlBJ8m8BfLUTjK7G87kQkZ6JwKCcCj
+	MNQptcECL4679bc9IT3lw7ZzMgJ6s0ouNhH31rqagykPLJrgsd+rPHfi
+X-Gm-Gg: AfdE7ckpPklM4fLVHRnfyeArLnUKj0jqpr6UZ2xwgxUrkzoxIWsmCvJrI5QfVSvVE2I
+	wcRxKDrU+n6xf+sXneAwhoWjK/4BLH6sdCqdHn3dvWLE5ZfnHzcRae38hmu4na7AEnd4XH4dg35
+	C4MdZc1HYZ6FhGvEt1rTB/zpOVFBi8U/WotHn/YWupE2Jq9J++uoehBpC+yzbAemSCakXVm6X9c
+	HEMAbeJ5ckxyAkCAC4+B8tgAXyL0hpW7xQ1NgvSABkJRxOnqzmHJ512WM0abKuRcEUrL/1l6WOZ
+	ib4IdrvsyuzcsrfYbDlO0RD4E67CoVKM3stc8z1aVFoMUkdlYWVe4POhitecreePxbtS0/ondZg
+	kF1dnDoBI2f+NMwMehjenTfxWeUegcn5igJrQxQIx5y6vboh+icqoALYf8vH9hkZlzpnu3Sv4gb
+	4M0UUD8qLMg+w0
+X-Received: by 2002:a05:600c:3489:b0:490:b8e6:be40 with SMTP id 5b1f17b1804b1-4926086e5edmr52079765e9.21.1782309538140;
+        Wed, 24 Jun 2026 06:58:58 -0700 (PDT)
+Received: from beast.lan ([2a00:c281:1461:c400:bf16:e4f3:7fa:c2dc])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-46c221d93eesm6734311f8f.20.2026.06.24.06.58.56
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 24 Jun 2026 06:58:57 -0700 (PDT)
+From: Boris Shtrasman <borissh1983@gmail.com>
+To: Sebastian Reichel <sre@kernel.org>,
+	Shuah Khan <shuah@kernel.org>
+Cc: linux-pm@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	linux-kselftest@vger.kernel.org,
+	linux-api@vger.kernel.org,
+	Boris Shtrasman <borissh1983@gmail.com>
+Subject: PATCH v2 0/2] Power: supply: Add PbAc, NiZn, RAM, and ZnAr support
+Date: Wed, 24 Jun 2026 16:57:16 +0300
+Message-ID: <20260624135718.286771-1-borissh1983@gmail.com>
+X-Mailer: git-send-email 2.47.3
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260618224527.1506419-1-jmattson@google.com> <20260618224527.1506419-4-jmattson@google.com>
- <CAJZ5v0jeJCN3Zu4uWoOYTYcu9o4BpkWLitNToGbPdwm8Tub=hg@mail.gmail.com> <a962064f-fcd5-4ad2-bc7d-4249ec8fa495@oss.qualcomm.com>
-In-Reply-To: <a962064f-fcd5-4ad2-bc7d-4249ec8fa495@oss.qualcomm.com>
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Date: Wed, 24 Jun 2026 15:35:52 +0200
-X-Gmail-Original-Message-ID: <CAJZ5v0iJ=gLpjX2ZGhH7v0QQKROkoOto6R6-pOk=76ADrNWySw@mail.gmail.com>
-X-Gm-Features: AVVi8CfjQ-g9msinsRP9O--Y6SLuc4vBB4GUuh45U33IfEet7LQR0SrSKSxjjBY
-Message-ID: <CAJZ5v0iJ=gLpjX2ZGhH7v0QQKROkoOto6R6-pOk=76ADrNWySw@mail.gmail.com>
-Subject: Re: [PATCH v3 3/4] cpufreq: ACPI: Use IPI to update boost MSR in cpufreq_boost_down_prep()
-To: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Jim Mattson <jmattson@google.com>, bp@alien8.de, 
-	tglx@kernel.org, x86@kernel.org, viresh.kumar@linaro.org, yosry@kernel.org, 
-	andrew.cooper3@citrix.com, ludloff@gmail.com, linux-kernel@vger.kernel.org, 
-	linux-pm@vger.kernel.org, Sashiko <sashiko-bot@kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
 
-On Wed, Jun 24, 2026 at 1:26=E2=80=AFPM Zhongqiu Han
-<zhongqiu.han@oss.qualcomm.com> wrote:
->
-> On 6/23/2026 8:47 PM, Rafael J. Wysocki wrote:
-> > On Fri, Jun 19, 2026 at 12:45=E2=80=AFAM Jim Mattson <jmattson@google.c=
-om> wrote:
-> >>
-> >> During driver exit or CPU hotplug, acpi_cpufreq_cpu_exit() calls
-> >> cpufreq_boost_down_prep() to re-enable boost on the target CPU.  Howev=
-er,
-> >> cpufreq_boost_down_prep() ignores the target CPU parameter and calls
-> >> boost_set_msr(1) locally. Since this runs in an unbound process contex=
-t, it
-> >> updates the local CPU's MSR while leaving the target CPU's boost state
-> >> unchanged.
-> >>
-> >> On Intel platforms, the open-coded read-modify-write of
-> >> MSR_IA32_MISC_ENABLE in boost_set_msr() is vulnerable to preemption an=
-d
-> >> thread migration if executed in process context.
-> >>
-> >> Fix both issues by routing the MSR update through
-> >> smp_call_function_single() to execute boost_set_msr() synchronously on=
- the
-> >> target CPU. This ensures the correct CPU is updated and that the RMW
-> >> sequence on Intel executes safely in IPI context with interrupts disab=
-led.
-> >>
-> >> Fixes: a3605c46e0c0 ("cpufreq: acpi-cpufreq: drop rdmsr_on_cpus() usag=
-e")
-> >> Reported-by: Sashiko <sashiko-bot@kernel.org>
-> >> Closes: https://sashiko.dev/#/patchset/20260612215729.1532175-1-jmatts=
-on%40google.com
-> >> Assisted-by: Gemini:gemini-3.5-pro
-> >> Signed-off-by: Jim Mattson <jmattson@google.com>
-> >> ---
-> >>   drivers/cpufreq/acpi-cpufreq.c | 7 ++++---
-> >>   1 file changed, 4 insertions(+), 3 deletions(-)
-> >>
-> >> diff --git a/drivers/cpufreq/acpi-cpufreq.c b/drivers/cpufreq/acpi-cpu=
-freq.c
-> >> index 21639d9ac753..48d678812fd6 100644
-> >> --- a/drivers/cpufreq/acpi-cpufreq.c
-> >> +++ b/drivers/cpufreq/acpi-cpufreq.c
-> >> @@ -528,10 +528,11 @@ static void free_acpi_perf_data(void)
-> >>   static int cpufreq_boost_down_prep(unsigned int cpu)
-> >>   {
-> >>          /*
-> >> -        * Clear the boost-disable bit on the CPU_DOWN path so that
-> >> -        * this cpu cannot block the remaining ones from boosting.
-> >> +        * Clear the boost-disable bit on the target CPU so that
-> >> +        * it cannot block the remaining ones from boosting.
-> >>           */
-> >> -       return boost_set_msr(1);
-> >> +       return smp_call_function_single(cpu, boost_set_msr_each,
-> >> +                                       (void *)1L, 1);
-> >
-> > While I have not investigated the history of this code, I'm wondering
-> > why cpufreq_boost_down_prep()  is a separate function and why it takes
-> > the CPU number argument.
-> >
-> > The only caller of it is acpi_cpufreq_cpu_exit() which could just do
-> >
-> > set_boost(policy, 1);
-> >
-> > instead of calling it (and might check if boost was supported at all
-> > for that matter).
->
->
-> 1) It seems that set_boost(policy, 1) would be a no-op here, since
-> policy->cpus appears to be empty by the time ->exit() is called.
+These series adds support for PbAc, NiZn, RAM, and ZnAr chemistries as 
+defined in the Smart Battery Data Specification v1.1 (Section 5.1.30 
+DeviceChemistry).
 
-All right, but this means that ->exit() is not quite suitable for this
-type of cleanup.
+Currently, the sbs-battery driver only handles LION, LiP, NiCd and NiMH.
+The Smart Battery specification defines 8 possible values:
+ - Lead Acid (PbAc)
+ - Lithium Ion (LION)
+ - Nickel Cadmium (NiCd)
+ - Nickel Metal Hydride (NiMH)
+ - Nickel Zinc (NiZn)
+ - Rechargeable Alkaline-Manganese (RAM)
+ - Zinc Air (ZnAr)
+ - Lithium Polymer (LiP)
 
-> acpi-cpufreq only implements ->exit (no ->offline), and ->exit() is
-> reached only when policy_is_inactive() (i.e. cpumask_empty
-> (policy->cpus)) is true. set_boost() does on_each_cpu_mask(policy->cpus,
-> ...), which on an empty mask runs nothing.
+Map the missing specification values to their respective core kernel
+POWER_SUPPLY_TECHNOLOGY definitions and documenation, declare these
+values into selftest. 
 
-Arguably though, .offline() should take care of the boost cleanup for
-the CPU going offline.  .exit() is too late because it can't clean up
-CPUs that went offline before.
+In selftest LiMn is moved to the next line to comply with
+checkpatch warning after adding said types.
 
-> 2) The patch's restore on only policy->cpu
-> (smp_call_function_single(policy->cpu, ...) will not fully cover shared
-> policies, and how much it covers seems to depend on the boost-disable
-> bit's scope (but that seems to be already discussed in the cover letter
-> and is probably a separate topic).
->
-> Please feel free to correct me if I'm misunderstanding the scope of the
-> boost-disable bit:
->
-> On driver unload the policy CPUs are removed from policy->cpus but seem
-> to stay hardware-online, so a stale disable bit on a non-last CPU might
-> still matter (those CPUs are presumably still running and may want to
-> boost). Abstractly:
->
-> - if the bit is per-CPU independent: clearing policy->cpu seems to fix
-> only that CPU, and the other still-online CPUs in the policy may stay
-> disabled.
+It is an update for 
+https://lore.kernel.org/linux-pm/ajmc_naB7zYv0SPY@venus.
 
-Yes.
+Link: https://sbs-forum.org/specs/sbdat110.pdf
+Signed-off-by: Boris Shtrasman <borissh1983@gmail.com>
+--
+Changes in V2:
 
-> - if the bit is shared within a group (e.g. core/package), "disabled if
-> any member set": clearing policy->cpu maybe only covers its own group,
-> and other groups spanned by the policy could stay disabled.
+1. Seperate into two patches.
+2. Modify Documenation, self test and sysfs interface. self test is
+updated as the documeation is now mentioning them.
+--
 
-Yes.
+Boris Shtrasman (2):
+  power: supply: Add PbAc, NiZn, RAM, and ZnAr support
+  power: supply: sbs-battery: Add PbAc, NiZn, RAM, and ZnAr support
 
-Thus it is better to clear it at offline time for the given CPU.
+ Documentation/ABI/testing/sysfs-class-power               | 2 +-
+ drivers/power/supply/power_supply_sysfs.c                 | 4 ++++
+ drivers/power/supply/sbs-battery.c                        | 8 ++++++++
+ include/linux/power_supply.h                              | 4 ++++
+ .../power_supply/test_power_supply_properties.sh          | 3 ++-
+ 5 files changed, 19 insertions(+), 2 deletions(-)
+
+-- 
+2.47.3
+
