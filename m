@@ -1,88 +1,202 @@
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.18])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pg1-f176.google.com (mail-pg1-f176.google.com [209.85.215.176])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 64E473254AE;
-	Wed, 24 Jun 2026 05:51:29 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9E71033F361
+	for <linux-pm@vger.kernel.org>; Wed, 24 Jun 2026 06:15:31 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.215.176
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1782280290; cv=none; b=gHYjKKFnYE/h/E30L1OpspjbPRGF7Q7K2VMI00Hs2VDeXHzvbNlidq8sRHZRoxlC8wmA/2MxJk+k7LJ/iceGNkN3izFZhNKaSUSyyQeO3Nz+N+NfY9f01P5rc/KUKIa8wRGbHIudWYE3YUgurqVd7ApRH6gNsUMKSz59V6A9hH8=
+	t=1782281733; cv=none; b=JzmPrWw/mFaoP0ot7Jh7BQSU3ysea1utXn5BsQYCGnq4yF8Gp0nImLP9BRKmRNp4wQfM0dHQCgknrDuuijbBLPurBG712Y0b0dwYV91gq/31JtFHHKKF2AMSFL16d0ClxczZEQmAGMXl5WR4Z7P+qzp5Eu1zi2HVWYF3xScEBWE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1782280290; c=relaxed/simple;
-	bh=D9I/LTguC5OtyFwynVjoVCieJymaCyDcF7pGWxF94UM=;
-	h=Date:From:To:Cc:Subject:Message-ID; b=oib/92qNxVf3vW6zvXRRfXVOyiAi4XPSPefU5mGwwirjMM4TMKPOTc8lHUYagiRbIda8BZQb2mqdInCw3Zekd9n2DDogxHkL62B41LqjbW4mRkoIirMHgeq+X+WfiFyiPZDOrNDYdJADOgpJLbrvaXEjdXVwDHGTvsVs0o50Us8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=jf/8LIOY; arc=none smtp.client-ip=192.198.163.18
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
+	s=arc-20240116; t=1782281733; c=relaxed/simple;
+	bh=aH0b/lOP3E/eHs7Kj9MVmfcQXZdjz79GV7nBpFxLmW8=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=OFCT0B+Q4ej4kZ8lwTEVoX4i/xLq1oSIXN5du6/WWFsYM9TrJoeNrMObdzi4iLC8skzlUE2yxP2fF2jVJ4moofaoHXfTppLI56srxBV+os/V6JeIGSRpU9fAc0mM/VSAzApbWpqcHGLccFhKLrC1BNB4WVbD3m0x9e0i85pVCYc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=G4HKTw0R; arc=none smtp.client-ip=209.85.215.176
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="jf/8LIOY"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1782280289; x=1813816289;
-  h=date:from:to:cc:subject:message-id;
-  bh=D9I/LTguC5OtyFwynVjoVCieJymaCyDcF7pGWxF94UM=;
-  b=jf/8LIOYgT87AEnYgTHBY086ScEiaN/p8uimmYzB0hL5UkNC96yOkmKn
-   0Dgig5yFRIBpvXfIerHGeUjMAfXCZ0r1bm0Ns/p/LPfNuuirQhOapwNQo
-   Fk9MaciA+6fCyy9n3g2qQejf72bzJciWueConDWnjdWnOxh9SzLkIqNtx
-   NQghbGlbb6zJhqvn92f1m9HE8D8/kl69MKX5awKNm6GVHN8+lxAV9Y8FK
-   Ji/gqnPj/+w1zguOewrO3mCcklbxJzx5xvLPqZtrSEeBQNbJazfh45jzF
-   MeevhC9Nkbbtrm9lzFgy3P5Xr0ZA3tiCubADnQVKYMkGY/7IOQmPTR1H0
-   w==;
-X-CSE-ConnectionGUID: 9e2l1lDVRYGObQRDb6MjYg==
-X-CSE-MsgGUID: yugaFsLoQrCuNdJTMi2SGQ==
-X-IronPort-AV: E=McAfee;i="6800,10657,11826"; a="82147688"
-X-IronPort-AV: E=Sophos;i="6.24,221,1774335600"; 
-   d="scan'208";a="82147688"
-Received: from orviesa008.jf.intel.com ([10.64.159.148])
-  by fmvoesa112.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 23 Jun 2026 22:51:23 -0700
-X-CSE-ConnectionGUID: TDaGHdk2TgGuFy2CTjR3sg==
-X-CSE-MsgGUID: iv2UiRHLS5qIoLEZ8psrcw==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.24,221,1774335600"; 
-   d="scan'208";a="249582966"
-Received: from lkp-server02.sh.intel.com (HELO ea128546eb3d) ([10.239.97.151])
-  by orviesa008.jf.intel.com with ESMTP; 23 Jun 2026 22:51:20 -0700
-Received: from kbuild by ea128546eb3d with local (Exim 4.98.2)
-	(envelope-from <lkp@intel.com>)
-	id 1wcGW5-0000000039L-2yei;
-	Wed, 24 Jun 2026 05:51:17 +0000
-Date: Wed, 24 Jun 2026 13:51:04 +0800
-From: kernel test robot <lkp@intel.com>
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: oe-kbuild-all@lists.linux.dev, linux-acpi@vger.kernel.org,
- linux-pm@vger.kernel.org
-Subject: [rafael-pm:linux-next 11/16]
- drivers/thermal/testing/command.c:91:27: sparse: sparse: symbol 'd_command'
- was not declared. Should it be static?
-Message-ID: <202606241309.I4xxswNB-lkp@intel.com>
-User-Agent: s-nail v14.9.25
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="G4HKTw0R"
+Received: by mail-pg1-f176.google.com with SMTP id 41be03b00d2f7-c89fa656ea1so217217a12.2
+        for <linux-pm@vger.kernel.org>; Tue, 23 Jun 2026 23:15:31 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1782281731; x=1782886531; darn=vger.kernel.org;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=87QgyDoyxAcN2RlRMsIzcXMwRXx5rS1IvXCP9lPgo4A=;
+        b=G4HKTw0RqQN8h0rktccL5ldPmGS/V8WFO+JRtwWsRBNJ1qsj6m/zDhSAeKu0nDdleo
+         QT7Zj/k9OzFrnFPV5UXCCmR62WDZzhZUeoGh/8Uhwl8e7w5eIR27uyOiqd5WBv252QnI
+         LiRaoAbPbdGaVvEcngnIWwI/Ueo/ATUahbvj5XUaQawnEZ/7jMSXKXc/FDInYbsjFuC3
+         gQO90ZkjWKphg6ZtP0PcLCOPA9lnZ5RcBIh1MBwE/p9ODwgqYmJUj+Beu/IH7hFkvr6b
+         YMbfmdlGEKcUG8tLY4bGtGD5XdxCTSKNNXK5N1UDzLcJY44oMiI7hdGMOdURmJ0qvsr1
+         dCSQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1782281731; x=1782886531;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=87QgyDoyxAcN2RlRMsIzcXMwRXx5rS1IvXCP9lPgo4A=;
+        b=isuPQyLQcnaLD1AJGv/V9KRZPCUZD/cpuJFI3P3WF+8zuoJM5V0LL8EJys5GAw7P9O
+         K+5GEj2mmkyVHNwLnaGxfl7q/d8B0n3BFs026Fvkm+KNcgceWA+nMfoHey2oAxJHkBhK
+         y2zgAxb6Pos4OCt8kaHCrNci42IcPM5kdtWM4KoJA6Yfx5ch8zmIjYFH7Kdour9Zp8zt
+         1XktIi2TDlzF7vb/VcPfyRiuVmP4IZo1LRI6F0LzwIOlcqo597O155QhTAPdxESDgwbI
+         LNgg1m8wovZI6+J/+f2TZkBXfkfngbUf4gJ7y7xLG3lYc2EEG0T2qQYF/4GQaCPwHGeH
+         L3Pg==
+X-Forwarded-Encrypted: i=1; AFNElJ+HHNB3OyDgyCVMcaVXMexhaJU1TnvwZdvv+L37TBvdqgiAN4wxLXQ2iknp0EThc01+0lVtHRgDVQ==@vger.kernel.org
+X-Gm-Message-State: AOJu0Ywhambz78FqYNg4Z/yIwkzgdJHyA8N0xpvB97u0Z9Anq0gkQgdy
+	AU67s8OR/an7Y0HR+PTE/HXEQ4SPHrS5Z2yYxs6jO0m6thoUkxraaRbZ/sfJcEuZ2o4=
+X-Gm-Gg: AfdE7cnnd3+/ETJa+yA7A6AKirh+rpSpFmQI0lNF2pGB6xyt0BR1jEPfEaHhe5Ag9Mx
+	9n0dPe/Rqb5FKFfLqDzuJhsVKJYaui3dVn409deU4uZR9s778sss/8Y0LAFhfRe2d8BK8zVVIqW
+	JTWQynYwYrNMqx+5/nykVlxORzpNx1VgfPxr5Ir4nOIzPUnTvW6wou1fb5evv+jXxjv07u+93wt
+	9YnGdcDjc6xHuAeyGg/ZBaacC2zcCstYAmRfHI+YnnUFw07zOPMJ9N8vMzYeGe8ufZ+yzFELoVW
+	SXM6t4iIQvZUeMfC+iaaM162FtWrBVwDfH2hpAbt4Zr5VwWdFSPzxH4gMF+rRjMUKIcgWenUkVr
+	Hx1Lc3eqMwstOPVEriW2KCPiK41VgDB70IU+IA2VMzPT4ZtKPQl/aLsyhhXN+33froGmhdIqfus
+	NbEHJfh0IvSc88
+X-Received: by 2002:a05:6a21:1bc1:b0:3b4:88e7:87c7 with SMTP id adf61e73a8af0-3bc51c683c9mr19446329637.17.1782281730631;
+        Tue, 23 Jun 2026 23:15:30 -0700 (PDT)
+Received: from localhost ([122.172.82.94])
+        by smtp.gmail.com with ESMTPSA id 41be03b00d2f7-c8bc563c131sm13199347a12.18.2026.06.23.23.15.29
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 23 Jun 2026 23:15:29 -0700 (PDT)
+Date: Wed, 24 Jun 2026 11:45:26 +0530
+From: Viresh Kumar <viresh.kumar@linaro.org>
+To: Haoxiang Li <haoxiang_li2024@163.com>
+Cc: sven@kernel.org, j@jannau.net, neal@gompa.dev, rafael@kernel.org, 
+	linux-arm-kernel@lists.infradead.org, asahi@lists.linux.dev, linux-pm@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, sumit.semwal@linaro.org
+Subject: Re: [PATCH v2] cpufreq: apple-soc: Fix OPP table cleanup
+Message-ID: <x3lom5jew2w4i7aftjxl4qpgupggw74bsjnzqiu5pjbejztti4@j33hgft6gt3b>
+References: <20260624033756.2702021-1-haoxiang_li2024@163.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260624033756.2702021-1-haoxiang_li2024@163.com>
 
-tree:   https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git linux-next
-head:   7b8d80921156c54cf7fcc35a830342686958aeea
-commit: a36ab01e7cd43baf3150f4b3c68624c14ead27a8 [11/16] thermal: testing: zone: Flush work items during cleanup
-config: powerpc-randconfig-r132-20260624 (https://download.01.org/0day-ci/archive/20260624/202606241309.I4xxswNB-lkp@intel.com/config)
-compiler: powerpc-linux-gcc (GCC) 12.5.0
-sparse: v0.6.5-rc1
-reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20260624/202606241309.I4xxswNB-lkp@intel.com/reproduce)
+On 24-06-26, 11:37, Haoxiang Li wrote:
+> dev_pm_opp_of_add_table() adds the DT OPP table but not all failure
+> paths remove it. The driver also uses dev_pm_opp_remove_all_dynamic(),
+> which is not the right cleanup helper for OPPs loaded from firmware.
+> 
+> Remove the DT OPP table with dev_pm_opp_of_remove_table() on init
+> failure paths and from apple_soc_cpufreq_exit().
+> 
+> Signed-off-by: Haoxiang Li <haoxiang_li2024@163.com>
 
-If you fix the issue in a separate patch/commit (i.e. not just a new version of
-the same patch/commit), kindly add following tags
-| Reported-by: kernel test robot <lkp@intel.com>
-| Closes: https://lore.kernel.org/oe-kbuild-all/202606241309.I4xxswNB-lkp@intel.com/
+Please add Fixes and Stable tags.
 
-sparse warnings: (new ones prefixed by >>)
->> drivers/thermal/testing/command.c:91:27: sparse: sparse: symbol 'd_command' was not declared. Should it be static?
+> diff --git a/drivers/cpufreq/apple-soc-cpufreq.c b/drivers/cpufreq/apple-soc-cpufreq.c
+> @@ -320,10 +320,10 @@ static int apple_soc_cpufreq_init(struct cpufreq_policy *policy)
+>  	dev_pm_opp_free_cpufreq_table(cpu_dev, &freq_table);
+>  out_free_priv:
+>  	kfree(priv);
+> -out_free_opp:
+> -	dev_pm_opp_remove_all_dynamic(cpu_dev);
+>  out_iounmap:
+>  	iounmap(reg_base);
+> +out_remove_opp_table:
+> +	dev_pm_opp_of_remove_table(cpu_dev);
+>  	return ret;
+>  }
+>  
+> @@ -332,7 +332,7 @@ static void apple_soc_cpufreq_exit(struct cpufreq_policy *policy)
+>  	struct apple_cpu_priv *priv = policy->driver_data;
+>  
+>  	dev_pm_opp_free_cpufreq_table(priv->cpu_dev, &policy->freq_table);
+> -	dev_pm_opp_remove_all_dynamic(priv->cpu_dev);
+> +	dev_pm_opp_of_remove_table(priv->cpu_dev);
+>  	iounmap(priv->reg_base);
+>  	kfree(priv);
 
-vim +/d_command +91 drivers/thermal/testing/command.c
+The order of cleanup calls should match in the above two sequences and there are
+other missing pieces as well.
 
-    90	
-  > 91	struct dentry *d_testing, *d_command __ro_after_init;
-    92	
+I think this would fix it:
 
---
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
+diff --git a/drivers/cpufreq/apple-soc-cpufreq.c b/drivers/cpufreq/apple-soc-cpufreq.c
+index 9396034167e5..150deae8c31d 100644
+--- a/drivers/cpufreq/apple-soc-cpufreq.c
++++ b/drivers/cpufreq/apple-soc-cpufreq.c
+@@ -251,21 +251,19 @@ static int apple_soc_cpufreq_init(struct cpufreq_policy *policy)
+                return -ENODEV;
+        }
+
+-       ret = dev_pm_opp_of_add_table(cpu_dev);
+-       if (ret < 0) {
+-               dev_err(cpu_dev, "%s: failed to add OPP table: %d\n", __func__, ret);
+-               return ret;
+-       }
++       priv = kzalloc_obj(*priv);
++       if (!priv)
++               return -ENOMEM;
+
+        ret = apple_soc_cpufreq_find_cluster(policy, &reg_base, &info);
+        if (ret) {
+                dev_err(cpu_dev, "%s: failed to get cluster info: %d\n", __func__, ret);
+-               return ret;
++               goto out_priv;
+        }
+
+-       ret = dev_pm_opp_set_sharing_cpus(cpu_dev, policy->cpus);
+-       if (ret) {
+-               dev_err(cpu_dev, "%s: failed to mark OPPs as shared: %d\n", __func__, ret);
++       ret = dev_pm_opp_of_cpumask_add_table(policy->cpus);
++       if (ret < 0) {
++               dev_err(cpu_dev, "%s: failed to add OPP table: %d\n", __func__, ret);
+                goto out_iounmap;
+        }
+
+@@ -273,19 +271,13 @@ static int apple_soc_cpufreq_init(struct cpufreq_policy *policy)
+        if (ret <= 0) {
+                dev_dbg(cpu_dev, "OPP table is not ready, deferring probe\n");
+                ret = -EPROBE_DEFER;
+-               goto out_free_opp;
+-       }
+-
+-       priv = kzalloc_obj(*priv);
+-       if (!priv) {
+-               ret = -ENOMEM;
+-               goto out_free_opp;
++               goto out_free_table;
+        }
+
+        ret = dev_pm_opp_init_cpufreq_table(cpu_dev, &freq_table);
+        if (ret) {
+                dev_err(cpu_dev, "failed to init cpufreq table: %d\n", ret);
+-               goto out_free_priv;
++               goto out_free_table;
+        }
+
+        /* Get OPP levels (p-state indexes) and stash them in driver_data */
+@@ -320,12 +312,12 @@ static int apple_soc_cpufreq_init(struct cpufreq_policy *policy)
+
+ out_free_cpufreq_table:
+        dev_pm_opp_free_cpufreq_table(cpu_dev, &freq_table);
+-out_free_priv:
+-       kfree(priv);
+-out_free_opp:
+-       dev_pm_opp_remove_all_dynamic(cpu_dev);
++out_free_table:
++       dev_pm_opp_of_cpumask_remove_table(policy->cpus);
+ out_iounmap:
+        iounmap(reg_base);
++out_free_priv:
++       kfree(priv);
+        return ret;
+ }
+
+@@ -334,7 +326,7 @@ static void apple_soc_cpufreq_exit(struct cpufreq_policy *policy)
+        struct apple_cpu_priv *priv = policy->driver_data;
+
+        dev_pm_opp_free_cpufreq_table(priv->cpu_dev, &policy->freq_table);
+-       dev_pm_opp_remove_all_dynamic(priv->cpu_dev);
++       dev_pm_opp_of_cpumask_remove_table(policy->cpus);
+        iounmap(priv->reg_base);
+        kfree(priv);
+ }
+
+-- 
+viresh
