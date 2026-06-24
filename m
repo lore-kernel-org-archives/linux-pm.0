@@ -1,147 +1,135 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-wm1-f48.google.com (mail-wm1-f48.google.com [209.85.128.48])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1BC1937268B;
-	Wed, 24 Jun 2026 19:17:23 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5BC91316197
+	for <linux-pm@vger.kernel.org>; Wed, 24 Jun 2026 20:31:56 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.48
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1782328646; cv=none; b=GvtlrK8TbpH2ZjwqTyYXypRsMdZbUbJpy4gRX4DcBPvC5ERLIXBrf2IjBYcohonlXwGM3iRgsmw9u2fVo3qelzfM6H6nry7Ak5Afkf/EivhTOX/xoWoIqRPoHeqhB9TZQcHMgE2FNSml6NKv4wFN12H3zF7r51cmhUPeuUeuAvk=
+	t=1782333118; cv=none; b=iLzjThj8cZuqF+MUbk+DMYVvLHZLcXNPEYT8d99758quVmLswYcPKor7LVa3pAX9PllIDSC5Glmp4RmrHXfq91LeOuTShCO+cLcp8HYhWWxunpe2y8XqvdAKQ/slGZ4WXtr5BwlZnv0k41W0HuuFiR6Lfw74m00Y4LevrjhHbJA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1782328646; c=relaxed/simple;
-	bh=NvF+pR0fYQdZKbUADyPaq42Q6BnQZUMM3H2eaBsL90Q=;
-	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
-	 MIME-Version:Content-Type; b=B4rOyT2hjRXHD7pVczn06ObnjEulVDZf7hd9aTlCi59MUZwXde1bE2q7eg0bm8MXWtewGJUMV9EkMOaOmuPTj+mldcCC3DLvOcEnAQF6beFyu+nj35E/XH3+Sqbstjw56FKuoLYA8Z6brgHrvJz7H503ksZiyz9SmEtCWLwXKzg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=jipwVXQt; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1782333118; c=relaxed/simple;
+	bh=DOAD2CjWSFTRRHDBzlKC4rST39Ld3+cgTNsHdXfxePI=;
+	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=AudOMDjpr9kWjauhp2GlPNQ/yRpk2YC+D7/TNkbAHK9qdvPlzZOYXXRhIB4YSZATRACMdmR3XQa+hafVgugbBPr7UtE6BmXMBQJ1ShQ6ruTPYczBvzy0cTxlzJCZxm6zdCC829+KFg8sQn9ia8T02SEhrHBPLRUDAelHRn2BH+0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=FCQl1snI; arc=none smtp.client-ip=209.85.128.48
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="jipwVXQt"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4DA3A1F000E9;
-	Wed, 24 Jun 2026 19:17:15 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1782328643;
-	bh=BXTL1/pEN/FTyKPKMA8BVIZWBMRtKuw+rExm3vmkKx4=;
-	h=From:To:Cc:Subject:In-Reply-To:References:Date;
-	b=jipwVXQtIhW9z8lFxljLcuY7oEB/LokW5tJFCYei9aG4AJZaD4IX+IkiuSVyW+9gX
-	 XkAsEiaMRxjWXGmEuXVkVh28pqAoVc/aDo37K2YiiFJUxAjm2ddCHFTl9+aM661GW3
-	 PE+Qcm1rb4neo7M1iuFsvHQGR9Z8jyp3VjjmJiFWU3LtteGM0CUG1TvIJmIFo9kAFC
-	 4R6ORXsd+HioryjRDjvG1YfuF4t1dKBfkbIc9bDf7FTKereQM/74Au9PjcixYNzNzD
-	 QYNlB8bH7PIOPQgoUBOOyXhslgfwjWS1ahCofuush0ejyBFSORKT3noH+//Lvsum9v
-	 qnflbrsxJvUcA==
-From: Andreas Hindborg <a.hindborg@kernel.org>
-To: Onur =?utf-8?Q?=C3=96zkan?= <work@onurozkan.dev>
-Cc: Miguel Ojeda <ojeda@kernel.org>, Gary Guo <gary@garyguo.net>,
- =?utf-8?Q?Bj=C3=B6rn?= Roy
- Baron <bjorn3_gh@protonmail.com>, Benno Lossin <lossin@kernel.org>, Alice
- Ryhl <aliceryhl@google.com>, Trevor Gross <tmgross@umich.edu>, Danilo
- Krummrich <dakr@kernel.org>, Greg Kroah-Hartman
- <gregkh@linuxfoundation.org>, Dave Ertman <david.m.ertman@intel.com>, Ira
- Weiny <ira.weiny@intel.com>, Leon Romanovsky <leon@kernel.org>, Paul Moore
- <paul@paul-moore.com>, Serge Hallyn <sergeh@kernel.org>, "Rafael J.
- Wysocki" <rafael@kernel.org>, David Airlie <airlied@gmail.com>, Simona
- Vetter <simona@ffwll.ch>, Alexander Viro <viro@zeniv.linux.org.uk>,
- Christian Brauner <brauner@kernel.org>, Jan Kara <jack@suse.cz>, Daniel
- Almeida <daniel.almeida@collabora.com>, Viresh Kumar <vireshk@kernel.org>,
- Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@kernel.org>, Bjorn Helgaas
- <bhelgaas@google.com>, Krzysztof =?utf-8?Q?Wilczy=C5=84ski?=
- <kwilczynski@kernel.org>,
- Boqun Feng <boqun@kernel.org>, Uladzislau Rezki <urezki@gmail.com>,
- Lorenzo Stoakes <ljs@kernel.org>, Vlastimil Babka <vbabka@kernel.org>,
- "Liam R. Howlett" <liam@infradead.org>, Igor Korotin
- <igor.korotin@linux.dev>, Pavel Tikhomirov <ptikhomirov@virtuozzo.com>,
- linux-kernel@vger.kernel.org, rust-for-linux@vger.kernel.org,
- linux-block@vger.kernel.org, linux-security-module@vger.kernel.org,
- dri-devel@lists.freedesktop.org, linux-fsdevel@vger.kernel.org,
- linux-mm@kvack.org, linux-pm@vger.kernel.org, linux-pci@vger.kernel.org,
- driver-core@lists.linux.dev, Oliver Mangold <oliver.mangold@pm.me>, Viresh
- Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v17 06/10] rust: rename `AlwaysRefCounted` to `RefCounted`.
-In-Reply-To: <20260623175814.87191-1-work@onurozkan.dev>
-References: <20260604-unique-ref-v17-0-7b4c3d2930b9@kernel.org>
- <20260604-unique-ref-v17-6-7b4c3d2930b9@kernel.org>
- <20260623175814.87191-1-work@onurozkan.dev>
-Date: Wed, 24 Jun 2026 21:17:08 +0200
-Message-ID: <87cxxfiw97.fsf@t14s.mail-host-address-is-not-set>
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="FCQl1snI"
+Received: by mail-wm1-f48.google.com with SMTP id 5b1f17b1804b1-490b211ee6aso9685405e9.3
+        for <linux-pm@vger.kernel.org>; Wed, 24 Jun 2026 13:31:56 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1782333115; x=1782937915; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=EDktcxKViRxImw/W6VGUuZ2Igzx47Ciytf/NkxSnUCk=;
+        b=FCQl1snIqTriGkvmnMpICHzuxImLNMJljJAbxB6zqKOCQSQxMK0smDDQh/c7iz0uRy
+         scISV0HwQQ9QT2fJihsmGwO/0tD1GntndvwKOD9O+rXIKs1r88JoBqMDKNnnoNaEn14s
+         c2VVQ31YibsXu4ItXvo54M50Sx7zqDSeCkXMZzGInkFdG2Ys8jorJHpoE44ZHdTsQoDR
+         vTh1CBBPRsbxDYG2lxrGrs+Ask3ECYgWNHkFZCPkF3AzlhCdAOZUnbaQ5u+kAVl3Ze+F
+         zOFwsd911T5/4yY6/CGFkUsMEs85fYmA4N2JpeV10mV6baRqiIyV+LXdtDiceDfPQr2b
+         9xJQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1782333115; x=1782937915;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=EDktcxKViRxImw/W6VGUuZ2Igzx47Ciytf/NkxSnUCk=;
+        b=eu1pOls0zNn5LTzAEfrLjaK4NWzgtK6bwW88aZgJQVDLHEvhI62ZemhlbfYvwUaX38
+         IDl+He1PAp5UeJvRA+Z6QrYYM+pQnlRV0FehFCirIhZIUP+PpWwLbkjTSqwaPGPanATg
+         wgn5xXf4YXQEp4ZX3K9+KSr1duv9EGw5Jrrid1PWBPcMoeXFd1LEq/ZvqGWeHcsVrj2J
+         Idkdq5YAVeqWTcVlR74ODe6qnRIbXjL494ccugxV0ETcabGSs0F0sngkJXHUi+wkKxDe
+         yS9Wg9bVIw/BFUqRCQgPx49IruZNO1oEOz1kDQ4xvQEAvW/GbkcR/29tXX5al34dFnX9
+         80Cw==
+X-Gm-Message-State: AOJu0YzHrPyf1WLMYla986Si24dlRJSRdfNrhNfN+jOfLr3wR2r55Wp2
+	Yh+GHGm3GySXGVDj2p+hZ9PXL/E/zK78rveaYp8iVFV+/Hzn8z7FoKgdgzH2KYoU
+X-Gm-Gg: AfdE7cnmjv5S4qtBWNC+1PdbGo6DQhL9GTHalvLwhurn6/T6wEGHeEWUQ6Zwi2AAYJU
+	OFRdYpTAA0tVCYezLqBFF9drc3lSmAIw/CnndtC50dBHLfuwLjIJTeFTN4xi53K/IxbTAC3xoOR
+	N1xqOjIuF+SSx/3CeQ4p2u1lBswGOILIeGg/JIlTGAjcvrBTBwfsax0ahwy3mLt7+JO4DmadWLk
+	lFDSlsMelu0vbblgpVWd7EjEs1KRFn2rnVdwGvSRbS4syO3c3j/TWQN1Kf5J4Gc3x+VWwuawtfH
+	CKbIA25xI8oiTGlknwpgWPTI/uuODBaP0/p+9Etxm+2ypnV59wdCnPcq4myNQevSukT0hQGyoDv
+	vohRT37dmz4heOY4RmX9h5LiN/bOu/+eocflBiUu77j108y0TgDHXiwtNSIbTSg26mHIUWUbv+q
+	7TygIWbc055bv+HUGgkxKY09zLvTPwl520kFzm6mKQJ3ml08Vg6UCjM6dWk+r07EVj10AU/qawN
+	fLNexbXJrCUzgZ81OIroBYpP2U6Lj2YcsKlvTT94TdX
+X-Received: by 2002:a05:600c:3f10:b0:492:5bb6:6d4b with SMTP id 5b1f17b1804b1-4926088031cmr69513275e9.34.1782333114396;
+        Wed, 24 Jun 2026 13:31:54 -0700 (PDT)
+Received: from localhost.localdomain (85-250-93-211.bb.netvision.net.il. [85.250.93.211])
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-49264022e7dsm18736795e9.6.2026.06.24.13.31.52
+        (version=TLS1_3 cipher=TLS_CHACHA20_POLY1305_SHA256 bits=256/256);
+        Wed, 24 Jun 2026 13:31:53 -0700 (PDT)
+From: sivany32@gmail.com
+To: linux-pm@vger.kernel.org
+Cc: rafael@kernel.org,
+	daniel.lezcano@kernel.org,
+	linux-kernel@vger.kernel.org,
+	elazarl@gmail.com,
+	Sivan Zohar-Kotzer <sivany32@gmail.com>
+Subject: [PATCH v2 1/2] powercap: dtpm_cpu: Guard em_cpu_get() against NULL return in sysfs callbacks
+Date: Wed, 24 Jun 2026 23:31:47 +0300
+Message-Id: <20260624203147.67528-1-sivany32@gmail.com>
+X-Mailer: git-send-email 2.39.5 (Apple Git-154)
+In-Reply-To: <20260611204658.47987-1-elazarl@gmail.com>
+References: <20260611204658.47987-1-elazarl@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 
-Onur =C3=96zkan <work@onurozkan.dev> writes:
+From: Sivan Zohar-Kotzer <sivany32@gmail.com>
 
-> On Thu, 04 Jun 2026 22:11:18 +0200
-> Andreas Hindborg <a.hindborg@kernel.org> wrote:
->
->> From: Oliver Mangold <oliver.mangold@pm.me>
->>=20
->> There are types where it may both be reference counted in some cases and
->> owned in others. In such cases, obtaining `ARef<T>` from `&T` would be
->> unsound as it allows creation of `ARef<T>` copy from `&Owned<T>`.
->>=20
->> Therefore, we split `AlwaysRefCounted` into `RefCounted` (which `ARef<T>`
->> would require) and a marker trait to indicate that the type is always
->> reference counted (and not `Ownable`) so the `&T` -> `ARef<T>` conversion
->> is possible.
->>=20
->> - Rename `AlwaysRefCounted` to `RefCounted`.
->> - Add a new unsafe trait `AlwaysRefCounted`.
->> - Implement the new trait `AlwaysRefCounted` for the newly renamed
->>   `RefCounted` implementations. This leaves functionality of existing
->>   implementers of `AlwaysRefCounted` intact.
->>=20
->> Suggested-by: Alice Ryhl <aliceryhl@google.com>
->> Reviewed-by: Daniel Almeida <daniel.almeida@collabora.com>
->> Signed-off-by: Oliver Mangold <oliver.mangold@pm.me>
->> [ Andreas: Updated commit message and rebase on rust-6.20-7.0 ]
->> Acked-by: Igor Korotin <igor.korotin.linux@gmail.com>
->> Acked-by: Danilo Krummrich <dakr@kernel.org>
->> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
->> Reviewed-by: Gary Guo <gary@garyguo.net>
->> Co-developed-by: Andreas Hindborg <a.hindborg@kernel.org>
->> Signed-off-by: Andreas Hindborg <a.hindborg@kernel.org>
->> ---
->>  rust/kernel/auxiliary.rs        |  7 +++++-
->>  rust/kernel/block/mq/request.rs | 15 ++++++++-----
->>  rust/kernel/cred.rs             | 13 +++++++++--
->>  rust/kernel/device.rs           | 12 ++++++++--
->>  rust/kernel/device/property.rs  | 11 +++++++--
->>  rust/kernel/drm/device.rs       |  9 ++++++--
->>  rust/kernel/drm/gem/mod.rs      | 16 ++++++++++----
->>  rust/kernel/fs/file.rs          | 16 ++++++++++----
->>  rust/kernel/i2c.rs              | 13 ++++++++---
->>  rust/kernel/mm.rs               | 15 +++++++++----
->>  rust/kernel/mm/mmput_async.rs   |  9 ++++++--
->>  rust/kernel/opp.rs              | 10 ++++++---
->>  rust/kernel/owned.rs            |  2 +-
->>  rust/kernel/pci.rs              | 10 ++++++++-
->>  rust/kernel/pid_namespace.rs    | 12 ++++++++--
->>  rust/kernel/platform.rs         |  7 +++++-
->>  rust/kernel/sync/aref.rs        | 49 ++++++++++++++++++++++++++--------=
--------
->>  rust/kernel/task.rs             | 13 +++++++++--
->>  rust/kernel/types.rs            |  3 ++-
->>  rust/kernel/usb.rs              | 17 +++++++++++---
->>  20 files changed, 195 insertions(+), 64 deletions(-)
->>=20
->> diff --git a/rust/kernel/auxiliary.rs b/rust/kernel/auxiliary.rs
->> index 93c0db1f6655..49f07740f657 100644
->> --- a/rust/kernel/auxiliary.rs
->> +++ b/rust/kernel/auxiliary.rs
->> @@ -19,6 +19,7 @@
->>          to_result, //
->>      },
->>      prelude::*,
->> +    sync::aref::{AlwaysRefCounted, RefCounted},
->
-> This patch has multiple horizontal use statements around.
+em_cpu_get() can return NULL when a CPU becomes impossible. Two call
+sites miss the NULL test:
 
-Thanks, I'll take another pass to fix that.
+1. set_pd_power_limit() — reachable from sysfs via the powercap
+   constraint power_limit_uw store path. If the CPU has become
+   impossible then pd will be NULL, return the current power limit
+   unchanged (no-op) instead of crashing.
 
+2. update_pd_power_uw() — called from CPU hotplug handlers via
+   dtpm_update_power(). While reaching this with a NULL em may be
+   technically impossible today, the check is kept for defense in
+   depth against future refactoring or subtle races.
 
-Best regards,
-Andreas Hindborg
+The other sysfs-reachable path, get_pd_power_uw(), already has a NULL
+guard returning 0.
 
+Fixes: 0e8f68d7f048 ("powercap/drivers/dtpm: Add CPU energy model based support")
+Signed-off-by: Sivan Zohar-Kotzer <sivany32@gmail.com>
+Co-developed-by: Elazar Leibovich <elazarl@gmail.com>
+Signed-off-by: Elazar Leibovich <elazarl@gmail.com>
+---
+ drivers/powercap/dtpm_cpu.c | 6 ++++++
+ 1 file changed, 6 insertions(+)
 
+diff --git a/drivers/powercap/dtpm_cpu.c b/drivers/powercap/dtpm_cpu.c
+index 21355db64..886cbe922 100644
+--- a/drivers/powercap/dtpm_cpu.c
++++ b/drivers/powercap/dtpm_cpu.c
+@@ -47,6 +47,9 @@ static u64 set_pd_power_limit(struct dtpm *dtpm, u64 power_limit)
+ 	u64 power;
+ 	int i, nr_cpus;
+ 
++	if (!pd)
++		return dtpm->power_limit;
++
+ 	nr_cpus = cpumask_weight_and(cpu_online_mask, to_cpumask(pd->cpus));
+ 
+ 	rcu_read_lock();
+@@ -125,6 +128,9 @@ static int update_pd_power_uw(struct dtpm *dtpm)
+ 	struct em_perf_state *table;
+ 	int nr_cpus;
+ 
++	if (!em)
++		return -EINVAL;
++
+ 	nr_cpus = cpumask_weight_and(cpu_online_mask, to_cpumask(em->cpus));
+ 
+ 	rcu_read_lock();
+-- 
+2.39.5 (Apple Git-154)
 
