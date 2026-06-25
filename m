@@ -1,137 +1,120 @@
-Received: from AS8PR04CU009.outbound.protection.outlook.com (mail-westeuropeazon11011013.outbound.protection.outlook.com [52.101.70.13])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-wr1-f43.google.com (mail-wr1-f43.google.com [209.85.221.43])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2288E3E0097;
-	Thu, 25 Jun 2026 12:21:06 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.70.13
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1782390068; cv=fail; b=SaB3n83UTQ5g+eBBDFny+cep6wpghLT32QssJn6hjWnZOknnVQxCyd0Ez6qh4+uFvd2NfhVChG37LE0/CL0mmFXjW9q/sKTov+06tK8Z3AQB7sbsN5pUFVnUi4lf7D+waAnc/3gZJGq7Xz4AIb5+REJfnhiF9irQpQ6pD3eLZ3s=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1782390068; c=relaxed/simple;
-	bh=6eDmvG4qv04dBrD7APZJuywt8QYxkgjZw8G8T9S/cd8=;
-	h=From:To:CC:Subject:In-Reply-To:References:Date:Message-ID:
-	 MIME-Version:Content-Type; b=kpO/idjBBlxD3zl1B1R+82319osvd1JknFcC0ZL43c9iP8rdtp3nUdN6Lk45MOPzgAXZy5MT7Sk/z7A8LiKrIbEi+BIhHFIet/d8t2zLYpREDz3snzPugGkiEduURcWBYyoq/P94x40ODxrFKFNV36BYiYq4/Oa3mLg3FqeKp+Y=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=axis.com; spf=pass smtp.mailfrom=axis.com; dkim=pass (1024-bit key) header.d=axis.com header.i=@axis.com header.b=MQoTEQxp; arc=fail smtp.client-ip=52.101.70.13
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=axis.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=axis.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D5B5F3DFC95
+	for <linux-pm@vger.kernel.org>; Thu, 25 Jun 2026 12:54:20 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.43
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1782392062; cv=none; b=bMuxLaaPDLLVJEtpxQyUGVYyaLfjR72f8rAZqaYIHwvjssoEI73GnO+jqtCuYTRPRzdOzT9f2yLxzAQAVgInIKLhvNb429Au038iODVnQLw5V9bNsSDhhjzpyodmJXXHWw1pQWg37t+8Xn1N7ufj2BtDN2fvU8nz+FvkRzNLhRw=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1782392062; c=relaxed/simple;
+	bh=ZwoYLetcUtF9UoQ4QRBlUB3RVZ7uO3Uytsx2+NqgYzA=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=kSvXEO4aOqFxtgjXWFCkc8tPOt2/0sgHrQA85AWX4zBWzZ93kIDwKuf+ppLsTl0hG6fNZI6N3oJ3u64acMy49R9IKbKQSGM6XIfQqqr6TEqb4Su7raWPPzVNRYDVgOFD+7SfG1M6Szjk+j5TTTLwYTOwb798GeJkdR2g6m+2q1Y=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=oa7bnVXp; arc=none smtp.client-ip=209.85.221.43
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=axis.com header.i=@axis.com header.b="MQoTEQxp"
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=TnRND+LeWP+m1rpw5ZcFOiUxJ8bhLwamckxjOXWXSBdMHLWNLt952gjMNI0h6zAv6UKzFVdZrjxNtCbYYlLiQ46hPU7rZKHhyDc3+RE6OyCKOGkdjboWfZeG2kdnb2dr/kJjBZ52oLaS7ShEWHg5OLg0XLdkaCe2GILnQ7gZqWwm+OL+Ny5hva8b7LIU8C9GlbEg0bg7ePSp15adhHORGVUD/epHRIMX3iWc/ZWpVdLMoj0S8Ytb9Iyeblo+h1eO4/o1WJBtU3/sjMMKsZ1nMCfHLpnslspomqfYCS/8N3QQ2EqVkpgIpeJA2ffhcXEu5NwaHPC9L1oEJtJWt0QNEg==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=oEGnRl5px6gpDCkAUbm55fENrAfDvauFxSSF4y7HoQc=;
- b=gqjbuCI5oAY78n3A9z8L77pPJ3zoz7cbkCUaX2X8NyeuoccOtvwlDl/KJIbFj2QAywK/fp7S3D+GErU8VZbAfnadNuVkONREVSZFtgTW60XD/4sYM8QqK7yqyRbFuh93nXRoNgvoxPq/Prnz0hEo7+yRn7Oyt9UMQ2Z4G299dimtf848ms4MhGG7hpQzE86VDdzBwDopRMpQpFzmdP960tem8H/7prXPfkZes62hvnCT3Qw0ss2dpeKHCwloNJjO6y7jseJxBWw55KxVdLHtcgla1DslgPpZesVAVNEac4Y9T/y07kNjcIZRbB0/EQ+GkiM1h/1fMA+tBmx3ww8NWQ==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
- 195.60.68.100) smtp.rcpttodomain=vger.kernel.org smtp.mailfrom=axis.com;
- dmarc=pass (p=none sp=none pct=100) action=none header.from=axis.com;
- dkim=none (message not signed); arc=none (0)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=axis.com; s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=oEGnRl5px6gpDCkAUbm55fENrAfDvauFxSSF4y7HoQc=;
- b=MQoTEQxpFwh/Mb2bNvjJS9NTOlUXFHtscdGUytsWzBpLSIsYfLTl47FQmqfk3caSMVYbhuqU4JZpD5W2FRFgJ2EU3z3zbZOB2dYrRTtjBSOSbCC7+pv0FfrvOT6NnrYsM7QcVvzLM448Y/nnNhVbZGTqYqx7Uk9AdNB6Gkuc1MA=
-Received: from CWLP123CA0188.GBRP123.PROD.OUTLOOK.COM (2603:10a6:400:19c::17)
- by VI0PR02MB10804.eurprd02.prod.outlook.com (2603:10a6:800:208::18) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.159.14; Thu, 25 Jun
- 2026 12:21:00 +0000
-Received: from AM3PEPF00009BA2.eurprd04.prod.outlook.com
- (2603:10a6:400:19c:cafe::51) by CWLP123CA0188.outlook.office365.com
- (2603:10a6:400:19c::17) with Microsoft SMTP Server (version=TLS1_3,
- cipher=TLS_AES_256_GCM_SHA384) id 15.21.159.16 via Frontend Transport; Thu,
- 25 Jun 2026 12:21:00 +0000
-X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 195.60.68.100)
- smtp.mailfrom=axis.com; dkim=none (message not signed)
- header.d=none;dmarc=pass action=none header.from=axis.com;
-Received-SPF: Pass (protection.outlook.com: domain of axis.com designates
- 195.60.68.100 as permitted sender) receiver=protection.outlook.com;
- client-ip=195.60.68.100; helo=mail.axis.com; pr=C
-Received: from mail.axis.com (195.60.68.100) by
- AM3PEPF00009BA2.mail.protection.outlook.com (10.167.16.27) with Microsoft
- SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.21.181.6 via Frontend Transport; Thu, 25 Jun 2026 12:20:59 +0000
-Received: from pc67007-2609 (10.4.0.13) by se-mail11w.axis.com (10.20.40.11)
- with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1748.39; Thu, 25 Jun
- 2026 14:20:59 +0200
-From: Waqar Hameed <waqar.hameed@axis.com>
-To: Krzysztof Kozlowski <krzk@kernel.org>
-CC: Sebastian Reichel <sre@kernel.org>, Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>,
-	<kernel@axis.com>, <linux-pm@vger.kernel.org>, <devicetree@vger.kernel.org>,
-	<linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH v2 1/2] dt-bindings: power: supply: Add TI BQ25630 charger
-In-Reply-To: <18ae59ae-024f-4dfb-ad66-2db90e6f7ed4@kernel.org> (Krzysztof
-	Kozlowski's message of "Thu, 25 Jun 2026 14:10:24 +0200")
-References: <cover.1781789320.git.waqarh@axis.com>
-	<96b7d1a0aa0c00929f0fef2847db116b54079a30.1781789320.git.waqarh@axis.com>
-	<20260622-whimsical-inescapable-pronghorn-5f94bb@quoll>
-	<pndwlvm6ese.a.out@axis.com>
-	<18ae59ae-024f-4dfb-ad66-2db90e6f7ed4@kernel.org>
-User-Agent: a.out
-Date: Thu, 25 Jun 2026 14:20:59 +0200
-Message-ID: <pndqzlu6cb8.a.out@axis.com>
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="oa7bnVXp"
+Received: by mail-wr1-f43.google.com with SMTP id ffacd0b85a97d-4626fdc829aso1755253f8f.3
+        for <linux-pm@vger.kernel.org>; Thu, 25 Jun 2026 05:54:20 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1782392059; x=1782996859; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=UJAtGQmovXlj8CbbOYVBpCwG1j5kbcJ2ECu+Lwn8HsI=;
+        b=oa7bnVXpbA5iHBLS7wTv3D6N+r860Gw2N6/iMG8KeuKt+qsURZSjLM01LOwP6b3ybx
+         W/gDc/DYI3b4Y8n+IdtNwfbWy70x1ESPNW8xtMhA09Sjl0wmwxcLH27xWnf8QCx3J5Gq
+         VkJmI2kvIaGAQ11xZe+tLf3107UiP33pNtEL0Atw3nV9DCOS+c44f5lVf7TSzMv/+zOD
+         5bpSkbE+26mIf7Qwgp30YOh1tA8jnDg/Jhv+r3aiKksqyLEKjKk9T+KXPtt0/nQwS0hy
+         8cVoTJlBLPxS1+/9TaDgiFfZQYTu6vKoehdouD5uFo4SSlq1pOMiNby0PhI+878PdGWH
+         VUMg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1782392059; x=1782996859;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=UJAtGQmovXlj8CbbOYVBpCwG1j5kbcJ2ECu+Lwn8HsI=;
+        b=sstDC71eNqdhIxlbq0HX5rV/a4/LBiQS3BYkQjxQ/TVS7/CaOW9HkasGPCflZDdtJB
+         mi0681+ygISOzv2OI0Rqh9A8c3VQYbb/gol9K7Ff5WV10etac/DLuUZ2PbJuDuDG++Lf
+         pF2tFA+AUF0Ou2nDnx+yd0DjOsxkeGFubfnL0St/DL3zdC8SFBbpSZ8hKXEpbQrglrx9
+         YA5DdftocwQWUWdI2dBRpqrIAmkcW3lmVwpIJrz9WfctjtHOZdsSKmljAWvo7Nq1rBOv
+         OlGDKo/eAoBk5m27NE1l/8/wGIKysSHRLVcAI+wPSzHrN1pOqCYa2Eof80hOdCFgrSYy
+         wrSg==
+X-Gm-Message-State: AOJu0YwyZVxsE05B05YRi6kDDMlFTm1HrEs1dJzwgoX9Z3ZnKnCmKc3H
+	mNWw7lVHLT13DcLJE2NzSmjkoz/rJRoZrrUdlva+qpUHpQhDbWTOt1O5
+X-Gm-Gg: AfdE7ckGazHNmAlxKlCswH58cR9dVI/1cQY9wbPi+zmwWYU4loAEiWyv9c3HsQIAR1D
+	3VpMW/TF71JRgl7qB52qufy7N/TRgDzmypRFbhMpibkGCLt6La/pWToDU04j56+V/0ezma6F7qn
+	zgsh9hbLhKcCA1oFzW+a3+SZ+sTzDlN3luqBC7sOBFArAtBj0a/kYE5zW9oD19mYRGnIHcDKE9j
+	5/jtmsZ6diDUku5KC4y6zeBM3YercyYWCQmcxj6iFAHwHYbJHGUluq736r007mi5Y/bE78T0+8E
+	/Zw61JGKPF4a1YrWCCGhnmhk14dJCUY1V3idmGao3JXfflfKjxLobLJ4GwHu3struiP+oevT1Dm
+	2MZcRRm0o6Y/gdV0Subzg4cbOUdCYauO54JpWSsOBpCKs3mlRm5y2PHOvZilxDb5vvZLwQlJ55W
+	Y4Z7Zx0WmrtYCHUJ8JlRejHak=
+X-Received: by 2002:a05:6000:4286:b0:45e:e9ac:42e8 with SMTP id ffacd0b85a97d-46dc0839ffbmr3888358f8f.18.1782392059131;
+        Thu, 25 Jun 2026 05:54:19 -0700 (PDT)
+Received: from beast.lan ([2a00:c281:1461:c400:bf16:e4f3:7fa:c2dc])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-46e6167c05fsm724670f8f.25.2026.06.25.05.54.17
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 25 Jun 2026 05:54:18 -0700 (PDT)
+From: Boris Shtrasman <borissh1983@gmail.com>
+To: Sebastian Reichel <sre@kernel.org>,
+	Shuah Khan <shuah@kernel.org>
+Cc: linux-pm@vger.kernel.org,
+	linux-kselftest@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	Boris Shtrasman <borissh1983@gmail.com>
+Subject: [PATCH] selftests: helpers: handle multi line in test_sysfs_prop_optional_list
+Date: Thu, 25 Jun 2026 15:52:37 +0300
+Message-ID: <20260625125237.36605-1-borissh1983@gmail.com>
+X-Mailer: git-send-email 2.47.3
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain
-X-ClientProxiedBy: se-mail11w.axis.com (10.20.40.11) To se-mail11w.axis.com
- (10.20.40.11)
-X-EOPAttributedMessage: 0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: AM3PEPF00009BA2:EE_|VI0PR02MB10804:EE_
-X-MS-Office365-Filtering-Correlation-Id: 6def7c53-e429-47d8-88c8-08ded2b4377c
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|1800799024|36860700016|82310400026|376014|23010399003|3023799007|56012099006|11063799006|4143699003|18002099003|22082099003;
-X-Microsoft-Antispam-Message-Info:
-	2bQkhGCgr3Xr7f9a5cWoCB783JsN3yJ2OJYOOGWZqRIt67KQAAXSXCxGR0O3N5tGgiJaOE5yVLiLmJddgu+wP8b34rY4pmVSAy2Q+otEyj/TA42BMK1RAstftT4kDDwC3OkzHMuqScekPGqHIsxsQddWZ2qirfJ+oL7XL1GyXcQIk2dkougnYTWE5pGFdEzuE0+HsDNrkX7uHUNFZgW6kx9p2x3igDYkgRhs7smbW1B/DvzVdiaaHo3nh1OEBCTBiMiNXMeqG8se4OwpD9Bbsje+VTyBLmGcLF726A5ZFj4SgLjpfuFZgahI6QUKshizYFU3UqECrcqJU3MBYBEAGr5//BV4xfmPrZjolAxOXy9OeTl0G+vVDAle/dyFvehRsfmNvbh7ZjiOJM0GFs25YonVTIlN1qhST49oIgSr/o1gQf7aoYu/ROpvJ6C1EJP2saukrSjvFL4Hqr4iJmKgY9duMOkFwWrHWeZ/jMnlq5LONQ9akuJ3bw9GQUCXvUToyut1rgyeDfn0Kc4KY28RvViJFZaLwyq0taFa5mk2rBhFp2hemHgORpTZi06qnXBAWTCmtVWTtlxGJJJ7sRKCE420BDG3W3w3OvIPYn7mKkf7HNRaGnq6kCyJYdhhporwYkTGVghNOB4rgO8aMfnkj8NaVco+qBUgftlkxdv3KMaj66cxbQiRnIi6iLTBXXzixzeiMsXnzQBZXH9BDWk38Q==
-X-Forefront-Antispam-Report:
-	CIP:195.60.68.100;CTRY:SE;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:mail.axis.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230040)(1800799024)(36860700016)(82310400026)(376014)(23010399003)(3023799007)(56012099006)(11063799006)(4143699003)(18002099003)(22082099003);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	ayPK/uYYyj5BWgcPEwv7QqxIW9oQRElwKSpZgJlHdGcSFe7ROsoTF6oJdyhVxiFPOklOLVp7EScM1BAX2IaXEpQMBEMA7sFx2yzvNTQECEgayyvCtIMMLy8A9mRGKKQmiQ0eIKhYENV9fdgfzlhVHVOOokev7/JEPKtY/Mbvyt8L+slvfHMHFM0jJusHfaiRj+yxgy68/BIZHyNQ6syygWGMXFA3ecOsVCW2yxOkX/bKRkce+To7z1ILlRbu1F798IiyDbFeBWZoIAlZgacT9o/iWtMET2l/XrY8X9xZs71YePBy9WiBpV8EnWxObvF7V1eqOSnTL6w+/Sj46936Sm62Ud7Dl1dS237rUgN+g7EjKxKQpZCb0ulJ6+1PFhfTaglI9OsLRLjW5Kcw0HuacTs8P6mNghRQTp0vp3YyXWGYKVxpQQTtk8ijt9FOpcZd
-X-OriginatorOrg: axis.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 25 Jun 2026 12:20:59.9640
- (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: 6def7c53-e429-47d8-88c8-08ded2b4377c
-X-MS-Exchange-CrossTenant-Id: 78703d3c-b907-432f-b066-88f7af9ca3af
-X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=78703d3c-b907-432f-b066-88f7af9ca3af;Ip=[195.60.68.100];Helo=[mail.axis.com]
-X-MS-Exchange-CrossTenant-AuthSource:
-	AM3PEPF00009BA2.eurprd04.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Anonymous
-X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: VI0PR02MB10804
+Content-Transfer-Encoding: 8bit
 
-On Thu, Jun 25, 2026 at 14:10 +0200 Krzysztof Kozlowski <krzk@kernel.org> wrote:
+Modify test_sysfs_prop_optional_list to allow multi line parameters, in
+order to comply with checkpatch output that limit line by 100 chars.
 
-> On 25/06/2026 13:27, Waqar Hameed wrote:
->>>> +
->>>> +required:
->>>> +  - compatible
->>>> +  - reg
->>>> +  - interrupts
->>>> +  - monitored-battery
->>>> +
->>>> +additionalProperties: false
->>>
->>> And here use 'unevaluatedProperties: false' instead.
->> 
->> Hm, reading the documentation [1], `unevaluatedProperties` should be
->> used, because of the "include" of `power-supply.yaml`. I'll change to
->> that.
->> 
->> However, there are tons of other places where `additionalProperties` is
->> used instead _with_ a reference to `power-supply.yaml` (which is what I
->> followed). Are all of them actually "wrong" then?
->
-> No, they are not wrong, but usually preferred is to allow all properties
-> from referenced power-supply schema.
+Allow use cases like:
 
-Ah ok, I can see why it's more preferable to be more "permissive" with
-`unevaluatedProperties`. Thanks!
+test_sysfs_prop_optional_list \
+        property_name "value1","value2","val3","very_long_option"\
+        ,"extra_long_option" \
+	,"even_more_data"
+
+Signed-off-by: Boris Shtrasman <borissh1983@gmail.com>
+---
+ tools/testing/selftests/power_supply/helpers.sh | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/tools/testing/selftests/power_supply/helpers.sh b/tools/testing/selftests/power_supply/helpers.sh
+index 1ec90d7c9108..8535cb7ed094 100644
+--- a/tools/testing/selftests/power_supply/helpers.sh
++++ b/tools/testing/selftests/power_supply/helpers.sh
+@@ -108,7 +108,7 @@ test_sysfs_prop_optional_range() {
+ 
+ test_sysfs_prop_optional_list() {
+ 	PROP=$1
+-	LIST=$2
++	shift
+ 
+ 	TEST_NAME="$DEVNAME".sysfs."$PROP"
+ 
+@@ -118,9 +118,9 @@ test_sysfs_prop_optional_list() {
+ 	valid=0
+ 
+ 	OLDIFS=$IFS
+-	IFS=","
+-	for item in $LIST; do
+-		if [ "$DATA" = "$item" ]; then
++	IFS=",IFS"
++	for item in $*; do
++		if [ "$item" ] && [ "$DATA" = "$item" ]; then
+ 			valid=1
+ 			break
+ 		fi
+-- 
+2.47.3
+
