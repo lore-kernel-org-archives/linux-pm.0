@@ -1,114 +1,63 @@
-Received: from mail-wm1-f49.google.com (mail-wm1-f49.google.com [209.85.128.49])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 412093E8330
-	for <linux-pm@vger.kernel.org>; Thu, 25 Jun 2026 16:07:42 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.49
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8608427B32C;
+	Thu, 25 Jun 2026 16:48:52 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1782403663; cv=none; b=YWs/2SZs5DBtlNVJUHYjTAJcvLpvXPZcD94WWEq1st8nnmI3lGMwOOd3xQwzbr5hYVfbEf2TLMGtxpRwkIJBg2GyAxZQ/SfyPPTdH33cpBLkvjv6S2tOQr0WyvEF9IGmKc+Vh7PiGN6dR/nuFOnqDOZJPVvXQZUEtuz3JlyErJI=
+	t=1782406133; cv=none; b=j3j4FwGGhHpB2Euy+u5/4Ni9xQFWivzYescMDOekdPZxvLpis57K8qmtjDXbkanSZR6OcE2Ajf2FU0yHSo2hZ39nbNr+nN7auLMinI/iPVWfvSs/3GvMzY7Fsbc98EL4NQge3QAumE+Tbt2LK3kMWaWQ1YeQoZmQtxEGbxrRdKY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1782403663; c=relaxed/simple;
-	bh=h33sooVrCbTG5jJ44p3NjBGF+AChHF0yDgbpED9sCwM=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=mV2iSo9VKM3bOktrajmJNt8BO7D1qDLOPT/V1OsoQmJr+w2kZZ4SPktcDmdtJRmVW48TXrK9sOgmOhMkxOVPGreBGeBaQ0D/LH9eQ2JFZe4p0oSFfKku94rQOCPEgoZt+ertzWdkxQiwRx9iHuIgI1o3J9cGNNMPxDooT6xWMCQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=bVh2mKL+; arc=none smtp.client-ip=209.85.128.49
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1782406133; c=relaxed/simple;
+	bh=H34NZuqsrouAWsc4u7jxDd7Cgs20iob7fuiOpt7d7vQ=;
+	h=Subject:From:In-Reply-To:References:Message-Id:Date:To:Cc; b=HW1HWV/n6YAD1vx5yR6lVs4Sf6P/qEKSjx3nCKyQi8MRx+/5EpLDKmFwysUIPv3cO2SQ32deu6O4DjaccIFn52JliP4z/7k7nBtZ8SK6FwcM+Or4wuNt5AxydarvI6m+CugoHWZJ9+txs5WYlqR10WdrscXb1MkKXirtTddymzs=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=R8sxymU8; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="bVh2mKL+"
-Received: by mail-wm1-f49.google.com with SMTP id 5b1f17b1804b1-4903d730b1fso264515e9.2
-        for <linux-pm@vger.kernel.org>; Thu, 25 Jun 2026 09:07:42 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1782403661; x=1783008461; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=9xlNMIqzkOijapT3trmKB36H51y0Q3Hatzee9XcmfXw=;
-        b=bVh2mKL+60lJLfbvQaVuYhDktryGa42/C14+Wbiamzi6YeDdSu0RAIE31iHEOWDC4u
-         nKDn6tvafYTBvAv5g0QQWH7X6u+yiW7IUKZkIqHidHFMnIrrX62Y0SgA+Vqmn5PoC/vl
-         g6Dj1A/XcVXwzRVwOr/weapVHvCijFzG3ellNp7jPCCYyPvIbqu9AKtPBeSlEmbbrWCq
-         P4Lqwtvej7WrdbmXjHSOEvLIYTBVPgPiiUYkFCFh0f4swOc0k7wrt8UK5FNVndhT8ORF
-         K9TWpsJwR8TvO62EpbhtiId5MxE+LL+UP3tdT0CvY2axu2U4TePijkVdsebhm+cEBhMN
-         A7qg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1782403661; x=1783008461;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=9xlNMIqzkOijapT3trmKB36H51y0Q3Hatzee9XcmfXw=;
-        b=ehSDV42gRZVMYCmC+rPDUhYvqfHtymaaqHRZm1jPLqRzHx/6vq7G/GV2WkhPW3Pg96
-         KzNSz0GNAhWTCciEdiSOqR8osaDmGJutTMGwxTs7EVh4lXnw+xdjh8ytwJeEveOwRoDk
-         wxpx4W5iDzHRZLedcpyvA7RlYH8Q/6F9idNIsAo+cjZzVRoSdckT2ss+qRO3rGacjKaS
-         bxVvJAEP2uEPXqElSmOv0U8G5AlOlJQeau/qLVrDrDLpcuQkDvOQNJ0a7yyrHiallG4V
-         ZKCfH/axo6YHSWOPT8B2QyEZmzG38A4ElUQy7wTOBWRpUvteOwR94C0Neqg/86YJCH6y
-         DEOw==
-X-Gm-Message-State: AOJu0YwiB4Vzq6FxAiqM5qsV+ydRwvn8kx57bIBlY5h7qONTFDtVox67
-	DYCnqXoaAEP3wXHAQXGfWLYml/3j0Ji8/MmBzC7EoVwJMeYjP2fY2NTG
-X-Gm-Gg: AfdE7cnEESGRFktGweEWCU9GL44qp8Ek9Rw9bJq6P/v0BzkXA88YFL6qSfJsiWtxIDX
-	bW3RfDK9EHmrdwjjpkasVuTOKf7JvbeA5zmNOsgXX+GbCKJe2W0JPSAr2mIkkiVAXjtdrDo+MMa
-	xiNZhUVZRXPM71iPAIOFQhe1cSdJacTjNuw75EbyC65PVAJMZRtMdCe6AzXCYfMZTuab+Qnae/g
-	EPpCJZXVXMAzerKjEoJX4nWIFGqXSY6WKi697v0tUuCdw3WrhIEAS8g+wW7GaSNwgodS2hiSUnh
-	n1TiaLzXKU4XUc2nKXI8KvUbTQJi/xF7gdsGJduPmhYsqoBP2PC/YWHmok+GV2mPIRI89Ksr7H/
-	MDEnYV0POg4Rx7+lUrCfk4WM2Jn9hB/Tn1FQ2JqceugFRJMq7r5u3JTvH+sfvh4LRh//5G462+g
-	g+8aBUxdxXSyq8
-X-Received: by 2002:a05:600c:609b:b0:490:e60b:6860 with SMTP id 5b1f17b1804b1-49266833cedmr44566275e9.7.1782403660449;
-        Thu, 25 Jun 2026 09:07:40 -0700 (PDT)
-Received: from beast.lan ([2a00:c281:1461:c400:bf16:e4f3:7fa:c2dc])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-49268fef710sm12844515e9.7.2026.06.25.09.07.39
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 25 Jun 2026 09:07:40 -0700 (PDT)
-From: Boris Shtrasman <borissh1983@gmail.com>
-To: Sebastian Reichel <sre@kernel.org>,
-	Shuah Khan <shuah@kernel.org>
-Cc: linux-pm@vger.kernel.org,
-	linux-kselftest@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	Boris Shtrasman <borissh1983@gmail.com>
-Subject: [PATCH v2 2/2] selftests: test possible usb type values from documentation
-Date: Thu, 25 Jun 2026 19:05:55 +0300
-Message-ID: <20260625160556.54830-3-borissh1983@gmail.com>
-X-Mailer: git-send-email 2.47.3
-In-Reply-To: <20260625160556.54830-1-borissh1983@gmail.com>
-References: <20260625160556.54830-1-borissh1983@gmail.com>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="R8sxymU8"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 374F81F000E9;
+	Thu, 25 Jun 2026 16:48:52 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1782406132;
+	bh=9gTk0QF4pC07358fYyP/1j0QKyOWTcNsVAJWgGMBR8s=;
+	h=Subject:From:In-Reply-To:References:Date:To:Cc;
+	b=R8sxymU8JadPnxfGf+Oy5O5kVdpuyv3wj7V28rZjU+R0SWFCW2Dj/rkUgFXSy0vGk
+	 dsHYjtasWO1GJfyKhwcMFCivMYdr+N70MZXNNtMvCB9z79LV2otP//QKMyE1ZbWp7P
+	 dhsbnBvtRraFFgO6+HB/xYC3xGlWxe9TOcoRY8zZr2+Qqq7Ekx4ppzYn1QBvDACWYv
+	 yfFnP67kjrSz9qr2BUh9MQ4D8Fds5RHXc5d1lh0iobwdSSOJUGFtR8ZsYfDFieB76p
+	 riS1GdtsVRRdc6nED/JvPgXTqw0kiNFk8JjY52lFRID4krwMsynWGEEUYCPhDG5TKc
+	 NYEjqfZl3Hgcg==
+Received: from [10.30.226.235] (localhost [IPv6:::1])
+	by aws-us-west-2-korg-oddjob-rhel9-1.codeaurora.org (Postfix) with ESMTP id 199563938789;
+	Thu, 25 Jun 2026 16:48:41 +0000 (UTC)
+Subject: Re: [GIT PULL] power sequencing fixes for v7.2-rc1
+From: pr-tracker-bot@kernel.org
+In-Reply-To: <20260625085158.11090-1-bartosz.golaszewski@oss.qualcomm.com>
+References: <20260625085158.11090-1-bartosz.golaszewski@oss.qualcomm.com>
+X-PR-Tracked-List-Id: <linux-pm.vger.kernel.org>
+X-PR-Tracked-Message-Id: <20260625085158.11090-1-bartosz.golaszewski@oss.qualcomm.com>
+X-PR-Tracked-Remote: git://git.kernel.org/pub/scm/linux/kernel/git/brgl/linux.git tags/pwrseq-fixes-for-v7.2-rc1
+X-PR-Tracked-Commit-Id: 2d5a7d406ecece5837af1e278ffbbf6c0315560a
+X-PR-Merge-Tree: torvalds/linux.git
+X-PR-Merge-Refname: refs/heads/master
+X-PR-Merge-Commit-Id: ec85be724c5c0c2cc392f5681b45da0403ea60ec
+Message-Id: <178240611970.3815539.5245691242935876195.pr-tracker-bot@kernel.org>
+Date: Thu, 25 Jun 2026 16:48:39 +0000
+To: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, brgl@kernel.org, Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
 
-modify kselftest to check for usb_types values from
-Documentation/ABI/testing/sysfs-class-power instead of only checking for
-property.
+The pull request you sent on Thu, 25 Jun 2026 10:51:58 +0200:
 
-Added the
-"Unknown", "SDP", "DCP", "CDP", "ACA", "C", "PD",
-"PD_DRP", "PD_PPS", "BrickID", "PD_SPR_AVS",
-"PD_PPS_SPR_AVS" values from the
- /sys/class/power_supply/<supply_name>/usb_type section.
+> git://git.kernel.org/pub/scm/linux/kernel/git/brgl/linux.git tags/pwrseq-fixes-for-v7.2-rc1
 
-Signed-off-by: Boris Shtrasman <borissh1983@gmail.com>
----
- .../selftests/power_supply/test_power_supply_properties.sh   | 5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
+has been merged into torvalds/linux.git:
+https://git.kernel.org/torvalds/c/ec85be724c5c0c2cc392f5681b45da0403ea60ec
 
-diff --git a/tools/testing/selftests/power_supply/test_power_supply_properties.sh b/tools/testing/selftests/power_supply/test_power_supply_properties.sh
-index a66b1313ed88..7bf76af4cfd5 100755
---- a/tools/testing/selftests/power_supply/test_power_supply_properties.sh
-+++ b/tools/testing/selftests/power_supply/test_power_supply_properties.sh
-@@ -58,7 +58,10 @@ for DEVNAME in $supplies; do
- 	# This fails on kernels < 5.8 (needs 2ad3d74e3c69f)
- 	test_uevent_prop TYPE "$SUPPLY_TYPE"
- 
--	test_sysfs_prop_optional usb_type
-+	test_sysfs_prop_optional_list \
-+		usb_type "Unknown","SDP","DCP","CDP","ACA","C","PD"\
-+			,"PD_DRP","PD_PPS","BrickID", "PD_SPR_AVS" \
-+			,"PD_PPS_SPR_AVS"
- 
- 	test_sysfs_prop_optional_range online 0 2
- 	test_sysfs_prop_optional_range present 0 1
+Thank you!
+
 -- 
-2.47.3
-
+Deet-doot-dot, I am a bot.
+https://korg.docs.kernel.org/prtracker.html
