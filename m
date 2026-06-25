@@ -1,197 +1,337 @@
-Received: from canpmsgout02.his.huawei.com (canpmsgout02.his.huawei.com [113.46.200.217])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D94513C10B8;
-	Thu, 25 Jun 2026 09:55:51 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=113.46.200.217
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 738173CEB9B;
+	Thu, 25 Jun 2026 10:15:54 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1782381355; cv=none; b=necEQly3gnjMX9vgmjv1iGQ1mVExMiUvlkoeB45vhT8cSBdVvkAWBf8VXKClE+N5sgviuYSO8Nl/qcuwVtsLSQlC9RuZhC1BNAshO33BhLAVhM1eEUsDxZdphqA9lzWbIZGb9+/DT0JSqfbbFBzLxB0sLusCSLYNJlL46ZlGHrM=
+	t=1782382556; cv=none; b=XxMRnOHIZlI20GIrLTvM7lizAcpoFOFq7bKFMvdNeecE/9dc8txiOPsY/Z8DEw0mQgtRn86028n79a81pMA9JsExvh+fjJRz32QhrZ7Qit9RaWKOXmYLTPEDbmMq16MARk+SRKiidMhPPYj8DBsVTDTCCYqGhNf3CdxyfWQ3nxI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1782381355; c=relaxed/simple;
-	bh=AVzU6uhAKGmwZXLxbz3FqQFhpLlmuoveVJ13ywwKLWo=;
-	h=Message-ID:Date:MIME-Version:Subject:To:CC:References:From:
-	 In-Reply-To:Content-Type; b=CEKeXqnFeOX1PaakNZztOk8hngwsYOpbwwUWdH4mz6uRchGPJwvDlw9IYYkVOrDcLio9Qvm5mLGjxZZyLwNYFS93Xjdwr9RTXBYNktOWyL4SB2lFll9zF7lQp9p7FOX4LbG1b4TBB89KsOJNTdqRxmLogyogjt1C7f+nlcmJ9Ps=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=hisilicon.com; spf=pass smtp.mailfrom=hisilicon.com; arc=none smtp.client-ip=113.46.200.217
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=hisilicon.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=hisilicon.com
-Received: from mail.maildlp.com (unknown [172.19.163.104])
-	by canpmsgout02.his.huawei.com (SkyGuard) with ESMTPS id 4gmDVH4lSpzcZyQ;
-	Thu, 25 Jun 2026 17:47:03 +0800 (CST)
-Received: from kwepemf200017.china.huawei.com (unknown [7.202.181.10])
-	by mail.maildlp.com (Postfix) with ESMTPS id 1614A40363;
-	Thu, 25 Jun 2026 17:55:43 +0800 (CST)
-Received: from [10.67.121.58] (10.67.121.58) by kwepemf200017.china.huawei.com
- (7.202.181.10) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1544.11; Thu, 25 Jun
- 2026 17:55:42 +0800
-Message-ID: <e0090262-34ae-4419-aa9a-fd36901d0a05@hisilicon.com>
-Date: Thu, 25 Jun 2026 17:55:41 +0800
+	s=arc-20240116; t=1782382556; c=relaxed/simple;
+	bh=07UwugMGGF13AofqLnujkYeATx0wKHVCxy61iC0wZIs=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=e1DAEOQo3PD0nHIboRbKfKyOe3ysSbXYcpFGEgbJel3T4DqKat8Llv0BNlo+oXha9m0OpmwgVtfAoUPKLUqeND6heEaiEwBsc43NCqogO8J/Nz/pH/AcmHdeCm7Cbfq/dBXOzvO0a6jVcAgPHRCcCvI0ZZMt8RzfyT3ihssVdUg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=FZ9E4325; arc=none smtp.client-ip=100.103.45.18
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="FZ9E4325"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 093711F000E9;
+	Thu, 25 Jun 2026 10:15:43 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1782382554;
+	bh=ZToO+NQD3LW0EAmo0Z2TAVZkC45YHlFo8YdIzTw1Q2A=;
+	h=From:Date:Subject:References:In-Reply-To:To:Cc;
+	b=FZ9E4325NuPDynK8zLdwbNfS+lbrGpPD6GpiFQY9yM+ZvbhO1TFzNBkRBA5AHz7us
+	 gg/U00xWrsz1s/i8RCxBwnI9xmiiVdfZYF9JmoEpc5yGosCDjf/Y/BI6RKtv4NFK8+
+	 aJOJUZ37Hes4cAXKVRCiazykWCkSVhDptaO91vQBvl3gpQ9KPtfURJy+eLQhlPhtlu
+	 GjebExOR/ZHbbNPr3ZSySn3nPzQ2jy9/QyIiFKtYqo0o6CUiHfuFoMAzsLodoX+icv
+	 RbGPKHldyC093xSpf3gnl5pADqKYapZP/BICOcqdgKbbYp0EaqZyQ1t7QC/6z6Ifhi
+	 6c3/XEXORjwWA==
+From: Andreas Hindborg <a.hindborg@kernel.org>
+Date: Thu, 25 Jun 2026 12:15:09 +0200
+Subject: [PATCH v18 7/8] rust: Add `OwnableRefCounted`
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] cpufreq: cppc: Reduce cppc delivered perf sampling jitter
-To: Jeremy Linton <jeremy.linton@arm.com>, <linux-pm@vger.kernel.org>
-CC: <sumitg@nvidia.com>, <pierre.gondois@arm.com>, <zhenglifeng1@huawei.com>,
-	<viresh.kumar@linaro.org>, <leitao@debian.org>, <rafael@kernel.org>,
-	<linux-kernel@vger.kernel.org>
-References: <20260602212052.1278365-1-jeremy.linton@arm.com>
-Content-Language: en-US
-From: Jie Zhan <zhanjie9@hisilicon.com>
-In-Reply-To: <20260602212052.1278365-1-jeremy.linton@arm.com>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-ClientProxiedBy: kwepems500002.china.huawei.com (7.221.188.17) To
- kwepemf200017.china.huawei.com (7.202.181.10)
+Message-Id: <20260625-unique-ref-v18-7-4e06b5896d47@kernel.org>
+References: <20260625-unique-ref-v18-0-4e06b5896d47@kernel.org>
+In-Reply-To: <20260625-unique-ref-v18-0-4e06b5896d47@kernel.org>
+To: Danilo Krummrich <dakr@kernel.org>, Lorenzo Stoakes <ljs@kernel.org>, 
+ Vlastimil Babka <vbabka@kernel.org>, "Liam R. Howlett" <liam@infradead.org>, 
+ Uladzislau Rezki <urezki@gmail.com>, Miguel Ojeda <ojeda@kernel.org>, 
+ Boqun Feng <boqun@kernel.org>, Gary Guo <gary@garyguo.net>, 
+ =?utf-8?q?Bj=C3=B6rn_Roy_Baron?= <bjorn3_gh@protonmail.com>, 
+ Benno Lossin <lossin@kernel.org>, Alice Ryhl <aliceryhl@google.com>, 
+ Trevor Gross <tmgross@umich.edu>, 
+ Daniel Almeida <daniel.almeida@collabora.com>, 
+ Tamir Duberstein <tamird@kernel.org>, 
+ Alexandre Courbot <acourbot@nvidia.com>, 
+ =?utf-8?q?Onur_=C3=96zkan?= <work@onurozkan.dev>, 
+ Lyude Paul <lyude@redhat.com>, 
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
+ =?utf-8?q?Arve_Hj=C3=B8nnev=C3=A5g?= <arve@android.com>, 
+ Todd Kjos <tkjos@android.com>, Christian Brauner <brauner@kernel.org>, 
+ Carlos Llamas <cmllamas@google.com>, 
+ "Rafael J. Wysocki" <rafael@kernel.org>, 
+ Dave Ertman <david.m.ertman@intel.com>, Ira Weiny <ira.weiny@intel.com>, 
+ Leon Romanovsky <leon@kernel.org>, Paul Moore <paul@paul-moore.com>, 
+ Serge Hallyn <sergeh@kernel.org>, David Airlie <airlied@gmail.com>, 
+ Simona Vetter <simona@ffwll.ch>, Alexander Viro <viro@zeniv.linux.org.uk>, 
+ Jan Kara <jack@suse.cz>, Igor Korotin <igor.korotin@linux.dev>, 
+ Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, 
+ Stephen Boyd <sboyd@kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, 
+ =?utf-8?q?Krzysztof_Wilczy=C5=84ski?= <kwilczynski@kernel.org>, 
+ Pavel Tikhomirov <ptikhomirov@virtuozzo.com>, 
+ Michal Wilczynski <m.wilczynski@samsung.com>
+Cc: Andreas Hindborg <a.hindborg@kernel.org>, 
+ Philipp Stanner <phasta@kernel.org>, rust-for-linux@vger.kernel.org, 
+ linux-kernel@vger.kernel.org, linux-mm@kvack.org, 
+ driver-core@lists.linux.dev, linux-block@vger.kernel.org, 
+ linux-security-module@vger.kernel.org, dri-devel@lists.freedesktop.org, 
+ linux-fsdevel@vger.kernel.org, linux-pm@vger.kernel.org, 
+ linux-pci@vger.kernel.org, linux-pwm@vger.kernel.org, 
+ Oliver Mangold <oliver.mangold@pm.me>
+X-Mailer: b4 0.16-dev
+X-Developer-Signature: v=1; a=openpgp-sha256; l=9473; i=a.hindborg@kernel.org;
+ h=from:subject:message-id; bh=cWJqdUJZGXrcHaKbHpYDZftK3zE/sexxuAi+S26aqlw=;
+ b=owEBbQKS/ZANAwAKAfpQKQiqxb3QAcsmYgBqPP/Du39o/7gxB53usiQFtTa8MFJbFxK5czvjr
+ 83YAteFVpiJAjMEAAEKAB0WIQRXitnI2WZ2JirAaob6UCkIqsW90AUCajz/wwAKCRD6UCkIqsW9
+ 0Af9D/9w10G3io//DOmUeHH9FD6KsXpwAK/zpVsZ/QT6kNTFOGFn6S+fnXjMpb2m56aKPaCYGlE
+ eVcKwRT9xacubbqlID9d1mFW6lIrwuR01kff3cVlzFNlF05UScRgidldx8PoLSdGMlVktTUgT1n
+ oaTYDcojM+IWpqK0aUU8nGFhwKFCScnaBaNJSpYNSRxtb4A++eweLs15r0bBglVqsuaZR6GTbqY
+ Oig66z+jCWVptLSXAjJVj+jVn/fz4kHX3I9UwnMkdzFrWh8YMAt6EGO/1wN4sVr8IvW1vcg+TCg
+ GNeePvc+YEwh6SfmxhuTrIhDbxPwLFZ0xs+GDXvdzryDurPfB7dHh10Vb59WJeSTMy3/Uwm6sD7
+ JjPYO3a2RYqzccURIrqcFZR/hZqGLFT1p9er66xsxT3ODZJakt0wP+hLIiSZQ4o1B69RbJ8yRG9
+ 8RVMuGZ0/tGttIzpYXfPlojokwgWvCcwAJpdtYMlM3pWg6jzMS+2m0eJ7DjlGwGoFnnmKWHb3Xh
+ IFWxGg+FN9pqhAlQ3NiR40jYCKL2QUKjtqREWqVlMuqsIBvvwTsCDOjBMkxBydMAGmmcs6m4YtT
+ BUqvXMqrl0TQS0IzFpbuREHR/s0O2Gp+97s2oCAxGeS5YQKQ+o09DRnOOcmj8peXME0ZNv5hc5V
+ cpyJprpdU6ZxEaw==
+X-Developer-Key: i=a.hindborg@kernel.org; a=openpgp;
+ fpr=3108C10F46872E248D1FB221376EB100563EF7A7
 
-Hi Jeremy,
+From: Oliver Mangold <oliver.mangold@pm.me>
 
-On 6/3/2026 5:20 AM, Jeremy Linton wrote:
-> CPPC uses a pair of registers cycling at different frequencies to
-> determine an accumulated performance level. For userspace reporting we
-> want to convert this to an instantaneous CPU frequency, but over short
-> time periods small errors caused by CPPC counter reads can cause
-> fairly significant reported frequency variations even when the core
-> CPU clock isn't changing.
-> 
-> Reduce this by keeping a start sample fixed and retrying the end
-> sample until the counter deltas are large enough to reduce short
-> window error, or until adjacent delivered performance estimates are
-> within the CPU's observed CPPC read noise floor.
-> 
-> To begin, resample the initial pair a small fixed number of times
-> looking for matching delivered performance deltas.  This reduces the
-> chance that a disturbed start sample anchors the rest of the
-> calculation.
-> 
-> Then look for an end sample while updating the noise floor from the
-> best error seen between samples.  The floor remains zero on systems
-> with stable feedback reads, but lets noisy systems stop early once
-> another retry is unlikely to improve the result.  The retry loop is
-> capped at 200 iterations, giving an ~20 usec explicit delay budget
-> derived from ndelay(100).
-> 
-> Signed-off-by: Jeremy Linton <jeremy.linton@arm.com>
-> ---
->  drivers/cpufreq/cppc_cpufreq.c | 68 ++++++++++++++++++++++++++++++----
->  1 file changed, 61 insertions(+), 7 deletions(-)
-> 
-> diff --git a/drivers/cpufreq/cppc_cpufreq.c b/drivers/cpufreq/cppc_cpufreq.c
-> index 7e7f9dfb7a24..362c08def420 100644
-> --- a/drivers/cpufreq/cppc_cpufreq.c
-> +++ b/drivers/cpufreq/cppc_cpufreq.c
-> @@ -50,7 +50,7 @@ struct cppc_freq_invariance {
->  static DEFINE_PER_CPU(struct cppc_freq_invariance, cppc_freq_inv);
->  static struct kthread_worker *kworker_fie;
->  
-> -static int cppc_perf_from_fbctrs(u64 reference_perf,
-> +static u64 cppc_perf_from_fbctrs(u64 reference_perf,
->  				 struct cppc_perf_fb_ctrs *fb_ctrs_t0,
->  				 struct cppc_perf_fb_ctrs *fb_ctrs_t1);
->  
-> @@ -750,7 +750,7 @@ static inline u64 get_delta(u64 t1, u64 t0)
->  	return (u32)t1 - (u32)t0;
->  }
->  
-> -static int cppc_perf_from_fbctrs(u64 reference_perf,
-> +static u64 cppc_perf_from_fbctrs(u64 reference_perf,
->  				 struct cppc_perf_fb_ctrs *fb_ctrs_t0,
->  				 struct cppc_perf_fb_ctrs *fb_ctrs_t1)
->  {
-> @@ -771,19 +771,71 @@ static int cppc_perf_from_fbctrs(u64 reference_perf,
->  	return (reference_perf * delta_delivered) / delta_reference;
->  }
->  
-> -static int cppc_get_perf_ctrs_sample(int cpu,
-> +/* CPPC read noise floor for early retry exit. */
-> +static DEFINE_PER_CPU(u64, err_floor);
-> +
-> +#define CPPC_SAMPLE_MAX_RETRIES	200
-> +
-> +static int cppc_get_perf_ctrs_sample(int cpu, u64 ref,
->  				     struct cppc_perf_fb_ctrs *fb_ctrs_t0,
->  				     struct cppc_perf_fb_ctrs *fb_ctrs_t1)
->  {
->  	int ret;
-> +	s64 last_delivered = 0;
-> +	u64 smallest_error = 0;
-> +	int tries = 0;
-> +	u64 min_counts = ref * 2000;
-> +
-> +	/* Two subsequent reads with the same offset avoids one off large jitter values */
-> +	for (int x = 0; x < 10; x++) {
-> +		ret = cppc_get_perf_ctrs(cpu, fb_ctrs_t0);
-> +		if (ret)
-> +			return ret;
-> +
-> +		ret = cppc_get_perf_ctrs(cpu, fb_ctrs_t1);
-> +		if (ret)
-> +			return ret;
-> +
-> +		if (last_delivered == cppc_perf_from_fbctrs(ref, fb_ctrs_t0, fb_ctrs_t1))
-> +			break;
-> +
-> +		last_delivered = cppc_perf_from_fbctrs(ref, fb_ctrs_t0, fb_ctrs_t1);
-> +	}
-Actually I don't quite understand this hunk.
-Is it trying to get two exactly same samples of delivered performance?
-Isn't that very hard or impossible to meet?
+Types implementing one of these traits can safely convert between an
+`ARef<T>` and an `Owned<T>`.
 
-> +	last_delivered = 0;
-> +again:
-> +	ndelay(100);
->  
-> -	ret = cppc_get_perf_ctrs(cpu, fb_ctrs_t0);
-> +	ret = cppc_get_perf_ctrs(cpu, fb_ctrs_t1);
->  	if (ret)
->  		return ret;
->  
-> -	udelay(2); /* 2usec delay between sampling */
-> +	/*
-> +	 * We want at least two significant figures, if the counts are low, then there
-> +	 * can be rounding errors that show up as frequency that is swinging around a few hundred
-> +	 * Mhz. OTOH, if the delay gets too long the clock rate can be affected.
-> +	 * So we want it exactly long enough to have sufficient counter turn over, and
-> +	 * a repeatable low error value.
-> +	 */
-> +	if ((get_delta(fb_ctrs_t1->reference, fb_ctrs_t0->reference) < min_counts) ||
-> +	    (get_delta(fb_ctrs_t1->delivered, fb_ctrs_t0->delivered) < min_counts)) {
-> +		s64 delivered = cppc_perf_from_fbctrs(ref, fb_ctrs_t0, fb_ctrs_t1);
-> +		u64 error = abs(last_delivered - delivered);
-> +
-> +		if (smallest_error == 0 || smallest_error > error)
-> +			smallest_error = error;
-> +
-> +		if (error > per_cpu(err_floor, cpu)) {
-> +			last_delivered = delivered;
-> +			tries++;
-> +			if (tries < CPPC_SAMPLE_MAX_RETRIES)
-> +				goto again;
-> +		}
-> +	}
->  
-> -	return cppc_get_perf_ctrs(cpu, fb_ctrs_t1);
-> +	/* compute a running error */
-> +	per_cpu(err_floor, cpu) = (per_cpu(err_floor, cpu) + smallest_error) / 2;
-> +
-> +	return ret;
-Correct me if I'm wrong.  The key point is something like a self-adaptation
-process to get an appropriate sampling delay for different platforms or
-even each CPU?
->  }
->  
->  static unsigned int cppc_cpufreq_get_rate(unsigned int cpu)
-> @@ -799,7 +851,9 @@ static unsigned int cppc_cpufreq_get_rate(unsigned int cpu)
->  
->  	cpu_data = policy->driver_data;
->  
-> -	ret = cppc_get_perf_ctrs_sample(cpu, &fb_ctrs_t0, &fb_ctrs_t1);
-> +	ret = cppc_get_perf_ctrs_sample(cpu, cpu_data->perf_caps.reference_perf,
-> +					&fb_ctrs_t0, &fb_ctrs_t1);
-> +
->  	if (ret) {
->  		if (ret == -EFAULT)
->  			/* Any of the associated CPPC regs is 0. */
+This is useful for types which generally are accessed through an `ARef`
+but have methods which can only safely be called when the reference is
+unique, like e.g. `block::mq::Request::end_ok()`.
+
+Signed-off-by: Oliver Mangold <oliver.mangold@pm.me>
+[ Andreas: Fix formatting, update documentation, fix error handling in
+  examples. ]
+Co-developed-by: Andreas Hindborg <a.hindborg@kernel.org>
+Signed-off-by: Andreas Hindborg <a.hindborg@kernel.org>
+---
+ rust/kernel/owned.rs     | 140 +++++++++++++++++++++++++++++++++++++++++++++--
+ rust/kernel/sync/aref.rs |  16 +++++-
+ rust/kernel/types.rs     |   1 +
+ 3 files changed, 151 insertions(+), 6 deletions(-)
+
+diff --git a/rust/kernel/owned.rs b/rust/kernel/owned.rs
+index e79936c00002c..bb4223c0f725a 100644
+--- a/rust/kernel/owned.rs
++++ b/rust/kernel/owned.rs
+@@ -14,20 +14,26 @@
+     pin::Pin,
+     ptr::NonNull, //
+ };
++use kernel::{
++    sync::aref::ARef,
++    types::RefCounted, //
++};
+ 
+ use kernel::types::ForeignOwnable;
+ 
+ /// Types that specify their own way of performing allocation and destruction. Typically, this trait
+ /// is implemented on types from the C side.
+ ///
+-/// Implementing this trait allows types to be referenced via the [`Owned<Self>`] pointer type. This
+-/// is useful when it is desirable to tie the lifetime of the reference to an owned object, rather
+-/// than pass around a bare reference. [`Ownable`] types can define custom drop logic that is
+-/// executed when the owned reference [`Owned<Self>`] pointing to the object is dropped.
++/// Implementing this trait allows types to be referenced via the [`Owned<Self>`] pointer type.
++///  - This is useful when it is desirable to tie the lifetime of an object reference to an owned
++///    object, rather than pass around a bare reference.
++///  - [`Ownable`] types can define custom drop logic that is executed when the owned reference
++///    of type [`Owned<_>`] pointing to the object is dropped.
+ ///
+ /// Note: The underlying object is not required to provide internal reference counting, because it
+ /// represents a unique, owned reference. If reference counting (on the Rust side) is required,
+-/// [`RefCounted`](crate::types::RefCounted) should be implemented.
++/// [`RefCounted`] should be implemented. [`OwnableRefCounted`] should be implemented if conversion
++/// between unique and shared (reference counted) ownership is needed.
+ ///
+ /// # Examples
+ ///
+@@ -239,3 +245,127 @@ unsafe fn borrow_mut<'a>(ptr: *mut kernel::ffi::c_void) -> Self::BorrowedMut<'a>
+         unsafe { Pin::new_unchecked(inner) }
+     }
+ }
++
++/// A trait for objects that can be wrapped in either one of the reference types [`Owned`] and
++/// [`ARef`].
++///
++/// # Examples
++///
++/// A minimal example implementation of [`OwnableRefCounted`], [`Ownable`] and its usage with
++/// [`ARef`] and [`Owned`] looks like this:
++///
++/// ```
++/// # #![expect(clippy::disallowed_names)]
++/// # use core::cell::Cell;
++/// # use core::ptr::NonNull;
++/// # use kernel::alloc::{flags, kbox::KBox, AllocError};
++/// # use kernel::sync::aref::{ARef, RefCounted};
++/// # use kernel::types::{Owned, Ownable, OwnableRefCounted};
++///
++/// // An internally refcounted struct for demonstration purposes.
++/// //
++/// // # Invariants
++/// //
++/// // - `refcount` is always non-zero for a valid object.
++/// // - `refcount` is >1 if there is more than one Rust reference to it.
++/// //
++/// struct Foo {
++///     refcount: Cell<usize>,
++/// }
++///
++/// impl Foo {
++///     fn new() -> Result<Owned<Self>> {
++///         // We are just using a `KBox` here to handle the actual allocation, as our `Foo` is
++///         // not actually a C-allocated object.
++///         // INVARIANT: We initialize `refcount` to 1, satisfying the invariants.
++///         let result = KBox::new(
++///             Foo {
++///                 refcount: Cell::new(1),
++///             },
++///             flags::GFP_KERNEL,
++///         )?;
++///         let result = KBox::into_non_null(result);
++///         // SAFETY:
++///         //  - We just allocated the `Self`, thus it is valid and we own it.
++///         //  - We can transfer this ownership to the `from_raw` method.
++///         Ok(unsafe { Owned::from_raw(result) })
++///     }
++/// }
++///
++/// // SAFETY: We increment and decrement each time the respective function is called and only free
++/// // the `Foo` when the refcount reaches zero.
++/// unsafe impl RefCounted for Foo {
++///     fn inc_ref(&self) {
++///         self.refcount.replace(self.refcount.get() + 1);
++///     }
++///
++///     unsafe fn dec_ref(this: NonNull<Self>) {
++///         // SAFETY: By requirement on calling this function, the refcount is non-zero,
++///         // implying the underlying object is valid.
++///         let refcount = unsafe { &this.as_ref().refcount };
++///         let new_refcount = refcount.get() - 1;
++///         if new_refcount == 0 {
++///             // The `Foo` will be dropped when `KBox` goes out of scope.
++///             // SAFETY: The [`KBox<Foo>`] is still alive as the old refcount is 1. We can pass
++///             // ownership to the [`KBox`] as by requirement on calling this function,
++///             // the `Self` will no longer be used by the caller.
++///             unsafe { KBox::from_raw(this.as_ptr()) };
++///         } else {
++///             refcount.replace(new_refcount);
++///         }
++///     }
++/// }
++///
++/// impl OwnableRefCounted for Foo {
++///     fn try_from_shared(this: ARef<Self>) -> Result<Owned<Self>, ARef<Self>> {
++///         if this.refcount.get() == 1 {
++///             // SAFETY: The `Foo` is still alive and has no other Rust references as the refcount
++///             // is 1.
++///             Ok(unsafe { Owned::from_raw(ARef::into_raw(this)) })
++///         } else {
++///             Err(this)
++///         }
++///     }
++/// }
++///
++/// impl Ownable for Foo {
++///     unsafe fn release(this: NonNull<Self>) {
++///         // SAFETY: Using `dec_ref()` from [`RefCounted`] to release is okay, as the refcount is
++///         // always 1 for an [`Owned<Foo>`].
++///         unsafe { Foo::dec_ref(this) };
++///     }
++/// }
++///
++/// let foo = Foo::new()?;
++/// let foo = ARef::from(foo);
++/// {
++///     let bar = foo.clone();
++///     assert!(Owned::try_from(bar).is_err());
++/// }
++/// assert!(Owned::try_from(foo).is_ok());
++/// # Ok::<(), Error>(())
++/// ```
++pub trait OwnableRefCounted: RefCounted + Ownable + Sized {
++    /// Checks if the [`ARef`] is unique and converts it to an [`Owned`] if that is the case.
++    /// Otherwise it returns again an [`ARef`] to the same underlying object.
++    fn try_from_shared(this: ARef<Self>) -> Result<Owned<Self>, ARef<Self>>;
++
++    /// Converts the [`Owned`] into an [`ARef`].
++    #[inline]
++    fn into_shared(this: Owned<Self>) -> ARef<Self> {
++        // SAFETY: `Owned::into_raw` returns a pointer to a valid `Self`, and the `Owned` owned the
++        // reference count that we now transfer to the new `ARef`.
++        unsafe { ARef::from_raw(Owned::into_raw(this)) }
++    }
++}
++
++impl<T: OwnableRefCounted> TryFrom<ARef<T>> for Owned<T> {
++    type Error = ARef<T>;
++    /// Tries to convert the [`ARef`] to an [`Owned`] by calling
++    /// [`try_from_shared()`](OwnableRefCounted::try_from_shared). In case the [`ARef`] is not
++    /// unique, it returns again an [`ARef`] to the same underlying object.
++    #[inline]
++    fn try_from(b: ARef<T>) -> Result<Owned<T>, Self::Error> {
++        T::try_from_shared(b)
++    }
++}
+diff --git a/rust/kernel/sync/aref.rs b/rust/kernel/sync/aref.rs
+index d0865aeb9371b..77eb390139079 100644
+--- a/rust/kernel/sync/aref.rs
++++ b/rust/kernel/sync/aref.rs
+@@ -23,6 +23,10 @@
+     ops::Deref,
+     ptr::NonNull, //
+ };
++use kernel::types::{
++    OwnableRefCounted,
++    Owned, //
++};
+ 
+ /// Types that are internally reference counted.
+ ///
+@@ -35,7 +39,10 @@
+ /// Note: Implementing this trait allows types to be wrapped in an [`ARef<Self>`]. It requires an
+ /// internal reference count and provides only shared references. If unique references are required
+ /// [`Ownable`](crate::types::Ownable) should be implemented which allows types to be wrapped in an
+-/// [`Owned<Self>`](crate::types::Owned).
++/// [`Owned<Self>`](crate::types::Owned). Implementing the trait
++/// [`OwnableRefCounted`] allows to convert between unique and
++/// shared references (i.e. [`Owned<Self>`](crate::types::Owned) and
++/// [`ARef<Self>`](crate::types::Owned)).
+ ///
+ /// # Safety
+ ///
+@@ -188,6 +195,13 @@ fn from(b: &T) -> Self {
+     }
+ }
+ 
++impl<T: OwnableRefCounted> From<Owned<T>> for ARef<T> {
++    #[inline]
++    fn from(b: Owned<T>) -> Self {
++        T::into_shared(b)
++    }
++}
++
+ impl<T: RefCounted> Drop for ARef<T> {
+     fn drop(&mut self) {
+         // SAFETY: The type invariants guarantee that the `ARef` owns the reference we're about to
+diff --git a/rust/kernel/types.rs b/rust/kernel/types.rs
+index 5ef763717e59a..6aa760952cb63 100644
+--- a/rust/kernel/types.rs
++++ b/rust/kernel/types.rs
+@@ -18,6 +18,7 @@
+ pub use crate::{
+     owned::{
+         Ownable,
++        OwnableRefCounted,
+         Owned, //
+     },
+     sync::aref::{
+
+-- 
+2.51.2
+
+
