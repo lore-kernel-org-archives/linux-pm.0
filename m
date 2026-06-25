@@ -1,63 +1,124 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+Received: from mout-p-101.mailbox.org (mout-p-101.mailbox.org [80.241.56.151])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8608427B32C;
-	Thu, 25 Jun 2026 16:48:52 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B39B21D5174;
+	Thu, 25 Jun 2026 17:07:49 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=80.241.56.151
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1782406133; cv=none; b=j3j4FwGGhHpB2Euy+u5/4Ni9xQFWivzYescMDOekdPZxvLpis57K8qmtjDXbkanSZR6OcE2Ajf2FU0yHSo2hZ39nbNr+nN7auLMinI/iPVWfvSs/3GvMzY7Fsbc98EL4NQge3QAumE+Tbt2LK3kMWaWQ1YeQoZmQtxEGbxrRdKY=
+	t=1782407272; cv=none; b=O7dSKs6eaLT2yje65huYfysaFwDPqRP77qlFFHaU0kMaa4KGhFcxLqqviHaEv/AMtuPIPuiSKRybbKYo/hnfzsvlIz8Z2CO1wn/6Ej3hBTTllJqLowdev6Ru6a6o2sXmvtyraa6u20SpRRypdaK//nRz+CqiTqdTCjBY2KBKppg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1782406133; c=relaxed/simple;
-	bh=H34NZuqsrouAWsc4u7jxDd7Cgs20iob7fuiOpt7d7vQ=;
-	h=Subject:From:In-Reply-To:References:Message-Id:Date:To:Cc; b=HW1HWV/n6YAD1vx5yR6lVs4Sf6P/qEKSjx3nCKyQi8MRx+/5EpLDKmFwysUIPv3cO2SQ32deu6O4DjaccIFn52JliP4z/7k7nBtZ8SK6FwcM+Or4wuNt5AxydarvI6m+CugoHWZJ9+txs5WYlqR10WdrscXb1MkKXirtTddymzs=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=R8sxymU8; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1782407272; c=relaxed/simple;
+	bh=3OrnZFBPbVV5Sb9axsd5lLcxx/AJ2uGLIK/sIYxvTAA=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=a+NmxNz/5Tj35hcjUpBfy2fKW+n4/z32OAXgYY7YvGgQ2sBzJNK2amE54YaNkxoDGj2QyWV5333okJ42eAQUndyW2ax5TX+G1024wUt1nJGNqH3UZZbBrvRhzqyYFQLMpkVbAlCCnLkMS/609mz2q7U0vddctd2ahFEyC7E2eqY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=steffen.cc; spf=pass smtp.mailfrom=steffen.cc; dkim=pass (2048-bit key) header.d=steffen.cc header.i=@steffen.cc header.b=Q49NvJLI; arc=none smtp.client-ip=80.241.56.151
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=steffen.cc
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=steffen.cc
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="R8sxymU8"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 374F81F000E9;
-	Thu, 25 Jun 2026 16:48:52 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1782406132;
-	bh=9gTk0QF4pC07358fYyP/1j0QKyOWTcNsVAJWgGMBR8s=;
-	h=Subject:From:In-Reply-To:References:Date:To:Cc;
-	b=R8sxymU8JadPnxfGf+Oy5O5kVdpuyv3wj7V28rZjU+R0SWFCW2Dj/rkUgFXSy0vGk
-	 dsHYjtasWO1GJfyKhwcMFCivMYdr+N70MZXNNtMvCB9z79LV2otP//QKMyE1ZbWp7P
-	 dhsbnBvtRraFFgO6+HB/xYC3xGlWxe9TOcoRY8zZr2+Qqq7Ekx4ppzYn1QBvDACWYv
-	 yfFnP67kjrSz9qr2BUh9MQ4D8Fds5RHXc5d1lh0iobwdSSOJUGFtR8ZsYfDFieB76p
-	 riS1GdtsVRRdc6nED/JvPgXTqw0kiNFk8JjY52lFRID4krwMsynWGEEUYCPhDG5TKc
-	 NYEjqfZl3Hgcg==
-Received: from [10.30.226.235] (localhost [IPv6:::1])
-	by aws-us-west-2-korg-oddjob-rhel9-1.codeaurora.org (Postfix) with ESMTP id 199563938789;
-	Thu, 25 Jun 2026 16:48:41 +0000 (UTC)
-Subject: Re: [GIT PULL] power sequencing fixes for v7.2-rc1
-From: pr-tracker-bot@kernel.org
-In-Reply-To: <20260625085158.11090-1-bartosz.golaszewski@oss.qualcomm.com>
-References: <20260625085158.11090-1-bartosz.golaszewski@oss.qualcomm.com>
-X-PR-Tracked-List-Id: <linux-pm.vger.kernel.org>
-X-PR-Tracked-Message-Id: <20260625085158.11090-1-bartosz.golaszewski@oss.qualcomm.com>
-X-PR-Tracked-Remote: git://git.kernel.org/pub/scm/linux/kernel/git/brgl/linux.git tags/pwrseq-fixes-for-v7.2-rc1
-X-PR-Tracked-Commit-Id: 2d5a7d406ecece5837af1e278ffbbf6c0315560a
-X-PR-Merge-Tree: torvalds/linux.git
-X-PR-Merge-Refname: refs/heads/master
-X-PR-Merge-Commit-Id: ec85be724c5c0c2cc392f5681b45da0403ea60ec
-Message-Id: <178240611970.3815539.5245691242935876195.pr-tracker-bot@kernel.org>
-Date: Thu, 25 Jun 2026 16:48:39 +0000
-To: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, brgl@kernel.org, Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
+	dkim=pass (2048-bit key) header.d=steffen.cc header.i=@steffen.cc header.b="Q49NvJLI"
+Received: from smtp202.mailbox.org (smtp202.mailbox.org [IPv6:2001:67c:2050:b231:465::202])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by mout-p-101.mailbox.org (Postfix) with ESMTPS id 4gmQGp3yBjz9tgB;
+	Thu, 25 Jun 2026 19:07:46 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=steffen.cc; s=MBO0001;
+	t=1782407266;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=B91AhuTtQGkYT5URvzYhx2Ce7ga49uf4NQCIrdgzwrU=;
+	b=Q49NvJLI7kUJ+AYyzrRniCSzpEMic1aK411+weooz951R595E+FwD8zHM7HHEiDMLIyMzO
+	1yDJCYzKJDSYznUhUGoFme5y3vVN3mcEmO2xAnJ6/p8xTC7Ob2ZJ44NW8P3DMJMVch7jUl
+	G8f91uK6heaH7SeG0wWzVCXeKzOJPLv7me+wfHIIxAZp1/0dSr7M48IzeZMdiYaaRCA/Yn
+	eAu/qqLjAYTUuB03L4RiAOovhjp4TP5esLOybFJxjwurIz8xaGLXa4I6j73kcS8eUbhRYr
+	NshtoBnRn6/JA46ymM4g+MSot9XyJOVYwsY6m3KXKDeELOvMkdUooKzmAiod3w==
+Authentication-Results: outgoing_mbo_mout;
+	dkim=none;
+	spf=pass (outgoing_mbo_mout: domain of lists@steffen.cc designates 2001:67c:2050:b231:465::202 as permitted sender) smtp.mailfrom=lists@steffen.cc
+From: Steffen Dirkwinkel <lists@steffen.cc>
+Date: Thu, 25 Jun 2026 19:07:35 +0200
+Subject: [PATCH 2/2] power: supply: leds: add a not-charging trigger
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20260625-std-power-supply-triggers-v1-2-d80db570d329@beckhoff.com>
+References: <20260625-std-power-supply-triggers-v1-0-d80db570d329@beckhoff.com>
+In-Reply-To: <20260625-std-power-supply-triggers-v1-0-d80db570d329@beckhoff.com>
+To: Sebastian Reichel <sre@kernel.org>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
+ Steffen Dirkwinkel <s.dirkwinkel@beckhoff.com>
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1782407261; l=2421;
+ i=s.dirkwinkel@beckhoff.com; s=20260625; h=from:subject:message-id;
+ bh=QPl08tNHBYaAsAMerAoV4E+unXMqWwAmJOunNP7YlaI=;
+ b=XAfHCNZ+xVIeLYHuStSBlENHeruAKMywKOs14jNsXVp/yY8EHHk5U5qXvDkiqQO1sNtxXT/+z
+ PKLM13zhNMvDL0ZiRXHpSpbyWsswnwhpy4sHe8kC7l1rGsSEbdzl4x8
+X-Developer-Key: i=s.dirkwinkel@beckhoff.com; a=ed25519;
+ pk=5DcsaSpVtmm7nCi3Bnw5A4vbXI+sg3hBgt8e2A2U/gw=
+X-Rspamd-Queue-Id: 4gmQGp3yBjz9tgB
 
-The pull request you sent on Thu, 25 Jun 2026 10:51:58 +0200:
+From: Steffen Dirkwinkel <s.dirkwinkel@beckhoff.com>
 
-> git://git.kernel.org/pub/scm/linux/kernel/git/brgl/linux.git tags/pwrseq-fixes-for-v7.2-rc1
+We intend to use this with a gpio-charger ups device that reports
+charging or not-charging based on a gpio to set a "power failure" led.
 
-has been merged into torvalds/linux.git:
-https://git.kernel.org/torvalds/c/ec85be724c5c0c2cc392f5681b45da0403ea60ec
+Signed-off-by: Steffen Dirkwinkel <s.dirkwinkel@beckhoff.com>
+---
+ drivers/power/supply/power_supply_leds.c | 7 +++++++
+ include/linux/power_supply.h             | 1 +
+ 2 files changed, 8 insertions(+)
 
-Thank you!
+diff --git a/drivers/power/supply/power_supply_leds.c b/drivers/power/supply/power_supply_leds.c
+index 538cc0440e53..c82a3628765c 100644
+--- a/drivers/power/supply/power_supply_leds.c
++++ b/drivers/power/supply/power_supply_leds.c
+@@ -131,6 +131,10 @@ static void power_supply_update_status_leds(struct power_supply *psy)
+ 			LED_OFF);
+ 		break;
+ 	}
++
++	led_trigger_event(psy->not_charging_trig,
++			  status.intval == POWER_SUPPLY_STATUS_NOT_CHARGING ?
++			  LED_FULL : LED_OFF);
+ }
+ 
+ static int power_supply_create_status_triggers(struct power_supply *psy)
+@@ -150,6 +154,8 @@ static int power_supply_create_status_triggers(struct power_supply *psy)
+ 					  &psy->charging_blink_full_solid_trig, &err);
+ 	power_supply_register_led_trigger(psy, "%s-charging-orange-full-green",
+ 					  &psy->charging_orange_full_green_trig, &err);
++	power_supply_register_led_trigger(psy, "%s-not-charging",
++					  &psy->not_charging_trig, &err);
+ 
+ 	return err;
+ }
+@@ -209,6 +215,7 @@ void power_supply_remove_triggers(struct power_supply *psy)
+ 	power_supply_unregister_led_trigger(psy->online_trig);
+ 	power_supply_unregister_led_trigger(psy->charging_or_full_trig);
+ 	power_supply_unregister_led_trigger(psy->charging_trig);
++	power_supply_unregister_led_trigger(psy->not_charging_trig);
+ 	power_supply_unregister_led_trigger(psy->full_trig);
+ 	power_supply_unregister_led_trigger(psy->charging_blink_full_solid_trig);
+ 	power_supply_unregister_led_trigger(psy->charging_orange_full_green_trig);
+diff --git a/include/linux/power_supply.h b/include/linux/power_supply.h
+index 68b65682b14d..9052610e3910 100644
+--- a/include/linux/power_supply.h
++++ b/include/linux/power_supply.h
+@@ -349,6 +349,7 @@ struct power_supply {
+ 	struct led_trigger *charging_or_full_trig;
+ 	struct led_trigger *online_trig;
+ 	struct led_trigger *charging_trig;
++	struct led_trigger *not_charging_trig;
+ 	struct led_trigger *full_trig;
+ 	struct led_trigger *charging_blink_full_solid_trig;
+ 	struct led_trigger *charging_orange_full_green_trig;
 
 -- 
-Deet-doot-dot, I am a bot.
-https://korg.docs.kernel.org/prtracker.html
+2.54.0
+
