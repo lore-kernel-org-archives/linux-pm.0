@@ -1,270 +1,242 @@
-Received: from mout-p-101.mailbox.org (mout-p-101.mailbox.org [80.241.56.151])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B56123D9688;
-	Thu, 25 Jun 2026 17:07:48 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=80.241.56.151
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id B61FE25771;
+	Thu, 25 Jun 2026 20:28:23 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1782407272; cv=none; b=M1BvK+v1AKDYDj10YXcKZGTVPCIkXijUI6tEOiWUGp+4b6bbg6RN00OtZByvCi3RWSAj8vfznSRkNqD0zpessUIDaqGIXd0xPoggJL5dSm96NjEJORYhDqwfKe2AWcwz9dZIujOP3W5IKjTuMy5EWi3/4F8czAD7MLGckH9L+Gc=
+	t=1782419305; cv=none; b=c9/Jirc/db4NaoCru6F+3GFyLukj9C9bhfB8F2oe4Fbm2fJtWZ49s0GN/5h0HiZlK1YU3D/ATSUZwYiEGc3pP4OP/yB9tc1JgpkbILgauFhh3ZFuw5CsLfqlowKjM8YLNTBOUQi77610+RWjlk78VqK9Gvd1fIi8PzvpRAqih10=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1782407272; c=relaxed/simple;
-	bh=bnYXH0lOLHdZvIPsRngPxa9h8NfxvI/Sd70LwIpMEag=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=onQ7O6rPwjC45l9mXcyWP5M4k78Gmvth4Sug6GKDe2mQsdn9D5u++VxBSqAw1nqihPU+WSEpCB7704lvGWufPv6B6jQ4LkLoyJHgyJs8YLDmhqxIxB9c9UmkZA3WTiDLBPHv8AXOwOkf4Cus4pwUjq8A68z4sLomTq+lPIEJyfA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=steffen.cc; spf=pass smtp.mailfrom=steffen.cc; dkim=pass (2048-bit key) header.d=steffen.cc header.i=@steffen.cc header.b=t1nZ9gkZ; arc=none smtp.client-ip=80.241.56.151
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=steffen.cc
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=steffen.cc
+	s=arc-20240116; t=1782419305; c=relaxed/simple;
+	bh=Lr0XZjaAP/7aDphtrrjy9poPQuZylLb0LnvSpESQ0jY=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=K48ettpNF+pWRQ6Jt6DYUUw2QJ5kvR/1ZA35Gzf8g4qF7Zhzxvy3FwyuT5AScXgCBju5y010qz78WykVCLCV1vT+eeg2oBQ0/h1kHGYKUyAWfPbC6us57bebks2eL733Ikyc+88Vsb5HO2YYHytPKzKLzusajIddnfohkSPlh/s=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=L6/DSlmJ; arc=none smtp.client-ip=217.140.110.172
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=steffen.cc header.i=@steffen.cc header.b="t1nZ9gkZ"
-Received: from smtp202.mailbox.org (smtp202.mailbox.org [IPv6:2001:67c:2050:b231:465::202])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by mout-p-101.mailbox.org (Postfix) with ESMTPS id 4gmQGn2TSxz9t6W;
-	Thu, 25 Jun 2026 19:07:45 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=steffen.cc; s=MBO0001;
-	t=1782407265;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=8VwJS2KsuOD9m66ITNHoqe/Upe6CiqeoXwItuWdYRdw=;
-	b=t1nZ9gkZTORoTDZPMp2BJdGi03UE1eBJcm2/hbRSpbaYzJ6wNKz9TapwFreiAd7AvIAb4K
-	2vLeUP9B5xk/CFlAiTAeIzTd2gSVBGlu4CQaqE/H+u5dTW2KkYSAASWvwya380Z2vLERwm
-	6poysZ1fjGd62iE66zea4xoV3V1KAW8rVBUQPxId1W533nOGrHHKeF8p+6D4XcYXI1HlRJ
-	N9JWrPprwYk7hzR3SrXYRV3YqJ0qp609Nw9AiW8ZZPzstCeu1yTUgGMM356DivuZT82Y8U
-	AoMg+RRC1pmNRFc2RLjIF7QsItz+BDlg6YbEDUNAhU3lBIegRbML7Kxe+NiiQg==
-Authentication-Results: outgoing_mbo_mout;
-	dkim=none;
-	spf=pass (outgoing_mbo_mout: domain of lists@steffen.cc designates 2001:67c:2050:b231:465::202 as permitted sender) smtp.mailfrom=lists@steffen.cc
-From: Steffen Dirkwinkel <lists@steffen.cc>
-Date: Thu, 25 Jun 2026 19:07:34 +0200
-Subject: [PATCH 1/2] power: supply: leds: create triggers based on
- properties, not type
+	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="L6/DSlmJ"
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id E74741756;
+	Thu, 25 Jun 2026 13:28:17 -0700 (PDT)
+Received: from [172.27.42.179] (usa-sjc-mx-foss1.foss.arm.com [172.31.20.19])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 060E33F836;
+	Thu, 25 Jun 2026 13:28:22 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
+	t=1782419302; bh=Lr0XZjaAP/7aDphtrrjy9poPQuZylLb0LnvSpESQ0jY=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=L6/DSlmJMqCrHt3LSEj+7J7VcwQBmanKiQsY9fCOZqJE37iI/zuUf9/prC62qvKzl
+	 vJxVU42dr/c5HllWyzHKWenT8R6dPl3fzOB5wfnF+p16qhXYpwhXcQvcLDvqmypD6Y
+	 SN7bAfnSkY0+95NkcPVppSn2I24mfq6fRfw92R9I=
+Message-ID: <7b227c98-4ca9-4b2a-9a1d-31e9fc15b842@arm.com>
+Date: Thu, 25 Jun 2026 15:27:56 -0500
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] cpufreq: cppc: Reduce cppc delivered perf sampling jitter
+To: Jie Zhan <zhanjie9@hisilicon.com>, linux-pm@vger.kernel.org
+Cc: sumitg@nvidia.com, pierre.gondois@arm.com, zhenglifeng1@huawei.com,
+ viresh.kumar@linaro.org, leitao@debian.org, rafael@kernel.org,
+ linux-kernel@vger.kernel.org, zhangpengjie2@huawei.com,
+ Will Deacon <will.deacon@arm.com>
+References: <20260602212052.1278365-1-jeremy.linton@arm.com>
+ <e0090262-34ae-4419-aa9a-fd36901d0a05@hisilicon.com>
+Content-Language: en-US
+From: Jeremy Linton <jeremy.linton@arm.com>
+In-Reply-To: <e0090262-34ae-4419-aa9a-fd36901d0a05@hisilicon.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260625-std-power-supply-triggers-v1-1-d80db570d329@beckhoff.com>
-References: <20260625-std-power-supply-triggers-v1-0-d80db570d329@beckhoff.com>
-In-Reply-To: <20260625-std-power-supply-triggers-v1-0-d80db570d329@beckhoff.com>
-To: Sebastian Reichel <sre@kernel.org>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
- Steffen Dirkwinkel <s.dirkwinkel@beckhoff.com>
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1782407261; l=7207;
- i=s.dirkwinkel@beckhoff.com; s=20260625; h=from:subject:message-id;
- bh=gND+aD6N0iBP2NMdN+hfsN7FyxJ4ZCoyKYItQIUT37I=;
- b=MfpJtUyJJ61xLYZ14Wj1mRcuZllEgLJeTvSngzoQYN8wQZwGKXfz39B2T/jM3AMsdJrxz5Gwn
- oQ7xrET4ODNDdy6uq4gO5UMiKd3aVWLZLemaFhJDKa476sMKx3wi53/
-X-Developer-Key: i=s.dirkwinkel@beckhoff.com; a=ed25519;
- pk=5DcsaSpVtmm7nCi3Bnw5A4vbXI+sg3hBgt8e2A2U/gw=
-X-Rspamd-Queue-Id: 4gmQGn2TSxz9t6W
 
-From: Steffen Dirkwinkel <s.dirkwinkel@beckhoff.com>
+Hi,
 
-Currently only battery power supplies get triggers for other properties
-and other supplies only get the online trigger.
+On 6/25/26 4:55 AM, Jie Zhan wrote:
+> Hi Jeremy,
+> 
+> On 6/3/2026 5:20 AM, Jeremy Linton wrote:
+>> CPPC uses a pair of registers cycling at different frequencies to
+>> determine an accumulated performance level. For userspace reporting we
+>> want to convert this to an instantaneous CPU frequency, but over short
+>> time periods small errors caused by CPPC counter reads can cause
+>> fairly significant reported frequency variations even when the core
+>> CPU clock isn't changing.
+>>
+>> Reduce this by keeping a start sample fixed and retrying the end
+>> sample until the counter deltas are large enough to reduce short
+>> window error, or until adjacent delivered performance estimates are
+>> within the CPU's observed CPPC read noise floor.
+>>
+>> To begin, resample the initial pair a small fixed number of times
+>> looking for matching delivered performance deltas.  This reduces the
+>> chance that a disturbed start sample anchors the rest of the
+>> calculation.
+>>
+>> Then look for an end sample while updating the noise floor from the
+>> best error seen between samples.  The floor remains zero on systems
+>> with stable feedback reads, but lets noisy systems stop early once
+>> another retry is unlikely to improve the result.  The retry loop is
+>> capped at 200 iterations, giving an ~20 usec explicit delay budget
+>> derived from ndelay(100).
+>>
+>> Signed-off-by: Jeremy Linton <jeremy.linton@arm.com>
+>> ---
+>>   drivers/cpufreq/cppc_cpufreq.c | 68 ++++++++++++++++++++++++++++++----
+>>   1 file changed, 61 insertions(+), 7 deletions(-)
+>>
+>> diff --git a/drivers/cpufreq/cppc_cpufreq.c b/drivers/cpufreq/cppc_cpufreq.c
+>> index 7e7f9dfb7a24..362c08def420 100644
+>> --- a/drivers/cpufreq/cppc_cpufreq.c
+>> +++ b/drivers/cpufreq/cppc_cpufreq.c
+>> @@ -50,7 +50,7 @@ struct cppc_freq_invariance {
+>>   static DEFINE_PER_CPU(struct cppc_freq_invariance, cppc_freq_inv);
+>>   static struct kthread_worker *kworker_fie;
+>>   
+>> -static int cppc_perf_from_fbctrs(u64 reference_perf,
+>> +static u64 cppc_perf_from_fbctrs(u64 reference_perf,
+>>   				 struct cppc_perf_fb_ctrs *fb_ctrs_t0,
+>>   				 struct cppc_perf_fb_ctrs *fb_ctrs_t1);
+>>   
+>> @@ -750,7 +750,7 @@ static inline u64 get_delta(u64 t1, u64 t0)
+>>   	return (u32)t1 - (u32)t0;
+>>   }
+>>   
+>> -static int cppc_perf_from_fbctrs(u64 reference_perf,
+>> +static u64 cppc_perf_from_fbctrs(u64 reference_perf,
+>>   				 struct cppc_perf_fb_ctrs *fb_ctrs_t0,
+>>   				 struct cppc_perf_fb_ctrs *fb_ctrs_t1)
+>>   {
+>> @@ -771,19 +771,71 @@ static int cppc_perf_from_fbctrs(u64 reference_perf,
+>>   	return (reference_perf * delta_delivered) / delta_reference;
+>>   }
+>>   
+>> -static int cppc_get_perf_ctrs_sample(int cpu,
+>> +/* CPPC read noise floor for early retry exit. */
+>> +static DEFINE_PER_CPU(u64, err_floor);
+>> +
+>> +#define CPPC_SAMPLE_MAX_RETRIES	200
+>> +
+>> +static int cppc_get_perf_ctrs_sample(int cpu, u64 ref,
+>>   				     struct cppc_perf_fb_ctrs *fb_ctrs_t0,
+>>   				     struct cppc_perf_fb_ctrs *fb_ctrs_t1)
+>>   {
+>>   	int ret;
+>> +	s64 last_delivered = 0;
+>> +	u64 smallest_error = 0;
+>> +	int tries = 0;
+>> +	u64 min_counts = ref * 2000;
+>> +
+>> +	/* Two subsequent reads with the same offset avoids one off large jitter values */
+>> +	for (int x = 0; x < 10; x++) {
+>> +		ret = cppc_get_perf_ctrs(cpu, fb_ctrs_t0);
+>> +		if (ret)
+>> +			return ret;
+>> +
+>> +		ret = cppc_get_perf_ctrs(cpu, fb_ctrs_t1);
+>> +		if (ret)
+>> +			return ret;
+>> +
+>> +		if (last_delivered == cppc_perf_from_fbctrs(ref, fb_ctrs_t0, fb_ctrs_t1))
+>> +			break;
+>> +
+>> +		last_delivered = cppc_perf_from_fbctrs(ref, fb_ctrs_t0, fb_ctrs_t1);
+>> +	}
+> Actually I don't quite understand this hunk.
+> Is it trying to get two exactly same samples of delivered performance?
+> Isn't that very hard or impossible to meet?
 
-This changes it to provide the triggers for any power supply depending
-on what properties are available. Batteries will still get the same
-triggers if the properties are there, but now other power supplies can
-get the triggers too.
+Short version, yes, but it seems like its not difficult on machines with 
+lowish frequency delivered/ref registers.
 
-Signed-off-by: Steffen Dirkwinkel <s.dirkwinkel@beckhoff.com>
----
- drivers/power/supply/power_supply_leds.c | 88 ++++++++++++++++----------------
- include/linux/power_supply.h             |  3 +-
- 2 files changed, 45 insertions(+), 46 deletions(-)
+So we are looking for two a-b samples that are equal under the 
+assumption that interrupts/whatever won't have two identical offsets and 
+the CPU can sample them faster than they roll over. If that isn't the 
+case then the platform probably doesn't have a lot of issues with this 
+code path because the counters are running at a fairly high frequency.
 
-diff --git a/drivers/power/supply/power_supply_leds.c b/drivers/power/supply/power_supply_leds.c
-index 1548aaba3362..538cc0440e53 100644
---- a/drivers/power/supply/power_supply_leds.c
-+++ b/drivers/power/supply/power_supply_leds.c
-@@ -17,8 +17,6 @@
- 
- #include "power_supply.h"
- 
--/* Battery specific LEDs triggers. */
--
- struct power_supply_led_trigger {
- 	struct led_trigger trig;
- 	struct power_supply *psy;
-@@ -89,7 +87,7 @@ static void power_supply_unregister_led_trigger(struct led_trigger *trig)
- 	kfree(psy_trig);
- }
- 
--static void power_supply_update_bat_leds(struct power_supply *psy)
-+static void power_supply_update_status_leds(struct power_supply *psy)
- {
- 	union power_supply_propval status;
- 	unsigned int intensity_green[3] = { 0, 255, 0 };
-@@ -102,7 +100,7 @@ static void power_supply_update_bat_leds(struct power_supply *psy)
- 
- 	switch (status.intval) {
- 	case POWER_SUPPLY_STATUS_FULL:
--		led_trigger_event(psy->trig, LED_FULL);
-+		led_trigger_event(psy->charging_or_full_trig, LED_FULL);
- 		led_trigger_event(psy->charging_trig, LED_OFF);
- 		led_trigger_event(psy->full_trig, LED_FULL);
- 		/* Going from blink to LED on requires a LED_OFF event to stop blink */
-@@ -114,7 +112,7 @@ static void power_supply_update_bat_leds(struct power_supply *psy)
- 				     LED_FULL);
- 		break;
- 	case POWER_SUPPLY_STATUS_CHARGING:
--		led_trigger_event(psy->trig, LED_FULL);
-+		led_trigger_event(psy->charging_or_full_trig, LED_FULL);
- 		led_trigger_event(psy->charging_trig, LED_FULL);
- 		led_trigger_event(psy->full_trig, LED_OFF);
- 		led_trigger_blink(psy->charging_blink_full_solid_trig, 0, 0);
-@@ -124,7 +122,7 @@ static void power_supply_update_bat_leds(struct power_supply *psy)
- 				     LED_FULL);
- 		break;
- 	default:
--		led_trigger_event(psy->trig, LED_OFF);
-+		led_trigger_event(psy->charging_or_full_trig, LED_OFF);
- 		led_trigger_event(psy->charging_trig, LED_OFF);
- 		led_trigger_event(psy->full_trig, LED_OFF);
- 		led_trigger_event(psy->charging_blink_full_solid_trig,
-@@ -135,21 +133,15 @@ static void power_supply_update_bat_leds(struct power_supply *psy)
- 	}
- }
- 
--static void power_supply_remove_bat_triggers(struct power_supply *psy)
--{
--	power_supply_unregister_led_trigger(psy->trig);
--	power_supply_unregister_led_trigger(psy->charging_trig);
--	power_supply_unregister_led_trigger(psy->full_trig);
--	power_supply_unregister_led_trigger(psy->charging_blink_full_solid_trig);
--	power_supply_unregister_led_trigger(psy->charging_orange_full_green_trig);
--}
--
--static int power_supply_create_bat_triggers(struct power_supply *psy)
-+static int power_supply_create_status_triggers(struct power_supply *psy)
- {
- 	int err = 0;
- 
-+	if (!power_supply_has_property(psy, POWER_SUPPLY_PROP_STATUS))
-+		return 0;
-+
- 	power_supply_register_led_trigger(psy, "%s-charging-or-full",
--					  &psy->trig, &err);
-+					  &psy->charging_or_full_trig, &err);
- 	power_supply_register_led_trigger(psy, "%s-charging",
- 					  &psy->charging_trig, &err);
- 	power_supply_register_led_trigger(psy, "%s-full",
-@@ -158,15 +150,11 @@ static int power_supply_create_bat_triggers(struct power_supply *psy)
- 					  &psy->charging_blink_full_solid_trig, &err);
- 	power_supply_register_led_trigger(psy, "%s-charging-orange-full-green",
- 					  &psy->charging_orange_full_green_trig, &err);
--	if (err)
--		power_supply_remove_bat_triggers(psy);
- 
- 	return err;
- }
- 
--/* Generated power specific LEDs triggers. */
--
--static void power_supply_update_gen_leds(struct power_supply *psy)
-+static void power_supply_update_online_leds(struct power_supply *psy)
- {
- 	union power_supply_propval online;
- 
-@@ -175,43 +163,53 @@ static void power_supply_update_gen_leds(struct power_supply *psy)
- 
- 	dev_dbg(&psy->dev, "%s %d\n", __func__, online.intval);
- 
--	if (online.intval)
--		led_trigger_event(psy->trig, LED_FULL);
--	else
--		led_trigger_event(psy->trig, LED_OFF);
-+	led_trigger_event(psy->online_trig, online.intval ? LED_FULL : LED_OFF);
- }
- 
--static int power_supply_create_gen_triggers(struct power_supply *psy)
-+static int power_supply_create_online_trigger(struct power_supply *psy)
- {
--	return power_supply_register_led_trigger(psy, "%s-online", &psy->trig, NULL);
--}
-+	int err = 0;
- 
--static void power_supply_remove_gen_triggers(struct power_supply *psy)
--{
--	power_supply_unregister_led_trigger(psy->trig);
--}
-+	if (!power_supply_has_property(psy, POWER_SUPPLY_PROP_ONLINE))
-+		return 0;
- 
--/* Choice what triggers to create&update. */
-+	power_supply_register_led_trigger(psy, "%s-online", &psy->online_trig,
-+					  &err);
-+
-+	return err;
-+}
- 
- void power_supply_update_leds(struct power_supply *psy)
- {
--	if (psy->desc->type == POWER_SUPPLY_TYPE_BATTERY)
--		power_supply_update_bat_leds(psy);
--	else
--		power_supply_update_gen_leds(psy);
-+	power_supply_update_online_leds(psy);
-+	power_supply_update_status_leds(psy);
- }
- 
- int power_supply_create_triggers(struct power_supply *psy)
- {
--	if (psy->desc->type == POWER_SUPPLY_TYPE_BATTERY)
--		return power_supply_create_bat_triggers(psy);
--	return power_supply_create_gen_triggers(psy);
-+	int err;
-+
-+	err = power_supply_create_online_trigger(psy);
-+	if (err)
-+		goto err_remove;
-+
-+	err = power_supply_create_status_triggers(psy);
-+	if (err)
-+		goto err_remove;
-+
-+	return 0;
-+
-+err_remove:
-+	power_supply_remove_triggers(psy);
-+	return err;
- }
- 
- void power_supply_remove_triggers(struct power_supply *psy)
- {
--	if (psy->desc->type == POWER_SUPPLY_TYPE_BATTERY)
--		power_supply_remove_bat_triggers(psy);
--	else
--		power_supply_remove_gen_triggers(psy);
-+	power_supply_unregister_led_trigger(psy->online_trig);
-+	power_supply_unregister_led_trigger(psy->charging_or_full_trig);
-+	power_supply_unregister_led_trigger(psy->charging_trig);
-+	power_supply_unregister_led_trigger(psy->full_trig);
-+	power_supply_unregister_led_trigger(psy->charging_blink_full_solid_trig);
-+	power_supply_unregister_led_trigger(psy->charging_orange_full_green_trig);
- }
-diff --git a/include/linux/power_supply.h b/include/linux/power_supply.h
-index 7a5e4c3242a0..68b65682b14d 100644
---- a/include/linux/power_supply.h
-+++ b/include/linux/power_supply.h
-@@ -346,7 +346,8 @@ struct power_supply {
- #endif
- 
- #ifdef CONFIG_LEDS_TRIGGERS
--	struct led_trigger *trig;
-+	struct led_trigger *charging_or_full_trig;
-+	struct led_trigger *online_trig;
- 	struct led_trigger *charging_trig;
- 	struct led_trigger *full_trig;
- 	struct led_trigger *charging_blink_full_solid_trig;
+If your curious, just add some debugging to print abs(last_delivered 
+-cppc_perf_from_fbctrs(ref, fb_ctrs_t0, fb_ctrs_t1)) on your platform 
+before last_delivered is re-assigned.
 
--- 
-2.54.0
+So, this exits almost right away, sometimes, the rest of the time it 
+just exits after the 10 iterations and we potentially we have a little 
+jitter in the start sample. Although interestingly one platform I tried 
+it on the jitter settles and the abs() value there goes down towards 0 
+later in the loop even when it doesn't reach it.
+
+> 
+>> +	last_delivered = 0;
+>> +again:
+>> +	ndelay(100);
+>>   
+>> -	ret = cppc_get_perf_ctrs(cpu, fb_ctrs_t0);
+>> +	ret = cppc_get_perf_ctrs(cpu, fb_ctrs_t1);
+>>   	if (ret)
+>>   		return ret;
+>>   
+>> -	udelay(2); /* 2usec delay between sampling */
+>> +	/*
+>> +	 * We want at least two significant figures, if the counts are low, then there
+>> +	 * can be rounding errors that show up as frequency that is swinging around a few hundred
+>> +	 * Mhz. OTOH, if the delay gets too long the clock rate can be affected.
+>> +	 * So we want it exactly long enough to have sufficient counter turn over, and
+>> +	 * a repeatable low error value.
+>> +	 */
+>> +	if ((get_delta(fb_ctrs_t1->reference, fb_ctrs_t0->reference) < min_counts) ||
+>> +	    (get_delta(fb_ctrs_t1->delivered, fb_ctrs_t0->delivered) < min_counts)) {
+>> +		s64 delivered = cppc_perf_from_fbctrs(ref, fb_ctrs_t0, fb_ctrs_t1);
+>> +		u64 error = abs(last_delivered - delivered);
+>> +
+>> +		if (smallest_error == 0 || smallest_error > error)
+>> +			smallest_error = error;
+>> +
+>> +		if (error > per_cpu(err_floor, cpu)) {
+>> +			last_delivered = delivered;
+>> +			tries++;
+>> +			if (tries < CPPC_SAMPLE_MAX_RETRIES)
+>> +				goto again;
+>> +		}
+>> +	}
+>>   
+>> -	return cppc_get_perf_ctrs(cpu, fb_ctrs_t1);
+>> +	/* compute a running error */
+>> +	per_cpu(err_floor, cpu) = (per_cpu(err_floor, cpu) + smallest_error) / 2;
+>> +
+>> +	return ret;
+> Correct me if I'm wrong.  The key point is something like a self-adaptation
+> process to get an appropriate sampling delay for different platforms or
+> even each CPU?
+
+Yes, and one of the changes I've considered here was tracking what we 
+think is the lowest error sample in these loops and picking that sample 
+rather than the last one.
+
+This is a bit ugly and that makes it even worse.
+
+I was under the impression when I started this that the "CPPC: reduce 
+FFH feedback-counter sampling skew on arm64" patch wasn't helping on one 
+of the platforms, so I wrote this.
+
+But I'm going to merge that one into my tree and rerun the across a 
+couple platforms before reposting this one. I think they are vaguely 
+complementary, but lets see.
+
+I'm also sitting on a cpupower patch that re-exposes this on arm64 via 
+that tool if the results don't look wildly wrong most of the time.
+
+
+>>   }
+>>   
+>>   static unsigned int cppc_cpufreq_get_rate(unsigned int cpu)
+>> @@ -799,7 +851,9 @@ static unsigned int cppc_cpufreq_get_rate(unsigned int cpu)
+>>   
+>>   	cpu_data = policy->driver_data;
+>>   
+>> -	ret = cppc_get_perf_ctrs_sample(cpu, &fb_ctrs_t0, &fb_ctrs_t1);
+>> +	ret = cppc_get_perf_ctrs_sample(cpu, cpu_data->perf_caps.reference_perf,
+>> +					&fb_ctrs_t0, &fb_ctrs_t1);
+>> +
+>>   	if (ret) {
+>>   		if (ret == -EFAULT)
+>>   			/* Any of the associated CPPC regs is 0. */
 
