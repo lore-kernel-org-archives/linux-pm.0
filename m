@@ -1,45 +1,41 @@
-Received: from mout-p-101.mailbox.org (mout-p-101.mailbox.org [80.241.56.151])
+Received: from mout-p-102.mailbox.org (mout-p-102.mailbox.org [80.241.56.152])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B39B21D5174;
-	Thu, 25 Jun 2026 17:07:49 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=80.241.56.151
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CBEE83A7F4B;
+	Thu, 25 Jun 2026 17:07:47 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=80.241.56.152
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1782407272; cv=none; b=O7dSKs6eaLT2yje65huYfysaFwDPqRP77qlFFHaU0kMaa4KGhFcxLqqviHaEv/AMtuPIPuiSKRybbKYo/hnfzsvlIz8Z2CO1wn/6Ej3hBTTllJqLowdev6Ru6a6o2sXmvtyraa6u20SpRRypdaK//nRz+CqiTqdTCjBY2KBKppg=
+	t=1782407272; cv=none; b=XX/zqVH+RQ2H8PZ75+n84QPKmlQzxXDtnqXOEorqBVQ0KZd/3l8yNLCxzVVquf1FCbI68mZuA3q9TiCN1CbuWll93JT12d9UlRmltgRsjkxJjYtsxS5V+JUVUjGFOli+OJcGJ5cFOqiQyvkoLNamxruB/9SlYNJ2w12xuiyhpt0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1782407272; c=relaxed/simple;
-	bh=3OrnZFBPbVV5Sb9axsd5lLcxx/AJ2uGLIK/sIYxvTAA=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=a+NmxNz/5Tj35hcjUpBfy2fKW+n4/z32OAXgYY7YvGgQ2sBzJNK2amE54YaNkxoDGj2QyWV5333okJ42eAQUndyW2ax5TX+G1024wUt1nJGNqH3UZZbBrvRhzqyYFQLMpkVbAlCCnLkMS/609mz2q7U0vddctd2ahFEyC7E2eqY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=steffen.cc; spf=pass smtp.mailfrom=steffen.cc; dkim=pass (2048-bit key) header.d=steffen.cc header.i=@steffen.cc header.b=Q49NvJLI; arc=none smtp.client-ip=80.241.56.151
+	bh=1Pzzgn4ee5Fq3uqW2V7GD4cVj/zF+fKYAOC8vTJJgv8=;
+	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=qGye77bj2wmRRM97qcvzdZJwZgBeqxlYqiTROruiaj3YSlmf3padXjiL+isKBXhCGq/2NHHoMYMk7lef1x7mO9Mrhij03p6MTSQDP7yHKIa5ywVzDkP4TQXUO9XIKDr1YkM1HW40ifrbG93iZgqNwrlnynNQHo1ousO31e94l+s=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=steffen.cc; spf=pass smtp.mailfrom=steffen.cc; dkim=pass (2048-bit key) header.d=steffen.cc header.i=@steffen.cc header.b=DYGJaixe; arc=none smtp.client-ip=80.241.56.152
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=steffen.cc
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=steffen.cc
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=steffen.cc header.i=@steffen.cc header.b="Q49NvJLI"
-Received: from smtp202.mailbox.org (smtp202.mailbox.org [IPv6:2001:67c:2050:b231:465::202])
+	dkim=pass (2048-bit key) header.d=steffen.cc header.i=@steffen.cc header.b="DYGJaixe"
+Received: from smtp202.mailbox.org (smtp202.mailbox.org [10.196.197.202])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mout-p-101.mailbox.org (Postfix) with ESMTPS id 4gmQGp3yBjz9tgB;
-	Thu, 25 Jun 2026 19:07:46 +0200 (CEST)
+	by mout-p-102.mailbox.org (Postfix) with ESMTPS id 4gmQGm0FCCz9vCP;
+	Thu, 25 Jun 2026 19:07:44 +0200 (CEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=steffen.cc; s=MBO0001;
-	t=1782407266;
+	t=1782407264;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=B91AhuTtQGkYT5URvzYhx2Ce7ga49uf4NQCIrdgzwrU=;
-	b=Q49NvJLI7kUJ+AYyzrRniCSzpEMic1aK411+weooz951R595E+FwD8zHM7HHEiDMLIyMzO
-	1yDJCYzKJDSYznUhUGoFme5y3vVN3mcEmO2xAnJ6/p8xTC7Ob2ZJ44NW8P3DMJMVch7jUl
-	G8f91uK6heaH7SeG0wWzVCXeKzOJPLv7me+wfHIIxAZp1/0dSr7M48IzeZMdiYaaRCA/Yn
-	eAu/qqLjAYTUuB03L4RiAOovhjp4TP5esLOybFJxjwurIz8xaGLXa4I6j73kcS8eUbhRYr
-	NshtoBnRn6/JA46ymM4g+MSot9XyJOVYwsY6m3KXKDeELOvMkdUooKzmAiod3w==
-Authentication-Results: outgoing_mbo_mout;
-	dkim=none;
-	spf=pass (outgoing_mbo_mout: domain of lists@steffen.cc designates 2001:67c:2050:b231:465::202 as permitted sender) smtp.mailfrom=lists@steffen.cc
+	 content-transfer-encoding:content-transfer-encoding;
+	bh=/r6Q5Fzs26vOjloPYfpIEea6sUwQwXI2u+7L2V9FvDc=;
+	b=DYGJaixequLTCFpMs6sjybCfXFwh2gJTeBQoGvihIWtmq83wzzeIGg8JppMjJuQI7a0fNf
+	HGYvy/GgSwB0gPmpGAHlVS1ox/+oDpOOPsw/eXjEaOSqbe5sza0Dvq/eVTc4RKU+sRR/2L
+	Kg6SsP3jeBbZ/h8q8MESmVgJwisraZmztylRe1RLQrkRzgUNjqBeVOPm+yYazZRwj63Q70
+	RuYk2XpPGlOeTdEZtn7V1W+gxL+0ZCTnSzwBVCqBrgPmIJVNmd0A8QPTck91+HEYeiIo/q
+	JGaF9Fhz6uJcgdED9iSUUfiODyowbXu/bp2Ppm72urfbbEhbKBmuWtQsdJ2hCg==
 From: Steffen Dirkwinkel <lists@steffen.cc>
-Date: Thu, 25 Jun 2026 19:07:35 +0200
-Subject: [PATCH 2/2] power: supply: leds: add a not-charging trigger
+Subject: [PATCH 0/2] power: supply: leds: add triggers for non battery type
+Date: Thu, 25 Jun 2026 19:07:33 +0200
+Message-Id: <20260625-std-power-supply-triggers-v1-0-d80db570d329@beckhoff.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -48,77 +44,66 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260625-std-power-supply-triggers-v1-2-d80db570d329@beckhoff.com>
-References: <20260625-std-power-supply-triggers-v1-0-d80db570d329@beckhoff.com>
-In-Reply-To: <20260625-std-power-supply-triggers-v1-0-d80db570d329@beckhoff.com>
+X-B4-Tracking: v=1; b=H4sIAAAAAAAC/yXMyw6CMBBA0V8hs3aSUh4m/gpxAWVaxxhoZsrDE
+ P7dqsuzuPcAJWFSuBUHCK2sPE8Z5aUA9+inQMhjNlhjW9PaBjWNGOeNBHWJ8fXGJBwCiaLxdWN
+ q7waqrpD7KOR5/727+9+6DE9y6TuE8/wA7nMPEn0AAAA=
+X-Change-ID: 20260625-std-power-supply-triggers-0f4504fcbe37
 To: Sebastian Reichel <sre@kernel.org>
 Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
  Steffen Dirkwinkel <s.dirkwinkel@beckhoff.com>
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1782407261; l=2421;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1782407261; l=1584;
  i=s.dirkwinkel@beckhoff.com; s=20260625; h=from:subject:message-id;
- bh=QPl08tNHBYaAsAMerAoV4E+unXMqWwAmJOunNP7YlaI=;
- b=XAfHCNZ+xVIeLYHuStSBlENHeruAKMywKOs14jNsXVp/yY8EHHk5U5qXvDkiqQO1sNtxXT/+z
- PKLM13zhNMvDL0ZiRXHpSpbyWsswnwhpy4sHe8kC7l1rGsSEbdzl4x8
+ bh=1Pzzgn4ee5Fq3uqW2V7GD4cVj/zF+fKYAOC8vTJJgv8=;
+ b=Qwpm2QtrV9yH5OUxr4r5X7yM2/LC5+p1uwpzg7HmBP/xlGal0fpVOYwRk6eNY/tkLWYzc8tDm
+ Jk4FUcFtxC7B3F9unX/OCMnfc3MpKqGGac4oCgQb3Vu2defZwab+YQ8
 X-Developer-Key: i=s.dirkwinkel@beckhoff.com; a=ed25519;
  pk=5DcsaSpVtmm7nCi3Bnw5A4vbXI+sg3hBgt8e2A2U/gw=
-X-Rspamd-Queue-Id: 4gmQGp3yBjz9tgB
 
-From: Steffen Dirkwinkel <s.dirkwinkel@beckhoff.com>
+We want to use the power supply leds to show a different led color based
+on ups charging / non-charging state. For this we add support for led
+triggers for non "battery" supplies and a "not-charging" trigger.
 
-We intend to use this with a gpio-charger ups device that reports
-charging or not-charging based on a gpio to set a "power failure" led.
+This is roughly how it would be used with a device tree power ups supply
+to have a violet led on power failure and green on power ok:
+
+ups { 
+      compatible = "gpio-charger";
+      charger-type = "ups"; 
+      charge-status-gpios = <&gpio 17 GPIO_ACTIVE_LOW>;
+};
+
+leds {
+        compatible = "gpio-leds";
+        pwr-red {
+                gpios = <&gpio 27 GPIO_ACTIVE_HIGH>;
+                linux,default-trigger = "ups-not-charging";
+        };
+        
+        pwr-green {
+                gpios = <&gpio 28 GPIO_ACTIVE_HIGH>;
+                linux,default-trigger = "ups-charging";
+        };
+
+        pwr-blue {
+                gpios = <&gpio 34 GPIO_ACTIVE_HIGH>;
+                linux,default-trigger = "ups-not-charging";
+     };
+};
 
 Signed-off-by: Steffen Dirkwinkel <s.dirkwinkel@beckhoff.com>
 ---
- drivers/power/supply/power_supply_leds.c | 7 +++++++
- include/linux/power_supply.h             | 1 +
- 2 files changed, 8 insertions(+)
+Steffen Dirkwinkel (2):
+      power: supply: leds: create triggers based on properties, not type
+      power: supply: leds: add a not-charging trigger
 
-diff --git a/drivers/power/supply/power_supply_leds.c b/drivers/power/supply/power_supply_leds.c
-index 538cc0440e53..c82a3628765c 100644
---- a/drivers/power/supply/power_supply_leds.c
-+++ b/drivers/power/supply/power_supply_leds.c
-@@ -131,6 +131,10 @@ static void power_supply_update_status_leds(struct power_supply *psy)
- 			LED_OFF);
- 		break;
- 	}
-+
-+	led_trigger_event(psy->not_charging_trig,
-+			  status.intval == POWER_SUPPLY_STATUS_NOT_CHARGING ?
-+			  LED_FULL : LED_OFF);
- }
- 
- static int power_supply_create_status_triggers(struct power_supply *psy)
-@@ -150,6 +154,8 @@ static int power_supply_create_status_triggers(struct power_supply *psy)
- 					  &psy->charging_blink_full_solid_trig, &err);
- 	power_supply_register_led_trigger(psy, "%s-charging-orange-full-green",
- 					  &psy->charging_orange_full_green_trig, &err);
-+	power_supply_register_led_trigger(psy, "%s-not-charging",
-+					  &psy->not_charging_trig, &err);
- 
- 	return err;
- }
-@@ -209,6 +215,7 @@ void power_supply_remove_triggers(struct power_supply *psy)
- 	power_supply_unregister_led_trigger(psy->online_trig);
- 	power_supply_unregister_led_trigger(psy->charging_or_full_trig);
- 	power_supply_unregister_led_trigger(psy->charging_trig);
-+	power_supply_unregister_led_trigger(psy->not_charging_trig);
- 	power_supply_unregister_led_trigger(psy->full_trig);
- 	power_supply_unregister_led_trigger(psy->charging_blink_full_solid_trig);
- 	power_supply_unregister_led_trigger(psy->charging_orange_full_green_trig);
-diff --git a/include/linux/power_supply.h b/include/linux/power_supply.h
-index 68b65682b14d..9052610e3910 100644
---- a/include/linux/power_supply.h
-+++ b/include/linux/power_supply.h
-@@ -349,6 +349,7 @@ struct power_supply {
- 	struct led_trigger *charging_or_full_trig;
- 	struct led_trigger *online_trig;
- 	struct led_trigger *charging_trig;
-+	struct led_trigger *not_charging_trig;
- 	struct led_trigger *full_trig;
- 	struct led_trigger *charging_blink_full_solid_trig;
- 	struct led_trigger *charging_orange_full_green_trig;
+ drivers/power/supply/power_supply_leds.c | 93 +++++++++++++++++---------------
+ include/linux/power_supply.h             |  4 +-
+ 2 files changed, 52 insertions(+), 45 deletions(-)
+---
+base-commit: ab9de95c9cf952332ab79453b4b5d1bfca8e514f
+change-id: 20260625-std-power-supply-triggers-0f4504fcbe37
 
--- 
-2.54.0
+Best regards,
+--  
+Steffen Dirkwinkel <s.dirkwinkel@beckhoff.com>
 
