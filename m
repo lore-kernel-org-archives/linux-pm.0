@@ -1,168 +1,120 @@
-Received: from mail-pl1-f179.google.com (mail-pl1-f179.google.com [209.85.214.179])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C3D302D7393
-	for <linux-pm@vger.kernel.org>; Fri, 26 Jun 2026 09:30:22 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.179
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4536230C168
+	for <linux-pm@vger.kernel.org>; Fri, 26 Jun 2026 09:31:17 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1782466224; cv=none; b=Bm7OXZROei5sr8YdNiXk6vNAsLM5K+MCllaAomFxkagZBrp8IfaSmYrBLXz0t11GmV1tv9d1DGyx7CRY3Zk3ewgAlvhGLdd92NE/Y2rVB0U2pd8otcjuWJ2alBz/MpTEbco1YA0HiVD7TFHnXQKwHoHep/V+WLSbSu1LeWd+Wx0=
+	t=1782466278; cv=none; b=KRC6KQkuMiQfgkYc1vzw/LIDZ5WTcvKHWfM/1+UbVEMx9BGsggt7Kvxtz98nEXLEyP8mdkbur2x1vFzmjBne2ZqHivnJTeu4hgJBUYg+4KdGgP+kMm5w6v7KKH2x+jVeZpDjRIPbH8hmOYvVovATKc5DpxBt1flaoMs20g4W08c=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1782466224; c=relaxed/simple;
-	bh=5TCVCZYMsHwklgptT0a+ukl8cIrb+npq0Sev7Hs4aAw=;
-	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=MtqowJhLycDB4LR+L8m8x3qSmQbsFTfneuMgk6wkoBZiXwLA4V49KBx4gOUL23H07QpCoEwA57msL5n7xYThHkZdc8GAqRtyTHKqgZFT2klBWDXPBoJxvL/Z9JjV4TA0kNXzJvqg605djmyC963MVp8cqR8oYGOrQdbb+0npZv8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=pd49guFI; arc=none smtp.client-ip=209.85.214.179
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1782466278; c=relaxed/simple;
+	bh=rpux6yDT16ic0wS3/2Ry77dxAooCngnSjhcLkmuwQiw=;
+	h=From:In-Reply-To:MIME-Version:References:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=bO2m6mdQMPvz7Q5whicqNPWK89SsqSP9cvbWlcBAjDV2RVZg/Sox4G09XVyJb2BzVidd1wVWJHZovPozo/4727D9OCGkaY6dPr/6AiYpWozHVjvRMVjW1xSPRG4Kb/1b1UErpDHnXPw1vlZ4cnzFV4dZPwGqiegG4qafXOM6SqM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=hDQuGtnw; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="pd49guFI"
-Received: by mail-pl1-f179.google.com with SMTP id d9443c01a7336-2c6bb8a5980so6212905ad.2
-        for <linux-pm@vger.kernel.org>; Fri, 26 Jun 2026 02:30:22 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1782466222; x=1783071022; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=mUNxVgExdJDYrlTYUIFt1iBi5SI3UCc/8A0H3G/YdC4=;
-        b=pd49guFIfOSWKS3ugmrawmV1Rjv3x5blFozIogKD0nlLIHN3ePI1FYTm1j4eJFnIoK
-         NiS+tmK814FChC3/vJN/dbVBacXjMH3+cXM5kaXaWCILNGDXAomlFnegDGH8k5Y+MFx0
-         W0vPV6QK+M0knmSS2ENJaxLvJQvk6K4q/4YM9P25jEUh8GOOjJSVR4JrFVPpveXs3FjO
-         SIMSq9FCSf/dBuIlwvb1FWKun4GkFpK//8CGjmRCGNF0vBm7aLLf2ORGV5N1Rf5xFpsk
-         PJwO0nQg4ccaH9+WRDGJ6fOtE/L560xBxQVcEvn6+n0GzvnUGa0zoTPQlQwGAFqUzng6
-         63kQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1782466222; x=1783071022;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=mUNxVgExdJDYrlTYUIFt1iBi5SI3UCc/8A0H3G/YdC4=;
-        b=ejjQXSTUHS7auaVtXYhHjOWgM9MMglfK0go7t4SJ1ShzWbLqDRkmstoPJ+R1tXrUqt
-         XL/C7q2Dk2t9xAX1+cIrHfV9xUi/4JJQV+U04MNneSRpcZLpqVdkv8Pmcf+Y+ivRwf1k
-         kiQdKRV8xxD7uhAIVMI0VEZhkxQ+KLkkhe0EAB8yr819N0c/Mvhwm2hcxV3xh58ThIo/
-         zZnPAuT8WR2kQm0D5NAj8Bb2/ahrvFXKa9EZ/ImV+/Ysmt9Dc/BnfPcBAFpTPmwMvK+3
-         JKgLpD958I6i3q1ozsRV0035aWuXoOfsW/qlU+fjObMQAwl0AwWsi/hsLtqGop5QlEIZ
-         3+Qg==
-X-Forwarded-Encrypted: i=1; AHgh+RqSu7x15w9KefvKmYJooT5IcaUByH/xgb8wAWk/N7ZbyqFYk9hFU0+JNIeR46GuxlRNdCSV5Peh6w==@vger.kernel.org
-X-Gm-Message-State: AOJu0YxP+Q/w9ehL/NaNtTnMJ1AE8W4RmdtTcLkTtugl0fsTipfawlCa
-	3q6S1oOAyaBQLGe3xnC/gwCwzkOZyKRB/gnTRIsoV1bNA+UAji0AF8o=
-X-Gm-Gg: AfdE7clBjoSRcIP+0O0L9jR9hj+EY/uE0y27y0+r9rSzCs6blyXOgdJ66VT6elDPRb4
-	2+fibONzTyUY0u3WPQPzL9NT9I8qPTYnNn/kymYQl+1nJ8RhIVFijx3GRy9Q4c0YMHZamfHcy9I
-	Sdx1sdhnHvf+PMsCH9x9b29w3ObIH0ZSi7hmZ5JkVwqCw04TAVfRqUbZDUuyUsqAJe3LKJr5cL8
-	Y5DskVU69gyX5OhYmyFH+557pPbD/wCBCSolGVzGOlKXJO4BTUVe53dvSkDyhdiFUo7WDb/orGZ
-	WFKog/YOOesAi0VKc2P+5vms1139cj2TITnfsq1uCarMSvbytYGji5J3SN87YHjP8IGt4FobnHW
-	G82LpGn+SBpZYzzp6k6RJzISyErCclpEFKsnmYMwJ0cG8oDeE/IOZu0nhd1T3n28Pj4aWtWG60v
-	/y09jzknuKPFbfXgvJN7AxR/1j6lgUe2mwnzJqjKaOvk+1GBbXXOcBfsLWAcY1v51Pyl6pOym1L
-	l0tSQzh7P52z+FoYIt7e2ciWOQvZ0balIjzbjxG12wIpeounQ==
-X-Received: by 2002:a17:902:d510:b0:2c7:9b20:37de with SMTP id d9443c01a7336-2c7fc62db17mr57730425ad.4.1782466222006;
-        Fri, 26 Jun 2026 02:30:22 -0700 (PDT)
-Received: from localhost.localdomain ([14.5.152.27])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2c7f63b2bd7sm35408435ad.48.2026.06.26.02.30.17
-        (version=TLS1_3 cipher=TLS_CHACHA20_POLY1305_SHA256 bits=256/256);
-        Fri, 26 Jun 2026 02:30:19 -0700 (PDT)
-From: Myeonghun Pak <mhun512@gmail.com>
-To: "Rafael J . Wysocki" <rafael@kernel.org>,
-	Viresh Kumar <viresh.kumar@linaro.org>,
-	linux-pm@vger.kernel.org
-Cc: Thierry Reding <thierry.reding@kernel.org>,
-	Jonathan Hunter <jonathanh@nvidia.com>,
-	linux-tegra@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	Myeonghun Pak <mhun512@gmail.com>,
-	Ijae Kim <ae878000@gmail.com>
-Subject: [PATCH] cpufreq: tegra124: Disable DFLL clock on removal
-Date: Fri, 26 Jun 2026 18:30:14 +0900
-Message-Id: <20260626093014.66092-1-mhun512@gmail.com>
-X-Mailer: git-send-email 2.39.5 (Apple Git-154)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="hDQuGtnw"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id E351C1F00A3A
+	for <linux-pm@vger.kernel.org>; Fri, 26 Jun 2026 09:31:16 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1782466276;
+	bh=rpux6yDT16ic0wS3/2Ry77dxAooCngnSjhcLkmuwQiw=;
+	h=From:In-Reply-To:References:Date:Subject:To:Cc;
+	b=hDQuGtnwR3ps3zQIvEb2J6W6uU1Kwq1lxpQ3sWo2Qf925+HiVIxsJ00GCxCkdZyh5
+	 tYDDuCZyfXWLHAT2QlhOEEuAIDCiUPXlfYQY4ZqfNs6zyr+uroZIyz2rSFXDP7ayZL
+	 34Nm+HlcRO3/rgdb+HUlxwn4QBi+JSvp/DR4PjwGTv246nD2VkPiQFmznv3B+HcJi7
+	 +xCUYXceGxhiTbBwA/FlvknLNoxBaUImfFDknasg0z4J0rglUxJlLXbgetH7YHnN+9
+	 hOrTPCDOt0fEg90jHsFsZOB2qXsE6syH545TxXubpADCTFz2sNkHHzoA7jVEB/KXNo
+	 L87aN7E8srVqA==
+Received: by mail-lf1-f53.google.com with SMTP id 2adb3069b0e04-5aea517451fso800894e87.2
+        for <linux-pm@vger.kernel.org>; Fri, 26 Jun 2026 02:31:16 -0700 (PDT)
+X-Gm-Message-State: AOJu0YzqSlgob5+5Os3neKksCGKzs/ip8lU9L8XOKQec2X35Q8hyZUa2
+	XjaJrFLID/15xrv+LwVEhpIe3ugSRLP6vAbGRNwgH2mi4pgNoLw9ULUi4yqf3K3AYbRiHjFahPv
+	a29kAdDIJ50rSqpJS0lkIa1VbH2eFAwHdfQ0iP9M2Dw==
+X-Received: by 2002:a05:6512:70:b0:5aa:6f89:9378 with SMTP id
+ 2adb3069b0e04-5aea1f4cc51mr1390413e87.33.1782466275655; Fri, 26 Jun 2026
+ 02:31:15 -0700 (PDT)
+Received: from 969154062570 named unknown by gmailapi.google.com with
+ HTTPREST; Fri, 26 Jun 2026 02:31:13 -0700
+Received: from 969154062570 named unknown by gmailapi.google.com with
+ HTTPREST; Fri, 26 Jun 2026 02:31:13 -0700
+From: Bartosz Golaszewski <brgl@kernel.org>
+In-Reply-To: <20260624-wakeirq_support-v11-1-120fbfaebe59@oss.qualcomm.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+References: <20260624-wakeirq_support-v11-1-120fbfaebe59@oss.qualcomm.com>
+Date: Fri, 26 Jun 2026 02:31:13 -0700
+X-Gmail-Original-Message-ID: <CAMRc=MenARGtsG9EhF7zVgcOeQGAYVRZc906j4tBDHQzzsc0hg@mail.gmail.com>
+X-Gm-Features: AVVi8Cf30tKZqffjS3ZAp3xIi5Kv5KtWMy22eC3tfJBlDmG5o9u1ykXsqyuQesk
+Message-ID: <CAMRc=MenARGtsG9EhF7zVgcOeQGAYVRZc906j4tBDHQzzsc0hg@mail.gmail.com>
+Subject: Re: [PATCH v11] PCI: Add support for PCIe WAKE# interrupt
+To: Krishna Chaitanya Chundru <krishna.chundru@oss.qualcomm.com>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
+	linux-pci@vger.kernel.org, linux-gpio@vger.kernel.org, 
+	quic_vbadigan@quicinc.com, sherry.sun@nxp.com, driver-core@lists.linux.dev, 
+	devicetree@vger.kernel.org, Manivannan Sadhasivam <mani@kernel.org>, 
+	"Rafael J. Wysocki" <rafael@kernel.org>, Len Brown <lenb@kernel.org>, Pavel Machek <pavel@kernel.org>, 
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Danilo Krummrich <dakr@kernel.org>, 
+	Bjorn Helgaas <bhelgaas@google.com>, Bartosz Golaszewski <brgl@bgdev.pl>, Linus Walleij <linusw@kernel.org>, 
+	Bartosz Golaszewski <brgl@kernel.org>, Rob Herring <robh@kernel.org>, 
+	Saravana Kannan <saravanak@kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 
-tegra124_cpu_switch_to_dfll() enables the DFLL clock before switching
-the CPU clock parent to it. If cpufreq_dt_pdev_register() fails after
-that point, or when the driver is removed, the driver only drops clock
-references and never disables the enabled DFLL clock.
+On Wed, 24 Jun 2026 13:25:49 +0200, Krishna Chaitanya Chundru
+<krishna.chundru@oss.qualcomm.com> said:
+> According to the PCI Express specification (PCIe r7.0, Section 5.3.3.2),
+> two link wakeup mechanisms are defined: Beacon and WAKE#. Beacon is a
+> hardware-only mechanism and is invisible to software (PCIe r7.0,
+> Section 4.2.7.8.1). This change adds support for the WAKE# mechanism
+> in the PCI core.
+>
+> According to the PCIe specification, multiple WAKE# signals can exist in
+> a system or each component in the hierarchy could share a single WAKE#
+> signal. In configurations involving a PCIe switch, each downstream port
+> (DSP) of the switch may be connected to a separate WAKE# line, allowing
+> each endpoint to signal WAKE# independently. From figure 5.4 in sec
+> 5.3.3.2, WAKE# can also be terminated at the switch itself. Such topologies
+> are typically not described in Device Tree, therefore it is out of scope
+> for this series.
+>
+> To support this, the WAKE# should be described in the device tree node of
+> the endpoint/bridge. If all endpoints share a single WAKE# line, then each
+> endpoint node shall describe the same WAKE# signal or a single WAKE# in
+> the Root Port node.
+>
+> In pci_device_add(), PCI framework will search for the WAKE# in device
+> node. Once found, register for the wake IRQ through
+> dev_pm_set_dedicated_wake_irq() associates a wakeup IRQ with a device
+> and requests it, but the PM core keeps the IRQ disabled by default. The
+> IRQ is enabled by the PM core, only when the device is permitted to wake
+> the system, i.e. during system suspend and after runtime suspend, and
+> only when device wakeup is enabled.
+>
+> If the same WAKE# GPIO is described in multiple device tree nodes, only the
+> first device that successfully registers the wake IRQ will succeed, while
+> subsequent registrations may fail. This limitation does not affect
+> functional correctness, since WAKE# is only used to bring the link to D0,
+> and endpoint-specific wakeup handling is resolved later through
+> PME detection (PME_EN is set in suspend path by PCI core by default).
+>
+> When the wake IRQ fires, the wakeirq handler invokes pm_runtime_resume() to
+> bring the device back to an active power state, such as transitioning from
+> D3cold to D0. Once the device is active and the link is usable, the
+> endpoint may generate a PME, which is then handled by the PCI core through
+> PME polling or the PCIe PME service driver to complete the wakeup of the
+> endpoint.
+>
+> WAKE# is added in dts schema and merged based on below links.
+>
+> Link: https://lore.kernel.org/all/20250515090517.3506772-1-krishna.chundru@oss.qualcomm.com/
+> Link: https://github.com/devicetree-org/dt-schema/pull/170
+> Reviewed-by: Linus Walleij <linus.walleij@linaro.org>
+> Acked-by: Manivannan Sadhasivam <mani@kernel.org>
+> Signed-off-by: Krishna Chaitanya Chundru <krishna.chundru@oss.qualcomm.com>
+> ---
 
-Add a helper for switching the CPU back to PLLP and disabling DFLL, then
-use it in the post-DFLL probe unwind path and in remove.
-
-Fixes: 9f5ed5fe6060 ("cpufreq: tegra124: do not handle the CPU rail")
-Co-developed-by: Ijae Kim <ae878000@gmail.com>
-Signed-off-by: Ijae Kim <ae878000@gmail.com>
-Signed-off-by: Myeonghun Pak <mhun512@gmail.com>
-
----
- drivers/cpufreq/tegra124-cpufreq.c | 25 +++++++++++++++++++++++--
- 1 file changed, 23 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/cpufreq/tegra124-cpufreq.c b/drivers/cpufreq/tegra124-cpufreq.c
-index f8a76bbec..1fb3bf50b 100644
---- a/drivers/cpufreq/tegra124-cpufreq.c
-+++ b/drivers/cpufreq/tegra124-cpufreq.c
-@@ -54,12 +54,25 @@
- 	return ret;
- }
- 
-+static int tegra124_cpu_disable_dfll(struct tegra124_cpufreq_priv *priv)
-+{
-+	int ret;
-+
-+	ret = clk_set_parent(priv->cpu_clk, priv->pllp_clk);
-+	if (ret)
-+		return ret;
-+
-+	clk_disable_unprepare(priv->dfll_clk);
-+
-+	return 0;
-+}
-+
- static int tegra124_cpufreq_probe(struct platform_device *pdev)
- {
- 	struct device_node *np __free(device_node) = of_cpu_device_node_get(0);
- 	struct tegra124_cpufreq_priv *priv;
- 	struct device *cpu_dev;
--	int ret;
-+	int err, ret;
- 
- 	if (!np)
- 		return -ENODEV;
-@@ -101,13 +114,17 @@
- 	priv->cpufreq_dt_pdev = cpufreq_dt_pdev_register(&pdev->dev);
- 	if (IS_ERR(priv->cpufreq_dt_pdev)) {
- 		ret = PTR_ERR(priv->cpufreq_dt_pdev);
--		goto out_put_pllp_clk;
-+		goto out_disable_dfll;
- 	}
- 
- 	platform_set_drvdata(pdev, priv);
- 
- 	return 0;
- 
-+out_disable_dfll:
-+	err = tegra124_cpu_disable_dfll(priv);
-+	if (err)
-+		dev_err(&pdev->dev, "failed to disable DFLL clock: %d\n", err);
- out_put_pllp_clk:
- 	clk_put(priv->pllp_clk);
- out_put_pllx_clk:
-@@ -175,12 +192,17 @@
- static void tegra124_cpufreq_remove(struct platform_device *pdev)
- {
- 	struct tegra124_cpufreq_priv *priv = dev_get_drvdata(&pdev->dev);
-+	int err;
- 
- 	if (!IS_ERR(priv->cpufreq_dt_pdev)) {
- 		platform_device_unregister(priv->cpufreq_dt_pdev);
- 		priv->cpufreq_dt_pdev = ERR_PTR(-ENODEV);
- 	}
- 
-+	err = tegra124_cpu_disable_dfll(priv);
-+	if (err)
-+		dev_err(&pdev->dev, "failed to disable DFLL clock: %d\n", err);
-+
- 	clk_put(priv->pllp_clk);
- 	clk_put(priv->pllx_clk);
- 	clk_put(priv->dfll_clk);
--- 
-2.39.5
+Reviewed-by: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
