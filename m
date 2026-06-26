@@ -1,423 +1,151 @@
-Received: from mail-wr1-f48.google.com (mail-wr1-f48.google.com [209.85.221.48])
+Received: from mail-ot1-f51.google.com (mail-ot1-f51.google.com [209.85.210.51])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A64823EC2EB
-	for <linux-pm@vger.kernel.org>; Fri, 26 Jun 2026 10:36:53 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.48
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E62113E8C59
+	for <linux-pm@vger.kernel.org>; Fri, 26 Jun 2026 10:38:31 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.210.51
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1782470219; cv=none; b=aOpjuzGvzor51RUG/u/BoN1IR/lYktOe9SC/QeA0SsQneeTS6LdX+ciTuZH5IlfZirRQh+q9JDdGBFruJCNH87FeaAtwFTfI743g+HkhWw7OC9GLS9J7SA8Ytl1WfVOPstBzioOIVG+ZJtw7LP/sLHGmpZ3tZ/xdDZ2wL8F6ca4=
+	t=1782470315; cv=none; b=e11s9gNDrBvi5WaZI6N7qzsVtrD22dKjLj7+sfi+N7Xq+CGAdf6rKto17ypFt3FnkkKB0GoTv1MDEv9En4j+BhurvL4YcuWKkk3m51ByEvl1MN9kILBeYRMhtFYYeYfUUOoXYTGoxz3uoZjj7jVyvwe+5yPE9qTgZ87O7Tve8MU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1782470219; c=relaxed/simple;
-	bh=UYLMSQIhe6qO0sm3exwD+uQX3V04ifUVR98mAMtFHoc=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=QgMobTRnntxTGfOUCmexLSJzOUAJ8N3H/szq9e3ulzzkajM6pe7bEEBqXqZgBYV0LYyBZHE1QbxTLJuQ1YMJu0pj24yx5J2aM2AjudYMslriNOD6bUxBk/UWLPbCJnbyHqTn619FHdvU8Pm4Ol7QZZIEMH1425dGiVT+X5Rp5zM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=F2j3FV8Z; arc=none smtp.client-ip=209.85.221.48
+	s=arc-20240116; t=1782470315; c=relaxed/simple;
+	bh=xki6Rg+f9VujDhsCScACR8JXl+gH6IVEyZSauehtbW4=;
+	h=Date:From:To:Cc:Subject:Message-ID:MIME-Version:Content-Type:
+	 Content-Disposition; b=udIag/vxHqdhhg+5kz7yO+YqCtAgzu4lN1GBjvnP85RSeSsX+eXcxirVpHMbYRDc4uHyvsWG6oAilwF2f1UuI/1POhsQx54yQygeKnCVS8Bn+KHGEskybfSXMI9r1Ad7J1ZxdWK0U+jOQJ4wQEoje0l0fp8+SQS4gAMemRh5fy4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=abAoocNV; arc=none smtp.client-ip=209.85.210.51
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="F2j3FV8Z"
-Received: by mail-wr1-f48.google.com with SMTP id ffacd0b85a97d-4627adcf4d6so513481f8f.3
-        for <linux-pm@vger.kernel.org>; Fri, 26 Jun 2026 03:36:53 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="abAoocNV"
+Received: by mail-ot1-f51.google.com with SMTP id 46e09a7af769-7e951b9524fso553110a34.0
+        for <linux-pm@vger.kernel.org>; Fri, 26 Jun 2026 03:38:31 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1782470212; x=1783075012; darn=vger.kernel.org;
-        h=content-transfer-encoding:in-reply-to:content-language:from
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
+        d=gmail.com; s=20251104; t=1782470311; x=1783075111; darn=vger.kernel.org;
+        h=content-disposition:mime-version:message-id:subject:cc:to:from:date
          :from:to:cc:subject:date:message-id:reply-to;
-        bh=D+LOxUqboNwspW3Z1iwsJeIpREU5uApJLby1JgVSadY=;
-        b=F2j3FV8Zpg7Th038twotiuqJ1ag7ZpI/hjVGwW7cRO0MXKIUMcdcIsPHbCLvc1iZYy
-         Ed6LUa9pMPAaFL2I6k3PPFTMnDZ705zw2nSXxKSKSPHvkKZ7CVZ0STeECFuRza6FI3fS
-         vSjVEqVrwFoZ8h/epXLqKpkHXFnYzoV1LaRYEz0n3gxiotRPjIlbT5jup6PQuY5ug0+d
-         RLo4HSL+gMyl4xJ7/rex8ecPEoHQ5AE7npABnkK4B3sE5y5/MXMdj9laNLDjl88zAeEL
-         5AYCs60fx41Ao6ytq8tOqyFhL2UOFN7xzW+thLTRri0z1DoCNbluYo7ht8J210KG8Thf
-         o89A==
+        bh=BEj0fPXIFdsm7jWY2EGFcG1jufuq5NId8KtSZrzl5fU=;
+        b=abAoocNVKwtA7vtLNIUNNG2j6s+C8qkR6YpUekKUUyUx15kEbPlhdZPeybRas3t9tI
+         uMmKDCN7K4BghVnjfd+0kiMtCXMjzFDemn5s2gX87QuEF/lJOD3VN1e06XbAPR1Aza/3
+         N3SjHpcvB4OaH/EL3E6dmHP4nm+kaR9gD9xlPv60S90A9lm32M3gNDCy1EnfRalLHhW+
+         yuZIxolpQCYbxaIL+laO0pa2PMbALUr2+bgFnXGFemdsmbLe4ZpNvyFUU9ghxEinsOxl
+         ufTrUj8O1Jw1tkoKp9aFElLrBiv2xvkjeGPrjwPcyXjcLPu3doXWZ/UIX08uo2earXuU
+         JwKg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1782470212; x=1783075012;
-        h=content-transfer-encoding:in-reply-to:content-language:from
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
+        d=1e100.net; s=20251104; t=1782470311; x=1783075111;
+        h=content-disposition:mime-version:message-id:subject:cc:to:from:date
          :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=D+LOxUqboNwspW3Z1iwsJeIpREU5uApJLby1JgVSadY=;
-        b=e2LadL9457+pTYcL+yA71I1FoTUAR5ip/wsxtvfg4k3H3GkFzqq/vpE4J4HSIx1w4J
-         npQaXhGqofB0Wli+dNPB6pwAJobDBPi9fhKsY84bPl9DgIB0iHRKCv4NvKRI3VArFISy
-         bvbTczbsXq7WhRTQ2YgXybpcCCOGt0YF3gdvpRvSO0XCTNhQ+o8RSlOyNMvDYmDcGPne
-         g36+qhSymLAzb1/bEZTTyFF2xlLXGM6oD6OV4nA+OuxGkoF10hGqA0mBpx8ZhIATz0hJ
-         YBPo9vOVONAs7VR3HR5VWRwwtINBA0hZ+4y6uqx+nUJpxwvZKJnF998oMAG7JF+HEjDG
-         c2/w==
-X-Gm-Message-State: AOJu0YxLFenGyw6nYxCKDBjMLU8d81WWhpmAtYp0gbae6Rz5d+J8NG3m
-	g0rDI03g2EyxuqN1O1GK1PZXHk11PKqbOfnb5qifYCv7JNnEICHx8kUF
-X-Gm-Gg: AfdE7clp2tXWSLS7O9OBWHdKlJnqasJh9xIWg0o4tUItg0KRPl/iC5tTJJ/YIGE8y0+
-	xFMKNyMhw2GUWYElTQ/X3XM5rIYVEj2wrMQqxOtNtU9nrfYHWlLyyIM9vx2hAWXnQ511YGAORvF
-	rHwFHirj6uI+DVgOctc5bnw4ExMOfx+fQxu1QiLIW+jmK27cnDmoEI8HFTgB4ORMb4OgjghjdBB
-	i9fiI/kpld5Ku+VBIBG2TMNf/Qcca8VGeZ67Foju/qOZADQ3qb/IUAgyWoQSgvz/7C0fBuhOKc/
-	ZVYo15IgeYyKTNVwmzuXn3BqDT0Y9zGGw8D/QNN79RwLGF2xyglLE7xVvIY2d+/8jzs7OFhyDog
-	AKRMEWKK4nXzVY7a+okYLVOKFwCnLw/eEHW4QDLKCLjqanyeryW6lecsDT2ZCZcO+UyBAA9UzRi
-	j0rnl/ByPCWzgpocvEtuFRumSsR8NeIfOkLXYeqBCXgpKRIXcxSK6VeTE=
-X-Received: by 2002:a5d:6f11:0:b0:46e:341b:45dd with SMTP id ffacd0b85a97d-46e341b47c7mr8297132f8f.26.1782470211515;
-        Fri, 26 Jun 2026 03:36:51 -0700 (PDT)
-Received: from [192.168.0.40] (a89-182-137-217.net-htp.de. [89.182.137.217])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-46dd5f9da4fsm15043736f8f.23.2026.06.26.03.36.50
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Fri, 26 Jun 2026 03:36:50 -0700 (PDT)
-Message-ID: <2a69d701-741b-4d65-bdbe-226610bf53b5@gmail.com>
-Date: Fri, 26 Jun 2026 12:36:48 +0200
+        bh=BEj0fPXIFdsm7jWY2EGFcG1jufuq5NId8KtSZrzl5fU=;
+        b=pDpHJMyEQVhJWN2/muo0Kd5URAdrXj2tYwIRjRumRUuaVmHam6W2FdAXJScTtDcKac
+         EN94TCBl0NeTpbBPC4wn+79hr4Mrk7R5YkV11srpaKmEc8+JxjaMyMbaRiOpfkIGEDfH
+         cfNeq+g00DRC9RDfuvzomNaNqppR/vnAwmUClM3K6XsfGdeR9NRXMfTGHArTcDqoYodI
+         JKtUc9R8epJ83SCMBEuYNjhJJKqH3vYFHZRBQ2hWQlPHJQeG6Qb2EQS04ZT+t/EpRkZ/
+         CJGiOuCGal1Y62BVmoA78gy03550aUclQFshKqp2YGd1bKvwMgOZbT6VZNnww9HWdySG
+         iYkg==
+X-Forwarded-Encrypted: i=1; AFNElJ8PQyLBXM8Nm/aZtlYkAsphnYqeuc1NEGQjR5YKSqWYi6dkFxl764qWGJuuiOdFqk11kSWHpFM+5A==@vger.kernel.org
+X-Gm-Message-State: AOJu0YyA0DGtQ5JsKqjht014u9iZb1BQZps1g1BrmTPUtwBqQlbMAQaC
+	PTiiO8D9mbEpxYTlDXnn57nV9P9l9EZX4RxZwb71iN+YQvYhcwzXqE1D
+X-Gm-Gg: AfdE7cnAfi5IO+0t0EegfcGsuujOA5M9n3fSdi5fCtHAD2o626zLzQRiVvgODNKyJJB
+	PAf4krGyTrWsRbUeL325XNEfYeY/jgqoLU0olDd/gEFokNxmNGLgmnRu0iWufpMme2f3jWwG5tn
+	T55TCCmIqCgsDde6uPVqXy5R8vFqrnWLmruTeGV5ARB8OApTwoKqKyzMOQm1iVCbqnxbMqmE9mO
+	UT0Oj3cAwCDASoeSKzJ8keVpHO8t1NkRmsocTEOiT1mBn7oYQlyJBOLavlZJZ4O3Z+oHLpk2M0R
+	1hWmOtLGYtex3TvxIBVTddI694kku2cjuyvfXFftbM7Rt8p3tsaOcq9fdbtWcaud+DY8Wf5GqXr
+	jbJef5T7LhYIzMdHkKsERfK5USfG7/Pk7iyY6wyMVzPvDKWJJNNgJv/rRKtpYDo0RT0ic+QQhEZ
+	QvORu9
+X-Received: by 2002:a05:6808:1b21:b0:492:9333:4375 with SMTP id 5614622812f47-4929333651dmr4269146b6e.27.1782470310785;
+        Fri, 26 Jun 2026 03:38:30 -0700 (PDT)
+Received: from localhost ([74.80.182.98])
+        by smtp.gmail.com with ESMTPSA id 5614622812f47-4935545dad9sm1080530b6e.16.2026.06.26.03.38.27
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 26 Jun 2026 03:38:29 -0700 (PDT)
+Date: Fri, 26 Jun 2026 13:38:22 +0300
+From: Dan Carpenter <error27@gmail.com>
+To: Niklas =?iso-8859-1?Q?S=F6derlund?= <niklas.soderlund@ragnatech.se>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>,
+	Daniel Lezcano <daniel.lezcano@kernel.org>,
+	Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>,
+	Geert Uytterhoeven <geert+renesas@glider.be>,
+	Magnus Damm <magnus.damm@gmail.com>,
+	linux-renesas-soc@vger.kernel.org, linux-pm@vger.kernel.org,
+	linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: [PATCH v3] thermal/drivers/rcar: fix error checking in probe()
+Message-ID: <aj5WnseULiwgmlWv@stanley.mountain>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v4 2/2] riscv: dts: spacemit: Add cpu scaling for K1 SoC
-To: Shuwei Wu <shuwei.wu@mailbox.org>, "Rafael J. Wysocki"
- <rafael@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>,
- Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
- Conor Dooley <conor+dt@kernel.org>, Paul Walmsley <pjw@kernel.org>,
- Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>,
- Alexandre Ghiti <alex@ghiti.fr>, Yixun Lan <dlan@kernel.org>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
- linux-riscv@lists.infradead.org, spacemit@lists.linux.dev,
- devicetree@vger.kernel.org
-References: <20260626-shadow-deps-v4-0-bba9831f2f1d@mailbox.org>
- <20260626-shadow-deps-v4-2-bba9831f2f1d@mailbox.org>
-From: Andre Heider <a.heider@gmail.com>
-Content-Language: de-DE
-In-Reply-To: <20260626-shadow-deps-v4-2-bba9831f2f1d@mailbox.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+X-Mailer: git-send-email haha only kidding
 
-On 26.06.26 10:10 AM, Shuwei Wu wrote:
-> Add CPU clock properties and OPP tables for the two CPU clusters in the
-> SpacemiT K1 SoC. The OPP entries use voltage ranges because the CPU
-> supply is shared by both clusters.
-> 
-> Enable CPU DVFS on Banana Pi BPI-F3 by including the OPP tables and
-> wiring the CPU nodes to the CPU regulator supply.
-> 
-> Signed-off-by: Shuwei Wu <shuwei.wu@mailbox.org>
+This code accidentally calls thermal_zone_device_enable() before checking
+whether thermal_zone_device_register_with_trips() failed.  Move the call
+until later to avoid an error pointer dereference of "priv->zone".
 
-With the musepi-pro dts enablement patch [0] on top, this is
-Tested-by: Andre Heider <a.heider@gmail.com> # k1-musepi-pro
+The driver works differently depending on if we are using OF thermal or
+not.  We use thermal_add_hwmon_sysfs() if we are using OF thermal and
+call thermal_zone_device_enable() if not.  We can share same error check
+for if either of these fail.
 
-Works as advertised, I get two policies, matching the clusters:
-$ cat /sys/devices/system/cpu/cpufreq/policy0/related_cpus
-0 1 2 3
-$ cat /sys/devices/system/cpu/cpufreq/policy4/related_cpus
-4 5 6 7
+Moving the thermal_zone_device_enable() call is a bit cleaner as well.
+The original code used a three step process to cleanup:
+1. Call thermal_zone_device_unregister() to cleanup.
+2. Set priv->zone to an error pointer to preserve the error code.
+3. Set priv->zone to NULL to avoid a second call to
+   thermal_zone_device_unregister() in the rcar_thermal_remove()
+   function.
 
-Some time after boot:
-$ cat /sys/devices/system/cpu/cpufreq/policy0/stats/time_in_state
-614400 31124
-819000 185
-1000000 158
-1228800 341
-1600000 1148
-$ cat /sys/devices/system/cpu/cpufreq/policy4/stats/time_in_state
-614400 29232
-819000 198
-1000000 212
-1228800 443
-1600000 3428
+Now we can just do a direct goto error_unregister and rcar_thermal_remove()
+handles the cleanup properly.
 
-Creating one single-threaded load increases max freq time_in_state in one policy (4 here):
-$ yes > /dev/null &
-(...after some time)
-$ cat /sys/devices/system/cpu/cpufreq/policy0/stats/time_in_state
-614400 45244
-819000 187
-1000000 169
-1228800 345
-1600000 1148
-$ cat /sys/devices/system/cpu/cpufreq/policy4/stats/time_in_state
-614400 38794
-819000 201
-1000000 226
-1228800 450
-1600000 7580
+Fixes: bbcf90c0646a ("thermal: Explicitly enable non-changing thermal zone devices")
+Signed-off-by: Dan Carpenter <error27@gmail.com>
+Reviewed-by: Geert Uytterhoeven <geert+renesas@glider.be>
+---
+v2: Use the correct fixes tag and re-write the check in a cleaner way.
+v3: Share the same error checking as a further cleanup.  The
+    thermal_add_hwmon_sysfs() and thermal_zone_device_enable() functions
+    really do serve the same purpose even though their names are
+    different.
 
-Creating load for all 8 cores in both:
-$ yes > /dev/null &
-$ yes > /dev/null &
-$ yes > /dev/null &
-$ yes > /dev/null &
-$ yes > /dev/null &
-$ yes > /dev/null &
-$ yes > /dev/null &
-$ yes > /dev/null &
+ drivers/thermal/renesas/rcar_thermal.c | 15 +++++----------
+ 1 file changed, 5 insertions(+), 10 deletions(-)
 
-$ cat /sys/devices/system/cpu/cpufreq/policy0/stats/time_in_state
-614400 51371
-819000 190
-1000000 171
-1228800 352
-1600000 4391
-$ cat /sys/devices/system/cpu/cpufreq/policy4/stats/time_in_state
-614400 44121
-819000 203
-1000000 244
-1228800 452
-1600000 11812
-
-Thanks!
-Andre
-
-[0] https://lore.kernel.org/all/20260614122812.2287506-1-a.heider@gmail.com/
-
-> ---
-> Changes in v4:
-> - Use separate OPP tables for the two CPU clock clusters
-> - Use voltage ranges for the shared CPU supply
-> 
-> Changes in v3:
-> - Use one shared CPU OPP table for all CPUs
-> 
-> Changes in v2:
-> - Add k1-opp.dtsi with OPP tables for both CPU clusters
-> - Assign CPU supplies and include OPP table for Banana Pi BPI-F3
-> ---
-> ---
->   arch/riscv/boot/dts/spacemit/k1-bananapi-f3.dts |  35 +++++++-
->   arch/riscv/boot/dts/spacemit/k1-opp.dtsi        | 105 ++++++++++++++++++++++++
->   arch/riscv/boot/dts/spacemit/k1.dtsi            |   8 ++
->   3 files changed, 147 insertions(+), 1 deletion(-)
-> 
-> diff --git a/arch/riscv/boot/dts/spacemit/k1-bananapi-f3.dts b/arch/riscv/boot/dts/spacemit/k1-bananapi-f3.dts
-> index 444c3b1e6f44..487179f7b9b9 100644
-> --- a/arch/riscv/boot/dts/spacemit/k1-bananapi-f3.dts
-> +++ b/arch/riscv/boot/dts/spacemit/k1-bananapi-f3.dts
-> @@ -4,6 +4,7 @@
->    */
->   
->   #include "k1.dtsi"
-> +#include "k1-opp.dtsi"
->   #include "k1-pinctrl.dtsi"
->   
->   / {
-> @@ -86,6 +87,38 @@ &combo_phy {
->   	status = "okay";
->   };
->   
-> +&cpu_0 {
-> +	cpu-supply = <&buck1_0v9>;
-> +};
-> +
-> +&cpu_1 {
-> +	cpu-supply = <&buck1_0v9>;
-> +};
-> +
-> +&cpu_2 {
-> +	cpu-supply = <&buck1_0v9>;
-> +};
-> +
-> +&cpu_3 {
-> +	cpu-supply = <&buck1_0v9>;
-> +};
-> +
-> +&cpu_4 {
-> +	cpu-supply = <&buck1_0v9>;
-> +};
-> +
-> +&cpu_5 {
-> +	cpu-supply = <&buck1_0v9>;
-> +};
-> +
-> +&cpu_6 {
-> +	cpu-supply = <&buck1_0v9>;
-> +};
-> +
-> +&cpu_7 {
-> +	cpu-supply = <&buck1_0v9>;
-> +};
-> +
->   &emmc {
->   	bus-width = <8>;
->   	mmc-hs400-1_8v;
-> @@ -201,7 +234,7 @@ pmic@41 {
->   		dldoin2-supply = <&buck5>;
->   
->   		regulators {
-> -			buck1 {
-> +			buck1_0v9: buck1 {
->   				regulator-min-microvolt = <500000>;
->   				regulator-max-microvolt = <3450000>;
->   				regulator-ramp-delay = <5000>;
-> diff --git a/arch/riscv/boot/dts/spacemit/k1-opp.dtsi b/arch/riscv/boot/dts/spacemit/k1-opp.dtsi
-> new file mode 100644
-> index 000000000000..4cebfcd87485
-> --- /dev/null
-> +++ b/arch/riscv/boot/dts/spacemit/k1-opp.dtsi
-> @@ -0,0 +1,105 @@
-> +// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
-> +
-> +/ {
-> +	cluster0_opp_table: opp-table-cluster0 {
-> +		compatible = "operating-points-v2";
-> +		opp-shared;
-> +
-> +		opp-614400000 {
-> +			opp-hz = /bits/ 64 <614400000>;
-> +			opp-microvolt = <950000 950000 1050000>;
-> +			clock-latency-ns = <200000>;
-> +		};
-> +
-> +		opp-819000000 {
-> +			opp-hz = /bits/ 64 <819000000>;
-> +			opp-microvolt = <950000 950000 1050000>;
-> +			clock-latency-ns = <200000>;
-> +		};
-> +
-> +		opp-1000000000 {
-> +			opp-hz = /bits/ 64 <1000000000>;
-> +			opp-microvolt = <950000 950000 1050000>;
-> +			clock-latency-ns = <200000>;
-> +		};
-> +
-> +		opp-1228800000 {
-> +			opp-hz = /bits/ 64 <1228800000>;
-> +			opp-microvolt = <950000 950000 1050000>;
-> +			clock-latency-ns = <200000>;
-> +		};
-> +
-> +		opp-1600000000 {
-> +			opp-hz = /bits/ 64 <1600000000>;
-> +			opp-microvolt = <1050000 1050000 1050000>;
-> +			clock-latency-ns = <200000>;
-> +		};
-> +	};
-> +
-> +	cluster1_opp_table: opp-table-cluster1 {
-> +		compatible = "operating-points-v2";
-> +		opp-shared;
-> +
-> +		opp-614400000 {
-> +			opp-hz = /bits/ 64 <614400000>;
-> +			opp-microvolt = <950000 950000 1050000>;
-> +			clock-latency-ns = <200000>;
-> +		};
-> +
-> +		opp-819000000 {
-> +			opp-hz = /bits/ 64 <819000000>;
-> +			opp-microvolt = <950000 950000 1050000>;
-> +			clock-latency-ns = <200000>;
-> +		};
-> +
-> +		opp-1000000000 {
-> +			opp-hz = /bits/ 64 <1000000000>;
-> +			opp-microvolt = <950000 950000 1050000>;
-> +			clock-latency-ns = <200000>;
-> +		};
-> +
-> +		opp-1228800000 {
-> +			opp-hz = /bits/ 64 <1228800000>;
-> +			opp-microvolt = <950000 950000 1050000>;
-> +			clock-latency-ns = <200000>;
-> +		};
-> +
-> +		opp-1600000000 {
-> +			opp-hz = /bits/ 64 <1600000000>;
-> +			opp-microvolt = <1050000 1050000 1050000>;
-> +			clock-latency-ns = <200000>;
-> +		};
-> +	};
-> +};
-> +
-> +&cpu_0 {
-> +	operating-points-v2 = <&cluster0_opp_table>;
-> +};
-> +
-> +&cpu_1 {
-> +	operating-points-v2 = <&cluster0_opp_table>;
-> +};
-> +
-> +&cpu_2 {
-> +	operating-points-v2 = <&cluster0_opp_table>;
-> +};
-> +
-> +&cpu_3 {
-> +	operating-points-v2 = <&cluster0_opp_table>;
-> +};
-> +
-> +&cpu_4 {
-> +	operating-points-v2 = <&cluster1_opp_table>;
-> +};
-> +
-> +&cpu_5 {
-> +	operating-points-v2 = <&cluster1_opp_table>;
-> +};
-> +
-> +&cpu_6 {
-> +	operating-points-v2 = <&cluster1_opp_table>;
-> +};
-> +
-> +&cpu_7 {
-> +	operating-points-v2 = <&cluster1_opp_table>;
-> +};
-> diff --git a/arch/riscv/boot/dts/spacemit/k1.dtsi b/arch/riscv/boot/dts/spacemit/k1.dtsi
-> index 529ec68e9c23..bdd109b81730 100644
-> --- a/arch/riscv/boot/dts/spacemit/k1.dtsi
-> +++ b/arch/riscv/boot/dts/spacemit/k1.dtsi
-> @@ -54,6 +54,7 @@ cpu_0: cpu@0 {
->   			compatible = "spacemit,x60", "riscv";
->   			device_type = "cpu";
->   			reg = <0>;
-> +			clocks = <&syscon_apmu CLK_CPU_C0_CORE>;
->   			riscv,isa = "rv64imafdcbv_zicbom_zicbop_zicboz_zicntr_zicond_zicsr_zifencei_zihintpause_zihpm_zfh_zba_zbb_zbc_zbs_zkt_zvfh_zvkt_sscofpmf_sstc_svinval_svnapot_svpbmt";
->   			riscv,isa-base = "rv64i";
->   			riscv,isa-extensions = "i", "m", "a", "f", "d", "c", "b", "v", "zicbom",
-> @@ -84,6 +85,7 @@ cpu_1: cpu@1 {
->   			compatible = "spacemit,x60", "riscv";
->   			device_type = "cpu";
->   			reg = <1>;
-> +			clocks = <&syscon_apmu CLK_CPU_C0_CORE>;
->   			riscv,isa = "rv64imafdcbv_zicbom_zicbop_zicboz_zicntr_zicond_zicsr_zifencei_zihintpause_zihpm_zfh_zba_zbb_zbc_zbs_zkt_zvfh_zvkt_sscofpmf_sstc_svinval_svnapot_svpbmt";
->   			riscv,isa-base = "rv64i";
->   			riscv,isa-extensions = "i", "m", "a", "f", "d", "c", "b", "v", "zicbom",
-> @@ -114,6 +116,7 @@ cpu_2: cpu@2 {
->   			compatible = "spacemit,x60", "riscv";
->   			device_type = "cpu";
->   			reg = <2>;
-> +			clocks = <&syscon_apmu CLK_CPU_C0_CORE>;
->   			riscv,isa = "rv64imafdcbv_zicbom_zicbop_zicboz_zicntr_zicond_zicsr_zifencei_zihintpause_zihpm_zfh_zba_zbb_zbc_zbs_zkt_zvfh_zvkt_sscofpmf_sstc_svinval_svnapot_svpbmt";
->   			riscv,isa-base = "rv64i";
->   			riscv,isa-extensions = "i", "m", "a", "f", "d", "c", "b", "v", "zicbom",
-> @@ -144,6 +147,7 @@ cpu_3: cpu@3 {
->   			compatible = "spacemit,x60", "riscv";
->   			device_type = "cpu";
->   			reg = <3>;
-> +			clocks = <&syscon_apmu CLK_CPU_C0_CORE>;
->   			riscv,isa = "rv64imafdcbv_zicbom_zicbop_zicboz_zicntr_zicond_zicsr_zifencei_zihintpause_zihpm_zfh_zba_zbb_zbc_zbs_zkt_zvfh_zvkt_sscofpmf_sstc_svinval_svnapot_svpbmt";
->   			riscv,isa-base = "rv64i";
->   			riscv,isa-extensions = "i", "m", "a", "f", "d", "c", "b", "v", "zicbom",
-> @@ -174,6 +178,7 @@ cpu_4: cpu@4 {
->   			compatible = "spacemit,x60", "riscv";
->   			device_type = "cpu";
->   			reg = <4>;
-> +			clocks = <&syscon_apmu CLK_CPU_C1_CORE>;
->   			riscv,isa = "rv64imafdcbv_zicbom_zicbop_zicboz_zicntr_zicond_zicsr_zifencei_zihintpause_zihpm_zfh_zba_zbb_zbc_zbs_zkt_zvfh_zvkt_sscofpmf_sstc_svinval_svnapot_svpbmt";
->   			riscv,isa-base = "rv64i";
->   			riscv,isa-extensions = "i", "m", "a", "f", "d", "c", "b", "v", "zicbom",
-> @@ -204,6 +209,7 @@ cpu_5: cpu@5 {
->   			compatible = "spacemit,x60", "riscv";
->   			device_type = "cpu";
->   			reg = <5>;
-> +			clocks = <&syscon_apmu CLK_CPU_C1_CORE>;
->   			riscv,isa = "rv64imafdcbv_zicbom_zicbop_zicboz_zicntr_zicond_zicsr_zifencei_zihintpause_zihpm_zfh_zba_zbb_zbc_zbs_zkt_zvfh_zvkt_sscofpmf_sstc_svinval_svnapot_svpbmt";
->   			riscv,isa-base = "rv64i";
->   			riscv,isa-extensions = "i", "m", "a", "f", "d", "c", "b", "v", "zicbom",
-> @@ -234,6 +240,7 @@ cpu_6: cpu@6 {
->   			compatible = "spacemit,x60", "riscv";
->   			device_type = "cpu";
->   			reg = <6>;
-> +			clocks = <&syscon_apmu CLK_CPU_C1_CORE>;
->   			riscv,isa = "rv64imafdcbv_zicbom_zicbop_zicboz_zicntr_zicond_zicsr_zifencei_zihintpause_zihpm_zfh_zba_zbb_zbc_zbs_zkt_zvfh_zvkt_sscofpmf_sstc_svinval_svnapot_svpbmt";
->   			riscv,isa-base = "rv64i";
->   			riscv,isa-extensions = "i", "m", "a", "f", "d", "c", "b", "v", "zicbom",
-> @@ -264,6 +271,7 @@ cpu_7: cpu@7 {
->   			compatible = "spacemit,x60", "riscv";
->   			device_type = "cpu";
->   			reg = <7>;
-> +			clocks = <&syscon_apmu CLK_CPU_C1_CORE>;
->   			riscv,isa = "rv64imafdcbv_zicbom_zicbop_zicboz_zicntr_zicond_zicsr_zifencei_zihintpause_zihpm_zfh_zba_zbb_zbc_zbs_zkt_zvfh_zvkt_sscofpmf_sstc_svinval_svnapot_svpbmt";
->   			riscv,isa-base = "rv64i";
->   			riscv,isa-extensions = "i", "m", "a", "f", "d", "c", "b", "v", "zicbom",
-> 
+diff --git a/drivers/thermal/renesas/rcar_thermal.c b/drivers/thermal/renesas/rcar_thermal.c
+index 6e5dcac5d47a..fd686da9252e 100644
+--- a/drivers/thermal/renesas/rcar_thermal.c
++++ b/drivers/thermal/renesas/rcar_thermal.c
+@@ -492,12 +492,6 @@ static int rcar_thermal_probe(struct platform_device *pdev)
+ 				"rcar_thermal", trips, ARRAY_SIZE(trips), priv,
+ 						&rcar_thermal_zone_ops, NULL, 0,
+ 						idle);
+-
+-			ret = thermal_zone_device_enable(priv->zone);
+-			if (ret) {
+-				thermal_zone_device_unregister(priv->zone);
+-				priv->zone = ERR_PTR(ret);
+-			}
+ 		}
+ 		if (IS_ERR(priv->zone)) {
+ 			dev_err(dev, "can't register thermal zone\n");
+@@ -506,11 +500,12 @@ static int rcar_thermal_probe(struct platform_device *pdev)
+ 			goto error_unregister;
+ 		}
+ 
+-		if (chip->use_of_thermal) {
++		if (chip->use_of_thermal)
+ 			ret = thermal_add_hwmon_sysfs(priv->zone);
+-			if (ret)
+-				goto error_unregister;
+-		}
++		else
++			ret = thermal_zone_device_enable(priv->zone);
++		if (ret)
++			goto error_unregister;
+ 
+ 		rcar_thermal_irq_enable(priv);
+ 
+-- 
+2.53.0
 
