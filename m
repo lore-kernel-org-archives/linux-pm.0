@@ -1,160 +1,99 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D4CE0BE63;
-	Sat, 27 Jun 2026 14:13:08 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1042F18C008;
+	Sat, 27 Jun 2026 16:39:15 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1782569589; cv=none; b=rNP/F/vjoSNzObeiUN03vJUyp8/AxXfgm1R37fYUE6yvjnmcZDJ7383kIPaKwZma5zowLSnyxQ776IgDRWlpz3TkNtQ9jgk2KFBAMhekyWXjtprRUPUaecLfHSFMnGw4sAE2tYJ5kDjE4XOZ35wNX353YXeuq/C37hVCLKfCnz4=
+	t=1782578356; cv=none; b=SdjTzavyw1zNU6Ti6QAHfFslxtoLF498zQPOXswR3JNH/E6dPVZJL7Lkz7sUKGAFxawJc4iIL4OzLcQFg1mWQIH5xcmcFig1VTJbymJdY3tDeOehEid40rwwrXxsP2NbAGhkrGaSYXQ7i7bA0lTF/JsQMDc8BHKtug2otG4xUrI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1782569589; c=relaxed/simple;
-	bh=g4koX41JGn64lh65JFCkF5PrPq+J6QkdQJejseRwjPQ=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=GFBC9bZhFF+m26rj2IHmcL2EJa+PGepQVUbWB5bUJh1w+vn03Un+prRfRlaXxJB9pubYOFb+GD6xxFh64H+xWpI6AjOEKZWZxBlHoyV2f0G5FWIITWQRJfmoUyYwl/ZPc73fCh43+BPPDZJEWcD6vqwRV8sun4aPey9PsPShUKw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=JnpZG/ZV; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1782578356; c=relaxed/simple;
+	bh=QIfCDzoFcP+viA9sNVbr8JyKd1jzefbZ8eYnjRmqDz0=;
+	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=pG6lbTU18vP14ZCHFrlAPoFV/zaopholi2gLzd3h0iTTNdfzNL+sf/5c6g8yhTFqlrcjjPKdsEgZNSXkExezmEKfQJqFVYJnT1J/xLfcE96seqA+6CsmlLCIzQ49TDY8wtHnKwxYSwwBUmwG3MBdFgSHqZdrDs1lLBKdm3dcOXU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=nGolq32N; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="JnpZG/ZV"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 888B71F000E9;
-	Sat, 27 Jun 2026 14:13:04 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="nGolq32N"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id CCBA41F000E9;
+	Sat, 27 Jun 2026 16:39:12 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1782569588;
-	bh=Gzh2plBXJ+V5rVAo9UH0lZu//mdnWSb19kyOOoCk0VM=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=JnpZG/ZVd5B/C2reKUrIBHrC31EZoCUQUouaF9Ti+GxmZecEzJJ3lo6HKvTt6qIXS
-	 1BCW73i///CgG0wfzEpeWf51FQIchi9EBBDoz7e2TMfWH1NG+PZv3asA4GxL7B6yxv
-	 PKCtNi1c8JgcvT1P+ynkE1VIrs/F530SdF2umAJ9jXYo2M6g9+EjbDsW44W1CLlL2Q
-	 L0tSq4H+6nyJDpny9Nw2VWZTtB5kdnSPKtXNH6FGohGVvFerRyEiv1TkInjmV13ZAl
-	 eW3q2xtQyszuvO+iSuJueq80I2LSLdYsknrVGo2dbvk9R1NAeOD7v31kw2DdiYgYOk
-	 fap6XfIkbWYxA==
-Date: Sat, 27 Jun 2026 15:13:02 +0100
+	s=k20260515; t=1782578354;
+	bh=0BvNz0Ie4ab9gUSU7DwohbxEkLHnqx5EoFweh6YnSuo=;
+	h=From:Subject:Date:To:Cc;
+	b=nGolq32NZIg+jDQ28qdhVJOFT6FZnrdd68Ti4ERPfT26SUixh68xokGRdaAVeXAUm
+	 hvHJvhv5eUMSBd/rUDIrEdeEaxwiGkvkfKtJ3b4xeFUJbuuvXkm9rtxe5mDWD2Itik
+	 uwuSYOhl4azbiPwI5MLX3ZcL46VGFzA7Vdo5gH9Nd4OBiq3mv8rj+Nl18Cus+9zXLL
+	 fIlvL8YiLoxfYvK0OnQg4f5FiHLUGof67at3B1VvG1IK0DWk49uAfZHMD1fWG91Wzt
+	 9CGMKBa2cTK8983swDNFftN4v8OLxxYzh6P8z1PTe7bJK+zJebU3aRdeOCWUKV0ui2
+	 07efK7LBpoxOg==
 From: Sudeep Holla <sudeep.holla@kernel.org>
-To: Pragnesh Papaniya <pragnesh.papaniya@oss.qualcomm.com>
-Cc: Cristian Marussi <cristian.marussi@arm.com>,
-	Sudeep Holla <sudeep.holla@kernel.org>,
-	Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Sibi Sankar <sibi.sankar@oss.qualcomm.com>,
-	MyungJoo Ham <myungjoo.ham@samsung.com>,
-	Kyungmin Park <kyungmin.park@samsung.com>,
-	Chanwoo Choi <cw00.choi@samsung.com>,
-	Dmitry Osipenko <digetx@gmail.com>,
-	Thierry Reding <thierry.reding@kernel.org>,
-	Jonathan Hunter <jonathanh@nvidia.com>,
-	Bjorn Andersson <andersson@kernel.org>,
-	Konrad Dybcio <konradybcio@kernel.org>,
-	Rajendra Nayak <rajendra.nayak@oss.qualcomm.com>,
-	Pankaj Patil <pankaj.patil@oss.qualcomm.com>,
-	linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org,
-	arm-scmi@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-	devicetree@vger.kernel.org, linux-pm@vger.kernel.org,
-	linux-tegra@vger.kernel.org,
-	Amir Vajid <amir.vajid@oss.qualcomm.com>,
-	Ramakrishna Gottimukkula <ramakrishna.gottimukkula@oss.qualcomm.com>
-Subject: Re: [PATCH RFC v7 0/9] firmware: arm_scmi: vendors: Qualcomm Generic
- Vendor Extensions
-Message-ID: <20260625-metal-chachalaca-of-fascination-eabc0f@sudeepholla>
-References: <20260610-rfc_v7_scmi_memlat-v7-0-f3f68c608f25@oss.qualcomm.com>
- <20260616-responsible-junglefowl-of-chaos-7eda7d@sudeepholla>
- <8725caf9-cebb-49ce-b2c8-4960a6073322@oss.qualcomm.com>
- <20260623-busy-beautiful-trout-8cc2ea@sudeepholla>
- <ea9d0c11-e110-4d13-b165-1548875ef9cd@oss.qualcomm.com>
+Subject: [PATCH 0/6] ACPI/PCC: Preserve platform-populated PCC signatures
+Date: Sat, 27 Jun 2026 17:37:28 +0100
+Message-Id: <20260627-acpi_pcc_signature-v1-0-c1b7268d4fdc@kernel.org>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <ea9d0c11-e110-4d13-b165-1548875ef9cd@oss.qualcomm.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-B4-Tracking: v=1; b=H4sIAEv8P2oC/yXMQQqDMBBA0avIrA2kEZLiVYpIMh11uoghY0QQ7
+ 960Lt/i/xOEMpNA35yQaWfhNVY82gZw8XEmxe9qMNpYbY1THhOPCXEUnqPfSiblgtNB267D5wQ
+ 1TJkmPv7T13BbSvgQbr8TXNcXrGtV9nYAAAA=
+X-Change-ID: 20260627-acpi_pcc_signature-7b70b0633c8f
+To: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Sudeep Holla <sudeep.holla@kernel.org>, 
+ "Rafael J. Wysocki" <rafael@kernel.org>, 
+ Jassi Brar <jassisinghbrar@gmail.com>, Huisong Li <lihuisong@huawei.com>, 
+ Guenter Roeck <linux@roeck-us.net>, linux-hwmon@vger.kernel.org, 
+ Andi Shyti <andi.shyti@kernel.org>, linux-i2c@vger.kernel.org, 
+ MyungJoo Ham <myungjoo.ham@samsung.com>, 
+ Kyungmin Park <kyungmin.park@samsung.com>, 
+ Chanwoo Choi <cw00.choi@samsung.com>, linux-pm@vger.kernel.org
+X-Mailer: b4 0.15.2
 
-On Thu, Jun 25, 2026 at 10:57:40AM +0530, Pragnesh Papaniya wrote:
-> 
-> 
-> On 23-Jun-26 2:17 PM, Sudeep Holla wrote:
-> > On Fri, Jun 19, 2026 at 06:01:23PM +0530, Pragnesh Papaniya wrote:
-> >>
-> >> On 16-Jun-26 1:57 PM, Sudeep Holla wrote:
-> >>
-> >>> Not sure if it was discussed in the previous versions or not, it would be
-> >>> good if you can capture why some of bus scaling doesn't work with the existing
-> >>> SCMI performance protocol and the monitors don't fit the MPAM mode.
-> >>>
-> >>> Please capture them in 1/9 as a motivation for this vendor protocol. It will
-> >>> then help to understand it better as I am still struggling to. Sorry for that.
-> >>
-> >> Thanks for the input!
-> >>
-> >> SCMI perf protocol exports perf domains to kernel where kernel can set
-> >> the frequency but here the scaling governor runs on the SCP while kernel
-> >> just observes frequency changes made by remote governor.
-> > 
-> > OK if it is sort of read-only w.r.t kernel, why not perf domain notifications
-> > work to consume the change done by the SCMI platform.
-> > 
-> > And why do you have set operations in the vendor protocol being proposed then.
-> > It all looks like something just cooked up to make things work. I need
-> > detailed reasoning as why the existing perf protocol can't work considering
-> > all the existing notifications in place.
-> 
-> Please do take another look at the documentation and driver changes to see
-> how it all comes together, since it's apparent that we use SET operation for
-> a ton of things. Taking another stab at explaining how the MEMLAT uses all
-> the ops exposed by the vendor protocol.
-> 
+ACPI PCC shared memory layouts reserve the first dword for the PCC
+signature. ACPI specification defines the signature as 0x50434300 ORed
+with the PCC subspace ID, and ACPI 6.6 clarify that the signature is
+populated by the platform and verified by OSPM.
 
-Sure I will have a look at the documentation again and sorry if I missed
-anything. But in general I would expect the document to be self-explanatory
-and not having to look at the driver on how it is used to understand the
-firmware interface. Please make sure of that if not already.
+This series centralizes PCC shared memory signature validation in the PCC
+mailbox controller and stops PCC users from rewriting the signature before
+each command. Clients that previously copied complete local PCC headers
+now update only the mutable command/status/flags/length/payload fields.
 
-> We use the SET operation to pass on various tuneables (IPM CEIL, stall floors,
-> write-back filter, freq-scale params, adaptive low/high freq, sample ms),
-> the core-freq -> mem-freq map, and min/max clamps) required to run the
-> MEMLAT algorithm on the SCP. You might ask why can't we have these values
-> stored somewhere on the SCP itself?
+The final patch also fixes the PCC OperationRegion handler. ACPI defines
+a PCC OperationRegion as the shared memory fields that follow the PCC
+signature, with the OperationRegion length covering only those fields. The
+handler is updated to copy to/from the region after the signature and to
+reject regions that do not fit there.
 
-Exactly, thanks for saving a round trip.
+All patches can go independently as there is no strict dependency between
+them and posted together for the complete context.
 
-> We would like to but all of these are tuneable values, that can change for
-> various boards for the same SoC.
-> 
+Signed-off-by: Sudeep Holla <sudeep.holla@kernel.org>
+---
+Sudeep Holla (6):
+      mailbox: pcc: Validate shared memory signature on request
+      hwmon: xgene: Stop writing PCC shared memory signature
+      i2c: xgene-slimpro: Stop writing PCC shared memory signature
+      devfreq: hisi_uncore: Preserve PCC shared memory signature
+      soc: hisilicon: kunpeng_hccs: Preserve PCC signatures
+      ACPI: PCC: Preserve shared memory signature in OpRegion handler
 
-Sure and where do these boards get these values from ? I assume device tree ?
-If so, are the fixed and can be done once at boot ?
+ drivers/acpi/acpi_pcc.c                | 20 ++++++++++++++----
+ drivers/devfreq/hisi_uncore_freq.c     | 15 +++++++-------
+ drivers/hwmon/xgene-hwmon.c            |  4 ----
+ drivers/i2c/busses/i2c-xgene-slimpro.c |  3 ---
+ drivers/mailbox/pcc.c                  | 38 +++++++++++++++++++++++++++++-----
+ drivers/soc/hisilicon/kunpeng_hccs.c   | 24 ++++++++-------------
+ 6 files changed, 65 insertions(+), 39 deletions(-)
+---
+base-commit: 5a66900afbd6b2a063eebad35294038a654de2b0
+change-id: 20260627-acpi_pcc_signature-7b70b0633c8f
 
-> The START/STOP operations are meant to start/stop the algorithm, in this case
-> the bus scaling algorithm.
-> 
-
-Yes you need to add more details on that algorithm. Can firmware take random
-strings as input. I guess not. Please list the valid strings and explain them.
-Filter invalid strings in the driver if only handful of values are valid.
-
-> We use the GET operation to get the current frequency of memory that we
-> are trying to scale. It can be also used to read back all the parameters
-> that we are trying to set. Another thing to note is that exposing the current
-> frequency to the userspace was something that the community wanted.
-> 
-
-More fun, user ABI involved, so the firmware interface needs to be as clear
-as possible.
-
-> With all of ^^ in mind, re-using the perf protocol becomes impossible.
-> 
-> https://lore.kernel.org/lkml/k4lpzxtrq3x6riyv6etxiobn7nbpczf2bp3m4oc752nhjknlit@uo53kbppzim7/
-> https://lore.kernel.org/lkml/20241115003809epcms1p518df149458f3023d33ec6d87a315e8f6@epcms1p5/
-> 
-
-It is good to capture summary of these old discussions if they are relevant.
-
-> We'll add more call flow diagrams as part of the documentation for the next
-> re-spin to make reviews a bit more easier.
-> 
-
-Anything that improves and helps in understanding this is always welcome.
 
 -- 
 Regards,
 Sudeep
+
