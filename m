@@ -1,134 +1,180 @@
-Received: from mail-qt1-f174.google.com (mail-qt1-f174.google.com [209.85.160.174])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from shelob.surriel.com (shelob.surriel.com [96.67.55.147])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5DFA139DBD3
-	for <linux-pm@vger.kernel.org>; Sat, 27 Jun 2026 11:46:19 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.160.174
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1782560780; cv=pass; b=GEVo0oUvk8W+SgyXI/W7G8uQL7JqO0a8UDbnEGe5C34+38jaTtY1IsXQQTXKngAru69e+d2lHeUHvW2xN8QdISRrifQlOShHFZiAvJGBj9nnMLCbd1C9D8x1KfVPi/XzxSXIzVefPiqjnhiUoMMnBjMektTULmeYrmE6DQxgyqI=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1782560780; c=relaxed/simple;
-	bh=8En6EBLgZ/7Y9RpK8TSKSbvJhwFJjH5l3CmH25wjlz4=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Content-Type; b=elugkp2WyFHqhpiiwQAUERlNDB4Sb0PQ3Dw8d+XgbqjAwxLPwa+qWAxx/TrxncG613d4KmNPx11p4Lsn5Q4y9CMG3ACEEd4yVCF0yjIzv8JYEfD1+h5U/PG38qqab/0ICW9ZukAt8hBRZaZjYrb/1fZTRGgz5Jl19Tdh5c5vzro=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=JxcvuWdJ; arc=pass smtp.client-ip=209.85.160.174
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1D94F12F585;
+	Sat, 27 Jun 2026 13:37:01 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=96.67.55.147
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1782567423; cv=none; b=jFHzsxp6WE2eaFH782GDJFkT+LVDgKXKzOpkCE57qNJR+HoAQzFaXf/Qh92pmgLv7h6UeMfUI7Ys7nLDcWCiPQw0NEQgIqkDfApLfzUswvLFUy5M43tfYUxzQj+0MgrfyYx5mqCVjzq+UBfH3cK53ubcO0qHviLInLPMjAbz7Mw=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1782567423; c=relaxed/simple;
+	bh=uUTYL+XiY6nbZ0YUir4XMg22YbfTVMU7jfHFV+vOYwc=;
+	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
+	 Content-Type:MIME-Version; b=Wa2aza/y73B/WOv5IOkCQbJEty6zwinPM7gqeM042m6P15sAT7YiiOFJidSa97rouwonuOF+w8eE0ZYimLuZMChpMFJJT0KvrPKRp+XGkzlx7JArxhZEqf0CbYw2BFKxHtIHq5K65rpIAjq+kY64G45tgzsPlWShAwEGk92sSbA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=surriel.com; spf=pass smtp.mailfrom=surriel.com; dkim=pass (2048-bit key) header.d=surriel.com header.i=@surriel.com header.b=YJaTGbBC; arc=none smtp.client-ip=96.67.55.147
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=surriel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=surriel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="JxcvuWdJ"
-Received: by mail-qt1-f174.google.com with SMTP id d75a77b69052e-517dc520840so20705821cf.3
-        for <linux-pm@vger.kernel.org>; Sat, 27 Jun 2026 04:46:19 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1782560778; cv=none;
-        d=google.com; s=arc-20260327;
-        b=anZ3FO0eY2AIbVApS1Gzykz8nyQOQqc3MOyQZt4deNxVqUKGworJ93JiUVFerRfg++
-         R/mX1d6h/ihQLTojl2WY9yBHdZUVN5o98e46J95/NlHt3ZfC6s4R2AVlwvIyL5c2oBbJ
-         XAkgvR2AdGM8EA95d1REAkY8b4WfOwpUGjrT+NmwdPvPrm2uoKqAVh2CrRl27a0FcaM0
-         lWMYnu+t/60pmFicbIxseOozgKILi2dAA1H9CcaVDl4fVZ4NCnwyfdUK8jFCCWeuZaMf
-         5XR3NbgWMvOa+a4ucDwSB1DK6rrpET9osSm+FLX2hpMQNA88mEl2iJUrEAEj7JMLE2tb
-         xtTw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
-        h=to:subject:message-id:date:from:in-reply-to:references:mime-version
-         :dkim-signature;
-        bh=MwgmP+AIkwRVqsKscXw1JvJ/gpEoo8Dz+/YrGyTigaI=;
-        fh=HvvMgQ+djKYSugo52SvrIMSrlgxOh0vBXD1fJpJyfmo=;
-        b=EDUNn6nUDKKoavJHoe9mv5J5/Jv5UqNihrrDhawIOlNOdemaZ2LpghZOnqeapMyZZa
-         zVFi9nJD9PbK3U9JhoPIoPPbAXvc75vF+9DLjWVwazUGlZKn0AlVaCiKV2f4YGeplAEO
-         cdGQ2rDe0FSJsKNjkV2hLAbOYXEW1PYQrnkcVFxg9yG6FXyHE24hAgInjAg0NyD4ZoGe
-         tJzhpao8XPL3xozhSlcRyBTxP+ByMZ1ukeIKW2xOtIrX6yoPb9OjnzSLHw6S3/2ymGV4
-         MsZSUfuNPEUai+6BizUbuexVwF+m88KuD2ucOhSkPSWVTZebYrdMz1fIc2faGq2jgRCm
-         8s4A==;
-        darn=vger.kernel.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1782560778; x=1783165578; darn=vger.kernel.org;
-        h=to:subject:message-id:date:from:in-reply-to:references:mime-version
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=MwgmP+AIkwRVqsKscXw1JvJ/gpEoo8Dz+/YrGyTigaI=;
-        b=JxcvuWdJwbH60EE0DX+qlY1haRVHiUaE3g7jNcU2S3O5Im0stTOFu3wEmH6kZea8Az
-         pXsu8ZPzWsjcqEM0QXIkpIn2kTaF+ujdokGlWZ95wp8xwJ2h8GTLcIgT+bgbVqlYQjv8
-         ogWVBN7Je8XOnk5gnCdvyD0OMX86Fc9Q+m7syncRkruK2gMI0oxz/0ZhbpSff4LTWdz7
-         u7o8cMNWL3+DFI+QtuE9J0s07tgTl9oEDIyFy2kZTXsbBXfIQ6uxmiWLr3WMCD28gug4
-         DjdrA4qtfgtFJUP+nkyp4tBgRJ/wUW9s8UOQURxT/rnyK/Amgjr4D41jLzuwAkDcpxM8
-         XAvQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1782560778; x=1783165578;
-        h=to:subject:message-id:date:from:in-reply-to:references:mime-version
-         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=MwgmP+AIkwRVqsKscXw1JvJ/gpEoo8Dz+/YrGyTigaI=;
-        b=EV3k6k1/2Kr2Xkpvozb9KcJK1kEpVjX92z55WKNNOwYVZ6nCXYWW8xV0/+vGCcQeqy
-         WAXYiRVRQ7op1mlGhrRj+U11N1bv6EpzMYGEFLy4CVb7sC5mJOWNGo939Cb0OCzq2guO
-         zArn57L2J1iOz3TrrsAw2GSYv3TaD4+ILD+vv5Zyt3XDX5qlA9Yi4dCjwLiKaMCRtdNn
-         Ez56gEngx2/wTHEiqZxwjoGk1BP+N7Wp8NRBEOwV5WiTD54TUqB4qOWFQX1IqVzurzzg
-         UskkkHxtJeBySJrItNsxpflRP6UJksiJdLAsn7I4LgYH3o0arh4mJOztOZWGEEYjlOoA
-         0lxg==
-X-Forwarded-Encrypted: i=1; AFNElJ+VPIIiAat9yo09x2EoFIj1cben2aG6ZVT4bAFtHYJpms/yHIKQoYkSLN504OelKjA8LL8rqaw1/A==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yyvy+R8hdKKQXkIkC9Ozje4LL/d9yY9ulIgTcDDJ72fwXznZVO0
-	Os3jcZlqEuG2uSgTBZl+iGoUtGXn+iKegilYX6aRDclWxFl1lLuKqE/huwjInF6ybZqOv1nQL5R
-	MveefLW/H8GSTtgLrJoNySi+NwmFh48E=
-X-Gm-Gg: AfdE7cmU5/VPTCbzzgGHRNBSn64CCBRtBu5nCtfC4Vb9suMLeB5DspxAh/USG1K3xBh
-	eedW9XHee8e1cZqveH3ya+yCVreJ7QOyYJ79iS9d2WzgrxzMqpAhfUu2h4aAwe43muu2yL09ekL
-	cX+teED3G/SMBHpU7gjkzDjM3Rg8KJlBJZzgHEh5RlJfRbbPqBnp2r7lB7o/BNgoI6WsFqy247K
-	Y8DgMySVq69AOQbnBgT77lSAC5++XjqZyyiRGoUDGmqlnml58x38QqHxnLyzmhVSp4ekAw=
-X-Received: by 2002:a05:622a:15d3:b0:517:6804:3732 with SMTP id
- d75a77b69052e-51a727f36e7mr140180601cf.55.1782560778293; Sat, 27 Jun 2026
- 04:46:18 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=surriel.com header.i=@surriel.com header.b="YJaTGbBC"
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=surriel.com
+	; s=mail; h=MIME-Version:Content-Transfer-Encoding:Content-Type:References:
+	In-Reply-To:Date:Cc:To:From:Subject:Message-ID:Sender:Reply-To:Content-ID:
+	Content-Description:Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc
+	:Resent-Message-ID:List-Id:List-Help:List-Unsubscribe:List-Subscribe:
+	List-Post:List-Owner:List-Archive;
+	bh=uUTYL+XiY6nbZ0YUir4XMg22YbfTVMU7jfHFV+vOYwc=; b=YJaTGbBCAVkVuPVOSxUJ2kyeYa
+	46ME1ttXik+l5W/4OaXgsFFRgNxoTXOJSK9N8VJ+c/+QrIfMDCzUE2fJ4GAkPb7p3H0fc8JDQdYcf
+	kxGge3hiO4PZ6LpBE3ofT5oqUu/Rnnwn/foxEhnSgeZM4nVCrVAWDZqJZaiUAfsiA8a5CX3uLPzBN
+	r+DZp2wjEQcTBiLwDbHh0eDvbOH4wBM0AmEQmchQpavFxPzudC489W+mjUYDlbAoiI0e0dfdnBKI/
+	rrqtnG+L8Vvh2CgwhahdXjZDSVs5uXIiefETS5PJUZeHRreYtb4s5n1eh9ab5nIEMB80rdg6igmk4
+	ZhzQ7/9w==;
+Received: from fangorn.home.surriel.com ([10.0.13.7])
+	by shelob.surriel.com with esmtpsa  (TLS1.2) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+	(Exim 4.97.1)
+	(envelope-from <riel@surriel.com>)
+	id 1wdTDI-000000001nG-0Ciu;
+	Sat, 27 Jun 2026 09:36:52 -0400
+Message-ID: <528e3a5fbc27c9dc7a098121c32b7679b4c9962a.camel@surriel.com>
+Subject: Re: [RFC PATCH 00/40] mm: reliable 1GB page allocation
+From: Rik van Riel <riel@surriel.com>
+To: Lorenzo Stoakes <ljs@kernel.org>
+Cc: linux-kernel@vger.kernel.org, kernel-team@meta.com, linux-mm@kvack.org, 
+	david@kernel.org, willy@infradead.org, surenb@google.com,
+ hannes@cmpxchg.org, 	ziy@nvidia.com, usama.arif@linux.dev, fvdl@google.com,
+ Andrew Morton	 <akpm@linux-foundation.org>, Jonathan Corbet
+ <corbet@lwn.net>, Chris Mason	 <clm@fb.com>, David Sterba
+ <dsterba@suse.com>, Vlastimil Babka <vbabka@kernel.org>,  Steven Rostedt
+ <rostedt@goodmis.org>, Masami Hiramatsu <mhiramat@kernel.org>, "Rafael J.
+ Wysocki"	 <rafael@kernel.org>, Oscar Salvador <osalvador@suse.de>, Mike
+ Rapoport	 <rppt@kernel.org>, linux-doc@vger.kernel.org,
+ linux-btrfs@vger.kernel.org, 	linux-trace-kernel@vger.kernel.org,
+ linux-pm@vger.kernel.org, 	linux-cxl@vger.kernel.org, Linus Torvalds
+ <torvalds@linux-foundation.org>
+Date: Sat, 27 Jun 2026 09:36:51 -0400
+In-Reply-To: <aj9yrlB0TrlYCLlf@lucifer>
+References: <20260520150018.2491267-1-riel@surriel.com>
+	 <aj9yrlB0TrlYCLlf@lucifer>
+Autocrypt: addr=riel@surriel.com; prefer-encrypt=mutual;
+ keydata=mQENBFIt3aUBCADCK0LicyCYyMa0E1lodCDUBf6G+6C5UXKG1jEYwQu49cc/gUBTTk33A
+ eo2hjn4JinVaPF3zfZprnKMEGGv4dHvEOCPWiNhlz5RtqH3SKJllq2dpeMS9RqbMvDA36rlJIIo47
+ Z/nl6IA8MDhSqyqdnTY8z7LnQHqq16jAqwo7Ll9qALXz4yG1ZdSCmo80VPetBZZPw7WMjo+1hByv/
+ lvdFnLfiQ52tayuuC1r9x2qZ/SYWd2M4p/f5CLmvG9UcnkbYFsKWz8bwOBWKg1PQcaYHLx06sHGdY
+ dIDaeVvkIfMFwAprSo5EFU+aes2VB2ZjugOTbkkW2aPSWTRsBhPHhV6dABEBAAG0HlJpayB2YW4gU
+ mllbCA8cmllbEByZWRoYXQuY29tPokBHwQwAQIACQUCW5LcVgIdIAAKCRDOed6ShMTeg05SB/986o
+ gEgdq4byrtaBQKFg5LWfd8e+h+QzLOg/T8mSS3dJzFXe5JBOfvYg7Bj47xXi9I5sM+I9Lu9+1XVb/
+ r2rGJrU1DwA09TnmyFtK76bgMF0sBEh1ECILYNQTEIemzNFwOWLZZlEhZFRJsZyX+mtEp/WQIygHV
+ WjwuP69VJw+fPQvLOGn4j8W9QXuvhha7u1QJ7mYx4dLGHrZlHdwDsqpvWsW+3rsIqs1BBe5/Itz9o
+ 6y9gLNtQzwmSDioV8KhF85VmYInslhv5tUtMEppfdTLyX4SUKh8ftNIVmH9mXyRCZclSoa6IMd635
+ Jq1Pj2/Lp64tOzSvN5Y9zaiCc5FucXtB9SaWsgdmFuIFJpZWwgPHJpZWxAc3VycmllbC5jb20+iQE
+ +BBMBAgAoBQJSLd2lAhsjBQkSzAMABgsJCAcDAgYVCAIJCgsEFgIDAQIeAQIXgAAKCRDOed6ShMTe
+ g4PpB/0ZivKYFt0LaB22ssWUrBoeNWCP1NY/lkq2QbPhR3agLB7ZXI97PF2z/5QD9Fuy/FD/jddPx
+ KRTvFCtHcEzTOcFjBmf52uqgt3U40H9GM++0IM0yHusd9EzlaWsbp09vsAV2DwdqS69x9RPbvE/Ne
+ fO5subhocH76okcF/aQiQ+oj2j6LJZGBJBVigOHg+4zyzdDgKM+jp0bvDI51KQ4XfxV593OhvkS3z
+ 3FPx0CE7l62WhWrieHyBblqvkTYgJ6dq4bsYpqxxGJOkQ47WpEUx6onH+rImWmPJbSYGhwBzTo0Mm
+ G1Nb1qGPG+mTrSmJjDRxrwf1zjmYqQreWVSFEt26tBpSaWsgdmFuIFJpZWwgPHJpZWxAZmIuY29tP
+ okBPgQTAQIAKAUCW5LbiAIbIwUJEswDAAYLCQgHAwIGFQgCCQoLBBYCAwECHgECF4AACgkQznneko
+ TE3oOUEQgAsrGxjTC1bGtZyuvyQPcXclap11Ogib6rQywGYu6/Mnkbd6hbyY3wpdyQii/cas2S44N
+ cQj8HkGv91JLVE24/Wt0gITPCH3rLVJJDGQxprHTVDs1t1RAbsbp0XTksZPCNWDGYIBo2aHDwErhI
+ omYQ0Xluo1WBtH/UmHgirHvclsou1Ks9jyTxiPyUKRfae7GNOFiX99+ZlB27P3t8CjtSO831Ij0Ip
+ QrfooZ21YVlUKw0Wy6Ll8EyefyrEYSh8KTm8dQj4O7xxvdg865TLeLpho5PwDRF+/mR3qi8CdGbkE
+ c4pYZQO8UDXUN4S+pe0aTeTqlYw8rRHWF9TnvtpcNzZw==
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+User-Agent: Evolution 3.56.2 (3.56.2-2.fc42) 
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260520155525.22239-1-ansuelsmth@gmail.com>
-In-Reply-To: <20260520155525.22239-1-ansuelsmth@gmail.com>
-From: "Christian Marangi (Ansuel)" <ansuelsmth@gmail.com>
-Date: Sat, 27 Jun 2026 13:46:05 +0200
-X-Gm-Features: AVVi8Cf_0TYEuahTO65ACteREkW6yB49hgA0BclLT9szcFa1Y79hU8GGc7i-Jso
-Message-ID: <CA+_ehUy0tbLR+dt2QQAj94AYCnSvmUgY7OEV9a+ums7WrGe5pA@mail.gmail.com>
-Subject: Re: [PATCH v5 0/7] thermal/drivers: airoha: Add support for AN7583
-To: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
-	Conor Dooley <conor+dt@kernel.org>, "Rafael J. Wysocki" <rafael@kernel.org>, 
-	Daniel Lezcano <daniel.lezcano@kernel.org>, Zhang Rui <rui.zhang@intel.com>, 
-	Lukasz Luba <lukasz.luba@arm.com>, Christian Marangi <ansuelsmth@gmail.com>, 
-	Lorenzo Bianconi <lorenzo@kernel.org>, devicetree@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
 
-Il giorno mer 20 mag 2026 alle ore 17:55 Christian Marangi
-<ansuelsmth@gmail.com> ha scritto:
->
-> This small series implement all the required changes to
-> support Airoha AN7583 Thermal Sensor.
->
-> The SoC dropped the Monitor subsystem and only provide
-> temperature reading. Some generalization was required
-> to at least save the common code with also the help of
-> reg field API.
->
-> Changes v5:
-> - Fix alpabetical order in Documentation patch
-> - Address suggested change by AI Bot
-> Changes v4:
-> - Rebase on top of linux-next
-> Changes v3:
-> - Property use chip-scu for thermal sensor
-> Changes v2:
-> - Update DT schema patch to implement dedicated schema
->
-> Christian Marangi (7):
->   thermal/drivers: airoha: fix copy paste error on clamp_t low temp
->   thermal/drivers: airoha: fix copy paste error for sen internal
->   thermal/drivers: airoha: Convert to regmap API
->   thermal/drivers: airoha: Generalize probe function
->   thermal/drivers: airoha: Generalize get_thermal_ADC and set_mux
->     function
->   dt-bindings: arm: airoha: Add the chip-scu node for AN7583 SoC
->   thermal/drivers: airoha: Add support for AN7583 Thermal Sensor
->
->  .../bindings/arm/airoha,en7581-chip-scu.yaml  |  14 +
->  drivers/thermal/airoha_thermal.c              | 380 +++++++++++++++---
->  2 files changed, 327 insertions(+), 67 deletions(-)
->
+On Sat, 2026-06-27 at 10:28 +0100, Lorenzo Stoakes wrote:
+>=20
+> So really, you need to start again, from scratch, and without the use
+> of an
+> LLM for generating code, or at least with it kept on a (very very
+> short)
+> leash.
+>=20
+> And to be clear, I _want_ this concept of GB superpageblocks to land.
+> It's
+> a really exciting concept.
 
-Any news for this series? Can someone check it? Every patch have
-a tag.
+That is the one reason I sent out RFC code before it
+is ready. I am looking for feedback on the concepts
+in this series.
+
+How do people feel about splitting up the free lists,
+so each gigabyte (well, PUD sized) chunk of memory
+has its own free lists?
+
+How can we balance the desire for higher-order kernel
+allocations, against the desire to preserve gigabyte
+sized chunks of memory that can be used for user space?
+
+>=20
+> Pulling compaction kicking and screaming into 2026 stands to
+> significantly
+> benefit linux users and developers.
+
+That's another big question. How do we balance the
+desire to keep compaction overhead low with the desire
+to do higher order allocations almost everywhere?
+
+>=20
+> But the execution has to be _completely_ rethought.
+
+There's no argument there.
+
+I am just hoping to figure out what I should be
+doing on a conceptual level, before figuring out
+how to do it cleanly.
+
+The mess in the RFC is the result of trying something
+that seemed right, watching it fail in some subtle
+way, and trying to fix it up.
+
+Once I know what I need to do, coming up with a
+cleaner implementation is very doable.
+
+>=20
+> IOW I say we take off and nuke the entire site from orbit. It's the
+> only
+> way to be sure :)
+>=20
+BOOM?
+
+> Another issue here is maintainer time - even this _extremely_ light-
+> touch
+> review has taken me a few hours (of my weekend :). To review it in
+> detail
+> would take probably DAYS of dedicated work.
+
+I suspect there is a mismatch in expectations here.
+
+I already knew this code has to be totally redone.
+
+I was looking for feedback on the basic concepts
+and design in the patch series, but failed to
+clearly communicate that.
+
+You provided some detailed feedback on the code,
+but as of yet nobody has really provided any
+opinions on things like whether it is desirable
+at all to have the free lists per gigablock,
+or whether we need to come up with some totally
+different approach.
+
+How do we better communicate that kind of thing
+in the future?
+
+Is that something to spell out more clearly in
+the cover letter?
+
+Is that kind of feedback something developers
+could even reasonably ask for? (if not, how do
+we figure out what maintainers want?)
+
+
+--=20
+All Rights Reversed.
