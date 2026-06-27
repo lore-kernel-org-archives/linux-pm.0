@@ -1,110 +1,225 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-vs1-f50.google.com (mail-vs1-f50.google.com [209.85.217.50])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3070E31D371;
-	Sat, 27 Jun 2026 16:39:20 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0AC452F7F13
+	for <linux-pm@vger.kernel.org>; Sat, 27 Jun 2026 17:49:29 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.217.50
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1782578378; cv=none; b=gbbASzq1g9avoQ65mHDO1QUezM0+88efbtiZWcl9+Y5mnr9+rSI0IbAXB6+j7yraDe9qhXIR3SbYTsmSq75krJfqB7zhrhdtSp7fcMvwFLF7tmdcKJjKamYmiaXpRUfkZq7Fa0KGm/JYHFRbC+A6RN5XF44MarqULNxZr2hdr9A=
+	t=1782582571; cv=none; b=aBAMZkMmhJ+tDz+AJBDfbtHfxUm+N/XIpBuAuo8bJUOmrFPKYpl3EHDQUy2iDU+fOFYHgjuO9DfLgdGcyWR5eOgSGD0xTENtX7RMvIe7+Vdvdf5F9mYgnpbZC85gG+zDLCzeHWHRyK7WEZjCmrBvpljFa12HqOLpBl0yBwQ8TpM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1782578378; c=relaxed/simple;
-	bh=1cpjwuqX4AI0+mZn4uzmSmj8Y/XUMlU10pu35e63QH4=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=nPwojfp8zcGVelQqI47hlpn7XFCVE6OKX0koyIQl8cZzjxpFai49w2CaDW3sjheObZMKbTMxd5dVtCuBsys6I/1MEN0+dxui8V/Js6vl0gE5C/kEf1KcR92LJOt5jitIJDZgUeA9T4cdObjSMs1pUl0WAIjZUsAqJI6cex44DvM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=MQ29Mh3Y; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1782582571; c=relaxed/simple;
+	bh=YA+1i/UnBYMi612cEFEOy+3MzER+Xfj7iA6l8jGXb4M=;
+	h=From:Date:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=uqBWml+sZkZLyg3tgy3QWUrv+O87pvRvuZ80rDtczf5Wgo6yto2O9I/3FkFj/I+vhxgFODDK2NfOTzrlCZA2Jf6Ma0Q2cxq0emG7r4fRbVPkP/4UBoQKuhzsPUWPYpC5apcJmHKqjk27WwGuY+hwyQUVSRZrQ70/uoTpSELuNvI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=D+APVrVB; arc=none smtp.client-ip=209.85.217.50
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="MQ29Mh3Y"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3503A1F000E9;
-	Sat, 27 Jun 2026 16:39:19 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1782578360;
-	bh=pVrtp0+OjLGteT3DW93alrv/5D/KFUVlB/nwln/Xxic=;
-	h=From:Date:Subject:References:In-Reply-To:To:Cc;
-	b=MQ29Mh3YYIhn+fwEdG49NMRm8ZUBKIx7RFcrRvGcPFW0SQdN7xTch6NQzDirpefNd
-	 wssMXjaFL3N2OFCrZe/e0z79mj9fgrXU7+IOHExp/hBdFHsgJDT+pXGzTfanGEczen
-	 aMHmPevDnO+DABNTL5P5nLIGYXrPxHvATETD3yAA+ZYSBKl22iJvLZwa/XhKkbUqvg
-	 Urfz1gHyoHKNXtycG8ISShSIvx3UrVW+8wSPQnXacn2mgymFE8etj69WzgtvzWSjed
-	 rt8Y3agQ/7Rcbs7WgW45AjDMMAwvxFdr+acgsO/hlIXa2FhA/JIn3iJfQEDrGYqAbX
-	 HhCuxYAJsGJxw==
-From: Sudeep Holla <sudeep.holla@kernel.org>
-Date: Sat, 27 Jun 2026 17:37:32 +0100
-Subject: [PATCH 4/6] devfreq: hisi_uncore: Preserve PCC shared memory
- signature
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="D+APVrVB"
+Received: by mail-vs1-f50.google.com with SMTP id ada2fe7eead31-734dfaa3d9bso1368700137.3
+        for <linux-pm@vger.kernel.org>; Sat, 27 Jun 2026 10:49:29 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1782582569; x=1783187369; darn=vger.kernel.org;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:date:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=+uflCN5dEoFADXWjqBtV9JZXNhAeBkbLG/4dD0z7b4I=;
+        b=D+APVrVB7sDaioieVdmISDPXpLFAuW6Z8ACka+jIwp7ns0TQdWs5MEy+Z/dxvn8VAa
+         e29T4yf7lV++S7Zg1KPGSJLqvjfqzUAvUEu7tSGmqaCsQogJoe9MO5ZfM/HH/GhY8ux0
+         YW6ZINIMDlm8qugBnJpjrCnTOHTSXKlAPJF11MzR2txP/MrDTMvFDy0oCu+HsC/1rWic
+         5RnQmKwAXJpxLkTmgZLfBFUKtZnCgcM2yM4bDprDEVL6jHCMPi1e3zAqIe9XmKpm9HEA
+         GY5jXZXmdNMNEJwgCkWWPPLSrpsmhX+cbfcTpaZTE+Q/IJm4Gxe+tsxjkBwBxlPFhi9j
+         4y8Q==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1782582569; x=1783187369;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:date:from:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=+uflCN5dEoFADXWjqBtV9JZXNhAeBkbLG/4dD0z7b4I=;
+        b=GT1kePwZ/x5PfceZWlm/SMy8rjV+TcqosRpbtsK9qknU3+543E1/EAiRwoqGRpOGyv
+         rCmgTSTAYoBk6RzNo1aTj4ZCLuURCp5mH0uGcMsqqG8/WLd1oCVUwK+RGGRRzS5aX5C7
+         uprHOKg7IqDPy97hE77WTUrreC3fBdsJbjWECkri0M3gwtmceApLtZkRA1HQaelQH1ld
+         zuAtUj4WWR2SE992bYouTYspuhfJb6JPqfcNKkq3J2WWHW0mpGXpk384q03dEdMU7i+d
+         bzKbf6YROeXVPF12Tx0HueZKFSU0CJ1VDtTQ69IB8rIH2juCPL98lj0ur1a0ixi6TfEw
+         zI9Q==
+X-Forwarded-Encrypted: i=1; AHgh+RodxjbjC20k2After3svncIcM+Ph50r2MOekahqSg4dJHbStdltDX79+8MTjqaTsae1tDRILqMsYg==@vger.kernel.org
+X-Gm-Message-State: AOJu0YwHWbMlKHxjR67olsW41oiSnPCcosXZpgI8jWCYQuEwPA/ar/Vz
+	0dCAk6qKiLJabpen4RqkPKPSaEUSYwIwJppW43kgdlbtbzc2Z6qdJORV
+X-Gm-Gg: AfdE7cmtymUCwqDNyKmf4dUi6AibwPKMPiz9NY0fe/him4d3f3VeCD+Bp8xTdubIB9H
+	APSkTrHLNBrKNI3lxYKyZBY5zQuA9QU8ZYHcec+FThWeZHH33lKb1Yv/5kmd2T2FIttgKOF/IR7
+	y2rqo2iyDw2siYLf9Cm/hlpOL1OuHNolOzU6Z0qdWEzrfxjUgWc59Bsd0ILpvzh3ztMbZ6exVEC
+	6HUsmIVfin7PeDy7ponK4+OMbrBgpNXxrjgINaOIYMlX2jx7MRE8q0bFQ8hLSGv98MDMfQG1fHO
+	ssAdmj/JEw497tomSLehqO+m+eMC4bzM4sVosdt38qPmN+8hqRhb5VOEPT1FMo45adlxaFCT4aw
+	q+YiTeCO8HgTZJpe4R6pZ5U+IpiISuaXe99B1sGnINsuvRkB0RNMRNMj75LU8t0J/K9GydI+TM1
+	0u/T639580uMoQJyF+h/GvrzNUq6ZGfnbBukCkv5Dkr2U5
+X-Received: by 2002:a05:6102:440f:b0:730:db02:1d08 with SMTP id ada2fe7eead31-73434452fd5mr5471882137.10.1782582569056;
+        Sat, 27 Jun 2026 10:49:29 -0700 (PDT)
+Received: from localhost (d-24-145-72-22.fl.cpe.atlanticbb.net. [24.145.72.22])
+        by smtp.gmail.com with ESMTPSA id a1e0cc1a2514c-96916e5b10dsm2811280241.4.2026.06.27.10.49.28
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sat, 27 Jun 2026 10:49:28 -0700 (PDT)
+From: Yury Norov <yury.norov@gmail.com>
+X-Google-Original-From: Yury Norov <ynorov@nvidia.com>
+Date: Sat, 27 Jun 2026 13:49:27 -0400
+To: David Laight <david.laight.linux@gmail.com>
+Cc: Robin Murphy <robin.murphy@arm.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Rasmus Villemoes <linux@rasmusvillemoes.dk>,
+	Russell King <linux@armlinux.org.uk>, Frank Li <Frank.Li@nxp.com>,
+	Sascha Hauer <s.hauer@pengutronix.de>,
+	Pengutronix Kernel Team <kernel@pengutronix.de>,
+	Fabio Estevam <festevam@gmail.com>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+	Peter Zijlstra <peterz@infradead.org>,
+	Ingo Molnar <mingo@redhat.com>,
+	Arnaldo Carvalho de Melo <acme@kernel.org>,
+	Namhyung Kim <namhyung@kernel.org>,
+	Mark Rutland <mark.rutland@arm.com>,
+	Alexander Shishkin <alexander.shishkin@linux.intel.com>,
+	Jiri Olsa <jolsa@kernel.org>, Ian Rogers <irogers@google.com>,
+	Adrian Hunter <adrian.hunter@intel.com>,
+	James Clark <james.clark@linaro.org>,
+	Thomas Gleixner <tglx@kernel.org>, Borislav Petkov <bp@alien8.de>,
+	Dave Hansen <dave.hansen@linux.intel.com>,
+	"H. Peter Anvin" <hpa@zytor.com>,
+	"Rafael J. Wysocki" <rafael@kernel.org>,
+	Len Brown <lenb@kernel.org>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	Danilo Krummrich <dakr@kernel.org>,
+	Chanwoo Choi <cw00.choi@samsung.com>,
+	MyungJoo Ham <myungjoo.ham@samsung.com>,
+	Kyungmin Park <kyungmin.park@samsung.com>,
+	Heiko Stuebner <heiko@sntech.de>,
+	Lorenzo Pieralisi <lpieralisi@kernel.org>,
+	Xu Yilun <yilun.xu@intel.com>, Tom Rix <trix@redhat.com>,
+	Moritz Fischer <mdf@kernel.org>,
+	Yicong Yang <yangyicong@hisilicon.com>,
+	Jonathan Cameron <jic23@kernel.org>,
+	Dennis Dalessandro <dennis.dalessandro@cornelisnetworks.com>,
+	Jason Gunthorpe <jgg@ziepe.ca>, Leon Romanovsky <leon@kernel.org>,
+	Dan Williams <djbw@kernel.org>,
+	Vishal Verma <vishal.l.verma@intel.com>,
+	Dave Jiang <dave.jiang@intel.com>, Ira Weiny <ira.weiny@intel.com>,
+	Bjorn Helgaas <bhelgaas@google.com>,
+	Shuai Xue <xueshuai@linux.alibaba.com>,
+	Will Deacon <will@kernel.org>,
+	Jiucheng Xu <jiucheng.xu@amlogic.com>,
+	Neil Armstrong <neil.armstrong@linaro.org>,
+	Kevin Hilman <khilman@baylibre.com>,
+	Jerome Brunet <jbrunet@baylibre.com>,
+	Martin Blumenstingl <martin.blumenstingl@googlemail.com>,
+	Jing Zhang <renyu.zj@linux.alibaba.com>,
+	Xu Yang <xu.yang_2@nxp.com>, Linu Cherian <lcherian@marvell.com>,
+	Gowthami Thiagarajan <gthiagarajan@marvell.com>,
+	Ji Sheng Teoh <jisheng.teoh@starfivetech.com>,
+	Khuong Dinh <khuong@os.amperecomputing.com>,
+	Daniel Lezcano <daniel.lezcano@kernel.org>,
+	Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>,
+	Yury Norov <yury.norov@gmail.com>, Kees Cook <kees@kernel.org>,
+	Thomas =?iso-8859-1?Q?Wei=DFschuh?= <thomas.weissschuh@linutronix.de>,
+	Aboorva Devarajan <aboorvad@linux.ibm.com>,
+	"Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
+	Ilkka Koskinen <ilkka@os.amperecomputing.com>,
+	Besar Wicaksono <bwicaksono@nvidia.com>, Ma Ke <make24@iscas.ac.cn>,
+	Chengwen Feng <fengchengwen@huawei.com>,
+	linux-arm-kernel@lists.infradead.org, imx@lists.linux.dev,
+	linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+	linux-perf-users@vger.kernel.org, linux-acpi@vger.kernel.org,
+	driver-core@lists.linux.dev, linux-pm@vger.kernel.org,
+	linux-rockchip@lists.infradead.org, linux-fpga@vger.kernel.org,
+	linux-rdma@vger.kernel.org, nvdimm@lists.linux.dev,
+	linux-pci@vger.kernel.org, linux-amlogic@lists.infradead.org,
+	linux-cxl@vger.kernel.org, linux-arm-msm@vger.kernel.org
+Subject: Re: [PATCH 13/16] perf: Use sysfs_emit() for cpumask show callbacks
+Message-ID: <akANJ-AT7nHpRMq-@yury>
+References: <20260528183625.870813-1-ynorov@nvidia.com>
+ <20260528183625.870813-14-ynorov@nvidia.com>
+ <7e980b99-1e4e-408b-8ebd-4d28116e7ad5@arm.com>
+ <20260529130619.12f24264@pumpkin>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20260627-acpi_pcc_signature-v1-4-c1b7268d4fdc@kernel.org>
-References: <20260627-acpi_pcc_signature-v1-0-c1b7268d4fdc@kernel.org>
-In-Reply-To: <20260627-acpi_pcc_signature-v1-0-c1b7268d4fdc@kernel.org>
-To: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Sudeep Holla <sudeep.holla@kernel.org>, 
- "Rafael J. Wysocki" <rafael@kernel.org>, 
- MyungJoo Ham <myungjoo.ham@samsung.com>, 
- Kyungmin Park <kyungmin.park@samsung.com>, 
- Chanwoo Choi <cw00.choi@samsung.com>, Huisong Li <lihuisong@huawei.com>, 
- linux-pm@vger.kernel.org
-X-Mailer: b4 0.15.2
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260529130619.12f24264@pumpkin>
 
-ACPI specification defines the generic PCC shared memory signature as
-the PCC base signature ORed with the subspace ID.
+On Fri, May 29, 2026 at 01:06:19PM +0100, David Laight wrote:
+> On Fri, 29 May 2026 12:05:08 +0100
+> Robin Murphy <robin.murphy@arm.com> wrote:
+> 
+> > On 2026-05-28 7:36 pm, Yury Norov wrote:
+> > > These callbacks are sysfs show paths.
+> > > 
+> > > Use sysfs_emit() and cpumask_pr_args() to emit the masks.
+> > > 
+> > > This prepares for removing cpumap_print_to_pagebuf().  
+> > 
+> > TBH, looking at this diff I think it only shows the value of having a 
+> > helper to abstract the boilerplate...
+> > 
+> > I'm not sure I agree with the argument of removing something entirely 
+> > just because it may occasionally be misused, but could we at least have 
+> > something like:
+> > 
+> > #define sysfs_emit_cpumask(buf, mask) \
+> > 	sysfs_emit((buf), "%*pbl\n", cpumask_pr_args(mask))
+> >
+> > to save the mess in all the many places where the current 
+> > cpumap_print_to_pagebuf() usage _is_ entirely appropriate?
 
-ACPI 6.6 added clarification that the signature is populated by the
-platform and verified by OSPM.
+This way you have to add 2 wrappers:
 
-The PCC mailbox controller now validates the signature when the channel
-is requested. Stop copying a complete local PCC header into shared
-memory and write only the command, status and payload fields, leaving
-the platform-populated signature intact.
+ #define sysfs_emit_cpulist(buf, mask) \
+ 	sysfs_emit((buf), "%*pbl\n", cpumask_pr_args(mask))
 
-Cc: MyungJoo Ham <myungjoo.ham@samsung.com>
-Cc: Kyungmin Park <kyungmin.park@samsung.com>
-Cc: Chanwoo Choi <cw00.choi@samsung.com>
-Cc: Huisong Li <lihuisong@huawei.com>
-Cc: linux-pm@vger.kernel.org
-Signed-off-by: Sudeep Holla <sudeep.holla@kernel.org>
----
- drivers/devfreq/hisi_uncore_freq.c | 15 +++++++--------
- 1 file changed, 7 insertions(+), 8 deletions(-)
+ and
 
-diff --git a/drivers/devfreq/hisi_uncore_freq.c b/drivers/devfreq/hisi_uncore_freq.c
-index 4d00d813c8ac..7976eb359061 100644
---- a/drivers/devfreq/hisi_uncore_freq.c
-+++ b/drivers/devfreq/hisi_uncore_freq.c
-@@ -187,7 +187,6 @@ static int hisi_uncore_cmd_send(struct hisi_uncore_freq *uncore,
- 				u8 cmd, u32 *data)
- {
- 	struct hisi_uncore_pcc_shmem __iomem *addr;
--	struct hisi_uncore_pcc_shmem shmem;
- 	struct pcc_mbox_chan *pchan;
- 	unsigned int mrtt;
- 	s64 time_delta;
-@@ -210,13 +209,13 @@ static int hisi_uncore_cmd_send(struct hisi_uncore_freq *uncore,
- 	if (mrtt > time_delta)
- 		udelay(mrtt - time_delta);
- 
--	/* Copy data */
--	shmem.head = (struct acpi_pcct_shared_memory) {
--		.signature = PCC_SIGNATURE | uncore->chan_id,
--		.command = cmd,
--	};
--	shmem.pcc_data.data = *data;
--	memcpy_toio(addr, &shmem, sizeof(shmem));
-+	/*
-+	 * Copy command and data, leaving the platform-populated signature
-+	 * intact.
-+	 */
-+	iowrite16(cmd, &addr->head.command);
-+	iowrite16(0, &addr->head.status);
-+	iowrite32(*data, &addr->pcc_data.data);
- 
- 	/* Ring doorbell */
- 	rc = mbox_send_message(pchan->mchan, &cmd);
+ #define sysfs_emit_cpumask(buf, mask) \
+ 	sysfs_emit((buf), "%*pb\n", cpumask_pr_args(mask))
 
--- 
-2.43.0
+There are people who complain even about DIV_ROUND_UP(), how hard it is
+to keep all that helpers in memory, and all that things.
 
+https://lore.kernel.org/all/20260304124805.GB2277644@noisy.programming.kicks-ass.net/
+
+Disagree about DIV_ROUND_UP() (because yeah, I'm bad in math), but
+this sysfs_emit_cpumask() is a complete syntax redundancy.
+
+Once we have it, people will do this type of things:
+
+        tmp = kmalloc(PAGE_SIZE);
+        sysfs_emit_cpumask(tmp, mask);
+        sysfs_emit(buf, "my prefix: %s\n", tmp);
+        kfree(tmp);
+
+Patch #1 in this series is one example. My series that removes
+bitmap_print_to_pagebuf() will give you more:
+
+https://lore.kernel.org/all/20260303200842.124996-2-ynorov@nvidia.com/
+
+It doesn't mean that *you* will misuse the API. It means that *I* will
+have to inspect the codebase for that type of bugs periodically.
+
+So, the overall state is simple: we've got well-established
+printf()-like functions that people know and understand, and we also
+have exotic APIs here and there with a non-standard interface and a
+clear potential to misuse. In this case, they have historical roots,
+but now we don't need them.
+
+> That has the advantage of letting you change how it is done (again)
+> without having to find all the callers.
+
+You mean things like silencing the prints or adding a prefix?
+
+If you believe that perf subsystem would benefit from it - that's
+OK. Just please keep it local. The kernel globally doesn't need to
+'change how it is done' beyond the lib/vsprintf.  The kernel really
+needs people to use something that the other people are familiar with.
+
+Thanks,
+Yury
