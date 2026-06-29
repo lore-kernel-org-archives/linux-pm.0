@@ -1,16 +1,16 @@
 Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8EFF83955C8
-	for <linux-pm@vger.kernel.org>; Mon, 29 Jun 2026 06:05:56 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D474F393DCA
+	for <linux-pm@vger.kernel.org>; Mon, 29 Jun 2026 06:07:04 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.130
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1782713157; cv=none; b=efIFGfGWXGShv87XwGLBzpIQFL2Hpz3a5oyci2+welr2ZwNftkw8/6Sfo5kbMGDzrvWPoPpTrFs5q9jTztwgmjH7xP0sVDQcW8MetkTwzadtAJqakQQM+Lcvm0dy4fD0skWgFApqRpUA6+Qvkj90ZjgdPp/T0XegkH7dJweQTKE=
+	t=1782713227; cv=none; b=C/RxolaU34SlWaU/Xv7aOh+RgRzltSQaI6Tj5ZuSIxeF687INbNBUfDqA4lP03VRTCE5NvJgG2z+Mq6UIteOaKCisQ4MsEla66RU3z24aHGyc0sWYJRzBsP3bI1T94d+qerK/o5sftW+5LC7OUnEStWtUZY6FgHd8mo1a+7b0EI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1782713157; c=relaxed/simple;
-	bh=kU+tbFNURgODrMKqtaWQ7xYYsb0OCQv3o/JiLcMbYXU=;
+	s=arc-20240116; t=1782713227; c=relaxed/simple;
+	bh=Tr6o9EYnilt5tU9Np46rcXTYoTEY+74LpOR4u/CFUOU=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=tT2QiTYSl49cCur08T2IR1GhwHF90c7SGp0y8UBOqx+cErgRmTIhTantxjL66l4LVqKHrCcPORc+Sg/8ih22rFMwJdXD6untJTzj3iuCiWOMKSyfUrNpvL+8sQ5APUpsZjxNhmr8xDBi3tWd/kiiEXrzI6/I0Ym6MC1OQ+WXLQY=
+	 MIME-Version; b=iTFZ0T7rkoNGO+8ciUR5swC3hj0n0n3iCXvtcqYRb/00D6Y5TUwcQFd2i7tP45nxvbXxvunP8/A/aS6kbMQ2gZk2zJLM8/PSfhmwKCQjupf3j4knr+4E+0kSB4qDhoDtuVcVymWQkpMd2ZrMIbbs9HsF4F4Vlp146K10sPGeg38=
 ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com; spf=pass smtp.mailfrom=suse.com; arc=none smtp.client-ip=195.135.223.130
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.com
@@ -18,37 +18,29 @@ Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [IPv6:2a07:de40:
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by smtp-out1.suse.de (Postfix) with ESMTPS id 16BA57023D;
-	Mon, 29 Jun 2026 06:05:55 +0000 (UTC)
+	by smtp-out1.suse.de (Postfix) with ESMTPS id 4159B72F06;
+	Mon, 29 Jun 2026 06:07:03 +0000 (UTC)
 Authentication-Results: smtp-out1.suse.de;
 	none
 Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id AAB2C779A8;
-	Mon, 29 Jun 2026 06:05:54 +0000 (UTC)
+	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 0D8BD779A8;
+	Mon, 29 Jun 2026 06:07:03 +0000 (UTC)
 Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
 	by imap1.dmz-prg2.suse.org with ESMTPSA
-	id Dhk7KEILQmrJEQAAD6G6ig
-	(envelope-from <jgross@suse.com>); Mon, 29 Jun 2026 06:05:54 +0000
+	id oQPeAYcLQmocEwAAD6G6ig
+	(envelope-from <jgross@suse.com>); Mon, 29 Jun 2026 06:07:03 +0000
 From: Juergen Gross <jgross@suse.com>
 To: linux-kernel@vger.kernel.org,
-	x86@kernel.org,
-	linux-pm@vger.kernel.org,
-	linux-acpi@vger.kernel.org
+	linux-pm@vger.kernel.org
 Cc: Juergen Gross <jgross@suse.com>,
 	"Rafael J. Wysocki" <rafael@kernel.org>,
-	Len Brown <lenb@kernel.org>,
-	Pavel Machek <pavel@kernel.org>,
-	Thomas Gleixner <tglx@kernel.org>,
-	Ingo Molnar <mingo@redhat.com>,
-	Borislav Petkov <bp@alien8.de>,
-	Dave Hansen <dave.hansen@linux.intel.com>,
-	"H. Peter Anvin" <hpa@zytor.com>
-Subject: [PATCH 04/32] acpi: Stop using 32-bit MSR interfaces
-Date: Mon, 29 Jun 2026 08:04:55 +0200
-Message-ID: <20260629060526.3638272-5-jgross@suse.com>
+	Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH 16/32] cpufreq: Stop using 32-bit MSR interfaces
+Date: Mon, 29 Jun 2026 08:05:07 +0200
+Message-ID: <20260629060526.3638272-17-jgross@suse.com>
 X-Mailer: git-send-email 2.54.0
 In-Reply-To: <20260629060526.3638272-1-jgross@suse.com>
 References: <20260629060526.3638272-1-jgross@suse.com>
@@ -58,162 +50,812 @@ List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 X-Rspamd-Pre-Result: action=no action;
 	module=replies;
 	Message is reply to one we originated
-X-Rspamd-Pre-Result: action=no action;
-	module=replies;
-	Message is reply to one we originated
+X-Rspamd-Queue-Id: 4159B72F06
 X-Spam-Flag: NO
 X-Spam-Score: -4.00
 X-Spam-Level: 
-X-Rspamd-Server: rspamd2.dmz-prg2.suse.org
+X-Rspamd-Action: no action
+X-Rspamd-Server: rspamd1.dmz-prg2.suse.org
+X-Rspamd-Pre-Result: action=no action;
+	module=replies;
+	Message is reply to one we originated
 X-Spamd-Result: default: False [-4.00 / 50.00];
 	REPLY(-4.00)[]
-X-Rspamd-Queue-Id: 16BA57023D
-X-Rspamd-Action: no action
 
-The 32-bit MSR interfaces rdmsr(), wrmsr(), rdmsr_safe() and
-wrmsr_safe() are planned to be removed. Use the related 64-bit variants
-instead.
-
-In processor_throttling.c drop needless initializers.
+The 32-bit MSR interfaces rdmsr() and wrmsr() are planned to be
+removed. Use the related 64-bit variants instead.
 
 Signed-off-by: Juergen Gross <jgross@suse.com>
 ---
- arch/x86/kernel/acpi/sleep.c        | 20 ++++++++------------
- drivers/acpi/processor_perflib.c    | 11 ++++++-----
- drivers/acpi/processor_throttling.c | 14 ++------------
- 3 files changed, 16 insertions(+), 29 deletions(-)
+ drivers/cpufreq/acpi-cpufreq.c       | 22 ++++----
+ drivers/cpufreq/e_powersaver.c       | 48 ++++++++---------
+ drivers/cpufreq/longhaul.c           | 15 +++---
+ drivers/cpufreq/longrun.c            | 78 +++++++++++++++-------------
+ drivers/cpufreq/powernow-k6.c        | 12 ++---
+ drivers/cpufreq/powernow-k8.c        | 67 ++++++++++++------------
+ drivers/cpufreq/speedstep-centrino.c | 16 +++---
+ drivers/cpufreq/speedstep-lib.c      | 63 +++++++++++-----------
+ 8 files changed, 166 insertions(+), 155 deletions(-)
 
-diff --git a/arch/x86/kernel/acpi/sleep.c b/arch/x86/kernel/acpi/sleep.c
-index 91fa262f0e30..8dfe98784bf9 100644
---- a/arch/x86/kernel/acpi/sleep.c
-+++ b/arch/x86/kernel/acpi/sleep.c
-@@ -61,6 +61,7 @@ int x86_acpi_suspend_lowlevel(void)
+diff --git a/drivers/cpufreq/acpi-cpufreq.c b/drivers/cpufreq/acpi-cpufreq.c
+index 21639d9ac753..b40fa99b5ab2 100644
+--- a/drivers/cpufreq/acpi-cpufreq.c
++++ b/drivers/cpufreq/acpi-cpufreq.c
+@@ -246,32 +246,32 @@ static unsigned extract_freq(struct cpufreq_policy *policy, u32 val)
+ 
+ static u32 cpu_freq_read_intel(struct acpi_pct_register *not_used)
  {
- 	struct wakeup_header *header =
- 		(struct wakeup_header *) __va(real_mode_header->wakeup_header);
-+	struct msr val;
+-	u32 val, dummy __always_unused;
++	u64 val;
  
- 	if (header->signature != WAKEUP_HEADER_SIGNATURE) {
- 		printk(KERN_ERR "wakeup header does not match\n");
-@@ -82,13 +83,10 @@ int x86_acpi_suspend_lowlevel(void)
- 	 * with 2-MB L2 Cache and Intel® Processor A100 and A110 on 90
- 	 * nm process with 512-KB L2 Cache Specification Update".
- 	 */
--	if (!rdmsr_safe(MSR_EFER,
--			&header->pmode_efer_low,
--			&header->pmode_efer_high) &&
--	    !wrmsr_safe(MSR_EFER,
--			header->pmode_efer_low,
--			header->pmode_efer_high))
-+	if (!rdmsrq_safe(MSR_EFER, &val.q) && !wrmsrq_safe(MSR_EFER, val.q))
- 		header->pmode_behavior |= (1 << WAKEUP_BEHAVIOR_RESTORE_EFER);
-+	header->pmode_efer_low = val.l;
-+	header->pmode_efer_high = val.h;
- #endif /* !CONFIG_64BIT */
+-	rdmsr(MSR_IA32_PERF_CTL, val, dummy);
+-	return val;
++	rdmsrq(MSR_IA32_PERF_CTL, val);
++	return (u32)val;
+ }
  
- 	header->pmode_cr0 = read_cr0();
-@@ -96,14 +94,12 @@ int x86_acpi_suspend_lowlevel(void)
- 		header->pmode_cr4 = __read_cr4();
- 		header->pmode_behavior |= (1 << WAKEUP_BEHAVIOR_RESTORE_CR4);
+ static void cpu_freq_write_intel(struct acpi_pct_register *not_used, u32 val)
+ {
+-	u32 lo, hi;
++	struct msr msrval;
+ 
+-	rdmsr(MSR_IA32_PERF_CTL, lo, hi);
+-	lo = (lo & ~INTEL_MSR_RANGE) | (val & INTEL_MSR_RANGE);
+-	wrmsr(MSR_IA32_PERF_CTL, lo, hi);
++	rdmsrq(MSR_IA32_PERF_CTL, msrval.q);
++	msrval.h = (msrval.h & ~INTEL_MSR_RANGE) | (val & INTEL_MSR_RANGE);
++	wrmsrq(MSR_IA32_PERF_CTL, msrval.q);
+ }
+ 
+ static u32 cpu_freq_read_amd(struct acpi_pct_register *not_used)
+ {
+-	u32 val, dummy __always_unused;
++	u64 val;
+ 
+-	rdmsr(MSR_AMD_PERF_CTL, val, dummy);
+-	return val;
++	rdmsrq(MSR_AMD_PERF_CTL, val);
++	return (u32)val;
+ }
+ 
+ static void cpu_freq_write_amd(struct acpi_pct_register *not_used, u32 val)
+ {
+-	wrmsr(MSR_AMD_PERF_CTL, val, 0);
++	wrmsrq(MSR_AMD_PERF_CTL, val);
+ }
+ 
+ static u32 cpu_freq_read_io(struct acpi_pct_register *reg)
+diff --git a/drivers/cpufreq/e_powersaver.c b/drivers/cpufreq/e_powersaver.c
+index eb5a9209d828..13709f9667ea 100644
+--- a/drivers/cpufreq/e_powersaver.c
++++ b/drivers/cpufreq/e_powersaver.c
+@@ -90,7 +90,7 @@ static int eps_acpi_exit(struct cpufreq_policy *policy)
+ static unsigned int eps_get(unsigned int cpu)
+ {
+ 	struct eps_cpu_data *centaur;
+-	u32 lo, hi;
++	u64 val;
+ 
+ 	if (cpu)
+ 		return 0;
+@@ -99,35 +99,35 @@ static unsigned int eps_get(unsigned int cpu)
+ 		return 0;
+ 
+ 	/* Return current frequency */
+-	rdmsr(MSR_IA32_PERF_STATUS, lo, hi);
+-	return centaur->fsb * ((lo >> 8) & 0xff);
++	rdmsrq(MSR_IA32_PERF_STATUS, val);
++	return centaur->fsb * ((val >> 8) & 0xff);
+ }
+ 
+ static int eps_set_state(struct eps_cpu_data *centaur,
+ 			 struct cpufreq_policy *policy,
+ 			 u32 dest_state)
+ {
+-	u32 lo, hi;
++	u64 val;
+ 	int i;
+ 
+ 	/* Wait while CPU is busy */
+-	rdmsr(MSR_IA32_PERF_STATUS, lo, hi);
++	rdmsrq(MSR_IA32_PERF_STATUS, val);
+ 	i = 0;
+-	while (lo & ((1 << 16) | (1 << 17))) {
++	while (val & ((1 << 16) | (1 << 17))) {
+ 		udelay(16);
+-		rdmsr(MSR_IA32_PERF_STATUS, lo, hi);
++		rdmsrq(MSR_IA32_PERF_STATUS, val);
+ 		i++;
+ 		if (unlikely(i > 64)) {
+ 			return -ENODEV;
+ 		}
  	}
--	if (!rdmsr_safe(MSR_IA32_MISC_ENABLE,
--			&header->pmode_misc_en_low,
--			&header->pmode_misc_en_high) &&
--	    !wrmsr_safe(MSR_IA32_MISC_ENABLE,
--			header->pmode_misc_en_low,
--			header->pmode_misc_en_high))
-+	if (!rdmsrq_safe(MSR_IA32_MISC_ENABLE, &val.q) &&
-+	    !wrmsrq_safe(MSR_IA32_MISC_ENABLE, val.q))
- 		header->pmode_behavior |=
- 			(1 << WAKEUP_BEHAVIOR_RESTORE_MISC_ENABLE);
-+	header->pmode_misc_en_low = val.l;
-+	header->pmode_misc_en_high = val.h;
- 	header->realmode_flags = acpi_realmode_flags;
- 	header->real_magic = 0x12345678;
+ 	/* Set new multiplier and voltage */
+-	wrmsr(MSR_IA32_PERF_CTL, dest_state & 0xffff, 0);
++	wrmsrq(MSR_IA32_PERF_CTL, dest_state & 0xffff);
+ 	/* Wait until transition end */
+ 	i = 0;
+ 	do {
+ 		udelay(16);
+-		rdmsr(MSR_IA32_PERF_STATUS, lo, hi);
++		rdmsrq(MSR_IA32_PERF_STATUS, val);
+ 		i++;
+ 		if (unlikely(i > 64)) {
+ 			return -ENODEV;
+@@ -139,10 +139,10 @@ static int eps_set_state(struct eps_cpu_data *centaur,
+ 	u8 current_multiplier, current_voltage;
  
-diff --git a/drivers/acpi/processor_perflib.c b/drivers/acpi/processor_perflib.c
-index fdf55c285c9a..9e25d6124efd 100644
---- a/drivers/acpi/processor_perflib.c
-+++ b/drivers/acpi/processor_perflib.c
-@@ -287,7 +287,8 @@ static int acpi_processor_get_performance_control(struct acpi_processor *pr)
+ 	/* Print voltage and multiplier */
+-	rdmsr(MSR_IA32_PERF_STATUS, lo, hi);
+-	current_voltage = lo & 0xff;
++	rdmsrq(MSR_IA32_PERF_STATUS, val);
++	current_voltage = val & 0xff;
+ 	pr_info("Current voltage = %dmV\n", current_voltage * 16 + 700);
+-	current_multiplier = (lo >> 8) & 0xff;
++	current_multiplier = (val >> 8) & 0xff;
+ 	pr_info("Current multiplier = %d\n", current_multiplier);
+ 	}
+ #endif
+@@ -171,8 +171,8 @@ static int eps_target(struct cpufreq_policy *policy, unsigned int index)
+ static int eps_cpu_init(struct cpufreq_policy *policy)
+ {
+ 	unsigned int i;
+-	u32 lo, hi;
+ 	u64 val;
++	struct msr status;
+ 	u8 current_multiplier, current_voltage;
+ 	u8 max_multiplier, max_voltage;
+ 	u8 min_multiplier, min_voltage;
+@@ -195,13 +195,13 @@ static int eps_cpu_init(struct cpufreq_policy *policy)
+ 
+ 	switch (c->x86_model) {
+ 	case 10:
+-		rdmsr(0x1153, lo, hi);
+-		brand = (((lo >> 2) ^ lo) >> 18) & 3;
++		rdmsrq(0x1153, val);
++		brand = (((val >> 2) ^ val) >> 18) & 3;
+ 		pr_cont("Model A ");
+ 		break;
+ 	case 13:
+-		rdmsr(0x1154, lo, hi);
+-		brand = (((lo >> 4) ^ (lo >> 2))) & 0x000000ff;
++		rdmsrq(0x1154, val);
++		brand = (((val >> 4) ^ (val >> 2))) & 0x000000ff;
+ 		pr_cont("Model D ");
+ 		break;
+ 	}
+@@ -237,20 +237,20 @@ static int eps_cpu_init(struct cpufreq_policy *policy)
+ 	}
+ 
+ 	/* Print voltage and multiplier */
+-	rdmsr(MSR_IA32_PERF_STATUS, lo, hi);
+-	current_voltage = lo & 0xff;
++	rdmsrq(MSR_IA32_PERF_STATUS, status.q);
++	current_voltage = status.l & 0xff;
+ 	pr_info("Current voltage = %dmV\n", current_voltage * 16 + 700);
+-	current_multiplier = (lo >> 8) & 0xff;
++	current_multiplier = (status.l >> 8) & 0xff;
+ 	pr_info("Current multiplier = %d\n", current_multiplier);
+ 
+ 	/* Print limits */
+-	max_voltage = hi & 0xff;
++	max_voltage = status.h & 0xff;
+ 	pr_info("Highest voltage = %dmV\n", max_voltage * 16 + 700);
+-	max_multiplier = (hi >> 8) & 0xff;
++	max_multiplier = (status.h >> 8) & 0xff;
+ 	pr_info("Highest multiplier = %d\n", max_multiplier);
+-	min_voltage = (hi >> 16) & 0xff;
++	min_voltage = (status.h >> 16) & 0xff;
+ 	pr_info("Lowest voltage = %dmV\n", min_voltage * 16 + 700);
+-	min_multiplier = (hi >> 24) & 0xff;
++	min_multiplier = (status.h >> 24) & 0xff;
+ 	pr_info("Lowest multiplier = %d\n", min_multiplier);
+ 
+ 	/* Sanity checks */
+diff --git a/drivers/cpufreq/longhaul.c b/drivers/cpufreq/longhaul.c
+index a18d1d11725f..4c2599264333 100644
+--- a/drivers/cpufreq/longhaul.c
++++ b/drivers/cpufreq/longhaul.c
+@@ -118,13 +118,14 @@ static unsigned int calc_speed(int mult)
+ 
+ static int longhaul_get_cpu_mult(void)
+ {
+-	unsigned long invalue = 0, lo, hi;
++	unsigned long invalue = 0;
++	u64 val;
+ 
+-	rdmsr(MSR_IA32_EBL_CR_POWERON, lo, hi);
+-	invalue = (lo & (1<<22|1<<23|1<<24|1<<25))>>22;
++	rdmsrq(MSR_IA32_EBL_CR_POWERON, val);
++	invalue = (val & (1<<22|1<<23|1<<24|1<<25))>>22;
+ 	if (longhaul_version == TYPE_LONGHAUL_V2 ||
+ 	    longhaul_version == TYPE_POWERSAVER) {
+-		if (lo & (1<<27))
++		if (val & (1<<27))
+ 			invalue += 16;
+ 	}
+ 	return eblcr[invalue];
+@@ -761,7 +762,7 @@ static int longhaul_cpu_init(struct cpufreq_policy *policy)
+ 	struct cpuinfo_x86 *c = &cpu_data(0);
+ 	char *cpuname = NULL;
+ 	int ret;
+-	u32 lo, hi;
++	u64 val;
+ 
+ 	/* Check what we have on this motherboard */
+ 	switch (c->x86_model) {
+@@ -835,8 +836,8 @@ static int longhaul_cpu_init(struct cpufreq_policy *policy)
+ 	}
+ 	/* Check Longhaul ver. 2 */
+ 	if (longhaul_version == TYPE_LONGHAUL_V2) {
+-		rdmsr(MSR_VIA_LONGHAUL, lo, hi);
+-		if (lo == 0 && hi == 0)
++		rdmsrq(MSR_VIA_LONGHAUL, val);
++		if (val == 0)
+ 			/* Looks like MSR isn't present */
+ 			longhaul_version = TYPE_LONGHAUL_V1;
+ 	}
+diff --git a/drivers/cpufreq/longrun.c b/drivers/cpufreq/longrun.c
+index f3aaca0496a4..99abef32e7e5 100644
+--- a/drivers/cpufreq/longrun.c
++++ b/drivers/cpufreq/longrun.c
+@@ -35,27 +35,27 @@ static unsigned int longrun_low_freq, longrun_high_freq;
   */
- static void amd_fixup_frequency(struct acpi_processor_px *px, int i)
+ static void longrun_get_policy(struct cpufreq_policy *policy)
  {
--	u32 hi, lo, fid, did;
-+	struct msr val;
-+	u32 fid, did;
- 	int index = px->control & 0x00000007;
+-	u32 msr_lo, msr_hi;
++	struct msr msr;
  
- 	if (boot_cpu_data.x86_vendor != X86_VENDOR_AMD)
-@@ -295,16 +296,16 @@ static void amd_fixup_frequency(struct acpi_processor_px *px, int i)
+-	rdmsr(MSR_TMTA_LONGRUN_FLAGS, msr_lo, msr_hi);
+-	pr_debug("longrun flags are %x - %x\n", msr_lo, msr_hi);
+-	if (msr_lo & 0x01)
++	rdmsrq(MSR_TMTA_LONGRUN_FLAGS, msr.q);
++	pr_debug("longrun flags are %x - %x\n", msr.l, msr.h);
++	if (msr.l & 0x01)
+ 		policy->policy = CPUFREQ_POLICY_PERFORMANCE;
+ 	else
+ 		policy->policy = CPUFREQ_POLICY_POWERSAVE;
  
- 	if ((boot_cpu_data.x86 == 0x10 && boot_cpu_data.x86_model < 10) ||
- 	    boot_cpu_data.x86 == 0x11) {
--		rdmsr(MSR_AMD_PSTATE_DEF_BASE + index, lo, hi);
-+		rdmsrq(MSR_AMD_PSTATE_DEF_BASE + index, val.q);
- 		/*
- 		 * MSR C001_0064+:
- 		 * Bit 63: PstateEn. Read-write. If set, the P-state is valid.
+-	rdmsr(MSR_TMTA_LONGRUN_CTRL, msr_lo, msr_hi);
+-	pr_debug("longrun ctrl is %x - %x\n", msr_lo, msr_hi);
+-	msr_lo &= 0x0000007F;
+-	msr_hi &= 0x0000007F;
++	rdmsrq(MSR_TMTA_LONGRUN_CTRL, msr.q);
++	pr_debug("longrun ctrl is %x - %x\n", msr.l, msr.h);
++	msr.l &= 0x0000007F;
++	msr.h &= 0x0000007F;
+ 
+ 	if (longrun_high_freq <= longrun_low_freq) {
+ 		/* Assume degenerate Longrun table */
+ 		policy->min = policy->max = longrun_high_freq;
+ 	} else {
+-		policy->min = longrun_low_freq + msr_lo *
++		policy->min = longrun_low_freq + msr.l *
+ 			((longrun_high_freq - longrun_low_freq) / 100);
+-		policy->max = longrun_low_freq + msr_hi *
++		policy->max = longrun_low_freq + msr.h *
+ 			((longrun_high_freq - longrun_low_freq) / 100);
+ 	}
+ 	policy->cpu = 0;
+@@ -71,7 +71,7 @@ static void longrun_get_policy(struct cpufreq_policy *policy)
+  */
+ static int longrun_set_policy(struct cpufreq_policy *policy)
+ {
+-	u32 msr_lo, msr_hi;
++	struct msr msr;
+ 	u32 pctg_lo, pctg_hi;
+ 
+ 	if (!policy)
+@@ -93,24 +93,24 @@ static int longrun_set_policy(struct cpufreq_policy *policy)
+ 		pctg_lo = pctg_hi;
+ 
+ 	/* performance or economy mode */
+-	rdmsr(MSR_TMTA_LONGRUN_FLAGS, msr_lo, msr_hi);
+-	msr_lo &= 0xFFFFFFFE;
++	rdmsrq(MSR_TMTA_LONGRUN_FLAGS, msr.q);
++	msr.l &= 0xFFFFFFFE;
+ 	switch (policy->policy) {
+ 	case CPUFREQ_POLICY_PERFORMANCE:
+-		msr_lo |= 0x00000001;
++		msr.l |= 0x00000001;
+ 		break;
+ 	case CPUFREQ_POLICY_POWERSAVE:
+ 		break;
+ 	}
+-	wrmsr(MSR_TMTA_LONGRUN_FLAGS, msr_lo, msr_hi);
++	wrmsrq(MSR_TMTA_LONGRUN_FLAGS, msr.q);
+ 
+ 	/* lower and upper boundary */
+-	rdmsr(MSR_TMTA_LONGRUN_CTRL, msr_lo, msr_hi);
+-	msr_lo &= 0xFFFFFF80;
+-	msr_hi &= 0xFFFFFF80;
+-	msr_lo |= pctg_lo;
+-	msr_hi |= pctg_hi;
+-	wrmsr(MSR_TMTA_LONGRUN_CTRL, msr_lo, msr_hi);
++	rdmsrq(MSR_TMTA_LONGRUN_CTRL, msr.q);
++	msr.l &= 0xFFFFFF80;
++	msr.h &= 0xFFFFFF80;
++	msr.l |= pctg_lo;
++	msr.h |= pctg_hi;
++	wrmsrq(MSR_TMTA_LONGRUN_CTRL, msr.q);
+ 
+ 	return 0;
+ }
+@@ -160,7 +160,7 @@ static unsigned int longrun_get(unsigned int cpu)
+ static int longrun_determine_freqs(unsigned int *low_freq,
+ 						      unsigned int *high_freq)
+ {
+-	u32 msr_lo, msr_hi;
++	struct msr msr;
+ 	u32 save_lo, save_hi;
+ 	u32 eax, ebx, ecx, edx;
+ 	u32 try_hi;
+@@ -178,15 +178,17 @@ static int longrun_determine_freqs(unsigned int *low_freq,
+ 		 * For maximum frequency, read out level zero.
  		 */
--		if (!(hi & BIT(31)))
-+		if (!(val.h & BIT(31)))
- 			return;
+ 		/* minimum */
+-		rdmsr(MSR_TMTA_LRTI_READOUT, msr_lo, msr_hi);
+-		wrmsr(MSR_TMTA_LRTI_READOUT, msr_hi, msr_hi);
+-		rdmsr(MSR_TMTA_LRTI_VOLT_MHZ, msr_lo, msr_hi);
+-		*low_freq = msr_lo * 1000; /* to kHz */
++		rdmsrq(MSR_TMTA_LRTI_READOUT, msr.q);
++		msr.l = msr.h;
++		wrmsrq(MSR_TMTA_LRTI_READOUT, msr.q);
++		rdmsrq(MSR_TMTA_LRTI_VOLT_MHZ, msr.q);
++		*low_freq = msr.l * 1000; /* to kHz */
  
--		fid = lo & 0x3f;
--		did = (lo >> 6) & 7;
-+		fid = val.l & 0x3f;
-+		did = (val.l >> 6) & 7;
- 		if (boot_cpu_data.x86 == 0x10)
- 			px->core_frequency = (100 * (fid + 0x10)) >> did;
- 		else
-diff --git a/drivers/acpi/processor_throttling.c b/drivers/acpi/processor_throttling.c
-index c0f92b93747d..d1605e0ab61f 100644
---- a/drivers/acpi/processor_throttling.c
-+++ b/drivers/acpi/processor_throttling.c
-@@ -698,20 +698,13 @@ static int acpi_processor_get_throttling_fadt(struct acpi_processor *pr)
- #ifdef CONFIG_X86
- static int acpi_throttling_rdmsr(u64 *value)
- {
--	u64 msr_high, msr_low;
--	u64 msr = 0;
- 	int ret = -1;
+ 		/* maximum */
+-		wrmsr(MSR_TMTA_LRTI_READOUT, 0, msr_hi);
+-		rdmsr(MSR_TMTA_LRTI_VOLT_MHZ, msr_lo, msr_hi);
+-		*high_freq = msr_lo * 1000; /* to kHz */
++		msr.l = 0;
++		wrmsrq(MSR_TMTA_LRTI_READOUT, msr.q);
++		rdmsrq(MSR_TMTA_LRTI_VOLT_MHZ, msr.q);
++		*high_freq = msr.l * 1000; /* to kHz */
  
- 	if ((this_cpu_read(cpu_info.x86_vendor) != X86_VENDOR_INTEL) ||
- 		!this_cpu_has(X86_FEATURE_ACPI)) {
- 		pr_err("HARDWARE addr space,NOT supported yet\n");
- 	} else {
--		msr_low = 0;
--		msr_high = 0;
--		rdmsr_safe(MSR_IA32_THERM_CONTROL,
--			(u32 *)&msr_low, (u32 *) &msr_high);
--		msr = (msr_high << 32) | msr_low;
--		*value = (u64) msr;
-+		rdmsrq_safe(MSR_IA32_THERM_CONTROL, value);
- 		ret = 0;
+ 		pr_debug("longrun table interface told %u - %u kHz\n",
+ 				*low_freq, *high_freq);
+@@ -202,9 +204,9 @@ static int longrun_determine_freqs(unsigned int *low_freq,
+ 	pr_debug("high frequency is %u kHz\n", *high_freq);
+ 
+ 	/* get current borders */
+-	rdmsr(MSR_TMTA_LONGRUN_CTRL, msr_lo, msr_hi);
+-	save_lo = msr_lo & 0x0000007F;
+-	save_hi = msr_hi & 0x0000007F;
++	rdmsrq(MSR_TMTA_LONGRUN_CTRL, msr.q);
++	save_lo = msr.l & 0x0000007F;
++	save_hi = msr.h & 0x0000007F;
+ 
+ 	/* if current perf_pctg is larger than 90%, we need to decrease the
+ 	 * upper limit to make the calculation more accurate.
+@@ -214,16 +216,18 @@ static int longrun_determine_freqs(unsigned int *low_freq,
+ 	 * on some barrier values */
+ 	for (try_hi = 80; try_hi > 0 && ecx > 90; try_hi -= 10) {
+ 		/* set to 0 to try_hi perf_pctg */
+-		msr_lo &= 0xFFFFFF80;
+-		msr_hi &= 0xFFFFFF80;
+-		msr_hi |= try_hi;
+-		wrmsr(MSR_TMTA_LONGRUN_CTRL, msr_lo, msr_hi);
++		msr.l &= 0xFFFFFF80;
++		msr.h &= 0xFFFFFF80;
++		msr.h |= try_hi;
++		wrmsrq(MSR_TMTA_LONGRUN_CTRL, msr.q);
+ 
+ 		/* read out current core MHz and current perf_pctg */
+ 		cpuid(0x80860007, &eax, &ebx, &ecx, &edx);
+ 
+ 		/* restore values */
+-		wrmsr(MSR_TMTA_LONGRUN_CTRL, save_lo, save_hi);
++		msr.l = save_lo;
++		msr.h = save_hi;
++		wrmsrq(MSR_TMTA_LONGRUN_CTRL, msr.q);
  	}
- 	return ret;
-@@ -720,15 +713,12 @@ static int acpi_throttling_rdmsr(u64 *value)
- static int acpi_throttling_wrmsr(u64 value)
- {
- 	int ret = -1;
--	u64 msr;
+ 	pr_debug("percentage is %u %%, freq is %u MHz\n", ecx, eax);
  
- 	if ((this_cpu_read(cpu_info.x86_vendor) != X86_VENDOR_INTEL) ||
- 		!this_cpu_has(X86_FEATURE_ACPI)) {
- 		pr_err("HARDWARE addr space,NOT supported yet\n");
- 	} else {
--		msr = value;
--		wrmsr_safe(MSR_IA32_THERM_CONTROL,
--			msr & 0xffffffff, msr >> 32);
-+		wrmsrq_safe(MSR_IA32_THERM_CONTROL, value);
- 		ret = 0;
+diff --git a/drivers/cpufreq/powernow-k6.c b/drivers/cpufreq/powernow-k6.c
+index 99d2244e03b0..2044e8a336ec 100644
+--- a/drivers/cpufreq/powernow-k6.c
++++ b/drivers/cpufreq/powernow-k6.c
+@@ -83,15 +83,15 @@ static const struct {
+ static int powernow_k6_get_cpu_multiplier(void)
+ {
+ 	unsigned long invalue = 0;
+-	u32 msrval;
++	u64 msrval;
+ 
+ 	local_irq_disable();
+ 
+ 	msrval = POWERNOW_IOPORT + 0x1;
+-	wrmsr(MSR_K6_EPMR, msrval, 0); /* enable the PowerNow port */
++	wrmsrq(MSR_K6_EPMR, msrval); /* enable the PowerNow port */
+ 	invalue = inl(POWERNOW_IOPORT + 0x8);
+ 	msrval = POWERNOW_IOPORT + 0x0;
+-	wrmsr(MSR_K6_EPMR, msrval, 0); /* disable it again */
++	wrmsrq(MSR_K6_EPMR, msrval); /* disable it again */
+ 
+ 	local_irq_enable();
+ 
+@@ -101,8 +101,8 @@ static int powernow_k6_get_cpu_multiplier(void)
+ static void powernow_k6_set_cpu_multiplier(unsigned int best_i)
+ {
+ 	unsigned long outvalue, invalue;
+-	unsigned long msrval;
+ 	unsigned long cr0;
++	u64 msrval;
+ 
+ 	/* we now need to transform best_i to the BVC format, see AMD#23446 */
+ 
+@@ -118,13 +118,13 @@ static void powernow_k6_set_cpu_multiplier(unsigned int best_i)
+ 	outvalue = (1<<12) | (1<<10) | (1<<9) | (index_to_register[best_i]<<5);
+ 
+ 	msrval = POWERNOW_IOPORT + 0x1;
+-	wrmsr(MSR_K6_EPMR, msrval, 0); /* enable the PowerNow port */
++	wrmsrq(MSR_K6_EPMR, msrval); /* enable the PowerNow port */
+ 	invalue = inl(POWERNOW_IOPORT + 0x8);
+ 	invalue = invalue & 0x1f;
+ 	outvalue = outvalue | invalue;
+ 	outl(outvalue, (POWERNOW_IOPORT + 0x8));
+ 	msrval = POWERNOW_IOPORT + 0x0;
+-	wrmsr(MSR_K6_EPMR, msrval, 0); /* disable it again */
++	wrmsrq(MSR_K6_EPMR, msrval); /* disable it again */
+ 
+ 	write_cr0(cr0);
+ 	local_irq_enable();
+diff --git a/drivers/cpufreq/powernow-k8.c b/drivers/cpufreq/powernow-k8.c
+index 2b791f1ec51b..fe1f499b4fc0 100644
+--- a/drivers/cpufreq/powernow-k8.c
++++ b/drivers/cpufreq/powernow-k8.c
+@@ -87,10 +87,10 @@ static u32 convert_fid_to_vco_fid(u32 fid)
+  */
+ static int pending_bit_stuck(void)
+ {
+-	u32 lo, hi __always_unused;
++	u64 msr;
+ 
+-	rdmsr(MSR_FIDVID_STATUS, lo, hi);
+-	return lo & MSR_S_LO_CHANGE_PENDING ? 1 : 0;
++	rdmsrq(MSR_FIDVID_STATUS, msr);
++	return msr & MSR_S_LO_CHANGE_PENDING ? 1 : 0;
+ }
+ 
+ /*
+@@ -99,7 +99,7 @@ static int pending_bit_stuck(void)
+  */
+ static int query_current_values_with_pending_wait(struct powernow_k8_data *data)
+ {
+-	u32 lo, hi;
++	struct msr msr;
+ 	u32 i = 0;
+ 
+ 	do {
+@@ -107,11 +107,11 @@ static int query_current_values_with_pending_wait(struct powernow_k8_data *data)
+ 			pr_debug("detected change pending stuck\n");
+ 			return 1;
+ 		}
+-		rdmsr(MSR_FIDVID_STATUS, lo, hi);
+-	} while (lo & MSR_S_LO_CHANGE_PENDING);
++		rdmsrq(MSR_FIDVID_STATUS, msr.q);
++	} while (msr.l & MSR_S_LO_CHANGE_PENDING);
+ 
+-	data->currvid = hi & MSR_S_HI_CURRENT_VID;
+-	data->currfid = lo & MSR_S_LO_CURRENT_FID;
++	data->currvid = msr.h & MSR_S_HI_CURRENT_VID;
++	data->currfid = msr.l & MSR_S_LO_CURRENT_FID;
+ 
+ 	return 0;
+ }
+@@ -131,22 +131,22 @@ static void count_off_vst(struct powernow_k8_data *data)
+ /* need to init the control msr to a safe value (for each cpu) */
+ static void fidvid_msr_init(void)
+ {
+-	u32 lo, hi;
++	struct msr msr;
+ 	u8 fid, vid;
+ 
+-	rdmsr(MSR_FIDVID_STATUS, lo, hi);
+-	vid = hi & MSR_S_HI_CURRENT_VID;
+-	fid = lo & MSR_S_LO_CURRENT_FID;
+-	lo = fid | (vid << MSR_C_LO_VID_SHIFT);
+-	hi = MSR_C_HI_STP_GNT_BENIGN;
+-	pr_debug("cpu%d, init lo 0x%x, hi 0x%x\n", smp_processor_id(), lo, hi);
+-	wrmsr(MSR_FIDVID_CTL, lo, hi);
++	rdmsrq(MSR_FIDVID_STATUS, msr.q);
++	vid = msr.h & MSR_S_HI_CURRENT_VID;
++	fid = msr.l & MSR_S_LO_CURRENT_FID;
++	msr.l = fid | (vid << MSR_C_LO_VID_SHIFT);
++	msr.h = MSR_C_HI_STP_GNT_BENIGN;
++	pr_debug("cpu%d, init lo 0x%x, hi 0x%x\n", smp_processor_id(), msr.l, msr.h);
++	wrmsrq(MSR_FIDVID_CTL, msr.q);
+ }
+ 
+ /* write the new fid value along with the other control fields to the msr */
+ static int write_new_fid(struct powernow_k8_data *data, u32 fid)
+ {
+-	u32 lo;
++	struct msr msr;
+ 	u32 savevid = data->currvid;
+ 	u32 i = 0;
+ 
+@@ -155,15 +155,15 @@ static int write_new_fid(struct powernow_k8_data *data, u32 fid)
+ 		return 1;
  	}
- 	return ret;
+ 
+-	lo = fid;
+-	lo |= (data->currvid << MSR_C_LO_VID_SHIFT);
+-	lo |= MSR_C_LO_INIT_FID_VID;
++	msr.l = fid;
++	msr.l |= (data->currvid << MSR_C_LO_VID_SHIFT);
++	msr.l |= MSR_C_LO_INIT_FID_VID;
++	msr.h = data->plllock * PLL_LOCK_CONVERSION;
+ 
+-	pr_debug("writing fid 0x%x, lo 0x%x, hi 0x%x\n",
+-		fid, lo, data->plllock * PLL_LOCK_CONVERSION);
++	pr_debug("writing fid 0x%x, lo 0x%x, hi 0x%x\n", fid, msr.l, msr.h);
+ 
+ 	do {
+-		wrmsr(MSR_FIDVID_CTL, lo, data->plllock * PLL_LOCK_CONVERSION);
++		wrmsrq(MSR_FIDVID_CTL, msr.q);
+ 		if (i++ > 100) {
+ 			pr_err("Hardware error - pending bit very stuck - no further pstate changes possible\n");
+ 			return 1;
+@@ -190,7 +190,7 @@ static int write_new_fid(struct powernow_k8_data *data, u32 fid)
+ /* Write a new vid to the hardware */
+ static int write_new_vid(struct powernow_k8_data *data, u32 vid)
+ {
+-	u32 lo;
++	struct msr msr;
+ 	u32 savefid = data->currfid;
+ 	int i = 0;
+ 
+@@ -199,15 +199,15 @@ static int write_new_vid(struct powernow_k8_data *data, u32 vid)
+ 		return 1;
+ 	}
+ 
+-	lo = data->currfid;
+-	lo |= (vid << MSR_C_LO_VID_SHIFT);
+-	lo |= MSR_C_LO_INIT_FID_VID;
++	msr.l = data->currfid;
++	msr.l |= (vid << MSR_C_LO_VID_SHIFT);
++	msr.l |= MSR_C_LO_INIT_FID_VID;
++	msr.h = STOP_GRANT_5NS;
+ 
+-	pr_debug("writing vid 0x%x, lo 0x%x, hi 0x%x\n",
+-		vid, lo, STOP_GRANT_5NS);
++	pr_debug("writing vid 0x%x, lo 0x%x, hi 0x%x\n", vid, msr.l, msr.h);
+ 
+ 	do {
+-		wrmsr(MSR_FIDVID_CTL, lo, STOP_GRANT_5NS);
++		wrmsrq(MSR_FIDVID_CTL, msr.q);
+ 		if (i++ > 100) {
+ 			pr_err("internal error - pending bit very stuck - no further pstate changes possible\n");
+ 			return 1;
+@@ -281,9 +281,10 @@ static int transition_fid_vid(struct powernow_k8_data *data,
+ static int core_voltage_pre_transition(struct powernow_k8_data *data,
+ 		u32 reqvid, u32 reqfid)
+ {
++	struct msr msr;
+ 	u32 rvosteps = data->rvo;
+ 	u32 savefid = data->currfid;
+-	u32 maxvid, lo __always_unused, rvomult = 1;
++	u32 maxvid, rvomult = 1;
+ 
+ 	pr_debug("ph1 (cpu%d): start, currfid 0x%x, currvid 0x%x, reqvid 0x%x, rvo 0x%x\n",
+ 		smp_processor_id(),
+@@ -292,8 +293,8 @@ static int core_voltage_pre_transition(struct powernow_k8_data *data,
+ 	if ((savefid < LO_FID_TABLE_TOP) && (reqfid < LO_FID_TABLE_TOP))
+ 		rvomult = 2;
+ 	rvosteps *= rvomult;
+-	rdmsr(MSR_FIDVID_STATUS, lo, maxvid);
+-	maxvid = 0x1f & (maxvid >> 16);
++	rdmsrq(MSR_FIDVID_STATUS, msr.q);
++	maxvid = 0x1f & (msr.h >> 16);
+ 	pr_debug("ph1 maxvid=0x%x\n", maxvid);
+ 	if (reqvid < maxvid) /* lower numbers are higher voltages */
+ 		reqvid = maxvid;
+diff --git a/drivers/cpufreq/speedstep-centrino.c b/drivers/cpufreq/speedstep-centrino.c
+index 9237ed8f2b1f..de50fb367c6b 100644
+--- a/drivers/cpufreq/speedstep-centrino.c
++++ b/drivers/cpufreq/speedstep-centrino.c
+@@ -345,7 +345,7 @@ static unsigned int get_cur_freq(unsigned int cpu)
+ static int centrino_cpu_init(struct cpufreq_policy *policy)
+ {
+ 	struct cpuinfo_x86 *cpu = &cpu_data(policy->cpu);
+-	unsigned l, h;
++	u64 q;
+ 	int i;
+ 
+ 	/* Only Intel makes Enhanced Speedstep-capable CPUs */
+@@ -378,16 +378,16 @@ static int centrino_cpu_init(struct cpufreq_policy *policy)
+ 
+ 	/* Check to see if Enhanced SpeedStep is enabled, and try to
+ 	   enable it if not. */
+-	rdmsr(MSR_IA32_MISC_ENABLE, l, h);
++	rdmsrq(MSR_IA32_MISC_ENABLE, q);
+ 
+-	if (!(l & MSR_IA32_MISC_ENABLE_ENHANCED_SPEEDSTEP)) {
+-		l |= MSR_IA32_MISC_ENABLE_ENHANCED_SPEEDSTEP;
+-		pr_debug("trying to enable Enhanced SpeedStep (%x)\n", l);
+-		wrmsr(MSR_IA32_MISC_ENABLE, l, h);
++	if (!(q & MSR_IA32_MISC_ENABLE_ENHANCED_SPEEDSTEP)) {
++		q |= MSR_IA32_MISC_ENABLE_ENHANCED_SPEEDSTEP;
++		pr_debug("trying to enable Enhanced SpeedStep (%x)\n", (u32)q);
++		wrmsrq(MSR_IA32_MISC_ENABLE, q);
+ 
+ 		/* check to see if it stuck */
+-		rdmsr(MSR_IA32_MISC_ENABLE, l, h);
+-		if (!(l & MSR_IA32_MISC_ENABLE_ENHANCED_SPEEDSTEP)) {
++		rdmsrq(MSR_IA32_MISC_ENABLE, q);
++		if (!(q & MSR_IA32_MISC_ENABLE_ENHANCED_SPEEDSTEP)) {
+ 			pr_info("couldn't enable Enhanced SpeedStep\n");
+ 			return -ENODEV;
+ 		}
+diff --git a/drivers/cpufreq/speedstep-lib.c b/drivers/cpufreq/speedstep-lib.c
+index 973716c1c29c..2afc3f177a29 100644
+--- a/drivers/cpufreq/speedstep-lib.c
++++ b/drivers/cpufreq/speedstep-lib.c
+@@ -69,13 +69,14 @@ static unsigned int pentium3_get_frequency(enum speedstep_processor processor)
+ 		{   0, 0xff}
+ 	};
+ 
++	struct msr msr;
+ 	u32 msr_lo, msr_tmp;
+ 	int i = 0, j = 0;
+ 
+ 	/* read MSR 0x2a - we only need the low 32 bits */
+-	rdmsr(MSR_IA32_EBL_CR_POWERON, msr_lo, msr_tmp);
+-	pr_debug("P3 - MSR_IA32_EBL_CR_POWERON: 0x%x 0x%x\n", msr_lo, msr_tmp);
+-	msr_tmp = msr_lo;
++	rdmsrq(MSR_IA32_EBL_CR_POWERON, msr.q);
++	pr_debug("P3 - MSR_IA32_EBL_CR_POWERON: 0x%x 0x%x\n", msr.l, msr.h);
++	msr_tmp = msr_lo = msr.l;
+ 
+ 	/* decode the FSB */
+ 	msr_tmp &= 0x00c0000;
+@@ -108,19 +109,20 @@ static unsigned int pentium3_get_frequency(enum speedstep_processor processor)
+ 
+ static unsigned int pentiumM_get_frequency(void)
+ {
+-	u32 msr_lo, msr_tmp;
++	struct msr msr;
++	u32 msr_tmp;
+ 
+-	rdmsr(MSR_IA32_EBL_CR_POWERON, msr_lo, msr_tmp);
+-	pr_debug("PM - MSR_IA32_EBL_CR_POWERON: 0x%x 0x%x\n", msr_lo, msr_tmp);
++	rdmsrq(MSR_IA32_EBL_CR_POWERON, msr.q);
++	pr_debug("PM - MSR_IA32_EBL_CR_POWERON: 0x%x 0x%x\n", msr.l, msr.h);
+ 
+ 	/* see table B-2 of 24547212.pdf */
+-	if (msr_lo & 0x00040000) {
++	if (msr.l & 0x00040000) {
+ 		printk(KERN_DEBUG PFX "PM - invalid FSB: 0x%x 0x%x\n",
+-				msr_lo, msr_tmp);
++				msr.l, msr.h);
+ 		return 0;
+ 	}
+ 
+-	msr_tmp = (msr_lo >> 22) & 0x1f;
++	msr_tmp = (msr.l >> 22) & 0x1f;
+ 	pr_debug("bits 22-26 are 0x%x, speed is %u\n",
+ 			msr_tmp, (msr_tmp * 100 * 1000));
+ 
+@@ -129,13 +131,14 @@ static unsigned int pentiumM_get_frequency(void)
+ 
+ static unsigned int pentium_core_get_frequency(void)
+ {
++	struct msr msr;
+ 	u32 fsb = 0;
+-	u32 msr_lo, msr_tmp;
++	u32 msr_tmp;
+ 	int ret;
+ 
+-	rdmsr(MSR_FSB_FREQ, msr_lo, msr_tmp);
++	rdmsrq(MSR_FSB_FREQ, msr.q);
+ 	/* see table B-2 of 25366920.pdf */
+-	switch (msr_lo & 0x07) {
++	switch (msr.l & 0x07) {
+ 	case 5:
+ 		fsb = 100000;
+ 		break;
+@@ -158,11 +161,11 @@ static unsigned int pentium_core_get_frequency(void)
+ 		pr_err("PCORE - MSR_FSB_FREQ undefined value\n");
+ 	}
+ 
+-	rdmsr(MSR_IA32_EBL_CR_POWERON, msr_lo, msr_tmp);
++	rdmsrq(MSR_IA32_EBL_CR_POWERON, msr.q);
+ 	pr_debug("PCORE - MSR_IA32_EBL_CR_POWERON: 0x%x 0x%x\n",
+-			msr_lo, msr_tmp);
++			msr.l, msr.h);
+ 
+-	msr_tmp = (msr_lo >> 22) & 0x1f;
++	msr_tmp = (msr.l >> 22) & 0x1f;
+ 	pr_debug("bits 22-26 are 0x%x, speed is %u\n",
+ 			msr_tmp, (msr_tmp * fsb));
+ 
+@@ -174,7 +177,8 @@ static unsigned int pentium_core_get_frequency(void)
+ static unsigned int pentium4_get_frequency(void)
+ {
+ 	struct cpuinfo_x86 *c = &boot_cpu_data;
+-	u32 msr_lo, msr_hi, mult;
++	struct msr msr;
++	u32 mult;
+ 	unsigned int fsb = 0;
+ 	unsigned int ret;
+ 	u8 fsb_code;
+@@ -187,16 +191,16 @@ static unsigned int pentium4_get_frequency(void)
+ 	if (c->x86_model < 2)
+ 		return cpu_khz;
+ 
+-	rdmsr(0x2c, msr_lo, msr_hi);
++	rdmsrq(0x2c, msr.q);
+ 
+-	pr_debug("P4 - MSR_EBC_FREQUENCY_ID: 0x%x 0x%x\n", msr_lo, msr_hi);
++	pr_debug("P4 - MSR_EBC_FREQUENCY_ID: 0x%x 0x%x\n", msr.l, msr.h);
+ 
+ 	/* decode the FSB: see IA-32 Intel (C) Architecture Software
+ 	 * Developer's Manual, Volume 3: System Prgramming Guide,
+ 	 * revision #12 in Table B-1: MSRs in the Pentium 4 and
+ 	 * Intel Xeon Processors, on page B-4 and B-5.
+ 	 */
+-	fsb_code = (msr_lo >> 16) & 0x7;
++	fsb_code = (msr.l >> 16) & 0x7;
+ 	switch (fsb_code) {
+ 	case 0:
+ 		fsb = 100 * 1000;
+@@ -214,7 +218,7 @@ static unsigned int pentium4_get_frequency(void)
+ 				"Please send an e-mail to <linux@brodo.de>\n");
+ 
+ 	/* Multiplier. */
+-	mult = msr_lo >> 24;
++	mult = msr.l >> 24;
+ 
+ 	pr_debug("P4 - FSB %u kHz; Multiplier %u; Speed %u kHz\n",
+ 			fsb, mult, (fsb * mult));
+@@ -255,7 +259,8 @@ EXPORT_SYMBOL_GPL(speedstep_get_frequency);
+ enum speedstep_processor speedstep_detect_processor(void)
+ {
+ 	struct cpuinfo_x86 *c = &cpu_data(0);
+-	u32 ebx, msr_lo, msr_hi;
++	struct msr msr;
++	u32 ebx;
+ 
+ 	pr_debug("x86: %x, model: %x\n", c->x86, c->x86_model);
+ 
+@@ -343,11 +348,11 @@ enum speedstep_processor speedstep_detect_processor(void)
+ 
+ 		/* all mobile PIII Coppermines have FSB 100 MHz
+ 		 * ==> sort out a few desktop PIIIs. */
+-		rdmsr(MSR_IA32_EBL_CR_POWERON, msr_lo, msr_hi);
++		rdmsrq(MSR_IA32_EBL_CR_POWERON, msr.q);
+ 		pr_debug("Coppermine: MSR_IA32_EBL_CR_POWERON is 0x%x, 0x%x\n",
+-				msr_lo, msr_hi);
+-		msr_lo &= 0x00c0000;
+-		if (msr_lo != 0x0080000)
++				msr.l, msr.h);
++		msr.l &= 0x00c0000;
++		if (msr.l != 0x0080000)
+ 			return 0;
+ 
+ 		/*
+@@ -356,11 +361,11 @@ enum speedstep_processor speedstep_detect_processor(void)
+ 		 * it has SpeedStep technology if either
+ 		 * bit 56 or 57 is set
+ 		 */
+-		rdmsr(MSR_IA32_PLATFORM_ID, msr_lo, msr_hi);
++		rdmsrq(MSR_IA32_PLATFORM_ID, msr.q);
+ 		pr_debug("Coppermine: MSR_IA32_PLATFORM ID is 0x%x, 0x%x\n",
+-				msr_lo, msr_hi);
+-		if ((msr_hi & (1<<18)) &&
+-		    (relaxed_check ? 1 : (msr_hi & (3<<24)))) {
++				msr.l, msr.h);
++		if ((msr.h & (1<<18)) &&
++		    (relaxed_check ? 1 : (msr.h & (3<<24)))) {
+ 			if (c->x86_stepping == 0x01) {
+ 				pr_debug("early PIII version\n");
+ 				return SPEEDSTEP_CPU_PIII_C_EARLY;
 -- 
 2.54.0
 
