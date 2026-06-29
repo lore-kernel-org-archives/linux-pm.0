@@ -1,174 +1,154 @@
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+Received: from flow-b5-smtp.messagingengine.com (flow-b5-smtp.messagingengine.com [202.12.124.140])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CE96C42980E
-	for <linux-pm@vger.kernel.org>; Mon, 29 Jun 2026 15:48:19 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=170.10.133.124
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B67A8427A1F;
+	Mon, 29 Jun 2026 15:48:32 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=202.12.124.140
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1782748102; cv=none; b=qx0ympIki4b9g/2DbuY95eLfYVJnp74C1TypISiFFeqVzMdht7McU2mYmXgZQGoSPAxWbTW3JuIecatlmLRnJqTcUadlK6eJTPfQeB4iM1cq0l4rpKnPjVLfdj1D7uMUapNLgCE+QePUIT7n9EyEoOeLYa2yDrzku7MoI7CqmBE=
+	t=1782748113; cv=none; b=QbUnRpW7CqSKG3RoXq6tgnW654tatDjtWxE0i3ipvPfcf3OAWU7VfQkfaHD+9cAoYtZRGFTSBRYkpW1v023lg9bvKEGf96GkBPXISitRJlFsbicb4SHBs9KJgIeDsjQp6NoTALkn6WlAw4KH7z8c52hdalrW0RlxTFBC6qLKVOs=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1782748102; c=relaxed/simple;
-	bh=xEj2dKDGeASR+fSR2Rl0OKNkvS5xk75qjuIZf3NSAJ0=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=Ucw9wJ1FrE9XWJAvSzcOHeVMulv30/VPNlKb9cilh/FFE2M5+VVpeWNuzIkDDmT/PSEFQve8RGawogdKXKXiU0SWATWZMnhNBKwfvdEFzT7+enl5GfozqXFyjFpxkidU3ZWRB22buUKRNPVcD3BqRkxgjjK6jS/7hrYN9UN98ig=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com; spf=pass smtp.mailfrom=redhat.com; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b=aXeqHSD3; dkim=pass (2048-bit key) header.d=redhat.com header.i=@redhat.com header.b=aPWqSA1w; arc=none smtp.client-ip=170.10.133.124
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=redhat.com
+	s=arc-20240116; t=1782748113; c=relaxed/simple;
+	bh=1McCVs2snxu+gNjJm1D421N5eVerVO5vK6JHvxW/TfQ=;
+	h=MIME-Version:Date:From:To:Cc:Message-Id:In-Reply-To:References:
+	 Subject:Content-Type; b=JkXKFk2KDlXlJXEHiJi7KHZnlLSmfiBNTVT4NuzOCwqFNoPrK2cHdXG1yL3YPokO+hwyOgbfsWKZuq+Qn9iX/kTHEZ0PXILsVfk1BV4Qwbo4GqGOfMyC2pyLqp+C5B1rYUd3kSe9hofSJ6tegmtqmUBkIPSeU+bHnf8DKOq3Bpk=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arndb.de; spf=pass smtp.mailfrom=arndb.de; dkim=pass (2048-bit key) header.d=arndb.de header.i=@arndb.de header.b=otExSv6C; dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b=ZP+OSo5y; arc=none smtp.client-ip=202.12.124.140
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arndb.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arndb.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="aXeqHSD3";
-	dkim=pass (2048-bit key) header.d=redhat.com header.i=@redhat.com header.b="aPWqSA1w"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1782748099;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=5qsO792Ztaa0qn5nI0kJBMOa5Ndy7BivqDU0OQn0EDk=;
-	b=aXeqHSD3FHmzjGYoyXXNko8aigdQgmTf7pMk+JXT4QIclq2V3qCJ0UY7TgYQ9y6j5gX7dT
-	YjMLn3e3de7LoGPBCxTIpzjeJJCsCXxZmGopVkGxlJUVBA6UAQLgEww0956OcN9/m0NuWK
-	pKERJhaigv/HR6ZE0G4pUc00l6yPi2M=
-Received: from mail-qk1-f198.google.com (mail-qk1-f198.google.com
- [209.85.222.198]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-322-FqK5j9A4OVqBlltEyHr8cg-1; Mon, 29 Jun 2026 11:48:17 -0400
-X-MC-Unique: FqK5j9A4OVqBlltEyHr8cg-1
-X-Mimecast-MFC-AGG-ID: FqK5j9A4OVqBlltEyHr8cg_1782748097
-Received: by mail-qk1-f198.google.com with SMTP id af79cd13be357-915d3261c5cso739567185a.3
-        for <linux-pm@vger.kernel.org>; Mon, 29 Jun 2026 08:48:17 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=redhat.com; s=google; t=1782748097; x=1783352897; darn=vger.kernel.org;
-        h=user-agent:in-reply-to:content-disposition:mime-version:references
-         :message-id:subject:cc:to:from:date:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=5qsO792Ztaa0qn5nI0kJBMOa5Ndy7BivqDU0OQn0EDk=;
-        b=aPWqSA1w99vyc3/BXLJ+BrznWgIAnP7X5gj1EtG2y1KF9LkFMLciagnaa4ehNNt6gy
-         3ZH6Jx4rKk7affpUP7sBwAsEJ5vY0B5Es2iTfGzX/50FLhQW8CNvWgZypGDN8N/3YxuJ
-         3oXakenjcVDAZSz4uU13B+l22tgb6nkSIVJPpT5fiTU0vsAoNGWOqm4iTURR8ltH9Nkb
-         WIUXYqZADabcAsb0qmtkMgYvgj9HAQgpYYelPSnT6mTBx1Jbk6NKXQZuvGrAV8ZlgeHU
-         fIj92jxiBonTh8dU7KK1j1eawDHFBbS+sHstNbya7sc4mMSGjNDSgL5OzXcdh1klorV0
-         w/Vg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1782748097; x=1783352897;
-        h=user-agent:in-reply-to:content-disposition:mime-version:references
-         :message-id:subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=5qsO792Ztaa0qn5nI0kJBMOa5Ndy7BivqDU0OQn0EDk=;
-        b=NXXhPpp/VK8Is+i1DXcoRZDPFGWDwBqokLwmgkvmNbi5P5nBOi5C6I8696gzcMKA+6
-         mijj2yYYP7HInkEt1qNIP740ZYd/12B87/JZeXuI42+DAx3SaxewBUbunJ0xq3egztE0
-         Smhbb2oUkFpN474cGFjabXeMALQ+1/0qlTzB+kTy+Gbk66yj6S/1WFQaJ20j0pCdlkN2
-         yDCf1lgxtMGZWV02qS1kGCBBKHBXIeR5IwCULgUQYcdDDiYCY7M6I+gVPVpimJEk43CC
-         SuvLBbHCNIrqpbX8/jmfprUG3GnL/CIYhP84S+QUh/WJ+AVizCy1TB3S9rbLWcBJIYfi
-         iyzQ==
-X-Forwarded-Encrypted: i=1; AFNElJ9m/7ABTtVSw7Py3MvJI+9kiwfHMu20+vD0eb1Wphfz6d1FSnOfBaAfwUosPdlIrVEHgPGDtULADQ==@vger.kernel.org
-X-Gm-Message-State: AOJu0YySifuz5i7w2CYEigWt42GIuHI6ypNbCbq55hKC/+lGphzgLJlw
-	TQVyMMHFNQgQKfBq6EKw6QGbSM3salLGb+NeMR6JbFLpEgfB96F7m5ErG5b/LD2kc5fylA16lzH
-	j2IzIZd2aXA3WQctvzL388wTOU82fM02osxdIK+Aup9rb6+VvDwPteTypxpzb
-X-Gm-Gg: AfdE7ckWjPq4lxLrDdqQXRP1uEotFeq88KcZ/vf4oI2NLFD8bbbFxSNkebRxxQidMUj
-	LMzmZbWm6HINaZCCYqVWJyKEF2hGJYmg9psouLUG2zWFrajFN2nNiyeJK0EXgeLz+IaUTFeApRD
-	k8bFEIafumr4P1pJrF4QXFgr4JnVeNuAlzmauLvuiSyguKJ3pGtshcNtJGu7XKeET2fYj4zvAq3
-	NbLSrBi00oG/cmQePNYmWDSgwdLJ/2xzL4gdvY1B49vp3zPQke46qrvea8raqUvTDfhizFoBdCH
-	+VYMGzd5yfwDyZoFdejGwMI8CdW9vWiMd6PGe1t3rMdGPa7goqiEJq/aZsIzbt9C2kpnyeYDDkw
-	EGgvgIc/s5hrZ5wyQK1iXWZUvQxbgAtb8+3eBhxuX0j/Z7Q==
-X-Received: by 2002:a05:620a:4690:b0:92b:6805:9193 with SMTP id af79cd13be357-92e627e2931mr13877985a.59.1782748096894;
-        Mon, 29 Jun 2026 08:48:16 -0700 (PDT)
-X-Received: by 2002:a05:620a:4690:b0:92b:6805:9193 with SMTP id af79cd13be357-92e627e2931mr13870385a.59.1782748096281;
-        Mon, 29 Jun 2026 08:48:16 -0700 (PDT)
-Received: from redhat.com (c-73-183-53-213.hsd1.pa.comcast.net. [73.183.53.213])
-        by smtp.gmail.com with ESMTPSA id 6a1803df08f44-8f1a69c283fsm947266d6.26.2026.06.29.08.48.14
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 29 Jun 2026 08:48:15 -0700 (PDT)
-Date: Mon, 29 Jun 2026 11:48:14 -0400
-From: Brian Masney <bmasney@redhat.com>
-To: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	"Rafael J. Wysocki" <rafael@kernel.org>,
-	Danilo Krummrich <dakr@kernel.org>, Ulf Hansson <ulfh@kernel.org>,
-	Bjorn Andersson <andersson@kernel.org>,
-	Michael Turquette <mturquette@baylibre.com>,
-	Stephen Boyd <sboyd@kernel.org>,
-	Russell King <linux@armlinux.org.uk>,
-	Neil Armstrong <neil.armstrong@linaro.org>,
-	Xuyang Dong <dongxuyang@eswincomputing.com>,
-	Jens Glathe <jens.glathe@oldschoolsolutions.biz>,
-	Hans de Goede <johannes.goede@oss.qualcomm.com>,
-	Maxime Ripard <mripard@kernel.org>,
-	Saravana Kannan <saravanak@kernel.org>,
-	Abel Vesa <abelvesa@kernel.org>, driver-core@lists.linux.dev,
-	linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
-	linux-arm-msm@vger.kernel.org, linux-clk@vger.kernel.org
-Subject: Re: [PATCH 4/4] clk: implement sync_state support
-Message-ID: <akKTviIP_rt4eRSk@redhat.com>
-References: <20260626-clk-sync-state-v1-0-4156d8196dc8@redhat.com>
- <20260626-clk-sync-state-v1-4-4156d8196dc8@redhat.com>
- <f280150f-f829-4425-a856-9ca9f7aca233@oss.qualcomm.com>
+	dkim=pass (2048-bit key) header.d=arndb.de header.i=@arndb.de header.b="otExSv6C";
+	dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b="ZP+OSo5y"
+Received: from phl-compute-04.internal (phl-compute-04.internal [10.202.2.44])
+	by mailflow.stl.internal (Postfix) with ESMTP id 7F8A013001E3;
+	Mon, 29 Jun 2026 11:48:31 -0400 (EDT)
+Received: from phl-imap-05 ([10.202.2.95])
+  by phl-compute-04.internal (MEProxy); Mon, 29 Jun 2026 11:48:32 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=arndb.de; h=cc
+	:cc:content-transfer-encoding:content-type:content-type:date
+	:date:from:from:in-reply-to:in-reply-to:message-id:mime-version
+	:references:reply-to:subject:subject:to:to; s=fm1; t=1782748111;
+	 x=1782755311; bh=OQSYL+rcbbMvXGkfQit/IeSyVBDzp7a1uiLZytls49o=; b=
+	otExSv6CCfwgU+53OmRzfq2B2DYzwG97/7OG2yFVL9SLp2zuXWfhdL/w+7nIA4id
+	pS7hJpE+p/zM36qUEbCM1LqXAUyUGB34hT8s1CLctdvUhUl0w1ZhqpR2HIS3PV7o
+	bsnIFZBboF30NjRkOQ9UT+Q8NXhm9E13I7offTJ2aRcuG8r2Lm82KoHQohaMMwV5
+	1pog70vnywIoIEN8MJJPZBLCU4XXKtem9FHI/gOfgvqsBOGTC7GkxZFe5P2Lw2ga
+	yjsSm7K9GLJMBOqJ4k1/I3YVG3A8X1aWU9NyZdVYzw3BMgCE/ro9EeoLtAyGzeFK
+	Pl4J0bO7j6edaTVNsgNFEA==
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
+	messagingengine.com; h=cc:cc:content-transfer-encoding
+	:content-type:content-type:date:date:feedback-id:feedback-id
+	:from:from:in-reply-to:in-reply-to:message-id:mime-version
+	:references:reply-to:subject:subject:to:to:x-me-proxy
+	:x-me-sender:x-me-sender:x-sasl-enc; s=fm1; t=1782748111; x=
+	1782755311; bh=OQSYL+rcbbMvXGkfQit/IeSyVBDzp7a1uiLZytls49o=; b=Z
+	P+OSo5yef9/cf64i9oZY96JMQWrkgDB3///chYutdOeJnhuCLMIQBthaTPJcoReA
+	A42wB43XIfLOAHZlUSZRrEWmaIkkJVPyR9ZrNj0Zg79fjHX5GNwFKh44vBnstNjs
+	+gKwPg044HSnH3p4e5kEU8/gJdXnd5J9rcJgbSl1CjuvG8G/lzCfuRrzQSuK0yFG
+	nAQ3o6X2C2t4pALrCSMONEpg+Bh0sXEMP7jMgbrh5fxsQE9kGxPzz2YGv3rx56Gv
+	vpRCb8LQ5USUCARnUKXaPOljl/bpYRFLx50FMB3vSHHH4V2/reUKPVgJULvxVire
+	Mkj0fQjdTFT7fm+9wEFeQ==
+X-ME-Sender: <xms:z5NCakeBygjeAHHHThz3dUsTnvB6AK_UVMjKz-WZKZVRr2lluk78FQ>
+    <xme:z5NCahCpYUk2lb8a1RbHVmyXeGBSy5l5DdSrmUr_uS7YYPkiTX-Ewa_wUd6Pe47oi
+    fqqLUBT-9g8HmIrQlngZpk17TUMnckWDzEtut6NIZEoxunmVuyUuWA>
+X-ME-Proxy-Cause: dmFkZTGx/zQGI8s/7q5psZd2hog4QvvLF8VyS3SEh6yndDN0NLF+SUROST5TuJaRfbYzsR
+    kRNLz+nZnLIWxTAnVDEiVI3LWMoT76m1NPebPhT28iJCWPXc0GO7oFLEPDfrdg9tfzroWb
+    HnrfV5e1jPmjz36LnDV+54JGw32aQMY40K1t7WiGcRFvXEmQH6xS4redW3l3jMN7eHVHXH
+    OMUBqc4hdT1AWM82wO5kRpwsYMYMv8K7MRSSgj1UrGhr0ZavzP88ve8YyHNE7ly6hSja/5
+    QiP/FqZsNFQZ34zbxnGfKyKytbn/wMNNFVGFjw0DXOPPa8n6XjB/fzcu7YZiP8PrvEJSOd
+    l8wa/9o9YFghE4nmtzEFNP5GHS4DgMKC4w2rG1ksKG4K1tNod94D3VEihl/RxyL9ohAzRZ
+    DV3gAxtenHg9Z5cQJzoBipUKZ9pqhmJudtox/jlSGg2Nc/v34rLMtOwqFKQfA1uoQshteX
+    Fj+AMNKhMnJ4QbvjVI2RQG1hwfF0E+t7vkI/rh/pkR03lll3huezz0P+7sfFgS0BBFEc4I
+    tgwdiyeO6AWLRMbzNKqGc2BGlgFQrUK3BgCvUK9m1iH9OEbmB8sUgFESS3o9AeJDZgiza+
+    QtMgrmbDhds3U+BZzmooK8ccK4+ZTU4CwBh9Kr050guMXdKmxiwbffVRqy2w
+X-ME-Proxy: <xmx:z5NCaqnslMw1U4x946I_QUjw_ET8HBcAAsdnOpVQMvFlVCBGjb5OEQ>
+    <xmx:z5NCatSrHaFps5ZyxX5SqaW3oWWvqcDK6TzS14FaET5Pf4npQ179sg>
+    <xmx:z5NCanXHY9GeHNVa3tjFzINJQ_mrCW-T7sCwo55oVGN2tZsh_Krxbw>
+    <xmx:z5NCars5LXs8k9icxryzzfrpvBcoTsGtWAAjyBjSc4vWQn2-iQYc8Q>
+    <xmx:z5NCarutsUgfjq0e6Ud1ZnN0qPM1Eju682i8umHuTCrQdRzm5WnqOIk6>
+Feedback-ID: i56a14606:Fastmail
+Received: by mailuser.phl.internal (Postfix, from userid 501)
+	id 215901820082; Mon, 29 Jun 2026 11:48:31 -0400 (EDT)
+X-Mailer: MessagingEngine.com Webmail Interface
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <f280150f-f829-4425-a856-9ca9f7aca233@oss.qualcomm.com>
-User-Agent: Mutt/2.3.2 (2026-04-26)
+X-ThreadId: A045QOfflcQ7
+Date: Mon, 29 Jun 2026 17:48:04 +0200
+From: "Arnd Bergmann" <arnd@arndb.de>
+To: "Geert Uytterhoeven" <geert@linux-m68k.org>,
+ "Arnd Bergmann" <arnd@kernel.org>
+Cc: "Linus Walleij" <linusw@kernel.org>,
+ "Bartosz Golaszewski" <brgl@kernel.org>,
+ "Marcel Holtmann" <marcel@holtmann.org>,
+ "MyungJoo Ham" <myungjoo.ham@samsung.com>,
+ "Chanwoo Choi" <cw00.choi@samsung.com>,
+ "Geert Uytterhoeven" <geert+renesas@glider.be>,
+ "Andy Shevchenko" <andy@kernel.org>,
+ "Dmitry Torokhov" <dmitry.torokhov@gmail.com>,
+ "Ulf Hansson" <ulfh@kernel.org>, linux-bluetooth@vger.kernel.org,
+ linux-kernel@vger.kernel.org,
+ "open list:GPIO SUBSYSTEM" <linux-gpio@vger.kernel.org>,
+ dri-devel@lists.freedesktop.org, linux-i2c@vger.kernel.org,
+ linux-iio@vger.kernel.org, linux-input@vger.kernel.org,
+ "linux-mmc @ vger . kernel . org" <linux-mmc@vger.kernel.org>,
+ linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org,
+ linux-usb@vger.kernel.org
+Message-Id: <ff4d7043-1929-4fa1-ba5e-f28403ad6fcc@app.fastmail.com>
+In-Reply-To: 
+ <CAMuHMdXhsM4JzArRuB=A46N-Ogbn2Fans+PVJVA-hEytFq=DeQ@mail.gmail.com>
+References: <20260629135917.1308621-1-arnd@kernel.org>
+ <CAMuHMdXhsM4JzArRuB=A46N-Ogbn2Fans+PVJVA-hEytFq=DeQ@mail.gmail.com>
+Subject: Re: [PATCH] [RFC] gpiolib: introduce gpio_name() helper
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
 
-On Mon, Jun 29, 2026 at 03:44:26PM +0200, Konrad Dybcio wrote:
-> On 6/26/26 6:32 PM, Brian Masney wrote:
-> > The existing support for disabling unused clks runs in the late initcall
-> > stage, and it has been known for a long time that this is broken since
-> > it runs too early in the boot up process. It doesn't work for kernel
-> > modules, and it also doesn't work if all of the consumers haven't fully
-> > probed yet. Folks have long recommended to boot certain platforms with
-> > clk_ignore_unused to work around issues with disabling unused clks.
-> 
-> [...]
-> 
-> >     [    0.366737] clk: Disabling unused clocks not associated with a device
-> >     [    0.367232] PM: genpd: Disabling unused power domains
-> >     [    7.791413] qcom-qmp-pcie-phy 1c24000.phy: clk: Disabling unused clocks
-> >     [    7.799702] qcom_aoss_qmp c300000.power-management: clk: Disabling unused clocks
-> >     [    8.548820] qcom-qmp-pcie-phy 1c14000.phy: clk: Disabling unused clocks
-> >     [    9.121849] qcom-qmp-usb-phy 88f1000.phy: clk: Disabling unused clocks
-> >     [    9.121985] qcom-qmp-usb-phy 88ef000.phy: clk: Disabling unused clocks
-> >     [    9.122691] qcom-edp-phy aec5a00.phy: clk: Disabling unused clocks
-> 
-> Many of these drivers only register fixed "virtual" clocks that
-> don't lead to any registers being altered and only exist to convey
-> what the clocks look like on the hw level.. but I don't think we
-> have great infra to skip that..
-> 
-> >     [    9.122760] disp_cc-sc8280xp af00000.clock-controller: clk: Disabling unused clocks
-> >     [    9.142121] qcom-qmp-combo-phy 88eb000.phy: clk: Disabling unused clocks
-> >     [    9.169149] qcom-qmp-combo-phy 8903000.phy: clk: Disabling unused clocks
-> >     [   16.057997] qcom-cpufreq-hw 18591000.cpufreq: clk: Disabling unused clocks
-> >     [   16.058149] clk-rpmh 18200000.rsc:clock-controller: clk: Disabling unused clocks
-> >     [   16.334879] qcom-qmp-pcie-phy 1c06000.phy: clk: Disabling unused clocks
-> >     [   16.706113] camcc-sc8280xp ad00000.clock-controller: clk: Disabling unused clocks
-> >     [   21.565731] q6prm-lpass-clock 3000000.remoteproc:glink-edge:gpr:service@2:clock-controller: clk: Disabling unused clocks
-> >     [   21.597069] va_macro 3370000.codec: clk: Disabling unused clocks
-> >     [   21.605039] rx_macro 3200000.rxmacro: clk: Disabling unused clocks
-> >     [   21.630313] wsa_macro 3240000.codec: clk: Disabling unused clocks
-> >     [   21.635069] tx_macro 3220000.txmacro: clk: Disabling unused clocks
-> 
-> This is a bit noisy, but then it's necessary for debugging the
-> related hangs. Maybe if it turns out to be a huge issue, we can
-> hide it behind a _dbg() in the future.
+On Mon, Jun 29, 2026, at 17:29, Geert Uytterhoeven wrote:
+> On Mon, 29 Jun 2026 at 15:59, Arnd Bergmann <arnd@kernel.org> wrote:
+>> From: Arnd Bergmann <arnd@arndb.de>
+>>
+>> Most remaining users of desc_to_gpio() only call it for printing debug
+>> information.
+>>
+>> Replace this with a new gpiod_name() helper that returns the
+>> gpio_desc->name string after checking the gpio_desc pointer.
+>>
+>> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+>
+> Thanks for your patch!
 
-Agreed. Personally I think we have this go in with dev_info() initially,
-then after it's been there for one release, move it to dev_dbg().
+Thanks for testing!
 
-> I was hoping/expecting that sync_state would completely replace the
-> late initcall (which would also simplify this diff), but I'm surprised
-> to learn that there's a whole bunch of clk_register(dev=NULL)
-> calls in the kernel (are most of them doing it for no good reason
-> by chance?)
+>> --- a/drivers/gpio/gpio-aggregator.c
+>> +++ b/drivers/gpio/gpio-aggregator.c
+>> @@ -758,8 +758,8 @@ int gpiochip_fwd_desc_add(struct gpiochip_fwd *fwd, struct gpio_desc *desc,
+>>
+>>         fwd->descs[offset] = desc;
+>>
+>> -       dev_dbg(chip->parent, "%u => gpio %d irq %d\n", offset,
+>> -               desc_to_gpio(desc), gpiod_to_irq(desc));
+>> +       dev_dbg(chip->parent, "%u => gpio %s irq %d\n", offset,
+>> +               gpiod_name(desc), gpiod_to_irq(desc));
+>>
+>>         return 0;
+>>  }
+>
+> Before, this printed:
+>
+>     gpio-aggregator gpio-aggregator.1: 0 => gpio 589 irq 188
+>     gpio-aggregator gpio-aggregator.1: 1 => gpio 590 irq 189
+>
+> After, this prints:
+>
+>     gpio-aggregator gpio-aggregator.1: 0 => gpio (null) irq 188
+>     gpio-aggregator gpio-aggregator.1: 1 => gpio (null) irq 189
+>
+> Same results for instantiation using sysfs or configfs[1], although
+> the latter does have optional support for specifying the name.
 
-Yes, correct there are a ton of clk drivers that use
-clk_register(dev=NULL) to register clks from __init early in the boot.
-My understanding of one use case is that this is needed to setup arch
-timers that have a dependency on a clock.
+I wonder how many of the other instances have the same problem
+then. Would it be appropriate for gpiochip_fwd_desc_add() to set
+a name itself to address this one?
 
-My understanding is that lots of drivers that register clks in __init
-don't need to do it from there.
-
-Brian
-
+       Arnd
