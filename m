@@ -1,141 +1,107 @@
-Received: from mail-lj1-f176.google.com (mail-lj1-f176.google.com [209.85.208.176])
+Received: from layka.disroot.org (layka.disroot.org [178.21.23.139])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E260C2F2910
-	for <linux-pm@vger.kernel.org>; Mon, 29 Jun 2026 19:07:35 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.208.176
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1782760057; cv=pass; b=XtG9FH1zx/gm1C0AJpzsg4dkWmlYldGeBz9FhR9k93DKt5if08vuX6Qi6o9YnfGl/4nZ17RDfhD7eKi9TdpbvRYhcSi7IlstwUUBTMm8cChwEMPKRy9UT6RNc/R9wB5FyYB2P8AQ4BuXuoCHpKr0ApD4V7OmCN0rev+nBqx2Ihs=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1782760057; c=relaxed/simple;
-	bh=+Z2OEmnJdgjqS1g3yj57KCVy6mHfzWTsN+WLdqFjrxY=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=OUp9G+VBNbFN0TuKVtHq7svRmTjlGohUccR+/k6dqQEnOfpPAK1ZwQbJM+N0JkKDTQfdaYgh66N7SBUK2LNhtlA4D6EqOfg8bsWxxexyRZSUbuTqb51i1oOpxfwX+uG6ch2h/Wk7Us2J557Fzx3vloE1rAeMByT3PggB7j/EMX0=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=Q3m+w0MW; arc=pass smtp.client-ip=209.85.208.176
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9075531F9AB;
+	Mon, 29 Jun 2026 19:53:21 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=178.21.23.139
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1782762804; cv=none; b=ftBa6dF2B/BNihP4FOJj246HRO2nfKd4fILvBXRHgdTqgEjYR42aCnGHS9lNKfuZJAC2Tp0vYnksnIKUd77zJXWNHrkjHP+n/bSwzT0RbExpNTTdbr1H6RWNK4/KDco3IDKFohM6wH5eqo8uMvTVMQYNLZqmDIjtq9iDUPHzKko=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1782762804; c=relaxed/simple;
+	bh=PbPgBayX6b24ISDV01nkGcJIvbWXXJPgcSy/A/hY1+Q=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=PkHwaFZWLz92D46UFUPJ3riKcoHbEkeMIzgIO9ItQj7eIpzciw7eMlmgoKeEcksKVY2NeeYy0BxV8jlSIvQq4BiptUYmI48tSHcLVdBrSVPwIpT99Q6LDqGhootV+InDc84DIg9lFUs3lcW+fbw/IMzIy0S1kWb0aLpl0UCsH6Y=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=disroot.org; spf=pass smtp.mailfrom=disroot.org; dkim=pass (2048-bit key) header.d=disroot.org header.i=@disroot.org header.b=khrKQ0g8; arc=none smtp.client-ip=178.21.23.139
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=disroot.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=disroot.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Q3m+w0MW"
-Received: by mail-lj1-f176.google.com with SMTP id 38308e7fff4ca-39aeb9513efso19090951fa.0
-        for <linux-pm@vger.kernel.org>; Mon, 29 Jun 2026 12:07:35 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1782760054; cv=none;
-        d=google.com; s=arc-20260327;
-        b=MpqH1SIbyt2mm0IcJD3kG0zrtvgVtMecpqjYt7pgjQdNQsiOOmaGGqJO7Qmfd2cTgC
-         rZE1jq+ZwFYpNXnj2S2bdHH1GtArV2ud3fLF1lLxz+wwfJAaykZTLfB4vuKSLXaYlOHQ
-         ZVRC/WRbyaM6dwXxnW1xZ03ylx0/gjsgk/hlUgSQFL5+BrFW2Uei2g9Ox+xIUGYOcYvK
-         SI9xHVoDJF00An7tcken3f2cpXfvSQV6Lb5LhVIir2xYAp7DLb+YesO80u6WmEZ7G4g1
-         t8tXeOcv4kpKJ835/hA95sgqWhoXZRSWgQgdoS5xGf8q3Bg8IBxOhd6lS2bi5hXmG7eW
-         RxVQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=+Z2OEmnJdgjqS1g3yj57KCVy6mHfzWTsN+WLdqFjrxY=;
-        fh=TRMxe37u0lnIz7MsdaDhamIwVfqfGN6j51yZxSo579c=;
-        b=K6qg1iYkI5DFDElTJPdOhQEptlt078CsBswDpB/eHZiPVsIcay0LIxqVx2sAD7lz7X
-         h+w34mjb8LeblP77+okh0Ul1HMvKtJHrtyb7b8cCqpHJYEL+6ULFHZgnR7bWhIKhdS+d
-         0ggR9Oz/81CCP2/M51taf+61ecCD2+5wx40xd/cB4tCyjMDFhD/OueWLkjlUS/PAEUsM
-         M5ebKlfTOTMktO+6rNpOMhCz0/VylP81Us+y5iKlF/pvgEwYmd+ow75gKnKVGFgV7gaZ
-         gB/ZjAJCyirG6MyWd6KwIfbXPjQtttFOu9je8cUhBdVPf3lsrdHbnPVy05rO8AMuZkCm
-         pLbg==;
-        darn=vger.kernel.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1782760054; x=1783364854; darn=vger.kernel.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=+Z2OEmnJdgjqS1g3yj57KCVy6mHfzWTsN+WLdqFjrxY=;
-        b=Q3m+w0MWqSARc7l05a9STTULeSH4k1Xw1lNOw9sZ0oxr/YasLAwl26qBjYsrRX0bpA
-         OtpHXE3zppcuFQotUbLaeC62HhhqwGYlrbYHUNLWXLKG9ZpnSJRWtTe8aqMJVZkQL91r
-         fwh7q0tN8jKWtnEk3P1r0snyB0JVWw7MLAP3pf1c5zV3HfOAKGt+jiqiqH+5jPZVmA0F
-         XkQJTVxiMgW1zHLWHD8oMmjVC3QCBmVkMhClXnmZjLp8tuKS354xcGOibg0wxsKVmsUO
-         hTonyu9cS40fj2c23Km/dlLGI2BBA2Xqw/0EXgC70uwkp61jwd+4MZignHhborJip0g3
-         M9HQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1782760054; x=1783364854;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=+Z2OEmnJdgjqS1g3yj57KCVy6mHfzWTsN+WLdqFjrxY=;
-        b=fI5k84B4TVXvcYxP8BfiZl6wzBpSrU+To/TyRairjmc2U3EPyiRacvO2Xfhs/WQZLL
-         AVOMuoRNNCB1E7TXQmhQS0yZ4yPrWrfdlWcHCmswuOMc/2FCbyilUmVkALd73tmDZiTg
-         pssucDpp0LjQqC3CHgL3bP3C1Sy+dvV84hOlTcCTWJ3L9A72maMyzagd3U1G5kASFhxv
-         V6nqImu8/NmmROvIdO1LXIYLcdQowjhJXkdtwGXGANLk0E0F74+yy68bYertnxB5y7DG
-         0EmEJEMugzVAcRV8mJdTm0IG3tciptRyjSb2Jngm525r/w4mj970e8I9OQ9MmsdDG85N
-         HwxQ==
-X-Forwarded-Encrypted: i=1; AHgh+Rrymqnrbu07akb51GL4y4K/jyAALT9pZJ1DwnnQgoCdHXkRnwsaGXE2lgCojLkfMJj0//x3jy2RSQ==@vger.kernel.org
-X-Gm-Message-State: AOJu0YxCtrQCbutRl71iTFlFSNt4TZ0qTV9R1NkL/ak39Tg5WrIiaJwt
-	uwc96PpWdE8Czvv47lM2uevF/ER29MFaKeE6TcnAG2ZIBnLWfX7Fynd9p5x7nH33FnsHWwVm5Iv
-	YVUGldER67fmnWRbEEDqPFVOzHQuXdZA=
-X-Gm-Gg: AfdE7clvxtEtjnO0IAHoX3jywDRLAsJ667Xcn9rciSOh1OcAlWPxg7Zsr40JPsu2e7h
-	tLZUu4mVIHn+KtZkTORzH06nN8u2qubi2BPDeY5myI2pWI8zo+XjwC0LU4BZ3WkjqqvkXHkv1c/
-	KueDuCnQ7PwTV3GJeqcSo6B3hJkjVR60PKcq4CLxYf6/21QD2Gegry5zyT34hJEhcgclwmD2gF5
-	JS1ISmde0LXeXkn+AO4+UROZA06C8x5U0jFYIkOLJH4Zx10eIFMrDfuWXUscNacyoRMb9XBIpra
-	gBWzxFkmmiUH2mhaEs86KjG3y1t/xS277xUxvuUJ3g==
-X-Received: by 2002:a05:651c:2223:b0:394:184:f7a7 with SMTP id
- 38308e7fff4ca-39b1da8f5f6mr1003691fa.6.1782760053776; Mon, 29 Jun 2026
- 12:07:33 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=disroot.org header.i=@disroot.org header.b="khrKQ0g8"
+Received: from mail01.disroot.lan (localhost [127.0.0.1])
+	by disroot.org (Postfix) with ESMTP id 2B108270AC;
+	Mon, 29 Jun 2026 21:53:20 +0200 (CEST)
+X-Virus-Scanned: SPAM Filter at disroot.org
+Received: from layka.disroot.org ([127.0.0.1])
+ by localhost (disroot.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id tKKKoC5HHSQC; Mon, 29 Jun 2026 21:53:19 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=disroot.org; s=mail;
+	t=1782762799; bh=PbPgBayX6b24ISDV01nkGcJIvbWXXJPgcSy/A/hY1+Q=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References;
+	b=khrKQ0g8pLbzWz324vtf05mo7a/lVK/vvOiBeHLqoUDurCXh/aqFB/nUWsWzl6NLX
+	 Vos3V7PNrNH0lSbsacsvgrrpsubxdMcsghCytkObMLYF4fe5QSvewCeoBbVEZ+SvjP
+	 dQdgGH8jzfpXnOFD2wfwRnB+sT0nUoQILywZYflFULNU8+Z7PcUTH9rn89ZKDRh7/0
+	 fkH6YrIx4URxlCRfyNHBoqGQEYUITLs1rFlLjeFB8GBUVJoP/BJ2HyMuvKMBu9f/fY
+	 ZJS27tFwEjwWWeU0aYQ4J61vvWiNUpzo+/nhFwJ33XOc1JJZhshWOLuYi/1ywLWd8S
+	 99L2qDf0yLnNg==
+From: Marco Scardovi <scardracs@disroot.org>
+To: Milan Oravec <moravec@ukf.sk>
+Cc: bp@alien8.de, crecklin@redhat.com, dave.hansen@linux.intel.com,
+ hpa@zytor.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+ mingo@redhat.com, pavel@kernel.org, rafael@kernel.org,
+ regressions@leemhuis.info, regressions@lists.linux.dev, tglx@kernel.org,
+ x86@kernel.org
+Subject:
+ Re: [PATCH v2 0/4] PM: hibernate: Add relaxed_memmap option for x86 E820
+ integrity check
+Date: Mon, 29 Jun 2026 21:53:06 +0200
+Message-ID: <2_MjK2gjTYawu-VEuCwZxw@disroot.org>
+In-Reply-To: <4346170f-6685-40c6-8eeb-e3adab19275c@ukf.sk>
+References:
+ <cd45c7c8-4df9-4963-b847-02cf72bcc039@ukf.sk>
+ <20260623165724.10753-1-scardracs@disroot.org>
+ <4346170f-6685-40c6-8eeb-e3adab19275c@ukf.sk>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260629083542.10041-1-lucaslnobrega38@gmail.com> <7f960dca-2de2-4831-8690-a40fdec848dd@arm.com>
-In-Reply-To: <7f960dca-2de2-4831-8690-a40fdec848dd@arm.com>
-From: Lucas Lima <lucaslnobrega38@gmail.com>
-Date: Mon, 29 Jun 2026 16:07:21 -0300
-X-Gm-Features: AVVi8Cf5-wN9nhSYqnSyz5AgBk1jFBqAT648csCtFWb1IIWF-rBqtEJoG7PzYJo
-Message-ID: <CAMVixxXdTHKVS+oOd6f6qjOWA9-fg329=58e6fXqAO8_hJ9mUw@mail.gmail.com>
-Subject: Re: [PATCH] sched/topology: Allow EAS without schedutil for
- artificial Energy Models
-To: Lukasz Luba <lukasz.luba@arm.com>
-Cc: dietmar.eggemann@arm.com, rostedt@goodmis.org, vincent.guittot@linaro.org, 
-	mingo@redhat.com, bsegall@google.com, mgorman@suse.de, vschneid@redhat.com, 
-	kprateek.nayak@amd.com, corbet@lwn.net, skhan@linuxfoundation.org, 
-	linux-pm@vger.kernel.org, linux-doc@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, juri.lelli@redhat.com, rafael@kernel.org, 
-	viresh.kumar@linaro.org, peterz@infradead.org
-Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="utf-8"
 
-Em seg., 29 de jun. de 2026 =C3=A0s 11:05, Lukasz Luba
-<lukasz.luba@arm.com> escreveu:
->
->
->
-> On 6/29/26 09:35, Lucas de Lima N=C3=B3brega wrote:
-> > EAS currently refuses to enable energy-aware scheduling on a root
-> > domain unless schedutil is the active CPUFreq governor for all of its
-> > CPUs (cpufreq_ready_for_eas()). This requirement exists to protect the
-> > accuracy of the energy estimate: EAS predicts the OPP a CPU will run
-> > at from its utilization, which is only meaningful if the active
-> > governor actually requests OPPs that way, and schedutil is the only
-> > one that does.
-> >
-> > That requirement does not apply to artificial Energy Models
-> > (EM_PERF_DOMAIN_ARTIFICIAL). An artificial EM is built from a
-> > get_cost() callback instead of real power numbers, and only encodes a
-> > cost ranking between CPUs (e.g. P-cores cost more than E-cores at a
-> > given utilization). It never claims to predict real energy use at any
-> > specific OPP, so there is no per-OPP accuracy for the governor
-> > requirement to protect, regardless of which governor is in control or
-> > whether it tracks utilization at all.
-> >
-> > intel_pstate registers exactly this kind of artificial EM for hybrid
-> > (P/E-core) systems without SMT, regardless of whether it operates in
-> > active or passive mode. In active mode it never uses schedutil, since
-> > HWP picks frequency autonomously, so on these systems EAS never
->
-> When frequency is picked autonomously then EAS and energy estimations
-> don't make sense IMHO.
->
-> Do you have any data from experiments how it runs?
->
-> Regards,
-> Lukasz
+In data luned=C3=AC 29 giugno 2026 15:04:04 Ora legale dell=E2=80=99Europa =
+centrale, Milan Oravec ha scritto:
+> Hello, I wanted to try this new set of patches, but I was unable to=20
+> apply them. Tested with 7.1.2 and master too.
+>=20
+> migo@migo-HP:~/build/linux-test/linux$ patch -p1 < ../hibernate2.patch
+> patching file include/linux/suspend.h
+> patching file kernel/power/hibernate.c
+> Hunk #2 FAILED at 1431.
+> 1 out of 2 hunks FAILED -- saving rejects to file=20
+> kernel/power/hibernate.c.rej
+> patching file arch/x86/power/hibernate.c
+> Hunk #1 FAILED at 61.
+> Hunk #2 succeeded at 78 with fuzz 1.
+> Hunk #3 FAILED at 144.
+> Hunk #4 FAILED at 166.
+> 3 out of 4 hunks FAILED -- saving rejects to file=20
+> arch/x86/power/hibernate.c.rej
+> patching file Documentation/admin-guide/kernel-parameters.txt
+> Hunk #1 FAILED at 1967.
+> 1 out of 1 hunk FAILED -- saving rejects to file=20
+> Documentation/admin-guide/kernel-parameters.txt.rej
+>=20
+> Thank you,
+>=20
+> Milan
+>=20
+Hi Milan,
+that's probably because all the patches I write are against linux-next and
+not a specific linux version. In that case linux-next contain [1] which
+is not on stable version, making the patch non working for you.
 
-Through my testings, HWP does seem follow an strictly non decreasing
-duty-cycle to freq curve, with or without frequency clamping and turbo
-boost activated. For me, that feels enough to justify the use of the
-simplified energy model already implemented.
+To be honest I'm not gonna release a new patch specifically for kernel 7.1:
+it's a waste of effort to target a specific version as the patch will be me=
+rged
+(if rafael will agree with it) in a future version. Said that, I'm not even
+sure it will be merged for the points stated by Rafael, which I understand
+and agree.
+
+[1] https://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git/com=
+mit/kernel/power/hibernate.c?h=3Dnext-20260629&id=3D783c8109844503bd1c35dab=
+41b6d5fd074a9f131
+
+With best regards,
+Marco
+
+
