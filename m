@@ -1,83 +1,162 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.16])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 37D6044BCA1
-	for <linux-pm@vger.kernel.org>; Mon, 29 Jun 2026 16:15:21 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 30A4E3BBFCC;
+	Mon, 29 Jun 2026 16:21:47 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.16
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1782749722; cv=none; b=EYK48WUU1M7rGqXqwvLOwFzSQiXAIVdfWQSpzjK+Dxjg9gWi3g4FDUiRR6FOIsavV1avpwKy8qDR+Li2rkGKhokYAkKgf4SYIZb1lTk+xgLPijJ4fpu8bj8/YsQyGhBSRTgEOvRJ62/Cs+Gu0b4tMMxnm8WpM047trVmtSObQ3I=
+	t=1782750108; cv=none; b=Z+sjVpG2aS8Ml3DGfzl7A9fjwLFaRLRGcTYZS5EXyaFdyFh1WXidvSh75Fz1O7RXuRlJke+bdXZy1ryyffJBnfhlwU6YVE9FrmdZFgjBGriL29rE5iAxS/KIZzq0hLxqROXkDuxPr565Scp9ZgoU89K4kQUqxatLBZd7COzwVew=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1782749722; c=relaxed/simple;
-	bh=w6ZVnKbd/yP5ciQEeAt3KGcP1DU9DnB81w3BTQgoGHU=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=mufv4gB8hOJG7AJIsB4yJymprueY9w87PYxDmeTz8wCGh24tCCLlpXqLwPitLTIUAZw+ieDrGujVRK0uKlcUahME9StVnBORI064sTIqXJVATr6uzk0ZAs6gYTKUt3Y0XYU3N01CIOpvO0CXk0VthZQ2F2dKBuTk9Hy0/RODPzY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=TJoazlts; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1782750108; c=relaxed/simple;
+	bh=NFSMtVuoxLsda44tJKXSv/IYfieoOuyAy+SzWiTGH00=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=foXViyWwgidm9hoojvyLNRgMsRzfqOArVbrFQ9HPZbds3BGHI/eGh2I32Qoh9MmWcsO6znDUoRixUrKkxDCNhy23wg7Yj79Z5uXkmQpK87KBCQSyU6TuDxOX3B1kdFpuBtE/HRXtW7dU/IXrt6qZZMWXAbdjVO/mCkJR5rjPHus=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=pass smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=SFgg2Qvo; arc=none smtp.client-ip=198.175.65.16
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="TJoazlts"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0830E1F00AC4
-	for <linux-pm@vger.kernel.org>; Mon, 29 Jun 2026 16:15:20 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1782749721;
-	bh=2echV2TuUCorDUo3P+lP4EOwfZ6UxnA7Vrhb9+2po14=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc;
-	b=TJoazltsXCrMCTgucF9n2rj55ynbhFXimvamVNgnZhCjgNyjgNqGE+fB84F2BOlK1
-	 Lhep4YdXesYdd4f+yP36ezAZZrT5O1TXql4Eq7vImX0an2xO5P3S37240UffBz51JH
-	 F3OhdkIPez8rlNHeQchlruofSmheg8cfSA7hNy5fv1OwhBJmiJSLX8P2+qE0X45xRL
-	 okDyyj6H7k7wo4fFTcbK9a7Sh+rJsQe9YgiHuH0jnIwIhNoP2+bk4RCNC0CnkEPhhr
-	 lyayZgs64iOAznZH9uHM9q2Wokb0AxK7AQaTYq/Mwb3dFzVDr66xXJ8cp17sX3KN9q
-	 710v1sBBZcBEQ==
-Received: by mail-ej1-f52.google.com with SMTP id a640c23a62f3a-c126e47a82cso131653466b.2
-        for <linux-pm@vger.kernel.org>; Mon, 29 Jun 2026 09:15:20 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AFNElJ88TSm/sxWagNpm+Qgd2Zuje3QjAzfXpVsAOirp7KYSyoO3iswB8JgY9SHlJuik9dCu0cr4yba7ZQ==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yy7At+GrNBD2hrTCFK6WSLcEqdmj6MvzqJMNv8w2Gi5aJvNfLwc
-	V09jEru/4zQX1DxPNZwV7M4oYQG6sV3gP3e0WXRJ11ElFjJ9dhY5D2mDe7vRp9eMCJenx5oXzrU
-	/dkNNnv9kgT8bkGFetK7s30Zpb0yE/g==
-X-Received: by 2002:a17:907:1c91:b0:c12:58ac:9869 with SMTP id
- a640c23a62f3a-c1258aca1b9mr349323966b.9.1782749719747; Mon, 29 Jun 2026
- 09:15:19 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="SFgg2Qvo"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1782750107; x=1814286107;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=NFSMtVuoxLsda44tJKXSv/IYfieoOuyAy+SzWiTGH00=;
+  b=SFgg2Qvonqj8YyAz02Rzoab9VLsyMuk1b2S6GRXzz911VFwK8AOpYQvD
+   gh2NroGboBlOxZxq8ppnrBdmpC3JcV6dGj6ED5gKhkiNZ4kZq0wq0uGbr
+   a3VmAVA5Kc7j8cyv187xM1NfyHX3Aw/6jKgNejMIHBGim9z0LPjAmbRNv
+   /KwjamNzJXqUmKEMFNl1a/e9hN7dype5qHlqx+cd5FPWBmk1oBx2Zrsty
+   Sip63u3gUmIQTLdQwtsvMIwThfeepxeXuej0SWoFnAdkvlblsnuyEszIp
+   g2qHFCbyXLDZ8YYEjAv8nz914j2QuSxDBVNEKCpAfj1IdQ9FIrD35Ckp2
+   A==;
+X-CSE-ConnectionGUID: 8i5aSoTjT/OirOQF3Es8rA==
+X-CSE-MsgGUID: dj77uQ48SyqEHl8D2MbtPQ==
+X-IronPort-AV: E=McAfee;i="6800,10657,11832"; a="83644931"
+X-IronPort-AV: E=Sophos;i="6.24,232,1774335600"; 
+   d="scan'208";a="83644931"
+Received: from orviesa001.jf.intel.com ([10.64.159.141])
+  by orvoesa108.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 29 Jun 2026 09:21:46 -0700
+X-CSE-ConnectionGUID: FxugsHAHT4+THTJwauLSzw==
+X-CSE-MsgGUID: nJKI5ILbSS+sjP319WFTsA==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.24,232,1774335600"; 
+   d="scan'208";a="290124520"
+Received: from kniemiec-mobl1.ger.corp.intel.com (HELO localhost) ([10.245.244.207])
+  by smtpauth.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 29 Jun 2026 09:21:33 -0700
+Date: Mon, 29 Jun 2026 19:21:10 +0300
+From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+To: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
+Cc: Lee Jones <lee@kernel.org>,
+	Mark Brown <broonie@opensource.wolfsonmicro.com>,
+	Thierry Reding <thierry.reding@avionic-design.de>,
+	Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>,
+	Andrew Lunn <andrew+netdev@lunn.ch>,
+	"David S. Miller" <davem@davemloft.net>,
+	Eric Dumazet <edumazet@google.com>,
+	Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
+	Srinivas Kandagatla <srini@kernel.org>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	Vinod Koul <vkoul@kernel.org>,
+	"Rafael J. Wysocki" <rafael@kernel.org>,
+	Danilo Krummrich <dakr@kernel.org>, Rob Herring <robh@kernel.org>,
+	Saravana Kannan <saravanak@kernel.org>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+	Andi Shyti <andi.shyti@kernel.org>, Joerg Roedel <joro@8bytes.org>,
+	Will Deacon <will@kernel.org>, Robin Murphy <robin.murphy@arm.com>,
+	Doug Berger <opendmb@gmail.com>,
+	Florian Fainelli <florian.fainelli@broadcom.com>,
+	Broadcom internal kernel review list <bcm-kernel-feedback-list@broadcom.com>,
+	Ulf Hansson <ulfh@kernel.org>, Frank Li <Frank.Li@nxp.com>,
+	Sascha Hauer <s.hauer@pengutronix.de>,
+	Pengutronix Kernel Team <kernel@pengutronix.de>,
+	Fabio Estevam <festevam@gmail.com>,
+	Matthew Brost <matthew.brost@intel.com>,
+	Thomas =?iso-8859-1?Q?Hellstr=F6m?= <thomas.hellstrom@linux.intel.com>,
+	Rodrigo Vivi <rodrigo.vivi@intel.com>,
+	David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>,
+	Peter Chen <peter.chen@kernel.org>,
+	Paul Cercueil <paul@crapouillou.net>, Bin Liu <b-liu@ti.com>,
+	Philipp Zabel <p.zabel@pengutronix.de>,
+	Maximilian Luz <luzmaximilian@gmail.com>,
+	Hans de Goede <hansg@kernel.org>,
+	Ilpo =?iso-8859-1?Q?J=E4rvinen?= <ilpo.jarvinen@linux.intel.com>,
+	Krzysztof Kozlowski <krzk@kernel.org>,
+	Benjamin Herrenschmidt <benh@kernel.crashing.org>, brgl@kernel.org,
+	linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+	linux-arm-msm@vger.kernel.org, linux-sound@vger.kernel.org,
+	driver-core@lists.linux.dev, devicetree@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org, linux-i2c@vger.kernel.org,
+	iommu@lists.linux.dev, linux-pm@vger.kernel.org,
+	imx@lists.linux.dev, linux-arm-kernel@lists.infradead.org,
+	intel-xe@lists.freedesktop.org, dri-devel@lists.freedesktop.org,
+	linux-usb@vger.kernel.org, linux-mips@vger.kernel.org,
+	platform-driver-x86@vger.kernel.org
+Subject: Re: [PATCH v2 19/19] driver core: platform: count references to all
+ kinds of firmware nodes
+Message-ID: <akKbdrwQSGAakDcq@ashevche-desk.local>
+References: <20260629-pdev-fwnode-ref-v2-0-8abe2513f96e@oss.qualcomm.com>
+ <20260629-pdev-fwnode-ref-v2-19-8abe2513f96e@oss.qualcomm.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260603-rust_serdev-v12-0-3400ffb88b12@posteo.de> <20260603-rust_serdev-v12-3-3400ffb88b12@posteo.de>
-In-Reply-To: <20260603-rust_serdev-v12-3-3400ffb88b12@posteo.de>
-From: Rob Herring <robh@kernel.org>
-Date: Mon, 29 Jun 2026 11:15:08 -0500
-X-Gmail-Original-Message-ID: <CAL_JsqJEqUbA8t_01E+QBbsfdV6JWKGJPhEQMD7YKPKYk3vYuA@mail.gmail.com>
-X-Gm-Features: AVVi8CfhB--Db5QbuVKNGlVOJyT9ymFkRQjZNe17XqY3kKJM0r_8jlarJXXYsZQ
-Message-ID: <CAL_JsqJEqUbA8t_01E+QBbsfdV6JWKGJPhEQMD7YKPKYk3vYuA@mail.gmail.com>
-Subject: Re: [PATCH v12 3/3] MAINTAINERS: serdev: Add self for serdev
-To: markus.probst@posteo.de
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jiri Slaby <jirislaby@kernel.org>, 
-	Miguel Ojeda <ojeda@kernel.org>, Gary Guo <gary@garyguo.net>, 
-	=?UTF-8?Q?Bj=C3=B6rn_Roy_Baron?= <bjorn3_gh@protonmail.com>, 
-	Benno Lossin <lossin@kernel.org>, Andreas Hindborg <a.hindborg@kernel.org>, 
-	Alice Ryhl <aliceryhl@google.com>, Trevor Gross <tmgross@umich.edu>, 
-	Danilo Krummrich <dakr@kernel.org>, Kari Argillander <kari.argillander@gmail.com>, 
-	"Rafael J. Wysocki" <rafael@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, 
-	Boqun Feng <boqun@kernel.org>, David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>, 
-	linux-serial@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	rust-for-linux@vger.kernel.org, linux-pm@vger.kernel.org, 
-	driver-core@lists.linux.dev, dri-devel@lists.freedesktop.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260629-pdev-fwnode-ref-v2-19-8abe2513f96e@oss.qualcomm.com>
+Organization: Intel Finland Oy - BIC 0357606-4 - c/o Alberga Business Park, 6
+ krs, Bertel Jungin Aukio 5, 02600 Espoo
 
-On Wed, Jun 3, 2026 at 10:56=E2=80=AFAM Markus Probst via B4 Relay
-<devnull+markus.probst.posteo.de@kernel.org> wrote:
->
-> From: Markus Probst <markus.probst@posteo.de>
->
-> Rob mentioned he needs to find someone else to maintain serdev.
->
-> Link: https://lore.kernel.org/rust-for-linux/20260430195858.GA1650658-rob=
-h@kernel.org/
-> Link: https://lore.kernel.org/rust-for-linux/da85ceb81f51079d4a8248a1ffde=
-6a27d2ef24ad.camel@posteo.de/
-> Signed-off-by: Markus Probst <markus.probst@posteo.de>
-> ---
->  MAINTAINERS | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+On Mon, Jun 29, 2026 at 11:12:42AM +0200, Bartosz Golaszewski wrote:
+> When using platform_device_register_full(), we currently only increase
+> the reference count of the OF node associated with a platform device. We
+> symmetrically decrease it in platform_device_release(). With all users in
+> tree now converted to using provided platform device helpers for
+> assigning OF and firmware nodes, we can now switch to counting references
+> of all kinds of firmware nodes.
 
-Acked-by: Rob Herring (Arm) <robh@kernel.org>
+Yep, that's the expected result, thanks!
+
+...
+
+>  void platform_device_set_fwnode(struct platform_device *pdev,
+>  				struct fwnode_handle *fwnode)
+>  {
+> -	if (is_of_node(fwnode))
+> -		platform_device_set_of_node(pdev, to_of_node(fwnode));
+> -	else
+> -		pdev->dev.fwnode = fwnode;
+> +	fwnode_handle_put(pdev->dev.fwnode);
+
+> +	pdev->dev.fwnode = fwnode_handle_get(fwnode);
+> +	pdev->dev.of_node = to_of_node(fwnode);
+
+	device_set_node(&pdev->dev, fwnode_handle_get(fwnode));
+
+>  }
+
+...
+
+>  	pdev->dev.parent = pdevinfo->parent;
+> -	pdev->dev.fwnode = pdevinfo->fwnode;
+> -	pdev->dev.of_node = of_node_get(to_of_node(pdev->dev.fwnode));
+
+> +	pdev->dev.fwnode = fwnode_handle_get(pdevinfo->fwnode);
+> +	pdev->dev.of_node = to_of_node(pdev->dev.fwnode);
+
+See above.
+
+...
+
+With them being addressed,
+Reviewed-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+
+-- 
+With Best Regards,
+Andy Shevchenko
+
+
