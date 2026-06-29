@@ -1,222 +1,142 @@
-Received: from DU2PR03CU002.outbound.protection.outlook.com (mail-northeuropeazon11011027.outbound.protection.outlook.com [52.101.65.27])
+Received: from flow-b5-smtp.messagingengine.com (flow-b5-smtp.messagingengine.com [202.12.124.140])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AF64444BCB1;
-	Mon, 29 Jun 2026 15:45:19 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.65.27
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1782747922; cv=fail; b=t0FumwYvKBKI4goBO+++ggTZUSipgoHSdPYU5b/8UuDgDjZhATonDCBbJt2MmouPi9vycMdVsyK+QUdhiTIgGRiMX2fF2oc4u+0uIjYFTUGvgo5uU9c34fjkAMHm5ZurOD/ghC3uBWR8vyh346LKDnOWrCXqMd25UiPkBZEFreo=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1782747922; c=relaxed/simple;
-	bh=o3Hc+TNFqS8YiUZ49GFpzDVumFVCdKrKAZPMR+63l+M=;
-	h=From:To:CC:Subject:In-Reply-To:References:Message-ID:Date:
-	 MIME-Version:Content-Type; b=k64ZfzqYYN41IXtOpjw5F7OceZAku6jqNNn7Hv3u94Hpio2K0vGyrbInBL5IZkSWDY+cC+TiLUDcUU17VQcstHVRDykiaSXTjmagOvGS5MpksUv18EUDImXLkvBmJNm5nR4OZknsqN7ilpEsWeeuz4YQkUrskt/30whv9HmmzRc=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=axis.com; spf=pass smtp.mailfrom=axis.com; dkim=pass (1024-bit key) header.d=axis.com header.i=@axis.com header.b=r/4vCRW9; arc=fail smtp.client-ip=52.101.65.27
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=axis.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=axis.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0659E43C05C;
+	Mon, 29 Jun 2026 15:45:34 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=202.12.124.140
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1782747936; cv=none; b=rQoiH5eZkzWysZgIckctYyK2hU3kqFdzOekA3Tt8PZF8JoMxgHKHOhBaFZr6OnzcvG7NXaNLff2q9Y66dsfSQylqxsAfv3psuQmW58L/nwDdLXRx3u/TR1GcvPjZQPINt/dBvVSGIliysg5eZ+NI+GpN+nF/3xdcYgX4QAaUHYU=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1782747936; c=relaxed/simple;
+	bh=rjFM2D6jrN878gEPa2yebQ2V6lQ4Ly5z/86sDfy9Ef4=;
+	h=MIME-Version:Date:From:To:Cc:Message-Id:In-Reply-To:References:
+	 Subject:Content-Type; b=igqU4KZYGRzC+JPX1EZnz5H3JgfIDGRtyP5vRY5klE5P+k5LblIx/+KB8bDGTyl35qjn9D6bh2NQnO6zSfY7fZ+KKmUxJB4k5hQZjFfx2GFuERn3T8Ma2MZ0M7SXQvue7HJhUWrnTOnuc///Yto63dz3aSU7jf7/13NDsY9nM34=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arndb.de; spf=pass smtp.mailfrom=arndb.de; dkim=pass (2048-bit key) header.d=arndb.de header.i=@arndb.de header.b=NE6t34RD; dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b=BvW9GpEf; arc=none smtp.client-ip=202.12.124.140
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arndb.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arndb.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=axis.com header.i=@axis.com header.b="r/4vCRW9"
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=J/pVgIpyqstzyH5jZ2LttzhSKXirGdOeLcVSuT7BYCCYE0o01bl8snHr5zfnsVUh01A77gLqiluUkyM30X4bwWbNsQOohX9N+j9Fy426rJzBg05dzu2DecGiZGBEM3w1txCp445ob0qKg2mHlhb3Nqg8OJHPNUkHWTqDX3Fhi0iqWQ+ZOJCmRdGOUqM+dTQ4RgR35qFpaim/7vADijNg0uHU5jq+WcAlH+1pkaJADG4lGpMHqv32D7gdI41jNz8Qx4IYrDu+H+8h/aAUkWqb57cS8ze4wG7eAX/5AoXCpKUG7/SfRRaDCuWBdQ7uSykyyuA3fMooZSZ9pQkFFdYiyA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=IMOaDAV2ccuqZR1LVDs8m/Rs2WAoNrB8U7c6rbUlb0g=;
- b=W6fDENmIictyaJZKaHa7shwrqOLTlGoLLgbmQRC2BuXeK/mO0xy9J32olozAoLpn2XGoC5Cva4xPfxJsL+p6RLdwy1n6OP+g94AkSh05je/zxyMvB9ru4qKinMr1sGveSs7cUvSL7fkWeEYPJam2kWw9CDnpG1bL8Tzp/OvxlU7XNg9XrjyXoWhBEJaLAl5vP7Qj3a1wROhg3Dd8tvY0Uu6JZ+bQu1MnXbpuY0VryHANUvaUTrOGGIaKRx8XHB9zOIph67WX1LQ3GkPptYi7+RMloTMuRQMW46iCt6g6wyLxfSiB2SM1BeNFnrZs7kMjt3YoOAR8UoUPMXuI4gGP8w==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
- 195.60.68.100) smtp.rcpttodomain=vger.kernel.org smtp.mailfrom=axis.com;
- dmarc=pass (p=none sp=none pct=100) action=none header.from=axis.com;
- dkim=none (message not signed); arc=none (0)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=axis.com; s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=IMOaDAV2ccuqZR1LVDs8m/Rs2WAoNrB8U7c6rbUlb0g=;
- b=r/4vCRW9yAcXclHf6y6GlkntDbVF3vOWl5YHK+2z6U4K8wol8rHdahtUKSgDt97SC43jkgFEhOyPb+VFLP08o7DavoZJd+8RDwS9cULq53uY+yqL1prXpy5Vi1CNlkGJM23VbmP4VM1CVuyzHtp/tjrv3SxinryEgR+Ve4h4s7M=
-Received: from DU7P191CA0009.EURP191.PROD.OUTLOOK.COM (2603:10a6:10:54e::13)
- by GV1PR02MB8332.eurprd02.prod.outlook.com (2603:10a6:150:57::11) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.159.18; Mon, 29 Jun
- 2026 15:45:09 +0000
-Received: from DB1PEPF000509E3.eurprd03.prod.outlook.com
- (2603:10a6:10:54e:cafe::4d) by DU7P191CA0009.outlook.office365.com
- (2603:10a6:10:54e::13) with Microsoft SMTP Server (version=TLS1_3,
- cipher=TLS_AES_256_GCM_SHA384) id 15.21.159.19 via Frontend Transport; Mon,
- 29 Jun 2026 15:45:09 +0000
-X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 195.60.68.100)
- smtp.mailfrom=axis.com; dkim=none (message not signed)
- header.d=none;dmarc=pass action=none header.from=axis.com;
-Received-SPF: Pass (protection.outlook.com: domain of axis.com designates
- 195.60.68.100 as permitted sender) receiver=protection.outlook.com;
- client-ip=195.60.68.100; helo=mail.axis.com; pr=C
-Received: from mail.axis.com (195.60.68.100) by
- DB1PEPF000509E3.mail.protection.outlook.com (10.167.242.53) with Microsoft
- SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.21.181.6 via Frontend Transport; Mon, 29 Jun 2026 15:45:09 +0000
-Received: from pc67007-2609 (10.4.0.13) by se-mail10w.axis.com (10.20.40.10)
- with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1748.39; Mon, 29 Jun
- 2026 17:44:59 +0200
-From: Waqar Hameed <waqar.hameed@axis.com>
-To: Sebastian Reichel <sre@kernel.org>
-CC: <kernel@axis.com>, <linux-pm@vger.kernel.org>,
-	<linux-kernel@vger.kernel.org>
-Subject: [PATCH 10/10] power: supply: bq24190: Use
- POWER_SUPPLY_PROP_LOAD_SWITCH
-In-Reply-To: <cover.1782746851.git.waqar.hameed@axis.com>
-References: <cover.1782746851.git.waqar.hameed@axis.com>
-User-Agent: a.out
-Message-ID: <e04adf1bd52dd5fea9da593c8d6a017317d12bdb.1782746851.git.waqar.hameed@axis.com>
-Date: Mon, 29 Jun 2026 17:44:59 +0200
+	dkim=pass (2048-bit key) header.d=arndb.de header.i=@arndb.de header.b="NE6t34RD";
+	dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b="BvW9GpEf"
+Received: from phl-compute-04.internal (phl-compute-04.internal [10.202.2.44])
+	by mailflow.stl.internal (Postfix) with ESMTP id B7CF01300119;
+	Mon, 29 Jun 2026 11:45:33 -0400 (EDT)
+Received: from phl-imap-05 ([10.202.2.95])
+  by phl-compute-04.internal (MEProxy); Mon, 29 Jun 2026 11:45:34 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=arndb.de; h=cc
+	:cc:content-transfer-encoding:content-type:content-type:date
+	:date:from:from:in-reply-to:in-reply-to:message-id:mime-version
+	:references:reply-to:subject:subject:to:to; s=fm1; t=1782747933;
+	 x=1782755133; bh=JSWP+oCjDefLm/g9PuV1GqUkziDul2e9yv/ysVQsJLY=; b=
+	NE6t34RDiIItJnjdvpPNLzERZEmy1Uokb4joPY1CUGLVDWSQy6O7lM7YR/JH2Vzz
+	EKjSBDHgy12XKPTe4T6/vFGszy9/X5bhW/dAEDGMtAFHdRGEckNuxhc9bX3PR0VE
+	bfW0MW2BR1AKR58Jk7h1JxjrIx1Kz7REAVnwk0oAlfoj8/mj7rRNlBSR0zA4hhnh
+	nrZ5Ql6KmC6VRVCiJ20YjlxB5Hon27fcsCOduVLOhAndchegK3YeVpKE9Pp1EySs
+	+Hgew3gjNwCsL97JbgGzSZGffJk0l4s3icmD0kqHlku9NQytJJHrK5zKTtqTrlSN
+	nN0K/5MSbp6GsS3AP9v5Xw==
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
+	messagingengine.com; h=cc:cc:content-transfer-encoding
+	:content-type:content-type:date:date:feedback-id:feedback-id
+	:from:from:in-reply-to:in-reply-to:message-id:mime-version
+	:references:reply-to:subject:subject:to:to:x-me-proxy
+	:x-me-sender:x-me-sender:x-sasl-enc; s=fm1; t=1782747933; x=
+	1782755133; bh=JSWP+oCjDefLm/g9PuV1GqUkziDul2e9yv/ysVQsJLY=; b=B
+	vW9GpEfQf5KLp9NtJM6GkHv3I5ZqIvw4Ca2lMiHX8SKqsoxlmypG2EMXAsormSFb
+	oqLT0a0Bl9FJyA6vd4v32gwdXkqPQVCs0Q1Y9jXp5dOSVQI2tfbQcx1ULcycd2no
+	cz4W31l3TBY05Bi2KSWoBV2ZPe6YbfMg4EFP7hw/vkSYA/ePVKRQACV+DCkNrleC
+	7d2U6h7NAcmkprtPUjO4A9XW6JXNK6W9RSqJU2/A289YIaXuaBCd1hJaZ6vsHuTg
+	GNxjVNjZ5DH/aXylHFIrfAuE5N81jk6hj/53mTDmJA3sJAwIS6GzLql0EapV+l/2
+	td6qNY5irlX8jNYf/UttQ==
+X-ME-Sender: <xms:HJNCaoMrkvvQS7N_eQkd2-7GzY3rf6oAfFR9scbcsRER6z01sw7mzQ>
+    <xme:HJNCapwMpwLVp89QaYKeW8Gu_iFO6mtIcDakQdQ1IcDR2awHglttG5XYgUbY-f2KY
+    MUHVhVlQ81X_KxAdYNn48ZwudPAYseWVvBXQ00pUVx7Z5102rCPfbsZ>
+X-ME-Proxy-Cause: dmFkZTGfEuV5uhz9iLc4/VqJewkOwZztE2Q/W2L8MWGpthXJSG6cnqB0ybUTZO/gmTStFr
+    IiMG3oMMwTOd1GN29iTAZh8ELqDq/pvNTu31HqcDhNTnRV5w+qN8TY5zQgqjhrWyTFnLFv
+    a5lC1bd0Nsy33atl2U9pCG8DwHiBT9SAvLqnCXSLgY6ykY2nreWYk0o6gpE7z+zCzbU5QI
+    CLqmPEwYE4mll5+cmq6mEdAN12TaRxj619rRYC2M3spZPblqPgudPkyzWrdvTZpBYK3w/u
+    jqv7Hdzc+TtswHLZ1V6GZ+c/1ZffJJfwsB5JIPB30uvkpQkKQBrSQtzi9AGb8HNFEb2kgE
+    qKkXl9pCm/0B95O8InFrTkKN0fJJdpnCSraeOZvlbYvDYSuDEOsOuD28QLxuf4mNOnHYEc
+    4em35Aufoj/L6MFtoXv8X9guYW3iZk9yMbK8VidKBOe9HIlA6Vy69oYVLWvoeIP/sRtUxM
+    xWA7NaPmd/Kd9MV/ItckFUA5jQ19oB0lqDlABCPUJva5FAJO0rNnJiVDlHuYcKo1028G2L
+    QCmWZB57sVtG9lZURwNtcccEDwqWzXsVO1FCuadUaHZRSO4zh0UrefsDvNNDkSsAklUL8C
+    nDBMgI4yo+tcTzxNjLzthPlRQuu7ftRHxOLDna+Fu5ygZv/F2jkt5rcMUitw
+X-ME-Proxy: <xmx:HJNCaiVR99ITZUIeVHLQIjkAl3W5L7-NY_eXPpexE2ezyiuvPV7Wig>
+    <xmx:HJNCaqDcmel0SZvoqXYoLZayz9Q48weXPGpjP4Y1EEA9-teXfq9kNA>
+    <xmx:HJNCalHWKybZhCSB_h9ep1tLEkKEMci7ODZ3AjJ9oK0yH0tMhtYVDw>
+    <xmx:HJNCamc1hcyXGhjSob0H8QG7OUqPoVNgYLrZzyvRI9sJF6RPK2srWA>
+    <xmx:HZNCahf_1C-xXUG9BEQMuJSIEx8k4QdhQtNpq8TMrV7EM8NaHbepNMFj>
+Feedback-ID: i56a14606:Fastmail
+Received: by mailuser.phl.internal (Postfix, from userid 501)
+	id BA658182007A; Mon, 29 Jun 2026 11:45:32 -0400 (EDT)
+X-Mailer: MessagingEngine.com Webmail Interface
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+X-ThreadId: A045QOfflcQ7
+Date: Mon, 29 Jun 2026 17:45:12 +0200
+From: "Arnd Bergmann" <arnd@arndb.de>
+To: "Andy Shevchenko" <andriy.shevchenko@intel.com>,
+ "Arnd Bergmann" <arnd@kernel.org>
+Cc: "Linus Walleij" <linusw@kernel.org>,
+ "Bartosz Golaszewski" <brgl@kernel.org>,
+ "Marcel Holtmann" <marcel@holtmann.org>,
+ "MyungJoo Ham" <myungjoo.ham@samsung.com>,
+ "Chanwoo Choi" <cw00.choi@samsung.com>,
+ "Geert Uytterhoeven" <geert+renesas@glider.be>,
+ "Andy Shevchenko" <andy@kernel.org>,
+ "Dmitry Torokhov" <dmitry.torokhov@gmail.com>,
+ "Ulf Hansson" <ulfh@kernel.org>, linux-bluetooth@vger.kernel.org,
+ linux-kernel@vger.kernel.org,
+ "open list:GPIO SUBSYSTEM" <linux-gpio@vger.kernel.org>,
+ dri-devel@lists.freedesktop.org, linux-i2c@vger.kernel.org,
+ linux-iio@vger.kernel.org, linux-input@vger.kernel.org,
+ "linux-mmc @ vger . kernel . org" <linux-mmc@vger.kernel.org>,
+ linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org,
+ linux-usb@vger.kernel.org
+Message-Id: <34d4eddf-bfe5-4103-b2c6-143c63ea37f9@app.fastmail.com>
+In-Reply-To: <akKN59lv55CXS3HU@ashevche-desk.local>
+References: <20260629135917.1308621-1-arnd@kernel.org>
+ <akKN59lv55CXS3HU@ashevche-desk.local>
+Subject: Re: [PATCH] [RFC] gpiolib: introduce gpio_name() helper
 Content-Type: text/plain
-X-ClientProxiedBy: se-mail11w.axis.com (10.20.40.11) To se-mail10w.axis.com
- (10.20.40.10)
-X-EOPAttributedMessage: 0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: DB1PEPF000509E3:EE_|GV1PR02MB8332:EE_
-X-MS-Office365-Filtering-Correlation-Id: c1dd1223-e27e-4c60-b67f-08ded5f56662
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|36860700016|82310400026|376014|1800799024|23010399003|6133799003|11063799006|18002099003|22082099003|56012099006;
-X-Microsoft-Antispam-Message-Info:
-	rdxawNOI6FJIOM1OpFQ+Er+PBCbyfQJl1uE17VT31NJI3PN8WQOXQrvLyaZPYCfr/WNC61f+tAVmGtyYWLdzajHkGK7A0u5r+zXB6lP4FyZ4qYP47jddjdCQRlHFUk+foxcIeNGaRUwJB4j2RzCG4Z1abyoxnjneNu19tXumAI/FPHe7EYp++47CSaJtZCgKGlP/Ies2zPOWG9lVcTGPE32O9lYUdYdHf3VYDzDWpIwtuf8qT9Jq0GpDBBIxhh1Mk1pHNB3qdyV2eEXQgV0kUERb+Kq8J1C3wupZ+TJQ7PzsvXPg0rzeKLRRzCumfxpB4rdf6S9fw14I6YDwISVyopyNTPZQkKez6CrWh6VLUQ1qUO8cR39WXObMCk1y4EiYuSuQLJTxq89zig8RLAyKvPJK+60IDO4I6ut4tMLC+7JwM2VOsf1YEbFwGz6yqLQOS5ECDtgJGb4PQo0hPkpqDKfRfLzgMQOQa+MCGf+l5YJUJ2gCPiS1pEI9a7/pSLBBEJGoLVN61VZsH3WxQ0cD1bfkT2tG5IDv6qeIMhe6GOvBKmRrY/TInLBt4KjvyEBzdcjqJb89XNTLaF1gO0QenSZSmgxWXG0sYQzM4/CrOcXs/lb6te5+F8vACGe9lqJFfiWB9xZfKfEk8MXSplG0CdPNaR4alTPd9bXf0h99rMNDMC1pn2JYujuNiofvwNyIHtY6pdLDyTJ0EqVAbgpEZw==
-X-Forefront-Antispam-Report:
-	CIP:195.60.68.100;CTRY:SE;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:mail.axis.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230040)(36860700016)(82310400026)(376014)(1800799024)(23010399003)(6133799003)(11063799006)(18002099003)(22082099003)(56012099006);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	mJD3DAUjFY89ZYRhIyn42xhnRwkb0cN031n9Rdx2N+EKMy0fgmiq4aruiq1249uOoFCKxBX+bw3AeOVKeKCxehDjFqUD6X/JmB+CQiw1EdeNtB0sBi4oUCPQHEcvGdML9/F7w0pIacr/IgX1Zw3M/+8KwQWxWbXIuUOcYtlQL4nLc35XDcYu7Au5GJ4fhYQunnkbOeGWKyFFthqeSBWWYvgjL9Ou+QnafAHTOzEzErP07xZqR7GLB12yQbC4kcqYO9Iqf5yn6+l+4kZ1+6yBRY9VnrFRO8BtPFGbv0XjAiAHyIHdWOaI0MrH8B+4/f0OPziXlCwvEqpxsxBLRw6ar+UxlsZH9djwgKw0eqIw+GOYTbr/k6H3RR9ce0gZTWkA8aOlxRsii7BAdkWMjYbUMzO7Lmt8l0gqp+qQqZKoT/0utiSG5nw5Uu77gzus9OOt
-X-OriginatorOrg: axis.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 29 Jun 2026 15:45:09.4137
- (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: c1dd1223-e27e-4c60-b67f-08ded5f56662
-X-MS-Exchange-CrossTenant-Id: 78703d3c-b907-432f-b066-88f7af9ca3af
-X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=78703d3c-b907-432f-b066-88f7af9ca3af;Ip=[195.60.68.100];Helo=[mail.axis.com]
-X-MS-Exchange-CrossTenant-AuthSource:
-	DB1PEPF000509E3.eurprd03.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Anonymous
-X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: GV1PR02MB8332
+Content-Transfer-Encoding: 7bit
 
-The `online`-property has historically been (ab)used for controlling the
-BATFET in this driver. The framework supports controlling system load
-with `POWER_SUPPLY_PROP_LOAD_SWITCH`. Use this to control the BATFET,
-but keep the support for `online` in order to have ABI backward
-compatibility.
+On Mon, Jun 29, 2026, at 17:23, Andy Shevchenko wrote:
+> On Mon, Jun 29, 2026 at 03:56:29PM +0200, Arnd Bergmann wrote:
+>> +const char *gpiod_name(const struct gpio_desc *desc)
+>> +{
+>> +	return desc ? desc->name : "(no gpio)";
+>
+> Can we get into here with wrong (error pointer descriptor)? Shouldn't you call
+> one of validate_desc() / VALIDATE_DESC()?
 
-Moreover, don't bother with converting the `online`-functions to use the
-new `charger_get/set_batfet_ctrl()` to keep the code more readable. It's
-already quite messy, e.g. `charge_set_online()` calls
-`battery_set_online()`.
+Since all the callers previously call desc_to_gpio and that does
+not even check desc at all, it would be a preexisting bug if
+any caller passed an error pointer.
 
-Signed-off-by: Waqar Hameed <waqar.hameed@axis.com>
----
- drivers/power/supply/bq24190_charger.c | 60 ++++++++++++++++++++++++++
- 1 file changed, 60 insertions(+)
+I added the NULL pointer check since many callers had that
+part originally, like
 
-diff --git a/drivers/power/supply/bq24190_charger.c b/drivers/power/supply/bq24190_charger.c
-index 987ef0e29eb15..1e77816c49a3b 100644
---- a/drivers/power/supply/bq24190_charger.c
-+++ b/drivers/power/supply/bq24190_charger.c
-@@ -1295,6 +1295,58 @@ static int bq24190_charger_set_iinlimit(struct bq24190_dev_info *bdi,
- 			ARRAY_SIZE(bq24190_isc_iinlim_values), val->intval);
- }
- 
-+static int bq24190_charger_get_batfet_ctrl(struct bq24190_dev_info *bdi,
-+					   union power_supply_propval *val)
-+{
-+	u8 regval;
-+	int ret;
-+
-+	ret = bq24190_read_mask(bdi, BQ24190_REG_MOC,
-+				BQ24190_REG_MOC_BATFET_DISABLE_MASK,
-+				BQ24190_REG_MOC_BATFET_DISABLE_SHIFT,
-+				&regval);
-+	if (ret < 0)
-+		return ret;
-+
-+	/*
-+	 * Datasheet defines shipping mode as BATFET off _and_ the watchdog
-+	 * disabled. Since the watchdog is disabled during the whole lifetime
-+	 * (from probe), shipping mode is the only "off" state that can be
-+	 * achievable.
-+	 */
-+	val->intval = regval ? POWER_SUPPLY_LOAD_SWITCH_SHIP :
-+			       POWER_SUPPLY_LOAD_SWITCH_ON;
-+	return 0;
-+}
-+
-+static int
-+bq24190_charger_set_batfet_ctrl(struct bq24190_dev_info *bdi,
-+				const union power_supply_propval *val)
-+{
-+	u8 regval;
-+
-+	/*
-+	 * Datasheet defines shipping mode as BATFET off _and_ the watchdog
-+	 * disabled. Since the watchdog is disabled during the whole lifetime
-+	 * (from probe), shipping mode is the only "off" state that can be
-+	 * achievable.
-+	 */
-+	switch (val->intval) {
-+	case POWER_SUPPLY_LOAD_SWITCH_ON:
-+		regval = 0;
-+		break;
-+	case POWER_SUPPLY_LOAD_SWITCH_SHIP:
-+		regval = 1;
-+		break;
-+	default:
-+		return -EINVAL;
-+	}
-+
-+	return bq24190_write_mask(bdi, BQ24190_REG_MOC,
-+				  BQ24190_REG_MOC_BATFET_DISABLE_MASK,
-+				  BQ24190_REG_MOC_BATFET_DISABLE_SHIFT, regval);
-+}
-+
- static int bq24190_charger_get_property(struct power_supply *psy,
- 		enum power_supply_property psp, union power_supply_propval *val)
- {
-@@ -1351,6 +1403,9 @@ static int bq24190_charger_get_property(struct power_supply *psy,
- 		val->intval = POWER_SUPPLY_SCOPE_SYSTEM;
- 		ret = 0;
- 		break;
-+	case POWER_SUPPLY_PROP_LOAD_SWITCH:
-+		ret = bq24190_charger_get_batfet_ctrl(bdi, val);
-+		break;
- 	case POWER_SUPPLY_PROP_MODEL_NAME:
- 		val->strval = bdi->model_name;
- 		ret = 0;
-@@ -1401,6 +1456,9 @@ static int bq24190_charger_set_property(struct power_supply *psy,
- 	case POWER_SUPPLY_PROP_INPUT_CURRENT_LIMIT:
- 		ret = bq24190_charger_set_iinlimit(bdi, val);
- 		break;
-+	case POWER_SUPPLY_PROP_LOAD_SWITCH:
-+		ret = bq24190_charger_set_batfet_ctrl(bdi, val);
-+		break;
- 	default:
- 		ret = -EINVAL;
- 	}
-@@ -1421,6 +1479,7 @@ static int bq24190_charger_property_is_writeable(struct power_supply *psy,
- 	case POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT:
- 	case POWER_SUPPLY_PROP_CONSTANT_CHARGE_VOLTAGE:
- 	case POWER_SUPPLY_PROP_INPUT_CURRENT_LIMIT:
-+	case POWER_SUPPLY_PROP_LOAD_SWITCH:
- 		return 1;
- 	default:
- 		return 0;
-@@ -1481,6 +1540,7 @@ static enum power_supply_property bq24190_charger_properties[] = {
- 	POWER_SUPPLY_PROP_SCOPE,
- 	POWER_SUPPLY_PROP_MODEL_NAME,
- 	POWER_SUPPLY_PROP_MANUFACTURER,
-+	POWER_SUPPLY_PROP_LOAD_SWITCH,
- };
- 
- static char *bq24190_charger_supplied_to[] = {
--- 
-2.43.0
+      tsdata->wake_gpio ? desc_to_gpio(tsdata->wake_gpio) : -1,
 
+> Also not sure if "(no gpio)" is a good choice. "not requested"? "not provided"?
+
+Any of those seem fine to me, not sure.
+
+>> +static inline const char *gpiod_name(const struct gpio_desc *desc)
+>> +{
+>> +	WARN_ON(desc);
+>> +	return "(no gpio)";
+>
+> Hmm... This will be a second copy with a slight potential of going apart from
+> the other case. Perhaps a #define? (Yes, yes, I understand that there are pros
+> and cons, in particular readability with define is questionable.)
+
+I was mostly trying to optimize for consistency with the other
+stub functions here. Since it should not actually be used at all
+without gpiolib, returning NULL or an empty string here would
+also work.
+
+     Arnd
