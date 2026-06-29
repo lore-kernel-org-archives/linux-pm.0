@@ -1,142 +1,158 @@
-Received: from mail-ej1-f41.google.com (mail-ej1-f41.google.com [209.85.218.41])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4615342EEA4
-	for <linux-pm@vger.kernel.org>; Mon, 29 Jun 2026 15:29:42 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.218.41
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F2FE2425CD8
+	for <linux-pm@vger.kernel.org>; Mon, 29 Jun 2026 15:31:20 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=170.10.129.124
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1782746985; cv=none; b=IFQYWNEF1XQuL+turuS2t/AJfIl3YL9SCGzQRYjXFbmlKNAc4jcQTrA2KpoosIKzJ4whXuqtIuZ+6++gXWflMzMZModpxt1aRzWe6oNT+goyMCinuko8+/kLM8pXP7GJ9s0T0K3W1PzQADeadkZzZeErovIdvixzYsj4Znii+pE=
+	t=1782747082; cv=none; b=qbKvHYOHR6d+QFUxuu6MnBrf5vg1YjgjSBwiYNmN1RfhGs7E90Jm5l0/IPaZbNCGu4MtaAszIUaw6UAGzkDhcvwNTEB0ukWZnyhNpX7KzJSTdvqOkdqvW/DkZ4NJ8x4g6/fohft/2er58d7vYDmTfxQibkihWt8yXOdLI9K5vQQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1782746985; c=relaxed/simple;
-	bh=BODU8nH72xA0ScZ+HzwpHMr8UOUoOL0Z1xiarATGzqY=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=nmKYgsTfBltbOZJWBQXLT5D1cZc08jAcG//m6oE1qglg+kCXFJWmwa2X8Tylnyue01XIr62qUQZAkGN/cmdw/ZBWnR6/mJHUJ/JJMd3oU/aRgwuZ39Ohr/VueUq5hwmaO6CTRcNtSs/hd1aBeQNzNHR2ZudavRbqAuR0QRPrtdo=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org; spf=pass smtp.mailfrom=gmail.com; arc=none smtp.client-ip=209.85.218.41
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
-Received: by mail-ej1-f41.google.com with SMTP id a640c23a62f3a-c12758e75afso109655666b.1
-        for <linux-pm@vger.kernel.org>; Mon, 29 Jun 2026 08:29:42 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1782746980; x=1783351780;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+	s=arc-20240116; t=1782747082; c=relaxed/simple;
+	bh=TelLuQFVj84dg15intj6l6XA0Pbbdt2xzy2TuA9iVP0=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=H5vj6frT57xxSvJHhGFKnERzY0tsyzeYCw5hbPBprvtql7VdSTw1lxcu8XDjFI4BDTo4PvmA6xlLgyZJDXBeQjBV9eIouVUi8pL2aHyBPPmYaYFjKze2pXs3J3UzLsMpxXO4JLj7E5cYgs5gXs6b4VEh3oviybDKcLYs8Mrq/c8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com; spf=pass smtp.mailfrom=redhat.com; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b=Ik0Ruwgq; dkim=pass (2048-bit key) header.d=redhat.com header.i=@redhat.com header.b=SdenFFPp; arc=none smtp.client-ip=170.10.129.124
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=redhat.com
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="Ik0Ruwgq";
+	dkim=pass (2048-bit key) header.d=redhat.com header.i=@redhat.com header.b="SdenFFPp"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1782747080;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=DOCP00x0YVfBobkqwjRQEWaP9evLVGD2m07PpA2VUgw=;
+	b=Ik0RuwgqjZYLZ/b3nsdlt8Gj4H83eWkX6udgvQO+bYEjpdDpKj0lZ8OfJ2qans8Y4l9DgZ
+	XfiDwDMJ8Mh5NB2+S0LB3zwrjNkqGQqWWVqkn1uSxSBOKiXOeqc4O6Sm+T0PhCr6HV6aDd
+	gh7U/Ji7sDqlcxgGBRlJwPPcTu0fJ2M=
+Received: from mail-qt1-f199.google.com (mail-qt1-f199.google.com
+ [209.85.160.199]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
+ us-mta-147-bd0eFv3ZP-uAcMHODmcpsQ-1; Mon, 29 Jun 2026 11:31:17 -0400
+X-MC-Unique: bd0eFv3ZP-uAcMHODmcpsQ-1
+X-Mimecast-MFC-AGG-ID: bd0eFv3ZP-uAcMHODmcpsQ_1782747077
+Received: by mail-qt1-f199.google.com with SMTP id d75a77b69052e-51a1460e3d3so28691751cf.0
+        for <linux-pm@vger.kernel.org>; Mon, 29 Jun 2026 08:31:17 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=redhat.com; s=google; t=1782747077; x=1783351877; darn=vger.kernel.org;
+        h=user-agent:in-reply-to:content-disposition:mime-version:references
+         :message-id:subject:cc:to:from:date:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=3PSkrSvBcOj2Vfr1tOG9HdESUGrp+uU5X3MHl1xNqsM=;
-        b=fxBPE9WHNjpP8qDMapYGvxUxwUkt8X0LGqFveXTJXLcZUOCS/1FEaiZFEL50strdSf
-         2YOpaLuVXkBGCxJH0SAvlujRvOv8sJe2Y9UaF2L04cvtMCHcKi7L4DJEKxUBSPU7+QXk
-         H5qBZDqnPyTr3iqodyU+ZeLonEFjIdR5pPJShGw6B+mdLnPQAgnC68kFQ3mZF1LsvC2L
-         7jh+PLLjQgb74VjmEjcEbugKk/SZFv2DNrPCDoah6HpIYg5prlJgMa2NgNnPF8AIxlp/
-         0soSDlNNwtH7NdBXk+QEdWYGalkemwi1O+VexVGHjx51QWgbBEJKPFq5ysKXIdpDu/eM
-         UOKQ==
-X-Forwarded-Encrypted: i=1; AHgh+Ro6Eid2baxtQmSbM4l2MW+lXKVY7GLYe1X6sUX4OlcivaHvT6Ssb6Q0DB/J8dlpvXdl1Qq6S8eqRg==@vger.kernel.org
-X-Gm-Message-State: AOJu0YyysFWmoJvg1ZUawqZTHt+dlW7hvJQVui/dgqHoB3Lo/TvBaT/x
-	m2IIvyTCySl4cpIIjJnQikQnQEjgXTBiWQHPjEGF9DhPWfY2Nu8NBm+I9w8Sv+mUYOQ=
-X-Gm-Gg: AfdE7cnGXGsU1C2XERa4aBIGdGhdrzqEN0cgtF6Uj9yEg7KqmcoqqWwfoRAaD2znSUW
-	avHP1c/xdTVFK3O+n198SoE7sidJIAcaF7+4o03vm9xNyue3TZUlSod4I+AMwKrYL3156yO0e/F
-	IqSRdcRIf3PLv4jZka3XgzolGsFeaCSnbJ/fNvden+Q7m4QoJgN8q+o7H1hd5ElZClM2c1nR4Sl
-	DVLWtlqCbliE3K13u+HX4sDPqgLp6CDd9s8D5wqVNhy/kA1ITGr+h/uSKU0XAXvH/QVpFKh6W2m
-	dXkyyas6lcLKQE7Xuq+steB4ej+KcP52Kg7gS+FrDFR0ANQW/8tKBXTNxvb9pWXTehJblNxSGSB
-	Laa9dMmIkmPCwdfRiLo/kCMZRj1vx5FNMrxi36gcNYMnq6YywZrY9zGx/TS9wgpwDEXCKqKBRgV
-	lBOrevTPup85zQi80Ac9P4AaI5LheOpg3PiiQN1oJwWpfULv/bRnLtAgq/urDO
-X-Received: by 2002:a17:907:1c88:b0:bff:738c:7a64 with SMTP id a640c23a62f3a-c12061e36f3mr876672066b.49.1782746980192;
-        Mon, 29 Jun 2026 08:29:40 -0700 (PDT)
-Received: from mail-ed1-f53.google.com (mail-ed1-f53.google.com. [209.85.208.53])
-        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-c11fbe05cbfsm805274866b.36.2026.06.29.08.29.38
-        for <linux-pm@vger.kernel.org>
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 29 Jun 2026 08:29:38 -0700 (PDT)
-Received: by mail-ed1-f53.google.com with SMTP id 4fb4d7f45d1cf-6983f5c1c52so3797768a12.1
-        for <linux-pm@vger.kernel.org>; Mon, 29 Jun 2026 08:29:38 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AHgh+RqcFeiz0pdzuzOLcCqMBB7HbD32EmrvSaDOsADc7nxFPd3ROllLH4eg3CVGyHs3xFhqWiekPmYhaA==@vger.kernel.org
-X-Received: by 2002:a17:907:3c8b:b0:c12:f84:85d4 with SMTP id
- a640c23a62f3a-c120f8487bamr796791266b.24.1782746977928; Mon, 29 Jun 2026
- 08:29:37 -0700 (PDT)
+        bh=DOCP00x0YVfBobkqwjRQEWaP9evLVGD2m07PpA2VUgw=;
+        b=SdenFFPp+cQRnEp88s1emS9I3yjI6QV01f6URp6idw70huaWHF+au8ZcdU3NS6JGGa
+         TEHqaJ7y4ry9YdRKFBixS59xX2r8EVQPsYIP6+cmxhehxlD8fa/0PjPH89BFKyO+iLNX
+         i58taShtozF95CGTzwvMQ6JgjAwCVrKPLG0/RB51JkSFysuGvWvo6Po0hD0xJL0U6/P5
+         j74UA0aWu0lvfzplZjO/44kfvuW9hEHpUH6TPIAH9iFYlVvGYe2w7dX08cOfDnmzOvqN
+         R8Jt0XmL4sFk45mW1gKHiyO5faDKc2xYecaA7ynfIQr3QoyO7mI6IFqiaZG3Pee7FzNm
+         daqw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1782747077; x=1783351877;
+        h=user-agent:in-reply-to:content-disposition:mime-version:references
+         :message-id:subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=DOCP00x0YVfBobkqwjRQEWaP9evLVGD2m07PpA2VUgw=;
+        b=NU+O05wRa3ADoFHFKIAHs7CoWbNYNSHU2EhGBKRwRiJqEcO1yOiPIUh0+ljgFnai6K
+         UiFhYUOwngVaicomMqQNldQNQh/DhKolUQuRedzBMuLHi0o/B+pSYWwtOld9JDTvDWAy
+         CvQT73XUGjQ6rVTgtlxewmK2QrYMt5LxzUZDxZzocwrGLYtrEd1yGqZbGRHdBX1/Zd1c
+         s7V+UK6LMRSAD4dvOYuo+gWVlezkvYl9hvhYw2vI+nPjXybXwk1qeOPWKmyvCX74HCIM
+         su33zqy7Fj8ZDe7EFE8Jk0gTO+bOBZb7K3EvgkR5JoPpNOOsN/+5p5RTPTeWRJMz4n26
+         73nQ==
+X-Forwarded-Encrypted: i=1; AFNElJ+6cCCgAH8xskI8TZSrhfmeE+9cwItDOQ4x07xsydB7l10ZiSCmDcuZnFEJX737MkU80710E9KySw==@vger.kernel.org
+X-Gm-Message-State: AOJu0YyBQ0Jyg/D3K1b7sSsiWdK9kpzyfhukvyu8LdbyYM/iplKRAqpz
+	AjNZaL+dZMrrg/Q8yjGtLZ82wmxZxKf98w2j6UeHZMWdYU/iMdhM4tIJwIQ8Kit2Jiwzgbru8WY
+	l3KunildA9a8SLF2eVwm3X9gZxi1sjrUxojRms3YESORomUiA/sCVBxbRWOph
+X-Gm-Gg: AfdE7clV1EnE2PFHMjpyW+9J7G7zjihj2ICWEEGFhdGVqSu6CkaBi5e4Ai+JwN4nQYT
+	9nkZFBRGmOOu1+kHswJmx+bgGQLZRsJJUkdyrXcdb5cGJKSuBl35L1zZd9B6O3IAf/wbRpHMfY/
+	2DeQ5qCxXRe8RAmenoWp+/oPktPVwOQWWmFJ6BUigp5H8+pjn3ZkiIeTPF703gCrFaVIjNI9caz
+	5TGlnmM0C87Wmk+wjjf63D4zig63GS6nbH544nh0SlnzsPER/oO9q2suB7Ub+0yBUrw/K8vm3Ps
+	+Q19ylAf5G4gKeNIScaq8Y0qxXzLL4oZ4Ty8s5V8NMDf5W+Fb07y5MugTs1RbBQZiqDTL9nWbcF
+	Ny4Td8TvK6jUGitWRWDce91WGg/ZyOAoaJzMeiqAPZsOo3g==
+X-Received: by 2002:a05:622a:8d05:b0:51b:f635:9aa9 with SMTP id d75a77b69052e-51bf6359ebamr61940811cf.35.1782747077202;
+        Mon, 29 Jun 2026 08:31:17 -0700 (PDT)
+X-Received: by 2002:a05:622a:8d05:b0:51b:f635:9aa9 with SMTP id d75a77b69052e-51bf6359ebamr61940241cf.35.1782747076630;
+        Mon, 29 Jun 2026 08:31:16 -0700 (PDT)
+Received: from redhat.com (c-73-183-53-213.hsd1.pa.comcast.net. [73.183.53.213])
+        by smtp.gmail.com with ESMTPSA id d75a77b69052e-51bf0697775sm45079741cf.26.2026.06.29.08.31.14
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 29 Jun 2026 08:31:15 -0700 (PDT)
+Date: Mon, 29 Jun 2026 11:31:14 -0400
+From: Brian Masney <bmasney@redhat.com>
+To: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	"Rafael J. Wysocki" <rafael@kernel.org>,
+	Danilo Krummrich <dakr@kernel.org>, Ulf Hansson <ulfh@kernel.org>,
+	Bjorn Andersson <andersson@kernel.org>,
+	Michael Turquette <mturquette@baylibre.com>,
+	Stephen Boyd <sboyd@kernel.org>,
+	Russell King <linux@armlinux.org.uk>,
+	Neil Armstrong <neil.armstrong@linaro.org>,
+	Xuyang Dong <dongxuyang@eswincomputing.com>,
+	Jens Glathe <jens.glathe@oldschoolsolutions.biz>,
+	Hans de Goede <johannes.goede@oss.qualcomm.com>,
+	Maxime Ripard <mripard@kernel.org>,
+	Saravana Kannan <saravanak@kernel.org>,
+	Abel Vesa <abelvesa@kernel.org>, driver-core@lists.linux.dev,
+	linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+	linux-arm-msm@vger.kernel.org, linux-clk@vger.kernel.org
+Subject: Re: [PATCH 1/4] driver: core: introduce dev_add_sync_state()
+Message-ID: <akKPwt8PN_UtawAg@redhat.com>
+References: <20260626-clk-sync-state-v1-0-4156d8196dc8@redhat.com>
+ <20260626-clk-sync-state-v1-1-4156d8196dc8@redhat.com>
+ <fea9665f-d134-4b11-a936-e1f265858ce1@oss.qualcomm.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260629135917.1308621-1-arnd@kernel.org>
-In-Reply-To: <20260629135917.1308621-1-arnd@kernel.org>
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Mon, 29 Jun 2026 17:29:24 +0200
-X-Gmail-Original-Message-ID: <CAMuHMdXhsM4JzArRuB=A46N-Ogbn2Fans+PVJVA-hEytFq=DeQ@mail.gmail.com>
-X-Gm-Features: AVVi8CfSSg4DcoB7CGCYddSfqoWpUaOwYUjpkorP-3LR7U8E7vJ9ucbePhiZLD8
-Message-ID: <CAMuHMdXhsM4JzArRuB=A46N-Ogbn2Fans+PVJVA-hEytFq=DeQ@mail.gmail.com>
-Subject: Re: [PATCH] [RFC] gpiolib: introduce gpio_name() helper
-To: Arnd Bergmann <arnd@kernel.org>
-Cc: Linus Walleij <linusw@kernel.org>, Bartosz Golaszewski <brgl@kernel.org>, Arnd Bergmann <arnd@arndb.de>, 
-	Marcel Holtmann <marcel@holtmann.org>, MyungJoo Ham <myungjoo.ham@samsung.com>, 
-	Chanwoo Choi <cw00.choi@samsung.com>, Geert Uytterhoeven <geert+renesas@glider.be>, 
-	Andy Shevchenko <andy@kernel.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, 
-	Ulf Hansson <ulfh@kernel.org>, linux-bluetooth@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, linux-gpio@vger.kernel.org, 
-	dri-devel@lists.freedesktop.org, linux-i2c@vger.kernel.org, 
-	linux-iio@vger.kernel.org, linux-input@vger.kernel.org, 
-	linux-mmc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
-	linux-pm@vger.kernel.org, linux-usb@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <fea9665f-d134-4b11-a936-e1f265858ce1@oss.qualcomm.com>
+User-Agent: Mutt/2.3.2 (2026-04-26)
 
-Hi Arnd,
+On Mon, Jun 29, 2026 at 12:11:18PM +0200, Konrad Dybcio wrote:
+> On 6/26/26 6:32 PM, Brian Masney wrote:
+> > We have cases where a device node represents a provider for multiple
+> > types of resources, like clocks, power-domains, resets, etc. We
+> > currently have dev_set_drv_sync_state() where a framework or driver
+> > can set the sync_state callback for a device node, however it currently
+> > only supports a single sync_state callback.
+> > 
+> > The pmdomain subsystem currently sets up a sync_state callback in the
+> > core framework, and the clk subsystem will setup it's own separate
+> > sync_state callback in the core framework. These can collide with each
+> > other on some types of devices that have multiple types of resources.
+> > Additionally, some clk drivers already have their own separate
+> > sync_state callback already defined.
+> > 
+> > Let's introduce support for allowing drivers and frameworks to add their
+> > own sync_state callback via a new function dev_add_sync_state() so that
+> > multiple sync_state callbacks can coexist.
+> > 
+> > Link: https://lore.kernel.org/linux-clk/CAPx+jO9JiV16ePLk59hTQzEMnA96Va6Ns4jqJbwyZ6oTT0AjXA@mail.gmail.com/
+> > Signed-off-by: Brian Masney <bmasney@redhat.com>
+> > Assisted-by: Claude:claude-opus-4-6
+> > ---
+> 
+> [...]
+> 
+> > +int dev_add_sync_state(struct device *dev,
+> > +			   void (*fn)(struct device *dev))
+> > +{
+> > +	struct sync_state_entry *entry;
+> > +
+> > +	if (!dev || !dev->driver)
+> > +		return 0;
+> > +
+> > +	list_for_each_entry(entry, &dev->sync_state_list, node)
+> > +		if (entry->fn == fn)
+> > +			return 0;
+> 
+> Do we expect this to be a valid call, i.e. should we WARN_ON here?
 
-On Mon, 29 Jun 2026 at 15:59, Arnd Bergmann <arnd@kernel.org> wrote:
-> From: Arnd Bergmann <arnd@arndb.de>
->
-> Most remaining users of desc_to_gpio() only call it for printing debug
-> information.
->
-> Replace this with a new gpiod_name() helper that returns the
-> gpio_desc->name string after checking the gpio_desc pointer.
->
-> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+That's a good point about adding a WARN_ON() here. I kept this logic
+from when I converted from dev_set_drv_sync_state().
 
-Thanks for your patch!
+Brian
 
-> Not sure if this the way we want to take this, or if the gpio name is
-> an appropriate replacement in debug printk.
->
-> Since most of the callers of desc_to_gpio() and gpio_to_desc() are
-> otherwise in drivers that already depend on CONFIG_GPIOLIB_LEGACY and
-> include linux/gpio/legacy.h, only a handful of instances remain that
-> are otherwise in files that otherwise only use the descriptor interfaces:
-
-> --- a/drivers/gpio/gpio-aggregator.c
-> +++ b/drivers/gpio/gpio-aggregator.c
-> @@ -758,8 +758,8 @@ int gpiochip_fwd_desc_add(struct gpiochip_fwd *fwd, struct gpio_desc *desc,
->
->         fwd->descs[offset] = desc;
->
-> -       dev_dbg(chip->parent, "%u => gpio %d irq %d\n", offset,
-> -               desc_to_gpio(desc), gpiod_to_irq(desc));
-> +       dev_dbg(chip->parent, "%u => gpio %s irq %d\n", offset,
-> +               gpiod_name(desc), gpiod_to_irq(desc));
->
->         return 0;
->  }
-
-Before, this printed:
-
-    gpio-aggregator gpio-aggregator.1: 0 => gpio 589 irq 188
-    gpio-aggregator gpio-aggregator.1: 1 => gpio 590 irq 189
-
-After, this prints:
-
-    gpio-aggregator gpio-aggregator.1: 0 => gpio (null) irq 188
-    gpio-aggregator gpio-aggregator.1: 1 => gpio (null) irq 189
-
-Same results for instantiation using sysfs or configfs[1], although
-the latter does have optional support for specifying the name.
-
-[1] Documentation/admin-guide/gpio/gpio-aggregator.rst
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
--- 
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
