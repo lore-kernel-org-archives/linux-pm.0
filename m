@@ -1,33 +1,87 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4B52A3FB7D3;
-	Mon, 29 Jun 2026 10:03:47 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4A5E83FC5C1
+	for <linux-pm@vger.kernel.org>; Mon, 29 Jun 2026 10:06:25 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1782727428; cv=none; b=l6t2//POIFFZ34FVQvdaflR/jJPAp1m21vrnpxWe37yzJ5dSq4Zbt1kPZz73Di78pRw7tl5wl0h/cgztQmvnR+/cUYf6XaRBxAzH7calYOk0BFXdWzX08q0PpWSUw6gLan/TdmGFpD7GGAzAJKQJdi9f3y9HJXFrzB3ZWA/a+8w=
+	t=1782727586; cv=none; b=p+TzBWrLFJBRWmGdGReGo//QGxG45rO6zReLgW0/xZGZCbkaU6nD+Re9l9kdFYp8Xbl9tPK76ssy+dI0rFXgmzlJoSRVuTDsb/6s2hIoX8IicM6vdtlORahmy2U5XUyNtngLKTeh6uGmNyAIK14YtOqzoXaYnOk/5z+l87PUV8o=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1782727428; c=relaxed/simple;
-	bh=bwXLL+XJvWMAXziHSYZE2po8bOEpQlV1khCY0EzhTyk=;
+	s=arc-20240116; t=1782727586; c=relaxed/simple;
+	bh=eYrZuUDW54GVV8/zA+Zs7S0GCSgEOyJGq3UYJVTrPJk=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=IQ252thFgR2Iz7PfFLfn1V6BBoZht0MsEZENW9OVj1IU1a8iOvlDnSZEp3xQLq7QN7vzMY5r9kmvQM5ii1LaHAcau6r1NHQNLyrtR6augq4TeA/LDw/oOxQAc8T4dHGUNddkSSLcDL2KnY7TW+QG0jWZ44AZB+uV/eozJeYIn48=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=KoarWmxW; arc=none smtp.client-ip=100.103.45.18
+	 In-Reply-To:Content-Type; b=g7ZsdQQXo7U1M+TMwAfNNeC+NuhlaFOSLyGndMVVBB1BCxZ9nedBuy/i9r5fKJSTEt8zq+lfL3EyFJkz8DBA7MIuV6xQrs/9iLjAy2zS+/mIapgtrYVd8rlBFTYdWN9Xh+JAnjQPcjNgLKAHyBEkz5/Y7/PsM6dVOb206Bc0IA8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=MqZ7xCHb; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=Y4qv8cEW; arc=none smtp.client-ip=205.220.168.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="KoarWmxW"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 62DD01F000E9;
-	Mon, 29 Jun 2026 10:03:41 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1782727427;
-	bh=Jd+hmxLURQiD9Sgh35jmlQ8k1qpegebRuBU4J3XstSM=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To;
-	b=KoarWmxWjVDe2EjBPztEGnT09eM0m6YQTFgIHSu01qGRWVz6iiIBSvc2hxB0aVpA+
-	 Wuf+esX0EphxkjbdxfFD1lboJUsG94uCFUGTIyd8yxNorQozTn6vvDsgpR/rpNdL4o
-	 HByjVHsUeDPVTYKR1Sifft2E/47evt1V26MI06NT49+UAug0JkOuVEbGQ6VLksEqk3
-	 +18uw2WA6RcmwawTnahlR77ecg/pVNMLKWjLN+O0I2tsf6vegWhlM03opgOpxEfxNs
-	 R0erYHaOrtSuXcJi+hQRduGwhqYFQincxnCDCDTyPEcNn07kccpBtJmSpWhSBBT66W
-	 q3Iq4tTUkOsUQ==
-Message-ID: <361fd2e5-a5f9-42fe-90fc-bc0af109553e@kernel.org>
-Date: Mon, 29 Jun 2026 12:03:39 +0200
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="MqZ7xCHb";
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="Y4qv8cEW"
+Received: from pps.filterd (m0279867.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 65T8OOIn2349150
+	for <linux-pm@vger.kernel.org>; Mon, 29 Jun 2026 10:06:24 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
+	lVt6Gi25NiYqcnkyDANHxTfSbL/4fUYAeYFJ+RUI7cE=; b=MqZ7xCHbU1O4tss5
+	EMuW985nkiThlT3+GsjK3ceVrdJuznujEYmCOJYJlPcy2hDjSRSBLI0qofA8W3Df
+	UHspn07PPrzMDWwOvJI5Qpn1m2PHQGN2TmD0kf9mA8JL2RyXxR44ndHznQPt+BMO
+	VlMR23Efa7mhmgwVR/T3CJjflWI+LPBYyNyAcjgnFUcu6ZGX4sW+aVt31Cv1Aa+f
+	7H2ZCGXJLwF8gCLP7f58JXPPd6UBVusZLffrQ5RxDjwIPfUZNmWa5Jjjkisz1SBv
+	gEpeffsGZjxTM+UeDMDISujGXSAcdiWYJIHnne8FN3A9xH98a1KixsWEy7LKC1Jt
+	ChXDMQ==
+Received: from mail-qt1-f198.google.com (mail-qt1-f198.google.com [209.85.160.198])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4f3n5s0ept-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <linux-pm@vger.kernel.org>; Mon, 29 Jun 2026 10:06:24 +0000 (GMT)
+Received: by mail-qt1-f198.google.com with SMTP id d75a77b69052e-51bea07880dso3929881cf.0
+        for <linux-pm@vger.kernel.org>; Mon, 29 Jun 2026 03:06:24 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=oss.qualcomm.com; s=google; t=1782727584; x=1783332384; darn=vger.kernel.org;
+        h=content-transfer-encoding:content-type:in-reply-to:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=lVt6Gi25NiYqcnkyDANHxTfSbL/4fUYAeYFJ+RUI7cE=;
+        b=Y4qv8cEWHLW4hejr1zbmvCqTGdoN1vjGCznMYeHpKTXKTM2q+hH2rd3Tvh3fc+BWVc
+         Kpvd1kX2UZAvPVocYP/Durbb0apevE8OUYv1zT2U2hL5cBPVLHTNG+RX08ZYzlakabwY
+         APysXAdpKH5co08+QNoWQaHKiECRVaxJTL/u5bcNs7UHVU9IH5fz/ge4kIdS2m4mRzPo
+         /QZQLyRAmbYOU5qbNBV8+GiF864Lo8cO+Zetd1lNHRvjXjdQn73g5lE9SFLd7I60xeXW
+         EN1go0kkkJvXAx6xrfAbtdY+u9Oav0GM4kg/dHAUjlVBJ3zyh/CDJ6tuWkq6mv7xSPHB
+         4aKg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1782727584; x=1783332384;
+        h=content-transfer-encoding:content-type:in-reply-to:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=lVt6Gi25NiYqcnkyDANHxTfSbL/4fUYAeYFJ+RUI7cE=;
+        b=m5cMggxPNuc0iJI70t5+I1Z7vuZj3Qa0bhm2PC2IfNDTN8JYASBMYt2lNTV8/PONzm
+         iJSUeK35MOD0xtnmkoOESy0KTNUKLUGIomiUlk5p7VdQdGllYOadI0+mHSD0wxhjdIrP
+         ij+MNP1Ijfd6A1wXjxvRbcXrSokJUsEJVRorhfCGlgmQfggtRF/8YUT0pInJFcYO66Zc
+         sqxiuidl79jNFaPg2M1h4Xk1PuwZ6rEEZX9RwmnjaZYPFmRUGLnGE3AH0qtz5+eR7odC
+         kGc2fPrluvRJKjqETRIu12ceZB2sd0xtNeRv+P52heH30OmwGJwQrjZEnyIDjg2JusQO
+         OZXg==
+X-Forwarded-Encrypted: i=1; AFNElJ9+n8P5dFu+YdSNYliIBRVBOJLIDoiUshBdWhfFRRkG/W0SmopvrfrXjjnEqJfjp+HwCaQpz8XXpg==@vger.kernel.org
+X-Gm-Message-State: AOJu0YwkARww5uUEG7VxGi3h4Q3B+EaUNLeofyLYNbGqS2uhqE9XAZek
+	kNYO9BYXB1jCjYLUlVmwB6YlaF3qkhrxkhlLGS7CHMhF+jrPQBIX1xe8/OU25dJ/si5WyL/M+L8
+	al/KPcaQknow9dqg6daIj6BJutBcP5VIBqa/+bX3qxJWGnaxdVJnTEJwpyEQIKg==
+X-Gm-Gg: AfdE7cnhQn720xLGhV3CPsOYjbp9Ye2Jh1+iae56/QRsrYaKd2CgUIzwPvp7DkRW1VL
+	FFVVIDh/WRSORpMrk2htFa2ftvHDO67wtKqOUD1lhx4voiDJV//5oH8fsoZUGod0I7BFi9aCt5I
+	gK5HuPCwxVXd3aa2OUfLCbu9axwwbA42WfJVqJZeZjtlrxFNag5R/DEBPcoVpQ8wQggoyo23Z7L
+	iEEfpEteEREpMd7USLa4qaNg0dhsWbVbPgnAcboRjF7aM6hk/LNV9mFLemVVjyVa0xjJQEGntn3
+	e4w+hCIj+L8kL64CYaQvF3b20O5ARFtK4Xoo91LTMGE6GsUdbSh95SWzIkGgcqs5Zl42vKKHU34
+	VpNiESlwY/5zhTD84Kxx4DIsSQ1QKY4UQFa4=
+X-Received: by 2002:a05:622a:3d0:b0:51b:eab3:4ef1 with SMTP id d75a77b69052e-51beab3578cmr59352131cf.4.1782727583437;
+        Mon, 29 Jun 2026 03:06:23 -0700 (PDT)
+X-Received: by 2002:a05:622a:3d0:b0:51b:eab3:4ef1 with SMTP id d75a77b69052e-51beab3578cmr59351661cf.4.1782727582842;
+        Mon, 29 Jun 2026 03:06:22 -0700 (PDT)
+Received: from [192.168.120.170] ([178.235.128.140])
+        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-c11fbbe8125sm747959766b.19.2026.06.29.03.06.20
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Mon, 29 Jun 2026 03:06:21 -0700 (PDT)
+Message-ID: <bfacf381-8112-4c12-b87c-46cab7d7f284@oss.qualcomm.com>
+Date: Mon, 29 Jun 2026 12:06:19 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -35,296 +89,74 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [RFC PATCH 00/40] mm: reliable 1GB page allocation
+Subject: Re: [PATCH 0/4] clk: implement sync_state support
+To: Brian Masney <bmasney@redhat.com>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Danilo Krummrich <dakr@kernel.org>, Ulf Hansson <ulfh@kernel.org>,
+        Bjorn Andersson <andersson@kernel.org>,
+        Michael Turquette <mturquette@baylibre.com>,
+        Stephen Boyd
+ <sboyd@kernel.org>, Russell King <linux@armlinux.org.uk>,
+        Neil Armstrong <neil.armstrong@linaro.org>,
+        Xuyang Dong <dongxuyang@eswincomputing.com>,
+        Jens Glathe <jens.glathe@oldschoolsolutions.biz>,
+        Hans de Goede <johannes.goede@oss.qualcomm.com>,
+        Maxime Ripard <mripard@kernel.org>,
+        Saravana Kannan <saravanak@kernel.org>,
+        Abel Vesa <abelvesa@kernel.org>
+Cc: driver-core@lists.linux.dev, linux-kernel@vger.kernel.org,
+        linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org,
+        linux-clk@vger.kernel.org
+References: <20260626-clk-sync-state-v1-0-4156d8196dc8@redhat.com>
 Content-Language: en-US
-To: Lorenzo Stoakes <ljs@kernel.org>, Rik van Riel <riel@surriel.com>
-Cc: linux-kernel@vger.kernel.org, kernel-team@meta.com, linux-mm@kvack.org,
- david@kernel.org, willy@infradead.org, surenb@google.com,
- hannes@cmpxchg.org, ziy@nvidia.com, usama.arif@linux.dev, fvdl@google.com,
- Andrew Morton <akpm@linux-foundation.org>, Jonathan Corbet <corbet@lwn.net>,
- Chris Mason <clm@fb.com>, David Sterba <dsterba@suse.com>,
- Steven Rostedt <rostedt@goodmis.org>, Masami Hiramatsu
- <mhiramat@kernel.org>, "Rafael J. Wysocki" <rafael@kernel.org>,
- Oscar Salvador <osalvador@suse.de>, Mike Rapoport <rppt@kernel.org>,
- linux-doc@vger.kernel.org, linux-btrfs@vger.kernel.org,
- linux-trace-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
- linux-cxl@vger.kernel.org, Linus Torvalds <torvalds@linux-foundation.org>
-References: <20260520150018.2491267-1-riel@surriel.com>
- <aj9yrlB0TrlYCLlf@lucifer>
- <528e3a5fbc27c9dc7a098121c32b7679b4c9962a.camel@surriel.com>
- <akIjA_dqh4OHAYo4@lucifer>
-From: "Vlastimil Babka (SUSE)" <vbabka@kernel.org>
-Autocrypt: addr=vbabka@kernel.org; keydata=
- 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
-In-Reply-To: <akIjA_dqh4OHAYo4@lucifer>
+From: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
+In-Reply-To: <20260626-clk-sync-state-v1-0-4156d8196dc8@redhat.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+X-Proofpoint-Spam-Info: AW1haW4tMjYwNjI5MDA4MSBTYWx0ZWRfX7TSBgxJzV7Rm
+ UNRkH7VuKv5EXaD9LAQ7vy48bjZ47E3Wjr4z5oTL0rKvnPJ2Fp5XV0fX32WSuhcbwdIfhsmZgYk
+ itizaJK4ac8ZdOyqeurE6nzaMBTUK70=
+X-Proofpoint-ORIG-GUID: QZrhBYsLU5iYZTpQOysNtk5xPQsK9osl
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNjI5MDA4MSBTYWx0ZWRfX8Gk7sW4ZufsY
+ jRQbYMxYzfo8JKH+5C3QTt9itANiYgpoMtq4Q/9DAUfb9DA/f1083EvZG15GmKRGA7Mce8bVFqd
+ AAYY9TWL3ZIhmhsMgRfl2/atJFWNSVwCPAD8Ya9qe8mA+KrDqUsgYp/PjaKav4ZZ+uTEG6eLxWY
+ EkCr4d0qU+d4eSPb66XW8IR0dEESrMHXPJxBwf7S1cc66rN43USrBbc0zQcl4VMNaIvD6AY38ZQ
+ 5nMQ0D5QCX544fw961pG/BU8y5XJFP5XbZsLXCEruqdubwRlD4NcnWfqORmMCOywHfITnTwsu1z
+ cL+zElOaYsCOLKfvi7h4t4qXtX4iAlIhLAWXU2Kd4PW1KZUqEv2TQgWntrwIHhTGM97I3F/qvEC
+ lXXIqMn93BVXRc52LxUiIqLCk6x2LnNDlfup2zgOLgo2nvxDjY3h7O7SiT3KGVLlPr7InIjhkcf
+ IgIkZBj1UPBZJfEIz0Q==
+X-Authority-Analysis: v=2.4 cv=NZzWEWD4 c=1 sm=1 tr=0 ts=6a4243a0 cx=c_pps
+ a=mPf7EqFMSY9/WdsSgAYMbA==:117 a=PRfkaYvzSr8QmIIGAkY2Sg==:17
+ a=IkcTkHD0fZMA:10 a=FelO9ux0wxsA:10 a=s4-Qcg_JpJYA:10
+ a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=eoimf2acIAo5FJnRuUoq:22
+ a=NDI1EqwwtgGkLGOeOxsA:9 a=QEXdDO2ut3YA:10 a=dawVfQjAaf238kedN5IG:22
+X-Proofpoint-GUID: QZrhBYsLU5iYZTpQOysNtk5xPQsK9osl
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.125,FMLib:17.12.100.49
+ definitions=2026-06-29_02,2026-06-26_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ phishscore=0 impostorscore=0 spamscore=0 adultscore=0 suspectscore=0
+ clxscore=1015 bulkscore=0 priorityscore=1501 malwarescore=0
+ lowpriorityscore=0 classifier=typeunknown authscore=0 authtc= authcc=
+ route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2606150000
+ definitions=main-2606290081
 
-On 6/29/26 11:29, Lorenzo Stoakes wrote:
-> TL;DR - please don't send unfiltered LLM code to list _at all_. If you want
-> to share it, link to a repo.
+On 6/26/26 6:32 PM, Brian Masney wrote:
+> The existing support for disabling unused clks runs in the late initcall
+> stage, and it has been known for a long time that this is broken since
+> it runs too early in the boot up process. It doesn't work for kernel
+> modules, and it also doesn't work if all of the consumers haven't fully
+> probed yet. Folks have long recommended to boot certain platforms with
+> clk_ignore_unused to work around issues with disabling unused clks.
 > 
-> On Sat, Jun 27, 2026 at 09:36:51AM -0400, Rik van Riel wrote:
->> That is the one reason I sent out RFC code before it
->> is ready. I am looking for feedback on the concepts
->> in this series.
-> ...
->> Once I know what I need to do, coming up with a
->> cleaner implementation is very doable.
-> ...
->> The mess in the RFC is the result of trying something
->> that seemed right, watching it fail in some subtle
->> way, and trying to fix it up.
-> ...
->> > But the execution has to be _completely_ rethought.
->>
->> There's no argument there.
-> ...
->> > Another issue here is maintainer time - even this _extremely_ light-
->> > touch
->> > review has taken me a few hours (of my weekend :). To review it in
->> > detail
->> > would take probably DAYS of dedicated work.
->>
->> I suspect there is a mismatch in expectations here.
->>
->> I already knew this code has to be totally redone.
+> This series fixes this by adding support for sync_state to the clk
+> subsystem.
 > 
-> I'm glad we are in agreement on this :)
-> 
-> But in general I feel you have sent this and at least one other series like this
-> without being as clear as you should have been.
-> 
-> I hate to belabour the point but just to be clear:
-> 
-> * You label one patch [DO-NOT-MERGE], but none of the others (implying they
->   are candidates for being merged) [0] and the cover letter has TODOs,
->   including trivia like naming, but nothing about the code.
-> 
-> * You sent a non-RFC series with identical code quality issues [1]
->   recently.
-> 
-> * Until I pointed it out, you were responding to other review here as if
->   the series was genuinely was intended for (eventual) merge:
-> 
->   - "This is a userspace-visible removal. Writes to
->      /proc/sys/vm/watermark_boost_factor will now return -ENOENT instead of
->      being accepted, breaking userspace." [2]
-> 
->      <-: "I'll just drop this patch for now." [3]
-> 
->   - "I left a small code nit inline, but whether you take that suggestion
->      or leave it, you can add Reviewed-by: ..." [4]
-> 
->     <-: "I sent it with this series mostly because it's needed to make the
->     series work, and to provide context on why it's needed. I'm happy to
->     resend it with a GFP mask passed in by each caller. That would look
->     better, indeed!" [5]
-> 
-> So to be concrete, if you send really rough code, Use [pre-RFC] or [DO NOT
-> MERGE] (on the series as a whole) to make that clear and say so in the
-> cover letter VERY VERY clearly.
+> Changes in v3:
 
-Yes please. [POC NOT-FOR-MERGE] perhaps?
+The version tag is missing from the subjects of the patches you sent
+By the trailers, it seems like you used b4.. did you play with
+prep --force-revision by chance?
 
-> Or, you can put it in a repo somewhere and link it in an email discussing
-> the concepts (like I did with scalable CoW for instance).
-
-Indeed.
-
-> As above, firstly make it clear that the code you are sending for review is
-> not to be reviewed so people don't waste highly contended maintainer time
-> on that! :)
-> 
-> Also, you didn't respond to my point regarding cc'ing the right people -
-> but that's clearly something you need to get right if you want this kind of
-> feedback to start with.
-> 
-> For instance, you didn't cc- the page allocator maintainer (Vlastimil) on a
-> series that is fundamentally changing the page allocator. That's not going
-> to help with feedback.
-
-Right! Thanks a lot for adding me, Lorenzo.
-
-> In general, this area of the page allocator and compaction isn't my
-> specialism in the kernel so I can't give you the in-depth feedback you need
-> on that.
-> 
-> But I do have thoughts in general as to how to achieve what you want here:
-> 
-> Firstly - you should try to summarise what you're doing here and what
-> you're changing alongside the trade-offs as clearly as you can in the cover
-> letter.
-> 
-> Then highlight what it is you need feedback on, broken out into clear
-> questions or points that make it easy for people to respond to.
-
-Yep.
-
-> And _you have already done this_ in your reply here:
-> 
-> * "How do people feel about splitting up the free lists, so each gigabyte
->    (well, PUD sized) chunk of memory has its own free lists?"
-
-My immediate response is that now we'd need to search multiple sets of lists
-instead of a single one? What about the overhead?
-
-Having a POC (even vibe-coded) for measuring that overhead might be actually
-useful to quickly figure out whether the idea is viable or not.
-
-But then the code doesn't need to be sent as a huge series if it's not for
-review. As Lorenzo said, git repo link is enough.
-
-> * "How can we balance the desire for higher-order kernel allocations,
->   against the desire to preserve gigabyte sized chunks of memory that can
->   be used for user space?"
-> 
-> * "How do we balance the desire to keep compaction overhead low with the
->    desire to do higher order allocations almost everywhere?"
-
-How can we have a cake and eat it too? :)
-
-> I think a really good way of doing this would be to start out with
-> something like:
-> 
-> 	Right now compaction often fails to achieve what we need, with
-> 	fragmentation occurring anyway and (for instance) THP stalling on
-> 	the availability of higher order folios.
-> 
-> etc. etc.
-> 
-> Summarising _the problem_.
-> 
-> Then a section about your proposed solution, e.g.:
-> 
-> 	I propose a means by which we proactively achieve gigabyte-sized
-> 	pageblocks with logic which maintains these as physically
-> 	contiguous under both ordinary and contended workloads
-> 
-> Then list out the "secret sauce" of your approach, e.g.:
-> 
-> 	This works by arranging memory such that unmovable allocations are
-> 	grouped at <blah blah blah> etc.
-> 
-> Then raise your questions e.g.:
-> 
-> 	I'd like to ask the community - how do people feel about splitting
-> 	up the free lists, so each gigabyte (well, PUD sized) chunk of
-> 	memory has its own free lists? <etc. etc.>
-> 
-> Then make it clear whether this is an RFC that is ready for primetime or
-> not:
-> 
-> 	This series is simply intended as a proof-of-concept - PLEASE DO
-> 	NOT REVIEW THE CODE per-se, but rather comment on the concepts!
-> 
-> (And obviously as above, if that _is_ what you intend, underline it with
-> [DO NOT MERGE] or [pre-RFC] or something like that).
-
-Ack.
-
-> I'd also very strongly suggest (as I did in my original reply) breaking out
-> parts that can be broken out as prerequisite series.
-> 
-> If you're doing something good or useful _anyway_ then just send that
-> separately first, and have later work rely on the earlier work.
-
-Ack.
-
-> There's no rush, this is huge and will take time.
-> 
-> A final KEY point:
-> 
-> NEVER submit unfiltered code generated by an LLMs to the list in _any_
-> form. If you want people to access code like that to test or something,
-> then put it in a remote repo and link to it.
-> 
-> The code is SO overly complicated and SO messy that it's really difficult
-> for people to understand what's actually going on.
-> 
-> At the heart of what you need here is CLARITY.
-> 
-> You need to CLEARLY communicate what it is you're doing so busy maintainers
-> can examine it. That's the _only_ way you're going to get something like
-> this merged.
-> 
-> The LLM-generated code is so awful that ain't nobody got the time to try to
-> understand what it's doing.
-
-Indeed.
-
-> The workload for this really has to be on submitters, not maintainers.
-> 
-> And what you've done, even if not intended, is workslopping, and that's
-> really not acceptable. Quoting the kernel process on tool-generated content
-> [6]:
-> 
-> "If tools permit you to generate a contribution automatically, expect
-> additional scrutiny in proportion to how much of it was generated.
-> 
-> As with the output of any tooling, the result may be incorrect or
-> inappropriate. You are expected to understand and to be able to defend
-> everything you submit. If you are unable to do so, then do not submit the
-> resulting changes.
-> 
-> If you do so anyway, maintainers are entitled to reject your series without
-> detailed review."
-> 
-> As per this and my previous reply, AI slop doesn't scale, even as an RFC -
-> I won't have time to reply like this in future, and we will just have to
-> reject your series out of hand, which helps nobody.
-
-True. Thanks a lot for going out of your way on this!
-
->>
->>
->> --
->> All Rights Reversed.
-> 
-> Thanks, Lorenzo
-> 
-> [0]:https://lore.kernel.org/all/20260520150018.2491267-41-riel@surriel.com/
-> [1]:https://lore.kernel.org/linux-mm/20260616190300.1509639-1-riel@surriel.com/
-> [2]:https://lore.kernel.org/all/20260526140204.1390573-1-usama.arif@linux.dev/
-> [3]:https://lore.kernel.org/all/2ecf71858845e7d14c718b1a6845389cb78b986e.camel@surriel.com/
-> [4]:https://lore.kernel.org/all/20260520174749.GA1458531@zen.localdomain/
-> [5]:https://lore.kernel.org/all/daa29c92f055d028a5b3ec0e42cfb1ee1496a593.camel@surriel.com/
-> [6]:https://docs.kernel.org/process/generated-content.html
-
+Konrad
