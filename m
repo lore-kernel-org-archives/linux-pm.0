@@ -1,86 +1,107 @@
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id B0803347506;
-	Mon, 29 Jun 2026 14:05:59 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
+Received: from vps0.lunn.ch (vps0.lunn.ch [156.67.10.101])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AED5D372B4F;
+	Mon, 29 Jun 2026 14:07:24 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=156.67.10.101
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1782741961; cv=none; b=TNcBNsYJgMIu40og1B91OLKxQjvsXyOVVws/nqgOe2Pg3NKepXvp6yIjfvvvKsSVKbjCI4JofUtAVDTR8ghXnwvtlp8nJ3hR41CoB4mXewug0Bk5kuoMRK0o9osW1rJwNVDVspApDcOmWsVYXKM6b+8vU7PmBJ/lNoKNtCMKAzE=
+	t=1782742048; cv=none; b=tYJghlsXhPQDR+v6q64MymrJdwFqLeIib2XsSvz2v5OSubWBlmVLmWo/mKfXJoDcRz+BDbj2WGpcR/UOzIwJ+zokynKLP5oMKT4AqnZDWTpP8TRSOIzrPBIk+6/gR6BjJG9/CrReJ2Ewa8S5Htmbzd0BDqTEE3fCtUSUyGWfs1E=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1782741961; c=relaxed/simple;
-	bh=FnuueWM1I3R3V6FvYpALJCpc8zOP3fwSXA+tyAe9Ues=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=k2dQxq18/HkVyvO7u2FveY4Ez1e8fIBSCiYVSX3gW/vgXV1eMacEKDeQzlwI27bKpiKIyvXcdvKfgqYhJCCTmT4SwAUrgVLZ89c2gdFkYfHXMNslHwkaqVcN+Rh4q1/2JIURvpAdkotF31IJDZtNVK1a2riw95pKeVN+rvey4dI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=TJ+JzPq+; arc=none smtp.client-ip=217.140.110.172
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
+	s=arc-20240116; t=1782742048; c=relaxed/simple;
+	bh=QoLTJ57tMoqWinR7HP1trdAaWAx87URKv1Q4ZqAnHvs=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=j2QZhXTeZzLw1l7yPiJC7OgJ/OVN/ARA06Rxodh8uNjXwzR3aYTgZoWL4pwbIHov/MLOE7yDC3r4H5ALk/fQR7VS+jDAWm6ZgXBfoXF0a/Vm+R/V7xgmEmdCM01/Il2PG8t8jsDNHsiHiDsj/25Jz+FtdwPv47RPotz2w+AziKw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=lunn.ch; spf=pass smtp.mailfrom=lunn.ch; dkim=pass (1024-bit key) header.d=lunn.ch header.i=@lunn.ch header.b=sPe3Iq+2; arc=none smtp.client-ip=156.67.10.101
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=lunn.ch
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=lunn.ch
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="TJ+JzPq+"
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 9CD5C169C;
-	Mon, 29 Jun 2026 07:05:54 -0700 (PDT)
-Received: from [10.57.29.109] (unknown [10.57.29.109])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 0B62E3F905;
-	Mon, 29 Jun 2026 07:05:55 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1782741959; bh=FnuueWM1I3R3V6FvYpALJCpc8zOP3fwSXA+tyAe9Ues=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=TJ+JzPq+couSJ3On7oulw/MC0x6e8UuOEQ1om95XBkNjobj4qbzSMXg9GX1yPZy40
-	 sd281DEC20RqIwmAxJTeNVhfCTXH6SKReOpoQ74L2J4uzkIP5ABAOkckBNwV96a5Pg
-	 bcMcRbNyaPqCM+FULNEEJQuWwftHwwNaxkjk9Iqg=
-Message-ID: <7f960dca-2de2-4831-8690-a40fdec848dd@arm.com>
-Date: Mon, 29 Jun 2026 15:05:54 +0100
+	dkim=pass (1024-bit key) header.d=lunn.ch header.i=@lunn.ch header.b="sPe3Iq+2"
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=lunn.ch;
+	s=20171124; h=In-Reply-To:Content-Disposition:Content-Type:MIME-Version:
+	References:Message-ID:Subject:Cc:To:From:Date:From:Sender:Reply-To:Subject:
+	Date:Message-ID:To:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:
+	Content-ID:Content-Description:Content-Disposition:In-Reply-To:References;
+	bh=AK6FrYtKSIh8cngqIV8WnN9GXpQxjhIF++nUuJZfwbU=; b=sPe3Iq+2B0cNSg858/MXj17mqs
+	nGlNw4jzWt1Blm83SZhOTLuScCneipEQxYrk7fXoJmwYNeCbx8QSg1zGqipMB+jk5FPKkzUkyFMIs
+	HpGichrCIBqHOm8y6SCjU5HgKkXaATkMgoXLLY+KqvXdNOnkRWFnviWgOcyKmCa5rfCU=;
+Received: from andrew by vps0.lunn.ch with local (Exim 4.94.2)
+	(envelope-from <andrew@lunn.ch>)
+	id 1weCdA-009lYC-UB; Mon, 29 Jun 2026 16:06:36 +0200
+Date: Mon, 29 Jun 2026 16:06:36 +0200
+From: Andrew Lunn <andrew@lunn.ch>
+To: Guru Das Srinagesh <linux@gurudas.dev>
+Cc: Miguel Ojeda <ojeda@kernel.org>, rust-for-linux@vger.kernel.org,
+	linux-kernel@vger.kernel.org, Danilo Krummrich <dakr@kernel.org>,
+	Abdiel Janulgue <abdiel.janulgue@gmail.com>,
+	Daniel Almeida <daniel.almeida@collabora.com>,
+	Robin Murphy <robin.murphy@arm.com>,
+	Andreas Hindborg <a.hindborg@kernel.org>,
+	Boqun Feng <boqun@kernel.org>, Gary Guo <gary@garyguo.net>,
+	=?iso-8859-1?Q?Bj=F6rn?= Roy Baron <bjorn3_gh@protonmail.com>,
+	Benno Lossin <lossin@kernel.org>, Alice Ryhl <aliceryhl@google.com>,
+	Trevor Gross <tmgross@umich.edu>,
+	Tamir Duberstein <tamird@kernel.org>,
+	Alexandre Courbot <acourbot@nvidia.com>,
+	Onur =?iso-8859-1?Q?=D6zkan?= <work@onurozkan.dev>,
+	Drew Fustini <fustini@kernel.org>, Guo Ren <guoren@kernel.org>,
+	Fu Wei <wefu@redhat.com>,
+	Michal Wilczynski <m.wilczynski@samsung.com>,
+	Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <ukleinek@kernel.org>,
+	"Rafael J. Wysocki" <rafael@kernel.org>,
+	Viresh Kumar <viresh.kumar@linaro.org>,
+	Jens Axboe <axboe@kernel.dk>,
+	FUJITA Tomonori <fujita.tomonori@gmail.com>,
+	Heiner Kallweit <hkallweit1@gmail.com>,
+	Russell King <linux@armlinux.org.uk>,
+	"David S. Miller" <davem@davemloft.net>,
+	Eric Dumazet <edumazet@google.com>,
+	Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
+	David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>,
+	driver-core@lists.linux.dev, linux-riscv@lists.infradead.org,
+	linux-pwm@vger.kernel.org, linux-pm@vger.kernel.org,
+	linux-block@vger.kernel.org, netdev@vger.kernel.org,
+	nova-gpu@lists.linux.dev, dri-devel@lists.freedesktop.org
+Subject: Re: [PATCH 0/7] rust: Use kernel style vertical imports in various
+ drivers
+Message-ID: <c89a1bc8-6cc1-4e16-ac95-add389e45a2b@lunn.ch>
+References: <20260628-b4-rust-vertical-imports-v1-0-98bc71d4810b@gurudas.dev>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] sched/topology: Allow EAS without schedutil for
- artificial Energy Models
-To: =?UTF-8?Q?Lucas_de_Lima_N=C3=B3brega?= <lucaslnobrega38@gmail.com>
-Cc: dietmar.eggemann@arm.com, rostedt@goodmis.org,
- vincent.guittot@linaro.org, mingo@redhat.com, bsegall@google.com,
- mgorman@suse.de, vschneid@redhat.com, kprateek.nayak@amd.com,
- corbet@lwn.net, skhan@linuxfoundation.org, linux-pm@vger.kernel.org,
- linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org,
- juri.lelli@redhat.com, rafael@kernel.org, viresh.kumar@linaro.org,
- peterz@infradead.org
-References: <20260629083542.10041-1-lucaslnobrega38@gmail.com>
-Content-Language: en-US
-From: Lukasz Luba <lukasz.luba@arm.com>
-In-Reply-To: <20260629083542.10041-1-lucaslnobrega38@gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260628-b4-rust-vertical-imports-v1-0-98bc71d4810b@gurudas.dev>
 
-
-
-On 6/29/26 09:35, Lucas de Lima Nóbrega wrote:
-> EAS currently refuses to enable energy-aware scheduling on a root
-> domain unless schedutil is the active CPUFreq governor for all of its
-> CPUs (cpufreq_ready_for_eas()). This requirement exists to protect the
-> accuracy of the energy estimate: EAS predicts the OPP a CPU will run
-> at from its utilization, which is only meaningful if the active
-> governor actually requests OPPs that way, and schedutil is the only
-> one that does.
+On Sun, Jun 28, 2026 at 08:38:14PM -0700, Guru Das Srinagesh wrote:
+> Came across a recent commit bc58905eb07 ("samples: rust_misc_device: use
+> vertical import style") and found a few more locations that could
+> benefit from this cleanup. No functional changes.
 > 
-> That requirement does not apply to artificial Energy Models
-> (EM_PERF_DOMAIN_ARTIFICIAL). An artificial EM is built from a
-> get_cost() callback instead of real power numbers, and only encodes a
-> cost ranking between CPUs (e.g. P-cores cost more than E-cores at a
-> given utilization). It never claims to predict real energy use at any
-> specific OPP, so there is no per-OPP accuracy for the governor
-> requirement to protect, regardless of which governor is in control or
-> whether it tracks utilization at all.
-> 
-> intel_pstate registers exactly this kind of artificial EM for hybrid
-> (P/E-core) systems without SMT, regardless of whether it operates in
-> active or passive mode. In active mode it never uses schedutil, since
-> HWP picks frequency autonomously, so on these systems EAS never
+> Signed-off-by: Guru Das Srinagesh <linux@gurudas.dev>
+> ---
+> Guru Das Srinagesh (7):
+>       samples: rust_dma: use vertical import style
+>       pwm: th1520: use vertical import style
+>       cpufreq: rcpufreq_dt: use vertical import style
+>       block: rnull: use vertical import style
+>       net: phy: ax88796b: use vertical import style
+>       net: phy: qt2025: use vertical import style
+>       drm/nova: use vertical import style
 
-When frequency is picked autonomously then EAS and energy estimations
-don't make sense IMHO.
+You have multiple subsystems here, so you need to split this patch
+setup, per subsystem, and submit them separately. Maintainers only
+accept patchsets for their own subsystems.
 
-Do you have any data from experiments how it runs?
+For netdev, please take a read of:
 
-Regards,
-Lukasz
+https://www.kernel.org/doc/html/latest/process/maintainer-netdev.html
+
+You need to get the correct tree, and set the Subject: line correctly.
+
+    Andrew
+
+---
+pw-bot: cr
