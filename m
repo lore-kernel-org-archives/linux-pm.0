@@ -1,221 +1,366 @@
-Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-lf1-f45.google.com (mail-lf1-f45.google.com [209.85.167.45])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 86D3935E925
-	for <linux-pm@vger.kernel.org>; Mon, 29 Jun 2026 20:37:13 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.180.131
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1782765434; cv=none; b=T9Demd3fupwOarsb3F1eKdcdxaSyKnRwt4tpFVtO1QnsxAiPwM1op4Xrnay1BmNuXsLN7KqwUTWGC9X4BRS17DkcdKTdZQtDDvqRbC7fi5bccKYSuvbd9vq+m5esnEkxLzOaaYMYlB8X77pMKrQhx0yBHUcpiEljV8Ercmtf4PM=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1782765434; c=relaxed/simple;
-	bh=NoBxgTpHGJnabz1qe5DLBuL00WEPQMYrLj1bACR4WDk=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:To:Cc; b=R0DlhJAo+8gVc96tizyWRKpy7srxr4YWMAj3PHbC3O5SJyI09ZIumWT9LLr2pCvh1ZVUJ4OKa27V2L+mfhISz1OO+puDHq8EsB0Qnp2r4C8XN164XhFBhPua2941GF1Hi20ZGw+qH48gFhE2fZzNLmPXC6IKObW0BnN61EAuv7M=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=Z8dbbSdS; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=jS2eqW46; arc=none smtp.client-ip=205.220.180.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1E5E837F8C9
+	for <linux-pm@vger.kernel.org>; Mon, 29 Jun 2026 21:13:04 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.167.45
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1782767587; cv=pass; b=PcPV/hcUipTTszMqkqcOE1y8kA+HI222tQAZLMX3K5xiK9p1O9o3xicozRbahSv/9IO0PpvKI5/ujwWZdHIK5CHzjSS8oIAGLpF40r0uy/0o3ePhucu7t8NorJxw6bc/7dsadzIdwmSmeTEXAbhSWZU7V3kE9EsuAgWm0VEXZX8=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1782767587; c=relaxed/simple;
+	bh=2U11dd3c7MU/cITIimxfZJB1UDDsbWaV0aAb5l/6KzI=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=ThSOmqra6As5mCBauZm9zq+g5UxlfdlF0YhGMda2lrQrPBw2qiMY6asUUHWzvAquOE4pJmE82VDE+JjpgvOEnXnhrJkCJvJFixmh67S4yZC0Y1gF/HU/81qa1ybb3HWfZdCulY/CX6Vs7AB1ayotBRvcpzNgYiC3ws8/QTJdcoI=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=OTNK4MJC; arc=pass smtp.client-ip=209.85.167.45
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="Z8dbbSdS";
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="jS2eqW46"
-Received: from pps.filterd (m0279868.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 65TGKXjl3450581
-	for <linux-pm@vger.kernel.org>; Mon, 29 Jun 2026 20:37:12 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:content-type:date:from:message-id
-	:mime-version:subject:to; s=qcppdkim1; bh=3tNDKhsz+AVRDAEgoanN+6
-	KqNZh86ze/6x9MuT1XmOM=; b=Z8dbbSdSwJKAmhn+bamHo6Xhxbnp8yhQGxcrMN
-	Bspp1t9/qsiu/pIh7P9rgmLLxQoccHHn8Ekq6veGeOgcW/7VI6iTPnIySJg8QwLb
-	bld5FrZk8945FbLFOiSttQbdsA/1zUk30fZEFVvxt8twp2J1SwlREdSnM5n/O6LL
-	PwstPud9xOJpnVusnJ9QEZzmkiYsFBy25iowPcLhQmsFJGqxe1lto/erDeoQxWLx
-	RyTIZgDe124oBkwVOdS8siafK0lTp9nDYnJEyCLC74t6FGLBPE5MW1Y6NGe2e4L8
-	CopYOY1Prd2KkoOD2IKQw5kS2JttlsGij0Ydr4VwidSB+3bw==
-Received: from mail-dy1-f200.google.com (mail-dy1-f200.google.com [74.125.82.200])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4f3kyjkebx-1
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Mon, 29 Jun 2026 20:37:12 +0000 (GMT)
-Received: by mail-dy1-f200.google.com with SMTP id 5a478bee46e88-30c011c7cb9so9908997eec.1
-        for <linux-pm@vger.kernel.org>; Mon, 29 Jun 2026 13:37:12 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="OTNK4MJC"
+Received: by mail-lf1-f45.google.com with SMTP id 2adb3069b0e04-5aeb89359a3so1349439e87.3
+        for <linux-pm@vger.kernel.org>; Mon, 29 Jun 2026 14:13:04 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1782767583; cv=none;
+        d=google.com; s=arc-20260327;
+        b=GCY5dftTic2zbC48QAKUVOkJHQgnLf73Q7HEgNYqtMVfK6sj3BWplebuRDg7uF8k2P
+         UY1Dp1+icMk3KGqMiXbAp3T+kr2kNj+/cnrFp61mKhw+uSc3N23xVOOmkAFh9qjy1Oei
+         206HsOwENViFTLtJwW3e+oSqabj2P7nTHIz0rMDafWNnHpTNA6aKxEx8YrsxOrWfMu6r
+         KQtDaD3q01m1fhwyCvJKXeMg8uD8wJdra9Y3Z/YcDeynUrBfnOZJhS7DvnTDlf5vBde2
+         4ROL7v1lo6aK0505KiOLQ3pUDSUJVnVGxyCR+/PfZtlm5iNz7wKjleBg66UtSmzEKXOV
+         c4/Q==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=e+REWoDpnZnXowg1qoaQ9RmZvqVtyWxBL4m5S7IFqaw=;
+        fh=txrFtQw0UAtJ+nR4L4NhJr8JKYuCSWFKV7CzTv1WsFc=;
+        b=ArPQMEujNRmnqxm1GZ5wNub51jagKZzEqc/JFkG2WXYp1Hy8Db2v4QZowhyOC3BQdx
+         a3ouL9WmVbFNdNDEwcF8bDNuqKCRLIsQsGjDmPsWeZ5kJcgbY0r00tfSLca/FalwQJgE
+         hW5gF9vbYlQtnMouOCC7bqJ4qn/VBhW5YFwLqBj93x7jC4bMDYRI8ln+P7WdH4kkKpS/
+         hCUKYmM2vaHxhUXjFiXb6e9rzQAicsKAwF0pBSdZDnWSOa5vU21l9H1pqw7zGWRQ4I/t
+         RxpK0TiL4nGZA6rPGlN4C2bYUj9Tg2BarVx4TPbSCpATgU9IsnbgzAUvTP4+O0CwxlRP
+         GExQ==;
+        darn=vger.kernel.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1782765431; x=1783370231; darn=vger.kernel.org;
-        h=cc:to:message-id:content-transfer-encoding:mime-version:subject
-         :date:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=3tNDKhsz+AVRDAEgoanN+6KqNZh86ze/6x9MuT1XmOM=;
-        b=jS2eqW467g+1eedKpWNk9QQfiwt7cxse5UGs06S7gBLyeFIdY5Xjs/jcWawZwmBijC
-         xKF3LVV7+NCKYmbIKsOEWBih7shARzUrJsD52Hgdjd0HnlQv0En3MwSHrEQw0xKyoHm+
-         weMLymIHhKmCIJIq52XDbW5zU4qA6ltA87m7fr77iWXwBvudcMWzUDL8DWLVldtAYYgO
-         RMf5fThKYrYqofObPyUGJdnjc/AB3cfDu6G5A+YJlvjS7/+YFwatgRYDECNEY6wfmQLF
-         IrwXvOzw57M7w7X4sNiNlaOoCwJlu4GQ8YGygYFfkVFKX6M2Cs0TdbGptKMnJv0d75pN
-         xyOA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1782765431; x=1783370231;
-        h=cc:to:message-id:content-transfer-encoding:mime-version:subject
-         :date:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+        d=gmail.com; s=20251104; t=1782767583; x=1783372383; darn=vger.kernel.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=3tNDKhsz+AVRDAEgoanN+6KqNZh86ze/6x9MuT1XmOM=;
-        b=BwO9AFSulBWFJmvb4Yb5QBZn4xStQkYM0UsGKDjjh/oFgy1v9vQe6zvpoDVOpqFvav
-         TJAfB5KvpnsrEAnKlITpcliGz16Xcr/Czi7FX8mH49YnFjYyjntIkavmiGy/HgM3XIOU
-         5sHJQpOf/QWQR+au4FejceBS2Xx3yMl7OIhOZGCbQ27+8oM0Wcf3rS0qIteeyy1nOlMS
-         BLskSxxEXCTxPsqbUnHShY+atmWimcOsMGygWjoNBejKpVb73MPiOBqX25MLYHjd+gYA
-         /Vbp3aRJIxjKL6nlxKvbvMzcX8ycByzBCIAeg2JMCVtljhTRTUbqqSk0RZMPzzhjA5k8
-         NIpQ==
-X-Forwarded-Encrypted: i=1; AHgh+RoxVSM+qvh1RGdFgit289bt2ZbJGcgkfueDCsdkPz2TGA3BYtlS0EL0cellWgQoUaZNzG1eD/+XkQ==@vger.kernel.org
-X-Gm-Message-State: AOJu0YwmA3dYv/CKbNxNBBzwEt1crKdFZ8UzP3qCO8ltSWscEpqgfHG/
-	1WPOWh4KOO3CzsXxLBQGeDCW7tADolq1Dx1T83HVL7WmSSwaDd55BHtYZjraAeOzBaUdUnpmLFz
-	fUq0GPHxNaeGA3XUp7Rz2OW8HqTF0mRjsGOkQVnTNVuwF2ZkGe8LdjbHBortx8ubvN4cANw==
-X-Gm-Gg: AfdE7cnuchkaiaglbue/D6856naPqHU7eX6e9gtpB2sCXrk2X7ojzER2Z76dE4FXDpF
-	gE8fd4bfghYWyyB/hkHgQ80klSIbeaCnWAHPCZLXwh37NiHB1YX8VLFi6ASsqM26RutDqLlAfgG
-	SZf9hkqMcNcDzXT+uV/nu1Wpf2DnZIq+7XDvzRIQ/cz0u128Telw1qK+mr21gBEbLOjE2kxyxIc
-	5AWcIdOAOmCiBr2alL5/kAohJ513Xy5sdbJppli8tS6D7bAimxk8Epd8l15kSNjlJIc71Ujip6L
-	nsEuqCiLQPhZrYS6uubFBEycHGgtq0f1ZZJQBn+MRDdfsak+SYyC4jRf1fbcWRyvcPTFuSKBsDo
-	plZWl/oDxzeKcSbwJ3rzTMbjCqRmL5+3jKNDLWrmZiSJErvu+cTONngoCivDOwDd6
-X-Received: by 2002:a05:7300:2213:b0:30a:e52f:9bcf with SMTP id 5a478bee46e88-30ee131ae36mr624156eec.10.1782765431286;
-        Mon, 29 Jun 2026 13:37:11 -0700 (PDT)
-X-Received: by 2002:a05:7300:2213:b0:30a:e52f:9bcf with SMTP id 5a478bee46e88-30ee131ae36mr624140eec.10.1782765430814;
-        Mon, 29 Jun 2026 13:37:10 -0700 (PDT)
-Received: from hu-mdtipton-lv.qualcomm.com (Global_NAT1.qualcomm.com. [129.46.96.20])
-        by smtp.gmail.com with ESMTPSA id a92af1059eb24-13b2ab20921sm699283c88.4.2026.06.29.13.37.10
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 29 Jun 2026 13:37:10 -0700 (PDT)
-From: Mike Tipton <mike.tipton@oss.qualcomm.com>
-Date: Mon, 29 Jun 2026 13:33:36 -0700
-Subject: [PATCH] pmdomain: qcom: rpmhpd: Skip retention by default
+        bh=e+REWoDpnZnXowg1qoaQ9RmZvqVtyWxBL4m5S7IFqaw=;
+        b=OTNK4MJCclBAUN8589wUiPXdyTSAHbTP1Rkth6sw7pk9c/JLEYkNxZc0SV10wTaa/7
+         uWxhNymlRL/UG2pPAIwnRejmzdNfobyN2W48O/YKvbf1gSr9w2WPNbK04Tqb4pkKDyhF
+         rrrEpy5/evEHEGnaO2TJMFJbSED8sanc+iLF/gfYWZ2AM8PiMBSaPvVuusDOgQTFA3As
+         uxVteM2JShaFfd59fS0xnsfqKpXLf7nHvITZv7lrUFP0FkEjZ0PTi6bHKqn3iTy35xDg
+         0ynPJ5TmEzxMnwxPpN3lBj91GxSgAkx/7WIyu/HOIQXqCLj/Lk4Tf6a7HzIayUWVEvIU
+         P5SA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1782767583; x=1783372383;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=e+REWoDpnZnXowg1qoaQ9RmZvqVtyWxBL4m5S7IFqaw=;
+        b=RmEdbNLHlT3WT/MnwHSS/+aTUS1Yfoe4STCcUcyYu+B76EawDcg9IRK8OkOdPkmuNY
+         cnDvQsr02NnXEIgb7JFkV0sidlCh8BhMGxAEhEpfakxZ7Wd2MHtb93atPuZCFY8CWL0O
+         hP0gtlm5GwbYKvofMddD0jvZkac3pln91Cfe+D2IB4+59pt5uDLtxrGO0/x6GVMN0eUQ
+         3qcKV751gtg/oWAjT/0jTmr0IOImc7y2050lzgJCUoEfO8lb3xmaxrx/8zGvZFRsrXHP
+         bXhprNcW78qRO9sqCY2kZJASBLHeDCm4GpE7iUOBkEDdXb1TtV1ErzvN8F3CYByqL7cT
+         iHOQ==
+X-Forwarded-Encrypted: i=1; AHgh+RpX7GwpObtD+8JbPijMqugnIGCisEYkwzwEorVqC70eMya+UMSOVZuC/gH/t+u/hHGXnSPClmzelw==@vger.kernel.org
+X-Gm-Message-State: AOJu0YyZBSu835qKo4TeCyj+QalRAs9f3gauD8awdqLN9ZlmU92EgBiO
+	ulfhAUjp6CVW8A++iRobgAWNMLnxFJ+UitB7C/cDPpfpI3dzE3bO5G6sIujFsi0qknwZEqazjlg
+	BYzdJffgwPQutNv41pbdvSw8YJPNOR6Y=
+X-Gm-Gg: AfdE7cncsaYFBUNtjQUhysO7zt/lFpmRaa3/XkAT74Q7+oDmLYs3d63UrjHNF6FjSb2
+	fqNUXIcUhuwBsNkYbvq+/MY2c5WAdds0j/9T2UdWBSOXANL5DVgNJUfIY2R3iCM+NUED/pTP31e
+	yzxWI2B6VhO87xlnYGYERGDtIxHGorSSjBylvd2iYyrCjlM4OkQ1v20xj6FL1LF+Ycgs3Q+kR4A
+	445hBtKSWPfmhVQAwq5w+oF9cv9Gu9TDz3GnzfDTDdLlEQVnvLQpsz60KdUbI98zhduLn5XcyGW
+	XHGAMz5G0JMihCiclPJMYXAKMVcMBno=
+X-Received: by 2002:a05:6512:61ae:b0:5ae:b0c3:bb89 with SMTP id
+ 2adb3069b0e04-5aebdbdb349mr193180e87.63.1782767582911; Mon, 29 Jun 2026
+ 14:13:02 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20260629-rpmhpd-skip-ret-v1-1-d94180ad9a29@oss.qualcomm.com>
-X-B4-Tracking: v=1; b=H4sIAKDWQmoC/x3MTQqAIBBA4avErBtQ+yG6SrQQG3OISsaIILx70
- vJbvPdCImFKMFYvCN2c+DwKdF2BC/ZYCXkpBqNMr3o9oMQ9xAXTxhGFLmwbZU1nvXaOoFRRyPP
- zH6c55w/neP5NYQAAAA==
-X-Change-ID: 20260618-rpmhpd-skip-ret-430a25af1cce
-To: Ulf Hansson <ulfh@kernel.org>
-Cc: linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org, Bjorn Andersson <andersson@kernel.org>,
-        Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>,
-        Taniya Das <taniya.das@oss.qualcomm.com>,
-        Fenglin Wu <fenglin.wu@oss.qualcomm.com>,
-        Mike Tipton <mike.tipton@oss.qualcomm.com>
-X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1782765430; l=3111;
- i=mike.tipton@oss.qualcomm.com; s=20260305; h=from:subject:message-id;
- bh=NoBxgTpHGJnabz1qe5DLBuL00WEPQMYrLj1bACR4WDk=;
- b=yqJL8wqjDaJeajSkR2uRKj2NtChl4CnBuVvnaM16A3rn6cAB3/FgW++axnEGTBFLcZi4eK6KM
- AavL13yNnybAvKqrBD8jcOcDrcr3SMG2mxWdich/vTKBV9o4Rvwobv5
-X-Developer-Key: i=mike.tipton@oss.qualcomm.com; a=ed25519;
- pk=vHBMZwmy10j0Vmh8WgVvBGg8Pt14yalDIN7LBSoSRZw=
-X-Proofpoint-GUID: xhmkGLtb_9A4ZuS4Ti6eDuKiOmSrqX8y
-X-Proofpoint-ORIG-GUID: xhmkGLtb_9A4ZuS4Ti6eDuKiOmSrqX8y
-X-Authority-Analysis: v=2.4 cv=Ftk1OWrq c=1 sm=1 tr=0 ts=6a42d778 cx=c_pps
- a=PfFC4Oe2JQzmKTvty2cRDw==:117 a=ouPCqIW2jiPt+lZRy3xVPw==:17
- a=IkcTkHD0fZMA:10 a=FelO9ux0wxsA:10 a=s4-Qcg_JpJYA:10
- a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=ZpdpYltYx_vBUK5n70dp:22
- a=EUspDBNiAAAA:8 a=r5Zemlu_opgY2UB85KYA:9 a=QEXdDO2ut3YA:10
- a=6Ab_bkdmUrQuMsNx7PHu:22
-X-Proofpoint-Spam-Info: AW1haW4tMjYwNjI5MDE3MyBTYWx0ZWRfX9jyC9PZn2OjU
- ppXFe2rvS8S3MpdQ8+A/c9gH/x45gcyhHlLpp50uYJHIFocAB5vFy9SA3XYvddPVr0CFZLiNaYx
- K38qfrcglMUCoWkniQ+i4CXFrdT2aGQ=
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNjI5MDE3MyBTYWx0ZWRfX4z6i/yrDDEmX
- s1cu0FHQ1dC0u3YfcHCtzMyW7pLEr2UTFSfzGW3eAEf2dBcWByGT1fZ79tMTsJm7WvTNiGjoPMe
- w3Ze1uHMccbQv63EOMgdPFvMMaLwn+GFZAjHW5X6/mvaMc2XhprmHnG7fnRs/TWrrbEljmKZzYA
- 5GGCmgmUeK8cjngZVlBgDOABmvox8HnkMAH3maA/YkubJH8zoPS2EcmObMNF/326aknvnBhVv2f
- iUVx/04IAYSMB8TN7y+BDhdo1QZ6XAqLpZ8kZKgk3IcmdiqhwPlIwGt6l0dsFjPbwdDvk3WtHbu
- uX23BXThcNpUxiOHFSXvYLjSma+8jCIi079YZRbW/KkkqnMWT/IYriYy4CFdtheMQ2PdJcfOm6w
- 6+3RKOcIyThQv2GoWJSZDOObE/ePXXdDg/BePThV1NM85I3yb2L6xUNu46UulcqZ44UJuoS9Xrg
- +sxnDayGJtf7HHZxE2A==
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.125,FMLib:17.12.100.49
- definitions=2026-06-29_04,2026-06-26_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- impostorscore=0 lowpriorityscore=0 adultscore=0 suspectscore=0 phishscore=0
- priorityscore=1501 malwarescore=0 spamscore=0 clxscore=1015 bulkscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2606290173
+References: <20260629083542.10041-1-lucaslnobrega38@gmail.com> <CAJZ5v0iVD90XPsWgT8B+fw9vmFRZTVL7MasPP-=Ci0OdUmNR=A@mail.gmail.com>
+In-Reply-To: <CAJZ5v0iVD90XPsWgT8B+fw9vmFRZTVL7MasPP-=Ci0OdUmNR=A@mail.gmail.com>
+From: Lucas Lima <lucaslnobrega38@gmail.com>
+Date: Mon, 29 Jun 2026 18:12:50 -0300
+X-Gm-Features: AVVi8CdwHxbLA63H991JC71Qw8Csnfm7fyJpV5N4UeMOhX-QPUILwCYNDZFvhoc
+Message-ID: <CAMVixxWkriVFgvS_WBVJu3LYGJYOcEx50hpr2TrNnPi-1O7mjw@mail.gmail.com>
+Subject: Re: [PATCH] sched/topology: Allow EAS without schedutil for
+ artificial Energy Models
+To: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
+Cc: viresh.kumar@linaro.org, mingo@redhat.com, peterz@infradead.org, 
+	juri.lelli@redhat.com, vincent.guittot@linaro.org, dietmar.eggemann@arm.com, 
+	rostedt@goodmis.org, bsegall@google.com, mgorman@suse.de, vschneid@redhat.com, 
+	kprateek.nayak@amd.com, corbet@lwn.net, skhan@linuxfoundation.org, 
+	linux-pm@vger.kernel.org, linux-doc@vger.kernel.org, 
+	linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Retention is very rarely an operational corner. In the majority of
-cases, HW cannot operate properly at Retention levels and so the minimum
-operational level when enabling a rail is the first corner above
-Retention. A small subset of always-on use cases can operate at
-Retention, but those aren't controlled from HLOS.
+Em seg., 29 de jun. de 2026 =C3=A0s 12:16, Rafael J. Wysocki (Intel)
+<rafael@kernel.org> escreveu:
+>
+> On Mon, Jun 29, 2026 at 10:36=E2=80=AFAM Lucas de Lima N=C3=B3brega
+> <lucaslnobrega38@gmail.com> wrote:
+> >
+> > EAS currently refuses to enable energy-aware scheduling on a root
+> > domain unless schedutil is the active CPUFreq governor for all of its
+> > CPUs (cpufreq_ready_for_eas()). This requirement exists to protect the
+> > accuracy of the energy estimate: EAS predicts the OPP a CPU will run
+> > at from its utilization, which is only meaningful if the active
+> > governor actually requests OPPs that way, and schedutil is the only
+> > one that does.
+> >
+> > That requirement does not apply to artificial Energy Models
+> > (EM_PERF_DOMAIN_ARTIFICIAL). An artificial EM is built from a
+> > get_cost() callback instead of real power numbers, and only encodes a
+> > cost ranking between CPUs (e.g. P-cores cost more than E-cores at a
+> > given utilization). It never claims to predict real energy use at any
+> > specific OPP, so there is no per-OPP accuracy for the governor
+> > requirement to protect, regardless of which governor is in control or
+> > whether it tracks utilization at all.
+>
+> But it is still about comparing the cost of running on different CPUs
+> at different performance levels.
+>
+> For instance, say the scale-invariant utilization of a task is 256 and
+> it can run either by itself on a P-core, or with another task whose
+> utilization is 128 on an E-core, and say the P-core's and E-core's
+> capacity is 1024 and 512, respectively.
+>
+> Say the cost function tells EAS that running a P-core at 1/4 of the
+> capacity is cheaper than running an E-core at 3/4 capacity, so it will
+> pick up the P-core to run that task, but if cpufreq ramps up the
+> frequency of the P-core to the max when the task gets to it, it may
+> actually turn out to be more expensive.
+>
+> This means that EAS still has an expectation regarding cpufreq which
+> is that it will generally tend to run tasks at the performance level
+> corresponding to the sum of their scale-invariant utilization at least
+> roughly.
+>
+> IIUC this actually has nothing to do with whether or not the energy
+> model used by EAS is artificial.  The schedutil requirement is about
+> choosing a performance level proportional to the utilization (which
+> schedutil generally tends to do by design).
 
-Currently, we allow Retention by default and only disallow it special
-cases. But this leaves us open to various failures when the PD is
-enabled without first being voted to an OPP above Retention. Such as
-when a child GDSC PD requests to enable its parent RPMh PD. In this
-case, the GDSC would get stuck powering on.
+You're right, and I want to walk back the "artificial EM doesn't need
+this" framing entirely -- it doesn't survive your example. What I want
+to argue instead is narrower: that even though intel_pstate active
+mode tracks demand much more weakly than schedutil, the specific
+conclusion this simplified EM's cost ranking relies on (E-cores cost
+less than P-cores at matched conditions) still holds up against
+measured energy, and that's a different, more modest claim than "OPP
+tracks utilization closely enough for per-bin accuracy."
 
-Newer chips have started supporting Retention on rails that didn't
-previously (such as for MMCX). Instead of adding more special cases to
-skip Retention on MMCX, start skipping Retention by default since it's
-almost never desired from an HLOS perspective.
+I measured the actual frequency behavior on this test machine (one
+P-core, one E-core, isolated, stress-ng --cpu-load duty cycles at
+20/40/60/80/100%, turbostat Bzy_MHz =3D average frequency only during
+the busy portion of each cycle) under three regimes:
 
-Signed-off-by: Mike Tipton <mike.tipton@oss.qualcomm.com>
-Reviewed-by: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
----
- drivers/pmdomain/qcom/rpmhpd.c | 14 +++++++++-----
- 1 file changed, 9 insertions(+), 5 deletions(-)
+                    20%    40%    60%    80%   100%   span
+  passive+schedutil  P    2523   2879   3786   4537   4567  2044
+                      E    2335   2416   2574   3070   3399  1064
+  active EPP=3Dbalance  P   2225   2285   2497   2646   2778   553
+                      E   2101   2215   2375   2462   2555   454
+  active EPP=3Dperf     P   4483   4519   4496   4537   4564    81
+                      E   3364   3377   3380   3387   3399    35
 
-diff --git a/drivers/pmdomain/qcom/rpmhpd.c b/drivers/pmdomain/qcom/rpmhpd.c
-index 63120e703923..35c598b33ac9 100644
---- a/drivers/pmdomain/qcom/rpmhpd.c
-+++ b/drivers/pmdomain/qcom/rpmhpd.c
-@@ -41,7 +41,6 @@
-  * @addr:		Resource address as looped up using resource name from
-  *			cmd-db
-  * @state_synced:	Indicator that sync_state has been invoked for the rpmhpd resource
-- * @skip_retention_level: Indicate that retention level should not be used for the power domain
-  */
- struct rpmhpd {
- 	struct device	*dev;
-@@ -58,7 +57,6 @@ struct rpmhpd {
- 	const char	*res_name;
- 	u32		addr;
- 	bool		state_synced;
--	bool            skip_retention_level;
- };
- 
- struct rpmhpd_desc {
-@@ -191,7 +189,6 @@ static struct rpmhpd mxc = {
- 	.pd = { .name = "mxc", },
- 	.peer = &mxc_ao,
- 	.res_name = "mxc.lvl",
--	.skip_retention_level = true,
- };
- 
- static struct rpmhpd mxc_ao = {
-@@ -199,7 +196,6 @@ static struct rpmhpd mxc_ao = {
- 	.active_only = true,
- 	.peer = &mxc,
- 	.res_name = "mxc.lvl",
--	.skip_retention_level = true,
- };
- 
- static struct rpmhpd nsp = {
-@@ -1093,7 +1089,15 @@ static int rpmhpd_update_level_mapping(struct rpmhpd *rpmhpd)
- 		return -EINVAL;
- 
- 	for (i = 0; i < rpmhpd->level_count; i++) {
--		if (rpmhpd->skip_retention_level && buf[i] == RPMH_REGULATOR_LEVEL_RETENTION)
-+		/*
-+		 * Most HW won't function properly at Retention. The minimum
-+		 * operational level is the first level above Retention. The
-+		 * small subset of HW that can operate at Retention isn't
-+		 * controlled by HLOS. Skip the Retention level to avoid HW
-+		 * failures when the PD is enabled without first having an
-+		 * explicit OPP level set.
-+		 */
-+		if (buf[i] == RPMH_REGULATOR_LEVEL_RETENTION)
- 			continue;
- 
- 		rpmhpd->level[i] = buf[i];
+It is visible now that intel_pstate active
+mode does *not* track demand anywhere near as tightly as schedutil,
+and i don't think that claim survives scrutiny, dropping it.
 
----
-base-commit: 7de6ae9e12207ec146f2f3f1e58d1a99317e88bc
-change-id: 20260618-rpmhpd-skip-ret-430a25af1cce
+What does survive, I think, is narrower: E-cores measured consistently
+cheaper per unit of completed work than P-cores, across every matched-
+parallelism configuration I tested (data below), regardless of which
+exact OPP HWP autonomously picked underneath. I don't have data on
+idle-state residency to know truly whether the race-to-idle behavior under
+EPP=3Dperformance recovers any of that gap through deeper C-states --
+that's an open question I haven't tested.
 
-Best regards,
--- 
-Mike Tipton <mike.tipton@oss.qualcomm.com>
+  1 core alone:          P 7.27 J/unit   E 6.25 J/unit   (P +16%)
+  1 core, packed x2:     P 7.24 J/unit   E 6.13 J/unit   (P +18%)
+  2 cores, spread:       P 4.84 J/unit   E 3.82 J/unit   (P +27%)
 
+P consistently costs more than E for the same completed work at every
+matched parallelism level I tried. Separately, I also measured that
+spreading work across more E-cores is itself far more efficient than
+packing it onto fewer (8 E-cores spread: 1.74 J/unit vs the same total
+work packed onto 1 E-core: 6.10 J/unit. In fact, this is the most
+efficient placement --
+even better than global spreading) -- I also have traced
+find_energy_efficient_cpu()
+produced spread placement in practice under this patch with real tasks,
+and it roughly does follow this heavy preference for E cores during light l=
+oad.
+Note: P cores occasionally seem to spike, likely due to misfit tasks
+which are larger
+than E core capacity when nosmt=3Dforce is active  (512). To place E
+cores capacities
+at half of P cores' feels weird, as the vast majority of workloads enjoy on=
+ly a
+40-60% performance disparity between them both (the outliers observed are
+mostly float point heavy tasks, software ipc class 2).
+
+>
+> > intel_pstate registers exactly this kind of artificial EM for hybrid
+> > (P/E-core) systems without SMT, regardless of whether it operates in
+> > active or passive mode. In active mode it never uses schedutil, since
+> > HWP picks frequency autonomously, so on these systems EAS never
+> > engages even though SD_ASYM_CPUCAPACITY, frequency invariance and the
+> > EM are all in place: find_energy_efficient_cpu() is never reached
+> > because is_rd_overutilized() is hardcoded to true whenever
+> > sched_energy_enabled() is false. cppc_cpufreq registers the same kind
+> > of ranking-only artificial EM and is affected the same way with any
+> > non-schedutil governor.
+> >
+> > Allow EAS to be enabled when every CPU's EM in the root domain is
+> > artificial, even when schedutil is not the active governor.
+> >
+> > Tested on a Raptor Lake-P laptop with nosmt=3Dforce and intel_pstate in
+> > active/HWP mode: find_energy_efficient_cpu() was never called before
+> > this change (confirmed via the sched_overutilized_tp tracepoint and
+> > ftrace) and is exercised as expected afterwards.
+>
+> If this is about allowing EAS to work with intel_pstate running in the
+> active mode, you may argue that what the processor firmware is doing
+> when intel_pstate runs in the active mode is not much different from
+> what schedutil would do.  So a driver implementing an internal
+> governor (that is, using the .set_policy() callback) would need to
+> declare that its internal governor is as good as schedutil from EAS'
+> perspective and so it will pass the "cpufreq readiness" check.
+
+Given the data above, I don't think I can honestly word that
+declaration as "as good as schedutil" -- it isn't, by a factor of
+2-25x depending on EPP. If a flag like this still makes sense, I'd
+want its justification to say something narrower: "this driver's
+internal governor, combined with this EM's coarse type-based ranking,
+still produces correct placement decisions in practice" rather than
+claiming OPP-tracking parity. I'm not sure if that's a distinction
+that belongs in the flag's contract itself, or just in this
+patch's commit message -- happy to go either way, or to test more
+if that would help decide.
+
+>
+> > Signed-off-by: Lucas de Lima N=C3=B3brega <lucaslnobrega38@gmail.com>
+> > ---
+> >  Documentation/admin-guide/pm/intel_pstate.rst |  9 ++++--
+> >  Documentation/scheduler/sched-energy.rst      |  7 ++++-
+> >  kernel/sched/topology.c                       | 28 +++++++++++++++++--
+> >  3 files changed, 38 insertions(+), 6 deletions(-)
+> >
+> > diff --git a/Documentation/admin-guide/pm/intel_pstate.rst b/Documentat=
+ion/admin-guide/pm/intel_pstate.rst
+> > index 25fe5d88f..c8fef1e60 100644
+> > --- a/Documentation/admin-guide/pm/intel_pstate.rst
+> > +++ b/Documentation/admin-guide/pm/intel_pstate.rst
+> > @@ -409,13 +409,16 @@ Energy-Aware Scheduling Support
+> >  If ``CONFIG_ENERGY_MODEL`` has been set during kernel configuration an=
+d
+> >  ``intel_pstate`` runs on a hybrid processor without SMT, in addition t=
+o enabling
+> >  :ref:`CAS` it registers an Energy Model for the processor.  This allow=
+s the
+> > -Energy-Aware Scheduling (EAS) support to be enabled in the CPU schedul=
+er if
+> > -``schedutil`` is used as the  ``CPUFreq`` governor which requires ``in=
+tel_pstate``
+> > -to operate in the :ref:`passive mode <passive_mode>`.
+> > +Energy-Aware Scheduling (EAS) support to be enabled in the CPU schedul=
+er.
+> >
+> >  The Energy Model registered by ``intel_pstate`` is artificial (that is=
+, it is
+> >  based on abstract cost values and it does not include any real power n=
+umbers)
+> >  and it is relatively simple to avoid unnecessary computations in the s=
+cheduler.
+> > +Because of that, EAS does not require ``schedutil`` to be used as the
+> > +``CPUFreq`` governor in this case: the cost ranking it relies on does =
+not
+> > +depend on the governor tracking utilization when requesting frequencie=
+s, so
+> > +EAS works the same way regardless of whether ``intel_pstate`` operates=
+ in the
+> > +active or in the :ref:`passive mode <passive_mode>`.
+> >  There is a performance domain in it for every CPU in the system and th=
+e cost
+> >  values for these performance domains have been chosen so that running =
+a task on
+> >  a less performant (small) CPU appears to be always cheaper than runnin=
+g that
+> > diff --git a/Documentation/scheduler/sched-energy.rst b/Documentation/s=
+cheduler/sched-energy.rst
+> > index 4e47aaf10..c23ca226d 100644
+> > --- a/Documentation/scheduler/sched-energy.rst
+> > +++ b/Documentation/scheduler/sched-energy.rst
+> > @@ -379,7 +379,12 @@ Consequently, the only sane governor to use togeth=
+er with EAS is schedutil,
+> >  because it is the only one providing some degree of consistency betwee=
+n
+> >  frequency requests and energy predictions.
+> >
+> > -Using EAS with any other governor than schedutil is not supported.
+> > +Using EAS with any other governor than schedutil is not supported, unl=
+ess the
+> > +EM in use is artificial (see EM_PERF_DOMAIN_ARTIFICIAL).  An artificia=
+l EM only
+> > +encodes a cost ranking between CPUs/OPPs instead of a real power table=
+, so it
+> > +does not make any claim about energy use at a specific OPP and its con=
+clusions
+> > +do not depend on the governor actually tracking utilization when reque=
+sting
+> > +frequencies.
+> >
+> >
+> >  6.5 Scale-invariant utilization signals
+> > diff --git a/kernel/sched/topology.c b/kernel/sched/topology.c
+> > index 5847b83d9..124a4bb4d 100644
+> > --- a/kernel/sched/topology.c
+> > +++ b/kernel/sched/topology.c
+> > @@ -212,6 +212,27 @@ static unsigned int sysctl_sched_energy_aware =3D =
+1;
+> >  static DEFINE_MUTEX(sched_energy_mutex);
+> >  static bool sched_energy_update;
+> >
+> > +/*
+> > + * An artificial EM (see EM_PERF_DOMAIN_ARTIFICIAL) only encodes a cos=
+t
+> > + * ranking between CPUs and does not claim to predict energy use at an=
+y
+> > + * particular OPP.  Unlike a real power-based EM, its conclusions do n=
+ot
+> > + * rely on the active governor tracking utilization when selecting
+> > + * frequencies, so the schedutil requirement below does not apply to i=
+t.
+> > + */
+> > +static bool perf_domains_are_artificial(const struct cpumask *cpu_mask=
+)
+> > +{
+> > +       int i;
+> > +
+> > +       for_each_cpu(i, cpu_mask) {
+> > +               struct em_perf_domain *pd =3D em_cpu_get(i);
+>
+> I would do
+>
+> if (!pd)
+>         continue;
+>
+> here because the CPUs without a PD simply don't matter.
+
+That's fair. I will be updating the code to ignore cpus with no perf
+domain. I also want to discuss whether or not is it worth it to
+aggregate E clusters inside the same perf domain, as they share the
+same L2 cache and
+migrations are likely easier.
+
+>
+> Also, is any synchronization needed for this?
+
+No additional sync besides what is already in use today. In fact, this
+very pointer is dereferenced the same way in other paths of the
+kernel.
