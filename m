@@ -1,304 +1,181 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+Received: from chaosmail.tech (chaosmail.tech [77.81.229.115])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 91B24378824;
-	Mon, 29 Jun 2026 09:29:52 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1CC573F8EA1;
+	Mon, 29 Jun 2026 09:49:10 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=77.81.229.115
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1782725393; cv=none; b=Q9K5WWFObcG2v39ulZslxLZxkJpgYEU0o9PVv+DZRCDiIzD6qcRJVb6Kvg3JJ3WJCy5yh/AS01EDbILL04/5JL5/TIXrYZbDR8kM3zNpJ3lqs+EvgUxkhf5q3ZLLpSB4ak82QEZ3nyfnWDE3V2nvjAr5chox9J0q+dKNrwyA1ZA=
+	t=1782726557; cv=none; b=UVL6jK+uqhLCYi8e/PwPYQqfAHmvcRQzZpUJ/iWNF2zNpe5WD7I/mBkzqDO/5x8gAtHGjdRlpjVu8IMrdQcXeTNaLO0KSQaHc4+ymRlXQdylvkaaL0xG1P0+n0THwfMRljFDq84plDhVCLVMM9x74fBSGyuaAL4hZIBK40Vu5Nk=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1782725393; c=relaxed/simple;
-	bh=jSMKyhpwOoBN2kN4mXySQg7+N1xIK06zgQcIqssIhNo=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=C3wW7zdWHMULkuSSrvCt9ETJBtZUNCn/8oxlFUaoLV4ps1H5UE2EFX7gxQxwCnLW559Uf6Lw3OIk1WI5qXmuYTuQkMJ2h1PPJspSr6HCESSY9GsMN1YAx4/2qlF/lA+zwhl0DeC6FH1WDU8KSqWUJKaD0LYq/+W+Ah3BdvyBiY8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=VtA7MjXR; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1782726557; c=relaxed/simple;
+	bh=sqKFDbIEcCs2cvx/DTq3eUOzdy0v/552i0lfDimwwZE=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:To:Cc; b=tY2eeOQDtfRIlyftvafegr04HD4VCogBRHACcU8TXtR6csa359i/jZ4znFoawQYeqmO0W1VU+UchsbnBFuhHtWwYZKp4IC5ts5+/R63jKxFq7Z+mYyIgTteB7kP7WTd7oE0gUevYIm8m9jOoEAzuf2uV1ESolz4JIjzk1tLXI+0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=chaosmail.tech; spf=pass smtp.mailfrom=chaosmail.tech; dkim=pass (1024-bit key) header.d=chaosmail.tech header.i=@chaosmail.tech header.b=qMFhtldV; arc=none smtp.client-ip=77.81.229.115
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=chaosmail.tech
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=chaosmail.tech
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="VtA7MjXR"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 047F41F00A3A;
-	Mon, 29 Jun 2026 09:29:46 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1782725392;
-	bh=Npk92WP4+iddnwXb26xetSuG1nU9c64h3XFMA6XCVrA=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=VtA7MjXRZVQaaJ9Ih/X8IeykXC9h1JN3ed+nWlG+FOYdWGYUVvUlIiRfl8oubtyCi
-	 gOmZrcpZ7qUUKF3WHd8F3vWIfsakqRyVS0nU1BabmH05MWinufmuagmMR+lVYMj/Sh
-	 9ISoLFdQ38FmmGnyJP1nwUcRyG0El5hYGkYeIa6RyCDutA2wHCodwkG3HhA7gvREzN
-	 MsT+C+WV88u/DYSwuWI7DQ+2llBIY3R3Qte+cAsQs4hVNlZSfO9axLXh/C6eHPvdII
-	 qSVdM5bqj/+BDniFj4HC3c2DUW0+1pD55OJ1rVvyJoYtl/NFw0Nax2r+VvCkGMmUgh
-	 O6dPgtCAjuZSg==
-Date: Mon, 29 Jun 2026 10:29:41 +0100
-From: Lorenzo Stoakes <ljs@kernel.org>
-To: Rik van Riel <riel@surriel.com>
-Cc: linux-kernel@vger.kernel.org, kernel-team@meta.com, linux-mm@kvack.org, 
-	david@kernel.org, willy@infradead.org, surenb@google.com, hannes@cmpxchg.org, 
-	ziy@nvidia.com, usama.arif@linux.dev, fvdl@google.com, 
-	Andrew Morton <akpm@linux-foundation.org>, Jonathan Corbet <corbet@lwn.net>, Chris Mason <clm@fb.com>, 
-	David Sterba <dsterba@suse.com>, Vlastimil Babka <vbabka@kernel.org>, 
-	Steven Rostedt <rostedt@goodmis.org>, Masami Hiramatsu <mhiramat@kernel.org>, 
-	"Rafael J. Wysocki" <rafael@kernel.org>, Oscar Salvador <osalvador@suse.de>, 
-	Mike Rapoport <rppt@kernel.org>, linux-doc@vger.kernel.org, linux-btrfs@vger.kernel.org, 
-	linux-trace-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-cxl@vger.kernel.org, 
-	Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [RFC PATCH 00/40] mm: reliable 1GB page allocation
-Message-ID: <akIjA_dqh4OHAYo4@lucifer>
-References: <20260520150018.2491267-1-riel@surriel.com>
- <aj9yrlB0TrlYCLlf@lucifer>
- <528e3a5fbc27c9dc7a098121c32b7679b4c9962a.camel@surriel.com>
+	dkim=pass (1024-bit key) header.d=chaosmail.tech header.i=@chaosmail.tech header.b="qMFhtldV"
+Received: by chaosmail.tech (Postfix) id 793011CB983;
+	Mon, 29 Jun 2026 09:43:06 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=chaosmail.tech;
+	s=mail; t=1782726187;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding;
+	bh=oBhbYYISpLrIPK4lF4gaoN3zx36fHWE0W6XAugBNCrk=;
+	b=qMFhtldVvg7tSNSE+uKpg20xCQN+OrOt/FY8tRyLwSRcIuh3pvJHTMyr35XMx/rzIKy7vn
+	VnmbcfvAik90s9Q0TfKF8jD1SHtyr1FLKfBQn9XQik6KnUNYQmYcTFcPh6oLI1P6zs9WYk
+	rv8c+wNUhXDBPKpgYoDRlsXbrejECFM=
+From: Sasha Finkelstein <k@chaosmail.tech>
+Date: Mon, 29 Jun 2026 11:42:42 +0200
+Subject: [PATCH v3] power: supply: macsmc: Support macOS 27 SMC firmware
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <528e3a5fbc27c9dc7a098121c32b7679b4c9962a.camel@surriel.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20260629-gate-power-v3-1-8428ab93f389@chaosmail.tech>
+X-B4-Tracking: v=1; b=H4sIAAAAAAAC/22OzQ7CIBAGX6XhLAbWBNST72E88LO0GG0bQNQ0f
+ XehXjR6nOSb2Z1IxOAxkn0zkYDZRz/0BTarhphO9S1SbwsTYCCY4Jy2KiEdhzsGapyVIKxhVjp
+ ShDGg848ldjy9Od70GU2qhbrofExDeC7XMq+7v+HMKadbJUACZ1th5KH8MsSr8pd1QtORWs/w6
+ cOXD8W3KIXRO60luh9/nucXXyNCu/sAAAA=
+X-Change-ID: 20260611-gate-power-cfd726dc0d7f
+To: Sven Peter <sven@kernel.org>, Janne Grunau <j@jannau.net>, 
+ Neal Gompa <neal@gompa.dev>, Sebastian Reichel <sre@kernel.org>
+Cc: asahi@lists.linux.dev, linux-arm-kernel@lists.infradead.org, 
+ linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
+ Joshua Peisach <jpeisach@ubuntu.com>, stable@vger.kernel.org, 
+ Sasha Finkelstein <k@chaosmail.tech>
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1782726186; l=4571;
+ i=k@chaosmail.tech; s=20241124; h=from:subject:message-id;
+ bh=sqKFDbIEcCs2cvx/DTq3eUOzdy0v/552i0lfDimwwZE=;
+ b=rAhW13ZQ4HEXnm44sK/vEYVcG2oDhiUbPESwy2G5RRIbCUbMuvLHz1NLGVk56y0zwnvS8yodm
+ MhLGnNtNmmhC9QU2PDJ8upyBNA2Xar8vAA0vo3VggqD6cLw+NpmC4YF
+X-Developer-Key: i=k@chaosmail.tech; a=ed25519;
+ pk=aSkp1PdZ+eF4jpMO6oLvz/YfT5XkBUneWwyhQrOgmsU=
 
-TL;DR - please don't send unfiltered LLM code to list _at all_. If you want
-to share it, link to a repo.
+The SMC firmware included in macOS 27 changed the size of BCF0 key from
+4 to 1 bytes. This key is used for indicating that battery state is
+critically low.
 
-On Sat, Jun 27, 2026 at 09:36:51AM -0400, Rik van Riel wrote:
-> That is the one reason I sent out RFC code before it
-> is ready. I am looking for feedback on the concepts
-> in this series.
-...
-> Once I know what I need to do, coming up with a
-> cleaner implementation is very doable.
-...
-> The mess in the RFC is the result of trying something
-> that seemed right, watching it fail in some subtle
-> way, and trying to fix it up.
-...
-> > But the execution has to be _completely_ rethought.
->
-> There's no argument there.
-...
-> > Another issue here is maintainer time - even this _extremely_ light-
-> > touch
-> > review has taken me a few hours (of my weekend :). To review it in
-> > detail
-> > would take probably DAYS of dedicated work.
->
-> I suspect there is a mismatch in expectations here.
->
-> I already knew this code has to be totally redone.
+Reviewed-by: Sven Peter <sven@kernel.org>
+Reviewed-by: Joshua Peisach <jpeisach@ubuntu.com>
+Reviewed-by: Janne Grunau <j@jannau.net>
+Cc: stable@vger.kernel.org
+Fixes: 0ebf821cf6c7 ("power: supply: Add macsmc-power driver for Apple Silicon")
+Signed-off-by: Sasha Finkelstein <k@chaosmail.tech>
+---
+Changes in v3:
+- Minor style fixes
+- R-b tags and Cc stable
+- Rebase on 7.2
+- Link to v2: https://patch.msgid.link/20260612-gate-power-v2-1-de76cb9bb7ef@chaosmail.tech
 
-I'm glad we are in agreement on this :)
+Changes in v2:
+- Addressing review feedback
+- Link to v1: https://patch.msgid.link/20260611-gate-power-v1-1-8a62721086c7@chaosmail.tech
+---
+ drivers/power/supply/macsmc-power.c | 36 +++++++++++++++++++++++++++++++++---
+ 1 file changed, 33 insertions(+), 3 deletions(-)
 
-But in general I feel you have sent this and at least one other series like this
-without being as clear as you should have been.
+diff --git a/drivers/power/supply/macsmc-power.c b/drivers/power/supply/macsmc-power.c
+index ced07f71e0a8..a357e50f81f2 100644
+--- a/drivers/power/supply/macsmc-power.c
++++ b/drivers/power/supply/macsmc-power.c
+@@ -86,6 +86,7 @@ struct macsmc_power {
+ 	bool has_ch0i; /* Force discharge (Older firmware) */
+ 	bool has_ch0c; /* Inhibit charge (Older firmware) */
+ 	bool has_chte; /* Inhibit charge (Modern firmware) */
++	bool bcf0_1byte; /* Battery critical key is 1 byte (Modern firmware) */
+ 
+ 	u8 num_cells;
+ 	int nominal_voltage_mv;
+@@ -273,6 +274,20 @@ static int macsmc_battery_get_date(const char *s, int *out)
+ 	return 0;
+ }
+ 
++static int macsmc_battery_read_bcf0(struct macsmc_power *power, u32 *val)
++{
++	u8 tval = 0;
++	int ret;
++
++	if (power->bcf0_1byte) {
++		ret = apple_smc_read_u8(power->smc, SMC_KEY(BCF0), &tval);
++		*val = tval;
++		return ret;
++	}
++
++	return apple_smc_read_u32(power->smc, SMC_KEY(BCF0), val);
++}
++
+ static int macsmc_battery_get_capacity_level(struct macsmc_power *power)
+ {
+ 	bool flag;
+@@ -280,7 +295,7 @@ static int macsmc_battery_get_capacity_level(struct macsmc_power *power)
+ 	int ret;
+ 
+ 	/* Check for emergency shutdown condition */
+-	if (apple_smc_read_u32(power->smc, SMC_KEY(BCF0), &val) >= 0 && val)
++	if (macsmc_battery_read_bcf0(power, &val) >= 0 && val)
+ 		return POWER_SUPPLY_CAPACITY_LEVEL_CRITICAL;
+ 
+ 	/* Check AC status for whether we could boot in this state */
+@@ -577,7 +592,7 @@ static void macsmc_power_critical_work(struct work_struct *wrk)
+ 	 * Check if SMC flagged the battery as empty.
+ 	 * We trigger a graceful shutdown to let the OS save data.
+ 	 */
+-	if (apple_smc_read_u32(power->smc, SMC_KEY(BCF0), &bcf0) == 0 && bcf0 != 0) {
++	if (macsmc_battery_read_bcf0(power, &bcf0) == 0 && bcf0 != 0) {
+ 		power->orderly_shutdown_triggered = true;
+ 		dev_crit(power->dev, "Battery critical (empty flag set). Triggering orderly shutdown.\n");
+ 		orderly_poweroff(true);
+@@ -616,6 +631,7 @@ static int macsmc_power_probe(struct platform_device *pdev)
+ 	struct device *dev = &pdev->dev;
+ 	struct apple_smc *smc = dev_get_drvdata(pdev->dev.parent);
+ 	struct power_supply_config psy_cfg = {};
++	struct apple_smc_key_info info;
+ 	struct macsmc_power *power;
+ 	bool has_battery = false;
+ 	bool has_ac_adapter = false;
+@@ -714,6 +730,20 @@ static int macsmc_power_probe(struct platform_device *pdev)
+ 		if (apple_smc_key_exists(smc, SMC_KEY(CH0I)))
+ 			power->has_ch0i = true;
+ 
++		ret = apple_smc_get_key_info(power->smc, SMC_KEY(BCF0), &info);
++		if (ret) {
++			dev_err(&pdev->dev, "Failed to determine BCF0 key size\n");
++			return ret;
++		}
++		if (info.size == 1)
++			power->bcf0_1byte = true;
++		else if (info.size == 4)
++			power->bcf0_1byte = false;
++		else {
++			dev_err(&pdev->dev, "Unexpected BCF0 key size %d\n", info.size);
++			return -EIO;
++		}
++
+ 		/* Reset "Optimised Battery Charging" flags to default state */
+ 		if (power->has_chte)
+ 			apple_smc_write_u32(smc, SMC_KEY(CHTE), 0);
+@@ -766,7 +796,7 @@ static int macsmc_power_probe(struct platform_device *pdev)
+ 		power->nominal_voltage_mv = MACSMC_NOMINAL_CELL_VOLTAGE_MV * power->num_cells;
+ 
+ 		/* Enable critical shutdown notifications by reading status once */
+-		apple_smc_read_u32(power->smc, SMC_KEY(BCF0), &val32);
++		macsmc_battery_read_bcf0(power, &val32);
+ 
+ 		psy_cfg.drv_data = power;
+ 		power->batt = devm_power_supply_register(dev, &power->batt_desc, &psy_cfg);
 
-I hate to belabour the point but just to be clear:
+---
+base-commit: dc59e4fea9d83f03bad6bddf3fa2e52491777482
+change-id: 20260611-gate-power-cfd726dc0d7f
 
-* You label one patch [DO-NOT-MERGE], but none of the others (implying they
-  are candidates for being merged) [0] and the cover letter has TODOs,
-  including trivia like naming, but nothing about the code.
+Best regards,
+--  
+Sasha Finkelstein <k@chaosmail.tech>
 
-* You sent a non-RFC series with identical code quality issues [1]
-  recently.
-
-* Until I pointed it out, you were responding to other review here as if
-  the series was genuinely was intended for (eventual) merge:
-
-  - "This is a userspace-visible removal. Writes to
-     /proc/sys/vm/watermark_boost_factor will now return -ENOENT instead of
-     being accepted, breaking userspace." [2]
-
-     <-: "I'll just drop this patch for now." [3]
-
-  - "I left a small code nit inline, but whether you take that suggestion
-     or leave it, you can add Reviewed-by: ..." [4]
-
-    <-: "I sent it with this series mostly because it's needed to make the
-    series work, and to provide context on why it's needed. I'm happy to
-    resend it with a GFP mask passed in by each caller. That would look
-    better, indeed!" [5]
-
-So to be concrete, if you send really rough code, Use [pre-RFC] or [DO NOT
-MERGE] (on the series as a whole) to make that clear and say so in the
-cover letter VERY VERY clearly.
-
-Or, you can put it in a repo somewhere and link it in an email discussing
-the concepts (like I did with scalable CoW for instance).
-
-Also if people respond to the series as if it isn't pre-RFC, I'd suggest in
-your replies saying something like 'I intend to completely rework all this
-anyway' or something like that! :)
-
-> How do people feel about splitting up the free lists,
-> so each gigabyte (well, PUD sized) chunk of memory
-> has its own free lists?
->
-> How can we balance the desire for higher-order kernel
-> allocations, against the desire to preserve gigabyte
-> sized chunks of memory that can be used for user space?
-...
-> That's another big question. How do we balance the
-> desire to keep compaction overhead low with the desire
-> to do higher order allocations almost everywhere?
->
-> >
-...
->
-> I am just hoping to figure out what I should be
-> doing on a conceptual level, before figuring out
-> how to do it cleanly.
->
-...
->
-> I was looking for feedback on the basic concepts
-> and design in the patch series, but failed to
-> clearly communicate that.
->
-> You provided some detailed feedback on the code,
-> but as of yet nobody has really provided any
-> opinions on things like whether it is desirable
-> at all to have the free lists per gigablock,
-> or whether we need to come up with some totally
-> different approach.
->
-> How do we better communicate that kind of thing
-> in the future?
->
-> Is that something to spell out more clearly in
-> the cover letter?
->
-> Is that kind of feedback something developers
-> could even reasonably ask for? (if not, how do
-> we figure out what maintainers want?)
-
-As above, firstly make it clear that the code you are sending for review is
-not to be reviewed so people don't waste highly contended maintainer time
-on that! :)
-
-Also, you didn't respond to my point regarding cc'ing the right people -
-but that's clearly something you need to get right if you want this kind of
-feedback to start with.
-
-For instance, you didn't cc- the page allocator maintainer (Vlastimil) on a
-series that is fundamentally changing the page allocator. That's not going
-to help with feedback.
-
-In general, this area of the page allocator and compaction isn't my
-specialism in the kernel so I can't give you the in-depth feedback you need
-on that.
-
-But I do have thoughts in general as to how to achieve what you want here:
-
-Firstly - you should try to summarise what you're doing here and what
-you're changing alongside the trade-offs as clearly as you can in the cover
-letter.
-
-Then highlight what it is you need feedback on, broken out into clear
-questions or points that make it easy for people to respond to.
-
-And _you have already done this_ in your reply here:
-
-* "How do people feel about splitting up the free lists, so each gigabyte
-   (well, PUD sized) chunk of memory has its own free lists?"
-
-* "How can we balance the desire for higher-order kernel allocations,
-  against the desire to preserve gigabyte sized chunks of memory that can
-  be used for user space?"
-
-* "How do we balance the desire to keep compaction overhead low with the
-   desire to do higher order allocations almost everywhere?"
-
-I think a really good way of doing this would be to start out with
-something like:
-
-	Right now compaction often fails to achieve what we need, with
-	fragmentation occurring anyway and (for instance) THP stalling on
-	the availability of higher order folios.
-
-etc. etc.
-
-Summarising _the problem_.
-
-Then a section about your proposed solution, e.g.:
-
-	I propose a means by which we proactively achieve gigabyte-sized
-	pageblocks with logic which maintains these as physically
-	contiguous under both ordinary and contended workloads
-
-Then list out the "secret sauce" of your approach, e.g.:
-
-	This works by arranging memory such that unmovable allocations are
-	grouped at <blah blah blah> etc.
-
-Then raise your questions e.g.:
-
-	I'd like to ask the community - how do people feel about splitting
-	up the free lists, so each gigabyte (well, PUD sized) chunk of
-	memory has its own free lists? <etc. etc.>
-
-Then make it clear whether this is an RFC that is ready for primetime or
-not:
-
-	This series is simply intended as a proof-of-concept - PLEASE DO
-	NOT REVIEW THE CODE per-se, but rather comment on the concepts!
-
-(And obviously as above, if that _is_ what you intend, underline it with
-[DO NOT MERGE] or [pre-RFC] or something like that).
-
-I'd also very strongly suggest (as I did in my original reply) breaking out
-parts that can be broken out as prerequisite series.
-
-If you're doing something good or useful _anyway_ then just send that
-separately first, and have later work rely on the earlier work.
-
-There's no rush, this is huge and will take time.
-
-A final KEY point:
-
-NEVER submit unfiltered code generated by an LLMs to the list in _any_
-form. If you want people to access code like that to test or something,
-then put it in a remote repo and link to it.
-
-The code is SO overly complicated and SO messy that it's really difficult
-for people to understand what's actually going on.
-
-At the heart of what you need here is CLARITY.
-
-You need to CLEARLY communicate what it is you're doing so busy maintainers
-can examine it. That's the _only_ way you're going to get something like
-this merged.
-
-The LLM-generated code is so awful that ain't nobody got the time to try to
-understand what it's doing.
-
-The workload for this really has to be on submitters, not maintainers.
-
-And what you've done, even if not intended, is workslopping, and that's
-really not acceptable. Quoting the kernel process on tool-generated content
-[6]:
-
-"If tools permit you to generate a contribution automatically, expect
-additional scrutiny in proportion to how much of it was generated.
-
-As with the output of any tooling, the result may be incorrect or
-inappropriate. You are expected to understand and to be able to defend
-everything you submit. If you are unable to do so, then do not submit the
-resulting changes.
-
-If you do so anyway, maintainers are entitled to reject your series without
-detailed review."
-
-As per this and my previous reply, AI slop doesn't scale, even as an RFC -
-I won't have time to reply like this in future, and we will just have to
-reject your series out of hand, which helps nobody.
-
->
->
-> --
-> All Rights Reversed.
-
-Thanks, Lorenzo
-
-[0]:https://lore.kernel.org/all/20260520150018.2491267-41-riel@surriel.com/
-[1]:https://lore.kernel.org/linux-mm/20260616190300.1509639-1-riel@surriel.com/
-[2]:https://lore.kernel.org/all/20260526140204.1390573-1-usama.arif@linux.dev/
-[3]:https://lore.kernel.org/all/2ecf71858845e7d14c718b1a6845389cb78b986e.camel@surriel.com/
-[4]:https://lore.kernel.org/all/20260520174749.GA1458531@zen.localdomain/
-[5]:https://lore.kernel.org/all/daa29c92f055d028a5b3ec0e42cfb1ee1496a593.camel@surriel.com/
-[6]:https://docs.kernel.org/process/generated-content.html
