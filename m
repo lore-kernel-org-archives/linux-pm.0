@@ -1,169 +1,210 @@
-Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
+Received: from shelob.surriel.com (shelob.surriel.com [96.67.55.147])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B00D141931F
-	for <linux-pm@vger.kernel.org>; Mon, 29 Jun 2026 14:39:00 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2B86F41B36D;
+	Mon, 29 Jun 2026 14:39:28 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=96.67.55.147
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1782743941; cv=none; b=ugmeV6IRnvlqai7YL0bJov34ja6N0VKBRzpf3wE0E18j/dmaJ3Kju4uJRRO3G+oivfx2TjfgjIRSGvhVwOGEeXKVYGmv6chL8AzvCo/owF3ex4QfTWn1gYGp/DmQctMYvqzCmT7W9tTqpGDcHS9UzgXYyuJWn//pN56JEI3wUyA=
+	t=1782743971; cv=none; b=gzUnWHfJMOCGsVnk7mlwYGHxhlr7+KMq+Inj7FNB9nF8rz12sGgX6Kh3gAgUOhuXsTTwKpsbDn9JVnOZpxwFKSnHOtqXlfUaIdRWnsQxVJa3YFd4MrGp8nlrc21Xu0HoMpkLIpZ2/LoKNJM1gSlyrBP427cj1yNIMwx3h1yh0AY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1782743941; c=relaxed/simple;
-	bh=dJ2JTp6OFiB0mDOUeLX87yYQ+VnXucP5xQ/OK7M2m44=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=cVqQwEHD/UkqqSD/VGkLBBV94LFQpKLNB5+68LN6j4sszL2K7oV1mT61cs0YTJTMZsMieogqGaFGHuYJ1vbLgLmpZAisuT3FhnM0bYT1JxIPblth2tD6X8rA2NOHPheisv8gLsiqlxhfJt3Cv0qQgyW5eVUItxp82SdO5zSfvFA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=NS95HeDZ; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=Ygz/Ex3y; arc=none smtp.client-ip=205.220.168.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
+	s=arc-20240116; t=1782743971; c=relaxed/simple;
+	bh=tIgmvkbVGgsAFw9O5XEwFGKEfBQkgY3RT+doQ9R/e5A=;
+	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
+	 Content-Type:MIME-Version; b=dXGvES5WJc5ep0IbhSg/FJW/Pdkav1ZAfGTwSZdQ+EO7y6rbfeJ8FXzeytV3Qcfr0SmX3lihSCJHlvzjq+A//WPwprmKDPhrxeZsFkkX+3bd0ujE4W/xn5mElnfWlveVw3SJrhEGOhnHJMLAh4Q+ZpHYqMGDcukf9elzER85uew=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=surriel.com; spf=pass smtp.mailfrom=surriel.com; dkim=pass (2048-bit key) header.d=surriel.com header.i=@surriel.com header.b=BlIR7eoq; arc=none smtp.client-ip=96.67.55.147
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=surriel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=surriel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="NS95HeDZ";
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="Ygz/Ex3y"
-Received: from pps.filterd (m0279866.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 65TASrW12601136
-	for <linux-pm@vger.kernel.org>; Mon, 29 Jun 2026 14:39:00 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	t9F0ZQvdgCZ175pSXQOqitXo6ftMA07Jyq3N/MCBR0A=; b=NS95HeDZbikRVR2L
-	CDbdAEuKNbD4Bc/z8M8aR3CAtyBF/pWucf/5uTVV0RFapYgsHjzPYc4FQLV1+t88
-	/rIEWdm8GIkJ2Q/EXFtwmym8tJ+hGgo48rfkq4W1YDciQn3HpmwsHP5FRQ4O22Ey
-	v9JQJARm571mVhShSfQ0RJhYLw2XEUzSsGXd7lSqDm6QPJh02Vm4sXN99yuSTZf8
-	JPTIY2eC5ASHR+FcCF9jq5zv7lkIA3/FVqLyqLj8Cx2U6eBtKCxUCTs7H4LFV+Td
-	y3Q54UfP040JuLQM0li7HYENa1p1qNVT6gOKNvgi0iZ171F88OJR1awSjGJDR1R4
-	McZEKA==
-Received: from mail-vs1-f71.google.com (mail-vs1-f71.google.com [209.85.217.71])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4f3nnw9bc9-1
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Mon, 29 Jun 2026 14:38:59 +0000 (GMT)
-Received: by mail-vs1-f71.google.com with SMTP id ada2fe7eead31-7392d893428so66672137.2
-        for <linux-pm@vger.kernel.org>; Mon, 29 Jun 2026 07:38:59 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1782743939; x=1783348739; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:in-reply-to:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=t9F0ZQvdgCZ175pSXQOqitXo6ftMA07Jyq3N/MCBR0A=;
-        b=Ygz/Ex3yySJCXWmnYA4yiIVVdGT7nZDFwQRJeYDzNFR1hM93TtfBimbbn1khwNBGEj
-         ML6M5L/W9lG1OiXrkI77CIpNCxmxTzq7u0x2lvkpnRuZRU+181I6O2KYPvXRKOA9x2g8
-         EREgT0S4rVBqGEQ0I7B0kFKtkTvo/v8lL9PykOFrvmX0cL/7YaLlZ001otz0dyOeWeV1
-         aU4Y6ui2gOSaBotrvBCWnMLWZnOgNlRIdAiFAduSYaCdnVnnys+rGSqva9nTMQ9/2czL
-         gax+4c8dCWlx2+k3f62GxXw5bj3qnArxq7PPlp4cg303ohumvCwcMcI0sEB9CtRd0/Ox
-         z/FQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1782743939; x=1783348739;
-        h=content-transfer-encoding:content-type:in-reply-to:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=t9F0ZQvdgCZ175pSXQOqitXo6ftMA07Jyq3N/MCBR0A=;
-        b=Ct5ano+E8LAr+v/zjgzFXPre75fuJ2zgPyF5emDiWvdxUKAciws2tOIWdzwUXHlxpj
-         6kBOLhT4eLyhXKWi1vhwGxS64sWciyTLgyQ0CT3nWF+cq8oTI2TnCwSEvt+RcFdKr53+
-         BxnQ0xBe+OZ4he8floVbUIjq5JPqHQsOH/ItEXBHUQ6ifug1PyBBH20hgZN3SdjGm0+w
-         GLiUQGP2RB+OYuV4qqrC60SGX713a4QaJ7L7/QI0APhq4PimhnA6qhguQmp6bFZv/5ua
-         Cx4KbgEWuCyIbZCWn4TSfVHuX2FJfDWtCDZ+Z8LZ6vcOCOMhHgtuu2r4lEA35aHetD9I
-         ZNSg==
-X-Forwarded-Encrypted: i=1; AHgh+RrAqSBzuKvcM/2yeLo8a5Eq4X0CiW+roarDopJz6EcvXrcHD4XCPLbQ68wULTSupNczg7tjIVpAlQ==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yy7I/Gdgv1+d99nMALVGcEOK2PS77Ywsvn+xu4F0C92tMJwvhkw
-	QycJ/jgk64LH7AwkgybTu6EnDxL12EgQ1ItVRKlB76zYOyVDCiCD2dGdX94+AdMz4kBxwgN3tJN
-	i8X6dDWycQJHRiK4go9o7IIPqjrepqmgM9tBxTHPvxYvMi09UDxxQnmubVEl+B1U0jzuEVw==
-X-Gm-Gg: AfdE7cnIhiLVdAw30mGfLwZ34Lg/hrUa06o3RzwArDaWHzkA1Kyy0+oHvY0Dx9hzu97
-	Iz4QvDTTT/JR13QjEvBa9nyRngnchy2Ea/pOosxytC5uLuYCP3lLwmCtG4MBUP9T9wOta5Olpbr
-	bsASQo64L6gmi9TdPjnzxr/mrq2cR/9ry/TAhIKUpeWkhj2q5IAo8xrvONCpTn03MZ1tZM0Vsa/
-	idSTGtX7xvNgCzIKaBJDrzTI/jbAS2l6SPL9y0HP9yz3v8DEvOaL2M7h23ARWRfyZuy0HxOa8n1
-	mt5hC3LIpPDoLBICmYh7flrD14pwD2kRYM0wKNfu+PY9ELZDPnJKSccrxwQ2jGobmlCEGhkua67
-	hPC7RMBTxfFgO7yFLf5zV5S2MH7PAIVN/RXA=
-X-Received: by 2002:a05:6102:1607:b0:739:b6bf:bc9e with SMTP id ada2fe7eead31-739b6bfbe2bmr297197137.3.1782743939042;
-        Mon, 29 Jun 2026 07:38:59 -0700 (PDT)
-X-Received: by 2002:a05:6102:1607:b0:739:b6bf:bc9e with SMTP id ada2fe7eead31-739b6bfbe2bmr297178137.3.1782743938563;
-        Mon, 29 Jun 2026 07:38:58 -0700 (PDT)
-Received: from [192.168.120.170] ([178.235.128.140])
-        by smtp.gmail.com with ESMTPSA id 4fb4d7f45d1cf-69870eac1f5sm1099403a12.2.2026.06.29.07.38.55
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 29 Jun 2026 07:38:57 -0700 (PDT)
-Message-ID: <a0a96e9a-2df0-4576-86a1-95683dcef4f4@oss.qualcomm.com>
-Date: Mon, 29 Jun 2026 16:38:55 +0200
+	dkim=pass (2048-bit key) header.d=surriel.com header.i=@surriel.com header.b="BlIR7eoq"
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=surriel.com
+	; s=mail; h=MIME-Version:Content-Transfer-Encoding:Content-Type:References:
+	In-Reply-To:Date:Cc:To:From:Subject:Message-ID:Sender:Reply-To:Content-ID:
+	Content-Description:Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc
+	:Resent-Message-ID:List-Id:List-Help:List-Unsubscribe:List-Subscribe:
+	List-Post:List-Owner:List-Archive;
+	bh=tIgmvkbVGgsAFw9O5XEwFGKEfBQkgY3RT+doQ9R/e5A=; b=BlIR7eoqUhI1rLk2ZjKvXK65XF
+	ul1b3Jicl/kzWBqFFYfTW2921ScvcTwoLQ7D7BoW0xono/v0ezOQgDtoxXPq8xKg9MqyJQHmaTZhG
+	3N1FL0vYN2X8TFLjAVPYDdDvGPGx1uft0Pa7GoBvSEuiVgDaK3EgcJG8dImxaUrlrgvLYWMIxQyn1
+	mqWkLM7qeLR9Typ4qRZCwCK3lq9Oq4RFiCgyZ2raRaTMiE9Vts5062yaD5qjjHcCL8sVUyeLo3GWz
+	+cuYSucxEx9Gj/nM3pCzyJgsqsJA+OZVuo9vlhAoQJX3s1SIwfIZUWajLmBCV7g8w4yjJ5+x20fez
+	cWgAlFmw==;
+Received: from fangorn.home.surriel.com ([10.0.13.7])
+	by shelob.surriel.com with esmtpsa  (TLS1.2) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+	(Exim 4.97.1)
+	(envelope-from <riel@surriel.com>)
+	id 1weD8d-000000007rY-1v7G;
+	Mon, 29 Jun 2026 10:39:07 -0400
+Message-ID: <ec4d1acc0d01cd9d9b6f4c9da4033f8591f9436a.camel@surriel.com>
+Subject: Re: [RFC PATCH 00/40] mm: reliable 1GB page allocation
+From: Rik van Riel <riel@surriel.com>
+To: "Vlastimil Babka (SUSE)" <vbabka@kernel.org>, Lorenzo Stoakes
+	 <ljs@kernel.org>
+Cc: linux-kernel@vger.kernel.org, kernel-team@meta.com, linux-mm@kvack.org, 
+	david@kernel.org, willy@infradead.org, surenb@google.com,
+ hannes@cmpxchg.org, 	ziy@nvidia.com, usama.arif@linux.dev, fvdl@google.com,
+ Andrew Morton	 <akpm@linux-foundation.org>, Jonathan Corbet
+ <corbet@lwn.net>, Chris Mason	 <clm@fb.com>, David Sterba
+ <dsterba@suse.com>, Steven Rostedt	 <rostedt@goodmis.org>, Masami Hiramatsu
+ <mhiramat@kernel.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Oscar
+ Salvador <osalvador@suse.de>, Mike Rapoport <rppt@kernel.org>, 
+	linux-doc@vger.kernel.org, linux-btrfs@vger.kernel.org, 
+	linux-trace-kernel@vger.kernel.org, linux-pm@vger.kernel.org, 
+	linux-cxl@vger.kernel.org, Linus Torvalds <torvalds@linux-foundation.org>
+Date: Mon, 29 Jun 2026 10:39:07 -0400
+In-Reply-To: <361fd2e5-a5f9-42fe-90fc-bc0af109553e@kernel.org>
+References: <20260520150018.2491267-1-riel@surriel.com>
+	 <aj9yrlB0TrlYCLlf@lucifer>
+	 <528e3a5fbc27c9dc7a098121c32b7679b4c9962a.camel@surriel.com>
+	 <akIjA_dqh4OHAYo4@lucifer>
+	 <361fd2e5-a5f9-42fe-90fc-bc0af109553e@kernel.org>
+Autocrypt: addr=riel@surriel.com; prefer-encrypt=mutual;
+ keydata=mQENBFIt3aUBCADCK0LicyCYyMa0E1lodCDUBf6G+6C5UXKG1jEYwQu49cc/gUBTTk33A
+ eo2hjn4JinVaPF3zfZprnKMEGGv4dHvEOCPWiNhlz5RtqH3SKJllq2dpeMS9RqbMvDA36rlJIIo47
+ Z/nl6IA8MDhSqyqdnTY8z7LnQHqq16jAqwo7Ll9qALXz4yG1ZdSCmo80VPetBZZPw7WMjo+1hByv/
+ lvdFnLfiQ52tayuuC1r9x2qZ/SYWd2M4p/f5CLmvG9UcnkbYFsKWz8bwOBWKg1PQcaYHLx06sHGdY
+ dIDaeVvkIfMFwAprSo5EFU+aes2VB2ZjugOTbkkW2aPSWTRsBhPHhV6dABEBAAG0HlJpayB2YW4gU
+ mllbCA8cmllbEByZWRoYXQuY29tPokBHwQwAQIACQUCW5LcVgIdIAAKCRDOed6ShMTeg05SB/986o
+ gEgdq4byrtaBQKFg5LWfd8e+h+QzLOg/T8mSS3dJzFXe5JBOfvYg7Bj47xXi9I5sM+I9Lu9+1XVb/
+ r2rGJrU1DwA09TnmyFtK76bgMF0sBEh1ECILYNQTEIemzNFwOWLZZlEhZFRJsZyX+mtEp/WQIygHV
+ WjwuP69VJw+fPQvLOGn4j8W9QXuvhha7u1QJ7mYx4dLGHrZlHdwDsqpvWsW+3rsIqs1BBe5/Itz9o
+ 6y9gLNtQzwmSDioV8KhF85VmYInslhv5tUtMEppfdTLyX4SUKh8ftNIVmH9mXyRCZclSoa6IMd635
+ Jq1Pj2/Lp64tOzSvN5Y9zaiCc5FucXtB9SaWsgdmFuIFJpZWwgPHJpZWxAc3VycmllbC5jb20+iQE
+ +BBMBAgAoBQJSLd2lAhsjBQkSzAMABgsJCAcDAgYVCAIJCgsEFgIDAQIeAQIXgAAKCRDOed6ShMTe
+ g4PpB/0ZivKYFt0LaB22ssWUrBoeNWCP1NY/lkq2QbPhR3agLB7ZXI97PF2z/5QD9Fuy/FD/jddPx
+ KRTvFCtHcEzTOcFjBmf52uqgt3U40H9GM++0IM0yHusd9EzlaWsbp09vsAV2DwdqS69x9RPbvE/Ne
+ fO5subhocH76okcF/aQiQ+oj2j6LJZGBJBVigOHg+4zyzdDgKM+jp0bvDI51KQ4XfxV593OhvkS3z
+ 3FPx0CE7l62WhWrieHyBblqvkTYgJ6dq4bsYpqxxGJOkQ47WpEUx6onH+rImWmPJbSYGhwBzTo0Mm
+ G1Nb1qGPG+mTrSmJjDRxrwf1zjmYqQreWVSFEt26tBpSaWsgdmFuIFJpZWwgPHJpZWxAZmIuY29tP
+ okBPgQTAQIAKAUCW5LbiAIbIwUJEswDAAYLCQgHAwIGFQgCCQoLBBYCAwECHgECF4AACgkQznneko
+ TE3oOUEQgAsrGxjTC1bGtZyuvyQPcXclap11Ogib6rQywGYu6/Mnkbd6hbyY3wpdyQii/cas2S44N
+ cQj8HkGv91JLVE24/Wt0gITPCH3rLVJJDGQxprHTVDs1t1RAbsbp0XTksZPCNWDGYIBo2aHDwErhI
+ omYQ0Xluo1WBtH/UmHgirHvclsou1Ks9jyTxiPyUKRfae7GNOFiX99+ZlB27P3t8CjtSO831Ij0Ip
+ QrfooZ21YVlUKw0Wy6Ll8EyefyrEYSh8KTm8dQj4O7xxvdg865TLeLpho5PwDRF+/mR3qi8CdGbkE
+ c4pYZQO8UDXUN4S+pe0aTeTqlYw8rRHWF9TnvtpcNzZw==
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+User-Agent: Evolution 3.56.2 (3.56.2-2.fc42) 
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v4 07/10] arm64: dts: qcom: shikra: Add CDSP, LPAICP, MPSS
- remoteproc PAS nodes
-To: Komal Bajaj <komal.bajaj@oss.qualcomm.com>, Vinod Koul
- <vkoul@kernel.org>,
-        Frank Li <Frank.Li@kernel.org>, Rob Herring <robh@kernel.org>,
-        Krzysztof Kozlowski <krzk+dt@kernel.org>,
-        Conor Dooley <conor+dt@kernel.org>,
-        Krzysztof Kozlowski <krzk@kernel.org>,
-        Georgi Djakov <djakov@kernel.org>,
-        Bjorn Andersson <andersson@kernel.org>,
-        Konrad Dybcio <konradybcio@kernel.org>
-Cc: linux-arm-msm@vger.kernel.org, dmaengine@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-pm@vger.kernel.org,
-        Bibek Kumar Patro <bibek.patro@oss.qualcomm.com>
-References: <20260608-shikra-dt-m1-v4-0-2114300594a6@oss.qualcomm.com>
- <20260608-shikra-dt-m1-v4-7-2114300594a6@oss.qualcomm.com>
-Content-Language: en-US
-From: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
-In-Reply-To: <20260608-shikra-dt-m1-v4-7-2114300594a6@oss.qualcomm.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-Proofpoint-Spam-Info: AW1haW4tMjYwNjI5MDEyMiBTYWx0ZWRfX1J1oQ6h9oi1w
- kzK2sBWFQhb6aSD5hbqNHwkhU6JDaKf6Vr3uajePuSg38/pkl1/ri87qr8VIL7KxoyOos5Jx9x8
- F6Sn0cGNiBdJdHvyj8VP+NJuubv2DsY=
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNjI5MDEyMiBTYWx0ZWRfX7S3RG0tBySoq
- YH3F+HbtXtTr1IVAcaZXKKnFtzvmouDbEoBqvqzOb5y3qUqtZlr2EA/qr2cMb3GYTmqofgc7OKh
- 43FCtzJ+Uaxh/AcFzQIJll/XcwqszTV+r9v95MR0eo4Uq9ITgXbv9B3KNqzlCKDpglMPPa7OalT
- vvI9S3UQJV8kGl6WzRj4JRUsySkZ5WK767hWAVZ4a4xplVNA+Am4aoMXcY3FrubuVbT61FisBvr
- Pfp+B4SP50fXgVbgR167d4kZjdfTmTiGSgI1p6tVojq+YQa87v+wMK/Xzh+UUA8SGUTQk5J9em4
- 9TdJkI7aZn/H/nKg2uUjWpgrqJnoXS5ikNlMusqMArktBm0JoGU6BsTZAa/HZY6bAP/wiDHZvWQ
- oJyKoF0hrbdXmuxmIwHW13wGg1qjwg7z/Lvsr6j2XJCsDYP+WmfGqaFmfRnhZdroL5VmGkCz9yO
- 4cVGO/529Q6wMUZYQPg==
-X-Proofpoint-GUID: 2XKWNVNoksYT-NP926jLMM6OwfBbyLFZ
-X-Authority-Analysis: v=2.4 cv=cefiaHDM c=1 sm=1 tr=0 ts=6a428384 cx=c_pps
- a=P2rfLEam3zuxRRdjJWA2cw==:117 a=PRfkaYvzSr8QmIIGAkY2Sg==:17
- a=IkcTkHD0fZMA:10 a=FelO9ux0wxsA:10 a=s4-Qcg_JpJYA:10
- a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=YMgV9FUhrdKAYTUUvYB2:22
- a=EUspDBNiAAAA:8 a=l7gszL_yuYPfzADJGiwA:9 a=QEXdDO2ut3YA:10
- a=ODZdjJIeia2B_SHc_B0f:22
-X-Proofpoint-ORIG-GUID: 2XKWNVNoksYT-NP926jLMM6OwfBbyLFZ
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.125,FMLib:17.12.100.49
- definitions=2026-06-29_03,2026-06-26_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- spamscore=0 impostorscore=0 lowpriorityscore=0 malwarescore=0 bulkscore=0
- suspectscore=0 clxscore=1015 priorityscore=1501 adultscore=0 phishscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2606290122
 
-On 6/8/26 3:10 PM, Komal Bajaj wrote:
-> From: Bibek Kumar Patro <bibek.patro@oss.qualcomm.com>
-> 
-> Add nodes for remoteproc PAS loader for CDSP, LPAICP, MPSS subsystem.
-> 
-> Signed-off-by: Bibek Kumar Patro <bibek.patro@oss.qualcomm.com>
-> Signed-off-by: Komal Bajaj <komal.bajaj@oss.qualcomm.com>
-> ---
->  arch/arm64/boot/dts/qcom/shikra.dtsi | 164 +++++++++++++++++++++++++++++++++++
->  1 file changed, 164 insertions(+)
-> 
-> diff --git a/arch/arm64/boot/dts/qcom/shikra.dtsi b/arch/arm64/boot/dts/qcom/shikra.dtsi
-> index 219c904fba29..445dd8bb7269 100644
-> --- a/arch/arm64/boot/dts/qcom/shikra.dtsi
-> +++ b/arch/arm64/boot/dts/qcom/shikra.dtsi
-> @@ -1798,6 +1798,170 @@ &clk_virt SLAVE_QUP_CORE_0 RPM_ALWAYS_TAG>,
->  			};
->  		};
->  
-> +		remoteproc_mpss: remoteproc@6080000 {
-> +			compatible = "qcom,shikra-mpss-pas";
-> +			reg = <0x0 0x06080000 0x0 0x100>;
+On Mon, 2026-06-29 at 12:03 +0200, Vlastimil Babka (SUSE) wrote:
+> On 6/29/26 11:29, Lorenzo Stoakes wrote:
+> >=20
+> > So to be concrete, if you send really rough code, Use [pre-RFC] or
+> > [DO NOT
+> > MERGE] (on the series as a whole) to make that clear and say so in
+> > the
+> > cover letter VERY VERY clearly.
+>=20
+> Yes please. [POC NOT-FOR-MERGE] perhaps?
+>=20
+> > Or, you can put it in a repo somewhere and link it in an email
+> > discussing
+> > the concepts (like I did with scalable CoW for instance).
+>=20
+> Indeed.
 
-0x10_000
+I'll do that for the next version.
 
-Reviewed-by: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
+I suspect it will take a while to beat this thing
+into shape.
+>=20
+> > And _you have already done this_ in your reply here:
+> >=20
+> > * "How do people feel about splitting up the free lists, so each
+> > gigabyte
+> > =C2=A0=C2=A0 (well, PUD sized) chunk of memory has its own free lists?"
+>=20
+> My immediate response is that now we'd need to search multiple sets
+> of lists
+> instead of a single one? What about the overhead?
 
-Konrad
+The current code is clearly not good enough. It
+has to try several gigablocks almost blindly,
+because there is no efficient way to find the
+right gigablock.
+
+I have an idea on how to fix that with bitmaps.
+
+We could have one bitmap per order, indicating which
+gigablocks have order 0 pages, order 1 pages, etc
+
+Then a second set of bitmaps indicating which gigablocks
+have unmovable / reclaimable pages.
+
+At that point, finding a good gigablock to allocate
+from can be done with a bitmap_and and a search.
+
+These bitmaps would only need to be changed when the
+status of a gigablock changes, eg. going from having
+order 0 pages free, to not having any order 0 pages
+free.
+
+Does that seem like a workable approach?
+
+Once we can quickly pinpoint a gigablock for the
+page allocator to grab pages from, we can also
+split out the "pick a gigablock" code from the
+"allocate a page" code.
+
+>=20
+> > * "How can we balance the desire for higher-order kernel
+> > allocations,
+> > =C2=A0 against the desire to preserve gigabyte sized chunks of memory
+> > that can
+> > =C2=A0 be used for user space?"
+> >=20
+> > * "How do we balance the desire to keep compaction overhead low
+> > with the
+> > =C2=A0=C2=A0 desire to do higher order allocations almost everywhere?"
+>=20
+> How can we have a cake and eat it too? :)
+
+Pretty much :/
+
+I suspect it's going to require some fun interactions=C2=A0
+between allocation, reclaim, and compaction.
+
+However, with everybody from networking, to filesystems,
+to anonymous memory wanting to use higher order allocations
+of differing sizes, it seems like we're going to have to=C2=A0
+tackle this somehow.
+
+>=20
+> > I'd also very strongly suggest (as I did in my original reply)
+> > breaking out
+> > parts that can be broken out as prerequisite series.
+> >=20
+> > If you're doing something good or useful _anyway_ then just send
+> > that
+> > separately first, and have later work rely on the earlier work.
+>=20
+That becomes cleaner with the "post a link to
+a tree" thing, as well.
+
+The pcpbuddy stuff is likely to go in separately.
+Johannes is still working on that code.
+
+The "make btrfs inode cache pages movable" thing
+already went in.
+
+I think I have a few more things in the tree that
+can go in separately, but hopefully that will grow
+as this code solidifies.
+
+On the flip side, things like "making compaction
+scale" may well end up depending on the gigablock
+stuff, because lack of targeting data seems like a
+likely cause for why compaction has to try so hard.
+
+I'll make sure to go over every point raised by
+you guys before writing the next version of the
+code, and again before posting a link to the
+tree.
+
+--=20
+All Rights Reversed.
