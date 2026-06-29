@@ -1,88 +1,110 @@
-Received: from mailgw.kylinos.cn (mailgw.kylinos.cn [124.126.103.232])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from out-03.smtp.spacemail.com (out-03.smtp.spacemail.com [63.250.43.88])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2E15B35C19F;
-	Mon, 29 Jun 2026 03:11:44 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=124.126.103.232
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F096CBA3D;
+	Mon, 29 Jun 2026 03:38:39 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=63.250.43.88
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1782702709; cv=none; b=e13EAnkCRqDPhJgCLUSPUGNSVN8+r8c5oQpcNsgB+fzW7pssQb6xkVjkEEX5QVvR39bBZNu8hg3yMA8mcBX8CatqeF0XEBK8dsfLXo+Qs/04XlZdN12myFQTyjinRwkYhaGNuczBM2VJM5R98Zkkl54X9f565ecTOjLs13qXMtM=
+	t=1782704322; cv=none; b=rFDpvQnFikm+juuFIe2OL6wHkdn/iwsC24JKHopojw+dVVarotucQzfMOUZDCD2P825vf0FjzAjvhkXzNzzMswExnZKagaYt/suIVd/d0h7Ewn0HNPmsb4Uw3kQJSAiU+bgwJgfI2eUdF1+iYJ4i3zNSDDrHboDtYY0HQ1y50K0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1782702709; c=relaxed/simple;
-	bh=WS6aMDWTh0MxVBzt+/eE+t9Oj+YEyOwY4UGJtSkPqtU=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=n5Dh9e6Am3MaEKojDuA66cEZUbV5AsgsKx3EsWsmO9aUCM3rkTcWBk36o97Esr7zb+FFhiaKjhBmlM4RffHuAypQZdnNKk4gyn4RYKeJeh9jYNoyt7jZmwx+AcS9JMBaki4yHkXyk/UXk1Kw8ZwQ5EP7+dV6lLVqCnKeMyedLEI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kylinos.cn; spf=pass smtp.mailfrom=kylinos.cn; arc=none smtp.client-ip=124.126.103.232
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kylinos.cn
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=kylinos.cn
-X-UUID: 3ab143f2736811f1aa26b74ffac11d73-20260629
-X-CID-P-RULE: Release_Ham
-X-CID-O-INFO: VERSION:1.3.12,REQID:07bcff7d-ab44-4bb2-ac7a-ec3b7eec7420,IP:0,U
-	RL:0,TC:0,Content:0,EDM:0,RT:0,SF:0,FILE:0,BULK:0,RULE:Release_Ham,ACTION:
-	release,TS:0
-X-CID-META: VersionHash:e7bac3a,CLOUDID:394a6bcccd0778bf0883b01304f84a7a,BulkI
-	D:nil,BulkQuantity:0,Recheck:0,SF:102|850|865|898,TC:nil,Content:0|15|50,E
-	DM:-3,IP:nil,URL:0,File:nil,RT:nil,Bulk:nil,QS:nil,BEC:nil,COL:0,OSI:0,OSA
-	:0,AV:0,LES:1,SPR:NO,DKR:0,DKP:0,BRR:0,BRE:0,ARC:0
-X-CID-BVR: 2,SSN|SDN
-X-CID-BAS: 2,SSN|SDN,0,_
-X-CID-FACTOR: TF_CID_SPAM_SNR
-X-CID-RHF: D41D8CD98F00B204E9800998ECF8427E
-X-UUID: 3ab143f2736811f1aa26b74ffac11d73-20260629
-X-User: yanlonglong@kylinos.cn
-Received: from localhost.localdomain [(10.44.16.150)] by mailgw.kylinos.cn
-	(envelope-from <yanlonglong@kylinos.cn>)
-	(Generic MTA with TLSv1.3 TLS_AES_256_GCM_SHA384 256/256)
-	with ESMTP id 293483947; Mon, 29 Jun 2026 11:11:32 +0800
-From: longlong yan <yanlonglong@kylinos.cn>
-To: trenn@suse.com,
-	shuah@kernel.org,
-	jwyatt@redhat.com,
-	jkacur@redhat.com
-Cc: skhan@linuxfoundation.org,
-	sageofredondo@gmail.com,
-	linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	longlong yan <yanlonglong@kylinos.cn>
-Subject: [PATCH] cpupower/debug/i386: check mmap return value in main
-Date: Mon, 29 Jun 2026 11:11:13 +0800
-Message-ID: <20260629031113.556-1-yanlonglong@kylinos.cn>
-X-Mailer: git-send-email 2.47.1.windows.2
+	s=arc-20240116; t=1782704322; c=relaxed/simple;
+	bh=IFp8KIfJQFaD5SxJ03pX/G7sKzcitokGMS85gqHLheo=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=pY7d6cTiG4u1WbtgMY/+JHG31B3nBDa8MPOvgxC52IEE+/US6Jynui9dpRLkNKfthADcJVjTYtTqH07tjQIZe3wlLFDaG+dzhcXF+h8bFH4AK4p3YECmgdSqnUaxXAY3aYIMrr17zjX6/0fLNpE2FS6RYE4T+9+P3LTkB2e8Y8E=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=gurudas.dev; spf=pass smtp.mailfrom=gurudas.dev; dkim=pass (2048-bit key) header.d=gurudas.dev header.i=@gurudas.dev header.b=EhhFE7XY; arc=none smtp.client-ip=63.250.43.88
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=gurudas.dev
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gurudas.dev
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=gurudas.dev header.i=@gurudas.dev header.b="EhhFE7XY"
+Received: from [192.168.1.96] (107-194-158-19.lightspeed.sntcca.sbcglobal.net [107.194.158.19])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by mail.spacemail.com (Postfix) with ESMTPSA id 4gpX7H6gmwz8sbG;
+	Mon, 29 Jun 2026 03:38:35 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gurudas.dev;
+	s=spacemail; t=1782704318;
+	bh=YIeQik7zWpB4jmw4IE+FSK27BQvQ/I/lwKnJtdpPOVk=;
+	h=From:Date:Subject:References:In-Reply-To:To:Cc:From;
+	b=EhhFE7XYbRvohudmbaj4Tj/bf7TsPPwJS6wC8hq61i/uzpkfCPn9O/Sj+E6vte5mI
+	 zbnJ9PqzqqaLumWY6B+onwSBNV/N76KtKvpbx7stlcS3fDZ9oMExVWMz38iTcsSWwO
+	 w+0ygrtBSeD6V211j4eHZhNCHmNJbZX06k/SLUnRt01sFiEAWtvcBgfdXLpH8y+NxD
+	 PuODykExHbQ4D7tovt0GiZQVTfBrDuTvGtLEJhO67v9mO5L9Dk9Ot7WdHsyhsU3HGO
+	 Yu1WQEDXN2d6In0WW0QXUi7DPbd9JKlwh78KcnLoxIh/ivkPjwTJJI78IQh07n+xfJ
+	 U7tOax9rEkydw==
+From: Guru Das Srinagesh <linux@gurudas.dev>
+Date: Sun, 28 Jun 2026 20:38:19 -0700
+Subject: [PATCH 5/7] net: phy: ax88796b: use vertical import style
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20260628-b4-rust-vertical-imports-v1-5-98bc71d4810b@gurudas.dev>
+References: <20260628-b4-rust-vertical-imports-v1-0-98bc71d4810b@gurudas.dev>
+In-Reply-To: <20260628-b4-rust-vertical-imports-v1-0-98bc71d4810b@gurudas.dev>
+To: Miguel Ojeda <ojeda@kernel.org>, rust-for-linux@vger.kernel.org, 
+ linux-kernel@vger.kernel.org
+Cc: Danilo Krummrich <dakr@kernel.org>, 
+ Abdiel Janulgue <abdiel.janulgue@gmail.com>, 
+ Daniel Almeida <daniel.almeida@collabora.com>, 
+ Robin Murphy <robin.murphy@arm.com>, 
+ Andreas Hindborg <a.hindborg@kernel.org>, Boqun Feng <boqun@kernel.org>, 
+ Gary Guo <gary@garyguo.net>, 
+ =?utf-8?q?Bj=C3=B6rn_Roy_Baron?= <bjorn3_gh@protonmail.com>, 
+ Benno Lossin <lossin@kernel.org>, Alice Ryhl <aliceryhl@google.com>, 
+ Trevor Gross <tmgross@umich.edu>, Tamir Duberstein <tamird@kernel.org>, 
+ Alexandre Courbot <acourbot@nvidia.com>, 
+ =?utf-8?q?Onur_=C3=96zkan?= <work@onurozkan.dev>, 
+ Drew Fustini <fustini@kernel.org>, Guo Ren <guoren@kernel.org>, 
+ Fu Wei <wefu@redhat.com>, Michal Wilczynski <m.wilczynski@samsung.com>, 
+ =?utf-8?q?Uwe_Kleine-K=C3=B6nig?= <ukleinek@kernel.org>, 
+ "Rafael J. Wysocki" <rafael@kernel.org>, 
+ Viresh Kumar <viresh.kumar@linaro.org>, Jens Axboe <axboe@kernel.dk>, 
+ FUJITA Tomonori <fujita.tomonori@gmail.com>, Andrew Lunn <andrew@lunn.ch>, 
+ Heiner Kallweit <hkallweit1@gmail.com>, 
+ Russell King <linux@armlinux.org.uk>, 
+ "David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>, 
+ Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, 
+ David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>, 
+ driver-core@lists.linux.dev, linux-riscv@lists.infradead.org, 
+ linux-pwm@vger.kernel.org, linux-pm@vger.kernel.org, 
+ linux-block@vger.kernel.org, netdev@vger.kernel.org, 
+ nova-gpu@lists.linux.dev, dri-devel@lists.freedesktop.org, 
+ Guru Das Srinagesh <linux@gurudas.dev>
+X-Mailer: b4 0.15.2
+X-Envelope-From: linux@gurudas.dev
 
-The return value of mmap() is not checked. On failure mmap() returns
-MAP_FAILED, not NULL. If mmap() fails, the subsequent for-loop
-dereferences the invalid pointer (MAP_FAILED), causing a segfault.
+Convert `use` imports to vertical layout for better readability and
+maintainability.
 
-Add a check for MAP_FAILED after mmap(), consistent with the existing
-error handling style for open() in the same function.
-
-Fixes: 7fe2f6399a84 ("cpupowerutils - cpufrequtils extended with quite some features")
-Signed-off-by: longlong yan <yanlonglong@kylinos.cn>
+Signed-off-by: Guru Das Srinagesh <linux@gurudas.dev>
 ---
- tools/power/cpupower/debug/i386/dump_psb.c | 5 +++++
- 1 file changed, 5 insertions(+)
+ drivers/net/phy/ax88796b_rust.rs | 7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
 
-diff --git a/tools/power/cpupower/debug/i386/dump_psb.c b/tools/power/cpupower/debug/i386/dump_psb.c
-index 6fb81b42ea61..9da519200433 100644
---- a/tools/power/cpupower/debug/i386/dump_psb.c
-+++ b/tools/power/cpupower/debug/i386/dump_psb.c
-@@ -181,6 +181,11 @@ main(int argc, char *argv[])
- 
- 	mem = mmap(mem, 0x100000 - 0xc0000, PROT_READ, MAP_SHARED, fd, 0xc0000);
- 	close(fd);
-+	
-+	if (mem == MAP_FAILED) {
-+		printf ("Couldn't mmap /dev/mem\n");
-+		exit(1);
-+	}
- 
- 	for (p = mem; p - mem < LEN; p+=16) {
- 		if (memcmp(p, "AMDK7PNOW!", 10) == 0) {
+diff --git a/drivers/net/phy/ax88796b_rust.rs b/drivers/net/phy/ax88796b_rust.rs
+index 2d24628a4e58..5a21fe09bd62 100644
+--- a/drivers/net/phy/ax88796b_rust.rs
++++ b/drivers/net/phy/ax88796b_rust.rs
+@@ -5,7 +5,12 @@
+ //!
+ //! C version of this driver: [`drivers/net/phy/ax88796b.c`](./ax88796b.c)
+ use kernel::{
+-    net::phy::{self, reg::C22, DeviceId, Driver},
++    net::phy::{
++        self,
++        reg::C22,
++        DeviceId,
++        Driver, //
++    },
+     prelude::*,
+     uapi,
+ };
+
 -- 
-2.43.0
+2.54.0
 
