@@ -1,85 +1,76 @@
-Received: from mail-dy1-f173.google.com (mail-dy1-f173.google.com [74.125.82.173])
+Received: from mail-dy1-f181.google.com (mail-dy1-f181.google.com [74.125.82.181])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1FD5F37E2E7
-	for <linux-pm@vger.kernel.org>; Mon, 29 Jun 2026 04:39:33 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.82.173
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5DBB02820C6
+	for <linux-pm@vger.kernel.org>; Mon, 29 Jun 2026 04:58:40 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.82.181
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1782707975; cv=none; b=OroPQ4kxFdpldEMJaAojCfr8qnkX1dzM1ZAr35FRT2zAVsmidlQ7C4QakO9duhBJy5JKuhXlev4cm7+iOHvR+Hcmu+hkvp/C0NpV7De9hLD3FaBIBYFaT4+PraXsH4/ZW1RtyRtpWIyEP6jbOVSSly6K2Yi70lRO4N3KQ92S2gE=
+	t=1782709121; cv=none; b=daw3bwuYPxx+KDBtWnAI0Iv7n5/dJGIl0Rzth1nems/nuRIYE16HFx8hxtEzGWKJApAyvRz/kJkjc+fsiXUvuanPICa/YlOm3VQKlzr/tNcJhOZ5x23Yd+B6wo1YwGUktayDNlkhcyLFdLjmw9Nj3YsGh+hGNXX4SYba4ZpzmbY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1782707975; c=relaxed/simple;
-	bh=1eU+2bDqdzNluinyylphYvQVh/IYBb3LxR6xoSyK7UA=;
+	s=arc-20240116; t=1782709121; c=relaxed/simple;
+	bh=CIWzjM+Jxse1BycqhtYy2huv0CauD709CmJ9y4Fmpl4=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=Tk7Gt215LEoJMK4CjWdLUx4DcDMLEz9bhmc9Sm/IISYcUDu5yjkBa3OeT50gD8AkCF8CFGwhROo2Ad19OrdytvNAgeLOqATPCRo/48334GNgJ7Sy9N0KCL6aG8ZFSuIAfjHHVKGNJTnbao0u+pbkSj4vFF7R8RwqEZibfpHlMiI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=hn+E1MsJ; arc=none smtp.client-ip=74.125.82.173
+	 Content-Type:Content-Disposition:In-Reply-To; b=Y/J0AJIrMAuatNQMSVOqB2BlU4b42qmP/K1CSl3Mu40zuE6P5rKxIQtGOY7HvOJibPjNwHndJfarawtPsG6zZIPKRDJZUB0Qg+al4vqBTOH/mPVquysTmdRu/xs9LOIH403c7FdaOTBM64KGsV24WPNwmxVUw/CG1O8POtW+HXk=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=ST3YUnkS; arc=none smtp.client-ip=74.125.82.181
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="hn+E1MsJ"
-Received: by mail-dy1-f173.google.com with SMTP id 5a478bee46e88-30c99ccb1afso2693800eec.1
-        for <linux-pm@vger.kernel.org>; Sun, 28 Jun 2026 21:39:33 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="ST3YUnkS"
+Received: by mail-dy1-f181.google.com with SMTP id 5a478bee46e88-30bf132969bso4139119eec.0
+        for <linux-pm@vger.kernel.org>; Sun, 28 Jun 2026 21:58:40 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1782707973; x=1783312773; darn=vger.kernel.org;
+        d=linaro.org; s=google; t=1782709120; x=1783313920; darn=vger.kernel.org;
         h=in-reply-to:content-disposition:mime-version:references:message-id
          :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=tAkDY+MQvqYfr4IaXyrXZrjWk09q7w3/qlUx+mpeOiI=;
-        b=hn+E1MsJrcDHw4L7JMBDRGaEVWJGa0ETOsmQqVkAezoHqRNCzAOGRuGGIvFIzzgKAj
-         5WbmJiHasrXBsw2nHoHF1trp0cS9knpAh085FbvxF1XlG/DPaHrEmcR5qOONpWipekTI
-         b2pmR3DACgvrHz+t5K24F1Klul23PedHMKZDFVxRkjraR01Q2lZwnkB4VEOAS38x302C
-         RZiSAD2L8UPyAhNhq9GeEbgcAxM6bpc8M18GprrNeMR9TQXwcNyYWNbEZe2Iplh0nXwf
-         JkyvAD/bQHrPjowwEaqS8/fiHVxRV9+9F+3y+wWGAbHlMLR/ZbracNqgYEj3tkzGnPPZ
-         Cm5Q==
+        bh=QsB27okN3oIFcQCd02Iqvl+jQspzLnJ1Dz6viWpLCEI=;
+        b=ST3YUnkS+Wj/SV0uuFZYGcDbyIWgG8t3yJFbf0rIhwsro8bVGUk95hZ2+tfu8fSEAj
+         YniYLdh+UcHGaXzzJMoykgxhz28zp4JHZz3XCy3UdvP7I3Kb3k80ZdiuZ8zAVzp3Xaic
+         C5pJ2wxhChqBUb165/z+EFP6CO0d185h5xd4C2oaMLazv2MQRW+UUXKEIQdWO0EDudoF
+         AZZcuxpw1o9mI99vyiB452/rBWu9DV/gXu/d7OPSaiyz80+wLSlxOSJtPnwvC9WlgIlQ
+         oJSVAysyVE6y/6Kwe2rpZ+84Hcok+PuNURRononeqjmKssexetIUQyaLg73OrhoV0o1O
+         /rEg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1782707973; x=1783312773;
+        d=1e100.net; s=20251104; t=1782709120; x=1783313920;
         h=in-reply-to:content-disposition:mime-version:references:message-id
          :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=tAkDY+MQvqYfr4IaXyrXZrjWk09q7w3/qlUx+mpeOiI=;
-        b=YPb6udu/vjsGadAGNQ/I5ykEWSPQ9/2Xp86x6SgaOhBIgTBzGOShpew2S6sAtN4iY0
-         JW8scqln/XntjOWpAuRJIn5ug7B/q+PyPaUh4WMumHTfCN5S/bEY1hn0Grn8NX7+2hat
-         o0AN8ZDQdj8crGCCVK0vgOPpJsgor6B+QbBiUfdNG9VlvRrpKMzyE3DcqwIUH4RbRJQH
-         SDq3ciCW94fyTWSG+LnxHkIgLfuIdV26z8+Vnyjq8MuKwlkvRu8amJfAAuUGbEK7EvK2
-         e4rkc2sSi9nq69K+M6S9lamznUT9vAUvFJ0H4U+98Keq7MW7w0z2y78Wq65vUJq/nB/K
-         hS6A==
-X-Forwarded-Encrypted: i=1; AHgh+RrRjTELqah9z8UMIhVChr5xkKWh26rGssIim9hLoyjh96NsQAjP4JERM+8txfHmuEZMYetgZcL+hw==@vger.kernel.org
-X-Gm-Message-State: AOJu0YxNW4ruBYrIR8y4aCoX0BPyBdPywTQHMmR6VXxQyMKXrr6OfGX5
-	FkLQl6tUWFSf3MTfHCrI2+17fuS1bVuOApOLa8KwgoJFA3Z0WSJrM5pHrrvQyQ3e6Sk=
-X-Gm-Gg: AfdE7cnTX8ACz/AvBsdJKanQ9cIqPxzqieLnRFYHtzz0eMKP3tIt2f8YHh8SB3y6F+m
-	sWLlVK6WHwpgzU721pwnKgLoluRJQOOER5aLp3dWdKT9dtPk1qcbFQvliGtYXCJ3uij3PcoyUNo
-	lR05dxrzUC+zanGcwVRRtjhrUHXXFTgYh/HbbcAOzrdjCP3aWUdq+yQYAM4dfYRZIdk9Pk4XOsQ
-	AFZWylaW+KzOeejcyz8ZOft9lt4pHyZLRC8I1xDwqZmFYxrFRrmWh36TPQfPRWM5XYuzNkrCvew
-	VFGcgqgb4JvpsoL9lTcD3ZuoX4ltgYf2zWcZKB0/hllCcc5U0sygiBRPK7byFBNSIpMXYo7MhDY
-	biesguJikPvxJPHIPyWDey3eG01CvMe03m9XI5Ufi0a4x9CFxtsgQa+fTq2HvNip09l902eoo2X
-	lqLV9kR1nEezH2
-X-Received: by 2002:a05:7300:5341:b0:307:d4e7:b177 with SMTP id 5a478bee46e88-30c84f3cb8emr16773092eec.16.1782707972936;
-        Sun, 28 Jun 2026 21:39:32 -0700 (PDT)
+        bh=QsB27okN3oIFcQCd02Iqvl+jQspzLnJ1Dz6viWpLCEI=;
+        b=AtdNbXBmmqr1K6zE9Hz8ZQe/bMevIARB3iiFOKrcniFTIYDoc11vV7zhcbdqYiiGum
+         X8dbcBRWERO8eV5O6A4o/h3/drPKxzK5B9stgwwWarz6VHCJ9vys+rgsMohfDHnyBc7a
+         5eWJkCO/+rwzpfmtDlOxJgptH6gYl+nlBm1DMmD6HHydLre3N3ySezrRLlpvhvyDywJl
+         l1QcVgneLVpo2G+wWglB7yjedcBGwm6SgAe0A3SI/NxWFyPYYOWpR2A8UAghCtbduXYY
+         syzLAl8KbO7LW+k/ip5onzsj1SOCttMei0Nv3zxu9XQ/Q5M7ctEZrHaLjU7o2Bi0nrn9
+         8GiQ==
+X-Forwarded-Encrypted: i=1; AHgh+RqEU9r3/4W1XtPHiMZdFNU7pH9SLA6z7TB9e/Sb9KgNw82M3+CJX8VK43AMk78kZzBZNv9ZJ6LPAg==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yzx/Nza285qUwhYE3d4th6+bELkV5SspC8ODdbgXtcAvdSASIbJ
+	DBzDk6ZiVMdYZ+ElR1CJfa5aVwWNigSoBm+UuljmDrf74Ekd7hg/dqDqx7FVVeKI/VE=
+X-Gm-Gg: AfdE7ck8Cwa81loP1bhtwEqpmI6eqz7XrfCZnOPnpGtOIdxwp3dCEkutt5B4tIib1Vu
+	zHGOeFajps0fv94hsVNvt8E0jRY9ZWLjg2Bf1J34EF7MgVPl+dzcwjW1QRtZI4u7P1kNQVAf+gP
+	jg61pV/Ru6YGQ6eY4on18EAbD4AAZRt6MqCQ68WnUQOMePzNE/I1md009puNh2EuHRRBJxtm5m5
+	2lyKyLM1leDluZguwz9Oe0RQH/QlzNUrm0bzSJb0BlhX3r65GQAR/jJV4pDtGFY0kNSWpCnbR9O
+	j89c7wTIbuFV5RbpsXkPsbN50IyFgkfKgBYinpr3Ers/G3n235nlnpv8uh2FqzefpbxQxlh5149
+	HL4BGrqT3n3WEJJ+h9fG4Y15CTt5md/JleW6tBNzRHkyAaebWa2BUVo5BzittvDIE7L/nrOkyTR
+	x1dVU3Leea1dU/
+X-Received: by 2002:a05:7301:2a08:b0:30c:ab4f:46a3 with SMTP id 5a478bee46e88-30cab4f48e1mr7122599eec.39.1782709119287;
+        Sun, 28 Jun 2026 21:58:39 -0700 (PDT)
 Received: from localhost ([122.172.82.94])
-        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-30cac1b9751sm23319860eec.3.2026.06.28.21.39.31
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-30ca5f14f8asm27880242eec.6.2026.06.28.21.58.37
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 28 Jun 2026 21:39:31 -0700 (PDT)
-Date: Mon, 29 Jun 2026 10:09:29 +0530
+        Sun, 28 Jun 2026 21:58:38 -0700 (PDT)
+Date: Mon, 29 Jun 2026 10:28:35 +0530
 From: Viresh Kumar <viresh.kumar@linaro.org>
-To: Trevor Chan <trev@trevrosa.dev>
-Cc: gregkh@linuxfoundation.org, rafael@kernel.org, dakr@kernel.org, 
-	ojeda@kernel.org, a.hindborg@kernel.org, paul@paul-moore.com, aliceryhl@google.com, 
-	airlied@gmail.com, simona@ffwll.ch, viro@zeniv.linux.org.uk, brauner@kernel.org, 
-	igor.korotin@linux.dev, vireshk@kernel.org, nm@ti.com, sboyd@kernel.org, 
-	m.wilczynski@samsung.com, boqun@kernel.org, gary@garyguo.net, axboe@kernel.dk, 
-	daniel.almeida@collabora.com, shankari.ak0208@gmail.com, lyude@redhat.com, j@jananu.net, 
-	lossin@kernel.org, acourbot@nvidia.com, markus.probst@posteo.de, 
-	driver-core@lists.linux.dev, rust-for-linux@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	linux-block@vger.kernel.org, linux-security-module@vger.kernel.org, 
-	dri-devel@lists.freedesktop.org, linux-fsdevel@vger.kernel.org, linux-mm@kvack.org, 
-	linux-pm@vger.kernel.org, linux-pci@vger.kernel.org, linux-pwm@vger.kernel.org, 
-	david.m.ertman@intel.com, iweiny@kernel.org, leon@kernel.org, bjorn3_gh@protonmail.com, 
-	tmgross@umich.edu, tamird@kernel.org, work@onurozkan.dev, sergeh@kernel.org, 
-	matthew.brost@intel.com, thomas.hellstrom@linux.intel.com, jack@suse.cz, ljs@kernel.org, 
-	liam@infradead.org, bhelgaas@google.com, kwilczynski@kernel.org, 
-	ptikhomirov@virtuozzo.com
-Subject: Re: [PATCH v7] rust: aref: make `AlwaysRefCounted::inc_ref` an
- associated function
-Message-ID: <xak7wil2w2wdnmkfh4e4ijhlgnudzuh5y3ltlo72454e52tocv@434kdjz2eupv>
-References: <20260628100731.64885-1-trev@trevrosa.dev>
+To: Shuwei Wu <shuwei.wu@mailbox.org>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Rob Herring <robh@kernel.org>, 
+	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
+	Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, 
+	Albert Ou <aou@eecs.berkeley.edu>, Alexandre Ghiti <alex@ghiti.fr>, Yixun Lan <dlan@kernel.org>, 
+	linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-riscv@lists.infradead.org, 
+	spacemit@lists.linux.dev, devicetree@vger.kernel.org
+Subject: Re: [PATCH v4 1/2] cpufreq: dt-platdev: Add SpacemiT K1 SoC to the
+ allowlist
+Message-ID: <7x5mgpk3z3aiebifhxto2v7m5yrikj52lwf5pzegzhk5aiehhj@jqm6opm6nrub>
+References: <20260626-shadow-deps-v4-0-bba9831f2f1d@mailbox.org>
+ <20260626-shadow-deps-v4-1-bba9831f2f1d@mailbox.org>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -88,27 +79,41 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20260628100731.64885-1-trev@trevrosa.dev>
+In-Reply-To: <20260626-shadow-deps-v4-1-bba9831f2f1d@mailbox.org>
 
-On 28-06-26, 18:07, Trevor Chan wrote:
-> diff --git a/rust/kernel/opp.rs b/rust/kernel/opp.rs
-> index 62e44676125d..84802f22b652 100644
-> --- a/rust/kernel/opp.rs
-> +++ b/rust/kernel/opp.rs
-> @@ -1043,9 +1043,9 @@ unsafe impl Sync for OPP {}
->  /// SAFETY: The type invariants guarantee that [`OPP`] is always refcounted.
->  unsafe impl AlwaysRefCounted for OPP {
->      #[inline]
-> -    fn inc_ref(&self) {
-> +    fn inc_ref(obj: &Self) {
->          // SAFETY: The existence of a shared reference means that the refcount is nonzero.
-> -        unsafe { bindings::dev_pm_opp_get(self.0.get()) };
-> +        unsafe { bindings::dev_pm_opp_get(obj.0.get()) };
->      }
+On 26-06-26, 16:10, Shuwei Wu wrote:
+> Add the compatible string for supporting the generic
+> cpufreq driver on the SpacemiT K1 SoC.
+> 
+> Signed-off-by: Shuwei Wu <shuwei.wu@mailbox.org>
+> ---
+> Changes in v4:
+> - Drop the K1-specific cpufreq driver and use cpufreq-dt again
+> - Add spacemit,k1 back to the cpufreq-dt allowlist
+> 
+> Changes in v3:
+> - Add a K1-specific cpufreq driver for the shared-rail, dual-clock topology
+> - Add spacemit,k1 to the cpufreq-dt blocklist
+> ---
+> ---
+>  drivers/cpufreq/cpufreq-dt-platdev.c | 2 ++
+>  1 file changed, 2 insertions(+)
+> 
+> diff --git a/drivers/cpufreq/cpufreq-dt-platdev.c b/drivers/cpufreq/cpufreq-dt-platdev.c
+> index 25fd3b191b7e..e262394b56f9 100644
+> --- a/drivers/cpufreq/cpufreq-dt-platdev.c
+> +++ b/drivers/cpufreq/cpufreq-dt-platdev.c
+> @@ -81,6 +81,8 @@ static const struct of_device_id allowlist[] __initconst = {
+>  		{ .have_governor_per_policy = true, },
+>  	},
 >  
->      #[inline]
+> +	{ .compatible = "spacemit,k1", },
+> +
+>  	{ .compatible = "st-ericsson,u8500", },
+>  	{ .compatible = "st-ericsson,u8540", },
+>  	{ .compatible = "st-ericsson,u9500", },
 
-For OPP:
+Please take this via arch tree.
 
 Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
