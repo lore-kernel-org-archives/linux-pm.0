@@ -1,122 +1,136 @@
-Received: from m16.mail.163.com (m16.mail.163.com [117.135.210.3])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-dy1-f178.google.com (mail-dy1-f178.google.com [74.125.82.178])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0E36840D577;
-	Tue, 30 Jun 2026 08:34:43 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=117.135.210.3
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1782808491; cv=none; b=D4H4N9uD40vC5m8kUTgYyLdfzDGLMZnxWyEB2MjbLTrTja1ALfWCx3+hb5vRMuvLgZho+7TyY7LwZQzkLB9gdKL/iIyyGbxwvCD+YI3qi0lK/x1DQJBUzqE03cHDvc/AXEHmt+xMSRndxMHWMFInXsZD/b3unRG1Vp7S9sMsQzA=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1782808491; c=relaxed/simple;
-	bh=/2j0DDj3iEHsHxquIQWouGW2wWlUANGgq7bRDSng2TE=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=AjmBVzgfindhW9uYzkb0OCBD57btD2MqPw2q9bEZQuDAmqDiQAm9ijIrpgvgq7YdRAT/4dwU+KZ/4MOydoVdlUoPcnw/72RJTd5t5VkcHfhvXNJcTASZt9G7a+ugKmQ76/Lms2J//HWMg3OFXGfw/3O5TYFaNeOJzWMrSMZ6iJk=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=163.com; spf=pass smtp.mailfrom=163.com; dkim=pass (1024-bit key) header.d=163.com header.i=@163.com header.b=oYguo7QO; arc=none smtp.client-ip=117.135.210.3
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=163.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=163.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A62FD1DE8BB
+	for <linux-pm@vger.kernel.org>; Tue, 30 Jun 2026 08:35:14 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=74.125.82.178
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1782808516; cv=pass; b=lMWkYiNalk/UeWorO3LOw1aCIZRuC2VDzEbUwpZI5bgALx868wDiFtTWFrSPISDNJdIzvXfb5OEkbAPAPhMaJTUc31hN5j6YueDQjG3hx/O5pZc5XIhOa0UFngeTdVSBnTJ+/I3jXUcAyzcHgh57yJYJ/yKORAxDnx5K3PHL51Q=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1782808516; c=relaxed/simple;
+	bh=12uAIaSCl7tiswRNJqqBaN64Jz/2PQBPhlMgm7mCoFk=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=dpp0HmRgEYupNqGoeO9JFwF1Z+sSeIRZh7hxQpQnLlKZMiOjl/wGJOJtFFegLTiyTH+QWxTp7NKHNyU0e6uKrCsYzsMRpiTuNRluJTFb/T5hGhniOa3uYOQJEiK3nJWhWWoXqJJW1wYIzrXokMNb9mISz+NTetDTM6/ZS8Jgalc=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=P4QDKeSM; arc=pass smtp.client-ip=74.125.82.178
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=163.com header.i=@163.com header.b="oYguo7QO"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=163.com;
-	s=s110527; h=From:To:Subject:Date:Message-ID:MIME-Version; bh=YT
-	EgbRAg6lomNr0DN2FzVbDdc7M+qSJOungF1DxvSAE=; b=oYguo7QOEwbf96iwNz
-	+eUJ/03thBALJVsRjOoN4Dgejdf7XRhRCyYFPa+vhSa9N3mr/iaCnm6Dp4jfw8VP
-	EBlFQrB46BMybzmv/BXTYqCM32YmT8rydSzmbRNCxHstblneBlLPvX7VVXkhkvm7
-	jRbipk0Rq37Z+4JhT2XUn9Bxs=
-Received: from ubuntu.. (unknown [])
-	by gzga-smtp-mtada-g0-3 (Coremail) with SMTP id _____wD3D8V4f0NqibrcGg--.35590S4;
-	Tue, 30 Jun 2026 16:34:05 +0800 (CST)
-From: Ma Ke <make_ruc2021@163.com>
-To: sre@kernel.org,
-	hansg@kernel.org,
-	marex@denx.de
-Cc: linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	akpm@linux-foundation.org,
-	Ma Ke <make_ruc2021@163.com>,
-	stable@vger.kernel.org
-Subject: [RESEND PATCH] power: supply: bq25890: Fix power_supply reference leak
-Date: Tue, 30 Jun 2026 16:33:52 +0800
-Message-ID: <20260630083352.1841720-1-make_ruc2021@163.com>
-X-Mailer: git-send-email 2.43.0
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="P4QDKeSM"
+Received: by mail-dy1-f178.google.com with SMTP id 5a478bee46e88-30c5912314fso555343eec.2
+        for <linux-pm@vger.kernel.org>; Tue, 30 Jun 2026 01:35:14 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1782808514; cv=none;
+        d=google.com; s=arc-20260327;
+        b=STyKiMvxZMm7dDEqIWbxy6xsqNzMJRMxY4rdaIM4u26dfyLd5FBxocyAYZmioUPbn3
+         KWBOmqeGqJXa7xcY140tpAtRIwsk6OzUOG7ME03l5Erf0pxE87s1el4nlGzocVQV0eYT
+         7Z+2m9PKUI0PdeB/vw3b7N5OO0nY1RqHefuVYcmEIpOGmygqav/AKms8RuLR9OZmZRuY
+         J6Dpj6VvVEAuVhiFVBUdPdDLrCLNhxAVNMWzi6N0MgiYs5VIFw+O9pDSIDIFn5RXUjMW
+         FMd2ORiGrIaR9DeJ7oHAESZ63B4gY8yUGxhwTGcmaZ5126liaZKreRZwtQotxIig0pHB
+         UKEg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=2h4fg+PROtgYOgPDGjwjg1prtaKYRf+MRnb5H8GnFAw=;
+        fh=ZoFKXkL6q9UjkBYGcWV6vx/09fZRKI+MV+zMLkyaE2g=;
+        b=WtI3dYCX9cF4NgCDIcfu7RQv7gtPF5lRfgI/aBB4RDayYMupBBi93aaJhfUJ2uvJxJ
+         MoKlqi0WlUzru5YHbJGoK87BqLyRNwv62G4Owwzvlb1pFEie9Pzi2KnHQhoIHalYqfhV
+         HEuZn021y0dA6Gg3cEKuegwYeZwQCm5zw9PBirF4273FhMP4RudFpsGNIotsE9dvg5gp
+         KoWM28r2oEepDeWCqE21hudeLTvHxih18LociBdmFeXAy3HfwjstzWevzYzo5bSu9wzu
+         lW8JuEq7+GOAPSra5XL12dJEcz3WZjdVij4Rvmb+0LbHeVbfS6BL196jUnfKOTMGmAw3
+         KUMg==;
+        darn=vger.kernel.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1782808514; x=1783413314; darn=vger.kernel.org;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=2h4fg+PROtgYOgPDGjwjg1prtaKYRf+MRnb5H8GnFAw=;
+        b=P4QDKeSMKLnfVsDrpWCuEmR+fde0eSYT8JQqFhe7xLiugA+IX+ZEepZDsU6I5Ie6jm
+         EtCDCgp7ZUpLvZdZ9CeeHs1gUu0FxMROHIvFtqAoQDLzY4WLKVd+sF0mn1+zSJcaOOg7
+         ivbtAQ3UbteWlBQOZntGY9QsskxDj5hlMxFvEVEvo4HBZvZsK14n0N8BCitTpGtn20mb
+         QA2/hDVc2OLBIH9W3JVORw9oy7kYaxNwQxRz/mq6Pak487EKo1e1i7J5CyPThcjxMTpL
+         uBwhyWHKVQUOpS4s/mkDiT5cs0YZI553d1UZiED4mLQC2v3AAQ2O+HmyAr+DDIx3cXgg
+         pdPA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1782808514; x=1783413314;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=2h4fg+PROtgYOgPDGjwjg1prtaKYRf+MRnb5H8GnFAw=;
+        b=Ui+kTlSP4llUZj+W9MNlDmQ424Ji0jBR+v+D9XeJDIgNQ1XRIzt+3tSfS07oVPSi2h
+         1iOYyYH78SKnFLMttACvEjEadXutTT94M89OOLXSGZb5LzVByRDJU4s523l644baMct8
+         wPpRJaMwoxWH2zw8I5ZI5eFJ8Icr/mFbwj6UPegHeFFzny+1Tx8KieZPWs73uuIAtVqH
+         CgUtcq9tBZNQaNhPGorAJrHV0glNRY7PRb3A0n6QbPG4xDX2TkZ5iO9NQcJOI8ixp3Wu
+         2DTd0cP6HW0H06TSgvOKYqGZg4afrhS0EfEI7buFJapJ0q7dDGChachnHuWHfh8CpHzW
+         xpxg==
+X-Forwarded-Encrypted: i=1; AHgh+RodzQiTwz6s9nbl+miTFWS24QTTWZ3oNhfkXMp77VVfBMYuQ2JqdPk3+BCRCgYibcBid6YhOKuDMg==@vger.kernel.org
+X-Gm-Message-State: AOJu0YweW596momLJ5w5Qz7RK/jrPAwjUaO/986owAUTXo+6t4zqZbKu
+	ipY4pP+RMOzfgDq52+l12vjSO06BywgZt6qW2VcosmEEDc0Xt8y68ssDbTelUox2mNODICu2WJ7
+	leS/xAR2Gbi8vzGq1QZKKUd1YYVtnK8M=
+X-Gm-Gg: AfdE7clQGKirv1Dkr6S2R5ovWyMuLl2DEr0SrzMtfoyiJNX/AsiGL/bR83a22qF9OP9
+	3LM4TtUawh1XCUsiHCviB0xAolYsz/6U1DzoRcN8M7gfuBh9FByayRCMPOlPMwgSzsWhhRkZiPM
+	cSBxeOmkmuYUYfCxjqTCFU16kZtCQzSmIIdKIfC4m5SFRCTyIIDilTQO1F9uqExD1tLtiInM2Yx
+	5NU0liFhWPkYhhTimeSwp+1HVpcVpDIipgD8tAeBBOlpdjC7o6uJ0QZFvKM4cN8cYSsyAohuPJy
+	9OIRxfbNEHDDH25h5KPRM4WUPgByBbychLge+7JPlydvouasb9kzTyw5o/mwP/zWNq97V9yCBjt
+	BqkyNOZe0z44Y
+X-Received: by 2002:a05:7300:6ca1:b0:30e:dda8:e0ba with SMTP id
+ 5a478bee46e88-30ee150954cmr1003565eec.6.1782808513710; Tue, 30 Jun 2026
+ 01:35:13 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-CM-TRANSID:_____wD3D8V4f0NqibrcGg--.35590S4
-X-Coremail-Antispam: 1Uf129KBjvJXoW7ZrW7Gr4UKw1UZryxuryUWrg_yoW8tFy8pF
-	4rCF98Kr48XF4fAw4ktw1v9Fyak34xCFy3Ar1xGw1vvw13Jr1DXry8JF9aqry8Cr97GFs2
-	yw43tr4fCFnxGaDanT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
-	9KBjDUYxBIdaVFxhVjvjDU0xZFpf9x0pRkhLbUUUUU=
-X-CM-SenderInfo: 5pdnvshuxfjiisr6il2tof0z/xtbC0x1qdWpDf31P5wAA3S
+References: <20260628-b4-rust-vertical-imports-v1-0-98bc71d4810b@gurudas.dev>
+ <20260628-b4-rust-vertical-imports-v1-3-98bc71d4810b@gurudas.dev> <f0ed588a-6cfb-4079-a2fe-7c14f1b42727@oss.qualcomm.com>
+In-Reply-To: <f0ed588a-6cfb-4079-a2fe-7c14f1b42727@oss.qualcomm.com>
+From: Miguel Ojeda <miguel.ojeda.sandonis@gmail.com>
+Date: Tue, 30 Jun 2026 10:35:00 +0200
+X-Gm-Features: AVVi8CdhtqV-BYuDJ7-_rhOqSdDxdGUExu9BuuQ1x0bjmiH_24JXcG_HI6rxurs
+Message-ID: <CANiq72=SQK7pd-fj+4MOb=E6=R-DHCcLcuCvN=us2E5o7Rcy2A@mail.gmail.com>
+Subject: Re: [PATCH 3/7] cpufreq: rcpufreq_dt: use vertical import style
+To: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>
+Cc: Guru Das Srinagesh <linux@gurudas.dev>, Miguel Ojeda <ojeda@kernel.org>, rust-for-linux@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, Danilo Krummrich <dakr@kernel.org>, 
+	Abdiel Janulgue <abdiel.janulgue@gmail.com>, Daniel Almeida <daniel.almeida@collabora.com>, 
+	Robin Murphy <robin.murphy@arm.com>, Andreas Hindborg <a.hindborg@kernel.org>, 
+	Boqun Feng <boqun@kernel.org>, Gary Guo <gary@garyguo.net>, 
+	=?UTF-8?Q?Bj=C3=B6rn_Roy_Baron?= <bjorn3_gh@protonmail.com>, 
+	Benno Lossin <lossin@kernel.org>, Alice Ryhl <aliceryhl@google.com>, 
+	Trevor Gross <tmgross@umich.edu>, Tamir Duberstein <tamird@kernel.org>, 
+	Alexandre Courbot <acourbot@nvidia.com>, =?UTF-8?Q?Onur_=C3=96zkan?= <work@onurozkan.dev>, 
+	Drew Fustini <fustini@kernel.org>, Guo Ren <guoren@kernel.org>, Fu Wei <wefu@redhat.com>, 
+	Michal Wilczynski <m.wilczynski@samsung.com>, =?UTF-8?Q?Uwe_Kleine=2DK=C3=B6nig?= <ukleinek@kernel.org>, 
+	"Rafael J. Wysocki" <rafael@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, 
+	Jens Axboe <axboe@kernel.dk>, FUJITA Tomonori <fujita.tomonori@gmail.com>, 
+	Andrew Lunn <andrew@lunn.ch>, Heiner Kallweit <hkallweit1@gmail.com>, 
+	Russell King <linux@armlinux.org.uk>, "David S. Miller" <davem@davemloft.net>, 
+	Eric Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, 
+	David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>, driver-core@lists.linux.dev, 
+	linux-riscv@lists.infradead.org, linux-pwm@vger.kernel.org, 
+	linux-pm@vger.kernel.org, linux-block@vger.kernel.org, netdev@vger.kernel.org, 
+	nova-gpu@lists.linux.dev, dri-devel@lists.freedesktop.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-bq25890_fw_probe() acquires a reference to a secondary charger via
-power_supply_get_by_name(). This helper internally calls
-class_find_device() which gets a reference on the found device.
-However, the driver does not release this reference on error paths.
-The devm cleanup callback also does not put the reference, so normal
-driver unload leaks it as well.
+On Mon, Jun 29, 2026 at 2:43=E2=80=AFPM Zhongqiu Han
+<zhongqiu.han@oss.qualcomm.com> wrote:
+>
+> If the preferred style is to place each imported item on its own line,
+> shouldn't imports such as
+>
+>      cpu, cpufreq,
+>
+> be formatted similarly as well?
 
-Fix the leak by adding a power_supply_put() call in the new error
-label of bq25890_fw_probe() and in the devm cleanup routine.
+Indeed, good eyes.
 
-Found by code review.
+To do what we want, `rustfmt` needs the `//` at the end of that level
+too (in the future, it will be without the `//`), i.e. the patch
+probably passes `rustfmtcheck`, but it still needs to split that line
+and add the other `//`.
 
-Signed-off-by: Ma Ke <make_ruc2021@163.com>
-Cc: stable@vger.kernel.org
-Fixes: d54bf877fd87 ("power: supply: bq25890: Add support for having a secondary charger IC")
----
- drivers/power/supply/bq25890_charger.c | 17 +++++++++++++++--
- 1 file changed, 15 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/power/supply/bq25890_charger.c b/drivers/power/supply/bq25890_charger.c
-index c1c12a447178..b50be3fca77c 100644
---- a/drivers/power/supply/bq25890_charger.c
-+++ b/drivers/power/supply/bq25890_charger.c
-@@ -1411,7 +1411,8 @@ static int bq25890_fw_probe(struct bq25890_device *bq)
- 	if (ret == 0) {
- 		if (val > 100) {
- 			dev_err(bq->dev, "Error linux,iinlim-percentage %u > 100\n", val);
--			return -EINVAL;
-+			ret = -EINVAL;
-+			goto err_put_charger;
- 		}
- 		bq->iinlim_percentage = val;
- 	} else {
-@@ -1426,12 +1427,19 @@ static int bq25890_fw_probe(struct bq25890_device *bq)
- 
- 	ret = bq25890_fw_read_u32_props(bq);
- 	if (ret < 0)
--		return ret;
-+		goto err_put_charger;
- 
- 	init->ilim_en = device_property_read_bool(bq->dev, "ti,use-ilim-pin");
- 	init->boostf = device_property_read_bool(bq->dev, "ti,boost-low-freq");
- 
- 	return 0;
-+
-+err_put_charger:
-+	if (bq->secondary_chrg) {
-+		power_supply_put(bq->secondary_chrg);
-+		bq->secondary_chrg = NULL;
-+	}
-+	return ret;
- }
- 
- static void bq25890_non_devm_cleanup(void *data)
-@@ -1440,6 +1448,11 @@ static void bq25890_non_devm_cleanup(void *data)
- 
- 	cancel_delayed_work_sync(&bq->pump_express_work);
- 
-+	if (bq->secondary_chrg) {
-+		power_supply_put(bq->secondary_chrg);
-+		bq->secondary_chrg = NULL;
-+	}
-+
- 	if (bq->id >= 0) {
- 		mutex_lock(&bq25890_id_mutex);
- 		idr_remove(&bq25890_id, bq->id);
--- 
-2.43.0
-
+Cheers,
+Miguel
