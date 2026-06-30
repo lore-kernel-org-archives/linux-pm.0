@@ -1,169 +1,83 @@
-Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
+Received: from mout-p-101.mailbox.org (mout-p-101.mailbox.org [80.241.56.151])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4D38142315C
-	for <linux-pm@vger.kernel.org>; Tue, 30 Jun 2026 14:16:19 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7A18F2C235E;
+	Tue, 30 Jun 2026 15:06:56 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=80.241.56.151
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1782828980; cv=none; b=IAuGHKI0lh8S8hAWpZqT/X0R8gRr62+t0d/coQf5HXqt5n4uM3xyBmI9M9mKPqFGZvwcAQW8vVGRtSYG+hz3WaE08pOLLlndZn3tDGCOrFR6SnBbwhYPJzHh5bJpPlvcT9UUeWB1rEH4DhPiShXlAt65SalUj/GELQj42cWXjyc=
+	t=1782832018; cv=none; b=hOQCnad+g/9MeBUzP3XMjTZ+tqZcv61T5UabBvyOAci5dtKM6gfh8JuACn/BJyItwr6qPwY5igspG7fgtl1H3/NC99H6RQRbn5U1sfXtk/vWcsAGBrihNvpdN00vrEA7Kuh4HS6bDWSswUt3bZhGeV4ZTa1Lbx9SiO9McRUXEBM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1782828980; c=relaxed/simple;
-	bh=BIhbtLTCuL/PsbBo7bkGtYH7eIpUplVqs0upazLRnDE=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=FTFhtOZ8dCkUBrRwn2efwXTMV8Zfqi+R4LzxNe/BpNU1yPRL9pOPFu8QWIwhpwDI3+xGC5XIyMOSHWoxEZwamqTX9CD1LXUP2Xwu0HXfjfCJ5deNnbwCqwFPoYhaM9gBZlg7RTPxWYgFNa3A1x+EjiTksMu11ACFU74lUZhvqFg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=jAjhfMZ6; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=FFzFYvZG; arc=none smtp.client-ip=205.220.168.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
+	s=arc-20240116; t=1782832018; c=relaxed/simple;
+	bh=ddd5nFk6HZnzFzbw6Jc4Os3J5GUa2PDKNyyiZAs+zaI=;
+	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
+	 Content-Type:MIME-Version; b=kEzH/9majMv6w1fdqLTvDQ6nIp7YUIXdTyEjXQ5QUl31hugbOFsQqliKQ/qBvF4X84yJiGfcFjXI1EgQJxBQWQ20O6NClxPPrzOeIgHBSttp8c2Z+d9zxtK5aeSK9mf8s4W8ld23SXEneF4CbIH2JJaUanxbofHdmAxHxfGbKVU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=mailbox.org; spf=pass smtp.mailfrom=mailbox.org; dkim=pass (2048-bit key) header.d=mailbox.org header.i=@mailbox.org header.b=KGw0nMd2; arc=none smtp.client-ip=80.241.56.151
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=mailbox.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=mailbox.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="jAjhfMZ6";
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="FFzFYvZG"
-Received: from pps.filterd (m0279863.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 65UEDFq42216759
-	for <linux-pm@vger.kernel.org>; Tue, 30 Jun 2026 14:16:18 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	JStmruWEm2i+T8q7mcjNz5amoIiti9X5qtUv4Cl3j4U=; b=jAjhfMZ6op01ueNr
-	Vs893PlDvIYcGfDo9Dx2HeGWGX874Sjg+pnUnFP1Ej/neiC9xlWR5St3KxTqP+eh
-	1naV+eNK3eI2Y9x7Dw+J9KooUsZzw/EfL80xUzOnTGxa/lbAeaQcWfoHsLwDk+lA
-	9LVjMhjaoeaYwkO1M3GAxyLYGZrIRnixp1/ei1243owW5Vw0RJA0SpftKOVLYHPU
-	f7OwymOBMfESYc0sBH/jshFHpTZRFY9aWPjCsBMWAu/qhaiF0ortD6sytqiCh7nL
-	sJLFYooJ7ublkfjcOh55hAlT2LpMBtMJ98G3VbGPokHncKuyIauyd2Ol6SXLnrIq
-	Gkhrdw==
-Received: from mail-qk1-f198.google.com (mail-qk1-f198.google.com [209.85.222.198])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4f43vfk3j8-1
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Tue, 30 Jun 2026 14:16:18 +0000 (GMT)
-Received: by mail-qk1-f198.google.com with SMTP id af79cd13be357-92e5e21552dso36809085a.0
-        for <linux-pm@vger.kernel.org>; Tue, 30 Jun 2026 07:16:18 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1782828977; x=1783433777; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:in-reply-to:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=JStmruWEm2i+T8q7mcjNz5amoIiti9X5qtUv4Cl3j4U=;
-        b=FFzFYvZG3aCtZbVd5MLv2lTajT0AuwjmXfyt92tlFgOLh9a7NATXtzQ7pmaxeTZwue
-         hVFZH15FdntdWLwVwtfzCrwUptTk/DeCM3krSl+rn4RYgJQJcD7Vvjm/pkCExIj1hP8Y
-         XVxDHjYFdR+JFTHVY/aWcEne7VpjhIwVWPw9T/zEqrWvesQFTsGdqQmnd3AwGDSxXYqk
-         gjusNkXKNtB9ioP6bnw0USzDkWPuLcKBE1Q90fJVIDKIqt6cNJFp4bTtAJ4DkHZxxhKn
-         uEI0gPlhTWYsBBOg7ThxreRYZuYBrv/uIsP4GmhByBh/l4eQ+ItSYaGyHff3xzqTWOb7
-         h9pA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1782828977; x=1783433777;
-        h=content-transfer-encoding:content-type:in-reply-to:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=JStmruWEm2i+T8q7mcjNz5amoIiti9X5qtUv4Cl3j4U=;
-        b=g1RUizswYY+/v92wAxd693JzbRFdbH2JO0YF724QtSPxAOSKuDNtlXTWezG6htgXix
-         7eVbJpX1srDVRRWEeuW6xyAqaoI0ORG4rnddGDFwYVoLK+e1AwssJDgbLsjaZ04AI+YU
-         R18x8L/cj53TtOjiPIekn7PjdLlcvmfZqi2IViRzKHs3EROncBa8AdyjINSo8UaA5k1J
-         jh+Sd5752i3K7SE+v01ohrZ9jkjpwcSEzzcSBbduAFlIbFmxI5K0AjHfq0uptYFOMBUf
-         7rUeWTyoPRygih5WANO7DDnU+isOvOxVe88GTfyTGZpuaePu1+DcXVoUxHy/jdFLi1kE
-         M47Q==
-X-Forwarded-Encrypted: i=1; AFNElJ/NJDEnlpLtuBHXPyNQ2mcLqXV+/IoEvvfr5+Sgl3oV4cClpgbbaMODxzHwxA+QG2SBkJ6A9iN1ow==@vger.kernel.org
-X-Gm-Message-State: AOJu0YzXfz34WGHqGknrnYyTQTL3BKIs7L5zP7a3y5FfLURwP6FoAOC6
-	+DmBCePkqsqoCRHWJtys1ALiCVn46VHxKuDX7RpPMI0s90i83ZlOAYAIXHPRNHAy6IGtLncl/Xk
-	0xcoK8f1bqQmuLYHQ0P9u4kjaZSPtH3Q2TfIkEX7/wG57m26lQC6J8aDlAdPFtA==
-X-Gm-Gg: AfdE7cmXDB6CWWy2uYDxsCJ0z3Cp7MWSsZfd5FgzN14rV9N80qJVtKhiK1Kthitvfej
-	MUXZG4FMFLQmqT9VxTAei8TV0sPZMjJuDGeLWrMyWNNqdmzIIeFGMrPiJP0HV8u2AZBGs4A36EM
-	4hl1cVENeVXLYiuBQ5y+fiZpTOVrIzreq8uzsqUiJQLP5UHpR2Xd9yaeZVLS418GHTjXIxgAaOy
-	hPGDS/VKD2+UQvG8MP9UxJTlvTAn8WRWfnInqpkFTBOYFMVYET+1OgByzJyYMcMnoxfcnoGJeUs
-	akF9xB64wlqKZCrH+jBNzc3JmX5EisOogVWSRWuhtQmjDBTvWD1CrZhy7G39SThFirjs2eCTTv4
-	VjKoK4EgnCjhhjOrIoCoSgMXd3Pg8ofmrfd0=
-X-Received: by 2002:a05:620a:371b:b0:92a:d10e:bde3 with SMTP id af79cd13be357-92e62829870mr353026585a.3.1782828977415;
-        Tue, 30 Jun 2026 07:16:17 -0700 (PDT)
-X-Received: by 2002:a05:620a:371b:b0:92a:d10e:bde3 with SMTP id af79cd13be357-92e62829870mr353021485a.3.1782828976841;
-        Tue, 30 Jun 2026 07:16:16 -0700 (PDT)
-Received: from [192.168.120.170] ([178.235.128.140])
-        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-c1288d6b068sm138860266b.25.2026.06.30.07.16.13
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 30 Jun 2026 07:16:15 -0700 (PDT)
-Message-ID: <d4001407-cdb0-48ee-a138-87c94b5dab01@oss.qualcomm.com>
-Date: Tue, 30 Jun 2026 16:16:13 +0200
+	dkim=pass (2048-bit key) header.d=mailbox.org header.i=@mailbox.org header.b="KGw0nMd2"
+Received: from smtp102.mailbox.org (smtp102.mailbox.org [10.196.197.102])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange x25519 server-signature RSA-PSS (4096 bits) server-digest SHA512)
+	(No client certificate requested)
+	by mout-p-101.mailbox.org (Postfix) with ESMTPS id 4gqRM072GBz8swT;
+	Tue, 30 Jun 2026 17:06:52 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=mailbox.org; s=mail20150812;
+	t=1782832013;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=nvcasnePEEpk54Kk2gu0D4PLMNe04Pkcm0wLQLpZBNU=;
+	b=KGw0nMd26zlxfbKAnryt/6ZFiJBPJ6JNXHuoZqPscq1eJto32yAf2gpWSXkSOGF1NqFeRA
+	s3E98dJS3RKyp4nsb3oRf6eFyBF5zz5wNVwejNSJpWay6z1gW+BUswwrEEWltrk+EAQXm/
+	/asRYYFQ6MnKdZE1KsyesUZTspldiKix4gDYljCsc0KNnavRXRfjU8+76el14xqhhOcJs9
+	tc+08vKpOWe8N125GyqtJKaX5t1xxe+2zolf6F2eGYyJlP3WTl8YdtWzcYuw5nB0ktEAVs
+	gs49sRgPN5DqolmqK76Isfb1e+13tExjBOdPv93LH64mvngnh8Po9grh0URq/g==
+Message-ID: <5a4bb6aba4616d1a73ef9b5629f22ed61882eafa.camel@mailbox.org>
+Subject: Re: [PATCH 0/3] Enable icc-clk support for Qualcomm IPQ9650
+From: Manuel Ebner <manuelebner@mailbox.org>
+To: Kathiravan Thirumoorthy <kathiravan.thirumoorthy@oss.qualcomm.com>, 
+ Georgi Djakov <djakov@kernel.org>, Rob Herring <robh@kernel.org>, Krzysztof
+ Kozlowski <krzk+dt@kernel.org>,  Conor Dooley <conor+dt@kernel.org>, Bjorn
+ Andersson <andersson@kernel.org>, Michael Turquette	
+ <mturquette@baylibre.com>, Stephen Boyd <sboyd@kernel.org>, Brian Masney	
+ <bmasney@redhat.com>, Konrad Dybcio <konradybcio@kernel.org>
+Cc: linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org, 
+	linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
+ linux-clk@vger.kernel.org,  Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
+Date: Tue, 30 Jun 2026 17:06:45 +0200
+In-Reply-To: <20260519-ipq9650_icc-v1-0-4d3554c94257@oss.qualcomm.com>
+References: <20260519-ipq9650_icc-v1-0-4d3554c94257@oss.qualcomm.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 0/2] qcom_battmgr: Add batteryless DC-adapter MAINS
- support
-To: Bjorn Andersson <andersson@kernel.org>,
-        Rakesh Kota <rakesh.kota@oss.qualcomm.com>
-Cc: Konrad Dybcio <konradybcio@kernel.org>, Rob Herring <robh@kernel.org>,
-        Krzysztof Kozlowski <krzk+dt@kernel.org>,
-        Conor Dooley
- <conor+dt@kernel.org>,
-        Sebastian Reichel <sre@kernel.org>, linux-arm-msm@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-pm@vger.kernel.org, jishnu.prakash@oss.qualcomm.com,
-        kamal.wadhwa@oss.qualcomm.com
-References: <20260518-add_dc_in_support-v1-0-31fbaa329879@oss.qualcomm.com>
- <56a54a34-1040-44ae-92e2-ce65a3d3acb5@oss.qualcomm.com>
- <20260519065938.4i5wot72pfxy4m3d@hu-kotarake-hyd.qualcomm.com>
- <ag-NLvh4ROgTCs_L@baldur>
-Content-Language: en-US
-From: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
-In-Reply-To: <ag-NLvh4ROgTCs_L@baldur>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-Proofpoint-ORIG-GUID: _UsaGXmGj8tm0UnTekn0SfaVCbkKj8F8
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNjMwMDEzMyBTYWx0ZWRfXzXo0ans0eJJo
- 6lclHv+q/Xm/4sRzgS76ENdxffIClnevZ+/Ca70ZO2/oRqsCOeyNH56I4DEgdIlTxAMG420aVvR
- q+8Xpg8VSjnLvtDTn2ZKkIX3zyH33G0zb68oCQLegWX2zB+7Z7PGPJTpJMTA01ZeuEcuARRUSKI
- 2rLclL4cP1NxoP0xB5vTOSYyczVAEIuYeCbGigiu/vMqYYqlMfHQewK8ZcW2OEc2bhqlre83AMC
- +TC1Dr3p9dI/o6BvY6jWlOkGhDCr+5eYh2uFbmSLZh1EElCIDd35DWHkWNi8tWrC3a2nAGWtRmN
- terwTI0iJ9gdumfYbS3h4fIYq4Uz31O48ikexcPOvhE8yAunpM/AWuD3rfVYDtjG3W/uGh7SFSi
- wJJulNZVtSO4jBw0en/odPpB1nGE1K/lLKtYkpFd7TWSpf7JzOCo09/gOImyG0kLaU75QxD7Rqb
- 2CE27M4zZJziBzCNTVg==
-X-Proofpoint-Spam-Info: AW1haW4tMjYwNjMwMDEzMyBTYWx0ZWRfX8wZcHjDA2ae1
- NSSybdaTSOoqOUCxscH8J0Mq29YdepxUgm8ZSANK+ndONbUCowA7x22S2xS0JlJlAHO5wcixku+
- qGGR/Oixzs3Ic1F0PPDczsqBkrH5COU=
-X-Proofpoint-GUID: _UsaGXmGj8tm0UnTekn0SfaVCbkKj8F8
-X-Authority-Analysis: v=2.4 cv=PcXPQChd c=1 sm=1 tr=0 ts=6a43cfb2 cx=c_pps
- a=qKBjSQ1v91RyAK45QCPf5w==:117 a=PRfkaYvzSr8QmIIGAkY2Sg==:17
- a=IkcTkHD0fZMA:10 a=FelO9ux0wxsA:10 a=s4-Qcg_JpJYA:10
- a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=yOCtJkima9RkubShWh1s:22
- a=v7J6KcBBf8EwAPocaPwA:9 a=QEXdDO2ut3YA:10 a=NFOGd7dJGGMPyQGDc5-O:22
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.125,FMLib:17.12.100.49
- definitions=2026-06-30_04,2026-06-26_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- suspectscore=0 spamscore=0 clxscore=1015 impostorscore=0 bulkscore=0
- adultscore=0 priorityscore=1501 malwarescore=0 lowpriorityscore=0
- phishscore=0 classifier=typeunknown authscore=0 authtc= authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2606150000
- definitions=main-2606300133
+X-MBO-RS-ID: d6b2c0e86fd9608152c
+X-MBO-RS-META: n95qsm97o7q6rsztba4bquoonb4pgiar
 
-On 5/22/26 12:56 AM, Bjorn Andersson wrote:
-> On Tue, May 19, 2026 at 12:29:38PM +0530, Rakesh Kota wrote:
->> On Mon, May 18, 2026 at 04:36:32PM +0200, Konrad Dybcio wrote:
->>> On 5/18/26 3:49 PM, Rakesh Kota wrote:
->>>> On batteryless boards powered by 12V DC adapters, registering the
->>>> power supply as BATTERY causes userspace to incorrectly trigger
->>>> battery power-saving sequences.
->>>
->>> Does battman really offer no way of differentiating whether a battery
->>> is *actually* present in such cases?
->>>
->>> What boards are affected?
->>>
->> Currently, batteryless support is only implemented for the
->> qcs6490-rb3gen2(Kodiak) board.
->>
-> 
-> What do you mean?
-> 
-> Are you saying that the pmic_glink firmware in Kodiak has a one-off hack
-> that no other implementation of this firmware has?
-> 
-> My Lenovo IdeaCentre (hamoa) doesn't have battery, what should I do now?
+On Tue, 2026-05-19 at 14:17 +0530, Kathiravan Thirumoorthy wrote:
+> Add the master and slave=20
 
-I was going through my inbox.
-This remains unanswered, and I don't see the discussion progressing
-without resolving this.
+coding-style.rst line 340 suggest:
+> For symbol names and documentation, avoid introducing new usage of
+> 'master / slave' (or 'slave' independent of 'master') and 'blacklist /
+> whitelist'.
+>=20
+> Recommended replacements for 'master / slave' are:
+>     '{primary,main} / {secondary,replica,subordinate}'
+>     '{initiator,requester} / {target,responder}'
+>     '{controller,host} / {device,worker,proxy}'
+>     'leader / follower'
+>     'director / performer'
 
-Konrad
+Please consider changing terms.=20
+
+Thanks
+ Manuel
+
+
