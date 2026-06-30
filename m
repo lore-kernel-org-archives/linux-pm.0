@@ -1,223 +1,183 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0B64E411688
-	for <linux-pm@vger.kernel.org>; Tue, 30 Jun 2026 13:07:11 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4818C413D66;
+	Tue, 30 Jun 2026 13:14:03 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1782824833; cv=none; b=F0n6mlNRARpioiD1cjBfpirSM5zAZ5eM6UD5Li/OMstdMSahpIiOvNpbXXa9q6DpJNBkmhScoD29GV/aN9qFp3PYc9wFRe2g604TUa3DgMuQ5+MC5/4kYH+rVp20ZM4w7IkcTBtUlxKInk3VCb3sYYvwlYohTcdDHM9fff2jfgM=
+	t=1782825244; cv=none; b=O6qqJfTeeibpjmLzlFE1EHNiePkKIjU+o9SJsKFOICPSRNo/dfqwz3Al/PdblP9FHJrErcJPvx72B53pMzEI2HRsCAs1YMhu+KB1jyMx3rQGmdRrnFs8XbDnRjwKvtaoTTq+Q/gBo7OA1fWBbot3e14MKDNGFexRxLlmDkRi7qU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1782824833; c=relaxed/simple;
-	bh=hkQVXksvs1+hoKg4jRPyHwvVG0kaAtmGUHOGd/K67MI=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=HQqq1Cv3W7uYHTL7Tsom/8yKZ3UcIVL38tARYyT/7dbwqT1hGnWm68hsA8n5Z6EsWDlANNgBXaOY3NV1pkDg50HaBgqPyyoHTdxdS6hwyqMthzyBJummxuYN8fI8AiqUcMjq9EqULIIoa7lMnVK1yryIgTkL9/4vkg7iq81c+fU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=kYv7X4Ni; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1782825244; c=relaxed/simple;
+	bh=xFwetoL8Vuck3E69GGR5DG/ScQBvfKjkLbbRxYolLus=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=MSxeWf3zVq8I+kl5ASFY4VKvuXj1IVcgzw6aUWbjbFeki06zUJGzu5+UQUTZNRa9tFmYjyqeetdzQEjFIhz1zEvL1uQd1Ake+Eyv7fvuDP1DoGr5NSpGwfjRJISlxtd4ppkb7Cthy92YJTfskiiaZXyF3Xt0qit5uxRrkhKJwQo=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=D+NR4PWB; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="kYv7X4Ni"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id B2CAE1F01559
-	for <linux-pm@vger.kernel.org>; Tue, 30 Jun 2026 13:07:11 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="D+NR4PWB"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id A928F1F000E9;
+	Tue, 30 Jun 2026 13:14:02 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1782824831;
-	bh=Gkte/lktTVRUYYoKzhVuxXn3p42paF+z9eeBGVuqlbE=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc;
-	b=kYv7X4Nieka6wLjaDOnH5oIbtsHGXeJ0VQpyQhp+RzGxJyKpeoNq5mGU03rTDpI0M
-	 4UTJRKALTzIa1uckXAT0eRvQeA0HmbWBOmv5ExDtqUOeSys4lpUYpsVwxgCnA6kGSm
-	 AG2Zi+k0p+YCxJ80mJOLdzLuK0f5UBbooV4codRcid1GpKluC744vw/OcIv/J4eXsZ
-	 x7iJkB418npqM88Ar6zS+q4be6Dah3wwDx2JO+MW0bg/hTxpWpx5bJw9cA6o15syql
-	 veGyN7iR535r1/eRXdC8BTT/Tc2Z/BCcI5SwmAhN5QVhZyqhZCGrCGI8us8ju0Wr7t
-	 lVaH2ty2v22kQ==
-Received: by mail-lf1-f42.google.com with SMTP id 2adb3069b0e04-5aea0fff535so4643213e87.3
-        for <linux-pm@vger.kernel.org>; Tue, 30 Jun 2026 06:07:11 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AHgh+Rolyt51T7lYukF3qvWrXiFzUKIw1lpP2++PMHjlauSUzKtjGHKgCXuLHC2YnuMXFjydjwFJ4n8vew==@vger.kernel.org
-X-Gm-Message-State: AOJu0YysqsJMQocK9LbwOS/p6NQLbrYGmRpd29UdpuxR/6t+h9jcDjw7
-	clXQ71KG9bwGgCW1S+Get5LUz9mEug9omEr+Leui9Ov6pzaDdxsYEBcfkluy+udylYNA0GBVabj
-	OfT95UUOeFYC3QrJUM6Dk8k4zRpQ6v0U=
-X-Received: by 2002:a05:6512:1152:b0:5ae:a536:3733 with SMTP id
- 2adb3069b0e04-5aebdb9ad7fmr982702e87.20.1782824830105; Tue, 30 Jun 2026
- 06:07:10 -0700 (PDT)
+	s=k20260515; t=1782825242;
+	bh=3VuQxWyNENL8ziwIh4+vVmGpesCoHqcx8KGFgDaDinE=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=D+NR4PWBy6W6iM/Ff9MJncwYZfKq30z/VF5MnSG8JFLGmwT0FzFrXQ6aqWQn6tpWz
+	 chHpLPggi5lTbCoTpu69t94kXbZr+54B8Qro/1rU8YF3QIJBK4COjPZil73sSsG/rd
+	 CiVe+KSnk9WsTojsa9gNlK1n26D3/mnvCqbZMD5cX6k9unq4jh7CGsXJojiyasmvDq
+	 7w0D/ZsVBTMrSr6IcdOr8M0V26GjKqIDvDX2FrobXBhsyL6Jjt3N6f1qpqH6gdqybZ
+	 eLCJc7XBSLae7AfshSoISbnWfGD+cmyyDGkCoKB0jaQPJzFZxNYKlq0Y2hgnslfXEp
+	 2ae+MO2588wVg==
+Date: Tue, 30 Jun 2026 08:14:02 -0500
+From: "Rob Herring (Arm)" <robh@kernel.org>
+To: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
+Cc: Lee Jones <lee@kernel.org>, Sean Paul <sean@poorly.run>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	David Airlie <airlied@gmail.com>,
+	Kyungmin Park <kyungmin.park@samsung.com>,
+	Lukasz Luba <lukasz.luba@arm.com>, Vinod Koul <vkoul@kernel.org>,
+	Adam Skladowski <a_skl39@protonmail.com>,
+	Chanho Park <chanho61.park@samsung.com>,
+	Wesley Cheng <quic_wcheng@quicinc.com>,
+	Mark Brown <broonie@kernel.org>, Linus Walleij <linusw@kernel.org>,
+	Alim Akhtar <alim.akhtar@samsung.com>,
+	Abhinav Kumar <abhinav.kumar@linux.dev>, linux-gpio@vger.kernel.org,
+	linux-samsung-soc@vger.kernel.org,
+	Anusha Rao <quic_anusha@quicinc.com>, linux-mmc@vger.kernel.org,
+	Jonathan Marek <jonathan@marek.ca>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	Javier Martinez Canillas <javier@dowhile0.org>,
+	Taniya Das <quic_tdas@quicinc.com>, linux-clk@vger.kernel.org,
+	Stephen Boyd <sboyd@kernel.org>, linux-kernel@vger.kernel.org,
+	Zhang Rui <rui.zhang@intel.com>,
+	Srinivas Kandagatla <srini@kernel.org>,
+	Barnabas Czeman <barnabas.czeman@mainlining.org>,
+	Bjorn Andersson <andersson@kernel.org>,
+	Sunyeal Hong <sunyeal.hong@samsung.com>,
+	freedreno@lists.freedesktop.org,
+	Stephan Gerhold <stephan@gerhold.net>,
+	Rob Clark <robin.clark@oss.qualcomm.com>,
+	Simona Vetter <simona@ffwll.ch>, Andi Shyti <andi.shyti@kernel.org>,
+	Niklas =?iso-8859-1?Q?S=F6derlund?= <niklas.soderlund@ragnatech.se>,
+	linux-i2c@vger.kernel.org, Brian Masney <bmasney@redhat.com>,
+	Mauro Carvalho Chehab <mchehab@kernel.org>,
+	Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+	Konrad Dybcio <konradybcio@kernel.org>,
+	Maxime Ripard <mripard@kernel.org>,
+	Daniel Lezcano <daniel.lezcano@kernel.org>,
+	"Rafael J. Wysocki" <rafael@kernel.org>,
+	Hans Verkuil <hverkuil@kernel.org>,
+	Dmitry Baryshkov <lumag@kernel.org>,
+	Sebastian Reichel <sre@kernel.org>,
+	Chanwoo Choi <cw00.choi@samsung.com>,
+	Robert Marko <robimarko@gmail.com>, linux-sound@vger.kernel.org,
+	linux-usb@vger.kernel.org, Pavel Machek <pavel@kernel.org>,
+	Peter Griffin <peter.griffin@linaro.org>,
+	linux-arm-msm@vger.kernel.org,
+	Marijn Suijten <marijn.suijten@somainline.org>,
+	Christian Marangi <ansuelsmth@gmail.com>,
+	Imran Shaik <quic_imrashai@quicinc.com>,
+	Neil Armstrong <neil.armstrong@linaro.org>,
+	dri-devel@lists.freedesktop.org, Jiri Slaby <jirislaby@kernel.org>,
+	linux-phy@lists.infradead.org, Shin Son <shin.son@samsung.com>,
+	Jessica Zhang <jesszhan0024@gmail.com>,
+	Liam Girdwood <lgirdwood@gmail.com>,
+	Sam Protsenko <semen.protsenko@linaro.org>,
+	Tomasz Figa <tomasz.figa@gmail.com>,
+	Magnus Damm <magnus.damm@gmail.com>,
+	linux-renesas-soc@vger.kernel.org,
+	Jacek Anaszewski <jacek.anaszewski@gmail.com>,
+	Sricharan Ramabadhran <quic_srichara@quicinc.com>,
+	Georgi Djakov <djakov@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	Geert Uytterhoeven <geert+renesas@glider.be>,
+	devicetree@vger.kernel.org, Luo Jie <quic_luoj@quicinc.com>,
+	linux-serial@vger.kernel.org,
+	Jaehoon Chung <jh80.chung@samsung.com>,
+	Andy Gross <agross@kernel.org>,
+	Krishna Manikandan <quic_mkrishn@quicinc.com>,
+	Thomas Zimmermann <tzimmermann@suse.de>, linux-leds@vger.kernel.org,
+	Marek Szyprowski <m.szyprowski@samsung.com>,
+	Conor Dooley <conor.dooley@microchip.com>,
+	linux-media@vger.kernel.org,
+	Michael Turquette <mturquette@baylibre.com>,
+	Ulf Hansson <ulfh@kernel.org>,
+	Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+	Seung-Woo Kim <sw0312.kim@samsung.com>,
+	Inki Dae <inki.dae@samsung.com>,
+	linux-arm-kernel@lists.infradead.org,
+	Sireesh Kodali <sireeshkodali@protonmail.com>,
+	Sylwester Nawrocki <s.nawrocki@samsung.com>,
+	linux-pm@vger.kernel.org, Alina Yu <alina_yu@richtek.com>
+Subject: Re: [PATCH v2 1/2] dt-bindings: clock: Drop incorrect usage of
+ double '::'
+Message-ID: <178282524123.2726988.10975134253725315687.robh@kernel.org>
+References: <20260623054842.21831-3-krzysztof.kozlowski@oss.qualcomm.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260629083542.10041-1-lucaslnobrega38@gmail.com>
- <CAJZ5v0iVD90XPsWgT8B+fw9vmFRZTVL7MasPP-=Ci0OdUmNR=A@mail.gmail.com>
- <6021784.DvuYhMxLoT@rafael.j.wysocki> <CAMVixxV83tSLEi_o1vmHjqfgPnnXDwo2LjP_m-Y7iEWfvUAP2g@mail.gmail.com>
-In-Reply-To: <CAMVixxV83tSLEi_o1vmHjqfgPnnXDwo2LjP_m-Y7iEWfvUAP2g@mail.gmail.com>
-From: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
-Date: Tue, 30 Jun 2026 15:06:57 +0200
-X-Gmail-Original-Message-ID: <CAJZ5v0h=u3dGbujFpU2yObyLXT0ZLZTxpG2+zLZLP7wpKsBvQw@mail.gmail.com>
-X-Gm-Features: AVVi8CcY6rkGlx5o1pyPGlP_agrlwjJ1tUDigieSRG0BpjTO4pVCVRKxAjoWu74
-Message-ID: <CAJZ5v0h=u3dGbujFpU2yObyLXT0ZLZTxpG2+zLZLP7wpKsBvQw@mail.gmail.com>
-Subject: Re: [PATCH] sched/topology: Allow EAS without schedutil for
- artificial Energy Models
-To: Lucas Lima <lucaslnobrega38@gmail.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, viresh.kumar@linaro.org, mingo@redhat.com, 
-	peterz@infradead.org, juri.lelli@redhat.com, vincent.guittot@linaro.org, 
-	dietmar.eggemann@arm.com, rostedt@goodmis.org, bsegall@google.com, 
-	mgorman@suse.de, vschneid@redhat.com, kprateek.nayak@amd.com, corbet@lwn.net, 
-	skhan@linuxfoundation.org, linux-pm@vger.kernel.org, 
-	linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260623054842.21831-3-krzysztof.kozlowski@oss.qualcomm.com>
 
-On Tue, Jun 30, 2026 at 10:11=E2=80=AFAM Lucas Lima <lucaslnobrega38@gmail.=
-com> wrote:
->
-> Em seg., 29 de jun. de 2026 =C3=A0s 16:06, Rafael J. Wysocki
-> <rafael@kernel.org> escreveu:
-> >
-> > On Monday, June 29, 2026 5:16:17 PM CEST Rafael J. Wysocki (Intel) wrot=
-e:
-> > > On Mon, Jun 29, 2026 at 10:36=E2=80=AFAM Lucas de Lima N=C3=B3brega
-> > > <lucaslnobrega38@gmail.com> wrote:
-> > > >
-> > > > EAS currently refuses to enable energy-aware scheduling on a root
-> > > > domain unless schedutil is the active CPUFreq governor for all of i=
-ts
-> > > > CPUs (cpufreq_ready_for_eas()). This requirement exists to protect =
-the
-> > > > accuracy of the energy estimate: EAS predicts the OPP a CPU will ru=
-n
-> > > > at from its utilization, which is only meaningful if the active
-> > > > governor actually requests OPPs that way, and schedutil is the only
-> > > > one that does.
-> > > >
-> > > > That requirement does not apply to artificial Energy Models
-> > > > (EM_PERF_DOMAIN_ARTIFICIAL). An artificial EM is built from a
-> > > > get_cost() callback instead of real power numbers, and only encodes=
- a
-> > > > cost ranking between CPUs (e.g. P-cores cost more than E-cores at a
-> > > > given utilization). It never claims to predict real energy use at a=
-ny
-> > > > specific OPP, so there is no per-OPP accuracy for the governor
-> > > > requirement to protect, regardless of which governor is in control =
-or
-> > > > whether it tracks utilization at all.
-> > >
-> > > But it is still about comparing the cost of running on different CPUs
-> > > at different performance levels.
-> > >
-> > > For instance, say the scale-invariant utilization of a task is 256 an=
-d
-> > > it can run either by itself on a P-core, or with another task whose
-> > > utilization is 128 on an E-core, and say the P-core's and E-core's
-> > > capacity is 1024 and 512, respectively.
-> > >
-> > > Say the cost function tells EAS that running a P-core at 1/4 of the
-> > > capacity is cheaper than running an E-core at 3/4 capacity, so it wil=
-l
-> > > pick up the P-core to run that task, but if cpufreq ramps up the
-> > > frequency of the P-core to the max when the task gets to it, it may
-> > > actually turn out to be more expensive.
-> > >
-> > > This means that EAS still has an expectation regarding cpufreq which
-> > > is that it will generally tend to run tasks at the performance level
-> > > corresponding to the sum of their scale-invariant utilization at leas=
-t
-> > > roughly.
-> > >
-> > > IIUC this actually has nothing to do with whether or not the energy
-> > > model used by EAS is artificial.  The schedutil requirement is about
-> > > choosing a performance level proportional to the utilization (which
-> > > schedutil generally tends to do by design).
-> > >
-> > > > intel_pstate registers exactly this kind of artificial EM for hybri=
-d
-> > > > (P/E-core) systems without SMT, regardless of whether it operates i=
-n
-> > > > active or passive mode. In active mode it never uses schedutil, sin=
-ce
-> > > > HWP picks frequency autonomously, so on these systems EAS never
-> > > > engages even though SD_ASYM_CPUCAPACITY, frequency invariance and t=
-he
-> > > > EM are all in place: find_energy_efficient_cpu() is never reached
-> > > > because is_rd_overutilized() is hardcoded to true whenever
-> > > > sched_energy_enabled() is false. cppc_cpufreq registers the same ki=
-nd
-> > > > of ranking-only artificial EM and is affected the same way with any
-> > > > non-schedutil governor.
-> > > >
-> > > > Allow EAS to be enabled when every CPU's EM in the root domain is
-> > > > artificial, even when schedutil is not the active governor.
-> > > >
-> > > > Tested on a Raptor Lake-P laptop with nosmt=3Dforce and intel_pstat=
-e in
-> > > > active/HWP mode: find_energy_efficient_cpu() was never called befor=
-e
-> > > > this change (confirmed via the sched_overutilized_tp tracepoint and
-> > > > ftrace) and is exercised as expected afterwards.
-> > >
-> > > If this is about allowing EAS to work with intel_pstate running in th=
-e
-> > > active mode, you may argue that what the processor firmware is doing
-> > > when intel_pstate runs in the active mode is not much different from
-> > > what schedutil would do.  So a driver implementing an internal
-> > > governor (that is, using the .set_policy() callback) would need to
-> > > declare that its internal governor is as good as schedutil from EAS'
-> > > perspective and so it will pass the "cpufreq readiness" check.
-> >
-> > And I have a prototype patch (on top of 7.2-rc1) doing this which is
-> > appended.
-> >
-> > I wonder if it works for you (that is, if it allows intel_pstate and EA=
-S to
-> > work together both with schedutil and when intel_pstate operates in the
-> > active mode with the "powersave" policy on your system).
->
-> It does work, thank you.
 
-Great, thanks!
+On Tue, 23 Jun 2026 07:48:43 +0200, Krzysztof Kozlowski wrote:
+> There is no use of double colon '::' in YAML. OTOH, the literal style
+> block, e.g. using '|' treats all characters as content [1] therefore
+> single use of ':' in descriptions is perfectly fine, whenever '|' is
+> used.
+> 
+> Cleanup existing code, so the confusing style won't be re-used in new
+> contributions.
+> 
+> Link: https://yaml.org/spec/1.2.2/#literal-style [1]
+> Acked-by: Alim Akhtar <alim.akhtar@samsung.com>
+> Acked-by: Conor Dooley <conor.dooley@microchip.com>
+> Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
+> ---
+> I split the patches to avoid bounces from mailing list due to email size.
+> 
+> This can go via clock tree (no dependencies)... or both could go via
+> Rob's tree.
+> 
+> Changes in v2:
+> 1. Add tags (partial Reviews as Acks, as that's the meaning of Ack)
+> ---
+>  .../devicetree/bindings/clock/qcom,dispcc-sm8x50.yaml       | 2 +-
+>  .../devicetree/bindings/clock/qcom,gcc-apq8064.yaml         | 2 +-
+>  .../devicetree/bindings/clock/qcom,gcc-apq8084.yaml         | 2 +-
+>  .../devicetree/bindings/clock/qcom,gcc-ipq6018.yaml         | 2 +-
+>  .../devicetree/bindings/clock/qcom,gcc-ipq8064.yaml         | 2 +-
+>  .../devicetree/bindings/clock/qcom,gcc-mdm9607.yaml         | 2 +-
+>  .../devicetree/bindings/clock/qcom,gcc-mdm9615.yaml         | 2 +-
+>  .../devicetree/bindings/clock/qcom,gcc-msm8660.yaml         | 2 +-
+>  .../devicetree/bindings/clock/qcom,gcc-msm8909.yaml         | 2 +-
+>  .../devicetree/bindings/clock/qcom,gcc-msm8916.yaml         | 2 +-
+>  .../devicetree/bindings/clock/qcom,gcc-msm8953.yaml         | 2 +-
+>  .../devicetree/bindings/clock/qcom,gcc-msm8974.yaml         | 2 +-
+>  .../devicetree/bindings/clock/qcom,gcc-sdm660.yaml          | 2 +-
+>  Documentation/devicetree/bindings/clock/qcom,gpucc.yaml     | 2 +-
+>  .../devicetree/bindings/clock/qcom,ipq5018-gcc.yaml         | 2 +-
+>  .../devicetree/bindings/clock/qcom,ipq9574-gcc.yaml         | 2 +-
+>  .../devicetree/bindings/clock/qcom,qca8k-nsscc.yaml         | 2 +-
+>  .../devicetree/bindings/clock/qcom,qcm2290-gpucc.yaml       | 2 +-
+>  Documentation/devicetree/bindings/clock/qcom,rpmcc.yaml     | 2 +-
+>  .../devicetree/bindings/clock/qcom,sc7280-lpasscorecc.yaml  | 2 +-
+>  .../devicetree/bindings/clock/qcom,sc8280xp-lpasscc.yaml    | 2 +-
+>  .../devicetree/bindings/clock/qcom,sm6115-lpasscc.yaml      | 2 +-
+>  .../devicetree/bindings/clock/qcom,sm8350-videocc.yaml      | 2 +-
+>  Documentation/devicetree/bindings/clock/qcom,videocc.yaml   | 2 +-
+>  .../devicetree/bindings/clock/samsung,exynos5260-clock.yaml | 6 +++---
+>  .../devicetree/bindings/clock/samsung,exynos5410-clock.yaml | 2 +-
+>  .../devicetree/bindings/clock/samsung,exynos5433-clock.yaml | 2 +-
+>  .../devicetree/bindings/clock/samsung,exynos7-clock.yaml    | 2 +-
+>  .../devicetree/bindings/clock/samsung,exynos850-clock.yaml  | 2 +-
+>  .../bindings/clock/samsung,exynosautov9-clock.yaml          | 2 +-
+>  .../bindings/clock/samsung,exynosautov920-clock.yaml        | 2 +-
+>  .../devicetree/bindings/clock/samsung,s5pv210-clock.yaml    | 2 +-
+>  32 files changed, 34 insertions(+), 34 deletions(-)
+> 
 
-So this approach is more straightforward IMV and that's why I prefer it.
+Applied, thanks!
 
-I'll need to revise the new flag description so it mentions the need
-for a "matching" EM to produce reasonable results and there are a few
-intel_pstate patches in-flight, so this one will need to be rebased.
-It also needs a changelog, of course.
-
-> >
-> > Also I wonder why exactly you want intel_pstate in the active mode to
-> > work with EAS.  Do you see any significant improvement in that case?
->
-> About that specific topic i do not have any testing data, but it felt
-> like schedutil drains more battery than pstate active (likely due to
-> worse c-states management) and presents more stutters in general usage
-> (I would guess it's slower to react to load changes). After bypassing sch=
-edutil
-> those very observations were gone, and the responsiveness of the system
-> looked very similar to EAS disabled, pstate active. Since EAS does
-> prioritize spreading
-> onto E cores, which do consume less energy by my testing, IMHO it's
-> almost too good
-> to be leaving it unused.
-
-Fair enough.
-
-> I also want to point out that gaming (mainly minecraft) stutters a lot mo=
-re with
-> EAS on, even when pstate is set to active. So i wonder what do you think =
-about
-> capturing the system power mode (currently only clamps frequency) and
-> disabling eas_compatible when set to "performance"? That would need
-> updating cpufreq_policy, but feels reasonable to let the user disable EAS
-> for latency sensitive tasks, since E cores struggle at those.
-
-Switching the governor (or policy if you will) to "performance" on any
-CPU should cause eas_compatible to be cleared for it due to the
-cpu->policy !=3D CPUFREQ_POLICY_PERFORMANCE check and then the scheduler
-will refuse to use EAS after rebuilding the sched domains.
-
-Or do you mean something else?
-
-> I know that for now, my observations are only anecdotal, but if needed
-> I'm eager to test those assumptions!
-
-So it would be good to have some data indicating that it is beneficial
-to use EAS when intel_pstate operates in the active mode ("powersave"
-policy).
-
-Also, enabling EAS by default for the active mode may be problematic
-because people may see (and report) performance regressions due to it.
-OTOH, EAS can be disabled via sysctl, so that may not be a big deal.
