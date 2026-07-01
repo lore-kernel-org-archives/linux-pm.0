@@ -1,31 +1,31 @@
 Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id EACB348125C;
-	Wed,  1 Jul 2026 12:58:19 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id 9713249250A;
+	Wed,  1 Jul 2026 12:58:22 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1782910701; cv=none; b=aM9xdgg/K7letlsSJl2q/icIIv1P0G8PSHRzeIkc/w0l+TSBBIEKpTmGpRWR5FqlRhw3FcTS1pMyTPbzzK8BzevlE3V9dZUoAFjXIoJMI/eHI66jIltSZdSOaIq7fr+RLCt0qZi2Ih3ObfzrXPj0DVp1fBpBECcG8kqjOen6uTs=
+	t=1782910703; cv=none; b=tNdNz6yoln9p6hUKsE0M/7z2Ah9lJ4NolRMmiF74LTwo4cIrs/4ngQXTwvyUrgXYFJXnThlk5ga9ogzC8z9S9TVqsTq2iexa2Rub/auxRj0kHm57HDfumi6hjm0zOx3WwFUbNM7k4LK8w/09lO2VsnWXGXePmDziWQJ7bkRmyKQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1782910701; c=relaxed/simple;
-	bh=SoT2xmBVfDbTDLmJU1ewMwTP951Qvvta5aWClhfdxZ0=;
+	s=arc-20240116; t=1782910703; c=relaxed/simple;
+	bh=d/ez46M8JR6nHFeAaTkavV1BjE9Sl9hl/s65oL5R7v4=;
 	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=QXIXbwyeJsxegmwWYoauqt24yK+ifMibHX5H9DA/01pM+ZfHwMBD6uN6DxEXb1z3zYTjcaqVRZT0MSKLJTPUE28yaoPDDV88OwXGpvh3QBjG7OqC0dv+b3X+d2p0USCbM1Gd20NT3AjMtq7x63zJ+VGOwVKREfhd1Sh8SglOqBc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=TEFb7lo8; arc=none smtp.client-ip=217.140.110.172
+	 MIME-Version; b=lJgUpk0pbsaT/PHjAojQzRuMvZo3RosbN5LLPs+iUNqQXy6Z5yTRZnfNIyg7N7iNVkIRXbUlxcMhKBhkuFWuNq+63VdDMbN0hfvegWjelkKOtsu2T5XKsJzm0n3SWHqXOW892DecVxVzCEqhYbnWzge7zHnENcQZXxubuV/prqI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=ZV/X08I1; arc=none smtp.client-ip=217.140.110.172
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="TEFb7lo8"
+	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="ZV/X08I1"
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id F1B362309;
-	Wed,  1 Jul 2026 05:58:14 -0700 (PDT)
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 8BABF168F;
+	Wed,  1 Jul 2026 05:58:17 -0700 (PDT)
 Received: from oss-apollo7005.oss.cambridge.arm.com (oss-apollo7005.oss.lab.cambridge.arm.com [10.7.15.171])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 03BDE3F85F;
-	Wed,  1 Jul 2026 05:58:16 -0700 (PDT)
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id AD8323F85F;
+	Wed,  1 Jul 2026 05:58:19 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1782910699; bh=SoT2xmBVfDbTDLmJU1ewMwTP951Qvvta5aWClhfdxZ0=;
+	t=1782910701; bh=d/ez46M8JR6nHFeAaTkavV1BjE9Sl9hl/s65oL5R7v4=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=TEFb7lo8AOBWiDgqoeFvTavPCn2zAXgLLLu/sc1BrLJkOivc8SWXZj4IiGxdB4bKC
-	 sSdrjLM8V6oPpKgsZdct52JHWrXvciUlTo6MBoxL4sJsdf4iu7DeawcEki41wZkijV
-	 zE6wgwzcu+GoVDnB7b5qe0162xyVlJHtbSPcD4Ao=
+	b=ZV/X08I1+5jK/R1W+bwPKNT2Gr6Fa15qpIrvm6eIkvY/aMmkvuBaUEf8M/1gPpKn+
+	 plvw5TebzTmnJlcf+Uwlg0aRO//VEaUxLlghKM9OyJbGBzyPTJILTvNCQQDZit/9P3
+	 drLoXYhWephuaFvKe+T85SNNltHq3sFu13r2p4hE=
 From: Philip Radford <philip.radford@arm.com>
 To: linux-kernel@vger.kernel.org,
 	linux-arm-kernel@lists.infradead.org,
@@ -42,11 +42,10 @@ Cc: sudeep.holla@arm.com,
 	dan.carpenter@linaro.org,
 	d-gole@ti.com,
 	souvik.chakravarty@arm.com,
-	Cristian Marussi <cristian.marussi@arm.com>,
 	Philip Radford <philip.radford@arm.com>
-Subject: [PATCH v8 06/13] firmware: arm_scmi: Add SCMIV4.0 Powercap notifications support
-Date: Wed,  1 Jul 2026 12:57:40 +0000
-Message-Id: <20260701125747.407921-7-philip.radford@arm.com>
+Subject: [PATCH v8 07/13] firmware: arm_scmi: Extend powercap report to include MAI
+Date: Wed,  1 Jul 2026 12:57:41 +0000
+Message-Id: <20260701125747.407921-8-philip.radford@arm.com>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20260701125747.407921-1-philip.radford@arm.com>
 References: <20260701125747.407921-1-philip.radford@arm.com>
@@ -58,79 +57,105 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-From: Cristian Marussi <cristian.marussi@arm.com>
+Extend scmi_powercap_meas_changed_report to include MAI change
+notifications.
 
-Extend notification support to the new SCMIv4.0 Powercap format that carry
-also a CPL identifier where specified.
-
-Since this addition completes SCMIv4.0 Powercap support bump also the
-protocol version define.
-
-Signed-off-by: Cristian Marussi <cristian.marussi@arm.com>
 Signed-off-by: Philip Radford <philip.radford@arm.com>
 ---
- drivers/firmware/arm_scmi/powercap.c | 13 +++++++++----
- include/linux/scmi_protocol.h        |  3 ++-
- 2 files changed, 11 insertions(+), 5 deletions(-)
+ drivers/firmware/arm_scmi/powercap.c | 28 +++++++++++++++-------------
+ include/linux/scmi_protocol.h        |  1 +
+ 2 files changed, 16 insertions(+), 13 deletions(-)
 
 diff --git a/drivers/firmware/arm_scmi/powercap.c b/drivers/firmware/arm_scmi/powercap.c
-index cfa1dde71ff4..65fac7fc6169 100644
+index 65fac7fc6169..653b0656a9bd 100644
 --- a/drivers/firmware/arm_scmi/powercap.c
 +++ b/drivers/firmware/arm_scmi/powercap.c
-@@ -18,7 +18,7 @@
- #include "notify.h"
+@@ -11,6 +11,7 @@
+ #include <linux/io.h>
+ #include <linux/module.h>
+ #include <linux/scmi_protocol.h>
++#include <linux/stddef.h>
  
- /* Updated only after ALL the mandatory features for that version are merged */
--#define SCMI_PROTOCOL_SUPPORTED_VERSION		0x20000
-+#define SCMI_PROTOCOL_SUPPORTED_VERSION		0x30000
+ #include <trace/events/scmi.h>
+ 
+@@ -21,6 +22,8 @@
+ #define SCMI_PROTOCOL_SUPPORTED_VERSION		0x30000
  
  #define CPL0	0
++#define SZ_V3 (sizeof(struct scmi_powercap_meas_changed_notify_payld))
++#define SZ_V2 (SZ_V3 - sizeof(__le32))
  
-@@ -156,7 +156,8 @@ struct scmi_powercap_cap_changed_notify_payld {
+ enum scmi_powercap_protocol_cmd {
+ 	POWERCAP_DOMAIN_ATTRIBUTES = 0x3,
+@@ -164,6 +167,7 @@ struct scmi_powercap_meas_changed_notify_payld {
  	__le32 agent_id;
  	__le32 domain_id;
- 	__le32 power_cap;
--	__le32 pai;
-+	__le32 avg_ivl;
-+	__le32 cpli;
+ 	__le32 power;
++	__le32 mai;
  };
  
- struct scmi_powercap_meas_changed_notify_payld {
-@@ -1326,14 +1327,18 @@ scmi_powercap_fill_custom_report(const struct scmi_protocol_handle *ph,
- 		const struct scmi_powercap_cap_changed_notify_payld *p = payld;
- 		struct scmi_powercap_cap_changed_report *r = report;
+ struct scmi_msg_powercap_cpc {
+@@ -1215,24 +1219,18 @@ static int scmi_powercap_notify(const struct scmi_protocol_handle *ph,
+ 		struct scmi_msg_powercap_notify_thresh *notify;
+ 
+ 		/*
+-		 * Note that we have to pick the most recently configured
+-		 * thresholds to build a proper POWERCAP_MEASUREMENTS_NOTIFY
+-		 * enable request and we fail, complaining, if no thresholds
+-		 * were ever set, since this is an indication the API has been
+-		 * used wrongly.
++		 * Build the POWERCAP_MEASUREMENTS_NOTIFY enable request using the
++		 * most recently configured thresholds.
++		 *
++		 * The absence of thresholds is not considered an error:
++		 * notifications can still be generated to report MAI changes, even
++		 * when low and high are set to zero.
+ 		 */
+ 		ret = scmi_powercap_measurements_threshold_get(ph, domain,
+ 							       &low, &high);
+ 		if (ret)
+ 			return ret;
+ 
+-		if (enable && !low && !high) {
+-			dev_err(ph->dev,
+-				"Invalid Measurements Notify thresholds: %u/%u\n",
+-				low, high);
+-			return -EINVAL;
+-		}
+-
+ 		ret = ph->xops->xfer_get_init(ph, message_id,
+ 					      sizeof(*notify), 0, &t);
+ 		if (ret)
+@@ -1348,13 +1346,17 @@ scmi_powercap_fill_custom_report(const struct scmi_protocol_handle *ph,
+ 		const struct scmi_powercap_meas_changed_notify_payld *p = payld;
+ 		struct scmi_powercap_meas_changed_report *r = report;
  
 -		if (sizeof(*p) != payld_sz)
-+		if (sizeof(*p) > payld_sz)
++		if (payld_sz != SZ_V2 && payld_sz != SZ_V3)
  			break;
  
  		r->timestamp = timestamp;
  		r->agent_id = le32_to_cpu(p->agent_id);
  		r->domain_id = le32_to_cpu(p->domain_id);
- 		r->power_cap = le32_to_cpu(p->power_cap);
--		r->pai = le32_to_cpu(p->pai);
-+		r->avg_ivl = le32_to_cpu(p->avg_ivl);
-+		if (sizeof(*p) == payld_sz)
-+			r->cpli = le32_to_cpu(p->cpli);
-+		else
-+			r->cpli = 0;
+ 		r->power = le32_to_cpu(p->power);
++		r->mai = 0;
++		if (payld_sz == SZ_V3 && PROTOCOL_REV_MAJOR(ph->version) >= 0x3)
++			r->mai = le32_to_cpu(p->mai);
++
  		*src_id = r->domain_id;
  		rep = r;
  		break;
 diff --git a/include/linux/scmi_protocol.h b/include/linux/scmi_protocol.h
-index 8b539bfcf482..ce00106d2b65 100644
+index ce00106d2b65..583122037bf6 100644
 --- a/include/linux/scmi_protocol.h
 +++ b/include/linux/scmi_protocol.h
-@@ -1129,7 +1129,8 @@ struct scmi_powercap_cap_changed_report {
+@@ -1138,5 +1138,6 @@ struct scmi_powercap_meas_changed_report {
  	unsigned int	agent_id;
  	unsigned int	domain_id;
- 	unsigned int	power_cap;
--	unsigned int	pai;
-+	unsigned int	avg_ivl;
-+	unsigned int	cpli;
+ 	unsigned int	power;
++	unsigned int	mai;
  };
- 
- struct scmi_powercap_meas_changed_report {
+ #endif /* _LINUX_SCMI_PROTOCOL_H */
 -- 
 2.25.1
 
