@@ -1,31 +1,31 @@
 Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id D770148C8BC;
-	Wed,  1 Jul 2026 12:58:08 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id C51ED49218D;
+	Wed,  1 Jul 2026 12:58:11 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1782910690; cv=none; b=Z9D/94LbMViY4napSf/Al36KsXXuHISuCrz849bExi1RPL3bxh8hpZbxfLQCzIXJFWEbrsnXiap7tO+ypnOnFD2RYVf0CvrWxLN0Ipmri16u2gK7JqhylH8jUcs9WcmBRkr2YrzizQmBaI/Aq2XbvknaXlHfD3WaZC0oYAvA9V0=
+	t=1782910694; cv=none; b=ME2eD2rSVD0TB92a2K51UeIw7BQLx9dNjk1H6bxqHi34KwdAACm9ihCbqUwVcr6L7ld59h34tY8DkgwP/5gr5TKDgllYXzkjDhbDbLLRe4iPNIvxfzg3IN4Cfnc3yamyaOEnMxr5P2XTaiKhNiMy86aDbcPGHlBCRO8OAVQwgRA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1782910690; c=relaxed/simple;
-	bh=VaIjpliNHMdmpjcZ2+EaV8d740iUXIoJDb8F//xzL00=;
+	s=arc-20240116; t=1782910694; c=relaxed/simple;
+	bh=1doNLZQ9yycAnN8WpOvuqm4aJZLCmCrhyIBX96Z95E0=;
 	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=nMLFGeDyhfv1bCw4JiCUu08wg57kK99P0vbcc7aqCgagb1//SWobVr1hCDZLuc1QmqeLkVOz0W7ks9NO5Jc6XNeKNS1gLP+lddmfZ6SLUV0Q0tZBHAnCGLt2I+1T4fK7tU0ClkBenRttGFl7Xd7MxAqXUhjKGYdj+DH0uzHyOvk=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=OMq7WGgh; arc=none smtp.client-ip=217.140.110.172
+	 MIME-Version; b=aKXTZ/BytCnZlytaeYt8X31E0/2hBzGgenLzPkZLFtQ2EetvnELsY+30Cy9jemKHKyT345PfeMv6R/h+7U3cqRNZPahfG+UIBvJJkdT70MQIpVOiYGpwXSp7OwUY/xLIscmTTsa78AcvM+XUlWbB+/z2fCtqwOPk0WYN2fA8rcc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=iU1EI2bf; arc=none smtp.client-ip=217.140.110.172
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="OMq7WGgh"
+	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="iU1EI2bf"
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id E5C7D2309;
-	Wed,  1 Jul 2026 05:58:03 -0700 (PDT)
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id BB3282309;
+	Wed,  1 Jul 2026 05:58:06 -0700 (PDT)
 Received: from oss-apollo7005.oss.cambridge.arm.com (oss-apollo7005.oss.lab.cambridge.arm.com [10.7.15.171])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id EB49F3F85F;
-	Wed,  1 Jul 2026 05:58:05 -0700 (PDT)
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id A1EB03F85F;
+	Wed,  1 Jul 2026 05:58:08 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1782910688; bh=VaIjpliNHMdmpjcZ2+EaV8d740iUXIoJDb8F//xzL00=;
+	t=1782910691; bh=1doNLZQ9yycAnN8WpOvuqm4aJZLCmCrhyIBX96Z95E0=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=OMq7WGghlagVGdcjYZo7dKnYgLRh6k3wRVWeB7B2NyHDZttDgI1/t7V2cfbo08FQv
-	 296FIpAharKW74uL1DsyZbtTFHK5JTn7wrBG8yTmFtzSkTFC1UB1sfOB4v3sjeHBsY
-	 NUeR1u/bjvGTr5BQqs8P+6lmQ9lRNppPlrWuIVzo=
+	b=iU1EI2bfdZGx9gEPDOXcmpJ9Ka6L5pRIm7hYfhrAr624WapryRrKVW2v5H2352neM
+	 VkReAhbD6uKYPaKyU6ivTi3lxWPffQnu/IpBMnqx0LjV3LQ26B5Pxgl8u6P0tH5k9N
+	 keOqFomaSQoId78fDlaQbd1vQG6ibrpni7kdVzBc=
 From: Philip Radford <philip.radford@arm.com>
 To: linux-kernel@vger.kernel.org,
 	linux-arm-kernel@lists.infradead.org,
@@ -44,9 +44,9 @@ Cc: sudeep.holla@arm.com,
 	souvik.chakravarty@arm.com,
 	Cristian Marussi <cristian.marussi@arm.com>,
 	Philip Radford <philip.radford@arm.com>
-Subject: [PATCH v8 02/13] firmware: arm_scmi: Add an optional custom parameter to fastchannel helpers
-Date: Wed,  1 Jul 2026 12:57:36 +0000
-Message-Id: <20260701125747.407921-3-philip.radford@arm.com>
+Subject: [PATCH v8 03/13] firmware: arm_scmi: Refactor powercap domain layout
+Date: Wed,  1 Jul 2026 12:57:37 +0000
+Message-Id: <20260701125747.407921-4-philip.radford@arm.com>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20260701125747.407921-1-philip.radford@arm.com>
 References: <20260701125747.407921-1-philip.radford@arm.com>
@@ -60,148 +60,758 @@ Content-Transfer-Encoding: 8bit
 
 From: Cristian Marussi <cristian.marussi@arm.com>
 
-Starting from SCMIv4.0 the protocols DESCRIBE_FASTCHANNEL commands allow
-to specify one additional per-protocol custom field in the outgoing message
-request in order to, optionally, further narrow down the scope of the
-fastchannel discovery request; the related message-reply format is instead
-unchanged.
+SCMIv4.0 introduces the idea of an optional Concurrent Power Limit (CPL)
+for each powercap domain, where CPL0 coincides with the one and only
+per-domain constraint limit that was available in pre-v4.0 SCMI Powercap.
 
-Add an optional custom protocol parameter to the common fastchannel helper
-so as to enable the caller to choose the kind of message to send based on
-the detected protocol version.
+Refactor the powercap domain descriptors and powercap operations to allow
+future v4.0 extensions to cope with multiple CPLs.
+
+While at that generalize the powercap protocol API to drop PAI references
+in favour of a more generic avg_ivl naming, since from v4.0 the number and
+types of averaging intervals will change in a non-backward compatible way,
+so let's bury these changes within the protocol layer.
+
+Last but not least, make the necessary changes to the ARM SCMI Powwercap
+driver in order to support all of these new capabilities.
+
+No functional change.
 
 Signed-off-by: Cristian Marussi <cristian.marussi@arm.com>
+[Philip: Adjusted domain_id comparitor in scmi_powercap_pai_get]
 Signed-off-by: Philip Radford <philip.radford@arm.com>
 ---
- drivers/firmware/arm_scmi/driver.c    | 12 ++++++++++--
- drivers/firmware/arm_scmi/perf.c      |  8 ++++----
- drivers/firmware/arm_scmi/powercap.c  |  8 ++++----
- drivers/firmware/arm_scmi/protocols.h |  2 +-
- 4 files changed, 19 insertions(+), 11 deletions(-)
+V7->V8
+- Fixed conflict due to changes in 7.2-rc1
+---
+ drivers/firmware/arm_scmi/powercap.c | 182 +++++++++++++++++----------
+ drivers/powercap/arm_scmi_powercap.c |  52 ++++----
+ include/linux/scmi_protocol.h        |  74 +++++++----
+ 3 files changed, 189 insertions(+), 119 deletions(-)
 
-diff --git a/drivers/firmware/arm_scmi/driver.c b/drivers/firmware/arm_scmi/driver.c
-index 3e0d975ec94c..81cb8eec14bc 100644
---- a/drivers/firmware/arm_scmi/driver.c
-+++ b/drivers/firmware/arm_scmi/driver.c
-@@ -1902,6 +1902,11 @@ static int scmi_iterator_run_bound(void *iter, unsigned int *start,
- struct scmi_msg_get_fc_info {
- 	__le32 domain;
- 	__le32 message_id;
-+	__le32 custom;
-+#define MSG_FC_INFO_SZ_EXTENDED	\
-+	(sizeof(struct scmi_msg_get_fc_info))
-+#define MSG_FC_INFO_SZ		\
-+	(sizeof(struct scmi_msg_get_fc_info) - sizeof(__le32))
- };
- 
- struct scmi_msg_resp_desc_fc {
-@@ -1930,7 +1935,7 @@ struct scmi_msg_resp_desc_fc {
- static void
- scmi_common_fastchannel_init(const struct scmi_protocol_handle *ph,
- 			     u8 describe_id, u32 message_id, u32 valid_size,
--			     u32 domain, void __iomem **p_addr,
-+			     u32 domain, u32 *custom, void __iomem **p_addr,
- 			     struct scmi_fc_db_info **p_db, u32 *rate_limit)
- {
- 	int ret;
-@@ -1961,13 +1966,16 @@ scmi_common_fastchannel_init(const struct scmi_protocol_handle *ph,
- 	}
- 
- 	ret = ph->xops->xfer_get_init(ph, describe_id,
--				      sizeof(*info), sizeof(*resp), &t);
-+				      custom ? MSG_FC_INFO_SZ_EXTENDED :
-+				      MSG_FC_INFO_SZ, sizeof(*resp), &t);
- 	if (ret)
- 		goto err_out;
- 
- 	info = t->tx.buf;
- 	info->domain = cpu_to_le32(domain);
- 	info->message_id = cpu_to_le32(message_id);
-+	if (custom)
-+		info->custom = cpu_to_le32(*custom);
- 
- 	/*
- 	 * Bail out on error leaving fc_info addresses zeroed; this includes
-diff --git a/drivers/firmware/arm_scmi/perf.c b/drivers/firmware/arm_scmi/perf.c
-index 4583d02bee1c..7f283f457e02 100644
---- a/drivers/firmware/arm_scmi/perf.c
-+++ b/drivers/firmware/arm_scmi/perf.c
-@@ -835,25 +835,25 @@ static void scmi_perf_domain_init_fc(const struct scmi_protocol_handle *ph,
- 		return;
- 
- 	ph->hops->fastchannel_init(ph, PERF_DESCRIBE_FASTCHANNEL,
--				   PERF_LEVEL_GET, 4, dom->id,
-+				   PERF_LEVEL_GET, 4, dom->id, NULL,
- 				   &fc[PERF_FC_LEVEL].get_addr, NULL,
- 				   &fc[PERF_FC_LEVEL].rate_limit);
- 
- 	ph->hops->fastchannel_init(ph, PERF_DESCRIBE_FASTCHANNEL,
--				   PERF_LIMITS_GET, 8, dom->id,
-+				   PERF_LIMITS_GET, 8, dom->id, NULL,
- 				   &fc[PERF_FC_LIMIT].get_addr, NULL,
- 				   &fc[PERF_FC_LIMIT].rate_limit);
- 
- 	if (dom->info.set_perf)
- 		ph->hops->fastchannel_init(ph, PERF_DESCRIBE_FASTCHANNEL,
--					   PERF_LEVEL_SET, 4, dom->id,
-+					   PERF_LEVEL_SET, 4, dom->id, NULL,
- 					   &fc[PERF_FC_LEVEL].set_addr,
- 					   &fc[PERF_FC_LEVEL].set_db,
- 					   &fc[PERF_FC_LEVEL].rate_limit);
- 
- 	if (dom->set_limits)
- 		ph->hops->fastchannel_init(ph, PERF_DESCRIBE_FASTCHANNEL,
--					   PERF_LIMITS_SET, 8, dom->id,
-+					   PERF_LIMITS_SET, 8, dom->id, NULL,
- 					   &fc[PERF_FC_LIMIT].set_addr,
- 					   &fc[PERF_FC_LIMIT].set_db,
- 					   &fc[PERF_FC_LIMIT].rate_limit);
 diff --git a/drivers/firmware/arm_scmi/powercap.c b/drivers/firmware/arm_scmi/powercap.c
-index 27e3c805e927..31b19967452f 100644
+index 31b19967452f..4666030176c3 100644
 --- a/drivers/firmware/arm_scmi/powercap.c
 +++ b/drivers/firmware/arm_scmi/powercap.c
-@@ -726,24 +726,24 @@ static void scmi_powercap_domain_init_fc(const struct scmi_protocol_handle *ph,
- 		return;
+@@ -2,7 +2,7 @@
+ /*
+  * System Control and Management Interface (SCMI) Powercap Protocol
+  *
+- * Copyright (C) 2022 ARM Ltd.
++ * Copyright (C) 2022-2026 ARM Ltd.
+  */
  
- 	ph->hops->fastchannel_init(ph, POWERCAP_DESCRIBE_FASTCHANNEL,
--				   POWERCAP_CAP_SET, 4, domain,
-+				   POWERCAP_CAP_SET, 4, domain, NULL,
- 				   &fc[POWERCAP_FC_CAP].set_addr,
- 				   &fc[POWERCAP_FC_CAP].set_db,
- 				   &fc[POWERCAP_FC_CAP].rate_limit);
+ #define pr_fmt(fmt) "SCMI Notifications POWERCAP - " fmt
+@@ -20,6 +20,8 @@
+ /* Updated only after ALL the mandatory features for that version are merged */
+ #define SCMI_PROTOCOL_SUPPORTED_VERSION		0x20000
  
- 	ph->hops->fastchannel_init(ph, POWERCAP_DESCRIBE_FASTCHANNEL,
--				   POWERCAP_CAP_GET, 4, domain,
-+				   POWERCAP_CAP_GET, 4, domain, NULL,
- 				   &fc[POWERCAP_FC_CAP].get_addr, NULL,
- 				   &fc[POWERCAP_FC_CAP].rate_limit);
++#define CPL0	0
++
+ enum scmi_powercap_protocol_cmd {
+ 	POWERCAP_DOMAIN_ATTRIBUTES = 0x3,
+ 	POWERCAP_CAP_GET = 0x4,
+@@ -192,27 +194,26 @@ scmi_powercap_validate(unsigned int min_val, unsigned int max_val,
  
- 	ph->hops->fastchannel_init(ph, POWERCAP_DESCRIBE_FASTCHANNEL,
--				   POWERCAP_PAI_SET, 4, domain,
-+				   POWERCAP_PAI_SET, 4, domain, NULL,
- 				   &fc[POWERCAP_FC_PAI].set_addr,
- 				   &fc[POWERCAP_FC_PAI].set_db,
- 				   &fc[POWERCAP_FC_PAI].rate_limit);
+ static int
+ scmi_powercap_domain_attributes_get(const struct scmi_protocol_handle *ph,
+-				    struct powercap_info *pinfo, u32 domain)
++				    struct powercap_info *pinfo,
++				    struct scmi_powercap_info *dom_info)
+ {
+ 	int ret;
+ 	u32 flags;
+ 	struct scmi_xfer *t;
+-	struct scmi_powercap_info *dom_info = pinfo->powercaps + domain;
+ 	struct scmi_msg_resp_powercap_domain_attributes *resp;
  
- 	ph->hops->fastchannel_init(ph, POWERCAP_DESCRIBE_FASTCHANNEL,
--				   POWERCAP_PAI_GET, 4, domain,
-+				   POWERCAP_PAI_GET, 4, domain, NULL,
- 				   &fc[POWERCAP_FC_PAI].get_addr, NULL,
- 				   &fc[POWERCAP_FC_PAI].rate_limit);
+ 	ret = ph->xops->xfer_get_init(ph, POWERCAP_DOMAIN_ATTRIBUTES,
+-				      sizeof(domain), sizeof(*resp), &t);
++				      sizeof(dom_info->id), sizeof(*resp), &t);
+ 	if (ret)
+ 		return ret;
  
-diff --git a/drivers/firmware/arm_scmi/protocols.h b/drivers/firmware/arm_scmi/protocols.h
-index 15ad5162e37a..6b27e1b531a1 100644
---- a/drivers/firmware/arm_scmi/protocols.h
-+++ b/drivers/firmware/arm_scmi/protocols.h
-@@ -291,7 +291,7 @@ struct scmi_proto_helpers_ops {
- 				  u32 message_id, u32 *attributes);
- 	void (*fastchannel_init)(const struct scmi_protocol_handle *ph,
- 				 u8 describe_id, u32 message_id,
--				 u32 valid_size, u32 domain,
-+				 u32 valid_size, u32 domain, u32 *custom,
- 				 void __iomem **p_addr,
- 				 struct scmi_fc_db_info **p_db,
- 				 u32 *rate_limit);
+-	put_unaligned_le32(domain, t->tx.buf);
++	put_unaligned_le32(dom_info->id, t->tx.buf);
+ 	resp = t->rx.buf;
+ 
+ 	ret = ph->xops->do_xfer(ph, t);
+ 	if (!ret) {
+ 		flags = le32_to_cpu(resp->attributes);
+ 
+-		dom_info->id = domain;
+ 		if (pinfo->notify_cap_cmd)
+ 			dom_info->notify_powercap_cap_change =
+ 				SUPPORTS_POWERCAP_CAP_CHANGE_NOTIFY(flags);
+@@ -221,12 +222,9 @@ scmi_powercap_domain_attributes_get(const struct scmi_protocol_handle *ph,
+ 				SUPPORTS_POWERCAP_MEASUREMENTS_CHANGE_NOTIFY(flags);
+ 		dom_info->async_powercap_cap_set =
+ 			SUPPORTS_ASYNC_POWERCAP_CAP_SET(flags);
+-		dom_info->powercap_cap_config =
+-			SUPPORTS_POWERCAP_CAP_CONFIGURATION(flags);
++
+ 		dom_info->powercap_monitoring =
+ 			SUPPORTS_POWERCAP_MONITORING(flags);
+-		dom_info->powercap_pai_config =
+-			SUPPORTS_POWERCAP_PAI_CONFIGURATION(flags);
+ 		dom_info->powercap_scale_mw =
+ 			SUPPORTS_POWER_UNITS_MW(flags);
+ 		dom_info->powercap_scale_uw =
+@@ -236,13 +234,29 @@ scmi_powercap_domain_attributes_get(const struct scmi_protocol_handle *ph,
+ 
+ 		strscpy(dom_info->name, resp->name, SCMI_SHORT_NAME_MAX_SIZE);
+ 
+-		dom_info->min_pai = le32_to_cpu(resp->min_pai);
+-		dom_info->max_pai = le32_to_cpu(resp->max_pai);
+-		dom_info->pai_step = le32_to_cpu(resp->pai_step);
+-		ret = scmi_powercap_validate(dom_info->min_pai,
+-					     dom_info->max_pai,
+-					     dom_info->pai_step,
+-					     dom_info->powercap_pai_config);
++		dom_info->sustainable_power =
++			le32_to_cpu(resp->sustainable_power);
++		dom_info->accuracy = le32_to_cpu(resp->accuracy);
++
++		dom_info->parent_id = le32_to_cpu(resp->parent_id);
++		if (dom_info->parent_id != SCMI_POWERCAP_ROOT_ZONE_ID &&
++		    (dom_info->parent_id >= pinfo->num_domains ||
++		     dom_info->parent_id == dom_info->id)) {
++			dev_err(ph->dev,
++				"Platform reported inconsistent parent ID for domain %d - %s\n",
++				dom_info->id, dom_info->name);
++			ret = -ENODEV;
++		}
++
++		dom_info->cpli[0].avg_ivl_config =
++			SUPPORTS_POWERCAP_PAI_CONFIGURATION(flags);
++		dom_info->cpli[0].min_avg_ivl = le32_to_cpu(resp->min_pai);
++		dom_info->cpli[0].max_avg_ivl = le32_to_cpu(resp->max_pai);
++		dom_info->cpli[0].avg_ivl_step = le32_to_cpu(resp->pai_step);
++		ret = scmi_powercap_validate(dom_info->cpli[0].min_avg_ivl,
++					     dom_info->cpli[0].max_avg_ivl,
++					     dom_info->cpli[0].avg_ivl_step,
++					     dom_info->cpli[0].avg_ivl_config);
+ 		if (ret) {
+ 			dev_err(ph->dev,
+ 				"Platform reported inconsistent PAI config for domain %d - %s\n",
+@@ -250,13 +264,15 @@ scmi_powercap_domain_attributes_get(const struct scmi_protocol_handle *ph,
+ 			goto clean;
+ 		}
+ 
+-		dom_info->min_power_cap = le32_to_cpu(resp->min_power_cap);
+-		dom_info->max_power_cap = le32_to_cpu(resp->max_power_cap);
+-		dom_info->power_cap_step = le32_to_cpu(resp->power_cap_step);
+-		ret = scmi_powercap_validate(dom_info->min_power_cap,
+-					     dom_info->max_power_cap,
+-					     dom_info->power_cap_step,
+-					     dom_info->powercap_cap_config);
++		dom_info->cpli[0].cap_config =
++			SUPPORTS_POWERCAP_CAP_CONFIGURATION(flags);
++		dom_info->cpli[0].min_power_cap = le32_to_cpu(resp->min_power_cap);
++		dom_info->cpli[0].max_power_cap = le32_to_cpu(resp->max_power_cap);
++		dom_info->cpli[0].power_cap_step = le32_to_cpu(resp->power_cap_step);
++		ret = scmi_powercap_validate(dom_info->cpli[0].min_power_cap,
++					     dom_info->cpli[0].max_power_cap,
++					     dom_info->cpli[0].power_cap_step,
++					     dom_info->cpli[0].cap_config);
+ 		if (ret) {
+ 			dev_err(ph->dev,
+ 				"Platform reported inconsistent CAP config for domain %d - %s\n",
+@@ -264,19 +280,9 @@ scmi_powercap_domain_attributes_get(const struct scmi_protocol_handle *ph,
+ 			goto clean;
+ 		}
+ 
+-		dom_info->sustainable_power =
+-			le32_to_cpu(resp->sustainable_power);
+-		dom_info->accuracy = le32_to_cpu(resp->accuracy);
+-
+-		dom_info->parent_id = le32_to_cpu(resp->parent_id);
+-		if (dom_info->parent_id != SCMI_POWERCAP_ROOT_ZONE_ID &&
+-		    (dom_info->parent_id >= pinfo->num_domains ||
+-		     dom_info->parent_id == dom_info->id)) {
+-			dev_err(ph->dev,
+-				"Platform reported inconsistent parent ID for domain %d - %s\n",
+-				dom_info->id, dom_info->name);
+-			ret = -ENODEV;
+-		}
++		/* Just using same short name */
++		strscpy(dom_info->cpli[0].name, dom_info->name,
++			SCMI_SHORT_NAME_MAX_SIZE);
+ 	}
+ 
+ clean:
+@@ -288,12 +294,30 @@ scmi_powercap_domain_attributes_get(const struct scmi_protocol_handle *ph,
+ 	 */
+ 	if (!ret && SUPPORTS_EXTENDED_NAMES(flags))
+ 		ph->hops->extended_name_get(ph, POWERCAP_DOMAIN_NAME_GET,
+-					    domain, NULL, dom_info->name,
++					    dom_info->id, NULL, dom_info->name,
+ 					    SCMI_MAX_STR_SIZE);
+ 
+ 	return ret;
+ }
+ 
++static int
++scmi_powercap_domain_initialize(const struct scmi_protocol_handle *ph,
++				struct powercap_info *pinfo, u32 domain)
++{
++	struct scmi_powercap_info *dom_info = pinfo->powercaps + domain;
++
++	dom_info->num_cpli = 1;
++	dom_info->cpli = devm_kcalloc(ph->dev, dom_info->num_cpli,
++				      sizeof(*dom_info->cpli), GFP_KERNEL);
++	if (!dom_info->cpli)
++		return -ENOMEM;
++
++	dom_info->id = domain;
++	dom_info->cpli[0].id = CPL0;
++
++	return scmi_powercap_domain_attributes_get(ph, pinfo, dom_info);
++}
++
+ static int scmi_powercap_num_domains_get(const struct scmi_protocol_handle *ph)
+ {
+ 	struct powercap_info *pi = ph->get_priv(ph);
+@@ -335,10 +359,11 @@ static int scmi_powercap_xfer_cap_get(const struct scmi_protocol_handle *ph,
+ 
+ static int __scmi_powercap_cap_get(const struct scmi_protocol_handle *ph,
+ 				   const struct scmi_powercap_info *dom,
+-				   u32 *power_cap)
++				   u32 cpl_id, u32 *power_cap)
+ {
+-	if (dom->fc_info && dom->fc_info[POWERCAP_FC_CAP].get_addr) {
+-		*power_cap = ioread32(dom->fc_info[POWERCAP_FC_CAP].get_addr);
++	if (dom->cpli[cpl_id].fc_info &&
++	    dom->cpli[cpl_id].fc_info[POWERCAP_FC_CAP].get_addr) {
++		*power_cap = ioread32(dom->cpli[cpl_id].fc_info[POWERCAP_FC_CAP].get_addr);
+ 		trace_scmi_fc_call(SCMI_PROTOCOL_POWERCAP, POWERCAP_CAP_GET,
+ 				   dom->id, *power_cap, 0);
+ 		return 0;
+@@ -348,7 +373,7 @@ static int __scmi_powercap_cap_get(const struct scmi_protocol_handle *ph,
+ }
+ 
+ static int scmi_powercap_cap_get(const struct scmi_protocol_handle *ph,
+-				 u32 domain_id, u32 *power_cap)
++				 u32 domain_id, u32 cpl_id, u32 *power_cap)
+ {
+ 	const struct scmi_powercap_info *dom;
+ 
+@@ -359,12 +384,13 @@ static int scmi_powercap_cap_get(const struct scmi_protocol_handle *ph,
+ 	if (!dom)
+ 		return -EINVAL;
+ 
+-	return __scmi_powercap_cap_get(ph, dom, power_cap);
++	return __scmi_powercap_cap_get(ph, dom, cpl_id, power_cap);
+ }
+ 
+ static int scmi_powercap_xfer_cap_set(const struct scmi_protocol_handle *ph,
+ 				      const struct scmi_powercap_info *pc,
+-				      u32 power_cap, bool ignore_dresp)
++				      u32 cpl_id, u32 power_cap,
++				      bool ignore_dresp)
+ {
+ 	int ret;
+ 	struct scmi_xfer *t;
+@@ -406,21 +432,23 @@ static int scmi_powercap_xfer_cap_set(const struct scmi_protocol_handle *ph,
+ 
+ static int __scmi_powercap_cap_set(const struct scmi_protocol_handle *ph,
+ 				   struct powercap_info *pi, u32 domain_id,
+-				   u32 power_cap, bool ignore_dresp)
++				   u32 cpl_id, u32 power_cap, bool ignore_dresp)
+ {
+ 	int ret = -EINVAL;
+ 	const struct scmi_powercap_info *pc;
+ 
+ 	pc = scmi_powercap_dom_info_get(ph, domain_id);
+-	if (!pc || !pc->powercap_cap_config)
++	if (!pc || !pc->cpli[cpl_id].cap_config)
+ 		return ret;
+ 
+ 	if (power_cap &&
+-	    (power_cap < pc->min_power_cap || power_cap > pc->max_power_cap))
++	    (power_cap < pc->cpli[cpl_id].min_power_cap ||
++	     power_cap > pc->cpli[cpl_id].max_power_cap))
+ 		return ret;
+ 
+-	if (pc->fc_info && pc->fc_info[POWERCAP_FC_CAP].set_addr) {
+-		struct scmi_fc_info *fci = &pc->fc_info[POWERCAP_FC_CAP];
++	if (pc->cpli[cpl_id].fc_info &&
++	    pc->cpli[cpl_id].fc_info[POWERCAP_FC_CAP].set_addr) {
++		struct scmi_fc_info *fci = &pc->cpli[cpl_id].fc_info[POWERCAP_FC_CAP];
+ 
+ 		iowrite32(power_cap, fci->set_addr);
+ 		ph->hops->fastchannel_db_ring(fci->set_db);
+@@ -428,7 +456,7 @@ static int __scmi_powercap_cap_set(const struct scmi_protocol_handle *ph,
+ 				   domain_id, power_cap, 0);
+ 		ret = 0;
+ 	} else {
+-		ret = scmi_powercap_xfer_cap_set(ph, pc, power_cap,
++		ret = scmi_powercap_xfer_cap_set(ph, pc, cpl_id, power_cap,
+ 						 ignore_dresp);
+ 	}
+ 
+@@ -440,7 +468,7 @@ static int __scmi_powercap_cap_set(const struct scmi_protocol_handle *ph,
+ }
+ 
+ static int scmi_powercap_cap_set(const struct scmi_protocol_handle *ph,
+-				 u32 domain_id, u32 power_cap,
++				 u32 domain_id, u32 cpl_id, u32 power_cap,
+ 				 bool ignore_dresp)
+ {
+ 	struct powercap_info *pi = ph->get_priv(ph);
+@@ -463,7 +491,7 @@ static int scmi_powercap_cap_set(const struct scmi_protocol_handle *ph,
+ 		}
+ 	}
+ 
+-	return __scmi_powercap_cap_set(ph, pi, domain_id,
++	return __scmi_powercap_cap_set(ph, pi, domain_id, cpl_id,
+ 				       power_cap, ignore_dresp);
+ }
+ 
+@@ -489,7 +517,7 @@ static int scmi_powercap_xfer_pai_get(const struct scmi_protocol_handle *ph,
+ }
+ 
+ static int scmi_powercap_pai_get(const struct scmi_protocol_handle *ph,
+-				 u32 domain_id, u32 *pai)
++				 u32 domain_id, u32 cpl_id, u32 *pai)
+ {
+ 	struct scmi_powercap_info *dom;
+ 	struct powercap_info *pi = ph->get_priv(ph);
+@@ -498,8 +526,11 @@ static int scmi_powercap_pai_get(const struct scmi_protocol_handle *ph,
+ 		return -EINVAL;
+ 
+ 	dom = pi->powercaps + domain_id;
+-	if (dom->fc_info && dom->fc_info[POWERCAP_FC_PAI].get_addr) {
+-		*pai = ioread32(dom->fc_info[POWERCAP_FC_PAI].get_addr);
++	if (cpl_id >= dom->num_cpli)
++		return -EINVAL;
++
++	if (dom->cpli[cpl_id].fc_info && dom->cpli[cpl_id].fc_info[POWERCAP_FC_PAI].get_addr) {
++		*pai = ioread32(dom->cpli[cpl_id].fc_info[POWERCAP_FC_PAI].get_addr);
+ 		trace_scmi_fc_call(SCMI_PROTOCOL_POWERCAP, POWERCAP_PAI_GET,
+ 				   domain_id, *pai, 0);
+ 		return 0;
+@@ -508,6 +539,12 @@ static int scmi_powercap_pai_get(const struct scmi_protocol_handle *ph,
+ 	return scmi_powercap_xfer_pai_get(ph, domain_id, pai);
+ }
+ 
++static int scmi_powercap_avg_interval_get(const struct scmi_protocol_handle *ph,
++					  u32 domain_id, u32 cpl_id, u32 *val)
++{
++	return scmi_powercap_pai_get(ph, domain_id, cpl_id, val);
++}
++
+ static int scmi_powercap_xfer_pai_set(const struct scmi_protocol_handle *ph,
+ 				      u32 domain_id, u32 pai)
+ {
+@@ -532,17 +569,18 @@ static int scmi_powercap_xfer_pai_set(const struct scmi_protocol_handle *ph,
+ }
+ 
+ static int scmi_powercap_pai_set(const struct scmi_protocol_handle *ph,
+-				 u32 domain_id, u32 pai)
++				 u32 domain_id, u32 cpl_id, u32 pai)
+ {
+ 	const struct scmi_powercap_info *pc;
+ 
+ 	pc = scmi_powercap_dom_info_get(ph, domain_id);
+-	if (!pc || !pc->powercap_pai_config || !pai ||
+-	    pai < pc->min_pai || pai > pc->max_pai)
++	if (!pc || cpl_id >= pc->num_cpli || !pc->cpli[cpl_id].avg_ivl_config ||
++	    !pai || pai < pc->cpli[cpl_id].min_avg_ivl ||
++	    pai > pc->cpli[cpl_id].max_avg_ivl)
+ 		return -EINVAL;
+ 
+-	if (pc->fc_info && pc->fc_info[POWERCAP_FC_PAI].set_addr) {
+-		struct scmi_fc_info *fci = &pc->fc_info[POWERCAP_FC_PAI];
++	if (pc->cpli[cpl_id].fc_info && pc->cpli[cpl_id].fc_info[POWERCAP_FC_PAI].set_addr) {
++		struct scmi_fc_info *fci = &pc->cpli[cpl_id].fc_info[POWERCAP_FC_PAI];
+ 
+ 		trace_scmi_fc_call(SCMI_PROTOCOL_POWERCAP, POWERCAP_PAI_SET,
+ 				   domain_id, pai, 0);
+@@ -554,6 +592,12 @@ static int scmi_powercap_pai_set(const struct scmi_protocol_handle *ph,
+ 	return scmi_powercap_xfer_pai_set(ph, domain_id, pai);
+ }
+ 
++static int scmi_powercap_avg_interval_set(const struct scmi_protocol_handle *ph,
++					  u32 domain_id, u32 cpl_id, u32 val)
++{
++	return scmi_powercap_pai_set(ph, domain_id, cpl_id, val);
++}
++
+ static int scmi_powercap_measurements_get(const struct scmi_protocol_handle *ph,
+ 					  u32 domain_id, u32 *average_power,
+ 					  u32 *pai)
+@@ -652,11 +696,11 @@ static int scmi_powercap_cap_enable_set(const struct scmi_protocol_handle *ph,
+ 		if (!pi->states[domain_id].last_pcap)
+ 			return -EINVAL;
+ 
+-		ret = __scmi_powercap_cap_set(ph, pi, domain_id,
++		ret = __scmi_powercap_cap_set(ph, pi, domain_id, CPL0,
+ 					      pi->states[domain_id].last_pcap,
+ 					      true);
+ 	} else {
+-		ret = __scmi_powercap_cap_set(ph, pi, domain_id, 0, true);
++		ret = __scmi_powercap_cap_set(ph, pi, domain_id, CPL0, 0, true);
+ 	}
+ 
+ 	if (ret)
+@@ -667,7 +711,7 @@ static int scmi_powercap_cap_enable_set(const struct scmi_protocol_handle *ph,
+ 	 * server could have ignored a disable request and kept enforcing some
+ 	 * powercap limit requested by other agents.
+ 	 */
+-	ret = scmi_powercap_cap_get(ph, domain_id, &power_cap);
++	ret = scmi_powercap_cap_get(ph, domain_id, CPL0, &power_cap);
+ 	if (!ret)
+ 		pi->states[domain_id].enabled = !!power_cap;
+ 
+@@ -692,7 +736,7 @@ static int scmi_powercap_cap_enable_get(const struct scmi_protocol_handle *ph,
+ 	 * Report always real platform state; platform could have ignored
+ 	 * a previous disable request. Default true on any error.
+ 	 */
+-	ret = scmi_powercap_cap_get(ph, domain_id, &power_cap);
++	ret = scmi_powercap_cap_get(ph, domain_id, CPL0, &power_cap);
+ 	if (!ret)
+ 		*enable = !!power_cap;
+ 
+@@ -709,8 +753,8 @@ static const struct scmi_powercap_proto_ops powercap_proto_ops = {
+ 	.cap_set = scmi_powercap_cap_set,
+ 	.cap_enable_set = scmi_powercap_cap_enable_set,
+ 	.cap_enable_get = scmi_powercap_cap_enable_get,
+-	.pai_get = scmi_powercap_pai_get,
+-	.pai_set = scmi_powercap_pai_set,
++	.avg_interval_get = scmi_powercap_avg_interval_get,
++	.avg_interval_set = scmi_powercap_avg_interval_set,
+ 	.measurements_get = scmi_powercap_measurements_get,
+ 	.measurements_threshold_set = scmi_powercap_measurements_threshold_set,
+ 	.measurements_threshold_get = scmi_powercap_measurements_threshold_get,
+@@ -1001,18 +1045,18 @@ scmi_powercap_protocol_init(const struct scmi_protocol_handle *ph)
+ 	 * formed and correlated by sane parent-child relationship (if any).
+ 	 */
+ 	for (domain = 0; domain < pinfo->num_domains; domain++) {
+-		ret = scmi_powercap_domain_attributes_get(ph, pinfo, domain);
++		ret = scmi_powercap_domain_initialize(ph, pinfo, domain);
+ 		if (ret)
+ 			return ret;
+ 
+ 		if (pinfo->powercaps[domain].fastchannels)
+ 			scmi_powercap_domain_init_fc(ph, domain,
+-						     &pinfo->powercaps[domain].fc_info);
++						     &pinfo->powercaps[domain].cpli[CPL0].fc_info);
+ 
+ 		/* Grab initial state when disable is supported. */
+ 		if (PROTOCOL_REV_MAJOR(ph->version) >= 0x2) {
+ 			ret = __scmi_powercap_cap_get(ph,
+-						      &pinfo->powercaps[domain],
++						      &pinfo->powercaps[domain], CPL0,
+ 						      &pinfo->states[domain].last_pcap);
+ 			if (ret)
+ 				return ret;
+diff --git a/drivers/powercap/arm_scmi_powercap.c b/drivers/powercap/arm_scmi_powercap.c
+index e33829d5c551..90d1fa70b1d4 100644
+--- a/drivers/powercap/arm_scmi_powercap.c
++++ b/drivers/powercap/arm_scmi_powercap.c
+@@ -120,7 +120,7 @@ scmi_powercap_set_root_children_enable_state(struct scmi_powercap_root *pr, bool
+ 
+ 		if (!scmi_powercap_is_control_type_child(spz))
+ 			continue;
+-		if (!spz->info->powercap_cap_config)
++		if (!spz->info->cpli[0].cap_config)
+ 			continue;
+ 		if (prev_state[i] == enable)
+ 			continue;
+@@ -235,7 +235,7 @@ static const struct powercap_zone_ops zone_ops = {
+ };
+ 
+ static void scmi_powercap_normalize_cap(const struct scmi_powercap_zone *spz,
+-					u64 power_limit_uw, u32 *norm)
++					u64 power_limit_uw, int cid, u32 *norm)
+ {
+ 	bool scale_mw = spz->info->powercap_scale_mw;
+ 	u64 val;
+@@ -246,9 +246,9 @@ static void scmi_powercap_normalize_cap(const struct scmi_powercap_zone *spz,
+ 	 * the range [min_power_cap, max_power_cap] whose bounds are assured to
+ 	 * be two unsigned 32bits quantities.
+ 	 */
+-	*norm = clamp_t(u32, val, spz->info->min_power_cap,
+-			spz->info->max_power_cap);
+-	*norm = rounddown(*norm, spz->info->power_cap_step);
++	*norm = clamp_t(u32, val, spz->info->cpli[cid].min_power_cap,
++			spz->info->cpli[cid].max_power_cap);
++	*norm = rounddown(*norm, spz->info->cpli[cid].power_cap_step);
+ 
+ 	val = (scale_mw) ? *norm * 1000 : *norm;
+ 	if (power_limit_uw != val)
+@@ -263,12 +263,12 @@ static int scmi_powercap_set_power_limit_uw(struct powercap_zone *pz, int cid,
+ 	struct scmi_powercap_zone *spz = to_scmi_powercap_zone(pz);
+ 	u32 norm_power;
+ 
+-	if (!spz->info->powercap_cap_config)
++	if (!spz->info->cpli[cid].cap_config)
+ 		return -EINVAL;
+ 
+-	scmi_powercap_normalize_cap(spz, power_uw, &norm_power);
++	scmi_powercap_normalize_cap(spz, power_uw, cid, &norm_power);
+ 
+-	return powercap_ops->cap_set(spz->ph, spz->info->id, norm_power, false);
++	return powercap_ops->cap_set(spz->ph, spz->info->id, cid, norm_power, false);
+ }
+ 
+ static int scmi_powercap_get_power_limit_uw(struct powercap_zone *pz, int cid,
+@@ -278,7 +278,7 @@ static int scmi_powercap_get_power_limit_uw(struct powercap_zone *pz, int cid,
+ 	u32 power;
+ 	int ret;
+ 
+-	ret = powercap_ops->cap_get(spz->ph, spz->info->id, &power);
++	ret = powercap_ops->cap_get(spz->ph, spz->info->id, cid, &power);
+ 	if (ret)
+ 		return ret;
+ 
+@@ -290,19 +290,20 @@ static int scmi_powercap_get_power_limit_uw(struct powercap_zone *pz, int cid,
+ }
+ 
+ static void scmi_powercap_normalize_time(const struct scmi_powercap_zone *spz,
+-					 u64 time_us, u32 *norm)
++					 u64 time_us, int cid, u32 *norm)
+ {
+ 	/*
+ 	 * This cast is lossless since here @time_us is certain to be within the
+-	 * range [min_pai, max_pai] whose bounds are assured to be two unsigned
+-	 * 32bits quantities.
++	 * range [min_avg_ivl, max_avg_ivl] whose bounds are assured to be two
++	 * unsigned 32bits quantities.
+ 	 */
+-	*norm = clamp_t(u32, time_us, spz->info->min_pai, spz->info->max_pai);
+-	*norm = rounddown(*norm, spz->info->pai_step);
++	*norm = clamp_t(u32, time_us, spz->info->cpli[cid].min_avg_ivl,
++			spz->info->cpli[cid].max_avg_ivl);
++	*norm = rounddown(*norm, spz->info->cpli[cid].avg_ivl_step);
+ 
+ 	if (time_us != *norm)
+ 		dev_dbg(spz->dev,
+-			"Normalized %s:PAI - requested:%llu - normalized:%u\n",
++			"Normalized %s:AVG_IVL - requested:%llu - normalized:%u\n",
+ 			spz->info->name, time_us, *norm);
+ }
+ 
+@@ -312,12 +313,13 @@ static int scmi_powercap_set_time_window_us(struct powercap_zone *pz, int cid,
+ 	struct scmi_powercap_zone *spz = to_scmi_powercap_zone(pz);
+ 	u32 norm_pai;
+ 
+-	if (!spz->info->powercap_pai_config)
++	if (!spz->info->cpli[cid].avg_ivl_config)
+ 		return -EINVAL;
+ 
+-	scmi_powercap_normalize_time(spz, time_window_us, &norm_pai);
++	scmi_powercap_normalize_time(spz, time_window_us, cid, &norm_pai);
+ 
+-	return powercap_ops->pai_set(spz->ph, spz->info->id, norm_pai);
++	return powercap_ops->avg_interval_set(spz->ph, spz->info->id,
++					      cid, norm_pai);
+ }
+ 
+ static int scmi_powercap_get_time_window_us(struct powercap_zone *pz, int cid,
+@@ -327,7 +329,7 @@ static int scmi_powercap_get_time_window_us(struct powercap_zone *pz, int cid,
+ 	int ret;
+ 	u32 pai;
+ 
+-	ret = powercap_ops->pai_get(spz->ph, spz->info->id, &pai);
++	ret = powercap_ops->avg_interval_get(spz->ph, spz->info->id, cid, &pai);
+ 	if (ret)
+ 		return ret;
+ 
+@@ -341,7 +343,7 @@ static int scmi_powercap_get_max_power_uw(struct powercap_zone *pz, int cid,
+ {
+ 	struct scmi_powercap_zone *spz = to_scmi_powercap_zone(pz);
+ 
+-	*max_power_uw = spz->info->max_power_cap;
++	*max_power_uw = spz->info->cpli[cid].max_power_cap;
+ 	if (spz->info->powercap_scale_mw)
+ 		*max_power_uw *= 1000;
+ 
+@@ -353,7 +355,7 @@ static int scmi_powercap_get_min_power_uw(struct powercap_zone *pz, int cid,
+ {
+ 	struct scmi_powercap_zone *spz = to_scmi_powercap_zone(pz);
+ 
+-	*min_power_uw = spz->info->min_power_cap;
++	*min_power_uw = spz->info->cpli[cid].min_power_cap;
+ 	if (spz->info->powercap_scale_mw)
+ 		*min_power_uw *= 1000;
+ 
+@@ -365,7 +367,7 @@ static int scmi_powercap_get_max_time_window_us(struct powercap_zone *pz,
+ {
+ 	struct scmi_powercap_zone *spz = to_scmi_powercap_zone(pz);
+ 
+-	*time_window_us = spz->info->max_pai;
++	*time_window_us = spz->info->cpli[cid].max_avg_ivl;
+ 
+ 	return 0;
+ }
+@@ -375,14 +377,16 @@ static int scmi_powercap_get_min_time_window_us(struct powercap_zone *pz,
+ {
+ 	struct scmi_powercap_zone *spz = to_scmi_powercap_zone(pz);
+ 
+-	*time_window_us = (u64)spz->info->min_pai;
++	*time_window_us = (u64)spz->info->cpli[cid].min_avg_ivl;
+ 
+ 	return 0;
+ }
+ 
+ static const char *scmi_powercap_get_name(struct powercap_zone *pz, int cid)
+ {
+-	return "SCMI power-cap";
++	struct scmi_powercap_zone *spz = to_scmi_powercap_zone(pz);
++
++	return spz->info->cpli[cid].name;
+ }
+ 
+ static const struct powercap_zone_constraint_ops constraint_ops  = {
+diff --git a/include/linux/scmi_protocol.h b/include/linux/scmi_protocol.h
+index 5ab73b1ab9aa..ecd99b24ae92 100644
+--- a/include/linux/scmi_protocol.h
++++ b/include/linux/scmi_protocol.h
+@@ -2,7 +2,7 @@
+ /*
+  * SCMI Message Protocol driver header
+  *
+- * Copyright (C) 2018-2021 ARM Ltd.
++ * Copyright (C) 2018-2026 ARM Ltd.
+  */
+ 
+ #ifndef _LINUX_SCMI_PROTOCOL_H
+@@ -613,6 +613,35 @@ struct scmi_voltage_proto_ops {
+ 			 s32 *volt_uV);
+ };
+ 
++/**
++ * struct scmi_powercap_cpl_info  - Describe one CPL - Concurrent Powercap Limit
++ *
++ * @id: CPL ID as advertised by the platform.
++ * @cap_config: CAP configuration support for this CPL.
++ * @min_power_cap: Minimum configurable CAP.
++ * @max_power_cap: Maximum configurable CAP.
++ * @power_cap_step: Step size between two consecutive CAP values.
++ * @avg_ivl_config: Powercap averaging interval configuration support.
++ * @min_avg_ivl: Minimum configurable powercap averaging interval.
++ * @max_avg_ivl: Maximum configurable powercap averaging interval.
++ * @avg_ivl_step: Step size between two consecutive averaging intervals.
++ * @name: name assigned to the Powercap Domain by platform.
++ * @fc_info: Reference to the FastChannels descriptors supported by this CPL
++ */
++struct scmi_powercap_cpl_info {
++	unsigned int id;
++	bool cap_config;
++	unsigned int min_power_cap;
++	unsigned int max_power_cap;
++	unsigned int power_cap_step;
++	bool avg_ivl_config;
++	unsigned int min_avg_ivl;
++	unsigned int max_avg_ivl;
++	unsigned int avg_ivl_step;
++	char name[SCMI_SHORT_NAME_MAX_SIZE];
++	struct scmi_fc_info *fc_info;
++};
++
+ /**
+  * struct scmi_powercap_info  - Describe one available Powercap domain
+  *
+@@ -621,21 +650,15 @@ struct scmi_voltage_proto_ops {
+  * @notify_powercap_measurement_change: MEASUREMENTS change notifications
+  *				       support.
+  * @async_powercap_cap_set: Asynchronous CAP set support.
+- * @powercap_cap_config: CAP configuration support.
+  * @powercap_monitoring: Monitoring (measurements) support.
+- * @powercap_pai_config: PAI configuration support.
+  * @powercap_scale_mw: Domain reports power data in milliwatt units.
+  * @powercap_scale_uw: Domain reports power data in microwatt units.
+  *		       Note that, when both @powercap_scale_mw and
+  *		       @powercap_scale_uw are set to false, the domain
+  *		       reports power data on an abstract linear scale.
++ * @extended_names: Support for long names.
++ * @fastchannels: Support for at least one fastchannel,
+  * @name: name assigned to the Powercap Domain by platform.
+- * @min_pai: Minimum configurable PAI.
+- * @max_pai: Maximum configurable PAI.
+- * @pai_step: Step size between two consecutive PAI values.
+- * @min_power_cap: Minimum configurable CAP.
+- * @max_power_cap: Maximum configurable CAP.
+- * @power_cap_step: Step size between two consecutive CAP values.
+  * @sustainable_power: Maximum sustainable power consumption for this domain
+  *		       under normal conditions.
+  * @accuracy: The accuracy with which the power is measured and reported in
+@@ -643,30 +666,25 @@ struct scmi_voltage_proto_ops {
+  * @parent_id: Identifier of the containing parent power capping domain, or the
+  *	       value 0xFFFFFFFF if this powercap domain is a root domain not
+  *	       contained in any other domain.
++ * @num_cpli: Number of discovered CPLs.
++ * @cpli: Reference to an array holding descriptors to all the discovered CPLs.
+  */
+ struct scmi_powercap_info {
+ 	unsigned int id;
+ 	bool notify_powercap_cap_change;
+ 	bool notify_powercap_measurement_change;
+ 	bool async_powercap_cap_set;
+-	bool powercap_cap_config;
+ 	bool powercap_monitoring;
+-	bool powercap_pai_config;
+ 	bool powercap_scale_mw;
+ 	bool powercap_scale_uw;
+ 	bool fastchannels;
+ 	char name[SCMI_MAX_STR_SIZE];
+-	unsigned int min_pai;
+-	unsigned int max_pai;
+-	unsigned int pai_step;
+-	unsigned int min_power_cap;
+-	unsigned int max_power_cap;
+-	unsigned int power_cap_step;
+ 	unsigned int sustainable_power;
+ 	unsigned int accuracy;
+ #define SCMI_POWERCAP_ROOT_ZONE_ID     0xFFFFFFFFUL
+ 	unsigned int parent_id;
+-	struct scmi_fc_info *fc_info;
++	unsigned int num_cpli;
++	struct scmi_powercap_cpl_info *cpli;
+ };
+ 
+ /**
+@@ -695,8 +713,12 @@ struct scmi_powercap_info {
+  *		    on the system: for this reason @cap_get and @cap_enable_get
+  *		    will always report the final platform view of the powercaps.
+  * @cap_enable_get: get the current CAP enable status for the specified domain.
+- * @pai_get: get the current PAI value for the specified domain.
+- * @pai_set: set the PAI value for the specified domain to the provided value.
++ * @avg_interval_get: get the current averaging interval value for the specified
++ *		      domain. This will get the PAI or CAI depending on the used
++ *		      protocol version.
++ * @avg_interval_set: set the current averaging interval value for the specified
++ *		      domain. This will set the PAI or CAI depending on the used
++ *		      protocol version.
+  * @measurements_get: retrieve the current average power measurements for the
+  *		      specified domain and the related PAI upon which is
+  *		      calculated.
+@@ -720,17 +742,17 @@ struct scmi_powercap_proto_ops {
+ 	const struct scmi_powercap_info __must_check *(*info_get)
+ 		(const struct scmi_protocol_handle *ph, u32 domain_id);
+ 	int (*cap_get)(const struct scmi_protocol_handle *ph, u32 domain_id,
+-		       u32 *power_cap);
++		       u32 cpl_id, u32 *power_cap);
+ 	int (*cap_set)(const struct scmi_protocol_handle *ph, u32 domain_id,
+-		       u32 power_cap, bool ignore_dresp);
++		       u32 cpl_id, u32 power_cap, bool ignore_dresp);
+ 	int (*cap_enable_set)(const struct scmi_protocol_handle *ph,
+ 			      u32 domain_id, bool enable);
+ 	int (*cap_enable_get)(const struct scmi_protocol_handle *ph,
+ 			      u32 domain_id, bool *enable);
+-	int (*pai_get)(const struct scmi_protocol_handle *ph, u32 domain_id,
+-		       u32 *pai);
+-	int (*pai_set)(const struct scmi_protocol_handle *ph, u32 domain_id,
+-		       u32 pai);
++	int (*avg_interval_get)(const struct scmi_protocol_handle *ph,
++				u32 domain_id, u32 cpl_id, u32 *val);
++	int (*avg_interval_set)(const struct scmi_protocol_handle *ph,
++				u32 domain_id, u32 cpl_id, u32 val);
+ 	int (*measurements_get)(const struct scmi_protocol_handle *ph,
+ 				u32 domain_id, u32 *average_power, u32 *pai);
+ 	int (*measurements_threshold_set)(const struct scmi_protocol_handle *ph,
 -- 
 2.25.1
 
