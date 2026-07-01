@@ -1,33 +1,33 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9053B282F1B;
-	Wed,  1 Jul 2026 21:38:56 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 740E5282F1B;
+	Wed,  1 Jul 2026 21:40:23 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1782941937; cv=none; b=oTfYFfucc5wf9z3bXMYrhMolyx+NrRCCouca/4wDysby9vqnzn4bBRq7faYLEYEwz0P2NvOkKCId3MyQC1yic6FEEWJxp3qJuCFgKDhyc2sFOP81s7z1zzW/TC+Xfk1B+Auekkugop9YgGo1NXOg7icpaCa6E+UUWmOSL7BgbY4=
+	t=1782942024; cv=none; b=HV+Q3sYz0xZhIuwEypqE5XeXBVkjMBdW1h2A15ey0kGuN4ZYmrCSxx71GBP2uW9FIQK3dZB3u1+r5EnKLPuJa39ol0VL3gI6NWSF3auqQWHM7cGtrVRG74KdZkyg4x7yw8VbY6J4BVtvsifhhw5G1Ot8oaxfowKvugI8d4UBpSE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1782941937; c=relaxed/simple;
-	bh=p7inwEkikDHPBjGDFoiFnrONp8/i9bivq1WwpjfNdH4=;
+	s=arc-20240116; t=1782942024; c=relaxed/simple;
+	bh=PZzeuqPCmB1eNY7dOEhMPK9sqw12cOhCvMQRpwOxku4=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=ILlYZhOkiDRWalmK7KdvL94mbAMWtoiEAw1LzOt5JqPvbmY68oU78E/KCn70Frer7FwLyrTrhDLvydFs4ezud8culdfysVker6DyyIkPW+maLHmQnQyzp4VKYUblzKZryOYbOP8tsh8kqprM3aZk2BeJtzETmtCW6O8EDsiURzk=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=dqIpe07B; arc=none smtp.client-ip=100.103.45.18
+	 In-Reply-To:Content-Type; b=f4oT7ngM5AG5irJHPn5l/Yx82CzTk/tW+kcwKrdLFA18jM+CgxXDoakDuS1R5lOQtxSP+wfO6Bw+TC3nLNa0xAYaNHl7xqLjnpDSqsiULgvnEuN82sSE4/lE6XCGO7z8h80ipd2jHTKYji2Edi8KD/Q3LLUYohtOO1N59sI8X5E=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=SCq/sOkT; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="dqIpe07B"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2F2871F000E9;
-	Wed,  1 Jul 2026 21:38:54 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="SCq/sOkT"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id EBBBA1F000E9;
+	Wed,  1 Jul 2026 21:40:21 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1782941936;
-	bh=OoRUOnIMYYBK4JW+BASzeBpKzSzFajYr5tpR995ygv4=;
+	s=k20260515; t=1782942023;
+	bh=f2TSNTOr28pG9ZvaTCLDevfHgzOLh/rc5rNXG29p8PM=;
 	h=Date:Subject:To:Cc:References:From:In-Reply-To;
-	b=dqIpe07BaDU2woc5NFRXOMun+jXXjdTy21roUiZ/k2ytdeYTWZdRZUwp+BV66iY/x
-	 gA8mbOVVYOt/vD4iQnn8TCtNWU4r68TFKEPpGiA2HP+Qczg9JeksOaEaSyIUZHjgdK
-	 x3uhrJiBtcbkrXX0c4HUdVMCFP9JBR+gSjxZKXVQIqvHXRtpckdAfC3cVERGZTdqo6
-	 dQhxxhjC2a2b7goRkHCPJYB17RtAeGGqy55/1S1mBCwUPsRMdZpD5Fw0btrg7G9hv3
-	 KzovxnB+enbCQmmAohn5wRXlRBaC1uDj6PUP+WZ3IOESEufbJI9+VU+mJZt/3H0EZv
-	 zGJnWH93aF0ig==
-Message-ID: <51ab81bd-4c77-446d-b9ec-afad343f4321@kernel.org>
-Date: Wed, 1 Jul 2026 16:38:52 -0500
+	b=SCq/sOkT45tDAkzdEFwrD/HkginQBUz1Ej4va8PnsL9nRX0nH5CIWdWwyRhbBCF2Z
+	 8V6YwHPkKkApjNku8RGI+bsfR52LVIM2G7/5S/0HFNuOGFcgqrUdvycRV5FIalks2W
+	 cBVSAvc6LtoQ2gPbX0EniXgbF4O8ZhxNNp59VbxP1eQMd2iTiC42sd8eYD6ErBg0FR
+	 AcEcAkRb6Qq8AceLsauO5oDx/KW24ycJJYAtZaBaz2eo0J8URrjdagQQXvjgJowU7Y
+	 vBH1s2JB9QhxpCMHqmntUZBE3kyUHDQ9w0dJ2MlDvxEs4jGEEcebm3EpDF3eyZcCap
+	 lYnEj1f1/Ht9Q==
+Message-ID: <8155d7c7-2a10-4fec-bfde-0aeb017724ac@kernel.org>
+Date: Wed, 1 Jul 2026 16:40:20 -0500
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -35,8 +35,8 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [RFC PATCH 5/6] cpufreq/amd-pstate: Reduce the scope of exported
- symbols
+Subject: Re: [RFC PATCH 3/6] cpufreq/amd-pstate: Repurpose "amd_dynamic_epp"
+ cmdline and corresponding sysfs
 Content-Language: en-US
 To: K Prateek Nayak <kprateek.nayak@amd.com>,
  "Rafael J. Wysocki" <rafael@kernel.org>,
@@ -44,111 +44,135 @@ To: K Prateek Nayak <kprateek.nayak@amd.com>,
 Cc: Perry Yuan <perry.yuan@amd.com>, linux-pm@vger.kernel.org,
  linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org
 References: <20260630185904.5602-1-kprateek.nayak@amd.com>
- <20260630190304.5671-2-kprateek.nayak@amd.com>
+ <20260630185904.5602-4-kprateek.nayak@amd.com>
 From: Mario Limonciello <superm1@kernel.org>
-In-Reply-To: <20260630190304.5671-2-kprateek.nayak@amd.com>
+In-Reply-To: <20260630185904.5602-4-kprateek.nayak@amd.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 
 
 
-On 6/30/26 14:03, K Prateek Nayak wrote:
-> Symbols exported by amd-pstate.c are ever only needed for amd-pstate-ut.
-> Introduce EXPORT_SYMBOL_FOR_PSTATE_UT() to export these symbols
-> selectively to "amd-pstate-ut" namespace as opposed to all GPL modules.
+On 6/30/26 13:59, K Prateek Nayak wrote:
+> Since dynamic_epp has been converted to an
+> "energy_performance_preference", toggling the feature via the sysfs file
+> is now redundant.
 > 
-> No functional changes intended.
+> Repurpose "amd_dynamic_epp=enable" command line to opt into dynamic EPP
+> by default when the active driver is loaded, or switched into. The
+> "disable" counterpart will "dynamic" option out of
+> "energyy_performance_preference" to ensure dynamic EPP feature can never
+> be toggled.
+> 
+> Use a tri-state enum to differentiate if the user has supplied a command
+> line parameter or not to enable the feature by default vs keeping the
+> current defaults as is and allowing users to toggle it later via the
+> "dynamic" option in "energy_performance_preference" selection.
 > 
 > Signed-off-by: K Prateek Nayak <kprateek.nayak@amd.com>
-Reviewed-by: Mario Limonciello (AMD) <superm1@kernel.org>
+
+Honestly - I have to question if we even want to have the kernel command 
+line option anymore.  If userspace can easily opt in and out as in this 
+series, do we still need a kernel command line for default policy?
+
+I'm of the opinion rip it out, less to maintain.
+
 > ---
->   drivers/cpufreq/amd-pstate.c | 14 +++++++-------
->   drivers/cpufreq/amd-pstate.h |  7 +++++++
->   2 files changed, 14 insertions(+), 7 deletions(-)
+>   drivers/cpufreq/amd-pstate.c | 48 +++++++++---------------------------
+>   1 file changed, 12 insertions(+), 36 deletions(-)
 > 
 > diff --git a/drivers/cpufreq/amd-pstate.c b/drivers/cpufreq/amd-pstate.c
-> index 61f30820d95a..44c03b0be219 100644
+> index c7eec6b96dcc..61f30820d95a 100644
 > --- a/drivers/cpufreq/amd-pstate.c
 > +++ b/drivers/cpufreq/amd-pstate.c
-> @@ -75,7 +75,7 @@ const char *amd_pstate_get_mode_string(enum amd_pstate_mode mode)
->   		mode = AMD_PSTATE_UNDEFINED;
->   	return amd_pstate_mode_string[mode];
->   }
-> -EXPORT_SYMBOL_GPL(amd_pstate_get_mode_string);
-> +EXPORT_SYMBOL_FOR_PSTATE_UT(amd_pstate_get_mode_string);
+> @@ -82,12 +82,18 @@ struct quirk_entry {
+>   	u32 lowest_freq;
+>   };
 >   
->   struct quirk_entry {
->   	u32 nominal_freq;
-> @@ -1266,7 +1266,7 @@ void amd_pstate_clear_dynamic_epp(struct cpufreq_policy *policy)
->   	kfree(cpudata->profile_name);
->   	cpudata->dynamic_epp = false;
->   }
-> -EXPORT_SYMBOL_GPL(amd_pstate_clear_dynamic_epp);
-> +EXPORT_SYMBOL_FOR_PSTATE_UT(amd_pstate_clear_dynamic_epp);
+> +enum dynamic_epp_state {
+> +	DYNAMIC_EPP_USER_TOGGLE = -1,	/* User can toggle dynamic EPP. (Default) */
+> +	DYNAMIC_EPP_DISABLED,		/* Dynamic EPP disabled from command line. */
+> +	DYNAMIC_EPP_DEFAULT_ENABLED,	/* Dynamic EPP enabled from command line. */
+> +};
+> +
+> +static enum dynamic_epp_state dynamic_epp = DYNAMIC_EPP_USER_TOGGLE;
+>   static struct cpufreq_driver *current_pstate_driver;
+>   static struct cpufreq_driver amd_pstate_driver;
+>   static struct cpufreq_driver amd_pstate_epp_driver;
+>   static int cppc_state = AMD_PSTATE_UNDEFINED;
+>   static bool amd_pstate_prefcore = true;
+> -static bool dynamic_epp;
+>   static struct quirk_entry *quirks;
 >   
->   static int amd_pstate_set_dynamic_epp(struct cpufreq_policy *policy)
+>   /*
+> @@ -1839,39 +1845,9 @@ static ssize_t dynamic_epp_show(struct device *dev,
+>   	return sysfs_emit(buf, "%s\n", str_enabled_disabled(dynamic_epp));
+>   }
+>   
+> -static ssize_t dynamic_epp_store(struct device *a, struct device_attribute *b,
+> -				 const char *buf, size_t count)
+> -{
+> -	bool enabled;
+> -	int ret;
+> -
+> -	ret = kstrtobool(buf, &enabled);
+> -	if (ret)
+> -		return ret;
+> -
+> -	guard(mutex)(&amd_pstate_driver_lock);
+> -
+> -	if (cppc_state != AMD_PSTATE_ACTIVE) {
+> -		pr_debug("dynamic_epp can only be toggled in active mode\n");
+> -		return -EINVAL;
+> -	}
+> -
+> -	/* Nothing to do */
+> -	if (dynamic_epp == enabled)
+> -		return count;
+> -
+> -	/* reinitialize with desired dynamic EPP value */
+> -	dynamic_epp = enabled;
+> -	ret = amd_pstate_change_driver_mode(cppc_state);
+> -	if (ret)
+> -		dynamic_epp = false;
+> -
+> -	return ret ? ret : count;
+> -}
+> -
+>   static DEVICE_ATTR_RW(status);
+>   static DEVICE_ATTR_RO(prefcore);
+> -static DEVICE_ATTR_RW(dynamic_epp);
+> +static DEVICE_ATTR_RO(dynamic_epp);
+>   
+>   static struct attribute *pstate_global_attributes[] = {
+>   	&dev_attr_status.attr,
+> @@ -1983,7 +1959,7 @@ static int amd_pstate_epp_cpu_init(struct cpufreq_policy *policy)
+>   		cpudata->current_profile = PLATFORM_PROFILE_BALANCED;
+>   	}
+>   
+> -	if (dynamic_epp) {
+> +	if (dynamic_epp == DYNAMIC_EPP_DEFAULT_ENABLED) {
+>   		/* Dynamic EPP is only available with the POWERSAVE policy. */
+>   		policy->policy = CPUFREQ_POLICY_POWERSAVE;
+>   		ret = amd_pstate_set_dynamic_epp(policy);
+> @@ -2076,7 +2052,7 @@ static int amd_pstate_epp_set_policy(struct cpufreq_policy *policy)
+>   		 * If dynamic_epp is enabled by default, toggle it on
+>   		 * when switching to CPUFREQ_POLICY_POWERSAVE.
+>   		 */
+> -		if (dynamic_epp) {
+> +		if (dynamic_epp == DYNAMIC_EPP_DEFAULT_ENABLED) {
+>   			WARN_ON_ONCE(policy->policy != CPUFREQ_POLICY_POWERSAVE);
+>   
+>   			cpudata->current_profile = PLATFORM_PROFILE_BALANCED;
+> @@ -2410,9 +2386,9 @@ static int __init amd_prefcore_param(char *str)
+>   static int __init amd_dynamic_epp_param(char *str)
 >   {
-> @@ -1472,7 +1472,7 @@ ssize_t store_energy_performance_preference(struct cpufreq_policy *policy,
->   
->   	return count;
->   }
-> -EXPORT_SYMBOL_GPL(store_energy_performance_preference);
-> +EXPORT_SYMBOL_FOR_PSTATE_UT(store_energy_performance_preference);
->   
->   ssize_t show_energy_performance_preference(struct cpufreq_policy *policy, char *buf)
->   {
-> @@ -1506,7 +1506,7 @@ ssize_t show_energy_performance_preference(struct cpufreq_policy *policy, char *
->   
->   	return sysfs_emit(buf, "%s\n", energy_perf_strings[preference]);
->   }
-> -EXPORT_SYMBOL_GPL(show_energy_performance_preference);
-> +EXPORT_SYMBOL_FOR_PSTATE_UT(show_energy_performance_preference);
->   
->   static ssize_t store_amd_pstate_floor_freq(struct cpufreq_policy *policy,
->   					   const char *buf, size_t count)
-> @@ -1606,7 +1606,7 @@ struct freq_attr **amd_pstate_get_current_attrs(void)
->   		return NULL;
->   	return current_pstate_driver->attr;
->   }
-> -EXPORT_SYMBOL_GPL(amd_pstate_get_current_attrs);
-> +EXPORT_SYMBOL_FOR_PSTATE_UT(amd_pstate_get_current_attrs);
->   
->   static struct freq_attr **get_freq_attrs(void)
->   {
-> @@ -1791,7 +1791,7 @@ int amd_pstate_get_status(void)
->   {
->   	return cppc_state;
->   }
-> -EXPORT_SYMBOL_GPL(amd_pstate_get_status);
-> +EXPORT_SYMBOL_FOR_PSTATE_UT(amd_pstate_get_status);
->   
->   int amd_pstate_update_status(const char *buf, size_t size)
->   {
-> @@ -1811,7 +1811,7 @@ int amd_pstate_update_status(const char *buf, size_t size)
+>   	if (!strcmp(str, "disable"))
+> -		dynamic_epp = false;
+> +		dynamic_epp = DYNAMIC_EPP_DISABLED;
+>   	if (!strcmp(str, "enable"))
+> -		dynamic_epp = true;
+> +		dynamic_epp = DYNAMIC_EPP_DEFAULT_ENABLED;
 >   
 >   	return 0;
 >   }
-> -EXPORT_SYMBOL_GPL(amd_pstate_update_status);
-> +EXPORT_SYMBOL_FOR_PSTATE_UT(amd_pstate_update_status);
->   
->   static ssize_t status_show(struct device *dev,
->   			   struct device_attribute *attr, char *buf)
-> diff --git a/drivers/cpufreq/amd-pstate.h b/drivers/cpufreq/amd-pstate.h
-> index 23e8baa05849..edd697a5e29f 100644
-> --- a/drivers/cpufreq/amd-pstate.h
-> +++ b/drivers/cpufreq/amd-pstate.h
-> @@ -11,6 +11,13 @@
->   #include <linux/pm_qos.h>
->   #include <linux/platform_profile.h>
->   
-> +#if IS_MODULE(CONFIG_X86_AMD_PSTATE_UT)
-> +#define EXPORT_SYMBOL_FOR_PSTATE_UT(symbol) \
-> +	EXPORT_SYMBOL_FOR_MODULES(symbol, "amd-pstate-ut")
-> +#else
-> +#define EXPORT_SYMBOL_FOR_PSTATE_UT(symbol)
-> +#endif
-> +
->   /*********************************************************************
->    *                        AMD P-state INTERFACE                       *
->    *********************************************************************/
 
