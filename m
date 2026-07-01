@@ -1,69 +1,62 @@
-Received: from m16.mail.163.com (m16.mail.163.com [117.135.210.2])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 81558356742;
-	Wed,  1 Jul 2026 06:54:11 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=117.135.210.2
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1A5DA386C24;
+	Wed,  1 Jul 2026 07:20:39 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1782888854; cv=none; b=iv/bxTXzgEySiySU3BRZwmqYE5J9+8ppCxuPGffAj3qrbWGl/f7rcR/rGiko4jvWFMgIfVaAGiR5MV96XXwBWn0MqEbiODxam7Ydub7j8A6nctzRaOuogI/4rm9rkq9/uSXG0Ua6Jqmehzbt4Z2rvdNTvA7dqqPiyiV17/tG5S8=
+	t=1782890441; cv=none; b=Rn0Kdo8gbzYtDzgKBPro/+SblQyTgfOhVaVjtrit2nKIQoKMkDrNo+LZKyR2Ec4KxluRiCD7p0/smHW/FhmCPoq6nzPYIwHyLyiN/ZRIeI5HyAo9Y0qcskzQfnqwnDFY+lxeTBFbUYjybl6PRXH0WACJ2XANNDcHq5TzeUFpwik=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1782888854; c=relaxed/simple;
-	bh=xIElgnFq8EtClhTLuOhn5pq6PlA2nac0VFPId7TvFK8=;
-	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=fExfP8ly9+R57dYtNtmRYpjOcJu7k1ognY9l3c8cv7scq2DOBo4YB1QjIfTQTiESLl6IoHoclsIxFU5Tax7E2YHzDVAIwCWMMC0Ck6ah6hKwR5flH03OkC1D4tG3e1qplHMGC0oQq58Jxqz+eGX3K6Y0R1vAs8CUzHtH6NZlMFU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=163.com; spf=pass smtp.mailfrom=163.com; dkim=pass (1024-bit key) header.d=163.com header.i=@163.com header.b=no4srl6i; arc=none smtp.client-ip=117.135.210.2
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=163.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=163.com
+	s=arc-20240116; t=1782890441; c=relaxed/simple;
+	bh=bOcwdlvrB8Ehn5Csie4Yehgl0UKcGfcP3sIJAIKz/OA=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=bQJuAje71riPVuR9RhAwEZF7hqsg4bulP5sapq9c5Q4lLOGVDkG4IJDx11cuAswvYYor4BXSXBGoOsQa1L7RdVboQEBGH5dOa/2s0t4b2gZriSo38NugK4NdNzc7PPKqse7V2r5d5mMIoBy1rFyk97kOdXClaYzFXU7GBgF8wMc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b=dKMCi26D; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=163.com header.i=@163.com header.b="no4srl6i"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=163.com;
-	s=s110527; h=From:To:Subject:Date:Message-Id:MIME-Version:
-	Content-Type; bh=xIElgnFq8EtClhTLuOhn5pq6PlA2nac0VFPId7TvFK8=;
-	b=no4srl6iYned6xWUc5UESnHFkh5ANMnGlbzNhIFfTc1enfYpoA4XZAPptaM+L4
-	Hu1aQ7Tmac0FAS2pXPgs8SB7WzUK1aYDRcW99wFPQ87xXd7oskuq9JS3IFACapue
-	1wC1P4PyR6Ie8vmNQAI9udPLaNhZBTiaKZVYsDZIw6tTY=
-Received: from QD202103290168A.neusoft.internal (unknown [])
-	by gzga-smtp-mtada-g0-2 (Coremail) with SMTP id _____wCX3EdZuURq2kJRGw--.64373S2;
-	Wed, 01 Jul 2026 14:53:15 +0800 (CST)
-From: Jianing Li <m13940358460@163.com>
-To: Greg KH <gregkh@linuxfoundation.org>
-Cc: Jianing Li <m13940358460@163.com>,
-	Sebastian Reichel <sre@kernel.org>,
-	Iskren Chernev <me@iskren.info>,
-	Krzysztof Kozlowski <krzk@kernel.org>,
-	Marek Szyprowski <m.szyprowski@samsung.com>,
-	Matheus Castello <matheus@castello.eng.br>,
-	linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	stable@vger.kernel.org
-Subject: Re: [PATCH] power: supply: max17040: handle missing status supplier
-Date: Wed,  1 Jul 2026 14:52:55 +0800
-Message-Id: <20260701065255.1073-1-m13940358460@163.com>
-X-Mailer: git-send-email 2.23.0.windows.1
-In-Reply-To: <2026070115-equate-shimmy-5f19@gregkh>
-References: <20260701012101.782-1-m13940358460@163.com> <2026070115-equate-shimmy-5f19@gregkh>
+	dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b="dKMCi26D"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3D1151F000E9;
+	Wed,  1 Jul 2026 07:20:39 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linuxfoundation.org;
+	s=korg; t=1782890439;
+	bh=aDsZvo1S7Yg7bB8Qh4hUT2oygbCaSH+pPQ6xt1kwzg0=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=dKMCi26DaBx3zYW/1o17Cj5agyQuEXODWD0xV2Q8BDJW+F+1roSo18SP95XCOygGH
+	 IjcEAwvxpP1BNLRGyiFhCKvL2VSHDQ1znana+XHzyxzKarp9uQzFSn2uT9xV5V/Pqz
+	 gd8Op5Qt8aMtEHVN/dhXZ3ZEpdMWEVPrn3iXuWwQ=
+Date: Wed, 1 Jul 2026 09:19:25 +0200
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+To: Tzung-Bi Shih <tzungbi@kernel.org>
+Cc: Jonathan Corbet <corbet@lwn.net>,
+	"Rafael J. Wysocki" <rafael@kernel.org>,
+	Danilo Krummrich <dakr@kernel.org>,
+	Shuah Khan <skhan@linuxfoundation.org>,
+	Pavel Machek <pavel@kernel.org>, Len Brown <lenb@kernel.org>,
+	linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linux-pm@vger.kernel.org, driver-core@lists.linux.dev,
+	tfiga@chromium.org, senozhatsky@chromium.org,
+	Randy Dunlap <rdunlap@infradead.org>
+Subject: Re: [PATCH v5 1/2] PM: sleep: Rename module parameters prefix to
+ "pm_sleep"
+Message-ID: <2026070110-unrented-crummiest-d6af@gregkh>
+References: <20260701045640.3130090-1-tzungbi@kernel.org>
+ <20260701045640.3130090-2-tzungbi@kernel.org>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-CM-TRANSID:_____wCX3EdZuURq2kJRGw--.64373S2
-X-Coremail-Antispam: 1Uf129KBjDUn29KB7ZKAUJUUUUU529EdanIXcx71UUUUU7v73
-	VFW2AGmfu7bjvjm3AaLaJ3UbIYCTnIWIevJa73UjIFyTuYvjTRG_M3UUUUU
-X-CM-SenderInfo: jprtmkaqtvmkiwq6il2tof0z/xtbC-BswampEuVsInQAA3k
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260701045640.3130090-2-tzungbi@kernel.org>
 
-Hi Greg,
+On Wed, Jul 01, 2026 at 04:56:39AM +0000, Tzung-Bi Shih wrote:
+> Currently, the module parameters defined in drivers/base/power/main.c
+> use the default prefix "main" (derived from the filename).  The prefix
+> is too generic and non-descriptive.
+> 
+> Redefine MODULE_PARAM_PREFIX to "pm_sleep." to group the module
+> parameters under the namespace instead.  This makes the parameters more
+> descriptive.
 
-Sorry for the duplicate submissions. There was network instability on my
-side, and I mistakenly thought the previous attempts had not been sent
-successfully.
-
-My real name is Jianing Li (李加宁). I sent a v2 with the From and
-Signed-off-by fields fixed.
-
-Thanks,
-Jianing
-
+You just changed the user/kernel api, right?  That will break things...
