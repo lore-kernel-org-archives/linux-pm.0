@@ -1,38 +1,37 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5B9BF11CA9;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5BA16175A72;
 	Wed,  1 Jul 2026 00:34:35 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1782866075; cv=none; b=VJlKJ+TgFRTGKQC/DcXiK6qkO3veTMiBm3SwcjTiEKXNL1lqcQsPM+O8R35tZxK0zltA3FiMuSAdai5rWY4ZAwHxqM8QetozNPC4wvXK3IEmRy+GpJ6U/dbIyBohQJU+IfKq6bGkL/70mCEwKn/k/3po5LEISJ4AdPOv09UuMU4=
+	t=1782866075; cv=none; b=mcOYm7UFU5+Ad2/lGN5vxFM/RUY8e6gjVjnvsodWutQiG5zpk+45TS3Lc73fJ7GDetWHp56E8QgvktGSHlpa0wMqSsQAQFJ1EEKu9ZeJhrapinMgu3v6RR1Ejg0b2T5Ie//t2w8uq3dHjH7bT4BeTJ/ILePZM5yCypc4HJw3X4c=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1782866075; c=relaxed/simple;
-	bh=3OJgRHe9Sd6n6S8VAOpjifbG3KgrcWmYMylguKBPZTM=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=eez5RW8jFJG/lX0JorxzJuBBHBCzLiTVLiO19fJzTe4OA5O047A1wUHBGaDJU+VSNwiUraGFjsRQVpP44sqlffqxPxA7ByWevG2LMctIVBYzsporlk/6WdcThmvGu/MuLW43pN+8UPA35s1wwgRA4EpXbvRxklpAdb+iyn5WiWE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=YF/4N3dc; arc=none smtp.client-ip=10.30.226.201
+	bh=I4vg6DHHr5+EusWxauGftveS+8tdCcuVGW8aXCIpIUg=;
+	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=ffw2zOeetjBIpPw6yj3HQfgt7LAm6onl7KPHs44ifwC/4gpPxyTtPhZPNFRBSJ3O8GYCUHdf/M4LpyBO/Dl751SAjkgWaDSD6KzYPoVZehkCzx6UyFf/96BLMqwiI5yirM6Fyw8/TpyZ9WlhMZtjJzD7pAK0CnHWAW5L6loOqts=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=i7rwfEcB; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="YF/4N3dc"
-Received: by smtp.kernel.org (Postfix) with ESMTPS id E103CC2BCF4;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="i7rwfEcB"
+Received: by smtp.kernel.org (Postfix) with ESMTPS id DC6D2C2BCB9;
 	Wed,  1 Jul 2026 00:34:34 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
 	s=k20201202; t=1782866075;
-	bh=3OJgRHe9Sd6n6S8VAOpjifbG3KgrcWmYMylguKBPZTM=;
-	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
-	b=YF/4N3dcZHf658oD/y10nwj/6meXTTHLZXokWqFhOPfaa5GA5BK5W8Fqy+EMPt8qh
-	 Bzl1AS0PIERXvIMt1wbJ4rzePMlNHzJIPHEJs1o2xVVBiyCJezMw+x6zOc+HOIcVeQ
-	 J+oE0+3schc3dJk9NbhyQ7nvZpw0ir7/Tsnl8CiSsaUw3e0ZCH5JkejhLeiDEfWHmE
-	 VMp0bj6TCVxfglUWRfjXxPCz4AU+n6NX5lG1escnFF95SoVWU3x29thzksZQxq1W3/
-	 NPsAk4/lElo4MoqHhm8VVzJD4QCUgcqxtIPqpHMTfQTz1P9WK5WbGZ21g/UlOjR7c7
-	 MOuqEZr2pmZ8w==
+	bh=I4vg6DHHr5+EusWxauGftveS+8tdCcuVGW8aXCIpIUg=;
+	h=From:Subject:Date:To:Cc:Reply-To:From;
+	b=i7rwfEcBRychZ4ftgkmL2TRoCFHAN/j3lrT2AbzqaJtZM6scovcXpeolddo5D5FXk
+	 9xJOQ7eLH2cdfxFWXzl3yH5nK+jqCcqSbYZ5tgQf5aft4d5oiFDccVdRvrVT08jNXu
+	 B+lD5P/HLAtKISmcpeSOdEVZmT3Uem6IkDNYfWtu0mGSygRgvlQtKzIn88/28Nw3Li
+	 QLW7wEib6BHdncpm2iip47wzCHSi4uvgRrDTSJ6jkU2cZjvtbehPNoEWnlW8EYBEYm
+	 Jo0+eijiBQZRcBqnvxh9go+r0w2T01n8pIZ4U3koVWmQC26Ksgy2Xj3fxQy1SvDHlx
+	 Tznw3g900RdbQ==
 Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CE163C43327;
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BD521C43458;
 	Wed,  1 Jul 2026 00:34:34 +0000 (UTC)
 From: Amit Sunil Dhamne via B4 Relay <devnull+amitsd.google.com@kernel.org>
-Date: Wed, 01 Jul 2026 00:34:18 +0000
-Subject: [PATCH v4 1/2] power: supply: Add helpers to get and put arrays of
- power supply handles
+Subject: [PATCH v4 0/2] Add support for Battery Status AMS
+Date: Wed, 01 Jul 2026 00:34:17 +0000
+Message-Id: <20260701-batt-status-v4-0-a31d97b1ae57@google.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -41,9 +40,11 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260701-batt-status-v4-1-a31d97b1ae57@google.com>
-References: <20260701-batt-status-v4-0-a31d97b1ae57@google.com>
-In-Reply-To: <20260701-batt-status-v4-0-a31d97b1ae57@google.com>
+X-B4-Tracking: v=1; b=H4sIAIlgRGoC/2XM0Q6CIBiG4VtxHEfj/1WwjrqP1gEgKFtJE2I15
+ 72Hrq1ch9+3Pe9EghmdCeRYTGQ0yQXnhzyqXUF0L4fOUNfmTZAhZzUDqmSMNEQZH4ECV1xw0Ew
+ pIFncR2Pdc62dL3n3LkQ/vtZ4guX9dKDedBJQRq1puRJto40Up8777mr22t/IEkr4g1FsMWZcY
+ YOHpgZe2/IPl1/MGW5xmbEUGjQKsKViGzzP8xv9eXt7IQEAAA==
+X-Change-ID: 20260501-batt-status-16b6761c0bb1
 To: Sebastian Reichel <sre@kernel.org>, 
  Badhri Jagan Sridharan <badhri@google.com>, 
  Heikki Krogerus <heikki.krogerus@linux.intel.com>, 
@@ -59,11 +60,11 @@ Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
  Peter Griffin <peter.griffin@linaro.org>, RD Babiera <rdbabiera@google.com>, 
  Kyle Tso <kyletso@google.com>, Amit Sunil Dhamne <amitsd@google.com>
 X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1782866074; l=6221;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1782866074; l=4318;
  i=amitsd@google.com; s=20241031; h=from:subject:message-id;
- bh=gvdYw83SlBQnEVfW0ZcpDG4WOMw9avUKEx52LOGumVc=;
- b=H32nRc+fa+3ucffN0tuPR0ZsFUV7cTi3WBdtCNh9Mp3KrR/s58OiTkRIUWhYuJa3veQCU6K2/
- aDCyp/1jsJQCR3xNq9VKS9cXClcrX5tclQjG4mj81u0Tn7FEi/NnJcE
+ bh=I4vg6DHHr5+EusWxauGftveS+8tdCcuVGW8aXCIpIUg=;
+ b=zIZTUkZ4++xujArdDEEYsTgx53+ayCTfNkK8ZYjL8gozj23582K/mYC9ln4kdEG8XzHUtGCEo
+ gVxrV1+SwqTD5HHZGW/erHGisaWpHuljgmqLTgQReXjnoGhGOiae14C
 X-Developer-Key: i=amitsd@google.com; a=ed25519;
  pk=wD+XZSST4dmnNZf62/lqJpLm7fiyT8iv462zmQ3H6bI=
 X-Endpoint-Received: by B4 Relay for amitsd@google.com/20241031 with
@@ -71,216 +72,98 @@ X-Endpoint-Received: by B4 Relay for amitsd@google.com/20241031 with
 X-Original-From: Amit Sunil Dhamne <amitsd@google.com>
 Reply-To: amitsd@google.com
 
-From: Amit Sunil Dhamne <amitsd@google.com>
+PD 3.1 v1.8 Spec necessitates a response to Get_Battery_Status request
+from the port partner (see "6.13.2 Applicability of Data Message").
+This patchset adds support to get all the battery type power supplies
+and query them to report the telemetry required to build a Battery
+Status Message. Right now, this submission assumes all the battery type
+power supplies that exist in the system are fixed (meaning cannot be hot
+swapped).
 
-Add power_supply_get_system_batteries() to allow drivers to obtain
-a list of registered battery type power supply references in the
-system. Also add power_supply_put_system_batteries() to perform
-cleanup after the former function is called.
+Previously, I had sent a patch series [1]. However there were some
+concerns. Broadly:
+  * No client drivers
+  * Duplicating dt properties
+To address the above issues, we now have Fuel Gauge and Charger drivers.
+Also, I have rectified my approach to fetch information about batteries
+from the power supply core.
+
+While, the original patch series [1] added support for Battery Caps as
+well, this patch series only adds support for Battery Status. Therefore,
+I am sending it as a new series while incorporating relevant feedback.
+
+[1] https://lore.kernel.org/all/20250507-batt_ops-v2-0-8d06130bffe6@google.com/
+
+Patches in series:
+[A] "power: supply: Add helpers to get and put arrays of power supply handles"
+[B] "usb: typec: tcpm: Add support for Battery Status response message"
+
+Technical dependency of patches:
+[B] depends on [A] due to usage of `power_supply_get_system_batteries` &
+`power_supply_put_system_batteries` APIs.
 
 Signed-off-by: Amit Sunil Dhamne <amitsd@google.com>
 ---
+Changes in v4:
+- Filter battery retrieval based on POWER_SUPPLY_SCOPE_SYSTEM
+  (suggested by Sebastian Reichel)
+- For the rest of the comments, I have replied in thread in previous
+  submission.
+- Link to v3: https://lore.kernel.org/r/20260602-batt-status-v3-0-a7c1c271f3b0@google.com
+
+Changes in v3:
+- Suggested by Hans:
+  - s/power_supply_put_array/power_supply_put_battery_all.
+  - Call kfree in power_supply_put_battery_all().
+  - Change the datatype for fixed_batt from an array of pointers to a
+    double pointer.
+  - Directly store the power supply pointers returned by
+    power_supply_get_battery_all() into fixed_batt.
+  - As we are directly storing all battery type power supplies returned
+    by *_get_battery_all() but as per the USB PD specification, tcpm
+    only supports reporting of up to 4 fixed batteries, we add
+    additional checks to satisfy the latter condition.
+  - It was suggested that fixed_batt_cnt be changed to int to store the
+    return value of *_get_battery_all(). However, I am leaving it as is
+    because: in case the retval is < 0, we don't care for the error
+    value beyond the scope of the function it's called in. It's sufficient
+    to just have fixed_batt_cnt to stay 0. Lmk if you still want it to
+    be int and I will change it.
+
+- Suggested by Badhri (internal review)
+  - It's not necessary from a PD protocol perspective that a Sink Cap
+    Extended AMS should always precede the Battery Status AMS.
+    Therefore, we should also get battery references during Battery
+    Status AMS in case fixed_batteries was unintialized.
+- Link to v2: https://lore.kernel.org/r/20260527-batt-status-v2-0-4282985165f3@google.com
+
+Changes in v2:
+- Suggested by Hans De Goede:
+  - Added helper power_supply_put_array() to release array of psy refs.
+  - Modified tcpm implementation to use the above.
+  - Drop "power: supply: max17042: add handler for energy_now property"
+    commit.
+  - Offload energy_now calculation to tcpm.
+- Minor changes to description comments of
+  power_supply_get_battery_all() to improve brevity.
+- Link to v1: https://lore.kernel.org/r/20260515-batt-status-v1-0-fed6b7d8cea7@google.com
+
+---
+Amit Sunil Dhamne (2):
+      power: supply: Add helpers to get and put arrays of power supply handles
+      usb: typec: tcpm: Add support for Battery Status response message
+
  drivers/power/supply/power_supply_core.c | 153 +++++++++++++++++++++++++++++++
+ drivers/usb/typec/tcpm/tcpm.c            | 135 ++++++++++++++++++++++++++-
  include/linux/power_supply.h             |  15 +++
- 2 files changed, 168 insertions(+)
+ include/linux/usb/pd.h                   |  29 ++++++
+ 4 files changed, 329 insertions(+), 3 deletions(-)
+---
+base-commit: 4708cac0e22cfd217f48f7cec3c35e5922efcccd
+change-id: 20260501-batt-status-16b6761c0bb1
 
-diff --git a/drivers/power/supply/power_supply_core.c b/drivers/power/supply/power_supply_core.c
-index 2532e221b2e1..70f35f64cc72 100644
---- a/drivers/power/supply/power_supply_core.c
-+++ b/drivers/power/supply/power_supply_core.c
-@@ -477,6 +477,159 @@ struct power_supply *power_supply_get_by_name(const char *name)
- }
- EXPORT_SYMBOL_GPL(power_supply_get_by_name);
- 
-+static bool power_supply_is_system_battery(struct power_supply *psy)
-+{
-+	union power_supply_propval val;
-+
-+	if (psy->desc->type != POWER_SUPPLY_TYPE_BATTERY)
-+		return false;
-+
-+	if (!power_supply_get_property_direct(psy, POWER_SUPPLY_PROP_SCOPE,
-+					      &val))
-+		if (val.intval == POWER_SUPPLY_SCOPE_DEVICE)
-+			return false;
-+
-+	return true;
-+}
-+
-+static int __power_supply_get_num_system_batteries(struct power_supply *epsy,
-+						   void *data)
-+{
-+	int *count = data;
-+
-+	if (power_supply_is_system_battery(epsy))
-+		(*count)++;
-+
-+	return 0;
-+}
-+
-+static int power_supply_get_num_system_batteries(struct device *dev)
-+{
-+	int ret, count = 0;
-+
-+	ret = power_supply_for_each_psy(&count,
-+					__power_supply_get_num_system_batteries);
-+
-+	dev_dbg(dev, "%s: count: %d ret %d\n", __func__, count, ret);
-+
-+	if (ret)
-+		return ret;
-+
-+	return count;
-+}
-+
-+struct psy_get_supplies_data {
-+	int cnt;
-+	int size;
-+	struct power_supply **psys;
-+};
-+
-+static int
-+__power_supply_populate_system_batteries_array(struct power_supply *epsy,
-+					       void *_data)
-+{
-+	struct psy_get_supplies_data *data = _data;
-+
-+	if (power_supply_is_system_battery(epsy)) {
-+		if (data->size <= data->cnt)
-+			return -EOVERFLOW;
-+
-+		get_device(&epsy->dev);
-+		data->psys[data->cnt] = epsy;
-+		atomic_inc(&epsy->use_cnt);
-+		data->cnt++;
-+	}
-+
-+	return 0;
-+}
-+
-+static int
-+power_supply_populate_system_batteries_array(struct device *dev, int size,
-+					     struct power_supply **batteries)
-+{
-+	int ret;
-+
-+	struct psy_get_supplies_data data = {
-+		.cnt = 0,
-+		.size = size,
-+		.psys = batteries,
-+	};
-+
-+	ret = power_supply_for_each_psy(&data,
-+					__power_supply_populate_system_batteries_array);
-+
-+	dev_dbg(dev, "%s Found %d batteries with array size %d ret %d\n",
-+		__func__, data.cnt, data.size, ret);
-+
-+	if (ret < 0 || !data.cnt) {
-+		power_supply_put_system_batteries(batteries, data.cnt);
-+		return ret;
-+	}
-+
-+	return data.cnt;
-+}
-+
-+/**
-+ * power_supply_get_system_batteries() - Fetches references to battery type
-+ *                                       power supplies in the system.
-+ * @dev: Pointer to device requesting the power supply refs.
-+ * @psys: Pointer to an array of power supply refs.
-+ *
-+ * Helper function to get handles to battery type power supplies in the system.
-+ * If acquiring a ref to a power supply fails, then the search for battery type
-+ * power supplies will abort and the acquired power supply references will be
-+ * released.
-+ *
-+ * Return: Indicates the number of battery type power supplies returned on
-+ * success or a negative error code on failure.
-+ *
-+ * Call power_supply_put_system_batteries() after use to cleanup resources.
-+ */
-+int __must_check power_supply_get_system_batteries(struct device *dev,
-+						   struct power_supply ***psys)
-+{
-+	int ret;
-+
-+	if (!psys)
-+		return -EINVAL;
-+
-+	ret = power_supply_get_num_system_batteries(dev);
-+	if (ret <= 0) {
-+		*psys = NULL;
-+		return ret;
-+	}
-+
-+	*psys = kzalloc_objs(**psys, ret);
-+	if (!*psys)
-+		return -ENOMEM;
-+
-+	ret = power_supply_populate_system_batteries_array(dev, ret, *psys);
-+	if (ret <= 0)
-+		*psys = NULL;
-+
-+	return ret;
-+}
-+EXPORT_SYMBOL_GPL(power_supply_get_system_batteries);
-+
-+/**
-+ * power_supply_put_system_batteries() - Cleanup resources allocated by
-+ *                                       power_supply_get_system_batteries()
-+ * @psys: Array of power supply references to release and free.
-+ * @count: Number of elements in the array.
-+ */
-+void power_supply_put_system_batteries(struct power_supply **psys, int count)
-+{
-+	int i;
-+
-+	for (i = 0; i < count; i++) {
-+		if (psys[i])
-+			power_supply_put(psys[i]);
-+	}
-+
-+	kfree(psys);
-+}
-+EXPORT_SYMBOL_GPL(power_supply_put_system_batteries);
-+
- /**
-  * power_supply_put() - Drop reference obtained with power_supply_get_by_name
-  * @psy: Reference to put
-diff --git a/include/linux/power_supply.h b/include/linux/power_supply.h
-index 7a5e4c3242a0..9167a33d074b 100644
---- a/include/linux/power_supply.h
-+++ b/include/linux/power_supply.h
-@@ -806,11 +806,26 @@ extern int power_supply_reg_notifier(struct notifier_block *nb);
- extern void power_supply_unreg_notifier(struct notifier_block *nb);
- #if IS_ENABLED(CONFIG_POWER_SUPPLY)
- extern struct power_supply *power_supply_get_by_name(const char *name);
-+extern int __must_check power_supply_get_system_batteries(struct device *dev,
-+							  struct power_supply ***psys);
-+extern void power_supply_put_system_batteries(struct power_supply **psys, int count);
- extern void power_supply_put(struct power_supply *psy);
- #else
- static inline void power_supply_put(struct power_supply *psy) {}
- static inline struct power_supply *power_supply_get_by_name(const char *name)
- { return NULL; }
-+static inline int __must_check power_supply_get_system_batteries(struct device *dev,
-+								 struct power_supply ***psys)
-+{
-+	if (psys)
-+		*psys = NULL;
-+	return 0;
-+}
-+
-+static inline void power_supply_put_system_batteries(struct power_supply **psys,
-+						     int count)
-+{
-+}
- #endif
- extern struct power_supply *power_supply_get_by_reference(struct fwnode_handle *fwnode,
- 							  const char *property);
-
+Best regards,
 -- 
-2.55.0.rc0.799.gd6f94ed593-goog
+Amit Sunil Dhamne <amitsd@google.com>
 
 
