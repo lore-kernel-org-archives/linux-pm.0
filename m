@@ -1,95 +1,94 @@
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.11])
+Received: from bali.collaboradmins.com (bali.collaboradmins.com [148.251.105.195])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2096947F2D3;
-	Wed,  1 Jul 2026 11:31:16 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.11
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 67A913FC5A7;
+	Wed,  1 Jul 2026 12:19:25 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=148.251.105.195
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1782905478; cv=none; b=YwNDtqqawxVF382pIiLiYJhay1Fbl1vqd4H7pXN46oAKxxN9xEifKwAOSjvNkH8ugpAyN2wPlUmxJgpQfDzZGPTXliMtgS4LCmCXKiWSbJfiyr0qZTQUZcmIR70TOFddupFzbkxWhSHUTitRtlTlc2XPd+QH46soGJgkiFqZzu8=
+	t=1782908366; cv=none; b=vBY1i6a/7aWrRnWTT0zQ3TbZUOlwafJ/kPoZJFaoXfMgW7+SBzQn/rz3UwxrzcMhCt/VJd9uIaTq56BojCYNKKMW+4OuNf/847WiiQmI1cJ3PFBKVRgYL6kv59fvyuwT0Cc7f8cFRBEAs+DA+nLo5xT9Ty1yIWQ8Nta49Iy70X0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1782905478; c=relaxed/simple;
-	bh=GKjno9HFuSbao2xvBNrebi2Q4+5znXdp6HvAOPQVjsU=;
-	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
-	 MIME-Version:Content-Type; b=RLBDusbdjLz1rYSKxCTyJEA+D674d7cWCMcxTEQvthDkV3Il4eWwPu6NgILfyiAq4joC4iaPaHYnzywQRI7vvOwkjTUZQhTdrLAUNrqf1EpRuRdEO0hDVX8HyRgbIfQvNU3TUEKui5wRZxzvhgi/6WZlSVcGGKVSz/Z3rmQ4B5s=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=pass smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=Fj9ckOMC; arc=none smtp.client-ip=192.198.163.11
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.intel.com
+	s=arc-20240116; t=1782908366; c=relaxed/simple;
+	bh=RIGHToQ86+80dzU39WU9it8zdhmzP6nEWWQjnFhwEXU=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=vGk5JOiz/PQPstHet5YKHisahaFY7ynj5RCA3sah4Yz06X38TI/mH+23H+WoDYNDomIycpnHAsRs8FlK4ZWP4og+dpzH4sfMQHOi2jd1KNBpXO9miWmNWFzxFmyDPMG51kYxZnmQCDVZ6rHAb1rLjesxaGn1/jycGYdRU/gy5zA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b=SLOOeJbw; arc=none smtp.client-ip=148.251.105.195
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="Fj9ckOMC"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1782905477; x=1814441477;
-  h=from:to:cc:in-reply-to:references:subject:message-id:
-   date:mime-version:content-transfer-encoding;
-  bh=GKjno9HFuSbao2xvBNrebi2Q4+5znXdp6HvAOPQVjsU=;
-  b=Fj9ckOMC/ewhvuSfaCu/VUT3nJsR/y/UC680h05O150hGYqlg9C4wIcQ
-   22WvNLpAOxEqKjeHAtlQLD0Jv+LvGSRYfzQXYAjUuBPg0ZKTp7xDtm+/R
-   7lwWe/vB10W1r/2s0wwkbsQZqR7NsktrRrVDKOY2cRTMVva7HrhDsyc/8
-   Nt6Tc+4EpkYWY79VBYlRdM5WakywwIegNQgpSajvBAIzm9ODaB1dnVdbh
-   8AErSD7KsxZYqB2YcyjXOuboeqlQddBCASXxiWpMfgXIjleWlK3ix6YQv
-   nMg8kMHx8hj8FqAtL7mPvjZb2S2kg5jUgnx9Y7uRoJGApbunXugoJyg1c
-   g==;
-X-CSE-ConnectionGUID: FF0qrSkYQSO8llEeR8Do3g==
-X-CSE-MsgGUID: aSgAv7h6RmmvdcQiGqHiOA==
-X-IronPort-AV: E=McAfee;i="6800,10657,11833"; a="94235246"
-X-IronPort-AV: E=Sophos;i="6.25,141,1779174000"; 
-   d="scan'208";a="94235246"
-Received: from orviesa005.jf.intel.com ([10.64.159.145])
-  by fmvoesa105.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 01 Jul 2026 04:31:16 -0700
-X-CSE-ConnectionGUID: 4orjbU/QQjeDltdBM6+f/A==
-X-CSE-MsgGUID: ShK3hB1XRnmE0ww8nie0AQ==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.25,141,1779174000"; 
-   d="scan'208";a="256889036"
-Received: from ijarvine-mobl1.ger.corp.intel.com (HELO localhost) ([10.245.244.83])
-  by orviesa005-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 01 Jul 2026 04:31:13 -0700
-From: =?UTF-8?q?Ilpo=20J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>
-To: Maximilian Luz <luzmaximilian@gmail.com>, 
- Sebastian Reichel <sre@kernel.org>, 
- =?utf-8?q?Uwe_Kleine-K=C3=B6nig_=28The_Capable_Hub=29?= <u.kleine-koenig@baylibre.com>
-Cc: linux-pm@vger.kernel.org, platform-driver-x86@vger.kernel.org, 
- linux-kernel@vger.kernel.org
-In-Reply-To: <bc8eff03b2f36c82af5a75fc7114c277228921db.1781526433.git.u.kleine-koenig@baylibre.com>
-References: <bc8eff03b2f36c82af5a75fc7114c277228921db.1781526433.git.u.kleine-koenig@baylibre.com>
-Subject: Re: [PATCH v1] power: supply: surface_{battery,charger}:
- Consistently define ssam_device_ids using named initializers
-Message-Id: <178290546835.22449.8997171259957042077.b4-ty@b4>
-Date: Wed, 01 Jul 2026 14:31:08 +0300
+	dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b="SLOOeJbw"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
+	s=mail; t=1782908363;
+	bh=RIGHToQ86+80dzU39WU9it8zdhmzP6nEWWQjnFhwEXU=;
+	h=From:To:Cc:Subject:Date:From;
+	b=SLOOeJbwtD22khwDQNSCEIXb2djNF8mPJ225Fxb0j2ZXY8SEJJO92p6+bQqCzsezh
+	 1/viTRmV6/yR+CyoDSt52XoWDvHOYZr8XHE7I94fBo7wgN2yDTmTfWR3F4yMQD3GTe
+	 rvo6g34jnhqocWbpq3W6Hewb3+WqdR8T+h4Gr3TN2Z/Ir8GoDfbal9lje7Njw3qwLa
+	 qlYluFXthnKidoLpxu8zkA6+RwRGlY2+UBrwqUuLXwFEtPZcD7ZvLXGW2asJq3NIWr
+	 R6VnCG6CrzclJa7IcoPwYk7k2hMrgPK4QypVgO3RazmTPYujnGKmvHvYiiW2VWj1kH
+	 WOA1ZujbOgcbg==
+Received: from IcarusMOD.eternityproject.eu (unknown [100.64.1.21])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	(Authenticated sender: kholk11)
+	by bali.collaboradmins.com (Postfix) with ESMTPSA id 257A017E0909;
+	Wed,  1 Jul 2026 14:19:23 +0200 (CEST)
+From: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
+To: ulfh@kernel.org
+Cc: robh@kernel.org,
+	krzk+dt@kernel.org,
+	conor+dt@kernel.org,
+	matthias.bgg@gmail.com,
+	angelogioacchino.delregno@collabora.com,
+	nfraprado@collabora.com,
+	irving-ch.lin@mediatek.com,
+	macpaul.lin@mediatek.com,
+	aford173@gmail.com,
+	mbrugger@suse.com,
+	devicetree@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	linux-pm@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org,
+	linux-mediatek@lists.infradead.org,
+	justin.yeh@mediatek.com,
+	kernel@collabora.com
+Subject: [PATCH 0/4] pmdomains: Fixes and add support for HFRP Direct
+Date: Wed,  1 Jul 2026 14:19:16 +0200
+Message-ID: <20260701121920.19347-1-angelogioacchino.delregno@collabora.com>
+X-Mailer: git-send-email 2.54.0
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-X-Mailer: b4 0.15.2
 
-On Mon, 15 Jun 2026 14:51:37 +0200, Uwe Kleine-König (The Capable Hub) wrote:
+This series adds support for the DirectCTL HFRPSYS power domains found
+on the MT8196 SoC (the ones without HW Voter support) and also adds a
+fix to respect the power domain relationships during error cleanup,
+which avoids HW lockups in case probe deferrals in the specific case
+of "almost fully probed" power domains (where most of them probed and
+got set up but a probe deferral happened almost at the end), behavior
+seen on the MT8189 SoC during bringup (but honestly I have no idea how
+are the current ones working fine without this fix...!).
 
-> The .driver_data member of the the two struct ssam_device_id arrays were
-> initialized by list expressions. This isn't easily readable if you don't
-> work with the Surface System Aggregator core regularily. Using named
-> initializers is more explicit and thus easier to parse and also more
-> robust to changes of the struct definition. This robustness is relevant
-> for a planned change to struct ssam_device_id replacing .driver_data
-> by an anonymous union.
-> 
-> [...]
+This was tested on MT8173, MT8186, MT8188, MT8189, MT8192, MT8195 and
+also on MT8196, over months of development, both manually and over CI,
+with no regressions detected.
 
-Thank you for your contribution, it has been applied to my local
-review-ilpo-next branch. Note it will show up in the public
-platform-drivers-x86/review-ilpo-next branch only once I've pushed my
-local branch there, which might take a while.
+AngeloGioacchino Del Regno (4):
+  dt-bindings: power: mediatek: Add support for MT8196 direct HFRP
+  pmdomain: mediatek: Respect PD relationships during error cleanup
+  pmdomain: mediatek: Add support for Direct CTL simple power sequence
+  pmdomain: mediatek: Add support for MT8196 HFRP DirectCTL domains
 
-FYI [if applicable to your patch], as per Linus' policy change, also
-fixes are mostly routed through for-next unless the fix is for a
-commit introduced in the most recent or clearly a regression fix.
+ .../power/mediatek,power-controller.yaml      |   1 +
+ drivers/pmdomain/mediatek/mt8196-pm-domains.h |  27 ++++
+ drivers/pmdomain/mediatek/mtk-pm-domains.c    | 134 ++++++++++++++----
+ drivers/pmdomain/mediatek/mtk-pm-domains.h    |   1 +
+ .../dt-bindings/power/mediatek,mt8196-power.h |   4 +
+ 5 files changed, 141 insertions(+), 26 deletions(-)
 
-The list of commits applied:
-[1/1] power: supply: surface_{battery,charger}: Consistently define ssam_device_ids using named initializers
-      commit: 2f0fab3e8ef925e10dcfa04d1df9cdf1015eda8a
-
---
- i.
+-- 
+2.54.0
 
