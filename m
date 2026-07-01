@@ -1,33 +1,66 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pg1-f182.google.com (mail-pg1-f182.google.com [209.85.215.182])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 740E5282F1B;
-	Wed,  1 Jul 2026 21:40:23 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1EEEE395D86
+	for <linux-pm@vger.kernel.org>; Wed,  1 Jul 2026 21:49:11 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.215.182
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1782942024; cv=none; b=HV+Q3sYz0xZhIuwEypqE5XeXBVkjMBdW1h2A15ey0kGuN4ZYmrCSxx71GBP2uW9FIQK3dZB3u1+r5EnKLPuJa39ol0VL3gI6NWSF3auqQWHM7cGtrVRG74KdZkyg4x7yw8VbY6J4BVtvsifhhw5G1Ot8oaxfowKvugI8d4UBpSE=
+	t=1782942554; cv=none; b=EuDexg43as+37jKC7EegAvVuAwlkZdOvEnHgh0o/MNSTWa3f8YMHerY+2X1F8RoRSyPXQyvJKb6QCA4USGZXy5i+bqBSEVEvzr9CkbiV9hCeVGNPbYE9tIt9Yhcn7kkmnEYmm8WiUIlssaLM6KzWA3qECi5a11xrcGNHl6OecBE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1782942024; c=relaxed/simple;
-	bh=PZzeuqPCmB1eNY7dOEhMPK9sqw12cOhCvMQRpwOxku4=;
+	s=arc-20240116; t=1782942554; c=relaxed/simple;
+	bh=+RvLpdIWlkp7Qw6oqN0VEiCWZVnLi9JEW+RoRI/aOC8=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=f4oT7ngM5AG5irJHPn5l/Yx82CzTk/tW+kcwKrdLFA18jM+CgxXDoakDuS1R5lOQtxSP+wfO6Bw+TC3nLNa0xAYaNHl7xqLjnpDSqsiULgvnEuN82sSE4/lE6XCGO7z8h80ipd2jHTKYji2Edi8KD/Q3LLUYohtOO1N59sI8X5E=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=SCq/sOkT; arc=none smtp.client-ip=100.103.45.18
+	 In-Reply-To:Content-Type; b=DRtfm1icYzKIlWGKa16T6bu0R+/sFuQcMO3HQMsTEMNnoscLKKBAPrGiGLWF83vb4VnFK5eZm2Rf77w6J815Li3OsUyKLVvQNJvUjGo9yj5WOka69G/wgOy92U67nZ0h4gIv8WagfzPzD1/J6tYqezgWyASHpzRCCFsBI9gzvDw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com; spf=pass smtp.mailfrom=google.com; dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b=leE38UQu; arc=none smtp.client-ip=209.85.215.182
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=google.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="SCq/sOkT"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id EBBBA1F000E9;
-	Wed,  1 Jul 2026 21:40:21 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1782942023;
-	bh=f2TSNTOr28pG9ZvaTCLDevfHgzOLh/rc5rNXG29p8PM=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To;
-	b=SCq/sOkT45tDAkzdEFwrD/HkginQBUz1Ej4va8PnsL9nRX0nH5CIWdWwyRhbBCF2Z
-	 8V6YwHPkKkApjNku8RGI+bsfR52LVIM2G7/5S/0HFNuOGFcgqrUdvycRV5FIalks2W
-	 cBVSAvc6LtoQ2gPbX0EniXgbF4O8ZhxNNp59VbxP1eQMd2iTiC42sd8eYD6ErBg0FR
-	 AcEcAkRb6Qq8AceLsauO5oDx/KW24ycJJYAtZaBaz2eo0J8URrjdagQQXvjgJowU7Y
-	 vBH1s2JB9QhxpCMHqmntUZBE3kyUHDQ9w0dJ2MlDvxEs4jGEEcebm3EpDF3eyZcCap
-	 lYnEj1f1/Ht9Q==
-Message-ID: <8155d7c7-2a10-4fec-bfde-0aeb017724ac@kernel.org>
-Date: Wed, 1 Jul 2026 16:40:20 -0500
+	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b="leE38UQu"
+Received: by mail-pg1-f182.google.com with SMTP id 41be03b00d2f7-c85c531d4a9so530478a12.2
+        for <linux-pm@vger.kernel.org>; Wed, 01 Jul 2026 14:49:11 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20251104; t=1782942551; x=1783547351; darn=vger.kernel.org;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=BclWnKbR9DeJaPkRvBhDEXzil7VstZzrzDQKrVM+tko=;
+        b=leE38UQufsO8PxaEr3k/XchLDnx4Ol2mNyfpo/XEa8/rlF7UTix/zTIYbJCaKpISMy
+         CoPXY+vlqbOGsTIcLXwRRp7K/SeUXLLx2A9XZon3bG6AOhdFzK0ASQ5BuTmLjUbq5K6w
+         8RJWMkbUk8I6lOwsiPRwOKoxPA9MBqr2wprrxBY0rxWrd/+laRdQA2/pYTdwBuC0FfNP
+         lHhNepeYJHuF6CxZoWkQjko2k6Fa6pyjN++6GyNaTVrtrlm+qOQpxxGYI8zmAsOzoqJ3
+         /1JqCoMM6/+K8bXMJwZnnzDRAksn2wbIat9hrY6AbaKZC9S0hPahz1QmXlwUr5ghuVh+
+         kcaQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1782942551; x=1783547351;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=BclWnKbR9DeJaPkRvBhDEXzil7VstZzrzDQKrVM+tko=;
+        b=BQRmVCQC4LvKyWt3U5+XWOOmENdHyZkQaytY5Et729G5rZB6F39RjiaTg3HWDLwBYT
+         zMdL0lcmMWx8GyyUlIgrqM/Y6NpeVhMb8pgsFhd1B05C31M0fqNKD5ggV2FsDKCYuNFv
+         foXQn+GqTZDL3g+HiAZrsl7dHG0Z+ZSnEFn3+AiEJN1ltv/xM9D4W1moj0HEkLyt8PWh
+         /T9q2I/0YfCFPHd8U77fYsgttMAtUn52FfC6YErqrvTADNjLM5ZyvjUl6W6wTx9iMKHo
+         DRSfRBKT7TYMi4b5xvNESwxv7KxjjrAqhbKG06q01LqC93oz1302fmsJUiEdBSm8eW89
+         tJ8w==
+X-Gm-Message-State: AOJu0Yw6widbMiPkFMDwzSoy3e6hqcDSgl5OHsUdNctzXp6nQRr5Y1Xa
+	LIgWHN7Llxa6jK5J5mzv8JtM+Cfb1Hbt6E9XZdfTvA1/pI9eUwCWCyK5jATHO3YMig==
+X-Gm-Gg: AfdE7cmT3gooSpRR23DALvISCi1JCfwqyQfrmN3DxyBWXl6z/KGbDP2086JGSf1/sO3
+	gYlCzaJzqHZolRKslzzdQlnH6Zze7ekzfYzAGwT4HbwsFU76rEJxxEUdB3t/x+EuG0FSjX/3faP
+	p4zhV+3cTVmgwU3wt3snMv4/IsDQCyzdWllM++PORnbMwqFcPBGxMpEzCOGD9fHwD27/lSGlZlx
+	EK9EOMcUwxDE+QmbDcISkTzwMhp02b0RFIB3ytFlG0iQ68vXmzy18qFQ0UyQpypqYszjn+/d75i
+	oK6I7711xmmaMhekIx8YCHz/H4QCDqmRYQCUFPPaE95jmKobLt1iVtUJz3Y0sRoUmV69fsUYJPR
+	WK4rNXyPV+RlbBuSkVmEIue7qrl2WYaNfR/Vn0yXOjogfQrSlTn8FSm1z8RlFa4dVHuSmNzIvBw
+	G+mHhJTh/d165typyhXCJfLekIXIGqc1VV8KRvdafIOYuDsPrq2P8fg4WD5fTk7j4pTYjeXcz9e
+	moHBFHaJZU2bbjg2uKiPbPCV0SIm9I/hstD7xbKGVLekugZfiRb9Jdmkg==
+X-Received: by 2002:a05:6a21:4c08:b0:3bf:6e72:68f9 with SMTP id adf61e73a8af0-3bfed3e923amr3498778637.38.1782942550808;
+        Wed, 01 Jul 2026 14:49:10 -0700 (PDT)
+Received: from ?IPV6:2a00:79e0:2e7c:8:abdb:65e7:c3c7:ef4d? ([2a00:79e0:2e7c:8:abdb:65e7:c3c7:ef4d])
+        by smtp.gmail.com with ESMTPSA id a92af1059eb24-13b3c85b345sm2195106c88.10.2026.07.01.14.49.09
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Wed, 01 Jul 2026 14:49:10 -0700 (PDT)
+Message-ID: <06c52f85-cf0b-40a7-a93a-c366ced29216@google.com>
+Date: Wed, 1 Jul 2026 14:49:08 -0700
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -35,144 +68,323 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [RFC PATCH 3/6] cpufreq/amd-pstate: Repurpose "amd_dynamic_epp"
- cmdline and corresponding sysfs
+Subject: Re: [PATCH v4 2/2] usb: typec: tcpm: Add support for Battery Status
+ response message
+To: Sebastian Reichel <sre@kernel.org>,
+ Badhri Jagan Sridharan <badhri@google.com>,
+ Heikki Krogerus <heikki.krogerus@linux.intel.com>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Hans de Goede <hansg@kernel.org>, Krzysztof Kozlowski <krzk@kernel.org>,
+ Marek Szyprowski <m.szyprowski@samsung.com>,
+ Sebastian Krzyszkowiak <sebastian.krzyszkowiak@puri.sm>,
+ Purism Kernel Team <kernel@puri.sm>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linux-usb@vger.kernel.org, =?UTF-8?Q?Andr=C3=A9_Draszik?=
+ <andre.draszik@linaro.org>, Tudor Ambarus <tudor.ambarus@linaro.org>,
+ Peter Griffin <peter.griffin@linaro.org>, RD Babiera <rdbabiera@google.com>,
+ Kyle Tso <kyletso@google.com>
+References: <20260701-batt-status-v4-0-a31d97b1ae57@google.com>
+ <20260701-batt-status-v4-2-a31d97b1ae57@google.com>
 Content-Language: en-US
-To: K Prateek Nayak <kprateek.nayak@amd.com>,
- "Rafael J. Wysocki" <rafael@kernel.org>,
- Viresh Kumar <viresh.kumar@linaro.org>, Huang Rui <ray.huang@amd.com>
-Cc: Perry Yuan <perry.yuan@amd.com>, linux-pm@vger.kernel.org,
- linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <20260630185904.5602-1-kprateek.nayak@amd.com>
- <20260630185904.5602-4-kprateek.nayak@amd.com>
-From: Mario Limonciello <superm1@kernel.org>
-In-Reply-To: <20260630185904.5602-4-kprateek.nayak@amd.com>
+From: Amit Sunil Dhamne <amitsd@google.com>
+In-Reply-To: <20260701-batt-status-v4-2-a31d97b1ae57@google.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 
 
+On 6/30/26 5:34 PM, Amit Sunil Dhamne via B4 Relay wrote:
+> From: Amit Sunil Dhamne <amitsd@google.com>
+>
+> Add support for responding to a Get_Battery_Status request with a
+> Battery_Status message. The port partner shall request the status of a
+> port's battery by providing an index in the Get_Battery_Status AMS. In
+> case of failure to identify the battery, the port shall reply with an
+> appropriate message indicating so.
+>
+> Support for Battery_Status message is required for sinks that contain
+> battery as specified in USB PD Rev3.1 v1.8
+> ("Applicability of Data Messages" section).
+>
+> Signed-off-by: Amit Sunil Dhamne <amitsd@google.com>
+> Reviewed-by: Badhri Jagan Sridharan <badhri@google.com>
 
-On 6/30/26 13:59, K Prateek Nayak wrote:
-> Since dynamic_epp has been converted to an
-> "energy_performance_preference", toggling the feature via the sysfs file
-> is now redundant.
-> 
-> Repurpose "amd_dynamic_epp=enable" command line to opt into dynamic EPP
-> by default when the active driver is loaded, or switched into. The
-> "disable" counterpart will "dynamic" option out of
-> "energyy_performance_preference" to ensure dynamic EPP feature can never
-> be toggled.
-> 
-> Use a tri-state enum to differentiate if the user has supplied a command
-> line parameter or not to enable the feature by default vs keeping the
-> current defaults as is and allowing users to toggle it later via the
-> "dynamic" option in "energy_performance_preference" selection.
-> 
-> Signed-off-by: K Prateek Nayak <kprateek.nayak@amd.com>
+Unfortunately, I forgot to add Heikki's ack [1] . In case I have to send 
+a new revision and this tcpm patch looks okay, I will add the Ack.
 
-Honestly - I have to question if we even want to have the kernel command 
-line option anymore.  If userspace can easily opt in and out as in this 
-series, do we still need a kernel command line for default policy?
 
-I'm of the opinion rip it out, less to maintain.
+[1] https://lore.kernel.org/all/aiLHSlkdw_BAO6c_@kuha/
+
+
+Thanks,
+
+Amit
 
 > ---
->   drivers/cpufreq/amd-pstate.c | 48 +++++++++---------------------------
->   1 file changed, 12 insertions(+), 36 deletions(-)
-> 
-> diff --git a/drivers/cpufreq/amd-pstate.c b/drivers/cpufreq/amd-pstate.c
-> index c7eec6b96dcc..61f30820d95a 100644
-> --- a/drivers/cpufreq/amd-pstate.c
-> +++ b/drivers/cpufreq/amd-pstate.c
-> @@ -82,12 +82,18 @@ struct quirk_entry {
->   	u32 lowest_freq;
+>   drivers/usb/typec/tcpm/tcpm.c | 135 +++++++++++++++++++++++++++++++++++++++++-
+>   include/linux/usb/pd.h        |  29 +++++++++
+>   2 files changed, 161 insertions(+), 3 deletions(-)
+>
+> diff --git a/drivers/usb/typec/tcpm/tcpm.c b/drivers/usb/typec/tcpm/tcpm.c
+> index 7ef746a90a17..19daa17917a7 100644
+> --- a/drivers/usb/typec/tcpm/tcpm.c
+> +++ b/drivers/usb/typec/tcpm/tcpm.c
+> @@ -232,7 +232,8 @@ enum pd_msg_request {
+>   	PD_MSG_DATA_SINK_CAP,
+>   	PD_MSG_DATA_SOURCE_CAP,
+>   	PD_MSG_DATA_REV,
+> -	PD_MSG_EXT_SINK_CAP_EXT
+> +	PD_MSG_EXT_SINK_CAP_EXT,
+> +	PD_MSG_DATA_BATT_STATUS
 >   };
 >   
-> +enum dynamic_epp_state {
-> +	DYNAMIC_EPP_USER_TOGGLE = -1,	/* User can toggle dynamic EPP. (Default) */
-> +	DYNAMIC_EPP_DISABLED,		/* Dynamic EPP disabled from command line. */
-> +	DYNAMIC_EPP_DEFAULT_ENABLED,	/* Dynamic EPP enabled from command line. */
-> +};
-> +
-> +static enum dynamic_epp_state dynamic_epp = DYNAMIC_EPP_USER_TOGGLE;
->   static struct cpufreq_driver *current_pstate_driver;
->   static struct cpufreq_driver amd_pstate_driver;
->   static struct cpufreq_driver amd_pstate_epp_driver;
->   static int cppc_state = AMD_PSTATE_UNDEFINED;
->   static bool amd_pstate_prefcore = true;
-> -static bool dynamic_epp;
->   static struct quirk_entry *quirks;
+>   enum adev_actions {
+> @@ -389,6 +390,14 @@ struct pd_timings {
+>   /* Convert microwatt to watt */
+>   #define UW_TO_W(pow)					((pow) / 1000000)
 >   
+> +/*
+> + * As per USB PD Spec Rev 3.18 (Sec. 6.5.13.11), the number of fixed batteries
+> + * that a port can be queried is restricted to 4.
+> + */
+> +#define MAX_NUM_FIXED_BATT				4
+> +
+> +#define BATTERY_PROPERTY_UNKNOWN			0xffff
+> +
 >   /*
-> @@ -1839,39 +1845,9 @@ static ssize_t dynamic_epp_show(struct device *dev,
->   	return sysfs_emit(buf, "%s\n", str_enabled_disabled(dynamic_epp));
+>    * struct pd_identifier - Contains info about PD identifiers
+>    * @vid: Vendor ID (assigned by USB-IF)
+> @@ -683,6 +692,9 @@ struct tcpm_port {
+>   
+>   	struct pd_identifier pd_ident;
+>   	struct sink_caps_ext_data sink_caps_ext;
+> +	struct power_supply **fixed_batt;
+> +	u32 fixed_batt_cnt;
+> +	u32 batt_request_id;
+>   #ifdef CONFIG_DEBUG_FS
+>   	struct dentry *dentry;
+>   	struct mutex logbuffer_lock;	/* log buffer access lock */
+> @@ -1470,6 +1482,20 @@ static int tcpm_pd_send_sink_caps(struct tcpm_port *port)
+>   	return tcpm_pd_transmit(port, TCPC_TX_SOP, &msg);
 >   }
 >   
-> -static ssize_t dynamic_epp_store(struct device *a, struct device_attribute *b,
-> -				 const char *buf, size_t count)
-> -{
-> -	bool enabled;
-> -	int ret;
-> -
-> -	ret = kstrtobool(buf, &enabled);
-> -	if (ret)
-> -		return ret;
-> -
-> -	guard(mutex)(&amd_pstate_driver_lock);
-> -
-> -	if (cppc_state != AMD_PSTATE_ACTIVE) {
-> -		pr_debug("dynamic_epp can only be toggled in active mode\n");
-> -		return -EINVAL;
-> -	}
-> -
-> -	/* Nothing to do */
-> -	if (dynamic_epp == enabled)
-> -		return count;
-> -
-> -	/* reinitialize with desired dynamic EPP value */
-> -	dynamic_epp = enabled;
-> -	ret = amd_pstate_change_driver_mode(cppc_state);
-> -	if (ret)
-> -		dynamic_epp = false;
-> -
-> -	return ret ? ret : count;
-> -}
-> -
->   static DEVICE_ATTR_RW(status);
->   static DEVICE_ATTR_RO(prefcore);
-> -static DEVICE_ATTR_RW(dynamic_epp);
-> +static DEVICE_ATTR_RO(dynamic_epp);
+> +static void tcpm_get_fixed_batt(struct tcpm_port *port)
+> +{
+> +	int ret;
+> +
+> +	if (!port->self_powered || port->fixed_batt_cnt > 0)
+> +		return;
+> +
+> +	ret = power_supply_get_system_batteries(port->dev, &port->fixed_batt);
+> +	if (ret < 0)
+> +		tcpm_log(port, "Failed to get battery array, ret=%d", ret);
+> +	else
+> +		port->fixed_batt_cnt = ret;
+> +}
+> +
+>   static int tcpm_pd_send_sink_cap_ext(struct tcpm_port *port)
+>   {
+>   	u16 operating_snk_watt = port->operating_snk_mw / 1000;
+> @@ -1482,6 +1508,8 @@ static int tcpm_pd_send_sink_cap_ext(struct tcpm_port *port)
+>   	if (!port->self_powered)
+>   		data->spr_op_pdp = operating_snk_watt;
 >   
->   static struct attribute *pstate_global_attributes[] = {
->   	&dev_attr_status.attr,
-> @@ -1983,7 +1959,7 @@ static int amd_pstate_epp_cpu_init(struct cpufreq_policy *policy)
->   		cpudata->current_profile = PLATFORM_PROFILE_BALANCED;
+> +	tcpm_get_fixed_batt(port);
+> +
+>   	/*
+>   	 * SPR Sink Minimum PDP indicates the minimum power required to operate
+>   	 * a sink device in its lowest level of functionality without requiring
+> @@ -1507,6 +1535,7 @@ static int tcpm_pd_send_sink_cap_ext(struct tcpm_port *port)
+>   	skedb.load_step = data->load_step;
+>   	skedb.load_char = cpu_to_le16(data->load_char);
+>   	skedb.compliance = data->compliance;
+> +	skedb.batt_info = min(port->fixed_batt_cnt, MAX_NUM_FIXED_BATT);
+>   	skedb.modes = data->modes;
+>   	skedb.spr_min_pdp = data->spr_min_pdp;
+>   	skedb.spr_op_pdp = data->spr_op_pdp;
+> @@ -1525,6 +1554,88 @@ static int tcpm_pd_send_sink_cap_ext(struct tcpm_port *port)
+>   					   port->message_id,
+>   					   data_obj_cnt,
+>   					   1 /* Denotes if ext header */));
+> +
+> +	return tcpm_pd_transmit(port, TCPC_TX_SOP, &msg);
+> +}
+> +
+> +static int tcpm_pd_send_batt_status(struct tcpm_port *port)
+> +{
+> +	u16 present_charge = BATTERY_PROPERTY_UNKNOWN;
+> +	bool batt_present = false, invalid_ref = true;
+> +	u32 batt_id = port->batt_request_id;
+> +	union power_supply_propval val;
+> +	struct power_supply *batt;
+> +	u8 charging_status = 0;
+> +	struct pd_message msg;
+> +	int ret, charge_now;
+> +	u64 energy_now;
+> +	u32 bsdo;
+> +
+> +	tcpm_get_fixed_batt(port);
+> +	memset(&msg, 0, sizeof(msg));
+> +
+> +	if (batt_id >= port->fixed_batt_cnt || batt_id >= MAX_NUM_FIXED_BATT)
+> +		goto send_status;
+> +
+> +	invalid_ref = false;
+> +	batt = port->fixed_batt[batt_id];
+> +	ret = power_supply_get_property(batt, POWER_SUPPLY_PROP_PRESENT, &val);
+> +	if (ret)
+> +		tcpm_log(port,
+> +			 "Failed to fetch power_supply_prop_present ret %d",
+> +			 ret);
+> +	else
+> +		batt_present = val.intval > 0;
+> +
+> +	ret = power_supply_get_property(batt, POWER_SUPPLY_PROP_CHARGE_NOW,
+> +					&val);
+> +	if (!ret) {
+> +		charge_now = val.intval;
+> +
+> +		ret = power_supply_get_property(batt,
+> +						POWER_SUPPLY_PROP_VOLTAGE_AVG,
+> +						&val);
+> +		if (!ret) {
+> +			energy_now = ((u64)charge_now * val.intval) / 1000000;
+> +
+> +			/*
+> +			 * Battery Present Charge is reported in
+> +			 * increments of 0.1WH.
+> +			 */
+> +			present_charge = (u16)UW_TO_W(energy_now * 10);
+> +		}
+> +	}
+> +
+> +	ret = power_supply_get_property(batt, POWER_SUPPLY_PROP_STATUS, &val);
+> +	if (!ret) {
+> +		switch (val.intval) {
+> +		case POWER_SUPPLY_STATUS_CHARGING:
+> +			charging_status = BSDO_BATTERY_INFO_CHARGING;
+> +			break;
+> +		case POWER_SUPPLY_STATUS_DISCHARGING:
+> +			charging_status = BSDO_BATTERY_INFO_DISCHARGING;
+> +			break;
+> +		case POWER_SUPPLY_STATUS_NOT_CHARGING:
+> +		case POWER_SUPPLY_STATUS_FULL:
+> +			charging_status = BSDO_BATTERY_INFO_IDLE;
+> +			break;
+> +		default:
+> +			charging_status = BSDO_BATTERY_INFO_RSVD;
+> +			break;
+> +		}
+> +	}
+> +
+> +send_status:
+> +
+> +	bsdo = BSDO(present_charge, charging_status, batt_present, invalid_ref);
+> +	msg.payload[0] = cpu_to_le32(bsdo);
+> +	msg.header = PD_HEADER_LE(PD_DATA_BATT_STATUS,
+> +				  port->pwr_role,
+> +				  port->data_role,
+> +				  port->negotiated_rev,
+> +				  port->message_id,
+> +				  1);
+> +
+>   	return tcpm_pd_transmit(port, TCPC_TX_SOP, &msg);
+>   }
+>   
+> @@ -3886,6 +3997,7 @@ static void tcpm_pd_ext_msg_request(struct tcpm_port *port,
+>   {
+>   	enum pd_ext_msg_type type = pd_header_type_le(msg->header);
+>   	unsigned int data_size = pd_ext_header_data_size_le(msg->ext_msg.header);
+> +	const struct pd_chunked_ext_message_data *ext_msg = &msg->ext_msg;
+>   
+>   	/* stopping VDM state machine if interrupted by other Messages */
+>   	if (tcpm_vdm_ams(port)) {
+> @@ -3894,7 +4006,7 @@ static void tcpm_pd_ext_msg_request(struct tcpm_port *port,
+>   		mod_vdm_delayed_work(port, 0);
 >   	}
 >   
-> -	if (dynamic_epp) {
-> +	if (dynamic_epp == DYNAMIC_EPP_DEFAULT_ENABLED) {
->   		/* Dynamic EPP is only available with the POWERSAVE policy. */
->   		policy->policy = CPUFREQ_POLICY_POWERSAVE;
->   		ret = amd_pstate_set_dynamic_epp(policy);
-> @@ -2076,7 +2052,7 @@ static int amd_pstate_epp_set_policy(struct cpufreq_policy *policy)
->   		 * If dynamic_epp is enabled by default, toggle it on
->   		 * when switching to CPUFREQ_POLICY_POWERSAVE.
->   		 */
-> -		if (dynamic_epp) {
-> +		if (dynamic_epp == DYNAMIC_EPP_DEFAULT_ENABLED) {
->   			WARN_ON_ONCE(policy->policy != CPUFREQ_POLICY_POWERSAVE);
+> -	if (!(le16_to_cpu(msg->ext_msg.header) & PD_EXT_HDR_CHUNKED)) {
+> +	if (!(le16_to_cpu(ext_msg->header) & PD_EXT_HDR_CHUNKED)) {
+>   		tcpm_pd_handle_msg(port, PD_MSG_CTRL_NOT_SUPP, NONE_AMS);
+>   		tcpm_log(port, "Unchunked extended messages unsupported");
+>   		return;
+> @@ -3919,9 +4031,17 @@ static void tcpm_pd_ext_msg_request(struct tcpm_port *port,
+>   					     NONE_AMS, 0);
+>   		}
+>   		break;
+> +	case PD_EXT_GET_BATT_STATUS:
+> +		if (data_size >= 1) {
+> +			port->batt_request_id = ext_msg->data[0];
+> +			tcpm_pd_handle_msg(port, PD_MSG_DATA_BATT_STATUS,
+> +					   GETTING_BATTERY_STATUS);
+> +		} else {
+> +			tcpm_set_state(port, SOFT_RESET_SEND, 0);
+> +		}
+> +		break;
+>   	case PD_EXT_SOURCE_CAP_EXT:
+>   	case PD_EXT_GET_BATT_CAP:
+> -	case PD_EXT_GET_BATT_STATUS:
+>   	case PD_EXT_BATT_CAP:
+>   	case PD_EXT_GET_MANUFACTURER_INFO:
+>   	case PD_EXT_MANUFACTURER_INFO:
+> @@ -4132,6 +4252,14 @@ static bool tcpm_send_queued_message(struct tcpm_port *port)
+>   					 ret);
+>   			tcpm_ams_finish(port);
+>   			break;
+> +		case PD_MSG_DATA_BATT_STATUS:
+> +			ret = tcpm_pd_send_batt_status(port);
+> +			if (ret)
+> +				tcpm_log(port,
+> +					 "Failed to send battery status ret=%d",
+> +					 ret);
+> +			tcpm_ams_finish(port);
+> +			break;
+>   		default:
+>   			break;
+>   		}
+> @@ -8633,6 +8761,7 @@ void tcpm_unregister_port(struct tcpm_port *port)
+>   	hrtimer_cancel(&port->vdm_state_machine_timer);
+>   	hrtimer_cancel(&port->state_machine_timer);
 >   
->   			cpudata->current_profile = PLATFORM_PROFILE_BALANCED;
-> @@ -2410,9 +2386,9 @@ static int __init amd_prefcore_param(char *str)
->   static int __init amd_dynamic_epp_param(char *str)
->   {
->   	if (!strcmp(str, "disable"))
-> -		dynamic_epp = false;
-> +		dynamic_epp = DYNAMIC_EPP_DISABLED;
->   	if (!strcmp(str, "enable"))
-> -		dynamic_epp = true;
-> +		dynamic_epp = DYNAMIC_EPP_DEFAULT_ENABLED;
+> +	power_supply_put_system_batteries(port->fixed_batt, port->fixed_batt_cnt);
+>   	tcpm_reset_port(port);
 >   
->   	return 0;
->   }
-
+>   	tcpm_port_unregister_pd(port);
+> diff --git a/include/linux/usb/pd.h b/include/linux/usb/pd.h
+> index 337a5485af7c..afb9c2c65588 100644
+> --- a/include/linux/usb/pd.h
+> +++ b/include/linux/usb/pd.h
+> @@ -724,4 +724,33 @@ void usb_power_delivery_unlink_device(struct usb_power_delivery *pd, struct devi
+>   
+>   #endif /* CONFIG_TYPEC */
+>   
+> +/* Battery Status Data Object */
+> +#define BSDO_PRESENT_CAPACITY				GENMASK(31, 16)
+> +#define BSDO_CHG_STATUS					GENMASK(11, 10)
+> +#define BSDO_BATTERY_PRESENT				BIT(9)
+> +#define BSDO_INVALID_BATTERY_REFERENCE			BIT(8)
+> +
+> +/*
+> + * Battery Charge Status: Battery Charging Status Values as defined in
+> + * "USB PD Spec Rev3.1 Ver1.8", "Table 6-46 Battery Status Data Object (BSDO)".
+> + */
+> +#define BSDO_BATTERY_INFO_CHARGING			0x0
+> +#define BSDO_BATTERY_INFO_DISCHARGING			0x1
+> +#define BSDO_BATTERY_INFO_IDLE				0x2
+> +#define BSDO_BATTERY_INFO_RSVD				0x3
+> +
+> +/**
+> + * BSDO() - Pack data into Battery Status Data Object format.
+> + * @batt_charge: Battery's present state of charge in 0.1WH increment.
+> + * @chg_status: Battery charge status.
+> + * @batt_present: Indicates that battery is present/attached when set else absent when unset.
+> + * @invalid_ref: Indicates that an invalid battery reference was made in the Get_Battery_Status
+> + *		 request.
+> + */
+> +#define BSDO(batt_charge, chg_status, batt_present, invalid_ref)	\
+> +	((FIELD_PREP(BSDO_PRESENT_CAPACITY, batt_charge)) |		\
+> +	 (FIELD_PREP(BSDO_CHG_STATUS, chg_status)) |			\
+> +	 ((batt_present) ? BSDO_BATTERY_PRESENT : 0) |			\
+> +	 ((invalid_ref) ? BSDO_INVALID_BATTERY_REFERENCE : 0))
+> +
+>   #endif /* __LINUX_USB_PD_H */
+>
