@@ -1,29 +1,29 @@
-Received: from AS8PR04CU009.outbound.protection.outlook.com (mail-westeuropeazon11011012.outbound.protection.outlook.com [52.101.70.12])
+Received: from DUZPR83CU001.outbound.protection.outlook.com (mail-northeuropeazon11012012.outbound.protection.outlook.com [52.101.66.12])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 61AB53603C0;
-	Wed,  1 Jul 2026 16:25:14 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.70.12
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 073CC36AB61;
+	Wed,  1 Jul 2026 16:25:18 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.66.12
 ARC-Seal:i=3; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1782923116; cv=fail; b=uxFNWWisfAJXPcHE7ttINr39h6Q60IfnkUKxdyIjkVMkwnJVJ33gGwHAehZXELOeSTf3Vo+/x2IXaIFeMTp/jGSL2W4n2FgXI1pu22FQVEDbzYqXHy65HL+TUnkBBZZOze8bkyFfXjSyrycF6EoO5CA5bqOinb+W4iHcZ0n4+i8=
+	t=1782923121; cv=fail; b=KorzrmDJ2bTlOkt+kOzEmYLjofzg/JwT20Dhcai9lyvBR9KUJ8Ujnyp8bdcJRkILOyHc4udb6X57Icay/5ac50TABRrPNyHoeOtb7iWnKsgLpbUWLTFDP9l36cjAOL+zF2eWlezfXYSTsyuGLDemHtbDgGbO5bp3yv4sxbiv9Zc=
 ARC-Message-Signature:i=3; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1782923116; c=relaxed/simple;
-	bh=q8i/CuRdO85dBxSfLeWWP0290ujMMn8OuGd2ddMhoAw=;
+	s=arc-20240116; t=1782923121; c=relaxed/simple;
+	bh=kgzw3b0hqSQoO2dZVkc6W8UgikJRdypV0CO7uXdtI3c=;
 	h=Message-ID:Date:From:Subject:To:Cc:References:In-Reply-To:
-	 Content-Type:MIME-Version; b=ADdEpotnTDrTyW3shgaJVNOcZoNJzMWebb496QB8C++rGfJRQqYeN7O886/u1b7dLremmNAEcGWOWMUER/cuR7o5CCq6oUPoE0zhRSaKp0y8P3E7ansNFpNjtaN75Zbr8qdwRti228PklOImhZCvvD0NxzCIJR62TtE1+1n9kJE=
-ARC-Authentication-Results:i=3; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=MfGWjBg2; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=MfGWjBg2; arc=fail smtp.client-ip=52.101.70.12
+	 Content-Type:MIME-Version; b=Lz9MqVN4o+gZbQKBr2rpwXoL3RN9Jy5mMaR46W4423e5FTC/WMJbJbXOxq3lr/VBkxRGT1SbeFKALAh+QMNw2934NodlWsfWdgvLfe/IY3xu7gjWUIoss5EDJ/gyWBFodYmrdsequNzIqsX55yzc2Q8bMaCeztiAWM4QEh8UgKs=
+ARC-Authentication-Results:i=3; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=n+ezlxFi; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=n+ezlxFi; arc=fail smtp.client-ip=52.101.66.12
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="MfGWjBg2";
-	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="MfGWjBg2"
+	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="n+ezlxFi";
+	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="n+ezlxFi"
 ARC-Seal: i=2; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=pass;
- b=uGEWXZ6SLVwctQymunvmArEtcg8u0NFFVUjUNyj7u+ddvp9P0+VQ8q0OdO5UHSfYk8+5B9kWbsDoo4R+GKW0EN6JyDWpgheuC+VRg87q/5JGbrIMG9XsqyARVM0RBMcjxk5Aee/eJroPyWMrvAOnEMc0W2jmQhH8Qs8dEkGi2R/Xa026mgJ5b9NQLy+XATNlUhfJA7sSQGEPtfXHVaTFMC3/QFHY3rey4ODGfNVcBgWIZyCKM/vX8XvN1XRflFt9fAW672RNg1soMiQViTB5yyg4SzuyySBeZX5KCCXJRsKH39nV4GnHlxzefs8xFuGUGOB0eImtIk7I9IXxn/pZWg==
+ b=cTF0EMdDxRKa6UT56FGzhIgSnuSQsNcFZ9U9wo9oHbmZn4H5cPz65ArbvGWqx2CDnS/s3Llddc5CMkFCYCxYfg+j4s9qN6AxeL9r2PaGp62L+k6lYNW6w6B5U0n07ghx80X6le8aQgK8bZis3NrxGKai7FJI00xTZ41JsA/uiW3t8H1OV+XeNDDLFf6UIboLEtKNTO6v0V73Vsrt8ECoJtpBbZ1DCkJM+piJR54QaJa7FMmLemJfVLWp1hzmMblCfI0KTiI0tF22GUfEflLj0yGK5r64TJAtAYXiaaLD2S0lHjcBT5kV/yWPTMf50/+2C1wRhdlD+qp/V2tAp4SiVg==
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector10001;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=VQLYcuiI60TJc34NejVutZT8GiTY8t7G9YjJnNfGq+4=;
- b=BQ//MRo0Oyc9rNX71DRm0X8oA/eUL5qgDifKrFFYIjJlxQtDQtyLYrk+sBIoh5/19hX7D4S6U7l1JoSM9PwflnHz9vYUeZKzZ5HKt6hXyl43Huvf4YtwE9cUnoekmj+ispusX2IDDgXhC+IeEZFT6sSVTtoD9z3XsvTL14/NrhN5QuOyZ8EWDAPrw72SAs83XYZeQCrBeZkh+cRBvh2cHDSalnJ+MgLIrTcxZc6urLJN2XL4e0J3ltWOXmbERi/NIwtd5vVunXQujFYjfze/XvSp534gUGkmM7AKbB/EUdEzYUAG2L/1xR7boJmLYsDxO9AGJghlBmeaKzoGrhn6mw==
+ bh=k+Fqvu3TY1O88xSjA4xtdM8M/nzRMOOXTzQvZF2MEtU=;
+ b=WTM9tGLyiS2iMShFfIUXXLhSx5ivzPrP2S62nFzAn8/ThMP7TNbVthqCSyKw+ePR9+Zptkl7LDnGrkam7a0EY88AGraXJTMecYx/hSxZu5Rs0iekQjcifjQ2y0yI38LdQKfYS6AVrvxXQUuKvhGEb2XcrFuuC6Tjriz8a3nltSU0X2d05LLTqKVyPQnMtxgDR5wjhsoad/Nxgq5qB7Z69hHgJaNtIj9B5dSZr01Aw54yvQpZGQ6jmQFbiYE2vBKO4082R+X93gHuBQrr241jV4SSbtzT+BnqWsqzRBhjvx6lhXEYSafjC1NDnX5BxOKMSqJb6T5/5mi62D8jvx/wAA==
 ARC-Authentication-Results: i=2; mx.microsoft.com 1; spf=pass (sender ip is
  4.158.2.129) smtp.rcpttodomain=nvidia.com smtp.mailfrom=arm.com; dmarc=pass
  (p=none sp=none pct=100) action=none header.from=arm.com; dkim=pass
@@ -32,18 +32,18 @@ ARC-Authentication-Results: i=2; mx.microsoft.com 1; spf=pass (sender ip is
  dmarc=[1,1,header.from=arm.com])
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=arm.com; s=selector1;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=VQLYcuiI60TJc34NejVutZT8GiTY8t7G9YjJnNfGq+4=;
- b=MfGWjBg2giSpfqvmgawzanObcKFjUu/yPrH8Bq/srgsePOFTSQqCyncNwBUz3iws4zkk5dOC4bkklpYtnFVIYrp7omAp9lalyZXHv78UuZBvNTYt2iRISKRJ1BUEx9ZpDKU/HbngPR3CdGTEqJ4ts2b3+lCTYMk8D3bZ4MSFDwE=
-Received: from DUZPR01CA0023.eurprd01.prod.exchangelabs.com
- (2603:10a6:10:46b::17) by VI1PR08MB5341.eurprd08.prod.outlook.com
- (2603:10a6:803:135::20) with Microsoft SMTP Server (version=TLS1_2,
+ bh=k+Fqvu3TY1O88xSjA4xtdM8M/nzRMOOXTzQvZF2MEtU=;
+ b=n+ezlxFi3mxMDfbcDMc+DY/CO0efoD39R51GOTZRslcfD27V1Ym/m+wY1x4JEAFfxcROIbd792ievhePHpL5yUA90UJ6eAT13l+s1rOQgnPzkSUPZod+qN6s4PO8IlAoWax6tCI89FJ5AZ16+GplVkD2U8AoyFSairx+dh8nxes=
+Received: from AM0P309CA0028.EURP309.PROD.OUTLOOK.COM (2603:10a6:20b:28f::6)
+ by DU0PR08MB7640.eurprd08.prod.outlook.com (2603:10a6:10:31b::17) with
+ Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.181.8; Wed, 1 Jul 2026
- 16:25:06 +0000
-Received: from DB1PEPF000509F6.eurprd02.prod.outlook.com
- (2603:10a6:10:46b:cafe::74) by DUZPR01CA0023.outlook.office365.com
- (2603:10a6:10:46b::17) with Microsoft SMTP Server (version=TLS1_3,
- cipher=TLS_AES_256_GCM_SHA384) id 15.21.181.8 via Frontend Transport; Wed, 1
- Jul 2026 16:25:06 +0000
+ 16:25:10 +0000
+Received: from AMS0EPF0000019D.eurprd05.prod.outlook.com
+ (2603:10a6:20b:28f:cafe::74) by AM0P309CA0028.outlook.office365.com
+ (2603:10a6:20b:28f::6) with Microsoft SMTP Server (version=TLS1_3,
+ cipher=TLS_AES_256_GCM_SHA384) id 15.21.202.3 via Frontend Transport; Wed, 1
+ Jul 2026 16:25:10 +0000
 X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 4.158.2.129)
  smtp.mailfrom=arm.com; dkim=pass (signature was verified)
  header.d=arm.com;dmarc=pass action=none header.from=arm.com;
@@ -51,52 +51,54 @@ Received-SPF: Pass (protection.outlook.com: domain of arm.com designates
  4.158.2.129 as permitted sender) receiver=protection.outlook.com;
  client-ip=4.158.2.129; helo=outbound-uk1.az.dlp.m.darktrace.com; pr=C
 Received: from outbound-uk1.az.dlp.m.darktrace.com (4.158.2.129) by
- DB1PEPF000509F6.mail.protection.outlook.com (10.167.242.152) with Microsoft
+ AMS0EPF0000019D.mail.protection.outlook.com (10.167.16.249) with Microsoft
  SMTP Server (version=TLS1_3, cipher=TLS_AES_256_GCM_SHA384) id 15.21.181.6
- via Frontend Transport; Wed, 1 Jul 2026 16:25:06 +0000
+ via Frontend Transport; Wed, 1 Jul 2026 16:25:10 +0000
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=Ig/zO6+ZqZNWIaGxJQGTcWjN5NxH7m1F/SSBwVPt84IT8H2bBZKCDA93pRfAZ+0jU5OwQGbgmUbgxDI2XO4hRo2bAFD/Jan/iNRgFoBkXfR29ZgIqzIve8eEg0W69WlHBtiKPdOxhxsj1Q7EieldgM/u+iJ7Kf33l7w/5VVcnrtWNcW5R6teunfnPVwLvvec9PEIuCIsadwFE/UlBMTV9ohn0QtxJE4XVycP3M1yHG179kTCLzPpdq93yn3RpaxeD/XmBBoDFhlSW6D3SOXFnFPPQ/KkBEjUw8LMQqYzZILcWDV3nT/Dfr602WGYbz2RExFanM5O+zT7/Nwszroyfg==
+ b=J95EpYHqaeWc4nm0oM8UnwIe7Jye5KGwoOzPFLs7Q4bpEJm4CD1fy78SeRosqVkrDcfrwBi6jDQnhfYHolqdLz5JrpXcXpGamUEVB5bij2QMKrbE2NQHXJrFS0UjpQEEGPazSGWIWdDYJ1oOzcWeOKqcy9vvKG+7fhrbZjQ0IGXDiWBBwhALLlneLaUvKX+8Uw8PtDKBqa/q76XIIuZwu0elRi7Oozs7o53ZP3AtIy1OILrDGHTiB8EsH/LrAtVl9g1qxOdPWnwuf0ewqpUU1iZ693/s9kp/3HZJXbNMdhmMr+XfkYePnYHL2Le3n3cYBnhgrNqAlS1k2/bgC+1RMQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector10001;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=VQLYcuiI60TJc34NejVutZT8GiTY8t7G9YjJnNfGq+4=;
- b=zMMIXlHjKDYFOURNtVpgLoBNVJfaDatk3+KZfVf/BTvzdoXFJfn8NHs9yXMBn1mg3wgTpa+k4+5TX8ajprwfN9Ke3FIwYTIbKvDMxKOm5rl2Q+6AC9/a4sFdPT7SmvwRtnK2Yj7qj9nxBuHoDJpDHmSFHlqVCHDnV1vDR6dgK262eoQuasrKlHXsmB6HVqPityhSeyhuIiag+iN0LfFrn52wGgketbkdgn+skaCngBxMXlqffwg/zkqns3WctUzvWikh+4oNjiK3G/5NoHYYDSsIdCtQxyP+LJtwC1z6nHks9P9VtcK7+gPYb/RvH3dK+3fNhHiw4icXMMTAorp0Iw==
+ bh=k+Fqvu3TY1O88xSjA4xtdM8M/nzRMOOXTzQvZF2MEtU=;
+ b=JRmX6GvxwpmsJ05RPcaf1VdIIFoR0YMDIHYf7S9jOpCkzQDByTLZiIR0fp/49aukGPqS4FAiDgJByyGBM6GZd8Yx9ru6eF+fE4bYP8nhjxO+64K5aJGnpAsVD8pmg/JeBpJxj1grXJmvEMp/0w6s+gynBveXn0rOtXd/yjS5ijvYi6a3F4QYH3aZ4z4LKh+qRd6nltiLzz/86D0UDAh7NjOBBtT8rDW7yAomRtYUJZ2mQAgcgzavvyqlBt+m0kPIomkNBFbfNpPhL0LtlwskJ5xXpihbRtGW2/Nve77KbHl0Pj6KwcYOu8dlFf6Ibg+nLovkmrwGsA1NLJGr+Oe5gQ==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
  smtp.mailfrom=arm.com; dmarc=pass action=none header.from=arm.com; dkim=pass
  header.d=arm.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=arm.com; s=selector1;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=VQLYcuiI60TJc34NejVutZT8GiTY8t7G9YjJnNfGq+4=;
- b=MfGWjBg2giSpfqvmgawzanObcKFjUu/yPrH8Bq/srgsePOFTSQqCyncNwBUz3iws4zkk5dOC4bkklpYtnFVIYrp7omAp9lalyZXHv78UuZBvNTYt2iRISKRJ1BUEx9ZpDKU/HbngPR3CdGTEqJ4ts2b3+lCTYMk8D3bZ4MSFDwE=
+ bh=k+Fqvu3TY1O88xSjA4xtdM8M/nzRMOOXTzQvZF2MEtU=;
+ b=n+ezlxFi3mxMDfbcDMc+DY/CO0efoD39R51GOTZRslcfD27V1Ym/m+wY1x4JEAFfxcROIbd792ievhePHpL5yUA90UJ6eAT13l+s1rOQgnPzkSUPZod+qN6s4PO8IlAoWax6tCI89FJ5AZ16+GplVkD2U8AoyFSairx+dh8nxes=
 Authentication-Results-Original: dkim=none (message not signed)
  header.d=none;dmarc=none action=none header.from=arm.com;
 Received: from VI0PR08MB10391.eurprd08.prod.outlook.com (2603:10a6:800:20c::6)
  by VE1PR08MB5646.eurprd08.prod.outlook.com (2603:10a6:800:1a9::19) with
  Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.181.8; Wed, 1 Jul 2026
- 16:24:01 +0000
+ 16:24:07 +0000
 Received: from VI0PR08MB10391.eurprd08.prod.outlook.com
  ([fe80::fa6b:9ba8:5c2f:ac91]) by VI0PR08MB10391.eurprd08.prod.outlook.com
  ([fe80::fa6b:9ba8:5c2f:ac91%3]) with mapi id 15.21.0181.008; Wed, 1 Jul 2026
- 16:24:00 +0000
-Message-ID: <b665ecdd-31c3-4663-8f1b-d734ef0c630b@arm.com>
-Date: Wed, 1 Jul 2026 18:23:58 +0200
+ 16:24:07 +0000
+Message-ID: <07721a34-dae0-4575-897b-e4cb7754cf4d@arm.com>
+Date: Wed, 1 Jul 2026 18:24:05 +0200
 User-Agent: Mozilla Thunderbird
 From: Pierre Gondois <pierre.gondois@arm.com>
-Subject: Re: [PATCH v5] ACPI: CPPC: Add ospm_nominal_perf support
+Subject: Re: [PATCH v5 2/2] cpufreq: CPPC: add autonomous mode boot parameter
+ support
 To: Sumit Gupta <sumitg@nvidia.com>, rafael@kernel.org,
- viresh.kumar@linaro.org, lenb@kernel.org, zhenglifeng1@huawei.com,
- zhanjie9@hisilicon.com, linux-pm@vger.kernel.org,
- acpica-devel@lists.linux.dev
+ viresh.kumar@linaro.org, ionela.voinescu@arm.com, zhenglifeng1@huawei.com,
+ zhanjie9@hisilicon.com, corbet@lwn.net, skhan@linuxfoundation.org,
+ rdunlap@infradead.org, mario.limonciello@amd.com,
+ linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+ linux-doc@vger.kernel.org, linux-tegra@vger.kernel.org
 Cc: treding@nvidia.com, jonathanh@nvidia.com, vsethi@nvidia.com,
- ksitaraman@nvidia.com, sanjayc@nvidia.com, mochs@nvidia.com,
- bbasu@nvidia.com, mario.limonciello@amd.com, linux-kernel@vger.kernel.org,
- saket.dumbre@intel.com, linux-acpi@vger.kernel.org
-References: <20260615185934.2383514-1-sumitg@nvidia.com>
+ ksitaraman@nvidia.com, sanjayc@nvidia.com, mochs@nvidia.com, bbasu@nvidia.com
+References: <20260623080652.3353386-1-sumitg@nvidia.com>
+ <20260623080652.3353386-3-sumitg@nvidia.com>
 Content-Language: en-US
-In-Reply-To: <20260615185934.2383514-1-sumitg@nvidia.com>
+In-Reply-To: <20260623080652.3353386-3-sumitg@nvidia.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 X-ClientProxiedBy: LO4P265CA0236.GBRP265.PROD.OUTLOOK.COM
  (2603:10a6:600:315::15) To VI0PR08MB10391.eurprd08.prod.outlook.com
  (2603:10a6:800:20c::6)
@@ -107,257 +109,367 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 X-MS-TrafficTypeDiagnostic:
-	VI0PR08MB10391:EE_|VE1PR08MB5646:EE_|DB1PEPF000509F6:EE_|VI1PR08MB5341:EE_
-X-MS-Office365-Filtering-Correlation-Id: 15ff9e0b-207d-46b1-5c36-08ded78d4fcc
+	VI0PR08MB10391:EE_|VE1PR08MB5646:EE_|AMS0EPF0000019D:EE_|DU0PR08MB7640:EE_
+X-MS-Office365-Filtering-Correlation-Id: ca300dd8-3f36-41c8-95a4-08ded78d5251
 x-checkrecipientrouted: true
 NoDisclaimer: true
 X-MS-Exchange-SenderADCheck: 1
 X-MS-Exchange-AntiSpam-Relay: 0
 X-Microsoft-Antispam-Untrusted:
- BCL:0;ARA:13230040|366016|376014|23010399003|7416014|1800799024|6133799003|11063799006|18002099003|22082099003|56012099006;
+ BCL:0;ARA:13230040|366016|376014|23010399003|7416014|1800799024|921020|3023799007|6133799003|11063799006|18002099003|22082099003|56012099006|4143699003|18092099006;
 X-Microsoft-Antispam-Message-Info-Original:
- ZY7c+NVrd2XAnO8VvBwuXsc3OtXCWqWweWePIppHOnk3tg22J9lyc7onQicVpnn4K8WwU6kzRdFye1/rJbSR0IchByEf36TqHIHR3U/2AcQYw4gwfN1KYgtGp+/2bStZQYn9AUjvOLCpzTHum2bOJB1q32di5BfcEn4wWSSA8+o50t0jObxd2W6Zi6FUAqMacl8Mi8GG0xKmEobIcHN/L5TWv7COaITkkkkkqFwZ0KIKgepfgJCCe+8sMFZSZVGElOLlYuaF/AJe60MESj3lQE6HgHyW56+dmdTM2DF3qt01typW1sS8n1WJ1y0j1+UQEPaQvRmdkFXCN05als3lDpW7lhf3Xi2a13NJTCzPcp3q/2auNzN1D8Bhxjy61GtqAd6aa5usBl3iN8mkpj8gJEsh6VHckcFUu/XHVRPqmqXoVdHxlCkTYNgnskxbcUXAkJmZ8d+CHSx5/nGmW1N9FcE/wkRP3cdV0fsLSGBhParc+doAsWZV0W9Ej2HKIoQ9WEKKn9ayDTmvFZ9I0vqbz+C3liOa9Fal0pmOfEJCrRTIcv5f40+MCjKLS4nSrplqLJLn+x/M3YL15HOx9KZBEQsO0qMame3TrtynzMyOB7ZG1t4HtM8Bzfq93izunltEehOMya4hFmfxS4uiOw8k8j8FwlG6tigkaTkWargSVwM=
+ 47hc/e/5ew/YIg45zMarq/c0cbye1glIHjfLvCmJeB65w5A6Urj391EWhAbDR+oqyktrJ3VIRf3VN4lrCovTlXqpy19LiRSLlGUy5EN2k3iem9B59TdM5TV5Gd3NFl9TgfM7mmbV5bPINX6Xag1hATRFgzucG7cqqtR18nQz+Eg9aA5znKkJvT65l3Bk41Y4KiZ6p6UQ7q+kwrLy9cRFA4IOVlBkv3iQNdn2v9CT3MYhYUHPWNGWT9QljDnhZQaSr+c3mCQY2dPE155EWoidXPBrYLay/3qn07L8lgsfT5GALG56SQalAD20gkHwA96YH0zXVT3oduWGjp/lwAWNyEDTStfIuIVBTjM35P1F62j5e+qcifKdq3WaSqsl1L8Z1JxiHaBn7bk60DTxHiqSYTuokKdFjqFTVkKXhnla5KXZC3mQMZzQN89/MeLIzV5sblNseiiB0iZ/xJwVUfR4cmcojlPde1IZZ7ZK/uY3hgXDMn1+kpPuV131B2lWFcXECxAuAFOTTcJY8SOUzuxMYmzqIOg/5EUvVXdh2MeTy4mhfcQs6ETwiNT6kFiRWbrKj8a6ZP7GYtUTdrd7lTDA9MBgGZ98b6G7DhSdGlDXrLr9vq7DyHltT+gH0N5zxqTg6m07D6OTUzcFcij4WHRX/3xOB6i24jRPEokBC8B5vQSRs5q/oJ+3IWn4OeRVzVZWiTGpWRI9FGw7Y+X2uVYlhA==
 X-Forefront-Antispam-Report-Untrusted:
- CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:VI0PR08MB10391.eurprd08.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(376014)(23010399003)(7416014)(1800799024)(6133799003)(11063799006)(18002099003)(22082099003)(56012099006);DIR:OUT;SFP:1101;
+ CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:VI0PR08MB10391.eurprd08.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(376014)(23010399003)(7416014)(1800799024)(921020)(3023799007)(6133799003)(11063799006)(18002099003)(22082099003)(56012099006)(4143699003)(18092099006);DIR:OUT;SFP:1101;
 X-Exchange-RoutingPolicyChecked:
- Z8zKW5M3sLjlfd5yMsmc3mzcVNQs+ilfDF3vPLbd/WoiMBLdubCiEpuLCfNzAw8dGgQxG0czYDLHPaHLa8FSlmSbCsxx+aGyVLPPKDuAWGiHOssWzkdCMWDOtazFyV023WlHtL9KVfXr4tY/mewUHUJskfqoPFy2f5EiA+PpV8c00UAb3xgda0LXyowJAuqGZ/ykf2WTEBFjiZ4rIKYrOwdxZE3mYQ1KyGv5xHUHyMJ7x0wnTvRn8PBx8FYHURUEHPgfjyfmGU1g+Zv1TOhfBeYALwspCfudZtgBx0A2y0KKR0jYjBD/m5vW2cOSvsjsVdhO/lwfIEXZfilBis3oAw==
+ q1/iVD1HYvMp6qPIigq/ULTfcyvN8JAMgBL7G+GGaNpK0Cr0CQBCHIOwPGE7g2jTiyiWm1CbXtXtFFUHhtLz0/sbtQchaiSQg5rfuQmfEKi1Z+nggFNYjPLC+EJX/MSENENghQYjHKp+OmLa08l5PjbixaE1X6/cOoOZuanoE4F7sislbzd88ZaEiJt3DC2jmSeDVCBy1NPBPZtbeGWcvdUHvgJpGddlbwr0yqW3mS0E5Ud4H9ObVjKAI+ryFJFWnx0otfEGwyyJs++cl8gpALzLnKnDTNf64VmYimg3HZ1MIRS8xglkTTCvuBJWLg2jHFL2I8sLvng11EEOCGNqrg==
 X-MS-Exchange-Transport-CrossTenantHeadersStamped: VE1PR08MB5646
 X-EOPAttributedMessage: 0
 X-MS-Exchange-Transport-CrossTenantHeadersStripped:
- DB1PEPF000509F6.eurprd02.prod.outlook.com
+ AMS0EPF0000019D.eurprd05.prod.outlook.com
 X-MS-PublicTrafficType: Email
 X-MS-Office365-Filtering-Correlation-Id-Prvs:
-	d6a1a280-2aca-4948-c477-08ded78d28a3
+	5f6c3dc5-3b02-47b1-af7c-08ded78d2c8a
 X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|36860700016|82310400026|23010399003|1800799024|376014|7416014|35042699022|14060799003|11063799006|56012099006|6133799003|22082099003|18002099003|13003099007;
+	BCL:0;ARA:13230040|23010399003|82310400026|1800799024|7416014|376014|14060799003|35042699022|36860700016|22082099003|18002099003|18092099006|921020|13003099007|4143699003|11063799006|3023799007|6133799003|56012099006;
 X-Microsoft-Antispam-Message-Info:
-	RtpVaCO3bDTavzsHsDSqoX8PMMOBLUZOQNr6RhW0SZKxy/n0ccBqXtvsTdlhaviNovJ1TtxYHU03S0p/IEocmEA+2M+4d9lapsdAiOufYOQD+iOs7vO6s1f+isK9IbZ0MtKMdTq0G5giLI/ppSafaRY70YEw0onBNoqw9pzy7WdVCIUvRWMmMe6Q2fK85OHGmvgt90rBICkGBfrd5Efjz39/SRfbeWD0Xgyszb5/E5hosF6pMJWle2IRHnJPKujqOKvHJ8P+vs1LqYCag2mzdH4kXtL54uSqX3XJ1ua4jLxpuVX2K3Rk7TbHrCmQ8BiWI+CZWv+sDOiKLzFXeNWF+SksP9B6OYVKW0qq9PgI+Y+KMDxpzWvudUmqy2D+1yew+pARoGY69cO8dEobZbWH9E64pHMzMVt0Z4N4RUVMPMKhuKiiHsgYoMJ7scVWB+HKqO4j8j0N5TxsA9To1kvYlMnbhR4SCCfZxc8DXqTRYUw7NSZLEPH0RbvypcoMqdYkqqGj16K+4b+dUP43c4wiU10GB6PW9ihmKGD2XnYufJuoCFSi650EbQNNEKdWhR38Q+FDE3gWnXZq/aSqbYbabwxzVqj93ECkK8KFAKHZjTqUfW/Cu0kLdqcbxnsKe1LDa51EEgm9cdlvXSzGSTEzSl/5SvoJ0uOg5ciyoDXR4B6NkwRGg77HrQ9lsdKxLH4CkijL3H5t7LukROOOy9rtkw==
+	5PK1RI8RUx7XiX3q5UtvlstIkFiG107vCHp6kIcl5KgeZjxjipKFa0cvmUoB/noKNUyxWECg2Izb7+4FB3UeJHq6nvU3Yvg1kauwJmVRJ6X0UbcUjS/wa5Ynv1THnxoQ1eyPI4UNj4mQDqNCYGvooEnS1od3hzDlla+bgA1MsrQmD6g+xWpynmHW4GmtzVSQospliOLcdrGMOPM2TgzcZId4nt0hy3O693ETZftoQqiXh31/nNCO9AYRBaX2pbg6in4sJAgaXw0Lk84NIcrTzyfcyUAx2g7aOYljcGl1KATmrD1la3FDY9A6b3L1VSxMB4KQnyN4sY2HqfWDP+a3qvpmI3yg9wEBEsnOwRIr9LawDmd1tq+kf8AIxTDmT0X0dxq//vF4d9AB1SiFqyMhACrn6xyFBYe9DZvMwTtfOrAtTpmwQUaIif0pZDJrHyD2P4h6dpwKuJibZt9/KEplP3QqnyJrkTXieiaNSXjEa4vVZfqr4NWW5R2xrfb7iZHOHVr1x3KzP9JN+Ht7cB0yKAhQo9TIzqz4VVrM4iY6pTH+uRPY9sx5vyfmkRyrf8RgioUFId2ERftzpajMiWe70/j9oeh+mnAHZzPAq+CE/PW6YZ5DxUCsWQ43z+mbLcJ/H4d11jfgsiXtGW47B4HRtqK/7yCzApmEZhGLHMb+mwdsdeTU0hlCQSNJ6L9sR19AEKJ/CoYGGl+Pms3OwFzCrDWtQ6egtkOb7bkVmkjcKObthUoOv8QOSD6+yNMBDNS8
 X-Forefront-Antispam-Report:
-	CIP:4.158.2.129;CTRY:GB;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:outbound-uk1.az.dlp.m.darktrace.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230040)(36860700016)(82310400026)(23010399003)(1800799024)(376014)(7416014)(35042699022)(14060799003)(11063799006)(56012099006)(6133799003)(22082099003)(18002099003)(13003099007);DIR:OUT;SFP:1101;
+	CIP:4.158.2.129;CTRY:GB;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:outbound-uk1.az.dlp.m.darktrace.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230040)(23010399003)(82310400026)(1800799024)(7416014)(376014)(14060799003)(35042699022)(36860700016)(22082099003)(18002099003)(18092099006)(921020)(13003099007)(4143699003)(11063799006)(3023799007)(6133799003)(56012099006);DIR:OUT;SFP:1101;
 X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
 X-MS-Exchange-AntiSpam-MessageData-0:
-	yqNZHQgRvFhMs7l5qBgLMyOzt2Jws9bQbLBh0tEsE2KS4alF6ddfAIRx/06zroIpHs55QbbWXbOO2o9i2tZ6U6aLuIdO9oXlF6XONJ/m7XDvVnpJyhQjqil5lIOYIU2uITdqKf0COo7v/DqEMf/NXuRrGtu33tAV5pzcSAhBg8MXxjUOsuqyMdB1D0RJRvPMwUsgWU466eWAc8b/KyEHCyroG6+sibwxdmVjkAKiGbLuuyaHBVMdgCvJDObvqVpZHUDsZGvYYOFNb2sCr2oPdZjj4ALOWosR2SC8Msj9GsKgmr0P9UC6Li9MDPgGY7hp95gZUrJiylpRiWWr5D6Ktz3E/sRWsow/1X10GrywgdODraiweFop5rD9W9h3G0kA9aLnyjhoUOkD2AVFCInNUXx6OHZHl1+4g+JxtMnyTo/r7dRdq6GU479yGjrSYH3F
+	ZOlZ9TWXXkH1ppnDuWZtPeXFm+FIJYf/ccswTWh42+uWkpKuAUUuWjWxIk1A5qP0ds8Aqtgeqgo0g5O22Gi4M5dotfaqsFcBaoPILjVuTizll8R092wj+xXd/VLuCreegeSpwIhPcOQBZym7AHRBDfOwDurfJQjSxmCXaL4gBnNakmgUgye6jOUy3fWRcfM9v1vr8uXngPlX9uOu1KNW1uOwjvb7Nbb4rvI2l06M/2PMRQEwGpHNsbqbEp+y6Cct3kt39lSv1z9unZRyysImEii/KaPtS3y8ylQ+IkWCerza29i0BAcqZM0xrRyHa3OE5k22kgl1ci+h94h3wzSiCVVxu29TS/9JUD7dsmrbnr3+1Tj38bZS9vOh8+qfmrZN8hHC4HnbwTNvrB0k0LLUaTqckp5lYx6+q4II1+LqsWG1vfCjC4wKzIoO6XM65Q/n
 X-OriginatorOrg: arm.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 01 Jul 2026 16:25:06.0437
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 01 Jul 2026 16:25:10.3534
  (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: 15ff9e0b-207d-46b1-5c36-08ded78d4fcc
+X-MS-Exchange-CrossTenant-Network-Message-Id: ca300dd8-3f36-41c8-95a4-08ded78d5251
 X-MS-Exchange-CrossTenant-Id: f34e5979-57d9-4aaa-ad4d-b122a662184d
 X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=f34e5979-57d9-4aaa-ad4d-b122a662184d;Ip=[4.158.2.129];Helo=[outbound-uk1.az.dlp.m.darktrace.com]
 X-MS-Exchange-CrossTenant-AuthSource:
-	DB1PEPF000509F6.eurprd02.prod.outlook.com
+	AMS0EPF0000019D.eurprd05.prod.outlook.com
 X-MS-Exchange-CrossTenant-AuthAs: Anonymous
 X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: VI1PR08MB5341
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: DU0PR08MB7640
 
-Hello Sumit,
 
-On 6/15/26 20:59, Sumit Gupta wrote:
-> Expose the OSPM Nominal Performance register (ACPI 6.6, Section
-> 8.4.6.1.2.6), which conveys the desired nominal performance level
-> at which the platform may run. Unlike the existing read-only
-> Nominal Performance register, it is writable and lets OSPM
-> request a lower nominal level than the platform-reported nominal.
-> The platform classifies performance above this level as boosted
-> and below as throttled for its power/thermal decisions.
+On 6/23/26 10:06, Sumit Gupta wrote:
+> Add a kernel boot parameter 'cppc_cpufreq.auto_sel_mode' to enable
+> CPPC autonomous performance selection on all CPUs at system startup.
+> When autonomous mode is enabled, the hardware automatically adjusts
+> CPU performance based on workload demands using Energy Performance
+> Preference (EPP) hints.
 >
-> It is exposed as a per-policy cpufreq sysfs attribute in kHz, to
-> match the cpufreq sysfs unit convention:
+> When the parameter is set:
+> - Configure all CPUs for autonomous operation on first init
+> - Use HW min/max_perf when available; otherwise initialize from caps
+> - Initialize desired_perf to max_perf as a starting hint
+> - Hardware controls frequency instead of the OS governor
+> - EPP behavior depends on parameter value:
+>    - performance (or 1):         override EPP to performance (0x0)
+>    - balance_performance (or 2): override EPP to balance_performance
+>                                  (0x80)
+>    - default_epp (or 3):         preserve EPP value programmed by
+>                                  BIOS/firmware
 >
->    /sys/devices/system/cpu/cpufreq/policyN/ospm_nominal_freq
+> Unset, "0"/"disabled", or an unrecognized value leaves autonomous
+> selection disabled.
 >
-> The attribute is documented in
-> Documentation/ABI/testing/sysfs-devices-system-cpu.
+> The boot parameter is applied only during first policy initialization.
+> Skip applying it on CPU hotplug to preserve runtime sysfs configuration.
 >
-> Writes are converted to perf via cppc_khz_to_perf(), validated
-> against [Lowest Performance, Nominal Performance], and applied to
-> every CPU in policy->cpus.
->
-> On read, the current register value is returned, or
-> "<unsupported>" if the platform does not implement the register.
+> This relies on commit 8c83947c5dbb ("cpufreq: Use policy->min/max init as
+> QoS request") so that the policy->min/max set in cppc_cpufreq_cpu_init()
+> are used as the policy's QoS requests and not overridden by
+> cpufreq_set_policy() during init.
 >
 > Signed-off-by: Sumit Gupta<sumitg@nvidia.com>
 > ---
-> Patch 1 of the v4 series ("ACPI: CPPC: Add support for CPPC v4") is
-> already applied, so this contains only patch 2.
+>   .../admin-guide/kernel-parameters.txt         |  22 +++
+>   drivers/cpufreq/cppc_cpufreq.c                | 151 +++++++++++++++++-
+>   include/acpi/cppc_acpi.h                      |   1 +
+>   3 files changed, 169 insertions(+), 5 deletions(-)
 >
-> Changes in v5:
-> - Add cppc_get_ospm_nominal_perf() to read the register directly.
-> - Drop the cppc_cpudata cache variables ospm_nominal_perf/_set.
-> - Show_ospm_nominal_freq() returns register value or "<unsupported>".
-> - Register rollback reads the register too.
-> - Move range check into the sysfs store from cppc_set_ospm_nominal_perf()
-> - ABI doc: update read description and add a task-migration note.
->
-> v4:https://lore.kernel.org/lkml/20260527194626.185286-1-sumitg@nvidia.com/
-> v3:https://lore.kernel.org/lkml/20260514194822.1841748-1-sumitg@nvidia.com/
-> v2:https://lore.kernel.org/lkml/20260430142430.755437-1-sumitg@nvidia.com/
-> v1:https://lore.kernel.org/lkml/20260427051823.280419-1-sumitg@nvidia.com/
->
->   .../ABI/testing/sysfs-devices-system-cpu      | 26 ++++++++
->   drivers/acpi/cppc_acpi.c                      | 32 +++++++++
->   drivers/cpufreq/cppc_cpufreq.c                | 65 +++++++++++++++++++
->   include/acpi/cppc_acpi.h                      | 10 +++
->   4 files changed, 133 insertions(+)
->
-> diff --git a/Documentation/ABI/testing/sysfs-devices-system-cpu b/Documentation/ABI/testing/sysfs-devices-system-cpu
-> index 82d10d556cc8..a8d592c08823 100644
-> --- a/Documentation/ABI/testing/sysfs-devices-system-cpu
-> +++ b/Documentation/ABI/testing/sysfs-devices-system-cpu
-> @@ -346,6 +346,32 @@ Description:	Performance Limited
+> diff --git a/Documentation/admin-guide/kernel-parameters.txt b/Documentation/admin-guide/kernel-parameters.txt
+> index b5493a7f8f22..88820d34d516 100644
+> --- a/Documentation/admin-guide/kernel-parameters.txt
+> +++ b/Documentation/admin-guide/kernel-parameters.txt
+> @@ -1019,6 +1019,28 @@ Kernel parameters
+>   			policy to use. This governor must be registered in the
+>   			kernel before the cpufreq driver probes.
 >   
->   		This file is only present if the cppc-cpufreq driver is in use.
->   
-> +What:		/sys/devices/system/cpu/cpuX/cpufreq/ospm_nominal_freq
-> +Date:		May 2026
-> +Contact:	linux-pm@vger.kernel.org
-> +Description:	OSPM Nominal Performance (kHz)
+> +	cppc_cpufreq.auto_sel_mode=
+> +			[CPU_FREQ] Enable ACPI CPPC autonomous performance
+> +			selection. When enabled, hardware automatically adjusts
+> +			CPU frequency on all CPUs based on workload demands.
+> +			In Autonomous mode, Energy Performance Preference (EPP)
+> +			hints guide hardware toward performance (0x0) or energy
+> +			efficiency (0xff).
+> +			Requires ACPI CPPC autonomous selection register
+> +			support.
+> +			Accepts:
+> +			  disabled, 0:
+
+Just a question, but would it be worth only accepting
+strings ? If we want to have a thinner granularity later,
+it will be harder to introduce them if there are integer values
+already present.
+
+> +				  cpufreq governors are used (auto_sel disabled)
+> +			  performance, 1:
+> +				  enable auto_sel + set EPP to performance (0x0)
+> +			  balance_performance, 2:
+> +				  enable auto_sel + set EPP to
+> +				  balance_performance (0x80)
+> +			  default_epp, 3:
+> +				  enable auto_sel, preserve EPP value programmed
+> +				  by BIOS/firmware
+> +			Unset or an unrecognized value is treated as disabled.
 > +
-> +		OSPM uses this attribute to request a nominal performance
-> +		level lower than the platform-reported nominal. The
-> +		platform treats performance above this level as boost
-> +		and below as throttle for power and thermal decisions.
-> +
-> +		Read returns the current value in kHz, or "<unsupported>"
-> +		if the platform does not implement the register. Write a
-> +		kHz value in the range [lowest_freq, nominal_freq].
-> +
-> +		Note that tasks may be migrated from one CPU to another
-> +		by the scheduler's load-balancing algorithm, and if
-> +		different OSPM Nominal Performance values are set for
-> +		those CPUs (through different cpufreq policies), that may
-> +		lead to undesirable outcomes. To avoid such issues it is
-> +		better to set the same value across all policies, or to
-> +		pin every task potentially sensitive to it to a specific
-> +		CPU.
-> +
-> +		This file is only present if the cppc-cpufreq driver is
-> +		in use.
-> +
->   What:		/sys/devices/system/cpu/cpu*/cache/index3/cache_disable_{0,1}
->   Date:		August 2008
->   KernelVersion:	2.6.27
-> diff --git a/drivers/acpi/cppc_acpi.c b/drivers/acpi/cppc_acpi.c
-> index 9f572f481241..1fcc22a10b4c 100644
-> --- a/drivers/acpi/cppc_acpi.c
-> +++ b/drivers/acpi/cppc_acpi.c
-> @@ -1685,6 +1685,38 @@ int cppc_set_epp(int cpu, u64 epp_val)
->   }
->   EXPORT_SYMBOL_GPL(cppc_set_epp);
->   
-> +/**
-> + * cppc_set_ospm_nominal_perf() - Write OSPM Nominal Performance register.
-> + * @cpu: CPU on which to write register.
-> + * @ospm_nominal_perf: Value to write to the OSPM Nominal Performance register.
-> + *
-> + * OSPM Nominal Performance conveys the desired nominal performance level
-> + * at which the platform may run. Per ACPI 6.6, s8.4.6.1.2.6, the value
-> + * must lie within [Lowest Performance, Nominal Performance] and may be
-> + * set independently of Minimum, Maximum and Desired performance. The
-> + * caller is responsible for validating the range.
-> + *
-> + * Return: 0 on success or negative error code.
-> + */
-> +int cppc_set_ospm_nominal_perf(int cpu, u64 ospm_nominal_perf)
-> +{
-> +	return cppc_set_reg_val(cpu, OSPM_NOMINAL_PERF, ospm_nominal_perf);
-> +}
-> +EXPORT_SYMBOL_GPL(cppc_set_ospm_nominal_perf);
-> +
-> +/**
-> + * cppc_get_ospm_nominal_perf() - Read OSPM Nominal Performance register.
-> + * @cpu: CPU from which to read register.
-> + * @ospm_nominal_perf: Pointer to store the OSPM Nominal Performance value.
-> + *
-> + * Return: 0 on success or negative error code.
-> + */
-> +int cppc_get_ospm_nominal_perf(int cpu, u64 *ospm_nominal_perf)
-> +{
-> +	return cppc_get_reg_val(cpu, OSPM_NOMINAL_PERF, ospm_nominal_perf);
-> +}
-> +EXPORT_SYMBOL_GPL(cppc_get_ospm_nominal_perf);
-> +
->   /**
->    * cppc_get_auto_act_window() - Read autonomous activity window register.
->    * @cpu: CPU from which to read register.
+>   	cpu_init_udelay=N
+>   			[X86,EARLY] Delay for N microsec between assert and de-assert
+>   			of APIC INIT to start processors.  This delay occurs
 > diff --git a/drivers/cpufreq/cppc_cpufreq.c b/drivers/cpufreq/cppc_cpufreq.c
-> index f6cea0c54dd9..d160ceced7d9 100644
+> index f7a47576717a..efa673e3830c 100644
 > --- a/drivers/cpufreq/cppc_cpufreq.c
 > +++ b/drivers/cpufreq/cppc_cpufreq.c
-> @@ -1011,11 +1011,75 @@ static int cppc_get_perf_limited_filtered(int cpu, u64 *perf_limited)
->   CPPC_CPUFREQ_ATTR_RW_U64(perf_limited, cppc_get_perf_limited_filtered,
->   			 cppc_set_perf_limited)
+> @@ -28,6 +28,55 @@
 >   
-> +static ssize_t show_ospm_nominal_freq(struct cpufreq_policy *policy, char *buf)
+>   static struct cpufreq_driver cppc_cpufreq_driver;
+>   
+> +/* Autonomous Selection boot parameter modes */
+> +enum {
+> +	AUTO_SEL_DISABLED = 0,
+> +	AUTO_SEL_PERFORMANCE = 1,
+> +	AUTO_SEL_BALANCE_PERFORMANCE = 2,
+> +	AUTO_SEL_DEFAULT_EPP = 3,
+> +};
+> +
+> +static int auto_sel_mode;
+> +
+> +static int auto_sel_mode_set(const char *val, const struct kernel_param *kp)
 > +{
-> +	struct cppc_cpudata *cpu_data = policy->driver_data;
-> +	u64 perf;
-> +	int ret;
+> +	int *mode = kp->arg;
 > +
-> +	ret = cppc_get_ospm_nominal_perf(policy->cpu, &perf);
-> +	if (ret == -EOPNOTSUPP)
-> +		return sysfs_emit(buf, "<unsupported>\n");
-> +	if (ret)
-> +		return ret;
+> +	*mode = AUTO_SEL_DISABLED;
 > +
-> +	return sysfs_emit(buf, "%u\n",
-> +			  cppc_perf_to_khz(&cpu_data->perf_caps, perf));
+> +	if (sysfs_streq(val, "performance") || sysfs_streq(val, "1"))
+> +		*mode = AUTO_SEL_PERFORMANCE;
+> +	else if (sysfs_streq(val, "balance_performance") || sysfs_streq(val, "2"))
+> +		*mode = AUTO_SEL_BALANCE_PERFORMANCE;
+> +	else if (sysfs_streq(val, "default_epp") || sysfs_streq(val, "3"))
+> +		*mode = AUTO_SEL_DEFAULT_EPP;
+> +	else if (!sysfs_streq(val, "disabled") && !sysfs_streq(val, "0"))
+> +		pr_warn("Invalid auto_sel_mode \"%s\", disable auto select\n", val);
+> +
+> +	return 0;
 > +}
 > +
-> +static ssize_t store_ospm_nominal_freq(struct cpufreq_policy *policy,
-> +				       const char *buf, size_t count)
+> +static int auto_sel_mode_get(char *buffer, const struct kernel_param *kp)
 > +{
-> +	struct cppc_cpudata *cpu_data = policy->driver_data;
-> +	unsigned int sib, freq_khz, failing_cpu = 0;
-> +	u64 prev_perf;
-> +	u32 perf;
-> +	int ret;
+> +	int *mode = kp->arg;
 > +
-> +	ret = kstrtouint(buf, 0, &freq_khz);
-> +	if (ret)
-> +		return ret;
+> +	switch (*mode) {
+> +	case AUTO_SEL_PERFORMANCE:
+> +		return sysfs_emit(buffer, "performance\n");
+> +	case AUTO_SEL_BALANCE_PERFORMANCE:
+> +		return sysfs_emit(buffer, "balance_performance\n");
+> +	case AUTO_SEL_DEFAULT_EPP:
+> +		return sysfs_emit(buffer, "default_epp\n");
+> +	default:
+> +		return sysfs_emit(buffer, "disabled\n");
+> +	}
+> +}
 > +
-> +	perf = cppc_khz_to_perf(&cpu_data->perf_caps, freq_khz);
-> +	if (perf < cpu_data->perf_caps.lowest_perf ||
-> +	    perf > cpu_data->perf_caps.nominal_perf)
-> +		return -EINVAL;
+> +static const struct kernel_param_ops auto_sel_mode_ops = {
+> +	.set = auto_sel_mode_set,
+> +	.get = auto_sel_mode_get,
+> +};
 > +
+>   #ifdef CONFIG_ACPI_CPPC_CPUFREQ_FIE
+>   static enum {
+>   	FIE_UNSET = -1,
+> @@ -645,7 +694,9 @@ static int cppc_cpufreq_cpu_init(struct cpufreq_policy *policy)
+>   	unsigned int cpu = policy->cpu;
+>   	struct cppc_cpudata *cpu_data;
+>   	struct cppc_perf_caps *caps;
+> +	bool set_epp = true;
+>   	int ret;
+> +	u32 epp;
+>   
+>   	cpu_data = cppc_cpufreq_get_cpu_data(cpu);
+>   	if (!cpu_data) {
+> @@ -715,11 +766,87 @@ static int cppc_cpufreq_cpu_init(struct cpufreq_policy *policy)
+>   	policy->cur = cppc_perf_to_khz(caps, caps->highest_perf);
+>   	cpu_data->perf_ctrls.desired_perf =  caps->highest_perf;
+>   
+> -	ret = cppc_set_perf(cpu, &cpu_data->perf_ctrls);
+> -	if (ret) {
+> -		pr_debug("Err setting perf value:%d on CPU:%d. ret:%d\n",
+> -			 caps->highest_perf, cpu, ret);
+> -		goto out;
+> +	/*
+> +	 * Enable autonomous mode on first init if boot param is set.
+> +	 * Check last_governor to detect first init and skip if auto_sel
+> +	 * is already enabled.
+> +	 */
+> +	if (auto_sel_mode && policy->last_governor[0] == '\0' &&
+> +	    !cpu_data->perf_ctrls.auto_sel) {
 
-Sorry I didn't notice in v3, but this function is the only
-one setting the registers for all CPUs in the policy.
+If an .online() callback is introduced, does it mean that we can
+remove the "policy->last_governor[0] == '\0'" check ?
 
-In v2, the interface was per-CPU. The main issue with that
-is that we need a mechanism to aggregate values of CPUs
-in the same policy.
+Also maybe it would be worth creating a function for this
+"if" block ?
 
-In v3/v4/v5, the interface was per-policy, but the
-ospm_nominal_freq was set for all CPUs CPPC regs individually.
-If we do that, the sequence:
-- unplug a CPU from a policy
-- set ospm_nominal_freq for the policy
-- hotplug back the CPU
-might cause inconsistencies in the CPPC regs.
-
-Maybe it is better to continue with the assumption that all
-CPUs in the same policy have the same interface ? This
-assumption seems to be made for auto_sel and other regs.
-
-If this makes sense, would it be possible to:
-- add such check and warn if it is not the case
-- set the ospm_nominal_freq value only for policy->cpu
-(and remove the rollback mechanism)
-
-When updating the ospm_nominal_freq, we should also:
-- update policy->cpuinfo.max_freq if boost=0
-- refresh the freq. limits
-- set policy->boost_supported if it is not already the case
-
-Also, update cppc_cpufreq_set_boost() should rely on
-ospm_nominal_freq instead of caps->nominal_perf as a reference.
-
-Please let me know if this is ok
-
-Regards,
-
-Pierre
+Also (bis), maybe we should check that auto_sel is supported before
+doing anything else.
 
 
+> +		/* Init min/max_perf from caps if not already set by HW. */
+> +		if (!cpu_data->perf_ctrls.min_perf)
+> +			cpu_data->perf_ctrls.min_perf = caps->lowest_nonlinear_perf;
+> +		if (!cpu_data->perf_ctrls.max_perf)
+> +			cpu_data->perf_ctrls.max_perf = policy->boost_enabled ?
+> +				caps->highest_perf : caps->nominal_perf;
+
+Is it necessary to do that ?
+
+- for min_perf, we are setting it to the lowest possible value
+
+- for max_perf, we are setting it to the highest available value.
+If boost is disabled and we enabled it later, I don't think max_perf is
+updated accordingly, so we would limit the freq. to caps->nominal_perf
+
+(If I m not missing something)
+
+> +
+> +		/*
+> +		 * In autonomous mode desired_perf is only a hint; EPP and
+> +		 * the platform drive actual selection within [min, max].
+> +		 * Initialize it to max_perf so HW starts at the upper bound.
+> +		 */
+> +		cpu_data->perf_ctrls.desired_perf = cpu_data->perf_ctrls.max_perf;
+> +
+> +		policy->cur = cppc_perf_to_khz(caps,
+> +					       cpu_data->perf_ctrls.desired_perf);
+> +
+> +		/*
+> +		 * Set EPP per mode. 'default_epp' preserves the BIOS/firmware
+> +		 * programmed EPP value. EPP is optional - some platforms may
+> +		 * not support it.
+> +		 */
+> +		switch (auto_sel_mode) {
+> +		case AUTO_SEL_PERFORMANCE:
+> +			epp = CPPC_EPP_PERFORMANCE_PREF;
+> +			break;
+> +		case AUTO_SEL_BALANCE_PERFORMANCE:
+> +			epp = CPPC_EPP_BALANCE_PERFORMANCE_PREF;
+> +			break;
+> +		default:
+> +			set_epp = false;
+> +			break;
+> +		}
+> +
+> +		if (set_epp) {
+> +			ret = cppc_set_epp(cpu, epp);
+> +			if (ret && ret != -EOPNOTSUPP)
+> +				pr_warn("Failed to set EPP for CPU%d (%d)\n", cpu, ret);
+> +			else if (!ret)
+> +				cpu_data->perf_ctrls.energy_perf = epp;
+> +		}
+> +
+> +		/* Program min/max/desired into CPPC regs (non-fatal on failure). */
+> +		ret = cppc_set_perf(cpu, &cpu_data->perf_ctrls);
+> +		if (ret)
+> +			pr_warn("set_perf failed CPU%d (%d); using HW values\n",
+> +				cpu, ret);
+> +
+> +		ret = cppc_set_auto_sel(cpu, true);
+> +		if (ret && ret != -EOPNOTSUPP)
+> +			pr_warn("auto_sel CPU%d failed (%d); using OS mode\n",
+> +				cpu, ret);
+> +		else if (!ret)
+> +			cpu_data->perf_ctrls.auto_sel = true;
+> +	}
+(until here)
+> +
+> +	if (cpu_data->perf_ctrls.auto_sel) {
+> +		/* Sync policy limits from HW when autonomous mode is active */
+
+Similar comment as above, doesn't it fall into a similar case as:
+521223d8b3ec ("cpufreq: Fix initialization of min and max frequency QoS 
+request")
+
+?
+
+
+> +		policy->min = cppc_perf_to_khz(caps,
+> +					       cpu_data->perf_ctrls.min_perf ?:
+> +					       caps->lowest_nonlinear_perf);
+> +		policy->max = cppc_perf_to_khz(caps,
+> +					       cpu_data->perf_ctrls.max_perf ?:
+> +					       (policy->boost_enabled ?
+> +						caps->highest_perf :
+> +						caps->nominal_perf));
+> +	} else {
+> +		/* Normal mode: governors control frequency */
+> +		ret = cppc_set_perf(cpu, &cpu_data->perf_ctrls);
+> +		if (ret) {
+> +			pr_debug("Err setting perf value:%d on CPU:%d. ret:%d\n",
+> +				 caps->highest_perf, cpu, ret);
+> +			goto out;
+> +		}
+>   	}
+>   
+>   	cppc_cpufreq_cpu_fie_init(policy);
+> @@ -1066,10 +1193,24 @@ static int __init cppc_cpufreq_init(void)
+>   
+>   static void __exit cppc_cpufreq_exit(void)
+>   {
+> +	unsigned int cpu;
+> +
+> +	for_each_present_cpu(cpu)
+> +		cppc_set_auto_sel(cpu, false);
+
+I saw that this is being changed in:
+[PATCH] cpufreq: CPPC: Preserve OSPM-set registers across hotplug and unload
+
+But I think it would make more sense to have this patch comes before these
+patches:
+
+  [1] ACPI: CPPC: Add ospm_nominal_perf support
+      https://lore.kernel.org/lkml/20260615185934.2383514-1-sumitg@nvidia.com/
+  [2] cpufreq: CPPC: add autonomous mode boot parameter support
+      https://lore.kernel.org/lkml/20260623080652.3353386-1-sumitg@nvidia.com/
+
+to avoid making changes that are corrected in this last patch of the serie.
+
+> +
+>   	cpufreq_unregister_driver(&cppc_cpufreq_driver);
+>   	cppc_freq_invariance_exit();
+>   }
+>   
+> +module_param_cb(auto_sel_mode, &auto_sel_mode_ops, &auto_sel_mode, 0444);
+> +MODULE_PARM_DESC(auto_sel_mode,
+> +		 "Enable CPPC autonomous performance selection at boot: "
+> +		 "disabled or 0 (use cpufreq governors), "
+> +		 "performance or 1 (EPP=performance), "
+> +		 "balance_performance or 2 (EPP=balance_performance), "
+> +		 "default_epp or 3 (preserve BIOS/firmware EPP); "
+> +		 "an unrecognized value is treated as disabled");
+> +
+>   module_exit(cppc_cpufreq_exit);
+>   MODULE_AUTHOR("Ashwin Chaugule");
+>   MODULE_DESCRIPTION("CPUFreq driver based on the ACPI CPPC v5.0+ spec");
+> diff --git a/include/acpi/cppc_acpi.h b/include/acpi/cppc_acpi.h
+> index 8693890a7275..9b18fb9aab7c 100644
+> --- a/include/acpi/cppc_acpi.h
+> +++ b/include/acpi/cppc_acpi.h
+> @@ -42,6 +42,7 @@
+>   #define CPPC_AUTO_ACT_WINDOW_SIG_CARRY_THRESH 129
+>   
+>   #define CPPC_EPP_PERFORMANCE_PREF		0x00
+> +#define CPPC_EPP_BALANCE_PERFORMANCE_PREF	0x80
+>   #define CPPC_EPP_ENERGY_EFFICIENCY_PREF		0xFF
+>   
+>   #define CPPC_PERF_LIMITED_DESIRED_EXCURSION	BIT(0)
