@@ -1,232 +1,231 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 327F8481FD6
-	for <linux-pm@vger.kernel.org>; Wed,  1 Jul 2026 12:53:33 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F1D1348097B
+	for <linux-pm@vger.kernel.org>; Wed,  1 Jul 2026 12:57:02 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1782910414; cv=none; b=mo7SeM27hJfjXnoWfNkj3LpNBZ82xqsrv+GS0Aid+u8gcexy5su5n5cvrl627zoA2tEUmFg+LFocwKASOOGVOhNeUdAptB0k4Nh/FzbQ8qo//e7oOAInBBE7oWVPA/fmjmEeBEaLXEOpOjgC+0Wsh8aA0kh4HiQjOFyTDZlNkUc=
+	t=1782910624; cv=none; b=sIOCYSz7S5uGbm06Svrc5N67qsjsex1ZlHwM+fwjBfdCTxeV6fbLd5e+r2EwJ3olUTidOBlEtIqMJAeLiJ7/VZvQZzf1TIHkbuDtefdoTXYvNoD+hi4Qc+/LWS7fx1U1dHAg5rdsruC+RLG7s9VStCQi0GddkoSOfPmAp4Trkww=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1782910414; c=relaxed/simple;
-	bh=s4t3G5F4qqktsL4DaLIjyp87DSQDbY/2WsaSTuGkOyI=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=kjb/L+xFB22Tfkst8geD3h6rkQm+Ymno4hsds/r6h+eo5wEys79P7qCcn5XN/EUqN/Gy4XUPbdtV88h50iq7Rrwdrm18edqUcpC+L5C9bAEGThXMHkidCetDFP57pftv40sIJHyjGvocskf8uW4XjctC2fSripDC+IvF4Ck7RpM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=blZvASod; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1782910624; c=relaxed/simple;
+	bh=hdIYYpVLSeX7+svp6SZ8DMOKqflnF52FNs8KE0Y2J3g=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=nVsBaIwPZgwP6fiZtHRwBEVUhlii5TMwOgDqQUca8JIyn4X55cU4R8BQtG/cNkl5xa/t991PEX8N2uuJv4CaHTlgYRHso/PEQNiEm1E0xRk/3MeqD/QH7RFtxWPsOqxrEkwAI55dLkSrGmo3G/O7wSm9HgkIZfCCHv3Yt3/i4Vg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=c/U6gq8j; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=Jdy0OADN; arc=none smtp.client-ip=205.220.168.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="blZvASod"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id E95E41F00AC4
-	for <linux-pm@vger.kernel.org>; Wed,  1 Jul 2026 12:53:32 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1782910412;
-	bh=Uyf3m31VmHN9oNn8pJPThrwZz9OConCR56J0nW8Z1B8=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc;
-	b=blZvASodFnskfsIU37pK5zHozkuqZSxyJDXLoZfzr2MvYCGO/RKwzqZiEf/ifty2v
-	 L12hWMIKFdeoOdKNxgbufxRJDAG90vIPAglx3nfvFZqOYz7xDt0Sjgm8RDidSnmPeN
-	 G1k2f7LatAPa3T5mtWfpnZc7k+TA7vBB/ScxzeCqiVHGoFCdrKybykXSSZm38/Q4qg
-	 d1GWE69UxhQ1Z9hhn43mAJO2990saecoq6kOB25ITBPH9nDjHYi6e34ZCAe29jzsX2
-	 LSJiyPbxficZ93bpABHpBc7n2Qq8tkgWlnkgS1ebjqcoXTY1xbda4HkpLwF0SMBs3B
-	 UEqPpwrfQUotw==
-Received: by mail-lj1-f169.google.com with SMTP id 38308e7fff4ca-39b030e889aso5626421fa.1
-        for <linux-pm@vger.kernel.org>; Wed, 01 Jul 2026 05:53:32 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AHgh+RpKSdmmjWaa6Y+j0FLr+5Wl2W2bsm2zs3ZPmNsYQp1zffXJ2RlGoY/sBzl3cp1rvXhBAm2jBB/rew==@vger.kernel.org
-X-Gm-Message-State: AOJu0YyDT77M/9g9TN5nKFZNTQcKUkwR8k5/As7qYCsz3/oFkStlXC01
-	ZgwLeP2DVvbkRNW5GpyMs2ut5f/0+Ljs5IK+XVGyCJZBzOqM76tLugrzibbcp/bi7WfA6XMYiEX
-	ya6Z0iLXt/H+BaShIuXKDmV6erqbD6/4=
-X-Received: by 2002:a05:6512:6382:b0:5ae:b97b:5855 with SMTP id
- 2adb3069b0e04-5aec68b4320mr358186e87.40.1782910411374; Wed, 01 Jul 2026
- 05:53:31 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="c/U6gq8j";
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="Jdy0OADN"
+Received: from pps.filterd (m0279863.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 661A8O7h761381
+	for <linux-pm@vger.kernel.org>; Wed, 1 Jul 2026 12:57:02 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
+	/OJQwxG66eoPwHB57XhMgHYByUU3ZhNy+b3VmI0FVH8=; b=c/U6gq8jxAU41MoF
+	i+4cbo86vaXqtO4VTz1j3LuCB1CaF6b8u11rAv0ejfm3CEcoG8oiF82NruPVi8Fq
+	DIAQVh9FDqSM/DXuXfvxSEIKEzBYwKNfF9YINoyW66dMhaLi8VNOoKztK6UzEnvz
+	RG/rxG21Zp9tlw3AHieAXbz19X64XeICHg+x/kSZQRD6WqGVNN4iF9yYEYJ+dGMU
+	1FAFiUclAOUWXcmCfND52cyM6QbcStUzYXljIUHAAhZq8mSTOVUP39H/9w/DSu3P
+	sX0Z+FM9R8B9S58/0QMBRcZYqouLTAqpN0/Dh79vg3SOXeE7JPK8c1WULwcHdsY0
+	u8U/+w==
+Received: from mail-pj1-f70.google.com (mail-pj1-f70.google.com [209.85.216.70])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4f50sd0q7r-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <linux-pm@vger.kernel.org>; Wed, 01 Jul 2026 12:57:01 +0000 (GMT)
+Received: by mail-pj1-f70.google.com with SMTP id 98e67ed59e1d1-37fb51faa63so681735a91.0
+        for <linux-pm@vger.kernel.org>; Wed, 01 Jul 2026 05:57:01 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=oss.qualcomm.com; s=google; t=1782910621; x=1783515421; darn=vger.kernel.org;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=/OJQwxG66eoPwHB57XhMgHYByUU3ZhNy+b3VmI0FVH8=;
+        b=Jdy0OADN9DhK6uLgBXpdb2REgTDYx2HIauqRqbHUcWTpjvox05FxU1vwE5Qa2xPqXa
+         vvEeIgt+wA8uFJ08gUjoVUvG5o5fOYVTmX/5HVur83MxC9Y4BpvoNTaRZQwnRUmJ7wdT
+         KRhchg6gIoThwk8SrlJikb6Vxk4ufLoF2FlBJCrHuV/ZkIQ3fCM9gFBKJh/rx9EWBbjV
+         bASDzfHXDxmnMNy1jss4hW8XxHV9fhB8bCcG8kXOAawPZ6ldX2tZAdOus6bnJye8ApA6
+         n67THh7Jl78XFBCySg66OsoNeevCiLIjdt1/U88NkEF4NPChofbfWSWGwBBqELAGskIo
+         NUXQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1782910621; x=1783515421;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=/OJQwxG66eoPwHB57XhMgHYByUU3ZhNy+b3VmI0FVH8=;
+        b=IU1PDQboAjCVoIQveOO5IVLAzCeCug49QhBJY5wfYe99luoUSbecQ5tQYz+gQA/wXW
+         oQbzLRo/HacX1S8d6YCsz3/iOQ7L6v+EIh3tJt7Qs/rtU5n7Mua+RlAsPDPXAkvvQfdR
+         mGhah0+EWFE9S5Imq2U3oYLwNQoOl9UwS47E2YlIuH2h1IZYoV2LJk4JN8pdk4KiFLpE
+         uUainsyVeLRTkZAcU2CnYCOnuz8Iw2t5FpIpgsAUXUFpgsrAn/ujwvRSBATHXaxmPM8J
+         XFoRn8CDAFdKeHN7Rx0oAlts3uP/h2DOnrYPW1u16LDnKkLJ+5GZzxcyEl8dGKGkzE6K
+         EjrA==
+X-Forwarded-Encrypted: i=1; AHgh+RriXV5xoxGynx8nHsyqgl3p0cESKWhAcp163gNEkCErUBXFK/PI2d3QgkPoHxle+7bj0Q3oOZ6Jow==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yx0HyWU3gRVrsDiovj2qxijiHKQYGjvAnMWSl4YdSpchn4vQW+D
+	k/Pdtsg6+68gxQMse4HS+RvMikQms7qKD829jzxqXy1cDRr3H8tUU4vKnORgPhdvaHom+e5Jc0W
+	eQG0j3UFB+z6BHRZyC+Apgq7LLaz3dZFrKjTjxf7Ex4vZIXE5nZjCfK8/IoaF
+X-Gm-Gg: AfdE7clk9M28D0rrjl5KNBxt3zth38Nweotepj4VPIOaHU20o4HEV8923khawer1p1V
+	fx8svpKx9iGSymwJgyHTBdBi9Oot2FSCVJEJfZHOakv/spBx6oQh+/rzPJ4fTGxZZoCOgzNHugC
+	JITBRj/y7aC/kjrsYNVE3k2jeSPte4ZbQTlUUgflFLwMHLMYH0Bd3OK8QyBnWPNIypP6fDTc4St
+	c4jFeWrNhZywHseZfL1FE3QIZSyYBdBhf190qxQhlYhxzrSrmpVj5M0dbgguJYKX8ttuFNMv6q1
+	GrH/eYEHxCe75GX3jfA8ITQoPj3jmNGzzd2zBgjAM3tZ3ZDJfBVEAD9xFHZkZQkKG9PE14BS2wb
+	H/HyKNXI2UMwfyMfWulLlz9sy+SS3QpmJTPkrAWKW
+X-Received: by 2002:a17:90b:520d:b0:37e:cb9:fd7d with SMTP id 98e67ed59e1d1-3806a04dc16mr5209498a91.17.1782910621055;
+        Wed, 01 Jul 2026 05:57:01 -0700 (PDT)
+X-Received: by 2002:a17:90b:520d:b0:37e:cb9:fd7d with SMTP id 98e67ed59e1d1-3806a04dc16mr5209457a91.17.1782910620416;
+        Wed, 01 Jul 2026 05:57:00 -0700 (PDT)
+Received: from [172.20.10.3] ([106.195.73.56])
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-38095d4c263sm1876770a91.3.2026.07.01.05.56.51
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Wed, 01 Jul 2026 05:56:59 -0700 (PDT)
+Message-ID: <4b5321e8-05c8-4f3f-bc22-d3776e008151@oss.qualcomm.com>
+Date: Wed, 1 Jul 2026 18:26:37 +0530
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260701045640.3130090-1-tzungbi@kernel.org> <20260701045640.3130090-3-tzungbi@kernel.org>
- <2026070140-rally-prowling-4d66@gregkh>
-In-Reply-To: <2026070140-rally-prowling-4d66@gregkh>
-From: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
-Date: Wed, 1 Jul 2026 14:53:18 +0200
-X-Gmail-Original-Message-ID: <CAJZ5v0goFxWOjjm1_JyaORKViEEc99-Tj-Yq4K0guYqZEvU9gg@mail.gmail.com>
-X-Gm-Features: AVVi8Cf86nuhzIOE2p8v6g-b6ssqyCv2EsWN9SuC4GrAViSt0kYqBNdtyScE0U4
-Message-ID: <CAJZ5v0goFxWOjjm1_JyaORKViEEc99-Tj-Yq4K0guYqZEvU9gg@mail.gmail.com>
-Subject: Re: [PATCH v5 2/2] PM: dpm_watchdog: Allow disabling DPM watchdog by default
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Tzung-Bi Shih <tzungbi@kernel.org>
-Cc: Jonathan Corbet <corbet@lwn.net>, "Rafael J. Wysocki" <rafael@kernel.org>, 
-	Danilo Krummrich <dakr@kernel.org>, Shuah Khan <skhan@linuxfoundation.org>, 
-	Pavel Machek <pavel@kernel.org>, Len Brown <lenb@kernel.org>, linux-doc@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, 
-	driver-core@lists.linux.dev, tfiga@chromium.org, senozhatsky@chromium.org, 
-	Randy Dunlap <rdunlap@infradead.org>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v11 0/7] Introduction of PSCR Framework and Related
+ Components
+To: Oleksij Rempel <o.rempel@pengutronix.de>
+Cc: Sebastian Reichel <sre@kernel.org>,
+        Srinivas Kandagatla <srinivas.kandagatla@linaro.org>,
+        Benson Leung <bleung@chromium.org>, Tzung-Bi Shih <tzungbi@kernel.org>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>, kernel@pengutronix.de,
+        linux-kernel@vger.kernel.org, Liam Girdwood <lgirdwood@gmail.com>,
+        Mark Brown <broonie@kernel.org>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>,
+        linux-pm@vger.kernel.org,
+        =?UTF-8?Q?S=C3=B8ren_Andersen?= <san@skov.dk>,
+        Guenter Roeck <groeck@chromium.org>,
+        Matti Vaittinen <mazziesaccount@gmail.com>,
+        Ahmad Fatoum <a.fatoum@pengutronix.de>,
+        Andrew Morton <akpm@linux-foundation.org>,
+        chrome-platform@lists.linux.dev, avaneesh.dwivedi@oss.qualcomm.com,
+        umang.chheda@oss.qualcomm.com, faiyaz.mohammed@oss.qualcomm.com
+References: <20250618120255.3141862-1-o.rempel@pengutronix.de>
+ <3309e88e-e189-42ea-b74e-346aec1b4b5f@oss.qualcomm.com>
+ <729b0e26-bdbc-42f9-8245-79b2942272c2@oss.qualcomm.com>
+ <akJaAesz35Ml3iW4@pengutronix.de>
+Content-Language: en-US
+From: Faruque Ansari <faruque.ansari@oss.qualcomm.com>
+In-Reply-To: <akJaAesz35Ml3iW4@pengutronix.de>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Authority-Analysis: v=2.4 cv=Z+3c2nRA c=1 sm=1 tr=0 ts=6a450e9d cx=c_pps
+ a=0uOsjrqzRL749jD1oC5vDA==:117 a=1uYXuS+mtKqEVW6EmjfGNQ==:17
+ a=IkcTkHD0fZMA:10 a=RAioF0-LDSMA:10 a=s4-Qcg_JpJYA:10
+ a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=yOCtJkima9RkubShWh1s:22
+ a=fA3yq6K1D-CQ7x3jqe0A:9 a=QEXdDO2ut3YA:10 a=mQ_c8vxmzFEMiUWkPHU9:22
+X-Proofpoint-ORIG-GUID: YFwjJPs6SmodpmFNJUrIbzQQO7_s3WeN
+X-Proofpoint-Spam-Info: AW1haW4tMjYwNzAxMDEzNSBTYWx0ZWRfX+49m9lMmRy6K
+ dmVpbMqCZPBnx2I43hKQZvrzfWV5scS/PIGNlfHqmv8h0j5Cc3n9O8RU7B5TDQFPONkmtO659Ta
+ z7DZZQ/SAL68u+L57SzT98jn/rhXY3c=
+X-Proofpoint-GUID: YFwjJPs6SmodpmFNJUrIbzQQO7_s3WeN
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzAxMDEzNSBTYWx0ZWRfXw/VPfjfCJ0Ri
+ M4D2Few1kVXlWkVvOqpqmW6LTyoE9t8v2iijYbTvkMl8/WR01s/W/bZV7krhZnn8w8kf9lCzCrP
+ 9itov3wBL07EjCBLVvYwaRNxjKDNS45MCTd1uAgMaPwkEnkbfAyhloVukHBgn80PFqHwDXDOL/V
+ uh5AYHCGIVdVDztLRTmX0rOyt4CnOrclZYR+vm1XF8RZEnkFCiG+qNtrAwb5ablQXl2M9Ijuw1J
+ mJABS94hYDphAa2PuVE56zLGeWENXLe5xDP7FWm86tuarso/2b491AMoX/whKwV+j6Z7gg1H7WH
+ 3+2jlCSBO5i7CCfuSF9ymjI2CT/olQgiwIT1uw2x7ddoOfcLVGxjjvQ34ngzyLfjZ/0lt2wiF5u
+ YZ9wuvkhtpydXFoKYSICKHH2JO35zvRPT/NpqECXg6YJPrh5uZgUVgL9hR4Bwx1774sqvXcIEfc
+ D5NDwKxWW4nP5vFG3GA==
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.125,FMLib:17.12.100.49
+ definitions=2026-07-01_03,2026-06-26_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ bulkscore=0 suspectscore=0 adultscore=0 priorityscore=1501 spamscore=0
+ phishscore=0 impostorscore=0 malwarescore=0 lowpriorityscore=0 clxscore=1015
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2607010135
 
-On Wed, Jul 1, 2026 at 9:22=E2=80=AFAM Greg Kroah-Hartman
-<gregkh@linuxfoundation.org> wrote:
->
-> On Wed, Jul 01, 2026 at 04:56:40AM +0000, Tzung-Bi Shih wrote:
-> > Introduce the "dpm_watchdog_enabled" module parameter to allow the DPM
-> > watchdog to be enabled or disabled at boot time and runtime.
->
-> As I say all the time, this isn't the 1990's, please don't add new
-> module parameters as they are a pain to manage and maintain over time
-> (as you found out with my rejection of patch 1/2 here...)
+Hi Oleksij,
 
-Let me challenge this though because there are use cases for something
-like module parameters AFAICS.
+On 29-Jun-26 5:11 PM, Oleksij Rempel wrote:
+> Hi Faruque,
+> 
+> On Mon, Jun 29, 2026 at 04:44:18PM +0530, Faruque Ansari wrote:
+>> On 29-Jun-26 4:40 PM, Faruque Ansari wrote:
+>>> Hi Oleksij,
+>>>
+>>>>
+>>>> Hello all,
+>>>>
+>>>> This patch series introduces the Power State Change Reasons Recording
+>>>> (PSCRR) framework and its related components into the kernel. The PSCR
+>>>> framework is designed for systems where traditional methods of storing
+>>>> power state change reasons, like PMICs or watchdogs, are inadequate. It
+>>>> provides a structured way to store reasons for system shutdowns and
+>>>> reboots, such as under-voltage or software-triggered events, in
+>>>> non-volatile hardware storage.
+>>>>
+>>>> These changes are critical for systems requiring detailed postmortem
+>>>> analysis and where immediate power-down scenarios limit traditional
+>>>> storage options. The framework also assists bootloaders and early-stage
+>>>> system components in making informed recovery decisions.
+>>>>
+>>>>
+>>>
+>>> Just wanted to understand rational behind creating this new framework
+>>> (PSCRR) for
+>>> reboot reason recording and not considering extending the existing
+>>> nvmem-reboot
+>>> framework ? As, this framework already provides a way to represent nvmem
+>>> cell in
+>>> the DT and the driver as well can discover it. Would it be correct if
+>>> nvmem-reboot
+>>> driver itself is extended with the features which this framework provides ?
+>>>
+>>> or was there any other reason you decided to create a new framework ?
+> 
+> There are two main reasons:
+> - nvmem-reboot - Tells the reboot target - What should system do after
+>    reboot. This frameworks is collecting information - why we
+>    rebooted/booted in the first place.
+> - System may have more then one recorder or source of information. Non
+>    of it provides full picture. This framework should provide easier
+>    access to different providers. For example:
+>    - SoC tells PoR
+>    - PMIC tells PoR
+>    - Watchdog tells nothing
+>    - nvmem storage - tells under-voltage.
+> 
+>    All of them provide own opinion on what is happened. Evaluation or
+>    prioritisation should not be done in the kernel
+> 
+> So far i struggled with DT, but may be i need to put it to the side for
+> now to go forward?
+> 
+> Best Regards,
+> Oleksij
 
-There are things that are "on" by default that people want to turn
-"off" and ideally at init time.  If that happens in a loadable module,
-the only way to do so I'm aware of is using a module parameter.
 
-There are also diagnostic features that are generally "off", but it is
-useful to turn them "on" occasionally, both at run time and at init
-time.  Adding a special kernel command line option and a separate
-special sysfs switch (for example) for that is kind of a pain and
-using a module parameter in such cases appears to be more
-straightforward to me, so what really is the problem with that?
 
-Moreover, there are those cases in which updating the kernel command
-line is more straightforward than updating user space to write into a
-specific file in sysfs after boot, so using a module parameter helps.
+Thank You for sharing your rational behind and idea behind this 
+framework !
+IMO it would be better to have a single framework to represent 
+all the reboot reasons of a system and not just the reboot 
+reasons caused because of errors
+Ex capturing reboot reasons like ota, bootloader,recovery etc ... 
+currently nvmem reboot driver does not expose a sysfs/ABI which 
+user app can use to infer reboot reason ...
+Also, it would be extend this framework to also support firmware 
+triggered reboot reasons  ...
+Do you have any plan to extend this framework to support 
+userspace triggered reboot reasons as well like bootloader, 
+recovery, ota etc ?
+And also extend the framework to support vendor specific reboot 
+reasons which can be triggered by firmware  ?
 
-So in general, assuming that the underlying use case is good enough,
-is a module parameter really worse than a combination of a special
-sysfs file and a special kernel command line argument and if so, then
-why?
+We can co-work to extend this framework  ?
 
-Of course, whether or not the underlying use case is good enough is a
-different matter.
+On representating nvmem cell to the framework  - if not DT what 
+is your plan to represent it ?
+How would framework discover the nvmem cell if its not DT based ?
 
-> > Additionally, introduce the CONFIG_DPM_WATCHDOG_ENABLED Kconfig option
-> > to set default value of the module parameter at compile time.
-> >
-> > This provides flexibility for systems that want the watchdog code
-> > compiled in but inactive by default, allowing it to be enabled only whe=
-n
-> > needed.
-> >
-> > Signed-off-by: Tzung-Bi Shih <tzungbi@kernel.org>
-> > ---
-> > v5: No changes.
-> >
-> > v4: https://lore.kernel.org/all/20260611021219.2093476-2-tzungbi@kernel=
-.org
-> > - Rewrite the commit message to indicate the module parameter is the
-> >   main change in the patch.
-> > - DPM_WATCHDOG_DEFAULT_ENABLED -> DPM_WATCHDOG_ENABLED.
-> >
-> > v3: https://lore.kernel.org/all/20260608021526.1023248-3-tzungbi@kernel=
-.org
-> > - Add "PM" tag (was missing).
-> > - Update the format and specify dependencies in kernel-parameters.txt.
-> > - Update the help message in Kconfig to reflect that dpm_watchdog_enabl=
-ed
-> >   can be set at runtime as well.
-> >
-> > v2: https://lore.kernel.org/all/20260604090756.2884671-3-tzungbi@kernel=
-.org
-> > - Use module parameter and bool for dpm_watchdog_enabled.
-> > - Use IS_ENABLED().
-> >
-> > v1: https://lore.kernel.org/all/20260528103215.505795-1-tzungbi@kernel.=
-org
-> > ---
-> >  Documentation/admin-guide/kernel-parameters.txt |  7 +++++++
-> >  drivers/base/power/main.c                       | 11 +++++++++++
-> >  kernel/power/Kconfig                            | 10 ++++++++++
-> >  3 files changed, 28 insertions(+)
-> >
-> > diff --git a/Documentation/admin-guide/kernel-parameters.txt b/Document=
-ation/admin-guide/kernel-parameters.txt
-> > index b5493a7f8f22..46c20e1b5f05 100644
-> > --- a/Documentation/admin-guide/kernel-parameters.txt
-> > +++ b/Documentation/admin-guide/kernel-parameters.txt
-> > @@ -47,6 +47,7 @@
-> >       PCI     PCI bus support is enabled.
-> >       PCIE    PCI Express support is enabled.
-> >       PCMCIA  The PCMCIA subsystem is enabled.
-> > +     PM      Power Management support is enabled.
-> >       PNP     Plug & Play support is enabled.
-> >       PPC     PowerPC architecture is enabled.
-> >       PPT     Parallel port support is enabled.
-> > @@ -5354,6 +5355,12 @@ Kernel parameters
-> >       pm_debug_messages       [SUSPEND,KNL]
-> >                       Enable suspend/resume debug messages during boot =
-up.
-> >
-> > +     pm_sleep.dpm_watchdog_enabled=3D
-> > +                     [PM] Enable or disable the DPM watchdog.  Require=
-s
-> > +                     CONFIG_PM_SLEEP and CONFIG_DPM_WATCHDOG enabled.
-> > +                     Format: <bool>
-> > +                     Default value is set by CONFIG_DPM_WATCHDOG_ENABL=
-ED.
-> > +
-> >       pnp.debug=3D1     [PNP]
-> >                       Enable PNP debug messages (depends on the
-> >                       CONFIG_PNP_DEBUG_MESSAGES option).  Change at run=
--time
-> > diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
-> > index c6a3300cfb7a..f58945758868 100644
-> > --- a/drivers/base/power/main.c
-> > +++ b/drivers/base/power/main.c
-> > @@ -535,6 +535,11 @@ module_param(dpm_watchdog_all_cpu_backtrace, bool,=
- 0644);
-> >  MODULE_PARM_DESC(dpm_watchdog_all_cpu_backtrace,
-> >                "Backtrace all CPUs on DPM watchdog timeout");
-> >
-> > +static bool __read_mostly dpm_watchdog_enabled =3D
-> > +                             IS_ENABLED(CONFIG_DPM_WATCHDOG_ENABLED);
-> > +module_param(dpm_watchdog_enabled, bool, 0644);
-> > +MODULE_PARM_DESC(dpm_watchdog_enabled, "Enable DPM watchdog");
-> > +
-> >  static unsigned int __read_mostly dpm_watchdog_timeout =3D CONFIG_DPM_=
-WATCHDOG_TIMEOUT;
-> >  static unsigned int __read_mostly dpm_watchdog_warning_timeout =3D
-> >                                               CONFIG_DPM_WATCHDOG_WARNI=
-NG_TIMEOUT;
-> > @@ -630,6 +635,9 @@ static void dpm_watchdog_set(struct dpm_watchdog *w=
-d, struct device *dev)
-> >  {
-> >       struct timer_list *timer =3D &wd->timer;
-> >
-> > +     if (!dpm_watchdog_enabled)
-> > +             return;
-> > +
-> >       wd->dev =3D dev;
-> >       wd->tsk =3D current;
-> >       wd->fatal =3D dpm_watchdog_timeout =3D=3D dpm_watchdog_warning_ti=
-meout;
-> > @@ -648,6 +656,9 @@ static void dpm_watchdog_clear(struct dpm_watchdog =
-*wd)
-> >  {
-> >       struct timer_list *timer =3D &wd->timer;
-> >
-> > +     if (!dpm_watchdog_enabled)
-> > +             return;
-> > +
-> >       timer_delete_sync(timer);
-> >       timer_destroy_on_stack(timer);
-> >  }
-> > diff --git a/kernel/power/Kconfig b/kernel/power/Kconfig
-> > index 530c897311d4..508ceabc4d2e 100644
-> > --- a/kernel/power/Kconfig
-> > +++ b/kernel/power/Kconfig
-> > @@ -268,6 +268,16 @@ config DPM_WATCHDOG
-> >         captured in pstore device for inspection in subsequent
-> >         boot session.
-> >
-> > +config DPM_WATCHDOG_ENABLED
-> > +     bool "Enable DPM watchdog by default"
-> > +     depends on DPM_WATCHDOG
-> > +     default y
->
-> Only do this if you can not boot without the option enabled, which I do
-> not think is the case here.
-
-So in this particular case, there is a way to adjust the watchdog
-timeout and if it is set to a very large value, the watchdog gets
-effectively disabled for all purposes.
-
-I'm not entirely sure if another switch to disable/enable it is needed
-in addition to that TBH.
+Thanks,
+Faruque Ansari
