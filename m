@@ -1,360 +1,321 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-dy1-f176.google.com (mail-dy1-f176.google.com [74.125.82.176])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5DFBD17C211;
-	Wed,  1 Jul 2026 00:34:35 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 117FE239085
+	for <linux-pm@vger.kernel.org>; Wed,  1 Jul 2026 01:17:37 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.82.176
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1782866075; cv=none; b=idIhNv7obgqOGwx7eFCUQpMYoLJkvrjAr/cY4LCrpkpZ3at4Q+0FvlIzer+z35Wtv+3WHx5H+UGZ5EHqQTC2goHsCrYlmviCMiqsfFZOnYz2SoBChdUTVrtCUcb2/s1Gx1TbFJsOYF1TO5k8GBSmy0aWFMxnb3zMBdK1UakQYgw=
+	t=1782868662; cv=none; b=NW1L4aHE+PI+U/wlaUv+oM3zJfSOAFCfX/P4yOT30rMZM7nDr95m8S0Gbv1+CRePaNuZ/NDhuEzMOK5GG7srdH0cgzM38rMlegMWx7E+f+YtVY+omGPD0s99pPH7MtES/R8UpKUJ2FOW6WSnoRrzgRIgIQFUa/SFlSPLgkQ1Krk=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1782866075; c=relaxed/simple;
-	bh=jp4oa+nB/LFZ04j1MBHx15gKEFiIydrLUbj2ORutANA=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=nOANovICL63lEuaTb+1zo3/0Vn2CN2cXe0ur8A8A8xc6EvPF5tMVIRHOlDQ9JY+lH1rEXsuX83qN909U0jS9Buiw9WWsOptl6v0ghLfjRLSZpHFljddgLEX557AE5b2w/BDWDJK+TT9cBGpPLSbGw8rZFPELOzWt3HtDqq/ZSFE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=niEuF4FN; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1782868662; c=relaxed/simple;
+	bh=MYF09Vdc6oklqHC6Wr4T2ymTHa4EE6saYjamUYP1eyM=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=goAftsms0e6b7zB3srMYdsHun5yz5/+PnRJOn9TvgXrtPmvHDngsQ1YpFwr/tG5tapdlncNr/1unYiPTkNs9YtW0CTi5sXlEEkX0dpY68jlwcLrUoZeraCOWEL7VN/0A8urUQ4B63dMtRRrkp27MZsBCFHryMen0oAd6MrpdSG4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=usp.br; spf=pass smtp.mailfrom=usp.br; dkim=pass (2048-bit key) header.d=usp.br header.i=@usp.br header.b=A3E2ZQem; arc=none smtp.client-ip=74.125.82.176
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=usp.br
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=usp.br
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="niEuF4FN"
-Received: by smtp.kernel.org (Postfix) with ESMTPS id F26F3C2BCC7;
-	Wed,  1 Jul 2026 00:34:34 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1782866075;
-	bh=jp4oa+nB/LFZ04j1MBHx15gKEFiIydrLUbj2ORutANA=;
-	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
-	b=niEuF4FNFy6Ry/TjM8q5oh4mYfFh/NyuqN4eagemDhyL23U3iRwt+NttewYVQR3Om
-	 zRFKvHrlKzhGrpracB2PV4oEthwfqDTnzluCTzxPJglEShJcNZKpVdiIo+numCQwoQ
-	 TlFEBQrkn8EeqBpwz0S0yHJSYvmcsedeS8XvJBM3fBjODYnjbcn4097p4nx2hWe+Ih
-	 sbvEQZibnZSExhKc6dzWV7VeiYVGB+syHjGVBLd0zWnNAvz4JyQL2caVx70S/UNgnK
-	 LXraGisK9LUKR+U2IbJ/equLb8+TTX/nm23AB7eHVU50izb6OYkhjeHryzqzypIYWJ
-	 eUU0ZYX2zJKHw==
-Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DD6C1C44500;
-	Wed,  1 Jul 2026 00:34:34 +0000 (UTC)
-From: Amit Sunil Dhamne via B4 Relay <devnull+amitsd.google.com@kernel.org>
-Date: Wed, 01 Jul 2026 00:34:19 +0000
-Subject: [PATCH v4 2/2] usb: typec: tcpm: Add support for Battery Status
- response message
+	dkim=pass (2048-bit key) header.d=usp.br header.i=@usp.br header.b="A3E2ZQem"
+Received: by mail-dy1-f176.google.com with SMTP id 5a478bee46e88-30c965eab27so201163eec.0
+        for <linux-pm@vger.kernel.org>; Tue, 30 Jun 2026 18:17:37 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=usp.br; s=usp-google; t=1782868657; x=1783473457; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=Lyy8MBwXxNEEgpglO6QxnqIdKjc9GvseuoouQERX99A=;
+        b=A3E2ZQemUqcrzGB2EGr7avrL5P7mdQoWmmGeLxwFdVmWorGrfW2jO4b81cB0cXTOEX
+         z9cyUZsdqyztmu6CcoTJoVebNofFSv81Q7DgpV7E8Zx7rV8N0bW5+t92Yc5ntnAL6xVD
+         Er1wE9JRr8imSfKvXvRofwWl+kvK+dsx5M6xNwgOG7mJDKjyz49r9jlCAB98Ulu7NhdV
+         1WFA99m7GHgwM9GYdD7lJNFi88f/QWHKZ1GT5wviTS0dakyOoBOZAGDfCgiTMXwxYTn9
+         QsWoMbfuyPJgJrJf/0rGCxB4VSMUVwyB14EprqC6Lt+6jJYI+NA4M5dcQQdy6YVKyWMh
+         FndQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1782868657; x=1783473457;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=Lyy8MBwXxNEEgpglO6QxnqIdKjc9GvseuoouQERX99A=;
+        b=fdsGGOvdBz9XKmjuLD0KO3rNy19pgcuAc+72w3QQHcI48+nXHraei+F1nUIvOiI0tB
+         ZyF/n05qyxTQYN791/XgOq60Lg1jnuIZwExoHyxaPySCxYbashKDqKew8l/Hlt2YzA5h
+         CDGEM21AiLFCCwSOQdSWZysjyZT1mfqo1c9c8jl5EY57gfQKjFAgImUYA1K+SNg8z+x4
+         83Cf+Fnw6XDpLekdNWfa/vMgLLmxbH0EA+Xj3al9xeAc4kKsLPrIpfkI7EO7hC1uQEKb
+         bwaT/QmiczpMSMLVB5Wgu2y2xl1l/QvzQZc0ieGFbwG97r9cMQ4NzY5ZdqqXqf1Q8kzO
+         Ur0w==
+X-Forwarded-Encrypted: i=1; AHgh+RrW3SRBdcL404/2BVZ8GFJ3CvIgMGMqieXyPgeCvAKqY5qEJtAkJmGb9hPLl94mm11/BTR+/51ccw==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yy264Oa5TVFpRA9p+FN+CVDI6Ribu1bz7Tz3h+mMZlDJj0ywFox
+	Q5El9LjbdPA8Ckhfg89h3CTuMCiiSsv+726Rm7ox4iSFWmmbgqNVHHISm/NPSejxPCE=
+X-Gm-Gg: AfdE7cnl+wN32/uMCcZHwTv/BcwYUJkRqkDA7dcrMnw8UUS9d4h1DICCTbU5vowL+rm
+	hZYIZLI79UzYqAdQgaXWgMz/vFulHy918k+TcV7qmp/p0rGYOVCrFTjXU341Onu7LwA7gyqmhnH
+	WMyqScWCOA/2s2YlURXdLxyg7d1RDqQccZLuU4i+cviAECEf3WAk4DqNHIzI4tgu3aMooou+nIg
+	2iHk2JBGwLTDBPEiJOWNaiNdA9/HFN8Rz5H273YkO+f4Ses4pJxk8bWozRMKmjbo7/9iDVznc49
+	il1ack4aWC+mhes0ehbCSEWAZ+2AHUXCltlwv8AWYOOUd6FWcl6CfpwyCYWKE0xRinYmBjHTlVA
+	QeZycuTTnJKNMIO5szo4y8478zom25nvSTrMAjnZYjM2z9DEZbfoSLodkqi0nyUGuq2+7Fm2mdW
+	Xv90vw2qFkUaQ6jgPj2OU15ZKnu1CPlmNT+tc0azYWJ+dcDpNoLXAQid2XzCCL5n04pbRtrOO3H
+	w5EISgnq1uzi0yOMVzAAvChlyFm+i6nxBJK6E0DI3h1XjtJfHJ2
+X-Received: by 2002:a05:7300:3214:b0:2f1:6252:f8fe with SMTP id 5a478bee46e88-30ef07fec74mr2369207eec.3.1782868656805;
+        Tue, 30 Jun 2026 18:17:36 -0700 (PDT)
+Received: from wolf-skin.semfio.usp.br ([2001:12d0:800:a:9ec7:d3ff:fef2:7ce6])
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-30ee3205993sm13517061eec.24.2026.06.30.18.17.33
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 30 Jun 2026 18:17:36 -0700 (PDT)
+From: "Bryan B. Lima" <bblima@usp.br>
+To: miquel.raynal@bootlin.com,
+	rafael@kernel.org,
+	daniel.lezcano@kernel.org,
+	rui.zhang@intel.com,
+	lukasz.luba@arm.com
+Cc: gustavoscorrea@usp.br,
+	bblima@usp.br,
+	linux-pm@vger.kernel.org
+Subject: [PATCH] thermal: armada: Use bitfield and bitmask macros
+Date: Tue, 30 Jun 2026 22:07:18 -0300
+Message-ID: <20260701010802.99029-1-bblima@usp.br>
+X-Mailer: git-send-email 2.55.0
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20260701-batt-status-v4-2-a31d97b1ae57@google.com>
-References: <20260701-batt-status-v4-0-a31d97b1ae57@google.com>
-In-Reply-To: <20260701-batt-status-v4-0-a31d97b1ae57@google.com>
-To: Sebastian Reichel <sre@kernel.org>, 
- Badhri Jagan Sridharan <badhri@google.com>, 
- Heikki Krogerus <heikki.krogerus@linux.intel.com>, 
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
- Hans de Goede <hansg@kernel.org>, Krzysztof Kozlowski <krzk@kernel.org>, 
- Marek Szyprowski <m.szyprowski@samsung.com>, 
- Sebastian Krzyszkowiak <sebastian.krzyszkowiak@puri.sm>, 
- Purism Kernel Team <kernel@puri.sm>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
- linux-usb@vger.kernel.org, 
- =?utf-8?q?Andr=C3=A9_Draszik?= <andre.draszik@linaro.org>, 
- Tudor Ambarus <tudor.ambarus@linaro.org>, 
- Peter Griffin <peter.griffin@linaro.org>, RD Babiera <rdbabiera@google.com>, 
- Kyle Tso <kyletso@google.com>, Amit Sunil Dhamne <amitsd@google.com>
-X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1782866074; l=9494;
- i=amitsd@google.com; s=20241031; h=from:subject:message-id;
- bh=d1NfTj8UswSEtak3ZClTJoRISHYAGPQ9HC5PINs5qhU=;
- b=m7oXzbzD/ZH6reZapHdMkkRdrKT7inH8x6morkfBnr+e+hF4GiKqI6K/vTbxFqgVXlHIw+ocu
- pChxnL2bBWkBnmUHbTZ4GXsR8CkXJ3jTLaGOBk/S38njPF62jxByTrQ
-X-Developer-Key: i=amitsd@google.com; a=ed25519;
- pk=wD+XZSST4dmnNZf62/lqJpLm7fiyT8iv462zmQ3H6bI=
-X-Endpoint-Received: by B4 Relay for amitsd@google.com/20241031 with
- auth_id=262
-X-Original-From: Amit Sunil Dhamne <amitsd@google.com>
-Reply-To: amitsd@google.com
+Content-Transfer-Encoding: 8bit
 
-From: Amit Sunil Dhamne <amitsd@google.com>
+Replace manual bitfield manipulations with FIELD_MODIFY() and define
+constants with BIT() and GENMASK() to make code more readable.
 
-Add support for responding to a Get_Battery_Status request with a
-Battery_Status message. The port partner shall request the status of a
-port's battery by providing an index in the Get_Battery_Status AMS. In
-case of failure to identify the battery, the port shall reply with an
-appropriate message indicating so.
+Also, remove offset and shift constants for clarity in use of bitfield
+macros.
 
-Support for Battery_Status message is required for sinks that contain
-battery as specified in USB PD Rev3.1 v1.8
-("Applicability of Data Messages" section).
-
-Signed-off-by: Amit Sunil Dhamne <amitsd@google.com>
-Reviewed-by: Badhri Jagan Sridharan <badhri@google.com>
+Signed-off-by: Bryan B. Lima <bblima@usp.br>
+Co-developed-by: Gustavo S. Correa <gustavoscorrea@usp.br>
+Signed-off-by: Gustavo S. Correa <gustavoscorrea@usp.br>
 ---
- drivers/usb/typec/tcpm/tcpm.c | 135 +++++++++++++++++++++++++++++++++++++++++-
- include/linux/usb/pd.h        |  29 +++++++++
- 2 files changed, 161 insertions(+), 3 deletions(-)
+ drivers/thermal/armada_thermal.c | 100 ++++++++++++++-----------------
+ 1 file changed, 44 insertions(+), 56 deletions(-)
 
-diff --git a/drivers/usb/typec/tcpm/tcpm.c b/drivers/usb/typec/tcpm/tcpm.c
-index 7ef746a90a17..19daa17917a7 100644
---- a/drivers/usb/typec/tcpm/tcpm.c
-+++ b/drivers/usb/typec/tcpm/tcpm.c
-@@ -232,7 +232,8 @@ enum pd_msg_request {
- 	PD_MSG_DATA_SINK_CAP,
- 	PD_MSG_DATA_SOURCE_CAP,
- 	PD_MSG_DATA_REV,
--	PD_MSG_EXT_SINK_CAP_EXT
-+	PD_MSG_EXT_SINK_CAP_EXT,
-+	PD_MSG_DATA_BATT_STATUS
- };
+diff --git a/drivers/thermal/armada_thermal.c b/drivers/thermal/armada_thermal.c
+index c2fbdb534f61..be6240984002 100644
+--- a/drivers/thermal/armada_thermal.c
++++ b/drivers/thermal/armada_thermal.c
+@@ -20,41 +20,35 @@
+ #include <linux/interrupt.h>
  
- enum adev_actions {
-@@ -389,6 +390,14 @@ struct pd_timings {
- /* Convert microwatt to watt */
- #define UW_TO_W(pow)					((pow) / 1000000)
- 
-+/*
-+ * As per USB PD Spec Rev 3.18 (Sec. 6.5.13.11), the number of fixed batteries
-+ * that a port can be queried is restricted to 4.
-+ */
-+#define MAX_NUM_FIXED_BATT				4
+ /* Thermal Manager Control and Status Register */
+-#define PMU_TDC0_SW_RST_MASK		(0x1 << 1)
+-#define PMU_TM_DISABLE_OFFS		0
+-#define PMU_TM_DISABLE_MASK		(0x1 << PMU_TM_DISABLE_OFFS)
+-#define PMU_TDC0_REF_CAL_CNT_OFFS	11
+-#define PMU_TDC0_REF_CAL_CNT_MASK	(0x1ff << PMU_TDC0_REF_CAL_CNT_OFFS)
+-#define PMU_TDC0_OTF_CAL_MASK		(0x1 << 30)
+-#define PMU_TDC0_START_CAL_MASK		(0x1 << 25)
+-
+-#define A375_UNIT_CONTROL_SHIFT		27
+-#define A375_UNIT_CONTROL_MASK		0x7
++#define PMU_TDC0_SW_RST_MASK		BIT(1)
++#define PMU_TM_DISABLE_MASK		BIT(0)
++#define PMU_TDC0_REF_CAL_CNT_MASK	GENMASK(19, 11)
++#define PMU_TDC0_OTF_CAL_MASK		BIT(30)
++#define PMU_TDC0_START_CAL_MASK		BIT(25)
 +
-+#define BATTERY_PROPERTY_UNKNOWN			0xffff
-+
- /*
-  * struct pd_identifier - Contains info about PD identifiers
-  * @vid: Vendor ID (assigned by USB-IF)
-@@ -683,6 +692,9 @@ struct tcpm_port {
++#define A375_UNIT_CONTROL_MASK		GENMASK(29, 27)
+ #define A375_READOUT_INVERT		BIT(15)
+ #define A375_HW_RESETn			BIT(8)
  
- 	struct pd_identifier pd_ident;
- 	struct sink_caps_ext_data sink_caps_ext;
-+	struct power_supply **fixed_batt;
-+	u32 fixed_batt_cnt;
-+	u32 batt_request_id;
- #ifdef CONFIG_DEBUG_FS
- 	struct dentry *dentry;
- 	struct mutex logbuffer_lock;	/* log buffer access lock */
-@@ -1470,6 +1482,20 @@ static int tcpm_pd_send_sink_caps(struct tcpm_port *port)
- 	return tcpm_pd_transmit(port, TCPC_TX_SOP, &msg);
+ /* Errata fields */
+-#define CONTROL0_TSEN_TC_TRIM_MASK	0x7
++#define CONTROL0_TSEN_TC_TRIM_MASK	GENMASK(2, 0)
+ #define CONTROL0_TSEN_TC_TRIM_VAL	0x3
+ 
+ #define CONTROL0_TSEN_START		BIT(0)
+ #define CONTROL0_TSEN_RESET		BIT(1)
+ #define CONTROL0_TSEN_ENABLE		BIT(2)
+ #define CONTROL0_TSEN_AVG_BYPASS	BIT(6)
+-#define CONTROL0_TSEN_CHAN_SHIFT	13
+-#define CONTROL0_TSEN_CHAN_MASK		0xF
+-#define CONTROL0_TSEN_OSR_SHIFT		24
+-#define CONTROL0_TSEN_OSR_MAX		0x3
+-#define CONTROL0_TSEN_MODE_SHIFT	30
++#define CONTROL0_TSEN_CHAN_MASK		GENMASK(16, 13)
++#define CONTROL0_TSEN_OSR_MASK		GENMASK(25, 24)
++#define CONTROL0_TSEN_OSR_MAX		FIELD_MAX(CONTROL0_TSEN_OSR_MASK)
++#define CONTROL0_TSEN_MODE_MASK		GENMASK(31, 30)
+ #define CONTROL0_TSEN_MODE_EXTERNAL	0x2
+-#define CONTROL0_TSEN_MODE_MASK		0x3
+ 
+-#define CONTROL1_TSEN_AVG_MASK		0x7
++#define CONTROL1_TSEN_AVG_MASK		GENMASK(2, 0)
+ #define CONTROL1_EXT_TSEN_SW_RESET	BIT(7)
+ #define CONTROL1_EXT_TSEN_HW_RESETn	BIT(8)
+ #define CONTROL1_TSEN_INT_EN		BIT(25)
+-#define CONTROL1_TSEN_SELECT_OFF	21
+-#define CONTROL1_TSEN_SELECT_MASK	0x3
++#define CONTROL1_TSEN_SELECT_MASK	GENMASK(22, 21)
+ 
+ #define STATUS_POLL_PERIOD_US		1000
+ #define STATUS_POLL_TIMEOUT_US		100000
+@@ -140,23 +134,21 @@ static void armadaxp_init(struct platform_device *pdev,
+ 	u32 reg;
+ 
+ 	regmap_read(priv->syscon, data->syscon_control1_off, &reg);
+-	reg |= PMU_TDC0_OTF_CAL_MASK;
++	FIELD_MODIFY(PMU_TDC0_OTF_CAL_MASK, &reg, 1);
+ 
+ 	/* Reference calibration value */
+-	reg &= ~PMU_TDC0_REF_CAL_CNT_MASK;
+-	reg |= (0xf1 << PMU_TDC0_REF_CAL_CNT_OFFS);
++	FIELD_MODIFY(PMU_TDC0_REF_CAL_CNT_MASK, &reg, 0xf1);
+ 
+ 	/* Reset the sensor */
+-	reg |= PMU_TDC0_SW_RST_MASK;
+-
++	FIELD_MODIFY(PMU_TDC0_SW_RST_MASK, &reg, 1);
+ 	regmap_write(priv->syscon, data->syscon_control1_off, reg);
+ 
+-	reg &= ~PMU_TDC0_SW_RST_MASK;
++	FIELD_MODIFY(PMU_TDC0_SW_RST_MASK, &reg, 0);
+ 	regmap_write(priv->syscon, data->syscon_control1_off, reg);
+ 
+ 	/* Enable the sensor */
+ 	regmap_read(priv->syscon, data->syscon_status_off, &reg);
+-	reg &= ~PMU_TM_DISABLE_MASK;
++	FIELD_MODIFY(PMU_TM_DISABLE_MASK, &reg, 0);
+ 	regmap_write(priv->syscon, data->syscon_status_off, reg);
  }
  
-+static void tcpm_get_fixed_batt(struct tcpm_port *port)
-+{
-+	int ret;
-+
-+	if (!port->self_powered || port->fixed_batt_cnt > 0)
-+		return;
-+
-+	ret = power_supply_get_system_batteries(port->dev, &port->fixed_batt);
-+	if (ret < 0)
-+		tcpm_log(port, "Failed to get battery array, ret=%d", ret);
-+	else
-+		port->fixed_batt_cnt = ret;
-+}
-+
- static int tcpm_pd_send_sink_cap_ext(struct tcpm_port *port)
- {
- 	u16 operating_snk_watt = port->operating_snk_mw / 1000;
-@@ -1482,6 +1508,8 @@ static int tcpm_pd_send_sink_cap_ext(struct tcpm_port *port)
- 	if (!port->self_powered)
- 		data->spr_op_pdp = operating_snk_watt;
+@@ -167,14 +159,13 @@ static void armada370_init(struct platform_device *pdev,
+ 	u32 reg;
  
-+	tcpm_get_fixed_batt(port);
-+
- 	/*
- 	 * SPR Sink Minimum PDP indicates the minimum power required to operate
- 	 * a sink device in its lowest level of functionality without requiring
-@@ -1507,6 +1535,7 @@ static int tcpm_pd_send_sink_cap_ext(struct tcpm_port *port)
- 	skedb.load_step = data->load_step;
- 	skedb.load_char = cpu_to_le16(data->load_char);
- 	skedb.compliance = data->compliance;
-+	skedb.batt_info = min(port->fixed_batt_cnt, MAX_NUM_FIXED_BATT);
- 	skedb.modes = data->modes;
- 	skedb.spr_min_pdp = data->spr_min_pdp;
- 	skedb.spr_op_pdp = data->spr_op_pdp;
-@@ -1525,6 +1554,88 @@ static int tcpm_pd_send_sink_cap_ext(struct tcpm_port *port)
- 					   port->message_id,
- 					   data_obj_cnt,
- 					   1 /* Denotes if ext header */));
-+
-+	return tcpm_pd_transmit(port, TCPC_TX_SOP, &msg);
-+}
-+
-+static int tcpm_pd_send_batt_status(struct tcpm_port *port)
-+{
-+	u16 present_charge = BATTERY_PROPERTY_UNKNOWN;
-+	bool batt_present = false, invalid_ref = true;
-+	u32 batt_id = port->batt_request_id;
-+	union power_supply_propval val;
-+	struct power_supply *batt;
-+	u8 charging_status = 0;
-+	struct pd_message msg;
-+	int ret, charge_now;
-+	u64 energy_now;
-+	u32 bsdo;
-+
-+	tcpm_get_fixed_batt(port);
-+	memset(&msg, 0, sizeof(msg));
-+
-+	if (batt_id >= port->fixed_batt_cnt || batt_id >= MAX_NUM_FIXED_BATT)
-+		goto send_status;
-+
-+	invalid_ref = false;
-+	batt = port->fixed_batt[batt_id];
-+	ret = power_supply_get_property(batt, POWER_SUPPLY_PROP_PRESENT, &val);
-+	if (ret)
-+		tcpm_log(port,
-+			 "Failed to fetch power_supply_prop_present ret %d",
-+			 ret);
-+	else
-+		batt_present = val.intval > 0;
-+
-+	ret = power_supply_get_property(batt, POWER_SUPPLY_PROP_CHARGE_NOW,
-+					&val);
-+	if (!ret) {
-+		charge_now = val.intval;
-+
-+		ret = power_supply_get_property(batt,
-+						POWER_SUPPLY_PROP_VOLTAGE_AVG,
-+						&val);
-+		if (!ret) {
-+			energy_now = ((u64)charge_now * val.intval) / 1000000;
-+
-+			/*
-+			 * Battery Present Charge is reported in
-+			 * increments of 0.1WH.
-+			 */
-+			present_charge = (u16)UW_TO_W(energy_now * 10);
-+		}
-+	}
-+
-+	ret = power_supply_get_property(batt, POWER_SUPPLY_PROP_STATUS, &val);
-+	if (!ret) {
-+		switch (val.intval) {
-+		case POWER_SUPPLY_STATUS_CHARGING:
-+			charging_status = BSDO_BATTERY_INFO_CHARGING;
-+			break;
-+		case POWER_SUPPLY_STATUS_DISCHARGING:
-+			charging_status = BSDO_BATTERY_INFO_DISCHARGING;
-+			break;
-+		case POWER_SUPPLY_STATUS_NOT_CHARGING:
-+		case POWER_SUPPLY_STATUS_FULL:
-+			charging_status = BSDO_BATTERY_INFO_IDLE;
-+			break;
-+		default:
-+			charging_status = BSDO_BATTERY_INFO_RSVD;
-+			break;
-+		}
-+	}
-+
-+send_status:
-+
-+	bsdo = BSDO(present_charge, charging_status, batt_present, invalid_ref);
-+	msg.payload[0] = cpu_to_le32(bsdo);
-+	msg.header = PD_HEADER_LE(PD_DATA_BATT_STATUS,
-+				  port->pwr_role,
-+				  port->data_role,
-+				  port->negotiated_rev,
-+				  port->message_id,
-+				  1);
-+
- 	return tcpm_pd_transmit(port, TCPC_TX_SOP, &msg);
+ 	regmap_read(priv->syscon, data->syscon_control1_off, &reg);
+-	reg |= PMU_TDC0_OTF_CAL_MASK;
++	FIELD_MODIFY(PMU_TDC0_OTF_CAL_MASK, &reg, 1);
+ 
+ 	/* Reference calibration value */
+-	reg &= ~PMU_TDC0_REF_CAL_CNT_MASK;
+-	reg |= (0xf1 << PMU_TDC0_REF_CAL_CNT_OFFS);
++	FIELD_MODIFY(PMU_TDC0_REF_CAL_CNT_MASK, &reg, 0xf1);
+ 
+ 	/* Reset the sensor */
+-	reg &= ~PMU_TDC0_START_CAL_MASK;
++	FIELD_MODIFY(PMU_TDC0_START_CAL_MASK, &reg, 0);
+ 
+ 	regmap_write(priv->syscon, data->syscon_control1_off, reg);
+ 
+@@ -188,14 +179,14 @@ static void armada375_init(struct platform_device *pdev,
+ 	u32 reg;
+ 
+ 	regmap_read(priv->syscon, data->syscon_control1_off, &reg);
+-	reg &= ~(A375_UNIT_CONTROL_MASK << A375_UNIT_CONTROL_SHIFT);
+-	reg &= ~A375_READOUT_INVERT;
+-	reg &= ~A375_HW_RESETn;
++	FIELD_MODIFY(A375_UNIT_CONTROL_MASK, &reg, 0);
++	FIELD_MODIFY(A375_READOUT_INVERT, &reg, 0);
++	FIELD_MODIFY(A375_HW_RESETn, &reg, 0);
+ 	regmap_write(priv->syscon, data->syscon_control1_off, reg);
+ 
+ 	msleep(20);
+ 
+-	reg |= A375_HW_RESETn;
++	FIELD_MODIFY(A375_HW_RESETn, &reg, 1);
+ 	regmap_write(priv->syscon, data->syscon_control1_off, reg);
+ 
+ 	msleep(50);
+@@ -220,14 +211,13 @@ static void armada380_init(struct platform_device *pdev,
+ 
+ 	/* Disable the HW/SW reset */
+ 	regmap_read(priv->syscon, data->syscon_control1_off, &reg);
+-	reg |= CONTROL1_EXT_TSEN_HW_RESETn;
+-	reg &= ~CONTROL1_EXT_TSEN_SW_RESET;
++	FIELD_MODIFY(CONTROL1_EXT_TSEN_HW_RESETn, &reg, 1);
++	FIELD_MODIFY(CONTROL1_EXT_TSEN_SW_RESET, &reg, 0);
+ 	regmap_write(priv->syscon, data->syscon_control1_off, reg);
+ 
+ 	/* Set Tsen Tc Trim to correct default value (errata #132698) */
+ 	regmap_read(priv->syscon, data->syscon_control0_off, &reg);
+-	reg &= ~CONTROL0_TSEN_TC_TRIM_MASK;
+-	reg |= CONTROL0_TSEN_TC_TRIM_VAL;
++	FIELD_MODIFY(CONTROL0_TSEN_TC_TRIM_MASK, &reg, CONTROL0_TSEN_TC_TRIM_VAL);
+ 	regmap_write(priv->syscon, data->syscon_control0_off, reg);
  }
  
-@@ -3886,6 +3997,7 @@ static void tcpm_pd_ext_msg_request(struct tcpm_port *port,
- {
- 	enum pd_ext_msg_type type = pd_header_type_le(msg->header);
- 	unsigned int data_size = pd_ext_header_data_size_le(msg->ext_msg.header);
-+	const struct pd_chunked_ext_message_data *ext_msg = &msg->ext_msg;
+@@ -238,14 +228,15 @@ static void armada_ap80x_init(struct platform_device *pdev,
+ 	u32 reg;
  
- 	/* stopping VDM state machine if interrupted by other Messages */
- 	if (tcpm_vdm_ams(port)) {
-@@ -3894,7 +4006,7 @@ static void tcpm_pd_ext_msg_request(struct tcpm_port *port,
- 		mod_vdm_delayed_work(port, 0);
+ 	regmap_read(priv->syscon, data->syscon_control0_off, &reg);
+-	reg &= ~CONTROL0_TSEN_RESET;
+-	reg |= CONTROL0_TSEN_START | CONTROL0_TSEN_ENABLE;
++	FIELD_MODIFY(CONTROL0_TSEN_RESET, &reg, 0);
++	FIELD_MODIFY(CONTROL0_TSEN_START, &reg, 1);
++	FIELD_MODIFY(CONTROL0_TSEN_ENABLE, &reg, 1);
+ 
+ 	/* Sample every ~2ms */
+-	reg |= CONTROL0_TSEN_OSR_MAX << CONTROL0_TSEN_OSR_SHIFT;
++	FIELD_MODIFY(CONTROL0_TSEN_OSR_MASK, &reg, CONTROL0_TSEN_OSR_MAX);
+ 
+ 	/* Enable average (2 samples by default) */
+-	reg &= ~CONTROL0_TSEN_AVG_BYPASS;
++	FIELD_MODIFY(CONTROL0_TSEN_AVG_BYPASS, &reg, 0);
+ 
+ 	regmap_write(priv->syscon, data->syscon_control0_off, reg);
+ }
+@@ -260,13 +251,12 @@ static void armada_cp110_init(struct platform_device *pdev,
+ 
+ 	/* Sample every ~2ms */
+ 	regmap_read(priv->syscon, data->syscon_control0_off, &reg);
+-	reg |= CONTROL0_TSEN_OSR_MAX << CONTROL0_TSEN_OSR_SHIFT;
++	FIELD_MODIFY(CONTROL0_TSEN_OSR_MASK, &reg, CONTROL0_TSEN_OSR_MAX);
+ 	regmap_write(priv->syscon, data->syscon_control0_off, reg);
+ 
+ 	/* Average the output value over 2^1 = 2 samples */
+ 	regmap_read(priv->syscon, data->syscon_control1_off, &reg);
+-	reg &= ~CONTROL1_TSEN_AVG_MASK;
+-	reg |= 1;
++	FIELD_MODIFY(CONTROL1_TSEN_AVG_MASK, &reg, 1);
+ 	regmap_write(priv->syscon, data->syscon_control1_off, reg);
+ }
+ 
+@@ -313,7 +303,7 @@ armada_disable_overheat_interrupt(struct armada_thermal_priv *priv)
+ 	u32 reg;
+ 
+ 	regmap_read(priv->syscon, data->syscon_control1_off, &reg);
+-	reg &= ~CONTROL1_TSEN_INT_EN;
++	FIELD_MODIFY(CONTROL1_TSEN_INT_EN, &reg, 0);
+ 	regmap_write(priv->syscon, data->syscon_control1_off, reg);
+ }
+ 
+@@ -331,20 +321,18 @@ static int armada_select_channel(struct armada_thermal_priv *priv, int channel)
+ 
+ 	/* Stop the measurements */
+ 	regmap_read(priv->syscon, data->syscon_control0_off, &ctrl0);
+-	ctrl0 &= ~CONTROL0_TSEN_START;
++	FIELD_MODIFY(CONTROL0_TSEN_START, &ctrl0, 0);
+ 	regmap_write(priv->syscon, data->syscon_control0_off, ctrl0);
+ 
+-	/* Reset the mode, internal sensor will be automatically selected */
+-	ctrl0 &= ~(CONTROL0_TSEN_MODE_MASK << CONTROL0_TSEN_MODE_SHIFT);
+-
+ 	/* Other channels are external and should be selected accordingly */
+ 	if (channel) {
+ 		/* Change the mode to external */
+-		ctrl0 |= CONTROL0_TSEN_MODE_EXTERNAL <<
+-			 CONTROL0_TSEN_MODE_SHIFT;
++		FIELD_MODIFY(CONTROL0_TSEN_MODE_MASK, &ctrl0, CONTROL0_TSEN_MODE_EXTERNAL);
+ 		/* Select the sensor */
+-		ctrl0 &= ~(CONTROL0_TSEN_CHAN_MASK << CONTROL0_TSEN_CHAN_SHIFT);
+-		ctrl0 |= (channel - 1) << CONTROL0_TSEN_CHAN_SHIFT;
++		FIELD_MODIFY(CONTROL0_TSEN_CHAN_MASK, &ctrl0, channel - 1);
++	} else {
++		/* Reset the mode, internal sensor will be automatically selected */
++		FIELD_MODIFY(CONTROL0_TSEN_MODE_MASK, &ctrl0, 0);
  	}
  
--	if (!(le16_to_cpu(msg->ext_msg.header) & PD_EXT_HDR_CHUNKED)) {
-+	if (!(le16_to_cpu(ext_msg->header) & PD_EXT_HDR_CHUNKED)) {
- 		tcpm_pd_handle_msg(port, PD_MSG_CTRL_NOT_SUPP, NONE_AMS);
- 		tcpm_log(port, "Unchunked extended messages unsupported");
- 		return;
-@@ -3919,9 +4031,17 @@ static void tcpm_pd_ext_msg_request(struct tcpm_port *port,
- 					     NONE_AMS, 0);
- 		}
- 		break;
-+	case PD_EXT_GET_BATT_STATUS:
-+		if (data_size >= 1) {
-+			port->batt_request_id = ext_msg->data[0];
-+			tcpm_pd_handle_msg(port, PD_MSG_DATA_BATT_STATUS,
-+					   GETTING_BATTERY_STATUS);
-+		} else {
-+			tcpm_set_state(port, SOFT_RESET_SEND, 0);
-+		}
-+		break;
- 	case PD_EXT_SOURCE_CAP_EXT:
- 	case PD_EXT_GET_BATT_CAP:
--	case PD_EXT_GET_BATT_STATUS:
- 	case PD_EXT_BATT_CAP:
- 	case PD_EXT_GET_MANUFACTURER_INFO:
- 	case PD_EXT_MANUFACTURER_INFO:
-@@ -4132,6 +4252,14 @@ static bool tcpm_send_queued_message(struct tcpm_port *port)
- 					 ret);
- 			tcpm_ams_finish(port);
- 			break;
-+		case PD_MSG_DATA_BATT_STATUS:
-+			ret = tcpm_pd_send_batt_status(port);
-+			if (ret)
-+				tcpm_log(port,
-+					 "Failed to send battery status ret=%d",
-+					 ret);
-+			tcpm_ams_finish(port);
-+			break;
- 		default:
- 			break;
- 		}
-@@ -8633,6 +8761,7 @@ void tcpm_unregister_port(struct tcpm_port *port)
- 	hrtimer_cancel(&port->vdm_state_machine_timer);
- 	hrtimer_cancel(&port->state_machine_timer);
+ 	/* Actually set the mode/channel */
+@@ -352,7 +340,7 @@ static int armada_select_channel(struct armada_thermal_priv *priv, int channel)
+ 	priv->current_channel = channel;
  
-+	power_supply_put_system_batteries(port->fixed_batt, port->fixed_batt_cnt);
- 	tcpm_reset_port(port);
+ 	/* Re-start the measurements */
+-	ctrl0 |= CONTROL0_TSEN_START;
++	FIELD_MODIFY(CONTROL0_TSEN_START, &ctrl0, 1);
+ 	regmap_write(priv->syscon, data->syscon_control0_off, ctrl0);
  
- 	tcpm_port_unregister_pd(port);
-diff --git a/include/linux/usb/pd.h b/include/linux/usb/pd.h
-index 337a5485af7c..afb9c2c65588 100644
---- a/include/linux/usb/pd.h
-+++ b/include/linux/usb/pd.h
-@@ -724,4 +724,33 @@ void usb_power_delivery_unlink_device(struct usb_power_delivery *pd, struct devi
- 
- #endif /* CONFIG_TYPEC */
- 
-+/* Battery Status Data Object */
-+#define BSDO_PRESENT_CAPACITY				GENMASK(31, 16)
-+#define BSDO_CHG_STATUS					GENMASK(11, 10)
-+#define BSDO_BATTERY_PRESENT				BIT(9)
-+#define BSDO_INVALID_BATTERY_REFERENCE			BIT(8)
-+
-+/*
-+ * Battery Charge Status: Battery Charging Status Values as defined in
-+ * "USB PD Spec Rev3.1 Ver1.8", "Table 6-46 Battery Status Data Object (BSDO)".
-+ */
-+#define BSDO_BATTERY_INFO_CHARGING			0x0
-+#define BSDO_BATTERY_INFO_DISCHARGING			0x1
-+#define BSDO_BATTERY_INFO_IDLE				0x2
-+#define BSDO_BATTERY_INFO_RSVD				0x3
-+
-+/**
-+ * BSDO() - Pack data into Battery Status Data Object format.
-+ * @batt_charge: Battery's present state of charge in 0.1WH increment.
-+ * @chg_status: Battery charge status.
-+ * @batt_present: Indicates that battery is present/attached when set else absent when unset.
-+ * @invalid_ref: Indicates that an invalid battery reference was made in the Get_Battery_Status
-+ *		 request.
-+ */
-+#define BSDO(batt_charge, chg_status, batt_present, invalid_ref)	\
-+	((FIELD_PREP(BSDO_PRESENT_CAPACITY, batt_charge)) |		\
-+	 (FIELD_PREP(BSDO_CHG_STATUS, chg_status)) |			\
-+	 ((batt_present) ? BSDO_BATTERY_PRESENT : 0) |			\
-+	 ((invalid_ref) ? BSDO_INVALID_BATTERY_REFERENCE : 0))
-+
- #endif /* __LINUX_USB_PD_H */
-
+ 	/*
 -- 
-2.55.0.rc0.799.gd6f94ed593-goog
-
+2.55.0
 
