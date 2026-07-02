@@ -1,109 +1,160 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7BBAF441036
-	for <linux-pm@vger.kernel.org>; Thu,  2 Jul 2026 11:37:40 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E45C6366054;
+	Thu,  2 Jul 2026 11:48:29 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1782992262; cv=none; b=oPseQzsWoiuyjEr6V7VdIimE1fIFdk+FnBglvXByXB/qRBVykwlsrmvZLdW/ou7qsuDDoSPQOp6APWefdOAoRbRquJOibRWzou1HyrzyyOvl/jCQwgVN4gfdPi0feNZNz/vKF4B8K/wi4s82FkbXAKGafNri7WdH0OycAyC+lU8=
+	t=1782992910; cv=none; b=Xa7G2mJj+kPx4b5r3tprxXgHsxOoS/msGpJhHFsnKxhBvAGZ6ct3p6IU0lwF/D0WdWkyZFWx3FW3Q4AdOPXTLtXJijTSAPzRhJQ+W2sJaD2fMVX7jSrzu/BBd1Mse0IRtl6RFddQzXf6j9cJE4+UYKM4Kq01vp9OwBnbtrvlz2M=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1782992262; c=relaxed/simple;
-	bh=WY9oIWlzoimYhCJKvEg6rl1OwI2uR608QGIY7aWSJ4Q=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=fOSkK3SYtM/ooeoplPMuj+xx3yKr4IhxVb7GkCFbR9cMp2mqhiLqAYlZoMo/qjI/812BoxLh/0K3/obgC1jPDBdjWn3kWhHIm0eo400alykltYMDeBtB6/RVyzL67wYPBbGtub+Jom6SuFQqkYv/uEQFsKYWF8gHTndSc/OyMaI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=k1hTFGiq; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1782992910; c=relaxed/simple;
+	bh=p22v56AemqjJ0QCpQ1BwH68NPTqShUBeeyh1V6L5+wo=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=f2NEf7DCbRyviNI7VOft1sFExOawfKHbuoP0+J+asooyGiu7CnB3DbY+TzF+PadXUVr89mrzeSJ8y3LY15A9mS6laPEtI6pJ65bBegowIOLxG7Q9QbKzXi61yVL78fqaBYN5cnsgSYyZ2vmF/lmGjscwZX86ojueFLK4B+mgIk8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=duBvPqFD; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="k1hTFGiq"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0FB1A1F00ACF
-	for <linux-pm@vger.kernel.org>; Thu,  2 Jul 2026 11:37:40 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="duBvPqFD"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id DAE8E1F000E9;
+	Thu,  2 Jul 2026 11:48:24 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1782992260;
-	bh=u7EXb1weowWTs8qmsPE7dm/b7A2l7/Sm1XmjS9B1n6E=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc;
-	b=k1hTFGiqG4YbriyM+fxdbw/kxpiX1A9Ce6x0tm3iVPCwNBp/H0+fU8x3YanZ6Vhby
-	 E1YhFE6tiD1btRWy2QbaFAcw518+hV2Bd4CyYIsN7GuxiIMOCB2XcVJU0bESObzMFt
-	 o+felxhputbqHdVsvPNVciqRlj/PYkWgX90RCtmUIaf+Iat7oYCtuYumydunQXB1Ep
-	 lABxQNacpI/7pbKffPc86Otp72PU0F+CZbOhgYrLHvSMxpv29AQ34QrZabpUQxIvry
-	 vCXnf8Q3PaPS3apqso/xx1yRCADpxy9JtpFJ07YgXZ+RZMdXbHsbiAZFWZZ1YDpnLG
-	 BYV4OBYRjIKpQ==
-Received: by mail-lf1-f54.google.com with SMTP id 2adb3069b0e04-5aeb91c003eso1823275e87.3
-        for <linux-pm@vger.kernel.org>; Thu, 02 Jul 2026 04:37:39 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AHgh+Rq1B8J5LwBXSwAaBvqL/NO3Lhe06kFuPsmxVNq9vI3GYCEKSpmsX1WlhiBz8V3HfnSyaBcWfeUchw==@vger.kernel.org
-X-Gm-Message-State: AOJu0YxcH803zhjrT6XKq4xVdu7SoWEnEHM6GorUuy4OEMZtJzJvzz0P
-	+gniQ5vlkr6u3rULqZ/MTBe4FEE6rwNnPeN/UFGO8seVg5izu46a/PVgZeFPvYUtmAB7Ww2k0Gl
-	WMtus6UdZaUdHraMUBZDQ+/Gyu6X6O8I=
-X-Received: by 2002:a05:6512:1383:b0:5ae:b25b:8a43 with SMTP id
- 2adb3069b0e04-5aec67ab096mr1418021e87.23.1782992258496; Thu, 02 Jul 2026
- 04:37:38 -0700 (PDT)
+	s=k20260515; t=1782992909;
+	bh=GAfc4SqC69E4ZIzIg2kX2N6xCM1PGgNYZm/ex6Fu2Sw=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To;
+	b=duBvPqFD68SJtuJMHT6xAhWtHQkC+Bww6wCMUyuEVjX0tQCdPYM7f7R/KqVsNuEOa
+	 CO8fWm+vDeL0TpkipWlRgu3u2Gq3Rj8tqpX+pGb3PE869TjWY+Ej6eU1pgve+l9rYg
+	 +dX6OVZ63GsJSm5AqX0bAfyKSxs6qcL4FAckmb//Dnp87TWvH9YWnMfc5gQY0nooYO
+	 jFMwKJIQamDB2Oewz9QGDg2xrjHvaShHvv+AIBxSGWarubFdWfwi6PCWseqX4T2Cm2
+	 YrSxF6cMGlgFW1QCRerJp4Wk9Fe3Y868fS7n8eJuy94vDNTLA62zqPnHRSfD3Jsq3Z
+	 Xk8FQf2DbzrZg==
+Message-ID: <08ef6b3e-be83-4516-954d-dbdb68776df2@kernel.org>
+Date: Thu, 2 Jul 2026 13:48:22 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260702-fix_sticky_-einval_after_pm_runtime_api_failure-v1-0-6ddc317011c0@oss.qualcomm.com>
- <20260702-fix_sticky_-einval_after_pm_runtime_api_failure-v1-1-6ddc317011c0@oss.qualcomm.com>
-In-Reply-To: <20260702-fix_sticky_-einval_after_pm_runtime_api_failure-v1-1-6ddc317011c0@oss.qualcomm.com>
-From: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
-Date: Thu, 2 Jul 2026 13:37:24 +0200
-X-Gmail-Original-Message-ID: <CAJZ5v0g6iRNUAKtDNKWa-_pshmnSCdStenNBJ91Xt=PSrhx=aQ@mail.gmail.com>
-X-Gm-Features: AVVi8Cdnq5UobXyHGkMuzdH234LirYD10dZQzOXqVoakHaXA7PLVm3FHzd9rkH4
-Message-ID: <CAJZ5v0g6iRNUAKtDNKWa-_pshmnSCdStenNBJ91Xt=PSrhx=aQ@mail.gmail.com>
-Subject: Re: [PATCH 1/4] PM: runtime: Clear runtime_error on supplier after
- failed get_sync
-To: Praveen Talari <praveen.talari@oss.qualcomm.com>
-Cc: Mark Brown <broonie@kernel.org>, Dilip Kota <dkota@codeaurora.org>, 
-	Stephen Boyd <swboyd@chromium.org>, Girish Mahadevan <girishm@codeaurora.org>, 
-	Alok Chauhan <alokc@codeaurora.org>, bjorn.andersson@oss.qualcomm.com, 
-	Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>, "Rafael J. Wysocki" <rafael@kernel.org>, 
-	Len Brown <lenb@kernel.org>, Pavel Machek <pavel@kernel.org>, 
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Danilo Krummrich <dakr@kernel.org>, 
-	Douglas Anderson <dianders@chromium.org>, linux-spi@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org, 
-	Mukesh Kumar Savaliya <mukesh.savaliya@oss.qualcomm.com>, aniket.randive@oss.qualcomm.com, 
-	chandana.chiluveru@oss.qualcomm.com, jyothi.seerapu@oss.qualcomm.com, 
-	linux-pm@vger.kernel.org, driver-core@lists.linux.dev
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 1/2] dt-bindings: soc: qcom: pmic-glink: Document
+ batteryless property
+To: Rakesh Kota <rakesh.kota@oss.qualcomm.com>,
+ Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
+Cc: Kamal Wadhwa <kamal.wadhwa@oss.qualcomm.com>,
+ jishnu.prakash@oss.qualcomm.com, Bjorn Andersson <andersson@kernel.org>,
+ Konrad Dybcio <konradybcio@kernel.org>, Rob Herring <robh@kernel.org>,
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
+ <conor+dt@kernel.org>, Sebastian Reichel <sre@kernel.org>,
+ linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+References: <20260518-add_dc_in_support-v1-1-31fbaa329879@oss.qualcomm.com>
+ <fd58d6d7-26cf-4b11-82ad-05b4863b6dd1@kernel.org>
+ <20260519082526.odmn5dqi2jftwnln@hu-kotarake-hyd.qualcomm.com>
+ <20260519-first-wine-bulldog-a6a4c7@quoll>
+ <20260521071341.q4efqssppvettaey@hu-kamalw-hyd.qualcomm.com>
+ <86f76a81-832d-4ba5-81d5-38b46b7dc0a7@kernel.org>
+ <6c595a5f-b979-4e8b-ae77-d28d24700588@oss.qualcomm.com>
+ <e07085c5-0fe8-4ea7-8e51-ebe104e7aa2d@kernel.org>
+ <82019c2e-6b6e-4edd-91b3-a28ef6eb09eb@oss.qualcomm.com>
+ <20260525120139.dyfnm6nwfzuoxd7p@hu-kotarake-hyd.qualcomm.com>
+ <20260702113010.zjrk4kr7fpjp6asj@hu-kotarake-hyd.qualcomm.com>
+From: Krzysztof Kozlowski <krzk@kernel.org>
+Content-Language: en-US
+Autocrypt: addr=krzk@kernel.org; keydata=
+ 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
+In-Reply-To: <20260702113010.zjrk4kr7fpjp6asj@hu-kotarake-hyd.qualcomm.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 
-On Thu, Jul 2, 2026 at 8:08=E2=80=AFAM Praveen Talari
-<praveen.talari@oss.qualcomm.com> wrote:
->
-> When pm_runtime_get_sync() fails for a supplier device in
-> rpm_get_suppliers(), the supplier's power.runtime_error field is left
-> set. This causes any subsequent rpm_resume() call on that supplier to
-> immediately return -EINVAL at the top of the function without
-> attempting an actual resume, making the failure permanent until
-> runtime PM is explicitly re-enabled.
->
-> Fix this by calling pm_runtime_set_suspended() on the supplier after
-> pm_runtime_put_noidle() in the error path. This clears runtime_error
-> and resets the runtime PM status to RPM_SUSPENDED, allowing the next
-> consumer resume attempt to retry the supplier resume normally.
->
-> Change-Id: Id5067d09caca464f663fc95fe745d037e9c56664
-> Signed-off-by: Praveen Talari <praveen.talari@oss.qualcomm.com>
-> ---
->  drivers/base/power/runtime.c | 1 +
->  1 file changed, 1 insertion(+)
->
-> diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.c
-> index 335288e8b5b3..9811d024d140 100644
-> --- a/drivers/base/power/runtime.c
-> +++ b/drivers/base/power/runtime.c
-> @@ -309,6 +309,7 @@ static int rpm_get_suppliers(struct device *dev)
->                 /* Ignore suppliers with disabled runtime PM. */
->                 if (retval < 0 && retval !=3D -EACCES) {
->                         pm_runtime_put_noidle(link->supplier);
-> +                       pm_runtime_set_suspended(link->supplier);
->                         return retval;
->                 }
->                 refcount_inc(&link->rpm_active);
->
-> --
+On 02/07/2026 13:30, Rakesh Kota wrote:
+> On Mon, May 25, 2026 at 05:31:39PM +0530, Rakesh Kota wrote:
+>> On Fri, May 22, 2026 at 11:24:19AM +0200, Konrad Dybcio wrote:
+>>> On 5/21/26 11:58 AM, Krzysztof Kozlowski wrote:
+>>>> On 21/05/2026 10:46, Konrad Dybcio wrote:
+>>>>> On 5/21/26 9:20 AM, Krzysztof Kozlowski wrote:
+>>>>>>> Since firmware does not have a way to dynamically tell if it on a
+>>>>>>> debug-board powered device or a DCIN powered device, We are required to
+>>>>>>> add this new DT property.
+>>>>>>
+>>>>>> Neither debug-board powered device nor battery-less will have
+>>>>>> monitored-battery, thus again, why lack of that property cannot tell you
+>>>>>> what you need?
+>>>>>
+>>>>> A device with a battery will not have a monitored-battery either
+>>>> But why? If for such device property "no battery" is suitable, then for
+>>>> me "monitored-battery" is suitable as well. IOW, if you say that having
+>>>> a property describing batter is not a accurate hardware property here,
+>>>> then neither saying "no battery" is, because no batter is basically some
+>>>> sort of battery (just like empty set is still a set, empty array is
+>>>> still an array).
+>>>
+>>> The battmgr service running on one of the remoteprocs already has all
+>>> the information about the battery and it also handles all the type-c,
+>>> PD and charger configuration, only letting the OS know about the
+>>> results.
+>>>
+>>> Hence, unless there's some other hardware at play (e.g. for custom
+>>> 200 W charging), which wasn't fully implemented in the QC firmware,
+>>> there is no reason to describe a battery separately, since the OS
+>>> can't do anything useful with that information
+>>>
+>>> In some abstract way, perhaps monitored_battery = <&pmic_glink> could
+>>> be thought of as valid (since that's the data source the OS gets to
+>>> see)
+>>
+>> Should we use monitored-battery = <&pmic_glink>; If so, would it be
+>> incorrect to mark pmic_glink as simple-battery, as that may cause the
+>> schema validation to fail?
+> 
+> Hi @Konrad Dybcio, @Krzysztof Kozlowski , 
+> 
+> Following up on the earlier discussion — is monitored-battery =
+> <&pmic_glink>; a valid pattern? And if so, would marking pmic_glink as
+> simple-battery cause DT schema validation failures?
 
-I don't think that this is the way to go here.
+No, pmic is not the monitored batter. Node representing real batter
+would be, but the main point remains - your firmware abstracts it, so
+fix the firmware to provide proper abstraction.
 
-Can you please say some more about the specific scenario in which this
-happens and explain why it is OK to effectively discard runtime PM
-errors occurring when suppliers are handled?
+Best regards,
+Krzysztof
