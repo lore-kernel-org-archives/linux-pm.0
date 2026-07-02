@@ -1,234 +1,267 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.14])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2C360375F81;
-	Thu,  2 Jul 2026 06:12:33 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0C68326F2B0;
+	Thu,  2 Jul 2026 08:22:37 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.14
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1782972755; cv=none; b=kcE4LOFEIQ5ivxRmKbOvMcYf2ZfJS7YP9IvU4vBa8fDAnIB3hUvslmcvsw2wjddW0yG6DB/IV92PnVE7d3fI6tgPVGtLCEKoMEzYYq5iwZXQ9DneDeF+tPRueiyG4ju5wPadQ7KrXXiKljDZstRdMtRWpbXPcUJvwWA/F/ux2gs=
+	t=1782980559; cv=none; b=BwtSsfF0DVfd6OeT22MgfcH9mYf8N2uSuP3aD2sH3QaEqD/tNKIrI9NnxnDZc/fHiPZU3LwCLn1T3gNKCCPYg5uGCOJj5qdkpYgzYb2vTAJaqrA3kKG/TUBQ4zuKssQ2Qya704+FEFSC8armcAB1lQYgLK2mnwFJDe4QE0jpWpg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1782972755; c=relaxed/simple;
-	bh=DJIuscRTaAjtMWnc4698PNWAw7LLTT0m9/hosL4X6pY=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=H3g6X/nKGDGZzQ5cxbywT3WsLwoIwW5Ic67Q2sONpfk1DJRIdcRZYLAiSndTCHBwueVUlvAlGqM1GeX/CgeKM+RQlkFuYD+SJFUUdvlw4Cl6RQl9rB8aALl6JN6i2Bd8ruZ0bXiJoXtKlsF/LAjf6Jf5tNUJS2LxhqGy6HF/XM4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=m6pHxkxr; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1782980559; c=relaxed/simple;
+	bh=3ZiaoBYTE1XKneTOvu3IasubXv8IsiAnV3Gi5fN37eM=;
+	h=Date:From:To:Cc:Subject:Message-ID; b=L5kmOBvW/xLDq95TiC631+OqTKaoBLC4urWJIgQfen4tqrP3di4YAIc2jQuBnSwRBm4Z+EmPRNEMjvep1z0KUoq2f23ZTNvF7gntbe6vqILj27/hHgVB8W3ht7U4esGsIsFxM0lF4c/l2mzu6sSXlEtJusBFELi/1bmKL017qHU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=Cjzf8k+c; arc=none smtp.client-ip=198.175.65.14
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="m6pHxkxr"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 95B471F000E9;
-	Thu,  2 Jul 2026 06:12:31 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1782972753;
-	bh=2Pz7VNLrEMNrLBDs+5aAtRtpYCC8kLZD9CTOtu2AAic=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=m6pHxkxrOm6eAkhVC5wcskecggqtHEonXSjol7RRbstxTWw1wiUkBXUXtFMH7SxJx
-	 hK2zOwqUEvGPz3tPhitFUCt2xjyLfvzbA/Tn4P2VrXXCEcfbNW/RVnFl5Ux+jD73Zz
-	 tPJ2qcp9fpLF/190On8Ul6EcALUWF8dkt/yv5fP2zZ18L1OBcYfnmUGuIa1oox2/+5
-	 HjgeRUPBdTojTFMljv9X7/BgWuhtISRi/rWplGz7DaEYxTihL99yCP7EkDy0lCrNYp
-	 Tu4j+3ZfA2C2KHzjy6kglcRx8InNij+luqaAQJlB0iI+y3i2aES74jTjoGhuxusOkU
-	 M3XmzAzFX279w==
-Date: Thu, 2 Jul 2026 06:12:29 +0000
-From: Tzung-Bi Shih <tzungbi@kernel.org>
-To: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	Jonathan Corbet <corbet@lwn.net>,
-	Danilo Krummrich <dakr@kernel.org>,
-	Shuah Khan <skhan@linuxfoundation.org>,
-	Pavel Machek <pavel@kernel.org>, Len Brown <lenb@kernel.org>,
-	linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linux-pm@vger.kernel.org, driver-core@lists.linux.dev,
-	tfiga@chromium.org, senozhatsky@chromium.org,
-	Randy Dunlap <rdunlap@infradead.org>
-Subject: Re: [PATCH v5 2/2] PM: dpm_watchdog: Allow disabling DPM watchdog by
- default
-Message-ID: <akYBTbV61YKcRjZ4@google.com>
-References: <20260701045640.3130090-1-tzungbi@kernel.org>
- <20260701045640.3130090-3-tzungbi@kernel.org>
- <2026070140-rally-prowling-4d66@gregkh>
- <CAJZ5v0goFxWOjjm1_JyaORKViEEc99-Tj-Yq4K0guYqZEvU9gg@mail.gmail.com>
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="Cjzf8k+c"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1782980558; x=1814516558;
+  h=date:from:to:cc:subject:message-id;
+  bh=3ZiaoBYTE1XKneTOvu3IasubXv8IsiAnV3Gi5fN37eM=;
+  b=Cjzf8k+cSJlEsgrFka4cRfi43g7cF6O4zF/OER8bHTmKZ2MjquszwExU
+   ZgCcdiHSE8nIcEGSZh6FSUzo5Y7Bkw64letXrGbcDRWjFTy1InYh972Yg
+   ria9h580y+k/bNUrTP2L9hMPZLbLwLrRzioq2spDeynYIEOCThIQv6yCK
+   vzURxAm0AWIoKsKqHfICDa3tuPWIs07HTjJ3q7ZbJT+18gho+1VfBW5io
+   gkvlvIhYkFb9qFg6GueEzcGWvLQabCJJ7Ojs+7TAA2Ka1MayLcvSCgpjG
+   89rBAE/MzyA0+E+/PuL0X6UxcndnO40OL0RhTJgfpe7TelMcU7DLSlxck
+   g==;
+X-CSE-ConnectionGUID: LZtz+yKrTAeSyR0iNz+/Qw==
+X-CSE-MsgGUID: SrOKHYFPTq+zjvQroUNaww==
+X-IronPort-AV: E=McAfee;i="6800,10657,11834"; a="87642189"
+X-IronPort-AV: E=Sophos;i="6.25,143,1779174000"; 
+   d="scan'208";a="87642189"
+Received: from fmviesa001.fm.intel.com ([10.60.135.141])
+  by orvoesa106.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 02 Jul 2026 01:22:37 -0700
+X-CSE-ConnectionGUID: Oce6k+nGQbWCVOZF/NGkzA==
+X-CSE-MsgGUID: i+NTvaI4R4eWIVdBL3YvIA==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.25,143,1779174000"; 
+   d="scan'208";a="277122457"
+Received: from lkp-server02.sh.intel.com (HELO ea128546eb3d) ([10.239.97.151])
+  by fmviesa001.fm.intel.com with ESMTP; 02 Jul 2026 01:22:35 -0700
+Received: from kbuild by ea128546eb3d with local (Exim 4.98.2)
+	(envelope-from <lkp@intel.com>)
+	id 1wfCgM-00000000AWj-1JZR;
+	Thu, 02 Jul 2026 08:22:03 +0000
+Date: Thu, 02 Jul 2026 16:21:04 +0800
+From: kernel test robot <lkp@intel.com>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org
+Subject: [rafael-pm:bleeding-edge] BUILD SUCCESS
+ 91b846502260d8fd819a8d6be0a59b7ef009f448
+Message-ID: <202607021653.gH9Uawdk-lkp@intel.com>
+User-Agent: s-nail v14.9.25
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <CAJZ5v0goFxWOjjm1_JyaORKViEEc99-Tj-Yq4K0guYqZEvU9gg@mail.gmail.com>
 
-On Wed, Jul 01, 2026 at 02:53:18PM +0200, Rafael J. Wysocki (Intel) wrote:
-> On Wed, Jul 1, 2026 at 9:22 AM Greg Kroah-Hartman
-> <gregkh@linuxfoundation.org> wrote:
-> >
-> > On Wed, Jul 01, 2026 at 04:56:40AM +0000, Tzung-Bi Shih wrote:
-> > > Introduce the "dpm_watchdog_enabled" module parameter to allow the DPM
-> > > watchdog to be enabled or disabled at boot time and runtime.
-> >
-> > As I say all the time, this isn't the 1990's, please don't add new
-> > module parameters as they are a pain to manage and maintain over time
-> > (as you found out with my rejection of patch 1/2 here...)
-> 
-> Let me challenge this though because there are use cases for something
-> like module parameters AFAICS.
-> 
-> There are things that are "on" by default that people want to turn
-> "off" and ideally at init time.  If that happens in a loadable module,
-> the only way to do so I'm aware of is using a module parameter.
-> 
-> There are also diagnostic features that are generally "off", but it is
-> useful to turn them "on" occasionally, both at run time and at init
-> time.  Adding a special kernel command line option and a separate
-> special sysfs switch (for example) for that is kind of a pain and
-> using a module parameter in such cases appears to be more
-> straightforward to me, so what really is the problem with that?
-> 
-> Moreover, there are those cases in which updating the kernel command
-> line is more straightforward than updating user space to write into a
-> specific file in sysfs after boot, so using a module parameter helps.
-> 
-> So in general, assuming that the underlying use case is good enough,
-> is a module parameter really worse than a combination of a special
-> sysfs file and a special kernel command line argument and if so, then
-> why?
-> 
-> Of course, whether or not the underlying use case is good enough is a
-> different matter.
-> 
-> > > Additionally, introduce the CONFIG_DPM_WATCHDOG_ENABLED Kconfig option
-> > > to set default value of the module parameter at compile time.
-> > >
-> > > This provides flexibility for systems that want the watchdog code
-> > > compiled in but inactive by default, allowing it to be enabled only when
-> > > needed.
-> > >
-> > > Signed-off-by: Tzung-Bi Shih <tzungbi@kernel.org>
-> > > ---
-> > > v5: No changes.
-> > >
-> > > v4: https://lore.kernel.org/all/20260611021219.2093476-2-tzungbi@kernel.org
-> > > - Rewrite the commit message to indicate the module parameter is the
-> > >   main change in the patch.
-> > > - DPM_WATCHDOG_DEFAULT_ENABLED -> DPM_WATCHDOG_ENABLED.
-> > >
-> > > v3: https://lore.kernel.org/all/20260608021526.1023248-3-tzungbi@kernel.org
-> > > - Add "PM" tag (was missing).
-> > > - Update the format and specify dependencies in kernel-parameters.txt.
-> > > - Update the help message in Kconfig to reflect that dpm_watchdog_enabled
-> > >   can be set at runtime as well.
-> > >
-> > > v2: https://lore.kernel.org/all/20260604090756.2884671-3-tzungbi@kernel.org
-> > > - Use module parameter and bool for dpm_watchdog_enabled.
-> > > - Use IS_ENABLED().
-> > >
-> > > v1: https://lore.kernel.org/all/20260528103215.505795-1-tzungbi@kernel.org
-> > > ---
-> > >  Documentation/admin-guide/kernel-parameters.txt |  7 +++++++
-> > >  drivers/base/power/main.c                       | 11 +++++++++++
-> > >  kernel/power/Kconfig                            | 10 ++++++++++
-> > >  3 files changed, 28 insertions(+)
-> > >
-> > > diff --git a/Documentation/admin-guide/kernel-parameters.txt b/Documentation/admin-guide/kernel-parameters.txt
-> > > index b5493a7f8f22..46c20e1b5f05 100644
-> > > --- a/Documentation/admin-guide/kernel-parameters.txt
-> > > +++ b/Documentation/admin-guide/kernel-parameters.txt
-> > > @@ -47,6 +47,7 @@
-> > >       PCI     PCI bus support is enabled.
-> > >       PCIE    PCI Express support is enabled.
-> > >       PCMCIA  The PCMCIA subsystem is enabled.
-> > > +     PM      Power Management support is enabled.
-> > >       PNP     Plug & Play support is enabled.
-> > >       PPC     PowerPC architecture is enabled.
-> > >       PPT     Parallel port support is enabled.
-> > > @@ -5354,6 +5355,12 @@ Kernel parameters
-> > >       pm_debug_messages       [SUSPEND,KNL]
-> > >                       Enable suspend/resume debug messages during boot up.
-> > >
-> > > +     pm_sleep.dpm_watchdog_enabled=
-> > > +                     [PM] Enable or disable the DPM watchdog.  Requires
-> > > +                     CONFIG_PM_SLEEP and CONFIG_DPM_WATCHDOG enabled.
-> > > +                     Format: <bool>
-> > > +                     Default value is set by CONFIG_DPM_WATCHDOG_ENABLED.
-> > > +
-> > >       pnp.debug=1     [PNP]
-> > >                       Enable PNP debug messages (depends on the
-> > >                       CONFIG_PNP_DEBUG_MESSAGES option).  Change at run-time
-> > > diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
-> > > index c6a3300cfb7a..f58945758868 100644
-> > > --- a/drivers/base/power/main.c
-> > > +++ b/drivers/base/power/main.c
-> > > @@ -535,6 +535,11 @@ module_param(dpm_watchdog_all_cpu_backtrace, bool, 0644);
-> > >  MODULE_PARM_DESC(dpm_watchdog_all_cpu_backtrace,
-> > >                "Backtrace all CPUs on DPM watchdog timeout");
-> > >
-> > > +static bool __read_mostly dpm_watchdog_enabled =
-> > > +                             IS_ENABLED(CONFIG_DPM_WATCHDOG_ENABLED);
-> > > +module_param(dpm_watchdog_enabled, bool, 0644);
-> > > +MODULE_PARM_DESC(dpm_watchdog_enabled, "Enable DPM watchdog");
-> > > +
-> > >  static unsigned int __read_mostly dpm_watchdog_timeout = CONFIG_DPM_WATCHDOG_TIMEOUT;
-> > >  static unsigned int __read_mostly dpm_watchdog_warning_timeout =
-> > >                                               CONFIG_DPM_WATCHDOG_WARNING_TIMEOUT;
-> > > @@ -630,6 +635,9 @@ static void dpm_watchdog_set(struct dpm_watchdog *wd, struct device *dev)
-> > >  {
-> > >       struct timer_list *timer = &wd->timer;
-> > >
-> > > +     if (!dpm_watchdog_enabled)
-> > > +             return;
-> > > +
-> > >       wd->dev = dev;
-> > >       wd->tsk = current;
-> > >       wd->fatal = dpm_watchdog_timeout == dpm_watchdog_warning_timeout;
-> > > @@ -648,6 +656,9 @@ static void dpm_watchdog_clear(struct dpm_watchdog *wd)
-> > >  {
-> > >       struct timer_list *timer = &wd->timer;
-> > >
-> > > +     if (!dpm_watchdog_enabled)
-> > > +             return;
-> > > +
-> > >       timer_delete_sync(timer);
-> > >       timer_destroy_on_stack(timer);
-> > >  }
-> > > diff --git a/kernel/power/Kconfig b/kernel/power/Kconfig
-> > > index 530c897311d4..508ceabc4d2e 100644
-> > > --- a/kernel/power/Kconfig
-> > > +++ b/kernel/power/Kconfig
-> > > @@ -268,6 +268,16 @@ config DPM_WATCHDOG
-> > >         captured in pstore device for inspection in subsequent
-> > >         boot session.
-> > >
-> > > +config DPM_WATCHDOG_ENABLED
-> > > +     bool "Enable DPM watchdog by default"
-> > > +     depends on DPM_WATCHDOG
-> > > +     default y
-> >
-> > Only do this if you can not boot without the option enabled, which I do
-> > not think is the case here.
-> 
-> So in this particular case, there is a way to adjust the watchdog
-> timeout and if it is set to a very large value, the watchdog gets
-> effectively disabled for all purposes.
-> 
-> I'm not entirely sure if another switch to disable/enable it is needed
-> in addition to that TBH.
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git bleeding-edge
+branch HEAD: 91b846502260d8fd819a8d6be0a59b7ef009f448  Merge branch 'experimental/acpi-driver-work' into bleeding-edge
 
-They are still different.  Setting a very large timeout effectively delays
-the timeout, but doesn't disable the DPM watchdog.
+elapsed time: 736m
 
-For devices that are unaware of the watchdog, a long suspend/resume cycle
-might still eventually reach that large timeout and trigger unexpectedly.
+configs tested: 190
+configs skipped: 2
 
-More importantly, the timeout currently has a strict upper bound of 120
-seconds.  Setting it to a "very large value" is infeasible without changing
-the Kconfig:
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-        config DPM_WATCHDOG_TIMEOUT
-                int "Watchdog timeout to panic in seconds"
-                range 1 120
-                default 120
+tested configs:
+alpha                             allnoconfig    gcc-16.1.0
+alpha                            allyesconfig    gcc-16.1.0
+alpha                               defconfig    gcc-16.1.0
+arc                              allmodconfig    clang-23
+arc                               allnoconfig    gcc-16.1.0
+arc                              allyesconfig    clang-23
+arc                                 defconfig    gcc-16.1.0
+arc                   randconfig-001-20260702    gcc-8.5.0
+arc                   randconfig-002-20260702    gcc-8.5.0
+arm                               allnoconfig    gcc-16.1.0
+arm                              allyesconfig    clang-23
+arm                                 defconfig    gcc-16.1.0
+arm                   randconfig-001-20260702    gcc-8.5.0
+arm                   randconfig-002-20260702    gcc-8.5.0
+arm                   randconfig-003-20260702    gcc-8.5.0
+arm                   randconfig-004-20260702    gcc-8.5.0
+arm64                            allmodconfig    clang-23
+arm64                             allnoconfig    gcc-16.1.0
+arm64                               defconfig    gcc-16.1.0
+arm64                 randconfig-001-20260702    gcc-15.2.0
+arm64                 randconfig-002-20260702    gcc-15.2.0
+arm64                 randconfig-003-20260702    gcc-15.2.0
+arm64                 randconfig-004-20260702    gcc-15.2.0
+csky                             allmodconfig    gcc-16.1.0
+csky                              allnoconfig    gcc-16.1.0
+csky                                defconfig    gcc-16.1.0
+csky                  randconfig-001-20260702    gcc-15.2.0
+csky                  randconfig-002-20260702    gcc-15.2.0
+hexagon                          allmodconfig    gcc-16.1.0
+hexagon                           allnoconfig    gcc-16.1.0
+hexagon                             defconfig    gcc-16.1.0
+hexagon               randconfig-001-20260702    clang-23
+hexagon               randconfig-002-20260702    clang-23
+i386                             allmodconfig    clang-22
+i386                              allnoconfig    gcc-16.1.0
+i386                             allyesconfig    clang-22
+i386        buildonly-randconfig-001-20260702    clang-22
+i386        buildonly-randconfig-002-20260702    clang-22
+i386        buildonly-randconfig-003-20260702    clang-22
+i386        buildonly-randconfig-004-20260702    clang-22
+i386        buildonly-randconfig-005-20260702    clang-22
+i386        buildonly-randconfig-006-20260702    clang-22
+i386                                defconfig    gcc-16.1.0
+i386                  randconfig-001-20260702    gcc-14
+i386                  randconfig-002-20260702    gcc-14
+i386                  randconfig-003-20260702    gcc-14
+i386                  randconfig-004-20260702    gcc-14
+i386                  randconfig-005-20260702    gcc-14
+i386                  randconfig-006-20260702    gcc-14
+i386                  randconfig-007-20260702    gcc-14
+i386                  randconfig-011-20260702    clang-22
+i386                  randconfig-012-20260702    clang-22
+i386                  randconfig-013-20260702    clang-22
+i386                  randconfig-014-20260702    clang-22
+i386                  randconfig-015-20260702    clang-22
+i386                  randconfig-016-20260702    clang-22
+i386                  randconfig-017-20260702    clang-22
+loongarch                        allmodconfig    clang-23
+loongarch                         allnoconfig    gcc-16.1.0
+loongarch                           defconfig    clang-23
+loongarch                loongson32_defconfig    clang-18
+loongarch             randconfig-001-20260702    clang-23
+loongarch             randconfig-002-20260702    clang-23
+m68k                             allmodconfig    gcc-16.1.0
+m68k                              allnoconfig    gcc-16.1.0
+m68k                             allyesconfig    clang-23
+m68k                                defconfig    clang-23
+microblaze                        allnoconfig    gcc-16.1.0
+microblaze                       allyesconfig    gcc-16.1.0
+microblaze                          defconfig    clang-23
+mips                             allmodconfig    gcc-16.1.0
+mips                              allnoconfig    gcc-16.1.0
+mips                             allyesconfig    gcc-16.1.0
+mips                           ci20_defconfig    clang-23
+nios2                            allmodconfig    clang-20
+nios2                             allnoconfig    clang-23
+nios2                               defconfig    clang-23
+nios2                 randconfig-001-20260702    clang-23
+nios2                 randconfig-002-20260702    clang-23
+openrisc                         allmodconfig    clang-20
+openrisc                          allnoconfig    clang-23
+openrisc                            defconfig    gcc-16.1.0
+parisc                           allmodconfig    gcc-16.1.0
+parisc                            allnoconfig    clang-23
+parisc                           allyesconfig    clang-17
+parisc                              defconfig    gcc-16.1.0
+parisc                randconfig-001-20260702    clang-17
+parisc                randconfig-002-20260702    clang-17
+parisc64                            defconfig    clang-23
+powerpc                    adder875_defconfig    gcc-16.1.0
+powerpc                          allmodconfig    gcc-16.1.0
+powerpc                           allnoconfig    clang-23
+powerpc               randconfig-001-20260702    clang-17
+powerpc               randconfig-002-20260702    clang-17
+powerpc                         wii_defconfig    gcc-16.1.0
+powerpc64             randconfig-001-20260702    clang-17
+powerpc64             randconfig-002-20260702    clang-17
+riscv                            allmodconfig    clang-23
+riscv                             allnoconfig    clang-23
+riscv                            allyesconfig    clang-23
+riscv                               defconfig    gcc-16.1.0
+riscv                          randconfig-001    gcc-12.5.0
+riscv                 randconfig-001-20260702    gcc-12.5.0
+riscv                          randconfig-002    gcc-12.5.0
+riscv                 randconfig-002-20260702    gcc-12.5.0
+s390                             allmodconfig    clang-17
+s390                              allnoconfig    clang-23
+s390                             allyesconfig    gcc-16.1.0
+s390                                defconfig    gcc-16.1.0
+s390                           randconfig-001    gcc-12.5.0
+s390                  randconfig-001-20260702    gcc-12.5.0
+s390                           randconfig-002    gcc-12.5.0
+s390                  randconfig-002-20260702    gcc-12.5.0
+sh                               allmodconfig    gcc-16.1.0
+sh                                allnoconfig    clang-23
+sh                               allyesconfig    clang-17
+sh                                  defconfig    gcc-14
+sh                             randconfig-001    gcc-12.5.0
+sh                    randconfig-001-20260702    gcc-12.5.0
+sh                             randconfig-002    gcc-12.5.0
+sh                    randconfig-002-20260702    gcc-12.5.0
+sh                           se7619_defconfig    gcc-16.1.0
+sparc                             allnoconfig    clang-23
+sparc                               defconfig    gcc-16.1.0
+sparc                 randconfig-001-20260702    gcc-16.1.0
+sparc                 randconfig-002-20260702    gcc-16.1.0
+sparc64                          allmodconfig    clang-20
+sparc64                             defconfig    gcc-14
+sparc64               randconfig-001-20260702    gcc-16.1.0
+sparc64               randconfig-002-20260702    gcc-16.1.0
+um                               allmodconfig    clang-17
+um                                allnoconfig    clang-23
+um                               allyesconfig    gcc-16.1.0
+um                                  defconfig    gcc-14
+um                             i386_defconfig    gcc-14
+um                    randconfig-001-20260702    gcc-16.1.0
+um                    randconfig-002-20260702    gcc-16.1.0
+um                           x86_64_defconfig    gcc-14
+x86_64                           allmodconfig    clang-22
+x86_64                            allnoconfig    clang-23
+x86_64                           allyesconfig    clang-22
+x86_64               buildonly-randconfig-001    clang-22
+x86_64      buildonly-randconfig-001-20260702    clang-22
+x86_64               buildonly-randconfig-002    clang-22
+x86_64      buildonly-randconfig-002-20260702    clang-22
+x86_64               buildonly-randconfig-003    clang-22
+x86_64      buildonly-randconfig-003-20260702    clang-22
+x86_64               buildonly-randconfig-004    clang-22
+x86_64      buildonly-randconfig-004-20260702    clang-22
+x86_64               buildonly-randconfig-005    clang-22
+x86_64      buildonly-randconfig-005-20260702    clang-22
+x86_64               buildonly-randconfig-006    clang-22
+x86_64      buildonly-randconfig-006-20260702    clang-22
+x86_64                              defconfig    gcc-14
+x86_64                                  kexec    clang-22
+x86_64                         randconfig-001    clang-22
+x86_64                randconfig-001-20260702    clang-22
+x86_64                         randconfig-002    clang-22
+x86_64                randconfig-002-20260702    clang-22
+x86_64                         randconfig-003    clang-22
+x86_64                randconfig-003-20260702    clang-22
+x86_64                         randconfig-004    clang-22
+x86_64                randconfig-004-20260702    clang-22
+x86_64                         randconfig-005    clang-22
+x86_64                randconfig-005-20260702    clang-22
+x86_64                         randconfig-006    clang-22
+x86_64                randconfig-006-20260702    clang-22
+x86_64                randconfig-011-20260702    clang-22
+x86_64                randconfig-012-20260702    clang-22
+x86_64                randconfig-013-20260702    clang-22
+x86_64                randconfig-014-20260702    clang-22
+x86_64                randconfig-015-20260702    clang-22
+x86_64                randconfig-016-20260702    clang-22
+x86_64                randconfig-071-20260702    clang-22
+x86_64                randconfig-072-20260702    clang-22
+x86_64                randconfig-073-20260702    clang-22
+x86_64                randconfig-074-20260702    clang-22
+x86_64                randconfig-075-20260702    clang-22
+x86_64                randconfig-076-20260702    clang-22
+x86_64                               rhel-9.4    clang-22
+x86_64                           rhel-9.4-bpf    gcc-14
+x86_64                          rhel-9.4-func    clang-22
+x86_64                    rhel-9.4-kselftests    clang-22
+x86_64                         rhel-9.4-kunit    gcc-14
+x86_64                           rhel-9.4-ltp    gcc-14
+x86_64                          rhel-9.4-rust    clang-22
+xtensa                            allnoconfig    clang-23
+xtensa                           allyesconfig    clang-20
+xtensa                randconfig-001-20260702    gcc-16.1.0
+xtensa                randconfig-002-20260702    gcc-16.1.0
 
-To provide a bit more context on our use case:
-Our primary intent here revolves around Android GKI (Generic Kernel Image).
-We want to enable CONFIG_DPM_WATCHDOG in the GKI so the feature is available.
-However, because the GKI is shared across many different devices, we don't
-want to affect devices that are unaware of this feature.  We need a way to
-compile it in, but keep it disabled by default for those devices.
+--
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests/wiki
