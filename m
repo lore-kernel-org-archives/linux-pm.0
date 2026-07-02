@@ -1,148 +1,161 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 18C2144E021;
-	Thu,  2 Jul 2026 10:07:39 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4343B355F57;
+	Thu,  2 Jul 2026 10:21:44 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1782986860; cv=none; b=daVpg8CL1XxXODi/4vMGftI8ify2qUM571jjSdXjsJj6ndLonLH2+iJpseZSMjdF85vnzqb7vznL+6UswhvKl0xALF/YSkedZHBWwbaiQrXg/Xch/BNEH6vp6XeY912XhLLSoa4RsSelp/1dQLZaJ07qnUXhFyCEJnNAFq6J26Q=
+	t=1782987705; cv=none; b=i7CNq74B/0ZdKv/eiw5x2Y2PaPY3mmXo4aEGCkbAlaB0kQH4guFxzjYAaNkbD+y7EPBtXezHZvpbPbCaeyBJHuBza/GGz1TIiw+npyTKdpcj7ZRcZSdboTb9yym0uX+qdqCpz8eR+BZkLt1/qI+9gTNkSB62w1tC4h2Zvzui8mQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1782986860; c=relaxed/simple;
-	bh=/9b8XhRdxlUi0LGnAzYPhCpgKuVEuoSHdRJkABgQExM=;
+	s=arc-20240116; t=1782987705; c=relaxed/simple;
+	bh=cGr4f7bR5VMBK84qrv00rsz03dvLqLgQ0AaUzlh7PLY=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=df6LXzJyfKFvKbWr7Ymf3QY1RMbco/cbQLybValhkhK/AxQx3BsiUtMHBtyER0khJAkC3Amm/9706r4+CKNxctCewBX7+TpXk9t+gCYwyreuflgMpnt8u70Hl6JY7/OqFn0s8dyIo7nKtp4U0FXn1+97RUNyOFAKN74kr7tTu10=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=AUJ2SDXv; arc=none smtp.client-ip=100.103.45.18
+	 Content-Type:Content-Disposition:In-Reply-To; b=e+eFR7Hoi1f+S0iCua26udFvJxn3Q9PgV+NJq/8LGLNoLcl41RpjlwJlhPMoXHPnjWNr9S2Qp0SPIsKp2nKQs6OvMjqNZkTgu9wKbPlw8XMGTrHpIdW2llgemNme9Z2JSCK1sFYxpeE5knUJbKzW3G3ZO5OEN77fGOJyxgoRdyQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=ofvt0Nm6; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="AUJ2SDXv"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3D4E71F000E9;
-	Thu,  2 Jul 2026 10:07:18 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="ofvt0Nm6"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 877F81F000E9;
+	Thu,  2 Jul 2026 10:21:41 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1782986859;
-	bh=rYlxsT3EfvvJVMSpiElkKSMRxs3TOqthCAywxBW0128=;
+	s=k20260515; t=1782987703;
+	bh=1p0c92EUzb/HOdHALw9qhTbLmRIjo2ME3rKWvKGRpK8=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=AUJ2SDXvs0VEdi5h/Kivbi3brTHkQLZzOc+/NAV87+f7C+JbSJugMOeorpgT3tHNL
-	 p58+v4CbXSREtEJG3hLwTa5n8p6G+p8Uf6kuVPNIUtEb3lILgd1rLCgiUeDjzt2+mZ
-	 zGpUePOrV+YiczwnsZiA+nTEa+dq7dVC2Ri5VUVSthC4z19IRHYTorV302BUc8jnc8
-	 lzbpbbTR/gUCNSPcKQ4CL0UIE7YEz9VRE1nLkcyV3m++qYsnaX7iOq8PztYSNv6FrO
-	 w1VeEKbpH/fT7kvqY9QrCvgHPHHPFXTLBTuAr9eAkNY5WqMk3S9O4fQkBovR+Lq+yS
-	 W5zmwAV0MlSzg==
-Date: Thu, 2 Jul 2026 12:07:15 +0200
-From: Ingo Molnar <mingo@kernel.org>
-To: Sean Christopherson <seanjc@google.com>
-Cc: Arnd Bergmann <arnd@arndb.de>, Juergen Gross <jgross@suse.com>,
-	linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
-	"linux-edac@vger.kernel.org" <linux-edac@vger.kernel.org>,
-	x86@kernel.org, linux-acpi@vger.kernel.org, kvm@vger.kernel.org,
-	linux-coco@lists.linux.dev, linux-pci@vger.kernel.org,
-	virtualization@lists.linux.dev, linux-ide@vger.kernel.org,
-	dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-	linux-crypto@vger.kernel.org,
-	"open list:GPIO SUBSYSTEM" <linux-gpio@vger.kernel.org>,
-	linux-hyperv@vger.kernel.org, linux-hwmon@vger.kernel.org,
-	linux-perf-users@vger.kernel.org, linux-mtd@lists.infradead.org,
-	platform-driver-x86@vger.kernel.org,
-	"Rafael J . Wysocki" <rafael@kernel.org>,
-	Daniel Lezcano <daniel.lezcano@kernel.org>,
-	Zhang Rui <rui.zhang@intel.com>,
-	"lukasz.luba@arm.com" <lukasz.luba@arm.com>,
-	Jason Baron <jbaron@akamai.com>, Borislav Petkov <bp@alien8.de>,
-	Tony Luck <tony.luck@intel.com>,
-	Yazen Ghannam <yazen.ghannam@amd.com>, Len Brown <lenb@kernel.org>,
-	Pavel Machek <pavel@kernel.org>, Thomas Gleixner <tglx@kernel.org>,
-	Ingo Molnar <mingo@redhat.com>,
-	Dave Hansen <dave.hansen@linux.intel.com>,
-	"H. Peter Anvin" <hpa@zytor.com>,
-	Paolo Bonzini <pbonzini@redhat.com>,
-	"Kirill A. Shutemov" <kas@kernel.org>,
-	Rick Edgecombe <rick.p.edgecombe@intel.com>,
-	Pu Wen <puwen@hygon.cn>, Bjorn Helgaas <bhelgaas@google.com>,
-	Ajay Kaher <ajay.kaher@broadcom.com>,
-	Alexey Makhalov <alexey.makhalov@broadcom.com>,
-	Broadcom internal kernel review list <bcm-kernel-feedback-list@broadcom.com>,
-	Viresh Kumar <viresh.kumar@linaro.org>,
-	Reinette Chatre <reinette.chatre@intel.com>,
-	Dave Martin <Dave.Martin@arm.com>,
-	James Morse <james.morse@arm.com>, Babu Moger <babu.moger@amd.com>,
-	Tony W Wang-oc <TonyWWang-oc@zhaoxin.com>,
-	Damien Le Moal <dlemoal@kernel.org>,
-	Niklas Cassel <cassel@kernel.org>, Dave Airlie <airlied@redhat.com>,
-	Helge Deller <deller@gmx.de>, linux-geode@lists.infradead.org,
-	Olivia Mackall <olivia@selenic.com>,
-	Herbert Xu <herbert@gondor.apana.org.au>,
-	Linus Walleij <linusw@kernel.org>,
-	Bartosz Golaszewski <brgl@kernel.org>,
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	"K. Y. Srinivasan" <kys@microsoft.com>,
-	Haiyang Zhang <haiyangz@microsoft.com>,
-	Wei Liu <wei.liu@kernel.org>, Dexuan Cui <decui@microsoft.com>,
-	Long Li <longli@microsoft.com>, Guenter Roeck <linux@roeck-us.net>,
-	Peter Zijlstra <peterz@infradead.org>,
-	Arnaldo Carvalho de Melo <acme@kernel.org>,
-	Namhyung Kim <namhyung@kernel.org>,
-	Mark Rutland <mark.rutland@arm.com>,
-	Alexander Shishkin <alexander.shishkin@linux.intel.com>,
-	Jiri Olsa <jolsa@kernel.org>, Ian Rogers <irogers@google.com>,
-	Adrian Hunter <adrian.hunter@intel.com>,
-	James Clark <james.clark@linaro.org>,
-	Josh Poimboeuf <jpoimboe@kernel.org>,
-	Pawan Gupta <pawan.kumar.gupta@linux.intel.com>,
-	Vitaly Kuznetsov <vkuznets@redhat.com>,
-	Andy Lutomirski <luto@kernel.org>,
-	Boris Ostrovsky <boris.ostrovsky@oracle.com>,
-	Huang Rui <ray.huang@amd.com>,
-	Mario Limonciello <mario.limonciello@amd.com>,
-	Perry Yuan <perry.yuan@amd.com>,
-	K Prateek Nayak <kprateek.nayak@amd.com>,
-	"srinivas.pandruvada@linux.intel.com" <srinivas.pandruvada@linux.intel.com>,
-	Artem Bityutskiy <artem.bityutskiy@linux.intel.com>,
-	Artem Bityutskiy <dedekind1@gmail.com>,
-	Miquel Raynal <miquel.raynal@bootlin.com>,
-	Richard Weinberger <richard@nod.at>,
-	Vignesh Raghavendra <vigneshr@ti.com>,
-	Ashok Raj <ashok.raj.linux@gmail.com>,
-	Hans de Goede <hansg@kernel.org>,
-	Ilpo =?iso-8859-1?Q?J=E4rvinen?= <ilpo.jarvinen@linux.intel.com>,
-	Rajneesh Bhardwaj <irenic.rajneesh@gmail.com>,
-	David E Box <david.e.box@intel.com>, xen-devel@lists.xenproject.org
-Subject: Re: [PATCH 00/32] x86/msr: Drop 32-bit MSR interfaces
-Message-ID: <akY4U0jUZm4HOGZ_@gmail.com>
-References: <20260629060526.3638272-1-jgross@suse.com>
- <d7c1db52-529a-43cc-ac7d-38b52627e8bc@app.fastmail.com>
- <c1608c48-13c2-4290-826b-28b5ca51eaf7@suse.com>
- <7332feff-2649-496c-8e49-b0a19eb54a32@app.fastmail.com>
- <akJUz0kYkEBdLSZ3@gmail.com>
- <akQR9YMtMHReJTfB@google.com>
+	b=ofvt0Nm6Bas+d/2UTjYhNGvaHZR6DuUTk6QdlQ4eJj5Sa62ZTlls5XBujAkjuFHgE
+	 7f4m8Tyj39LO1uVY7asLyDR27BtBJgboxv4LAtfbH5HOAzR7viZVvd2Dk53GvR05ee
+	 5iAv+Z+qcblReRrDG6NMlGdK+o+yo4uhT7nUxkCBeNoOqTElqD4gz3FDI0JdXNNh3l
+	 CAicILNWxwNVbozdBGWpdwvYq/SY+u0NhWxawO+EDjeecrnclYhpHehdq0erfL+N91
+	 rZrZI6HOMNeg0kiIJBC3T00dE08/U+34sbyJtPjdOo935BzBH1g5V7j42z1FA9Kcq7
+	 1omWR4S/8IyOA==
+Date: Thu, 2 Jul 2026 11:21:39 +0100
+From: Sudeep Holla <sudeep.holla@kernel.org>
+To: "lihuisong (C)" <lihuisong@huawei.com>
+Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
+	"Rafael J. Wysocki" <rafael@kernel.org>,
+	Sudeep Holla <sudeep.holla@kernel.org>,
+	Jassi Brar <jassisinghbrar@gmail.com>,
+	Guenter Roeck <linux@roeck-us.net>, linux-hwmon@vger.kernel.org,
+	Andi Shyti <andi.shyti@kernel.org>, linux-i2c@vger.kernel.org,
+	MyungJoo Ham <myungjoo.ham@samsung.com>,
+	Kyungmin Park <kyungmin.park@samsung.com>,
+	Chanwoo Choi <cw00.choi@samsung.com>, linux-pm@vger.kernel.org
+Subject: Re: [PATCH 0/6] ACPI/PCC: Preserve platform-populated PCC signatures
+Message-ID: <20260702-secret-gifted-pheasant-34be3a@sudeepholla>
+References: <20260627-acpi_pcc_signature-v1-0-c1b7268d4fdc@kernel.org>
+ <10fb88e6-02f8-46b8-9665-db94a4035c5d@huawei.com>
+ <20260630-loyal-gray-polecat-a68c0d@sudeepholla>
+ <6e5e36e0-c470-469e-bb16-a5faaf055463@huawei.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <akQR9YMtMHReJTfB@google.com>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <6e5e36e0-c470-469e-bb16-a5faaf055463@huawei.com>
 
-
-* Sean Christopherson <seanjc@google.com> wrote:
-
-> > Note that the individual patches are IMO significantly easier to review
-> > through the actual 32-bit => 64-bit variable assignment changes done
-> > in isolation (which sometimes include minor cleanups), while
-> > the Coccinelle semantic patch:
-> > 
-> >    { a(b,c) => c = a(b) }
-> > 
-> > which changes both the function signature and the order of terms as
-> > well, is just a single add-on treewide patch.
+On Wed, Jul 01, 2026 at 03:38:21PM +0800, lihuisong (C) wrote:
 > 
-> Is the plan for subsystem maintainers to pick up the relevant patches,
-> and then do the treewide change one release cycle later?
+> On 6/30/2026 6:49 PM, Sudeep Holla wrote:
+> > On Tue, Jun 30, 2026 at 05:25:20PM +0800, lihuisong (C) wrote:
+> > > Hi Sudeep,
+> > > 
+> > > On 6/28/2026 12:37 AM, Sudeep Holla wrote:
+> > > > ACPI PCC shared memory layouts reserve the first dword for the PCC
+> > > > signature. ACPI specification defines the signature as 0x50434300 ORed
+> > > > with the PCC subspace ID, and ACPI 6.6 clarify that the signature is
+> > > > populated by the platform and verified by OSPM.
+> > > > 
+> > > > This series centralizes PCC shared memory signature validation in the PCC
+> > > > mailbox controller and stops PCC users from rewriting the signature before
+> > > > each command. Clients that previously copied complete local PCC headers
+> > > > now update only the mutable command/status/flags/length/payload fields.
+> > > I am concerned that this may affect the functionality of drivers on some
+> > > existed platforms.
+> > One other option I was thinking is to not issue error but just log the error
+> > message and let the client driver add that additional check if required.
+> The patch 1/6 is not good to our platform.
+> Yeah, suggest to use gentle approach to do this if we have to clarify this
+> signature.
 
-I'll try to keep the patches in a single tree (tip:x86/msr)
-in the hope of not prolonging the pain two cycles - but it's
-of course fine for maintainers to pick up the patches too
-(most of them are standalone), we'll sort it all out in the end.
+Fair enough, we can just log the warning for now.
 
-Thanks,
+> After all, all client drivers work well before.
 
-	Ingo
+Sure, but not doing anything will just make the bug carry on for ever in
+the firmware. SO logging warning is minimum we should do IMO.
+
+> > > This largely depends on the implementation of the platform firmware.
+> > > 
+> > Sure. However I always expected it to be taken care by the platform, v6.6
+> > just adds that clarification explicitly. It was never clear that the sender
+> > or the OSPM needs to write that signature, so I disagree that it is platform
+> > firmware dependent entirely. The clarification wouldn't have got added if
+> > there was any disagreement on that fact.
+> The reasons I say this largely depends on the firmware are as follows:
+> 1> The previous ACPI spec did not clearly require that the platform firmware
+> needs to fill in this signature first.
+>      The client driver working on these platform doesn't work anymore if use
+> the way in patch 1/6.
+
+Fair enough.
+
+> 2> We are not sure if some firmware verify this signature or clear this
+> signature field in shared memory.
+
+Anyways, better to check that for current and future platforms if not the
+legacy ones.
+
+> > 
+> > > I think it's good for the signature to be filled in by the command initiator
+> > > and then verified by the recipient, as this is how this field can serve its
+> > > purpose.
+> > > Otherwise, I really don't see what use it has.
+> > Please get the spec updated accordingly, we can just change in the kernel
+> > based on what we think is the best way to use it. It needs to be clearly
+> > specified, otherwise it may cause issue for non-Linux OSVs.
+> Agree.
+> 
+> Yeah, I found spec v6.5 just said how to compute it and didn't specify how
+> to use it for platform and OSPM.
+> I saw the update of v6.6 for the signature field in "Generic Communications
+> Channel Shared Memory Region" and "Extended PCC Subspace Shared Memory
+> Region".
+> like: "The signature is populated by the platform and is verified by OSPM."
+> But please note v6.6 didn't say above words in "Reduced PCC Subspace Shared
+> Memory Region".
+> 
+
+Ah, that's just inconsistency I believe. I will raise a defect.
+
+> I don't know why v6.6 specify like that.
+> After all. all PCC application parties (client drivers) in Linux have
+> already filled this field.
+> 
+
+I don't think what Linux drivers should be the reference as there are other
+OSVs.
+
+> According to my understanding of normal signature in communication,
+> it is generally filled by the initiator (sender) and verified by the
+> responder (receiver).
+> In this way, the data is valid, and the signature is meaningful.
+> 
+> If it is only initialized by firmware, and OSPM verifies it, its lifecycle
+> ends there.
+> I don't think this signature has much significance.
+> 
+> The signature field is just in shared memory and may be cleared due to some
+> other exception.
+> Some similar case also need to be considered.
+> How to make it work better and more resilient may also be something we need
+> to consider.
+
+Not sure if I follow that. The way I expect is platform won't populate the
+signature if everything is not initialised and running at it's end which
+implies it is not ready to accept the request.
+
+-- 
+Regards,
+Sudeep
