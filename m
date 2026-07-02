@@ -1,164 +1,93 @@
-Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 04EDD4189D9;
-	Thu,  2 Jul 2026 11:30:17 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 098323A5995
+	for <linux-pm@vger.kernel.org>; Thu,  2 Jul 2026 11:33:26 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1782991821; cv=none; b=jLlAcTdDSUCyRuO//xI/S5iFqGMu/Tb+m+0AT/kM6+K1nQHpLPPLP+xKG1+gjNATRw3jo4g7JqNuwwH99x1bCm1f3DkK/VXUF5kbEib8yxWN+rBWXOO+lE7aNaaBJfkH+IPRl0MVpi54tKoQMZ2Kqm+MnTW25wrNzNg81E6CZFs=
+	t=1782992008; cv=none; b=exUXr/C91bIoXglllHP05TxHjYTT5+s+a/UYCI9KVMFuPWgs2XfqKdSHobxRKJ8r7JeZ7cjhKTuRxD40PDDx4en3/wEGymUewqZ1P6L3Q15qpo0Kp+y6A2KJ1HtlINR5c0c3Rhrt+VLZ5Mb3XE2gQo1wu62xdqywHce15l9xxdg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1782991821; c=relaxed/simple;
-	bh=l0w+n8I3EpX5DnM9hbiDuz6Ka4fy/n+CmFn4TLF8cJQ=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=kQFQCH1xo0xIhvD/Ux/Mbux/IrSnvu6qtTrFqwukecBG29K/sLh2XfgswkAAVFYGkWysfConzDP+PqfRhr4xHte3DKfZxSk2NhxSYY64kgUxMs68IO8aszPDswERujInLIIuPJZaR7jNmKiMpJr7rEbapwbXgnrYeyfsYgjrnYk=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=ZolEsJ49; arc=none smtp.client-ip=205.220.168.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=qualcomm.com
+	s=arc-20240116; t=1782992008; c=relaxed/simple;
+	bh=VYSg/77Q+SdFkeWNkEOec2SdlPXuI9PWG8pKMZl+j3M=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=QDCnPnyOAJ5ZzILaRuyi0AGCuiJbHKOtAntK/PxjuV7TV6P4mmLamW4x0I9qxc2vaeqYQVa7a6Im3qTzniTDYxiTBBa1t8YFljVYywJr5Y94jJoy1TPu4gVTdmZxjh7fhP7Mkr24Z4sEOErOebSIVjnnvveRQjl4ytzsRc1QJMg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=bANe73gA; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="ZolEsJ49"
-Received: from pps.filterd (m0279863.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 662AaK8E3591072;
-	Thu, 2 Jul 2026 11:30:15 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	0n6T3VUvqrwQFYo+kQxR/wRZf/y5fYIkYNo6YhrKNpY=; b=ZolEsJ49ukzOSasW
-	T894XcZxOqQOTpMm31kZ2YTt6S0fT480TnKEiUin8l35m0GKa0swO0wHgIB4XiCb
-	Q/2ap1LAtPPKBaphVqH0nWxea16QmoFiYOXkUtWegyjmOmJqXAxX+fZEZJF3RY8T
-	Zo1Pr4dUr4ZsGG2O4nT9TilqReARzKDCEuvFsKtWnCYfnk+Fgokb/bloinQkK9zP
-	P5JP7ihpB+xln4bbF78YZV5Tu8mnfyd7ESd7L+p0ur19g+lK8M14cQ+9DGKh12S5
-	aIRMEKjvFwiOISFi26KOjgGo1fbQO6rPoWQ3RbzZGMjdkvt3kQYp/tq4yWw5RvQc
-	+rwHXQ==
-Received: from apblrppmta02.qualcomm.com (blr-bdr-fw-01_GlobalNAT_AllZones-Outside.qualcomm.com [103.229.18.19])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4f5h7n9fdf-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 02 Jul 2026 11:30:15 +0000 (GMT)
-Received: from pps.filterd (APBLRPPMTA02.qualcomm.com [127.0.0.1])
-	by APBLRPPMTA02.qualcomm.com (8.18.1.7/8.18.1.7) with ESMTP id 662BUB4J021139;
-	Thu, 2 Jul 2026 11:30:11 GMT
-Received: from pps.reinject (localhost [127.0.0.1])
-	by APBLRPPMTA02.qualcomm.com (PPS) with ESMTPS id 4f27kkryx4-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 02 Jul 2026 11:30:11 +0000 (GMT)
-Received: from APBLRPPMTA02.qualcomm.com (APBLRPPMTA02.qualcomm.com [127.0.0.1])
-	by pps.reinject (8.18.1.12/8.18.1.12) with ESMTP id 662BUBKR021132;
-	Thu, 2 Jul 2026 11:30:11 GMT
-Received: from hu-devc-hyd-u22-c.qualcomm.com (hu-kotarake-hyd.qualcomm.com [10.213.97.140])
-	by APBLRPPMTA02.qualcomm.com (PPS) with ESMTPS id 662BUAwb021127
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 02 Jul 2026 11:30:11 +0000 (GMT)
-Received: by hu-devc-hyd-u22-c.qualcomm.com (Postfix, from userid 2389607)
-	id 4E76FB2B; Thu,  2 Jul 2026 17:00:10 +0530 (+0530)
-Date: Thu, 2 Jul 2026 17:00:10 +0530
-From: Rakesh Kota <rakesh.kota@oss.qualcomm.com>
-To: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
-Cc: Krzysztof Kozlowski <krzk@kernel.org>,
-        Kamal Wadhwa <kamal.wadhwa@oss.qualcomm.com>,
-        jishnu.prakash@oss.qualcomm.com,
-        Bjorn Andersson <andersson@kernel.org>,
-        Konrad Dybcio <konradybcio@kernel.org>, Rob Herring <robh@kernel.org>,
-        Krzysztof Kozlowski <krzk+dt@kernel.org>,
-        Conor Dooley <conor+dt@kernel.org>, Sebastian Reichel <sre@kernel.org>,
-        linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-Subject: Re: [PATCH 1/2] dt-bindings: soc: qcom: pmic-glink: Document
- batteryless property
-Message-ID: <20260702113010.zjrk4kr7fpjp6asj@hu-kotarake-hyd.qualcomm.com>
-References: <20260518-add_dc_in_support-v1-1-31fbaa329879@oss.qualcomm.com>
- <fd58d6d7-26cf-4b11-82ad-05b4863b6dd1@kernel.org>
- <20260519082526.odmn5dqi2jftwnln@hu-kotarake-hyd.qualcomm.com>
- <20260519-first-wine-bulldog-a6a4c7@quoll>
- <20260521071341.q4efqssppvettaey@hu-kamalw-hyd.qualcomm.com>
- <86f76a81-832d-4ba5-81d5-38b46b7dc0a7@kernel.org>
- <6c595a5f-b979-4e8b-ae77-d28d24700588@oss.qualcomm.com>
- <e07085c5-0fe8-4ea7-8e51-ebe104e7aa2d@kernel.org>
- <82019c2e-6b6e-4edd-91b3-a28ef6eb09eb@oss.qualcomm.com>
- <20260525120139.dyfnm6nwfzuoxd7p@hu-kotarake-hyd.qualcomm.com>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="bANe73gA"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id BBF4B1F00AC4
+	for <linux-pm@vger.kernel.org>; Thu,  2 Jul 2026 11:33:26 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1782992006;
+	bh=VYSg/77Q+SdFkeWNkEOec2SdlPXuI9PWG8pKMZl+j3M=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc;
+	b=bANe73gATYsjh3KMjUnPeUOezJIRqax3aenDmhJvfz+AVmEtiDAQcJMwc+0zRQfAP
+	 54EGC9DvNucCMXfBA08DawBY8wcwSEX+8YtrTC0gFv2AU3b7cTHuKBylsfr04bqDG9
+	 G2ag+7g3MWPfVs932t379t2WON9YK9tyxATxEssb3/RjLgSSj2kEAbjuFDB7aIk7zI
+	 p7WfdIme1dp7su1YLbQQOkG1qZtHinUs/VBlNqL0RBIm1k/1EhoBv3dPv9wnSzq9NK
+	 7LMaYDjEAn0u3664ev2jJwhzpQtnx/ZBqSIfNGATXzNosO3ZqazBVmfrUQKWQ3EIJh
+	 PR9CmYuNHpoRg==
+Received: by mail-lf1-f51.google.com with SMTP id 2adb3069b0e04-5aeb2df5cc1so1446241e87.3
+        for <linux-pm@vger.kernel.org>; Thu, 02 Jul 2026 04:33:26 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AHgh+RoQJ9EdgjphB6J74mccgSKCl7EBShXUEx4+f9/iBSUKOGhn6h7HF8MwQqmPhGqrJF/r3laZuxOIFg==@vger.kernel.org
+X-Gm-Message-State: AOJu0YwQhscqGPnZMmTS+/Ib/jPV+OnGWZbPz7xbz915M9SIO+FOAvj/
+	oh/06dTQ4S/eH8DjPjNLO2E4u2skdCeICfl9hi8Tqf38fgLyvRNyEHnX3hHb33VwCReONQzKyoo
+	++0uWvUK/PPNKzShDpQ8v/huVDqJ+wes=
+X-Received: by 2002:a05:6512:4cd:b0:5ae:b792:7f21 with SMTP id
+ 2adb3069b0e04-5aec68b78ffmr838445e87.33.1782992005260; Thu, 02 Jul 2026
+ 04:33:25 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20260525120139.dyfnm6nwfzuoxd7p@hu-kotarake-hyd.qualcomm.com>
-X-QCInternal: smtphost
-X-QCInternal: smtphost
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzAyMDEyMCBTYWx0ZWRfX6eM9A/hXnY2Z
- hO13vnuPXA1g5JvYJzqX0JkicqcED1tJYXE7YnlPYUFgPKWvtXJ5K9lRQ30X/+vPwtUNP8d+/Yp
- zccrrFkXHwZ8RXRx4hFGZuG5XKFN6GYzA2V12KBjHdQVlr/TGPzhE0J/okhhbd26VzP0ge1JOIc
- W1DKkurZRwuod5B24+0AnNdZeFaydRBq1nJKq848kE0AQfUpq/SKued/7Q5jL0afddn8IGidcqh
- V2BbkCqrQAOOwH6bFBJ6nUNkC3W7Jc7Ui1UqtB6g3qWHLh93JgZg+KzH8UmOL1rZg3nCtb+BUTL
- dXEv/JPD5tnmfizu31RX+jk68diBDD0A4MnLNLtTBO63sgih+qIiA0gciLSndcJWKLFdMVvzFOO
- aF+a3s5ixk+0jr2FUE6X28sbzkrwUvQ/4qYIr8+SovCW7q5t6+PcBv95OUtdF108f9BkrCDG5yE
- 9aujSVaBk/AeGHetBtg==
-X-Proofpoint-ORIG-GUID: 0eCh5IeNmFv2zlTB2dxGDAB3_trdEPJi
-X-Proofpoint-Spam-Info: AW1haW4tMjYwNzAyMDEyMCBTYWx0ZWRfX3fqQtvjvGAd7
- JqPgrcj3ExiYxgKHz4FyRyvIxAJMan95/ZB5hkh1WqTU9Zgz+fWghtkywVp4TKVEZrU8dzD2W8K
- CcPc2EUWDUn5hgddO3l2IJKtltA/Jqo=
-X-Proofpoint-GUID: 0eCh5IeNmFv2zlTB2dxGDAB3_trdEPJi
-X-Authority-Analysis: v=2.4 cv=WMBPmHsR c=1 sm=1 tr=0 ts=6a464bc7 cx=c_pps
- a=Ou0eQOY4+eZoSc0qltEV5Q==:117 a=Ou0eQOY4+eZoSc0qltEV5Q==:17
- a=IkcTkHD0fZMA:10 a=RAioF0-LDSMA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=u7WPNUs3qKkmUXheDGA7:22 a=yOCtJkima9RkubShWh1s:22 a=vq6V-Kc8it9GCgzh-0QA:9
- a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.125,FMLib:17.12.100.49
- definitions=2026-07-02_01,2026-06-26_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- clxscore=1015 phishscore=0 suspectscore=0 lowpriorityscore=0 bulkscore=0
- spamscore=0 priorityscore=1501 adultscore=0 impostorscore=0 malwarescore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2607020120
+References: <20260629060526.3638272-1-jgross@suse.com> <20260629060526.3638272-5-jgross@suse.com>
+ <CAJZ5v0itUVZ6=GCbRomkMiesy5uhZVWWjsUbqFqsZTyNeCBAbQ@mail.gmail.com> <akYskLix-iNOAbCM@gmail.com>
+In-Reply-To: <akYskLix-iNOAbCM@gmail.com>
+From: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
+Date: Thu, 2 Jul 2026 13:33:08 +0200
+X-Gmail-Original-Message-ID: <CAJZ5v0hZN2SsX1uVfDuVzV=7UoHsNbhe8DUaFCaVsd-ceLvZWg@mail.gmail.com>
+X-Gm-Features: AVVi8CfMpB7NssFif4b5GLRbtyknf5VfY5RNjQktihRoZDbdR6kB2YT4BQb_uxI
+Message-ID: <CAJZ5v0hZN2SsX1uVfDuVzV=7UoHsNbhe8DUaFCaVsd-ceLvZWg@mail.gmail.com>
+Subject: Re: [PATCH 04/32] acpi: Stop using 32-bit MSR interfaces
+To: Ingo Molnar <mingo@kernel.org>
+Cc: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>, Juergen Gross <jgross@suse.com>, linux-kernel@vger.kernel.org, 
+	x86@kernel.org, linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org, 
+	Len Brown <lenb@kernel.org>, Pavel Machek <pavel@kernel.org>, Thomas Gleixner <tglx@kernel.org>, 
+	Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, 
+	Dave Hansen <dave.hansen@linux.intel.com>, "H. Peter Anvin" <hpa@zytor.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-On Mon, May 25, 2026 at 05:31:39PM +0530, Rakesh Kota wrote:
-> On Fri, May 22, 2026 at 11:24:19AM +0200, Konrad Dybcio wrote:
-> > On 5/21/26 11:58 AM, Krzysztof Kozlowski wrote:
-> > > On 21/05/2026 10:46, Konrad Dybcio wrote:
-> > >> On 5/21/26 9:20 AM, Krzysztof Kozlowski wrote:
-> > >>>> Since firmware does not have a way to dynamically tell if it on a
-> > >>>> debug-board powered device or a DCIN powered device, We are required to
-> > >>>> add this new DT property.
-> > >>>
-> > >>> Neither debug-board powered device nor battery-less will have
-> > >>> monitored-battery, thus again, why lack of that property cannot tell you
-> > >>> what you need?
-> > >>
-> > >> A device with a battery will not have a monitored-battery either
-> > > But why? If for such device property "no battery" is suitable, then for
-> > > me "monitored-battery" is suitable as well. IOW, if you say that having
-> > > a property describing batter is not a accurate hardware property here,
-> > > then neither saying "no battery" is, because no batter is basically some
-> > > sort of battery (just like empty set is still a set, empty array is
-> > > still an array).
-> > 
-> > The battmgr service running on one of the remoteprocs already has all
-> > the information about the battery and it also handles all the type-c,
-> > PD and charger configuration, only letting the OS know about the
-> > results.
-> > 
-> > Hence, unless there's some other hardware at play (e.g. for custom
-> > 200 W charging), which wasn't fully implemented in the QC firmware,
-> > there is no reason to describe a battery separately, since the OS
-> > can't do anything useful with that information
-> > 
-> > In some abstract way, perhaps monitored_battery = <&pmic_glink> could
-> > be thought of as valid (since that's the data source the OS gets to
-> > see)
-> 
-> Should we use monitored-battery = <&pmic_glink>; If so, would it be
-> incorrect to mark pmic_glink as simple-battery, as that may cause the
-> schema validation to fail?
+On Thu, Jul 2, 2026 at 11:17=E2=80=AFAM Ingo Molnar <mingo@kernel.org> wrot=
+e:
+>
+>
+> * Rafael J. Wysocki (Intel) <rafael@kernel.org> wrote:
+>
+> > On Mon, Jun 29, 2026 at 8:05=E2=80=AFAM Juergen Gross <jgross@suse.com>=
+ wrote:
+> > >
+> > > The 32-bit MSR interfaces rdmsr(), wrmsr(), rdmsr_safe() and
+> > > wrmsr_safe() are planned to be removed. Use the related 64-bit varian=
+ts
+> > > instead.
+> > >
+> > > In processor_throttling.c drop needless initializers.
+> > >
+> > > Signed-off-by: Juergen Gross <jgross@suse.com>
+> >
+> > LGTM overall.
+> >
+> > Do you want me to pick it up or do you prefer to route it along with
+> > the rest of the series?
+>
+> I'd like to keep this series together if you don't mind, so that
+> followup changes can be done more easily.
 
-Hi @Konrad Dybcio, @Krzysztof Kozlowski , 
+Sure.
 
-Following up on the earlier discussion — is monitored-battery =
-<&pmic_glink>; a valid pattern? And if so, would marking pmic_glink as
-simple-battery cause DT schema validation failures?
+I will be assuming that tip will be taking care of this change going forwar=
+d.
 
-Any guidance would be appreciated!
-
-regards
-Rakesh 
+Thanks!
