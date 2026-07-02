@@ -1,390 +1,269 @@
-Received: from mail-pg1-f182.google.com (mail-pg1-f182.google.com [209.85.215.182])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mx0a-00069f02.pphosted.com (mx0a-00069f02.pphosted.com [205.220.165.32])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1EEEE395D86
-	for <linux-pm@vger.kernel.org>; Wed,  1 Jul 2026 21:49:11 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.215.182
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1782942554; cv=none; b=EuDexg43as+37jKC7EegAvVuAwlkZdOvEnHgh0o/MNSTWa3f8YMHerY+2X1F8RoRSyPXQyvJKb6QCA4USGZXy5i+bqBSEVEvzr9CkbiV9hCeVGNPbYE9tIt9Yhcn7kkmnEYmm8WiUIlssaLM6KzWA3qECi5a11xrcGNHl6OecBE=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1782942554; c=relaxed/simple;
-	bh=+RvLpdIWlkp7Qw6oqN0VEiCWZVnLi9JEW+RoRI/aOC8=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=DRtfm1icYzKIlWGKa16T6bu0R+/sFuQcMO3HQMsTEMNnoscLKKBAPrGiGLWF83vb4VnFK5eZm2Rf77w6J815Li3OsUyKLVvQNJvUjGo9yj5WOka69G/wgOy92U67nZ0h4gIv8WagfzPzD1/J6tYqezgWyASHpzRCCFsBI9gzvDw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com; spf=pass smtp.mailfrom=google.com; dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b=leE38UQu; arc=none smtp.client-ip=209.85.215.182
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=google.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1797B281525;
+	Thu,  2 Jul 2026 01:34:21 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=205.220.165.32
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1782956063; cv=fail; b=T6FHqsWtJ41y89sZeO2m/djffmis0S0Gu2QGFTyNd/B46FQRlth2iNzZa2qEIwWJH/YhimINxMp+7XOf/g/0YmaI5/5+oJxMu+JyqIdcFm15EYGNfIF3/Nl8rODSzeTSHaiw2HFEy74aDqijkkq5eP4SxjTe9wa6RvIoUhfMcog=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1782956063; c=relaxed/simple;
+	bh=YAaMmNb6IOY6TrrY/rpQt43UEmLsmHachAy0k2TJG/s=;
+	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
+	 Content-Type:MIME-Version; b=Jy1nxP7KMLPZPleZSA5XjJ8xyspvQfKxW5gNsnNRBh/Idz4j+cdXBsIGEXHBu1XuZl8NO4543Asm6gtLWgq5GU+ejgEZDcOdy1mKWFUhdcUFy0RFo338XhC5lPGpEA+IfP6Maq2g76bHfAwot/aVmPl7z5XqrBEyYR/JR6Tp2QQ=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oracle.com; spf=pass smtp.mailfrom=oracle.com; dkim=pass (2048-bit key) header.d=oracle.com header.i=@oracle.com header.b=ELhevkU7; dkim=pass (1024-bit key) header.d=oracle.onmicrosoft.com header.i=@oracle.onmicrosoft.com header.b=cFGhpV+5; arc=fail smtp.client-ip=205.220.165.32
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oracle.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oracle.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b="leE38UQu"
-Received: by mail-pg1-f182.google.com with SMTP id 41be03b00d2f7-c85c531d4a9so530478a12.2
-        for <linux-pm@vger.kernel.org>; Wed, 01 Jul 2026 14:49:11 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=oracle.com header.i=@oracle.com header.b="ELhevkU7";
+	dkim=pass (1024-bit key) header.d=oracle.onmicrosoft.com header.i=@oracle.onmicrosoft.com header.b="cFGhpV+5"
+Received: from pps.filterd (m0246617.ppops.net [127.0.0.1])
+	by mx0b-00069f02.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 661EJoF62783072;
+	Thu, 2 Jul 2026 01:33:50 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=
+	corp-2025-04-25; bh=6n7bSZBhtF9l75cWzUqXT6k25501/cO8HE32bqQm7lo=; b=
+	ELhevkU7EgW3djtGMVRtSp3gwHgvD90DtYuAHN8nt/SJaYCD71Q9qE90K0JJac0n
+	daCFXkLdtYzQjHQt8dUK4w5iKOYD84fIvLTOodufiPGLdCn0DnexCJKiAmLAwOlS
+	fc5t4I+EQiFu3mj/9U47Sc6AtekxhFHkcoi5mLDIROfZGaxntGuD7ZH9fbaOKJ62
+	7rCAVLYKVrkKpjt0weCj92jsXWyd2HhUj6Mng241BORuAO1QKKVRGhPBHGs1kJcT
+	DWJ+Hj31l59yWsOaR/tby7BcIlG/5l2cLhlCU8ZnsThcy3wlWjd6RCv1WaYAm+x7
+	RLVI4IPG2ufGRHeGFiW/gw==
+Received: from phxpaimrmta03.imrmtpd1.prodappphxaev1.oraclevcn.com (phxpaimrmta03.appoci.oracle.com [138.1.37.129])
+	by mx0b-00069f02.pphosted.com (PPS) with ESMTPS id 4f272qq6rh-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Thu, 02 Jul 2026 01:33:49 +0000 (GMT)
+Received: from pps.filterd (phxpaimrmta03.imrmtpd1.prodappphxaev1.oraclevcn.com [127.0.0.1])
+	by phxpaimrmta03.imrmtpd1.prodappphxaev1.oraclevcn.com (8.18.1.7/8.18.1.7) with ESMTP id 6621X7hK036276;
+	Thu, 2 Jul 2026 01:33:49 GMT
+Received: from dm5pr21cu001.outbound.protection.outlook.com (mail-centralusazon11011068.outbound.protection.outlook.com [52.101.62.68])
+	by phxpaimrmta03.imrmtpd1.prodappphxaev1.oraclevcn.com (PPS) with ESMTPS id 4f50yt4ew2-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Thu, 02 Jul 2026 01:33:49 +0000 (GMT)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=afpwI1v2opiKMEHzFJHYnXbaGp5DF5etMp7B9mSkjrvTvdi33YkgOB0BN1uIW2BpfAtSjS0XaJ3J1Imh4angInZU9nETEV7B1Wh3m71Rlh/SJIspnoIhL8MRcKQBTcMizUxWk7zBe6PoQogQnn4NlwcOkM1CXw6kkmZSAFX63SqNfjJHHmrVIqUQdc2oWPeLUEK+IRmPCuagihbgBERsIiDg1VGLPUmtKBadwyEcQZ87mJJ/v8XCQUI25b6twkklQoYTxxLOlQogCnOIBlo5co+YaipCXbpzbSNx+PtaTI0gAwk7J1zzfiQnz1Fjl0Of3Mbu4JtrLDnOB1CDbonAzQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=6n7bSZBhtF9l75cWzUqXT6k25501/cO8HE32bqQm7lo=;
+ b=NS3nx6tD/eO/4CfSKNCEW3EbU/Qe09zvXvSnhbUwVhbFzdHIYwbTju4Wg7WY3X2hyqQ8HgqimPjxYEgF47KGUcjrULrlLEGRxtsFz5YV/NgyYLDC0YjV3tLBFCAkxtJfdCHCOEwsnv7ICrbxiqr7oSgxzLaQjPwNgvZ8F0LwMLJWeNXPLsZs9YIdrimhMaGioK/6fYmALMIDS0XjF7uVlD2IGDy1nEYp9wx4fQENRK7JhVgOJYhFckZ9ActCfnxM7j2SAL0/n7Pf788AROsQ+IpQftmA+RmMOaH+drXMhcz8+pqvqTM+CdA4xjN72DcO7XnJYlYBup/7pI8jLvIbcg==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=oracle.com; dmarc=pass action=none header.from=oracle.com;
+ dkim=pass header.d=oracle.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20251104; t=1782942551; x=1783547351; darn=vger.kernel.org;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=BclWnKbR9DeJaPkRvBhDEXzil7VstZzrzDQKrVM+tko=;
-        b=leE38UQufsO8PxaEr3k/XchLDnx4Ol2mNyfpo/XEa8/rlF7UTix/zTIYbJCaKpISMy
-         CoPXY+vlqbOGsTIcLXwRRp7K/SeUXLLx2A9XZon3bG6AOhdFzK0ASQ5BuTmLjUbq5K6w
-         8RJWMkbUk8I6lOwsiPRwOKoxPA9MBqr2wprrxBY0rxWrd/+laRdQA2/pYTdwBuC0FfNP
-         lHhNepeYJHuF6CxZoWkQjko2k6Fa6pyjN++6GyNaTVrtrlm+qOQpxxGYI8zmAsOzoqJ3
-         /1JqCoMM6/+K8bXMJwZnnzDRAksn2wbIat9hrY6AbaKZC9S0hPahz1QmXlwUr5ghuVh+
-         kcaQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1782942551; x=1783547351;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=BclWnKbR9DeJaPkRvBhDEXzil7VstZzrzDQKrVM+tko=;
-        b=BQRmVCQC4LvKyWt3U5+XWOOmENdHyZkQaytY5Et729G5rZB6F39RjiaTg3HWDLwBYT
-         zMdL0lcmMWx8GyyUlIgrqM/Y6NpeVhMb8pgsFhd1B05C31M0fqNKD5ggV2FsDKCYuNFv
-         foXQn+GqTZDL3g+HiAZrsl7dHG0Z+ZSnEFn3+AiEJN1ltv/xM9D4W1moj0HEkLyt8PWh
-         /T9q2I/0YfCFPHd8U77fYsgttMAtUn52FfC6YErqrvTADNjLM5ZyvjUl6W6wTx9iMKHo
-         DRSfRBKT7TYMi4b5xvNESwxv7KxjjrAqhbKG06q01LqC93oz1302fmsJUiEdBSm8eW89
-         tJ8w==
-X-Gm-Message-State: AOJu0Yw6widbMiPkFMDwzSoy3e6hqcDSgl5OHsUdNctzXp6nQRr5Y1Xa
-	LIgWHN7Llxa6jK5J5mzv8JtM+Cfb1Hbt6E9XZdfTvA1/pI9eUwCWCyK5jATHO3YMig==
-X-Gm-Gg: AfdE7cmT3gooSpRR23DALvISCi1JCfwqyQfrmN3DxyBWXl6z/KGbDP2086JGSf1/sO3
-	gYlCzaJzqHZolRKslzzdQlnH6Zze7ekzfYzAGwT4HbwsFU76rEJxxEUdB3t/x+EuG0FSjX/3faP
-	p4zhV+3cTVmgwU3wt3snMv4/IsDQCyzdWllM++PORnbMwqFcPBGxMpEzCOGD9fHwD27/lSGlZlx
-	EK9EOMcUwxDE+QmbDcISkTzwMhp02b0RFIB3ytFlG0iQ68vXmzy18qFQ0UyQpypqYszjn+/d75i
-	oK6I7711xmmaMhekIx8YCHz/H4QCDqmRYQCUFPPaE95jmKobLt1iVtUJz3Y0sRoUmV69fsUYJPR
-	WK4rNXyPV+RlbBuSkVmEIue7qrl2WYaNfR/Vn0yXOjogfQrSlTn8FSm1z8RlFa4dVHuSmNzIvBw
-	G+mHhJTh/d165typyhXCJfLekIXIGqc1VV8KRvdafIOYuDsPrq2P8fg4WD5fTk7j4pTYjeXcz9e
-	moHBFHaJZU2bbjg2uKiPbPCV0SIm9I/hstD7xbKGVLekugZfiRb9Jdmkg==
-X-Received: by 2002:a05:6a21:4c08:b0:3bf:6e72:68f9 with SMTP id adf61e73a8af0-3bfed3e923amr3498778637.38.1782942550808;
-        Wed, 01 Jul 2026 14:49:10 -0700 (PDT)
-Received: from ?IPV6:2a00:79e0:2e7c:8:abdb:65e7:c3c7:ef4d? ([2a00:79e0:2e7c:8:abdb:65e7:c3c7:ef4d])
-        by smtp.gmail.com with ESMTPSA id a92af1059eb24-13b3c85b345sm2195106c88.10.2026.07.01.14.49.09
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Wed, 01 Jul 2026 14:49:10 -0700 (PDT)
-Message-ID: <06c52f85-cf0b-40a7-a93a-c366ced29216@google.com>
-Date: Wed, 1 Jul 2026 14:49:08 -0700
+ d=oracle.onmicrosoft.com; s=selector2-oracle-onmicrosoft-com;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=6n7bSZBhtF9l75cWzUqXT6k25501/cO8HE32bqQm7lo=;
+ b=cFGhpV+53WJKf6CSKMvm1RzuC3IIwtjg4KtT8jRryQUomwNplftj3H9oJ3rgL6srRuaZ1+YWLs7Ik5S1ll8rwqC/hg5xLWFwYQZxlJrABt5VYIaaAFdJwiX+zmQiVqNPh4tpEAkq16pXIoRsdWUQkAbgvMQgCjKfZkbld6IPXbU=
+Received: from CO6PR10MB5409.namprd10.prod.outlook.com (2603:10b6:5:357::14)
+ by CY8PR10MB7314.namprd10.prod.outlook.com (2603:10b6:930:7b::22) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.181.10; Thu, 2 Jul
+ 2026 01:33:44 +0000
+Received: from CO6PR10MB5409.namprd10.prod.outlook.com
+ ([fe80::3c92:21f3:96a:b574]) by CO6PR10MB5409.namprd10.prod.outlook.com
+ ([fe80::3c92:21f3:96a:b574%6]) with mapi id 15.21.0181.008; Thu, 2 Jul 2026
+ 01:33:44 +0000
+From: Ankur Arora <ankur.a.arora@oracle.com>
+To: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org,
+        bpf@vger.kernel.org
+Cc: arnd@arndb.de, catalin.marinas@arm.com, will@kernel.org,
+        peterz@infradead.org, akpm@linux-foundation.org, mark.rutland@arm.com,
+        harisokn@amazon.com, cl@gentwo.org, ast@kernel.org, rafael@kernel.org,
+        daniel.lezcano@linaro.org, memxor@gmail.com, zhenglifeng1@huawei.com,
+        xueshuai@linux.alibaba.com, rdunlap@infradead.org,
+        david.laight.linux@gmail.com, broonie@kernel.org,
+        joao.m.martins@oracle.com, boris.ostrovsky@oracle.com,
+        konrad.wilk@oracle.com, ashok.bhat@arm.com,
+        Ankur Arora <ankur.a.arora@oracle.com>
+Subject: [PATCH v13 02/15] arm64: barrier: Support smp_cond_load_relaxed_timeout()
+Date: Wed,  1 Jul 2026 18:33:21 -0700
+Message-Id: <20260702013334.140905-3-ankur.a.arora@oracle.com>
+X-Mailer: git-send-email 2.31.1
+In-Reply-To: <20260702013334.140905-1-ankur.a.arora@oracle.com>
+References: <20260702013334.140905-1-ankur.a.arora@oracle.com>
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-ClientProxiedBy: MW4PR04CA0143.namprd04.prod.outlook.com
+ (2603:10b6:303:84::28) To CO6PR10MB5409.namprd10.prod.outlook.com
+ (2603:10b6:5:357::14)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v4 2/2] usb: typec: tcpm: Add support for Battery Status
- response message
-To: Sebastian Reichel <sre@kernel.org>,
- Badhri Jagan Sridharan <badhri@google.com>,
- Heikki Krogerus <heikki.krogerus@linux.intel.com>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Hans de Goede <hansg@kernel.org>, Krzysztof Kozlowski <krzk@kernel.org>,
- Marek Szyprowski <m.szyprowski@samsung.com>,
- Sebastian Krzyszkowiak <sebastian.krzyszkowiak@puri.sm>,
- Purism Kernel Team <kernel@puri.sm>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
- linux-usb@vger.kernel.org, =?UTF-8?Q?Andr=C3=A9_Draszik?=
- <andre.draszik@linaro.org>, Tudor Ambarus <tudor.ambarus@linaro.org>,
- Peter Griffin <peter.griffin@linaro.org>, RD Babiera <rdbabiera@google.com>,
- Kyle Tso <kyletso@google.com>
-References: <20260701-batt-status-v4-0-a31d97b1ae57@google.com>
- <20260701-batt-status-v4-2-a31d97b1ae57@google.com>
-Content-Language: en-US
-From: Amit Sunil Dhamne <amitsd@google.com>
-In-Reply-To: <20260701-batt-status-v4-2-a31d97b1ae57@google.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: CO6PR10MB5409:EE_|CY8PR10MB7314:EE_
+X-MS-Office365-Filtering-Correlation-Id: 909369ca-2164-48a3-c96e-08ded7d9f4b2
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|23010399003|366016|1800799024|376014|7416014|56012099006|18002099003|22082099003;
+X-Microsoft-Antispam-Message-Info:
+	kNkZkNm/o5A6B1TNikyv0gwL6tPC8Zorm45joV3OjuegZICvye104lvjGpdgtnJfQoh7XXPoUYWS0XhyQ2e8zNVxQDqgo3aZ8JQ/8IandEj+Ab/pzVw8pKCaK34dkV3kODQA2f7VtjIsCgxSwHBpHk1HkjVmIKIMXQoAeUfPLRU345dPLGFgJYW13lnrV+cnAMCPFa+Udh714uIgRpj7eCgZKSZXTGEcLdKZy10W/5LjMSEbE0SIR1Vz8epmVqT8kKy8OEfBvuSJdgTwC+HDNzNMTnOGmfOWym3c56MqwnlH4x/pyOlHLTEv7Ky+dIUqmFILYQvGHH+U0hrjS7izxp+6s7g784Iv2g8zzw59ak5037M/91yt4/q7cqe87crq1UK9Skjb+GCZHX7gpScWIkpkEWM15hxl40XQHDZR+c4QGnPgzUO553vOoYTC+C93hrg9R3Xw2CloHnZcSrGvDTYGIF2+8hGYFOj0QdozQlKQwCquEs2IKc8FWJ6f0bXx7W/hlbuuotCSIQKwU9fJEuNIrL4t9TKNMIWdPF3Hnbk2IRyO+L/mqYv9CW8Zwp5adZrNaoOubG4vWIG5UCuqSq3CC5j7NDflhB+I/e3vZgtIjTOAxqaKpd5sPAv+p8aTvocSGYL/tP+Wjwv5n3utGZhbhdfPy8Nrf6lCNgaiq1Q=
+X-Forefront-Antispam-Report:
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:CO6PR10MB5409.namprd10.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(23010399003)(366016)(1800799024)(376014)(7416014)(56012099006)(18002099003)(22082099003);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	=?us-ascii?Q?jZEIi875eecEi9Brc7p/dsCvbl7lW4XdOxsB8btY/HzKqQZ5aJgapUJIFTOc?=
+ =?us-ascii?Q?tS4DVARoKepFwoNbw7kxsFGbDhgLp4zIcT9JDVH4qH8rfn82N1MaSM9SBIgw?=
+ =?us-ascii?Q?zpq9TOhwoyBoYTdYjNOquhasySSDdpcfZK5/gQJu7gWyRtWQx59YyhQrMIsm?=
+ =?us-ascii?Q?XODoLRikb1VF4c6QVRHHdx084VlD1QDx94Tp9cM5uhCQ6twK1awzDWFgjQ9p?=
+ =?us-ascii?Q?Rpb3ZwKa02GEGIEYrsM7NAiQc/XyTQt3gQURUmys3Y7ecVg7coB8ZXznnIyA?=
+ =?us-ascii?Q?v8hgMtORgzjINDqNGGhSno8AZKooYgLR0T5kwr6+LkiZBH1cPzGVtcJLRv3I?=
+ =?us-ascii?Q?E9OulqbiCb1jHr1ggZPSS1M+t3uc2u+d/N3d2GnmDm7xakvhLtkOWld92+l7?=
+ =?us-ascii?Q?1R/Hfaq7tFv5AAS1HomNF9OfHqpvphxWuMXVf2Jv73BuAUMIbe7tsrGpddD+?=
+ =?us-ascii?Q?naVTR2aqpizaUySn9uW/FotvMfe3kSQ6ZzwowPaoBC+tuIyDLUy7h4G3HPb7?=
+ =?us-ascii?Q?2A0StQCzAuZVDoKkG/r+QQy9NMW4X4r6z2XFUV/SLRxgFNcJUKCeydEvyK8G?=
+ =?us-ascii?Q?VkSHL4lkOpSmd40FrjlkNpSEKbHSMiDvs10ufvfbq9dxufEKQgpXqHGNoWjo?=
+ =?us-ascii?Q?54dxJEuvj6cFc/o9vZiX+pFnb37qrFoLsFmNwMaZJQpY1fstn0P2qb6eAmJp?=
+ =?us-ascii?Q?tS4e3YgOfpxUE+W3jg7XcaA9yHbPCObtumngN3iRrL2fpqFR8pP2K6McJFAW?=
+ =?us-ascii?Q?KE2D2aaY/ZLrxQRQcKqqcZexYEYrIs+WAxlEFk74jKt4JYhVZdiw9PwhP7r0?=
+ =?us-ascii?Q?GsRpqywX6Te/V6aMJq79jccCi6aiCZHCc/0j0omVgFqwaJZVBYQMyJnmcx9Z?=
+ =?us-ascii?Q?sJdBspDDF2aOxpCXkYXFvUbB9OmvR8z4+jCDPx8SUeeuYk2zsDFGPDtG5dzA?=
+ =?us-ascii?Q?OKY31aGipwQUL9NPTNH7kTsXmXtgkyWjhqnkKH6InIFPr+loDkYnGIi8IOeB?=
+ =?us-ascii?Q?D0inlPMGdfr/cJGoAZfZlXvSo+b3Pf4+wXmQrki4VWBfA7Mx9fY8FWycdCHy?=
+ =?us-ascii?Q?8rCFioF+oZP9qhREtbd1jvrMoJAg3hq2kouqYbqxqP0BqQMd+Zw3LIMdawsK?=
+ =?us-ascii?Q?sMppMrrW+SFgLmqDeNl2e3SZLTSYlgiMFCfy2Yc6m5zXs6kikYNzB5TnPzld?=
+ =?us-ascii?Q?dCslCAvrh+RasvQq0G3Z3h9AbPzKwiRmEapWce/yMJL5Uz76CgPsAvxNbUJm?=
+ =?us-ascii?Q?vtg03TKrZ/deiSIhFIMfHVTftL85aZ6Be44W8zHTsxOowPFwAsmL3vdnZ2cf?=
+ =?us-ascii?Q?FRGcvd3RN9nQc28ZmN9SZkW7T0daIYOkwgiKp7TorzRJD24sZtXjsunv1nTg?=
+ =?us-ascii?Q?ooNd5Anr+jpMndL0HfS2W3ECHtnaqfZ8Bg/SsA+eyGqKlfZ+rSxlP9bacviS?=
+ =?us-ascii?Q?Y0RXmZ4eFrVlHl9ZEGxV6Y38EJTPhzBOpV25bntJy6DTRmhKdWS7+0kjIK7Z?=
+ =?us-ascii?Q?UQbHQOa+SFBpklbsC9t5NcQ0q6wekScBKWuLvrZIqhWVtW1ytWz2AX5ZQy6G?=
+ =?us-ascii?Q?YCD4y+UOx5+RitsTMIwWQR4/nsr0A+e1yBc9jMpAUf9FgnmH7SGeyOkel0eo?=
+ =?us-ascii?Q?jved7vRaxKRuU7wY6gHlOKUwBkmFvwK3SuG6aPbURseNDU7ln4OWcMsU18Ht?=
+ =?us-ascii?Q?Se+7x7iEyXFYmn0FkmOBzWFOUtCEoxVihjneQOWMyPWUDszW/79GRAZo0j7f?=
+ =?us-ascii?Q?8XsDPCkoUmR0DTGtmNartF3TFX0pMls=3D?=
+X-Exchange-RoutingPolicyChecked:
+	C0GxxHbdiCEh8oKqDRv2bLOMox8+unMvj37ntPp3qUNIKJMnTakG9wLHbN+FBWqyR7Uvz6ox4qmF6niHTdvZLwri0wcdYUd82erYU/18tZC77WIy8T0jVwWtJO1Q6SkC0ikHGXbO+yEPEaKKOd3l93FtGY8kA84WRs4DAC/LEXlGuRrgaF1X9I63bOo+9w/qnhjbNauwR8Uum1DQv38M6Lb2S60geqMVbBQwN3tH8EUy873fSRD7eg8WbUF6mnzMYa4gp8/0HhXA+EdIGkXRsSUZV1UdjC7ANJlXMqMyDuSIgMxB52OKxN8lchvcAElNJIGCN3ysm3ZoxHQaEXLZZQ==
+X-MS-Exchange-AntiSpam-ExternalHop-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-ExternalHop-MessageData-0:
+	dNwEa5DpGt4qICix9jr2krH4iY45xMhim8a/5MyVEKLQYKFZQZUEa1esjTDIcnUiFXAjL4oeZlNxwXKZuMNpwarMs+WCXms3mkRxlhDkaJog2U8aCHYpTqUlclE1IxpVyXAQEilxkDM03YddM78VH5A8CGOGqn4d9jabCeM3Y+LqdwnI5ioOTDLBD6zZ++6/8kL1yTdRI/DNJ5PJ8JTCo2aw5uCbPnBD3dNnwa1Pl72WH3ekn7nl0/gFobWJo5H2qURK2KDjoalzK+LZfahKhdF8j4AcK/CUyoe5oNjyv1PeYcry69Ipm3KZ/ERdnYJAYIUh1zQCm+/eynkqBsKmx9LwZtuvH5t9oLYXZCpIqc0rRhZqe9LAb1Lpr6Lw7XWzskOs3YTsvr19fdi0WV+FURZtNBYQv6+Xah8XuBhF2Y4WmbYCkp3z9bMFTJjedwotGIJYySAk8oc35LRtpdGzvfoNPopwowIU5NjnU3Blv3K4D7S2f+O6MlNMSoRvcwLzCyXCP0YoQrGyLaKAyYy3xTCii4T9uKUrkklmMiU/iEq5Za50xjmRqPZ7N2sGIlyj4YRM/jxppSGC52kJ0+y0Vq+AMehJa20LhqTEHHRMYII=
+X-OriginatorOrg: oracle.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 909369ca-2164-48a3-c96e-08ded7d9f4b2
+X-MS-Exchange-CrossTenant-AuthSource: CO6PR10MB5409.namprd10.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 02 Jul 2026 01:33:44.7565
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 4e2c6054-71cb-48f1-bd6c-3a9705aca71b
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: r0iBxtw3uEvV1qRuqoaI5YW+rluEER8+VR6n60A/EqHJtaWExi6MPOd2DXC32dOOhXlgMURSJjSEZ7wPPPLo2O5AVJk5N1AZuSiDbH+ZjA8=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: CY8PR10MB7314
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.125,FMLib:17.12.100.49
+ definitions=2026-07-02_01,2026-06-26_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 suspectscore=0
+ mlxlogscore=647 bulkscore=0 phishscore=0 malwarescore=0 lowpriorityscore=0
+ mlxscore=0 adultscore=0 spamscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.19.0-2606160000 definitions=main-2607020013
+X-Proofpoint-ORIG-GUID: 7nGjo23FMHoj9iobu6HiKKgwbPAMRlXP
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzAyMDAxMiBTYWx0ZWRfXx9HkS+ITs5zM
+ /oOTMNSNcUIuTLeTYSUhuLRvdlIUyV8WBsILbOT6ZSL3wudYOB2vVPNvCEHCxHSMt38SB16sNE6
+ rcQaavIk3jInGUHK1iWjCxvOftjBa2wJj4k8SqJVbSgdKXpdNY6rsVwUCsq/4NR6GcDQb9RZ3gb
+ F8Ukf0vfKE785zkzKob9Dx7uJv+VpqYNGjj6AtY7+lgsGLmHPNm97pjSEQXk9qNnES1s4j+ji1Q
+ jl72dD3RlgWKo2MimHZuwYXwvNT8q0zFt3TI6mI9MqbUkQXem1qYboRXMJnEZ9Btx8xy+5z5GV2
+ MhZ1JK9H8QDYmhymBeckMTmTWw11iQMwrQNJbTuWGVtzYGN/p8JstvXQgEYLWKd1o26r4WgkW4W
+ LtVa4y4otMoTa840rAKm2ec5gqSJk1s52FVn713Xf0k9TvmbrPEELPmPXOCeWsD3t0Bo3lmwAiq
+ TxWh8sqZp00azCOckyQ==
+X-Authority-Analysis: v=2.4 cv=LOxWhpW9 c=1 sm=1 tr=0 ts=6a45bffe b=1 cx=c_pps
+ a=WeWmnZmh0fydH62SvGsd2A==:117 a=WeWmnZmh0fydH62SvGsd2A==:17
+ a=6eWqkTHjU83fiwn7nKZWdM+Sl24=:19 a=z/mQ4Ysz8XfWz/Q5cLBRGdckG28=:19
+ a=lCpzRmAYbLLaTzLvsPZ7Mbvzbb8=:19 a=xqWC_Br6kY4A:10 a=RAioF0-LDSMA:10
+ a=GoEa3M9JfhUA:10 a=VkNPw1HP01LnGYTKEx00:22 a=jiCTI4zE5U7BLdzWsZGv:22
+ a=7Gl3-_t3PgB9XO-mQDs3:22 a=VwQbUJbxAAAA:8 a=7CQSdrXTAAAA:8 a=JfrnYn6hAAAA:8
+ a=yPCof4ZbAAAA:8 a=x6ygOChz5MOYKFFXTgQA:9 a=WmVTiCyuxqgg3mnwYu6p:22
+ a=a-qgeE7W1pNrGK8U0ZQC:22 a=1CNFftbPRP8L7MoqJWF3:22
+X-Proofpoint-GUID: 7nGjo23FMHoj9iobu6HiKKgwbPAMRlXP
+X-Proofpoint-Spam-Info: AW1haW4tMjYwNzAyMDAxMiBTYWx0ZWRfX9QnJo0vedXcE
+ c7BujmS56unDslaqrveNlP2MBh1+ZvMfUHqq3+/wa/8EpK9xcBQKChNK/x4gnwPrigPfwI8Thyp
+ CI/xKzsf0erfgEswpISXMWhpItQd1whSeaBveeTwvSqhpCt9lvps
 
+Support waiting in smp_cond_load_relaxed_timeout() via
+__cmpwait_relaxed(). To ensure that we wake from waiting in WFE
+periodically and don't block forever if there are no stores to
+ptr, this path is only used when the event-stream is enabled.
 
-On 6/30/26 5:34 PM, Amit Sunil Dhamne via B4 Relay wrote:
-> From: Amit Sunil Dhamne <amitsd@google.com>
->
-> Add support for responding to a Get_Battery_Status request with a
-> Battery_Status message. The port partner shall request the status of a
-> port's battery by providing an index in the Get_Battery_Status AMS. In
-> case of failure to identify the battery, the port shall reply with an
-> appropriate message indicating so.
->
-> Support for Battery_Status message is required for sinks that contain
-> battery as specified in USB PD Rev3.1 v1.8
-> ("Applicability of Data Messages" section).
->
-> Signed-off-by: Amit Sunil Dhamne <amitsd@google.com>
-> Reviewed-by: Badhri Jagan Sridharan <badhri@google.com>
+Note that when using __cmpwait_relaxed() we ignore the timeout
+value, allowing an overshoot by up to the event-stream period.
+And, in the unlikely event that the event-stream is unavailable,
+fallback to spin-waiting.
 
-Unfortunately, I forgot to add Heikki's ack [1] . In case I have to send 
-a new revision and this tcpm patch looks okay, I will add the Ack.
+Also set SMP_TIMEOUT_POLL_COUNT to 1 so we do the time-check in
+each iteration of smp_cond_load_relaxed_timeout().
 
+Note that with this we have enough to define ARCH_HAS_CPU_RELAX to
+indicate that we support an optimized implementation of
+cpu_poll_relax(). However, defer defining ARCH_HAS_CPU_RELAX as that
+enables polling based C-state handling, which really needs
+TIF_POLLING_NRFLAG.
 
-[1] https://lore.kernel.org/all/aiLHSlkdw_BAO6c_@kuha/
+Cc: Arnd Bergmann <arnd@arndb.de>
+Cc: Will Deacon <will@kernel.org>
+Cc: Catalin Marinas <catalin.marinas@arm.com>
+Cc: linux-arm-kernel@lists.infradead.org
+Suggested-by: Will Deacon <will@kernel.org>
+Acked-by: Will Deacon <will@kernel.org>
+Reviewed-by: Catalin Marinas <catalin.marinas@arm.com>
+Signed-off-by: Ankur Arora <ankur.a.arora@oracle.com>
+---
+Notes: remove definition of ARCH_HAS_CPU_RELAX as that adds a degenerate
+implementation of polling in idle via acpi_processor_setup_cstates().
+Flagged by BPF bot [1].
 
+Will, Catalin: I've retained your ack and r-by tags. Hope that's okay.
 
-Thanks,
+As mentioned in the prior patch, not addressing the range comment [2].
 
-Amit
+[1] https://lore.kernel.org/all/23edac0734ee3ef334237165500d8f34e3c649081db7b3140a4a8596a202f339@mail.kernel.org/
+[2] https://lore.kernel.org/all/20260608083135.6C0C81F00893@smtp.kernel.org/
+--
+ arch/arm64/include/asm/barrier.h | 21 +++++++++++++++++++++
+ 1 file changed, 21 insertions(+)
 
-> ---
->   drivers/usb/typec/tcpm/tcpm.c | 135 +++++++++++++++++++++++++++++++++++++++++-
->   include/linux/usb/pd.h        |  29 +++++++++
->   2 files changed, 161 insertions(+), 3 deletions(-)
->
-> diff --git a/drivers/usb/typec/tcpm/tcpm.c b/drivers/usb/typec/tcpm/tcpm.c
-> index 7ef746a90a17..19daa17917a7 100644
-> --- a/drivers/usb/typec/tcpm/tcpm.c
-> +++ b/drivers/usb/typec/tcpm/tcpm.c
-> @@ -232,7 +232,8 @@ enum pd_msg_request {
->   	PD_MSG_DATA_SINK_CAP,
->   	PD_MSG_DATA_SOURCE_CAP,
->   	PD_MSG_DATA_REV,
-> -	PD_MSG_EXT_SINK_CAP_EXT
-> +	PD_MSG_EXT_SINK_CAP_EXT,
-> +	PD_MSG_DATA_BATT_STATUS
->   };
->   
->   enum adev_actions {
-> @@ -389,6 +390,14 @@ struct pd_timings {
->   /* Convert microwatt to watt */
->   #define UW_TO_W(pow)					((pow) / 1000000)
->   
-> +/*
-> + * As per USB PD Spec Rev 3.18 (Sec. 6.5.13.11), the number of fixed batteries
-> + * that a port can be queried is restricted to 4.
-> + */
-> +#define MAX_NUM_FIXED_BATT				4
-> +
-> +#define BATTERY_PROPERTY_UNKNOWN			0xffff
-> +
->   /*
->    * struct pd_identifier - Contains info about PD identifiers
->    * @vid: Vendor ID (assigned by USB-IF)
-> @@ -683,6 +692,9 @@ struct tcpm_port {
->   
->   	struct pd_identifier pd_ident;
->   	struct sink_caps_ext_data sink_caps_ext;
-> +	struct power_supply **fixed_batt;
-> +	u32 fixed_batt_cnt;
-> +	u32 batt_request_id;
->   #ifdef CONFIG_DEBUG_FS
->   	struct dentry *dentry;
->   	struct mutex logbuffer_lock;	/* log buffer access lock */
-> @@ -1470,6 +1482,20 @@ static int tcpm_pd_send_sink_caps(struct tcpm_port *port)
->   	return tcpm_pd_transmit(port, TCPC_TX_SOP, &msg);
->   }
->   
-> +static void tcpm_get_fixed_batt(struct tcpm_port *port)
-> +{
-> +	int ret;
-> +
-> +	if (!port->self_powered || port->fixed_batt_cnt > 0)
-> +		return;
-> +
-> +	ret = power_supply_get_system_batteries(port->dev, &port->fixed_batt);
-> +	if (ret < 0)
-> +		tcpm_log(port, "Failed to get battery array, ret=%d", ret);
-> +	else
-> +		port->fixed_batt_cnt = ret;
-> +}
-> +
->   static int tcpm_pd_send_sink_cap_ext(struct tcpm_port *port)
->   {
->   	u16 operating_snk_watt = port->operating_snk_mw / 1000;
-> @@ -1482,6 +1508,8 @@ static int tcpm_pd_send_sink_cap_ext(struct tcpm_port *port)
->   	if (!port->self_powered)
->   		data->spr_op_pdp = operating_snk_watt;
->   
-> +	tcpm_get_fixed_batt(port);
-> +
->   	/*
->   	 * SPR Sink Minimum PDP indicates the minimum power required to operate
->   	 * a sink device in its lowest level of functionality without requiring
-> @@ -1507,6 +1535,7 @@ static int tcpm_pd_send_sink_cap_ext(struct tcpm_port *port)
->   	skedb.load_step = data->load_step;
->   	skedb.load_char = cpu_to_le16(data->load_char);
->   	skedb.compliance = data->compliance;
-> +	skedb.batt_info = min(port->fixed_batt_cnt, MAX_NUM_FIXED_BATT);
->   	skedb.modes = data->modes;
->   	skedb.spr_min_pdp = data->spr_min_pdp;
->   	skedb.spr_op_pdp = data->spr_op_pdp;
-> @@ -1525,6 +1554,88 @@ static int tcpm_pd_send_sink_cap_ext(struct tcpm_port *port)
->   					   port->message_id,
->   					   data_obj_cnt,
->   					   1 /* Denotes if ext header */));
-> +
-> +	return tcpm_pd_transmit(port, TCPC_TX_SOP, &msg);
-> +}
-> +
-> +static int tcpm_pd_send_batt_status(struct tcpm_port *port)
-> +{
-> +	u16 present_charge = BATTERY_PROPERTY_UNKNOWN;
-> +	bool batt_present = false, invalid_ref = true;
-> +	u32 batt_id = port->batt_request_id;
-> +	union power_supply_propval val;
-> +	struct power_supply *batt;
-> +	u8 charging_status = 0;
-> +	struct pd_message msg;
-> +	int ret, charge_now;
-> +	u64 energy_now;
-> +	u32 bsdo;
-> +
-> +	tcpm_get_fixed_batt(port);
-> +	memset(&msg, 0, sizeof(msg));
-> +
-> +	if (batt_id >= port->fixed_batt_cnt || batt_id >= MAX_NUM_FIXED_BATT)
-> +		goto send_status;
-> +
-> +	invalid_ref = false;
-> +	batt = port->fixed_batt[batt_id];
-> +	ret = power_supply_get_property(batt, POWER_SUPPLY_PROP_PRESENT, &val);
-> +	if (ret)
-> +		tcpm_log(port,
-> +			 "Failed to fetch power_supply_prop_present ret %d",
-> +			 ret);
-> +	else
-> +		batt_present = val.intval > 0;
-> +
-> +	ret = power_supply_get_property(batt, POWER_SUPPLY_PROP_CHARGE_NOW,
-> +					&val);
-> +	if (!ret) {
-> +		charge_now = val.intval;
-> +
-> +		ret = power_supply_get_property(batt,
-> +						POWER_SUPPLY_PROP_VOLTAGE_AVG,
-> +						&val);
-> +		if (!ret) {
-> +			energy_now = ((u64)charge_now * val.intval) / 1000000;
-> +
-> +			/*
-> +			 * Battery Present Charge is reported in
-> +			 * increments of 0.1WH.
-> +			 */
-> +			present_charge = (u16)UW_TO_W(energy_now * 10);
-> +		}
-> +	}
-> +
-> +	ret = power_supply_get_property(batt, POWER_SUPPLY_PROP_STATUS, &val);
-> +	if (!ret) {
-> +		switch (val.intval) {
-> +		case POWER_SUPPLY_STATUS_CHARGING:
-> +			charging_status = BSDO_BATTERY_INFO_CHARGING;
-> +			break;
-> +		case POWER_SUPPLY_STATUS_DISCHARGING:
-> +			charging_status = BSDO_BATTERY_INFO_DISCHARGING;
-> +			break;
-> +		case POWER_SUPPLY_STATUS_NOT_CHARGING:
-> +		case POWER_SUPPLY_STATUS_FULL:
-> +			charging_status = BSDO_BATTERY_INFO_IDLE;
-> +			break;
-> +		default:
-> +			charging_status = BSDO_BATTERY_INFO_RSVD;
-> +			break;
-> +		}
-> +	}
-> +
-> +send_status:
-> +
-> +	bsdo = BSDO(present_charge, charging_status, batt_present, invalid_ref);
-> +	msg.payload[0] = cpu_to_le32(bsdo);
-> +	msg.header = PD_HEADER_LE(PD_DATA_BATT_STATUS,
-> +				  port->pwr_role,
-> +				  port->data_role,
-> +				  port->negotiated_rev,
-> +				  port->message_id,
-> +				  1);
-> +
->   	return tcpm_pd_transmit(port, TCPC_TX_SOP, &msg);
->   }
->   
-> @@ -3886,6 +3997,7 @@ static void tcpm_pd_ext_msg_request(struct tcpm_port *port,
->   {
->   	enum pd_ext_msg_type type = pd_header_type_le(msg->header);
->   	unsigned int data_size = pd_ext_header_data_size_le(msg->ext_msg.header);
-> +	const struct pd_chunked_ext_message_data *ext_msg = &msg->ext_msg;
->   
->   	/* stopping VDM state machine if interrupted by other Messages */
->   	if (tcpm_vdm_ams(port)) {
-> @@ -3894,7 +4006,7 @@ static void tcpm_pd_ext_msg_request(struct tcpm_port *port,
->   		mod_vdm_delayed_work(port, 0);
->   	}
->   
-> -	if (!(le16_to_cpu(msg->ext_msg.header) & PD_EXT_HDR_CHUNKED)) {
-> +	if (!(le16_to_cpu(ext_msg->header) & PD_EXT_HDR_CHUNKED)) {
->   		tcpm_pd_handle_msg(port, PD_MSG_CTRL_NOT_SUPP, NONE_AMS);
->   		tcpm_log(port, "Unchunked extended messages unsupported");
->   		return;
-> @@ -3919,9 +4031,17 @@ static void tcpm_pd_ext_msg_request(struct tcpm_port *port,
->   					     NONE_AMS, 0);
->   		}
->   		break;
-> +	case PD_EXT_GET_BATT_STATUS:
-> +		if (data_size >= 1) {
-> +			port->batt_request_id = ext_msg->data[0];
-> +			tcpm_pd_handle_msg(port, PD_MSG_DATA_BATT_STATUS,
-> +					   GETTING_BATTERY_STATUS);
-> +		} else {
-> +			tcpm_set_state(port, SOFT_RESET_SEND, 0);
-> +		}
-> +		break;
->   	case PD_EXT_SOURCE_CAP_EXT:
->   	case PD_EXT_GET_BATT_CAP:
-> -	case PD_EXT_GET_BATT_STATUS:
->   	case PD_EXT_BATT_CAP:
->   	case PD_EXT_GET_MANUFACTURER_INFO:
->   	case PD_EXT_MANUFACTURER_INFO:
-> @@ -4132,6 +4252,14 @@ static bool tcpm_send_queued_message(struct tcpm_port *port)
->   					 ret);
->   			tcpm_ams_finish(port);
->   			break;
-> +		case PD_MSG_DATA_BATT_STATUS:
-> +			ret = tcpm_pd_send_batt_status(port);
-> +			if (ret)
-> +				tcpm_log(port,
-> +					 "Failed to send battery status ret=%d",
-> +					 ret);
-> +			tcpm_ams_finish(port);
-> +			break;
->   		default:
->   			break;
->   		}
-> @@ -8633,6 +8761,7 @@ void tcpm_unregister_port(struct tcpm_port *port)
->   	hrtimer_cancel(&port->vdm_state_machine_timer);
->   	hrtimer_cancel(&port->state_machine_timer);
->   
-> +	power_supply_put_system_batteries(port->fixed_batt, port->fixed_batt_cnt);
->   	tcpm_reset_port(port);
->   
->   	tcpm_port_unregister_pd(port);
-> diff --git a/include/linux/usb/pd.h b/include/linux/usb/pd.h
-> index 337a5485af7c..afb9c2c65588 100644
-> --- a/include/linux/usb/pd.h
-> +++ b/include/linux/usb/pd.h
-> @@ -724,4 +724,33 @@ void usb_power_delivery_unlink_device(struct usb_power_delivery *pd, struct devi
->   
->   #endif /* CONFIG_TYPEC */
->   
-> +/* Battery Status Data Object */
-> +#define BSDO_PRESENT_CAPACITY				GENMASK(31, 16)
-> +#define BSDO_CHG_STATUS					GENMASK(11, 10)
-> +#define BSDO_BATTERY_PRESENT				BIT(9)
-> +#define BSDO_INVALID_BATTERY_REFERENCE			BIT(8)
-> +
-> +/*
-> + * Battery Charge Status: Battery Charging Status Values as defined in
-> + * "USB PD Spec Rev3.1 Ver1.8", "Table 6-46 Battery Status Data Object (BSDO)".
-> + */
-> +#define BSDO_BATTERY_INFO_CHARGING			0x0
-> +#define BSDO_BATTERY_INFO_DISCHARGING			0x1
-> +#define BSDO_BATTERY_INFO_IDLE				0x2
-> +#define BSDO_BATTERY_INFO_RSVD				0x3
-> +
-> +/**
-> + * BSDO() - Pack data into Battery Status Data Object format.
-> + * @batt_charge: Battery's present state of charge in 0.1WH increment.
-> + * @chg_status: Battery charge status.
-> + * @batt_present: Indicates that battery is present/attached when set else absent when unset.
-> + * @invalid_ref: Indicates that an invalid battery reference was made in the Get_Battery_Status
-> + *		 request.
-> + */
-> +#define BSDO(batt_charge, chg_status, batt_present, invalid_ref)	\
-> +	((FIELD_PREP(BSDO_PRESENT_CAPACITY, batt_charge)) |		\
-> +	 (FIELD_PREP(BSDO_CHG_STATUS, chg_status)) |			\
-> +	 ((batt_present) ? BSDO_BATTERY_PRESENT : 0) |			\
-> +	 ((invalid_ref) ? BSDO_INVALID_BATTERY_REFERENCE : 0))
-> +
->   #endif /* __LINUX_USB_PD_H */
->
+diff --git a/arch/arm64/include/asm/barrier.h b/arch/arm64/include/asm/barrier.h
+index 9495c4441a46..6190e178db51 100644
+--- a/arch/arm64/include/asm/barrier.h
++++ b/arch/arm64/include/asm/barrier.h
+@@ -12,6 +12,7 @@
+ #include <linux/kasan-checks.h>
+ 
+ #include <asm/alternative-macros.h>
++#include <asm/vdso/processor.h>
+ 
+ #define __nops(n)	".rept	" #n "\nnop\n.endr\n"
+ #define nops(n)		asm volatile(__nops(n))
+@@ -219,6 +220,26 @@ do {									\
+ 	(typeof(*ptr))VAL;						\
+ })
+ 
++/* Re-declared here to avoid include dependency. */
++extern bool arch_timer_evtstrm_available(void);
++
++/*
++ * In the common case, cpu_poll_relax() sits waiting in __cmpwait_relaxed()
++ * for the ptr value to change.
++ *
++ * Since this period is reasonably long, choose SMP_TIMEOUT_POLL_COUNT
++ * to be 1, so smp_cond_load_{relaxed,acquire}_timeout() does a
++ * time-check in each iteration.
++ */
++#define SMP_TIMEOUT_POLL_COUNT	1
++
++#define cpu_poll_relax(ptr, val, timeout_ns) do {			\
++	if (arch_timer_evtstrm_available())				\
++		__cmpwait_relaxed(ptr, val);				\
++	else								\
++		cpu_relax();						\
++} while (0)
++
+ #include <asm-generic/barrier.h>
+ 
+ #endif	/* __ASSEMBLER__ */
+-- 
+2.43.7
+
