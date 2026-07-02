@@ -1,284 +1,167 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8F07647DFB2;
-	Thu,  2 Jul 2026 12:42:12 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4F5CF48122D
+	for <linux-pm@vger.kernel.org>; Thu,  2 Jul 2026 12:59:28 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1782996133; cv=none; b=YBgMnMees8klbZB361eOufYP9a0fQXKfS3+e+UuyKdeKGlxQnjqnKsfewQqnM8UOX4BticG6bNgL5PMUHdxdrq3inJIR6YC1p5r1uBsOJum2eF11UnNd2hN9msSQb+W8Pyw1fUlq/V3rs4jEVPhbUI6lKLMXzypGRskWYAbjL6M=
+	t=1782997169; cv=none; b=JLRyS0BZv+jeHN9Q4rE0DxaEk4WoMvI2gZTgb/0yyknuONyLqFH31NKG6dyBbDaTz/ebdoodSRLWfWEBh6mDYRwME0vOmfvBw7jUAkC+AK2cxXS94IEWGhn5tLqWrfy6uAxtUEfLn520Eg1A7SQSEKp64wfVEH1O/6CVs35hspg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1782996133; c=relaxed/simple;
-	bh=GhGY2uJlPlxapIVd2591Q8ZB/UGIi44eagOQNiP6pbQ=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=WmVrNbE1VvflO7M00Jp10Xco+dOx6dRQ2v6/OccOqV6ieGsirRq4W/L81wRUL11eitGqjYXBLvzVXcdFsp4RNOHM2+om1FA+jatq51oG2h01eEy1znZILZQKT7F/lIcI5bKzXo1i4XEVXSOe9+rBySbxVWsVQ7z3pOrrZd5hyLQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=RmRB+8p/; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1782997169; c=relaxed/simple;
+	bh=uUKDkqlNCglYPmuMqaEVfRyX46iCIZHXBkJAj3Zz+ao=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=hOd1AEzbgvh7rIfHiogBjSvrFYINbdiUG/6gPExIS2jXwoXKjc8La9gbB9A/gk/iPsK/UFgTvJCrlGeyx/bVzheufgg93zwhPwnUgxqjwTKTQTmS9n5JchIkvkKfvajBILbBRVoEuFM39nbQyo/S6dZhGNhzdLRzMVsU8gGLxyA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=CjDbmUPo; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="RmRB+8p/"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1CECD1F00A3A;
-	Thu,  2 Jul 2026 12:42:08 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="CjDbmUPo"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1F8111F00ACF
+	for <linux-pm@vger.kernel.org>; Thu,  2 Jul 2026 12:59:28 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1782996132;
-	bh=j4TUqQ9a83KckGoDbJG7Jsv1SNP3jjBNDc9CRHtia2g=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To;
-	b=RmRB+8p/aHlHF6f+RB2xKZ9qKdJgmm+qVKRYbBQg5FDjh+u+1s8ySofHq0+fKn18N
-	 WQ0wThJI1QeeZYSt1ETq+52XYa/sYcBrayKXF61sZldB6i3Smr/YCkh8LxObJnZaWn
-	 hZ3s+8Zf0XhhL8AQKA7rlYJ2G0RQEKUUm76GyPbr+UHqoaIuPXkhO4ImFUBjsGYrbW
-	 H+6h00k6LC8+iufOHZN4rBjMqDDchk6ikqW3q2m26wrsQ+L5ePXtpoQQFmLZYjPguC
-	 On1gyRYkVqOHTLXSU1B6Q1eR6qyQChbsPTKRNenT06TSfZ0vVvQ8XNXSalFOMywZOj
-	 CqsqulV1Mwupw==
-Message-ID: <9bbe1461-a731-4cbc-89db-2ff0866bd3d7@kernel.org>
-Date: Thu, 2 Jul 2026 14:42:07 +0200
+	s=k20260515; t=1782997168;
+	bh=fjPgbB2H3M05UY5za1DjwijyWrPVl+qvmy/SwWaWVlQ=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc;
+	b=CjDbmUPosDXkDQ0gaFgP9Td33t/PSi2SD3nxJftGeXxNW8RiJElNKqlcqDz46EVH6
+	 D91vh4elkYdGmayHmXno/bAWFv9D8kusroSMCzAPxpT1bAqPlAhdE0mrCSe3KGXx62
+	 SM5oB96oAD46KuID2u8ctCawRy3OF23yfsJU3++1+n5JkqbaV9QJMIqDrWiCZof3d8
+	 m391bmJ3NI0h0naSydbb7eJ30wOYunjB8B6+DMzJDV66gtUoISpDDg0dcsKGi4exZM
+	 bwWNmjyTWcyHhZLJbhj38P5yCNkbymKttYI8psEb+EKlVD2rajbcmNoS+donyYWaaM
+	 oPzrSk+nWJdmw==
+Received: by mail-lf1-f54.google.com with SMTP id 2adb3069b0e04-5aebf162770so472892e87.1
+        for <linux-pm@vger.kernel.org>; Thu, 02 Jul 2026 05:59:28 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AHgh+RrGsQWkX11ZXVcDBRJeujpgVatZZqnRaGR5hhkb7W9CB7iGPanckjJ/aYHVYAhZJFUtNXiBrF7dNg==@vger.kernel.org
+X-Gm-Message-State: AOJu0YyCnhr3bNXsqjARbbGkUcd7b6AXJrtbHOBqLHo8Cml+T2KbxI9e
+	hi1lolQSYD0bldu00vJfCPkvUAo4C5B6ahnpKzNUyRXYuiZ0PPLHAjuIKBL0CBzm+Id1nJsR/6F
+	SOOF9VXChCQLAnljgGSsSYrVK9pCvHZY=
+X-Received: by 2002:a05:6512:2310:b0:5ae:b686:d9d8 with SMTP id
+ 2adb3069b0e04-5aebf967210mr2544930e87.9.1782997166443; Thu, 02 Jul 2026
+ 05:59:26 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v4 1/2] power: supply: Add helpers to get and put arrays
- of power supply handles
-To: amitsd@google.com, Sebastian Reichel <sre@kernel.org>,
- Badhri Jagan Sridharan <badhri@google.com>,
- Heikki Krogerus <heikki.krogerus@linux.intel.com>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Krzysztof Kozlowski <krzk@kernel.org>,
- Marek Szyprowski <m.szyprowski@samsung.com>,
- Sebastian Krzyszkowiak <sebastian.krzyszkowiak@puri.sm>,
- Purism Kernel Team <kernel@puri.sm>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
- linux-usb@vger.kernel.org, =?UTF-8?Q?Andr=C3=A9_Draszik?=
- <andre.draszik@linaro.org>, Tudor Ambarus <tudor.ambarus@linaro.org>,
- Peter Griffin <peter.griffin@linaro.org>, RD Babiera <rdbabiera@google.com>,
- Kyle Tso <kyletso@google.com>
-References: <20260701-batt-status-v4-0-a31d97b1ae57@google.com>
- <20260701-batt-status-v4-1-a31d97b1ae57@google.com>
-Content-Language: en-US, nl
-From: Hans de Goede <hansg@kernel.org>
-In-Reply-To: <20260701-batt-status-v4-1-a31d97b1ae57@google.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+References: <20260702-fix_sticky_-einval_after_pm_runtime_api_failure-v1-0-6ddc317011c0@oss.qualcomm.com>
+ <20260702-fix_sticky_-einval_after_pm_runtime_api_failure-v1-1-6ddc317011c0@oss.qualcomm.com>
+ <CAJZ5v0g6iRNUAKtDNKWa-_pshmnSCdStenNBJ91Xt=PSrhx=aQ@mail.gmail.com> <04b67f29-2afe-4c72-8c9b-bbde56f27a83@oss.qualcomm.com>
+In-Reply-To: <04b67f29-2afe-4c72-8c9b-bbde56f27a83@oss.qualcomm.com>
+From: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
+Date: Thu, 2 Jul 2026 14:59:14 +0200
+X-Gmail-Original-Message-ID: <CAJZ5v0hc5yYphPjtF8kNBTPaTaVDxq4Fdb=DRuQ953EAo-CMqQ@mail.gmail.com>
+X-Gm-Features: AVVi8CcLlsfEYaX75GZe8RjqszCs33_BhtDCHTaBpZCGdeHCkGSnOhwt3W2pLYY
+Message-ID: <CAJZ5v0hc5yYphPjtF8kNBTPaTaVDxq4Fdb=DRuQ953EAo-CMqQ@mail.gmail.com>
+Subject: Re: [PATCH 1/4] PM: runtime: Clear runtime_error on supplier after
+ failed get_sync
+To: Praveen Talari <praveen.talari@oss.qualcomm.com>
+Cc: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>, Mark Brown <broonie@kernel.org>, 
+	Dilip Kota <dkota@codeaurora.org>, Stephen Boyd <swboyd@chromium.org>, 
+	Girish Mahadevan <girishm@codeaurora.org>, Alok Chauhan <alokc@codeaurora.org>, 
+	bjorn.andersson@oss.qualcomm.com, 
+	Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>, Len Brown <lenb@kernel.org>, 
+	Pavel Machek <pavel@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
+	Danilo Krummrich <dakr@kernel.org>, Douglas Anderson <dianders@chromium.org>, linux-spi@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org, 
+	Mukesh Kumar Savaliya <mukesh.savaliya@oss.qualcomm.com>, aniket.randive@oss.qualcomm.com, 
+	chandana.chiluveru@oss.qualcomm.com, jyothi.seerapu@oss.qualcomm.com, 
+	linux-pm@vger.kernel.org, driver-core@lists.linux.dev
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Hi,
+On Thu, Jul 2, 2026 at 1:53=E2=80=AFPM Praveen Talari
+<praveen.talari@oss.qualcomm.com> wrote:
+>
+> Hi Rafael,
+>
+> Thank you for review.
+>
+> On 02-07-2026 17:07, Rafael J. Wysocki (Intel) wrote:
+> > On Thu, Jul 2, 2026 at 8:08=E2=80=AFAM Praveen Talari
+> > <praveen.talari@oss.qualcomm.com> wrote:
+> >> When pm_runtime_get_sync() fails for a supplier device in
+> >> rpm_get_suppliers(), the supplier's power.runtime_error field is left
+> >> set. This causes any subsequent rpm_resume() call on that supplier to
+> >> immediately return -EINVAL at the top of the function without
+> >> attempting an actual resume, making the failure permanent until
+> >> runtime PM is explicitly re-enabled.
+> >>
+> >> Fix this by calling pm_runtime_set_suspended() on the supplier after
+> >> pm_runtime_put_noidle() in the error path. This clears runtime_error
+> >> and resets the runtime PM status to RPM_SUSPENDED, allowing the next
+> >> consumer resume attempt to retry the supplier resume normally.
+> >>
+> >> Change-Id: Id5067d09caca464f663fc95fe745d037e9c56664
+> >> Signed-off-by: Praveen Talari <praveen.talari@oss.qualcomm.com>
+> >> ---
+> >>   drivers/base/power/runtime.c | 1 +
+> >>   1 file changed, 1 insertion(+)
+> >>
+> >> diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime=
+.c
+> >> index 335288e8b5b3..9811d024d140 100644
+> >> --- a/drivers/base/power/runtime.c
+> >> +++ b/drivers/base/power/runtime.c
+> >> @@ -309,6 +309,7 @@ static int rpm_get_suppliers(struct device *dev)
+> >>                  /* Ignore suppliers with disabled runtime PM. */
+> >>                  if (retval < 0 && retval !=3D -EACCES) {
+> >>                          pm_runtime_put_noidle(link->supplier);
+> >> +                       pm_runtime_set_suspended(link->supplier);
+> >>                          return retval;
+> >>                  }
+> >>                  refcount_inc(&link->rpm_active);
+> >>
+> >> --
+> > I don't think that this is the way to go here.
+> >
+> > Can you please say some more about the specific scenario in which this
+> > happens and explain why it is OK to effectively discard runtime PM
+> > errors occurring when suppliers are handled?
+>
+> This was observed with a consumer device whose supplier's
+> ->runtime_resume callback returns an error (e.g., a transient failure
+> such as a timeout or resource unavailability).
 
-On 1-Jul-26 02:34, Amit Sunil Dhamne via B4 Relay wrote:
-> From: Amit Sunil Dhamne <amitsd@google.com>
-> 
-> Add power_supply_get_system_batteries() to allow drivers to obtain
-> a list of registered battery type power supply references in the
-> system. Also add power_supply_put_system_batteries() to perform
-> cleanup after the former function is called.
-> 
-> Signed-off-by: Amit Sunil Dhamne <amitsd@google.com>
+In runtime PM, errors returned by the suspend and resume callbacks,
+except for -EAGAIN and -EBUSY are not regarded as transient, which is
+why they stick.
 
-Thanks, patch looks good to me:
+If the driver or bus type wants to signal a transient error, it should
+return one of the above error codes.
 
-Reviewed-by: Hans de Goede <johannes.goede@oss.qualcomm.com>
+That said, I can see that this is problematic on the resume side where
+it may be desirable to repeat resume attempts in the hope that one of
+them will succeed.
 
-Regards,
+I would then consider changing the runtime PM core code so that
+power.runtime_error is only set on failing attempts to suspend, but it
+will not be set on failing attempts to resume.
 
-Hans
+> When that happens,
+> rpm_resume() sets power.runtime_error on the supplier and returns an
+> error. pm_runtime_get_sync() propagates that error up to
+> rpm_get_suppliers(), which then calls pm_runtime_put_noidle() and
+> returns, aborting the consumer's resume.
 
+Right.
 
+> The problem is that power.runtime_error remains set on the supplier. On
+> the next attempt to resume the consumer, rpm_get_suppliers() calls
+> pm_runtime_get_sync() on the supplier again, but rpm_resume() now
+> returns -EINVAL immediately at the top-of-function runtime_error check =
+=E2=80=94
+> without even attempting the resume callback. The supplier is stuck
+> permanently in the error state until someone explicitly calls
+> pm_runtime_reinit() or re-enables runtime PM on it.
+>
+> when rpm_get_suppliers() fails and we're already propagating the error
+> to the consumer's resume path, we should not leave the supplier in a
+> state that prevents all future retry attempts.
+>
+> Would you suggest a different approach here? I want to understand what
+> the preferred recovery path should be when a supplier's resume fails
+> inside rpm_get_suppliers().
 
-> ---
->  drivers/power/supply/power_supply_core.c | 153 +++++++++++++++++++++++++++++++
->  include/linux/power_supply.h             |  15 +++
->  2 files changed, 168 insertions(+)
-> 
-> diff --git a/drivers/power/supply/power_supply_core.c b/drivers/power/supply/power_supply_core.c
-> index 2532e221b2e1..70f35f64cc72 100644
-> --- a/drivers/power/supply/power_supply_core.c
-> +++ b/drivers/power/supply/power_supply_core.c
-> @@ -477,6 +477,159 @@ struct power_supply *power_supply_get_by_name(const char *name)
->  }
->  EXPORT_SYMBOL_GPL(power_supply_get_by_name);
->  
-> +static bool power_supply_is_system_battery(struct power_supply *psy)
-> +{
-> +	union power_supply_propval val;
-> +
-> +	if (psy->desc->type != POWER_SUPPLY_TYPE_BATTERY)
-> +		return false;
-> +
-> +	if (!power_supply_get_property_direct(psy, POWER_SUPPLY_PROP_SCOPE,
-> +					      &val))
-> +		if (val.intval == POWER_SUPPLY_SCOPE_DEVICE)
-> +			return false;
-> +
-> +	return true;
-> +}
-> +
-> +static int __power_supply_get_num_system_batteries(struct power_supply *epsy,
-> +						   void *data)
-> +{
-> +	int *count = data;
-> +
-> +	if (power_supply_is_system_battery(epsy))
-> +		(*count)++;
-> +
-> +	return 0;
-> +}
-> +
-> +static int power_supply_get_num_system_batteries(struct device *dev)
-> +{
-> +	int ret, count = 0;
-> +
-> +	ret = power_supply_for_each_psy(&count,
-> +					__power_supply_get_num_system_batteries);
-> +
-> +	dev_dbg(dev, "%s: count: %d ret %d\n", __func__, count, ret);
-> +
-> +	if (ret)
-> +		return ret;
-> +
-> +	return count;
-> +}
-> +
-> +struct psy_get_supplies_data {
-> +	int cnt;
-> +	int size;
-> +	struct power_supply **psys;
-> +};
-> +
-> +static int
-> +__power_supply_populate_system_batteries_array(struct power_supply *epsy,
-> +					       void *_data)
-> +{
-> +	struct psy_get_supplies_data *data = _data;
-> +
-> +	if (power_supply_is_system_battery(epsy)) {
-> +		if (data->size <= data->cnt)
-> +			return -EOVERFLOW;
-> +
-> +		get_device(&epsy->dev);
-> +		data->psys[data->cnt] = epsy;
-> +		atomic_inc(&epsy->use_cnt);
-> +		data->cnt++;
-> +	}
-> +
-> +	return 0;
-> +}
-> +
-> +static int
-> +power_supply_populate_system_batteries_array(struct device *dev, int size,
-> +					     struct power_supply **batteries)
-> +{
-> +	int ret;
-> +
-> +	struct psy_get_supplies_data data = {
-> +		.cnt = 0,
-> +		.size = size,
-> +		.psys = batteries,
-> +	};
-> +
-> +	ret = power_supply_for_each_psy(&data,
-> +					__power_supply_populate_system_batteries_array);
-> +
-> +	dev_dbg(dev, "%s Found %d batteries with array size %d ret %d\n",
-> +		__func__, data.cnt, data.size, ret);
-> +
-> +	if (ret < 0 || !data.cnt) {
-> +		power_supply_put_system_batteries(batteries, data.cnt);
-> +		return ret;
-> +	}
-> +
-> +	return data.cnt;
-> +}
-> +
-> +/**
-> + * power_supply_get_system_batteries() - Fetches references to battery type
-> + *                                       power supplies in the system.
-> + * @dev: Pointer to device requesting the power supply refs.
-> + * @psys: Pointer to an array of power supply refs.
-> + *
-> + * Helper function to get handles to battery type power supplies in the system.
-> + * If acquiring a ref to a power supply fails, then the search for battery type
-> + * power supplies will abort and the acquired power supply references will be
-> + * released.
-> + *
-> + * Return: Indicates the number of battery type power supplies returned on
-> + * success or a negative error code on failure.
-> + *
-> + * Call power_supply_put_system_batteries() after use to cleanup resources.
-> + */
-> +int __must_check power_supply_get_system_batteries(struct device *dev,
-> +						   struct power_supply ***psys)
-> +{
-> +	int ret;
-> +
-> +	if (!psys)
-> +		return -EINVAL;
-> +
-> +	ret = power_supply_get_num_system_batteries(dev);
-> +	if (ret <= 0) {
-> +		*psys = NULL;
-> +		return ret;
-> +	}
-> +
-> +	*psys = kzalloc_objs(**psys, ret);
-> +	if (!*psys)
-> +		return -ENOMEM;
-> +
-> +	ret = power_supply_populate_system_batteries_array(dev, ret, *psys);
-> +	if (ret <= 0)
-> +		*psys = NULL;
-> +
-> +	return ret;
-> +}
-> +EXPORT_SYMBOL_GPL(power_supply_get_system_batteries);
-> +
-> +/**
-> + * power_supply_put_system_batteries() - Cleanup resources allocated by
-> + *                                       power_supply_get_system_batteries()
-> + * @psys: Array of power supply references to release and free.
-> + * @count: Number of elements in the array.
-> + */
-> +void power_supply_put_system_batteries(struct power_supply **psys, int count)
-> +{
-> +	int i;
-> +
-> +	for (i = 0; i < count; i++) {
-> +		if (psys[i])
-> +			power_supply_put(psys[i]);
-> +	}
-> +
-> +	kfree(psys);
-> +}
-> +EXPORT_SYMBOL_GPL(power_supply_put_system_batteries);
-> +
->  /**
->   * power_supply_put() - Drop reference obtained with power_supply_get_by_name
->   * @psy: Reference to put
-> diff --git a/include/linux/power_supply.h b/include/linux/power_supply.h
-> index 7a5e4c3242a0..9167a33d074b 100644
-> --- a/include/linux/power_supply.h
-> +++ b/include/linux/power_supply.h
-> @@ -806,11 +806,26 @@ extern int power_supply_reg_notifier(struct notifier_block *nb);
->  extern void power_supply_unreg_notifier(struct notifier_block *nb);
->  #if IS_ENABLED(CONFIG_POWER_SUPPLY)
->  extern struct power_supply *power_supply_get_by_name(const char *name);
-> +extern int __must_check power_supply_get_system_batteries(struct device *dev,
-> +							  struct power_supply ***psys);
-> +extern void power_supply_put_system_batteries(struct power_supply **psys, int count);
->  extern void power_supply_put(struct power_supply *psy);
->  #else
->  static inline void power_supply_put(struct power_supply *psy) {}
->  static inline struct power_supply *power_supply_get_by_name(const char *name)
->  { return NULL; }
-> +static inline int __must_check power_supply_get_system_batteries(struct device *dev,
-> +								 struct power_supply ***psys)
-> +{
-> +	if (psys)
-> +		*psys = NULL;
-> +	return 0;
-> +}
-> +
-> +static inline void power_supply_put_system_batteries(struct power_supply **psys,
-> +						     int count)
-> +{
-> +}
->  #endif
->  extern struct power_supply *power_supply_get_by_reference(struct fwnode_handle *fwnode,
->  							  const char *property);
-> 
+Well, this isn't really different to any other cases when runtime
+resume fails.  If it fails for a given device, it will also fail for
+all devices depending on it.
 
+But fair enough, please see above.
