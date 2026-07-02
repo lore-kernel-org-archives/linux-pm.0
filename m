@@ -1,176 +1,156 @@
-Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4C8C0397331
-	for <linux-pm@vger.kernel.org>; Thu,  2 Jul 2026 17:23:30 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.180.131
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 679D810785
+	for <linux-pm@vger.kernel.org>; Thu,  2 Jul 2026 18:48:12 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1783013014; cv=none; b=h9fEQhdvK+NZr+dLccjlirxfz3mhzxo9shx/SldV4WQQxUg8vA/tekmUCQuuuBge9Hh25XrgqFf6U2VsZZ6xHpjQPfjE0VKzn7HeuGy9LiAeu6U9mS/HD62Pj7BDFzi02ShtK0yrCmDZAy7CGSd0jN0/xFEAp2a8DbyAxNzXeHA=
+	t=1783018093; cv=none; b=ZTGZ1ApXBnffUXXiZRV+3bB+DN6LKEPJ76/AiR2MA5ojuc8sISdeYhSshLBxTJDv0t/bW3TZnbeU+tZ69SFHjHq9xf+M1/FANFk63UoiNZO88BRuwiHg96Q8pf+jojNg/Vf9HR2lmhRCRbcLhLVdbFtR3gvZkzOBNfM8R6ngz/c=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1783013014; c=relaxed/simple;
-	bh=f1kW0KfbOBwzfyvSB6qRsv0wRsKse0k48GBqyG+Gu0k=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=ZHNUoLFahFJwb/Iw37SxscfJg40fvFnT9LF8SeaCUH2X/N17JpVIGaXYYNNHcpmdoXy2M1I0EBZa9yKlvyq058BtaUQQ8fi6fq+K0Ce6/ubQrCjhsP76iSybE4sn2S4Sz2vSVGU6g18hOcrSLjdG7oZX9D44rzLY0fxMRBm5KiE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=PD/G9MX6; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=aa+ibTxH; arc=none smtp.client-ip=205.220.180.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
+	s=arc-20240116; t=1783018093; c=relaxed/simple;
+	bh=raUo+CGpWrD67s/afmyf9SkDsqorM7yqCwPQdnHoa6g=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=mpogKDbV2JWbMDRNOOmktN85HZVcLzI6p394TBgI9Z8Uf3wirjtpyBs31dc2Nas06YerQKL1NS/u1wt2Zt4D1P8G4lvz1i52jp8zOwbU2EFJtmfody4QPDDc5LXubrElggtejwPgLNELdXJIdKpSPVHvr6DW5ZAAzBqibYZf2Ys=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=jgf4F1rX; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="PD/G9MX6";
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="aa+ibTxH"
-Received: from pps.filterd (m0279872.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 662E3S2j549149
-	for <linux-pm@vger.kernel.org>; Thu, 2 Jul 2026 17:23:29 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	4LjwJAfGIMwv4JvSBnxIJgWfBxcmgUQORx2Zd1CjIe4=; b=PD/G9MX6RYrFDIaY
-	iKo0vYuQdqDFW3yDhh2meMjy1DPJkhVv5WGSETjk1F0NfjMwfArK3u38fL+YKzzX
-	aLgtqeESvTbCrDJvZ8tNyMVjBCmYv8dOK/S5kbWI/lM32rwyyo+bcoSfWdg+xLpr
-	tBmELcuEiUmpSsauDhiLxNu4p99cy5gg2D4sZhtiuRp1ugH3azLvNPnHtkeXJ7xR
-	qZGt5dOIMg02UlssOkyEhtZMpclxfVkNgfmR0HwW1kI3O/g/yyqJSfD2z3WMJ0Se
-	gOIRMKO+vxrnA8kaziAV7lgJjocaM6O3yZXaZlmJVLeQQLsi2V0mchekjzmjsrP1
-	wBSIlQ==
-Received: from mail-pg1-f199.google.com (mail-pg1-f199.google.com [209.85.215.199])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4f5h98jyhm-1
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Thu, 02 Jul 2026 17:23:28 +0000 (GMT)
-Received: by mail-pg1-f199.google.com with SMTP id 41be03b00d2f7-c88ad1558f4so2946095a12.2
-        for <linux-pm@vger.kernel.org>; Thu, 02 Jul 2026 10:23:28 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1783013008; x=1783617808; darn=vger.kernel.org;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :mime-version:subject:date:from:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=4LjwJAfGIMwv4JvSBnxIJgWfBxcmgUQORx2Zd1CjIe4=;
-        b=aa+ibTxHvMxHUro+87PX01nYss19HbAQQxOFQ2dJyv1OlIEUeQll3ndk3SF/LHjnan
-         SOt3MFL+ApMkqRwHmUSdQx/UqGg5pchV1GZg9yAGwYEEfBCQmo+3nV+eH5DeQ5nMLnml
-         grTJ6v37EMg/QHMd4LkQDUeGmTS4SMnprQaCZkJMae5mnTtiqSGJmBXhjV/nNXJ8Kylu
-         g/iVTLWl8JuIZVeGq1L4jQdqqmmGqLRNihvjdBnR3CqdIPGzLOYXBA+0M+q+r15LV703
-         9c/1Mw+oO64qs4hkXS5HPmYj9/Olea/YinY7+XFADvrsLgcuE5eKXd80bZrD7ij34ODz
-         5RIg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1783013008; x=1783617808;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :mime-version:subject:date:from:x-gm-gg:x-gm-message-state:from:to
-         :cc:subject:date:message-id:reply-to;
-        bh=4LjwJAfGIMwv4JvSBnxIJgWfBxcmgUQORx2Zd1CjIe4=;
-        b=csKppaz+TFpdY8nSBYAFdTVf3hCn8pjjJ8fkpbBhBgCjtdzv8BdbEJ0R4u+4OMegHX
-         F+1X2XqmSVJK0xPT5xaakCKlGvsLD8k0t0D0AmcQq9ijE2LY1anQxwbtTe/p5mHCSLgt
-         jQOakQMVr1dMDCg8ylzeTvulTJfgpYg930ZAWUc6Mf3d6lNUhH17X9aL/tza5au2ZBIC
-         cMIAw9z5DR0MJ3VFo4koubjGswKSyhDZYx06SY+T83ajbAfggr3sJMLdvzNNYQ+A6txK
-         tw+gNsNVlS0kSi3nqLIH8SHfebQmF5SDBRv/z6T+FQAj3pH3PK7FwydmHy//vRIVJoV7
-         ehEA==
-X-Forwarded-Encrypted: i=1; AFNElJ/34MgAHeyrSvIBx05AcAdpFmmLGHAbDLJ5LoQ8WJGOSNtbnO7gFPs96bonCvTEBMCV/ZUBE2oDQQ==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yy42Db1P3XHnkhkfes72b0FHtasznNZFTGTH8YTqp0mPgtNntZ+
-	CSl44kBPKwiaE+rT7Kd1G+Kqp9M0HKpPybcO6JULxLXAjhE1L/ARlNDymvxiNt5HhwAbBhIB8aD
-	aZ5pNpxzJ4TJvrzlw8NLRPRE7MgHNNmQgmZlmMhVGJ8nYxwk32wC3zHJE9i2Iew==
-X-Gm-Gg: AfdE7ck0IoAI9PypSozsmOsVYy7nLTJG6uIRSL7dF5qeWefG/517sMNcT/BHDousicv
-	la1S2omeHASb03DcnbmQP4nYixKQysESGf0u4R0Y91+J9vJNSUASFVd11xZ+eTMrzn6R/9tGO3b
-	rHmXhDpq+xfRoRWPg9pnuEyYFY5DyPcZYKhkYJyQQ1+lzojXi7Z2PnCWANj1YwHBWJh7mJUyrfo
-	KhN/7TSMsBxN4j3Wnj1nfRa1dC4BNRtSjvysUeZRROeTGr4QnIlPHeTR2QcgIcwmVHayoO7LCyN
-	W180i1ZO8q3zDyw+Wny63prbyV2XQPwHX4XGsLVp5ZnQxuBeErDTOAoxFcVYVV32ScDtmrt+kq5
-	4HJ7H3VsngdklRXIazv4pGKYqmnhMeBMIGYmgDah8nQBHFQ==
-X-Received: by 2002:a05:6a20:b40b:b0:3bf:b9de:854d with SMTP id adf61e73a8af0-3bfed2b3ad6mr7932455637.23.1783013007746;
-        Thu, 02 Jul 2026 10:23:27 -0700 (PDT)
-X-Received: by 2002:a05:6a20:b40b:b0:3bf:b9de:854d with SMTP id adf61e73a8af0-3bfed2b3ad6mr7932404637.23.1783013007223;
-        Thu, 02 Jul 2026 10:23:27 -0700 (PDT)
-Received: from hu-manafm-hyd.qualcomm.com ([202.46.23.25])
-        by smtp.gmail.com with ESMTPSA id a92af1059eb24-13b3ececfe4sm10564289c88.8.2026.07.02.10.23.23
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 02 Jul 2026 10:23:26 -0700 (PDT)
-From: Manaf Meethalavalappu Pallikunhi <manaf.pallikunhi@oss.qualcomm.com>
-Date: Thu, 02 Jul 2026 22:52:57 +0530
-Subject: [PATCH v3 4/4] arm64: dts: qcom: glymur: Enable SPEL powercap
- driver
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="jgf4F1rX"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 266AD1F01558
+	for <linux-pm@vger.kernel.org>; Thu,  2 Jul 2026 18:48:12 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1783018092;
+	bh=BOSDrMobB0ZVHldvBgJMtIG2Yo9lUzWbeajnzMUjwWU=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc;
+	b=jgf4F1rXBmXB3IlDNjmjHmBkJnalYubKskpOuxf7GVMIP7kub2x/LHPZNXSv4hKQV
+	 LYPCW/IWn9aZy1QDlvux0AG/JuZUYSgu3hnDDPMGBHdiXdSfZfhh+6eGegrZ9u2d96
+	 //hH5t7KUZjGeq/IxDQGHJFyJFklo36H0QvmlkJv8MI44lmnMpVxtJ/C7xEhvFTcnU
+	 ZjOO2b/G1MGbS68Lg9AValFwpRcKFZODFpXgMrj5BrC5GtN9Qg1tpG8tNaN9QBaY2H
+	 S3z1R8RHmp/hwC0QwqfOipA/mydQzJnL2MT35lpjru19g7B1uJ6Z6VxhzQqPzBVUzs
+	 MRkehqNfbKjRQ==
+Received: by mail-lf1-f48.google.com with SMTP id 2adb3069b0e04-5aec5675c46so2191073e87.1
+        for <linux-pm@vger.kernel.org>; Thu, 02 Jul 2026 11:48:12 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AHgh+RqlFzCKgx7qB8ONkELOn624pfIHAIGXajiGddZCJkeBY9C+/6FLGNcY/vkeOdXOCyuPnLJfxX4Y9A==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yyqe98RgAJktIggifJbQo5INnUYrXrPJhENI+LXJwqnnqdor89D
+	Fp0D4ryCyE8kXHltjBSekFwjX2gVj91/R8FjbVU0y/ijQ37OKto2agETcGBsM5eS1f3qQcdVaYX
+	JxuidBdY1A0PYEZgNuSdGF4Jp4rkkrd8=
+X-Received: by 2002:a05:6512:290a:b0:5ae:b887:19a with SMTP id
+ 2adb3069b0e04-5aec7435728mr1365955e87.64.1783018090521; Thu, 02 Jul 2026
+ 11:48:10 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20260702-qcom_spel_driver_upstream-v3-4-434d50f0c5b0@oss.qualcomm.com>
-References: <20260702-qcom_spel_driver_upstream-v3-0-434d50f0c5b0@oss.qualcomm.com>
-In-Reply-To: <20260702-qcom_spel_driver_upstream-v3-0-434d50f0c5b0@oss.qualcomm.com>
-To: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
-        Conor Dooley <conor+dt@kernel.org>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Bjorn Andersson <andersson@kernel.org>,
-        Konrad Dybcio <konradybcio@kernel.org>,
-        Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>
-Cc: Gaurav Kohli <gaurav.kohli@oss.qualcomm.com>,
-        linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
-        Manaf Meethalavalappu Pallikunhi <manaf.pallikunhi@oss.qualcomm.com>
-X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1783012984; l=1091;
- i=manaf.pallikunhi@oss.qualcomm.com; s=20260206; h=from:subject:message-id;
- bh=f1kW0KfbOBwzfyvSB6qRsv0wRsKse0k48GBqyG+Gu0k=;
- b=wmK6qDX3jahgYWIrKjsQYC/RtdfcAAJm1MmeDtfPeAyOAiPjjOoPupWkQkcyQnN+kadpTsN9A
- OvcQXq3+n3EDEwVxHdkDs3UBzJBsu1Pj/kYJXmhPg9T20ItLaz3aIBg
-X-Developer-Key: i=manaf.pallikunhi@oss.qualcomm.com; a=ed25519;
- pk=oZ3x9jh+FDyPwxHmCbyzEMQHMzKqrH6hUbbL7dEBe2g=
-X-Proofpoint-ORIG-GUID: N8g9CTMafslHEMXXq18MrYobMPv22Jb8
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzAyMDE4MyBTYWx0ZWRfX99O7UHzSk63f
- e92rm51euZE69txijsvQmak+72VgzfqkENW1SfhMK3xzlRdCu6ucUWj4/fgAmgiM5iQ2fWlHZ5Y
- cLIpxSvlBhgUc/QgA4O+d7KQ8bktWSCwRJ0DjE9wjA2TduLrTnr8JAWGfo2htMJnVwpU3WZWf8r
- NQ7yUqKe3RPqgeWkp2wa5OiTQY6noYZ9l3M+tTJom+gLqklI5qY3YqHPRksKNElPQYBUODfb0mb
- YcjvMRx35ufsFMr/iXHglgbhTv5MpZ0WyQAI9uOggXBQBfv9kajY8WqYrTMW044WcO1oTeVWLGC
- W0HOuOZ/3htbKIrqmcoxqGPK/p7Y27s8RAiSZ1jEOmTnXDxI6zocn+ivFLm/HjOz5+P9c624pDG
- 5hc6DORoNHahr2C/vwUn+fCmOGAUUnJmyZ97Iv8woVcbwuf548SiFsXvudc9KkO1/6P8XYxvkB1
- ++VNXMmzURdhsYHLpKA==
-X-Proofpoint-GUID: N8g9CTMafslHEMXXq18MrYobMPv22Jb8
-X-Proofpoint-Spam-Info: AW1haW4tMjYwNzAyMDE4MyBTYWx0ZWRfX7/RyIXJ0jRdt
- La0eg++AFpWgvwJQ6r1E+jP6A8t+zMXqfTil/AWB8XD7JB8jmah0I2v8qSS//uiQiOC2rOYJZ8D
- Xj/+mgTVln0SeOFwo32NnfBhg/c3Tj4=
-X-Authority-Analysis: v=2.4 cv=bdFbluPB c=1 sm=1 tr=0 ts=6a469e90 cx=c_pps
- a=Oh5Dbbf/trHjhBongsHeRQ==:117 a=ZePRamnt/+rB5gQjfz0u9A==:17
- a=IkcTkHD0fZMA:10 a=RAioF0-LDSMA:10 a=s4-Qcg_JpJYA:10
- a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=yx91gb_oNiZeI1HMLzn7:22
- a=EUspDBNiAAAA:8 a=mqSRqqF8xmN81XtCacEA:9 a=QEXdDO2ut3YA:10
- a=_Vgx9l1VpLgwpw_dHYaR:22
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.125,FMLib:17.12.100.49
- definitions=2026-07-02_02,2026-06-26_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- spamscore=0 bulkscore=0 clxscore=1015 lowpriorityscore=0 phishscore=0
- priorityscore=1501 malwarescore=0 impostorscore=0 suspectscore=0 adultscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2607020183
+References: <096b42fa-107f-450d-b3b1-03bcad3f1e04@oracle.com>
+In-Reply-To: <096b42fa-107f-450d-b3b1-03bcad3f1e04@oracle.com>
+From: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
+Date: Thu, 2 Jul 2026 20:47:56 +0200
+X-Gmail-Original-Message-ID: <CAJZ5v0g+SkTxuP5fqUMisQAh19v-JzpmRZHiKtYzJH1sVt656g@mail.gmail.com>
+X-Gm-Features: AVVi8CedlYXA0cjFr29OOGiAldizVnflJnoGqgjlKD8GSDj2RqBcLRpqvDs1bNk
+Message-ID: <CAJZ5v0g+SkTxuP5fqUMisQAh19v-JzpmRZHiKtYzJH1sVt656g@mail.gmail.com>
+Subject: Re: [REGRESSION] sched/idle: Sysbench threads regression after f4c31b07b136
+To: Joseph Salisbury <joseph.salisbury@oracle.com>
+Cc: rafael.j.wysocki@intel.com, Ingo Molnar <mingo@redhat.com>, 
+	Peter Zijlstra <peterz@infradead.org>, Juri Lelli <juri.lelli@redhat.com>, 
+	Vincent Guittot <vincent.guittot@linaro.org>, Dietmar Eggemann <dietmar.eggemann@arm.com>, 
+	christian.loehle@arm.com, frederic@kernel.org, linux-pm@vger.kernel.org, 
+	LKML <linux-kernel@vger.kernel.org>, regressions@lists.linux.dev
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-The Qualcomm SoC Power and Electrical Limits (SPEL) provides hardware
-based power monitoring and limiting capabilities for various power
-domains including System, SoC, CPU clusters, GPU, and various other
-subsystems for glymur.
+Hi,
 
-Signed-off-by: Manaf Meethalavalappu Pallikunhi <manaf.pallikunhi@oss.qualcomm.com>
+On Thu, Jul 2, 2026 at 6:30=E2=80=AFPM Joseph Salisbury
+<joseph.salisbury@oracle.com> wrote:
+>
+> Hi Rafael,
+>
+> We are seeing a reproducible MySQL Sysbench threads regression.  A
+> bisect indicated the following commit as the first bad commit:
+> f4c31b07b136 ("sched: idle: Consolidate the handling of two special cases=
+")
+>
+> The regression was found in Oracle kernel performance testing on OCI VM
+> shapes:
+>
+> VM Details:
+> * VM.Standard2.1:
+>        x86 OCI VM shape, 1 OCPU / 2 hardware threads, about 14.5 GB RAM
+>
+>   * VM.Standard.A1.Flex.2:
+>        Arm/Ampere A1 flexible VM shape, 2 vCPU threads, about 10.9 GB RAM
+>
+>
+> The ResultsDB runs show the regression in the Sysbench threads metric:
+>
+>    - VM.Standard2.1:       333 -> 236  (-29.1%)
+>    - VM.Standard.A1.Flex.2: 1286 -> 1152 (-10.4%)
+>
+> A test kernel was built with f4c31b07b136 reverted and the performance
+> regression was recovered.
+>
+>  From the code, it is possible the regression is due to the new
+> previous-wakeup heuristic in the special idle cases.  Before the commit:
+>
+>    - no cpuidle driver:
+>        tick_nohz_idle_stop_tick()
+>        default_idle_call()
+>
+>    - one idle state:
+>        tick_nohz_idle_retain_tick()
+>        cpuidle state 0
+
+I think that this is your case and the tick stops for you sometimes
+now while it had never stopped before.
+
+Can you confirm?
+
+Overall, it would be good to know the idle state lists for both the VM
+and the host.
+
+> After the commit, both paths use:
+>
+>    idle_call_stop_or_retain_tick(got_tick)
+>
+> Here, got_tick is true if the CPU was woken from the previous idle-loop
+> iteration by the scheduler tick, and false otherwise. On this
+> workload/platform combination, using that previous wakeup source to
+> decide whether to stop or retain the tick appears to change NOHZ
+> behavior enough to regress this wakeup-heavy threaded workload.
+>
+> Do you have any thoughts on whether this is an expected tradeoff of the
+> new heuristic,
+
+For the second case, yes.  It is expected that stopping the tick more
+often may cause performance to drop.
+
+> or whether the special cases need a narrower condition?
+
+Let's first identify the case this happens in.
+
+> For our stable kernels, the immediate candidate fix is to revert the
+> backport, but before doing that I wanted to ask whether upstream would
+> prefer a targeted adjustment.
+>
+> I can collect additional data if useful, for example cpuidle
+> driver/state information, timer interrupt counts, idle residency, perf
+> stat, or scheduler trace data from the affected OCI shapes.
+
+So instead of reverting the commit, please try the appended change
+(modulo gmail-induced whitespace breakage).
+
 ---
- arch/arm64/boot/dts/qcom/glymur.dtsi | 10 ++++++++++
- 1 file changed, 10 insertions(+)
+ kernel/sched/idle.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/arm64/boot/dts/qcom/glymur.dtsi b/arch/arm64/boot/dts/qcom/glymur.dtsi
-index 20b49af7298e..9c942db8c824 100644
---- a/arch/arm64/boot/dts/qcom/glymur.dtsi
-+++ b/arch/arm64/boot/dts/qcom/glymur.dtsi
-@@ -5045,6 +5045,16 @@ spmi_bus2: spmi@c48000 {
- 			};
- 		};
- 
-+		power-limits@ef3b000 {
-+			compatible = "qcom,glymur-spel";
-+			reg = <0x0 0x0ef3b000 0x0 0x1000>,
-+			      <0x0 0x0ef3d000 0x0 0x1000>,
-+			      <0x0 0x0ef3e000 0x0 0x1000>;
-+			reg-names = "config",
-+				    "constraints",
-+				    "nodes";
-+		};
-+
- 		tlmm: pinctrl@f100000 {
- 			compatible = "qcom,glymur-tlmm";
- 			reg = <0x0 0x0f100000 0x0 0xf00000>;
+--- a/kernel/sched/idle.c
++++ b/kernel/sched/idle.c
+@@ -250,7 +250,7 @@ static void cpuidle_idle_call(bool stop_
+          */
+         cpuidle_reflect(dev, entered_state);
+     } else {
+-        idle_call_stop_or_retain_tick(stop_tick);
++        idle_call_stop_or_retain_tick(false);
 
--- 
-2.43.0
-
+         /*
+          * If there is only a single idle state (or none), there is
