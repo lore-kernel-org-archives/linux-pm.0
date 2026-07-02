@@ -1,368 +1,269 @@
-Received: from mail-wr1-f51.google.com (mail-wr1-f51.google.com [209.85.221.51])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5652C4A33F4
-	for <linux-pm@vger.kernel.org>; Thu,  2 Jul 2026 09:49:05 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.51
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D946747ECCE
+	for <linux-pm@vger.kernel.org>; Thu,  2 Jul 2026 09:50:56 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.180.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1782985747; cv=none; b=boOTjiSPQvBMn7R5U1joHtp5SPaRvf17Wv9dx3NsxAKQqDrJzm3xskIda2Ut+NyMmeRGLGoDJkpvvUgPifBFpZKU5ify9C8/J9ioDvS7JERzMGDIxnk83dVnbCVp/lD1MohiHypQKimV+8E/Tigu5nowWN7e98j7BH2atOJeb/0=
+	t=1782985858; cv=none; b=gcD+pBg6eRvrFJBjoNYH2iWtixyE22jtcgx+T/Y1UNVtu8N8O1Qqk1Op5y9m88VCq2AjKWaXw2Mg3i2b/nT0VCE2bFJ9wGYeEt6xg8Zys6T3wpg8UZoRLs3emPuYsjg0hf+zl6rcdulQQ/h5giSXY9pDLa1zY3lb8fzawyfapLg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1782985747; c=relaxed/simple;
-	bh=iniF0tSViInEh1MMLv25tzxSwqEs76/kr8afwqrlSZE=;
-	h=From:To:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=kHCeSfasS9IZHzmql/UFF9m3P4TI2p/OzMaLJiBiZYg3R4S9sgFaXomFuEbxsun/Oa31jqihHmtcM5XChmv9L1Ak9g/FkvMqpregDY8vC86X40y+PNYWdz5zVNw97d5e738O0AeKZ0jMqjE2/mz24z5TfUKI/onmzvhvcl1C2UA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=DT+5iPee; arc=none smtp.client-ip=209.85.221.51
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1782985858; c=relaxed/simple;
+	bh=/TKztqHNu1ktZUUR/gy9QSyGNP4CR2tBnk8ugYs17X8=;
+	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=bI5BHwfCp3xeFogpDqhKjz+5+hKnTPgjENxR/3O8Eoe14cBpRxV+KD7KPvdxZPPxtkO3nFP1mAA58lrdyYQuVdw10VtOVOINzygr3KtcvEIKGX7lSjAfNS4/nWbn1ndMoyGyUVw9BECiYjxWUeabUvUgvpC3qaqeXwNbQMYzXuQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=DPGLm/3F; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=UNMNfLKj; arc=none smtp.client-ip=205.220.180.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="DT+5iPee"
-Received: by mail-wr1-f51.google.com with SMTP id ffacd0b85a97d-471eeac43bfso1305053f8f.3
-        for <linux-pm@vger.kernel.org>; Thu, 02 Jul 2026 02:49:05 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="DPGLm/3F";
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="UNMNfLKj"
+Received: from pps.filterd (m0279871.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6628mxwx3050526
+	for <linux-pm@vger.kernel.org>; Thu, 2 Jul 2026 09:50:56 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-transfer-encoding:content-type:date:from:message-id
+	:mime-version:subject:to; s=qcppdkim1; bh=8cpCdcdxZefnhRwM4qHY15
+	IjCCDyyudibEtw9KMCnbU=; b=DPGLm/3FfdGycMLNCqw1shY4pY23ZYPyMPxcAF
+	7uwBvNnxKIc1HSuFwYUeY8JI5Wyd2jnLDfeSAH8OTsc5puxmY9aNKLgscrD7+ymy
+	v63nO34dCRW02IFZqs0AR21dh15Q3U/aUNkUdkc9Sb8dOiexa4u/8PFu3G/6Q/dm
+	2+eUHAWIPA1guizrYfWuFItQ3McSivp7qJFmPggIIjUiNsmnwnFH6MQTN/AOuKCz
+	ILhTMeX6VBUmYKu/57VZe//OVHl+FqMqagc0ci5mQwk4yCMftjbMtwJjhgzR850B
+	3HFt5MbYeJ2x+AFriYTovfV7vGjzz0VbkN8G8VmuT6BiAstA==
+Received: from mail-pf1-f198.google.com (mail-pf1-f198.google.com [209.85.210.198])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4f58k3aw99-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <linux-pm@vger.kernel.org>; Thu, 02 Jul 2026 09:50:55 +0000 (GMT)
+Received: by mail-pf1-f198.google.com with SMTP id d2e1a72fcca58-847a90cc5e2so2706202b3a.0
+        for <linux-pm@vger.kernel.org>; Thu, 02 Jul 2026 02:50:55 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1782985744; x=1783590544; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:to:from:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=uOBI/76zfymmsnLabP6yGWPMsg68pHJzFMjvw0nPsIU=;
-        b=DT+5iPeeuOJHkSLGtg8MRKj9lAs6a7R+5Mxc1a3Rg0w9/lHNoOjc+yZXRtdY3RMXAu
-         1tILxroXxVq36HJGv+sg0T6fXW6b1bRW6ZaXDT0djIK44zt5MtLGGsFea25T15TrGRcE
-         PeRBK7KQkEXHUv7l5p06GMmVhu5mXgZU1M8jrqwEnmRRdQ5iSdeh0tT8IXWD2Y00rCNB
-         4npqelzxwYWTLwyVIVR794mPPZluKEJxbnNXRpppJ4y++KeVnGHJ3QDdk+j3Eu85Cbbn
-         P069GK/vjdDNw3PkERJAmjDQSZyU6K5TWjgV5Vr/NQ+j3vWy0yaogLhoAtOTw2yBXiiV
-         hwkg==
+        d=oss.qualcomm.com; s=google; t=1782985855; x=1783590655; darn=vger.kernel.org;
+        h=cc:to:content-transfer-encoding:mime-version:message-id:date
+         :subject:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=8cpCdcdxZefnhRwM4qHY15IjCCDyyudibEtw9KMCnbU=;
+        b=UNMNfLKjizRy+JsN5jNbLq+HBsbukc+EsNwwy2nHPICRER/iXiOdElV5AF2BBs064a
+         Ru1uZJwTxgOPB/fiUglClu+hnLW9g5wb4Nyh7zDxia/DHlNRvbWl91ALjhOYk3Nvp5JS
+         ErVquqwdEFK38X0u6L96olTDbfM5grQ9hhFpmhKgBKtvwpkNqvEZXHDixpqaiW+BL/OH
+         2zWHiPxhW43jrMnALm9ZgD/5g3eye2CepOx4QwrXMcnoLT8wVpKSmURz/pKiSgGjv8FS
+         qgdSfgA6LkIOHu0nJ1Z8TSim02VDdQwdpGsxg0HMvl517lP+t7GKcUoYgAffLzpLTsaq
+         fZqw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1782985744; x=1783590544;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:to:from:x-gm-gg:x-gm-message-state:from:to
-         :cc:subject:date:message-id:reply-to;
-        bh=uOBI/76zfymmsnLabP6yGWPMsg68pHJzFMjvw0nPsIU=;
-        b=GnN4utoG0Fxh9XffSAUT+R2ncPlx8sXZWeMvVCNbVK2Xy/alJ54fTfIqjAY3aKdnyT
-         972VlwHLbgZ/hboninNkJMWOQO/uIpL57ztI1AWfVS9gn0x49x206xqPM6LJyqMiPO9L
-         l1uAzFMzmWOo5EI1hNtqc4N54BiQdKtspMJyU9459/zWm3x5V3WNo6xCsEv9EWXYfTWg
-         y7tedxoAN0sOYTaKXR4NWQ2bB2CJLCw60HejceAHvJKs8TNsUO/tciN80W9mfzoXf/Uv
-         llkuDkDv3ZibDCCqaoo+I7TBg56FEQ38YDqEA96dj1u2tnEVj9CczOW0Mg4eeRSBLGuK
-         yCZA==
-X-Forwarded-Encrypted: i=1; AHgh+Ro6ADbx7Ry4At2MU7FNjhbGKFmW41i0E+Wim/UWTy77oZnMopHk6zwhZjlYP/3V+kPYKUGaENYP1g==@vger.kernel.org
-X-Gm-Message-State: AOJu0YwKYmz12xcWeC6+eSBFUbKr+r+xnDrSYmc9hVDuMyvvcUmaC/i+
-	Vz5SUIEBh9MpygL34qQ9DH/PTX2BITyI30PR2ev/MJAF8HpcDw5PMkTA
-X-Gm-Gg: AfdE7cnduamz/GBT4sqc7+Kowsp30j9k5TiIPxbxO+MZF17gJz1rNadM3S2B8em1p2F
-	cEC5D0fMkRFajlUQ/yt1MUz+oyOnvMJZXL2ITgebDFNQDkcuubi06Lozh3mmfm++e+KxbMCKLnk
-	tMe6cBVZ5LgmiYtr6Apsl3ZYAEkWXWBMWmKiUAUdbBAG+mWNN7R8D6kPzdEMlf3bmFei1xbF4qX
-	qMPNPqnHAq5upmd1GgOtZpKMDtVHYxvNzDpXJZW6GY0YhN5jenf4hrEJmTxQR88HDOHNcKqMMqk
-	jbpnPWft5wz0eVOYzs+o8dT1fa5wqT3ZwsBK9QiDkfYh7OZVEND+JmFWLnMaOaNa0G6mMJW46r5
-	WASgo9IUoD/fTg3pC8033AsRR4rGxflms/2fPn6SvnTrR5HfkV2P8uWov/rVXzWagLANoFRPR66
-	hd32y+gJ3dpbqro7UENxpb/qnqdL6oVAARRynQnT6oMeHM7Ela2FT+fkaCr+w5DQ65ABD99MkbQ
-	IXyCmd3PC9GE37J
-X-Received: by 2002:a05:6000:2506:b0:475:69ce:ac4a with SMTP id ffacd0b85a97d-4775a100fc5mr8013251f8f.33.1782985743675;
-        Thu, 02 Jul 2026 02:49:03 -0700 (PDT)
-Received: from Ansuel-XPS24.localdomain (host-79-52-250-217.retail.telecomitalia.it. [79.52.250.217])
-        by smtp.googlemail.com with ESMTPSA id ffacd0b85a97d-477dbe617b1sm7381364f8f.16.2026.07.02.02.49.02
+        d=1e100.net; s=20251104; t=1782985855; x=1783590655;
+        h=cc:to:content-transfer-encoding:mime-version:message-id:date
+         :subject:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=8cpCdcdxZefnhRwM4qHY15IjCCDyyudibEtw9KMCnbU=;
+        b=RqHDAvQjqqXRrIWabdsGSrlScgE8jLW3Cyxj1AfH2iPcBDhFKrMNlPc85X7grJAJ+h
+         9Wj4HCJMfDfZpwx1SAriIvZWXH3XHjBaRpCPGuQf9Tv/q/leXxpaZ7WSPlINIhasWxbt
+         oPGfQA9jrrxwy1ucrAHdHUKp8FTXafNuN5cHmmb3gI0GqUhGPZY3CM3ZeIVaT7T/Q7KZ
+         WlpRn4PJI9FuIMrjq6+gf7VuzNADDqiZdFfEKzVvBF0OhBXt7YhJIegoCm1DXrY6eyLk
+         A78FP6oKW+AOyRH8qqW12qLxVNwNGB/1RXZ8T+9DBIepPM0QuzpXJdqXaP/eEFzq8exp
+         mW9g==
+X-Forwarded-Encrypted: i=1; AHgh+RqgxaH1P4/YCi+vVEWFBGx55av+Lfq03FS+NCQkRana9gjDjiM9yxNDJV2Vk+HhcUH6JFaEo2Tg5g==@vger.kernel.org
+X-Gm-Message-State: AOJu0YyXVft7xhHzr8pY2d5dTdX3xy3DKObsivY4qJB7C/YyyqXB2+cw
+	zLYdWS/37S6oY8ddaQtLAjiv5L2meWMRvIkX+dN67s3MR7URJNRPCIeg/u8LiqfB3qRkNZWXkMi
+	+Oz2L1M9w9HpZ+yuY8ZNiS5RKOI5BaCo6cnSYrnPlkbueuxCVDadmh8wHq0dc8A==
+X-Gm-Gg: AfdE7cllOoWPzWyaFN7DwR1/A0CZWydR6krlt5dExN6M4vmsuwkzNdcyXaE6yTk9tCE
+	wIez+79sA1CXnoeA7RhJe2qgly1SkigQK0aIz09815k69xDo9BUwNf2/fHgr5ULlGlSIwC70w37
+	q9pLocBZiiZA+dYsTeoMrm3QHVn9cXjQipK5xgnVWOhQ+03heGkWdFK2iHazReK61a7F2c2+2sz
+	MxRvYoIw1DNl9VWQ4jSJhoZtlv3FrbjkzFncaLSbaQxLLb2bOrORzhjbuuvbANoFvtj+BZTxiCo
+	UjvA1I5GHjl1/SkQ1bYkZLWPSLTc8POV3Mf9UtaighhkBaA7Txa9nXR73PnLq3emV6S4F5oaWP2
+	NnXUs8yPjg3f5xdheOP/TMX+vww==
+X-Received: by 2002:aa7:9309:0:b0:847:759e:f617 with SMTP id d2e1a72fcca58-847c0a3c9b1mr5338762b3a.44.1782985854742;
+        Thu, 02 Jul 2026 02:50:54 -0700 (PDT)
+X-Received: by 2002:aa7:9309:0:b0:847:759e:f617 with SMTP id d2e1a72fcca58-847c0a3c9b1mr5338727b3a.44.1782985854140;
+        Thu, 02 Jul 2026 02:50:54 -0700 (PDT)
+Received: from [10.213.101.118] ([202.46.23.25])
+        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-847cb78ee2esm1110051b3a.24.2026.07.02.02.50.46
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 02 Jul 2026 02:49:03 -0700 (PDT)
-From: Christian Marangi <ansuelsmth@gmail.com>
-To: Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	"Rafael J. Wysocki" <rafael@kernel.org>,
-	Daniel Lezcano <daniel.lezcano@kernel.org>,
-	Zhang Rui <rui.zhang@intel.com>,
-	Lukasz Luba <lukasz.luba@arm.com>,
-	Christian Marangi <ansuelsmth@gmail.com>,
-	Lorenzo Bianconi <lorenzo@kernel.org>,
-	devicetree@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	linux-pm@vger.kernel.org
-Subject: [PATCH v6 7/7] thermal/drivers: airoha: Add support for AN7583 Thermal Sensor
-Date: Thu,  2 Jul 2026 11:48:35 +0200
-Message-ID: <20260702094846.17325-8-ansuelsmth@gmail.com>
-X-Mailer: git-send-email 2.53.0
-In-Reply-To: <20260702094846.17325-1-ansuelsmth@gmail.com>
-References: <20260702094846.17325-1-ansuelsmth@gmail.com>
+        Thu, 02 Jul 2026 02:50:53 -0700 (PDT)
+From: Komal Bajaj <komal.bajaj@oss.qualcomm.com>
+Subject: [PATCH v5 00/11] arm64: dts: qcom: Extend Shikra device tree with
+ peripheral and subsystem support
+Date: Thu, 02 Jul 2026 15:20:42 +0530
+Message-Id: <20260702-shikra-dt-m1-v5-0-f911ac92720c@oss.qualcomm.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-B4-Tracking: v=1; b=H4sIAHM0RmoC/3XQ24rCMBAG4Fcpud5ITpMmvdr3WBbJUYPW1qaWX
+ cR331hdLKI3AxP4v8zMGeUwpJBRU53REKaUU3coDXxUyG3NYRNw8qVHjDBJgAHO27QbDPYjbik
+ mivnguGKhjqhE+iHE9DNzX9+3fgjHU1HH2+MDbaqZFEz/kxvn8NC3pbr9LmNGtAg+xsgtaSZAy
+ 4nuYWDiHl6HPuf1nmNgzMQgolURmom/TFG62MLX4HUtQEghm0leA9bkgF3XtmlsKhmUAOtsrZw
+ GEzWHMhcRxPoyneOOWel9rQS67rtNeeyG3/maE50Xfn24qdwOR6BGK668Neazy3l1PJn99d9VK
+ bM3sYXByZPBiiGtBUUJB0/5G4M/DEnok8GLQWLgUXkdnFBvDLE01JMhisEoFZwQ0MLIF8blcvk
+ DJ/4zU2sCAAA=
+X-Change-ID: 20260525-shikra-dt-m1-082dec382e7f
+To: Vinod Koul <vkoul@kernel.org>, Frank Li <Frank.Li@kernel.org>,
+        Rob Herring <robh@kernel.org>,
+        Krzysztof Kozlowski <krzk+dt@kernel.org>,
+        Conor Dooley <conor+dt@kernel.org>,
+        Krzysztof Kozlowski <krzk@kernel.org>,
+        Georgi Djakov <djakov@kernel.org>,
+        Bjorn Andersson <andersson@kernel.org>,
+        Konrad Dybcio <konradybcio@kernel.org>
+Cc: linux-arm-msm@vger.kernel.org, dmaengine@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-pm@vger.kernel.org, Komal Bajaj <komal.bajaj@oss.qualcomm.com>,
+        Sayantan Chakraborty <sayantan.chakraborty@oss.qualcomm.com>,
+        Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>,
+        Xueyao An <xueyao.an@oss.qualcomm.com>,
+        Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>,
+        Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>,
+        Aastha Pandey <aastha.pandey@oss.qualcomm.com>,
+        Imran Shaik <imran.shaik@oss.qualcomm.com>,
+        Raviteja Laggyshetty <raviteja.laggyshetty@oss.qualcomm.com>,
+        Vishnu Santhosh <vishnu.santhosh@oss.qualcomm.com>,
+        Bibek Kumar Patro <bibek.patro@oss.qualcomm.com>,
+        Gaurav Kohli <gaurav.kohli@oss.qualcomm.com>,
+        Miaoqing Pan <miaoqing.pan@oss.qualcomm.com>,
+        Yepuri Siddu <yepuri.siddu@oss.qualcomm.com>,
+        Anurag Pateriya <apateriy@qti.qualcomm.com>
+X-Mailer: b4 0.14.3
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1782985846; l=5256;
+ i=komal.bajaj@oss.qualcomm.com; s=20250710; h=from:subject:message-id;
+ bh=/TKztqHNu1ktZUUR/gy9QSyGNP4CR2tBnk8ugYs17X8=;
+ b=JwNdPb7c1TDbauwuBbqidoMvDkPs5n/FHUjbTztorGYWWIwGueFoKU+EHhfYXZT/yBXSwEn74
+ IncyjbtosJAB+vRi1hfQTfSELNqqUBkgYvc+rqHBF7Mw4jokZOPVYhF
+X-Developer-Key: i=komal.bajaj@oss.qualcomm.com; a=ed25519;
+ pk=wKh8mgDh+ePUZ4IIvpBhQOqf16/KvuQHvSvHK20LXNU=
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzAyMDEwMSBTYWx0ZWRfX3ut1q73QCsFi
+ hNgtOCQNeOl13yNONK7ATkUTzOYiRfeN+43iDFC8Yralc+phxRKXzW4o6WsVf5uVl3cpjGSnx7K
+ X+gU+36YO1RpuSWmssXt4wplssUgGD8sK571ICbsme6fDJxtwMrWdTyEJ5lfbxNbd21HAkSX1HS
+ cUxTMltZg9xxt4lyrt21Mua7+ul3HW0qEaUvRQ9KDFZ5Z4X2l61rbJuQa0QvMFPJt5Fs0hc1w//
+ yCbr2OAV7REotJMp7DJW+qGMiXshSPzPDAnC2uQBU9BdU7yCesC3CwYR1HXT7DWyuR5M3S2VKGe
+ fwO56oJnSMEkiySHg5OAPDHmwEnwixi2z1WiSvOlLL4RV7AsSZ2EWSx3sLtYLiMScGxlQwr2AB/
+ lWmMA4EOXgFQaE4QqGmxThfol3YhwaQimxLoZcwzCJo302ZmqcdugCvS5vkbLHaYmJua9zMM2Z5
+ JJie+ZaVtpHds9RG19A==
+X-Authority-Analysis: v=2.4 cv=SuGgLvO0 c=1 sm=1 tr=0 ts=6a46347f cx=c_pps
+ a=m5Vt/hrsBiPMCU0y4gIsQw==:117 a=ZePRamnt/+rB5gQjfz0u9A==:17
+ a=IkcTkHD0fZMA:10 a=RAioF0-LDSMA:10 a=s4-Qcg_JpJYA:10
+ a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=3WHJM1ZQz_JShphwDgj5:22
+ a=VwQbUJbxAAAA:8 a=EUspDBNiAAAA:8 a=FrY2Icr_-yWe-lCAmnUA:9 a=QEXdDO2ut3YA:10
+ a=IoOABgeZipijB_acs4fv:22
+X-Proofpoint-Spam-Info: AW1haW4tMjYwNzAyMDEwMSBTYWx0ZWRfXwepRqxFcVqpL
+ hgrPKWmXjwdQNXbytkul8CyqtbNLx7DUiJIptZ3sJVIJzUyFva5wqBnt8uPlvfs3w6Sp8ICuaFo
+ 9XvB0l7rJintYqhveCQWqVM7qiP6EZs=
+X-Proofpoint-ORIG-GUID: BF37tXbqFwKMq1_t228FGC1d5kp2uK3Q
+X-Proofpoint-GUID: BF37tXbqFwKMq1_t228FGC1d5kp2uK3Q
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.125,FMLib:17.12.100.49
+ definitions=2026-07-02_01,2026-06-26_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501 spamscore=0 adultscore=0 impostorscore=0 phishscore=0
+ malwarescore=0 suspectscore=0 bulkscore=0 clxscore=1015 lowpriorityscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2607020101
 
-Add support for Airoha AN7583 Thermal driver. This apply similar logic
-on how to read the temperature but totally drop support for the
-PTP_THERMAL subsystem. PTP_THERMAL subsystem was a way to trigger trip
-point from hardware by configuring how to read the temperature
-internally.
+Extend Shikra DT with peripheral and subsystem support across all SoM
+variants (CQ2390M, CQ2390S, IQ2390S) and their EVK boards.
 
-This subsystem has been totally removed from Airoha AN7583 permitting
-only to read the temperature.
+The series adds:
 
-The SoC support up to 3 sensor but the original driver always read the
-BGA sensor hence it's currently implemented reading only this specific
-sensor. Reference and values for the other 2 sensor are defined for
-further implementation if confirmed working.
+- QUPv3 serial engine configuration
+- cpufreq-hw node for hardware-assisted CPU frequency scaling
+- DDR bandwidth monitor (BWMONv5) nodes with OPP tables for dynamic
+  DDR frequency scaling
+- EPSS L3 interconnect provider node for L3 cache frequency scaling
+- CPU OPP tables to drive DDR and L3 scaling per frequency domain
+- SMP2P nodes for CDSP, modem and LMCU inter-processor signalling
+- Remoteproc PAS nodes for CDSP, LPAICP and MPSS subsystems
+- TSENS instance with 14 thermal sensors and thermal zone definitions
+- Bluetooth (WCN3988) node with board-specific regulator supplies on
+  all three EVK variants
+- WiFi node in the SoC DTSI with board-specific power supply and
+  calibration variant selection on all three EVK variants
+- Gpio-reserved-ranges to tlmm to mark GPIOs used by the SoC
+  internally and not available for general use
 
-set_thermal_mux() is extended to also address muxing the sensor as
-AN7583 use a different way to read the temperature from 3 different
-diode. The EN7581 code is updated to account for these changes.
+This series depends on:
+- https://lore.kernel.org/all/20260612-shikra-dt-v6-0-6b6cb58db477@oss.qualcomm.com/
+- https://lore.kernel.org/all/20260524-shikra_epss_l3-v1-0-b1528a436134@oss.qualcomm.com/
+- https://lore.kernel.org/linux-clk/20260608-shikra-gcc-rpmcc-clks-v5-0-94cefe092ee3@oss.qualcomm.com/
 
-Signed-off-by: Christian Marangi <ansuelsmth@gmail.com>
+Signed-off-by: Komal Bajaj <komal.bajaj@oss.qualcomm.com>
 ---
- drivers/thermal/airoha_thermal.c | 161 ++++++++++++++++++++++++++++++-
- 1 file changed, 157 insertions(+), 4 deletions(-)
+Changes in v5:
+- Split the WiFi hardware description into a separate shikra.dtsi patch (Konrad)
+- Moved common WCN3988 PMU, Bluetooth and WiFi properties into
+  shikra-evk.dtsi, leaving board files with board-specific supplies and
+  status updates (Konrad)
+- Added missing CPU OPP entries for 768 MHz and 2208 MHz
+- Added gpio-reserved-ranges for TLMM on CQM, CQS and IQS EVK boards
+- Collected tags fron Dmitry and Konrad
+- Link to v4: https://lore.kernel.org/r/20260608-shikra-dt-m1-v4-0-2114300594a6@oss.qualcomm.com
 
-diff --git a/drivers/thermal/airoha_thermal.c b/drivers/thermal/airoha_thermal.c
-index 249abbbd46bc..c84b5c36e880 100644
---- a/drivers/thermal/airoha_thermal.c
-+++ b/drivers/thermal/airoha_thermal.c
-@@ -18,6 +18,12 @@
- #define EN7581_DOUT_TADC			0x2f8
- #define   EN7581_DOUT_TADC_MASK			GENMASK(15, 0)
- 
-+#define AN7583_MUX_SENSOR			0x2a0
-+#define   AN7583_LOAD_ADJ			GENMASK(3, 2)
-+#define AN7583_MUX_TADC				0x2e4
-+#define   AN7583_MUX_TADC_MASK			GENMASK(3, 1)
-+#define AN7583_DOUT_TADC			0x2f0
-+
- /* PTP_THERMAL regs */
- #define EN7581_TEMPMONCTL0			0x800
- #define   EN7581_SENSE3_EN			BIT(3)
-@@ -181,6 +187,11 @@
- #define EN7581_SCU_THERMAL_PROTECT_KEY		0x12
- #define EN7581_SCU_THERMAL_MUX_DIODE1		0x7
- 
-+#define AN7583_SCU_THERMAL_PROTECT_KEY		0x80
-+#define AN7583_NUM_SENSOR			3
-+
-+#define AIROHA_THERMAL_NO_MUX_SENSOR		-1
-+
- /* Convert temp to raw value as read from ADC	((((temp / 100) - init) * slope) / 1000) + offset */
- #define TEMP_TO_RAW(priv, temp)			((((((temp) / 100) - (priv)->init_temp) * \
- 						  (priv)->default_slope) / 1000) + \
-@@ -193,8 +204,39 @@
- 
- #define AIROHA_MAX_SAMPLES			6
- 
-+/*
-+ * AN7583 supports all these ADC mux but the original driver
-+ * always checked temp with the AN7583_BGP_TEMP_SENSOR.
-+ * Assume using the other sensor temperature is invalid and
-+ * always read from AN7583_BGP_TEMP_SENSOR.
-+ *
-+ * On top of this it's defined that AN7583 supports 3
-+ * sensor: AN7583_BGP_TEMP_SENSOR, AN7583_GBE_TEMP_SENSOR,
-+ * AN7583_CPU_TEMP_SENSOR.
-+ *
-+ * Provide the ADC mux for reference.
-+ */
-+enum an7583_thermal_adc_mux {
-+	AN7583_BGP_TEMP_SENSOR,
-+	AN7583_PAD_AVS,
-+	AN7583_CORE_POWER,
-+	AN7583_AVSDAC_OUT,
-+	AN7583_VCM,
-+	AN7583_GBE_TEMP_SENSOR,
-+	AN7583_CPU_TEMP_SENSOR,
-+
-+	AN7583_ADC_MUX_MAX,
-+};
-+
-+enum an7583_thermal_diode_mux {
-+	AN7583_D0_TADC,
-+	AN7583_ZERO_TADC,
-+	AN7583_D1_TADC,
-+};
-+
- enum airoha_thermal_chip_scu_field {
- 	AIROHA_THERMAL_DOUT_TADC,
-+	AIROHA_THERMAL_MUX_SENSOR,
- 	AIROHA_THERMAL_MUX_TADC,
- 
- 	/* keep last */
-@@ -208,6 +250,7 @@ struct airoha_thermal_priv {
- 	struct resource scu_adc_res;
- 
- 	u32 pllrg_protect;
-+	int current_adc;
- 
- 	struct thermal_zone_device *tz;
- 	int init_temp;
-@@ -224,6 +267,24 @@ struct airoha_thermal_soc_data {
- 	int (*post_probe)(struct platform_device *pdev);
- };
- 
-+static const unsigned int an7583_thermal_coeff[AN7583_ADC_MUX_MAX] = {
-+	[AN7583_BGP_TEMP_SENSOR] = 973,
-+	[AN7583_GBE_TEMP_SENSOR] = 995,
-+	[AN7583_CPU_TEMP_SENSOR] = 1035,
-+};
-+
-+static const unsigned int an7583_thermal_slope[AN7583_ADC_MUX_MAX] = {
-+	[AN7583_BGP_TEMP_SENSOR] = 7440,
-+	[AN7583_GBE_TEMP_SENSOR] = 7620,
-+	[AN7583_CPU_TEMP_SENSOR] = 8390,
-+};
-+
-+static const unsigned int an7583_thermal_offset[AN7583_ADC_MUX_MAX] = {
-+	[AN7583_BGP_TEMP_SENSOR] = 294,
-+	[AN7583_GBE_TEMP_SENSOR] = 298,
-+	[AN7583_CPU_TEMP_SENSOR] = 344,
-+};
-+
- static int airoha_get_thermal_ADC(struct airoha_thermal_priv *priv)
- {
- 	u32 val;
-@@ -234,7 +295,7 @@ static int airoha_get_thermal_ADC(struct airoha_thermal_priv *priv)
- }
- 
- static void airoha_set_thermal_mux(struct airoha_thermal_priv *priv,
--				   int tdac_idx)
-+				   int tdac_idx, int sensor_idx)
- {
- 	u32 pllrg;
- 
-@@ -245,9 +306,20 @@ static void airoha_set_thermal_mux(struct airoha_thermal_priv *priv,
- 	regmap_write(priv->chip_scu, EN7581_PLLRG_PROTECT,
- 		     priv->pllrg_protect);
- 
-+	/*
-+	 * Configure Thermal Sensor mux to sensor_idx.
-+	 * (if not supported, sensor_idx is AIROHA_THERMAL_NO_MUX_SENSOR)
-+	 */
-+	if (sensor_idx != AIROHA_THERMAL_NO_MUX_SENSOR)
-+		regmap_field_write(priv->chip_scu_fields[AIROHA_THERMAL_MUX_SENSOR],
-+				   sensor_idx);
-+
- 	/* Configure Thermal ADC mux to tdac_idx */
--	regmap_field_write(priv->chip_scu_fields[AIROHA_THERMAL_MUX_TADC],
--			   tdac_idx);
-+	if (priv->current_adc != tdac_idx) {
-+		regmap_field_write(priv->chip_scu_fields[AIROHA_THERMAL_MUX_TADC],
-+				   tdac_idx);
-+		priv->current_adc = tdac_idx;
-+	}
- 
- 	/* Restore PLLRG value on exit */
- 	regmap_write(priv->chip_scu, EN7581_PLLRG_PROTECT, pllrg);
-@@ -361,7 +433,8 @@ static void en7581_thermal_setup_adc_val(struct device *dev,
- 	u32 cpu_sensor = 0;
- 
- 	/* Setup Thermal Sensor to ADC mode and setup the mux to DIODE1 */
--	airoha_set_thermal_mux(priv, EN7581_SCU_THERMAL_MUX_DIODE1);
-+	airoha_set_thermal_mux(priv, EN7581_SCU_THERMAL_MUX_DIODE1,
-+			       AIROHA_THERMAL_NO_MUX_SENSOR);
- 
- 	regmap_read(priv->map, EN7581_EFUSE_TEMP_OFFSET_REG, &efuse_calib_info);
- 	if (efuse_calib_info) {
-@@ -477,6 +550,10 @@ static int en7581_thermal_probe(struct platform_device *pdev,
- 	for (i = 0; i < AIROHA_THERMAL_FIELD_MAX; i++) {
- 		struct regmap_field *field;
- 
-+		/* Skip registering MUX_SENSOR field as not supported */
-+		if (i == AIROHA_THERMAL_MUX_SENSOR)
-+			continue;
-+
- 		field = devm_regmap_field_alloc(dev, priv->chip_scu,
- 						en7581_chip_scu_fields[i]);
- 		if (IS_ERR(field)) {
-@@ -519,6 +596,74 @@ static int en7581_thermal_post_probe(struct platform_device *pdev)
- 	return 0;
- }
- 
-+static int an7583_thermal_get_temp(struct thermal_zone_device *tz, int *temp)
-+{
-+	struct airoha_thermal_priv *priv = thermal_zone_device_priv(tz);
-+	int sensor_idx;
-+	int delta_diode, delta_gain;
-+	int coeff, slope, offset;
-+
-+	int diode_zero, diode_d0, diode_d1;
-+
-+	/* Always read sensor AN7583_BGP_TEMP_SENSOR */
-+	sensor_idx = AN7583_BGP_TEMP_SENSOR;
-+
-+	coeff = an7583_thermal_coeff[sensor_idx];
-+	slope = an7583_thermal_slope[sensor_idx];
-+	offset = an7583_thermal_offset[sensor_idx];
-+
-+	airoha_set_thermal_mux(priv, AN7583_ZERO_TADC, sensor_idx);
-+	diode_zero = airoha_get_thermal_ADC(priv);
-+	airoha_set_thermal_mux(priv, AN7583_D0_TADC, sensor_idx);
-+	diode_d0 = airoha_get_thermal_ADC(priv);
-+	airoha_set_thermal_mux(priv, AN7583_D1_TADC, sensor_idx);
-+	diode_d1 = airoha_get_thermal_ADC(priv);
-+
-+	delta_diode = diode_d1 - diode_d0;
-+	delta_gain = (delta_diode * coeff) / 100 + (diode_zero - diode_d1);
-+	if (!delta_gain)
-+		return -EINVAL;
-+
-+	*temp = (slope * delta_diode * 10) / delta_gain - offset * 10;
-+	*temp *= 100;
-+
-+	return 0;
-+}
-+
-+static const struct thermal_zone_device_ops an7583_tz_ops = {
-+	.get_temp = an7583_thermal_get_temp,
-+};
-+
-+static const struct reg_field an7583_chip_scu_fields[AIROHA_THERMAL_FIELD_MAX] = {
-+	[AIROHA_THERMAL_DOUT_TADC] = REG_FIELD(AN7583_DOUT_TADC, 0, 31),
-+	[AIROHA_THERMAL_MUX_TADC] = REG_FIELD(AN7583_MUX_TADC, 1, 3),
-+	[AIROHA_THERMAL_MUX_SENSOR] = REG_FIELD(AN7583_MUX_SENSOR, 2, 3),
-+};
-+
-+static int an7583_thermal_probe(struct platform_device *pdev,
-+				struct airoha_thermal_priv *priv)
-+{
-+	struct device *dev = &pdev->dev;
-+	int i;
-+
-+	priv->chip_scu = device_node_to_regmap(dev->of_node);
-+	if (IS_ERR(priv->chip_scu))
-+		return PTR_ERR(priv->chip_scu);
-+
-+	for (i = 0; i < AIROHA_THERMAL_FIELD_MAX; i++) {
-+		struct regmap_field *field;
-+
-+		field = devm_regmap_field_alloc(dev, priv->chip_scu,
-+						an7583_chip_scu_fields[i]);
-+		if (IS_ERR(field))
-+			return PTR_ERR(field);
-+
-+		priv->chip_scu_fields[i] = field;
-+	}
-+
-+	return 0;
-+}
-+
- static int airoha_thermal_probe(struct platform_device *pdev)
- {
- 	const struct airoha_thermal_soc_data *soc_data;
-@@ -533,6 +678,7 @@ static int airoha_thermal_probe(struct platform_device *pdev)
- 		return -ENOMEM;
- 
- 	priv->pllrg_protect = soc_data->pllrg_protect;
-+	priv->current_adc = -1;
- 
- 	if (!soc_data->probe)
- 		return -EINVAL;
-@@ -561,8 +707,15 @@ static const struct airoha_thermal_soc_data en7581_data = {
- 	.post_probe = &en7581_thermal_post_probe,
- };
- 
-+static const struct airoha_thermal_soc_data an7583_data = {
-+	.pllrg_protect = AN7583_SCU_THERMAL_PROTECT_KEY,
-+	.thdev_ops = &an7583_tz_ops,
-+	.probe = &an7583_thermal_probe,
-+};
-+
- static const struct of_device_id airoha_thermal_match[] = {
- 	{ .compatible = "airoha,en7581-thermal", .data = &en7581_data },
-+	{ .compatible = "airoha,an7583-chip-scu", .data = &an7583_data },
- 	{},
- };
- MODULE_DEVICE_TABLE(of, airoha_thermal_match);
+Changes in v4:
+- Updated commit message for first commit of the series (Krzysztof)
+- Collected tags from Dmitry and Krzysztof
+- Updated wifi fimmware name (Dmitry)
+- Link to v3: https://lore.kernel.org/r/20260601-shikra-dt-m1-v3-0-0fe3f8d9ec48@oss.qualcomm.com
+
+Changes in v3:
+- Add missing interrupt affinity cell (0) to GPI DMA interrupts
+- Link to v2: https://lore.kernel.org/r/20260530-shikra-dt-m1-v2-0-6bb581035d13@oss.qualcomm.com
+
+Changes in v2:
+- Collected Reviewed-By tags from Dmitry and Konrad
+- Squashed cpufreq_hw, EPSS and OPP tables into single commit (Dmitry)
+- Removed labels from CPU OPP table entries (Dmitry)
+- Squashed CQM, CQS and IQS remoteproc-enable patches into one commit (Dmitry)
+- Added WCN3988 PMU support (Dmitry)
+- Squashed Bluetooth and Wifi changes into one commit (Dmitry)
+- Link to v1: https://lore.kernel.org/r/20260525-shikra-dt-m1-v1-0-f51a9838dbaa@oss.qualcomm.com
+
+---
+Bibek Kumar Patro (2):
+      arm64: dts: qcom: shikra: Add CDSP, LPAICP, MPSS remoteproc PAS nodes
+      arm64: dts: qcom: shikra: Enable CDSP, LPAICP and MPSS on EVK boards
+
+Gaurav Kohli (1):
+      arm64: dts: qcom: shikra: Enable TSENS and thermal zones
+
+Komal Bajaj (4):
+      arm64: dts: qcom: shikra: Add cpufreq-hw, EPSS L3 interconnect and OPP tables
+      arm64: dts: qcom: shikra: add WiFi node support
+      arm64: dts: qcom: shikra: Enable Bluetooth and WiFi on EVK boards
+      arm64: dts: qcom: shikra: Add gpio-reserved-ranges to tlmm
+
+Sayantan Chakraborty (2):
+      dt-bindings: interconnect: qcom-bwmon: Add Shikra cpu-bwmon compatible
+      arm64: dts: qcom: shikra: Add DDR BWMON support
+
+Vishnu Santhosh (1):
+      arm64: dts: qcom: shikra: Add SMP2P nodes
+
+Xueyao An (1):
+      arm64: dts: qcom: Add QUPv3 configuration for Shikra
+
+ .../bindings/interconnect/qcom,msm8998-bwmon.yaml  |    1 +
+ arch/arm64/boot/dts/qcom/shikra-cqm-evk.dts        |   41 +
+ arch/arm64/boot/dts/qcom/shikra-cqs-evk.dts        |   41 +
+ arch/arm64/boot/dts/qcom/shikra-evk.dtsi           |   61 +
+ arch/arm64/boot/dts/qcom/shikra-iqs-evk.dts        |   49 +
+ arch/arm64/boot/dts/qcom/shikra.dtsi               | 1682 +++++++++++++++++++-
+ 6 files changed, 1861 insertions(+), 14 deletions(-)
+---
+base-commit: 6e845bcb78c95af935094040bd4edc3c2b6dd784
+change-id: 20260525-shikra-dt-m1-082dec382e7f
+prerequisite-change-id: 20260429-shikra-gcc-rpmcc-clks-2094edfff3b0:v5
+prerequisite-patch-id: 59bb0a7828e41f546f734f127d81da83c0adcda9
+prerequisite-patch-id: 197da6bcb15cadc47869dba88c8020987b25c335
+prerequisite-patch-id: 8ec9c1eb03f052ae232ed54117abed38672c23f6
+prerequisite-patch-id: 350db4f4bcdfc0fad9ed57cd5b1723f85ad44f5d
+prerequisite-change-id: 20260524-shikra_epss_l3-522afe4fb8f5:v3
+prerequisite-patch-id: b5d7f75df02fde56181f576a936baf09d0a72276
+prerequisite-patch-id: 3ce52e07ae57139c2e2b71a29ed7d7250f6fcc87
+prerequisite-change-id: 20260511-shikra-dt-d75d97454646:v6
+prerequisite-patch-id: 3a689e8dda5fd2755b689d94d095806b3f2e6eed
+prerequisite-patch-id: ac83151a889855498d36288ddd36216d451340c8
+prerequisite-patch-id: 2357cac636e019eaf14d6a493a1c72bca56fe405
+prerequisite-patch-id: 2885f299e711582da312ca9d13983d296a3dd5dc
+prerequisite-patch-id: 91af5f3c01e766a53ce8de69aa21847a2d6bbbf8
+
+Best regards,
 -- 
-2.53.0
+Komal Bajaj <komal.bajaj@oss.qualcomm.com>
 
