@@ -1,57 +1,57 @@
 Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.14])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0C68326F2B0;
-	Thu,  2 Jul 2026 08:22:37 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0007B388E42;
+	Thu,  2 Jul 2026 08:23:44 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.14
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1782980559; cv=none; b=BwtSsfF0DVfd6OeT22MgfcH9mYf8N2uSuP3aD2sH3QaEqD/tNKIrI9NnxnDZc/fHiPZU3LwCLn1T3gNKCCPYg5uGCOJj5qdkpYgzYb2vTAJaqrA3kKG/TUBQ4zuKssQ2Qya704+FEFSC8armcAB1lQYgLK2mnwFJDe4QE0jpWpg=
+	t=1782980627; cv=none; b=um+RRCj97lKGOgNnsqV0aMGJLZmlwN42zafMyFFyZVhkzbPvK8Kmk3M2VrrXqrB0icNvhTkC61rA8MjRJjj7vcTp9jz+tLwbMt9T0rg0m4IwTb+LTTauP/8svoxRJpCiWpjnHBa+ECfRgjAs6dku7PWkt/mKvMbhdA9MfgguAe0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1782980559; c=relaxed/simple;
-	bh=3ZiaoBYTE1XKneTOvu3IasubXv8IsiAnV3Gi5fN37eM=;
-	h=Date:From:To:Cc:Subject:Message-ID; b=L5kmOBvW/xLDq95TiC631+OqTKaoBLC4urWJIgQfen4tqrP3di4YAIc2jQuBnSwRBm4Z+EmPRNEMjvep1z0KUoq2f23ZTNvF7gntbe6vqILj27/hHgVB8W3ht7U4esGsIsFxM0lF4c/l2mzu6sSXlEtJusBFELi/1bmKL017qHU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=Cjzf8k+c; arc=none smtp.client-ip=198.175.65.14
+	s=arc-20240116; t=1782980627; c=relaxed/simple;
+	bh=Yliexb29amWu9d0qO9A2zWcs0L3824xqM3D5SJJyzjo=;
+	h=Date:From:To:Cc:Subject:Message-ID; b=obbfAFkJyXu/+E+r53m6g0KoVyZO3UnWiMmTREYbI7zr6ShSF01KTqakKyBcKlYLnT7ZMXtrA3MorYfiFPAPaw3CWLl6w9TdCqEMEguW/Gxy/bQyKzwkTEbqzTl/Pe+CvUgpnd8w+TOZEpfwEeQbKgSJs1/e4VPu8ltY5XD+EuU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=W8EIzTUV; arc=none smtp.client-ip=198.175.65.14
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="Cjzf8k+c"
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="W8EIzTUV"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1782980558; x=1814516558;
+  t=1782980625; x=1814516625;
   h=date:from:to:cc:subject:message-id;
-  bh=3ZiaoBYTE1XKneTOvu3IasubXv8IsiAnV3Gi5fN37eM=;
-  b=Cjzf8k+cSJlEsgrFka4cRfi43g7cF6O4zF/OER8bHTmKZ2MjquszwExU
-   ZgCcdiHSE8nIcEGSZh6FSUzo5Y7Bkw64letXrGbcDRWjFTy1InYh972Yg
-   ria9h580y+k/bNUrTP2L9hMPZLbLwLrRzioq2spDeynYIEOCThIQv6yCK
-   vzURxAm0AWIoKsKqHfICDa3tuPWIs07HTjJ3q7ZbJT+18gho+1VfBW5io
-   gkvlvIhYkFb9qFg6GueEzcGWvLQabCJJ7Ojs+7TAA2Ka1MayLcvSCgpjG
-   89rBAE/MzyA0+E+/PuL0X6UxcndnO40OL0RhTJgfpe7TelMcU7DLSlxck
-   g==;
-X-CSE-ConnectionGUID: LZtz+yKrTAeSyR0iNz+/Qw==
-X-CSE-MsgGUID: SrOKHYFPTq+zjvQroUNaww==
-X-IronPort-AV: E=McAfee;i="6800,10657,11834"; a="87642189"
+  bh=Yliexb29amWu9d0qO9A2zWcs0L3824xqM3D5SJJyzjo=;
+  b=W8EIzTUVTwgF0A1Vo3921K4K4jUH446J/U33xszR36XvkVJaGYHk9hbU
+   MNnSVyP6eGw54EYXE19I1ei9xSKECX4pyiJtIcePMByuF4VHyBNO80dJv
+   xsWb+1DGfXy1rq9GJvCqYbkywpt6N+DaP8cId35QC1cX7xUBcDvSDFOuP
+   VGDqqLYklBfCO7nPEiypzWSw1lgvW46+aZq5rDJ/Y2HFMQaLQhwGELLSZ
+   rtbnd/GvHoC80iHSOTXlCiCpNuMxIzO2DShhhuEYY5w7bnVARzf1Y9zrR
+   ibGJ7OhQBxNLfUmoJ5uSy09K1EOnx9Ls1/D6K/o0XCxjwyzrFWc34jbYq
+   w==;
+X-CSE-ConnectionGUID: M+ADM9/pRUqz6j+QVQc5fw==
+X-CSE-MsgGUID: IqsWqr7OQpWHHQKdwgb+Eg==
+X-IronPort-AV: E=McAfee;i="6800,10657,11834"; a="87642463"
 X-IronPort-AV: E=Sophos;i="6.25,143,1779174000"; 
-   d="scan'208";a="87642189"
+   d="scan'208";a="87642463"
 Received: from fmviesa001.fm.intel.com ([10.60.135.141])
-  by orvoesa106.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 02 Jul 2026 01:22:37 -0700
-X-CSE-ConnectionGUID: Oce6k+nGQbWCVOZF/NGkzA==
-X-CSE-MsgGUID: i+NTvaI4R4eWIVdBL3YvIA==
+  by orvoesa106.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 02 Jul 2026 01:23:42 -0700
+X-CSE-ConnectionGUID: XoZB61M5Ss6XJ6daGOnmLQ==
+X-CSE-MsgGUID: OIfbOr7bSoe78N6PveAyuA==
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="6.25,143,1779174000"; 
-   d="scan'208";a="277122457"
+   d="scan'208";a="277122646"
 Received: from lkp-server02.sh.intel.com (HELO ea128546eb3d) ([10.239.97.151])
-  by fmviesa001.fm.intel.com with ESMTP; 02 Jul 2026 01:22:35 -0700
+  by fmviesa001.fm.intel.com with ESMTP; 02 Jul 2026 01:23:40 -0700
 Received: from kbuild by ea128546eb3d with local (Exim 4.98.2)
 	(envelope-from <lkp@intel.com>)
-	id 1wfCgM-00000000AWj-1JZR;
-	Thu, 02 Jul 2026 08:22:03 +0000
-Date: Thu, 02 Jul 2026 16:21:04 +0800
+	id 1wfChu-00000000AWz-2PNi;
+	Thu, 02 Jul 2026 08:23:38 +0000
+Date: Thu, 02 Jul 2026 16:23:11 +0800
 From: kernel test robot <lkp@intel.com>
 To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
 Cc: linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org
-Subject: [rafael-pm:bleeding-edge] BUILD SUCCESS
- 91b846502260d8fd819a8d6be0a59b7ef009f448
-Message-ID: <202607021653.gH9Uawdk-lkp@intel.com>
+Subject: [rafael-pm:fixes] BUILD SUCCESS
+ 643f7cad721ddb66d254cb5a480671d37e8f2b0b
+Message-ID: <202607021600.jdzPBkBV-lkp@intel.com>
 User-Agent: s-nail v14.9.25
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
@@ -59,12 +59,12 @@ List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git bleeding-edge
-branch HEAD: 91b846502260d8fd819a8d6be0a59b7ef009f448  Merge branch 'experimental/acpi-driver-work' into bleeding-edge
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git fixes
+branch HEAD: 643f7cad721ddb66d254cb5a480671d37e8f2b0b  Merge branch 'acpica' into fixes
 
-elapsed time: 736m
+elapsed time: 738m
 
-configs tested: 190
+configs tested: 194
 configs skipped: 2
 
 The following configs have been built successfully.
@@ -80,6 +80,7 @@ arc                              allyesconfig    clang-23
 arc                                 defconfig    gcc-16.1.0
 arc                   randconfig-001-20260702    gcc-8.5.0
 arc                   randconfig-002-20260702    gcc-8.5.0
+arm                               allnoconfig    clang-17
 arm                               allnoconfig    gcc-16.1.0
 arm                              allyesconfig    clang-23
 arm                                 defconfig    gcc-16.1.0
@@ -100,11 +101,13 @@ csky                                defconfig    gcc-16.1.0
 csky                  randconfig-001-20260702    gcc-15.2.0
 csky                  randconfig-002-20260702    gcc-15.2.0
 hexagon                          allmodconfig    gcc-16.1.0
+hexagon                           allnoconfig    clang-23
 hexagon                           allnoconfig    gcc-16.1.0
 hexagon                             defconfig    gcc-16.1.0
 hexagon               randconfig-001-20260702    clang-23
 hexagon               randconfig-002-20260702    clang-23
 i386                             allmodconfig    clang-22
+i386                              allnoconfig    gcc-14
 i386                              allnoconfig    gcc-16.1.0
 i386                             allyesconfig    clang-22
 i386        buildonly-randconfig-001-20260702    clang-22
@@ -129,6 +132,7 @@ i386                  randconfig-015-20260702    clang-22
 i386                  randconfig-016-20260702    clang-22
 i386                  randconfig-017-20260702    clang-22
 loongarch                        allmodconfig    clang-23
+loongarch                         allnoconfig    clang-20
 loongarch                         allnoconfig    gcc-16.1.0
 loongarch                           defconfig    clang-23
 loongarch                loongson32_defconfig    clang-18
