@@ -1,87 +1,66 @@
-Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-ej1-f48.google.com (mail-ej1-f48.google.com [209.85.218.48])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5589128CF6F
-	for <linux-pm@vger.kernel.org>; Thu,  2 Jul 2026 10:59:45 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C60A73DCDA2
+	for <linux-pm@vger.kernel.org>; Thu,  2 Jul 2026 11:03:58 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.218.48
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1782989986; cv=none; b=EOTU13415vC2t71DJDrgM58K/52toHmvPnUUa3BGaDD04guYr7fEKJTBgYzry8VvQK8ido7LWKbtWZX/iR1qQ04C1CAajVQmbuU+gn74R+u3rRfqaDAErVZrRzYAHv7sNK7hLNzUkSdQtA4BPP4SaLJjIWVybOl43tw3ozqIxYM=
+	t=1782990240; cv=none; b=bcJixS7mPpDSS1/LXSdSOWJ92bKd0mcVHEQOvYFpKodFKi2GgW5tlu57ZKPM167sjPH9vTzvzDAr33nHW0BoBWaSrn0cUBZan1LkBwUpNurOrgiX1mGU536bKOerCygU2TkTFXaVSYJ72KXGmu8tjpDhm/CLOmfMidJb8n3m9Ek=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1782989986; c=relaxed/simple;
-	bh=VyTdXY+0+wvH6hvhv1k6KwriSQSnFo9Ih756l2s+Zfo=;
+	s=arc-20240116; t=1782990240; c=relaxed/simple;
+	bh=rLAZ6xjWSh4dBeXXx+Zm/8773z7w6ApW8uj4atG+Tbg=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=o4/xn7EtbSVoVsmUA23V+JKvxs2xQB9QaCXZoSpj+BvFNou6/7xo3AmQp+TCYAzQ5nb9XqZwcf7+6KmPJiAtKImsHjnx/7aOP2DoyBwv7WayDWzoZb+gP7yt2giBvR9PlwVAvsyvgGAIpaaSj1cNrbed3WK7P6ljinXywGcEyXQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=gZaEZfuL; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=dSPoTcVi; arc=none smtp.client-ip=205.220.168.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
+	 In-Reply-To:Content-Type; b=Q/lJMGNHUJJ9++7Pdc/7xiE5Yas007DQtnrlzrpUidLBVaC0JstqvZ7Vl/AX/OrLm8+bD/qrFK/+O3BsJbgDCxb1u22p53OT2g3kiSY6BxyMtgb0nc9WHwb3UjKLf/FoN5eVb5wxWtnMa2htCAF3sGYxewcfWX1Z3d6gkP9DYhA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com; spf=pass smtp.mailfrom=suse.com; dkim=pass (2048-bit key) header.d=suse.com header.i=@suse.com header.b=CQtIQbwU; arc=none smtp.client-ip=209.85.218.48
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="gZaEZfuL";
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="dSPoTcVi"
-Received: from pps.filterd (m0279865.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6628sTa34172791
-	for <linux-pm@vger.kernel.org>; Thu, 2 Jul 2026 10:59:44 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	T8l303crY05X0SOko3/98TvkP+K410TeNXuDoKahb7U=; b=gZaEZfuLBvPGVhEJ
-	IW/rB2RpgDRswRjdoN26w+mpsSW3GAaL6dR521F9K4XwGtVMMRwE5lXPHlz6nBaT
-	oN9YIPvYYxrkBoO3mmqcAM+octSyx4ehBOwZhiUsdyJHFpjOnop3JaBFis8mYGcc
-	hteKyzXGrkuzjR4qU3zQqdN8oHBh5VyUq3HS0Tvw8iugeGsdkldzGSEO2FfxtA+5
-	PhTT5zfTGKTiIUpDxWwBffTfO28fdG1PO9AR5TXixz2LRX2l/3AZO8S7S/hbyD7a
-	ljC/wOdy48nMUW6uFC32oseN9mnfVNlxBwb/8lMBRJ4lA/4r+HEZ8as0tfMcaiT+
-	WH9qeg==
-Received: from mail-qt1-f197.google.com (mail-qt1-f197.google.com [209.85.160.197])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4f5mvwrfc8-1
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Thu, 02 Jul 2026 10:59:44 +0000 (GMT)
-Received: by mail-qt1-f197.google.com with SMTP id d75a77b69052e-51c21be5bb4so8372681cf.0
-        for <linux-pm@vger.kernel.org>; Thu, 02 Jul 2026 03:59:44 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=suse.com header.i=@suse.com header.b="CQtIQbwU"
+Received: by mail-ej1-f48.google.com with SMTP id a640c23a62f3a-c0e124d2a21so208672366b.2
+        for <linux-pm@vger.kernel.org>; Thu, 02 Jul 2026 04:03:58 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1782989984; x=1783594784; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:in-reply-to:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=T8l303crY05X0SOko3/98TvkP+K410TeNXuDoKahb7U=;
-        b=dSPoTcViJJE91Q4C6VrV7ujzJH10P0/enhNGjfTEAYs4LE4m/d4B8grexpAy7AOkqo
-         rnZr0KMY4o5BJIG0fG7IRi1GJYzKcEAJCrl4UFv/yU9Qqp70y8z5dFbGEMeBgWFlylLZ
-         5rpNvShp3zd0E5RjvLwbSDfNyo5hfvjzfEqE6m0HZxs+4hLZQj/wr3O0gA2+PStgfcyy
-         ziTVqgTZIbcx4jyfSlQFuXpxPMmgpL1daN6ElPAQuvAyO2JHk0ra6sFpki8rYRxztgWx
-         etlGkEOthe8utfjxqd2xhgMCQ936LK5h8UDPStbY9EHdaYpm2E1xrzzoWn8WTe2qD8mk
-         OT0Q==
+        d=suse.com; s=google; t=1782990237; x=1783595037; darn=vger.kernel.org;
+        h=in-reply-to:autocrypt:from:content-language:references:cc:to
+         :subject:user-agent:mime-version:date:message-id:from:to:cc:subject
+         :date:message-id:reply-to;
+        bh=rLAZ6xjWSh4dBeXXx+Zm/8773z7w6ApW8uj4atG+Tbg=;
+        b=CQtIQbwUA2gmUAfSK5sVmy/UlaASADFwvd3fAgg6um2Y2ZRToSvYV4IsWCVTtQnixd
+         7xa6LNwIFmvGzW6vrGOzex3KQwMhR8+ckf+/WvdAEllWL/7ge/qwjcjEx9kigp/B0uUv
+         Y0sq05+ePF1u+zZ4ORf6LPo6hUgMNP8MpanzQXsLrybGO67QGwLZgihiNzs5B7c7NDmS
+         PYmluEXkNahBXlHQMHUSrRQQXlL2ALaNn08woxLMBnkzzoupXJvhefSj1QVS4rIpEzXD
+         WyfHLJ/wHC78z2G8jrx5jGSIA531ygYs6w8QBK9sL7MSejsfXblnZm6959Jpw9xVib6A
+         YFSw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1782989984; x=1783594784;
-        h=content-transfer-encoding:content-type:in-reply-to:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=T8l303crY05X0SOko3/98TvkP+K410TeNXuDoKahb7U=;
-        b=AK5OVbpbQ5eMXCAD1sHuv08T5UkdFtzKllPCXG44Kydc4lZW/smfRVuODHavdOdDmi
-         vn2zdBj5W5fM66GQAvWOcPJo7yEMW45Tw0GchsYHawm19zhGqN+p8YRcL4s6ouPxJhqS
-         DuqWbzCC4HJPLSKq8lmgSMf7BbqoLF+zW5HOfzY8IPBohRCJSfn3+Z04RlXt5Or4aAmX
-         +4FIUKDUT4QIcPYf3L5xnuc6PjFJbeSq9z4I6gqSBsC+qCs+uK7KfKBrtSPe1W7+Ha0f
-         r/7DERggkzePhZctu9z/SygmhnV+t9HN+SwvjLbALCHKsxaOwl/dLaGcCckbr1SbcRjQ
-         YU/g==
-X-Forwarded-Encrypted: i=1; AFNElJ81ZsriJLZMF5KoCKd9tA3iPreDk2mR6W410Q/v6Simb+/SvpMVcGlZNOa3Y5ppUHmrTs840fKjVg==@vger.kernel.org
-X-Gm-Message-State: AOJu0YwayaBbcqXYRtDCnhjK8I17Zx1Zp/CGl8dcpbskM3kQxxVFWsxd
-	iKXbLUobCiKPuEbI+25g4edwXzC65xdmqbk/2HfLet+u8xY9Y3BI1dE9KbUr5QL8tfqvsTaW/PN
-	Cy4LqLh54lBRU3JDMrsP7qMcW8N0EFDMSYcqCx9KLRw+gOLW8c/x5ASyE1qhS1A==
-X-Gm-Gg: AfdE7cl2oNQ3LgFO9eSpY2QRrRFtE3IvRbCOcH12jPsOL24VIZ8m+DhmVwmgaLZO0D+
-	HXX2G7Gs03Pj8OLEugBYctDPH/WfxHjvhki4ZyZsxgYlY5j8tWYL1fWM1B3cSNJkrfmNjLamlqU
-	rnsUCOqODByWSfNF2XxEg1I3vGLSBaIszflPjXq74mntsAkMygdGDnD43FziPkKeVqxavPtGtMf
-	314x7ql6w4IYLE7o91gjU6EPAClAtf0tXXchjKcYv53z1DZobW42/uHM27sZQEZ9cNACYzxKXG8
-	gifBTaE0t/ZWz5fsOglExUqNInyaUAwOMYZ/EYuyxImKy9xByXSYz76dEO0dq2QuvlUejiJShI/
-	1CcY0BsM8PqHCv8hn7pYiRvoqZQ7aaHfmCmE=
-X-Received: by 2002:a05:622a:3d4:b0:51b:ff1a:3d80 with SMTP id d75a77b69052e-51c26b07996mr51310271cf.7.1782989983704;
-        Thu, 02 Jul 2026 03:59:43 -0700 (PDT)
-X-Received: by 2002:a05:622a:3d4:b0:51b:ff1a:3d80 with SMTP id d75a77b69052e-51c26b07996mr51310141cf.7.1782989983368;
-        Thu, 02 Jul 2026 03:59:43 -0700 (PDT)
-Received: from [192.168.120.170] ([178.235.128.140])
-        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-c12b6290972sm112872666b.41.2026.07.02.03.59.39
+        d=1e100.net; s=20251104; t=1782990237; x=1783595037;
+        h=in-reply-to:autocrypt:from:content-language:references:cc:to
+         :subject:user-agent:mime-version:date:message-id:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=rLAZ6xjWSh4dBeXXx+Zm/8773z7w6ApW8uj4atG+Tbg=;
+        b=qomtKyO92w6CNqgA4jjX4wVKiP2jYcHQXcqKqxcZyGpxfCE4CB3YZa17z2o9psFYbV
+         9+sfj5o8r1edUWQ+/X/PN90FMuNqlj2lREpusmJYJM6N+3ThAyHXEMPLuJ1MP5bliSLm
+         pVd5Utwb4ZZEBjbVblYCL6MSudKw5DbcjIZJVBGQfOvDMWwfDVf8askxR8OWCdBaP65v
+         LPZ8DwUJde9oXxIA+Xq5XGESQS9DvHX1Fr88/nu3pgLLoYDCUg0+5iGVRU+ork0ErdTx
+         J6y3/TAc181gMFw6LZ/d5TQRxB84uVvX2tdtfGIaM7Q/ki/lO6uRoL7uMyl3bnSPf9PU
+         wLEg==
+X-Forwarded-Encrypted: i=1; AHgh+RovTDmgTCdHv7yeJVexFO57j+/6ZCJPipy6e7rVb+HIE0s7HwGQAespqrlwQ7ahiqiaXEAVguD1mA==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yy5M9A+dLp7OpUax9DSQWOohXTpAiqZXJuMwhHYo8NNKGHCHCHX
+	hbOoWlEr/zFluVcmQXP3hUO5pC5l3aMEN7UDnE8Y33G1ANXoiYjmDHGpncESZlDYo9w=
+X-Gm-Gg: AfdE7ckluid+M6UdMwVPPg+sdoLw+WTMApNs2zULQJz0U1Ix0ioR0HRaYNI4XdNE1aV
+	FwqwIHnED6CwV6umlvAXuE4TK+BEhNUKy1w88uMlj8p2HPkUVJaDF6OAoyxpx6SJY3xeuJJIuqh
+	qIbSidk1W0em9DDo68AtdovJeWDKqE1ZOlTct9IvZCqTqinu34NNGbb3rHVOfhXtR1lvOcEMnkG
+	s4Vk3EE3x9cpxt1YqMy+S1wksglJ3YcemAH9g74QhqmY00XPANPLY1BYwat8nQG0qZ/ilrj0vfk
+	pKysN1Dmv/tnqINdVY5B3SJHgrvI+Ldqc8kex/7x77OKWpE0M2ijIVGIT3NNWz2zbJqD5KFN8hZ
+	SYjT49L2GgfmmFZLkql95iO0sYwRt+GU1/12oEcEQsjvCHBxNILhuS7ne4qZpwvOmnldZGhoWjE
+	RxMAB+zGwsNeWSVAAUN39OQIXFhrTdhdsgJQq8yXzdTUe8llU6pD65TKgRVsDfvjjdR3+1x7TpE
+	enWjYYHrd65DTykIDboyUVMe0M4v9sCJ0OeCI1nFv8=
+X-Received: by 2002:a17:907:e14b:10b0:c12:3143:864f with SMTP id a640c23a62f3a-c12ae47556cmr180127966b.2.1782990234377;
+        Thu, 02 Jul 2026 04:03:54 -0700 (PDT)
+Received: from ?IPV6:2a00:12d0:af5d:ad01:5d3f:14e6:9bcb:5112? (2a00-12d0-af5d-ad01-5d3f-14e6-9bcb-5112.ip.tng.de. [2a00:12d0:af5d:ad01:5d3f:14e6:9bcb:5112])
+        by smtp.gmail.com with ESMTPSA id 4fb4d7f45d1cf-698acf25f4dsm809220a12.8.2026.07.02.04.03.52
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Thu, 02 Jul 2026 03:59:41 -0700 (PDT)
-Message-ID: <0ac50f09-8a62-4735-99e3-b8e632621ed5@oss.qualcomm.com>
-Date: Thu, 2 Jul 2026 12:59:38 +0200
+        Thu, 02 Jul 2026 04:03:53 -0700 (PDT)
+Message-ID: <99228803-b8b7-47a3-b77c-6fdf3b785730@suse.com>
+Date: Thu, 2 Jul 2026 13:03:52 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -89,86 +68,296 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v5 10/11] arm64: dts: qcom: shikra: Enable Bluetooth and
- WiFi on EVK boards
-To: Komal Bajaj <komal.bajaj@oss.qualcomm.com>, Vinod Koul
- <vkoul@kernel.org>,
-        Frank Li <Frank.Li@kernel.org>, Rob Herring <robh@kernel.org>,
-        Krzysztof Kozlowski <krzk+dt@kernel.org>,
-        Conor Dooley <conor+dt@kernel.org>,
-        Krzysztof Kozlowski <krzk@kernel.org>,
-        Georgi Djakov <djakov@kernel.org>,
-        Bjorn Andersson <andersson@kernel.org>,
-        Konrad Dybcio <konradybcio@kernel.org>
-Cc: linux-arm-msm@vger.kernel.org, dmaengine@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-pm@vger.kernel.org, Yepuri Siddu <yepuri.siddu@oss.qualcomm.com>,
-        Miaoqing Pan <miaoqing.pan@oss.qualcomm.com>,
-        Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>
-References: <20260702-shikra-dt-m1-v5-0-f911ac92720c@oss.qualcomm.com>
- <20260702-shikra-dt-m1-v5-10-f911ac92720c@oss.qualcomm.com>
+Subject: Re: [PATCH 00/32] x86/msr: Drop 32-bit MSR interfaces
+To: Ingo Molnar <mingo@kernel.org>, Sean Christopherson <seanjc@google.com>
+Cc: Arnd Bergmann <arnd@arndb.de>, linux-kernel@vger.kernel.org,
+ linux-pm@vger.kernel.org,
+ "linux-edac@vger.kernel.org" <linux-edac@vger.kernel.org>, x86@kernel.org,
+ linux-acpi@vger.kernel.org, kvm@vger.kernel.org, linux-coco@lists.linux.dev,
+ linux-pci@vger.kernel.org, virtualization@lists.linux.dev,
+ linux-ide@vger.kernel.org, dri-devel@lists.freedesktop.org,
+ linux-fbdev@vger.kernel.org, linux-crypto@vger.kernel.org,
+ "open list:GPIO SUBSYSTEM" <linux-gpio@vger.kernel.org>,
+ linux-hyperv@vger.kernel.org, linux-hwmon@vger.kernel.org,
+ linux-perf-users@vger.kernel.org, linux-mtd@lists.infradead.org,
+ platform-driver-x86@vger.kernel.org, "Rafael J . Wysocki"
+ <rafael@kernel.org>, Daniel Lezcano <daniel.lezcano@kernel.org>,
+ Zhang Rui <rui.zhang@intel.com>, "lukasz.luba@arm.com"
+ <lukasz.luba@arm.com>, Jason Baron <jbaron@akamai.com>,
+ Borislav Petkov <bp@alien8.de>, Tony Luck <tony.luck@intel.com>,
+ Yazen Ghannam <yazen.ghannam@amd.com>, Len Brown <lenb@kernel.org>,
+ Pavel Machek <pavel@kernel.org>, Thomas Gleixner <tglx@kernel.org>,
+ Ingo Molnar <mingo@redhat.com>, Dave Hansen <dave.hansen@linux.intel.com>,
+ "H. Peter Anvin" <hpa@zytor.com>, Paolo Bonzini <pbonzini@redhat.com>,
+ "Kirill A. Shutemov" <kas@kernel.org>,
+ Rick Edgecombe <rick.p.edgecombe@intel.com>, Pu Wen <puwen@hygon.cn>,
+ Bjorn Helgaas <bhelgaas@google.com>, Ajay Kaher <ajay.kaher@broadcom.com>,
+ Alexey Makhalov <alexey.makhalov@broadcom.com>,
+ Broadcom internal kernel review list
+ <bcm-kernel-feedback-list@broadcom.com>,
+ Viresh Kumar <viresh.kumar@linaro.org>,
+ Reinette Chatre <reinette.chatre@intel.com>,
+ Dave Martin <Dave.Martin@arm.com>, James Morse <james.morse@arm.com>,
+ Babu Moger <babu.moger@amd.com>, Tony W Wang-oc <TonyWWang-oc@zhaoxin.com>,
+ Damien Le Moal <dlemoal@kernel.org>, Niklas Cassel <cassel@kernel.org>,
+ Dave Airlie <airlied@redhat.com>, Helge Deller <deller@gmx.de>,
+ linux-geode@lists.infradead.org, Olivia Mackall <olivia@selenic.com>,
+ Herbert Xu <herbert@gondor.apana.org.au>, Linus Walleij <linusw@kernel.org>,
+ Bartosz Golaszewski <brgl@kernel.org>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ "K. Y. Srinivasan" <kys@microsoft.com>,
+ Haiyang Zhang <haiyangz@microsoft.com>, Wei Liu <wei.liu@kernel.org>,
+ Dexuan Cui <decui@microsoft.com>, Long Li <longli@microsoft.com>,
+ Guenter Roeck <linux@roeck-us.net>, Peter Zijlstra <peterz@infradead.org>,
+ Arnaldo Carvalho de Melo <acme@kernel.org>,
+ Namhyung Kim <namhyung@kernel.org>, Mark Rutland <mark.rutland@arm.com>,
+ Alexander Shishkin <alexander.shishkin@linux.intel.com>,
+ Jiri Olsa <jolsa@kernel.org>, Ian Rogers <irogers@google.com>,
+ Adrian Hunter <adrian.hunter@intel.com>, James Clark
+ <james.clark@linaro.org>, Josh Poimboeuf <jpoimboe@kernel.org>,
+ Pawan Gupta <pawan.kumar.gupta@linux.intel.com>,
+ Vitaly Kuznetsov <vkuznets@redhat.com>, Andy Lutomirski <luto@kernel.org>,
+ Boris Ostrovsky <boris.ostrovsky@oracle.com>, Huang Rui <ray.huang@amd.com>,
+ Mario Limonciello <mario.limonciello@amd.com>,
+ Perry Yuan <perry.yuan@amd.com>, K Prateek Nayak <kprateek.nayak@amd.com>,
+ "srinivas.pandruvada@linux.intel.com" <srinivas.pandruvada@linux.intel.com>,
+ Artem Bityutskiy <artem.bityutskiy@linux.intel.com>,
+ Artem Bityutskiy <dedekind1@gmail.com>,
+ Miquel Raynal <miquel.raynal@bootlin.com>,
+ Richard Weinberger <richard@nod.at>, Vignesh Raghavendra <vigneshr@ti.com>,
+ Ashok Raj <ashok.raj.linux@gmail.com>, Hans de Goede <hansg@kernel.org>,
+ =?UTF-8?Q?Ilpo_J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>,
+ Rajneesh Bhardwaj <irenic.rajneesh@gmail.com>,
+ David E Box <david.e.box@intel.com>, xen-devel@lists.xenproject.org
+References: <20260629060526.3638272-1-jgross@suse.com>
+ <d7c1db52-529a-43cc-ac7d-38b52627e8bc@app.fastmail.com>
+ <c1608c48-13c2-4290-826b-28b5ca51eaf7@suse.com>
+ <7332feff-2649-496c-8e49-b0a19eb54a32@app.fastmail.com>
+ <akJUz0kYkEBdLSZ3@gmail.com> <akQR9YMtMHReJTfB@google.com>
+ <akY4U0jUZm4HOGZ_@gmail.com>
 Content-Language: en-US
-From: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
-In-Reply-To: <20260702-shikra-dt-m1-v5-10-f911ac92720c@oss.qualcomm.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-Proofpoint-GUID: 0XtJn7YQ9eiIQMxyTwnRYlxnQtl4Cz1Q
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzAyMDExNCBTYWx0ZWRfX1UZuPdXS2c1u
- PSut75LVQIchooYIfe91wH688vw30CjuY33ym+jdqVcDdl0xZlJOoW1L4I7FPlaPKcttlzqIXVj
- Yo+CQZPZwQxBQMJ69zsxgSvExLwrvGqYdtQJQHpRL5m5gY/UUushOsWZrO4+Bhdq3K39Scu5sQp
- 4WbMWkkyyKEnshw73X/XKz4rklb8hGLvBI1CKlizpRIu27O2nuALHmpQJuefEHHw+ezX2dcwZjn
- coZw5mHVu+Jr5tfX7ryPoW7wbr+MJEc82kMdFzJJL/plipwVObNAF62m7RnBrPLq1HSzzdCu7XQ
- DqUdu1JaBRzRtPntEE9G+7TIamjpOj91cefESdfPDEA+s0f4//aA2f/g7j375bOVbBIGk4Sfyf7
- bYXTAwwy0i73Arkuvtl1XHGFEEmR+Vel7rQvqr+hCRzRbZjr4/0HkgSMpQqn97fGRjrafZEGM1I
- CFCCDOUQ5+a6B5VE5kQ==
-X-Proofpoint-Spam-Info: AW1haW4tMjYwNzAyMDExNCBTYWx0ZWRfXwQbXMXFBI6KT
- LL7MB6n1FokuWpRsKSc2FNSlm7efedQT+srWlGYwyGFAaJonFflX+eFHlWZcG+4BpWbLgomjO3x
- AR8VUvcHt28f5baYj7qrArVOn0xZ4N0=
-X-Authority-Analysis: v=2.4 cv=N+UZ0W9B c=1 sm=1 tr=0 ts=6a4644a0 cx=c_pps
- a=EVbN6Ke/fEF3bsl7X48z0g==:117 a=PRfkaYvzSr8QmIIGAkY2Sg==:17
- a=IkcTkHD0fZMA:10 a=RAioF0-LDSMA:10 a=s4-Qcg_JpJYA:10
- a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=Um2Pa8k9VHT-vaBCBUpS:22
- a=pm3H3U3sixV8GkyNLbAA:9 a=QEXdDO2ut3YA:10 a=a_PwQJl-kcHnX1M80qC6:22
-X-Proofpoint-ORIG-GUID: 0XtJn7YQ9eiIQMxyTwnRYlxnQtl4Cz1Q
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.125,FMLib:17.12.100.49
- definitions=2026-07-02_01,2026-06-26_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- impostorscore=0 lowpriorityscore=0 clxscore=1015 bulkscore=0 spamscore=0
- priorityscore=1501 phishscore=0 adultscore=0 malwarescore=0 suspectscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2607020114
+From: Juergen Gross <jgross@suse.com>
+Autocrypt: addr=jgross@suse.com; keydata=
+ xsBNBFOMcBYBCACgGjqjoGvbEouQZw/ToiBg9W98AlM2QHV+iNHsEs7kxWhKMjrioyspZKOB
+ ycWxw3ie3j9uvg9EOB3aN4xiTv4qbnGiTr3oJhkB1gsb6ToJQZ8uxGq2kaV2KL9650I1SJve
+ dYm8Of8Zd621lSmoKOwlNClALZNew72NjJLEzTalU1OdT7/i1TXkH09XSSI8mEQ/ouNcMvIJ
+ NwQpd369y9bfIhWUiVXEK7MlRgUG6MvIj6Y3Am/BBLUVbDa4+gmzDC9ezlZkTZG2t14zWPvx
+ XP3FAp2pkW0xqG7/377qptDmrk42GlSKN4z76ELnLxussxc7I2hx18NUcbP8+uty4bMxABEB
+ AAHNH0p1ZXJnZW4gR3Jvc3MgPGpncm9zc0BzdXNlLmNvbT7CwHkEEwECACMFAlOMcK8CGwMH
+ CwkIBwMCAQYVCAIJCgsEFgIDAQIeAQIXgAAKCRCw3p3WKL8TL8eZB/9G0juS/kDY9LhEXseh
+ mE9U+iA1VsLhgDqVbsOtZ/S14LRFHczNd/Lqkn7souCSoyWsBs3/wO+OjPvxf7m+Ef+sMtr0
+ G5lCWEWa9wa0IXx5HRPW/ScL+e4AVUbL7rurYMfwCzco+7TfjhMEOkC+va5gzi1KrErgNRHH
+ kg3PhlnRY0Udyqx++UYkAsN4TQuEhNN32MvN0Np3WlBJOgKcuXpIElmMM5f1BBzJSKBkW0Jc
+ Wy3h2Wy912vHKpPV/Xv7ZwVJ27v7KcuZcErtptDevAljxJtE7aJG6WiBzm+v9EswyWxwMCIO
+ RoVBYuiocc51872tRGywc03xaQydB+9R7BHPzsBNBFOMcBYBCADLMfoA44MwGOB9YT1V4KCy
+ vAfd7E0BTfaAurbG+Olacciz3yd09QOmejFZC6AnoykydyvTFLAWYcSCdISMr88COmmCbJzn
+ sHAogjexXiif6ANUUlHpjxlHCCcELmZUzomNDnEOTxZFeWMTFF9Rf2k2F0Tl4E5kmsNGgtSa
+ aMO0rNZoOEiD/7UfPP3dfh8JCQ1VtUUsQtT1sxos8Eb/HmriJhnaTZ7Hp3jtgTVkV0ybpgFg
+ w6WMaRkrBh17mV0z2ajjmabB7SJxcouSkR0hcpNl4oM74d2/VqoW4BxxxOD1FcNCObCELfIS
+ auZx+XT6s+CE7Qi/c44ibBMR7hyjdzWbABEBAAHCwF8EGAECAAkFAlOMcBYCGwwACgkQsN6d
+ 1ii/Ey9D+Af/WFr3q+bg/8v5tCknCtn92d5lyYTBNt7xgWzDZX8G6/pngzKyWfedArllp0Pn
+ fgIXtMNV+3t8Li1Tg843EXkP7+2+CQ98MB8XvvPLYAfW8nNDV85TyVgWlldNcgdv7nn1Sq8g
+ HwB2BHdIAkYce3hEoDQXt/mKlgEGsLpzJcnLKimtPXQQy9TxUaLBe9PInPd+Ohix0XOlY+Uk
+ QFEx50Ki3rSDl2Zt2tnkNYKUCvTJq7jvOlaPd6d/W0tZqpyy7KVay+K4aMobDsodB3dvEAs6
+ ScCnh03dDAFgIq5nsB11j3KPKdVoPlfucX2c7kGNH+LUMbzqV6beIENfNexkOfxHfw==
+In-Reply-To: <akY4U0jUZm4HOGZ_@gmail.com>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature";
+ boundary="------------WjZXb44KsATEDkDSufWy2bKk"
 
-On 7/2/26 11:50 AM, Komal Bajaj wrote:
-> Enable Bluetooth and WiFi connectivity on Shikra CQM, CQS and IQS
-> EVK boards using the WCN3988 combo chip.
-> 
-> For Bluetooth, enable uart8 and add WCN3988 Bluetooth node with
-> board-specific regulator supplies across CQM, CQS and IQS Shikra
-> EVK boards.
-> 
-> For WiFi, enable per-board with the appropriate PMIC supply
-> connections and calibration variant selection.
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--------------WjZXb44KsATEDkDSufWy2bKk
+Content-Type: multipart/mixed; boundary="------------o2fircZpb09tU1GMO2GxqgPd";
+ protected-headers="v1"
+From: Juergen Gross <jgross@suse.com>
+To: Ingo Molnar <mingo@kernel.org>, Sean Christopherson <seanjc@google.com>
+Cc: Arnd Bergmann <arnd@arndb.de>, linux-kernel@vger.kernel.org,
+ linux-pm@vger.kernel.org,
+ "linux-edac@vger.kernel.org" <linux-edac@vger.kernel.org>, x86@kernel.org,
+ linux-acpi@vger.kernel.org, kvm@vger.kernel.org, linux-coco@lists.linux.dev,
+ linux-pci@vger.kernel.org, virtualization@lists.linux.dev,
+ linux-ide@vger.kernel.org, dri-devel@lists.freedesktop.org,
+ linux-fbdev@vger.kernel.org, linux-crypto@vger.kernel.org,
+ "open list:GPIO SUBSYSTEM" <linux-gpio@vger.kernel.org>,
+ linux-hyperv@vger.kernel.org, linux-hwmon@vger.kernel.org,
+ linux-perf-users@vger.kernel.org, linux-mtd@lists.infradead.org,
+ platform-driver-x86@vger.kernel.org, "Rafael J . Wysocki"
+ <rafael@kernel.org>, Daniel Lezcano <daniel.lezcano@kernel.org>,
+ Zhang Rui <rui.zhang@intel.com>, "lukasz.luba@arm.com"
+ <lukasz.luba@arm.com>, Jason Baron <jbaron@akamai.com>,
+ Borislav Petkov <bp@alien8.de>, Tony Luck <tony.luck@intel.com>,
+ Yazen Ghannam <yazen.ghannam@amd.com>, Len Brown <lenb@kernel.org>,
+ Pavel Machek <pavel@kernel.org>, Thomas Gleixner <tglx@kernel.org>,
+ Ingo Molnar <mingo@redhat.com>, Dave Hansen <dave.hansen@linux.intel.com>,
+ "H. Peter Anvin" <hpa@zytor.com>, Paolo Bonzini <pbonzini@redhat.com>,
+ "Kirill A. Shutemov" <kas@kernel.org>,
+ Rick Edgecombe <rick.p.edgecombe@intel.com>, Pu Wen <puwen@hygon.cn>,
+ Bjorn Helgaas <bhelgaas@google.com>, Ajay Kaher <ajay.kaher@broadcom.com>,
+ Alexey Makhalov <alexey.makhalov@broadcom.com>,
+ Broadcom internal kernel review list
+ <bcm-kernel-feedback-list@broadcom.com>,
+ Viresh Kumar <viresh.kumar@linaro.org>,
+ Reinette Chatre <reinette.chatre@intel.com>,
+ Dave Martin <Dave.Martin@arm.com>, James Morse <james.morse@arm.com>,
+ Babu Moger <babu.moger@amd.com>, Tony W Wang-oc <TonyWWang-oc@zhaoxin.com>,
+ Damien Le Moal <dlemoal@kernel.org>, Niklas Cassel <cassel@kernel.org>,
+ Dave Airlie <airlied@redhat.com>, Helge Deller <deller@gmx.de>,
+ linux-geode@lists.infradead.org, Olivia Mackall <olivia@selenic.com>,
+ Herbert Xu <herbert@gondor.apana.org.au>, Linus Walleij <linusw@kernel.org>,
+ Bartosz Golaszewski <brgl@kernel.org>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ "K. Y. Srinivasan" <kys@microsoft.com>,
+ Haiyang Zhang <haiyangz@microsoft.com>, Wei Liu <wei.liu@kernel.org>,
+ Dexuan Cui <decui@microsoft.com>, Long Li <longli@microsoft.com>,
+ Guenter Roeck <linux@roeck-us.net>, Peter Zijlstra <peterz@infradead.org>,
+ Arnaldo Carvalho de Melo <acme@kernel.org>,
+ Namhyung Kim <namhyung@kernel.org>, Mark Rutland <mark.rutland@arm.com>,
+ Alexander Shishkin <alexander.shishkin@linux.intel.com>,
+ Jiri Olsa <jolsa@kernel.org>, Ian Rogers <irogers@google.com>,
+ Adrian Hunter <adrian.hunter@intel.com>, James Clark
+ <james.clark@linaro.org>, Josh Poimboeuf <jpoimboe@kernel.org>,
+ Pawan Gupta <pawan.kumar.gupta@linux.intel.com>,
+ Vitaly Kuznetsov <vkuznets@redhat.com>, Andy Lutomirski <luto@kernel.org>,
+ Boris Ostrovsky <boris.ostrovsky@oracle.com>, Huang Rui <ray.huang@amd.com>,
+ Mario Limonciello <mario.limonciello@amd.com>,
+ Perry Yuan <perry.yuan@amd.com>, K Prateek Nayak <kprateek.nayak@amd.com>,
+ "srinivas.pandruvada@linux.intel.com" <srinivas.pandruvada@linux.intel.com>,
+ Artem Bityutskiy <artem.bityutskiy@linux.intel.com>,
+ Artem Bityutskiy <dedekind1@gmail.com>,
+ Miquel Raynal <miquel.raynal@bootlin.com>,
+ Richard Weinberger <richard@nod.at>, Vignesh Raghavendra <vigneshr@ti.com>,
+ Ashok Raj <ashok.raj.linux@gmail.com>, Hans de Goede <hansg@kernel.org>,
+ =?UTF-8?Q?Ilpo_J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>,
+ Rajneesh Bhardwaj <irenic.rajneesh@gmail.com>,
+ David E Box <david.e.box@intel.com>, xen-devel@lists.xenproject.org
+Message-ID: <99228803-b8b7-47a3-b77c-6fdf3b785730@suse.com>
+Subject: Re: [PATCH 00/32] x86/msr: Drop 32-bit MSR interfaces
+References: <20260629060526.3638272-1-jgross@suse.com>
+ <d7c1db52-529a-43cc-ac7d-38b52627e8bc@app.fastmail.com>
+ <c1608c48-13c2-4290-826b-28b5ca51eaf7@suse.com>
+ <7332feff-2649-496c-8e49-b0a19eb54a32@app.fastmail.com>
+ <akJUz0kYkEBdLSZ3@gmail.com> <akQR9YMtMHReJTfB@google.com>
+ <akY4U0jUZm4HOGZ_@gmail.com>
+In-Reply-To: <akY4U0jUZm4HOGZ_@gmail.com>
 
-[...]
+--------------o2fircZpb09tU1GMO2GxqgPd
+Content-Type: multipart/mixed; boundary="------------DvT8SfkPmJRmXAYHiBwk9gCF"
 
-> +	wcn3988-pmu {
+--------------DvT8SfkPmJRmXAYHiBwk9gCF
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: base64
 
-Override by label, this works but it's super fragile.
+T24gMDIuMDcuMjYgMTI6MDcsIEluZ28gTW9sbmFyIHdyb3RlOg0KPiANCj4gKiBTZWFuIENo
+cmlzdG9waGVyc29uIDxzZWFuamNAZ29vZ2xlLmNvbT4gd3JvdGU6DQo+IA0KPj4+IE5vdGUg
+dGhhdCB0aGUgaW5kaXZpZHVhbCBwYXRjaGVzIGFyZSBJTU8gc2lnbmlmaWNhbnRseSBlYXNp
+ZXIgdG8gcmV2aWV3DQo+Pj4gdGhyb3VnaCB0aGUgYWN0dWFsIDMyLWJpdCA9PiA2NC1iaXQg
+dmFyaWFibGUgYXNzaWdubWVudCBjaGFuZ2VzIGRvbmUNCj4+PiBpbiBpc29sYXRpb24gKHdo
+aWNoIHNvbWV0aW1lcyBpbmNsdWRlIG1pbm9yIGNsZWFudXBzKSwgd2hpbGUNCj4+PiB0aGUg
+Q29jY2luZWxsZSBzZW1hbnRpYyBwYXRjaDoNCj4+Pg0KPj4+ICAgICB7IGEoYixjKSA9PiBj
+ID0gYShiKSB9DQo+Pj4NCj4+PiB3aGljaCBjaGFuZ2VzIGJvdGggdGhlIGZ1bmN0aW9uIHNp
+Z25hdHVyZSBhbmQgdGhlIG9yZGVyIG9mIHRlcm1zIGFzDQo+Pj4gd2VsbCwgaXMganVzdCBh
+IHNpbmdsZSBhZGQtb24gdHJlZXdpZGUgcGF0Y2guDQo+Pg0KPj4gSXMgdGhlIHBsYW4gZm9y
+IHN1YnN5c3RlbSBtYWludGFpbmVycyB0byBwaWNrIHVwIHRoZSByZWxldmFudCBwYXRjaGVz
+LA0KPj4gYW5kIHRoZW4gZG8gdGhlIHRyZWV3aWRlIGNoYW5nZSBvbmUgcmVsZWFzZSBjeWNs
+ZSBsYXRlcj8NCj4gDQo+IEknbGwgdHJ5IHRvIGtlZXAgdGhlIHBhdGNoZXMgaW4gYSBzaW5n
+bGUgdHJlZSAodGlwOng4Ni9tc3IpDQo+IGluIHRoZSBob3BlIG9mIG5vdCBwcm9sb25naW5n
+IHRoZSBwYWluIHR3byBjeWNsZXMgLSBidXQgaXQncw0KPiBvZiBjb3Vyc2UgZmluZSBmb3Ig
+bWFpbnRhaW5lcnMgdG8gcGljayB1cCB0aGUgcGF0Y2hlcyB0b28NCj4gKG1vc3Qgb2YgdGhl
+bSBhcmUgc3RhbmRhbG9uZSksIHdlJ2xsIHNvcnQgaXQgYWxsIG91dCBpbiB0aGUgZW5kLg0K
+DQpJbmdvLCB3b3VsZCB5b3UgYmUgZmluZSB3aXRoIG1lIHBvc3RpbmcgcGF0Y2ggdXBkYXRl
+cyBqdXN0IGFzIHJlcGxpZXMgdG8gdGhlDQpvcmlnaW5hbCBwYXRjaCBlbWFpbHM/IFRoaXMg
+d291bGQgc3BlZWQgdGhpbmdzIHVwLCBhcyBJIHdvdWxkbid0IG5lZWQgdG8gd2FpdA0KZm9y
+IG1vcmUgcmV2aWV3IGlucHV0IG9mIGFsbCB0aGUgcGF0Y2hlcyBiZWZvcmUgc2VuZGluZyBv
+dXQgbmV3IHZlcnNpb25zLg0KDQpBcyB0aGUgcGF0Y2hlcyBhcmUgKG1vc3RseSkgc3RhbmRh
+bG9uZSwgdGhpcyBzaG91bGQgbm90IGNhdXNlIGFueSB3ZWlyZA0KcHJvYmxlbXMuDQoNClRo
+ZSBsYXN0IHR3byBwYXRjaGVzIG1pZ2h0IG5lZWQgdXBkYXRlcywgYnV0IHRob3NlIGNhbiBi
+ZSBhcHBsaWVkIG9ubHkgYWZ0ZXINCnRoZSByZXN0IGhhcyBiZWVuIGFjY2VwdGVkIGFueXdh
+eS4NCg0KDQpKdWVyZ2VuDQo=
+--------------DvT8SfkPmJRmXAYHiBwk9gCF
+Content-Type: application/pgp-keys; name="OpenPGP_0xB0DE9DD628BF132F.asc"
+Content-Disposition: attachment; filename="OpenPGP_0xB0DE9DD628BF132F.asc"
+Content-Description: OpenPGP public key
+Content-Transfer-Encoding: quoted-printable
 
-[...]
+-----BEGIN PGP PUBLIC KEY BLOCK-----
 
-> +&uart8 {
-> +	status = "okay";
-> +};
-> +
-> +&wifi {
-> +	vdd-0.8-cx-mx-supply = <&pm4125_l7>;
-> +
-> +	status = "okay";
-> +};
+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
+kt+z4drzFUyEjLM1vVvIMjkUoJs=3D
+=3DeeAB
+-----END PGP PUBLIC KEY BLOCK-----
 
-Since the module is on the EVK board itself, push the enablement of
-these nodes there too
+--------------DvT8SfkPmJRmXAYHiBwk9gCF--
 
-Konrad
+--------------o2fircZpb09tU1GMO2GxqgPd--
+
+--------------WjZXb44KsATEDkDSufWy2bKk
+Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="OpenPGP_signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+wsB5BAABCAAjFiEEhRJncuj2BJSl0Jf3sN6d1ii/Ey8FAmpGRZgFAwAAAAAACgkQsN6d1ii/Ey9T
+iQf8D4c54BGRNKMRsSJiXSFxOPiUVfGXcsH7BLGSCIbavlNKB6PC4nfBVKfvlEHUsQk3Zy7dOXCt
+DjWUBhqMxb+QCJKNrUGKsdDFtl1Agihz8PaRzzF6LAJL86LHnhjy30FkyEoT+wE8pfL61qKpyusy
+xGc+xkkzm+tcDAwQDn9wTrmDKRaa/yWjrPX2idLQ/ATrKILtNW/Ci7tbKeltRSGhWV7aNEtyEUco
+wq6RU91rH9miz+a9ZWCRa/bc1FU0brdudBe2pkTiDua5vzSwUx4gBoLQ98BcHb+bKidB+OS3WYBa
+Qfoo0sr6Uryp6mf98UcyNgyPhA4rdUuo1iUvfsGhdg==
+=MZUf
+-----END PGP SIGNATURE-----
+
+--------------WjZXb44KsATEDkDSufWy2bKk--
