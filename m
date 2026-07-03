@@ -1,156 +1,127 @@
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id 283F634FF79;
-	Fri,  3 Jul 2026 14:29:00 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
+Received: from out-188.mta0.migadu.com (out-188.mta0.migadu.com [91.218.175.188])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 116413F23C5;
+	Fri,  3 Jul 2026 14:54:58 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=91.218.175.188
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1783088941; cv=none; b=qJl9dyLNtlmeFU5thcXpy/7U+SEvEZIbhO6/43Ja3UV+UgYMzQw6jtK/xaDJjZ+YTAkO7NcRKyC9BEOIeH4Z7mqf+Pc2iKN+AtKZ4/LQCyippYJKNrN8RbL3YnD5TlHQKXMX16kVSknuWQ7UO8o0w+DRaPTc0D9nzYqiA+mtbNY=
+	t=1783090500; cv=none; b=uIwEpbINPDcoiGMX75IrEUjlca4hNIAvb02fHm449JbUowCrhxErzx6vHgjwsbirY9d3MkpzvGuBbF7BY+bLkyA4nBBauG3BNiINPkmYcyJPB78UsQy64UdbkmHhnhRF4qrQJu3rv1VfW8OPD0onMg3yhXaF6sKdhmemH2skU0A=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1783088941; c=relaxed/simple;
-	bh=nv3+ueVUIqGIKl6icFEdZ93kbNEcdpBz4MyhQ3JR4po=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=S7LqaXHXqxFPPn2lSL8b3zaKaX2kT1ZE6OYfO116G/wqwyfKgbz9PuzwDurdCP5ag0xIelh76b7xaw7KwwthLmdmmBznthUXeTU0PCNoqV4YH6B1L6E07ZNOvIGnk6tBtNoUJBwJHvCXSAhxmQx9yYUF4bfEpQZLqjbxzqApFqI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=sgpwwyrA; arc=none smtp.client-ip=217.140.110.172
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
+	s=arc-20240116; t=1783090500; c=relaxed/simple;
+	bh=SbPuoxe9/8K5nDiss1P1G+SXa5cD6+BbCbutJ10O3gA=;
+	h=Mime-Version:Content-Type:Date:Message-Id:Cc:Subject:From:To:
+	 References:In-Reply-To; b=aEYthiScmjqUuGUIQI+318CQxUtDxTTcAFgbC+J4x8PUqD6uNMIxTYDBLdMq86jsEp9eM/fNRnAayQaOqQCyuv4ExydXTXYUTErHXCL4DAr0DYfn3HNss2mjuOsPkGH8zMYah6KzDcRnm3JULODtBG92sSzFErp3BPf86w9b/5E=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.dev; spf=pass smtp.mailfrom=linux.dev; dkim=pass (1024-bit key) header.d=linux.dev header.i=@linux.dev header.b=GoqgUdNe; arc=none smtp.client-ip=91.218.175.188
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.dev
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.dev
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="sgpwwyrA"
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 2D44B1EA6;
-	Fri,  3 Jul 2026 07:28:55 -0700 (PDT)
-Received: from J2N7QTR9R3 (usa-sjc-imap-foss1.foss.arm.com [10.121.207.14])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 6C2863F905;
-	Fri,  3 Jul 2026 07:28:57 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1783088939; bh=nv3+ueVUIqGIKl6icFEdZ93kbNEcdpBz4MyhQ3JR4po=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=sgpwwyrA/S1qdbCYzbpunx+YSOi/jbPy7mBef/QF23F8VqcSZmHV4PamfxqlyayUB
-	 sq2PIBc7rIVuruoOoPtnyLYPY+bSDlQGmACa4RDkTcGSIIPiF6xcDbM7b2i+disHMG
-	 NSjNMHHWVx90IeXhriurCRV5kA4+6xDVTZCTt0Hs=
-Date: Fri, 3 Jul 2026 15:28:48 +0100
-From: Mark Rutland <mark.rutland@arm.com>
-To: Sneh Mankad <sneh.mankad@oss.qualcomm.com>
-Cc: Thomas Gleixner <tglx@kernel.org>,
-	Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>,
-	Peter Zijlstra <peterz@infradead.org>,
-	"Rafael J. Wysocki" <rafael@kernel.org>,
-	Pavel Machek <pavel@kernel.org>, Len Brown <lenb@kernel.org>,
-	Catalin Marinas <catalin.marinas@arm.com>,
-	Will Deacon <will@kernel.org>, linux-arm-msm@vger.kernel.org,
-	linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org
-Subject: Re: [PATCH v2] arm64: Disallow disabling boot CPU based on config
-Message-ID: <akfHIH_dZrr5bosu@J2N7QTR9R3>
-References: <20260703-disable_boot_cpu_offline-v2-1-782d16ff58c3@oss.qualcomm.com>
+	dkim=pass (1024-bit key) header.d=linux.dev header.i=@linux.dev header.b="GoqgUdNe"
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260703-disable_boot_cpu_offline-v2-1-782d16ff58c3@oss.qualcomm.com>
+Mime-Version: 1.0
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
+	t=1783090495;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=SbPuoxe9/8K5nDiss1P1G+SXa5cD6+BbCbutJ10O3gA=;
+	b=GoqgUdNey9WibpT4bCWElWCK/Q8ZarEulgJnOwtH8yUYJA68i9+SGQflaQqhfntmLTLqoe
+	eB23ClEBpn2xCd2QuZuRlpe/F6BVVRjYG8MpJKtoXNNPTsnfkNo24Jc6bEsuCimTjf2nDr
+	Gtk6mCa7gTMDQeIwZl5Jn3GGSudvZ6Y=
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=UTF-8
+Date: Fri, 03 Jul 2026 14:54:45 +0000
+Message-Id: <DJP0TON6OW7J.EPYIYFFA5ZOZ@linux.dev>
+Cc: "Kalyazin, Nikita" <kalyazin@amazon.co.uk>, "kvm@vger.kernel.org"
+ <kvm@vger.kernel.org>, "linux-doc@vger.kernel.org"
+ <linux-doc@vger.kernel.org>, "linux-kernel@vger.kernel.org"
+ <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org"
+ <linux-arm-kernel@lists.infradead.org>, "kvmarm@lists.linux.dev"
+ <kvmarm@lists.linux.dev>, "linux-fsdevel@vger.kernel.org"
+ <linux-fsdevel@vger.kernel.org>, "linux-mm@kvack.org" <linux-mm@kvack.org>,
+ "bpf@vger.kernel.org" <bpf@vger.kernel.org>,
+ "linux-kselftest@vger.kernel.org" <linux-kselftest@vger.kernel.org>,
+ "kernel@xen0n.name" <kernel@xen0n.name>, "linux-riscv@lists.infradead.org"
+ <linux-riscv@lists.infradead.org>, "linux-s390@vger.kernel.org"
+ <linux-s390@vger.kernel.org>, "loongarch@lists.linux.dev"
+ <loongarch@lists.linux.dev>, "linux-pm@vger.kernel.org"
+ <linux-pm@vger.kernel.org>, "pbonzini@redhat.com" <pbonzini@redhat.com>,
+ "corbet@lwn.net" <corbet@lwn.net>, "suzuki.poulose@arm.com"
+ <suzuki.poulose@arm.com>, "yuzenghui@huawei.com" <yuzenghui@huawei.com>,
+ "will@kernel.org" <will@kernel.org>, "seanjc@google.com"
+ <seanjc@google.com>, "tglx@kernel.org" <tglx@kernel.org>,
+ "mingo@redhat.com" <mingo@redhat.com>, "bp@alien8.de" <bp@alien8.de>,
+ "dave.hansen@linux.intel.com" <dave.hansen@linux.intel.com>,
+ "x86@kernel.org" <x86@kernel.org>, "hpa@zytor.com" <hpa@zytor.com>,
+ "luto@kernel.org" <luto@kernel.org>, "peterz@infradead.org"
+ <peterz@infradead.org>, "willy@infradead.org" <willy@infradead.org>,
+ "akpm@linux-foundation.org" <akpm@linux-foundation.org>, "david@kernel.org"
+ <david@kernel.org>, "lorenzo.stoakes@oracle.com"
+ <lorenzo.stoakes@oracle.com>, "vbabka@kernel.org" <vbabka@kernel.org>,
+ "surenb@google.com" <surenb@google.com>, "mhocko@suse.com"
+ <mhocko@suse.com>, "ast@kernel.org" <ast@kernel.org>,
+ "martin.lau@linux.dev" <martin.lau@linux.dev>, "eddyz87@gmail.com"
+ <eddyz87@gmail.com>, "song@kernel.org" <song@kernel.org>,
+ "yonghong.song@linux.dev" <yonghong.song@linux.dev>,
+ "john.fastabend@gmail.com" <john.fastabend@gmail.com>, "kpsingh@kernel.org"
+ <kpsingh@kernel.org>, "sdf@fomichev.me" <sdf@fomichev.me>,
+ "haoluo@google.com" <haoluo@google.com>, "jolsa@kernel.org"
+ <jolsa@kernel.org>, "jgg@ziepe.ca" <jgg@ziepe.ca>, "jhubbard@nvidia.com"
+ <jhubbard@nvidia.com>, "peterx@redhat.com" <peterx@redhat.com>,
+ "jannh@google.com" <jannh@google.com>, "pfalcato@suse.de"
+ <pfalcato@suse.de>, "skhan@linuxfoundation.org"
+ <skhan@linuxfoundation.org>, "riel@surriel.com" <riel@surriel.com>,
+ "ryan.roberts@arm.com" <ryan.roberts@arm.com>, "jgross@suse.com"
+ <jgross@suse.com>, "yu-cheng.yu@intel.com" <yu-cheng.yu@intel.com>,
+ "kas@kernel.org" <kas@kernel.org>, "coxu@redhat.com" <coxu@redhat.com>,
+ "ackerleytng@google.com" <ackerleytng@google.com>, "yosry@kernel.org"
+ <yosry@kernel.org>, "maobibo@loongson.cn" <maobibo@loongson.cn>,
+ "tabba@google.com" <tabba@google.com>, "prsampat@amd.com"
+ <prsampat@amd.com>, "jthoughton@google.com" <jthoughton@google.com>,
+ "agordeev@linux.ibm.com" <agordeev@linux.ibm.com>, "aou@eecs.berkeley.edu"
+ <aou@eecs.berkeley.edu>, "borntraeger@linux.ibm.com"
+ <borntraeger@linux.ibm.com>, "chenhuacai@kernel.org"
+ <chenhuacai@kernel.org>, "baolu.lu@linux.intel.com"
+ <baolu.lu@linux.intel.com>, "dev.jain@arm.com" <dev.jain@arm.com>,
+ "gor@linux.ibm.com" <gor@linux.ibm.com>, "hca@linux.ibm.com"
+ <hca@linux.ibm.com>, "palmer@dabbelt.com" <palmer@dabbelt.com>,
+ "pjw@kernel.org" <pjw@kernel.org>, "shijie@os.amperecomputing.com"
+ <shijie@os.amperecomputing.com>, "svens@linux.ibm.com"
+ <svens@linux.ibm.com>, "thuth@redhat.com" <thuth@redhat.com>,
+ "yang@os.amperecomputing.com" <yang@os.amperecomputing.com>,
+ "Liam.Howlett@oracle.com" <Liam.Howlett@oracle.com>, "urezki@gmail.com"
+ <urezki@gmail.com>, "zhengqi.arch@bytedance.com"
+ <zhengqi.arch@bytedance.com>, "gerald.schaefer@linux.ibm.com"
+ <gerald.schaefer@linux.ibm.com>, "jiayuan.chen@shopee.com"
+ <jiayuan.chen@shopee.com>, "rafael@kernel.org" <rafael@kernel.org>,
+ "yangyicong@hisilicon.com" <yangyicong@hisilicon.com>,
+ "vannapurve@google.com" <vannapurve@google.com>, "jackmanb@google.com"
+ <jackmanb@google.com>, "patrick.roy@linux.dev" <patrick.roy@linux.dev>,
+ "Itazuri, Takahiro" <itazur@amazon.co.uk>, "Manwaring, Derek"
+ <derekmn@amazon.com>
+Subject: Re: [PATCH v12 02/16] set_memory: add
+ folio_{zap,restore}_direct_map helpers
+X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
+From: "Brendan Jackman" <brendan.jackman@linux.dev>
+To: "Mike Rapoport" <rppt@kernel.org>, "Brendan Jackman"
+ <brendan.jackman@linux.dev>
+References: <20260410151746.61150-1-kalyazin@amazon.com>
+ <20260410151746.61150-3-kalyazin@amazon.com>
+ <DJOUYOKL6N3R.BFIO8HEL03OA@linux.dev> <ake7aPB2O_-dAXhI@kernel.org>
+In-Reply-To: <ake7aPB2O_-dAXhI@kernel.org>
+X-Migadu-Flow: FLOW_OUT
 
-On Fri, Jul 03, 2026 at 04:50:02PM +0530, Sneh Mankad wrote:
-> The Qualcomm SoCs like LeMans, Monaco 
+On Fri Jul 3, 2026 at 1:38 PM UTC, Mike Rapoport wrote:
+> On Fri, Jul 03, 2026 at 10:19:10AM +0000, Brendan Jackman wrote:
+...
+>> Alternatively, we maybe should disable secretmem for highmem systems
+>> since it evidently doesn't have any users.
+>
+> Yes, please :)=20
 
-Are those released products?
-
-Are those mobile phone parts, or somthing else?
-
-> support suspend to ram which leads the SoC to ACPI S3 similar state
-> where SoC is turned off and DDR is retained. The hardware design on
-> these SoCs forces a constraint to suspend and resume the system on
-> boot CPU / CPU0.
-> 
-> If CPU0 is already offline before starting suspend to ram the
-> freeze_secondary_cpus() picks alternate CPU as primary / last CPU and
-> proceed further to invoke PSCI SYSTEM_SUSPEND.
-> This leads to a system crash.
-
-Ok, so that's a firmware bug.
-
-Why does the FW permit CPU0 to be offlined in the first place if it
-can't handle this?
-
-What does PSCI_MIGRATE_INFO_TYPE report?
-
-Ideally it'd report Uniprocessor (UP) not migrate capable (1), which
-would prevent CPU_OFF on that CPU, and would force suspend to happen
-there...
-
-> In order to prevent such an issue introduce PM_SLEEP_SMP_CPU_ZERO_STRICT
-> config and when enabled prohibit the CPU0 from getting disabled.
-
-I don't think it makes sense for this to be a config option.
-
-This is a platform-specific property, and it's possible to build a
-kernel that boots on this platform and/or other platforms.
-
-> Signed-off-by: Sneh Mankad <sneh.mankad@oss.qualcomm.com>
-> ---
-> Changes in v2:
-> - Moved the check to arm64 specific code.
-> - Link to v1: https://lore.kernel.org/r/20260605-disable_boot_cpu_offline-v1-1-4c68fe1a6cf8@oss.qualcomm.com
-> ---
->  arch/arm64/Kconfig       | 9 +++++++++
->  arch/arm64/kernel/psci.c | 6 ++++++
->  2 files changed, 15 insertions(+)
-> 
-> diff --git a/arch/arm64/Kconfig b/arch/arm64/Kconfig
-> index fe60738e5943ba279e5571862423df4fed3db661..21697a535a25d286a2f8afe4921a41b13cc32c0a 100644
-> --- a/arch/arm64/Kconfig
-> +++ b/arch/arm64/Kconfig
-> @@ -263,6 +263,15 @@ config ARM64
->  	help
->  	  ARM 64-bit (AArch64) Linux support.
->  
-> +config PM_SLEEP_SMP_CPU_ZERO_STRICT
-> +       bool "Disallow boot CPU (CPU0) offline"
-> +       depends on ARCH_QCOM
-
-Why can't others select this?
-
-> +       depends on HOTPLUG_CPU
-> +       depends on SUSPEND
-> +       help
-> +         Disallow boot CPU (CPU0) offline when the suspend_ops->enter()
-> +         has to be executed by boot CPU.
-
-As above, I don't think this makse sense as a config option.
-
-Either we handle the FW bug, or we do not.
-
-Mark.
-
-> +
->  config RUSTC_SUPPORTS_ARM64
->  	def_bool y
->  	depends on CPU_LITTLE_ENDIAN
-> diff --git a/arch/arm64/kernel/psci.c b/arch/arm64/kernel/psci.c
-> index fabd732d0a2dfee37074ef4ebb6ce5894871c8bd..4ad90ae6f8bacf0cbd3203d66580107d467ea232 100644
-> --- a/arch/arm64/kernel/psci.c
-> +++ b/arch/arm64/kernel/psci.c
-> @@ -49,6 +49,12 @@ static int cpu_psci_cpu_boot(unsigned int cpu)
->  #ifdef CONFIG_HOTPLUG_CPU
->  static bool cpu_psci_cpu_can_disable(unsigned int cpu)
->  {
-> +#ifdef CONFIG_PM_SLEEP_SMP_CPU_ZERO_STRICT
-> +	if (cpu == get_boot_cpu_id()) {
-> +		pr_info("Disabling boot CPU is not supported\n");
-> +		return false;
-> +	}
-> +#endif
->  	return !psci_tos_resident_on(cpu);
->  }
->  
-> 
-> ---
-> base-commit: ba3e43a9e601636f5edb54e259a74f96ca3b8fd8
-> change-id: 20260603-disable_boot_cpu_offline-eb4f55ac96f2
-> 
-> Best regards,
-> -- 
-> Sneh Mankad <sneh.mankad@oss.qualcomm.com>
-> 
-> 
+https://lore.kernel.org/all/20260703-secretmem-highmem-v1-1-30d5ff944664@go=
+ogle.com/
