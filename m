@@ -1,85 +1,82 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7D0D23B71C8
-	for <linux-pm@vger.kernel.org>; Fri,  3 Jul 2026 12:10:04 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6782A3CFF55
+	for <linux-pm@vger.kernel.org>; Fri,  3 Jul 2026 12:12:55 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1783080605; cv=none; b=IjXPSt2ZmZFdN2WK6IquiKcdrC4RxYzaGWf3fjcpTu3793kACmdIgZHzBArf5HqskgizCbq5EHPDnstiDrFXhXzeJVhslDFaMhTrSQEPYL+myR5TQddur+9LtOjTkIByBtlGSlIwtqenn9SHbBzNYUsgy5yjBAIBxoW0cB6jFB8=
+	t=1783080776; cv=none; b=AvnMH7WeSsSagLUKFrSM6+ZAfdY3jE4/YfvETLWCZEXYNcZW4i5lGnDCpzQQRhg+WAhg7CS/74/9Qlyh5+SCc7Bb4eEHh/RzyqiQf21fkb9Y3VVJjstzlsPQFRoA+O7/gypXFo7K1pnOZt8l+euyPA6c9418hlpRb7SNBovWjkU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1783080605; c=relaxed/simple;
-	bh=FRnTE+sfqNi4P4NSTy/kqSXlrErtvnHm1QlBxXoiDG4=;
+	s=arc-20240116; t=1783080776; c=relaxed/simple;
+	bh=ZW1+Rwj2Zkkg4xFxLw7inao2NDBuiKLZLReMOE1kdHk=;
 	h=From:In-Reply-To:MIME-Version:References:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=YqyR8xpVerFIxK4Gw6cY16qwHbXqYjHk0WExGXkKgUrf6gCD6YtUhNc/kFiz9L98ChB21rVnWWYOj1xVbR2OJz0+aJUYYf+tEdy/ILV3Q+N6YHaCnVHuzVZDmwEDXKsGMhLKGf9nAldxCqdcjUzGUDzFJj2MqBscmaj+VCilouw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=R5EQi/XU; arc=none smtp.client-ip=100.103.45.18
+	 To:Cc:Content-Type; b=Kzi26kQcqdmOWFdjMFsfZxAe4avta4zZCWWPxTajC0okI8B+aem81Ht4brRREF542c3pUvYmewCma+sXg99cFP7ci34DqFzKjDTH7PXfPfs2tpDywlTtpn85+iZDsJXMoLDT+y97xr7F8YhjXndhz+zLM1IzH4wmjFd03Xddc0E=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=V13+C1TO; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="R5EQi/XU"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 642861F0155C
-	for <linux-pm@vger.kernel.org>; Fri,  3 Jul 2026 12:10:04 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="V13+C1TO"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2EE701F0155C
+	for <linux-pm@vger.kernel.org>; Fri,  3 Jul 2026 12:12:55 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1783080604;
-	bh=FRnTE+sfqNi4P4NSTy/kqSXlrErtvnHm1QlBxXoiDG4=;
+	s=k20260515; t=1783080775;
+	bh=ZW1+Rwj2Zkkg4xFxLw7inao2NDBuiKLZLReMOE1kdHk=;
 	h=From:In-Reply-To:References:Date:Subject:To:Cc;
-	b=R5EQi/XUeS15y7qKoAb3iyfRNON/HfPCXUy4TXekpkz50HKLNuxkqfKMtIacIPCj2
-	 excH/UeAK7lKnCYiE7kk/ZGc1Jfdv4I7p7pz/KRc++S0aaGZcMMiQLjOLAiJOjGnft
-	 WMtcYRr9SpfVqjeoJajNQ/rtXF8WYtixMqYLReWDkKRvSDsn0G4NEMqd2rcm7GxCeW
-	 4I4Nd6FfGuJ0Rx/EhdyECwnNkB7IuIcqDASN9jsbcVfNYBfIt1QxTQKalBynI+NzXm
-	 +gC1za7Gwuqlvy4P/sjLjFDhyho2uKcKCsSlqjXvXaKuMVevHXQehOOSdPTahIYEnd
-	 giIul7JI8B9WQ==
-Received: by mail-lj1-f182.google.com with SMTP id 38308e7fff4ca-39b27812c96so4373581fa.0
-        for <linux-pm@vger.kernel.org>; Fri, 03 Jul 2026 05:10:04 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AHgh+RrSMHkT0YzBbh/5Ohchgxs3ji6hz8BS9VK/Vzd6WaQ9N6WLrMyibBLwm+L2e0v0yJpmjBvZ0kO/tA==@vger.kernel.org
-X-Gm-Message-State: AOJu0YxrS+TpgMdpRErgwSPr6iy4kfFEYIfyk1HPjtGgk8w8zlVAq4Aj
-	DVt0cqKC1+7IWLZcjiNfouK0xOPCGWZkWzkrkvx+/1NF/YVyMpjH9mHfumszAVMAdzU2ulOLZec
-	1am3q6CvhlSoqh1GuVwD1wnM4TbI0cFoL9Wc/Gd4P0Q==
-X-Received: by 2002:a2e:b538:0:b0:39b:2b9c:5447 with SMTP id
- 38308e7fff4ca-39b33f83e54mr14578471fa.5.1783080603058; Fri, 03 Jul 2026
- 05:10:03 -0700 (PDT)
+	b=V13+C1TO7e0BLup6/ZXRFCVqSB8pr91oUvp+sZqGgDu6dy35z5ppYNo0lSuhKJf1f
+	 vWZ5VzzvMkh6hoWyk1wdjkd//bAC1zhiP0ugdLwRvhYzJAIbRnGx1D76pMjOdo1k09
+	 1ZUqjXfwW0JozzdJ4gTapT02eIULAj+Q0nw4EIDW+B5+ZavUQA7EZwi3FFbE8D5gOz
+	 D3D8CInjn2ciHTHbs6DLk5Zl+AWG5YXG4gR3X2WSFDVsNqohzwWXIqSer0SUApbXqU
+	 zlj2Ddp1yY39dCBH8RwqN4GhbP9u5/BPm7Xdp6VcIqfcI6DZaRLauZombNCO7ssslT
+	 hMOavJL5+escg==
+Received: by mail-lf1-f41.google.com with SMTP id 2adb3069b0e04-5aeb77b3afbso528004e87.1
+        for <linux-pm@vger.kernel.org>; Fri, 03 Jul 2026 05:12:55 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AHgh+RqNZhXJ+/V4gjLntAkur991/o5WaC0Drj69PP6tgfs2i218TELTPzzrsKQxheBDjeeK/Iniz5KOpw==@vger.kernel.org
+X-Gm-Message-State: AOJu0YwnJOmZ2BtTLIhB061oCnWi0ERiMPPkGg0oX/ysQUG4h+L9UCqL
+	lTGlG1JDF5d9YYsV31gRRWozcTv5FuzFuKsdftOANFzks2SGeUTeRMMRArGpaA08VybMwEICte4
+	aUWDX6q/o/A47qd0t1EyD6C8wA1vx8tD2kEDJJOmmtg==
+X-Received: by 2002:a05:6512:6383:b0:5ae:a702:6528 with SMTP id
+ 2adb3069b0e04-5aec67ac494mr2230940e87.26.1783080773854; Fri, 03 Jul 2026
+ 05:12:53 -0700 (PDT)
 Received: from 969154062570 named unknown by gmailapi.google.com with
- HTTPREST; Fri, 3 Jul 2026 07:09:59 -0500
+ HTTPREST; Fri, 3 Jul 2026 07:12:52 -0500
 Received: from 969154062570 named unknown by gmailapi.google.com with
- HTTPREST; Fri, 3 Jul 2026 07:09:59 -0500
+ HTTPREST; Fri, 3 Jul 2026 07:12:52 -0500
 From: Bartosz Golaszewski <brgl@kernel.org>
-In-Reply-To: <20260703110317.1283411-6-wenst@chromium.org>
+In-Reply-To: <20260703110317.1283411-8-wenst@chromium.org>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260703110317.1283411-1-wenst@chromium.org> <20260703110317.1283411-6-wenst@chromium.org>
-Date: Fri, 3 Jul 2026 07:09:59 -0500
-X-Gmail-Original-Message-ID: <CAMRc=MddJrLT1f62-MCoKQ3ZzchHRypXF0njO0K1Fgxmpv4BGQ@mail.gmail.com>
-X-Gm-Features: AVVi8CcIrznNQZqmZR1andR36KwnRtt161WRtINBstw2LlkWAj-ZsW0prqZIcwI
-Message-ID: <CAMRc=MddJrLT1f62-MCoKQ3ZzchHRypXF0njO0K1Fgxmpv4BGQ@mail.gmail.com>
-Subject: Re: [PATCH v3 05/13] usb: hub: Associate port@ fwnode with USB port device
+References: <20260703110317.1283411-1-wenst@chromium.org> <20260703110317.1283411-8-wenst@chromium.org>
+Date: Fri, 3 Jul 2026 07:12:52 -0500
+X-Gmail-Original-Message-ID: <CAMRc=McpxD325uVPO5NNZ=47DQgCBrD+uTOKUzoHTgbkPhqtiA@mail.gmail.com>
+X-Gm-Features: AVVi8CftwarX-Z8K0VV5KkzRZ0nUoORfEc2vkRQt3p7UOG6R8Lwo7yu86B3HXFw
+Message-ID: <CAMRc=McpxD325uVPO5NNZ=47DQgCBrD+uTOKUzoHTgbkPhqtiA@mail.gmail.com>
+Subject: Re: [PATCH v3 07/13] usb: hub: Use usb_hub_set_port_power() to
+ control port power everywhere
 To: Chen-Yu Tsai <wenst@chromium.org>
-Cc: linux-acpi@vger.kernel.org, driver-core@lists.linux.dev, 
-	linux-pm@vger.kernel.org, linux-usb@vger.kernel.org, 
-	devicetree@vger.kernel.org, linux-mediatek@lists.infradead.org, 
-	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, 
-	Manivannan Sadhasivam <mani@kernel.org>, Alan Stern <stern@rowland.harvard.edu>, 
-	Bartosz Golaszewski <brgl@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
+Cc: Bartosz Golaszewski <brgl@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
 	Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Daniel Scally <djrscally@gmail.com>, 
 	Heikki Krogerus <heikki.krogerus@linux.intel.com>, 
 	Sakari Ailus <sakari.ailus@linux.intel.com>, "Rafael J. Wysocki" <rafael@kernel.org>, 
 	Danilo Krummrich <dakr@kernel.org>, Rob Herring <robh@kernel.org>, 
 	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
 	Matthias Brugger <matthias.bgg@gmail.com>, 
-	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
+	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>, linux-acpi@vger.kernel.org, 
+	driver-core@lists.linux.dev, linux-pm@vger.kernel.org, 
+	linux-usb@vger.kernel.org, devicetree@vger.kernel.org, 
+	linux-mediatek@lists.infradead.org, linux-arm-kernel@lists.infradead.org, 
+	linux-kernel@vger.kernel.org, Manivannan Sadhasivam <mani@kernel.org>, 
+	Alan Stern <stern@rowland.harvard.edu>
 Content-Type: text/plain; charset="UTF-8"
 
-On Fri, 3 Jul 2026 13:03:06 +0200, Chen-Yu Tsai <wenst@chromium.org> said:
-> When a USB hub port is connected to a connector in a firmware node
-> graph, the port itself has a node in the graph.
+On Fri, 3 Jul 2026 13:03:08 +0200, Chen-Yu Tsai <wenst@chromium.org> said:
+> There are still some instances in the USB hub driver where port power is
+> directly controlled by toggling the USB_PORT_FEAT_POWER feature flag.
 >
-> Associate the port's firmware node with the USB port's device,
-> usb_port::dev. This is used in later changes for the M.2 slot power
-> sequencing provider to match against the requesting port.
->
-> To avoid potential conflicts with ACPI firmware nodes and then causing
-> power management issues, only assign the firmware node if the hub's
-> firmware node is not an ACPI firmware node.
+> Switch these instances over to usb_hub_set_port_power() so that only one
+> unified function to do this exists. This makes adding external power
+> control with the power sequencing API easier and consistently applied.
 >
 > Signed-off-by: Chen-Yu Tsai <wenst@chromium.org>
 > ---
