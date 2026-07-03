@@ -1,100 +1,88 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+Received: from chaosmail.tech (chaosmail.tech [77.81.229.115])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C3A172C9D
-	for <linux-pm@vger.kernel.org>; Fri,  3 Jul 2026 18:47:11 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D01523016F7;
+	Fri,  3 Jul 2026 18:52:58 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=77.81.229.115
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1783104432; cv=none; b=pPEEYOkl7f20La7BSRKntI1dQ6F9rvg2IXSrKcJoN+2QqCzWsonfjV5RrV4+3Rln737vrD0Vf807EhUjBivc8kigYOAA+by0XY+u4Z+/qnagRVb5o5lXPqXbRCl7d81MKY8mTprNKujMu7NDunUaamMwR8cLkiC2HXxd9d1uEfM=
+	t=1783104782; cv=none; b=dRG7tgJuKKanyuCgFwiDiPInPwX6J5jBTP6pxvGwug53PYn1SVBf5L+eWoUcFdnvOAeC8nX8YOpVm7L4UWK0/nEAqedCYOhWsssAZHVEExLP8Md19hLBFadhgpL4Iy+WQDXNgwBSdOsHIKzLY1pnITvDP+/lWuDs7rwA1tydeeU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1783104432; c=relaxed/simple;
-	bh=p4XO1ZsrfCvm+JRvGMocTQQ7CwSGJ4XFbOeDEwwHdyo=;
-	h=MIME-Version:From:Date:Message-ID:Subject:To:Cc:Content-Type; b=MpqcLnwVWIRy/sgMX9xrw/2d8shtvF0zNs+jN4Dogh0f1WKazaTlyeMyssZ13Md+LmxtXJBJsmFHLi0cbbclhOw9va0bfu8ZcvemBxSvxGpN39Qle31b9XdANbvLBUUi5qxOLjcSONwS6jQwTVhgDA5BX/SpXAygWxRduhxd+hQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=X+X78nSt; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1783104782; c=relaxed/simple;
+	bh=pKYXT+BZ+wJ3YBFYOlgjpxbv7tZC2s26tw/M0N6OYfM=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:To:Cc; b=HFlJqz/gYgHEn/Gs6wBsDnobv7yUsIMy2D5d4fmmTUDOou7EiEFIfx0+1TfGxYhbMmHBNotk+pJHyDiD7T2B5/DOxd1a5CadSa+jmlEO4bAATDBJoPEb5WxVNBnwHmMVQHWEQNCtSK+Q8jDKlnpWSIjC1OsgXQk9gFOGOfe+7Ks=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=chaosmail.tech; spf=pass smtp.mailfrom=chaosmail.tech; dkim=pass (1024-bit key) header.d=chaosmail.tech header.i=@chaosmail.tech header.b=U+ydAsT3; arc=none smtp.client-ip=77.81.229.115
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=chaosmail.tech
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=chaosmail.tech
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="X+X78nSt"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 633791F00A3A
-	for <linux-pm@vger.kernel.org>; Fri,  3 Jul 2026 18:47:11 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1783104431;
-	bh=WSHkPufvRxell47S5RaReeupVMfOx71kVBmiWgWD1iQ=;
-	h=From:Date:Subject:To:Cc;
-	b=X+X78nStVxeaL5nfx8HTBtlF+s+rK3RPaOGaKKKaBQtLLa8gNInKY+zueFxSM4Iqp
-	 5BkDbzRG+e6S25XBdber0lF7S53wUL1Zz+9YaBDgoSnCSe5bPvO7Q6B5nyJnYrL2IB
-	 DvRGk++DCXZ6jOYCKB7sHFHKUFMg0hbuzVsYsEYuynxU7tj9fJQLsco8czCl0pyYn7
-	 brVahAYgXWWacKDy4rKRTgYNBZdEINYJgjsh01E9EMJlDujZtF1tl1jpomuobnXzJn
-	 XPJX83ukFkTp09QcAsapzwUp/QAUj/altLMAmlLdKG8YMelObbja5XfqodGxjAOyzx
-	 4DrvquiLkIVnw==
-Received: by mail-lf1-f49.google.com with SMTP id 2adb3069b0e04-5aeb36ed873so656890e87.0
-        for <linux-pm@vger.kernel.org>; Fri, 03 Jul 2026 11:47:11 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AHgh+RpZEx9sP88X6qLhx+owqnrasYb9HT1p7wZNRuo12ErHUhjLqCf4ABOW8Zt3BwXMHevID7XeHDViGQ==@vger.kernel.org
-X-Gm-Message-State: AOJu0YwdeVavkaC5Lh4XQQd6VODSERpgiCdmqO6U3S1v9W3yjjVusTrS
-	/O9zheadjsguUI4YXgTgzWeKz12B+q3vcXSwbZJNSy3wipeRzsaTKUzQ53v8ZC7cemNh5b5sXOq
-	t0pRw0WNTirOUZhQgoYnqOpCZ6bYIjRI=
-X-Received: by 2002:a05:6512:6416:b0:5ae:ba7a:1790 with SMTP id
- 2adb3069b0e04-5aed5086ce1mr31552e87.11.1783104429901; Fri, 03 Jul 2026
- 11:47:09 -0700 (PDT)
+	dkim=pass (1024-bit key) header.d=chaosmail.tech header.i=@chaosmail.tech header.b="U+ydAsT3"
+Received: by chaosmail.tech (Postfix) id 61D561CC21E;
+	Fri, 03 Jul 2026 18:52:56 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=chaosmail.tech;
+	s=mail; t=1783104776;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding;
+	bh=5yh6tx0rcTXUg+w8H4oTXcRUK8TzdWacjEqbGEhyWGI=;
+	b=U+ydAsT3oX7qKlEr/7lwYq9PYT+vx84UTPKteCxy8BvzQLGk0vqE2t6kQhoPW+tJngcZJ4
+	NBagcVBkm8QrO6P+1r4SN2cUpG1CRZ5ztoTTZCfInyjtmBtW2Wm7HxdJP9S68eEkJ/pF2I
+	WDD+eSj/SBTSiin62q2v/KiCBE63dqo=
+From: Sasha Finkelstein <k@chaosmail.tech>
+Date: Fri, 03 Jul 2026 20:52:48 +0200
+Subject: [PATCH] cpufreq: apple-soc: Calculate frequency as a 64-bit value
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-From: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
-Date: Fri, 3 Jul 2026 20:46:57 +0200
-X-Gmail-Original-Message-ID: <CAJZ5v0ic0MROqd3-CEKvVpFPf9MPDoYHW+VU3cL2_Dwi37DJLg@mail.gmail.com>
-X-Gm-Features: AVVi8CeUgRVgM-oCHm1cpnM1k3L51q5X2SY13dyxn_ThSaCHUPETglsVPIpJM5Q
-Message-ID: <CAJZ5v0ic0MROqd3-CEKvVpFPf9MPDoYHW+VU3cL2_Dwi37DJLg@mail.gmail.com>
-Subject: [GIT PULL] ACPI support fixes for 7.2-rc2
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, 
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20260703-cpufreq-64-v1-1-c406c705319a@chaosmail.tech>
+X-B4-Tracking: v=1; b=H4sIAAAAAAAC/yXMTQ5AMBBA4avIrDWpIRWuIha0g7Hw06pIpHdXL
+ L/Fezc4skwO6uQGSyc7XpeILE1AT90ykmATDShRyVLmQm9+sLQLVQjsMDclqoxkBTHYLA18fbO
+ m/e18P5M+3gOE8AD6xnmUbgAAAA==
+X-Change-ID: 20260703-cpufreq-64-2a23d7261e09
+To: Sven Peter <sven@kernel.org>, Janne Grunau <j@jannau.net>, 
+ Neal Gompa <neal@gompa.dev>, "Rafael J. Wysocki" <rafael@kernel.org>, 
+ Viresh Kumar <viresh.kumar@linaro.org>
+Cc: asahi@lists.linux.dev, linux-arm-kernel@lists.infradead.org, 
+ linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
+ Sasha Finkelstein <k@chaosmail.tech>
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1783104776; l=1126;
+ i=k@chaosmail.tech; s=20241124; h=from:subject:message-id;
+ bh=pKYXT+BZ+wJ3YBFYOlgjpxbv7tZC2s26tw/M0N6OYfM=;
+ b=rV8RlNcoGB9fGgWZo6PqV81pKfRxc4rz0NcyYGjLsMbudvptfAgphE8sUtztRKBGcLRxKfjhX
+ Qj6W+EKtlWKCbSUsLjU5ijhZi4+d6qBuvEjtREm7Vtlu9RHYd1caEeB
+X-Developer-Key: i=k@chaosmail.tech; a=ed25519;
+ pk=aSkp1PdZ+eF4jpMO6oLvz/YfT5XkBUneWwyhQrOgmsU=
 
-Hi Linus,
+The current frequency calculation is done in 32 bit, causing problems
+if run on a future SoC that can boost higher than 4.2GHz.
 
-Please pull from the tag
+Signed-off-by: Sasha Finkelstein <k@chaosmail.tech>
+---
+ drivers/cpufreq/apple-soc-cpufreq.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
- git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
- acpi-7.2-rc2
+diff --git a/drivers/cpufreq/apple-soc-cpufreq.c b/drivers/cpufreq/apple-soc-cpufreq.c
+index 638e5bf72185..6a0f1d36578f 100644
+--- a/drivers/cpufreq/apple-soc-cpufreq.c
++++ b/drivers/cpufreq/apple-soc-cpufreq.c
+@@ -288,7 +288,7 @@ static int apple_soc_cpufreq_init(struct cpufreq_policy *policy)
+ 
+ 	/* Get OPP levels (p-state indexes) and stash them in driver_data */
+ 	for (i = 0; freq_table[i].frequency != CPUFREQ_TABLE_END; i++) {
+-		unsigned long rate = freq_table[i].frequency * 1000 + 999;
++		unsigned long rate = freq_table[i].frequency * 1000UL + 999UL;
+ 		struct dev_pm_opp *opp = dev_pm_opp_find_freq_floor(cpu_dev, &rate);
+ 
+ 		if (IS_ERR(opp)) {
 
-with top-most commit 973772c7cf647cf4da6badd86c484f9b350eea18
+---
+base-commit: 4a50a141f05a8d1737661b19ee22ff8455b94409
+change-id: 20260703-cpufreq-64-2a23d7261e09
 
- Merge branch 'acpi-tad'
+Best regards,
+--  
+Sasha Finkelstein <k@chaosmail.tech>
 
-on top of commit dc59e4fea9d83f03bad6bddf3fa2e52491777482
-
- Linux 7.2-rc1
-
-to receive ACPI support fixes for 7.2-rc2.
-
-These fix a coding mistake in the ACPI TAD (Time and Alarm Device)
-driver introduced by one of its previous updates and get rid of the ugly
-#ifdef __KERNEL__ conditional compliation in acpi_ut_safe_strncpy() by
-redefining that function as an alias for strscpy_pad():
-
- - Add a missing ACPI_TAD_AC_WAKE capability check omitted by mistake to
-   the ACPI TAD driver (Xu Rao)
-
- - Define acpi_ut_safe_strncpy() as an alias for strscpy_pad() which is
-   viable because that function is only called from kernel code (Rafael
-   Wysocki)
-
-Thanks!
-
-
----------------
-
-Rafael J. Wysocki (1):
-      ACPICA: Define acpi_ut_safe_strncpy() as strscpy_pad() alias
-
-Xu Rao (1):
-      ACPI: TAD: Check AC wake capability before enabling wakeup
-
----------------
-
- drivers/acpi/acpi_tad.c           |  2 +-
- drivers/acpi/acpica/acutils.h     |  2 --
- drivers/acpi/acpica/utnonansi.c   | 16 ----------------
- include/acpi/platform/aclinuxex.h |  1 +
- 4 files changed, 2 insertions(+), 19 deletions(-)
