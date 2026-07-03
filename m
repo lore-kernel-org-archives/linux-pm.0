@@ -1,67 +1,66 @@
-Received: from chaosmail.tech (chaosmail.tech [77.81.229.115])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CB3EA2BDC05;
-	Fri,  3 Jul 2026 20:59:28 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=77.81.229.115
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AD7EF2DFA4A;
+	Fri,  3 Jul 2026 21:09:37 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1783112370; cv=none; b=ZXciIxQsXT/9uAxbQtfABolVlGv9Dmq6tUSjhE8efctDxRFbNviKLpDG/LsTifO3Tp993ycAUZngtboOKKP70W0pewidyriMgwj24lkwUOOFq6C6K+9YymSmDholNZ0PMxR87ZRkLpQx6ec41l50PNwyANxUyCo5VewiwLIixuY=
+	t=1783112978; cv=none; b=GdMhDCLvK6VnmbxsoF0fzyuL5rt2jQMbe5f/rprAIKdZzcoSc0fPxe4Vc82k616djlnVqLD/901HiSTjIoLRN3K8oQUDd1OnQDgP76qvvPY/JsBAOwjHn38JHVh5ywFMqag74QzfQRLVvDyhhJ0svMMELlRpoUqULFIC5hGrMTU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1783112370; c=relaxed/simple;
-	bh=lDCAW5JxkEZaw8O6yCVACMA+ujcuVnhrrunY9Av18BQ=;
-	h=Content-Type:MIME-Version:Subject:From:In-Reply-To:Date:Cc:
-	 Message-Id:References:To; b=LdA4goNeH0Q0zDjwTQJA/RW2E9Xn+5oMohX78J04zVj8BQKaDu1KfE4RxThS8/m1sn0o2mpxAsuxfJJWMRcJqNBOycs7hWUDvlitZMj/FnUqjNT4uZt+GzMMi0JCWvCwNbrdxor+3igV/jE1ZY2Ncs5/SK5ZLpmzPrvWIlGO98M=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=chaosmail.tech; spf=pass smtp.mailfrom=chaosmail.tech; dkim=pass (1024-bit key) header.d=chaosmail.tech header.i=@chaosmail.tech header.b=sodW93uj; arc=none smtp.client-ip=77.81.229.115
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=chaosmail.tech
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=chaosmail.tech
+	s=arc-20240116; t=1783112978; c=relaxed/simple;
+	bh=GZQ1FBSifAsE+04rbRtkuF1fB/OD0zBWi+bNiSovTww=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
+	 MIME-Version:Content-Type; b=fBOKEcw79jhVnxveKAgzoV++4XWLKgc1slQVCoeCVYMMEYa4mE0ZwaOkdW2SoGThRwn48B2raofndyoL+YZoB0TeEiof1/9GwNNdkWW4wGHwFif4qPI2VplfxdKvJ7+ok/c+a/+YiLVSi/5UNhF7K50B4aE7L07tXPreLMVIaSE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=S7HEqDSY; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=chaosmail.tech header.i=@chaosmail.tech header.b="sodW93uj"
-Received: by chaosmail.tech (Postfix) id 8649C1CC21E;
-	Fri, 03 Jul 2026 20:59:26 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=chaosmail.tech;
-	s=mail; t=1783112367;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=61HVUUUBujYWxZF3kJRe/CaNMwhNM+5pPU5vtUBZmdc=;
-	b=sodW93ujKc4YTfy1kcia8w4GUnTCnMEACok4ZgMl/VfTYfztulZ+4rn0H3hR4IITyXwzuD
-	zFWlsaTWkFe2K9LoUAj+nd2OIMhtT8d3UPs70iIQdyp12Cny9WYltFvvlonuyh3AxrFRnu
-	uqH0cJvPntZdT3GumJ5KKLVN0Lqt62w=
-Content-Type: text/plain;
-	charset=us-ascii
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="S7HEqDSY"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 934E31F000E9;
+	Fri,  3 Jul 2026 21:09:36 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1783112977;
+	bh=8nPMkOdgH6vPZv3E0L1/87s6y+9ZPPA8sJI8Ebig5cs=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date;
+	b=S7HEqDSYehX2rE5vhDX8v14E4SNDupI2Ar+VTfduze3wgDCGmtKl3PY0K7NwFtoav
+	 vUyQ6t88vQuJXNk2OXcou2i3wHOKRlgG50hgAMRTrA+ZKyj0znPrtm9taYOMsnqKW2
+	 e/p889jsPO4pPy1DGhsJaUbljXoOXkU8cawVP4lzbCAXV8CdQSrFn/kkywUirB0Tb/
+	 qdMFAN/OfEac0aIrJFBFPZFsEIUEReLQs7fsUymShyoexqeavoi23EWt8wp8lzgbR0
+	 w59zXlXKA3/rCUNZLsZSA6fd8xAkkV7eTNHZAQOJaOzjwCnYxUItdanQl2NeIL3h8/
+	 8q6xNCGlumizQ==
+From: Thomas Gleixner <tglx@kernel.org>
+To: Mark Rutland <mark.rutland@arm.com>, Sneh Mankad
+ <sneh.mankad@oss.qualcomm.com>
+Cc: Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>, Peter Zijlstra
+ <peterz@infradead.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Pavel
+ Machek <pavel@kernel.org>, Len Brown <lenb@kernel.org>, Catalin Marinas
+ <catalin.marinas@arm.com>, Will Deacon <will@kernel.org>,
+ linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Subject: Re: [PATCH v2] arm64: Disallow disabling boot CPU based on config
+In-Reply-To: <akfHIH_dZrr5bosu@J2N7QTR9R3>
+References: <20260703-disable_boot_cpu_offline-v2-1-782d16ff58c3@oss.qualcomm.com>
+ <akfHIH_dZrr5bosu@J2N7QTR9R3>
+Date: Fri, 03 Jul 2026 23:09:34 +0200
+Message-ID: <878q7rlr01.ffs@fw13>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Subject: Re: [PATCH] cpufreq: apple-soc: Calculate frequency as a 64-bit value
-From: Sasha Finkelstein <k@chaosmail.tech>
-In-Reply-To: <20260703215244.437ec9ac@pumpkin>
-Date: Fri, 3 Jul 2026 22:59:15 +0200
-Cc: Sven Peter <sven@kernel.org>,
- Janne Grunau <j@jannau.net>,
- Neal Gompa <neal@gompa.dev>,
- "Rafael J. Wysocki" <rafael@kernel.org>,
- Viresh Kumar <viresh.kumar@linaro.org>,
- asahi@lists.linux.dev,
- linux-arm-kernel@lists.infradead.org,
- linux-pm@vger.kernel.org,
- linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 7bit
-Message-Id: <AD6119B8-88DE-45BD-8241-3E8585F892FC@chaosmail.tech>
-References: <20260703-cpufreq-64-v1-1-c406c705319a@chaosmail.tech>
- <20260703215244.437ec9ac@pumpkin>
-To: David Laight <david.laight.linux@gmail.com>
+Content-Type: text/plain
 
-On Jul 3, 2026, at 22:52, David Laight <david.laight.linux@gmail.com> wrote:
-> 
-> If it matters you need to fix it for 32bit builds as well.
-> It is pretty much really wrong to use 'unsigned long' for frequencies.
-> IMHO the should either be 32bit or 64bit.
+On Fri, Jul 03 2026 at 15:28, Mark Rutland wrote:
+> On Fri, Jul 03, 2026 at 04:50:02PM +0530, Sneh Mankad wrote:
+>> +       depends on HOTPLUG_CPU
+>> +       depends on SUSPEND
+>> +       help
+>> +         Disallow boot CPU (CPU0) offline when the suspend_ops->enter()
+>> +         has to be executed by boot CPU.
+>
+> As above, I don't think this makse sense as a config option.
 
-This module has a 64BIT dep, and is not applicable to 32-bit devices.
-In addition, the calculation is passed to dev_pm_opp_find_freq_floor,
-which is core code and takes an unsigned long.
+Correct. That's pointless as it can be determined at boot time either
+through firmware (ACPI/DT) or if that's not possible for whatever
+reasons then a runtime detection quirk which depends on that particular
+platform.
 
