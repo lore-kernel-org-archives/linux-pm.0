@@ -1,275 +1,184 @@
-Received: from out-182.mta0.migadu.com (out-182.mta0.migadu.com [91.218.175.182])
+Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5DDF2371072
-	for <linux-pm@vger.kernel.org>; Fri,  3 Jul 2026 10:19:31 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=91.218.175.182
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 22F9E3C8C74
+	for <linux-pm@vger.kernel.org>; Fri,  3 Jul 2026 10:31:21 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1783073974; cv=none; b=iGnFKBd2btayFePv2EnkNzy0IimcTPDCiiHptCBZTCMKJFkS0cCawbkcdsHL/WZdH3bmHfH2+7lFpO6sUGkeh+n+szGHDthmUmVbNUaj015iYiBt73CQ4yCgxSt8Japy4c652vhlCVChz/denNbVdqdaABBw2oss3uF2m2YQguo=
+	t=1783074683; cv=none; b=r6KpM532uMsLhGKsZSmRq/CF/iFUDuz5aTJERoMWo441BdVoAyoDGmZGvb7qpafmCPXf+iOoS/Ox72kt0l17CWIQsqU38HtbTF1QARDuM/1WkGIPz9FbWyO3+lSc+nt6xSR04ivxpWtODuvGA+Xq57v3sPAJnmPuQDkme0CP0F0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1783073974; c=relaxed/simple;
-	bh=tRqX3R6EiKC5w+Fjl8swgCaFgI3p6H6/SqU24pOE9sM=;
-	h=Mime-Version:Content-Type:Date:Message-Id:Subject:From:To:Cc:
-	 References:In-Reply-To; b=OczzWwLnwI/UkRz0lSZyxhwMiNAXy5M783JShJTF49X4AfFNSD6TkJp2CB3PeGE7R8Al0UhWfX9rsO3yp9jc6Fo3UW6HO6LYF6a2BOJLniubyEFFnuy0pbxui/KscC8H5Ua4aeXCmz9dq+ehiJuo2bbIyuQYOPu95TJs9TSAlR4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.dev; spf=pass smtp.mailfrom=linux.dev; dkim=pass (1024-bit key) header.d=linux.dev header.i=@linux.dev header.b=e0Cuc7Jv; arc=none smtp.client-ip=91.218.175.182
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.dev
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.dev
+	s=arc-20240116; t=1783074683; c=relaxed/simple;
+	bh=qiyzgDhFBvLQBInbQdAPGyL8srSytSEX42oOuQxiCH4=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=Ws+AjlsHQ81c+vHe1bCqpQPS+zhokQNB0vGrOp3A68eDJk/NlPx1YKlOh8c8J9WskLjmTss4dxvXTU6lhLBqzkpTs6jks0VcCgv+8l5vZCF7Z1blUzMJA7I2wjmMrwtC8xY8zSbLTGLuuANnQz9Xni3Bk79+SwUyjKsWwLRRSnQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=XF25VBTj; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=HkKlrQqr; arc=none smtp.client-ip=205.220.168.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=linux.dev header.i=@linux.dev header.b="e0Cuc7Jv"
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="XF25VBTj";
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="HkKlrQqr"
+Received: from pps.filterd (m0279867.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6637ZrJE3410207
+	for <linux-pm@vger.kernel.org>; Fri, 3 Jul 2026 10:31:21 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
+	8sg/ld/I8qbw7uUnUsVl9AhVTb+2HSc9O79hpsKVLY8=; b=XF25VBTjXdW4rzLs
+	Cv50XV/XSKIHVl2NDbWOZikEIzSts9CaNge1SdaskXgT77lLHZQRySRLceuSZw6w
+	sjAzZuLbAQD7FDUUL/epyOXp7Ncz3eN8p3Olhq6f/Q/Dkm4dOdQZvpi7ALh3/drh
+	hVifuvuDLxvcV2e3bfWznaqF1cFQ1GpktvjIn6Nspw5yZEpzzIPZ/lghhkTIjFrP
+	rOxRC8MV55xl/RoDnQUUBN4BDqwTTU7jrwS88RV045BJEncNAdLoRDG9FG9A1gSE
+	z8DXzKw5GEJ06tndCi1ST5hffPxVPH/zm3qfOUmd8rtPKoI6u4EgzzH7Fk633T2V
+	wS+fdA==
+Received: from mail-pg1-f200.google.com (mail-pg1-f200.google.com [209.85.215.200])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4f68u30n12-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <linux-pm@vger.kernel.org>; Fri, 03 Jul 2026 10:31:21 +0000 (GMT)
+Received: by mail-pg1-f200.google.com with SMTP id 41be03b00d2f7-c890bac374eso823917a12.1
+        for <linux-pm@vger.kernel.org>; Fri, 03 Jul 2026 03:31:21 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=oss.qualcomm.com; s=google; t=1783074681; x=1783679481; darn=vger.kernel.org;
+        h=content-transfer-encoding:content-type:in-reply-to:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=8sg/ld/I8qbw7uUnUsVl9AhVTb+2HSc9O79hpsKVLY8=;
+        b=HkKlrQqrBMdzBN6+NVhyBsbfGgnL6ph7UyOPJSl7ZXDHjrWVR7qq41L+SAHP7hQ478
+         lvjIkJsbACA6u/oCwrBp0gYJJ8kuCRskgbMgRUgMuufnDhgDVxgILMLoh3Z19YApN8+Y
+         6qTtCZImnkvGqXs7+ZR9MxMYIoP7XolbnYr7c9E8utarakkHyGJvgKSFMg5jCkCDfHTG
+         pGzLZLsJb3JemIrDJ+c8/qQdZ7GKvFN+pi70bQ+dY0CDUsN2VToZ6qbdG5JjQG0hOFlF
+         jbS3fgLnI/rZFp1+9Xnw3XkFubV0IVJcE+Do/lQY79NoXkCaiazklJLGrrbFKf+1ZeWt
+         tkdQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1783074681; x=1783679481;
+        h=content-transfer-encoding:content-type:in-reply-to:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=8sg/ld/I8qbw7uUnUsVl9AhVTb+2HSc9O79hpsKVLY8=;
+        b=TkIEPINpUc1vYOK5pdMWgJqNt9kpzsNaXpU1ApL84JlEjjgSRJDMDa1a/6bZtm/QGe
+         x1xNI+niepwafGAZJQYQPziIjYOl+4wXnMKnNBpJZhbi/esBwAM5ipsSmK2kf8lKPkRy
+         RXU1PAIBcWlfuCDKh7FLtqR6rRxWHYT487BkxD31mGkZS1Cqta0oJhcsanJIgibgvMUX
+         Q8O0I9JCvesTKNkFIBPSe1GSlrcaVeCtUoeZLjBLlmNH1Z0HayD31N2DP88BZk5B5Ydj
+         cetYHzRBRXsauzHhVTH171+J4m7emnDusyraXskGl/QaZb+OjB7pr1fRW+WQCW0g9e7a
+         MuFw==
+X-Forwarded-Encrypted: i=1; AHgh+Rq+Pzfw8hXQk07r4cKW2/rLRV6bo3XsL17zn650t1whDrdVCPRdt2/oA1Vt94SIePPEECa2llJIDA==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yzb/eRpLjfuZqw/3NarY9++l1vQvgDWWeEs5fpojdpNjdvTS3xI
+	B/cBD+BC+Nm9bsUDlR0967Nbc0LdwjaamEaAy2JKB1WAzO08FNtoloFO7W2saIP1tn9MCNa7tys
+	f2TJpfwnM13RNEFtCb1K8TE2Gv7jJgStQn6xYscVPrUlPLHK9hCdP8B/jDbywjA==
+X-Gm-Gg: AfdE7cmUmDhx1nqOJhF5IZ22JehfmTLqM7HYu0twUsL2xuy5LMhSROS1jGeqhtcu70t
+	FYx+Urwi2yfPQNydVjT/HrfzwLBhy/ARXKbSm125R+mv6H1u43UGkX2eW8Uqfs27hlvWanBboQq
+	xovNWQqYtBlNYXLtH7PGcvXwYw7IpijQSKEwTJ8UxcroPVsqqQ5+E/zM09hUuwtVQFiiOB51Y4T
+	KR142IsCDcwA4/as++cvS5d52M4Mo5TOrDkRcJqTWtWYUecddheGCSmTDrSqVhhCHQesCJUAQqI
+	5hIxr9iFg+mdZlFzj5G6PQDrK3S4QRD1H6X2j7Gazhuz3WUlhGi0hVzpQAtHysZF0pg/MbOFeyh
+	F6Y/1d/auVaN1pN7D/sNgynv8SssBJ+PzkAYW2koY5A==
+X-Received: by 2002:a17:902:da89:b0:2c9:e6d7:fbb4 with SMTP id d9443c01a7336-2ca7e85a856mr102663215ad.31.1783074680701;
+        Fri, 03 Jul 2026 03:31:20 -0700 (PDT)
+X-Received: by 2002:a17:902:da89:b0:2c9:e6d7:fbb4 with SMTP id d9443c01a7336-2ca7e85a856mr102662705ad.31.1783074680012;
+        Fri, 03 Jul 2026 03:31:20 -0700 (PDT)
+Received: from [10.217.199.117] ([202.46.22.19])
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2cad71328d8sm7377295ad.29.2026.07.03.03.31.14
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Fri, 03 Jul 2026 03:31:19 -0700 (PDT)
+Message-ID: <faa65875-0aee-4a12-a751-084459edd4a7@oss.qualcomm.com>
+Date: Fri, 3 Jul 2026 16:01:13 +0530
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
-Mime-Version: 1.0
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
-	t=1783073967;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=kh3FyxapX81U/ZPkDXPQ35eHo8l1a0EYTCkh/tPyQcQ=;
-	b=e0Cuc7JvJVHteKushc+UtNVkwNT9o1lVu5LvqWVmdqPsMSPQgu9A2kRfsnx0xQfRnUHPYp
-	E5DoGGsQTiJ/6LeWKpBLgQMBOdLAW9HcOCrzUybirGsEQP8UiAZrRmv4xietGvdTMPXY2X
-	gD/tE/T+aE5W3zMioXiLzp1kYJy+Cz0=
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset=UTF-8
-Date: Fri, 03 Jul 2026 10:19:10 +0000
-Message-Id: <DJOUYOKL6N3R.BFIO8HEL03OA@linux.dev>
-Subject: Re: [PATCH v12 02/16] set_memory: add
- folio_{zap,restore}_direct_map helpers
-X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
-From: "Brendan Jackman" <brendan.jackman@linux.dev>
-To: "Kalyazin, Nikita" <kalyazin@amazon.co.uk>, "kvm@vger.kernel.org"
- <kvm@vger.kernel.org>, "linux-doc@vger.kernel.org"
- <linux-doc@vger.kernel.org>, "linux-kernel@vger.kernel.org"
- <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org"
- <linux-arm-kernel@lists.infradead.org>, "kvmarm@lists.linux.dev"
- <kvmarm@lists.linux.dev>, "linux-fsdevel@vger.kernel.org"
- <linux-fsdevel@vger.kernel.org>, "linux-mm@kvack.org" <linux-mm@kvack.org>,
- "bpf@vger.kernel.org" <bpf@vger.kernel.org>,
- "linux-kselftest@vger.kernel.org" <linux-kselftest@vger.kernel.org>,
- "kernel@xen0n.name" <kernel@xen0n.name>, "linux-riscv@lists.infradead.org"
- <linux-riscv@lists.infradead.org>, "linux-s390@vger.kernel.org"
- <linux-s390@vger.kernel.org>, "loongarch@lists.linux.dev"
- <loongarch@lists.linux.dev>, "linux-pm@vger.kernel.org"
- <linux-pm@vger.kernel.org>
-Cc: "pbonzini@redhat.com" <pbonzini@redhat.com>, "corbet@lwn.net"
- <corbet@lwn.net>, "suzuki.poulose@arm.com" <suzuki.poulose@arm.com>,
- "yuzenghui@huawei.com" <yuzenghui@huawei.com>, "will@kernel.org"
- <will@kernel.org>, "seanjc@google.com" <seanjc@google.com>,
- "tglx@kernel.org" <tglx@kernel.org>, "mingo@redhat.com" <mingo@redhat.com>,
- "bp@alien8.de" <bp@alien8.de>, "dave.hansen@linux.intel.com"
- <dave.hansen@linux.intel.com>, "x86@kernel.org" <x86@kernel.org>,
- "hpa@zytor.com" <hpa@zytor.com>, "luto@kernel.org" <luto@kernel.org>,
- "peterz@infradead.org" <peterz@infradead.org>, "willy@infradead.org"
- <willy@infradead.org>, "akpm@linux-foundation.org"
- <akpm@linux-foundation.org>, "david@kernel.org" <david@kernel.org>,
- "lorenzo.stoakes@oracle.com" <lorenzo.stoakes@oracle.com>,
- "vbabka@kernel.org" <vbabka@kernel.org>, "rppt@kernel.org"
- <rppt@kernel.org>, "surenb@google.com" <surenb@google.com>,
- "mhocko@suse.com" <mhocko@suse.com>, "ast@kernel.org" <ast@kernel.org>,
- "martin.lau@linux.dev" <martin.lau@linux.dev>, "eddyz87@gmail.com"
- <eddyz87@gmail.com>, "song@kernel.org" <song@kernel.org>,
- "yonghong.song@linux.dev" <yonghong.song@linux.dev>,
- "john.fastabend@gmail.com" <john.fastabend@gmail.com>, "kpsingh@kernel.org"
- <kpsingh@kernel.org>, "sdf@fomichev.me" <sdf@fomichev.me>,
- "haoluo@google.com" <haoluo@google.com>, "jolsa@kernel.org"
- <jolsa@kernel.org>, "jgg@ziepe.ca" <jgg@ziepe.ca>, "jhubbard@nvidia.com"
- <jhubbard@nvidia.com>, "peterx@redhat.com" <peterx@redhat.com>,
- "jannh@google.com" <jannh@google.com>, "pfalcato@suse.de"
- <pfalcato@suse.de>, "skhan@linuxfoundation.org"
- <skhan@linuxfoundation.org>, "riel@surriel.com" <riel@surriel.com>,
- "ryan.roberts@arm.com" <ryan.roberts@arm.com>, "jgross@suse.com"
- <jgross@suse.com>, "yu-cheng.yu@intel.com" <yu-cheng.yu@intel.com>,
- "kas@kernel.org" <kas@kernel.org>, "coxu@redhat.com" <coxu@redhat.com>,
- "ackerleytng@google.com" <ackerleytng@google.com>, "yosry@kernel.org"
- <yosry@kernel.org>, "maobibo@loongson.cn" <maobibo@loongson.cn>,
- "tabba@google.com" <tabba@google.com>, "prsampat@amd.com"
- <prsampat@amd.com>, "jthoughton@google.com" <jthoughton@google.com>,
- "agordeev@linux.ibm.com" <agordeev@linux.ibm.com>, "aou@eecs.berkeley.edu"
- <aou@eecs.berkeley.edu>, "borntraeger@linux.ibm.com"
- <borntraeger@linux.ibm.com>, "chenhuacai@kernel.org"
- <chenhuacai@kernel.org>, "baolu.lu@linux.intel.com"
- <baolu.lu@linux.intel.com>, "dev.jain@arm.com" <dev.jain@arm.com>,
- "gor@linux.ibm.com" <gor@linux.ibm.com>, "hca@linux.ibm.com"
- <hca@linux.ibm.com>, "palmer@dabbelt.com" <palmer@dabbelt.com>,
- "pjw@kernel.org" <pjw@kernel.org>, "shijie@os.amperecomputing.com"
- <shijie@os.amperecomputing.com>, "svens@linux.ibm.com"
- <svens@linux.ibm.com>, "thuth@redhat.com" <thuth@redhat.com>,
- "yang@os.amperecomputing.com" <yang@os.amperecomputing.com>,
- "Liam.Howlett@oracle.com" <Liam.Howlett@oracle.com>, "urezki@gmail.com"
- <urezki@gmail.com>, "zhengqi.arch@bytedance.com"
- <zhengqi.arch@bytedance.com>, "gerald.schaefer@linux.ibm.com"
- <gerald.schaefer@linux.ibm.com>, "jiayuan.chen@shopee.com"
- <jiayuan.chen@shopee.com>, "rafael@kernel.org" <rafael@kernel.org>,
- "yangyicong@hisilicon.com" <yangyicong@hisilicon.com>,
- "vannapurve@google.com" <vannapurve@google.com>, "jackmanb@google.com"
- <jackmanb@google.com>, "patrick.roy@linux.dev" <patrick.roy@linux.dev>,
- "Itazuri, Takahiro" <itazur@amazon.co.uk>, "Manwaring, Derek"
- <derekmn@amazon.com>
-References: <20260410151746.61150-1-kalyazin@amazon.com>
- <20260410151746.61150-3-kalyazin@amazon.com>
-In-Reply-To: <20260410151746.61150-3-kalyazin@amazon.com>
-X-Migadu-Flow: FLOW_OUT
+MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v4 01/10] dt-bindings: firmware: qcom: tmd: add TMD device
+ type constants
+To: Krzysztof Kozlowski <krzk@kernel.org>
+Cc: Bjorn Andersson <andersson@kernel.org>,
+        Mathieu Poirier <mathieu.poirier@linaro.org>,
+        Rob Herring <robh@kernel.org>,
+        Krzysztof Kozlowski <krzk+dt@kernel.org>,
+        Conor Dooley
+ <conor+dt@kernel.org>,
+        Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>,
+        Amit Kucheria <amit.kucheria@oss.qualcomm.com>,
+        Manivannan Sadhasivam <mani@kernel.org>,
+        Konrad Dybcio <konradybcio@kernel.org>, Kees Cook <kees@kernel.org>,
+        "Gustavo A. R. Silva" <gustavoars@kernel.org>,
+        cros-qcom-dts-watchers@chromium.org, linux-arm-msm@vger.kernel.org,
+        linux-remoteproc@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+        linux-hardening@vger.kernel.org,
+        Manaf Meethalavalappu Pallikunhi <manaf.pallikunhi@oss.qualcomm.com>
+References: <20260703-qmi-tmd-v4-0-3882189c1f83@oss.qualcomm.com>
+ <20260703-qmi-tmd-v4-1-3882189c1f83@oss.qualcomm.com>
+ <20260703-bizarre-abiding-spoonbill-dcc142@quoll>
+Content-Language: en-US
+From: Gaurav Kohli <gaurav.kohli@oss.qualcomm.com>
+In-Reply-To: <20260703-bizarre-abiding-spoonbill-dcc142@quoll>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Proofpoint-GUID: TJuXQ_c7u6mHZZgt6o0q68_4wX7vwAQR
+X-Proofpoint-ORIG-GUID: TJuXQ_c7u6mHZZgt6o0q68_4wX7vwAQR
+X-Proofpoint-Spam-Info: AW1haW4tMjYwNzAzMDEwMSBTYWx0ZWRfX0wxclyuFPzpn
+ kxcZk42gbh1M1nVurS3D+mqn+GdvS3qp0F1NvSWi1mPFHJziz3Jl5HURIYUsf3UY6YMiX193yNX
+ 5wOaQQuqTFLrdUvEc98+aqjEJT+s6Pg=
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzAzMDEwMSBTYWx0ZWRfX/GK+HLp2edNh
+ We+UjQoFPuq8jR9y2ZXd0JFQabuSnsVFlsoYs7I35SeFLMlIDpKM/SCTQFmP9FtJqHi7DcxtEcw
+ iTLN68Hx8J7EBKEGDRkwgO+LpfFSthXgdtHYxJq14Ed7czB02LxZbfZ12ojMuAUffO7bLKbRhwS
+ L083EBB6NftAxKGo5Ghzh4Vi5I7jZJWha6+JKpZ5G4yNW8B7QlgcOBtDaZ3/IZpaeCZlSnziG6I
+ e+hA37hQWZLF0d7DvbBL46GkImGr2hLv9szU2d9EEu9mOqCUN8VHM/Nyev7vKkFifp8+HooFvUu
+ h5VWsCrlb9WQp6OiDTrPxEB8K6efOp3y+io3/f0KhBbAzc3/zC4ndcnEAUSoqA3gbw5O8gca4Fi
+ RwtR+exNtNWlbWdXg/BmkDmpMg2DupuxYQ8K+CpV5ztBPgjd+9JO64jcXc93VxGSyA1FXde5pcu
+ MWCJRx9LOr4MqLUNqxw==
+X-Authority-Analysis: v=2.4 cv=OaKoyBTY c=1 sm=1 tr=0 ts=6a478f79 cx=c_pps
+ a=oF/VQ+ItUULfLr/lQ2/icg==:117 a=fChuTYTh2wq5r3m49p7fHw==:17
+ a=IkcTkHD0fZMA:10 a=RAioF0-LDSMA:10 a=s4-Qcg_JpJYA:10
+ a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=eoimf2acIAo5FJnRuUoq:22
+ a=EUspDBNiAAAA:8 a=Ac_jkr_iY3tVM05H0rEA:9 a=QEXdDO2ut3YA:10
+ a=3WC7DwWrALyhR5TkjVHa:22
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.125,FMLib:17.12.100.49
+ definitions=2026-07-03_02,2026-06-26_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ impostorscore=0 suspectscore=0 bulkscore=0 lowpriorityscore=0
+ priorityscore=1501 adultscore=0 spamscore=0 phishscore=0 malwarescore=0
+ clxscore=1015 classifier=typeunknown authscore=0 authtc= authcc=
+ route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2606150000
+ definitions=main-2607030101
 
-On Fri Apr 10, 2026 at 3:18 PM UTC, Nikita Kalyazin wrote:
-> From: Nikita Kalyazin <nikita.kalyazin@linux.dev>
->
-> Let's provide folio_{zap,restore}_direct_map helpers as preparation for
-> supporting removal of the direct map for guest_memfd folios.
-> In folio_zap_direct_map(), flush TLB to make sure the data is not
-> accessible.  On some architectures, there may be a double TLB flush
-> issued because set_direct_map_valid_noflush already performs a flush
-> internally.
->
-> The new helpers need to be accessible to KVM on architectures that
-> support guest_memfd (x86 and arm64).
->
-> Direct map removal gives guest_memfd the same protection that
-> memfd_secret does, such as hardening against Spectre-like attacks
-> through in-kernel gadgets.
->
-> Acked-by: David Hildenbrand (Arm) <david@kernel.org>
-> Signed-off-by: Nikita Kalyazin <nikita.kalyazin@linux.dev>
-> ---
->  include/linux/set_memory.h | 13 +++++++++++
->  mm/memory.c                | 45 ++++++++++++++++++++++++++++++++++++++
->  2 files changed, 58 insertions(+)
->
-> diff --git a/include/linux/set_memory.h b/include/linux/set_memory.h
-> index 1a2563f525fc..24caea2931f9 100644
-> --- a/include/linux/set_memory.h
-> +++ b/include/linux/set_memory.h
-> @@ -41,6 +41,15 @@ static inline int set_direct_map_valid_noflush(const v=
-oid *addr,
->  	return 0;
->  }
-> =20
-> +static inline int folio_zap_direct_map(struct folio *folio)
-> +{
-> +	return 0;
-> +}
-> +
-> +static inline void folio_restore_direct_map(struct folio *folio)
-> +{
-> +}
-> +
->  static inline bool kernel_page_present(struct page *page)
->  {
->  	return true;
-> @@ -57,6 +66,10 @@ static inline bool can_set_direct_map(void)
->  }
->  #define can_set_direct_map can_set_direct_map
->  #endif
-> +
-> +int folio_zap_direct_map(struct folio *folio);
-> +void folio_restore_direct_map(struct folio *folio);
-> +
->  #endif /* CONFIG_ARCH_HAS_SET_DIRECT_MAP */
-> =20
->  #ifdef CONFIG_X86_64
-> diff --git a/mm/memory.c b/mm/memory.c
-> index 2f815a34d924..3b9ada2cc19c 100644
-> --- a/mm/memory.c
-> +++ b/mm/memory.c
-> @@ -78,6 +78,7 @@
->  #include <linux/sched/sysctl.h>
->  #include <linux/pgalloc.h>
->  #include <linux/uaccess.h>
-> +#include <linux/set_memory.h>
-> =20
->  #include <trace/events/kmem.h>
-> =20
-> @@ -7479,3 +7480,47 @@ void vma_pgtable_walk_end(struct vm_area_struct *v=
-ma)
->  	if (is_vm_hugetlb_page(vma))
->  		hugetlb_vma_unlock_read(vma);
->  }
-> +
-> +#ifdef CONFIG_ARCH_HAS_SET_DIRECT_MAP
-> +/**
-> + * folio_zap_direct_map - remove a folio from the kernel direct map
-> + * @folio: folio to remove from the direct map
-> + *
-> + * Removes the folio from the kernel direct map and flushes the TLB.  Th=
-is may
-> + * require splitting huge pages in the direct map, which can fail due to=
- memory
-> + * allocation.  So far, only order-0 folios are supported.
-> + *
-> + * Return: 0 on success, or a negative error code on failure.
-> + */
-> +int folio_zap_direct_map(struct folio *folio)
-> +{
-> +	const void *addr =3D folio_address(folio);
-> +	int ret;
-> +
-> +	if (folio_test_large(folio))
-> +		return -EINVAL;
-> +
-> +	ret =3D set_direct_map_valid_noflush(addr, folio_nr_pages(folio), false=
-);
-> +	flush_tlb_kernel_range((unsigned long)addr,
-> +			       (unsigned long)addr + folio_size(folio));
-> +
-> +	return ret;
-> +}
 
-My local Sashiko run pointed out that this is broken for highmem.
 
-There's no highmem for guest_memfd but there is for secretmem.
+On 7/3/2026 1:22 PM, Krzysztof Kozlowski wrote:
+> On Fri, Jul 03, 2026 at 10:33:04AM +0530, Gaurav Kohli wrote:
+>> Add Device Tree binding constants for Qualcomm Thermal Mitigation
+>> Device (TMD) types used by remoteproc-backed thermal cooling devices.
+>>
+>> Qualcomm remote processors expose thermal mitigation endpoints
+>> through QMI. These endpoints can be registered with the thermal
+>> framework via the `#cooling-cells` property on the remoteproc node.
+>>
+>> The QMI TMD protocol identifies devices using string names (for example,
+>> "pa", "modem", and "cdsp_sw"), while the DT cooling-device binding with
+>> `#cooling-cells = <3>` requires numeric device id in the form:
+>>
+>>    <&phandle device_id min_state max_state>
+>>
+>> Define common TMD device index constants shared across currently
+>> supported platforms. If a future target requires a different mapping,
+>> additional target-specific constants can be introduced while preserving
+>> existing DT ABI.
+>>
+>> Signed-off-by: Gaurav Kohli <gaurav.kohli@oss.qualcomm.com>
+>> ---
+>>   MAINTAINERS                                 |  1 +
+>>   include/dt-bindings/firmware/qcom,qmi-tmd.h | 20 ++++++++++++++++++++
+> 
+> Why is it put into firmware? What part of firmware are you describing?
+> To me it looks like thermal thing and even you wrote: Thermal Mitigation Device
 
-... but this isn't actually an issue with the patch, it's currently
-broken in Linus' master:
+Ack, it looks better under thermal. Will move to
+include/dt-bindings/thermal/qcom,qmi-tmd.h in the next version.
+> 
+> Best regards,
+> Krzysztof
+> 
 
-Su[   30.071284] ------------[ cut here ]------------
-ccessfully allocated and mapped 2097152000 bytes at 0x3a449000
-Populating memor[   30.074614] CPA: called for zero pte. vaddr =3D 0 cpa->v=
-addr =3D 0
-y...
-[   30.078636] WARNING: arch/x86/mm/pat/set_memory.c:1840 at __cpa_process_=
-fault+0x34d/0x360, CPU#5: allocate_secret/570
-[   30.084789] CPU: 5 UID: 0 PID: 570 Comm: allocate_secret Not tainted 7.1=
-.0-14063-g4edcdefd4083-dirty #10 PREEMPTLAZY
-[   30.090937] Hardware name: QEMU Standard PC (i440FX + PIIX, 1996), BIOS =
-rel-1.17.0-0-gb52ca86e094d-prebuilt.qemu.org 04/01/2014
-[   30.097543] EIP: __cpa_process_fault+0x34d/0x360
-[   30.100514] Code: ff ff 85 c0 0f 89 7d fe ff ff e9 3d fe ff ff 8b 03 8b =
-00 c7 04 24 c8 ff 64 c1 89 44 24 08 8b 45 e8 89 44 24 04 e8 53 7a 00 00 <0f=
-> 0b c7 45 f0 f2 ff ff ff e9 fc fc ff ff 90 8d 74 26 00 55 25 00
-[   30.110829] EAX: 00000000 EBX: f64afe98 ECX: 00000000 EDX: 00000000
-[   30.114799] ESI: 00000000 EDI: f64afe98 EBP: f64afe04 ESP: f64afdcc
-[   30.118785] DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068 EFLAGS: 0001024=
-6
-[   30.123020] CR0: 80050033 CR2: 46c48ffc CR3: 038c8000 CR4: 00000690
-[   30.127010] Call Trace:
-[   30.129078]  __change_page_attr_set_clr+0x5e7/0x870
-[   30.132275]  ? console_unlock+0x99/0x130
-[   30.135069]  ? irq_work_queue+0x36/0x70
-[   30.137853]  ? page_address+0xd3/0xf0
-[   30.140421]  set_direct_map_invalid_noflush+0x52/0x60
-[   30.143782]  secretmem_fault+0x128/0x210
-[   30.146560]  __do_fault+0x25/0x90
-[   30.149053]  handle_mm_fault+0x6d1/0xcb0
-[   30.151759]  exc_page_fault+0x135/0x3b0
-[   30.154487]  ? doublefault_shim+0x150/0x150
-[   30.157416]  handle_exception+0x130/0x130
-[   30.160137] EIP: 0x804d29f
-[   30.162307] Code: 89 54 08 e1 89 54 08 e5 89 54 08 e9 89 54 08 ed c3 0f =
-b6 44 24 08 89 7c 24 0c 69 c0 01 01 01 01 8b 7c 24 04 f7 c7 0f 00 00 00 <89=
-> 44 0f fc 75 0e c1 e9 02 f3 ab 8b 44 24 04 8b 7c 24 0c c3 31 d2
-[   30.172936] EAX: 5a5a5a5a EBX: 00000000 ECX: 0c800000 EDX: 3a449000
-[   30.176927] ESI: 00000000 EDI: 3a449000 EBP: bfbbae18 ESP: bfbbadac
-[   30.180897] DS: 007b ES: 007b FS: 0000 GS: 0033 SS: 007b EFLAGS: 0001024=
-6
-[   30.185161]  ? doublefault_shim+0x150/0x150
-[   30.187979] ---[ end trace 0000000000000000 ]---
-Bus error                  (core dumped) ./allocate_secret_i686 2000M
-
-Fixing this directly in secretmem.c is kinda yucky but if we can just
-make folio_zap_direct_map() a NOP for highmem folios it's nice and easy
-so I propose to just fix it as a followup to this series.
-
-Alternatively, we maybe should disable secretmem for highmem systems
-since it evidently doesn't have any users.
