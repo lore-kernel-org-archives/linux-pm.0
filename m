@@ -1,899 +1,152 @@
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.223.131])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8FA593AB291
-	for <linux-pm@vger.kernel.org>; Fri,  3 Jul 2026 11:24:52 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.131
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C57A33CDBD6
+	for <linux-pm@vger.kernel.org>; Fri,  3 Jul 2026 12:04:56 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1783077901; cv=none; b=QOuRBS03igNd6a2/MVkzS/CF51dWUOi3rtrIRRo2Ar3qap5PVLMRN+kE+AsCOpHGPpvuyQCLlPjATZ2h1LK3/D7bCl4tKTsx5A3W1VoMv+q+Bk4167eXjxhWEp8GHFuoZYv5rVyjSZYq1qtoCRsgKcw/XcJiZjqoTo1XN/m+whw=
+	t=1783080298; cv=none; b=T6IKzv4gVOb3Gi7WCnca4yNFEhMzqS8cEuCoYMPab2ue40JR8Fof23DJooz+74PV3+QdClZl1iqu+y/DxO1eeMmKM7O5CR27n/Cbzeo0Il/ducGGzKZzvsA5bZZDGyNdkvjQhFr936x3RJk/A/IAdy6HalZqOs6mGvorOaxTjjg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1783077901; c=relaxed/simple;
-	bh=R1UBR5SSusXfaRrwqFk/SarSBaFu8EUGhG5nwGThfQQ=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=RcBirYwj6b2jgWhpluwivRqZ0YFs7pxWZoNUPHOC8ukxIHJr+MJqoBK3PoCJZYwqo68IqfYg0rGEnMbOPxRd4nYymmmsOj5rHc5/81L+PPgkqeXxCPLW8FohUcusY6Lguawx4rTU8Y2iZIHnLv+3h6VQ9viYe1sBcA4gb+a8ivw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com; spf=pass smtp.mailfrom=suse.com; dkim=pass (1024-bit key) header.d=suse.com header.i=@suse.com header.b=G5rRmong; dkim=pass (1024-bit key) header.d=suse.com header.i=@suse.com header.b=dt1RqVFO; arc=none smtp.client-ip=195.135.223.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.com
+	s=arc-20240116; t=1783080298; c=relaxed/simple;
+	bh=56Siyovl6VI/xXaoNR4iTACjQL+X7tU79OlaOV6Kjeg=;
+	h=From:In-Reply-To:MIME-Version:References:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=awU3KVEcxyEnf99RHX8fJQUOaT0ItUUS1wCEO4gu6sZHx7qe9uwRD4Uc3RQ9DET4zrDv9ZsVuxUs/VYC4UDg9UeRu7OhthiESghyOIpPX72grfQRDgvyR/ulfmV9p5P1GcMvdOWgs1KxpvR6U5iq4h/zxusct17OYurq/o0wXf0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=R43BrsCk; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=suse.com header.i=@suse.com header.b="G5rRmong";
-	dkim=pass (1024-bit key) header.d=suse.com header.i=@suse.com header.b="dt1RqVFO"
-Received: from imap1.dmz-prg2.suse.org (unknown [10.150.64.97])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by smtp-out2.suse.de (Postfix) with ESMTPS id 07F8E758B0;
-	Fri,  3 Jul 2026 11:24:48 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.com; s=susede1;
-	t=1783077889; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=Tw5UFUhlv6X4xvzqA9AfgS/JIpM61WBjYVjVFEjEm2Y=;
-	b=G5rRmonganSLdBo9Z4V9CPxVBdxIGj6DbAwK9H5KZFAeJ9RYEitIhewZQNFWPUnDrZfWbu
-	zUhwjTyUP0U4rMw3IbwuI71NZjv4yWGk+lSkbpqk8DNYUrFU7jt1j3H42Zwc06JpUAmNSC
-	U25vPjAgzuG4RDm5Xx50w52zXGhA7lA=
-Authentication-Results: smtp-out2.suse.de;
-	none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.com; s=susede1;
-	t=1783077888; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=Tw5UFUhlv6X4xvzqA9AfgS/JIpM61WBjYVjVFEjEm2Y=;
-	b=dt1RqVFOILVZtlrRDPrcj+X9IJlak8Q/BYtzV6BhQ2NDbfTvf8Foc9VB6sX0W6bPR6y4+l
-	xF0fbSWbkSl9vTCQw8OQojpHhaocg1nVPxmP3Fg2bKscO62ocAHLsK7R9bmT1jyTfLe3LY
-	tiWTxmXQUshvJ69pvJoHoB+7ciwzXE8=
-Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id CB5FA779AA;
-	Fri,  3 Jul 2026 11:24:47 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
-	by imap1.dmz-prg2.suse.org with ESMTPSA
-	id ajlXMP+bR2qFZQAAD6G6ig
-	(envelope-from <jgross@suse.com>); Fri, 03 Jul 2026 11:24:47 +0000
-From: Juergen Gross <jgross@suse.com>
-To: linux-kernel@vger.kernel.org,
-	linux-pm@vger.kernel.org
-Cc: Juergen Gross <jgross@suse.com>,
-	"Rafael J. Wysocki" <rafael@kernel.org>,
-	Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH v2 16/32] cpufreq: Stop using 32-bit MSR interfaces
-Date: Fri,  3 Jul 2026 13:24:45 +0200
-Message-ID: <20260703112445.1763078-1-jgross@suse.com>
-X-Mailer: git-send-email 2.54.0
-In-Reply-To: <20260629060526.3638272-17-jgross@suse.com>
-References: <20260629060526.3638272-17-jgross@suse.com>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="R43BrsCk"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 66E251F00A3E
+	for <linux-pm@vger.kernel.org>; Fri,  3 Jul 2026 12:04:56 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1783080296;
+	bh=lYt6V9Jnqt8R/CJJl+keIMNvwfnVSgPAem6i+B/iGB0=;
+	h=From:In-Reply-To:References:Date:Subject:To:Cc;
+	b=R43BrsCkCyKD/cc1XKL6zqzw3XTY2TUpQl7n0q5JuLJdVZNi18xkae1IcOWb2pmP2
+	 illl8oyL+0cRX0a1cWPr+392XOPXDshG8txXXgvS94Pp4A+9wQYLOQOlDuarGUYpNa
+	 JJfDmLgE6juRr8ofDcXTnOfq2Z9ENufPlYGG+yOG/Imcaimd0ivaN3esJXMdFhYPFQ
+	 Bexmo1mq6eIpDnf3bjJSY/SnYCDQOQxQEIeP3Qte3g+4Mh/Byg7UCDdPPnWPgQA3wM
+	 A4JVLQ0D5sW6yI4X5kTy2RCb8QmLJC/zsYvs7mMibj9jUM++lMCCkhqezmnfaIVnt/
+	 F5x0ONb5FeqHA==
+Received: by mail-lj1-f169.google.com with SMTP id 38308e7fff4ca-39af6402933so4320141fa.2
+        for <linux-pm@vger.kernel.org>; Fri, 03 Jul 2026 05:04:56 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AHgh+RpVZdb0qOHDgakB09UEg1cVGO2pYUv1ubZ+WaMfiNd7SBsvnijgQsfXPldIOqswCNsatDhXri7//Q==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yyofj14vMOTD63WmkLDe1GXJ+qRnC0ngHr04FuqxFP4sUagEbEE
+	QlCylT5DjmKZF0kNNcORN/oPczjBQvuu0UBxu5ILjZnfd1AyJ8UtPj8iR27Hs9gcKlt7lEXwA/x
+	0cjWniRDmpuDvIjElwbrVjpKvmFE+kbc+tCqzWTkSRw==
+X-Received: by 2002:a2e:beaa:0:b0:39b:32b3:b31f with SMTP id
+ 38308e7fff4ca-39b36dbe62amr23176871fa.5.1783080295099; Fri, 03 Jul 2026
+ 05:04:55 -0700 (PDT)
+Received: from 969154062570 named unknown by gmailapi.google.com with
+ HTTPREST; Fri, 3 Jul 2026 07:04:53 -0500
+Received: from 969154062570 named unknown by gmailapi.google.com with
+ HTTPREST; Fri, 3 Jul 2026 07:04:53 -0500
+From: Bartosz Golaszewski <brgl@kernel.org>
+In-Reply-To: <20260703110317.1283411-3-wenst@chromium.org>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Spam-Flag: NO
-X-Spam-Score: -2.80
-X-Spamd-Result: default: False [-2.80 / 50.00];
-	BAYES_HAM(-3.00)[100.00%];
-	MID_CONTAINS_FROM(1.00)[];
-	NEURAL_HAM_LONG(-1.00)[-1.000];
-	R_MISSING_CHARSET(0.50)[];
-	NEURAL_HAM_SHORT(-0.20)[-1.000];
-	MIME_GOOD(-0.10)[text/plain];
-	TO_MATCH_ENVRCPT_ALL(0.00)[];
-	FROM_HAS_DN(0.00)[];
-	ARC_NA(0.00)[];
-	MIME_TRACE(0.00)[0:+];
-	TO_DN_SOME(0.00)[];
-	DBL_BLOCKED_OPENRESOLVER(0.00)[suse.com:email,suse.com:mid,brodo.de:email,imap1.dmz-prg2.suse.org:helo];
-	RCVD_VIA_SMTP_AUTH(0.00)[];
-	FROM_EQ_ENVFROM(0.00)[];
-	RCVD_COUNT_TWO(0.00)[2];
-	FUZZY_RATELIMITED(0.00)[rspamd.com];
-	DKIM_SIGNED(0.00)[suse.com:s=susede1];
-	RCPT_COUNT_FIVE(0.00)[5];
-	RCVD_TLS_ALL(0.00)[]
-X-Spam-Level: 
+References: <20260703110317.1283411-1-wenst@chromium.org> <20260703110317.1283411-3-wenst@chromium.org>
+Date: Fri, 3 Jul 2026 07:04:53 -0500
+X-Gmail-Original-Message-ID: <CAMRc=Mc7TzwLS1Kbyd9OwXPJcHk-39kxgfagxxCCbKYK8QG0Vg@mail.gmail.com>
+X-Gm-Features: AVVi8CfmsSUQO2IQlOpABcTwLAPK-fQZLHJJwpMHDg07kXLzC1jeLanLhSp6ZO4
+Message-ID: <CAMRc=Mc7TzwLS1Kbyd9OwXPJcHk-39kxgfagxxCCbKYK8QG0Vg@mail.gmail.com>
+Subject: Re: [PATCH v3 02/13] device property: Add fwnode_graph_get_next_port_endpoint()
+To: Chen-Yu Tsai <wenst@chromium.org>
+Cc: linux-acpi@vger.kernel.org, driver-core@lists.linux.dev, 
+	linux-pm@vger.kernel.org, linux-usb@vger.kernel.org, 
+	devicetree@vger.kernel.org, linux-mediatek@lists.infradead.org, 
+	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, 
+	Manivannan Sadhasivam <mani@kernel.org>, Alan Stern <stern@rowland.harvard.edu>, 
+	Bartosz Golaszewski <brgl@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
+	Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Daniel Scally <djrscally@gmail.com>, 
+	Heikki Krogerus <heikki.krogerus@linux.intel.com>, 
+	Sakari Ailus <sakari.ailus@linux.intel.com>, "Rafael J. Wysocki" <rafael@kernel.org>, 
+	Danilo Krummrich <dakr@kernel.org>, Rob Herring <robh@kernel.org>, 
+	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
+	Matthias Brugger <matthias.bgg@gmail.com>, 
+	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
+Content-Type: text/plain; charset="UTF-8"
 
-The 32-bit MSR interfaces rdmsr() and wrmsr() are planned to be
-removed. Use the related 64-bit variants instead.
+On Fri, 3 Jul 2026 13:03:03 +0200, Chen-Yu Tsai <wenst@chromium.org> said:
+> Due to design constraints of the power sequencing API, the consumer
+> must first be sure that the other side is actually a provider, or it
+> will continually get -EPROBE_DEFER when requesting the power
+> sequencing descriptor.
+>
+> In the upcoming USB power sequencing integration, the USB hub driver
+> first needs to check whether a graph connection exists, and whether
+> the other side of the connection is a supported connector type. The
+> USB port is tied to a "port" firmware node, and this new helper will
+> be used to get the endpoint under the known "port" firmware node.
+>
+> Signed-off-by: Chen-Yu Tsai <wenst@chromium.org>
+> ---
+> Changes since v2:
+> - Dropped unused |ep| variable
+> - Rewrote as do {} while()
+> - Dropped WARN() use
+> ---
+>  drivers/base/property.c  | 25 +++++++++++++++++++++++++
+>  include/linux/property.h |  2 ++
+>  2 files changed, 27 insertions(+)
+>
+> diff --git a/drivers/base/property.c b/drivers/base/property.c
+> index 3e3e19ef66a9..7e7ad3635806 100644
+> --- a/drivers/base/property.c
+> +++ b/drivers/base/property.c
+> @@ -1099,6 +1099,31 @@ int fwnode_irq_get_byname(const struct fwnode_handle *fwnode, const char *name)
+>  }
+>  EXPORT_SYMBOL(fwnode_irq_get_byname);
+>
+> +/**
+> + * fwnode_graph_get_next_port_endpoint - Get next endpoint firmware node in port
+> + * @port: Pointer to the target port firmware node
+> + * @prev: Previous endpoint node or %NULL to get the first
+> + *
+> + * The caller is responsible for calling fwnode_handle_put() on the returned
+> + * fwnode pointer. Note that this function also puts a reference to @prev
+> + * unconditionally.
+> + *
+> + * Return: an endpoint firmware node pointer or %NULL if no more endpoints
 
-Signed-off-by: Juergen Gross <jgross@suse.com>
----
-V2:
-- fix bug in cpu_freq_write_intel() (Zhongqiu Han)
-- fix bug in eps_set_state() (Zhongqiu Han)
-- fix bug in longrun_determine_freqs() (Zhongqiu Han)
-- use u64 instead of struct msr in some places (Zhongqiu Han)
----
- drivers/cpufreq/acpi-cpufreq.c       | 22 ++++----
- drivers/cpufreq/e_powersaver.c       | 49 +++++++++---------
- drivers/cpufreq/longhaul.c           | 15 +++---
- drivers/cpufreq/longrun.c            | 77 ++++++++++++++--------------
- drivers/cpufreq/powernow-k6.c        | 12 ++---
- drivers/cpufreq/powernow-k8.c        | 67 ++++++++++++------------
- drivers/cpufreq/speedstep-centrino.c | 16 +++---
- drivers/cpufreq/speedstep-lib.c      | 63 ++++++++++++-----------
- 8 files changed, 164 insertions(+), 157 deletions(-)
+I think the correct keyword is Returns: followed by a newline.
 
-diff --git a/drivers/cpufreq/acpi-cpufreq.c b/drivers/cpufreq/acpi-cpufreq.c
-index 21639d9ac753..10ea6035f4ad 100644
---- a/drivers/cpufreq/acpi-cpufreq.c
-+++ b/drivers/cpufreq/acpi-cpufreq.c
-@@ -246,32 +246,32 @@ static unsigned extract_freq(struct cpufreq_policy *policy, u32 val)
- 
- static u32 cpu_freq_read_intel(struct acpi_pct_register *not_used)
- {
--	u32 val, dummy __always_unused;
-+	u64 val;
- 
--	rdmsr(MSR_IA32_PERF_CTL, val, dummy);
--	return val;
-+	rdmsrq(MSR_IA32_PERF_CTL, val);
-+	return (u32)val;
- }
- 
- static void cpu_freq_write_intel(struct acpi_pct_register *not_used, u32 val)
- {
--	u32 lo, hi;
-+	u64 msrval;
- 
--	rdmsr(MSR_IA32_PERF_CTL, lo, hi);
--	lo = (lo & ~INTEL_MSR_RANGE) | (val & INTEL_MSR_RANGE);
--	wrmsr(MSR_IA32_PERF_CTL, lo, hi);
-+	rdmsrq(MSR_IA32_PERF_CTL, msrval);
-+	msrval = (msrval & ~(u64)INTEL_MSR_RANGE) | (val & INTEL_MSR_RANGE);
-+	wrmsrq(MSR_IA32_PERF_CTL, msrval);
- }
- 
- static u32 cpu_freq_read_amd(struct acpi_pct_register *not_used)
- {
--	u32 val, dummy __always_unused;
-+	u64 val;
- 
--	rdmsr(MSR_AMD_PERF_CTL, val, dummy);
--	return val;
-+	rdmsrq(MSR_AMD_PERF_CTL, val);
-+	return (u32)val;
- }
- 
- static void cpu_freq_write_amd(struct acpi_pct_register *not_used, u32 val)
- {
--	wrmsr(MSR_AMD_PERF_CTL, val, 0);
-+	wrmsrq(MSR_AMD_PERF_CTL, val);
- }
- 
- static u32 cpu_freq_read_io(struct acpi_pct_register *reg)
-diff --git a/drivers/cpufreq/e_powersaver.c b/drivers/cpufreq/e_powersaver.c
-index eb5a9209d828..54689ebadeb2 100644
---- a/drivers/cpufreq/e_powersaver.c
-+++ b/drivers/cpufreq/e_powersaver.c
-@@ -90,7 +90,7 @@ static int eps_acpi_exit(struct cpufreq_policy *policy)
- static unsigned int eps_get(unsigned int cpu)
- {
- 	struct eps_cpu_data *centaur;
--	u32 lo, hi;
-+	u64 val;
- 
- 	if (cpu)
- 		return 0;
-@@ -99,50 +99,50 @@ static unsigned int eps_get(unsigned int cpu)
- 		return 0;
- 
- 	/* Return current frequency */
--	rdmsr(MSR_IA32_PERF_STATUS, lo, hi);
--	return centaur->fsb * ((lo >> 8) & 0xff);
-+	rdmsrq(MSR_IA32_PERF_STATUS, val);
-+	return centaur->fsb * ((val >> 8) & 0xff);
- }
- 
- static int eps_set_state(struct eps_cpu_data *centaur,
- 			 struct cpufreq_policy *policy,
- 			 u32 dest_state)
- {
--	u32 lo, hi;
-+	u64 val;
- 	int i;
- 
- 	/* Wait while CPU is busy */
--	rdmsr(MSR_IA32_PERF_STATUS, lo, hi);
-+	rdmsrq(MSR_IA32_PERF_STATUS, val);
- 	i = 0;
--	while (lo & ((1 << 16) | (1 << 17))) {
-+	while (val & ((1 << 16) | (1 << 17))) {
- 		udelay(16);
--		rdmsr(MSR_IA32_PERF_STATUS, lo, hi);
-+		rdmsrq(MSR_IA32_PERF_STATUS, val);
- 		i++;
- 		if (unlikely(i > 64)) {
- 			return -ENODEV;
- 		}
- 	}
- 	/* Set new multiplier and voltage */
--	wrmsr(MSR_IA32_PERF_CTL, dest_state & 0xffff, 0);
-+	wrmsrq(MSR_IA32_PERF_CTL, dest_state & 0xffff);
- 	/* Wait until transition end */
- 	i = 0;
- 	do {
- 		udelay(16);
--		rdmsr(MSR_IA32_PERF_STATUS, lo, hi);
-+		rdmsrq(MSR_IA32_PERF_STATUS, val);
- 		i++;
- 		if (unlikely(i > 64)) {
- 			return -ENODEV;
- 		}
--	} while (lo & ((1 << 16) | (1 << 17)));
-+	} while (val & ((1 << 16) | (1 << 17)));
- 
- #ifdef DEBUG
- 	{
- 	u8 current_multiplier, current_voltage;
- 
- 	/* Print voltage and multiplier */
--	rdmsr(MSR_IA32_PERF_STATUS, lo, hi);
--	current_voltage = lo & 0xff;
-+	rdmsrq(MSR_IA32_PERF_STATUS, val);
-+	current_voltage = val & 0xff;
- 	pr_info("Current voltage = %dmV\n", current_voltage * 16 + 700);
--	current_multiplier = (lo >> 8) & 0xff;
-+	current_multiplier = (val >> 8) & 0xff;
- 	pr_info("Current multiplier = %d\n", current_multiplier);
- 	}
- #endif
-@@ -171,7 +171,6 @@ static int eps_target(struct cpufreq_policy *policy, unsigned int index)
- static int eps_cpu_init(struct cpufreq_policy *policy)
- {
- 	unsigned int i;
--	u32 lo, hi;
- 	u64 val;
- 	u8 current_multiplier, current_voltage;
- 	u8 max_multiplier, max_voltage;
-@@ -195,13 +194,13 @@ static int eps_cpu_init(struct cpufreq_policy *policy)
- 
- 	switch (c->x86_model) {
- 	case 10:
--		rdmsr(0x1153, lo, hi);
--		brand = (((lo >> 2) ^ lo) >> 18) & 3;
-+		rdmsrq(0x1153, val);
-+		brand = (((val >> 2) ^ val) >> 18) & 3;
- 		pr_cont("Model A ");
- 		break;
- 	case 13:
--		rdmsr(0x1154, lo, hi);
--		brand = (((lo >> 4) ^ (lo >> 2))) & 0x000000ff;
-+		rdmsrq(0x1154, val);
-+		brand = (((val >> 4) ^ (val >> 2))) & 0x000000ff;
- 		pr_cont("Model D ");
- 		break;
- 	}
-@@ -237,20 +236,20 @@ static int eps_cpu_init(struct cpufreq_policy *policy)
- 	}
- 
- 	/* Print voltage and multiplier */
--	rdmsr(MSR_IA32_PERF_STATUS, lo, hi);
--	current_voltage = lo & 0xff;
-+	rdmsrq(MSR_IA32_PERF_STATUS, val);
-+	current_voltage = val & 0xff;
- 	pr_info("Current voltage = %dmV\n", current_voltage * 16 + 700);
--	current_multiplier = (lo >> 8) & 0xff;
-+	current_multiplier = (val >> 8) & 0xff;
- 	pr_info("Current multiplier = %d\n", current_multiplier);
- 
- 	/* Print limits */
--	max_voltage = hi & 0xff;
-+	max_voltage = (val >> 32) & 0xff;
- 	pr_info("Highest voltage = %dmV\n", max_voltage * 16 + 700);
--	max_multiplier = (hi >> 8) & 0xff;
-+	max_multiplier = (val >> 40) & 0xff;
- 	pr_info("Highest multiplier = %d\n", max_multiplier);
--	min_voltage = (hi >> 16) & 0xff;
-+	min_voltage = (val >> 48) & 0xff;
- 	pr_info("Lowest voltage = %dmV\n", min_voltage * 16 + 700);
--	min_multiplier = (hi >> 24) & 0xff;
-+	min_multiplier = (val >> 56) & 0xff;
- 	pr_info("Lowest multiplier = %d\n", min_multiplier);
- 
- 	/* Sanity checks */
-diff --git a/drivers/cpufreq/longhaul.c b/drivers/cpufreq/longhaul.c
-index a18d1d11725f..4c2599264333 100644
---- a/drivers/cpufreq/longhaul.c
-+++ b/drivers/cpufreq/longhaul.c
-@@ -118,13 +118,14 @@ static unsigned int calc_speed(int mult)
- 
- static int longhaul_get_cpu_mult(void)
- {
--	unsigned long invalue = 0, lo, hi;
-+	unsigned long invalue = 0;
-+	u64 val;
- 
--	rdmsr(MSR_IA32_EBL_CR_POWERON, lo, hi);
--	invalue = (lo & (1<<22|1<<23|1<<24|1<<25))>>22;
-+	rdmsrq(MSR_IA32_EBL_CR_POWERON, val);
-+	invalue = (val & (1<<22|1<<23|1<<24|1<<25))>>22;
- 	if (longhaul_version == TYPE_LONGHAUL_V2 ||
- 	    longhaul_version == TYPE_POWERSAVER) {
--		if (lo & (1<<27))
-+		if (val & (1<<27))
- 			invalue += 16;
- 	}
- 	return eblcr[invalue];
-@@ -761,7 +762,7 @@ static int longhaul_cpu_init(struct cpufreq_policy *policy)
- 	struct cpuinfo_x86 *c = &cpu_data(0);
- 	char *cpuname = NULL;
- 	int ret;
--	u32 lo, hi;
-+	u64 val;
- 
- 	/* Check what we have on this motherboard */
- 	switch (c->x86_model) {
-@@ -835,8 +836,8 @@ static int longhaul_cpu_init(struct cpufreq_policy *policy)
- 	}
- 	/* Check Longhaul ver. 2 */
- 	if (longhaul_version == TYPE_LONGHAUL_V2) {
--		rdmsr(MSR_VIA_LONGHAUL, lo, hi);
--		if (lo == 0 && hi == 0)
-+		rdmsrq(MSR_VIA_LONGHAUL, val);
-+		if (val == 0)
- 			/* Looks like MSR isn't present */
- 			longhaul_version = TYPE_LONGHAUL_V1;
- 	}
-diff --git a/drivers/cpufreq/longrun.c b/drivers/cpufreq/longrun.c
-index f3aaca0496a4..82a7bb69c401 100644
---- a/drivers/cpufreq/longrun.c
-+++ b/drivers/cpufreq/longrun.c
-@@ -35,27 +35,27 @@ static unsigned int longrun_low_freq, longrun_high_freq;
-  */
- static void longrun_get_policy(struct cpufreq_policy *policy)
- {
--	u32 msr_lo, msr_hi;
-+	struct msr msr;
- 
--	rdmsr(MSR_TMTA_LONGRUN_FLAGS, msr_lo, msr_hi);
--	pr_debug("longrun flags are %x - %x\n", msr_lo, msr_hi);
--	if (msr_lo & 0x01)
-+	rdmsrq(MSR_TMTA_LONGRUN_FLAGS, msr.q);
-+	pr_debug("longrun flags are %x - %x\n", msr.l, msr.h);
-+	if (msr.l & 0x01)
- 		policy->policy = CPUFREQ_POLICY_PERFORMANCE;
- 	else
- 		policy->policy = CPUFREQ_POLICY_POWERSAVE;
- 
--	rdmsr(MSR_TMTA_LONGRUN_CTRL, msr_lo, msr_hi);
--	pr_debug("longrun ctrl is %x - %x\n", msr_lo, msr_hi);
--	msr_lo &= 0x0000007F;
--	msr_hi &= 0x0000007F;
-+	rdmsrq(MSR_TMTA_LONGRUN_CTRL, msr.q);
-+	pr_debug("longrun ctrl is %x - %x\n", msr.l, msr.h);
-+	msr.l &= 0x0000007F;
-+	msr.h &= 0x0000007F;
- 
- 	if (longrun_high_freq <= longrun_low_freq) {
- 		/* Assume degenerate Longrun table */
- 		policy->min = policy->max = longrun_high_freq;
- 	} else {
--		policy->min = longrun_low_freq + msr_lo *
-+		policy->min = longrun_low_freq + msr.l *
- 			((longrun_high_freq - longrun_low_freq) / 100);
--		policy->max = longrun_low_freq + msr_hi *
-+		policy->max = longrun_low_freq + msr.h *
- 			((longrun_high_freq - longrun_low_freq) / 100);
- 	}
- 	policy->cpu = 0;
-@@ -71,7 +71,7 @@ static void longrun_get_policy(struct cpufreq_policy *policy)
-  */
- static int longrun_set_policy(struct cpufreq_policy *policy)
- {
--	u32 msr_lo, msr_hi;
-+	struct msr msr;
- 	u32 pctg_lo, pctg_hi;
- 
- 	if (!policy)
-@@ -93,24 +93,24 @@ static int longrun_set_policy(struct cpufreq_policy *policy)
- 		pctg_lo = pctg_hi;
- 
- 	/* performance or economy mode */
--	rdmsr(MSR_TMTA_LONGRUN_FLAGS, msr_lo, msr_hi);
--	msr_lo &= 0xFFFFFFFE;
-+	rdmsrq(MSR_TMTA_LONGRUN_FLAGS, msr.q);
-+	msr.l &= 0xFFFFFFFE;
- 	switch (policy->policy) {
- 	case CPUFREQ_POLICY_PERFORMANCE:
--		msr_lo |= 0x00000001;
-+		msr.l |= 0x00000001;
- 		break;
- 	case CPUFREQ_POLICY_POWERSAVE:
- 		break;
- 	}
--	wrmsr(MSR_TMTA_LONGRUN_FLAGS, msr_lo, msr_hi);
-+	wrmsrq(MSR_TMTA_LONGRUN_FLAGS, msr.q);
- 
- 	/* lower and upper boundary */
--	rdmsr(MSR_TMTA_LONGRUN_CTRL, msr_lo, msr_hi);
--	msr_lo &= 0xFFFFFF80;
--	msr_hi &= 0xFFFFFF80;
--	msr_lo |= pctg_lo;
--	msr_hi |= pctg_hi;
--	wrmsr(MSR_TMTA_LONGRUN_CTRL, msr_lo, msr_hi);
-+	rdmsrq(MSR_TMTA_LONGRUN_CTRL, msr.q);
-+	msr.l &= 0xFFFFFF80;
-+	msr.h &= 0xFFFFFF80;
-+	msr.l |= pctg_lo;
-+	msr.h |= pctg_hi;
-+	wrmsrq(MSR_TMTA_LONGRUN_CTRL, msr.q);
- 
- 	return 0;
- }
-@@ -160,8 +160,7 @@ static unsigned int longrun_get(unsigned int cpu)
- static int longrun_determine_freqs(unsigned int *low_freq,
- 						      unsigned int *high_freq)
- {
--	u32 msr_lo, msr_hi;
--	u32 save_lo, save_hi;
-+	struct msr msr, save;
- 	u32 eax, ebx, ecx, edx;
- 	u32 try_hi;
- 	struct cpuinfo_x86 *c = &cpu_data(0);
-@@ -178,15 +177,17 @@ static int longrun_determine_freqs(unsigned int *low_freq,
- 		 * For maximum frequency, read out level zero.
- 		 */
- 		/* minimum */
--		rdmsr(MSR_TMTA_LRTI_READOUT, msr_lo, msr_hi);
--		wrmsr(MSR_TMTA_LRTI_READOUT, msr_hi, msr_hi);
--		rdmsr(MSR_TMTA_LRTI_VOLT_MHZ, msr_lo, msr_hi);
--		*low_freq = msr_lo * 1000; /* to kHz */
-+		rdmsrq(MSR_TMTA_LRTI_READOUT, msr.q);
-+		msr.l = msr.h;
-+		wrmsrq(MSR_TMTA_LRTI_READOUT, msr.q);
-+		rdmsrq(MSR_TMTA_LRTI_VOLT_MHZ, msr.q);
-+		*low_freq = msr.l * 1000; /* to kHz */
- 
- 		/* maximum */
--		wrmsr(MSR_TMTA_LRTI_READOUT, 0, msr_hi);
--		rdmsr(MSR_TMTA_LRTI_VOLT_MHZ, msr_lo, msr_hi);
--		*high_freq = msr_lo * 1000; /* to kHz */
-+		msr.l = 0;
-+		wrmsrq(MSR_TMTA_LRTI_READOUT, msr.q);
-+		rdmsrq(MSR_TMTA_LRTI_VOLT_MHZ, msr.q);
-+		*high_freq = msr.l * 1000; /* to kHz */
- 
- 		pr_debug("longrun table interface told %u - %u kHz\n",
- 				*low_freq, *high_freq);
-@@ -202,9 +203,9 @@ static int longrun_determine_freqs(unsigned int *low_freq,
- 	pr_debug("high frequency is %u kHz\n", *high_freq);
- 
- 	/* get current borders */
--	rdmsr(MSR_TMTA_LONGRUN_CTRL, msr_lo, msr_hi);
--	save_lo = msr_lo & 0x0000007F;
--	save_hi = msr_hi & 0x0000007F;
-+	rdmsrq(MSR_TMTA_LONGRUN_CTRL, msr.q);
-+	save.l = msr.l & 0x0000007F;
-+	save.h = msr.h & 0x0000007F;
- 
- 	/* if current perf_pctg is larger than 90%, we need to decrease the
- 	 * upper limit to make the calculation more accurate.
-@@ -214,16 +215,16 @@ static int longrun_determine_freqs(unsigned int *low_freq,
- 	 * on some barrier values */
- 	for (try_hi = 80; try_hi > 0 && ecx > 90; try_hi -= 10) {
- 		/* set to 0 to try_hi perf_pctg */
--		msr_lo &= 0xFFFFFF80;
--		msr_hi &= 0xFFFFFF80;
--		msr_hi |= try_hi;
--		wrmsr(MSR_TMTA_LONGRUN_CTRL, msr_lo, msr_hi);
-+		msr.l &= 0xFFFFFF80;
-+		msr.h &= 0xFFFFFF80;
-+		msr.h |= try_hi;
-+		wrmsrq(MSR_TMTA_LONGRUN_CTRL, msr.q);
- 
- 		/* read out current core MHz and current perf_pctg */
- 		cpuid(0x80860007, &eax, &ebx, &ecx, &edx);
- 
- 		/* restore values */
--		wrmsr(MSR_TMTA_LONGRUN_CTRL, save_lo, save_hi);
-+		wrmsrq(MSR_TMTA_LONGRUN_CTRL, save.q);
- 	}
- 	pr_debug("percentage is %u %%, freq is %u MHz\n", ecx, eax);
- 
-diff --git a/drivers/cpufreq/powernow-k6.c b/drivers/cpufreq/powernow-k6.c
-index 99d2244e03b0..2044e8a336ec 100644
---- a/drivers/cpufreq/powernow-k6.c
-+++ b/drivers/cpufreq/powernow-k6.c
-@@ -83,15 +83,15 @@ static const struct {
- static int powernow_k6_get_cpu_multiplier(void)
- {
- 	unsigned long invalue = 0;
--	u32 msrval;
-+	u64 msrval;
- 
- 	local_irq_disable();
- 
- 	msrval = POWERNOW_IOPORT + 0x1;
--	wrmsr(MSR_K6_EPMR, msrval, 0); /* enable the PowerNow port */
-+	wrmsrq(MSR_K6_EPMR, msrval); /* enable the PowerNow port */
- 	invalue = inl(POWERNOW_IOPORT + 0x8);
- 	msrval = POWERNOW_IOPORT + 0x0;
--	wrmsr(MSR_K6_EPMR, msrval, 0); /* disable it again */
-+	wrmsrq(MSR_K6_EPMR, msrval); /* disable it again */
- 
- 	local_irq_enable();
- 
-@@ -101,8 +101,8 @@ static int powernow_k6_get_cpu_multiplier(void)
- static void powernow_k6_set_cpu_multiplier(unsigned int best_i)
- {
- 	unsigned long outvalue, invalue;
--	unsigned long msrval;
- 	unsigned long cr0;
-+	u64 msrval;
- 
- 	/* we now need to transform best_i to the BVC format, see AMD#23446 */
- 
-@@ -118,13 +118,13 @@ static void powernow_k6_set_cpu_multiplier(unsigned int best_i)
- 	outvalue = (1<<12) | (1<<10) | (1<<9) | (index_to_register[best_i]<<5);
- 
- 	msrval = POWERNOW_IOPORT + 0x1;
--	wrmsr(MSR_K6_EPMR, msrval, 0); /* enable the PowerNow port */
-+	wrmsrq(MSR_K6_EPMR, msrval); /* enable the PowerNow port */
- 	invalue = inl(POWERNOW_IOPORT + 0x8);
- 	invalue = invalue & 0x1f;
- 	outvalue = outvalue | invalue;
- 	outl(outvalue, (POWERNOW_IOPORT + 0x8));
- 	msrval = POWERNOW_IOPORT + 0x0;
--	wrmsr(MSR_K6_EPMR, msrval, 0); /* disable it again */
-+	wrmsrq(MSR_K6_EPMR, msrval); /* disable it again */
- 
- 	write_cr0(cr0);
- 	local_irq_enable();
-diff --git a/drivers/cpufreq/powernow-k8.c b/drivers/cpufreq/powernow-k8.c
-index 2b791f1ec51b..fe1f499b4fc0 100644
---- a/drivers/cpufreq/powernow-k8.c
-+++ b/drivers/cpufreq/powernow-k8.c
-@@ -87,10 +87,10 @@ static u32 convert_fid_to_vco_fid(u32 fid)
-  */
- static int pending_bit_stuck(void)
- {
--	u32 lo, hi __always_unused;
-+	u64 msr;
- 
--	rdmsr(MSR_FIDVID_STATUS, lo, hi);
--	return lo & MSR_S_LO_CHANGE_PENDING ? 1 : 0;
-+	rdmsrq(MSR_FIDVID_STATUS, msr);
-+	return msr & MSR_S_LO_CHANGE_PENDING ? 1 : 0;
- }
- 
- /*
-@@ -99,7 +99,7 @@ static int pending_bit_stuck(void)
-  */
- static int query_current_values_with_pending_wait(struct powernow_k8_data *data)
- {
--	u32 lo, hi;
-+	struct msr msr;
- 	u32 i = 0;
- 
- 	do {
-@@ -107,11 +107,11 @@ static int query_current_values_with_pending_wait(struct powernow_k8_data *data)
- 			pr_debug("detected change pending stuck\n");
- 			return 1;
- 		}
--		rdmsr(MSR_FIDVID_STATUS, lo, hi);
--	} while (lo & MSR_S_LO_CHANGE_PENDING);
-+		rdmsrq(MSR_FIDVID_STATUS, msr.q);
-+	} while (msr.l & MSR_S_LO_CHANGE_PENDING);
- 
--	data->currvid = hi & MSR_S_HI_CURRENT_VID;
--	data->currfid = lo & MSR_S_LO_CURRENT_FID;
-+	data->currvid = msr.h & MSR_S_HI_CURRENT_VID;
-+	data->currfid = msr.l & MSR_S_LO_CURRENT_FID;
- 
- 	return 0;
- }
-@@ -131,22 +131,22 @@ static void count_off_vst(struct powernow_k8_data *data)
- /* need to init the control msr to a safe value (for each cpu) */
- static void fidvid_msr_init(void)
- {
--	u32 lo, hi;
-+	struct msr msr;
- 	u8 fid, vid;
- 
--	rdmsr(MSR_FIDVID_STATUS, lo, hi);
--	vid = hi & MSR_S_HI_CURRENT_VID;
--	fid = lo & MSR_S_LO_CURRENT_FID;
--	lo = fid | (vid << MSR_C_LO_VID_SHIFT);
--	hi = MSR_C_HI_STP_GNT_BENIGN;
--	pr_debug("cpu%d, init lo 0x%x, hi 0x%x\n", smp_processor_id(), lo, hi);
--	wrmsr(MSR_FIDVID_CTL, lo, hi);
-+	rdmsrq(MSR_FIDVID_STATUS, msr.q);
-+	vid = msr.h & MSR_S_HI_CURRENT_VID;
-+	fid = msr.l & MSR_S_LO_CURRENT_FID;
-+	msr.l = fid | (vid << MSR_C_LO_VID_SHIFT);
-+	msr.h = MSR_C_HI_STP_GNT_BENIGN;
-+	pr_debug("cpu%d, init lo 0x%x, hi 0x%x\n", smp_processor_id(), msr.l, msr.h);
-+	wrmsrq(MSR_FIDVID_CTL, msr.q);
- }
- 
- /* write the new fid value along with the other control fields to the msr */
- static int write_new_fid(struct powernow_k8_data *data, u32 fid)
- {
--	u32 lo;
-+	struct msr msr;
- 	u32 savevid = data->currvid;
- 	u32 i = 0;
- 
-@@ -155,15 +155,15 @@ static int write_new_fid(struct powernow_k8_data *data, u32 fid)
- 		return 1;
- 	}
- 
--	lo = fid;
--	lo |= (data->currvid << MSR_C_LO_VID_SHIFT);
--	lo |= MSR_C_LO_INIT_FID_VID;
-+	msr.l = fid;
-+	msr.l |= (data->currvid << MSR_C_LO_VID_SHIFT);
-+	msr.l |= MSR_C_LO_INIT_FID_VID;
-+	msr.h = data->plllock * PLL_LOCK_CONVERSION;
- 
--	pr_debug("writing fid 0x%x, lo 0x%x, hi 0x%x\n",
--		fid, lo, data->plllock * PLL_LOCK_CONVERSION);
-+	pr_debug("writing fid 0x%x, lo 0x%x, hi 0x%x\n", fid, msr.l, msr.h);
- 
- 	do {
--		wrmsr(MSR_FIDVID_CTL, lo, data->plllock * PLL_LOCK_CONVERSION);
-+		wrmsrq(MSR_FIDVID_CTL, msr.q);
- 		if (i++ > 100) {
- 			pr_err("Hardware error - pending bit very stuck - no further pstate changes possible\n");
- 			return 1;
-@@ -190,7 +190,7 @@ static int write_new_fid(struct powernow_k8_data *data, u32 fid)
- /* Write a new vid to the hardware */
- static int write_new_vid(struct powernow_k8_data *data, u32 vid)
- {
--	u32 lo;
-+	struct msr msr;
- 	u32 savefid = data->currfid;
- 	int i = 0;
- 
-@@ -199,15 +199,15 @@ static int write_new_vid(struct powernow_k8_data *data, u32 vid)
- 		return 1;
- 	}
- 
--	lo = data->currfid;
--	lo |= (vid << MSR_C_LO_VID_SHIFT);
--	lo |= MSR_C_LO_INIT_FID_VID;
-+	msr.l = data->currfid;
-+	msr.l |= (vid << MSR_C_LO_VID_SHIFT);
-+	msr.l |= MSR_C_LO_INIT_FID_VID;
-+	msr.h = STOP_GRANT_5NS;
- 
--	pr_debug("writing vid 0x%x, lo 0x%x, hi 0x%x\n",
--		vid, lo, STOP_GRANT_5NS);
-+	pr_debug("writing vid 0x%x, lo 0x%x, hi 0x%x\n", vid, msr.l, msr.h);
- 
- 	do {
--		wrmsr(MSR_FIDVID_CTL, lo, STOP_GRANT_5NS);
-+		wrmsrq(MSR_FIDVID_CTL, msr.q);
- 		if (i++ > 100) {
- 			pr_err("internal error - pending bit very stuck - no further pstate changes possible\n");
- 			return 1;
-@@ -281,9 +281,10 @@ static int transition_fid_vid(struct powernow_k8_data *data,
- static int core_voltage_pre_transition(struct powernow_k8_data *data,
- 		u32 reqvid, u32 reqfid)
- {
-+	struct msr msr;
- 	u32 rvosteps = data->rvo;
- 	u32 savefid = data->currfid;
--	u32 maxvid, lo __always_unused, rvomult = 1;
-+	u32 maxvid, rvomult = 1;
- 
- 	pr_debug("ph1 (cpu%d): start, currfid 0x%x, currvid 0x%x, reqvid 0x%x, rvo 0x%x\n",
- 		smp_processor_id(),
-@@ -292,8 +293,8 @@ static int core_voltage_pre_transition(struct powernow_k8_data *data,
- 	if ((savefid < LO_FID_TABLE_TOP) && (reqfid < LO_FID_TABLE_TOP))
- 		rvomult = 2;
- 	rvosteps *= rvomult;
--	rdmsr(MSR_FIDVID_STATUS, lo, maxvid);
--	maxvid = 0x1f & (maxvid >> 16);
-+	rdmsrq(MSR_FIDVID_STATUS, msr.q);
-+	maxvid = 0x1f & (msr.h >> 16);
- 	pr_debug("ph1 maxvid=0x%x\n", maxvid);
- 	if (reqvid < maxvid) /* lower numbers are higher voltages */
- 		reqvid = maxvid;
-diff --git a/drivers/cpufreq/speedstep-centrino.c b/drivers/cpufreq/speedstep-centrino.c
-index 9237ed8f2b1f..de50fb367c6b 100644
---- a/drivers/cpufreq/speedstep-centrino.c
-+++ b/drivers/cpufreq/speedstep-centrino.c
-@@ -345,7 +345,7 @@ static unsigned int get_cur_freq(unsigned int cpu)
- static int centrino_cpu_init(struct cpufreq_policy *policy)
- {
- 	struct cpuinfo_x86 *cpu = &cpu_data(policy->cpu);
--	unsigned l, h;
-+	u64 q;
- 	int i;
- 
- 	/* Only Intel makes Enhanced Speedstep-capable CPUs */
-@@ -378,16 +378,16 @@ static int centrino_cpu_init(struct cpufreq_policy *policy)
- 
- 	/* Check to see if Enhanced SpeedStep is enabled, and try to
- 	   enable it if not. */
--	rdmsr(MSR_IA32_MISC_ENABLE, l, h);
-+	rdmsrq(MSR_IA32_MISC_ENABLE, q);
- 
--	if (!(l & MSR_IA32_MISC_ENABLE_ENHANCED_SPEEDSTEP)) {
--		l |= MSR_IA32_MISC_ENABLE_ENHANCED_SPEEDSTEP;
--		pr_debug("trying to enable Enhanced SpeedStep (%x)\n", l);
--		wrmsr(MSR_IA32_MISC_ENABLE, l, h);
-+	if (!(q & MSR_IA32_MISC_ENABLE_ENHANCED_SPEEDSTEP)) {
-+		q |= MSR_IA32_MISC_ENABLE_ENHANCED_SPEEDSTEP;
-+		pr_debug("trying to enable Enhanced SpeedStep (%x)\n", (u32)q);
-+		wrmsrq(MSR_IA32_MISC_ENABLE, q);
- 
- 		/* check to see if it stuck */
--		rdmsr(MSR_IA32_MISC_ENABLE, l, h);
--		if (!(l & MSR_IA32_MISC_ENABLE_ENHANCED_SPEEDSTEP)) {
-+		rdmsrq(MSR_IA32_MISC_ENABLE, q);
-+		if (!(q & MSR_IA32_MISC_ENABLE_ENHANCED_SPEEDSTEP)) {
- 			pr_info("couldn't enable Enhanced SpeedStep\n");
- 			return -ENODEV;
- 		}
-diff --git a/drivers/cpufreq/speedstep-lib.c b/drivers/cpufreq/speedstep-lib.c
-index 973716c1c29c..2afc3f177a29 100644
---- a/drivers/cpufreq/speedstep-lib.c
-+++ b/drivers/cpufreq/speedstep-lib.c
-@@ -69,13 +69,14 @@ static unsigned int pentium3_get_frequency(enum speedstep_processor processor)
- 		{   0, 0xff}
- 	};
- 
-+	struct msr msr;
- 	u32 msr_lo, msr_tmp;
- 	int i = 0, j = 0;
- 
- 	/* read MSR 0x2a - we only need the low 32 bits */
--	rdmsr(MSR_IA32_EBL_CR_POWERON, msr_lo, msr_tmp);
--	pr_debug("P3 - MSR_IA32_EBL_CR_POWERON: 0x%x 0x%x\n", msr_lo, msr_tmp);
--	msr_tmp = msr_lo;
-+	rdmsrq(MSR_IA32_EBL_CR_POWERON, msr.q);
-+	pr_debug("P3 - MSR_IA32_EBL_CR_POWERON: 0x%x 0x%x\n", msr.l, msr.h);
-+	msr_tmp = msr_lo = msr.l;
- 
- 	/* decode the FSB */
- 	msr_tmp &= 0x00c0000;
-@@ -108,19 +109,20 @@ static unsigned int pentium3_get_frequency(enum speedstep_processor processor)
- 
- static unsigned int pentiumM_get_frequency(void)
- {
--	u32 msr_lo, msr_tmp;
-+	struct msr msr;
-+	u32 msr_tmp;
- 
--	rdmsr(MSR_IA32_EBL_CR_POWERON, msr_lo, msr_tmp);
--	pr_debug("PM - MSR_IA32_EBL_CR_POWERON: 0x%x 0x%x\n", msr_lo, msr_tmp);
-+	rdmsrq(MSR_IA32_EBL_CR_POWERON, msr.q);
-+	pr_debug("PM - MSR_IA32_EBL_CR_POWERON: 0x%x 0x%x\n", msr.l, msr.h);
- 
- 	/* see table B-2 of 24547212.pdf */
--	if (msr_lo & 0x00040000) {
-+	if (msr.l & 0x00040000) {
- 		printk(KERN_DEBUG PFX "PM - invalid FSB: 0x%x 0x%x\n",
--				msr_lo, msr_tmp);
-+				msr.l, msr.h);
- 		return 0;
- 	}
- 
--	msr_tmp = (msr_lo >> 22) & 0x1f;
-+	msr_tmp = (msr.l >> 22) & 0x1f;
- 	pr_debug("bits 22-26 are 0x%x, speed is %u\n",
- 			msr_tmp, (msr_tmp * 100 * 1000));
- 
-@@ -129,13 +131,14 @@ static unsigned int pentiumM_get_frequency(void)
- 
- static unsigned int pentium_core_get_frequency(void)
- {
-+	struct msr msr;
- 	u32 fsb = 0;
--	u32 msr_lo, msr_tmp;
-+	u32 msr_tmp;
- 	int ret;
- 
--	rdmsr(MSR_FSB_FREQ, msr_lo, msr_tmp);
-+	rdmsrq(MSR_FSB_FREQ, msr.q);
- 	/* see table B-2 of 25366920.pdf */
--	switch (msr_lo & 0x07) {
-+	switch (msr.l & 0x07) {
- 	case 5:
- 		fsb = 100000;
- 		break;
-@@ -158,11 +161,11 @@ static unsigned int pentium_core_get_frequency(void)
- 		pr_err("PCORE - MSR_FSB_FREQ undefined value\n");
- 	}
- 
--	rdmsr(MSR_IA32_EBL_CR_POWERON, msr_lo, msr_tmp);
-+	rdmsrq(MSR_IA32_EBL_CR_POWERON, msr.q);
- 	pr_debug("PCORE - MSR_IA32_EBL_CR_POWERON: 0x%x 0x%x\n",
--			msr_lo, msr_tmp);
-+			msr.l, msr.h);
- 
--	msr_tmp = (msr_lo >> 22) & 0x1f;
-+	msr_tmp = (msr.l >> 22) & 0x1f;
- 	pr_debug("bits 22-26 are 0x%x, speed is %u\n",
- 			msr_tmp, (msr_tmp * fsb));
- 
-@@ -174,7 +177,8 @@ static unsigned int pentium_core_get_frequency(void)
- static unsigned int pentium4_get_frequency(void)
- {
- 	struct cpuinfo_x86 *c = &boot_cpu_data;
--	u32 msr_lo, msr_hi, mult;
-+	struct msr msr;
-+	u32 mult;
- 	unsigned int fsb = 0;
- 	unsigned int ret;
- 	u8 fsb_code;
-@@ -187,16 +191,16 @@ static unsigned int pentium4_get_frequency(void)
- 	if (c->x86_model < 2)
- 		return cpu_khz;
- 
--	rdmsr(0x2c, msr_lo, msr_hi);
-+	rdmsrq(0x2c, msr.q);
- 
--	pr_debug("P4 - MSR_EBC_FREQUENCY_ID: 0x%x 0x%x\n", msr_lo, msr_hi);
-+	pr_debug("P4 - MSR_EBC_FREQUENCY_ID: 0x%x 0x%x\n", msr.l, msr.h);
- 
- 	/* decode the FSB: see IA-32 Intel (C) Architecture Software
- 	 * Developer's Manual, Volume 3: System Prgramming Guide,
- 	 * revision #12 in Table B-1: MSRs in the Pentium 4 and
- 	 * Intel Xeon Processors, on page B-4 and B-5.
- 	 */
--	fsb_code = (msr_lo >> 16) & 0x7;
-+	fsb_code = (msr.l >> 16) & 0x7;
- 	switch (fsb_code) {
- 	case 0:
- 		fsb = 100 * 1000;
-@@ -214,7 +218,7 @@ static unsigned int pentium4_get_frequency(void)
- 				"Please send an e-mail to <linux@brodo.de>\n");
- 
- 	/* Multiplier. */
--	mult = msr_lo >> 24;
-+	mult = msr.l >> 24;
- 
- 	pr_debug("P4 - FSB %u kHz; Multiplier %u; Speed %u kHz\n",
- 			fsb, mult, (fsb * mult));
-@@ -255,7 +259,8 @@ EXPORT_SYMBOL_GPL(speedstep_get_frequency);
- enum speedstep_processor speedstep_detect_processor(void)
- {
- 	struct cpuinfo_x86 *c = &cpu_data(0);
--	u32 ebx, msr_lo, msr_hi;
-+	struct msr msr;
-+	u32 ebx;
- 
- 	pr_debug("x86: %x, model: %x\n", c->x86, c->x86_model);
- 
-@@ -343,11 +348,11 @@ enum speedstep_processor speedstep_detect_processor(void)
- 
- 		/* all mobile PIII Coppermines have FSB 100 MHz
- 		 * ==> sort out a few desktop PIIIs. */
--		rdmsr(MSR_IA32_EBL_CR_POWERON, msr_lo, msr_hi);
-+		rdmsrq(MSR_IA32_EBL_CR_POWERON, msr.q);
- 		pr_debug("Coppermine: MSR_IA32_EBL_CR_POWERON is 0x%x, 0x%x\n",
--				msr_lo, msr_hi);
--		msr_lo &= 0x00c0000;
--		if (msr_lo != 0x0080000)
-+				msr.l, msr.h);
-+		msr.l &= 0x00c0000;
-+		if (msr.l != 0x0080000)
- 			return 0;
- 
- 		/*
-@@ -356,11 +361,11 @@ enum speedstep_processor speedstep_detect_processor(void)
- 		 * it has SpeedStep technology if either
- 		 * bit 56 or 57 is set
- 		 */
--		rdmsr(MSR_IA32_PLATFORM_ID, msr_lo, msr_hi);
-+		rdmsrq(MSR_IA32_PLATFORM_ID, msr.q);
- 		pr_debug("Coppermine: MSR_IA32_PLATFORM ID is 0x%x, 0x%x\n",
--				msr_lo, msr_hi);
--		if ((msr_hi & (1<<18)) &&
--		    (relaxed_check ? 1 : (msr_hi & (3<<24)))) {
-+				msr.l, msr.h);
-+		if ((msr.h & (1<<18)) &&
-+		    (relaxed_check ? 1 : (msr.h & (3<<24)))) {
- 			if (c->x86_stepping == 0x01) {
- 				pr_debug("early PIII version\n");
- 				return SPEEDSTEP_CPU_PIII_C_EARLY;
--- 
-2.54.0
+> + * are available.
+> + */
+> +struct fwnode_handle *fwnode_graph_get_next_port_endpoint(const struct fwnode_handle *port,
+> +							  struct fwnode_handle *prev)
+> +{
+> +	do {
+> +		prev = fwnode_get_next_child_node(port, prev);
+> +		if (fwnode_name_eq(prev, "endpoint"))
+> +			break;
+> +	} while (prev);
+> +
+> +	return prev;
+> +}
+> +EXPORT_SYMBOL_GPL(fwnode_graph_get_next_port_endpoint);
+> +
+>  /**
+>   * fwnode_graph_get_next_endpoint - Get next endpoint firmware node
+>   * @fwnode: Pointer to the parent firmware node
+> diff --git a/include/linux/property.h b/include/linux/property.h
+> index e04901c0bd8f..931e703393cb 100644
+> --- a/include/linux/property.h
+> +++ b/include/linux/property.h
+> @@ -506,6 +506,8 @@ int fwnode_get_phy_mode(const struct fwnode_handle *fwnode);
+>  void __iomem *fwnode_iomap(struct fwnode_handle *fwnode, int index);
+>
+>  struct fwnode_handle *fwnode_graph_get_port_by_id(struct fwnode_handle *fwnode, u32 id);
+> +struct fwnode_handle *fwnode_graph_get_next_port_endpoint(
+> +	const struct fwnode_handle *port, struct fwnode_handle *prev);
+>  struct fwnode_handle *fwnode_graph_get_next_endpoint(
+>  	const struct fwnode_handle *fwnode, struct fwnode_handle *prev);
+>  struct fwnode_handle *
+> --
+> 2.55.0.rc0.799.gd6f94ed593-goog
+>
+>
 
+Reviewed-by: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
