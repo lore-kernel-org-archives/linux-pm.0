@@ -1,88 +1,118 @@
-Received: from chaosmail.tech (chaosmail.tech [77.81.229.115])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D01523016F7;
-	Fri,  3 Jul 2026 18:52:58 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=77.81.229.115
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BFEA1326945
+	for <linux-pm@vger.kernel.org>; Fri,  3 Jul 2026 20:23:39 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1783104782; cv=none; b=dRG7tgJuKKanyuCgFwiDiPInPwX6J5jBTP6pxvGwug53PYn1SVBf5L+eWoUcFdnvOAeC8nX8YOpVm7L4UWK0/nEAqedCYOhWsssAZHVEExLP8Md19hLBFadhgpL4Iy+WQDXNgwBSdOsHIKzLY1pnITvDP+/lWuDs7rwA1tydeeU=
+	t=1783110221; cv=none; b=hl2HLHZ+jK2LRP5Ya0zdT1RVEEiBWE6zAfDDjfck8JPQCCM/gdwPopwPfscfV8ZEnUw2f1JUDnvsqw25w9+B3fEfl4pD2V8rNDj8O6xZgo0JLcrLiUoMshU0Q33mwRCNNTeDwJu8EDErqYmrhQ3bD3Ch7W7SMlik+6SOd1x2xBg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1783104782; c=relaxed/simple;
-	bh=pKYXT+BZ+wJ3YBFYOlgjpxbv7tZC2s26tw/M0N6OYfM=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:To:Cc; b=HFlJqz/gYgHEn/Gs6wBsDnobv7yUsIMy2D5d4fmmTUDOou7EiEFIfx0+1TfGxYhbMmHBNotk+pJHyDiD7T2B5/DOxd1a5CadSa+jmlEO4bAATDBJoPEb5WxVNBnwHmMVQHWEQNCtSK+Q8jDKlnpWSIjC1OsgXQk9gFOGOfe+7Ks=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=chaosmail.tech; spf=pass smtp.mailfrom=chaosmail.tech; dkim=pass (1024-bit key) header.d=chaosmail.tech header.i=@chaosmail.tech header.b=U+ydAsT3; arc=none smtp.client-ip=77.81.229.115
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=chaosmail.tech
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=chaosmail.tech
+	s=arc-20240116; t=1783110221; c=relaxed/simple;
+	bh=+lLKo+hfgft3HZbL+R5Lk/WjvfQOY0bJEByCh077yok=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=PCOQeUnOEOsfoLzitw6NYqHVl/r2mwzYVcDdFwqDt63T+ErLPxfM2v5w5ez7c7lqN4X8IetZ1xsNe4MQH+yRdQ7pQSlvJMUq/UhPv+KMYgYs1BPH/LW+Idn389jEI4gkFSxg1LD8hw84ri7nHr8juch2gxuAomcbH12EsCb5Bs4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=LzCKe9wM; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=chaosmail.tech header.i=@chaosmail.tech header.b="U+ydAsT3"
-Received: by chaosmail.tech (Postfix) id 61D561CC21E;
-	Fri, 03 Jul 2026 18:52:56 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=chaosmail.tech;
-	s=mail; t=1783104776;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding;
-	bh=5yh6tx0rcTXUg+w8H4oTXcRUK8TzdWacjEqbGEhyWGI=;
-	b=U+ydAsT3oX7qKlEr/7lwYq9PYT+vx84UTPKteCxy8BvzQLGk0vqE2t6kQhoPW+tJngcZJ4
-	NBagcVBkm8QrO6P+1r4SN2cUpG1CRZ5ztoTTZCfInyjtmBtW2Wm7HxdJP9S68eEkJ/pF2I
-	WDD+eSj/SBTSiin62q2v/KiCBE63dqo=
-From: Sasha Finkelstein <k@chaosmail.tech>
-Date: Fri, 03 Jul 2026 20:52:48 +0200
-Subject: [PATCH] cpufreq: apple-soc: Calculate frequency as a 64-bit value
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="LzCKe9wM"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8D5621F00A3D
+	for <linux-pm@vger.kernel.org>; Fri,  3 Jul 2026 20:23:39 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1783110219;
+	bh=K9OaFBi3ks/K/oOukwD8pGfn1NuBqlXea9Mvvp0CecQ=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc;
+	b=LzCKe9wMFPr2YK93DsxQEtjnjbXVH2n3e47AlAzL0CNV+nRlNmowroDN8fl35u3Jj
+	 T+PcMQwfyTWEo1iKWe7yPPvL25426DKGG6na+V8LAo2dIG7oN0WHOWlqyVBla08wLa
+	 OgLAqBScnnAnli6S1p3oBcpmSC7g411NyogeTZ+iW0N8a9ggo44sGmdhZJSXotSxPL
+	 aaQtjVvUAWtcfIQbHxA9NYQiMCFwD7RWkvh2G4AmPXkUS2fwDFL2oQg79tyr34srmH
+	 yZU425yUkLREuLRgJiChAKK6w6ZoUj/rm6/K3gAJb3wFEgdWtFotuOxc5BgNzjRarx
+	 +2u0AfchX/V1g==
+Received: by mail-lf1-f47.google.com with SMTP id 2adb3069b0e04-5aebd52488cso1040527e87.2
+        for <linux-pm@vger.kernel.org>; Fri, 03 Jul 2026 13:23:39 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AHgh+RpkP7FnZk+s/aAjg8AA8iHGGTdczBRxLbB5wBkhmZUjEvGJZq5A2OLf8OoKdrmRXc7SzRwDDrcDAQ==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yx0LN5AO5zZx1RtcK9u/K8uauJqQjShRsnrhG8dtq3n1wE/owfs
+	H1O5tXw3lqA5v47EL8+cDKwHkhD1WlLc5JNGrcXiUTgPeXAHT/UJKo0yYnOIH8EoW/IlRJKOFxd
+	Yq020ZAysLzAma0U2tiOLJ7gLN8DbF6g=
+X-Received: by 2002:ac2:4e16:0:b0:5ae:bdaa:df02 with SMTP id
+ 2adb3069b0e04-5aed50b4946mr65751e87.45.1783110217735; Fri, 03 Jul 2026
+ 13:23:37 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20260703-cpufreq-64-v1-1-c406c705319a@chaosmail.tech>
-X-B4-Tracking: v=1; b=H4sIAAAAAAAC/yXMTQ5AMBBA4avIrDWpIRWuIha0g7Hw06pIpHdXL
- L/Fezc4skwO6uQGSyc7XpeILE1AT90ykmATDShRyVLmQm9+sLQLVQjsMDclqoxkBTHYLA18fbO
- m/e18P5M+3gOE8AD6xnmUbgAAAA==
-X-Change-ID: 20260703-cpufreq-64-2a23d7261e09
-To: Sven Peter <sven@kernel.org>, Janne Grunau <j@jannau.net>, 
- Neal Gompa <neal@gompa.dev>, "Rafael J. Wysocki" <rafael@kernel.org>, 
- Viresh Kumar <viresh.kumar@linaro.org>
-Cc: asahi@lists.linux.dev, linux-arm-kernel@lists.infradead.org, 
- linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
- Sasha Finkelstein <k@chaosmail.tech>
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1783104776; l=1126;
- i=k@chaosmail.tech; s=20241124; h=from:subject:message-id;
- bh=pKYXT+BZ+wJ3YBFYOlgjpxbv7tZC2s26tw/M0N6OYfM=;
- b=rV8RlNcoGB9fGgWZo6PqV81pKfRxc4rz0NcyYGjLsMbudvptfAgphE8sUtztRKBGcLRxKfjhX
- Qj6W+EKtlWKCbSUsLjU5ijhZi4+d6qBuvEjtREm7Vtlu9RHYd1caEeB
-X-Developer-Key: i=k@chaosmail.tech; a=ed25519;
- pk=aSkp1PdZ+eF4jpMO6oLvz/YfT5XkBUneWwyhQrOgmsU=
+References: <20260703-fix_sticky_-einval_after_pm_runtime_api_failure-v2-0-578b78a0cf46@oss.qualcomm.com>
+ <20260703-fix_sticky_-einval_after_pm_runtime_api_failure-v2-1-578b78a0cf46@oss.qualcomm.com>
+In-Reply-To: <20260703-fix_sticky_-einval_after_pm_runtime_api_failure-v2-1-578b78a0cf46@oss.qualcomm.com>
+From: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
+Date: Fri, 3 Jul 2026 22:23:24 +0200
+X-Gmail-Original-Message-ID: <CAJZ5v0haSHfupyfnVGX_v4K0wYrjn-83NiDPPfC22x=zwi8igg@mail.gmail.com>
+X-Gm-Features: AVVi8CefGUyrFFdZwPYGZlC3wvidhE3xdDNTkOOUOg1Ptb_xKwPZ7PIeqlLivR8
+Message-ID: <CAJZ5v0haSHfupyfnVGX_v4K0wYrjn-83NiDPPfC22x=zwi8igg@mail.gmail.com>
+Subject: Re: [PATCH v2 1/2] PM: runtime: Only set runtime_error on suspend
+ callback failures
+To: Praveen Talari <praveen.talari@oss.qualcomm.com>
+Cc: Mark Brown <broonie@kernel.org>, Dilip Kota <dkota@codeaurora.org>, 
+	Stephen Boyd <swboyd@chromium.org>, Girish Mahadevan <girishm@codeaurora.org>, 
+	Alok Chauhan <alokc@codeaurora.org>, bjorn.andersson@oss.qualcomm.com, 
+	Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>, "Rafael J. Wysocki" <rafael@kernel.org>, 
+	Len Brown <lenb@kernel.org>, Pavel Machek <pavel@kernel.org>, 
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Danilo Krummrich <dakr@kernel.org>, 
+	Douglas Anderson <dianders@chromium.org>, linux-spi@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org, 
+	Mukesh Kumar Savaliya <mukesh.savaliya@oss.qualcomm.com>, aniket.randive@oss.qualcomm.com, 
+	chandana.chiluveru@oss.qualcomm.com, jyothi.seerapu@oss.qualcomm.com, 
+	linux-pm@vger.kernel.org, driver-core@lists.linux.dev
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-The current frequency calculation is done in 32 bit, causing problems
-if run on a future SoC that can boost higher than 4.2GHz.
+On Fri, Jul 3, 2026 at 5:05=E2=80=AFPM Praveen Talari
+<praveen.talari@oss.qualcomm.com> wrote:
+>
+> When a runtime resume callback returns an error, rpm_callback() sets
+> power.runtime_error on the device.  This causes all subsequent calls to
+> rpm_resume() to return -EINVAL immediately at the top of the function
+> without invoking the callback again, making the failure permanent until
+> runtime PM is explicitly re-initialized.
+>
+> Unlike suspend failures, resume failures should be retryable.  If a
+> device's resume callback fails transiently, there is no reason to
+> permanently block future resume attempts on that device and all of its
+> consumers.
+>
+> Fix this by conditioning the power.runtime_error assignment in
+> rpm_callback() on the device being in the RPM_SUSPENDING state.  At the
+> point rpm_callback() runs, __update_runtime_status() has already set the
+> device status to either RPM_SUSPENDING or RPM_RESUMING, so the two paths
+> are reliably distinguishable.  Suspend callback failures continue to set
+> power.runtime_error as before.  Resume callback failures return the error
+> to the caller but leave power.runtime_error clear, allowing the next
+> resume attempt to invoke the callback normally.
+>
+> Signed-off-by: Praveen Talari <praveen.talari@oss.qualcomm.com>
+> ---
+>  drivers/base/power/runtime.c | 8 +++++++-
+>  1 file changed, 7 insertions(+), 1 deletion(-)
+>
+> diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.c
+> index 335288e8b5b3..70d933bcd295 100644
+> --- a/drivers/base/power/runtime.c
+> +++ b/drivers/base/power/runtime.c
+> @@ -469,7 +469,13 @@ static int rpm_callback(int (*cb)(struct device *), =
+struct device *dev)
+>         if (retval =3D=3D -EACCES)
+>                 retval =3D -EAGAIN;
+>
+> -       if (retval !=3D -EAGAIN && retval !=3D -EBUSY)
+> +       /*
+> +        * Only stick the error on suspend failures.  Resume failures are=
+ not
+> +        * treated as permanent so that the next resume attempt will run =
+the
+> +        * callback again rather than short-circuiting on runtime_error.
+> +        */
+> +       if (retval !=3D -EAGAIN && retval !=3D -EBUSY &&
+> +           dev->power.runtime_status =3D=3D RPM_SUSPENDING)
+>                 dev->power.runtime_error =3D retval;
 
-Signed-off-by: Sasha Finkelstein <k@chaosmail.tech>
----
- drivers/cpufreq/apple-soc-cpufreq.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/cpufreq/apple-soc-cpufreq.c b/drivers/cpufreq/apple-soc-cpufreq.c
-index 638e5bf72185..6a0f1d36578f 100644
---- a/drivers/cpufreq/apple-soc-cpufreq.c
-+++ b/drivers/cpufreq/apple-soc-cpufreq.c
-@@ -288,7 +288,7 @@ static int apple_soc_cpufreq_init(struct cpufreq_policy *policy)
- 
- 	/* Get OPP levels (p-state indexes) and stash them in driver_data */
- 	for (i = 0; freq_table[i].frequency != CPUFREQ_TABLE_END; i++) {
--		unsigned long rate = freq_table[i].frequency * 1000 + 999;
-+		unsigned long rate = freq_table[i].frequency * 1000UL + 999UL;
- 		struct dev_pm_opp *opp = dev_pm_opp_find_freq_floor(cpu_dev, &rate);
- 
- 		if (IS_ERR(opp)) {
-
----
-base-commit: 4a50a141f05a8d1737661b19ee22ff8455b94409
-change-id: 20260703-cpufreq-64-2a23d7261e09
-
-Best regards,
---  
-Sasha Finkelstein <k@chaosmail.tech>
-
+Why don't you move this check to rpm_suspend()?
