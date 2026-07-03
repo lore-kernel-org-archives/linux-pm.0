@@ -1,80 +1,168 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+Received: from m16.mail.163.com (m16.mail.163.com [220.197.31.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F05A533CE80;
-	Fri,  3 Jul 2026 06:21:45 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B26C1369D6D;
+	Fri,  3 Jul 2026 06:21:59 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=220.197.31.2
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1783059706; cv=none; b=BdA+Crtm46dy08fttwEn+apcs5oX7oC1Y2xSOXx0LwbPlsWH+Mi7IjjCAtuAbFABNpJqtHmMVGuZXl2tyhmPhlMFBZwOboz2+ufGv6f7eAzV4CPzd3aYCtulNIZkyEGAbQ48qzOHvnWrR393h4lRBGdDBPeC6ntkXEzWbVBy1TQ=
+	t=1783059722; cv=none; b=Ts694MU3G3a1fNDW6g4M3m1x8ZwAo05UNXQ9wfy6aarENtLzOpEmFHLevj/96HTOLLXoVu73d9V3aPbfgjJz2PC8Jbv0n/cUWtSTdiAaNtWIqxk8xdKM2MCbJuFKUP7oxYzsdmP4QFQM3MZGRfsWcjQUwMRMIGGRRYh25w4kupc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1783059706; c=relaxed/simple;
-	bh=lzzJVjjvVZjpLMVVdCED199e6uwLBfBDY/p+X3b2Hhw=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=TMn3rmqZXdH7ITw7jo4RohNH740SPVtTILleXNZqsMTfflQ21zXW4+llVGSqyBTVN9Hb+8PeJQTe+KOuxwFBlODZSfAvpGcIzCzO67DyqJu18fUupUc495bGaNOuzmKWWhF9lZJs+DTSnDO/IiPBXqEzqthXI8A/N9lq7f3U5ds=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=l1SvAygo; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1783059722; c=relaxed/simple;
+	bh=NJhGiAFsDN15in5OETBvEzBUccCQZDM83X07uR3IuwQ=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=nYhUyDZxe7bWTpU06lEU3IZrQGcSYsOyyWegRooav8HFQC3O4QrCfgwKpwhWhZgGl1v8VrlePNKPEOuwQeEBVeH3bWD2UnQzVReziJj+e7/6XXqG965vGhmIopvzPMWcInYUtOMnGBq2Uzm1WBU+N1NuHBFuxDxZckNVbySCuJw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=163.com; spf=pass smtp.mailfrom=163.com; dkim=pass (1024-bit key) header.d=163.com header.i=@163.com header.b=DfKyCIWW; arc=none smtp.client-ip=220.197.31.2
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=163.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=163.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="l1SvAygo"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id D737F1F000E9;
-	Fri,  3 Jul 2026 06:21:44 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1783059705;
-	bh=7MnTyVBXFYp8Vg2HkN9K0Uqvv/ITH5vIesO323A19Ug=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=l1SvAygoZlQi4uJF1C/PgeT3ztkI0zOK3VsCg5W40I4/4qwR8F2fqN5SqTIfDwfaM
-	 kliunmN4aKQGkXYwlJFF9PGIxCY1cLPdTkd9Tqtd2fXFODKM5nhnKA8cYqfceGxe35
-	 tyIQLNfsjCvAnFhdTU5LUi2RwptdVqvYO1UeVXvvbSDpI2ngOBl15yyTmmk66BRco4
-	 OL5BshL8b19pQbQlGsOd7o1WMYJIj4RW6kTpA/uk6+ceq40IF2fe9hjfScII8/1pBU
-	 GZHMskefZ+hsP2rUtX0MB0Ee3buaDKXDta4YtUASIAU8iCyHc/ZKrOuCpBR5XLOpWR
-	 flR+9gWnTTS1A==
-Date: Fri, 3 Jul 2026 08:21:41 +0200
-From: Krzysztof Kozlowski <krzk@kernel.org>
-To: Manaf Meethalavalappu Pallikunhi <manaf.pallikunhi@oss.qualcomm.com>
-Cc: Rob Herring <robh@kernel.org>, 
-	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
-	"Rafael J. Wysocki" <rafael@kernel.org>, Bjorn Andersson <andersson@kernel.org>, 
-	Konrad Dybcio <konradybcio@kernel.org>, Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>, 
-	Gaurav Kohli <gaurav.kohli@oss.qualcomm.com>, linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-Subject: Re: [PATCH v3 2/4] dt-bindings: power: limits: Describe Qualcomm
- SPEL hardware
-Message-ID: <20260703-pastel-sensible-scorpion-6cea30@quoll>
-References: <20260702-qcom_spel_driver_upstream-v3-0-434d50f0c5b0@oss.qualcomm.com>
- <20260702-qcom_spel_driver_upstream-v3-2-434d50f0c5b0@oss.qualcomm.com>
+	dkim=pass (1024-bit key) header.d=163.com header.i=@163.com header.b="DfKyCIWW"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=163.com;
+	s=s110527; h=From:To:Subject:Date:Message-Id:MIME-Version; bh=Ce
+	5xDFXpby+V5V73K8roz6+RbThLVkSsONzOsCEDrhU=; b=DfKyCIWWay1NPfCwCr
+	SSLWQlYzMGqHp2YD2vy+XejkjwViXE2JiUefRFSDIxXuQxVir8q7ploNkIqtCJCH
+	6J8wYHRw7UC26L0O75miFAFp3T7dMZJhVxYRgWs4c1y8VCmOJIHqBCCa7+HZt9gX
+	0GIjMZr59OfUmb/5oj/xB6QS8=
+Received: from localhost.localdomain (unknown [])
+	by gzsmtp3 (Coremail) with SMTP id PigvCgDXvwnDVEdqd70GFw--.62912S2;
+	Fri, 03 Jul 2026 14:20:53 +0800 (CST)
+From: Haoxiang Li <haoxiang_li2024@163.com>
+To: sven@kernel.org,
+	j@jannau.net,
+	neal@gompa.dev,
+	rafael@kernel.org,
+	viresh.kumar@linaro.org,
+	marcan@marcan.st,
+	maz@kernel.org
+Cc: asahi@lists.linux.dev,
+	linux-arm-kernel@lists.infradead.org,
+	linux-pm@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	Haoxiang Li <haoxiang_li2024@163.com>,
+	stable@vger.kernel.org
+Subject: [PATCH v3] cpufreq: apple-soc: Fix OPP table cleanup
+Date: Fri,  3 Jul 2026 14:20:49 +0800
+Message-Id: <20260703062049.1459175-1-haoxiang_li2024@163.com>
+X-Mailer: git-send-email 2.25.1
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20260702-qcom_spel_driver_upstream-v3-2-434d50f0c5b0@oss.qualcomm.com>
+Content-Transfer-Encoding: 8bit
+X-CM-TRANSID:PigvCgDXvwnDVEdqd70GFw--.62912S2
+X-Coremail-Antispam: 1Uf129KBjvJXoWxXw47trykWrWDKw4UJF48tFb_yoWrJr45pF
+	W5WFW5Kr95GFn7tw45JF4j93W7tw4DJ3yUK3y7Gw1Svw17ZF1vg3W8GFyUuF95CF95JFy3
+	AryUtay7uay8JaUanT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
+	9KBjDUYxBIdaVFxhVjvjDU0xZFpf9x0JUUhL8UUUUU=
+X-CM-SenderInfo: xkdr5xpdqjszblsqjki6rwjhhfrp/xtbCxgayIWpHVMZSzgAA3w
 
-On Thu, Jul 02, 2026 at 10:52:55PM +0530, Manaf Meethalavalappu Pallikunhi wrote:
-> +  SPEL enforces power consumption limits to prevent thermal overload, maintain
-> +  system stability, and comply with platform power budgets. It provides
-> +    - Hardware-enforced power capping with configurable power limits
-> +    - Time window controls for power averaging
-> +    - Energy counter monitoring for each power domain
-> +    - Automatic throttling when power limits are exceeded
-> +
-> +  The hardware supports multiple power domains including system (SYS), SoC,
-> +  CPU clusters, GPU, memory, and peripheral subsystems. Each domain can have
-> +  independent power limits and monitoring.
-> +
-> +allOf:
-> +  - $ref: power-limit-controller.yaml#
+apple_soc_cpufreq_init() adds OPP tables from firmware, but
+some failure paths do not remove them. The driver also uses
+dev_pm_opp_remove_all_dynamic(), which is not the right cleanup
+helper for OPP tables loaded from firmware.
 
-Which properties are shared with above schema?
+Use the cpumask OPP helper after the policy CPU mask has been
+populated. Pair it with the matching cpumask remove helper on
+failure paths and in apple_soc_cpufreq_exit(). This also removes
+the separate dev_pm_opp_set_sharing_cpus() call, as the cpumask
+helper loads the DT OPP tables for all CPUs in the policy.
 
-> +
-> +properties:
-> +  compatible:
-> +    const: qcom,glymur-spel
-> +
-> +  reg:
-> +    maxItems: 3
+Fixes: 6286bbb40576 ("cpufreq: apple-soc: Add new driver to control Apple SoC CPU P-states")
+Cc: stable@vger.kernel.org
+Signed-off-by: Haoxiang Li <haoxiang_li2024@163.com>
+---
+Changes in v2:
+ - Remove unnecessary cleanup calls.
+ - Remove OPP table from apple_soc_cpufreq_exit(). Thanks, Viresh!
+Changes in v3:
+ - Add Fixes and Cc stable tags.
+ - Use cpumask OPP helpers.
+ - Reorder init and failure cleanup. Thanks, Viresh!
+---
+ drivers/cpufreq/apple-soc-cpufreq.c | 36 +++++++++++------------------
+ 1 file changed, 14 insertions(+), 22 deletions(-)
 
-Best regards,
-Krzysztof
+diff --git a/drivers/cpufreq/apple-soc-cpufreq.c b/drivers/cpufreq/apple-soc-cpufreq.c
+index 638e5bf72185..3f64f266e695 100644
+--- a/drivers/cpufreq/apple-soc-cpufreq.c
++++ b/drivers/cpufreq/apple-soc-cpufreq.c
+@@ -249,21 +249,19 @@ static int apple_soc_cpufreq_init(struct cpufreq_policy *policy)
+ 		return -ENODEV;
+ 	}
+ 
+-	ret = dev_pm_opp_of_add_table(cpu_dev);
+-	if (ret < 0) {
+-		dev_err(cpu_dev, "%s: failed to add OPP table: %d\n", __func__, ret);
+-		return ret;
+-	}
++	priv = kzalloc_obj(*priv);
++	if (!priv)
++		return -ENOMEM;
+ 
+ 	ret = apple_soc_cpufreq_find_cluster(policy, &reg_base, &info);
+ 	if (ret) {
+ 		dev_err(cpu_dev, "%s: failed to get cluster info: %d\n", __func__, ret);
+-		return ret;
++		goto out_free_priv;
+ 	}
+ 
+-	ret = dev_pm_opp_set_sharing_cpus(cpu_dev, policy->cpus);
+-	if (ret) {
+-		dev_err(cpu_dev, "%s: failed to mark OPPs as shared: %d\n", __func__, ret);
++	ret = dev_pm_opp_of_cpumask_add_table(policy->cpus);
++	if (ret < 0) {
++		dev_err(cpu_dev, "%s: failed to add OPP table: %d\n", __func__, ret);
+ 		goto out_iounmap;
+ 	}
+ 
+@@ -271,19 +269,13 @@ static int apple_soc_cpufreq_init(struct cpufreq_policy *policy)
+ 	if (ret <= 0) {
+ 		dev_dbg(cpu_dev, "OPP table is not ready, deferring probe\n");
+ 		ret = -EPROBE_DEFER;
+-		goto out_free_opp;
+-	}
+-
+-	priv = kzalloc_obj(*priv);
+-	if (!priv) {
+-		ret = -ENOMEM;
+-		goto out_free_opp;
++		goto out_free_table;
+ 	}
+ 
+ 	ret = dev_pm_opp_init_cpufreq_table(cpu_dev, &freq_table);
+ 	if (ret) {
+ 		dev_err(cpu_dev, "failed to init cpufreq table: %d\n", ret);
+-		goto out_free_priv;
++		goto out_free_table;
+ 	}
+ 
+ 	/* Get OPP levels (p-state indexes) and stash them in driver_data */
+@@ -318,12 +310,12 @@ static int apple_soc_cpufreq_init(struct cpufreq_policy *policy)
+ 
+ out_free_cpufreq_table:
+ 	dev_pm_opp_free_cpufreq_table(cpu_dev, &freq_table);
+-out_free_priv:
+-	kfree(priv);
+-out_free_opp:
+-	dev_pm_opp_remove_all_dynamic(cpu_dev);
++out_free_table:
++	dev_pm_opp_of_cpumask_remove_table(policy->cpus);
+ out_iounmap:
+ 	iounmap(reg_base);
++out_free_priv:
++	kfree(priv);
+ 	return ret;
+ }
+ 
+@@ -332,7 +324,7 @@ static void apple_soc_cpufreq_exit(struct cpufreq_policy *policy)
+ 	struct apple_cpu_priv *priv = policy->driver_data;
+ 
+ 	dev_pm_opp_free_cpufreq_table(priv->cpu_dev, &policy->freq_table);
+-	dev_pm_opp_remove_all_dynamic(priv->cpu_dev);
++	dev_pm_opp_of_cpumask_remove_table(policy->cpus);
+ 	iounmap(priv->reg_base);
+ 	kfree(priv);
+ }
+-- 
+2.25.1
 
