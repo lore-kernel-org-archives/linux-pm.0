@@ -1,168 +1,416 @@
-Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 67CD13DEAE0
-	for <linux-pm@vger.kernel.org>; Fri,  3 Jul 2026 12:38:58 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.180.131
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E0ABF3D45CF
+	for <linux-pm@vger.kernel.org>; Fri,  3 Jul 2026 12:41:51 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1783082339; cv=none; b=GNELgWR/12Dqq6y8e+lrMXrBkw13mEwWq7XczR0gMubeEkAp5X1/xbqCcMCNp0+Z2GUgGYLXd9AzHwYkxZi8dR5/VdP3rzUqWhFTHbNWgJBC4BLOUrocoMaSIzszOii8mZjf+i6HepT7L4x3O6/drbEOgyz6XFJJxw3NnTaDyks=
+	t=1783082513; cv=none; b=hWonXO/H9LMQDUuN265yuaRvF8zYdyGaOy/p4Ntbb0vhforPeI6H3vx7+hHb0WMQXE++P+dy/1wkXoScZZ38iFYkNDUt2U9XpjqAmaD5wDA3Je9wPvTezjQ7FYgixpRE1EfxCufwreM/49RmRfavcOt89SabE3uEzZQ/3PlHrDQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1783082339; c=relaxed/simple;
-	bh=yrcztr48bhxuCH5lq0JIaPikaCvhdOM0GKlWIoBGDZo=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=b5DkTpyeBapakAiW0usXoYL2y7UJtlWxDSZXVOW0hnD2lyvXTwC+CYQJ8nyVQ09SVx354Ar4qKtwuHSnltRIaYo9ke/Gd11tuQJf3abZyLj2sjGF4CjX2U7cj0oNbjcZ9p2ybY5+jUPRHPgNPabMQk2yjEQPd/lyptNHTp0iWgQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=HdVHys8s; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=OLX0OTdv; arc=none smtp.client-ip=205.220.180.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
+	s=arc-20240116; t=1783082513; c=relaxed/simple;
+	bh=jgi0PHbyXrCnZfltaN6GwVesL6ba33KifpWY6gHtebM=;
+	h=From:In-Reply-To:MIME-Version:References:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=RdRMjBTqu1g77z+3wRcvEKZtlFU90qQaoWjCG8TawZIzc4rrm/h/AELD2Zd6UWFPa7OGJMo5iGh6LPQskCbAKo2X/csWW+w7R1SxbnobohL82yPG6wsWyueEH5YVmVWoiyj1dZ+bEp4c+Q6kS2PyVwjWgZ5a3Aw9/ZiqThneM6M=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=RFJ3cXjF; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="HdVHys8s";
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="OLX0OTdv"
-Received: from pps.filterd (m0279870.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 663BPjtA3108955
-	for <linux-pm@vger.kernel.org>; Fri, 3 Jul 2026 12:38:57 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	IfLl6OpM0eaLATdEjN7bgfl16l74dkGT1KH6fUf6XVg=; b=HdVHys8sym8Vg7Mm
-	8zzeZUxm5qYja04JADLfYUJSMSK5mndXbqDQPg42YeibCCIdyUUWKIoy2+O1O/9R
-	U8hs7l9bME8gYwwyfNuaAzAndI2NtMDKL4dlFoNlASAWcNZsvlSlvWLw77kaZyBM
-	u/2pVsiAJIWElmsqnJARXkJDxpa8Ggw+8t2IrUwHRHXVIeRDAhgLroG5GovNUshf
-	aj1WFWRlkIV72Pzs7rav1GYh9nu7s1f7/RCrppcfMmoyPlZ7P/B/VucyPNUtXkUX
-	BemtmhXxrqA4JxdvaA02e7t41xw11n8oOPWQ4R9twnYrYKfUo7Aadw3z48IR/ETI
-	Ql/+XA==
-Received: from mail-pl1-f197.google.com (mail-pl1-f197.google.com [209.85.214.197])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4f60eyb37g-1
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Fri, 03 Jul 2026 12:38:57 +0000 (GMT)
-Received: by mail-pl1-f197.google.com with SMTP id d9443c01a7336-2c7f385887bso9333145ad.0
-        for <linux-pm@vger.kernel.org>; Fri, 03 Jul 2026 05:38:57 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1783082336; x=1783687136; darn=vger.kernel.org;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :content-type:mime-version:subject:date:from:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=IfLl6OpM0eaLATdEjN7bgfl16l74dkGT1KH6fUf6XVg=;
-        b=OLX0OTdvdnAj+5myuk0nBDGph1JaNPvOukkh567O9ub9TzTGpD/JWRGRjqQ9m3wKUG
-         aPz7vjoqQfV7s/8pWu2pzVTjyyYmj257G6KcAfkvd0Ui8wglbW0EYt1SXTUsK4Uuf5tX
-         kny9i8yzPqQugJBr4TJP9DdlJYFJCJyNddNS2a9zsY9pORzGd+WU5uZ6Q3ZSIphrRZ80
-         Rpqn3cN6jXYcdkJ4xdJLaXGZmMXKhzB92Sy65ARNWEnE3ShF6/w0OlELrQtqYh9xp/34
-         wQ/H06rU0DM1Zbe6vsB8pTLpSkf0tjuCnQ0lCcgY832/0KXMV0oGFYP98DqqbznQoFPr
-         PWrQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1783082336; x=1783687136;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :content-type:mime-version:subject:date:from:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=IfLl6OpM0eaLATdEjN7bgfl16l74dkGT1KH6fUf6XVg=;
-        b=bywI2dVApWUczcvcDVLPfC3BL4+gKgoIyTGYhXub4mcRZ/oLxqukYgy0tVvhcx6MM2
-         G+u9CqRkZCRsSN4MkSwOS6njzLd66Bu4WIF66snrwivbj4Ls4SqsqGfSEYeSoaK6Zbv/
-         Q+XrmkUPSzNVDQrRXldm+ZK73rHhnM7jPOY2x8tleDDQg1cTHjvlkmiiBxVO8Ew211tc
-         OUCTWUNwx+CT3MXmsF5RpNtTBXoba9P77j5yuejr7D0jC8vt99mlecDICAWacbmUqm5o
-         /ll9Tmf9tF+yCpvN/y72iqIFdSF/iykcmEit5hw5Z38bpLD0L02NFV43DjojSlu3D+rT
-         deyg==
-X-Forwarded-Encrypted: i=1; AHgh+RpXzkmVUdNIwUEPCYmSY8MIMgKYhHLZI6GmN+x1Kd7pZDm0tqlJr26iRPONyVfBI/udHlGy9Inmfg==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yw3ynv0rzEEnTuY5X9rikFepLy/hFF/LQOfV8mSZhjviu94BO7T
-	bK/8ngqGNK/mQ1SdQaQ9VtH375ulwsbXZmmyNX+RBjwO9YDJDCnD+JPm72FlcjD7v5Z+ggorhOW
-	VGI0fTanCWKtt4IZkUbDh7Trl568ECszf5my7T78gwADZUZFydxC/rOwE9UwBZQhw4LORQA==
-X-Gm-Gg: AfdE7cl69ke0COmE1hXGzk3iNokMMNqXQKQO6L6fBj81qnitRxLJyt8nowxK4Ib8zf5
-	S+9PWcwsX8gtPyFtIZ88y3hxVRe4DMm+c93oMNDOA16kuS4Awf2BUCGt6pwI9JJh1lI1Odau0p3
-	mOT02fCGGph79etO2JnJ7OKZRszlfNuKNEFlPlzfZzOt2ohZIC3wZHZj8hTzboRNJ97s/40jzZc
-	nkHTFRYK89QCmFbbITFC2Evz6g7OFU7NjU0rN1OeEqQcem78S0HtujwIgbxWAs3v0qvmaaaFK57
-	YRdmdyqj9XSU7e+0eksZJ1OzqYvHcJ/d85E+w4D7YjsIaWMAWYNagUWUFggNCHf56fKasH2Ui1l
-	MeFcjl2qYs9Y720kYpuwsbEjXl/RdobjCssoB+XsZMlF6DQ==
-X-Received: by 2002:a17:903:26d0:b0:2ca:5a0f:d0c9 with SMTP id d9443c01a7336-2ca7e8cb82cmr108830255ad.43.1783082336404;
-        Fri, 03 Jul 2026 05:38:56 -0700 (PDT)
-X-Received: by 2002:a17:903:26d0:b0:2ca:5a0f:d0c9 with SMTP id d9443c01a7336-2ca7e8cb82cmr108829935ad.43.1783082335987;
-        Fri, 03 Jul 2026 05:38:55 -0700 (PDT)
-Received: from hu-krichai-hyd.qualcomm.com ([202.46.23.25])
-        by smtp.gmail.com with ESMTPSA id a92af1059eb24-13b3c870effsm24356993c88.12.2026.07.03.05.38.51
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 03 Jul 2026 05:38:55 -0700 (PDT)
-From: Krishna Chaitanya Chundru <krishna.chundru@oss.qualcomm.com>
-Date: Fri, 03 Jul 2026 18:08:32 +0530
-Subject: [PATCH 3/3] power: sequencing: pwrseq-pcie-m2: Add QCC2072 BT PCI
- device ID
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="RFJ3cXjF"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 271E21F01560
+	for <linux-pm@vger.kernel.org>; Fri,  3 Jul 2026 12:41:50 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1783082510;
+	bh=qXgm5GzWOwTuhle3+8LVl3YercTPiiTjpibd8sA2mJQ=;
+	h=From:In-Reply-To:References:Date:Subject:To:Cc;
+	b=RFJ3cXjFrvXj3EAIXGb1V96nTHUQE8BbIIIwW8xmrZ6qnwJ264UUc2YVik6MThDfj
+	 Q0a3/qdZuJXwvLicm4ZwMQWqe5l5B3tfrreOjq1h4247jWgvHH/g5vv3VBrBEQd91r
+	 MKvi1l5asPhjpzVd9wIj8cvpZ2QJbeQ9Zk9vE6oEmvwifSEEhDoF/W6UW6JF/O09e8
+	 knXI/PydTKeMTzvCpgYjsgxIkEVl550mi1lePyZ1zrGiV3ViKbE2O3r6X6Fni6Q/61
+	 dHhV/KfaCrEfoA0g89poUWtyArR2OXLRYRuOZXl+Rb/EH7t62ovbdYO0PEWYMVxRv5
+	 u68JHxbXTxKCw==
+Received: by mail-lj1-f169.google.com with SMTP id 38308e7fff4ca-3995e22ef81so14655391fa.1
+        for <linux-pm@vger.kernel.org>; Fri, 03 Jul 2026 05:41:49 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AHgh+RpACavkSSrETUsIMd2opcjBe2ZiV/xMCswEwGLd1qcBRtic+M5Qnqr72H2XoBcEf9MNQt/Fj3voug==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yz4n1YA+jKXc72ua+qnjG6lHDdKzsHkjpzHfNjYCcVLnqlrrzMV
+	CepeBlDB6vwkZ61IrPIMVxBmSuRSoKHgmoYi3nX7WxdbAKZG6hujC4N6n9vDNhbAc2k/3f4UP1U
+	GVZJyCkFhxFUltRjyGc6pQu9Xt8Qe5rDR6doEsL77aQ==
+X-Received: by 2002:a05:6512:61c5:20b0:5ae:aa02:4c24 with SMTP id
+ 2adb3069b0e04-5aecf506c99mr608732e87.24.1783082508622; Fri, 03 Jul 2026
+ 05:41:48 -0700 (PDT)
+Received: from 969154062570 named unknown by gmailapi.google.com with
+ HTTPREST; Fri, 3 Jul 2026 07:41:47 -0500
+Received: from 969154062570 named unknown by gmailapi.google.com with
+ HTTPREST; Fri, 3 Jul 2026 07:41:47 -0500
+From: Bartosz Golaszewski <brgl@kernel.org>
+In-Reply-To: <20260703110317.1283411-9-wenst@chromium.org>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20260703-eliza_evk-v1-3-7624440bd76d@oss.qualcomm.com>
-References: <20260703-eliza_evk-v1-0-7624440bd76d@oss.qualcomm.com>
-In-Reply-To: <20260703-eliza_evk-v1-0-7624440bd76d@oss.qualcomm.com>
-To: Bjorn Andersson <andersson@kernel.org>,
-        Konrad Dybcio <konradybcio@kernel.org>, Rob Herring <robh@kernel.org>,
-        Krzysztof Kozlowski <krzk+dt@kernel.org>,
-        Conor Dooley <conor+dt@kernel.org>,
-        Manivannan Sadhasivam <mani@kernel.org>,
-        Bartosz Golaszewski <brgl@kernel.org>
-Cc: linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
-        linux-pm@vger.kernel.org,
-        Krishna Chaitanya Chundru <krishna.chundru@oss.qualcomm.com>
-X-Mailer: b4 0.15.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1783082317; l=978;
- i=krishna.chundru@oss.qualcomm.com; s=20230907; h=from:subject:message-id;
- bh=yrcztr48bhxuCH5lq0JIaPikaCvhdOM0GKlWIoBGDZo=;
- b=O0fosvzU4i45T8cQPPruRKR2egGi9jQkA06AsdKRspZ7xBYL1Tlf7jgIdwoCUcOonXL3YHHj/
- a8AdApc9dDgDAe3OJpnNOLF6galNO2wunHGIdC4/o5JDuNeZ0lE8fIJ
-X-Developer-Key: i=krishna.chundru@oss.qualcomm.com; a=ed25519;
- pk=10CL2pdAKFyzyOHbfSWHCD0X0my7CXxj8gJScmn1FAg=
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzAzMDEyNCBTYWx0ZWRfX/aVZfLBSA01C
- 69mSFZDLsdSoD6qzzAZ18GY7FDnBIv2LUE2uwJs9YcR1SYWq86476AUhvpsQZWoEezKsS+1CKOX
- eJeB1Yj+vIxg6irrqjXyw/JkMhTQnFH1PTo2oQovnWiXfCwQEeFgiqHpFYd0cU1geazY2f9L9Pb
- V5ohtv9p9vn5dUYw6IUVrP5qFtAGgA5CtQLH1eY2lm66OIIoGFM9JxVUrMpLVd9eOtNf2gCfHTc
- X/Oq87YKyo2c/SXge0jkuL56ftq14Rv58fGvhgdmtzfwS4AmOWWjPIWjC72lX7VS12Grtlc83qs
- /0+97lJjhkpWjGTTjVikS9CqJgevOLojF+TDi2HBbVoiBHjC5qZ1jC9qCRsnsAy9wLgaZZPU+yp
- e5i6EYA9PO3rMrjqp82RXBrbyX9rTydA6YCh1C9PfT8w1IwaZvRBBBUkRlZfMxGA0YE2XBScPSF
- OoOzMJSriogpN2tcNlw==
-X-Proofpoint-GUID: XwtPEPgavJDncI7PD0nDJNEjCpha7yZp
-X-Proofpoint-Spam-Info: AW1haW4tMjYwNzAzMDEyNCBTYWx0ZWRfX3TPe4PLhgSlK
- TFfblte2c1uum000dlI0ACfRNMylxJni0NqSBpDFGnVhhG1AvTBH1S8QBeq+K/6j28oq8WVU47g
- 59XAoGa/JF2JUfqq2R0ARX4G0zIgSj0=
-X-Authority-Analysis: v=2.4 cv=SPRykuvH c=1 sm=1 tr=0 ts=6a47ad61 cx=c_pps
- a=cmESyDAEBpBGqyK7t0alAg==:117 a=ZePRamnt/+rB5gQjfz0u9A==:17
- a=IkcTkHD0fZMA:10 a=RAioF0-LDSMA:10 a=s4-Qcg_JpJYA:10
- a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=gowsoOTTUOVcmtlkKump:22
- a=EUspDBNiAAAA:8 a=BU0hv6CmB1lMHcRhg2oA:9 a=QEXdDO2ut3YA:10
- a=1OuFwYUASf3TG4hYMiVC:22
-X-Proofpoint-ORIG-GUID: XwtPEPgavJDncI7PD0nDJNEjCpha7yZp
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.125,FMLib:17.12.100.49
- definitions=2026-07-03_02,2026-06-26_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- clxscore=1015 adultscore=0 malwarescore=0 bulkscore=0 priorityscore=1501
- lowpriorityscore=0 phishscore=0 spamscore=0 suspectscore=0 impostorscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2607030124
+References: <20260703110317.1283411-1-wenst@chromium.org> <20260703110317.1283411-9-wenst@chromium.org>
+Date: Fri, 3 Jul 2026 07:41:47 -0500
+X-Gmail-Original-Message-ID: <CAMRc=MdMhr6qAnAtUePbuBbsH=3MzRC+BrL5GssbNTwGjp_ayA@mail.gmail.com>
+X-Gm-Features: AVVi8CfK6VeOpGIFoyyJEmBt9vHcfAKFmiaoE4w_iEM61JImiWHSHBQUYQ0YLEk
+Message-ID: <CAMRc=MdMhr6qAnAtUePbuBbsH=3MzRC+BrL5GssbNTwGjp_ayA@mail.gmail.com>
+Subject: Re: [PATCH v3 08/13] usb: hub: Power on connected M.2 E-key
+ connectors with power sequencing API
+To: Chen-Yu Tsai <wenst@chromium.org>
+Cc: linux-acpi@vger.kernel.org, driver-core@lists.linux.dev, 
+	linux-pm@vger.kernel.org, linux-usb@vger.kernel.org, 
+	devicetree@vger.kernel.org, linux-mediatek@lists.infradead.org, 
+	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, 
+	Manivannan Sadhasivam <mani@kernel.org>, Alan Stern <stern@rowland.harvard.edu>, 
+	Bartosz Golaszewski <brgl@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
+	Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Daniel Scally <djrscally@gmail.com>, 
+	Heikki Krogerus <heikki.krogerus@linux.intel.com>, 
+	Sakari Ailus <sakari.ailus@linux.intel.com>, "Rafael J. Wysocki" <rafael@kernel.org>, 
+	Danilo Krummrich <dakr@kernel.org>, Rob Herring <robh@kernel.org>, 
+	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
+	Matthias Brugger <matthias.bgg@gmail.com>, 
+	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
+Content-Type: text/plain; charset="UTF-8"
 
-Add the Qualcomm QCC2072 Bluetooth device (PCI ID 0x1112) to the
-pwrseq_m2_pci_ids table so the M.2 power sequencer can create the
-serdev node for its BT interface on enumeration.
+On Fri, 3 Jul 2026 13:03:09 +0200, Chen-Yu Tsai <wenst@chromium.org> said:
+> The new M.2 E-key connector can have a USB connection. For the USB device
+> on this connector to work, its power must be enabled and the W_DISABLE2#
+> signal deasserted. The connector driver handles this and provides a
+> toggle over the power sequencing API.
+>
+> This feature currently only supports a directly connected (no mux in
+> between) M.2 E-key connector. Existing USB connector types are not
+> covered. The USB A connector was recently added to the onboard devices
+> driver. USB B connectors have historically been managed by the USB
+> gadget or dual-role device controller drivers. USB C connectors are
+> handled by TCPM drivers.
+>
+> The power sequencing API does not know whether a power sequence provider
+> is not needed or not available yet, so we only request it for connectors
+> that we know need it, which at this time is just the E-key connector.
+>
+> On the USB side, the port firmware node (if present) is tied to the
+> usb_port device. This device is used to acquire the power sequencing
+> descriptor. This allows the provider to tell the different ports on one
+> hub apart.
+>
+> This feature is not implemented in the onboard USB devices driver. The
+> power sequencing API expects the consumer device to make the request,
+> but there is no device node to instantiate a platform device to tie
+> the driver to. The connector is not a child node of the USB host or
+> hub, and the graph connection is from a USB port to the connector.
+> And the connector itself already has a driver.
+>
+> Power sequencing is not directly enabled in the connector driver as
+> that would completely decouple the timing of it from the USB subsystem.
+> It would not be possible for the USB subsystem to toggle the power
+> for a power cycle or to disable the port.
+>
+> Also rewrite the existing set_bit() and clear_bit() branches with
+> assign_bit() to make it cleaner.
+>
+> Signed-off-by: Chen-Yu Tsai <wenst@chromium.org>
+> ---
+> Changes since v2:
+> - Expanded subject to mention power sequencing API
+> - Dropped commit message bit about power sequencing Kconfig symbol change
+>   to bool
+> - Added optional dependency on POWER_SEQUENCING to USB
+> - Split out pwrseq_power_*() calls into separate helpers
+> - Rewrote set_bit() and clear_bit() branches with assign_bit()
+> - Dropped the pwrseq_power_off() before pwrseq_put(): pwrseq_put() does it
+>   automatically.
+> - Removed pwrseq_power_on() from usb_hub_create_port_device(); it will
+>   get called through usb_hub_set_port_power() in hub_activate().
+> - Added checks for port->pwrseq in hub_is_port_power_switchable()
+>
+> - Use separate pwrseq descriptors for HighSpeed and SuperSpeed ports.
+>   This makes things simpler. On the other hand to power cycle a port
+>   userspace needs to toggle it on both the HS and SS ports together.
+> - Dropped pwrseq state tracking again
+>   The power sequencing consumer API already tracks the state internally;
+>   doing it again in |struct usb_port| is not necessary especially now
+>   that the descriptors aren't shared.
+>
+> It's unclear to me how actual hubs reconcile USB_PORT_FEAT_POWER settings
+> from the HS side and SS side. One hub chip vendor said that VBUS_EN for
+> a port is on if the flag is set on either side; however actually testing
+> on one of their hubs showed that VBUS was cut as soon as the flag is
+> cleared on the HS port. Maybe it could be different if a SS device was
+> connected? That scenario was not tested. Testing on another retail
+> bought hub seemed to work exactly as described though: USB_PORT_FEAT_POWER
+> needed to be clear on both HS and SS ports to turn off VBUS.
+>
+> Under this scheme, I'm not sure how the power cycle in hub_port_connect()
+> would work correctly.
+>
+> - Link to v2:
+>   https://lore.kernel.org/all/20260610084053.2059858-1-wenst@chromium.org/
+>
+> Changes since v1:
+> - Switch to fwnode instead of OF
+> - Tie port@ fwnode to usb_port device
+> - Move remote node compatible checking to separate helper
+> - Use usb_port device to request power sequencing descriptor
+> - Drop "index" parameter from pwrseq_get()
+> - Do not get pwrseq descriptor for SuperSpeed port; share one for one
+>   physical port
+> - Add pwrseq state tracking
+> - Link to v1:
+>   https://lore.kernel.org/all/20260515090149.3169406-1-wenst@chromium.org/
+> ---
+>  drivers/usb/Kconfig     |  1 +
+>  drivers/usb/core/hub.c  | 44 +++++++++++++++++++++++++++++-----
+>  drivers/usb/core/hub.h  | 10 +++++++-
+>  drivers/usb/core/port.c | 52 ++++++++++++++++++++++++++++++++++++++++-
+>  4 files changed, 99 insertions(+), 8 deletions(-)
+>
+> diff --git a/drivers/usb/Kconfig b/drivers/usb/Kconfig
+> index abf8c6cdea9e..ef1959363fb1 100644
+> --- a/drivers/usb/Kconfig
+> +++ b/drivers/usb/Kconfig
+> @@ -44,6 +44,7 @@ config USB_ARCH_HAS_HCD
+>  config USB
+>  	tristate "Support for Host-side USB"
+>  	depends on USB_ARCH_HAS_HCD
+> +	depends on POWER_SEQUENCING if POWER_SEQUENCING
+>  	select GENERIC_ALLOCATOR
+>  	select USB_COMMON
+>  	select NLS  # for UTF-8 strings
+> diff --git a/drivers/usb/core/hub.c b/drivers/usb/core/hub.c
+> index 8ae97e8c26aa..dfa0f5dd75e8 100644
+> --- a/drivers/usb/core/hub.c
+> +++ b/drivers/usb/core/hub.c
+> @@ -32,6 +32,7 @@
+>  #include <linux/mutex.h>
+>  #include <linux/random.h>
+>  #include <linux/pm_qos.h>
+> +#include <linux/pwrseq/consumer.h>
+>  #include <linux/kobject.h>
+>
+>  #include <linux/bitfield.h>
+> @@ -871,6 +872,30 @@ static void hub_tt_work(struct work_struct *work)
+>  	spin_unlock_irqrestore(&hub->tt.lock, flags);
+>  }
+>
+> +static int usb_hub_set_port_pwrseq(struct usb_port *port, bool set)
+> +{
+> +	int ret = 0;
+> +
+> +	if (set)
+> +		ret = pwrseq_power_on(port->pwrseq);
+> +	else
+> +		ret = pwrseq_power_off(port->pwrseq);
+> +
+> +	return ret;
+> +}
+> +
+> +static int usb_hub_restore_port_pwrseq(struct usb_port *port, bool set)
+> +{
+> +	int ret = 0;
+> +
+> +	if (set)
+> +		ret = pwrseq_power_off(port->pwrseq);
+> +	else
+> +		ret = pwrseq_power_on(port->pwrseq);
+> +
+> +	return ret;
+> +}
+> +
+>  /**
+>   * usb_hub_set_port_power - control hub port's power state
+>   * @hdev: USB device belonging to the usb hub
+> @@ -886,20 +911,24 @@ static void hub_tt_work(struct work_struct *work)
+>  int usb_hub_set_port_power(struct usb_device *hdev, struct usb_hub *hub,
+>  			   int port1, bool set)
+>  {
+> +	struct usb_port *pwrseq_port = hub->ports[port1 - 1];
+>  	int ret;
+>
+> +	ret = usb_hub_set_port_pwrseq(pwrseq_port, set);
+> +	if (ret)
+> +		return ret;
+> +
+>  	if (set)
+>  		ret = set_port_feature(hdev, port1, USB_PORT_FEAT_POWER);
+>  	else
+>  		ret = usb_clear_port_feature(hdev, port1, USB_PORT_FEAT_POWER);
+>
+> -	if (ret)
+> +	if (ret) {
+> +		usb_hub_restore_port_pwrseq(pwrseq_port, set);
+>  		return ret;
+> +	}
+>
+> -	if (set)
+> -		set_bit(port1, hub->power_bits);
+> -	else
+> -		clear_bit(port1, hub->power_bits);
+> +	assign_bit(port1, hub->power_bits, set);
+>  	return 0;
+>  }
+>
+> @@ -3249,7 +3278,10 @@ int usb_port_is_power_on(struct usb_port *port, unsigned int portstatus)
+>  			ret = 1;
+>  	}
+>
+> -	return ret;
+> +	if (!port->pwrseq)
+> +		return ret;
+> +
+> +	return ret && pwrseq_power_is_on(port->pwrseq);
 
-Signed-off-by: Krishna Chaitanya Chundru <krishna.chundru@oss.qualcomm.com>
----
- drivers/power/sequencing/pwrseq-pcie-m2.c | 2 ++
- 1 file changed, 2 insertions(+)
+So this is only needed to not have to track the state in a separate field?
 
-diff --git a/drivers/power/sequencing/pwrseq-pcie-m2.c b/drivers/power/sequencing/pwrseq-pcie-m2.c
-index b5ed80d03953..4aac52062fae 100644
---- a/drivers/power/sequencing/pwrseq-pcie-m2.c
-+++ b/drivers/power/sequencing/pwrseq-pcie-m2.c
-@@ -190,6 +190,8 @@ static const struct pci_device_id pwrseq_m2_pci_ids[] = {
- 	  .driver_data = (kernel_ulong_t)"qcom,wcn6855-bt" },
- 	{ PCI_DEVICE(PCI_VENDOR_ID_QCOM, 0x1107),
- 	  .driver_data = (kernel_ulong_t)"qcom,wcn7850-bt" },
-+	{ PCI_DEVICE(PCI_VENDOR_ID_QCOM, 0x1112),
-+	  .driver_data = (kernel_ulong_t)"qcom,qcc2072-bt" },
- 	{ } /* Sentinel */
- };
- 
+>  }
+>
+>  static void usb_lock_port(struct usb_port *port_dev)
+> diff --git a/drivers/usb/core/hub.h b/drivers/usb/core/hub.h
+> index b65d9192379d..99bae6ace4da 100644
+> --- a/drivers/usb/core/hub.h
+> +++ b/drivers/usb/core/hub.h
+> @@ -85,6 +85,7 @@ struct usb_hub {
+>   * @port_owner: port's owner
+>   * @peer: related usb2 and usb3 ports (share the same connector)
+>   * @connector: USB Type-C connector
+> + * @pwrseq: power sequencing descriptor for the port
+>   * @req: default pm qos request for hubs without port power control
+>   * @connect_type: port's connect type
+>   * @state: device state of the usb device attached to the port
+> @@ -104,6 +105,7 @@ struct usb_port {
+>  	struct usb_dev_state *port_owner;
+>  	struct usb_port *peer;
+>  	struct typec_connector *connector;
+> +	struct pwrseq_desc *pwrseq;
+>  	struct dev_pm_qos_request *req;
+>  	enum usb_port_connect_type connect_type;
+>  	enum usb_device_state state;
+> @@ -147,7 +149,13 @@ static inline bool hub_is_port_power_switchable(struct usb_hub *hub)
+>  	if (!hub)
+>  		return false;
+>  	hcs = hub->descriptor->wHubCharacteristics;
+> -	return (le16_to_cpu(hcs) & HUB_CHAR_LPSM) < HUB_CHAR_NO_LPSM;
+> +	if ((le16_to_cpu(hcs) & HUB_CHAR_LPSM) < HUB_CHAR_NO_LPSM)
+> +		return true;
+> +	/* check for controllable external power sequencers */
+> +	for (unsigned int i = 1; i <= hub->hdev->maxchild; i++)
+> +		if (hub->ports[i] && hub->ports[i]->pwrseq)
+> +			return true;
+> +	return false;
+>  }
+>
+>  static inline int hub_is_superspeed(struct usb_device *hdev)
+> diff --git a/drivers/usb/core/port.c b/drivers/usb/core/port.c
+> index 77dbf51f1760..87b8e4f90be6 100644
+> --- a/drivers/usb/core/port.c
+> +++ b/drivers/usb/core/port.c
+> @@ -8,11 +8,14 @@
+>   */
+>
+>  #include <linux/acpi.h>
+> +#include <linux/cleanup.h>
+>  #include <linux/kstrtox.h>
+>  #include <linux/slab.h>
+>  #include <linux/string_choices.h>
+>  #include <linux/sysfs.h>
+>  #include <linux/pm_qos.h>
+> +#include <linux/property.h>
+> +#include <linux/pwrseq/consumer.h>
+>  #include <linux/component.h>
+>  #include <linux/usb/of.h>
+>
+> @@ -29,6 +32,9 @@ static bool usb_port_allow_power_off(struct usb_device *hdev,
+>  	if (hub_is_port_power_switchable(hub))
+>  		return true;
+>
+> +	if (port_dev->pwrseq)
+> +		return true;
+> +
+>  	if (!IS_ENABLED(CONFIG_ACPI))
+>  		return false;
+>
+> @@ -749,6 +755,39 @@ static const struct component_ops connector_ops = {
+>  	.unbind = connector_unbind,
+>  };
+>
+> +static bool port_pwrseq_is_supported(struct usb_port *port_dev)
+> +{
+> +	struct device *dev = &port_dev->dev;
+> +	struct fwnode_handle *port = dev->fwnode;
+> +	struct fwnode_handle *ep __free(fwnode_handle) =
+> +			fwnode_graph_get_next_port_endpoint(port, NULL);
+> +	if (!ep)
+> +		return false;
+> +
+> +	struct fwnode_handle *remote __free(fwnode_handle) =
+> +			fwnode_graph_get_remote_port_parent(ep);
+> +	if (!remote)
+> +		return false;
+> +
+> +	if (!fwnode_device_is_compatible(remote, "pcie-m2-e-connector")) {
+> +		dev_dbg(dev, "remote endpoint %pfw is not a supported connector", remote);
+> +		return false;
+> +	}
+> +
+> +	return true;
+> +}
+> +
+> +static struct pwrseq_desc *usb_hub_port_pwrseq_get(struct usb_port *port_dev)
+> +{
+> +	if (!IS_ENABLED(CONFIG_POWER_SEQUENCING))
+> +		return NULL;
+> +
+> +	if (!port_pwrseq_is_supported(port_dev))
+> +		return NULL;
+> +
+> +	return pwrseq_get(&port_dev->dev, "usb");
+> +}
+> +
+>  int usb_hub_create_port_device(struct usb_hub *hub, int port1)
+>  {
+>  	struct usb_port *port_dev;
+> @@ -809,10 +848,18 @@ int usb_hub_create_port_device(struct usb_hub *hub, int port1)
+>  		goto err_put_kn;
+>  	}
+>
+> +	port_dev->pwrseq = usb_hub_port_pwrseq_get(port_dev);
+> +	if (IS_ERR(port_dev->pwrseq)) {
+> +		retval = PTR_ERR(port_dev->pwrseq);
+> +		dev_err_probe(&port_dev->dev, retval,
+> +			      "failed to get power sequencing descriptor\n");
+> +		goto err_put_kn;
+> +	}
+> +
+>  	retval = component_add(&port_dev->dev, &connector_ops);
+>  	if (retval) {
+>  		dev_warn(&port_dev->dev, "failed to add component\n");
+> -		goto err_put_kn;
+> +		goto err_put_pwrseq;
+>  	}
+>
+>  	find_and_link_peer(hub, port1);
+> @@ -850,6 +897,8 @@ int usb_hub_create_port_device(struct usb_hub *hub, int port1)
+>  	}
+>  	return 0;
+>
+> +err_put_pwrseq:
+> +	pwrseq_put(port_dev->pwrseq);
+>  err_put_kn:
+>  	sysfs_put(port_dev->state_kn);
+>  err_unregister:
+> @@ -866,6 +915,7 @@ void usb_hub_remove_port_device(struct usb_hub *hub, int port1)
+>  	peer = port_dev->peer;
+>  	if (peer)
+>  		unlink_peers(port_dev, peer);
+> +	pwrseq_put(port_dev->pwrseq);
+>  	component_del(&port_dev->dev, &connector_ops);
+>  	sysfs_put(port_dev->state_kn);
+>  	device_unregister(&port_dev->dev);
+> --
+> 2.55.0.rc0.799.gd6f94ed593-goog
+>
+>
 
--- 
-2.34.1
+Looks good to me.
 
+Reviewed-by: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
+
+Bart
