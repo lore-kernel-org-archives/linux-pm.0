@@ -1,209 +1,372 @@
-Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.223.131])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D7B9D3AB291
-	for <linux-pm@vger.kernel.org>; Fri,  3 Jul 2026 11:20:26 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.180.131
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7A9A93BB69D
+	for <linux-pm@vger.kernel.org>; Fri,  3 Jul 2026 11:22:39 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1783077628; cv=none; b=t/7PC92IEsEPXkzSJTHUamPhwxVjm3cIPMAO4IsO8S4I/ZWXHItV0p2Af6wOSSTpLU2UClTBcnWBTr6bMsTKpx/osU7hQLRju50XXsVRkc26OshsQ/x+/N6eNHzEe1/0U6cNDvZdzjOdCdRo/oa6Bi7x8+eM2TfOH9Xk6qCtPOM=
+	t=1783077769; cv=none; b=EuhI7bYJNBrfyq/0+jzlYelXA5+7yFS7okRSSDuMt9UU6TRQPbUnsLlDg40+thqiAdyHt9HaydsLOxM4WOHlPBMw2TlZ/v7TRv23pmWrc72bPSAvGqraX876CpIdfrFQUfv8SEWWn90vBCjlI515NP/aOebrvcehwlNUyChswrg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1783077628; c=relaxed/simple;
-	bh=0u/Hn+/+Ov7gEwvAy1Fe3xpUvD2U1MX/9snOD6f2Czs=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:To:Cc; b=jtKenm+upqKKE6VEUsUeAHlDroZR2aYCj0ANDQJQVoqTMe9U0RWKq22sURD5zQvsvafanFYOTnxYY18hdfUni/gA61ZCW+6wghQHCI8PGnDNkdL1645GToL47rR+a2ig1g+x2rz92If//pzvYFP4kMKJrXo7GXJxCzsU0yKT0z0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=KN9xvv4p; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=aFZxgAjx; arc=none smtp.client-ip=205.220.180.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
+	s=arc-20240116; t=1783077769; c=relaxed/simple;
+	bh=KLPh0BwNOdUQmEQY2/HZE8OLYt2UhyohcczNBETMmds=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=oOhQyHhfifA+bK7uxF3kUqqIdKxZNDTfEQz5bIBibUphPFGoQ1omLtXWyIR8k5izrvXS4v7tgEhvPjjDLkWM4oK/knP1gfc3+CQpHgbvc/bqCHQzCANHXn+eRblGNpr3fbKqugl2SQa06K1IE+Un/BnCDOlqbENMDFTzZ3tQ9Z4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com; spf=pass smtp.mailfrom=suse.com; dkim=pass (1024-bit key) header.d=suse.com header.i=@suse.com header.b=vYfs5E8Q; dkim=pass (1024-bit key) header.d=suse.com header.i=@suse.com header.b=vYfs5E8Q; arc=none smtp.client-ip=195.135.223.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="KN9xvv4p";
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="aFZxgAjx"
-Received: from pps.filterd (m0279869.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 663BEZiT3134747
-	for <linux-pm@vger.kernel.org>; Fri, 3 Jul 2026 11:20:25 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:content-type:date:from:message-id
-	:mime-version:subject:to; s=qcppdkim1; bh=Nbi6KRQjupOc9B3Hw9OyBw
-	J8mgQgydOW3Gn8fR9ycYc=; b=KN9xvv4pbKCDOdA5N4lwhvzoE/Q7UihobnSlPm
-	98K4FXR8O6ViaHlMmxjk+tYAABcQvX+dI2hRKYAuVRuvTttTIj3k6RBgNovL08/J
-	HF2NHi1L1cwvzr0jzbkq49FfjmXQMPRNNSTCTuFL8NqhLTHSk9pZyLLiTptsEonm
-	GW1oPCq4+VcUhXln1i3C3EBs9FAwPAvO//LXraZu29cSJlyQyw1VvBcqG7duV8aC
-	u8CuHvrIKs2yRlDA1qjBF3FY4TSUzafF3R/dmLD76yn728PM2cxkWh8bwrRQhG+L
-	uUWKMZlC3bu5jS3PG1U82Loa0JmUhTP0vCYtFJdyEZVrUHYw==
-Received: from mail-pf1-f197.google.com (mail-pf1-f197.google.com [209.85.210.197])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4f65qchsc4-1
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Fri, 03 Jul 2026 11:20:25 +0000 (GMT)
-Received: by mail-pf1-f197.google.com with SMTP id d2e1a72fcca58-8478e603285so1951940b3a.0
-        for <linux-pm@vger.kernel.org>; Fri, 03 Jul 2026 04:20:25 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1783077625; x=1783682425; darn=vger.kernel.org;
-        h=cc:to:message-id:content-transfer-encoding:mime-version:subject
-         :date:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=Nbi6KRQjupOc9B3Hw9OyBwJ8mgQgydOW3Gn8fR9ycYc=;
-        b=aFZxgAjxAtB2I8SOtOle/PKOtSKnoM+IWfGer/RI2OpUufB6fIZlRYhXAXC0HyvevF
-         zBbl0deNu1a8mirkzeDA4fcmb3cWUvKdBobSykTPXU+Aljnxfi+XZaMcI4P2qjjwHi/5
-         /W0abk2mx66HLrPtLkMl80jxt3Tp/gGwJCT9axryW6mTfnXK0z9e55wK/ihxF30PiD/y
-         wUWDCr6Zd/ur8irQyOfdYrk1EactmMW//cFT3ieklrne4haqGB5C/NxbBhEsvmLA7l7i
-         vaM7m4rt4LwmGmpm52WBpc6HAClNlk5t4Z/HVFs4VhJtTy5g+fL1e8Tef/SF0zUykWM5
-         Qyrw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1783077625; x=1783682425;
-        h=cc:to:message-id:content-transfer-encoding:mime-version:subject
-         :date:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=Nbi6KRQjupOc9B3Hw9OyBwJ8mgQgydOW3Gn8fR9ycYc=;
-        b=XcHOuq+oPRJsv0EzJP6bC3bkSmz3/M46pb/2iQjsDLQvr+DxFh6CjBXY8K5Gzng0uP
-         AVYDYsoPRgJW2Gz+Iz7PZzNkhGqEuBHlgdzfeET2ohV/0uHKNDTRgBsyOVx5geSLY5V9
-         c0xOPdWjrm/sywnd03ZhbGB/lk7QSZ3jRMPOYE5Xv+qCOGeZ5nIguQkdbmVXpnc5BUCb
-         maHhwNJi6b4fuWBshX3rNRigG9Zn+J/k4ZsjPwrxoeVYAiTt/MXW8wxXvWXUpOZWKZZz
-         T/sVXaNGqaIuOFkpPS7P6PX2xxWCaUi6Lp74EDcnizujninaZCv2AfPfUwREoBG1ogjK
-         YNyw==
-X-Forwarded-Encrypted: i=1; AHgh+Rp00fvyyYKBI8QFEVot/yuINjMEpNb3rV5Ake2ac4B55wL6UcTdYpST6+xfXX/GoSgwmcxyJTtEkQ==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yw99zxb955IsZfn2i70R7FojVoZwUt80GFrucU+2CD5V6Oe2bY4
-	i6TnGUP4VRdGF1FhtCE/PDf4c5jRJb0POJPZN/ewMzcBu6mkEmvXE3IEuwOkok38Mh5f2F5y3m+
-	kDH7fk2y32ILBOqWC1Kdm8j4kAhYgJbW4izkCM2TqjM+XHkbDi3ewzSLprfmZzAOQatrryw==
-X-Gm-Gg: AfdE7ck4LubbRdDPVrDAuRHgwegKfVpS/x+SK46KS7IDXJrQfTvTbzIHao9vJqK78La
-	sfTQcPk8V7STTIwW9anx60NIHk6Jn3Jvw0Bcr6g3btUGSwzgjE/kAk68zTWOYTco4iPvMq6pQ7q
-	enCuCu4apyUt4Iyvey7fOHoVrG9sz/XhmQzWTTdRakiCmV28YZ9BQEnSyaMPehO6X18MuMe6ntQ
-	O4O7r91/bUOKnYz5KZGLM7I887zVku/iPCSraxPyITK4PBI7PGQg9PLlEG5u+ZDC6exasjwMgQV
-	g2cs2x6TARXi+QLc2KGTgbybVwx2cSEWQX5rw3WWhh65Ygo0rTMRqD2uTAFujyg6TK4Yy4QWhGP
-	3+OllC3vUFmsoOn5oON4tCnfy/k6FLd9xrsF2zsfA
-X-Received: by 2002:a05:6a00:760d:b0:842:dd4:d9e2 with SMTP id d2e1a72fcca58-847e14f59b3mr2793939b3a.0.1783077624646;
-        Fri, 03 Jul 2026 04:20:24 -0700 (PDT)
-X-Received: by 2002:a05:6a00:760d:b0:842:dd4:d9e2 with SMTP id d2e1a72fcca58-847e14f59b3mr2793906b3a.0.1783077624149;
-        Fri, 03 Jul 2026 04:20:24 -0700 (PDT)
-Received: from hu-smankad-hyd.qualcomm.com ([202.46.22.19])
-        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-847cb9902efsm2728261b3a.45.2026.07.03.04.20.20
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 03 Jul 2026 04:20:23 -0700 (PDT)
-From: Sneh Mankad <sneh.mankad@oss.qualcomm.com>
-Date: Fri, 03 Jul 2026 16:50:02 +0530
-Subject: [PATCH v2] arm64: Disallow disabling boot CPU based on config
+	dkim=pass (1024-bit key) header.d=suse.com header.i=@suse.com header.b="vYfs5E8Q";
+	dkim=pass (1024-bit key) header.d=suse.com header.i=@suse.com header.b="vYfs5E8Q"
+Received: from imap1.dmz-prg2.suse.org (unknown [10.150.64.97])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by smtp-out2.suse.de (Postfix) with ESMTPS id 6FB687586A;
+	Fri,  3 Jul 2026 11:22:35 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.com; s=susede1;
+	t=1783077755; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=wB+1rVAgNN1Vo7FTUuc1IHwfiXaLYQJR/5FTXToOVMI=;
+	b=vYfs5E8QG5SO5rqFGaq1ZSI1Q7rVMrlmSjYDnjTxNNXFlTA+jxOZy5YlPxv1pfuSVz/JE4
+	hKt2FKhsAkErSkbE7p04qD0uq7YTAxLt8TXMOWAGyrjowdOxnZnKuDEr7sW3pQpiTAyo6Z
+	XbI6IE0oqpDTJeQKMe5jb+wN2A693oY=
+Authentication-Results: smtp-out2.suse.de;
+	none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.com; s=susede1;
+	t=1783077755; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=wB+1rVAgNN1Vo7FTUuc1IHwfiXaLYQJR/5FTXToOVMI=;
+	b=vYfs5E8QG5SO5rqFGaq1ZSI1Q7rVMrlmSjYDnjTxNNXFlTA+jxOZy5YlPxv1pfuSVz/JE4
+	hKt2FKhsAkErSkbE7p04qD0uq7YTAxLt8TXMOWAGyrjowdOxnZnKuDEr7sW3pQpiTAyo6Z
+	XbI6IE0oqpDTJeQKMe5jb+wN2A693oY=
+Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 36A94779AA;
+	Fri,  3 Jul 2026 11:22:35 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
+	by imap1.dmz-prg2.suse.org with ESMTPSA
+	id H/GbC3ubR2qfYgAAD6G6ig
+	(envelope-from <jgross@suse.com>); Fri, 03 Jul 2026 11:22:35 +0000
+From: Juergen Gross <jgross@suse.com>
+To: linux-kernel@vger.kernel.org,
+	linux-pm@vger.kernel.org
+Cc: Juergen Gross <jgross@suse.com>,
+	"Rafael J. Wysocki" <rafael@kernel.org>,
+	Daniel Lezcano <daniel.lezcano@kernel.org>,
+	Zhang Rui <rui.zhang@intel.com>,
+	Lukasz Luba <lukasz.luba@arm.com>
+Subject: [PATCH v2 01/32] thermal/intel: Stop using 32-bit MSR interfaces
+Date: Fri,  3 Jul 2026 13:22:32 +0200
+Message-ID: <20260703112232.1762925-1-jgross@suse.com>
+X-Mailer: git-send-email 2.54.0
+In-Reply-To: <20260629060526.3638272-2-jgross@suse.com>
+References: <20260629060526.3638272-2-jgross@suse.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20260703-disable_boot_cpu_offline-v2-1-782d16ff58c3@oss.qualcomm.com>
-X-B4-Tracking: v=1; b=H4sIAOGaR2oC/3WNwQqDMBBEf0VybsSkGmxP/Y8iEuOmLqhrsyot4
- r83FXrsZeANzJtNMAQEFtdkEwFWZKQxgj4lwnV2fIDENrLQmTaZyc6yRbZND3VDNNduWmryvsc
- RJDS5LwrrLsZrEedTAI+vQ32vInfIM4X38bSqb/uTFv+lq5JK5s6UHpQ1zpc3Yk6fi+0dDUMaQ
- 1T7vn8Adw6SFMcAAAA=
-X-Change-ID: 20260603-disable_boot_cpu_offline-eb4f55ac96f2
-To: Thomas Gleixner <tglx@kernel.org>,
-        Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>,
-        Peter Zijlstra <peterz@infradead.org>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Pavel Machek <pavel@kernel.org>, Len Brown <lenb@kernel.org>,
-        Catalin Marinas <catalin.marinas@arm.com>,
-        Will Deacon <will@kernel.org>
-Cc: linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-        Sneh Mankad <sneh.mankad@oss.qualcomm.com>
-X-Mailer: b4 0.14.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1783077619; l=2434;
- i=sneh.mankad@oss.qualcomm.com; s=20250818; h=from:subject:message-id;
- bh=0u/Hn+/+Ov7gEwvAy1Fe3xpUvD2U1MX/9snOD6f2Czs=;
- b=hbLYt8wNQd74NPxFoeXBJoSB7L3HKgJpB/Ls7t3cgm/7vJoy7ZGbGg42hEtIT52O+ZE3Q8A6B
- hCZVB2RQnT/DdbHMHTz+jp70iryzWvl1fEkWXrMd/jM/UvAtzP0gx6j
-X-Developer-Key: i=sneh.mankad@oss.qualcomm.com; a=ed25519;
- pk=sv57EGwdcfnp6xJmoBCIT1JFSqWI+gawRHkJWj/T2B0=
-X-Proofpoint-GUID: p3rXImSAJS-KgY5x88XzQtrjebFYuHEr
-X-Authority-Analysis: v=2.4 cv=Bb7oFLt2 c=1 sm=1 tr=0 ts=6a479af9 cx=c_pps
- a=rEQLjTOiSrHUhVqRoksmgQ==:117 a=fChuTYTh2wq5r3m49p7fHw==:17
- a=IkcTkHD0fZMA:10 a=RAioF0-LDSMA:10 a=s4-Qcg_JpJYA:10
- a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=_glEPmIy2e8OvE2BGh3C:22
- a=VwQbUJbxAAAA:8 a=EUspDBNiAAAA:8 a=uPx51MvRb-IBqrSjUCkA:9 a=QEXdDO2ut3YA:10
- a=2VI0MkxyNR6bbpdq8BZq:22
-X-Proofpoint-ORIG-GUID: p3rXImSAJS-KgY5x88XzQtrjebFYuHEr
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzAzMDExMCBTYWx0ZWRfX/xdn6iZeln1J
- w7yL/wwykiENZKUCnEn3GGETpE9mRqL+09ixCaan3Bq6ykjwXof0PzjH6I65aiIvLm6LTbpGfzu
- 7xZArL41Lx+ooPWDx8cv6SV8rvPoVDNEC8fHZSOn8f1yOJSMl1cBwcGAuFRzhCdXJ0TsKjdsZIx
- /1Mzl7NF2X9w/AF8zWiAqF3ti4pQua1dkQUgaLxmjJkhd4gWfp69F/AZYSWyB1vXRYbsx+yKBjt
- 2161fXtRzG7+e3DO5+T0Kp/urAoxGeQ7WMCvjPTCTwiA3X6PLPM2H53E3bGjPKD3bD+0j8uOxwE
- Fpt8qwTUCwmgwROTi3tvOK69UyIDvngxOVotk7++uI0SArbO1qjrxijWYy+2D6SvOmEXpW+Yjg/
- iq3qWoAHg4Ot0OQh55L3eY1p1V+aBu8eCV0GH52opzCO7RbIHA35hdTbxJH/8PHMzOdOWdcGs6/
- 9spPoxZAT858htP7XDw==
-X-Proofpoint-Spam-Info: AW1haW4tMjYwNzAzMDExMCBTYWx0ZWRfXxNGOfLVgfdJB
- jZJA4N2M/rAQFWl8jzYRMaUXE/IvhEPDQXL1Ya9rMFSMU1ocC0ykvawHy8plop41iWu211/AOfM
- K8VTfKDqvW6KqK8yecy6P9evWjO0fak=
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.125,FMLib:17.12.100.49
- definitions=2026-07-03_02,2026-06-26_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- malwarescore=0 spamscore=0 clxscore=1015 impostorscore=0 suspectscore=0
- phishscore=0 adultscore=0 priorityscore=1501 bulkscore=0 lowpriorityscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2607030110
+Content-Transfer-Encoding: 8bit
+X-Spam-Flag: NO
+X-Spamd-Result: default: False [-2.80 / 50.00];
+	BAYES_HAM(-3.00)[100.00%];
+	MID_CONTAINS_FROM(1.00)[];
+	NEURAL_HAM_LONG(-1.00)[-1.000];
+	R_MISSING_CHARSET(0.50)[];
+	NEURAL_HAM_SHORT(-0.20)[-1.000];
+	MIME_GOOD(-0.10)[text/plain];
+	TO_MATCH_ENVRCPT_ALL(0.00)[];
+	ARC_NA(0.00)[];
+	RCVD_VIA_SMTP_AUTH(0.00)[];
+	FROM_HAS_DN(0.00)[];
+	MIME_TRACE(0.00)[0:+];
+	DBL_BLOCKED_OPENRESOLVER(0.00)[imap1.dmz-prg2.suse.org:helo,suse.com:email,suse.com:mid];
+	FUZZY_RATELIMITED(0.00)[rspamd.com];
+	RCPT_COUNT_SEVEN(0.00)[7];
+	RCVD_COUNT_TWO(0.00)[2];
+	FROM_EQ_ENVFROM(0.00)[];
+	DKIM_SIGNED(0.00)[suse.com:s=susede1];
+	TO_DN_SOME(0.00)[];
+	RCVD_TLS_ALL(0.00)[]
+X-Spam-Level: 
+X-Spam-Score: -2.80
 
-The Qualcomm SoCs like LeMans, Monaco support suspend to ram which leads
-the SoC to ACPI S3 similar state where SoC is turned off and DDR is
-retained. The hardware design on these SoCs forces a constraint to suspend
-and resume the system on boot CPU / CPU0.
+The 32-bit MSR interfaces rdmsr(), wrmsr(), rdmsr_safe() and
+wrmsr_safe() are planned to be removed. Use the related 64-bit variants
+instead.
 
-If CPU0 is already offline before starting suspend to ram the
-freeze_secondary_cpus() picks alternate CPU as primary / last CPU and
-proceed further to invoke PSCI SYSTEM_SUSPEND.
-This leads to a system crash.
-
-In order to prevent such an issue introduce PM_SLEEP_SMP_CPU_ZERO_STRICT
-config and when enabled prohibit the CPU0 from getting disabled.
-
-Signed-off-by: Sneh Mankad <sneh.mankad@oss.qualcomm.com>
+Signed-off-by: Juergen Gross <jgross@suse.com>
 ---
-Changes in v2:
-- Moved the check to arm64 specific code.
-- Link to v1: https://lore.kernel.org/r/20260605-disable_boot_cpu_offline-v1-1-4c68fe1a6cf8@oss.qualcomm.com
+V2:
+- make bit modifications more readable (Ingo Molnar)
 ---
- arch/arm64/Kconfig       | 9 +++++++++
- arch/arm64/kernel/psci.c | 6 ++++++
- 2 files changed, 15 insertions(+)
+ drivers/thermal/intel/intel_tcc.c            | 10 +--
+ drivers/thermal/intel/therm_throt.c          | 76 ++++++++++----------
+ drivers/thermal/intel/x86_pkg_temp_thermal.c | 32 ++++-----
+ 3 files changed, 56 insertions(+), 62 deletions(-)
 
-diff --git a/arch/arm64/Kconfig b/arch/arm64/Kconfig
-index fe60738e5943ba279e5571862423df4fed3db661..21697a535a25d286a2f8afe4921a41b13cc32c0a 100644
---- a/arch/arm64/Kconfig
-+++ b/arch/arm64/Kconfig
-@@ -263,6 +263,15 @@ config ARM64
- 	help
- 	  ARM 64-bit (AArch64) Linux support.
+diff --git a/drivers/thermal/intel/intel_tcc.c b/drivers/thermal/intel/intel_tcc.c
+index 59f70bb5ffa5..d1fa3c63d554 100644
+--- a/drivers/thermal/intel/intel_tcc.c
++++ b/drivers/thermal/intel/intel_tcc.c
+@@ -185,7 +185,7 @@ int intel_tcc_get_tjmax(int cpu)
+ 	int val, err;
  
-+config PM_SLEEP_SMP_CPU_ZERO_STRICT
-+       bool "Disallow boot CPU (CPU0) offline"
-+       depends on ARCH_QCOM
-+       depends on HOTPLUG_CPU
-+       depends on SUSPEND
-+       help
-+         Disallow boot CPU (CPU0) offline when the suspend_ops->enter()
-+         has to be executed by boot CPU.
-+
- config RUSTC_SUPPORTS_ARM64
- 	def_bool y
- 	depends on CPU_LITTLE_ENDIAN
-diff --git a/arch/arm64/kernel/psci.c b/arch/arm64/kernel/psci.c
-index fabd732d0a2dfee37074ef4ebb6ce5894871c8bd..4ad90ae6f8bacf0cbd3203d66580107d467ea232 100644
---- a/arch/arm64/kernel/psci.c
-+++ b/arch/arm64/kernel/psci.c
-@@ -49,6 +49,12 @@ static int cpu_psci_cpu_boot(unsigned int cpu)
- #ifdef CONFIG_HOTPLUG_CPU
- static bool cpu_psci_cpu_can_disable(unsigned int cpu)
+ 	if (cpu < 0)
+-		err = rdmsr_safe(MSR_IA32_TEMPERATURE_TARGET, &msrval.l, &msrval.h);
++		err = rdmsrq_safe(MSR_IA32_TEMPERATURE_TARGET, &msrval.q);
+ 	else
+ 		err = rdmsrq_safe_on_cpu(cpu, MSR_IA32_TEMPERATURE_TARGET, &msrval.q);
+ 	if (err)
+@@ -212,7 +212,7 @@ int intel_tcc_get_offset(int cpu)
+ 	int err;
+ 
+ 	if (cpu < 0)
+-		err = rdmsr_safe(MSR_IA32_TEMPERATURE_TARGET, &val.l, &val.h);
++		err = rdmsrq_safe(MSR_IA32_TEMPERATURE_TARGET, &val.q);
+ 	else
+ 		err = rdmsrq_safe_on_cpu(cpu, MSR_IA32_TEMPERATURE_TARGET, &val.q);
+ 	if (err)
+@@ -245,7 +245,7 @@ int intel_tcc_set_offset(int cpu, int offset)
+ 		return -EINVAL;
+ 
+ 	if (cpu < 0)
+-		err = rdmsr_safe(MSR_IA32_TEMPERATURE_TARGET, &val.l, &val.h);
++		err = rdmsrq_safe(MSR_IA32_TEMPERATURE_TARGET, &val.q);
+ 	else
+ 		err = rdmsrq_safe_on_cpu(cpu, MSR_IA32_TEMPERATURE_TARGET, &val.q);
+ 	if (err)
+@@ -259,7 +259,7 @@ int intel_tcc_set_offset(int cpu, int offset)
+ 	val.l |= offset << 24;
+ 
+ 	if (cpu < 0)
+-		return wrmsr_safe(MSR_IA32_TEMPERATURE_TARGET, val.l, val.h);
++		return wrmsrq_safe(MSR_IA32_TEMPERATURE_TARGET, val.q);
+ 	else
+ 		return wrmsrq_safe_on_cpu(cpu, MSR_IA32_TEMPERATURE_TARGET, val.q);
+ }
+@@ -288,7 +288,7 @@ int intel_tcc_get_temp(int cpu, int *temp, bool pkg)
+ 		return tjmax;
+ 
+ 	if (cpu < 0)
+-		err = rdmsr_safe(msr, &val.l, &val.h);
++		err = rdmsrq_safe(msr, &val.q);
+ 	else
+ 		err = rdmsrq_safe_on_cpu(cpu, msr, &val.q);
+ 	if (err)
+diff --git a/drivers/thermal/intel/therm_throt.c b/drivers/thermal/intel/therm_throt.c
+index 45a8ef4a608b..1dfd4491c9f6 100644
+--- a/drivers/thermal/intel/therm_throt.c
++++ b/drivers/thermal/intel/therm_throt.c
+@@ -722,8 +722,8 @@ void __init therm_lvt_init(void)
+ void intel_init_thermal(struct cpuinfo_x86 *c)
  {
-+#ifdef CONFIG_PM_SLEEP_SMP_CPU_ZERO_STRICT
-+	if (cpu == get_boot_cpu_id()) {
-+		pr_info("Disabling boot CPU is not supported\n");
-+		return false;
-+	}
-+#endif
- 	return !psci_tos_resident_on(cpu);
+ 	unsigned int cpu = smp_processor_id();
++	struct msr val;
+ 	int tm2 = 0;
+-	u32 l, h;
+ 
+ 	if (!intel_thermal_supported(c))
+ 		return;
+@@ -733,9 +733,9 @@ void intel_init_thermal(struct cpuinfo_x86 *c)
+ 	 * be some SMM goo which handles it, so we can't even put a handler
+ 	 * since it might be delivered via SMI already:
+ 	 */
+-	rdmsr(MSR_IA32_MISC_ENABLE, l, h);
++	rdmsrq(MSR_IA32_MISC_ENABLE, val.q);
+ 
+-	h = lvtthmr_init;
++	val.h = lvtthmr_init;
+ 	/*
+ 	 * The initial value of thermal LVT entries on all APs always reads
+ 	 * 0x10000 because APs are woken up by BSP issuing INIT-SIPI-SIPI
+@@ -746,11 +746,11 @@ void intel_init_thermal(struct cpuinfo_x86 *c)
+ 	 * BIOS has programmed on AP based on BSP's info we saved since BIOS
+ 	 * is always setting the same value for all threads/cores.
+ 	 */
+-	if ((h & APIC_DM_FIXED_MASK) != APIC_DM_FIXED)
++	if ((val.h & APIC_DM_FIXED_MASK) != APIC_DM_FIXED)
+ 		apic_write(APIC_LVTTHMR, lvtthmr_init);
+ 
+ 
+-	if ((l & MSR_IA32_MISC_ENABLE_TM1) && (h & APIC_DM_SMI)) {
++	if ((val.l & MSR_IA32_MISC_ENABLE_TM1) && (val.h & APIC_DM_SMI)) {
+ 		if (system_state == SYSTEM_BOOTING)
+ 			pr_debug("CPU%d: Thermal monitoring handled by SMI\n", cpu);
+ 		return;
+@@ -759,59 +759,55 @@ void intel_init_thermal(struct cpuinfo_x86 *c)
+ 	/* early Pentium M models use different method for enabling TM2 */
+ 	if (cpu_has(c, X86_FEATURE_TM2)) {
+ 		if (c->x86 == 6 && (c->x86_model == 9 || c->x86_model == 13)) {
+-			rdmsr(MSR_THERM2_CTL, l, h);
+-			if (l & MSR_THERM2_CTL_TM_SELECT)
++			rdmsrq(MSR_THERM2_CTL, val.q);
++			if (val.l & MSR_THERM2_CTL_TM_SELECT)
+ 				tm2 = 1;
+-		} else if (l & MSR_IA32_MISC_ENABLE_TM2)
++		} else if (val.l & MSR_IA32_MISC_ENABLE_TM2)
+ 			tm2 = 1;
+ 	}
+ 
+ 	/* We'll mask the thermal vector in the lapic till we're ready: */
+-	h = THERMAL_APIC_VECTOR | APIC_DM_FIXED | APIC_LVT_MASKED;
+-	apic_write(APIC_LVTTHMR, h);
++	val.h = THERMAL_APIC_VECTOR | APIC_DM_FIXED | APIC_LVT_MASKED;
++	apic_write(APIC_LVTTHMR, val.h);
+ 
+ 	thermal_intr_init_core_clear_mask();
+ 	thermal_intr_init_pkg_clear_mask();
+ 
+-	rdmsr(MSR_IA32_THERM_INTERRUPT, l, h);
+-	if (cpu_has(c, X86_FEATURE_PLN) && !int_pln_enable)
+-		wrmsr(MSR_IA32_THERM_INTERRUPT,
+-			(l | (THERM_INT_LOW_ENABLE
+-			| THERM_INT_HIGH_ENABLE)) & ~THERM_INT_PLN_ENABLE, h);
+-	else if (cpu_has(c, X86_FEATURE_PLN) && int_pln_enable)
+-		wrmsr(MSR_IA32_THERM_INTERRUPT,
+-			l | (THERM_INT_LOW_ENABLE
+-			| THERM_INT_HIGH_ENABLE | THERM_INT_PLN_ENABLE), h);
++	rdmsrq(MSR_IA32_THERM_INTERRUPT, val.q);
++	if (cpu_has(c, X86_FEATURE_PLN) && !int_pln_enable) {
++		val.l |= THERM_INT_LOW_ENABLE | THERM_INT_HIGH_ENABLE;
++		val.l &= ~THERM_INT_PLN_ENABLE;
++	} else if (cpu_has(c, X86_FEATURE_PLN) && int_pln_enable)
++		val.l |= THERM_INT_LOW_ENABLE | THERM_INT_HIGH_ENABLE |
++			 THERM_INT_PLN_ENABLE;
+ 	else
+-		wrmsr(MSR_IA32_THERM_INTERRUPT,
+-		      l | (THERM_INT_LOW_ENABLE | THERM_INT_HIGH_ENABLE), h);
++		val.l |= THERM_INT_LOW_ENABLE | THERM_INT_HIGH_ENABLE;
++	wrmsrq(MSR_IA32_THERM_INTERRUPT, val.q);
+ 
+ 	if (cpu_has(c, X86_FEATURE_PTS)) {
+-		rdmsr(MSR_IA32_PACKAGE_THERM_INTERRUPT, l, h);
+-		if (cpu_has(c, X86_FEATURE_PLN) && !int_pln_enable)
+-			wrmsr(MSR_IA32_PACKAGE_THERM_INTERRUPT,
+-				(l | (PACKAGE_THERM_INT_LOW_ENABLE
+-				| PACKAGE_THERM_INT_HIGH_ENABLE))
+-				& ~PACKAGE_THERM_INT_PLN_ENABLE, h);
+-		else if (cpu_has(c, X86_FEATURE_PLN) && int_pln_enable)
+-			wrmsr(MSR_IA32_PACKAGE_THERM_INTERRUPT,
+-				l | (PACKAGE_THERM_INT_LOW_ENABLE
+-				| PACKAGE_THERM_INT_HIGH_ENABLE
+-				| PACKAGE_THERM_INT_PLN_ENABLE), h);
++		rdmsrq(MSR_IA32_PACKAGE_THERM_INTERRUPT, val.q);
++		if (cpu_has(c, X86_FEATURE_PLN) && !int_pln_enable) {
++			val.l |= PACKAGE_THERM_INT_LOW_ENABLE |
++				 PACKAGE_THERM_INT_HIGH_ENABLE;
++			val.l &= ~PACKAGE_THERM_INT_PLN_ENABLE;
++		} else if (cpu_has(c, X86_FEATURE_PLN) && int_pln_enable)
++			val.l |= PACKAGE_THERM_INT_LOW_ENABLE |
++				 PACKAGE_THERM_INT_HIGH_ENABLE |
++				 PACKAGE_THERM_INT_PLN_ENABLE;
+ 		else
+-			wrmsr(MSR_IA32_PACKAGE_THERM_INTERRUPT,
+-			      l | (PACKAGE_THERM_INT_LOW_ENABLE
+-				| PACKAGE_THERM_INT_HIGH_ENABLE), h);
++			val.l |= PACKAGE_THERM_INT_LOW_ENABLE |
++				 PACKAGE_THERM_INT_HIGH_ENABLE;
++		wrmsrq(MSR_IA32_PACKAGE_THERM_INTERRUPT, val.q);
+ 
+ 		if (cpu_has(c, X86_FEATURE_HFI)) {
+-			rdmsr(MSR_IA32_PACKAGE_THERM_INTERRUPT, l, h);
+-			wrmsr(MSR_IA32_PACKAGE_THERM_INTERRUPT,
+-			      l | PACKAGE_THERM_INT_HFI_ENABLE, h);
++			rdmsrq(MSR_IA32_PACKAGE_THERM_INTERRUPT, val.q);
++			wrmsrq(MSR_IA32_PACKAGE_THERM_INTERRUPT,
++			       val.q | PACKAGE_THERM_INT_HFI_ENABLE);
+ 		}
+ 	}
+ 
+-	rdmsr(MSR_IA32_MISC_ENABLE, l, h);
+-	wrmsr(MSR_IA32_MISC_ENABLE, l | MSR_IA32_MISC_ENABLE_TM1, h);
++	rdmsrq(MSR_IA32_MISC_ENABLE, val.q);
++	wrmsrq(MSR_IA32_MISC_ENABLE, val.q | MSR_IA32_MISC_ENABLE_TM1);
+ 
+ 	pr_info_once("CPU0: Thermal monitoring enabled (%s)\n",
+ 		      tm2 ? "TM2" : "TM1");
+diff --git a/drivers/thermal/intel/x86_pkg_temp_thermal.c b/drivers/thermal/intel/x86_pkg_temp_thermal.c
+index 688e04c63761..43fd5bdf1d8d 100644
+--- a/drivers/thermal/intel/x86_pkg_temp_thermal.c
++++ b/drivers/thermal/intel/x86_pkg_temp_thermal.c
+@@ -51,8 +51,7 @@ MODULE_PARM_DESC(notify_delay_ms,
+ struct zone_device {
+ 	int				cpu;
+ 	bool				work_scheduled;
+-	u32				msr_pkg_therm_low;
+-	u32				msr_pkg_therm_high;
++	u64				msr_pkg_therm;
+ 	struct delayed_work		work;
+ 	struct thermal_zone_device	*tzone;
+ 	struct cpumask			cpumask;
+@@ -186,28 +185,28 @@ static bool pkg_thermal_rate_control(void)
+ static inline void enable_pkg_thres_interrupt(void)
+ {
+ 	u8 thres_0, thres_1;
+-	u32 l, h;
++	struct msr val;
+ 
+-	rdmsr(MSR_IA32_PACKAGE_THERM_INTERRUPT, l, h);
++	rdmsrq(MSR_IA32_PACKAGE_THERM_INTERRUPT, val.q);
+ 	/* only enable/disable if it had valid threshold value */
+-	thres_0 = (l & THERM_MASK_THRESHOLD0) >> THERM_SHIFT_THRESHOLD0;
+-	thres_1 = (l & THERM_MASK_THRESHOLD1) >> THERM_SHIFT_THRESHOLD1;
++	thres_0 = (val.l & THERM_MASK_THRESHOLD0) >> THERM_SHIFT_THRESHOLD0;
++	thres_1 = (val.l & THERM_MASK_THRESHOLD1) >> THERM_SHIFT_THRESHOLD1;
+ 	if (thres_0)
+-		l |= THERM_INT_THRESHOLD0_ENABLE;
++		val.l |= THERM_INT_THRESHOLD0_ENABLE;
+ 	if (thres_1)
+-		l |= THERM_INT_THRESHOLD1_ENABLE;
+-	wrmsr(MSR_IA32_PACKAGE_THERM_INTERRUPT, l, h);
++		val.l |= THERM_INT_THRESHOLD1_ENABLE;
++	wrmsrq(MSR_IA32_PACKAGE_THERM_INTERRUPT, val.q);
  }
  
-
----
-base-commit: ba3e43a9e601636f5edb54e259a74f96ca3b8fd8
-change-id: 20260603-disable_boot_cpu_offline-eb4f55ac96f2
-
-Best regards,
+ /* Disable threshold interrupt on local package/cpu */
+ static inline void disable_pkg_thres_interrupt(void)
+ {
+-	u32 l, h;
++	struct msr val;
+ 
+-	rdmsr(MSR_IA32_PACKAGE_THERM_INTERRUPT, l, h);
++	rdmsrq(MSR_IA32_PACKAGE_THERM_INTERRUPT, val.q);
+ 
+-	l &= ~(THERM_INT_THRESHOLD0_ENABLE | THERM_INT_THRESHOLD1_ENABLE);
+-	wrmsr(MSR_IA32_PACKAGE_THERM_INTERRUPT, l, h);
++	val.l &= ~(THERM_INT_THRESHOLD0_ENABLE | THERM_INT_THRESHOLD1_ENABLE);
++	wrmsrq(MSR_IA32_PACKAGE_THERM_INTERRUPT, val.q);
+ }
+ 
+ static void pkg_temp_thermal_threshold_work_fn(struct work_struct *work)
+@@ -357,8 +356,7 @@ static int pkg_temp_thermal_device_add(unsigned int cpu)
+ 		goto out_unregister_tz;
+ 
+ 	/* Store MSR value for package thermal interrupt, to restore at exit */
+-	rdmsr(MSR_IA32_PACKAGE_THERM_INTERRUPT, zonedev->msr_pkg_therm_low,
+-	      zonedev->msr_pkg_therm_high);
++	rdmsrq(MSR_IA32_PACKAGE_THERM_INTERRUPT, zonedev->msr_pkg_therm);
+ 
+ 	cpumask_set_cpu(cpu, &zonedev->cpumask);
+ 	raw_spin_lock_irq(&pkg_temp_lock);
+@@ -426,8 +424,8 @@ static int pkg_thermal_cpu_offline(unsigned int cpu)
+ 	if (lastcpu) {
+ 		zones[topology_logical_die_id(cpu)] = NULL;
+ 		/* After this point nothing touches the MSR anymore. */
+-		wrmsr(MSR_IA32_PACKAGE_THERM_INTERRUPT,
+-		      zonedev->msr_pkg_therm_low, zonedev->msr_pkg_therm_high);
++		wrmsrq(MSR_IA32_PACKAGE_THERM_INTERRUPT,
++		       zonedev->msr_pkg_therm);
+ 	}
+ 
+ 	/*
 -- 
-Sneh Mankad <sneh.mankad@oss.qualcomm.com>
+2.54.0
 
