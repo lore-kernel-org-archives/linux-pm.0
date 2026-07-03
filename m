@@ -1,32 +1,32 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 040173019AA;
-	Fri,  3 Jul 2026 06:20:27 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F05A533CE80;
+	Fri,  3 Jul 2026 06:21:45 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1783059629; cv=none; b=Oauo0zqJnFvWuqbBo+4M3VtuP7nwRA4Nh/NTOBgi206LTITdUYB2oO7dPDoFy6JEnSulIgtue8LIogxAT1Aw9VDhcPnm5Guhjry7a8cs3Vf4tt0pilsomxC20k4npYn5IftmzzzTN0L/R4J61lcrFwmY73exr9NoSnaYZKndqdc=
+	t=1783059706; cv=none; b=BdA+Crtm46dy08fttwEn+apcs5oX7oC1Y2xSOXx0LwbPlsWH+Mi7IjjCAtuAbFABNpJqtHmMVGuZXl2tyhmPhlMFBZwOboz2+ufGv6f7eAzV4CPzd3aYCtulNIZkyEGAbQ48qzOHvnWrR393h4lRBGdDBPeC6ntkXEzWbVBy1TQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1783059629; c=relaxed/simple;
-	bh=vjuDqyfxp0IWWyjc+HDhwkXzpy2rC9dZ3qsZEn3remU=;
+	s=arc-20240116; t=1783059706; c=relaxed/simple;
+	bh=lzzJVjjvVZjpLMVVdCED199e6uwLBfBDY/p+X3b2Hhw=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=XHIf/JlXkLWkpkItGeNwWdqmHkSQ5h99JXPVmCkiE2dPaHvF2j/ABj962iO+CW44Uiyi/e3m6kaDeN31U+J36oUiQVLy4DgQl0kvcoJktx7jxaVKIQ4okVgTw8KzeVo37ED8w2soI5qLMMfBwXctEXAQ+rEX+qqw8S9ePx7r8fQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=bZjVQ4k1; arc=none smtp.client-ip=100.103.45.18
+	 Content-Type:Content-Disposition:In-Reply-To; b=TMn3rmqZXdH7ITw7jo4RohNH740SPVtTILleXNZqsMTfflQ21zXW4+llVGSqyBTVN9Hb+8PeJQTe+KOuxwFBlODZSfAvpGcIzCzO67DyqJu18fUupUc495bGaNOuzmKWWhF9lZJs+DTSnDO/IiPBXqEzqthXI8A/N9lq7f3U5ds=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=l1SvAygo; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="bZjVQ4k1"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9F19E1F000E9;
-	Fri,  3 Jul 2026 06:20:26 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="l1SvAygo"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id D737F1F000E9;
+	Fri,  3 Jul 2026 06:21:44 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1783059627;
-	bh=pm0t9ydFcpktLa35+YRQ3ivYFMa29UixUYCSb79e5D8=;
+	s=k20260515; t=1783059705;
+	bh=7MnTyVBXFYp8Vg2HkN9K0Uqvv/ITH5vIesO323A19Ug=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=bZjVQ4k1ra3vF0HtF3nNyzma+8cJst63bGd3qSZv05vgRXmQ6HgYGgtlWuQaxzKdv
-	 WMxVwoM1CzZ4je2Wdj3qTHgPkL1xphlqNmCZ6dSSsbLqNwdhgHWvWaidTFF9/WuB4Q
-	 2REp+aPksQ/wVw09Zjh1DXLL4FmY3bySjRICl2/f9DNj/iEDNUXnnvw6Efru05dw3B
-	 MQpdndhbVHZXlhTrZ6nnpj8qtFz1AZ7EtqnYa2z80gdOzTImPgF1ciyw9nTFzu3IkT
-	 Oti/vNwmXdZ/bQz5St0kuy3K1J1fE29hs9Eqkd8UQoyfJK91I1B245EeYBAOCAm8Ks
-	 QAeXrAdwTEVyA==
-Date: Fri, 3 Jul 2026 08:20:23 +0200
+	b=l1SvAygoZlQi4uJF1C/PgeT3ztkI0zOK3VsCg5W40I4/4qwR8F2fqN5SqTIfDwfaM
+	 kliunmN4aKQGkXYwlJFF9PGIxCY1cLPdTkd9Tqtd2fXFODKM5nhnKA8cYqfceGxe35
+	 tyIQLNfsjCvAnFhdTU5LUi2RwptdVqvYO1UeVXvvbSDpI2ngOBl15yyTmmk66BRco4
+	 OL5BshL8b19pQbQlGsOd7o1WMYJIj4RW6kTpA/uk6+ceq40IF2fe9hjfScII8/1pBU
+	 GZHMskefZ+hsP2rUtX0MB0Ee3buaDKXDta4YtUASIAU8iCyHc/ZKrOuCpBR5XLOpWR
+	 flR+9gWnTTS1A==
+Date: Fri, 3 Jul 2026 08:21:41 +0200
 From: Krzysztof Kozlowski <krzk@kernel.org>
 To: Manaf Meethalavalappu Pallikunhi <manaf.pallikunhi@oss.qualcomm.com>
 Cc: Rob Herring <robh@kernel.org>, 
@@ -35,11 +35,11 @@ Cc: Rob Herring <robh@kernel.org>,
 	Konrad Dybcio <konradybcio@kernel.org>, Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>, 
 	Gaurav Kohli <gaurav.kohli@oss.qualcomm.com>, linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org, 
 	linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-Subject: Re: [PATCH v3 1/4] dt-bindings: power: Add common power limit
- controller schema
-Message-ID: <20260703-modern-indigo-wolverine-6b6eaa@quoll>
+Subject: Re: [PATCH v3 2/4] dt-bindings: power: limits: Describe Qualcomm
+ SPEL hardware
+Message-ID: <20260703-pastel-sensible-scorpion-6cea30@quoll>
 References: <20260702-qcom_spel_driver_upstream-v3-0-434d50f0c5b0@oss.qualcomm.com>
- <20260702-qcom_spel_driver_upstream-v3-1-434d50f0c5b0@oss.qualcomm.com>
+ <20260702-qcom_spel_driver_upstream-v3-2-434d50f0c5b0@oss.qualcomm.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -48,44 +48,33 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20260702-qcom_spel_driver_upstream-v3-1-434d50f0c5b0@oss.qualcomm.com>
+In-Reply-To: <20260702-qcom_spel_driver_upstream-v3-2-434d50f0c5b0@oss.qualcomm.com>
 
-On Thu, Jul 02, 2026 at 10:52:54PM +0530, Manaf Meethalavalappu Pallikunhi wrote:
-> +title: Power Limit Controller
-> +
-> +maintainers:
-> +  - Manaf Meethalavalappu Pallikunhi <manaf.pallikunhi@oss.qualcomm.com>
-> +
-> +description:
-
-You should have | to preserve formatting,
-
-> +  Power limit controllers are hardware blocks that enforce power consumption
-> +  limits on SoC power domains to prevent thermal overload, maintain system
-> +  stability, and comply with platform power budgets.
-> +
-> +  These controllers typically provide
-> +    - Hardware-enforced power capping for one or more power domains
-> +    - Configurable power limits (e.g., sustained, burst, peak)
+On Thu, Jul 02, 2026 at 10:52:55PM +0530, Manaf Meethalavalappu Pallikunhi wrote:
+> +  SPEL enforces power consumption limits to prevent thermal overload, maintain
+> +  system stability, and comply with platform power budgets. It provides
+> +    - Hardware-enforced power capping with configurable power limits
 > +    - Time window controls for power averaging
-> +    - Energy or power monitoring and reporting capabilities
-> +    - Power balancing algorithms across domains
+> +    - Energy counter monitoring for each power domain
+> +    - Automatic throttling when power limits are exceeded
 > +
-> +  This binding describes the common properties for power limit controller
-> +  provider nodes. Individual controller bindings should reference this schema
-> +  and add device-specific properties.
-
-Where are the properties? I see nothing - empty list of properties.
-
+> +  The hardware supports multiple power domains including system (SYS), SoC,
+> +  CPU clusters, GPU, memory, and peripheral subsystems. Each domain can have
+> +  independent power limits and monitoring.
 > +
-> +select: false
+> +allOf:
+> +  - $ref: power-limit-controller.yaml#
+
+Which properties are shared with above schema?
+
 > +
 > +properties:
-> +  $nodename:
-> +    pattern: "^power-limits(@.*)?$"
+> +  compatible:
+> +    const: qcom,glymur-spel
 > +
-> +additionalProperties: true
-> 
-> -- 
-> 2.43.0
-> 
+> +  reg:
+> +    maxItems: 3
+
+Best regards,
+Krzysztof
+
