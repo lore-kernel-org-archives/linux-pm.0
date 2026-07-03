@@ -1,94 +1,95 @@
-Received: from mail-yw1-f178.google.com (mail-yw1-f178.google.com [209.85.128.178])
+Received: from mail-yx1-f48.google.com (mail-yx1-f48.google.com [74.125.224.48])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C12723B8139
-	for <linux-pm@vger.kernel.org>; Fri,  3 Jul 2026 13:23:56 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.128.178
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 51BA53D810D
+	for <linux-pm@vger.kernel.org>; Fri,  3 Jul 2026 13:26:08 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=74.125.224.48
 ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1783085038; cv=pass; b=U12SozoYhYGRGY4kCrSzDfoQDFVxDSoUtG186DNos5aGRwFTsQ52GnD2RfhaGljpCGkm41sUVW2Yokps+U4/qk5WKeT16BAVQlBZ1AjKCY6bwQOTTyq+0bAGAxugqhhHjTpa+VJWyQX5LxDBEZ9gEY2seq6rMrpz4Fd5UOxJn+4=
+	t=1783085170; cv=pass; b=qDowUGfBAzcuAC2fxXMP/SCMu5dHta5wZH/kYNot7ekgm2cWB9SVkQu4A38UiycYMtPDSd3Q+ngxycZNcnj8Xy/qzd8sCH2NtMFUYlj4r8j+CBZ3DUK+jF0DW2DF4W463UQ0xlzJ0zHAvzGl0ztCw8TP5BA2DXQEHOGmvSRpMF0=
 ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1783085038; c=relaxed/simple;
-	bh=3AQ8P2Il+2wWlMlJMTJ9+9roF3hePCnmEzgS9nHgr5c=;
+	s=arc-20240116; t=1783085170; c=relaxed/simple;
+	bh=P4zhLhFMp7O4gmnRm5uDgMPugvo8rGAGH9W/oNg9Rsc=;
 	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=fawaCd5d+2AxTWauQSL1eCRQYkkfqf2K8Sb3AF486ztpkTqHoQ6JZJu0r1K+zbtmmfU1p5fmsHSlwND7TCDySslcF9YJsFJeINaEIz5yEF9rsKntQRbmX0re0aOduVXqB5OYPqxc4padlvHvraBjgZNzQy42XOfDblGrbLRQbqE=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=chromium.org; spf=pass smtp.mailfrom=chromium.org; dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b=GoADlfeB; arc=pass smtp.client-ip=209.85.128.178
+	 To:Cc:Content-Type; b=q95s6ja7ZB8SGSx92IAmZQ8IxUr0zeVNHdIV+2huIhAVXRm8XmS2g2E8VPLHNHtbANJnQZXyHzm8JNaeu0Xwby6HpgdyGaXV0EwwFsMCQej15prXiGMziEN1/XUudZeOwJWF6C7p0gOaLwL/KgALhI3Ebe/yurFeYqsngxAsvNE=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=chromium.org; spf=pass smtp.mailfrom=chromium.org; dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b=KJrt8HfN; arc=pass smtp.client-ip=74.125.224.48
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=chromium.org
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=chromium.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="GoADlfeB"
-Received: by mail-yw1-f178.google.com with SMTP id 00721157ae682-80e46c00f3bso5687747b3.2
-        for <linux-pm@vger.kernel.org>; Fri, 03 Jul 2026 06:23:56 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1783085036; cv=none;
+	dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="KJrt8HfN"
+Received: by mail-yx1-f48.google.com with SMTP id 956f58d0204a3-66628618509so777625d50.2
+        for <linux-pm@vger.kernel.org>; Fri, 03 Jul 2026 06:26:08 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1783085167; cv=none;
         d=google.com; s=arc-20260327;
-        b=M5KJCkqQyAGazwPOHoWutUEOyzbPUUxWviPG+0ebguSmoB05BSGjEnPWmL5/gyALBn
-         Lp0v6Scavmx1S/GEfeOO7MwK8YupiyaotshILb74BgHfNGK6zS8OXF8Vk2kOBm71qeXH
-         nFl2zeYUirOIbyyz9cxNf/2Z/kfTl0LtEZHHGs+oNoZYDTueVm/Pm1XsLg+yZN0x90fc
-         zlkuKQNCYYI9QFcdCIuYqcCTouiFHAqy5YGeXfXsPMyK0ZFTXKZrFOyqqro6QGpxo4sd
-         CFkdCtA7YhFrSV5jTOnZvk9DLGjDaE6SGausPlxyJ7lZrDStY03oJLWPW7OXS6iKPuAS
-         HPmA==
+        b=FiJPtDWeGW9nSdncG4oaZZRR3bb34HnVjRr1PYgyCmw7L1DXrVg34BNUdVictbKBwo
+         BTacLOeqH1t38X8T7iikI16roBBnLXaZZm0lxgcEMYuzc5QcYM6SodNWZJyHfu6oeLUP
+         1Th7jGqxwTLGwcEvqV5ex9RbPnsjus3VV2I5jnzY0qzoW7lFQIsN9yGQEvy132nmuXzO
+         QccjIuGnYOmQyd4GD50UWxr8LYxQLszjK7Zl1jBQT1PXkhECa0EYy89aD57NQs8X7qJL
+         v/ShuspQ43cvv6YAiOhAJVU3enQCu/XuDC04vbLw3pNhXK7jDSJC0IOhq3+bNf9GjKgS
+         7SHg==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
         h=content-transfer-encoding:cc:to:subject:message-id:date:from
          :in-reply-to:references:mime-version:dkim-signature;
-        bh=nyHYQJiH0grz6FfspPAI6IMD2L9btQY/X/z4yRA/W0Q=;
-        fh=TFz5A16uLGNkPUYnjyCBqGJqc5aD5Cgm5pBioxHNfR8=;
-        b=Uq7t7hcHUEq+EGOas87geAYN9w3dCSuMQ8j5xNw7g+nKroJIoZMiaU0zYGD59A3DBh
-         hQ/CUnl5ncm/fMZ5jirbPqCHZ1k1dcM21GKT7Mv/qkqtLyb9fOpgs43Bb5EsmpuuX46g
-         juehHJQ73dwwskGcOESeGME43yq/eADpZkrYxpsd3gOgWiZ5+Jxvqga7t9/tp2Av2xpp
-         TJ/WHg16cuuPOY1qo7lj+qLuG2JZrufUZLHvb4j2Vtoy7Gj4DfkYgJlR0urGoyXUAClG
-         oKoGsT8A/qqtaO+n5bGNVgI2F13k3kV+PRWCoFl3ZR4mkczrVsveYGfzbj/iZLEKD/gS
-         HIhA==;
+        bh=P4zhLhFMp7O4gmnRm5uDgMPugvo8rGAGH9W/oNg9Rsc=;
+        fh=q4skgrFBozPaH+UQplmMZZRdQs4jmOIjxaiHenfIWEI=;
+        b=PJ6pvAF8UlYmrZavDzPQ++SaA+TDlj2CnVZrtsP9xOcaa8ORwkv2IIED8KPM9opHGW
+         aac8Aw0SIFDwXSPmgMn+I/9vi+pAc3Uz5/Li1hJ2OW8bVuBb7eiXU7al2ZNV5wrNl64P
+         Q/ZxQzKSQq/qIoO40rgFDsl1thAaKOFkJhrRN9tKgo2A7nndXFrcnjIgUSNUXWjvExFz
+         ruTTylueP2c52hNKjeAcW4N8eYBF1sp7nkzDj6qAXxK8hTczc4276ko6e2/ZoZ6AgDE+
+         2AgW+xX59fDXH+k+ADCj4zsNkYZ4n/3j7pVfN5oY12Sdloi1l3/QIqg/VqDu2gm3QlGS
+         GoAQ==;
         darn=vger.kernel.org
 ARC-Authentication-Results: i=1; mx.google.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=chromium.org; s=google; t=1783085036; x=1783689836; darn=vger.kernel.org;
+        d=chromium.org; s=google; t=1783085167; x=1783689967; darn=vger.kernel.org;
         h=content-transfer-encoding:cc:to:subject:message-id:date:from
          :in-reply-to:references:mime-version:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=nyHYQJiH0grz6FfspPAI6IMD2L9btQY/X/z4yRA/W0Q=;
-        b=GoADlfeB4Hv03q5mN+g+LfR2Y11//vyMTpH8Ax53DxrAr97PrXyBM9IMvFBwZ1uGRn
-         dN/6qn1FPpmokdj4d+3esz+gzcOSuAzDAiLEw1imODvxp69fjbzR4EMceumX4JeVCoXr
-         PJ4wTb+e8Zgf0DZROuCpNE+b/s720Wuwi3W3s=
+        bh=P4zhLhFMp7O4gmnRm5uDgMPugvo8rGAGH9W/oNg9Rsc=;
+        b=KJrt8HfNHAIjRwl1rngsaRwQF/9FG/CBUQfLIs6l/S0TOIfaVompOtGsf8X3bPYz2D
+         RpHkamXeIR2v+GJi9wvXvM4EG3fqa1ExPuTLfmCtACLkWQ1SQRgq8Jnf8+Y6no5X9ShD
+         3ZnIRWkysCQxSmaWU1XoTY7M6QhPv0auFgUNY=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1783085036; x=1783689836;
+        d=1e100.net; s=20251104; t=1783085167; x=1783689967;
         h=content-transfer-encoding:cc:to:subject:message-id:date:from
          :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to;
-        bh=nyHYQJiH0grz6FfspPAI6IMD2L9btQY/X/z4yRA/W0Q=;
-        b=ZhSOTJKbtdH5BbpJl5i/4/goClap8LjIy2mvnLVkQGMBfVLRua4tMI1hktdFkNdLZ7
-         yIaWO/QKFq5Jx+Hr49FRo/LbIWJEQFysPTKohohqc3kMlI8XQqR7Mh+SANxMPtYe41G4
-         WiTiiNr7vruSKHabCPWcKJ20+E9Y6ZKEX8BpGvZi8Zbs0FI1fkK6oxkDOLBOZMDSZqLt
-         N9KPE2AMjrE0Ii8IY+jhOSbOY0vKT8xiffIlnaliOyeyksrHIUWIIoTeuU0xCkDEC3un
-         peXBq4AAj1RPAN6tYER9uetmOagX1+457c/9qAUfQc6cN0QiZ0S6j+dFmosunz0/7mYX
-         WWow==
-X-Forwarded-Encrypted: i=1; AHgh+RrdPpGUbZyC67t3zV5GUnDUxGRQss5ayBnKnPb9NvOrkSVYO7+WcT3Sn1/0dV9WWed40CC0o3hb0w==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yw0ToPqgt9DdL7fD0NxxQO6ACoSfnoJGAgWh9/OyggXcoLw48kd
-	MuRzfk2wHHLfJtv094ONDlrdRpI8E/XHGjaaCW4Zc2uFRcl6+4BxWIFRSwS8Mjtr52VQttRM0wW
-	coTVA5p9lliTXPTQs/b8o6YsuoIYg6wKZk52gCPoTNVbaaV2z5I606g==
-X-Gm-Gg: AfdE7cnffiD2SwBgQkzFpssiHVM0qRlhAqXLWxsnMWJI3AE0o28dO3N/+BoxHOUy8vA
-	/pUFQy/qBdevCH9FyRxGzcOKRH1N0XqUMj4zUrfQATn5clBylOClz1Yby8WRnfAGQbgJnh1Tyo2
-	9hitQVUje7K+C7fgH6nnDVcclI9siUZWxqm77p01C3PwVXgzwU75ttRFJ7DefmmiQ8yrz4PQalB
-	HjgJ3PtGKUuquRrRJfxRygZdlPhgHBnpPkqnSbDzjX1ZZcgqCkZafBoHyjXxe9Mym3H2kHs+KWc
-	D/9pxjm8id86O7O0bKNrIrnT0iU=
-X-Received: by 2002:a05:690e:4805:b0:664:de7a:a014 with SMTP id
- 956f58d0204a3-66521a07484mr6637877d50.34.1783084648062; Fri, 03 Jul 2026
- 06:17:28 -0700 (PDT)
+        bh=P4zhLhFMp7O4gmnRm5uDgMPugvo8rGAGH9W/oNg9Rsc=;
+        b=MphX6EL7gEXBSEBMwRPng9DwLKP3V+Y1fi+h4GhdIY1meNa2wUJSEenVVpmH+RXVjG
+         5uq2BMiV7qDz7xSDJTQLIckPd43OnTpCQzMlfx0tdIoFj3OLCmq6a8AggXTGBwAHw5WN
+         X8YPHZakBrSIdC7yQR/+OMVcGVVD4V/LPs5pLkCu5j6E7O+XLsNQcfGlbBX3Cyle/wWG
+         ed2QI3RnOZyiowzBHP+UzT0WXP/f+4iiiaztJ2GbF4UEyh5Eq+FxYSkV96ca2oEkB0nN
+         2nDVbnuO2nNyZUqdokV4QvH61tJeeQnsFGbrb4buGwiwx6JlWKrN79SoiLwhKm8FbOIX
+         WMOg==
+X-Forwarded-Encrypted: i=1; AHgh+RqGPRhX3WKVeNEFGVlE/cRIBQUQ0NDXXQpav4qT0VtFtBbgzk4fnCRTgYDR8HOxKNgjna6SsGRRgQ==@vger.kernel.org
+X-Gm-Message-State: AOJu0YwtWaKYz1P/6quaHjAskewlZYvaQoEh44TRPLWQCPD+IbEexKS/
+	KshXvjYwjIqng/aC+a0/+hdQiM5wfF10/kL0jVx61Wz8bOL/6gI3CveJTabCS0pbGVAaZdFAd/9
+	hYjLhu5rM47Q2NmkcBIQ2RtBsJK+Tl3utLZ5dsd+t
+X-Gm-Gg: AfdE7cnLLxRMw2PClhSlzdhhfx9Q67ml3sotYa5ezgCoyMMTjosyaeEC++Iep7QB+Ot
+	gFnkVsPkPafbgVQCPTLfUIgfhfX5ffTaL6lqASwLw1QYLR7cMELB3VxM2huaP7SVkOakfqoSMAd
+	eH+haxn4p2tL4wnwyX+NdHhg3tVlJCeb/DbfMWgoKPrdQA8QHNRVvcuNEWHIouucc0bq9csJHA9
+	jSdG9eiVxBKuZs32CMkDzoz9daceCmvN/Z49TZ7E6x7RscYvP7EIuq5RG/VR3JYVhbu1evDMD0k
+	ij9yUDc1Jkmm+tlqSH9wskIAnf8d780RkyfT6Q==
+X-Received: by 2002:a05:690e:480f:b0:664:fc22:36cd with SMTP id
+ 956f58d0204a3-66521ad34dcmr7426372d50.43.1783085167252; Fri, 03 Jul 2026
+ 06:26:07 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260703110317.1283411-1-wenst@chromium.org> <20260703110317.1283411-7-wenst@chromium.org>
- <ake09vk4fEv1D9QC@ashevche-desk.local>
-In-Reply-To: <ake09vk4fEv1D9QC@ashevche-desk.local>
+References: <20260703110317.1283411-1-wenst@chromium.org> <20260703110317.1283411-6-wenst@chromium.org>
+ <akeyxn390mVmYo83@ashevche-desk.local>
+In-Reply-To: <akeyxn390mVmYo83@ashevche-desk.local>
 From: Chen-Yu Tsai <wenst@chromium.org>
-Date: Fri, 3 Jul 2026 21:17:16 +0800
-X-Gm-Features: AVVi8CfejZEcwq-X4tSLhB9B5zlOpwIE7AknFvssi26xknUZgb1hl9QfxXck8os
-Message-ID: <CAGXv+5GNucSXrhL=YxarSJHD2ezzYDK3EovFu-zy012KgZ+ZBg@mail.gmail.com>
-Subject: Re: [PATCH v3 06/13] usb: hub: Pass |struct usb_port*| to usb_port_is_power_on()
-To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Cc: Bartosz Golaszewski <brgl@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
-	Daniel Scally <djrscally@gmail.com>, Heikki Krogerus <heikki.krogerus@linux.intel.com>, 
+Date: Fri, 3 Jul 2026 21:25:56 +0800
+X-Gm-Features: AVVi8CePOG6OpnrlSpGFhkpL2GOtwCFUk_NB8IIc5qFTOLO5i-BW3OK69XKCfdo
+Message-ID: <CAGXv+5G3ETTGbgjWJCbQjn9yvRamx4GHPxjWPgmy_aXWUxm0iQ@mail.gmail.com>
+Subject: Re: [PATCH v3 05/13] usb: hub: Associate port@ fwnode with USB port device
+To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>, 
+	Bartosz Golaszewski <brgl@kernel.org>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Daniel Scally <djrscally@gmail.com>, 
+	Heikki Krogerus <heikki.krogerus@linux.intel.com>, 
 	Sakari Ailus <sakari.ailus@linux.intel.com>, "Rafael J. Wysocki" <rafael@kernel.org>, 
 	Danilo Krummrich <dakr@kernel.org>, Rob Herring <robh@kernel.org>, 
 	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
@@ -98,51 +99,33 @@ Cc: Bartosz Golaszewski <brgl@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfound
 	linux-usb@vger.kernel.org, devicetree@vger.kernel.org, 
 	linux-mediatek@lists.infradead.org, linux-arm-kernel@lists.infradead.org, 
 	linux-kernel@vger.kernel.org, Manivannan Sadhasivam <mani@kernel.org>, 
-	Alan Stern <stern@rowland.harvard.edu>, 
-	Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
+	Alan Stern <stern@rowland.harvard.edu>
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Fri, Jul 3, 2026 at 9:11=E2=80=AFPM Andy Shevchenko
+On Fri, Jul 3, 2026 at 9:02=E2=80=AFPM Andy Shevchenko
 <andriy.shevchenko@linux.intel.com> wrote:
 >
-> On Fri, Jul 03, 2026 at 07:03:07PM +0800, Chen-Yu Tsai wrote:
-> > usb_port_is_power_on() currently takes |struct usb_hub*|, but only need=
-s
-> > it to tell if the hub/port is SuperSpeed or not.
+> On Fri, Jul 03, 2026 at 07:03:06PM +0800, Chen-Yu Tsai wrote:
+> > When a USB hub port is connected to a connector in a firmware node
+> > graph, the port itself has a node in the graph.
 > >
-> > In a subsequent change, usb_port_is_power_on() needs access to a pwrseq
-> > state tracking field in |struct usb_port|. Either structure can be used
-> > to identify whether a port/hub is SuperSpeed or not, as the field in
-> > |struct usb_port| is inherited from the hub:
+> > Associate the port's firmware node with the USB port's device,
+> > usb_port::dev. This is used in later changes for the M.2 slot power
+> > sequencing provider to match against the requesting port.
 > >
-> >     port->is_superspeed =3D hub_is_superspeed(hub)
-> >
-> > Replace usb_port_is_power_on()'s |struct usb_hub*| parameter with
-> > |struct usb_port*| so a subsequent change can use it.
+> > To avoid potential conflicts with ACPI firmware nodes and then causing
+> > power management issues, only assign the firmware node if the hub's
+> > firmware node is not an ACPI firmware node.
 >
-> At a brief look this will be the only function that takes usb_port
-> instead of usb_hub in the entire hub.h (I don't count container_of()
-> as a function). With that being said I would rather see it to be moved
-> to port.c altogether (yes, it's more invasive change, but looks more
-> consistent).  I would even dare to move struct usb_port (and container_of=
-()
-> accompanied with that) and this function to port.h. This might require
-> a separate patch, though.
+> Now I'm more confident that it does not mess up with ACPI case.
+> Reviewed-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 
-I agree with the reasoning, especially given the function name. However
-I wonder if it would cause problems given the linking order. I'll give
-it a try nevertheless and report back.
+Thank you and Bartosz for the reviews.
+
+FTR Sashiko pointed out that this is likely leaking a fwnode reference.
+I will add a fwnode_handle_put() call to usb_hub_remove_port_device()
+in the next version.
+
 
 ChenYu
-
-> Perhaps something like: 1) "move struct usb_port and associated APIs to p=
-ort.h";
-> 2) "...this patch...".
->
-> --
-> With Best Regards,
-> Andy Shevchenko
->
->
->
