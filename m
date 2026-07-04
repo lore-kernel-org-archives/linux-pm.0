@@ -1,77 +1,30 @@
-Received: from mail-pj1-f51.google.com (mail-pj1-f51.google.com [209.85.216.51])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from cstnet.cn (smtp25.cstnet.cn [159.226.251.25])
+	(using TLSv1.2 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8637F38F240
-	for <linux-pm@vger.kernel.org>; Sat,  4 Jul 2026 08:43:27 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.216.51
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 62291218592;
+	Sat,  4 Jul 2026 15:23:39 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=159.226.251.25
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1783154608; cv=none; b=SxR2YGs3VEV/PntbF+LP49WCF95i+NbuBs3D9co1H3CzVcrNnnG1BRyFqLlfXPsH5vx9R/D2k0EcTEE3n3pE0/O4bKDAfNVxJ8kfC6q+1YhX59o4O95JlCMn0Z+QSXsL374y3gl1rIJRfL7UUsnqZImKRaQPR4SMJq5EXGXQyCE=
+	t=1783178622; cv=none; b=hzU+fGS+eH9hLeA4iIH19yXBOBWZiWK3QisymERlOhPCFB966BHBLCixsBNRfuq+S3G7Tqm2a4pxy66FJ0hWTYmnuwUL6CLrUZAZ856jWxUV2zpN7nrnkliuy4cs8eqLqshnO4kvixl71V/0sjiq7x6/GnZIPUVBO69y9SCHN8s=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1783154608; c=relaxed/simple;
-	bh=W6XndoPJxMmfvcF5J/6RwgK7hpJy2bK1C4lOGRI1vlM=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=t397n+rI9RLRVzaPykm3dUYyFNSNtAVbSxN3tqNVItE14Ntt+8a2vLun0IvCRCLbg85gAm7GTdvd6c2EHQ/7NVzcUdebMI+F14Kf5WS6YuN0sQRofBKNj2GrQ8sWwJVeYjdbOn6Q9+h6rU6PEZnaF+llVgqOOL0B1iaU7sRFg8c=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=AxdlIH/c; arc=none smtp.client-ip=209.85.216.51
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="AxdlIH/c"
-Received: by mail-pj1-f51.google.com with SMTP id 98e67ed59e1d1-36b9d265355so978328a91.2
-        for <linux-pm@vger.kernel.org>; Sat, 04 Jul 2026 01:43:27 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1783154607; x=1783759407; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=RpGZ+bQBBUTVKiZDfz7x7KckanibPTCiPxjo/4OYUFw=;
-        b=AxdlIH/c7Mt/HcTIlgIKrCjLW+bgnaAdZ+EdbDwjxkT/V+1pk9M4LwEo/8zZPZYdf5
-         LH2EnavLEyzwEwlIFl/gyzDigGabtGNzNFkCBzfbfkmQA2aoY16lwqLZZ3neM632l0KR
-         SxdUP+7DeQA8nibO0ZU9e74MIZ7j3mVYlKk24lbJysK0WH28fX9DjaGloTpyn2Xxqelh
-         39G5OQWRwLamIDoZO7ONLebF9cmHQnkUPbFkS2YhNcVkHEAl6d7/BWkfC5dCCs10w+d6
-         TjGnrSDMuB34/YkhD/6/HiP5Kdq1y+qVrrTYBfnJm/yGPxKdO2Nc01ADPGOQABMUMJ4p
-         k8Sw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1783154607; x=1783759407;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=RpGZ+bQBBUTVKiZDfz7x7KckanibPTCiPxjo/4OYUFw=;
-        b=abbP54HxlwnYfBKUQS+Uzw2OvEXQXibaq3EuKA0y9O30NObjjUqNFV0wZQXJMZyj//
-         DNRXVHxGmEW5C3ychWxVvEf1dAh6dZV9llC8RgOjOK0p/Hyzu7ECE/Ex41QR9bXvwqw2
-         NaTWKH5AUztAJM+oGoJx35ePSgiFLtWh2YARzXR+Chlyo93YZRRgr1WN/+hYkuCMr3c1
-         g2BP1mpVULfu8SMwGh0VN9xgQioTGMrhd0xs/ti8QXqAymHs1uEhIDKhB3FkG9ojFYPQ
-         hFvT0sPUmQWy8Py8yRI/TrhxsoITsb/qjvD+FICCDuhTLDJWA2l/P2owvelqYxXVZDLT
-         2Hyg==
-X-Forwarded-Encrypted: i=1; AHgh+Rp8d9JKVcZpwBisI9WtJMgfJyjz7XA2t4V93QP/EK08DU7221RtRpZnZN23xdgFRmgx6bG86oxNww==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yzyyh6sWgrvRJro5C2lY6WwP8g/T+JHFD2Eo9Yu3oielWuJCJbE
-	ZKFObohJ4IdZHk1tuV98nkRohoKfWE8MQC1YXCzAsm39EiB02/jqi+NF
-X-Gm-Gg: AfdE7ckIRzVaBvwJR7/KWoBvSG7LIQZ0zCJfJWNTsMzVbw9V5dHs01QbvAzMYFCv2Bn
-	0tG15WvCKE6k2KCM2ySRRjMj2Ia4iAVYfQMzJD0do/vjHV/+Nu04PztpfZQOjLlyrRNWna4IGvI
-	RKumVjk0UshjBBHkrFHb7vkTmnBYmRthK8U8nlamm0quRW0eytMori64wFZyDmOE5cvKdwvsTBn
-	YveU1skfM+sdOmBOxPVrk0llf6kHSnHjaxUKowQVHd9yuoGIIJ/VzYOSRYiae5nh/QCiBFGnYBn
-	kxt+c3cjfrkNZyz5nAwRxGaxWIJxJHgCPGssP1DTbC/aa8XiuDn1wxoE1K/bum4r/GQERXZs7LO
-	QOkaBVMsoZMX23zMnL2ArcjCdq+kL0pelNM/TV9U174l85k7p0iXhf1EqmtZPHgR/vp8tfvbuJ3
-	EKgW/NW//Ow0zOi11H+kaym+tM1fqujndzOUK5drtGpfBsHVwawcY05vYpYA==
-X-Received: by 2002:a17:90a:d44f:b0:37d:f7fe:4bbc with SMTP id 98e67ed59e1d1-3829eb1e30cmr2577670a91.21.1783154606804;
-        Sat, 04 Jul 2026 01:43:26 -0700 (PDT)
-Received: from fedora.mrout-thinkpadp16vgen1.punetw6.csb ([103.133.229.222])
-        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-30f0bb7fe46sm34137884eec.14.2026.07.04.01.43.22
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 04 Jul 2026 01:43:26 -0700 (PDT)
-From: Malaya Kumar Rout <malayarout91@gmail.com>
-To: linux-kernel@vger.kernel.org,
-	linux-pm@vger.kernel.org
-Cc: mrout@redhat.com,
-	skhan@linuxfoundation.org,
-	me@brighamcampbell.com,
-	Malaya Kumar Rout <malayarout91@gmail.com>,
-	Thomas Renninger <trenn@suse.com>,
-	Shuah Khan <shuah@kernel.org>,
-	"John B. Wyatt IV" <jwyatt@redhat.com>,
-	John Kacur <jkacur@redhat.com>,
-	Brahadambal Srinivasan <latha@linux.vnet.ibm.com>
-Subject: [PATCH] cpupower: Fix NULL pointer dereference on allocation failure
-Date: Sat,  4 Jul 2026 14:13:02 +0530
-Message-ID: <20260704084303.86113-1-malayarout91@gmail.com>
-X-Mailer: git-send-email 2.53.0
+	s=arc-20240116; t=1783178622; c=relaxed/simple;
+	bh=uUFlQ9KK3s8iq6VpM3pFS4wflBs41vvpt7JUb7ifVF8=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=uBx+FHK8Ln5TnxZDI4dKY62deSWzDMj/gACxdJ++ZNyFeu1ftjifQJAo5lNDqJA+ekpHEa/HB6RGFfPPkfQNK9Ak2Kmt7j+MlRVi+MbygvTx8fWfItd4Gmwqh4cuhAGMervcP2t5q0Q5JNRtv8IdbQEyde4T6G+sEEal0Ku/LKc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=iscas.ac.cn; spf=pass smtp.mailfrom=iscas.ac.cn; arc=none smtp.client-ip=159.226.251.25
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=iscas.ac.cn
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=iscas.ac.cn
+Received: from localhost.localdomain (unknown [111.196.245.140])
+	by APP-05 (Coremail) with SMTP id zQCowAD3fAB6JUlqjbnbFg--.46104S2;
+	Sat, 04 Jul 2026 23:23:38 +0800 (CST)
+From: Pengpeng Hou <pengpeng@iscas.ac.cn>
+To: Sebastian Reichel <sre@kernel.org>
+Cc: Pengpeng Hou <pengpeng@iscas.ac.cn>,
+	linux-pm@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+Subject: [PATCH] power: reset: piix4-poweroff: add missing MODULE_DEVICE_TABLE()
+Date: Sat,  4 Jul 2026 23:23:36 +0800
+Message-ID: <20260704152336.51384-1-pengpeng@iscas.ac.cn>
+X-Mailer: git-send-email 2.50.1
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -79,43 +32,52 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
+X-CM-TRANSID:zQCowAD3fAB6JUlqjbnbFg--.46104S2
+X-Coremail-Antispam: 1UD129KBjvdXoWruryUGF1fCF1rCF47Cr18Grg_yoWkZwb_C3
+	4xK3yI93WkGry2kanxCan3ZryIk3WxWFn7W348tr9xGF13Z34DJF97Gr9xJF1DJw15XF98
+	XFyqqr4FkFyxtjkaLaAFLSUrUUUUjb8apTn2vfkv8UJUUUU8Yxn0WfASr-VFAUDa7-sFnT
+	9fnUUIcSsGvfJTRUUUbzkFF20E14v26r1j6r4UM7CY07I20VC2zVCF04k26cxKx2IYs7xG
+	6rWj6s0DM7CIcVAFz4kK6r1j6r18M28lY4IEw2IIxxk0rwA2F7IY1VAKz4vEj48ve4kI8w
+	A2z4x0Y4vE2Ix0cI8IcVAFwI0_Gr0_Xr1l84ACjcxK6xIIjxv20xvEc7CjxVAFwI0_Cr0_
+	Gr1UM28EF7xvwVC2z280aVAFwI0_Cr1j6rxdM28EF7xvwVC2z280aVCY1x0267AKxVW0oV
+	Cq3wAS0I0E0xvYzxvE52x082IY62kv0487Mc02F40EFcxC0VAKzVAqx4xG6I80ewAv7VC0
+	I7IYx2IY67AKxVWUtVWrXwAv7VC2z280aVAFwI0_Cr0_Gr1UMcvjeVCFs4IE7xkEbVWUJV
+	W8JwACjcxG0xvY0x0EwIxGrwACjI8F5VA0II8E6IAqYI8I648v4I1l42xK82IYc2Ij64vI
+	r41l4I8I3I0E4IkC6x0Yz7v_Jr0_Gr1lx2IqxVAqx4xG67AKxVWUJVWUGwC20s026x8Gjc
+	xK67AKxVWUGVWUWwC2zVAF1VAY17CE14v26r126r1DMIIYrxkI7VAKI48JMIIF0xvE2Ix0
+	cI8IcVAFwI0_JFI_Gr1lIxAIcVC0I7IYx2IY6xkF7I0E14v26F4j6r4UJwCI42IY6xAIw2
+	0EY4v20xvaj40_Jr0_JF4lIxAIcVC2z280aVAFwI0_Cr0_Gr1UMIIF0xvEx4A2jsIEc7Cj
+	xVAFwI0_Cr1j6rxdYxBIdaVFxhVjvjDU0xZFpf9x0JUdpnPUUUUU=
+X-CM-SenderInfo: pshqw1xhqjqxpvfd2hldfou0/
 
-The bitmask_alloc() function can return NULL if memory allocation fails,
-but the code in main() does not check the return values before using the
-allocated bitmasks. This can lead to a NULL pointer dereference when
-bitmask_setall() or bitmask_parselist() is called with NULL pointers.
+The driver has a match table for the pci bus wired into its driver
+structure, but the table is not exported with MODULE_DEVICE_TABLE().
 
-Add proper NULL checks after bitmask allocations and exit gracefully with
-an error message if allocation fails.
+Add the missing MODULE_DEVICE_TABLE() entry so module alias information
+is generated for automatic module loading.
 
-Fixes: 748f0d70087c ("cpupower: Provide online and offline CPU information")
-Signed-off-by: Malaya Kumar Rout <malayarout91@gmail.com>
+This is a source-level fix.  It does not claim dynamic hardware
+reproduction; the evidence is the driver-owned match table, its use by
+the driver registration structure, and the missing module alias
+publication.
+
+Signed-off-by: Pengpeng Hou <pengpeng@iscas.ac.cn>
 ---
- tools/power/cpupower/utils/cpupower.c | 11 +++++++++++
- 1 file changed, 11 insertions(+)
+ drivers/power/reset/piix4-poweroff.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/tools/power/cpupower/utils/cpupower.c b/tools/power/cpupower/utils/cpupower.c
-index 9ec973165af1..8f7b18b8bb43 100644
---- a/tools/power/cpupower/utils/cpupower.c
-+++ b/tools/power/cpupower/utils/cpupower.c
-@@ -184,6 +184,17 @@ int main(int argc, const char *argv[])
- 	online_cpus = bitmask_alloc(sysconf(_SC_NPROCESSORS_CONF));
- 	offline_cpus = bitmask_alloc(sysconf(_SC_NPROCESSORS_CONF));
+diff --git a/drivers/power/reset/piix4-poweroff.c b/drivers/power/reset/piix4-poweroff.c
+index e6822c021000..1a6f3d22d297 100644
+--- a/drivers/power/reset/piix4-poweroff.c
++++ b/drivers/power/reset/piix4-poweroff.c
+@@ -96,6 +96,7 @@ static const struct pci_device_id piix4_poweroff_ids[] = {
+ 	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_82371AB_3) },
+ 	{ 0 },
+ };
++MODULE_DEVICE_TABLE(pci, piix4_poweroff_ids);
  
-+	if (!cpus_chosen || !online_cpus || !offline_cpus) {
-+		fprintf(stderr, _("Failed to allocate bitmasks\n"));
-+		if (cpus_chosen)
-+			bitmask_free(cpus_chosen);
-+		if (online_cpus)
-+			bitmask_free(online_cpus);
-+		if (offline_cpus)
-+			bitmask_free(offline_cpus);
-+		return EXIT_FAILURE;
-+	}
-+
- 	argc--;
- 	argv += 1;
- 
+ static struct pci_driver piix4_poweroff_driver = {
+ 	.name		= "piix4-poweroff",
 -- 
-2.54.0
+2.53.0
 
