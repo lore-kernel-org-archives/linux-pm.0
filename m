@@ -1,113 +1,117 @@
-Received: from mail-oo1-f48.google.com (mail-oo1-f48.google.com [209.85.161.48])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from sendmail.purelymail.com (sendmail.purelymail.com [34.202.193.197])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E43382D97AA
-	for <linux-pm@vger.kernel.org>; Sun,  5 Jul 2026 17:47:42 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.161.48
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D663810785
+	for <linux-pm@vger.kernel.org>; Sun,  5 Jul 2026 21:43:45 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=34.202.193.197
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1783273664; cv=none; b=hQScvMjv2VWDvpyOxmFxzJY0CVTRSi0NLbE75NUWENqxONgcpHlTXYXK9NH/EdXd8DMuu3egx+5mKjLlQu26CR3ePwxHzITLasXdmBRUfEWRomz2g/gPEJn4wgBAR8Lj7i5njdCOZrhUtAFBB3ztdO5hHO4501LYS2eqsqz/tvw=
+	t=1783287827; cv=none; b=g6JUp4Yja/vEYsAPOHGJIeRP/VapBVjJbTFiwlyyIg2BwqAR6w8T8Cyp4Rp37w+zphDcMB7NzhZ5ZXQguVjWaTjIn1kCE5Zc4A6NYxWnqnVUnw2KEdKOLaD6MMzrKcDqJ4qBktRHhQEjvDMUMkUR3gYANn5hvf75uWn5V8ZNqaI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1783273664; c=relaxed/simple;
-	bh=+DWCiJuHtexmYzOgAlNi4lBL2tdyHsr209Svskkd2Rs=;
-	h=Mime-Version:Content-Type:Date:Message-Id:Subject:From:To:Cc:
-	 References:In-Reply-To; b=goON6TIQbYQ81a5ITeJQTWLj0wP2M363EWSazRwRZWfWK8eGnecDAqtdmzaaRHnsDwKlFxoib2da4/enQ7KBvYNhWtseSNXj0yeyXfQ5539zF4RrX127w99GhB+J2q1JvtFnV6qU8aYosa1pyEj1G16H1J3L7ifw48hX/ho8dqY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=RR9EVRVs; arc=none smtp.client-ip=209.85.161.48
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1783287827; c=relaxed/simple;
+	bh=Ms0260N9LkJUv3V2qU2ODpwuKVcozFxHSNPKHAVZZaE=;
+	h=Date:From:Subject:To:Cc:Message-Id:MIME-Version:Content-Type; b=QdhYNzv2XatXUbP0pTgIQkubDoPe9UWPiFR1oP52NayxfCTWLakGJGl6zPtgOjORIrYb9aXxUM9PhW7C7i6W/T+jXq5IxTYN3N6VVuIyGCsZ/7T55yiqVNaJ5dvKGtDJ+UqpcY0xHjZJ21aTo5gLLfFpLzeWJAvv8Jzie2T1DAA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=0iq.dev; spf=pass smtp.mailfrom=0iq.dev; dkim=pass (2048-bit key) header.d=0iq.dev header.i=@0iq.dev header.b=gqN4CP+U; dkim=pass (2048-bit key) header.d=purelymail.com header.i=@purelymail.com header.b=le0xRqth; arc=none smtp.client-ip=34.202.193.197
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=0iq.dev
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=0iq.dev
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="RR9EVRVs"
-Received: by mail-oo1-f48.google.com with SMTP id 006d021491bc7-6a308736a36so1334558eaf.3
-        for <linux-pm@vger.kernel.org>; Sun, 05 Jul 2026 10:47:42 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1783273662; x=1783878462; darn=vger.kernel.org;
-        h=in-reply-to:references:cc:to:from:subject:message-id:date
-         :content-type:content-transfer-encoding:mime-version:from:to:cc
-         :subject:date:message-id:reply-to:content-type;
-        bh=75FEqaRZi7gyVEUOxCRUP71SjurGrXH97prx6jJpO3Y=;
-        b=RR9EVRVsmCAw+wcrAKa4ntkKxPOIH9RrIpAy1ENR/V+W4NGiDXFGjZO52kbHPTlV/5
-         lXnuIBS+6aYZiccU/hhfLr5wh571ToWp0Vfgpy0XY2bp6nK1j6fHro6pdciCpoCr56sh
-         zdzQpGurW1AuVtlQ56rt11qsotsNcVxBRXSAHsDbwPBK/K0bhvLmeC+FtxNYqz1AoS3Z
-         vyWEK9HiFkuemMIXcEd3GjymH0ZCe4z4DTp6ba9VNpn8egmWadrPOGb+nGPN4LpYGD2S
-         MFq+7VUj/T54+Rnqwc+OzfJ4YU3dR3xTs5e/D8u+3K64Xapud3rE2veJ3V71Xzmk0+vC
-         Ub2Q==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1783273662; x=1783878462;
-        h=in-reply-to:references:cc:to:from:subject:message-id:date
-         :content-type:content-transfer-encoding:mime-version:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=75FEqaRZi7gyVEUOxCRUP71SjurGrXH97prx6jJpO3Y=;
-        b=s/jj2VX5Fx+Ckk6+x4Dcez8wZ3d5Tujb1l0BBpzv3O4C5MgJQEwe6diIGDzmcto4BJ
-         gKi1DT5cWPBjhWRemJePy0yHPze0IOuTOkGnbzDTAE92waDy3BirH/kKL+60LfZnVSMc
-         CHynQ2x9qpXjyivTiPdNFsbEBIUQjT4ShT01pJqTU57tWJ019LtRWTtGRJamNDHwt8mp
-         yTtV/PS2z0nQYGrRkNFD3h09w7IRj+vRvZ8J+RfJcGZYFgUKiK1zhl/y8OxFtnqBiZBu
-         ioAeq3KFLW5sdkAAdT8YuyBZ36lG1rZ40O37fUZ+uqUTjIPYOL9JuyBu7js2nzkZ/Vhb
-         3Xww==
-X-Forwarded-Encrypted: i=1; AFNElJ8qLli0+AfkYvNbYFZYRaa//s47ycbI4skP9gF5co0kHkFe3Mt8i9aeRm7hU/zK3OGXqBnGzP5m3g==@vger.kernel.org
-X-Gm-Message-State: AOJu0Ywqj/5K/hlbUhvJ6ZQ++AvrYz3mhrq4meEm8G0wpuqz/iSDy1rG
-	7pAWcGd8JmvOvF3ZRAVtiprYiiy1YkKuGHZbkOGfL0pA4YR+UW530zLN
-X-Gm-Gg: AfdE7clpgjhuuHZUzVD6oWofIiHR9pGLf9YoVyOdlKqEREdvsIUcueADnXyQYyAdjCj
-	DJERXIPQbRWRfWUpT/hOAKFZjm9NWaU107nVpsLKp6CAeMZg+enPRI0V/KNvU4pnyg9de2/DHpN
-	F91xJPUi9YuX8UdHNmUdj01yUP8YmSkMaHHTeCyrMOa5eg4aiEhoRo1477fd7vrFusdmwqGmhH5
-	/uNk5zhtQHSc0KzLLMRYc/ROSkLxjlXg+Z+YTsx3lSFXT/B6rDfzTnRzVi64KhiWvEzqn34I4hv
-	Jgg3f02dNqIBJrP+Xke+ulZTwEx6BqoKJd8aXztpx60Fwx6LaE8X6dILxpVBo8lsC5//QFZCeOw
-	HvjgjF0Q37+9aXltKlkYd7zEEMoxV+vbIVixIssQXdhUPXDbS8IWXeDfKLINTpHZTnkqFSl9bB0
-	UvfYfv7LSOOnHOh33oH3r/3vhL6uEtZByMcFkwhA3azjqAeLAw+g==
-X-Received: by 2002:a05:6820:3095:b0:6a1:8192:4d75 with SMTP id 006d021491bc7-6a32f5d6b94mr4075618eaf.64.1783273661937;
-        Sun, 05 Jul 2026 10:47:41 -0700 (PDT)
-Received: from localhost (23-88-128-2.fttp.usinternet.com. [23.88.128.2])
-        by smtp.gmail.com with ESMTPSA id 586e51a60fabf-44cfb559559sm8482157fac.9.2026.07.05.10.47.40
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Sun, 05 Jul 2026 10:47:41 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=0iq.dev header.i=@0iq.dev header.b="gqN4CP+U";
+	dkim=pass (2048-bit key) header.d=purelymail.com header.i=@purelymail.com header.b="le0xRqth"
+DKIM-Signature: a=rsa-sha256; b=gqN4CP+UTMFTDyPmiKIsfelbvlgSqhvzE43+o6l4M7R6C/9ySuldmR6IqTY9jJv16Z+zU0GJZIl1QsgeUDa+rzvxHhXxd6TbfqiWDObSJ4m/ruUAZjycxU5l2n5do811LekhBTBLesggJYzkOSY5nFVPDa8YvmDha3duzFg4MSqmlACVrSz1pFlguQnDkN+ie7iNX/Zx2LjfWz2+jc2bAdtycMTleTWi4yTaUhVDOFil9bP55za3jDaU7hcvLHidXXiBbNTv0zU8f1y8VfqEuhgERiFt0P+wm0trsSh4BSqn4estlBBlmkPMh4Weq+gDUfXOTmfMFE3Ihn/dbbQ1NQ==; s=purelymail3; d=0iq.dev; v=1; bh=Ms0260N9LkJUv3V2qU2ODpwuKVcozFxHSNPKHAVZZaE=; h=Received:Date:From:Subject:To;
+DKIM-Signature: a=rsa-sha256; b=le0xRqthj8NisktRkg2kbulb+VPKx5VaK6OuI2kzRcFe5kmYd9zBGDvS8W9rmL5wje8ARoHTIpTOkwoxt4hMKPgKUdAZeGhR5EhMviWDltsXBlD84MzwXYrvw9HYq+bMQrjWrSuldzXPE+XOe+AS3Ta5YRTT7DQadBXvcVRmR2tYJ7vJdmJROXgXb1373hascizhEg0wTr5CYVO/3LdFonmQSi3QYypGW9N3HyQGuvI1fxPQjvEF63ZBkhRjFvJWBOdX78OseEd41m9oiREc/DeYwloAlKdVvH9et3+5He2y/k5yl2l0tOHQoIQ21aX8AEScZ9voBR0MkOXyBORQig==; s=purelymail3; d=purelymail.com; v=1; bh=Ms0260N9LkJUv3V2qU2ODpwuKVcozFxHSNPKHAVZZaE=; h=Feedback-ID:Received:Date:From:Subject:To;
+Feedback-ID: 319265:26396:null:purelymail
+X-Pm-Original-To: linux-pm@vger.kernel.org
+Received: by smtp.purelymail.com (Purelymail SMTP) with ESMTPSA id -320624632;
+          (version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384);
+          Sun, 05 Jul 2026 21:43:27 +0000 (UTC)
+Date: Sun, 05 Jul 2026 23:43:17 +0200
+From: Polina Vishneva <poli@0iq.dev>
+Subject: Lunar Lake: silent fatal platform resets caused by idle-exit core
+ hang
+To: "Rafael J. Wysocki" <rafael@kernel.org>, Artem Bityutskiy
+	<artem.bityutskiy@linux.intel.com>
+Cc: Len Brown <lenb@kernel.org>, linux-pm@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+Message-Id: <6O1QHT.QP6URTCEWLSV1@0iq.dev>
+X-Mailer: org.gnome.Geary/46.0
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
-Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset=UTF-8
-Date: Sun, 05 Jul 2026 12:47:39 -0500
-Message-Id: <DJQTR5SRX5DL.20UJ66ES758CN@gmail.com>
-Subject: Re: [PATCH v3 2/3] iio: adc: qcom-spmi-adc5-gen3: Remove an
- unnecessary print
-From: "Maxwell Doose" <m32285159@gmail.com>
-To: "Jishnu Prakash" <jishnu.prakash@oss.qualcomm.com>, "Jonathan Cameron"
- <jic23@kernel.org>, "David Lechner" <dlechner@baylibre.com>,
- =?utf-8?q?Nuno_S=C3=A1?= <nuno.sa@analog.com>, "Andy Shevchenko"
- <andy@kernel.org>, "Amit Kucheria" <amitk@kernel.org>, "Thara Gopinath"
- <thara.gopinath@gmail.com>, "Rafael J. Wysocki" <rafael@kernel.org>,
- "Daniel Lezcano" <daniel.lezcano@kernel.org>, "Zhang Rui"
- <rui.zhang@intel.com>, "Lukasz Luba" <lukasz.luba@arm.com>
-Cc: <linux-arm-msm@vger.kernel.org>, <linux-iio@vger.kernel.org>,
- <linux-kernel@vger.kernel.org>, <linux-pm@vger.kernel.org>, "Kamal Wadhwa"
- <kamal.wadhwa@oss.qualcomm.com>, "David Collins"
- <david.collins@oss.qualcomm.com>, "Anjelique Melendez"
- <anjelique.melendez@oss.qualcomm.com>, "Neil Armstrong"
- <neil.armstrong@linaro.org>, "Stephan Gerhold" <stephan.gerhold@linaro.org>
-X-Mailer: aerc 0.21.0-0-g5549850facc2
-References: <20260705-gen3_adc_tm-v3-0-ac62f387dbce@oss.qualcomm.com>
- <20260705-gen3_adc_tm-v3-2-ac62f387dbce@oss.qualcomm.com>
-In-Reply-To: <20260705-gen3_adc_tm-v3-2-ac62f387dbce@oss.qualcomm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii; format=flowed
 
-On Sun Jul 5, 2026 at 11:53 AM CDT
-Jishnu Prakash <jishnu.prakash@oss.qualcomm.com> wrote:
+Hello.
 
-> devm_request_threaded_irq internally prints an error message using
-> dev_err_probe in case of any errors. Remove the error print in the
-> devm_request_threaded_irq failure path as it is not needed.
->
-> Signed-off-by: Jishnu Prakash <jishnu.prakash@oss.qualcomm.com>
-> ---
->  drivers/iio/adc/qcom-spmi-adc5-gen3.c | 4 +---
->  1 file changed, 1 insertion(+), 3 deletions(-)
->
+So, I've got frustrated enough with my system cold-resetting every few
+days to try to debug the issue, with some success.
 
-Seems like I'm a bit late to the party, I got distracted messing with
-email templates. Oh well.
+TL;DR: cold reset on the cpuidle exit path.
 
-Reviewed-by: Maxwell Doose <m32285159@gmail.com>
+It's *probably* not actually a kernel bug, but I don't know any better
+place to submit it (hoping that the Intel folks will take a look).
 
---=20
-best regards,
-max
+System:
+- Lenovo ThinkPad X1 Carbon Gen 13 (21NS001ACD), BIOS N4BET75W (1.45).
+- Intel Core Ultra 7 258V (Lunar Lake), microcode 0x126.
+- Kernel 7.1.1, intel_idle in ACPI _CST mode.
+- Reproduces even with intel_idle.max_cstate=2, so the enabled
+  states are only POLL, C1_ACPI and C2_ACPI.
+
+On boot after each crash, the kernel logs:
+
+  BERT: [Hardware Error]: Skipped 1 error records
+
+I pulled /sys/firmware/acpi/tables/data/BERT by hand and decoded it with
+https://github.com/intel/crashlog.
+
+The region contains a full PMC crashlog (MCA, Punit, UNCORE, PCORE,
+PMC, PMC_RST, PMC_TRACE records). iclg summarizes the failure as:
+
+  CORE_TIMEOUT.SINGLE_STUCK_TRANSACTION.C898FH
+  MCA.BANK3.INTERNAL_TIMER_ERROR.MSCOD_E184H
+  CRASHLOG_REASON.PMC.10H
+  CRASHLOG_REASON.PUNIT.20004H
+  RESET_CAUSE.FIRMWARE_GLOBAL_RESET.FW_GBLRST_SCRATCH16
+  RESET_CAUSE.GLOBAL_RESET.PMC_FW
+
+The important registers (one P-core has captured state):
+
+  mca.bank3.status = 0xbe000000e1840400
+      VAL|UC|EN|MISCV|ADDRV|PCC, MCACOD 0x0400 (internal timer /
+      retirement watchdog, "three-strike"), MSCOD 0xE184
+  mca.bank3.addr = mca.bank3.misc = arch_state.lip
+                 = 0xffffffff9471bb3c        (kernel text)
+  super queue: exactly one stuck transaction (cacheline 0xC898F)
+  pmc_rst: gblrst_cause_0.pmc_fw=1, fw_gblrst_cause_0.scratch16=1,
+      gblrst_req_0 = pmc_fw|syspwr_flr|pchpwr_flr
+
+The LIP: given that KASLR slide is 2MB-aligned, (lip mod 2M) is an
+invariant. Solving over System.map text symbols gives 14 candidates, of
+which only one can be related:
+
+  cpuidle_enter_state+0xbc
+
+Disassembly:
+
+  +0x73  call __x86_indirect_thunk_rax   ; target_state->enter()
+   ...   sched_clock_idle_wakeup_event / local_clock_noinstr /
+         sched_idle_set_state
+  +0xb6  call *pv_ops...irq_enable       ; patched to STI at boot
+  +0xbc  test %r14d,%r14d                ; <- LIP
+
+So (my best guess) the core had already returned from MWAIT, executed
+STI on the idle-exit path, and then stopped retiring instructions. The
+retirement watchdog then fires, Punit reports CORE_TIMEOUT, and PMC
+firmware pulls a global platform reset.
+
+The question is whether it is something known or rather something
+platform-specific that should be reported to Lenovo instead.
+
+I can provide the raw BERT dump, and also I'd be happy to debug/test if
+requested.
+
+Best regards,
+Polina.
+
+
