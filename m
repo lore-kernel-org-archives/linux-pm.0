@@ -1,90 +1,96 @@
-Received: from vps0.lunn.ch (vps0.lunn.ch [156.67.10.101])
+Received: from mail.zeus03.de (zeus03.de [194.117.254.33])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 711CFB672;
-	Sun,  5 Jul 2026 15:04:02 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=156.67.10.101
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C2ADB268690
+	for <linux-pm@vger.kernel.org>; Sun,  5 Jul 2026 16:43:20 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=194.117.254.33
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1783263845; cv=none; b=uEuTgJm8mZUIXfhxr3YJY8+sMwIEqECabpD7NvCE5jksnVT9ZzTyUKlI7CyiLX5/96aDuK8SqdBqzLwdIxnpAFjA3FO0LFbaGk1lSkUtFsTD12dEWC3lazCn89Ymi1rxaWwIUPR8yjafyuLt1u9VHApVZKD5/59SCc+5DLanfbQ=
+	t=1783269802; cv=none; b=rUxt9ETTJ1sscg9hPJtJf2RXDe0t0di4Gd2hzOf4MN0y+9of365N3bocJyAHTfpfqUGAdiIFVV8WgmKEXMgGDxX8AkCOIzoI78gEqUAwGbCUg1Ab49YCmEMZkSpbPvfngdirnsb02QYOVywPHcg/eYK8+ZFZWNQ1lBNoEuOxKPQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1783263845; c=relaxed/simple;
-	bh=wo4lqtA47GkxIAmoMhie9KkYyvnhazyJKrtTvigul0M=;
-	h=Date:From:To:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=Sh0/Gu9Q/f0WMtOIm7rMg2DFAtdz5mFuV99VaT9+ILzau34agBSmNEIzvpMMrVhpgKuwm6/rHKA2IGvtYsKIvSYa0MdbDrVG/cMoGvWg5v/MkddQg6Jnny34ehEWvheI0Y4shUbeuoYlFVHk/MZZNHXtqNrxIMToXAYHuv7LA1w=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=lunn.ch; spf=pass smtp.mailfrom=lunn.ch; dkim=pass (1024-bit key) header.d=lunn.ch header.i=@lunn.ch header.b=u7Fb4+hm; arc=none smtp.client-ip=156.67.10.101
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=lunn.ch
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=lunn.ch
+	s=arc-20240116; t=1783269802; c=relaxed/simple;
+	bh=cyUkMLJJp3urCo9V1X8obrIRw6qDYFxdPLNNgwlOFR8=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=ltJPUVaS2bLhR1KXdtQ8UdQJoM/KkjBTaik+Z6N2vAwFQIdlY2BpV0DiP/yilCCaKD/GYh8s4dtK50T2rjKde4wEeamRh+2+Cw8I7M4E2aTii021UUeyg5/uBzsRB90rwA+gw90WAL99/hOnLgSAfCTTcx5HOvJnKM6lSSSXQ58=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=sang-engineering.com; spf=pass smtp.mailfrom=sang-engineering.com; dkim=pass (2048-bit key) header.d=sang-engineering.com header.i=@sang-engineering.com header.b=PdRaf902; arc=none smtp.client-ip=194.117.254.33
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=sang-engineering.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=sang-engineering.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=lunn.ch header.i=@lunn.ch header.b="u7Fb4+hm"
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=lunn.ch;
-	s=20171124; h=In-Reply-To:Content-Disposition:Content-Type:MIME-Version:
-	References:Message-ID:Subject:To:From:Date:From:Sender:Reply-To:Subject:Date:
-	Message-ID:To:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:
-	Content-ID:Content-Description:Content-Disposition:In-Reply-To:References;
-	bh=MjFyE/GuY4zCXOCWmZjS9nf5WEwFKlMosakxlzzhgKA=; b=u7Fb4+hmzFx3UipHSwoWedWBaU
-	KSTZCMZWLVdMdrU31XEcUPWdZlHdz0ghtvmlN3vYOq03ljvEGr7J1v8LIogoINE9dgA7GCnG4mXCJ
-	WS9CcL5vZF6JVFEG5lvN5eyR1iIHx3Uu1oP70Kxkp4a5WTenUj/5s6GW+Oe8Akb6oPZw=;
-Received: from andrew by vps0.lunn.ch with local (Exim 4.94.2)
-	(envelope-from <andrew@lunn.ch>)
-	id 1wgONV-00AqQj-DU; Sun, 05 Jul 2026 17:03:29 +0200
-Date: Sun, 5 Jul 2026 17:03:29 +0200
-From: Andrew Lunn <andrew@lunn.ch>
-To: Miguel Ojeda <ojeda@kernel.org>, rust-for-linux@vger.kernel.org,
-	linux-kernel@vger.kernel.org, Danilo Krummrich <dakr@kernel.org>,
-	Abdiel Janulgue <abdiel.janulgue@gmail.com>,
-	Daniel Almeida <daniel.almeida@collabora.com>,
-	Robin Murphy <robin.murphy@arm.com>,
-	Andreas Hindborg <a.hindborg@kernel.org>,
-	Boqun Feng <boqun@kernel.org>, Gary Guo <gary@garyguo.net>,
-	=?iso-8859-1?Q?Bj=F6rn?= Roy Baron <bjorn3_gh@protonmail.com>,
-	Benno Lossin <lossin@kernel.org>, Alice Ryhl <aliceryhl@google.com>,
-	Trevor Gross <tmgross@umich.edu>,
-	Tamir Duberstein <tamird@kernel.org>,
-	Alexandre Courbot <acourbot@nvidia.com>,
-	Onur =?iso-8859-1?Q?=D6zkan?= <work@onurozkan.dev>,
-	Drew Fustini <fustini@kernel.org>, Guo Ren <guoren@kernel.org>,
-	Fu Wei <wefu@redhat.com>,
-	Michal Wilczynski <m.wilczynski@samsung.com>,
-	Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <ukleinek@kernel.org>,
+	dkim=pass (2048-bit key) header.d=sang-engineering.com header.i=@sang-engineering.com header.b="PdRaf902"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
+	sang-engineering.com; h=from:to:cc:subject:date:message-id
+	:mime-version:content-transfer-encoding; s=k1; bh=GAELMdD28uRnWd
+	mZM6U9lfBnfk6B8A+WDHptdWUHPCM=; b=PdRaf902Qlmj0nfltRVYKhEPRG7ixa
+	dzPjp1QeBSg0xA9eDxJeXTcuhE4Vj+cC5BAwPr493DDoPdt67APbf41qt4cebozj
+	74+wnJIqTIDcUvw/a0+YEKk0/ns24ENUq+5kuS0JMrnCB68zk0k2kKl1I+ELGAuz
+	7pnvNq1uUGxmTWfaO58/fxDb8XBPAmP/Z0NpMpE4ESgv9NBPtdalLrFYeNTbqA+z
+	5iI3T76rl5gRNCRS6iZAKVddDrJoQF02L42MUN0KRkOAsGcqQkZaNl5XHp531QeX
+	Rcq9E7kB4FI0b+QdaI2nQQx8xv81ZyCHn2t8A1Ut5RP//XdEvu/VsHmg==
+Received: (qmail 2289317 invoked from network); 5 Jul 2026 18:43:18 +0200
+Received: by mail.zeus03.de with ESMTPSA (TLS_AES_256_GCM_SHA384 encrypted, authenticated); 5 Jul 2026 18:43:18 +0200
+X-UD-Smtp-Session: l3s3148p1@QWjd2t9VkCltKjFj
+From: Wolfram Sang <wsa+renesas@sang-engineering.com>
+To: linux-kernel@vger.kernel.org
+Cc: Wolfram Sang <wsa+renesas@sang-engineering.com>,
+	Miquel Raynal <miquel.raynal@bootlin.com>,
 	"Rafael J. Wysocki" <rafael@kernel.org>,
-	Viresh Kumar <viresh.kumar@linaro.org>,
-	Jens Axboe <axboe@kernel.dk>,
-	FUJITA Tomonori <fujita.tomonori@gmail.com>,
-	Heiner Kallweit <hkallweit1@gmail.com>,
-	Russell King <linux@armlinux.org.uk>,
-	"David S. Miller" <davem@davemloft.net>,
-	Eric Dumazet <edumazet@google.com>,
-	Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
-	David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>,
-	driver-core@lists.linux.dev, linux-riscv@lists.infradead.org,
-	linux-pwm@vger.kernel.org, linux-pm@vger.kernel.org,
-	linux-block@vger.kernel.org, netdev@vger.kernel.org,
-	nova-gpu@lists.linux.dev, dri-devel@lists.freedesktop.org
-Subject: Re: [PATCH 0/7] rust: Use kernel style vertical imports in various
- drivers
-Message-ID: <66d3d69d-0974-49e1-ad93-9295407f4b78@lunn.ch>
-References: <20260628-b4-rust-vertical-imports-v1-0-98bc71d4810b@gurudas.dev>
- <c89a1bc8-6cc1-4e16-ac95-add389e45a2b@lunn.ch>
- <akmnh0AKFfu9-OYn@gurudas.dev>
+	Daniel Lezcano <daniel.lezcano@kernel.org>,
+	Zhang Rui <rui.zhang@intel.com>,
+	Lukasz Luba <lukasz.luba@arm.com>,
+	Vasily Khoruzhick <anarsoul@gmail.com>,
+	Yangtao Li <tiny.windzz@gmail.com>,
+	Chen-Yu Tsai <wens@kernel.org>,
+	Jernej Skrabec <jernej.skrabec@gmail.com>,
+	Samuel Holland <samuel@sholland.org>,
+	linux-pm@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org,
+	linux-sunxi@lists.linux.dev
+Subject: [PATCH] thermal: remove unneeded 'fast_io' parameter in regmap_config
+Date: Sun,  5 Jul 2026 18:43:12 +0200
+Message-ID: <20260705164311.2273-2-wsa+renesas@sang-engineering.com>
+X-Mailer: git-send-email 2.51.0
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <akmnh0AKFfu9-OYn@gurudas.dev>
+Content-Transfer-Encoding: 8bit
 
-> Is that reasoning off-base, or is the right path to split these out per subsystem
-> regardless?
+When using MMIO with regmap, fast_io is implied. No need to set it
+again.
 
-Adding to what others have said, some subsystems have there own CI
-system which tests every patch. Does it build? Does it add new
-warning, is sparse happy, are there more self test failures. What do
-different AIs think of the patch etc. Cross subsystem patches don't
-always hit the per subsystem CI tests.
+Signed-off-by: Wolfram Sang <wsa+renesas@sang-engineering.com>
+---
+No dependencies, can be applied directly to the subsystem tree. Buildbot is
+happy, too.
 
-So in general, it is better to submit per subsystem.
+ drivers/thermal/armada_thermal.c | 1 -
+ drivers/thermal/sun8i_thermal.c  | 1 -
+ 2 files changed, 2 deletions(-)
 
-       Andrew
+diff --git a/drivers/thermal/armada_thermal.c b/drivers/thermal/armada_thermal.c
+index c2fbdb534f61..252d5afecea1 100644
+--- a/drivers/thermal/armada_thermal.c
++++ b/drivers/thermal/armada_thermal.c
+@@ -722,7 +722,6 @@ static const struct regmap_config armada_thermal_regmap_config = {
+ 	.reg_bits = 32,
+ 	.reg_stride = 4,
+ 	.val_bits = 32,
+-	.fast_io = true,
+ };
+ 
+ static int armada_thermal_probe_legacy(struct platform_device *pdev,
+diff --git a/drivers/thermal/sun8i_thermal.c b/drivers/thermal/sun8i_thermal.c
+index 22674790629a..284684137c43 100644
+--- a/drivers/thermal/sun8i_thermal.c
++++ b/drivers/thermal/sun8i_thermal.c
+@@ -149,7 +149,6 @@ static const struct regmap_config config = {
+ 	.reg_bits = 32,
+ 	.val_bits = 32,
+ 	.reg_stride = 4,
+-	.fast_io = true,
+ 	.max_register = 0xfc,
+ };
+ 
+-- 
+2.51.0
+
