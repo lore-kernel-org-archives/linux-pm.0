@@ -1,214 +1,148 @@
-Received: from CWXP265CU009.outbound.protection.outlook.com (mail-ukwestazon11021101.outbound.protection.outlook.com [52.101.100.101])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pl1-f179.google.com (mail-pl1-f179.google.com [209.85.214.179])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5B355347C5;
-	Sun,  5 Jul 2026 12:08:58 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.100.101
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 395BC360ED0
+	for <linux-pm@vger.kernel.org>; Sun,  5 Jul 2026 12:13:00 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.214.179
 ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1783253340; cv=fail; b=SwOcvJubZikcYgtIe/kRO7yhvY0tc9KE2ug7iyA+1di3N+MgK0vEsNm3A9Wde83ZrrvIUz/wkSgODyWtulSB4USKUNj7C43YEVKuvIw/+L1OtyrRqibHNoEEJ6RkodgLlyswSq2G7FKhTzQAB+RNOeCqbFpS9EyOO6yrIo4kZSs=
+	t=1783253581; cv=pass; b=gZDlxEvbEQS710KtMWNKFHT3ztQauSTHslmAtKYIMENBVmFRrauP8MrQWQaB4t0Xu87QGW3mWM5eWg2M62uqWdpFONOXGh5ICeREnnI0D6mYrXe768D/iF2Dcc6FXsspFDDZf7l08lYx7lSGrnXlsS6+iU34d1wx6Wj4NLvq8zs=
 ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1783253340; c=relaxed/simple;
-	bh=DY/ZJQ3rqnkCC0e1X/oyZqJVF8kR1+OKPNDi0K/7Hls=;
-	h=Content-Type:Date:Message-Id:Cc:Subject:From:To:References:
-	 In-Reply-To:MIME-Version; b=SoPW6M+F/x8o+dBJmHPDPn1kh8GX8pkvv9D5z7LcnFOBv/xSlHJCZx5RshPzZosYiTdgmqDsdE2tX11R7YsT5qfJGZqbyYc+NVIm20Rg9XEGR4HOYQZ0Z7IlCnymvwL9L0+W2+hkAubRNvEtJd+bLk8DQTZJnuHnoqJ+BGbhGCQ=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=garyguo.net; spf=pass smtp.mailfrom=garyguo.net; dkim=pass (1024-bit key) header.d=garyguo.net header.i=@garyguo.net header.b=iRVGNrnK; arc=fail smtp.client-ip=52.101.100.101
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=garyguo.net
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=garyguo.net
+	s=arc-20240116; t=1783253581; c=relaxed/simple;
+	bh=5ISwFpI0UbPRq9FTX8wSAZ5/fVWcYX66lDYusFmfZZE=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Content-Type; b=pYMPBTFSXqRCbMBEgTt/FbD6Ogb1Oncw26xaZAq/2Y9U5OG0Lebrux8jbAV0FH7ZWV3/fF6GiKgvUz4CfnWStlQEG1gmPVToFrVrehgvvEZ1pSQ3eTLxAJML+frFv603QibhpwhCyTIpwZB0ziqXHQpYo+Y+fi03XA5XHaGxxt4=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=EiS8dlOM; arc=pass smtp.client-ip=209.85.214.179
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=garyguo.net header.i=@garyguo.net header.b="iRVGNrnK"
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=i7yuJ/XJPfB6H416itnidLvU2Q+SFBYEPsHwzUllF3OUNw6M+GewX8/7QXzRkpX0KQXWtEBeI0dc9x9E+qAj64qyGOf4SAduLbiHyEFPXm692n5BwQgcBUmuE7QFcuRO53LUqHl9vhbQ1T9nGQVhAifdDgvjAaU2Jz/D/zEakDgya2lnzHKuvDaJGUz0wOqqZgKwJoOq0ypfdkSfa8BXHISmKETY0SZ8DRVpOqAS6N68XvGuSYvc+DEUBzpkKDv3a0CMedz2QM/lCWSIh5GKcZSeTa6kIcWSbFTBni0lKzGD1uAG1QfYN+7arxhoZ3uNFjl0YlpyfQ0mub1LcFdM4Q==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=6geqeTZ8oVqFzJKnxN6Ou9cSnOXfd1QdLC5R6btzXj0=;
- b=OfEoDDAsFCWl7+OkmDFrXDqZLI58LRqwqX6MbiyPwI47sYjRgxYzAtPwpmKhOXPTBdf2BoK51C4kzyAz8U6KmpYyaIHFxiIwIZ3E3qMtDBUTL1JbSaNFoBU36HLGO9/MMrKXDm4UcFhorpEie760vgrPp3NcFWbFanBnhHsNTPK0v6JLUYWBlER0TI462JsF0D5VLt4/XyPJfEwgI5pjJrQx5VELQQbPGzRKgoDdB7xyHfQFymUnNoGXC3hyZKVUMMzXZW824jDqpRvpqku58ryc7sfUfUfxFd4jfTTifnCnhy0wda+pYByAy2gOlHWAQyqin2F9u5c1epudpqTL/w==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=garyguo.net; dmarc=pass action=none header.from=garyguo.net;
- dkim=pass header.d=garyguo.net; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=garyguo.net;
- s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=6geqeTZ8oVqFzJKnxN6Ou9cSnOXfd1QdLC5R6btzXj0=;
- b=iRVGNrnKWi7fAz/tPSANgq3+NUdr2BXG7tq8skjuWq8+CH/moPYvnmZjey9Ezpl6qKKybIJsjSd4F2/IfeozZ9k5si7TR8KN0Lq6cKwny+Qp4cK6+kyr2whZyxA9gHaDGMPFzMzSDUM4fDu37gj+sra4II4Yn0PSZ0FGHLBRjIc=
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=garyguo.net;
-Received: from LOVP265MB8871.GBRP265.PROD.OUTLOOK.COM (2603:10a6:600:488::16)
- by CWLP265MB7266.GBRP265.PROD.OUTLOOK.COM (2603:10a6:400:225::11) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.181.11; Sun, 5 Jul
- 2026 12:08:54 +0000
-Received: from LOVP265MB8871.GBRP265.PROD.OUTLOOK.COM
- ([fe80::1c3:ceba:21b4:9986]) by LOVP265MB8871.GBRP265.PROD.OUTLOOK.COM
- ([fe80::1c3:ceba:21b4:9986%4]) with mapi id 15.21.0181.008; Sun, 5 Jul 2026
- 12:08:54 +0000
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset=UTF-8
-Date: Sun, 05 Jul 2026 13:08:53 +0100
-Message-Id: <DJQMJS0C3EDQ.278WBLVP566HU@garyguo.net>
-Cc: "Miguel Ojeda" <ojeda@kernel.org>, <rust-for-linux@vger.kernel.org>,
- <linux-kernel@vger.kernel.org>, "Danilo Krummrich" <dakr@kernel.org>,
- "Abdiel Janulgue" <abdiel.janulgue@gmail.com>, "Daniel Almeida"
- <daniel.almeida@collabora.com>, "Robin Murphy" <robin.murphy@arm.com>,
- "Andreas Hindborg" <a.hindborg@kernel.org>, "Boqun Feng"
- <boqun@kernel.org>, "Gary Guo" <gary@garyguo.net>,
- =?utf-8?q?Bj=C3=B6rn_Roy_Baron?= <bjorn3_gh@protonmail.com>, "Benno Lossin"
- <lossin@kernel.org>, "Alice Ryhl" <aliceryhl@google.com>, "Trevor Gross"
- <tmgross@umich.edu>, "Tamir Duberstein" <tamird@kernel.org>, "Alexandre
- Courbot" <acourbot@nvidia.com>, =?utf-8?q?Onur_=C3=96zkan?=
- <work@onurozkan.dev>, "Drew Fustini" <fustini@kernel.org>, "Guo Ren"
- <guoren@kernel.org>, "Fu Wei" <wefu@redhat.com>, "Michal Wilczynski"
- <m.wilczynski@samsung.com>, =?utf-8?q?Uwe_Kleine-K=C3=B6nig?=
- <ukleinek@kernel.org>, "Rafael J. Wysocki" <rafael@kernel.org>, "Viresh
- Kumar" <viresh.kumar@linaro.org>, "Jens Axboe" <axboe@kernel.dk>, "FUJITA
- Tomonori" <fujita.tomonori@gmail.com>, "Heiner Kallweit"
- <hkallweit1@gmail.com>, "Russell King" <linux@armlinux.org.uk>, "David S.
- Miller" <davem@davemloft.net>, "Eric Dumazet" <edumazet@google.com>, "Jakub
- Kicinski" <kuba@kernel.org>, "Paolo Abeni" <pabeni@redhat.com>, "David
- Airlie" <airlied@gmail.com>, "Simona Vetter" <simona@ffwll.ch>,
- <driver-core@lists.linux.dev>, <linux-riscv@lists.infradead.org>,
- <linux-pwm@vger.kernel.org>, <linux-pm@vger.kernel.org>,
- <linux-block@vger.kernel.org>, <netdev@vger.kernel.org>,
- <nova-gpu@lists.linux.dev>, <dri-devel@lists.freedesktop.org>
-Subject: Re: [PATCH 0/7] rust: Use kernel style vertical imports in various
- drivers
-From: "Gary Guo" <gary@garyguo.net>
-To: "Guru Das Srinagesh" <linux@gurudas.dev>, "Andrew Lunn" <andrew@lunn.ch>
-X-Mailer: aerc 0.21.0
-References: <20260628-b4-rust-vertical-imports-v1-0-98bc71d4810b@gurudas.dev> <c89a1bc8-6cc1-4e16-ac95-add389e45a2b@lunn.ch> <akmnh0AKFfu9-OYn@gurudas.dev>
-In-Reply-To: <akmnh0AKFfu9-OYn@gurudas.dev>
-X-ClientProxiedBy: LO4P265CA0048.GBRP265.PROD.OUTLOOK.COM
- (2603:10a6:600:2ac::8) To LOVP265MB8871.GBRP265.PROD.OUTLOOK.COM
- (2603:10a6:600:488::16)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="EiS8dlOM"
+Received: by mail-pl1-f179.google.com with SMTP id d9443c01a7336-2c988e16bb3so5122145ad.0
+        for <linux-pm@vger.kernel.org>; Sun, 05 Jul 2026 05:13:00 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1783253579; cv=none;
+        d=google.com; s=arc-20260327;
+        b=UiFGrvyTWVqJKyVjH0dwztVfPqvV1ImC+HtiS01S60/781VAVKdoYozoMYJiennWrp
+         YHvOZorAoIvVVGdL1COBpZ0yul8yNVELBbbm/0mFvE4Du2nO1Vem48R7NXj3q7efVmxF
+         SQf9zbqHEFyNjS6hRnhZBrynzj3WscCXq0Wspka3ZI/tIKe7eC/l53XXutM2FqPFVFij
+         S/yeCqL9NIOsl0GPoc7l2W2OPNb2DSgNLy/yLiCaRVkM5WxlrmoSUmtmwHXbY9k4yZ/W
+         1S1CQxon3gyENUl4WGrG5YLZlWopgwnQpMpYfLhhb9nvMLXRqta6VPQDq1BZjDL11Pm/
+         KGdg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
+        h=content-transfer-encoding:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=U0wpLikbkQ+TMe9JGtyw25kNkY3ZEdsCI94B3LxA6AA=;
+        fh=pH5iLCjI9xKqvP4+QyFyLUc4KUfGrYd8prPUjudQpIA=;
+        b=TnX9FgwokbGmjFF8NRrfftCnLvrPKwqfe/scU0UFlQEupRKomhp8TrLyOWZpmOsiCi
+         YWuv3O2zpkSZz3kFNuutm4QEfYdUDwCJwPq+Tv8M3vSGF8qVKqjcTwOcjizi5QOcNz3S
+         vm5Dt2vam+NihNKslTYRqq1tGocTJcl2XxDb+GWNsjQLIT7BZl+NTrzTehmutb2pJe9h
+         vQhiKOrhaJIhXBCQC+HJ7Ex7taoALWA/7Wuw/oQx/7RU+BJU9jo1QHNxOxDazbzLLRvx
+         bvO29LiDhDHnS6hUUHw3z5z+sjGeTRm1GomscP4YOLMraH6csCHhnqa3WmGLEYMK6ojy
+         Lo5g==;
+        darn=vger.kernel.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1783253579; x=1783858379; darn=vger.kernel.org;
+        h=content-transfer-encoding:content-type:to:subject:message-id:date
+         :from:in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=U0wpLikbkQ+TMe9JGtyw25kNkY3ZEdsCI94B3LxA6AA=;
+        b=EiS8dlOM4eyK6m1HpW3B/2Lk4Ke8vaKmQ1grSKFAJWT3nDgHQp9PHG6jDFJWFMvvPG
+         oCku+2dl+HfLBkdKZgSuHLUA7YZqNbbMrZm2TVKZv4KZ45li1mzTsRsicFKWdCN+v+zi
+         IdwL4gSU3xdcrd7mNZoZYzHVr3F5FCVUfsFcww01QxO2XIg11BR+z3vKVvWkHs0gbj5I
+         2DZJKv0/WQyEQ8Ha6Xu82TGTSYANNStIKhMU5St9tH4npH0B5hAWmCb/g9/YoriaRJzj
+         b431tZuxGVTTDaog+QabLoyvZpxKg8nku7BLjtK1/CPlyoToF4FA0vaITOaO05iHBIt5
+         lnvQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1783253579; x=1783858379;
+        h=content-transfer-encoding:content-type:to:subject:message-id:date
+         :from:in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state
+         :from:to:cc:subject:date:message-id:reply-to:content-type;
+        bh=U0wpLikbkQ+TMe9JGtyw25kNkY3ZEdsCI94B3LxA6AA=;
+        b=JyW18SiVL4HLUnuKbAwP0hDKkoPNOul7TVgxbldg9F8kDxAzOUvwIq3E6EELkx3RjM
+         fjSCezoNCdZYJWjiOBqC9Skw8OdzjFBBxoRTayX5+nm0/BQbO8UF+K2t1yD9VFfUM643
+         23rOFplQ1LBqYRcxsXvdbbvJrlDDrt0sKVc8jJvtO6ONK6oIT4JhLRUrowrBT7yq3w+r
+         i4ahp2lPKHTrr8RVFVH593lvKIaXnurjdkbOM10cHW8aUXBcLPBpOw+Uun6na6OtTqC1
+         uuRN74Qxdw4yQHnD9zh1uiuFGXeu9N8e+IWC25VkAHrvr1vXd49hCSPxDBjX3BbcolA5
+         Mmyw==
+X-Forwarded-Encrypted: i=1; AHgh+RqHoyFFbJkcXsoo2m7qDEbyQwOhdf5zKVC5+eCfTOKFMjeIQy9w5d6ANc7MGVByNEJWLKiRL5qEJw==@vger.kernel.org
+X-Gm-Message-State: AOJu0YxGYx6799P1rwG5U7/FyAjGs+aYjc5O3krKuSXaLNDGPgybKsSM
+	D5uiUpmoz6VZAAF9jRT3WO0oZXHfX5sPJ6HPFS26KxopGh/thv6SX5S6d8UcJBPfm4xNXhxqcX4
+	8Ce48CRKl5FPzNr9lEXJO/Ca4EsFCPP8=
+X-Gm-Gg: AfdE7cnJwXEwUomhKxs9IFBHpbYlvKNGDBVVe3DnVeMV1SStXfaldi+O/6KIVpPI7Ex
+	/LPcxiwupIBUtF+0X7csZ+o7C6v0Or5MbA4ucNZNucCP0hc/RJoGMIGEdXRsWcytYVh6fNfA4B0
+	R7Ya5W5VvCmK95NvgQFQgQm4fVXk+zH/9Um7PJIYTtw0GIsR2hBMUR++Oich3Uo5PNi/rxb4e2P
+	wzek4g0bEvnY7TSfZXThtEni9eQ2F2lp8z71ecwoMDV2l4Mxlb7+0+56aXiYTYO1/+7+fKLb4CN
+	Kc32+v10kQaZbLd8Ck8qldD3ybX3gEr67h3bbRhiymHXi+Fv7HyfG5R3B5Q6Pl2bvksF6wZBZjA
+	BUO9MdHMG65fL
+X-Received: by 2002:a17:90b:268f:b0:381:28e0:6248 with SMTP id
+ 98e67ed59e1d1-382802beaa9mr4128789a91.1.1783253579563; Sun, 05 Jul 2026
+ 05:12:59 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: LOVP265MB8871:EE_|CWLP265MB7266:EE_
-X-MS-Office365-Filtering-Correlation-Id: 5fc16130-6fad-4dd5-d084-08deda8e2efc
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|1800799024|23010399003|366016|376014|10070799003|7416014|22082099003|18002099003|4143699003|56012099006|5023799004|6133799003;
-X-Microsoft-Antispam-Message-Info:
-	QihblXpvdEklQsRNqW5pdvrh4cjhymtOwvrUSKJkhXQji/x84dL/C8nM0EymlyR52WUCDwTjlyxAMJ8kFjG/5Ie+nnA16WvQbLSxfIZGz0PIOF7pnN6Kyfbt8vYUL64jlg8LFH3ph49deno3tfqTqwiApzuoSYQJZDDXIciAeonmyMnSxY5hJ+k7D9LaGtJodPPnUKd4NtBH5okovKgm3NKsDXCfEEtNEhJTwVC/X5AEi53N/ekfeIl4v1SnWeUh4yoxa3WirdyqimaCjGzSGXT2mAoiaGkSUNNQTcEbkQJLTA6mSLssAhznFWOj9TYemH0UXjw82Fu5rAlg1gMyJgEHGgerhkzuep9RE/rKTo2akbuyuGKH6vw1pVM7pkkNI8uPuSAh34IxLidBA2OOY6GyiOMBREMy03JVFtzzfaXHfmYQsZspqR1UZeAfQ0/uqP4nsi3gEnXi9yhy1sy8JKJTqt4o/XFuFo5RTet4NH3fuKKgr+aY2zbROLQ8u3YwnaNU+kFrFKANka5Nej3/w+vWc9AV2lnRzVKWplWe90kxiqtMVa5b2gRdnfZWEIJEEv3H/8PQg1pyOH1z7G6j7PMxiTcOA94kCz2vHvc1+xlJOxv5UOqG2/mYFbmkWPJJBFF7P2R5AMRKEaDaME0ZD/e/uPPzd8FL8zavBSDguco=
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:LOVP265MB8871.GBRP265.PROD.OUTLOOK.COM;PTR:;CAT:NONE;SFS:(13230040)(1800799024)(23010399003)(366016)(376014)(10070799003)(7416014)(22082099003)(18002099003)(4143699003)(56012099006)(5023799004)(6133799003);DIR:OUT;SFP:1102;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?utf-8?B?MEtFRy85QkZxdkNDVXp5NFA2blRYQk5TRWJQTW1CTFFrRzZqRHhZTSt1b0ox?=
- =?utf-8?B?QnNTa3c5R2p5MXlOUURMTzNCZm9adDlzQkkwdTRGRC9aWDk3MEpiUk9GQ1BB?=
- =?utf-8?B?Z1JmK1lEbTJRanBKVmJBbUFERGpIZlArd3NxYXl5NlZHY3QrdzZZUHoyblll?=
- =?utf-8?B?aHAxTHhWOWw1OUZpYlZZK2FkOXl2NFVJNGU5ak0wQk9oYnRwVmE2T0J1RkJC?=
- =?utf-8?B?UjE2aldZSUV4MFZ6MzVReUZMeGo4dGxzZDdFUzdCSnBXU1RBcVlQMXZHTWUy?=
- =?utf-8?B?dGZPVkRGN3d3S0hHUjJSai9YdmNCbkMwbDR2QlpQcTlCc1V5VFcxVXNCb1F5?=
- =?utf-8?B?TytPUExhcVVwdldQR1cwQ0h6dnRmRXlyalVydUxVU01vYzQxQXdYR1orU3Rj?=
- =?utf-8?B?b3BCbEJlNmtMaWI5YlNZRCtYcVY3S0V4WmJhZFRONVpkK012bDBSd3lnNmZj?=
- =?utf-8?B?aWx5L3kyNExVR0JzVWU3TlBnWVZMdFJPdmpFdGpxYXdMQmZSV3BRWDV4dVlZ?=
- =?utf-8?B?YUVBQXJZYXNWL1NRckkwN21YbzRVWnEyNUU4bUwwb1RUUjlxd2pQUVJqaWRW?=
- =?utf-8?B?R24rc01McUM5MGMyM0htTllnaGxnNlhxQ1k5VndOUVJNQXR0aHdyL3c1T1FX?=
- =?utf-8?B?UUYvTGdrdFBIUGhta2dLTUt3NENOczBla2VWNlVIOGc5S1YwT3RUVDJOT0Rl?=
- =?utf-8?B?Z0dTcldabEtML05vdEZTNVlvTW4xSzQyeVVnYlNrcnZEM0doRnQwem5FMjlo?=
- =?utf-8?B?UEVYYXpDR0VTRVNhczRTQTdzYU9LNHBtVGxIWjhycjR1N21Ic0NFVFdvdXMx?=
- =?utf-8?B?YVJpNnN3TnEwM1VaeVF5enc1Unh3R0tXUHpwcUlSUE00RmhYSzBSTnozejQw?=
- =?utf-8?B?OHUzZ1FnNjFMQnI0ZzBtNG9HaHFab0tQUE9rSWxnTzU1Z1V1TDRKUjduZllO?=
- =?utf-8?B?NjhaL2NWckJwUVNWVC9oblVvNE4vZFFiWTNVQndYc01TOEx1Z0h5M2JMQVJF?=
- =?utf-8?B?bzNTa1p5V1dBVWh4YzgwKzVWRGdTK0w0RjAzalNiYzJmTmdDOWtzSEdFZVZk?=
- =?utf-8?B?cTd1L0R1ZEJjV01YVjlBOXNjT3NQRXVUR1EyWEQ4SmUzc0xkb1NnL0oxbkhW?=
- =?utf-8?B?Tk1WdW1DRjM0NjBCNUJRZDNwSFVpMDAxb2pNZE9LdER6d2h2bG50R3FGaElJ?=
- =?utf-8?B?YzdmUUdIZVc2UVhJWTRKalBkelJkK2dRSUxVd1dmV0JJTFFEeW93OVh0UGFN?=
- =?utf-8?B?NmxuSitiMTJ4MnVCSnZtRno1ZzZYYnRsZUNtZjBYNW4vVmh6ajNvMFlnTnZl?=
- =?utf-8?B?aERPZkNpaFdFejUwRUVwSlZGaDhlZGw2SUgvYTlvNmMyZTdYamRqeEc2NmI2?=
- =?utf-8?B?ZG9vNWM2ZzZYL0RBUUIvanBHSGVjdmxzY3JCc0lYMjFCY2Y0bTBNbkM4ZXpD?=
- =?utf-8?B?aXlidm9iUUc3Szdid0dTc0Q0aTNzK3NXN08zYVA2dTlIUVRaQkUrNlFPVXRD?=
- =?utf-8?B?RHBuN2d1OVVxOUtYTGVhY0xGYjNiQjMvNDkySFFMZHRPRjFmWEFiQ3U4djRn?=
- =?utf-8?B?WHpBSHV1RmRzeXZndnZ6N0REdmZKRzdtc0dNU0ZxYzM4S05yY3o3d1BUd2R1?=
- =?utf-8?B?bnFQNFFlR2ZPQldhK04zNURrOWYxQno4WVlwRE1ndUMzYjc4M3E4d3c2Mjgw?=
- =?utf-8?B?Qk4rN24yYnFqQjQ2WnAzdHdURUY3SSttQVZzTFJLbEhscDlBeGN1Y0JNU3ov?=
- =?utf-8?B?UmozUG9TY29jb0RPN2xZZnIxZjJyWVJmOXZRc29mY3loaHBiai9LWkl6TDRJ?=
- =?utf-8?B?eS9rYXVpNXNCd2FveUY1aE5wd2lnYkJQTjMwRkd5TDBiYklGY1BsVVBlcFcy?=
- =?utf-8?B?bWlPKzVQRWl5NDFGYjBiWjZMbkhNRXVnVjErRTBsY2puSzFFLzRNNjFNN1V3?=
- =?utf-8?B?WGVhRDRoRTEzSUtPamNrNkpIMVBnRnpjaHJud2wzQTYvVDQrTTErc0Y3T2d0?=
- =?utf-8?B?NktkRVFJUVJ6SXc2cGI3a09sMklYV3kyOUI4d1BiblZmMlRFMXJhd3VGOHdv?=
- =?utf-8?B?TUlJRVZoMkc1L2s2R1g4OUx4eVhHWEI1NjZSbUg4a1p3bENmZTlrSHJ6N2pi?=
- =?utf-8?B?OWQ3NXVEUUI1QjZNZkNqVFZLbHd6YnZIWEttdjg5ZkhKcGNkbi9qbGRPWmlk?=
- =?utf-8?B?VGtYWThlTElVTjBJUWdqcG4yQm9nL1lPRGt3YTFkY2REaGtCRml3cmJqa2pj?=
- =?utf-8?B?a2RNUkxLV0JxMmszY0c5Q1Q5NmpkYnNOdHNBVC83YlFaYzM3dzRMYmthcWVH?=
- =?utf-8?B?UjBtUnltUlZEL1Bwc1EvTkZOV3dTRlh3N1lvSDNISlVpaU1jZVZCQT09?=
-X-OriginatorOrg: garyguo.net
-X-MS-Exchange-CrossTenant-Network-Message-Id: 5fc16130-6fad-4dd5-d084-08deda8e2efc
-X-MS-Exchange-CrossTenant-AuthSource: LOVP265MB8871.GBRP265.PROD.OUTLOOK.COM
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 05 Jul 2026 12:08:54.2533
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: bbc898ad-b10f-4e10-8552-d9377b823d45
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: JdwnKBPxCCwEeEGzF05qXAmbhqYKudY/Xb6P52svQLtX7DqZrHVHWxwaofl6FWN6ARCYIhokMbHTLyBvf36efg==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: CWLP265MB7266
+References: <20260628-b4-rust-vertical-imports-v1-0-98bc71d4810b@gurudas.dev>
+ <20260628-b4-rust-vertical-imports-v1-3-98bc71d4810b@gurudas.dev>
+ <f0ed588a-6cfb-4079-a2fe-7c14f1b42727@oss.qualcomm.com> <CANiq72=SQK7pd-fj+4MOb=E6=R-DHCcLcuCvN=us2E5o7Rcy2A@mail.gmail.com>
+ <akmtA7EbVBdhRAOq@gurudas.dev>
+In-Reply-To: <akmtA7EbVBdhRAOq@gurudas.dev>
+From: Miguel Ojeda <miguel.ojeda.sandonis@gmail.com>
+Date: Sun, 5 Jul 2026 14:12:47 +0200
+X-Gm-Features: AVVi8Cfl7DMeNQYuJP9tYThrU-TabLAul_khYoWVx5WCyAQG55ujZm7jKpKar4U
+Message-ID: <CANiq72nESZyX95XSKC3zaog=XSQF09bYJmre0mUbtQ42-Ly6tA@mail.gmail.com>
+Subject: Re: [PATCH 3/7] cpufreq: rcpufreq_dt: use vertical import style
+To: Miguel Ojeda <miguel.ojeda.sandonis@gmail.com>, 
+	Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>, Miguel Ojeda <ojeda@kernel.org>, 
+	rust-for-linux@vger.kernel.org, linux-kernel@vger.kernel.org, 
+	Danilo Krummrich <dakr@kernel.org>, Abdiel Janulgue <abdiel.janulgue@gmail.com>, 
+	Daniel Almeida <daniel.almeida@collabora.com>, Robin Murphy <robin.murphy@arm.com>, 
+	Andreas Hindborg <a.hindborg@kernel.org>, Boqun Feng <boqun@kernel.org>, Gary Guo <gary@garyguo.net>, 
+	=?UTF-8?Q?Bj=C3=B6rn_Roy_Baron?= <bjorn3_gh@protonmail.com>, 
+	Benno Lossin <lossin@kernel.org>, Alice Ryhl <aliceryhl@google.com>, 
+	Trevor Gross <tmgross@umich.edu>, Tamir Duberstein <tamird@kernel.org>, 
+	Alexandre Courbot <acourbot@nvidia.com>, =?UTF-8?Q?Onur_=C3=96zkan?= <work@onurozkan.dev>, 
+	Drew Fustini <fustini@kernel.org>, Guo Ren <guoren@kernel.org>, Fu Wei <wefu@redhat.com>, 
+	Michal Wilczynski <m.wilczynski@samsung.com>, =?UTF-8?Q?Uwe_Kleine=2DK=C3=B6nig?= <ukleinek@kernel.org>, 
+	"Rafael J. Wysocki" <rafael@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, 
+	Jens Axboe <axboe@kernel.dk>, FUJITA Tomonori <fujita.tomonori@gmail.com>, 
+	Andrew Lunn <andrew@lunn.ch>, Heiner Kallweit <hkallweit1@gmail.com>, 
+	Russell King <linux@armlinux.org.uk>, "David S. Miller" <davem@davemloft.net>, 
+	Eric Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, 
+	David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>, driver-core@lists.linux.dev, 
+	linux-riscv@lists.infradead.org, linux-pwm@vger.kernel.org, 
+	linux-pm@vger.kernel.org, linux-block@vger.kernel.org, netdev@vger.kernel.org, 
+	nova-gpu@lists.linux.dev, dri-devel@lists.freedesktop.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-On Sun Jul 5, 2026 at 1:38 AM BST, Guru Das Srinagesh wrote:
-> On Mon, Jun 29, 2026 at 04:06:36PM +0200, Andrew Lunn wrote:
->> On Sun, Jun 28, 2026 at 08:38:14PM -0700, Guru Das Srinagesh wrote:
->> > Came across a recent commit bc58905eb07 ("samples: rust_misc_device: u=
-se
->> > vertical import style") and found a few more locations that could
->> > benefit from this cleanup. No functional changes.
->> >=20
->> > Signed-off-by: Guru Das Srinagesh <linux@gurudas.dev>
->> > ---
->> > Guru Das Srinagesh (7):
->> >       samples: rust_dma: use vertical import style
->> >       pwm: th1520: use vertical import style
->> >       cpufreq: rcpufreq_dt: use vertical import style
->> >       block: rnull: use vertical import style
->> >       net: phy: ax88796b: use vertical import style
->> >       net: phy: qt2025: use vertical import style
->> >       drm/nova: use vertical import style
->>=20
->> You have multiple subsystems here, so you need to split this patch
->> setup, per subsystem, and submit them separately. Maintainers only
->> accept patchsets for their own subsystems.
->>=20
->> For netdev, please take a read of:
->>=20
->> https://www.kernel.org/doc/html/latest/process/maintainer-netdev.html
->>=20
->> You need to get the correct tree, and set the Subject: line correctly.
->>=20
->>     Andrew
+On Sun, Jul 5, 2026 at 3:02=E2=80=AFAM Guru Das Srinagesh <linux@gurudas.de=
+v> wrote:
 >
-> Hi Andrew,
->
-> Thanks for the feedback.
->
-> I was aware of the per-subsystem rule, but reasoned that since these chan=
-ges are
-> purely about Rust import formatting coding style with no functional impac=
-t on any
-> subsystem, they might go through the rust-for-linux tree with acks from t=
-he
-> respective subsystem maintainers. The Rust coding style is independent of=
- any
-> subsystem-specific guidelines.
+> But unfortunately, since `imports_layout` is an unstable option currently=
+ [1], it
+> cannot be used straightaway.
 
-Patches should usually be merged via their usual tree, otherwise you're jus=
-t
-creating unnecessary merge conflicts.
+Yeah, we are trying to get that one stabilized -- upstream `rustfmt`
+is aware and working on it. More context at:
 
-There are obiviously exceptions to this for series that need to touch multi=
-ple
-subsystems and cannot be split, but it is not the case for this sort of sma=
-ll
-cleanups.
+  https://github.com/rust-lang/rustfmt/issues/6829
+  https://github.com/Rust-for-Linux/linux/issues/398
 
-Best,
-Gary
+> However, .rustfmt.toml already has a section of commented-out unstable op=
+tions kept
+> as a reference for when they stabilize. Would it make sense to add `#impo=
+rts_layout =3D
+> "Vertical"` there? If so, I can include it in v2.
 
->
-> Is that reasoning off-base, or is the right path to split these out per s=
-ubsystem
-> regardless?
+That may be a bit confusing, because we still need to add the `//`
+comments. And if you add them, then `rustfmt` will format properly,
+i.e. you don't need the unstable option.
+
+Put another way: the intended workflow is to add the `//` and then to
+run `make ... rustfmt`.
+
+I hope that clarifies!
+
+Cheers,
+Miguel
