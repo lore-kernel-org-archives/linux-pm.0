@@ -1,87 +1,86 @@
-Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
+Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5B8A920010A
-	for <linux-pm@vger.kernel.org>; Sun,  5 Jul 2026 04:52:05 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2CD3C36EAB2
+	for <linux-pm@vger.kernel.org>; Sun,  5 Jul 2026 08:42:06 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.180.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1783227127; cv=none; b=qlIPul6iDP96iQcZ6jxXRXa76uZiq1MydIHWqBxbBzuzXAcH5DP+QM/VffMteTWfZYfWD0Q6KE/q+QIZtlZBoVitTE2fDeiAaKg0NhHRItk44sgYSS6yoU5z3lVLRvn95UnCN7FinPj+any82XwbL4Xj4nEJ8ZKHR8pzW3J8zEo=
+	t=1783240927; cv=none; b=bk89JrXeTQLQKKN8Qo3FA5RNApkZACCpIAU/OyJ+tZOQ3gqKmXw36PPm/538+4ai2A/WUEO/Zywi2OAu1kM3iNRy33ko81tILIcCoMTWAb0hLIze6P6PVLhy6qjz48+cBl10J1P4iKxe/18/ZD14h/ldfW7hcpY0O63ifTcAEuM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1783227127; c=relaxed/simple;
-	bh=hfTNo/+ARkaSbPBDtcrCw97W7FV6OVn22FmoBNFKw30=;
+	s=arc-20240116; t=1783240927; c=relaxed/simple;
+	bh=yKKzPWK+/FdU/VXFVrVaqR48TggYD3+aJAhMO7AVZgM=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=A1J78ssw3JZPJZVTg0wBn/U753EDeQxNli5ZTsML8hBAwH4Aji57/MGdrzn7ai88HKO71YSeqZU3czgyG1nDDh1ydToeO28wKuEdWE3PUfRiXxq++7/Nv5WMCKIfryA85kQnoHuyns2408siCaZJ/JDhtxt3JBeMTrdRFZi/g1k=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=f+svZHWz; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=jSe21nbF; arc=none smtp.client-ip=205.220.168.131
+	 In-Reply-To:Content-Type; b=r4WffM26U1JlPCBiwf7zLnrwOtOTRoCHLUhGjhbGsHwK8H7APBriyhl+q19ZDM3+KwgpknBNsVnH1lsOvfcbMi3Rj9gFy+Kl/NTEe+XFjxQr7lPrxXU5jRoUYnLCpXT1g5sj8I2QR/bUO2Ewuqy+3s5pvs69SLrQeNamI4j6Kew=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=BzdQnron; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=HIzXATG0; arc=none smtp.client-ip=205.220.180.131
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="f+svZHWz";
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="jSe21nbF"
-Received: from pps.filterd (m0279862.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6651d3lp247554
-	for <linux-pm@vger.kernel.org>; Sun, 5 Jul 2026 04:52:04 GMT
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="BzdQnron";
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="HIzXATG0"
+Received: from pps.filterd (m0279869.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6650cdUc275202
+	for <linux-pm@vger.kernel.org>; Sun, 5 Jul 2026 08:42:05 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
 	cc:content-transfer-encoding:content-type:date:from:in-reply-to
 	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	g9VtxJWRzogIomGicIjLP9Fxdr8GuhsrzSjFUdjjRtA=; b=f+svZHWzh93UvXzy
-	/f7y1sDPdAx6dAeY48VVLpQaPraF8W5KTFx84iIWFXlxqGACOLVSwB+zsoIDdf+d
-	abzBcnPiPuLbgO/HyDVDYfgWj2Dv45eXxuGLbWfbL9oqAysUwBqk+3p7bbalEF9c
-	fH9biPcOD+uuSPlv7Y/pCsOS9gCHIEwfsC3AbSMAjrRoJ+67HU7w/XURDktGCQs+
-	tlP1mCi+XnT4xEKgbYstWUjwGDMLE0SjgHLhaiL5qVunr1Z5gSBm3b4qp0Vnhq/F
-	nCht1zDsJ3g8OcjtBy3tnbl4IcNFkCINziJJ5lg1mTKM5yF7NSEYusb/+JGCDQHv
-	fvNU5g==
-Received: from mail-pl1-f198.google.com (mail-pl1-f198.google.com [209.85.214.198])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4f6txej0ns-1
+	jdRFpiIhdtARWUSRwfBjeoXMFG+E8udRGzwOjsDHjWE=; b=BzdQnronpobP/+PA
+	rGJLRm8/7KNZWXdLhsyatKyJxOoP+UY+lMquekjgVL5zF+S2PJnI+zsZjZn/GMNK
+	lWUnJTYSIdUrm3ynSa3H8b+kipiEb4iiDB/XGpNV4iqRwE5k+VLs6MrfK7vOFs7C
+	iFRszOuISJZRGk0OFpc9I1v8c/HymomUA07PKGfjGrDTS6ZnAiBuDnDOlx1NF9Fi
+	Xo7lUgAtrB08D49SE8saY1WEBuT1asv40kO5yJNi5/6WGdK8UogvDtgWIQY7ePBB
+	MnA8sLXibyGsTJ3ygDu89NdxxkkbcveFDqoSRb45U0MzYv/FBQRUevvav2jwAAnw
+	a000UQ==
+Received: from mail-pj1-f69.google.com (mail-pj1-f69.google.com [209.85.216.69])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4f6s64jga2-1
 	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Sun, 05 Jul 2026 04:52:04 +0000 (GMT)
-Received: by mail-pl1-f198.google.com with SMTP id d9443c01a7336-2cc73f47bdcso12754045ad.3
-        for <linux-pm@vger.kernel.org>; Sat, 04 Jul 2026 21:52:04 -0700 (PDT)
+	for <linux-pm@vger.kernel.org>; Sun, 05 Jul 2026 08:42:05 +0000 (GMT)
+Received: by mail-pj1-f69.google.com with SMTP id 98e67ed59e1d1-384419c6c74so1039468a91.1
+        for <linux-pm@vger.kernel.org>; Sun, 05 Jul 2026 01:42:04 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1783227124; x=1783831924; darn=vger.kernel.org;
+        d=oss.qualcomm.com; s=google; t=1783240924; x=1783845724; darn=vger.kernel.org;
         h=content-transfer-encoding:in-reply-to:from:content-language
          :references:cc:to:subject:user-agent:mime-version:date:message-id
          :from:to:cc:subject:date:message-id:reply-to;
-        bh=g9VtxJWRzogIomGicIjLP9Fxdr8GuhsrzSjFUdjjRtA=;
-        b=jSe21nbFK/Qrulzr8vUEKN42d/kiAf33dE7Ws7gISNDbnnl6qcWh1gM0DIlZ3vRgBW
-         7reo8DLVR1x5BVFiJVHoJpffpg2jTBroIB8EZQB1UIk9ZG2Bqmq1Dm6zhtIiLBz88qqr
-         1NzagobiaqLilYye1i5FbeZWQlCL/VRCeO7AF3eAs8Kqw3wugSNaOHh2eNwEWT6GhwF9
-         o0NBmw7vCTRABrC1W3H/BUgpEE8y1Zu8KWQKZP9gh9NzQTPQuXppP2AHVWIq6JwwnY+2
-         L/Spvx51YMHRQNM7aZsfvNEpkzEfeM7+O8oPyiD1W/ZQx6SErHFZ6/BU8ayuqtdb6i59
-         xEyA==
+        bh=jdRFpiIhdtARWUSRwfBjeoXMFG+E8udRGzwOjsDHjWE=;
+        b=HIzXATG0tKDX0xGhSYs2pHyW3rmdvmxAAt+fC4LGjL7IabAlD4Y/4lXMyZAym5dCYl
+         crDy1mMwuOXfc+MG+ICBXLK9tIYJ7az0hEhdlTeA+owDqC666cyckRf95BJxLfsWHPBy
+         eupOEuKbxBqCrb3Jsso+BE0HsmvodBST3XSxoO0DZn0Ag5XMbCp8mD1Z+ngroXsTYMAc
+         DyOlHBs8lQYnYvzY04NSoW3qzGcnQMv/R3BmYYKUS390c1hV3Q3ftaIpnpSxt7egmclk
+         zyF9vG012fujPCTHSqn5AZG3diUNUVDSjgj/gZRtWj5WV8On3IV0qrvUCwMM+nX54EAh
+         KSYw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1783227124; x=1783831924;
+        d=1e100.net; s=20251104; t=1783240924; x=1783845724;
         h=content-transfer-encoding:in-reply-to:from:content-language
          :references:cc:to:subject:user-agent:mime-version:date:message-id
          :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=g9VtxJWRzogIomGicIjLP9Fxdr8GuhsrzSjFUdjjRtA=;
-        b=cZMijGL5ZrIDvdtJ+cPiffNK/LrQUHGZi7IzCi6ko19WNKt+zoADuYm+AMMlZzkRrt
-         fE5AwsQj0VLOxcxSQL/gZiuHWjtTvTnjKi0PBbsbqd33g3BDx4jN7hV796Tf0tgVxyV3
-         WaDG4Qr/mYB/wvX+l5YzUQ9LvTR64ph3kF6j+HJNb8LHnrjE16kkaPyE4xafPLmHJ0Of
-         mAbNpBsw+XncbODVYrTMMLDpYc5c8vMNSs5Iw0q/S8pyQTftaN92354ZKHzF8jz+e5D+
-         AVKg2axWSx54O4u58v7QGwz2UF1C+l86p7ccQcFmTRUapCzcHsb6xG8RkV1yiXniD9Zi
-         CYDg==
-X-Forwarded-Encrypted: i=1; AHgh+RrSAVr7yCN1TRd/UT0h+zVDUNzRrwJRfRW9hwL9AxbOBSQhjCpPzUiIgUGxNii3nx3sPChT9XEIuQ==@vger.kernel.org
-X-Gm-Message-State: AOJu0YxRuHB67yDWxWMIPD5Ear2NLQRfrh1ul6JFx7rXc2LehuFlw0JW
-	r5Q2dc6YM9XhJxQLCH8KTsECCeYDHfAJVL4+TyIKOnmGfgW12IwS03IykZR2Ef0eDkiAepGdUIB
-	HgjuJGBUB5ljbISfoT5ugk7C9L8h7XluWTHDJj/DMP2FrrN4Dj/YBjdinS9q3OYYsL4iLgw==
-X-Gm-Gg: AfdE7clPjPNX8KZXaQ9DO/RQoULL0T/UYZffKLsRMY48aFHojHcPyB8j6YGeiXCayGU
-	ydKWZ67TVip8QyYw0bdYxQyel2oymEnRmxIJFzynkRRyZNIgH2q/gk2npoAyVOjLeWr3ore2zw0
-	5auXUXpnIk6LOAbC6p6A/lHefOt3zEvG3RBSneveTvof91iQEdNno6v1oW05InnD5G9eGzWaxp3
-	gQSzBPVnCzgZsF7YYbHS4xnLGuao3mbsXtIrE+3NgtyfaFbwTiEWseGGx47de44h96HRLfotLhT
-	+j4+8UxVTOFFs+NNZBqrDrfW/VV/l92sjcpPtUEWXdEl8BjSRqVCuL49Mt2XskZE9/agmLup7Nm
-	h2JGYIVjwVgQNo1HwujbcHhwKKM0urci7x/bEEXbhf1yzvAGKb+3GzI2ISYFl/633j1gZx2zDy5
-	asmKULqw==
-X-Received: by 2002:a17:903:35d0:b0:2c9:97a7:71ab with SMTP id d9443c01a7336-2cbb9f17525mr48308115ad.38.1783227123344;
-        Sat, 04 Jul 2026 21:52:03 -0700 (PDT)
-X-Received: by 2002:a17:903:35d0:b0:2c9:97a7:71ab with SMTP id d9443c01a7336-2cbb9f17525mr48307815ad.38.1783227122650;
-        Sat, 04 Jul 2026 21:52:02 -0700 (PDT)
-Received: from [10.133.33.78] (tpe-colo-wan-fw-bordernet.qualcomm.com. [103.229.16.4])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2cad6f25febsm30318995ad.1.2026.07.04.21.51.59
+        bh=jdRFpiIhdtARWUSRwfBjeoXMFG+E8udRGzwOjsDHjWE=;
+        b=dNVmffJRBnz1DONORJLDlstMv9YvuUqPOf3oBHraCwVZtb2azadgT8X/wL/jQtQ9re
+         lA4C/HQBahia4YGswDqI10oQQ0AnlAkbMWG6qMedcB7NOd7XsKPLrpnNKKj3MszB6KWi
+         EtMEPyAHDl7HMSbgYVYcsvgHgcGZz5+iKUEoKU4jhm8heGMaHMH8FqzJ2PcP4sUwP5Mb
+         Bd65VwjSHxX4bzMuE1k0FT49btLuYBzs4ejqMxL9H0pwaWwPkYRMDvzvIFwiEWNSEjU/
+         5dv1JE3rKCMmQxm+54OlBrHb/nakjs2y424uOxttIFwE9NMlZG1WZfBAtqfCm6btJVEB
+         P61w==
+X-Forwarded-Encrypted: i=1; AHgh+RrVgA3eJp410LYuEABv3z9tGAaujzixzNTSJnCsQk3UKQ8Q7yYWnP/p2Hsdwk9a7bPtEkW4NzjSPA==@vger.kernel.org
+X-Gm-Message-State: AOJu0YxjeY9oBivb/Lx/BUAXtEHP11lR3ix0jd67G4O2zxDUsqGK2612
+	1qo802pSkRNWxjGg6YwUKcTmkAc/oVQbNGmDs+c+0UCs/eGm/gbZqW+OQPe7vz4Bg9BRi15AgnN
+	sOzLnPNR/L523wyWMXuUskVhQCvgHYWSxGkU2GYf5VO4rXvOsnFUWyiQV3VL+rA==
+X-Gm-Gg: AfdE7clXIIOF074R+xSUDdeFqbcKzBw0uawaox+AmrY6+N4Kr+wsfEL1aACXXAZnGOM
+	nzl00LEl2H+OLUV+4lnHwE0LvZQgGxklRh7dz3yePgWvX0wjrAjDVPlrA9SvlLen6F+SxlOp4f2
+	Wj1eRNb0PFv+gZfvKM5EDdXNsUvQvn/djNlzUv2MTuSRSlGn0KVFXmOiPCcpJfz53lf6EPg5Emc
+	Pa4qAHcVQcLXO/rjMfPN0dobe2A0ck0audAF4D3U7CdLa4NdZ7+no5h9h1pPQFEnrOpgr5ZmMsU
+	SmH9qQgbE438qYCJnvKnTFAqJWhcoldK8/2vKU69jjpJyoLqI9p9/MfgbP5Z5e2Hm/4ONY3aYv7
+	gYQbHm+flSu0+mx7jnGdK7lDWiPs8LKKMfJnuxG/EJw==
+X-Received: by 2002:a17:90a:dfc8:b0:37f:9ce1:cdb0 with SMTP id 98e67ed59e1d1-3829f9dffe0mr5138245a91.30.1783240924023;
+        Sun, 05 Jul 2026 01:42:04 -0700 (PDT)
+X-Received: by 2002:a17:90a:dfc8:b0:37f:9ce1:cdb0 with SMTP id 98e67ed59e1d1-3829f9dffe0mr5138234a91.30.1783240923435;
+        Sun, 05 Jul 2026 01:42:03 -0700 (PDT)
+Received: from [192.168.1.13] ([106.222.231.34])
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-30f0b7bb8fasm38382008eec.1.2026.07.05.01.41.56
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Sat, 04 Jul 2026 21:52:02 -0700 (PDT)
-Message-ID: <a0bd292f-ef71-4e4e-877c-40e9f0980995@oss.qualcomm.com>
-Date: Sun, 5 Jul 2026 12:51:55 +0800
+        Sun, 05 Jul 2026 01:42:02 -0700 (PDT)
+Message-ID: <9821302b-5e14-4a8e-8b1c-f3eb1824d7a3@oss.qualcomm.com>
+Date: Sun, 5 Jul 2026 14:11:54 +0530
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -89,853 +88,163 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 16/32] cpufreq: Stop using 32-bit MSR interfaces
-To: Juergen Gross <jgross@suse.com>, linux-kernel@vger.kernel.org,
-        linux-pm@vger.kernel.org
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>,
-        Viresh Kumar <viresh.kumar@linaro.org>, zhongqiu.han@oss.qualcomm.com
-References: <20260629060526.3638272-17-jgross@suse.com>
- <20260703112445.1763078-1-jgross@suse.com>
+Subject: Re: [PATCH v4 02/10] dt-bindings: remoteproc: qcom,pas: add
+ #cooling-cells property
+To: Krzysztof Kozlowski <krzk@kernel.org>
+Cc: Bjorn Andersson <andersson@kernel.org>,
+        Mathieu Poirier <mathieu.poirier@linaro.org>,
+        Rob Herring <robh@kernel.org>,
+        Krzysztof Kozlowski <krzk+dt@kernel.org>,
+        Conor Dooley
+ <conor+dt@kernel.org>,
+        Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>,
+        Amit Kucheria <amit.kucheria@oss.qualcomm.com>,
+        Manivannan Sadhasivam <mani@kernel.org>,
+        Konrad Dybcio <konradybcio@kernel.org>, Kees Cook <kees@kernel.org>,
+        "Gustavo A. R. Silva" <gustavoars@kernel.org>,
+        cros-qcom-dts-watchers@chromium.org, linux-arm-msm@vger.kernel.org,
+        linux-remoteproc@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+        linux-hardening@vger.kernel.org,
+        Manaf Meethalavalappu Pallikunhi <manaf.pallikunhi@oss.qualcomm.com>
+References: <20260703-qmi-tmd-v4-0-3882189c1f83@oss.qualcomm.com>
+ <20260703-qmi-tmd-v4-2-3882189c1f83@oss.qualcomm.com>
+ <20260703-quirky-impartial-oyster-caab0d@quoll>
 Content-Language: en-US
-From: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>
-In-Reply-To: <20260703112445.1763078-1-jgross@suse.com>
+From: Gaurav Kohli <gaurav.kohli@oss.qualcomm.com>
+In-Reply-To: <20260703-quirky-impartial-oyster-caab0d@quoll>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Proofpoint-Spam-Info: AW1haW4tMjYwNzA1MDA0NiBTYWx0ZWRfXxwnIX2ceQYuB
- A99LI50eXP6/ae03xYmioq3EoqUZOz5Xx0amvp6Gp5VeyoodOGUWnusnC78mMydViaJf9PfOqG2
- CCEdLXHklDDLpO35tF8Ynfrv39SA5GI=
-X-Proofpoint-GUID: A7PpmQZ-qyUFQanSj1AAjUx03v45ynOJ
-X-Proofpoint-ORIG-GUID: A7PpmQZ-qyUFQanSj1AAjUx03v45ynOJ
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzA1MDA0NiBTYWx0ZWRfX6ImCW3n5drSk
- QxItu5j10ro8x5USldhoSnsv+dYDQpxZLN3xbf76eRayK2QyiUSfylHo1Qjtn6/kTHCjVAUxh8b
- tJQbH4Vtn9Omvz70gRYZRfbxcehYigIpcifrXvWC5Rpf9xm3n1nH6sum+ZOHSqhHWdvW2JV4dxV
- /381H3mc5QqExXAhLdV3BMc6KdpsyqHnySk/HtE4KUwhrjy0jQOPUmx2M9nuK4/zFIoE14fQQVD
- vUlcSDA3Fst/kSgGVMfbYU5VSJGHxPoOkmiOdGkuri+vWL0gOWV1zL8a3DtVVcgRwpNXVvYbKC2
- hS44EcJvHYPDDCp6UfLwzrxa8DiEMm3MvM+OeewiPW7f//znDnDqDwE+/rNsqbABn+/ZrovvbjS
- ZbxdeJQlDOJE6p/AwvIyZna2nljuFRczOsHuo+8k/dYlv0YWCzE6qdu4fSpUtIx8QTv0kAcWyQc
- 3hVQ0prBO+uaKMrFGhA==
-X-Authority-Analysis: v=2.4 cv=HLLz0Itv c=1 sm=1 tr=0 ts=6a49e2f4 cx=c_pps
- a=MTSHoo12Qbhz2p7MsH1ifg==:117 a=nuhDOHQX5FNHPW3J6Bj6AA==:17
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzA1MDA4OCBTYWx0ZWRfXy8sfy0BR1KXT
+ 4DUfmhxo7Bi5/7pt2rkO+4S+tUa+N9Uqcuwq+7OMKTNiS0Lh1Gnx7brBGfX38ic8u8KMf8fNuDk
+ nyrKzyiNCDEiNiGQ//KjHYpELoCJK1uW/d/15/ghXg8smtLzzOiRQxCCry9/vjPB0KvZKkLtskB
+ B5EFn7nTDBgEpYH3lIdtQsSDkzjbmdE+/YVNCK88sC7m89HohFeWNZ7vWj9Qxc6U1ZqSOurRM32
+ nAKeEIB8PaYrmfPpeMIZev9amPo0JowAIMg/RgfESNV1PfPF7HtP7bAX3MH8sHkQQb2cxdTQ1nB
+ lI7aIVlOXsxERrbHRidNZEAbGpRP4Rzx8XVxp486TbKS7HwJR3Gqaakd/RG4kaP0eIbQTmQKkkA
+ 2fuIr1e3LnlNhE4ESbL2nGXTbZEihrwIMix5QybnkUxhtGOsQZRQebBdmgHKlGpM++GXRvkDuM1
+ DXoyu3BZjhKdtt6eCRQ==
+X-Authority-Analysis: v=2.4 cv=VvITxe2n c=1 sm=1 tr=0 ts=6a4a18dd cx=c_pps
+ a=vVfyC5vLCtgYJKYeQD43oA==:117 a=JaHktJlP2QtFIg7UHuVw+g==:17
  a=IkcTkHD0fZMA:10 a=RAioF0-LDSMA:10 a=s4-Qcg_JpJYA:10
- a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=_K5XuSEh1TEqbUxoQ0s3:22
- a=iox4zFpeAAAA:8 a=EUspDBNiAAAA:8 a=K3eIHdjr0bD4nYfofcMA:9 a=QEXdDO2ut3YA:10
- a=GvdueXVYPmCkWapjIL-Q:22 a=WzC6qhA0u3u7Ye7llzcV:22
+ a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=_glEPmIy2e8OvE2BGh3C:22
+ a=EUspDBNiAAAA:8 a=V7JA6PPGWL3xxjczixMA:9 a=QEXdDO2ut3YA:10
+ a=rl5im9kqc5Lf4LNbBjHf:22
+X-Proofpoint-ORIG-GUID: tus8NgeIrpAujdz50lW2CX7pD6cCT93i
+X-Proofpoint-Spam-Info: AW1haW4tMjYwNzA1MDA4OCBTYWx0ZWRfX/oRSk4SksYzy
+ V3MDPzEiC3TvuKBybY/vE4ZbQRqBuqxptcOUulj2ghSAtAec8MWXSBmMA4Kd8wpxdwhLvPN/wZf
+ 9Vxyu1hxAm21YxQkW5xKj1AXp4vUulM=
+X-Proofpoint-GUID: tus8NgeIrpAujdz50lW2CX7pD6cCT93i
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.125,FMLib:17.12.100.49
  definitions=2026-07-04_03,2026-07-03_01,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- bulkscore=0 priorityscore=1501 clxscore=1015 suspectscore=0 impostorscore=0
- phishscore=0 adultscore=0 malwarescore=0 lowpriorityscore=0 spamscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2607050046
+ malwarescore=0 spamscore=0 suspectscore=0 bulkscore=0 adultscore=0
+ priorityscore=1501 lowpriorityscore=0 phishscore=0 clxscore=1015
+ impostorscore=0 classifier=typeunknown authscore=0 authtc= authcc=
+ route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2606150000
+ definitions=main-2607050088
 
-On 7/3/2026 7:24 PM, Juergen Gross wrote:
-> The 32-bit MSR interfaces rdmsr() and wrmsr() are planned to be
-> removed. Use the related 64-bit variants instead.
+
+
+On 7/3/2026 1:19 PM, Krzysztof Kozlowski wrote:
+> On Fri, Jul 03, 2026 at 10:33:05AM +0530, Gaurav Kohli wrote:
+>> Document the optional #cooling-cells property for Qualcomm PAS
+>> remoteproc nodes so they can be used as thermal cooling devices via
+>> the QMI Thermal Mitigation Device (TMD) interface.
+>>
+>> Qualcomm remote processors expose TMD endpoints that support thermal
+>> throttling through firmware. The cooling-device specifier uses 3 cells:
+>>
+>>    <&phandle device_id min_state max_state>
+>>
+>> where device_index selects the TMD endpoint (for example PA, modem,
+>> or CDSP software mitigation), with constants defined in:
+>> - dt-bindings/firmware/qcom,qmi-tmd.h
 > 
-> Signed-off-by: Juergen Gross <jgross@suse.com>
-> ---
-> V2:
-> - fix bug in cpu_freq_write_intel() (Zhongqiu Han)
-> - fix bug in eps_set_state() (Zhongqiu Han)
-> - fix bug in longrun_determine_freqs() (Zhongqiu Han)
-> - use u64 instead of struct msr in some places (Zhongqiu Han)
-
-Looks good to me, thanks Juergen.
-
-Reviewed-by: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>
-
-
-> ---
->   drivers/cpufreq/acpi-cpufreq.c       | 22 ++++----
->   drivers/cpufreq/e_powersaver.c       | 49 +++++++++---------
->   drivers/cpufreq/longhaul.c           | 15 +++---
->   drivers/cpufreq/longrun.c            | 77 ++++++++++++++--------------
->   drivers/cpufreq/powernow-k6.c        | 12 ++---
->   drivers/cpufreq/powernow-k8.c        | 67 ++++++++++++------------
->   drivers/cpufreq/speedstep-centrino.c | 16 +++---
->   drivers/cpufreq/speedstep-lib.c      | 63 ++++++++++++-----------
->   8 files changed, 164 insertions(+), 157 deletions(-)
+> Full path.
 > 
-> diff --git a/drivers/cpufreq/acpi-cpufreq.c b/drivers/cpufreq/acpi-cpufreq.c
-> index 21639d9ac753..10ea6035f4ad 100644
-> --- a/drivers/cpufreq/acpi-cpufreq.c
-> +++ b/drivers/cpufreq/acpi-cpufreq.c
-> @@ -246,32 +246,32 @@ static unsigned extract_freq(struct cpufreq_policy *policy, u32 val)
->   
->   static u32 cpu_freq_read_intel(struct acpi_pct_register *not_used)
->   {
-> -	u32 val, dummy __always_unused;
-> +	u64 val;
->   
-> -	rdmsr(MSR_IA32_PERF_CTL, val, dummy);
-> -	return val;
-> +	rdmsrq(MSR_IA32_PERF_CTL, val);
-> +	return (u32)val;
->   }
->   
->   static void cpu_freq_write_intel(struct acpi_pct_register *not_used, u32 val)
->   {
-> -	u32 lo, hi;
-> +	u64 msrval;
->   
-> -	rdmsr(MSR_IA32_PERF_CTL, lo, hi);
-> -	lo = (lo & ~INTEL_MSR_RANGE) | (val & INTEL_MSR_RANGE);
-> -	wrmsr(MSR_IA32_PERF_CTL, lo, hi);
-> +	rdmsrq(MSR_IA32_PERF_CTL, msrval);
-> +	msrval = (msrval & ~(u64)INTEL_MSR_RANGE) | (val & INTEL_MSR_RANGE);
-> +	wrmsrq(MSR_IA32_PERF_CTL, msrval);
->   }
->   
->   static u32 cpu_freq_read_amd(struct acpi_pct_register *not_used)
->   {
-> -	u32 val, dummy __always_unused;
-> +	u64 val;
->   
-> -	rdmsr(MSR_AMD_PERF_CTL, val, dummy);
-> -	return val;
-> +	rdmsrq(MSR_AMD_PERF_CTL, val);
-> +	return (u32)val;
->   }
->   
->   static void cpu_freq_write_amd(struct acpi_pct_register *not_used, u32 val)
->   {
-> -	wrmsr(MSR_AMD_PERF_CTL, val, 0);
-> +	wrmsrq(MSR_AMD_PERF_CTL, val);
->   }
->   
->   static u32 cpu_freq_read_io(struct acpi_pct_register *reg)
-> diff --git a/drivers/cpufreq/e_powersaver.c b/drivers/cpufreq/e_powersaver.c
-> index eb5a9209d828..54689ebadeb2 100644
-> --- a/drivers/cpufreq/e_powersaver.c
-> +++ b/drivers/cpufreq/e_powersaver.c
-> @@ -90,7 +90,7 @@ static int eps_acpi_exit(struct cpufreq_policy *policy)
->   static unsigned int eps_get(unsigned int cpu)
->   {
->   	struct eps_cpu_data *centaur;
-> -	u32 lo, hi;
-> +	u64 val;
->   
->   	if (cpu)
->   		return 0;
-> @@ -99,50 +99,50 @@ static unsigned int eps_get(unsigned int cpu)
->   		return 0;
->   
->   	/* Return current frequency */
-> -	rdmsr(MSR_IA32_PERF_STATUS, lo, hi);
-> -	return centaur->fsb * ((lo >> 8) & 0xff);
-> +	rdmsrq(MSR_IA32_PERF_STATUS, val);
-> +	return centaur->fsb * ((val >> 8) & 0xff);
->   }
->   
->   static int eps_set_state(struct eps_cpu_data *centaur,
->   			 struct cpufreq_policy *policy,
->   			 u32 dest_state)
->   {
-> -	u32 lo, hi;
-> +	u64 val;
->   	int i;
->   
->   	/* Wait while CPU is busy */
-> -	rdmsr(MSR_IA32_PERF_STATUS, lo, hi);
-> +	rdmsrq(MSR_IA32_PERF_STATUS, val);
->   	i = 0;
-> -	while (lo & ((1 << 16) | (1 << 17))) {
-> +	while (val & ((1 << 16) | (1 << 17))) {
->   		udelay(16);
-> -		rdmsr(MSR_IA32_PERF_STATUS, lo, hi);
-> +		rdmsrq(MSR_IA32_PERF_STATUS, val);
->   		i++;
->   		if (unlikely(i > 64)) {
->   			return -ENODEV;
->   		}
->   	}
->   	/* Set new multiplier and voltage */
-> -	wrmsr(MSR_IA32_PERF_CTL, dest_state & 0xffff, 0);
-> +	wrmsrq(MSR_IA32_PERF_CTL, dest_state & 0xffff);
->   	/* Wait until transition end */
->   	i = 0;
->   	do {
->   		udelay(16);
-> -		rdmsr(MSR_IA32_PERF_STATUS, lo, hi);
-> +		rdmsrq(MSR_IA32_PERF_STATUS, val);
->   		i++;
->   		if (unlikely(i > 64)) {
->   			return -ENODEV;
->   		}
-> -	} while (lo & ((1 << 16) | (1 << 17)));
-> +	} while (val & ((1 << 16) | (1 << 17)));
->   
->   #ifdef DEBUG
->   	{
->   	u8 current_multiplier, current_voltage;
->   
->   	/* Print voltage and multiplier */
-> -	rdmsr(MSR_IA32_PERF_STATUS, lo, hi);
-> -	current_voltage = lo & 0xff;
-> +	rdmsrq(MSR_IA32_PERF_STATUS, val);
-> +	current_voltage = val & 0xff;
->   	pr_info("Current voltage = %dmV\n", current_voltage * 16 + 700);
-> -	current_multiplier = (lo >> 8) & 0xff;
-> +	current_multiplier = (val >> 8) & 0xff;
->   	pr_info("Current multiplier = %d\n", current_multiplier);
->   	}
->   #endif
-> @@ -171,7 +171,6 @@ static int eps_target(struct cpufreq_policy *policy, unsigned int index)
->   static int eps_cpu_init(struct cpufreq_policy *policy)
->   {
->   	unsigned int i;
-> -	u32 lo, hi;
->   	u64 val;
->   	u8 current_multiplier, current_voltage;
->   	u8 max_multiplier, max_voltage;
-> @@ -195,13 +194,13 @@ static int eps_cpu_init(struct cpufreq_policy *policy)
->   
->   	switch (c->x86_model) {
->   	case 10:
-> -		rdmsr(0x1153, lo, hi);
-> -		brand = (((lo >> 2) ^ lo) >> 18) & 3;
-> +		rdmsrq(0x1153, val);
-> +		brand = (((val >> 2) ^ val) >> 18) & 3;
->   		pr_cont("Model A ");
->   		break;
->   	case 13:
-> -		rdmsr(0x1154, lo, hi);
-> -		brand = (((lo >> 4) ^ (lo >> 2))) & 0x000000ff;
-> +		rdmsrq(0x1154, val);
-> +		brand = (((val >> 4) ^ (val >> 2))) & 0x000000ff;
->   		pr_cont("Model D ");
->   		break;
->   	}
-> @@ -237,20 +236,20 @@ static int eps_cpu_init(struct cpufreq_policy *policy)
->   	}
->   
->   	/* Print voltage and multiplier */
-> -	rdmsr(MSR_IA32_PERF_STATUS, lo, hi);
-> -	current_voltage = lo & 0xff;
-> +	rdmsrq(MSR_IA32_PERF_STATUS, val);
-> +	current_voltage = val & 0xff;
->   	pr_info("Current voltage = %dmV\n", current_voltage * 16 + 700);
-> -	current_multiplier = (lo >> 8) & 0xff;
-> +	current_multiplier = (val >> 8) & 0xff;
->   	pr_info("Current multiplier = %d\n", current_multiplier);
->   
->   	/* Print limits */
-> -	max_voltage = hi & 0xff;
-> +	max_voltage = (val >> 32) & 0xff;
->   	pr_info("Highest voltage = %dmV\n", max_voltage * 16 + 700);
-> -	max_multiplier = (hi >> 8) & 0xff;
-> +	max_multiplier = (val >> 40) & 0xff;
->   	pr_info("Highest multiplier = %d\n", max_multiplier);
-> -	min_voltage = (hi >> 16) & 0xff;
-> +	min_voltage = (val >> 48) & 0xff;
->   	pr_info("Lowest voltage = %dmV\n", min_voltage * 16 + 700);
-> -	min_multiplier = (hi >> 24) & 0xff;
-> +	min_multiplier = (val >> 56) & 0xff;
->   	pr_info("Lowest multiplier = %d\n", min_multiplier);
->   
->   	/* Sanity checks */
-> diff --git a/drivers/cpufreq/longhaul.c b/drivers/cpufreq/longhaul.c
-> index a18d1d11725f..4c2599264333 100644
-> --- a/drivers/cpufreq/longhaul.c
-> +++ b/drivers/cpufreq/longhaul.c
-> @@ -118,13 +118,14 @@ static unsigned int calc_speed(int mult)
->   
->   static int longhaul_get_cpu_mult(void)
->   {
-> -	unsigned long invalue = 0, lo, hi;
-> +	unsigned long invalue = 0;
-> +	u64 val;
->   
-> -	rdmsr(MSR_IA32_EBL_CR_POWERON, lo, hi);
-> -	invalue = (lo & (1<<22|1<<23|1<<24|1<<25))>>22;
-> +	rdmsrq(MSR_IA32_EBL_CR_POWERON, val);
-> +	invalue = (val & (1<<22|1<<23|1<<24|1<<25))>>22;
->   	if (longhaul_version == TYPE_LONGHAUL_V2 ||
->   	    longhaul_version == TYPE_POWERSAVER) {
-> -		if (lo & (1<<27))
-> +		if (val & (1<<27))
->   			invalue += 16;
->   	}
->   	return eblcr[invalue];
-> @@ -761,7 +762,7 @@ static int longhaul_cpu_init(struct cpufreq_policy *policy)
->   	struct cpuinfo_x86 *c = &cpu_data(0);
->   	char *cpuname = NULL;
->   	int ret;
-> -	u32 lo, hi;
-> +	u64 val;
->   
->   	/* Check what we have on this motherboard */
->   	switch (c->x86_model) {
-> @@ -835,8 +836,8 @@ static int longhaul_cpu_init(struct cpufreq_policy *policy)
->   	}
->   	/* Check Longhaul ver. 2 */
->   	if (longhaul_version == TYPE_LONGHAUL_V2) {
-> -		rdmsr(MSR_VIA_LONGHAUL, lo, hi);
-> -		if (lo == 0 && hi == 0)
-> +		rdmsrq(MSR_VIA_LONGHAUL, val);
-> +		if (val == 0)
->   			/* Looks like MSR isn't present */
->   			longhaul_version = TYPE_LONGHAUL_V1;
->   	}
-> diff --git a/drivers/cpufreq/longrun.c b/drivers/cpufreq/longrun.c
-> index f3aaca0496a4..82a7bb69c401 100644
-> --- a/drivers/cpufreq/longrun.c
-> +++ b/drivers/cpufreq/longrun.c
-> @@ -35,27 +35,27 @@ static unsigned int longrun_low_freq, longrun_high_freq;
->    */
->   static void longrun_get_policy(struct cpufreq_policy *policy)
->   {
-> -	u32 msr_lo, msr_hi;
-> +	struct msr msr;
->   
-> -	rdmsr(MSR_TMTA_LONGRUN_FLAGS, msr_lo, msr_hi);
-> -	pr_debug("longrun flags are %x - %x\n", msr_lo, msr_hi);
-> -	if (msr_lo & 0x01)
-> +	rdmsrq(MSR_TMTA_LONGRUN_FLAGS, msr.q);
-> +	pr_debug("longrun flags are %x - %x\n", msr.l, msr.h);
-> +	if (msr.l & 0x01)
->   		policy->policy = CPUFREQ_POLICY_PERFORMANCE;
->   	else
->   		policy->policy = CPUFREQ_POLICY_POWERSAVE;
->   
-> -	rdmsr(MSR_TMTA_LONGRUN_CTRL, msr_lo, msr_hi);
-> -	pr_debug("longrun ctrl is %x - %x\n", msr_lo, msr_hi);
-> -	msr_lo &= 0x0000007F;
-> -	msr_hi &= 0x0000007F;
-> +	rdmsrq(MSR_TMTA_LONGRUN_CTRL, msr.q);
-> +	pr_debug("longrun ctrl is %x - %x\n", msr.l, msr.h);
-> +	msr.l &= 0x0000007F;
-> +	msr.h &= 0x0000007F;
->   
->   	if (longrun_high_freq <= longrun_low_freq) {
->   		/* Assume degenerate Longrun table */
->   		policy->min = policy->max = longrun_high_freq;
->   	} else {
-> -		policy->min = longrun_low_freq + msr_lo *
-> +		policy->min = longrun_low_freq + msr.l *
->   			((longrun_high_freq - longrun_low_freq) / 100);
-> -		policy->max = longrun_low_freq + msr_hi *
-> +		policy->max = longrun_low_freq + msr.h *
->   			((longrun_high_freq - longrun_low_freq) / 100);
->   	}
->   	policy->cpu = 0;
-> @@ -71,7 +71,7 @@ static void longrun_get_policy(struct cpufreq_policy *policy)
->    */
->   static int longrun_set_policy(struct cpufreq_policy *policy)
->   {
-> -	u32 msr_lo, msr_hi;
-> +	struct msr msr;
->   	u32 pctg_lo, pctg_hi;
->   
->   	if (!policy)
-> @@ -93,24 +93,24 @@ static int longrun_set_policy(struct cpufreq_policy *policy)
->   		pctg_lo = pctg_hi;
->   
->   	/* performance or economy mode */
-> -	rdmsr(MSR_TMTA_LONGRUN_FLAGS, msr_lo, msr_hi);
-> -	msr_lo &= 0xFFFFFFFE;
-> +	rdmsrq(MSR_TMTA_LONGRUN_FLAGS, msr.q);
-> +	msr.l &= 0xFFFFFFFE;
->   	switch (policy->policy) {
->   	case CPUFREQ_POLICY_PERFORMANCE:
-> -		msr_lo |= 0x00000001;
-> +		msr.l |= 0x00000001;
->   		break;
->   	case CPUFREQ_POLICY_POWERSAVE:
->   		break;
->   	}
-> -	wrmsr(MSR_TMTA_LONGRUN_FLAGS, msr_lo, msr_hi);
-> +	wrmsrq(MSR_TMTA_LONGRUN_FLAGS, msr.q);
->   
->   	/* lower and upper boundary */
-> -	rdmsr(MSR_TMTA_LONGRUN_CTRL, msr_lo, msr_hi);
-> -	msr_lo &= 0xFFFFFF80;
-> -	msr_hi &= 0xFFFFFF80;
-> -	msr_lo |= pctg_lo;
-> -	msr_hi |= pctg_hi;
-> -	wrmsr(MSR_TMTA_LONGRUN_CTRL, msr_lo, msr_hi);
-> +	rdmsrq(MSR_TMTA_LONGRUN_CTRL, msr.q);
-> +	msr.l &= 0xFFFFFF80;
-> +	msr.h &= 0xFFFFFF80;
-> +	msr.l |= pctg_lo;
-> +	msr.h |= pctg_hi;
-> +	wrmsrq(MSR_TMTA_LONGRUN_CTRL, msr.q);
->   
->   	return 0;
->   }
-> @@ -160,8 +160,7 @@ static unsigned int longrun_get(unsigned int cpu)
->   static int longrun_determine_freqs(unsigned int *low_freq,
->   						      unsigned int *high_freq)
->   {
-> -	u32 msr_lo, msr_hi;
-> -	u32 save_lo, save_hi;
-> +	struct msr msr, save;
->   	u32 eax, ebx, ecx, edx;
->   	u32 try_hi;
->   	struct cpuinfo_x86 *c = &cpu_data(0);
-> @@ -178,15 +177,17 @@ static int longrun_determine_freqs(unsigned int *low_freq,
->   		 * For maximum frequency, read out level zero.
->   		 */
->   		/* minimum */
-> -		rdmsr(MSR_TMTA_LRTI_READOUT, msr_lo, msr_hi);
-> -		wrmsr(MSR_TMTA_LRTI_READOUT, msr_hi, msr_hi);
-> -		rdmsr(MSR_TMTA_LRTI_VOLT_MHZ, msr_lo, msr_hi);
-> -		*low_freq = msr_lo * 1000; /* to kHz */
-> +		rdmsrq(MSR_TMTA_LRTI_READOUT, msr.q);
-> +		msr.l = msr.h;
-> +		wrmsrq(MSR_TMTA_LRTI_READOUT, msr.q);
-> +		rdmsrq(MSR_TMTA_LRTI_VOLT_MHZ, msr.q);
-> +		*low_freq = msr.l * 1000; /* to kHz */
->   
->   		/* maximum */
-> -		wrmsr(MSR_TMTA_LRTI_READOUT, 0, msr_hi);
-> -		rdmsr(MSR_TMTA_LRTI_VOLT_MHZ, msr_lo, msr_hi);
-> -		*high_freq = msr_lo * 1000; /* to kHz */
-> +		msr.l = 0;
-> +		wrmsrq(MSR_TMTA_LRTI_READOUT, msr.q);
-> +		rdmsrq(MSR_TMTA_LRTI_VOLT_MHZ, msr.q);
-> +		*high_freq = msr.l * 1000; /* to kHz */
->   
->   		pr_debug("longrun table interface told %u - %u kHz\n",
->   				*low_freq, *high_freq);
-> @@ -202,9 +203,9 @@ static int longrun_determine_freqs(unsigned int *low_freq,
->   	pr_debug("high frequency is %u kHz\n", *high_freq);
->   
->   	/* get current borders */
-> -	rdmsr(MSR_TMTA_LONGRUN_CTRL, msr_lo, msr_hi);
-> -	save_lo = msr_lo & 0x0000007F;
-> -	save_hi = msr_hi & 0x0000007F;
-> +	rdmsrq(MSR_TMTA_LONGRUN_CTRL, msr.q);
-> +	save.l = msr.l & 0x0000007F;
-> +	save.h = msr.h & 0x0000007F;
->   
->   	/* if current perf_pctg is larger than 90%, we need to decrease the
->   	 * upper limit to make the calculation more accurate.
-> @@ -214,16 +215,16 @@ static int longrun_determine_freqs(unsigned int *low_freq,
->   	 * on some barrier values */
->   	for (try_hi = 80; try_hi > 0 && ecx > 90; try_hi -= 10) {
->   		/* set to 0 to try_hi perf_pctg */
-> -		msr_lo &= 0xFFFFFF80;
-> -		msr_hi &= 0xFFFFFF80;
-> -		msr_hi |= try_hi;
-> -		wrmsr(MSR_TMTA_LONGRUN_CTRL, msr_lo, msr_hi);
-> +		msr.l &= 0xFFFFFF80;
-> +		msr.h &= 0xFFFFFF80;
-> +		msr.h |= try_hi;
-> +		wrmsrq(MSR_TMTA_LONGRUN_CTRL, msr.q);
->   
->   		/* read out current core MHz and current perf_pctg */
->   		cpuid(0x80860007, &eax, &ebx, &ecx, &edx);
->   
->   		/* restore values */
-> -		wrmsr(MSR_TMTA_LONGRUN_CTRL, save_lo, save_hi);
-> +		wrmsrq(MSR_TMTA_LONGRUN_CTRL, save.q);
->   	}
->   	pr_debug("percentage is %u %%, freq is %u MHz\n", ecx, eax);
->   
-> diff --git a/drivers/cpufreq/powernow-k6.c b/drivers/cpufreq/powernow-k6.c
-> index 99d2244e03b0..2044e8a336ec 100644
-> --- a/drivers/cpufreq/powernow-k6.c
-> +++ b/drivers/cpufreq/powernow-k6.c
-> @@ -83,15 +83,15 @@ static const struct {
->   static int powernow_k6_get_cpu_multiplier(void)
->   {
->   	unsigned long invalue = 0;
-> -	u32 msrval;
-> +	u64 msrval;
->   
->   	local_irq_disable();
->   
->   	msrval = POWERNOW_IOPORT + 0x1;
-> -	wrmsr(MSR_K6_EPMR, msrval, 0); /* enable the PowerNow port */
-> +	wrmsrq(MSR_K6_EPMR, msrval); /* enable the PowerNow port */
->   	invalue = inl(POWERNOW_IOPORT + 0x8);
->   	msrval = POWERNOW_IOPORT + 0x0;
-> -	wrmsr(MSR_K6_EPMR, msrval, 0); /* disable it again */
-> +	wrmsrq(MSR_K6_EPMR, msrval); /* disable it again */
->   
->   	local_irq_enable();
->   
-> @@ -101,8 +101,8 @@ static int powernow_k6_get_cpu_multiplier(void)
->   static void powernow_k6_set_cpu_multiplier(unsigned int best_i)
->   {
->   	unsigned long outvalue, invalue;
-> -	unsigned long msrval;
->   	unsigned long cr0;
-> +	u64 msrval;
->   
->   	/* we now need to transform best_i to the BVC format, see AMD#23446 */
->   
-> @@ -118,13 +118,13 @@ static void powernow_k6_set_cpu_multiplier(unsigned int best_i)
->   	outvalue = (1<<12) | (1<<10) | (1<<9) | (index_to_register[best_i]<<5);
->   
->   	msrval = POWERNOW_IOPORT + 0x1;
-> -	wrmsr(MSR_K6_EPMR, msrval, 0); /* enable the PowerNow port */
-> +	wrmsrq(MSR_K6_EPMR, msrval); /* enable the PowerNow port */
->   	invalue = inl(POWERNOW_IOPORT + 0x8);
->   	invalue = invalue & 0x1f;
->   	outvalue = outvalue | invalue;
->   	outl(outvalue, (POWERNOW_IOPORT + 0x8));
->   	msrval = POWERNOW_IOPORT + 0x0;
-> -	wrmsr(MSR_K6_EPMR, msrval, 0); /* disable it again */
-> +	wrmsrq(MSR_K6_EPMR, msrval); /* disable it again */
->   
->   	write_cr0(cr0);
->   	local_irq_enable();
-> diff --git a/drivers/cpufreq/powernow-k8.c b/drivers/cpufreq/powernow-k8.c
-> index 2b791f1ec51b..fe1f499b4fc0 100644
-> --- a/drivers/cpufreq/powernow-k8.c
-> +++ b/drivers/cpufreq/powernow-k8.c
-> @@ -87,10 +87,10 @@ static u32 convert_fid_to_vco_fid(u32 fid)
->    */
->   static int pending_bit_stuck(void)
->   {
-> -	u32 lo, hi __always_unused;
-> +	u64 msr;
->   
-> -	rdmsr(MSR_FIDVID_STATUS, lo, hi);
-> -	return lo & MSR_S_LO_CHANGE_PENDING ? 1 : 0;
-> +	rdmsrq(MSR_FIDVID_STATUS, msr);
-> +	return msr & MSR_S_LO_CHANGE_PENDING ? 1 : 0;
->   }
->   
->   /*
-> @@ -99,7 +99,7 @@ static int pending_bit_stuck(void)
->    */
->   static int query_current_values_with_pending_wait(struct powernow_k8_data *data)
->   {
-> -	u32 lo, hi;
-> +	struct msr msr;
->   	u32 i = 0;
->   
->   	do {
-> @@ -107,11 +107,11 @@ static int query_current_values_with_pending_wait(struct powernow_k8_data *data)
->   			pr_debug("detected change pending stuck\n");
->   			return 1;
->   		}
-> -		rdmsr(MSR_FIDVID_STATUS, lo, hi);
-> -	} while (lo & MSR_S_LO_CHANGE_PENDING);
-> +		rdmsrq(MSR_FIDVID_STATUS, msr.q);
-> +	} while (msr.l & MSR_S_LO_CHANGE_PENDING);
->   
-> -	data->currvid = hi & MSR_S_HI_CURRENT_VID;
-> -	data->currfid = lo & MSR_S_LO_CURRENT_FID;
-> +	data->currvid = msr.h & MSR_S_HI_CURRENT_VID;
-> +	data->currfid = msr.l & MSR_S_LO_CURRENT_FID;
->   
->   	return 0;
->   }
-> @@ -131,22 +131,22 @@ static void count_off_vst(struct powernow_k8_data *data)
->   /* need to init the control msr to a safe value (for each cpu) */
->   static void fidvid_msr_init(void)
->   {
-> -	u32 lo, hi;
-> +	struct msr msr;
->   	u8 fid, vid;
->   
-> -	rdmsr(MSR_FIDVID_STATUS, lo, hi);
-> -	vid = hi & MSR_S_HI_CURRENT_VID;
-> -	fid = lo & MSR_S_LO_CURRENT_FID;
-> -	lo = fid | (vid << MSR_C_LO_VID_SHIFT);
-> -	hi = MSR_C_HI_STP_GNT_BENIGN;
-> -	pr_debug("cpu%d, init lo 0x%x, hi 0x%x\n", smp_processor_id(), lo, hi);
-> -	wrmsr(MSR_FIDVID_CTL, lo, hi);
-> +	rdmsrq(MSR_FIDVID_STATUS, msr.q);
-> +	vid = msr.h & MSR_S_HI_CURRENT_VID;
-> +	fid = msr.l & MSR_S_LO_CURRENT_FID;
-> +	msr.l = fid | (vid << MSR_C_LO_VID_SHIFT);
-> +	msr.h = MSR_C_HI_STP_GNT_BENIGN;
-> +	pr_debug("cpu%d, init lo 0x%x, hi 0x%x\n", smp_processor_id(), msr.l, msr.h);
-> +	wrmsrq(MSR_FIDVID_CTL, msr.q);
->   }
->   
->   /* write the new fid value along with the other control fields to the msr */
->   static int write_new_fid(struct powernow_k8_data *data, u32 fid)
->   {
-> -	u32 lo;
-> +	struct msr msr;
->   	u32 savevid = data->currvid;
->   	u32 i = 0;
->   
-> @@ -155,15 +155,15 @@ static int write_new_fid(struct powernow_k8_data *data, u32 fid)
->   		return 1;
->   	}
->   
-> -	lo = fid;
-> -	lo |= (data->currvid << MSR_C_LO_VID_SHIFT);
-> -	lo |= MSR_C_LO_INIT_FID_VID;
-> +	msr.l = fid;
-> +	msr.l |= (data->currvid << MSR_C_LO_VID_SHIFT);
-> +	msr.l |= MSR_C_LO_INIT_FID_VID;
-> +	msr.h = data->plllock * PLL_LOCK_CONVERSION;
->   
-> -	pr_debug("writing fid 0x%x, lo 0x%x, hi 0x%x\n",
-> -		fid, lo, data->plllock * PLL_LOCK_CONVERSION);
-> +	pr_debug("writing fid 0x%x, lo 0x%x, hi 0x%x\n", fid, msr.l, msr.h);
->   
->   	do {
-> -		wrmsr(MSR_FIDVID_CTL, lo, data->plllock * PLL_LOCK_CONVERSION);
-> +		wrmsrq(MSR_FIDVID_CTL, msr.q);
->   		if (i++ > 100) {
->   			pr_err("Hardware error - pending bit very stuck - no further pstate changes possible\n");
->   			return 1;
-> @@ -190,7 +190,7 @@ static int write_new_fid(struct powernow_k8_data *data, u32 fid)
->   /* Write a new vid to the hardware */
->   static int write_new_vid(struct powernow_k8_data *data, u32 vid)
->   {
-> -	u32 lo;
-> +	struct msr msr;
->   	u32 savefid = data->currfid;
->   	int i = 0;
->   
-> @@ -199,15 +199,15 @@ static int write_new_vid(struct powernow_k8_data *data, u32 vid)
->   		return 1;
->   	}
->   
-> -	lo = data->currfid;
-> -	lo |= (vid << MSR_C_LO_VID_SHIFT);
-> -	lo |= MSR_C_LO_INIT_FID_VID;
-> +	msr.l = data->currfid;
-> +	msr.l |= (vid << MSR_C_LO_VID_SHIFT);
-> +	msr.l |= MSR_C_LO_INIT_FID_VID;
-> +	msr.h = STOP_GRANT_5NS;
->   
-> -	pr_debug("writing vid 0x%x, lo 0x%x, hi 0x%x\n",
-> -		vid, lo, STOP_GRANT_5NS);
-> +	pr_debug("writing vid 0x%x, lo 0x%x, hi 0x%x\n", vid, msr.l, msr.h);
->   
->   	do {
-> -		wrmsr(MSR_FIDVID_CTL, lo, STOP_GRANT_5NS);
-> +		wrmsrq(MSR_FIDVID_CTL, msr.q);
->   		if (i++ > 100) {
->   			pr_err("internal error - pending bit very stuck - no further pstate changes possible\n");
->   			return 1;
-> @@ -281,9 +281,10 @@ static int transition_fid_vid(struct powernow_k8_data *data,
->   static int core_voltage_pre_transition(struct powernow_k8_data *data,
->   		u32 reqvid, u32 reqfid)
->   {
-> +	struct msr msr;
->   	u32 rvosteps = data->rvo;
->   	u32 savefid = data->currfid;
-> -	u32 maxvid, lo __always_unused, rvomult = 1;
-> +	u32 maxvid, rvomult = 1;
->   
->   	pr_debug("ph1 (cpu%d): start, currfid 0x%x, currvid 0x%x, reqvid 0x%x, rvo 0x%x\n",
->   		smp_processor_id(),
-> @@ -292,8 +293,8 @@ static int core_voltage_pre_transition(struct powernow_k8_data *data,
->   	if ((savefid < LO_FID_TABLE_TOP) && (reqfid < LO_FID_TABLE_TOP))
->   		rvomult = 2;
->   	rvosteps *= rvomult;
-> -	rdmsr(MSR_FIDVID_STATUS, lo, maxvid);
-> -	maxvid = 0x1f & (maxvid >> 16);
-> +	rdmsrq(MSR_FIDVID_STATUS, msr.q);
-> +	maxvid = 0x1f & (msr.h >> 16);
->   	pr_debug("ph1 maxvid=0x%x\n", maxvid);
->   	if (reqvid < maxvid) /* lower numbers are higher voltages */
->   		reqvid = maxvid;
-> diff --git a/drivers/cpufreq/speedstep-centrino.c b/drivers/cpufreq/speedstep-centrino.c
-> index 9237ed8f2b1f..de50fb367c6b 100644
-> --- a/drivers/cpufreq/speedstep-centrino.c
-> +++ b/drivers/cpufreq/speedstep-centrino.c
-> @@ -345,7 +345,7 @@ static unsigned int get_cur_freq(unsigned int cpu)
->   static int centrino_cpu_init(struct cpufreq_policy *policy)
->   {
->   	struct cpuinfo_x86 *cpu = &cpu_data(policy->cpu);
-> -	unsigned l, h;
-> +	u64 q;
->   	int i;
->   
->   	/* Only Intel makes Enhanced Speedstep-capable CPUs */
-> @@ -378,16 +378,16 @@ static int centrino_cpu_init(struct cpufreq_policy *policy)
->   
->   	/* Check to see if Enhanced SpeedStep is enabled, and try to
->   	   enable it if not. */
-> -	rdmsr(MSR_IA32_MISC_ENABLE, l, h);
-> +	rdmsrq(MSR_IA32_MISC_ENABLE, q);
->   
-> -	if (!(l & MSR_IA32_MISC_ENABLE_ENHANCED_SPEEDSTEP)) {
-> -		l |= MSR_IA32_MISC_ENABLE_ENHANCED_SPEEDSTEP;
-> -		pr_debug("trying to enable Enhanced SpeedStep (%x)\n", l);
-> -		wrmsr(MSR_IA32_MISC_ENABLE, l, h);
-> +	if (!(q & MSR_IA32_MISC_ENABLE_ENHANCED_SPEEDSTEP)) {
-> +		q |= MSR_IA32_MISC_ENABLE_ENHANCED_SPEEDSTEP;
-> +		pr_debug("trying to enable Enhanced SpeedStep (%x)\n", (u32)q);
-> +		wrmsrq(MSR_IA32_MISC_ENABLE, q);
->   
->   		/* check to see if it stuck */
-> -		rdmsr(MSR_IA32_MISC_ENABLE, l, h);
-> -		if (!(l & MSR_IA32_MISC_ENABLE_ENHANCED_SPEEDSTEP)) {
-> +		rdmsrq(MSR_IA32_MISC_ENABLE, q);
-> +		if (!(q & MSR_IA32_MISC_ENABLE_ENHANCED_SPEEDSTEP)) {
->   			pr_info("couldn't enable Enhanced SpeedStep\n");
->   			return -ENODEV;
->   		}
-> diff --git a/drivers/cpufreq/speedstep-lib.c b/drivers/cpufreq/speedstep-lib.c
-> index 973716c1c29c..2afc3f177a29 100644
-> --- a/drivers/cpufreq/speedstep-lib.c
-> +++ b/drivers/cpufreq/speedstep-lib.c
-> @@ -69,13 +69,14 @@ static unsigned int pentium3_get_frequency(enum speedstep_processor processor)
->   		{   0, 0xff}
->   	};
->   
-> +	struct msr msr;
->   	u32 msr_lo, msr_tmp;
->   	int i = 0, j = 0;
->   
->   	/* read MSR 0x2a - we only need the low 32 bits */
-> -	rdmsr(MSR_IA32_EBL_CR_POWERON, msr_lo, msr_tmp);
-> -	pr_debug("P3 - MSR_IA32_EBL_CR_POWERON: 0x%x 0x%x\n", msr_lo, msr_tmp);
-> -	msr_tmp = msr_lo;
-> +	rdmsrq(MSR_IA32_EBL_CR_POWERON, msr.q);
-> +	pr_debug("P3 - MSR_IA32_EBL_CR_POWERON: 0x%x 0x%x\n", msr.l, msr.h);
-> +	msr_tmp = msr_lo = msr.l;
->   
->   	/* decode the FSB */
->   	msr_tmp &= 0x00c0000;
-> @@ -108,19 +109,20 @@ static unsigned int pentium3_get_frequency(enum speedstep_processor processor)
->   
->   static unsigned int pentiumM_get_frequency(void)
->   {
-> -	u32 msr_lo, msr_tmp;
-> +	struct msr msr;
-> +	u32 msr_tmp;
->   
-> -	rdmsr(MSR_IA32_EBL_CR_POWERON, msr_lo, msr_tmp);
-> -	pr_debug("PM - MSR_IA32_EBL_CR_POWERON: 0x%x 0x%x\n", msr_lo, msr_tmp);
-> +	rdmsrq(MSR_IA32_EBL_CR_POWERON, msr.q);
-> +	pr_debug("PM - MSR_IA32_EBL_CR_POWERON: 0x%x 0x%x\n", msr.l, msr.h);
->   
->   	/* see table B-2 of 24547212.pdf */
-> -	if (msr_lo & 0x00040000) {
-> +	if (msr.l & 0x00040000) {
->   		printk(KERN_DEBUG PFX "PM - invalid FSB: 0x%x 0x%x\n",
-> -				msr_lo, msr_tmp);
-> +				msr.l, msr.h);
->   		return 0;
->   	}
->   
-> -	msr_tmp = (msr_lo >> 22) & 0x1f;
-> +	msr_tmp = (msr.l >> 22) & 0x1f;
->   	pr_debug("bits 22-26 are 0x%x, speed is %u\n",
->   			msr_tmp, (msr_tmp * 100 * 1000));
->   
-> @@ -129,13 +131,14 @@ static unsigned int pentiumM_get_frequency(void)
->   
->   static unsigned int pentium_core_get_frequency(void)
->   {
-> +	struct msr msr;
->   	u32 fsb = 0;
-> -	u32 msr_lo, msr_tmp;
-> +	u32 msr_tmp;
->   	int ret;
->   
-> -	rdmsr(MSR_FSB_FREQ, msr_lo, msr_tmp);
-> +	rdmsrq(MSR_FSB_FREQ, msr.q);
->   	/* see table B-2 of 25366920.pdf */
-> -	switch (msr_lo & 0x07) {
-> +	switch (msr.l & 0x07) {
->   	case 5:
->   		fsb = 100000;
->   		break;
-> @@ -158,11 +161,11 @@ static unsigned int pentium_core_get_frequency(void)
->   		pr_err("PCORE - MSR_FSB_FREQ undefined value\n");
->   	}
->   
-> -	rdmsr(MSR_IA32_EBL_CR_POWERON, msr_lo, msr_tmp);
-> +	rdmsrq(MSR_IA32_EBL_CR_POWERON, msr.q);
->   	pr_debug("PCORE - MSR_IA32_EBL_CR_POWERON: 0x%x 0x%x\n",
-> -			msr_lo, msr_tmp);
-> +			msr.l, msr.h);
->   
-> -	msr_tmp = (msr_lo >> 22) & 0x1f;
-> +	msr_tmp = (msr.l >> 22) & 0x1f;
->   	pr_debug("bits 22-26 are 0x%x, speed is %u\n",
->   			msr_tmp, (msr_tmp * fsb));
->   
-> @@ -174,7 +177,8 @@ static unsigned int pentium_core_get_frequency(void)
->   static unsigned int pentium4_get_frequency(void)
->   {
->   	struct cpuinfo_x86 *c = &boot_cpu_data;
-> -	u32 msr_lo, msr_hi, mult;
-> +	struct msr msr;
-> +	u32 mult;
->   	unsigned int fsb = 0;
->   	unsigned int ret;
->   	u8 fsb_code;
-> @@ -187,16 +191,16 @@ static unsigned int pentium4_get_frequency(void)
->   	if (c->x86_model < 2)
->   		return cpu_khz;
->   
-> -	rdmsr(0x2c, msr_lo, msr_hi);
-> +	rdmsrq(0x2c, msr.q);
->   
-> -	pr_debug("P4 - MSR_EBC_FREQUENCY_ID: 0x%x 0x%x\n", msr_lo, msr_hi);
-> +	pr_debug("P4 - MSR_EBC_FREQUENCY_ID: 0x%x 0x%x\n", msr.l, msr.h);
->   
->   	/* decode the FSB: see IA-32 Intel (C) Architecture Software
->   	 * Developer's Manual, Volume 3: System Prgramming Guide,
->   	 * revision #12 in Table B-1: MSRs in the Pentium 4 and
->   	 * Intel Xeon Processors, on page B-4 and B-5.
->   	 */
-> -	fsb_code = (msr_lo >> 16) & 0x7;
-> +	fsb_code = (msr.l >> 16) & 0x7;
->   	switch (fsb_code) {
->   	case 0:
->   		fsb = 100 * 1000;
-> @@ -214,7 +218,7 @@ static unsigned int pentium4_get_frequency(void)
->   				"Please send an e-mail to <linux@brodo.de>\n");
->   
->   	/* Multiplier. */
-> -	mult = msr_lo >> 24;
-> +	mult = msr.l >> 24;
->   
->   	pr_debug("P4 - FSB %u kHz; Multiplier %u; Speed %u kHz\n",
->   			fsb, mult, (fsb * mult));
-> @@ -255,7 +259,8 @@ EXPORT_SYMBOL_GPL(speedstep_get_frequency);
->   enum speedstep_processor speedstep_detect_processor(void)
->   {
->   	struct cpuinfo_x86 *c = &cpu_data(0);
-> -	u32 ebx, msr_lo, msr_hi;
-> +	struct msr msr;
-> +	u32 ebx;
->   
->   	pr_debug("x86: %x, model: %x\n", c->x86, c->x86_model);
->   
-> @@ -343,11 +348,11 @@ enum speedstep_processor speedstep_detect_processor(void)
->   
->   		/* all mobile PIII Coppermines have FSB 100 MHz
->   		 * ==> sort out a few desktop PIIIs. */
-> -		rdmsr(MSR_IA32_EBL_CR_POWERON, msr_lo, msr_hi);
-> +		rdmsrq(MSR_IA32_EBL_CR_POWERON, msr.q);
->   		pr_debug("Coppermine: MSR_IA32_EBL_CR_POWERON is 0x%x, 0x%x\n",
-> -				msr_lo, msr_hi);
-> -		msr_lo &= 0x00c0000;
-> -		if (msr_lo != 0x0080000)
-> +				msr.l, msr.h);
-> +		msr.l &= 0x00c0000;
-> +		if (msr.l != 0x0080000)
->   			return 0;
->   
->   		/*
-> @@ -356,11 +361,11 @@ enum speedstep_processor speedstep_detect_processor(void)
->   		 * it has SpeedStep technology if either
->   		 * bit 56 or 57 is set
->   		 */
-> -		rdmsr(MSR_IA32_PLATFORM_ID, msr_lo, msr_hi);
-> +		rdmsrq(MSR_IA32_PLATFORM_ID, msr.q);
->   		pr_debug("Coppermine: MSR_IA32_PLATFORM ID is 0x%x, 0x%x\n",
-> -				msr_lo, msr_hi);
-> -		if ((msr_hi & (1<<18)) &&
-> -		    (relaxed_check ? 1 : (msr_hi & (3<<24)))) {
-> +				msr.l, msr.h);
-> +		if ((msr.h & (1<<18)) &&
-> +		    (relaxed_check ? 1 : (msr.h & (3<<24)))) {
->   			if (c->x86_stepping == 0x01) {
->   				pr_debug("early PIII version\n");
->   				return SPEEDSTEP_CPU_PIII_C_EARLY;
+>>
+>> Signed-off-by: Gaurav Kohli <gaurav.kohli@oss.qualcomm.com>
+>> ---
+>>   .../bindings/remoteproc/qcom,pas-common.yaml       | 39 ++++++++++++++++++++++
+>>   1 file changed, 39 insertions(+)
+>>
+>> diff --git a/Documentation/devicetree/bindings/remoteproc/qcom,pas-common.yaml b/Documentation/devicetree/bindings/remoteproc/qcom,pas-common.yaml
+>> index 4607b459131b..ef11371058c4 100644
+>> --- a/Documentation/devicetree/bindings/remoteproc/qcom,pas-common.yaml
+>> +++ b/Documentation/devicetree/bindings/remoteproc/qcom,pas-common.yaml
+>> @@ -79,6 +79,14 @@ properties:
+>>         channels and devices related to the ADSP.
+>>       unevaluatedProperties: false
+>>   
+>> +  '#cooling-cells':
+>> +    description: |
+>> +      Cooling device with three cells:
+>> +        Cell 0: Cooling device id
+> 
+> And here you provide full path with device IDs.
 
+thanks for review, will update this.
 
--- 
-Thx and BRs,
-Zhongqiu Han
+> 
+>> +        Cell 1: Minimum cooling state
+>> +        Cell 2: Maximum cooling state
+>> +    const: 3
+>> +
+>>     glink-edge:
+>>       $ref: /schemas/remoteproc/qcom,glink-edge.yaml#
+>>       description:
+>> @@ -95,3 +103,34 @@ required:
+>>     - qcom,smem-state-names
+>>   
+>>   additionalProperties: true
+>> +
+>> +examples:
+>> +  - |
+>> +    #include <dt-bindings/thermal/thermal.h>
+>> +    #include <dt-bindings/firmware/qcom,qmi-tmd.h>
+>> +
+>> +    remoteproc: remoteproc {
+>> +      #cooling-cells = <3>;
+>> +    };
+> 
+> Drop, empty node.
+> 
+
+Ack, will remove this.
+
+>> +
+>> +    thermal-zones {
+>> +      subsystem-thermal {
+>> +        thermal-sensors = <&tsens 0>;
+>> +
+>> +        trips {
+>> +          alert: alert {
+>> +            temperature = <95000>;
+>> +            hysteresis = <2000>;
+>> +            type = "passive";
+>> +          };
+>> +        };
+>> +
+>> +        cooling-maps {
+>> +          map0 {
+>> +            trip = <&alert>;
+>> +            cooling-device = <&remoteproc QCOM_CDSP_TMD_CDSP_SW
+>> +                             THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
+>> +          };
+>> +        };
+>> +      };
+>> +    };
+> 
+> thermal-zones are not relevant to remoteproc.
+> 
+
+Ack, wanted to show by example, can i use commit message for that.
+
+> Entire example feels pointless - how is schema even applied/matched
+> against it?
+> 
+> Best regards,
+> Krzysztof
+> 
+
