@@ -1,159 +1,212 @@
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.10])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pl1-f170.google.com (mail-pl1-f170.google.com [209.85.214.170])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 291B23F6C4F;
-	Mon,  6 Jul 2026 16:00:58 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.10
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2717841F7D5
+	for <linux-pm@vger.kernel.org>; Mon,  6 Jul 2026 16:15:19 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.170
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1783353660; cv=none; b=j1WBbY86atO8GC5tQ3EdLmCIZSk3DwH/ABrJrWpTjTnS2BIVLWRHM4MhB0MoK6hT/ZWpH/LHHj0+dOIAxY/JRhURpjZGD+bWnI2OXeMnwxnRZcjwbisaj7hRxnCy+PeNQWO/Eb8hML2MJ9Pt2tKh+XL9J6isHetMs3wIL+Ws04I=
+	t=1783354521; cv=none; b=R3J0qCS70pcp391GoE0tlbxA4cWNgQZSQgOWO8QqK+TswGVxZIhStK7V119VFiMfYqb1ayujM/F3mR5MOvKm1Kp3+KMSSB5z+5slb3F5XELY6bdHH9LlAM+omUmbq6hMgT9jvf9pJW8BN63c97Bec6+vSyKlg97fELEm7dITfRg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1783353660; c=relaxed/simple;
-	bh=CNeXdCq4YUYr/jn29WXp0/HYvFmsD6R6iES7V1e2kXU=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=sIFfLOBp2AZabJk3TQQVwmI/CG7L1zPiynmwNDeyyiwyAvS8mHxVge7uJFhc/tT8CVs8DK0uwAImVGsUzvh01i5MTRNY7MVEvwgJIa5E132RWR3rxzT4h69TNltw5EfE+7Wj0IlpTAkOspXlm7104gCk8PwSaBneZWu2tpb7C2A=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=pass smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=bbIegzf4; arc=none smtp.client-ip=192.198.163.10
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.intel.com
+	s=arc-20240116; t=1783354521; c=relaxed/simple;
+	bh=5G5FB9kOtpFLC9ywyKU/WqUp5GOuGEuJ4zI7XGzDU/w=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=GdqTehNOCZfaPSiipT8Xmn9LjljimrUL5GWBi+wdQ145fo4thHKCqmHIeeSDsVgL73aSKsWjw2u/1Y60hg4lsBezmSYmEOd9BGg1fq1IfStGfWNAYBGR27TlpfV4rjtpFeCeZAnUF7I09sbueNCrCjUrue+9/IrzRIfaIiifCQs=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=Dsf6MDyX; arc=none smtp.client-ip=209.85.214.170
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="bbIegzf4"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1783353659; x=1814889659;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:content-transfer-encoding:in-reply-to;
-  bh=CNeXdCq4YUYr/jn29WXp0/HYvFmsD6R6iES7V1e2kXU=;
-  b=bbIegzf4MGsxr9qRTE6ii1PNH7LpAdrOiLg2dNgpBfZ49GOVcXGLsLLz
-   fJVtvR6LW6dQBSsRBsG+IEanPUWIvezt1ntUPlkmRlqrJeQ7agbBbpMla
-   DXga+wuNuw6gA8yPMydm9lTj1+KMNgSbgBZe+7fEqp7+3SbLDAiWtG/VB
-   nMTF6pzkLtA3ySEbznXpjEyHQVsYlZFr2hu1JmxFKtb0RtshvIWhjye07
-   GNHuUzI/9ngxym3DbM9Knf0zQ/k6OLCnrWelxzxRoMOn6lBbB0sO+Tbd+
-   l2N6xtPfg8Yjl1ECV8lZuLiWPRC3iL2+XYEe0KAff209dd1xsPZhxDG4P
-   Q==;
-X-CSE-ConnectionGUID: ltA6oE6/TuaOL3y4o5xIrg==
-X-CSE-MsgGUID: iiWqcV4iSpWT/wpn4b8Pcw==
-X-IronPort-AV: E=McAfee;i="6800,10657,11838"; a="95370638"
-X-IronPort-AV: E=Sophos;i="6.25,149,1779174000"; 
-   d="scan'208";a="95370638"
-Received: from fmviesa007.fm.intel.com ([10.60.135.147])
-  by fmvoesa104.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 06 Jul 2026 09:00:57 -0700
-X-CSE-ConnectionGUID: W+MT9vknQx+rEQ4fdWnATQ==
-X-CSE-MsgGUID: kJ90HQUOT+izFt8uG3wJzQ==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.25,149,1779174000"; 
-   d="scan'208";a="250408991"
-Received: from vpanait-mobl.ger.corp.intel.com (HELO localhost) ([10.245.244.48])
-  by fmviesa007-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 06 Jul 2026 09:00:52 -0700
-Date: Mon, 6 Jul 2026 19:00:49 +0300
-From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-To: Chen-Yu Tsai <wenst@chromium.org>
-Cc: Bartosz Golaszewski <brgl@kernel.org>,
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	Daniel Scally <djrscally@gmail.com>,
-	Heikki Krogerus <heikki.krogerus@linux.intel.com>,
-	Sakari Ailus <sakari.ailus@linux.intel.com>,
-	"Rafael J. Wysocki" <rafael@kernel.org>,
-	Danilo Krummrich <dakr@kernel.org>, Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Matthias Brugger <matthias.bgg@gmail.com>,
-	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>,
-	linux-acpi@vger.kernel.org, driver-core@lists.linux.dev,
-	linux-pm@vger.kernel.org, linux-usb@vger.kernel.org,
-	devicetree@vger.kernel.org, linux-mediatek@lists.infradead.org,
-	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
-	Manivannan Sadhasivam <mani@kernel.org>,
-	Alan Stern <stern@rowland.harvard.edu>,
-	Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
-Subject: Re: [PATCH v3 06/13] usb: hub: Pass |struct usb_port*| to
- usb_port_is_power_on()
-Message-ID: <akvRMcGnUPxE3sxR@ashevche-desk.local>
-References: <20260703110317.1283411-1-wenst@chromium.org>
- <20260703110317.1283411-7-wenst@chromium.org>
- <ake09vk4fEv1D9QC@ashevche-desk.local>
- <CAGXv+5GNucSXrhL=YxarSJHD2ezzYDK3EovFu-zy012KgZ+ZBg@mail.gmail.com>
- <ake6FNy83LLtCs3b@ashevche-desk.local>
- <CAGXv+5EgpizA3Pc8ScNuChPhvFKWd5F6dxB-wT4-7EwabE-9dQ@mail.gmail.com>
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Dsf6MDyX"
+Received: by mail-pl1-f170.google.com with SMTP id d9443c01a7336-2caed617615so25625525ad.3
+        for <linux-pm@vger.kernel.org>; Mon, 06 Jul 2026 09:15:19 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1783354518; x=1783959318; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=S/3RgXCA9XKT4PqM3Zw2JPstafRKCR+nS+crMfKpAcE=;
+        b=Dsf6MDyXItcjWn9QJIcv5EzfidGxocrrA7mt65C0Rpsf3CECAM0+kMW2UryOaySVtH
+         HY7B2hOkvyy7vX6MZqSEEwcY0tFjhG5v+YPiZHiLYpTyHvYk5mZ8oL+Jof2aPolBb7oX
+         vxTFesMrDGFsVxx2qbqlNZGUKkQwhoMKA1r4CElWLlkbCKWgtx4AUu5QfV58yjbUoYBL
+         jE5qjwVVkeeTfJ4hCXDhBOWqchfxSV51XazD9Abk0jqHEo33FxtIG28YbbMTlUhFOHvq
+         zPW5WE2TFZtc1wc8Ckn89C5QnQFa4Ow3nMs7G60Yl4wfsBiQXRDjb+L+o4ukoYoImAiS
+         7TcA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1783354518; x=1783959318;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=S/3RgXCA9XKT4PqM3Zw2JPstafRKCR+nS+crMfKpAcE=;
+        b=EqywLCaTmfhbvIl6uZR9ZD2RWCLj8YjVi2SAI9ulz9APEzFTboCiLFEJM+2lAURvBy
+         PN11tCwzkUiLkheLZsX4tihLbeS0X6hlI5Zq2bxYmVhPaR/vKFJnmVL9V0KiZBZjWwDx
+         FRnFcxtO8jZ3TEqyUHeLaYvVvnU1NPNUVdmJ88J7B6sIBtapg0+oaodU/8VATpaHRRAm
+         PJdQ+6blKirO+OMhU0mw3KrRQfwdkxL0X+sMxyD9xoRHoXD9qUfdVdOTvuf3iYNFvzqK
+         /JGy/A9EO3niSC8CnX/9vamZWQK+RaF4H2GVIzsVX/8xHxSUC+4lccl9QLQOV5kfvyi3
+         5SIA==
+X-Gm-Message-State: AOJu0YxSRwMkGckC/UZK+dNQWBOZrOXK7wjTldHY9OjhtIW5KQRmkalh
+	13ELnTwEB6xob8MUs2Z5N5LOfye97LwObzw2FEJfcQL/k7zZ05lK9p+p
+X-Gm-Gg: AfdE7ck5sv1Qd5KCg0qHbJ6BJvUrDXFQavFmI9q5UB3yfygFYX+BXbg+779TWbfzbMa
+	cdfxSQzcDb9tuWsNhoRD0JT96pmYVFjRrWeRY8V60LjkdlEwwNiwGt6UW5dWUY6xNUQKLFqqfte
+	iYoYidvJuYcJu6HAo6TnVK/jus8e77cn4FjaSPJyqM6sdhXyb92d/GIghEO1q6erDdp55SjjV+N
+	IcVnJqvGTtD1ej4dvAzhYVKArivNgfX59Qo640sBmg7lpYNHCCnpV7reYDCeKfpOwdTt22KJheY
+	ll4iJpAV89bvc5sPX65UAbEQVe7GHgrzRxmXIy3NdkejXoq5Qxwmq65Xt8fxzn85ExjXhKyaLfw
+	sE84Ti0eVHol8fXSzCykL2H6SaffCydNuGk5TN311AhOVuHQjP+fUdZ83aA7GeuxfvgvdymOGMW
+	L/w1q1tFiFcyQWbdZxXixTpVkN5CW+MEdAws/zJLBHzt42hzOsH57RqlPzzjIHWOJ/jEjKJFmwg
+	oMHqPej2PuW3lYzZP7HyJCNYbXumI8=
+X-Received: by 2002:a17:902:d2ca:b0:2c9:da58:17dd with SMTP id d9443c01a7336-2ccbf02ea30mr12245295ad.34.1783354518316;
+        Mon, 06 Jul 2026 09:15:18 -0700 (PDT)
+Received: from NV-9MNJ414.nvidia.com (2001-b011-2005-72fc-7da4-215b-b67f-50ea.dynamic-ip6.hinet.net. [2001:b011:2005:72fc:7da4:215b:b67f:50ea])
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2cad6f260a1sm53394545ad.11.2026.07.06.09.15.16
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 06 Jul 2026 09:15:17 -0700 (PDT)
+From: Yiwei Lin <s921975628@gmail.com>
+To: rafael@kernel.org,
+	viresh.kumar@linaro.org,
+	shuah@kernel.org
+Cc: linux-pm@vger.kernel.org,
+	linux-kselftest@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	Yiwei Lin <s921975628@gmail.com>
+Subject: [PATCH] kselftest: cpufreq: Backup and restore governor for sptests
+Date: Tue,  7 Jul 2026 00:14:30 +0800
+Message-Id: <20260706161430.16949-1-s921975628@gmail.com>
+X-Mailer: git-send-email 2.34.1
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <CAGXv+5EgpizA3Pc8ScNuChPhvFKWd5F6dxB-wT4-7EwabE-9dQ@mail.gmail.com>
-Organization: Intel Finland Oy - BIC 0357606-4 - c/o Alberga Business Park, 6
- krs, Bertel Jungin Aukio 5, 02600 Espoo
 
-On Mon, Jul 06, 2026 at 07:08:07PM +0800, Chen-Yu Tsai wrote:
-> On Fri, Jul 3, 2026 at 9:33 PM Andy Shevchenko
-> <andriy.shevchenko@linux.intel.com> wrote:
-> > On Fri, Jul 03, 2026 at 09:17:16PM +0800, Chen-Yu Tsai wrote:
-> > > On Fri, Jul 3, 2026 at 9:11 PM Andy Shevchenko
-> > > <andriy.shevchenko@linux.intel.com> wrote:
-> > > > On Fri, Jul 03, 2026 at 07:03:07PM +0800, Chen-Yu Tsai wrote:
+After executing cpufreq sptest, the system governor
+will be overwritten with the governor switched
+during the test. Restore this setting to maintain
+consistency before and after the test.
 
-...
+Signed-off-by: Yiwei Lin <s921975628@gmail.com>
+---
+ tools/testing/selftests/cpufreq/governor.sh   | 21 +++++++++++++++++++
+ .../selftests/cpufreq/special-tests.sh        | 13 ++++++++++++
+ 2 files changed, 34 insertions(+)
 
-> > > > At a brief look this will be the only function that takes usb_port
-> > > > instead of usb_hub in the entire hub.h (I don't count container_of()
-> > > > as a function). With that being said I would rather see it to be moved
-> > > > to port.c altogether (yes, it's more invasive change, but looks more
-> > > > consistent).  I would even dare to move struct usb_port (and container_of()
-> > > > accompanied with that) and this function to port.h. This might require
-> > > > a separate patch, though.
-> > >
-> > > I agree with the reasoning, especially given the function name. However
-> > > I wonder if it would cause problems given the linking order. I'll give
-> > > it a try nevertheless and report back.
-> >
-> > Thanks!
-> >
-> > In case it won't fly (but I still think it's better to split), can you at least
-> > group usb_port APIs and struct? Means moving the proto closer to that struct
-> > usb_port followed by container_of().
-> 
-> Looks like it works out fine. port.o is linked in after hub.o, so moving
-> the function from the latter to the former doesn't cause issues. One might
-> even say that it is the correct thing to do.
-
-That's what I say! :-)
-
-> > > > Perhaps something like: 1) "move struct usb_port and associated APIs to port.h";
-> > > > 2) "...this patch...".
-> 
-> There are still some left in hub.c:
-> 
-> static void usb_lock_port(struct usb_port *port_dev)
-> static void usb_unlock_port(struct usb_port *port_dev)
-> static void port_over_current_notify(struct usb_port *port_dev)
-
-> static void hub_usb3_port_prepare_disable(struct usb_hub *hub,
->                                           struct usb_port *port_dev)
-
-This one takes hub as well.
-
-> These are used only in hub.c and moving them probably makes things
-> messier?
-
-Perhaps better naming to each (kinda moving to usb hub namespace)?
-
-> OOTH, the following bits are in port.c but declared in hub.h:
-> 
-> int usb_hub_create_port_device(struct usb_hub *hub,
->          int port1);
-> void usb_hub_remove_port_device(struct usb_hub *hub,
->          int port1);
-> 
-> Any preferences for these while we're reorganizing the code?
-
-These ones would be good to be in hub.c if there is no circular dependencies or
-alike.
-
-
+diff --git a/tools/testing/selftests/cpufreq/governor.sh b/tools/testing/selftests/cpufreq/governor.sh
+index fe37df79c0871..5d105ab9c9222 100755
+--- a/tools/testing/selftests/cpufreq/governor.sh
++++ b/tools/testing/selftests/cpufreq/governor.sh
+@@ -16,6 +16,12 @@ source cpufreq.sh
+ CUR_GOV=
+ CUR_FREQ=
+ 
++# Per-policy backup, keyed by policy so multiple policies can be saved at once
++# (backup_governor/restore_governor also keep CUR_GOV/CUR_FREQ for callers that
++# read them directly).
++declare -A SAVED_GOVERNORS
++declare -A SAVED_FREQS
++
+ # Find governor's directory path
+ # $1: policy, $2: governor
+ find_gov_directory()
+@@ -39,11 +45,13 @@ find_current_governor()
+ backup_governor()
+ {
+ 	CUR_GOV=$(find_current_governor $1)
++	SAVED_GOVERNORS[$1]=$CUR_GOV
+ 
+ 	printf "Governor backup done for $1: $CUR_GOV\n"
+ 
+ 	if [ $CUR_GOV == "userspace" ]; then
+ 		CUR_FREQ=$(find_current_freq $1)
++		SAVED_FREQS[$1]=$CUR_FREQ
+ 		printf "Governor frequency backup done for $1: $CUR_FREQ\n"
+ 	fi
+ 
+@@ -53,11 +61,13 @@ backup_governor()
+ # $1: policy
+ restore_governor()
+ {
++	CUR_GOV=${SAVED_GOVERNORS[$1]}
+ 	__switch_governor $1 $CUR_GOV
+ 
+ 	printf "Governor restored for $1 to $CUR_GOV\n"
+ 
+ 	if [ $CUR_GOV == "userspace" ]; then
++		CUR_FREQ=${SAVED_FREQS[$1]}
+ 		set_cpu_frequency $1 $CUR_FREQ
+ 		printf "Governor frequency restored for $1: $CUR_FREQ\n"
+ 	fi
+@@ -65,6 +75,17 @@ restore_governor()
+ 	printf "\n"
+ }
+ 
++# Save/restore governors for every policy at once
++save_all_governors()
++{
++	for_each_policy backup_governor
++}
++
++restore_all_governors()
++{
++	for_each_policy restore_governor
++}
++
+ # param:
+ # $1: policy, $2: governor
+ __switch_governor()
+diff --git a/tools/testing/selftests/cpufreq/special-tests.sh b/tools/testing/selftests/cpufreq/special-tests.sh
+index 8d40505dc4682..c7eddadd047d1 100755
+--- a/tools/testing/selftests/cpufreq/special-tests.sh
++++ b/tools/testing/selftests/cpufreq/special-tests.sh
+@@ -40,7 +40,9 @@ simple_lockdep()
+ {
+ 	printf "** Test: Running ${FUNCNAME[0]} **\n"
+ 
++	save_all_governors
+ 	for_each_policy __simple_lockdep
++	restore_all_governors
+ }
+ 
+ # Test 2
+@@ -56,7 +58,10 @@ concurrent_lockdep()
+ {
+ 	printf "** Test: Running ${FUNCNAME[0]} **\n"
+ 
++	save_all_governors
+ 	for_each_policy_concurrent __concurrent_lockdep
++	wait
++	restore_all_governors
+ }
+ 
+ # Test 3
+@@ -68,17 +73,23 @@ quick_shuffle()
+ 		echo ondemand | sudo tee $CPUFREQROOT/policy*/scaling_governor &
+ 		echo userspace | sudo tee $CPUFREQROOT/policy*/scaling_governor &
+ 	done
++	wait
+ }
+ 
+ governor_race()
+ {
+ 	printf "** Test: Running ${FUNCNAME[0]} **\n"
+ 
++	save_all_governors
++
+ 	# run 8 concurrent instances
+ 	for I in `seq 8`
+ 	do
+ 		quick_shuffle &
+ 	done
++	wait
++
++	restore_all_governors
+ }
+ 
+ # Test 4
+@@ -112,5 +123,7 @@ hotplug_with_updates_cpu()
+ 
+ hotplug_with_updates()
+ {
++	save_all_governors
+ 	for_each_non_boot_cpu hotplug_with_updates_cpu
++	restore_all_governors
+ }
 -- 
-With Best Regards,
-Andy Shevchenko
-
+2.34.1
 
