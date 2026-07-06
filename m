@@ -1,139 +1,115 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B81AE424645
-	for <linux-pm@vger.kernel.org>; Mon,  6 Jul 2026 12:48:54 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 705AE430316
+	for <linux-pm@vger.kernel.org>; Mon,  6 Jul 2026 12:50:43 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1783342135; cv=none; b=aqEKPTuYnI5mBtQgZMw2wuVPln+no5AnAXMlAW07ACuvkNIzaxUz/2B243SzIdqAZa3GRiM5GZwYq7/iFho4Xvo1TPKDo1pUqZB+qvv3QXeK/5qb5uYkyn5qIaSs3WcSqde7knSYFsRM7EpN282wyfp+Tj9Mrp1Jhz5EtunQbPg=
+	t=1783342245; cv=none; b=ui7Y3UBXoHl6GZ+vO2Rr7nWY66TwDXhpMqtmtjk70/YupdeOcH8W2IT+rLsKN9O7ssGHINLtJ149Z3LS9PAGnqOotooZDf7V7+eegdI6MU8dN9/TzDCC+qkcyeBvIu0Ijx5Pau4jJZ9mG/oaPZRttkOikvu/DuhiamUHdSkIRP8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1783342135; c=relaxed/simple;
-	bh=lIEWERhnsxN7Qi/PGFRqv7lB50E4tkrkU8iURJ8DQXE=;
+	s=arc-20240116; t=1783342245; c=relaxed/simple;
+	bh=vTAKk70ZRRV8/efCs47Uzw+dFgt34Wa5TAsFvO4ZfAs=;
 	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=P/nPsYs/qw90HGG8QSK79UF0/YKvSXIf3u/v8OwnqyLgMbWn/YZD0qhwWXjuooLCDMa7tGcl3PPPeNjl6XoARoeUnKne9o5McXcsErUTQZLS8u6q5Z39EYd5j2R/id0XsPW+aLAVyM4LxzZIs2yjMRrFQt1UNbb9El0r5ECOhS4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=BEQHxqcZ; arc=none smtp.client-ip=100.103.45.18
+	 To:Cc:Content-Type; b=QiFMGq9b3BkhpisFlvSJBIyJAiSthmO7CbtNOtTcY3d4KHPqU+QQhzf45iyh1CqaRzUs/celXBApTjRFoeXhOLUsBfKHMvQANdw4uK3mH2rHCHdMa1iDtTF+a0WMVLHgEPjim7yDK2vjMPjwTG1tRHnBRw5HRH1LWr8atkdxvHc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=MPxYlOWz; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="BEQHxqcZ"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6B9721F00A3A
-	for <linux-pm@vger.kernel.org>; Mon,  6 Jul 2026 12:48:54 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="MPxYlOWz"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 336921F00A3A
+	for <linux-pm@vger.kernel.org>; Mon,  6 Jul 2026 12:50:43 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1783342134;
-	bh=mLN6L5epv5+bkv1pR3WCrmAyrYPgwiGFNCNtQupoE8Q=;
+	s=k20260515; t=1783342243;
+	bh=07GLEgOUI5a+j2cP0rEFk++m6bjbKk3uvfak/3Sku/g=;
 	h=References:In-Reply-To:From:Date:Subject:To:Cc;
-	b=BEQHxqcZeKsqbJYegky/VrG73eh348gpDPPOnrQ/Fypce4ssxGZPHgH4a2nKnPN1S
-	 dwIlueQ39asofkOoHQ8VkZDhPF2It0XCVS+/vhzPbmIr/JmOZJ+s5Vdqeq5fZIdCt+
-	 OMbE8B3xvybQcgjpxeL9GDkj/cOwKDNPyZEGvIM3HMca5yRc870pyFtT9EgME2mfh4
-	 ZDUyUVdw+CjszKqL+Z2191hVa2TjpdOrFtCcdJnT3aq1HQkPuxiExc+n6LvqaL+Eli
-	 Fns3QLU/ADrVUo/BKbSt1xsJPFMzwVdXHnJTqmdStkTgcCM5Z4cdGuxDPZjTZ7WZ7+
-	 G8N/KENtw3kxw==
-Received: by mail-lf1-f43.google.com with SMTP id 2adb3069b0e04-5aeb98460c6so2394324e87.2
-        for <linux-pm@vger.kernel.org>; Mon, 06 Jul 2026 05:48:54 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AHgh+Ro6ef8IUIRbqwQt4Ct+Ljk4GgDf3MnCbtr/uR/+pia96xEEwLjjZ/NQJ2vKqQp09C9bvCUyq86d+Q==@vger.kernel.org
-X-Gm-Message-State: AOJu0YxI8/G0meDgmBRyi2HmEvIQt5IA3ce8bQxTHkTT4IC9lw5cfWB4
-	AEKi7tfrMVXkIycXNsztR6BTA2Qg1/go5zHVXWZYyjYU8yjUPqoo3cn5yFk3yJ8m0+7z+2R7VSq
-	ueEUolOtQw0hvkmdZslWRrJyNe0LhQAU=
-X-Received: by 2002:a05:6512:1454:10b0:5ae:ab26:12ee with SMTP id
- 2adb3069b0e04-5b007c0ba04mr47904e87.14.1783342132879; Mon, 06 Jul 2026
- 05:48:52 -0700 (PDT)
+	b=MPxYlOWzixi4WTzDOYkRsU0Ryo0ZLyNl/5WGLj0XbuFQRASl4U6dwbrGyoqsPn1O9
+	 x2XBnTO29WhQ3LxGnoA/R6RCbbwZkLFQ8YqUatyuF1pgfkSBv/ajVPO+uZPLLvLHzE
+	 0Bh3rAqT3EaK0BsRVeB2aQPtUPy3/pxmilggbRYXZ6I7ke3NIL4abIu/ZwdXPX54J5
+	 fblTaqUxjzsc0fdt+FQqQsOtKVKc+E76bt00xU29ghPv8MsN+/Q0ngIZhnoVWHnfD7
+	 AmeEwYL5Q/7xEydYPG7y90o64T+sjKisXdFO4JE0mXjC98LN8djBz6cIhVX24B+VIZ
+	 JfYava5ykeCDg==
+Received: by mail-lf1-f49.google.com with SMTP id 2adb3069b0e04-5aec5675c46so2920628e87.1
+        for <linux-pm@vger.kernel.org>; Mon, 06 Jul 2026 05:50:43 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AHgh+Rr6p9WdC3eluR+OvWljRpBXaupAhRpcU1/sgBOrDgyn/R/vCEMi0ObQhEEdBFwLi2JoRc8vy9LSqw==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yy6rt8wuWcj4hfJXl3sKyg7LPk0T/k7onfeWAIRFTuTxD8i3YM8
+	TgHFkVYVrWnC6IUk/X/Vv+iE6aoWV0PYbNpjYsmw6+z+1WNM1g7gedf1jRwv/fmcCTLLY+bgaLX
+	cGvtF3N21BtkkfDFjnWsDY39s9Vgz/PI=
+X-Received: by 2002:a05:6512:838f:b0:5ae:befc:97ac with SMTP id
+ 2adb3069b0e04-5b007c6ea82mr32613e87.55.1783342241685; Mon, 06 Jul 2026
+ 05:50:41 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260629060526.3638272-1-jgross@suse.com> <20260629060526.3638272-3-jgross@suse.com>
-In-Reply-To: <20260629060526.3638272-3-jgross@suse.com>
+References: <20260629060526.3638272-1-jgross@suse.com> <20260629060526.3638272-5-jgross@suse.com>
+ <CAJZ5v0itUVZ6=GCbRomkMiesy5uhZVWWjsUbqFqsZTyNeCBAbQ@mail.gmail.com>
+ <akYskLix-iNOAbCM@gmail.com> <CAJZ5v0hZN2SsX1uVfDuVzV=7UoHsNbhe8DUaFCaVsd-ceLvZWg@mail.gmail.com>
+ <akjDoZnJsZNxE1tg@gmail.com>
+In-Reply-To: <akjDoZnJsZNxE1tg@gmail.com>
 From: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
-Date: Mon, 6 Jul 2026 14:48:36 +0200
-X-Gmail-Original-Message-ID: <CAJZ5v0grM1P6Cq7zPbcj=iGyhKs_2-jb1f9Xhc3bVRDWwvGY_A@mail.gmail.com>
-X-Gm-Features: AVVi8CfiN1kYRpx43avoEL7_eDNpce-Y6Kakz-Pa8lEzsIFX_OpDQgHwZ5YvsvQ
-Message-ID: <CAJZ5v0grM1P6Cq7zPbcj=iGyhKs_2-jb1f9Xhc3bVRDWwvGY_A@mail.gmail.com>
-Subject: Re: [PATCH 02/32] powercap: Stop using 32-bit MSR interfaces
-To: Juergen Gross <jgross@suse.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, 
-	"Rafael J. Wysocki" <rafael@kernel.org>
+Date: Mon, 6 Jul 2026 14:50:24 +0200
+X-Gmail-Original-Message-ID: <CAJZ5v0hA+wwKKrnwKKaTjgoAzJ6Pe_KuW9VBrpROdvVv_w5fbA@mail.gmail.com>
+X-Gm-Features: AVVi8CffklVcXY_CLFB1bxuR6U7mqoC6O5wLSBzLy8wKvsJS6Io-lsiwG0rzKlk
+Message-ID: <CAJZ5v0hA+wwKKrnwKKaTjgoAzJ6Pe_KuW9VBrpROdvVv_w5fbA@mail.gmail.com>
+Subject: Re: [PATCH 04/32] acpi: Stop using 32-bit MSR interfaces
+To: Ingo Molnar <mingo@kernel.org>
+Cc: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>, Juergen Gross <jgross@suse.com>, linux-kernel@vger.kernel.org, 
+	x86@kernel.org, linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org, 
+	Len Brown <lenb@kernel.org>, Pavel Machek <pavel@kernel.org>, Thomas Gleixner <tglx@kernel.org>, 
+	Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, 
+	Dave Hansen <dave.hansen@linux.intel.com>, "H. Peter Anvin" <hpa@zytor.com>
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Mon, Jun 29, 2026 at 8:05=E2=80=AFAM Juergen Gross <jgross@suse.com> wro=
-te:
+On Sat, Jul 4, 2026 at 10:26=E2=80=AFAM Ingo Molnar <mingo@kernel.org> wrot=
+e:
 >
-> The 32-bit MSR interfaces rdmsr_safe() and wrmsr_safe() are planned to
-> be removed. Use the related 64-bit variants instead.
 >
-> Drop a pointless initializer.
+> * Rafael J. Wysocki (Intel) <rafael@kernel.org> wrote:
 >
-> Signed-off-by: Juergen Gross <jgross@suse.com>
+> > On Thu, Jul 2, 2026 at 11:17=E2=80=AFAM Ingo Molnar <mingo@kernel.org> =
+wrote:
+> > >
+> > >
+> > > * Rafael J. Wysocki (Intel) <rafael@kernel.org> wrote:
+> > >
+> > > > On Mon, Jun 29, 2026 at 8:05=E2=80=AFAM Juergen Gross <jgross@suse.=
+com> wrote:
+> > > > >
+> > > > > The 32-bit MSR interfaces rdmsr(), wrmsr(), rdmsr_safe() and
+> > > > > wrmsr_safe() are planned to be removed. Use the related 64-bit va=
+riants
+> > > > > instead.
+> > > > >
+> > > > > In processor_throttling.c drop needless initializers.
+> > > > >
+> > > > > Signed-off-by: Juergen Gross <jgross@suse.com>
+> > > >
+> > > > LGTM overall.
+> > > >
+> > > > Do you want me to pick it up or do you prefer to route it along wit=
+h
+> > > > the rest of the series?
+> > >
+> > > I'd like to keep this series together if you don't mind, so that
+> > > followup changes can be done more easily.
+> >
+> > Sure.
+> >
+> > I will be assuming that tip will be taking care of this change going fo=
+rward.
+>
+> Thank you!
+>
+> Can I also add your Acked-by to these two patches:
+>
+>   [PATCH 01/32] thermal/intel: Stop using 32-bit MSR interfaces
+>   [PATCH 02/32] powercap: Stop using 32-bit MSR interfaces
+>
+> ? They both look fine to me.
 
-LGTM
+Done.
 
-Acked-by: Rafael J. Wysocki (Intel) <rafael@kernel.org>
+Please also feel free to add my ACK to the $subject patch.
 
-> ---
->  drivers/powercap/intel_rapl_common.c | 20 ++++++++++----------
->  1 file changed, 10 insertions(+), 10 deletions(-)
->
-> diff --git a/drivers/powercap/intel_rapl_common.c b/drivers/powercap/inte=
-l_rapl_common.c
-> index 1006d183d508..3cee4ccb7997 100644
-> --- a/drivers/powercap/intel_rapl_common.c
-> +++ b/drivers/powercap/intel_rapl_common.c
-> @@ -752,17 +752,17 @@ EXPORT_SYMBOL_NS_GPL(rapl_default_check_unit, "INTE=
-L_RAPL");
->
->  static void power_limit_irq_save_cpu(void *info)
->  {
-> -       u32 l, h =3D 0;
-> +       struct msr val;
->         struct rapl_package *rp =3D (struct rapl_package *)info;
->
->         /* save the state of PLN irq mask bit before disabling it */
-> -       rdmsr_safe(MSR_IA32_PACKAGE_THERM_INTERRUPT, &l, &h);
-> +       rdmsrq_safe(MSR_IA32_PACKAGE_THERM_INTERRUPT, &val.q);
->         if (!(rp->power_limit_irq & PACKAGE_PLN_INT_SAVED)) {
-> -               rp->power_limit_irq =3D l & PACKAGE_THERM_INT_PLN_ENABLE;
-> +               rp->power_limit_irq =3D val.l & PACKAGE_THERM_INT_PLN_ENA=
-BLE;
->                 rp->power_limit_irq |=3D PACKAGE_PLN_INT_SAVED;
->         }
-> -       l &=3D ~PACKAGE_THERM_INT_PLN_ENABLE;
-> -       wrmsr_safe(MSR_IA32_PACKAGE_THERM_INTERRUPT, l, h);
-> +       val.l &=3D ~PACKAGE_THERM_INT_PLN_ENABLE;
-> +       wrmsrq_safe(MSR_IA32_PACKAGE_THERM_INTERRUPT, val.q);
->  }
->
->  /* REVISIT:
-> @@ -792,7 +792,7 @@ static void package_power_limit_irq_save(struct rapl_=
-package *rp)
->   */
->  static void package_power_limit_irq_restore(struct rapl_package *rp)
->  {
-> -       u32 l, h;
-> +       struct msr val;
->
->         if (rp->lead_cpu < 0)
->                 return;
-> @@ -804,14 +804,14 @@ static void package_power_limit_irq_restore(struct =
-rapl_package *rp)
->         if (!(rp->power_limit_irq & PACKAGE_PLN_INT_SAVED))
->                 return;
->
-> -       rdmsr_safe(MSR_IA32_PACKAGE_THERM_INTERRUPT, &l, &h);
-> +       rdmsrq_safe(MSR_IA32_PACKAGE_THERM_INTERRUPT, &val.q);
->
->         if (rp->power_limit_irq & PACKAGE_THERM_INT_PLN_ENABLE)
-> -               l |=3D PACKAGE_THERM_INT_PLN_ENABLE;
-> +               val.l |=3D PACKAGE_THERM_INT_PLN_ENABLE;
->         else
-> -               l &=3D ~PACKAGE_THERM_INT_PLN_ENABLE;
-> +               val.l &=3D ~PACKAGE_THERM_INT_PLN_ENABLE;
->
-> -       wrmsr_safe(MSR_IA32_PACKAGE_THERM_INTERRUPT, l, h);
-> +       wrmsrq_safe(MSR_IA32_PACKAGE_THERM_INTERRUPT, val.q);
->  }
->
->  void rapl_default_set_floor_freq(struct rapl_domain *rd, bool mode)
-> --
-> 2.54.0
->
->
+Thanks!
