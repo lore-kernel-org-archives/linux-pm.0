@@ -1,108 +1,152 @@
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id E1E5439B4B9;
-	Mon,  6 Jul 2026 14:29:57 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1783348199; cv=none; b=nAK58Spmp/ZZV2qEIcYQcGHnz7b+4K3+OiJ04EY5ilsVqXM7lMM8eFSs5leIcfw3VwFevpwvkoNK3naoKlKQXri0EXZTmKW+aLr+Tx1uofxWi2kkL/0QPiuwynJ6ADILe9DhnovgUH48/rBU4g0WgQ1BT4F7v5+rKO9fWcMrOEg=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1783348199; c=relaxed/simple;
-	bh=EHTVXpLQN4gAdnhonC+dqDnLj3DCyY4jhjDQXN2MSiI=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=UpM9JBP7Pr2LuTuWE2IE9L5xOEtd/LowRQBJiXbZpZIlUSt3szXs8qmknIP4tRiQhm/1AL3w7BcRKrHtatw9NzGGtmBgw1XRACZbVSivGO13iFGf2R08431RtpJxjFgB6M83Vcg9rk5uVz3DtgaDDA6HlcUmKA5L8Ag7KaOq/QE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=HslELLYI; arc=none smtp.client-ip=217.140.110.172
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
+Received: from sender4-op-o11.zoho.com (sender4-op-o11.zoho.com [136.143.188.11])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0B06B3911AB;
+	Mon,  6 Jul 2026 14:38:36 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=136.143.188.11
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1783348718; cv=pass; b=s2cvGjy+e+WjBykt4UkI2UT7JzL9jb/0SBIJg333L1rC1aCNWWdRChOzLWqMBD73T/t31Ebf8hscpTvtzmGUqN3j9TUD0wMf8XnVgbHBrFyb5zoZqRTugTtsNAK0oVcm6Vp+c32WZiMlvjUSm61XCtkyRBnszPSknHiOuCT42zA=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1783348718; c=relaxed/simple;
+	bh=tF7AljJwtTFuS1zxSK2Z1txTblLIjES1aUAsy+O4Oho=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=J/haB9sGGX2y3kIJ2c7MqA4CbOIDEPZM/Y/YkFfE0xMRt6PF5h5Mgufgkqs97f+L1xllB6qOvwBYvf/BMTby1Cv+k4JyDIrbM8cM9r0IhKtVE+/me+BOdOZQcTvuiQp7qupiX5tqxFpxb444A0DgYsODu6Od7w8MajO2bM6o6zY=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (1024-bit key) header.d=collabora.com header.i=daniel.almeida@collabora.com header.b=YzEdmPKh; arc=pass smtp.client-ip=136.143.188.11
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="HslELLYI"
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 0DF3A2BCB;
-	Mon,  6 Jul 2026 07:29:53 -0700 (PDT)
-Received: from [10.1.27.96] (e127648.arm.com [10.1.27.96])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 9165B3F905;
-	Mon,  6 Jul 2026 07:29:55 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1783348197; bh=EHTVXpLQN4gAdnhonC+dqDnLj3DCyY4jhjDQXN2MSiI=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=HslELLYIvlxSEpjExw8Mql4VMl+Zixo9nWuUac3ORv0qmLQ1UuA1F7Dif+aNSG085
-	 yS4/8GRFt2LNuvxll2feRGFKpgYr5u+rsBU5tgcW7l2X4tAH1OhT9lQ9kvk0sB/Xek
-	 2F6OojsHheuTP5kHx9p3dqqDpKjca0vOa/Q6a9G0=
-Message-ID: <5f5cb821-92ae-4539-ae81-a43e33a7ded5@arm.com>
-Date: Mon, 6 Jul 2026 15:29:53 +0100
+	dkim=pass (1024-bit key) header.d=collabora.com header.i=daniel.almeida@collabora.com header.b="YzEdmPKh"
+ARC-Seal: i=1; a=rsa-sha256; t=1783348674; cv=none; 
+	d=zohomail.com; s=zohoarc; 
+	b=fC1kHJIMI8EMzhCyfTZIwXDwzqZYFG38b79rW8RQkMPYTnLqa4c8q5FLuPef2MGonvs0ZHWpER0zycLEn8/EWEWZPXvBXa49Z7GWAMbMKWcQuauWo1oHKwa3gEBCuLVNCXOp3gM5aWu4B60+VGGpoCDUiiPICt3mxOjt8SlcRQ0=
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=zohomail.com; s=zohoarc; 
+	t=1783348674; h=Content-Type:Content-Transfer-Encoding:Cc:Cc:Date:Date:From:From:In-Reply-To:MIME-Version:Message-ID:References:Subject:Subject:To:To:Message-Id:Reply-To; 
+	bh=nGOFMadA6trjWagAE4R3R81yB6gXYE/D7KXnaPswwtM=; 
+	b=bkpGybzdDSxBGUdhE67Doit2e7emaIN/k/WQRzsR284jOj4TwFMlnV20DjFC0EYX2w4SgRewjKCFv+rRZFE3iXTD7q2ohPikTUbOmUc15qI7ohe2IpkWUwuHxBBWwNQKwwtIq2HtgMCzu/bWtpLi/LwqpMV0qALQ4mhs9qSCKSc=
+ARC-Authentication-Results: i=1; mx.zohomail.com;
+	dkim=pass  header.i=collabora.com;
+	spf=pass  smtp.mailfrom=daniel.almeida@collabora.com;
+	dmarc=pass header.from=<daniel.almeida@collabora.com>
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; t=1783348674;
+	s=zohomail; d=collabora.com; i=daniel.almeida@collabora.com;
+	h=From:From:Date:Date:Subject:Subject:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-Id:Message-Id:References:In-Reply-To:To:To:Cc:Cc:Reply-To;
+	bh=nGOFMadA6trjWagAE4R3R81yB6gXYE/D7KXnaPswwtM=;
+	b=YzEdmPKh2Mco7bA/gnkich800xFRjea/TYKt8ZXIBjyjE847Aag1jdJEok9MojSF
+	aHzgfkog4KgjaIRW3cCdAjWRGWtVvLN/PG+YRLhYW3Cgx91WZx0H0x1s2U3R/bM83lt
+	PVFS8C5E7PnvRD4Nc8gDdIGpaiXDXvHU46oY+yx8=
+Received: by mx.zohomail.com with SMTPS id 1783348672663992.9747630995766;
+	Mon, 6 Jul 2026 07:37:52 -0700 (PDT)
+From: Daniel Almeida <daniel.almeida@collabora.com>
+Date: Mon, 06 Jul 2026 11:37:14 -0300
+Subject: [PATCH v5 3/4] rust: clk: add devres-managed clks
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [REGRESSION] sched/idle: Sysbench threads regression after
- f4c31b07b136
-To: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>,
- Joseph Salisbury <joseph.salisbury@oracle.com>
-Cc: rafael.j.wysocki@intel.com, Ingo Molnar <mingo@redhat.com>,
- Peter Zijlstra <peterz@infradead.org>, Juri Lelli <juri.lelli@redhat.com>,
- Vincent Guittot <vincent.guittot@linaro.org>,
- Dietmar Eggemann <dietmar.eggemann@arm.com>, frederic@kernel.org,
- linux-pm@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
- regressions@lists.linux.dev
-References: <096b42fa-107f-450d-b3b1-03bcad3f1e04@oracle.com>
- <CAJZ5v0g+SkTxuP5fqUMisQAh19v-JzpmRZHiKtYzJH1sVt656g@mail.gmail.com>
-Content-Language: en-US
-From: Christian Loehle <christian.loehle@arm.com>
-In-Reply-To: <CAJZ5v0g+SkTxuP5fqUMisQAh19v-JzpmRZHiKtYzJH1sVt656g@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20260706-clk-type-state-v5-3-67c5f326a16c@collabora.com>
+References: <20260706-clk-type-state-v5-0-67c5f326a16c@collabora.com>
+In-Reply-To: <20260706-clk-type-state-v5-0-67c5f326a16c@collabora.com>
+To: "Rafael J. Wysocki" <rafael@kernel.org>, 
+ Viresh Kumar <viresh.kumar@linaro.org>, Danilo Krummrich <dakr@kernel.org>, 
+ Alice Ryhl <aliceryhl@google.com>, 
+ Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, 
+ Maxime Ripard <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>, 
+ David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>, 
+ Drew Fustini <fustini@kernel.org>, Guo Ren <guoren@kernel.org>, 
+ Fu Wei <wefu@redhat.com>, 
+ =?utf-8?q?Uwe_Kleine-K=C3=B6nig?= <ukleinek@kernel.org>, 
+ Michael Turquette <mturquette@baylibre.com>, 
+ Stephen Boyd <sboyd@kernel.org>, Miguel Ojeda <ojeda@kernel.org>, 
+ Gary Guo <gary@garyguo.net>, 
+ =?utf-8?q?Bj=C3=B6rn_Roy_Baron?= <bjorn3_gh@protonmail.com>, 
+ Benno Lossin <lossin@kernel.org>, Andreas Hindborg <a.hindborg@kernel.org>, 
+ Trevor Gross <tmgross@umich.edu>, 
+ Daniel Almeida <daniel.almeida@collabora.com>, 
+ Michal Wilczynski <m.wilczynski@samsung.com>, Boqun Feng <boqun@kernel.org>, 
+ Boqun Feng <boqun@kernel.org>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
+ dri-devel@lists.freedesktop.org, linux-riscv@lists.infradead.org, 
+ linux-pwm@vger.kernel.org, linux-clk@vger.kernel.org, 
+ rust-for-linux@vger.kernel.org, 
+ Boris Brezillon <boris.brezillon@collabora.com>, 
+ =?utf-8?q?Onur_=C3=96zkan?= <work@onurozkan.dev>, Maurice <mhi@mailbox.org>
+X-Mailer: b4 0.15.2
+X-ZohoMailClient: External
 
-On 7/2/26 19:47, Rafael J. Wysocki (Intel) wrote:
-> Hi,
-> 
-> On Thu, Jul 2, 2026 at 6:30 PM Joseph Salisbury
-> <joseph.salisbury@oracle.com> wrote:
->>
->> Hi Rafael,
->>
->> We are seeing a reproducible MySQL Sysbench threads regression.  A
->> bisect indicated the following commit as the first bad commit:
->> f4c31b07b136 ("sched: idle: Consolidate the handling of two special cases")
->>
->> The regression was found in Oracle kernel performance testing on OCI VM
->> shapes:
->>
->> VM Details:
->> * VM.Standard2.1:
->>        x86 OCI VM shape, 1 OCPU / 2 hardware threads, about 14.5 GB RAM
->>
->>   * VM.Standard.A1.Flex.2:
->>        Arm/Ampere A1 flexible VM shape, 2 vCPU threads, about 10.9 GB RAM
->>
->>
->> The ResultsDB runs show the regression in the Sysbench threads metric:
->>
->>    - VM.Standard2.1:       333 -> 236  (-29.1%)
->>    - VM.Standard.A1.Flex.2: 1286 -> 1152 (-10.4%)
->>
->> A test kernel was built with f4c31b07b136 reverted and the performance
->> regression was recovered.
->>
->>  From the code, it is possible the regression is due to the new
->> previous-wakeup heuristic in the special idle cases.  Before the commit:
->>
->>    - no cpuidle driver:
->>        tick_nohz_idle_stop_tick()
->>        default_idle_call()
->>
->>    - one idle state:
->>        tick_nohz_idle_retain_tick()
->>        cpuidle state 0
-> 
-> I think that this is your case and the tick stops for you sometimes
-> now while it had never stopped before.
-> 
-> Can you confirm?
-> 
-> Overall, it would be good to know the idle state lists for both the VM
-> and the host.
-> 
-+1, but also which HZ are you using?
-Both systems reported have 2 logical CPUs then? Were higher core counts also
-tested and how does it affect them?
+The clk API allows fine-grained control, but some drivers might be
+more interested in a "set and forget" API.
+
+Expand the current API to support this. The clock will automatically be
+disabled, unprepared and freed when the device is unbound from the bus
+without further intervention by the driver.
+
+Signed-off-by: Daniel Almeida <daniel.almeida@collabora.com>
+---
+ rust/kernel/clk.rs | 46 ++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 46 insertions(+)
+
+diff --git a/rust/kernel/clk.rs b/rust/kernel/clk.rs
+index dd5fd656271e..b9a44f83843a 100644
+--- a/rust/kernel/clk.rs
++++ b/rust/kernel/clk.rs
+@@ -96,6 +96,52 @@ impl Sealed for super::Prepared {}
+         impl Sealed for super::Enabled {}
+     }
+ 
++    /// Obtains and enables a [`devres`]-managed [`Clk`] for a bound device.
++    ///
++    /// [`devres`]: crate::devres::Devres
++    #[inline]
++    pub fn devm_enable(dev: &Device<Bound>, name: Option<&CStr>) -> Result {
++        let name = name.map_or(ptr::null(), |n| n.as_char_ptr());
++
++        // SAFETY: It is safe to call [`devm_clk_get_enabled`] with a valid
++        // device pointer.
++        from_err_ptr(unsafe { bindings::devm_clk_get_enabled(dev.as_raw(), name) })?;
++        Ok(())
++    }
++
++    /// Obtains and enables a [`devres`]-managed [`Clk`] for a bound device.
++    ///
++    /// This does not print any error messages if the clock is not found.
++    ///
++    /// [`devres`]: crate::devres::Devres
++    #[inline]
++    pub fn devm_enable_optional(dev: &Device<Bound>, name: Option<&CStr>) -> Result {
++        let name = name.map_or(ptr::null(), |n| n.as_char_ptr());
++
++        // SAFETY: It is safe to call [`devm_clk_get_optional_enabled`] with a
++        // valid device pointer.
++        from_err_ptr(unsafe { bindings::devm_clk_get_optional_enabled(dev.as_raw(), name) })?;
++        Ok(())
++    }
++
++    /// Same as [`devm_enable_optional`], but also sets the rate.
++    #[inline]
++    pub fn devm_enable_optional_with_rate(
++        dev: &Device<Bound>,
++        name: Option<&CStr>,
++        rate: Hertz,
++    ) -> Result {
++        let name = name.map_or(ptr::null(), |n| n.as_char_ptr());
++
++        // SAFETY: It is safe to call
++        // [`devm_clk_get_optional_enabled_with_rate`] with a valid device
++        // pointer.
++        from_err_ptr(unsafe {
++            bindings::devm_clk_get_optional_enabled_with_rate(dev.as_raw(), name, rate.as_hz())
++        })?;
++        Ok(())
++    }
++
+     /// A trait representing the different states that a [`Clk`] can be in.
+     pub trait ClkState: private::Sealed {
+         /// Whether the clock is enabled in this state.
+
+-- 
+2.54.0
+
