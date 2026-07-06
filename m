@@ -1,78 +1,108 @@
-Received: from smtpout-03.galae.net (smtpout-03.galae.net [185.246.85.4])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A41F1376A08
-	for <linux-pm@vger.kernel.org>; Mon,  6 Jul 2026 14:11:23 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=185.246.85.4
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id E1E5439B4B9;
+	Mon,  6 Jul 2026 14:29:57 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1783347085; cv=none; b=Hl4uQAaW7Aauk7SzF9TwgYPiSUFboKMvFxfiI39Cuoo5j6gcvKPVu/AOyvPz1VDRq/oKyQkKsT+Eo/FdvfgGkdBFcaRuxjTBX7hgZZm9gK7uZa/lJx3g8kJ6RE/YNONIp9uNHks8bMBUoWG6kP+pdpNt8WihcLai7hUu2WxwU0M=
+	t=1783348199; cv=none; b=nAK58Spmp/ZZV2qEIcYQcGHnz7b+4K3+OiJ04EY5ilsVqXM7lMM8eFSs5leIcfw3VwFevpwvkoNK3naoKlKQXri0EXZTmKW+aLr+Tx1uofxWi2kkL/0QPiuwynJ6ADILe9DhnovgUH48/rBU4g0WgQ1BT4F7v5+rKO9fWcMrOEg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1783347085; c=relaxed/simple;
-	bh=37+4q7COOhXJEW+gXuemdFa5O7sFCIJzgfNUlkoW+l8=;
-	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
-	 MIME-Version:Content-Type; b=jxO4M28lHbZQRvFk9WxY9TTzCmXl0kFrQFrcsesyAXVuEyF7EbP3rqpNMUn9ylJs2Jy5Gqng8JVGaV/vygsLSRqvsRRrjSKDsvaExE4RIyR2lO7lJ8S4vUVA8pcoTk0kovfh8g2Ood4njAXVRab1ot7mLHtb0mhDejSaEX+kuRo=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com; spf=pass smtp.mailfrom=bootlin.com; dkim=pass (2048-bit key) header.d=bootlin.com header.i=@bootlin.com header.b=LyHjOFnP; arc=none smtp.client-ip=185.246.85.4
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=bootlin.com
+	s=arc-20240116; t=1783348199; c=relaxed/simple;
+	bh=EHTVXpLQN4gAdnhonC+dqDnLj3DCyY4jhjDQXN2MSiI=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=UpM9JBP7Pr2LuTuWE2IE9L5xOEtd/LowRQBJiXbZpZIlUSt3szXs8qmknIP4tRiQhm/1AL3w7BcRKrHtatw9NzGGtmBgw1XRACZbVSivGO13iFGf2R08431RtpJxjFgB6M83Vcg9rk5uVz3DtgaDDA6HlcUmKA5L8Ag7KaOq/QE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=HslELLYI; arc=none smtp.client-ip=217.140.110.172
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=bootlin.com header.i=@bootlin.com header.b="LyHjOFnP"
-Received: from smtpout-01.galae.net (smtpout-01.galae.net [212.83.139.233])
-	by smtpout-03.galae.net (Postfix) with ESMTPS id 36B1E4E409FE;
-	Mon,  6 Jul 2026 14:11:22 +0000 (UTC)
-Received: from mail.galae.net (mail.galae.net [212.83.136.155])
-	by smtpout-01.galae.net (Postfix) with ESMTPS id 093DD601A2;
-	Mon,  6 Jul 2026 14:11:22 +0000 (UTC)
-Received: from [127.0.0.1] (localhost [127.0.0.1]) by localhost (Mailerdaemon) with ESMTPSA id 702DA11BBA4EC;
-	Mon,  6 Jul 2026 16:11:18 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bootlin.com; s=dkim;
-	t=1783347081; h=from:subject:date:message-id:to:cc:mime-version:content-type:
-	 content-transfer-encoding:in-reply-to:references;
-	bh=37+4q7COOhXJEW+gXuemdFa5O7sFCIJzgfNUlkoW+l8=;
-	b=LyHjOFnP41JECW6ndU1QxZDuK/Xnq0yE+IfSIR9YL3JX3IkRw9d4z+Pf9+wWFBVVsBeZ89
-	izKa/IfvGTxTrfNd9HUnUHJH8oWQfpV6qngk44s59M+9KyFQddMyxL7DXhixY43HbN5bbp
-	PD9BatHpbG+b78I/ykLupTRjufQa4rSh3/W7KaPvQT+la+nqYxYHf8vzQlrYSb1aJeivBN
-	PUQBNJyVLf77rPN2ijoHe2NpQ5BS24Ug+u+Dy2p8w1DtAl8nbBTezc5a87TXPiYVjI7uoJ
-	MjjWmP+LKEbLM2VHl/N+6GmLq48cELxwckPzjqWI5aF4a7tuHmxNTSycFD/kUg==
-From: Miquel Raynal <miquel.raynal@bootlin.com>
-To: Wolfram Sang <wsa+renesas@sang-engineering.com>
-Cc: linux-kernel@vger.kernel.org,  "Rafael J. Wysocki" <rafael@kernel.org>,
-  Daniel Lezcano <daniel.lezcano@kernel.org>,  Zhang Rui
- <rui.zhang@intel.com>,  Lukasz Luba <lukasz.luba@arm.com>,  Vasily
- Khoruzhick <anarsoul@gmail.com>,  Yangtao Li <tiny.windzz@gmail.com>,
-  Chen-Yu Tsai <wens@kernel.org>,  Jernej Skrabec
- <jernej.skrabec@gmail.com>,  Samuel Holland <samuel@sholland.org>,
-  linux-pm@vger.kernel.org,  linux-arm-kernel@lists.infradead.org,
-  linux-sunxi@lists.linux.dev
-Subject: Re: [PATCH] thermal: remove unneeded 'fast_io' parameter in
- regmap_config
-In-Reply-To: <20260705164311.2273-2-wsa+renesas@sang-engineering.com> (Wolfram
-	Sang's message of "Sun, 5 Jul 2026 18:43:12 +0200")
-References: <20260705164311.2273-2-wsa+renesas@sang-engineering.com>
-User-Agent: mu4e 1.12.7; emacs 30.2
-Date: Mon, 06 Jul 2026 16:11:18 +0200
-Message-ID: <87o6gkky2h.fsf@bootlin.com>
+	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="HslELLYI"
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 0DF3A2BCB;
+	Mon,  6 Jul 2026 07:29:53 -0700 (PDT)
+Received: from [10.1.27.96] (e127648.arm.com [10.1.27.96])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 9165B3F905;
+	Mon,  6 Jul 2026 07:29:55 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
+	t=1783348197; bh=EHTVXpLQN4gAdnhonC+dqDnLj3DCyY4jhjDQXN2MSiI=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=HslELLYIvlxSEpjExw8Mql4VMl+Zixo9nWuUac3ORv0qmLQ1UuA1F7Dif+aNSG085
+	 yS4/8GRFt2LNuvxll2feRGFKpgYr5u+rsBU5tgcW7l2X4tAH1OhT9lQ9kvk0sB/Xek
+	 2F6OojsHheuTP5kHx9p3dqqDpKjca0vOa/Q6a9G0=
+Message-ID: <5f5cb821-92ae-4539-ae81-a43e33a7ded5@arm.com>
+Date: Mon, 6 Jul 2026 15:29:53 +0100
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
-X-Last-TLS-Session-Version: TLSv1.3
+User-Agent: Mozilla Thunderbird
+Subject: Re: [REGRESSION] sched/idle: Sysbench threads regression after
+ f4c31b07b136
+To: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>,
+ Joseph Salisbury <joseph.salisbury@oracle.com>
+Cc: rafael.j.wysocki@intel.com, Ingo Molnar <mingo@redhat.com>,
+ Peter Zijlstra <peterz@infradead.org>, Juri Lelli <juri.lelli@redhat.com>,
+ Vincent Guittot <vincent.guittot@linaro.org>,
+ Dietmar Eggemann <dietmar.eggemann@arm.com>, frederic@kernel.org,
+ linux-pm@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+ regressions@lists.linux.dev
+References: <096b42fa-107f-450d-b3b1-03bcad3f1e04@oracle.com>
+ <CAJZ5v0g+SkTxuP5fqUMisQAh19v-JzpmRZHiKtYzJH1sVt656g@mail.gmail.com>
+Content-Language: en-US
+From: Christian Loehle <christian.loehle@arm.com>
+In-Reply-To: <CAJZ5v0g+SkTxuP5fqUMisQAh19v-JzpmRZHiKtYzJH1sVt656g@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 
-Hello,
-
-On 05/07/2026 at 18:43:12 +02, Wolfram Sang <wsa+renesas@sang-engineering.c=
-om> wrote:
-
-> When using MMIO with regmap, fast_io is implied. No need to set it
-> again.
->
-> Signed-off-by: Wolfram Sang <wsa+renesas@sang-engineering.com>
-> ---
-
-Reviewed-by: Miquel Raynal <miquel.raynal@bootlin.com>
-
-Thanks,
-Miqu=C3=A8l
+On 7/2/26 19:47, Rafael J. Wysocki (Intel) wrote:
+> Hi,
+> 
+> On Thu, Jul 2, 2026 at 6:30 PM Joseph Salisbury
+> <joseph.salisbury@oracle.com> wrote:
+>>
+>> Hi Rafael,
+>>
+>> We are seeing a reproducible MySQL Sysbench threads regression.  A
+>> bisect indicated the following commit as the first bad commit:
+>> f4c31b07b136 ("sched: idle: Consolidate the handling of two special cases")
+>>
+>> The regression was found in Oracle kernel performance testing on OCI VM
+>> shapes:
+>>
+>> VM Details:
+>> * VM.Standard2.1:
+>>        x86 OCI VM shape, 1 OCPU / 2 hardware threads, about 14.5 GB RAM
+>>
+>>   * VM.Standard.A1.Flex.2:
+>>        Arm/Ampere A1 flexible VM shape, 2 vCPU threads, about 10.9 GB RAM
+>>
+>>
+>> The ResultsDB runs show the regression in the Sysbench threads metric:
+>>
+>>    - VM.Standard2.1:       333 -> 236  (-29.1%)
+>>    - VM.Standard.A1.Flex.2: 1286 -> 1152 (-10.4%)
+>>
+>> A test kernel was built with f4c31b07b136 reverted and the performance
+>> regression was recovered.
+>>
+>>  From the code, it is possible the regression is due to the new
+>> previous-wakeup heuristic in the special idle cases.  Before the commit:
+>>
+>>    - no cpuidle driver:
+>>        tick_nohz_idle_stop_tick()
+>>        default_idle_call()
+>>
+>>    - one idle state:
+>>        tick_nohz_idle_retain_tick()
+>>        cpuidle state 0
+> 
+> I think that this is your case and the tick stops for you sometimes
+> now while it had never stopped before.
+> 
+> Can you confirm?
+> 
+> Overall, it would be good to know the idle state lists for both the VM
+> and the host.
+> 
++1, but also which HZ are you using?
+Both systems reported have 2 logical CPUs then? Were higher core counts also
+tested and how does it affect them?
