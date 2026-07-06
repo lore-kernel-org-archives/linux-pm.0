@@ -1,44 +1,44 @@
 Received: from sender4-op-o11.zoho.com (sender4-op-o11.zoho.com [136.143.188.11])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 22EFA3BE17D;
-	Mon,  6 Jul 2026 14:38:43 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 70B173E3D8B;
+	Mon,  6 Jul 2026 14:38:48 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=136.143.188.11
 ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1783348725; cv=pass; b=GCq8akFoI+emSNG2/giQhhn35N/lFNsphlixpdYTJYqhLGqj6N5wVq05TexmtiLUFtca4b3MmYnuSvec1ViCe25jnroyp+crVzfMmkW43DgpbErniZq2e8FMqLft1PkXomxEjYMSNA9Iehb2nyfhkt9MWNxbrAF5RiM76z+2OrA=
+	t=1783348730; cv=pass; b=aFxauEZPI41egcgbykB4r5FIbO/wAHH+RDzVpFVTgPjtKCcJGEocqA//aEXVfEQ74XJbVEe1E3HhQStOiuhP3vwrO5xhe8AUCk6nsSuxE/AeyYZg4dDN5P0c8yFnzoa0+zbF0V2QSgv4ARm6oTM/9Efam0bKQpKUqjPfGL8bRok=
 ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1783348725; c=relaxed/simple;
-	bh=sMZmaj1YmGIROeZqohwKCCGi8Wvn2wWReeQd18UcWUc=;
-	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=AIDKzWzAsHypdjHBEijcgKJEQEgsN3qlKl++csZiv2JAADRzkvKDVM5Z1fggSrgQflYnGy1/MDGqqMATGk+ncVwyvCGCCDzi/PQg1UhdZOlbVoZD7+us19/mVN2W40te5zvwevrb0o0z4zm8zMZiK778lozG4dPZO4odLAoyyUo=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (1024-bit key) header.d=collabora.com header.i=daniel.almeida@collabora.com header.b=PT/dVq1Y; arc=pass smtp.client-ip=136.143.188.11
+	s=arc-20240116; t=1783348730; c=relaxed/simple;
+	bh=CvCft2laOjkq0hKCSm4slSQxLApI9/LWwp9wZDc7XgI=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=BoLsYEjTfAGeaucSgCO9DpiUJLs1dYwLuNB4wrW3pP2Z4rsocDXChBxAi69vpxvb6LcFIn8DRQZFFdBFD1kpPEnsiduH3ZuysfCcWqbWpt5hIqe0WuykiHzTn0wrsNwW4MO3ModjLUbcR+zhH6QjSV+b608Rislv35jb7FbqvvM=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (1024-bit key) header.d=collabora.com header.i=daniel.almeida@collabora.com header.b=gX61wBBb; arc=pass smtp.client-ip=136.143.188.11
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=collabora.com header.i=daniel.almeida@collabora.com header.b="PT/dVq1Y"
-ARC-Seal: i=1; a=rsa-sha256; t=1783348654; cv=none; 
+	dkim=pass (1024-bit key) header.d=collabora.com header.i=daniel.almeida@collabora.com header.b="gX61wBBb"
+ARC-Seal: i=1; a=rsa-sha256; t=1783348666; cv=none; 
 	d=zohomail.com; s=zohoarc; 
-	b=C2vV/Zv8rnqycP3X/i18vOoOF4ItlKiKlXuyEVsdSSztOG0uonFooKFIMu30oIjkAc9JHKtt6+LDDPCwI0lNA6tZzUKjT1q6QFVcauwZZYcG7mUGmyfh+QUb6Ho+wWczeCGu3iQHhee1W9YuG7SmMr2Io3GjfvYP2FAqbZfcd7w=
+	b=fuyyuP1MRySyzsT8Mm+cyQV3QLe5uVRJt7hq71I3JnS0T11Me45vPw9Xtg6hH5QJfbIr2AmEvErqHyXx5BbNXjBpXI8OzHA5RmTRp2p7UTn1mNMl9WOKRhvJJPg43iM84VfCyWiET+lO6qgnRTrObgojQC2QsbUmRwgskkZUvC4=
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=zohomail.com; s=zohoarc; 
-	t=1783348654; h=Content-Type:Content-Transfer-Encoding:Cc:Cc:Date:Date:From:From:MIME-Version:Message-ID:Subject:Subject:To:To:Message-Id:Reply-To; 
-	bh=3BGnFRvuYHig+06rp+UmmAvcj1kSjosNAxgMkDDKtVc=; 
-	b=PIlDvqQ2NUaeMfP+VfRmShY+BBGSdOn0hlJwav8EhzHt3v7VdurC9jqnnVxCrspPHOZK8jSXNFKbvyNGGWRbswdIGNfC1K8r7stxmULRsrxh3ke3yCunS9fiZJOeMU2WWOCRP86A9tgCDQwDYqgUsLmfMTn9b4OC5a1gYen62vk=
+	t=1783348666; h=Content-Type:Content-Transfer-Encoding:Cc:Cc:Date:Date:From:From:In-Reply-To:MIME-Version:Message-ID:References:Subject:Subject:To:To:Message-Id:Reply-To; 
+	bh=T/zgfvNUmDyE3TB4DFfwT++P3v+ov4Zjeb1HOGHJm3w=; 
+	b=KoV3ZL9TmM8U0kFvaYVLe/I3PtZkUEdqDg2YdNhRy6x0QK71Oz82i2m6IToBYWjjX9PxQ4VQbviH6KmV7N/tMuRypfurnghzF4QO5cNRJqBDWSmsmrI7Bc2cb0XN5A9PUp7jvQPuO9uPvq1D7PFZLel6Yibz81SBsp7MwXHtKmM=
 ARC-Authentication-Results: i=1; mx.zohomail.com;
 	dkim=pass  header.i=collabora.com;
 	spf=pass  smtp.mailfrom=daniel.almeida@collabora.com;
 	dmarc=pass header.from=<daniel.almeida@collabora.com>
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; t=1783348654;
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; t=1783348666;
 	s=zohomail; d=collabora.com; i=daniel.almeida@collabora.com;
-	h=From:From:Subject:Subject:Date:Date:Message-Id:Message-Id:MIME-Version:Content-Type:Content-Transfer-Encoding:To:To:Cc:Cc:Reply-To;
-	bh=3BGnFRvuYHig+06rp+UmmAvcj1kSjosNAxgMkDDKtVc=;
-	b=PT/dVq1YT2WIilYpgQK6vreaafhwTqD/29rkn1FUwkofb5StCq9wrwMN0cTl6x4L
-	WBSL3cVw0GrGain4ig1lAsFjmh+339IVulIlJqIvNN/qYAT3ZL4VZC+HDFWYxOgkZ/l
-	fcjsjY3YPb1qulruhZwvNoP4vZTq+J5ty8IB1Oc8=
-Received: by mx.zohomail.com with SMTPS id 1783348651535783.6421995425076;
-	Mon, 6 Jul 2026 07:37:31 -0700 (PDT)
+	h=From:From:Date:Date:Subject:Subject:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-Id:Message-Id:References:In-Reply-To:To:To:Cc:Cc:Reply-To;
+	bh=T/zgfvNUmDyE3TB4DFfwT++P3v+ov4Zjeb1HOGHJm3w=;
+	b=gX61wBBbgvsbwvYDPsnXWwHnktT0P4/lOgl1yfLPi4c/VXOh5En+XZXryQkR5bbZ
+	gOzUG/jYeUkpVmtz6qmpiNdjQmam9fM/NH+W+2bVhk3vy3sQUv4iynCoqY3eGUoM9EE
+	MOY7WAqBj6tR1jd3GlSYdLFKcvzp+UNLXqzVKka4=
+Received: by mx.zohomail.com with SMTPS id 1783348665694714.7937200385192;
+	Mon, 6 Jul 2026 07:37:45 -0700 (PDT)
 From: Daniel Almeida <daniel.almeida@collabora.com>
-Subject: [PATCH v5 0/4] Clk improvements
-Date: Mon, 06 Jul 2026 11:37:11 -0300
-Message-Id: <20260706-clk-type-state-v5-0-67c5f326a16c@collabora.com>
+Date: Mon, 06 Jul 2026 11:37:13 -0300
+Subject: [PATCH v5 2/4] rust: clk: implement Clone for Clk<T>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -46,13 +46,10 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-X-B4-Tracking: v=1; b=H4sIAAAAAAAC/6XRTW7DIBAF4KtErEs1A+HHXfUeVRaAxzWqE1JMr
- EaR716ctIoUd9flW7wPZubCRsqRRvayubBMUxxjOtSgnjYs9O7wTjy2NTMBQkEDDQ/DBy/nI/G
- xuEI8ADpn2lYpbFktHTN18esKvu1q7nLa89JncnfGiBUzIUduG+2VtKg7419DGgbnU3bPIe0Xu
- Y9jSfl8/ekkFv8/2m0ehFVVcODoGxMQvdcSH6rLTJP8fV0DglkRshLGtJIkkWqC+IvY3gmNdkV
- sK2E9gRXGarDwSMy3VWf6PNWTlZ99z/M3M87OONABAAA=
-X-Change-ID: 20250909-clk-type-state-c01aa7dd551d
+Content-Transfer-Encoding: 7bit
+Message-Id: <20260706-clk-type-state-v5-2-67c5f326a16c@collabora.com>
+References: <20260706-clk-type-state-v5-0-67c5f326a16c@collabora.com>
+In-Reply-To: <20260706-clk-type-state-v5-0-67c5f326a16c@collabora.com>
 To: "Rafael J. Wysocki" <rafael@kernel.org>, 
  Viresh Kumar <viresh.kumar@linaro.org>, Danilo Krummrich <dakr@kernel.org>, 
  Alice Ryhl <aliceryhl@google.com>, 
@@ -80,149 +77,359 @@ Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
 X-Mailer: b4 0.15.2
 X-ZohoMailClient: External
 
-This series contains a few improvements that simplifies clock handling for
-drivers.
+The type-state pattern makes state transitions consume the Clk value,
+which means a single Clk cannot be shared between users that need to
+hold the clock in different states, nor can a driver keep a long-lived
+Clk<Prepared> around while temporarily enabling it for scoped sections.
 
-Patch 1 implements the same typestate pattern that has been used
-successfully for Regulators. This is needed because otherwise drivers
-will be responsible for unpreparing and disabling clocks themselves and
-ultimately handling the reference counts on their own. This is
-undesirable. The patch automatically encodes this information using the
-type system so that no misuse can occur.
+Implement Clone for Clk<T>: each clone is an independent view of the
+same underlying clock, in the same state, owning its own
+clk_prepare()/clk_enable() counts, e.g.:
 
-Patch 2 implements Clone for Clk<T>, so that a driver can hold a
-long-lived clock in one state while temporarily moving an independent
-clone of it through the other states. This is the outcome of the
-discussion in v3 with Boris Brezillon and Gary Guo.
+	let enabled_clk = prepared_clk.clone().enable()?;
 
-Patch 3 makes things more convenient by offering devres-managed APIs. This
-lets drivers set clock parameters once and forget about lifetime
-management.
+	// Do stuff that requires the clock to be enabled.
 
-Patch 4 converts clk.rs to the newer kernel-vertical style in order to make
-future changes easier.
+	// enabled_clk goes out of scope and releases the counts it
+	// owns; the clock remains prepared through prepared_clk.
 
-The pre-existing error-path imbalance in the C function
-devm_clk_get_optional_enabled_with_rate() that was noted during the v4
-review is a C-side issue and will be addressed by a separate patch.
+Since struct clk is not refcounted on the C side, share it between
+clones by wrapping the pointer in an Arc'd RawClk, whose drop
+implementation calls clk_put() exactly once, when the last clone goes
+out of scope. This costs one small allocation per clk_get(), which was
+deemed negligible when compared against the pre-existing indirections
+in the clk framework.
 
+Cloning a prepared (or enabled) Clk calls clk_prepare() (and
+clk_enable()) on the underlying clock. These calls cannot fail here:
+the value being cloned already holds a count of each, so the C side
+only increments the respective counts. This is what makes an infallible
+Clone implementation possible.
+
+The DISABLE_ON_DROP and UNPREPARE_ON_DROP constants are renamed to
+ENABLED and PREPARED respectively, since they now describe the state
+for both Drop and Clone. #[repr(transparent)] is removed from Clk<T>,
+as the layout is no longer transparent over the raw clk pointer.
+
+This was proposed and discussed on the list in response to v3 [1], with
+a prototype by Boris Brezillon [2].
+
+Link: https://lore.kernel.org/r/20260203113902.501e5803@fedora [1]
+Link: https://gitlab.freedesktop.org/bbrezillon/linux/-/commit/d5d04da4f4f6192b6e6760d5f861c69596c7d837 [2]
+Signed-off-by: Daniel Almeida <daniel.almeida@collabora.com>
 ---
-Changes in v5:
-- Rebased onto the latest clk-next.
-- New patch: "rust: clk: implement Clone for Clk<T>". Each clone is an
-  independent view of the same underlying clock, owning its own
-  prepare/enable counts; the raw pointer is shared through an Arc so
-  clk_get()/clk_put() stay balanced. Follows the v3 discussion with
-  Boris Brezillon and Gary Guo.
-- Moved rate() and set_rate() from Clk<Enabled> to all states; the C API
-  does not restrict these to enabled clocks, and some clocks can only
-  change rate before being prepared.
-- Made Clk::<Enabled>::disable() infallible, matching unprepare() and
-  the void C API (Onur).
-- Fixed a typo in the "# Invariants" section, fixed SAFETY comments
-  that referred to the non-existent `self.0` field, and added missing
-  INVARIANT comments on the state transitions.
-- Added the missing rustdoc link definitions for clk_unprepare and
-  clk_put (Maurice).
-- Dropped the redundant `Result` import and the `use
-  kernel::error::Result;` lines from the doctests; the prelude already
-  provides it (Miguel).
-- Added #[inline] to the devm_* helpers.
-- Link to v4: https://patch.msgid.link/20260618-clk-type-state-v4-0-8be082786080@collabora.com
+ rust/kernel/clk.rs | 181 ++++++++++++++++++++++++++++++++++++++++-------------
+ 1 file changed, 139 insertions(+), 42 deletions(-)
 
-Changes in v4:
-- Rebased onto clk-next. Alice Ryhl's "rust: clk: implement Send and Sync"
-  series is now merged upstream, so it is no longer carried as a dependency.
-- Fixed the build with CONFIG_CPUFREQ_DT_RUST=y. The generic DT cpufreq
-  driver only has the (unbound) per-CPU device, so it cannot hand a
-  &Device<Bound> to Policy::set_clk(). Added a pub(crate) Clk::get_unbound()
-  for the few in-tree abstractions that operate on a device outside a bind
-  scope; set_clk() now takes &Device and uses it. Clk::get()/get_optional()
-  and the devm_* helpers still require &Device<Bound>.
-- Added impl From<Error<State>> for kernel::error::Error, so the fallible
-  state transitions can be used with `?` (and chained) instead of
-  .map_err(|e| e.error).
-- Added Clk::<Prepared>::with_enabled(), which runs a closure with the clock
-  temporarily enabled, scoping the Enabled state without giving up the
-  prepared clock.
-- Documented how to change a clock's state at runtime via an enum, for
-  drivers that enable/disable across resume/suspend.
-- Link to v3: https://lore.kernel.org/r/20260107-clk-type-state-v3-0-77d3e3ee59c2@collabora.com
+diff --git a/rust/kernel/clk.rs b/rust/kernel/clk.rs
+index a9edfdf9db68..dd5fd656271e 100644
+--- a/rust/kernel/clk.rs
++++ b/rust/kernel/clk.rs
+@@ -83,6 +83,7 @@ mod common_clk {
+         device::{Bound, Device},
+         error::{from_err_ptr, to_result, Result},
+         prelude::*,
++        sync::Arc,
+     };
+ 
+     use core::{marker::PhantomData, mem::ManuallyDrop, ptr};
+@@ -97,11 +98,11 @@ impl Sealed for super::Enabled {}
+ 
+     /// A trait representing the different states that a [`Clk`] can be in.
+     pub trait ClkState: private::Sealed {
+-        /// Whether the clock should be disabled when dropped.
+-        const DISABLE_ON_DROP: bool;
++        /// Whether the clock is enabled in this state.
++        const ENABLED: bool;
+ 
+-        /// Whether the clock should be unprepared when dropped.
+-        const UNPREPARE_ON_DROP: bool;
++        /// Whether the clock is prepared in this state.
++        const PREPARED: bool;
+     }
+ 
+     /// A state where the [`Clk`] is not prepared and not enabled.
+@@ -114,18 +115,18 @@ pub trait ClkState: private::Sealed {
+     pub struct Enabled;
+ 
+     impl ClkState for Unprepared {
+-        const DISABLE_ON_DROP: bool = false;
+-        const UNPREPARE_ON_DROP: bool = false;
++        const ENABLED: bool = false;
++        const PREPARED: bool = false;
+     }
+ 
+     impl ClkState for Prepared {
+-        const DISABLE_ON_DROP: bool = false;
+-        const UNPREPARE_ON_DROP: bool = true;
++        const ENABLED: bool = false;
++        const PREPARED: bool = true;
+     }
+ 
+     impl ClkState for Enabled {
+-        const DISABLE_ON_DROP: bool = true;
+-        const UNPREPARE_ON_DROP: bool = true;
++        const ENABLED: bool = true;
++        const PREPARED: bool = true;
+     }
+ 
+     /// An error that can occur when trying to convert a [`Clk`] between states.
+@@ -183,13 +184,15 @@ fn from(err: Error<State>) -> Self {
+     /// portion of the kernel or a `NULL` pointer.
+     ///
+     /// Instances of this type are reference-counted. Calling [`Clk::get`] ensures that the
+-    /// allocation remains valid for the lifetime of the [`Clk`].
++    /// allocation remains valid for the lifetime of the [`Clk`] and of all its clones: the
++    /// underlying [`struct clk`] is obtained through a single call to `clk_get()`, which is
++    /// balanced by a single call to `clk_put()` when the last clone is dropped.
+     ///
+-    /// The [`Prepared`] state is associated with a single count of
+-    /// `clk_prepare()`, and the [`Enabled`] state is associated with a single
+-    /// count of both `clk_prepare()` and `clk_enable()`.
+-    ///
+-    /// All states are associated with a single count of `clk_get()`.
++    /// Each [`Clk`] value owns its own state counts: the [`Prepared`] state is
++    /// associated with a single count of `clk_prepare()`, and the [`Enabled`]
++    /// state is associated with a single count of both `clk_prepare()` and
++    /// `clk_enable()`. These counts are released when the value transitions to
++    /// a lower state or is dropped.
+     ///
+     /// # Examples
+     ///
+@@ -268,13 +271,57 @@ fn from(err: Error<State>) -> Self {
+     /// }
+     /// ```
+     ///
++    /// Cloning a [`Clk`] yields an independent view of the same underlying
++    /// clock, in the same state, owning its own state counts. This lets a
++    /// driver keep e.g. a long-lived [`Clk<Prepared>`] around and temporarily
++    /// enable a clone of it:
++    ///
++    /// ```
++    /// use kernel::clk::{Clk, Enabled, Prepared};
++    /// use kernel::error::Result;
++    ///
++    /// fn use_clk(prepared_clk: &Clk<Prepared>) -> Result {
++    ///     let enabled_clk: Clk<Enabled> = prepared_clk.clone().enable()?;
++    ///
++    ///     // Do something that requires the clock to be enabled.
++    ///
++    ///     // `enabled_clk` is dropped here and releases its own counts; the
++    ///     // clock remains prepared through `prepared_clk`.
++    ///     Ok(())
++    /// }
++    /// ```
++    ///
++    /// Note that cloning a [`Clk<Prepared>`] or a [`Clk<Enabled>`] may sleep.
++    ///
+     /// [`struct clk`]: https://docs.kernel.org/driver-api/clk.html
+-    #[repr(transparent)]
+     pub struct Clk<T: ClkState> {
+-        inner: *mut bindings::clk,
++        inner: Arc<RawClk>,
+         _phantom: core::marker::PhantomData<T>,
+     }
+ 
++    /// Owns a single `clk_get()` reference to a [`struct clk`].
++    ///
++    /// This is shared by every clone of a [`Clk`], so that `clk_put()` is
++    /// called exactly once, when the last clone is dropped.
++    ///
++    /// # Invariants
++    ///
++    /// The wrapped pointer is either a pointer to a valid [`struct clk`]
++    /// obtained through `clk_get()` or one of its variants, or `NULL`.
++    ///
++    /// [`struct clk`]: https://docs.kernel.org/driver-api/clk.html
++    #[repr(transparent)]
++    struct RawClk(*mut bindings::clk);
++
++    impl Drop for RawClk {
++        #[inline]
++        fn drop(&mut self) {
++            // SAFETY: By the type invariants, `self.0` is a valid argument for
++            // [`clk_put`], which also accepts a `NULL` pointer.
++            unsafe { bindings::clk_put(self.0) };
++        }
++    }
++
+     // SAFETY: It is safe to call `clk_put` on another thread than where `clk_get` was called.
+     unsafe impl<T: ClkState> Send for Clk<T> {}
+ 
+@@ -311,11 +358,14 @@ pub(crate) fn get_unbound(dev: &Device, name: Option<&CStr>) -> Result<Clk<Unpre
+ 
+             // SAFETY: It is safe to call [`clk_get`] for a valid device pointer
+             // and any `con_id`, including NULL.
+-            let inner = from_err_ptr(unsafe { bindings::clk_get(dev.as_raw(), con_id) })?;
++            let clk = from_err_ptr(unsafe { bindings::clk_get(dev.as_raw(), con_id) })?;
+ 
+-            // INVARIANT: The reference-count is decremented when [`Clk`] goes out of scope.
++            // INVARIANT: The single `clk_get()` reference is owned by `RawClk`,
++            // which releases it when the last clone of this [`Clk`] goes out of
++            // scope. If the allocation fails, `Arc::new` drops the `RawClk`,
++            // releasing the reference.
+             Ok(Self {
+-                inner,
++                inner: Arc::new(RawClk(clk), GFP_KERNEL)?,
+                 _phantom: PhantomData,
+             })
+         }
+@@ -329,11 +379,14 @@ pub fn get_optional(dev: &Device<Bound>, name: Option<&CStr>) -> Result<Clk<Unpr
+ 
+             // SAFETY: It is safe to call [`clk_get`] for a valid device pointer
+             // and any `con_id`, including NULL.
+-            let inner = from_err_ptr(unsafe { bindings::clk_get_optional(dev.as_raw(), con_id) })?;
++            let clk = from_err_ptr(unsafe { bindings::clk_get_optional(dev.as_raw(), con_id) })?;
+ 
+-            // INVARIANT: The reference-count is decremented when [`Clk`] goes out of scope.
++            // INVARIANT: The single `clk_get()` reference is owned by `RawClk`,
++            // which releases it when the last clone of this [`Clk`] goes out of
++            // scope. If the allocation fails, `Arc::new` drops the `RawClk`,
++            // releasing the reference.
+             Ok(Self {
+-                inner,
++                inner: Arc::new(RawClk(clk), GFP_KERNEL)?,
+                 _phantom: PhantomData,
+             })
+         }
+@@ -356,7 +409,10 @@ pub fn prepare(self) -> Result<Clk<Prepared>, Error<Unprepared>> {
+                 // `Clk<Prepared>` owns a single count of it, which is released
+                 // when it leaves the [`Prepared`] state.
+                 .map(|()| Clk {
+-                    inner: clk.inner,
++                    // SAFETY: `clk` is wrapped in `ManuallyDrop`, so its `Arc`
++                    // reference is never released; moving it out here keeps the
++                    // reference count balanced.
++                    inner: unsafe { ptr::read(&clk.inner) },
+                     _phantom: PhantomData,
+                 })
+                 .map_err(|error| Error {
+@@ -404,9 +460,12 @@ pub fn unprepare(self) -> Clk<Unprepared> {
+             unsafe { bindings::clk_unprepare(clk.as_raw()) }
+ 
+             // INVARIANT: The `clk_prepare()` count was released above, so the
+-            // returned `Clk<Unprepared>` owns only the `clk_get()` count.
++            // returned `Clk<Unprepared>` owns only the `clk_get()` reference.
+             Clk {
+-                inner: clk.inner,
++                // SAFETY: `clk` is wrapped in `ManuallyDrop`, so its `Arc`
++                // reference is never released; moving it out here keeps the
++                // reference count balanced.
++                inner: unsafe { ptr::read(&clk.inner) },
+                 _phantom: PhantomData,
+             }
+         }
+@@ -429,7 +488,10 @@ pub fn enable(self) -> Result<Clk<Enabled>, Error<Prepared>> {
+                 // `Clk<Enabled>` owns a single count of it, which is released
+                 // when it leaves the [`Enabled`] state.
+                 .map(|()| Clk {
+-                    inner: clk.inner,
++                    // SAFETY: `clk` is wrapped in `ManuallyDrop`, so its `Arc`
++                    // reference is never released; moving it out here keeps the
++                    // reference count balanced.
++                    inner: unsafe { ptr::read(&clk.inner) },
+                     _phantom: PhantomData,
+                 })
+                 .map_err(|error| Error {
+@@ -474,7 +536,10 @@ pub fn with_enabled<R>(&self, cb: impl FnOnce(&Clk<Enabled>) -> R) -> Result<R>
+             //
+             // INVARIANT: The clock is enabled for the lifetime of `enabled`.
+             let enabled = ManuallyDrop::new(Clk::<Enabled> {
+-                inner: self.inner,
++                // SAFETY: The duplicate `Arc` reference is wrapped in
++                // `ManuallyDrop` and thus never released, keeping the reference
++                // count balanced.
++                inner: unsafe { ptr::read(&self.inner) },
+                 _phantom: PhantomData,
+             });
+ 
+@@ -527,10 +592,13 @@ pub fn disable(self) -> Clk<Prepared> {
+             unsafe { bindings::clk_disable(clk.as_raw()) };
+ 
+             // INVARIANT: The `clk_enable()` count was released above, so the
+-            // returned `Clk<Prepared>` owns the `clk_get()` and `clk_prepare()`
+-            // counts.
++            // returned `Clk<Prepared>` owns the `clk_get()` reference and the
++            // `clk_prepare()` count.
+             Clk {
+-                inner: clk.inner,
++                // SAFETY: `clk` is wrapped in `ManuallyDrop`, so its `Arc`
++                // reference is never released; moving it out here keeps the
++                // reference count balanced.
++                inner: unsafe { ptr::read(&clk.inner) },
+                 _phantom: PhantomData,
+             }
+         }
+@@ -540,7 +608,7 @@ impl<T: ClkState> Clk<T> {
+         /// Obtain the raw [`struct clk`] pointer.
+         #[inline]
+         pub fn as_raw(&self) -> *mut bindings::clk {
+-            self.inner
++            self.inner.0
+         }
+ 
+         /// Get clock's rate.
+@@ -573,21 +641,50 @@ pub fn set_rate(&self, rate: Hertz) -> Result {
+ 
+     impl<T: ClkState> Drop for Clk<T> {
+         fn drop(&mut self) {
+-            if T::DISABLE_ON_DROP {
+-                // SAFETY: By the type invariants, self.as_raw() is a valid argument for
+-                // [`clk_disable`].
++            if T::ENABLED {
++                // SAFETY: By the type invariants, `self.as_raw()` is a valid
++                // argument for [`clk_disable`].
+                 unsafe { bindings::clk_disable(self.as_raw()) };
+             }
+ 
+-            if T::UNPREPARE_ON_DROP {
+-                // SAFETY: By the type invariants, self.as_raw() is a valid argument for
+-                // [`clk_unprepare`].
++            if T::PREPARED {
++                // SAFETY: By the type invariants, `self.as_raw()` is a valid
++                // argument for [`clk_unprepare`].
+                 unsafe { bindings::clk_unprepare(self.as_raw()) };
+             }
+ 
+-            // SAFETY: By the type invariants, self.as_raw() is a valid argument for
+-            // [`clk_put`].
+-            unsafe { bindings::clk_put(self.as_raw()) };
++            // The `clk_get()` reference is owned by `RawClk`: it is released
++            // by its drop implementation when the last clone goes out of scope.
++        }
++    }
++
++    impl<T: ClkState> Clone for Clk<T> {
++        #[inline]
++        fn clone(&self) -> Self {
++            if T::PREPARED {
++                // SAFETY: By the type invariants, `self.as_raw()` is a valid
++                // argument for [`clk_prepare`]. `self` already holds a
++                // `clk_prepare()` count, so the underlying clock is already
++                // prepared and this call only increments the prepare count:
++                // it cannot fail.
++                unsafe { bindings::clk_prepare(self.as_raw()) };
++            }
++
++            if T::ENABLED {
++                // SAFETY: By the type invariants, `self.as_raw()` is a valid
++                // argument for [`clk_enable`]. `self` already holds a
++                // `clk_enable()` count, so the underlying clock is already
++                // enabled and this call only increments the enable count: it
++                // cannot fail.
++                unsafe { bindings::clk_enable(self.as_raw()) };
++            }
++
++            // INVARIANT: The new value owns the state counts acquired above
++            // and shares the `clk_get()` reference through the `Arc`.
++            Self {
++                inner: self.inner.clone(),
++                _phantom: PhantomData,
++            }
+         }
+     }
+ }
 
-Changes in v3:
-- Rebased on top of 6.19-rc4
-- Dropped patch 1 (from Alice), added her series as a dependency instead
-- Fixed Tyr, PWM_TH1520 drivers
-- Changed clk.rs imports to kernel-vertical style
-- Added support get_optional shortcut for Prepared and Enabled (i.e.:
-  Clk::<Enabled>::get_optional())
-- Fixed misplaced #[inline] tag
-
-Thanks, Danilo {
-  - Moved the devres changes into its own patch
-  - Require &Device<Bound> for all functions where a &Device is used
-  - Account for con_in in SAFETY comments where applicable
-  - Added backticks
-}
-
-- Link to v2: https://lore.kernel.org/r/20250910-clk-type-state-v2-0-1b97c11bb631@collabora.com
-
-Changes in v2:
-- Added Alice's patch as patch 1, since it is a dependency.
-- Added devm helpers (like we did for Regulator<T>)
-- Fixed missing clk_put() call in Drop (Danilo)
-- Fixed missing parenthesis and wrong docs (Viresh)
-- Removed extra "dev" parameter from "shutdown" example (Danilo)
-- Removed useless type annotation from example (Danilo)
-- Link to v1: https://lore.kernel.org/rust-for-linux/20250729-clk-type-state-v1-1-896b53816f7b@collabora.com/#r
-
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-To: Viresh Kumar <viresh.kumar@linaro.org>
-To: Danilo Krummrich <dakr@kernel.org>
-To: Alice Ryhl <aliceryhl@google.com>
-To: Daniel Almeida <daniel.almeida@collabora.com>
-To: David Airlie <airlied@gmail.com>
-To: Simona Vetter <simona@ffwll.ch>
-To: Michal Wilczynski <m.wilczynski@samsung.com>
-To: Drew Fustini <fustini@kernel.org>
-To: Guo Ren <guoren@kernel.org>
-To: Fu Wei <wefu@redhat.com>
-To: Uwe Kleine-König <ukleinek@kernel.org>
-To: Michael Turquette <mturquette@baylibre.com>
-To: Stephen Boyd <sboyd@kernel.org>
-To: Miguel Ojeda <ojeda@kernel.org>
-To: Boqun Feng <boqun@kernel.org>
-To: Gary Guo <gary@garyguo.net>
-To: Björn Roy Baron <bjorn3_gh@protonmail.com>
-To: Benno Lossin <lossin@kernel.org>
-To: Andreas Hindborg <a.hindborg@kernel.org>
-To: Trevor Gross <tmgross@umich.edu>
-Cc: linux-pm@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Cc: dri-devel@lists.freedesktop.org
-Cc: linux-riscv@lists.infradead.org
-Cc: linux-pwm@vger.kernel.org
-Cc: linux-clk@vger.kernel.org
-Cc: rust-for-linux@vger.kernel.org
-
----
-Daniel Almeida (4):
-      rust: clk: use the type-state pattern
-      rust: clk: implement Clone for Clk<T>
-      rust: clk: add devres-managed clks
-      rust: clk: use 'kernel vertical style' for imports
-
- drivers/cpufreq/rcpufreq_dt.rs |   2 +-
- drivers/gpu/drm/tyr/driver.rs  |  37 +--
- drivers/pwm/pwm_th1520.rs      |  17 +-
- rust/kernel/clk.rs             | 722 +++++++++++++++++++++++++++++++++--------
- rust/kernel/cpufreq.rs         |   8 +-
- 5 files changed, 602 insertions(+), 184 deletions(-)
----
-base-commit: 92010229c4b38897f1319d260162d2f96925ed17
-change-id: 20250909-clk-type-state-c01aa7dd551d
-
-Best regards,
---  
-Daniel Almeida <daniel.almeida@collabora.com>
+-- 
+2.54.0
 
