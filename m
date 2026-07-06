@@ -1,168 +1,186 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D9E5842A799;
-	Mon,  6 Jul 2026 06:44:42 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id ECB1637C923
+	for <linux-pm@vger.kernel.org>; Mon,  6 Jul 2026 08:15:19 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1783320293; cv=none; b=It+cdTbbOfPdxDSuLspBAiqv3Cc0xBDBFPIB0Sq0PAi9alCGpwHzOKfvzGYLFWcx9TSYIr5xCTjuYokcBtFexMGaHcPgp7GEdQpaetaegHjMVHgESKY/HyphQI8Y9dlCXgP1gqkgTFgnB/ko9sju7WVWP61MxHWVMlRIl2RkGAw=
+	t=1783325730; cv=none; b=sKWT6B1LdT6iEsV3KK2U8P8gMDtknQ5aBN6Sul49lWRLBQ2APy7arpvnxy5pxV6L478QxD8fMENWr683s6KW3vl3TCFuXBf7jniKAnigR9CEWFoY8lOKtjBmLKiSA89q2bABoLtlxVR7jEV859qUA6PnHJyxnyQ9nKk6akDkIGE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1783320293; c=relaxed/simple;
-	bh=xQqqE7JBbyahFaqaJ0tvO7axntcfjCqwxtMCYAG7yKw=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=fA0oM7UIGi6b7k9Z+p6Sfvo9XwsTat5pt6glYP3BWmpBiMnH2JgVgKiGewjDlp0+HiBPMQkIc9NA4SdskyL/Y7Hn9B+sJLGlIYLxpWNjFgjcG2vzyWkmmcLej2JrVRjZ3if0yKvnnJ+drQs+Kas9ps507Qbl5TnHgWO77jItr6w=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=IpEh56T1; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1783325730; c=relaxed/simple;
+	bh=RNJIaocZYsVAyi9K44GDvBfuC55YSi0vUGWPt8ppen0=;
+	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=nVByLR59u/bMUPgk7vVim2b6vVct20U7s9xsDBxl4IqNMwF+rkNyvVH2rjPe9/oKn3Ja/W3AKlx6ZmIED/hLU89k+orCR6eBgRF8wyskh84s9PFG9afrNCwgqWms9hibhPsVtk3e7R06eR0p8OFapUlcBmOwkr0G/uct7I+z8qw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=ltw/ycGj; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=Yy6f1VSe; arc=none smtp.client-ip=205.220.168.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="IpEh56T1"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6F44C1F000E9;
-	Mon,  6 Jul 2026 06:44:34 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1783320280;
-	bh=/fPwJ5XgRM6mvxg/vC5xFu7gKO1w6g8o9vmcGDZN3lw=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=IpEh56T1GIDmOQX1RCRaoOsSsgDiuNbWlgnxSxm4/DHvKCf1EIK1Iu0pDmKgay+th
-	 GW15L23bEe6g/qbRQ3a7oM5eHrf9jker/7266zhJHse7XaPZPE1QhQYYN1LHUs1PLx
-	 64AlDCa0/X1LxnNiNGjcHbRxomlJmU8/C32bnq8TZRZ7m3JFGcA28gP7Kt0JafX1M9
-	 ah1yk8O/jJdN6v2rrdBmJgriO8C31X9rAsm/Gc67754018FNdBwT+DvLh0MemtDLkS
-	 hMtEPNB1d8Zo0A+3UUNFZlU2nVc+70lwPjmNQUOydNemM834P+i2Cnt4Sv7mvhB+9x
-	 hqi7uNJA/SDWQ==
-Date: Mon, 6 Jul 2026 08:44:29 +0200
-From: Manivannan Sadhasivam <mani@kernel.org>
-To: Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>
-Cc: Loic Poulain <loic.poulain@oss.qualcomm.com>, 
-	Bartosz Golaszewski <brgl@kernel.org>, Marcel Holtmann <marcel@holtmann.org>, 
-	Luiz Augusto von Dentz <luiz.dentz@gmail.com>, Bjorn Andersson <andersson@kernel.org>, 
-	Konrad Dybcio <konradybcio@kernel.org>, Rob Herring <robh@kernel.org>, 
-	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, linux-pci@vger.kernel.org, 
-	linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org, 
-	linux-bluetooth@vger.kernel.org, devicetree@vger.kernel.org, 
-	Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>
-Subject: Re: [PATCH v2 3/4] Bluetooth: hci_qca: Support QCA2066 on M.2
- connector via pwrseq
-Message-ID: <l4qycbmz2zaroe5rreuop4dx7ugfcx37hfaketvn43trdpaept@jyx65agqznq4>
-References: <20260702-monza-wireless-v2-0-7b56e2a6a6d4@oss.qualcomm.com>
- <20260702-monza-wireless-v2-3-7b56e2a6a6d4@oss.qualcomm.com>
- <43re752djujsh2kiyvjlkpmztxsh4atg6472qhir4lgay24zbo@mtlkn2xc2ors>
- <rxt4n6vuscu33mrw24af72lb3s6urqfpkhtia44yfo4j7wtu6o@3xp57owekrgj>
- <u5ieok3hgjcf74sxjdzv6xurmlbve46xa3imgfnom4hpjarmxa@fna5daqpyk3r>
- <zat6uuvh7jwfxajvqtif6d67osf6h5b2vxig3bmuch76btpdkj@bfxjj7kk5fjk>
- <ynhos7h4x3kbqbio2gkigoo5rqbwogrzihkylxv5pqjtqpqmnq@rlyjaiopx74a>
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="ltw/ycGj";
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="Yy6f1VSe"
+Received: from pps.filterd (m0279867.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 66641Shn3593985
+	for <linux-pm@vger.kernel.org>; Mon, 6 Jul 2026 08:15:16 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-transfer-encoding:content-type:date:from:message-id
+	:mime-version:subject:to; s=qcppdkim1; bh=zNW0xFIonHoxP9CiO/pPyT
+	lRjfRihWd8KfgBFkWrZRg=; b=ltw/ycGj6/CbJcfap2Pa9jgnEf8tKpeQszceMS
+	8Yq7/66cRbtMtmoPCf0QVLA86NRLTWDwSkcqngPiyPTZvIpHdNp6ejdIiapX7QWq
+	bkFEOg7bv1x+iKUwboXicsEOdFN8qrPvhhRu8m9hQBtk/tTcYn3VoEh1NBJpgn4f
+	G6f5Egih+rokwp0pkPKORaxnJnB8OFqd9d4iD2RsfCgUlvg/Gl4oXIHlV/aOr904
+	e2sr4WnoQ7MRW3d1GpFZF9Bq9gRJL2HveuDoWa6MhjpSvVjjzpDfJpPkzvzL5ORY
+	W0iwFV6Hntk10fureFA0e5GXr2CIV00zK+leTSCRjT3mRKIw==
+Received: from mail-pf1-f198.google.com (mail-pf1-f198.google.com [209.85.210.198])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4f6qvgwj4w-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <linux-pm@vger.kernel.org>; Mon, 06 Jul 2026 08:15:16 +0000 (GMT)
+Received: by mail-pf1-f198.google.com with SMTP id d2e1a72fcca58-847c3a12ce8so2858032b3a.1
+        for <linux-pm@vger.kernel.org>; Mon, 06 Jul 2026 01:15:16 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=oss.qualcomm.com; s=google; t=1783325716; x=1783930516; darn=vger.kernel.org;
+        h=cc:to:content-transfer-encoding:mime-version:message-id:date
+         :subject:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=zNW0xFIonHoxP9CiO/pPyTlRjfRihWd8KfgBFkWrZRg=;
+        b=Yy6f1VSebpJ4aUHkUGYAzjjQWOtQ1hCiPCYP2kvgrmXLjOhl6G1/1iK4U7WIixNr7c
+         IMyhdVC/VbaKxFUu4r73eV6Vn0OmF9yaixaC7ajh9lBf9m2T8G1EvKXo1C4WFIAnQdW4
+         Po3l9l8z7GAtIFlxOT/wfMzh4r2+f3pKFboFNaU/PHP3UpmcI8Q+mtN+kSFor4OlIQHW
+         Z4mvLuIZ0WZ3kBGO1dxr1Wlp7uI+J3rePjeiNJ4aCywD5k14FARpnAkhwqfAuzAlXSTL
+         lk5S/Y1Hc/k9mWj4XyhTNZfvLpvW1Mu1I2sE5akm0QTBkGolTCfndKjkxN4r5EgN9woW
+         Vu9w==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1783325716; x=1783930516;
+        h=cc:to:content-transfer-encoding:mime-version:message-id:date
+         :subject:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=zNW0xFIonHoxP9CiO/pPyTlRjfRihWd8KfgBFkWrZRg=;
+        b=S7M7LhF2uA+++NYTN7fv0RQexWJ+4WPxPIqZYfRuMG0ZJbpQFNO2zcYtaCm7LJD1p3
+         29ndx5/wIRRCaUiQ4wpGXlgrF1Ai+CMsN0vXiz943PZJ6kHXoPOtkBLcvRidykSp1aJa
+         AeOcrkMHEVbMgckHia9XaSHsR4jFfayPhZrli5Ht6seXl8VteeRkr+Gs5fqs3nyGy2x8
+         BCHSTiqcmHvpnsQ390CUuR8jqV14TNONvHfdoAX1pmUOpqp+Ek+CX16MA6XLX+m8BbQV
+         pkkwW83VJ+72NtBI5ERN9ABgqGfeSLL5cTOhreKCdRbfD7yuN1AmWceQIf8F4KKS9JZU
+         1DWA==
+X-Forwarded-Encrypted: i=1; AHgh+RqOxh0py4/3+kM7WW81iSwnZsfQVvlY5ZoxfKLrl1JLBIHQ3I1/u+ppcMlLUXRyeImkJ6u7tnTIsg==@vger.kernel.org
+X-Gm-Message-State: AOJu0Ywf4qrhnljV1l8rclNioHWoJAFBUB57N6L7ji+9/tAGbyAImBSD
+	tOyZMlKJvETggrPOq+HtYa+gZvXnef32sqv9HComRrfGdKZWrlDGBDT8d792CmRFyYU7Gk/38lW
+	22Oft70NgK8cAt/OiEjg9ThKLM7AjZ86wLEYNuHhDjKIWsoTVjNODcWS6/PfiLYAkdHYKEw==
+X-Gm-Gg: AfdE7cl6MWxXe3Si4iBCvp9UU/nf52TwjzLi8aa1g8kx5IFpfr/CqXDtvIaC1zTXQyg
+	tQnCq8cZNUHvRrcU+BkMwWOaHM1lQr6b9kSuzuDdor/p8juW8G1gvPzVh/E4xzJhVN6iOnfvqvg
+	oypAICr45AxZYNr28jvMcSn/wyif82dbVR3Pq/H0Gkes9HRYNek9cFbUjT1hXQmK38ptOhYZXbD
+	H36HfZd8ZLs0nKq+DuikIj63/TLXz097+6lFqtM0rXI2vXmIh3gsQQf5PjXynIhFyQN07gHkhi5
+	8TRSxgkJM3cXSJf5J6mXFDYxb7hT9dqY0bWpW6V6WcPSjUkuPt1TFXqbex++CwzUxMOn3ZWf6E3
+	VARaWFkzt7aB5hR1M23JcTL8nxFwL6UetMsqeALvlsKs=
+X-Received: by 2002:a05:6a00:3686:b0:847:99a7:c751 with SMTP id d2e1a72fcca58-847f6dfde0bmr7953179b3a.25.1783325715841;
+        Mon, 06 Jul 2026 01:15:15 -0700 (PDT)
+X-Received: by 2002:a05:6a00:3686:b0:847:99a7:c751 with SMTP id d2e1a72fcca58-847f6dfde0bmr7953100b3a.25.1783325714598;
+        Mon, 06 Jul 2026 01:15:14 -0700 (PDT)
+Received: from hu-sachgupt-hyd.qualcomm.com ([202.46.22.19])
+        by smtp.gmail.com with ESMTPSA id 41be03b00d2f7-c9e8f4cd4b1sm5584525a12.12.2026.07.06.01.15.07
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 06 Jul 2026 01:15:13 -0700 (PDT)
+From: Sachin Gupta <sachin.gupta@oss.qualcomm.com>
+Subject: [PATCH v2 0/2] thermal: qcom: Add Qualcomm SPMI MBG thermal
+ monitor support
+Date: Mon, 06 Jul 2026 13:44:34 +0530
+Message-Id: <20260706-spmi-mbg-driver-v2-0-f883ff1d8719@oss.qualcomm.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <ynhos7h4x3kbqbio2gkigoo5rqbwogrzihkylxv5pqjtqpqmnq@rlyjaiopx74a>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-B4-Tracking: v=1; b=H4sIAOtjS2oC/3WNQQ6CMBREr0K6tqRtbEVX3sOw+IUC31iL/dBoC
+ He34NrNJC+ZebMwchEdsUuxsOgSEoZnBnUoWDPAs3cc28xMCWWEEZLT6JF72/M2YnKR60oBWA1
+ gwLC8GqPr8L0bb/WPabZ310ybZmsMSFOIn/0yya33354kF9weq7OyWoM8dddAVL5meDTB+zIHq
+ 9d1/QKKGIYcxwAAAA==
+X-Change-ID: 20260601-spmi-mbg-driver-582aab5aa6a6
+To: Lee Jones <lee@kernel.org>, Rob Herring <robh@kernel.org>,
+        Krzysztof Kozlowski <krzk+dt@kernel.org>,
+        Conor Dooley <conor+dt@kernel.org>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Daniel Lezcano <daniel.lezcano@kernel.org>,
+        Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>,
+        Stephen Boyd <sboyd@kernel.org>,
+        Jishnu Prakash <jishnu.prakash@oss.qualcomm.com>,
+        Kamal Wadhwa <kamal.wadhwa@oss.qualcomm.com>,
+        Amit Kucheria <amitk@kernel.org>,
+        Thara Gopinath <thara.gopinath@gmail.com>
+Cc: linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+        Satya Priya Kakitapalli <quic_skakitap@quicinc.com>,
+        Sachin Gupta <sachin.gupta@oss.qualcomm.com>,
+        Ajit Pandey <ajit.pandey@oss.qualcomm.com>,
+        Imran Shaik <imran.shaik@oss.qualcomm.com>,
+        Taniya Das <taniya.das@oss.qualcomm.com>,
+        Jagadeesh Kona <jagadeesh.kona@oss.qualcomm.com>
+X-Mailer: b4 0.15.2
+X-Authority-Analysis: v=2.4 cv=VvoTxe2n c=1 sm=1 tr=0 ts=6a4b6414 cx=c_pps
+ a=m5Vt/hrsBiPMCU0y4gIsQw==:117 a=fChuTYTh2wq5r3m49p7fHw==:17
+ a=IkcTkHD0fZMA:10 a=RAioF0-LDSMA:10 a=s4-Qcg_JpJYA:10
+ a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=eoimf2acIAo5FJnRuUoq:22
+ a=VwQbUJbxAAAA:8 a=bC-a23v3AAAA:8 a=EUspDBNiAAAA:8 a=COk6AnOGAAAA:8
+ a=iUTBZumk_BVKSr9I0GoA:9 a=QEXdDO2ut3YA:10 a=IoOABgeZipijB_acs4fv:22
+ a=FO4_E8m0qiDe52t0p3_H:22 a=TjNXssC_j7lpFel5tvFf:22
+X-Proofpoint-ORIG-GUID: 2y5wP7E-f80e2corTaRj2M0W4hw3BKw5
+X-Proofpoint-GUID: 2y5wP7E-f80e2corTaRj2M0W4hw3BKw5
+X-Proofpoint-Spam-Info: AW1haW4tMjYwNzA2MDA4MiBTYWx0ZWRfX8aEpH5/yl43V
+ c338Jd4/CLBgc4R+HBXLj/5CnsEKMy/CYsUyCtKO1iP3ZexacpK+iRfkPYlswwQY+v48seU9pIm
+ +XixkelEhb5ZEzc12vUNvtw0eQ4AWUQ=
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzA2MDA4MiBTYWx0ZWRfXyV9C5fjIeAK9
+ BNJARKXwtABWuNgoSi+VbC6dIjmI9eNEvXAYlyA73J7RI2tldeHI2b2NTUkmhTPkqxP7EYFYH4W
+ XbxHTeGqtiOhWDL/e8Ikq4zPdsso6ZyczbQNoUbC1m41NCRNi11AXcYcpXfReotzjsi6FmoESiW
+ h8Ea2J/9UUPdoMF8hsoQGiqicNJdJOeDYOuKUpda0w5e92OMfvkyHHORmaiinY8hmYW4TvYSvz6
+ VXJco8dKVuCj5oVzD1n5z/F9Lq19oBcTFqgL2vnv2ifrl4EdYDv3M370IEZnKOhdUJYJ8NAjo9/
+ IGtuz3UDcuUlIqxwyFhtrMiX3LHxQ1lOfyom57KFGgsnPTF0GvMc4q3Bgy9MMe0l3SRXzfD3UVF
+ DF/MeFuBFLYc6WA0CAaNBhmUBgzeOUY9lG54KoHWtE78weJe9Wwa2VskgvsSjhXt+uF0tRtyJQG
+ PFaIqx8nCB+PmfOp0Bw==
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.125,FMLib:17.12.100.49
+ definitions=2026-07-05_02,2026-07-03_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ spamscore=0 bulkscore=0 priorityscore=1501 lowpriorityscore=0 adultscore=0
+ suspectscore=0 impostorscore=0 clxscore=1015 malwarescore=0 phishscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2607060082
 
-On Sat, Jul 04, 2026 at 03:11:13AM +0300, Dmitry Baryshkov wrote:
-> On Thu, Jul 02, 2026 at 05:08:56PM +0200, Manivannan Sadhasivam wrote:
-> > On Thu, Jul 02, 2026 at 05:34:31PM +0300, Dmitry Baryshkov wrote:
-> > > On Thu, Jul 02, 2026 at 04:17:43PM +0200, Manivannan Sadhasivam wrote:
-> > > > On Thu, Jul 02, 2026 at 03:14:49PM +0300, Dmitry Baryshkov wrote:
-> > > > > On Thu, Jul 02, 2026 at 12:46:15PM +0200, Loic Poulain wrote:
-> > > > > > For QCA2066 (and other QCA chips) on M.2 connectors, the UART enable
-> > > > > > is controlled by the W_DISABLE2# signal managed by the pcie-m2 power
-> > > > > > sequencer rather than a dedicated BT enable GPIO.
-> > > > > > 
-> > > > > > When the serdev controller has an OF graph (indicating it is connected
-> > > > > > to an M.2 connector), acquire the 'uart' pwrseq target from the
-> > > > > > connector's power sequencer and use it to control BT power instead of
-> > > > > > the bt-enable GPIO.
-> > > > > > 
-> > > > > > Also allocate bt_power unconditionally for all SOC types since the
-> > > > > 
-> > > > > Can we just fold it into the main struct?
-> > > > > 
-> > > > > > pwrseq path is independent of the SOC type switch.
-> > > > > > 
-> > > > > > Signed-off-by: Loic Poulain <loic.poulain@oss.qualcomm.com>
-> > > > > > ---
-> > > > > >  drivers/bluetooth/hci_qca.c | 81 ++++++++++++++++++++++++---------------------
-> > > > > >  1 file changed, 43 insertions(+), 38 deletions(-)
-> > > > > > @@ -2387,6 +2390,35 @@ static int qca_init_regulators(struct qca_power *qca,
-> > > > > >  	return 0;
-> > > > > >  }
-> > > > > >  
-> > > > > > +/*
-> > > > > > + * Acquire the M.2 connector power sequencer.
-> > > > > > + *
-> > > > > > + * An OF graph link on the serdev controller is only present when the BT
-> > > > > > + * device is attached through an M.2 Key E connector. In that case the UART
-> > > > > > + * enable (W_DISABLE2#) is driven by the pcie-m2 power sequencer instead of a
-> > > > > > + * dedicated BT enable GPIO, so grab the "uart" pwrseq target from it.
-> > > > > > + *
-> > > > > > + * Returns 0 if no M.2 connector is present (nothing to do), a negative errno
-> > > > > > + * on error, otherwise 0 with qcadev->bt_power->pwrseq populated.
-> > > > > > + */
-> > > > > > +static int qca_serdev_get_m2_pwrseq(struct qca_serdev *qcadev, bool *bt_en_available)
-> > > > > > +{
-> > > > > > +	struct serdev_device *serdev = qcadev->serdev_hu.serdev;
-> > > > > > +	struct device *dev;
-> > > > > > +
-> > > > > > +	if (!of_graph_is_present(dev_of_node(&serdev->ctrl->dev)))
-> > > > > > +		return 0;
-> > > > > > +
-> > > > > > +	qcadev->bt_power->pwrseq = devm_pwrseq_get(&serdev->ctrl->dev, "uart");
-> > > > > > +	if (IS_ERR(qcadev->bt_power->pwrseq))
-> > > > > > +		return PTR_ERR(qcadev->bt_power->pwrseq);
-> > > > > > +
-> > > > > > +	dev = pwrseq_to_device(qcadev->bt_power->pwrseq);
-> > > > > > +	*bt_en_available = device_property_present(dev, "w-disable2-gpios");
-> > > > > 
-> > > > > I think here you are looking into the exact details of the other of the
-> > > > > graph. There might be other devices on that side, while the code now
-> > > > > assumes M.2. Or, consider having an M.2 controller which handles
-> > > > > W_DISABLE2# internally rather than through the GPIO.
-> > > > > 
-> > > > 
-> > > > This code only deals with M.2 connector in specific, so I'm not sure why we need
-> > > > to worry about *other* kind of devices. Let's worry about them when they show up
-> > > > (with graph interface ofc).
-> > > 
-> > > I don't think we want to go through the drivers using M.2 connectors in
-> > > such a case. In the end, the contract should be that there is a power
-> > > sequencer on the other side of the graph, but the specifics of the
-> > > connector should be abstracted out. Do you know, if in the x86 world the
-> > > W_DISABLE2# is a GPIO or is controleed by the hub.
-> > > 
-> > 
-> > I tried to abstract out, but Bartosz didn't want pwrctrl APIs to do that level
-> > of abstraction as pwrctrl APIs should be generic and should not be bind to a
-> > specific connector and exposing its internals.
-> > 
-> > That's why we ended up having pwrctrl core exposing the 'struct dev' using
-> > pwrseq_to_device() and letting the consumer extracting whatever information it
-> > needs.
-> 
-> Do we have other ways to control M.2? For example on the x86 systems,
-> are those signals controlled via GPIOs (or GPIO-like registers) or are
-> they controlled separately by something like M.2 controller? Or do you
-> have an idea about other non-x86 systems?
-> 
+This series adds support for Qualcomm MBG thermal monitoring.
 
-Thre is no OS-visible M.2 power control in ACPI systems. ACPI defines PRx
-objects to control power to the PCI devices based on the D-state and the OS just
-evaluates the _ON/_OFF methods of the respective objects.
+Adding support for:
+- DT bindings for the MBG thermal monitor peripheral on PM8775
+- A new Qualcomm SPMI MBG thermal monitor driver under `drivers/thermal/qcom/`
+ 
+The driver monitors die temperature alarms, handles the MBG interrupt on
+upper-threshold violation, reads the fault status, and reports events to the
+thermal framework.
+ 
+RFC patch:
+https://lore.kernel.org/all/qq3cggafexwpdrv46eqijxfmrdbqusl2vpbuswqmcvshqueaiw@r4mrmap4nwkt/
+ 
 
-So this API is not going to be useful on non-DT systems where the BT_EN GPIO
-handling is abstracted away. And also on platforms where BT_EN is not controlled
-by GPIOs. But I haven't seen DT platforms handling BT_EN (or W_DISABLE2#)
-signal in a non-GPIO way.
+Signed-off-by: Satya Priya Kakitapalli <quic_skakitap@quicinc.com>
+Signed-off-by: Sachin Gupta <sachin.gupta@oss.qualcomm.com>
+---
+Changes in v2:
+- Fix locking, -ERANGE, enum check, and flag race. [Sashiko AI]
+- Rewrap commit text, rename binding file to match compatible. [Krzysztof] 
+- Drop redundant comment, return -ERANGE, fix ISR locking. [Konrad]
+- Link to v1: https://patch.msgid.link/20260601-spmi-mbg-driver-v1-0-b4892b55a17f@oss.qualcomm.com
 
-I too prefer an API to query whether the connector supports BT_EN or not, but
-I'm not sure how to come up with a generic pwrseq API which also satisfies the
-requirement. If you have any suggestions, please let me know!
+---
+Satya Priya Kakitapalli (2):
+      dt-bindings: thermal: Add Qualcomm MBG thermal monitor support
+      thermal: qcom: Add support for Qualcomm MBG thermal monitoring
 
-FWIW, I tried adding pwrseq_is_fixed() API [1] earlier, which was turned down by
-Bartosz.
+ .../devicetree/bindings/mfd/qcom,spmi-pmic.yaml    |   4 +
+ .../bindings/thermal/qcom,pm8775-mbg-tm.yaml       |  72 ++++++
+ drivers/thermal/qcom/Kconfig                       |  11 +
+ drivers/thermal/qcom/Makefile                      |   1 +
+ drivers/thermal/qcom/qcom-spmi-mbg-tm.c            | 256 +++++++++++++++++++++
+ 5 files changed, 344 insertions(+)
+---
+base-commit: 2b763db0c2763d6bf73d7d3e69665222d1f377cf
+change-id: 20260601-spmi-mbg-driver-582aab5aa6a6
 
-- Mani
+Best regards,
+--  
+Sachin Gupta <sachin.gupta@oss.qualcomm.com>
 
-[1] https://lore.kernel.org/all/20260422-pwrseq-m2-bt-v1-1-720d02545a64@oss.qualcomm.com/
-
--- 
-மணிவண்ணன் சதாசிவம்
