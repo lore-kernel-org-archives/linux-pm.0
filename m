@@ -1,67 +1,66 @@
-Received: from mail-wm1-f51.google.com (mail-wm1-f51.google.com [209.85.128.51])
+Received: from mail-wr1-f54.google.com (mail-wr1-f54.google.com [209.85.221.54])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3EBA9357CEB
-	for <linux-pm@vger.kernel.org>; Mon,  6 Jul 2026 15:20:51 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.51
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D2CC0386426
+	for <linux-pm@vger.kernel.org>; Mon,  6 Jul 2026 15:21:35 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.54
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1783351253; cv=none; b=IugoC5+wghYZcM4mOlCo0e4kMC1AcpxTOiv01BuZTrcpTckWjOIj7yihsgU3QpV1SzHqzHSVqtXCqrOnlZCWGkIVGR78RFhzPAJwJxxlHS8FNwTNfCHGqYB/ZqCEih8eMZHjmegH1i+47ycmMbDTcsmvy+SgNChaUxmbOOWtZI4=
+	t=1783351297; cv=none; b=C4u0JEPENUta6avyu3NXp4V4HiQ9WD3sFB252AsNY8ACf5BDIYxvOe3wkbEEh9tEMbG0oQFodhLjg3HzldPZgkspk//jrCPZbldwWG8xCvbe3yVl8TS8TYEnnIy5iq2fhM2VblPQCuGPZC1WWpMeBT21Z+C6voHl+TmlB6ZjB8Q=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1783351253; c=relaxed/simple;
-	bh=5RAQ/vzRARHcaE/i0yXQNhBm4ZYZtzy48qsvVQTE/JE=;
+	s=arc-20240116; t=1783351297; c=relaxed/simple;
+	bh=zncjsV5s6UAGBEFupoETnv3kRTq7gsHlr3o3AUla/BA=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=NMrEMxiKnsqfTDlNcial8xB1HmAhmArQtq/aYNWJJ5QW7e2zsHrJ6RiaKo7C/4RLOqoape5xWDskFLtR1djj6G8l9MZ2nnkQIQLkT9fQq7umIw/u9u7sWyhOwsgHIelUsa1FuMZaOiCr/tSNipPldAA2H3LXhLMYVgMZMh+JKiw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com; spf=pass smtp.mailfrom=suse.com; dkim=pass (2048-bit key) header.d=suse.com header.i=@suse.com header.b=ehfflhrQ; arc=none smtp.client-ip=209.85.128.51
+	 In-Reply-To:Content-Type; b=oVM45TaxRY9g4l/7BQqSdB8rG/hrl18fyIX1elNi44XIndfqSVFDEtsbLn/2bW/MGgcpZ0h+zitDNCnPK9+0Hwh0Tkim33nrGUpNcoTCY2j5v49ZIvOBg7M+bDpk70JX3ETmQUqzYuMdiaccUjyeIIMJtN2zXu5Tpp1uTkH+lCw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com; spf=pass smtp.mailfrom=suse.com; dkim=pass (2048-bit key) header.d=suse.com header.i=@suse.com header.b=MaCFv/RR; arc=none smtp.client-ip=209.85.221.54
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=suse.com header.i=@suse.com header.b="ehfflhrQ"
-Received: by mail-wm1-f51.google.com with SMTP id 5b1f17b1804b1-493c2c0b9a8so28566205e9.1
-        for <linux-pm@vger.kernel.org>; Mon, 06 Jul 2026 08:20:51 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=suse.com header.i=@suse.com header.b="MaCFv/RR"
+Received: by mail-wr1-f54.google.com with SMTP id ffacd0b85a97d-47c2b362ee2so1738738f8f.1
+        for <linux-pm@vger.kernel.org>; Mon, 06 Jul 2026 08:21:35 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=suse.com; s=google; t=1783351250; x=1783956050; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:in-reply-to:autocrypt:from
+        d=suse.com; s=google; t=1783351294; x=1783956094; darn=vger.kernel.org;
+        h=content-transfer-encoding:in-reply-to:autocrypt:from
          :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=jA188Me9AgAO7O1Is8f9n+gtNtSnCCBgUgpsHEqHR9Q=;
-        b=ehfflhrQkCJPCF4Ye6McnXgQVlGPP9Bj79W8wfMFil05k248FAzhge187g77s5mMWG
-         +Q7HdYGNVm6rg4ueacksvJDrRmxwmKwKYy2CF9qoLLW6amGZAI8m2ygz5s/lLdhjNElQ
-         86RwavNzy9CBoueHtdxoNGiuu3yMOl5KyhI8UnYB3oFqi5boktVK2BuOQppZ8E+EU7nN
-         PUhS2QoHLYsQEFgUXGi/Trjyj12UQd6CRNQPU/YvfwuqfmtL4776C27CX+bi64y8ZbIe
-         Y7DdjbckLwqyTr7kXp5QgqRWmblsyEm2kRyXBRHY7QWBIhEv9MWMiV+HiXX5avM/QuSr
-         sKIw==
+         :date:message-id:from:to:cc:subject:date:message-id:reply-to;
+        bh=8A51OX/9my7e6tIHaoARVbxZ+6ZmCrlNFfVyyluoI3Y=;
+        b=MaCFv/RRjpMEqj7DnWcGRyw2TUomxw6wtOz+fiJ5F9vk7cfpsBDl2yG2bdp0POxwr1
+         u5+8/G8SL29FaGvnpZQ2QQjPk6mlaBWmZ8b4pQiUKUaY53NteTYHG69Mx8GkcgSp6xqk
+         Q8r1zI8vH09AzlVqs27grhUEBgLEssXLOjr9i/1PqFIRnJJCGTifxuahcAtsVdJEEj5v
+         CRvMG8enJWIbflrCoz217GA2G2BLDcRlSddWLCO9nCF01QR/OBprEGTRa8X5ccFKYRCZ
+         z38kHf/xz8KAxwU8YnPLid3eAraojGRDIRjHrsKyxZ8v5FZuMIa0nDcVV2NFXqqVH5fR
+         B/4Q==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1783351250; x=1783956050;
-        h=content-transfer-encoding:content-type:in-reply-to:autocrypt:from
+        d=1e100.net; s=20251104; t=1783351294; x=1783956094;
+        h=content-transfer-encoding:in-reply-to:autocrypt:from
          :content-language:references:cc:to:subject:user-agent:mime-version
          :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=jA188Me9AgAO7O1Is8f9n+gtNtSnCCBgUgpsHEqHR9Q=;
-        b=Xe4K/ksAEmVWXaAAX6i3aZdpsuktLyen5DnyEjZBxOtk8c4DUKS49d2tTEiB2XO8XW
-         ZyMDPvceLmBU4cKpjBoyO+DiRwbuHimKJ+PorZRJ9egBhNR+6fh6DQjeIqjhXofy+IED
-         8oEq+Fz2YwOYFWNM4hqps9/aqn+/qjVCAMxTmisE0ZfD9CNas6gJugOwGtZZ2VH9qD0H
-         rQqyPOWa3zPyxhfocKzRhCZICO06+MaD+3PbRNKBponvZROaS761+T54s+21uKI3Z6az
-         taEZKg7ny2N2E+Tg9LMp+PlwezRWTK4VwZPuWXJS6yCs0SkB9rDQlzDyQHwvOjNEOksf
-         4QKQ==
-X-Forwarded-Encrypted: i=1; AHgh+RpGY47Od2L39Q4pFvC/+H859YJm2vBHXkidkc8jw8ZIB/W4SolSAmeoaR5vFp3PsvL9YZjE44K6ng==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yy24yFC4jExhhm0uPMZgL+/rio3cmbdF6GCXgbyhiU2y2CXjkJm
-	ltC1VSsi46IA6kENnTLowBKFHMoraIjK+J2f+QbiE1LPULGu/3j+Nd/ZQBVpzmoZMGg=
-X-Gm-Gg: AfdE7cmN7iRfWb5dmtLvTN3zyK8ZMgtJ/jymGbeJnmg1VNHjXVyu+foBtJp9Wgrz31Y
-	ZbPgDh2QLGKiBJP/cVcxttZQlDZmFvpzBWXFajGIHGMoGugr0Ap/WSO6eDvDCE1fvihUxK501ix
-	dHOKMonN/4ZtPffKIx4vzgWPc3JpjHzaXSGKdFYogmVZGRds85sDLT93+RVwWmp6V77jUW7iJKc
-	gDt+HxzXw4yNqhd8AmDAYtT4r0WGKePBmfH1B0fwZAmcleQhC8wADcOToBoxXWkEeD4OyCjW7vv
-	JRO0XRLpX90fGQRyJLDI0qRI5gKSBO1A0ka5kX4kQVAh1AuVddsFXLu+OmRmkDW5kUjAKhse2ww
-	pIdp5xPhVuDRVuCmA+0BUFo2dCmVHIG9k9G3rrgdzzZaid0uRkNzgxBV7elwqA8r2zriTQTrvq/
-	xkcAonF1hiUzk1T8x+tSDnjmnxvI9ASHBLuYzUjhTTHjsqyJzL4Rm4WV1RC579
-X-Received: by 2002:a05:600c:19cc:b0:492:5145:f054 with SMTP id 5b1f17b1804b1-493df0930a6mr12030995e9.26.1783351249504;
-        Mon, 06 Jul 2026 08:20:49 -0700 (PDT)
+         :message-id:reply-to;
+        bh=8A51OX/9my7e6tIHaoARVbxZ+6ZmCrlNFfVyyluoI3Y=;
+        b=UPQY+/DUvJ4I7LHprvYvd3mrpFsufsCD6h5pz2AXbrydOCxLJD2kwjP5JinoMC/Wry
+         15pHnd1HZty81Pk+d5Vyl6Qx2kNk+ZBjUIntCvnHJCFjrtOqPBRrn3/unTgd3+2brbta
+         Z9HbNfO+DbW0S8xHxh2u+DMJJPARkLSxaKDEiU//Tn7Hc6Ex6U3p3Cmjge771cgJDo74
+         kRY4t0N9t3ehEQGbgdNnfPSAH+ehbWBLHlFdHpfMl2sH7Ts/ypfpDf9Psq4UxhBVhPDW
+         3HrnXnfj4o93QhWXIc0mJxh8yuge9A1Zyru5Xi4MRaAswxDvnydmRTuCf69vn3gwSZ8y
+         xqSQ==
+X-Forwarded-Encrypted: i=1; AHgh+RozMew04chJHPvUky//II6V+vOTqRqSnh56OJaPjmj42tOlcS0fRx4/An4sd5okEvy4WFHg4lQtcQ==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yy/FYiGzZE147aWQtsj6jb0fEnSB8dWzzgVdktNCypIGI/gO+2W
+	SsDqeQMB9DT3mCaifrwIsS/jHqU63lcUtH1HM0mYDSIMxUk7TGf/YUcljjjCd97cySA=
+X-Gm-Gg: AfdE7cmlDR1GwaPTRMvqCnyEyKhaS3QzeBlE3Y/pz4lwG/jkd7ohx7XPOlLsh+B7df4
+	40h5jlru0hHTEV1I/jltuKsO03AoAKLh3wYRcq0kuS/hvzoMZ/nLedl+sFpGpvf9p2pt8q3tYi8
+	GXIAzRWyGq+IQnXrvQtWyaH2NcE1cISgRvAcwZzfHn1WP0CkR4zTwAbN40joofGdD6BplDt6y8a
+	TV5M2v4xlNgLT6moFXSX21pjdnZPsNCSaZ+hDC/TruAU46mYeMqIt+njMSjaIhijBNWRdnVqm7G
+	CFJcOEaDXNln/7DR70iJ77RILiV+biFwTTnO2wNOJpfDq8S/5ssx2T7a+ng8frLy1HykmZyIkJ0
+	IxaD2la4V/n0oO0DDo2kEItVje7MrvQKoUidAchAfWCoENMjYAMtnxGTWY+/SwryyZ7U5foTQ5x
+	fgVzLyPeY7wU61+g+4N30aOuTwvsOX2pQZJeDS8nFKTG1DPd2wzVQHIfhFIyfC
+X-Received: by 2002:adf:e40e:0:b0:475:f0c2:75a6 with SMTP id ffacd0b85a97d-47de66f2e70mr580585f8f.55.1783351294208;
+        Mon, 06 Jul 2026 08:21:34 -0700 (PDT)
 Received: from [192.168.1.136] (48.85-85-171.dynamic.clientes.euskaltel.es. [85.85.171.48])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-47aa0960634sm27008175f8f.26.2026.07.06.08.20.44
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-47aa09608d4sm26469667f8f.25.2026.07.06.08.21.31
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 06 Jul 2026 08:20:48 -0700 (PDT)
-Message-ID: <42e9c942-5b96-4cd4-a25b-51d1a7e8eff7@suse.com>
-Date: Mon, 6 Jul 2026 17:20:43 +0200
+        Mon, 06 Jul 2026 08:21:33 -0700 (PDT)
+Message-ID: <747bb78f-5ebf-40cf-9922-98e69920a9d8@suse.com>
+Date: Mon, 6 Jul 2026 17:21:30 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -69,8 +68,8 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 3/4] pmdomain: mediatek: Add support for Direct CTL simple
- power sequence
+Subject: Re: [PATCH 4/4] pmdomain: mediatek: Add support for MT8196 HFRP
+ DirectCTL domains
 To: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>,
  ulfh@kernel.org
 Cc: robh@kernel.org, krzk+dt@kernel.org, conor+dt@kernel.org,
@@ -80,7 +79,7 @@ Cc: robh@kernel.org, krzk+dt@kernel.org, conor+dt@kernel.org,
  linux-arm-kernel@lists.infradead.org, linux-mediatek@lists.infradead.org,
  justin.yeh@mediatek.com, kernel@collabora.com
 References: <20260701121920.19347-1-angelogioacchino.delregno@collabora.com>
- <20260701121920.19347-4-angelogioacchino.delregno@collabora.com>
+ <20260701121920.19347-5-angelogioacchino.delregno@collabora.com>
 Content-Language: en-US, ca-ES, es-ES
 From: Matthias Brugger <mbrugger@suse.com>
 Autocrypt: addr=mbrugger@suse.com; keydata=
@@ -126,225 +125,84 @@ Autocrypt: addr=mbrugger@suse.com; keydata=
  LV6nybxdRG/jp8ZQdQQixPA9azZDzuTu+NjKtzIA5qtfZfmm8xC+kAwAMZ/ZnfCsKwN0bbnD
  YfO3B5Q131ASmu0kbwY03Mw4PhxDzZNrt4a89Y95dq5YkMtVH2Me1ZP063cFCCYCkvEAK/C8
  PVrr2NoUqi/bxI8fFQJD1jVj8K0=
-In-Reply-To: <20260701121920.19347-4-angelogioacchino.delregno@collabora.com>
+In-Reply-To: <20260701121920.19347-5-angelogioacchino.delregno@collabora.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 
 
 
 On 01/07/2026 14:19, AngeloGioacchino Del Regno wrote:
-> Some new SoCs like MT8196, MT6991, and others, have got one
-> additional power controller (usually in the HFRP Multimedia
-> block) which needs a simplified power on/off sequence while
-> using Direct Control strategy.
-> 
-> Domains using the "simple power sequence" are not backed by
-> the RTFF hardware, have no Bus Protection mechanism, lacks
-> the ISO, PWR_ON, PWR_ON_2ND bits, and therefore get enabled
-> automatically after getting out of reset.
-> 
-> This simple power sequence is then a subset of the full one
-> as only needs the enablement of the specific power domain's
-> clock input and reset (where, again, after getting out of
-> reset, the ISO and PWR_ON bits are automatically internally
-> getting flipped) to enable or disable (power on or off).
-> 
-> Moreover, the simple power sequence power domains guarantee
-> that they always get enabled/disabled after executing the
-> relevant power sequence (on/off) so, differently from the
-> others, there is also no need to poll for a PWR_ACK.
+> Add support for the power domains provided by the HFRPSYS Power
+> Controller of the MT8196 SoC.
+> Those control power to the eDP and DP Transmitter IPs.
 > 
 > Signed-off-by: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
 
 Reviewed-by: Matthias Brugger <matthias.bgg@gmail.com>
 
 > ---
->   drivers/pmdomain/mediatek/mtk-pm-domains.c | 87 ++++++++++++++++++----
->   drivers/pmdomain/mediatek/mtk-pm-domains.h |  1 +
->   2 files changed, 72 insertions(+), 16 deletions(-)
+>   drivers/pmdomain/mediatek/mt8196-pm-domains.h | 27 +++++++++++++++++++
+>   drivers/pmdomain/mediatek/mtk-pm-domains.c    |  4 +++
+>   2 files changed, 31 insertions(+)
 > 
+> diff --git a/drivers/pmdomain/mediatek/mt8196-pm-domains.h b/drivers/pmdomain/mediatek/mt8196-pm-domains.h
+> index 2e4b28720659..d704c9fa9337 100644
+> --- a/drivers/pmdomain/mediatek/mt8196-pm-domains.h
+> +++ b/drivers/pmdomain/mediatek/mt8196-pm-domains.h
+> @@ -602,6 +602,27 @@ static const struct scpsys_hwv_domain_data hfrpsys_hwv_domain_data_mt8196[] = {
+>   	},
+>   };
+>   
+> +static const struct scpsys_domain_data hfrpsys_domain_data_mt8196[] = {
+> +	[MT8196_POWER_DOMAIN_EDPTX] = {
+> +		.name = "edp-tx",
+> +		.sta_mask = MT8196_PWR_ACK,
+> +		.sta2nd_mask = MT8196_PWR_ACK_2ND,
+> +		.ctl_offs = 0x74,
+> +		.pwr_sta_offs = 0x74,
+> +		.pwr_sta2nd_offs = 0x74,
+> +		.caps = MTK_SCPD_SIMPLE_PWRSEQ,
+> +	},
+> +	[MT8196_POWER_DOMAIN_DPTX] = {
+> +		.name = "dp-tx",
+> +		.sta_mask = MT8196_PWR_ACK,
+> +		.sta2nd_mask = MT8196_PWR_ACK_2ND,
+> +		.ctl_offs = 0x78,
+> +		.pwr_sta_offs = 0x78,
+> +		.pwr_sta2nd_offs = 0x78,
+> +		.caps = MTK_SCPD_SIMPLE_PWRSEQ,
+> +	},
+> +};
+> +
+>   static const struct scpsys_soc_data mt8196_scpsys_data = {
+>   	.domains_data = scpsys_domain_data_mt8196,
+>   	.num_domains = ARRAY_SIZE(scpsys_domain_data_mt8196),
+> @@ -616,6 +637,12 @@ static const struct scpsys_soc_data mt8196_scpsys_hwv_data = {
+>   	.type = SCPSYS_MTCMOS_TYPE_HW_VOTER,
+>   };
+>   
+> +static const struct scpsys_soc_data mt8196_hfrpsys_data = {
+> +	.domains_data = hfrpsys_domain_data_mt8196,
+> +	.num_domains = ARRAY_SIZE(hfrpsys_domain_data_mt8196),
+> +	.type = SCPSYS_MTCMOS_TYPE_DIRECT_CTL,
+> +};
+> +
+>   static const struct scpsys_soc_data mt8196_hfrpsys_hwv_data = {
+>   	.hwv_domains_data = hfrpsys_hwv_domain_data_mt8196,
+>   	.num_hwv_domains = ARRAY_SIZE(hfrpsys_hwv_domain_data_mt8196),
 > diff --git a/drivers/pmdomain/mediatek/mtk-pm-domains.c b/drivers/pmdomain/mediatek/mtk-pm-domains.c
-> index db543d4b1813..5276adea1d04 100644
+> index 5276adea1d04..f69cf69ba0f6 100644
 > --- a/drivers/pmdomain/mediatek/mtk-pm-domains.c
 > +++ b/drivers/pmdomain/mediatek/mtk-pm-domains.c
-> @@ -549,9 +549,11 @@ static int scpsys_ctl_pwrseq_on(struct scpsys_domain *pd)
->   	return 0;
->   }
->   
-> -static void scpsys_ctl_pwrseq_off(struct scpsys_domain *pd)
-> +static int scpsys_ctl_pwrseq_off(struct scpsys_domain *pd)
->   {
->   	struct scpsys *scpsys = pd->scpsys;
-> +	bool tmp;
-> +	int ret;
->   
->   	switch (pd->data->rtff_type) {
->   	case SCPSYS_RTFF_TYPE_GENERIC:
-> @@ -583,6 +585,41 @@ static void scpsys_ctl_pwrseq_off(struct scpsys_domain *pd)
->   	regmap_clear_bits(scpsys->base, pd->data->ctl_offs, PWR_RST_B_BIT);
->   	regmap_clear_bits(scpsys->base, pd->data->ctl_offs, PWR_ON_2ND_BIT);
->   	regmap_clear_bits(scpsys->base, pd->data->ctl_offs, PWR_ON_BIT);
-> +
-> +	/* wait until PWR_ACK = 0 */
-> +	ret = readx_poll_timeout(scpsys_domain_is_on, pd, tmp, !tmp, MTK_POLL_DELAY_US,
-> +				 MTK_POLL_TIMEOUT);
-> +	if (ret < 0)
-> +		return ret;
-> +
-> +	return 0;
-> +}
-> +
-> +static int scpsys_simple_pwrseq_on(struct scpsys_domain *pd)
-> +{
-> +	struct scpsys *scpsys = pd->scpsys;
-> +
-> +	/* Enable subsys clock input and trigger power domain reset state */
-> +	regmap_clear_bits(scpsys->base, pd->data->ctl_offs, PWR_CLK_DIS_BIT);
-> +	regmap_clear_bits(scpsys->base, pd->data->ctl_offs, PWR_RST_B_BIT);
-> +
-> +	/* Wait for the hardware to stabilize */
-> +	udelay(1);
-> +
-> +	/* Get out of reset: set power on */
-> +	regmap_set_bits(scpsys->base, pd->data->ctl_offs, PWR_RST_B_BIT);
-> +
-> +	return 0;
-> +}
-> +
-> +static int scpsys_simple_pwrseq_off(struct scpsys_domain *pd)
-> +{
-> +	struct scpsys *scpsys = pd->scpsys;
-> +
-> +	regmap_clear_bits(scpsys->base, pd->data->ctl_offs, PWR_RST_B_BIT);
-> +	regmap_set_bits(scpsys->base, pd->data->ctl_offs, PWR_CLK_DIS_BIT);
-> +
-> +	return 0;
->   }
->   
->   static int scpsys_modem_pwrseq_on(struct scpsys_domain *pd)
-> @@ -605,14 +642,24 @@ static int scpsys_modem_pwrseq_on(struct scpsys_domain *pd)
->   	return 0;
->   }
->   
-> -static void scpsys_modem_pwrseq_off(struct scpsys_domain *pd)
-> +static int scpsys_modem_pwrseq_off(struct scpsys_domain *pd)
->   {
->   	struct scpsys *scpsys = pd->scpsys;
-> +	bool tmp;
-> +	int ret;
->   
->   	regmap_clear_bits(scpsys->base, pd->data->ctl_offs, PWR_ON_BIT);
->   
->   	if (!MTK_SCPD_CAPS(pd, MTK_SCPD_SKIP_RESET_B))
->   		regmap_clear_bits(scpsys->base, pd->data->ctl_offs, PWR_RST_B_BIT);
-> +
-> +	/* wait until PWR_ACK = 0 */
-> +	ret = readx_poll_timeout(scpsys_domain_is_on, pd, tmp, !tmp, MTK_POLL_DELAY_US,
-> +				 MTK_POLL_TIMEOUT);
-> +	if (ret < 0)
-> +		return ret;
-> +
-> +	return 0;
->   }
->   
->   static int scpsys_power_on(struct generic_pm_domain *genpd)
-> @@ -635,6 +682,8 @@ static int scpsys_power_on(struct generic_pm_domain *genpd)
->   
->   	if (MTK_SCPD_CAPS(pd, MTK_SCPD_MODEM_PWRSEQ))
->   		ret = scpsys_modem_pwrseq_on(pd);
-> +	else if (MTK_SCPD_CAPS(pd, MTK_SCPD_SIMPLE_PWRSEQ))
-> +		ret = scpsys_simple_pwrseq_on(pd);
->   	else
->   		ret = scpsys_ctl_pwrseq_on(pd);
->   
-> @@ -662,9 +711,11 @@ static int scpsys_power_on(struct generic_pm_domain *genpd)
->   			goto err_pwr_ack;
->   	}
->   
-> -	ret = scpsys_sram_enable(pd);
-> -	if (ret < 0)
-> -		goto err_disable_subsys_clks;
-> +	if (!MTK_SCPD_CAPS(pd, MTK_SCPD_SIMPLE_PWRSEQ)) {
-> +		ret = scpsys_sram_enable(pd);
-> +		if (ret < 0)
-> +			goto err_disable_subsys_clks;
-> +	}
->   
->   	ret = scpsys_bus_protect_disable(pd, 0);
->   	if (ret < 0)
-> @@ -682,7 +733,8 @@ static int scpsys_power_on(struct generic_pm_domain *genpd)
->   err_enable_bus_protect:
->   	scpsys_bus_protect_enable(pd, 0);
->   err_disable_sram:
-> -	scpsys_sram_disable(pd);
-> +	if (!MTK_SCPD_CAPS(pd, MTK_SCPD_SIMPLE_PWRSEQ))
-> +		scpsys_sram_disable(pd);
->   err_disable_subsys_clks:
->   	if (!MTK_SCPD_CAPS(pd, MTK_SCPD_STRICT_BUS_PROTECTION))
->   		clk_bulk_disable_unprepare(pd->num_subsys_clks,
-> @@ -698,16 +750,17 @@ static int scpsys_power_off(struct generic_pm_domain *genpd)
->   {
->   	struct scpsys_domain *pd = container_of(genpd, struct scpsys_domain, genpd);
->   	struct scpsys *scpsys = pd->scpsys;
-> -	bool tmp;
->   	int ret;
->   
->   	ret = scpsys_bus_protect_enable(pd, 0);
->   	if (ret < 0)
->   		return ret;
->   
-> -	ret = scpsys_sram_disable(pd);
-> -	if (ret < 0)
-> -		return ret;
-> +	if (!MTK_SCPD_CAPS(pd, MTK_SCPD_SIMPLE_PWRSEQ)) {
-> +		ret = scpsys_sram_disable(pd);
-> +		if (ret < 0)
-> +			return ret;
-> +	}
->   
->   	if (pd->data->ext_buck_iso_offs && MTK_SCPD_CAPS(pd, MTK_SCPD_EXT_BUCK_ISO))
->   		regmap_set_bits(scpsys->base, pd->data->ext_buck_iso_offs,
-> @@ -721,15 +774,11 @@ static int scpsys_power_off(struct generic_pm_domain *genpd)
->   
->   	if (MTK_SCPD_CAPS(pd, MTK_SCPD_MODEM_PWRSEQ))
->   		scpsys_modem_pwrseq_off(pd);
-> +	else if (MTK_SCPD_CAPS(pd, MTK_SCPD_SIMPLE_PWRSEQ))
-> +		ret = scpsys_simple_pwrseq_off(pd);
->   	else
->   		scpsys_ctl_pwrseq_off(pd);
->   
-> -	/* wait until PWR_ACK = 0 */
-> -	ret = readx_poll_timeout(scpsys_domain_is_on, pd, tmp, !tmp, MTK_POLL_DELAY_US,
-> -				 MTK_POLL_TIMEOUT);
-> -	if (ret < 0)
-> -		return ret;
-> -
->   	clk_bulk_disable_unprepare(pd->num_clks, pd->clks);
->   
->   	scpsys_regulator_disable(pd->supply);
-> @@ -1083,6 +1132,12 @@ static int scpsys_get_bus_protection_legacy(struct device *dev, struct scpsys *s
->   		regmap[2] = NULL;
->   	}
->   
-> +	/* If no access controllers are needed, don't allocate and don't fail */
-> +	if (num_regmaps == 0) {
-> +		scpsys->bus_prot = NULL;
-> +		return 0;
-> +	}
-> +
->   	scpsys->bus_prot = devm_kmalloc_array(dev, num_regmaps,
->   					      sizeof(*scpsys->bus_prot), GFP_KERNEL);
->   	if (!scpsys->bus_prot)
-> diff --git a/drivers/pmdomain/mediatek/mtk-pm-domains.h b/drivers/pmdomain/mediatek/mtk-pm-domains.h
-> index a5dca24cbc2f..092403de66fa 100644
-> --- a/drivers/pmdomain/mediatek/mtk-pm-domains.h
-> +++ b/drivers/pmdomain/mediatek/mtk-pm-domains.h
-> @@ -17,6 +17,7 @@
->   #define MTK_SCPD_MODEM_PWRSEQ		BIT(10)
->   #define MTK_SCPD_SKIP_RESET_B		BIT(11)
->   #define MTK_SCPD_INFRA_PWR_CTL		BIT(12)
-> +#define MTK_SCPD_SIMPLE_PWRSEQ		BIT(13)
->   #define MTK_SCPD_CAPS(_scpd, _x)	((_scpd)->data ?		\
->   					 (_scpd)->data->caps & (_x) :	\
->   					 (_scpd)->hwv_data->caps & (_x))
+> @@ -1252,6 +1252,10 @@ static const struct of_device_id scpsys_of_match[] = {
+>   		.compatible = "mediatek,mt8196-power-controller",
+>   		.data = &mt8196_scpsys_data,
+>   	},
+> +	{
+> +		.compatible = "mediatek,mt8196-hfrp-power-controller",
+> +		.data = &mt8196_hfrpsys_data,
+> +	},
+>   	{
+>   		.compatible = "mediatek,mt8196-hwv-hfrp-power-controller",
+>   		.data = &mt8196_hfrpsys_hwv_data,
 
