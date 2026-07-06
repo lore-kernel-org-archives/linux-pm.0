@@ -1,234 +1,171 @@
-Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
+Received: from canpmsgout04.his.huawei.com (canpmsgout04.his.huawei.com [113.46.200.219])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3445041F7E0
-	for <linux-pm@vger.kernel.org>; Mon,  6 Jul 2026 08:53:46 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.180.131
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 780B94DD6DC;
+	Mon,  6 Jul 2026 09:02:53 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=113.46.200.219
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1783328034; cv=none; b=eKAKxuE4QUAqLiDqhQGACBpDEveOVPuk6bxaSSiBi7B53Bn/yl1J8P1HitbHg5tXXLLm6qrSHu0tA2x9SBUWwDhzJeh05ESulhubXUe8szQ2LVHqjmGWXCptVEIH+wFr9LZYXSMMr/it27OJEuCzD/ug+NUd0sPnt+ruVovOWGM=
+	t=1783328582; cv=none; b=rLJh/qZQTL9ymjtsdgVCEvo7UbuB8N4F3RsH8g7vgpxuJgXK9VVDvnl8ta6fk3cOvdkZPuQF1vZTrZmJwTgjKl8K2HLoF794/Pev6f76KZg7sFs7LsvK+oBYWyHKSloydvY4bf2AYsupIiE9RsRKJWycFv4X7IKll3fAvJNElGE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1783328034; c=relaxed/simple;
-	bh=0ufInVUVLfFzq8y2beOLns32ovlcfJNcUR5C24Dtp+I=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=SGj1p0Cx2bxMnUo9Zkcuc3Z1q+4ChUA01EsoAvnBcynnCkuw9MSZIgDAI6ZHCAa2rxgR50i/6VaROCiq89AY0hB4xYrLVavYhfYrhyNmXmL4rz/oiuwhnIVFrIfbLhDEVaBGsa87wBqRt7RK6IBc0JXbZtHahjiTDy11LjSsXWI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=X+SUIniJ; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=exHy7keO; arc=none smtp.client-ip=205.220.180.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
+	s=arc-20240116; t=1783328582; c=relaxed/simple;
+	bh=yufmUSY40R4RXPo6K7fEa4KIhnrAK13kSTYa5kuGUP8=;
+	h=Message-ID:Date:MIME-Version:Subject:To:CC:References:From:
+	 In-Reply-To:Content-Type; b=DEZro42zNxj9UqrIY643v6/4W3Ee/uOWE2BTc2uyHnvmfSLwiQ7feUp1u1Q4BrHCZwXVzrR28D9lYtEYJ0HtupFJp82NGIekqCAdtNckcHQRvOJz6o5nE4MbalUIboEeV3ELXP6yaHcsPm/DpV1Htu9hNO7hEcLNlAj/uyMa4/A=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=fail (p=quarantine dis=none) header.from=huawei.com; spf=pass smtp.mailfrom=h-partners.com; dkim=pass (1024-bit key) header.d=h-partners.com header.i=@h-partners.com header.b=eqNX7Nqc; arc=none smtp.client-ip=113.46.200.219
+Authentication-Results: smtp.subspace.kernel.org; dmarc=fail (p=quarantine dis=none) header.from=huawei.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=h-partners.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="X+SUIniJ";
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="exHy7keO"
-Received: from pps.filterd (m0279872.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 66684vr54006749
-	for <linux-pm@vger.kernel.org>; Mon, 6 Jul 2026 08:53:42 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	3MLeedBrkkia/qCCz/UPFtN7ntKyyH0lh9E88vuT4PU=; b=X+SUIniJ5e76N3KC
-	4okub6IeNfLol0638NNvmRBHBEf/yZRoV7W6kmQ3kBZZJ+ReJNEiBVm9nf1zLwZB
-	+PpvOUoOg3c4XOwhemASgDzeP+jIikkx4dpfOoPQadY3I+iEGEMGVJS3ElVaFW7m
-	up+mxV8NYu5tHP2NWk9ArysC7f1y7gLH3Q+kHeKOtVaqg3fAufJMJEIL2gz4gP7J
-	8PcD/NpEjm2KQWn/VkL7/oCY3QKL87d/QHpd44GgyhbUDIXVlT2lHKOzRoSjTwjT
-	0C9BC5WVr4cLrm9dMhDKNe8hd9QRxf9qOMoq9xOpCKMAtzzBalq8UoOMqfDgWFE3
-	I3BiFg==
-Received: from mail-pg1-f197.google.com (mail-pg1-f197.google.com [209.85.215.197])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4f88hs86x0-1
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Mon, 06 Jul 2026 08:53:42 +0000 (GMT)
-Received: by mail-pg1-f197.google.com with SMTP id 41be03b00d2f7-c8894570b58so1932109a12.3
-        for <linux-pm@vger.kernel.org>; Mon, 06 Jul 2026 01:53:42 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1783328021; x=1783932821; darn=vger.kernel.org;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :content-type:mime-version:subject:date:from:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=3MLeedBrkkia/qCCz/UPFtN7ntKyyH0lh9E88vuT4PU=;
-        b=exHy7keOBcznT31dWTDiEPZbv9WEOYQz7Kl2bmDkfFOIEf4RaSn2/ar6P4FY62UahW
-         VfG7Q/MGWRoyEJicOTeh1bkBj1aF7bMvFk9+AHem4vFu2QGTbz7MTSexS7oQwfgdYKi8
-         o8xQzOsqvN+dlPTAKhFbF8EQIH2Ud10byEC4XlFFrHuExphbtSJZKHqq7Xen/bw0PPSe
-         AFxtTt+zimkez6eDEVS1RrAn0ex4AzaU6q/OewqaO94Hwb1Wop1jmNBmSpWJuUsPgEil
-         cjGYJ0rhq3ZTnnZ6OcQzGIhYRWLEmXaELO9Kzc6DgomDeOHffvM5Pa9Um6BFjY9V8gq5
-         LP7g==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1783328021; x=1783932821;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :content-type:mime-version:subject:date:from:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=3MLeedBrkkia/qCCz/UPFtN7ntKyyH0lh9E88vuT4PU=;
-        b=Gk1B9uRmTRAYBHXPTA1Kksgf+sV5f0Cz+22gM49p0GAdN/vVcr43gAhWJx0fUUz3Ga
-         4eiEF5oBeM08WVrBp6T826gpo91FqDLcAMemHzpyzxjm3uIMpPBShGocjU8TTAwzndDe
-         +9MzHbZXw94MuuRboJCU6w3oncz3MMWzfCoZgQsPD+BdZyOLwrvBymeznApDWbU/o7rr
-         txRl1A43QdVDdFCa/VkSp1VFfHEgU1ikUI372qAQP5nkIpKXoeQSrhmlJHCfWkm15g29
-         Qa0s735+1jyqIgT93iTJMpbbMjYuPiGHdS14Ew+bVDlj57RCBt7ONxmKTWiW3iHuix37
-         NDhw==
-X-Forwarded-Encrypted: i=1; AHgh+Ro8a8DWG9W8F3XiPKVstzVT7BBB1rBEdfosZCteTDSSyymYu2ZiYY1OSpFiI6zuaUh2zvw2bJsY4A==@vger.kernel.org
-X-Gm-Message-State: AOJu0YyuYluvXPQkR6bONlIx+FOlEnIcbdzNEYGQNMAWzNNCFHvoLNTU
-	ApU6g+xXykHu0LV6NQKS+ZDeqEBhzyTp27HgeNqnPGINEjSzY423wLvbHGS1TnkZutVvF7je7FZ
-	JMGfdl5xMGCC+gURWDiw13lO0pP+75fOen9T6O1iZWbIzmhcnD/H/X4NmsTXqQA==
-X-Gm-Gg: AfdE7cmsyHAcWvc1J0YJkgrVf8wZhXuReGZXlOOQ8m1H68fMcU79u6okHWs8sCmqcmp
-	yE0q7RynmOaUGpJt9rkbPv5koBojucTrZ9TFN2HJBaDeNGzYqH4JCteou1tcV4AfKApGlAGvoZt
-	4AZH4vN3r7YxhAjd2WinZgcaiZq0pnKsieuQATIdagU+n32mpCsP7hJt24HI1ESdq7/VDcQDL/S
-	derrXtDGGdsK1kBbImqHr+T07ckNSg38Y1+FulvSBi5lWvHeF/1nxkC4vZy9C7NIY+29wzGPjZh
-	E9NumfQiBvZBhEWHUdG3urZNf/Wy8PeFaYMMMjVi92fQ80vhUepHNt3hL3Eca8FHVIdw39N6jx/
-	HjdBIkakfNzVTnN6HWn9RAbl9WFeoa56lDgLwSahYvFym
-X-Received: by 2002:a05:6a00:909d:b0:829:8942:2c93 with SMTP id d2e1a72fcca58-847f6d6708emr8249565b3a.9.1783328018686;
-        Mon, 06 Jul 2026 01:53:38 -0700 (PDT)
-X-Received: by 2002:a05:6a00:909d:b0:829:8942:2c93 with SMTP id d2e1a72fcca58-847f6d6708emr8249531b3a.9.1783328018026;
-        Mon, 06 Jul 2026 01:53:38 -0700 (PDT)
-Received: from hu-ptalari-hyd.qualcomm.com ([202.46.22.19])
-        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-847f6b9e12csm3411834b3a.21.2026.07.06.01.53.31
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 06 Jul 2026 01:53:37 -0700 (PDT)
-From: Praveen Talari <praveen.talari@oss.qualcomm.com>
-Date: Mon, 06 Jul 2026 14:23:10 +0530
-Subject: [PATCH v3 2/2] spi: qcom-geni: Fix missing error check on
- pm_runtime_get_sync()
+	dkim=pass (1024-bit key) header.d=h-partners.com header.i=@h-partners.com header.b="eqNX7Nqc"
+dkim-signature: v=1; a=rsa-sha256; d=h-partners.com; s=dkim;
+	c=relaxed/relaxed; q=dns/txt;
+	h=From;
+	bh=2qCqXzWRyJgWX/jnAd9V4kg/326uEay1uq2VZP4DJJE=;
+	b=eqNX7NqcRHulodn1DGKmrAwPngvL/KEnkDj8rjacXwchLellJkmB/BXCciys5pPKEq9G0tk0l
+	DyRH5AWM9/lX0/hkoxc5uLE84SI60mkFD9M7Yk9/uBrBtMOxfVLbdv3jmUpEkc6jodJD3UOEFpL
+	K3E8ZyyBpWhy4Oyv+nKQCK4=
+Received: from mail.maildlp.com (unknown [172.19.162.144])
+	by canpmsgout04.his.huawei.com (SkyGuard) with ESMTPS id 4gtynF0fYnz1prqF;
+	Mon,  6 Jul 2026 16:53:21 +0800 (CST)
+Received: from kwepemo100005.china.huawei.com (unknown [7.202.195.212])
+	by mail.maildlp.com (Postfix) with ESMTPS id CFCF54056E;
+	Mon,  6 Jul 2026 17:02:35 +0800 (CST)
+Received: from [10.67.121.59] (10.67.121.59) by kwepemo100005.china.huawei.com
+ (7.202.195.212) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1544.36; Mon, 6 Jul
+ 2026 17:02:35 +0800
+Message-ID: <9e351fa5-e4ad-42a6-b4e8-daf43b8b4251@huawei.com>
+Date: Mon, 6 Jul 2026 17:02:34 +0800
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20260706-fix_sticky_-einval_after_pm_runtime_api_failure-v3-2-92feb5a7b926@oss.qualcomm.com>
-References: <20260706-fix_sticky_-einval_after_pm_runtime_api_failure-v3-0-92feb5a7b926@oss.qualcomm.com>
-In-Reply-To: <20260706-fix_sticky_-einval_after_pm_runtime_api_failure-v3-0-92feb5a7b926@oss.qualcomm.com>
-To: Mark Brown <broonie@kernel.org>, Dilip Kota <dkota@codeaurora.org>,
-        Stephen Boyd <swboyd@chromium.org>,
-        Girish Mahadevan <girishm@codeaurora.org>,
-        Alok Chauhan <alokc@codeaurora.org>, bjorn.andersson@oss.qualcomm.com,
-        Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>,
-        "Rafael J. Wysocki" <rafael@kernel.org>, Len Brown <lenb@kernel.org>,
-        Pavel Machek <pavel@kernel.org>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Danilo Krummrich <dakr@kernel.org>,
-        Douglas Anderson <dianders@chromium.org>
-Cc: linux-spi@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-arm-msm@vger.kernel.org,
-        Mukesh Kumar Savaliya <mukesh.savaliya@oss.qualcomm.com>,
-        aniket.randive@oss.qualcomm.com, chandana.chiluveru@oss.qualcomm.com,
-        jyothi.seerapu@oss.qualcomm.com, linux-pm@vger.kernel.org,
-        driver-core@lists.linux.dev,
-        Praveen Talari <praveen.talari@oss.qualcomm.com>
-X-Mailer: b4 0.15.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1783327997; l=2819;
- i=praveen.talari@oss.qualcomm.com; s=20251114; h=from:subject:message-id;
- bh=0ufInVUVLfFzq8y2beOLns32ovlcfJNcUR5C24Dtp+I=;
- b=Lxpi51lVQh8CfIa0DMGsvzgVX/5WK/vUmhHZ4ROGKQqbLRm7Qj+Ah9siSBj3Pxzi85bbp/reV
- PsSrkkU61iYAUyDE5ufd+3sw/mfgU22Cj97wfFqxnnPNeiq1qCBJbVQ
-X-Developer-Key: i=praveen.talari@oss.qualcomm.com; a=ed25519;
- pk=NGK/88fjyHXgfhIKwag7+uIytOmyOypvZ/hDFaYPEss=
-X-Proofpoint-ORIG-GUID: S61LXxKPqdOiIuXvMhOpTpcJeMaDfb_H
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzA2MDA4OSBTYWx0ZWRfXyWzkOlnnGSct
- rtwhxd87WQToFXRGe18UknBWSmIJZK+usezwVLXWtUZRosg+YE7OFKNdTMaZffe8t42T2BQmqoy
- 3Oxd+fXePzyN04UBBtYHV+Jvlbf9LxWCrNVwx1cdExq9EieqWIA+gzWgq7XcAh0J1iALCUD1bkK
- 74sKHKWbBogPFmoxhpw2Cx3KORSPQTrQhA6uVMMSjXm/otiLxh1+zNEcY6mz8TVZEW3mFXlr5nV
- fDAEfhe2WecE8TUf5n7Dqo3YhujVJQQT0O+mn1gikgyJpdN3W8/xnfenrSJZhpg/XWfH06ilgQ/
- cgzJqql0/VTiIwyb11C2KDltEcuOEtMV+PZNnJ3DFtwSHaOb4UjoHYAQB6/ygAsf5RorW8DNpIp
- WWHKsHj1QFiI0kFFSbnjFxp6O/fEGK5tXoZPQI4Dy/fdADGMlTDsmS3fhyYEFnW1LyLxdC6hx4+
- h5UOD7lT9uSY9wyDEzQ==
-X-Proofpoint-Spam-Info: AW1haW4tMjYwNzA2MDA4OSBTYWx0ZWRfXxVQExOznY1dO
- DdBwGbAoiusseVcaCLfCmHcacHpMjj1OzZJ0tbN/09Znc2zRgvphadDViORijLl3mtiIStZcdfu
- HzPeQM+wuGKXMV1irQBnxELlVEVmCVI=
-X-Authority-Analysis: v=2.4 cv=XIwAjwhE c=1 sm=1 tr=0 ts=6a4b6d16 cx=c_pps
- a=rz3CxIlbcmazkYymdCej/Q==:117 a=fChuTYTh2wq5r3m49p7fHw==:17
- a=IkcTkHD0fZMA:10 a=RAioF0-LDSMA:10 a=s4-Qcg_JpJYA:10
- a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=yx91gb_oNiZeI1HMLzn7:22
- a=EUspDBNiAAAA:8 a=rPJgdety-6tgKaoqdU0A:9 a=QEXdDO2ut3YA:10
- a=bFCP_H2QrGi7Okbo017w:22
-X-Proofpoint-GUID: S61LXxKPqdOiIuXvMhOpTpcJeMaDfb_H
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.125,FMLib:17.12.100.49
- definitions=2026-07-05_02,2026-07-03_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- adultscore=0 clxscore=1015 bulkscore=0 priorityscore=1501 impostorscore=0
- malwarescore=0 lowpriorityscore=0 spamscore=0 phishscore=0 suspectscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2607060089
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 0/6] ACPI/PCC: Preserve platform-populated PCC signatures
+To: Sudeep Holla <sudeep.holla@kernel.org>
+CC: <linux-acpi@vger.kernel.org>, <linux-kernel@vger.kernel.org>, "Rafael J.
+ Wysocki" <rafael@kernel.org>, Jassi Brar <jassisinghbrar@gmail.com>, Guenter
+ Roeck <linux@roeck-us.net>, <linux-hwmon@vger.kernel.org>, Andi Shyti
+	<andi.shyti@kernel.org>, <linux-i2c@vger.kernel.org>, MyungJoo Ham
+	<myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>,
+	Chanwoo Choi <cw00.choi@samsung.com>, <linux-pm@vger.kernel.org>,
+	<lihuisong@huawei.com>
+References: <20260627-acpi_pcc_signature-v1-0-c1b7268d4fdc@kernel.org>
+ <10fb88e6-02f8-46b8-9665-db94a4035c5d@huawei.com>
+ <20260630-loyal-gray-polecat-a68c0d@sudeepholla>
+ <6e5e36e0-c470-469e-bb16-a5faaf055463@huawei.com>
+ <20260702-secret-gifted-pheasant-34be3a@sudeepholla>
+From: "lihuisong (C)" <lihuisong@huawei.com>
+In-Reply-To: <20260702-secret-gifted-pheasant-34be3a@sudeepholla>
+Content-Type: text/plain; charset="UTF-8"; format=flowed
+Content-Transfer-Encoding: 8bit
+X-ClientProxiedBy: kwepems500002.china.huawei.com (7.221.188.17) To
+ kwepemo100005.china.huawei.com (7.202.195.212)
 
-spi_geni_init() calls pm_runtime_get_sync() to power up the device
-before accessing hardware registers, but never checks the return value.
-If the runtime resume fails, the function silently proceeds to read and
-write hardware registers on a device that may not be powered up, leading
-to register access faults.
 
-Fix this by replacing pm_runtime_get_sync() with the
-PM_RUNTIME_ACQUIRE_IF_ENABLED() macro and checking the result via
-PM_RUNTIME_ACQUIRE_ERR(), propagating any error back to the caller
-immediately before any hardware access occurs.
+On 7/2/2026 6:21 PM, Sudeep Holla wrote:
+> On Wed, Jul 01, 2026 at 03:38:21PM +0800, lihuisong (C) wrote:
+>> On 6/30/2026 6:49 PM, Sudeep Holla wrote:
+>>> On Tue, Jun 30, 2026 at 05:25:20PM +0800, lihuisong (C) wrote:
+>>>> Hi Sudeep,
+>>>>
+>>>> On 6/28/2026 12:37 AM, Sudeep Holla wrote:
+>>>>> ACPI PCC shared memory layouts reserve the first dword for the PCC
+>>>>> signature. ACPI specification defines the signature as 0x50434300 ORed
+>>>>> with the PCC subspace ID, and ACPI 6.6 clarify that the signature is
+>>>>> populated by the platform and verified by OSPM.
+>>>>>
+>>>>> This series centralizes PCC shared memory signature validation in the PCC
+>>>>> mailbox controller and stops PCC users from rewriting the signature before
+>>>>> each command. Clients that previously copied complete local PCC headers
+>>>>> now update only the mutable command/status/flags/length/payload fields.
+>>>> I am concerned that this may affect the functionality of drivers on some
+>>>> existed platforms.
+>>> One other option I was thinking is to not issue error but just log the error
+>>> message and let the client driver add that additional check if required.
+>> The patch 1/6 is not good to our platform.
+>> Yeah, suggest to use gentle approach to do this if we have to clarify this
+>> signature.
+> Fair enough, we can just log the warning for now.
+Ack.
+>
+>> After all, all client drivers work well before.
+> Sure, but not doing anything will just make the bug carry on for ever in
+> the firmware. SO logging warning is minimum we should do IMO.
+Agree. We need to clearify this based on spec.
+>
+>>>> This largely depends on the implementation of the platform firmware.
+>>>>
+>>> Sure. However I always expected it to be taken care by the platform, v6.6
+>>> just adds that clarification explicitly. It was never clear that the sender
+>>> or the OSPM needs to write that signature, so I disagree that it is platform
+>>> firmware dependent entirely. The clarification wouldn't have got added if
+>>> there was any disagreement on that fact.
+>> The reasons I say this largely depends on the firmware are as follows:
+>> 1> The previous ACPI spec did not clearly require that the platform firmware
+>> needs to fill in this signature first.
+>>       The client driver working on these platform doesn't work anymore if use
+>> the way in patch 1/6.
+> Fair enough.
+>
+>> 2> We are not sure if some firmware verify this signature or clear this
+>> signature field in shared memory.
+> Anyways, better to check that for current and future platforms if not the
+> legacy ones.
+>
+>>>> I think it's good for the signature to be filled in by the command initiator
+>>>> and then verified by the recipient, as this is how this field can serve its
+>>>> purpose.
+>>>> Otherwise, I really don't see what use it has.
+>>> Please get the spec updated accordingly, we can just change in the kernel
+>>> based on what we think is the best way to use it. It needs to be clearly
+>>> specified, otherwise it may cause issue for non-Linux OSVs.
+>> Agree.
+>>
+>> Yeah, I found spec v6.5 just said how to compute it and didn't specify how
+>> to use it for platform and OSPM.
+>> I saw the update of v6.6 for the signature field in "Generic Communications
+>> Channel Shared Memory Region" and "Extended PCC Subspace Shared Memory
+>> Region".
+>> like: "The signature is populated by the platform and is verified by OSPM."
+>> But please note v6.6 didn't say above words in "Reduced PCC Subspace Shared
+>> Memory Region".
+>>
+> Ah, that's just inconsistency I believe. I will raise a defect.
+Nice.
+>
+>> I don't know why v6.6 specify like that.
+>> After all. all PCC application parties (client drivers) in Linux have
+>> already filled this field.
+>>
+> I don't think what Linux drivers should be the reference as there are other
+> OSVs.
+Agree.
+>> According to my understanding of normal signature in communication,
+>> it is generally filled by the initiator (sender) and verified by the
+>> responder (receiver).
+>> In this way, the data is valid, and the signature is meaningful.
+>>
+>> If it is only initialized by firmware, and OSPM verifies it, its lifecycle
+>> ends there.
+>> I don't think this signature has much significance.
+>>
+>> The signature field is just in shared memory and may be cleared due to some
+>> other exception.
+>> Some similar case also need to be considered.
+>> How to make it work better and more resilient may also be something we need
+>> to consider.
+> Not sure if I follow that. The way I expect is platform won't populate the
+> signature if everything is not initialised and running at it's end which
+> implies it is not ready to accept the request.
+It can also be defined this way.
+But platform firmware is generally ready to accept request when OS is 
+running.
+If platform isn't ready to accept the request from OSPM, the command 
+will execute failed.
+So it seems that the signature is a bit redundant if it is only used to 
+indicate that the platform is ready to receive data.
 
-Since the macro handles its own cleanup on failure, the out_pm label and
-the corresponding pm_runtime_put() call are no longer needed. Replace
-all goto out_pm paths with direct return ret statements and remove the
-label entirely.
-
-Fixes: 561de45f72bd ("spi: spi-geni-qcom: Add SPI driver support for GENI based QUP")
-Signed-off-by: Praveen Talari <praveen.talari@oss.qualcomm.com>
----
- drivers/spi/spi-geni-qcom.c | 18 ++++++++++--------
- 1 file changed, 10 insertions(+), 8 deletions(-)
-
-diff --git a/drivers/spi/spi-geni-qcom.c b/drivers/spi/spi-geni-qcom.c
-index 26e723cfea61..392accfd8515 100644
---- a/drivers/spi/spi-geni-qcom.c
-+++ b/drivers/spi/spi-geni-qcom.c
-@@ -613,25 +613,30 @@ static int spi_geni_init(struct spi_geni_master *mas)
- 	u32 spi_tx_cfg, fifo_disable;
- 	int ret = -ENXIO;
- 
--	pm_runtime_get_sync(mas->dev);
-+	PM_RUNTIME_ACQUIRE_IF_ENABLED(mas->dev, pm);
-+	ret = PM_RUNTIME_ACQUIRE_ERR(&pm);
-+	if (ret < 0) {
-+		dev_err(mas->dev, "Failed to resume and get %d\n", ret);
-+		return ret;
-+	}
- 
- 	proto = geni_se_read_proto(se);
- 
- 	if (spi->target) {
- 		if (proto != GENI_SE_SPI_SLAVE) {
- 			dev_err(mas->dev, "Invalid proto %d\n", proto);
--			goto out_pm;
-+			return ret;
- 		}
- 		spi_slv_setup(mas);
- 	} else if (proto == GENI_SE_INVALID_PROTO) {
- 		ret = geni_load_se_firmware(se, GENI_SE_SPI);
- 		if (ret) {
- 			dev_err(mas->dev, "spi master firmware load failed ret: %d\n", ret);
--			goto out_pm;
-+			return ret;
- 		}
- 	} else if (proto != GENI_SE_SPI) {
- 		dev_err(mas->dev, "Invalid proto %d\n", proto);
--		goto out_pm;
-+		return ret;
- 	}
- 	mas->tx_fifo_depth = geni_se_get_tx_fifo_depth(se);
- 
-@@ -664,7 +669,7 @@ static int spi_geni_init(struct spi_geni_master *mas)
- 			dev_dbg(mas->dev, "Using GPI DMA mode for SPI\n");
- 			break;
- 		} else if (ret == -EPROBE_DEFER) {
--			goto out_pm;
-+			return ret;
- 		}
- 		/*
- 		 * in case of failure to get gpi dma channel, we can still do the
-@@ -693,10 +698,7 @@ static int spi_geni_init(struct spi_geni_master *mas)
- 		writel(spi_tx_cfg, se->base + SE_SPI_TRANS_CFG);
- 	}
- 
--out_pm:
--	pm_runtime_put(mas->dev);
- 	return ret;
--}
- 
- static unsigned int geni_byte_per_fifo_word(struct spi_geni_master *mas)
- {
-
--- 
-2.34.1
-
+Anyway, I follow spec, just does not understand the signature usage spec 
+6.6 added.
