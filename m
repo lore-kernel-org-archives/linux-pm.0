@@ -1,209 +1,107 @@
-Received: from sender4-op-o11.zoho.com (sender4-op-o11.zoho.com [136.143.188.11])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pz2-f1.google.com (mail-pz2-f1.google.com [74.125.228.1])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 074243BE16F;
-	Mon,  6 Jul 2026 14:39:01 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=136.143.188.11
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1783348743; cv=pass; b=nQsXbRNKgWY/VgYWMPcKX4I7INv7hM3pwmnx3LdVXqagBNqBmxBdnzwW5/k6DFFrG3qKqaXOzPYZFZB/eV06pqHheD740pGZLUS+JlwrZACLzHsB9fzf1hflvbQDhurLrlzJNWCMgIACTr6i5bnNt+WVLdVSH09Y9ZcunRs5ygk=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1783348743; c=relaxed/simple;
-	bh=5A0PYDl79o9DLnwKyHykq+EZHEycomHcdZN/jGd2oHA=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=XHx20JZnZaMNUAu2Vllh32ai8YphxyLXXzBJ//l/kB0rc1GWRjNa+o8+3knV/Hc90xy4h1FWpZWyTDFPJcqHGuHw8DoG25sC+oQOIaYJ5MYYBdC7wN9Xi1k3B//wcfrTkonJVKRMBGgTaAgfi7nlnZF7jmKrS6F2l6xXmIL2zak=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (1024-bit key) header.d=collabora.com header.i=daniel.almeida@collabora.com header.b=VNI81rIS; arc=pass smtp.client-ip=136.143.188.11
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3F63F3939A6
+	for <linux-pm@vger.kernel.org>; Mon,  6 Jul 2026 14:39:29 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.228.1
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1783348770; cv=none; b=iBsCefVOvsAsKdeCZ6+LMUjAGQIS/SH7GeUM25TzYIn1YEDHNvtKgmk3uXC8d67HqQrbAGPw5iTH8/fORdmUSUw6fj2/8AhGoCfgUNotN7vp15HL+nCzqybkuekuTvkYmzgiLe1HQysR1ZT6PPZaLqpz9aVv/+4ur+Lfi+ekRXc=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1783348770; c=relaxed/simple;
+	bh=x90aUn0J9cOzFK9OMOuB1T/9j8EV5QSJzT98AE3Ubb4=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=G/pvObkGBHSKCemseiQfjK5lUmJvxw4w+UzErWatHhbY1Z3t+2wSIE7NmhSBg2kU2OynZN7XnkW3jciLSow4a+ueFt1OVk+LXVk13O+hpzZjj/EISNMfN/WJlxOquUq7f8hBeTFrpRwA5dvP1q+4BhKzmhs6jjrsfGL0fzs1U6A=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=Q9krdShV; arc=none smtp.client-ip=74.125.228.1
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=collabora.com header.i=daniel.almeida@collabora.com header.b="VNI81rIS"
-ARC-Seal: i=1; a=rsa-sha256; t=1783348680; cv=none; 
-	d=zohomail.com; s=zohoarc; 
-	b=MIOfhPRszk4c+sgy9Q6NAwEV1CdSkvErbwZmp5rbzyb565vspKxBHgnMfVxVORa+T3hEDUwKW8M+np6CCmV3JStrcyarSbIfNKuXRA8TmSDtPCyQYIi30L8eHntU5aaEqZgsNNVLmMDJ1QAxw4qqNDwzgZE/EnxMAhKhlRH3cFg=
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=zohomail.com; s=zohoarc; 
-	t=1783348680; h=Content-Type:Content-Transfer-Encoding:Cc:Cc:Date:Date:From:From:In-Reply-To:MIME-Version:Message-ID:References:Subject:Subject:To:To:Message-Id:Reply-To; 
-	bh=2E6p0yq7ndvFPYl6q3MG80gHOfGZKjQpLPchEo0gBIw=; 
-	b=Cg2VMHYUsOaNGsrCn2kVDjfMDV5+rjPn6OREHq8DhhUBmOPoi87YXY9zXjuuGqXy97MUOUUObzkky7dp9ibnqiZCRmrGCnFw1UKRJzOcbR63uEji6pWFCD1qwTEhqm87A4QAAZsjE9JJ6qEN+6MXO3hL13r4Z58cXl5CV7SrwjU=
-ARC-Authentication-Results: i=1; mx.zohomail.com;
-	dkim=pass  header.i=collabora.com;
-	spf=pass  smtp.mailfrom=daniel.almeida@collabora.com;
-	dmarc=pass header.from=<daniel.almeida@collabora.com>
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; t=1783348680;
-	s=zohomail; d=collabora.com; i=daniel.almeida@collabora.com;
-	h=From:From:Date:Date:Subject:Subject:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-Id:Message-Id:References:In-Reply-To:To:To:Cc:Cc:Reply-To;
-	bh=2E6p0yq7ndvFPYl6q3MG80gHOfGZKjQpLPchEo0gBIw=;
-	b=VNI81rIS2LH0loqTTo9Vvthp9xxFAqm7CpfYOWYizZW/sK7SZPkKZQw9BscJYd+l
-	7GDHTG2ITjvDvaGRb67ulHDrG6sDrsNJCXDuTD/nxWSgjE1vidtf6XRWDRNlfOryUK1
-	5YQlXfYKEEW0EICTFIc4UmpeNy8ll8I+iTdw9jBU=
-Received: by mx.zohomail.com with SMTPS id 178334867955355.454678121945676;
-	Mon, 6 Jul 2026 07:37:59 -0700 (PDT)
-From: Daniel Almeida <daniel.almeida@collabora.com>
-Date: Mon, 06 Jul 2026 11:37:15 -0300
-Subject: [PATCH v5 4/4] rust: clk: use 'kernel vertical style' for imports
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Q9krdShV"
+Received: by mail-pz2-f1.google.com with SMTP id 41be03b00d2f7-c888c2cff99so643113a12.1
+        for <linux-pm@vger.kernel.org>; Mon, 06 Jul 2026 07:39:29 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1783348769; x=1783953569; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
+        bh=FfyQp4sNmNhsL49jNoWYN8Wz/1RG0tztSjlIz4Q1N+g=;
+        b=Q9krdShVbBLeGfakh7SnPqJwfUsVKx23I7oQuvp385w6eanlpdq2LWyOGKsfuerezQ
+         TOGwf38LE57e9ZCyTqm4jrTI5QrADwjcmO42fFAwYnwm/ny4sKXt4hViEVgtVbC6ey3f
+         m87NfW7RbSfKrKDRHDy49gpGdVt2FqbKduRkSHcWZj9J4PGEnadi07ftJt4OUKJSKASb
+         TTxOLCxmwHFfMvXz/VoBAzGua3LJNYG2WOtOTMJ/alIwcO0liFfznfALOzGZL8RlSKCa
+         7IN0EfZsK8oNwV9X7oLLvrgEpwfmZ/OmCItet/OwIIduIdGx+glnQHErb0T/0F7/oGx9
+         VoIw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1783348769; x=1783953569;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=FfyQp4sNmNhsL49jNoWYN8Wz/1RG0tztSjlIz4Q1N+g=;
+        b=WHt2JODurGNZdarxl8JQoARmSivlCoPtfksCALtkSiUHR+cykEYwBzLqzvVpaU7VQC
+         UHUle533b56m7m0QAU7FLHs7laqHbEiU/W9l6AJaipPCUF7X7iQ2Ci5NayBYa0G2IOiG
+         U5WxE1chHnbbF3E+T5MEBwBf8waPiqyauVLfiQmUnJTLUD81nL5kGMDyuxuGHCIPGRYt
+         NhxlCmAsQz2Vi+UOeNO9UjWd4QcVOL9zyGoNdJOHftKLeh12dmEXE1UE4n8xE0S0WMNQ
+         e2h+0YdzTfxvDJB/UJTv0RdeFTOIKabwiLeDrf+530Axu6wwSnjSVLWjJBiqSNFlvUGQ
+         ZbNQ==
+X-Gm-Message-State: AOJu0YwFwyPJJyd8g+cI4uw11oSIGjCcRhd6qoq0/J9DD+3gsD7dITAV
+	fBtYuH9IzNvf2w7WNUL+bgJvrooWs+OCa3dgbOwsl/vL1FeEZIggrtQ=
+X-Gm-Gg: AfdE7ckHf4hCuhnFapTT/URRC8exhX4/Nkpp4uAeURPN1tP/v1YuNN0m5PQ08NVqY5Y
+	Qty3iSPNo85+OyB1OINL/h4S3jSRgVjOuq5IS5eJJhSRcIf5dnHsnx8+vDGGoEQTkqqj7bhhdh4
+	G2EL57UeL4B78jMzuJ6Mvy9iqAbMHy9NnQ4tv3XGjY6UqfdK03kCpUHsgg8gfbhjbwtIOTcUK0y
+	614OUnrgiZ44s+4MfKn4N8KTppax9IVlYFV3ht6eu2fjEPEpHC9t1C/dWDEGpdFQrBjUljp4488
+	9M6ho8thoCeiy9N+fovANWVOX5yDa5i4MM+RBRi/bp9RN4Wl6lW/SXOOnhfDMMmRo4m6RqOQU7y
+	rG1saZ7ezH4fZP5Xyg2ZZlVR3M0O7PSzhoSqyVcxUPybMW8qBlrrT0moIlE/qvSCHpAr1kPQT7R
+	QYWngvkBxvbW8bU4o2gYbsB0MLDZjOjNHFwWS7o4pV74vR
+X-Received: by 2002:a05:6a00:2301:b0:845:c6c3:5e75 with SMTP id d2e1a72fcca58-84826e13ba3mr842845b3a.42.1783348768602;
+        Mon, 06 Jul 2026 07:39:28 -0700 (PDT)
+Received: from localhost.localdomain ([211.196.223.197])
+        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-847f6b609acsm3858991b3a.1.2026.07.06.07.39.25
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 06 Jul 2026 07:39:27 -0700 (PDT)
+From: Jinseok Kim <always.starving0@gmail.com>
+To: rafael@kernel.org,
+	viresh.kumar@linaro.org,
+	shuah@kernel.org
+Cc: linux-pm@vger.kernel.org,
+	linux-kselftest@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+Subject: [PATCH 1/2] selftests/cpufreq: Remove unused local variables from switch_show_governor()
+Date: Mon,  6 Jul 2026 23:38:53 +0900
+Message-ID: <20260706143857.3306-1-always.starving0@gmail.com>
+X-Mailer: git-send-email 2.43.0
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20260706-clk-type-state-v5-4-67c5f326a16c@collabora.com>
-References: <20260706-clk-type-state-v5-0-67c5f326a16c@collabora.com>
-In-Reply-To: <20260706-clk-type-state-v5-0-67c5f326a16c@collabora.com>
-To: "Rafael J. Wysocki" <rafael@kernel.org>, 
- Viresh Kumar <viresh.kumar@linaro.org>, Danilo Krummrich <dakr@kernel.org>, 
- Alice Ryhl <aliceryhl@google.com>, 
- Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, 
- Maxime Ripard <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>, 
- David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>, 
- Drew Fustini <fustini@kernel.org>, Guo Ren <guoren@kernel.org>, 
- Fu Wei <wefu@redhat.com>, 
- =?utf-8?q?Uwe_Kleine-K=C3=B6nig?= <ukleinek@kernel.org>, 
- Michael Turquette <mturquette@baylibre.com>, 
- Stephen Boyd <sboyd@kernel.org>, Miguel Ojeda <ojeda@kernel.org>, 
- Gary Guo <gary@garyguo.net>, 
- =?utf-8?q?Bj=C3=B6rn_Roy_Baron?= <bjorn3_gh@protonmail.com>, 
- Benno Lossin <lossin@kernel.org>, Andreas Hindborg <a.hindborg@kernel.org>, 
- Trevor Gross <tmgross@umich.edu>, 
- Daniel Almeida <daniel.almeida@collabora.com>, 
- Michal Wilczynski <m.wilczynski@samsung.com>, Boqun Feng <boqun@kernel.org>, 
- Boqun Feng <boqun@kernel.org>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
- dri-devel@lists.freedesktop.org, linux-riscv@lists.infradead.org, 
- linux-pwm@vger.kernel.org, linux-clk@vger.kernel.org, 
- rust-for-linux@vger.kernel.org, 
- Boris Brezillon <boris.brezillon@collabora.com>, 
- =?utf-8?q?Onur_=C3=96zkan?= <work@onurozkan.dev>, Maurice <mhi@mailbox.org>
-X-Mailer: b4 0.15.2
-X-ZohoMailClient: External
+Content-Transfer-Encoding: 8bit
 
-Convert all imports to use the new import style. This will make it easier
-to land new changes in the future.
+switch_show_governor() assigns the current governor and frequency
+to local variables before switching governors.
 
-No change of functionality implied.
+However, these variables are never referenced afterwards. The function
+does not restore the previous governor or use the saved frequency, as
+backup_governor() and restore_governor() already handle state preservation
+elsewhere.
 
-Link: https://docs.kernel.org/rust/coding-guidelines.html#imports
-Signed-off-by: Daniel Almeida <daniel.almeida@collabora.com>
+Signed-off-by: Jinseok Kim <always.starving0@gmail.com>
 ---
- rust/kernel/clk.rs | 66 +++++++++++++++++++++++++++++++++++++++++-------------
- 1 file changed, 50 insertions(+), 16 deletions(-)
+ tools/testing/selftests/cpufreq/governor.sh | 5 -----
+ 1 file changed, 5 deletions(-)
 
-diff --git a/rust/kernel/clk.rs b/rust/kernel/clk.rs
-index b9a44f83843a..e677156ffd21 100644
---- a/rust/kernel/clk.rs
-+++ b/rust/kernel/clk.rs
-@@ -80,13 +80,23 @@ fn from(freq: Hertz) -> Self {
- mod common_clk {
-     use super::Hertz;
-     use crate::{
--        device::{Bound, Device},
--        error::{from_err_ptr, to_result, Result},
-+        device::{
-+            Bound,
-+            Device, //
-+        },
-+        error::{
-+            from_err_ptr,
-+            to_result, //
-+        },
-         prelude::*,
--        sync::Arc,
-+        sync::Arc, //
-     };
- 
--    use core::{marker::PhantomData, mem::ManuallyDrop, ptr};
-+    use core::{
-+        marker::PhantomData,
-+        mem::ManuallyDrop,
-+        ptr, //
-+    };
- 
-     mod private {
-         pub trait Sealed {}
-@@ -193,9 +203,15 @@ impl<State: ClkState> From<Error<State>> for kernel::error::Error {
-         /// original [`Clk`], e.g.:
-         ///
-         /// ```
--        /// use kernel::clk::{Clk, Enabled, Unprepared};
--        /// use kernel::device::{Bound, Device};
--        /// use kernel::error::Result;
-+        /// use kernel::clk::{
-+        ///     Clk,
-+        ///     Enabled,
-+        ///     Unprepared, //
-+        /// };
-+        /// use kernel::device::{
-+        ///     Bound,
-+        ///     Device, //
-+        /// };
-         ///
-         /// fn get_enabled(dev: &Device<Bound>) -> Result<Clk<Enabled>> {
-         ///     let clk = Clk::<Unprepared>::get(dev, Some(c"apb_clk"))?
-@@ -245,9 +261,17 @@ fn from(err: Error<State>) -> Self {
-     /// The following example demonstrates how to obtain and configure a clock for a device.
-     ///
-     /// ```
--    /// use kernel::clk::{Clk, Enabled, Hertz, Unprepared, Prepared};
--    /// use kernel::device::{Bound, Device};
--    /// use kernel::error::Result;
-+    /// use kernel::clk::{
-+    ///     Clk,
-+    ///     Enabled,
-+    ///     Hertz,
-+    ///     Prepared,
-+    ///     Unprepared, //
-+    /// };
-+    /// use kernel::device::{
-+    ///     Bound,
-+    ///     Device, //
-+    /// };
-     ///
-     /// fn configure_clk(dev: &Device<Bound>) -> Result {
-     ///     // The fastest way is to use a version of `Clk::get` for the desired
-@@ -292,8 +316,11 @@ fn from(err: Error<State>) -> Self {
-     /// and move between the variants:
-     ///
-     /// ```
--    /// use kernel::clk::{Clk, Enabled, Prepared};
--    /// use kernel::error::Result;
-+    /// use kernel::clk::{
-+    ///     Clk,
-+    ///     Enabled,
-+    ///     Prepared, //
-+    /// };
-     ///
-     /// enum DeviceClk {
-     ///     Suspended(Clk<Prepared>),
-@@ -323,8 +350,11 @@ fn from(err: Error<State>) -> Self {
-     /// enable a clone of it:
-     ///
-     /// ```
--    /// use kernel::clk::{Clk, Enabled, Prepared};
--    /// use kernel::error::Result;
-+    /// use kernel::clk::{
-+    ///     Clk,
-+    ///     Enabled,
-+    ///     Prepared, //
-+    /// };
-     ///
-     /// fn use_clk(prepared_clk: &Clk<Prepared>) -> Result {
-     ///     let enabled_clk: Clk<Enabled> = prepared_clk.clone().enable()?;
-@@ -556,8 +586,12 @@ pub fn enable(self) -> Result<Clk<Enabled>, Error<Prepared>> {
-         /// clock or threading it through an intermediate state, e.g.:
-         ///
-         /// ```
--        /// use kernel::clk::{Clk, Enabled, Hertz, Prepared};
--        /// use kernel::error::Result;
-+        /// use kernel::clk::{
-+        ///     Clk,
-+        ///     Enabled,
-+        ///     Hertz,
-+        ///     Prepared, //
-+        /// };
-         ///
-         /// fn read_rate(clk: &Clk<Prepared>) -> Result<Hertz> {
-         ///     clk.with_enabled(|clk: &Clk<Enabled>| clk.rate())
+diff --git a/tools/testing/selftests/cpufreq/governor.sh b/tools/testing/selftests/cpufreq/governor.sh
+index fe37df79c087..212ef1cf43d5 100755
+--- a/tools/testing/selftests/cpufreq/governor.sh
++++ b/tools/testing/selftests/cpufreq/governor.sh
+@@ -100,11 +100,6 @@ switch_governor()
+ # $1: policy, $2: governor
+ switch_show_governor()
+ {
+-	cur_gov=find_current_governor
+-	if [ $cur_gov == "userspace" ]; then
+-		cur_freq=find_current_freq
+-	fi
+-
+ 	# switch governor
+ 	__switch_governor $1 $2
 
--- 
-2.54.0
-
+--
+2.43.0
