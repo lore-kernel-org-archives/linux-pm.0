@@ -1,49 +1,49 @@
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.21])
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.10])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C358D3AEF36;
-	Mon,  6 Jul 2026 05:44:22 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.21
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 540CC371D0A;
+	Mon,  6 Jul 2026 05:45:19 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.10
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1783316665; cv=none; b=jo3i3ivHyLj8xGk1wwdNfAkquBkjtUhhydN8JpnW0VglIesGCK7dgwxy4DuTqd8s62tAklJ9QyA4WyzQEexDsJ0jwzvEuPCV/JUb/coFj9tYvzsCgpl6s8vcESeFGylzb6M82s+oVDxKvGrw+6TXN86VbRzHm/ISr/Ob/Iu3/No=
+	t=1783316720; cv=none; b=G0LhXpcqU/fJ+W6T9BSkJpHA/awlXeYUw/Xtyw0tm09UlrTgMErL0LwFmhiV8qDTrk9boOFicdm+UMvcFCdJWKirIQ1TNTXrYIXNRWqGwpdrOjbQdQNs7XuHt4EnWpdp3onxr5aB6HG0w1Y9r8Af6XintlWi9sGEuSoxrDaZjYU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1783316665; c=relaxed/simple;
-	bh=IrUMWPDZ/VCpuPUVVBVYqvMi5P3Rt+n7hhw8JrpkD0w=;
+	s=arc-20240116; t=1783316720; c=relaxed/simple;
+	bh=lsnmS/u8NCo9XXYFOWuyuTUeIcFEKQZni4hHgmFmNoo=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=TuaGLA4TX/8YWgvlsbfDCw/G91nZRpzhi2HZ0LXaEBGuTs4VfNHoKs/YcUukAX/Sg4p+Drc/iFRIdq29fkB9THanSCi+qRIdDxX6Kw1sLcvgn9TY991uNxtUH7T3lcwicnRRbJRiJylh9HHswUQzd5UTmbiuoc8MEuW3EGK/a1U=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=jIEMZ9S9; arc=none smtp.client-ip=198.175.65.21
+	 Content-Type:Content-Disposition:In-Reply-To; b=Nab8JVFtXtI/EnSGloJX4hPZsQ+rflqIGph6Ps5k+wfUr9G80OR7PBZJiqIBU67T25mUp5yDYy0dGG6i8cxIe7MyLyyUU+YYTIQ3OKAEffkaQVfZCxU6Vu9QrppyTqh5ttzGcks6C4Zq7pRVxYqACshMN1R2Loy4Ku5yvoYL6i8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=cCJF9DNz; arc=none smtp.client-ip=192.198.163.10
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="jIEMZ9S9"
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="cCJF9DNz"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1783316663; x=1814852663;
+  t=1783316720; x=1814852720;
   h=date:from:to:cc:subject:message-id:references:
    mime-version:in-reply-to;
-  bh=IrUMWPDZ/VCpuPUVVBVYqvMi5P3Rt+n7hhw8JrpkD0w=;
-  b=jIEMZ9S9ODSVVxlDP3TrwZCSMmeowWKPPKL1OzT/KsYlLZoA0iwXmG++
-   QITX2EzaZyqTFEznsqBhlYNUykAU6er6kcnCXayFe6fD2eg9i7v0sSTxV
-   Tehfk6JFZlql4Kn+NkAxoMVmFc72iiFMTOz4nuLODEmHVk9hnZ49FAvM0
-   7N1CA/GMsRvLyZ9oktu6rdChBaIOCv8EbGs+0Bg55K4GdfXmHOjBeOR1r
-   xF5bHbCs7zkKzH4QPQrWFKLw8T6qEuBHBCduZRCZChyHxOlio8IA+M84Z
-   K9o8LZQw1f5LdAmzNNbZtqt8mPImKLXsrsNKfJzNjA4OwYMIOTp/bp0GQ
-   Q==;
-X-CSE-ConnectionGUID: L5FBMgd4S82ZP7ydk2aCyg==
-X-CSE-MsgGUID: a6XtVV5uSQ2vokAmmJLX3A==
-X-IronPort-AV: E=McAfee;i="6800,10657,11838"; a="83802674"
+  bh=lsnmS/u8NCo9XXYFOWuyuTUeIcFEKQZni4hHgmFmNoo=;
+  b=cCJF9DNzCHB9baWOK7TPEoA6IolWqWH6bQpuhMfUfhltXNrpnRzYwqA6
+   RCjBYxYSA3XvHQl9BHHF6x13eqMej6tb4YWa5bJQk1v7hDnOQNQXPhn/y
+   WZEb78aXz9ClSYjsbvsZ6+ZFuksA8KBjqrq8KzpzS7Q02XjhbWHbpttOZ
+   GmcSsYqmQ7QkBhMpUjH8dC1T/hVlDK8qZj8Wg1wg6j2CUKygElpnNsvs2
+   zAN8wHy8FtjOw3ZtUSnvqKA5CKSPO78NFrCCo8nRSN0FaUoX6/V+NPP6B
+   eXJulMaZTdCCzPFDEDHFSS3VHuwvVILfzPyPbkAhXa4c2uM4GKc+a55GY
+   w==;
+X-CSE-ConnectionGUID: vZ7jMdbDS/CEW6kqI/P3PQ==
+X-CSE-MsgGUID: 8nGYu6CDT3ua9VnF64jN7Q==
+X-IronPort-AV: E=McAfee;i="6800,10657,11838"; a="95318101"
 X-IronPort-AV: E=Sophos;i="6.25,149,1779174000"; 
-   d="scan'208";a="83802674"
-Received: from orviesa001.jf.intel.com ([10.64.159.141])
-  by orvoesa113.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 05 Jul 2026 22:44:22 -0700
-X-CSE-ConnectionGUID: hHhCO/19S3SGJ8Zo8luRZQ==
-X-CSE-MsgGUID: GRBidsKSTbaofQnKNC5SYw==
+   d="scan'208";a="95318101"
+Received: from orviesa003.jf.intel.com ([10.64.159.143])
+  by fmvoesa104.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 05 Jul 2026 22:45:15 -0700
+X-CSE-ConnectionGUID: HRLQl3dDRPuI4zFfbzEdcg==
+X-CSE-MsgGUID: BMVnKobxQBunIaatW5GVjw==
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="6.25,149,1779174000"; 
-   d="scan'208";a="291766650"
+   d="scan'208";a="257201279"
 Received: from vpanait-mobl.ger.corp.intel.com (HELO localhost) ([10.245.244.48])
-  by smtpauth.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 05 Jul 2026 22:44:17 -0700
-Date: Mon, 6 Jul 2026 08:44:15 +0300
+  by ORVIESA003-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 05 Jul 2026 22:45:11 -0700
+Date: Mon, 6 Jul 2026 08:45:08 +0300
 From: Andy Shevchenko <andriy.shevchenko@intel.com>
 To: Jishnu Prakash <jishnu.prakash@oss.qualcomm.com>
 Cc: Jonathan Cameron <jic23@kernel.org>,
@@ -61,11 +61,10 @@ Cc: Jonathan Cameron <jic23@kernel.org>,
 	Anjelique Melendez <anjelique.melendez@oss.qualcomm.com>,
 	Neil Armstrong <neil.armstrong@linaro.org>,
 	Stephan Gerhold <stephan.gerhold@linaro.org>
-Subject: Re: [PATCH v3 2/3] iio: adc: qcom-spmi-adc5-gen3: Remove an
- unnecessary print
-Message-ID: <aktArynt5xftgij1@ashevche-desk.local>
+Subject: Re: [PATCH v3 0/3] thermal: qcom: add support for PMIC5 Gen3 ADC
+ thermal monitoring
+Message-ID: <aktA5JZIcbbDP_hs@ashevche-desk.local>
 References: <20260705-gen3_adc_tm-v3-0-ac62f387dbce@oss.qualcomm.com>
- <20260705-gen3_adc_tm-v3-2-ac62f387dbce@oss.qualcomm.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -74,30 +73,34 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20260705-gen3_adc_tm-v3-2-ac62f387dbce@oss.qualcomm.com>
+In-Reply-To: <20260705-gen3_adc_tm-v3-0-ac62f387dbce@oss.qualcomm.com>
 Organization: Intel Finland Oy - BIC 0357606-4 - c/o Alberga Business Park, 6
  krs, Bertel Jungin Aukio 5, 02600 Espoo
 
-On Sun, Jul 05, 2026 at 10:23:34PM +0530, Jishnu Prakash wrote:
-> devm_request_threaded_irq internally prints an error message using
+On Sun, Jul 05, 2026 at 10:23:32PM +0530, Jishnu Prakash wrote:
+> Support for the main PMIC5 Gen3 ADC driver has been merged now.
+> 
+> In order to complete adding support for the Gen3 ADC_TM auxiliary
+> driver, some more changes are needed in the main driver, mainly to
+> improve its shared interrupt's handling mechanism.
+> 
+> Patch 1 simplifies the interrupt handling in the main ADC driver
+> by declaring the interrupt as a shared one and dropping the logic
+> used to call the ADC_TM notifier for handling ADC_TM interrupts on
+> the first SDAM whose interrupt is shared.
+> 
+> Patch 2 removes an unneeded print in the main ADC driver.
+> 
+> Patch 3 adds the auxiliary thermal driver which supports the ADC_TM
+> functionality of ADC5 Gen3.
 
-devm_request_threaded_irq()
+> ---
+> Changes in v3:
+> - Collected Reviewed-by tag from Jonathan on patch 1.
+> - Added new patch to remove an unnecessary print in main ADC driver, as
+>   suggested by Andy.
 
-> dev_err_probe in case of any errors. Remove the error print in the
-
-dev_err_probe()
-
-> devm_request_threaded_irq failure path as it is not needed.
-devm_request_threaded_irq()
-
-This patch should go first. The patch 1 is not marked as a fix and we don't
-need this message to be printed even before the patch 1 of your current version
-of the series.
-
-With that being addressed,
-Reviewed-by: Andy Shevchenko <andriy.shevchenko@intel.com>
-
-Also note we refer to the functions as func(), id est mind the parentheses.
+Add Suggested-by tag
 
 -- 
 With Best Regards,
