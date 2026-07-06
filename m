@@ -1,78 +1,49 @@
-Received: from mail-pg1-f171.google.com (mail-pg1-f171.google.com [209.85.215.171])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C92E818AE3
-	for <linux-pm@vger.kernel.org>; Mon,  6 Jul 2026 04:23:51 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.215.171
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D93002D0C62;
+	Mon,  6 Jul 2026 04:44:05 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1783311833; cv=none; b=q1ihtHeL/IHn54eHppKnK142suSonouSJUI+/zPB7NDBd+Ap/Xrevo9ldymC9wGko3CwOHqGUteVPtSqeo04JQanabcBVqlhjSqbQvZj8FxCjZV5az2h+pcWROHm9CqpxgZ4SZEIBbU9Ehq20oQoUtSLCi2hyebyC55yVTaSWa8=
+	t=1783313046; cv=none; b=NR13qz5XJnGP3K0V5/xMlS/0Bpk4t3L/8Auu1UYGROULRil5zA0Ro1uLnMODZlyNBA67BPZutcsmgr4yyUjykhnWzgsfqU/jIGoP09cot83APBhZ4Uk9CVv9Eg/gXvJPfUADPL4H+gxhlf+cm4vjDSrGZbKKs9DQePxb62GTqdE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1783311833; c=relaxed/simple;
-	bh=1TKuHPQG+qr2jHO37e/ykaCNi1KxsSiB0AU530is9qE=;
+	s=arc-20240116; t=1783313046; c=relaxed/simple;
+	bh=ZwUpnrJpg1mgDhyLD6RpzOzJx1X4iLpAN306MercrsQ=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=lDaGbnEb/LrKnq3V9iwmrin/vBanGNyFo/P7eEmAYvP4LWaBW/AEROY7GbDHreyVIjL8YK2OpsJsYRbeJKLua5rnHGtMC4BbNJGmxaxcp0htosZ1CYvyGYFOgUnxjrfAh+43g6K6TiMXdVhwuMOb8/SEI7ZFe52Hoe9ClKILwk4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=mTE9mQSr; arc=none smtp.client-ip=209.85.215.171
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
+	 Content-Type:Content-Disposition:In-Reply-To; b=HoQskv/pCLjV+Oo1ujfxKsEfj4SbtYSjsQ2Z1f4hB1n1mAwpVyR49dMqDx04w57MP0/m1yiQpWTjLnABNey9VCiSkyZdH6lBldJS6bJk7UZMWHC/1aWdAK9NPFa9XiT1vFJ8qSulAEpiSBAJhR/nVJ4Ihyld7i9h3KCBtCbfmIk=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=YIlGb5lc; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="mTE9mQSr"
-Received: by mail-pg1-f171.google.com with SMTP id 41be03b00d2f7-c9e607d81fcso1281641a12.2
-        for <linux-pm@vger.kernel.org>; Sun, 05 Jul 2026 21:23:51 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1783311831; x=1783916631; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=Lu1iu2s3AKXtUtx5SwXHLJCkf9NPTK5qEvHPLW7RRqc=;
-        b=mTE9mQSrVIPWv3QkUedR1mG/Az8wg5ydFlWXOmDO4Yv3cdv7gYxyCO9oXWPL/w7N+6
-         AAYJGYDBjF27GzHORH0dfA4YDXfG6f3xKsW1plI5cdYjwo1bI9f3lMiqFkAeI63YdmIX
-         1nFNRozVDcFOX0xi+HYKCx39pfoRoF2UTRO0e6bUsrV028fi9aHuKZm4vGwExSN5oDDO
-         fP5E8dnfwmkvSZsg1Q0+TaHcnddogwuLRjgFOP0Bi7UBWejz2R5A20yBEOuti9dU8w19
-         H/apkUnTl4P+zrIsFRpdzRqHLf6qweOAh009ifQUxVc3u7j7BZwK/bEsS3z/jN2c6oM+
-         YaDg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1783311831; x=1783916631;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=Lu1iu2s3AKXtUtx5SwXHLJCkf9NPTK5qEvHPLW7RRqc=;
-        b=LxLNyp8ZCFORXrGJUqgEYgDfvZ7Tod/JaxAlhiMoARpKBdm3kIRwTIaA5gSK/aZjC8
-         3I4uWowNCRG3OHlf3qvYPcEaf9oEkYSUjHoM7AJZP90X11eOOPDFXEoIGV82rSTHiFRC
-         IvwUJlPxidlLG4XeI7a7GK5HS088frY322rY37ymdc4k5Xd7ymuPrBqfoLShKK/MnsNr
-         lWYbIRdmJezSFsmzrbCNx55HMnI3pWmJlBJTyo0F7X3LesHZnwdc0TXhDmEVn+4z8DN6
-         CxPeeZs91Tc/g+D+J4ziQdkJP2vbspwkl9DL8GLsV7+fdyigQutbmemCwn6Dq2lwpryw
-         qcoA==
-X-Forwarded-Encrypted: i=1; AHgh+Rrv1NeoxtPgHhgRFN0lEJUYtKL1PrNAJP46RFQp2ObiVHl+hfLAH5WVh+vBFhiDDurrHk68OqLh2Q==@vger.kernel.org
-X-Gm-Message-State: AOJu0YxISp2YBVl1+V6GXjbRy26gPKbJPphwOSAn7n5mqUxOioaNTt1r
-	DWAcOblkidoaDtQnQDBIVNcTnV9wypcl+5rJgWQksuMuUCJkwg2GDDqNAe3gm39/lJg=
-X-Gm-Gg: AfdE7cmFosepN4otMDXFM9PTq5EAscFyUzZs3X3DE87VAE3br+d5JhFV90COQmTC2b2
-	LNrCxLVEvxvxH+tFzCZsZmty/PYbASPsYoMcWk8U3qVfBxosnKjaGIN3b0XIdeuiJJIm6DBPLaJ
-	NuTiGSoys4OYIGtJlkal+JquKsxwFMK4X8Jj3uE0w1Y2Hersnbr887kW/cLt1gWoTU3WMB1clAg
-	IT2/rdWO5iI4fD3mZNEJ7nbJRd5QSV5uRKDTKTfWKB6ERxyDfMNtearR97LrTx1RGN3V5b9BDq2
-	36ZSvDxRYKzZxedLSpdPAmKfYcLHKu0p6xVD7df5kCUWfhiA9ueYsuD53p7Hfbd3OzjK4I9Rc6g
-	d36SjvV2ZvLkLHbyWFGnrQLssNFSX0Qf8+wwxj6e55Pdtf3kpJ4VUREEoiz9ef7Ze07FNhqGJ/X
-	k0hKoRm6eq8Hs7
-X-Received: by 2002:a05:6a21:6e8f:b0:3bf:7189:2d1f with SMTP id adf61e73a8af0-3c03e50a981mr8627508637.31.1783311830982;
-        Sun, 05 Jul 2026 21:23:50 -0700 (PDT)
-Received: from localhost ([122.172.82.94])
-        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-30f3b252222sm30443173eec.23.2026.07.05.21.23.49
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 05 Jul 2026 21:23:49 -0700 (PDT)
-Date: Mon, 6 Jul 2026 09:53:47 +0530
-From: Viresh Kumar <viresh.kumar@linaro.org>
-To: Guru Das Srinagesh <linux@gurudas.dev>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, 
-	Miguel Ojeda <ojeda@kernel.org>, Boqun Feng <boqun@kernel.org>, Gary Guo <gary@garyguo.net>, 
-	=?utf-8?B?QmrDtnJu?= Roy Baron <bjorn3_gh@protonmail.com>, Benno Lossin <lossin@kernel.org>, 
-	Andreas Hindborg <a.hindborg@kernel.org>, Alice Ryhl <aliceryhl@google.com>, 
-	Trevor Gross <tmgross@umich.edu>, Danilo Krummrich <dakr@kernel.org>, 
-	Daniel Almeida <daniel.almeida@collabora.com>, Tamir Duberstein <tamird@kernel.org>, 
-	Alexandre Courbot <acourbot@nvidia.com>, Onur =?utf-8?B?w5Z6a2Fu?= <work@onurozkan.dev>, 
-	linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, rust-for-linux@vger.kernel.org
-Subject: Re: [PATCH] rust: rcpufreq_dt: use vertical import style
-Message-ID: <ennffugbsqhojfeplo7u7qjoeho473jg636jvfuxst4jq4jmda@7a2v5unjj5up>
-References: <20260705-pm-rust-vert-imp-v1-1-8aa778c32d82@gurudas.dev>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="YIlGb5lc"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3CF9B1F000E9;
+	Mon,  6 Jul 2026 04:44:03 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1783313045;
+	bh=OOT0M2EZdfcJh1s1OTtAjSBdwqM3ATiateEjVn+MbJA=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=YIlGb5lcWfs9WNrxxDjgeDEnIvM32TfzW/2J46SP5HWl0IWz69dCPLsqCgQ4vMKLw
+	 gQGvBGvpAA66sGO/oXUSUUMIbPmiH69poExMOcfwmtj65cG88sb66eoLTvdInY+eBm
+	 UfBjpoCU4HwTevLARZ6rpK73b1mqr6R6jsnzb92o5S3ELbEwWhE0QKunpadQUV466J
+	 jg+Fkh80I2NeDzkNwb5Wt8F/DXabPRjZMLuBnxpe7InyenbWUh78cO/hawpf9c+wuv
+	 viHFuDi/3cXAHZLOFwT4SIc8X2ETpSIZTSWE0FL+lpJuyo3yjn5gXthZ490VqqTiBf
+	 pnzi//0bP/DdA==
+Date: Mon, 6 Jul 2026 04:44:01 +0000
+From: Tzung-Bi Shih <tzungbi@kernel.org>
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Jonathan Corbet <corbet@lwn.net>,
+	"Rafael J. Wysocki" <rafael@kernel.org>,
+	Danilo Krummrich <dakr@kernel.org>,
+	Shuah Khan <skhan@linuxfoundation.org>,
+	Pavel Machek <pavel@kernel.org>, Len Brown <lenb@kernel.org>,
+	linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linux-pm@vger.kernel.org, driver-core@lists.linux.dev,
+	tfiga@chromium.org, senozhatsky@chromium.org,
+	Randy Dunlap <rdunlap@infradead.org>
+Subject: Re: [PATCH v5 2/2] PM: dpm_watchdog: Allow disabling DPM watchdog by
+ default
+Message-ID: <aksykRsv33t3lUla@google.com>
+References: <20260701045640.3130090-1-tzungbi@kernel.org>
+ <20260701045640.3130090-3-tzungbi@kernel.org>
+ <2026070140-rally-prowling-4d66@gregkh>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -81,31 +52,33 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20260705-pm-rust-vert-imp-v1-1-8aa778c32d82@gurudas.dev>
+In-Reply-To: <2026070140-rally-prowling-4d66@gregkh>
 
-On 05-07-26, 20:08, Guru Das Srinagesh wrote:
-> Convert `use` imports to vertical layout for better readability and
-> maintainability.
+On Wed, Jul 01, 2026 at 09:20:46AM +0200, Greg Kroah-Hartman wrote:
+> On Wed, Jul 01, 2026 at 04:56:40AM +0000, Tzung-Bi Shih wrote:
+> > diff --git a/kernel/power/Kconfig b/kernel/power/Kconfig
+> > index 530c897311d4..508ceabc4d2e 100644
+> > --- a/kernel/power/Kconfig
+> > +++ b/kernel/power/Kconfig
+> > @@ -268,6 +268,16 @@ config DPM_WATCHDOG
+> >  	  captured in pstore device for inspection in subsequent
+> >  	  boot session.
+> >  
+> > +config DPM_WATCHDOG_ENABLED
+> > +	bool "Enable DPM watchdog by default"
+> > +	depends on DPM_WATCHDOG
+> > +	default y
 > 
-> Signed-off-by: Guru Das Srinagesh <linux@gurudas.dev>
-> ---
-> Came across a recent commit bc58905eb07 ("samples: rust_misc_device: use
-> vertical import style") and found a few more locations that could
-> benefit from this cleanup. No functional changes.
-> 
-> Separating out patches per-subsystem as per the review feedback in [0].
-> 
-> Tested via:
-> 
->     $ make LLVM=1 rustfmtcheck || echo "fail"
->     $
-> 
-> [0]: https://lore.kernel.org/lkml/20260628-b4-rust-vertical-imports-v1-0-98bc71d4810b@gurudas.dev/
-> ---
->  drivers/cpufreq/rcpufreq_dt.rs | 13 ++++++++++---
->  1 file changed, 10 insertions(+), 3 deletions(-)
+> Only do this if you can not boot without the option enabled, which I do
+> not think is the case here.
 
-Applied. Thanks.
+I assume you are referring to the `default y`?
 
--- 
-viresh
+The reason for adding `default y` here is to maintain backward compatibility.
+Previously, the DPM watchdog was always active if CONFIG_DPM_WATCHDOG was set.
+By defaulting this new option to 'y', we ensure that the behavior remains
+unchanged for existing users and defconfigs when they upgrade.
+
+At the same time, this new option provides the flexibility for systems
+(like Android GKI) that want to compile the watchdog code in, but keep it
+disabled by default.
