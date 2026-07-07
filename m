@@ -1,38 +1,38 @@
 Received: from bali.collaboradmins.com (bali.collaboradmins.com [148.251.105.195])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2F8E43E1736;
-	Tue,  7 Jul 2026 10:18:34 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 071AF3DD86C;
+	Tue,  7 Jul 2026 10:18:36 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=148.251.105.195
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1783419516; cv=none; b=a/MxaIrFG0RJTAqrfZpnWMmUfHD6OoHx11VZi6wGDHKKHoCWSV8z0jPG3ExFdmhzacCweJRahgR94O9a1uHiK9hB0qC8cs7K1bcjZ+CzuP4MOWgZxhohiwIk4VTIC8VDZmS9jtw+N4RclCgXlyF9EHBiUTYltLIBdDLkDTG2ylg=
+	t=1783419517; cv=none; b=S8LxQU6mcHAJ1O0NPYEl09EIo25PdAOcr0M02x5TMo55q2gtjKLrXc1NVynBCJTnf4fdvS943vn10aSDLrxE6JhDKHfThlOs+h76PSACqMUKy0hbxrJm28cu30MLVFAaU8KrhSM3xLfZbPqjG7PVfDct8d5a9BqTdlEKYLhqZWE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1783419516; c=relaxed/simple;
-	bh=eJ2zKdEhpR/zWqAN0vxAwl+XVdL6Yw9mt7GmtAm+lxM=;
+	s=arc-20240116; t=1783419517; c=relaxed/simple;
+	bh=voQl0vfqoC0MMFj4jSHyCeAMaSupuoMA1cHKiG13Y04=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=YffxXXuNufsppuKiTquvIScbnBT2jNuT1LhrHEwwDG1lFBTjNXjcNBov0HPcsCqS70rA/dc+rgk3ISBx5lk4xi+A//r3ZjDsKQDrlnyqjeuAtlritL9uGSjTUBDA/fhgYXkhesxbkeYv5YibkfWxfbjSks66feGHLY89RKlqJRA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b=MKqNXk0U; arc=none smtp.client-ip=148.251.105.195
+	 MIME-Version; b=KTRXZ0ibTqUXQc0c+7aSUjJr3XguVqeFdNAylQgNNttJ1TAkjY0HpAwnJZH1Jp0kRrqACcc432uULo35aEY6QEUJLM2D4QeyWnJudGdIycx69baO4e4OZ6NoYItqBRZ9D2gw3qqT09IEhIRpfwIKk1rGr4QJRWNeA2rgSUlAZ1g=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b=jjbVXFAM; arc=none smtp.client-ip=148.251.105.195
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b="MKqNXk0U"
+	dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b="jjbVXFAM"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
-	s=mail; t=1783419513;
-	bh=eJ2zKdEhpR/zWqAN0vxAwl+XVdL6Yw9mt7GmtAm+lxM=;
+	s=mail; t=1783419514;
+	bh=voQl0vfqoC0MMFj4jSHyCeAMaSupuoMA1cHKiG13Y04=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=MKqNXk0UagUroapHUx5yfxoCU7fe/0tMjSmiRemzUoNUqY1tNM5UBl/5Zj15wuXjk
-	 GYqXQAg2n348q5Z0spxYguDLUxfQALdlG/8We83EROVXxIomYrYyjRzwNs/Kj63D4w
-	 pO/lPThwoI68bpDBVnvgC10FegDKEvfii10IL0s6woaBh0N0yS8OshsZ3UMYPtzBcV
-	 JgVLifiviHpSK1ncn5FmlIipM6jGZCCq4uag3S61ds4gyqtaYOCQHxrTyvsAznTvNJ
-	 Jh0jfJR/ijTaKb2uxuF+8jxn56Bvzv+vgxkbF0Qt+TxnflweQSeRkJxs8VWzn6qN8B
-	 hd+FghtXmE5OA==
+	b=jjbVXFAMv6S+ffubCvFatX0H8oO8HCoCEqDPzCuIWgRRqXcldtvMAETLnCPlOZC6B
+	 /LGtnjD2ulqypG+ffw5wbksoNLd637Hj5A/OrWU8puP9ItndHCLvNNI4gbnM0gvHFl
+	 nH51yQiVech+6csR5YC2YTfUSVofKPZnByAZTIjPJt/0+ZhdpYLopM9qXKKGAacVhI
+	 ruaGL8IMEaI42sO5/zt66ALQ/mgdfzeOFNXq2pC7MzmQs8cQ1xG0GIJCtizOehkcqb
+	 5aEvREZrqBJGL7mJwt12IBrd9EyNHkdiMsWzQ1T9cEgTjXLPqm9gYoI/+ti9e3CW76
+	 dW1RABIT2foaA==
 Received: from IcarusMOD.eternityproject.eu (unknown [100.64.1.21])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
 	(Authenticated sender: kholk11)
-	by bali.collaboradmins.com (Postfix) with ESMTPSA id 67FF917E0C88;
-	Tue, 07 Jul 2026 12:18:32 +0200 (CEST)
+	by bali.collaboradmins.com (Postfix) with ESMTPSA id 93BB717E0D56;
+	Tue, 07 Jul 2026 12:18:33 +0200 (CEST)
 From: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
 To: jic23@kernel.org,
 	sboyd@kernel.org
@@ -62,10 +62,11 @@ Cc: dlechner@baylibre.com,
 	linux-kernel@vger.kernel.org,
 	linux-phy@lists.infradead.org,
 	linux-pm@vger.kernel.org,
-	kernel@collabora.com
-Subject: [PATCH v11 06/12] spmi: Add helper to get a parent SPMI device
-Date: Tue,  7 Jul 2026 12:18:15 +0200
-Message-ID: <20260707101821.173319-7-angelogioacchino.delregno@collabora.com>
+	kernel@collabora.com,
+	Andy Shevchenko <andriy.shevchenko@intel.com>
+Subject: [PATCH v11 07/12] nvmem: qcom-spmi-sdam: Migrate to devm_spmi_subdevice_alloc_and_add()
+Date: Tue,  7 Jul 2026 12:18:16 +0200
+Message-ID: <20260707101821.173319-8-angelogioacchino.delregno@collabora.com>
 X-Mailer: git-send-email 2.54.0
 In-Reply-To: <20260707101821.173319-1-angelogioacchino.delregno@collabora.com>
 References: <20260707101821.173319-1-angelogioacchino.delregno@collabora.com>
@@ -77,71 +78,145 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Drivers that register a SPMI sub-device as a platform_driver are
-not guaranteed to have a SPMI device as their parent: add a new
-helper `spmi_get_parent_spmi_device()` that takes a struct device
-and checks if there's a parent, and if that parent is actually a
-SPMI device by checking if its device type matches with SPMI: if
-so, returns a pointer to the relative struct spmi_device without
-incrementing any refcount.
+Some Qualcomm PMICs integrate a SDAM device, internally located in
+a specific address range reachable through SPMI communication.
 
-As a note, in the specific case of using this helper to retrieve
-a SPMI subdevice's parent, the spmi_subdevice_alloc_and_add()
-function does actually call device_add(), which will already take
-care of raising the refcount of the associated parent device.
+Instead of using the parent SPMI device (the main PMIC) as a kind
+of syscon in this driver, register a new SPMI sub-device for SDAM
+and initialize its own regmap with this sub-device's specific base
+address, retrieved from the devicetree.
 
+This allows to stop manually adding the register base address to
+every R/W call in this driver, as this can be, and is now, handled
+by the regmap API instead.
+
+Reviewed-by: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
+Tested-by: Neil Armstrong <neil.armstrong@linaro.org> # on SM8650-QRD
+Acked-by: Srinivas Kandagatla <srini@kernel.org>
+Reviewed-by: Andy Shevchenko <andriy.shevchenko@intel.com>
 Signed-off-by: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
 ---
- drivers/spmi/spmi.c  | 23 +++++++++++++++++++++++
- include/linux/spmi.h |  1 +
- 2 files changed, 24 insertions(+)
+ drivers/nvmem/Kconfig          |  1 +
+ drivers/nvmem/qcom-spmi-sdam.c | 41 ++++++++++++++++++++++++----------
+ 2 files changed, 30 insertions(+), 12 deletions(-)
 
-diff --git a/drivers/spmi/spmi.c b/drivers/spmi/spmi.c
-index 16ffcb137008..53c26d72e210 100644
---- a/drivers/spmi/spmi.c
-+++ b/drivers/spmi/spmi.c
-@@ -433,6 +433,29 @@ struct spmi_device *spmi_find_device_by_of_node(struct device_node *np)
+diff --git a/drivers/nvmem/Kconfig b/drivers/nvmem/Kconfig
+index e10f7ff725ff..cc032d60b8c1 100644
+--- a/drivers/nvmem/Kconfig
++++ b/drivers/nvmem/Kconfig
+@@ -380,6 +380,7 @@ config NVMEM_SNVS_LPGPR
+ config NVMEM_SPMI_SDAM
+ 	tristate "SPMI SDAM Support"
+ 	depends on SPMI
++	select REGMAP_SPMI
+ 	help
+ 	  This driver supports the Shared Direct Access Memory Module on
+ 	  Qualcomm Technologies, Inc. PMICs. It provides the clients
+diff --git a/drivers/nvmem/qcom-spmi-sdam.c b/drivers/nvmem/qcom-spmi-sdam.c
+index 4f1cca6eab71..ad5ae47ce4b0 100644
+--- a/drivers/nvmem/qcom-spmi-sdam.c
++++ b/drivers/nvmem/qcom-spmi-sdam.c
+@@ -9,6 +9,7 @@
+ #include <linux/nvmem-provider.h>
+ #include <linux/platform_device.h>
+ #include <linux/regmap.h>
++#include <linux/spmi.h>
+ 
+ #define SDAM_MEM_START			0x40
+ #define REGISTER_MAP_ID			0x40
+@@ -20,7 +21,6 @@
+ struct sdam_chip {
+ 	struct regmap			*regmap;
+ 	struct nvmem_config		sdam_config;
+-	unsigned int			base;
+ 	unsigned int			size;
+ };
+ 
+@@ -73,7 +73,7 @@ static int sdam_read(void *priv, unsigned int offset, void *val,
+ 		return -EINVAL;
+ 	}
+ 
+-	rc = regmap_bulk_read(sdam->regmap, sdam->base + offset, val, bytes);
++	rc = regmap_bulk_read(sdam->regmap, offset, val, bytes);
+ 	if (rc < 0)
+ 		dev_err(dev, "Failed to read SDAM offset %#x len=%zd, rc=%d\n",
+ 						offset, bytes, rc);
+@@ -100,7 +100,7 @@ static int sdam_write(void *priv, unsigned int offset, void *val,
+ 		return -EINVAL;
+ 	}
+ 
+-	rc = regmap_bulk_write(sdam->regmap, sdam->base + offset, val, bytes);
++	rc = regmap_bulk_write(sdam->regmap, offset, val, bytes);
+ 	if (rc < 0)
+ 		dev_err(dev, "Failed to write SDAM offset %#x len=%zd, rc=%d\n",
+ 						offset, bytes, rc);
+@@ -110,8 +110,17 @@ static int sdam_write(void *priv, unsigned int offset, void *val,
+ 
+ static int sdam_probe(struct platform_device *pdev)
+ {
++	struct regmap_config sdam_regmap_config = {
++		.reg_bits = 16,
++		.val_bits = 8,
++		.max_register = 0xff,
++		.fast_io = true,
++	};
+ 	struct sdam_chip *sdam;
+ 	struct nvmem_device *nvmem;
++	struct spmi_device *sparent;
++	struct spmi_subdevice *sub_sdev;
++	struct device *dev = &pdev->dev;
+ 	unsigned int val;
+ 	int rc;
+ 
+@@ -119,19 +128,26 @@ static int sdam_probe(struct platform_device *pdev)
+ 	if (!sdam)
+ 		return -ENOMEM;
+ 
+-	sdam->regmap = dev_get_regmap(pdev->dev.parent, NULL);
+-	if (!sdam->regmap) {
+-		dev_err(&pdev->dev, "Failed to get regmap handle\n");
+-		return -ENXIO;
+-	}
++	sparent = spmi_get_parent_spmi_device(dev->parent);
++	if (!sparent)
++		return -ENODEV;
+ 
+-	rc = of_property_read_u32(pdev->dev.of_node, "reg", &sdam->base);
++	sub_sdev = devm_spmi_subdevice_alloc_and_add(dev, sparent);
++	if (IS_ERR(sub_sdev))
++		return PTR_ERR(sub_sdev);
++
++	rc = device_property_read_u32(dev, "reg", &sdam_regmap_config.reg_base);
+ 	if (rc < 0) {
+-		dev_err(&pdev->dev, "Failed to get SDAM base, rc=%d\n", rc);
++		dev_err(dev, "Failed to get SDAM base, rc=%d\n", rc);
+ 		return -EINVAL;
+ 	}
+ 
+-	rc = regmap_read(sdam->regmap, sdam->base + SDAM_SIZE, &val);
++	sdam->regmap = devm_regmap_init_spmi_ext(&sub_sdev->sdev, &sdam_regmap_config);
++	if (IS_ERR(sdam->regmap))
++		return dev_err_probe(dev, PTR_ERR(sdam->regmap),
++				     "Failed to get regmap handle\n");
++
++	rc = regmap_read(sdam->regmap, SDAM_SIZE, &val);
+ 	if (rc < 0) {
+ 		dev_err(&pdev->dev, "Failed to read SDAM_SIZE rc=%d\n", rc);
+ 		return -EINVAL;
+@@ -159,7 +175,7 @@ static int sdam_probe(struct platform_device *pdev)
+ 	}
+ 	dev_dbg(&pdev->dev,
+ 		"SDAM base=%#x size=%u registered successfully\n",
+-		sdam->base, sdam->size);
++		sdam_regmap_config.reg_base, sdam->size);
+ 
+ 	return 0;
  }
- EXPORT_SYMBOL_GPL(spmi_find_device_by_of_node);
+@@ -181,3 +197,4 @@ module_platform_driver(sdam_driver);
  
-+/**
-+ * spmi_get_parent_spmi_device() - get the parent SPMI device from current dev
-+ * @dev:        pointer to a subdevice on SPMI bus
-+ *
-+ * Checks if the passed device is a child of an SPMI device and returns a
-+ * handle to the parent SPMI device without incrementing any refcount.
-+ *
-+ * Return: Handle to the parent SPMI device or NULL
-+ */
-+struct spmi_device *spmi_get_parent_spmi_device(struct device *dev)
-+{
-+	struct device *parent;
-+
-+	if (dev && dev->parent) {
-+		parent = dev->parent;
-+
-+		if (parent->type == &spmi_dev_type)
-+			return to_spmi_device(parent);
-+	}
-+	return NULL;
-+}
-+EXPORT_SYMBOL_NS_GPL(spmi_get_parent_spmi_device, "SPMI");
-+
- /**
-  * spmi_device_alloc() - Allocate a new SPMI device
-  * @ctrl:	associated controller
-diff --git a/include/linux/spmi.h b/include/linux/spmi.h
-index a78a8924b2ac..4daebc980501 100644
---- a/include/linux/spmi.h
-+++ b/include/linux/spmi.h
-@@ -189,6 +189,7 @@ static inline void spmi_driver_unregister(struct spmi_driver *sdrv)
- struct device_node;
- 
- struct spmi_device *spmi_find_device_by_of_node(struct device_node *np);
-+struct spmi_device *spmi_get_parent_spmi_device(struct device *dev);
- int spmi_register_read(struct spmi_device *sdev, u8 addr, u8 *buf);
- int spmi_ext_register_read(struct spmi_device *sdev, u8 addr, u8 *buf,
- 			   size_t len);
+ MODULE_DESCRIPTION("QCOM SPMI SDAM driver");
+ MODULE_LICENSE("GPL v2");
++MODULE_IMPORT_NS("SPMI");
 -- 
 2.54.0
 
