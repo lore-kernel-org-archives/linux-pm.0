@@ -1,85 +1,182 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 338BD3BF679;
-	Mon,  6 Jul 2026 20:59:03 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EC06422301;
+	Tue,  7 Jul 2026 00:23:23 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1783371545; cv=none; b=rWOt+yv4XQaPMZ7kfsaWwWLzOKbPVuxkYdCTbIEex2DE0iy8B2CHWK/HUAbPXwwyRQCq56lMFEnQGOzb2VAyHI4z2OLQE44/4EO6qy12lzo+iPW7gMQeKY5SHFnTT+4HiF5ZSXgNrygodvteT0dAEIy5zxSBI9794Z9jxDmxtHA=
+	t=1783383805; cv=none; b=IcLyBBA5cY2qM4TTqMWLlhCfIXkbJnPhL4XqUCEBIIzEbLMYY/v1VK1sJdD0g1RP7VNVwEDNobJEMkVBW2IxomftqDL9BHTQ0UxU6+Dbet7ANS3I1lQ9nUcg54zcI4Lb0WERj3KKQGnHWd9qN4qTqkElf1nozJqtqYAtXgisXeQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1783371545; c=relaxed/simple;
-	bh=LRqt5iGrCy3stj6S4jr0OnbAsnN3ciWf48wLl6W30L4=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=QeY4iPrLcxH1OB4AR6STaplg7sABm9srMvoBpy8pnWPcLPliWdmVYIr9hcZRhieDvPCf4QQl/Y8qJG4JODFn4fhENv0FJzNtiWFMkfid/xI4x23yY7d+gqn+XiTEs+EPys+zhnC49LqFOKwjKENe4xz1fqVVFH7k2m8r00cXzB4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=SVITvsEk; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1783383805; c=relaxed/simple;
+	bh=KESq28kjthSmS4J5zfWb3lJIRiCvXUIXKjxITab28ao=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=IV6+GS5OsCjcwbwAHc7LkpZQ9dQnZmuUBHmuahRd8yAa5q47eILAPzGj/eRBmo+72vtASdaFeGOYXDMglDg2hF2+dkgruszJdbzRypY5XU//2pMKXFLiZEZpJMJUBZn9yWi2bgWjUV4ZohKm64CrYBUZmRPv7mW3pg5sYzDzov0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Zmqoq15h; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="SVITvsEk"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0F8CD1F000E9;
-	Mon,  6 Jul 2026 20:59:02 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Zmqoq15h"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id D1DB51F000E9;
+	Tue,  7 Jul 2026 00:23:22 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1783371543;
-	bh=+zc+AqSKZtfFV3G9vnqY3wnMZNqhlnIfdKw/QyGAhEI=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To;
-	b=SVITvsEk4/Snfvnhnsod8k7G1kePLpZbp49QGpjElDWmj72K7CpIjAoZ1rud26zZR
-	 nYRbwJPdZlpbfH/m+EToZuvMunOmwVCzg+MJG90vSqEmIcIpKavmuH7h5rt6gU28jC
-	 M24VnIsPLvDtAvvDwNT4l6Yl74LsTnQa/HCNGCycB4RFb/xOg/K5jtV57DXiQtxuSC
-	 KaeGY8Qa8qR+FrVjID071/DSDymlJX8HJNRPenul6dZzkXt+8A2QRg9y99UqJG0weU
-	 36APj9sRkYib4SiPsbFH1blo5a+qtK1KDP89K31ptlQN9YPrlsCYBpzFqCZpOsbeQ7
-	 55/kBsG08OOIA==
-Message-ID: <9bd738da-bc62-45a5-947f-8971538a522a@kernel.org>
-Date: Mon, 6 Jul 2026 15:59:01 -0500
+	s=k20260515; t=1783383803;
+	bh=1HDrKCWsJjNzEJihGkMggdF4BVdh8kzeKEp2eMd1tO0=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=Zmqoq15hcmgBH1RRCU8oPELos4iqYxq/iFRTLwXvMUPapkLAfpnnUI+akAYezrvvG
+	 jwnn9tlizYYeXdnaFStjVcRr76hOrq71mzPUi1/MgEtqk26dxAywHnLvW69QstxVkK
+	 3PEAY1mZedsTQr45U8LLLwOOymLZBvjhCNu+OMN0iNiWPnrQ6kTYEXfmTahK73WCAu
+	 QDmrh+BwPOly3LIVHfPrh2aJvRfmvW4Z4GCaLP3BBcJ0uvojnd8Doz+VUZX7ynvF4B
+	 Fe02jS78JmYv3IiA71DTf1QPQIq1mvEVqiRsOmmJDpB8FaRZx6SRcok9S169/WiQO6
+	 JUtS5WkEB7TWg==
+Date: Mon, 6 Jul 2026 19:23:20 -0500
+From: Bjorn Andersson <andersson@kernel.org>
+To: Richard Acayan <mailingradian@gmail.com>
+Cc: Konrad Dybcio <konradybcio@kernel.org>, Rob Herring <robh@kernel.org>, 
+	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
+	Amit Kucheria <amitk@kernel.org>, Thara Gopinath <thara.gopinath@gmail.com>, 
+	"Rafael J. Wysocki" <rafael@kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, 
+	Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>, linux-arm-msm@vger.kernel.org, 
+	devicetree@vger.kernel.org, linux-pm@vger.kernel.org
+Subject: Re: [PATCH v5 1/2] thermal/qcom/lmh: support SDM670 and its CPU
+ clusters
+Message-ID: <akxG4bzq7qAprz0M@baldur>
+References: <20260330165237.101045-1-mailingradian@gmail.com>
+ <20260330165237.101045-2-mailingradian@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [RFC PATCH 3/6] cpufreq/amd-pstate: Repurpose "amd_dynamic_epp"
- cmdline and corresponding sysfs
-Content-Language: en-US
-To: K Prateek Nayak <kprateek.nayak@amd.com>,
- "Rafael J. Wysocki" <rafael@kernel.org>,
- Viresh Kumar <viresh.kumar@linaro.org>, Huang Rui <ray.huang@amd.com>
-Cc: Perry Yuan <perry.yuan@amd.com>, linux-pm@vger.kernel.org,
- linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <20260630185904.5602-1-kprateek.nayak@amd.com>
- <20260630185904.5602-4-kprateek.nayak@amd.com>
- <8155d7c7-2a10-4fec-bfde-0aeb017724ac@kernel.org>
- <5f271215-6e83-4d75-a562-16d8e70ce672@amd.com>
-From: Mario Limonciello <superm1@kernel.org>
-In-Reply-To: <5f271215-6e83-4d75-a562-16d8e70ce672@amd.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260330165237.101045-2-mailingradian@gmail.com>
 
-On 7/2/26 15:36, K Prateek Nayak wrote:
-> Hello Mario,
+On Mon, Mar 30, 2026 at 12:52:36PM -0400, Richard Acayan wrote:
+> The LMh driver was made for Qualcomm SoCs with clusters of 4 CPUs, but
+> some SoCs divide the CPUs into different sizes of clusters. In SDM670,
+> the first 6 CPUs are in the little cluster and the next 2 are in the big
+> cluster. Define the clusters in the match data and define the different
+> cluster configuration for SDM670.
 > 
-> On 7/2/2026 3:10 AM, Mario Limonciello wrote:
->> On 6/30/26 13:59, K Prateek Nayak wrote:
->>> Since dynamic_epp has been converted to an
->>> "energy_performance_preference", toggling the feature via the sysfs file
->>> is now redundant.
->>>
->>> Repurpose "amd_dynamic_epp=enable" command line to opt into dynamic EPP
->>> by default when the active driver is loaded, or switched into. The
->>> "disable" counterpart will "dynamic" option out of
->>> "energyy_performance_preference" to ensure dynamic EPP feature can never
->>> be toggled.
->>>
->>> Use a tri-state enum to differentiate if the user has supplied a command
->>> line parameter or not to enable the feature by default vs keeping the
->>> current defaults as is and allowing users to toggle it later via the
->>> "dynamic" option in "energy_performance_preference" selection.
->>>
->>> Signed-off-by: K Prateek Nayak <kprateek.nayak@amd.com>
->>
->> Honestly - I have to question if we even want to have the kernel command line option anymore.  If userspace can easily opt in and out as in this series, do we still need a kernel command line for default policy?
->>
->> I'm of the opinion rip it out, less to maintain.
+> Currently, this tolerates linking to any CPU in a given cluster.
 > 
-> Ack! I'll rip out the cmdline and the "dynamic_epp" sysfs file then in
-> the next version?
-> 
+> Signed-off-by: Richard Acayan <mailingradian@gmail.com>
 
-Yeah; I would say so.
+Reviewed-by: Bjorn Andersson <andersson@kernel.org>
+
+Regards,
+Bjorn
+
+> ---
+>  drivers/thermal/qcom/lmh.c | 54 ++++++++++++++++++++++++--------------
+>  1 file changed, 34 insertions(+), 20 deletions(-)
+> 
+> diff --git a/drivers/thermal/qcom/lmh.c b/drivers/thermal/qcom/lmh.c
+> index 3d072b7a4a6d..81ab2f0be9c8 100644
+> --- a/drivers/thermal/qcom/lmh.c
+> +++ b/drivers/thermal/qcom/lmh.c
+> @@ -30,14 +30,17 @@
+>  
+>  #define LMH_REG_DCVS_INTR_CLR		0x8
+>  
+> -#define LMH_ENABLE_ALGOS		1
+> -
+>  struct lmh_hw_data {
+>  	void __iomem *base;
+>  	struct irq_domain *domain;
+>  	int irq;
+>  };
+>  
+> +struct lmh_soc_data {
+> +	bool enable_algos;
+> +	unsigned int clus1_start_idx;
+> +};
+> +
+>  static irqreturn_t lmh_handle_irq(int hw_irq, void *data)
+>  {
+>  	struct lmh_hw_data *lmh_data = data;
+> @@ -100,8 +103,8 @@ static int lmh_probe(struct platform_device *pdev)
+>  	struct device_node *np = dev->of_node;
+>  	struct device_node *cpu_node;
+>  	struct lmh_hw_data *lmh_data;
+> +	const struct lmh_soc_data *match_data;
+>  	int temp_low, temp_high, temp_arm, cpu_id, ret;
+> -	unsigned int enable_alg;
+>  	u32 node_id;
+>  
+>  	if (!qcom_scm_is_available())
+> @@ -121,6 +124,11 @@ static int lmh_probe(struct platform_device *pdev)
+>  	cpu_id = of_cpu_node_to_id(cpu_node);
+>  	of_node_put(cpu_node);
+>  
+> +	if (cpu_id < 0) {
+> +		dev_err(dev, "Wrong CPU id associated with LMh node\n");
+> +		return -EINVAL;
+> +	}
+> +
+>  	ret = of_property_read_u32(np, "qcom,lmh-temp-high-millicelsius", &temp_high);
+>  	if (ret) {
+>  		dev_err(dev, "missing qcom,lmh-temp-high-millicelsius property\n");
+> @@ -139,26 +147,16 @@ static int lmh_probe(struct platform_device *pdev)
+>  		return ret;
+>  	}
+>  
+> -	/*
+> -	 * Only sdm845 has lmh hardware currently enabled from hlos. If this is needed
+> -	 * for other platforms, revisit this to check if the <cpu-id, node-id> should be part
+> -	 * of a dt match table.
+> -	 */
+> -	if (cpu_id == 0) {
+> +	match_data = of_device_get_match_data(dev);
+> +	if (cpu_id < match_data->clus1_start_idx)
+>  		node_id = LMH_CLUSTER0_NODE_ID;
+> -	} else if (cpu_id == 4) {
+> +	else
+>  		node_id = LMH_CLUSTER1_NODE_ID;
+> -	} else {
+> -		dev_err(dev, "Wrong CPU id associated with LMh node\n");
+> -		return -EINVAL;
+> -	}
+>  
+>  	if (!qcom_scm_lmh_dcvsh_available())
+>  		return -EINVAL;
+>  
+> -	enable_alg = (uintptr_t)of_device_get_match_data(dev);
+> -
+> -	if (enable_alg) {
+> +	if (match_data->enable_algos) {
+>  		ret = qcom_scm_lmh_dcvsh(LMH_SUB_FN_CRNT, LMH_ALGO_MODE_ENABLE, 1,
+>  					 LMH_NODE_DCVS, node_id, 0);
+>  		if (ret)
+> @@ -231,10 +229,26 @@ static int lmh_probe(struct platform_device *pdev)
+>  	return 0;
+>  }
+>  
+> +static const struct lmh_soc_data sdm670_lmh_data = {
+> +	.enable_algos = true,
+> +	.clus1_start_idx = 6,
+> +};
+> +
+> +static const struct lmh_soc_data sdm845_lmh_data = {
+> +	.enable_algos = true,
+> +	.clus1_start_idx = 4,
+> +};
+> +
+> +static const struct lmh_soc_data sm8150_lmh_data = {
+> +	.enable_algos = false,
+> +	.clus1_start_idx = 4,
+> +};
+> +
+>  static const struct of_device_id lmh_table[] = {
+> -	{ .compatible = "qcom,sc8180x-lmh", },
+> -	{ .compatible = "qcom,sdm845-lmh", .data = (void *)LMH_ENABLE_ALGOS},
+> -	{ .compatible = "qcom,sm8150-lmh", },
+> +	{ .compatible = "qcom,sc8180x-lmh", .data = &sm8150_lmh_data },
+> +	{ .compatible = "qcom,sdm670-lmh", .data = &sdm670_lmh_data },
+> +	{ .compatible = "qcom,sdm845-lmh", .data = &sdm845_lmh_data },
+> +	{ .compatible = "qcom,sm8150-lmh", .data = &sm8150_lmh_data },
+>  	{}
+>  };
+>  MODULE_DEVICE_TABLE(of, lmh_table);
+> -- 
+> 2.53.0
+> 
