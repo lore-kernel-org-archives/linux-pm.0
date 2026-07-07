@@ -1,38 +1,38 @@
 Received: from bali.collaboradmins.com (bali.collaboradmins.com [148.251.105.195])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3939F33B6F6;
-	Tue,  7 Jul 2026 08:37:51 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 33E7D33066D;
+	Tue,  7 Jul 2026 08:37:53 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=148.251.105.195
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1783413485; cv=none; b=e+8qjqDGMp7MVF/RvUKxYef6Nu38qdj81ezbN8RJdbIoD+pwCUwc48dfgWKSrQoexGi1ATcZMZ7m4JtLgGqwVIQFYMDfUXBz8Vi0VHwQok3P3iESdc8PweWRYTy635UBwCitH1lO8y1K1Yx4DRkNujT91KLu3RXtvAS/DP8qyDc=
+	t=1783413486; cv=none; b=fc7jS2zMHH4kOU6M6TdNj7ZwWfNpnlP5N/MESoU70oe76dv9lRR8mQ8bHo+PmZMbWF4V1Uoy8EY1Bfgt+1bFM9L/Lz0y2XQ6xu2N7EuRjoz2aG2yaLESEzqm5BlakqdnwVtBOcWJHung+U6m2YTSqgcgmlVcZCRyDtYccyNoG6o=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1783413485; c=relaxed/simple;
-	bh=WiWJ4VteDL2NdJMMJJe3sIyQdaqLZ1rHqGcj4QGRxy4=;
+	s=arc-20240116; t=1783413486; c=relaxed/simple;
+	bh=8D7sHh0LbWIVvo0dK/zPkFjBDZksD7eaPPqZIGWhDXs=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=h1gWKJ+pT8fty9t6KTDlAuwl/BJa2K4F8PFngCwAsH+WsMuvNARHqkP3jqkKwtaCylcjd6oNGprX/FVFCn6YglJFUtajEY5UMFu7BNM5hMjFsHHHSc9svpZGVju5VqoCgtv+fYQ/Pxc6IZkPvqw/KzQZ+ArQ6HaSCP3uNLRUxCg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b=j5JWEf6d; arc=none smtp.client-ip=148.251.105.195
+	 MIME-Version; b=IFapVt/zyMuwen9AuGiuPnAnVUVemYZpM4eXBfE9Ck0QKpE7wXtbmhMkJjuU0JxsiC0QG5MP46kqcUB6Wers17t7oiVCAaj0TPjcNupgBgpuynLJ7v2Swzcv0MnPg3RRW8YuiCW/D+yxZq2JJ3hjoOWGFQ4xQjENSO0XH7YrAo8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b=a63J15JW; arc=none smtp.client-ip=148.251.105.195
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b="j5JWEf6d"
+	dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b="a63J15JW"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
-	s=mail; t=1783413469;
-	bh=WiWJ4VteDL2NdJMMJJe3sIyQdaqLZ1rHqGcj4QGRxy4=;
+	s=mail; t=1783413471;
+	bh=8D7sHh0LbWIVvo0dK/zPkFjBDZksD7eaPPqZIGWhDXs=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=j5JWEf6d+46/KYT9M98FkJ79zFQpCztXPpdY/yHmoWejm5RVdf2rX2JOLMpBzgI3E
-	 Dtnq8DiTxfNW325aVnXIJSbHRTOTbCtWRmNQldQcx9rJQpUdtOQ01I7AKMI4AJkjcK
-	 GWJBkFLHWuvuK7IJ/o1tszyjtZRewHr1H7KHjWhFHSmw9ULaRY/JaDvVFgF3VL7fdu
-	 3uAwNr42ZqtVYGQpJrj7+qPpBMcCTkW7c78PYM4kDJZBHq+utrTtQhrMx/Rqi5H3Or
-	 o+E47YxGmIbe5ufRMmU9gaMSVzWB5qyMO2ZRS6tmcwDSDQZ+ZtaepqBwgdvL08Q+Ai
-	 8TNhIlbMwshIA==
+	b=a63J15JWDZSlAObenC0X4z9kqh/H0eQr5C5cnvflzF/6oET8IC2P9GJPlnVKxNTTd
+	 zfAuz5GEOZKuCWLbWKipcsoK/Ef/Kecfaua9i5FtrBQLn+3sL46aes3zC93cKFsGon
+	 LLJJeFPPonCaQuWKavMm0ZKkn+JHOBpVitV4V2BcPdgUFfVjlRPIYrN60OUgRfJ9xv
+	 4jgwD8aq6jkPEezuEathLPuxf+3015nCfNyorHLIKXh1EQETd2+h/5UlMqSAzBiEEW
+	 rdAyjMSlCnocmefB9QABT+wWCJR5uEjuDV7knz7q08CzgzdXrnfweIedUmf1/XJu4r
+	 Md5nGXhE9O1MQ==
 Received: from IcarusMOD.eternityproject.eu (unknown [100.64.1.21])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
 	(Authenticated sender: kholk11)
-	by bali.collaboradmins.com (Postfix) with ESMTPSA id 1C14E17E0FAC;
-	Tue, 07 Jul 2026 10:37:48 +0200 (CEST)
+	by bali.collaboradmins.com (Postfix) with ESMTPSA id 8A2D717E05E8;
+	Tue, 07 Jul 2026 10:37:50 +0200 (CEST)
 From: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
 To: jic23@kernel.org,
 	sboyd@kernel.org
@@ -63,11 +63,11 @@ Cc: dlechner@baylibre.com,
 	linux-phy@lists.infradead.org,
 	linux-pm@vger.kernel.org,
 	kernel@collabora.com,
-	Abel Vesa <abel.vesa@linaro.org>,
+	Jonathan Cameron <jonathan.cameron@huawei.com>,
 	Andy Shevchenko <andriy.shevchenko@intel.com>
-Subject: [PATCH v10 08/11] phy: qualcomm: eusb2-repeater: Migrate to devm_spmi_subdevice_alloc_and_add()
-Date: Tue,  7 Jul 2026 10:37:27 +0200
-Message-ID: <20260707083730.33977-9-angelogioacchino.delregno@collabora.com>
+Subject: [PATCH v10 10/11] iio: adc: qcom-spmi-iadc: Migrate to devm_spmi_subdevice_alloc_and_add()
+Date: Tue,  7 Jul 2026 10:37:29 +0200
+Message-ID: <20260707083730.33977-11-angelogioacchino.delregno@collabora.com>
 X-Mailer: git-send-email 2.54.0
 In-Reply-To: <20260707083730.33977-1-angelogioacchino.delregno@collabora.com>
 References: <20260707083730.33977-1-angelogioacchino.delregno@collabora.com>
@@ -79,203 +79,136 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Some Qualcomm PMICs integrate an USB Repeater device, used to
-convert between eUSB2 and USB 2.0 signaling levels, reachable
+Some Qualcomm PMICs integrate an Current ADC device, reachable
 in a specific address range over SPMI.
 
 Instead of using the parent SPMI device (the main PMIC) as a kind
-of syscon in this driver, register a new SPMI sub-device for EUSB2
-and initialize its own regmap with this sub-device's specific base
+of syscon in this driver, register a new SPMI sub-device and
+initialize its own regmap with this sub-device's specific base
 address, retrieved from the devicetree.
 
 This allows to stop manually adding the register base address to
 every R/W call in this driver, as this can be, and is now, handled
 by the regmap API instead.
 
+Reviewed-by: Jonathan Cameron <jonathan.cameron@huawei.com>
 Tested-by: Neil Armstrong <neil.armstrong@linaro.org> # on SM8650-QRD
-Reviewed-by: Abel Vesa <abel.vesa@linaro.org>
-Acked-by: Vinod Koul <vkoul@kernel.org>
 Reviewed-by: Andy Shevchenko <andriy.shevchenko@intel.com>
 Signed-off-by: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
 ---
- drivers/phy/qualcomm/Kconfig                  |  2 +
- .../phy/qualcomm/phy-qcom-eusb2-repeater.c    | 57 ++++++++++++-------
- 2 files changed, 38 insertions(+), 21 deletions(-)
+ drivers/iio/adc/qcom-spmi-iadc.c | 35 ++++++++++++++++++++++----------
+ 1 file changed, 24 insertions(+), 11 deletions(-)
 
-diff --git a/drivers/phy/qualcomm/Kconfig b/drivers/phy/qualcomm/Kconfig
-index 60a0ead127fa..902a788f35f1 100644
---- a/drivers/phy/qualcomm/Kconfig
-+++ b/drivers/phy/qualcomm/Kconfig
-@@ -128,7 +128,9 @@ config PHY_QCOM_QUSB2
- config PHY_QCOM_EUSB2_REPEATER
- 	tristate "Qualcomm PMIC eUSB2 Repeater Driver"
- 	depends on OF && (ARCH_QCOM || COMPILE_TEST)
-+	depends on SPMI
- 	select GENERIC_PHY
-+	select REGMAP_SPMI
- 	help
- 	  Enable support for the USB high-speed eUSB2 repeater on Qualcomm
- 	  PMICs. The repeater is paired with a Synopsys or M31 eUSB2 Phy
-diff --git a/drivers/phy/qualcomm/phy-qcom-eusb2-repeater.c b/drivers/phy/qualcomm/phy-qcom-eusb2-repeater.c
-index efeec4709a15..f99152cf5984 100644
---- a/drivers/phy/qualcomm/phy-qcom-eusb2-repeater.c
-+++ b/drivers/phy/qualcomm/phy-qcom-eusb2-repeater.c
-@@ -9,6 +9,7 @@
+diff --git a/drivers/iio/adc/qcom-spmi-iadc.c b/drivers/iio/adc/qcom-spmi-iadc.c
+index 0ec3a0c4b1de..ad66bb92fe19 100644
+--- a/drivers/iio/adc/qcom-spmi-iadc.c
++++ b/drivers/iio/adc/qcom-spmi-iadc.c
+@@ -16,6 +16,7 @@
+ #include <linux/platform_device.h>
  #include <linux/regmap.h>
- #include <linux/of.h>
- #include <linux/phy/phy.h>
+ #include <linux/slab.h>
 +#include <linux/spmi.h>
  
- /* eUSB2 status registers */
- #define EUSB2_RPTR_STATUS		0x08
-@@ -66,7 +67,6 @@ struct eusb2_repeater {
- 	struct phy *phy;
- 	struct regulator_bulk_data *vregs;
- 	const struct eusb2_repeater_cfg *cfg;
--	u32 base;
- 	enum phy_mode mode;
- };
- 
-@@ -143,7 +143,6 @@ static int eusb2_repeater_init(struct phy *phy)
- 	struct eusb2_repeater *rptr = phy_get_drvdata(phy);
- 	struct device_node *np = rptr->dev->of_node;
- 	struct regmap *regmap = rptr->regmap;
--	u32 base = rptr->base;
- 	u32 poll_val;
- 	s32 dt_val;
+ /* IADC register and bit definition */
+ #define IADC_REVISION2				0x1
+@@ -94,7 +95,6 @@
+  * struct iadc_chip - IADC Current ADC device structure.
+  * @regmap: regmap for register read/write.
+  * @dev: This device pointer.
+- * @base: base offset for the ADC peripheral.
+  * @rsense: Values of the internal and external sense resister in micro Ohms.
+  * @poll_eoc: Poll for end of conversion instead of waiting for IRQ.
+  * @offset: Raw offset values for the internal and external channels.
+@@ -105,7 +105,6 @@
+ struct iadc_chip {
+ 	struct regmap	*regmap;
+ 	struct device	*dev;
+-	u16		base;
+ 	bool		poll_eoc;
+ 	u32		rsense[2];
+ 	u16		offset[2];
+@@ -119,7 +118,7 @@ static int iadc_read(struct iadc_chip *iadc, u16 offset, u8 *data)
+ 	unsigned int val;
  	int ret;
-@@ -154,37 +153,37 @@ static int eusb2_repeater_init(struct phy *phy)
- 	if (ret)
+ 
+-	ret = regmap_read(iadc->regmap, iadc->base + offset, &val);
++	ret = regmap_read(iadc->regmap, offset, &val);
+ 	if (ret < 0)
  		return ret;
  
--	regmap_write(regmap, base + EUSB2_EN_CTL1, EUSB2_RPTR_EN);
-+	regmap_write(regmap, EUSB2_EN_CTL1, EUSB2_RPTR_EN);
+@@ -129,7 +128,7 @@ static int iadc_read(struct iadc_chip *iadc, u16 offset, u8 *data)
  
- 	/* Write registers from init table */
- 	for (int i = 0; i < rptr->cfg->init_tbl_num; i++)
--		regmap_write(regmap, base + rptr->cfg->init_tbl[i].reg,
-+		regmap_write(regmap, rptr->cfg->init_tbl[i].reg,
- 			     rptr->cfg->init_tbl[i].value);
- 
- 	/* Override registers from devicetree values */
- 	if (!of_property_read_u8(np, "qcom,tune-usb2-preem", &val))
--		regmap_write(regmap, base + EUSB2_TUNE_USB2_PREEM, val);
-+		regmap_write(regmap, EUSB2_TUNE_USB2_PREEM, val);
- 
- 	if (!of_property_read_u8(np, "qcom,tune-usb2-disc-thres", &val))
--		regmap_write(regmap, base + EUSB2_TUNE_HSDISC, val);
-+		regmap_write(regmap, EUSB2_TUNE_HSDISC, val);
- 
- 	if (!of_property_read_u8(np, "qcom,tune-usb2-amplitude", &val))
--		regmap_write(regmap, base + EUSB2_TUNE_IUSB2, val);
-+		regmap_write(regmap, EUSB2_TUNE_IUSB2, val);
- 
- 	if (!of_property_read_u8(np, "qcom,tune-res-fsdif", &val))
--		regmap_write(regmap, base + EUSB2_TUNE_RES_FSDIF, val);
-+		regmap_write(regmap, EUSB2_TUNE_RES_FSDIF, val);
- 
- 	if (!of_property_read_s32(np, "qcom,squelch-detector-bp", &dt_val)) {
- 		for (i = 0; i < ARRAY_SIZE(squelch_detector); i++) {
- 			if (squelch_detector[i] == dt_val) {
--				regmap_write(regmap, base + EUSB2_TUNE_SQUELCH_U, i);
-+				regmap_write(regmap, EUSB2_TUNE_SQUELCH_U, i);
- 				break;
- 			}
- 		}
- 	}
- 
- 	/* Wait for status OK */
--	ret = regmap_read_poll_timeout(regmap, base + EUSB2_RPTR_STATUS, poll_val,
-+	ret = regmap_read_poll_timeout(regmap, EUSB2_RPTR_STATUS, poll_val,
- 				       poll_val & RPTR_OK, 10, 5);
- 	if (ret)
- 		dev_err(rptr->dev, "initialization timed-out\n");
-@@ -197,7 +196,6 @@ static int eusb2_repeater_set_mode(struct phy *phy,
+ static int iadc_write(struct iadc_chip *iadc, u16 offset, u8 data)
  {
- 	struct eusb2_repeater *rptr = phy_get_drvdata(phy);
- 	struct regmap *regmap = rptr->regmap;
--	u32 base = rptr->base;
+-	return regmap_write(iadc->regmap, iadc->base + offset, data);
++	return regmap_write(iadc->regmap, offset, data);
+ }
  
- 	switch (mode) {
- 	case PHY_MODE_USB_HOST:
-@@ -206,8 +204,8 @@ static int eusb2_repeater_set_mode(struct phy *phy,
- 		 * per eUSB 1.2 Spec. Below implement software workaround until
- 		 * PHY and controller is fixing seen observation.
- 		 */
--		regmap_write(regmap, base + EUSB2_FORCE_EN_5, F_CLK_19P2M_EN);
--		regmap_write(regmap, base + EUSB2_FORCE_VAL_5, V_CLK_19P2M_EN);
-+		regmap_write(regmap, EUSB2_FORCE_EN_5, F_CLK_19P2M_EN);
-+		regmap_write(regmap, EUSB2_FORCE_VAL_5, V_CLK_19P2M_EN);
- 		break;
- 	case PHY_MODE_USB_DEVICE:
- 		/*
-@@ -216,8 +214,8 @@ static int eusb2_repeater_set_mode(struct phy *phy,
- 		 * repeater doesn't clear previous value due to shared
- 		 * regulators (say host <-> device mode switch).
- 		 */
--		regmap_write(regmap, base + EUSB2_FORCE_EN_5, 0);
--		regmap_write(regmap, base + EUSB2_FORCE_VAL_5, 0);
-+		regmap_write(regmap, EUSB2_FORCE_EN_5, 0);
-+		regmap_write(regmap, EUSB2_FORCE_VAL_5, 0);
- 		break;
- 	default:
- 		return -EINVAL;
-@@ -242,13 +240,23 @@ static const struct phy_ops eusb2_repeater_ops = {
+ static int iadc_reset(struct iadc_chip *iadc)
+@@ -270,7 +269,7 @@ static int iadc_poll_wait_eoc(struct iadc_chip *iadc, unsigned int interval_us)
  
- static int eusb2_repeater_probe(struct platform_device *pdev)
+ static int iadc_read_result(struct iadc_chip *iadc, u16 *data)
  {
-+	struct regmap_config eusb2_regmap_config = {
+-	return regmap_bulk_read(iadc->regmap, iadc->base + IADC_DATA, data, 2);
++	return regmap_bulk_read(iadc->regmap, IADC_DATA, data, 2);
+ }
+ 
+ static int iadc_do_conversion(struct iadc_chip *iadc, int chan, u16 *data)
+@@ -488,12 +487,22 @@ static void iadc_disable_irq_wake(void *data)
+ 
+ static int iadc_probe(struct platform_device *pdev)
+ {
++	struct regmap_config iadc_regmap_config = {
 +		.reg_bits = 16,
 +		.val_bits = 8,
 +		.max_register = 0xff,
 +		.fast_io = true,
 +	};
-+	struct spmi_device *sparent;
- 	struct eusb2_repeater *rptr;
-+	struct spmi_subdevice *sub_sdev;
+ 	struct device_node *node = pdev->dev.of_node;
  	struct device *dev = &pdev->dev;
- 	struct phy_provider *phy_provider;
- 	struct device_node *np = dev->of_node;
++	struct spmi_subdevice *sub_sdev;
++	struct spmi_device *sparent;
+ 	struct iio_dev *indio_dev;
+ 	struct iadc_chip *iadc;
+ 	int ret, irq_eoc;
 -	u32 res;
- 	int ret;
- 
++
 +	if (!dev->parent)
 +		return -ENODEV;
-+
- 	rptr = devm_kzalloc(dev, sizeof(*rptr), GFP_KERNEL);
- 	if (!rptr)
- 		return -ENOMEM;
-@@ -260,15 +268,21 @@ static int eusb2_repeater_probe(struct platform_device *pdev)
- 	if (!rptr->cfg)
- 		return -EINVAL;
  
--	rptr->regmap = dev_get_regmap(dev->parent, NULL);
--	if (!rptr->regmap)
+ 	indio_dev = devm_iio_device_alloc(dev, sizeof(*iadc));
+ 	if (!indio_dev)
+@@ -502,18 +511,21 @@ static int iadc_probe(struct platform_device *pdev)
+ 	iadc = iio_priv(indio_dev);
+ 	iadc->dev = dev;
+ 
+-	iadc->regmap = dev_get_regmap(dev->parent, NULL);
+-	if (!iadc->regmap)
 -		return -ENODEV;
-+	sparent = spmi_find_device_by_of_node(dev->parent->of_node);
-+	if (!sparent)
-+		return ERR_PTR(-ENODEV);
-+
++	sparent = to_spmi_device(dev->parent);
 +	sub_sdev = devm_spmi_subdevice_alloc_and_add(dev, sparent);
 +	if (IS_ERR(sub_sdev))
 +		return PTR_ERR(sub_sdev);
  
--	ret = of_property_read_u32(np, "reg", &res);
-+	ret = device_property_read_u32(dev, "reg", &eusb2_regmap_config.reg_base);
+ 	init_completion(&iadc->complete);
+ 	mutex_init(&iadc->lock);
+ 
+-	ret = of_property_read_u32(node, "reg", &res);
++	ret = device_property_read_u32(dev, "reg", &iadc_regmap_config.reg_base);
  	if (ret < 0)
- 		return ret;
+ 		return -ENODEV;
  
--	rptr->base = res;
-+	rptr->regmap = devm_regmap_init_spmi_ext(&sub_sdev->sdev, &eusb2_regmap_config);
-+	if (IS_ERR(rptr->regmap))
-+		return PTR_ERR(rptr->regmap);
+-	iadc->base = res;
++	iadc->regmap = devm_regmap_init_spmi_ext(&sub_sdev->sdev, &iadc_regmap_config);
++	if (IS_ERR(iadc->regmap))
++		return PTR_ERR(iadc->regmap);
  
- 	ret = eusb2_repeater_init_vregs(rptr);
- 	if (ret < 0) {
-@@ -335,3 +349,4 @@ module_platform_driver(eusb2_repeater_driver);
- 
- MODULE_DESCRIPTION("Qualcomm PMIC eUSB2 Repeater driver");
- MODULE_LICENSE("GPL");
+ 	ret = iadc_version_check(iadc);
+ 	if (ret < 0)
+@@ -596,3 +608,4 @@ MODULE_ALIAS("platform:qcom-spmi-iadc");
+ MODULE_DESCRIPTION("Qualcomm SPMI PMIC current ADC driver");
+ MODULE_LICENSE("GPL v2");
+ MODULE_AUTHOR("Ivan T. Ivanov <iivanov@mm-sol.com>");
 +MODULE_IMPORT_NS("SPMI");
 -- 
 2.54.0
