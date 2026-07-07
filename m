@@ -1,190 +1,181 @@
-Received: from bali.collaboradmins.com (bali.collaboradmins.com [148.251.105.195])
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.13])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 39092330328;
-	Tue,  7 Jul 2026 08:37:51 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=148.251.105.195
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DFB4E390C94;
+	Tue,  7 Jul 2026 09:05:25 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.13
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1783413486; cv=none; b=Lkl+ultJTbVo4zrQyWhGgdp0cBn0INVHyvx+LuIu5VeTWHGJK2RcZl/JRXEyHucoXTLd4v3UhknrOC3sI0Jue8JPZI8xsMsKYSkKpVWKG8TI6ZBK7gjPt5V2skkEYLRvQ8B5PWIEuocPF7Q1uc2HZCInvY0/T1bor09lA2tIDT0=
+	t=1783415127; cv=none; b=cpsAvuI/uY+U4EvbjFd0VQqwqRhvELIvvK088AEuUj2kc/lgkjSY031NsIf3hmn1JqLkOzGe+QfHnAzW6kPtyd8ZJi4cO2LbAiSvtlSvE4OJo/RmLc4c6TLPxUn3r1aJ7GXo9XR3hlUrej+vCa2ZYGQtuDWfBgR2EsvEtr2Wlu4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1783413486; c=relaxed/simple;
-	bh=NGoIwaMCO4dQVDqoxpNEjBLTDRrH9MnuHgpYvcWn8s4=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=kpoGuc0tvv6zh8/iF59jCJb0I22YWrtriiqhNEZ6CT5J/NGY++zSjDFscAcrAP221hbq9ZLh8D4xdcqIsh+IesfaKaJzNOMTASDf6I0rYs75ayI1CxTg1ju2vTN54x1NvNcmoABa3BTXBUEgAz86CxBFVJVWGX2FDyitSk8K9Gk=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b=bEXavzCw; arc=none smtp.client-ip=148.251.105.195
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
+	s=arc-20240116; t=1783415127; c=relaxed/simple;
+	bh=gKXaUE1a/lj7ODJJG8Iu0vM/NcsyBp3SmPPenh/MKEY=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=UxFj7lDAyALU307oTe0LTKzFL/iB8xT5OXCDfqVE5ocDY4EjS4bN01JvVY9xmGWRAdsImK79pee98pYbALC015KY4zQJLnYjFUTVplzW8fc41xdjsxYh0e5lUdtqy404tuaI8x+rxU5rdQ/0Zw+yatJ7YmSn4tfw+mkCNtDJJKU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=pass smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=CkvJ4zQ/; arc=none smtp.client-ip=198.175.65.13
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b="bEXavzCw"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
-	s=mail; t=1783413467;
-	bh=NGoIwaMCO4dQVDqoxpNEjBLTDRrH9MnuHgpYvcWn8s4=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=bEXavzCwASYwwKHwciwWijirtSRAMkdLjafD1IXLAQcICB2QVJ5uDWfwyiq5rn5Rd
-	 4RoEUKSMIpY+GzomCN3swwUN3BUaCo7l94+uWhH9IMysXul6XoIe73V+RFGs6DKBlT
-	 Cn7y1oixqlel0NhVv1z9OZSghmr13ldsfac8hISTN1Q5RvQbSvDSMTTk9JKFaTM2++
-	 K0zuZm1gYE3ttdxkTDZNG4OCEvSasqPlKAvmC4lIDNVnuCXmvzt5j5gZgwOAULador
-	 +aDohqCZ57lFcIySStzikOI5polLtUmCFb6XDEV8dzJ5DqiCxqJ951uk2AWOBgL5VZ
-	 fc3XA44GWvgFQ==
-Received: from IcarusMOD.eternityproject.eu (unknown [100.64.1.21])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	(Authenticated sender: kholk11)
-	by bali.collaboradmins.com (Postfix) with ESMTPSA id D76E917E0EF3;
-	Tue, 07 Jul 2026 10:37:46 +0200 (CEST)
-From: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
-To: jic23@kernel.org,
-	sboyd@kernel.org
-Cc: dlechner@baylibre.com,
-	nuno.sa@analog.com,
-	andy@kernel.org,
-	arnd@arndb.de,
-	gregkh@linuxfoundation.org,
-	srini@kernel.org,
-	vkoul@kernel.org,
-	neil.armstrong@linaro.org,
-	sre@kernel.org,
-	angelogioacchino.delregno@collabora.com,
-	krzk@kernel.org,
-	dmitry.baryshkov@oss.qualcomm.com,
-	quic_wcheng@quicinc.com,
-	melody.olvera@oss.qualcomm.com,
-	quic_nsekar@quicinc.com,
-	ivo.ivanov.ivanov1@gmail.com,
-	abelvesa@kernel.org,
-	luca.weiss@fairphone.com,
-	konrad.dybcio@oss.qualcomm.com,
-	mitltlatltl@gmail.com,
-	krishna.kurapati@oss.qualcomm.com,
-	linux-arm-msm@vger.kernel.org,
-	linux-iio@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	linux-phy@lists.infradead.org,
-	linux-pm@vger.kernel.org,
-	kernel@collabora.com,
-	Sebastian Reichel <sebastian.reichel@collabora.com>,
-	Andy Shevchenko <andriy.shevchenko@intel.com>
-Subject: [PATCH v10 07/11] power: reset: qcom-pon: Migrate to devm_spmi_subdevice_alloc_and_add()
-Date: Tue,  7 Jul 2026 10:37:26 +0200
-Message-ID: <20260707083730.33977-8-angelogioacchino.delregno@collabora.com>
-X-Mailer: git-send-email 2.54.0
-In-Reply-To: <20260707083730.33977-1-angelogioacchino.delregno@collabora.com>
-References: <20260707083730.33977-1-angelogioacchino.delregno@collabora.com>
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="CkvJ4zQ/"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1783415126; x=1814951126;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:content-transfer-encoding:in-reply-to;
+  bh=gKXaUE1a/lj7ODJJG8Iu0vM/NcsyBp3SmPPenh/MKEY=;
+  b=CkvJ4zQ/LcA+tTb0HfvPc+BOfNVOqoYcsgECytX//YdH8D/g9Zk3okYh
+   0doN4ne67erXR23J33wrge8OfHIzWueDYHcPWXuoikM6CwwKo5IDlhcNi
+   kjCQj3/FEwFCX364v/sk5Rjq+wK9rCtAD1UfksTSPIWqUxidM9rG03FEC
+   pp3iYucNrZzaqJ5+vhQjfNGnbfqSQjXojHQoaa9aOZNIBSM0zgAAv87CG
+   mHTVjE293t5ddjq1euhsxPmNyCtVjn5GNEZaR+wYkN58gz44Ar/bD9E0u
+   2FwlAYr+dRpKxYiiEmosdVclhuOPlQb5HQACionzKW4Ul/xMKcyEyelGl
+   g==;
+X-CSE-ConnectionGUID: mLmplZFXSXm0N/erZowTQA==
+X-CSE-MsgGUID: 5PmLlCFHQE+LyO1VDOxc7w==
+X-IronPort-AV: E=McAfee;i="6800,10657,11839"; a="95211606"
+X-IronPort-AV: E=Sophos;i="6.25,153,1779174000"; 
+   d="scan'208";a="95211606"
+Received: from fmviesa008.fm.intel.com ([10.60.135.148])
+  by orvoesa105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 07 Jul 2026 02:05:26 -0700
+X-CSE-ConnectionGUID: IE34WxJFSwa0yBGRxtVjhw==
+X-CSE-MsgGUID: 5Hee06dDRh+ykBUiAm1gtw==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.25,153,1779174000"; 
+   d="scan'208";a="251274968"
+Received: from abityuts-desk.ger.corp.intel.com (HELO localhost) ([10.245.244.178])
+  by fmviesa008-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 07 Jul 2026 02:05:20 -0700
+Date: Tue, 7 Jul 2026 12:05:18 +0300
+From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+To: Chen-Yu Tsai <wenst@chromium.org>
+Cc: Bartosz Golaszewski <brgl@kernel.org>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	Daniel Scally <djrscally@gmail.com>,
+	Heikki Krogerus <heikki.krogerus@linux.intel.com>,
+	Sakari Ailus <sakari.ailus@linux.intel.com>,
+	"Rafael J. Wysocki" <rafael@kernel.org>,
+	Danilo Krummrich <dakr@kernel.org>, Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	Matthias Brugger <matthias.bgg@gmail.com>,
+	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>,
+	linux-acpi@vger.kernel.org, driver-core@lists.linux.dev,
+	linux-pm@vger.kernel.org, linux-usb@vger.kernel.org,
+	devicetree@vger.kernel.org, linux-mediatek@lists.infradead.org,
+	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+	Manivannan Sadhasivam <mani@kernel.org>,
+	Alan Stern <stern@rowland.harvard.edu>,
+	Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
+Subject: Re: [PATCH v3 06/13] usb: hub: Pass |struct usb_port*| to
+ usb_port_is_power_on()
+Message-ID: <akzBTumMCGFU-zAJ@ashevche-desk.local>
+References: <20260703110317.1283411-1-wenst@chromium.org>
+ <20260703110317.1283411-7-wenst@chromium.org>
+ <ake09vk4fEv1D9QC@ashevche-desk.local>
+ <CAGXv+5GNucSXrhL=YxarSJHD2ezzYDK3EovFu-zy012KgZ+ZBg@mail.gmail.com>
+ <ake6FNy83LLtCs3b@ashevche-desk.local>
+ <CAGXv+5EgpizA3Pc8ScNuChPhvFKWd5F6dxB-wT4-7EwabE-9dQ@mail.gmail.com>
+ <akvRMcGnUPxE3sxR@ashevche-desk.local>
+ <CAGXv+5EqsDbzTg9eDMGK3Ph6Pe3_uDoSrjVL4q23cy6jZCk2tw@mail.gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
+In-Reply-To: <CAGXv+5EqsDbzTg9eDMGK3Ph6Pe3_uDoSrjVL4q23cy6jZCk2tw@mail.gmail.com>
+Organization: Intel Finland Oy - BIC 0357606-4 - c/o Alberga Business Park, 6
+ krs, Bertel Jungin Aukio 5, 02600 Espoo
 
-Some Qualcomm PMICs integrates a Power On device supporting pwrkey
-and resin along with the Android reboot reason action identifier.
+On Tue, Jul 07, 2026 at 12:29:05PM +0800, Chen-Yu Tsai wrote:
+> On Tue, Jul 7, 2026 at 12:01 AM Andy Shevchenko
+> <andriy.shevchenko@linux.intel.com> wrote:
+> > On Mon, Jul 06, 2026 at 07:08:07PM +0800, Chen-Yu Tsai wrote:
+> > > On Fri, Jul 3, 2026 at 9:33 PM Andy Shevchenko
+> > > <andriy.shevchenko@linux.intel.com> wrote:
+> > > > On Fri, Jul 03, 2026 at 09:17:16PM +0800, Chen-Yu Tsai wrote:
+> > > > > On Fri, Jul 3, 2026 at 9:11 PM Andy Shevchenko
+> > > > > <andriy.shevchenko@linux.intel.com> wrote:
+> > > > > > On Fri, Jul 03, 2026 at 07:03:07PM +0800, Chen-Yu Tsai wrote:
 
-Instead of using the parent SPMI device (the main PMIC) as a kind
-of syscon in this driver, register a new SPMI sub-device for PON
-and initialize its own regmap with this sub-device's specific base
-address, retrieved from the devicetree.
+...
 
-This allows to stop manually adding the register base address to
-every R/W call in this driver, as this can be, and is now, handled
-by the regmap API instead.
+> > > > > > At a brief look this will be the only function that takes usb_port
+> > > > > > instead of usb_hub in the entire hub.h (I don't count container_of()
+> > > > > > as a function). With that being said I would rather see it to be moved
+> > > > > > to port.c altogether (yes, it's more invasive change, but looks more
+> > > > > > consistent).  I would even dare to move struct usb_port (and container_of()
+> > > > > > accompanied with that) and this function to port.h. This might require
+> > > > > > a separate patch, though.
+> > > > >
+> > > > > I agree with the reasoning, especially given the function name. However
+> > > > > I wonder if it would cause problems given the linking order. I'll give
+> > > > > it a try nevertheless and report back.
+> > > >
+> > > > Thanks!
+> > > >
+> > > > In case it won't fly (but I still think it's better to split), can you at least
+> > > > group usb_port APIs and struct? Means moving the proto closer to that struct
+> > > > usb_port followed by container_of().
+> > >
+> > > Looks like it works out fine. port.o is linked in after hub.o, so moving
+> > > the function from the latter to the former doesn't cause issues. One might
+> > > even say that it is the correct thing to do.
+> >
+> > That's what I say! :-)
+> >
+> > > > > > Perhaps something like: 1) "move struct usb_port and associated APIs to port.h";
+> > > > > > 2) "...this patch...".
+> > >
+> > > There are still some left in hub.c:
+> > >
+> > > static void usb_lock_port(struct usb_port *port_dev)
+> > > static void usb_unlock_port(struct usb_port *port_dev)
+> 
+> These are only used internally in hub.c as a wrapper for the port mutex.
+> 
+> > > static void port_over_current_notify(struct usb_port *port_dev)
+> 
+> This is only used by the hub's overcurrent event handler.
+> 
+> > > static void hub_usb3_port_prepare_disable(struct usb_hub *hub,
+> > >                                           struct usb_port *port_dev)
+> >
+> > This one takes hub as well.
+> >
+> > > These are used only in hub.c and moving them probably makes things
+> > > messier?
+> >
+> > Perhaps better naming to each (kinda moving to usb hub namespace)?
+> >
+> > > OOTH, the following bits are in port.c but declared in hub.h:
+> > >
+> > > int usb_hub_create_port_device(struct usb_hub *hub,
+> > >          int port1);
+> > > void usb_hub_remove_port_device(struct usb_hub *hub,
+> > >          int port1);
+> > >
+> > > Any preferences for these while we're reorganizing the code?
+> >
+> > These ones would be good to be in hub.c if there is no circular dependencies or
+> > alike.
+> 
+> Those two, along with all the static functions they call, ends up being
+> half of port.c. That doesn't help the size of hub.c, which is already
+> over 6000 lines. I think I'll leave this one as is.
 
-Reviewed-by: Sebastian Reichel <sebastian.reichel@collabora.com>
-Tested-by: Neil Armstrong <neil.armstrong@linaro.org> # on SM8650-QRD
-Reviewed-by: Andy Shevchenko <andriy.shevchenko@intel.com>
-Signed-off-by: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
----
- drivers/power/reset/qcom-pon.c | 36 +++++++++++++++++++++++++---------
- 1 file changed, 27 insertions(+), 9 deletions(-)
+For now, perhaps at some point in the future we can reconsider and refactor
+it more.
 
-diff --git a/drivers/power/reset/qcom-pon.c b/drivers/power/reset/qcom-pon.c
-index 7e108982a582..f94aaecd6ed6 100644
---- a/drivers/power/reset/qcom-pon.c
-+++ b/drivers/power/reset/qcom-pon.c
-@@ -11,6 +11,7 @@
- #include <linux/reboot.h>
- #include <linux/reboot-mode.h>
- #include <linux/regmap.h>
-+#include <linux/spmi.h>
- 
- #define PON_SOFT_RB_SPARE		0x8f
- 
-@@ -22,7 +23,6 @@
- struct qcom_pon {
- 	struct device *dev;
- 	struct regmap *regmap;
--	u32 baseaddr;
- 	struct reboot_mode_driver reboot_mode;
- 	long reason_shift;
- };
-@@ -35,7 +35,7 @@ static int qcom_pon_reboot_mode_write(struct reboot_mode_driver *reboot,
- 	int ret;
- 
- 	ret = regmap_update_bits(pon->regmap,
--				 pon->baseaddr + PON_SOFT_RB_SPARE,
-+				 PON_SOFT_RB_SPARE,
- 				 GENMASK(7, pon->reason_shift),
- 				 magic << pon->reason_shift);
- 	if (ret < 0)
-@@ -46,27 +46,44 @@ static int qcom_pon_reboot_mode_write(struct reboot_mode_driver *reboot,
- 
- static int qcom_pon_probe(struct platform_device *pdev)
- {
-+	struct regmap_config qcom_pon_regmap_config = {
-+		.reg_bits = 16,
-+		.val_bits = 8,
-+		.max_register = 0xff,
-+		.fast_io = true,
-+	};
-+	struct device *dev = &pdev->dev;
-+	struct spmi_subdevice *sub_sdev;
-+	struct spmi_device *sparent;
- 	struct qcom_pon *pon;
- 	long reason_shift;
- 	int error;
- 
-+	if (!dev->parent)
-+		return -ENODEV;
-+
- 	pon = devm_kzalloc(&pdev->dev, sizeof(*pon), GFP_KERNEL);
- 	if (!pon)
- 		return -ENOMEM;
- 
- 	pon->dev = &pdev->dev;
- 
--	pon->regmap = dev_get_regmap(pdev->dev.parent, NULL);
--	if (!pon->regmap) {
--		dev_err(&pdev->dev, "failed to locate regmap\n");
--		return -ENODEV;
--	}
-+	sparent = spmi_find_device_by_of_node(dev->parent->of_node);
-+	if (!sparent)
-+		return ERR_PTR(-ENODEV);
-+
-+	sub_sdev = devm_spmi_subdevice_alloc_and_add(dev, sparent);
-+	if (IS_ERR(sub_sdev))
-+		return PTR_ERR(sub_sdev);
- 
--	error = of_property_read_u32(pdev->dev.of_node, "reg",
--				     &pon->baseaddr);
-+	error = device_property_read_u32(dev, "reg", &qcom_pon_regmap_config.reg_base);
- 	if (error)
- 		return error;
- 
-+	pon->regmap = devm_regmap_init_spmi_ext(&sub_sdev->sdev, &qcom_pon_regmap_config);
-+	if (IS_ERR(pon->regmap))
-+		return PTR_ERR(pon->regmap);
-+
- 	reason_shift = (long)of_device_get_match_data(&pdev->dev);
- 
- 	if (reason_shift != NO_REASON_SHIFT) {
-@@ -106,3 +123,4 @@ module_platform_driver(qcom_pon_driver);
- 
- MODULE_DESCRIPTION("Qualcomm Power On driver");
- MODULE_LICENSE("GPL v2");
-+MODULE_IMPORT_NS("SPMI");
+> Both this part and the remaining bits in hub.c I mentioned above are
+> outside the scope of this series. We can discuss whether they really
+> need to be moved or renamed.
+
+Sure.
+
 -- 
-2.54.0
+With Best Regards,
+Andy Shevchenko
+
 
