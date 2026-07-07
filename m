@@ -1,142 +1,131 @@
-Received: from bali.collaboradmins.com (bali.collaboradmins.com [148.251.105.195])
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.21])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 36230431E65;
-	Tue,  7 Jul 2026 15:55:47 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=148.251.105.195
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 693E4329E46;
+	Tue,  7 Jul 2026 16:05:58 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.21
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1783439749; cv=none; b=ZGUNISAGNuECryKe4r/hI4sTLFNr8TkpuXMaHhbk7feTIZJtjdL85IH1W864qh0EeqBKS35GWYvvRQ99WyVlQrowqNIs4ALOJNMKIpWb8xwvs/0cZZ5/SF8YdtVSkVTUnMK5A2PVllQ+xEWUXNixCljRGhBPSwmJQBfLvXNUsYI=
+	t=1783440360; cv=none; b=eE+Uhb4WZZxjJ5EOG6CSmMeqixvNKtw7V55/nnbFmkvLONS6FvZLbW4akRsP0ZnMQwp9GKTTtwRWmPmurRXuEHM0TjVXKAaeZEUavtmIbOcKnMDzyKgxkhbVrbWLI7E/8N3TYna3qbm7fIoxbpoH70jjxWQbIxQEisKyIOJ1PaU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1783439749; c=relaxed/simple;
-	bh=3SHlhsGXgWOt2/oZDqxoHL12n/AYe5N0gkj91Cy9tmg=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=W9XgVS4fw+YATcyKtOVn6qx6gMXXW/XsEdLUqRG59+lzYmAEAOHgN/8+7uyNohb3awWbwq+mca3igujebIiFSzKdGbHWhsSH+UW7Bs7JdkqMDeGwLC7FwsHrtaqcTaSxruOoOQ8Yp6suUVOe9h67X4ybk8d1ZYnaOOXUW8zZNxA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b=TYjQYXw/; arc=none smtp.client-ip=148.251.105.195
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
+	s=arc-20240116; t=1783440360; c=relaxed/simple;
+	bh=WGu1H7KZ2YHXBPQTafzG2nNs51jULw2SwYV9eRAWAxk=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=ghv95dlUoUbfEY5YNnjG0dwcVHZJ36Y3IyIM1ecuLLxF0gjT2Td6q+EfL3kPfwjlhzjqi0Z14aYaJSS5hRsLY65VrAkplKKYgZ41b1vVI5w9A3mn9NLPB4q+Sygt2oismqPQBjZdq7dpkWqR7Utsejwy0AlC4oll6t/49oCzB8A=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=pass smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=MEIXCluI; arc=none smtp.client-ip=198.175.65.21
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b="TYjQYXw/"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
-	s=mail; t=1783439745;
-	bh=3SHlhsGXgWOt2/oZDqxoHL12n/AYe5N0gkj91Cy9tmg=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=TYjQYXw/JH3/FuFWzCI1VxeCJ167/aMa2XmYhk6/xMeplNaE9c9oKOWZOjERQX4bH
-	 aSY+YVM2GBOiKGL0QFa5MZ22sxef0qFAA0G66uD2GhZ/vaY+TUEx5S+2OM8NxFZnp1
-	 h6fzCAj9ebWjQQX25mNun9N03ydi9bm5U8xn/yN/fpkiZxCx1Mp+9JBxaWiJeuysj+
-	 OjEQR5r+SJLtNSCcUyhr4Dl4PRNsncURcGGaEYjMQMjUaeF+7KnxPpxIRCW6i6ecyN
-	 dE5ZH8oF5/CiyUHnTOuB8aAIDTFZ4R6pSEvt4zf1/dzbc8XOt2JFiwTI+dRB5jiJT2
-	 ZdUGBv8wEE/zw==
-Received: from IcarusMOD.eternityproject.eu (unknown [100.64.1.21])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	(Authenticated sender: kholk11)
-	by bali.collaboradmins.com (Postfix) with ESMTPSA id 01A7617E0DFB;
-	Tue, 07 Jul 2026 17:55:44 +0200 (CEST)
-From: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
-To: ulfh@kernel.org
-Cc: robh@kernel.org,
-	krzk+dt@kernel.org,
-	conor+dt@kernel.org,
-	matthias.bgg@gmail.com,
-	angelogioacchino.delregno@collabora.com,
-	nfraprado@collabora.com,
-	irving-ch.lin@mediatek.com,
-	macpaul.lin@mediatek.com,
-	aford173@gmail.com,
-	mbrugger@suse.com,
-	devicetree@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	linux-pm@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org,
-	linux-mediatek@lists.infradead.org,
-	justin.yeh@mediatek.com,
-	kernel@collabora.com
-Subject: [PATCH v2 4/4] pmdomain: mediatek: Add support for MT8196 HFRP DirectCTL domains
-Date: Tue,  7 Jul 2026 17:55:35 +0200
-Message-ID: <20260707155535.199383-5-angelogioacchino.delregno@collabora.com>
-X-Mailer: git-send-email 2.54.0
-In-Reply-To: <20260707155535.199383-1-angelogioacchino.delregno@collabora.com>
-References: <20260707155535.199383-1-angelogioacchino.delregno@collabora.com>
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="MEIXCluI"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1783440359; x=1814976359;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=WGu1H7KZ2YHXBPQTafzG2nNs51jULw2SwYV9eRAWAxk=;
+  b=MEIXCluINVipPSbqGAF5bhnDWYsbrB96QXVkCG0NuRGNKI7Ymjr9A/E9
+   33czbQRNNPAIBkVjhOtx/7AhFVfUyAlOTGMOvokm54GUfTaYYX9iu2NHR
+   PqxyjxH+XOqfD6apck727CPh3rjJvFFTPFiEkqHXDHXAiZsXufT6k+TKc
+   NPgxWTFpCSiskdC6lmAKBpPw1MnbhcRehj9FjnjjcP/Y8Bcw9axK/F929
+   QYHiX7mjkdIV2AqpMR+avm6kcOrAExLFiG8OhvNe0AFlEozUuhkAezJBl
+   qi7lOi3zNOi4UjfjpeFLPDDxFYoyUpE8VDZZZVKrOMAThQdICv/c+NoSf
+   A==;
+X-CSE-ConnectionGUID: cGs7XXHkTum8i9btrvKFkg==
+X-CSE-MsgGUID: 3YRJNqBcTji5bLz3V7OxJA==
+X-IronPort-AV: E=McAfee;i="6800,10657,11840"; a="83952075"
+X-IronPort-AV: E=Sophos;i="6.25,153,1779174000"; 
+   d="scan'208";a="83952075"
+Received: from orviesa007.jf.intel.com ([10.64.159.147])
+  by orvoesa113.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 07 Jul 2026 09:05:47 -0700
+X-CSE-ConnectionGUID: tBOk0B/0SG6kjtraoD2mfg==
+X-CSE-MsgGUID: bDNaWP1RQpiCsfz4/eJ9hQ==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.25,153,1779174000"; 
+   d="scan'208";a="254117548"
+Received: from slindbla-desk.ger.corp.intel.com (HELO localhost) ([10.245.245.36])
+  by orviesa007-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 07 Jul 2026 09:05:33 -0700
+Date: Tue, 7 Jul 2026 19:05:29 +0300
+From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+To: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
+Cc: Lee Jones <lee@kernel.org>,
+	Mark Brown <broonie@opensource.wolfsonmicro.com>,
+	Thierry Reding <thierry.reding@avionic-design.de>,
+	Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>,
+	Andrew Lunn <andrew+netdev@lunn.ch>,
+	"David S. Miller" <davem@davemloft.net>,
+	Eric Dumazet <edumazet@google.com>,
+	Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
+	Srinivas Kandagatla <srini@kernel.org>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	Vinod Koul <vkoul@kernel.org>,
+	"Rafael J. Wysocki" <rafael@kernel.org>,
+	Danilo Krummrich <dakr@kernel.org>, Rob Herring <robh@kernel.org>,
+	Saravana Kannan <saravanak@kernel.org>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+	Andi Shyti <andi.shyti@kernel.org>, Joerg Roedel <joro@8bytes.org>,
+	Will Deacon <will@kernel.org>, Robin Murphy <robin.murphy@arm.com>,
+	Doug Berger <opendmb@gmail.com>,
+	Florian Fainelli <florian.fainelli@broadcom.com>,
+	Broadcom internal kernel review list <bcm-kernel-feedback-list@broadcom.com>,
+	Ulf Hansson <ulfh@kernel.org>, Frank Li <Frank.Li@nxp.com>,
+	Sascha Hauer <s.hauer@pengutronix.de>,
+	Pengutronix Kernel Team <kernel@pengutronix.de>,
+	Fabio Estevam <festevam@gmail.com>,
+	Matthew Brost <matthew.brost@intel.com>,
+	Thomas =?iso-8859-1?Q?Hellstr=F6m?= <thomas.hellstrom@linux.intel.com>,
+	Rodrigo Vivi <rodrigo.vivi@intel.com>,
+	David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>,
+	Peter Chen <peter.chen@kernel.org>,
+	Paul Cercueil <paul@crapouillou.net>, Bin Liu <b-liu@ti.com>,
+	Philipp Zabel <p.zabel@pengutronix.de>,
+	Maximilian Luz <luzmaximilian@gmail.com>,
+	Hans de Goede <hansg@kernel.org>,
+	Ilpo =?iso-8859-1?Q?J=E4rvinen?= <ilpo.jarvinen@linux.intel.com>,
+	Krzysztof Kozlowski <krzk@kernel.org>,
+	Benjamin Herrenschmidt <benh@kernel.crashing.org>, brgl@kernel.org,
+	linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+	linux-arm-msm@vger.kernel.org, linux-sound@vger.kernel.org,
+	driver-core@lists.linux.dev, devicetree@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org, linux-i2c@vger.kernel.org,
+	iommu@lists.linux.dev, linux-pm@vger.kernel.org,
+	imx@lists.linux.dev, linux-arm-kernel@lists.infradead.org,
+	intel-xe@lists.freedesktop.org, dri-devel@lists.freedesktop.org,
+	linux-usb@vger.kernel.org, linux-mips@vger.kernel.org,
+	platform-driver-x86@vger.kernel.org, mfd@lists.linux.dev,
+	Manuel Ebner <manuelebner@mailbox.org>
+Subject: Re: [PATCH v3 05/20] driver core: update kerneldoc for
+ platform_device_alloc()
+Message-ID: <ak0jyUbNonSRiP_g@ashevche-desk.local>
+References: <20260706-pdev-fwnode-ref-v3-0-1ff028e33779@oss.qualcomm.com>
+ <20260706-pdev-fwnode-ref-v3-5-1ff028e33779@oss.qualcomm.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260706-pdev-fwnode-ref-v3-5-1ff028e33779@oss.qualcomm.com>
+Organization: Intel Finland Oy - BIC 0357606-4 - c/o Alberga Business Park, 6
+ krs, Bertel Jungin Aukio 5, 02600 Espoo
 
-Add support for the power domains provided by the HFRPSYS Power
-Controller of the MT8196 SoC.
-Those control power to the eDP and DP Transmitter IPs.
+On Mon, Jul 06, 2026 at 02:44:17PM +0200, Bartosz Golaszewski wrote:
+> Users of platform_device_alloc() + platform_device_add() must not modify
+> certain fields of the dynamically created platform device object. Update
+> the kernel doc to say which fields are affected and which functions to
+> use.
 
-Reviewed-by: Matthias Brugger <matthias.bgg@gmail.com>
-Signed-off-by: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
----
- drivers/pmdomain/mediatek/mt8196-pm-domains.h | 27 +++++++++++++++++++
- drivers/pmdomain/mediatek/mtk-pm-domains.c    |  4 +++
- 2 files changed, 31 insertions(+)
+Consider using __private checker attribute for them as well. It will make
+sparse scream.
 
-diff --git a/drivers/pmdomain/mediatek/mt8196-pm-domains.h b/drivers/pmdomain/mediatek/mt8196-pm-domains.h
-index 2e4b28720659..d704c9fa9337 100644
---- a/drivers/pmdomain/mediatek/mt8196-pm-domains.h
-+++ b/drivers/pmdomain/mediatek/mt8196-pm-domains.h
-@@ -602,6 +602,27 @@ static const struct scpsys_hwv_domain_data hfrpsys_hwv_domain_data_mt8196[] = {
- 	},
- };
- 
-+static const struct scpsys_domain_data hfrpsys_domain_data_mt8196[] = {
-+	[MT8196_POWER_DOMAIN_EDPTX] = {
-+		.name = "edp-tx",
-+		.sta_mask = MT8196_PWR_ACK,
-+		.sta2nd_mask = MT8196_PWR_ACK_2ND,
-+		.ctl_offs = 0x74,
-+		.pwr_sta_offs = 0x74,
-+		.pwr_sta2nd_offs = 0x74,
-+		.caps = MTK_SCPD_SIMPLE_PWRSEQ,
-+	},
-+	[MT8196_POWER_DOMAIN_DPTX] = {
-+		.name = "dp-tx",
-+		.sta_mask = MT8196_PWR_ACK,
-+		.sta2nd_mask = MT8196_PWR_ACK_2ND,
-+		.ctl_offs = 0x78,
-+		.pwr_sta_offs = 0x78,
-+		.pwr_sta2nd_offs = 0x78,
-+		.caps = MTK_SCPD_SIMPLE_PWRSEQ,
-+	},
-+};
-+
- static const struct scpsys_soc_data mt8196_scpsys_data = {
- 	.domains_data = scpsys_domain_data_mt8196,
- 	.num_domains = ARRAY_SIZE(scpsys_domain_data_mt8196),
-@@ -616,6 +637,12 @@ static const struct scpsys_soc_data mt8196_scpsys_hwv_data = {
- 	.type = SCPSYS_MTCMOS_TYPE_HW_VOTER,
- };
- 
-+static const struct scpsys_soc_data mt8196_hfrpsys_data = {
-+	.domains_data = hfrpsys_domain_data_mt8196,
-+	.num_domains = ARRAY_SIZE(hfrpsys_domain_data_mt8196),
-+	.type = SCPSYS_MTCMOS_TYPE_DIRECT_CTL,
-+};
-+
- static const struct scpsys_soc_data mt8196_hfrpsys_hwv_data = {
- 	.hwv_domains_data = hfrpsys_hwv_domain_data_mt8196,
- 	.num_hwv_domains = ARRAY_SIZE(hfrpsys_hwv_domain_data_mt8196),
-diff --git a/drivers/pmdomain/mediatek/mtk-pm-domains.c b/drivers/pmdomain/mediatek/mtk-pm-domains.c
-index feba436279c5..55e747880423 100644
---- a/drivers/pmdomain/mediatek/mtk-pm-domains.c
-+++ b/drivers/pmdomain/mediatek/mtk-pm-domains.c
-@@ -1258,6 +1258,10 @@ static const struct of_device_id scpsys_of_match[] = {
- 		.compatible = "mediatek,mt8196-power-controller",
- 		.data = &mt8196_scpsys_data,
- 	},
-+	{
-+		.compatible = "mediatek,mt8196-hfrp-power-controller",
-+		.data = &mt8196_hfrpsys_data,
-+	},
- 	{
- 		.compatible = "mediatek,mt8196-hwv-hfrp-power-controller",
- 		.data = &mt8196_hfrpsys_hwv_data,
+> Suggested-by: Manuel Ebner <manuelebner@mailbox.org>
+> Signed-off-by: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
+
 -- 
-2.54.0
+With Best Regards,
+Andy Shevchenko
+
 
