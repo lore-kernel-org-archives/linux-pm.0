@@ -1,176 +1,219 @@
-Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pf1-f169.google.com (mail-pf1-f169.google.com [209.85.210.169])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 20BC1379C2F
-	for <linux-pm@vger.kernel.org>; Tue,  7 Jul 2026 16:36:16 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A8FC93E8688
+	for <linux-pm@vger.kernel.org>; Tue,  7 Jul 2026 16:36:52 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.210.169
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1783442177; cv=none; b=d+JHs3lKLJQ6DuJijiOjpzSS7RJrQZ70NryIMIWinJPDFA8BuAO8TomYauxqPhPdJofvWtyNmHk9XmbCUPTDE6N/GuS9NFrNQnSTD57WlTcmYwOZKB7xfd5M+L3FnAaqmitCrYVeWaVqAaD6893xyED0wObX9zmYzkZhETMsK1o=
+	t=1783442214; cv=none; b=ju80MamWv7/OZglkxd1D7OH67PvZdtZt9kA/sWHRugLCMofiNhwbA78jQr7o1g3ZhAO1ow4hlocfhomKK02kOcox5lYdotb9kuQ4rV79yOTpiAJc7s5Ju/F+vwGha95Q/B6lb9Eh8C1SisO+oh/tW+epcy1pZuOru5GlljPTPDY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1783442177; c=relaxed/simple;
-	bh=jD7vMq40BtjbLgY2tK+JEwoLI6ZCP6ExRZNtAmmlxYM=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=WltDjWWXDa3wioOr9ninle36k6H8XFQkTT6V5IlIPdmLcB7/YFI7Mc9lR85KU96fNb11PwJvryReU+6cc8/YCtsRYu8VfT7l9lpDCrzVtvVTDNo6A+q4dzyDRHQV8Sv2b1TVG/AVO09gHL4RibjX/GGTrOC04XsJxQqcDhiNdgA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=V83Lk7Ef; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=it3/nVzL; arc=none smtp.client-ip=205.220.168.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
+	s=arc-20240116; t=1783442214; c=relaxed/simple;
+	bh=ke8OFstbdA/XHRGMxrbiN265g4oaheYPg0LqgQ63z+k=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=uBXvT0/vBaqW1sFPWxPGx/AyK4UBkrwJnJJVbkYO5Ev6w9yVTSOddPsZF+O1buotPwDkRwlqaSp/44KP/k6GY+rp03phpWA8eClOGwnXPS0sPDmlgJyZIfuBcQiKaS1BN12hTP5QbFBfvH3YjjeVn0uKqtqoq5xmtb8QoWF11sE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=Zs5R3tWC; arc=none smtp.client-ip=209.85.210.169
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="V83Lk7Ef";
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="it3/nVzL"
-Received: from pps.filterd (m0279867.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 667FTHQX002538
-	for <linux-pm@vger.kernel.org>; Tue, 7 Jul 2026 16:36:15 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	rOfu/YSWSoVJ9+8gOLnE9/D8lneB3OTBsZ8QT6Zknbs=; b=V83Lk7EfjAfcIHfd
-	bkLPBHZ7XgqzFQ9jyOKPYHyMkGKzP7+6Qr/7y1Y10nxHQOmGEnfiYcdrtZj8vJVe
-	huf+LH3EXGxlwQ5Zc6gyIpLVJkcFUXPxNu1Lub0lZrhHU5Incyp/bl7LulZNGj3T
-	1adSCkhBFLXP5OqmCWI4hBid86sdntPa/eAK3cAbrPHA5OuiOjKkVbwzloPyitAD
-	Br7JeOHWzbXFwR+BUvgbDap8qMW3pwVx4gZLZ9Y3ERe/oNl2kWYD8GydLMJK/bfb
-	TTLhMaPXC5iX7SptJ/yL4LOhOzXFNvsXketDXDOrDheXo5ZHJij0XomcMZ3TOSuH
-	XJlWpA==
-Received: from mail-pl1-f200.google.com (mail-pl1-f200.google.com [209.85.214.200])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4f8ye0hm04-1
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Tue, 07 Jul 2026 16:36:15 +0000 (GMT)
-Received: by mail-pl1-f200.google.com with SMTP id d9443c01a7336-2c7f385887bso69583425ad.0
-        for <linux-pm@vger.kernel.org>; Tue, 07 Jul 2026 09:36:15 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Zs5R3tWC"
+Received: by mail-pf1-f169.google.com with SMTP id d2e1a72fcca58-845ea8924fdso5012157b3a.0
+        for <linux-pm@vger.kernel.org>; Tue, 07 Jul 2026 09:36:52 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1783442175; x=1784046975; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:in-reply-to:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=rOfu/YSWSoVJ9+8gOLnE9/D8lneB3OTBsZ8QT6Zknbs=;
-        b=it3/nVzLgTn7meAL4hKBePYlyf3uMuQ2kcPTcGhnG+dDXnW/Fytad9gAktFX2+Ytyt
-         XDRY4/ML4lenkUtZoAkFIjNQo8BU3kXgaexAMkEKmFhQuuaQQnt2gF+f3K8TjvP28q5C
-         edOYOPXgzbzR/Q1mTRCAcddCbN6Y8miiSGJyLUty5s1XUGttUJRs1xwGlr2yTW8UZQyZ
-         Yp2CIRFp7McBKP0haup9V1EezznQaPPCigamUK7imirFcKmLaNcK/g6PrptQP43tPyW4
-         NjjlKDlGqIkQfWoHlrx2VQVPvF3EeK+cVGTQot7VWXeVVgWvjc3eHUzdzPy6b0A1MHku
-         d3Rg==
+        d=gmail.com; s=20251104; t=1783442212; x=1784047012; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=59KAfUy7DDwnSuMBWSJQPVmdDSAgriDADemJejGadBs=;
+        b=Zs5R3tWCRWpcZxE2HEFClpoqwv1zl9s8uzD7f2LEwocxMOmQmqmLVOpc/LT4JEQDFh
+         k2X8trvhGYVXNXQu3sqradmOemSMCksrpl00Hc7NKC4/VA3122GeQ5ahQ/IYsEpPvXLz
+         b/nwmuJB10O9LZdjuW74H26bM5nE06njXR+Ig8s8440/Bq/DlePCbez4nBNa3uWDPnKE
+         gWyzzO0ekR4W9WX1bDfkFO4Je/rUFsU7Tv5Gb9icN4u3KTKseSOXUg3pGB4RaHjaO8d1
+         VHrQ43hGJF86vefU0fgumlQX9jaotvUkgLaIOWVyudeHPrmR4umbIfKCKY5n6dYltXd8
+         7smA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1783442175; x=1784046975;
-        h=content-transfer-encoding:content-type:in-reply-to:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=rOfu/YSWSoVJ9+8gOLnE9/D8lneB3OTBsZ8QT6Zknbs=;
-        b=oQzDQu5rZ9acbGQKesPp+50oFB0TRDN2ThBqjfJZyINEajjDIyFfLpBtIv4bR2tl57
-         AOtzjVjIAqI5jZF8TZo97dHypfghxFv7NEXXfE52zJGxSbTpfRgEnH3MSvERyoOD+LpV
-         2sT1hZhgAlNSHhFx86qodNxzyqjTbTSA9C0f/aFlucXyiBksdlf8ldq1RxnIGNU+Zitl
-         NK5tFw9DZZ5+0Y300iawpzL+eXySA5+yMDBFaLqpBlPhDdUFsrN2nTedeQ6aZ1PSSEDZ
-         fVSi53FlA4K2Gag+uWiVVzGgLvE3Mb7osqa6tdYAnBp3RVlRUT+cwm6F23GCW0nP3TMb
-         PGxw==
-X-Forwarded-Encrypted: i=1; AHgh+RrAXzlm1ZjvtSK2Q/607uWUAq8RY0RVVfH8X0D64qE5duERegpAb9EgnrkezuYYfudjkh3i6Gqwtw==@vger.kernel.org
-X-Gm-Message-State: AOJu0YzpeAWZkJ5jO0cKQDLH9ivMUlF+EUt9RpoRkPat12bCGwDExCOl
-	tOadhp+dm90X8pjTm4XRoHoAgJ/t+znXV9rkjtC0GHpq9b/jA8AsQjP335MWZvwbcAOyj2dqwJu
-	BtZjY2gG5iZzXNdRl59pJvo19PicWUfzpIm+zkhHX9luCf+E8Ay1LIcxi/Zs41w==
-X-Gm-Gg: AfdE7cka9vFHjv3IuvAJD1bkkVURkNvNf91fLRI2cCQKTgeZCx7jlufk4L54hH2n/xm
-	i2L/6VMKa7iEGdeOThYtMTJVJ8FMG68nv/gktsFOX8HUlPXwIZ48EJwRQMEHjZA07aqVo0pHJBa
-	Q0TOEViHhwK5EtaqMinP2sLie2rLb5WEmGaOray8bzr3VTFuaak8zBqRWlqipxfiXSdwmdV3IRf
-	s0yw5NlWVpVEKJLAsSEu0Eod777xM4sS94SBQYnm1xXKqdlzCBBD2qjrw5TSRvpktJxsWsRjeIY
-	B0LYRWrki0t51iXRKrbao+BuhHVvr6kedeq+b4+BUy2OWdnbV26PEMQpNzCpSs/nWoaGAicInc8
-	oF1htm1LlYpipZROOzBmFOocB7cDVOet8/MEOSz8p+w==
-X-Received: by 2002:a17:90b:4ec5:b0:37e:1609:b304 with SMTP id 98e67ed59e1d1-38756801500mr5684133a91.1.1783442174787;
-        Tue, 07 Jul 2026 09:36:14 -0700 (PDT)
-X-Received: by 2002:a17:90b:4ec5:b0:37e:1609:b304 with SMTP id 98e67ed59e1d1-38756801500mr5684047a91.1.1783442173406;
-        Tue, 07 Jul 2026 09:36:13 -0700 (PDT)
-Received: from [192.168.29.166] ([49.43.234.127])
-        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-3118389d9bcsm2524489eec.20.2026.07.07.09.36.08
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 07 Jul 2026 09:36:12 -0700 (PDT)
-Message-ID: <97b205e8-5ab7-4205-b1dc-cbcb0497987d@oss.qualcomm.com>
-Date: Tue, 7 Jul 2026 22:06:05 +0530
+        d=1e100.net; s=20251104; t=1783442212; x=1784047012;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=59KAfUy7DDwnSuMBWSJQPVmdDSAgriDADemJejGadBs=;
+        b=oeW+UvLScgve5Ca7EMcqsZstv1FoMVFRy40qGpBsw3hzGTW2Y8+rLXjR5hwRCT1TwH
+         nmO3u+W3iMS+CBfMCCQdiwkUfHtXgVf/lKciDZb9ZwE/Su0yndOx5wYaWWIPgR82OADB
+         oeQb4LzDhEfBxHswZpzEi9LzRm13zgsrF17bj1nJ5nq8Ye/ivaRbGmxLcfRB/YkhdUV9
+         4I0Nzm3/Gq8BcCkx3/bxNwVG10i3Izhy7FP1Zikl+HgPQ3hOTnhYV6cpsd2x1k+xK+CP
+         +3Q0HZZQ+TAZLhPIZpmhWuyDQd33Y9qZ5sIFEOSS5XGc4cWAs6imZJNaGmsilEnhIclD
+         taQw==
+X-Gm-Message-State: AOJu0YwU+1Qr2U5syhB5hr3RloPbrVI/oQ1VvkMt31JejuiGhaTNbeEF
+	aAt3Kx2IdW6v0v6Xkyi82K4/moPIASBEADdr+bY27RYi78wVrssFx9Ku
+X-Gm-Gg: AfdE7cm8MLL4lDBJ9mguTbddHr1op2B64dpuB5r8mjE7H7v6FNiq9qQMvMCnOBLvCBX
+	PD4a+rascabgXKuuHX2hikqPaNjOnG3ksmluYH0W/lh7T8LZN/eiFML2cCAvfdNWuGz8Mm0eY6J
+	UWz+Z77N6LSdHy4qCfB7lg2bTPIMw+ibHGvvz5rKllPvC6+h94lEf0iVgtBhqz3H5+LJgSF7Y7u
+	KgT2DwpahoSVxSSIiEIURO+rdhgUFfvAfw4OfIceuZUxtcDtbSOSqXMTOI6A/5GpraaxLog/Twq
+	URqtMWwIuhH0VfMNw6LU3z1VUvlQbE1YjJzZuKi7xFJsNWysZLLNAyYMx/SbxsWZoyZXUQWqLWa
+	V83xtVkM+2EZHKqQBtFdvpMvbBfAgSykeaNOVawgmKVaiuhPkTkzCrMFfDywzft3VPSWCy40POv
+	+sOeo4QnTn3e6sKf8sDYLFvkppKEAEHBXk6Jds1c4pGVV64/YOBEsID+zFTqCcyvwZU/A3+014m
+	Iz02Q24XmtOj2+WUXAUqOH8FViys2s=
+X-Received: by 2002:a05:6a00:2d19:b0:848:2f6e:e52c with SMTP id d2e1a72fcca58-8482f6f0336mr3163662b3a.64.1783442211806;
+        Tue, 07 Jul 2026 09:36:51 -0700 (PDT)
+Received: from NV-9MNJ414.nvidia.com (2001-b011-2005-986c-7892-641c-1789-73b1.dynamic-ip6.hinet.net. [2001:b011:2005:986c:7892:641c:1789:73b1])
+        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-847f6d4dbdesm5721700b3a.31.2026.07.07.09.36.49
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 07 Jul 2026 09:36:51 -0700 (PDT)
+From: Yiwei Lin <s921975628@gmail.com>
+To: rafael@kernel.org,
+	viresh.kumar@linaro.org,
+	shuah@kernel.org
+Cc: linux-pm@vger.kernel.org,
+	linux-kselftest@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	Yiwei Lin <s921975628@gmail.com>
+Subject: [PATCH v2] kselftest: cpufreq: Backup and restore governor for sptests
+Date: Wed,  8 Jul 2026 00:36:47 +0800
+Message-Id: <20260707163647.6646-1-s921975628@gmail.com>
+X-Mailer: git-send-email 2.34.1
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v5 11/11] arm64: dts: qcom: shikra: Add
- gpio-reserved-ranges to tlmm
-To: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>,
-        Vinod Koul <vkoul@kernel.org>, Frank Li <Frank.Li@kernel.org>,
-        Rob Herring <robh@kernel.org>,
-        Krzysztof Kozlowski <krzk+dt@kernel.org>,
-        Conor Dooley <conor+dt@kernel.org>,
-        Krzysztof Kozlowski <krzk@kernel.org>,
-        Georgi Djakov <djakov@kernel.org>,
-        Bjorn Andersson <andersson@kernel.org>,
-        Konrad Dybcio <konradybcio@kernel.org>
-Cc: linux-arm-msm@vger.kernel.org, dmaengine@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-pm@vger.kernel.org, Anurag Pateriya <apateriy@qti.qualcomm.com>
-References: <20260702-shikra-dt-m1-v5-0-f911ac92720c@oss.qualcomm.com>
- <20260702-shikra-dt-m1-v5-11-f911ac92720c@oss.qualcomm.com>
- <9c1aab59-14b2-4811-b778-8e96645bd65b@oss.qualcomm.com>
-Content-Language: en-US
-From: Komal Bajaj <komal.bajaj@oss.qualcomm.com>
-In-Reply-To: <9c1aab59-14b2-4811-b778-8e96645bd65b@oss.qualcomm.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Proofpoint-ORIG-GUID: O9Y4UJn2YTyY6DcXu6dlPEWXUDoVPvbP
-X-Proofpoint-Spam-Info: AW1haW4tMjYwNzA3MDE2MiBTYWx0ZWRfX/2pn+koV8DE+
- 1HqPCBBen5LhzRb6HWRMI85EeVW44b4o5oWlyv9JmLWxhTlHgOxCmQI+/wAv7OtN+aqg23H0dAX
- nl9oGVQBS/cKyC2xhOIzt9i6dbSnSKo=
-X-Authority-Analysis: v=2.4 cv=SZfHsPRu c=1 sm=1 tr=0 ts=6a4d2aff cx=c_pps
- a=IZJwPbhc+fLeJZngyXXI0A==:117 a=fIivk1FRtaL8gRNK6azaIA==:17
- a=IkcTkHD0fZMA:10 a=RAioF0-LDSMA:10 a=s4-Qcg_JpJYA:10
- a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=eoimf2acIAo5FJnRuUoq:22
- a=TqdALn-mf9RdMn6JgEsA:9 a=QEXdDO2ut3YA:10 a=uG9DUKGECoFWVXl0Dc02:22
-X-Proofpoint-GUID: O9Y4UJn2YTyY6DcXu6dlPEWXUDoVPvbP
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzA3MDE2MiBTYWx0ZWRfX43/hV/AIwjfs
- A96EEhwHMPf0AEkDvfQkQTpA9w6M5QUxPHWV/MkgSPLAmXXb3TOL5unME4KdAtE6jKt7LTfWo8L
- A3ZxM9i+Y0iF+b8eMULmjEDI5XekHnSsMJ2XWC+ntWDRgCh+Ly876L06xnce1AGdXQdlBFXQOjE
- upI/UrjFESQb3BrrQNV0EJx9c/zn63gjMXXiudFBeMwnQT+f7+FcV2LFspPmRLA82REIEfXpKyj
- 3g0EDeu9+hlvcpQpjGDdnX4XDicmJmxwNn8kmpmEX8Q5xkA2eusHVRnTFqQgBt7M8sJrN/cxfju
- aR3YMzO+NDHsifxBMpFtbp6abR3TGwHtOARS29uA7gHMQtYIRiK7OJLeXVQgRy8HMfS8XWOQank
- fnowUkYsS4Idz9KsADFBMt/tuZmQXvUssyVAchL2/X5Zts08idOhaHYN0UWvQUBTNtyGcbntWOI
- sUVEcDu3tBvSHMbGGdw==
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-07-07_04,2026-07-06_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501 impostorscore=0 malwarescore=0 bulkscore=0 spamscore=0
- adultscore=0 lowpriorityscore=0 phishscore=0 clxscore=1015 suspectscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2607070162
+Content-Transfer-Encoding: 8bit
 
-On 7/2/2026 4:25 PM, Konrad Dybcio wrote:
-> On 7/2/26 11:50 AM, Komal Bajaj wrote:
->> Add gpio-reserved-ranges property to the tlmm node for all three
->> Shikra EVK variants (CQM, CQS, IQS) to mark GPIOs used by the
->> SoC internally and not available for general use.
-> These are generally added to prevent non-secure access upon TLMM
-> probe, i.e. the board won't boot if some of them are not protected.
->
-> I assume the proposed set contains both ones that are _absolutely
-> forbidden_ for Linux to touch, but also ones that are dedicated to
-> some specific purpose that Linux _shouldn't_ touch.
+After executing cpufreq sptest, the system governor
+will be overwritten with the governor switched
+during the test. Restore this setting to maintain
+consistency before and after the test.
 
-Yes, some GPIOs are reserved for secure-world use and are therefore not 
-accessible from the non-secure world.
-I will update the commit message accordingly.
+Signed-off-by: Yiwei Lin <s921975628@gmail.com>
 
->
-> Please add comments, like in glymur-crd.dtsi:
->
->          gpio-reserved-ranges = <4 4>, /* EC TZ Secure I3C */
->                                 <10 2>, /* OOB UART */
->                                 <44 4>; /* Security SPI (TPM) */
->
-> explaining what these pins are.
+---
+Change-Logs in V2:
+- Wait for all background processes to finish before restoring governors
+  in sptest4
 
-Sure, will add this info.
+---
+ tools/testing/selftests/cpufreq/governor.sh   | 21 +++++++++++++++++++
+ .../selftests/cpufreq/special-tests.sh        | 14 +++++++++++++
+ 2 files changed, 35 insertions(+)
 
-Thanks
-Komal
-
->
-> If any of them are boot-critical, squash this into the introductory
-> change
->
-> Konrad
+diff --git a/tools/testing/selftests/cpufreq/governor.sh b/tools/testing/selftests/cpufreq/governor.sh
+index fe37df79c0871..5d105ab9c9222 100755
+--- a/tools/testing/selftests/cpufreq/governor.sh
++++ b/tools/testing/selftests/cpufreq/governor.sh
+@@ -16,6 +16,12 @@ source cpufreq.sh
+ CUR_GOV=
+ CUR_FREQ=
+ 
++# Per-policy backup, keyed by policy so multiple policies can be saved at once
++# (backup_governor/restore_governor also keep CUR_GOV/CUR_FREQ for callers that
++# read them directly).
++declare -A SAVED_GOVERNORS
++declare -A SAVED_FREQS
++
+ # Find governor's directory path
+ # $1: policy, $2: governor
+ find_gov_directory()
+@@ -39,11 +45,13 @@ find_current_governor()
+ backup_governor()
+ {
+ 	CUR_GOV=$(find_current_governor $1)
++	SAVED_GOVERNORS[$1]=$CUR_GOV
+ 
+ 	printf "Governor backup done for $1: $CUR_GOV\n"
+ 
+ 	if [ $CUR_GOV == "userspace" ]; then
+ 		CUR_FREQ=$(find_current_freq $1)
++		SAVED_FREQS[$1]=$CUR_FREQ
+ 		printf "Governor frequency backup done for $1: $CUR_FREQ\n"
+ 	fi
+ 
+@@ -53,11 +61,13 @@ backup_governor()
+ # $1: policy
+ restore_governor()
+ {
++	CUR_GOV=${SAVED_GOVERNORS[$1]}
+ 	__switch_governor $1 $CUR_GOV
+ 
+ 	printf "Governor restored for $1 to $CUR_GOV\n"
+ 
+ 	if [ $CUR_GOV == "userspace" ]; then
++		CUR_FREQ=${SAVED_FREQS[$1]}
+ 		set_cpu_frequency $1 $CUR_FREQ
+ 		printf "Governor frequency restored for $1: $CUR_FREQ\n"
+ 	fi
+@@ -65,6 +75,17 @@ restore_governor()
+ 	printf "\n"
+ }
+ 
++# Save/restore governors for every policy at once
++save_all_governors()
++{
++	for_each_policy backup_governor
++}
++
++restore_all_governors()
++{
++	for_each_policy restore_governor
++}
++
+ # param:
+ # $1: policy, $2: governor
+ __switch_governor()
+diff --git a/tools/testing/selftests/cpufreq/special-tests.sh b/tools/testing/selftests/cpufreq/special-tests.sh
+index 8d40505dc4682..954c5fddf4d3f 100755
+--- a/tools/testing/selftests/cpufreq/special-tests.sh
++++ b/tools/testing/selftests/cpufreq/special-tests.sh
+@@ -40,7 +40,9 @@ simple_lockdep()
+ {
+ 	printf "** Test: Running ${FUNCNAME[0]} **\n"
+ 
++	save_all_governors
+ 	for_each_policy __simple_lockdep
++	restore_all_governors
+ }
+ 
+ # Test 2
+@@ -56,7 +58,10 @@ concurrent_lockdep()
+ {
+ 	printf "** Test: Running ${FUNCNAME[0]} **\n"
+ 
++	save_all_governors
+ 	for_each_policy_concurrent __concurrent_lockdep
++	wait
++	restore_all_governors
+ }
+ 
+ # Test 3
+@@ -68,17 +73,23 @@ quick_shuffle()
+ 		echo ondemand | sudo tee $CPUFREQROOT/policy*/scaling_governor &
+ 		echo userspace | sudo tee $CPUFREQROOT/policy*/scaling_governor &
+ 	done
++	wait
+ }
+ 
+ governor_race()
+ {
+ 	printf "** Test: Running ${FUNCNAME[0]} **\n"
+ 
++	save_all_governors
++
+ 	# run 8 concurrent instances
+ 	for I in `seq 8`
+ 	do
+ 		quick_shuffle &
+ 	done
++	wait
++
++	restore_all_governors
+ }
+ 
+ # Test 4
+@@ -112,5 +123,8 @@ hotplug_with_updates_cpu()
+ 
+ hotplug_with_updates()
+ {
++	save_all_governors
+ 	for_each_non_boot_cpu hotplug_with_updates_cpu
++	wait
++	restore_all_governors
+ }
+-- 
+2.34.1
 
