@@ -1,79 +1,241 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+Received: from bali.collaboradmins.com (bali.collaboradmins.com [148.251.105.195])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E865235BDA4;
-	Tue,  7 Jul 2026 07:01:00 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8F42F22D7A9;
+	Tue,  7 Jul 2026 08:37:46 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=148.251.105.195
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1783407661; cv=none; b=I5Xrmy+QYvYf/K568GWIG13c6uqi+xYh9Vq30p6gr29v74P+O3ApDoeBhwf5HI89DA4leQDDJvvib80tbQgqXLvoKQY/sCqCEHG7qs0CRpWftZxkRrdw7+TJr+3dDgVtqS0AxW0inUlXYSLHX/qemgAJiErJCGRhuhRlZ3fBL+I=
+	t=1783413468; cv=none; b=aXFk5Lm46xRgFd042NMXKqYKezaJFSkihZPoh128ebgdg/+aIInb2MqV67j2q024Rpo6QsIQ69VIhfcxs6qsvm+5rvrqYrFnbK6RBJOyrBqQVweNjmNuv4SNN6NEL5aw+dTSJzx+89aQqxFuvcyYqwP1+HXUJtD617x1BIUgS1E=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1783407661; c=relaxed/simple;
-	bh=Blav199sDEk4d5DvpTgfO++yFwfTVJVasL/vbvdLOMo=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=A5vmwPsTSY5yzDeEHGf04fZxU3O1OmrE4z1zFU77gU+1e3JiMnVpq+Mg4qFkJ5nrYWtKk0IlN0AjYyOhochTkubxwRsumYhor1B+7+Ml1c3kNQyyhkVfry3uBA7lH2VNmWM5EgAlafjkInttIzSOer3QHO5rGlW2HX6brX6/Rx8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=h1jDtMbp; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1783413468; c=relaxed/simple;
+	bh=tt7ZjNNzCWUWY2UkUwchhe/+QMPtTM+YCg90zvG66Xo=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=DynfcIQiz8xo/Ac1QES6oZfeC1j8YbfwG0d2J/D1XuMDsxSZ7ozS9qIem6syuA44iN3TIi8e/kYJZXRHpTRk4hbaDSptKI2/JgWV0k3lhV1eakpjvbBKLqA/mxsHmGXa5Qi7YzDQjrqwqxpnPWBVS7XYx41XPEtCVrAVh7felnA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b=Mtz4XvIN; arc=none smtp.client-ip=148.251.105.195
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="h1jDtMbp"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id D32B41F000E9;
-	Tue,  7 Jul 2026 07:00:59 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1783407660;
-	bh=AeZ3IfCxrr03mDjgfxdv1YqUGpcTKuc9ZnPETaDPODA=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=h1jDtMbpjuG/eB4VhdMbFu061/vP67HTqr4fR+w2xT93flQpC7hPVwopST/uQjx7T
-	 9C5mKexeuFltFWs1UA2HZWdLAbb3IFizDAWQzBkXVnVjEAnZJDC5p3GMgTE1emH+Py
-	 GO/26H3OQUHwft+Hoy4jFaKwxD4y9krxmmU5z274QaWwjkIbmTlEIwmol1sUrsw+Bq
-	 ninAKCEqJaU1VMZd3836SfrAC0volPjdi1S8qipO/IUGsiu4i26UnCcBve8qt5loX5
-	 dsLdtUxdLusG4cvN6KexRb8asB22OwRLz8F3EvrokWKtVgRJ0HVTrBseRkE47Xe5dN
-	 jdeVBCHl3JcUQ==
-Date: Tue, 7 Jul 2026 09:00:56 +0200
-From: Krzysztof Kozlowski <krzk@kernel.org>
-To: Sachin Gupta <sachin.gupta@oss.qualcomm.com>
-Cc: Lee Jones <lee@kernel.org>, Rob Herring <robh@kernel.org>, 
-	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
-	"Rafael J. Wysocki" <rafael@kernel.org>, Daniel Lezcano <daniel.lezcano@kernel.org>, 
-	Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>, 
-	Stephen Boyd <sboyd@kernel.org>, Jishnu Prakash <jishnu.prakash@oss.qualcomm.com>, 
-	Kamal Wadhwa <kamal.wadhwa@oss.qualcomm.com>, Amit Kucheria <amitk@kernel.org>, 
-	Thara Gopinath <thara.gopinath@gmail.com>, linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, 
-	Satya Priya Kakitapalli <quic_skakitap@quicinc.com>, Ajit Pandey <ajit.pandey@oss.qualcomm.com>, 
-	Imran Shaik <imran.shaik@oss.qualcomm.com>, Taniya Das <taniya.das@oss.qualcomm.com>, 
-	Jagadeesh Kona <jagadeesh.kona@oss.qualcomm.com>
-Subject: Re: [PATCH v2 1/2] dt-bindings: thermal: Add Qualcomm MBG thermal
- monitor support
-Message-ID: <20260707-portable-aquatic-chimpanzee-2f3c48@quoll>
-References: <20260706-spmi-mbg-driver-v2-0-f883ff1d8719@oss.qualcomm.com>
- <20260706-spmi-mbg-driver-v2-1-f883ff1d8719@oss.qualcomm.com>
+	dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b="Mtz4XvIN"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
+	s=mail; t=1783413459;
+	bh=tt7ZjNNzCWUWY2UkUwchhe/+QMPtTM+YCg90zvG66Xo=;
+	h=From:To:Cc:Subject:Date:From;
+	b=Mtz4XvINCOKklq54rZ/DPB7rwONmnnQiEMKnW4BRexvmwrGLl4xNu0QGGbEcSxBEB
+	 CvRMbda1Ix8i/2nCzYtV1CWFXQ8DkM7JTU7QxPum6bVXlftsHMFqGHYNQM34V2Pmn6
+	 AedRkvVMI1QPOUqRvAUfO79sAf/nR1ahQnNsMzdTgOEbQYYzZ9USwifZsGkzvQovA6
+	 6cqD7lguQcA/UY2yQdWuVI3uDW/g9IkrEoseSoiNarys052GHUSj6J3iH/YL3ia3vC
+	 7uTStXeePckiItWn3ub3iFwe46q47l2sCHnHjcBTrnKin07jgCbqb9YnC8rmtU7Wdn
+	 RYBFSy/plIH2w==
+Received: from IcarusMOD.eternityproject.eu (unknown [100.64.1.21])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange x25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	(Authenticated sender: kholk11)
+	by bali.collaboradmins.com (Postfix) with ESMTPSA id 5F07D17E05D3;
+	Tue, 07 Jul 2026 10:37:38 +0200 (CEST)
+From: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
+To: jic23@kernel.org,
+	sboyd@kernel.org
+Cc: dlechner@baylibre.com,
+	nuno.sa@analog.com,
+	andy@kernel.org,
+	arnd@arndb.de,
+	gregkh@linuxfoundation.org,
+	srini@kernel.org,
+	vkoul@kernel.org,
+	neil.armstrong@linaro.org,
+	sre@kernel.org,
+	angelogioacchino.delregno@collabora.com,
+	krzk@kernel.org,
+	dmitry.baryshkov@oss.qualcomm.com,
+	quic_wcheng@quicinc.com,
+	melody.olvera@oss.qualcomm.com,
+	quic_nsekar@quicinc.com,
+	ivo.ivanov.ivanov1@gmail.com,
+	abelvesa@kernel.org,
+	luca.weiss@fairphone.com,
+	konrad.dybcio@oss.qualcomm.com,
+	mitltlatltl@gmail.com,
+	krishna.kurapati@oss.qualcomm.com,
+	linux-arm-msm@vger.kernel.org,
+	linux-iio@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	linux-phy@lists.infradead.org,
+	linux-pm@vger.kernel.org,
+	kernel@collabora.com
+Subject: [PATCH v10 00/11] SPMI: Implement sub-devices and migrate drivers
+Date: Tue,  7 Jul 2026 10:37:19 +0200
+Message-ID: <20260707083730.33977-1-angelogioacchino.delregno@collabora.com>
+X-Mailer: git-send-email 2.54.0
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20260706-spmi-mbg-driver-v2-1-f883ff1d8719@oss.qualcomm.com>
+Content-Transfer-Encoding: 8bit
 
-On Mon, Jul 06, 2026 at 01:44:35PM +0530, Sachin Gupta wrote:
-> From: Satya Priya Kakitapalli <quic_skakitap@quicinc.com>
-> 
-> Add bindings for the Qualcomm MBG (Master Bandgap) temperature alarm
-> peripheral found on the PM8775 PMIC. Unlike the existing SPMI temp alarm
-> peripheral, the MBG peripheral supports both hot and cold threshold
-> monitoring across two programmable levels (LVL1 and LVL2), with interrupt
-> status reported via a fault status register over SPMI.
-> 
-> Signed-off-by: Satya Priya Kakitapalli <quic_skakitap@quicinc.com>
-> Co-developed-by: Sachin Gupta <sachin.gupta@oss.qualcomm.com>
-> Signed-off-by: Sachin Gupta <sachin.gupta@oss.qualcomm.com>
-> ---
->  .../devicetree/bindings/mfd/qcom,spmi-pmic.yaml    |  4 ++
->  .../bindings/thermal/qcom,pm8775-mbg-tm.yaml       | 72 ++++++++++++++++++++++
->  2 files changed, 76 insertions(+)
+Changes in v10:
+ - Add use-after-free fix rebased to before this series, as the v1 of
+   that did not apply cleanly on a tree without this series applied
+ - Replace unsafe to_spmi_device() with spmi_find_device_by_of_node() (Sashiko)
+ - Fix -Wformat warning in dev_set_name call (Sashiko)
 
-Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
+Changes in v9:
+ - Added check for dev->parent where missing (Sashiko)
+ - Changed %d to %u in dev_set_name() call as arg is unsigned (Sashiko)
+ - Propagating error code from devm_regmap_init_spmi_ext() instead of
+   returning -ENODEV in phy-qcom-eusb2-repeater.c (Sashiko)
+ - Rebased over next-20260605 (no conflicts anyway)
 
-Best regards,
-Krzysztof
+Changes in v8:
+ - Renamed *res to *sub_sdev in devm_spmi_subdevice_remove() (Andy)
+ - Changed kerneldoc wording to "error pointer" for function
+   spmi_subdevice_alloc_and_add() (Andy)
+ - Shuffled around some assignments in spmi_subdevice_alloc_and_add() (Andy)
+ - Used device_property_read_u32() instead of of_property_read_u32()
+   in all of the migrated drivers (Andy)
+ - Changed .max_register field in all of the migrated drivers from
+   0x100 to 0xff (Andy)
+ - Kept `sta1` declaration in reversed xmas tree order in function
+   iadc_poll_wait_eoc() of qcom-spmi-iadc.c (Andy)
+
+Changes in v7:
+ - Added commit to cleanup redundant dev_name() in the pre-existing
+   spmi_device_add() function
+ - Added commit removing unneeded goto and improving spmi_device_add()
+   readability by returning error in error path, and explicitly zero
+   for success at the end.
+
+Changes in v6:
+ - Added commit to convert spmi.c to %pe error format and used
+   %pe error format in spmi_subdevice code as wanted by Uwe Kleine-Konig
+
+Changes in v5:
+ - Changed dev_err to dev_err_probe in qcom-spmi-sdam (and done
+   that even though I disagree - because I wanted this series to
+   *exclusively* introduce the minimum required changes to
+   migrate to the new API, but okay, whatever....!);
+ - Added missing REGMAP dependency in Kconfig for qcom-spmi-sdam,
+   phy-qcom-eusb2-repeater and qcom-coincell to resolve build
+   issues when the already allowed COMPILE_TEST is enabled
+   as pointed out by the test robot's randconfig builds.
+
+Changes in v4:
+ - Added selection of REGMAP_SPMI in Kconfig for qcom-coincell and
+   for phy-qcom-eusb2-repeater to resolve undefined references when
+   compiled with some randconfig
+
+Changes in v3:
+ - Fixed importing "SPMI" namespace in spmi-devres.c
+ - Removed all instances of defensive programming, as pointed out by
+   jic23 and Sebastian
+ - Removed explicit casting as pointed out by jic23
+ - Moved ida_free call to spmi_subdev_release() and simplified error
+   handling in spmi_subdevice_alloc_and_add() as pointed out by jic23
+
+Changes in v2:
+ - Fixed missing `sparent` initialization in phy-qcom-eusb2-repeater
+ - Changed val_bits to 8 in all Qualcomm drivers to ensure
+   compatibility as suggested by Casey
+ - Added struct device pointer in all conversion commits as suggested
+   by Andy
+ - Exported newly introduced functions with a new "SPMI" namespace
+   and imported the same in all converted drivers as suggested by Andy
+ - Added missing error checking for dev_set_name() call in spmi.c
+   as suggested by Andy
+ - Added comma to last entry of regmap_config as suggested by Andy
+
+While adding support for newer MediaTek platforms, featuring complex
+SPMI PMICs, I've seen that those SPMI-connected chips are internally
+divided in various IP blocks, reachable in specific contiguous address
+ranges... more or less like a MMIO, but over a slow SPMI bus instead.
+
+I recalled that Qualcomm had something similar... and upon checking a
+couple of devicetrees, yeah - indeed it's the same over there.
+
+What I've seen then is a common pattern of reading the "reg" property
+from devicetree in a struct member and then either
+ A. Wrapping regmap_{read/write/etc}() calls in a function that adds
+    the register base with "base + ..register", like it's done with
+    writel()/readl() calls; or
+ B. Doing the same as A. but without wrapper functions.
+
+Even though that works just fine, in my opinion it's wrong.
+
+The regmap API is way more complex than MMIO-only readl()/writel()
+functions for multiple reasons (including supporting multiple busses
+like SPMI, of course) - but everyone seemed to forget that regmap
+can manage register base offsets transparently and automatically in
+its API functions by simply adding a `reg_base` to the regmap_config
+structure, which is used for initializing a `struct regmap`.
+
+So, here we go: this series implements the software concept of an SPMI
+Sub-Device (which, well, also reflects how Qualcomm and MediaTek's
+actual hardware is laid out anyway).
+
+               SPMI Controller
+                     |                ______
+                     |               /       Sub-Device 1
+                     V              /
+              SPMI Device (PMIC) ----------- Sub-Device 2
+                                    \
+                                     \______ Sub-Device 3
+
+As per this implementation, an SPMI Sub-Device can be allocated/created
+and added in any driver that implements a... well.. subdevice (!) with
+an SPMI "main" device as its parent: this allows to create and finally
+to correctly configure a regmap that is specific to the sub-device,
+operating on its specific address range and reading, and writing, to
+its registers with the regmap API taking care of adding the base address
+of a sub-device's registers as per regmap API design.
+
+All of the SPMI Sub-Devices are therefore added as children of the SPMI
+Device (usually a PMIC), as communication depends on the PMIC's SPMI bus
+to be available (and the PMIC to be up and running, of course).
+
+Summarizing the dependency chain (which is obvious to whoever knows what
+is going on with Qualcomm and/or MediaTek SPMI PMICs):
+    "SPMI Sub-Device x...N" are children "SPMI Device"
+    "SPMI Device" is a child of "SPMI Controller"
+
+(that was just another way to say the same thing as the graph above anyway).
+
+Along with the new SPMI Sub-Device registration functions, I have also
+performed a conversion of some Qualcomm SPMI drivers and only where the
+actual conversion was trivial.
+
+I haven't included any conversion of more complex Qualcomm SPMI drivers
+because I don't have the required bandwidth to do so (and besides, I think,
+but haven't exactly verified, that some of those require SoCs that I don't
+have for testing anyway).
+
+AngeloGioacchino Del Regno (10):
+  spmi: Remove redundant dev_name() print in spmi_device_add()
+  spmi: Print error status with %pe format
+  spmi: Remove unneeded goto in spmi_device_add() error path
+  spmi: Implement spmi_subdevice_alloc_and_add() and devm variant
+  nvmem: qcom-spmi-sdam: Migrate to devm_spmi_subdevice_alloc_and_add()
+  power: reset: qcom-pon: Migrate to devm_spmi_subdevice_alloc_and_add()
+  phy: qualcomm: eusb2-repeater: Migrate to
+    devm_spmi_subdevice_alloc_and_add()
+  misc: qcom-coincell: Migrate to devm_spmi_subdevice_alloc_and_add()
+  iio: adc: qcom-spmi-iadc: Migrate to
+    devm_spmi_subdevice_alloc_and_add()
+  iio: adc: qcom-spmi-iadc: Remove regmap R/W wrapper functions
+
+ drivers/iio/adc/qcom-spmi-iadc.c              | 118 ++++++++----------
+ drivers/misc/Kconfig                          |   2 +
+ drivers/misc/qcom-coincell.c                  |  45 +++++--
+ drivers/nvmem/Kconfig                         |   1 +
+ drivers/nvmem/qcom-spmi-sdam.c                |  38 ++++--
+ drivers/phy/qualcomm/Kconfig                  |   2 +
+ .../phy/qualcomm/phy-qcom-eusb2-repeater.c    |  54 ++++----
+ drivers/power/reset/qcom-pon.c                |  33 +++--
+ drivers/spmi/spmi-devres.c                    |  24 ++++
+ drivers/spmi/spmi.c                           |  95 ++++++++++++--
+ include/linux/spmi.h                          |  16 +++
+ 11 files changed, 299 insertions(+), 129 deletions(-)
+
+-- 
+2.54.0
 
