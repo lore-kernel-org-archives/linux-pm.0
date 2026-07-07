@@ -1,134 +1,259 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+Received: from bali.collaboradmins.com (bali.collaboradmins.com [148.251.105.195])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4CBDD13DDAA;
-	Tue,  7 Jul 2026 11:14:36 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 20AB33F44D0;
+	Tue,  7 Jul 2026 11:18:33 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=148.251.105.195
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1783422878; cv=none; b=jDbOzDPR5Oi/9G0rwkm9J3QwgXMedgz3CGJACZd8raBs3TmQ7nbBiSisifS6Oy56C7QFPpDIKV2BIl77x82XfW89TMRNkDoT236Jx4BVNxLqlHAirn3RPu5pny+mv8rl4ic1YgSwL7wzeoOg2OJxTyi5ouLW2/VLb3mrdX/guDg=
+	t=1783423115; cv=none; b=lCz5B7yQP05DUx6c7D0/as1f3sSmdtWKvp+AX/ctYznNcAgRFA3blBcFtDkTVmO62EktqIRA483Bi5zOpSwO8O+zEfDkkeaaeCqvhSNRtkwVfd1DOri7zbwg99W1kSbCyGdUVmFvvAji/dZeS5RLKlodqn+uVTINs/SpVFQC5ew=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1783422878; c=relaxed/simple;
-	bh=YPXUmDeS/hV67v0jjJTsDIiDBBPlUMQmUWVvsmHel9k=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=AaCWXs9jDOx/6D2ZcUTrSZE80gnA0Gr/F5lOflPEaLwcZMZ/iexdavp5Aa+MPl6eOIlJN0plGPkM1QkKyGaxEfKDKyAbxQvCF802VBLsy9DVlRcASIIB4T+RTd//6f2gt3cLzYwvdAI5D6CduKC7tw3jWsi5yyxSjEy4LtSr4Og=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=guG6hS9a; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1783423115; c=relaxed/simple;
+	bh=0IHx3+JVBn8IQqr6PlENFho7o3CLrDb4cjVOt/1v/LE=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=LcQ3mnTfFuUSdmSflYntTq1i4X8c5XCALXeqS9g5BwUaLLT2rWUaq8O6WgxdzFqAKNhjr2kPB4JCw4shHrwIHm1BtrmoMMShFRQrkqoiQZRTzZids2I4nyUBrmoFs9xLKTEUyyf+zJWJg2VsQj9dGrQi/fl/vC8DKEgz4xecG6g=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b=K//ZYtum; arc=none smtp.client-ip=148.251.105.195
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="guG6hS9a"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id A8CA81F000E9;
-	Tue,  7 Jul 2026 11:14:35 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1783422876;
-	bh=IZJglc593nYe2vPbX3HO9idEx12Y/SfrZkHPTFijlZM=;
-	h=From:To:Cc:Subject:Date;
-	b=guG6hS9arG1zHkAHud0v0S7+AQvwzC/TrBiRgbmASyUx6xlyPyLmbz2nIFKDRclOo
-	 jcI/PSECqD38XJijD0moDpFfRm1zGMovwM69H+ZKWfGbH4J0XEwbrYum5Jg+yOIJid
-	 ZVYiASw3sz9WfujmtgTyHVi6kRpXxV+KxeNF5dwdDKG+PpwYUbpa/rjdcy5rt1Zs6Q
-	 GYY5et9uAFEKF2cIrCOgU4eeS8V1GzDteg3vOzPik9MdDjnXi8/zxT52YcJTeP6kkr
-	 vlNGrUvC/I5YjZ1OeX4d1GMhs7j+hhVc+aGKoVlpNu6CtxeJzqNjT47U954IpB9K9l
-	 /D/mqN/Qgfiug==
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-To: Linux ACPI <linux-acpi@vger.kernel.org>
-Cc: golne tree <lrepper@outlook.de>, LKML <linux-kernel@vger.kernel.org>,
- Linux PM <linux-pm@vger.kernel.org>,
- Ata =?utf-8?B?xLBsaGFuIEvDtmt0w7xyaw==?= <atailhan2006@gmail.com>
-Subject: [PATCH v1] ACPI: battery: Adjust charging status validation check
-Date: Tue, 07 Jul 2026 13:14:33 +0200
-Message-ID: <6283544.lOV4Wx5bFT@rafael.j.wysocki>
-Organization: Linux Kernel Development - Intel
+	dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b="K//ZYtum"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
+	s=mail; t=1783423112;
+	bh=0IHx3+JVBn8IQqr6PlENFho7o3CLrDb4cjVOt/1v/LE=;
+	h=From:To:Cc:Subject:Date:From;
+	b=K//ZYtumZ+IXrowPCE1uQntAyK+qH08LtXv9aDg8evkyF9aab8S2XxYFLJCC9dVrM
+	 YBjafmq+iyYlaiqS78jlft4To+6visHB1YLFE3n3yZQSjNDwAAfbSOz/ZpydhSh8a9
+	 GkHb/BEhohSBZomdhh0RlnZlVbEYem4rsSCzmxDOOps57dd46m0pATK2xPXQEt91Tn
+	 u7M9ImRuZ9rn9DoeCAUMv5J1k2ks53yWJBrlALjEoHhW126MseBsCxP5Ye5zgfq+M9
+	 mssWHBx/n0N9WZxw2B4/AC880LuGonsE5FKrGzjAJsz7VAWpT/Uuv7TCXswi05pjvb
+	 ON7ZnnY3F7vSg==
+Received: from IcarusMOD.eternityproject.eu (unknown [100.64.1.21])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange x25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	(Authenticated sender: kholk11)
+	by bali.collaboradmins.com (Postfix) with ESMTPSA id 4F86217E05E8;
+	Tue, 07 Jul 2026 13:18:31 +0200 (CEST)
+From: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
+To: jic23@kernel.org,
+	sboyd@kernel.org
+Cc: dlechner@baylibre.com,
+	nuno.sa@analog.com,
+	andy@kernel.org,
+	arnd@arndb.de,
+	gregkh@linuxfoundation.org,
+	srini@kernel.org,
+	vkoul@kernel.org,
+	neil.armstrong@linaro.org,
+	sre@kernel.org,
+	angelogioacchino.delregno@collabora.com,
+	krzk@kernel.org,
+	dmitry.baryshkov@oss.qualcomm.com,
+	quic_wcheng@quicinc.com,
+	melody.olvera@oss.qualcomm.com,
+	quic_nsekar@quicinc.com,
+	ivo.ivanov.ivanov1@gmail.com,
+	abelvesa@kernel.org,
+	luca.weiss@fairphone.com,
+	konrad.dybcio@oss.qualcomm.com,
+	mitltlatltl@gmail.com,
+	krishna.kurapati@oss.qualcomm.com,
+	linux-arm-msm@vger.kernel.org,
+	linux-iio@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	linux-phy@lists.infradead.org,
+	linux-pm@vger.kernel.org,
+	kernel@collabora.com
+Subject: [PATCH v12 00/12] SPMI: Implement sub-devices and migrate drivers
+Date: Tue,  7 Jul 2026 13:18:17 +0200
+Message-ID: <20260707111829.180158-1-angelogioacchino.delregno@collabora.com>
+X-Mailer: git-send-email 2.54.0
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 
-From: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
+Changes in v12:
+ - Removed call to of_node_put() for failure as it's being already
+   done in spmi_dev_release(), as pointed out by Sashiko
+ - Fixed usage of the new helper in all users (it's too hot today, sorry)
 
-Commit bb1256e0ddc7 ("ACPI: battery: fix incorrect charging status when
-current is zero") added a charge rate check to validate the "charging"
-status of the battery, but that check is reported to cause some systems
-to misbehave [1].  Namely, it causes the "not charging" status to be
-reported on them while the battery is in fact charging (and they were
-correctly reporting the "charging" status in that case previously).
+Changes in v11:
+ - Use kzalloc_obj() in spmi_subdevice_alloc_and_add()
+ - Introduced new helper to get a parent SPMI device which verifies
+   both if the device has parent and if that parent is effectively
+   a SPMI device type
+ - Removed dev->parent NULL checks in all migration code, as that
+   is now being checked in the new helper instead, reducing the
+   amount of required lines of code to instantiate a SPMI subdevice
+ - Moved of_node reference dropping to dev release callback (Sashiko)
+ - Rebased over next-20260706
 
-To address that, check if the battery is full in addition to checking
-the charge rate when the "charging" status is reported by the platform
-firmware and only change it to "not charging" if the battery is full and
-its charge rate is zero.
+Changes in v10:
+ - Add use-after-free fix rebased to before this series, as the v1 of
+   that did not apply cleanly on a tree without this series applied
+ - Replace unsafe to_spmi_device() with spmi_find_device_by_of_node() (Sashiko)
+ - Fix -Wformat warning in dev_set_name call (Sashiko)
 
-Fixes: bb1256e0ddc7 ("ACPI: battery: fix incorrect charging status when current is zero")
-Link: https://lore.kernel.org/linux-acpi/AM9P193MB158895CFE0DDFA62FCD1DA5ED0F22@AM9P193MB1588.EURP193.PROD.OUTLOOK.COM/ [1]
-Reported-by: golne tree <lrepper@outlook.de>
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- drivers/acpi/battery.c |   38 ++++++++++++++++++++------------------
- 1 file changed, 20 insertions(+), 18 deletions(-)
+Changes in v9:
+ - Added check for dev->parent where missing (Sashiko)
+ - Changed %d to %u in dev_set_name() call as arg is unsigned (Sashiko)
+ - Propagating error code from devm_regmap_init_spmi_ext() instead of
+   returning -ENODEV in phy-qcom-eusb2-repeater.c (Sashiko)
+ - Rebased over next-20260605 (no conflicts anyway)
 
---- a/drivers/acpi/battery.c
-+++ b/drivers/acpi/battery.c
-@@ -150,27 +150,28 @@ static int acpi_battery_technology(struc
- 
- static int acpi_battery_get_state(struct acpi_battery *battery);
- 
--static int acpi_battery_is_charged(struct acpi_battery *battery)
-+static bool acpi_battery_is_full(struct acpi_battery *battery)
- {
--	/* charging, discharging, critical low or charge limited */
--	if (battery->state != 0)
--		return 0;
--
- 	/* battery not reporting charge */
- 	if (battery->capacity_now == ACPI_BATTERY_VALUE_UNKNOWN ||
- 	    battery->capacity_now == 0)
--		return 0;
-+		return false;
- 
- 	/* good batteries update full_charge as the batteries degrade */
--	if (battery->full_charge_capacity == battery->capacity_now)
--		return 1;
-+	if (battery->full_charge_capacity <= battery->capacity_now)
-+		return true;
- 
- 	/* fallback to using design values for broken batteries */
--	if (battery->design_capacity <= battery->capacity_now)
--		return 1;
-+	return battery->design_capacity <= battery->capacity_now;
-+}
- 
--	/* we don't do any sort of metric based on percentages */
--	return 0;
-+static int acpi_battery_is_charged(struct acpi_battery *battery)
-+{
-+	/* charging, discharging, critical low or charge limited */
-+	if (battery->state != 0)
-+		return 0;
-+
-+	return acpi_battery_is_full(battery);
- }
- 
- static bool acpi_battery_is_degraded(struct acpi_battery *battery)
-@@ -211,13 +212,14 @@ static int acpi_battery_get_property(str
- 		if (battery->state & ACPI_BATTERY_STATE_DISCHARGING)
- 			val->intval = acpi_battery_handle_discharging(battery);
- 		else if (battery->state & ACPI_BATTERY_STATE_CHARGING)
--			/* Validate the status by checking the current. */
--			if (battery->rate_now != ACPI_BATTERY_VALUE_UNKNOWN &&
--			    battery->rate_now == 0) {
--				/* On charge but no current (0W/0mA). */
--				val->intval = POWER_SUPPLY_STATUS_NOT_CHARGING;
--			} else {
-+			/* Check the rate and capacity to validate the status. */
-+			if (!acpi_battery_is_full(battery) ||
-+			    (battery->rate_now != ACPI_BATTERY_VALUE_UNKNOWN &&
-+			     battery->rate_now > 0)) {
- 				val->intval = POWER_SUPPLY_STATUS_CHARGING;
-+			} else {
-+				/* Full and zero rate. */
-+				val->intval = POWER_SUPPLY_STATUS_NOT_CHARGING;
- 			}
- 		else if (battery->state & ACPI_BATTERY_STATE_CHARGE_LIMITING)
- 			val->intval = POWER_SUPPLY_STATUS_NOT_CHARGING;
+Changes in v8:
+ - Renamed *res to *sub_sdev in devm_spmi_subdevice_remove() (Andy)
+ - Changed kerneldoc wording to "error pointer" for function
+   spmi_subdevice_alloc_and_add() (Andy)
+ - Shuffled around some assignments in spmi_subdevice_alloc_and_add() (Andy)
+ - Used device_property_read_u32() instead of of_property_read_u32()
+   in all of the migrated drivers (Andy)
+ - Changed .max_register field in all of the migrated drivers from
+   0x100 to 0xff (Andy)
+ - Kept `sta1` declaration in reversed xmas tree order in function
+   iadc_poll_wait_eoc() of qcom-spmi-iadc.c (Andy)
 
+Changes in v7:
+ - Added commit to cleanup redundant dev_name() in the pre-existing
+   spmi_device_add() function
+ - Added commit removing unneeded goto and improving spmi_device_add()
+   readability by returning error in error path, and explicitly zero
+   for success at the end.
 
+Changes in v6:
+ - Added commit to convert spmi.c to %pe error format and used
+   %pe error format in spmi_subdevice code as wanted by Uwe Kleine-Konig
+
+Changes in v5:
+ - Changed dev_err to dev_err_probe in qcom-spmi-sdam (and done
+   that even though I disagree - because I wanted this series to
+   *exclusively* introduce the minimum required changes to
+   migrate to the new API, but okay, whatever....!);
+ - Added missing REGMAP dependency in Kconfig for qcom-spmi-sdam,
+   phy-qcom-eusb2-repeater and qcom-coincell to resolve build
+   issues when the already allowed COMPILE_TEST is enabled
+   as pointed out by the test robot's randconfig builds.
+
+Changes in v4:
+ - Added selection of REGMAP_SPMI in Kconfig for qcom-coincell and
+   for phy-qcom-eusb2-repeater to resolve undefined references when
+   compiled with some randconfig
+
+Changes in v3:
+ - Fixed importing "SPMI" namespace in spmi-devres.c
+ - Removed all instances of defensive programming, as pointed out by
+   jic23 and Sebastian
+ - Removed explicit casting as pointed out by jic23
+ - Moved ida_free call to spmi_subdev_release() and simplified error
+   handling in spmi_subdevice_alloc_and_add() as pointed out by jic23
+
+Changes in v2:
+ - Fixed missing `sparent` initialization in phy-qcom-eusb2-repeater
+ - Changed val_bits to 8 in all Qualcomm drivers to ensure
+   compatibility as suggested by Casey
+ - Added struct device pointer in all conversion commits as suggested
+   by Andy
+ - Exported newly introduced functions with a new "SPMI" namespace
+   and imported the same in all converted drivers as suggested by Andy
+ - Added missing error checking for dev_set_name() call in spmi.c
+   as suggested by Andy
+ - Added comma to last entry of regmap_config as suggested by Andy
+
+While adding support for newer MediaTek platforms, featuring complex
+SPMI PMICs, I've seen that those SPMI-connected chips are internally
+divided in various IP blocks, reachable in specific contiguous address
+ranges... more or less like a MMIO, but over a slow SPMI bus instead.
+
+I recalled that Qualcomm had something similar... and upon checking a
+couple of devicetrees, yeah - indeed it's the same over there.
+
+What I've seen then is a common pattern of reading the "reg" property
+from devicetree in a struct member and then either
+ A. Wrapping regmap_{read/write/etc}() calls in a function that adds
+    the register base with "base + ..register", like it's done with
+    writel()/readl() calls; or
+ B. Doing the same as A. but without wrapper functions.
+
+Even though that works just fine, in my opinion it's wrong.
+
+The regmap API is way more complex than MMIO-only readl()/writel()
+functions for multiple reasons (including supporting multiple busses
+like SPMI, of course) - but everyone seemed to forget that regmap
+can manage register base offsets transparently and automatically in
+its API functions by simply adding a `reg_base` to the regmap_config
+structure, which is used for initializing a `struct regmap`.
+
+So, here we go: this series implements the software concept of an SPMI
+Sub-Device (which, well, also reflects how Qualcomm and MediaTek's
+actual hardware is laid out anyway).
+
+               SPMI Controller
+                     |                ______
+                     |               /       Sub-Device 1
+                     V              /
+              SPMI Device (PMIC) ----------- Sub-Device 2
+                                    \
+                                     \______ Sub-Device 3
+
+As per this implementation, an SPMI Sub-Device can be allocated/created
+and added in any driver that implements a... well.. subdevice (!) with
+an SPMI "main" device as its parent: this allows to create and finally
+to correctly configure a regmap that is specific to the sub-device,
+operating on its specific address range and reading, and writing, to
+its registers with the regmap API taking care of adding the base address
+of a sub-device's registers as per regmap API design.
+
+All of the SPMI Sub-Devices are therefore added as children of the SPMI
+Device (usually a PMIC), as communication depends on the PMIC's SPMI bus
+to be available (and the PMIC to be up and running, of course).
+
+Summarizing the dependency chain (which is obvious to whoever knows what
+is going on with Qualcomm and/or MediaTek SPMI PMICs):
+    "SPMI Sub-Device x...N" are children "SPMI Device"
+    "SPMI Device" is a child of "SPMI Controller"
+
+(that was just another way to say the same thing as the graph above anyway).
+
+Along with the new SPMI Sub-Device registration functions, I have also
+performed a conversion of some Qualcomm SPMI drivers and only where the
+actual conversion was trivial.
+
+I haven't included any conversion of more complex Qualcomm SPMI drivers
+because I don't have the required bandwidth to do so (and besides, I think,
+but haven't exactly verified, that some of those require SoCs that I don't
+have for testing anyway).
+
+AngeloGioacchino Del Regno (12):
+  spmi: Fix potential use-after-free by grabbing of_node reference
+  spmi: Remove redundant dev_name() print in spmi_device_add()
+  spmi: Print error status with %pe format
+  spmi: Remove unneeded goto in spmi_device_add() error path
+  spmi: Implement spmi_subdevice_alloc_and_add() and devm variant
+  spmi: Add helper to get a parent SPMI device
+  nvmem: qcom-spmi-sdam: Migrate to devm_spmi_subdevice_alloc_and_add()
+  power: reset: qcom-pon: Migrate to devm_spmi_subdevice_alloc_and_add()
+  phy: qualcomm: eusb2-repeater: Migrate to
+    devm_spmi_subdevice_alloc_and_add()
+  misc: qcom-coincell: Migrate to devm_spmi_subdevice_alloc_and_add()
+  iio: adc: qcom-spmi-iadc: Migrate to
+    devm_spmi_subdevice_alloc_and_add()
+  iio: adc: qcom-spmi-iadc: Remove regmap R/W wrapper functions
+
+ drivers/iio/adc/qcom-spmi-iadc.c              | 116 ++++++++---------
+ drivers/misc/Kconfig                          |   2 +
+ drivers/misc/qcom-coincell.c                  |  45 +++++--
+ drivers/nvmem/Kconfig                         |   1 +
+ drivers/nvmem/qcom-spmi-sdam.c                |  41 ++++--
+ drivers/phy/qualcomm/Kconfig                  |   2 +
+ .../phy/qualcomm/phy-qcom-eusb2-repeater.c    |  52 +++++---
+ drivers/power/reset/qcom-pon.c                |  31 +++--
+ drivers/spmi/spmi-devres.c                    |  24 ++++
+ drivers/spmi/spmi.c                           | 123 ++++++++++++++++--
+ include/linux/spmi.h                          |  17 +++
+ 11 files changed, 327 insertions(+), 127 deletions(-)
+
+-- 
+2.54.0
 
