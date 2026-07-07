@@ -1,38 +1,38 @@
 Received: from bali.collaboradmins.com (bali.collaboradmins.com [148.251.105.195])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 80A913F86F8;
-	Tue,  7 Jul 2026 11:18:37 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AC0123F9A05;
+	Tue,  7 Jul 2026 11:18:38 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=148.251.105.195
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1783423119; cv=none; b=uRIfbTgUAeK3q67/6BVtrF/ntt5+1u7Px2I2kYuUjkbFCqIvJ5toye5KYj8cmIXXTGgrHmHHtQU+ZINS5bPE4w/kHynkcOcUcqFxOGYuwnHv81iyGm8aMIXqYECmkc/g1darmY337Ax1yCcQVVjTcVaOtv+dXxEQ2q2vzy00NwU=
+	t=1783423120; cv=none; b=bh1Dx5TwoYbMGB+rpTyOo12bhXouREuI+4l56Rv0CjL9Q1sSip48BejFwzPAL06drpCYx4wp6dz2LI6Jo7Mm70uUkvRpbAU1xd13PzrKJvoDdL/qaxFkZkKIGiEHQEq72r+gPyBiH3QIkmcTB2wPFebSKWrJ3+5ge0vislDH8nE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1783423119; c=relaxed/simple;
-	bh=zpAYODfPgEaDXSzIqSip1NB35cM62aU/zNPBl5c3e7k=;
+	s=arc-20240116; t=1783423120; c=relaxed/simple;
+	bh=VjssSMudF55fYEue8+QvhRjlAJbL3qIke4KqjiMaopY=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=MuDYnwWp7LG+LX3KG/rSEyfxbuwJJqWsiLQ308XxwezUX8QJK6ze4O65RS6QYXql2tTEiPq91OCwWii+rhBpIj4pn79ufVP3U2mNPO9zNLXH8XFYeery3SvpY3G2otp7agHP9508UkVup8+Qr1wnOO8TWWoWbewW/qegV3i4IaM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b=HZ59ZB6d; arc=none smtp.client-ip=148.251.105.195
+	 MIME-Version; b=mMgqXM+mzn51W+N5+eEyDZFCGS+mCa9cpO/h0z9W+9RVR0ivjvDX9k4AXTo53r35jwN7mHxQl+L+u3Vhb8EcQ23v6IPPszg+gsoAf310pyHSxItcxDs6711VykEJs2lnpQy7ZO6vPxx+gwuRKeC+N/yGYwygUGBNVJL6nn8ZDSA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b=qZuT5jvk; arc=none smtp.client-ip=148.251.105.195
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b="HZ59ZB6d"
+	dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b="qZuT5jvk"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
-	s=mail; t=1783423116;
-	bh=zpAYODfPgEaDXSzIqSip1NB35cM62aU/zNPBl5c3e7k=;
+	s=mail; t=1783423117;
+	bh=VjssSMudF55fYEue8+QvhRjlAJbL3qIke4KqjiMaopY=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=HZ59ZB6dUj95vz8DVaW0qi2TChTzf10ThfF2+u9wgGroD/0lliGJQtMaWMXF8Uc9F
-	 e5v2u0jxM3tpPvzEXgiVAt1hQE3GU3wSgPT3WFLyLzLPsR7tNCxmxB5GrBshn+KC3q
-	 fNCXprrPu6nn1dOrZkWSplcRBCuEsAM2/4g7yCAWDC1hGeG5ZqPLISPhDCrMCyzGnW
-	 KhJ9eA123DSjLUb0HITbzwSmrJnEQ+XSc+oZxMvSNLVkW5qEfJx8kTkC8G3gIK0+BA
-	 3b7wqfAqAl2bFvrEIOQQkG6iALrEePMcAEu5m7lwu7+DsGmCpt07acDAPZZUsjAu5K
-	 CQi9FPd1cskPw==
+	b=qZuT5jvkBny1G68QHOVf7BQMkGWJZmvgUby6lp33PPdp7FOSc4rKuPSDKJEaYLK5k
+	 MdLeckZBA6M9KXMQd1XvkXEXMV1nBPDXwaU6qVZTuQQSmgAxmdFGpCu7bvxev6clDR
+	 lzZNa1tdzrpnZbKbd86zi8UH/h3ZKJIEABzE3gKt9jZ+cY8BOlIr/JF2Hqai2tkdgu
+	 //4XU9jTwil5j20SA54bPAd5G4LwBg/IbPKeykcvK6iLm7AKxYNd9dx8PJ8lNvjxIC
+	 mobSRP7866GtPiQIJha8od42MZbXbrfXnzmD6taaX7kZjdNxlPhehblspxmWBgQIg0
+	 VjBW1f0ooi7+g==
 Received: from IcarusMOD.eternityproject.eu (unknown [100.64.1.21])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
 	(Authenticated sender: kholk11)
-	by bali.collaboradmins.com (Postfix) with ESMTPSA id EDF1117E0DE6;
-	Tue, 07 Jul 2026 13:18:34 +0200 (CEST)
+	by bali.collaboradmins.com (Postfix) with ESMTPSA id 2BC1F17E0DFB;
+	Tue, 07 Jul 2026 13:18:36 +0200 (CEST)
 From: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
 To: jic23@kernel.org,
 	sboyd@kernel.org
@@ -64,9 +64,9 @@ Cc: dlechner@baylibre.com,
 	linux-pm@vger.kernel.org,
 	kernel@collabora.com,
 	Andy Shevchenko <andriy.shevchenko@intel.com>
-Subject: [PATCH v12 03/12] spmi: Print error status with %pe format
-Date: Tue,  7 Jul 2026 13:18:20 +0200
-Message-ID: <20260707111829.180158-4-angelogioacchino.delregno@collabora.com>
+Subject: [PATCH v12 04/12] spmi: Remove unneeded goto in spmi_device_add() error path
+Date: Tue,  7 Jul 2026 13:18:21 +0200
+Message-ID: <20260707111829.180158-5-angelogioacchino.delregno@collabora.com>
 X-Mailer: git-send-email 2.54.0
 In-Reply-To: <20260707111829.180158-1-angelogioacchino.delregno@collabora.com>
 References: <20260707111829.180158-1-angelogioacchino.delregno@collabora.com>
@@ -78,49 +78,40 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Instead of printing just a number, use the %pe format for error
-status, increasing readability of error prints.
+If any error happens during device_add() just return inside of the
+conditional, as the goto path doesn't do anything else if not just
+returning.
+
+While at it, to improve readability, also change this function to
+explicitly return 0 (for success) at the end.
 
 Acked-by: Stephen Boyd <sboyd@kernel.org>
 Reviewed-by: Andy Shevchenko <andriy.shevchenko@intel.com>
 Signed-off-by: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
 ---
- drivers/spmi/spmi.c | 8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+ drivers/spmi/spmi.c | 6 ++----
+ 1 file changed, 2 insertions(+), 4 deletions(-)
 
 diff --git a/drivers/spmi/spmi.c b/drivers/spmi/spmi.c
-index de019f3f1e27..244bd116f970 100644
+index 244bd116f970..4050f3614dab 100644
 --- a/drivers/spmi/spmi.c
 +++ b/drivers/spmi/spmi.c
-@@ -71,7 +71,7 @@ int spmi_device_add(struct spmi_device *sdev)
- 
+@@ -72,13 +72,11 @@ int spmi_device_add(struct spmi_device *sdev)
  	err = device_add(&sdev->dev);
  	if (err < 0) {
--		dev_err(&sdev->dev, "Can't add device, status %d\n", err);
-+		dev_err(&sdev->dev, "Can't add device, status %pe\n", ERR_PTR(err));
- 		goto err_device_add;
+ 		dev_err(&sdev->dev, "Can't add device, status %pe\n", ERR_PTR(err));
+-		goto err_device_add;
++		return err;
  	}
  
-@@ -496,8 +496,8 @@ static void of_spmi_register_devices(struct spmi_controller *ctrl)
- 		err = of_property_read_u32_array(node, "reg", reg, 2);
- 		if (err) {
- 			dev_err(&ctrl->dev,
--				"node %pOF err (%d) does not have 'reg' property\n",
--				node, err);
-+				"node %pOF err (%pe) does not have 'reg' property\n",
-+				node, ERR_PTR(err));
- 			continue;
- 		}
+ 	dev_dbg(&sdev->dev, "device registered\n");
+-
+-err_device_add:
+-	return err;
++	return 0;
+ }
+ EXPORT_SYMBOL_GPL(spmi_device_add);
  
-@@ -525,7 +525,7 @@ static void of_spmi_register_devices(struct spmi_controller *ctrl)
- 		err = spmi_device_add(sdev);
- 		if (err) {
- 			dev_err(&sdev->dev,
--				"failure adding device. status %d\n", err);
-+				"failure adding device. status %pe\n", ERR_PTR(err));
- 			spmi_device_put(sdev);
- 		}
- 	}
 -- 
 2.54.0
 
