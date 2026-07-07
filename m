@@ -1,40 +1,43 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E656043784C;
-	Tue,  7 Jul 2026 17:19:58 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 597DF420894;
+	Tue,  7 Jul 2026 17:25:44 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1783444799; cv=none; b=kZvvpl9tyQbmEL9VnHPJ2yjQa6TiEj50LTL06K8KopLELCRfOUft+QLaQbh2avx+KEHRYfg6wcxbGzkmTuOGTM4CCRGncN/BeX8et5us/JsXb5YZH2mzc8uDzfXlaa3ZaplYI/axwK9c8xN5V6fU6S/2vT+y+4dqOHPwOlglUBg=
+	t=1783445145; cv=none; b=Vf/r6tOmGJcLPkK3eYeXddtNO6Ksffvgb+AltQ2IjhAtTOLt+mluVNh0h5ITVhaPNtFzaLg7a3L8v/47T9pAcx60eWHQ2AAv11iZQK/R7c60VxMknbuvgGEsnNJHTTo4RtBqV105sUBIkmxGhdOX0dpZQrihWRJIAO5USv9o0cU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1783444799; c=relaxed/simple;
-	bh=S7AQzWTc5IPd5gOGoSB+DK3d2vkhjgkvpYE6QD0cCRc=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=IjR2GvqOfSt+vWJqrxDJccHgItTmQdEvsNJw5MtMmjy1t1EVAZnnP/7a36z6ee2Cb1G8shQwXiUB/BP56DCN4dSAWsVJSRig+ZQkn/Wb+e4WkDgr8UQrtxFlnqtPhxOC0DUKruAwXu1wfUCIG3hUKDcTplKbGPu2bWTYjWc521A=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=lvs7ga69; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1783445145; c=relaxed/simple;
+	bh=lX2a6AWpMokS7BzGM+qzcewEmAfPSRoBfBjBXPy5tiM=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=BU6U5JNladXhFwibIEu17ltI5Ib/nLFa1i8g64HzR6k7Tim930ioYzXpggnp6sgMYRTtKAotHwBRK7AchEbZRFYOq989rYN6dBy4lJmtWtNMkSYnBJrkkJhwMWML6kT1YfuuberVaMk7HqVkePAja2egRNhISLj/aq78jvZCQDo=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=NxR+Rbsk; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="lvs7ga69"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 88A471F000E9;
-	Tue,  7 Jul 2026 17:19:57 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="NxR+Rbsk"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id E44F21F000E9;
+	Tue,  7 Jul 2026 17:25:41 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1783444798;
-	bh=tUqqgaYW4430mN05/ROhxe6D3UPRuHK3y6o8DJMxlLQ=;
+	s=k20260515; t=1783445143;
+	bh=nJvPeWTUm3YxcIMFkA4NMapf6Aik/1OZyaFj9/ZkhBo=;
 	h=From:To:Cc:Subject:Date;
-	b=lvs7ga69T9mHFhWcCbC7pagngZcFQL6mmwbXvpKx2pltp1L+S6KZwS/+gRpRyjaMD
-	 FxPuuFDNXWtKdo3UXfcQ3P4WBfs9o5463KNNnrtrRK81nMWyaaJY/iwzNzE7nOFAcq
-	 D4uQv9zNKCA0+NUJSHKBh75+wrd087WCx9635JgkYsjTCi81yBimAkG3Wr87e4iHvr
-	 RJ121P/qENr33VEKOcLCn+QOxLMaO7chwo+VXSetak7+fNkaOs0KRBmc0qvmCqTsmX
-	 9HVMp9u2SRuLbUbMt/E1mGEwtgZ4s7qAfiGtWrzzjM1D6JAqeSmBHzM+UnG+Z3nsn0
-	 118I51hMl22OQ==
+	b=NxR+Rbsk/pDs4zzNsJpCIrJ7RO1w2IrK3YTsMCdYvEL2ZGOdUSsUGrwJXQITp/fFe
+	 xy4U+2SIunJ4wZzi7J6isI40mxwKgwGHlm6A1HZpb4t3fZ9DAP8utRmOqhGFnegsP4
+	 Ao4S+jDcpWJu7ubqFse8xfaovW6f2afQTGQfyJS80QcxccAJK8tBzpUVDZYrfOwTLX
+	 pJqPmPG5YuY8mQHdxrhX2Us+2oBf/7v9qxxXjLsgc15LBke/eNSs9AgU+ROpR71MFU
+	 yAuMSuFDbAw3RgTydD3tq9ve6rI2AHmitOQs6S1Q4j9WyHK14VXmUAWRWjngplGV08
+	 n/KOoMdbDeKOA==
 From: "Rafael J. Wysocki" <rafael@kernel.org>
 To: Linux PM <linux-pm@vger.kernel.org>
-Cc: LKML <linux-kernel@vger.kernel.org>,
+Cc: Vincent Guittot <vincent.guittot@linaro.org>,
+ LKML <linux-kernel@vger.kernel.org>,
  Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
- Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
+ Viresh Kumar <viresh.kumar@linaro.org>, Dhruva Gole <d-gole@ti.com>,
+ Lukasz Luba <lukasz.luba@arm.com>, Qais Yousef <qyousef@layalina.io>,
+ Ingo Molnar <mingo@kernel.org>
 Subject:
- [PATCH v1] cpufreq: intel_pstate: Set non-turbo capacity to
- HWP_GUARANTEED_PERF()
-Date: Tue, 07 Jul 2026 19:19:55 +0200
-Message-ID: <12928972.O9o76ZdvQC@rafael.j.wysocki>
+ [PATCH v1] cpufreq: Make cpufreq_update_pressure() fall back to
+ cpuinfo.max_freq
+Date: Tue, 07 Jul 2026 19:25:39 +0200
+Message-ID: <5086499.GXAFRqVoOG@rafael.j.wysocki>
 Organization: Linux Kernel Development - Intel
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
@@ -47,41 +50,41 @@ Content-Type: text/plain; charset="UTF-8"
 
 From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Setting cpu->capacity_perf to cpu->pstate.max_pstate_physical in the
-"no turbo" case is inconsistent with what happens elsewhere in the
-driver and causes arch_scale_cpu_capacity() to be incorrect.  It also
-skews arch_scale_freq_capacity() which ends up differing from 1024 for
-the guaranteed P-state.
+If arch_scale_freq_ref() is not defined for a given arch (like x86, for
+example), cpufreq_update_pressure() will always set cpufreq_pressure to
+zero for all CPUs in the system, which is generally problematic on
+systems with asymmetric capacity [1].
 
-Address that by setting capacity_perf to HWP_GUARANTEED_PERF() in the
-"no turbo" case.
+However, in the absence of arch_scale_freq_ref(), it is reasonable
+to assume that cpuinfo.max_freq is the maximum sustainable frequency
+for the given cpufreq policy.  Moreover, there are cases in which
+arch_scale_freq_ref() would need to be defined to return essentially
+the cpuinfo.max_freq value anyway (for example, intel_pstate on
+hybrid platforms).
 
-Fixes: 929ebc93ccaa ("cpufreq: intel_pstate: Set asymmetric CPU capacity on hybrid systems")
+For the above reasons, update cpufreq_update_pressure() to fall back to
+using cpuinfo.max_freq as the reference frequency if zero is returned by
+arch_scale_freq_ref().
+
+Fixes: 75d659317bb1 ("cpufreq: Add a cpufreq pressure feedback for the scheduler")
+Link: https://lore.kernel.org/lkml/CAKfTPtBuRLfYNnR4w--cFZYZy-R8gaPEgVwCcaMmbCcJ2H-muQ@mail.gmail.com/ [1]
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Cc: All applicable <stable@vger.kernel.org>
 ---
- drivers/cpufreq/intel_pstate.c |    6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
+ drivers/cpufreq/cpufreq.c |    3 +++
+ 1 file changed, 3 insertions(+)
 
---- a/drivers/cpufreq/intel_pstate.c
-+++ b/drivers/cpufreq/intel_pstate.c
-@@ -1007,12 +1007,14 @@ static void hybrid_clear_cpu_capacity(un
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -2590,6 +2590,9 @@ static void cpufreq_update_pressure(stru
  
- static void hybrid_get_capacity_perf(struct cpudata *cpu)
- {
-+	u64 hwp_cap = READ_ONCE(cpu->hwp_cap_cached);
+ 	cpu = cpumask_first(policy->related_cpus);
+ 	max_freq = arch_scale_freq_ref(cpu);
++	if (!max_freq)
++		max_freq = policy->cpuinfo.max_freq;
 +
- 	if (READ_ONCE(global.no_turbo)) {
--		cpu->capacity_perf = cpu->pstate.max_pstate_physical;
-+		cpu->capacity_perf = HWP_GUARANTEED_PERF(hwp_cap);
- 		return;
- 	}
+ 	capped_freq = policy->max;
  
--	cpu->capacity_perf = HWP_HIGHEST_PERF(READ_ONCE(cpu->hwp_cap_cached));
-+	cpu->capacity_perf = HWP_HIGHEST_PERF(hwp_cap);
- }
- 
- static void hybrid_set_capacity_of_cpus(void)
+ 	/*
 
 
 
