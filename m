@@ -1,134 +1,248 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+Received: from mout-p-101.mailbox.org (mout-p-101.mailbox.org [80.241.56.151])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 98CAF3F12CA;
-	Wed,  8 Jul 2026 15:35:11 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 20C8421D00A;
+	Wed,  8 Jul 2026 15:42:25 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=80.241.56.151
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1783524912; cv=none; b=nf0EuHrrzATOVVAF6F5aJherS73SgvNgf4QSLBExKX8w8y7UNXUtl3yWZIsAR0SCdVi7ogA0rVC9Ws1XcwFKGRzcHHF8H+i7jZ46xywiaS4xGDotliLR/QLyeVA1HqfKwDUTMhdRThn6eihRwSyeNyhVqhqrupp5KbS/qBtC9D8=
+	t=1783525349; cv=none; b=nqWE4/OcV6Nn54bUacMBYvwdPPvUZ1RXfiyVrFqSmz6GGLCxT6lJPFWGI2uIrP9rGyx8bsl8roAeJkoj9rA7dz1Lh7JtV+mUIv2dOqI+jtzGYjRf1nDrQZDZ7XfePm1gIOiTGeT6EtCGJvMKNHxHPf/ZtZR1eomEu3GjAFpswH0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1783524912; c=relaxed/simple;
-	bh=F8FzxmDbQnJT3S3eLejXFlR+nREK0IwYMuvQdmG/i3A=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=bpV4MHFTdZdHXBa6ML/Tvjg2wGuQodvaRTYAXdjhPf1/JBLSnWX6DOnLzNJPrXlE2a65KzZkBvKlGF/YuRJwnCRZrJIct2RIOdz5nt3UrA2hHkHqQpxlgkyn+yW3i7KfxN4S6ZwQ9kFu5xmKUJj831niDg7xOMCGLTkzQCs+v5A=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=GFEfWq56; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1783525349; c=relaxed/simple;
+	bh=B7N57zJe8RtS9hxqIwHqhlyVzrbTJ2AFcGRv+fse1zg=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=JCGJ65hboQ25YOyhNmyALcRFUki0VTW/VPk5cjKizKPWSTHnhiLZl/LvPjmOURK6NqG+rOhZxfOkmPC2yNnSlfWUTJwC5iacLbf5HN9aZg/OIpOimSeMKWRDC1pyDYZF8grTy1TKeoeMIBrHA/5fgqr77EZK3bUtGQ9ylGa/YMI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=mailbox.org; spf=pass smtp.mailfrom=mailbox.org; dkim=pass (2048-bit key) header.d=mailbox.org header.i=@mailbox.org header.b=ORFkF97m; dkim=pass (2048-bit key) header.d=mailbox.org header.i=@mailbox.org header.b=X/ZugQDC; arc=none smtp.client-ip=80.241.56.151
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=mailbox.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=mailbox.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="GFEfWq56"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5568C1F000E9;
-	Wed,  8 Jul 2026 15:35:10 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1783524911;
-	bh=TIhd5QGHHUH29LQnzEnCvrF+ZQHuAr9wGStJF7y8ltE=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=GFEfWq56iIsrg049quekywIWXYbcbmVhtKMHr4wPLUG9XA4AEuR9c9v2tx+uce6Lu
-	 f2gEw9XMdbiYfZfIyO48tMp4gqnCU9MS8/VU99gdm+A18RUyAgx+T3WWf5k48ymWQE
-	 NmaQsvnMIuNMVp5Yunm5v552kngUVGxqyfZLABzaaChawmyKGKQv73NhlHTHyvMslY
-	 DsHcIbYlFxCfuMPI5u1+FtQkHZDtUubHA/CNPjaVTIkCR3Ptafslbh9IfGoudPBxd0
-	 neIlEUPOhNIw9ZcBw2JnOmtM/fFtypxT1cPNS8TRxAOOIMJG62jOPE0JsdOyD5B8ld
-	 0YsYLbiF90wQQ==
-Date: Wed, 8 Jul 2026 10:35:07 -0500
-From: Bjorn Andersson <andersson@kernel.org>
-To: Krishna Chaitanya Chundru <krishna.chundru@oss.qualcomm.com>
-Cc: Konrad Dybcio <konradybcio@kernel.org>, Rob Herring <robh@kernel.org>, 
-	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
-	Manivannan Sadhasivam <mani@kernel.org>, Bartosz Golaszewski <brgl@kernel.org>, 
-	linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, 
-	Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
-Subject: Re: [PATCH v2 0/2] arm64: dts: qcom: eliza-evk: Enable PCIe0 and
- PCIe1 with M.2 and TC9563 switch
-Message-ID: <ak5sfkmrhorCY6lf@baldur>
-References: <20260708-eliza_evk-v2-0-c599246ceba1@oss.qualcomm.com>
+	dkim=pass (2048-bit key) header.d=mailbox.org header.i=@mailbox.org header.b="ORFkF97m";
+	dkim=pass (2048-bit key) header.d=mailbox.org header.i=@mailbox.org header.b="X/ZugQDC"
+Received: from smtp202.mailbox.org (smtp202.mailbox.org [IPv6:2001:67c:2050:b231:465::202])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange x25519 server-signature RSA-PSS (4096 bits) server-digest SHA512)
+	(No client certificate requested)
+	by mout-p-101.mailbox.org (Postfix) with ESMTPS id 4gwMmH4qsqz8v4f;
+	Wed, 08 Jul 2026 17:42:23 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=mailbox.org; s=mail20150812;
+	t=1783525343;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=8WmHiOxhuGs7I/lBwa1gi/h+UWk+IKvtIxLv+PtiRgs=;
+	b=ORFkF97mb77ztreAhZtYH0BKh9wJUNo+1KMGOOX/E3VZUR0UTqFffeWIQUIZPHeh5ZuL1I
+	Tag5H1Q0VOzXJPaPTnSuEjYR0ChVU3dr68sKHk+Sv0w72xRNF9LXeYonc1tZ1z2GGxeSNl
+	fFemno5RM5Zbut9zC/bXawSEske4z2fjb9eoOxdaYIjsHXRzoI00lS85ADeJdRxGpkE8Um
+	9bwmlKdD1O1eYpUetBScwAK1HIGx3KTWHbrilTbWAW89MbNB6O9/WRbMnUiGNI51sgXZlC
+	cbiQNH0xMsYkOEFb15JNQ8aT1pCxIfzzZKUZaJkau3eQ55kgDA2YDd9GF8NKqQ==
+Authentication-Results: outgoing_mbo_mout;
+	dkim=pass header.d=mailbox.org header.s=mail20150812 header.b="X/ZugQDC";
+	spf=pass (outgoing_mbo_mout: domain of marek.vasut@mailbox.org designates 2001:67c:2050:b231:465::202 as permitted sender) smtp.mailfrom=marek.vasut@mailbox.org
+Message-ID: <3c76a2d4-a8b8-493a-9196-c5cc72958118@mailbox.org>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=mailbox.org; s=mail20150812;
+	t=1783525341;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=8WmHiOxhuGs7I/lBwa1gi/h+UWk+IKvtIxLv+PtiRgs=;
+	b=X/ZugQDCEeNwelhI23TvYkqOuiEtjuS57oqNpPnJAlIATvvOJVdP1LtjfWdwJM/IN46MtG
+	QH+R0UeZTQrzAjhnTrCyOKpTRfi7MomUgXpiJe59FfyiDlNzabK3rTTTODIEj1HvihSDed
+	OYdr0Yztn5Tz9IJDqZvay+CwGY5F21w2WxTb7YuV92lmQLl/OTY51cohbuXtmpmD+Q2DCr
+	IUeRB3u8HhC1n7GuTboEVbroXkKx2EZu7tUQh8WXljcXBtJp9h6GwXEgcYQpklXbRrXpV1
+	Oa38KYHZO8AIOpFsYvq9TomeLMlVTNXAfETU6G+swujSAVwj9rp/hTxSUscTbA==
+Date: Wed, 8 Jul 2026 17:42:12 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260708-eliza_evk-v2-0-c599246ceba1@oss.qualcomm.com>
+Subject: Re: [PATCH v2 00/10] R-Car X5H Ironhide CPG/MDLC SCMI remapping
+ support
+To: Geert Uytterhoeven <geert+renesas@glider.be>,
+ Sudeep Holla <sudeep.holla@kernel.org>,
+ Cristian Marussi <cristian.marussi@arm.com>, Rob Herring <robh@kernel.org>,
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
+ <conor+dt@kernel.org>, Saravana Kannan <saravanak@kernel.org>,
+ Ulf Hansson <ulfh@kernel.org>, "Rafael J . Wysocki" <rafael@kernel.org>,
+ Philipp Zabel <p.zabel@pengutronix.de>,
+ Michael Turquette <mturquette@baylibre.com>, Stephen Boyd
+ <sboyd@kernel.org>, Brian Masney <bmasney@redhat.com>,
+ Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>,
+ Vinod Koul <vkoul@kernel.org>, Konrad Dybcio
+ <konrad.dybcio@oss.qualcomm.com>, Kevin Hilman <khilman@baylibre.com>,
+ Florian Fainelli <florian.fainelli@broadcom.com>,
+ Wolfram Sang <wsa+renesas@sang-engineering.com>,
+ Marek Vasut <marek.vasut+renesas@mailbox.org>,
+ Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
+Cc: arm-scmi@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ devicetree@vger.kernel.org, linux-pm@vger.kernel.org,
+ linux-clk@vger.kernel.org, linux-renesas-soc@vger.kernel.org,
+ linux-kernel@vger.kernel.org
+References: <cover.1783505329.git.geert+renesas@glider.be>
+Content-Language: en-US
+From: Marek Vasut <marek.vasut@mailbox.org>
+In-Reply-To: <cover.1783505329.git.geert+renesas@glider.be>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-MBO-RS-ID: 36fc94fa54e6fd61da0
+X-MBO-RS-META: mwanribk4pntqc6eesjb87bhecqsce6i
+X-Rspamd-Queue-Id: 4gwMmH4qsqz8v4f
 
-On Wed, Jul 08, 2026 at 11:47:15AM +0530, Krishna Chaitanya Chundru wrote:
-> This series enables PCIe for the Eliza EVK board (CQS SoM on EVK carrier).
+On 7/8/26 12:16 PM, Geert Uytterhoeven wrote:
+> 	Hi all,
 > 
-> The Eliza EVK exposes two PCIe ports:
+> TL;DR:
 > 
-> - PCIe0 drives an M.2 E key connector. The 3.3V supply is GPIO-controlled
->   via a TCA9538 I/O expander on I2C4. The slot hosts a WLAN module
->   (connected over PCIe) and a Bluetooth device (connected over UART5),
->   modelled with the pcie-m2-e-connector binding.
+>      Describe hardware in DT, and perform the mapping to SCMI in Linux.
 > 
-> - PCIe1 (8GT/s x2) connects to a Toshiba TC9563 PCIe switch, whose
->   management interface sits on I2C4 (address 0x77). The TC9563 RESX# and
->   PERST# lines are OR-ed internally; reset is driven via a TLMM GPIO on
->   the RESX# pin. The iommu-map covers all downstream switch ports
->   (SID range 0x1400-0x1408).
+> The Renesas R-Car X5H-based Ironhide board is the first Renesas
+> SoC/board combination that implements the ARM System Control and
+> Management Interface (SCMI).
 > 
-> The M.2 WLAN module carries a Qualcomm QCC2072 Bluetooth chip. A device-ID
-> entry is added to the M.2 power sequencer so the serdev node for the BT
-> UART interface is created on PCI enumeration.
+> This means Linux can no longer perform various system operations (e.g.
+> clock, power domain, and reset control) by accessing the hardware
+> directly.  Instead, these operations are abstracted according to various
+> SCMI sub-protocols, and Linux has to send messages to an SCMI-compliant
+> firmware running on a System Control Processor (SCP).
+> More specifically, the R-Car X5H SCP FW SCMI controls access to:
+>    1. Core clocks and module clocks,
+>    2. Module resets,
+>    3. Power domains,
+>    4. System power.
+> The latter is not relevant for this discussion.
 > 
-> Bluetooth is enabled with this patch https://lore.kernel.org/all/20260529175822.3366535-1-yepuri.siddu@oss.qualcomm.com/
+> Using SCMI also has an impact on the board DTS: besides the addition of
+> a firmware/scmi node with protocol-specific subnodes, devices using
+> SCMI-abstracted system resources now have to refer to these resources
+> using resource specifiers containing phandles to the SCMI protocol
+> subnodes, and firmware-specific object IDs[1].
 > 
-> This seris Depends-on:
->   https://lore.kernel.org/all/20260610-eliza_dt-v1-1-7bb72b75fc5b@oss.qualcomm.com/
-
-Why send this patch, when this dependency is known bad - when would I
-ever be able to merge this patch?
-
-And why are you sending separate series concurrently with dependencies
-between them!? It's one thing to send patches saying "I depend on
-someone else's completely unrelated work", but saying "here's a random
-bunch of tangled patches, good luck everyone!" is not okay.
-
-I expect all three patches to be rebased and send in one series that I
-can just click "Submit" on next time.
-
-Thanks,
-Bjorn
-
->   https://lore.kernel.org/all/20260630-eliza-dts-qcs-evk-v4-3-18cbbdba6e7e@oss.qualcomm.com/
->   https://lore.kernel.org/all/20260630-dts-qcom-eliza-mtp-evk-add-pmics-v1-1-f4f320f7c88b@oss.qualcomm.com/
+> Unfortunately we encountered several issues with this:
+>    - The clock, reset, and power domain IDs are not stable by design,
+>      causing DT incompatibilities.
+>      SCMI requires that the ID space exposed to an agent (i.e. Linux)
+>      starts at zero and is contiguous.  Hence any change in system
+>      partitioning (Application CPU core vs. Realtime CPU core,
+>      virtualization, ...) may mean a renumbering of all SCMI IDs,
+>      implying a massive change to the DT.
+>    - There may be different SCP firmware lineages, e.g. proprietary and
+>      certified variants, and FLOSS variants,
+>    - SCMI features may differ across firmware versions,
+>    - SCMI may abstract the hardware in a different way, requiring changes
+>      in (possibly existing) DT bindings and drivers to support the same
+>      hardware with and without SCMI:
+>        - E.g. the number of SCMI clocks inputs to a hardware block may
+> 	differ from the actual hardware,
+>        - E.g. hardware clock inputs may be abstracted as SCMI power
+> 	domains (or vice versa), like on Qualcomm SA8255P[2].
+>      Experience has taught that not describing the hardware in DT may
+>      lead to major issues later.
+>    - SCMI does not support the concept of a clock domain, so existing
+>      drivers can no longer rely on Runtime PM, but need to be changed to
+>      manage functional clocks explicitly,
+>    - U-Boot IPL (Initial Program Loader) needs a proper hardware
+>      description in DT, not using SCMI.
 > 
-> Signed-off-by: Krishna Chaitanya Chundru <krishna.chundru@oss.qualcomm.com>
-> ---
-> Changes in v2:
-> - Drop patch 3, as this is already applied
-> - Rebase on top of https://lore.kernel.org/all/20260708055017.A90C91F000E9@smtp.kernel.org/
->   and remove pincntrl as pincntrl is added in the eliza.dtsi patch and also remove
->   pinctrl for resx as this is covered in pcie1_default_state as perst gpio.
-> - Link to v1: https://patch.msgid.link/20260703-eliza_evk-v1-0-7624440bd76d@oss.qualcomm.com
+> This list deliberately ignores ID instability and the need for SCMI
+> quirks during development of the SCMI firmware.  While upstream Linux
+> must only support sufficiently mature firmware versions, vendor trees
+> (e.g. renesas-lts) may still want to support development firmware
+> versions.
 > 
-> To: Bjorn Andersson <andersson@kernel.org>
-> To: Konrad Dybcio <konradybcio@kernel.org>
-> To: Rob Herring <robh@kernel.org>
-> To: Krzysztof Kozlowski <krzk+dt@kernel.org>
-> To: Conor Dooley <conor+dt@kernel.org>
-> Cc: linux-arm-msm@vger.kernel.org
-> Cc: devicetree@vger.kernel.org
-> Cc: linux-kernel@vger.kernel.org
+> During last OSSJ/LPC, Marek Vasut pondered if we could keep our own ID
+> lists stable, and perform a mapping to the IDs used by the actual SCMI
+> implementation running on the system.  This was also briefly discussed
+> at LPC[3].  After some refining of the initial idea, this series takes a
+> slightly different approach, by:
+>    1. Describing the actual hardware components in DT, plus a minimum
+>       SCMI glue,
+>    2. Mapping DT hardware descriptions to SCMI-backed objects and
+>       abstractions (or replacements, in case they are unusable,
+>       unavailable, or too different), in Linux drivers, based on the
+>       detected firmware version.
 > 
-> ---
-> Krishna Chaitanya Chundru (2):
->       arm64: dts: qcom: eliza-evk: Add PCIe0 with M.2 E key connector
->       arm64: dts: qcom: eliza-evk: Add PCIe1 with TC9563 PCIe switch
+> This has the following advantages:
+>    1. The DT ABI is stable,
+>    2. DT bindings and drivers for existing hardware blocks do not need to
+>       be modified,
+>    2. Current and future firmware can be handled in driver code,
+>    3. U-Boot IPL can use almost the same DTS; it just needs stripping of
+>       SCMI-related nodes and properties.
+>    4. If ever needed, the Clock Pulse Generator (CPG) and Module
+>       Controller (MDLC) drivers can be extended to program the hardware
+>       directly if SCMI is not present,
 > 
->  arch/arm64/boot/dts/qcom/eliza-evk.dtsi | 228 ++++++++++++++++++++++++++++++++
->  arch/arm64/boot/dts/qcom/eliza.dtsi     |   2 +
->  2 files changed, 230 insertions(+)
-> ---
-> base-commit: dc59e4fea9d83f03bad6bddf3fa2e52491777482
-> change-id: 20260629-eliza_evk-6f30686b161f
-> prerequisite-message-id: <20260708-eliza_dt-v2-1-e6281da26408@oss.qualcomm.com>
-> prerequisite-patch-id: 7654ff4f899ac0094a2e791e7f208998fcc7d5fa
-> prerequisite-patch-id: 9e10dfbe360941cdac0300aaf163149755952f9f
-> prerequisite-patch-id: fecce0170351baf00cbe8f6b302d1def4d99bbfc
-> prerequisite-patch-id: 97cd6cb495fdd198f6de7fbe45ef32e4a638ec9c
-> prerequisite-message-id: <20260630-dts-qcom-eliza-mtp-evk-add-pmics-v1-1-f4f320f7c88b@oss.qualcomm.com>
-> prerequisite-patch-id: f3615b5c1e2222a2491f862a7fba3994058ecc53
+> This series depends on "[PATCH v2 0/6] R-Car X5H CPG/MDLC support"[4],
+> and consists of four parts:
+>    1. Patches 1-4 add new interfaces needed by the remapping support,
+>    2. Patches 5-6 update the DT bindings for the R-Car X5H Clock Pulse
+>       Generator (CPG) and Module Controller (MDLC) blocks,
+>    3. Patches 7-8 add SCMI remapping support to the R-Car X5H CPG and
+>       MDLC drivers,
+>    4. Patches 9-10 enables more SCMI protocols on R-Car X5H Ironhide, and
+>       link the CPG and MDLC blocks to their SCMI provider.
 > 
-> Best regards,
-> --  
-> Krishna Chaitanya Chundru <krishna.chundru@oss.qualcomm.com>
+> Changes compared to v1[5]:
+>    - Drop SCMI quirks and SCMI mapping tables,
+>    - Move CPG/MDLC DT bindings and minimal base drivers to a separate
+>      series,
+>    - Add that SCMI may provide different abstractions,
+>    - Add missing asterisk to blank kerneldoc line,
+>    - Let scmi_get_base_info() return -EPROBE_DEFER or -EOPNOTSUPP instead
+>      of -ENOENT, and propagate these errors in callers,
+>    - Fall back to the default support when SCMI support or firmware is
+>      not available, or when the detected SCMI firmware version is not
+>      supported by the driver,
+>    - Improve error message on scmi_get_base_info() failure,
+>    - Check if SCMI firmware node is available,
+>    - Use reverse xmas ordering in r8a78000_cpg_probe(),
+>    - Replace the scmi_*_np members of struct r8a78000_*_priv by local
+>      variables in the probe functions, and pass them to the fill_*_map()
+>      functions,
+>    - Join split short lines,
+>    - Move check for supported firmware version up,
+>    - Fix DT misindentations,
+>    - Add scmi_clk node, as it is no longer added in earlier commits.
 > 
+> Note that in reponse of feedback on v1, I did try to use SCMI IDs in DT,
+> and handle most issues in Linux SCMI drivers and SCMI quirks[6].  While
+> the result worked, it did not solve everything in the issues list above.
+> 
+> Note that this series does not include actual SCMI quirks and CPG/MDLC
+> mapping tables, as the SCMI firmware for R-Car X5H is still under
+> development.
+> 
+> For testing, I have pushed this series plus additional work to[7].
+> 
+> Thanks for your comments!
+> 
+> [1] Documentation/devicetree/bindings/firmware/arm,scmi.yaml
+> [2] "[PATCH net-next v11 1/7] dt-bindings: phy: document the serdes PHY on sa8255p"
+>      https://lore.kernel.org/20260629-qcom-sa8255p-emac-v11-1-1b7fb95b51f9@oss.qualcomm.com
+> [3] "Firmware ABI stability" at Linux Plumbers Conference 2025
+>      https://lpc.events/event/19/contributions/2153/
+> [4] "[PATCH v2 0/6] R-Car X5H CPG/MDLC support"
+>      https://lore.kernel.org/cover.1783505142.git.geert+renesas@glider.be
+> [5] "[PATCH/RFC 00/14] R-Car X5H Ironhide SCMI CPG/MDLC remapping"
+>      https://lore.kernel.org/cover.1776793163.git.geert+renesas@glider.be
+> [6] "[PATCH/RFC 0/9] R-Car X5H Ironhide pure SCMI proof-of-concept"
+>      https://lore.kernel.org/cover.1781171705.git.geert+renesas@glider.be/
+> [7] topic/rcar-x5h-ironhide-scmi-cpg-mdlc-remapping-v2 branch of
+>      https://git.kernel.org/pub/scm/linux/kernel/git/geert/renesas-drivers.git
+> 
+> Geert Uytterhoeven (10):
+>    firmware: arm_scmi: Add scmi_get_base_info()
+>    of: property: fw_devlink: Add support for firmware
+>    pmdomain: Make genpd_get_from_provider() public
+>    reset: Add reset_controller_get_provider()
+>    dt-bindings: clock: renesas,r8a78000-cpg: Add firmware property
+>    dt-bindings: power: renesas,r8a78000-mdlc: Add firmware property
+>    clk: renesas: r8a78000: Add SCMI remapping support
+>    pmdomain: renesas: r8a78000: Add SCMI remapping support
+>    arm64: dts: renesas: ironhide: Enable SCMI devpd, sys, clock, and
+>      reset
+>    arm64: dts: renesas: ironhide: Add CPG/MDLC firmware properties
+I think 10/10 did not make it either to my inbox or lore.k.o , but the 
+remaining 9 patches look good. Thank you !
