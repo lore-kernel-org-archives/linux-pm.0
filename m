@@ -1,269 +1,291 @@
-Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
+Received: from mx0a-00069f02.pphosted.com (mx0a-00069f02.pphosted.com [205.220.165.32])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 47BA52FD1B5
-	for <linux-pm@vger.kernel.org>; Wed,  8 Jul 2026 15:24:17 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=205.220.180.131
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6D9033F12F1;
+	Wed,  8 Jul 2026 15:25:32 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=205.220.165.32
 ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1783524258; cv=pass; b=WkDWHXfo+WcR4BFq/hT2WssFy0vBDBSjwpIEU+HjnIEjvS4V+S8itb4KJM+3ECQBk2tQPaDYdhEnIYeCIDd5GtJnuIYzWNvfa5pNbmjT1NgUkKsBVUxvE+oVRAzHQjW3Na19lixw7eER5VT5pJ3c6wRpwIhSbXNuSBGiyttbujg=
+	t=1783524334; cv=fail; b=UTSloLujclXqNYNnadKJsE2jFWGGD1neWC65t9JSk5HLyq0+P0d3+VhNR/zNh53+Ldc2NsjyZXDZYIey1JTn3CyaCG0kKW7T1DvL3KJ1nPAreqntqMBjcpehDJzpNeFhf3qlmXjFUAJ4JqN+eXjJGR77Yc2DiGY5qBrP/XSXyi0=
 ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1783524258; c=relaxed/simple;
-	bh=fTRf+CpDlg8oC/q1+pBZdLSPb9okL8GDVBLZGR4FfHU=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=BxvIbK/9tM7neLLfSzFw0I6ddWkGhjUivjhyTW/9BZIduWOrzGp+0BB8LZxB9AKxuz3z35lCu5BGx2IHAhHnMDJOQ/Bxc3mtiOI55AQQ8FB79VcNgsuzoU7AEDQRgGWUXW1b9ZMY7U4+kzTdB/33pHpOR2osTu4wGj0p8OUppKg=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=KNCMzsev; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=Nf6uq5E+; arc=pass smtp.client-ip=205.220.180.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
+	s=arc-20240116; t=1783524334; c=relaxed/simple;
+	bh=VgxlOOMRpPDB8vTqkGpPqLdHKG2umtzVPwR6MjNrOxM=;
+	h=Message-ID:Date:Subject:To:Cc:References:From:In-Reply-To:
+	 Content-Type:MIME-Version; b=FaUSfObf/1GTpD58lNrC/IaqDR+ZZdhD/OgJFrhOZhF7j0hGfRgq3B9kv/JkkID+agtN9dK46lTe+LWbPoZqIzKLTe+rSzYQ/kWpGAd9QLzPzH1WSmSf0jfAj61DYgaSMkOrU9JI6UqY7StwKUrvcm4rItuGOa757nYmaQKhCvY=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oracle.com; spf=pass smtp.mailfrom=oracle.com; dkim=pass (2048-bit key) header.d=oracle.com header.i=@oracle.com header.b=d5IxeVoS; dkim=pass (1024-bit key) header.d=oracle.onmicrosoft.com header.i=@oracle.onmicrosoft.com header.b=IFrtGJSM; arc=fail smtp.client-ip=205.220.165.32
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oracle.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oracle.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="KNCMzsev";
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="Nf6uq5E+"
-Received: from pps.filterd (m0279871.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 668C43nU2752166
-	for <linux-pm@vger.kernel.org>; Wed, 8 Jul 2026 15:24:16 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	zMJCbXSgt5kAQ4lY2HA7hGLs+5rsBULHk8Vjj77tBIU=; b=KNCMzsevlh2tuc5/
-	1WnIHZZhAhaywF9mfturWOYGVfOtDmek/uPAQGzO8pf5SVlIUqrprfq9VMbsxYYJ
-	In4RT4IQuLvwHdCHl2uDDy4uroXw2M6EurBD8eSU3xR6PTtrM8Dmh59iWn6ws4dC
-	92CbytmCMmFTb6lNx5rnJolDTaY4yGqklGGr7xsWt1VlIFJER6Uybv8uaGV5g0Ps
-	rr0TV2ROBhLa1I2l3JKNmDMytA1jSAa1NTLNCifcU+9Wn7GCxMZBY2vQc0S+n/f/
-	EYdNB5Cdm1Zocr9tW97T0cxeQ0WEWUd8uVX4VjqI0hpNRSjBJRCtoKTB03j6Z/Ki
-	naEIwg==
-Received: from mail-qv1-f69.google.com (mail-qv1-f69.google.com [209.85.219.69])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4f9cssu51d-1
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Wed, 08 Jul 2026 15:24:16 +0000 (GMT)
-Received: by mail-qv1-f69.google.com with SMTP id 6a1803df08f44-8f08560ea44so11935856d6.1
-        for <linux-pm@vger.kernel.org>; Wed, 08 Jul 2026 08:24:15 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1783524255; cv=none;
-        d=google.com; s=arc-20260327;
-        b=TU2GrUJbr72dZhHsEK9lhlaopo4CjIxOOENLqsjce5bEL9Hvx2tJXBsdUyW0ZdWQlG
-         IOfjhOjsejrbP6ZEQViugikGVo6Oydr2t1ncvqJstgNq6OeNxxF8g+6uqmQpNSgf6Mhj
-         Mrqx6rlXm4irX4D+q53nBdQPP1Bh2JLxYjfZYiMxiy3uRnNmpoEXOFAJy3JFF8kIyqZ8
-         /nE4hw8kJqghRWDaxr6qJrsGgKcK2wTIsR8vBPr3DCNExucmbY4NCMTkR4ZgGeWN/ALS
-         BwIW1RxkwoL/9dPedhZzJJOJKyE1ac5CaUEom3wBd0BWAn3dWDKrFpBq1CTwhAMaN36f
-         VkEA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=zMJCbXSgt5kAQ4lY2HA7hGLs+5rsBULHk8Vjj77tBIU=;
-        fh=uSqHChQlFckypPU2Mxk0JEIapYVB39dSGd0pf8DmHQA=;
-        b=fslp9QXQrg3goXTPVgwK/mDCgsNiBl8T43jiJqfvIHXRvvcd1fEAYyxKJEsYbkczGg
-         x3n97wZ0R1tW34JueazeoopA/FO5ANIoK/aCJlTckZ75TKbMlAoFYZaFs8NZu5lqeZzs
-         Z4gV6z1/LwwuLaWVIO1r8NzO7TpZzCZZBnI6EpexvOn8ETX3LAmpVK5Z1pOS3vWMMW5n
-         S0YXJEOcHr9xlt/Zas3cQK9ASHoAmaMwCsSExx2YdAlpZQ8EH1lcGjZwAuo5mZzo6dvN
-         s0ChEsfh975gCUx9k8e6zzApXc9i2UstwAnJpJOMdEgjRP86EBoEWoVUobq/oZijv/wM
-         cGTA==;
-        darn=vger.kernel.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
+	dkim=pass (2048-bit key) header.d=oracle.com header.i=@oracle.com header.b="d5IxeVoS";
+	dkim=pass (1024-bit key) header.d=oracle.onmicrosoft.com header.i=@oracle.onmicrosoft.com header.b="IFrtGJSM"
+Received: from pps.filterd (m0246627.ppops.net [127.0.0.1])
+	by mx0b-00069f02.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 668CiMk53174534;
+	Wed, 8 Jul 2026 15:25:13 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=
+	corp-2025-04-25; bh=OvF6OjK9oV2adO6I4vC/G2pnWFKoDR1h3yqX1g3bZiQ=; b=
+	d5IxeVoS5Z2uzE/Q7f0F5MZPOARTrR5lSCyzNyX4ZKnHGO7dlUnX4PsJGi6Neh9F
+	d275e2fslp4FwC1AamjNS3R8E0IjIXpLCnQhRVgcWUHWFFPmfYacz/aIQfbIXbWz
+	QAzcmtUj3YXaWKQ1mtqkaqAIS9WqPJmDNYLOx4E2qsITvSHRhxLSIMylGuCtf0DK
+	3hQZ/qOgqEhPDs3+Gid7QdSoxp5gNzeMqQQeT3yWK8cqO6bSzT5zzo05F3ckmUad
+	ktbaPxfHAQ93w6xjA15u31I7ibSF5qYj0bqQ6Sro5/gBzNwv4r5bmLuqTt1YRo+I
+	Ux3o/37pju2hF3Ry1H0NjA==
+Received: from phxpaimrmta03.imrmtpd1.prodappphxaev1.oraclevcn.com (phxpaimrmta03.appoci.oracle.com [138.1.37.129])
+	by mx0b-00069f02.pphosted.com (PPS) with ESMTPS id 4f6rs1fw1j-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Wed, 08 Jul 2026 15:25:12 +0000 (GMT)
+Received: from pps.filterd (phxpaimrmta03.imrmtpd1.prodappphxaev1.oraclevcn.com [127.0.0.1])
+	by phxpaimrmta03.imrmtpd1.prodappphxaev1.oraclevcn.com (8.18.1.7/8.18.1.7) with ESMTP id 668FI0wW005752;
+	Wed, 8 Jul 2026 15:25:12 GMT
+Received: from mw6pr02cu001.outbound.protection.outlook.com (mail-westus2azon11012039.outbound.protection.outlook.com [52.101.48.39])
+	by phxpaimrmta03.imrmtpd1.prodappphxaev1.oraclevcn.com (PPS) with ESMTPS id 4f8wuynjqf-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Wed, 08 Jul 2026 15:25:12 +0000 (GMT)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=vhKOL0LvOdG3jpB8QI5VDS2SrWMM3b1OnH+SAKX7YKZKEhqly+xkEcZBey+mu9VtRQ9RYislPSpcLTApsNqrEJsljNn3Dfvx9lKna3S7NVcN4kKQTwxjF3wgcQRHyIPoGng8DMdL8wwjzt1cqmK7HovgTAn2l86kia7uVbWsvXnQUtbjqPPEfth0+JVkTQGHYeTENT6wXSR4oHrnbmUPUbwuzr0HjlaWhfMNefBuYKLxVDS+u5qs3qon5+AN47VVA87hMnZ3oNB9uushmhcKxa2BsFWA51h2FDhrckc7wrU2WFnvBZKiQAO7dl+2OQZ0k+DfOtpsuHMXQJo3bx69xg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=OvF6OjK9oV2adO6I4vC/G2pnWFKoDR1h3yqX1g3bZiQ=;
+ b=ugvUR+blpDyWel/Xp1dJUSNJj3yfCTeodiTNurXCOrkn7jV6RwA7ZgduWBDs8YNHH9pypMSitMGqaSFPKCBpbQH+1eH3B6R8lKz3O/YQAupyNJ2JQ9gtNUAz+1vHrW0JWpPvcRPpmffX1vesjCD6Ki2upgtmAB5MyMWwGi+SX4ccPXE5N42gUq0z9+DbDNGRNJn1I1g17K/LjyxUThnN0v2A88l6V67xJZV89xb/O8l2TfSo7lyQld5hSa0AbqTuuIyWO8EFpLqGB2VrerzR73GzeHPPiW2NhdRcuTbtROhGm9VgxLpjj0InsRGFhS3O6Ut3osEomrPxDio3HSsmQQ==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=oracle.com; dmarc=pass action=none header.from=oracle.com;
+ dkim=pass header.d=oracle.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1783524255; x=1784129055; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=zMJCbXSgt5kAQ4lY2HA7hGLs+5rsBULHk8Vjj77tBIU=;
-        b=Nf6uq5E+Sb3LTeyJ86OWoOF5vgyLRqH7heBzNDDCwnmpBS/iV1isV7Qq6CNPCMsFBS
-         QjQFLFfNrA1qYYHeX3v12+SLSNjcp3rmQOSmjNpyDaiqHqSObSY6X9Q70TcQM6tHNFgX
-         7JmSjVheJM6IWYCkEU/Nsf2PhecyMQUeH8582Yu6+lZv4qGbAb3tDGn6V/NS/Ugr8y3g
-         D9dXuPsq2++MA++4rYoOQSxQ/jN5EBDMfZy4zhNevquUoxgc362QfmBw7PtPYiV9PO0r
-         afCvvMmBkQKoQEUWHpSXdT1GrQNFH2ag4xYTE32JO++5fvERGzVRUTuO4MIxGiOa4Guq
-         yIcw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1783524255; x=1784129055;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=zMJCbXSgt5kAQ4lY2HA7hGLs+5rsBULHk8Vjj77tBIU=;
-        b=N80pi1JvEmuye48OIhKZ+iBp/O7iviImNJ+59f5s/Zd1GwPTYOyGT5h7NttdESf+d1
-         q2v/eEGX9NW/4vUeY69OXxwCAbZE1spRrliYJ6O2ucjqw74gacVBKpi/UVf5UWx7Lmqc
-         cr3IBookfBniVJ8uTDimTjzqjVzLwMCftl5Sfk0gF9ozRcE55cXZQA+IkHJXe0oOaWXR
-         d2aB8DcMpdU9zUhIhdBznxLkWCXwD1jd/bZkTRKX196QUzOKLL9DS68uFj1tXgDZpajl
-         t/MjL+IDM7W8oX6rWZDIwnCmC++dEtB9/eiL/9FHw8jQq6vXSVKjIQ47UPVNBcypz8qC
-         W42A==
-X-Forwarded-Encrypted: i=1; AHgh+RopRv29WY5IJG8QFCju1lNFbPuOqj91mFActnq2Z8N3iNEnjpOyNKh2bTl1X1MyDRyz/nR9H05spA==@vger.kernel.org
-X-Gm-Message-State: AOJu0Ywb2Dx8REdKN1xZSwG1yfk1WpuOU1mchl5MsPnRBOl2VTW49SwP
-	gXfZpSurSQfnPWkkcqR0210OpABCzEvzrOKpCWio5habcfUg4qlL3JCQRzkGe/Hz0jNSwkOMA4R
-	bRDxLsO94TOTDjY38rIw04eJJylVAn8oQ6NZmA+/4IdDxL4bEU/agSn2awG7mJOoRvoGZx4WoRq
-	Q2JeQAx96arvMkEhZ48ocfM3p4v6wEmZwOeDotbNQqeb9C
-X-Gm-Gg: AfdE7cl3qtoyWfdXzPRSayBLXM6K7g/jLIWV/5ij9awHQA8uI4Y1qnSyXMonGLXHfLa
-	YcQwifkMzv3vUIdfE68wx8h8OijXO2441yMqX3p9hA3k9Bw2HGU1MBASm4t/qdmJfhhW2bRnpYK
-	coWgffJQSqY/F3NDXrENegoEAP5hpOlGehfhyygE+3hKJUtYAqxjPxLkd5GJV1SmWT2d+T
-X-Received: by 2002:a05:6214:5504:b0:8fd:6df3:b377 with SMTP id 6a1803df08f44-8fec323e5b7mr31147476d6.59.1783524255415;
-        Wed, 08 Jul 2026 08:24:15 -0700 (PDT)
-X-Received: by 2002:a05:6214:5504:b0:8fd:6df3:b377 with SMTP id
- 6a1803df08f44-8fec323e5b7mr31146966d6.59.1783524254959; Wed, 08 Jul 2026
- 08:24:14 -0700 (PDT)
+ d=oracle.onmicrosoft.com; s=selector2-oracle-onmicrosoft-com;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=OvF6OjK9oV2adO6I4vC/G2pnWFKoDR1h3yqX1g3bZiQ=;
+ b=IFrtGJSMdJlDu9aJOPeZC1k2Vaw1qybEnV+XENiT3A7qLFs1pBT2gb6NpVNbX3GgyO2pGoTW6EVrMJjW0iPHrU54jyh2lISTb8TkU/I6Dbr5ES6IjSiikmfQ31W8l2hc3EsYxadvNjtf72AZChMzPvxRbis4eWTDzaSzTYkhcO8=
+Received: from CH0PR10MB5131.namprd10.prod.outlook.com (2603:10b6:610:c6::24)
+ by SA3PR10MB7041.namprd10.prod.outlook.com (2603:10b6:806:320::18) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.181.10; Wed, 8 Jul
+ 2026 15:25:06 +0000
+Received: from CH0PR10MB5131.namprd10.prod.outlook.com
+ ([fe80::ab76:24ce:816a:8307]) by CH0PR10MB5131.namprd10.prod.outlook.com
+ ([fe80::ab76:24ce:816a:8307%6]) with mapi id 15.21.0181.012; Wed, 8 Jul 2026
+ 15:25:04 +0000
+Message-ID: <523a095d-8c30-4e25-9a1b-88cdf438041f@oracle.com>
+Date: Wed, 8 Jul 2026 11:25:02 -0400
+User-Agent: Mozilla Thunderbird
+Subject: Re: [REGRESSION] sched/idle: Sysbench threads regression after
+ f4c31b07b136
+To: Christian Loehle <christian.loehle@arm.com>,
+        "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
+Cc: rafael.j.wysocki@intel.com, Ingo Molnar <mingo@redhat.com>,
+        Peter Zijlstra <peterz@infradead.org>,
+        Juri Lelli <juri.lelli@redhat.com>,
+        Vincent Guittot <vincent.guittot@linaro.org>,
+        Dietmar Eggemann <dietmar.eggemann@arm.com>, frederic@kernel.org,
+        linux-pm@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+        regressions@lists.linux.dev
+References: <096b42fa-107f-450d-b3b1-03bcad3f1e04@oracle.com>
+ <CAJZ5v0g+SkTxuP5fqUMisQAh19v-JzpmRZHiKtYzJH1sVt656g@mail.gmail.com>
+ <5f5cb821-92ae-4539-ae81-a43e33a7ded5@arm.com>
+Content-Language: en-US, en-AG
+From: Joseph Salisbury <joseph.salisbury@oracle.com>
+In-Reply-To: <5f5cb821-92ae-4539-ae81-a43e33a7ded5@arm.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-ClientProxiedBy: BL1PR13CA0404.namprd13.prod.outlook.com
+ (2603:10b6:208:2c2::19) To CH0PR10MB5131.namprd10.prod.outlook.com
+ (2603:10b6:610:c6::24)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260613070116.438906-1-midgy971@gmail.com> <20260613070116.438906-10-midgy971@gmail.com>
-In-Reply-To: <20260613070116.438906-10-midgy971@gmail.com>
-From: Ulf Hansson <ulf.hansson@oss.qualcomm.com>
-Date: Wed, 8 Jul 2026 17:24:04 +0200
-X-Gm-Features: AVVi8Cct2pvQNJ49kCocOmZ_g-M7AfBNrJ0WxbavryIJprjGJGNLahRi4HQp2RE
-Message-ID: <CAPx+jO_2=SYo0smYzwd8T+TUtHZtgXU0dSWQgZGZ_haV3aOU_Q@mail.gmail.com>
-Subject: Re: [RFC PATCH v4 9/9] pmdomain: rockchip: Add a regulator to the
- RK3568 NPU power domain
-To: MidG971 <midgy971@gmail.com>
-Cc: tomeu@tomeuvizoso.net, ogabbay@kernel.org, heiko@sntech.de,
-        robh@kernel.org, krzk+dt@kernel.org, conor+dt@kernel.org,
-        ulf.hansson@linaro.org, dri-devel@lists.freedesktop.org,
-        linux-rockchip@lists.infradead.org, devicetree@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org,
-        iommu@lists.linux.dev, linux-kernel@vger.kernel.org,
-        xxm@rock-chips.com, chaoyi.chen@rock-chips.com,
-        finley.xiao@rock-chips.com, diederik@cknow-tech.com, jonas@kwiboo.se
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-X-Authority-Analysis: v=2.4 cv=EtziaycA c=1 sm=1 tr=0 ts=6a4e6ba0 cx=c_pps
- a=wEM5vcRIz55oU/E2lInRtA==:117 a=IkcTkHD0fZMA:10 a=RAioF0-LDSMA:10
- a=s4-Qcg_JpJYA:10 a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22
- a=3WHJM1ZQz_JShphwDgj5:22 a=JfrnYn6hAAAA:8 a=pGLkceISAAAA:8 a=s8YR1HE3AAAA:8
- a=bcpWyJPC7eKr9KdVfhAA:9 a=QEXdDO2ut3YA:10 a=OIgjcC2v60KrkQgK7BGD:22
- a=1CNFftbPRP8L7MoqJWF3:22 a=jGH_LyMDp9YhSvY-UuyI:22
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzA4MDE1MSBTYWx0ZWRfX4T/mzfbC9lTG
- lsBQHwKnRlju5PVhBedlXXgM4qk51LLSDG04l9DCQweonZMhezA57pU6p2BSfmSBiK8JqO3gI9M
- 1WPa88m2D7r6Ug3rj5fyByzxLByfI0bENBTTXaneUAohgAX4ZUPtyQW/7Sm2xxtJrnCEmiwt6Ed
- k/UqN4zk30qhySYi5O1GmfQuqHU3ShcGCNj65hWqQp/9tlfNzSduG/kz3PtUo3Y+/Vb9NE50Adk
- YR/t/a0SvvY0SbHbzNTUHtsyrR+Sug8yidw41SZJTKjUZsJAUBQt0Hs3essFQ/Wza83eNaow53G
- VWoX7G1GiHoGsnp2S164EtUuaRQGRevPjBS2iTv0614AhfZM9VCtGs5VgRv3/1WQgt1oe0xpDsa
- w7+qpf47txF+pRoYCrtNQNJBK3A09/TjbPY3Nt0G5dYQMh4mvpdOIiUTjtpn+aoPTf2jcGIc1Z7
- sAuq4B4XUHnW7clhKpQ==
-X-Proofpoint-Spam-Info: AW1haW4tMjYwNzA4MDE1MSBTYWx0ZWRfX/f65R5P6+1ZJ
- /Za8tg3tv/HklYyLvCs8+SKn1I771owR2zhSbaCjqfaaQors5EkSILPqVu0IdOI5LC3Lro1OEV5
- 4k1ys++8xF87SovnZww6hPG2FnJj3Ks=
-X-Proofpoint-GUID: vrz4L4Hi7VgNo7FaKVkaMBkcfW481qzT
-X-Proofpoint-ORIG-GUID: vrz4L4Hi7VgNo7FaKVkaMBkcfW481qzT
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: CH0PR10MB5131:EE_|SA3PR10MB7041:EE_
+X-MS-Office365-Filtering-Correlation-Id: f6a37d1f-b055-4965-ff71-08dedd0515b5
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|23010399003|1800799024|366016|376014|7416014|18002099003|22082099003|4143699003|56012099006;
+X-Microsoft-Antispam-Message-Info:
+	oDuAjPgKajDffgjRLCPNI7Mceb1AihnG5eAnXWCoNsLiTBfTzuhj6EYy3S1HitpEWH/iDXHno1MGTyFowOTW+jEPhXLmPAfvMhI7YTwvYLxtPNIwGl/G/dx17HQXniF6PMD96fSR0INNMD4we9V1S9KRDxLqNyiLm5a6dgBOzkKraHlhK47P7UUFRNhWnBhhuCiylQgngdxmx9e++8SWKcQj66DU4vHfAuu0pC54KmOT+cMVqiuZ5GddYC1W0FEWJdww3Mkx4E3e9Cc9uzqMWBKB4ad8uDX6QVxwvlswX+VhcYzgKGVgSRCZjJQYdILOcfOfEC9i/K/oaj1Mo54rH2B4zjyM7yIac1k6dBEF6uaY0ciLCkOZljkzIieNzDLxmXeL0O8eqMZq3iqAs7ev18vWDF+z64A/r/9rnCLXj3Po1DfUvoaydIYjDmrvUilyTHWc5bczYYozZjiK3hlImWkyyGlXByyWJRkUaz+a5VYUvkVBnytiEtI924k4xV9vxt0uUeqdAE/UvBI3T/zDL0jh4Z53zl/+Qts15VcHTUFJypNgZRhLTgsBMpQvE8QuDX5de18+i7MdB+FQQbM1ddghooHbXsmAyZut6Td0ihDuCbTmUdYD8pUYX6opZLEiwDUJKjhdPMmwfAkUvbzgwZazo66kA0+l8mESSO9GvYo=
+X-Forefront-Antispam-Report:
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:CH0PR10MB5131.namprd10.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(23010399003)(1800799024)(366016)(376014)(7416014)(18002099003)(22082099003)(4143699003)(56012099006);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	=?utf-8?B?dVdTL3dPMUM3QTRHTmVqdGJQNVE4NlIwT2JOSFFKOTZuOHVoamlIOC8yc3pz?=
+ =?utf-8?B?bGJiNlg4NnFjMUhTUGdnTk5GV0tvbXZYNzlHVFI5WTFIU0hXWVJGYVpycitn?=
+ =?utf-8?B?YWNqbkxKSUNGM3ZVZTdWK25qYVQ1Tm9GdTY2bXBhWkhOcDVkRXhrZkl4d1p0?=
+ =?utf-8?B?cVdiQnJJbFlIZ2dZNnRkc3JGbUNpQ1BGbm5QdmQ0NjhnYUpUODV6T253NzRI?=
+ =?utf-8?B?VXNVc3c5MHluekt3K0xJK3VIWGRFTXh4cTduR3NBMmNobVVJQmtud082SVVa?=
+ =?utf-8?B?d1EvREh0TFdQMlZTbk9ya05PUEJYK3BTUDR5eTFZbXhVTjluTC9nVTQzUU1W?=
+ =?utf-8?B?WmJKbm5YOWpDSU9mWUVCcUxyR3pJWktvMVVCeFJEQU80ZHNQeVBOT0lveGRY?=
+ =?utf-8?B?STk5dXhybGk2ZkVZZ0ltckhjMnIzSHFSSjRkQUR4SGJIRmFtM25sUzdjc2wy?=
+ =?utf-8?B?d3ZxeVl6dnJnWmNqYWlEdTltMUJzTWE3QVFuNForUmt3cjFmdmNwSmJyd20z?=
+ =?utf-8?B?Q2ROWHJkSDNWL3FwbENnTWZ1WS8zbnh6eUI1Z2dMN2Q2bzRUQ29xYzBJbzBl?=
+ =?utf-8?B?M0VjVmJHbkdWWmdzcjgyV1BINlZReGxlMWdWZ0g2WmVWamZJK0VkdHRjaVhr?=
+ =?utf-8?B?VHFPWVMrSVRzRDIxYUhQZGQ0MElJMDdhUUxIYWhlSGY4RXl3a1U0UnRmK3hX?=
+ =?utf-8?B?UHA3dFo2dG5VZE5TbVZvUHFtRlJ1Yi9VMzVLYUJlM1RWcS9lT3ByZnNHQ0Fh?=
+ =?utf-8?B?aGxneEs2RHBra3lRNXRSOEppQVZnTWg0L1ZvL0tpdkxSSkJCVzhMQWFDd3Fr?=
+ =?utf-8?B?aDJvREFCUStFRmYzdEZ6RktQbGh1bjF1RHBxUkhVNU1RU3hvMVVXdGg5a0gz?=
+ =?utf-8?B?R3BLREEvT1ZTZ2dZNjJiSERVQjlKaGl0ZmpxcGNaejBET2x2VG41dlB1RTZC?=
+ =?utf-8?B?Y3Vrc3h0NUpJZVBSQU41bEU4SnFsOVk1dkVacjY1aHZDOWhDc2tPdHBNOHEy?=
+ =?utf-8?B?WVpralJodUJsNUtudXJaL1IwakZBdG9UKzBRSTFhelRoc2pOZHE5NzRyNDBq?=
+ =?utf-8?B?YmNIQ1B4Z2ZiYmM4Z1ROdnlPRjhXSElrSy9ERjZDYjhkcHUwL2RZZkIzUXpN?=
+ =?utf-8?B?aGEvVkJTdDV3bmZFcDl4ZHNEaG9SaW1nbDhXY3FNZWVOeS8xdHU3ZGNIeHdj?=
+ =?utf-8?B?SGZqdGdBdWYvSzU2RCszdHluQ2VWc29LcG5UWDdzK1JCMVd1d0NleUpJbGx0?=
+ =?utf-8?B?SEV4MzhVa2J6eU8yWVFwakgzUnZ2Z2NjWDZ2WEZxVFR0S2ZZVkdWWFNrVi9q?=
+ =?utf-8?B?Y2E4YkZGWldlWkFwMWpYVWNoTUMvYTNXZkROV1VnTFhiZ3k3S3BUL20zS3Rp?=
+ =?utf-8?B?cFJxd01wRGRCdmdWQmlxbzJkVS9SSVhCMEhYNHRGaFB6YVVQeEUrWDVJSzlr?=
+ =?utf-8?B?UlNRNXBCVUMydkY0alpQQy8wYkhOcXpXeWIxQ0thYm1sZlMrOXQzUzF5c0VT?=
+ =?utf-8?B?c2kvQ3RtNHFRMnJFM09DTGNTK2VCZ09KTmpiWmgyM01qb3lRSnhPS1Iwc1pZ?=
+ =?utf-8?B?aTBINkhPVmhwT2l4M3NMTmVKQjA0NkJxNk9DM004TzJabFhHakc1ckZYS0Zj?=
+ =?utf-8?B?OW10ZjNtWk9TbTAyOE9oeW1xYUw5dmhMWDgySVc2REliVE9ldlhvMnZNQzhq?=
+ =?utf-8?B?MmVzVUh4dFI2UFo4aWZwM2gvNktkeElDTU1KRXdLMTZqZE5keS93Y3hxNkhB?=
+ =?utf-8?B?RFQ2ankrZHZOdllaTG5wSVJXNWFUZ1dZcENMSFpXZG4yRDZzSnQ4emVmYU85?=
+ =?utf-8?B?cVpsRGpVY3NqVWpyTzBxSUQwSTNMajRzUGpzMUF5WUJSdSt6VzBLdjRyeFF1?=
+ =?utf-8?B?b25qU2J0UTMwL3gwYWloMkx0NWdKaFpWdGovTDdVWHRxQmlCWC9OeXczaHhN?=
+ =?utf-8?B?Z1N0Smh5RFhVK2t6eUttSWF0RU1YSVpqcVB4Uk96R3hxMkFNdnZGZE02Z1Qw?=
+ =?utf-8?B?VFM2YTNCK2lWWVpRaUlFZmZrM0JwRngwcjdROEtHeVJMQVowVERrTkd1aEN1?=
+ =?utf-8?B?S0hBTDRjMWN4dDFuK0tPZFJiM2FTMlY0aVFsZnFrOFM2VkxnZCtzVTFHS3pI?=
+ =?utf-8?B?SHdtcThYRHhrWVczV2JrKzNmV3l0N3k1L1RlYVZ1OGZzQ1JlTFJsWFUwZ0ww?=
+ =?utf-8?B?M3kxUGVhTE1NYUdlaGNXNHZMMUhzeUp3SUE1MGhKUGthUzVhWTAraXJmcXpC?=
+ =?utf-8?B?SlJISVN6RXRsWDBxZndocU5YMzkxcDlhdlBWV04yczlnc243emRqcHRIRVFE?=
+ =?utf-8?B?RnVSMEZGckxSMlREUjR1ZXNSd2I3SXpHcFJVK0h0RzZLMnA4YjBCQ09RcS9m?=
+ =?utf-8?Q?mWhBUfVjmPpM8qZE=3D?=
+X-Exchange-RoutingPolicyChecked:
+	XQF5Ja1XQF+99dRhwFJuYlUP7Nj5mWa+2UXWkotAGosLt4tf5PGgCQ4GoJ9CpQ5mNzIfRlFL6QVI9jHaYaH3sAJI30uG18wFYf151t/E03wxRBzq2JzoAWvlRXx+j8hvteAXQOJcR0kcztJTst/88Ul5qf9g/DPr6emENMic5HwYoxDiAmtcDOuTqTMM4zE43qbeYgj1XXPaNIadRx5tBdhffvZRTGExZ1RMcWJ8PSHY1R77fufl87+2VDps6zA3u+NaZO9NhH/Uy2yslmK5SFwgLXC3qrRjQ6cr+efWTJS0vInZe5XU1fS3dWc0HGjxo/cnXqzazylWDBz7qSc9FQ==
+X-MS-Exchange-AntiSpam-ExternalHop-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-ExternalHop-MessageData-0:
+	PM+m8xl77t1sKVl+zn0Gp2SBS07bJOBy2bFYnI+nmpRN9ZCfhAkry0FEVquU6ZIi9y4qO+MmgKR5pyOxTHfAMHpufYY9HoduisofNwJbh9rosnHhd2JSF8PsLAQcOttOvQhVoa2OejRArv4AFMZVgTSi+grxAwV/dAwsMtpJDhywB1DC0mVIxNOm0PuhxEP7k5qybnWyKxOeDKk/5J7E1wfs4jKUT5/H9FPQW70B6jyNcirNp+5Ub993BHOFh3zWG8aAdiK4d363/tsPD7+Jj0gjOGnaJyT/gNK3+OEGIlOK2Y8YkWNkTbyNal28/F5/kIaWvJWwHTsYeOEGXvUb9nYFVxNJJqu1iGv8zXTquhS2QQNcqqPQKkdPtaIaxghtwvYXITZ2KxdhtbuofjzJS/4aDpO5Pgf8/BGiyzrdhaM4Ux5dotIvoXx0Mus0hpWbDYc74r2fULBo+FWHn6JXQEMQ5WnzwdLCQr8abJh3IhspK/Vj5HCdts0U3X+7arIrTeDmAjmFyioxWwHM7LTypOF6AD11Wb9L87LcaS0fOk6mYhzIu4E1MkHSquKTD7fKkfuMFWPh9ZODJTeiw0sD/TgMskah6DfT0QWOSyAc9hs=
+X-OriginatorOrg: oracle.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: f6a37d1f-b055-4965-ff71-08dedd0515b5
+X-MS-Exchange-CrossTenant-AuthSource: CH0PR10MB5131.namprd10.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 08 Jul 2026 15:25:04.3218
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 4e2c6054-71cb-48f1-bd6c-3a9705aca71b
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: MeljdF3o38QeF3JhQI4/zrrmFmoGniisUeIUXVIQc2j79ZQlzxvjlU0X9fTwgrAlJCkq4wKn0exw3wSeVpuIG3d7eTfBRQ+RhGKJhgWZyEk=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: SA3PR10MB7041
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.134,FMLib:17.12.100.49
  definitions=2026-07-08_02,2026-07-08_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- adultscore=0 lowpriorityscore=0 malwarescore=0 phishscore=0
- priorityscore=1501 clxscore=1015 suspectscore=0 bulkscore=0 impostorscore=0
- spamscore=0 classifier=typeunknown authscore=0 authtc= authcc= route=outbound
- adjust=0 reason=mlx scancount=1 engine=8.22.0-2606150000
- definitions=main-2607080151
+X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 malwarescore=0
+ adultscore=0 mlxlogscore=999 bulkscore=0 spamscore=0 phishscore=0
+ lowpriorityscore=0 mlxscore=0 suspectscore=0 classifier=spam adjust=0
+ reason=mlx scancount=1 engine=8.19.0-2606160000 definitions=main-2607080151
+X-Proofpoint-ORIG-GUID: f5X3Hdvyp5qVMoxuAMqPLNH00cuoyTwc
+X-Proofpoint-GUID: f5X3Hdvyp5qVMoxuAMqPLNH00cuoyTwc
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzA4MDE1MSBTYWx0ZWRfXxtEi+LESu7e2
+ BZzmPuNFhiTY+ROB86nEsRpHSXto+R4lbKfbSAsYPSotN0+2yD0jXd1yyq7iSACIo8iTxjdEtvZ
+ teXJ2uLbj0NgHuyFLogiPqhkUSlKBrD6bU1dXSCKFEIzy+DZi1oEy7bL5txsiCzBkQvJEUe0+f2
+ DqEnA90szGiblqpycCFvZEi7ImjsE1EhQU6fHKXbmjBJTyoVwUayJnEbFFAGwguEmu83YrjhmB+
+ HphAeo4egplCvYGyTNxldBXCa2iTyHaf/4sBFJMQ4PH7C+6ESGqzEoMya4V7iwD2ThZe+/SD9XX
+ PMTnLH7bMj/fj4ImUgVj970mek9JGXaabaoO4ta2xf7rqQDWOebIcc/C2Md884yrVabIklhEF+1
+ e89agnCMLXJjIrSRIDvf9ZXaugYBvkNPaaBIQFCqFrSjT8uzSE0FbVYQR0SduOGDmulbBiNByQk
+ Fd1eY/KXHGVRhe189Uw==
+X-Proofpoint-Spam-Info: AW1haW4tMjYwNzA4MDE1MSBTYWx0ZWRfXxUb8HAe3zxBC
+ IndYXC49+QHSo9PJHxN9uZgRpA9opdBfmuIBK0cl6f2PiujOWc5IE6hLumGF+lVD2MKQlKYb6nZ
+ L6lAI4Rr8f6jURLJMXmpF1iM9z7lrvqWoKAAD1xqsOPLaYlt/wqB
+X-Authority-Analysis: v=2.4 cv=Vu0Txe2n c=1 sm=1 tr=0 ts=6a4e6bd9 b=1 cx=c_pps
+ a=WeWmnZmh0fydH62SvGsd2A==:117 a=WeWmnZmh0fydH62SvGsd2A==:17
+ a=6eWqkTHjU83fiwn7nKZWdM+Sl24=:19 a=z/mQ4Ysz8XfWz/Q5cLBRGdckG28=:19
+ a=lCpzRmAYbLLaTzLvsPZ7Mbvzbb8=:19 a=xqWC_Br6kY4A:10 a=IkcTkHD0fZMA:10
+ a=RAioF0-LDSMA:10 a=GoEa3M9JfhUA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=jiCTI4zE5U7BLdzWsZGv:22 a=RD47p0oAkeU5bO7t-o6f:22 a=yPCof4ZbAAAA:8
+ a=Z8856WwFtE-RjjnfOaQA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
+ a=WmVTiCyuxqgg3mnwYu6p:22
 
-On Sat, Jun 13, 2026 at 9:01=E2=80=AFAM MidG971 <midgy971@gmail.com> wrote:
->
-> From: Midgy BALON <midgy971@gmail.com>
->
-> The RK3568 NPU rail (vdd_npu) needs to be enabled before the domain is
-> powered on and disabled after it is powered off. Give DOMAIN_RK3568 a
-> regulator parameter (like DOMAIN_RK3588 already has) so the NPU domain
-> can set need_regulator, letting genpd manage the rail wired up as the
-> domain's domain-supply instead of marking it always-on in DT.
->
-> Suggested-by: Chaoyi Chen <chaoyi.chen@rock-chips.com>
-> Signed-off-by: Midgy BALON <midgy971@gmail.com>
 
-This looks good to me. I assume this can be picked up independently of
-the other patches, whenever you decide to move forward from the RFC.
-If not, please let me know.
 
-Kind regards
-Uffe
+On 7/6/26 10:29 AM, Christian Loehle wrote:
+> On 7/2/26 19:47, Rafael J. Wysocki (Intel) wrote:
+>> Hi,
+>>
+>> On Thu, Jul 2, 2026 at 6:30 PM Joseph Salisbury
+>> <joseph.salisbury@oracle.com> wrote:
+>>> Hi Rafael,
+>>>
+>>> We are seeing a reproducible MySQL Sysbench threads regression.  A
+>>> bisect indicated the following commit as the first bad commit:
+>>> f4c31b07b136 ("sched: idle: Consolidate the handling of two special cases")
+>>>
+>>> The regression was found in Oracle kernel performance testing on OCI VM
+>>> shapes:
+>>>
+>>> VM Details:
+>>> * VM.Standard2.1:
+>>>         x86 OCI VM shape, 1 OCPU / 2 hardware threads, about 14.5 GB RAM
+>>>
+>>>    * VM.Standard.A1.Flex.2:
+>>>         Arm/Ampere A1 flexible VM shape, 2 vCPU threads, about 10.9 GB RAM
+>>>
+>>>
+>>> The ResultsDB runs show the regression in the Sysbench threads metric:
+>>>
+>>>     - VM.Standard2.1:       333 -> 236  (-29.1%)
+>>>     - VM.Standard.A1.Flex.2: 1286 -> 1152 (-10.4%)
+>>>
+>>> A test kernel was built with f4c31b07b136 reverted and the performance
+>>> regression was recovered.
+>>>
+>>>   From the code, it is possible the regression is due to the new
+>>> previous-wakeup heuristic in the special idle cases.  Before the commit:
+>>>
+>>>     - no cpuidle driver:
+>>>         tick_nohz_idle_stop_tick()
+>>>         default_idle_call()
+>>>
+>>>     - one idle state:
+>>>         tick_nohz_idle_retain_tick()
+>>>         cpuidle state 0
+>> I think that this is your case and the tick stops for you sometimes
+>> now while it had never stopped before.
+>>
+>> Can you confirm?
+>>
+>> Overall, it would be good to know the idle state lists for both the VM
+>> and the host.
+>>
+> +1, but also which HZ are you using?
+> Both systems reported have 2 logical CPUs then? Were higher core counts also
+> tested and how does it affect them?
+Hi Rafael, Christian,
 
-> ---
->  drivers/pmdomain/rockchip/pm-domains.c | 36 ++++++++++++++++++--------
->  1 file changed, 25 insertions(+), 11 deletions(-)
->
-> diff --git a/drivers/pmdomain/rockchip/pm-domains.c b/drivers/pmdomain/ro=
-ckchip/pm-domains.c
-> index 490bbb1d1d8e8..19db307e3811d 100644
-> --- a/drivers/pmdomain/rockchip/pm-domains.c
-> +++ b/drivers/pmdomain/rockchip/pm-domains.c
-> @@ -138,6 +138,20 @@ struct rockchip_pmu {
->         .active_wakeup =3D wakeup,                        \
->  }
->
-> +#define DOMAIN_M_R(_name, pwr, status, req, idle, ack, wakeup, regulator=
-)      \
-> +{                                                      \
-> +       .name =3D _name,                          \
-> +       .pwr_w_mask =3D (pwr) << 16,                      \
-> +       .pwr_mask =3D (pwr),                              \
-> +       .status_mask =3D (status),                        \
-> +       .req_w_mask =3D (req) << 16,                      \
-> +       .req_mask =3D (req),                              \
-> +       .idle_mask =3D (idle),                            \
-> +       .ack_mask =3D (ack),                              \
-> +       .active_wakeup =3D wakeup,                        \
-> +       .need_regulator =3D regulator,                    \
-> +}
-> +
->  #define DOMAIN_M_G(_name, pwr, status, req, idle, ack, g_mask, wakeup, k=
-eepon) \
->  {                                                      \
->         .name =3D _name,                                  \
-> @@ -241,8 +255,8 @@ struct rockchip_pmu {
->  #define DOMAIN_RK3562(name, pwr, req, g_mask, mem, wakeup)             \
->         DOMAIN_M_G_SD(name, pwr, pwr, req, req, req, g_mask, mem, wakeup,=
- false)
->
-> -#define DOMAIN_RK3568(name, pwr, req, wakeup)          \
-> -       DOMAIN_M(name, pwr, pwr, req, req, req, wakeup)
-> +#define DOMAIN_RK3568(name, pwr, req, wakeup, regulator)               \
-> +       DOMAIN_M_R(name, pwr, pwr, req, req, req, wakeup, regulator)
->
->  #define DOMAIN_RK3576(name, p_offset, pwr, status, r_status, r_offset, r=
-eq, idle, g_mask, wakeup)      \
->         DOMAIN_M_O_R_G(name, p_offset, pwr, status, 0, r_status, r_status=
-, r_offset, req, idle, idle, g_mask, wakeup)
-> @@ -1274,15 +1288,15 @@ static const struct rockchip_domain_info rk3562_p=
-m_domains[] =3D {
->  };
->
->  static const struct rockchip_domain_info rk3568_pm_domains[] =3D {
-> -       [RK3568_PD_NPU]         =3D DOMAIN_RK3568("npu",  BIT(1), BIT(2),=
-  false),
-> -       [RK3568_PD_GPU]         =3D DOMAIN_RK3568("gpu",  BIT(0), BIT(1),=
-  false),
-> -       [RK3568_PD_VI]          =3D DOMAIN_RK3568("vi",   BIT(6), BIT(3),=
-  false),
-> -       [RK3568_PD_VO]          =3D DOMAIN_RK3568("vo",   BIT(7), BIT(4),=
-  false),
-> -       [RK3568_PD_RGA]         =3D DOMAIN_RK3568("rga",  BIT(5), BIT(5),=
-  false),
-> -       [RK3568_PD_VPU]         =3D DOMAIN_RK3568("vpu",  BIT(2), BIT(6),=
-  false),
-> -       [RK3568_PD_RKVDEC]      =3D DOMAIN_RK3568("vdec", BIT(4), BIT(8),=
-  false),
-> -       [RK3568_PD_RKVENC]      =3D DOMAIN_RK3568("venc", BIT(3), BIT(7),=
-  false),
-> -       [RK3568_PD_PIPE]        =3D DOMAIN_RK3568("pipe", BIT(8), BIT(11)=
-, false),
-> +       [RK3568_PD_NPU]         =3D DOMAIN_RK3568("npu",  BIT(1), BIT(2),=
-  false, true),
-> +       [RK3568_PD_GPU]         =3D DOMAIN_RK3568("gpu",  BIT(0), BIT(1),=
-  false, false),
-> +       [RK3568_PD_VI]          =3D DOMAIN_RK3568("vi",   BIT(6), BIT(3),=
-  false, false),
-> +       [RK3568_PD_VO]          =3D DOMAIN_RK3568("vo",   BIT(7), BIT(4),=
-  false, false),
-> +       [RK3568_PD_RGA]         =3D DOMAIN_RK3568("rga",  BIT(5), BIT(5),=
-  false, false),
-> +       [RK3568_PD_VPU]         =3D DOMAIN_RK3568("vpu",  BIT(2), BIT(6),=
-  false, false),
-> +       [RK3568_PD_RKVDEC]      =3D DOMAIN_RK3568("vdec", BIT(4), BIT(8),=
-  false, false),
-> +       [RK3568_PD_RKVENC]      =3D DOMAIN_RK3568("venc", BIT(3), BIT(7),=
-  false, false),
-> +       [RK3568_PD_PIPE]        =3D DOMAIN_RK3568("pipe", BIT(8), BIT(11)=
-, false, false),
->  };
->
->  static const struct rockchip_domain_info rk3576_pm_domains[] =3D {
-> --
-> 2.39.5
->
->
-> _______________________________________________
-> Linux-rockchip mailing list
-> Linux-rockchip@lists.infradead.org
-> http://lists.infradead.org/mailman/listinfo/linux-rockchip
+Thanks for the feedback!
+
+We will collect the requested runtime data from the affected systems 
+before testing the proposed one-line change.
+
+For Christian’s HZ question, I can answer from the UEK kernel configs. 
+The relevant configs for the affected kernel are:
+
+- x86_64 / VM.Standard2.1:
+     - CONFIG_HZ=1000
+     - CONFIG_HZ_1000=y
+     - CONFIG_NO_HZ_FULL=y
+     - CONFIG_NO_HZ=y
+     - CONFIG_CPU_IDLE=y
+     - CONFIG_INTEL_IDLE=y
+     - CONFIG_ACPI_PROCESSOR_IDLE=y
+
+- arm64 / VM.Standard.A1.Flex.2:
+     - CONFIG_HZ=250
+     - CONFIG_HZ_250=y
+     - CONFIG_NO_HZ_FULL=y
+     - CONFIG_NO_HZ=y
+     - CONFIG_CPU_IDLE=y
+     - CONFIG_ACPI_PROCESSOR_IDLE=y
+     - CONFIG_ARM_PSCI_CPUIDLE is not set
+
+The ResultsDB metadata for the two reported systems shows both had 2 
+logical CPUs:
+
+  - VM.Standard2.1: 1 OCPU / 2 hardware threads
+  - VM.Standard.A1.Flex.2: 2 vCPU threads
+
+I do not yet have higher-core-count results for this same comparison.  I 
+will check whether those runs exist, and if not, whether we can schedule 
+them.
+
+Thanks,
+
+Joe
