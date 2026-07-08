@@ -1,18 +1,19 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9EDE8380FFD;
-	Wed,  8 Jul 2026 10:15:20 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6E99D38D6A9;
+	Wed,  8 Jul 2026 10:15:24 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1783505721; cv=none; b=GaI5fXAudkNQPdfBMdH1GguC9PgpyaEBWqQcIrhSGM+eHIFQP4oLQu8zd6hM1pHOoMYP+cA4jd0Q1mNN+wV1xGtYcvvtqQWiCyF1THoBGabZu/5FM4YxnsgP7PtfTDcNJ2pTEkZ94jl5gc8SWjqt5EPDfFzx10avrcTnayhPQeg=
+	t=1783505725; cv=none; b=fCAUqfizm8/SRC/nLIlAXIH6YvRhpV0lXAxY+V1uM0YINfdIyorZ0inJRwucwfj16mE9AJ8a5GBKqeVOoBxncEtV4NbJtQ3t1Jf8kwPw3xzef7lsitcMJV8+dNzPeD4CN64RjB+ZqQTnMbm8Q4l/gHZCmHBaMYsfKy3/J605pNc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1783505721; c=relaxed/simple;
-	bh=5tvlj1Jg/kBw/iZacMOm4SIRGWlDMHmtuDl1+CS763I=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=Sqnf4OZxs5rwXYuLbBYGNyvUhbrMJ/aJ/jqe4CX7H5UETxtsGdyBB7oQ4A5ubRIyboSvWfERbi9JHcozJhAFGIEPkmrFERPC6vH+YN7Kq0Q6ONrM4klLUi7c3NAI0GmABelhHOjljqFn6k1AoYrYWL4U9Dvc2T5RVeKZ4hblwO4=
+	s=arc-20240116; t=1783505725; c=relaxed/simple;
+	bh=pGuP/JHaq6BfGtKDP6om0E9hemxnwPRP7Tz9opeCo2w=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=ATw3HlUwrIoRoiMtwEILNJaganBjpZ9dRtZRuQWeHE5uP5AaUmEteRhRXdNPaH5NjECes64UhMF8puk2NsNF0/d9bK3DYAt5gddbU3p8Wyu5DkPSLJeX+cX9dqq6+1Qc813K7/i/FMJfYGO1SiopAtwMkK34lcQ1xZsIl0SR6Cc=
 ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id D89631F000E9;
-	Wed,  8 Jul 2026 10:15:16 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id B29231F00A3A;
+	Wed,  8 Jul 2026 10:15:20 +0000 (UTC)
 From: Geert Uytterhoeven <geert+renesas@glider.be>
 To: Rob Herring <robh@kernel.org>,
 	Krzysztof Kozlowski <krzk+dt@kernel.org>,
@@ -32,10 +33,12 @@ Cc: devicetree@vger.kernel.org,
 	linux-arm-kernel@lists.infradead.org,
 	linux-kernel@vger.kernel.org,
 	Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH v2 0/6] R-Car X5H CPG/MDLC support
-Date: Wed,  8 Jul 2026 12:15:05 +0200
-Message-ID: <cover.1783505142.git.geert+renesas@glider.be>
+Subject: [PATCH v2 1/6] dt-bindings: clock: Document Renesas R-Car X5H Clock Pulse Generator
+Date: Wed,  8 Jul 2026 12:15:06 +0200
+Message-ID: <f0f2e810b249a60ff7c27d508366d66be061fed2.1783505142.git.geert+renesas@glider.be>
 X-Mailer: git-send-email 2.43.0
+In-Reply-To: <cover.1783505142.git.geert+renesas@glider.be>
+References: <cover.1783505142.git.geert+renesas@glider.be>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -44,81 +47,109 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-	Hi all,
+Document support for the Renesas R-Car X5H Clock Pulse Generator, and
+add binding definitions for a limited initial set of clocks.
 
-This patch series adds minimal support for the Renesas R-Car X5H Clock
-Pulse Generator (CPG) and Module Controller (MDLC), to aim for replacing
-the dummy clocks in r8a78000.dtsi with proper hardware description.
-These two components are closely related, in the sense that they are
-both supposed to be accessed through the ARM System Control and
-Management Interface (SCMI) on the Ironhide development board.
-
-This series consists of three parts:
-  1. Patches 1-2 add DT bindings and DT binding definitions,
-  2. Patches 3-4 add minimal CPG and MDLC drivers,
-  3. Patches 5-6 update the DTS.
-
-Some of these patches have been sent before as part of "[PATCH/RFC
-00/14] R-Car X5H Ironhide SCMI CPG/MDLC remapping"[1], hence the v2.
-However, this series does not use or rely on SCMI in any way.
-
-Major changes compared to v1[1] (more detail in the individual patches):
-  - Add default support not using SCMI,
-  - Drop everything related to SCMI.
-
-SCMI remapping support will be added in a subsequent series[2].
-Full hardware support without using SCMI could be added, too, if anyone
-would care about that use case.
-
-For testing, I have pushed this series plus additional work to[3].
-
-Thanks for your comments!
-
-[1] "[PATCH/RFC 00/14] R-Car X5H Ironhide SCMI CPG/MDLC remapping"
-    https://lore.kernel.org/cover.1776793163.git.geert+renesas@glider.be
-[2] "[PATCH v2 00/10] R-Car X5H Ironhide CPG/MDLC SCMI remapping support"
-    https://lore.kernel.org/cover.1783505329.git.geert+renesas@glider.be
-[3] topic/rcar-x5h-ironhide-scmi-cpg-mdlc-remapping-v2 branch of
-    https://git.kernel.org/pub/scm/linux/kernel/git/geert/renesas-drivers.git
-
-Geert Uytterhoeven (6):
-  dt-bindings: clock: Document Renesas R-Car X5H Clock Pulse Generator
-  dt-bindings: power: Document Renesas R-Car X5H Module Controller
-  clk: renesas: Add R-Car X5H CPG driver
-  pmdomain: renesas: Add R-Car X5H MDLC driver
-  arm64: dts: renesas: r8a78000: Add CPG node
-  arm64: dts: renesas: r8a78000: Add MDLC nodes
-
- .../bindings/clock/renesas,r8a78000-cpg.yaml  |  55 +++
- .../bindings/power/renesas,r8a78000-mdlc.yaml |  61 ++++
- arch/arm64/boot/dts/renesas/r8a78000.dtsi     | 300 ++++++++++++++--
- drivers/clk/renesas/Kconfig                   |   4 +
- drivers/clk/renesas/Makefile                  |   1 +
- drivers/clk/renesas/r8a78000-cpg.c            | 216 ++++++++++++
- drivers/pmdomain/renesas/Kconfig              |   4 +
- drivers/pmdomain/renesas/Makefile             |   1 +
- drivers/pmdomain/renesas/r8a78000-mdlc.c      | 329 ++++++++++++++++++
- drivers/soc/renesas/Kconfig                   |   1 +
- .../dt-bindings/clock/renesas,r8a78000-cpg.h  |  14 +
- .../dt-bindings/power/renesas,r8a78000-mdlc.h |  15 +
- 12 files changed, 976 insertions(+), 25 deletions(-)
+Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+Reviewed-by: Marek Vasut <marek.vasut+renesas@mailbox.org>
+Tested-by: Marek Vasut <marek.vasut+renesas@mailbox.org>
+---
+v2:
+  - Add Reviewed-by, Tested-by,
+  - Drop preliminary,
+  - Expand CPG acronym,
+  - Drop R8A78000_CPG_MSOCK_PERW_BUS,
+  - Add R8A78000_CPG_SGASYNCD8_PERW_BUS, to avoid holes in the
+    SGASYNCDn_PERW_BUS sequence,
+  - Drop firmware property.
+---
+ .../bindings/clock/renesas,r8a78000-cpg.yaml  | 55 +++++++++++++++++++
+ .../dt-bindings/clock/renesas,r8a78000-cpg.h  | 14 +++++
+ 2 files changed, 69 insertions(+)
  create mode 100644 Documentation/devicetree/bindings/clock/renesas,r8a78000-cpg.yaml
- create mode 100644 Documentation/devicetree/bindings/power/renesas,r8a78000-mdlc.yaml
- create mode 100644 drivers/clk/renesas/r8a78000-cpg.c
- create mode 100644 drivers/pmdomain/renesas/r8a78000-mdlc.c
  create mode 100644 include/dt-bindings/clock/renesas,r8a78000-cpg.h
- create mode 100644 include/dt-bindings/power/renesas,r8a78000-mdlc.h
 
+diff --git a/Documentation/devicetree/bindings/clock/renesas,r8a78000-cpg.yaml b/Documentation/devicetree/bindings/clock/renesas,r8a78000-cpg.yaml
+new file mode 100644
+index 0000000000000000..4e23bba334382346
+--- /dev/null
++++ b/Documentation/devicetree/bindings/clock/renesas,r8a78000-cpg.yaml
+@@ -0,0 +1,55 @@
++# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/clock/renesas,r8a78000-cpg.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
++
++title: Renesas R-Car X5H Clock Pulse Generator
++
++maintainers:
++  - Geert Uytterhoeven <geert+renesas@glider.be>
++
++description:
++  The R-Car X5H Clock Pulse Generator (CLK CONTROL) consists of oscillators,
++  PLL circuits, clock dividers and clock control circuits.  It provides various
++  clocks for other modules.
++
++properties:
++  compatible:
++    const: renesas,r8a78000-cpg
++
++  reg:
++    maxItems: 1
++
++  clocks:
++    maxItems: 2
++
++  clock-names:
++    items:
++      - const: extal
++      - const: extalr
++
++  '#clock-cells':
++    description:
++      The single clock specifier cell must be the clock number, as defined in
++      <dt-bindings/clock/renesas,r8a78000-cpg.h>.
++    const: 1
++
++required:
++  - compatible
++  - reg
++  - clocks
++  - clock-names
++  - '#clock-cells'
++
++additionalProperties: false
++
++examples:
++  - |
++    clock-controller@c1320000 {
++            compatible = "renesas,r8a78000-cpg";
++            reg = <0xc1320000 0x10000>;
++            clocks = <&extal_clk>, <&extalr_clk>;
++            clock-names = "extal", "extalr";
++            #clock-cells = <1>;
++    };
+diff --git a/include/dt-bindings/clock/renesas,r8a78000-cpg.h b/include/dt-bindings/clock/renesas,r8a78000-cpg.h
+new file mode 100644
+index 0000000000000000..7fd09a3fb353d952
+--- /dev/null
++++ b/include/dt-bindings/clock/renesas,r8a78000-cpg.h
+@@ -0,0 +1,14 @@
++/* SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause) */
++/*
++ * Copyright (C) 2026 Glider bv
++ */
++#ifndef __DT_BINDINGS_CLOCK_RENESAS_R8A78000_CPG_H__
++#define __DT_BINDINGS_CLOCK_RENESAS_R8A78000_CPG_H__
++
++/* R-Car X5H Clock Pulse Generator Clocks */
++
++#define R8A78000_CPG_SGASYNCD4_PERW_BUS		0
++#define R8A78000_CPG_SGASYNCD8_PERW_BUS		1
++#define R8A78000_CPG_SGASYNCD16_PERW_BUS	2
++
++#endif /* __DT_BINDINGS_CLOCK_RENESAS_R8A78000_CPG_H__ */
 -- 
 2.43.0
 
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
