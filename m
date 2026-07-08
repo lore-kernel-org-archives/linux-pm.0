@@ -1,127 +1,139 @@
-Received: from mail-pf1-f177.google.com (mail-pf1-f177.google.com [209.85.210.177])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.21])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 15979346E57
-	for <linux-pm@vger.kernel.org>; Wed,  8 Jul 2026 11:01:41 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.210.177
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0D02E3BFAD1;
+	Wed,  8 Jul 2026 11:12:14 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.21
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1783508504; cv=none; b=qZwfaXuat+pg/xHwGFxyp8D5MZVAS64n9vIIMDE0MSW6i7gpai2WTrLo9NuqtD+JXxkYdPJxUjVtP/Jyd5azvtGO4b38DdB8SJtJK14xleTJm4UqG8I6zC0AjXNbBq7hH6360bFxlN9vf9/Vb3jeVAbJnS48RyBHJvZeKO4/f9U=
+	t=1783509136; cv=none; b=jPykNzg+2BHAzKfffm4/r4V0kBaDeYODapjHybpZlQc/EQGBctMxgxXGcxzmW1U5RWKXbNi9nZb/N+q272A+1rf161mh/5l6dBV3ty1I2W6icrSzxM38hML9437kp5xQaugwCRsg8PoPvD2SZhDTzulUBDFlOlk+quSYhm0diQI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1783508504; c=relaxed/simple;
-	bh=YTaaWjYSXf37/O64vVOJlMn6uJ3wzTPz6MyKhGkDpCc=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=gh/R1lX0GoP8i3V/iBTnXItWo05adU+uzyFWplk29zyFXbJqjHfDcleh2xFIYJKrz8SWgsC1CPnBiDVpHf/icRZC/RkaIQUpPz++iZkeAojsY4G1z/fODnkRDD9kwWsjHLfmhgNm2ev+Jjxql/qQulhKNgQbMAD/scicGkdsaSA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=FRw3o+AT; arc=none smtp.client-ip=209.85.210.177
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1783509136; c=relaxed/simple;
+	bh=dXbZA1E6z2cbPpn5lXVwUbC3y8RJZe9PuV/6K4qA1zI=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=BiF3qR7rJBWbNmlFriBx6WniD58XQNt58kyh0Zl5TMaCh8AK6D9gKK7Jy9JLhDW1doGywyM1Q2jE3uZXVl3dxr7KLHFTiwqROst+wcS4IiNial7Vxvx7N5A16lXhOPP8xDX5PX/K0Igub6V6+d7tbDOcI6EHjY1pLqR7mThKQ/o=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=pass smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=NKaLLLgY; arc=none smtp.client-ip=198.175.65.21
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="FRw3o+AT"
-Received: by mail-pf1-f177.google.com with SMTP id d2e1a72fcca58-847a5528b33so301097b3a.3
-        for <linux-pm@vger.kernel.org>; Wed, 08 Jul 2026 04:01:41 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1783508501; x=1784113301; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=jZbH5XcFqp9SWE5IMtoeIvw8DFbEAEc+msM3hD5f1Yc=;
-        b=FRw3o+AT1kmL95FExRgF3VcvUS1cLKt0DNysQBIv6Bne85Dt8uMPVII0A4k4tiYTOC
-         GO0WkwPAO8c6eNqHSN+Wf489nZcgd8Jrfn/TcDxGdsYUj0C7KwYGjT1S+NRsBAJSCfz9
-         b8jTAESoIj1sWrTQ2lJAhQ21EDg82kiRXLzQ6Pl21W8VRxEPBP7EfufZyrTLMmTHXrku
-         FrcDIhWhpI6Wg/+3363BICnxhM1G3AyOiOKagpH8+BaSP3qxW/85zXGPd9G5KBvJqBBJ
-         zU9XrElGo+O2HQqiTYd218QguyqPChoxetDlXjzw1V5A7vLBNkA2IvBhVo15sKm64RhA
-         jKCA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1783508501; x=1784113301;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=jZbH5XcFqp9SWE5IMtoeIvw8DFbEAEc+msM3hD5f1Yc=;
-        b=lfhqQ3K/UGPl4sTk7sRyobQrmfHNrqqTaYjty23Q1mKZsXKSN3hwV0nlR2z4vIOIt+
-         P1FqAHGtpKTNOPrT7GRyFnzIOdDw/Wce7r3qwJucws+l+9T/qRuLqJQN4BqFsz3s6bOL
-         yFZmduV5UIjayLE4yxLmSgRkfxNMOvKl0GZ/OwngzqaiyqioIj/cm3P4B6FIVWlnl9IK
-         L1mniCHbX5zqWOn25iw4R4zAUQa88QZ0mmlX2/e4qZGwuAzqvf5c1eZvFohtcqqVkLLR
-         q6n+yX/vR0nm+/t+nVLJrqdtMrFnT1rPEbDj6EgYk6sMyuzB8KJ/wTPCCOpOA13PbSAi
-         rRJg==
-X-Forwarded-Encrypted: i=1; AHgh+RpyCB2i9QXr1smXEWWMirgF2EsrU1Ju/8y018BpGQKVExGBn4Se/GEUmMZvK/ybarrN7VqabY85bg==@vger.kernel.org
-X-Gm-Message-State: AOJu0YzEJsCTjm2cckGDXSNHIw5cxv3GpavJSFJ+qMPlmUlHDXprR88l
-	Dy7OzK7B8yAiTHs1zKKjMxReTlSk2d+6mGIoUB5lhmbHcjVb9j+D140F
-X-Gm-Gg: AfdE7cnOS7z/C23JLB0BihfCp0d6QsjhRPmIVvkQLJSb8JyWcgrNpnc/RMnhAz7zbxV
-	jaD7QuOUDkZU9EQmWINetqI22hv+2xwg8UAz0z9E2FEjEBMQu8pB5rUvvvJAjwSdZ9qzrqnJVKs
-	OpTqhPsJmJTGx3GjygKhJAorISUZHZObea/NadmxTpZ1yDZEOSWbG4PDPrLhdkLOC0hzYDgm8aW
-	dLdw39bcjFSdeO10MfaPVVeLbRV7JPBZMCzdbKlHM3adCcENjSJ36kZrlQhbw8XURrLB++aCmtl
-	ttdPuYRu2vqtL8yM4h/p+jihQNFXlX6Vq4CoWCfJQOuL2nu2dKeSovKq307NjW8qK87WIVR95Oy
-	1088PrCAJdGB3kvTfaOUda+YR6KgWZNwd42XPkzNQoplNGpXjwpP+Mj/kJYhS8FT1cWbs/P1D61
-	TRR/Cx29Zrik8e5g==
-X-Received: by 2002:a05:6a00:92a8:b0:847:438f:500c with SMTP id d2e1a72fcca58-8484368e384mr1919809b3a.60.1783508500785;
-        Wed, 08 Jul 2026 04:01:40 -0700 (PDT)
-Received: from lgs.. ([152.32.133.247])
-        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-8484c32ee5esm259488b3a.29.2026.07.08.04.01.38
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 08 Jul 2026 04:01:40 -0700 (PDT)
-From: Guangshuo Li <lgs201920130244@gmail.com>
-To: "Rafael J. Wysocki" <rafael@kernel.org>,
-	Viresh Kumar <viresh.kumar@linaro.org>,
-	linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-Cc: Guangshuo Li <lgs201920130244@gmail.com>
-Subject: [PATCH] cpufreq: nforce2: put PCI device on driver register failure
-Date: Wed,  8 Jul 2026 19:01:31 +0800
-Message-ID: <20260708110131.748268-1-lgs201920130244@gmail.com>
-X-Mailer: git-send-email 2.43.0
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="NKaLLLgY"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1783509135; x=1815045135;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=dXbZA1E6z2cbPpn5lXVwUbC3y8RJZe9PuV/6K4qA1zI=;
+  b=NKaLLLgYSGwRbFEUPZ4WXfWAkQLZfXhRPviQaSCCWKxzP1Hwd/RZVyI5
+   qhXuK+dXM700naBdhd5VjHzf3fB68yRX1rwFVdBb5K4tRooC+h47nZN0b
+   HqlzRyvi3i/kegVxXwlN1Q9bFbd81z5OdScYJJbrEMHBh9n2zirrfivj3
+   BLmv97jfpG4CZUhQ06zO8jXEDpEWV04IHrUTpZ4Y4IibitKa+7JaNke2V
+   eeZ2GZkWMVMW7okGFl4bSqx3udTAk2pzQVKxjuOZ7hAoPkOtFqIPD9PMt
+   rUuZBYfnUwPvVhb5PmwwjRrhP3ahd79YDWKu/qN+x7cMdQsrVi6vnYScE
+   A==;
+X-CSE-ConnectionGUID: y2pZuRN5R/a+RXZU4b1NyA==
+X-CSE-MsgGUID: e/wLbpAFT1aFeVdEaqouAA==
+X-IronPort-AV: E=McAfee;i="6800,10657,11840"; a="84025163"
+X-IronPort-AV: E=Sophos;i="6.25,153,1779174000"; 
+   d="scan'208";a="84025163"
+Received: from orviesa006.jf.intel.com ([10.64.159.146])
+  by orvoesa113.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 08 Jul 2026 04:12:14 -0700
+X-CSE-ConnectionGUID: xnTXU7N2RFKFpJyFUzPznA==
+X-CSE-MsgGUID: WXa6o+4tR/u+kKLX2b+3mA==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.25,153,1779174000"; 
+   d="scan'208";a="252523743"
+Received: from klitkey1-mobl1.ger.corp.intel.com (HELO localhost) ([10.245.245.100])
+  by orviesa006-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 08 Jul 2026 04:12:00 -0700
+Date: Wed, 8 Jul 2026 14:11:58 +0300
+From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+To: Bartosz Golaszewski <brgl@kernel.org>
+Cc: Lee Jones <lee@kernel.org>,
+	Mark Brown <broonie@opensource.wolfsonmicro.com>,
+	Thierry Reding <thierry.reding@avionic-design.de>,
+	Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>,
+	Andrew Lunn <andrew+netdev@lunn.ch>,
+	"David S. Miller" <davem@davemloft.net>,
+	Eric Dumazet <edumazet@google.com>,
+	Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
+	Srinivas Kandagatla <srini@kernel.org>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	Vinod Koul <vkoul@kernel.org>,
+	"Rafael J. Wysocki" <rafael@kernel.org>,
+	Danilo Krummrich <dakr@kernel.org>, Rob Herring <robh@kernel.org>,
+	Saravana Kannan <saravanak@kernel.org>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+	Andi Shyti <andi.shyti@kernel.org>, Joerg Roedel <joro@8bytes.org>,
+	Will Deacon <will@kernel.org>, Robin Murphy <robin.murphy@arm.com>,
+	Doug Berger <opendmb@gmail.com>,
+	Florian Fainelli <florian.fainelli@broadcom.com>,
+	Broadcom internal kernel review list <bcm-kernel-feedback-list@broadcom.com>,
+	Ulf Hansson <ulfh@kernel.org>, Frank Li <Frank.Li@nxp.com>,
+	Sascha Hauer <s.hauer@pengutronix.de>,
+	Pengutronix Kernel Team <kernel@pengutronix.de>,
+	Fabio Estevam <festevam@gmail.com>,
+	Matthew Brost <matthew.brost@intel.com>,
+	Thomas =?iso-8859-1?Q?Hellstr=F6m?= <thomas.hellstrom@linux.intel.com>,
+	Rodrigo Vivi <rodrigo.vivi@intel.com>,
+	David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>,
+	Peter Chen <peter.chen@kernel.org>,
+	Paul Cercueil <paul@crapouillou.net>, Bin Liu <b-liu@ti.com>,
+	Philipp Zabel <p.zabel@pengutronix.de>,
+	Maximilian Luz <luzmaximilian@gmail.com>,
+	Hans de Goede <hansg@kernel.org>,
+	Ilpo =?iso-8859-1?Q?J=E4rvinen?= <ilpo.jarvinen@linux.intel.com>,
+	Krzysztof Kozlowski <krzk@kernel.org>,
+	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+	linux-arm-msm@vger.kernel.org, linux-sound@vger.kernel.org,
+	driver-core@lists.linux.dev, devicetree@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org, linux-i2c@vger.kernel.org,
+	iommu@lists.linux.dev, linux-pm@vger.kernel.org,
+	imx@lists.linux.dev, linux-arm-kernel@lists.infradead.org,
+	intel-xe@lists.freedesktop.org, dri-devel@lists.freedesktop.org,
+	linux-usb@vger.kernel.org, linux-mips@vger.kernel.org,
+	platform-driver-x86@vger.kernel.org, mfd@lists.linux.dev,
+	Manuel Ebner <manuelebner@mailbox.org>,
+	Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
+Subject: Re: [PATCH v3 05/20] driver core: update kerneldoc for
+ platform_device_alloc()
+Message-ID: <ak4wfuYxO2serrQt@ashevche-desk.local>
+References: <20260706-pdev-fwnode-ref-v3-0-1ff028e33779@oss.qualcomm.com>
+ <20260706-pdev-fwnode-ref-v3-5-1ff028e33779@oss.qualcomm.com>
+ <ak0jyUbNonSRiP_g@ashevche-desk.local>
+ <CAMRc=Md7-XMBKpdPuZ4=epfTn6F-PXKJBZNPGuz5xbVy58BHsg@mail.gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <CAMRc=Md7-XMBKpdPuZ4=epfTn6F-PXKJBZNPGuz5xbVy58BHsg@mail.gmail.com>
+Organization: Intel Finland Oy - BIC 0357606-4 - c/o Alberga Business Park, 6
+ krs, Bertel Jungin Aukio 5, 02600 Espoo
 
-nforce2_detect_chipset() stores a PCI device returned by
-pci_get_subsys() in the global nforce2_dev pointer. That reference is
-kept for the lifetime of the loaded module and is released from
-nforce2_exit().
+On Wed, Jul 08, 2026 at 12:42:58AM -0700, Bartosz Golaszewski wrote:
+> On Tue, 7 Jul 2026 18:05:29 +0200, Andy Shevchenko
+> <andriy.shevchenko@linux.intel.com> said:
+> > On Mon, Jul 06, 2026 at 02:44:17PM +0200, Bartosz Golaszewski wrote:
+> >> Users of platform_device_alloc() + platform_device_add() must not modify
+> >> certain fields of the dynamically created platform device object. Update
+> >> the kernel doc to say which fields are affected and which functions to
+> >> use.
+> >
+> > Consider using __private checker attribute for them as well. It will make
+> > sparse scream.
+> 
+> Sure but let's leave it for another series.
 
-However, nforce2_init() gets the PCI device reference before registering
-the cpufreq driver. If cpufreq_register_driver() fails, nforce2_init()
-returns an error and the module exit path is not run. The reference held
-in nforce2_dev is then leaked.
+Sure, just a side note comment that you know that we have some facilities for
+that type of problems.
 
-Drop the PCI device reference before returning from the registration
-failure path. Clear the global pointer as well so the failed
-initialization leaves no stale reference behind.
-
-Fixes: 1da177e4c3f4 ("Linux-2.6.12-rc2")
-Signed-off-by: Guangshuo Li <lgs201920130244@gmail.com>
----
- drivers/cpufreq/cpufreq-nforce2.c | 10 +++++++++-
- 1 file changed, 9 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/cpufreq/cpufreq-nforce2.c b/drivers/cpufreq/cpufreq-nforce2.c
-index 831102522ad6..5a101c69c47a 100644
---- a/drivers/cpufreq/cpufreq-nforce2.c
-+++ b/drivers/cpufreq/cpufreq-nforce2.c
-@@ -409,6 +409,8 @@ static int nforce2_detect_chipset(void)
-  */
- static int __init nforce2_init(void)
- {
-+	int ret;
-+
- 	/* TODO: do we need to detect the processor? */
- 
- 	/* detect chipset */
-@@ -417,7 +419,13 @@ static int __init nforce2_init(void)
- 		return -ENODEV;
- 	}
- 
--	return cpufreq_register_driver(&nforce2_driver);
-+	ret = cpufreq_register_driver(&nforce2_driver);
-+	if (ret) {
-+		pci_dev_put(nforce2_dev);
-+		nforce2_dev = NULL;
-+	}
-+
-+	return ret;
- }
- 
- /**
 -- 
-2.43.0
+With Best Regards,
+Andy Shevchenko
+
 
