@@ -1,189 +1,175 @@
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.10])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-wm1-f54.google.com (mail-wm1-f54.google.com [209.85.128.54])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DE1C2346E7A;
-	Wed,  8 Jul 2026 23:33:12 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.10
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1A84438757D
+	for <linux-pm@vger.kernel.org>; Wed,  8 Jul 2026 23:42:59 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.54
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1783553594; cv=none; b=XR/yPPSLvw6jlqfFnJlytY0MqHAaXcZ+7yV0VhdpVHOAmugitr6jG4a6KJxd4d4O5e0d8dM0C9CeQBCgU79/sXFCuAfoPefUt6MNxJTTW3bsZpXTXeZuXkmHNhnRXlg8lXjN9xk5wWfPbwmtB/vANQQbdTHXudCVQNDYFxsCNAc=
+	t=1783554181; cv=none; b=hqRtItsfT9oBEEs9FJ6tb/gE1xlHfl7Fh6xUZwvnyepJUOi0kbtkOS1ie5R9YWy2F7koU84mnM/wtD5RQaGZeyqpbRtizFHbjZzMIbpleX3wrs4YB9wCsvQgPYdyp3Kydc8S7/oYQ+juZ5MJp8YNy4ViFr9xkkt6V0wha9vKncY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1783553594; c=relaxed/simple;
-	bh=LDCyPMgicCdip5qtyME6CtGqMfz7kPU+tZVSy1F60YY=;
-	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=X9GlwqKdAD//TBAlkVgIMHhqcKHA93qxdZ5eXMF2LyMS5Da88mlXuHf5GnOgOF76efuGutETDCAMKmsO+vpGXcOKStltVq09YggOZxJ/z8wwKRwUfU3wZqQrx97OWA94OHkQ8gccnFeqol151cqDY2UJqLVJurV5aX/tw33kIRM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=pass smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=fBoMfDbn; arc=none smtp.client-ip=198.175.65.10
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.intel.com
+	s=arc-20240116; t=1783554181; c=relaxed/simple;
+	bh=h3R93Ok1NVbqWeVssCZgi3GVnxTbqmic2Yc76Z+ZQ2s=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version:Content-Type; b=mdfh4HhWqoi66smwqyMF+siFN1fCxv2MzTTH2wy5Ou8TA+T70mIFEbv1u8fnAB/kM6dsvSH11CfpL48iFWYnMzCgzWik/zsi2Sh7AxYM+KGpSucR5pWTqVWKRampYXtyfiG7w05kLTnk9bDYwluitxZp0Lddv1tz6thGOhj5tdM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=CFH0DiUA; arc=none smtp.client-ip=209.85.128.54
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="fBoMfDbn"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1783553593; x=1815089593;
-  h=message-id:subject:from:to:cc:date:in-reply-to:
-   references:content-transfer-encoding:mime-version;
-  bh=LDCyPMgicCdip5qtyME6CtGqMfz7kPU+tZVSy1F60YY=;
-  b=fBoMfDbnFRJNbWUAReRu3oQbrLx4wwImS7VCdLLRuHO6Kao6lLw8VG8t
-   a82DhG39g/0cyHbdlKNLwC7IIRAY0JHZbObwPUedRQMV8AEo1RAYHMh87
-   uelCg3CsUCNJAAeFgYqpxljNHmYvm7K0ofCPIwWA8Qqtsh0oqIsaYcaTO
-   bpQzu+tN18mIGZMMRAH3l3YD+q+CDta0vjmki8O0V/7VuHrh2MsvBHpQu
-   A1nyrV4/skLQzKbfiQqfJsdfPfK/bYZbNEGMNh53sxExgSoQ4M/UCR5BY
-   8J/tRLjbV7s48XN58Y+vQ8KaXxqVxtjwytX0AuWGMp52z46VXCLEit5Hm
-   w==;
-X-CSE-ConnectionGUID: 0ZTRkzqgR7qINdS5Eb6lXw==
-X-CSE-MsgGUID: nwdciWC8R5OQ0xu5iQ3ztg==
-X-IronPort-AV: E=McAfee;i="6800,10657,11841"; a="101656392"
-X-IronPort-AV: E=Sophos;i="6.25,154,1779174000"; 
-   d="scan'208";a="101656392"
-Received: from fmviesa004.fm.intel.com ([10.60.135.144])
-  by orvoesa102.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 08 Jul 2026 16:33:12 -0700
-X-CSE-ConnectionGUID: tBEUYxsyT625J0IpfiWBcA==
-X-CSE-MsgGUID: 6vp6bfZCSMC4pPUzoAW8BA==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.25,154,1779174000"; 
-   d="scan'208";a="256330737"
-Received: from dwoodwor-mobl2.amr.corp.intel.com (HELO [10.125.111.110]) ([10.125.111.110])
-  by fmviesa004-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 08 Jul 2026 16:33:12 -0700
-Message-ID: <31f103769bc42ad4ab03aea7131fc6d3ceb248d5.camel@linux.intel.com>
-Subject: Re: [PATCH] tools/power: intel_pstate_tracer: avoid optional
- imports for help
-From: srinivas pandruvada <srinivas.pandruvada@linux.intel.com>
-To: Yousef Alhouseen <alhouseenyousef@gmail.com>, Len Brown <lenb@kernel.org>
-Cc: "Rafael J . Wysocki" <rafael@kernel.org>, linux-pm@vger.kernel.org, 
-	linux-kernel@vger.kernel.org
-Date: Wed, 08 Jul 2026 16:33:11 -0700
-In-Reply-To: <20260624122747.5418-1-alhouseenyousef@gmail.com>
-References: <20260624122747.5418-1-alhouseenyousef@gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-User-Agent: Evolution 3.58.3 (3.58.3-1.fc43) 
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="CFH0DiUA"
+Received: by mail-wm1-f54.google.com with SMTP id 5b1f17b1804b1-493c486f012so5296375e9.3
+        for <linux-pm@vger.kernel.org>; Wed, 08 Jul 2026 16:42:59 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1783554178; x=1784158978; darn=vger.kernel.org;
+        h=content-transfer-encoding:content-type:mime-version:message-id:date
+         :subject:cc:to:from:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=U8qcNP21CNq1+szX+Pq/DiZmtH+Ke3MLxP+6o3bgK2g=;
+        b=CFH0DiUAl+rLnt3ea0ZbZW+ee/sAoDUUT0qAZ0b88UQtrqaaw3HO0YgKGksbnvQraE
+         xn8rhH/JvbNrt7WQ74hCgfZjZZgeO1rGzOt+6JcTNBRZ8HskuDz6IsUeY4Z8PFPiyt3y
+         H3KpcUkT7KEF6C3BaBuk3VLevUxCP4faZQ+kh47o21fSrXUGSFPre32zG84AH5VWqHnN
+         PkMKZ9YD79Xd4gnOKUj4+AZXRrpIV29Ms943Sz/aMaG/lmKToTVQB2JNbhTfdgJbiADt
+         YQIaaWJBl6lmDVWJnAXfRZfIxGQJDx/gWKzigM9hfT0PzbbRhn6pe6ikXZBr+h7RMtS3
+         cVfg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1783554178; x=1784158978;
+        h=content-transfer-encoding:content-type:mime-version:message-id:date
+         :subject:cc:to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=U8qcNP21CNq1+szX+Pq/DiZmtH+Ke3MLxP+6o3bgK2g=;
+        b=fBaF7+OeKi+E31vYY6iC3y1kJeDoqPkcPRhOB5RMWBGTDqs2n0SYVIrr/k+iioWITV
+         PXDcfPKY/4qNgrxTbB5jF9oL3rccEixmCYHaUIl8HDmc3bEu9w+5LA9HZ0rNRmzUSar/
+         43YriqgmG19g23zoFk4pb53UdIwK6ZS4o/GIWWSkwchbbjgJluI5NdnSV/g0W4Z/aX1v
+         undF/0ptISDmhazXoRMEit4uLYnT2F5rqPQNef7x4ILSjYxGTLiZKz18nztL4Kk1TWns
+         wdPSScav+3VX9noqg6TVYW7nVciEzUPuKhbwxZch60bDYyg6pJJcxC64Wyn2G+j6svi9
+         9FfQ==
+X-Forwarded-Encrypted: i=1; AHgh+Ro5/1XKgNGMwaquOeYGwtNSjzfPQGhRXS+a1Xpa9P1qysG9EEgAjxRiWYQlpQVF8ofHAgWVPirJkA==@vger.kernel.org
+X-Gm-Message-State: AOJu0YyzE+k9AKveLnUEudBlCOZ5kjdAXmSojyZEtxF7kD/Y+owhWFws
+	/lv4J1yIn0FueF8lK5/GZqz2SO9l9uTNMVGuagBhCo6c+7hDI4Llr7LOOGubuHEFlcU=
+X-Gm-Gg: AfdE7cndGGDh0Ozn4OgR2lyKB+GCsb/MTsK5B25IRpi+DGv7lP8++Z9n1q/7/UYlzY4
+	88ETlwOhkFnkTws1cio1IU8TGjxUYk8WICE/HCgoop8xmdFJdlx5cIoNwArPp0I16UrJtB2xmIj
+	xn0VAzEsAC6SSQslHqfuyS5JVznjOYi9844nsFzk0S0YvJJQdvP+7ASGzFYVsFTBmOxkDZTh1/e
+	bzbRRXGgVOqWJ5tEZr/R3DZxysByjyHixtIPXaxMCVIah9UjhGprGMElKg5kRP0nnubWT08ThKI
+	pNdBudPa2DpAu1PusKRpZAnVBQA3fUgzmP6rcCb0t84P2NVPJXg9Mq2a85JMku+zaQHorPNjqty
+	IcBzhex4SPh+4Y7e0QYO/thGXaTAmEC5+pEFTWm6sKVdAAc7gKoWy6i4H2x0lRyIctA7MFrEYTD
+	ShMkV9mW5M3uou4e0djO9L73QctopQa/s=
+X-Received: by 2002:a05:600c:4fd4:b0:493:e3ea:b23f with SMTP id 5b1f17b1804b1-493e6861ac2mr44972025e9.10.1783554178246;
+        Wed, 08 Jul 2026 16:42:58 -0700 (PDT)
+Received: from debian.tailb81abf.ts.net ([2a01:e0a:104a:4d80:14c0:9448:1c38:77df])
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-493eb6f16cfsm15653275e9.12.2026.07.08.16.42.57
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 08 Jul 2026 16:42:57 -0700 (PDT)
+From: MidG971 <midgy971@gmail.com>
+To: Ulf Hansson <ulfh@kernel.org>,
+	Heiko Stuebner <heiko@sntech.de>
+Cc: Chaoyi Chen <chaoyi.chen@rock-chips.com>,
+	Sebastian Reichel <sebastian.reichel@collabora.com>,
+	Shawn Lin <shawn.lin@rock-chips.com>,
+	Finley Xiao <finley.xiao@rock-chips.com>,
+	ulf.hansson@oss.qualcomm.com,
+	linux-pm@vger.kernel.org,
+	linux-rockchip@lists.infradead.org,
+	linux-arm-kernel@lists.infradead.org,
+	linux-kernel@vger.kernel.org,
+	Midgy BALON <midgy971@gmail.com>
+Subject: [PATCH] pmdomain: rockchip: Add a regulator to the RK3568 NPU power domain
+Date: Thu,  9 Jul 2026 01:46:14 +0200
+Message-Id: <20260708234614.499613-1-midgy971@gmail.com>
+X-Mailer: git-send-email 2.39.5
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 
-On Wed, 2026-06-24 at 14:27 +0200, Yousef Alhouseen wrote:
-> intel_pstate_tracer imports Gnuplot and numpy before parsing command-
-> line
-> options. As a result, even "-h" fails if those optional runtime
-> modules are
-> not installed.
->=20
-> Move the imports to the paths that need them. This lets the help and
-> invalid-argument paths describe usage without requiring plotting/data
-> dependencies. While there, fix a typo in the help text and matching
-> comments.
->=20
-> Signed-off-by: Yousef Alhouseen <alhouseenyousef@gmail.com>
+From: Midgy BALON <midgy971@gmail.com>
 
-    Acked-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+The RK3568 NPU rail (vdd_npu) needs to be enabled before the domain is
+powered on and disabled after it is powered off. Give DOMAIN_RK3568 a
+regulator parameter (like DOMAIN_RK3588 already has) so the NPU domain
+can set need_regulator, letting genpd manage the rail wired up as the
+domain's domain-supply instead of marking it always-on in DT.
 
-> ---
-> =C2=A0.../intel_pstate_tracer/intel_pstate_tracer.py | 18 ++++++++++-----=
--
-> --
-> =C2=A01 file changed, 10 insertions(+), 8 deletions(-)
->=20
-> diff --git
-> a/tools/power/x86/intel_pstate_tracer/intel_pstate_tracer.py
-> b/tools/power/x86/intel_pstate_tracer/intel_pstate_tracer.py
-> index 38cfbdcde..64001bc80 100755
-> --- a/tools/power/x86/intel_pstate_tracer/intel_pstate_tracer.py
-> +++ b/tools/power/x86/intel_pstate_tracer/intel_pstate_tracer.py
-> @@ -32,8 +32,6 @@ import re
-> =C2=A0import signal
-> =C2=A0import sys
-> =C2=A0import getopt
-> -import Gnuplot
-> -from numpy import *
-> =C2=A0from decimal import *
-> =C2=A0
-> =C2=A0__author__ =3D "Srinivas Pandruvada"
-> @@ -88,8 +86,8 @@ def print_help(driver_name):
-> =C2=A0=C2=A0=C2=A0=C2=A0 print('=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 kbytes: Ki=
-lo bytes of memory per CPU to allocate to
-> the trace buffer. Default: 10240')
-> =C2=A0=C2=A0=C2=A0=C2=A0 print('=C2=A0 Output:')
-> =C2=A0=C2=A0=C2=A0=C2=A0 print('=C2=A0=C2=A0=C2=A0 If not already present=
-, creates a "results/test_name"
-> folder in the current working directory with:')
-> -=C2=A0=C2=A0=C2=A0 print('=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 cpu.csv - comma=
- seperated values file with trace
-> contents and some additional calculations.')
-> -=C2=A0=C2=A0=C2=A0 print('=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 cpu???.csv - co=
-mma seperated values file for CPU
-> number ???.')
-> +=C2=A0=C2=A0=C2=A0 print('=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 cpu.csv - comma=
- separated values file with trace
-> contents and some additional calculations.')
-> +=C2=A0=C2=A0=C2=A0 print('=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 cpu???.csv - co=
-mma separated values file for CPU
-> number ???.')
-> =C2=A0=C2=A0=C2=A0=C2=A0 print('=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 *.png - a =
-variety of PNG format plot files created
-> from the trace contents and the additional calculations.')
-> =C2=A0=C2=A0=C2=A0=C2=A0 print('=C2=A0 Notes:')
-> =C2=A0=C2=A0=C2=A0=C2=A0 print('=C2=A0=C2=A0=C2=A0 Avoid the use of _ (un=
-derscore) in test names,
-> because in gnuplot it is a subscript directive.')
-> @@ -295,6 +293,8 @@ def common_all_gnuplot_settings(output_png):
-> =C2=A0def common_gnuplot_settings():
-> =C2=A0=C2=A0=C2=A0=C2=A0 """ common gnuplot settings. """
-> =C2=A0
-> +=C2=A0=C2=A0=C2=A0 import Gnuplot
-> +
-> =C2=A0=C2=A0=C2=A0=C2=A0 g_plot =3D Gnuplot.Gnuplot(persist=3D1)
-> =C2=A0#=C2=A0=C2=A0 The following line is for rigor only. It seems to be =
-assumed for
-> .csv files
-> =C2=A0=C2=A0=C2=A0=C2=A0 g_plot('set datafile separator \",\"')
-> @@ -343,7 +343,7 @@ def store_csv(cpu_int, time_pre_dec,
-> time_post_dec, core_busy, scaled, _from, _t
-> =C2=A0=C2=A0=C2=A0=C2=A0 graph_data_present =3D True;
-> =C2=A0
-> =C2=A0def split_csv(current_max_cpu, cpu_mask):
-> -=C2=A0=C2=A0=C2=A0 """ seperate the all csv file into per CPU csv files.=
- """
-> +=C2=A0=C2=A0=C2=A0 """ separate the main csv file into per CPU csv files=
-. """
-> =C2=A0
-> =C2=A0=C2=A0=C2=A0=C2=A0 if os.path.exists('cpu.csv'):
-> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 for index in range(0, cu=
-rrent_max_cpu + 1):
-> @@ -482,7 +482,7 @@ def read_trace_data(filename, cpu_mask):
-> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 =
-if cpu_int > current_max_cpu:
-> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0=C2=A0 current_max_cpu =3D cpu_int
-> =C2=A0# End of for each trace line loop
-> -# Now seperate the main overall csv file into per CPU csv files.
-> +# Now separate the main overall csv file into per CPU csv files.
-> =C2=A0=C2=A0=C2=A0=C2=A0 split_csv(current_max_cpu, cpu_mask)
-> =C2=A0
-> =C2=A0def signal_handler(signal, frame):
-> @@ -508,8 +508,6 @@ if __name__ =3D=3D "__main__":
-> =C2=A0=C2=A0=C2=A0=C2=A0 valid1 =3D False
-> =C2=A0=C2=A0=C2=A0=C2=A0 valid2 =3D False
-> =C2=A0
-> -=C2=A0=C2=A0=C2=A0 cpu_mask =3D zeros((MAX_CPUS,), dtype=3Dint)
-> -
-> =C2=A0=C2=A0=C2=A0=C2=A0 try:
-> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 opts, args =3D
-> getopt.getopt(sys.argv[1:],"ht:i:c:n:m:",["help","trace_file=3D","inter
-> val=3D","cpu=3D","name=3D","memory=3D"])
-> =C2=A0=C2=A0=C2=A0=C2=A0 except getopt.GetoptError:
-> @@ -538,6 +536,10 @@ if __name__ =3D=3D "__main__":
-> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 print_help('intel_pstate=
-')
-> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 sys.exit()
-> =C2=A0
-> +=C2=A0=C2=A0=C2=A0 from numpy import zeros
-> +
-> +=C2=A0=C2=A0=C2=A0 cpu_mask =3D zeros((MAX_CPUS,), dtype=3Dint)
-> +
-> =C2=A0=C2=A0=C2=A0=C2=A0 if cpu_list:
-> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 for p in re.split("[,]",=
- cpu_list):
-> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 =
-if int(p) < MAX_CPUS :
+Suggested-by: Chaoyi Chen <chaoyi.chen@rock-chips.com>
+Signed-off-by: Midgy BALON <midgy971@gmail.com>
+---
+This patch was part of the RFC NPU series [1]; Ulf Hansson and Heiko
+Stübner reviewed it there and confirmed it can be applied independently of
+the rest of the (still-RFC) rocket driver and DT patches, so it is reposted
+standalone. The NPU domain's domain-supply DT wiring follows in a separate
+patch, so this change alone is a no-op at runtime.
+
+Changes since the RFC posting:
+- Move DOMAIN_M_R below the other DOMAIN_M_* macros so they stay
+  alphabetically sorted (Heiko Stübner).
+
+[1] https://lore.kernel.org/linux-rockchip/20260613070116.438906-1-midgy971@gmail.com/
+
+ drivers/pmdomain/rockchip/pm-domains.c | 36 ++++++++++++++++++--------
+ 1 file changed, 25 insertions(+), 11 deletions(-)
+
+diff --git a/drivers/pmdomain/rockchip/pm-domains.c b/drivers/pmdomain/rockchip/pm-domains.c
+index 490bbb1d1d8e8..ba66ae7194289 100644
+--- a/drivers/pmdomain/rockchip/pm-domains.c
++++ b/drivers/pmdomain/rockchip/pm-domains.c
+@@ -204,6 +204,20 @@ struct rockchip_pmu {
+ 	.active_wakeup = wakeup,			\
+ }
+ 
++#define DOMAIN_M_R(_name, pwr, status, req, idle, ack, wakeup, regulator)	\
++{							\
++	.name = _name,				\
++	.pwr_w_mask = (pwr) << 16,			\
++	.pwr_mask = (pwr),				\
++	.status_mask = (status),			\
++	.req_w_mask = (req) << 16,			\
++	.req_mask = (req),				\
++	.idle_mask = (idle),				\
++	.ack_mask = (ack),				\
++	.active_wakeup = wakeup,			\
++	.need_regulator = regulator,			\
++}
++
+ #define DOMAIN_RK3036(_name, req, ack, idle, wakeup)		\
+ {							\
+ 	.name = _name,				\
+@@ -241,8 +255,8 @@ struct rockchip_pmu {
+ #define DOMAIN_RK3562(name, pwr, req, g_mask, mem, wakeup)		\
+ 	DOMAIN_M_G_SD(name, pwr, pwr, req, req, req, g_mask, mem, wakeup, false)
+ 
+-#define DOMAIN_RK3568(name, pwr, req, wakeup)		\
+-	DOMAIN_M(name, pwr, pwr, req, req, req, wakeup)
++#define DOMAIN_RK3568(name, pwr, req, wakeup, regulator)		\
++	DOMAIN_M_R(name, pwr, pwr, req, req, req, wakeup, regulator)
+ 
+ #define DOMAIN_RK3576(name, p_offset, pwr, status, r_status, r_offset, req, idle, g_mask, wakeup)	\
+ 	DOMAIN_M_O_R_G(name, p_offset, pwr, status, 0, r_status, r_status, r_offset, req, idle, idle, g_mask, wakeup)
+@@ -1274,15 +1288,15 @@ static const struct rockchip_domain_info rk3562_pm_domains[] = {
+ };
+ 
+ static const struct rockchip_domain_info rk3568_pm_domains[] = {
+-	[RK3568_PD_NPU]		= DOMAIN_RK3568("npu",  BIT(1), BIT(2),  false),
+-	[RK3568_PD_GPU]		= DOMAIN_RK3568("gpu",  BIT(0), BIT(1),  false),
+-	[RK3568_PD_VI]		= DOMAIN_RK3568("vi",   BIT(6), BIT(3),  false),
+-	[RK3568_PD_VO]		= DOMAIN_RK3568("vo",   BIT(7), BIT(4),  false),
+-	[RK3568_PD_RGA]		= DOMAIN_RK3568("rga",  BIT(5), BIT(5),  false),
+-	[RK3568_PD_VPU]		= DOMAIN_RK3568("vpu",  BIT(2), BIT(6),  false),
+-	[RK3568_PD_RKVDEC]	= DOMAIN_RK3568("vdec", BIT(4), BIT(8),  false),
+-	[RK3568_PD_RKVENC]	= DOMAIN_RK3568("venc", BIT(3), BIT(7),  false),
+-	[RK3568_PD_PIPE]	= DOMAIN_RK3568("pipe", BIT(8), BIT(11), false),
++	[RK3568_PD_NPU]		= DOMAIN_RK3568("npu",  BIT(1), BIT(2),  false, true),
++	[RK3568_PD_GPU]		= DOMAIN_RK3568("gpu",  BIT(0), BIT(1),  false, false),
++	[RK3568_PD_VI]		= DOMAIN_RK3568("vi",   BIT(6), BIT(3),  false, false),
++	[RK3568_PD_VO]		= DOMAIN_RK3568("vo",   BIT(7), BIT(4),  false, false),
++	[RK3568_PD_RGA]		= DOMAIN_RK3568("rga",  BIT(5), BIT(5),  false, false),
++	[RK3568_PD_VPU]		= DOMAIN_RK3568("vpu",  BIT(2), BIT(6),  false, false),
++	[RK3568_PD_RKVDEC]	= DOMAIN_RK3568("vdec", BIT(4), BIT(8),  false, false),
++	[RK3568_PD_RKVENC]	= DOMAIN_RK3568("venc", BIT(3), BIT(7),  false, false),
++	[RK3568_PD_PIPE]	= DOMAIN_RK3568("pipe", BIT(8), BIT(11), false, false),
+ };
+ 
+ static const struct rockchip_domain_info rk3576_pm_domains[] = {
+-- 
+2.39.5
+
