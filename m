@@ -1,175 +1,215 @@
-Received: from mail-wm1-f54.google.com (mail-wm1-f54.google.com [209.85.128.54])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from fout-a2-smtp.messagingengine.com (fout-a2-smtp.messagingengine.com [103.168.172.145])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1A84438757D
-	for <linux-pm@vger.kernel.org>; Wed,  8 Jul 2026 23:42:59 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.54
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6EFA1274FDC;
+	Wed,  8 Jul 2026 23:55:00 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=103.168.172.145
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1783554181; cv=none; b=hqRtItsfT9oBEEs9FJ6tb/gE1xlHfl7Fh6xUZwvnyepJUOi0kbtkOS1ie5R9YWy2F7koU84mnM/wtD5RQaGZeyqpbRtizFHbjZzMIbpleX3wrs4YB9wCsvQgPYdyp3Kydc8S7/oYQ+juZ5MJp8YNy4ViFr9xkkt6V0wha9vKncY=
+	t=1783554902; cv=none; b=secWdbOMPWcP9KNGg1KZJjaZB45VFJtnuOIySZvB1t9vAz/97XvNrVoEAcTgyjScIf7wJ9J1qkmeDYs3Qc7tXIMfOXRrfYuN11W2uaJk26VGjMtM5Gf7L1DEeyj63Kr0gdrg5H/zVWjzWcZSfpg95QqWrAGRow4DJkU55HkCzX8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1783554181; c=relaxed/simple;
-	bh=h3R93Ok1NVbqWeVssCZgi3GVnxTbqmic2Yc76Z+ZQ2s=;
-	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version:Content-Type; b=mdfh4HhWqoi66smwqyMF+siFN1fCxv2MzTTH2wy5Ou8TA+T70mIFEbv1u8fnAB/kM6dsvSH11CfpL48iFWYnMzCgzWik/zsi2Sh7AxYM+KGpSucR5pWTqVWKRampYXtyfiG7w05kLTnk9bDYwluitxZp0Lddv1tz6thGOhj5tdM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=CFH0DiUA; arc=none smtp.client-ip=209.85.128.54
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1783554902; c=relaxed/simple;
+	bh=8wjdG35HLF3JHZvM426K0SmE1AxAF4MJlT+wFvjkhQ4=;
+	h=MIME-Version:Date:From:To:Cc:Message-Id:In-Reply-To:References:
+	 Subject:Content-Type; b=idoMtHjBNGiSFCEiROpgX6h22sJu8A7btvT7Yb/mXyFBTN8Qy3Oi+2H+E2ZNwZKkyv2HnhwsjY3twaYm+P/iEiTpetBi5eav3sWDdaY4kmtoYLqN/Ip2FaRlMXaUqS4B3Rlq3lcWXXFi21FamUv27QUMHSfYXIgz/GAKXcvC79I=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=squebb.ca; spf=pass smtp.mailfrom=squebb.ca; dkim=pass (2048-bit key) header.d=squebb.ca header.i=@squebb.ca header.b=sSv99W6h; dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b=Sb2Sxu/C; arc=none smtp.client-ip=103.168.172.145
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=squebb.ca
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=squebb.ca
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="CFH0DiUA"
-Received: by mail-wm1-f54.google.com with SMTP id 5b1f17b1804b1-493c486f012so5296375e9.3
-        for <linux-pm@vger.kernel.org>; Wed, 08 Jul 2026 16:42:59 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1783554178; x=1784158978; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:mime-version:message-id:date
-         :subject:cc:to:from:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=U8qcNP21CNq1+szX+Pq/DiZmtH+Ke3MLxP+6o3bgK2g=;
-        b=CFH0DiUAl+rLnt3ea0ZbZW+ee/sAoDUUT0qAZ0b88UQtrqaaw3HO0YgKGksbnvQraE
-         xn8rhH/JvbNrt7WQ74hCgfZjZZgeO1rGzOt+6JcTNBRZ8HskuDz6IsUeY4Z8PFPiyt3y
-         H3KpcUkT7KEF6C3BaBuk3VLevUxCP4faZQ+kh47o21fSrXUGSFPre32zG84AH5VWqHnN
-         PkMKZ9YD79Xd4gnOKUj4+AZXRrpIV29Ms943Sz/aMaG/lmKToTVQB2JNbhTfdgJbiADt
-         YQIaaWJBl6lmDVWJnAXfRZfIxGQJDx/gWKzigM9hfT0PzbbRhn6pe6ikXZBr+h7RMtS3
-         cVfg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1783554178; x=1784158978;
-        h=content-transfer-encoding:content-type:mime-version:message-id:date
-         :subject:cc:to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=U8qcNP21CNq1+szX+Pq/DiZmtH+Ke3MLxP+6o3bgK2g=;
-        b=fBaF7+OeKi+E31vYY6iC3y1kJeDoqPkcPRhOB5RMWBGTDqs2n0SYVIrr/k+iioWITV
-         PXDcfPKY/4qNgrxTbB5jF9oL3rccEixmCYHaUIl8HDmc3bEu9w+5LA9HZ0rNRmzUSar/
-         43YriqgmG19g23zoFk4pb53UdIwK6ZS4o/GIWWSkwchbbjgJluI5NdnSV/g0W4Z/aX1v
-         undF/0ptISDmhazXoRMEit4uLYnT2F5rqPQNef7x4ILSjYxGTLiZKz18nztL4Kk1TWns
-         wdPSScav+3VX9noqg6TVYW7nVciEzUPuKhbwxZch60bDYyg6pJJcxC64Wyn2G+j6svi9
-         9FfQ==
-X-Forwarded-Encrypted: i=1; AHgh+Ro5/1XKgNGMwaquOeYGwtNSjzfPQGhRXS+a1Xpa9P1qysG9EEgAjxRiWYQlpQVF8ofHAgWVPirJkA==@vger.kernel.org
-X-Gm-Message-State: AOJu0YyzE+k9AKveLnUEudBlCOZ5kjdAXmSojyZEtxF7kD/Y+owhWFws
-	/lv4J1yIn0FueF8lK5/GZqz2SO9l9uTNMVGuagBhCo6c+7hDI4Llr7LOOGubuHEFlcU=
-X-Gm-Gg: AfdE7cndGGDh0Ozn4OgR2lyKB+GCsb/MTsK5B25IRpi+DGv7lP8++Z9n1q/7/UYlzY4
-	88ETlwOhkFnkTws1cio1IU8TGjxUYk8WICE/HCgoop8xmdFJdlx5cIoNwArPp0I16UrJtB2xmIj
-	xn0VAzEsAC6SSQslHqfuyS5JVznjOYi9844nsFzk0S0YvJJQdvP+7ASGzFYVsFTBmOxkDZTh1/e
-	bzbRRXGgVOqWJ5tEZr/R3DZxysByjyHixtIPXaxMCVIah9UjhGprGMElKg5kRP0nnubWT08ThKI
-	pNdBudPa2DpAu1PusKRpZAnVBQA3fUgzmP6rcCb0t84P2NVPJXg9Mq2a85JMku+zaQHorPNjqty
-	IcBzhex4SPh+4Y7e0QYO/thGXaTAmEC5+pEFTWm6sKVdAAc7gKoWy6i4H2x0lRyIctA7MFrEYTD
-	ShMkV9mW5M3uou4e0djO9L73QctopQa/s=
-X-Received: by 2002:a05:600c:4fd4:b0:493:e3ea:b23f with SMTP id 5b1f17b1804b1-493e6861ac2mr44972025e9.10.1783554178246;
-        Wed, 08 Jul 2026 16:42:58 -0700 (PDT)
-Received: from debian.tailb81abf.ts.net ([2a01:e0a:104a:4d80:14c0:9448:1c38:77df])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-493eb6f16cfsm15653275e9.12.2026.07.08.16.42.57
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 08 Jul 2026 16:42:57 -0700 (PDT)
-From: MidG971 <midgy971@gmail.com>
-To: Ulf Hansson <ulfh@kernel.org>,
-	Heiko Stuebner <heiko@sntech.de>
-Cc: Chaoyi Chen <chaoyi.chen@rock-chips.com>,
-	Sebastian Reichel <sebastian.reichel@collabora.com>,
-	Shawn Lin <shawn.lin@rock-chips.com>,
-	Finley Xiao <finley.xiao@rock-chips.com>,
-	ulf.hansson@oss.qualcomm.com,
-	linux-pm@vger.kernel.org,
-	linux-rockchip@lists.infradead.org,
-	linux-arm-kernel@lists.infradead.org,
-	linux-kernel@vger.kernel.org,
-	Midgy BALON <midgy971@gmail.com>
-Subject: [PATCH] pmdomain: rockchip: Add a regulator to the RK3568 NPU power domain
-Date: Thu,  9 Jul 2026 01:46:14 +0200
-Message-Id: <20260708234614.499613-1-midgy971@gmail.com>
-X-Mailer: git-send-email 2.39.5
+	dkim=pass (2048-bit key) header.d=squebb.ca header.i=@squebb.ca header.b="sSv99W6h";
+	dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b="Sb2Sxu/C"
+Received: from phl-compute-02.internal (phl-compute-02.internal [10.202.2.42])
+	by mailfout.phl.internal (Postfix) with ESMTP id 910BDEC00CA;
+	Wed,  8 Jul 2026 19:54:59 -0400 (EDT)
+Received: from phl-imap-08 ([10.202.2.84])
+  by phl-compute-02.internal (MEProxy); Wed, 08 Jul 2026 19:54:59 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=squebb.ca; h=cc
+	:cc:content-transfer-encoding:content-type:content-type:date
+	:date:from:from:in-reply-to:in-reply-to:message-id:mime-version
+	:references:reply-to:subject:subject:to:to; s=fm3; t=1783554899;
+	 x=1783641299; bh=0fj0OfRKRN+V6v00303K9fBGX5o1MLHhUVcYImRPAOM=; b=
+	sSv99W6h++OIkYrEH+58ybsw6u2lcYv5XAX1YeeESJALRA2bUMWnYnXUI1zlkvUg
+	S8RrOnyQawetGjoD55TSSFd1WvTXUZUGA9Zye/I+t6LL7O+Fo+QQ60VVFMiet8GC
+	NWTn2RiPWM9h8GoDDcAOYdkMlH2lIOoo+SSdMbJXlc36/eOwH5kw41GoLA8TYxnZ
+	+UxLZsGLFXWf+lX+31pJQu5SidPnNz/QmNXnVDVhLdgCJ7ARquIS0MOVYe6bzJ0m
+	RFwY14xYR5DGTHFtUqw33X+R+SANBdtelQZdg8Wvf8WWL69h/GWkOFf3Bh4yFEJj
+	3ntqHuXLIFS2fa57fYxjMg==
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
+	messagingengine.com; h=cc:cc:content-transfer-encoding
+	:content-type:content-type:date:date:feedback-id:feedback-id
+	:from:from:in-reply-to:in-reply-to:message-id:mime-version
+	:references:reply-to:subject:subject:to:to:x-me-proxy
+	:x-me-sender:x-me-sender:x-sasl-enc; s=fm2; t=1783554899; x=
+	1783641299; bh=0fj0OfRKRN+V6v00303K9fBGX5o1MLHhUVcYImRPAOM=; b=S
+	b2Sxu/Ch5qca8HRHUT4H2fDqk4gipYZOALFSz2aOcTGSHYxuaMqy+Q/CEXwc8LsI
+	/+CGQTpZahB9cuKe/Ykkfy0y8xlhxTP4bnvTOrSOffC9Ir/gfE/HK9oEP/JfX7GP
+	pe3YMGhS+e1VhJiKQn2J2E7pawFNtucnQc8PDmnO3GUJLvREnTYS2gZFFsvZ4rS+
+	ZEYMPrye0f3F8oVA2gMurXI4IZ2ByG1s0a3fr+ClJJiEtVspg2Zug/yBblGKGHUw
+	fO8j8zN+mWZpQeGUbbUGhiNgnhN80oWFVH+qdyC9uciCNhEBaGAuskhauFhkg985
+	jNEWj071jJDq/ygSUVLLA==
+X-ME-Sender: <xms:UuNOauDm9r0tJcq_TmXgfYkXhevs1icWVSexvNUJvm6dx40WXRObmg>
+    <xme:UuNOajVhnKePTzl4gEvO3zB-m6pcAh3HKK951aZ8Gsh2nXhLDdLLQQTubR1Vxui5_
+    qECcVrDzZJW9pvnjtx0ulqhil3wjrsnhzf7El6yiu8-OWwo5B0euYA>
+X-ME-Proxy-Cause: dmFkZTEh28FWsb4YZngwi97wFmwz2xbVaURvOKOkCavWKWgl0GS/PEf9zC5Q2ElL8tR/Wy
+    4TID+ycUASgHoy+Q+zrdjpm8qy54z7sET7e8DNwO9SSPq2fWVU1tu25tZg0EfRoPLazROv
+    m3izOyxe2HbgcNZWV8HJbBBxlypYmOH+cGHhZida1lLUSDeGSIlXU4jkA+XZVQs6ZSFZcn
+    YMfVfvFMwpCj40cVLAzgAHS9GbUJDuXDQ1kLL7UsPoCxdA4FgDvkqbOLzMh6okTk4TtqNz
+    nMmXtX8Ro5MdpKb1WnG0yqysQqMFnVwGeAY/cF4V20hxqm+iyyH1AuxTKGTL1D0iyK6Wje
+    AnBSxcWw+ww53PzA9ON9zzbmJYtOpcqLF3/fnib5X8PgNBWzzpjiocfdyVSoCn9lkLvBPL
+    +rMEsUqSCZ+CpKneNtWG/CQvqNrnteespJPvOqcKEokMkGZM8VksOtmHHF6/dsdkHiG3rf
+    JjnYg71inYCbDnLqRvQubMT7CLq6IV8fcu2r5H3QlfBgbNFmUVPDc+vz/6nS/AITce9FkW
+    vGhPBqrnCDlk5cCNgHwObBEsyVQFsXnW/61JVLGCQmQESUkpFQU/Ub6cwi47eVakgwgbLS
+    YeP8Vm6M8A0LLbPe0d1gLj+cxb7lQgBvBF92eS1XQDDS9hLlppz24ymhU96Q
+X-ME-Proxy: <xmx:UuNOamnxZFVm8qOzn2nEZBiwr6pbB1DW0fhJzMFhQhEYG8S_qC3otQ>
+    <xmx:UuNOagEkeaYPJfuP0LrLRFen3A64zvibijIUig1fxxIN9lAz4IKFZQ>
+    <xmx:UuNOam4WHbIiGbe655ara7ZSByxuIliqWymYke-_rSN7HVvRYa2ZAQ>
+    <xmx:UuNOagnPoJip2jjIKjMBwcqs3GifS_yIrM_g4k1i0OepumvmgnnQxA>
+    <xmx:U-NOamLs8uVOeNI0IQOorKMpbKomLdbTwRrlic1e2oABNVEVLDLcDmDh>
+Feedback-ID: ibe194615:Fastmail
+Received: by mailuser.phl.internal (Postfix, from userid 501)
+	id 8CCFA2CE0078; Wed,  8 Jul 2026 19:54:58 -0400 (EDT)
+X-Mailer: MessagingEngine.com Webmail Interface
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+X-ThreadId: A_tw3h5u72vV
+Date: Wed, 08 Jul 2026 19:54:38 -0400
+From: "Mark Pearson" <mpearson-lenovo@squebb.ca>
+To: "Polina Vishneva" <poli@0iq.dev>, "Len Brown" <lenb@kernel.org>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>,
+ "Artem Bityutskiy" <artem.bityutskiy@linux.intel.com>,
+ "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Message-Id: <4390834c-8bcf-4d3a-8e95-1d8508fd4c05@app.fastmail.com>
+In-Reply-To: 
+ <YQYPR01MB11542163CE28DD33BDC70AC73BDFF2@YQYPR01MB11542.CANPRD01.PROD.OUTLOOK.COM>
+References: <6O1QHT.QP6URTCEWLSV1@0iq.dev>
+ <CAJvTdK=XuhxrZ+ULuXyV=cMsSS9caqDBACXUnj+R6UYesMXABA@mail.gmail.com>
+ <YQYPR01MB11542163CE28DD33BDC70AC73BDFF2@YQYPR01MB11542.CANPRD01.PROD.OUTLOOK.COM>
+Subject: Re: Fw: [External] Re: Lunar Lake: silent fatal platform resets caused by
+ idle-exit core hang
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 
-From: Midgy BALON <midgy971@gmail.com>
+Note - switched to my open-source friendly email account. Lenovo email s=
+ucks.
 
-The RK3568 NPU rail (vdd_npu) needs to be enabled before the domain is
-powered on and disabled after it is powered off. Give DOMAIN_RK3568 a
-regulator parameter (like DOMAIN_RK3588 already has) so the NPU domain
-can set need_regulator, letting genpd manage the rail wired up as the
-domain's domain-supply instead of marking it always-on in DT.
+>
+> I think the chances of this being related to the Linux kernel are very=
+ small.
+> (We've run Linux on this model and it has been fine.)
+>
+> It would be interesting if booting with "idle=3Dhalt" makes the issue =
+go away.
+>
+> My guess is that you've got a flakey DIMM.
+> Does it pass an overnight memory test?
+>
+> Unfortunately, I believe the DIMMs on this one are soldered onto the
+> motherboard...
+>
+> cc: Mark, who may have some insight....
+> cheers,
+> -Len
+>
+> On Sun, Jul 5, 2026 at 5:43=E2=80=AFPM Polina Vishneva <poli@0iq.dev> =
+wrote:
+>>
+>> Hello.
+>>
+>> So, I've got frustrated enough with my system cold-resetting every few
+>> days to try to debug the issue, with some success.
+>>
+>> TL;DR: cold reset on the cpuidle exit path.
+>>
+>> It's *probably* not actually a kernel bug, but I don't know any better
+>> place to submit it (hoping that the Intel folks will take a look).
+>>
+>> System:
+>> - Lenovo ThinkPad X1 Carbon Gen 13 (21NS001ACD), BIOS N4BET75W (1.45).
+>> - Intel Core Ultra 7 258V (Lunar Lake), microcode 0x126.
+>> - Kernel 7.1.1, intel_idle in ACPI _CST mode.
+>> - Reproduces even with intel_idle.max_cstate=3D2, so the enabled
+>>   states are only POLL, C1_ACPI and C2_ACPI.
+>>
+>> On boot after each crash, the kernel logs:
+>>
+>>   BERT: [Hardware Error]: Skipped 1 error records
+>>
+>> I pulled /sys/firmware/acpi/tables/data/BERT by hand and decoded it w=
+ith
+>> https://apc01.safelinks.protection.outlook.com/?url=3Dhttps%3A%2F%2Fg=
+ithub.com%2Fintel%2Fcrashlog&data=3D05%7C02%7Cmpearson%40lenovo.com%7Cf3=
+802edcfdf349bfdd3c08dedd3a20a6%7C5c7d0b28bdf8410caa934df372b16203%7C0%7C=
+0%7C639191438937666379%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsI=
+lYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%=
+7C%7C%7C&sdata=3Dt09jXVwO9ptn39ez5fPlWlnPF7YtqtyuUwxvs484PUU%3D&reserved=
+=3D0<https://github.com/intel/crashlog>.
+>>
+>> The region contains a full PMC crashlog (MCA, Punit, UNCORE, PCORE,
+>> PMC, PMC_RST, PMC_TRACE records). iclg summarizes the failure as:
+>>
+>>   CORE_TIMEOUT.SINGLE_STUCK_TRANSACTION.C898FH
+>>   MCA.BANK3.INTERNAL_TIMER_ERROR.MSCOD_E184H
+>>   CRASHLOG_REASON.PMC.10H
+>>   CRASHLOG_REASON.PUNIT.20004H
+>>   RESET_CAUSE.FIRMWARE_GLOBAL_RESET.FW_GBLRST_SCRATCH16
+>>   RESET_CAUSE.GLOBAL_RESET.PMC_FW
+>>
+>> The important registers (one P-core has captured state):
+>>
+>>   mca.bank3.status =3D 0xbe000000e1840400
+>>       VAL|UC|EN|MISCV|ADDRV|PCC, MCACOD 0x0400 (internal timer /
+>>       retirement watchdog, "three-strike"), MSCOD 0xE184
+>>   mca.bank3.addr =3D mca.bank3.misc =3D arch_state.lip
+>>                  =3D 0xffffffff9471bb3c        (kernel text)
+>>   super queue: exactly one stuck transaction (cacheline 0xC898F)
+>>   pmc_rst: gblrst_cause_0.pmc_fw=3D1, fw_gblrst_cause_0.scratch16=3D1,
+>>       gblrst_req_0 =3D pmc_fw|syspwr_flr|pchpwr_flr
+>>
+>> The LIP: given that KASLR slide is 2MB-aligned, (lip mod 2M) is an
+>> invariant. Solving over System.map text symbols gives 14 candidates, =
+of
+>> which only one can be related:
+>>
+>>   cpuidle_enter_state+0xbc
+>>
+>> Disassembly:
+>>
+>>   +0x73  call __x86_indirect_thunk_rax   ; target_state->enter()
+>>    ...   sched_clock_idle_wakeup_event / local_clock_noinstr /
+>>          sched_idle_set_state
+>>   +0xb6  call *pv_ops...irq_enable       ; patched to STI at boot
+>>   +0xbc  test %r14d,%r14d                ; <- LIP
+>>
+>> So (my best guess) the core had already returned from MWAIT, executed
+>> STI on the idle-exit path, and then stopped retiring instructions. The
+>> retirement watchdog then fires, Punit reports CORE_TIMEOUT, and PMC
+>> firmware pulls a global platform reset.
+>>
+>> The question is whether it is something known or rather something
+>> platform-specific that should be reported to Lenovo instead.
+>>
+>> I can provide the raw BERT dump, and also I'd be happy to debug/test =
+if
+>> requested.
+>>
 
-Suggested-by: Chaoyi Chen <chaoyi.chen@rock-chips.com>
-Signed-off-by: Midgy BALON <midgy971@gmail.com>
----
-This patch was part of the RFC NPU series [1]; Ulf Hansson and Heiko
-Stübner reviewed it there and confirmed it can be applied independently of
-the rest of the (still-RFC) rocket driver and DT patches, so it is reposted
-standalone. The NPU domain's domain-supply DT wiring follows in a separate
-patch, so this change alone is a no-op at runtime.
+With the BERT error this looks like a HW issue. X1 Carbon is one of our =
+more popular platforms and should run Linux really well (I used it mysel=
+f quite a bit for 6 months).
+You probably need to call Lenovo support to organise an RMA.
 
-Changes since the RFC posting:
-- Move DOMAIN_M_R below the other DOMAIN_M_* macros so they stay
-  alphabetically sorted (Heiko Stübner).
+If you want you can send me the kernel log and the EC and ME details (yo=
+ur BIOS version looks recent) and I'll have a look through and confirm t=
+here's nothing else funky going on.
 
-[1] https://lore.kernel.org/linux-rockchip/20260613070116.438906-1-midgy971@gmail.com/
+I can share the certified Ubuntu or Fedora images if interested. I doubt=
+ it's worth burning the time on doing the whole reinstall dance but it c=
+an help when dealing with Lenovo support - they like to know the certifi=
+ed image fails too.
 
- drivers/pmdomain/rockchip/pm-domains.c | 36 ++++++++++++++++++--------
- 1 file changed, 25 insertions(+), 11 deletions(-)
-
-diff --git a/drivers/pmdomain/rockchip/pm-domains.c b/drivers/pmdomain/rockchip/pm-domains.c
-index 490bbb1d1d8e8..ba66ae7194289 100644
---- a/drivers/pmdomain/rockchip/pm-domains.c
-+++ b/drivers/pmdomain/rockchip/pm-domains.c
-@@ -204,6 +204,20 @@ struct rockchip_pmu {
- 	.active_wakeup = wakeup,			\
- }
- 
-+#define DOMAIN_M_R(_name, pwr, status, req, idle, ack, wakeup, regulator)	\
-+{							\
-+	.name = _name,				\
-+	.pwr_w_mask = (pwr) << 16,			\
-+	.pwr_mask = (pwr),				\
-+	.status_mask = (status),			\
-+	.req_w_mask = (req) << 16,			\
-+	.req_mask = (req),				\
-+	.idle_mask = (idle),				\
-+	.ack_mask = (ack),				\
-+	.active_wakeup = wakeup,			\
-+	.need_regulator = regulator,			\
-+}
-+
- #define DOMAIN_RK3036(_name, req, ack, idle, wakeup)		\
- {							\
- 	.name = _name,				\
-@@ -241,8 +255,8 @@ struct rockchip_pmu {
- #define DOMAIN_RK3562(name, pwr, req, g_mask, mem, wakeup)		\
- 	DOMAIN_M_G_SD(name, pwr, pwr, req, req, req, g_mask, mem, wakeup, false)
- 
--#define DOMAIN_RK3568(name, pwr, req, wakeup)		\
--	DOMAIN_M(name, pwr, pwr, req, req, req, wakeup)
-+#define DOMAIN_RK3568(name, pwr, req, wakeup, regulator)		\
-+	DOMAIN_M_R(name, pwr, pwr, req, req, req, wakeup, regulator)
- 
- #define DOMAIN_RK3576(name, p_offset, pwr, status, r_status, r_offset, req, idle, g_mask, wakeup)	\
- 	DOMAIN_M_O_R_G(name, p_offset, pwr, status, 0, r_status, r_status, r_offset, req, idle, idle, g_mask, wakeup)
-@@ -1274,15 +1288,15 @@ static const struct rockchip_domain_info rk3562_pm_domains[] = {
- };
- 
- static const struct rockchip_domain_info rk3568_pm_domains[] = {
--	[RK3568_PD_NPU]		= DOMAIN_RK3568("npu",  BIT(1), BIT(2),  false),
--	[RK3568_PD_GPU]		= DOMAIN_RK3568("gpu",  BIT(0), BIT(1),  false),
--	[RK3568_PD_VI]		= DOMAIN_RK3568("vi",   BIT(6), BIT(3),  false),
--	[RK3568_PD_VO]		= DOMAIN_RK3568("vo",   BIT(7), BIT(4),  false),
--	[RK3568_PD_RGA]		= DOMAIN_RK3568("rga",  BIT(5), BIT(5),  false),
--	[RK3568_PD_VPU]		= DOMAIN_RK3568("vpu",  BIT(2), BIT(6),  false),
--	[RK3568_PD_RKVDEC]	= DOMAIN_RK3568("vdec", BIT(4), BIT(8),  false),
--	[RK3568_PD_RKVENC]	= DOMAIN_RK3568("venc", BIT(3), BIT(7),  false),
--	[RK3568_PD_PIPE]	= DOMAIN_RK3568("pipe", BIT(8), BIT(11), false),
-+	[RK3568_PD_NPU]		= DOMAIN_RK3568("npu",  BIT(1), BIT(2),  false, true),
-+	[RK3568_PD_GPU]		= DOMAIN_RK3568("gpu",  BIT(0), BIT(1),  false, false),
-+	[RK3568_PD_VI]		= DOMAIN_RK3568("vi",   BIT(6), BIT(3),  false, false),
-+	[RK3568_PD_VO]		= DOMAIN_RK3568("vo",   BIT(7), BIT(4),  false, false),
-+	[RK3568_PD_RGA]		= DOMAIN_RK3568("rga",  BIT(5), BIT(5),  false, false),
-+	[RK3568_PD_VPU]		= DOMAIN_RK3568("vpu",  BIT(2), BIT(6),  false, false),
-+	[RK3568_PD_RKVDEC]	= DOMAIN_RK3568("vdec", BIT(4), BIT(8),  false, false),
-+	[RK3568_PD_RKVENC]	= DOMAIN_RK3568("venc", BIT(3), BIT(7),  false, false),
-+	[RK3568_PD_PIPE]	= DOMAIN_RK3568("pipe", BIT(8), BIT(11), false, false),
- };
- 
- static const struct rockchip_domain_info rk3576_pm_domains[] = {
--- 
-2.39.5
+Mark
 
