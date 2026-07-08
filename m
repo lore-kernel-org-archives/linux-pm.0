@@ -1,19 +1,19 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 346E742189A;
-	Wed,  8 Jul 2026 10:17:19 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A95933E1231;
+	Wed,  8 Jul 2026 10:17:25 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1783505841; cv=none; b=urJOaEK11gOXQc+1k81rdguiJIDrFq8hrnEZaOJ6UbqDs2YNE41mawhtvExwKJg3szUU7EdUW8mp0hSXn9QACd3/ujIfeEQRF50QvfJvFFz/7mCLuvNvXswJR6LcNkofLr6Iwt6aLf12bpiAFcWhMKKjes/OfcElimRSZYx6w6s=
+	t=1783505846; cv=none; b=W/gABqih6mIyi4s0RDCYJx9RAt7sqmHG4Fg1EPdWeavhetWHIeuJnKVhrXbPHpKc7ZKpl44KvuXK3VBP7+yf+GmVeV5yqIaDFX/1xxRksobwAJRGy+rLSkSiR6HEAddDzPNBGGYM7wlkwSOipim1RXBbHSL0xzuyWxKitFocqi0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1783505841; c=relaxed/simple;
-	bh=OVfjBCOWwIW+n8Ee4eFBGu00ml5ebjzikt+6tjXE/94=;
+	s=arc-20240116; t=1783505846; c=relaxed/simple;
+	bh=k14qa0Ealuf/Y+wH/E+klOEeuZzgrFfDVY3EoFFYPnA=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=f4BNtZcLccWk/7va+pCHRrMYlw/7cHF2zHwPSzqloQNdMnK+8CPqxnpMbV3VsCmPLjA5Ah5+aEBewgXkH6b6P/KUm5ePKNVyADORT0y0bS9ngR67GDj0HkFrCp057RomualvLficgSjkUWSs4TI0FDFlCjyQkInHmFac9ntJcw8=
+	 MIME-Version; b=TMt2/HIpgOrqIi2jsx5lSwqzfozw0W3pZMud0jJpg9FVZk+Hf9qs/phftBGjs+cFoCVEBktGhTa4QfurrNkuDd4MXpA03rBDe+3yWnQUCUzMqkn9keb/gBtQLSD1ozXbswF0Sbx/+9Skpak3rhzGmfQJjZmR/Egte7Hivjj0w90=
 ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id A12BF1F00A3A;
-	Wed,  8 Jul 2026 10:17:14 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 372341F00A3D;
+	Wed,  8 Jul 2026 10:17:20 +0000 (UTC)
 From: Geert Uytterhoeven <geert+renesas@glider.be>
 To: Sudeep Holla <sudeep.holla@kernel.org>,
 	Cristian Marussi <cristian.marussi@arm.com>,
@@ -43,9 +43,9 @@ Cc: arm-scmi@vger.kernel.org,
 	linux-renesas-soc@vger.kernel.org,
 	linux-kernel@vger.kernel.org,
 	Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH v2 05/10] dt-bindings: clock: renesas,r8a78000-cpg: Add firmware property
-Date: Wed,  8 Jul 2026 12:16:23 +0200
-Message-ID: <49726acff0fee1c3606e83c4f242ef6aad25b4b8.1783505329.git.geert+renesas@glider.be>
+Subject: [PATCH v2 06/10] dt-bindings: power: renesas,r8a78000-mdlc: Add firmware property
+Date: Wed,  8 Jul 2026 12:16:24 +0200
+Message-ID: <b4d16ddb0c0af56f4103feadb3014e71899edec1.1783505329.git.geert+renesas@glider.be>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <cover.1783505329.git.geert+renesas@glider.be>
 References: <cover.1783505329.git.geert+renesas@glider.be>
@@ -63,18 +63,18 @@ direct hardware access.
 Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 ---
 v2:
-  - Spin off from "dt-bindings: clock: Document Renesas R-Car X5H Clock
-    Pulse Generator".
+  - Spin off from "dt-bindings: power: Document Renesas R-Car X5H Module
+    Controller".
 ---
- .../devicetree/bindings/clock/renesas,r8a78000-cpg.yaml    | 7 +++++++
+ .../devicetree/bindings/power/renesas,r8a78000-mdlc.yaml   | 7 +++++++
  1 file changed, 7 insertions(+)
 
-diff --git a/Documentation/devicetree/bindings/clock/renesas,r8a78000-cpg.yaml b/Documentation/devicetree/bindings/clock/renesas,r8a78000-cpg.yaml
-index 4e23bba334382346..fc499e7cf52e4f0c 100644
---- a/Documentation/devicetree/bindings/clock/renesas,r8a78000-cpg.yaml
-+++ b/Documentation/devicetree/bindings/clock/renesas,r8a78000-cpg.yaml
-@@ -35,6 +35,12 @@ properties:
-       <dt-bindings/clock/renesas,r8a78000-cpg.h>.
+diff --git a/Documentation/devicetree/bindings/power/renesas,r8a78000-mdlc.yaml b/Documentation/devicetree/bindings/power/renesas,r8a78000-mdlc.yaml
+index 1dba1e1b1c5b52d0..9616f0244415896c 100644
+--- a/Documentation/devicetree/bindings/power/renesas,r8a78000-mdlc.yaml
++++ b/Documentation/devicetree/bindings/power/renesas,r8a78000-mdlc.yaml
+@@ -43,6 +43,12 @@ properties:
+       and thus identical to the second power domain specifier cell.
      const: 1
  
 +  firmware:
@@ -86,10 +86,10 @@ index 4e23bba334382346..fc499e7cf52e4f0c 100644
  required:
    - compatible
    - reg
-@@ -52,4 +58,5 @@ examples:
-             clocks = <&extal_clk>, <&extalr_clk>;
-             clock-names = "extal", "extalr";
-             #clock-cells = <1>;
+@@ -58,4 +64,5 @@ examples:
+             reg = <0xc3060000 0x1000>;
+             #power-domain-cells = <2>;
+             #reset-cells = <1>;
 +            firmware = <&scmi>;
      };
 -- 
