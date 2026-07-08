@@ -1,19 +1,19 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 43E9D394461;
-	Wed,  8 Jul 2026 10:17:03 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 194B2391E5F;
+	Wed,  8 Jul 2026 10:17:08 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1783505824; cv=none; b=VjW24n6MSzItIYb88ZLDursOqfqMhFvYBqIjn5DTHzJHU7AGsVQkFEKU09amPRQovfnR9WZaBWIhK31GdAxItQAOlMvNntWn1QiQDgvPWe0NRCHyrlo6sRzLMP5EEFNxXIcvoSkFTc4jr1Rew3Cp+Cz7SiJgAFCbANDiRAkAD/o=
+	t=1783505830; cv=none; b=sjs3DHorceGxkPGiX2UL97PRzjvI/nfC05yg/l3rxeWo7pxrN8TOO5ADM9NDGT10b+lSkpl2ib1onGxbgqj88QMFZGUCuSZbfh4wPRjpQ29E1y0cOJMAhYON3DIqNiaBItG054hRcvJHyO8voECoY0tUHzBggSYDqggOLcl6i5I=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1783505824; c=relaxed/simple;
-	bh=aBrFcOxUNEeztFhzZB+sFJBaznGhAsuXoLVaTLabbYA=;
+	s=arc-20240116; t=1783505830; c=relaxed/simple;
+	bh=HfcKmU/lLybToKAZLFgevnTSOmaQxLu2yN0ODrj7HMY=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=ZIy81nN6nAy4ucRAabvZXUU5Irhf36V9blJwOJ0KnQfiY5jP+hMoPXOE2EGs2cSZMxrDkM9znjT3GOva1Q9nDnE/MWdac7KwMX2bGlxQDJelTVAhCyotLMd5tbQ7GRZFot/T/p4RBEP9eNsEwSPJ6tf0hvi+pZY2fpKTj8Mx5QY=
+	 MIME-Version; b=Vd+Q34zAWdOjULra59AGDIp6oUwbrKfGTQo9C0EujkHwIJDW9l6gBz494Vztbv44wbe089o4ypxDL6FiMONPVybVbGRlzJyrAq9DOFfTa10bxeOrzZXBD0SqjWBGQiC8bbHr6+zje/pSweSLsAB9R2r7673zLnS/MGKh8hZ35Is=
 ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0DC5A1F000E9;
-	Wed,  8 Jul 2026 10:16:57 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9370B1F00A3A;
+	Wed,  8 Jul 2026 10:17:03 +0000 (UTC)
 From: Geert Uytterhoeven <geert+renesas@glider.be>
 To: Sudeep Holla <sudeep.holla@kernel.org>,
 	Cristian Marussi <cristian.marussi@arm.com>,
@@ -43,9 +43,9 @@ Cc: arm-scmi@vger.kernel.org,
 	linux-renesas-soc@vger.kernel.org,
 	linux-kernel@vger.kernel.org,
 	Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH v2 02/10] of: property: fw_devlink: Add support for firmware
-Date: Wed,  8 Jul 2026 12:16:20 +0200
-Message-ID: <de34ac0c52695d92c67cf950b3d8e9b30095d305.1783505329.git.geert+renesas@glider.be>
+Subject: [PATCH v2 03/10] pmdomain: Make genpd_get_from_provider() public
+Date: Wed,  8 Jul 2026 12:16:21 +0200
+Message-ID: <fce1aa52b181082f260a824fe38baf033ba8f56e.1783505329.git.geert+renesas@glider.be>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <cover.1783505329.git.geert+renesas@glider.be>
 References: <cover.1783505329.git.geert+renesas@glider.be>
@@ -57,44 +57,68 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Let fw_devlink create device links between consumers and suppliers of
-firmware, and enforce these dependencies.
+Unlike the corresponding function in the clock subsystem
+(of_clk_get_from_provider()), genpd_get_from_provider() is private, and
+thus cannot be used by PM Domain drivers.
 
-This prevents probing of drivers before the firmware they depend on
-becomes available, thus avoiding unneeded probe deferrals.
+Make it public, so it be used by the R-Car X5H Module Controller driver.
 
 Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 ---
-Written for the upcoming R-Car X5H Clock Pulse Generator and Module
-Controller drivers and their dependency on SCMI, but the existing
-Raspberry Pi power domain driver should benefit from this, too.
-
 v2:
   - No changes.
 ---
- drivers/of/property.c | 2 ++
- 1 file changed, 2 insertions(+)
+ drivers/pmdomain/core.c   | 4 ++--
+ include/linux/pm_domain.h | 7 +++++++
+ 2 files changed, 9 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/of/property.c b/drivers/of/property.c
-index 72cf12907de034e9..1a40a4f7db01f0a9 100644
---- a/drivers/of/property.c
-+++ b/drivers/of/property.c
-@@ -1401,6 +1401,7 @@ DEFINE_SIMPLE_PROP(dmas, "dmas", "#dma-cells")
- DEFINE_SIMPLE_PROP(power_domains, "power-domains", "#power-domain-cells")
- DEFINE_SIMPLE_PROP(hwlocks, "hwlocks", "#hwlock-cells")
- DEFINE_SIMPLE_PROP(extcon, "extcon", NULL)
-+DEFINE_SIMPLE_PROP(firmware, "firmware", NULL)
- DEFINE_SIMPLE_PROP(nvmem_cells, "nvmem-cells", "#nvmem-cell-cells")
- DEFINE_SIMPLE_PROP(phys, "phys", "#phy-cells")
- DEFINE_SIMPLE_PROP(wakeup_parent, "wakeup-parent", NULL)
-@@ -1550,6 +1551,7 @@ static const struct supplier_bindings of_supplier_bindings[] = {
- 	{ .parse_prop = parse_power_domains, },
- 	{ .parse_prop = parse_hwlocks, },
- 	{ .parse_prop = parse_extcon, },
-+	{ .parse_prop = parse_firmware, },
- 	{ .parse_prop = parse_nvmem_cells, },
- 	{ .parse_prop = parse_phys, },
- 	{ .parse_prop = parse_wakeup_parent, },
+diff --git a/drivers/pmdomain/core.c b/drivers/pmdomain/core.c
+index 842c4169e290677c..7de3c693ddd9a2c8 100644
+--- a/drivers/pmdomain/core.c
++++ b/drivers/pmdomain/core.c
+@@ -2900,8 +2900,7 @@ EXPORT_SYMBOL_GPL(of_genpd_del_provider);
+  * Returns a valid pointer to struct generic_pm_domain on success or ERR_PTR()
+  * on failure.
+  */
+-static struct generic_pm_domain *genpd_get_from_provider(
+-					const struct of_phandle_args *genpdspec)
++struct generic_pm_domain *genpd_get_from_provider(const struct of_phandle_args *genpdspec)
+ {
+ 	struct generic_pm_domain *genpd = ERR_PTR(-ENOENT);
+ 	struct of_genpd_provider *provider;
+@@ -2923,6 +2922,7 @@ static struct generic_pm_domain *genpd_get_from_provider(
+ 
+ 	return genpd;
+ }
++EXPORT_SYMBOL_GPL(genpd_get_from_provider);
+ 
+ /**
+  * of_genpd_add_child_ids() - Parse power-domains-child-ids property
+diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
+index f925614aebdbc914..95fd7e63e87e2095 100644
+--- a/include/linux/pm_domain.h
++++ b/include/linux/pm_domain.h
+@@ -458,6 +458,7 @@ int of_genpd_add_provider_simple(struct device_node *np,
+ int of_genpd_add_provider_onecell(struct device_node *np,
+ 				  struct genpd_onecell_data *data);
+ void of_genpd_del_provider(struct device_node *np);
++struct generic_pm_domain *genpd_get_from_provider(const struct of_phandle_args *genpdspec);
+ int of_genpd_add_device(const struct of_phandle_args *args, struct device *dev);
+ int of_genpd_add_subdomain(const struct of_phandle_args *parent_spec,
+ 			   const struct of_phandle_args *subdomain_spec);
+@@ -492,6 +493,12 @@ static inline int of_genpd_add_provider_onecell(struct device_node *np,
+ 
+ static inline void of_genpd_del_provider(struct device_node *np) {}
+ 
++static inline struct generic_pm_domain *genpd_get_from_provider(
++				const struct of_phandle_args *genpdspec)
++{
++	return ERR_PTR(-ENODEV);
++}
++
+ static inline int of_genpd_add_device(const struct of_phandle_args *args,
+ 				      struct device *dev)
+ {
 -- 
 2.43.0
 
