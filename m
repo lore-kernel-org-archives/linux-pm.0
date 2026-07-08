@@ -1,157 +1,158 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pl1-f182.google.com (mail-pl1-f182.google.com [209.85.214.182])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D33DD3E44E7
-	for <linux-pm@vger.kernel.org>; Wed,  8 Jul 2026 21:44:43 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 38B213F6C5A
+	for <linux-pm@vger.kernel.org>; Wed,  8 Jul 2026 21:48:27 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.182
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1783547085; cv=none; b=ZqiWYYxwHO6mGnpfR+QgNx7yGxotWezb4luXt8dho6O6gUQJv30cUVv+tVlLpVi2sJx4NaZbKnUtQa6R1a5lwOpHQLz2aTh7l70VcAw3h4bNtI9izjF5RaPiL8i0GRYBjSTchTSLpnhhbc2oZsjX4qzfongKgujUyQZgO7TvpeA=
+	t=1783547308; cv=none; b=od+/M7pf25jKrKqTfHWUDC4V8Ye1xlkfUsOBzjiwG4Un8V+SOHI1OK6ulJSKgKKNK6xnrN2aOctb4YboVD2cczWLS+KUw8Mj4GSFOS+3XVreIc73sO+16cWWo3X64u75hYn5+OFKgRo9XkZvyul8h6RZLnhGScoXAvhmH7HvPAE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1783547085; c=relaxed/simple;
-	bh=0xcUBAw7Xkn4hMHQX/IAjUsl8P1FFlogGYQCQvRaJXE=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=QJDyB6Rx23z17bCIxzRkT/kClgCM7goSyjtDq1582bvVaULRpzq+dZLRkGp8oMPNXKB+hptBTfs6UpgwInV86fG8xefmUhh4xSogVj8v1vynL7yCkRpnLMYKgDbHuf5dpAUTRgn6FDHp9gfc2CZrMOJV0I8Gtn5qI53Xyoh9cxo=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=iyc7Dppb; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1783547308; c=relaxed/simple;
+	bh=7KJXJzo+UE0xE9qAQMsWzVrOorS//UfnfERkBCDL37I=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=ZkiysacffbNT+sZrdDjVILGCaGSM0F1whTuGr8CcbKNISL9Le39u6qi/pqJYcZyHiJYo96AOUIUVFMQ61yY6ssAqenl1kSXb47NSQM6WG3EwR+M+3JiGy85dFz47FoayCxFimYsabXe+B8V5gMMdxa8Bbtqlgy6QL2jV41NPghk=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=dbUi5dYO; arc=none smtp.client-ip=209.85.214.182
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="iyc7Dppb"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id BAB621F00A3D
-	for <linux-pm@vger.kernel.org>; Wed,  8 Jul 2026 21:44:43 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1783547083;
-	bh=wrOPGY5PAtJevz9co/cj3hDyc1hXQKRSR2bjLsOlxWQ=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc;
-	b=iyc7DppbM6t0rk5jVCljFrpt+ZSbPCFLIfkxPWNcgfWGTvxX8BFtvwbBujoSIMJrJ
-	 gaR3gVc8hei9ICnx6/wd00LWWIVBZvIbBOT+38Dp2+qz8KG01EaZkw98PUM8w0l2Xc
-	 w5Xs9rblgmenT5xwvBXyDQQP/abd52b6xcw3oGXp/woDhyeJGfP0UyeDcEks1rNMgG
-	 mAquVs02fWxXWFREvOC3DREr2L/+fpmCRrW2aemOHQaZbZwDUXtkKyFpOLb86RLOnb
-	 WPZpvUVBqTEucvIe1GRLvGPveKiOle6PKO2iXa3v5KcsykfD7bdkBy1cBZZTKJlsOe
-	 xP28I3jaecilw==
-Received: by mail-ed1-f41.google.com with SMTP id 4fb4d7f45d1cf-697cee2eb6dso1298871a12.0
-        for <linux-pm@vger.kernel.org>; Wed, 08 Jul 2026 14:44:43 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AHgh+RoMEzD5tEZozsH45oxH3MjNUM2m4kyJWpx93vG17c73VDFrj03Gl2/kk49dAt/lHxrqh/ejGoYSsA==@vger.kernel.org
-X-Gm-Message-State: AOJu0YwxMWulhvbqunKUfQkNxvqDsWE3mGkNRZvsDsbtmjIbEBBcEVec
-	HWb8r/Gs2mnn0378Psl4CSojfUWwoFfMbH/D7R/2FGL+TGpsUJ/yW70yHpwIRUzWdrPFuXpVAfV
-	iAomrhq45Zaq2M5c7fQNt1aRPCjCkf8U=
-X-Received: by 2002:a05:6402:274c:b0:697:c052:a990 with SMTP id
- 4fb4d7f45d1cf-69ab4499259mr1800530a12.19.1783547082635; Wed, 08 Jul 2026
- 14:44:42 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="dbUi5dYO"
+Received: by mail-pl1-f182.google.com with SMTP id d9443c01a7336-2cae1a3a744so9290435ad.3
+        for <linux-pm@vger.kernel.org>; Wed, 08 Jul 2026 14:48:27 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1783547306; x=1784152106; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
+        bh=ws9RhF/v+RDUhCzwrIsuIgwDdl54OneaRZCtnhDgCNo=;
+        b=dbUi5dYOv74sX1ph2QjqwrH2P1X6X+GyipaScdiG0ElDNBVvZxmbO1qtkb07nDvSVe
+         SRxWkQaUqOcF3+wBYpIeVoSIz7nNpQXsHPfBo82MP6zmqeFc4CWHM+TwSJkozKhQ40qP
+         /KKxm57d7pJiZgJiZjY7kmmDUhFMP+vJTQLyVeOW8AnPgCIZ8INQWyVUOlp8DFSt7BeT
+         YwU7p90uTGLNybComwoe7OcG+652A7bRxLJy2G3Q8QiT4fEuE4BkDdDZ6bKDOr1SHqkc
+         r2Zr/O/T31zZltLZVxnDH2Z+iN9UAbmUmywYAjpJtr812j3ES0bwCoTIynwmj+cJQSu4
+         ErPA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1783547306; x=1784152106;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=ws9RhF/v+RDUhCzwrIsuIgwDdl54OneaRZCtnhDgCNo=;
+        b=gC2xuPN5YWVvdeOgflTrTpR41RtmPFrOMzX//JOMZJ4Zrpyw1zx5yDlG3HbM/bLwji
+         2BZSpFVJdbWLA9ZghmzmkgRAwpVB7fr/GSp7/mXL2aAMX/1LCgGQI/c2mrVkaV4A9c6e
+         Kg9LlZyW2WE6tb8CIWSWXxGieaayToi1lSopTTtWy33plIY3UCvvVRXd604OdjQ177KB
+         KGrKMDf13+J4sHFl9TGlQdfVufQDsEtkyMORcsZexUnVArWY0WfwG9UsSoixM/7n/Tnm
+         eygeU3Do2IsDDYUJtP4+tin3iFr5VSEfQ1Zefh86Z4pEG/QOK0xahYbkn80UMGNiwTgb
+         Wasg==
+X-Forwarded-Encrypted: i=1; AHgh+Rrq1R3tcX10jsdIjyQfzkjSLo8cAPXtEsLA2wVJFf4D5S/uWFKj5jIhhCe6vEsHIYXwHDyWBEje7g==@vger.kernel.org
+X-Gm-Message-State: AOJu0YzSNdU3YssKOM71o+ovG67+O+0ucUpVTvMCKIq3phtH0CT41V35
+	VT2bypWYJd8mywXnxStPSTfYi/8OIU8pZwGJd5W4eFXA2ktjJDSSGBgQUmdzEQaS
+X-Gm-Gg: AfdE7cmw680O+jzFdnxgS17WyHx7BD9NSTf6IHPdb7K0erch5L6+NM1n3sfXAco4Gzt
+	Y1I9UKYHICw5YXYajfOq46voTzOHnkIb43ggtHfQIeKcmL22CbsQUd7EQPmUuOCcGmbsVOJ/5n8
+	MH5+90raHTDOEYBFvUkC21K50dI4aDMVuvsrT1XKJQhZpATzfIBkCqht4KtdK5oz6bvBKX6XrRf
+	RuPu7qJQlBsH6fdFWtsZBWSNZHSZTzAIqFx0pMsXslGBs6906KdGz/f0d4lzch21QYFs87CmkD9
+	QRrKWrTHZmbItqhgIB2GYhJUbTuAUKxu5eyUVRJvImteVapo1S0LLFIeVgszQEvSfVyU4L0Pvqt
+	gnT5gLXssC9UZeNRJiBSqngqx0qUzuFtSXXr3itHjlyFpmFsWbUTgzYYL/Y6+sz12l/6zmefSnP
+	PQhofeiQ1lv+3eFnHNB3PCVpMf2h6jG8sZeJww+gwcd7yqLtA/95I7pCdKqjTDnGicha7CZvPjo
+	W5HCRiOcKO8v9sw4wqbrSvm963I8aSAPFlpK3E1NY1YQPUJ3/3P3d6xN3i+ynsiRzyt6JxIie+3
+	4LM32bBGQ/WVEl7P14jtO0mERvILUZCDKbAzXhXmglWi1I2foGxsMnMvqtzFbxg6mM8jGPvF
+X-Received: by 2002:a17:903:987:b0:2c7:f2c6:89e0 with SMTP id d9443c01a7336-2ccea35ad78mr48716195ad.4.1783547306454;
+        Wed, 08 Jul 2026 14:48:26 -0700 (PDT)
+Received: from ip-172-31-21-198.us-west-2.compute.internal (ec2-35-85-29-74.us-west-2.compute.amazonaws.com. [35.85.29.74])
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2ccc9d3d946sm33733855ad.66.2026.07.08.14.48.25
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 08 Jul 2026 14:48:25 -0700 (PDT)
+From: Bruce Robertson <brucer42@gmail.com>
+To: rust-for-linux@vger.kernel.org,
+	linux-pm@vger.kernel.org,
+	linux-i2c@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+Cc: Sebastian Reichel <sre@kernel.org>,
+	Miguel Ojeda <ojeda@kernel.org>,
+	Igor Korotin <igor.korotin@linux.dev>,
+	Gary Guo <gary@garyguo.net>,
+	Tamir Duberstein <tamird@kernel.org>,
+	Alice Ryhl <aliceryhl@google.com>,
+	Boqun Feng <boqun@kernel.org>,
+	Bruce Robertson <brucer42@gmail.com>
+Subject: [RFC PATCH 0/3] rust: power_supply class abstraction and SMB347 charger driver
+Date: Wed,  8 Jul 2026 21:47:35 +0000
+Message-ID: <20260708214738.25008-1-brucer42@gmail.com>
+X-Mailer: git-send-email 2.43.0
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <6O1QHT.QP6URTCEWLSV1@0iq.dev>
-In-Reply-To: <6O1QHT.QP6URTCEWLSV1@0iq.dev>
-From: Len Brown <lenb@kernel.org>
-Date: Wed, 8 Jul 2026 17:44:31 -0400
-X-Gmail-Original-Message-ID: <CAJvTdK=XuhxrZ+ULuXyV=cMsSS9caqDBACXUnj+R6UYesMXABA@mail.gmail.com>
-X-Gm-Features: AVVi8Cfhs0jYYpu6REpyUXCZOT_SanzXQ0hFOhH1f9hFXuXRjhzD-4E-qMmUt4c
-Message-ID: <CAJvTdK=XuhxrZ+ULuXyV=cMsSS9caqDBACXUnj+R6UYesMXABA@mail.gmail.com>
-Subject: Re: Lunar Lake: silent fatal platform resets caused by idle-exit core hang
-To: Polina Vishneva <poli@0iq.dev>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Artem Bityutskiy <artem.bityutskiy@linux.intel.com>, 
-	linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	"mpearson@lenovo.com" <mpearson@lenovo.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
 
-I think the chances of this being related to the Linux kernel are very smal=
-l.
-(We've run Linux on this model and it has been fine.)
+This series adds a Rust abstraction for the power supply class -- which
+does not currently exist in mainline or rust-next -- together with the
+SMBus helpers needed to drive an I2C charger from Rust, and a Rust port
+of the Summit SMB347 battery charger as the first consumer.
 
-It would be interesting if booting with "idle=3Dhalt" makes the issue go aw=
-ay.
+Motivation
+----------
+Rust drivers for power supply hardware are currently blocked: there is
+no safe Rust interface to the power supply class, and the I2cClient
+abstraction exposes no register I/O. This series provides a minimal,
+self-contained path from binding an I2C charger to reporting charging
+state through sysfs, entirely in safe Rust, with the unsafe FFI confined
+to the two abstraction layers.
 
-My guess is that you've got a flakey DIMM.
-Does it pass an overnight memory test?
+The series is structured abstraction-first:
 
-Unfortunately, I believe the DIMMs on this one are soldered onto the
-motherboard...
+  1/3  Safe SMBus read/write/update_bits over i2c::I2cClient.
+  2/3  A power_supply Driver trait, a generic get_property trampoline,
+       and an RAII Registration that owns the descriptor lifetime.
+  3/3  A Rust SMB347 charger driver consuming both: it binds over I2C
+       and reports STATUS, ONLINE and CHARGE_TYPE.
 
-cc: Mark, who may have some insight....
+Testing
+-------
+Built and exercised against an emulated SMB347 using i2c-stub: seeding
+the chip's status registers and reading back the corresponding sysfs
+attributes (status, online, charge_type) confirms the full C->Rust->C
+path. No physical hardware or interrupt path has been tested.
 
-cheers,
--Len
+Open questions / known limitations (hence RFC)
+----------------------------------------------
+  - get_property recovers the driver's private data via the parent
+    device's drvdata. The current code relies on the observed ordering
+    (callbacks only fire after probe() has set drvdata); the contract
+    should be made explicit.
+  - smbus_update_bits() is not atomic against concurrent callers; a lock
+    will be required before a charger IRQ handler is added (not yet
+    implemented).
+  - Only get_property and a handful of properties are wired up;
+    set_property, property_is_writeable and the IRQ-driven
+    power_supply_changed() notification are future work.
 
-On Sun, Jul 5, 2026 at 5:43=E2=80=AFPM Polina Vishneva <poli@0iq.dev> wrote=
-:
->
-> Hello.
->
-> So, I've got frustrated enough with my system cold-resetting every few
-> days to try to debug the issue, with some success.
->
-> TL;DR: cold reset on the cpuidle exit path.
->
-> It's *probably* not actually a kernel bug, but I don't know any better
-> place to submit it (hoping that the Intel folks will take a look).
->
-> System:
-> - Lenovo ThinkPad X1 Carbon Gen 13 (21NS001ACD), BIOS N4BET75W (1.45).
-> - Intel Core Ultra 7 258V (Lunar Lake), microcode 0x126.
-> - Kernel 7.1.1, intel_idle in ACPI _CST mode.
-> - Reproduces even with intel_idle.max_cstate=3D2, so the enabled
->   states are only POLL, C1_ACPI and C2_ACPI.
->
-> On boot after each crash, the kernel logs:
->
->   BERT: [Hardware Error]: Skipped 1 error records
->
-> I pulled /sys/firmware/acpi/tables/data/BERT by hand and decoded it with
-> https://github.com/intel/crashlog.
->
-> The region contains a full PMC crashlog (MCA, Punit, UNCORE, PCORE,
-> PMC, PMC_RST, PMC_TRACE records). iclg summarizes the failure as:
->
->   CORE_TIMEOUT.SINGLE_STUCK_TRANSACTION.C898FH
->   MCA.BANK3.INTERNAL_TIMER_ERROR.MSCOD_E184H
->   CRASHLOG_REASON.PMC.10H
->   CRASHLOG_REASON.PUNIT.20004H
->   RESET_CAUSE.FIRMWARE_GLOBAL_RESET.FW_GBLRST_SCRATCH16
->   RESET_CAUSE.GLOBAL_RESET.PMC_FW
->
-> The important registers (one P-core has captured state):
->
->   mca.bank3.status =3D 0xbe000000e1840400
->       VAL|UC|EN|MISCV|ADDRV|PCC, MCACOD 0x0400 (internal timer /
->       retirement watchdog, "three-strike"), MSCOD 0xE184
->   mca.bank3.addr =3D mca.bank3.misc =3D arch_state.lip
->                  =3D 0xffffffff9471bb3c        (kernel text)
->   super queue: exactly one stuck transaction (cacheline 0xC898F)
->   pmc_rst: gblrst_cause_0.pmc_fw=3D1, fw_gblrst_cause_0.scratch16=3D1,
->       gblrst_req_0 =3D pmc_fw|syspwr_flr|pchpwr_flr
->
-> The LIP: given that KASLR slide is 2MB-aligned, (lip mod 2M) is an
-> invariant. Solving over System.map text symbols gives 14 candidates, of
-> which only one can be related:
->
->   cpuidle_enter_state+0xbc
->
-> Disassembly:
->
->   +0x73  call __x86_indirect_thunk_rax   ; target_state->enter()
->    ...   sched_clock_idle_wakeup_event / local_clock_noinstr /
->          sched_idle_set_state
->   +0xb6  call *pv_ops...irq_enable       ; patched to STI at boot
->   +0xbc  test %r14d,%r14d                ; <- LIP
->
-> So (my best guess) the core had already returned from MWAIT, executed
-> STI on the idle-exit path, and then stopped retiring instructions. The
-> retirement watchdog then fires, Punit reports CORE_TIMEOUT, and PMC
-> firmware pulls a global platform reset.
->
-> The question is whether it is something known or rather something
-> platform-specific that should be reported to Lenovo instead.
->
-> I can provide the raw BERT dump, and also I'd be happy to debug/test if
-> requested.
->
-> Best regards,
-> Polina.
->
->
+Feedback on the abstraction's shape -- especially the descriptor
+lifetime and the drvdata recovery -- would be very welcome.
 
+checkpatch emits one MAINTAINERS warning on patch 3/3 (new driver file);
+it is a false positive -- the driver is covered by the existing POWER
+SUPPLY CLASS "F: drivers/power/supply/" glob and needs no new entry.
+Patch 2/3 adds the one file outside any existing glob
+(rust/kernel/power_supply.rs) and updates MAINTAINERS accordingly.
 
---=20
-Len Brown, Intel Open Source Technology Center
+Based on rust-next (v7.2-rc1).
+
+Bruce Robertson (3):
+  rust: i2c: add SMBus byte transfer helpers
+  rust: power_supply: add power supply class abstraction
+  power: supply: add Rust SMB347 charger driver
+
+ MAINTAINERS                                 |   1 +
+ drivers/power/supply/Kconfig                |  14 ++
+ drivers/power/supply/Makefile               |   1 +
+ drivers/power/supply/smb347-charger_rust.rs | 180 ++++++++++++++++++++
+ rust/bindings/bindings_helper.h             |   1 +
+ rust/kernel/i2c.rs                          |  42 +++++
+ rust/kernel/lib.rs                          |   1 +
+ rust/kernel/power_supply.rs                 | 133 +++++++++++++++
+ 8 files changed, 373 insertions(+)
+ create mode 100644 drivers/power/supply/smb347-charger_rust.rs
+ create mode 100644 rust/kernel/power_supply.rs
+
+-- 
+2.43.0
+
