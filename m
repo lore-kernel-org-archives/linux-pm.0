@@ -1,126 +1,90 @@
-Received: from mout-p-201.mailbox.org (mout-p-201.mailbox.org [80.241.56.171])
+Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5960F40245F;
-	Wed,  8 Jul 2026 16:48:43 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=80.241.56.171
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0E7CD480974;
+	Wed,  8 Jul 2026 16:52:37 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.137.202.133
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1783529325; cv=none; b=dvojIpiqH0sdOm3yCpYY+BbmmqW0CC3iU9muUgJtqUInSxO4BB64wLrUNCzLcFNb8IgJN6swRVdgSCHjfyDMy4unZj0FKXa0CrUAqEMAbAqxF0uBU+Qt/O7mKVissAIGCBKR2kDC8nEmd06DmQQpzeQBKdn+H4VsmBUErSRbY34=
+	t=1783529566; cv=none; b=OdKErR7yHBQGV2o9f2uZGPO3u5R0zIWYVhBJAl6p1fjU8cBbHsRNCswUk+MejdAB6nxDv0jXWcD/BjqgjqA1FZ40mhze7r6fSPfnfIYdU4C95hZjVT9wvFV9EnWpR7buQEJ1Rs3S6C5M9RDyV3RIi/iE4mNwicEWv6lv5nFtkY4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1783529325; c=relaxed/simple;
-	bh=fofBQvPVcd3NX+xdJivf5D8jfwRM6c2GJjKIcT6JUBk=;
+	s=arc-20240116; t=1783529566; c=relaxed/simple;
+	bh=E+a/Nl4KRlXUbSBIV1vhfrYD79/OxswYaqm7Cdwqxyg=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=MyCQadAH7qFUZ8lqUyYc1mQsdHlL2W1c5xTAeVKgdLYjmALN4w7Ujx2jVYK6WG5EtwUdbJpeAa/iCDDRBaMM/FFN0opkhNAVI0ndswt/G7fTJ12MsdV39eVzknN9XvM+J5pN9B99Yo0x3vWd7eTQmTVoCwu6bWTKaXgus+KOtoA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=mailbox.org; spf=pass smtp.mailfrom=mailbox.org; dkim=pass (2048-bit key) header.d=mailbox.org header.i=@mailbox.org header.b=yY1xJQwb; dkim=pass (2048-bit key) header.d=mailbox.org header.i=@mailbox.org header.b=HyyEMk/D; arc=none smtp.client-ip=80.241.56.171
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=mailbox.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=mailbox.org
+	 In-Reply-To:Content-Type; b=cpHfeR1uIDhCyMpmWCEwUuAjdU+LPfE85/RHK2sIwG80aMAqNUF+PZpCao6L2zr0FUirX4baKTP0ya6pNZDN8DwfDHuL77XAwAE+AagRgpiJm2vvajBqxRDPwduUa8eKxR+Xrk/LCLCEgh4aiYojWRtvV5UwwsKWCuwCUByz6tM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=infradead.org; spf=pass smtp.mailfrom=infradead.org; dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b=lSxeMkAw; arc=none smtp.client-ip=198.137.202.133
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=infradead.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=infradead.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=mailbox.org header.i=@mailbox.org header.b="yY1xJQwb";
-	dkim=pass (2048-bit key) header.d=mailbox.org header.i=@mailbox.org header.b="HyyEMk/D"
-Received: from smtp102.mailbox.org (smtp102.mailbox.org [IPv6:2001:67c:2050:b231:465::102])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (4096 bits) server-digest SHA512)
-	(No client certificate requested)
-	by mout-p-201.mailbox.org (Postfix) with ESMTPS id 4gwPDm6s9TzMlKN;
-	Wed, 08 Jul 2026 18:48:40 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=mailbox.org; s=mail20150812;
-	t=1783529321;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=G2F8UTbrQpHAZf8UnpKm16ni9iweS0yaca1Uv+SwEYc=;
-	b=yY1xJQwbYy4eG2NsyWzBCVrlkg0EcBjFvdcuFovEC2IbWp3kU60JKjSAKSzLMciR1EsPdu
-	ejjAFDe+JVF9Sr9+3QhhAur1hoqUsx/BwX/PDpB/e8Nwa0hOuypUuMHhL9Uwujrw7tbXNH
-	/j35Zda5HbVnuqxQP84QRGA1FV25MuMpNgpXQAo9aBYw2ylltxz5DS3qGE2Xk/tripSQUp
-	4rigneeHGxJ162cClnDzNhffDU/3Eo9bSvYV4qi7/wkQ7qcrWGAK6XA2NN2uE2+bIhKC0P
-	Ov74Ct4qnnCl6FDRTICjToZjcoBT48/7DeD44GFkfO2C13KILjQU/E9XLhZq4w==
-Authentication-Results: outgoing_mbo_mout;
-	dkim=pass header.d=mailbox.org header.s=mail20150812 header.b="HyyEMk/D";
-	spf=pass (outgoing_mbo_mout: domain of marek.vasut@mailbox.org designates 2001:67c:2050:b231:465::102 as permitted sender) smtp.mailfrom=marek.vasut@mailbox.org
-Message-ID: <1c072a8f-a854-4b72-be43-7fdb50b14653@mailbox.org>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=mailbox.org; s=mail20150812;
-	t=1783529319;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=G2F8UTbrQpHAZf8UnpKm16ni9iweS0yaca1Uv+SwEYc=;
-	b=HyyEMk/DEMoJgPcxBr0Pq212SsCaf5NsNufZl8aXOfXzinVkcA2D20WAtT1qmT/1tWXXMm
-	UH50YgTdA4l+ihaYZ8AdS5GPRPKEWGAfhLKMXCMjNamAB+octGR79OarG/cz3sMKyDkx1A
-	szPV4dYYdC5rvgx5AsAU0aYRIKTDw8GV5rWRlZOBrOKKCq6a8ETtr4NOv7JDltLeNkzqFP
-	htLjbKZpYH65f3a2eeCxEaLRBnkYPYfr7gjm6vahw3qM7uspJlzPtCdzwIAwcuWPBU7FOI
-	s9p//CTQHqCgonVROF8iPyh9bmOz2wBDEdSqly1oBaTIk4J6CdcFB+d1/rb0jQ==
-Date: Wed, 8 Jul 2026 18:48:31 +0200
+	dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="lSxeMkAw"
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=infradead.org; s=bombadil.20210309; h=Content-Transfer-Encoding:
+	Content-Type:In-Reply-To:From:References:Cc:To:Subject:MIME-Version:Date:
+	Message-ID:Sender:Reply-To:Content-ID:Content-Description;
+	bh=VTZZc5hm7q7+Hrky3l8s8+PHOQxPKBAOs7wnzzVfQwQ=; b=lSxeMkAwQxu02LM23af1QtPwwX
+	Hu7hYLm5XjqUHoPO2ikXNgZvoUnAK1v9rT6ogCzQ4OuvpJWWR/UrYGGvwIwZepZ0HmaLMakcILOK0
+	Li6Raa3RAuZFlZDTC7DEEBo1dRmQJl6NZjYAVaZeGI0zbdplZEWFpzwrEuT3mYnpyMHR8uzPzsxyV
+	BB8RKUrVMLeWU7xpXte6zgN9GAGRTiQpeuAPXjCvORi8IZlhdAHpX97TLI5OXKLprbnMejHaS9gf0
+	2n/EYmmEx6RKZ84oNZ5yAqlfKj2UjeOQ/q4CI32v5eRdgLGXwImBXHMvIQkEHfZj4zWM7FDZoM8tx
+	Buab4nYA==;
+Received: from [50.53.43.113] (helo=[192.168.254.34])
+	by bombadil.infradead.org with esmtpsa (Exim 4.99.1 #2 (Red Hat Linux))
+	id 1whVVi-0000000021n-39Xw;
+	Wed, 08 Jul 2026 16:52:34 +0000
+Message-ID: <deca50e8-8f51-442d-b97b-3e2bc1ab4148@infradead.org>
+Date: Wed, 8 Jul 2026 09:52:33 -0700
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Subject: Re: [PATCH v2 00/10] R-Car X5H Ironhide CPG/MDLC SCMI remapping
- support
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Geert Uytterhoeven <geert+renesas@glider.be>,
- Sudeep Holla <sudeep.holla@kernel.org>,
- Cristian Marussi <cristian.marussi@arm.com>, Rob Herring <robh@kernel.org>,
- Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
- <conor+dt@kernel.org>, Saravana Kannan <saravanak@kernel.org>,
- Ulf Hansson <ulfh@kernel.org>, "Rafael J . Wysocki" <rafael@kernel.org>,
- Philipp Zabel <p.zabel@pengutronix.de>,
- Michael Turquette <mturquette@baylibre.com>, Stephen Boyd
- <sboyd@kernel.org>, Brian Masney <bmasney@redhat.com>,
- Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>,
- Vinod Koul <vkoul@kernel.org>, Konrad Dybcio
- <konrad.dybcio@oss.qualcomm.com>, Kevin Hilman <khilman@baylibre.com>,
- Florian Fainelli <florian.fainelli@broadcom.com>,
- Wolfram Sang <wsa+renesas@sang-engineering.com>,
- Marek Vasut <marek.vasut+renesas@mailbox.org>,
- Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>,
- arm-scmi@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- devicetree@vger.kernel.org, linux-pm@vger.kernel.org,
- linux-clk@vger.kernel.org, linux-renesas-soc@vger.kernel.org,
- linux-kernel@vger.kernel.org
-References: <cover.1783505329.git.geert+renesas@glider.be>
- <3c76a2d4-a8b8-493a-9196-c5cc72958118@mailbox.org>
- <CAMuHMdUVUKYrrms0Vd4i3_nwq2LVjvnvFRWswi8UY3cA67u2-w@mail.gmail.com>
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] power: supply: bd71828: add a terminating table border
+To: linux-doc@vger.kernel.org
+Cc: Andreas Kemnade <andreas@kemnade.info>,
+ Matti Vaittinen <mazziesaccount@gmail.com>,
+ Sebastian Reichel <sebastian.reichel@collabora.com>, linux-pm@vger.kernel.org
+References: <20260620011821.3568674-1-rdunlap@infradead.org>
 Content-Language: en-US
-From: Marek Vasut <marek.vasut@mailbox.org>
-In-Reply-To: <CAMuHMdUVUKYrrms0Vd4i3_nwq2LVjvnvFRWswi8UY3cA67u2-w@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+From: Randy Dunlap <rdunlap@infradead.org>
+In-Reply-To: <20260620011821.3568674-1-rdunlap@infradead.org>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-MBO-RS-ID: 09e4c3dda12fcca6b00
-X-MBO-RS-META: na9n8ju6zp3juk8qegttrip714c8zcby
-X-Rspamd-Queue-Id: 4gwPDm6s9TzMlKN
 
-On 7/8/26 6:04 PM, Geert Uytterhoeven wrote:
+ping. Build error is now in mainline.
 
-Hello Geert,
 
-> On Wed, 8 Jul 2026 at 17:42, Marek Vasut <marek.vasut@mailbox.org> wrote:
->> On 7/8/26 12:16 PM, Geert Uytterhoeven wrote:
->>> Geert Uytterhoeven (10):
->>>     firmware: arm_scmi: Add scmi_get_base_info()
->>>     of: property: fw_devlink: Add support for firmware
->>>     pmdomain: Make genpd_get_from_provider() public
->>>     reset: Add reset_controller_get_provider()
->>>     dt-bindings: clock: renesas,r8a78000-cpg: Add firmware property
->>>     dt-bindings: power: renesas,r8a78000-mdlc: Add firmware property
->>>     clk: renesas: r8a78000: Add SCMI remapping support
->>>     pmdomain: renesas: r8a78000: Add SCMI remapping support
->>>     arm64: dts: renesas: ironhide: Enable SCMI devpd, sys, clock, and
->>>       reset
->>>     arm64: dts: renesas: ironhide: Add CPG/MDLC firmware properties
->>
->> I think 10/10 did not make it either to my inbox or lore.k.o , but the
->> remaining 9 patches look good. Thank you !
+On 6/19/26 6:18 PM, Randy Dunlap wrote:
+> Fix a documentation build error by adding a bottom table border:
 > 
-> Thanks, I did something silly while sending.
-> Lore now has it, b4 still seems to miss it, unless I specify the
-> Message-ID of 10/10.
-
-Thank you, it looks just fine.
+> Documentation/ABI/testing/sysfs-class-power-bd71828:1: ERROR: Malformed table.
+> No bottom table border found.
+> ============  ===========================================
+> 1             automatic adjustment of input current limit
+> 0             no adjustment of input current limit. This
+>               helps for more unusual power sources like
+>               solar modules. [docutils]
+> 
+> Fixes: e92786dd86a2 ("power: supply: bd71828: sysfs for auto input current limitation")
+> Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
+> ---
+> Cc: Andreas Kemnade <andreas@kemnade.info>
+> Cc: Matti Vaittinen <mazziesaccount@gmail.com>
+> Cc: Sebastian Reichel <sebastian.reichel@collabora.com>
+> Cc: linux-pm@vger.kernel.org
+> 
+>  Documentation/ABI/testing/sysfs-class-power-bd71828 |    1 +
+>  1 file changed, 1 insertion(+)
+> 
+> --- linux-next-20260619.orig/Documentation/ABI/testing/sysfs-class-power-bd71828
+> +++ linux-next-20260619/Documentation/ABI/testing/sysfs-class-power-bd71828
+> @@ -10,3 +10,4 @@ Description:
+>  		0             no adjustment of input current limit. This
+>  		              helps for more unusual power sources like
+>  			      solar modules.
+> +		============  ===========================================
+> 
 
 -- 
-Best regards,
-Marek Vasut
+~Randy
+
