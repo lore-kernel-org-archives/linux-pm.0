@@ -1,40 +1,40 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 05C2F221275;
-	Thu,  9 Jul 2026 12:47:54 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 460B221C9EA;
+	Thu,  9 Jul 2026 12:47:56 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1783601275; cv=none; b=dlUw5IyRqwnPRwaNP0QVZJZIUK3mIQz6xxh5u8OgaSQSrylWlzbXPskQqRVd7dnSEGHABaP55rFrTsdz/KeFrPZaLPsq9ZL4LOcOH1y0A5Y3Ns3pPbd/AxREHteeR3ydlPZOAzi9VzatHNHBWCReieBwBqcbXDrWkP6dBHnaCx0=
+	t=1783601278; cv=none; b=affKJmQhbOihdiSWbNEuUDZKGwKcYclh/W8M424EbKhfadBuBS/JZCmwgJzSe2AuwYusiG93KGUzQCe8wsxYbTlhGEPTTDIzCTT1tYODn58s/yfMKUlr2umF15M09w7QgLd7FYlrchNt8Jap1VTqKGcyc1kthO4sC0Wn3A9Nl24=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1783601275; c=relaxed/simple;
-	bh=J4s9A0HMclqt+nuDsHaVsI5jhaR3tgigwgiNmTSpOgs=;
+	s=arc-20240116; t=1783601278; c=relaxed/simple;
+	bh=p//xG4dF10nozG9lWw1MVV5myP4qHb65D7dsKdfkAg8=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=tvwFl/hDBQNyEYgZU/XqLRV5QOmbdSmb/XbX+URJWkr31Q9YAJQvGbJbuEJlhGTVXKnuLUVBuE6kHs7Bn3zEAh/ZhlxEpjyzyklyPWj7l9l3mk+PzAdWAVZonZ6ZSL2plsaAs0Hj7/vHNfLAwQrElx7u4YHmhel1cKWdgG4LOV8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=CsVDEmNc; arc=none smtp.client-ip=100.103.45.18
+	 MIME-Version:Content-Type; b=CT+91TecPHOktcv475OwwSNKi3xhB8EWfz/2fRw4U7lIOxw/pD5VBz/W+I+YX10eO5Gqc53aCf7b9og6zUXPYvmLsQCf31HVmI3epXc/BQCT8h9wbMUn9mWSlLdHxdIuWkjCLUgRjTBEe+GYjAZnMb1QaHE64TG2/B9wxr1fZKo=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=jKiJ+lPS; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="CsVDEmNc"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 223511F000E9;
-	Thu,  9 Jul 2026 12:47:52 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="jKiJ+lPS"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1AF3A1F000E9;
+	Thu,  9 Jul 2026 12:47:55 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1783601273;
-	bh=GK/hqPme3o1MIbAc3Xq84kbAQmmWsXDnqxrI/2ftNY8=;
+	s=k20260515; t=1783601276;
+	bh=+ZkTm+LK83S0+VOfTvR+xKjCkxaP6Wn4EylKTUubACw=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References;
-	b=CsVDEmNckYKNN8o6hXU4HiC6PfBdBgyI5+nfUemzY7QCIwprD3htDLjsD7rhdBwlp
-	 zohO21a+U83BhKWIAyQ0ZXVIZZ1/wR+riSuphkmJ+vhCziRZk5c/ggHbhdnQU/tWAL
-	 X4p4DwpvcetfMFjp9GdZUpD4YsQF0gbdLevnZPrH8xO5UMpnpebNVPHMZcSgMW2S+r
-	 +FEfxCl3zbL2ky48ZYh6Unt2CLAgxu6fIKGbqa0JAvoFYOx38dgeceVZIkgJ7IqAgS
-	 Vsv9bjhZ8kGIjBHUuxy7SVSm6nmYReVBUc1kEPdODKfpFj/Ni1T8at+2bLtfaxFuEO
-	 IyjlLgTuhlq8g==
+	b=jKiJ+lPSgzp+xYYZVovzkzs3Lp5Szuk1zpuvMMuL2+Z+UEtvT+bmnbRFrzP3HJbcg
+	 FLpBi7qBx+iTVh3tCV0JdzYzSqhQQyTB+p2JtPnzjG4BwhMWwKIlpHTHeYtKx202dC
+	 8IY9AH/E31o2U/PpI0rjGrs0stV8SL5AFjsJXSe83D7xPMkziiV+0QRSzKZOBb7HJS
+	 4ulk8jCP7dePwMXCDcP2x0lWDnVyOm6N8EH/Y90PRO2FUriebqZfRGq9cDTglvNhg1
+	 9JX+OZlj84wK5k8SbH/gdbB8J/jj2Oi/t8qXXrY6tY8Qq1OLY+4SxnpQ5hGIbc+3mg
+	 XB8tpH3CqC0qg==
 From: "Rafael J. Wysocki" <rafael@kernel.org>
 To: Linux PM <linux-pm@vger.kernel.org>
 Cc: Linux ACPI <linux-acpi@vger.kernel.org>,
  Sudeep Holla <Sudeep.Holla@arm.com>
 Subject:
- [PATCH v1 03/17] ACPI: processor: idle: Unify debug in
- acpi_processor_evaluate_lpi()
-Date: Thu, 09 Jul 2026 14:32:15 +0200
-Message-ID: <3051550.e9J7NaK4W3@rafael.j.wysocki>
+ [PATCH v1 02/17] ACPI: processor: idle: Ignore _LPI states with SYSTEMIO
+ entry method
+Date: Thu, 09 Jul 2026 14:31:28 +0200
+Message-ID: <2268989.irdbgypaU6@rafael.j.wysocki>
 Organization: Linux Kernel Development - Intel
 In-Reply-To: <4746278.LvFx2qVVIh@rafael.j.wysocki>
 References: <4746278.LvFx2qVVIh@rafael.j.wysocki>
@@ -49,68 +49,43 @@ Content-Type: text/plain; charset="UTF-8"
 
 From: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
 
-Use acpi_handle_debug() consistently for printing debug messages in
-acpi_processor_evaluate_lpi() because that makes it somewhat easier
-to identify the source of the problem in the ACPI tables.
+The only entry method for _LPI states supported by acpi_idle_lpi_enter()
+is FFH and it is better to ignore _LPI states with the SYSTEMIO entry
+method upfront than return an error from acpi_idle_lpi_enter() on
+attempts to use them.
 
-No intentional functional impact beyond debug output.
+Update acpi_processor_evaluate_lpi() accordingly.
 
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- drivers/acpi/processor_idle.c | 17 +++++++++++------
- 1 file changed, 11 insertions(+), 6 deletions(-)
+ drivers/acpi/processor_idle.c | 11 ++++++-----
+ 1 file changed, 6 insertions(+), 5 deletions(-)
 
 diff --git a/drivers/acpi/processor_idle.c b/drivers/acpi/processor_idle.c
-index aa6d5d8edc79..e8682f779249 100644
+index d573f201295a..aa6d5d8edc79 100644
 --- a/drivers/acpi/processor_idle.c
 +++ b/drivers/acpi/processor_idle.c
-@@ -890,7 +890,7 @@ static int acpi_processor_evaluate_lpi(acpi_handle handle,
- 	/* There must be at least 4 elements = 3 elements + 1 package */
- 	if (!lpi_data || lpi_data->type != ACPI_TYPE_PACKAGE ||
- 	    lpi_data->package.count < 4) {
--		pr_debug("not enough elements in _LPI\n");
-+		acpi_handle_debug(handle, "Not enough elements in _LPI\n");
- 		ret = -ENODATA;
- 		goto end;
- 	}
-@@ -899,7 +899,7 @@ static int acpi_processor_evaluate_lpi(acpi_handle handle,
+@@ -935,14 +935,15 @@ static int acpi_processor_evaluate_lpi(acpi_handle handle,
+ 			}
  
- 	/* Validate number of power states. */
- 	if (pkg_count < 1 || pkg_count != lpi_data->package.count - 3) {
--		pr_debug("count given by _LPI is not valid\n");
-+		acpi_handle_debug(handle, "Invalid _LPI state count\n");
- 		ret = -ENODATA;
- 		goto end;
- 	}
-@@ -948,19 +948,24 @@ static int acpi_processor_evaluate_lpi(acpi_handle handle,
+ 			reg = (struct acpi_power_register *)obj->buffer.pointer;
+-			if (reg->space_id != ACPI_ADR_SPACE_SYSTEM_IO &&
+-			    reg->space_id != ACPI_ADR_SPACE_FIXED_HARDWARE)
++			if (reg->space_id != ACPI_ADR_SPACE_FIXED_HARDWARE) {
++				acpi_handle_debug(handle,
++					"Unsupported entry method for _LPI state %d\n",
++					state_idx);
+ 				continue;
++			}
+ 
++			lpi_state->entry_method = ACPI_CSTATE_FFH;
+ 			lpi_state->address = reg->address;
+-			lpi_state->entry_method =
+-				reg->space_id == ACPI_ADR_SPACE_FIXED_HARDWARE ?
+-				ACPI_CSTATE_FFH : ACPI_CSTATE_SYSTEMIO;
+ 		} else if (obj->type == ACPI_TYPE_INTEGER) {
  			lpi_state->entry_method = ACPI_CSTATE_INTEGER;
  			lpi_state->address = obj->integer.value;
- 		} else {
--			pr_debug("Entry method of state-%d is invalid, disable it.\n",
--				 state_idx);
-+			acpi_handle_debug(handle,
-+					  "Invalid entry method for _LPI state %d\n",
-+					  state_idx);
- 			continue;
- 		}
- 
- 		lpi_state->index = state_idx;
- 		if (obj_get_integer(pkg_elem + 0, &lpi_state->min_residency)) {
--			pr_debug("No min. residency found, assuming 10 us\n");
-+			acpi_handle_debug(handle,
-+					  "Assuming 10 us min. residency for _LPI state %d\n",
-+					  state_idx);
- 			lpi_state->min_residency = 10;
- 		}
- 
- 		if (obj_get_integer(pkg_elem + 1, &lpi_state->wake_latency)) {
--			pr_debug("No wakeup residency found, assuming 10 us\n");
-+			acpi_handle_debug(handle,
-+					  "Assuming 10 us wake latency for _LPI state %d\n",
-+					  state_idx);
- 			lpi_state->wake_latency = 10;
- 		}
- 
 -- 
 2.51.0
 
