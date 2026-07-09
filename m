@@ -1,151 +1,132 @@
-Received: from bali.collaboradmins.com (bali.collaboradmins.com [148.251.105.195])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-wm1-f74.google.com (mail-wm1-f74.google.com [209.85.128.74])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B86083E63B2;
-	Thu,  9 Jul 2026 08:46:45 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=148.251.105.195
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2D7983FC5BE
+	for <linux-pm@vger.kernel.org>; Thu,  9 Jul 2026 09:04:03 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.74
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1783586807; cv=none; b=gTq25x6JtQd3c0STbdCdwi7eOaPDxPODK9eW/lD0QAfSKbxbDWPc/phMTyTaIj9Ix7SZ1OtGeEwg3W7YSjKfGP4shsdLgS0wkFZiVeVH4+9rzZy5hFZKxq2ieZJGg+OP99Ty2IrHt5BNPvOe3D3x70cnenyB2KA5WgML/uFTJ88=
+	t=1783587845; cv=none; b=Sps5RBrkh1lYdcobk33/MWD1z7YAO8IaJ/qpyMvQmli4RN21YA/bLkrwASycjBIi8U8wJl+JvS6jPW8eIKaKmBfqqGYLDutNv3sRWR5Gq2KRFl3W8ROQNc9OBfENPxLt/gNz2cZA6vwPC1z6uQ3kRYE3Bju+/7AZ/VIpQ5HK0+4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1783586807; c=relaxed/simple;
-	bh=qzkG82fCo2yCvES8L+QvDNPl1CSrAGsEROUCjOB7JQA=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=guA22G+oD+61mJN739dVVA+ZQcuxZsSgDdgdYw4i1UxFLTTSLUV7fL0k1iN+76f4mRrdNtL7LqEUObUIJzQTcWVOMUBXKFI4UxhVSceC2nzcM75EzlyxHH/cA3QRFLbdQrnCGo9Cc+K1EgbInRyE9Yvyt6Cu/+dMhczvyy0+h1U=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b=QGdBVPxu; arc=none smtp.client-ip=148.251.105.195
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
+	s=arc-20240116; t=1783587845; c=relaxed/simple;
+	bh=8p1SlX4Y/tAMtxoktfOY4hYUbJ5KdrvxJ/hf35CLJIY=;
+	h=Date:In-Reply-To:Mime-Version:References:Message-ID:Subject:From:
+	 To:Cc:Content-Type; b=vGmgmdtepw7S7Sid42CQ46oLz+97xMJbpAsm39Ar3K+6zwKMWRiiKEg84LmbkkfAzLmiwVyZ1uacW8edTRRH6TgXxgdA0gUrBQ0We04/d3DDLPrYwEweUmYqBSaW7Lo1cWE0nahIakw0gOpcLzSJEWo2BOwVL5Yw1MC+/YuRk0o=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com; spf=pass smtp.mailfrom=flex--aliceryhl.bounces.google.com; dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b=NML6nO88; arc=none smtp.client-ip=209.85.128.74
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=flex--aliceryhl.bounces.google.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b="QGdBVPxu"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
-	s=mail; t=1783586804;
-	bh=qzkG82fCo2yCvES8L+QvDNPl1CSrAGsEROUCjOB7JQA=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=QGdBVPxufFk462JAQ3czVGczYRbRWJoJcyK9oeyrd7tQZehU2lWJzExKr1kq6xcY3
-	 UWJSfNNWG89PQCWrZaVvDEN0ZwcIpfhNF96wFuDQO2aDBZcura4cK4gyGrDBwx3R8S
-	 VOuWu4TB2riIZ2vCG0hwKpnQDdzdzUpHffydrdJHV4qjOnoK8IVuBGHFT9PfZtAzg3
-	 EqeBIgimodbuRSKZuEUIQKhgzPvROpesd07wLUVYH/iiX1FlrFOgUfhjzI+2Gy8+Im
-	 JESRQ5J8RmRA/XOl22mYpYlz5YzA/l2m5HM/ODSz8yrRAxVQ9tYbs276YSWHf/qROV
-	 7AfqpbThMxlHg==
-Received: from IcarusMOD.eternityproject.eu (unknown [100.64.1.21])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	(Authenticated sender: kholk11)
-	by bali.collaboradmins.com (Postfix) with ESMTPSA id B0F1017E0E04;
-	Thu, 09 Jul 2026 10:46:43 +0200 (CEST)
-From: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
-To: ulfh@kernel.org
-Cc: robh@kernel.org,
-	krzk+dt@kernel.org,
-	conor+dt@kernel.org,
-	matthias.bgg@gmail.com,
-	angelogioacchino.delregno@collabora.com,
-	nfraprado@collabora.com,
-	irving-ch.lin@mediatek.com,
-	macpaul.lin@mediatek.com,
-	aford173@gmail.com,
-	mbrugger@suse.com,
-	devicetree@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	linux-pm@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org,
-	linux-mediatek@lists.infradead.org,
-	justin.yeh@mediatek.com,
-	kernel@collabora.com
-Subject: [PATCH v3 5/5] pmdomain: mediatek: Add support for MT8196 HFRP DirectCTL domains
-Date: Thu,  9 Jul 2026 10:46:35 +0200
-Message-ID: <20260709084635.24912-6-angelogioacchino.delregno@collabora.com>
-X-Mailer: git-send-email 2.54.0
-In-Reply-To: <20260709084635.24912-1-angelogioacchino.delregno@collabora.com>
-References: <20260709084635.24912-1-angelogioacchino.delregno@collabora.com>
+	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b="NML6nO88"
+Received: by mail-wm1-f74.google.com with SMTP id 5b1f17b1804b1-493e94719e7so4081175e9.0
+        for <linux-pm@vger.kernel.org>; Thu, 09 Jul 2026 02:04:03 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20251104; t=1783587842; x=1784192642; darn=vger.kernel.org;
+        h=content-type:cc:to:from:subject:message-id:references:mime-version
+         :in-reply-to:date:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=UHb/QYDUeRjEZWmoAxhxicuHQ83r8Iogoxy5g/5DRs8=;
+        b=NML6nO88IooRB6zrk3xKGhZwKnJ2AnNs7VSnEjk4j0l4a5/A595GCIvC3E6KCYyJTJ
+         SNzOeGM2s+gaNuISy4xSzvvn/eRPAxtyPQxXVBFU7U3n9UkFQ0SBFvG8Tr8y5OjYZCsb
+         0G6Y2Ruub4sMK6iGkvJwtt1HB8RbLWZvZEEzYsyHr9+rvRytUaISRDp2sgDJKFvnfaS1
+         adUXvPN4/V+uOg6AjfMgvDAnUMEgYXoX7v5HN08WX6DyH8WkDWDiJ3Q6BecSeP+00Zki
+         him7Mu8z1lKNCiejO12YnuQGgVUjo9WSqe7PJD3uPQbVZQ5tdL2TE194NqtWwdlIupR3
+         yZzQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1783587842; x=1784192642;
+        h=content-type:cc:to:from:subject:message-id:references:mime-version
+         :in-reply-to:date:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=UHb/QYDUeRjEZWmoAxhxicuHQ83r8Iogoxy5g/5DRs8=;
+        b=AQvdVW0/+L4THrcX3MAPdZJ2AjBRC7At+sm/Z5FEk0ztKxhFNbVnieTiW2SgdgOj0W
+         zFjr2snAvSBksxdUIV1PVHxiDYPwJ05vyepmqvnXIg/PlfHT5/FLrzArDDca8l8j1KB3
+         YFgzpo4PVho+6s/2UjbbANfIw7wgNodaCFI4s7R8qnV1ghGhdfk9kMuwWwY/o6eJhU/Q
+         5GhMJ+FUewxH2iYgqQXTNQqGXp99rzluo7wctHIL4wUCSiESDExON1Vli3DaAiHIrXgQ
+         pr9ojJxmYRrGTxrgC5P5cL5xwt1/fu46EK0JMm++LGXtCJM9ww/T0iondnFwB7FtW7J5
+         xqkQ==
+X-Forwarded-Encrypted: i=1; AHgh+RpnxkbQyg7zWkJQhkSaYqWfnFWNHoElhQNcKipxEFbFNwFM2Brv07+L/nF80SXXgKNaZaYvxI9q3w==@vger.kernel.org
+X-Gm-Message-State: AOJu0YwO8jPyJKnHqLk4ErABPI/Bkz9gOVY1oEFljDPTtWtvIv1G/5lO
+	tTeKtaVU5PXQmWm8ClABOTw2x1KCjLmrTpf3oAm8EnkAZCmLOpWVLuNPBAbzrTrBGKbSgPQB55r
+	ZJbqo3imQKpaBymWKeA==
+X-Received: from wmer22.prod.google.com ([2002:a05:600c:4356:b0:493:bea4:1b1f])
+ (user=aliceryhl job=prod-delivery.src-stubby-dispatcher) by
+ 2002:a05:600c:3e8e:b0:493:d26b:1575 with SMTP id 5b1f17b1804b1-493e69b0dbdmr59666475e9.27.1783587841386;
+ Thu, 09 Jul 2026 02:04:01 -0700 (PDT)
+Date: Thu, 9 Jul 2026 09:04:00 +0000
+In-Reply-To: <20260708214738.25008-3-brucer42@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Mime-Version: 1.0
+References: <20260708214738.25008-1-brucer42@gmail.com> <20260708214738.25008-3-brucer42@gmail.com>
+Message-ID: <ak9kAP1SZF8AchQT@google.com>
+Subject: Re: [RFC PATCH 2/3] rust: power_supply: add power supply class abstraction
+From: Alice Ryhl <aliceryhl@google.com>
+To: Bruce Robertson <brucer42@gmail.com>
+Cc: rust-for-linux@vger.kernel.org, linux-pm@vger.kernel.org, 
+	linux-i2c@vger.kernel.org, linux-kernel@vger.kernel.org, 
+	Sebastian Reichel <sre@kernel.org>, Miguel Ojeda <ojeda@kernel.org>, Igor Korotin <igor.korotin@linux.dev>, 
+	Gary Guo <gary@garyguo.net>, Tamir Duberstein <tamird@kernel.org>, Boqun Feng <boqun@kernel.org>
+Content-Type: text/plain; charset="utf-8"
 
-Add support for the power domains provided by the HFRPSYS Power
-Controller of the MT8196 SoC.
-Those control power to the eDP and DP Transmitter IPs.
+On Wed, Jul 08, 2026 at 09:47:37PM +0000, Bruce Robertson wrote:
+> There is no Rust abstraction for the power supply class in mainline or
+> rust-next. Add a minimal one:
+> 
+>   - a Driver trait carrying the supply's name, type and property list,
+>     plus a get_property() method;
+>   - a generic extern "C" trampoline the power supply core calls back
+>     into, recovering the driver's private data via the parent device and
+>     dispatching to get_property();
+>   - a Registration that owns the power_supply_desc and unregisters the
+>     supply on drop, freeing the descriptor in the correct order.
+> 
+> Property, type and status constants are re-exported so drivers need not
+> reach into the generated bindings directly.
+> 
+> Signed-off-by: Bruce Robertson <brucer42@gmail.com>
 
-Reviewed-by: Matthias Brugger <matthias.bgg@gmail.com>
-Signed-off-by: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
----
- drivers/pmdomain/mediatek/mt8196-pm-domains.h | 27 +++++++++++++++++++
- drivers/pmdomain/mediatek/mtk-pm-domains.c    |  6 ++++-
- 2 files changed, 32 insertions(+), 1 deletion(-)
+> +impl Drop for Registration {
+> +    fn drop(&mut self) {
+> +        // SAFETY: `psy` came from a successful `power_supply_register` and has not been
+> +        // unregistered. `power_supply_unregister` blocks until no callback is running;
+> +        // `_desc` (dropped immediately after) is then no longer referenced by the core.
+> +        unsafe { bindings::power_supply_unregister(self.psy) };
+> +    }
+> +}
+> +
+> +/// Register a power supply backed by driver `T` against `dev`.
+> +pub fn register<T: Driver + 'static>(dev: &Device) -> Result<Registration> {
 
-diff --git a/drivers/pmdomain/mediatek/mt8196-pm-domains.h b/drivers/pmdomain/mediatek/mt8196-pm-domains.h
-index 2e4b28720659..d704c9fa9337 100644
---- a/drivers/pmdomain/mediatek/mt8196-pm-domains.h
-+++ b/drivers/pmdomain/mediatek/mt8196-pm-domains.h
-@@ -602,6 +602,27 @@ static const struct scpsys_hwv_domain_data hfrpsys_hwv_domain_data_mt8196[] = {
- 	},
- };
- 
-+static const struct scpsys_domain_data hfrpsys_domain_data_mt8196[] = {
-+	[MT8196_POWER_DOMAIN_EDPTX] = {
-+		.name = "edp-tx",
-+		.sta_mask = MT8196_PWR_ACK,
-+		.sta2nd_mask = MT8196_PWR_ACK_2ND,
-+		.ctl_offs = 0x74,
-+		.pwr_sta_offs = 0x74,
-+		.pwr_sta2nd_offs = 0x74,
-+		.caps = MTK_SCPD_SIMPLE_PWRSEQ,
-+	},
-+	[MT8196_POWER_DOMAIN_DPTX] = {
-+		.name = "dp-tx",
-+		.sta_mask = MT8196_PWR_ACK,
-+		.sta2nd_mask = MT8196_PWR_ACK_2ND,
-+		.ctl_offs = 0x78,
-+		.pwr_sta_offs = 0x78,
-+		.pwr_sta2nd_offs = 0x78,
-+		.caps = MTK_SCPD_SIMPLE_PWRSEQ,
-+	},
-+};
-+
- static const struct scpsys_soc_data mt8196_scpsys_data = {
- 	.domains_data = scpsys_domain_data_mt8196,
- 	.num_domains = ARRAY_SIZE(scpsys_domain_data_mt8196),
-@@ -616,6 +637,12 @@ static const struct scpsys_soc_data mt8196_scpsys_hwv_data = {
- 	.type = SCPSYS_MTCMOS_TYPE_HW_VOTER,
- };
- 
-+static const struct scpsys_soc_data mt8196_hfrpsys_data = {
-+	.domains_data = hfrpsys_domain_data_mt8196,
-+	.num_domains = ARRAY_SIZE(hfrpsys_domain_data_mt8196),
-+	.type = SCPSYS_MTCMOS_TYPE_DIRECT_CTL,
-+};
-+
- static const struct scpsys_soc_data mt8196_hfrpsys_hwv_data = {
- 	.hwv_domains_data = hfrpsys_hwv_domain_data_mt8196,
- 	.num_hwv_domains = ARRAY_SIZE(hfrpsys_hwv_domain_data_mt8196),
-diff --git a/drivers/pmdomain/mediatek/mtk-pm-domains.c b/drivers/pmdomain/mediatek/mtk-pm-domains.c
-index 632c5dcdceda..8309a4b46afb 100644
---- a/drivers/pmdomain/mediatek/mtk-pm-domains.c
-+++ b/drivers/pmdomain/mediatek/mtk-pm-domains.c
-@@ -1071,7 +1071,7 @@ static void scpsys_remove_one_domain(struct scpsys_domain *pd)
- 		if (scpsys_hwv_domain_is_enable_done(pd))
- 			scpsys_hwv_power_off_internal(pd);
- 	} else {
--		if (scpsys_domain_is_on(pd))
-+		if (scpsys_domain_is_on(pd) || MTK_SCPD_CAPS(pd, MTK_SCPD_SIMPLE_PWRSEQ))
- 			scpsys_power_off_internal(pd);
- 	}
- 
-@@ -1288,6 +1288,10 @@ static const struct of_device_id scpsys_of_match[] = {
- 		.compatible = "mediatek,mt8196-power-controller",
- 		.data = &mt8196_scpsys_data,
- 	},
-+	{
-+		.compatible = "mediatek,mt8196-hfrp-power-controller",
-+		.data = &mt8196_hfrpsys_data,
-+	},
- 	{
- 		.compatible = "mediatek,mt8196-hwv-hfrp-power-controller",
- 		.data = &mt8196_hfrpsys_hwv_data,
--- 
-2.54.0
+Should this be &Device<Bound>?
 
+> +    let mut desc = KBox::new(bindings::power_supply_desc::default(), GFP_KERNEL)?;
+> +    desc.name = T::NAME.as_char_ptr();
+> +    desc.type_ = T::TYPE;
+> +    desc.properties = T::PROPERTIES.as_ptr();
+> +    desc.num_properties = T::PROPERTIES.len();
+> +    desc.get_property = Some(get_property_trampoline::<T>);
+> +
+> +    // Stable heap address; moving the KBox into `Registration` keeps this valid
+> +    // (moving a KBox moves the pointer, not the heap allocation).
+> +    let desc_ptr: *const bindings::power_supply_desc = &*desc;
+> +
+> +    let cfg = bindings::power_supply_config {
+> +        drv_data: dev.as_raw().cast::<kernel::ffi::c_void>(),
+> +        ..Default::default()
+> +    };
+> +
+> +    // SAFETY: `dev` valid; `desc_ptr` points into `desc`, kept alive in the returned
+> +    // `Registration` and freed only after `power_supply_unregister`; `cfg` valid for the call.
+> +    let psy = unsafe { bindings::power_supply_register(dev.as_raw(), desc_ptr, &cfg) };
+> +    let psy = from_err_ptr(psy)?;
+> +
+> +    Ok(Registration { psy, _desc: desc })
+> +}
+
+This looks like it should be a ::new() method on Registration instead?
+
+I would compare with existing Registration abstractions and mirror how
+they do it.
+
+Alice
