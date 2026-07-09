@@ -1,152 +1,129 @@
-Received: from mail-wm1-f44.google.com (mail-wm1-f44.google.com [209.85.128.44])
+Received: from mail-ua1-f51.google.com (mail-ua1-f51.google.com [209.85.222.51])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DCF3F4028C3
-	for <linux-pm@vger.kernel.org>; Thu,  9 Jul 2026 09:49:52 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.44
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BE67D3E9F96
+	for <linux-pm@vger.kernel.org>; Thu,  9 Jul 2026 09:49:56 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.222.51
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1783590598; cv=none; b=f1eDe2NmLwkpcUEXpFTgITtOvg+Z35RSBhl3nfHttpamV+1NH/WI6THiUePHeNM+TkmDYxKtoVTWey9vApVxCsfK14MatSZEI4nuiexmW169sbHGkk/bsLf6u7LQ7ktZiPyqt6ll5JPhyW43gYQ3+bn2Mufcw8FqSZJcevPs+A4=
+	t=1783590601; cv=none; b=J6Z3uca8cMQD41kDoPSUyFbmxgAn5smm5i+IMCJVr1v9iLM5rjkICyMV52zcrNkJ3yNF5AtqApD+CQRBqPr+BEdhRi4lu6YBk1XEnr4/EDpMJKWNXhBCy0C/tvf1iR8Hh4Lm56LL8Dtl3Fej9lj4d+O7maZXIKMNRz2FU0NrFrM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1783590598; c=relaxed/simple;
-	bh=jTFvyUggpn9b7ir5dJXF/0vV6aESSqllkJsE1EJX8x0=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=qB6WuXC78EHO3BJ6mcnIG+YPRY7IDFdjgOlf6rCGoq5EuCnXJ45jlPADSQWpgdUKHeXlsUb9NUEMLur2R51LPD73w+PzZBnoB4Uh+Iq+9ZJtpNj8LmBVEvScarwXwa7DyqsOZZbHuR4UYYKdI5BTC54vV1yVnh4ukk5F0OsDjik=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com; spf=pass smtp.mailfrom=suse.com; dkim=pass (2048-bit key) header.d=suse.com header.i=@suse.com header.b=PovcRIVX; arc=none smtp.client-ip=209.85.128.44
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=suse.com header.i=@suse.com header.b="PovcRIVX"
-Received: by mail-wm1-f44.google.com with SMTP id 5b1f17b1804b1-493e497643fso9113655e9.0
-        for <linux-pm@vger.kernel.org>; Thu, 09 Jul 2026 02:49:52 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=suse.com; s=google; t=1783590589; x=1784195389; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:in-reply-to:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=MXemn+RWgfgniHXL+Z+iccp115cwF5wMpUS4nNjdkFs=;
-        b=PovcRIVXEPSF/FJeQlxhlzoXjqZOrbs3CiE5bUYuum/kokSouOcrfuWzkJz+QZ+EEU
-         bXZutBCPHghMPuDpORpgqEkhwf9ItYai/C2Wls7hXpV8JBACI0ISAzSZohMkmVLXApNn
-         fZlxwp5LQbRlt1W9WkBqq04596J259cyQGkTEsx5D5ai1Vpe/8NCZrLqgzS5soekf8Zd
-         N1CUWCeoaHYptaJl5ecJ1ZzDp9e7jZkz7Z27dZDIG4LQ8N1cI1J5HRitdDR0mFAuAiJK
-         tCK2hnhPLuoPo29pU3Y3TxhIiW33KldSOjrnaQ78LbO8JgLXI4Yv8EB+9OvmBldN7dCE
-         StRA==
+	s=arc-20240116; t=1783590601; c=relaxed/simple;
+	bh=XyB0QJBI/ArxNnxn06+fFpma6hNeLNHAjblX5FcA1C0=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=Bc7ZkyarQ0pCkSN/4Tfxl4+D36EFYW5bIAOkk+8NbrI7nnWQvDq8Bo16mKGYwmk+1Zg5ICK1/PwPSg/AGUCqPhpCfHyiwoYpFLRGXkGiaFbzRVxyQHDo3VdNBSgpr4JXiWt5t4aea0n67KzDNQysg3ZgczlQIcO6CfbOoqRd+7o=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org; spf=pass smtp.mailfrom=gmail.com; arc=none smtp.client-ip=209.85.222.51
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+Received: by mail-ua1-f51.google.com with SMTP id a1e0cc1a2514c-96944741eaeso556080241.1
+        for <linux-pm@vger.kernel.org>; Thu, 09 Jul 2026 02:49:56 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1783590589; x=1784195389;
-        h=content-transfer-encoding:content-type:in-reply-to:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=MXemn+RWgfgniHXL+Z+iccp115cwF5wMpUS4nNjdkFs=;
-        b=Co8eE0CUjAFS0CJhnWgUAAMwpvqT63ZhkkHnLaYYZYJnGBhSh2LADxI35NjCmcadI+
-         WI0KaQpWsdyPZgTP6aT+GK7Yjx+vmfqt0nRf5ZZfrHZNzF95ZenuIpDMZs2xOtu0MYJV
-         qVFq4tF4D54HQKCFrnw3++eW1w+w5tQPW/X81qh6A9GJq1QKbEivKWx1Glo7d4Ksp4V+
-         ACxpRRjTxCsKszrDCwGenrrPvc0ujxV0LUtlzLlL92MUeUqAoS6Xf2Chh9G31iFVhRfE
-         CKvor8fKGfTRdAamFFBmUy+YxEu51pwim5jPbKHG8rq+dDFWTtbEv4UCvHmwt2wIOa32
-         gsHQ==
-X-Forwarded-Encrypted: i=1; AHgh+RqTgazoQI4q75hMZn/cINPwLpsOue2mBt6oA6IiKGWpqVay429C4u6iqX3SYFyL69pE32aiH0ciXA==@vger.kernel.org
-X-Gm-Message-State: AOJu0YzThv8QQyo38M6YvboZwqQR09YWwIeABhkbxeiAbRaGDMspU5jX
-	f77M//Jf0jGNF1lzwsGlkkvEdvlx1WcHisa41HIG6Og4B4aa/aJXXErQ/dtY+pTDf7Q=
-X-Gm-Gg: AfdE7cnPN9wAN6yTs/qJ4x7D3Mp2b/lKYJBJ1Q4hnnJ0uo9Mq2Y0sWEUI5+qQrSP76U
-	jahpaFbHglRgIrzP0MFLfCwWVP2nQN2Q8m0BmIKC/STAbPRfKih6cLmCmlOH9ZRskrcNrUWxeUs
-	XWBkjkxfoaExVlbmbX4ty83Oqb3uVNfgqsM4JB8ZPaUlZpnmQ+5ip5PhM6dP9IkJg2Z4GaXYBlD
-	J9bhXIW1qRmGO7NKaSV/puf8XUd6OSxMixDNPQyd4LPCnb3CpfK2cn18LMlJ8KvZbe2FaSuAIqM
-	4nzPSnMg1FW+GjiOBuze7iNigEDVq0Td2Pg41B4oRR8iBGhTAjriB3THWrH4yf9qsjI92CEW+Wv
-	9fxyOxP+eTh21oBRccZWfaRa+A2O0+5q0j94zJKmUwgC+jsxmVmLEkjkX7Z3mMTeWUanOfkEKYD
-	AX82kveOk/9zFZIL19O3DP+Qxpr1x/44mD4w==
-X-Received: by 2002:a05:600c:c1d7:20b0:490:9782:3eb8 with SMTP id 5b1f17b1804b1-493e68c3535mr47652155e9.25.1783590588957;
-        Thu, 09 Jul 2026 02:49:48 -0700 (PDT)
-Received: from [192.168.42.79] (nat2.prg.suse.com. [195.250.132.146])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-493eb6d53absm47837275e9.6.2026.07.09.02.49.46
+        d=1e100.net; s=20251104; t=1783590594; x=1784195394;
+        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
+         :references:mime-version:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to:content-type;
+        bh=JBx1Lwl28bs84XHLARf2PZgvr/qdRO+0Qc3qcd6uTMQ=;
+        b=OiI0I9hfLm1aHAh1t4OvGKT0SkUBhDzh4iziiXWR0fmMxh2Tx0LLvnU/7u/Nffodqj
+         l478fcGmJHkKv8nykZbxgB8gJjqSzT8eNpBe2eIv/PFG4KAZYZoE3QSTXnjyptP260Sh
+         ZAdSBpqBx1MW5KxBXIyu9bhu8BWJoMPQn24dt9JW8uWihC5Tyv4oQ81S1yC9oIVGgb89
+         0pjfDrB97drgWufH2/CB7T3TYUpLWpQW3ebXqJGMY3RMnCX45DC7/far0Q90hKzaql2Z
+         NrSVDKbt9t7PRuqsT/s9i7yyCabebqlbdMuCFIhHDsPIfnZbeJcIq8toPYU2WSiaIeKp
+         xchw==
+X-Forwarded-Encrypted: i=1; AHgh+Rp4s/HoGmHJB3bCSLMrRHh7RG0fx9EfJIrHAnbxTbRz5JM/J+pIjs4uyhyPAVr6lQqv192eOkZeWg==@vger.kernel.org
+X-Gm-Message-State: AOJu0YxqaN2LK96xC/x8UGahJO0O4fJzt42QyuezoeK1v+/QsHdfDrak
+	Z8G3nNJfMX9tA/T0GMLdiTrVHT0jNf3XeL4hqkobHUq5NMnCRxz4QpyN8NFVFLy8ICI=
+X-Gm-Gg: AfdE7cla9Lezp3HEknAkDWRRD9skL1STvjt0CgwlXHomR+vFWTtvh4ye7HTRtZ+GStd
+	dUut3iIxOYsLuEvRuRBRuhQFY3LIHKbjOmprh9CXITz4nhgxjMl7TT/rJRnpvrpKRzB6pxHaaGi
+	zUijL+FGYF37JojmDp+A3i+jonqb80Mh7YVYPzByKOO9qd5MQZo3d4r4uklcoW6fIjIQm7jgSxB
+	V3vJD6CCI5jqQul6T5x6kGcMEj8OJp+Jnb4WLIZ8ev73zDz5ZrVvH6AJ3Lo+JG5rpaX5eqYyHXI
+	p4orUg7SlNAr0/UY/p0QGID3/IZOW+2cAgCS5FFPIIuYtwgFYLYPZNl9Mo6xw6z4dBziYpISOGY
+	2M/ZTrOLKHTd+hEF+NJ/PbFhlYBfIZx13bcc+bipl0TsA2R3r+B3/weyp2iZd/V1dUX+xXquk+l
+	l+8lyeDx6WM2UEiuntSCcDVUHEywa/aAyM5oauPnCjISL7ICwtXehPAxHl8Gvu
+X-Received: by 2002:a05:6102:644e:b0:608:9a34:c8ea with SMTP id ada2fe7eead31-744dff405bdmr3423923137.10.1783590594453;
+        Thu, 09 Jul 2026 02:49:54 -0700 (PDT)
+Received: from mail-vs1-f50.google.com (mail-vs1-f50.google.com. [209.85.217.50])
+        by smtp.gmail.com with ESMTPSA id a1e0cc1a2514c-96ed2c94ba7sm2821742241.4.2026.07.09.02.49.52
+        for <linux-pm@vger.kernel.org>
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Thu, 09 Jul 2026 02:49:48 -0700 (PDT)
-Message-ID: <3e2ae6e8-41ad-45f0-a885-131a5711c276@suse.com>
-Date: Thu, 9 Jul 2026 11:49:45 +0200
+        Thu, 09 Jul 2026 02:49:53 -0700 (PDT)
+Received: by mail-vs1-f50.google.com with SMTP id ada2fe7eead31-738f3419eedso448695137.3
+        for <linux-pm@vger.kernel.org>; Thu, 09 Jul 2026 02:49:52 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AHgh+RofEXe9rB6/gfS/4PuIVTIewE/HD+MnNveDo2Aav6G19bbAVTQuf+w4UxGlv9PidqT3SPQ0GXiwbg==@vger.kernel.org
+X-Received: by 2002:a05:6102:c54:b0:740:22ba:8a4e with SMTP id
+ ada2fe7eead31-744dfed12b0mr3967593137.6.1783590592726; Thu, 09 Jul 2026
+ 02:49:52 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 1/2] umh, treewide: Explicitly include linux/umh.h where
- needed
-To: =?UTF-8?Q?Michal_Koutn=C3=BD?= <mkoutny@suse.com>
-Cc: Tony Luck <tony.luck@intel.com>, Borislav Petkov <bp@alien8.de>,
- Thomas Gleixner <tglx@kernel.org>, Ingo Molnar <mingo@redhat.com>,
- Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org,
- "H. Peter Anvin" <hpa@zytor.com>,
- Philipp Reisner <philipp.reisner@linbit.com>,
- Lars Ellenberg <lars.ellenberg@linbit.com>,
- =?UTF-8?Q?Christoph_B=C3=B6hmwalder?= <christoph.boehmwalder@linbit.com>,
- Jens Axboe <axboe@kernel.dk>, Johan Hovold <johan@kernel.org>,
- Alex Elder <elder@kernel.org>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- "Rafael J. Wysocki" <rafael@kernel.org>,
- Michal Januszewski <spock@gentoo.org>, Helge Deller <deller@gmx.de>,
- Alexander Viro <viro@zeniv.linux.org.uk>,
- Christian Brauner <brauner@kernel.org>, Jan Kara <jack@suse.cz>,
- Trond Myklebust <trondmy@kernel.org>, Anna Schumaker <anna@kernel.org>,
- Chuck Lever <cel@kernel.org>, Jeff Layton <jlayton@kernel.org>,
- NeilBrown <neil@brown.name>, Olga Kornievskaia <okorniev@redhat.com>,
- Dai Ngo <Dai.Ngo@oracle.com>, Tom Talpey <tom@talpey.com>,
- Mark Fasheh <mark@fasheh.com>, Joel Becker <jlbec@evilplan.org>,
- Joseph Qi <joseph.qi@linux.alibaba.com>, Tejun Heo <tj@kernel.org>,
- Johannes Weiner <hannes@cmpxchg.org>, Luis Chamberlain <mcgrof@kernel.org>,
- Daniel Gomez <da.gomez@kernel.org>, Sami Tolvanen <samitolvanen@google.com>,
- Aaron Tomlin <atomlin@atomlin.com>, Pavel Machek <pavel@kernel.org>,
- Len Brown <lenb@kernel.org>, Andrew Morton <akpm@linux-foundation.org>,
- Danilo Krummrich <dakr@kernel.org>, Nikolay Aleksandrov
- <razor@blackwall.org>, Ido Schimmel <idosch@nvidia.com>,
- "David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>,
- Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
- Simon Horman <horms@kernel.org>, David Howells <dhowells@redhat.com>,
- Jarkko Sakkinen <jarkko@kernel.org>, Paul Moore <paul@paul-moore.com>,
- James Morris <jmorris@namei.org>, "Serge E. Hallyn" <serge@hallyn.com>,
- Kentaro Takeda <takedakn@nttdata.co.jp>,
- Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
- linux-edac@vger.kernel.org, linux-kernel@vger.kernel.org,
- drbd-dev@lists.linux.dev, linux-block@vger.kernel.org,
- greybus-dev@lists.linaro.org, linuxppc-dev@lists.ozlabs.org,
- linux-acpi@vger.kernel.org, linux-fbdev@vger.kernel.org,
- dri-devel@lists.freedesktop.org, linux-fsdevel@vger.kernel.org,
- linux-nfs@vger.kernel.org, ocfs2-devel@lists.linux.dev,
- cgroups@vger.kernel.org, linux-modules@vger.kernel.org,
- linux-pm@vger.kernel.org, driver-core@lists.linux.dev,
- bridge@lists.linux.dev, netdev@vger.kernel.org, keyrings@vger.kernel.org,
- linux-security-module@vger.kernel.org
-References: <20260708154510.6794-1-petr.pavlu@suse.com>
- <20260708154510.6794-2-petr.pavlu@suse.com>
- <ak6STbqZd-Q-c56v@localhost.localdomain>
-Content-Language: en-US
-From: Petr Pavlu <petr.pavlu@suse.com>
-In-Reply-To: <ak6STbqZd-Q-c56v@localhost.localdomain>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+References: <cover.1783505142.git.geert+renesas@glider.be> <50f5804f00c55cd60604d00da1bf1f1dc912ba8d.1783505142.git.geert+renesas@glider.be>
+ <80a31a21-9876-48a7-a9ed-baac4f87bc11@mailbox.org>
+In-Reply-To: <80a31a21-9876-48a7-a9ed-baac4f87bc11@mailbox.org>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Thu, 9 Jul 2026 11:49:40 +0200
+X-Gmail-Original-Message-ID: <CAMuHMdV+nHe9kWbBv1k=b-6iixBBJbqeNY-Vq+qbT+wD2g6jUQ@mail.gmail.com>
+X-Gm-Features: AUfX_mz8czD0BjSvqmftRZ_pTGys7GO-j5nSESdQS6eSA4Z7r12bLxvVFtqIaAw
+Message-ID: <CAMuHMdV+nHe9kWbBv1k=b-6iixBBJbqeNY-Vq+qbT+wD2g6jUQ@mail.gmail.com>
+Subject: Re: [PATCH v2 3/6] clk: renesas: Add R-Car X5H CPG driver
+To: Marek Vasut <marek.vasut@mailbox.org>
+Cc: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+	Conor Dooley <conor+dt@kernel.org>, Michael Turquette <mturquette@baylibre.com>, 
+	Stephen Boyd <sboyd@kernel.org>, Brian Masney <bmasney@redhat.com>, Ulf Hansson <ulfh@kernel.org>, 
+	Philipp Zabel <p.zabel@pengutronix.de>, Wolfram Sang <wsa+renesas@sang-engineering.com>, 
+	Marek Vasut <marek.vasut+renesas@mailbox.org>, 
+	Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>, devicetree@vger.kernel.org, 
+	linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, 
+	linux-renesas-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
+	linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
 
-On 7/8/26 8:13 PM, Michal Koutný wrote:
-> Hi Petr.
-> 
-> On Wed, Jul 08, 2026 at 05:44:29PM +0200, Petr Pavlu <petr.pavlu@suse.com> wrote:
->> diff --git a/kernel/cgroup/cgroup-v1.c b/kernel/cgroup/cgroup-v1.c
->> index a4337c9b5287..60eb994c32ae 100644
->> --- a/kernel/cgroup/cgroup-v1.c
->> +++ b/kernel/cgroup/cgroup-v1.c
->> @@ -16,6 +16,7 @@
->>  #include <linux/pid_namespace.h>
->>  #include <linux/cgroupstats.h>
->>  #include <linux/fs_parser.h>
->> +#include <linux/umh.h>
->>  
->>  #include <trace/events/cgroup.h>
-> 
-> There is kmod.h in here too but it's unnecessary, no module lazy loading
-> in this code.
+Hi Marek,
 
-You're right. I'll remove the kmod.h include from
-kernel/cgroup/cgroup-v1.c. I went through all the files again and it
-seems this was the only place I missed.
+On Wed, 8 Jul 2026 at 23:55, Marek Vasut <marek.vasut@mailbox.org> wrote:
+> On 7/8/26 12:15 PM, Geert Uytterhoeven wrote:
+> > +static int register_fixed_clks(struct r8a78000_cpg_priv *priv)
+> > +{
+> > +     struct device *dev = priv->dev;
+> > +     unsigned long rate;
+> > +     struct clk_hw *hw;
+> > +     const char *name;
+> > +
+> > +     for (unsigned int i = 0; i < ARRAY_SIZE(fixed_clk_rates); i++) {
+> > +             rate = fixed_clk_rates[i];
+> > +             name = devm_kasprintf(dev, GFP_KERNEL, "cpg-%lu", rate);
+> > +             if (!name)
+> > +                     return -ENOMEM;
+> > +
+> > +             hw = clk_hw_register_fixed_rate(dev, name, NULL, 0, rate);
+>
+> Would it be viable to use devm_clk_hw_register_fixed_rate() here ?
+
+Yes, I think so; thanks!
+
+> > +             if (IS_ERR(hw)) {
+> > +                     while (i-- > 0)
+> > +                             clk_hw_unregister_fixed_rate(priv->fixed_hws[i]);
+> > +                     return PTR_ERR(hw);
+> > +             }
+> > +
+> > +             priv->fixed_hws[i] = hw;
+> > +     }
+> > +
+> > +     return devm_add_action_or_reset(dev, unregister_fixed_clks, priv);
+
+And then this, and unregister_fixed_clks() can go, and
+r8a78000_cpg_priv.fixed_hws[] is no longer needed after probe.
+
+> > +}
+
+Gr{oetje,eeting}s,
+
+                        Geert
 
 -- 
-Thanks,
-Petr
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
