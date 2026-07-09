@@ -1,142 +1,255 @@
-Received: from mail-ej1-f53.google.com (mail-ej1-f53.google.com [209.85.218.53])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CBB8C1C84D0
-	for <linux-pm@vger.kernel.org>; Thu,  9 Jul 2026 13:00:43 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.218.53
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1783602045; cv=pass; b=qOPP4BGrdrgmKn9aUdx3dIR6EW2OAEIrFDrdzfYvDK8N44+pGgTfD6jvoBZ7tr7lnRiEvA5FgvTGnNpf52v6bPuoANlHqx+STzpKf7QNGzrOV6tV7nawsxnHU2gEpHh4EvbB/6l7QN1OwKg6lt6qL3jFu9GFylB8TS0uvbfp32w=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1783602045; c=relaxed/simple;
-	bh=LhRbf5bQM4Oy/ufZ7MaWMxW6XBM6coYQK3ANYzAq5LE=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=bd1TYHH1vlVcTvpxQK0l1bbRUyivFzlQMrLplqZGbaSvNEu8oRWJUxaO6Jc9BULVhrwDq4Z69t0qbCTJffXNN8MtGw6N4ePCFFZiOFtkwtTHNGmX9BocxFBC88rUeZF2Wn9bZbFlzGlBV/8wxW3NuR8TxAJORT//Q8a3pwBPfxY=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=uC4QFYke; arc=pass smtp.client-ip=209.85.218.53
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 916C134CDD;
+	Thu,  9 Jul 2026 13:03:25 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1783602206; cv=none; b=K06CmkKpib345IG5XPee0N+mV7NbgIgLjLfpOC/WE2HzGnML7X3neHzlMFWGUye1qfQsNt2h7nEuLc++uhuxm1zemPDRCiLqCf4K7SfyaAZpOouvtffnfYkbeeTq4D7rIePJm6S2wWgmp7nAAXox385R/Svbk/EkdN8rNxWN380=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1783602206; c=relaxed/simple;
+	bh=4MzdFv6f9wS5Fn/Z+JeIqk7v6WwX+7kICYeGs5hy4SY=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=msKaO9o6QLgGJqxy+DbQILa+F3dzyUdE14wvD59X5uDrAdw01MNvxUxoB54+KW9XFCkgRHGN8+dd9qbqwIWCKp/JdCkJGFFAy6KNsjaHBBy5RepkLtZq3ycojbal31/O27NdBjgMgRpTHABVwfFXrEF1ipAUTjEPHRu3V2ktV0A=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=VitzfpiE; arc=none smtp.client-ip=205.220.168.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="uC4QFYke"
-Received: by mail-ej1-f53.google.com with SMTP id a640c23a62f3a-c15ba5b151dso255168466b.3
-        for <linux-pm@vger.kernel.org>; Thu, 09 Jul 2026 06:00:43 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1783602042; cv=none;
-        d=google.com; s=arc-20260327;
-        b=XhVt5t699NvJsMmzkrjoFuprTtJc+10pO4w5U266aQNDXWaiIWHIZ9RVUEDiZTK9f1
-         m+ESXwz8MUXUP3lt3F83YcymbDYgzpPGsSW8HNZ1pWi2l9PwMzV9c9KFT9cApU6oGfh6
-         KahbOV8BBVL3cO0vGEdlc6m0uZYPiYyi7Or3s1g3S0YbjSqSOOTOlCpPSIK+ScSb3EYD
-         qkdDWgAT9rk7ubwdttemUacI0Gy7QaUg2lxYrxL6qYn6+bMppNMZ4HohtWHJNd4Qs8Tv
-         urFPf+anoUSaX46NZxa8cDwWaiJbLGTFTv90hKgyIOVyuVDleWwLpjHLWyc7pYkKM30R
-         M/JA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:dkim-signature;
-        bh=8OVGLmgcAKHzuHEuGgiI0/Yo86hRVAp4okPyVorViTo=;
-        fh=SCxAfsxH+2CbeGv2ja5sxY6/otZeRmus74skpEDVFZc=;
-        b=qTWhmslq2BHXPoZ+qW+D0gxH0eUzc9ylbRnZCRAXfniSIsUik0R0g6n7efqC+BFSva
-         KlMieWAPnppxog8ZII03G1xlsEt3tTeUfbmE9MHmnibPxHFaF9MMvM8sWj8HHVAmUNsO
-         W92yoSbS4A8O4dwWC6fhs/0QKdG0riBaN9gyXS6TBaPQtizOgSkuwOcgSqJRI1MsCi9k
-         j56Zk1hQ4G9rLhg/SbGEctDu2wq7pJOoGJpu0zve3AMg/SmZHd/cduPiy9BLOC+fNG2p
-         /y+HanN9nAUU0Zumddr1qtlTG0FU7H1F/xD3mS32kWzIoByTqP3mZdC6zWzHuc0fb706
-         vJiQ==;
-        darn=vger.kernel.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1783602042; x=1784206842; darn=vger.kernel.org;
-        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
-         :references:mime-version:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=8OVGLmgcAKHzuHEuGgiI0/Yo86hRVAp4okPyVorViTo=;
-        b=uC4QFYke8zxV+MydDOV00Bj/aW1WxtOdAxbyMA4MhBxHkgp2aY7adiFttHXj3PZO/s
-         w5GwgrdXknubB6BgMV3SkJYdl3WDsU4P3VEQLtCDHuRCOeSwicz86RmkXIP+u8IRv9fj
-         U5loUx/m4hgUSbWvlZ2doInhBxqK1klETAH0Q59y6SIqMOGKemR9C7fI9QxCkC5ALZmP
-         Jay/Wdo6cwtL2eXuSj8x21aCJTQT7z+W5M8hTIz7OhESZYK7qIeSHPLBW7UxsdhGQj+g
-         RVsaIhdprIa/IYR0GctcDYYJCIPUyFa1kRqTP7ljoqbQWCwoC8C1uQMMksNy0Z05g0cW
-         GihQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1783602042; x=1784206842;
-        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
-         :references:mime-version:x-gm-gg:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to:content-type;
-        bh=8OVGLmgcAKHzuHEuGgiI0/Yo86hRVAp4okPyVorViTo=;
-        b=hyPTvLpQDGJSWopvGwA+QE7ss2mEuKuHJ4NZEIVyo8XledhEoHPB8Zmws0NxtEM1Gs
-         5PPtKwTIqwPdQ6LkZLb6Mu4QD2FteSYpUe53htWrHOnsAGQDD6O6tUgJ3oGvJAB/aouZ
-         R2qmweslbYSFaCu8TbxYKMm1deJcGx51u3cFI3B/Ctz8Bw98jhidH3aWfqY8dbi7/D6Q
-         PKJDp2C1mj7Ay1iPGvxwC9rNEuUtj2cj51YV1k6Tpy+dKYT0m+IZeyTED+C8ChVtEBRc
-         OgzoCMknlYW07m0CzjFDeEEc3kmQw49gcx6tH1l67SNoYD26mClGudWtujw3lzno1SYk
-         1vGA==
-X-Gm-Message-State: AOJu0YzpT2FzTDzLQgNufQ4M+/Luhz9VzE+Bvdia4M2CUfTVHn7g2Q5o
-	ydWR/8ZOVl9RbGMDF/LpjnuIROWdzIPLuar52nDGiNUd2ylOp943+VBfVESdNGVl92Kr/H/zTSv
-	GFkRAyMEsS/n2eTJdZsFG+1wWefWljZUot/WHuTb0Ng==
-X-Gm-Gg: AfdE7cnodUgk8NPFFddXG+a0sRZkCyqrxc0eo/sKfkPW8o57CKz5ev12RfMoaEMhGs4
-	TyBgLYhfntgKReUyjcxonhiN0IC4BdEN5KWk6siATPc50k3Cp5PeSnOTBu9fHfUyaHX079SnQU4
-	Mp/3pRTCMOgU+L6IraV5AA3BvkHB9iBxJu8//+ml1f6R2BZcLfwL/jbYXXWmq703PM6tmI3qMR1
-	Pa5CSBA38l14VTQ1XqEyeoly8y56Lm2EHXel3z3xc5kuaw6pHwqIk5IEI7+gY5IWt2NDaWxdDhs
-	6xbt2zjRFVCdmA62ipv0RWKdPQ==
-X-Received: by 2002:a17:907:e143:b0:c15:b48d:caa4 with SMTP id
- a640c23a62f3a-c15ce0d591amr188922966b.39.1783602042020; Thu, 09 Jul 2026
- 06:00:42 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="VitzfpiE"
+Received: from pps.filterd (m0279862.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 669BN7Zp1537221;
+	Thu, 9 Jul 2026 13:03:23 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
+	viR7SRGwLt6ze51cBdmXoYA7a2IzlLJ0il3pJaQD7I4=; b=VitzfpiEOd1SIhDA
+	Fvs85I7Xk1sXXvghfW2Ju9ZHxdy2srSMiGMkK+sURNG0kI4ol+TWRZCcq+kee+19
+	yJ1b3fSl/SV2SW1k8XE0F+xF3uKCygebt/UouC+dkq9buEsqCtgAxU1bdiI/ZRlY
+	Vfui9vwaPSKmkSITXQ8vp5LaiE+yYJ/WtcqGsjzu3nDec1s0EkJps/K4T4pblK/F
+	/6sX9PvHtPS2YCs21WonsWJNoFDW98PGE3lIK98hlgiZ/IbRX4okgwOMM+42nC22
+	kRqGN3t5RtlyDBWfj99Fgyx/1y8xAcdl97sItfYnYDbZX8MT8VYP43XVqniqvwfn
+	3tRXMw==
+Received: from apblrppmta02.qualcomm.com (blr-bdr-fw-01_GlobalNAT_AllZones-Outside.qualcomm.com [103.229.18.19])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4fa1ydtt9h-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 09 Jul 2026 13:03:23 +0000 (GMT)
+Received: from pps.filterd (APBLRPPMTA02.qualcomm.com [127.0.0.1])
+	by APBLRPPMTA02.qualcomm.com (8.18.1.7/8.18.1.7) with ESMTP id 669D3KBQ031747;
+	Thu, 9 Jul 2026 13:03:20 GMT
+Received: from pps.reinject (localhost [127.0.0.1])
+	by APBLRPPMTA02.qualcomm.com (PPS) with ESMTPS id 4f6u8m1yh4-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 09 Jul 2026 13:03:20 +0000 (GMT)
+Received: from APBLRPPMTA02.qualcomm.com (APBLRPPMTA02.qualcomm.com [127.0.0.1])
+	by pps.reinject (8.18.1.12/8.18.1.12) with ESMTP id 669D3K6D031740;
+	Thu, 9 Jul 2026 13:03:20 GMT
+Received: from hu-devc-hyd-u22-c.qualcomm.com (hu-kotarake-hyd.qualcomm.com [10.213.97.140])
+	by APBLRPPMTA02.qualcomm.com (PPS) with ESMTPS id 669D3JPN031697
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 09 Jul 2026 13:03:19 +0000 (GMT)
+Received: by hu-devc-hyd-u22-c.qualcomm.com (Postfix, from userid 2389607)
+	id ECB21B06; Thu,  9 Jul 2026 18:33:18 +0530 (+0530)
+Date: Thu, 9 Jul 2026 18:33:18 +0530
+From: Rakesh Kota <rakesh.kota@oss.qualcomm.com>
+To: Krzysztof Kozlowski <krzk@kernel.org>
+Cc: Rob Herring <robh@kernel.org>, Sebastian Reichel <sre@kernel.org>,
+        Krzysztof Kozlowski <krzk+dt@kernel.org>,
+        Conor Dooley <conor+dt@kernel.org>, Vinod Koul <vkoul@kernel.org>,
+        Bjorn Andersson <andersson@kernel.org>,
+        Konrad Dybcio <konradybcio@kernel.org>, linux-pm@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-arm-msm@vger.kernel.org,
+        Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>,
+        Kamal Wadhwa <kamal.wadhwa@oss.qualcomm.com>,
+        Jishnu Prakash <jishnu.prakash@oss.qualcomm.com>
+Subject: Re: [PATCH v4 1/2] dt-bindings: power: reset: qcom-pon: Add new
+ compatible PMM8654AU
+Message-ID: <20260709130318.scxg7h6oyqsreoib@hu-kotarake-hyd.qualcomm.com>
+References: <20260323-b4-add_pwrkey_and_resin-v4-0-abef4e4dcc3d@oss.qualcomm.com>
+ <20260323-b4-add_pwrkey_and_resin-v4-1-abef4e4dcc3d@oss.qualcomm.com>
+ <20260323181820.GA888901-robh@kernel.org>
+ <20260327095341.5radsv6dsbwptnfs@hu-kotarake-hyd.qualcomm.com>
+ <9c7521fe-5008-4daa-945b-ce3f5c0f6dc0@kernel.org>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <5086499.GXAFRqVoOG@rafael.j.wysocki>
-In-Reply-To: <5086499.GXAFRqVoOG@rafael.j.wysocki>
-From: Vincent Guittot <vincent.guittot@linaro.org>
-Date: Thu, 9 Jul 2026 15:00:30 +0200
-X-Gm-Features: AVVi8Cc-17WjqtJis8MLChr9ZmG3bkpQuaU4uVoAIRW0HpNs2Br9GKToOcW_LyM
-Message-ID: <CAKfTPtDbj_BD8gT_xDUqOTZicLHYpGtdWygf=9Qw39dFZKxwFg@mail.gmail.com>
-Subject: Re: [PATCH v1] cpufreq: Make cpufreq_update_pressure() fall back to cpuinfo.max_freq
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, 
-	Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, 
-	Viresh Kumar <viresh.kumar@linaro.org>, Dhruva Gole <d-gole@ti.com>, 
-	Lukasz Luba <lukasz.luba@arm.com>, Qais Yousef <qyousef@layalina.io>, 
-	Ingo Molnar <mingo@kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <9c7521fe-5008-4daa-945b-ce3f5c0f6dc0@kernel.org>
+X-QCInternal: smtphost
+X-QCInternal: smtphost
+X-Proofpoint-Spam-Info: AW1haW4tMjYwNzA5MDEyNyBTYWx0ZWRfX+AmuPv3A5DIf
+ y8wv9amtrHs3zgGJGxGDynhZ4P9GImXdR9yiN6x8XRdJ/UYO41RYPQUTccf6UYZZ27g4e31n+88
+ PZJ9/7SwWTS150g25x0SxCy8lvyzSJk=
+X-Proofpoint-ORIG-GUID: SG6DFEn7F-Qia5iBm3lu7bntVOedNBPR
+X-Authority-Analysis: v=2.4 cv=cOLQdFeN c=1 sm=1 tr=0 ts=6a4f9c1b cx=c_pps
+ a=Ou0eQOY4+eZoSc0qltEV5Q==:117 a=Ou0eQOY4+eZoSc0qltEV5Q==:17
+ a=IkcTkHD0fZMA:10 a=RAioF0-LDSMA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=u7WPNUs3qKkmUXheDGA7:22 a=_K5XuSEh1TEqbUxoQ0s3:22 a=EUspDBNiAAAA:8
+ a=zIA9Wm4PP-oGnrJrhzEA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
+X-Proofpoint-GUID: SG6DFEn7F-Qia5iBm3lu7bntVOedNBPR
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzA5MDEyNyBTYWx0ZWRfX24FaDRZIzJdE
+ 2rJ7E8/8eFImScwlOKImulqGk57sHI3cEY31ZPJU1Tvj/nYPEnoMO6telbodWT2jDAQieeBGzSB
+ Jk5nq0ziLJ24eIC1s0cAP2H9ulvdV8CeXXfGl9IQTH8lZx8LFAJj4A4J9Y5eC0D7SHvaor8IXEr
+ Ismk/M4/xx1i5F8k0xuShzHlRVGQex6tITwHEkAOv6+lq7oiLyj+I1o+SKjowdy6hYIPchAFd6V
+ o2J4UrL9WvaRqaCFhifWiG2NedUjaTOT7gN2PGyyX9+9E4OBIiMAI69aqqKbbUHC4h0VozOqeie
+ +wZIRAUMPWWnwYT0h3rqu9KDKhiJvljGIqQ0gTEz1q9l+AFrM7yHWeik7hmOI7L1bXSU7ZuOSFq
+ VFHW3jn5jjGhXHlkWuixOcCmVAn4AQYOl2X8mwXxebOfZBoPVHjdGymTsIYvqeK8tvhS50Kp5bO
+ fm/EkOtZY0klE6o8I3g==
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.134,FMLib:17.12.100.49
+ definitions=2026-07-09_02,2026-07-09_02,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ malwarescore=0 clxscore=1015 priorityscore=1501 bulkscore=0 spamscore=0
+ lowpriorityscore=0 phishscore=0 suspectscore=0 impostorscore=0 adultscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2607090127
 
-On Tue, 7 Jul 2026 at 19:25, Rafael J. Wysocki <rafael@kernel.org> wrote:
->
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->
-> If arch_scale_freq_ref() is not defined for a given arch (like x86, for
-> example), cpufreq_update_pressure() will always set cpufreq_pressure to
-> zero for all CPUs in the system, which is generally problematic on
-> systems with asymmetric capacity [1].
->
-> However, in the absence of arch_scale_freq_ref(), it is reasonable
-> to assume that cpuinfo.max_freq is the maximum sustainable frequency
-> for the given cpufreq policy.  Moreover, there are cases in which
-> arch_scale_freq_ref() would need to be defined to return essentially
-> the cpuinfo.max_freq value anyway (for example, intel_pstate on
-> hybrid platforms).
->
-> For the above reasons, update cpufreq_update_pressure() to fall back to
-> using cpuinfo.max_freq as the reference frequency if zero is returned by
-> arch_scale_freq_ref().
->
-> Fixes: 75d659317bb1 ("cpufreq: Add a cpufreq pressure feedback for the scheduler")
-> Link: https://lore.kernel.org/lkml/CAKfTPtBuRLfYNnR4w--cFZYZy-R8gaPEgVwCcaMmbCcJ2H-muQ@mail.gmail.com/ [1]
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On Fri, Mar 27, 2026 at 11:32:57AM +0100, Krzysztof Kozlowski wrote:
+> On 27/03/2026 10:53, Rakesh Kota wrote:
+> > On Mon, Mar 23, 2026 at 01:18:20PM -0500, Rob Herring wrote:
+> >> On Mon, Mar 23, 2026 at 04:15:15PM +0530, Rakesh Kota wrote:
+> >>> PMM8654AU is a different PMIC from PMM8650AU, even though both share
+> >>> the same PMIC subtype. Add PON compatible string for PMM8654AU PMIC
+> >>> variant.
+> >>>
+> >>> The PMM8654AU PON block is compatible with the PMK8350 PON
+> >>> implementation, but PMM8654AU also implements additional PON registers
+> >>> beyond the baseline. Use the PMM8654AU naming to match the compatible
+> >>> string already present in the upstream pinctrl-spmi-gpio driver, keeping
+> >>> device tree and kernel driver naming consistent.
+> >>>
+> >>> Reviewed-by: Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>
+> >>> Signed-off-by: Rakesh Kota <rakesh.kota@oss.qualcomm.com>
+> >>> ---
+> >>> Changes in v4:
+> >>>  - Remove the contain for PMK8350 and new if:then for PMM8654AU as
+> >>>    suggested by Krzysztof Kozlowski
+> >>>
+> >>> Changes in v3:
+> >>>  - Update the commit message.
+> >>>
+> >>> Changes in v2:
+> >>>  - Introduces PMM8654AU compatible strings as suggested by Konrad Dybcio.
+> >>> ---
+> >>>  .../devicetree/bindings/power/reset/qcom,pon.yaml  | 32 +++++++++++++++++-----
+> >>>  1 file changed, 25 insertions(+), 7 deletions(-)
+> >>>
+> >>> diff --git a/Documentation/devicetree/bindings/power/reset/qcom,pon.yaml b/Documentation/devicetree/bindings/power/reset/qcom,pon.yaml
+> >>> index 979a377cb4ffd577bfa51b9a3cd089acc202de0c..2a5d9182b8d5c1a286716ab175c7bb5e39b334e0 100644
+> >>> --- a/Documentation/devicetree/bindings/power/reset/qcom,pon.yaml
+> >>> +++ b/Documentation/devicetree/bindings/power/reset/qcom,pon.yaml
+> >>> @@ -17,12 +17,16 @@ description: |
+> >>>  
+> >>>  properties:
+> >>>    compatible:
+> >>> -    enum:
+> >>> -      - qcom,pm8916-pon
+> >>> -      - qcom,pm8941-pon
+> >>> -      - qcom,pms405-pon
+> >>> -      - qcom,pm8998-pon
+> >>> -      - qcom,pmk8350-pon
+> >>> +    oneOf:
+> >>> +      - enum:
+> >>> +          - qcom,pm8916-pon
+> >>> +          - qcom,pm8941-pon
+> >>> +          - qcom,pms405-pon
+> >>> +          - qcom,pm8998-pon
+> >>> +          - qcom,pmk8350-pon
+> >>> +      - items:
+> >>> +          - const: qcom,pmm8654au-pon
+> >>> +          - const: qcom,pmk8350-pon
+> >>>  
+> >>>    reg:
+> >>>      description: |
+> >>> @@ -100,7 +104,6 @@ allOf:
+> >>>    - if:
+> >>>        properties:
+> >>>          compatible:
+> >>> -          contains:
+> >>>              const: qcom,pmk8350-pon
+> >>>      then:
+> >>>        properties:
+> >>> @@ -113,6 +116,21 @@ allOf:
+> >>>              - const: hlos
+> >>>              - const: pbs
+> >>>  
+> >>> +  - if:
+> >>> +      properties:
+> >>> +        compatible:
+> >>> +            const: qcom,pmm8654au-pon
+> >>> +    then:
+> >>> +      properties:
+> >>> +        reg:
+> >>> +          minItems: 1
+> >>> +          maxItems: 2
+> >>> +        reg-names:
+> >>> +          minItems: 1
+> >>> +          items:
+> >>> +            - const: hlos
+> >>> +            - const: pbs
+> >>
+> >> I don't understand this. The existing if/then schema did the exact same 
+> >> thing until you removed 'contains'. Now we just have the same schema 
+> >> duplicated.
+> >>
+> >> What does need changing now that I've looked at it is dropping 'reg' 
+> >> in this schema as it just repeats what the top-level schema has.
+> >>
+> > 
+> > we have got suggestion to add a new if:then block for the new compatible from Krzysztof Kozlowski.
+> > 
+> 
+> But I did not suggest to add the contents in new if:then: block. I
+> certainly did not suggest to not check this patch before submitting, either.
+> 
+> We had long discussion where I asked you how many address spaces you
+> have there?
+> 
+> Answer above.
 
-Acked-by: Vincent Guittot <vincent.guittot@linaro.org>
+Apologies for the late response ....!
 
-> ---
->  drivers/cpufreq/cpufreq.c |    3 +++
->  1 file changed, 3 insertions(+)
->
-> --- a/drivers/cpufreq/cpufreq.c
-> +++ b/drivers/cpufreq/cpufreq.c
-> @@ -2590,6 +2590,9 @@ static void cpufreq_update_pressure(stru
->
->         cpu = cpumask_first(policy->related_cpus);
->         max_freq = arch_scale_freq_ref(cpu);
-> +       if (!max_freq)
-> +               max_freq = policy->cpuinfo.max_freq;
-> +
->         capped_freq = policy->max;
->
->         /*
->
->
->
+Both PMK8350 and PMM8654AU have two address spaces (pon + pon_pbs).
+While PMM8654AU updates some register definitions (offsets/bits
+added/removed) in the pon + pon_pbs address spaces, we currently
+have no use case that requires separate handling. For this reason,
+PMM8654AU falls back to qcom,pmk8350-pon for now, and we can revisit
+this when a concrete use case arises.
+
+The minItems: 1 in the original pmk8350 if/then block was incorrect —
+it just repeated the top-level default and did not enforce the GEN3
+requirement of two address spaces.
+
+I will fix in v5 as a separate preceding commit:
+  - Set minItems: 2 for both reg: and reg-names: in the existing pmk8350 if/then block.
+  - Drop the new pmm8654au if/then block — covered by the pmk8350 block.
+
+Proposed change:
+- if: 
+   properties:
+      compatible:
+	  contains:
+	    const: qcom,pmk8350-pon
+				         
+   then:
+     properties:
+        reg:
+	  minItems: 2
+	  maxItems: 2
+	reg-names:
+	  minItems: 2
+	  maxItems: 2
+> 
+> And then answer why the patch says the device has one address space or
+> two address spaces. You engaged me, Konrad and now Rob in reviewing this
+> triviality. This is on the verge of wasting of our time.
+> 
+Apologies for the extra review cycles.
+
+regards
+Rakesh Kota
