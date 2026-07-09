@@ -1,37 +1,38 @@
 Received: from bali.collaboradmins.com (bali.collaboradmins.com [148.251.105.195])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 253FD3E4C7F;
-	Thu,  9 Jul 2026 08:46:41 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9C8E03E4C94;
+	Thu,  9 Jul 2026 08:46:42 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=148.251.105.195
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1783586803; cv=none; b=C+x1f1ltnXmMwb559Ecg+yEGaX5cmw6w8S0wv2Ntk2CmMoYo/j1CXB76O6LhwhVmB9j69SwCzLDwy02PfmmxcTgk3jd8OKY/QY6pvHx93qcxw3rpGMRXdBKcy0ASYfnB2hSspdK86kTtKASa+R4UGUhs+6W6JehgSvRyCec+t44=
+	t=1783586804; cv=none; b=HAL3ukrWL+VU0FdJU0c9RKVhm98YcTgJpdDO7CiQE2bvZ2uh7vHoSVgb0v66nW7OariZsHKJzFM9gltxR+VHccdkkFc2921+kxS9d//HUr4ItXCuKUagXjPH4xEWA91hxAcR3j8jp2MWHFoBNyBiz27Ci4J+WnflUGUkUD7QnQA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1783586803; c=relaxed/simple;
-	bh=5cG0A2p0dlO1yjnfX1PXqAS5ejqeFnCrhtr+/kbgOJY=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=hUgEUUSxnTbr9b6mgSpOPIheT0gF4P/F6pMMiOpkf+74BaVF2ULliPNKgjjdC/enoe/DXXnFhsaILi+zq/rK7T+CN3AAXHNyFJonW6PcAkL11rNIBfF1aixyefa6WCwT4NQvm0Mox43+GPIEdha15X1i6LhOJ7Ira7oaBnDvqKc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b=IzqBCxq0; arc=none smtp.client-ip=148.251.105.195
+	s=arc-20240116; t=1783586804; c=relaxed/simple;
+	bh=n2rtxDpW28tQqpUdcTdDJfoTHpu2QkpMLw+Abe0Jg3E=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=IWqjCbJlg/dLkb89+vFRFXHWnHB3dGTf8DwjpRiJ7fQqjSWzQKB5ClUFu0TyXUMaG7tCgxjHoWXbyfIyrzG1Xp20vgeMfN7j/PwCqxXkiMUnbAh4Cfx6q2UuRxx3F6d8O7DrZxs6S+NEQ4Q6/PZUexzHAuU/tJXATsc4OjJ+NUY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b=l/sG9Al+; arc=none smtp.client-ip=148.251.105.195
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b="IzqBCxq0"
+	dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b="l/sG9Al+"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
-	s=mail; t=1783586800;
-	bh=5cG0A2p0dlO1yjnfX1PXqAS5ejqeFnCrhtr+/kbgOJY=;
-	h=From:To:Cc:Subject:Date:From;
-	b=IzqBCxq0cEnlJD/CkMZb3Selaz3Cn4HEItsk9rO9IdOeRn/HEdOnzcU+0zNrwmxI9
-	 2NFRvh4LOtEF8kYUkOus/py1+me5WVNfM2v40zT6q1RnjCzyH4ytPUDa9+LvDq6vMe
-	 Z7uWmrkUlINDUHGmwdpqXAqyyZyrV+c53m44+Ljb3U2aVTSIfMeryXRBMldToz6UVi
-	 YOaED1nqNy98OBwlKD4Z8xQ82u6oRWzXpoOszo1eeYuz6ce0jHdZvEJNejn0Xblkjx
-	 3gDU2W0VypwzoHRn0X4xXOGeOU7oqpg8Ny6sHSgvr6Ha10umIV2vRVwC7ZDXFSunc1
-	 2z1EE7hAYVjxQ==
+	s=mail; t=1783586801;
+	bh=n2rtxDpW28tQqpUdcTdDJfoTHpu2QkpMLw+Abe0Jg3E=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+	b=l/sG9Al+KdlJ/5lPCLhdl4zSUn5svMza+wyH4aPuQMuFYldRmvWolcDhYxIFdvwaG
+	 JxJuSSBSfRj7ufqlqdSnSBYKztqzbwWTUI8r6wv50C0N4O6nCd9kogTLYe6pC/Q+iI
+	 QZAMQ+8Ba5kdbbico2oFB7hlVnIZhen6Z/riymPahNP+Q8Pgf/8WoTQZqNnWSTqhsk
+	 76PvbHZVWSKiya++k+4aS5bTGzrgqMbTlpy5E4t77OGVql3fugO5pI4wBslDwpWBpj
+	 IbT5sstqgqOhlfeJKdW4WyRgwtt7zPF5id2GPd+DfxvtTaqivovg5VNVfQE64NDQyF
+	 bqwTcfNs7ZzhQ==
 Received: from IcarusMOD.eternityproject.eu (unknown [100.64.1.21])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
 	(Authenticated sender: kholk11)
-	by bali.collaboradmins.com (Postfix) with ESMTPSA id 85A4F17E0886;
-	Thu, 09 Jul 2026 10:46:39 +0200 (CEST)
+	by bali.collaboradmins.com (Postfix) with ESMTPSA id 5D13F17E0CDE;
+	Thu, 09 Jul 2026 10:46:40 +0200 (CEST)
 From: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
 To: ulfh@kernel.org
 Cc: robh@kernel.org,
@@ -50,11 +51,14 @@ Cc: robh@kernel.org,
 	linux-arm-kernel@lists.infradead.org,
 	linux-mediatek@lists.infradead.org,
 	justin.yeh@mediatek.com,
-	kernel@collabora.com
-Subject: [PATCH v3 0/5] pmdomains: Fixes and add support for HFRP Direct
-Date: Thu,  9 Jul 2026 10:46:30 +0200
-Message-ID: <20260709084635.24912-1-angelogioacchino.delregno@collabora.com>
+	kernel@collabora.com,
+	Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
+Subject: [PATCH v3 1/5] dt-bindings: power: mediatek: Add support for MT8196 direct HFRP
+Date: Thu,  9 Jul 2026 10:46:31 +0200
+Message-ID: <20260709084635.24912-2-angelogioacchino.delregno@collabora.com>
 X-Mailer: git-send-email 2.54.0
+In-Reply-To: <20260709084635.24912-1-angelogioacchino.delregno@collabora.com>
+References: <20260709084635.24912-1-angelogioacchino.delregno@collabora.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -63,42 +67,45 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Changes in v3:
- - Added new Fixes commit for possible null pointer kp during cleanup
-   of internal on-check
- - Added proper error state cleanup support for SIMPLE_PWRSEQ domains
+Add support for the HFRPSYS direct control power domains in the
+MT8196 SoC, controlling power for the DisplayPort and for the
+Embedded DisplayPort Transmitter IPs.
 
-Changes in v2:
- - Fixed return value checking in power off path
+Reviewed-by: Matthias Brugger <matthias.bgg@gmail.com>
+Acked-by: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
+Signed-off-by: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
+---
+ .../devicetree/bindings/power/mediatek,power-controller.yaml  | 1 +
+ include/dt-bindings/power/mediatek,mt8196-power.h             | 4 ++++
+ 2 files changed, 5 insertions(+)
 
-This series adds support for the DirectCTL HFRPSYS power domains found
-on the MT8196 SoC (the ones without HW Voter support) and also adds a
-fix to respect the power domain relationships during error cleanup,
-which avoids HW lockups in case probe deferrals in the specific case
-of "almost fully probed" power domains (where most of them probed and
-got set up but a probe deferral happened almost at the end), behavior
-seen on the MT8189 SoC during bringup (but honestly I have no idea how
-are the current ones working fine without this fix...!).
-
-This was tested on MT8173, MT8186, MT8188, MT8189, MT8192, MT8195 and
-also on MT8196, over months of development, both manually and over CI,
-with no regressions detected.
-
-
-AngeloGioacchino Del Regno (5):
-  dt-bindings: power: mediatek: Add support for MT8196 direct HFRP
-  pmdomain: mediatek: Fix possible nullptr KP in HWV cleanup/on-check
-  pmdomain: mediatek: Respect PD relationships during error cleanup
-  pmdomain: mediatek: Add support for Direct CTL simple power sequence
-  pmdomain: mediatek: Add support for MT8196 HFRP DirectCTL domains
-
- .../power/mediatek,power-controller.yaml      |   1 +
- drivers/pmdomain/mediatek/mt8196-pm-domains.h |  27 +++
- drivers/pmdomain/mediatek/mtk-pm-domains.c    | 184 ++++++++++++++----
- drivers/pmdomain/mediatek/mtk-pm-domains.h    |   1 +
- .../dt-bindings/power/mediatek,mt8196-power.h |   4 +
- 5 files changed, 184 insertions(+), 33 deletions(-)
-
+diff --git a/Documentation/devicetree/bindings/power/mediatek,power-controller.yaml b/Documentation/devicetree/bindings/power/mediatek,power-controller.yaml
+index 07f046277f8a..070c6e5666dc 100644
+--- a/Documentation/devicetree/bindings/power/mediatek,power-controller.yaml
++++ b/Documentation/devicetree/bindings/power/mediatek,power-controller.yaml
+@@ -34,6 +34,7 @@ properties:
+       - mediatek,mt8189-power-controller
+       - mediatek,mt8192-power-controller
+       - mediatek,mt8195-power-controller
++      - mediatek,mt8196-hfrp-power-controller
+       - mediatek,mt8196-hwv-hfrp-power-controller
+       - mediatek,mt8196-hwv-scp-power-controller
+       - mediatek,mt8196-power-controller
+diff --git a/include/dt-bindings/power/mediatek,mt8196-power.h b/include/dt-bindings/power/mediatek,mt8196-power.h
+index 0f622a93c807..085790bf8124 100644
+--- a/include/dt-bindings/power/mediatek,mt8196-power.h
++++ b/include/dt-bindings/power/mediatek,mt8196-power.h
+@@ -30,6 +30,10 @@
+ #define MT8196_POWER_DOMAIN_MM_PROC_DORMANT		0
+ #define MT8196_POWER_DOMAIN_SSR				1
+ 
++/* HFRPSYS Multimedia Power Control (MMPC) - Direct Control */
++#define MT8196_POWER_DOMAIN_EDPTX			0
++#define MT8196_POWER_DOMAIN_DPTX			1
++
+ /* HFRPSYS MultiMedia Power Control (MMPC) - HW Voter */
+ #define MT8196_POWER_DOMAIN_VDE0			0
+ #define MT8196_POWER_DOMAIN_VDE1			1
 -- 
 2.54.0
 
