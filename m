@@ -1,97 +1,134 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EBFEE38945D
-	for <linux-pm@vger.kernel.org>; Thu,  9 Jul 2026 14:31:14 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BD90737757F;
+	Thu,  9 Jul 2026 14:37:41 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1783607476; cv=none; b=eVO7kXBlm7TY+d413QIxTdf7luvOJeRmmhaorhOq8wttOB+JWz4/k+qPHJbTMmjUQXy24KsDgOr2kJ6B6HaIPfsfHeHc9OuAhtSz4h0fcdqgm0zLP+zesydDuqcPxbL/QJg060Da8WL4hDWMBbThhK/KSfdUQ0g5hX7UMrkBeaA=
+	t=1783607862; cv=none; b=lhbK38nL9yy8rdxuBJDOsJ8RsHsXnoDCPv2nEi6rhDITco52R80el4iPhipA0yWrQ28BeuJhGv61qNqu1s3aIKouKwDy+ltExMQejRmohaEK47SnHh2+Xmw4jNShMXEphBqRlP++xiGe/QGJ/c2dOjYhpy1Pt4dXlcu92OUJ+RU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1783607476; c=relaxed/simple;
-	bh=C3Mw8q4Nno0demwxgT9owXxN/qKewUThoyTmm2QW7F8=;
-	h=From:In-Reply-To:MIME-Version:References:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=lL5TZatKCCx0u/jcgkkyjay0L4MGNS0LTdtn06D0llAEhzvAZJ6ju3GEorc5s3Mci49kpjx0+xbElb9T3VonviKaePjlmuWo16XVyQEfZs4dDClc/zXSlRfthDB9aFNeCpvJ6MuYC1/D+SqwNMr4VoZcb8k5+MSxWkJL7m7+UnI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=iLOZIDO+; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1783607862; c=relaxed/simple;
+	bh=G/JqQwW0dwNDKeTP8VENiBouDgdm24+mpw3kLDWuuJg=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=leolVpr8yWln9EY/oqVlYLViAi0bZe7g1ZkScqDhEaATCw1F3rEkGNWfWPe7RtxnWf9r6s6PyQKIuoRmIwHrzZPwZMA4rDmLpMHFWeSt336JoAXLog42jyH4mQOqiscQmvH/FxegTImm9wHtv5Zo8vOtTFTn5W/AqcqrDcdMPLM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=NNoPdcPd; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="iLOZIDO+"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id AB5801F0155B
-	for <linux-pm@vger.kernel.org>; Thu,  9 Jul 2026 14:31:14 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="NNoPdcPd"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5BACF1F000E9;
+	Thu,  9 Jul 2026 14:37:35 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1783607474;
-	bh=C3Mw8q4Nno0demwxgT9owXxN/qKewUThoyTmm2QW7F8=;
-	h=From:In-Reply-To:References:Date:Subject:To:Cc;
-	b=iLOZIDO+lyJhwkH2hmjAysd5QarjwYBTfZcs4s5flnO8wkm4BzWLLE6+SqDT375Zt
-	 mhcwPGTRdwFWbcfcFDqrD2SR6x4e328QZ/GdjwL1UQpjIG1MIRvmJ8qjtCQS020ukY
-	 DIKnWCJsybahgCObHZPqid4wiSalS1g2MIbJd5J7HRWhlG81Y1DO7eale792kvHxAX
-	 n9QGRG8VUpEsOlL7/JRTX6seju7rdberuvBc1xzyb4mvLC8jxCeUydDD5+6I1HC+yI
-	 jWyGyAIWRJU2ZYlE9joTS9K5JXltFrnwGmqkMfX1bL/gof401wvHNwu5QE3z6XpDzI
-	 bV2kCg4wjnO6g==
-Received: by mail-lj1-f172.google.com with SMTP id 38308e7fff4ca-39c8dbf4f38so6024831fa.3
-        for <linux-pm@vger.kernel.org>; Thu, 09 Jul 2026 07:31:14 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AHgh+RpcpFfjKawg3kK2E4QO/1iNmxRnjge/6yDtM/SB8OFE9ItP04mX04Ig63VKRGsiK7tg4ASW6p9D5g==@vger.kernel.org
-X-Gm-Message-State: AOJu0YwmX0iXVG7eju6mGCeEHdCNSU9LMU7bCK84wzKi0eYyUIGRhB34
-	2e9kszaJRF0iQist1aHgavgZ4+YD7q/E5h98BGdlMB/zV5x0bC2xhYBH6hHOm3zqUCGMGN2ovjp
-	5ZhZQUTTkZMUBzF1eyGfAavUrka6dDnxMY62gtpLOLQ==
-X-Received: by 2002:a2e:a912:0:b0:39c:6ea4:f0a1 with SMTP id
- 38308e7fff4ca-39c799c85e2mr15206641fa.26.1783607473388; Thu, 09 Jul 2026
- 07:31:13 -0700 (PDT)
-Received: from 969154062570 named unknown by gmailapi.google.com with
- HTTPREST; Thu, 9 Jul 2026 07:31:11 -0700
-Received: from 969154062570 named unknown by gmailapi.google.com with
- HTTPREST; Thu, 9 Jul 2026 07:31:10 -0700
-From: Bartosz Golaszewski <brgl@kernel.org>
-In-Reply-To: <20260709095726.704448-11-wenst@chromium.org>
+	s=k20260515; t=1783607861;
+	bh=a5n4xtOREpdY6Sr1GJeuEOG4Zfh2qQG7JXpk/xNyFHQ=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=NNoPdcPdHHEA7wneNqoHR7kIfdtqLLA7a80M+468gJQTPvaoJ/q3J4jpegzGTZF4A
+	 48p10WBPIxB41MPfCmVKwK7rvwEc7N9cBqdZfubGdcp3/tiSkgYP3KHjXLfG0OyK2d
+	 yvYObiNoeqngQG10i7t0OaTS9VgDIEw9ILAj2APpKQBhlPCrpTDXUoP4T9yP37/Bho
+	 EMT5tz9w8KOTMJTqnm5kpufpgEcauUdPxiYHu9IgOXwBnmrOIRsJqJgwL6h+DH+Nso
+	 ag1+4TdZ2ce27hCjz7MpmdUHFpOcUtbXxy1jf+gK6oSvIfKdZz/S3VOMR075gmG0Si
+	 uwbV4skc2OTdQ==
+Date: Thu, 9 Jul 2026 15:37:33 +0100
+From: Sudeep Holla <sudeep.holla@kernel.org>
+To: Hans de Goede <johannes.goede@oss.qualcomm.com>
+Cc: Brian Masney <bmasney@redhat.com>,
+	Bjorn Andersson <bjorn.andersson@oss.qualcomm.com>,
+	Sudeep Holla <sudeep.holla@kernel.org>,
+	Cristian Marussi <cristian.marussi@arm.com>,
+	Nathan Chancellor <nathan@kernel.org>,
+	Nicolas Schier <nsc@kernel.org>,
+	Michael Turquette <mturquette@baylibre.com>,
+	arm-scmi@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+	linux-kernel@vger.kernel.org, linux-kbuild@vger.kernel.org,
+	Stephen Boyd <sboyd@kernel.org>,
+	"Rafael J. Wysocki" <rafael@kernel.org>,
+	Viresh Kumar <viresh.kumar@linaro.org>, Frank Li <Frank.Li@nxp.com>,
+	Sascha Hauer <s.hauer@pengutronix.de>,
+	Pengutronix Kernel Team <kernel@pengutronix.de>,
+	Fabio Estevam <festevam@gmail.com>,
+	Guenter Roeck <linux@roeck-us.net>,
+	Jyoti Bhayana <jbhayana@google.com>,
+	Jonathan Cameron <jic23@kernel.org>,
+	David Lechner <dlechner@baylibre.com>,
+	Nuno =?iso-8859-1?Q?S=E1?= <nuno.sa@analog.com>,
+	Andy Shevchenko <andy@kernel.org>,
+	Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+	Ulf Hansson <ulfh@kernel.org>, Liam Girdwood <lgirdwood@gmail.com>,
+	Mark Brown <broonie@kernel.org>,
+	Philipp Zabel <p.zabel@pengutronix.de>,
+	Alexandre Belloni <alexandre.belloni@bootlin.com>,
+	linux-clk@vger.kernel.org, linux-pm@vger.kernel.org,
+	imx@lists.linux.dev, linux-hwmon@vger.kernel.org,
+	linux-iio@vger.kernel.org, linux-input@vger.kernel.org,
+	linux-rtc@vger.kernel.org
+Subject: Re: [PATCH v2 0/2] firmware: arm_scmi: Ensure automatic module
+ loading
+Message-ID: <20260709-exuberant-narwhal-of-correction-7f4650@sudeepholla>
+References: <20260618-scmi-modalias-v2-0-8c7547c1be21@oss.qualcomm.com>
+ <8c2a4ae3-95cc-489a-a7a4-90a3ee2597e9@oss.qualcomm.com>
+ <20260709-spicy-fiery-squid-6eec1d@sudeepholla>
+ <dae4deba-7e5f-434e-80ae-89033bdeb793@oss.qualcomm.com>
+ <ak-h8oPcL69fCUg2@redhat.com>
+ <f05860be-dd75-49f8-b27a-bff7b554e71b@oss.qualcomm.com>
+ <20260709-exuberant-galago-of-spirit-1c908f@sudeepholla>
+ <5fb236b7-7b99-40fb-b80b-fa7e1dfccd70@oss.qualcomm.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260709095726.704448-1-wenst@chromium.org> <20260709095726.704448-11-wenst@chromium.org>
-Date: Thu, 9 Jul 2026 07:31:10 -0700
-X-Gmail-Original-Message-ID: <CAMRc=McZNHswz2E8-0-XKpUwrzw4vNooGrYe893hWe6_Fk72yA@mail.gmail.com>
-X-Gm-Features: AVVi8CeE1ugyeFFTvSY6q0TqTEjoKIk_A1SAmSoXfKQhtfuqHopW23IvHHyz7SA
-Message-ID: <CAMRc=McZNHswz2E8-0-XKpUwrzw4vNooGrYe893hWe6_Fk72yA@mail.gmail.com>
-Subject: Re: [PATCH v4 10/14] dt-bindings: usb: mediatek,mtk-xhci: Switch to
- ports for USB connections
-To: Chen-Yu Tsai <wenst@chromium.org>
-Cc: linux-acpi@vger.kernel.org, driver-core@lists.linux.dev, 
-	linux-pm@vger.kernel.org, linux-usb@vger.kernel.org, 
-	devicetree@vger.kernel.org, linux-mediatek@lists.infradead.org, 
-	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, 
-	Manivannan Sadhasivam <mani@kernel.org>, Alan Stern <stern@rowland.harvard.edu>, 
-	Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>, 
-	Bartosz Golaszewski <brgl@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
-	Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Daniel Scally <djrscally@gmail.com>, 
-	Heikki Krogerus <heikki.krogerus@linux.intel.com>, 
-	Sakari Ailus <sakari.ailus@linux.intel.com>, "Rafael J. Wysocki" <rafael@kernel.org>, 
-	Danilo Krummrich <dakr@kernel.org>, Rob Herring <robh@kernel.org>, 
-	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
-	Matthias Brugger <matthias.bgg@gmail.com>, 
-	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <5fb236b7-7b99-40fb-b80b-fa7e1dfccd70@oss.qualcomm.com>
 
-On Thu, 9 Jul 2026 11:57:15 +0200, Chen-Yu Tsai <wenst@chromium.org> said:
-> This reverts commit 454a1e3cd36c113341d7b71e8e691c6e47ab4a8a.
->
-> MediaTek's XHCI implementation supports both USB 2.0 High Speed (HS)
-> and USB 3.x Super Speed (SS). The block can also be synthesized with
-> either HS-only capability or HS+SS capability. The SSUSB controller
-> handles the device or gadget mode. Saying that SSUSB handles the HS
-> portion is wrong.
->
-> For example, on the MT8195, the first two instances support both HS and
-> SS, while the latter two instances support only HS.
->
-> Switch to a "ports" sub-node for describing USB connections. Port 1 is
-> Super Speed if the controller is SS-capable, otherwise it is High Speed.
-> Port 2 is High Speed if SS-capable. This port mapping scheme directly
-> matches what the hardware returns in its capability registers.
->
-> Fixes: 454a1e3cd36c ("dt-bindings: usb: mediatek,mtk-xhci: Add port for SuperSpeed EP")
-> Cc: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
-> Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
-> Signed-off-by: Chen-Yu Tsai <wenst@chromium.org>
-> ---
+On Thu, Jul 09, 2026 at 04:31:00PM +0200, Hans de Goede wrote:
+> Hi,
+> 
+> On 9-Jul-26 16:21, Sudeep Holla wrote:
+[...]
+> > 
+> > I need to recall why we moved from static list of devices to dynamic.
+> > One reason I can think right now is the vendor protocols and their drivers
+> > But in general it was an attempt to help multiple drivers bind to different
+> > scmi_devices that have same protocol ID. E.g. the performance protocol
+> > can be used by cpufreq and devfreq/performance genpd drivers.
+> 
+> Note it is ok to have multiple drivers bind to the same modalias,
+> depending on the reason why there are multiple drivers either one
+> should detect that it is not compatible and exit probe() with -ENODEV
+> or there should be some other mechanism to make sure only one driver
+> loads.
+> 
+> E.g. duplicate USB device-ids happen (they shouldn't but they do) and
+> then the drivers typically figure out if they are talking to the device
+> which they were written for, or the other device with the same USB-ids
+> and then one of the 2 drivers exits with -ENODEV.
+> 
 
-Reviewed-by: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
+Understood. Sorry I tried to explain with examples assuming you may not
+be aware of the details, but now reading your response, you have better
+examples.
+
+> >> I wonder if we can just move a small part of the drivers
+> >> (some mapping table) into the bus code and then just have this work as it
+> >> does on regular busses. I hope to be able to make some time to look into
+> >> this soonish.
+> >>
+> > 
+> > I started with that few years ago and we then moved to this dynamic
+> > device creation. But I agree if it is deviation from the norms(which I
+> > wasn't aware of at the time), we can remove it.
+> 
+> Looking at the issue this is causing for automatic module loading if we
+> can get back to the bus enumeration code always creating a device without
+> waiting for the driver kmod to load then that would be good IMHO.
+> 
+
+Sure if it fixes the issue for you. Cristian can point out anything I
+might have missed to consider as he is the one who reworked it and made
+it dynamic device creation which at the time sounded nice option to
+solve the issue. We weren't aware that it could cause such issues 🙁.
+
+-- 
+Regards,
+Sudeep
