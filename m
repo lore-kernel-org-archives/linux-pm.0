@@ -1,123 +1,264 @@
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.13])
+Received: from mailout1.w1.samsung.com (mailout1.w1.samsung.com [210.118.77.11])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6D04D3FF889;
-	Thu,  9 Jul 2026 10:55:28 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.13
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0FFF6409100
+	for <linux-pm@vger.kernel.org>; Thu,  9 Jul 2026 11:41:45 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=210.118.77.11
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1783594529; cv=none; b=K1G0ZQfOrdVkIvYvm8w5yEJASEHNp2khS+XoPCUPsKB8Yoi/EjfJM66XY7OjpY9oDuNr1fiDtf0BKo332IgDqZN2RRNmDxJ4GIgXZ6BSsafDD2ZhV33G83xrnr2lrPSL3yyyn+zW06obBomRG4ewQy/IVnXwb80xokbIDCE/Mwc=
+	t=1783597309; cv=none; b=D9cyzcFKXgw2jzCyImhsmG4R6fBilMuWpL5yig6ncRY2hsgla+5fHtGtRI7ndTox5Ztu7Q8H8bcNeCTuDlX1OB7i5qVqg93m53DX5JkkuqCD7N4pdcrg4wpQZNbrwi53y+mzLoxeJSlkqA9wEIQMcHFCxQ8yb87ShLzdTYosDuY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1783594529; c=relaxed/simple;
-	bh=xFcQQhmhINQD3s4rCXCWmru3qkNnkEH19O9zKAO6j1I=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=Q0/CcqKdz9YsdpE0JU4goygBfAa2K6XiofJEk0AGz7346Edbh6SE/KDm4tW3nKzCIKP88irJMmVRZkfQLG4/fSqe4kJ41LtBPMCa3dDwPixMhPnRraB3whq9GL/IRWVsYplkf4n5Xracll5BJs2gK2+GakxkgGH/nD5JnT2qM4s=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=pass smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=WqEOdHr2; arc=none smtp.client-ip=198.175.65.13
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.intel.com
+	s=arc-20240116; t=1783597309; c=relaxed/simple;
+	bh=U1dCIO2MyctJ6SmYyh0JUmjOQpbmkKGDTuDhpOoRBfc=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:From:In-Reply-To:
+	 Content-Type:References; b=BX8DB/g1vGctitKYWkhOlsHaxYB1whU/4JTFotHM8cSR4o1v83fg7uVUmw2xa+R1mpv9j65d01QUByTVUDIOopz9Vnp421sW518OZw9YQRsNmXETpv3b7ADnx1ko9MetIJhVJEl/00jqMhthZMiwrtkgpoA6jyBOmdEi6dCWzIM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=samsung.com; spf=pass smtp.mailfrom=samsung.com; dkim=pass (1024-bit key) header.d=samsung.com header.i=@samsung.com header.b=lqRJ7n+Z; arc=none smtp.client-ip=210.118.77.11
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=samsung.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=samsung.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="WqEOdHr2"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1783594529; x=1815130529;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=xFcQQhmhINQD3s4rCXCWmru3qkNnkEH19O9zKAO6j1I=;
-  b=WqEOdHr2JEjRWCK8g8PlzB2JvLE03QYi0/zbn7nIHKLSxoUgTWlp0Rss
-   q3Znnb88Ej0HA7SC/a2hGHWL0I1gf/EAI3XEBaOex28J720YIF547Ok2e
-   1u5pmnW+q/k9QXhl4lg1RbBV1O5W5jSN1rEwCDc3on/jNDmaGvyWxzLN3
-   5GVyPykHMeWCU+bBIgfz93c80EQCR2Sho20XWyYWrrsX/THCVl2T/HgeQ
-   tDenyRlpB6wSfph+qbYesK27o2TDmqPjwdF/YWDXWRk66IFKtj+sSefXM
-   fixCZpxCBJiE3hHnh/buyRBfHMfBHfqmb+vnD8pQLsBIqJkz6A8obBjGX
-   A==;
-X-CSE-ConnectionGUID: zX3dVn6LS82f6uDcC6kK3g==
-X-CSE-MsgGUID: 8ZLFcPv/R3OE3WFKc1S4xw==
-X-IronPort-AV: E=McAfee;i="6800,10657,11841"; a="95425808"
-X-IronPort-AV: E=Sophos;i="6.25,154,1779174000"; 
-   d="scan'208";a="95425808"
-Received: from orviesa009.jf.intel.com ([10.64.159.149])
-  by orvoesa105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 09 Jul 2026 03:55:28 -0700
-X-CSE-ConnectionGUID: AR6qK3CCSDC7cPGAveNTzQ==
-X-CSE-MsgGUID: 7/7aeqFzRVWBEcBauFhSaA==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.25,154,1779174000"; 
-   d="scan'208";a="255214900"
-Received: from ettammin-mobl3.ger.corp.intel.com (HELO localhost) ([10.245.245.235])
-  by orviesa009-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 09 Jul 2026 03:55:22 -0700
-Date: Thu, 9 Jul 2026 13:55:19 +0300
-From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-To: Chen-Yu Tsai <wenst@chromium.org>
-Cc: Bartosz Golaszewski <brgl@kernel.org>,
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	Daniel Scally <djrscally@gmail.com>,
-	Heikki Krogerus <heikki.krogerus@linux.intel.com>,
-	Sakari Ailus <sakari.ailus@linux.intel.com>,
-	"Rafael J. Wysocki" <rafael@kernel.org>,
-	Danilo Krummrich <dakr@kernel.org>, Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Matthias Brugger <matthias.bgg@gmail.com>,
-	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>,
-	linux-acpi@vger.kernel.org, driver-core@lists.linux.dev,
-	linux-pm@vger.kernel.org, linux-usb@vger.kernel.org,
-	devicetree@vger.kernel.org, linux-mediatek@lists.infradead.org,
-	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
-	Manivannan Sadhasivam <mani@kernel.org>,
-	Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH v4 11/14] power: sequencing: pcie-m2: support matching on
- remote "port" node
-Message-ID: <ak9-FxumFw-NtQt2@ashevche-desk.local>
-References: <20260709095726.704448-1-wenst@chromium.org>
- <20260709095726.704448-12-wenst@chromium.org>
+	dkim=pass (1024-bit key) header.d=samsung.com header.i=@samsung.com header.b="lqRJ7n+Z"
+Received: from eucas1p1.samsung.com (unknown [182.198.249.206])
+	by mailout1.w1.samsung.com (KnoxPortal) with ESMTP id 20260709114144euoutp0139a7d42f4d4aa9054738f28ea84f5e42~AnExerxQZ2451124511euoutp010
+	for <linux-pm@vger.kernel.org>; Thu,  9 Jul 2026 11:41:44 +0000 (GMT)
+DKIM-Filter: OpenDKIM Filter v2.11.0 mailout1.w1.samsung.com 20260709114144euoutp0139a7d42f4d4aa9054738f28ea84f5e42~AnExerxQZ2451124511euoutp010
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=samsung.com;
+	s=mail20170921; t=1783597304;
+	bh=Y9DQkg6rMxHep3tCQiWIqrIxzviRHpty7VDOh1eSyAU=;
+	h=Date:Subject:To:Cc:From:In-Reply-To:References:From;
+	b=lqRJ7n+ZMW2FuZip1vN6rjAdZzueQPOENj8l+IflduuR3mkmh3EY8KdZAHJmlNDFs
+	 iCmOa7F6LG6cS5B5GQB34LOVxxQ78uy8Tppv2C57oS0yy0U221Iqs8r5zYZe+FY6bR
+	 lWFoRs7xiZ8DYkMiIRMpbkWXbPHD1U0hXZ3yXXUY=
+Received: from eusmtip1.samsung.com (unknown [203.254.199.221]) by
+	eucas1p1.samsung.com (KnoxPortal) with ESMTPA id
+	20260709114143eucas1p18463122323bdeae8e63b1d13cd626b55~AnEw92OlE1788517885eucas1p1c;
+	Thu,  9 Jul 2026 11:41:43 +0000 (GMT)
+Received: from [106.210.134.192] (unknown [106.210.134.192]) by
+	eusmtip1.samsung.com (KnoxPortal) with ESMTPA id
+	20260709114143eusmtip109ddf1157d363ce2e032b1b4a26659e9~AnEwUOH3C0267602676eusmtip1Y;
+	Thu,  9 Jul 2026 11:41:42 +0000 (GMT)
+Message-ID: <dadff7a9-bf04-49fb-8c55-5605e99be7fc@samsung.com>
+Date: Thu, 9 Jul 2026 13:41:42 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260709095726.704448-12-wenst@chromium.org>
-Organization: Intel Finland Oy - BIC 0357606-4 - c/o Alberga Business Park, 6
- krs, Bertel Jungin Aukio 5, 02600 Espoo
+User-Agent: Betterbird (Windows)
+Subject: Re: [PATCH 3/3] arm64: dts: qcom: qcm2290: Hook up MPM
+To: Konrad Dybcio <konradybcio@kernel.org>, Andy Gross <agross@kernel.org>,
+	Bjorn Andersson <andersson@kernel.org>, Rob Herring <robh+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>
+Cc: Konrad Dybcio <konrad.dybcio@somainline.org>,
+	linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org,
+	linux-kernel@vger.kernel.org, Ulf Hansson <ulf.hansson@linaro.org>,
+	"linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+Content-Language: en-US
+From: Marek Szyprowski <m.szyprowski@samsung.com>
+In-Reply-To: <20231215-topic-mpm_dt-v1-3-c6636fc75ce3@linaro.org>
+Content-Transfer-Encoding: 8bit
+X-CMS-MailID: 20260709114143eucas1p18463122323bdeae8e63b1d13cd626b55
+X-Msg-Generator: CA
+Content-Type: text/plain; charset="utf-8"
+X-RootMTR: 20260709114143eucas1p18463122323bdeae8e63b1d13cd626b55
+X-EPHeader: CA
+X-CMS-RootMailID: 20260709114143eucas1p18463122323bdeae8e63b1d13cd626b55
+References: <20231215-topic-mpm_dt-v1-0-c6636fc75ce3@linaro.org>
+	<20231215-topic-mpm_dt-v1-3-c6636fc75ce3@linaro.org>
+	<CGME20260709114143eucas1p18463122323bdeae8e63b1d13cd626b55@eucas1p1.samsung.com>
 
-On Thu, Jul 09, 2026 at 05:57:16PM +0800, Chen-Yu Tsai wrote:
-> A USB hub can have multiple ports, and this driver needs to
-> differentiate which port is being matched to. The USB hub driver now
-> associates the "port" node with the usb_port device, so here we can
-> use the remote "port" node to check for a match. Then fall back to
-> the remote device node for the other connection types.
-> 
-> Also rewrite the existing "remote == dev_of_node(dev)" with
-> device_match_of_node() for consistency.
+On 15.12.2023 01:01, Konrad Dybcio wrote:
+> Wire up MPM and the interrupts it provides.
+>
+> Signed-off-by: Konrad Dybcio <konrad.dybcio@linaro.org>
+> ---
+>  arch/arm64/boot/dts/qcom/qcm2290.dtsi | 42 +++++++++++++++++++++++++++++------
+>  1 file changed, 35 insertions(+), 7 deletions(-)
+>
+> diff --git a/arch/arm64/boot/dts/qcom/qcm2290.dtsi b/arch/arm64/boot/dts/qcom/qcm2290.dtsi
+> index ce04d0acdede..0911fb08ed63 100644
+> --- a/arch/arm64/boot/dts/qcom/qcm2290.dtsi
+> +++ b/arch/arm64/boot/dts/qcom/qcm2290.dtsi
+> @@ -199,6 +199,7 @@ CPU_PD3: power-domain-cpu3 {
+>  
+>  		CLUSTER_PD: power-domain-cpu-cluster {
+>  			#power-domain-cells = <0>;
+> +			power-domains = <&mpm>;
+>  			domain-idle-states = <&CLUSTER_SLEEP>;
+>  		};
+>  	};
 
-...
 
-> +		/* USB port devices are tied to the port nodes. */
-> +		struct device_node *remote_port __free(device_node) =
-> +				of_graph_get_remote_port(endpoint);
+This patch landed long time ago in mainline as commit e3f6a6994041
+("arm64: dts: qcom: qcm2290: Hook up MPM").
 
+Recently I've added Arduino UnoQ board
+(arch/arm64/boot/dts/qcom/qrb2210-arduino-imola.dts) to my test farm
+and found that this patch is responsible for the "Invalid wait context"
+warning [1] observed during boot of the recent kernels when
+CONFIG_PROVE_RAW_LOCK_NESTING is set (which is implicitly true when
+CONFIG_PROVE_LOCKING is set since commit d8fccd9ca5f90). This shows
+a real problem if one wants to run RT-enabled kernel.
+
+This is because the above chunk adds the "mpm" as a parent power domain
+to the "cluster_pd" (in current arch/arm64/boot/dts/qcom/agatti.dtsi). 
+"cluster_pd" is initialized as "GENPD_FLAG_IRQ_SAFE | GENPD_FLAG_CPU_DOMAIN"
+(see psci_pd_init in drivers/cpuidle/cpuidle-psci-domain.c, which use
+raw_spinlock_t based locking), while the "mpm" power domain only as 
+"GENPD_FLAG_IRQ_SAFE" (see qcom_mpm_probe in drivers/irqchip/irq-qcom-mpm.c,
+which use spinlock_t locking).
+
+I've check and there is no easy way to make the "mpm" power domain
+GENPD_FLAG_CPU_DOMAIN compatible. drivers/irqchip/irq-qcom-mpm.c driver
+uses mbox API, which internally uses spinlock_t based locking. Then
+there is a drivers/mailbox/qcom-apcs-ipc-mailbox.c driver and even
+more dependencies: mmio regmap, clocks and probably more (I've didn't
+check further).
+
+The question is how to solve this issue? Is this dependency really
+required? Would it work if the "mpm" power domain is set as always
+on and genpd framework extended to support such case without
+triggering lockdep warning (it already has support for irq-safe
+device in non-irq-safe power domain)?
+
+
+
+[1] mentioned kernel log :
+
+ =============================
+ [ BUG: Invalid wait context ]
+ 7.2.0-rc2-next-20260708+ #13154 Not tainted
+ -----------------------------
+ kworker/u16:1/44 is trying to lock:
+ ffff000002517870 (&genpd->slock/1){....}-{3:3}, at: genpd_lock_nested_spin+0x1c/0x30
+ other info that might help us debug this:
+ context-{5:5}
+ locks held by kworker/u16:1/44: 5, last CPU#3:
+  #0: ffff000000032140 ((wq_completion)events_unbound){+.+.}-{0:0}, at: process_one_work+0x6a8/0x86c
+  #1: ffff800080533d90 (deferred_probe_work){+.+.}-{0:0}, at: process_one_work+0x1f8/0x86c
+  #2: ffff00000036c138 (&dev->mutex){....}-{4:4}, at: __device_attach+0x3c/0x1b8
+  #3: ffffa850a0fca5f8 (gpd_list_lock){+.+.}-{4:4}, at: of_genpd_add_subdomain+0x30/0xc8
+  #4: ffff000001994750 (&genpd->raw_slock){....}-{2:2}, at: genpd_lock_raw_spin+0x1c/0x30
+ stack backtrace:
+ CPU: 3 UID: 0 PID: 44 Comm: kworker/u16:1 Not tainted 7.2.0-rc2-next-20260708+ #13154 PREEMPT
+ Hardware name: Arduino UnoQ (DT)
+ Workqueue: events_unbound deferred_probe_work_func
+ Call trace:
+  show_stack+0x18/0x24 (C)
+  dump_stack_lvl+0x90/0xd0
+  dump_stack+0x18/0x24
+  __lock_acquire+0xa78/0x22a8
+  lock_acquire+0x1d8/0x404
+  _raw_spin_lock_irqsave_nested+0x64/0x8c
+  genpd_lock_nested_spin+0x1c/0x30
+  genpd_add_subdomain+0x8c/0x1d8
+  of_genpd_add_subdomain+0x68/0xc8
+  dt_idle_pd_init_topology+0x88/0x100
+  psci_cpuidle_domain_probe+0x1bc/0x31c
+  platform_probe+0x5c/0xac
+  really_probe+0xbc/0x298
+  __driver_probe_device+0x164/0x184
+  driver_probe_device+0xbc/0x11c
+  __device_attach_driver+0xb8/0x118
+  bus_for_each_drv+0x84/0xe4
+  __device_attach+0xac/0x1b8
+  device_initial_probe+0x50/0x54
+  bus_probe_device+0x38/0xa8
+  deferred_probe_work_func+0x8c/0xc8
+  process_one_work+0x248/0x86c
+  worker_thread+0x240/0x388
+  kthread+0x13c/0x148
+  ret_from_fork+0x10/0x20
+ CPUidle PSCI: Initialized CPU PM domain topology using OSI mode
+
+
+
+> @@ -266,6 +267,24 @@ rpmpd_opp_turbo_plus: opp8 {
+>  				};
+>  			};
+>  		};
 > +
-
-No blank line here as this one is coupled with the check.
-
-> +		if (device_match_of_node(dev, remote_port))
-> +			return PWRSEQ_MATCH_OK;
+> +		mpm: interrupt-controller {
+> +			compatible = "qcom,mpm";
+> +			qcom,rpm-msg-ram = <&apss_mpm>;
+> +			interrupts = <GIC_SPI 197 IRQ_TYPE_EDGE_RISING>;
+> +			mboxes = <&apcs_glb 1>;
+> +			interrupt-controller;
+> +			#interrupt-cells = <2>;
+> +			#power-domain-cells = <0>;
+> +			interrupt-parent = <&intc>;
+> +			qcom,mpm-pin-count = <96>;
+> +			qcom,mpm-pin-map = <2 275>,  /* TSENS0 uplow */
+> +					   <5 296>,  /* Soundwire master_irq */
+> +					   <12 422>, /* DWC3 ss_phy_irq */
+> +					   <24 79>,  /* Soundwire wake_irq */
+> +					   <86 183>, /* MPM wake, SPMI */
+> +					   <90 260>; /* QUSB2_PHY DP+DM */
+> +		};
+>  	};
+>  
+>  	reserved_memory: reserved-memory {
+> @@ -429,6 +448,7 @@ tlmm: pinctrl@500000 {
+>  			interrupts = <GIC_SPI 227 IRQ_TYPE_LEVEL_HIGH>;
+>  			gpio-controller;
+>  			gpio-ranges = <&tlmm 0 0 127>;
+> +			wakeup-parent = <&mpm>;
+>  			#gpio-cells = <2>;
+>  			interrupt-controller;
+>  			#interrupt-cells = <2>;
+> @@ -778,7 +798,7 @@ spmi_bus: spmi@1c40000 {
+>  				    "obsrvr",
+>  				    "intr",
+>  				    "cnfg";
+> -			interrupts = <GIC_SPI 183 IRQ_TYPE_LEVEL_HIGH>;
+> +			interrupts-extended = <&mpm 86 IRQ_TYPE_LEVEL_HIGH>;
+>  			interrupt-names = "periph_irq";
+>  			qcom,ee = <0>;
+>  			qcom,channel = <0>;
+> @@ -793,8 +813,8 @@ tsens0: thermal-sensor@4411000 {
+>  			reg = <0x0 0x04411000 0x0 0x1ff>,
+>  			      <0x0 0x04410000 0x0 0x8>;
+>  			#qcom,sensors = <10>;
+> -			interrupts = <GIC_SPI 275 IRQ_TYPE_LEVEL_HIGH>,
+> -				     <GIC_SPI 190 IRQ_TYPE_LEVEL_HIGH>;
+> +			interrupts-extended = <&mpm 2 IRQ_TYPE_LEVEL_HIGH>,
+> +					      <&intc GIC_SPI 190 IRQ_TYPE_LEVEL_HIGH>;
+>  			interrupt-names = "uplow", "critical";
+>  			#thermal-sensor-cells = <1>;
+>  		};
+> @@ -813,8 +833,15 @@ bimc: interconnect@4480000 {
+>  		};
+>  
+>  		rpm_msg_ram: sram@45f0000 {
+> -			compatible = "qcom,rpm-msg-ram";
+> +			compatible = "qcom,rpm-msg-ram", "mmio-sram";
+>  			reg = <0x0 0x045f0000 0x0 0x7000>;
+> +			#address-cells = <1>;
+> +			#size-cells = <1>;
+> +			ranges = <0 0x0 0x045f0000 0x7000>;
 > +
-> +		/* Try the remote port parent for other types. */
->  		struct device_node *remote __free(device_node) =
->  				of_graph_get_remote_port_parent(endpoint);
-> -		if (remote && (remote == dev_of_node(dev)))
-
-> +
-
-Ditto.
-
-> +		if (device_match_of_node(dev, remote))
->  			return PWRSEQ_MATCH_OK;
->  	}
-
+> +			apss_mpm: sram@1b8 {
+> +				reg = <0x1b8 0x48>;
+> +			};
+>  		};
+>  
+>  		sram@4690000 {
+> @@ -1293,9 +1320,10 @@ &qup_virt SLAVE_QUP_CORE_0 RPM_ALWAYS_TAG>,
+>  		usb: usb@4ef8800 {
+>  			compatible = "qcom,qcm2290-dwc3", "qcom,dwc3";
+>  			reg = <0x0 0x04ef8800 0x0 0x400>;
+> -			interrupts = <GIC_SPI 260 IRQ_TYPE_LEVEL_HIGH>,
+> -				     <GIC_SPI 422 IRQ_TYPE_LEVEL_HIGH>;
+> -			interrupt-names = "hs_phy_irq", "ss_phy_irq";
+> +			interrupts-extended = <&intc GIC_SPI 260 IRQ_TYPE_LEVEL_HIGH>,
+> +					      <&mpm 12 IRQ_TYPE_LEVEL_HIGH>;
+> +			interrupt-names = "hs_phy_irq",
+> +					  "ss_phy_irq";
+>  
+>  			clocks = <&gcc GCC_CFG_NOC_USB3_PRIM_AXI_CLK>,
+>  				 <&gcc GCC_USB30_PRIM_MASTER_CLK>,
+>
+Best regards
 -- 
-With Best Regards,
-Andy Shevchenko
-
+Marek Szyprowski, PhD
+Samsung R&D Institute Poland
 
