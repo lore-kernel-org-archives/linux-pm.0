@@ -1,40 +1,39 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 460B221C9EA;
-	Thu,  9 Jul 2026 12:47:56 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DABF8218821;
+	Thu,  9 Jul 2026 12:47:59 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1783601278; cv=none; b=affKJmQhbOihdiSWbNEuUDZKGwKcYclh/W8M424EbKhfadBuBS/JZCmwgJzSe2AuwYusiG93KGUzQCe8wsxYbTlhGEPTTDIzCTT1tYODn58s/yfMKUlr2umF15M09w7QgLd7FYlrchNt8Jap1VTqKGcyc1kthO4sC0Wn3A9Nl24=
+	t=1783601281; cv=none; b=ny/cNskZgNMXHPZMWghA4P0AZErwMs1aplKqcgKqLnabD6F2FcOVRrsgS0/Mxsq/42SgAPs50ZnXCeuMCHrtbV48RpoamO72B0dk7N8wOkI1xp7XFzl5c13AOG84jYGvmE2nQzDvflmz4NiL4YLSHn/VHWZJEYQnvytS2NnAka0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1783601278; c=relaxed/simple;
-	bh=p//xG4dF10nozG9lWw1MVV5myP4qHb65D7dsKdfkAg8=;
+	s=arc-20240116; t=1783601281; c=relaxed/simple;
+	bh=yLvn8u3+Pho6lC/wA66btLbm+3NlFsn7HNFa2DmVAN4=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=CT+91TecPHOktcv475OwwSNKi3xhB8EWfz/2fRw4U7lIOxw/pD5VBz/W+I+YX10eO5Gqc53aCf7b9og6zUXPYvmLsQCf31HVmI3epXc/BQCT8h9wbMUn9mWSlLdHxdIuWkjCLUgRjTBEe+GYjAZnMb1QaHE64TG2/B9wxr1fZKo=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=jKiJ+lPS; arc=none smtp.client-ip=100.103.45.18
+	 MIME-Version:Content-Type; b=G/1cac1IyF7LEauIkLDuBQ9gLKFhKhD65Byzdn+T/Irq9k0eeRLvJCMZvzEXlWihlXZ+wsPNMbJbE32hTLZhG/cQZvD+o0V2cVkcrrUozL1F2HjNoLzoG2BgBBm4blERamMq7JphyxHyQpdy7qMyCV2SYuHdzlXkEdQq5gBNiR0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=XF0dML1O; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="jKiJ+lPS"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1AF3A1F000E9;
-	Thu,  9 Jul 2026 12:47:55 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="XF0dML1O"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id EF0F61F000E9;
+	Thu,  9 Jul 2026 12:47:58 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1783601276;
-	bh=+ZkTm+LK83S0+VOfTvR+xKjCkxaP6Wn4EylKTUubACw=;
+	s=k20260515; t=1783601279;
+	bh=FaQIvuYUdzDwZm2nKydrpQRgnD2KtKQYpxGTBXkPaD8=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References;
-	b=jKiJ+lPSgzp+xYYZVovzkzs3Lp5Szuk1zpuvMMuL2+Z+UEtvT+bmnbRFrzP3HJbcg
-	 FLpBi7qBx+iTVh3tCV0JdzYzSqhQQyTB+p2JtPnzjG4BwhMWwKIlpHTHeYtKx202dC
-	 8IY9AH/E31o2U/PpI0rjGrs0stV8SL5AFjsJXSe83D7xPMkziiV+0QRSzKZOBb7HJS
-	 4ulk8jCP7dePwMXCDcP2x0lWDnVyOm6N8EH/Y90PRO2FUriebqZfRGq9cDTglvNhg1
-	 9JX+OZlj84wK5k8SbH/gdbB8J/jj2Oi/t8qXXrY6tY8Qq1OLY+4SxnpQ5hGIbc+3mg
-	 XB8tpH3CqC0qg==
+	b=XF0dML1O3vWQ/ERcOIm/3w/1NQjvIP9Iw/5iZBs9UVbSPw9WAEvv7+3BKgtcUVkDX
+	 lP/3UXTMj6h+/dBlBHv/84VhyXFg9hOGr6j6egwrk8TLOJQEFEjf1AX6mw3yaSl7GR
+	 SXiUkm9dmroRWIEYkLvBamjnuSd4BmCLwHOy+u7dEptBuFbGcJxmmH/QEMe1zPm2gA
+	 C2uKLrALGZMyRDe++JgEZB571+xyOkmzQ3p5AUxD6CqZiSHW5K8e38qkDi3JTCqrRT
+	 +Ax6dwW2/jweD+nbGXMChy7fFfBUqbdeMKoeFKJkaHxqdkrtznw5cLxl4XqnKMPqGn
+	 iFcVpzSihgidg==
 From: "Rafael J. Wysocki" <rafael@kernel.org>
 To: Linux PM <linux-pm@vger.kernel.org>
 Cc: Linux ACPI <linux-acpi@vger.kernel.org>,
  Sudeep Holla <Sudeep.Holla@arm.com>
 Subject:
- [PATCH v1 02/17] ACPI: processor: idle: Ignore _LPI states with SYSTEMIO
- entry method
-Date: Thu, 09 Jul 2026 14:31:28 +0200
-Message-ID: <2268989.irdbgypaU6@rafael.j.wysocki>
+ [PATCH v1 01/17] ACPI: processor: idle: Expand _LPI package sanity checks
+Date: Thu, 09 Jul 2026 14:30:35 +0200
+Message-ID: <5084143.GXAFRqVoOG@rafael.j.wysocki>
 Organization: Linux Kernel Development - Intel
 In-Reply-To: <4746278.LvFx2qVVIh@rafael.j.wysocki>
 References: <4746278.LvFx2qVVIh@rafael.j.wysocki>
@@ -49,43 +48,76 @@ Content-Type: text/plain; charset="UTF-8"
 
 From: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
 
-The only entry method for _LPI states supported by acpi_idle_lpi_enter()
-is FFH and it is better to ignore _LPI states with the SYSTEMIO entry
-method upfront than return an error from acpi_idle_lpi_enter() on
-attempts to use them.
+The _LPI package sanity checks in acpi_processor_evaluate_lpi() miss
+a couple of things, so expand them by adding a buffer size check
+before retrieving a struct acpi_power_register from it (and skip the
+given state if the buffer is not large enough to hold a register
+structure) and making the function avoid copying the state description
+from the ACPI table if there are too few elements in the package
+supposed to hold it.
 
-Update acpi_processor_evaluate_lpi() accordingly.
+While at it, relocate and rephrase a comment about skipping _LPI state
+package elements [7-8].
 
+Fixes: a36a7fecfe60 ("ACPI / processor_idle: Add support for Low Power Idle(LPI) states")
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- drivers/acpi/processor_idle.c | 11 ++++++-----
- 1 file changed, 6 insertions(+), 5 deletions(-)
+ drivers/acpi/processor_idle.c | 28 +++++++++++++++++++++-------
+ 1 file changed, 21 insertions(+), 7 deletions(-)
 
 diff --git a/drivers/acpi/processor_idle.c b/drivers/acpi/processor_idle.c
-index d573f201295a..aa6d5d8edc79 100644
+index 4482cf28f56a..d573f201295a 100644
 --- a/drivers/acpi/processor_idle.c
 +++ b/drivers/acpi/processor_idle.c
-@@ -935,14 +935,15 @@ static int acpi_processor_evaluate_lpi(acpi_handle handle,
- 			}
+@@ -927,6 +927,13 @@ static int acpi_processor_evaluate_lpi(acpi_handle handle,
+ 		if (obj->type == ACPI_TYPE_BUFFER) {
+ 			struct acpi_power_register *reg;
  
- 			reg = (struct acpi_power_register *)obj->buffer.pointer;
--			if (reg->space_id != ACPI_ADR_SPACE_SYSTEM_IO &&
--			    reg->space_id != ACPI_ADR_SPACE_FIXED_HARDWARE)
-+			if (reg->space_id != ACPI_ADR_SPACE_FIXED_HARDWARE) {
++			if (obj->buffer.length < sizeof(*reg)) {
 +				acpi_handle_debug(handle,
-+					"Unsupported entry method for _LPI state %d\n",
++					"Invalid register data for _LPI state %d\n",
 +					state_idx);
- 				continue;
++				continue;
 +			}
++
+ 			reg = (struct acpi_power_register *)obj->buffer.pointer;
+ 			if (reg->space_id != ACPI_ADR_SPACE_SYSTEM_IO &&
+ 			    reg->space_id != ACPI_ADR_SPACE_FIXED_HARDWARE)
+@@ -945,13 +952,6 @@ static int acpi_processor_evaluate_lpi(acpi_handle handle,
+ 			continue;
+ 		}
  
-+			lpi_state->entry_method = ACPI_CSTATE_FFH;
- 			lpi_state->address = reg->address;
--			lpi_state->entry_method =
--				reg->space_id == ACPI_ADR_SPACE_FIXED_HARDWARE ?
--				ACPI_CSTATE_FFH : ACPI_CSTATE_SYSTEMIO;
- 		} else if (obj->type == ACPI_TYPE_INTEGER) {
- 			lpi_state->entry_method = ACPI_CSTATE_INTEGER;
- 			lpi_state->address = obj->integer.value;
+-		/* elements[7,8] skipped for now i.e. Residency/Usage counter*/
+-
+-		obj = pkg_elem + 9;
+-		if (obj->type == ACPI_TYPE_STRING)
+-			strscpy(lpi_state->desc, obj->string.pointer,
+-				ACPI_CX_DESC_LEN);
+-
+ 		lpi_state->index = state_idx;
+ 		if (obj_get_integer(pkg_elem + 0, &lpi_state->min_residency)) {
+ 			pr_debug("No min. residency found, assuming 10 us\n");
+@@ -974,6 +974,20 @@ static int acpi_processor_evaluate_lpi(acpi_handle handle,
+ 
+ 		if (obj_get_integer(pkg_elem + 5, &lpi_state->enable_parent_state))
+ 			lpi_state->enable_parent_state = 0;
++
++		/* Skip elements [7-8] i.e. Residency/Usage counters. */
++
++		/*
++		 * Avoid out-of-bounds access if the size of the package is less
++		 * than expected.
++		 */
++		if (element->package.count < 10)
++			continue;
++
++		obj = pkg_elem + 9;
++		if (obj->type == ACPI_TYPE_STRING)
++			strscpy(lpi_state->desc, obj->string.pointer,
++				ACPI_CX_DESC_LEN);
+ 	}
+ 
+ 	acpi_handle_debug(handle, "Found %d power states\n", state_idx);
 -- 
 2.51.0
 
