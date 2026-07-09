@@ -1,112 +1,144 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-vs1-f42.google.com (mail-vs1-f42.google.com [209.85.217.42])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2A0EA40B38F;
-	Thu,  9 Jul 2026 10:10:19 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 87708406287
+	for <linux-pm@vger.kernel.org>; Thu,  9 Jul 2026 10:24:34 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.217.42
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1783591821; cv=none; b=pd5lRw1LnOwpW5ZFo9s8h3N6sSHhSTmqXvmfyZjkqhfrfMfTUxC77FGQjLcZyWE8cY9ZFsGIr7UnxAtfKoZTgVpOj68/J5K7EQgpgET3KpAWFUR3Ib36v+KuvJCvy95nK5IeCoaohFQY5Psl0AQG88bBAER9Vswf2s5tsXtUwc8=
+	t=1783592675; cv=none; b=h+2IiSEeh9lC8uX4m25VSfzg8C++RyjNusXYgm3/2YKvWXK/12tu2kE+HJH2HOuTmjLLtGFNeY8AmHog80DmkZWlTFxFrdlq/qexBTbx6E41TfArHjcO69bDZHfE5Kqw8HjHbKZa5BmgD06ceA0Y7LYRpkM1LnRL1NaOsxCVi4k=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1783591821; c=relaxed/simple;
-	bh=fRNeER7LnUmcwoquzvpNn39F7hoZUAISetj6EkZZm2Q=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=ZAglQaMDywneEb1thEshAVduxVhdTQAdza10AKSLHiCwHo//34ycBrSULpSST9TXkIaxsJI25G1amlNVvCSXhbQaTsbXrQ+iKaJjZl3wExj1ioZNlTwnV7EsOw8TczW1fWk7H5eHj+XIfWjv0wqxCY1W7gB2KXQgiQxjz1pheWs=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=F03vhvIw; arc=none smtp.client-ip=100.103.45.18
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="F03vhvIw"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3C8C61F00A3D;
-	Thu,  9 Jul 2026 10:10:14 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1783591819;
-	bh=oWFW04FqDfkqF6FQ5XuyyPvQ7Y46Kanl78+AV4Ugsl8=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=F03vhvIwmj4StkRYQPee7Mpo8rhhvPDYa1ZUqMf2+g/CIeGCVIfCN0xnG5MJNYpgT
-	 G/xk+YiSmjsIpQ2a+ZCD1F7xW6UWIvVaIlA6EZhjtHM2GrgY2ZJp+KTKbZzmfeMY3V
-	 YI9cy3UqYXyMdyhNZ1zM949+ZSyI5yjfsP0DsW4R6T1oCjhBIM50nriVks3E2TiNTH
-	 S9m1h8vO+qxxJ7t4pzTYadBUln5t8vaGIXxmcrGaq5iBn0yQiXfbw6yHSMCKDUSEG8
-	 sAdltXpvBqJuHdUtm+PegrAGj97SvlIeTEKN0AltXJqRF1FwfLCw0B+XrWz/skAojF
-	 Ifn+6OI6uNVwQ==
-Date: Thu, 9 Jul 2026 11:10:12 +0100
-From: Sudeep Holla <sudeep.holla@kernel.org>
-To: Hans de Goede <johannes.goede@oss.qualcomm.com>
-Cc: Bjorn Andersson <bjorn.andersson@oss.qualcomm.com>,
-	Sudeep Holla <sudeep.holla@kernel.org>,
-	Cristian Marussi <cristian.marussi@arm.com>,
-	Nathan Chancellor <nathan@kernel.org>,
-	Nicolas Schier <nsc@kernel.org>,
-	Michael Turquette <mturquette@baylibre.com>,
-	arm-scmi@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-	linux-kernel@vger.kernel.org, linux-kbuild@vger.kernel.org,
-	Stephen Boyd <sboyd@kernel.org>, Brian Masney <bmasney@redhat.com>,
-	"Rafael J. Wysocki" <rafael@kernel.org>,
-	Viresh Kumar <viresh.kumar@linaro.org>, Frank Li <Frank.Li@nxp.com>,
-	Sascha Hauer <s.hauer@pengutronix.de>,
-	Pengutronix Kernel Team <kernel@pengutronix.de>,
-	Fabio Estevam <festevam@gmail.com>,
-	Guenter Roeck <linux@roeck-us.net>,
-	Jyoti Bhayana <jbhayana@google.com>,
-	Jonathan Cameron <jic23@kernel.org>,
-	David Lechner <dlechner@baylibre.com>,
-	Nuno =?iso-8859-1?Q?S=E1?= <nuno.sa@analog.com>,
-	Andy Shevchenko <andy@kernel.org>,
-	Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-	Ulf Hansson <ulfh@kernel.org>, Liam Girdwood <lgirdwood@gmail.com>,
-	Mark Brown <broonie@kernel.org>,
-	Philipp Zabel <p.zabel@pengutronix.de>,
-	Alexandre Belloni <alexandre.belloni@bootlin.com>,
-	linux-clk@vger.kernel.org, linux-pm@vger.kernel.org,
-	imx@lists.linux.dev, linux-hwmon@vger.kernel.org,
-	linux-iio@vger.kernel.org, linux-input@vger.kernel.org,
-	linux-rtc@vger.kernel.org
-Subject: Re: [PATCH v2 0/2] firmware: arm_scmi: Ensure automatic module
- loading
-Message-ID: <20260709-spicy-fiery-squid-6eec1d@sudeepholla>
-References: <20260618-scmi-modalias-v2-0-8c7547c1be21@oss.qualcomm.com>
- <8c2a4ae3-95cc-489a-a7a4-90a3ee2597e9@oss.qualcomm.com>
+	s=arc-20240116; t=1783592675; c=relaxed/simple;
+	bh=FxUfzWpCleIQzfr8y72a6t+Wi81Fv5S94Ccqz6vyAuY=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=CQIAlnVcHsvu4ChUcdp61bq1qxo6xqNod7UngwV/T18fL4TEofOA6BrvDBvQyKNJ+g7da69dyg8nwYLbcaly78r/v3K1S+7il35YfjqJW7Cmwfjy7LHuJS0PvSYSOLWqjlRAgk6Q+aDJt6KEfoAVFzVTP7QHtgrGY2ylyYRgctI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org; spf=pass smtp.mailfrom=gmail.com; arc=none smtp.client-ip=209.85.217.42
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+Received: by mail-vs1-f42.google.com with SMTP id ada2fe7eead31-7391d5504b5so841053137.3
+        for <linux-pm@vger.kernel.org>; Thu, 09 Jul 2026 03:24:34 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1783592673; x=1784197473;
+        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
+         :references:mime-version:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to:content-type;
+        bh=s6cZ9HNvj5euq2IsKqnGtW9n38TCf44UpefkQ/0EfN8=;
+        b=l8pJAJhGiyg7vPGsoPybprInaD4KkdCLX/nfw09oSm9fUIIQt+nHJpFdmlbvxi8xYm
+         GJS7i8cB/GHYkZOAdGe3nU+CfMBdWnV/TwXVkItQKs+pje+oLkFxABOs7sfyGaVnp6WQ
+         8GTTMyV6qYdRSCOtGMZ8ajNBPQSRv5+G51Fu7UDkw0aoYSxLMPvCkXFZDj0gAsly3DSZ
+         4RUA67fzM2FIcaDk8dTk1uJP/arFsPVf/jAGKKc/r/tVnERZN8uhZJ50pJJOL5xQY6dG
+         30SAm71cdCdqJ2fL15K3WkW7JpxgiLQOetPpZ+jd2yYPeSBuyZfGo8nsAxhA3+ZsSZ9C
+         kcuw==
+X-Forwarded-Encrypted: i=1; AHgh+RryBHW6h1ABumeyg8JCV9LjbclD8bJyo5wZ/OwQapBJykH3Sfx5k9wUbfs0n26FkczlfElEwMIAiw==@vger.kernel.org
+X-Gm-Message-State: AOJu0YxAZb+CDz9nGAtbaEDYpUkbJI1m37ZIdKLizGzk98YLGkiW3cM5
+	ltN7yFiOs4Ife2K5dEzv21O7HiTR5aoG5j6GM/DlK60XBmEIXXEv7oH0np76NI86wLw=
+X-Gm-Gg: AfdE7ckJo5l1uikTsf59tFKWepHpp8FuNAqMsiyIenN9Etu+5uR13Eb3c01VxeO9XJG
+	eMkyRVo6UQj/EsPF9oq4cK56snAFkVvOt8nHiQ8eK4oAlYFwYeXrUBXQhZSnHuI1m1nZuKBkhiH
+	JMJdJDrXmBcfKGwwU7kKnS7IM3FE1ioajasgC6wJzGum34bJyd9PTDyaxMx9JCCNSm0GviEeXKh
+	sJ9APWMjBVTz0IwLYxMAV2SL7VZbwvSBqaTQDo13yQ9gPfuMh1t9tYBe9K+6gRKrxj82/REzOTW
+	AQZhavNtKnAmpltmWICQfOXFOB2KrrVqk9SvmA17K8pDecg08s20oaCxLAtdyPWvklqScAy7yz2
+	ZcWImhZnydD0MobAGP1quj5OQpcf4/Qgvw2uDVIQ33vP4PlOD3DigzA5+nF0WL/BESbQUeimYrR
+	ZBqghzAbZ+UPXxUrXkZKswJlq0fG1eZQOGrSSaJhjAiEaSKcwatg==
+X-Received: by 2002:a05:6102:94f:b0:738:531e:a43e with SMTP id ada2fe7eead31-744e00634cbmr4111720137.7.1783592673463;
+        Thu, 09 Jul 2026 03:24:33 -0700 (PDT)
+Received: from mail-ua1-f43.google.com (mail-ua1-f43.google.com. [209.85.222.43])
+        by smtp.gmail.com with ESMTPSA id a1e0cc1a2514c-96ed3868749sm2801313241.7.2026.07.09.03.24.30
+        for <linux-pm@vger.kernel.org>
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Thu, 09 Jul 2026 03:24:31 -0700 (PDT)
+Received: by mail-ua1-f43.google.com with SMTP id a1e0cc1a2514c-96387efc30aso821419241.3
+        for <linux-pm@vger.kernel.org>; Thu, 09 Jul 2026 03:24:30 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AHgh+RqtG0MfDThFBng2SXm1wzfolCGgg27tZww5QsyzdzDoeQH+EzNM1PFSxyZKo3gi6H9OchWfaZhelg==@vger.kernel.org
+X-Received: by 2002:a05:6102:94f:b0:738:531e:a43e with SMTP id
+ ada2fe7eead31-744e00634cbmr4111626137.7.1783592670751; Thu, 09 Jul 2026
+ 03:24:30 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <8c2a4ae3-95cc-489a-a7a4-90a3ee2597e9@oss.qualcomm.com>
+References: <cover.1783505142.git.geert+renesas@glider.be> <dca2c4940ba38b897f04b6fb67591de9835900e1.1783505142.git.geert+renesas@glider.be>
+ <59725f93-5269-4b0e-8633-48821219877f@mailbox.org>
+In-Reply-To: <59725f93-5269-4b0e-8633-48821219877f@mailbox.org>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Thu, 9 Jul 2026 12:24:18 +0200
+X-Gmail-Original-Message-ID: <CAMuHMdXCooODm3YuE1JjZJAc2BeQuD==kWbA+ZzpXRA3fqa0Vg@mail.gmail.com>
+X-Gm-Features: AUfX_mzHlNNTYZ42llQz3ksPLOjU-3fWPe_bQZCByAo9mLJpSl17fS0OhOffgPc
+Message-ID: <CAMuHMdXCooODm3YuE1JjZJAc2BeQuD==kWbA+ZzpXRA3fqa0Vg@mail.gmail.com>
+Subject: Re: [PATCH v2 6/6] arm64: dts: renesas: r8a78000: Add MDLC nodes
+To: Marek Vasut <marek.vasut@mailbox.org>
+Cc: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+	Conor Dooley <conor+dt@kernel.org>, Michael Turquette <mturquette@baylibre.com>, 
+	Stephen Boyd <sboyd@kernel.org>, Brian Masney <bmasney@redhat.com>, Ulf Hansson <ulfh@kernel.org>, 
+	Philipp Zabel <p.zabel@pengutronix.de>, Wolfram Sang <wsa+renesas@sang-engineering.com>, 
+	Marek Vasut <marek.vasut+renesas@mailbox.org>, 
+	Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>, devicetree@vger.kernel.org, 
+	linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, 
+	linux-renesas-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
+	linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
 
-On Thu, Jun 18, 2026 at 10:31:12PM +0200, Hans de Goede wrote:
-> Hi,
-> 
-> On 18-Jun-26 17:56, Bjorn Andersson wrote:
-> > SCMI drivers such as the Arm SCMI CPUfreq driver are allowed to built as
-> > modules, but they are then not automatically loaded. Rework the SCMI
-> > device table alias support to make modpost consume the information from
-> > MODULE_DEVICE_TABLE(scmi, ...) and allow drivers to be loaded based on
-> > this information, if known. Also add a protocol-based alias to also
-> > trigger driver loading when only the SCMI protocol id is known.
-> > 
-> > Signed-off-by: Bjorn Andersson <bjorn.andersson@oss.qualcomm.com>
-> 
-> So I just gave this a test spin and unfortunately it does not work.
-> 
-> The problem with Fedora's kernel-config / setup is that the
-> request_module() from patch 2/2 runs from the initramfs, but
-> the scmi_cpufreq module is only available in the rootfs.
-> 
-> It does work if I explictly add the scmi_cpufreq module to
-> the initramfs, then it does get autoloaded.
-> 
-> We really need some place to put a uevent sysfs attr which then
-> gets replayed when udev is restarted from the rootfs and then
-> re-reads all the uevent files as part of its coldplug
-> enumeration.
-> 
+Hi Marek,
 
-I don't have much knowledge on uevent to provide any suggestions/help.
-But isn't this a generic requirement ? I mean you could have modules
-install on the rootfs and not all of them are packed in initramfs ?
-Just wondering if that works for other modules, we can examine how
-do they work and what are we missing ?
+On Wed, 8 Jul 2026 at 23:56, Marek Vasut <marek.vasut@mailbox.org> wrote:
+> On 7/8/26 12:15 PM, Geert Uytterhoeven wrote:
+> > Add device nodes for the Module Control (MDLC) blocks on the R-Car X5H
+> > (R8A78000) SoC.
+> >
+> > Complete hardware desciption of all (H)SCIF serial ports, by linking
+> > them to an MDLC for power domains and resets.
+> >
+> > Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+>
+> [...]
+>
+> > +             mdlc_ddr7: system-controller@e8380000 {
+> > +                     compatible = "renesas,r8a78000-mdlc";
+> > +                     reg = <0 0xe8380000 0 0x1000>;
+> > +                     #power-domain-cells = <2>;
+> > +                     #reset-cells = <1>;
+> > +                     bootph-all;
+> > +             };
+> > +
+> > +             mdlc_hscn: system-controller@c9c90000 {
+> > +                     compatible = "renesas,r8a78000-mdlc";
+> > +                     reg = <0 0xc9c90000 0 0x1000>;
+> > +                     #power-domain-cells = <2>;
+> > +                     #reset-cells = <1>;
+> > +                     bootph-all;
+> > +             };
+> > +
+> > +             mdlc_rt: system-controller@19440000 {
+>
+> Please keep the list sorted (0x19440000 should be before 0xc9c90000).
+
+These are sorted by instance (Module Number), as per Table 18.1
+("Target Module hierarchy of Module Power Gating and Module Standby")
+in the documentation.  This order is indeed a bit odd, as it differs
+from both alphabetical label order (unlike e.g. hscifN), and numerical
+unit address order...
+
+Any guidance?
+
+> > +                     compatible = "renesas,r8a78000-mdlc";
+> > +                     reg = <0 0x19440000 0 0x1000>;
+> > +                     #power-domain-cells = <2>;
+> > +                     #reset-cells = <1>;
+> > +                     bootph-all;
+> > +             };
+> With that fixed:
+>
+> Reviewed-by: Marek Vasut <marek.vasut+renesas@mailbox.org>
+
+Thanks! ;-)
+
+Gr{oetje,eeting}s,
+
+                        Geert
 
 -- 
-Regards,
-Sudeep
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
