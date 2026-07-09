@@ -1,49 +1,49 @@
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.11])
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.21])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2E0C5404BDD;
-	Thu,  9 Jul 2026 10:33:55 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.11
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5AB9D3FAE10;
+	Thu,  9 Jul 2026 10:36:47 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.21
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1783593236; cv=none; b=GbWNjPwE6wZ9H0/y+k1QHU7JC60FrjZQXFoEi2AFyvUgOmlXWTfHHt470xbLQo1oUTFWFRvPPj8xGYxkapR5VVcRzCZqkqK/mAGJnb4PdPPwZ07fLWz26m7e4uD7JeeQMEDMhvWBnJZ1zfhusQfHjKfIA/O778ucf+Hvt1VxZHY=
+	t=1783593408; cv=none; b=ErxFjWFP7QM4Z2E6xNVBJZWLvrIz+ruCpHB6wCsvgcKzFhmmz3jaVvvpyuR6UumSTqCzJNQHje/5YcFRV30KD3PPzhpa2X4vvFPm/vN4LjQZcgv3hKQe4GXUvorIeqEtmzte4Ui9O/OV9HWTosaFmqe22+IhFykBjjSCGCFfPyo=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1783593236; c=relaxed/simple;
-	bh=bWHIEdjL2dr+L3lteYYp6oLrvxioUMyONYbfmyggoc0=;
+	s=arc-20240116; t=1783593408; c=relaxed/simple;
+	bh=sM/To+DTEc32STAWmbWoa4mxR1gafUH0Ew8jud2Bb6E=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=J7eu/pcBsQ65uyOuPejZAeDY2Vv7oFZcFuDi7DHbdWmJmbjQx6EShhEb4H3WgsyNl6D7E0WPeN3vvIM5mJokv57XW+AmTyHAfYWK5fD2kLSIinz5aMS9+QGZ0wvAkZvHEa7MQud/gPVYy79AAWAauI/iXDlJS5TFm2enkAugEms=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=pass smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=WotwiPXS; arc=none smtp.client-ip=198.175.65.11
+	 Content-Type:Content-Disposition:In-Reply-To; b=QKHSM8XnsyK9a+q0IAknVva8HEWVSGx2dUimSiopNdkRdb2OI/oAWI6ig9/ZvOmN9D41p0cwUXhiPbp7iMrCxueUNT0l91SDdNERCXu2CNapunIYUucN55qA++6XyfECc9vYvoLCMsPOy1ZD5IhSP5deGUxA07Fxi/A9+ACynsk=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=pass smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=bua0mjXM; arc=none smtp.client-ip=198.175.65.21
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="WotwiPXS"
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="bua0mjXM"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1783593235; x=1815129235;
+  t=1783593408; x=1815129408;
   h=date:from:to:cc:subject:message-id:references:
    mime-version:in-reply-to;
-  bh=bWHIEdjL2dr+L3lteYYp6oLrvxioUMyONYbfmyggoc0=;
-  b=WotwiPXS8CRPgaqjmIHLojPyqOn9ovWnJ+fO3Nb1ctEhWXYaHou5pQ4O
-   lQMfpoFt9bcWBvGpfU1dvnirHopGT37l3sOHya5PODLKzs5s9dMbV1Vcc
-   EBDypSwNwmb4Hx1x3jUvh8SQP4+JRujh0Ko/H+DGXOhFWFYuhsbz47/sj
-   9U8dQFP9AmUPbm5ezTFmyGKJd80T65WohdUXlDlDNxHOFuuUaiJfX5Siv
-   ebOEyE38o6ttsYTLLoSUXUMe5WcUW/BwJgHwItkjFUg/OlnSqjEBqn8r+
-   Wru3rTvPPgo5AtQbt2oRuQthF+NlPY5Gj8lnGw7wMIWxHv3XjDfB2nzD9
-   A==;
-X-CSE-ConnectionGUID: aIczG6sXSrS7NX9ztCrjuw==
-X-CSE-MsgGUID: 8mZ8FKxwS+ymNQK9KeOg+g==
-X-IronPort-AV: E=McAfee;i="6800,10657,11841"; a="94623163"
+  bh=sM/To+DTEc32STAWmbWoa4mxR1gafUH0Ew8jud2Bb6E=;
+  b=bua0mjXM47Lg5VIlNcyvznBOjLcjqQcEEQ4wacmSt+F0RV8lNCP7U73P
+   Mn3xb7t9p2KKRC63biExgj0U23hsmHTB8Bh6otZmanmW+DCLlzIH2kOf0
+   S0yAHmsd3505TQlTbCDMcbor09GTI6uEa11Bnqyng4KcAqawAQwLd+8RA
+   Az00Lxpp0gbwNs7T1g92yj+eSXbr/Vm2lKHiRAgkUS1YZApOO29CChf4n
+   oby/y0EPycoz6+CF/LBoZDien/jWAeH2ymtmhM67YCYvJG7kz4L6zqrud
+   UcekR56BNrpKnvCCeLOj8nKyIdtgMWJLYWAXiBbXPerrXWkBaQJjd601t
+   g==;
+X-CSE-ConnectionGUID: GDi6Yu+ASYODYLCb8kcShg==
+X-CSE-MsgGUID: g03hxAK4QYq7xv3A1wvLKQ==
+X-IronPort-AV: E=McAfee;i="6800,10657,11841"; a="84128317"
 X-IronPort-AV: E=Sophos;i="6.25,154,1779174000"; 
-   d="scan'208";a="94623163"
-Received: from orviesa006.jf.intel.com ([10.64.159.146])
-  by orvoesa103.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 09 Jul 2026 03:33:55 -0700
-X-CSE-ConnectionGUID: oJJpjx0aQmOy2HToIrIdLA==
-X-CSE-MsgGUID: F/+fAyoiRoqqeb7dacv0kA==
+   d="scan'208";a="84128317"
+Received: from fmviesa006.fm.intel.com ([10.60.135.146])
+  by orvoesa113.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 09 Jul 2026 03:36:45 -0700
+X-CSE-ConnectionGUID: 5i2pH1kLQnmvne4XMmnt5g==
+X-CSE-MsgGUID: aCmP89aeSLqKerWrRicZLQ==
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="6.25,154,1779174000"; 
-   d="scan'208";a="252799922"
+   d="scan'208";a="250148201"
 Received: from ettammin-mobl3.ger.corp.intel.com (HELO localhost) ([10.245.245.235])
-  by orviesa006-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 09 Jul 2026 03:33:49 -0700
-Date: Thu, 9 Jul 2026 13:33:47 +0300
+  by fmviesa006-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 09 Jul 2026 03:36:40 -0700
+Date: Thu, 9 Jul 2026 13:36:37 +0300
 From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 To: Chen-Yu Tsai <wenst@chromium.org>
 Cc: Bartosz Golaszewski <brgl@kernel.org>,
@@ -62,12 +62,12 @@ Cc: Bartosz Golaszewski <brgl@kernel.org>,
 	devicetree@vger.kernel.org, linux-mediatek@lists.infradead.org,
 	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
 	Manivannan Sadhasivam <mani@kernel.org>,
-	Alan Stern <stern@rowland.harvard.edu>,
-	Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
-Subject: Re: [PATCH v4 03/14] power: sequencing: Add pwrseq_power_is_on()
-Message-ID: <ak95C4HVnFn4UEo8@ashevche-desk.local>
+	Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH v4 06/14] usb: core: Move struct usb_port and related
+ APIs to port.h
+Message-ID: <ak95tdi31diPMTZ6@ashevche-desk.local>
 References: <20260709095726.704448-1-wenst@chromium.org>
- <20260709095726.704448-4-wenst@chromium.org>
+ <20260709095726.704448-7-wenst@chromium.org>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -76,30 +76,30 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20260709095726.704448-4-wenst@chromium.org>
+In-Reply-To: <20260709095726.704448-7-wenst@chromium.org>
 Organization: Intel Finland Oy - BIC 0357606-4 - c/o Alberga Business Park, 6
  krs, Bertel Jungin Aukio 5, 02600 Espoo
 
-On Thu, Jul 09, 2026 at 05:57:08PM +0800, Chen-Yu Tsai wrote:
-> The power sequencing consumer API already does power on state tracking
-> internally. Expose the state to consumers through pwrseq_power_is_on()
-> so that they don't have to reimplement it locally.
+On Thu, Jul 09, 2026 at 05:57:11PM +0800, Chen-Yu Tsai wrote:
+> |struct usb_port| and its matching container_of() macro should live in
+> its own port.h, matching the split we have for .c files.
+> 
+> Move them as described. Also move usb_port_is_power_on(), since in the
+> next change its |struct usb_hub *| parameter will be changed to
+> |struct usb_port *|, and becomes a non-static function that only
+> references |struct usb_port|.
+> 
+> port.h is only included from hub.h, as a subsequent patch will directly
+> use fields from |struct usb_port| in a static inline helper in hub.h.
+> The USB internal headers don't have header guards to help with this.
+
+Reviewed-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 
 ...
 
-> Side question: I wonder if making the !POWER_SEQUENCING return success
-> would make developers' lives better? At least that is what the clk and
+> +extern int usb_port_is_power_on(struct usb_hub *hub, unsigned int portstatus);
 
-"the clk... mistakenly do."
-
-> regulator consumer APIs do.
-
-When the clock is optional, that is justified, but for non-optional cases it
-makes life actually harder (see for IS_ERR_OR_NULL() checks against
-devm_clk_*() cases, which Krzysztof targets this cycle to eliminate).
-
-That said, if the pwrseq desc can be NULL and the API tolerates that,
-then it might make sense, otherwise it has to return an error.
+Drop 'extern', it's not needed in a modern code (like 20 years?).
 
 -- 
 With Best Regards,
