@@ -1,38 +1,39 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 58B0E1DDC2B;
-	Thu,  9 Jul 2026 12:47:13 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0C4DC439337;
+	Thu,  9 Jul 2026 12:47:16 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1783601234; cv=none; b=FjYjh83CmoiUuiBx56tmACJXiBy8AP4CNdZjywLqGqF3N2WIzRavTIoAKBvIQj+mt1bfAQHe2q5N3X+L1o+nSx1Vdcg8cegnoVMDDCV7enuHpzjyU4pr7saqbX+MCeq1MpxgbJtG/E5THcjvqkzUDjuETMsmMHG9xjEfCsthuW8=
+	t=1783601238; cv=none; b=m3WpPXHJgEOByFLNyFiYtptLHMPFmRucnDApclPGa6g6PoNoAO08ajITohHC8G8U9ih9Pf2KpBqgLSbdaRki8A4kKROU6haBX2lVcXeoj5KW1Yol1NojpkKKU03gMcOc+x2hRiyxYKFwNqcaQecN0GQPEGUSobNkgIW8IWdB9Tk=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1783601234; c=relaxed/simple;
-	bh=faE+GwtK97BinEI5nLBJ0WSq+DAr3ZIIgQ50dMdrZaE=;
+	s=arc-20240116; t=1783601238; c=relaxed/simple;
+	bh=2tJBrTjLBvM2nO4NtthbxBwVxtAAU2s8dDDn5k5I/bs=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=tXNkr1Vm4JURwqVVFMNreGRWJYhK0nF9EJXSCLesyaFDxAHTRKf7SHkHKcygPGWmbpCmH4U1/fbeyw0wBF2j9zRj1OS9XrdzXqSF304Sa8NVT5Hq124Xf4aM7CoZTBmcXOxbH7WDchN8v3h6l6y/UeSLDa2FA6drJGcUSEey/fE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=EfH6M9I8; arc=none smtp.client-ip=100.103.45.18
+	 MIME-Version:Content-Type; b=YsTYr0K5DptMUhVX1vm7owKGNgKyxB1Llhi/PiJHEd/S9FowrqqCOBHDdGE7xltpVws2sH7/nAzUrXPUG3m4hPXgW95FQv3PHcEK/i7NjnokSewY+AxQ65/rm8S5lSigP6aeNvxrM9jMe786Cy8Fr0WRjXfaYeV8pZYVTjAqiNw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=P8gHBfCH; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="EfH6M9I8"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4530D1F00A3A;
-	Thu,  9 Jul 2026 12:47:12 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="P8gHBfCH"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6FACB1F000E9;
+	Thu,  9 Jul 2026 12:47:15 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1783601233;
-	bh=NxvdMpy73qwOhoP0zaphQF6YlJGN+AiR4ARaplTTyLs=;
+	s=k20260515; t=1783601236;
+	bh=hRa3RsXlryJz8g3FCZDlcIxUYj6pKYjD5YZ0UrWx4I4=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References;
-	b=EfH6M9I8uOniE9Mo9F/UO7YcIfrZpaSWyX8Vnh3qkWwSVa9Ojl7h1T9eRoyHD3gcI
-	 4SEB7XMTbbSWJFEiWwFJFprDflgqVE0MTBdsfXQDhawksymHjodIKt7mijXdq1c1Pf
-	 Jp2qy4515D2g0Ax0tgWCAgZcf18WfT8rvB9GLMnHIVGpLyGE0Q+9qpyJJyPxOocGXP
-	 LObjXjxsCcsUrqSGdMpBzyzhCIaElAc8q9IJRUw2gi97OQFjSoqnW7MZVzFf7hh77v
-	 YK7ifwd0azWnc+vgRBlEmyV0y+1lSK4CqqKID74s/+5oFl3RK4L9h19kLyMmWVHFCM
-	 XLZAbNNBUU4FQ==
+	b=P8gHBfCHT3DqpGYxTOSCHlEzb1lr3BzsjBfp/rIQGYrFVHqzz9D11tG9PoF78ZxTd
+	 b8Doj187Ncy2GtR5bFDHNx+8UV6rhUzOSSS51BMGM65+iQTwtlLAnNcRAumKvAa1Ru
+	 wLC1Bh34kmp2sbzlWWRqUrqvVMVH53i0YI4hAZYZ1kv+gbxWX1gagaKn3vp4etC/Ws
+	 BF58ELyYwK2XOOQraXNC0YYPO6V6SOcoIMH7sPfKIy1+cdi3uraLMkUemsZt/ncdUg
+	 iT0yRe/Mrf1viiwOFLy2fNZaY4IhQ1tgZAYuE3c7718n9nUX8K/9heI8xbNhz/s8Ay
+	 tKtZg9xiQ+plg==
 From: "Rafael J. Wysocki" <rafael@kernel.org>
 To: Linux PM <linux-pm@vger.kernel.org>
 Cc: Linux ACPI <linux-acpi@vger.kernel.org>,
  Sudeep Holla <Sudeep.Holla@arm.com>
-Subject: [PATCH v1 16/17] intel_idle: Prepare for adding ACPI _LPI support
-Date: Thu, 09 Jul 2026 14:43:43 +0200
-Message-ID: <1932965.atdPhlSkOF@rafael.j.wysocki>
+Subject:
+ [PATCH v1 15/17] ACPI: processor: idle: Add switch for strict _LPI processing
+Date: Thu, 09 Jul 2026 14:42:33 +0200
+Message-ID: <3896986.MHq7AAxBmi@rafael.j.wysocki>
 Organization: Linux Kernel Development - Intel
 In-Reply-To: <4746278.LvFx2qVVIh@rafael.j.wysocki>
 References: <4746278.LvFx2qVVIh@rafael.j.wysocki>
@@ -47,85 +48,134 @@ Content-Type: text/plain; charset="UTF-8"
 
 From: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
 
-In preparation for adding ACPI _LPI support to intel_idle, move some
-code used for processing ACPI idle states information coming from
-_CST objects to separate functions because that code will be also
-used for processing idle states information coming from _LPI.
+Add a "strict" argument to acpi_processor_extract_lpi_info() that, when
+set, will cause it to ignore _LPI states without minimum residency or
+wake latency instead of assuming 10 us values for these parameters.
 
 No intentional functional impact.
 
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- drivers/idle/intel_idle.c | 35 ++++++++++++++++++++++-------------
- 1 file changed, 22 insertions(+), 13 deletions(-)
+ drivers/acpi/acpi_processor.c | 25 +++++++++++++++++++------
+ drivers/acpi/processor_idle.c |  2 +-
+ include/linux/acpi.h          |  6 ++++--
+ 3 files changed, 24 insertions(+), 9 deletions(-)
 
-diff --git a/drivers/idle/intel_idle.c b/drivers/idle/intel_idle.c
-index d74b478db280..fedaa8142121 100644
---- a/drivers/idle/intel_idle.c
-+++ b/drivers/idle/intel_idle.c
-@@ -1837,6 +1837,16 @@ static bool __init intel_idle_acpi_cst_extract(void)
- 	return false;
+diff --git a/drivers/acpi/acpi_processor.c b/drivers/acpi/acpi_processor.c
+index cdba1aee84e9..5fbab54171b7 100644
+--- a/drivers/acpi/acpi_processor.c
++++ b/drivers/acpi/acpi_processor.c
+@@ -1018,7 +1018,7 @@ static int obj_get_integer(union acpi_object *obj, u32 *value)
+ static void process_lpi_state_package(union acpi_object *lpi_pkg,
+ 				      struct acpi_lpi_state *lpi_state,
+ 				      acpi_handle handle,
+-				      unsigned int state_idx)
++				      unsigned int state_idx, bool strict)
+ {
+ 	union acpi_object *lpi_pkg_elem, *obj;
+ 
+@@ -1054,11 +1054,21 @@ static void process_lpi_state_package(union acpi_object *lpi_pkg,
+ 	}
+ 
+ 	if (obj_get_integer(&lpi_pkg_elem[0], &lpi_state->min_residency)) {
++		if (strict) {
++			lpi_state_debug(handle, "No min. residency", state_idx);
++			return;
++		}
++
+ 		lpi_state_debug(handle, "Assuming 10 us min. residency", state_idx);
+ 		lpi_state->min_residency = 10;
+ 	}
+ 
+ 	if (obj_get_integer(&lpi_pkg_elem[1], &lpi_state->wake_latency)) {
++		if (strict) {
++			lpi_state_debug(handle, "No wake latency", state_idx);
++			return;
++		}
++
+ 		lpi_state_debug(handle, "Assuming 10 us wake latency", state_idx);
+ 		lpi_state->wake_latency = 10;
+ 	}
+@@ -1090,7 +1100,8 @@ static void process_lpi_state_package(union acpi_object *lpi_pkg,
  }
  
-+static void __init intel_idle_complete_state_init(struct cpuidle_state *state)
-+{
-+	if (intel_idle_state_needs_timer_stop(state))
-+		state->flags |= CPUIDLE_FLAG_TIMER_STOP;
-+
-+	state->enter = intel_idle;
-+	state->enter_dead = intel_idle_enter_dead;
-+	state->enter_s2idle = intel_idle_s2idle;
-+}
-+
- static void __init intel_idle_init_cstates_acpi(struct cpuidle_driver *drv)
+ static int acpi_processor_evaluate_lpi(acpi_handle handle,
+-				       struct acpi_lpi_states_array *info)
++				       struct acpi_lpi_states_array *info,
++				       bool strict)
  {
- 	int cstate, limit = min_t(int, CPUIDLE_STATE_MAX, acpi_state_table.count);
-@@ -1879,18 +1889,23 @@ static void __init intel_idle_init_cstates_acpi(struct cpuidle_driver *drv)
- 		if (disabled_states_mask & BIT(cstate))
- 			state->flags |= CPUIDLE_FLAG_OFF;
+ 	struct acpi_buffer buffer = { ACPI_ALLOCATE_BUFFER, NULL };
+ 	union acpi_object *lpi_data, *lpi_pkg;
+@@ -1138,7 +1149,8 @@ static int acpi_processor_evaluate_lpi(acpi_handle handle,
  
--		if (intel_idle_state_needs_timer_stop(state))
--			state->flags |= CPUIDLE_FLAG_TIMER_STOP;
--
- 		if (cx->type > ACPI_STATE_C1 && !boot_cpu_has(X86_FEATURE_NONSTOP_TSC))
- 			mark_tsc_unstable("TSC halts in idle");
- 
--		state->enter = intel_idle;
--		state->enter_dead = intel_idle_enter_dead;
--		state->enter_s2idle = intel_idle_s2idle;
-+		intel_idle_complete_state_init(state);
+ 	for (state_idx = 1; state_idx <= lpi_pkg_count; state_idx++) {
+ 		lpi_state->index = state_idx;
+-		process_lpi_state_package(lpi_pkg++, lpi_state++, handle, state_idx);
++		process_lpi_state_package(lpi_pkg++, lpi_state++, handle,
++					  state_idx, strict);
  	}
+ 
+ 	acpi_handle_debug(handle, "Found %u power states\n", lpi_pkg_count);
+@@ -1245,7 +1257,8 @@ static unsigned int flatten_lpi_states(acpi_handle handle,
  }
  
-+static bool __init intel_idle_acpi_hint_match(unsigned int flags, u32 acpi_hint,
-+					      u32 table_hint)
-+{
-+	if (flags & CPUIDLE_FLAG_PARTIAL_HINT_MATCH) {
-+		acpi_hint &= ~MWAIT_SUBSTATE_MASK;
-+		table_hint &= ~MWAIT_SUBSTATE_MASK;
-+	}
-+	return acpi_hint == table_hint;
-+}
-+
- static bool __init intel_idle_off_by_default(unsigned int flags, u32 mwait_hint)
+ int acpi_processor_extract_lpi_info(acpi_handle pr_handle,
+-				    struct acpi_processor_power *pr_power)
++				    struct acpi_processor_power *pr_power,
++				    bool strict)
  {
- 	int cstate, limit;
-@@ -1909,14 +1924,8 @@ static bool __init intel_idle_off_by_default(unsigned int flags, u32 mwait_hint)
- 	 */
- 	for (cstate = 1; cstate < limit; cstate++) {
- 		u32 acpi_hint = acpi_state_table.states[cstate].address;
--		u32 table_hint = mwait_hint;
--
--		if (flags & CPUIDLE_FLAG_PARTIAL_HINT_MATCH) {
--			acpi_hint &= ~MWAIT_SUBSTATE_MASK;
--			table_hint &= ~MWAIT_SUBSTATE_MASK;
--		}
+ 	struct acpi_lpi_states_array info[2], *prev, *curr;
+ 	acpi_handle handle = pr_handle;
+@@ -1259,7 +1272,7 @@ int acpi_processor_extract_lpi_info(acpi_handle pr_handle,
+ 	curr = &info[0];
+ 	curr->composite_states_size = 0;
  
--		if (acpi_hint == table_hint)
-+		if (intel_idle_acpi_hint_match(flags, acpi_hint, mwait_hint))
- 			return false;
- 	}
- 	return true;
+-	ret = acpi_processor_evaluate_lpi(handle, curr);
++	ret = acpi_processor_evaluate_lpi(handle, curr, strict);
+ 	if (ret)
+ 		return ret;
+ 
+@@ -1312,7 +1325,7 @@ int acpi_processor_extract_lpi_info(acpi_handle pr_handle,
+ 
+ 		curr->composite_states_size = 0;
+ 
+-		ret = acpi_processor_evaluate_lpi(handle, curr);
++		ret = acpi_processor_evaluate_lpi(handle, curr, strict);
+ 		if (ret)
+ 			break;
+ 
+diff --git a/drivers/acpi/processor_idle.c b/drivers/acpi/processor_idle.c
+index 44a52148bc25..e113bcbbb882 100644
+--- a/drivers/acpi/processor_idle.c
++++ b/drivers/acpi/processor_idle.c
+@@ -867,7 +867,7 @@ static int acpi_processor_get_lpi_info(struct acpi_processor *pr)
+ 	if (ret == -EOPNOTSUPP)
+ 		return ret;
+ 
+-	ret = acpi_processor_extract_lpi_info(pr->handle, &pr->power);
++	ret = acpi_processor_extract_lpi_info(pr->handle, &pr->power, false);
+ 	if (ret)
+ 		return ret;
+ 
+diff --git a/include/linux/acpi.h b/include/linux/acpi.h
+index 1d3ea92a2344..9e418b23373c 100644
+--- a/include/linux/acpi.h
++++ b/include/linux/acpi.h
+@@ -317,10 +317,12 @@ static inline int acpi_processor_evaluate_cst(acpi_handle handle, u32 cpu,
+ 
+ #ifdef CONFIG_ACPI_PROCESSOR_IDLE
+ int acpi_processor_extract_lpi_info(acpi_handle pr_handle,
+-				    struct acpi_processor_power *pr_power);
++				    struct acpi_processor_power *pr_power,
++				    bool strict);
+ #else
+ static inline int acpi_processor_extract_lpi_info(acpi_handle pr_handle,
+-				    struct acpi_processor_power *pr_power)
++				    struct acpi_processor_power *pr_power,
++				    bool strict)
+ {
+ 	return -ENODEV;
+ }
 -- 
 2.51.0
 
