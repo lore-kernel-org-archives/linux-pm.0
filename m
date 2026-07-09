@@ -1,39 +1,40 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2D979439337;
-	Thu,  9 Jul 2026 12:47:34 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0C07B439337;
+	Thu,  9 Jul 2026 12:47:38 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1783601256; cv=none; b=X/zzkkuSYm0KrhLzMWh72pS42BR9TxGlZ+aMqJnz3vKngSlA6y8yhtxuOm3jSqFqJbR/XHQ72zalYGQ2zSsxVHSzt+HAKJZBJEGCADPf7FpNatNWh2+2aom9whwfriay9JlHgNeU+rGhNHWfpxxUeGGL4LRlHVrx/2wd+XyRe+4=
+	t=1783601259; cv=none; b=XCtTqVn38Fl82cjTjWb5pJuWoS6n5WNd6EJ7njMYJseAc1C6iqK5da0Y7ei3lvFyHDo8UxKzlkj2abEqVaRsNdb4HlfqV+8YWGV2jsHhQ7y7MpdyR3V+JkWtFa2XBNnONqWAopA0HvH63nZKmvBEL9fXOIGxgegDV0H1xTVc4Yc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1783601256; c=relaxed/simple;
-	bh=84vKwTrxsNZ97k7f/hC48FGW5hYCLcrsbhaWi58CX68=;
+	s=arc-20240116; t=1783601259; c=relaxed/simple;
+	bh=xx+6El9sbU8WOxcazpIGpQBP1XqmY2CzD6O/eaMJE4Y=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=gGRJDBbOtjnolYKOPSZG4mxQZcrinXu+i68wgH6/Axaw7omdzpONGiNVBQusAcQGPbKh0rHaRilbOyN03ZA4gaDucpgdXkwCjg9drlZs5cVWLDrauTg5XXzNbP3aERDcDB1naRW/zH9AfBskAM5KE2KJIauKisEPnyty+oB9wYc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Ng/8IBpI; arc=none smtp.client-ip=100.103.45.18
+	 MIME-Version:Content-Type; b=CEeC/KtgNe5saZsZL8WhX9ftlua3tXf8xaFFhDuBaP4/F8DNbJbZqvfrDMoYh1PUpjxhsMubL+3TT3w73rBI8ytGs9AP6xv1OtEebmtE1Id7L6ZPXTHntqRG+3mi86gOIyuLSJuGo43CSvIR7dX3HDSn6K8O9Jqj+BjbGIihs9s=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=JFvDJJgf; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Ng/8IBpI"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 170F41F000E9;
-	Thu,  9 Jul 2026 12:47:33 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="JFvDJJgf"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 287461F000E9;
+	Thu,  9 Jul 2026 12:47:36 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1783601254;
-	bh=tIll783jCthqFI1/QAGckGAOIaGYl2VI5/i68ovDfdo=;
+	s=k20260515; t=1783601257;
+	bh=I0SChfDGZY9q05Rl2ktZ4djGuAHJCGa8kizIbVzP9h8=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References;
-	b=Ng/8IBpIJcJGh0nvAFaP0iAny+Lw5v41xdTa5eVBGWLd3Q6WnpmVZfjl6QNHM8g9g
-	 VrgXx053lHlmGq/+NKsixxMFVkCJdWTx193aMZR6BX5dbf5883yWmuZtwD1T5yNdb1
-	 IpOh58VPN+RI4wTdSk8sLKYSFBIWr3eTsGgx2veAnHham0K7bwPgTaNXCJ9xSxdFBh
-	 mqiebEBY53IzMSmFBR2/S8kCVTbAzfB2HLBwSGUQDWd0HLYWz/kLzN/CyHxBWFDaj1
-	 JCnYTLXBw7VYlBJS/63keClBYxYdXD6V49RV2NcasR5JLM+Wd7Miv6jZ2qTPYhsG7N
-	 3/vVmpiclUYqA==
+	b=JFvDJJgf/ceZXbnrfYvAANIyyyCgeaUa6qSFVQJmN2754wIUWNj/+tNE/51OaptN8
+	 G2omiCaKjxaGzcf1QM/wBQC4FSList1yHcpMJz/ncwpno4LeVFHlCtUXKWSIB5J5/Q
+	 j93ifqVj0GxOpcAFva+Rq13q4EDSYG8RvoDDj/VYioek3hS9qlKDzaEvzs+4W9hpgX
+	 8F55yHoPtLf4AM1B65Y6ARqqR8gEozjVE5F8V4FV+WZ1CgaY0/RftY5jNfm/1U31EU
+	 ILvdtPSKrF1hxFnbm1C5W+RIgYyHHQ3NqlYF7LLXXkM/lxaO8gJhYO3sYqxmxOpPIH
+	 oELVSxcWfbgrw==
 From: "Rafael J. Wysocki" <rafael@kernel.org>
 To: Linux PM <linux-pm@vger.kernel.org>
 Cc: Linux ACPI <linux-acpi@vger.kernel.org>,
  Sudeep Holla <Sudeep.Holla@arm.com>
 Subject:
- [PATCH v1 09/17] ACPI: processor: idle: Drop redundant _LPI presence checks
-Date: Thu, 09 Jul 2026 14:37:49 +0200
-Message-ID: <3349003.5fSG56mABF@rafael.j.wysocki>
+ [PATCH v1 08/17] ACPI: processor: idle: Rework first-level _LPI states
+ processing
+Date: Thu, 09 Jul 2026 14:37:09 +0200
+Message-ID: <3703077.iIbC2pHGDl@rafael.j.wysocki>
 Organization: Linux Kernel Development - Intel
 In-Reply-To: <4746278.LvFx2qVVIh@rafael.j.wysocki>
 References: <4746278.LvFx2qVVIh@rafael.j.wysocki>
@@ -48,42 +49,97 @@ Content-Type: text/plain; charset="UTF-8"
 
 From: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
 
-The acpi_has_method() checks for _LPI in acpi_processor_get_lpi_info()
-are redundant because acpi_processor_evaluate_lpi() returns an error
-when _LPI is not present, so drop them.
+The first-level _LPI states need not be combined with the previous
+level and the entry method for them cannot be ACPI_CSTATE_INTEGER, so
+process them directly in acpi_processor_get_lpi_info() instead of doing
+a special case for them in flatten_lpi_states().
 
-No intentional functional impact.
+Also bail out if there are no _LPI states at the first level because
+that means that there are no _LPI states at all.
 
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- drivers/acpi/processor_idle.c | 7 -------
- 1 file changed, 7 deletions(-)
+ drivers/acpi/processor_idle.c | 47 +++++++++++++++++++++++++++--------
+ 1 file changed, 37 insertions(+), 10 deletions(-)
 
 diff --git a/drivers/acpi/processor_idle.c b/drivers/acpi/processor_idle.c
-index efd3e76377fa..274abe3da7a4 100644
+index e990a43514e6..efd3e76377fa 100644
 --- a/drivers/acpi/processor_idle.c
 +++ b/drivers/acpi/processor_idle.c
-@@ -1107,9 +1107,6 @@ static int acpi_processor_get_lpi_info(struct acpi_processor *pr)
- 	if (!osc_pc_lpi_support_confirmed)
- 		return -EOPNOTSUPP;
+@@ -1068,13 +1068,6 @@ static unsigned int flatten_lpi_states(struct acpi_processor *pr,
  
--	if (!acpi_has_method(handle, "_LPI"))
--		return -EINVAL;
+ 		flpi = &pr->power.lpi_states[flat_state_cnt];
+ 
+-		if (!prev_level) { /* leaf/processor node */
+-			memcpy(flpi, t, sizeof(*t));
+-			stash_composite_state(curr_level, flpi);
+-			flat_state_cnt++;
+-			continue;
+-		}
 -
+ 		for (i = 0; i < prev_level->composite_states_size; i++) {
+ 			p = prev_level->composite_states[i];
+ 			if (t->index <= p->enable_parent_state &&
+@@ -1101,9 +1094,10 @@ static int acpi_processor_get_lpi_info(struct acpi_processor *pr)
+ {
+ 	struct acpi_lpi_states_array info[2], *prev, *curr;
+ 	acpi_handle handle = pr->handle;
+-	unsigned int state_count;
++	unsigned int state_count = 0;
+ 	acpi_status status;
+-	int ret, i;
++	unsigned int i;
++	int ret;
+ 
+ 	/* make sure our architecture has support */
+ 	ret = acpi_processor_ffh_lpi_probe(pr->id);
+@@ -1117,12 +1111,45 @@ static int acpi_processor_get_lpi_info(struct acpi_processor *pr)
+ 		return -EINVAL;
+ 
  	curr = &info[0];
- 	curr->composite_states_size = 0;
++	curr->composite_states_size = 0;
  
-@@ -1166,10 +1163,6 @@ static int acpi_processor_get_lpi_info(struct acpi_processor *pr)
- 		if (strcmp(acpi_device_hid(d), ACPI_PROCESSOR_CONTAINER_HID))
- 			break;
+ 	ret = acpi_processor_evaluate_lpi(handle, curr);
+ 	if (ret)
+ 		return ret;
  
--		/* can be optional ? */
--		if (!acpi_has_method(handle, "_LPI"))
--			break;
--
- 		ret = acpi_processor_evaluate_lpi(handle, curr);
- 		if (ret)
- 			break;
+-	state_count = flatten_lpi_states(pr, 0, curr, NULL);
++	/* Copy all of the usable first-level states to power.lpi_states[]. */
++	for (i = 0; i < curr->size; i++) {
++		struct acpi_lpi_state *lpi = &curr->entries[i];
++		struct acpi_lpi_state *flpi;
++
++		/*
++		 * Skip states that are not enabled or have an inadequate entry
++		 * method for this level.
++		 */
++		if (!(lpi->flags & ACPI_LPI_STATE_FLAGS_ENABLED) ||
++		    lpi->entry_method == ACPI_CSTATE_INTEGER)
++			continue;
++
++		if (state_count >= ACPI_PROCESSOR_MAX_POWER) {
++			acpi_handle_info(handle,
++					 "No space for more _LPI states than %d\n",
++					 ACPI_PROCESSOR_MAX_POWER);
++			break;
++		}
++
++		flpi = &pr->power.lpi_states[state_count++];
++		memcpy(flpi, lpi, sizeof(*lpi));
++		stash_composite_state(curr, flpi);
++	}
++
++	kfree(curr->entries);
++
++	/*
++	 * If there are no _LPI states at the first level, there are no _LPI
++	 * states at all.
++	 */
++	if (!state_count)
++		return -ENODATA;
+ 
+ 	prev = curr;
+ 	curr = &info[1];
 -- 
 2.51.0
 
