@@ -1,108 +1,95 @@
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.21])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-vs1-f46.google.com (mail-vs1-f46.google.com [209.85.217.46])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5AB9D3FAE10;
-	Thu,  9 Jul 2026 10:36:47 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.21
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2F8BA3D25CC
+	for <linux-pm@vger.kernel.org>; Thu,  9 Jul 2026 10:36:57 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.217.46
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1783593408; cv=none; b=ErxFjWFP7QM4Z2E6xNVBJZWLvrIz+ruCpHB6wCsvgcKzFhmmz3jaVvvpyuR6UumSTqCzJNQHje/5YcFRV30KD3PPzhpa2X4vvFPm/vN4LjQZcgv3hKQe4GXUvorIeqEtmzte4Ui9O/OV9HWTosaFmqe22+IhFykBjjSCGCFfPyo=
+	t=1783593418; cv=none; b=axs6hmM0rbKDQyexqsXAl+rHZ76YfSOs/Q9/BYdl67mZ1Rzgwg6of+pzTZX59nyZe0uvDf2diVqbK2udA5FG0tID/KLKJscef1DWJFkucAbnaoBabCExSRKzXsptH7jvD1hofI9ETdFS909tcsmK+4WgBSqmXSzB4kOqXCf+0Yw=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1783593408; c=relaxed/simple;
-	bh=sM/To+DTEc32STAWmbWoa4mxR1gafUH0Ew8jud2Bb6E=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=QKHSM8XnsyK9a+q0IAknVva8HEWVSGx2dUimSiopNdkRdb2OI/oAWI6ig9/ZvOmN9D41p0cwUXhiPbp7iMrCxueUNT0l91SDdNERCXu2CNapunIYUucN55qA++6XyfECc9vYvoLCMsPOy1ZD5IhSP5deGUxA07Fxi/A9+ACynsk=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=pass smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=bua0mjXM; arc=none smtp.client-ip=198.175.65.21
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.intel.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="bua0mjXM"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1783593408; x=1815129408;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=sM/To+DTEc32STAWmbWoa4mxR1gafUH0Ew8jud2Bb6E=;
-  b=bua0mjXM47Lg5VIlNcyvznBOjLcjqQcEEQ4wacmSt+F0RV8lNCP7U73P
-   Mn3xb7t9p2KKRC63biExgj0U23hsmHTB8Bh6otZmanmW+DCLlzIH2kOf0
-   S0yAHmsd3505TQlTbCDMcbor09GTI6uEa11Bnqyng4KcAqawAQwLd+8RA
-   Az00Lxpp0gbwNs7T1g92yj+eSXbr/Vm2lKHiRAgkUS1YZApOO29CChf4n
-   oby/y0EPycoz6+CF/LBoZDien/jWAeH2ymtmhM67YCYvJG7kz4L6zqrud
-   UcekR56BNrpKnvCCeLOj8nKyIdtgMWJLYWAXiBbXPerrXWkBaQJjd601t
-   g==;
-X-CSE-ConnectionGUID: GDi6Yu+ASYODYLCb8kcShg==
-X-CSE-MsgGUID: g03hxAK4QYq7xv3A1wvLKQ==
-X-IronPort-AV: E=McAfee;i="6800,10657,11841"; a="84128317"
-X-IronPort-AV: E=Sophos;i="6.25,154,1779174000"; 
-   d="scan'208";a="84128317"
-Received: from fmviesa006.fm.intel.com ([10.60.135.146])
-  by orvoesa113.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 09 Jul 2026 03:36:45 -0700
-X-CSE-ConnectionGUID: 5i2pH1kLQnmvne4XMmnt5g==
-X-CSE-MsgGUID: aCmP89aeSLqKerWrRicZLQ==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.25,154,1779174000"; 
-   d="scan'208";a="250148201"
-Received: from ettammin-mobl3.ger.corp.intel.com (HELO localhost) ([10.245.245.235])
-  by fmviesa006-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 09 Jul 2026 03:36:40 -0700
-Date: Thu, 9 Jul 2026 13:36:37 +0300
-From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-To: Chen-Yu Tsai <wenst@chromium.org>
-Cc: Bartosz Golaszewski <brgl@kernel.org>,
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	Daniel Scally <djrscally@gmail.com>,
-	Heikki Krogerus <heikki.krogerus@linux.intel.com>,
-	Sakari Ailus <sakari.ailus@linux.intel.com>,
-	"Rafael J. Wysocki" <rafael@kernel.org>,
-	Danilo Krummrich <dakr@kernel.org>, Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Matthias Brugger <matthias.bgg@gmail.com>,
-	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>,
-	linux-acpi@vger.kernel.org, driver-core@lists.linux.dev,
-	linux-pm@vger.kernel.org, linux-usb@vger.kernel.org,
-	devicetree@vger.kernel.org, linux-mediatek@lists.infradead.org,
-	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
-	Manivannan Sadhasivam <mani@kernel.org>,
-	Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH v4 06/14] usb: core: Move struct usb_port and related
- APIs to port.h
-Message-ID: <ak95tdi31diPMTZ6@ashevche-desk.local>
-References: <20260709095726.704448-1-wenst@chromium.org>
- <20260709095726.704448-7-wenst@chromium.org>
+	s=arc-20240116; t=1783593418; c=relaxed/simple;
+	bh=4CIPkQb4KkhTWhyWxYY18u//D5r796JDgZpLE+nZYNk=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=EIDcZ/m0KunR02lYX7DsBn8CU+1NavO9uXVpZV/GtkOAyvGiEoaoOEEzbPl7IxbWcO/i01Q8XNohSQsL33U2TiFxfTX+JjjmnHr5326HOXH1UwqxnsSwQVlOiuomIVBIfpOh90Ab3Cckhffy9s1q8lgJVmBJ4XLwGpwXtDmelig=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org; spf=pass smtp.mailfrom=gmail.com; arc=none smtp.client-ip=209.85.217.46
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+Received: by mail-vs1-f46.google.com with SMTP id ada2fe7eead31-736eea06c3eso565774137.0
+        for <linux-pm@vger.kernel.org>; Thu, 09 Jul 2026 03:36:56 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1783593416; x=1784198216;
+        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
+         :references:mime-version:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to:content-type;
+        bh=52Mzwh5zuD3pl6tySjFoedOc+SKNqyM0wWZqkOZl5UQ=;
+        b=WAZcHMAPeZj2+KCvvyumvopBNep27Owi9slBtEeQoxCl8DXDAGe4+vH0pGOfwRA/PY
+         7n4iLb/tvO8OsZOzYyPZp4GLtGLIXsCCZx3LU8M7LCUFSAOC2HG0r1TNPKs/XMMd98tS
+         fz5qFMsDIEVVkZjWDGdTCCc0ZjG7diw7zWuszhhp3XnzE+7Xtxo4V/5jYaPrZj1Z0eAC
+         QSvHUwsZ7E77cbRJc2efeznzDozATQ9gTrhb0pbcc4oYuGZTexCsihqvPJjB/dHO3g83
+         32Nxam7R/r/Sl+wR1mIduGCuSeOdqk8UeRefkIpcZmE+7YlaI47PIm2Fxf16UK+GVzmx
+         efYg==
+X-Forwarded-Encrypted: i=1; AHgh+RoWH6HY0duehWkVVU13zGS0HUPV5Odc200+u6aNwF7uhTcbh/dH8mD/UFEHElG33r1IyBAsWzmnAA==@vger.kernel.org
+X-Gm-Message-State: AOJu0Ywqqj7f3LitfUx576wT9WKI2PYxff+w76yNzmSvpx153xnqfQA7
+	fEQlBQN+oVaAjROVkCViHJIH+8odGeGDbsaXto5Js4hQQZq+iCKt52IG4qIjVIw0eTo=
+X-Gm-Gg: AfdE7clGBeDIyN05WaeTpchL0IlsLQWGfHwL4AAgkVIStnIL/oibFZR52wf0LFej/VA
+	q3pZdQoSgBG1hgYv1q4DO1DP3pg8UUntGzYtt3vDme7z9OCDmJfjg3ko/XQHv/kxNCGtK9X1Dh6
+	mMqo8SJfm47W84mp6YKwAdfgVROdu3MYWsDEwn5shZ06QnzlINeDntW2SYa/zVicropW+e2PXyz
+	pNpSI8K6Q3eSFK8YbwOOiVc6Sg+WjWmeFFjmvMgGI16kIBqOZQYLtxEIbs7Bza6XH1w6R+WEVJ+
+	0axAbVUYWxnA7UltMHjc4G1OAXT159KyCuSpcHoYZjwuhrGra2+vvMeDRnN5HgiuOB42cnFtGT6
+	mIFdCWij3t61STWn9MYxsnYEK5/mKKSgUeaoKTrY09NMwyDL1nfPMGUBwk+AN2PgLHZStY+i//r
+	J21IgoZFd0JjwK5M93QZPoKySs99Ecb8R7Hp9rbhDw4ijgnzL7IQ==
+X-Received: by 2002:a05:6102:f0f:b0:738:be73:55e9 with SMTP id ada2fe7eead31-744dff85addmr3663694137.12.1783593416046;
+        Thu, 09 Jul 2026 03:36:56 -0700 (PDT)
+Received: from mail-ua1-f46.google.com (mail-ua1-f46.google.com. [209.85.222.46])
+        by smtp.gmail.com with ESMTPSA id a1e0cc1a2514c-96ed25847e5sm2723005241.2.2026.07.09.03.36.52
+        for <linux-pm@vger.kernel.org>
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Thu, 09 Jul 2026 03:36:53 -0700 (PDT)
+Received: by mail-ua1-f46.google.com with SMTP id a1e0cc1a2514c-9666739d3bcso578624241.0
+        for <linux-pm@vger.kernel.org>; Thu, 09 Jul 2026 03:36:52 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AHgh+RppALsV/WgxpTmHRymiMfUnQRkzmIHuNtlLxbdC0gJoVNhqQlVwtw7usISIq7szmIqXwkmrbhL0fg==@vger.kernel.org
+X-Received: by 2002:a05:6102:290a:b0:739:adba:f27c with SMTP id
+ ada2fe7eead31-744e00f5e2fmr3715156137.20.1783593411950; Thu, 09 Jul 2026
+ 03:36:51 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260709095726.704448-7-wenst@chromium.org>
-Organization: Intel Finland Oy - BIC 0357606-4 - c/o Alberga Business Park, 6
- krs, Bertel Jungin Aukio 5, 02600 Espoo
+References: <20260709023048.599150-1-panchuang@vivo.com> <20260709023048.599150-15-panchuang@vivo.com>
+In-Reply-To: <20260709023048.599150-15-panchuang@vivo.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Thu, 9 Jul 2026 12:36:41 +0200
+X-Gmail-Original-Message-ID: <CAMuHMdWhbufoj4PMBN4jZqBhvrVVkNP86By7vcjEjiDRRGz_Og@mail.gmail.com>
+X-Gm-Features: AUfX_myNXBXKGEc9hKQlW5AX1iVW4ix7pcbGGCDTwzpx-MfG5CyqtA2qNt_vs9E
+Message-ID: <CAMuHMdWhbufoj4PMBN4jZqBhvrVVkNP86By7vcjEjiDRRGz_Og@mail.gmail.com>
+Subject: Re: [PATCH 14/18] thermal/drivers/renesas: Remove redundant dev_err()
+To: Pan Chuang <panchuang@vivo.com>
+Cc: =?UTF-8?Q?Niklas_S=C3=B6derlund?= <niklas.soderlund@ragnatech.se>, 
+	"Rafael J. Wysocki" <rafael@kernel.org>, Daniel Lezcano <daniel.lezcano@kernel.org>, 
+	Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>, 
+	Magnus Damm <magnus.damm@gmail.com>, John Madieu <john.madieu.xa@bp.renesas.com>, 
+	"open list:RENESAS R-CAR THERMAL DRIVERS" <linux-renesas-soc@vger.kernel.org>, 
+	"open list:THERMAL" <linux-pm@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 
-On Thu, Jul 09, 2026 at 05:57:11PM +0800, Chen-Yu Tsai wrote:
-> |struct usb_port| and its matching container_of() macro should live in
-> its own port.h, matching the split we have for .c files.
-> 
-> Move them as described. Also move usb_port_is_power_on(), since in the
-> next change its |struct usb_hub *| parameter will be changed to
-> |struct usb_port *|, and becomes a non-static function that only
-> references |struct usb_port|.
-> 
-> port.h is only included from hub.h, as a subsequent patch will directly
-> use fields from |struct usb_port| in a static inline helper in hub.h.
-> The USB internal headers don't have header guards to help with this.
+On Thu, 9 Jul 2026 at 04:32, Pan Chuang <panchuang@vivo.com> wrote:
+> The devm_request_threaded_irq() now automatically logs detailed error
+> messages on failure. This eliminates the need for driver-specific
+> dev_err() calls that previously printed generic messages.
+>
+> Signed-off-by: Pan Chuang <panchuang@vivo.com>
 
-Reviewed-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Reviewed-by: Geert Uytterhoeven <geert+renesas@glider.be>
 
-...
+Gr{oetje,eeting}s,
 
-> +extern int usb_port_is_power_on(struct usb_hub *hub, unsigned int portstatus);
-
-Drop 'extern', it's not needed in a modern code (like 20 years?).
+                        Geert
 
 -- 
-With Best Regards,
-Andy Shevchenko
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
