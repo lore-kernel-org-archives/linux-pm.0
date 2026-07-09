@@ -1,40 +1,40 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CAFE21DFDAF;
-	Thu,  9 Jul 2026 12:47:19 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EF6AB1D63F3;
+	Thu,  9 Jul 2026 12:47:22 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1783601241; cv=none; b=TcrPUaJVY7r04qiJfypmWJ66DUXdRNDiC6yktPv6viYQKvJgLIRFBM1UC5oUPZqElmfCsIaHB6AWken0ShEVb5B9UQg0LHYT2iR9n9EijWG/kOcDHepmo5HKPFdzIiVQP1q6t4gXPALM0VsX5FV/0q982jglSA89lT/Whl3+J+o=
+	t=1783601244; cv=none; b=XTys5y9Od2swMpaI/xVwWBsZ35PDcYDhunHOussDvuy+ToQNRTFj6UINADr7vw2TAj2BW116IijMcxalAEwaJAbGPFkEHZAIGpKyIxnJHhmKeTgAnVVBNN810gnVoIlei13b9Ce+NF1FNLr9L+HIs4gD3R4b1zMf4Uy32Y0Y1uc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1783601241; c=relaxed/simple;
-	bh=MEf/sbCGNxy+8H/V3W5by9Ah8OyWma86khvhE1Md34Q=;
+	s=arc-20240116; t=1783601244; c=relaxed/simple;
+	bh=R9aRLgRUt4Ogow1zw4JCucTkGGr76dKgYlFL7uhdpOs=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=FWQeXzy8WKryGKrafkuopDeqkeqMRu+BWcrR1CMuTb6ZbiWo4FuK+8+k+zzHbCg0KNcZ8MP70tllSmYFZn/J8xNDf765VxvnSsQOj1KUbPTEUCmu54qtAZ+obsbsx3jaMCgP6ToeuPzm8pkqjFGxcUbukSHoAu9q6GWx5IAInfA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=hFKppjxx; arc=none smtp.client-ip=100.103.45.18
+	 MIME-Version:Content-Type; b=CK7gmoxbyg3gbxNir94ecy97W7+PuIiUQOS4TIYFtAw259JKAzUOpUFYygeXylKGDP6jCuJo58yP84AAO5ISJGT29YFDJ0YitqHdRqiiCkFtEwJq+HkdQKrRPI+sDeGsfzq1HsECT1Ra1DISiERemNSzVEOR1BECZ4HB8Ya1MXI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=l5+/71sw; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="hFKppjxx"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 681AD1F000E9;
-	Thu,  9 Jul 2026 12:47:18 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="l5+/71sw"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id ABAFA1F000E9;
+	Thu,  9 Jul 2026 12:47:21 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1783601239;
-	bh=iV0d7qrDlnlbQ7Y/rXd4DVkasHt0c+tfLeNSfIiIMbc=;
+	s=k20260515; t=1783601242;
+	bh=vKpJgDuEIJ59UH5t5IP++T0dEoLRPg8iTTbxbu2vxqQ=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References;
-	b=hFKppjxx0dumliSm0vm9ctH/uUaTHp8K5L1xD3hR9JVMpNCjJ/J/TEbXcY7h5scil
-	 VaFxbasm7/QFndYQslSl8q/Ae2Nl4qQ/P9ZCiNNEda3/pOyDiCxHjJKvNyBQEwNvBg
-	 duqJtdHX5/RCzynk7Io+HTYh2ifbK4E6fmxbkz2jflSRr4gvTChlNhOT3dqNxopoof
-	 F9iqMBXzN+a2MsgA/sPN31UB/WMLEmGSObDAsfcuN/3c/UOfQ0anTq8DPIjUfm0DWG
-	 P9u1nRMlDohO4DNVFnwf7QSSl7AWpyXOcjpSV/vWbjWVo3jkfrC9k4xEbxRM1fsDm+
-	 BkccNUA7UDzrQ==
+	b=l5+/71swyos7CTqIk7nZWeyyFx1Cg73jVCwtwWhOoL1JYP412xMUF2L4dVYIhdWj/
+	 0xrCIqTJdSTgi3cJVu4TJLIpVja6tVT3UZb3fbATgZzEzh3GAJjSG7XqbV0OOWiqhA
+	 Wvtzd/XiTMK32LynnCEvm9ODDsYhxQZDOXpZEPQL5REdBhfrX+BnDDFFgwKdgZ5oDa
+	 d2sAJC4klLNE65dAxky96qUwVsz6Lz0l4+0A6X4I+rMw2YcSTgJu7PlJiZg8T+GbwB
+	 W9X7CLUA2TW+kBhD9E8JbyDC94Rg2gYqBgjiKcVZ3No++uGhkvKkNb24Gu3KTnlZ1k
+	 hCZS2xVA6l/Pg==
 From: "Rafael J. Wysocki" <rafael@kernel.org>
 To: Linux PM <linux-pm@vger.kernel.org>
 Cc: Linux ACPI <linux-acpi@vger.kernel.org>,
  Sudeep Holla <Sudeep.Holla@arm.com>
 Subject:
- [PATCH v1 14/17] ACPI: processor: idle: Relocate
+ [PATCH v1 13/17] ACPI: processor: idle: Introduce
  acpi_processor_extract_lpi_info()
-Date: Thu, 09 Jul 2026 14:41:36 +0200
-Message-ID: <2277662.Mh6RI2rZIc@rafael.j.wysocki>
+Date: Thu, 09 Jul 2026 14:40:35 +0200
+Message-ID: <2709187.Lt9SDvczpP@rafael.j.wysocki>
 Organization: Linux Kernel Development - Intel
 In-Reply-To: <4746278.LvFx2qVVIh@rafael.j.wysocki>
 References: <4746278.LvFx2qVVIh@rafael.j.wysocki>
@@ -50,749 +50,118 @@ Content-Type: text/plain; charset="UTF-8"
 From: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
 
 In preparation for adding ACPI _LPI support to the intel_idle driver,
-move acpi_processor_extract_lpi_info() along with some static functions
-used by it to the acpi_processor.c file containing the non-modular part
-of the ACPI processor driver, so it can be called by external non-modular
-code like intel_idle.
-
-However, export it to modules in the ACPI_PROCESSOR_IDLE import
-namespace so that the modular part of the ACPI processor driver
-can still invoke it.
+move the majority of the acpi_processor_get_lpi_info() function body
+to a new function called acpi_processor_extract_lpi_info() that will
+be exported to external code subsequently.
 
 No intentional functional impact.
 
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- drivers/acpi/acpi_processor.c | 341 ++++++++++++++++++++++++++++++++++
- drivers/acpi/processor_idle.c | 338 ---------------------------------
- include/linux/acpi.h          |  11 ++
- 3 files changed, 352 insertions(+), 338 deletions(-)
+ drivers/acpi/processor_idle.c | 44 +++++++++++++++++++++++------------
+ 1 file changed, 29 insertions(+), 15 deletions(-)
 
-diff --git a/drivers/acpi/acpi_processor.c b/drivers/acpi/acpi_processor.c
-index 00775b91bd41..cdba1aee84e9 100644
---- a/drivers/acpi/acpi_processor.c
-+++ b/drivers/acpi/acpi_processor.c
-@@ -994,3 +994,344 @@ int acpi_processor_evaluate_cst(acpi_handle handle, u32 cpu,
+diff --git a/drivers/acpi/processor_idle.c b/drivers/acpi/processor_idle.c
+index c7f206c094fb..2c6c9a7365fb 100644
+--- a/drivers/acpi/processor_idle.c
++++ b/drivers/acpi/processor_idle.c
+@@ -1054,7 +1054,8 @@ static bool too_many_states(acpi_handle handle, unsigned int state_count)
+ 	return true;
  }
- EXPORT_SYMBOL_NS_GPL(acpi_processor_evaluate_cst, "ACPI_PROCESSOR_IDLE");
- #endif /* CONFIG_ACPI_PROCESSOR_CSTATE */
-+
-+#ifdef CONFIG_ACPI_PROCESSOR_IDLE
-+struct acpi_lpi_states_array {
-+	unsigned int size;
-+	unsigned int composite_states_size;
-+	struct acpi_lpi_state *entries;
-+	struct acpi_lpi_state *composite_states[ACPI_PROCESSOR_MAX_POWER];
-+};
-+
-+static int obj_get_integer(union acpi_object *obj, u32 *value)
-+{
-+	if (obj->type != ACPI_TYPE_INTEGER)
-+		return -EINVAL;
-+
-+	*value = obj->integer.value;
-+	return 0;
-+}
-+
-+#define lpi_state_debug(handle, message, state_idx)	\
-+	acpi_handle_debug(handle, message " for _LPI state %u\n", state_idx)
-+
-+static void process_lpi_state_package(union acpi_object *lpi_pkg,
-+				      struct acpi_lpi_state *lpi_state,
-+				      acpi_handle handle,
-+				      unsigned int state_idx)
-+{
-+	union acpi_object *lpi_pkg_elem, *obj;
-+
-+	if (lpi_pkg->type != ACPI_TYPE_PACKAGE || lpi_pkg->package.count < 7)
-+		return;
-+
-+	lpi_pkg_elem = lpi_pkg->package.elements;
-+
-+	/* Get the entry method first and skip the state if that fails. */
-+	obj = &lpi_pkg_elem[6];
-+	if (obj->type == ACPI_TYPE_BUFFER) {
-+		struct acpi_power_register *reg;
-+
-+		if (obj->buffer.length < sizeof(*reg)) {
-+			lpi_state_debug(handle, "Invalid register data", state_idx);
-+			return;
-+		}
-+
-+		reg = (struct acpi_power_register *)obj->buffer.pointer;
-+		if (reg->space_id != ACPI_ADR_SPACE_FIXED_HARDWARE) {
-+			lpi_state_debug(handle, "Unsupported entry method", state_idx);
-+			return;
-+		}
-+
-+		lpi_state->entry_method = ACPI_CSTATE_FFH;
-+		lpi_state->address = reg->address;
-+	} else if (obj->type == ACPI_TYPE_INTEGER) {
-+		lpi_state->entry_method = ACPI_CSTATE_INTEGER;
-+		lpi_state->address = obj->integer.value;
-+	} else {
-+		lpi_state_debug(handle, "Invalid entry method", state_idx);
-+		return;
-+	}
-+
-+	if (obj_get_integer(&lpi_pkg_elem[0], &lpi_state->min_residency)) {
-+		lpi_state_debug(handle, "Assuming 10 us min. residency", state_idx);
-+		lpi_state->min_residency = 10;
-+	}
-+
-+	if (obj_get_integer(&lpi_pkg_elem[1], &lpi_state->wake_latency)) {
-+		lpi_state_debug(handle, "Assuming 10 us wake latency", state_idx);
-+		lpi_state->wake_latency = 10;
-+	}
-+
-+	if (obj_get_integer(&lpi_pkg_elem[2], &lpi_state->flags))
-+		lpi_state->flags = 0;
-+
-+	if (obj_get_integer(&lpi_pkg_elem[3], &lpi_state->arch_flags))
-+		lpi_state->arch_flags = 0;
-+
-+	if (obj_get_integer(&lpi_pkg_elem[4], &lpi_state->res_cnt_freq))
-+		lpi_state->res_cnt_freq = 1;
-+
-+	if (obj_get_integer(&lpi_pkg_elem[5], &lpi_state->enable_parent_state))
-+		lpi_state->enable_parent_state = 0;
-+
-+	/* Skip elements [7-8] i.e. Residency/Usage counters. */
-+
-+	/*
-+	 * Avoid out-of-bounds access if the size of the package is less than
-+	 * expected.
-+	 */
-+	if (lpi_pkg->package.count < 10)
-+		return;
-+
-+	obj = &lpi_pkg_elem[9];
-+	if (obj->type == ACPI_TYPE_STRING)
-+		strscpy(lpi_state->desc, obj->string.pointer, ACPI_CX_DESC_LEN);
-+}
-+
-+static int acpi_processor_evaluate_lpi(acpi_handle handle,
-+				       struct acpi_lpi_states_array *info)
-+{
-+	struct acpi_buffer buffer = { ACPI_ALLOCATE_BUFFER, NULL };
-+	union acpi_object *lpi_data, *lpi_pkg;
-+	unsigned int lpi_pkg_count, state_idx;
-+	struct acpi_lpi_state *lpi_state;
-+	acpi_status status;
-+	int ret = 0;
-+
-+	status = acpi_evaluate_object(handle, "_LPI", NULL, &buffer);
-+	if (ACPI_FAILURE(status)) {
-+		acpi_handle_debug(handle, "No _LPI, giving up\n");
-+		return -ENODEV;
-+	}
-+
-+	lpi_data = buffer.pointer;
-+
-+	/* There must be at least 4 elements = 3 elements + 1 package */
-+	if (!lpi_data || lpi_data->type != ACPI_TYPE_PACKAGE ||
-+	    lpi_data->package.count < 4) {
-+		acpi_handle_debug(handle, "Not enough elements in _LPI\n");
-+		ret = -ENODATA;
-+		goto end;
-+	}
-+
-+	lpi_pkg_count = lpi_data->package.elements[2].integer.value;
-+
-+	/* Validate number of power states. */
-+	if (!lpi_pkg_count || lpi_pkg_count != lpi_data->package.count - 3) {
-+		acpi_handle_debug(handle, "Invalid _LPI state count\n");
-+		ret = -ENODATA;
-+		goto end;
-+	}
-+
-+	lpi_state = kzalloc_objs(*lpi_state, lpi_pkg_count);
-+	if (!lpi_state) {
-+		ret = -ENOMEM;
-+		goto end;
-+	}
-+
-+	info->size = lpi_pkg_count;
-+	info->entries = lpi_state;
-+
-+	/* _LPI State packages start at index 3. */
-+	lpi_pkg = &lpi_data->package.elements[3];
-+
-+	for (state_idx = 1; state_idx <= lpi_pkg_count; state_idx++) {
-+		lpi_state->index = state_idx;
-+		process_lpi_state_package(lpi_pkg++, lpi_state++, handle, state_idx);
-+	}
-+
-+	acpi_handle_debug(handle, "Found %u power states\n", lpi_pkg_count);
-+end:
-+	kfree(buffer.pointer);
-+	return ret;
-+}
-+
-+/**
-+ * combine_lpi_states - combine local and parent LPI states to form a composite LPI state
-+ *
-+ * @local: local LPI state
-+ * @parent: parent LPI state
-+ * @result: composite LPI state
-+ */
-+static bool combine_lpi_states(struct acpi_lpi_state *local,
-+			       struct acpi_lpi_state *parent,
-+			       struct acpi_lpi_state *result)
-+{
-+	if (parent->entry_method == ACPI_CSTATE_INTEGER) {
-+		if (!parent->address) /* 0 means autopromotable */
-+			return false;
-+		result->address = local->address + parent->address;
-+	} else {
-+		result->address = parent->address;
-+	}
-+
-+	result->min_residency = max(local->min_residency, parent->min_residency);
-+	result->wake_latency = local->wake_latency + parent->wake_latency;
-+	result->enable_parent_state = parent->enable_parent_state;
-+	result->entry_method = local->entry_method;
-+
-+	result->flags = parent->flags;
-+	result->arch_flags = parent->arch_flags;
-+	result->index = parent->index;
-+
-+	scnprintf(result->desc, ACPI_CX_DESC_LEN, "%s+%s", local->desc, parent->desc);
-+	return true;
-+}
-+
-+#define ACPI_LPI_STATE_FLAGS_ENABLED			BIT(0)
-+
-+static void stash_composite_state(struct acpi_lpi_states_array *curr_level,
-+				  struct acpi_lpi_state *t)
-+{
-+	curr_level->composite_states[curr_level->composite_states_size++] = t;
-+}
-+
-+static bool too_many_states(acpi_handle handle, unsigned int state_count)
-+{
-+	if (state_count < ACPI_PROCESSOR_MAX_POWER)
-+		return false;
-+
-+	acpi_handle_info(handle, "No space for more _LPI states than %d\n",
-+			 ACPI_PROCESSOR_MAX_POWER);
-+	return true;
-+}
-+
+ 
+-static unsigned int flatten_lpi_states(struct acpi_processor *pr,
 +static unsigned int flatten_lpi_states(acpi_handle handle,
 +				       struct acpi_lpi_state *lpi_states,
-+				       unsigned int state_count,
-+				       struct acpi_lpi_states_array *curr,
-+				       struct acpi_lpi_states_array *prev)
-+{
-+	struct acpi_lpi_state *parent_lpi = curr->entries;
-+	unsigned int j;
-+
-+	/*
-+	 * Combine each of the "raw" _LPI states from the current (processor
-+	 * container) level with all of the composite _LPI states from the
-+	 * previous (processor or processor container) level.
-+	 */
-+	for (j = 0; j < curr->size; j++, parent_lpi++) {
-+		struct acpi_lpi_state *flpi;
-+		int i;
-+
-+		if (!(parent_lpi->flags & ACPI_LPI_STATE_FLAGS_ENABLED))
-+			continue;
-+
+ 				       unsigned int state_count,
+ 				       struct acpi_lpi_states_array *curr,
+ 				       struct acpi_lpi_states_array *prev)
+@@ -1074,10 +1075,10 @@ static unsigned int flatten_lpi_states(struct acpi_processor *pr,
+ 		if (!(parent_lpi->flags & ACPI_LPI_STATE_FLAGS_ENABLED))
+ 			continue;
+ 
+-		if (too_many_states(pr->handle, state_count))
 +		if (too_many_states(handle, state_count))
-+			break;
-+
+ 			break;
+ 
+-		flpi = &pr->power.lpi_states[state_count];
 +		flpi = &lpi_states[state_count];
-+
-+		for (i = 0; i < prev->composite_states_size; i++) {
-+			struct acpi_lpi_state *local_lpi = prev->composite_states[i];
-+
-+			if (parent_lpi->index > local_lpi->enable_parent_state)
-+				continue;
-+
-+			if (!combine_lpi_states(local_lpi, parent_lpi, flpi))
-+				continue;
-+
-+			stash_composite_state(curr, flpi);
-+			state_count++;
-+			flpi++;
-+
-+			if (state_count >= ACPI_PROCESSOR_MAX_POWER)
-+				break;
-+		}
-+	}
-+
-+	return state_count;
-+}
-+
-+int acpi_processor_extract_lpi_info(acpi_handle pr_handle,
-+				    struct acpi_processor_power *pr_power)
-+{
-+	struct acpi_lpi_states_array info[2], *prev, *curr;
+ 
+ 		for (i = 0; i < prev->composite_states_size; i++) {
+ 			struct acpi_lpi_state *local_lpi = prev->composite_states[i];
+@@ -1105,19 +1106,15 @@ int __weak acpi_processor_ffh_lpi_probe(unsigned int cpu)
+ 	return -EOPNOTSUPP;
+ }
+ 
+-static int acpi_processor_get_lpi_info(struct acpi_processor *pr)
++static int acpi_processor_extract_lpi_info(acpi_handle pr_handle,
++					   struct acpi_processor_power *pr_power)
+ {
+ 	struct acpi_lpi_states_array info[2], *prev, *curr;
+-	acpi_handle handle = pr->handle;
 +	acpi_handle handle = pr_handle;
-+	unsigned int state_count = 0;
-+	unsigned int i;
-+	int ret;
-+
-+	if (!osc_pc_lpi_support_confirmed)
-+		return -EOPNOTSUPP;
-+
-+	curr = &info[0];
-+	curr->composite_states_size = 0;
-+
-+	ret = acpi_processor_evaluate_lpi(handle, curr);
-+	if (ret)
-+		return ret;
-+
-+	/* Copy all of the usable first-level states to power.lpi_states[]. */
-+	for (i = 0; i < curr->size; i++) {
-+		struct acpi_lpi_state *lpi = &curr->entries[i];
-+		struct acpi_lpi_state *flpi;
-+
-+		/*
-+		 * Skip states that are not enabled or have an inadequate entry
-+		 * method for this level.
-+		 */
-+		if (!(lpi->flags & ACPI_LPI_STATE_FLAGS_ENABLED) ||
-+		    lpi->entry_method == ACPI_CSTATE_INTEGER)
-+			continue;
-+
+ 	unsigned int state_count = 0;
+ 	unsigned int i;
+ 	int ret;
+ 
+-	/* make sure our architecture has support */
+-	ret = acpi_processor_ffh_lpi_probe(pr->id);
+-	if (ret == -EOPNOTSUPP)
+-		return ret;
+-
+ 	if (!osc_pc_lpi_support_confirmed)
+ 		return -EOPNOTSUPP;
+ 
+@@ -1141,10 +1138,10 @@ static int acpi_processor_get_lpi_info(struct acpi_processor *pr)
+ 		    lpi->entry_method == ACPI_CSTATE_INTEGER)
+ 			continue;
+ 
+-		if (too_many_states(pr->handle, state_count))
 +		if (too_many_states(pr_handle, state_count))
-+			break;
-+
+ 			break;
+ 
+-		flpi = &pr->power.lpi_states[state_count++];
 +		flpi = &pr_power->lpi_states[state_count++];
-+		memcpy(flpi, lpi, sizeof(*lpi));
-+		stash_composite_state(curr, flpi);
-+	}
-+
-+	kfree(curr->entries);
-+
-+	/*
-+	 * If there are no _LPI states at the first level, there are no _LPI
-+	 * states at all.
-+	 */
-+	if (!state_count)
-+		return -ENODATA;
-+
-+	prev = curr;
-+	curr = &info[1];
-+
-+	for (;;) {
-+		struct acpi_lpi_states_array *tmp;
-+		struct acpi_device *d;
-+
-+		if (ACPI_FAILURE(acpi_get_parent(handle, &handle)))
-+			break;
-+
-+		d = acpi_fetch_acpi_dev(handle);
-+		if (!d)
-+			break;
-+
-+		if (strcmp(acpi_device_hid(d), ACPI_PROCESSOR_CONTAINER_HID))
-+			break;
-+
-+		curr->composite_states_size = 0;
-+
-+		ret = acpi_processor_evaluate_lpi(handle, curr);
-+		if (ret)
-+			break;
-+
-+		/* flatten all the LPI states in this level of hierarchy */
+ 		memcpy(flpi, lpi, sizeof(*lpi));
+ 		stash_composite_state(curr, flpi);
+ 	}
+@@ -1182,7 +1179,8 @@ static int acpi_processor_get_lpi_info(struct acpi_processor *pr)
+ 			break;
+ 
+ 		/* flatten all the LPI states in this level of hierarchy */
+-		state_count = flatten_lpi_states(pr, state_count, curr, prev);
 +		state_count = flatten_lpi_states(pr_handle, pr_power->lpi_states,
 +						 state_count, curr, prev);
-+
-+		kfree(curr->entries);
-+
-+		tmp = prev, prev = curr, curr = tmp;
-+	}
-+
-+	/* reset the index after flattening */
-+	for (i = 0; i < state_count; i++)
+ 
+ 		kfree(curr->entries);
+ 
+@@ -1191,9 +1189,25 @@ static int acpi_processor_get_lpi_info(struct acpi_processor *pr)
+ 
+ 	/* reset the index after flattening */
+ 	for (i = 0; i < state_count; i++)
+-		pr->power.lpi_states[i].index = i;
 +		pr_power->lpi_states[i].index = i;
-+
+ 
+-	pr->power.count = state_count;
 +	pr_power->count = state_count;
 +
 +	return 0;
 +}
-+EXPORT_SYMBOL_NS_GPL(acpi_processor_extract_lpi_info, "ACPI_PROCESSOR_IDLE");
-+#endif /* CONFIG_ACPI_PROCESSOR_IDLE */
-diff --git a/drivers/acpi/processor_idle.c b/drivers/acpi/processor_idle.c
-index 2c6c9a7365fb..44a52148bc25 100644
---- a/drivers/acpi/processor_idle.c
-+++ b/drivers/acpi/processor_idle.c
-@@ -853,349 +853,11 @@ static int acpi_processor_setup_cstates(struct acpi_processor *pr)
- 
- #endif /* CONFIG_ACPI_PROCESSOR_CSTATE */
- 
--struct acpi_lpi_states_array {
--	unsigned int size;
--	unsigned int composite_states_size;
--	struct acpi_lpi_state *entries;
--	struct acpi_lpi_state *composite_states[ACPI_PROCESSOR_MAX_POWER];
--};
--
--static int obj_get_integer(union acpi_object *obj, u32 *value)
--{
--	if (obj->type != ACPI_TYPE_INTEGER)
--		return -EINVAL;
--
--	*value = obj->integer.value;
--	return 0;
--}
--
--#define lpi_state_debug(handle, message, state_idx)	\
--	acpi_handle_debug(handle, message " for _LPI state %u\n", state_idx)
--
--static void process_lpi_state_package(union acpi_object *lpi_pkg,
--				      struct acpi_lpi_state *lpi_state,
--				      acpi_handle handle,
--				      unsigned int state_idx)
--{
--	union acpi_object *lpi_pkg_elem, *obj;
--
--	if (lpi_pkg->type != ACPI_TYPE_PACKAGE || lpi_pkg->package.count < 7)
--		return;
--
--	lpi_pkg_elem = lpi_pkg->package.elements;
--
--	/* Get the entry method first and skip the state if that fails. */
--	obj = &lpi_pkg_elem[6];
--	if (obj->type == ACPI_TYPE_BUFFER) {
--		struct acpi_power_register *reg;
--
--		if (obj->buffer.length < sizeof(*reg)) {
--			lpi_state_debug(handle, "Invalid register data", state_idx);
--			return;
--		}
--
--		reg = (struct acpi_power_register *)obj->buffer.pointer;
--		if (reg->space_id != ACPI_ADR_SPACE_FIXED_HARDWARE) {
--			lpi_state_debug(handle, "Unsupported entry method", state_idx);
--			return;
--		}
--
--		lpi_state->entry_method = ACPI_CSTATE_FFH;
--		lpi_state->address = reg->address;
--	} else if (obj->type == ACPI_TYPE_INTEGER) {
--		lpi_state->entry_method = ACPI_CSTATE_INTEGER;
--		lpi_state->address = obj->integer.value;
--	} else {
--		lpi_state_debug(handle, "Invalid entry method", state_idx);
--		return;
--	}
--
--	if (obj_get_integer(&lpi_pkg_elem[0], &lpi_state->min_residency)) {
--		lpi_state_debug(handle, "Assuming 10 us min. residency", state_idx);
--		lpi_state->min_residency = 10;
--	}
--
--	if (obj_get_integer(&lpi_pkg_elem[1], &lpi_state->wake_latency)) {
--		lpi_state_debug(handle, "Assuming 10 us wake latency", state_idx);
--		lpi_state->wake_latency = 10;
--	}
--
--	if (obj_get_integer(&lpi_pkg_elem[2], &lpi_state->flags))
--		lpi_state->flags = 0;
--
--	if (obj_get_integer(&lpi_pkg_elem[3], &lpi_state->arch_flags))
--		lpi_state->arch_flags = 0;
--
--	if (obj_get_integer(&lpi_pkg_elem[4], &lpi_state->res_cnt_freq))
--		lpi_state->res_cnt_freq = 1;
--
--	if (obj_get_integer(&lpi_pkg_elem[5], &lpi_state->enable_parent_state))
--		lpi_state->enable_parent_state = 0;
--
--	/* Skip elements [7-8] i.e. Residency/Usage counters. */
--
--	/*
--	 * Avoid out-of-bounds access if the size of the package is less than
--	 * expected.
--	 */
--	if (lpi_pkg->package.count < 10)
--		return;
--
--	obj = &lpi_pkg_elem[9];
--	if (obj->type == ACPI_TYPE_STRING)
--		strscpy(lpi_state->desc, obj->string.pointer, ACPI_CX_DESC_LEN);
--}
--
--static int acpi_processor_evaluate_lpi(acpi_handle handle,
--				       struct acpi_lpi_states_array *info)
--{
--	struct acpi_buffer buffer = { ACPI_ALLOCATE_BUFFER, NULL };
--	union acpi_object *lpi_data, *lpi_pkg;
--	unsigned int lpi_pkg_count, state_idx;
--	struct acpi_lpi_state *lpi_state;
--	acpi_status status;
--	int ret = 0;
--
--	status = acpi_evaluate_object(handle, "_LPI", NULL, &buffer);
--	if (ACPI_FAILURE(status)) {
--		acpi_handle_debug(handle, "No _LPI, giving up\n");
--		return -ENODEV;
--	}
--
--	lpi_data = buffer.pointer;
--
--	/* There must be at least 4 elements = 3 elements + 1 package */
--	if (!lpi_data || lpi_data->type != ACPI_TYPE_PACKAGE ||
--	    lpi_data->package.count < 4) {
--		acpi_handle_debug(handle, "Not enough elements in _LPI\n");
--		ret = -ENODATA;
--		goto end;
--	}
--
--	lpi_pkg_count = lpi_data->package.elements[2].integer.value;
--
--	/* Validate number of power states. */
--	if (!lpi_pkg_count || lpi_pkg_count != lpi_data->package.count - 3) {
--		acpi_handle_debug(handle, "Invalid _LPI state count\n");
--		ret = -ENODATA;
--		goto end;
--	}
--
--	lpi_state = kzalloc_objs(*lpi_state, lpi_pkg_count);
--	if (!lpi_state) {
--		ret = -ENOMEM;
--		goto end;
--	}
--
--	info->size = lpi_pkg_count;
--	info->entries = lpi_state;
--
--	/* _LPI State packages start at index 3. */
--	lpi_pkg = &lpi_data->package.elements[3];
--
--	for (state_idx = 1; state_idx <= lpi_pkg_count; state_idx++) {
--		lpi_state->index = state_idx;
--		process_lpi_state_package(lpi_pkg++, lpi_state++, handle, state_idx);
--	}
--
--	acpi_handle_debug(handle, "Found %u power states\n", lpi_pkg_count);
--end:
--	kfree(buffer.pointer);
--	return ret;
--}
--
--/**
-- * combine_lpi_states - combine local and parent LPI states to form a composite LPI state
-- *
-- * @local: local LPI state
-- * @parent: parent LPI state
-- * @result: composite LPI state
-- */
--static bool combine_lpi_states(struct acpi_lpi_state *local,
--			       struct acpi_lpi_state *parent,
--			       struct acpi_lpi_state *result)
--{
--	if (parent->entry_method == ACPI_CSTATE_INTEGER) {
--		if (!parent->address) /* 0 means autopromotable */
--			return false;
--		result->address = local->address + parent->address;
--	} else {
--		result->address = parent->address;
--	}
--
--	result->min_residency = max(local->min_residency, parent->min_residency);
--	result->wake_latency = local->wake_latency + parent->wake_latency;
--	result->enable_parent_state = parent->enable_parent_state;
--	result->entry_method = local->entry_method;
--
--	result->flags = parent->flags;
--	result->arch_flags = parent->arch_flags;
--	result->index = parent->index;
--
--	scnprintf(result->desc, ACPI_CX_DESC_LEN, "%s+%s", local->desc, parent->desc);
--	return true;
--}
--
--#define ACPI_LPI_STATE_FLAGS_ENABLED			BIT(0)
--
--static void stash_composite_state(struct acpi_lpi_states_array *curr_level,
--				  struct acpi_lpi_state *t)
--{
--	curr_level->composite_states[curr_level->composite_states_size++] = t;
--}
--
--static bool too_many_states(acpi_handle handle, unsigned int state_count)
--{
--	if (state_count < ACPI_PROCESSOR_MAX_POWER)
--		return false;
--
--	acpi_handle_info(handle, "No space for more _LPI states than %d\n",
--			 ACPI_PROCESSOR_MAX_POWER);
--	return true;
--}
--
--static unsigned int flatten_lpi_states(acpi_handle handle,
--				       struct acpi_lpi_state *lpi_states,
--				       unsigned int state_count,
--				       struct acpi_lpi_states_array *curr,
--				       struct acpi_lpi_states_array *prev)
--{
--	struct acpi_lpi_state *parent_lpi = curr->entries;
--	unsigned int j;
--
--	/*
--	 * Combine each of the "raw" _LPI states from the current (processor
--	 * container) level with all of the composite _LPI states from the
--	 * previous (processor or processor container) level.
--	 */
--	for (j = 0; j < curr->size; j++, parent_lpi++) {
--		struct acpi_lpi_state *flpi;
--		int i;
--
--		if (!(parent_lpi->flags & ACPI_LPI_STATE_FLAGS_ENABLED))
--			continue;
--
--		if (too_many_states(handle, state_count))
--			break;
--
--		flpi = &lpi_states[state_count];
--
--		for (i = 0; i < prev->composite_states_size; i++) {
--			struct acpi_lpi_state *local_lpi = prev->composite_states[i];
--
--			if (parent_lpi->index > local_lpi->enable_parent_state)
--				continue;
--
--			if (!combine_lpi_states(local_lpi, parent_lpi, flpi))
--				continue;
--
--			stash_composite_state(curr, flpi);
--			state_count++;
--			flpi++;
--
--			if (state_count >= ACPI_PROCESSOR_MAX_POWER)
--				break;
--		}
--	}
--
--	return state_count;
--}
--
- int __weak acpi_processor_ffh_lpi_probe(unsigned int cpu)
- {
- 	return -EOPNOTSUPP;
- }
- 
--static int acpi_processor_extract_lpi_info(acpi_handle pr_handle,
--					   struct acpi_processor_power *pr_power)
--{
--	struct acpi_lpi_states_array info[2], *prev, *curr;
--	acpi_handle handle = pr_handle;
--	unsigned int state_count = 0;
--	unsigned int i;
--	int ret;
--
--	if (!osc_pc_lpi_support_confirmed)
--		return -EOPNOTSUPP;
--
--	curr = &info[0];
--	curr->composite_states_size = 0;
--
--	ret = acpi_processor_evaluate_lpi(handle, curr);
--	if (ret)
--		return ret;
--
--	/* Copy all of the usable first-level states to power.lpi_states[]. */
--	for (i = 0; i < curr->size; i++) {
--		struct acpi_lpi_state *lpi = &curr->entries[i];
--		struct acpi_lpi_state *flpi;
--
--		/*
--		 * Skip states that are not enabled or have an inadequate entry
--		 * method for this level.
--		 */
--		if (!(lpi->flags & ACPI_LPI_STATE_FLAGS_ENABLED) ||
--		    lpi->entry_method == ACPI_CSTATE_INTEGER)
--			continue;
--
--		if (too_many_states(pr_handle, state_count))
--			break;
--
--		flpi = &pr_power->lpi_states[state_count++];
--		memcpy(flpi, lpi, sizeof(*lpi));
--		stash_composite_state(curr, flpi);
--	}
--
--	kfree(curr->entries);
--
--	/*
--	 * If there are no _LPI states at the first level, there are no _LPI
--	 * states at all.
--	 */
--	if (!state_count)
--		return -ENODATA;
--
--	prev = curr;
--	curr = &info[1];
--
--	for (;;) {
--		struct acpi_lpi_states_array *tmp;
--		struct acpi_device *d;
--
--		if (ACPI_FAILURE(acpi_get_parent(handle, &handle)))
--			break;
--
--		d = acpi_fetch_acpi_dev(handle);
--		if (!d)
--			break;
--
--		if (strcmp(acpi_device_hid(d), ACPI_PROCESSOR_CONTAINER_HID))
--			break;
--
--		curr->composite_states_size = 0;
--
--		ret = acpi_processor_evaluate_lpi(handle, curr);
--		if (ret)
--			break;
--
--		/* flatten all the LPI states in this level of hierarchy */
--		state_count = flatten_lpi_states(pr_handle, pr_power->lpi_states,
--						 state_count, curr, prev);
--
--		kfree(curr->entries);
--
--		tmp = prev, prev = curr, curr = tmp;
--	}
--
--	/* reset the index after flattening */
--	for (i = 0; i < state_count; i++)
--		pr_power->lpi_states[i].index = i;
--
--	pr_power->count = state_count;
--
--	return 0;
--}
--
- static int acpi_processor_get_lpi_info(struct acpi_processor *pr)
- {
- 	int ret;
-diff --git a/include/linux/acpi.h b/include/linux/acpi.h
-index 60ab50cb8930..1d3ea92a2344 100644
---- a/include/linux/acpi.h
-+++ b/include/linux/acpi.h
-@@ -315,6 +315,17 @@ static inline int acpi_processor_evaluate_cst(acpi_handle handle, u32 cpu,
- }
- #endif
- 
-+#ifdef CONFIG_ACPI_PROCESSOR_IDLE
-+int acpi_processor_extract_lpi_info(acpi_handle pr_handle,
-+				    struct acpi_processor_power *pr_power);
-+#else
-+static inline int acpi_processor_extract_lpi_info(acpi_handle pr_handle,
-+				    struct acpi_processor_power *pr_power)
-+{
-+	return -ENODEV;
-+}
-+#endif
 +
- #ifdef CONFIG_ACPI_HOTPLUG_CPU
- /* Arch dependent functions for cpu hotplug support */
- int acpi_map_cpu(acpi_handle handle, phys_cpuid_t physid, u32 acpi_id,
++static int acpi_processor_get_lpi_info(struct acpi_processor *pr)
++{
++	int ret;
++
++	/* make sure our architecture has support */
++	ret = acpi_processor_ffh_lpi_probe(pr->id);
++	if (ret == -EOPNOTSUPP)
++		return ret;
++
++	ret = acpi_processor_extract_lpi_info(pr->handle, &pr->power);
++	if (ret)
++		return ret;
+ 
+ 	/* Tell driver that _LPI is supported. */
+ 	pr->flags.has_lpi = 1;
 -- 
 2.51.0
 
