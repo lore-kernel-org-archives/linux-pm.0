@@ -1,71 +1,57 @@
-Received: from TYPPR03CU001.outbound.protection.outlook.com (mail-japaneastazon11012001.outbound.protection.outlook.com [52.101.126.1])
+Received: from TYPPR03CU001.outbound.protection.outlook.com (mail-japaneastazon11012049.outbound.protection.outlook.com [52.101.126.49])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4D52238D3EF;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8F4F638F626;
 	Thu,  9 Jul 2026 03:34:58 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.126.1
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.126.49
 ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1783568100; cv=fail; b=pyj+ULpvb3FFMcFR66Bt58Ro2UQqe1pb0wWQ6sbQK8KFSH/2fJBJ/f1u2dSJbBIoSJJlM2d6S1f7Q/D6hnUiwCSdTNhwVpLru0u28Y3uMO/vYKSG+nzsCvq/zSMljNHjn91LEyvKZs4Q5ggNJliEokpSKh9ZEOpgG74RQF+moYg=
+	t=1783568100; cv=fail; b=nYwSZc9YfK6RGwl+DG1cjGq2pUUOB7bd5UDARkrOFVLFn5msW4/kLKw+GOsYzRl6eIwFTT0HNDe2oTU8Scy2+lU8YmXMAn6l7KE5Bm5eep/z88Qx09FdfJ+mWqgZJiyJqbHEACg3r7Lk0l8UKdL3J1ZYhUTGZlhbb1CAaEO2s1k=
 ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1783568100; c=relaxed/simple;
-	bh=+3J/eDnCSZCZBu6Nd4AH6Y1kNjQle7pe+8I3hPRCuTQ=;
-	h=From:To:Cc:Subject:Date:Message-Id:Content-Type:MIME-Version; b=R8AWwzr6zeoK6EVqU62JsS5qUhC6oRJtDN4qvdQfaGcg1ndIeDkuvgCiy6xs0dW4zWJ9SmsUvzk3oN3+89QPjp3FnbYnvylijnun11bf33ijDa1FNE1Qmr33XnZ0GYaVPYA9dYhFwGxHorwRQ2nbjPiJ6MnlHJFxCLlVjaNLYKM=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=vivo.com; spf=pass smtp.mailfrom=vivo.com; dkim=pass (2048-bit key) header.d=vivo.com header.i=@vivo.com header.b=NutE10Fz; arc=fail smtp.client-ip=52.101.126.1
+	bh=AuoL15LvZGiB3YrTm/TOyaNpx8f2CU+B4h55AykQVRA=;
+	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
+	 Content-Type:MIME-Version; b=UtGa4Qe1ru6zMEN9QGlBrCvXmyDAouea/CT6WZrfaDA0/ru3IcPht5QhsxNqou219wu4HZ7ew2Fpy40iPgTYDLi95H5NZ+aL4qSXtnqZWFX1Sx2Hq1f7fLCD84iJTghJYyWk2DawOwca3I7P+WHPCLCE5BfGr/zNR/qdtkyY6jQ=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=vivo.com; spf=pass smtp.mailfrom=vivo.com; dkim=pass (2048-bit key) header.d=vivo.com header.i=@vivo.com header.b=Y+4cwjoc; arc=fail smtp.client-ip=52.101.126.49
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=vivo.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=vivo.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=vivo.com header.i=@vivo.com header.b="NutE10Fz"
+	dkim=pass (2048-bit key) header.d=vivo.com header.i=@vivo.com header.b="Y+4cwjoc"
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=Z54+tPnbz0UYYpSHMNHndnOS2Glq9YQIJrz4SOJ5vJHuRdQRv0KuhKocSJSXeLij7m6khOs8yUG0y9HE+RwOrXfpyA0XZJH7Dh62cCZcBaVQFy3jGGJtuYDuHl+uK1lah0Ea6pICJBk5ByOj9SM6EzC90TDxNueiVFHNYbFIZYVW72+IKXs/soPoipQ5lmZD8GWQEppa/wwxQwUZDmiR9sorAVA0KYx6qCqLlZpeISWuZlUstJ4zewZt4cGAmkkYsZYF0B4VbWoL9pcB2ZPEIFeagfBRYExn7hlX08d+XcBFxxQO/44ZlDRcqGs7OYqSnhphZ4VPCstq6S4vtwLwWQ==
+ b=MV/4UW/3aB99sMMsgF+2Ps8LNCF0n8p17TqJ1iIUo5iqYM7gAnbdZPBT4j1erTREsHVHYBCvolCis8MVmKPPY2e3IOPYkwionTkGxr/QdcIDt/lZ5EJZx+SiEZvSQit7j43tnb+TmTdKMIBIasxWfhhV9+kNg+Gr4u9Jn8XejeBZqZObh5QNdDDsXWPNniHwUmNg5pth0fBkvQtbRIq+DWbareqZziC57pRQlzr+juyWDCY79icEFJpNyjHsBN8DMusDQr5VcXejJ4fEPiF8klLs3lmb7BKulMnlRjVFw/MNqPYs/K5U3Yy/w2MhP9Bye6CJ7ttn3LWaed3de0Yybw==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector10001;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=m7JAm6c5QpWscHDUz2WKVnHugJ6te115xZNRdOcGfts=;
- b=c/DHEjK/sqWW3eQVC7t31SEohMwEzqRV31SCpo10mb97+fy7LoJBzCMR5bO2NeC4R5xF9LXD8WsvUO93mx+FF3CPN67NEE6a0me3Y+7rRwjuTVt7dzJbiG7wntAdWITtdgFb6Gnv5wnr3fkc363DowNwd/jKS8MELsuxTD2FVnDAlB22KCm6TrjCgGwnxNP01kDeofjlYk+wAJg4+GE5c2sZJmUwE2KYQ4JVyWH/SzvUfbQGxA3T20o33Ma2rPu60JQMpDx7Wy46MB3r3Bnt2cwHc7SRq/VkhbqTDaAJMC2s727sjWqfTw4R/afRtkbZg8cLWym7gYnkW4bQ6Ejmvw==
+ bh=c/4aH8mYPg77tUTTVxq/JIS00UcpjNCQMf5ImAWEuv0=;
+ b=lQZnJuIq/CNtvM2GWZ1gB0Y8uSHj9HW2RwIxCHsFzkJzSGyeL1ljuPCYx53diiP3iBAhAqq384yV2bnfJGrBl0fjEnzhmosJrjFA9Ylc+tRup/g1HRwTFfehGIM0T4Xi7eK/Xad40gsmKbUbKVZQGZP+LRbrcn7RE5eqmUdt9phiVOhE8kcOSAng7MbRvebzs0J8zNw7MxLDeZCTUaiKi6zACZRUflVwiN6HbTLS/R3hb6eSeEwwV5SarWHl36WsODHd2SEmyTGblhUawixgErcrdDoRqqPgKEbEEUe4jy1gZHF7JMEiHmHr66DgkKaF3ZjuR/0DtF+RQwPkOMDcgw==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
  smtp.mailfrom=vivo.com; dmarc=pass action=none header.from=vivo.com;
  dkim=pass header.d=vivo.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=vivo.com; s=selector2;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=m7JAm6c5QpWscHDUz2WKVnHugJ6te115xZNRdOcGfts=;
- b=NutE10FzDHfNJpMrKlBLPBYaVA75/dwliVb7gjlaVv/8DIOLvUSkR5gXgabMpII98TH1rC+MqYsUy9q1SnLqAc55uXA/moe7k0G3MSqwJ57SOO9TImRKL229Q2W5PECxxKjqWuqUlKJB+RP4Jbu8SF9xpJM0+Nzkt42i3a0ENDzU6RyRmnxasWftG5UHptrgSeermQNPLJv0vdsqd8jk61nRuXvUH5ht2HZ7HoThNrELMmLDoDvIWKWb1o9euYSWcAKo6AQ7p3Md9BakAX+y7Qe+CzDC00r+/j7tk2a9sWihaK32VSJ/ewCXHNvqbSvIvAqxoOHy+735jvVRla4TLw==
+ bh=c/4aH8mYPg77tUTTVxq/JIS00UcpjNCQMf5ImAWEuv0=;
+ b=Y+4cwjoc+z/F92m1NqUv5lm/LrXGLAPoL+PBkRqVB4S1cX3xgxGuTfESVPmD8FPePt2TvPqqmZW6U4yAmPAEW8SrIm0MGEhSwi4TNiMeMdz0oDXiC3d7rdbiiX5WVTOAUE8eX0A2ePSXEk0v2MdEgPW96g2U0cL86ZvR6gpKJGQhGXCyNTmZrdfnUkca/kx0SHCUQnfd5pTuWCLnL5TzgmC1curthyIR1MiUZCbnqduuCIwcyKkvYxNljRazTEtFCv9q0AJkZOqpye6r9bYpxqF52c7J6TU0Gn+HIL0wG4G+IHFmHOXIWLGZDD6hgVtkNWKQ3IsztUU+/XAWV6p+8A==
 Authentication-Results: dkim=none (message not signed)
  header.d=none;dmarc=none action=none header.from=vivo.com;
 Received: from SEZPR06MB5832.apcprd06.prod.outlook.com (2603:1096:101:c8::12)
- by SEYPR06MB6360.apcprd06.prod.outlook.com (2603:1096:101:13f::10) with
+ by TYZPR06MB7253.apcprd06.prod.outlook.com (2603:1096:405:ad::12) with
  Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.181.15; Thu, 9 Jul
- 2026 03:34:50 +0000
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.181.10; Thu, 9 Jul
+ 2026 03:34:53 +0000
 Received: from SEZPR06MB5832.apcprd06.prod.outlook.com
  ([fe80::f98:5e32:4ccb:d07b]) by SEZPR06MB5832.apcprd06.prod.outlook.com
  ([fe80::f98:5e32:4ccb:d07b%6]) with mapi id 15.21.0181.014; Thu, 9 Jul 2026
- 03:34:50 +0000
+ 03:34:53 +0000
 From: Pan Chuang <panchuang@vivo.com>
 To: Sebastian Reichel <sre@kernel.org>,
-	Linus Walleij <linusw@kernel.org>,
-	Chen-Yu Tsai <wens@kernel.org>,
-	Hans de Goede <hansg@kernel.org>,
-	Support Opensource <support.opensource@diasemi.com>,
-	Amit Sunil Dhamne <amitsd@google.com>,
-	Saravanan Sekar <sravanhome@gmail.com>,
-	Matthias Brugger <matthias.bgg@gmail.com>,
-	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>,
-	Samuel Kayode <samkay014@gmail.com>,
-	Casey Connolly <casey.connolly@linaro.org>,
-	Orson Zhai <orsonzhai@gmail.com>,
-	Baolin Wang <baolin.wang@linux.alibaba.com>,
-	Chunyan Zhang <zhang.lyra@gmail.com>,
-	linux-pm@vger.kernel.org (open list:SYSTEM RESET/SHUTDOWN DRIVERS),
-	linux-kernel@vger.kernel.org (open list),
-	linux-arm-kernel@lists.infradead.org (moderated list:ARM/Mediatek SoC support),
-	linux-mediatek@lists.infradead.org (moderated list:ARM/Mediatek SoC support),
-	imx@lists.linux.dev (open list:NXP PF1550 PMIC MFD DRIVER),
-	linux-arm-msm@vger.kernel.org (open list:ARM/QUALCOMM MAILING LIST)
+	linux-pm@vger.kernel.org (open list:POWER SUPPLY CLASS/SUBSYSTEM and DRIVERS),
+	linux-kernel@vger.kernel.org (open list)
 Cc: Pan Chuang <panchuang@vivo.com>
-Subject: [PATCH 00/43] power: Remove redundant error messages on IRQ request failure
-Date: Thu,  9 Jul 2026 11:33:39 +0800
-Message-Id: <20260709033428.362970-1-panchuang@vivo.com>
+Subject: [PATCH 03/43] power: supply: 88pm860x_charger: Remove redundant dev_err()/dev_err_probe()
+Date: Thu,  9 Jul 2026 11:33:42 +0800
+Message-Id: <20260709033428.362970-4-panchuang@vivo.com>
 X-Mailer: git-send-email 2.34.1
+In-Reply-To: <20260709033428.362970-1-panchuang@vivo.com>
+References: <20260709033428.362970-1-panchuang@vivo.com>
 Content-Transfer-Encoding: 8bit
 Content-Type: text/plain
 X-ClientProxiedBy: TPYP295CA0017.TWNP295.PROD.OUTLOOK.COM (2603:1096:7d0:a::9)
@@ -77,200 +63,87 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: SEZPR06MB5832:EE_|SEYPR06MB6360:EE_
-X-MS-Office365-Filtering-Correlation-Id: a2303c2f-d8ba-435a-dc1d-08dedd6b07cc
+X-MS-TrafficTypeDiagnostic: SEZPR06MB5832:EE_|TYZPR06MB7253:EE_
+X-MS-Office365-Filtering-Correlation-Id: 6a245811-6051-41d1-0a38-08dedd6b0a32
 X-MS-Exchange-SenderADCheck: 1
 X-MS-Exchange-AntiSpam-Relay: 0
 X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|366016|23010399003|1800799024|376014|7416014|52116014|11063799006|56012099006|18002099003|6133799003|921020|38350700014;
+	BCL:0;ARA:13230040|1800799024|376014|366016|23010399003|52116014|18002099003|22082099003|38350700014|56012099006|11063799006;
 X-Microsoft-Antispam-Message-Info:
-	P0c5wX6Zdb0agOCKZa0qbc0jN69beP1K8FHaERdiu6e56Gf/yLNpXvxXHoMPlOKLVSGeYQf7cQ6wAmReAARiy1MQLI8HUVsd38saL77lgr6j2WjTup3u6fHv4zHPYk5Bvq3pV3vnir1QdSQZeeA1DhvPwJZDIq8iAiGLj8g2fh4/eN8KtTMme1IWN6Po9gyadHLjWQhX6wfczS8fK9wocZps2X7eGonBJ5WKeMuKadv190JODDoB1SSHi7X71O8anqq0dUKxVgRam4mq+wgA/YXLeZMj9T333paFWryw/c9XeLiXYdEV9rnf9HLH3OucCOoCiKJpKGc8ve+xC476uDt8q62smpg3X/VPXb7QBJ0tSl913krygohiupVImHSia2jNAq2VAIrS1OmTPL6OJsSvMxa7bNE0oZA4975Qd8Omka0XQkhCQ3UftYqgiElFVIfK/h48UajCBN2seAX7A0dHz65x2Ogpn2cX696v5NYuP6UTPaWshNDi7Mr9XbF2Tom6G5O6TqTT4w9XkAs+/RcjVmUvDNjAbcDzQ0ukG3M/8ey/+U+jYP68GMQm3fKjCjd307LMZxDV1IsHtPoKbjLOGe/grg279u96NhqWgv3cJPGcjmp3nEVlQ99LIsJ1UQUSbDTQuZhFqduUqtsFergZWluDQmoyZlF6l1atL14wcGr7A6qWR1vWwND4RXQm06uin61hKcJ2roevFYDXMTTlD0r2aMYb2UAf5TvTMMt1h2wklPCunOYtnhneEzNy
+	NpFHFxIKOIUPnddv0JA6UXKFpt0M1rZGSWIX6h9NFqQHtkuVA3MwVBIBMPE0FbgxuNUgrFJo2BBiAsbpi4p6gzna9meMwJGplGqSuENTi4TMqIu42G2GFazWVSIyBQdjPwUYQJm0F0h2z/yxvtXZpjl1gBR51plluJf+ubLyH6Jx1WYhnpcSJWc46y1sZt5wXrhGS3dN4Oxs+6oIi9OwKNX226U7XujUM4i5UWLQU1XD2hqVeY6usURyDIkJIv7YMM5YPQptIXEUM81NbVO2FnA/sbXmp5VV0Kbu1M15GZhyWh/CB+lR+xmhcONyk2kgpFIt7r/2ZWI60MCi3vHYpHQawILVdLlgDPqth1i8eZ/rFqoVgpDSTsnNsxKieJsM/JHSCwbTwKEManl3EYrNWTPrNZ/zGahu4No1X4VM5D2StH8ahj9KbyUB8UdtOkKlV9AY7/4rWvkBHJKewhrpjUpAIG0mHEtV6f76EM23t03yrU+qkp/o0246uoB2qcbGNaWXBY33uO8OvDeW9MScan40aUgF0PrsSr68haLEiJ3szBWgK3B1yLyEZ9re5L5uik0KKJsga/WUXxACrckItP4MMwEoVjAvpu51Ht3eKdoPZrNNRNNtAq9wK0GI6G9d+Rfh3Xq7EO8DChKtds26gT6GxEk+U1NYbxvyqRbYzSi3WKypz4MpM3e064OF7KVtEXbLCWcXBbo8+p2fS8yu2d7PE+4er48EK6WImhnYYoo=
 X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:SEZPR06MB5832.apcprd06.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(23010399003)(1800799024)(376014)(7416014)(52116014)(11063799006)(56012099006)(18002099003)(6133799003)(921020)(38350700014);DIR:OUT;SFP:1101;
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:SEZPR06MB5832.apcprd06.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(1800799024)(376014)(366016)(23010399003)(52116014)(18002099003)(22082099003)(38350700014)(56012099006)(11063799006);DIR:OUT;SFP:1101;
 X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
 X-MS-Exchange-AntiSpam-MessageData-0:
-	=?us-ascii?Q?Gm++FXjTYhidG/YOq9mDMeP/GsaWmq78sj8PLiBG+pGVYK7CultcMM31rXRU?=
- =?us-ascii?Q?oDgPZizZyPPqjbJxlqJdj6/mnLPmnQuiv4guPL9dnToe8ufRQbGqO02GwODR?=
- =?us-ascii?Q?+vuWO1JxmvbtXhM9afGoyVZKMuZQ1NnThwanWKYb9lDQsgOuJrgwa42DK47P?=
- =?us-ascii?Q?0pXmqTnAgn+t6QS9jBk9qa/q4CZpQ/3xxjy7uqSgYN3jlbf3hMZ76CwcX04Y?=
- =?us-ascii?Q?tWKZ6HVyPHYSbD1kf3I8rJbxzigWZJBpKt2D1auoMX/wmesFGcZLRliKp93n?=
- =?us-ascii?Q?ga9R5LG3KdWvW9vy45mV2sAuQczZpAH0oSX/CtlwZb/bDV3hBtLEUPLB0y1g?=
- =?us-ascii?Q?34HMlcMxL7ZcGtfkllzohooyTWVi924oWN2vYOn6n0+cJYXtdvlIppNbjOiP?=
- =?us-ascii?Q?73Yid07/KF9pBt1n0chkOYmuBHcx70AEaojcjf/AVGGjbUHUhggOrwzxBw8B?=
- =?us-ascii?Q?4SJeLDjgUT8joF5hzUKC/ddwdvf7iaTy4l7bVE7PwvZznbbYiBwVoASkKZlH?=
- =?us-ascii?Q?xrhwbJIzsGjbHLCWa6OsXtFs3Kv3TDNFNHkcQ2Vh6BWpAPOVAEJj1MgW+029?=
- =?us-ascii?Q?+naz+RgoJG9DLFC8K59PePvZ92DfinPGTWS2weVXrzjCqocn3He+o2qaBebE?=
- =?us-ascii?Q?wvhrq9UL5nxl79HAfMJDhzq068gZ6DJNXOqpp7HvS4NHtgNKm9LR6OnFDgbp?=
- =?us-ascii?Q?AS+40G4curgPbMRh/kSacHPIoJamN5AYVXdzCkFJ74QFaQ6Hh4WAMQrQ+rUc?=
- =?us-ascii?Q?r6gpDsRvqH/BH+xZS29GCoACMap7M5dcxSQYhrUCuPIAXDEaPVhbNsE9+AUu?=
- =?us-ascii?Q?pb8TSxwh4vqR1QnYNpiS/3Hd7OALUHTnniZTdqT9q6h9YPhd6B4bR/+gZhKa?=
- =?us-ascii?Q?JDocYS7NUfc/D6NSCfmVcnyY0MXOIlTFsINwBDfMNL8ejX7Pk6XtUPzQfIqi?=
- =?us-ascii?Q?J4mx3PZBKWcQBZjVQm/Yp5vmOhv0jJdA+SNKPf/eMSOTLuc0b+/jvlKZQCX+?=
- =?us-ascii?Q?TTyCA6DYdz76bJvm3oNdCkbLV5IMT7W2f+m+xoJvtZubERY+mU65bm5n1WLH?=
- =?us-ascii?Q?OrHvZCCvgMDIToqcl7L1JC4W5b3kTPyHloMFJT0b7T976BQkocPnMh7y+W+6?=
- =?us-ascii?Q?KpE6/0qzigzp6fJTTdLPVcbYB59PFV3B0FCBJ2vlj01RBG9PWb8SryktFY+T?=
- =?us-ascii?Q?1V5D5jAY2WT4aq360BnXOv3npX9RPoJtDqiLxKBUNklW1gvtFq8kDOml+92a?=
- =?us-ascii?Q?BBKcRtTmEx88CxRuI9x57Lx5+kNrWJsUmXKCIYX8h8QmiyXsmPV1Fn0mkWuA?=
- =?us-ascii?Q?ou3UQDB+DqGTY21esEO7P25EsJygET9mKnkJ9d6C+kYvd2peh9vMsAPkONDf?=
- =?us-ascii?Q?w66X33gl5nvcP2Cr07U0y50jmXBmKIoWWRm2fLe07qyjbwTTO7bDHowt4lPQ?=
- =?us-ascii?Q?XfPhDYNTZUhGQ+yblQ5b4mWfxjliLb7H6Ht7Fc+7lpJ2qYIWOitOZpSlbr5f?=
- =?us-ascii?Q?etXpt0iSzph70OqooPEhNKsTzcEt3+lZrxrTd6hQlayRy0yBmNqvE4nyJpZs?=
- =?us-ascii?Q?UnmmxLNNXnFU8Tq1i8bzFawN8gRNwZu0TDiYTkcUDj8oAve93HvRFmatG/+9?=
- =?us-ascii?Q?PHcpYMz19CkVmoYTcOVl/D+ynAT+9ArcKJ673iBnV0n4d4Ph2xvpliaHBolG?=
- =?us-ascii?Q?+w2S23Mmi+9oj1uRyvY8Yi5H+fS7oVP2T/fM7xTLB6x22FlqeXfbCDrNHC8W?=
- =?us-ascii?Q?0L4sN5FX1w=3D=3D?=
+	=?us-ascii?Q?vj5cd566RbDeGkUO8vcwokBsKnEAcNHyvImhIt6YmA0rQI+KyHr+P70mF1FM?=
+ =?us-ascii?Q?lRxSZP5ves5muc44HQ2pMTZc6z9UzPLgo2AaPFZwUYZ2BXmAEdsADELcpQNX?=
+ =?us-ascii?Q?Z1S/sAukQ82SswE3AEooR9zGaMYJkgorOBF2aF+v5JX0hyyaQD4YnBOiuAzr?=
+ =?us-ascii?Q?vJBKdltNF/YPZdpC5gt8nVrDyf2blZM2JVNvvCe97XATSzc+GdqPI9ArUwgl?=
+ =?us-ascii?Q?WHEKdSBs/2HC7ySO5lo3U+H7bOswAptELH3OEKWc6PK7fywlISNa+CKWH3p/?=
+ =?us-ascii?Q?fB27QRu76q5S3xCAym3HrOr/T+HHggqKXhvI3HygB8x60KzTH6NMwN5aYbro?=
+ =?us-ascii?Q?s1yG76Tg9Is5/jLI6Nvlo2acuiXGT3Zd/vHqVhWwxfU38wSI6dp9ctAIiHuF?=
+ =?us-ascii?Q?QN4Iysk7xQ1N1aTf7Xkx1cT3wN55hnK0XW/Hx0WfTQwQJQQ4umwKp3aNSIxg?=
+ =?us-ascii?Q?IsDrjz5a16j0knvt6uPzFwTuDhYjXFXHTcDSj4S6vsV3AFn84NuFZI9fH4F2?=
+ =?us-ascii?Q?9NZIs9wtzmhrUvxV7mCSQ+9y0b/9R4VduJ3zajxHWYOg/uX86oDJFFMDKpAQ?=
+ =?us-ascii?Q?TVp1FbegQWBsx7E7+YyuZ5FaNHKYwaoKYT4/23yAqBSiBkE0dL3GXfZOJPLC?=
+ =?us-ascii?Q?HJhxIgLbIFxAdlyIc+uh9KSY0uezpuWkmHzFoojgL48fd5CoHL6ISodxNFJ1?=
+ =?us-ascii?Q?s6Md2MMjBgzSIoSX1zmPzfyiQK4rAIbYRvbXhrp5KWdJFUgMjDpczlR4er+f?=
+ =?us-ascii?Q?4xNzBqAtmNoOMULvK2B9fRTu87PFvwPaj7qToE8Gwt5Mn0fm+simaC0QW+3A?=
+ =?us-ascii?Q?ilImvhQvUK/VzYtCriBCgksCYcVvMWP+spyWJskO7aWph5p9OQF0ttK+FtkR?=
+ =?us-ascii?Q?lBt0Pws9mZV5XDuRufCpkOT1b0J57+JRnmYJA9KUgGSDu8x9zAfLI8wQbUsn?=
+ =?us-ascii?Q?7iQoT3MOPRFDnjeNZz437XtJD2iQOR/3SEOToCLhh6H1Q21voMjWwdVEmk8y?=
+ =?us-ascii?Q?1Yo1tzUgp0/cMq55IDElIksTcTAqTeESIQH4W6w8b+aTdAD8pSYSwtZBX1vW?=
+ =?us-ascii?Q?jkluKwbig316nqtNlY5uZcG7JgYYwTVjTGQ3zlF7nPLKHGVL9S8joIZMdTPD?=
+ =?us-ascii?Q?U4UT9hTBi9X0xPHxsgh1A21nsbEf4Ak/lGDF0dZTW0WY0+FK4hEMizb4f5eD?=
+ =?us-ascii?Q?OUGJFPj5Em0WYUAiH1/Yg1h0s6BsGvgNE2ff5Or5ECzv3JpbScR5FIuyfHTl?=
+ =?us-ascii?Q?xhjnICv6j3Hu5l8PBcXPIcwmKKBfzXoku8MKBJU9tLR3CXIPgrbd7KNZR6Yv?=
+ =?us-ascii?Q?UEjnG/nnn6FTAo8/W55oscUKopO8W66GKBm5A9fuTrFSVCIqRpdMjh1Ynclk?=
+ =?us-ascii?Q?qNbJPyp+/w29oW3xIeK48zGi/GklOMpiTn7O4f64LuoGyj/NdQSWH4+Oef3Y?=
+ =?us-ascii?Q?1eQjcNDrEKlnlNYyK+cGlJIkEm1PolYWLuei66PBCpiMNSgW8bnri/Czdb7O?=
+ =?us-ascii?Q?bRBu1s6RPaMJQhLWYHYd7LnbhI4z7Mzlfgv4Bz3qfI/qJrCQUt39cwIh9C80?=
+ =?us-ascii?Q?DoJYox7jqYlkRRAbIyQHKw0OmE0HbJwnvprqo0pq0Ons5y2IvlTOj4YP3iCq?=
+ =?us-ascii?Q?11Q9dOOmxur+JJU9tqoejhYdTeMk9P0ubgX3PErpvSkgRebK05vdmfoR7klZ?=
+ =?us-ascii?Q?sOmOf58Mhni58HUwvtOMjUtt4qWyvacQ8kLfV+R0rWgDNAZu1ucSDwAEXFcr?=
+ =?us-ascii?Q?Om3r9fBYjg=3D=3D?=
 X-OriginatorOrg: vivo.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: a2303c2f-d8ba-435a-dc1d-08dedd6b07cc
+X-MS-Exchange-CrossTenant-Network-Message-Id: 6a245811-6051-41d1-0a38-08dedd6b0a32
 X-MS-Exchange-CrossTenant-AuthSource: SEZPR06MB5832.apcprd06.prod.outlook.com
 X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 09 Jul 2026 03:34:49.7346
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 09 Jul 2026 03:34:53.7224
  (UTC)
 X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
 X-MS-Exchange-CrossTenant-Id: 923e42dc-48d5-4cbe-b582-1a797a6412ed
 X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: WhJoL70c7Z48w8Et6VIKeRc3R+ZzNUJdv2Ale4Ygp3C6mEr87vMLZ9leLvs2/2LlHbvQxSqDyChlw2xakVfeqw==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: SEYPR06MB6360
+X-MS-Exchange-CrossTenant-UserPrincipalName: SRbLODbXJ5sMyqUEdqfv/2KjHP39iDLFBvBFfXlh9pd73J8v7OFQJXy2AhukPIVPlSvQao1xidqjJ6nGTCkNyA==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: TYZPR06MB7253
 
-Commit 55b48e23f5c4b6f5ca9b7ab09599b17dcf501c10 ("genirq/devres: Add
-error handling in devm_request_*_irq()") added automatic error logging
-to devm_request_threaded_irq() and devm_request_any_context_irq() via
-the new devm_request_result() helper. The helper prints device name,
-IRQ number, handler functions, and error code on failure.
+The devm_request_threaded_irq() and devm_request_irq() now automatically
+log detailed error messages on failure. This eliminates the need for
+driver-specific dev_err() and dev_err_probe() calls that previously
+printed generic messages.
 
-Since devm_request_irq() is a static inline wrapper around
-devm_request_threaded_irq(), it also benefits from this automatic
-logging.
+Signed-off-by: Pan Chuang <panchuang@vivo.com>
+---
+ drivers/power/supply/88pm860x_charger.c | 5 +----
+ 1 file changed, 1 insertion(+), 4 deletions(-)
 
-This series removes the now-redundant dev_err() and dev_err_probe() calls
-in power drivers that follow these devm_request_*_irq() functions, as the
-core now provides more detailed diagnostic information on failure.
-
-Pan Chuang (43):
-  power: reset: pwr-mlxbf: Remove redundant dev_err()/dev_err_probe()
-  power: supply: 88pm860x_battery: Remove redundant
-    dev_err()/dev_err_probe()
-  power: supply: 88pm860x_charger: Remove redundant
-    dev_err()/dev_err_probe()
-  power: supply: ab8500_btemp: Remove redundant
-    dev_err()/dev_err_probe()
-  power: supply: ab8500_charger: Remove redundant
-    dev_err()/dev_err_probe()
-  power: supply: ab8500_fg: Remove redundant dev_err()/dev_err_probe()
-  power: supply: act8945a_charger: Remove redundant
-    dev_err()/dev_err_probe()
-  power: supply: axp20x_ac_power: Remove redundant
-    dev_err()/dev_err_probe()
-  power: supply: axp20x_usb_power: Remove redundant
-    dev_err()/dev_err_probe()
-  power: supply: axp288_charger: Remove redundant
-    dev_err()/dev_err_probe()
-  power: supply: axp288_fuel_gauge: Remove redundant
-    dev_err()/dev_err_probe()
-  power: supply: bq24190_charger: Remove redundant
-    dev_err()/dev_err_probe()
-  power: supply: bq24257_charger: Remove redundant
-    dev_err()/dev_err_probe()
-  power: supply: bq24735-charger: Remove redundant
-    dev_err()/dev_err_probe()
-  power: supply: bq256xx_charger: Remove redundant
-    dev_err()/dev_err_probe()
-  power: supply: bq257xx_charger: Remove redundant
-    dev_err()/dev_err_probe()
-  power: supply: cpcap-battery: Remove redundant
-    dev_err()/dev_err_probe()
-  power: supply: cpcap-charger: Remove redundant
-    dev_err()/dev_err_probe()
-  power: supply: da9150-fg: Remove redundant dev_err()/dev_err_probe()
-  power: supply: generic-adc-battery: Remove redundant
-    dev_err()/dev_err_probe()
-  power: supply: max14656_charger_detector: Remove redundant
-    dev_err()/dev_err_probe()
-  power: supply: max77759_charger: Remove redundant
-    dev_err()/dev_err_probe()
-  power: supply: max8903_charger: Remove redundant
-    dev_err()/dev_err_probe()
-  power: supply: max8971_charger: Remove redundant
-    dev_err()/dev_err_probe()
-  power: supply: mp2629_charger: Remove redundant
-    dev_err()/dev_err_probe()
-  power: supply: mt6360_charger: Remove redundant
-    dev_err()/dev_err_probe()
-  power: supply: mt6370-charger: Remove redundant
-    dev_err()/dev_err_probe()
-  power: supply: pf1550-charger: Remove redundant
-    dev_err()/dev_err_probe()
-  power: supply: qcom_smbb: Remove redundant dev_err()/dev_err_probe()
-  power: supply: qcom_smbx: Remove redundant dev_err()/dev_err_probe()
-  power: supply: rk817_charger: Remove redundant
-    dev_err()/dev_err_probe()
-  power: supply: rn5t618_power: Remove redundant
-    dev_err()/dev_err_probe()
-  power: supply: rt9455_charger: Remove redundant
-    dev_err()/dev_err_probe()
-  power: supply: rt9467-charger: Remove redundant
-    dev_err()/dev_err_probe()
-  power: supply: rt9471: Remove redundant dev_err()/dev_err_probe()
-  power: supply: sbs-charger: Remove redundant dev_err()/dev_err_probe()
-  power: supply: sc27xx_fuel_gauge: Remove redundant
-    dev_err()/dev_err_probe()
-  power: supply: surface-rt-ec: Remove redundant
-    dev_err()/dev_err_probe()
-  power: supply: tps65090-charger: Remove redundant
-    dev_err()/dev_err_probe()
-  power: supply: tps65217_charger: Remove redundant
-    dev_err()/dev_err_probe()
-  power: supply: twl4030_charger: Remove redundant
-    dev_err()/dev_err_probe()
-  power: supply: twl6030_charger: Remove redundant
-    dev_err()/dev_err_probe()
-  power: supply: ucs1002_power: Remove redundant
-    dev_err()/dev_err_probe()
-
- drivers/power/reset/pwr-mlxbf.c                  |  2 --
- drivers/power/supply/88pm860x_battery.c          | 10 ++--------
- drivers/power/supply/88pm860x_charger.c          |  5 +----
- drivers/power/supply/ab8500_btemp.c              |  5 +----
- drivers/power/supply/ab8500_charger.c            |  5 +----
- drivers/power/supply/ab8500_fg.c                 |  2 --
- drivers/power/supply/act8945a_charger.c          |  4 +---
- drivers/power/supply/axp20x_ac_power.c           |  5 +----
- drivers/power/supply/axp20x_usb_power.c          |  5 +----
- drivers/power/supply/axp288_charger.c            |  3 +--
- drivers/power/supply/axp288_fuel_gauge.c         |  2 +-
- drivers/power/supply/bq24190_charger.c           |  4 +---
- drivers/power/supply/bq24257_charger.c           |  4 +---
- drivers/power/supply/bq24735-charger.c           |  6 +-----
- drivers/power/supply/bq256xx_charger.c           |  4 +---
- drivers/power/supply/bq257xx_charger.c           |  2 --
- drivers/power/supply/cpcap-battery.c             |  6 +-----
- drivers/power/supply/cpcap-charger.c             |  6 +-----
- drivers/power/supply/da9150-fg.c                 |  4 +---
- drivers/power/supply/generic-adc-battery.c       |  2 +-
- drivers/power/supply/max14656_charger_detector.c |  4 +---
- drivers/power/supply/max77759_charger.c          |  4 +---
- drivers/power/supply/max8903_charger.c           | 15 +++------------
- drivers/power/supply/max8971_charger.c           |  2 +-
- drivers/power/supply/mp2629_charger.c            |  4 +---
- drivers/power/supply/mt6360_charger.c            |  3 +--
- drivers/power/supply/mt6370-charger.c            |  4 +---
- drivers/power/supply/pf1550-charger.c            |  3 +--
- drivers/power/supply/qcom_smbb.c                 |  5 +----
- drivers/power/supply/qcom_smbx.c                 |  3 +--
- drivers/power/supply/rk817_charger.c             | 12 ++++--------
- drivers/power/supply/rn5t618_power.c             |  5 +----
- drivers/power/supply/rt9455_charger.c            |  4 +---
- drivers/power/supply/rt9467-charger.c            |  3 +--
- drivers/power/supply/rt9471.c                    |  3 +--
- drivers/power/supply/sbs-charger.c               |  2 +-
- drivers/power/supply/sc27xx_fuel_gauge.c         |  8 ++------
- drivers/power/supply/surface-rt-ec.c             |  2 +-
- drivers/power/supply/tps65090-charger.c          |  6 +-----
- drivers/power/supply/tps65217_charger.c          |  6 +-----
- drivers/power/supply/twl4030_charger.c           | 10 ++--------
- drivers/power/supply/twl6030_charger.c           |  4 +---
- drivers/power/supply/ucs1002_power.c             | 10 ++--------
- 43 files changed, 49 insertions(+), 159 deletions(-)
-
+diff --git a/drivers/power/supply/88pm860x_charger.c b/drivers/power/supply/88pm860x_charger.c
+index 8d99c6ff72ed..47f95f31e472 100644
+--- a/drivers/power/supply/88pm860x_charger.c
++++ b/drivers/power/supply/88pm860x_charger.c
+@@ -716,11 +716,8 @@ static int pm860x_charger_probe(struct platform_device *pdev)
+ 						pm860x_irq_descs[i].handler,
+ 						IRQF_ONESHOT,
+ 						pm860x_irq_descs[i].name, info);
+-		if (ret < 0) {
+-			dev_err(chip->dev, "Failed to request IRQ: #%d: %d\n",
+-				info->irq[i], ret);
++		if (ret < 0)
+ 			return ret;
+-		}
+ 	}
+ 	return 0;
+ }
 -- 
 2.34.1
 
