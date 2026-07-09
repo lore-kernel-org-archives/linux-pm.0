@@ -1,69 +1,68 @@
-Received: from mail-wm1-f54.google.com (mail-wm1-f54.google.com [209.85.128.54])
+Received: from mail-wr1-f52.google.com (mail-wr1-f52.google.com [209.85.221.52])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1E42838F626
-	for <linux-pm@vger.kernel.org>; Thu,  9 Jul 2026 01:10:37 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.54
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 16D973909B1
+	for <linux-pm@vger.kernel.org>; Thu,  9 Jul 2026 01:10:39 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.52
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1783559444; cv=none; b=Haf381NNWJfAG98H0N71U7IX1fUJcvUP8eiAzszgtT7YBp+hT66bDM5dPrybB8EO/feDCfTtmeKapyFrXh1bHRc59F2SUZufHCN+TmowitRo8nmshfi+Q/YM1ALHYswyohvFToNf9Al2q+7t4O+Ss0dxjlv01JzkT8eZsy3NGJs=
+	t=1783559446; cv=none; b=jv6+6QNHCCKA0O07JkimHtnU4RchF1+jXv6aiRSZ1pm/e/Rf+VvlKADmp9pqLCqdSZC3UAWVc3ksvPTWHKc+TlioelC8BFiSbyKqNoXnYKNLCWyMqqe5+uBE1yjq3sPYTnkGBIsdARu2Ym+OQ9wiRGG5YGCB0BawsKbI25lZ6Ts=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1783559444; c=relaxed/simple;
-	bh=223TOTp79VOsGKtAPmgofIZTevSQt+5lcuqNLQQkNhg=;
+	s=arc-20240116; t=1783559446; c=relaxed/simple;
+	bh=NorYOSPVJZcKZxDpD9sKvkFX7ejrxkySeB+SqU3BlRA=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=OpTZiSufDdfHQEyqXT9Dsf2fNWUOitHTC2jAjLBcb2H1KOJ64rRZNZ9ljeQRBvyy5Pftv3eACzsGdrrnBBJlBdt++gzpxnpOide9Euywt+qlZ4XZ5sQjTg4759Ht97K6/YMt0ZkmGEzmbqxPhO7j3PFvTqtPXAUm9hbtOyR3Ua0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=XRyaOky5; arc=none smtp.client-ip=209.85.128.54
+	 In-Reply-To:To:Cc; b=ql+AGlSRDnK6a4tBA6LcHTDJ6132KZAtlCLP3taHEp3rzezDJUCqekaG8zt6PDr+VXwo+oI5agstUugoh6gislZNeZHDOsbUohMtVYAQTvA3j8BUpb70kaz+pjQsvmoBxkNQimaWVNmaqiscBBJFCPES0de78fmFgfa+PBvwCgc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=K2r95X5/; arc=none smtp.client-ip=209.85.221.52
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="XRyaOky5"
-Received: by mail-wm1-f54.google.com with SMTP id 5b1f17b1804b1-493c733f15aso3694675e9.0
-        for <linux-pm@vger.kernel.org>; Wed, 08 Jul 2026 18:10:37 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="K2r95X5/"
+Received: by mail-wr1-f52.google.com with SMTP id ffacd0b85a97d-47d70879764so892072f8f.2
+        for <linux-pm@vger.kernel.org>; Wed, 08 Jul 2026 18:10:39 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1783559436; x=1784164236; darn=vger.kernel.org;
+        d=linaro.org; s=google; t=1783559438; x=1784164238; darn=vger.kernel.org;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :content-type:mime-version:subject:date:from:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=V7eMQkXnTBigOm6CMpOEGhcl7xxsHMUYLRGQDej44Ls=;
-        b=XRyaOky52mWMfaiZA22VkKhxr2PzIRAViUNWYwEVY/mnwj0SDBuWK4yz7gzaLdrbIK
-         kZy5S4nXEiH8XTwHDGDmWwuWLHbM7jFQJPQiQB9Y49BkM1kVdp2OFoZGx0OELU3rSVjS
-         w+phXSFi/whcw4gxc39J9OxcXwo5DGOsZKCh3iPcnYgXJ5KIXckNlisUayctz4QTFkT0
-         mWc5PaE5D+45kTZUePG5R7VhSV5J5M3GvxPDvEE7BhluiohHkF0k1tIn1xuBQAB5Y/dU
-         blMf2O9OtnG+hBTiw7Y7u0euvwczCo1XAWLBRGEABuvM8leLhbPqsqO3xbddbrKUkMer
-         fRUQ==
+        bh=8L+CQ4Gynkx2AYXtRuWONCUauUOwqk9uV3HudEHaG/k=;
+        b=K2r95X5/djCO11/JBj5MiLSOqZ0od2M56LwKbw/edr6lKyuLN+gzxllYpB+cAOG85M
+         9zsUrbf4xjRAhuAtPQUdB7oIrDhODuDFD+we0dh4nGnQ8ks6v4H4EVduO9mWIcuy9Y5W
+         W6Ai3L6OiAm0tLbja6Unga/UUB8Vs96p+00Y6sOFK2pDemrkHoFCQKeklAv75BH+q20x
+         ezv/WhFuvj4njKo1pbxpx5HXjvJS7P8sefmhnCi3QcKPpsE3GIAIm7xOmiOod+XoGkuv
+         o/Stp0OAxezH7MQDD6GZyoQ0QEH2MrHx/gTr3Rytl1gRrxFB5foBMK5gEcRaqSwP1Xei
+         oN+g==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1783559436; x=1784164236;
+        d=1e100.net; s=20251104; t=1783559438; x=1784164238;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :content-type:mime-version:subject:date:from:x-gm-gg
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=V7eMQkXnTBigOm6CMpOEGhcl7xxsHMUYLRGQDej44Ls=;
-        b=AjPsyAQTKGnxBR05Mu6KXXwBXyjvmfgs7teKF+MHFEgTnJ8D8oWKREMBHE6x3E9MNA
-         gATyllFI+Xm9769xlA4GP32Xh0JztPiHUjRaIPQlTc0PEWNRcelsgqw2ue9gF4vzM3CA
-         4LqYWurrBr4QWNrkJpr2JSIjmwoN9j+0FEJv3vTo1zHSFGRiOAFNis4nyGCRIbFdcdcU
-         xavVlqK6fhzknrOyALamimUJc3iRNXWnU2wmqfQ35wEpTIKp+wUDgseSL+zqlYAL5dT/
-         XULmtQa7fKcnyYXYmyBnRd5lIOOSG0xc/N01W2CAAdCX1m/OH3vzkRwn72NrEsNP8vcq
-         iP8g==
-X-Forwarded-Encrypted: i=1; AHgh+RruuiMGEzrgdhCH1idi3KVQqLf5b4SvAMedj0Tl2Ees0cj9gTFMA32FGC45jKP/wGXD5+rUXWYelA==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yy0AMtJTtPdtC1awGK1ESZCOiPoEfDlS3bNGcM8sT9DwbgHTyiT
-	xk371YFeCMu67alPwu9NL53q2iP9x0ECMaUHGYK3ryvlg/1Ikd5EocsHWS13wWB22Bs=
-X-Gm-Gg: AfdE7cnu6gF7SdK2uOfqaHuSVAwuwnLoBFCwd9jsM0XkXANWgBmd5+fXzxgcwOpmpu9
-	sVZqcvF9+3XmXFRbWsaKZ1C5QHGCR+hhXO8K0K5prN8lxYduTR0cx1xL42xNiq1et+cBBvos7D4
-	HXBNLp5BlwIA7Cj/KTKZwHUjkfd81W/ARSMr49iXP6NQpV166vIIGNWccz9Gm0ZGYvb4UsvqWjY
-	mFp63x7JKirhlsWTKBjK6UIZJxOqvVcRST2lcPwx/rdn+cHJMDB/YE07GiFDZ04fdJnmmptFhSs
-	UbIoZlK2xvMlUqjjPQmFQM5u8WUy3OlG54Iu9yCtMU2THr0PiNq+FkFNLakiv2cWWWq3IFRSwGP
-	MaYRHuNO9iWCtCkZ18E9WTGj7DSqO/F5+aiGZgMdTgREotL8wrdXQA2l7583C7qcZlGg11mwOVI
-	5FSkz1oeHbYfj00fuv3al3OpSrzoIvPXnCN0pubp9I6G5xX30aQNF+rt9jKqPQbeSKtfGtAZeOf
-	i+J
-X-Received: by 2002:a05:600c:8b6a:b0:493:b55f:bca2 with SMTP id 5b1f17b1804b1-493e88760f3mr32980535e9.34.1783559436451;
-        Wed, 08 Jul 2026 18:10:36 -0700 (PDT)
+        bh=8L+CQ4Gynkx2AYXtRuWONCUauUOwqk9uV3HudEHaG/k=;
+        b=clu5UWq9ZMGunJ4Az8PSE3J+vBD1GE0eK4hFmZWsMwAoc+VAQsZMzDgtJMMUe2c1D9
+         P8dIevM4MRCGN5jcya+Htr+T7Q/rsuRK9wgZgfV4OCfQI8AFan4p4UbUamQM4hUW8zHL
+         5JDT9r4uCO742G1jqCf8TFllpEj5dOv6PtdxO79xML/q3S1/Iu1x5agh7z1/mYEE4Npv
+         Ct4TUiFwilm+1fDckQHnubvT6sYS0C3BtcVVttbS3cMFAQtKfoGgBn3Mu217G/ht4hT2
+         +oIXL3bz3K4cI5WhV8/Ze9zZrd1/J3rFSriPBuyTalG6xeyTZbMzWqU3V+O0cQKUHf3N
+         7Ndw==
+X-Forwarded-Encrypted: i=1; AHgh+RqWJ+696fvbXRC+8e4ZA+oqYYXCxvKV/0auvq1EcCWiTIR0S83U0+eFFZwY/r1mmrcyy0ojRSNfVw==@vger.kernel.org
+X-Gm-Message-State: AOJu0YyKg0+7prOnr/2t0/glYAMfU2dgdFxLZmmewPQeZzkigV23mqb6
+	g5qTDyT3wcjTl+zb5/3sWXdnMU4mEEVJKsJHDJ0E5ssMDabSTlnivkoN/dY2iFv8xL8=
+X-Gm-Gg: AfdE7cmT6v24cT09sR3smA791QCG8FrAkkIS325U/mH/SjrIW8cs3MpshRaoNoaa21g
+	cu0b+paeZeuozADkzYilvgj+5tHL1jcB3jrlRXnoxzYuye4ccyWGu56DOMNCu2w+DVCCiPDFu5T
+	Ih41BPcEt2sZPIxjcJv4wY99fNZAeyzCz+gUzmGqCFQLjVrhudRu7PMuL6rs9u0d/NNBRmAIzjJ
+	QR+U8FDbxZ/N9+kX9mBo+gRI9VcmiBNv7IuWJbwg89kWUDz68QEuf+n1L9EdF0/2qydzAttnbOo
+	+MdP3ULScSzUSgNniNoOfaHTRNkqCqds7Vn1fQhNq2jm3swK16aoqTrEiIMrjEIp0dfuhbZTMIY
+	EqFjSdiVLcCV7Z/fgKTLGUy2StkjIMPxed5uUzdWDVozy+EqGVBsHUaqu1izr7fYcPQltOFAFnE
+	kafLaYbLaEvSbGoSq5OHV3/QKXb+sEe9l3baiIv3X6Aphf4xyxbybHu+yllNXCRkk/6F4ru795k
+	EFe
+X-Received: by 2002:a05:600c:1910:b0:493:e52f:6ee1 with SMTP id 5b1f17b1804b1-493e8a618bamr27806825e9.0.1783559438392;
+        Wed, 08 Jul 2026 18:10:38 -0700 (PDT)
 Received: from [127.0.1.1] ([2.122.8.179])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-493eb742d0esm18994725e9.13.2026.07.08.18.10.35
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-493eb742d0esm18994725e9.13.2026.07.08.18.10.36
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 08 Jul 2026 18:10:35 -0700 (PDT)
+        Wed, 08 Jul 2026 18:10:37 -0700 (PDT)
 From: Alexey Klimov <alexey.klimov@linaro.org>
-Date: Thu, 09 Jul 2026 02:10:28 +0100
-Subject: [PATCH 2/3] thermal: samsung: acpm-tmu: refactor SoC-specific
- operations into driver data
+Date: Thu, 09 Jul 2026 02:10:29 +0100
+Subject: [PATCH 3/3] thermal: samsung: acpm-tmu: add Exynos850 support
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -72,7 +71,7 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260709-acpm-tmu-e850-support-v1-2-9fdd58b634af@linaro.org>
+Message-Id: <20260709-acpm-tmu-e850-support-v1-3-9fdd58b634af@linaro.org>
 References: <20260709-acpm-tmu-e850-support-v1-0-9fdd58b634af@linaro.org>
 In-Reply-To: <20260709-acpm-tmu-e850-support-v1-0-9fdd58b634af@linaro.org>
 To: Tudor Ambarus <tudor.ambarus@linaro.org>, 
@@ -92,264 +91,481 @@ Cc: Peter Griffin <peter.griffin@linaro.org>,
  Alexey Klimov <alexey.klimov@linaro.org>
 X-Mailer: b4 0.14.3
 
-The current ACPM TMU driver assumes that all TMU operations (init,
-threshold updates, and interrupt clearing) are handled exclusively
-via ACPM IPC commands, which is true for the GS101.
+Add support for the Thermal Management Unit block found on the
+Exynos850 SoC.
 
-However, other Exynos platforms (like Exynos850) lack complete firmware
-support for these operations and require direct MMIO register access
-instead for missing ACPM TMU IPC calls.
+Unlike the GS101, the Exynos850 ACPM firmware implements a smaller
+set of IPC commands (primarily basic TMU initialization, suspend/resume,
+and temperature reading). While the firmware supports basic TMU
+initialization, suspend/resume, and temperature polling, it lacks the
+ability to fully configure the hardware. The remaining functionality
+is implemented via direct MMIO access:
+- TMU initialization sequence,
+- setting falling and rising thresholds and associated IRQs,
+- helpers to convert temperature to hardware values,
+- handling of IRQs,
+- thermal zone control (TMU core enable/disable).
 
-Prepare the driver for multi-SoC support by moving the hardcoded GS101
-IPC calls into SoC-specific callbacks: "tz_control", "tmu_init",
-"tmu_update_thresholds" and "tmu_check_and_clear_irqs" within the
-acpm_tmu_driver_data struct. Additionally, save the regmap pointer in
-the private structure so that these callbacks can utilize it for other
-SoCs.
+Additionally, this also reorders the sensor group assignment in
+acpm_tmu_probe() to let it happen before TMU init SoC callback.
 
 Signed-off-by: Alexey Klimov <alexey.klimov@linaro.org>
 ---
- drivers/thermal/samsung/acpm-tmu.c | 112 +++++++++++++++++++++++++------------
- 1 file changed, 76 insertions(+), 36 deletions(-)
+ drivers/thermal/samsung/acpm-tmu.c | 356 ++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 355 insertions(+), 1 deletion(-)
 
 diff --git a/drivers/thermal/samsung/acpm-tmu.c b/drivers/thermal/samsung/acpm-tmu.c
-index f9802080acd7..b3cea9890b4b 100644
+index b3cea9890b4b..2bf880515e31 100644
 --- a/drivers/thermal/samsung/acpm-tmu.c
 +++ b/drivers/thermal/samsung/acpm-tmu.c
-@@ -72,6 +72,8 @@ struct acpm_tmu_sensor {
+@@ -5,6 +5,7 @@
+  * Copyright 2026 Linaro Ltd.
+  */
+ 
++#include <linux/bitfield.h>
+ #include <linux/cleanup.h>
+ #include <linux/clk.h>
+ #include <linux/device/devres.h>
+@@ -23,9 +24,79 @@
+ 
+ #include "../thermal_hwmon.h"
+ 
++#define TYPE_TWO_POINT_TRIMMING		1
++
+ #define EXYNOS_TMU_SENSOR(i)		BIT(i)
+ #define EXYNOS_TMU_SENSORS_MAX_COUNT	16
+ 
++#define EXYNOS850_INTPEND_RISE_MASK	GENMASK(8, 0)
++#define EXYNOS850_INTPEND_FALL_MASK	GENMASK(23, 16)
++
++#define EXYNOS850_GPU_SENSOR_MASK	(EXYNOS_TMU_SENSOR(3))
++#define EXYNOS850_CPUCL1_SENSOR_MASK	(EXYNOS_TMU_SENSOR(2))
++#define EXYNOS850_CPUCL0_SENSOR_MASK	(EXYNOS_TMU_SENSOR(1))
++
++#define EXYNOS_TMU_REG_TRIMINFO		(0x0)
++#define EXYNOS850_TMU_TRIMINFO_SHIFT	4
++#define EXYNOS850_TMU_TRIMINFO_OFFSET(n)	\
++	(EXYNOS_TMU_REG_TRIMINFO + (n) * EXYNOS850_TMU_TRIMINFO_SHIFT)
++
++#define EXYNOS_FIRST_POINT_TRIM		25
++#define EXYNOS_SECOND_POINT_TRIM	85
++
++#define EXYNOS_TRIMINFO_CALIB_SEL_MASK	BIT(23)
++#define EXYNOS_TRIMINFO_25_MASK		GENMASK(8, 0)
++#define EXYNOS_TRIMINFO_85_MASK		GENMASK(17, 9)
++#define EXYNOS850_TMU_BGRI_TRIM_SHIFT	20
++#define EXYNOS850_TMU_BGRI_TRIM_MASK	0xf
++#define EXYNOS850_TMU_VREF_TRIM_SHIFT	12
++#define EXYNOS850_TMU_VREF_TRIM_MASK	0xf
++#define EXYNOS850_TMU_VBEI_TRIM_SHIFT	8
++#define EXYNOS850_TMU_VBEI_TRIM_MASK	0xf
++
++#define EXYNOS850_TMU_CONTROL		(0x20)
++#define EXYNOS850_TMU_CONTROL1		(0x24)
++#define EXYNOS850_TMU_COUNTER_VALUE0	(0x30)
++#define EXYNOS850_TMU_COUNTER_VALUE1	(0x34)
++#define EXYNOS850_TMU_AVG_CONTROL	(0x38)
++#define EXYNOS850_TMU_TRIM0		(0x3c)
++
++#define EXYNOS_TMU_REG_INTPEND0		(0x118)
++#define EXYNOS_TMU_REG_INTPEND5		(0x318)
++#define EXYNOS_TMU_REG_INTPEND8		(0x658)
++
++#define EXYNOS_TMU_REG_INTEN0		(0x110)
++#define EXYNOS_TMU_REG_INTEN5		(0x310)
++#define EXYNOS_TMU_REG_INTEN8		(0x650)
++#define EXYNOS850_RISE_LEVEL1		BIT(1)
++#define EXYNOS850_FALL_LEVEL1		BIT(17)
++
++#define EXYNOS_TMU_REG_THD_TEMP0	(0x50)
++#define EXYNOS_TMU_REG_THD_TEMP1	(0x170)
++#define EXYNOS_TMU_REG_THD_TEMP8	(0x450)
++
++#define EXYNOS850_REG_RISE1_0_OFFSET	(0xc)
++#define EXYNOS850_REG_FALL1_0_OFFSET	(EXYNOS850_REG_RISE1_0_OFFSET + 0x10)
++#define EXYNOS850_THD_LEVEL1_MASK	GENMASK(24, 16)
++
++#define EXYNOS850_TMU_REG_THD(p)	((p == 0) ?					\
++					EXYNOS_TMU_REG_THD_TEMP0 :			\
++					((p < 8) ?					\
++					(EXYNOS_TMU_REG_THD_TEMP1 + (p - 1) * 0x20) :	\
++					(EXYNOS_TMU_REG_THD_TEMP8 + (p - 8) * 0x20)))
++
++#define EXYNOS850_TMU_REG_INTEN(p)	((p < 5) ?					\
++					(EXYNOS_TMU_REG_INTEN0 + p * 0x10) :		\
++					((p < 8) ?					\
++					(EXYNOS_TMU_REG_INTEN5 + (p - 5) * 0x10) :	\
++					(EXYNOS_TMU_REG_INTEN8 + (p - 8) * 0x10)))
++
++#define EXYNOS850_REG_INTPEND(p)	((p < 5) ?					\
++					(EXYNOS_TMU_REG_INTPEND0 + p * 0x10) :		\
++					((p < 8) ?					\
++					(EXYNOS_TMU_REG_INTPEND5 + (p - 5) * 0x10) :	\
++					(EXYNOS_TMU_REG_INTPEND8 + (p - 8) * 0x10)))
++
+ #define GS101_CPUCL2_SENSOR_MASK (EXYNOS_TMU_SENSOR(0) |	\
+ 				  EXYNOS_TMU_SENSOR(6) |	\
+ 				  EXYNOS_TMU_SENSOR(7) |	\
+@@ -69,6 +140,9 @@ struct acpm_tmu_sensor {
+ 	struct acpm_tmu_priv *priv;
+ 	struct mutex lock; /* protects sensor state */
+ 	bool enabled;
++
++	u32 efuse_value;
++	u16 temp_error1, temp_error2;
  };
  
  struct acpm_tmu_priv {
-+	const struct acpm_tmu_driver_data *data;
-+	struct regmap *regmap;
- 	struct regmap_field *regmap_fields[REG_INTPEND_COUNT];
- 	struct acpm_handle *handle;
- 	struct device *dev;
-@@ -84,9 +86,18 @@ struct acpm_tmu_priv {
- 
- struct acpm_tmu_driver_data {
- 	const struct reg_field *reg_fields;
-+	const struct regmap_config *regmap_config;
- 	const struct acpm_tmu_sensor_group *sensor_groups;
- 	unsigned int num_sensor_groups;
+@@ -81,6 +155,7 @@ struct acpm_tmu_priv {
  	unsigned int mbox_chan_id;
-+
-+	/* SoC-specific TMU routines and values */
-+	int (*tz_control)(struct acpm_tmu_sensor *sensor, bool on);
-+	int (*tmu_check_and_clear_irqs)(struct acpm_tmu_sensor *sensor,
-+					bool *pending_irq);
-+	int (*tmu_init)(struct acpm_tmu_priv *priv);
-+	int (*tmu_update_thresholds)(struct acpm_tmu_sensor *sensor,
-+				     u8 thresholds[2], u8 inten);
+ 	unsigned int num_sensors;
+ 	int irq;
++	u32 cal_type;
+ 	struct acpm_tmu_sensor sensors[] __counted_by(num_sensors);
  };
  
- #define ACPM_TMU_SENSOR_GROUP(_mask, _id)		\
-@@ -128,24 +139,32 @@ static const struct regmap_config gs101_regmap_config = {
+@@ -92,6 +167,7 @@ struct acpm_tmu_driver_data {
+ 	unsigned int mbox_chan_id;
+ 
+ 	/* SoC-specific TMU routines and values */
++	u32 efuse_value;
+ 	int (*tz_control)(struct acpm_tmu_sensor *sensor, bool on);
+ 	int (*tmu_check_and_clear_irqs)(struct acpm_tmu_sensor *sensor,
+ 					bool *pending_irq);
+@@ -139,6 +215,40 @@ static const struct regmap_config gs101_regmap_config = {
  	.max_register = GS101_REG_INTPEND(15),
  };
  
--static const struct acpm_tmu_driver_data acpm_tmu_gs101 = {
--	.reg_fields = gs101_reg_fields,
--	.sensor_groups = gs101_sensor_groups,
--	.num_sensor_groups = ARRAY_SIZE(gs101_sensor_groups),
--	.mbox_chan_id = 9,
--};
-+static int gs101_tz_control(struct acpm_tmu_sensor *sensor, bool on)
++static const struct acpm_tmu_sensor_group exynos850_sensor_groups[] = {
++	ACPM_TMU_SENSOR_GROUP(EXYNOS850_CPUCL0_SENSOR_MASK, 0),
++	ACPM_TMU_SENSOR_GROUP(EXYNOS850_CPUCL1_SENSOR_MASK, 1),
++	ACPM_TMU_SENSOR_GROUP(EXYNOS850_GPU_SENSOR_MASK, 2),
++};
++
++static const struct reg_field exynos850_reg_fields[REG_INTPEND_COUNT] = {
++	[P0_INTPEND] =		REG_FIELD(EXYNOS850_REG_INTPEND(0), 0, 23),
++	[P1_INTPEND] =		REG_FIELD(EXYNOS850_REG_INTPEND(1), 0, 23),
++	[P2_INTPEND] =		REG_FIELD(EXYNOS850_REG_INTPEND(2), 0, 23),
++	[P3_INTPEND] =		REG_FIELD(EXYNOS850_REG_INTPEND(3), 0, 23),
++	[P4_INTPEND] =		REG_FIELD(EXYNOS850_REG_INTPEND(4), 0, 23),
++	[P5_INTPEND] =		REG_FIELD(EXYNOS850_REG_INTPEND(5), 0, 23),
++	[P6_INTPEND] =		REG_FIELD(EXYNOS850_REG_INTPEND(6), 0, 23),
++	[P7_INTPEND] =		REG_FIELD(EXYNOS850_REG_INTPEND(7), 0, 23),
++	[P8_INTPEND] =		REG_FIELD(EXYNOS850_REG_INTPEND(8), 0, 23),
++	[P9_INTPEND] =		REG_FIELD(EXYNOS850_REG_INTPEND(9), 0, 23),
++	[P10_INTPEND] =		REG_FIELD(EXYNOS850_REG_INTPEND(10), 0, 23),
++	[P11_INTPEND] =		REG_FIELD(EXYNOS850_REG_INTPEND(11), 0, 23),
++	[P12_INTPEND] =		REG_FIELD(EXYNOS850_REG_INTPEND(12), 0, 23),
++	[P13_INTPEND] =		REG_FIELD(EXYNOS850_REG_INTPEND(13), 0, 23),
++	[P14_INTPEND] =		REG_FIELD(EXYNOS850_REG_INTPEND(14), 0, 23),
++	[P15_INTPEND] =		REG_FIELD(EXYNOS850_REG_INTPEND(15), 0, 23),
++};
++
++static const struct regmap_config exynos850_regmap_config = {
++	.name = "e850_tmu_regs",
++	.reg_bits = 32,
++	.reg_stride = 4,
++	.val_bits = 32,
++	.use_relaxed_mmio = true,
++	.max_register = EXYNOS850_REG_INTPEND(15),
++};
++
+ static int gs101_tz_control(struct acpm_tmu_sensor *sensor, bool on)
+ {
+ 	struct acpm_tmu_priv *priv = sensor->priv;
+@@ -155,6 +265,129 @@ static int gs101_tmu_init(struct acpm_tmu_priv *priv)
+ 	return handle->ops->tmu.init(handle, priv->mbox_chan_id);
+ }
+ 
++static int exynos850_tz_control(struct acpm_tmu_sensor *sensor, bool on)
 +{
 +	struct acpm_tmu_priv *priv = sensor->priv;
-+	struct acpm_handle *handle = priv->handle;
 +
-+	return handle->ops->tmu.tz_control(handle, priv->mbox_chan_id,
-+					   sensor->group->id, on);
++	regmap_update_bits(priv->regmap, EXYNOS850_TMU_CONTROL,
++			   BIT(0), on ? BIT(0) : 0);
++	return 0;
 +}
 +
-+static int gs101_tmu_init(struct acpm_tmu_priv *priv)
++static int exynos850_tmu_init(struct acpm_tmu_priv *priv)
 +{
 +	struct acpm_handle *handle = priv->handle;
++	struct regmap *regmap = priv->regmap;
++	unsigned int trim_info, trim;
++	unsigned int t_buf_vref_sel, t_buf_slope_sel, avg_mode;
++	unsigned int t_bgri_trim, t_vref_trim, t_vbei_trim;
++	u32 trim0_mask, trim0_val;
++	int ret, i;
 +
-+	return handle->ops->tmu.init(handle, priv->mbox_chan_id);
++	ret = handle->ops->tmu.init(handle, priv->mbox_chan_id);
++	if (ret)
++		return ret;
++
++	/*
++	 * Bootloader may partly initialise TMU or may not initialise it at all,
++	 * regardless of that we do the full TMU initialisation here and
++	 * collect calibration info.
++	 */
++	regmap_read(regmap, EXYNOS850_TMU_TRIMINFO_OFFSET(0), &trim_info);
++	priv->cal_type = FIELD_GET(EXYNOS_TRIMINFO_CALIB_SEL_MASK, trim_info);
++
++	for (i = 0; i < priv->num_sensors; i++) {
++		struct acpm_tmu_sensor *sensor = &priv->sensors[i];
++		unsigned long mask = sensor->group->mask;
++		int t;
++		u16 temp_error1, temp_error2;
++
++		for_each_set_bit(t, &mask, EXYNOS_TMU_SENSORS_MAX_COUNT) {
++			regmap_read(regmap, EXYNOS850_TMU_TRIMINFO_OFFSET(t), &trim_info);
++
++			temp_error1 = FIELD_GET(EXYNOS_TRIMINFO_25_MASK, trim_info);
++			temp_error2 = FIELD_GET(EXYNOS_TRIMINFO_85_MASK, trim_info);
++
++			if (temp_error1)
++				sensor->temp_error1 = temp_error1;
++			else
++				sensor->temp_error1 = FIELD_GET(EXYNOS_TRIMINFO_25_MASK,
++								priv->data->efuse_value);
++
++			if (priv->cal_type == TYPE_TWO_POINT_TRIMMING) {
++				if (temp_error1)
++					sensor->temp_error2 = temp_error2;
++				else
++					sensor->temp_error2 = FIELD_GET(EXYNOS_TRIMINFO_85_MASK,
++									priv->data->efuse_value);
++			}
++		}
++	}
++
++	/* Read TRIMINFO 0, 1, 2 settings */
++	regmap_read(regmap, EXYNOS850_TMU_TRIMINFO_OFFSET(0), &trim);
++	t_buf_vref_sel = FIELD_GET(GENMASK(22, 18), trim);
++
++	regmap_read(regmap, EXYNOS850_TMU_TRIMINFO_OFFSET(1), &trim);
++	t_buf_slope_sel = FIELD_GET(GENMASK(21, 18), trim);
++
++	regmap_read(regmap, EXYNOS850_TMU_TRIMINFO_OFFSET(2), &trim);
++	avg_mode = FIELD_GET(GENMASK(20, 18), trim);
++
++	/*
++	 * Set BUF_VREF_SEL and BUF_SLOPE_SEL.
++	 * Clear bit 12 -- disable thermal tripping for now.
++	 * Clear bit 0 -- TMU core off
++	 */
++	regmap_update_bits(regmap, EXYNOS850_TMU_CONTROL,
++			   GENMASK(28, 24) | BIT(12) | GENMASK(11, 8) | BIT(0),
++			   FIELD_PREP(GENMASK(28, 24), t_buf_vref_sel) |
++			   FIELD_PREP(GENMASK(11, 8), t_buf_slope_sel));
++
++	/*
++	 * Set NUM_PROBE equal to number of sensors.
++	 * Disable LPI by clearing bit 10.
++	 */
++	regmap_update_bits(regmap, EXYNOS850_TMU_CONTROL1,
++			   GENMASK(19, 16) | BIT(10),
++			   FIELD_PREP(GENMASK(19, 16), priv->num_sensors));
++
++	/* Set AVG_MODE (If avg_mode > 0, set bit 4 and insert avg_mode into bits [2:0]) */
++	regmap_update_bits(regmap, EXYNOS850_TMU_AVG_CONTROL,
++			   BIT(4) | GENMASK(2, 0),
++			   avg_mode ? (BIT(4) | FIELD_PREP(GENMASK(2, 0), avg_mode)) : 0);
++
++	/* Set COUNTER_VALUE 0 & 1 */
++	regmap_update_bits(regmap, EXYNOS850_TMU_COUNTER_VALUE0,
++			   GENMASK(15, 0), FIELD_PREP(GENMASK(15, 0), 0x028A));
++
++	regmap_update_bits(regmap, EXYNOS850_TMU_COUNTER_VALUE1,
++			   GENMASK(31, 16), FIELD_PREP(GENMASK(31, 16), 0x028A));
++
++	/* Read TRIMINFO 3, 4, 5 for BGR_I/VREF/VBE_I */
++	regmap_read(regmap, EXYNOS850_TMU_TRIMINFO_OFFSET(3), &trim);
++	t_bgri_trim = FIELD_GET(GENMASK(21, 18), trim);
++
++	regmap_read(regmap, EXYNOS850_TMU_TRIMINFO_OFFSET(4), &trim);
++	t_vref_trim = FIELD_GET(GENMASK(21, 18), trim);
++
++	regmap_read(regmap, EXYNOS850_TMU_TRIMINFO_OFFSET(5), &trim);
++	t_vbei_trim = FIELD_GET(GENMASK(21, 18), trim);
++
++	/* Set TRIM0 */
++	trim0_mask = (EXYNOS850_TMU_BGRI_TRIM_MASK << EXYNOS850_TMU_BGRI_TRIM_SHIFT) |
++		     (EXYNOS850_TMU_VREF_TRIM_MASK << EXYNOS850_TMU_VREF_TRIM_SHIFT) |
++		     (EXYNOS850_TMU_VBEI_TRIM_MASK << EXYNOS850_TMU_VBEI_TRIM_SHIFT);
++
++	trim0_val = (t_bgri_trim << EXYNOS850_TMU_BGRI_TRIM_SHIFT) |
++		    (t_vref_trim << EXYNOS850_TMU_VREF_TRIM_SHIFT) |
++		    (t_vbei_trim << EXYNOS850_TMU_VBEI_TRIM_SHIFT);
++
++	regmap_update_bits(regmap, EXYNOS850_TMU_TRIM0, trim0_mask, trim0_val);
++
++	return 0;
 +}
- 
++
  static int acpm_tmu_op_tz_control(struct acpm_tmu_sensor *sensor, bool on)
  {
  	struct acpm_tmu_priv *priv = sensor->priv;
--	struct acpm_handle *handle = priv->handle;
--	const struct acpm_tmu_ops *ops = &handle->ops->tmu;
- 	int ret;
- 
--	ret = ops->tz_control(handle, priv->mbox_chan_id, sensor->group->id,
--			      on);
--	if (ret)
--		return ret;
-+	if (priv->data->tz_control) {
-+		ret = priv->data->tz_control(sensor, on);
-+		if (ret)
-+			return ret;
-+	}
- 
- 	sensor->enabled = on;
- 
-@@ -249,8 +268,8 @@ static int acpm_tmu_get_temp(struct thermal_zone_device *tz, int *temp)
+@@ -268,6 +501,74 @@ static int acpm_tmu_get_temp(struct thermal_zone_device *tz, int *temp)
  	return 0;
  }
  
--static int acpm_tmu_update_thresholds(struct acpm_tmu_sensor *sensor,
--				      u8 thresholds[2], u8 inten)
-+static int gs101_tmu_update_thresholds(struct acpm_tmu_sensor *sensor,
-+				       u8 thresholds[2], u8 inten)
- {
- 	struct acpm_tmu_priv *priv = sensor->priv;
- 	struct acpm_handle *handle = priv->handle;
-@@ -314,7 +333,8 @@ static int acpm_tmu_set_trips(struct thermal_zone_device *tz, int low, int high)
- 	if (ret)
- 		return ret;
- 
--	ret = acpm_tmu_update_thresholds(sensor, thresholds, inten);
-+	if (priv->data->tmu_update_thresholds)
-+		ret = priv->data->tmu_update_thresholds(sensor, thresholds, inten);
- 
- 	pm_runtime_put_autosuspend(dev);
- 
-@@ -326,10 +346,11 @@ static const struct thermal_zone_device_ops acpm_tmu_sensor_ops = {
- 	.set_trips = acpm_tmu_set_trips,
- };
- 
--static int acpm_tmu_has_pending_irq(struct acpm_tmu_sensor *sensor,
--				    bool *pending_irq)
-+static int gs101_handle_irqs(struct acpm_tmu_sensor *sensor, bool *pending_irq)
- {
- 	struct acpm_tmu_priv *priv = sensor->priv;
-+	struct acpm_handle *handle = priv->handle;
-+	const struct acpm_tmu_ops *ops = &handle->ops->tmu;
- 	unsigned long mask = sensor->group->mask;
- 	int i, ret;
- 	u32 val;
-@@ -347,14 +368,17 @@ static int acpm_tmu_has_pending_irq(struct acpm_tmu_sensor *sensor,
- 		}
- 	}
- 
--	return 0;
-+	ret = ops->clear_tz_irq(handle, priv->mbox_chan_id, sensor->group->id);
-+	if (ret)
-+		dev_err(priv->dev, "Sensor %d: failed to clear IRQ (%d)\n",
-+			i, ret);
++static int temp_to_code(struct acpm_tmu_sensor *sensor, u8 temp)
++{
++	struct acpm_tmu_priv *priv = sensor->priv;
 +
-+	return ret;
++	if (priv->cal_type == TYPE_TWO_POINT_TRIMMING)
++		return (temp - EXYNOS_FIRST_POINT_TRIM) *
++		       (sensor->temp_error2 - sensor->temp_error1) /
++		       (EXYNOS_SECOND_POINT_TRIM - EXYNOS_FIRST_POINT_TRIM) +
++		       sensor->temp_error1;
++
++	return temp + sensor->temp_error1 - EXYNOS_FIRST_POINT_TRIM;
++}
++
++static int exynos850_tmu_update_thresholds(struct acpm_tmu_sensor *sensor,
++				      u8 thresholds[2], u8 inten)
++{
++	struct acpm_tmu_priv *priv = sensor->priv;
++	unsigned long mask = sensor->group->mask;
++	bool was_enabled;
++	int ret, restore_ret, i, trip_code, trip_code_low;
++	u32 addr;
++
++	guard(mutex)(&sensor->lock);
++
++	was_enabled = sensor->enabled;
++
++	if (was_enabled) {
++		ret = acpm_tmu_op_tz_control(sensor, false);
++		if (ret)
++			return ret;
++	}
++
++	trip_code = temp_to_code(sensor, thresholds[1]);
++	trip_code_low = temp_to_code(sensor, thresholds[0]);
++
++	for_each_set_bit(i, &mask, EXYNOS_TMU_SENSORS_MAX_COUNT) {
++		u32 irq_en = 0;
++
++		if (inten & BIT(0)) {
++			addr = EXYNOS850_TMU_REG_THD(i) + EXYNOS850_REG_FALL1_0_OFFSET;
++			regmap_update_bits(priv->regmap, addr, EXYNOS850_THD_LEVEL1_MASK,
++					   FIELD_PREP(EXYNOS850_THD_LEVEL1_MASK, trip_code_low));
++			irq_en = EXYNOS850_FALL_LEVEL1;
++		}
++
++		if (inten & BIT(1)) {
++			addr = EXYNOS850_TMU_REG_THD(i) + EXYNOS850_REG_RISE1_0_OFFSET;
++			regmap_update_bits(priv->regmap, addr, EXYNOS850_THD_LEVEL1_MASK,
++					   FIELD_PREP(EXYNOS850_THD_LEVEL1_MASK, trip_code));
++			irq_en |= EXYNOS850_RISE_LEVEL1;
++		}
++
++		regmap_update_bits(priv->regmap, EXYNOS850_TMU_REG_INTEN(i),
++				   (EXYNOS850_FALL_LEVEL1 | EXYNOS850_RISE_LEVEL1), irq_en);
++	}
++
++	if (was_enabled) {
++		restore_ret = acpm_tmu_op_tz_control(sensor, true);
++		if (restore_ret)
++			dev_err(priv->dev, "Failed to restore sensor state: %d\n",
++				restore_ret);
++		if (!ret)
++			ret = restore_ret;
++	}
++
++	return 0;
++}
++
+ static int gs101_tmu_update_thresholds(struct acpm_tmu_sensor *sensor,
+ 				       u8 thresholds[2], u8 inten)
+ {
+@@ -376,6 +677,36 @@ static int gs101_handle_irqs(struct acpm_tmu_sensor *sensor, bool *pending_irq)
+ 	return ret;
  }
  
++static int exynos850_handle_irqs(struct acpm_tmu_sensor *sensor,
++				 bool *pending_irq)
++{
++	struct acpm_tmu_priv *priv = sensor->priv;
++	unsigned long mask = sensor->group->mask;
++	int i, ret;
++	u32 val, clear_val;
++
++	guard(mutex)(&sensor->lock);
++
++	for_each_set_bit(i, &mask, EXYNOS_TMU_SENSORS_MAX_COUNT) {
++		ret = regmap_field_read(priv->regmap_fields[i], &val);
++		if (ret)
++			return ret;
++
++		if (val) {
++			clear_val = val &
++				(EXYNOS850_INTPEND_RISE_MASK | EXYNOS850_INTPEND_FALL_MASK);
++			ret = regmap_field_force_write(priv->regmap_fields[i], clear_val);
++			if (ret)
++				dev_err(priv->dev,
++					 "sensor %d: failed to clear IRQ (%d)\n", i, ret);
++			*pending_irq = true;
++			break;
++		}
++	}
++
++	return 0;
++}
++
  static irqreturn_t acpm_tmu_thread_fn(int irq, void *id)
  {
  	struct acpm_tmu_priv *priv = id;
--	struct acpm_handle *handle = priv->handle;
--	const struct acpm_tmu_ops *ops = &handle->ops->tmu;
- 	struct device *dev = priv->dev;
- 	bool handled = false;
- 	int i, ret;
-@@ -372,20 +396,12 @@ static irqreturn_t acpm_tmu_thread_fn(int irq, void *id)
- 		if (!sensor->tzd)
- 			continue;
+@@ -423,11 +754,28 @@ static const struct acpm_tmu_driver_data acpm_tmu_gs101 = {
+ 	.tmu_update_thresholds = gs101_tmu_update_thresholds,
+ };
  
--		ret = acpm_tmu_has_pending_irq(sensor, &pending_irq);
-+		ret = priv->data->tmu_check_and_clear_irqs(sensor, &pending_irq);
- 		if (ret || !pending_irq)
- 			continue;
- 
- 		handled = true;
- 
--		scoped_guard(mutex, &sensor->lock) {
--			ret = ops->clear_tz_irq(handle, priv->mbox_chan_id,
--						sensor->group->id);
--			if (ret)
--				dev_err(priv->dev, "Sensor %d: failed to clear IRQ (%d)\n",
--					i, ret);
--		}
--
- 		thermal_zone_device_update(sensor->tzd,
- 					   THERMAL_EVENT_UNSPECIFIED);
- 	}
-@@ -395,15 +411,30 @@ static irqreturn_t acpm_tmu_thread_fn(int irq, void *id)
- 	return handled ? IRQ_HANDLED : IRQ_NONE;
- }
- 
-+static const struct acpm_tmu_driver_data acpm_tmu_gs101 = {
-+	.reg_fields = gs101_reg_fields,
-+	.regmap_config = &gs101_regmap_config,
-+	.sensor_groups = gs101_sensor_groups,
-+	.num_sensor_groups = ARRAY_SIZE(gs101_sensor_groups),
++static const struct acpm_tmu_driver_data acpm_tmu_exynos850 = {
++	.reg_fields = exynos850_reg_fields,
++	.regmap_config = &exynos850_regmap_config,
++	.sensor_groups = exynos850_sensor_groups,
++	.num_sensor_groups = ARRAY_SIZE(exynos850_sensor_groups),
 +	.mbox_chan_id = 9,
-+	.tz_control = gs101_tz_control,
-+	.tmu_check_and_clear_irqs = gs101_handle_irqs,
-+	.tmu_init = gs101_tmu_init,
-+	.tmu_update_thresholds = gs101_tmu_update_thresholds,
++	.efuse_value = 55,
++	.tz_control = exynos850_tz_control,
++	.tmu_check_and_clear_irqs = exynos850_handle_irqs,
++	.tmu_init = exynos850_tmu_init,
++	.tmu_update_thresholds = exynos850_tmu_update_thresholds,
 +};
 +
  static const struct of_device_id acpm_tmu_match[] = {
--	{ .compatible = "google,gs101-tmu-top" },
+ 	{
+ 		.compatible = "google,gs101-tmu-top",
+ 		.data = &acpm_tmu_gs101
+ 	},
 +	{
-+		.compatible = "google,gs101-tmu-top",
-+		.data = &acpm_tmu_gs101
++		.compatible = "samsung,exynos850-tmu-top",
++		.data = &acpm_tmu_exynos850,
 +	},
  	{ /* sentinel */ },
  };
  MODULE_DEVICE_TABLE(of, acpm_tmu_match);
- 
- static int acpm_tmu_probe(struct platform_device *pdev)
- {
--	const struct acpm_tmu_driver_data *data = &acpm_tmu_gs101;
-+	const struct acpm_tmu_driver_data *data;
- 	struct acpm_handle *acpm_handle;
- 	struct device *dev = &pdev->dev;
- 	struct acpm_tmu_priv *priv;
-@@ -411,6 +442,10 @@ static int acpm_tmu_probe(struct platform_device *pdev)
- 	void __iomem *base;
- 	int i, ret;
- 
-+	data = of_device_get_match_data(dev);
-+	if (!data)
-+		return dev_err_probe(dev, -ENODEV, "No matching driver data found\n");
-+
- 	acpm_handle = devm_acpm_get_by_phandle(dev);
- 	if (IS_ERR(acpm_handle))
- 		return dev_err_probe(dev, PTR_ERR(acpm_handle),
-@@ -422,6 +457,7 @@ static int acpm_tmu_probe(struct platform_device *pdev)
- 	if (!priv)
- 		return -ENOMEM;
- 
-+	priv->data = data;
- 	priv->dev = dev;
- 	priv->handle = acpm_handle;
- 	priv->mbox_chan_id = data->mbox_chan_id;
-@@ -433,10 +469,12 @@ static int acpm_tmu_probe(struct platform_device *pdev)
- 	if (IS_ERR(base))
- 		return dev_err_probe(dev, PTR_ERR(base), "Failed to ioremap resource\n");
- 
--	regmap = devm_regmap_init_mmio(dev, base, &gs101_regmap_config);
-+	regmap = devm_regmap_init_mmio(dev, base, data->regmap_config);
- 	if (IS_ERR(regmap))
- 		return dev_err_probe(dev, PTR_ERR(regmap), "Failed to init regmap\n");
- 
-+	priv->regmap = regmap;
-+
- 	ret = devm_regmap_field_bulk_alloc(dev, regmap, priv->regmap_fields,
- 					   data->reg_fields, REG_INTPEND_COUNT);
- 	if (ret)
-@@ -463,10 +501,12 @@ static int acpm_tmu_probe(struct platform_device *pdev)
+@@ -501,6 +849,13 @@ static int acpm_tmu_probe(struct platform_device *pdev)
  	if (ret < 0)
  		return dev_err_probe(dev, ret, "Failed to resume device\n");
  
--	ret = acpm_handle->ops->tmu.init(acpm_handle, priv->mbox_chan_id);
--	if (ret) {
--		ret = dev_err_probe(dev, ret, "Failed to init TMU\n");
--		goto err_pm_put;
-+	if (priv->data->tmu_init) {
-+		ret = priv->data->tmu_init(priv);
-+		if (ret) {
-+			ret = dev_err_probe(dev, ret, "Failed to init TMU\n");
-+			goto err_pm_put;
-+		}
- 	}
++	/* Sensor groups should be assigned before ->tmu_init() for some SoCs */
++	for (i = 0; i < priv->num_sensors; i++) {
++		struct acpm_tmu_sensor *sensor = &priv->sensors[i];
++
++		sensor->group = &data->sensor_groups[i];
++	}
++
+ 	if (priv->data->tmu_init) {
+ 		ret = priv->data->tmu_init(priv);
+ 		if (ret) {
+@@ -513,7 +868,6 @@ static int acpm_tmu_probe(struct platform_device *pdev)
+ 		struct acpm_tmu_sensor *sensor = &priv->sensors[i];
  
- 	for (i = 0; i < priv->num_sensors; i++) {
+ 		mutex_init(&sensor->lock);
+-		sensor->group = &data->sensor_groups[i];
+ 		sensor->priv = priv;
+ 
+ 		sensor->tzd = devm_thermal_of_zone_register(dev, i, sensor,
 
 -- 
 2.51.0
