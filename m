@@ -1,165 +1,109 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 33355408009
-	for <linux-pm@vger.kernel.org>; Fri, 10 Jul 2026 10:38:27 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 267DB40C5CF
+	for <linux-pm@vger.kernel.org>; Fri, 10 Jul 2026 10:42:32 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1783679909; cv=none; b=BUSmG4Uzk9spZs7TBsKx5R88TF5lYirQEPJJsj/UJ0MiPtvEknjg9dyEab3X4TIny3A61mwRFqKEG+VHRKFopQwdrpsHEagz4DJUXiEBFyfrjlEUYiAeCbybVoiVcBiR5PR2Hgd9rF2fY+0cZRSHloNlcQGzP56z5yoWVbOU704=
+	t=1783680153; cv=none; b=svBM9sBOxnWGAViP1xpcm2Uh3uxsHTE89TF4nTaiTXR9ch5pvufFtrOj+A1QxExzCbeOxvq02AKJ4FwezkN/cn/K1z8ArAtMu5FidRZpIEPDCZhb2a32s4JDpqrXApL7yui7cS0Jh2e+Xz4jE/LwWewKLWRzZW3r4zbS4K1Sq5E=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1783679909; c=relaxed/simple;
-	bh=WOb+uX8gE+wYG8Dsh6sXom/leQkc2LizHwqTacE2JBE=;
+	s=arc-20240116; t=1783680153; c=relaxed/simple;
+	bh=ThH+1fvwr0fKTcO6a7KsatsJI8sj4l9QUj8rdS8pUKo=;
 	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=dQ1SQHkZC8lV/bgqxbqlacC11AWmtMdDctS/TOQ2E7KVLy+9H0nOYWKhifFyoW6qt+LBxax/3I7GAXJWEHQncV6oywrvviVMXjLUby4ZMSPREcKpBaCuh896FbdTk9+UBSmMLyK7ndSkmxt0aTqzBvUVi+S6LBg1f8tltJpITt4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=l/DZEQ4/; arc=none smtp.client-ip=100.103.45.18
+	 To:Cc:Content-Type; b=IvjS1yVBj3TeD/nB4ur3QkKom73gm1c0SKa3AyDZeD45ahmKwDqCIVGtm0KfIKC8jwxdPn7WlmHT8JpCyBW5IXcU9VbN8IljVmWY2fhgNZzcBho+EtGLJ6p5UDQFl7fWfjr6DqrmLewK716K+sV6qFRwuYEMfm8QAVV6eLZVQfs=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=DmonNfKd; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="l/DZEQ4/"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id C98981F00A3F
-	for <linux-pm@vger.kernel.org>; Fri, 10 Jul 2026 10:38:27 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="DmonNfKd"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id E36DD1F00A3E
+	for <linux-pm@vger.kernel.org>; Fri, 10 Jul 2026 10:42:31 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1783679907;
-	bh=b1UWf3hc2p/e6E6J3PavjnKbVKNggOrUZMoz2TnIfaw=;
+	s=k20260515; t=1783680151;
+	bh=6mXYoGljL4glCAb32pdfjdC0FVD85sDkej7+/p4xLXI=;
 	h=References:In-Reply-To:From:Date:Subject:To:Cc;
-	b=l/DZEQ4/eM05lsuYhYHaPzGO8uwHlWIlejinwFn4jvb/dYkwevL1MNaepiK2n16Js
-	 UwLqdZtw8BojGj6QGaTs1iM1olyt0UljdHBUypiQzJ75AKX1JYVN8D413aP4yGGOVs
-	 qXaXqNGsJFkGPCZfhYXNS3XBOBn25E7EDJ1CmSo7yBi/WUdLHS86Fwpce7KFRVIgh5
-	 qGp+wpUnU5dnqIduDvOgmTMFmoTAO6Axnxa6qzn/NAH3MnXDGpuQwZScWG++k5r0yR
-	 /yD0fnSz72KLn/sr9EqGykp+dvjhwmxr9Oxeq+xr7s3L748tKuBDrbz82D0xuwm4lM
-	 qKQA8Abx14tjg==
-Received: by mail-lf1-f45.google.com with SMTP id 2adb3069b0e04-5aeae350e0aso903396e87.1
-        for <linux-pm@vger.kernel.org>; Fri, 10 Jul 2026 03:38:27 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AHgh+Rpxm5QC1dR4CzIFwmcW/su8EFt8x5W6BHM6xP+9SXF6dISSr0l80U+loN2ltb4JrhYgjiRBQzT7Rw==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yz+Z1cqk7I11YGMM4Tp6ooBemPWR4LnyRygZa1SvOCuRMGsvMcB
-	gQeuhbsz1q0e+3duefMCzIBcX1EGu7hVI39eKZ/iRKZUPsfELF/0n/+1KYl0bfQuNSNDAfy+S3q
-	+Bpj1x9+svaVx5QKB7gcBcjZwB20d5eM=
-X-Received: by 2002:a05:6512:252b:b0:5b0:11e5:6bd5 with SMTP id
- 2adb3069b0e04-5b011e56fcdmr3010392e87.40.1783679906244; Fri, 10 Jul 2026
- 03:38:26 -0700 (PDT)
+	b=DmonNfKdNgsD9/KmdaS4KxP2sh4owbptoEpZ4V1Cklu+saysNZ6+IcbfwFAKXqUaN
+	 ngVaVnQG4tbWHthvHKGX+Rm+NG+99pRl/GfxsmGwkgFtFLBjrHOXYWNj83ajMO7FuW
+	 mFZiLdjucRhBlHpClBw23Za9cOuyRW2pFMh2pMo4A1xe2z4D1OhnLuU3DkI+fOF9Yu
+	 lyh0l4nF5ENf8IQI2eQyUIp1c5prSf6Wlg0Ru34SpZ1qClaEKT5sT6MWRrexUjnMgV
+	 nUPSOKYpj3+xqYdKN5FVWb8QIxZvL0e+p3jxT8QMYRNHGnRXhMAALIOzveh7NKI+1c
+	 NLwBJkwcNX7Ng==
+Received: by mail-lf1-f54.google.com with SMTP id 2adb3069b0e04-5b00d083818so1658152e87.1
+        for <linux-pm@vger.kernel.org>; Fri, 10 Jul 2026 03:42:31 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AHgh+RqZI1hw2PHNSbX8zfDHPCL3e/Ka90oINkk6Jv5zrl2Nznnkpanwtxl8zzHbB7Qw4kDFpUvQl/1zrA==@vger.kernel.org
+X-Gm-Message-State: AOJu0YzEnqH6Ud2SCjLjK98yDbScy/B/qiZ+xiTmfb+Aal+OeXWI7DfK
+	LrPDZKvNrXnJ1a4q6qvH4TCi41gyzEI3oAA7R2rjVURR0Bw8mU2x5Bqg9EYKGEcKG1u3NAJKhBg
+	nAWN6NVinivxQ8ujLQBqZgur/W4ZRsSA=
+X-Received: by 2002:a05:6512:340b:b0:5ae:a500:e368 with SMTP id
+ 2adb3069b0e04-5b01c606265mr634149e87.3.1783680150375; Fri, 10 Jul 2026
+ 03:42:30 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260613-rneri-directed-therm-intr-v3-0-3a26d1e47fc8@linux.intel.com>
-In-Reply-To: <20260613-rneri-directed-therm-intr-v3-0-3a26d1e47fc8@linux.intel.com>
+References: <20260611-topic-lpm-pmdomain-device-constraints-v3-0-75d69438518b@baylibre.com>
+ <20260611-topic-lpm-pmdomain-device-constraints-v3-2-75d69438518b@baylibre.com>
+In-Reply-To: <20260611-topic-lpm-pmdomain-device-constraints-v3-2-75d69438518b@baylibre.com>
 From: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
-Date: Fri, 10 Jul 2026 12:38:13 +0200
-X-Gmail-Original-Message-ID: <CAJZ5v0iVTvi_nYfx0UEFLQbbJiiHHBuMyDFaxHy1EmbJsoo-4A@mail.gmail.com>
-X-Gm-Features: AUfX_mw8eWBm_ayEt-v_tt2IFxeMHt_gt5MwucRLxHsA3nOhSlpky83O27WJfGQ
-Message-ID: <CAJZ5v0iVTvi_nYfx0UEFLQbbJiiHHBuMyDFaxHy1EmbJsoo-4A@mail.gmail.com>
-Subject: Re: [PATCH v3 0/6] thermal: intel: Add support for Directed Package
- Thermal Interrupt
-To: Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Daniel Lezcano <daniel.lezcano@kernel.org>, 
-	Lukasz Luba <lukasz.luba@arm.com>, x86@kernel.org, 
-	Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Zhang Rui <rui.zhang@intel.com>, 
-	linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, 
-	Ricardo Neri <ricardo.neri@intel.com>
+Date: Fri, 10 Jul 2026 12:42:17 +0200
+X-Gmail-Original-Message-ID: <CAJZ5v0h15XmucddczVn8b4=T1axydUPB6J20uiOLEk794mjsiw@mail.gmail.com>
+X-Gm-Features: AUfX_mwkCv23HCzcyZ5VMFNMGeRxGkYRWKNWFBn6d9BcWv_zW25QkmHOvnjEUQk
+Message-ID: <CAJZ5v0h15XmucddczVn8b4=T1axydUPB6J20uiOLEk794mjsiw@mail.gmail.com>
+Subject: Re: [PATCH v3 2/4] PM / QoS: add lockless read for flags
+To: "Kevin Hilman (TI)" <khilman@baylibre.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, linux-pm@vger.kernel.org, 
+	Ulf Hansson <ulfh@kernel.org>, Dhruva Gole <d-gole@ti.com>, linux-kernel@vger.kernel.org
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Sun, Jun 14, 2026 at 12:07=E2=80=AFAM Ricardo Neri
-<ricardo.neri-calderon@linux.intel.com> wrote:
+On Thu, Jun 11, 2026 at 9:59=E2=80=AFPM Kevin Hilman (TI) <khilman@baylibre=
+.com> wrote:
 >
-> Hi,
+> Add a lockless read for QoS flags similar to the lockless read for
+> resume latency (dev_pm_qos_raw_resume_latency) which may be called
+> from atomic context (e.g. genpd governors running under a raw spinlock
+> or in the syscore suspend path), where taking that sleeping lock would
+> be invalid on PREEMPT_RT.
 >
-> This is v3 of this series. The main change is the reworking of the
-> rollback mechanism to fix a bug in which kfree() could be called with loc=
-al
-> interrupts disabled in PREEMPT_RT kernels. Please see the changelog for
-> details.
->
-> Package-level thermal interrupts are currently broadcast to all CPUs in a
-> package. Only one CPU is needed to service package-wide events.
-> Broadcasting creates unnecessary resource contention. Thermal interrupts
-> generated for Hardware Feedback Interface[1] updates are an example: all
-> CPUs in the package receive the interrupt and race for a lock to update a
-> shared data structure. Idle CPUs are needlessly woken up.
->
-> Newer Intel processors allow directing package-level thermal interrupts
-> only to CPUs that explicitly request them. A CPU opts in by setting a
-> designated bit in IA32_THERM_INTERRUPT. Hardware acknowledges the request
-> by setting a designated bit in IA32_PACKAGE_THERM_STATUS.
->
-> This series enables directed package-level thermal interrupts and
-> designates one handler CPU per package using the CPU hotplug
-> infrastructure. A new CPU is selected if the handler CPU goes offline.
->
-> Because CPU0's hotplug callbacks are not invoked during suspend and resum=
-e,
-> syscore callbacks are added to restore the handler for the boot package.
-> The series also disables directed delivery during kexec reboot, avoiding
-> stale interrupt routing when rebooting into a kernel that does not suppor=
-t
-> the feature.
->
-> This patchset introduces a change in behavior in the /sys/devices/system/
-> cpu/cpuN/thermal_throttle/package* sysfs files. These files reflect per-C=
-PU
-> variables updated when a CPU handles a package-level thermal interrupt. I=
-n
-> broadcast mode, all CPUs update their variables. When directed package-
-> level thermal interrupts are enabled, only the handler CPU's variables ar=
-e
-> updated.
->
-> Lastly, nothing changes for processors that do not support this feature:
-> they fall back to broadcast delivery.
->
-> [1] Intel Software Developer's Manual Vol. 3, Section 17.6, March 2026 ht=
-tps://www.intel.com/SDM
->
-> Signed-off-by: Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
+> Signed-off-by: Kevin Hilman (TI) <khilman@baylibre.com>
 > ---
-> Changes in v3:
-> - Fixed a potential deadlock when calling kfree() with interrupts
->   disabled in PREEMPT_RT kernels. (Sashiko)
-> - Introduced cleanup_directed_pkg_thermal_intr() to tear down DPTI
->   resources on error.
-> - Split patch 4 into two since it had become too big.
-> - Miscellaneous changes to inline comments.
-> - Link to v2: https://lore.kernel.org/r/20260528-rneri-directed-therm-int=
-r-v2-0-8e2f9e0c1a36@linux.intel.com
+>  include/linux/pm_qos.h | 7 +++++++
+>  1 file changed, 7 insertions(+)
 >
-> Changes in v2:
-> - Fixed an existing bug in the error-handling of thermal_throttle_online(=
-)
->   CPU hotplug callback.
-> - Redesigned the rollback mechanism to handle all packages, not only
->   the boot package.
-> - Fixed the handling of the return value of cpumask_any_but(), which on
->   failure returns small_cpumask_bits, not nr_cpu_ids.
-> - Renamed the Directed Package Thermal Interrupt CPUID and MSR bits for
->   consistency and brevity. (Boris)
-> - Added measurements of the latency of setup acknowledgment from hardware=
-.
-> - Removed an unused argument from directed_thermal_pkg_intr_supported().
-> - Reused the global rollback mechanism in the syscore shutdown callback.
-> - Link to v1: https://lore.kernel.org/r/20260309-rneri-directed-therm-int=
-r-v1-0-2956e3000950@linux.intel.com
+> diff --git a/include/linux/pm_qos.h b/include/linux/pm_qos.h
+> index aededda52b6b..439a9e779d81 100644
+> --- a/include/linux/pm_qos.h
+> +++ b/include/linux/pm_qos.h
+> @@ -219,6 +219,12 @@ static inline s32 dev_pm_qos_raw_resume_latency(stru=
+ct device *dev)
+>                 PM_QOS_RESUME_LATENCY_NO_CONSTRAINT :
+>                 pm_qos_read_value(&dev->power.qos->resume_latency);
+>  }
+> +
+> +static inline s32 dev_pm_qos_raw_flags(struct device *dev)
+> +{
+> +       return IS_ERR_OR_NULL(dev->power.qos) ?
+> +               0 : READ_ONCE(dev->power.qos->flags.effective_flags);
+
+So if you add READ_ONCE() on the reader side, all updates of it need
+to go under WRITE_ONCE(), or the READ_ONCE() may still not be
+effective.
+
+I don't think they are under WRITE_ONCE() ATM.
+
+> +}
+>  #else
+>  static inline enum pm_qos_flags_status __dev_pm_qos_flags(struct device =
+*dev,
+>                                                           s32 mask)
+> @@ -300,6 +306,7 @@ static inline s32 dev_pm_qos_raw_resume_latency(struc=
+t device *dev)
+>  {
+>         return PM_QOS_RESUME_LATENCY_NO_CONSTRAINT;
+>  }
+> +static inline s32 dev_pm_qos_raw_flags(struct device *dev) { return 0; }
+>  #endif
 >
-> ---
-> Ricardo Neri (6):
->       thermal: intel: Fix dangling resources on thermal_throttle_online()=
- failure
-
-This one is there already in 7.2-rc.
-
->       x86/thermal: Add bit definitions for Intel Directed Package Thermal=
- Interrupt
->       thermal: intel: Add resources to handle directed package-level ther=
-mal interrupts
->       thermal: intel: Enable the Directed Package-level Thermal Interrupt
->       thermal: intel: Add syscore callbacks for suspend and resume
->       thermal: intel: Add a syscore shutdown callback for kexec reboot
+>  static inline int freq_qos_request_active(struct freq_qos_request *req)
 >
->  arch/x86/include/asm/cpufeatures.h  |   2 +
->  arch/x86/include/asm/msr-index.h    |   2 +
->  drivers/thermal/intel/therm_throt.c | 284 ++++++++++++++++++++++++++++++=
-+++++-
->  3 files changed, 284 insertions(+), 4 deletions(-)
-> ---
-
-Assumed no objections from the x86 folks and applied patches [2-6] as
-7.3 material, thanks!
+> --
