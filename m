@@ -1,115 +1,269 @@
-Received: from oss.cyber.gouv.fr (oss.cyber.gouv.fr [51.159.188.251])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9237131D372;
-	Fri, 10 Jul 2026 13:09:52 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=51.159.188.251
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3A884427A0F
+	for <linux-pm@vger.kernel.org>; Fri, 10 Jul 2026 13:14:02 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1783688994; cv=none; b=pcSrdV6PCuRb0WfWH7zCWzVZ0gukbBUj4gXHBCFTq71VsMwD8xdagPedA5OFEwLAJnDvDlq3W52mcLTTqYV+Cm9xqBZwt+g8o/x2zNLMRtEXt1aRiV0cT0DQP/0aNOLjKRrhdqkHWjtiYfr+mDA2+ndamFWpUAJWeAN6gTFITX0=
+	t=1783689244; cv=none; b=HdoRclSVwrBP/AFcy6JSvCHlyfreh3QvaxyTF3bs9UBvH7N4pzUpGHZZ3VP878t8Uh842+XxchafzeM/xWKYlXA2paTv75pEit9ohml5necnjs7ID8veDrUoAtqGjg+uhvNNfPA1j2OGonNGGjr6VpldVc8UojhiKjFx4M3K4fY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1783688994; c=relaxed/simple;
-	bh=LpDSSjIZj3yLjNQ0NCsdZm2XmzUKx3Za503MNzCOYiI=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=RkpCqK3Nkctzt6Vs7n2dl+F4b2iuMbRsVcSX+ZdUE0b1EhsQlw4de6oA0f37Tl02JrbfOUysyGal1lEQwBzkZ0yh90njD70L02rth2k2QjkM+0fSPSEO/BJfudxeM3mpMjLw/fxCYeqvN41Nqyz3chjJc+Djyq5bSdTFnefYFJ4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=oss.cyber.gouv.fr; spf=pass smtp.mailfrom=oss.cyber.gouv.fr; dkim=pass (2048-bit key) header.d=oss.cyber.gouv.fr header.i=@oss.cyber.gouv.fr header.b=BcaUZ6aS; arc=none smtp.client-ip=51.159.188.251
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=oss.cyber.gouv.fr
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.cyber.gouv.fr
+	s=arc-20240116; t=1783689244; c=relaxed/simple;
+	bh=f7vBLyNzMSj2AQGpnaqFOaefWYImHsH9b1i1ejYmTYs=;
+	h=From:In-Reply-To:MIME-Version:References:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=TYthAVwKUeVXtPJukIl/lNvO95WwbCza5xiiYGtj8WiSpV2lAh3DjfWB/M8g+tTkTY+gNl9i/Z3+voQ72j0D65unjIMFxld78KCpYqfxQdHB/kbGWcsv1nKoT5jPlGYBCB+CQz6sovZiAS4FhEyA/uXMa2coKnY8h9WhlQIo2vI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=lQ2TnaNk; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=oss.cyber.gouv.fr header.i=@oss.cyber.gouv.fr header.b="BcaUZ6aS"
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=oss.cyber.gouv.fr; s=default; h=In-Reply-To:Content-Type:MIME-Version:
-	References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
-	Content-Transfer-Encoding:Content-ID:Content-Description:Resent-Date:
-	Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:
-	List-Help:List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
-	bh=YNmqdOXHC9bVvxEhK3ClkhyZS4A77BRnu2okgiPeqMo=; b=BcaUZ6aSM1SNiBqGrg6jCSEJ4F
-	OsLZgsHa4E063AAA1q1LrXAUXOHcUqj1E6pJYKhe9ZJEKTzYnnf3izCLC8b7z51gvhWzrS8ZOqXWI
-	HY1UPxZnlTVNgGYkNaHLKYNdDwy+R33IpBb80OlhALWCFMXGIEL9epgXqqqT5LYbbMBUAiPqqdhGE
-	uO21fU+TzArwFixoOkBweRSpJ+Sv+kePQClWgJWGzioBW8c6n95r2rYtpIMtywyx3M7C+KQChor3l
-	s4puZOih3nJSSKSvykeV5vtQI9OOlI6j7fpv9v3DGZ+31ZgmK1PK+24UbhSmNTGa6hIROxKxWam8s
-	Tywpbphw==;
-Received: from laubervilliers-658-1-215-187.w90-63.abo.wanadoo.fr ([90.63.246.187]:56274 helo=archlinux)
-	by pf-012.whm.fr-par.scw.cloud with esmtpsa  (TLS1.3) tls TLS_AES_256_GCM_SHA384
-	(Exim 4.99.4)
-	(envelope-from <nicolas.bouchinet@oss.cyber.gouv.fr>)
-	id 1wiAzD-00000004kUd-3Nbz;
-	Fri, 10 Jul 2026 15:09:45 +0200
-Date: Fri, 10 Jul 2026 13:09:42 +0000
-From: Nicolas Bouchinet <nicolas.bouchinet@oss.cyber.gouv.fr>
-To: Sean Rhodes <sean@starlabs.systems>
-Cc: rafael@kernel.org, lenb@kernel.org, pavel@kernel.org, corbet@lwn.net, 
-	skhan@linuxfoundation.org, paul@paul-moore.com, jmorris@namei.org, serge@hallyn.com, 
-	xiujianfeng@huawei.com, keescook@chromium.org, linux-pm@vger.kernel.org, 
-	linux-doc@vger.kernel.org, linux-security-module@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, "mjg59@srcf.ucam.org" <mjg59@srcf.ucam.org>
-Subject: Re: [PATCH] PM: hibernate: Allow hibernation opt-in when locked down
-Message-ID: <alDt32nsEOMb5UmI@archlinux>
-References: <CABtds-0AUr1jD2Sri6ViiFiqyBbjc3-6xeAOr12YLJA9ux-2BA@mail.gmail.com>
- <CABtds-1d8uYi5YbxgbL5MwZOXTUgBmeLQWiggVhBKtqct5VC-g@mail.gmail.com>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="lQ2TnaNk"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 391CE1F00A3A
+	for <linux-pm@vger.kernel.org>; Fri, 10 Jul 2026 13:14:01 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1783689241;
+	bh=T6H7LMB/4+PhXJiGpc8gE69jjGwtNnvDvo8BbHdy9mQ=;
+	h=From:In-Reply-To:References:Date:Subject:To:Cc;
+	b=lQ2TnaNkYfbZWd0F76fFd8EAlleylnd95DzoJuMgfre3HGKSHgdaxh8saZ4/EoGEF
+	 SYdZNpGjywDj0nSqeOFq1j09ChBbNETxMr16CivJyuuwqujKlDKj/1A+VjEG90Zy8W
+	 6ZMYBzYRMEdOutDdPRgMBA7b91ZhkVkXsaa8aRINx5NQ2xX7yhg8VoiOn/IUVfNP+O
+	 PpY0mq9OodXlR9+SOsW8voV5rFBn7ybt0J2xleV3DXh++xMcLw1J8roYyfjp0QDzr4
+	 DnGLJ0MerjemG9yqi1O2TZOPSthzukAVoiUrRYncn7L1a17FiAklsSy5LEkC57lL1v
+	 hvly1Y0ObGXbw==
+Received: by mail-pg1-f175.google.com with SMTP id 41be03b00d2f7-ca97d139d8dso531292a12.2
+        for <linux-pm@vger.kernel.org>; Fri, 10 Jul 2026 06:14:01 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AHgh+RpsBMgQ1erlWRhjAjUKwv23cE5rj/DJ0RqkAzctbIYEupQElV5xu9e+nfyDMQEWidycy5SZzut8Yw==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yz6VLLeRTz0qRXOJzleIOqkPBEd89YP2MxujjgUK4/HJXZql/AJ
+	vbSHN4z90kDxJ1+sEO3RgF340v2bKHMsejlHMbYaVmJuNRXfHNEaWrGQNMqSlE6k6bj/gCcfJBf
+	9OjXLX+0aHQJf0aPxouTW/fmtxwWeZH8uDgDbld1xhg==
+X-Received: by 2002:a05:6a21:178a:b0:3c0:9c1a:8951 with SMTP id
+ adf61e73a8af0-3c0bd32597amr13144316637.73.1783689240568; Fri, 10 Jul 2026
+ 06:14:00 -0700 (PDT)
+Received: from 969154062570 named unknown by gmailapi.google.com with
+ HTTPREST; Fri, 10 Jul 2026 06:13:56 -0700
+Received: from 969154062570 named unknown by gmailapi.google.com with
+ HTTPREST; Fri, 10 Jul 2026 06:13:55 -0700
+From: Bartosz Golaszewski <brgl@kernel.org>
+In-Reply-To: <20260710-monza-wireless-v3-3-46253587af64@oss.qualcomm.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <CABtds-1d8uYi5YbxgbL5MwZOXTUgBmeLQWiggVhBKtqct5VC-g@mail.gmail.com>
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - pf-012.whm.fr-par.scw.cloud
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - oss.cyber.gouv.fr
-X-Get-Message-Sender-Via: pf-012.whm.fr-par.scw.cloud: authenticated_id: nicolas.bouchinet@oss.cyber.gouv.fr
-X-Authenticated-Sender: pf-012.whm.fr-par.scw.cloud: nicolas.bouchinet@oss.cyber.gouv.fr
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+References: <20260710-monza-wireless-v3-0-46253587af64@oss.qualcomm.com> <20260710-monza-wireless-v3-3-46253587af64@oss.qualcomm.com>
+Date: Fri, 10 Jul 2026 06:13:55 -0700
+X-Gmail-Original-Message-ID: <CAMRc=MckiTUBCF+UvmFi-ceLpjWW71LXTTHDiY+s5Qn7NCbD6Q@mail.gmail.com>
+X-Gm-Features: AVVi8CdQQqAQg6auslUpdHZRLDKr7G6uRL7WcF3-kXQOHwxYL-i8zfzS6d0XT5w
+Message-ID: <CAMRc=MckiTUBCF+UvmFi-ceLpjWW71LXTTHDiY+s5Qn7NCbD6Q@mail.gmail.com>
+Subject: Re: [PATCH v3 03/11] power: sequencing: Add pwrseq_power_is_controllable()
+ API
+To: Loic Poulain <loic.poulain@oss.qualcomm.com>
+Cc: linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org, 
+	linux-bluetooth@vger.kernel.org, devicetree@vger.kernel.org, 
+	Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>, 
+	Manivannan Sadhasivam <mani@kernel.org>, Bartosz Golaszewski <brgl@kernel.org>, Marcel Holtmann <marcel@holtmann.org>, 
+	Luiz Augusto von Dentz <luiz.dentz@gmail.com>, Bjorn Andersson <andersson@kernel.org>, 
+	Konrad Dybcio <konradybcio@kernel.org>, Rob Herring <robh@kernel.org>, 
+	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 
-On Thu, Jul 09, 2026 at 04:33:38PM -0400, Sean Rhodes wrote:
-> Please ignore this patch; the approach was wrong.
-> 
-> I'll follow up with a v2.
-> 
-> On Thu, 9 Jul 2026 12:23:11 -0700, Sean Rhodes <sean@starlabs.systems> wrote:
-> > Kernel lockdown disables hibernation because the resume image cannot be
-> > verified before it is restored. On systems where external platform or
-> > storage policy protects the hibernation image from offline modification,
-> > users may still need hibernation while lockdown is active.
-> >
-> > Add a hibernate=allow_locked_down command line option to make that opt-in
-> > explicit. This only bypasses the LOCKDOWN_HIBERNATION gate; nohibernate,
-> > secretmem and CXL memory restrictions still apply.
-> >
-> > The kernel does not validate the external policy or authenticate the image
-> > with this option.
-> >
-> > Build-tested with Fedora config:
-> > make O=../linux-lockdown-hibernate-build kernel/power/hibernate.o
+On Fri, 10 Jul 2026 11:57:29 +0200, Loic Poulain
+<loic.poulain@oss.qualcomm.com> said:
+> On some boards a power sequencing target has no host-controllable enable
+> for its function, for instance when the enable line is not wired up to a
+> GPIO and is hardwired to an always-on level. The pcie-m2 "uart" target is
+> one such example: when the M.2 connector does not route the W_DISABLE2#
+> signal to a host GPIO, its enable/disable are no-ops and the host cannot
+> gate the Bluetooth function at all or exclusively.
+>
+> Add a generic pwrseq_power_is_controllable() helper. It reports whether the
+> target's final unit provides a host-controllable dedicated power actuator.
+> The unit can implement a new optional per-unit is_controllable() callback,
+> reporting whether that actuator is effective on this instance (for example
+> depending on GPIO presence). If the unit does not provide the callback, it
+> is assumed to be controllable.
+>
+> Note this only describes the target's own enable actuator. It does not
+> imply that a power-off reaches an electrical OFF state as a target may
+> have multiple consumers. Also, this does not restrict consumers from
+> calling pwrseq_power_off() either, which remains valid to drop a vote
+> on shared unit resources/dependencies.
+>
 
-Hi Sean, thanks for your contribution.
+Thanks. In general it looks good, though I would extend the last paragraph by
+mentioning that the fact that the target's final unit doesn't guarantee power
+control for the host, doesn't mean that the power is not controlled for its
+dependencies. This is what you basically said but it may not be clear to
+someone new to this API what a "vote on shared unit resources" exactly means.
 
-While I understand the frustration of Lockdown disabling hibernation, it really
-is necessary in order to protect against the root user which is in Lockdown's
-threat model. Similar discussions already happened in this patch set [1].
+> Signed-off-by: Loic Poulain <loic.poulain@oss.qualcomm.com>
+> ---
+>  drivers/power/sequencing/core.c | 39 +++++++++++++++++++++++++++++++++++++++
+>  include/linux/pwrseq/consumer.h |  7 +++++++
+>  include/linux/pwrseq/provider.h |  9 +++++++++
+>  3 files changed, 55 insertions(+)
+>
+> diff --git a/drivers/power/sequencing/core.c b/drivers/power/sequencing/core.c
+> index 02f42da915985339d3de507fc36dd158b0035a99..35df55312a71e9dfd3f24a8199b539746466af36 100644
+> --- a/drivers/power/sequencing/core.c
+> +++ b/drivers/power/sequencing/core.c
+> @@ -72,6 +72,8 @@ static DECLARE_RWSEM(pwrseq_sem);
+>   *          this unit.
+>   * @disable: Callback running the part of the power-off sequence provided
+>   *           by this unit.
+> + * @is_controllable: Optional callback reporting whether this unit's
+> + *                   enable/disable actually control power.
+>   * @enable_count: Current number of users that enabled this unit. May be the
+>   *                consumer of the power sequencer or other units that depend
+>   *                on this one.
+> @@ -83,6 +85,7 @@ struct pwrseq_unit {
+>  	struct list_head deps;
+>  	pwrseq_power_state_func enable;
+>  	pwrseq_power_state_func disable;
+> +	pwrseq_is_controllable_func is_controllable;
 
-About Lockdown hibernation support, some work have started some time ago by
-Matthew, it blog post [2] describe really well the security issue of hibernation.
-This has then lead to a first implementation [3] that has been recently bumped
-[4] but sadly no news have been given since.
-Some interesting discussion also happened recently about this subject on
-mastodon [5].
+Is there any reason not to put it in struct pwrseq_target? That would avoid
+needless duplication of NULL pointers across all units, right?
 
-If a solution have to be implemented, it definitively should take a different
-approach than just disabling Lockdown. If your interested by working on the
-original patch, I'd gladly review it.
+>  	unsigned int enable_count;
+>  };
+>
+> @@ -104,6 +107,7 @@ static struct pwrseq_unit *pwrseq_unit_new(const struct pwrseq_unit_data *data)
+>  	INIT_LIST_HEAD(&unit->deps);
+>  	unit->enable = data->enable;
+>  	unit->disable = data->disable;
+> +	unit->is_controllable = data->is_controllable;
+>
+>  	return unit;
+>  }
+> @@ -991,6 +995,41 @@ struct device *pwrseq_to_device(struct pwrseq_desc *desc)
+>  }
+>  EXPORT_SYMBOL_GPL(pwrseq_to_device);
+>
+> +/**
+> + * pwrseq_power_is_controllable() - Check whether the target provides a
+> + *                                  host-controllable power actuator.
+> + * @desc: Descriptor referencing the power sequencer.
+> + *
+> + * Some power sequencing targets provide no host-controllable enable for their
+> + * function on a given board, for instance when the enable line is not wired up
+> + * and is instead hardwired to an always-on level. For such targets a call to
+> + * pwrseq_power_off() is still allowed, so that the consumer can drop its vote
+> + * on the (possibly shared) resources, but the host cannot gate the function
+> + * on its own.
+> + *
+> + * Returns:
+> + * True if the target provides a host-controllable power actuator, false
+> + * otherwise. Also returns false if @desc is NULL.
+> + */
+> +bool pwrseq_power_is_controllable(struct pwrseq_desc *desc)
 
-[1]: https://lore.kernel.org/all/20250728111517.134116-1-nik.borisov@suse.com/
-[2]: https://mjg59.dreamwidth.org/55845.html
-[3]: https://lore.kernel.org/lkml/20210220013255.1083202-1-matthewgarrett@google.com/
-[4]: https://lore.kernel.org/all/IA1PR14MB62243E515C24AE8BF40E36BCB14BA@IA1PR14MB6224.namprd14.prod.outlook.com/
-[5]: https://nondeterministic.computer/@mjg59/115491928573781876.
+I think, we should call it simply pwrseq_is_controllable(). I was thinking
+about pwrseq_target_is_controllable() but it's redundant: a pwrseq handle is
+already associated with a concrete target. When you say "power" it suggests
+a concrete thing that's "controllable" but it may be a ragulator, it may be
+a GPIO or reset. I'd just go with pwrseq_is_controllable().
 
-Best regards,
+> +{
+> +	struct pwrseq_unit *unit;
+> +
 
-Nicolas
+might_sleep();
+
+> +	if (!desc)
+> +		return false;
+> +
+
+Please follow the pattern in other functions where we guard against the
+device's concurrent removal with pwrseq->rw_lock.
+
+> +	unit = desc->target->unit;
+> +
+> +	if (!unit->enable && !unit->disable)
+> +		return false;
+> +
+> +	if (!unit->is_controllable)
+> +		return true;
+> +
+> +	return unit->is_controllable(desc->pwrseq);
+> +}
+> +EXPORT_SYMBOL_GPL(pwrseq_power_is_controllable);
+> +
+>  #if IS_ENABLED(CONFIG_DEBUG_FS)
+>
+>  struct pwrseq_debugfs_count_ctx {
+> diff --git a/include/linux/pwrseq/consumer.h b/include/linux/pwrseq/consumer.h
+> index 3c907c9e1885dc2958043a9a733fbe20bdf95f6e..ea2b87a521bceb7fb51e79c3b03fdb50f38bf94f 100644
+> --- a/include/linux/pwrseq/consumer.h
+> +++ b/include/linux/pwrseq/consumer.h
+> @@ -25,6 +25,8 @@ int pwrseq_power_off(struct pwrseq_desc *desc);
+>
+>  struct device *pwrseq_to_device(struct pwrseq_desc *desc);
+>
+> +bool pwrseq_power_is_controllable(struct pwrseq_desc *desc);
+> +
+>  #else /* CONFIG_POWER_SEQUENCING */
+>
+>  static inline struct pwrseq_desc * __must_check
+> @@ -58,6 +60,11 @@ static inline struct device *pwrseq_to_device(struct pwrseq_desc *desc)
+>  	return NULL;
+>  }
+>
+> +static inline bool pwrseq_power_is_controllable(struct pwrseq_desc *desc)
+> +{
+> +	return false;
+> +}
+> +
+>  #endif /* CONFIG_POWER_SEQUENCING */
+>
+>  #endif /* __POWER_SEQUENCING_CONSUMER_H__ */
+> diff --git a/include/linux/pwrseq/provider.h b/include/linux/pwrseq/provider.h
+> index 33b3d2c2e39decafac6c6fca9254ad4329d90e94..42c7a37355869ecd0ae8e59b3a8c8716c7ff9ce8 100644
+> --- a/include/linux/pwrseq/provider.h
+> +++ b/include/linux/pwrseq/provider.h
+> @@ -6,12 +6,15 @@
+>  #ifndef __POWER_SEQUENCING_PROVIDER_H__
+>  #define __POWER_SEQUENCING_PROVIDER_H__
+>
+> +#include <linux/types.h>
+> +
+>  struct device;
+>  struct module;
+>  struct pwrseq_device;
+>
+>  typedef int (*pwrseq_power_state_func)(struct pwrseq_device *);
+>  typedef int (*pwrseq_match_func)(struct pwrseq_device *, struct device *);
+> +typedef bool (*pwrseq_is_controllable_func)(struct pwrseq_device *);
+>
+>  #define PWRSEQ_NO_MATCH 0
+>  #define PWRSEQ_MATCH_OK 1
+> @@ -26,12 +29,18 @@ typedef int (*pwrseq_match_func)(struct pwrseq_device *, struct device *);
+>   *          this unit.
+>   * @disable: Callback running the part of the power-off sequence provided
+>   *           by this unit.
+> + * @is_controllable: Optional callback returning whether this unit's
+
+s/returning/checking/
+
+> + *                   enable/disable callbacks actually control power on this
+> + *                   instance (for example when the controlling GPIO is wired
+
+s/instance/unit/g
+
+> + *                   up). If not provided, the unit's power is assumed to be
+> + *                   always controllable.
+>   */
+>  struct pwrseq_unit_data {
+>  	const char *name;
+>  	const struct pwrseq_unit_data **deps;
+>  	pwrseq_power_state_func enable;
+>  	pwrseq_power_state_func disable;
+> +	pwrseq_is_controllable_func is_controllable;
+>  };
+>
+>  /**
+>
+> --
+> 2.34.1
+>
+>
+
+Bart
