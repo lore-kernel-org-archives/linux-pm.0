@@ -1,416 +1,194 @@
-Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
+Received: from MRWPR03CU001.outbound.protection.outlook.com (mail-francesouthazon11011051.outbound.protection.outlook.com [40.107.130.51])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 623EF30BF4F
-	for <linux-pm@vger.kernel.org>; Fri, 10 Jul 2026 15:14:49 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.180.131
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1783696493; cv=none; b=UY/WdKuCk/U1V7Sd+MevtGBK5OPrgXqgq3PjUgYN82AKzqezK9SW+Ao/GHjEjgaAQEMPF46V7sTG3kTDEP00uOqJzIlDYC+pUrt2SS3WJAMpD59Xu9rVuRfhtMVxXEZqxq8szp2+zP5k/FxXJpA2N1UXB+attrDwwhcScV/O3yM=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1783696493; c=relaxed/simple;
-	bh=Q7SXo8DC/0xS/EZU1J22olGXiFpFxo8B5OX9/Vdb4xI=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=RGxVbnIwsu0psVlcieciaOGnWFXwUHYGafNMPkTa0AjU+VR0qKQDSv392PLozmMwLs7Jf/hE+3KTNwnYBkR7W0rldbe7kmADdabpSnwk4509RvkARdDbTOT6nxLccLVAC27AhtQguhKMHkQMdW1zx5tlkhRAVVjiNLgShohjd5s=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=JbA4+60f; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=B23pOis2; arc=none smtp.client-ip=205.220.180.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B14D84195A4;
+	Fri, 10 Jul 2026 15:33:27 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.107.130.51
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1783697609; cv=fail; b=Edj3XqMXDpMSF2VOAgPXE5tMY1Pk0Ti4+RjQsy4/nKt9Trjnb704My0mv1BUKMn60HrXiJALp0wqUZUv4/Of20EvklR46OCuCYKoK18AUCoM468aQjVkkexGrNmqErnBjE0ooWL1mo3fyXgVQwGAVKcq5yirWrXKas/lOMo8i/c=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1783697609; c=relaxed/simple;
+	bh=/X0MAezw84uq2zQnTkC2k4ETk9RgWnb/UTNX8SnDIY0=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:Content-Type:
+	 Content-Disposition:In-Reply-To:MIME-Version; b=Yfffk2MS9ZA+IAtntfA7KY36Qrt7eD7jUGf/8G/RxM+cittCkrckwNYbhajgh1lPHNwhzoz7l714ZJBcF2/V0RDR4Pw/DO7PnQ+8H63SvTyJjS2rWSG78avkgXaCRh3mYuHmJNSAJtUwfoskWO077OSZ5BW13S10dPZOL+Y9zZg=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=oss.nxp.com; spf=pass smtp.mailfrom=oss.nxp.com; dkim=pass (2048-bit key) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.b=AzsUuQ6K; arc=fail smtp.client-ip=40.107.130.51
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=oss.nxp.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.nxp.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="JbA4+60f";
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="B23pOis2"
-Received: from pps.filterd (m0279873.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 66AEdAQr1030231
-	for <linux-pm@vger.kernel.org>; Fri, 10 Jul 2026 15:14:48 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	Y0V8KZPgKxdhmBKZy9zTx1VsGb8GdWSYih1vACwJ2JM=; b=JbA4+60fvXE5wrgp
-	fRoUWRMadr8xo23/8WiDX7RuIC4x39N0cwd0+jGNv9e0vD1i5ez8uamhaz1mUdWZ
-	zSZEejERnLZxR5WqFspxxM0yI4L25gRA8NymVBBCNgseyCb1zLdLttA/BeFDjSda
-	ITGRXlOuXClxHb3QawJx3+e4qR3CFuCwBoNi+6rSgtaPy+BT3fn37I6CTwMEqI4h
-	dmD7iqk1CM0Tcyps5rtLwNF/o3a3fzI6ZfZrvnVgyodqQgksP4tD5fdvpV2z0yKR
-	25beYSmh0RSpOyq1rougnAm8MK+oK7ooWpv6uQhubFRiyK9XGR/OAkVR3+ZpPunZ
-	yLRDBg==
-Received: from mail-qt1-f198.google.com (mail-qt1-f198.google.com [209.85.160.198])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4fb2pc86ht-1
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Fri, 10 Jul 2026 15:14:48 +0000 (GMT)
-Received: by mail-qt1-f198.google.com with SMTP id d75a77b69052e-51c0408254aso26105471cf.0
-        for <linux-pm@vger.kernel.org>; Fri, 10 Jul 2026 08:14:48 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1783696488; x=1784301288; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:in-reply-to:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=Y0V8KZPgKxdhmBKZy9zTx1VsGb8GdWSYih1vACwJ2JM=;
-        b=B23pOis2OVolexIwVNXVlhy0hxQBBTvgZ+dCl/t7DZPC1tJwK+wYToSlW7EFSjSeAe
-         6AZOM9TA1ufUlqLtw7skC0fbMZ0XnfrwxkeqZHclEVvXqGOFhKiJD63SMPHy0tLsRApB
-         V55pUUrLgfZzlTi/tfwUx0x4oJue58tAL6xqEi7Hpi10Wcy4vayMV1zInd7SqaY8JBUd
-         fhBfPIbleDxa8bANr3xFI3WkBni5L13AeJ475hrpCT9FIC+4RD5BIp53Th6FDHI+iK8M
-         VWWSzoyuZLT+KeEslT+SMQKyW63PJBFQbUy7W84AeoU8JtfSSi/gb9X0HqBUumdgi6r0
-         lYiw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1783696488; x=1784301288;
-        h=content-transfer-encoding:content-type:in-reply-to:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=Y0V8KZPgKxdhmBKZy9zTx1VsGb8GdWSYih1vACwJ2JM=;
-        b=oDE8B7M2v+0zmCfA8wmCunIKLhhzdxV1NsKQPjtRnjlhPAlcvDXXUmWCFP8/0uTNw3
-         dI3H7lVAvz4ySTIGVFiu2lz59xOLPKvAAFEYur1RNJQ3eDZdAX4WzrUxm3S9442CK2lM
-         NMcogvgdIn0pytV/rPdTlWPYEG192RIqcc/16blfV5Y31oUB8tGzANOdoJeH8M/Fj/Kg
-         MZHSSjR0fFFUWbbDH8QEuxw11Kfgbkn0jru9/uE+sE060Mpx5Iyp2Vy6IQ74mGJbh6OR
-         SzaIqVcVgu335Ngs4nN2tlNA0kkz0oIw09K29i62frv0ADHWgbxdFVFVF7F2reHWAfWe
-         Ggmw==
-X-Forwarded-Encrypted: i=1; AHgh+RoN8p8bOkcXO12TlgJ6Qamft0nUbmm0nEly5azfOGxhKIjhU58jRkWUOaxqZNvyIWbe00viAicWwA==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yw9p1XsvxiVSqquuTUt/wBEyut86bTOkmn0kIdrN8KFxqHp4Zxi
-	wKXYNpCbnDX3ps6g5tJ5D1t1to3nTMQuW2sASCgjF6p2SW1dQnN5XUxF0+uAinbwCegkk6KVurR
-	mLEugC4cltiCnCh37Yb38gqy66M5E65dOCRUhwEnkc/SCqhBl8YMVqsaJ3OXUcg==
-X-Gm-Gg: AfdE7ckO7E8fJ7FMtUTmirGazKqUzOHAxF8MxhkcEutA8m6GjDAybCpVs72VFbWbW1A
-	dS99ak3aC99adtuqBpQEJAXW0g8sVrzjvT+kLxAOkY+URG3mv806X3L7hPvXa7kNTUd1KlUDj0N
-	sDqXBSFbeN2sPeefvzkIrJdjgCKHPqFsFMlrryR//vOCyWihA/C48vkvqUrBwn54cc9K6X3NFZg
-	ouWKplZm9LJJVBiXhgNo71HR7yxW1klZtx/kX4+Fdw1e+bfintTGnGfJIxQFXEC3cmGPUdQI0k9
-	wIimmPewAOsD5ym7+TgzszuzLgzPmdbpfiw8eF/AscMst277x2itffUM5u2Qx1R9rya8vauKiVi
-	28P0kHUPI8i8pJSD1buqTBqBL586ljwpK4ztyZG3eNxvkJvh9ftksjqOTkkl8TFVr+PfxbvSgDQ
-	==
-X-Received: by 2002:ac8:7f8d:0:b0:51c:7aa7:e0f1 with SMTP id d75a77b69052e-51caa1a7e08mr41258441cf.44.1783696487909;
-        Fri, 10 Jul 2026 08:14:47 -0700 (PDT)
-X-Received: by 2002:ac8:7f8d:0:b0:51c:7aa7:e0f1 with SMTP id d75a77b69052e-51caa1a7e08mr41258081cf.44.1783696487295;
-        Fri, 10 Jul 2026 08:14:47 -0700 (PDT)
-Received: from ?IPV6:2a05:6e02:1041:c10:d86b:ddff:83a7:67da? ([2a05:6e02:1041:c10:d86b:ddff:83a7:67da])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-47f273195d9sm4604990f8f.3.2026.07.10.08.14.45
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Fri, 10 Jul 2026 08:14:46 -0700 (PDT)
-Message-ID: <67b7d76b-f13f-4dee-9b99-d7a8215da504@oss.qualcomm.com>
-Date: Fri, 10 Jul 2026 17:14:45 +0200
+	dkim=pass (2048-bit key) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.b="AzsUuQ6K"
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=lJ4kcy2nuLfpXZ6q0YMPcUav4J83EJOAWBdg3p01dGaYTsKaHX13ck3E3kfpDmt39A3JWipTItpkoI75zHlbVe7AmAUXRpOeO0yLjq43NSSh7AuwteQ2/xzOjvT0AtmcoZ8l6lc67CCpPxxo6kCPpNBMaPCujOtprgTFUC2N/JtraE0CfMa40pAWMTXqGy6M48cWfGqTd3Ju+GbwEGK4Odmba0bwnJPPlpu+FvhhemoCKo+Jz0CFkyIc7QJSyWpRcO/aeCrKePQqZPyoARWGSA74Afx2eHwGZaQPdCy5A1x8X90UszwuuyfY+taEsdS+tlwmLLK19HNpnWeUp/AJcw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=IonECwjoPteSKiFmF0BYBXGcGB39kgEoKPbOHCoLHCE=;
+ b=tc+P1cjRYdkoMDFPHMvrJW0vZyPkXmWJ9IU1iQbKFJ0u3O8eJ0d78yVoONq7/z8BkFwfvqO7fxh8uM3lTCdjPJT8OabuGiRVSn3nadxjtC8EGS1SADH3gsaoY8Q106NY5Cub0tRRhU7vxtuWvACjwjPaxz4xTLxqyEPleNNfP6Os2fSRiU1HBvUprQ/5cSmW/Oal53N00Uk6nfkM7fjW8lUKe70DICmeeuUYVeTXGKfB1QCGKvAengDphKp9m048q/Rd9TP2W1J1dNrLqxSTIJj7P/DQAp0oFNo086E8hLhbc28RNv3Kzmq7zoFQ9tY0EZQ5ZxdKgyGhyOG8GhcKDw==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=oss.nxp.com; dmarc=pass action=none header.from=oss.nxp.com;
+ dkim=pass header.d=oss.nxp.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=NXP1.onmicrosoft.com;
+ s=selector1-NXP1-onmicrosoft-com;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=IonECwjoPteSKiFmF0BYBXGcGB39kgEoKPbOHCoLHCE=;
+ b=AzsUuQ6K5sQ4CaDOnCQ1+81AIuYDtAGrjEt88fCuZl3GaIqxppPdKxcFZxG23Pc2wk0QM6JfWpd2dABuB81TSqhJdqNVolvLY/lCR3+NNlZxI2bagaOP4hU+kZlttojyLhCl+k2b1cNKiBkl1Aq55K7thZ00stSZpPNLgmwARd6xlQd0V9wSL23vmmen9LSkRFeuYGIFdq/IBIyQnCDZ9eWV/208QSb0vKeHQKYttjNRcrCKLTfXSwIdK5EGoHGlY0lWy0TdbZZ9p6j53t4U9Enigvhp7D6HkKpWTjWOwuFsFdRhrMUC2+b+fW4U3p6Yqh3K4+Id61jTsvcIBxbiMw==
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=oss.nxp.com;
+Received: from GV2PR04MB11799.eurprd04.prod.outlook.com (2603:10a6:150:2cf::9)
+ by AS8PR04MB9144.eurprd04.prod.outlook.com (2603:10a6:20b:44b::13) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.181.8; Fri, 10 Jul
+ 2026 15:33:24 +0000
+Received: from GV2PR04MB11799.eurprd04.prod.outlook.com
+ ([fe80::2146:83a2:5329:b7c]) by GV2PR04MB11799.eurprd04.prod.outlook.com
+ ([fe80::2146:83a2:5329:b7c%6]) with mapi id 15.21.0159.007; Fri, 10 Jul 2026
+ 15:33:24 +0000
+Date: Fri, 10 Jul 2026 10:33:13 -0500
+From: Frank Li <Frank.li@oss.nxp.com>
+To: Haoning.CHENG@cn.bosch.com
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>,
+	Daniel Lezcano <daniel.lezcano@linaro.org>,
+	Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>,
+	Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>, Shawn Guo <shawnguo@kernel.org>,
+	Sascha Hauer <s.hauer@pengutronix.de>,
+	Pengutronix Kernel Team <kernel@pengutronix.de>,
+	Fabio Estevam <festevam@gmail.com>, linux-pm@vger.kernel.org,
+	devicetree@vger.kernel.org, imx@lists.linux.dev,
+	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v4 1/2] dt-bindings: thermal: imx: Document calibration
+ offset property
+Message-ID: <alEQuVaYjNeWEStP@SMW015318>
+References: <20260710-b4-symana21-11221-imx-thermal-support-upstream-6-18-v4-0-1fef97d1c750@cn.bosch.com>
+ <20260710-b4-symana21-11221-imx-thermal-support-upstream-6-18-v4-1-1fef97d1c750@cn.bosch.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260710-b4-symana21-11221-imx-thermal-support-upstream-6-18-v4-1-1fef97d1c750@cn.bosch.com>
+X-ClientProxiedBy: SA1PR02CA0002.namprd02.prod.outlook.com
+ (2603:10b6:806:2cf::6) To GV2PR04MB11799.eurprd04.prod.outlook.com
+ (2603:10a6:150:2cf::9)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 2/2] thermal: qcom: Add support for Qualcomm MBG
- thermal monitoring
-To: Sachin Gupta <sachin.gupta@oss.qualcomm.com>, Lee Jones <lee@kernel.org>,
-        Rob Herring <robh@kernel.org>,
-        Krzysztof Kozlowski <krzk+dt@kernel.org>,
-        Conor Dooley <conor+dt@kernel.org>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Daniel Lezcano <daniel.lezcano@kernel.org>,
-        Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>,
-        Stephen Boyd <sboyd@kernel.org>,
-        Jishnu Prakash <jishnu.prakash@oss.qualcomm.com>,
-        Kamal Wadhwa <kamal.wadhwa@oss.qualcomm.com>,
-        Amit Kucheria <amitk@kernel.org>,
-        Thara Gopinath <thara.gopinath@gmail.com>
-Cc: linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
-        Satya Priya Kakitapalli <quic_skakitap@quicinc.com>,
-        Ajit Pandey <ajit.pandey@oss.qualcomm.com>,
-        Imran Shaik <imran.shaik@oss.qualcomm.com>,
-        Taniya Das <taniya.das@oss.qualcomm.com>,
-        Jagadeesh Kona <jagadeesh.kona@oss.qualcomm.com>
-References: <20260706-spmi-mbg-driver-v2-0-f883ff1d8719@oss.qualcomm.com>
- <20260706-spmi-mbg-driver-v2-2-f883ff1d8719@oss.qualcomm.com>
-Content-Language: en-US
-From: Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>
-In-Reply-To: <20260706-spmi-mbg-driver-v2-2-f883ff1d8719@oss.qualcomm.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzEwMDE1MiBTYWx0ZWRfXxjxsPMIq2vB9
- /ZHopN5K1z0MGcEJDfemh+0O2qIe8dd+NufW/QVPnJcAlc9KYhlTqckhY6JEx6rhLZwiTjIeP5d
- UXkBXjK2c7jXqRYZLo/+gjs5dLl8HXZ6A+YIOORvXyTFX39u/YUt6xmpbFEQnM/0Oyv1zO0zMec
- pvQhiqZD34dw4Xaq/XQr7P7les4+ZUR+5Bu9GY9FyaLaHhTyDu/JkBb1pW9EJkxBNAH/vsp6hyH
- 6Sqq6nrxTNsR7JBFbb1swutjH/ASgy2x7QTvEkM6+jr7C4FgYtOm26HZEO6rJKUiMy1RIiO0qBW
- aXH3Y31ek1qcVLJhRS0rs6CGXO+UOlwTdzE5DqsrUjid//DUkuLYUUHdDQAUIaiJmso6nlEEPvP
- UfOchu0UnZYIZmaXWvjB+YOe+wooNjd2h/duwSQd7z3T2+uFjeYLF0N5xBJh1Xq63kQ6CPpzV4R
- JdHnj0JIwcY4FbM72Pw==
-X-Proofpoint-Spam-Info: AW1haW4tMjYwNzEwMDE1MiBTYWx0ZWRfXw1tiZvOTfBSo
- pSQsEBqWg5zjgNZEtrsQbPsJHz9dVvvazqX8uSHOAFjNNSox+RBgDemGQgklkjZqWj1pWskUk6M
- u5+SJM2yeWux6eV9zuDnBW/gJ/f7rbw=
-X-Proofpoint-ORIG-GUID: XNT-lTTTLxQUKuEwWNbj3lvhZ6hCLyO3
-X-Authority-Analysis: v=2.4 cv=J9SaKgnS c=1 sm=1 tr=0 ts=6a510c68 cx=c_pps
- a=mPf7EqFMSY9/WdsSgAYMbA==:117 a=xqWC_Br6kY4A:10 a=IkcTkHD0fZMA:10
- a=RAioF0-LDSMA:10 a=s4-Qcg_JpJYA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=u7WPNUs3qKkmUXheDGA7:22 a=rJkE3RaqiGZ5pbrm-msn:22 a=COk6AnOGAAAA:8
- a=EUspDBNiAAAA:8 a=ELNG7oYFuFGS01GaYMYA:9 a=QEXdDO2ut3YA:10
- a=dawVfQjAaf238kedN5IG:22 a=TjNXssC_j7lpFel5tvFf:22
-X-Proofpoint-GUID: XNT-lTTTLxQUKuEwWNbj3lvhZ6hCLyO3
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-07-10_04,2026-07-10_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- phishscore=0 bulkscore=0 malwarescore=0 spamscore=0 adultscore=0
- clxscore=1015 suspectscore=0 impostorscore=0 lowpriorityscore=0
- priorityscore=1501 classifier=typeunknown authscore=0 authtc= authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2606150000
- definitions=main-2607100152
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: GV2PR04MB11799:EE_|AS8PR04MB9144:EE_
+X-MS-Office365-Filtering-Correlation-Id: 7987de85-7a1c-4f85-a961-08dede989484
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|376014|7416014|23010399003|19092799006|366016|1800799024|6133799003|4143699003|56012099006|11063799006|22082099003|18002099003;
+X-Microsoft-Antispam-Message-Info:
+	Bl8OELV+sk0+YS/5N2Ll1Bm2OdRtpqXHsbxOB+yRBiy+qE6HIVROFtIpajCwEijnr+4sZGDtoqrQLvZzeyoo2ZSPI9jLxPKVSmIv6hQH4WqZC5TwFuNKh2dz0KPhl3p3fI6HMvarlVTH+NotOPL/6+Hz8aDOAU6x8eERiNyXbIfe0MXjLwwg+RnkJFwsQmJi+iDWmI8JAQrvW/HqEfNyAMy246b70MaarbHivZdO2NTSx1LHbeUD9YSGb4b09ERpWT0S3m46jxgV9TTs8P3/50iTuReA/kjQRaPgQ3CPe3PkJYOKhVLVBHHQOe7p79IGOm1G+4f/gYUcR31nP3mzjb4UreemMGWwTEebWhQ1MeSR8SwNj9wXxgBk7IdeXlWP9T7AQig9JtIFbRl0xfJlX6Hw60XCmZ399vaqF0lfFj32RLm0WdIFnhYA0NXkXlFlWmLAoYdIFWR5Qnak2OnK2D/L3QGLdEub3R8uqUvkAdTSZVAvsxAn2icKnJU0A4FtjTdOBhe2v/AizvW2SdTrUZTYNdf55w8JDMkE5A4RkjoXTbiq6uaGoNK+49eRPtvQyVRjPYllRmV2f1y/DpXX1hVYwLjCe7N5dfxn7gdMAVVJYltcKAUaAjtkoY7O8QAFr9ycLGpqVpJCADb1QNSk9Uwu7jzkG0Jpo0xeT7iYxvI=
+X-Forefront-Antispam-Report:
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:GV2PR04MB11799.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(376014)(7416014)(23010399003)(19092799006)(366016)(1800799024)(6133799003)(4143699003)(56012099006)(11063799006)(22082099003)(18002099003);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	=?us-ascii?Q?PWaachUWtJZ9utchUGyjQEpCvlGgDSOyCr91p6f8OfbHGmB6VP1kp0G8T3Fh?=
+ =?us-ascii?Q?ZJr8EtIekK3U5U/D9vjllvSH9aba502LdnnI7FPvTuPPWpMawxvQxhAd+PxH?=
+ =?us-ascii?Q?oADudgnWEETof17EZM7cxrMBcH/oc2g/HKk9KR4kChMQiAYlQis23iM5/mk1?=
+ =?us-ascii?Q?8HKFTTOk0JbijOD3cXJjW7I561IU2n7NuAznexoEsC0iN9aytWMkcJ5STTgw?=
+ =?us-ascii?Q?+5qjmzhkyW7mHlTrjSCwH24NgwSmUNtBP6G+gEjtKhbErxYDRjlnCO0EoEgK?=
+ =?us-ascii?Q?UjJ/wOJw68VeiFPYsBWiidZF6e0Y4uhYlSe0STWCIjPemzbg2YcsKJ4Xqa5l?=
+ =?us-ascii?Q?OhMMrzlvfJkiPsOnVd6WfXe3wa+ntrXVLioa3R92a9mgrxLNZ71r1mzUHE2B?=
+ =?us-ascii?Q?fx59dtGVAXXwrjTeVtcfjV5y6pDw6g8ktWFs43NvFKhCosVcIHSEKGa1tPOw?=
+ =?us-ascii?Q?Ysr+HwKhH3KmU/tAsWtJjPyiz+vewTul7gZbhZ9TxJiPuOZjScWhxF5kcxrM?=
+ =?us-ascii?Q?RlplkVTygaDkU7GG/+TObRw18C73hwz4gXzuXIf+H4hJrMGuK9qVpVxy0Kp2?=
+ =?us-ascii?Q?dVC8HDqNdsE8FU49luSznX0nEB4ZqaBPd6XOj/C4ydwmzSid12hCTiZFfHQY?=
+ =?us-ascii?Q?AW1gEwPhLvHRIwtCDphBTDCklA1ra10iL+Pxzui2nshYBbJs3zS527S5lGnG?=
+ =?us-ascii?Q?hATldofynloa9ZBQsXbCvLc+nM+IGtvn+kOqkBL4WytNp7dOZRCISevjUYds?=
+ =?us-ascii?Q?fl/52zry6hMWKYnGlycUUI/KH6fl6Of40hH+FAf2GYXdWGW396ReKwC9fCqE?=
+ =?us-ascii?Q?C+WjecO3NoTYg6quvGMyPmI9rmHAdbHxAuRMIFPp7vtFdRrbffANtK6Q2Jch?=
+ =?us-ascii?Q?bx7wak/3sfXA99cUo6pNbp78VhKqM/nhfgTVC0cyIrkFf0V1ubbscIcAc47A?=
+ =?us-ascii?Q?BubAxcRL53is0VMXCxWpHH0TfsQ5atWOXUJxUraFzSO20AXwrLQhIEj29NLl?=
+ =?us-ascii?Q?+uxy+dRIU5sAig5iQP9qUQX1dk/2VJD0zUMaXOPZdoZRPgXDjaaQDaIXsNSV?=
+ =?us-ascii?Q?IkaIrJyCm1sQdUAkxt5VeCLwONKjt8B7exW6C/j++1G6R6DnQwlzHvNB8d30?=
+ =?us-ascii?Q?VFYr2V5yHQWiYC8Sm+v91V3npXYRlwq/fuDp+tD4G1UjCuRXmKLxN2fX+7AA?=
+ =?us-ascii?Q?CGfIrDm/MLzpE3eC6u1M2qK/9GaM9Bl/FM01jBWwPa8EVUoz2vx6vnFX2srY?=
+ =?us-ascii?Q?slN1v6E9AfVB1BV9AYFAa8s/0luJi4FWEPI/g5KnanCZ223MHymtHu0Z/kzf?=
+ =?us-ascii?Q?tVwTbpk3YupnHkSEGamRGEEEw3oU7yEEj0wASrTn1SwN2o+9Z+AMW/ocIsBA?=
+ =?us-ascii?Q?YZKkav3JePadfhiy2gHZrOboiSBtdt7PR9H4hD4wlEe/2IfKnOetiFlYtUKZ?=
+ =?us-ascii?Q?WrY7xCiAhbzP8tSOJZeZoPZm9c7Bb2zfu+AL37JWYuG/zE6KxebPpi6cjzK+?=
+ =?us-ascii?Q?xY+nArDc5veZTWHiYQFgpgL1QBO83RThmFbmRA/AMPSiBtWeomOVCIkpFlBX?=
+ =?us-ascii?Q?qAaJCGSa3UpPXbXB4c2J/E/n0qaptMeCImSrEzu1w4fdljcFXFXxRuhNyeTF?=
+ =?us-ascii?Q?gwEGNeKET1z4UvrxxaU+jVZhDiiMGfJ7+UPblN8XsniignnBLL04bIIEmEtt?=
+ =?us-ascii?Q?+/TeEUpMghPVeBRhdVJbA8ucke3/pH3mkJTZmzuLOUb1fT23dsRSp1pZBN7P?=
+ =?us-ascii?Q?xqXj9otaXmDF2emwvIZWmSpWupvrfyXgiHiHQz5MjGAmsjjswUTi?=
+X-OriginatorOrg: oss.nxp.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 7987de85-7a1c-4f85-a961-08dede989484
+X-MS-Exchange-CrossTenant-AuthSource: GV2PR04MB11799.eurprd04.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 10 Jul 2026 15:33:24.4882
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: Ah9KsibzWQh8lIbK/LJ/xbZ0HOWw/rSXwXk8y0eQR6FVrnCyOMday2k76oLDdKIF9vReq8zJrIRrmRjRPB5NGv+NT3WgPYX9T3AyPhzy/c8yYxpMivHdVbk3ALW4xI1K
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: AS8PR04MB9144
 
+On Fri, Jul 10, 2026 at 11:03:36AM +0800, HaoNing Cheng via B4 Relay wrote:
+> [You don't often get email from devnull+haoning.cheng.cn.bosch.com@kernel.org. Learn why this is important at https://aka.ms/LearnAboutSenderIdentification ]
+>
+> From: HaoNing Cheng <Haoning.CHENG@cn.bosch.com>
+>
+> Some boards need a small per-design correction to align the reported CPU
+> temperature with board-level measurements.
 
-Hi Sachin,
+Thanks you for patch, but you have not answer my previous question yet.
 
-On 7/6/26 10:14, Sachin Gupta wrote:
-> From: Satya Priya Kakitapalli <quic_skakitap@quicinc.com>
-> 
-> Add driver for the Qualcomm MBG thermal monitoring device. It monitors the
+"why board difference cause such offset, I suppose it is cause by SoC
+variance. The offset may difference if you change to another chip. another
+words, if you have 1000 boards, Is this offset the same?"
 
-MBG ?
+Or did you tune this value for each boards?
 
-> die temperature, and when there is a level 1 upper threshold violation, it
-> receives an interrupt over spmi. The driver reads the fault status
-> register and notifies thermal accordingly.
+Frank
 
-You are describing how works the thermal framework. Please explain how 
-works the hardware so we can understand the submitted driver.
-
-> Signed-off-by: Satya Priya Kakitapalli <quic_skakitap@quicinc.com>
-> Co-developed-by: Sachin Gupta <sachin.gupta@oss.qualcomm.com>
-> Signed-off-by: Sachin Gupta <sachin.gupta@oss.qualcomm.com>
+>
+> Document the optional fsl,temp-calibration-offset-millicelsius property,
+> a signed offset in millicelsius that is added to the calculated sensor
+> temperature. The property is optional and the existing behaviour is kept
+> when it is omitted.
+>
+> Update the binding example to show its usage.
+>
+> Signed-off-by: HaoNing Cheng <Haoning.CHENG@cn.bosch.com>
 > ---
->   drivers/thermal/qcom/Kconfig            |  11 ++
->   drivers/thermal/qcom/Makefile           |   1 +
->   drivers/thermal/qcom/qcom-spmi-mbg-tm.c | 256 ++++++++++++++++++++++++++++++++
->   3 files changed, 268 insertions(+)
-> 
-> diff --git a/drivers/thermal/qcom/Kconfig b/drivers/thermal/qcom/Kconfig
-> index a6bb01082ec6..f2fc24a3096f 100644
-> --- a/drivers/thermal/qcom/Kconfig
-> +++ b/drivers/thermal/qcom/Kconfig
-> @@ -21,6 +21,17 @@ config QCOM_SPMI_ADC_TM5
->   	  Thermal client sets threshold temperature for both warm and cool and
->   	  gets updated when a threshold is reached.
->   
-> +config QCOM_SPMI_MBG_TM
-> +	tristate "Qualcomm SPMI PMIC MBG Temperature monitor"
-> +	depends on QCOM_SPMI_ADC5_GEN3
-> +	select REGMAP_SPMI
-> +	help
-> +	  This enables a thermal driver for the MBG thermal monitoring device.
-> +	  It shows up in sysfs as a thermal sensor with single trip point.
-> +	  It notifies the thermal framework when this trip is violated. The
-> +	  temperature reported by the thermal sensor reflects the real
-> +	  time die temperature through ADC channel.
-
-Explain the hardware, all sensors are showing up in sysfs and notify the 
-thermal framework about thermal events
-
->   config QCOM_SPMI_TEMP_ALARM
->   	tristate "Qualcomm SPMI PMIC Temperature Alarm"
->   	depends on OF && SPMI && IIO
-> diff --git a/drivers/thermal/qcom/Makefile b/drivers/thermal/qcom/Makefile
-> index 0fa2512042e7..1bec2746b98d 100644
-> --- a/drivers/thermal/qcom/Makefile
-> +++ b/drivers/thermal/qcom/Makefile
-> @@ -4,5 +4,6 @@ obj-$(CONFIG_QCOM_TSENS)	+= qcom_tsens.o
->   qcom_tsens-y			+= tsens.o tsens-v2.o tsens-v1.o tsens-v0_1.o \
->   				   tsens-8960.o
->   obj-$(CONFIG_QCOM_SPMI_ADC_TM5)	+= qcom-spmi-adc-tm5.o
-> +obj-$(CONFIG_QCOM_SPMI_MBG_TM) += qcom-spmi-mbg-tm.o
->   obj-$(CONFIG_QCOM_SPMI_TEMP_ALARM)	+= qcom-spmi-temp-alarm.o
->   obj-$(CONFIG_QCOM_LMH)		+= lmh.o
-> diff --git a/drivers/thermal/qcom/qcom-spmi-mbg-tm.c b/drivers/thermal/qcom/qcom-spmi-mbg-tm.c
-> new file mode 100644
-> index 000000000000..fa2f10002253
-> --- /dev/null
-
-[ ... ]
-
-> +static const struct mbg_map_table map_table[] = {
-> +	{ -60000, 4337, 1967 },
-> +	{ -40000, 4731, 1964 },
-> +	{ -20000, 5124, 1957 },
-> +	{ 0,      5515, 1949 },
-> +	{ 20000,  5905, 1940 },
-> +	{ 40000,  6293, 1930 },
-> +	{ 60000,  6679, 1921 },
-> +	{ 80000,  7064, 1910 },
-> +	{ 100000, 7446, 1896 },
-> +	{ 120000, 7825, 1878 },
-> +	{ 140000, 8201, 1859 },
-> +};
+>  Documentation/devicetree/bindings/thermal/imx-thermal.yaml | 9 +++++++++
+>  1 file changed, 9 insertions(+)
+>
+> diff --git a/Documentation/devicetree/bindings/thermal/imx-thermal.yaml b/Documentation/devicetree/bindings/thermal/imx-thermal.yaml
+> index 949b154856c5..b9afffd98f84 100644
+> --- a/Documentation/devicetree/bindings/thermal/imx-thermal.yaml
+> +++ b/Documentation/devicetree/bindings/thermal/imx-thermal.yaml
+> @@ -59,6 +59,14 @@ properties:
+>    clocks:
+>      maxItems: 1
+>
+> +  fsl,temp-calibration-offset-millicelsius:
+> +    minimum: -28580
+> +    maximum: 28580
+> +    description:
+> +      A signed calibration offset, in millicelsius, added to the calculated
+> +      sensor temperature to compensate for board-level measurement
+> +      differences. When absent, no offset is applied.
 > +
-> +static int mbg_tm_get_temp(struct thermal_zone_device *tz, int *temp)
-> +{
-> +	struct mbg_tm_chip *chip = thermal_zone_device_priv(tz);
-> +	int ret, milli_celsius;
-> +
-> +	scoped_guard(mutex, &chip->lock) {
-> +		if (chip->last_thres_crossed) {
-> +			dev_dbg(chip->dev, "last_temp: %d\n", chip->last_temp);
-> +			chip->last_thres_crossed = false;
-> +			*temp = chip->last_temp;
-> +			return 0;
-> +		}
-> +	}
-> +
-> +	ret = iio_read_channel_processed(chip->adc, &milli_celsius);
-> +	if (ret < 0) {
-> +		dev_err(chip->dev, "Failed to read iio channel with %d\n", ret);
-> +		return ret;
-> +	}
-> +
-> +	*temp = milli_celsius;
-> +
-> +	return 0;
-> +}
-> +
-> +static int temp_to_vtemp_mv(int temp)
-> +{
-> +	int idx, vtemp, tc = 0, t0 = 0, vtemp0 = 0;
-> +
-> +	for (idx = 0; idx < ARRAY_SIZE(map_table); idx++)
-> +		if (temp >= map_table[idx].min_temp &&
-> +		    temp < (map_table[idx].min_temp + 20000)) {
-> +			tc = map_table[idx].tc;
-> +			t0 = map_table[idx].min_temp;
-> +			vtemp0 = map_table[idx].vtemp0;
-> +			break;
-> +		}
-> +
-> +	/*
-> +	 * Formula to calculate vtemp(mV) from a given temp
-> +	 * vtemp = (temp - minT) * tc + vtemp0
-> +	 * tc, t0 and vtemp0 values are mentioned in the map_table array.
-> +	 */
-> +	vtemp = ((temp - t0) * tc + vtemp0 * 100000) / 1000000;
-> +
-> +	/* step size is 8mV */
-> +	return abs(vtemp - MBG_TEMP_DEFAULT_TEMP_MV) / MBG_TEMP_STEP_MV;
-> +}
-> +
-> +static int mbg_tm_set_trip_temp(struct thermal_zone_device *tz, int low_temp,
-> +				int temp)
-> +{
-> +	struct mbg_tm_chip *chip = thermal_zone_device_priv(tz);
-> +	int ret = 0;
-> +
-> +	guard(mutex)(&chip->lock);
-> +
-> +	/* The HW has a limitation that the trip set must be above 25C */
-> +	if (temp > MBG_MIN_TRIP_TEMP && temp < MBG_MAX_SUPPORTED_TEMP) {
-> +		ret = regmap_write(chip->map, chip->base + MON2_LVL1_UP_THRESH,
-> +				   temp_to_vtemp_mv(temp));
-> +		if (ret < 0)
-> +			return ret;
-> +
-> +		ret = regmap_set_bits(chip->map, chip->base + MBG_TEMP_MON2_MISC_CFG,
-> +				      MON2_UP_THRESH_EN);
-> +		if (ret < 0)
-> +			return ret;
-> +	} else {
-> +		dev_err(chip->dev, "Set trip b/w 25C and 160C\n");
-> +		ret = regmap_clear_bits(chip->map, chip->base + MBG_TEMP_MON2_MISC_CFG,
-> +					MON2_UP_THRESH_EN);
-> +		return -ERANGE;
-> +	}
-> +
-> +	/*
-> +	 * Configure the last_temp one degree higher, to ensure the
-> +	 * violated temp is returned to thermal framework when it reads
-> +	 * temperature for the first time after the violation happens.
-> +	 * This is needed to account for the inaccuracy in the conversion
-> +	 * formula used which leads to the thermal framework setting back
-> +	 * the same thresholds in case the temperature it reads does not
-> +	 * show violation.
-> +	 */
-> +	chip->last_temp = temp + MBG_TEMP_CONSTANT;
-
-It is because it is inaccurate or the temperature decreased a bit after 
-the interrupt fired ?
-
-> +	return ret;
-> +}
-> +
-> +static const struct thermal_zone_device_ops mbg_tm_ops = {
-> +	.get_temp = mbg_tm_get_temp,
-> +	.set_trips = mbg_tm_set_trip_temp,
-> +};
-> +
-> +static irqreturn_t mbg_tm_isr(int irq, void *data)
-> +{
-> +	struct mbg_tm_chip *chip = data;
-> +	int ret, val;
-> +
-> +	scoped_guard(mutex, &chip->lock) {
-> +		ret = regmap_read(chip->map, chip->base + MBG_TEMP_MON2_FAULT_STATUS, &val);
-> +		if (ret < 0)
-> +			return IRQ_HANDLED;
-> +		if (FIELD_GET(MON_FAULT_STATUS_MASK, val) == MON_FAULT_LVL1_UPR)
-> +			chip->last_thres_crossed = true;
-> +	}
-> +
-> +	if (FIELD_GET(MON_FAULT_STATUS_MASK, val) == MON_FAULT_LVL1_UPR) {
-> +		dev_dbg(chip->dev, "Notifying Thermal, fault status=%d\n", val);
-> +		thermal_zone_device_update(chip->tz_dev, THERMAL_TRIP_VIOLATED);
-> +	} else {
-> +		dev_dbg(chip->dev, "Lvl1 upper threshold not violated, ignoring interrupt\n");
-
-What does it mean ? Spurious interrupt ?
-
-> +	}
-> +
-> +	return IRQ_HANDLED;
-> +}
-> +
-> +static int mbg_tm_probe(struct platform_device *pdev)
-> +{
-> +	struct mbg_tm_chip *chip;
-> +	struct device_node *node = pdev->dev.of_node;
-> +	u32 res;
-> +	int ret;
-> +
-> +	chip = devm_kzalloc(&pdev->dev, sizeof(*chip), GFP_KERNEL);
-> +	if (!chip)
-> +		return -ENOMEM;
-> +
-> +	chip->dev = &pdev->dev;
-> +
-> +	mutex_init(&chip->lock);
-> +
-> +	chip->map = dev_get_regmap(pdev->dev.parent, NULL);
-> +	if (!chip->map)
-> +		return -ENXIO;
-> +
-> +	ret = device_property_read_u32(chip->dev, "reg", &res);
-> +	if (ret < 0)
-> +		return dev_err_probe(chip->dev, ret, "Couldn't read reg property\n");
-> +
-> +	chip->base = res;
-> +
-> +	chip->irq = platform_get_irq(pdev, 0);
-> +	if (chip->irq < 0)
-> +		return dev_err_probe(chip->dev, chip->irq, "Failed to get irq\n");
-> +
-> +	chip->adc = devm_iio_channel_get(&pdev->dev, "thermal");
-> +	if (IS_ERR(chip->adc))
-> +		return dev_err_probe(chip->dev, PTR_ERR(chip->adc), "Failed to get adc channel\n");
-> +
-> +	chip->tz_dev = devm_thermal_of_zone_register(chip->dev, 0, chip, &mbg_tm_ops);
-> +	if (IS_ERR(chip->tz_dev))
-> +		return dev_err_probe(chip->dev, PTR_ERR(chip->tz_dev),
-> +				     "Failed to register sensor\n");
-> +
-> +	return devm_request_threaded_irq(&pdev->dev, chip->irq, NULL, mbg_tm_isr, IRQF_ONESHOT,
-> +					 node->name, chip);
-> +}
-> +
-> +static const struct of_device_id mbg_tm_match_table[] = {
-> +	{ .compatible = "qcom,pm8775-mbg-tm" },
-> +	{ }
-> +};
-> +MODULE_DEVICE_TABLE(of, mbg_tm_match_table);
-> +
-> +static struct platform_driver mbg_tm_driver = {
-> +	.driver = {
-> +		.name = "qcom-spmi-mbg-tm",
-> +		.of_match_table = mbg_tm_match_table,
-> +	},
-> +	.probe = mbg_tm_probe,
-> +};
-> +module_platform_driver(mbg_tm_driver);
-> +
-> +MODULE_DESCRIPTION("PMIC MBG Temperature monitor driver");
-> +MODULE_LICENSE("GPL");
-> 
-
+>    "#thermal-sensor-cells":
+>      const: 0
+>
+> @@ -109,6 +117,7 @@ examples:
+>              nvmem-cells = <&tempmon_calib>, <&tempmon_temp_grade>;
+>              nvmem-cell-names = "calib", "temp_grade";
+>              clocks = <&clks IMX6SX_CLK_PLL3_USB_OTG>;
+> +            fsl,temp-calibration-offset-millicelsius = <(-6400)>;
+>              #thermal-sensor-cells = <0>;
+>          };
+>      };
+>
+> --
+> 2.43.0
+>
+>
+>
