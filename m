@@ -1,135 +1,107 @@
-Received: from fx.arvanta.net (93-87-244-166.static.isp.telekom.rs [93.87.244.166])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id C31B83769E9;
-	Fri, 10 Jul 2026 17:44:43 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=93.87.244.166
+Received: from mail-wr1-f42.google.com (mail-wr1-f42.google.com [209.85.221.42])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 04A4623D297
+	for <linux-pm@vger.kernel.org>; Fri, 10 Jul 2026 19:34:18 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.42
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1783705485; cv=none; b=EVeaBfkrqzeO5VyC6lMXksF/H/keDOsQeHQ1FjstcvQOvwQDh3cVdDVtdbxPh+9ngWNsa+/0lJEo5HM2var6OQCQtOYwEor1z1h7bETX21lgqHAPEFVmrQVKxyEQkiVJaUiV6vhWsJwayy1owStV7oXbrl2mY3Q+5vZfC3fBK0c=
+	t=1783712060; cv=none; b=bumMyjwTb/SGG1NPOHrgf+AICGgCnoHcbtpUhEuM4BqHCpE0pEjof7UnAyp+CnIAuuE8N4IQrE8lvi8ZwPwLuzYCtWRHJMG5HtZONB0sbMr6LSZm2oLNh9+Wpqj9iyRfMN+u22cqfxjDN3R1k7nayPAbOYZ6Sl/5yQP3v803QhE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1783705485; c=relaxed/simple;
-	bh=bfJbN/i3p8vhV4jRbWd4NRdb0ZEMHuwXU3j0imuckcs=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=FpZ0gx3bBB/HNSMU7U0lDRFYUui/oFCudx9L7idQg/2sZvYtFlqzUN1mK5cAQ02WZdNECFXbbeuFLonee8ij/7U5P7xvPSIVdOwDe0oAutH126niZkhkJMYbDwsLNqk1U92x01WWXN5cuEt8SpU7KiOg+AGEYg/i+qL9fm2yaw4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=arvanta.net; spf=pass smtp.mailfrom=arvanta.net; arc=none smtp.client-ip=93.87.244.166
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=arvanta.net
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arvanta.net
-Received: from air.arvanta.net (air.arvanta.net [10.5.1.4])
-	by fx.arvanta.net (Postfix) with ESMTP id ED996CF;
-	Fri, 10 Jul 2026 19:25:06 +0200 (CEST)
-Date: Fri, 10 Jul 2026 19:25:06 +0200
-From: Milan =?utf-8?Q?P=2E_Stani=C4=87?= <mps@arvanta.net>
-To: Shuwei Wu <shuwei.wu@mailbox.org>
+	s=arc-20240116; t=1783712060; c=relaxed/simple;
+	bh=qHpuXgwyDt7gd+u5X5Fkon+TXwHaSS4B0GanO68bKIY=;
+	h=Date:From:To:Cc:Subject:Message-ID:MIME-Version:Content-Type:
+	 Content-Disposition; b=n92tJjr3Amih5naEHSP0De2XPqYvpP+KktovSYfFlFB/g1/QaUVxN/5M993h0JNDbwNjFOP8l2d4qo+5AIN+ma/WvH0UHW3rTLJk/+f1ZwQPqYl1kKD/3CS0jXLJQKiDYE+lsJMtfYgPMh725ex81dR/5N1iHR40tXJ+Nu8yL2E=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=mp7BUVRC; arc=none smtp.client-ip=209.85.221.42
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="mp7BUVRC"
+Received: by mail-wr1-f42.google.com with SMTP id ffacd0b85a97d-47362928f65so1294527f8f.2
+        for <linux-pm@vger.kernel.org>; Fri, 10 Jul 2026 12:34:18 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1783712057; x=1784316857; darn=vger.kernel.org;
+        h=content-disposition:content-type:mime-version:message-id:subject:cc
+         :to:from:date:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=SfcK5+z71wUpvsd64BXWRq+fNxeTLDfjOVwwJT3IZWQ=;
+        b=mp7BUVRCV6sBSk3Cyl0MmDhzS0DpU1e+WtFIJKshfm5vJ+Wmr/hE9ygy2/w/EpMwxY
+         5freLJnLgcWP9u5secg2uhg6fUdXf8Q6H57dzAnXJlGGj+zl6s6xMGOv9Ybanw6ZTH+y
+         ySWOdxo/AHjFgIOBYPN0C26uTmIjtixY5UpwVrImj9js3CwxZ6ySpwVplWAaZ/icVVMz
+         14CNLvxuTWWGVGzmIjbaIk+HzLrOXhhT2OQtI41UmOCDvfZ3UM40lI/ce8Z0nDs45prq
+         cN3sekgLqWtMox7PjY6zLsmX7Pmhy5y3kLZ7mVER2wj+hMNANw432iXKOMjaYxZpoLpU
+         JH/Q==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1783712057; x=1784316857;
+        h=content-disposition:content-type:mime-version:message-id:subject:cc
+         :to:from:date:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=SfcK5+z71wUpvsd64BXWRq+fNxeTLDfjOVwwJT3IZWQ=;
+        b=G+zLNpURzVBuzUU4HXgiBmdBPCMvOgtXGP9F9orQXp5WFZpBu8WzFSoP7Vo2jVKQpG
+         /IviCR/fNiLfJRAhjKvZuEeqLDMsdRuimuHHOcxGiyyAO7z0gKOTcye6Gs3ef3NdjJBR
+         RvRiQDxRDFMpsh9VzE4LecbQl7ZlVwf46w0Y19OVoKbYwAoT/IMumd4j3pRlk/fIVQdh
+         liTFdrXEXY7tUSrO+cugfEbdP6l22HKRz+lqkEFOfyOZY4zaRNDOqi2DHnPuawGvPQ3j
+         eyx85xshSmoIZWrdLWKH7dNBubFYquir6jvETBOj/ZZ0wP8h7C2qmGqwcBm5aXUgH6YI
+         g6OA==
+X-Forwarded-Encrypted: i=1; AHgh+Roe6WTIP/YD8y+0ljxOQnui9Gt46lRRrHl6dsM2XBBv4RySjsHOx+I1+uv+lhplkE1gCrb/3weouA==@vger.kernel.org
+X-Gm-Message-State: AOJu0YwM8uxOZba1QN2cGdzgNDZMI7yCn4DBMhTGf/9EKzGprDSvIIAw
+	yqx8/wfhQkiy3iND1Y7GW9cjfc5SuBlFKQBsgHPixnkXnn5MRov2pXwl
+X-Gm-Gg: AfdE7cmAU5fgoboHBWt0PbFJo5gkj2JUxJKDM3Yi2pyKYCqGG18piFHfP6H2akbSBvA
+	j7VfHmWxciDLwxbdqnawFmSca2Jfm9wYuWkdtuDck2A4YMA24VCLHOp2CaaTa8vYax6Qrj78qxn
+	iJvkCAVdcmd+cfidl/V3G8lN4aRVtgNJVetUShkAKLl/TheD9T9Eo9U7/4bDL2DoiuePu72c+fU
+	lZoufEUu0yVKY9XXU1aBR97ddKRpIZ6vJ8sZBUkM0y+kgl8HIhfsLoePrdeSQB3R6eqARi3QI4m
+	XRiEZAOpxsyBG46msPQRY/YpcNLVzCMu/C/rVQ62vsZKhHieh2+cIpqE0esd4Y8uxb4nXQF3ach
+	Tjs1+qeb35ssxYoboI5RgqNZe9lNHfpuFgM44xxzYDezpRTZsJxu49e84BHDZ5TiSgXfcshmcbD
+	mVtpZUIVK4
+X-Received: by 2002:a5d:5c84:0:b0:478:65a8:6305 with SMTP id ffacd0b85a97d-47f2dcebd30mr143287f8f.49.1783712057358;
+        Fri, 10 Jul 2026 12:34:17 -0700 (PDT)
+Received: from localhost ([2c0f:3d00:6be:8900:ce5e:9212:ea4b:f30])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-47aa0f214d2sm61104797f8f.33.2026.07.10.12.34.16
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 10 Jul 2026 12:34:16 -0700 (PDT)
+Date: Fri, 10 Jul 2026 22:34:13 +0300
+From: Dan Carpenter <error27@gmail.com>
+To: Deepak Sikri <deepak.sikri@st.com>
 Cc: "Rafael J. Wysocki" <rafael@kernel.org>,
-	Viresh Kumar <viresh.kumar@linaro.org>,
-	Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>, Paul Walmsley <pjw@kernel.org>,
-	Palmer Dabbelt <palmer@dabbelt.com>,
-	Albert Ou <aou@eecs.berkeley.edu>, Alexandre Ghiti <alex@ghiti.fr>,
-	Yixun Lan <dlan@kernel.org>, linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org, linux-riscv@lists.infradead.org,
-	spacemit@lists.linux.dev, devicetree@vger.kernel.org
-Subject: Re: [PATCH v4 0/2] cpufreq: spacemit: Add cpufreq support for K1 SoC
-Message-ID: <20260710172506.GA7260@air.arvanta.net>
-References: <20260626-shadow-deps-v4-0-bba9831f2f1d@mailbox.org>
+	Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org,
+	linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: [PATCH] cpufreq: Fix an IS_ERR() vs NULL bug in
+ spear1340_set_cpu_rate()
+Message-ID: <alFJNUllC3JOKv6z@stanley.mountain>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20260626-shadow-deps-v4-0-bba9831f2f1d@mailbox.org>
+X-Mailer: git-send-email haha only kidding
 
-On Fri, 2026-06-26 at 16:10, Shuwei Wu wrote:
-> This series enables CPU DVFS for the SpacemiT K1 SoC using the generic
-> cpufreq-dt driver.
-> 
-> K1 has two CPU clock clusters. The two clusters have separate CPU clocks,
-> so they are represented as two cpufreq policies: policy0 for CPUs 0-3 and
-> policy4 for CPUs 4-7.
-> 
-> The CPU voltage rail is shared between the clusters. To model this with two
-> policies, the OPP entries describe voltage ranges instead of a single fixed
-> voltage, so the shared regulator can keep the rail within a range acceptable
-> for the active OPP constraints.
-> 
-> Tested on Banana Pi BPI-F3:
-> 
-> ~ # cat /sys/devices/system/cpu/online
-> 0-7
-> 
-> ~ # ls /sys/devices/system/cpu/cpufreq/
-> policy0  policy4
-> 
-> ~ # cat /sys/devices/system/cpu/cpufreq/policy0/scaling_driver
-> cpufreq-dt
-> ~ # cat /sys/devices/system/cpu/cpufreq/policy0/affected_cpus
-> 0 1 2 3
-> 
-> ~ # cat /sys/devices/system/cpu/cpufreq/policy4/scaling_driver
-> cpufreq-dt
-> ~ # cat /sys/devices/system/cpu/cpufreq/policy4/affected_cpus
-> 4 5 6 7
-> 
-> Both policies expose the same OPP frequencies:
-> 
-> ~ # cat /sys/devices/system/cpu/cpufreq/policy0/scaling_available_frequencies
-> 614400 819000 1000000 1228800 1600000
-> 
-> ~ # cat /sys/devices/system/cpu/cpufreq/policy4/scaling_available_frequencies
-> 614400 819000 1000000 1228800 1600000
-> 
-> For each policy, scaling_setspeed was set to each supported OPP and the
-> workload was pinned to one CPU covered by that policy with taskset.
-> CPU0 was used for policy0, and CPU4 was used for policy4. The clock rates below
-> are from /sys/kernel/debug/clk/clk_summary.
-> 
-> policy0 / CPU0:
-> ----------------------------------------------------------
-> Frequency    |  cpu_c0_core_clk  |  Real (s)  |  User (s)
-> (kHz)        |  (Hz)             |            |
-> -------------+-------------------+------------+-----------
-> 1,600,000    |  1,600,000,000    |    1.81    |    1.80
-> 1,228,800    |  1,228,800,000    |    2.37    |    2.37
-> 1,000,000    |  1,000,000,000    |    2.89    |    2.89
->   819,000    |    819,200,000    |    3.56    |    3.55
->   614,400    |    614,400,000    |    4.71    |    4.71
-> ----------------------------------------------------------
-> 
-> policy4 / CPU4:
-> ----------------------------------------------------------
-> Frequency    |  cpu_c1_core_clk  |  Real (s)  |  User (s)
-> (kHz)        |  (Hz)             |            |
-> -------------+-------------------+------------+-----------
-> 1,600,000    |  1,600,000,000    |    1.81    |    1.80
-> 1,228,800    |  1,228,800,000    |    2.36    |    2.36
-> 1,000,000    |  1,000,000,000    |    2.89    |    2.89
->   819,000    |    819,200,000    |    3.55    |    3.55
->   614,400    |    614,400,000    |    4.71    |    4.70
-> ----------------------------------------------------------
-> 
-> Signed-off-by: Shuwei Wu <shuwei.wu@mailbox.org>
-> ---
-> Changes in v4:
-> - Represent K1 as two cpufreq-dt policies, one per CPU clock cluster
-> - Use OPP voltage ranges for the shared CPU supply
-> - Link to v3: https://lore.kernel.org/r/20260612-shadow-deps-v3-0-2f3ba88611ff@mailbox.org
-> 
-> Changes in v3:
-> - Add a K1-specific cpufreq driver for the shared-rail, dual-clock topology
-> - Use one shared CPU OPP table and one cpufreq policy for all CPUs
-> - Link to v2: https://lore.kernel.org/r/20260410-shadow-deps-v2-0-4e16b8c0f60e@mailbox.org
-> 
-> Changes in v2:
-> - Move OPP tables to dedicated k1-opp.dtsi
-> - Enable OPP only on BPI-F3 with cpu-supply present
-> - Link to v1: https://lore.kernel.org/r/20260308-shadow-deps-v1-0-0ceb5c7c07eb@mailbox.org
-> 
+The clk_get_parent() function doesn't return error pointers, it returns
+NULL on error.  Update the error checking to match.
 
-Tested on bananapi-F3 and Musebook, works fine.
+Fixes: 420993221175 ("cpufreq: SPEAr: Add CPUFreq driver")
+Signed-off-by: Dan Carpenter <error27@gmail.com>
+---
+ drivers/cpufreq/spear-cpufreq.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-Tested-by: Milan P. Stanić <mps@arvanta.net>
+diff --git a/drivers/cpufreq/spear-cpufreq.c b/drivers/cpufreq/spear-cpufreq.c
+index 81a0780b2ebf..ffe5eda82f0b 100644
+--- a/drivers/cpufreq/spear-cpufreq.c
++++ b/drivers/cpufreq/spear-cpufreq.c
+@@ -79,9 +79,9 @@ static int spear1340_set_cpu_rate(struct clk *sys_pclk, unsigned long newfreq)
+ 	int ret = 0;
+ 
+ 	sys_clk = clk_get_parent(spear_cpufreq.clk);
+-	if (IS_ERR(sys_clk)) {
++	if (!sys_clk) {
+ 		pr_err("failed to get cpu's parent (sys) clock\n");
+-		return PTR_ERR(sys_clk);
++		return -EINVAL;
+ 	}
+ 
+ 	/* Set the rate of the source clock before changing the parent */
+-- 
+2.53.0
 
-> ---
