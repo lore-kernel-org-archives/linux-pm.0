@@ -1,87 +1,86 @@
-Received: from SHSQR01.spreadtrum.com (unknown [222.66.158.135])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 17ADA3EF650;
-	Fri, 10 Jul 2026 08:25:53 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=222.66.158.135
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id EC1043559F5;
+	Fri, 10 Jul 2026 08:34:18 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1783671956; cv=none; b=HWe4nxZDD2u9PYnhzvELImUYtw7CgICnsSDNqP7EWaCgBRaeybsGmWtaNnW4qNblHlz7KznLsKzmn/Cvam9laxhtjtQiV4IagU93PDa6I6ZU4BTyppc9eNPfS9q86u8YnoaZ9dXEdJ9xKVztkpYy+Yf6/zMQBGQFBYyhQagM2bE=
+	t=1783672461; cv=none; b=YfuZfvqOO+S1EL9TKbHELm5dEbtmwCPGQLyO+s6/XT0aQM4eU1pHHSL2VBV+hX2yNxrnN9vV4brHVKkHbNZzyrk6+stZDCOmKJpeT+xyiGtJju6c5quNe4IIdCYhALMMIU81EK+qX1Sej29grWHi3x4DgCfDKyRHYYRd+XN+WL0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1783671956; c=relaxed/simple;
-	bh=PGQxHoCamhkvyKv7L3qhCKlwwAlwklqGBQ+Swl9BfuQ=;
-	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=hZS5C0wFB7EbLT5DTXM0eDVT8F28ViNSp/TIFbVBfwsepLlWjHaxb2aCSfL2iAoX+VOH7R9xp1k9A+cQuztdlmcndNcfXOAR91YzYZw0KUhli3rKQjOR+LOwEoAldp6HPmN58Z/VH/iKQrWu0GuQcj8qDb4XRsx/CGejkgguMxc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=unisoc.com; spf=pass smtp.mailfrom=unisoc.com; dkim=pass (2048-bit key) header.d=unisoc.com header.i=@unisoc.com header.b=LCw4SI4V; arc=none smtp.client-ip=222.66.158.135
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=unisoc.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=unisoc.com
+	s=arc-20240116; t=1783672461; c=relaxed/simple;
+	bh=hoNFrqeb+5Si8JgjkfwQEJ7zAnDHR7M8m8edQoUhEBY=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=DtZdNXV49KF1oveVTzcrvn2pETsnCUpLp1Rk/dcJoYrS2P69n87QnG3cd+5kPcaEk8Bv6nohHZHl/az4PPlvSFzJTW77cZ+LxGq0R1Ep7YawOf7VlBJpihercusl/LLpQgtC55Q87+nEK15S+HYJ8mLkXZB8gVHZA2Xf8g3cXcw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=mDGE8OZL; arc=none smtp.client-ip=217.140.110.172
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=unisoc.com header.i=@unisoc.com header.b="LCw4SI4V"
-Received: from dlp.unisoc.com ([10.29.3.86])
-	by SHSQR01.spreadtrum.com with ESMTPS id 66A8PLtZ053463
-	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NO);
-	Fri, 10 Jul 2026 16:25:21 +0800 (+08)
-	(envelope-from Xuewen.Yan@unisoc.com)
-Received: from SHDLP.spreadtrum.com (BJMBX01.spreadtrum.com [10.0.64.7])
-	by dlp.unisoc.com (SkyGuard) with ESMTPS id 4gxPyf6FLSz2S3kr9;
-	Fri, 10 Jul 2026 16:24:58 +0800 (CST)
-Received: from BJ10918NBW01.spreadtrum.com (10.0.73.73) by
- BJMBX01.spreadtrum.com (10.0.64.7) with Microsoft SMTP Server (TLS) id
- 15.0.1497.48; Fri, 10 Jul 2026 16:25:20 +0800
-From: Xuewen Yan <xuewen.yan@unisoc.com>
-To: <lukasz.luba@arm.com>, <rafael@kernel.org>, <pavel@kernel.org>,
-        <lenb@kernel.org>
-CC: <linux-pm@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
-        <xuewen.yan94@gmail.com>, <ke.wang@unisoc.com>
-Subject: [RFC PATCH 2/2] PM: EM: Validate new_table in em_dev_update_perf_domain()
-Date: Fri, 10 Jul 2026 16:24:47 +0800
-Message-ID: <20260710082447.5160-2-xuewen.yan@unisoc.com>
-X-Mailer: git-send-email 2.25.1
-In-Reply-To: <20260710082447.5160-1-xuewen.yan@unisoc.com>
-References: <20260710082447.5160-1-xuewen.yan@unisoc.com>
+	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="mDGE8OZL"
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 1E11E1D70;
+	Fri, 10 Jul 2026 01:34:14 -0700 (PDT)
+Received: from [10.57.2.73] (unknown [10.57.2.73])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 289143F85F;
+	Fri, 10 Jul 2026 01:34:17 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
+	t=1783672458; bh=hoNFrqeb+5Si8JgjkfwQEJ7zAnDHR7M8m8edQoUhEBY=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=mDGE8OZLaqNwD+QpSFyxIzt+6llBGIOwg9W9kuUa3wjU8zLr0d5iFFleR4XTM9GvL
+	 YDaWgnyGDFx2WKdASHuUPjrQdc4cHI2EeRrdF6VvUYl1TSIx1Ctg6zEgkwweKyX7Fp
+	 dDcOJ3dT4rRTkr2n5kRn8klsx171uVYS8/ht5Jj0=
+Message-ID: <1ac9ac29-f79e-4d2d-951f-0a43bd66e2e9@arm.com>
+Date: Fri, 10 Jul 2026 09:34:18 +0100
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-ClientProxiedBy: SHCAS01.spreadtrum.com (10.0.1.201) To
- BJMBX01.spreadtrum.com (10.0.64.7)
-X-MAIL:SHSQR01.spreadtrum.com 66A8PLtZ053463
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=unisoc.com;
-	s=default; t=1783671938;
-	bh=FtFWK67eFemJ8nOXJOQ+HYOeP+r+Wyz0kpClXRfvc0g=;
-	h=From:To:CC:Subject:Date:In-Reply-To:References;
-	b=LCw4SI4VBmoNgpY8HNuAe4jneFocL6RAefBeDfef3izFpLTD0GtUoGWNjZRWFwGy6
-	 Xx3+TYxW21eJ1Yj3W4oXxekmOv+orJE/Tzs8DRdgeCVQD2Bk5FZ7BIiE1GmLZTV8PO
-	 cTNL/01ieqRbKAaF0M71wRcg+WnIikd4mLiqS1g0KrEJSKavU7ro5r7o9P32l86EF6
-	 wD+Ecvs9ZJphZtkQXX+J6HBd8ohMYEtSUqYMqDO6wIJ8eV5XHrQyco0iFSYYeD4abK
-	 25mHIYtFbGigyR7R9q2MBObKM0wQTXf705Opr3ueNzKr6mcOLxEJl6vezPNvaSNNpy
-	 QPgSAeaCrOINg==
+User-Agent: Mozilla Thunderbird
+Subject: Re: [RFC PATCH 1/2] PM: EM: Export em_table_alloc/free
+To: Xuewen Yan <xuewen.yan@unisoc.com>
+Cc: linux-pm@vger.kernel.org, rafael@kernel.org, lenb@kernel.org,
+ pavel@kernel.org, linux-kernel@vger.kernel.org, xuewen.yan94@gmail.com,
+ ke.wang@unisoc.com
+References: <20260710082447.5160-1-xuewen.yan@unisoc.com>
+Content-Language: en-US
+From: Lukasz Luba <lukasz.luba@arm.com>
+In-Reply-To: <20260710082447.5160-1-xuewen.yan@unisoc.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
-Add an explicit check for the new_table parameter in
-em_dev_update_perf_domain() to ensure it is not NULL or an
-ERR_PTR before proceeding with the update.
 
-Signed-off-by: Xuewen Yan <xuewen.yan@unisoc.com>
----
- kernel/power/energy_model.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/kernel/power/energy_model.c b/kernel/power/energy_model.c
-index 277aaf1b19da..4d75e1b3c20e 100644
---- a/kernel/power/energy_model.c
-+++ b/kernel/power/energy_model.c
-@@ -331,7 +331,7 @@ int em_dev_update_perf_domain(struct device *dev,
- 	struct em_perf_table *old_table;
- 	struct em_perf_domain *pd;
- 
--	if (!dev)
-+	if (!dev || IS_ERR_OR_NULL(new_table))
- 		return -EINVAL;
- 
- 	/* Serialize update/unregister or concurrent updates */
--- 
-2.25.1
+On 7/10/26 09:24, Xuewen Yan wrote:
+> When drivers wants to alloc a new em_perf_table to update
+> their em_perf_table, they need to use em_table_alloc and
+> em_table_free.
+> So export the two func.
+> 
+> Signed-off-by: Xuewen Yan <xuewen.yan@unisoc.com>
+> ---
+>   kernel/power/energy_model.c | 2 ++
+>   1 file changed, 2 insertions(+)
+> 
+> diff --git a/kernel/power/energy_model.c b/kernel/power/energy_model.c
+> index e610cf8e9a06..277aaf1b19da 100644
+> --- a/kernel/power/energy_model.c
+> +++ b/kernel/power/energy_model.c
+> @@ -201,6 +201,7 @@ void em_table_free(struct em_perf_table *table)
+>   {
+>   	kref_put(&table->kref, em_release_table_kref);
+>   }
+> +EXPORT_SYMBOL_GPL(em_table_free);
+>   
+>   /**
+>    * em_table_alloc() - Allocate a new EM table
+> @@ -225,6 +226,7 @@ struct em_perf_table *em_table_alloc(struct em_perf_domain *pd)
+>   
+>   	return table;
+>   }
+> +EXPORT_SYMBOL_GPL(em_table_alloc);
+>   
+>   static void em_init_performance(struct device *dev, struct em_perf_domain *pd,
+>   				struct em_perf_state *table, int nr_states)
 
+LGTM,
+
+Reviewed-by: Lukasz Luba <lukasz.luba@arm.com>
