@@ -1,107 +1,71 @@
-Received: from mail-wr1-f42.google.com (mail-wr1-f42.google.com [209.85.221.42])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 04A4623D297
-	for <linux-pm@vger.kernel.org>; Fri, 10 Jul 2026 19:34:18 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.42
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 73456383316
+	for <linux-pm@vger.kernel.org>; Fri, 10 Jul 2026 19:39:12 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1783712060; cv=none; b=bumMyjwTb/SGG1NPOHrgf+AICGgCnoHcbtpUhEuM4BqHCpE0pEjof7UnAyp+CnIAuuE8N4IQrE8lvi8ZwPwLuzYCtWRHJMG5HtZONB0sbMr6LSZm2oLNh9+Wpqj9iyRfMN+u22cqfxjDN3R1k7nayPAbOYZ6Sl/5yQP3v803QhE=
+	t=1783712353; cv=none; b=nz2IVcEWkbKyFFpKQ7mVTOEyUUqfP7UaDQRjrMW37QHIBpWHLgcgjbL8X6UvFuNwV2vdalCLRHf5wHcDhT3pQxb6P0eARdTUOFIXF7IpUWZMNYgF0sV9Erhz1xTfTdnkYnQIzMHYwN4sRS/9d4CujYeXyC9IohiIdCeePZDV+mI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1783712060; c=relaxed/simple;
-	bh=qHpuXgwyDt7gd+u5X5Fkon+TXwHaSS4B0GanO68bKIY=;
-	h=Date:From:To:Cc:Subject:Message-ID:MIME-Version:Content-Type:
-	 Content-Disposition; b=n92tJjr3Amih5naEHSP0De2XPqYvpP+KktovSYfFlFB/g1/QaUVxN/5M993h0JNDbwNjFOP8l2d4qo+5AIN+ma/WvH0UHW3rTLJk/+f1ZwQPqYl1kKD/3CS0jXLJQKiDYE+lsJMtfYgPMh725ex81dR/5N1iHR40tXJ+Nu8yL2E=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=mp7BUVRC; arc=none smtp.client-ip=209.85.221.42
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1783712353; c=relaxed/simple;
+	bh=Vg0lqJRyVD20Y1n9hS9MZYne+PScrbXmvpNBLpIzIT4=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=TpzNVC3LtmPiUeWWy6lu5e23/SZ+nnSWKsJh0qmp53mxENVaLSnRmZlsM0HWzM8eSN71fLyN4dyTLSbkhSGZef2WOYuaw12nZlzyeQD0UnJdgA+uT4b2DMHdS+/zUbZvK9/tl4xsnxInOaJ/4jcuyIgCmvVRuv4Knh7VPZCamdA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=S5fylJo7; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="mp7BUVRC"
-Received: by mail-wr1-f42.google.com with SMTP id ffacd0b85a97d-47362928f65so1294527f8f.2
-        for <linux-pm@vger.kernel.org>; Fri, 10 Jul 2026 12:34:18 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1783712057; x=1784316857; darn=vger.kernel.org;
-        h=content-disposition:content-type:mime-version:message-id:subject:cc
-         :to:from:date:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=SfcK5+z71wUpvsd64BXWRq+fNxeTLDfjOVwwJT3IZWQ=;
-        b=mp7BUVRCV6sBSk3Cyl0MmDhzS0DpU1e+WtFIJKshfm5vJ+Wmr/hE9ygy2/w/EpMwxY
-         5freLJnLgcWP9u5secg2uhg6fUdXf8Q6H57dzAnXJlGGj+zl6s6xMGOv9Ybanw6ZTH+y
-         ySWOdxo/AHjFgIOBYPN0C26uTmIjtixY5UpwVrImj9js3CwxZ6ySpwVplWAaZ/icVVMz
-         14CNLvxuTWWGVGzmIjbaIk+HzLrOXhhT2OQtI41UmOCDvfZ3UM40lI/ce8Z0nDs45prq
-         cN3sekgLqWtMox7PjY6zLsmX7Pmhy5y3kLZ7mVER2wj+hMNANw432iXKOMjaYxZpoLpU
-         JH/Q==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1783712057; x=1784316857;
-        h=content-disposition:content-type:mime-version:message-id:subject:cc
-         :to:from:date:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=SfcK5+z71wUpvsd64BXWRq+fNxeTLDfjOVwwJT3IZWQ=;
-        b=G+zLNpURzVBuzUU4HXgiBmdBPCMvOgtXGP9F9orQXp5WFZpBu8WzFSoP7Vo2jVKQpG
-         /IviCR/fNiLfJRAhjKvZuEeqLDMsdRuimuHHOcxGiyyAO7z0gKOTcye6Gs3ef3NdjJBR
-         RvRiQDxRDFMpsh9VzE4LecbQl7ZlVwf46w0Y19OVoKbYwAoT/IMumd4j3pRlk/fIVQdh
-         liTFdrXEXY7tUSrO+cugfEbdP6l22HKRz+lqkEFOfyOZY4zaRNDOqi2DHnPuawGvPQ3j
-         eyx85xshSmoIZWrdLWKH7dNBubFYquir6jvETBOj/ZZ0wP8h7C2qmGqwcBm5aXUgH6YI
-         g6OA==
-X-Forwarded-Encrypted: i=1; AHgh+Roe6WTIP/YD8y+0ljxOQnui9Gt46lRRrHl6dsM2XBBv4RySjsHOx+I1+uv+lhplkE1gCrb/3weouA==@vger.kernel.org
-X-Gm-Message-State: AOJu0YwM8uxOZba1QN2cGdzgNDZMI7yCn4DBMhTGf/9EKzGprDSvIIAw
-	yqx8/wfhQkiy3iND1Y7GW9cjfc5SuBlFKQBsgHPixnkXnn5MRov2pXwl
-X-Gm-Gg: AfdE7cmAU5fgoboHBWt0PbFJo5gkj2JUxJKDM3Yi2pyKYCqGG18piFHfP6H2akbSBvA
-	j7VfHmWxciDLwxbdqnawFmSca2Jfm9wYuWkdtuDck2A4YMA24VCLHOp2CaaTa8vYax6Qrj78qxn
-	iJvkCAVdcmd+cfidl/V3G8lN4aRVtgNJVetUShkAKLl/TheD9T9Eo9U7/4bDL2DoiuePu72c+fU
-	lZoufEUu0yVKY9XXU1aBR97ddKRpIZ6vJ8sZBUkM0y+kgl8HIhfsLoePrdeSQB3R6eqARi3QI4m
-	XRiEZAOpxsyBG46msPQRY/YpcNLVzCMu/C/rVQ62vsZKhHieh2+cIpqE0esd4Y8uxb4nXQF3ach
-	Tjs1+qeb35ssxYoboI5RgqNZe9lNHfpuFgM44xxzYDezpRTZsJxu49e84BHDZ5TiSgXfcshmcbD
-	mVtpZUIVK4
-X-Received: by 2002:a5d:5c84:0:b0:478:65a8:6305 with SMTP id ffacd0b85a97d-47f2dcebd30mr143287f8f.49.1783712057358;
-        Fri, 10 Jul 2026 12:34:17 -0700 (PDT)
-Received: from localhost ([2c0f:3d00:6be:8900:ce5e:9212:ea4b:f30])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-47aa0f214d2sm61104797f8f.33.2026.07.10.12.34.16
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 10 Jul 2026 12:34:16 -0700 (PDT)
-Date: Fri, 10 Jul 2026 22:34:13 +0300
-From: Dan Carpenter <error27@gmail.com>
-To: Deepak Sikri <deepak.sikri@st.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>,
-	Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: [PATCH] cpufreq: Fix an IS_ERR() vs NULL bug in
- spear1340_set_cpu_rate()
-Message-ID: <alFJNUllC3JOKv6z@stanley.mountain>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="S5fylJo7"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0FE211F00A3E
+	for <linux-pm@vger.kernel.org>; Fri, 10 Jul 2026 19:39:12 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1783712352;
+	bh=Vg0lqJRyVD20Y1n9hS9MZYne+PScrbXmvpNBLpIzIT4=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc;
+	b=S5fylJo7ou/pe199LtPQYvBFXxrwL2FbyqQl69usIF9KH+Xpwhm7/O9YsYQL6yvU1
+	 2HQHaI4uuJPCtrN5QfHZaGhV+57YImE+ceP74UrFfYrevhNnC4+liMPSSeX3Zrblny
+	 7dmJTB8RGQkPi8pt/kKzdIilkSC+rJe8zJfDhM5G5HvgA9SMF4/imv5dBjaw6KjOaJ
+	 ahd5gfMEK7lO/5VZdI8YSo/l4c3dQ4/7fIhMUyXHh4M9dblXFBcnJfcaWrvcDQcOzx
+	 hsgkuK86Q9g0z5zE5BfH0ELQD2UahEtNk+x0egd6qqczWgwi65n957AEGT7BJ591w/
+	 bZKwReIZLzdvQ==
+Received: by mail-lj1-f182.google.com with SMTP id 38308e7fff4ca-39c7ac9b8c3so13476861fa.0
+        for <linux-pm@vger.kernel.org>; Fri, 10 Jul 2026 12:39:11 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AHgh+RpGDLzR3CMcfvnuHGGxDl1CA5cIuDRbclMVajABte1cmnkbTHgIdSuykO7nPDxvn6D5JUUoQCyv+w==@vger.kernel.org
+X-Gm-Message-State: AOJu0YwPvyL6eCPDYOc5t3gGXJEQtHndd2GMS6bPeyyy0YqO3anqMtXj
+	Gl4BE/v1GLyZtc6VyDkMYKUKoe6ZNEQcTRDYcQhiir2XLJxphMfg7a0aVbJbAl5xZtTER6XEgfG
+	h4nBCbg3K7katxWqdF4nrCgvxBvg9zEA=
+X-Received: by 2002:a05:6512:350c:b0:5ae:bf2e:b86a with SMTP id
+ 2adb3069b0e04-5b0235611f9mr108035e87.8.1783712350848; Fri, 10 Jul 2026
+ 12:39:10 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-X-Mailer: git-send-email haha only kidding
+References: <20260709033428.362970-1-panchuang@vivo.com> <20260709033428.362970-5-panchuang@vivo.com>
+In-Reply-To: <20260709033428.362970-5-panchuang@vivo.com>
+From: Linus Walleij <linusw@kernel.org>
+Date: Fri, 10 Jul 2026 21:38:57 +0200
+X-Gmail-Original-Message-ID: <CAD++jL=BjZqhL34Phb2P4ZL=YfTGFX8kTEc8+yVKg+1w7KGs1w@mail.gmail.com>
+X-Gm-Features: AUfX_myT8PmuZ9-tNSLmmwKrWMbFlBNS86VEEGQkh-KBn26XkhAppa2GO_cynkQ
+Message-ID: <CAD++jL=BjZqhL34Phb2P4ZL=YfTGFX8kTEc8+yVKg+1w7KGs1w@mail.gmail.com>
+Subject: Re: [PATCH 04/43] power: supply: ab8500_btemp: Remove redundant dev_err()/dev_err_probe()
+To: Pan Chuang <panchuang@vivo.com>
+Cc: Sebastian Reichel <sre@kernel.org>, 
+	"open list:POWER SUPPLY CLASS/SUBSYSTEM and DRIVERS" <linux-pm@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-The clk_get_parent() function doesn't return error pointers, it returns
-NULL on error.  Update the error checking to match.
+On Thu, Jul 9, 2026 at 5:34=E2=80=AFAM Pan Chuang <panchuang@vivo.com> wrot=
+e:
 
-Fixes: 420993221175 ("cpufreq: SPEAr: Add CPUFreq driver")
-Signed-off-by: Dan Carpenter <error27@gmail.com>
----
- drivers/cpufreq/spear-cpufreq.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+> The devm_request_threaded_irq() and devm_request_irq() now automatically
+> log detailed error messages on failure. This eliminates the need for
+> driver-specific dev_err() and dev_err_probe() calls that previously
+> printed generic messages.
+>
+> Signed-off-by: Pan Chuang <panchuang@vivo.com>
 
-diff --git a/drivers/cpufreq/spear-cpufreq.c b/drivers/cpufreq/spear-cpufreq.c
-index 81a0780b2ebf..ffe5eda82f0b 100644
---- a/drivers/cpufreq/spear-cpufreq.c
-+++ b/drivers/cpufreq/spear-cpufreq.c
-@@ -79,9 +79,9 @@ static int spear1340_set_cpu_rate(struct clk *sys_pclk, unsigned long newfreq)
- 	int ret = 0;
- 
- 	sys_clk = clk_get_parent(spear_cpufreq.clk);
--	if (IS_ERR(sys_clk)) {
-+	if (!sys_clk) {
- 		pr_err("failed to get cpu's parent (sys) clock\n");
--		return PTR_ERR(sys_clk);
-+		return -EINVAL;
- 	}
- 
- 	/* Set the rate of the source clock before changing the parent */
--- 
-2.53.0
+Reviewed-by: Linus Walleij <linusw@kernel.org>
 
+Yours,
+Linus Walleij
