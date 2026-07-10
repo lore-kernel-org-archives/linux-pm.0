@@ -1,89 +1,89 @@
 Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4CFB43FC5CB
-	for <linux-pm@vger.kernel.org>; Fri, 10 Jul 2026 09:57:41 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C72F03FC5AB
+	for <linux-pm@vger.kernel.org>; Fri, 10 Jul 2026 09:57:42 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1783677468; cv=none; b=UWQqWqGoQtMwWrFhTyRr4TJz0LrKIMEMGfHV001Qd/S4nVScJwvcEtFcuCQiNaBM6NB4GPteYEqs3r4D433XRRiIzANVDLRZW9C3fmxjV9n/4oZMrDCqRE+1V1NFHiidbLCIBYYjEbCpqDnAiHAwDVzJzKLR/U+gdv7P4Wwy+24=
+	t=1783677469; cv=none; b=afJ5Zxshh4yF2Ma8uTEH4or6BsAzE3lxcTCY5TYSsClUWM2ep6cnT5geGFX0BTlAhwW2gGzRiZ+PyB5A96JlELdLn3DxgQXB96NqZOUThVn6Gz9PSs2eN5EmAlE6okMs4l5PM/XdVVJJwd3F9VvMdSwHgpVrFRnQwTqnNlReUBI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1783677468; c=relaxed/simple;
-	bh=2FBpwvvQE75I5khIUailuHtmF+KaL1qEU+l8PSLJfdc=;
+	s=arc-20240116; t=1783677469; c=relaxed/simple;
+	bh=7I0RHdk3qWyJVFH388ZwLbLetJ7qn/3xCwzAVbmebN4=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=at4BG6pWGl1VdrKL4OJFJm12UtQP76bVrV62XqBbvJoWKUdUHHcGcu+JU9fdnYZYH1Qlew+bv8WSTBwEtIM8yI0FESMLQFWH4v/Pa+700Z0gyq1m3WmMeUG1Kp0Z6oe/z00ZdsjypS78BHQ0P4JdfEnS8xmJ4qmPzCStQVrIACk=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=JH4UsoJa; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=Z61Sha5x; arc=none smtp.client-ip=205.220.168.131
+	 In-Reply-To:To:Cc; b=TbwdvQchCumqFVaI1z60hEq9dnMwuKPopcdU0W/MzgL0W6j3p1zyEHWysLVpew7MZURDE1q4+QznFw+Pj/150XQQgvtpxjVRdq6I0bQtWuUJ7CG1PqNwCZ8//eWU5EzuLu0E8xCWpL5r3dRdgniqo/es8goQUaE2KQ6IYeUObjE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=GMR9edp4; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=N5lsTuVF; arc=none smtp.client-ip=205.220.168.131
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="JH4UsoJa";
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="Z61Sha5x"
-Received: from pps.filterd (m0279862.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 66A7dYtT056517
-	for <linux-pm@vger.kernel.org>; Fri, 10 Jul 2026 09:57:40 GMT
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="GMR9edp4";
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="N5lsTuVF"
+Received: from pps.filterd (m0279866.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 66A9TZaQ292053
+	for <linux-pm@vger.kernel.org>; Fri, 10 Jul 2026 09:57:42 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
 	cc:content-transfer-encoding:content-type:date:from:in-reply-to
 	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	hRa1V0rI3XaAjqfNbDQPKrOYUHx+ncbEbofR/K207A0=; b=JH4UsoJaIxL9Qnjt
-	EDqt7UIvTRB5R1k6fgCRhtToC1oYoDSqCv+GjTm5MEd7ej2Z5jDAmIUWkIj+6+qU
-	lim9C3adByloFraelPCK2neFe5Gmr4HaFA41CM7W7WqFEXO8pnDMnr8fiB1pGIcX
-	w3ONI6cP9njcHc2Uln7Y63nl8B2DaBvD/MctKrnfv0g1jvQQEET8EM1+LjEdIA4P
-	vW53GtNes2rbLtve+HR/v+R/Vuu5Vt/AlC3OMVewk+Fto1X02rQI/e3h+lALOn6x
-	MScoikM+O2ChKkNm42YUYoN4AgHw878FRtMMv8rdwQXBlYrXmvkiAyPoX8xQxI2N
-	m0ZR6A==
+	GW8pkbZvfYORJjmA07dNF76DD9uMqzlV8iaeANQ36+M=; b=GMR9edp4MEDRJZ3d
+	eefnwfkR+g07cZAGReOZ0R2RW5AXUSz3E0WrR7XQ/vsYDCkQWqrYaX5k25zDHyvA
+	UP8QuxYnWrp15YFPdGb1JaK1fJK30PX2gHZIsFAPByTMSLbFLi7Qk6vWfshIuSgg
+	VCsLeDYBYFjRvXe6aSyyzN3O28sJTpshEOOXrHOvPQ/6avygar1zLHeScandaO4N
+	9sl+zVyEzmWe6lgGp16+A/mT5iysCDAm/YWqdaPIfWjaSEzcubYt55MzAhRmW1Mk
+	nhyDg9ZtzMI6sM2lluobJROKOeoDbsZq6i8g8o5l9b65dgluh2EPCx52jsGQKb0m
+	duQ9BA==
 Received: from mail-qt1-f198.google.com (mail-qt1-f198.google.com [209.85.160.198])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4fajwtafps-1
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4fax5dg3k0-1
 	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Fri, 10 Jul 2026 09:57:40 +0000 (GMT)
-Received: by mail-qt1-f198.google.com with SMTP id d75a77b69052e-51c110a3b6aso10113921cf.1
-        for <linux-pm@vger.kernel.org>; Fri, 10 Jul 2026 02:57:40 -0700 (PDT)
+	for <linux-pm@vger.kernel.org>; Fri, 10 Jul 2026 09:57:42 +0000 (GMT)
+Received: by mail-qt1-f198.google.com with SMTP id d75a77b69052e-51c0e702df8so7221821cf.2
+        for <linux-pm@vger.kernel.org>; Fri, 10 Jul 2026 02:57:41 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1783677459; x=1784282259; darn=vger.kernel.org;
+        d=oss.qualcomm.com; s=google; t=1783677461; x=1784282261; darn=vger.kernel.org;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :content-type:mime-version:subject:date:from:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=hRa1V0rI3XaAjqfNbDQPKrOYUHx+ncbEbofR/K207A0=;
-        b=Z61Sha5xuv+KyJpfvYsi0L8SRPDwV2+t0cuzTNY9K4eH5rnUyaz6Gr4A66yeM547id
-         MK8d38lbM/frxnF2NnWTiUnYarhgaxdQTmGW9rgLOSpf34PYAm+hjiBHayfdDBIvSEi5
-         KoX+KEJt0y7WGzTP5+aRNLrZUI3ixlM0KX4U1+0qOtG8iny4GZV+LkUExXKlpmElOYYh
-         0g6PjYmzMBtZb4kHaGVeH3UaABBgM7IE4jix8OKzjuDOBiOoVSGDBZwxgZ0o5UEWiPZB
-         oVUj0/CCAAjysBTY0KIA0EbbJhZ15w9tPqoyRFbOfSDBCCxUqhbQuOr+VeCyT2Dw7dDh
-         CtOQ==
+        bh=GW8pkbZvfYORJjmA07dNF76DD9uMqzlV8iaeANQ36+M=;
+        b=N5lsTuVF5QT24cUfIAsvdKWTqTWkmoWTsWqbu5LPXSzzfTNBRSzcKCI6FA0d2J3kr0
+         6sB2yg9d14TzGufEwAKyR5cKggRMm6lY4Rbk7dGXjdyDuNnz0/djGs1o1YKLPNwnAZd7
+         9mDLrhpfA4z0RxVVqVj6bih2EXcKDHkUgtbjJuvCtgd9FwQie4hipyqywuOGUl2kG75S
+         HrFJaz6SEgFlAmYnnqZTbRX5osR5HCuvdIlAb43JzoiFbNsHheOLjCXMzfL47NXxQH3D
+         krm0eHVw0douH2qWm1R5hkmuwKv6g801OXeAapCNB+ps96L7vEzBWkCYIcBqz1YderH5
+         x6fw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1783677459; x=1784282259;
+        d=1e100.net; s=20251104; t=1783677461; x=1784282261;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :content-type:mime-version:subject:date:from:x-gm-gg
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=hRa1V0rI3XaAjqfNbDQPKrOYUHx+ncbEbofR/K207A0=;
-        b=Sxy+N5ULE16+4mc2CY2/lSLKkUPLBxWyziOPRV6HVLZlM60GJ/egH+2+3rVQRCSjBn
-         /0x8UF08fmDKzfvxnYqfWOfx0COdf+d5v5FEPmIHouMrozEhOv4nm7UznAVxDvDJw5eT
-         LsJq9PPmgaJCfUAPdoQDHA91QVcFt9l+YWCD15VTKs6icMvQyT/fHPRECyS8T7ljR8zB
-         yyISp9Y18UrUTnpt5DNLtdiBAOgYaV1xfgQF+OVrLp+VYNUOPRe6cbdkYUA2NqyK4sWb
-         wij4ZQka6ZYmdMoenGqIGsXp2L/8rDDOe2rdwgl+N/uO71LU9QQgIv3ohdkNRaiIYqnG
-         Fdlw==
-X-Forwarded-Encrypted: i=1; AHgh+Rr/3gyMVWCEwEijJWmjegLFewiHH4iwkCy5Clfvyo3tf2UkRCW4/qmegFDQTXPZMDpwU7xNol3+Fg==@vger.kernel.org
-X-Gm-Message-State: AOJu0YzIRLHo+1OGviUHjTaa+Tnw3KK1BbNujlk2HI/UNNUMOLo5vN/a
-	8YbhswuMwPvvXH3su0QGefA4d658VCefxHwj9xq3wsCBBXvS2WWVHa5/32v4MA14byKZOi4fRra
-	bvinscLmXd7c42476F21V2p+0FFmqlBx7qZMtkO5RkE5k9io20Lio14c/OKscyw==
-X-Gm-Gg: AfdE7cm2AXVNEHMGtiUw2i83HWYs8KJ/Dngi2yiA7yk0eGBZlgSPN9k2Ds0pg8fXlOz
-	HkHHpmDaoZFK0ZiCxpcFW/fWc6/ODS+V8UfyT8g+ku6vhvib1ajnwHTC0lMGfxGhtRpoFdcDwPO
-	UiFnpOxsNWGUBuIn7KgjlODAbyVvhLpXrHlNkpGgW61v8fJGCAbBGkDDkBX/oJcLN63VdOIbQPF
-	6gq3uZ23U1BC1d1lT974BwqDpDD//aebhFKhRJj/iAxfotUSuD/F232jj0s9e8AGWWJnjxH0Ude
-	GYAFjZIKun3EfJQP/W4D0jOAizycxf/TpG+7nvqPA9Y6iLFChIjkq42x5ekqWCPktdKBQGOVXVM
-	xSRJ8ZyIStM8wAXKvANeOqNGBho9FILsrzV1WVbiWyqwo6nfARfc1V5c0mcEfMhTrROOc/ecvqk
-	ES1f8PoeTa74CT1He6M6PyW6RoiBpnQXUlkpuIQk9wAkDoTI+VAZCNiwdrNQrTcT6VuJ3yBRvtW
-	C/dPejZv7FxCbz1UVOb
-X-Received: by 2002:a05:622a:55:b0:51a:88f8:bef2 with SMTP id d75a77b69052e-51c8b3daeb9mr118302921cf.28.1783677459298;
-        Fri, 10 Jul 2026 02:57:39 -0700 (PDT)
-X-Received: by 2002:a05:622a:55:b0:51a:88f8:bef2 with SMTP id d75a77b69052e-51c8b3daeb9mr118302571cf.28.1783677458821;
-        Fri, 10 Jul 2026 02:57:38 -0700 (PDT)
+        bh=GW8pkbZvfYORJjmA07dNF76DD9uMqzlV8iaeANQ36+M=;
+        b=Hba+c5vJ5UTabZjVi5C7p+0IZxRs/kxXpJq5L2arfXB5C8dbamHVdR3BnakYzx9DlJ
+         AE9jYuu2NP5gXsvTt3XJseYCkYmGb6B4e4ovboZBLJs+NRfyDRqSGtN0MAQWFYAePURc
+         KrJK1+3PD1vVR4R81zFZ4xG3QjYLyE9b4b4lLocDggG6q4ahzuHNEV2DC+V1wQt98pnI
+         /2fWj4nKLbzAzADi2ioMgEsWV3XO5gqFhq8s2Yco6aA3lZVyvZ4VkDqhLHEMII3PNq86
+         Cx/Az0GKVMWAUnTxiKpgx1/c2UdUjAfPieQ2KiXGerCSUhDfS3bEdoysyvB296TTmecg
+         gu0w==
+X-Forwarded-Encrypted: i=1; AHgh+RrPCeMG8gUyTa5t4gJKVE+phfGQ5Oies26KRIDqaMHPcKUcOV2lzTzvIJZWjMrxj1KFzFizRHcjUA==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yzvo3qkWqkyvWmd0IcGcNy/DKnkyr2RxWDZIn+4H7hhpSQeT12d
+	zhKJscbKuhVq8B36FmoHDMbt0guVs53SrBh5F5Nnr0b4iGOH2Br+jl4C2mCNK/JCZXMhLSUTZqS
+	hexJQQi79QS6qv31RAuHGSqYAWvxtnU5Nz8x5XZ+/4A2x1mMHQVfjLnZ4aCwmVw==
+X-Gm-Gg: AfdE7cm585/YBRiXP6N7YuugwCjScc/TzzMvH9RoClBWObflD9a72eUQRBl3ntps7ZO
+	BA8PiyM7AHGWrfySUJUxHd7/Z6I3X8YOJ9ZrdWHq14J0yedtWCGZVgpK5/PrKvMfPz5swZ3iF7Y
+	JOQPPPwKd4okcJMiMdC/gmx4M0Zb5KhJKgoMLVhxm+M0dQg1YQaucGJI6OmHk6OODx3dtC7zfZ6
+	Ifo9Q74XTvISpyg4vRIKad2Q/jujL/iVm79SU71DhP29mYuAMhcf6XS2ysazLm2Gc0DB1sjTmZi
+	o1mnD5sQerIy6xMCx20uNewFCeee27/nWSBTcaaEICQmczP/SQy1zvvHCsk/9svOssZiuzFCXJL
+	g5fuEOjqgPFKSn4EJ1toNbenLX6LTVo9JgZiJhfUJq8pqH4Td6PQyUJfDoO9VKfeX3J88obKzyb
+	LStlsDMw+f8PR3/1cY/1Kf6zPvX9WBjWYnD0A4Ye+2GrdDg/wtBeNPXMNX0UEcXA2qe3+WThqgZ
+	2pergGuyaUKRluIKo0g
+X-Received: by 2002:ac8:5956:0:b0:51c:7b12:5fe9 with SMTP id d75a77b69052e-51c8b42893amr134253361cf.85.1783677460977;
+        Fri, 10 Jul 2026 02:57:40 -0700 (PDT)
+X-Received: by 2002:ac8:5956:0:b0:51c:7b12:5fe9 with SMTP id d75a77b69052e-51c8b42893amr134253051cf.85.1783677460461;
+        Fri, 10 Jul 2026 02:57:40 -0700 (PDT)
 Received: from QCOM-eG0v1AUPpu.na.qualcomm.com (82-64-236-198.subs.proxad.net. [82.64.236.198])
-        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-c15dfda815dsm265357966b.36.2026.07.10.02.57.37
+        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-c15dfda815dsm265357966b.36.2026.07.10.02.57.39
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 10 Jul 2026 02:57:38 -0700 (PDT)
+        Fri, 10 Jul 2026 02:57:39 -0700 (PDT)
 From: Loic Poulain <loic.poulain@oss.qualcomm.com>
-Date: Fri, 10 Jul 2026 11:57:30 +0200
-Subject: [PATCH v3 04/11] power: sequencing: pcie-m2: Report power
+Date: Fri, 10 Jul 2026 11:57:31 +0200
+Subject: [PATCH v3 05/11] power: sequencing: qcom-wcn: Report power
  controllability
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
@@ -93,7 +93,7 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260710-monza-wireless-v3-4-46253587af64@oss.qualcomm.com>
+Message-Id: <20260710-monza-wireless-v3-5-46253587af64@oss.qualcomm.com>
 References: <20260710-monza-wireless-v3-0-46253587af64@oss.qualcomm.com>
 In-Reply-To: <20260710-monza-wireless-v3-0-46253587af64@oss.qualcomm.com>
 To: Manivannan Sadhasivam <mani@kernel.org>,
@@ -110,103 +110,120 @@ Cc: linux-pci@vger.kernel.org, linux-pm@vger.kernel.org,
         Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>,
         Loic Poulain <loic.poulain@oss.qualcomm.com>
 X-Mailer: b4 0.14.2
-X-Authority-Analysis: v=2.4 cv=XOYAjwhE c=1 sm=1 tr=0 ts=6a50c214 cx=c_pps
+X-Proofpoint-Spam-Info: AW1haW4tMjYwNzEwMDA5NyBTYWx0ZWRfX+KbUzS5umZA7
+ +wx0hXki/PnEv5PlyKxhdLC4K7nGynd7oz5Fuxz8E5Y8GUzT4xuQc6yhAwpYq7CWGvHoA/Zi/s0
+ YE9H+m2+rom0kjOr8/tC9ZPLr6ZjBT4=
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzEwMDA5NyBTYWx0ZWRfXwXcGo4DBHJlJ
+ 0SLBT4MzNmsApBrIPa/hlT5kgFM/4dZHadtkx5mbbjNlBNTJsmnpQm1GxEeciC4QoVFEjB35JJy
+ /8thcwlYO3AoADAv8aXNj9Dp6J2NFQZPel57IVjccQ3x+GTW2s3exdmI/cGLdZi+QB3DaO5CDx5
+ wc51bDsILLqpyfyRsOLzcTk5D7d0h/tV5Hg/eYjiEPiZoPhgXhAx9rSa998Z4Z5/B0+MMCbjwfo
+ c2Wm+VO5F+vCMLIPgjGuuEOYr0C2SWElDy4JF+8f7tZzgfBArRWkHrXzauivWOiXF9tvAVLAotW
+ 97MYmx1bDv9wqB7uYRfPTiplBS0Ve2vqcCtFoJtQUBSMnXFROl9u1+93xjlMze5B7iZqubqKchG
+ EdAkW9DIteW+mWBRBv9cb30YGxP0H01s0MjLn9lX13okYxzW+Qn1Es7VzXW+u0j+P1pL6Kkd5ZN
+ YQ+jz621NdjdrfA87Ow==
+X-Proofpoint-GUID: 72_vv8B1dIdj0AIBKoX7yW2PeYOH9EJ5
+X-Proofpoint-ORIG-GUID: 72_vv8B1dIdj0AIBKoX7yW2PeYOH9EJ5
+X-Authority-Analysis: v=2.4 cv=M/x97Sws c=1 sm=1 tr=0 ts=6a50c216 cx=c_pps
  a=mPf7EqFMSY9/WdsSgAYMbA==:117 a=MDeckJw97qnk8wCBExTehA==:17
  a=IkcTkHD0fZMA:10 a=RAioF0-LDSMA:10 a=s4-Qcg_JpJYA:10
- a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=_K5XuSEh1TEqbUxoQ0s3:22
- a=EUspDBNiAAAA:8 a=ZbPLKLkBM29APCUVJXgA:9 a=QEXdDO2ut3YA:10
+ a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=YMgV9FUhrdKAYTUUvYB2:22
+ a=EUspDBNiAAAA:8 a=QWuo0IUDA92h_ITipQ8A:9 a=QEXdDO2ut3YA:10
  a=dawVfQjAaf238kedN5IG:22
-X-Proofpoint-GUID: _Tj1tNQak-9xZHCqEJOLaoVmafnBj8yr
-X-Proofpoint-Spam-Info: AW1haW4tMjYwNzEwMDA5OCBTYWx0ZWRfX4muWgnghSdoV
- hmM/Ty5D+Dhggn1RybtaOiNidYXZsudxFN+eVx3hWkmOqdQxBYmZ4O8TlOX+ZZQZSIioVKrIx5W
- xT/bczC2x3iXJkP0ucIHcPBCXIxlbdg=
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzEwMDA5OCBTYWx0ZWRfX4ZkExYl6PbDN
- nwkD9UTj6XM8G6G5SGNhf/VCNVwCmlrudQ4JKyl3Tr/y9Ee/lgS9HFlT5iXUuctwam6ZVB+Vdnj
- 1LIV0qWYBq8jYQZnc384OQGVO1eOarfVamwyZ47+0SVo0wDaahnzRZ2AMMIUPxQ4G/nSRTdYbP6
- iuPyZo5NgwjUNKoSizJvxELSYirkcRf1RfIhjuphWFtHIWS4N2JF5kZ8l0QDNyFvZeGHWaHamnH
- OlJ2Z/ixoCe+1kCsfsGwi/cUtUOdM2SlquTuuwcHAZmKju2DWhl5SEleTL7vFNbNb9RewtHBhDX
- lFO9EL/SP9VXqCu2SSX+cGY3BV8YZ6jXQrQ4bRUNVmM+Eu/PgfgOOOjw3y5HVA942pMdYIpeWtt
- P3ciGY0piCLJVDG9+J+WhVdbufL/TdxeC0KfKgJB+xbke4kQH22mgaC2MjcJBA0AUZX2NakrshL
- Fkx6FXNlI2dBeEvwAlA==
-X-Proofpoint-ORIG-GUID: _Tj1tNQak-9xZHCqEJOLaoVmafnBj8yr
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.134,FMLib:17.12.100.49
  definitions=2026-07-10_02,2026-07-09_04,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- lowpriorityscore=0 malwarescore=0 suspectscore=0 adultscore=0 bulkscore=0
- spamscore=0 priorityscore=1501 clxscore=1015 phishscore=0 impostorscore=0
+ lowpriorityscore=0 adultscore=0 bulkscore=0 malwarescore=0 suspectscore=0
+ phishscore=0 spamscore=0 clxscore=1015 priorityscore=1501 impostorscore=0
  classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2607100098
+ reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2607100097
 
-The M.2 Key E connector gates its functions through the W_DISABLE1#
-(PCIe/WiFi) and W_DISABLE2# (Bluetooth) signals. When a signal is not
-routed to a host GPIO, the corresponding enable/disable callbacks are
-no-ops, so the host cannot gate that function's power on its own.
+The "bluetooth" and "wlan" targets drive the BT_EN and WLAN_EN GPIOs to
+gate the respective functions. These GPIOs are optional, on some boards
+they are hardwired to an always-on pull-up and not routed to a host GPIO.
+In that case the corresponding enable/disable callbacks are no-ops, so the
+host cannot gate that function's power on its own.
 
-Implement the per-unit .is_controllable() callback on the "uart-enable"
-and "pcie-enable" units so that consumers can query this per instance
-(based on the runtime presence of the W_DISABLE2#/W_DISABLE1# GPIOs) via
-pwrseq_power_is_controllable().
+Implement the per-unit .is_controllable() callback on the bluetooth-enable
+and wlan-enable units so that consumers can query this via the pwrseq API.
 
 Signed-off-by: Loic Poulain <loic.poulain@oss.qualcomm.com>
 ---
- drivers/power/sequencing/pwrseq-pcie-m2.c | 26 ++++++++++++++++++++++++++
- 1 file changed, 26 insertions(+)
+ drivers/power/sequencing/pwrseq-qcom-wcn.c | 30 ++++++++++++++++++++++++++++++
+ 1 file changed, 30 insertions(+)
 
-diff --git a/drivers/power/sequencing/pwrseq-pcie-m2.c b/drivers/power/sequencing/pwrseq-pcie-m2.c
-index e3ba9169144dabbf0c553c0a4302c3b511fcaaa1..4bcd5078609da1be966ab30c73cffae5e578934f 100644
---- a/drivers/power/sequencing/pwrseq-pcie-m2.c
-+++ b/drivers/power/sequencing/pwrseq-pcie-m2.c
-@@ -84,11 +84,24 @@ static int pwrseq_pci_m2_e_uart_disable(struct pwrseq_device *pwrseq)
- 	return gpiod_set_value_cansleep(ctx->w_disable2_gpio, 1);
+diff --git a/drivers/power/sequencing/pwrseq-qcom-wcn.c b/drivers/power/sequencing/pwrseq-qcom-wcn.c
+index b55b4317e21b626e050e022648147770ca7f386e..d5c9b734b0538e209734e15980ff2877ef5a614d 100644
+--- a/drivers/power/sequencing/pwrseq-qcom-wcn.c
++++ b/drivers/power/sequencing/pwrseq-qcom-wcn.c
+@@ -184,11 +184,25 @@ static int pwrseq_qcom_wcn_bt_disable(struct pwrseq_device *pwrseq)
+ 	return 0;
  }
  
-+static bool pwrseq_pci_m2_e_uart_is_controllable(struct pwrseq_device *pwrseq)
++static bool pwrseq_qcom_wcn_bt_is_controllable(struct pwrseq_device *pwrseq)
 +{
-+	struct pwrseq_pcie_m2_ctx *ctx = pwrseq_device_get_drvdata(pwrseq);
++	struct pwrseq_qcom_wcn_ctx *ctx = pwrseq_device_get_drvdata(pwrseq);
 +
 +	/*
-+	 * The UART enable is driven through the W_DISABLE2# line. When it is not
-+	 * wired up on this connector the enable/disable callbacks are no-ops, so
-+	 * the host cannot gate the Bluetooth function on its own.
++	 * The Bluetooth enable is driven through the BT_EN GPIO. When it is not
++	 * wired up (e.g. hardwired to an always-on pull-up), the enable/disable
++	 * callbacks are no-ops, so the host cannot gate the Bluetooth function
++	 * on its own.
 +	 */
-+	return !!ctx->w_disable2_gpio;
++	return !!ctx->bt_gpio;
 +}
 +
- static const struct pwrseq_unit_data pwrseq_pcie_m2_e_uart_unit_data = {
- 	.name = "uart-enable",
- 	.deps = pwrseq_pcie_m2_unit_deps,
- 	.enable = pwrseq_pci_m2_e_uart_enable,
- 	.disable = pwrseq_pci_m2_e_uart_disable,
-+	.is_controllable = pwrseq_pci_m2_e_uart_is_controllable,
+ static const struct pwrseq_unit_data pwrseq_qcom_wcn_bt_unit_data = {
+ 	.name = "bluetooth-enable",
+ 	.deps = pwrseq_qcom_wcn_unit_deps,
+ 	.enable = pwrseq_qcom_wcn_bt_enable,
+ 	.disable = pwrseq_qcom_wcn_bt_disable,
++	.is_controllable = pwrseq_qcom_wcn_bt_is_controllable,
  };
  
- static int pwrseq_pci_m2_e_pcie_enable(struct pwrseq_device *pwrseq)
-@@ -105,11 +118,24 @@ static int pwrseq_pci_m2_e_pcie_disable(struct pwrseq_device *pwrseq)
- 	return gpiod_set_value_cansleep(ctx->w_disable1_gpio, 1);
+ static const struct pwrseq_unit_data pwrseq_qcom_wcn6855_bt_unit_data = {
+@@ -196,6 +210,7 @@ static const struct pwrseq_unit_data pwrseq_qcom_wcn6855_bt_unit_data = {
+ 	.deps = pwrseq_qcom_wcn6855_unit_deps,
+ 	.enable = pwrseq_qcom_wcn_bt_enable,
+ 	.disable = pwrseq_qcom_wcn_bt_disable,
++	.is_controllable = pwrseq_qcom_wcn_bt_is_controllable,
+ };
+ 
+ static int pwrseq_qcom_wcn_wlan_enable(struct pwrseq_device *pwrseq)
+@@ -218,11 +233,25 @@ static int pwrseq_qcom_wcn_wlan_disable(struct pwrseq_device *pwrseq)
+ 	return 0;
  }
  
-+static bool pwrseq_pci_m2_e_pcie_is_controllable(struct pwrseq_device *pwrseq)
++static bool pwrseq_qcom_wcn_wlan_is_controllable(struct pwrseq_device *pwrseq)
 +{
-+	struct pwrseq_pcie_m2_ctx *ctx = pwrseq_device_get_drvdata(pwrseq);
++	struct pwrseq_qcom_wcn_ctx *ctx = pwrseq_device_get_drvdata(pwrseq);
 +
 +	/*
-+	 * The PCIe/WiFi enable is driven through the W_DISABLE1# line. When it
-+	 * is not wired up on this connector the enable/disable callbacks are
-+	 * no-ops, so the host cannot gate the PCIe/WiFi function on its own.
++	 * The WLAN enable is driven through the WLAN_EN GPIO. When it is not
++	 * wired up (e.g. hardwired to an always-on pull-up), the enable/disable
++	 * callbacks are no-ops, so the host cannot gate the WLAN function on
++	 * its own.
 +	 */
-+	return !!ctx->w_disable1_gpio;
++	return !!ctx->wlan_gpio;
 +}
 +
- static const struct pwrseq_unit_data pwrseq_pcie_m2_e_pcie_unit_data = {
- 	.name = "pcie-enable",
- 	.deps = pwrseq_pcie_m2_unit_deps,
- 	.enable = pwrseq_pci_m2_e_pcie_enable,
- 	.disable = pwrseq_pci_m2_e_pcie_disable,
-+	.is_controllable = pwrseq_pci_m2_e_pcie_is_controllable,
+ static const struct pwrseq_unit_data pwrseq_qcom_wcn_wlan_unit_data = {
+ 	.name = "wlan-enable",
+ 	.deps = pwrseq_qcom_wcn_unit_deps,
+ 	.enable = pwrseq_qcom_wcn_wlan_enable,
+ 	.disable = pwrseq_qcom_wcn_wlan_disable,
++	.is_controllable = pwrseq_qcom_wcn_wlan_is_controllable,
  };
  
- static const struct pwrseq_unit_data pwrseq_pcie_m2_m_pcie_unit_data = {
+ static const struct pwrseq_unit_data pwrseq_qcom_wcn6855_wlan_unit_data = {
+@@ -230,6 +259,7 @@ static const struct pwrseq_unit_data pwrseq_qcom_wcn6855_wlan_unit_data = {
+ 	.deps = pwrseq_qcom_wcn6855_unit_deps,
+ 	.enable = pwrseq_qcom_wcn_wlan_enable,
+ 	.disable = pwrseq_qcom_wcn_wlan_disable,
++	.is_controllable = pwrseq_qcom_wcn_wlan_is_controllable,
+ };
+ 
+ static int pwrseq_qcom_wcn_pwup_delay(struct pwrseq_device *pwrseq)
 
 -- 
 2.34.1
