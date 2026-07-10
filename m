@@ -1,96 +1,120 @@
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id E567C449997;
-	Thu,  9 Jul 2026 22:13:53 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2ABF279DA;
+	Fri, 10 Jul 2026 02:50:59 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1783635236; cv=none; b=Yel900C90lLpKyjeHloTKn+UhnXzTRtgiAH7JQ2jR+tLxEoYgJeDd2obdYGPA7UYbqv/l2GaO9zYFSgaiUPB+9Gr4JksxSlniSK0KQr2eI+NQrQTn3OWfNazv7SBoZo0El66ncGjdDJuh4Xj5rAN2usk90offi3GV5sTDXCM9II=
+	t=1783651859; cv=none; b=TATD4qhvIUYz8BNpyvebz7vzoDwa5s62xL7KLj8jdeH0mfS69slbvDN3qimVOZOu15nPN8VmjERVHJvLMrxduqCvPSg6pGRAsjOAeumA5bq7ltGEkjq82rceeE8yLms7M/MAsGAroznb+0Kxw0jD4H7Eq8SO2j0/O3G2n6pCNdo=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1783635236; c=relaxed/simple;
-	bh=iL/HW5R8VC4E9H6N9UAhTc6qJyy2H5W+21lD1Hj7vDg=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=EObhJXegHc7mKM8HyMHCh0GgsmmmNd5qG/3UlyuWXqygAQgnNtZzERcA6/otnaNH7XiHXCJ3PHizmOOfyp4zHISEgeEB5lwaeGJvTc+KcGzOFszt1t2BsSBRrwBf3ifnf1M2k8Zp/JyE7kbp9PERcmeMzBXB5naKErnJLXOWemU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=fyhHxWLe; arc=none smtp.client-ip=217.140.110.172
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
+	s=arc-20240116; t=1783651859; c=relaxed/simple;
+	bh=3t+IwPNjchGwRw8aPRco1AcIAze6OzD8uBa6XiV4+D0=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=E3m/2TmQm3LES6VIZntRRe1VNCAUweOBzSpo9RWmAqYGx0wk2tyk92BL/c+sdT4PN/W21O0D6Z3e/ZGh+iAtpR1/yLbLyYMmUKeNpmSl7gCzEWerq+A07fanAm1tX4njVQIwa24Pf/myYf1TI5LipFpY0AeLCo5TvM4s8o5v+H4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=JYKHKw5H; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="fyhHxWLe"
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 38BEB24C0;
-	Thu,  9 Jul 2026 15:13:49 -0700 (PDT)
-Received: from u200865.usa.arm.com (U203867.austin.arm.com [10.118.30.58])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 6B4C63F66F;
-	Thu,  9 Jul 2026 15:13:53 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1783635233; bh=iL/HW5R8VC4E9H6N9UAhTc6qJyy2H5W+21lD1Hj7vDg=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=fyhHxWLeeVR7WCv66flWW3cpjjTp8ZJjyjEP5g94iVn9z1feofEeNsW1CSiEmrdUn
-	 wyGwZNOzXY/Sg1pAouzuZDgcHDYFYo1482AukUqflU7YHhsw/1bFeVBNBWYe7/8BiZ
-	 yIJO+vfNxaukTlD94sFN304OqxRUUXd/eaOgbeUk=
-From: Jeremy Linton <jeremy.linton@arm.com>
-To: linux-pm@vger.kernel.org
-Cc: trenn@suse.com,
-	shuah@kernel.org,
-	jwyatt@redhat.com,
-	jkacur@redhat.com,
-	kaushlendra.kumar@intel.com,
-	sashal@kernel.org,
-	fj5851bi@fujitsu.com,
-	rui.zhang@intel.com,
-	linux-kernel@vger.kernel.org,
-	Jeremy Linton <jeremy.linton@arm.com>
-Subject: [PATCH 3/3] cpupower: Print kernel and hardware frequency information
-Date: Thu,  9 Jul 2026 17:13:44 -0500
-Message-ID: <20260709221344.1919794-4-jeremy.linton@arm.com>
-X-Mailer: git-send-email 2.54.0
-In-Reply-To: <20260709221344.1919794-1-jeremy.linton@arm.com>
-References: <20260709221344.1919794-1-jeremy.linton@arm.com>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="JYKHKw5H"
+Received: by smtp.kernel.org (Postfix) with ESMTPS id C40A3C2BCC6;
+	Fri, 10 Jul 2026 02:50:58 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1783651858;
+	bh=3t+IwPNjchGwRw8aPRco1AcIAze6OzD8uBa6XiV4+D0=;
+	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
+	b=JYKHKw5Hpy1pZ/NyI+757U62Argk7txP87Sm7EoqZPhFRZKcBDDAYLx4bUMUnwB1W
+	 KYvvolQgXKb9awWHjmnNrMeEUO5fk8Wa6c/FmtJIdEc6dvKjr5j/UwTxhsaaTFfmQ3
+	 pOyVuLTduLeGyO0uT1jGBa8uUEPTf67npr8tXuVBWI4XzA7l41hreM8w7FAs+L9J5l
+	 WM9l+v4ZLXRgCESSzZmX5ApNs0uEgL6tbZiQSA/gzIjd/+AECH4U5yB8yqfgKn2UiJ
+	 wsRwG2CxJGTBGTH4Vls+w/w5MYLMhAcSB8pw/wC40Bk4xXSx4i6vju8VjbNSL26t2z
+	 Xmx/HK8sTWOVQ==
+Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A57A5C44501;
+	Fri, 10 Jul 2026 02:50:58 +0000 (UTC)
+From: HaoNing Cheng via B4 Relay <devnull+Haoning.CHENG.cn.bosch.com@kernel.org>
+Date: Fri, 10 Jul 2026 10:50:40 +0800
+Subject: [PATCH v3 1/2] dt-bindings: thermal: imx: Document calibration
+ offset property
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20260710-b4-symana21-11221-imx-thermal-support-upstream-6-18-v3-1-db9fc2947c55@cn.bosch.com>
+References: <20260710-b4-symana21-11221-imx-thermal-support-upstream-6-18-v3-0-db9fc2947c55@cn.bosch.com>
+In-Reply-To: <20260710-b4-symana21-11221-imx-thermal-support-upstream-6-18-v3-0-db9fc2947c55@cn.bosch.com>
+To: "Rafael J. Wysocki" <rafael@kernel.org>, 
+ Daniel Lezcano <daniel.lezcano@linaro.org>, Zhang Rui <rui.zhang@intel.com>, 
+ Lukasz Luba <lukasz.luba@arm.com>, Rob Herring <robh@kernel.org>, 
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+ Conor Dooley <conor+dt@kernel.org>, Shawn Guo <shawnguo@kernel.org>, 
+ Sascha Hauer <s.hauer@pengutronix.de>, 
+ Pengutronix Kernel Team <kernel@pengutronix.de>, 
+ Fabio Estevam <festevam@gmail.com>
+Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org, 
+ imx@lists.linux.dev, linux-arm-kernel@lists.infradead.org, 
+ linux-kernel@vger.kernel.org, Haoning CHENG <Haoning.CHENG@cn.bosch.com>
+X-Mailer: b4 0.15.2
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1783651853; l=1701;
+ i=Haoning.CHENG@cn.bosch.com; s=20260709; h=from:subject:message-id;
+ bh=WG7m2ewau975nWzQXBSSwPCqnASh0rwyMkTjPm4T6VA=;
+ b=lLDZAoJCUsyWvtYba3lIKK493xDvZUQOlG1N3cy82958lQRKrulD8XmbQCO/ZWa8q+WgA/Ptq
+ 0zuw2J7+pN6B7933X+zYjI4dUhlLQTsFSIQjOpmK+tby59kPBPoaAYb
+X-Developer-Key: i=Haoning.CHENG@cn.bosch.com; a=ed25519;
+ pk=glQGwad/fosRS5gZUJYbLDPPLGe7rFTrTV2VxY/ySdc=
+X-Endpoint-Received: by B4 Relay for Haoning.CHENG@cn.bosch.com/20260709
+ with auth_id=860
+X-Original-From: HaoNing Cheng <Haoning.CHENG@cn.bosch.com>
+Reply-To: Haoning.CHENG@cn.bosch.com
 
-The kernel asserted frequency from scaling_cur_freq may not always match
-the hardware reported frequency from cpuinfo_cur_freq.
+From: HaoNing Cheng <Haoning.CHENG@cn.bosch.com>
 
-Print both values when they are available, and only print the unavailable
-message on x86 when the hardware frequency can't be read.
+Some boards need a small per-design correction to align the reported CPU
+temperature with board-level measurements.
 
-Signed-off-by: Jeremy Linton <jeremy.linton@arm.com>
+Document the optional fsl,temp-calibration-offset-millicelsius property,
+a signed offset in millicelsius that is added to the calculated sensor
+temperature. The property is optional and the existing behaviour is kept
+when it is omitted.
+
+Update the binding example to show its usage.
+
+Signed-off-by: HaoNing Cheng <Haoning.CHENG@cn.bosch.com>
 ---
- tools/power/cpupower/utils/cpufreq-info.c | 8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+ Documentation/devicetree/bindings/thermal/imx-thermal.yaml | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
 
-diff --git a/tools/power/cpupower/utils/cpufreq-info.c b/tools/power/cpupower/utils/cpufreq-info.c
-index 105f06e690cc..11629ae49f98 100644
---- a/tools/power/cpupower/utils/cpufreq-info.c
-+++ b/tools/power/cpupower/utils/cpufreq-info.c
-@@ -270,10 +270,10 @@ static int get_freq_hardware(unsigned int cpu, unsigned int human)
- {
- 	unsigned long freq;
+diff --git a/Documentation/devicetree/bindings/thermal/imx-thermal.yaml b/Documentation/devicetree/bindings/thermal/imx-thermal.yaml
+index 949b154856c5..704bf2fa48cf 100644
+--- a/Documentation/devicetree/bindings/thermal/imx-thermal.yaml
++++ b/Documentation/devicetree/bindings/thermal/imx-thermal.yaml
+@@ -59,6 +59,15 @@ properties:
+   clocks:
+     maxItems: 1
  
--	if (!(cpupower_cpu_info.caps & CPUPOWER_CAP_APERF))
-+	freq = cpufreq_get_freq_hardware(cpu);
-+	if (!(cpupower_cpu_info.caps & CPUPOWER_CAP_APERF) && !freq)
- 		return -EINVAL;
++  fsl,temp-calibration-offset-millicelsius:
++    maxItems: 1
++    description:
++      A signed calibration offset, in millicelsius, added to the calculated
++      sensor temperature to compensate for board-level measurement
++      differences. When absent, no offset is applied.
++    minimum: -28580
++    maximum: 28580
++
+   "#thermal-sensor-cells":
+     const: 0
  
--	freq = cpufreq_get_freq_hardware(cpu);
- 	printf(_("  current CPU frequency: "));
- 	if (!freq) {
- 		printf("Unable to call hardware\n");
-@@ -514,8 +514,8 @@ static void debug_output_one(unsigned int cpu)
- 
- 	get_available_governors(cpu);
- 	get_policy(cpu);
--	if (get_freq_hardware(cpu, 1) < 0)
--		get_freq_kernel(cpu, 1);
-+	get_freq_hardware(cpu, 1);
-+	get_freq_kernel(cpu, 1);
- 	get_boost_mode(cpu);
- 	get_perf_cap(cpu);
- }
+@@ -109,6 +118,7 @@ examples:
+             nvmem-cells = <&tempmon_calib>, <&tempmon_temp_grade>;
+             nvmem-cell-names = "calib", "temp_grade";
+             clocks = <&clks IMX6SX_CLK_PLL3_USB_OTG>;
++            fsl,temp-calibration-offset-millicelsius = <(-6400)>;
+             #thermal-sensor-cells = <0>;
+         };
+     };
+
 -- 
-2.54.0
+2.43.0
+
 
