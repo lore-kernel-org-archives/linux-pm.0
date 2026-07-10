@@ -1,109 +1,142 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-yw1-f175.google.com (mail-yw1-f175.google.com [209.85.128.175])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 267DB40C5CF
-	for <linux-pm@vger.kernel.org>; Fri, 10 Jul 2026 10:42:32 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EAA573F39F2
+	for <linux-pm@vger.kernel.org>; Fri, 10 Jul 2026 11:10:05 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.175
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1783680153; cv=none; b=svBM9sBOxnWGAViP1xpcm2Uh3uxsHTE89TF4nTaiTXR9ch5pvufFtrOj+A1QxExzCbeOxvq02AKJ4FwezkN/cn/K1z8ArAtMu5FidRZpIEPDCZhb2a32s4JDpqrXApL7yui7cS0Jh2e+Xz4jE/LwWewKLWRzZW3r4zbS4K1Sq5E=
+	t=1783681807; cv=none; b=bKVxphJRLbSvfhVfA4kFDGy+o0uT69Vt43Y3kH6NPO4z3zAXNNRg6oPdunb/Lcu1a28uFIyxCmHr3yK97sUj7WyW/7y1E0/nlu1xo4axse43PvZqc0urYz3unhkrcsV1A88RLnc3p238v6ZFGeAx0P3DCQlEDNh3c1ilGJbmIns=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1783680153; c=relaxed/simple;
-	bh=ThH+1fvwr0fKTcO6a7KsatsJI8sj4l9QUj8rdS8pUKo=;
+	s=arc-20240116; t=1783681807; c=relaxed/simple;
+	bh=TAoC8AtqfvyrcOiH125Z48ckCbhqCjSDAUjYBMGFx+c=;
 	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=IvjS1yVBj3TeD/nB4ur3QkKom73gm1c0SKa3AyDZeD45ahmKwDqCIVGtm0KfIKC8jwxdPn7WlmHT8JpCyBW5IXcU9VbN8IljVmWY2fhgNZzcBho+EtGLJ6p5UDQFl7fWfjr6DqrmLewK716K+sV6qFRwuYEMfm8QAVV6eLZVQfs=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=DmonNfKd; arc=none smtp.client-ip=100.103.45.18
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="DmonNfKd"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id E36DD1F00A3E
-	for <linux-pm@vger.kernel.org>; Fri, 10 Jul 2026 10:42:31 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1783680151;
-	bh=6mXYoGljL4glCAb32pdfjdC0FVD85sDkej7+/p4xLXI=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc;
-	b=DmonNfKdNgsD9/KmdaS4KxP2sh4owbptoEpZ4V1Cklu+saysNZ6+IcbfwFAKXqUaN
-	 ngVaVnQG4tbWHthvHKGX+Rm+NG+99pRl/GfxsmGwkgFtFLBjrHOXYWNj83ajMO7FuW
-	 mFZiLdjucRhBlHpClBw23Za9cOuyRW2pFMh2pMo4A1xe2z4D1OhnLuU3DkI+fOF9Yu
-	 lyh0l4nF5ENf8IQI2eQyUIp1c5prSf6Wlg0Ru34SpZ1qClaEKT5sT6MWRrexUjnMgV
-	 nUPSOKYpj3+xqYdKN5FVWb8QIxZvL0e+p3jxT8QMYRNHGnRXhMAALIOzveh7NKI+1c
-	 NLwBJkwcNX7Ng==
-Received: by mail-lf1-f54.google.com with SMTP id 2adb3069b0e04-5b00d083818so1658152e87.1
-        for <linux-pm@vger.kernel.org>; Fri, 10 Jul 2026 03:42:31 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AHgh+RqZI1hw2PHNSbX8zfDHPCL3e/Ka90oINkk6Jv5zrl2Nznnkpanwtxl8zzHbB7Qw4kDFpUvQl/1zrA==@vger.kernel.org
-X-Gm-Message-State: AOJu0YzEnqH6Ud2SCjLjK98yDbScy/B/qiZ+xiTmfb+Aal+OeXWI7DfK
-	LrPDZKvNrXnJ1a4q6qvH4TCi41gyzEI3oAA7R2rjVURR0Bw8mU2x5Bqg9EYKGEcKG1u3NAJKhBg
-	nAWN6NVinivxQ8ujLQBqZgur/W4ZRsSA=
-X-Received: by 2002:a05:6512:340b:b0:5ae:a500:e368 with SMTP id
- 2adb3069b0e04-5b01c606265mr634149e87.3.1783680150375; Fri, 10 Jul 2026
- 03:42:30 -0700 (PDT)
+	 To:Cc:Content-Type; b=AAx0u7+fAx37aVmEvqgz2Ih6msBjFLNorCoCrtfGwEjfVvDu07/ASI05aiI/zlfv/3Kyna96VymuB+njDfRAeScUxuwi9/+pNtzM+lf5XR4PGe/hB6f/OyNFSgAGysJkKSxDfZMQXHAYVgg8tpft1EqIjswhLKlMva7v9f4Cz58=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org; spf=pass smtp.mailfrom=gmail.com; arc=none smtp.client-ip=209.85.128.175
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+Received: by mail-yw1-f175.google.com with SMTP id 00721157ae682-81e7826cbd2so8901687b3.3
+        for <linux-pm@vger.kernel.org>; Fri, 10 Jul 2026 04:10:05 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1783681805; x=1784286605;
+        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
+         :references:mime-version:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to:content-type;
+        bh=MuUmGqSSA58rP0nRidv37IIoymAVqS6FDOb1XQHbyds=;
+        b=GlxvWsgjK4k9mGMZrTgznUk9vKVb7isBOdvqEiWD/f2SNb4hqOUZndWMM94I1rcZKq
+         ZWjvaMb8Yrm5EV1QtFOWWpeWEG4FtAHHxiRh4tY9Cy+oZqiD+hHzNu694ERak7vNnBLS
+         GDz/1MT5Lti2ebk1Z6VvAzfINoubE2Htbr+wV/2KHEDJ1HC1Rcdmvhg5kYZ2715HvVab
+         +IAACRtxKLXqbkhxjegLK8olAKIR5P7Obalf8vxaze5J+fL0MTogR+aUxxvXd3mIherH
+         yBwHTzSRybFxCiPRhjkBGw/9UgS3k/xkj0xG2kwdUy8vXxlgebfmVEKeATd07Y3FElGP
+         0PNQ==
+X-Forwarded-Encrypted: i=1; AHgh+RrnuJPWJwAMzp8sBQ2MalXEO+DU/s9wi9ZRP1TYfEWGNTDP5dX86YQBotIfcBxbQzNA9lKXl17ZTQ==@vger.kernel.org
+X-Gm-Message-State: AOJu0YzqzjsVYyRG2vGhdSi3sSrplYVR5B1RKo/ULy6zs/3A0SGg1iol
+	+uleFvW1GHhLaKsm+9yI6kSxWxa1qQ/wSuE9urVC4gBuZZTYdhozUe9UQgQSSxB5YVM=
+X-Gm-Gg: AfdE7clJxNB5rP1R9M/FStpj/XvQuhnqjbJ4E1YIWca/iaIrotA77ydUb2zfU8HHuRu
+	OkwbIfTK5ZwbKxMtlXFfP1YtDJNQ5+iLVp2ITin2XJk0/Vr+WTZr38V+30LwRElG1YJsuRYZfKJ
+	vtCa9BAyJ0CGP1owWJD4SLjPoXECrJmC5oP/1m6VqqhuU+nXChtx3Ga8jxPQ3C8QY7zDi8TVaW0
+	E3nH+oxdM5YLi9ZC3JH6FxiYDus7i/hVxZUyhiYSPCSMFrJxwP36PBiMUSpLc4kHO3S+YMxWJPn
+	rmkGXfofi9z97XpNnmtqOlw2I05O/9diAEhAVodPLbG5ug2toFRXH4HF1a6W1LC1/YGIFAlnu/i
+	rH5iTR7m4F4aqCL37XGqteuRNYfLo7fS+88CUI4R5Ru0X9wNOIzBGHQc6/DlXrTtlAOnGGMW2zp
+	CKrf42SsirLrDyGe4amOTAs2Wd1WJWekxg+jT4LcPhyFsVh6MElxNPt89bIR77crqd
+X-Received: by 2002:a05:690c:7288:b0:81d:6af3:b9b5 with SMTP id 00721157ae682-81dbe553926mr84380147b3.9.1783681804646;
+        Fri, 10 Jul 2026 04:10:04 -0700 (PDT)
+Received: from mail-yw1-f174.google.com (mail-yw1-f174.google.com. [209.85.128.174])
+        by smtp.gmail.com with ESMTPSA id 00721157ae682-81e6c201dc7sm41751767b3.41.2026.07.10.04.10.04
+        for <linux-pm@vger.kernel.org>
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Fri, 10 Jul 2026 04:10:04 -0700 (PDT)
+Received: by mail-yw1-f174.google.com with SMTP id 00721157ae682-81e7826cbd2so8901597b3.3
+        for <linux-pm@vger.kernel.org>; Fri, 10 Jul 2026 04:10:04 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AHgh+RqvZpqNir5AVbvUoJn38Nv0TVOvDolX17t8O0Od/WvROE/PuW/9vciucL/Jz4G3NEnWC6kCe4uzIQ==@vger.kernel.org
+X-Received: by 2002:a05:6102:5789:b0:73e:9fae:5844 with SMTP id
+ ada2fe7eead31-744e0426fd6mr5821388137.27.1783681371174; Fri, 10 Jul 2026
+ 04:02:51 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260611-topic-lpm-pmdomain-device-constraints-v3-0-75d69438518b@baylibre.com>
- <20260611-topic-lpm-pmdomain-device-constraints-v3-2-75d69438518b@baylibre.com>
-In-Reply-To: <20260611-topic-lpm-pmdomain-device-constraints-v3-2-75d69438518b@baylibre.com>
-From: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
-Date: Fri, 10 Jul 2026 12:42:17 +0200
-X-Gmail-Original-Message-ID: <CAJZ5v0h15XmucddczVn8b4=T1axydUPB6J20uiOLEk794mjsiw@mail.gmail.com>
-X-Gm-Features: AUfX_mwkCv23HCzcyZ5VMFNMGeRxGkYRWKNWFBn6d9BcWv_zW25QkmHOvnjEUQk
-Message-ID: <CAJZ5v0h15XmucddczVn8b4=T1axydUPB6J20uiOLEk794mjsiw@mail.gmail.com>
-Subject: Re: [PATCH v3 2/4] PM / QoS: add lockless read for flags
-To: "Kevin Hilman (TI)" <khilman@baylibre.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, linux-pm@vger.kernel.org, 
-	Ulf Hansson <ulfh@kernel.org>, Dhruva Gole <d-gole@ti.com>, linux-kernel@vger.kernel.org
+References: <cover.1783505329.git.geert+renesas@glider.be> <49726acff0fee1c3606e83c4f242ef6aad25b4b8.1783505329.git.geert+renesas@glider.be>
+ <20260710-adventurous-burgundy-chimera-b2fff9@quoll>
+In-Reply-To: <20260710-adventurous-burgundy-chimera-b2fff9@quoll>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Fri, 10 Jul 2026 13:02:39 +0200
+X-Gmail-Original-Message-ID: <CAMuHMdV=ckONBbTYELPJU8YWoNzdu3PJ95VR8cz+f_7dUeiPUw@mail.gmail.com>
+X-Gm-Features: AUfX_mypDnJ4qFpPLK-a5R1Mbwkbc6yQr178xDsRkCp5yARGuoX_7FuK_KFx-r8
+Message-ID: <CAMuHMdV=ckONBbTYELPJU8YWoNzdu3PJ95VR8cz+f_7dUeiPUw@mail.gmail.com>
+Subject: Re: [PATCH v2 05/10] dt-bindings: clock: renesas,r8a78000-cpg: Add
+ firmware property
+To: Krzysztof Kozlowski <krzk@kernel.org>
+Cc: Sudeep Holla <sudeep.holla@kernel.org>, Cristian Marussi <cristian.marussi@arm.com>, 
+	Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
+	Saravana Kannan <saravanak@kernel.org>, Ulf Hansson <ulfh@kernel.org>, 
+	"Rafael J . Wysocki" <rafael@kernel.org>, Philipp Zabel <p.zabel@pengutronix.de>, 
+	Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@kernel.org>, 
+	Brian Masney <bmasney@redhat.com>, 
+	Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>, Vinod Koul <vkoul@kernel.org>, 
+	Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>, Kevin Hilman <khilman@baylibre.com>, 
+	Florian Fainelli <florian.fainelli@broadcom.com>, 
+	Wolfram Sang <wsa+renesas@sang-engineering.com>, 
+	Marek Vasut <marek.vasut+renesas@mailbox.org>, 
+	Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>, arm-scmi@vger.kernel.org, 
+	linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, 
+	linux-pm@vger.kernel.org, linux-clk@vger.kernel.org, 
+	linux-renesas-soc@vger.kernel.org, linux-kernel@vger.kernel.org
 Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
 
-On Thu, Jun 11, 2026 at 9:59=E2=80=AFPM Kevin Hilman (TI) <khilman@baylibre=
-.com> wrote:
->
-> Add a lockless read for QoS flags similar to the lockless read for
-> resume latency (dev_pm_qos_raw_resume_latency) which may be called
-> from atomic context (e.g. genpd governors running under a raw spinlock
-> or in the syscore suspend path), where taking that sleeping lock would
-> be invalid on PREEMPT_RT.
->
-> Signed-off-by: Kevin Hilman (TI) <khilman@baylibre.com>
-> ---
->  include/linux/pm_qos.h | 7 +++++++
->  1 file changed, 7 insertions(+)
->
-> diff --git a/include/linux/pm_qos.h b/include/linux/pm_qos.h
-> index aededda52b6b..439a9e779d81 100644
-> --- a/include/linux/pm_qos.h
-> +++ b/include/linux/pm_qos.h
-> @@ -219,6 +219,12 @@ static inline s32 dev_pm_qos_raw_resume_latency(stru=
-ct device *dev)
->                 PM_QOS_RESUME_LATENCY_NO_CONSTRAINT :
->                 pm_qos_read_value(&dev->power.qos->resume_latency);
->  }
-> +
-> +static inline s32 dev_pm_qos_raw_flags(struct device *dev)
-> +{
-> +       return IS_ERR_OR_NULL(dev->power.qos) ?
-> +               0 : READ_ONCE(dev->power.qos->flags.effective_flags);
+Hi Krzysztof,
 
-So if you add READ_ONCE() on the reader side, all updates of it need
-to go under WRITE_ONCE(), or the READ_ONCE() may still not be
-effective.
-
-I don't think they are under WRITE_ONCE() ATM.
-
-> +}
->  #else
->  static inline enum pm_qos_flags_status __dev_pm_qos_flags(struct device =
-*dev,
->                                                           s32 mask)
-> @@ -300,6 +306,7 @@ static inline s32 dev_pm_qos_raw_resume_latency(struc=
-t device *dev)
->  {
->         return PM_QOS_RESUME_LATENCY_NO_CONSTRAINT;
->  }
-> +static inline s32 dev_pm_qos_raw_flags(struct device *dev) { return 0; }
->  #endif
+On Fri, 10 Jul 2026 at 12:21, Krzysztof Kozlowski <krzk@kernel.org> wrote:
+> On Wed, Jul 08, 2026 at 12:16:23PM +0200, Geert Uytterhoeven wrote:
+> > Add a firmware property, for systems where SCMI must be used instead of
+> > direct hardware access.
+> >
+> > Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+> > ---
+> > v2:
+> >   - Spin off from "dt-bindings: clock: Document Renesas R-Car X5H Clock
+> >     Pulse Generator".
+> > ---
+> >  .../devicetree/bindings/clock/renesas,r8a78000-cpg.yaml    | 7 +++++++
+> >  1 file changed, 7 insertions(+)
+> >
+> > diff --git a/Documentation/devicetree/bindings/clock/renesas,r8a78000-cpg.yaml b/Documentation/devicetree/bindings/clock/renesas,r8a78000-cpg.yaml
+> > index 4e23bba334382346..fc499e7cf52e4f0c 100644
+> > --- a/Documentation/devicetree/bindings/clock/renesas,r8a78000-cpg.yaml
+> > +++ b/Documentation/devicetree/bindings/clock/renesas,r8a78000-cpg.yaml
+> > @@ -35,6 +35,12 @@ properties:
+> >        <dt-bindings/clock/renesas,r8a78000-cpg.h>.
+> >      const: 1
+> >
+> > +  firmware:
 >
->  static inline int freq_qos_request_active(struct freq_qos_request *req)
+> RPi is doing similar, but I have doubts. It looks way too close to
+> generic "syscon" which is disallowed.
 >
-> --
+> I think this should be vendor+purpose specific, e.g.:
+> "renesas,scmi-transport" or "renesas,scmi-firmware"
+
+The disadvantage of a vendor-specific property is that there are more
+cases to handle for fw_devlink, cfr. "[PATCH v2 02/10] of: property:
+fw_devlink: Add support for firmware"[1].
+
+> Also we have "firmware" nodes, so this might cause conflicts in dtschema
+> validation.  Anyway, the phandle itself is fine for me, just the naming.
+>
+> I'll ping also Rob to chime in.
+
+Thanks!
+
+[1] https://lore.kernel.org/de34ac0c52695d92c67cf950b3d8e9b30095d305.1783505329.git.geert+renesas@glider.be
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
+-- 
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
