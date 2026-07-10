@@ -1,37 +1,37 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2AD162C15AB;
-	Fri, 10 Jul 2026 02:50:59 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9A9A531BCAE;
+	Fri, 10 Jul 2026 03:03:44 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1783651859; cv=none; b=I/NUi8GMj08npWcqW1CfbDERBddGIE81LPc8sZ5HJGr9PvRXm76z+nsgQ9G8zRtksuBadWh2JtO3IMupaTb0quo96SFqWs2T9v3IKtOQSbj0kIYeS3azPOf+4NPosDiSElFjbsA9SSwuIhORJDz/S7clM+G4JN24/oXVny1XVtw=
+	t=1783652624; cv=none; b=llYmKlhJ3f7ODViqsJuscU51Y+X4tDt9FcQdZkmaBosqN5UWwkMm/moZLYmVriYvMbuQZ53lGjR1JI8CiR6cdZvZzdyVZltzlLV20mXeDYb47gtLZQI6x5YzAUN1ftsLcD0Q3LVWJI8AKN/bcovMt8oGF/zbkbL01DKYgBTeHfE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1783651859; c=relaxed/simple;
+	s=arc-20240116; t=1783652624; c=relaxed/simple;
 	bh=TpGJ0HgZLVDPaYc57SOUoH7whSlNEtTx1wMSxT+hVHk=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=MpliaPd8fpsU86BKIEaKWfp72L272w6ia1l+riXPSsWUa/v1EY4SPhG/vsbKu4kMlv+PcqzLU24gPvVYuHXqL8Ngqb/uC/4gpZU7+JMvmm0SiACDmj21ogpWDeXNjYbTZLFTi139v7TPLsbeqCP5C/1ooBi4aeaVBrwJSHy1kOA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=oc3BafBb; arc=none smtp.client-ip=10.30.226.201
+	 In-Reply-To:To:Cc; b=KEmq+iWJQcbvPkFdJcjbSUVTz1hTt0SDpitYCwXOeby7CsE70XArx3Ni0/p+6MMz4e56+H5Wt8EF/+jMoj+S95gqrjwdOPV3Y7uLBwcXz0JA7o/6fblfgKXdfSt0mx1LzOeWzjksHO2/b6fUCLjPJUv12N+xH0DCBuAPUIdSdNY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=WXJSAp8O; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="oc3BafBb"
-Received: by smtp.kernel.org (Postfix) with ESMTPS id CFD0BC2BCF4;
-	Fri, 10 Jul 2026 02:50:58 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="WXJSAp8O"
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 40B5FC2BCC7;
+	Fri, 10 Jul 2026 03:03:44 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1783651858;
+	s=k20201202; t=1783652624;
 	bh=TpGJ0HgZLVDPaYc57SOUoH7whSlNEtTx1wMSxT+hVHk=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
-	b=oc3BafBbM1+2+7u1C9raEOim1a/RvQLKXsY/94Sj4UpwfxvMn+IuUCtt6mYLko9et
-	 YuA41I/cgijjdOKzw7aObFO390t2nfvCKJcrn4FSN2Xa2JL+xjRvuid18BBX1YwyLC
-	 dm+G7DfbQ3SvC1iemH+ar58RofQ+Bb9iJt1hXIm+CoKa6br5TYZ4wv8snpJNmAtIun
-	 CV8xd+Z69ZPF6EtEdkSO9G6xbjVwu/aq3IzLpaB/PPDdqE2YQr4mQoG3LkB3YNbh9b
-	 83JQWN6PVgStWjcTMFMmV9SVxhVXcWTgxnWwJ3agTNwIB/au8hRiWemlKW0PxWQQKD
-	 h0t7GqRJP+5bQ==
+	b=WXJSAp8Ohh7cbJUrQnseFHuKhefI3wiUU4hXuEWF81PuMbMLbynE3868gWfoWIHEe
+	 z13aQcyo4blUWdnsm4FLXTpF5pACjjlJYASzXZROD1BXTzBnAvhc1p5rXNCEN+mgTV
+	 lq6Qn8X3r5vj15YT2x73IXgRb+RH+HkCx5PFecCoDXVqnFJqV+BzVKQJjx1oKFGRaG
+	 vUttO+ZLdLVDhLOSQjBdBjW+WtkJ6AROGLU/cX2UV00ndREUOToJ8fUQgX0qiIOS4+
+	 dwx4mtMPfjWkmiGRssUWfHmIWAy+PVjx2YbBxYtIpYqo3ehdz2Zjjc0QhcXbNK9qYP
+	 18a694OGdEd1A==
 Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B3DD7C44506;
-	Fri, 10 Jul 2026 02:50:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 22CCBC44501;
+	Fri, 10 Jul 2026 03:03:44 +0000 (UTC)
 From: HaoNing Cheng via B4 Relay <devnull+Haoning.CHENG.cn.bosch.com@kernel.org>
-Date: Fri, 10 Jul 2026 10:50:41 +0800
-Subject: [PATCH v3 2/2] thermal/drivers/imx: Add calibration offset support
+Date: Fri, 10 Jul 2026 11:03:37 +0800
+Subject: [PATCH v4 2/2] thermal/drivers/imx: Add calibration offset support
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -40,9 +40,9 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Message-Id: <20260710-b4-symana21-11221-imx-thermal-support-upstream-6-18-v3-2-db9fc2947c55@cn.bosch.com>
-References: <20260710-b4-symana21-11221-imx-thermal-support-upstream-6-18-v3-0-db9fc2947c55@cn.bosch.com>
-In-Reply-To: <20260710-b4-symana21-11221-imx-thermal-support-upstream-6-18-v3-0-db9fc2947c55@cn.bosch.com>
+Message-Id: <20260710-b4-symana21-11221-imx-thermal-support-upstream-6-18-v4-2-1fef97d1c750@cn.bosch.com>
+References: <20260710-b4-symana21-11221-imx-thermal-support-upstream-6-18-v4-0-1fef97d1c750@cn.bosch.com>
+In-Reply-To: <20260710-b4-symana21-11221-imx-thermal-support-upstream-6-18-v4-0-1fef97d1c750@cn.bosch.com>
 To: "Rafael J. Wysocki" <rafael@kernel.org>, 
  Daniel Lezcano <daniel.lezcano@linaro.org>, Zhang Rui <rui.zhang@intel.com>, 
  Lukasz Luba <lukasz.luba@arm.com>, Rob Herring <robh@kernel.org>, 
@@ -55,11 +55,11 @@ Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
  imx@lists.linux.dev, linux-arm-kernel@lists.infradead.org, 
  linux-kernel@vger.kernel.org, Haoning CHENG <Haoning.CHENG@cn.bosch.com>
 X-Mailer: b4 0.15.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1783651853; l=2625;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1783652619; l=2625;
  i=Haoning.CHENG@cn.bosch.com; s=20260709; h=from:subject:message-id;
  bh=MRMJXW3PasN1+vP3XrwOg3tSDMAKHZqZCG42ukJ5xEc=;
- b=M74uxJU0s38atttQdAJ0RxLeYA/l+9RZLMZC5PB4EX8tUKWiXQCTaLh0NUwF3l+lEmt7GteX6
- uSxBQnjYCUKAlINdAIaoFmDczFLseXi5M4UA51Rb8PaPQwekSs++xXa
+ b=t0rvPqYwHNNOuxzizKCabuptAVW2KUNbtlwhNM03dGoVD2UPZwtO61HhTY5qdN5L1TnA0eg7I
+ Svmq6726CnTBKnAjo0d8NkljNLEdE9lrZSVBj2jd5uKDeINgxa0GDBo
 X-Developer-Key: i=Haoning.CHENG@cn.bosch.com; a=ed25519;
  pk=glQGwad/fosRS5gZUJYbLDPPLGe7rFTrTV2VxY/ySdc=
 X-Endpoint-Received: by B4 Relay for Haoning.CHENG@cn.bosch.com/20260709
