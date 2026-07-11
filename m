@@ -1,111 +1,106 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CBCDF357CE6
-	for <linux-pm@vger.kernel.org>; Sat, 11 Jul 2026 07:32:34 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1F2E02EAB82;
+	Sat, 11 Jul 2026 07:41:42 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1783755154; cv=none; b=FOFhREEUmGMNcyGuf0CCXxRaeXDJWeLxEKrbSQACB6qmXfkGp02ef8bgvWFaunCtA9gcH9wmS9WNp2jzdCxszezPsMSZRBvxeMGbDHZN3iXKKvorRSepSh/EwqEdhVRR3qj6PPClsw8VQSlVJ5+6SBA17/8wC3mdctfLbrVhBPY=
+	t=1783755704; cv=none; b=l0vSNGW1KdjoEbOLQS8pyL03mCgiBuspW56u71+4t2UUDBUgzSWdwWOu3Dm59w0fTH8VyZv27kRl7ugi/86dZGpzClzVvTzIl1VS62EYOt9S00rzbnOnE1Wef8OwgbadfXZ0kHzIHRV2xSXH1twfN1+K/U6dy8vhICfv+xEuwiM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1783755154; c=relaxed/simple;
-	bh=gDFnsT6vHAeD1duHVWazIcctdvHeRJkqlI7n2bV4WAc=;
-	h=From:To:Subject:Date:Message-ID:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=M5+U1ZS4XYIhXjLhy4quWMYs4rP+MpVb161v5anWMmsFO6qZfuWLxP0Tg3C2QezAOSB8WRXyP/kLBMoN8Pa5dd6C+QP5F/LyNJjwJaafSYLpzOYfn/1HpJm2HENCPYqiBv+JS2jKG60xr9HpexZX5sb6Q9FlAC0/b7GJnPWg1F8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=YWcqgS8l; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1783755704; c=relaxed/simple;
+	bh=CZkC0T0G0v3pRiguDz3Y2aIo1lPSidqNTLl9RM53Y+A=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=KN8Enu+Tft1ON4tBRdqhC6REKiVuEZwJLBReoSDjG2xhAZ3l9+YZUpGHTPKK3Nz07I0TpqRzu7yEtXxo2aODqRXBPsdZC9Umug5umofwcYfVhJm0pPQoFfGrXjdamLNdVq6hzlz6ql2bEg6RKyTFarsiWGq9+JLbbztufJbLkcM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=KE1e5R5M; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="YWcqgS8l"
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 6D311C2BCB9
-	for <linux-pm@vger.kernel.org>; Sat, 11 Jul 2026 07:32:34 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1783755154;
-	bh=gDFnsT6vHAeD1duHVWazIcctdvHeRJkqlI7n2bV4WAc=;
-	h=From:To:Subject:Date:In-Reply-To:References:From;
-	b=YWcqgS8lTZgu3Ok/t7e5e4b2ul2bwGEo85MaU36JPhZ4AzTyKGwO46paoe5gBruKT
-	 6CZMbEA1dxdzIncWcfFetZ8x8TAF+VoRj1fS7YOhK6Ogo8f1y9T8zUrazkLlbkYCoa
-	 KODbRTUdqPL0ctv9gvtIGej1zmyIv/xskc3x9K6CZd+fygr8+FGcdDvSugyWo40PqA
-	 /gF9ZlRnLggUppAky5VdVr5uPmUqSVARFQz+oioRrgXHWnTjRYNnaBGCVqpkmtG5Wp
-	 1V7vED57J7hFTFpm5ceWgnTNRs16ntwCfvNScohTaGMab7MUiA1CEzplEKROMCJnJK
-	 sPUxmeJzs5RPA==
-Received: by aws-us-west-2-korg-bugzilla-1.web.codeaurora.org (Postfix, from userid 48)
-	id 46D65C41613; Sat, 11 Jul 2026 07:32:34 +0000 (UTC)
-From: bugzilla-daemon@kernel.org
-To: linux-pm@vger.kernel.org
-Subject: [Bug 221744] amd_pstate / ACPI: CPU frequency locked at 520MHz when
- AC disconnected with lid closed during s2idle on HP EliteBook 6 G1ah 14
-Date: Sat, 11 Jul 2026 07:32:34 +0000
-X-Bugzilla-Reason: AssignedTo
-X-Bugzilla-Type: changed
-X-Bugzilla-Watch-Reason: None
-X-Bugzilla-Product: Power Management
-X-Bugzilla-Component: cpufreq
-X-Bugzilla-Version: 2.5
-X-Bugzilla-Keywords: 
-X-Bugzilla-Severity: normal
-X-Bugzilla-Who: pepegnu@gmail.com
-X-Bugzilla-Status: NEW
-X-Bugzilla-Resolution: 
-X-Bugzilla-Priority: P3
-X-Bugzilla-Assigned-To: linux-pm@vger.kernel.org
-X-Bugzilla-Flags: 
-X-Bugzilla-Changed-Fields: 
-Message-ID: <bug-221744-137361-63zrfkVS8k@https.bugzilla.kernel.org/>
-In-Reply-To: <bug-221744-137361@https.bugzilla.kernel.org/>
-References: <bug-221744-137361@https.bugzilla.kernel.org/>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-X-Bugzilla-URL: https://bugzilla.kernel.org/
-Auto-Submitted: auto-generated
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="KE1e5R5M"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2CE311F000E9;
+	Sat, 11 Jul 2026 07:41:41 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1783755702;
+	bh=FfSritx/PtEBrsGP3lbGQMekJE8MmJCr9d3EgkR1zwo=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=KE1e5R5MLRMZ5mWs3Dpq4fi2fB/ZDPPgUTHy12YnFJdhMG9l4FWItXwYpe2hKDf9X
+	 SyP1C1klHJNrWx7NqlynSXTbvkrVo0Lz3DAqoxpnU71g6r/uTsDpfM+xlWY6849GfR
+	 qfuoYiBbeGk9bAr3/m9iWEb4MDb+4AOC+CTYkrGzamkhBSdyKBMRFEgKAio5lZ1FMJ
+	 xUZuhN8S24XxCVR6uny9gWtiIZYlJRebNoMGHNwt1TazQNcaHIQoea0ZQITPMCqjpj
+	 xYu/w4axLIUFOlJb4SpjwXVhx3CQ/HKPj0Z03126qxD+INTkI41wqGE2v5s+jFbzWK
+	 HKnDpxyjuAKog==
+Date: Sat, 11 Jul 2026 07:41:39 +0000
+From: Yixun Lan <dlan@kernel.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Shuwei Wu <shuwei.wu@mailbox.org>,
+	"Rafael J. Wysocki" <rafael@kernel.org>,
+	Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>, Paul Walmsley <pjw@kernel.org>,
+	Palmer Dabbelt <palmer@dabbelt.com>,
+	Albert Ou <aou@eecs.berkeley.edu>, Alexandre Ghiti <alex@ghiti.fr>,
+	linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linux-riscv@lists.infradead.org, spacemit@lists.linux.dev,
+	devicetree@vger.kernel.org
+Subject: Re: [PATCH v4 1/2] cpufreq: dt-platdev: Add SpacemiT K1 SoC to the
+ allowlist
+Message-ID: <20260711074139-GKA36656@kernel.org>
+References: <20260626-shadow-deps-v4-0-bba9831f2f1d@mailbox.org>
+ <20260626-shadow-deps-v4-1-bba9831f2f1d@mailbox.org>
+ <7x5mgpk3z3aiebifhxto2v7m5yrikj52lwf5pzegzhk5aiehhj@jqm6opm6nrub>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <7x5mgpk3z3aiebifhxto2v7m5yrikj52lwf5pzegzhk5aiehhj@jqm6opm6nrub>
 
-https://bugzilla.kernel.org/show_bug.cgi?id=3D221744
+Hi Viresh,
 
---- Comment #1 from pepegnu@gmail.com ---
-Should probably add CPU-info:
+On 10:28 Mon 29 Jun     , Viresh Kumar wrote:
+> On 26-06-26, 16:10, Shuwei Wu wrote:
+> > Add the compatible string for supporting the generic
+> > cpufreq driver on the SpacemiT K1 SoC.
+> > 
+> > Signed-off-by: Shuwei Wu <shuwei.wu@mailbox.org>
+> > ---
+> > Changes in v4:
+> > - Drop the K1-specific cpufreq driver and use cpufreq-dt again
+> > - Add spacemit,k1 back to the cpufreq-dt allowlist
+> > 
+> > Changes in v3:
+> > - Add a K1-specific cpufreq driver for the shared-rail, dual-clock topology
+> > - Add spacemit,k1 to the cpufreq-dt blocklist
+> > ---
+> > ---
+> >  drivers/cpufreq/cpufreq-dt-platdev.c | 2 ++
+> >  1 file changed, 2 insertions(+)
+> > 
+> > diff --git a/drivers/cpufreq/cpufreq-dt-platdev.c b/drivers/cpufreq/cpufreq-dt-platdev.c
+> > index 25fd3b191b7e..e262394b56f9 100644
+> > --- a/drivers/cpufreq/cpufreq-dt-platdev.c
+> > +++ b/drivers/cpufreq/cpufreq-dt-platdev.c
+> > @@ -81,6 +81,8 @@ static const struct of_device_id allowlist[] __initconst = {
+> >  		{ .have_governor_per_policy = true, },
+> >  	},
+> >  
+> > +	{ .compatible = "spacemit,k1", },
+> > +
+> >  	{ .compatible = "st-ericsson,u8500", },
+> >  	{ .compatible = "st-ericsson,u8540", },
+> >  	{ .compatible = "st-ericsson,u9500", },
+> 
+> Please take this via arch tree.
+> 
 
-lshw -C processor
+Ok, in this case, I will take it via SpacemiT SoC tree along with DT patch [2/2]
 
-  *-cpu
-       product: AMD Ryzen 5 220 w/ Radeon 740M Graphics
-       vendor: Advanced Micro Devices [AMD]
-       physical id: 1
-       bus info: cpu@0
-       version: 25.124.0
-       size: 1117MHz
-       capacity: 4979MHz
-       width: 64 bits
-       capabilities: fpu fpu_exception wp vme de pse tsc msr pae mce cx8 ap=
-ic
-sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 ht syscall nx mmx=
-ext
-fxsr_opt pdpe1gb rdtscp x86-64 constant_tsc rep_good amd_lbr_v2 nopl xtopol=
-ogy
-nonstop_tsc cpuid extd_apicid aperfmperf rapl pni pclmulqdq monitor ssse3 f=
-ma
-cx16 sse4_1 sse4_2 x2apic movbe popcnt aes xsave avx f16c rdrand lahf_lm
-cmp_legacy svm extapic cr8_legacy abm sse4a misalignsse 3dnowprefetch osvw =
-ibs
-skinit wdt tce topoext perfctr_core perfctr_nb bpext perfctr_llc mwaitx
-cpuid_fault cpb cat_l3 cdp_l3 hw_pstate ssbd mba perfmon_v2 ibrs ibpb stibp
-ibrs_enhanced vmmcall fsgsbase bmi1 avx2 smep bmi2 erms invpcid cqm rdt_a
-avx512f avx512dq rdseed adx smap avx512ifma clflushopt clwb avx512cd sha_ni
-avx512bw avx512vl xsaveopt xsavec xgetbv1 xsaves cqm_llc cqm_occup_llc
-cqm_mbm_total cqm_mbm_local user_shstk avx512_bf16 clzero irperf xsaveerptr
-rdpru wbnoinvd cppc arat npt lbrv svm_lock nrip_save tsc_scale vmcb_clean
-flushbyasid decodeassists pausefilter pfthreshold vgif x2avic v_spec_ctrl v=
-nmi
-avx512vbmi umip pku ospke avx512_vbmi2 gfni vaes vpclmulqdq avx512_vnni
-avx512_bitalg avx512_vpopcntdq rdpid overflow_recov succor smca fsrm flush_=
-l1d
-amd_lbr_pmc_freeze cpufreq
-       configuration: microcode=3D175161354
+Reviewed-by: Yixun Lan <dlan@kernel.org>
 
---=20
-You may reply to this email to add a comment.
+> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+> 
+> -- 
+> viresh
 
-You are receiving this mail because:
-You are the assignee for the bug.=
+-- 
+Yixun Lan (dlan)
