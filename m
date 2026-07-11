@@ -1,73 +1,85 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+Received: from out-183.mta0.migadu.com (out-183.mta0.migadu.com [91.218.175.183])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8401D370AC1;
-	Sat, 11 Jul 2026 07:44:56 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4EEC73B7B84
+	for <linux-pm@vger.kernel.org>; Sat, 11 Jul 2026 10:34:31 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=91.218.175.183
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1783755897; cv=none; b=sZcGBPu/xXgq21JWtfK5o15Wl8nXkF3euW2vZI/42qKCeLA2qXXqKTXqwLUGXiK9uBM3oLykA8S+MTzetavhUsDaDMAGJ1NvjiUVJksv1+UX6BePANigz3+Mpoj7wxcjJfmnG5t80AqF3YzTbJBQzvrUHyoHjtx4mQonGgSdSNU=
+	t=1783766072; cv=none; b=H41f4mu4xlSj4WILA7LAglg+RZWWcq21+T9Bu2ryOm2rktyvd9rhKi64sZoJLbSEag259YCMexRmL48ZehDYn2aF67aQ7rNwT1zc/U205vfXR4lf9nc8vaFV3DTq7SzhJLD+h7BAHISQ5BL3lKPAvX5+i5/1dAwLJvDlZty5h60=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1783755897; c=relaxed/simple;
-	bh=d1wJBJqnREdRO7uXVxi9cJLsD9w8TM/w6IYXPOaXiVQ=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=X3oC6MjNGGsFPrcvKUxaf1VItLDksF94O110/nTLh0Dzcl/q8Hk0owRmUt0BWEiZQHA8f793j9K3eJk8V1xZxVJ30UPiEHUtckbpUqOFDXbbzqhLf+XJMxESRPv9xXrrgf9hdS5aTSUh5REA9c9nORUteCk/MEneTSriikphNmE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=ek28vN3I; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1783766072; c=relaxed/simple;
+	bh=M4wMGAyEGwO/BYf2g7dMc+CI6AztqNnw9Q98ZbatvKo=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Message-ID:Date:
+	 Content-Type:MIME-Version; b=P66jn+0mKa32oE1zYlvmt45c/RVJs+rq0qxtiEJQFLbRI/LaHYbkp70Er+NZX9362yyp46CSG7s5Fxt/+ABUAWmK8YZSyLuDjO4lQZsKz8+b0xA1M+4wpYu+fra+CPXeJyRkmf9e3tKDF2Ge3Ng3lYZ3F2TX/PKUgfcz7Lv3obc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.dev; spf=pass smtp.mailfrom=linux.dev; dkim=pass (1024-bit key) header.d=linux.dev header.i=@linux.dev header.b=MxnlLyWN; arc=none smtp.client-ip=91.218.175.183
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.dev
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.dev
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="ek28vN3I"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id D3ED61F000E9;
-	Sat, 11 Jul 2026 07:44:54 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1783755896;
-	bh=b0CpmOWLm2vb+ALVgOzFuf2ikhKbi8vr3l51aLzsp4g=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=ek28vN3IHp2WFK7uen+eCu8vrfSzkYl6XFS2Rgqux3Rwn3djoDjd+uFzkKG6FPo+7
-	 PxeDmXVumlVj7ghYyfjp4i5Kq+n+Qg/rcRq0pd3YQ1tXUl25x87uvRgfGnd5yJ5v9t
-	 Vk0uGNFeFlRKtN8PaFNCykAhv1Hq3XL3AvGdeH3cdr/dyXnAqTVbA6ZViyStlTsCE6
-	 0IsWM2TSev3ruqOuFIpihZTiBT7edbqkdhpPN6gPjsYAA2sStd5CfR2r2RjWa6PG/7
-	 TK8T37e1P1aRUF/KQxyirmS0smYjrftZEBJG5/FB+U1uXMp6D5Hh+aQlrjXoeYeMI5
-	 b+/eeiBJCKGcg==
-Date: Sat, 11 Jul 2026 07:44:52 +0000
-From: Yixun Lan <dlan@kernel.org>
-To: Shuwei Wu <shuwei.wu@mailbox.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>,
-	Viresh Kumar <viresh.kumar@linaro.org>,
-	Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>, Paul Walmsley <pjw@kernel.org>,
-	Palmer Dabbelt <palmer@dabbelt.com>,
-	Albert Ou <aou@eecs.berkeley.edu>, Alexandre Ghiti <alex@ghiti.fr>,
-	linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linux-riscv@lists.infradead.org, spacemit@lists.linux.dev,
-	devicetree@vger.kernel.org
-Subject: Re: [PATCH v4 2/2] riscv: dts: spacemit: Add cpu scaling for K1 SoC
-Message-ID: <20260711074452-GKB36656@kernel.org>
-References: <20260626-shadow-deps-v4-0-bba9831f2f1d@mailbox.org>
- <20260626-shadow-deps-v4-2-bba9831f2f1d@mailbox.org>
+	dkim=pass (1024-bit key) header.d=linux.dev header.i=@linux.dev header.b="MxnlLyWN"
+X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
+	t=1783766059;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=M4wMGAyEGwO/BYf2g7dMc+CI6AztqNnw9Q98ZbatvKo=;
+	b=MxnlLyWNuBnw97dOyIznI7YCQpzjHjgoAInIVRj8wUUwS3TFmZiyjvTILUXH3HlLIpzbPb
+	dlxIP+QQ4QxIoJWBK2NerUzOypFGD4stTikAPXkeEUkEoCUugEhQ3ub4oMc0fxuxs6Dw3C
+	JlaPngMcQRdSry4l3W/0jQz/H/RBmm0=
+From: Igor Korotin <igor.korotin@linux.dev>
+To: rust-for-linux@vger.kernel.org, linux-pm@vger.kernel.org,
+ linux-i2c@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Sebastian Reichel <sre@kernel.org>, Miguel Ojeda <ojeda@kernel.org>,
+ Gary Guo <gary@garyguo.net>, Tamir Duberstein <tamird@kernel.org>,
+ Alice Ryhl <aliceryhl@google.com>, Boqun Feng <boqun@kernel.org>,
+ Danilo Krummrich <dakr@kernel.org>, Bruce Robertson <brucer42@gmail.com>
+Subject: Re: [RFC PATCH 1/3] rust: i2c: add SMBus byte transfer helpers
+In-Reply-To: <20260708214738.25008-2-brucer42@gmail.com>
+References: <20260708214738.25008-1-brucer42@gmail.com>
+ <20260708214738.25008-2-brucer42@gmail.com>
+Message-ID: <178376605131.22511.1602274538745913609@linux.dev>
+Date: Sat, 11 Jul 2026 11:34:11 +0100
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20260626-shadow-deps-v4-2-bba9831f2f1d@mailbox.org>
+X-Migadu-Flow: FLOW_OUT
 
-Hi Shuwei,
+Hi Bruce,
 
-On 16:10 Fri 26 Jun     , Shuwei Wu wrote:
-> Add CPU clock properties and OPP tables for the two CPU clusters in the
-> SpacemiT K1 SoC. The OPP entries use voltage ranges because the CPU
-> supply is shared by both clusters.
-> 
-> Enable CPU DVFS on Banana Pi BPI-F3 by including the OPP tables and
-> wiring the CPU nodes to the CPU regulator supply.
-> 
-> Signed-off-by: Shuwei Wu <shuwei.wu@mailbox.org>
+Thanks for the patch. Same feedback I gave Muchamad on a similar patch:
+I2cClient should implement the `Io` trait rather than adding standalone
+SMBus methods like these -- this was already agreed on previously [1][2].
 
-Looks good, thanks for working on this
+There's also an in-flight series doing exactly this rework right now:
+Muchamad's "[RFC PATCH v4 1/3] i2c: rust: implement SMBus read
+abstraction via kernel::io::Io for I2cClient". Worth looking at before
+reworking this yourself, both to avoid landing two competing
+implementations of the same thing, and because I've just raised a
+problem with that approach that affects this patch too: overriding
+try_read8()/try_read16() isn't enough on its own -- the generic
+try_read/try_write/try_update entry points still silently swallow real
+SMBus failures (NACK, arbitration loss, timeout) unless every one of
+them gets the same treatment. Your smbus_update_bits() is exactly the
+kind of read-modify-write that's affected (my reply on that thread,
+Message-ID <178376430529.16552.7043868463863908196@linux.dev>, has the
+detailed breakdown).
 
-Reviewed-by: Yixun Lan <dlan@kernel.org>
+I'd suggest holding this patch until that discussion settles -- Cc'ing
+Danilo here too, since it's ultimately a question of whether
+Io/IoCapable is the right abstraction for I2C at all -- rather than
+reworking it in parallel.
 
--- 
-Yixun Lan (dlan)
+Cheers
+Igor
+
+[1] https://lore.kernel.org/rust-for-linux/20260131-i2c-adapter-v1-4-5a436e34=
+cd1a@gmail.com/
+[2] https://git.kernel.org/pub/scm/linux/kernel/git/driver-core/driver-core.g=
+it/commit/?h=3Ddriver-core-testing&id=3D121d87b28e1d9061d3aaa156c43a627d3cb5e=
+620
