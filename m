@@ -1,80 +1,61 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 29E6D1D45E8
-	for <linux-pm@vger.kernel.org>; Sat, 11 Jul 2026 11:35:58 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 244CB27727;
+	Sat, 11 Jul 2026 12:06:58 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1783769759; cv=none; b=rXCdIjyhSAztw2u4qZ6PAh/8h64Nz7LVnreuea7sKTFi7tMpyPx/emAl5SG9ckKZPrFFq+1PWJrNnhII3DzOqX6KzPL8JTdDQVmonJXpy3eQRqG+wv80xjdo5bKkFeoWOgjc62L/LMxFT4TR3gJahkTNvhJcUjOFI+P2NQYapCY=
+	t=1783771620; cv=none; b=vF7dG4fDp596VhFRmdXP3NX2SqNs1f4vVw4CgLpbUxN7HolQDdAQz20uENfsopJsSkmGVG8CxuN7xp2Z48mLRug2/f3eB2bIONoYBUzsLwbgNXYSRFpGymN+0q/yGWFtX48h1SeVwx/k5ZvnEzGqIzX6XKJAkI0Oa/bnzYQOv9A=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1783769759; c=relaxed/simple;
-	bh=FMI0p62p5IC0DiVEvrysLH463//QVmCOJfw1cIOYtdQ=;
-	h=From:To:Subject:Date:Message-ID:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=igqZ7ncuMnZe6VxehefGjPM6UTS73mW01AKNz3oQT/lM0kYoLTGkfYm8P4i+SLfqspk3I6POa9QSH14JElZV7bN2G2tNxtz8Xn0ZZCaF4eeI+6nHZN36NEW3PSRnWw8XdPWgB6KOiwBlvWLMslcd8Cq3wnogMNlzXmvAh7dEOCU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Dh96YNv3; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1783771620; c=relaxed/simple;
+	bh=94CYsiDexERxDxvOZOkE1u9ftHBcDrrD7y0s249+GZQ=;
+	h=Mime-Version:Content-Type:Date:Message-Id:Subject:Cc:To:From:
+	 References:In-Reply-To; b=BJn7/af5IzdRm9y0jbc03dh88etP+IzIQYoqK3Ix+j1LCh0ypO+sDzlZogknAaTaV/nmRG2D9elyDlrXFZVMuFb5Wih/+GDqaaPH9+1zY9m8soTxbJKGZCDMimGKoKdEn2ojcvw9b+ss+WToOfFyoh42TJvDI5APQCX1/dp4UYs=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=bWvJJnpy; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Dh96YNv3"
-Received: by smtp.kernel.org (Postfix) with ESMTPS id ABBA9C2BCB3
-	for <linux-pm@vger.kernel.org>; Sat, 11 Jul 2026 11:35:58 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1783769758;
-	bh=FMI0p62p5IC0DiVEvrysLH463//QVmCOJfw1cIOYtdQ=;
-	h=From:To:Subject:Date:In-Reply-To:References:From;
-	b=Dh96YNv3zAtqp3DuwWt0cPxac7oEvhB61waeq5f7JFJ3bZXG2pi9VR3Atd7zAy3yA
-	 Osd36D8IFLGSznEjvGJFrRtGm/PDkXEIsyRjOfMycD63J7ggO/goWCyJzGKbQhJpma
-	 00H1TSLEkkHabwazU7qBgR9geuBgLOuG5n1fGoc8ZAvK7qvmCRUGJ3qqja7T8VF0V4
-	 C0Z+kaCetDjR+Up1pEAEgE7+PTrj5y/uYVrTiT6XfQgo9YSuSJ+rY/SQ21VLwMMLfb
-	 pV5gM7XEk5282qAvPjhQ2LkyyAX0/NvWw/miGxvkQQrIw2V+FiSHLd5F21lksLfs+A
-	 BKd6Qm25vXJUw==
-Received: by aws-us-west-2-korg-bugzilla-1.web.codeaurora.org (Postfix, from userid 48)
-	id 8FF99C41612; Sat, 11 Jul 2026 11:35:58 +0000 (UTC)
-From: bugzilla-daemon@kernel.org
-To: linux-pm@vger.kernel.org
-Subject: [Bug 221744] amd_pstate / ACPI: CPU frequency locked at 520MHz when
- AC disconnected with lid closed during s2idle on HP EliteBook 6 G1ah 14
-Date: Sat, 11 Jul 2026 11:35:58 +0000
-X-Bugzilla-Reason: AssignedTo
-X-Bugzilla-Type: changed
-X-Bugzilla-Watch-Reason: None
-X-Bugzilla-Product: Power Management
-X-Bugzilla-Component: cpufreq
-X-Bugzilla-Version: 2.5
-X-Bugzilla-Keywords: 
-X-Bugzilla-Severity: normal
-X-Bugzilla-Who: aros@gmx.com
-X-Bugzilla-Status: NEW
-X-Bugzilla-Resolution: 
-X-Bugzilla-Priority: P3
-X-Bugzilla-Assigned-To: linux-pm@vger.kernel.org
-X-Bugzilla-Flags: 
-X-Bugzilla-Changed-Fields: cc
-Message-ID: <bug-221744-137361-GIqNWahat7@https.bugzilla.kernel.org/>
-In-Reply-To: <bug-221744-137361@https.bugzilla.kernel.org/>
-References: <bug-221744-137361@https.bugzilla.kernel.org/>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-X-Bugzilla-URL: https://bugzilla.kernel.org/
-Auto-Submitted: auto-generated
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="bWvJJnpy"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6E1E51F000E9;
+	Sat, 11 Jul 2026 12:06:56 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1783771618;
+	bh=94CYsiDexERxDxvOZOkE1u9ftHBcDrrD7y0s249+GZQ=;
+	h=Date:Subject:Cc:To:From:References:In-Reply-To;
+	b=bWvJJnpygOWrz6y4yUrpFU0RiIJol7arw5AIT4SfCe9VKa2FBpiOE48pJLB0YuXmg
+	 xzQQ9TMewrxDop5z3HJF3TsdtjKj0ZvnIIry9iyG7yTCWegMF490Od67XLkl09VYHb
+	 qCXb/gCVwUVKqdWa/+6o1MDJjRJBR19GYGH8JdYuAdiQVKQXmg4PFMQt/D59pvb7qv
+	 UkVa4MwSBhpX04MguJEop5N6Hclhly8U0DdOm5ApkERFz3SRIVarmIy7v9uSjY5AJJ
+	 6Bo21+DzA6yvrrH/dpK32qvzyIzRwTwvOZHAvirFppLe8Jsw2oYaZJutcQRkH1sbkW
+	 bIuMidr5hrU3w==
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
-MIME-Version: 1.0
+Mime-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=UTF-8
+Date: Sat, 11 Jul 2026 14:06:55 +0200
+Message-Id: <DJVQ9J8WQP4V.37WGL1ZZEL3LP@kernel.org>
+Subject: Re: [RFC PATCH 1/3] rust: i2c: add SMBus byte transfer helpers
+Cc: <rust-for-linux@vger.kernel.org>, <linux-pm@vger.kernel.org>,
+ <linux-i2c@vger.kernel.org>, <linux-kernel@vger.kernel.org>, "Sebastian
+ Reichel" <sre@kernel.org>, "Miguel Ojeda" <ojeda@kernel.org>, "Gary Guo"
+ <gary@garyguo.net>, "Tamir Duberstein" <tamird@kernel.org>, "Alice Ryhl"
+ <aliceryhl@google.com>, "Boqun Feng" <boqun@kernel.org>, "Bruce Robertson"
+ <brucer42@gmail.com>
+To: "Igor Korotin" <igor.korotin@linux.dev>
+From: "Danilo Krummrich" <dakr@kernel.org>
+References: <20260708214738.25008-1-brucer42@gmail.com>
+ <20260708214738.25008-2-brucer42@gmail.com>
+ <178376605131.22511.1602274538745913609@linux.dev>
+In-Reply-To: <178376605131.22511.1602274538745913609@linux.dev>
 
-https://bugzilla.kernel.org/show_bug.cgi?id=3D221744
+On Sat Jul 11, 2026 at 12:34 PM CEST, Igor Korotin wrote:
+> I'd suggest holding this patch until that discussion settles -- Cc'ing
+> Danilo here too, since it's ultimately a question of whether
+> Io/IoCapable is the right abstraction for I2C at all -- rather than
+> reworking it in parallel.
 
-Artem S. Tashkinov (aros@gmx.com) changed:
+Please see the reply in [1].
 
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-                 CC|                            |mario.limonciello@amd.com
-
---- Comment #2 from Artem S. Tashkinov (aros@gmx.com) ---
-Looks like a dupe of bug 218305.
-
---=20
-You may reply to this email to add a comment.
-
-You are receiving this mail because:
-You are the assignee for the bug.=
+[1] https://lore.kernel.org/all/DJVQ852J7SOH.26YBIJTQ9B66G@kernel.org/
