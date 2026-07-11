@@ -1,39 +1,40 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 123A933F5A1
-	for <linux-pm@vger.kernel.org>; Sat, 11 Jul 2026 07:22:10 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CBCDF357CE6
+	for <linux-pm@vger.kernel.org>; Sat, 11 Jul 2026 07:32:34 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1783754531; cv=none; b=to4gW9N2HEIcs+Dx1NcqUgICiv+vhZjviKduraEtXjsPmAbveodSg68GGyDMErQr84fLJj+UvdcZM+qgPXNIJuXxkJvYH23xRHQZbrrt6ETDvVaHeWLi4+KgQREv5voEmBH1/uyO1tnMT//n2BwRjrNWxV3vLVN1t8nTQoOBR5c=
+	t=1783755154; cv=none; b=FOFhREEUmGMNcyGuf0CCXxRaeXDJWeLxEKrbSQACB6qmXfkGp02ef8bgvWFaunCtA9gcH9wmS9WNp2jzdCxszezPsMSZRBvxeMGbDHZN3iXKKvorRSepSh/EwqEdhVRR3qj6PPClsw8VQSlVJ5+6SBA17/8wC3mdctfLbrVhBPY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1783754531; c=relaxed/simple;
-	bh=zwOGlpuGNtH88Yu6nJfxmwAPPcCMneAvf+omaYqZDpY=;
-	h=From:To:Subject:Date:Message-ID:Content-Type:MIME-Version; b=s+kPvjl6KTflEpx+RuTZ52e4TSGwpwBFOuchh6M/DzMf64E3LU7Bnydk1ZfJorH3SNwzDMCJ4C8X+8hnwQejn71lEIilzavSuDY8P45yECg8sgotXqTfkFKiFFuvYABURWiPkBmfJ1wxAXEruaXpRQN3kOZaZJHlxHwCG98VI/A=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=ZLkskqUr; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1783755154; c=relaxed/simple;
+	bh=gDFnsT6vHAeD1duHVWazIcctdvHeRJkqlI7n2bV4WAc=;
+	h=From:To:Subject:Date:Message-ID:In-Reply-To:References:
+	 Content-Type:MIME-Version; b=M5+U1ZS4XYIhXjLhy4quWMYs4rP+MpVb161v5anWMmsFO6qZfuWLxP0Tg3C2QezAOSB8WRXyP/kLBMoN8Pa5dd6C+QP5F/LyNJjwJaafSYLpzOYfn/1HpJm2HENCPYqiBv+JS2jKG60xr9HpexZX5sb6Q9FlAC0/b7GJnPWg1F8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=YWcqgS8l; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="ZLkskqUr"
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 8C1CCC2BCB9
-	for <linux-pm@vger.kernel.org>; Sat, 11 Jul 2026 07:22:10 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="YWcqgS8l"
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 6D311C2BCB9
+	for <linux-pm@vger.kernel.org>; Sat, 11 Jul 2026 07:32:34 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1783754530;
-	bh=zwOGlpuGNtH88Yu6nJfxmwAPPcCMneAvf+omaYqZDpY=;
-	h=From:To:Subject:Date:From;
-	b=ZLkskqUr+3J/SeelRz889P2NP6+se4Pe4dWQZPXu5NuJKRSt9gmf0JDrJK3NID36N
-	 1XbMf2R2o3M1zqk1Deh/RA0tkgjBjyLaaKm8jf7Ku4gD+MQdIRjFod8A4W46tUOYQD
-	 IM0JzmVotLzarURn8cE8FVIW3wx3nPfD0RSai2YrjQjPDZwZtgPV8z7NMK1RdcV7j5
-	 WQx8hznIhZFMtWVP/j7RslOR8orveoV3Z/IwPzrpY8toxkCgYzi74FnIGxhG+Y8hcF
-	 DQ4jAvNrElhILBknBghM9nDNQ5AIO8O6CAeksxMJu05fbvxO2g4u1QjcpU9/jCC6bq
-	 CRs9jbjYD3J3Q==
+	s=k20201202; t=1783755154;
+	bh=gDFnsT6vHAeD1duHVWazIcctdvHeRJkqlI7n2bV4WAc=;
+	h=From:To:Subject:Date:In-Reply-To:References:From;
+	b=YWcqgS8lTZgu3Ok/t7e5e4b2ul2bwGEo85MaU36JPhZ4AzTyKGwO46paoe5gBruKT
+	 6CZMbEA1dxdzIncWcfFetZ8x8TAF+VoRj1fS7YOhK6Ogo8f1y9T8zUrazkLlbkYCoa
+	 KODbRTUdqPL0ctv9gvtIGej1zmyIv/xskc3x9K6CZd+fygr8+FGcdDvSugyWo40PqA
+	 /gF9ZlRnLggUppAky5VdVr5uPmUqSVARFQz+oioRrgXHWnTjRYNnaBGCVqpkmtG5Wp
+	 1V7vED57J7hFTFpm5ceWgnTNRs16ntwCfvNScohTaGMab7MUiA1CEzplEKROMCJnJK
+	 sPUxmeJzs5RPA==
 Received: by aws-us-west-2-korg-bugzilla-1.web.codeaurora.org (Postfix, from userid 48)
-	id 71CDCC41614; Sat, 11 Jul 2026 07:22:10 +0000 (UTC)
+	id 46D65C41613; Sat, 11 Jul 2026 07:32:34 +0000 (UTC)
 From: bugzilla-daemon@kernel.org
 To: linux-pm@vger.kernel.org
-Subject: [Bug 221744] New: amd_pstate / ACPI: CPU frequency locked at 520MHz
- when AC disconnected with lid closed during s2idle on HP EliteBook 6 G1ah 14
-Date: Sat, 11 Jul 2026 07:22:10 +0000
+Subject: [Bug 221744] amd_pstate / ACPI: CPU frequency locked at 520MHz when
+ AC disconnected with lid closed during s2idle on HP EliteBook 6 G1ah 14
+Date: Sat, 11 Jul 2026 07:32:34 +0000
 X-Bugzilla-Reason: AssignedTo
-X-Bugzilla-Type: new
+X-Bugzilla-Type: changed
 X-Bugzilla-Watch-Reason: None
 X-Bugzilla-Product: Power Management
 X-Bugzilla-Component: cpufreq
@@ -46,10 +47,10 @@ X-Bugzilla-Resolution:
 X-Bugzilla-Priority: P3
 X-Bugzilla-Assigned-To: linux-pm@vger.kernel.org
 X-Bugzilla-Flags: 
-X-Bugzilla-Changed-Fields: bug_id short_desc product version rep_platform
- op_sys bug_status bug_severity priority component assigned_to reporter
- cf_regression
-Message-ID: <bug-221744-137361@https.bugzilla.kernel.org/>
+X-Bugzilla-Changed-Fields: 
+Message-ID: <bug-221744-137361-63zrfkVS8k@https.bugzilla.kernel.org/>
+In-Reply-To: <bug-221744-137361@https.bugzilla.kernel.org/>
+References: <bug-221744-137361@https.bugzilla.kernel.org/>
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 X-Bugzilla-URL: https://bugzilla.kernel.org/
@@ -63,36 +64,45 @@ MIME-Version: 1.0
 
 https://bugzilla.kernel.org/show_bug.cgi?id=3D221744
 
-            Bug ID: 221744
-           Summary: amd_pstate / ACPI: CPU frequency locked at 520MHz when
-                    AC disconnected with lid closed during s2idle on HP
-                    EliteBook 6 G1ah 14
-           Product: Power Management
-           Version: 2.5
-          Hardware: All
-                OS: Linux
-            Status: NEW
-          Severity: normal
-          Priority: P3
-         Component: cpufreq
-          Assignee: linux-pm@vger.kernel.org
-          Reporter: pepegnu@gmail.com
-        Regression: No
+--- Comment #1 from pepegnu@gmail.com ---
+Should probably add CPU-info:
 
-Here's the affected laptop:
-cat /sys/class/dmi/id/product_name /sys/class/dmi/id/product_version
-/sys/class/dmi/id/bios_version
+lshw -C processor
 
-HP EliteBook 6 G1ah 14 inch Notebook PC
-SBKPFV3
-X77 Ver. 01.04.06
-
-After unplugging AC power with lid closed, half of the cores run at 520MHz,=
- the
-other half -- on 1.12 GHz. Plug and unplug kicks cores all to 1.12G-2.4GHz.
-There's no software way to 'wake' the cores.=20
-
-Setting kernel line 'amd_pstate=3Dpassive' or 'guided' *has no effect*.
+  *-cpu
+       product: AMD Ryzen 5 220 w/ Radeon 740M Graphics
+       vendor: Advanced Micro Devices [AMD]
+       physical id: 1
+       bus info: cpu@0
+       version: 25.124.0
+       size: 1117MHz
+       capacity: 4979MHz
+       width: 64 bits
+       capabilities: fpu fpu_exception wp vme de pse tsc msr pae mce cx8 ap=
+ic
+sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 ht syscall nx mmx=
+ext
+fxsr_opt pdpe1gb rdtscp x86-64 constant_tsc rep_good amd_lbr_v2 nopl xtopol=
+ogy
+nonstop_tsc cpuid extd_apicid aperfmperf rapl pni pclmulqdq monitor ssse3 f=
+ma
+cx16 sse4_1 sse4_2 x2apic movbe popcnt aes xsave avx f16c rdrand lahf_lm
+cmp_legacy svm extapic cr8_legacy abm sse4a misalignsse 3dnowprefetch osvw =
+ibs
+skinit wdt tce topoext perfctr_core perfctr_nb bpext perfctr_llc mwaitx
+cpuid_fault cpb cat_l3 cdp_l3 hw_pstate ssbd mba perfmon_v2 ibrs ibpb stibp
+ibrs_enhanced vmmcall fsgsbase bmi1 avx2 smep bmi2 erms invpcid cqm rdt_a
+avx512f avx512dq rdseed adx smap avx512ifma clflushopt clwb avx512cd sha_ni
+avx512bw avx512vl xsaveopt xsavec xgetbv1 xsaves cqm_llc cqm_occup_llc
+cqm_mbm_total cqm_mbm_local user_shstk avx512_bf16 clzero irperf xsaveerptr
+rdpru wbnoinvd cppc arat npt lbrv svm_lock nrip_save tsc_scale vmcb_clean
+flushbyasid decodeassists pausefilter pfthreshold vgif x2avic v_spec_ctrl v=
+nmi
+avx512vbmi umip pku ospke avx512_vbmi2 gfni vaes vpclmulqdq avx512_vnni
+avx512_bitalg avx512_vpopcntdq rdpid overflow_recov succor smca fsrm flush_=
+l1d
+amd_lbr_pmc_freeze cpufreq
+       configuration: microcode=3D175161354
 
 --=20
 You may reply to this email to add a comment.
