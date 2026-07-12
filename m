@@ -1,175 +1,249 @@
-Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
+Received: from mout01.posteo.de (mout01.posteo.de [185.67.36.65])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 39D402D1913
-	for <linux-pm@vger.kernel.org>; Sun, 12 Jul 2026 13:30:33 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.180.131
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 132603612DB
+	for <linux-pm@vger.kernel.org>; Sun, 12 Jul 2026 16:58:36 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=185.67.36.65
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1783863035; cv=none; b=DYJCK1z4mWVXQ76DD57HC+Em3TS8BDmsPjLtjKGwcZzXM0ItFoz2pfgZyw04ktELu3KzlaopdL4rNWB2WMNNhnX6bu4Z7qn68Zinmz5wCvk5jIgcxnawZ3uqHtEZ3py+PV/vWFk0qFWco5wiBqjjom2CcTxPYP0VRxNn9qGBACg=
+	t=1783875519; cv=none; b=o5BI07Ep6GPGdEfccTrL325OuCA34Py3iNxETdOp98feuNeJOWODKDCQHOPFiMWJBNgmbjR1ufpL0FSziljPio2MehlBljjZlufyZaarPMdbV+YX9Jza7jX5Fl1KTDTJT12/4YULIfq/lzBMp5D9M6zAXvRBDBXf8J9cDIF8r84=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1783863035; c=relaxed/simple;
-	bh=lb/BAo8nt/synyDfbm+lEnhjYWT3KhROXJZc8197IhQ=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=gNjCXvoUmEDsuWhcOHQ7u7xCVAbpNSTfNzJldaBO3fKzGuYIQMjIX/ta6bTbIj3iKHRxp8egsH8JeNrKiw/ahrX9sM/BIzLXdjkRZFVAPcNPiCm20OYgAukoJWNRyfo6iiTPjl/veXbABLW7CPkWszUk+ifu9Ekxsh6nP3KMQYA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=Yk71QcsP; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=KFnzSenR; arc=none smtp.client-ip=205.220.180.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
+	s=arc-20240116; t=1783875519; c=relaxed/simple;
+	bh=fV624To3UhqgGQ5DL+BBAkhjZ2J8+nOFl26Z689PZKg=;
+	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=kK68bZCHM7iYOxGjdcA16hgYWHn+XaY9HKj7pyQ5FJ3ktzyo0v4lXHq75qMtkorpTsk7xvDB4PDAkpkiClOY1IaGNLw0Qe3mXLIyjO/l4v8TsrvqSjIs/WdiC7jL2W5AbKgaUoxgCiFHlpiMSNKdQRDFHuh029mhpzbTrz0DxB8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=posteo.de; spf=pass smtp.mailfrom=posteo.de; dkim=pass (2048-bit key) header.d=posteo.de header.i=@posteo.de header.b=VwJ43LSx; arc=none smtp.client-ip=185.67.36.65
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=posteo.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=posteo.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="Yk71QcsP";
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="KFnzSenR"
-Received: from pps.filterd (m0279870.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 66CAcBdq2332033
-	for <linux-pm@vger.kernel.org>; Sun, 12 Jul 2026 13:30:32 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	4uHhiyPDur1M8sX3vop9wkmPBwPJCdrUdMn078zxrjg=; b=Yk71QcsPfmUAcpUC
-	ri8yyNK/LBXK3z7oCGi56+sC8lkTtaoIbICpaSXoI6gyN52T0Ah9a+Y3vh9+DB+H
-	AKU3gmMiNqaxgQcqxC7bz9297hdJ3MzuDncRBqOGu5FFQqLv89JGYRKKd+LE1DSH
-	cxz5HfyxEnp1ONorkGHNEDYXanVEMFSflDFybOJXwrSmaojBImpLTm9yN32JTySW
-	nXvavCffINO6Z/BriIejal/N1nNssPwjmJTrI6Hb9dExke9UUg+/x8RnowOrFiYs
-	h0uy45MkVBKf6vK2KApCfVq3dpquMXuhYtLFCNWhoxy+rGCaMdLa8zgDbsnFW+Z0
-	41THug==
-Received: from mail-pl1-f197.google.com (mail-pl1-f197.google.com [209.85.214.197])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4fbeamtv81-1
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Sun, 12 Jul 2026 13:30:32 +0000 (GMT)
-Received: by mail-pl1-f197.google.com with SMTP id d9443c01a7336-2cce870a060so45592925ad.2
-        for <linux-pm@vger.kernel.org>; Sun, 12 Jul 2026 06:30:31 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1783863025; x=1784467825; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:in-reply-to:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=4uHhiyPDur1M8sX3vop9wkmPBwPJCdrUdMn078zxrjg=;
-        b=KFnzSenRKG75KSFm37V4OJvAdEGjwr87WC9v/zM52Vx/KHxxbapalBe+/UL+ww3Cc3
-         J2sfJy2vMhy2ZXn5yb87JoPYMneY5tF0vBxUjKCrx87tRFZAw9YtWzyrAmwQCE/9ByRc
-         lGzBXTqH2lBoQgc31gUxH4re7x+sNT+VqQcU3jc7m+aMnc0oW4IumpWpVtdHb/j4JtCx
-         qBhoxDbvlzLLzJXluRk0LzhwTLpLgqHvbHzsgaY3ZjP20lOgqcvG40pHsW3NW8WheuPn
-         qm7PCxcG0W9ARH/4Xb5IPtqtdVAS4jiB4xgQFOUB2suWYlh9C6K2Qsde7VtKaaYPPR/0
-         cXvA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1783863025; x=1784467825;
-        h=content-transfer-encoding:content-type:in-reply-to:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=4uHhiyPDur1M8sX3vop9wkmPBwPJCdrUdMn078zxrjg=;
-        b=O7lgx79W4eKG80z5KSQQflN2hBuN1kGfquKCN4JyrZCf0xdnxdjV82rr1LU2Hq+W1B
-         YPosFSCWTGeeQOoQM4g5CgiLh/QMoySqomp/kydpt1eQFPF3XPQ3edN6g0TUu6/3aLQW
-         lHdqGm+ycRpJlTpyZiDk1N882vu9hCk92DkkJmck5K6ze/8GWtHBvoOBjaZwY7uHhwBE
-         XCKuIb6bczKo6B7P3OAt131jzAa1W1Bm0zqNMGOWGheaTcfX7vIh4+sG1Q+XjVVS3tyk
-         637Asz3igAtUis0nPSLoayMCIvOIQWTs0Gkwa2EDQsrzItbI+SMmoN1XoHy8O5gUoQyK
-         jj+w==
-X-Forwarded-Encrypted: i=1; AHgh+RpvsTaxSi4BNvEbSFi7DxEGIvMMAcQm3FLbBzDze2HDxU9g+0x+FTlQg5oZpgkgrgERawgEaVyJLQ==@vger.kernel.org
-X-Gm-Message-State: AOJu0YzXEPIYY5Rr2CNbATRgpgYJ2VMNxRWTU7z+yjAmZtzq8kJZbXm6
-	z8alrBnotsLMMZ+cVSZzmmxPogS8BWcq0x6pKSegY9vOcs2wYQ5FblGH/ex7OrmKk9k7eE/ZUTF
-	HKs5ogGaAfXrApVpnjcsZLEQlrd6KWQVNnuEWEt14wc3okywqfAUPluZo9Q19tQ==
-X-Gm-Gg: AfdE7clwA+w8AOvfWvcD56Zyt4KCxOBaKhxKl+v5lZ/pCLVWF5OhACdVZIUPMu0xJLi
-	dA81MYNER36QbLTf3Sr1VhYzPykC+3ZttBYbW03JXkNRweQTT9bL/u7DaVSohaN99lZDv/EOhdB
-	H6SHs9bBWHH6Iixr4kMiGQJs0g//hqry7Uvb0s8Vh3zVVJvIkR0IMj0NoncJ24jL8fdVJK2XuhR
-	uaYW7xbA1N/OpAqh08bgdWWjyCEEhCt6sVclGPoTs+wbl2b0EIzCXxAJ0rn252/lwixEsQiScaw
-	SNF+mYS9UoYU3BadlXw9t5NxFohVKnqJQASTPTvGD5DkfXJ92iLt9YC+16RRYtV199RX6RBe/XL
-	VSttNLcw6uLXYjP8NzUib/Osnf7tfRSvM5u5vMvNhQguev4X8VKAU6iQ/uI55s++5aljaNjC1aD
-	94C/JjzQ0=
-X-Received: by 2002:a17:902:f68c:b0:2c9:abe1:c352 with SMTP id d9443c01a7336-2ce9eab4f48mr68185515ad.13.1783863025150;
-        Sun, 12 Jul 2026 06:30:25 -0700 (PDT)
-X-Received: by 2002:a17:902:f68c:b0:2c9:abe1:c352 with SMTP id d9443c01a7336-2ce9eab4f48mr68185185ad.13.1783863024679;
-        Sun, 12 Jul 2026 06:30:24 -0700 (PDT)
-Received: from [10.133.33.247] (tpe-colo-wan-fw-bordernet.qualcomm.com. [103.229.16.4])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2ccc9bfe040sm85304465ad.31.2026.07.12.06.30.19
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Sun, 12 Jul 2026 06:30:24 -0700 (PDT)
-Message-ID: <c0800c49-3435-4e89-87b2-21dfa20ae58b@oss.qualcomm.com>
-Date: Sun, 12 Jul 2026 21:30:16 +0800
+	dkim=pass (2048-bit key) header.d=posteo.de header.i=@posteo.de header.b="VwJ43LSx"
+Received: from submission (posteo.de [185.67.36.169]) 
+	by mout01.posteo.de (Postfix) with ESMTPS id 44F13240028
+	for <linux-pm@vger.kernel.org>; Sun, 12 Jul 2026 18:58:34 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=posteo.de;
+	s=1984.8680eb; t=1783875514;
+	bh=tWPQ6xBmlMcyxk91xqi/8tmhrSraaxd2DhrAIo7VbCw=;
+	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:
+	 Content-Transfer-Encoding:To:Cc:Autocrypt:OpenPGP:From;
+	b=VwJ43LSxnXsz+f95UXeY8//UoRxX2QLmoHdQVLA8XZdMTOc2tArh6NJTJJGc0Whxi
+	 n7fKzejqpU/xjHpaheUltxz7OWatIM7Ku9fl8dYMwylDn6w9fzsNliJDOFpQul/nT9
+	 QphjRmRP6hVm4HilQSy7mtvnGagPdZgRJZdu/aoUW6KZMkQrorOOcs+74FfP35rt5a
+	 ycL0kEr0Wzol9706MaW8X06klwzqmLi64V51jmpLZ5dde/z5H5Tezj3heeshSf/OwI
+	 0zmzNoWW4Gc7IBEF0ZTLqyhtY3y2Z8BoqHrJ1AU3A6JkOECQbdW5lEG5Lef1o2wRts
+	 0GWQ/YI2MJoPA==
+Received: from customer (localhost [127.0.0.1])
+	by submission (posteo.de) with ESMTPSA id 4gysGF243Hz6tsg;
+	Sun, 12 Jul 2026 18:58:29 +0200 (CEST)
+From: Markus Probst <markus.probst@posteo.de>
+Subject: [PATCH v13 0/3] rust: add basic serial device bus abstractions
+Date: Sun, 12 Jul 2026 16:58:32 +0000
+Message-Id: <20260712-rust_serdev-v13-0-2c4060bc8e30@posteo.de>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] cpufreq: Fix an IS_ERR() vs NULL bug in
- spear1340_set_cpu_rate()
-To: Dan Carpenter <error27@gmail.com>, Deepak Sikri <deepak.sikri@st.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>,
-        Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org,
-        zhongqiu.han@oss.qualcomm.com
-References: <alFJNUllC3JOKv6z@stanley.mountain>
-Content-Language: en-US
-From: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>
-In-Reply-To: <alFJNUllC3JOKv6z@stanley.mountain>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-Proofpoint-Spam-Info: AW1haW4tMjYwNzEyMDE0MiBTYWx0ZWRfXwRPS74fU/Yf4
- 7BeOnk+t4iZ6A0UkJLzGkjSe+Ov0Pv6uvS1KmbOoSdE2x9UuJcTGBeAQebY7ckPwOsKTcfZ/d5S
- 3rJnPZhy4yyYHFfKc1W25TNRshQcd5o=
-X-Proofpoint-GUID: 7Sy17WJiWCBoaFXuRf8fJ8ng-43xTr15
-X-Proofpoint-ORIG-GUID: 7Sy17WJiWCBoaFXuRf8fJ8ng-43xTr15
-X-Authority-Analysis: v=2.4 cv=dJSWXuZb c=1 sm=1 tr=0 ts=6a5396f8 cx=c_pps
- a=cmESyDAEBpBGqyK7t0alAg==:117 a=nuhDOHQX5FNHPW3J6Bj6AA==:17
- a=IkcTkHD0fZMA:10 a=RAioF0-LDSMA:10 a=s4-Qcg_JpJYA:10
- a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=gowsoOTTUOVcmtlkKump:22
- a=pGLkceISAAAA:8 a=EUspDBNiAAAA:8 a=N0crexS4lfU0QNQj-gkA:9 a=QEXdDO2ut3YA:10
- a=1OuFwYUASf3TG4hYMiVC:22
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzEyMDE0MiBTYWx0ZWRfX4TkQiV5AiEiY
- GlHj8EK9FR//vzxSOMZoDbKUAIi2LRraMdlZO6lurMdGe5hw4VaieQuOtYtvvcSS8Zk+zlFF6vK
- cJ3RA+xIuXYMCIOKRmTDX53k8u452AtghqyJkvWvkCI9jUJZRGIGVn/lxNuXSefvuRhMpC3X4jI
- tGo2nQFtJN36uWlYDmvf7aRungUsjF6JgdUibXJAhc3oNkLzIGsQ04pjjM/KrWgCRPol3jy6/bs
- zGx33qQmfBc8JWVO8qMG+jBkdkqd4nLAF9fSlTcRWV2k/yuzFSkZDARC3OjM3AEAlPd+R8gAfIe
- 7pHacmBFFi9xta7h9CVZJjpBj9oqMCctmOY8qzecmxfBebMASnXwQ8OlESm2MDSu/f0SInQHEut
- DLE89xBH8QIn8TZF2tSQZNnPX08c1j+lrbQqkeFOydT/EKv4t6vQ+bYFa/tTZuX0udIgjF81nEd
- xCj2zpxjHjCYVYI3P+w==
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-07-12_04,2026-07-10_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- malwarescore=0 impostorscore=0 suspectscore=0 phishscore=0 clxscore=1015
- spamscore=0 priorityscore=1501 lowpriorityscore=0 adultscore=0 bulkscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2607120142
+X-B4-Tracking: v=1; b=H4sIAAAAAAAC/33T227bMAwG4FcJfD0FIiXqkKu+x1AUOlCt0SXuZ
+ NfYUPTdJ6crajtALyXgo0n551s3cu157E6Ht67y3I/9cGkHUD8OXXoKl0cWfW4XHUokQLCivo7
+ TQ1OZZ8FM2gF76Sh1TbxULv2fa7mf9+381I/TUP9eq8+w3P6vg3JTZwYhBWttNFljDcLdyzBOP
+ Bwzd0udGT+tkUqarcXF+ogqaoxItLdqZUFtrWo2+aBCQdDFlr3VX1YDbK1u1mlib2QyBu3e0sr
+ u56VmybKLQRL4ovbWrO32zWfTLFhlvcvEEG6sXVu/tbZZmZ1P1kOk5PbWfVlSu55dsxg8FcgBM
+ dzM67+xvtniIpWUovbppmeQ32BoPQtDGTLl6KxJNxrWevebYMlWZnbcBley3GQLVuFqEdnpJV1
+ KS1lKdC4CrvX7R+Qr/35tizN95L478ziG696cDp8DgUKrzFGhd6S9AJHDc7175nrhX8ehPi7LE
+ 8PIIg3ncz+dDrM9oqgJ20fe/wEYdC/xpQMAAA==
+X-Change-ID: 20251217-rust_serdev-ee5481e9085c
+To: Rob Herring <robh@kernel.org>, 
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
+ Jiri Slaby <jirislaby@kernel.org>, Miguel Ojeda <ojeda@kernel.org>, 
+ Gary Guo <gary@garyguo.net>, 
+ =?utf-8?q?Bj=C3=B6rn_Roy_Baron?= <bjorn3_gh@protonmail.com>, 
+ Benno Lossin <lossin@kernel.org>, Andreas Hindborg <a.hindborg@kernel.org>, 
+ Alice Ryhl <aliceryhl@google.com>, Trevor Gross <tmgross@umich.edu>, 
+ Danilo Krummrich <dakr@kernel.org>, 
+ Kari Argillander <kari.argillander@gmail.com>, 
+ "Rafael J. Wysocki" <rafael@kernel.org>, 
+ Viresh Kumar <viresh.kumar@linaro.org>, Boqun Feng <boqun@kernel.org>, 
+ David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>, 
+ Daniel Almeida <daniel.almeida@collabora.com>, 
+ Tamir Duberstein <tamird@kernel.org>, 
+ Alexandre Courbot <acourbot@nvidia.com>, 
+ =?utf-8?q?Onur_=C3=96zkan?= <work@onurozkan.dev>, 
+ Boqun Feng <boqun@kernel.org>
+Cc: linux-serial@vger.kernel.org, linux-kernel@vger.kernel.org, 
+ rust-for-linux@vger.kernel.org, linux-pm@vger.kernel.org, 
+ driver-core@lists.linux.dev, dri-devel@lists.freedesktop.org, 
+ Markus Probst <markus.probst@posteo.de>
+X-Developer-Signature: v=1; a=openpgp-sha256; l=4532;
+ i=markus.probst@posteo.de; h=from:subject:message-id;
+ bh=fV624To3UhqgGQ5DL+BBAkhjZ2J8+nOFl26Z689PZKg=;
+ b=owEBiQJ2/ZANAwAIATR2H/jnrUPSAcsmYgBqU8e0ycrwR6WYGMe+rwRRx/CQM3Cg9FcPsTsyq
+ ovK3BEci9uJAk8EAAEIADkWIQSCdBjE9KxY53IwxHM0dh/4561D0gUCalPHtBsUgAAAAAAEAA5t
+ YW51MiwyLjUrMS4xMiwyLDIACgkQNHYf+OetQ9JyMQ/+JlfcCfGrDNtXwweD8s+caaH/EhxixGQ
+ UC1Kv5j0Xr/696+hs+48vVmgvW9L5qMiIu5f/Wtzg4g3W7oAQdVZ1m6JAoMjmKDgM9TVJk0gxw0
+ 6AoG5ZP4wZkB1pqC5RkEC5XA5RTmkynxacQp7iNX4+3OLkX5e7PvcXJ+CRpQqEk6pRRR4kEz8pt
+ DSFGOR/tpc85hKwVXK02NkMsds3ZWXjL65HTg/jgKDq6NUqjFMLdekrQxxBiFpPry8q3EdVeoFl
+ 3dS1ndWOJ5Ry5ziNM7EG9St507MA13wRsiHMIcRlGbQQHzn+4bASOK0YosWXHu7C8H/mU+ID42K
+ HiwWe3mVjqDEcLN0ehkbpsvpxgP1PSShsxSk0xdBk9bSrYwXSAEgcXE4UHk+K4pcOqBKlFp4VVn
+ zMjPGdayqyiRHo2BAELr3q3zgall4vImGX+XZOi9l78FIDgM6zF88qdJBHsipJDJHYrFDjVNxUq
+ GIuOhU3IOyf9rM5KU8gMtEFis47oYz01gevdYbdjjKWRltKjnx1dDb0Ml7TQ93FizVjZTLqwTiE
+ +2IgqsSGhSG86gGwIc4fLHuUYGio3AbjOkqWNiNP5KbfP/t94vQkXxgpRYe9xt/+FmW2EbYp2Np
+ b6EvETHH6sOsbtO8LwS6AA/gLxE5SWSKj/SL/RymHgUpbCuAZRCg=
+X-Developer-Key: i=markus.probst@posteo.de; a=openpgp;
+ fpr=827418C4F4AC58E77230C47334761FF8E7AD43D2
+Autocrypt: addr=markus.probst@posteo.de; prefer-encrypt=mutual;
+  keydata=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
+  aBeNN4ijKZchBXHPgVx+YtWRHfcm4l8=
+OpenPGP: url=https://posteo.de/keys/markus.probst@posteo.de.asc; preference=encrypt
 
-On 7/11/2026 3:34 AM, Dan Carpenter wrote:
-> The clk_get_parent() function doesn't return error pointers, it returns
-> NULL on error.  Update the error checking to match.
-> 
-> Fixes: 420993221175 ("cpufreq: SPEAr: Add CPUFreq driver")
-> Signed-off-by: Dan Carpenter <error27@gmail.com>
+This patch series adds the serdev device bus rust abstraction into the
+kernel.
 
-Nice catch, thanks for the fix.
+This abstraction will be used by a driver,
+which targets the MCU devices in Synology devices.
 
-Nit: the subject is too generic and can be misread as a cpufreq core
-fix. It is better to scope it to the driver, e.g. "cpufreq: spear: ...".
+Kari Argillander also messaged me, stating that he wants to write a
+watchdog driver with this abstraction (needing initial device data).
 
-With that:
+This series depends on [1].
 
-Reviewed-by: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>
+[1] https://lore.kernel.org/rust-for-linux/20260530132736.3298549-1-dakr@kernel.org/
 
+Signed-off-by: Markus Probst <markus.probst@posteo.de>
+---
+Changes in v13:
+- Added Acked-by trailer from Rob. Consider this a RESEND.
+- Link to v12: https://patch.msgid.link/20260603-rust_serdev-v12-0-3400ffb88b12@posteo.de
 
-> ---
->   drivers/cpufreq/spear-cpufreq.c | 4 ++--
->   1 file changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/cpufreq/spear-cpufreq.c b/drivers/cpufreq/spear-cpufreq.c
-> index 81a0780b2ebf..ffe5eda82f0b 100644
-> --- a/drivers/cpufreq/spear-cpufreq.c
-> +++ b/drivers/cpufreq/spear-cpufreq.c
-> @@ -79,9 +79,9 @@ static int spear1340_set_cpu_rate(struct clk *sys_pclk, unsigned long newfreq)
->   	int ret = 0;
->   
->   	sys_clk = clk_get_parent(spear_cpufreq.clk);
-> -	if (IS_ERR(sys_clk)) {
-> +	if (!sys_clk) {
->   		pr_err("failed to get cpu's parent (sys) clock\n");
-> -		return PTR_ERR(sys_clk);
-> +		return -EINVAL;
->   	}
->   
->   	/* Set the rate of the source clock before changing the parent */
+Changes in v12:
+- fix CoreInternal instead of BoundInternal
+- Link to v11: https://patch.msgid.link/20260531-rust_serdev-v11-0-dee8e0d830f1@posteo.de
 
+Changes in v11:
+- redo changes from v9 with the following fixes:
+  - fix memory leak on probe failure
+  - fix possible access of dropped drvdata from receive_buf
+- Link to v10: https://patch.msgid.link/20260530-rust_serdev-v10-0-65d1d5db876c@posteo.de
 
--- 
-Thx and BRs,
-Zhongqiu Han
+Changes in v10:
+- revert everything from v9, except BoundInternal
+- use mutex to ensure receive_buf won't be called on a dropped drvdata.
+- Link to v9: https://patch.msgid.link/20260530-rust_serdev-v9-0-f8b5fccb49c3@posteo.de
+
+Changes in v9:
+- make use of BoundInternal
+- use PrivateData wrapper and drop rust_private_data field
+- use non-devm version of serdev_device_open
+- Link to v8: https://patch.msgid.link/20260530-rust_serdev-v8-0-2a95f1da22a7@posteo.de
+
+Changes in v8:
+- adapted to driver-lifetime v5 patch series
+- add MAINTAINERS file patch
+- Link to v7: https://patch.msgid.link/20260429-rust_serdev-v7-0-0d89c791b5c8@posteo.de
+
+Changes in v7:
+- adapted to driver-lifetime patch series
+- Link to v6: https://patch.msgid.link/20260427-rust_serdev-v6-0-173798d5e1a3@posteo.de
+
+Changes in v6:
+- rebased onto v7.1-rc1
+- Link to v5: https://patch.msgid.link/20260420-rust_serdev-v5-0-57e8ba0519f3@posteo.de
+
+Changes in v5:
+- fix typo in documentation
+- Link to v4: https://lore.kernel.org/r/20260411-rust_serdev-v4-0-845e960c6627@posteo.de
+
+Changes in v4:
+- fixed not selecting rust serdev abstraction in sample
+- Link to v3: https://lore.kernel.org/r/20260313-rust_serdev-v3-0-c9a3af214f7f@posteo.de
+
+Changes in v3:
+- fix vertical import style
+- add Kconfig entry for the rust abstraction
+- fix documentation in include/linux/serdev.h
+- rename private_data to rust_private_data
+- fix `complete_all` <-> `wait_for_completion` typo
+- move drvdata_borrow call after the completion
+- Link to v2: https://lore.kernel.org/r/20260306-rust_serdev-v2-0-e9b23b42b255@posteo.de
+
+Changes in v2:
+- fix documentation in `serdev::Driver::write` and
+  `serdev::Driver::write_all`
+- remove use of `dev_info` in probe from the sample
+- remove `properties_parse` from the sample
+- add optional `baudrate` property to the sample
+- remove 1. patch
+- remove `TryFrom<&device::Device<Ctx>> for &serdev::Device<Ctx>`
+  implementation
+- fix import style
+- add patch to return reference in `devres::register` to fix safety
+  issue
+- add patch to add private data to serdev_device, to fix
+  `Device.drvdata()` from failing
+- simplify abstraction by removing ability to receive the initial
+  transmission. It may be added later in a separate patch series if
+  needed.
+- Link to v1: https://lore.kernel.org/r/20251220-rust_serdev-v1-0-e44645767621@posteo.de
+
+---
+Markus Probst (3):
+      rust: add basic serial device bus abstractions
+      samples: rust: add Rust serial device bus sample device driver
+      MAINTAINERS: serdev: Add self for serdev
+
+ MAINTAINERS                        |   5 +-
+ drivers/tty/serdev/Kconfig         |   7 +
+ rust/bindings/bindings_helper.h    |   1 +
+ rust/helpers/helpers.c             |   1 +
+ rust/helpers/serdev.c              |  22 ++
+ rust/kernel/lib.rs                 |   2 +
+ rust/kernel/serdev.rs              | 590 +++++++++++++++++++++++++++++++++++++
+ samples/rust/Kconfig               |  11 +
+ samples/rust/Makefile              |   1 +
+ samples/rust/rust_driver_serdev.rs |  91 ++++++
+ 10 files changed, 730 insertions(+), 1 deletion(-)
+---
+base-commit: 4c45e14df2f4e77982ad70d6d8e3fe750edd4c37
+change-id: 20251217-rust_serdev-ee5481e9085c
+prerequisite-message-id: 20260530132736.3298549-1-dakr@kernel.org
+prerequisite-patch-id: 310c6bee038ca3909a8e5e58ec12b74f7189b869
+prerequisite-patch-id: 92812c3d42b29504838e6dc66c307ff5c035bb5e
+
