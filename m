@@ -1,178 +1,122 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-wm1-f52.google.com (mail-wm1-f52.google.com [209.85.128.52])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3958843934F;
-	Mon, 13 Jul 2026 14:56:16 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C333C348C5C
+	for <linux-pm@vger.kernel.org>; Mon, 13 Jul 2026 15:39:54 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.52
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1783954578; cv=none; b=nzNoBlUeZMUgvIXQbFLAaJB4CdHXkyVA49+z/hAoVZHa9y6aTWl6Df8aiXEYusdF/8N+Nh4kq9jZLmgBJk72MlVrQG0MvMb1eRZSy5ZPacsVYuELvyXM8t1ZrSwU4mq2OMIBt8fXzFN4eVTk+4Ci7GLpTcwHsKuI3Y/cQvNuOVU=
+	t=1783957198; cv=none; b=Wik+bMPiPqnVsAYurs/LLWKJt52tAu8PlPWbqhENCv52DWueOW3ZBR/XtkN/77RkObMOcSpjt3x96HCItFIxso3ASSSckF23nhxk2dwxG+mEOW0zUI+FAgr4+da/hAoxgVGhxFObcYlps0tavMNaJ2KjwDniyAr/kDM5Dl/nzmw=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1783954578; c=relaxed/simple;
-	bh=xXhR+YQhbHeSxj9QTNBYPUuyrnFL7pkl2lTIj7/UPEs=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=M+DlB8Ivblz8BSptTTH8WdaYM79Afyd5/lTJoxBekd1PFCXr1E3PLRIF4Cpi71EaxjB9OOVr9cGM1V3rnwQ5BAMZAg6Iax0WdsZlaeuqJN5U87MgUHBjvdEL+R0ow+PxyysAbBEmSttE5fQmMJ+5H29Ezo7NUXlTy8kgVVW6w1A=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Pz1QN26l; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1783957198; c=relaxed/simple;
+	bh=yTdMyO+i2E2fqL0HAbZQyuFHUHHTDwBD3/WMsL7u6eI=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=qB3EYrtsJNfjcRFdA0szn/8swQXOiQDf6StIKZyk3n4/JUjD+y+klAyqrDLsZDqVqsbToiP0bcMw8C28mQ37tp66T5ZU2y5PsGc6ItxGwcAHlMS/8OJUh0zgnfslQVRHYKKBDawNFHhzyGdPuBC+WINEYtvGWuBtmWV77ZqvM+A=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=starlabs.systems; spf=pass smtp.mailfrom=starlabs.systems; dkim=pass (2048-bit key) header.d=starlabs-systems.20251104.gappssmtp.com header.i=@starlabs-systems.20251104.gappssmtp.com header.b=O4as8Kr9; arc=none smtp.client-ip=209.85.128.52
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=starlabs.systems
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=starlabs.systems
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Pz1QN26l"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id E897B1F00A3A;
-	Mon, 13 Jul 2026 14:56:15 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1783954576;
-	bh=SG4pmBvSs0sNLwcnEn1kcaoWBVt60QEROp/eB+0WTP0=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=Pz1QN26lzHpBg0ACofz5Zp4Ni1gGTAcrL8Hhl/KOuvJ2f4vsB7YrAb+h3j4+tbmuS
-	 YcLtxLbXwk3hXVhUSINxvDqJn7CGRftE1xBdyS92spHjoIcHiMC9EjkOKomwqb/r+w
-	 Wi4mJda7posjB3T/o3WFScokLurYZ4vmib48LKD+G8jwu6mMHz8czjvPdZ9L7S5bW5
-	 NYk0++n/qmehckA0aJeIPBYNO2ZlD9sXy7arqvLfMLIn2wVrwR2MLJr6spqWNqpEhg
-	 qxmp83Or9NiXpqxlnGY9pm3VwdvnbgsLJjZGFh5p4h2A36eK6kmkI8U4C0YTUnVH2+
-	 9K91guI/zFGSg==
-Date: Mon, 13 Jul 2026 15:56:13 +0100
-From: Sudeep Holla <sudeep.holla@kernel.org>
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Linux PM <linux-pm@vger.kernel.org>,
-	Sudeep Holla <sudeep.holla@kernel.org>,
-	Linux ACPI <linux-acpi@vger.kernel.org>
-Subject: Re: [PATCH v1 17/17] intel_idle: Add ACPI _LPI support
-Message-ID: <20260713-aquatic-okapi-of-wind-9e657c@sudeepholla>
-References: <4746278.LvFx2qVVIh@rafael.j.wysocki>
- <2280567.Icojqenx9y@rafael.j.wysocki>
+	dkim=pass (2048-bit key) header.d=starlabs-systems.20251104.gappssmtp.com header.i=@starlabs-systems.20251104.gappssmtp.com header.b="O4as8Kr9"
+Received: by mail-wm1-f52.google.com with SMTP id 5b1f17b1804b1-493c52cde9eso29739375e9.3
+        for <linux-pm@vger.kernel.org>; Mon, 13 Jul 2026 08:39:54 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=starlabs-systems.20251104.gappssmtp.com; s=20251104; t=1783957193; x=1784561993; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
+        bh=WeDwmwYsyldgwys09XPYSkZKv49CSC/GW7zpDU3Wo8g=;
+        b=O4as8Kr95k/89bNhHOHBLNHAaKPevkhVkDHZQl/2kQAanzX4LlSJeXiL4VTTcUH4Z2
+         XB4l41yjLrsoyFVaDwC4rdGY7PA3eRmxwprF+P4jPELdgDPocJvfLl4oYfRAafC0EXQq
+         6vjsBXhEW2oEiv7FMXD6u0wjj8C+TULFGrkEAyjR6a4Aq49952KGV/8pPf1kaX2jBkp1
+         tZ8aRBM3obEz+92QkoGH3Jt2Hn83lw/dws//0tY5NEJ+ccSBkUv6zkhuOq+y7e6/2Hyw
+         uwvNuIlHdkzA0PACT7tdNxovcTy+b8Cc11fqOAXENEvfHpl00KIfQQMxyLMi1FrDzuYJ
+         jWIg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1783957193; x=1784561993;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=WeDwmwYsyldgwys09XPYSkZKv49CSC/GW7zpDU3Wo8g=;
+        b=JOPaZzmVpEjoMT0zeMiOUEk4k82RqUl/vbYgRIDBe86YToZRCsRyFQk+uWBn3C/Dj5
+         rjMbxGiBOkPhSbnMg771Dj32/Dv8IR51kigJGmFrbXbnS+HGz9ESfQOUmMyWC3kMZikH
+         S5AAHDCXpdsrbR+ucrY5eftlYPNsoq6tqaFwUoYD3A7liOMfUEtlBj22t+J74Ztvty2v
+         mE4hbKtmwHwA7yq9p7F2m6UZV9+RQ50WJmHBdaa15adI9M2lL5/8QGyiXTnH5okXCzxN
+         XQIYClUI6YDESLhg+Og77EhTt+EL+546ZMzFYJ+8vYxdVlaQkeHcwE+b0Q+CD6Po3Boe
+         Mmfw==
+X-Forwarded-Encrypted: i=1; AHgh+RqSB8q/eruZHtRmAhpqA4XfB8FYc8gwWP4p+HZAsyIbwSAna5EQgILtT5bI475TPq6QXlCVTgPBTw==@vger.kernel.org
+X-Gm-Message-State: AOJu0YwCNxhwi16PfRdKLvteczn5Qavvzc5xd6u1XjOkvGKDF4qCbVRP
+	oHoqONTHqAMQ+c+B5zsVFPfaj1K4ttLJXrQvFeNwm/MCSeVQ+k+3FcbCva8XS7MFsA==
+X-Gm-Gg: AfdE7clwFD7Ez7idw7KbHOv+V1amOGIxNqdIcSDbHH9kX8rN7CBaTcED/hQN1kN265m
+	1UU19B6+FzNXAB9zHTjDOvETW4rKNNx+HU+U6TwZ9lkOXVHkbtqeoYMjK26qSQXgs7ozXhbp0GQ
+	1siHNsvEVaAfe8DtB1zGWS8nrnBM1d72g+bq4oUObl09B+kdu0GSISj/ic5DbkXBBZ5dGb6PWxP
+	tj2jM6MRmOERNKxjzO3zNYZk5RbLXwj6bpL4Y+zt0dIbA3aHfxKKoF6XytXN+mCB2IJZwTPaGcV
+	i3YpqTOnRK8RevP2EPtXx3ZPDKsTzyB8njNfqnV0YCeE+w4rAvXm1i9TWmvFGYssv8pLc4Dl/JC
+	38F3ckm6PQcbWE+B9eBD8g75F+PmGi8f/otMWHOCEuk8aWkNB4ECMh5F0HP8tSOVhd9mDY+WoIH
+	aJ/e9GjBTZFg7dD6qvMRftxDh7sU4mo0JRJEKk0udPSrXK0dBBD+4xF2rY4ynDUG1eCVE=
+X-Received: by 2002:a05:600c:b99:b0:493:aaa2:f034 with SMTP id 5b1f17b1804b1-493f882ae23mr102205915e9.26.1783957192599;
+        Mon, 13 Jul 2026 08:39:52 -0700 (PDT)
+Received: from horizon.localdomain ([150.228.38.212])
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4950a32c65asm3135735e9.14.2026.07.13.08.39.51
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 13 Jul 2026 08:39:52 -0700 (PDT)
+From: Sean Rhodes <sean@starlabs.systems>
+To: "Rafael J. Wysocki" <rafael@kernel.org>,
+	Len Brown <lenb@kernel.org>,
+	Pavel Machek <pavel@kernel.org>,
+	linux-pm@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+Cc: Evan Green <evgreen@chromium.org>,
+	Xueqin Luo <luoxueqin@kylinos.cn>
+Subject: [RFC PATCH 0/3] PM: hibernate: encrypted snapshots under lockdown
+Date: Mon, 13 Jul 2026 16:39:47 +0100
+Message-ID: <cover.1783956835.git.sean@starlabs.systems>
+X-Mailer: git-send-email 2.53.0
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <2280567.Icojqenx9y@rafael.j.wysocki>
 
-On Thu, Jul 09, 2026 at 02:44:23PM +0200, Rafael J. Wysocki wrote:
-> From: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
-> 
-> Allow intel_idle to use idle states information coming from ACPI _LPI
-> objects by making it call acpi_processor_extract_lpi_info() and, if
-> that is successful, using the list of idle states produced by that
-> function instead of the one coming from acpi_processor_evaluate_cst().
-> 
+This is an RFC for allowing hibernate with lockdown enabled.
 
-May be it is lack of my knowledge. I always assumed intel_idle is fine
-tuned with for specific intel cores. But now if the information is being
-fetched from _LPI, what is the difference between intel_idle driver
-and ACPI processor idle if the FFH backend can be MWAIT.
+The kernel still refuses plain hibernate images under lockdown. This adds an
+encrypted snapshot path instead. Early userspace gives the kernel a seed, the
+kernel locks it, and /dev/snapshot can then create/load encrypted images. If
+that seed is not present and locked, lockdown keeps blocking hibernate as it
+does today.
 
-Couple of more questions below, all just for my understanding and it
-doesn't add as a review comment.
+This is based on the older encrypted hibernate work, but with the TPM policy
+pushed out of the kernel. The kernel side just handles the snapshot encryption
+and the seed ABI.
 
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> ---
->  drivers/idle/intel_idle.c | 160 ++++++++++++++++++++++++++++++++------
->  1 file changed, 138 insertions(+), 22 deletions(-)
-> 
-> diff --git a/drivers/idle/intel_idle.c b/drivers/idle/intel_idle.c
-> index fedaa8142121..bcc2725769c5 100644
-> --- a/drivers/idle/intel_idle.c
-> +++ b/drivers/idle/intel_idle.c
-> @@ -1779,6 +1779,7 @@ module_param_named(no_native, no_native, bool, 0444);
->  MODULE_PARM_DESC(no_native, "Ignore cpu specific (native) idle states in lieu of ACPI idle states");
->  
->  static struct acpi_processor_power acpi_state_table __initdata;
-> +static bool acpi_lpi_available __initdata;
->  
->  /**
->   * intel_idle_cst_usable - Check if the _CST information can be used.
-> @@ -1803,18 +1804,37 @@ static bool __init intel_idle_cst_usable(void)
->  	return true;
->  }
->  
-> -static bool __init intel_idle_acpi_cst_extract(void)
-> +static bool __init intel_idle_acpi_extract_lpi_cstates(void)
->  {
->  	unsigned int cpu;
->  
-> -	if (no_acpi) {
-> -		pr_debug("Not allowed to use ACPI _CST\n");
-> -		return false;
-> +	for_each_possible_cpu(cpu) {
-> +		struct acpi_processor *pr;
-> +
-> +		pr = per_cpu(processors, cpu);
-> +		if (!pr)
-> +			continue;
-> +
-> +		if (acpi_processor_extract_lpi_info(pr->handle,
-> +						    &acpi_state_table, true))
-> +			continue;
-> +
-> +		acpi_lpi_available = true;
-> +		return true;
+Testing on Star Labs StarFighter: dmesg shows the seed was locked, S4
+entry/exit, and no errors.
 
-On the first CPU for which acpi_processor_extract_lpi_info() returns 0,
-it sets acpi_lpi_available and immediately returns true.
+Sending as RFC because the ABI and early-userspace split need review before
+this should be a proper v1.
 
-Consequently, one CPU’s _LPI data populates the global acpi_state_table,
-which initializes the single intel_idle_driver. Remaining CPUs are neither
-queried nor compared which is fine IIUC on x86. But then the questions is
-why does this needs to be in a loop as you? Can't it be just the boot CPU
-for instance.
+Evan Green (1):
+  PM: hibernate: add seed-wrapped encrypted snapshots
 
->  	}
->  
-> +	pr_debug("No ACPI _LPI idle states\n");
-> +	return false;
-> +}
-> +
-> +static bool __init intel_idle_acpi_extract_cst_cstates(void)
-> +{
-> +	unsigned int cpu;
-> +
->  	for_each_possible_cpu(cpu) {
-> -		struct acpi_processor *pr = per_cpu(processors, cpu);
-> +		struct acpi_processor *pr;
->  
-> +		pr = per_cpu(processors, cpu);
->  		if (!pr)
->  			continue;
->  
-> @@ -1826,14 +1846,36 @@ static bool __init intel_idle_acpi_cst_extract(void)
->  		if (!intel_idle_cst_usable())
->  			continue;
->  
-> -		if (!acpi_processor_claim_cst_control())
-> -			break;
-> +		return true;
-> +	}
-> +
-> +	pr_debug("ACPI _CST not found or not usable\n");
-> +	return false;
-> +}
->  
-> +static bool __init intel_idle_acpi_extract_cstates(void)
-> +{
-> +	if (intel_idle_acpi_extract_lpi_cstates())
-> +		return true;
-> +
-> +	if (intel_idle_acpi_extract_cst_cstates())
->  		return true;
-> +
-> +	return false;
-> +}
-> +
-> +static bool __init intel_idle_acpi_probe(void)
-> +{
-> +	if (no_acpi) {
-> +		pr_debug("Not allowed to use ACPI for C-states extraction\n");
-> +		return false;
->  	}
-> 
+Sean Rhodes (2):
+  PM: hibernate: permit encrypted snapshot device under lockdown
+  PM: hibernate: document encrypted snapshot seed ABI
 
-The intel_idle documentation and module parameter descriptions should be
-updated to reflect _LPI support IMO.
+ Documentation/ABI/testing/sysfs-power   |  14 +
+ Documentation/power/userland-swsusp.rst |  19 +
+ include/uapi/linux/suspend_ioctls.h     |  31 +-
+ kernel/power/Kconfig                    |  15 +
+ kernel/power/Makefile                   |   1 +
+ kernel/power/hibernate.c                |  32 +
+ kernel/power/power.h                    |   2 +
+ kernel/power/snapenc.c                  | 878 ++++++++++++++++++++++++
+ kernel/power/snapshot.c                 |   5 +
+ kernel/power/user.c                     |  94 ++-
+ kernel/power/user.h                     | 133 ++++
+ 11 files changed, 1204 insertions(+), 20 deletions(-)
+ create mode 100644 kernel/power/snapenc.c
+ create mode 100644 kernel/power/user.h
 
-Documentation/admin-guide/pm/intel_idle.rst should no longer imply that
-intel_idle only looks for _CST or only uses _CST-derived state
-names/construction rules.
 
+base-commit: dd3210c47e8d3ac6b4e9141fc68acc03b38c0ba3
 -- 
-Regards,
-Sudeep
+2.53.0
