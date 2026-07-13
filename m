@@ -1,42 +1,42 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 931EB421A12;
-	Mon, 13 Jul 2026 13:17:31 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CC44C4229A3;
+	Mon, 13 Jul 2026 13:18:06 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1783948652; cv=none; b=tiuHVpIvhwWTjwcDz5pvh8E9d6tU61yzIWVu9fMQRvrOewaeSbSQzddx6YqdC9w8Ja0lbK67IShqXCXRYHk7iZDRwUj7zyiSCrJXgdD2Wyfb05CgNWJLnPKMb3Xi8PFKnTceEyixprIdnzJQuRBiMtuoa5y40t5LR5yWtfhrS9g=
+	t=1783948687; cv=none; b=nDFCwoLA2ST4duxMChHKRvMMWKMugRoBo9NC+pJm/jl8rjSBpBeISCcyqdI+cSSULRBCHXnCU5mvMN5NLuSVkmA+WNzEUiDxpoOZrXXkxPR2mciFjadwsLTw6By1xIQKe3HauMtW/RTjDGKeGzxJzG+iyH3WPQKqgV2eyGbfzrI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1783948652; c=relaxed/simple;
-	bh=JC/lJ/HQkfsfbILDjKPqLOhuX83T5J4LJVMmn5qmLxs=;
+	s=arc-20240116; t=1783948687; c=relaxed/simple;
+	bh=lVnuL+MP6vF2ebXuk2mTC1c2xeDUP5phi1bNiG4BI50=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=nKl14u5Mcht4YSsFKi/RDp8BfoZ8XYHcFsHZCAPP/he0aEsjA8J3iz/owfXTGGq4Y4wo9ndrvljuSUii59TpH+oeRbhaz7hIr0oogNpfMRwxc4FO1GeL38uY4YqvBElqC7oX5VLkZsee8hpW+bIOpTurR29a7f8SENaGvvYBL2M=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=KC6Q+GXh; arc=none smtp.client-ip=100.103.45.18
+	 Content-Type:Content-Disposition:In-Reply-To; b=YtULoJ6ksAqxSiJYVDdjblzOaXSUiQIX4PH6nPFMSr+TzQGqqyPkGZGW8IU3F/1N2uDdXOW65j4L6hTwsjeNze/ncgtBjoqwMJMAln3MzR20BSJsH2lR/qIHzJaOr9oLBOg2YmBZZUesf8AmF/tWPJM6Sb+cTNFXLzbwhj80JEM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=TzDPOY75; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="KC6Q+GXh"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9C30D1F000E9;
-	Mon, 13 Jul 2026 13:17:30 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="TzDPOY75"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8BE721F000E9;
+	Mon, 13 Jul 2026 13:18:05 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1783948651;
-	bh=CTDzIuECg7ec2CujzD4dfEzEhYJme9GipSqlqXXMpj4=;
+	s=k20260515; t=1783948686;
+	bh=dPkxTd8ulHYTR96R53pbdGlE76A0kuPjAVeZnyK2exw=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=KC6Q+GXhttKsbu9CWEw31Iy/WZwxMdPA/KSPis3lfiKK/wLCqQbVrZvDCW9ARu5Gl
-	 QabXyKFrVUYprBT5dwjhN8f5YfSIW7/bmZwo8EHj5wWB8lU86Pj3y8+Ko0QLSVSQZz
-	 ZbZPb9nSrvcaZI30VFQ6H8UX5vAEG3in4ywlOyxpPuSXzkVwxnA3GOCW0dosrzHanm
-	 96Dk3ofjo/sBxx5S402dwbfF/WyPxf7s4n7ni5hXzI4GHp8FqNr7HzHVZ5kEkuirLg
-	 SJI/K/h3IzGl8AaCcLdgo9FdkjtIg5xwfGI19pq2gKkKmgS4KmYW0fyxG8t+/mW+//
-	 IOtz88h0vnPqg==
-Date: Mon, 13 Jul 2026 14:17:28 +0100
+	b=TzDPOY75We+4yVEQXTdJoThAxLc5IunbSFCSxEHSN8Q0jhQticL+lprpu7o2H5EI0
+	 JZLd8tGr4DYa9/18hVaiAj4jdvYdMdDMBhITgT8VRs/3jvsoHwXTEy8qu8ig20NYcI
+	 FUwKy2RQpUQ/2OnknrblZ7lOar56BBy4nLoizy0K7FlNMdqlDC2YyGuGK5jiXyht5Y
+	 JSRLOvD/ZaLklf/QRP+0KB2TRVRohFDb6BFFnylrp4Rv6FqDY5V1m6Sza1VMkLTZsu
+	 8Jt9HO8H+MHo4U7OxaLcHVJ1akxg/Ck1tv7dCXSr2pqyyJxXe+ICj4Wzxw93n5Rz9q
+	 pc4IZ2YiL3W4w==
+Date: Mon, 13 Jul 2026 14:18:03 +0100
 From: Sudeep Holla <sudeep.holla@kernel.org>
 To: "Rafael J. Wysocki" <rafael@kernel.org>
 Cc: Linux PM <linux-pm@vger.kernel.org>,
 	Sudeep Holla <sudeep.holla@kernel.org>,
 	Linux ACPI <linux-acpi@vger.kernel.org>
-Subject: Re: [PATCH v1 05/17] ACPI: processor: idle: Split
- acpi_processor_evaluate_lpi()
-Message-ID: <20260713-debonair-imposing-stingray-1aa12b@sudeepholla>
+Subject: Re: [PATCH v1 07/17] ACPI: processor: idle: Rearrange
+ acpi_processor_get_lpi_info()
+Message-ID: <20260713-furious-sawfish-of-elegance-f5c6db@sudeepholla>
 References: <4746278.LvFx2qVVIh@rafael.j.wysocki>
- <10878273.nUPlyArG6x@rafael.j.wysocki>
+ <7965163.EvYhyI6sBW@rafael.j.wysocki>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -45,14 +45,18 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <10878273.nUPlyArG6x@rafael.j.wysocki>
+In-Reply-To: <7965163.EvYhyI6sBW@rafael.j.wysocki>
 
-On Thu, Jul 09, 2026 at 02:34:36PM +0200, Rafael J. Wysocki wrote:
+On Thu, Jul 09, 2026 at 02:36:28PM +0200, Rafael J. Wysocki wrote:
 > From: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
 > 
-> Move individual _LPI state package processing from
-> acpi_processor_evaluate_lpi() to a separate new function
-> called process_lpi_state_package().
+> Reorder the definitions of local variables in
+> acpi_processor_get_lpi_info() and drop local variable
+> pr_ahandle that is not really necessary from it.
+> 
+> Additionally, move two definitions of local variables to
+> the loop in which they are used and rearrange the code
+> slightly to prepare it for subsequent changes.
 > 
 > No intentional functional impact.
 > 
