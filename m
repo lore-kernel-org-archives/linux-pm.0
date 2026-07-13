@@ -1,241 +1,180 @@
-Received: from mail-ot1-f42.google.com (mail-ot1-f42.google.com [209.85.210.42])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F07D33D891F
-	for <linux-pm@vger.kernel.org>; Mon, 13 Jul 2026 10:47:56 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.210.42
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C25E6366052
+	for <linux-pm@vger.kernel.org>; Mon, 13 Jul 2026 11:06:09 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=205.220.180.131
 ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1783939678; cv=pass; b=AP+BF5Jku6LJkrX42//rNu4e8jwe59L31WaiBq+Fd2xPeYKjuOv3FpUeuGA6cM5Xj0H5DpXfWB22MtwAF6ovCUjBK925DAIZkN33wPaX94GepzDjJ/MO52rityONIg2nGDwErTb3fNCfBlSUnU3tP4XQ/OEn+mUSDIp81Ae6pDI=
+	t=1783940771; cv=pass; b=U2uaotUtbQR8n5XWOHbZTZoKQp/oe+UK31e7WDO+UvhuKKueaLKNRn1HDa1zUimEx9Ixr13TlX7lbFIaDSv1cOB/g3PX9r4nGuFNxhiX26xBIBf8Z+iEHt/eZllc7czK+q1iqw6H1ZpeykK4lMBoCi3IaW3IuPGT3uo46ZQ3Rq0=
 ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1783939678; c=relaxed/simple;
-	bh=Q+CCqNFJAWM5zclazh2uA9ABf22MMeWrfoy3sMf1DJE=;
+	s=arc-20240116; t=1783940771; c=relaxed/simple;
+	bh=wU4adGyulZDWHqdEHT6S2Ub0gI9p8fXNMrbZKLgyLEg=;
 	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=ke8SjyE9fbgdhJcl+D/17ShlWcf5mMZWeou+P+wQ6Qaq+doU9chY1zdzPkJ+5njkV6nIx9X3I1wIcvvYeYCh7wquu1r/SdBJcgq2oB9qG6VDPJhYQ6HJ3vo54p4qHM6aB6+zZF0qmw90ZaLvHi5Ragt/V/NSJwfmIUDxvdcIqZE=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=chromium.org; spf=pass smtp.mailfrom=chromium.org; dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b=MWcCWXfz; arc=pass smtp.client-ip=209.85.210.42
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=chromium.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=chromium.org
+	 To:Cc:Content-Type; b=Mq9ARex1Z5b4WYT/rInGb+bfbxk9dp0Bh+lSMG9dPGml8eeD5z2JkEMwzcjehIMQLnI9wemsrrqlIL7oCUqSUk3CSsd+fyJZnvDJb+axoOp1thgzTPeknowys6g9DAGvttdh+d6fFQLA89pAKRsAqKyoPOh+64my5bnp9/YMS4c=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=DxuR6f/b; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=LmE7iWGl; arc=pass smtp.client-ip=205.220.180.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="MWcCWXfz"
-Received: by mail-ot1-f42.google.com with SMTP id 46e09a7af769-7eb9b427da2so2666065a34.0
-        for <linux-pm@vger.kernel.org>; Mon, 13 Jul 2026 03:47:56 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1783939676; cv=none;
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="DxuR6f/b";
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="LmE7iWGl"
+Received: from pps.filterd (m0279871.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 66D9RF2C1123067
+	for <linux-pm@vger.kernel.org>; Mon, 13 Jul 2026 11:06:08 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
+	kvqsLA6Mvt2zukd4+gfC9bRp1ifbJzmUNc+eEGzl1K8=; b=DxuR6f/bxOGO5KQB
+	RZ/enNONz0Rdsd4+l1m31TX0ZtALLxRB2aZZ4Bvwlq9otL0CjXf/HxHi+EeJ+DGS
+	woR5CIoZx3YpXBtO0ZjEUFav2Ih1xlYDg5ps6CJ672D/7yb8iIDc9Nw6olArMEHV
+	HFsPQIxyZAzd4upN/mTsvRorElOr6ov8OmRtOK1E3b2upECnWP02bHAN9sBFQ5pP
+	XntXO7Wkgc5T7ENe+2f3GxoX5n/BA5J1SWLQLV6d37F/sG4cRmdHS+slqQgLEAeP
+	KuSI2ENJKzSPaK7VL23lN3pbrN/RdCerPnUzXEudqwmP7e7QG1DsJwAxPHbIwF8N
+	zKPiKQ==
+Received: from mail-qk1-f197.google.com (mail-qk1-f197.google.com [209.85.222.197])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4fcwda0bbt-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <linux-pm@vger.kernel.org>; Mon, 13 Jul 2026 11:06:08 +0000 (GMT)
+Received: by mail-qk1-f197.google.com with SMTP id af79cd13be357-92e632390d2so598676085a.3
+        for <linux-pm@vger.kernel.org>; Mon, 13 Jul 2026 04:06:08 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1783940768; cv=none;
         d=google.com; s=arc-20260327;
-        b=JGk/OzjMWY9jNLa9FD5J94WQH8vlhImVeXhPXctI3UJ40UAc2fRWTqBZrRwOEx3/et
-         z3tFElyVeEDURJ/ltYNQRtxWfPtcNgmthKkrxjCNS03bZHZWvq8PnRwE9sfN6AfXgkbz
-         Y6CJ3h7JggdvN2niyk+GzKn82aq2TrN59/0MPCs4CzQMt+7GYse8IKdCEBK7HGPGM9r+
-         jdrPacvQ2SKj9fE8Ghf3lgBPmifKDXTTFEy+4Ww3eJoKpwf1XdvqZnR3D79a/vKS/rW+
-         sBK+NHprdUXFvOh0rhs28HSrv93FQOIgc57rKON/+Rk5qHixIH5rMPa5Juca6tXxUmdm
-         JgDg==
+        b=dEhIc/nIAqxLCF4ds9AudyHwyYITmjxJgyAsoCr200lkKyvA/twdOjqCNrBJdJptQO
+         rlXYPPWNiWdylWR6FIUGPZL6mxWL80ZaTdmmFjRflGN8ir1xGmnUcsat4B4iKNICfNKb
+         LZHugacfj42zb10ejml5SwL6M2EgzcCC5f10dCSVFDcfApU2gavemHaBY9TwKS7KZGHK
+         OZc3CbAyi8tPXhcaUBFBG3cKaaH15dWIwTX3H84o9M1sDDs+UMOAXB/QW7Vo11TRi3pb
+         t4QjN2j3OXFZo47hp+BC4ByQEPttQYOZRQ78vwzMliPI0oXPtBNqnEWUhSyRvtpiN+Rj
+         waQQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
         h=content-transfer-encoding:cc:to:subject:message-id:date:from
          :in-reply-to:references:mime-version:dkim-signature;
-        bh=eWFL44d2xUl7HIjwQPptHzV3ZpTWrkGx+gsq+YbLkl8=;
-        fh=WjMjmgUmrOW5A8VB9njiOln14DB5Lnp7KHcYS2uUHjA=;
-        b=r1LuBBuTazHcszb3dqSI3IjcR9BZpyf455mL25jgY7bVZDd+klRHs/Sk0DSLLXtmlf
-         CSP+x4Egwww7LGsIwrqwk7IWwtrzVjxX09MUnH7I6sSUBx6VvdowishVifYfMw0voOpR
-         0I7tHDcF3egsN2NfRu2JooN6L6JQRh2CnBSVTRUXjhA7aup7Nu9KSZBVTj6/y4b+DjCE
-         Gvr+ufO8tzVKs8F5TgEe0z0tGYQ2ReYn7E626fB8gh9ZX6q7DNglKxFaA4RacwMfp4+I
-         KT7IqTehMICT3QWP6sazsjCwnvY/opTn90AhpyC7PDEAcTCSYn7pszmkAS2OXBdbrKVn
-         q4kA==;
+        bh=kvqsLA6Mvt2zukd4+gfC9bRp1ifbJzmUNc+eEGzl1K8=;
+        fh=77hHMzu8mjdtB2aCPDX4OTqfd0bP3sjHk3t4ZyuYcrk=;
+        b=HGhwl94mLDtjWShYmLTQMiWMSeKGxGxJCdK7+vIgPSROcktQh3UkxvqMlt4C7jczIo
+         V2h/nbuJxADIfrsSQXiNcB8q9Wz2K4F0KeKhnCXHe670MT0Bc4hMR8rV2w3xHdBxDuow
+         N6IE3mv6BqNpB+gM7ZHe4LsDfwqcrx/OgrYPUyl0d2vB8x2EG3DyDJd7CCi21V6h3WOO
+         ceyf7vH1YP+glsiunJBJQQ8VxeDb+eyU0hRXtmNeDQn7mKJovQfGjsehfgw2xwW84e7L
+         aGv8ecW+WR9HnWa0xXh+ROXEEa8M9a8d0wC8oIQkb3HTdJc5L5tHCa0KagITVuSY1FyO
+         ygaQ==;
         darn=vger.kernel.org
 ARC-Authentication-Results: i=1; mx.google.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=chromium.org; s=google; t=1783939676; x=1784544476; darn=vger.kernel.org;
+        d=oss.qualcomm.com; s=google; t=1783940768; x=1784545568; darn=vger.kernel.org;
         h=content-transfer-encoding:content-type:cc:to:subject:message-id
          :date:from:in-reply-to:references:mime-version:from:to:cc:subject
          :date:message-id:reply-to:content-type;
-        bh=eWFL44d2xUl7HIjwQPptHzV3ZpTWrkGx+gsq+YbLkl8=;
-        b=MWcCWXfzyC78Su9gH2gNTAvh4aoXBuesyO1EqEGBcwQpsU1cFNejSsqtwS+1ufqv3K
-         bu/tm/rOHqw6XPg5m5Hb9WvCn4SAyx3jyovZE3HyKGbIZPn7RgR1SHNA5LH+Wx2U7phk
-         YG33WyMLyYdFkYiiry7ZWNiXz7bq6Qd/QXbfE=
+        bh=kvqsLA6Mvt2zukd4+gfC9bRp1ifbJzmUNc+eEGzl1K8=;
+        b=LmE7iWGlMxYq1/UTi1S9nF1y9EB/rVelkyDlBjWbjlJlhH1hFlCxFD2K44xZDKdcFL
+         OTd7vhvKxJrzStHYB07h4zrUwy5VVZmaudJZmjVBqJ7AJhs5Ia06oqJMECU3Sy4fbB+F
+         ewIy5i7xjOnpVB8VUgfRgGGlSpTIXLxJyx4wFrQZKvzrPf8jObxUpIfnRwN+Ahqwq6u0
+         Z+m97txg0L5ORpLoqNJgC64mGgNaYNDbMHcTDa4v9HaatSq30DGhxynWnKRPL5RCnXDR
+         aa007lJe3Mk2Rs9eVtO1INIF1IjPURb30imVK/XzYscj8IY/jwYGwrlK4K46RG2hPrcK
+         IgWA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1783939676; x=1784544476;
+        d=1e100.net; s=20251104; t=1783940768; x=1784545568;
         h=content-transfer-encoding:content-type:cc:to:subject:message-id
          :date:from:in-reply-to:references:mime-version:x-gm-gg
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=eWFL44d2xUl7HIjwQPptHzV3ZpTWrkGx+gsq+YbLkl8=;
-        b=n84q2OuXpcehPIFypnd3dW4a+BPQxI5I6yr8FrpTNYNfauyN7aMkzX3M8xHJRVwVR6
-         zGAS6Dz+NCdxli7kzeMbzk78n+Do3TgFQ95W//omINDkfe+0iW/vNutlzoVPMvi7IdvG
-         lGFmlHnGj2R0e9m1k+Xbh2Bsr6LnHeX2f2Gsj3wt0Cln+kpgM5tV8QKM6S0+rYWevLSc
-         ZH8r25hPamnoy3aYrHU+b5HaYkZZcv1DAm0o2Mftq+0M+I4Y4RYabw/K7jnw5/KIPvNr
-         OrayWLbx4192HS4nh+L2177PMjYFG3rMou1xVQwjJAlsTpamvR8KmPxr+E5buXjR7ltu
-         yWFQ==
-X-Forwarded-Encrypted: i=1; AFNElJ//2Zs/xn3NOJrUx73AcDJjVBq/rZtjB+NHRt1fyN0827nd07Z3yweT5IaR2AXeaYQcTBr420YqXg==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yz5KZ9oaAZjDvih9mGIcIW/OFjNuq5rhwbYKOiMxwhnoeI5voJn
-	MVnvoRgaa0KGHkvMpg5yzdx2+84czxu7X2g5WSKrYUnPBvUWjcV+xUAWMwBxZsJf2gdbKMaUiSv
-	eXht2D1xARf2aWc9pN66aW24dXY4iO8kIUk5NZxhEu2EULtFgWGoHyw==
-X-Gm-Gg: AfdE7clKnADoH1Qyvh+P/mo432T87So4vWOLdbgSnuvkEjTUokb9QKusKBELA384MOL
-	hI5J7Iqx0m2f2dtGm7Kcc2dGIMYLzDYGy/lZP0Lz6AmmMaerBQcn+8NqOT3Zj5PdHu0zAqJ/dzs
-	6rpbvrviQBrVhnJD/UivTJ3UJPnWIwaopFvngURs+C5ltObmiG9wab9aY4WfgoRk3zt6KD5lp+8
-	Sxe+Vuz5H5IEwf2E//v9/H9eLOz7ZWHT8mrHsJWJADTd2J/nIM4yoqPZTVdQBgfQUXskBkeD/bO
-	/2QDY9Lx+REoC5zbUVAWJ0hEY/E=
-X-Received: by 2002:a05:690e:12ca:b0:667:f107:388 with SMTP id
- 956f58d0204a3-667f1070edcmr2274020d50.36.1783939356491; Mon, 13 Jul 2026
- 03:42:36 -0700 (PDT)
+        bh=kvqsLA6Mvt2zukd4+gfC9bRp1ifbJzmUNc+eEGzl1K8=;
+        b=Tzh50K1VTabd1AiIu8xOSNw2BiTIHtoLWBhTFd5fpYM9X5g3PHElcyjgwqrhdiPnbG
+         2/KYL+GlngkafeK/cHbqct9+ziTFPS2ywOvb197awifCI9el0NfnpqJmkQ0+7G7RPK7c
+         smKWvME3fv1H3+y/pQRlHEOdzabgfmcGMdRSRukvbu7Dv3iR/NQGQUkRT8CRSiA/Bf4X
+         29pbaWZDiIzwyeATcUkQPd3iJ2cZU62HqC9em/PTuAzkRrG9A+SYOqbvAIiXoc/xphei
+         d5sfBa6fJ6qXkM3zglSjfvGTbnMTmg3yxVEOdn2GDi2EtXGeYJKyKGj0q4LfuJADiE0A
+         V+4g==
+X-Forwarded-Encrypted: i=1; AHgh+RotEFNWRE0iqKVXYbhNESaGQJKpOr7mKL5OqGmm5kU9czYDCl1ECqZMLQzXgPYeICqpo4cKs72Z7A==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yzf56iEEz/lFYyerx34UcylULIHeNv5R5Wg9g2tNd7B7sn0Cynx
+	nu2qNYwid+nI0/RnJf/6foPAcQWYTMNxwcbH78Zlo6tXGGR0JAb/RqHvOQAWUHb8JTAwKU6iCby
+	6r1dPXmdvSXCJuxoo/E952mfJQKnLXYiWRg/sVNnG6w1FwPPmmNuZqVbTUmvh+BLfuqyljoBA/+
+	yBrvK43h94+PH4vuzCLD8AosBhCMqkhy37TH7W
+X-Gm-Gg: AfdE7cnFJuEBZMR/5fTHs+eHXesBqBrEOcRXmKPbd0MTtixFepg6DOtaNO2jicY7wA9
+	WQ5ANiZncY0+Ez7YqlKUQjuZ5gdho0cNbRBdbcA9PapBgu5TCV6eURR3kHkQwhKeGoTO+cGaKAJ
+	mzyuDQHVfbfrAR7vLWJMblADMM1hcRQR7fv6+MynOrcNluRzrSd426l8BpjSBuceWvskO/
+X-Received: by 2002:a05:622a:4cc5:b0:51c:7b12:1210 with SMTP id d75a77b69052e-51cbf34c183mr86772231cf.78.1783940768054;
+        Mon, 13 Jul 2026 04:06:08 -0700 (PDT)
+X-Received: by 2002:a05:622a:4cc5:b0:51c:7b12:1210 with SMTP id
+ d75a77b69052e-51cbf34c183mr86771971cf.78.1783940767679; Mon, 13 Jul 2026
+ 04:06:07 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260709095726.704448-13-wenst@chromium.org> <20260713094329.4105208-1-wei.deng@oss.qualcomm.com>
- <CAGXv+5Ew-_y4Ui8LF6sbges-nVi7mgB0HjQtZAUTHzPh6Vwk=w@mail.gmail.com>
-In-Reply-To: <CAGXv+5Ew-_y4Ui8LF6sbges-nVi7mgB0HjQtZAUTHzPh6Vwk=w@mail.gmail.com>
-From: Chen-Yu Tsai <wenst@chromium.org>
-Date: Mon, 13 Jul 2026 18:42:24 +0800
-X-Gm-Features: AUfX_myp_DLSLs6zxF1b0ZOGMaYgyXpFtWmzvguDpYK-nGyh8AfVloamNxBzSn0
-Message-ID: <CAGXv+5E0Nz=uD26eXSdt3jGKEjsWyai_+PO2ZBTr8t45FQ+SKw@mail.gmail.com>
-Subject: Re: [PATCH v4 12/14] power: sequencing: pcie-m2: Add usb and sdio
- targets for E-key connector
-To: Wei Deng <wei.deng@oss.qualcomm.com>, Bartosz Golaszewski <brgl@kernel.org>, 
-	Manivannan Sadhasivam <mani@kernel.org>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
-	Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Alan Stern <stern@rowland.harvard.edu>, 
-	linux-pm@vger.kernel.org, linux-usb@vger.kernel.org, 
-	linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, mengshi.wu@oss.qualcomm.com, 
-	quic_chezhou@quicinc.com, cheng.jiang@oss.qualcomm.com, 
-	shuai.zhang@oss.qualcomm.com, jinwang.li@oss.qualcomm.com, 
-	xiuzhuo.shang@oss.qualcomm.com
+References: <a9a082c25e4bda4d73b261eee951efecab20612d.1780499882.git.geert+renesas@glider.be>
+In-Reply-To: <a9a082c25e4bda4d73b261eee951efecab20612d.1780499882.git.geert+renesas@glider.be>
+From: Ulf Hansson <ulf.hansson@oss.qualcomm.com>
+Date: Mon, 13 Jul 2026 13:05:56 +0200
+X-Gm-Features: AUfX_myYmQelNutM8s1zx4fXjQ-IQeu5ofDTxXjw8xb17nMcZM8N1mjOg1nEQTY
+Message-ID: <CAPx+jO874b1EbcPF609NzZMCXaXQidA==eV1sgZzMde7VbvXKw@mail.gmail.com>
+Subject: Re: [PATCH] pmdomain: arm: Grammar s/may needed/may be needed/
+To: Geert Uytterhoeven <geert+renesas@glider.be>
+Cc: Sudeep Holla <sudeep.holla@kernel.org>,
+        Cristian Marussi <cristian.marussi@arm.com>,
+        Ulf Hansson <ulfh@kernel.org>, arm-scmi@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
+X-Proofpoint-Spam-Info: AW1haW4tMjYwNzEzMDExNSBTYWx0ZWRfX6CbtQz3biCg/
+ QrVhIlcBDl7i9ujgtt0XsWdSVBm0klXBpw136mNgKd88xC6SwTMh84ENzz0AHzkZv/6rk5DsK6k
+ wxUvx9sKIq9Ly/bQv6RnhUEzo2XSW9I=
+X-Authority-Analysis: v=2.4 cv=cNbQdFeN c=1 sm=1 tr=0 ts=6a54c6a0 cx=c_pps
+ a=50t2pK5VMbmlHzFWWp8p/g==:117 a=IkcTkHD0fZMA:10 a=RAioF0-LDSMA:10
+ a=s4-Qcg_JpJYA:10 a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22
+ a=3WHJM1ZQz_JShphwDgj5:22 a=hUYxl28pOwIGcUTX8NUA:9 a=QEXdDO2ut3YA:10
+ a=IoWCM6iH3mJn3m4BftBB:22
+X-Proofpoint-GUID: rIdRXWM4wBMrcQvUbErhQMMSjFhqNx7k
+X-Proofpoint-ORIG-GUID: rIdRXWM4wBMrcQvUbErhQMMSjFhqNx7k
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzEzMDExNSBTYWx0ZWRfX51xzhq4MsSbF
+ Ovoxl2//lDdgzGWSO18DRkTyJ3XNR3ZnG1/soGrC4hHhnha3ZYZIBchz4pRNnuCBYRIBYEt0XOE
+ kynCBCfHENAj/T8V9yB1Q97jkMHhSsRmdqyLLIZozKAZ88nYVRPEr/QWG9f9FEPgW72oboP8MWa
+ pwnod8bCunUEyEKV2wMAPtJK/ksekXfEVCSh6rPd4w+ujeQHmKbxVaHfRem3Tu+j/+rdQDhCnVs
+ CzjSF1+ZR0C3L+Z0qPkzAPDY8K+WUhsQiNjGXKcwSf6TmXLRVqysHtryNpS/4SRucUzEKeJZrBW
+ 4zNpDKhSakzKrbnzdZAAhDkbsANNRccpXnYv9AiaM5mRmK+5MisW5RxIhD3f8AbMwSXy60gFZPY
+ ImcQHYJec5EiWexFZnPQtuFtmR41YCK18CtAFuRRRZxgb1iFoY6S8ZjHT0fR0w02XqKN7RSP+AV
+ DwP33oi0mOAU4Jw+YWA==
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.134,FMLib:17.12.100.49
+ definitions=2026-07-13_02,2026-07-10_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501 bulkscore=0 spamscore=0 suspectscore=0 impostorscore=0
+ phishscore=0 clxscore=1015 adultscore=0 malwarescore=0 lowpriorityscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2607130115
 
-On Mon, Jul 13, 2026 at 5:57=E2=80=AFPM Chen-Yu Tsai <wenst@chromium.org> w=
-rote:
+On Wed, Jun 3, 2026 at 5:23=E2=80=AFPM Geert Uytterhoeven
+<geert+renesas@glider.be> wrote:
 >
-> On Mon, Jul 13, 2026 at 5:43=E2=80=AFPM Wei Deng <wei.deng@oss.qualcomm.c=
-om> wrote:
-> >
-> > On Thu, 9 Jul 2026, Chen-Yu Tsai wrote:
-> > > The M.2 E-key connector allows either PCIe or SDIO for WiFi and USB o=
-r
-> > > UART for BT. Currently the driver only supports PCIe and UART.
-> > >
-> > > Add power sequencing targets for SDIO and USB. To avoid adding a
-> > > complicated dependency tree, rename the existing power sequencing uni=
-ts
-> > > "pcie" and "uart" to "wifi" and "bt". The existing target names are l=
-eft
-> > > untouched. The new "sdio" and "usb" targets just point to the renamed
-> > > "wifi" and "bt" units.
-> > >
-> > > The "unit" names are internal to the power sequencing framework, and
-> > > should be confined to a single provider. The names are only
-> > > informational. Dependencies are tracked with pointers to other units.
-> > >
-> > > The "target" names are the strings that the consumer uses to acquire =
-a
-> > > descriptor with. As these remain the same, existing users will contin=
-ue
-> > > to work.
-> > >
-> > > Signed-off-by: Chen-Yu Tsai <wenst@chromium.org>
-> > > ---
-> > > Changes since v2:
-> > > - Expand commit message
-> > > ---
-> > >  drivers/power/sequencing/pwrseq-pcie-m2.c | 41 +++++++++++++++------=
---
-> > >  1 file changed, 27 insertions(+), 14 deletions(-)
-> > >
-> >
-> > Hi Chen-Yu,
-> >
-> > We tested this series on the Qualcomm Hamoa IoT EVK with both USB BT
-> > and UART BT M.2 cards and found an issue with UART BT power cycling
-> > when the USB hub is active.
-> >
-> > The "uart" and "usb" targets in this patch share the same bt_unit_data.
-> > The USB hub acquires the "usb" target in hub_activate() and never relea=
-ses
-> > it, so the bt_unit enable_count never reaches zero when hci_qca calls
-> > pwrseq_power_off("uart"). As a result bt_disable() is never called,
-> > W_DISABLE2# stays deasserted, and the BT chip cannot be properly reset.
-> >
-> > Observed on Hamoa with a UART BT card (WCN6855, sub 0xe105):
-> >
-> >   With your patches:
-> >     lsmod: pwrseq_pcie_m2 ... 3   (provider + uart + usb)
-> >     btmgmt power off -> GPIO116 stays HIGH (bt_unit ref 2->1, no callba=
-ck)
-> >     btmgmt power on  -> "hci0: command 0xfc00 tx timeout" -> failed
-> >
-> >   Without your patches:
-> >     lsmod: pwrseq_pcie_m2 ... 2   (provider + uart only)
-> >     btmgmt power off -> GPIO116 goes LOW  =E2=9C=93
-> >     btmgmt power on  -> hci0 UP RUNNING  =E2=9C=93
-> >
-> > USB BT card (WCN6855, sub 0x3374) tested separately works correctly wit=
-h
-> > your patches.
+> Fix grammar in the help text for the ARM_SCMI_POWER_DOMAIN symbol.
 >
-> Thanks for testing. I haven't gotten around to doing the UART based BT
-> in our stuff yet. Though today I had been thinking about how to reconcile
-> this with the MMC pwrseq stuff, if the SDIO stuff isn't moving over to
-> this. Still no idea whether that would happen.
->
-> > The testing was done with the following Hamoa-specific patches on top o=
-f
-> > this series:
-> >   [PATCH 1/3] arm64: dts: qcom: hamoa-iot-evk: Describe the PCIe M.2 Ke=
-y E connector
-> >     https://lore.kernel.org/all/20260709-fix-hamoa-m2-w-disable2-v1-1-5=
-e725091266a@oss.qualcomm.com/
-> >   [PATCH 2/3] power: sequencing: pcie-m2: Match WCN6855 and WCN7851 UAR=
-T BT variants by subdevice ID
-> >     https://lore.kernel.org/all/20260709-fix-hamoa-m2-w-disable2-v1-2-5=
-e725091266a@oss.qualcomm.com/
-> >
-> > The fix we verified is to give "usb" its own independent unit so its
-> > enable_count is tracked separately from "uart":
-> >
-> >   static const struct pwrseq_unit_data pwrseq_pcie_m2_e_usb_bt_unit_dat=
-a =3D {
-> >         .name =3D "usb-bt-enable",
-> >         .deps =3D pwrseq_pcie_m2_unit_deps,
-> >         .enable =3D pwrseq_pci_m2_e_bt_enable,
-> >         .disable =3D pwrseq_pci_m2_e_bt_disable,
-> >   };
-> >
-> >   /* change usb target to point to the independent unit */
-> >   static const struct pwrseq_target_data pwrseq_pcie_m2_e_usb_target_da=
-ta =3D {
-> >         .name =3D "usb",
-> >         .unit =3D &pwrseq_pcie_m2_e_usb_bt_unit_data,
-> >   };
-> >
-> > With this change, uart_bt_unit reaches ref=3D0 on UART BT power_off and
-> > bt_disable() is called correctly. Since a M.2 slot can only carry one
-> > card variant at a time, the two units do not interfere in practice.
-> >
-> > Would this be an acceptable fix, or do you have a better approach in mi=
-nd?
->
-> I think it's acceptable in that it works, but it needs to be properly
-> documented, like "this only works because on the M.2 slot only one of
-> the two interfaces is used; do not use this pattern in other drivers."
+> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 
-One small problem. On the USB side, userspace can disable any port,
-which will cause the usb unit to be powered off, and therefore asserting
-W_DISABLE2#. But on the UART side, the core still thinks the uart unit
-is powered on, and the consumer would need to power off and then on to
-recover. Maybe that fits into the normal reset / recovery procedure,
-but it's still not intuitive.
+Applied for next, thanks!
 
-Maybe something like
+Kind regards
+Uffe
 
-    pwrseq_power_cycle(struct pwrseq*, bool forced, unsigned int delay_us)
 
-would be better suited?
-
-> It's also up to Bartosz and Mani, since I believe this is a slight abuse
-> of what looks like a shared resource. I'm sure the AI review bot is going
-> to complain a bunch.
+> ---
+>  drivers/pmdomain/arm/Kconfig | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 >
-> If it's acceptable to the maintainers, I assume you want me to fold the
-> fix into my series.
+> diff --git a/drivers/pmdomain/arm/Kconfig b/drivers/pmdomain/arm/Kconfig
+> index afed10d382ad7f66..ba0b190a63d6bb18 100644
+> --- a/drivers/pmdomain/arm/Kconfig
+> +++ b/drivers/pmdomain/arm/Kconfig
+> @@ -21,7 +21,7 @@ config ARM_SCMI_POWER_DOMAIN
+>           enabled or disabled via the SCP firmware
 >
+>           This driver can also be built as a module. If so, the module
+> -         will be called scmi_pm_domain. Note this may needed early in bo=
+ot
+> +         will be called scmi_pm_domain. Note this may be needed early in=
+ boot
+>           before rootfs may be available.
 >
-> Thanks
-> ChenYu
+>  config ARM_SCPI_POWER_DOMAIN
+> --
+> 2.43.0
+>
