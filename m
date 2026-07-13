@@ -1,65 +1,60 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 11FD038E133;
-	Mon, 13 Jul 2026 07:31:04 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F1BAF38F629;
+	Mon, 13 Jul 2026 07:34:31 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.137.202.133
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1783927866; cv=none; b=SURasnmvNZH6VsW/D4JbsqF2A+/IZG2jfc8TJKEe1Ph+ajj5SoVEIbN86+SnBP72EbFJHU8TCWPPgszTGaztQOE8S6T42jKpEGMmMdolTgzay2k0gHlg4ClPsK11FT2eeJYVNY/bEmqySyZDfoP7rvaF8TYti4Se8yrXplFGhqQ=
+	t=1783928075; cv=none; b=uG43EQvCIc1sJn3lHBZQAirpULQQLSBPGnHGgvv5cLuuGa6QRA2GbZ94Wwix8t4n3hK184r1OzozcCBt4nXpxTDquUoYpSFNmhcCOLIhmWCTgkWCsv/WOZ0lQAtTh8cbXTQrXKW45axW1C48xY2jMLt8GZdxvgY2iC0/Ozs/3bk=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1783927866; c=relaxed/simple;
-	bh=uUPmojSvRJjdxDTfSrqL6xDcavcrxh1FCKzLi5plkO0=;
+	s=arc-20240116; t=1783928075; c=relaxed/simple;
+	bh=jtckptQsSbCsDCj0pXMmLT3NGfXx1i4glxY+C+FAjqA=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=svJCNJs/aLVHIEWJ6woDhG+vi4g5QVgtUQMrKfmCoihiwTj+bTWK7r5XzLiO1COk6oZjSDh0vUqFdjr0XZAWwF6safkU7fqfKHBYPBTYxG/ZB43e6UZbUvHT36fuBG4gePWIPw+M5l7L2G8PJrVs/UIxUpLH7GDDn19MFg5KR58=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=H0Qkb32s; arc=none smtp.client-ip=100.103.45.18
+	 Content-Type:Content-Disposition:In-Reply-To; b=IYQxnZNMdM3O3DPy56gzhIj4gNLNaW2drf4o+TBKEGGvUhpvwAGsnwDktOEEDySJsj0csDEXoP9E16n/Y96xB1MEvLdNrGNKDTsstO0rgZm7DZFhfp5f7PXvixq2oOlc9+OfM7bGEX9UyEe45BFOZ4yU03xAhGs4Vy/sZFJf2Ys=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=infradead.org; spf=none smtp.mailfrom=bombadil.srs.infradead.org; dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b=vB69+HBe; arc=none smtp.client-ip=198.137.202.133
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=infradead.org
+Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=bombadil.srs.infradead.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="H0Qkb32s"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5CC1E1F000E9;
-	Mon, 13 Jul 2026 07:31:02 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1783927864;
-	bh=KCDs4r72wm4+aWixawv9t2EtC+MrFNUw/QnmSNHgASI=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=H0Qkb32scuMJAg6lmDTHcHLtDE0tieBnUEl8BJeU4fNX6ixwSiQONL+YF5sN89wTf
-	 dPidT1mgtFrIe6V41jfYLuqZ4YP6lrvjco0YJMhteZIZVhuLaEfrvMHcyjl/T3qxR3
-	 JIgDQC/Bxr60+TWFS8IxSCOFj4FH9Keqp/sIuvXQad63gUqp+FIrW4MfhxVpPvTyDV
-	 ViCrt34viGfJ4YoH4Zqe/A6ZORbzx5QisSdOXS4/JB12r0KOBHDl56B0keP+olmTmg
-	 J/RYyjK+pxj9hUkF/Dhh9XDZsytNs2V+hyjdTOoSnnkmOPUL18O4mKXU4AIuSL7P+G
-	 n6hLplKChsa/A==
-Date: Mon, 13 Jul 2026 09:31:00 +0200
-From: Krzysztof Kozlowski <krzk@kernel.org>
-To: Luca Weiss <luca.weiss@fairphone.com>
-Cc: Georgi Djakov <djakov@kernel.org>, Rob Herring <robh@kernel.org>, 
-	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
-	Sibi Sankar <sibi.sankar@oss.qualcomm.com>, Bjorn Andersson <andersson@kernel.org>, 
-	Konrad Dybcio <konradybcio@kernel.org>, Alexander Koskovich <akoskovich@pm.me>, 
-	~postmarketos/upstreaming@lists.sr.ht, phone-devel@vger.kernel.org, linux-arm-msm@vger.kernel.org, 
-	linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/4] dt-bindings: interconnect: OSM L3: Document Milos
- OSM L3 compatible
-Message-ID: <20260713-intrepid-archetypal-malamute-eaaca7@quoll>
-References: <20260710-milos-cpu-opp-v1-0-ae7f4b09bc77@fairphone.com>
- <20260710-milos-cpu-opp-v1-1-ae7f4b09bc77@fairphone.com>
+	dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="vB69+HBe"
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=infradead.org; s=bombadil.20210309; h=In-Reply-To:Content-Type:MIME-Version
+	:References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
+	Content-Transfer-Encoding:Content-ID:Content-Description;
+	bh=jtckptQsSbCsDCj0pXMmLT3NGfXx1i4glxY+C+FAjqA=; b=vB69+HBeYSw3HWJ1xWaSl13dfV
+	+qTwT1tEL+YW0g6KRxnxgX2L9HbnGpFuF1erjWdBSlOvd7SrwA1+cEvE/4d+7CaOG+Wisn75H1bUO
+	dVX1uYYt0AESfVeGHS/5tp4JrukzilL5F4ZSfV0XiFm75ajXMifSdgYoSzRpHub8Z8XIcC5xhc0gv
+	J1AQNMatiDpqUl8eLNt+ket/vvHsZN/eytSob4On7mZvwlxACb1HGvec5xcE1WR1dOEsRnaqRffLO
+	HAtgtgjf0QpRBFlz7C6XxRfVn267rdr3Tyw012kfiQtjmsrNdMoJmn8YlOXyyUZkgrTDQo0oxpjeV
+	92oeDd9A==;
+Received: from hch by bombadil.infradead.org with local (Exim 4.99.1 #2 (Red Hat Linux))
+	id 1wjBBO-00000008RWQ-0Sfd;
+	Mon, 13 Jul 2026 07:34:30 +0000
+Date: Mon, 13 Jul 2026 00:34:29 -0700
+From: Christoph Hellwig <hch@infradead.org>
+To: Xuewen Yan <xuewen.yan@unisoc.com>
+Cc: lukasz.luba@arm.com, rafael@kernel.org, pavel@kernel.org,
+	lenb@kernel.org, linux-pm@vger.kernel.org,
+	linux-kernel@vger.kernel.org, xuewen.yan94@gmail.com,
+	ke.wang@unisoc.com
+Subject: Re: [RFC PATCH 1/2] PM: EM: Export em_table_alloc/free
+Message-ID: <alSVBRoPnyVHLcEJ@infradead.org>
+References: <20260710082447.5160-1-xuewen.yan@unisoc.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20260710-milos-cpu-opp-v1-1-ae7f4b09bc77@fairphone.com>
+In-Reply-To: <20260710082447.5160-1-xuewen.yan@unisoc.com>
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org. See http://www.infradead.org/rpr.html
 
-On Fri, Jul 10, 2026 at 11:22:39AM +0200, Luca Weiss wrote:
-> Document the OSM L3 found in the Qualcomm Milos SoC.
-> 
-> Signed-off-by: Luca Weiss <luca.weiss@fairphone.com>
-> ---
->  Documentation/devicetree/bindings/interconnect/qcom,osm-l3.yaml | 1 +
->  1 file changed, 1 insertion(+)
+On Fri, Jul 10, 2026 at 04:24:46PM +0800, Xuewen Yan wrote:
+> When drivers wants to alloc a new em_perf_table to update
+> their em_perf_table, they need to use em_table_alloc and
+> em_table_free.
+> So export the two func.
 
-Acked-by: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
-
-Best regards,
-Krzysztof
+Please send this along with the driver actually using it.
 
