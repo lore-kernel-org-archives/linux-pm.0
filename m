@@ -1,113 +1,183 @@
-Received: from mail-pg1-f179.google.com (mail-pg1-f179.google.com [209.85.215.179])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6712854723
-	for <linux-pm@vger.kernel.org>; Mon, 13 Jul 2026 04:01:17 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.215.179
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 159C62750FB;
+	Mon, 13 Jul 2026 04:56:57 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1783915278; cv=none; b=PK3ypFQnEpTDAZmA84aoWVsy0HZM6JB+/LH+Rhf/fAp98xgbU1H/YMOmSngBwAjjndIg1NnQNszlaFi337QKMnVobIuxemrOWGK1Pz05Yc2j6atYbJyymYY2Nez6jo31D7Z4Og+O+RSgpgEW6QVd6WwstGvbHizRPVEQh4dXqDY=
+	t=1783918619; cv=none; b=olXsU4+51/XJIcMlh2VfWKrmVzjXzGB2s/8W8eWrz/4nJy4LGkRMGV4QOZ/y/XXYBap9z2HE9E52Bjk+i6e58m9dtzSNuc9C8QcL80kU7zO/FblB1rhX6SVUpFBhSDvegGi/yGbV6tK1YjgV2r5abOMjjN9h6sH4CELB7tnzcoo=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1783915278; c=relaxed/simple;
-	bh=2btvzWb4f1fV7Xkk7YNTmYjsFJjgIYMJ4JoMe9ISYnk=;
+	s=arc-20240116; t=1783918619; c=relaxed/simple;
+	bh=/94lvdcimq2Roxo5Vqv88vv9tLT99AmeMn/ihS83wuM=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=HMTcBIYtfdES/8kCaH5rqZ/Rd9svIFgf7CiJvwXBTg/xYtlcVc0slt6XmcstmCqaI1jGEqlp9JhNMRBFWryafNTAWUXkiK3a0xizQGqJL23XSIwYF4aosdug5Rj6deTQFAUleUL0SE/YCuob+4aqwFCT4OI5rZH89f0pOJM2jcU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=dxJ9ueYV; arc=none smtp.client-ip=209.85.215.179
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
+	 Content-Type:Content-Disposition:In-Reply-To; b=qP9Zhlgk16+hS3otkqA638WAAEopzfmhcJh1BriZ2I2zEQEh4u3LDC0hbbHCn5kEtvMArl/n+y228rbr5giKruniF9MT9T2pdhftNbCmQdB6fpD15TdfF/So9Ikee2gTzgk17B71WQzTBI38cQ1rqUjHvmJSaJki6blyhoBoc8k=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=PBY+E11j; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="dxJ9ueYV"
-Received: by mail-pg1-f179.google.com with SMTP id 41be03b00d2f7-c9c26a5fb98so1581148a12.0
-        for <linux-pm@vger.kernel.org>; Sun, 12 Jul 2026 21:01:17 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1783915277; x=1784520077; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=7+4lglUIf7H+3FQoNuXHuJcCfTBfdwIBX34fYj/Zgw4=;
-        b=dxJ9ueYVBu0vHUOcqJGq6MQS93r1DWZJGipq0zrrdA7R4IpnHqudowNcmzKA1k+/cF
-         9OIp/ZlKISz5hsNQLAJdZ3H7E7L/LIjYEU24DQCsUmeiRCKmuVWeJhHQtz9ahcBQ1xEn
-         Rx33ScF/TzMvooIHj5HyoagUza55WWeXJ70F7X03CbOXerkURxHu+THNObsU7ZXD5c8R
-         zs+YOxCWKQcS7albPJmA3gFgLiHK2fTRkHEhOtgU0RDRHqSMVyy8++LUx1nAVF3MqSpN
-         tBIXn3oVeiZzHhyEBgByzmthyPTk/FQkNC1UHHYxB7ND77ukSa/WZ4sfK23EsmTeooxa
-         j1hw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1783915277; x=1784520077;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=7+4lglUIf7H+3FQoNuXHuJcCfTBfdwIBX34fYj/Zgw4=;
-        b=eZNpZfnPcy1Pl7jNdId9BIyhG+KixGoGw7iQuMuyd/sGXE5ig9UVAFJEKHkTUqfCvN
-         OIyZmcGkX2Qt3gcKhLsViVo8e3OWJm8f25OQNULAmNhj6kc08JxUT1NKlfB/BJpnmchY
-         BUq21UHZkHT7qGAsOiOfuDMEZvTrNcgHfKq9TR2nFoenLLkU+eLwyNrnqVFNkHbI7R5e
-         hY3OEWwaxHnxg5BF7kG0A13IOtbBl7EdbsadcHcbX/RwzprtWCUV7LCpywwIoWsWjlfR
-         VAZsbtHnIz3PtXdcWzftp94ohwlz980Pf/Q5P9SylQekgXd6RBx9KxZ814fZ49dQIivm
-         qzUQ==
-X-Forwarded-Encrypted: i=1; AHgh+RqP4VC1DVJupiZV5DiC6a2ty3veClIA22dse+HdCLqqQ1xcgfuWkM6cL41TFbqloHEJuA9EVJ04YQ==@vger.kernel.org
-X-Gm-Message-State: AOJu0YwoUJVPtJvDpVKtEPK3ihObpHWWlovqK9ed6JBnjsxq9x50faUj
-	sRMzwqZSFV5uyxXsDqrfNxTkfBvcAiTF5+Ah5ccv7jAp4rObPp6QQN92vWKjyGGKjvc=
-X-Gm-Gg: AfdE7clBt6h7Bok8JFifipkjmdWKrlDvx5+QeW8dpF6YcajHHiIKNZh1Mj8r0ywlJjU
-	BN+0m/NyPx+1DxdYwQjnGmDmYHj0pBeYhdnjYOmpAyxuQCO7IDzVhLnJxag0I98ADnnYjmuZ4sR
-	qi9fhLmz5C4zb+cVxyTwMpuO46mvRoN/gEjKLuWGfwVrU8k+S56I+FxWfCGKMyzC+A/l1Biehct
-	TIMLNUDfCnnu4cuDiOuxIHSggovak577xqBdro0AOcWsC2fhylFyw43YSCN6ZnmvRwxHhEAdRts
-	BE6DKOuv9l62+em+AMXrsrWVAvEU9D+SdUDUJHooUr3xtYUWUB08kq8DIL++Cr8edavOEXy2/kT
-	axINcCd7RUIleETTo5FxkCL7DA83/RIYdtbSadERaXdYpqmDQHjrNZtL7LD3MTC40Uc5N/317I7
-	c3Pg/MHP2JV+6v
-X-Received: by 2002:a05:6a20:2587:b0:398:76d4:c7e9 with SMTP id adf61e73a8af0-3c0f0bf478dmr13440206637.35.1783915276499;
-        Sun, 12 Jul 2026 21:01:16 -0700 (PDT)
-Received: from localhost ([122.172.82.94])
-        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-313b9ca880fsm23629968eec.23.2026.07.12.21.01.15
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 12 Jul 2026 21:01:15 -0700 (PDT)
-Date: Mon, 13 Jul 2026 09:31:12 +0530
-From: Viresh Kumar <viresh.kumar@linaro.org>
-To: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>
-Cc: Dan Carpenter <error27@gmail.com>, Deepak Sikri <deepak.sikri@st.com>, 
-	"Rafael J. Wysocki" <rafael@kernel.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	kernel-janitors@vger.kernel.org
-Subject: Re: [PATCH] cpufreq: Fix an IS_ERR() vs NULL bug in
- spear1340_set_cpu_rate()
-Message-ID: <sejbfcic3gey5p4uxgituyizdttimxhlrl4kwer27b4g7j5i6o@yvjnioeplypl>
-References: <alFJNUllC3JOKv6z@stanley.mountain>
- <c0800c49-3435-4e89-87b2-21dfa20ae58b@oss.qualcomm.com>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="PBY+E11j"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 520441F000E9;
+	Mon, 13 Jul 2026 04:56:50 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1783918617;
+	bh=jJKBYEa9rmr3kvyqLbAs5Ywz97Hji7oACJ4jFgIyWhw=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=PBY+E11jlqgQQIDZUU5NB9ily54ng2B7A0IQ+x0NPi3w7IQmtXvMM+0UwvlBndEZ0
+	 U7IRy2Zmfp/d2Q01FJuhFhlk7q3eKOffl+0iWGSaalhP7lyaepNkO9/1ZUe8AMBs01
+	 Vousxc+DyINtJgVKHFZaNoUyJ1oLHWxyP4zFF6peyuFyNBCnG9Nk33Z8ol3Xj+pqQ8
+	 eAPwklqg/O4gC5VAprHX1ofLAAOR8m5bLsHOBNy4x6wmkoLqpwm9IyI9Lbft7CvNAU
+	 GKgANzx6p3Rfs+aFcYreUOj5Q7vVvsF7Kl4NOLXaGCd5KNvG3zJguTMvNgiFx+fP0F
+	 Jb0+zqqfMSSiw==
+Date: Mon, 13 Jul 2026 06:56:45 +0200
+From: Manivannan Sadhasivam <mani@kernel.org>
+To: "Sherry Sun (OSS)" <sherry.sun@oss.nxp.com>
+Cc: robh@kernel.org, krzk+dt@kernel.org, conor+dt@kernel.org, 
+	Frank.Li@nxp.com, s.hauer@pengutronix.de, kernel@pengutronix.de, 
+	festevam@gmail.com, amitkumar.karwar@nxp.com, neeraj.sanjaykale@nxp.com, 
+	marcel@holtmann.org, luiz.dentz@gmail.com, hongxing.zhu@nxp.com, 
+	l.stach@pengutronix.de, lpieralisi@kernel.org, kwilczynski@kernel.org, 
+	bhelgaas@google.com, brgl@kernel.org, imx@lists.linux.dev, linux-pci@vger.kernel.org, 
+	linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
+	linux-bluetooth@vger.kernel.org, linux-pm@vger.kernel.org, sherry.sun@nxp.com
+Subject: Re: [PATCH V6 3/4] Bluetooth: btnxpuart: Add M.2 Bluetooth device
+ support using pwrseq
+Message-ID: <mow4vuf6zf6c7uzb7zbvwuw3b5p5q5rfghw266f2eiesvhssle@7jzavek52rt7>
+References: <20260713023435.235765-1-sherry.sun@oss.nxp.com>
+ <20260713023435.235765-4-sherry.sun@oss.nxp.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <c0800c49-3435-4e89-87b2-21dfa20ae58b@oss.qualcomm.com>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20260713023435.235765-4-sherry.sun@oss.nxp.com>
 
-On 12-07-26, 21:30, Zhongqiu Han wrote:
-> On 7/11/2026 3:34 AM, Dan Carpenter wrote:
-> > The clk_get_parent() function doesn't return error pointers, it returns
-> > NULL on error.  Update the error checking to match.
-
-origin/master:include/linux/clk.h
-
-/**
- * clk_get_parent - get the parent clock source for this clock
- * @clk: clock source
- *
- * Returns struct clk corresponding to parent clock source, or
- * valid IS_ERR() condition containing errno.
- */
-struct clk *clk_get_parent(struct clk *clk);
-
-I think this is the source of the confusion.
-
-> > 
-> > Fixes: 420993221175 ("cpufreq: SPEAr: Add CPUFreq driver")
-> > Signed-off-by: Dan Carpenter <error27@gmail.com>
+On Mon, Jul 13, 2026 at 10:34:34AM +0800, Sherry Sun (OSS) wrote:
+> From: Sherry Sun <sherry.sun@nxp.com>
 > 
-> Nice catch, thanks for the fix.
+> Power supply to the M.2 Bluetooth device attached to the host using M.2
+> connector is controlled using the 'uart' pwrseq device. So add support
+> for getting the pwrseq device if the OF graph link is present.
 > 
-> Nit: the subject is too generic and can be misread as a cpufreq core
-> fix. It is better to scope it to the driver, e.g. "cpufreq: spear: ...".
+> Once obtained, pwrseq_power_on() is called to power up the M.2 Bluetooth
+> card. The power sequencer descriptor is obtained via pwrseq_get() with
+> the UART controller device (serdev->ctrl->dev), since the OF graph
+> link is defined on the UART controller node.
+> 
+> Also add the explicit pwrseq_put() call in all exit paths, pwrseq_put()
+> already calls pwrseq_power_off() internally, so no separate
+> pwrseq_power_off() call is needed.
+> 
+> Signed-off-by: Sherry Sun <sherry.sun@nxp.com>
 
-Right.
+Reviewed-by: Manivannan Sadhasivam <mani@kernel.org>
+
+- Mani
+
+> Reviewed-by: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
+> Reviewed-by: Frank Li <Frank.Li@nxp.com>
+> ---
+> Hi Frank and Bartosz, this V6 patch using pwrseq_put() in all exit paths to
+> fix the power sequencer reference leak issue during BT driver unload and
+> reload as reported by sashiko. I'm keeping your Reviewed-by tag. I can
+> remove it if you think it's inappropriate.
+> ---
+>  drivers/bluetooth/btnxpuart.c | 34 ++++++++++++++++++++++++++++++----
+>  1 file changed, 30 insertions(+), 4 deletions(-)
+> 
+> diff --git a/drivers/bluetooth/btnxpuart.c b/drivers/bluetooth/btnxpuart.c
+> index 0bb300eef157..81a11ac05114 100644
+> --- a/drivers/bluetooth/btnxpuart.c
+> +++ b/drivers/bluetooth/btnxpuart.c
+> @@ -9,6 +9,8 @@
+>  
+>  #include <linux/serdev.h>
+>  #include <linux/of.h>
+> +#include <linux/of_graph.h>
+> +#include <linux/pwrseq/consumer.h>
+>  #include <linux/skbuff.h>
+>  #include <linux/unaligned.h>
+>  #include <linux/firmware.h>
+> @@ -211,6 +213,7 @@ struct btnxpuart_dev {
+>  
+>  	struct ps_data psdata;
+>  	struct btnxpuart_data *nxp_data;
+> +	struct pwrseq_desc *pwrseq;
+>  	struct reset_control *pdn;
+>  	struct hci_uart hu;
+>  };
+> @@ -1872,11 +1875,26 @@ static int nxp_serdev_probe(struct serdev_device *serdev)
+>  		return err;
+>  	}
+>  
+> +	if (of_graph_is_present(dev_of_node(&serdev->ctrl->dev))) {
+> +		struct pwrseq_desc *pwrseq;
+> +
+> +		pwrseq = pwrseq_get(&serdev->ctrl->dev, "uart");
+> +		if (IS_ERR(pwrseq))
+> +			return dev_err_probe(&serdev->dev, PTR_ERR(pwrseq),
+> +					     "failed to get pwrseq\n");
+> +
+> +		nxpdev->pwrseq = pwrseq;
+> +		err = pwrseq_power_on(pwrseq);
+> +		if (err)
+> +			goto err_pwrseq_put;
+> +	}
+> +
+>  	/* Initialize and register HCI device */
+>  	hdev = hci_alloc_dev();
+>  	if (!hdev) {
+>  		dev_err(&serdev->dev, "Can't allocate HCI device\n");
+> -		return -ENOMEM;
+> +		err = -ENOMEM;
+> +		goto err_pwrseq_put;
+>  	}
+>  
+>  	reset_control_deassert(nxpdev->pdn);
+> @@ -1907,13 +1925,16 @@ static int nxp_serdev_probe(struct serdev_device *serdev)
+>  	if (bacmp(&ba, BDADDR_ANY))
+>  		hci_set_quirk(hdev, HCI_QUIRK_USE_BDADDR_PROPERTY);
+>  
+> -	if (hci_register_dev(hdev) < 0) {
+> +	err = hci_register_dev(hdev);
+> +	if (err < 0) {
+>  		dev_err(&serdev->dev, "Can't register HCI device\n");
+>  		goto probe_fail;
+>  	}
+>  
+> -	if (ps_setup(hdev))
+> +	if (ps_setup(hdev)) {
+> +		err = -ENODEV;
+>  		goto probe_fail_unregister;
+> +	}
+>  
+>  	hci_devcd_register(hdev, nxp_coredump, nxp_coredump_hdr,
+>  			   nxp_coredump_notify);
+> @@ -1925,7 +1946,10 @@ static int nxp_serdev_probe(struct serdev_device *serdev)
+>  probe_fail:
+>  	reset_control_assert(nxpdev->pdn);
+>  	hci_free_dev(hdev);
+> -	return -ENODEV;
+> +err_pwrseq_put:
+> +	if (nxpdev->pwrseq)
+> +		pwrseq_put(nxpdev->pwrseq);
+> +	return err;
+>  }
+>  
+>  static void nxp_serdev_remove(struct serdev_device *serdev)
+> @@ -1952,6 +1976,8 @@ static void nxp_serdev_remove(struct serdev_device *serdev)
+>  	ps_cleanup(nxpdev);
+>  	hci_unregister_dev(hdev);
+>  	reset_control_assert(nxpdev->pdn);
+> +	if (nxpdev->pwrseq)
+> +		pwrseq_put(nxpdev->pwrseq);
+>  	hci_free_dev(hdev);
+>  }
+>  
+> -- 
+> 2.50.1
+> 
 
 -- 
-viresh
+மணிவண்ணன் சதாசிவம்
