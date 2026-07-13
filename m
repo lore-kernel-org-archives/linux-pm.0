@@ -1,109 +1,117 @@
-Received: from mail-vs1-f52.google.com (mail-vs1-f52.google.com [209.85.217.52])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mailgw.kylinos.cn (mailgw.kylinos.cn [124.126.103.232])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7A32839DBFA
-	for <linux-pm@vger.kernel.org>; Mon, 13 Jul 2026 08:19:18 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.217.52
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1A0F1353A74;
+	Mon, 13 Jul 2026 08:32:33 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=124.126.103.232
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1783930759; cv=none; b=cN+io9qJqMDowuq5v5cNP02zXB/ou6yJYstcuLnXVPwb2DiuxWxkOfAaIauwe86z36ORm+GLsRwT6jpD6UjT2Bufe+pma91m6Z9n7SwF7UMkuD1s4EwpVaMumTEAPIRdFPRL3sgGOiHQdaPmRN5kl9DOSIJz21G822/f0awY0gI=
+	t=1783931556; cv=none; b=kNihrB5DnjnQOlL0PJ0zZlb96r/aa//Ke1KNpKyAiHcoZW+ud4oB4zho5mWUZvG/wgdIH/S2hRpopS1ueJh9NruWm+jJZCP/C+zvwGdN67Nq3x6SSJoAjTmrajBS1b+4XjTXrXA2VYK/01frhOUAJdQnCsnvQJKfqCe0Tqofwbs=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1783930759; c=relaxed/simple;
-	bh=Psfrc3G7bXxsl7ECubdBiSlZDy7VaNL3f7/IvFNPlmU=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=Cs1XnLtvk9Qb165+zZm+nG+U6OnWYBsXw4wo/971UGgaepxYk5xeXkdu3B5XKKqu+x8z8plqoiY5RIblT68I3ON6N4shH+wX+PvvhQ0Zo8yyhHORBfKaOc2ROpFjXVAhacB9OVOTazwBY5iY/lRWcRYjAuZXAao2B4NQqzx0Exs=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org; spf=pass smtp.mailfrom=gmail.com; arc=none smtp.client-ip=209.85.217.52
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
-Received: by mail-vs1-f52.google.com with SMTP id ada2fe7eead31-737de525d2eso3006722137.2
-        for <linux-pm@vger.kernel.org>; Mon, 13 Jul 2026 01:19:18 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1783930757; x=1784535557;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=cK7IMBHRP2FdUnWCkfnYLPOObmzv4mtZRa495nyVkt0=;
-        b=WFRnNHZPraOEpJgw88EndFyIrIBPmeUQfY6kyn7iD1KhD5udkJbvhLUutFfyuXQ2iU
-         qtKbeaquaqgrkKHs0STmTQ346AODxFH+aT2BrhxtDjDJyYAjI9GOhroBZsLegWITiZCh
-         LJJtmh+677wNlgHhBMGzn29XV0qWlZRxxkVQ11e1Gu7z4lG/a+HtDHoVmkI28xhb5x4x
-         emjhgLws75d7luhmC/OOyhzqRpUcWkACjW8Z4JCjbW8A4FMvSejwSUXvvlWKE7OgrcJI
-         oQVVP2dkUn/MSonpuP+DojlGgf7rjhRp3FLMllIhf7jDFsf9b43Kwu3RzDyYMEuBtMEB
-         5Rbg==
-X-Forwarded-Encrypted: i=1; AHgh+Ro/hyZ7Imn666IJtsRGWPahIGFEeiylcCT+7js8qIYP9NXnbitlP6dk6hMGclosT3DltkgnlbnbSw==@vger.kernel.org
-X-Gm-Message-State: AOJu0YzxY4CzcGM1xjcRNSFmeQys687W6oRoZGiI+s9F4P3rYpUz4m8L
-	dELi5B/1SJ2coJgdtMlj197b0QPOJzK0V4qW+pBj8BQoCOyFA7Z+WdN6FmBIFHUq
-X-Gm-Gg: AfdE7clS6dnCg8Riig5ppEnNcLEkZAs1CEBT9DAWha0ZDJTZfQhe1/Cr2kpv57/Gf9x
-	cVJnL1gnTSLofVsFa4f4hda1efcSnv02cZ+fjE1R0S8J1vieUppJGem2kNoLFjiP5xKgg+BM4Vr
-	bj0hdZVrRs9Anb1A5SI87w+e00oo791hxXtAtENjgwAAQIUsoF24YRyuaET97FvYdBr/oBViQTf
-	EywkbZatj2APaen9XFpXvBNyfnNU2mZvxPXVcQuA0Evly1l+tjs2Boa/Z2Qkovo75Rj1opse5pD
-	Oiq9xzJHWiQYDU6pO+GBFeCWareslh7QutaS6v5PpGwf2V9GqG2nm6aJngiCaNkpMvP1aFWjTrI
-	PqTB/YBUfA1W0+uhSi1FOO6lOQcRRE6CLKj6hcn3wxdKlK7MWIWO/swMGocaR1Crl/PrRq4i1XU
-	p/Z98MvWrg8NAYk1WlwnDzlEfVVv+d9eovlQfBqS6oaziKEWTORw==
-X-Received: by 2002:a05:6102:f83:b0:6f0:3c5b:ce7a with SMTP id ada2fe7eead31-74533d7c9f8mr5298203137.17.1783930757391;
-        Mon, 13 Jul 2026 01:19:17 -0700 (PDT)
-Received: from mail-vs1-f45.google.com (mail-vs1-f45.google.com. [209.85.217.45])
-        by smtp.gmail.com with ESMTPSA id a1e0cc1a2514c-96ed5d4cb01sm7052575241.10.2026.07.13.01.19.15
-        for <linux-pm@vger.kernel.org>
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 13 Jul 2026 01:19:15 -0700 (PDT)
-Received: by mail-vs1-f45.google.com with SMTP id ada2fe7eead31-725cf9a923aso2241989137.0
-        for <linux-pm@vger.kernel.org>; Mon, 13 Jul 2026 01:19:15 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AHgh+RpuDfSCvVvGWxzyfrT724DA40lIEwunGoVTf66Okbt5QtZt05v2HYseDdyzHjbMAngfy299x7d4xQ==@vger.kernel.org
-X-Received: by 2002:a05:6102:f83:b0:6f0:3c5b:ce7a with SMTP id
- ada2fe7eead31-74533d7c9f8mr5298165137.17.1783930755575; Mon, 13 Jul 2026
- 01:19:15 -0700 (PDT)
+	s=arc-20240116; t=1783931556; c=relaxed/simple;
+	bh=uaUW/O+6q0/S0EDVJXNHXwZG3Ves7z414KTsEV1RK9g=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=r3p4gvB/yF1V4aKDMFWbfH0IPb7MsgMCckxWpHu1esEFdRIKIJQ/Eph4oEngdhYn5iP5MFigcPe6gV4yWUDoz8Bf24FkwLghmAsiDGBHS2tllursxITdO1Brb8E3wLeYguUXoWaQYGsL5qaQwOtFjqfx50nVXWYLrzNhIRVVdP4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kylinos.cn; spf=pass smtp.mailfrom=kylinos.cn; arc=none smtp.client-ip=124.126.103.232
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kylinos.cn
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=kylinos.cn
+X-UUID: 62a517ac7e9511f1aa26b74ffac11d73-20260713
+X-CID-P-RULE: Release_Ham
+X-CID-O-INFO: VERSION:1.3.12,REQID:e7d23ba5-70c5-47a7-8204-3c656e401106,IP:0,U
+	RL:0,TC:0,Content:-5,EDM:25,RT:0,SF:0,FILE:0,BULK:0,RULE:Release_Ham,ACTIO
+	N:release,TS:20
+X-CID-META: VersionHash:e7bac3a,CLOUDID:41abb22e5d5eb5801cbab6e2ec05fd27,BulkI
+	D:nil,BulkQuantity:0,Recheck:0,SF:102|850|865|898,TC:nil,Content:0|15|50,E
+	DM:5,IP:nil,URL:0,File:nil,RT:nil,Bulk:nil,QS:nil,BEC:nil,COL:0,OSI:0,OSA:
+	0,AV:0,LES:1,SPR:NO,DKR:0,DKP:0,BRR:0,BRE:0,ARC:0
+X-CID-BVR: 2,SSN|SDN
+X-CID-BAS: 2,SSN|SDN,0,_
+X-CID-FACTOR: TF_CID_SPAM_SNR
+X-CID-RHF: D41D8CD98F00B204E9800998ECF8427E
+X-UUID: 62a517ac7e9511f1aa26b74ffac11d73-20260713
+X-User: xiaopei01@kylinos.cn
+Received: from localhost.localdomain [(10.44.16.150)] by mailgw.kylinos.cn
+	(envelope-from <xiaopei01@kylinos.cn>)
+	(Generic MTA with TLSv1.3 TLS_AES_256_GCM_SHA384 256/256)
+	with ESMTP id 178118124; Mon, 13 Jul 2026 16:32:29 +0800
+From: Pei Xiao <xiaopei01@kylinos.cn>
+To: dlan@kernel.org,
+	rafael@kernel.org,
+	troy.mitchell@linux.spacemit.com,
+	shuwei.wu@mailbox.org,
+	linux-pm@vger.kernel.org,
+	linux-riscv@lists.infradead.org,
+	spacemit@lists.linux.dev,
+	linux-kernel@vger.kernel.org
+Cc: Pei Xiao <xiaopei01@kylinos.cn>
+Subject: [PATCH] thermal: spacemit: k1: disable hardware on driver remove
+Date: Mon, 13 Jul 2026 16:32:23 +0800
+Message-Id: <1db7d94eeaced9a92e3670d28e0c97c22f15f108.1783931396.git.xiaopei01@kylinos.cn>
+X-Mailer: git-send-email 2.25.1
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <cover.1783505142.git.geert+renesas@glider.be> <50f5804f00c55cd60604d00da1bf1f1dc912ba8d.1783505142.git.geert+renesas@glider.be>
- <alQTnZwVRwpVTVUf@monoceros>
-In-Reply-To: <alQTnZwVRwpVTVUf@monoceros>
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Mon, 13 Jul 2026 10:19:02 +0200
-X-Gmail-Original-Message-ID: <CAMuHMdWMS0ymenXwSasZ7f5aTcK30kTxq8U2W3Dhj43y1UAcTQ@mail.gmail.com>
-X-Gm-Features: AUfX_mzM4sxy25iOR9jBU-xAME53IzNcexx6a8MgetXZ4RYeb2wzLaySAOrHbao
-Message-ID: <CAMuHMdWMS0ymenXwSasZ7f5aTcK30kTxq8U2W3Dhj43y1UAcTQ@mail.gmail.com>
-Subject: Re: [PATCH v2 3/6] clk: renesas: Add R-Car X5H CPG driver
-To: =?UTF-8?Q?Uwe_Kleine=2DK=C3=B6nig?= <u.kleine-koenig@baylibre.com>
-Cc: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
-	Conor Dooley <conor+dt@kernel.org>, Michael Turquette <mturquette@baylibre.com>, 
-	Stephen Boyd <sboyd@kernel.org>, Brian Masney <bmasney@redhat.com>, Ulf Hansson <ulfh@kernel.org>, 
-	Philipp Zabel <p.zabel@pengutronix.de>, Wolfram Sang <wsa+renesas@sang-engineering.com>, 
-	Marek Vasut <marek.vasut+renesas@mailbox.org>, 
-	Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>, devicetree@vger.kernel.org, 
-	linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, 
-	linux-renesas-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
-	linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
 
-Hi Uwe,
+The driver uses devm_request_threaded_irq() but never disables the
+hardware interrupt enable, sensor enable, or sensor power bits when
+the driver is unbound.
 
-On Mon, 13 Jul 2026 at 00:22, Uwe Kleine-K=C3=B6nig
-<u.kleine-koenig@baylibre.com> wrote:
-> On Wed, Jul 08, 2026 at 12:15:08PM +0200, Geert Uytterhoeven wrote:
-> > +#include <linux/mod_devicetable.h>
->
-> Please don't add new users for this header file. Only use those
-> <linux/device-id/*.h> that you actually need (if any).
->
-> Ditto for patch 4.
+Add a devm action that clears K1_TSENSOR_INT_EN_REG,
+K1_TSENSOR_EN_ALL, and K1_TSENSOR_PCTRL_ENABLE on remove, mirroring
+what k1_tsensor_init() sets up.
 
-Thanks, will do after the rebase to v7.2-rc3 ;-)
+Signed-off-by: Pei Xiao <xiaopei01@kylinos.cn>
+---
+ drivers/thermal/spacemit/k1_tsensor.c | 27 +++++++++++++++++++++++++++
+ 1 file changed, 27 insertions(+)
 
-Gr{oetje,eeting}s,
+diff --git a/drivers/thermal/spacemit/k1_tsensor.c b/drivers/thermal/spacemit/k1_tsensor.c
+index 79222d233129..cf79dc7d403f 100644
+--- a/drivers/thermal/spacemit/k1_tsensor.c
++++ b/drivers/thermal/spacemit/k1_tsensor.c
+@@ -199,6 +199,29 @@ static irqreturn_t k1_tsensor_irq_thread(int irq, void *data)
+ 	return IRQ_HANDLED;
+ }
+ 
++static void k1_tsensor_shutdown(struct k1_tsensor *ts)
++{
++	u32 val;
++
++	/* Disable all interrupts */
++	writel(0xffffffff, ts->base + K1_TSENSOR_INT_EN_REG);
++
++	/* Disable all sensor */
++	val = readl(ts->base + K1_TSENSOR_EN_REG);
++	val &= ~K1_TSENSOR_EN_ALL;
++	writel(val, ts->base + K1_TSENSOR_EN_REG);
++
++	/* Power down the sensor module */
++	val = readl(ts->base + K1_TSENSOR_PCTRL_REG);
++	val &= ~K1_TSENSOR_PCTRL_ENABLE;
++	writel(val, ts->base + K1_TSENSOR_PCTRL_REG);
++}
++
++static void devm_k1_tsensor_shutdown(void *data)
++{
++	k1_tsensor_shutdown(data);
++}
++
+ static int k1_tsensor_probe(struct platform_device *pdev)
+ {
+ 	struct device *dev = &pdev->dev;
+@@ -229,6 +252,10 @@ static int k1_tsensor_probe(struct platform_device *pdev)
+ 
+ 	k1_tsensor_init(ts);
+ 
++	ret = devm_add_action_or_reset(dev, devm_k1_tsensor_shutdown, ts);
++	if (ret)
++		return ret;
++
+ 	irq = platform_get_irq(pdev, 0);
+ 	if (irq < 0)
+ 		return irq;
+-- 
+2.25.1
 
-                        Geert
-
---=20
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k=
-.org
-
-In personal conversations with technical people, I call myself a hacker. Bu=
-t
-when I'm talking to journalists I just say "programmer" or something like t=
-hat.
-                                -- Linus Torvalds
