@@ -1,141 +1,136 @@
 Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CD2F8384CD6
-	for <linux-pm@vger.kernel.org>; Mon, 13 Jul 2026 11:06:37 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 05BF537A83B
+	for <linux-pm@vger.kernel.org>; Mon, 13 Jul 2026 11:06:41 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=205.220.168.131
 ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1783940799; cv=pass; b=Zq2ZDo5FTR9UGhdo1VcDxPPAo8XDyb368doZgvAwu/fDTTNBevJicyr+wPO+Yh9hbTPmuvEVaGv6mhw+qbW58ryiQz1MpyPtj5kN4xl/iPwasb6G9NOGXEhk7ZktH+9j9o8I3lxdttwaucTvyREFsoz4ix7e0pkY5vCMCtb/Zbc=
+	t=1783940803; cv=pass; b=UOf4C6rcze/f5nOkKVsiQ6lfv7P34lndm1TXbW89PLZ2AeFok7o4OfyzEnUczz67XUbazklxGb3On8HWrErI4/rQIC2foHkg3XT6TKhLNgQScNzqlkXM5WekbMTvd2YMNGSJZSmHUlhkJHgv4VLG7kb50r80wYxDD4tLA9GPOow=
 ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1783940799; c=relaxed/simple;
-	bh=eXEreop2tRXVvzShMuZyqFcJeoalfpXNQ7N+QnwuNZA=;
+	s=arc-20240116; t=1783940803; c=relaxed/simple;
+	bh=KO/zBTNh5ocUqwGqELQr7gjJafYvxtj0nAW0zFpegvE=;
 	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=aj87QTNkLrLZRpnf4uRih8js0K15US0wj///ZCwOdXxESMWHNP5FEFsL7hWRgvpuhZ2dfNTFR294cg6+98NQ7e6swAX68oiuTh5XDCG0uDY7M3e1rLs6DOTy9VmMGzfKpCLGPPaaHTYejjsSbvmvBs49J8pZacjgvp0ZjbgfMpw=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=EDAGdw3e; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=i6sNI5YT; arc=pass smtp.client-ip=205.220.168.131
+	 To:Cc:Content-Type; b=AauScOFISXPa+NcEGzDqVvKJcdvcN40KOWOkADfN45emByUxgpdoLLpbf9nRVTFI512YtTwtvzUu76EotyHlbWXwJz6cROOuJX2wg8NcXM42jhKfcSIPScRIfLDBwccEgP5MTHu30jUry5T3HJh0SGGRVvs0FJhVwpwUa/u78Kw=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=MA3mSI7l; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=XOS5ams2; arc=pass smtp.client-ip=205.220.168.131
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="EDAGdw3e";
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="i6sNI5YT"
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="MA3mSI7l";
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="XOS5ams2"
 Received: from pps.filterd (m0279867.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 66D9M1GH1090406
-	for <linux-pm@vger.kernel.org>; Mon, 13 Jul 2026 11:06:37 GMT
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 66D9M4Y11090535
+	for <linux-pm@vger.kernel.org>; Mon, 13 Jul 2026 11:06:41 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
 	cc:content-transfer-encoding:content-type:date:from:in-reply-to
 	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	Ubat+z5QjnYmtaLIKT2fPs8gd+++aNLEi8AJBYOnLcY=; b=EDAGdw3eJHavUZd4
-	kZEDTL4iHaq956dBAgvXAkkiWWOfRTEYZ+FAshmpXc1eIm4/MG6nHfwS1irzRFCQ
-	XAlX0DO6j1gg+fsdnfV2ZCraIX9IuXIppNMmnlNmVZfk03YA08Io1PJulFnwrxTS
-	R0hNBpY6h2O/0ael8DW5XFNoYbxlIXdh+oOCjrMzw1sTjtQiXTERcoQj/K/AW05N
-	zP/EFXz244kR8ZGYLOSMc6tmv/2KGfrus7tsCXOuHhC4YP1hGFV/6sM2yzDv9Wdu
-	vCHIKnso674+9ma/jZt0QnqfS6kmM95v3AIogQ3v5Xg9UAN8RF0JNPUU9Z3o2Zpq
-	4swpYw==
-Received: from mail-qv1-f70.google.com (mail-qv1-f70.google.com [209.85.219.70])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4fcwavrc2e-1
+	xk40p3spSA7Dl+t/EMDWt78ol/53BabP80E+M7SNBGM=; b=MA3mSI7lKin5G10x
+	e2TdGUkqWxoxp6e7KjC3pfkH64B638tSUZru0ZFhLPUE4iT2e92yQwLqt7P/GFVl
+	NffKvMPDecUSBU0cE0e1jjPlMUH4jDen+MJAqhR4mqWImokjkc23eXIsLfgcamzv
+	NWM2hPEkvXYA0oB6lzHWK/JONgL6VhFy1NQn1Gp+UcJtdzr2EKZNyZhKLGRShdiY
+	Irtm96aloGOQS6EvuTLgHQNwTx53ZOcn33ON3q+b1B9Zw05H7QLOY102z/EOgnwt
+	w7tAC793qPmH5ixhsdbiR9mRddl7Y2rIooiUx7o1F5VGZtvGa6lQJMYIDabOa/qF
+	ilV4/A==
+Received: from mail-qv1-f71.google.com (mail-qv1-f71.google.com [209.85.219.71])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4fcwavrc2q-1
 	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Mon, 13 Jul 2026 11:06:37 +0000 (GMT)
-Received: by mail-qv1-f70.google.com with SMTP id 6a1803df08f44-8f39a46efd9so45570406d6.1
-        for <linux-pm@vger.kernel.org>; Mon, 13 Jul 2026 04:06:36 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1783940796; cv=none;
+	for <linux-pm@vger.kernel.org>; Mon, 13 Jul 2026 11:06:41 +0000 (GMT)
+Received: by mail-qv1-f71.google.com with SMTP id 6a1803df08f44-8fdace20927so29896046d6.2
+        for <linux-pm@vger.kernel.org>; Mon, 13 Jul 2026 04:06:41 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1783940800; cv=none;
         d=google.com; s=arc-20260327;
-        b=Aq7YuJ5uBlDzVyNrEb1/fQ+0SWn/94gDbjDlGCbI5UfMTsQRVetCtXvnGB0rJ5u4xu
-         nrZr0hFbGctkMhiYetnmNnSe/Ot5WyRZ6sceXXEBwFo0B6dqpmiyiprcwpHI2UH1nqAP
-         q3b0hImumGHjrF2d5GFu1/bHQ6O/O04QZ5viRkaC/hB6C0LEb2mytYwSf4pQRBpU35f9
-         cEd8z9AB2s0yKbdbpmmIscAQumoqQrf8NblYiBoj99owPzJ9gzya7uoOPW9QK3GaUFWf
-         Hdn5Jjuii0tHzrvQwf2plK1iiKx6zfrzjFTfN39t5b2Pv4aYGfG6GycmUbUzRhtuD69P
-         DV5Q==
+        b=lKV8/DDsmlSAOmNh5i/EtpZ8ZdsrR8O8/cxwN5nPz7OtXae049dyG5B/vBAVa3O5Rs
+         wThsZP7xUuO5fSOhPBIX86fkdCK7Ur/EOlXvHlNOM+fB3U0z1plr0+ReHywf+0UaOhvo
+         mujGfm2xaW6/YNsaVKYkUwbcZZCmh/kbyYkBESCXTppQug0gpxgvpmvPOmJ0vo7Aq+rv
+         47KG0SIWVCYuw512oPyr41dJRdkxt/PmP7CbUemnSW++87X3LHvB41Y6IAHNZ/Gr5Dt+
+         HTxRxWLKJgEalh3/SH308lpJqPWdGI7dm55fiI9MmbvDDypOlxx4voNYESAJrGgB44PO
+         InPw==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
         h=content-transfer-encoding:cc:to:subject:message-id:date:from
          :in-reply-to:references:mime-version:dkim-signature;
-        bh=Ubat+z5QjnYmtaLIKT2fPs8gd+++aNLEi8AJBYOnLcY=;
-        fh=rvQbiow6nrycDaoqVeulgAsf+PrVR0CRG/KpBc1+eLY=;
-        b=k/Esg9El8U91JqqLw31+ZWmjwvfOeS8+fj4xnBL9+KCAm0EPyXYuJoz4rm1V//4UVG
-         zfr3kTMD722KO9qCROZ2QVI5Pvy5OY0w6p+3D73b5K1rL9EoBF6X1oquTeNbW8mC6d63
-         JNEjbhwq945v9hxgBqmuSZgzYEVHmFhEO+cuaIfousGqUvfTxqU8W2nUXmKHwCe/8+7E
-         TLZCZKsEd25GzAh1/zZR05qQRMZb84+K7JCQiSk48TgbUg8L5OfOP1ak+agwX8qGZxot
-         ymhK4j4o3pgiDXOrGmnZy/rIj2wPQXymvK7V6b7Hc2V+o+KSBK/xr/TOY6Lkt4ckTMQ+
-         I3dg==;
+        bh=xk40p3spSA7Dl+t/EMDWt78ol/53BabP80E+M7SNBGM=;
+        fh=zdRdgRVRFw1qIrobyp59C4p7zoDwLU1qxFAUN0MwHgU=;
+        b=U29SKDU2HG5pahnn5djmcZtmUErzUCa6N+vULEPdAuOAHllp4lrp8TczRPpJCf28a+
+         Y9uGJzgtdsJ76QFotTpJkHxuPoq+5nUqYoVcizyjucIr90ugHRNuCEgaHN6LsDZypgj8
+         sitzAJ71q36zJE4ugwg9dkHsS6OWXvxntfELvUj3nwG9scYYeSsQYfg+D8l+Nc4FYlsi
+         FptRNQSOTBWA/fOEpPlHwjXimPFLyJSe0vqSver/rqWmXx0gqLAnzKcrDEsktcQiBSvd
+         q6PsTzY1UzMhP+qDBYDsZ+//59pfR4cOKzb1XD4BkQuQRc61tJdGVOyFhVbmkVeMC5MZ
+         TDxA==;
         darn=vger.kernel.org
 ARC-Authentication-Results: i=1; mx.google.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1783940796; x=1784545596; darn=vger.kernel.org;
+        d=oss.qualcomm.com; s=google; t=1783940800; x=1784545600; darn=vger.kernel.org;
         h=content-transfer-encoding:content-type:cc:to:subject:message-id
          :date:from:in-reply-to:references:mime-version:from:to:cc:subject
          :date:message-id:reply-to:content-type;
-        bh=Ubat+z5QjnYmtaLIKT2fPs8gd+++aNLEi8AJBYOnLcY=;
-        b=i6sNI5YTYxqyKFgZXq62GQN7/HRD2RtqxOeWUBw0TeULLdTP8MBgGcVSdIQAVponeK
-         lvlXD2g/RJcijMliA32DXX5mfQAhZBufXAUjsp4im0U5jlHYOc0cwj/59yi/ARLhCqEs
-         VbJ9/G/5he7w5VCU3GAUdJt0nrYbVP6LgFcllHatcYEAKEXWLbQUZGft5XAhTZtafV+u
-         WaIvR3eUd8cksDAWtN8UUmRgifYEigrKxGsNF23zBikpsgxGUu4yoFUY3POxIWfih/d5
-         k7R4ROz5EJfcNXP6izBXcqV1lHo8oSZAkNxpKyJXNt8KdpEj8Lzs7ZW+QctYeRjpdVi4
-         Vzbg==
+        bh=xk40p3spSA7Dl+t/EMDWt78ol/53BabP80E+M7SNBGM=;
+        b=XOS5ams2RCZKkVsUIwqmFFPipsl62dBqPVbFjUanOba93Do2NVgWmWsapl1A0yZ/yY
+         9GtjzdqlwEg6YkR4I9dh2qoEQe3v53H5PqXmEwcAL2/6G+gWioN1hGthwiBokZUV2LSL
+         3mZVKGDJQfHUJ8vFVv/Y7l3U1ygAUxnzYGECgICvW/uxRQzmjnEE/kmaG4eMe2laDrJ3
+         43jtoN+gQ8FHdzo5aw1QRutPU+MBnW4aCfYJwoLbffF1f6QM2aDwzh7hjJcB29DH2sgC
+         vKcrlfjUagjRVhGMxc1UADTuUwSGSmCorE0RWQqXyX1nv9p5Yju6f1KXocHhgdq1HVMU
+         jsfA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1783940796; x=1784545596;
+        d=1e100.net; s=20251104; t=1783940800; x=1784545600;
         h=content-transfer-encoding:content-type:cc:to:subject:message-id
          :date:from:in-reply-to:references:mime-version:x-gm-gg
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=Ubat+z5QjnYmtaLIKT2fPs8gd+++aNLEi8AJBYOnLcY=;
-        b=mL2jVuQTbRfzDaq4l3vKJZdC9DiITiJb+TcC9P3/fD0wQiJMUdLM3FYaA7cEhyPp8t
-         SI3kOdRaInykMNGJrasRe3iWz9yYmJ4s1pGcIs8UouNPLdzPooxNjI1KVEXPUuYtbN0/
-         DJ1gQTCni7Q7A/pxm6QdQbps1LnsLCENyZVK8WpXrj6blaJisd5OPAx7Hdajo19wBEdA
-         CtI39vuCW+KzWdAdKVdOMNsV8wGtxjQfcM4kndj/hSQU4NBoPzWgkCKXhVTc/2LGNLbJ
-         FPiDJtPS9zQOKoJrFMgR+3k2xq655f9CHu8SwMSIoxRsrK4rmmUh+DUsDRSIMp5Y0/2x
-         Y4vg==
-X-Forwarded-Encrypted: i=1; AHgh+Ro9lMPcM3AqvdMrjeRa+npCDPU4CbenXc1NnkUnpFpKe1rV1G1A9B49yMKYaLAuhSeuoGtcv2s6hA==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yy+ZfuWzLXCyy5eWqgxjOlMVPzKdYzsEngz4OwD3dVbgN4NWv2F
-	hqfARCOhxsgTpV4gBimDES11ekK4C2WQgQ9W5n3sbPFumjnR5v75y9vK2vUEaTZ+ZaMBMgm4XA5
-	cDRTKkwt9DtPgvTHjuG2uAlkI//j+0+jTGB7fJVB8HGijDzgffhy9xGpT74aGJemlB3b8PVSvpy
-	633+ohv0vdDVC1WEhB7PW277+FVc98AVZWt3Io
-X-Gm-Gg: AfdE7cl03229la224HsPnPDTajYp+rydOSG1yuM+rNTwMxbRs30RaRym5hyu5rxjbcb
-	nL9xFv/W4x3S834+QvIz7HTMU7d9UW7SOnB60HcsrseEyrqHxPXTxgZElEkdTVzIbL6FGeyLYg7
-	6dluB50a/sfuF9wu2838YdXda8Fg/yJILFfZF8LdcT/XztmeAbuFkwAxpTFsSvTbDz1IZW
-X-Received: by 2002:a05:6214:4c86:b0:8fd:b96d:195b with SMTP id 6a1803df08f44-902360add0amr136214386d6.15.1783940796113;
-        Mon, 13 Jul 2026 04:06:36 -0700 (PDT)
-X-Received: by 2002:a05:6214:4c86:b0:8fd:b96d:195b with SMTP id
- 6a1803df08f44-902360add0amr136214106d6.15.1783940795720; Mon, 13 Jul 2026
- 04:06:35 -0700 (PDT)
+        bh=xk40p3spSA7Dl+t/EMDWt78ol/53BabP80E+M7SNBGM=;
+        b=qz4LKmUxxp5b4v/RrepZXtrNSRzmUPEZb09DrJIcWgsXw91ieQuDWs8yV/ER+gA4tS
+         IcvNJT9A6J7HZxUYHGSghLuFJJO/QHsFkEgvjP7j6Pzn0EFIABlxGjfSnO4ppkqvbTyO
+         rHJGCGi1RTwx/jNRjx/A1SPWmRsKKupSUH20eKTBoJ8sHf52y+p8bETxpMSrKWJpnOMT
+         ziu/1ltS0ra9SKR5pjlxV3uptT8dvU7kX89MCgFZjunvJfs/tY/2/JVYBPVwIAd9ljWW
+         D4yBVFkNe3RCWmQGvZd0J+y0BhSDgZc9czBNVx9bpXEdRYz7qD2seFvkWSoDjg94QQ0N
+         hh3Q==
+X-Forwarded-Encrypted: i=1; AHgh+RoD6aA6pEEEpLZo181I8/aF6TBg/AuPLvYWcr5eCZFaqcvYmDF89GDEludVQmIxaLt+yIEtNZI9jg==@vger.kernel.org
+X-Gm-Message-State: AOJu0YwB2IXT65yYLObzigoR8QdO7ORbAwSW4PulIm3NOZPdoMvmWGN1
+	UnHH46dXxGVrgbedIl/gKfhFeqdE+YgyxOyPe9fYHjjy2drpphhGwDGno/73jAhso15yxFINUEA
+	wDqC+4nHMZrA8Zixy7Pya8Le3aDnfB33WhyAzTwBeytnQIxwwo8C9jV0ed5pppGyN9EGnHwHZeL
+	mnCALtrdsrvg0Qie0dpaKLZtaYeaEHhxtXj92L
+X-Gm-Gg: AfdE7clDAHYL/WyWaSC0ICdX0WNcNnhkkbEEweG+Wz8o5L+jN0GVvWKbIGJGX//J8J3
+	10XCoRWKuI4Bm/I2DySRbYbGWYHckeRh+Ec7WZHPh8dIZ+QRQ3kQKbrijWB3Yq1fDhSTXrDmJe8
+	sQ43dhf8+9UCHi8pOUC+YuEJb6HyuV1BK5Ksqqr8ggexnJ++KYYVzEgg6hI/7097xIs8bT
+X-Received: by 2002:a05:6214:3104:b0:8ec:26a9:17d3 with SMTP id 6a1803df08f44-90400b8c041mr92851756d6.41.1783940800187;
+        Mon, 13 Jul 2026 04:06:40 -0700 (PDT)
+X-Received: by 2002:a05:6214:3104:b0:8ec:26a9:17d3 with SMTP id
+ 6a1803df08f44-90400b8c041mr92851416d6.41.1783940799744; Mon, 13 Jul 2026
+ 04:06:39 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260530204636.1115120-1-mcanal@igalia.com>
-In-Reply-To: <20260530204636.1115120-1-mcanal@igalia.com>
+References: <20260602193248.443101-1-jonathanh@nvidia.com>
+In-Reply-To: <20260602193248.443101-1-jonathanh@nvidia.com>
 From: Ulf Hansson <ulf.hansson@oss.qualcomm.com>
-Date: Mon, 13 Jul 2026 13:06:24 +0200
-X-Gm-Features: AUfX_mzoo_GCCpmgP88Yj3-TYi906i2_TN-ZPhKg0bAnY7K4DQfnPcCJyPkqp1c
-Message-ID: <CAPx+jO_oP7HP7bkd5SVmxA3x+ND-mCRT__8ALpy6mhufP8MtGQ@mail.gmail.com>
-Subject: Re: [PATCH] pmdomain: bcm: bcm2835-power: Raise ASB poll timeout to 100us
-To: =?UTF-8?B?TWHDrXJhIENhbmFs?= <mcanal@igalia.com>
-Cc: Ulf Hansson <ulfh@kernel.org>,
-        Florian Fainelli <florian.fainelli@broadcom.com>,
-        Broadcom internal kernel review list <bcm-kernel-feedback-list@broadcom.com>,
-        Ray Jui <rjui@broadcom.com>, Scott Branden <sbranden@broadcom.com>,
-        Stefan Wahren <wahrenst@gmx.net>, linux-pm@vger.kernel.org,
-        linux-rpi-kernel@lists.infradead.org,
-        linux-arm-kernel@lists.infradead.org, kernel-dev@igalia.com
+Date: Mon, 13 Jul 2026 13:06:28 +0200
+X-Gm-Features: AUfX_mzZq7FFwaTj94C41S_9CAvUcbYXmH-pUFHdD2R2hW7sOaExdttegTZszMY
+Message-ID: <CAPx+jO-cbyeMALMtSSuyQosLdp8yH+-NP7ELTwfhNoeW4CMkkg@mail.gmail.com>
+Subject: Re: [PATCH V3] pmdomain: tegra: Add support for multi-socket platforms
+To: Jon Hunter <jonathanh@nvidia.com>
+Cc: Ulf Hansson <ulfh@kernel.org>, Thierry Reding <thierry.reding@kernel.org>,
+        linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
-X-Proofpoint-GUID: g_IBHgD-tQDT95ReYy93IkIxdF3JxUow
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzEzMDExNSBTYWx0ZWRfXzHwBevbtgZBX
- mi8cquZPunZDQ19x0ogjuTZmCbqKIohT964ceOOj4PZjqA+iFhsCiF4ZFXjiEa+DNoxA1oOWfFF
- f4JhLXyDhA13IfzsOzPpwaHil80tU7WZs1dfxvSKvjtSB5SXVRw3asX8l/PF9tdHVDLxD1ZtPT6
- 7SJM2LBUM/tosjZ5FNYLcAbaqRrlafnXVvk9uSB3qy3R7u29dZ7wrDp551ME5B+IT3nxmp3YPxb
- 6K8z92Q6eRNgEbgzt+fpB/F/cdgRZs6K+Ibf8F0auc4fO+kf29Ng1wTAHg1c3mIaKldJvNMSqx2
- Ad98cKYrr+UUNc9h5ab+7T8lkoeMlzLY+0EH1Z2oIVhYeKYEqahds/UMqFUFFoo3/DwuNyq7kcA
- 6Ne/9iMrsTjd9pG88d/4arbqCd9FZfKvoFlj8vn0RCQBh1ZCuS6mk2SgLB/TdCmTIDFseBeYeL8
- G01qxJWQcoJD0BPTJpA==
-X-Proofpoint-ORIG-GUID: g_IBHgD-tQDT95ReYy93IkIxdF3JxUow
-X-Authority-Analysis: v=2.4 cv=dZSwG3Xe c=1 sm=1 tr=0 ts=6a54c6bd cx=c_pps
- a=oc9J++0uMp73DTRD5QyR2A==:117 a=IkcTkHD0fZMA:10 a=RAioF0-LDSMA:10
+X-Proofpoint-GUID: 3LLXZdfr1jths6I3bTy6Y2NBLdCqysus
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzEzMDExNSBTYWx0ZWRfX48WfWJI1XyDO
+ UX/bZTBnv68x9bZRrr8NwXNheueqKvO6LwGcdfq26HFKsiY3szTn1DhgenEsp2mUXcbQ425sQ8m
+ 3D17kMw1mzzo3E0v6bp6KFyr46u3a9E9EjrOJ8kIOU3iAFhdzCWsyutUrhMqi42zVLPk5vvxbC0
+ qaScMBZV37/E+8wLk7ZrxtBZYH/ZcCJG1vlXTaM5hchnUB2vPQWyKCzKcGU+CaJfB6DOaA9X0K9
+ K9z+MiC1wmUV73uXM33NLzO1XsI+wjQ2MiEpZuwGTAPiB4Y7U1vpbUpCK2pESxm5pYXNNO50zfo
+ XYUlg0wWMN5cKhkKWG0A8e3AcrNy7eKU2CddmSA/qTAFC0Y1QYLmofojz1bjo0uTmgLoMeJp945
+ O9SZhmjWj/DLgEOgVtHOS3XocMqBsNf0QUyUEhT7TnwgVXIM9jz9yxC7aW0CN0sJj6xxb0G016R
+ knXhkMMt9lWKvF6XIdA==
+X-Proofpoint-ORIG-GUID: 3LLXZdfr1jths6I3bTy6Y2NBLdCqysus
+X-Authority-Analysis: v=2.4 cv=dZSwG3Xe c=1 sm=1 tr=0 ts=6a54c6c1 cx=c_pps
+ a=UgVkIMxJMSkC9lv97toC5g==:117 a=IkcTkHD0fZMA:10 a=RAioF0-LDSMA:10
  a=s4-Qcg_JpJYA:10 a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22
- a=eoimf2acIAo5FJnRuUoq:22 a=V2sgnzSHAAAA:8 a=xiSneWFeW3Tcw-NpSFEA:9
- a=QEXdDO2ut3YA:10 a=iYH6xdkBrDN1Jqds4HTS:22 a=Z31ocT7rh6aUJxSkT1EX:22
-X-Proofpoint-Spam-Info: AW1haW4tMjYwNzEzMDExNSBTYWx0ZWRfX7pKu6opz313U
- OScIBokj2gLL2F/VM97qdMF6Qw5eSppCEFM6VOiLDWLKX4iVYjUnYIr/lOZyjBC/2w8yJE9awYA
- DmO61lbwu65MNEmi4g7b4nNR3hvjZTg=
+ a=eoimf2acIAo5FJnRuUoq:22 a=Ikd4Dj_1AAAA:8 a=mQxNfCW7Vcdlk-GrVDgA:9
+ a=QEXdDO2ut3YA:10 a=1HOtulTD9v-eNWfpl4qZ:22
+X-Proofpoint-Spam-Info: AW1haW4tMjYwNzEzMDExNSBTYWx0ZWRfXz+8d5dg+Mnxo
+ tWGxlwYjhQJWJERO/+G+42tanvkR+DEtzsL0TCjVt71bsu9WwSUIENawfDZyslwek1b+ZrAboPI
+ 8VH8PwzkZ7uSg6kssn6EOQqHV3BMacE=
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.134,FMLib:17.12.100.49
  definitions=2026-07-13_02,2026-07-10_01,2025-10-01_01
@@ -145,26 +140,23 @@ X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
  classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
  reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2607130115
 
-On Sat, May 30, 2026 at 10:46=E2=80=AFPM Ma=C3=ADra Canal <mcanal@igalia.co=
-m> wrote:
+On Tue, Jun 2, 2026 at 9:33=E2=80=AFPM Jon Hunter <jonathanh@nvidia.com> wr=
+ote:
 >
-> Commit 18605b1b936b ("pmdomain: bcm: bcm2835-power: Increase ASB control
-> timeout") raised the ASB handshake polling budget from 1us to 5us.
-> Surveying the pmdomain subsystem, 5us is still one of the smallest pollin=
-g
-> budgets by a wide margin. Comparable handshakes in other drivers use:
+> On multi-socket platforms each socket has its own BPMP that is
+> registered with the kernel. For such platforms prefix the NUMA ID for
+> each socket to the BPMP powergate name to ensure there is a unique name
+> for each power-domain. Note that we only add the NUMA ID for powergates
+> that return a valid name because an invalid name indicates that the
+> powergate ID is not supported.
 >
->   - 100us : starfive jh71xx-pmu, apple pmgr-pwrstate
->   - 1ms   : renesas rcar-sysc, rmobile-sysc (power-on)
->   - 10ms  : renesas rcar-gen4-sysc, sunxi sun55i-pck600
->   - 1s    : mediatek mtk-pm-domains, mtk-scpsys
+> Note the check for the NULL string is moved into the function
+> tegra_bpmp_powergate_get_name(), because in the multi-socket case we
+> must only add the prefix if we receive a valid name. A NULL string
+> indicates that there is no valid powergate associated with the ID that
+> is being queried.
 >
-> Raise the BCM2835 timeout to 100us, matching analogous drivers. 100us is
-> still negligible relative to a power-domain transition and gives the V3D
-> master ASB substantially more headroom to drain under heavy workloads,
-> assuring us that the timeout is enough for any scenario.
->
-> Signed-off-by: Ma=C3=ADra Canal <mcanal@igalia.com>
+> Signed-off-by: Jon Hunter <jonathanh@nvidia.com>
 
 Applied for next, thanks!
 
@@ -173,26 +165,45 @@ Uffe
 
 
 > ---
->  drivers/pmdomain/bcm/bcm2835-power.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+> Changes since V2:
+> - Moved the test for a NULL string to a common location that can be
+>   used for both single and multi-socket platforms.
+> Changes since V1:
+> - Use NUMA ID as a prefix and not a suffix for the powergate name.
 >
-> diff --git a/drivers/pmdomain/bcm/bcm2835-power.c b/drivers/pmdomain/bcm/=
-bcm2835-power.c
-> index b76d74e3849b..d507bb675e29 100644
-> --- a/drivers/pmdomain/bcm/bcm2835-power.c
-> +++ b/drivers/pmdomain/bcm/bcm2835-power.c
-> @@ -175,7 +175,7 @@ static int bcm2835_asb_control(struct bcm2835_power *=
-power, u32 reg, bool enable
->         writel(PM_PASSWORD | val, base + reg);
+>  drivers/pmdomain/tegra/powergate-bpmp.c | 9 ++++++++-
+>  1 file changed, 8 insertions(+), 1 deletion(-)
 >
->         if (readl_poll_timeout_atomic(base + reg, val,
-> -                                     !!(val & ASB_ACK) !=3D enable, 0, 5=
-))
-> +                                     !!(val & ASB_ACK) !=3D enable, 0, 1=
-00))
->                 return -ETIMEDOUT;
+> diff --git a/drivers/pmdomain/tegra/powergate-bpmp.c b/drivers/pmdomain/t=
+egra/powergate-bpmp.c
+> index 8cde4f384846..e6a7e025b012 100644
+> --- a/drivers/pmdomain/tegra/powergate-bpmp.c
+> +++ b/drivers/pmdomain/tegra/powergate-bpmp.c
+> @@ -137,6 +137,13 @@ static char *tegra_bpmp_powergate_get_name(struct te=
+gra_bpmp *bpmp,
+>         if (err < 0 || msg.rx.ret < 0)
+>                 return NULL;
 >
->         return 0;
+> +       if (response.get_name.name[0] =3D=3D '\0')
+> +               return NULL;
+> +
+> +       if (dev_to_node(bpmp->dev) !=3D NUMA_NO_NODE)
+> +               return kasprintf(GFP_KERNEL, "%d-%s", dev_to_node(bpmp->d=
+ev),
+> +                                response.get_name.name);
+> +
+>         return kstrdup(response.get_name.name, GFP_KERNEL);
+>  }
+>
+> @@ -234,7 +241,7 @@ tegra_bpmp_probe_powergates(struct tegra_bpmp *bpmp,
+>                 struct tegra_powergate_info *info =3D &powergates[count];
+>
+>                 info->name =3D tegra_bpmp_powergate_get_name(bpmp, id);
+> -               if (!info->name || info->name[0] =3D=3D '\0') {
+> +               if (!info->name) {
+>                         num_holes++;
+>                         continue;
+>                 }
 > --
-> 2.54.0
+> 2.43.0
 >
