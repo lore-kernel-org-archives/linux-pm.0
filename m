@@ -1,37 +1,37 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E0D693E3158;
-	Mon, 13 Jul 2026 10:11:54 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D8D463D9530;
+	Mon, 13 Jul 2026 10:13:04 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1783937515; cv=none; b=fRe1M22BjQvHv0eifmBsq/Rnb6JjNg1Ei8bVhBR4jY3boiQ9UtBCEZhbiOAT5d3KGTNt2PE9HyIzn9YKNHrezq+6dWWLfTr08kubOMQLrqvZ5K+yjTEN8T+ptj1mMmACVrmfiWzSK7G1Ydxd8kPp4rpb1hkRRGs2UhkOAaDrA10=
+	t=1783937584; cv=none; b=mIfh6v3Y81azQFd7ePaqs9ATi3A58NSiITTlSR2NWKGmxXcuRx4fKCpJP/eIRUlHbI9dBtrJp0Y8eGQS1iOEdDnDnwrdpxHnEpUGFPcGS0sLCw+v7afSp9waUTKTz2MaPKxLYVSvK8CYgORlQZKTBZsajdU8arrv5aV+9Q5OfS8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1783937515; c=relaxed/simple;
-	bh=IH90joJ4tnRLkJPNr03igPwq+iiAzvjOkx7FuVR2LQo=;
-	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=ozL82HjoA/M8tpQW3pg5Sin8SH1yw4O+TJ2TK5G8rsy8VfZ+lzj9p3VufrJ4OmFct3zTOqyygazj/Y7PcgFLZVWR18tp4rHOfWIBPjvtbBMfzGxfgQaWTSceZ1YyBf9m6udMB65ZK/eogs8YkFJo5f4jQzTQnFGQOxwZDClAgR0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=jPs2CPfw; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1783937584; c=relaxed/simple;
+	bh=r+wAQb9yhTvl6rPXmFGVyfFSB1IhImatws4R7IYEpqo=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=MmEmpUkOciEGvO4vynku3EPX0DTjKcXJU8eIxUSqZEtUeHsfSJIiIK4GHNowJ0opfX8fCuV2GpzLIiOpkQOwAYlpcXzvQoarsouGKX//LendeSLI4aBwvaD+h5NWUcttxqhhSehVO3jbQjTZL3Sw4a9j4fITWF2GfPCoaAp9cOA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Ijk97rTV; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="jPs2CPfw"
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 84281C2BCB8;
-	Mon, 13 Jul 2026 10:11:54 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Ijk97rTV"
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 96C43C2BCB8;
+	Mon, 13 Jul 2026 10:13:04 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1783937514;
-	bh=IH90joJ4tnRLkJPNr03igPwq+iiAzvjOkx7FuVR2LQo=;
-	h=From:Subject:Date:To:Cc:Reply-To:From;
-	b=jPs2CPfwNKnT/QK3kmF3AknCV+qOfFfTKyeZQiIdECp0FVnfQsWLllpPfQox/FqEY
-	 i+E1OpjXy0wvVs8XTa5Rzs+9uhFpFBfhfh10r96sjjiJGnDI3nwZXE+klNcfyNW1dS
-	 o4NYb1ARoaJF6oFix7S3zAPZEDXG+WXjtpGgn6Qp8FKIuRsrina4EsATbwhy5WuunS
-	 umD/EJgCpdPo7kv5DfKEnFdpBemG9G4aD6TlHZWsgV00jUIS5JPsf0KxnUB0WMX4UI
-	 NaQ03RiIU+au+EassF5XJ9DYfXZ3SZ6ZiTUYV/B0AyjoHblIamDSeWT46HkR7wK0EL
-	 0dTtq0qdz60eA==
+	s=k20201202; t=1783937584;
+	bh=r+wAQb9yhTvl6rPXmFGVyfFSB1IhImatws4R7IYEpqo=;
+	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
+	b=Ijk97rTVcVnPNkgNWd210ObIDMVErrctqOYdx887NtBXygC1JkzyVpHttaFQMqgHE
+	 8So2tMVzCjjJ4ZxEeQCfcrY+xA3+1ZNn7vGeWjGu85f4u9TMduI/wMaBwDLZQkODa+
+	 SEKaU7fDCuaMtkZqynLChdPDXIzndUyN03rwOwHtvsNwhbC0BYey1u+Sgq/S7Kj8Ku
+	 Oc1S9HD2i9UKtvHFwG+PF5aVvlOFskaN38IQm23q5CMpk/q7IuvQGUOpja9eoDvp9g
+	 1wQfenZ20MaelDcwDSTRkUA5rfT8G8sg1PWnF2yGIwe4opHz7NWgjRW7M+7brkJHfB
+	 msrq4pArZ5rFQ==
 Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5F353C44506;
-	Mon, 13 Jul 2026 10:11:54 +0000 (UTC)
-From: Roman Vivchar via B4 Relay <devnull+rva333.protonmail.com@kernel.org>
-Subject: [PATCH v3 0/3] nvmem: add support for the MediaTek mt6323 PMIC
-Date: Mon, 13 Jul 2026 13:11:34 +0300
-Message-Id: <20260713-mt6323-nvmem-v3-0-205c39267a24@protonmail.com>
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 832EAC44501;
+	Mon, 13 Jul 2026 10:13:04 +0000 (UTC)
+From: Haoning CHENG via B4 Relay <devnull+Haoning.CHENG.cn.bosch.com@kernel.org>
+Date: Mon, 13 Jul 2026 18:12:40 +0800
+Subject: [PATCH v6 2/2] thermal/drivers/imx: Add calibration offset support
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -40,88 +40,107 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-B4-Tracking: v=1; b=H4sIAAAAAAAC/3XOTQ7CIBAF4Ks0rMXw02LqynsYFxQHixFoAImm6
- d2FujEaly95872ZUYRgIKJ9M6MA2UTjXQl80yA1SncBbM4lI0aYIIJSbJPgjGOXLVhMVNdKopm
- WvUblZAqgzWPljqd3jvfhCipVozZGE5MPz3Uv09r7Q2eKCR46oEOvoKOaHabgk3dWmttWeYuqn
- 9mnsPsSWBFazQlwIcuX7Y+wLMsLAjaZiQEBAAA=
-X-Change-ID: 20260611-mt6323-nvmem-0c54a0f2fa9f
-To: Sen Chu <sen.chu@mediatek.com>, Sean Wang <sean.wang@mediatek.com>, 
- Macpaul Lin <macpaul.lin@mediatek.com>, Lee Jones <lee@kernel.org>, 
- Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
- Conor Dooley <conor+dt@kernel.org>, 
- Matthias Brugger <matthias.bgg@gmail.com>, 
- AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>, 
- Srinivas Kandagatla <srini@kernel.org>, 
- Roman Vivchar <rva333@protonmail.com>
-Cc: Andy Shevchenko <andy@kernel.org>, linux-pm@vger.kernel.org, 
- devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
- linux-arm-kernel@lists.infradead.org, linux-mediatek@lists.infradead.org, 
- Ben Grisdale <bengris32@protonmail.ch>, 
- Conor Dooley <conor.dooley@microchip.com>
+Message-Id: <20260713-b4-symana21-11221-imx-thermal-support-upstream-6-18-v6-2-88a378faeca5@cn.bosch.com>
+References: <20260713-b4-symana21-11221-imx-thermal-support-upstream-6-18-v6-0-88a378faeca5@cn.bosch.com>
+In-Reply-To: <20260713-b4-symana21-11221-imx-thermal-support-upstream-6-18-v6-0-88a378faeca5@cn.bosch.com>
+To: "Rafael J. Wysocki" <rafael@kernel.org>, 
+ Daniel Lezcano <daniel.lezcano@linaro.org>, Zhang Rui <rui.zhang@intel.com>, 
+ Lukasz Luba <lukasz.luba@arm.com>, Rob Herring <robh@kernel.org>, 
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+ Conor Dooley <conor+dt@kernel.org>, Shawn Guo <shawnguo@kernel.org>, 
+ Sascha Hauer <s.hauer@pengutronix.de>, 
+ Pengutronix Kernel Team <kernel@pengutronix.de>, 
+ Fabio Estevam <festevam@gmail.com>
+Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org, 
+ imx@lists.linux.dev, linux-arm-kernel@lists.infradead.org, 
+ linux-kernel@vger.kernel.org, Haoning CHENG <Haoning.CHENG@cn.bosch.com>
 X-Mailer: b4 0.15.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1783937511; l=2150;
- i=rva333@protonmail.com; s=20260510; h=from:subject:message-id;
- bh=IH90joJ4tnRLkJPNr03igPwq+iiAzvjOkx7FuVR2LQo=;
- b=e72h5C0iNaVmwv4Y/8ukUwlKHV0J3jGG7YwkrI9fJAY3hbFhInt4LTTzIWRwBD+eA4nrrKCyJ
- v4b+mBvQsnSDumEwaC9CVp4OBK+J2/pJ3PklK3CCHhJJnfOQ8aMtO3S
-X-Developer-Key: i=rva333@protonmail.com; a=ed25519;
- pk=zww/nWjBGoQ4POXCG0BV6fx2iuXK6jx77rsKPA5YK5Y=
-X-Endpoint-Received: by B4 Relay for rva333@protonmail.com/20260510 with
- auth_id=777
-X-Original-From: Roman Vivchar <rva333@protonmail.com>
-Reply-To: rva333@protonmail.com
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1783937579; l=2618;
+ i=Haoning.CHENG@cn.bosch.com; s=20260709; h=from:subject:message-id;
+ bh=4RI3KwRlC8Yl5nDcFypymQ95vC8TXe4NB1RjWrUCQYE=;
+ b=ZjXUHUSzr1P2LOslVCEvFksBcDLlIQ10c85S/WRlXJSDB1+GkJ+rmpryb0wvvghE5XBZHKLlQ
+ +8+OgeSYfcIDzDg0yuhhUt2ily+rJ9QsoYxKH+hcMK7qQCe5hhrCJ6S
+X-Developer-Key: i=Haoning.CHENG@cn.bosch.com; a=ed25519;
+ pk=glQGwad/fosRS5gZUJYbLDPPLGe7rFTrTV2VxY/ySdc=
+X-Endpoint-Received: by B4 Relay for Haoning.CHENG@cn.bosch.com/20260709
+ with auth_id=860
+X-Original-From: Haoning CHENG <Haoning.CHENG@cn.bosch.com>
+Reply-To: Haoning.CHENG@cn.bosch.com
 
-This series adds support for the EFUSE found on the MediaTek mt6323 PMIC.
+From: Haoning CHENG <Haoning.CHENG@cn.bosch.com>
 
-The previous version of the series for all AUXADC, EFUSE and thermal
-drivers was split after Krzysztof's comment [1].
-    
-Tested on the MediaTek mt6572 and mt8163 SoCs (Ben), both paired with a
-mt6323.
+Some boards need a small per-design correction to align the reported CPU
+temperature with board-level measurements.
 
-[1]: https://lore.kernel.org/linux-mediatek/20260504-mt6323-v1-0-799b58b355ff@protonmail.com/T/#med30fad67a090be35f549231336b2dec295233f6
+Read the optional fsl,temp-calibration-offset-millicelsius property from
+DT and apply it to the i.MX6/6SX/7D calibration formulas. When the
+property is not present, the default offset remains 0, preserving the
+current behaviour.
 
-Tested-by: Ben Grisdale <bengris32@protonmail.ch> # Amazon Echo Dot (2nd Generation)
-Signed-off-by: Roman Vivchar <rva333@protonmail.com>
-
+Signed-off-by: HaoNing Cheng <Haoning.CHENG@cn.bosch.com>
 ---
-Changes in v3:
-- Rebase onto next-20260708
-- EFUSE driver: Replace 'mod_devicetable.h' with explicit 'device-id/of.h'
-- Drop MFD patch since it's applied
-- Link to v2: https://patch.msgid.link/20260617-mt6323-nvmem-v2-0-4f30e36aa0f4@protonmail.com
+ drivers/thermal/imx_thermal.c | 16 +++++++++++++---
+ 1 file changed, 13 insertions(+), 3 deletions(-)
 
-Changes in v2:
-- EFUSE driver: Sort variables in the mt6323_efuse_read (Andy)
-- Link to v1: https://patch.msgid.link/20260611-mt6323-nvmem-v1-0-b5e1b9ce51f2@protonmail.com
+diff --git a/drivers/thermal/imx_thermal.c b/drivers/thermal/imx_thermal.c
+index 38c993d1bcb3..0a443e608957 100644
+--- a/drivers/thermal/imx_thermal.c
++++ b/drivers/thermal/imx_thermal.c
+@@ -207,6 +207,7 @@ struct imx_thermal_data {
+ 	struct regmap *tempmon;
+ 	u32 c1, c2; /* See formula in imx_init_calib() */
+ 	int temp_max;
++	s32 calibration_offset;
+ 	int alarm_temp;
+ 	int last_temp;
+ 	bool irq_enabled;
+@@ -223,6 +224,7 @@ static void imx_set_panic_temp(struct imx_thermal_data *data,
+ 	struct regmap *map = data->tempmon;
+ 	int critical_value;
+ 
++	panic_temp -= data->calibration_offset;
+ 	critical_value = (data->c2 - panic_temp) / data->c1;
+ 
+ 	regmap_write(map, soc_data->panic_alarm_ctrl + REG_CLR,
+@@ -239,11 +241,14 @@ static void imx_set_alarm_temp(struct imx_thermal_data *data,
+ 	int alarm_value;
+ 
+ 	data->alarm_temp = alarm_temp;
++	alarm_temp -= data->calibration_offset;
+ 
+-	if (data->socdata->version == TEMPMON_IMX7D)
+-		alarm_value = alarm_temp / 1000 + data->c1 - 25;
+-	else
++	if (data->socdata->version == TEMPMON_IMX7D) {
++		alarm_value = DIV_ROUND_UP(alarm_temp, 1000) + data->c1 - 25;
++		alarm_value = clamp(alarm_value, 0, 0x1ff);
++	} else {
+ 		alarm_value = (data->c2 - alarm_temp) / data->c1;
++	}
+ 
+ 	regmap_write(map, soc_data->high_alarm_ctrl + REG_CLR,
+ 		     soc_data->high_alarm_mask);
+@@ -277,6 +282,7 @@ static int imx_get_temp(struct thermal_zone_device *tz, int *temp)
+ 		*temp = (n_meas - data->c1 + 25) * 1000;
+ 	else
+ 		*temp = data->c2 - n_meas * data->c1;
++	*temp += data->calibration_offset;
+ 
+ 	/* Update alarm value to next higher trip point for TEMPMON_IMX6Q */
+ 	if (data->socdata->version == TEMPMON_IMX6Q) {
+@@ -629,6 +635,10 @@ static int imx_thermal_probe(struct platform_device *pdev)
+ 
+ 	platform_set_drvdata(pdev, data);
+ 
++	of_property_read_s32(dev->of_node,
++			     "fsl,temp-calibration-offset-millicelsius",
++			     &data->calibration_offset);
++
+ 	if (of_property_present(dev->of_node, "nvmem-cells")) {
+ 		ret = imx_init_from_nvmem_cells(pdev);
+ 		if (ret)
 
-Changes after split:
-- EFUSE driver:
-    - Remove 'linux/errno.h' header (Andy)
-    - Remove explicit cast to u16 in the 'mt6323_efuse_read' (Andy)
-    - Reword comment in the 'mt6323_efuse_read'
-    - Capitalize MediaTek in the module description
-- Link to a previous series: https://patch.msgid.link/20260512-mt6323-v2-0-3efcba579e88@protonmail.com
-
----
-Roman Vivchar (3):
-      dt-bindings: mfd: mediatek: mt6397: add mt6323 PMIC EFUSE
-      nvmem: add mt6323 PMIC EFUSE driver
-      ARM: dts: mediatek: mt6323: add EFUSE support
-
- .../devicetree/bindings/mfd/mediatek,mt6397.yaml   | 21 ++++++
- MAINTAINERS                                        |  5 ++
- arch/arm/boot/dts/mediatek/mt6323.dtsi             |  4 +
- drivers/nvmem/Kconfig                              | 11 +++
- drivers/nvmem/Makefile                             |  2 +
- drivers/nvmem/mt6323-efuse.c                       | 85 ++++++++++++++++++++++
- 6 files changed, 128 insertions(+)
----
-base-commit: b9810cd75b9fb56a3425d391cba3f608502bd474
-change-id: 20260611-mt6323-nvmem-0c54a0f2fa9f
-
-Best regards,
---  
-Roman Vivchar <rva333@protonmail.com>
+-- 
+2.43.0
 
 
