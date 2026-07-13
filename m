@@ -1,37 +1,37 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D8E753E2AA1;
-	Mon, 13 Jul 2026 10:13:04 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 20D8C35FF6E;
+	Mon, 13 Jul 2026 10:23:02 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1783937584; cv=none; b=bA/WwKA/xXXs1jEYpk27B1gxRWmLWdjDDfnE+S0Qiws6uSk+0HoG0qEA+ptc1pSwXluaZS2CxJxrUNRtYU/F4+E9BGfl3Wuzilqkux+6yJGOIYxWbQ+3ZW8QJHnakGSzKlmQuuDNMIn8h9xG7frivQEgOW8jWpLFOvp/tBzpW40=
+	t=1783938182; cv=none; b=bqomHFrqqOhnEEghPKupuS1HOzYfMfnNoL6jpr7d8btkeR/ZZu2k8PHEkFB6fJc2m3+FN+kJwqPRyE+2f9sGN51ViyRxZTWbM8rhV34MgxT7SRE8PI/cq4LeuR//wH7XvLzKamQm34rnZeS0ccb8E5S6xCTzcyCmqkykEgdfMaY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1783937584; c=relaxed/simple;
-	bh=l4IzDk6AZekoK7hv30j/AYCaWvKZp5AFjNWbd7EU7QQ=;
-	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=RmQsKw4EYtWAyGs52AZwCNj4pAvyikvGohlKsjsoJq3FgOQYdLGE+31bpLflSqOHSv1X/QK9NBAUEez/DMGyDFXnh/g7ruu8dC1kDJfKCH8wK9dSNX3Q6LWE1znFpaZXwj2SGTzxHjWk9M4u77477xUOVqw0cMokXcyy7ZNaUiA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=BZhuxcKI; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1783938182; c=relaxed/simple;
+	bh=WsBnOQEJrUS0U9e4/AWulTtQhybgQSh9e128xESC+MU=;
+	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=LKwkmcrsyFa9jo4MXKkeg1ODf6KM2ybX8ftyMGNKmrohrRZ29UH9wQM3NpQ14RLOOjcnzcTtLlELzEQ8AYpld6S8BqeRs5GyCNepNI37ICZu/r4Nkm1qmMX64exGD0kktYetkdoHQNR/O47cweRYTJyvamV4qaTS9TBMVjyanvA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=fqXD13wP; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="BZhuxcKI"
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 78DF1C2BCF4;
-	Mon, 13 Jul 2026 10:13:04 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="fqXD13wP"
+Received: by smtp.kernel.org (Postfix) with ESMTPS id C5BD1C2BCF4;
+	Mon, 13 Jul 2026 10:23:01 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1783937584;
-	bh=l4IzDk6AZekoK7hv30j/AYCaWvKZp5AFjNWbd7EU7QQ=;
+	s=k20201202; t=1783938181;
+	bh=WsBnOQEJrUS0U9e4/AWulTtQhybgQSh9e128xESC+MU=;
 	h=From:Subject:Date:To:Cc:Reply-To:From;
-	b=BZhuxcKI/QEqO7bVHcRXNc8BkcONL6ae5x7kybzXaYFXwPHlB2xAe7uZwuNe9gnnw
-	 t7OulalpCnsgk94NV05kE73/hurI8PoI5iGsLz/uTR2d3Q+Vj14yUke8ZNeE5np87M
-	 Kvkka64EgWHJN45zIiRpZXZLIGUQJO4EWKxHlfId4V6LLph0yOApQ/P1dm0THW3Sim
-	 52f8R9GqtECGiF4UnFMhUJv++A+GcIZMOMtIpzWFMhdhBMvpy7QqmNEJzDav2KGZsl
-	 PgPW01tW/C2ENtVV4J+8yFYdTZzSw0nNcscJd81YRy+lu7GK7Oiwo/dr7iZ1n2Qdd3
-	 cBB9Kv+h2ZCWA==
+	b=fqXD13wP3TBH69Dujr3jF2AuXoyGs1UDYYFUn7eq2wX5YODv51uMmnkgtP2V8/v9u
+	 kRGm6Pyv20Ya0yEsErOLzwxI0tIKjUFKiQmD2Df4xbcbMh1vBpcbXEQEOrme92M6sP
+	 146pdKKwOsYmUOHX8FWMego0U1dNnkMO6kpOunSrROLStu/1zvdwxiTJB+qEtOPiP1
+	 a3bWHOilMfdX0z1kGIcPCyIpSBBNRuEtE1ADNn1Qq46Drsmbtvfsm+nk3NToxmHqKt
+	 CbIKG/IokYZkbsk3IpQobcLzaigCE4Vp9wV1cKw+so8/nlB6InjDbeEdUTd7II8SEf
+	 OTH1ELeK9IiaA==
 Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 62D0BC43458;
-	Mon, 13 Jul 2026 10:13:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A16B5C43458;
+	Mon, 13 Jul 2026 10:23:01 +0000 (UTC)
 From: Haoning CHENG via B4 Relay <devnull+Haoning.CHENG.cn.bosch.com@kernel.org>
-Subject: [PATCH v6 0/2] thermal: imx: Add calibration offset support
-Date: Mon, 13 Jul 2026 18:12:38 +0800
-Message-Id: <20260713-b4-symana21-11221-imx-thermal-support-upstream-6-18-v6-0-88a378faeca5@cn.bosch.com>
+Subject: [PATCH v7 0/2] thermal: imx: Add calibration offset support
+Date: Mon, 13 Jul 2026 18:22:55 +0800
+Message-Id: <20260713-b4-symana21-11221-imx-thermal-support-upstream-6-18-v7-0-09b6b7669be1@cn.bosch.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -40,11 +40,12 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-B4-Tracking: v=1; b=H4sIABa6VGoC/63Ry2rDMBAF0F8JWnfCSNbDyqr/UbqQZKlWqR9It
- kkI/vfKySYUr9JsBi4Mcy7MlWSfos/kdLiS5JeY49CXIN8OxLWm//IQm5IJQyZRoQbLIV860xt
- GgVJWZuzOMLU+deYH8jyOQ5pgHvOUvOlAAq3BYM11zRtvlSTl8ph8iOeb+vF5z3m2395NG7Vtt
- DFPQ7rcai102/tfg4UCAmKo68CZrtC+u/5oh+zaoxs6spVY2AsYdmeCYlwLz/gOUz0wFJ9jqsI
- 0VgfHNFdOiB2Gv4DhhaHBB60a6pTAHUY8MtVzjCiM1ByFq1A6+fc367r+Aq0QfPCnAgAA
+X-B4-Tracking: v=1; b=H4sIAH+8VGoC/63Ry2rDMBAF0F8JWneC3o+s+h+lC0mWapX6gWSbh
+ OB/r5xsQvEqzWbgwqBzGV1RCTmFgk6HK8phSSUNfQ3q7YB8a/uvAKmpGVFMJVbYgONQLp3tLSV
+ ACK0zdWeY2pA7+wNlHschTzCPZcrBdiCBaLBYc6N5E5ySqL485hDT+aZ+fN5zmd138NNGbRttK
+ tOQL7daC9n2/tdgIYAB46h15NQw7N59f3RD8e3RDx3aSiz0BQy9M1FRbkSgfIdhDwzBzzGsMo0
+ z0VPDlRdih+EvYHhlSAzRqIZ4JfAOIx4Z9hwjKiMNx8IzLL3c+xv5AkZWRmvLlI42ePv3aOu6/
+ gJw9nFmDgMAAA==
 X-Change-ID: 20260709-b4-symana21-11221-imx-thermal-support-upstream-6-18-a084984deb76
 To: "Rafael J. Wysocki" <rafael@kernel.org>, 
  Daniel Lezcano <daniel.lezcano@linaro.org>, Zhang Rui <rui.zhang@intel.com>, 
@@ -59,11 +60,11 @@ Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
  linux-kernel@vger.kernel.org, Haoning CHENG <Haoning.CHENG@cn.bosch.com>, 
  Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
 X-Mailer: b4 0.15.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1783937579; l=3842;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1783938176; l=4049;
  i=Haoning.CHENG@cn.bosch.com; s=20260709; h=from:subject:message-id;
- bh=l4IzDk6AZekoK7hv30j/AYCaWvKZp5AFjNWbd7EU7QQ=;
- b=Y+1A4VSGjNwHX6GT9AxYZvWvlNdTyRd+qYBU2fUsCF+vr+9uVfMsvDu6LySP6j+opS8bp/SR2
- F3MgbGwSnTSAbtkLo9evgdZ66/4+IR9Lw4OFieYpmP1VYz127TlHc1y
+ bh=WsBnOQEJrUS0U9e4/AWulTtQhybgQSh9e128xESC+MU=;
+ b=4h7HzH3CMcEDNzws8RqJVAERbwKRE9fY9ZLZmEZ7D8rMx0wGbCu2rHKwDKvvZXNeygV0gmmea
+ c2lS7j5MdeJCaAqqLsPu1LKYlNMh3hmaNY/wW3ti5TTf3+HIANqDTrH
 X-Developer-Key: i=Haoning.CHENG@cn.bosch.com; a=ed25519;
  pk=glQGwad/fosRS5gZUJYbLDPPLGe7rFTrTV2VxY/ySdc=
 X-Endpoint-Received: by B4 Relay for Haoning.CHENG@cn.bosch.com/20260709
@@ -86,6 +87,10 @@ current behaviour.
 
 Signed-off-by: Haoning CHENG <Haoning.CHENG@cn.bosch.com>
 ---
+Changes in v7:
+- Align the author name with the Signed-off-by trailer.
+- Link to v6: https://patch.msgid.link/20260713-b4-symana21-11221-imx-thermal-support-upstream-6-18-v6-0-88a378faeca5@cn.bosch.com
+
 Changes in v6:
 - Align the author name with the Signed-off-by trailer.
 - Link to v5: https://patch.msgid.link/20260713-b4-symana21-11221-imx-thermal-support-upstream-6-18-v5-0-69405c306c6b@cn.bosch.com
