@@ -1,118 +1,80 @@
-Received: from smtph3-05.21cn.com (smtph3-05.21cn.com [150.223.194.107])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id 356C13EDE63;
-	Tue, 14 Jul 2026 08:06:43 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=150.223.194.107
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9C5EE3F823B;
+	Tue, 14 Jul 2026 08:11:39 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1784016407; cv=none; b=tXcLQqFr3PEl6gacXRCMpHeWEW7shEWcRnBp6xDbpyaPs8m5gyr8+wYd6HBZZzMHp6mAM3Kf0wYLBlQBteO1FC75Z4CRCggm8tAfbynj5aINAWath8LUeGtKqZ6QdAjc+8ucKJEHereLrbY5XgX29IeOk28xY2sKVMzgYQC2SYk=
+	t=1784016701; cv=none; b=ejK9c+dF1dhz6XRCpPjRacmin9+7p1KdFJzqY9ZTfCvJGM7bgquBilQYuW8uZxSruhcnmx2Eej/dqpJeafdrScYwz1sR++XwT8j5hDfP/WQUVtWnmR9eiszsquwRnBokNSX+1Nu7DFr6e53+ppX5eCJds1U0Nf5LbOLw57O4lFM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1784016407; c=relaxed/simple;
-	bh=+cltpD9HJG8140I1RV820WYxNDUkUnPEn+bNyDglrY4=;
-	h=From:To:Cc:Subject:Date:Message-Id; b=ahHhZorgMfk3+6yGygqERjjQnqiVppwrZUp0PlcnoAIpmDY8xFteEQqvPbb27H4pyAkXdkc3GtKFgvDQH4F218WKwyThw0nelfyC7Cj3LWuxPwSEUyAXnKi9upOGlebyXqIWn8daYXAhuJsk7+L1uaERkNuyTY+gihAJo1XxVCw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=chinatelecom.cn; spf=pass smtp.mailfrom=chinatelecom.cn; arc=none smtp.client-ip=150.223.194.107
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=chinatelecom.cn
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=chinatelecom.cn
-HMM_SOURCE_IP:172.27.0.100:0.1528351204
-HMM_ATTACHE_NUM:0000
-HMM_SOURCE_TYPE:SMTP
-Received: from clientip-139.200.108.11 (unknown [172.27.0.100])
-	by smtph3-05.21cn.com (HERMES) with SMTP id BB48F1401AD6B;
-	Tue, 14 Jul 2026 15:59:11 +0800 (CST)
-X-189-SAVE-TO-SEND: +pengqh1@chinatelecom.cn
-Received: from  ([139.200.108.11])
-	by gateway-ssl-dep-657b8df9db-r4cbp with ESMTP id fd781366e666437f82459565a48b6125 for ray.huang@amd.com;
-	Tue, 14 Jul 2026 15:59:24 CST
-X-Transaction-ID: fd781366e666437f82459565a48b6125
-X-Real-From: pengqh1@chinatelecom.cn
-X-Receive-IP: 139.200.108.11
-X-MEDUSA-Status: 0
-Sender: pengqh1@chinatelecom.cn
-From: Qianheng Peng <pengqh1@chinatelecom.cn>
-To: ray.huang@amd.com,
-	mario.limonciello@amd.com,
-	perry.yuan@amd.com,
-	kprateek.nayak@amd.com,
-	rafael@kernel.org,
-	viresh.kumar@linaro.org,
-	skhan@linuxfoundation.org,
-	li.meng@amd.com
-Cc: linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	wangxb12@chinatelecom.cn,
-	xiongl24@chinatelecom.cn,
-	zhangar@chinatelecom.cn,
-	pengqh1@chinatelecom.cn
-Subject: [PATCH] cpufreq: amd-pstate-ut: fix null pointer dereference
-Date: Tue, 14 Jul 2026 15:59:01 +0800
-Message-Id: <1784015941-26535-1-git-send-email-pengqh1@chinatelecom.cn>
-X-Mailer: git-send-email 1.8.3.1
+	s=arc-20240116; t=1784016701; c=relaxed/simple;
+	bh=EwFKmsYfl+bD1LLKuHxnLdbF0n0QqBWjHvd5uv38YHA=;
+	h=Content-Type:MIME-Version:Message-Id:In-Reply-To:References:
+	 Subject:From:To:Cc:Date; b=OCWtWStTCwvk8dgrYe9uHGDSsfliwTo2CIfXCuhteEVOpZeySjgPPaFnBYjxeh43IMqVWfLkgyVRRJRRiZNLTAYb5arhB00w/bJrVyPvgiNUT2gA39hGX4xQsgGc5tNmiELUcX9c21aD1Faa7Dt8Cqrl/vXLI4+mR6pMRW+ILqU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=QMrRiQbS; arc=none smtp.client-ip=100.103.45.18
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="QMrRiQbS"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8B55C1F000E9;
+	Tue, 14 Jul 2026 08:11:38 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1784016699;
+	bh=OkAYUluhr6YaET7SYNVUxr0Dp4O9CKoxwBGmYn1WFVQ=;
+	h=In-Reply-To:References:Subject:From:To:Cc:Date;
+	b=QMrRiQbSUJTKi269vkwvfFF8p4vJHa/WTG0TKyGdgwRFAqacT1WprLOQXpFgItCfZ
+	 hgPmDXd0DTFRkENvaxWTUeOFxWLf9oFwb0rcrKmMGRuYGeJlc2OrpeYdk8iWTCOI5U
+	 MlC4gjRsiejoAak2ncKtGyhk6duqixQDHqNntuQp+pfl5Vrm4k06xxV4N2I/8zM7be
+	 PEO8rzNoYsnnHB7olATpQbYcZttDnSYXZc6hZqiWVEdbsAKvWylfpEqkGWaAinSzxf
+	 PPUP1+lA/ht9YHKbNxXoiAIpdkeawyDFnzCkL7UqLS2XY5Kygpu0reqk4xaTQANps9
+	 QBjOeFVEL9gJw==
+Content-Type: multipart/mixed; boundary="===============9025402234174642696=="
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
+MIME-Version: 1.0
+Message-Id: <13456576e105a6f6c9c4c26c2dda990659ac74afb4474c04cfa4d768c0f86e46@mail.kernel.org>
+In-Reply-To: <20260714073041.40250-15-ankur.a.arora@oracle.com>
+References: <20260714073041.40250-15-ankur.a.arora@oracle.com>
+Subject: Re: [PATCH v14 14/15] barrier: add tests for smp_cond_load_*_timeout()
+From: bot+bpf-ci@kernel.org
+To: ankur.a.arora@oracle.com,linux-kernel@vger.kernel.org,linux-arch@vger.kernel.org,linux-arm-kernel@lists.infradead.org,linux-pm@vger.kernel.org,bpf@vger.kernel.org
+Cc: arnd@arndb.de,catalin.marinas@arm.com,will@kernel.org,peterz@infradead.org,akpm@linux-foundation.org,mark.rutland@arm.com,harisokn@amazon.com,cl@gentwo.org,ast@kernel.org,rafael@kernel.org,daniel.lezcano@linaro.org,memxor@gmail.com,zhenglifeng1@huawei.com,xueshuai@linux.alibaba.com,rdunlap@infradead.org,david.laight.linux@gmail.com,broonie@kernel.org,joao.m.martins@oracle.com,boris.ostrovsky@oracle.com,konrad.wilk@oracle.com,ashok.bhat@arm.com,ankur.a.arora@oracle.com,julianbraha@gmail.com,ast@kernel.org,andrii@kernel.org,daniel@iogearbox.net,martin.lau@kernel.org,eddyz87@gmail.com,yonghong.song@linux.dev,clm@meta.com,ihor.solodrai@linux.dev
+Date: Tue, 14 Jul 2026 08:11:38 +0000 (UTC)
 
-The crash issue may occur when insmod amd_pstate_ut modules.
+--===============9025402234174642696==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
 
-   amd_pstate_ut: 1    amd_pstate_ut_acpi_cpc_valid  success!
-   amd_pstate_ut: 2    amd_pstate_ut_check_enabled   success!
-   BUG: kernel NULL pointer dereference, address: 0000000000000080
-   #PF: supervisor read access in kernel mode
-   #PF: error_code(0x0000) - not-present page
-   PGD 0 P4D 0
-   Oops: 0000 [#1] SMP NOPTI
-   CPU: 0 PID: 20300 Comm: modprobe
-   Kdump: loaded Tainted: G O 6.6.0-0010.rc1.ctl4.x86_64 #1
-   Hardware name: FiberHome R2200 V5/Xeon Boards, BIOS 3.1a 02/24/2020
-   RIP: 0010:amd_pstate_ut_check_perf+0x141/0x280 [amd_pstate_ut]
-   Call Trace:
-    <TASK>
-    amd_pstate_ut_init+0x1b/0xff0 [amd_pstate_ut]
-    ? __pfx_amd_pstate_ut_init+0x10/0x10 [amd_pstate_ut]
-    do_one_initcall+0x42/0x2e0
-    ? kmalloc_trace+0x26/0x90
-    do_init_module+0x60/0x240
-    __se_sys_init_module+0x185/0x1c0
-    do_syscall_64+0x62/0x190
-    entry_SYSCALL_64_after_hwframe+0x76/0x7e
-    </TASK>
+> diff --git a/lib/Kconfig.debug b/lib/Kconfig.debug
+> index 1244dcac2294..07a06cfd820a 100644
+> --- a/lib/Kconfig.debug
+> +++ b/lib/Kconfig.debug
+> @@ -2551,6 +2551,16 @@ config FFS_KUNIT_TEST
+>  	  For more information on KUnit and unit tests in general,
+>  	  please refer to Documentation/dev-tools/kunit/.
+>
+> +config BARRIER_TIMEOUT_KUNIT_TEST
+> +	tristate "KUnit tests for smp_cond_load_relaxed_timeout()" if !KUNIT_ALL_TESTS
+> +	depends on KUNIT
+> +	default KUNIT_ALL_TESTS
+> +	help
+> +	  Builds KUnit tests that validate wake-up and timeout handling paths
+> +	  in smp_cond_load_relaxed_timeout().
+> +
+> +	  If unusure, say N.
 
-Add invalidation check of cpudata in amd_pstate_ut_check_perf() and
-amd_pstate_ut_check_freq() to avoid unpredicated null pointer dereference.
+This isn't a bug, but there's a small typo here: should this be 'unsure'
+instead of 'unusure' to match the standard phrasing used by the neighboring
+config entries?
 
-Fixes: 14eb1c96e3a3 ("cpufreq: amd-pstate: Add test module for amd-pstate driver")
-Suggested-by: Li Xiong <xiongl24@chinatelecom.cn>
-Suggested-by: Xibo Wang <wangxb12@chinatelecom.cn>
-Signed-off-by: Qianheng Peng <pengqh1@chinatelecom.cn>
+[ ... ]
+
+
 ---
- drivers/cpufreq/amd-pstate-ut.c | 8 ++++++++
- 1 file changed, 8 insertions(+)
+AI reviewed your patch. Please fix the bug or email reply why it's not a bug.
+See: https://github.com/kernel-patches/vmtest/blob/master/ci/claude/README.md
 
-diff --git a/drivers/cpufreq/amd-pstate-ut.c b/drivers/cpufreq/amd-pstate-ut.c
-index 735b29f..3b24260 100644
---- a/drivers/cpufreq/amd-pstate-ut.c
-+++ b/drivers/cpufreq/amd-pstate-ut.c
-@@ -157,6 +157,10 @@ static int amd_pstate_ut_check_perf(u32 index)
- 		if (!policy)
- 			continue;
- 		cpudata = policy->driver_data;
-+		if (!cpudata) {
-+			pr_err("%s driver_data of %s is empty!\n", __func__, policy->kobj.name);
-+			return -EINVAL;
-+		}
- 
- 		if (get_shared_mem()) {
- 			ret = cppc_get_perf_caps(cpu, &cppc_perf);
-@@ -229,6 +233,10 @@ static int amd_pstate_ut_check_freq(u32 index)
- 		if (!policy)
- 			continue;
- 		cpudata = policy->driver_data;
-+		if (!cpudata) {
-+			pr_err("%s driver_data of %s is empty!\n", __func__, policy->kobj.name);
-+			return -EINVAL;
-+		}
- 
- 		if (!((policy->cpuinfo.max_freq >= cpudata->nominal_freq) &&
- 			(cpudata->nominal_freq > cpudata->lowest_nonlinear_freq) &&
--- 
-1.8.3.1
-
+CI run summary: https://github.com/kernel-patches/bpf/actions/runs/29315652884
+--===============9025402234174642696==--
