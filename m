@@ -1,110 +1,264 @@
-Received: from smtph3-07.21cn.com (smtph3-07.21cn.com [150.223.194.132])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id 39EB1364E98;
-	Tue, 14 Jul 2026 10:30:37 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=150.223.194.132
+Received: from mout-p-103.mailbox.org (mout-p-103.mailbox.org [80.241.56.161])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CBB2F17A300;
+	Tue, 14 Jul 2026 10:37:17 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=80.241.56.161
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1784025043; cv=none; b=OO4UvikmEVy3ymMsRYtiyMq6mkzpcA+ECEjzNA511mx0BmjY2yEdQpG+nf1mUgEVuQRSV1KLC25HtJAmBLqBUqFKMjwcXBD3cSg1H+v7hJi58VHqz/eXPNI49xStXwHaiE8FIjwZ3r5CoTdRvChZC/wxMxaBNjN2F8g+DzRyECA=
+	t=1784025439; cv=none; b=e872dGqIhuGc/qRm089Vr/x8fsNngkGemJmqzbDFSfYpLUqnNyrw5KKkkLJJh3Ec9Y/19/uMNKCnFvsBzbFQKmRqijRVBumsViSiKO+hOdSv/JLWDLKDftlWtX/hrLyKT+BvuddEMOzHcY3f3v6b9oHwg1GJZSm6FYT0+Y1TUD0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1784025043; c=relaxed/simple;
-	bh=Z5iBKYr70EpuKY3i8PlxSKlMS2ViQ2i7AuG0Y5iGVds=;
-	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References; b=ecR2Hz6yEyN0BGefFUFcIbaoJh7392PS2P2BL1M4lomLKd3VjHZPmA1MMe3AGwwFPUrCbDQpe4AyeJobm+ZAw0HYGw9y0fk+NOgMmzP0lf4kEUuQQBopYpC9UEUP+f4Nn6ia3nxrMi5qg+dRahawXKfbkQBTMzBSYvPk4irOaxo=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=chinatelecom.cn; spf=pass smtp.mailfrom=chinatelecom.cn; arc=none smtp.client-ip=150.223.194.132
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=chinatelecom.cn
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=chinatelecom.cn
-HMM_SOURCE_IP:172.27.0.98:0.502763977
-HMM_ATTACHE_NUM:0000
-HMM_SOURCE_TYPE:SMTP
-Received: from clientip-139.200.108.11 (unknown [172.27.0.98])
-	by smtph3-07.21cn.com (HERMES) with SMTP id 7E97D1402E11C;
-	Tue, 14 Jul 2026 18:21:11 +0800 (CST)
-X-189-SAVE-TO-SEND: +pengqh1@chinatelecom.cn
-Received: from  ([139.200.108.11])
-	by gateway-ssl-dep-657b8df9db-d66cm with ESMTP id 061489ed37054a598dcbbb4aba4db34a for viresh.kumar@linaro.org;
-	Tue, 14 Jul 2026 18:21:21 CST
-X-Transaction-ID: 061489ed37054a598dcbbb4aba4db34a
-X-Real-From: pengqh1@chinatelecom.cn
-X-Receive-IP: 139.200.108.11
-X-MEDUSA-Status: 0
-Sender: pengqh1@chinatelecom.cn
-From: Qianheng Peng <pengqh1@chinatelecom.cn>
-To: viresh.kumar@linaro.org
-Cc: kprateek.nayak@amd.com,
-	li.meng@amd.com,
-	linux-kernel@vger.kernel.org,
-	linux-pm@vger.kernel.org,
-	mario.limonciello@amd.com,
-	pengqh1@chinatelecom.cn,
-	perry.yuan@amd.com,
-	rafael@kernel.org,
-	ray.huang@amd.com,
-	skhan@linuxfoundation.org,
-	wangxb12@chinatelecom.cn,
-	xiongl24@chinatelecom.cn,
-	zhangar@chinatelecom.cn
-Subject: Re: [PATCH] cpufreq: amd-pstate-ut: fix null pointer dereference
-Date: Tue, 14 Jul 2026 18:21:10 +0800
-Message-Id: <1784024470-14747-1-git-send-email-pengqh1@chinatelecom.cn>
-X-Mailer: git-send-email 1.8.3.1
-In-Reply-To: <7fxgevkwbauh26jxm27x6yd3dcmi66znyqh4yud7vhm6cdwe4u@rskv6hd64pcp>
-References: <7fxgevkwbauh26jxm27x6yd3dcmi66znyqh4yud7vhm6cdwe4u@rskv6hd64pcp>
+	s=arc-20240116; t=1784025439; c=relaxed/simple;
+	bh=ddjug4FRAhzqNcIheOQuVpJhXkcdJhc8oo8KHgQqags=;
+	h=Mime-Version:Content-Type:Date:Message-Id:Subject:From:To:
+	 References:In-Reply-To; b=LsuBx+nq01jz5EitlSuLBkNokHvh6HiOUAlZgmwtyLyXjSnHk1IgwjSGZhx/64JCOxrdMIFJopVw9Cwax0zhmzwzukSFdbZFR/in+1TaqEhTRHsRtb5D6MAZAVC629DEDYXXlZLgENCufN4eKr1awIBNPbAnkZ11cyn43Vkgqpg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=mailbox.org; spf=pass smtp.mailfrom=mailbox.org; dkim=pass (2048-bit key) header.d=mailbox.org header.i=@mailbox.org header.b=yjCk071X; dkim=pass (2048-bit key) header.d=mailbox.org header.i=@mailbox.org header.b=V5T5SpTd; arc=none smtp.client-ip=80.241.56.161
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=mailbox.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=mailbox.org
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=mailbox.org header.i=@mailbox.org header.b="yjCk071X";
+	dkim=pass (2048-bit key) header.d=mailbox.org header.i=@mailbox.org header.b="V5T5SpTd"
+Received: from smtp1.mailbox.org (smtp1.mailbox.org [10.196.197.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange x25519 server-signature RSA-PSS (4096 bits) server-digest SHA512)
+	(No client certificate requested)
+	by mout-p-103.mailbox.org (Postfix) with ESMTPS id 4gzwjR2vkfzKngL;
+	Tue, 14 Jul 2026 12:37:15 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=mailbox.org; s=mail20150812;
+	t=1784025435;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=1fJftTlqcE8eGqPtuk9WNWMOkdgjG7MBJckMaW+Ctd4=;
+	b=yjCk071X+S4HfzaHmqtjhvuSeEbGlGnYTbaY9AzfBzULBfWei2jZwsSwtScHtZ3WtJuVKz
+	DkIK3HyDU6JOLOhI+zu/38QN3BeaEX4gHoE7JFTJWPShdJf2WfTm7tiLUtGfmK+cIykg/E
+	+e1qlSXSs6GRBYVotVNAa+rO8bq6p4brai7k4VaQsBZW/v2qN7IoMS2bu1hDSXb1AQ3+2C
+	13e60lwZYNqxvsr2CY1yxcOpeGQY8KIE+LHGFL0H1mgpaNmTX2jz6sALoSI7j9gSrf+8Ai
+	O0G4hwMGpPJy/my2bbXjA8pxRey7qNCUR7Npro88+gpDXPBvIe6r23YgBX2UPQ==
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
+Mime-Version: 1.0
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=mailbox.org; s=mail20150812;
+	t=1784025433;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=1fJftTlqcE8eGqPtuk9WNWMOkdgjG7MBJckMaW+Ctd4=;
+	b=V5T5SpTduNeivrpuenzg45SjjTyc8GkSKnn3uTMiGldsqUP9gNRJl0cyId5d+yelfTi6XT
+	rPVPXo6uc+6yxydWEMrHqmFOt+4Bx05i+amAk+2zQ6YllKqiWAt3qM05J8thgofCGFxN8x
+	Y+BHe4jy2Nurb6fFVRK/JHL8kw+sXEuRtaxTL94eS8ukPBxJ4JtjPsBWE4nftpG6JbgfDU
+	7EnIfrppq1zILJ81GDS9DPuvQkidImOdidp6OONjdFJ65eXuHA0RM3Lf8oNTmqYjKJaWfQ
+	wBDVophvGdyV1fv1B8Qv8ocj/hJG7lS6twlj7eHIXzZdWnR6COg4o3vygmEjkw==
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=UTF-8
+Date: Tue, 14 Jul 2026 18:36:59 +0800
+Message-Id: <DJY88BBD7RCM.20K3BATZ6JIM7@mailbox.org>
+Subject: Re: [PATCH] thermal: spacemit: k1: disable hardware on driver
+ remove
+From: "Shuwei Wu" <shuwei.wu@mailbox.org>
+To: "Pei Xiao" <xiaopei01@kylinos.cn>, <dlan@kernel.org>,
+ <rafael@kernel.org>, <troy.mitchell@linux.spacemit.com>,
+ <shuwei.wu@mailbox.org>, <linux-pm@vger.kernel.org>,
+ <linux-riscv@lists.infradead.org>, <spacemit@lists.linux.dev>,
+ <linux-kernel@vger.kernel.org>
+References: <1db7d94eeaced9a92e3670d28e0c97c22f15f108.1783931396.git.xiaopei01@kylinos.cn>
+In-Reply-To: <1db7d94eeaced9a92e3670d28e0c97c22f15f108.1783931396.git.xiaopei01@kylinos.cn>
+X-MBO-RS-META: dawor4uopnap8bhihc8hfk6snj5jbmo4
+X-MBO-RS-ID: 9c12ea2705f8e50f429
 
-On 14-07-26, 01:13:57 (PDT), Viresh Kumar wrote:
->On 14-07-26, 15:59, Qianheng Peng wrote:
->> The crash issue may occur when insmod amd_pstate_ut modules.
->> 
->>    amd_pstate_ut: 1    amd_pstate_ut_acpi_cpc_valid  success!
->>    amd_pstate_ut: 2    amd_pstate_ut_check_enabled   success!
->>    BUG: kernel NULL pointer dereference, address: 0000000000000080
->>    #PF: supervisor read access in kernel mode
->>    #PF: error_code(0x0000) - not-present page
->>    PGD 0 P4D 0
->>    Oops: 0000 [#1] SMP NOPTI
->>    CPU: 0 PID: 20300 Comm: modprobe
->>    Kdump: loaded Tainted: G O 6.6.0-0010.rc1.ctl4.x86_64 #1
->>    Hardware name: FiberHome R2200 V5/Xeon Boards, BIOS 3.1a 02/24/2020
->>    RIP: 0010:amd_pstate_ut_check_perf+0x141/0x280 [amd_pstate_ut]
->>    Call Trace:
->>     <TASK>
->>     amd_pstate_ut_init+0x1b/0xff0 [amd_pstate_ut]
->>     ? __pfx_amd_pstate_ut_init+0x10/0x10 [amd_pstate_ut]
->>     do_one_initcall+0x42/0x2e0
->>     ? kmalloc_trace+0x26/0x90
->>     do_init_module+0x60/0x240
->>     __se_sys_init_module+0x185/0x1c0
->>     do_syscall_64+0x62/0x190
->>     entry_SYSCALL_64_after_hwframe+0x76/0x7e
->>     </TASK>
->> 
->> Add invalidation check of cpudata in amd_pstate_ut_check_perf() and
->> amd_pstate_ut_check_freq() to avoid unpredicated null pointer dereference.
->> 
->> Fixes: 14eb1c96e3a3 ("cpufreq: amd-pstate: Add test module for amd-pstate driver")
->> Suggested-by: Li Xiong <xiongl24@chinatelecom.cn>
->> Suggested-by: Xibo Wang <wangxb12@chinatelecom.cn>
->> Signed-off-by: Qianheng Peng <pengqh1@chinatelecom.cn>
->> ---
->>  drivers/cpufreq/amd-pstate-ut.c | 8 ++++++++
->>  1 file changed, 8 insertions(+)
->> 
->> diff --git a/drivers/cpufreq/amd-pstate-ut.c b/drivers/cpufreq/amd-pstate-ut.c
->> index 735b29f..3b24260 100644
->> --- a/drivers/cpufreq/amd-pstate-ut.c
->> +++ b/drivers/cpufreq/amd-pstate-ut.c
->> @@ -157,6 +157,10 @@ static int amd_pstate_ut_check_perf(u32 index)
->>  		if (!policy)
->>  			continue;
->>  		cpudata = policy->driver_data;
->> +		if (!cpudata) {
->> +			pr_err("%s driver_data of %s is empty!\n", __func__, policy->kobj.name);
+Hi Pei,
+
+On Mon Jul 13, 2026 at 4:32 PM CST, Pei Xiao wrote:
+> The driver uses devm_request_threaded_irq() but never disables the
+> hardware interrupt enable, sensor enable, or sensor power bits when
+> the driver is unbound.
 >
->You can use kobject_name(), but I wonder why print kobj name here ? Other
->drivers just print policy->cpu normally and that is sufficient.
-Thanks for review.I will change kobj name to policy->cpu in patch v2.
+> Add a devm action that clears K1_TSENSOR_INT_EN_REG,
+> K1_TSENSOR_EN_ALL, and K1_TSENSOR_PCTRL_ENABLE on remove, mirroring
+> what k1_tsensor_init() sets up.
+>
+> Signed-off-by: Pei Xiao <xiaopei01@kylinos.cn>
+> ---
+>  drivers/thermal/spacemit/k1_tsensor.c | 27 +++++++++++++++++++++++++++
+>  1 file changed, 27 insertions(+)
+>
+> diff --git a/drivers/thermal/spacemit/k1_tsensor.c b/drivers/thermal/spac=
+emit/k1_tsensor.c
+> index 79222d233129..cf79dc7d403f 100644
+> --- a/drivers/thermal/spacemit/k1_tsensor.c
+> +++ b/drivers/thermal/spacemit/k1_tsensor.c
+> @@ -199,6 +199,29 @@ static irqreturn_t k1_tsensor_irq_thread(int irq, vo=
+id *data)
+>  	return IRQ_HANDLED;
+>  }
+> =20
+> +static void k1_tsensor_shutdown(struct k1_tsensor *ts)
+> +{
+> +	u32 val;
+> +
+> +	/* Disable all interrupts */
+> +	writel(0xffffffff, ts->base + K1_TSENSOR_INT_EN_REG);
+> +
+> +	/* Disable all sensor */
+> +	val =3D readl(ts->base + K1_TSENSOR_EN_REG);
+> +	val &=3D ~K1_TSENSOR_EN_ALL;
+> +	writel(val, ts->base + K1_TSENSOR_EN_REG);
+> +
+> +	/* Power down the sensor module */
+> +	val =3D readl(ts->base + K1_TSENSOR_PCTRL_REG);
+> +	val &=3D ~K1_TSENSOR_PCTRL_ENABLE;
+> +	writel(val, ts->base + K1_TSENSOR_PCTRL_REG);
+> +}
+> +
+> +static void devm_k1_tsensor_shutdown(void *data)
+> +{
+> +	k1_tsensor_shutdown(data);
+> +}
+> +
+>  static int k1_tsensor_probe(struct platform_device *pdev)
+>  {
+>  	struct device *dev =3D &pdev->dev;
+> @@ -229,6 +252,10 @@ static int k1_tsensor_probe(struct platform_device *=
+pdev)
+> =20
+>  	k1_tsensor_init(ts);
+> =20
+> +	ret =3D devm_add_action_or_reset(dev, devm_k1_tsensor_shutdown, ts);
+> +	if (ret)
+> +		return ret;
+> +
+>  	irq =3D platform_get_irq(pdev, 0);
+>  	if (irq < 0)
+>  		return irq;
 
---
-Qianheng
+Sorry, I missed the hardware cleanup in the original driver.
+Thanks for fixing it.
+
+I also found that registering the shutdown action immediately after
+k1_tsensor_init() would cause the thermal zones to be released before
+the IRQ during devres cleanup. The IRQ thread may then access an
+unregistered thermal zone.
+
+I changed the order so that the thermal zones are registered first,
+followed by the IRQ and the shutdown action.
+On removal, the hardware interrupt is disabled first, then the IRQ
+is released, and finally the thermal zones are released.
+
+-> % git --no-pager diff drivers/thermal/spacemit/k1_tsensor.c
+diff --git a/drivers/thermal/spacemit/k1_tsensor.c b/drivers/thermal/spacem=
+it/k1_tsensor.c
+index 79222d233129..57dbc652a405 100644
+--- a/drivers/thermal/spacemit/k1_tsensor.c
++++ b/drivers/thermal/spacemit/k1_tsensor.c
+@@ -199,6 +199,32 @@ static irqreturn_t k1_tsensor_irq_thread(int irq, void=
+ *data)
+ 	return IRQ_HANDLED;
+ }
+
++static void k1_tsensor_shutdown(struct k1_tsensor *ts)
++{
++	u32 val;
++
++	/* Disable all interrupts */
++	writel(0xffffffff, ts->base + K1_TSENSOR_INT_EN_REG);
++
++	/* Disable all sensors */
++	val =3D readl(ts->base + K1_TSENSOR_EN_REG);
++	val &=3D ~K1_TSENSOR_EN_ALL;
++	writel(val, ts->base + K1_TSENSOR_EN_REG);
++
++	/* Clear the sampling configuration set by k1_tsensor_init(). */
++	val =3D readl(ts->base + K1_TSENSOR_TIME_REG);
++	val &=3D ~(K1_TSENSOR_TIME_FILTER_PERIOD |
++		 K1_TSENSOR_TIME_ADC_CNT_RST |
++		 K1_TSENSOR_TIME_WAIT_REF_CNT);
++	writel(val, ts->base + K1_TSENSOR_TIME_REG);
++
++	/* Clear the control bits configured by k1_tsensor_init(). */
++	val =3D readl(ts->base + K1_TSENSOR_PCTRL_REG);
++	val &=3D ~(K1_TSENSOR_PCTRL_RAW_SEL |
++		 K1_TSENSOR_PCTRL_TEMP_MODE |
++		 K1_TSENSOR_PCTRL_HW_AUTO_MODE |
++		 K1_TSENSOR_PCTRL_ENABLE);
++	writel(val, ts->base + K1_TSENSOR_PCTRL_REG);
++}
++
++static void devm_k1_tsensor_shutdown(void *data)
++{
++	k1_tsensor_shutdown(data);
++}
++
+ static int k1_tsensor_probe(struct platform_device *pdev)
+ {
+ 	struct device *dev =3D &pdev->dev;
+@@ -229,34 +255,48 @@ static int k1_tsensor_probe(struct platform_device *p=
+dev)
+
+ 	k1_tsensor_init(ts);
+
+-	irq =3D platform_get_irq(pdev, 0);
+-	if (irq < 0)
+-		return irq;
+-
+-	ret =3D devm_request_threaded_irq(dev, irq, NULL,
+-					k1_tsensor_irq_thread,
+-					IRQF_ONESHOT, "k1_tsensor", ts);
+-	if (ret < 0)
+-		return ret;
+-
+ 	for (i =3D 0; i < MAX_SENSOR_NUMBER; ++i) {
+ 		ts->ch[i].id =3D i;
+ 		ts->ch[i].ts =3D ts;
+ 		ts->ch[i].tzd =3D devm_thermal_of_zone_register(dev, i, ts->ch + i, &k1_=
+tsensor_ops);
+-		if (IS_ERR(ts->ch[i].tzd))
+-			return PTR_ERR(ts->ch[i].tzd);
++		if (IS_ERR(ts->ch[i].tzd)) {
++			ret =3D PTR_ERR(ts->ch[i].tzd);
++			goto err_shutdown;
++		}
+
+ 		/* Attach sysfs hwmon attributes for userspace monitoring */
+ 		ret =3D devm_thermal_add_hwmon_sysfs(dev, ts->ch[i].tzd);
+ 		if (ret)
+ 			dev_warn(dev, "Failed to add hwmon sysfs attributes\n");
++	}
+
+-		k1_tsensor_enable_irq(ts->ch + i);
++	ret =3D platform_get_irq(pdev, 0);
++	if (ret < 0) {
++		goto err_shutdown;
+ 	}
+
++	ret =3D devm_request_threaded_irq(dev, irq, NULL,
++					k1_tsensor_irq_thread,
++					IRQF_ONESHOT, "k1_tsensor", ts);
++	if (ret < 0)
++		goto err_shutdown;
++
++	ret =3D devm_add_action_or_reset(dev, devm_k1_tsensor_shutdown, ts);
++	if (ret)
++		return ret;
++
++	/* Enable interrupts only after all zones and the handler are ready. */
++	for (i =3D 0; i < MAX_SENSOR_NUMBER; ++i)
++		k1_tsensor_enable_irq(ts->ch + i);
++
+ 	platform_set_drvdata(pdev, ts);
+
+ 	return 0;
++
++err_shutdown:
++	k1_tsensor_shutdown(ts);
++	return ret;
+ }
+
+ static const struct of_device_id k1_tsensor_dt_ids[] =3D {
+
+--=20
+Best regards,
+Shuwei Wu
