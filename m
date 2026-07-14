@@ -1,336 +1,237 @@
-Received: from mail-wm1-f42.google.com (mail-wm1-f42.google.com [209.85.128.42])
+Received: from mail-wm1-f43.google.com (mail-wm1-f43.google.com [209.85.128.43])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B99FC3624B2
-	for <linux-pm@vger.kernel.org>; Tue, 14 Jul 2026 15:00:28 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.42
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C1FB249551E
+	for <linux-pm@vger.kernel.org>; Tue, 14 Jul 2026 15:28:59 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.43
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1784041232; cv=none; b=HoIpKy1O38dFeHJOJ4CgK1QJFd0u9TScFnHLHpVrGvQTiy40WBsYRAs9Igr8vew7zkfgVnp9/jBD3gPm6cyj6H1n3e/BjgJ/fPEfyscyzBIOta/QFQyWYzwfKZURmJQcozkAPXZ7Cs75pdKIAv9XvAnhckWSfnM67k7TyZ3RJuw=
+	t=1784042941; cv=none; b=kJFDRnHgGcZ1j1Arnf6LyBECYcHS5EC8rN2eCvCanSrU6/oMfJjuNydPitLcBENECVNVLalw0GNZGczeaudaXsL8PhJylgiLiP3A62oUDP9icDPR/lzQzyhgYLZCnbaIgroXOnS/j0La0zsEeAzg25kPtr6RAD8DXHUkkZ40yq4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1784041232; c=relaxed/simple;
-	bh=KNymooo6pFrrV0pgopf1uLkUWo/vHxSbBQiLUMNGAjs=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=Q3pNkstFl20y+pAJOSUWqK2wQNl1PilD2uk5uAbjt9RMz1waaHgDlil9tz0CRaujUi6IjtXwL5Mof+s73wo939RnNTY+VNemF2jQe6ObGJGzLlEshwldM0ITtb6xQOljyt2uIM/gsIeu5NPwivQ7FlVMmRazpNIzqIahocRr7nM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=layalina.io; spf=pass smtp.mailfrom=layalina.io; dkim=pass (2048-bit key) header.d=layalina-io.20251104.gappssmtp.com header.i=@layalina-io.20251104.gappssmtp.com header.b=MgJl7rGm; arc=none smtp.client-ip=209.85.128.42
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=layalina.io
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=layalina.io
+	s=arc-20240116; t=1784042941; c=relaxed/simple;
+	bh=iK2N13Fa+ahJt7iMw2mLWbp8smO+p23o4+F3b2Vp1Bo=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=ZxeCzOI+gvHcDIGcKlGerv/H7II5Eyg8vRneHcghYKdnEhUwYLtwPga1zF6h+xkEc9x2kynS6NjtoG/AKha6r1hA5KYds/MbqJ8nUwG/OlAWwMucyVsJFJis3Ua2SuBLGpfUNEROUlAQ1Y+gRe1or3GiR6z9NfYVEQt/ICHS8W0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com; spf=pass smtp.mailfrom=suse.com; dkim=pass (2048-bit key) header.d=suse.com header.i=@suse.com header.b=GfBblfg3; arc=none smtp.client-ip=209.85.128.43
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=layalina-io.20251104.gappssmtp.com header.i=@layalina-io.20251104.gappssmtp.com header.b="MgJl7rGm"
-Received: by mail-wm1-f42.google.com with SMTP id 5b1f17b1804b1-493f75f7172so29254335e9.1
-        for <linux-pm@vger.kernel.org>; Tue, 14 Jul 2026 08:00:28 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=suse.com header.i=@suse.com header.b="GfBblfg3"
+Received: by mail-wm1-f43.google.com with SMTP id 5b1f17b1804b1-493e8d4f4dcso34500415e9.0
+        for <linux-pm@vger.kernel.org>; Tue, 14 Jul 2026 08:28:59 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=layalina-io.20251104.gappssmtp.com; s=20251104; t=1784041227; x=1784646027; darn=vger.kernel.org;
-        h=in-reply-to:content-transfer-encoding:content-disposition
-         :content-type:mime-version:references:message-id:subject:cc:to:from
-         :date:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=0sxwsAivRsb15uev9oE08Qk5pOQz/BnCnhJs5fBb2Mg=;
-        b=MgJl7rGmv9TRNckg2Yc/XF3XeGgj6s74z2rrv+kaPZFmFg4Vt0VJeyhQ6cYLwdw3P7
-         wwlkfK2I+rlhH8/5a/7U5bak+U0FK5/MzZTGMokB3iWKD+ITFHoYHXTV9XuS0gH4Nv87
-         +C95G/JuFA7gbW+AGvVn5A0RrrVDW/hf7280/R3AhTw/wd4RFCa4zXkkmvXnKItbQOhf
-         HR7rhWaqeUNIlkOtzmW0gHp/rYb6St+y7sx0fOmM467XfxKFEiyZmzj+DRRb7Z6S8+nQ
-         3/2Z/aXWLuLfa0C9CKMxF21Yf6XSrnLyNCwXDlxRuJyFjGAFQ6tSL9ug7rZnhJ9R2aSg
-         blfw==
+        d=suse.com; s=google; t=1784042938; x=1784647738; darn=vger.kernel.org;
+        h=content-transfer-encoding:content-type:in-reply-to:autocrypt:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=09TcclYmaPCDKc6+KZii+R3xNkB+ca7ftigSvlljO8Q=;
+        b=GfBblfg3V4AhQ9Y1uHsNefuUfkCLEWBXZ72vdRzrlRILtviBg0uiRYy6BFvhvoSdXn
+         mDus/zcQBCfIKqBYzJTgjoHTxejorRrDolSK6u56p0RK34XxJXTPuJC2Yz/LM52Ejr4Q
+         oGX0xAbUNj9JkIzz7hpIJhn8eq8M8lPawoLON5J11UapnhQFgAgLJ/pUK+uGavFn0/EN
+         5Jpl+mohSIt7Pc6PPJnlzaknIW+SiqguRR20rDHQI5ar0C7+3OItHQE48QP/HVx/YeRH
+         dmzBS0ydiBeVdgZTU1kqaVh60NxSrzd5KZAQk75FztGkD5hzP/ZMVQ7OPhXpygQyBNG6
+         IcLw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1784041227; x=1784646027;
-        h=in-reply-to:content-transfer-encoding:content-disposition
-         :content-type:mime-version:references:message-id:subject:cc:to:from
-         :date:x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to:content-type;
-        bh=0sxwsAivRsb15uev9oE08Qk5pOQz/BnCnhJs5fBb2Mg=;
-        b=Ms5DD4Ep2KvvzPm9a1bYMs+BUgnlM7k0wSWYkm1r8bGaM0Qe4VMXzzvf2O5wT3CYZQ
-         tjXcchUbqTJ/jnLXqbY9d2c2mRUwK83Vls+2qedvZ09DVcy3ajh2VqWoj6KmhMv25zJF
-         oGiRoIUL0cU21HA6Z9nXwm7jnwU9VwKXomFJ5PK4dFtfZRpRK3izzUpBBGHjlxBtpzIc
-         HsAUgHKT+yNm3MvEFjSxO1S9sK2Jfx55Mw118AYnpM2mQDoUwu4JA7Y67mrBE1Kxzod1
-         A1Su/gUEBNScImNjk0GPWRI1hPgpfNasRmo6+GhQV/CvHSO2j3P/Y+BjxjdSB4Z9BebW
-         hjUA==
-X-Forwarded-Encrypted: i=1; AHgh+Rp6cBwc0ASzZvWwpWzYZfwzjwxPqvUZKbHGagmYiwHAK0mWaja/dgcTRUMeGUfw7h5t6cg8bWUs3Q==@vger.kernel.org
-X-Gm-Message-State: AOJu0YwNs1LaT304EhuoEWBhkHkW4JtS2oiqRO6gbSE1j5xgDEjAIInD
-	X6R4qO6YLuyGM2HSXAeGqmcWB9CaBVkzoRzHLBkELWICP+ZTkwNWZvByKkOq3j8qIew=
-X-Gm-Gg: AfdE7cmnTUdKZnaqvDqBKgzvCkQ5Hr6PNIdj7VWzj325QJoF4IV6JxTg+Hqs0OELt+Y
-	lvdi/6ngyyBhE6zhlVp4BkeKdyJykgxPuiVLxl8NVHwJpyZtt+XnIIdT/Lz1hZf+sIO838ktNMF
-	SoY+zhaHb+pEjaSpnJPYLNbBN8KKOHHg5+KaqYxGgOqdlSXNJatUbPfNmplC8pBgm/VnKI3G5l7
-	7k35QwLEGUTS4VUWPclaMKl3BB0qEEKRH/yTfdvvycPRwZ2dC57vCqSsxQXmgSHt59lGkqZ+86O
-	kK5EIii7/khAul6kamyhwet++2bxYoKwzu/Tn8kWxv9vJBRXBt6KT/zYpE4LegFL8iYqgE+VB6X
-	UX175KMg4dZgRrPF305EmwpCyON4XlA27T49rZ/Jis8zBTOFK0TiV8KVgP70P79AjBIL2Z0E+oM
-	1tqJShRsM=
-X-Received: by 2002:a05:600c:348e:b0:493:bd37:1cdf with SMTP id 5b1f17b1804b1-493f87d6219mr139993815e9.2.1784041226851;
-        Tue, 14 Jul 2026 08:00:26 -0700 (PDT)
-Received: from airbuntu ([149.50.209.149])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4950871cbd6sm94284365e9.3.2026.07.14.08.00.24
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 14 Jul 2026 08:00:26 -0700 (PDT)
-Date: Tue, 14 Jul 2026 16:00:22 +0100
-From: Qais Yousef <qyousef@layalina.io>
-To: Frederic Weisbecker <frederic@kernel.org>
-Cc: Christian Loehle <christian.loehle@arm.com>,
-	LKML <linux-kernel@vger.kernel.org>,
-	Thomas Gleixner <tglx@linutronix.de>,
-	Anna-Maria Behnsen <anna-maria@linutronix.de>,
-	Sehee Jeong <sehee1.jeong@samsung.com>,
-	John Stultz <jstultz@google.com>,
-	"Rafael J. Wysocki" <rafael@kernel.org>,
-	Andrea Righi <arighi@nvidia.com>,
-	Dietmar Eggemann <dietmar.eggemann@arm.com>,
-	linux-pm <linux-pm@vger.kernel.org>,
-	Lukasz Luba <lukasz.luba@arm.com>,
-	Vincent Guittot <vincent.guittot@linaro.org>
-Subject: Re: [PATCH 0/6] timers/migration: Handle heterogenous CPU capacities
-Message-ID: <20260714150022.lifdys7c7czwmg63@airbuntu>
-References: <20260423165354.95152-1-frederic@kernel.org>
- <3b79338f-6cfc-4722-8062-9103db2c8ad1@arm.com>
- <aiF_eqFOXI2xEUoF@localhost.localdomain>
- <7e2e21a3-6ed6-4b98-a5f0-1aef842084ce@arm.com>
- <ail8awnO9NgDgbi3@localhost.localdomain>
+        d=1e100.net; s=20251104; t=1784042938; x=1784647738;
+        h=content-transfer-encoding:content-type:in-reply-to:autocrypt:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=09TcclYmaPCDKc6+KZii+R3xNkB+ca7ftigSvlljO8Q=;
+        b=cIf473U5z7ETFr9XfVzXBp5fjEdZ/W89eiZK/oZRqpZjqR7KLRInJ7Bp+pQaQDvOKX
+         UH3F4xnXzYvGgoFyKsBz5V9FNYlgrS0fIBPj7ZeN6TpOMTfx4AM+3lJL1ma6s+97k+RO
+         tiJkjpEA176znn5qJDy3xerkSwT0ju6fuomtFGFjVQhAaQnVIF6NtuZ/Jgw7R2f0/vqB
+         M8wRC8nuOLmJ9uiY7IiGfvxDUtb7hqcPUem39jPGxokh1GFEs6ymVVNp+2LmHSenDk7L
+         23A3HL1I4h4ttEmQXf3b/iR36EssLlVcTQtJFZ7kX/RrS44lQBjoz7zWOmnMxR3ED8Pk
+         zuDA==
+X-Forwarded-Encrypted: i=1; AHgh+RpvHNLKhCsi49NCQxyme7Ns5bvpRDKMsse1me6nkS0uhLQhEw9ZpUQ4DzrTGOLIDChiTMKyjk35lg==@vger.kernel.org
+X-Gm-Message-State: AOJu0YyTp1V/lfJmyJNQT6lmO1bG+l0cvL/qRDu4IdBckKwRmFol027u
+	CMPbvudwFnC5NyEbPI0RjGzyUUwZkmE97orqmvVrdQTyrxrmVrPgv4rhpjeJar235+c=
+X-Gm-Gg: AfdE7cmiqDyK/cExrn2MOkGo6pLBIojuWAfGbnEUj4R9q0Kih24bOc93b0KN7vkRyBa
+	aR58Y5eCjCNjP679Da9Ac0dof6qeUN0/r/yKny3OBVzFNBUxCktnobz3vi/yMtb0MYUClMen2TE
+	qE4paf5Gj5YWldM3XYe8u+neQDT3fS2XA95lBJmiS2eMd6kIJaUB3CnhQYyimXnrqzO8xRqKKyM
+	i5LkYDXynGcr3TvDzNNmtWQSerXyMlhX264p07Wywj+5683lFtYB/f89fY8EmWdePL5JvCVQlkM
+	PFta0z8OtnWTWYemNYRBVDo8t8UGilnqzuiMBpUShP0EQpfLShFivMT/Xm/qJD84cQwnntbQL9e
+	duPLN0gEnRkbrwtYmhSGeEvdhU1fpQk6j34oBxXFWO6TnAavf4snkpAj6WgPP8yByMEWrUgAMiQ
+	aMjHz/cZCtJOf8nzwMSZw60vtN7fgeVGGM0ci06LXD17wa
+X-Received: by 2002:a05:600d:6413:10b0:494:1cdd:4f9e with SMTP id 5b1f17b1804b1-4941cdd5035mr55153835e9.31.1784042937995;
+        Tue, 14 Jul 2026 08:28:57 -0700 (PDT)
+Received: from [192.168.0.25] (62.43.169.102.dyn.user.ono.com. [62.43.169.102])
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-493fd3ccfd4sm190589985e9.2.2026.07.14.08.28.56
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Tue, 14 Jul 2026 08:28:57 -0700 (PDT)
+Message-ID: <2e1731d4-71d9-4924-a728-0aa4821486cd@suse.com>
+Date: Tue, 14 Jul 2026 17:28:54 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <ail8awnO9NgDgbi3@localhost.localdomain>
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 2/3] pmdomain: mediatek: Add support for secure modem
+ power domain control
+To: nikolai.burov@jolla.com, Rob Herring <robh@kernel.org>,
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
+ <conor+dt@kernel.org>, Matthias Brugger <matthias.bgg@gmail.com>,
+ AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>,
+ Ulf Hansson <ulfh@kernel.org>
+Cc: devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, linux-mediatek@lists.infradead.org,
+ linux-pm@vger.kernel.org, Nikolai Burov <nikolai.burov+review@abscue.de>
+References: <20260714-mt6858-pmdomain-v1-0-4f09bbb822e0@jolla.com>
+ <20260714-mt6858-pmdomain-v1-2-4f09bbb822e0@jolla.com>
+Content-Language: en-US, ca-ES, es-ES
+From: Matthias Brugger <mbrugger@suse.com>
+Autocrypt: addr=mbrugger@suse.com; keydata=
+ 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
+ PVrr2NoUqi/bxI8fFQJD1jVj8K0=
+In-Reply-To: <20260714-mt6858-pmdomain-v1-2-4f09bbb822e0@jolla.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
-Thanks for the CC Christian.
 
-On 06/10/26 17:02, Frederic Weisbecker wrote:
-> Le Fri, Jun 05, 2026 at 11:10:20AM +0100, Christian Loehle a écrit :
-> > On 6/4/26 14:36, Frederic Weisbecker wrote:
-> > > Le Wed, Jun 03, 2026 at 11:50:58PM +0100, Christian Loehle a écrit :
-> > >> On 4/23/26 17:53, Frederic Weisbecker wrote:
-> > >>> Hi,
-> > >>>
-> > >>> This is a late follow-up after:
-> > >>>
-> > >>> 	https://lore.kernel.org/lkml/20250910074251.8148-1-sehee1.jeong@samsung.com/
-> > >>>
-> > >>> To summarize, heterogenous capacity CPUs migrate their timers
-> > >>> indifferently between big and little CPUs. And this happens to be often
-> > >>> migrated to big CPUs, increasing their idle target residency.
 
-This is a real problem in practice. Not only they can migrate to big core, but
-also can be stuck on that core.
-
-> > >>>
-> > >>> Thomas proposed to isolate the hierarchy between big and little CPUs.
-> > >>> So here is a try. Note I haven't tested on real heterogenous hardware
-> > >>> so if you have it, please test it!
-> > >>>
-> > >>> git://git.kernel.org/pub/scm/linux/kernel/git/frederic/linux-dynticks.git
-> > >>> 	timers/core
-> > >>>
-> > >>> HEAD: f0a87af6dab6f3a6dd8a603a2b9d7dcc86fd50e4
-> > >>> Thanks,
-> > >>> 	Frederic
-> > >>> ---
-> > >>>
-> > >>> Frederic Weisbecker (6):
-> > >>>       timers/migration: Fix another hotplug activation race
-> > >>>       timers/migration: Abstract out hierarchy to prepare for CPU capacity awareness
-> > >>>       timers/migration: Track CPUs in a hierarchy
-> > >>>       timers/migration: Split per-capacity hierarchies
-> > >>>       timers/migration: Handle capacity in connect tracepoints
-> > >>>       scripts/timers: Add timer_migration_tree.py
-> > >>>
-> > >>>  include/trace/events/timer_migration.h |  24 ++--
-> > >>>  kernel/time/timer_migration.c          | 246 ++++++++++++++++++++++++---------
-> > >>>  kernel/time/timer_migration.h          |  19 +++
-> > >>>  scripts/timer_migration_tree.py        | 122 ++++++++++++++++
-> > >>>  4 files changed, 337 insertions(+), 74 deletions(-)
-> > >>
-> > >> Hi Frederic,
-> > >> sorry for the late reaction to this, I completely missed it (CCing
-> > >> linux-pm would have helped :) ).
-> > > 
-> > > Good point, next time I'll do!
-> > > 
-> > >>
-> > >> I'm not convinced that unconditionally splitting the timer migration
-> > >> hierarchy per-capacity is always the right tradeoff from a power point of
-> > >> view. On some asymmetric systems we only have one or two CPUs in a given
-> > >> capacity class. In that case the split can effectively remove most of the
-> > >> useful timer migration opportunity for that class, even though allowing
-> > >> migration across nearby capacities may still be better for idle residency.
-
-The ideal behavior is that timers are handles on little cores, spill to mid if
-they get really busy handling timers, and to big if they get busy.
-
-Which is what we do for task placement, we pack until we reach a point we need
-to spill - or task get too busy to gets its perf demand satisfied on this core.
-But I can't see the latter a factor for timer interrupts.
-
-> > >>
-> > >> I tested this on an Orion O6 system with the following topology:
-> > >>
-> > >> online CPUs: 0-11
-> > >>
-> > >> capacity 279:  CPUs 2,3,4,5
-> > >> capacity 866:  CPUs 8,9
-> > >> capacity 905:  CPUs 6,7
-> > >> capacity 984:  CPUs 10,11
-> > >> capacity 1024: CPUs 0,1
-> > >>
-> > >> I compared the series up to and including the preparatory/refactoring
-> > >> patch 3 against the full series including the per-capacity hierarchy split.
-> > >> The numbers below are aggregate cpuidle residency deltas over a 600s run.
-> > >>
-> > >> Idle workload:
-> > >>
-> > >> variant    LPI-0     LPI-1     LPI-2     LPI-1+2
-> > >> base       2298.7s   1253.8s   2817.0s   4070.8s
-> > >> full       2298.8s   1306.1s   2758.7s   4064.7s
-> > >> delta      +0.1s     +52.3s    -58.3s    -6.1s
-
-What is LPI?
-
-> > >>
-> > >> Grouped by capacity class, the LPI-2 loss is mostly on the lower-capacity
-> > >> CPUs:
-> > >>
-> > >> group        base LPI-2   full LPI-2   delta full
-> > >> 279          1073.5s      1031.9s      -41.6s
-> > >> 866          502.5s       486.4s       -16.1s
-> > >> 905          499.7s       490.4s       -9.3s
-> > >> 984          488.8s       496.0s       +7.2s
-> > >> 1024         252.5s       254.0s       +1.5s
-> > >>
-> > >> For a light tbench run (tbench -R 20 -t 600 4), the result is more mixed:
-> > >>
-> > >> variant    LPI-0     LPI-1     LPI-2     LPI-1+2
-> > >> base       2593.5s   1483.4s   410.3s    1893.6s
-> > >> full       2605.3s   1446.5s   416.6s    1863.1s
-> > >> delta      +11.8s    -36.9s    +6.3s     -30.5s
-> > >>
-> > >> So tbench gets a small increase in deepest idle, but loses more in
-> > >> LPI-1+2 overall.
-> > >>
-> > >> If we do wanna keep the per-capacity hierarchy split, maybe it's sufficient to
-> > >> gate this behind there being either a small number of capacity classes or
-> > >> ensuring that they all have >=4 CPUs before splitting?
-> > > 
-> > > Ok I was afraid of something like that, ie: it works for some usages but not
-> > > on others.
-> > > 
-> > > And I don't know what to do. For example if I apply your suggested contraints,
-> > > on which hierarchy should go those capacities with < 4 CPUs ?
-> > > 
-> > > Thoughts?
-> > > 
-> > 
-> > I sure have some thoughts, but I'm unsure about the best solution is though.
-> > A few things bothering me:
-> > 1. In the original report the problem was timers being migrated from
-> > little to big CPU leads to a power regression, but of course they most
-> > likely still benefit from the reverse migration, making static partitioning
-
-Yes moving timers back to little is important. I need to look at timers code
-again, but any reason they should always be armed to the core the triggered the
-request?
-
-> > seem counterintuitive to me in the first place? In particular because usually
-> > #little CPUs > #big CPUs, so my intuition would be that that migration should
-> > be more common, or is that not true? I'd also love to know with what workload
-> > the original issue appeared.
-> > 2. While little->big timer migration might usually be bad for power, that's
-> > not always true depending on SoC and workload, we don't really know without
-> > consulting the energy model, for most timers though the energy model wouldn't
-> > be that useful anyway as a good chunk of the decision comes from wasting
-> > potential idle energy instead of active energy, energy model is unaware of
-> > power savings of idle states.
-
-I would say that timers on big is bad. I can't foresee in what situation this
-can't be true.
-
-> > 
-> > For the static hierarchy split itself my ideas would be:
-> > 
-> > 1. Don't do it if the resulting hierarchy is too awkward, e.g. single CPUs or
-> > too many tiny groups. Obviously that risks excluding the system from the
-> > original report.
-> > 
-> > 2. Group only meaningfully different capacities, rather than exact
-> > arch_scale_cpu_capacity() values. For example, use something like the
-> > capacity_greater() margin so negligible capacity differences don't create
-> > separate timer hierarchies. [1]
-> > 
-> > 3. Have a limited number of buckets, fixed thresholds such as <512
-> > and >=512 would probably work, but are arbitrary.
-> > 
-> > 4. Only start a new bucket if last_capacity != current_capacity &&
-> > last_bucket_cpus >= 4. This feels awkward because the resulting hierarchy then
-> > depends on CPU/hotplug ordering.
-> > 
-> > If we allow for a more dynamic migration strategy, I think I'd prefer the
-> > decision to be based on observed idle opportunity rather than capacity alone.
-> > Something like rq->avg_idle, could make CPUs with shorter recent idle periods
-> > more likely to handle timers, while avoiding CPUs that tend to get long/deep
-> > idle residencies. Is that unreasonable from your end?
+On 14/07/2026 15:43, Nikolai Burov via B4 Relay wrote:
+> From: Nikolai Burov <nikolai.burov@jolla.com>
 > 
-> I guess it's feasible, but that doesn't take into account the capacity itself.
-> The initial issue was about timers migrating too often to big cores and
-> therefore keeping them alive too frequently. I guess the biggest issue is
-> when the last core going idle is a big core. And it's the one that will handle
-> all global timers for the whole system.
+> On recent MediaTek SoCs such as MT6858, the kernel is required to use
+> a secure monitor call (SMC) to enable or disable the modem power domain.
+> The power domain control register can be read, but firmware prevents it
+> from being modified directly. Other parts of the power sequence, such as
+> setting the ext_buck_iso register, still need to be performed on the
+> kernel side.
 > 
-> And perhaps it's a fundamental issue because big cores are probably busier by
-> nature.
-
-In contrary, although that can depend on systems. But even today's mid range
-phones they are yesterday's flag ship SoCs and have pretty powerful mid cores.
-
-I am not sure if this makes sense as I need to dig into timers code more, but
-I'd say that trying to use CPU0, then spill to CPU1, then CPU2 etc is ideal.
-You can give the user the option to pick the order of preference if you want to
-handle potential weirdness where CPU0 is more expensive for whatever reason.
-But safe to assume lower is cheaper by default IMHO.
-
-I think this would not be useful for AMP systems only, but also on SMP ones by
-confining timers to fewer cores.
-
-Another alternative is allow irqbalance to control this somehow - but there's
-no standard irqbalance implementation/interface.
-
-FWIW the situation I saw more often is timer stuck on a core because the task
-that woke up there armed it and by default it ends up on the same core. I am
-not sure under what conditions we migrate timers, but I seem to remember it
-wants to try to allow the core to enter idle state and looks for another one
-that is active. I think a better logic is to nominate a core or set of cores to
-handle timers always - which might be also the right thing to do rather than
-come up with smart logic on how to migrate. Let the user 'affine' the handling
-to specific cores only which might be the simplest thing to do. I can vouche
-most folks will just say never run on these specific cores and current logic
-might be good enough as-is then.
-
-IOW, keep the current migration logic, but give the users the ability to
-exclude cores from ever handling timers. I think the root cause of the problem
-here is that you want to keep some cores really quite and handling any
-interrupts, not just timers, is bad. But not sure timers can be controlled as
-well like other interrupts and that what might be missing today.
-
-(I haven't spent time to verify few things, so apologies for lack of accuracy
-and making assumptions here and there)
-
+> In preparation for modem support, add a flag to enable this new power
+> sequence for SoCs that need it.
 > 
-> That problem is not easy to solve...
+> Signed-off-by: Nikolai Burov <nikolai.burov@jolla.com>
+> ---
+>   drivers/pmdomain/mediatek/mtk-pm-domains.c | 54 +++++++++++++++++++++++++++---
+>   drivers/pmdomain/mediatek/mtk-pm-domains.h |  1 +
+>   include/linux/soc/mediatek/mtk_sip_svc.h   |  3 ++
+>   3 files changed, 53 insertions(+), 5 deletions(-)
 > 
-> > 
-> > [1] nvidia grace e.g. has capacities of
-> > 994
-> > 997
-> > 1000
-> > 1002
-> > 1005
-> > 1008
-> > 1010
-> > 1013
-> > 1016
-> > 1018
-> > 1021
-> > 1024
-> 
-> Urgh, who needs that?
+> diff --git a/drivers/pmdomain/mediatek/mtk-pm-domains.c b/drivers/pmdomain/mediatek/mtk-pm-domains.c
+> index e1cfd4223473..56437b32b252 100644
+> --- a/drivers/pmdomain/mediatek/mtk-pm-domains.c
+> +++ b/drivers/pmdomain/mediatek/mtk-pm-domains.c
+> @@ -57,6 +57,12 @@
+>   
+>   #define MTK_SIP_KERNEL_HWCCF_CONTROL	MTK_SIP_SMC_CMD(0x540)
+>   
+> +/* Power domain commands for MTK_SIP_KERNEL_CCCI_CONTROL */
+> +enum {
+> +	MTK_MD_MTCMOS_ENABLE = 18,
+> +	MTK_MD_MTCMOS_DISABLE = 19,
+> +};
+> +
+>   struct scpsys_domain {
+>   	struct generic_pm_domain genpd;
+>   	const struct scpsys_domain_data *data;
+> @@ -615,6 +621,34 @@ static void scpsys_modem_pwrseq_off(struct scpsys_domain *pd)
+>   		regmap_clear_bits(scpsys->base, pd->data->ctl_offs, PWR_RST_B_BIT);
+>   }
+>   
+> +static bool scpsys_modem_sec_poll(unsigned long cmd)
+> +{
+> +	struct arm_smccc_res res;
+> +
+> +	arm_smccc_smc(MTK_SIP_KERNEL_CCCI_CONTROL, cmd, 1, 0, 0, 0, 0, 0, &res);
+> +
+> +	return res.a0 == 0;
+> +}
+> +
+> +static int scpsys_modem_sec_power_on(bool on)
+> +{
+> +	struct arm_smccc_res res;
+> +	unsigned long cmd = on ? MTK_MD_MTCMOS_ENABLE : MTK_MD_MTCMOS_DISABLE;
+> +	bool tmp;
+> +	int ret;
+> +
+> +	arm_smccc_smc(MTK_SIP_KERNEL_CCCI_CONTROL, cmd, 0, 0, 0, 0, 0, 0, &res);
+> +	if (res.a0 == 0)
+> +		return 0;
+> +
+> +	ret = readx_poll_timeout(scpsys_modem_sec_poll, cmd, tmp, tmp,
+> +				 MTK_POLL_DELAY_US, MTK_POLL_TIMEOUT);
+> +	if (ret < 0)
+> +		return ret;
+> +
+> +	return 0;
+> +}
+> +
+>   static int scpsys_power_on(struct generic_pm_domain *genpd)
+>   {
+>   	struct scpsys_domain *pd = container_of(genpd, struct scpsys_domain, genpd);
+> @@ -633,7 +667,9 @@ static int scpsys_power_on(struct generic_pm_domain *genpd)
+>   		regmap_clear_bits(scpsys->base, pd->data->ext_buck_iso_offs,
+>   				  pd->data->ext_buck_iso_mask);
+>   
+> -	if (MTK_SCPD_CAPS(pd, MTK_SCPD_MODEM_PWRSEQ))
+> +	if (MTK_SCPD_CAPS(pd, MTK_SCPD_MODEM_SECURE))
+> +		ret = scpsys_modem_sec_power_on(true);
+> +	else if (MTK_SCPD_CAPS(pd, MTK_SCPD_MODEM_PWRSEQ))
+>   		ret = scpsys_modem_pwrseq_on(pd);
 
-They are all the same uArch though no? i think important pre-condition to
-distinguish between CPUs is that this is asymmetric system, not symmetric with
-weird boost freqs availability.
+So we can have either cap MTK_SCPD_MODEM_SECURE or MTK_SCPD_MODEM_PWRSEQ but...
+
+[...]
+
+> @@ -719,10 +761,12 @@ static int scpsys_power_off(struct generic_pm_domain *genpd)
+>   	if (ret < 0)
+>   		return ret;
+>   
+> -	if (MTK_SCPD_CAPS(pd, MTK_SCPD_MODEM_PWRSEQ))
+> -		scpsys_modem_pwrseq_off(pd);
+> -	else
+> -		scpsys_ctl_pwrseq_off(pd);
+> +	if (!MTK_SCPD_CAPS(pd, MTK_SCPD_MODEM_SECURE)) {
+> +		if (MTK_SCPD_CAPS(pd, MTK_SCPD_MODEM_PWRSEQ))
+
+... here it seems that a power domain could have both caps set. I suppose this 
+second case does not exist, but code should treat just one of the two cases 
+(mutual exclusive or not mutual exclusive).
+
+Regards,
+Matthias
