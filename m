@@ -1,86 +1,87 @@
 Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 06A4E3559D6
-	for <linux-pm@vger.kernel.org>; Tue, 14 Jul 2026 17:17:28 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DD0CD39CD03
+	for <linux-pm@vger.kernel.org>; Tue, 14 Jul 2026 17:17:38 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1784049450; cv=none; b=IThlqh7+876MYnAoFJymmuz9XBkX7axU1ntBMtt9/NNBLA9NbEY7jq41zf1PgYA7ZniPx9wUHeAbtymCcor4orCEknbT3bZPPWEZ0IhOGCPjfrowBFNCgyCVmeH9ohWCi2MfhC6BLhiZzWAdV6Bu/pKQjdyfAUT96OQQ7YIyUjA=
+	t=1784049460; cv=none; b=R8aLkMapOx6acRMFiLKRkWG1xTRHx6mh9oUoClUYn6KJl91GcinfuawfvMifPHHvt52IuP7QHAB55USc1baQU5oHyTyZlPNEmTZIFFWeFEE8fFCTgOUYRXXeDDg7P72amjWgGsqfFmdeZWUOJIeZ7lU5jDXKwM8nuoUFjAyzuj0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1784049450; c=relaxed/simple;
-	bh=ctQvLTJKfrXPTV9ySg7oSX/KcelXwjfNCdBeL0pLEu4=;
+	s=arc-20240116; t=1784049460; c=relaxed/simple;
+	bh=WwBfb2ZvreUMO78WFLpkZieBbDtffp1obNxsGq+C7tA=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=SPxOy7UmUW32Svm/JJjGE1EMa4MtehjO3kO4rwcgWAB/3Cbdr9XfH2WEYGRaK90GGAA1YYpatJip9+9UY4agSRlq3bAuGciAaP94D08ZDkwlOXTdNTzSTImOu1eCJFeM+IeuZdNiY/MgOpqfCE4Tx5f8nbsNPK45Us4WJLPyU5o=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=FSxVkGw2; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=RI0Z0ZSq; arc=none smtp.client-ip=205.220.168.131
+	 In-Reply-To:To:Cc; b=H+uqytN23VJvX08H0tREUDyqjY07F+Jp8d5s4wIjjMZUYH5bcSolwH0qccgw17jz6AheXNBGNO74zlrrf/vR+4jQIjGEeMTuljHtvVOpmAXwjYm0kR0X555zQf/lUJ/MZeyVyOFN+NELKsFhD/ZJPSLgCvMGGM20loKYERB1Ze4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=XIpxSKZz; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=gOrAFxJH; arc=none smtp.client-ip=205.220.168.131
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="FSxVkGw2";
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="RI0Z0ZSq"
-Received: from pps.filterd (m0279867.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 66EHAZAN1206185
-	for <linux-pm@vger.kernel.org>; Tue, 14 Jul 2026 17:17:28 GMT
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="XIpxSKZz";
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="gOrAFxJH"
+Received: from pps.filterd (m0279866.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 66EG6w1h852643
+	for <linux-pm@vger.kernel.org>; Tue, 14 Jul 2026 17:17:38 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
 	cc:content-transfer-encoding:content-type:date:from:in-reply-to
 	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	zFHN2qyJOM1iC26km9OAgCA4h/0y1+tM0gE8VpSZk3A=; b=FSxVkGw2uYfpzVjk
-	oYLqIGkjTfxBsP/xuJL8NAT8OuDiLN8J9Sf3u+u91wCqhhUsUqy34HNqsEOvUZRz
-	4DClD0BuMasCT3MX6+EO4RGQi4UhUwWGCFMZDrdb/3f8S3CW051RzenA4Jt8uPyn
-	AbO5tNiKkY/thNjp013Dhe+wGdHaarfH08Lv7X0eVhqpUqSTXOtu99elPqZFKzsI
-	e9KrOf6VZKaROjALQXnHV6jLaMja3XAsE+GHGyeFe9fiyGll0wbg3UjGaHUryrY7
-	xL0jyMYoJPhsbcSsmmL48mWBTaSqlmRkOy92PfbVNth3bMKcjX4/M/HOjYxBENjC
-	KHaFTA==
-Received: from mail-pf1-f200.google.com (mail-pf1-f200.google.com [209.85.210.200])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4fds9hr0s5-1
+	kCPxF6uGGYpLkRljUCIn74j0oFDyhw53Efw/4CN1qbA=; b=XIpxSKZzSXAIx5nx
+	dtyL7UV4jeEyKghqFFtLH3t5mpBl07+HTmnAKBLfP9lEyClC7K2tFozz+8w0k4Kn
+	Gayt6A6bXKY3wBDjW4omOdKzETpNcs8GaZWHborsUYjqdkqUx0fwdLPEaG68Jcef
+	gmwAyj2/e84tKuEX27QBum421jnCugUcfhXG9dbEDLoCC/tO2ay7Yrx+W/T17S1Z
+	XD5h7cyoKqLjuspwgpQS91h193NVxA0UhAiUAKuqVq1oh2ZfpOyB+B++M0cTy8XW
+	KStsZ+MJYFlezyol2ypXVvXMHR9670IrvbilNOqinDAG6OFUaI56PZHz/5SZqMbv
+	JDou+w==
+Received: from mail-pf1-f197.google.com (mail-pf1-f197.google.com [209.85.210.197])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4fdmkk1dph-1
 	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Tue, 14 Jul 2026 17:17:28 +0000 (GMT)
-Received: by mail-pf1-f200.google.com with SMTP id d2e1a72fcca58-847a00bcbd0so6011478b3a.0
-        for <linux-pm@vger.kernel.org>; Tue, 14 Jul 2026 10:17:28 -0700 (PDT)
+	for <linux-pm@vger.kernel.org>; Tue, 14 Jul 2026 17:17:38 +0000 (GMT)
+Received: by mail-pf1-f197.google.com with SMTP id d2e1a72fcca58-84870e7f498so5352506b3a.3
+        for <linux-pm@vger.kernel.org>; Tue, 14 Jul 2026 10:17:38 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1784049448; x=1784654248; darn=vger.kernel.org;
+        d=oss.qualcomm.com; s=google; t=1784049457; x=1784654257; darn=vger.kernel.org;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :content-type:mime-version:subject:date:from:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=zFHN2qyJOM1iC26km9OAgCA4h/0y1+tM0gE8VpSZk3A=;
-        b=RI0Z0ZSq6wn1aTVqatT+i8zYgnB+ICjhmu3tSHVEyrt+vmQ5SAlnhLJvINSLkYhDnq
-         XlIKPP/2BkZkhhYbyuUTY7maKtGC4Dn8J+H2W0mNvigc66cZvQGIoGpEvfYgpRGaj7+t
-         sH1Jr80JPszK+q+Y44KDMpQfb6RPTdFVqdLfCwUNPZnRaWEDfgiUtzd7376MmYq8VAss
-         rcS+ekIFu7upCEMq+Jf+F3eIC8guIZEZKeTxSvtB2krK9uNLANW5/lAti7xwn6Mf4Wzs
-         TWdlHNuCt6DMdWUhcz3MfUCQaYMc6zBeqX+PFSmL5aROrjNKesAXyAwFq8JqSZiQyj6W
-         IYgw==
+        bh=kCPxF6uGGYpLkRljUCIn74j0oFDyhw53Efw/4CN1qbA=;
+        b=gOrAFxJH5T81kbQh1CZNdcvUmL1IKUaAKc6bHFleCyL5PjBkScABY++JRYcHqxUIQX
+         +ZKBgGblkr08yWAVZA4jILmkqriwVLBMaNIcxBW9tMDChk1RKftyBTUiZqazh3WNadxy
+         wklXT+d+V4yTiwLdNbS2E01fYJ9rePbkDfl7QvCxhSP6aO5a/YrcVpliU6xsYQuohM/A
+         /tACAJjTp2J5n3gjtNbwVIP2PkNWASCPI1aYfvtYoe4T+6EfrE/dOvUQ2BQe1rNUzDuW
+         xYbmmjkXTXMgn/nMfUaFsf43rnZPLf1JzBvbGoG00KWG9fxaxIJ1S7rSLb52UQwDcM8n
+         +XfQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1784049448; x=1784654248;
+        d=1e100.net; s=20251104; t=1784049457; x=1784654257;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :content-type:mime-version:subject:date:from:x-gm-gg
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=zFHN2qyJOM1iC26km9OAgCA4h/0y1+tM0gE8VpSZk3A=;
-        b=lMq/xJXiJnOZ9IFFIDGUQY71keeG79/P2H87yAI7QdZYjcX4KL+9o3qNxKM+gD+nVz
-         MEdJNUzTL9ICkDXk6vbBiwm3JFGpaATFO2Sw6NbngMJQTe2YThofy3dnGQAQmTKdVFO6
-         N3Afy1hxrEMma1snp4G0t9MQo9bwOL+/DvSC8WvfubnVGYm6iSuyG4uFmslO4cXJJA/S
-         h6zYGuJF6qUTz5Fxp0kYjbmIhR+UW0pkRyrjDH3WFhxkLoeAjtS7z1zUBIXFbZArlT1x
-         nufOOPJ/Rwq/IZ9vB1WEHuvfULPGYjFHbmn9OggaixTd4eOSgesj2WEuMYXx0KjI7Jyw
-         DOGg==
-X-Gm-Message-State: AOJu0YxjqHW8cpB9kO1aE8gyHc9+8TiMJN2yje0D9/9GnCT0e5hzuvQn
-	BsMR2kFR0vg5285veCktarWKhduIq5tiusfuaOpLtCqK7M+BcJWnbAXXtX3rbTXFhk61L5HVo5V
-	eEgSG7luk3Nz8w+NSDMcHiDHLUUCwP6ojVz+ZpKgUPKk89gyKOjCu/CwElEgJQg==
-X-Gm-Gg: AfdE7cm6tkMDDb1CdllQyrdWvhBeLTG11RdRMgDsyXLmknDnZLn0cqUmG3f8fOahwC5
-	0N0UV51kxhHEmbpvtkQJtBGqmSH/yvzjdENVoFOQDY+3wYqhimJsUdvQLYM2u8PqdE3Ler9diKP
-	qUCkFJ0rGpEt5E43IzxGk2N4d0Latqn8y1sc9YBD6E9wSYf/91i/TAdbNH8HLvbWH0W6ibO1obD
-	ZGAT+UPMapNRHE7GMv/BNxukdXQPBk9MQtkccfANDXtI8zHFndBV7yYUhaJyAUAGRhNSyCwOWGS
-	mJUz16zrF/SaAWjXdo4pXkVmJCe9NP3lIcTfbW/uoF4TyjkDpHkzSQlcMKJ4cwJjMdPkg+fLUri
-	wGwNhT7JIw38ZiJBwAxwpO1ixrTSGNVkwFa4gDoHq+atu580=
-X-Received: by 2002:a05:6a00:3e24:b0:847:86b0:888c with SMTP id d2e1a72fcca58-8488971d94bmr13898043b3a.48.1784049447541;
-        Tue, 14 Jul 2026 10:17:27 -0700 (PDT)
-X-Received: by 2002:a05:6a00:3e24:b0:847:86b0:888c with SMTP id d2e1a72fcca58-8488971d94bmr13897994b3a.48.1784049446949;
-        Tue, 14 Jul 2026 10:17:26 -0700 (PDT)
+        bh=kCPxF6uGGYpLkRljUCIn74j0oFDyhw53Efw/4CN1qbA=;
+        b=htYuKVBKkSSCK7NjOB7F7qzv0XwQWAR5+zSAjRmKH8iLLAqsLc38O6L6VFHI1mseZj
+         9qxakwe4JZhafbESDcw38y/zXX6nr3strOrcB9p24RcYW9fjWUdyZRu9Tt1N0cEHCa7w
+         Z19jakBeOIS5je9O7ixBLhRFlUTpxHHTlzOHTy4Ur81PB94k9dyixMytw4Hu5FqxlDF3
+         88579p3068nWjes8JAsGL9L7lk2kuRMG9Hz3koOMbq8FMX43QsQgQFL/0QCuBin50DaU
+         aTGKU9erPIKtsjeM64PBzbSNjOh3K3e//19TfjpdyCb7NIOrcOFWWkydTPr8tAsI5jIn
+         V4Uw==
+X-Gm-Message-State: AOJu0YydOwvlGA1WiU+bSaOX29N2iQ7lKNkZoMhNAiXZpPFHRW0KP7Us
+	q7UeN+eYGI+fxu89VGIRXoiV5INWd2zoie/xKUe1rOwA/ZdKnl1CYuv8yralyZxBtqHLJMRZUjX
+	vIhEYd1zPq/wbisXNjFay0LpGDyFkuqfAYVZpCCqcvK8NJf499sJEejvqQbH6Yw==
+X-Gm-Gg: AfdE7cmMYjbCA/VmzNb+yr0kI85GF/7tdkP/AMWLpiVMHgbsYPFj/IT7JgZC6s0o5Xn
+	5GOe4/C7PRrj9LOauIHl9GWSPK5AKRRjaEPRkEqTLQvIgCjXyugPb1lC7yJ08lhIardKrvRJDXk
+	zmERf/9D9udDpFjsVbqovSWNe0v1iCTC30/+Q+eJ3GWNABQViKucbF4LWqub3oMHaYHPnyibCxu
+	w7YEp6GuLHvNUCLHj2JcQf1Fkh48prsrkp8zvWxcVTKt4D40Vv28OX+XozNTp9NFB+0ZUKF60oV
+	9jioYHfrNV0A/5k53275dF/yi2ml//R+trnkXIKdZLUr3PQC4z8Ta5g+Cc9mPdvSzDgQR4KIXcu
+	n+9coLdPAt9HK8EfY/XYCUzHdcZYb7FEnE1Xlfx2gxb/F4g0=
+X-Received: by 2002:a05:6a00:1f06:b0:846:8b22:4933 with SMTP id d2e1a72fcca58-848896612c6mr12636118b3a.17.1784049457289;
+        Tue, 14 Jul 2026 10:17:37 -0700 (PDT)
+X-Received: by 2002:a05:6a00:1f06:b0:846:8b22:4933 with SMTP id d2e1a72fcca58-848896612c6mr12636064b3a.17.1784049456631;
+        Tue, 14 Jul 2026 10:17:36 -0700 (PDT)
 Received: from hu-spratap-hyd.qualcomm.com ([202.46.22.19])
-        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-84a5bfcc2e5sm731773b3a.56.2026.07.14.10.17.17
+        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-84a5bfcc2e5sm731773b3a.56.2026.07.14.10.17.27
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 14 Jul 2026 10:17:26 -0700 (PDT)
+        Tue, 14 Jul 2026 10:17:36 -0700 (PDT)
 From: Shivendra Pratap <shivendra.pratap@oss.qualcomm.com>
-Date: Tue, 14 Jul 2026 22:46:32 +0530
-Subject: [PATCH v23 04/13] firmware: psci: Introduce command-based resets
+Date: Tue, 14 Jul 2026 22:46:33 +0530
+Subject: [PATCH v23 05/13] mfd: psci-mfd: Add PSCI MFD driver for
+ cpuidle-psci-domain cell
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -89,7 +90,7 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260714-arm-psci-system_reset2-vendor-reboots-v23-4-e7453c548c21@oss.qualcomm.com>
+Message-Id: <20260714-arm-psci-system_reset2-vendor-reboots-v23-5-e7453c548c21@oss.qualcomm.com>
 References: <20260714-arm-psci-system_reset2-vendor-reboots-v23-0-e7453c548c21@oss.qualcomm.com>
 In-Reply-To: <20260714-arm-psci-system_reset2-vendor-reboots-v23-0-e7453c548c21@oss.qualcomm.com>
 To: Sebastian Reichel <sre@kernel.org>, Mark Rutland <mark.rutland@arm.com>,
@@ -121,279 +122,214 @@ Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
         Andre Draszik <andre.draszik@linaro.org>,
         Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
         Kathiravan Thirumoorthy <kathiravan.thirumoorthy@oss.qualcomm.com>,
-        mfd@lists.linux.dev, Srinivas Kandagatla <srini@kernel.org>
+        mfd@lists.linux.dev, Srinivas Kandagatla <srini@kernel.org>,
+        Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
 X-Mailer: b4 0.15.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1784049398; l=8392;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1784049398; l=5547;
  i=shivendra.pratap@oss.qualcomm.com; s=20250710; h=from:subject:message-id;
- bh=ctQvLTJKfrXPTV9ySg7oSX/KcelXwjfNCdBeL0pLEu4=;
- b=SOUs+g6IvT98LaENeem1JD2kteiBbRMeyl3Y6VWdoJ2jkc9hBDg+UwF7+zs1bhbk+6Hx582Zb
- eqzB67lz5wMDeYTxYesBdv47rKnUS3QCBc8BYfNfaPMXViQeoX8ZXGQ
+ bh=WwBfb2ZvreUMO78WFLpkZieBbDtffp1obNxsGq+C7tA=;
+ b=WEdIWqidYL4gyeVT9/byS7p/mXPDZVnitOfzgIAtnnqC5h6RRMdVeDn5ckn8JBbNV5EfrHuSs
+ BVz4nGfXAeXApyajcnFqdc8bYpM+ClQFd6+S+1kCDr/2nmCXDqDEKl8
 X-Developer-Key: i=shivendra.pratap@oss.qualcomm.com; a=ed25519;
  pk=CpsuL7yZ8NReDPhGgq6Xn/SRoa59mAvzWOW0QZoo4gw=
-X-Authority-Analysis: v=2.4 cv=Ib+3n2qa c=1 sm=1 tr=0 ts=6a566f28 cx=c_pps
- a=mDZGXZTwRPZaeRUbqKGCBw==:117 a=fChuTYTh2wq5r3m49p7fHw==:17
+X-Proofpoint-GUID: GAVucTOzz6z2mFg7h3ABt74QmKTg3vfv
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzE0MDE3OCBTYWx0ZWRfX32lNcPTizUcW
+ zqzEJMxmkz5fXYoAiUeeJhsHSdJClw6MDkhShTIanx1novCtleW1bbza2ADzyl6eFlMl6gfQJ8C
+ juYhnd9uFg+TzqtjTrQPDlsez5+GXVAVy2Ab2v13cLlr5tkiP6+DiFAOdOCZVIejGX8XdQFFaDh
+ oV4eL/O63sN7dNHu00OuSAhKK2gbdm5yjSfUpju9tdq54KN9ItFOCztncg1IiR8RVIs2Q4z6767
+ LUuuft7ejShThJwhR8Ox9rA5dEABfmq9zOzLmAsCUi6EL3UVw8ZmYy/HXQCCeOhPjJ5SEvoiV2E
+ KqcAsHJvOCnc/WLcFu5Zi1QEM/tUGDK7clHE0vEem2L1KbzZEuTTuKU2joR3f2zlm+wCEKgC9fY
+ 577sAJFQsieNy0Us9/9QHAUH4hMolbcSw5LkViKujXIn1sCVXM/eYfymOcdvTxuikrC7HuMwtv2
+ coyDSILKx+RURJPba/w==
+X-Authority-Analysis: v=2.4 cv=NszhtcdJ c=1 sm=1 tr=0 ts=6a566f32 cx=c_pps
+ a=rEQLjTOiSrHUhVqRoksmgQ==:117 a=fChuTYTh2wq5r3m49p7fHw==:17
  a=IkcTkHD0fZMA:10 a=RAioF0-LDSMA:10 a=s4-Qcg_JpJYA:10
- a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=eoimf2acIAo5FJnRuUoq:22
- a=EUspDBNiAAAA:8 a=g7gMiRdxR7lOOi1eyjcA:9 a=QEXdDO2ut3YA:10
- a=zc0IvFSfCIW2DFIPzwfm:22
-X-Proofpoint-ORIG-GUID: dAEO1bUka599_6L8ik_SIZazmdf45TGc
-X-Proofpoint-Spam-Info: AW1haW4tMjYwNzE0MDE3NyBTYWx0ZWRfX9EAjGitesJZm
- M6AUgzhSR74ef+mawcrsTalhhr+azRPiLntiIRQYOuAEjZ2T/AzlHfQI9J78w8cENgTBtC8FHxJ
- 0d5d7OXAPxqiqNYRfMz+ks0tz9P0X7Y=
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzE0MDE3NyBTYWx0ZWRfX+fii2eppGtJG
- CFIFIyyuva/O77X7gVhKWq6BsOMk5kukCrQRDMRpFUG4fhcL0o0wnHbE8RXlIlLI3t5+uDirQju
- 9RNE+L64jIK+meZc6KjtzaxIOusRVct2fEDd5QOkH/8u6pGIhQzfGefCp5EItXYD7Tp3pB9ou3o
- U9NVA25Qf/6nK5uzlyhYc/HesvhivO/pSNvsHm3Z8q+kGhUpH6rZjzwiFtrNqPZmsfTPNw4MbCP
- xM+L0H7R5tNAfH909gzuPJyV31iCzaKyH16DjUxnEt3uzoaXrEU+aS3m6ocuzqPC+0Afn3CBXwF
- HyjQyBXN1bDByPY8JCauT5mF8TZtjUK7jULZ4jlGIuG715K98oCMgbwraS7ocfChTKjL8T2KDU+
- yNA5GzTQmkVh6XLX2nUpfMhg5ynfMe4L03FCmAGcqnf7q6PLnLLwewIGlb7lcaPtpcD7a7FK/ik
- sJ3Aembu+tPt8DKQ0ig==
-X-Proofpoint-GUID: dAEO1bUka599_6L8ik_SIZazmdf45TGc
+ a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=YMgV9FUhrdKAYTUUvYB2:22
+ a=EUspDBNiAAAA:8 a=JfrnYn6hAAAA:8 a=wfThnEy5_2w5d1iZ5YkA:9 a=QEXdDO2ut3YA:10
+ a=2VI0MkxyNR6bbpdq8BZq:22 a=1CNFftbPRP8L7MoqJWF3:22
+X-Proofpoint-ORIG-GUID: GAVucTOzz6z2mFg7h3ABt74QmKTg3vfv
+X-Proofpoint-Spam-Info: AW1haW4tMjYwNzE0MDE3OCBTYWx0ZWRfX/M0z6o/OCrit
+ 0JYhv08Bc4LO/90OP9WERWgvns6/FzMg3HVPz3dQfQxDL7NZtcXV5WAmsagCCFzJJ0sgUf9dyRH
+ YOHzcJWgqLWwqGHQFyZ/mP8fr2yzI2g=
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.134,FMLib:17.12.100.49
  definitions=2026-07-14_04,2026-07-14_01,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- bulkscore=0 suspectscore=0 phishscore=0 malwarescore=0 adultscore=0
- impostorscore=0 clxscore=1015 spamscore=0 priorityscore=1501
- lowpriorityscore=0 classifier=typeunknown authscore=0 authtc= authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2606150000
- definitions=main-2607140177
+ priorityscore=1501 impostorscore=0 clxscore=1015 malwarescore=0 spamscore=0
+ phishscore=0 lowpriorityscore=0 bulkscore=0 adultscore=0 suspectscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2607140178
 
-PSCI currently supports only two resets - SYSTEM_RESET and SYSTEM_RESET2
-ARCH WARM reset. The reset patch is selected based on the Linux
-reboot_mode variable. The PSCI specification now includes SYSTEM_RESET2
-for vendor-specific resets but there's no mechanism to issue these
-through psci_sys_reset().
+PSCI has multiple kernel consumers, such as cpuidle-psci-domain.
+Currently, both the PSCI core driver and cpuidle-psci-domain bind
+directly to the same PSCI node "arm,psci-1.0". Additional consumers, if
+introduced, would also need to bind in the same way, leading to several
+drivers attached to a single device node.
 
-Add a command-based reset mechanism that allows external drivers to set
-the PSCI reset command by passing a reset_type and a cookie.
+Introduce a PSCI MFD driver that binds to "arm,psci-1.0" and registers
+PSCI child cells. As the first user, register cpuidle-psci-domain as a
+child cell.
 
-Add support for the following reset commands:
-  - SYSTEM_RESET2 vendor-specific resets.
-  - SYSTEM_RESET2 ARCH WARM reset and SYSTEM_RESET (reset_type = 0 and
-    cookie maps to psci_standard_resets).
-Unsupported commands fall back to the regular PSCI reset path.
+Update cpuidle-psci-domain to probe as an MFD child and use the parent
+PSCI node for power-domain traversal.
 
-Default to the existing reboot_mode-based reset flow unless a reset
-command is configured. If a kernel panic occurs after a reset command is
-set but before the final PSCI reset is issued, ignore the reset command
-and follow the normal reboot_mode-based reset path.
-
+Suggested-by: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
+Reviewed-by: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
 Signed-off-by: Shivendra Pratap <shivendra.pratap@oss.qualcomm.com>
 ---
- drivers/firmware/psci/psci.c | 106 ++++++++++++++++++++++++++++++++++++++++++-
- include/linux/psci.h         |  36 +++++++++++++++
- 2 files changed, 140 insertions(+), 2 deletions(-)
+ MAINTAINERS                           |  1 +
+ drivers/cpuidle/Kconfig.arm           |  1 +
+ drivers/cpuidle/cpuidle-psci-domain.c |  9 +-------
+ drivers/mfd/Kconfig                   | 12 ++++++++++
+ drivers/mfd/Makefile                  |  2 ++
+ drivers/mfd/psci-mfd.c                | 43 +++++++++++++++++++++++++++++++++++
+ 6 files changed, 60 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/firmware/psci/psci.c b/drivers/firmware/psci/psci.c
-index e73bae6cb23a..881819d09911 100644
---- a/drivers/firmware/psci/psci.c
-+++ b/drivers/firmware/psci/psci.c
-@@ -12,7 +12,9 @@
- #include <linux/debugfs.h>
- #include <linux/errno.h>
- #include <linux/linkage.h>
-+#include <linux/mutex.h>
- #include <linux/of.h>
-+#include <linux/panic.h>
- #include <linux/pm.h>
- #include <linux/printk.h>
+diff --git a/MAINTAINERS b/MAINTAINERS
+index dcffe9fc54f6..e1ed6abef62a 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -21575,6 +21575,7 @@ L:	linux-arm-kernel@lists.infradead.org (moderated for non-subscribers)
+ S:	Maintained
+ F:	Documentation/devicetree/bindings/arm/psci.yaml
+ F:	drivers/firmware/psci/
++F:	drivers/mfd/psci-mfd.c
+ F:	include/linux/psci.h
+ F:	include/uapi/linux/psci.h
+ 
+diff --git a/drivers/cpuidle/Kconfig.arm b/drivers/cpuidle/Kconfig.arm
+index b88b01aa5829..c5ecca0d7397 100644
+--- a/drivers/cpuidle/Kconfig.arm
++++ b/drivers/cpuidle/Kconfig.arm
+@@ -36,6 +36,7 @@ config ARM_PSCI_CPUIDLE_DOMAIN
+ 	bool "PSCI CPU idle Domain"
+ 	depends on ARM_PSCI_CPUIDLE
+ 	depends on PM_GENERIC_DOMAINS_OF
++	depends on MFD_PSCI
+ 	select DT_IDLE_GENPD
+ 	default y
+ 	help
+diff --git a/drivers/cpuidle/cpuidle-psci-domain.c b/drivers/cpuidle/cpuidle-psci-domain.c
+index b9e4ad7d43a3..a2d01810f295 100644
+--- a/drivers/cpuidle/cpuidle-psci-domain.c
++++ b/drivers/cpuidle/cpuidle-psci-domain.c
+@@ -17,7 +17,6 @@
+ #include <linux/pm_runtime.h>
  #include <linux/psci.h>
-@@ -51,6 +53,14 @@ static int resident_cpu = -1;
- struct psci_operations psci_ops;
- static enum arm_smccc_conduit psci_conduit = SMCCC_CONDUIT_NONE;
+ #include <linux/slab.h>
+-#include <linux/string.h>
  
-+struct psci_system_reset_cmd {
-+	u32 reset_type;
-+	u64 cookie;
-+};
-+
-+static struct psci_system_reset_cmd reset_cmd;
-+static DEFINE_MUTEX(reset_cmd_mutex);
-+
- bool psci_tos_resident_on(int cpu)
- {
- 	return cpu == resident_cpu;
-@@ -80,6 +90,62 @@ static u32 psci_cpu_suspend_feature;
- static bool psci_system_reset2_supported;
- static bool psci_system_off2_hibernate_supported;
- 
-+static u32 psci_get_sys_reset_fn(void)
-+{
-+	switch (reset_cmd.cookie) {
-+	case PSCI_SYSTEM_RESET2_ARCH_WARM_RESET:
-+		if (psci_system_reset2_supported)
-+			return PSCI_FN_NATIVE(1_1, SYSTEM_RESET2);
-+		return 0;
-+	case PSCI_SYSTEM_RESET_COLD_RESET:
-+		return PSCI_0_2_FN_SYSTEM_RESET;
-+	default:
-+		return 0;
-+	}
-+}
-+
-+/** psci_set_reset_cmd() - Configure PSCI reset command
-+ * @reset_type: SYSTEM_RESET2 vendor-specific reset_type as defined by
-+ *		firmware, or 0 for standard resets
-+ * @cookie: SYSTEM_RESET2 vendor-specific cookie as defined by firmware or one
-+ *		of enum psci_standard_resets when @reset_type is set to 0
-+ *
-+ * Supported commands:
-+ * - PSCI SYSTEM_RESET2 vendor-specific reset:
-+ *   - @reset_type and @cookie must follow platform-specific SYSTEM_RESET2
-+ *     vendor-specific resets.
-+ * - Standard reset selector:
-+ *   - @reset_type must be 0.
-+ *   - @cookie must be one of enum psci_standard_resets.
-+ *
-+ * This is an in-kernel helper intended for built-in reboot flow callers.
-+ * reset command can be set only one time per boot cycle.
-+ *
-+ * Return: 0 on success, -EINVAL if both inputs are zero, -EBUSY if reset
-+ * command is already set.
-+ */
-+int psci_set_reset_cmd(u32 reset_type, u64 cookie)
-+{
-+	if (!reset_type && !cookie)
-+		return -EINVAL;
-+
-+	scoped_guard(mutex, &reset_cmd_mutex) {
-+		if (reset_cmd.reset_type || reset_cmd.cookie)
-+			return -EBUSY;
-+
-+		reset_cmd.reset_type = reset_type;
-+		reset_cmd.cookie = cookie;
-+	}
-+
-+	return 0;
-+}
-+
-+bool psci_has_system_reset2_support(void)
-+{
-+	return psci_system_reset2_supported;
-+}
-+EXPORT_SYMBOL_GPL(psci_has_system_reset2_support);
-+
- static inline bool psci_has_ext_power_state(void)
- {
- 	return psci_cpu_suspend_feature &
-@@ -306,8 +372,24 @@ static int get_set_conduit_method(const struct device_node *np)
- 	return 0;
- }
- 
--static int psci_sys_reset(struct notifier_block *nb, unsigned long action,
--			  void *data)
-+static void psci_handle_reset_cmd(void)
-+{
-+	u32 psci_sys_reset_fn;
-+
-+	if ((reset_cmd.reset_type & PSCI_1_1_RESET_TYPE_VENDOR_START) &&
-+	    psci_system_reset2_supported) {
-+		/* PSCI SYSTEM_RESET2 Vendor-specific reset */
-+		invoke_psci_fn(PSCI_FN_NATIVE(1_1, SYSTEM_RESET2),
-+			       reset_cmd.reset_type, reset_cmd.cookie, 0);
-+	} else {
-+		/* Retrieve the psci reset function from reset_cmd */
-+		psci_sys_reset_fn = psci_get_sys_reset_fn();
-+		if (!reset_cmd.reset_type && psci_sys_reset_fn)
-+			invoke_psci_fn(psci_sys_reset_fn, 0, 0, 0);
-+	}
-+}
-+
-+static void psci_handle_reboot_mode(void)
- {
- 	if ((reboot_mode == REBOOT_WARM || reboot_mode == REBOOT_SOFT) &&
- 	    psci_system_reset2_supported) {
-@@ -320,6 +402,26 @@ static int psci_sys_reset(struct notifier_block *nb, unsigned long action,
- 	} else {
- 		invoke_psci_fn(PSCI_0_2_FN_SYSTEM_RESET, 0, 0, 0);
+ #include "cpuidle-psci.h"
+ #include "dt_idle_genpd.h"
+@@ -122,14 +121,9 @@ static void psci_pd_remove(void)
  	}
-+}
-+
-+static int psci_sys_reset(struct notifier_block *nb, unsigned long action,
-+			  void *data)
-+{
-+	/* The function psci_handle_reboot_mode follows reboot_mode based
-+	 * reset flow and psci_handle_reset_cmd uses reset_cmd based reset flow.
-+	 *
-+	 * The reset_cmd is configured at the reboot_notifier phase. If a kernel
-+	 * panic occurs between the reboot_notifier and this final reset, skip the
-+	 * command-based reset and let reboot_mode drive the reset flow.
-+	 *
-+	 * The function psci_handle_reset_cmd invokes non-returning PSCI SYSTEM_RESET
-+	 * calls to reset the device. If it returns, either the reset failed, or the
-+	 * command was unsupported. Fallback to reboot_mode based reset flow.
-+	 */
-+	if ((reset_cmd.reset_type || reset_cmd.cookie) && !panic_in_progress())
-+		psci_handle_reset_cmd();
-+
-+	psci_handle_reboot_mode();
- 
- 	return NOTIFY_DONE;
  }
-diff --git a/include/linux/psci.h b/include/linux/psci.h
-index 4ca0060a3fc4..39fe0edec651 100644
---- a/include/linux/psci.h
-+++ b/include/linux/psci.h
-@@ -8,6 +8,7 @@
- #define __LINUX_PSCI_H
  
- #include <linux/arm-smccc.h>
-+#include <linux/errno.h>
- #include <linux/init.h>
- #include <linux/types.h>
+-static const struct of_device_id psci_of_match[] = {
+-	{ .compatible = "arm,psci-1.0" },
+-	{}
+-};
+-
+ static int psci_cpuidle_domain_probe(struct platform_device *pdev)
+ {
+-	struct device_node *np = pdev->dev.of_node;
++	struct device_node *np = pdev->dev.parent->of_node;
+ 	bool use_osi = psci_has_osi_support();
+ 	int ret = 0, pd_count = 0;
  
-@@ -21,6 +22,16 @@ bool psci_power_state_is_valid(u32 state);
- int psci_set_osi_mode(bool enable);
- bool psci_has_osi_support(void);
+@@ -181,7 +175,6 @@ static struct platform_driver psci_cpuidle_domain_driver = {
+ 	.probe  = psci_cpuidle_domain_probe,
+ 	.driver = {
+ 		.name = "psci-cpuidle-domain",
+-		.of_match_table = psci_of_match,
+ 	},
+ };
  
-+/**
-+ * enum psci_standard_resets - Standard reset selectors for PSCI reset
-+ * @PSCI_SYSTEM_RESET_COLD_RESET: Standard SYSTEM_RESET command.
-+ * @PSCI_SYSTEM_RESET2_ARCH_WARM_RESET: SYSTEM_RESET2 architectural warm reset.
+diff --git a/drivers/mfd/Kconfig b/drivers/mfd/Kconfig
+index 35f6e9b76d05..8b7fae5d3f5c 100644
+--- a/drivers/mfd/Kconfig
++++ b/drivers/mfd/Kconfig
+@@ -2368,6 +2368,18 @@ config MFD_KHADAS_MCU
+ 	  additional drivers must be enabled in order to use the functionality
+ 	  of the device.
+ 
++config MFD_PSCI
++	bool "PSCI MFD for psci child cells"
++	depends on ARM_PSCI_FW
++	depends on OF
++	select MFD_CORE
++	default y
++	help
++	  PSCI MFD registers PSCI child cells and exposes them as
++	  platform devices. Child drivers are probed only if enabled in the
++	  kernel configuration. Select this option whenever a supported PSCI
++	  child driver is selected.
++
+ config MFD_ACER_A500_EC
+ 	tristate "Support for Acer Iconia Tab A500 Embedded Controller"
+ 	depends on I2C
+diff --git a/drivers/mfd/Makefile b/drivers/mfd/Makefile
+index dd4bb7e77c33..7fa0112ec309 100644
+--- a/drivers/mfd/Makefile
++++ b/drivers/mfd/Makefile
+@@ -24,6 +24,8 @@ obj-$(CONFIG_MFD_EXYNOS_LPASS)	+= exynos-lpass.o
+ obj-$(CONFIG_MFD_GATEWORKS_GSC)	+= gateworks-gsc.o
+ obj-$(CONFIG_MFD_MACSMC)	+= macsmc.o
+ 
++obj-$(CONFIG_MFD_PSCI)		+= psci-mfd.o
++
+ obj-$(CONFIG_MFD_TI_LP873X)	+= lp873x.o
+ obj-$(CONFIG_MFD_TI_LP87565)	+= lp87565.o
+ obj-$(CONFIG_MFD_TI_AM335X_TSCADC)	+= ti_am335x_tscadc.o
+diff --git a/drivers/mfd/psci-mfd.c b/drivers/mfd/psci-mfd.c
+new file mode 100644
+index 000000000000..7affd6bb09dd
+--- /dev/null
++++ b/drivers/mfd/psci-mfd.c
+@@ -0,0 +1,43 @@
++// SPDX-License-Identifier: GPL-2.0-only
++/*
++ * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
 + */
-+enum psci_standard_resets {
-+	PSCI_SYSTEM_RESET_COLD_RESET = 1,
-+	PSCI_SYSTEM_RESET2_ARCH_WARM_RESET,
++
++#include <linux/mfd/core.h>
++#include <linux/module.h>
++#include <linux/of.h>
++#include <linux/platform_device.h>
++
++static const struct mfd_cell psci_cells[] = {
++	{
++		.name = "psci-cpuidle-domain",
++	},
 +};
 +
- struct psci_operations {
- 	u32 (*get_version)(void);
- 	int (*cpu_suspend)(u32 state, unsigned long entry_point);
-@@ -45,8 +56,33 @@ struct psci_0_1_function_ids get_psci_0_1_function_ids(void);
- 
- #if defined(CONFIG_ARM_PSCI_FW)
- int __init psci_dt_init(void);
-+/**
-+ * psci_set_reset_cmd() - Configure PSCI reset command
-+ * @reset_type: SYSTEM_RESET2 vendor-specific reset_type as defined by
-+ *		firmware, or 0 for standard resets
-+ * @cookie: SYSTEM_RESET2 vendor-specific cookie as defined by firmware or one
-+ *		of enum psci_standard_resets when @reset_type is set to 0
-+ *
-+ * Supported commands:
-+ * - PSCI SYSTEM_RESET2 vendor-specific reset:
-+ *   - @reset_type and @cookie must follow platform-specific SYSTEM_RESET2
-+ *     vendor-reset encoding.
-+ * - Standard reset selector:
-+ *   - @reset_type must be 0.
-+ *   - @cookie must be one of enum psci_standard_resets.
-+ *
-+ * This is an in-kernel helper intended for built-in reboot flow callers.
-+ * reset command can be set only one time per boot cycle.
-+ *
-+ * Return: 0 on success, -EINVAL if both inputs are zero, -EBUSY if reset
-+ * command is already set.
-+ */
-+int psci_set_reset_cmd(u32 reset_type, u64 cookie);
-+bool psci_has_system_reset2_support(void);
- #else
- static inline int psci_dt_init(void) { return 0; }
-+static inline int psci_set_reset_cmd(u32 reset_type, u64 cookie) { return 0; }
-+static inline bool psci_has_system_reset2_support(void) { return false; }
- #endif
- 
- #if defined(CONFIG_ARM_PSCI_FW) && defined(CONFIG_ACPI)
++static int psci_mfd_probe(struct platform_device *pdev)
++{
++	return devm_mfd_add_devices(&pdev->dev, PLATFORM_DEVID_AUTO, psci_cells,
++				   ARRAY_SIZE(psci_cells), NULL, 0, NULL);
++}
++
++static const struct of_device_id psci_mfd_of_match[] = {
++	{ .compatible = "arm,psci-1.0" },
++	{ }
++};
++
++static struct platform_driver psci_mfd_driver = {
++	.probe = psci_mfd_probe,
++	.driver = {
++		.name = "psci-mfd",
++		.of_match_table = psci_mfd_of_match,
++	},
++};
++
++static int __init psci_mfd_init(void)
++{
++	return platform_driver_register(&psci_mfd_driver);
++}
++
++core_initcall(psci_mfd_init);
++
++MODULE_LICENSE("GPL");
 
 -- 
 2.34.1
