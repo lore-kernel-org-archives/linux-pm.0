@@ -1,119 +1,167 @@
-Received: from mail-wr1-f53.google.com (mail-wr1-f53.google.com [209.85.221.53])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3F5C23502A6
-	for <linux-pm@vger.kernel.org>; Tue, 14 Jul 2026 13:37:10 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.53
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 14A7346AF3D;
+	Tue, 14 Jul 2026 13:43:35 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1784036231; cv=none; b=BPNNDysbXmBq5ZxEYJnesQEWSj2kcF++WNhrM99HZS6jts6Ydy7W1LHqDLsvdTBIENUNKGYTn70wcjLvDXG9Yhz9wTPRHWb366TUsnYQfxwlKLJELIHb1AaCAJtJpnz7NA2gYHP2BpnivvhmEn8BJzxFv3flJYavs/dEyGSq814=
+	t=1784036615; cv=none; b=jKfQ1QmbMAJUI4sxbNQUEWSmHncNQRkziAMzy9Rn4j74p9iWjq5mQJ1MEgtvuX+58DMe8HJQQ04YRBzQfRJOQgXYHiv91UIPdC6UNonemqNmN789Wo1GG5fSte1rmWDOpcGdrBeRschN1oY3vy/eb4R7Azz/lmCioNEWx/YgPGM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1784036231; c=relaxed/simple;
-	bh=TQ/F5wJkdoeg0crfUfU5t6VJUqBLg7vlSXVJxmnnn78=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=KLFr2utfi2j/tCt217h7cCQeBUjfXjSXx4eYon7nNESntOl99CbMdZpGKyf3PUaHDBKBoK2OTuFLLza+f4Va77AWve3E37vOG9IFn9jlMJhRjw7GjnUW1k3TX545qeHRhhYml5P5a8kSt9nMjh7pbyEoAtPgLv6F9aqN/C0FCFc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=layalina.io; spf=pass smtp.mailfrom=layalina.io; dkim=pass (2048-bit key) header.d=layalina-io.20251104.gappssmtp.com header.i=@layalina-io.20251104.gappssmtp.com header.b=j2IUa21O; arc=none smtp.client-ip=209.85.221.53
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=layalina.io
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=layalina.io
+	s=arc-20240116; t=1784036615; c=relaxed/simple;
+	bh=1U9eKn3e1R9WRTPL80rdKx+5CvBlv+RphrbjVBJDHf4=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=mLgraC2SvPCoRWT18jqIemYOtLNL8A32gtzDrq8WmyYK6hQpzK8kM8He7duipknjnRQUi+iGz5hhmn3TWKh/OkF24uw3sfgQLI4AMgL4HVNXM1Iuga1Zt1YFY8lVpbbeIJ0ROK25Mrg1/wmpqGzcgyQT41H6NZ7mpXzgBDkNPYM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=l9+8if/l; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=layalina-io.20251104.gappssmtp.com header.i=@layalina-io.20251104.gappssmtp.com header.b="j2IUa21O"
-Received: by mail-wr1-f53.google.com with SMTP id ffacd0b85a97d-47de008b020so543906f8f.1
-        for <linux-pm@vger.kernel.org>; Tue, 14 Jul 2026 06:37:10 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=layalina-io.20251104.gappssmtp.com; s=20251104; t=1784036228; x=1784641028; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=asew3vqgJR8atRVj6FkeBywlgWqbCgDZZtKWBL12bZw=;
-        b=j2IUa21O+vAEU22pqfVw/MIIBwUmMa0NH6ef+N5Mzyspk7w9F5HgkqoSjD6jgmR7eX
-         se68BBh2vyGfh7hGkmSvA5pflNMBvtVXD+AzLsYk259miSGXcD3S9z9Gq5oFTs347wL+
-         wBWvFWW+oCNHYosxFjK5RHzf1m8qr0YCbm3ETeFYNycAH8I95oB7xfJPK1fukY2NrvdB
-         wD64+kIoOgCOrKH26q3ok27y33o6AKNst5dYdWBHleBwSFTrkJlf7tpq9/GXCxLtHRSI
-         W9vaEeNI3PsTvmqs2TbdoQqVWoJ1pzFT6ncf627ZrOiZ3Y/uqR2y5kTTUrQ7ccAA112X
-         xk2A==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1784036228; x=1784641028;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=asew3vqgJR8atRVj6FkeBywlgWqbCgDZZtKWBL12bZw=;
-        b=n3qoinC724Zfk75BRfhZ4p1uFhjahtrgrgSjr6g8TqiBE8bgVISdZIS0F2JM0Lw9xM
-         QMqMBhM3QHehHqWcGgWqiLTdwOxgT4RzMp4jpqoACOvbMDY6/EEkzhnGa9Zbo+smR84X
-         nRFSjraZ39TbWdmwTreDIkma9NRfwS+cTuJGHEM1Su6YxIghVAdWawcy8aQzvGAQ1nZJ
-         vdAhdJprv5+dOZ1AB3sDJQiWDsHbhI47lV8SyyesMYGw3Z+pkSM4lwjaTWjxKGYXfZIh
-         A2ppaYCd826msLPnE53TF5LeEfQ9suhYfL5Ty74XBen+YEj6A5xpDYYEu/yS3BCy4nAc
-         WjhQ==
-X-Forwarded-Encrypted: i=1; AHgh+RpIyr9iw30AwxABfjPyGCRPdLR3caVWVVJN6MY9wt5oRmgtnrD7h6N4vP4lJeMMsySuHn8ZMQuRXA==@vger.kernel.org
-X-Gm-Message-State: AOJu0YyRMDcOzI+DveWUpXNtLB7t0ifwN497Sa9YvUyJN4JYV+aiETAU
-	ogigbGmoYuNo0XtF+o3QyGF+9J9nwvXHrW0RwNppndvIBF7lq3ZHovpVuNyk3PwwIHI=
-X-Gm-Gg: AfdE7clqb1b6N8NYd341RfwbBCp9hRT5f9BTrm5+PWmoTe3IfYyOLWzaDSQc74G33lT
-	wxYBSH/Ng0Y4D9+nOzlILP4fTu7MGeajCN6Uv6dRJmXrUT53G1bS5xOlY9iVQNA9/xzANkd590F
-	xXHjIOWBFQQNbts7oUopaLYUbqL0VoEHOgjr0cWz/tcCmaWtJMTKGwJ4Ts0g8E7EUlnjGU4Aomm
-	iXjpybgnyTrrTDWwU0cb23nH85M/2eck/l3iNsSdpcCJh4MSq6HMw/2dgUJ89CB1GKlbaWBZeeq
-	aL0Toq9ZawZLgYp9SI8fUpcKpa7EuuNDk05bA1+8w667naQH5OrWbaPoAjozlVAjeSQDreRGlZF
-	2CD6VDf8B/gDrgBnya/b/50TLEzdZ4AuBiaPYNpRFubOvt4Q5l4uORTmxE8o8YEj2xsb2KhqeCz
-	wAj1VQo90=
-X-Received: by 2002:a05:6000:250a:b0:473:6590:c42a with SMTP id ffacd0b85a97d-47f2dc86338mr17485204f8f.9.1784036228303;
-        Tue, 14 Jul 2026 06:37:08 -0700 (PDT)
-Received: from airbuntu ([149.50.209.149])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-47f464c9cc3sm8289819f8f.35.2026.07.14.06.37.05
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 14 Jul 2026 06:37:07 -0700 (PDT)
-Date: Tue, 14 Jul 2026 14:37:04 +0100
-From: Qais Yousef <qyousef@layalina.io>
-To: Vincent Guittot <vincent.guittot@linaro.org>
-Cc: Ingo Molnar <mingo@kernel.org>, Peter Zijlstra <peterz@infradead.org>,
-	"Rafael J. Wysocki" <rafael@kernel.org>,
-	Viresh Kumar <viresh.kumar@linaro.org>,
-	Juri Lelli <juri.lelli@redhat.com>,
-	Steven Rostedt <rostedt@goodmis.org>,
-	John Stultz <jstultz@google.com>,
-	Dietmar Eggemann <dietmar.eggemann@arm.com>,
-	Tim Chen <tim.c.chen@linux.intel.com>,
-	"Chen, Yu C" <yu.c.chen@intel.com>,
-	Thomas Gleixner <tglx@kernel.org>, linux-kernel@vger.kernel.org,
-	linux-pm@vger.kernel.org
-Subject: Re: [PATCH v2 03/13] sched/pelt: Add a new function to approximate
- runtime to reach given util
-Message-ID: <20260714133704.hjwlprhutfbatqht@airbuntu>
-References: <20260504020003.71306-1-qyousef@layalina.io>
- <20260504020003.71306-4-qyousef@layalina.io>
- <CAKfTPtBxVZ-eB=sjj_ry3=BBHrCt5JUq0dbBS0VxLqi3LBfQ7Q@mail.gmail.com>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="l9+8if/l"
+Received: by smtp.kernel.org (Postfix) with ESMTPS id C2364C2BCF5;
+	Tue, 14 Jul 2026 13:43:34 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1784036614;
+	bh=1U9eKn3e1R9WRTPL80rdKx+5CvBlv+RphrbjVBJDHf4=;
+	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
+	b=l9+8if/lVDP0LPPFH/EhKNUjGjT6VkzjCMfIrjSMDSFnqYoL+avo+N3sCMOe8QnLV
+	 ZDalSnQvBPVLNVMV/gxk9pWnrljz6LkRjnTOAMz6h8qLWUAfkwBeBIeYTft5bBmNoR
+	 Jo45qCTmoe1bIBWohkbu+Lb7Zp/bsaW4nuJv2CZvijg9rSBTZWyh68XOjpp9TGiV4H
+	 JQfDbDAEmCX7TnL+mbTllssk/ga2F9knrHFwqm/5KweccQwQJBDDEQWLYjrgEuPib/
+	 HL7+y76Wra+zviUXs74Ku7LydyWjkdBZXP5WIeJWIyRWvrkkVERBmuSrNWS+2VhE1q
+	 U1aTa/7vUrbyA==
+Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A1505C44501;
+	Tue, 14 Jul 2026 13:43:34 +0000 (UTC)
+From: Nikolai Burov via B4 Relay <devnull+nikolai.burov.jolla.com@kernel.org>
+Date: Tue, 14 Jul 2026 16:43:06 +0300
+Subject: [PATCH 1/3] dt-bindings: power: Add MediaTek MT6858 power domain
+ controller
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <CAKfTPtBxVZ-eB=sjj_ry3=BBHrCt5JUq0dbBS0VxLqi3LBfQ7Q@mail.gmail.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20260714-mt6858-pmdomain-v1-1-4f09bbb822e0@jolla.com>
+References: <20260714-mt6858-pmdomain-v1-0-4f09bbb822e0@jolla.com>
+In-Reply-To: <20260714-mt6858-pmdomain-v1-0-4f09bbb822e0@jolla.com>
+To: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+ Conor Dooley <conor+dt@kernel.org>, 
+ Matthias Brugger <matthias.bgg@gmail.com>, 
+ AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>, 
+ Ulf Hansson <ulfh@kernel.org>
+Cc: Matthias Brugger <mbrugger@suse.com>, devicetree@vger.kernel.org, 
+ linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
+ linux-mediatek@lists.infradead.org, linux-pm@vger.kernel.org, 
+ Nikolai Burov <nikolai.burov@jolla.com>, 
+ Nikolai Burov <nikolai.burov+review@abscue.de>
+X-Mailer: b4 0.15.2
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1784036613; l=3755;
+ i=nikolai.burov@jolla.com; s=20260707; h=from:subject:message-id;
+ bh=M36MUmRAHEZNXG90DN7tPnz03tT5Y9VoFLmKPFkVkP4=;
+ b=wM2fWQoT8Ccssr8ffuVD5ftJk22I+VOYVRWZRRVHtAOCTVrr0seRTmsovJQOqo7HJD6ougUBH
+ 1v6OoAFbyGADxyPQR3+VUtKT9S/KFCVfkUQUYoDlaSHOSnrkJbwyev/
+X-Developer-Key: i=nikolai.burov@jolla.com; a=ed25519;
+ pk=yzpa+PD+ovHUFMIOBA9o2QqGwI110jM6hdGHLc7jtoQ=
+X-Endpoint-Received: by B4 Relay for nikolai.burov@jolla.com/20260707 with
+ auth_id=859
+X-Original-From: Nikolai Burov <nikolai.burov@jolla.com>
+Reply-To: nikolai.burov@jolla.com
 
-On 06/04/26 10:50, Vincent Guittot wrote:
-> On Mon, 4 May 2026 at 04:00, Qais Yousef <qyousef@layalina.io> wrote:
-> >
-> > It is basically the ramp-up time from 0 to a given value. Will be used
-> > later to implement new tunable to control response time  for schedutil.
-> >
-> > Signed-off-by: Qais Yousef <qyousef@layalina.io>
-> > ---
-> >  kernel/sched/pelt.c  | 21 +++++++++++++++++++++
-> >  kernel/sched/sched.h |  1 +
-> >  2 files changed, 22 insertions(+)
-> >
-> > diff --git a/kernel/sched/pelt.c b/kernel/sched/pelt.c
-> > index 5a8f4dc99ffc..dbd450798b03 100644
-> > --- a/kernel/sched/pelt.c
-> > +++ b/kernel/sched/pelt.c
-> > @@ -508,3 +508,24 @@ unsigned long approximate_util_avg(unsigned long util, u64 delta)
-> >
-> >         return sa.util_avg;
-> >  }
-> > +
-> > +/*
-> > + * Approximate the required amount of runtime in ms required to reach @util.
-> 
-> Why ms when we use us or ns everywhere else
+From: Nikolai Burov <nikolai.burov@jolla.com>
 
-Yeah us makes sense. I think it started initially for an older user to
-introduce response_time_ms knob to schedutil. I'll update it in next version.
+Add a new compatible and document bindings for the power domain
+controller of the MT6858 SoC.
+
+Signed-off-by: Nikolai Burov <nikolai.burov@jolla.com>
+---
+ .../bindings/power/mediatek,power-controller.yaml  | 21 +++++++++++++++++++-
+ include/dt-bindings/power/mediatek,mt6858-power.h  | 23 ++++++++++++++++++++++
+ 2 files changed, 43 insertions(+), 1 deletion(-)
+
+diff --git a/Documentation/devicetree/bindings/power/mediatek,power-controller.yaml b/Documentation/devicetree/bindings/power/mediatek,power-controller.yaml
+index 07f046277f8a..eecb95323bfb 100644
+--- a/Documentation/devicetree/bindings/power/mediatek,power-controller.yaml
++++ b/Documentation/devicetree/bindings/power/mediatek,power-controller.yaml
+@@ -25,6 +25,7 @@ properties:
+     enum:
+       - mediatek,mt6735-power-controller
+       - mediatek,mt6795-power-controller
++      - mediatek,mt6858-power-controller
+       - mediatek,mt6893-power-controller
+       - mediatek,mt8167-power-controller
+       - mediatek,mt8173-power-controller
+@@ -55,7 +56,7 @@ properties:
+       faults while enabling or disabling a power domain.
+       For example, this may hold phandles to INFRACFG and SMI.
+     minItems: 1
+-    maxItems: 3
++    maxItems: 6
+ 
+ patternProperties:
+   "^power-domain@[0-9a-f]+$":
+@@ -102,6 +103,7 @@ $defs:
+         description: |
+           Power domain index. Valid values are defined in:
+               "include/dt-bindings/power/mt6795-power.h" - for MT8167 type power domain.
++              "include/dt-bindings/power/mediatek,mt6858-power.h" - for MT6858 type power domain.
+               "include/dt-bindings/power/mediatek,mt6893-power.h" - for MT6893 type power domain.
+               "include/dt-bindings/power/mt8167-power.h" - for MT8167 type power domain.
+               "include/dt-bindings/power/mt8173-power.h" - for MT8173 type power domain.
+@@ -155,6 +157,23 @@ required:
+   - compatible
+ 
+ allOf:
++  - if:
++      properties:
++        compatible:
++          contains:
++            enum:
++              - mediatek,mt6858-power-controller
++    then:
++      properties:
++        access-controllers:
++          items:
++            - description: handle to INFRACFG register block
++            - description: handle to IMG_SUB0 register block
++            - description: handle to CAM_SUB1 register block
++            - description: handle to CAM_SUB0 register block
++            - description: handle to IPE_SUB0 register block
++            - description: handle to VLPCFG register block
++
+   - if:
+       properties:
+         compatible:
+diff --git a/include/dt-bindings/power/mediatek,mt6858-power.h b/include/dt-bindings/power/mediatek,mt6858-power.h
+new file mode 100644
+index 000000000000..6ed9e82d4ad3
+--- /dev/null
++++ b/include/dt-bindings/power/mediatek,mt6858-power.h
+@@ -0,0 +1,23 @@
++/* SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause) */
++
++#ifndef _DT_BINDINGS_POWER_MT6858_POWER_H
++#define _DT_BINDINGS_POWER_MT6858_POWER_H
++
++#define MT6858_POWER_DOMAIN_MD				0
++#define MT6858_POWER_DOMAIN_CONN			1
++#define MT6858_POWER_DOMAIN_AUDIO			2
++#define MT6858_POWER_DOMAIN_MM_INFRA			3
++#define MT6858_POWER_DOMAIN_ISP_IMG1			4
++#define MT6858_POWER_DOMAIN_ISP_IMG2			5
++#define MT6858_POWER_DOMAIN_ISP_IPE			6
++#define MT6858_POWER_DOMAIN_VDE0			7
++#define MT6858_POWER_DOMAIN_VEN0			8
++#define MT6858_POWER_DOMAIN_CAM_MAIN			9
++#define MT6858_POWER_DOMAIN_CAM_SUBA			10
++#define MT6858_POWER_DOMAIN_CAM_SUBB			11
++#define MT6858_POWER_DOMAIN_DIS0			12
++#define MT6858_POWER_DOMAIN_MM_PROC_DORMANT		13
++#define MT6858_POWER_DOMAIN_CSI_RX			14
++#define MT6858_POWER_DOMAIN_SSUSB			15
++
++#endif /* _DT_BINDINGS_POWER_MT6858_POWER_H */
+
+-- 
+2.54.0
+
+
