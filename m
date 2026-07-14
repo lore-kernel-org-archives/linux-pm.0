@@ -1,149 +1,134 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pl1-f177.google.com (mail-pl1-f177.google.com [209.85.214.177])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1D7D03F927A;
-	Tue, 14 Jul 2026 08:11:42 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3EB713F823B
+	for <linux-pm@vger.kernel.org>; Tue, 14 Jul 2026 08:13:58 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.177
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1784016705; cv=none; b=sk+3ouYiacv23iWaBAfMukRDWKBPTfdrgzJZHZu8LhEyMZVAAv75XxcESnxcGMIcYwPD7jm0sfz1Q6O5v29wSQernCzNghYICdDdmZrwUWJ5OotdY+Yfh+8awYof7kyreMZTxf514tNZpOnqWZFrheI6XAJPa5JZnjvuaXRo8GI=
+	t=1784016840; cv=none; b=dFnQZfBLdjY2Cu7aZhc4d3MRf53aDDQ59mOC1ENlhLt5SDBTmwJvRFRl8ob5TIEDxgOeFHNsCHkA7d6OUwVTVhrFFHZ+Hr3iw/bn5508cmjIlBoq0+g0lukyFDP5SHKnukMfDsswM55LAqIXjq398lAgN+14jvfBof4Jtrno0c4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1784016705; c=relaxed/simple;
-	bh=OZ1pbYKy2gk2DM0PoKB4jHWQTmuvMzB90+kMG0b5jzs=;
-	h=Content-Type:MIME-Version:Message-Id:In-Reply-To:References:
-	 Subject:From:To:Cc:Date; b=f4nkrElaoy4oj8WY1kmH+N3A5+/6aZEQeIL02X/o60zGx7HK86EVfqE7rgNdMJrpkRB2+qE9uyUbbUrEADMiQB2ELwWOTPPTCUBU39gRYeLv4yqXxyhE/bR0vZ4S5tXADIQN7+G9RUE6r8q9H3A85CLvy/tEMGNGxzrOuhtKh+8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=nKwuxLHG; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1784016840; c=relaxed/simple;
+	bh=gdCkP4sp22h60JxS0JoiANcjtVdzCVfRI611hqfC6+Q=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=iV6Wud+im+KcXxh5oYn6aw0j0Q4AkOmWat/FkNG5PyVGGiLWqtzmFrrdS3ZoqYHF5uIbqVItkmXuWlwvSAi5tqDXj2XpeRGc6D0Y3tJrvH5oPErhcbB1fCef2N9hqS60ZKNuSFkQYkNqftP+Bx+k+pLdJNxSejFNkpa+0vsHOmg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=Vp839PYW; arc=none smtp.client-ip=209.85.214.177
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="nKwuxLHG"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id BC2091F000E9;
-	Tue, 14 Jul 2026 08:11:41 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1784016702;
-	bh=Tl4h+221L/w6NzOfKKil7MwlTgDffDNAmIy67lN545c=;
-	h=In-Reply-To:References:Subject:From:To:Cc:Date;
-	b=nKwuxLHGUNYZSrccadSo3REBtphiZsLibg7xJIuWEiGXolX0HG5rtmmL5eFrSu6A/
-	 d8qeDobSrFiUHSBlcW1pU9YSoKlRyV75e7MKW7Hx5Oi7/O9cbnAl/+Y0vJdTYjqEDs
-	 ZPZUhdWHkR4Hjd41raW9n8HUWvVCF/YlF0BW3G092Wlbnad3/dbyfdESHhM2pfyFZ+
-	 WqNJkZf1etuhrvTrPGAD+hSI6qhD0CqQmyUIleGMse+4t8XTsNHqDynzMjkYPG3vKY
-	 NpHmsX5euPQD0r7DAdmFiwmbiA6ThvQs5d/oQKLMLnYQo2dZvqciNjXZTY0938s7Fv
-	 G80ftPN+eOSeA==
-Content-Type: multipart/mixed; boundary="===============2756016215755141306=="
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="Vp839PYW"
+Received: by mail-pl1-f177.google.com with SMTP id d9443c01a7336-2cca0c5799eso8147665ad.0
+        for <linux-pm@vger.kernel.org>; Tue, 14 Jul 2026 01:13:58 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1784016837; x=1784621637; darn=vger.kernel.org;
+        h=in-reply-to:content-disposition:content-type:mime-version
+         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=qYzRXurSIHTikl55g1qeyMI97vm5PuCtoDlT6FhIA0g=;
+        b=Vp839PYWRQwcGDs6Tz0DQ5PmZ/MZHRYlDmaojUL+HLW063mijLh9tXT0UKp7LsBegV
+         ZJJTvqCShDiIO3RCHowkG4RWYRgganjNzp2muIAr98l909m6YuGTxnXrDUfsvCLZ2tJ7
+         O05bcIoJueD+ppMGi0d1uppyjcwmAsk1IpJRRx1EpiceWSHGoWhknBDhntabyDQSQBi6
+         0vE7VTchFo2MbO2Ji01K2JxwixWQ9EOaWgYh5SgcWABCtCbruYZ8h/x0AVihKaZxRA3R
+         QKz77MJOZF/H9B1APgZO2cCLfkduFOx6ZTTdZ/Qu+U8yIGKz8ZnTr+IfkgxMwkB+blee
+         uaSQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1784016837; x=1784621637;
+        h=in-reply-to:content-disposition:content-type:mime-version
+         :references:message-id:subject:cc:to:from:date:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=qYzRXurSIHTikl55g1qeyMI97vm5PuCtoDlT6FhIA0g=;
+        b=qdHjeOU2cUBOYnsRsELfJO/ARGOFVUL4XZ7XGC0AEhSLXlXQhVafoyr+YeIHJUYMzV
+         7AXaRk93UsgAubY0WoJpWQJD8GwBC79HA4n9DoxO4fDOY3y8dMpGGFbiUeKExg3Wm4AN
+         Xaz8ZX5JTb7PpckCP2JMTga86eJDa9c6p2OoIFqCNrfoNbxHnXv761gTchOUIw+gZR+3
+         gP+PVynCxySbd/bbFJDdmt5+Hz4RdB8n+54ugA6upBeYSaWCxKTq/xZLEaHU0H/TCkSO
+         ybr98j+tsx3PdzhBEQuAJDnmE9ia60It1ywrVTKRN5hBvdoeVK/r/YmtW4clY8D39AIr
+         KVLA==
+X-Forwarded-Encrypted: i=1; AHgh+RqxCm7jWkxhcq7RibsGZkHat/mhotSk+f0xijJVNbs5Ne/pvJBc/jSLXZ7FyYzmHPKJRkyO799/pA==@vger.kernel.org
+X-Gm-Message-State: AOJu0YxmR/AG0wuBVek2H+8hXdYNMSyRDVWmMeFYYdXvebPI6zGklBnr
+	qOoWvfoCEDUO7cSAo9BLMYCcK5vyKT4fn/H4pntxvHfNRbfhJF9qCAIQ8oZTDwInJKM=
+X-Gm-Gg: AfdE7ckUf6C8jM8l/MuFdqhfa/pIAazWR2wZ+dmZiqDo9YF2/7+ceRdg/hmbwm0mRSD
+	R/7GYThKYhkO/upzRrJLedwL4yBG+lGHAzVwRYif7m4qtOUq/Dijk19PDj4Gnht2q+ciEou+zdh
+	euDlNLWrWw7b/Xrfe4FYF9jdlNEnAm4QpIw8LYDs2h4aEqfQvxWeKLXY6ruv9cmALqwDI57IqZx
+	k1WGyNAt81p6dGj8+tnCPpsUQUIQTtKhDYZqXfYpglwsYOiZL+EYXwjYSaA2g+u2wcOH2H70iTc
+	BVsDbQsldbmgGXQr39mp/fe5zOCwR55xZ09mPAzVuth4XqQBtU5ID/VTxhBmOqppS1Jv3H3Hqfc
+	cBGMcdp1PnX5CvoWr5E3UjsdXTat9Kc0QgSmJtLVaFVlcW0z0HMqpuAOqgh1gd3/UTkPEhvpEzM
+	jzDWxyD1S7kYXf
+X-Received: by 2002:a05:6a21:502:b0:3c0:9c1a:894c with SMTP id adf61e73a8af0-3c110b2f98bmr13998768637.68.1784016837292;
+        Tue, 14 Jul 2026 01:13:57 -0700 (PDT)
+Received: from localhost ([122.172.82.94])
+        by smtp.gmail.com with ESMTPSA id a92af1059eb24-13b659d8da9sm135899247c88.14.2026.07.14.01.13.55
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 14 Jul 2026 01:13:56 -0700 (PDT)
+Date: Tue, 14 Jul 2026 13:43:53 +0530
+From: Viresh Kumar <viresh.kumar@linaro.org>
+To: Qianheng Peng <pengqh1@chinatelecom.cn>
+Cc: ray.huang@amd.com, mario.limonciello@amd.com, perry.yuan@amd.com, 
+	kprateek.nayak@amd.com, rafael@kernel.org, skhan@linuxfoundation.org, li.meng@amd.com, 
+	linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, wangxb12@chinatelecom.cn, 
+	xiongl24@chinatelecom.cn, zhangar@chinatelecom.cn
+Subject: Re: [PATCH] cpufreq: amd-pstate-ut: fix null pointer dereference
+Message-ID: <7fxgevkwbauh26jxm27x6yd3dcmi66znyqh4yud7vhm6cdwe4u@rskv6hd64pcp>
+References: <1784015941-26535-1-git-send-email-pengqh1@chinatelecom.cn>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Message-Id: <4ef45450ea43d0a7932e003ca291e9ec4cc2642102b7d8116d4c8f241f67a9c0@mail.kernel.org>
-In-Reply-To: <20260714073041.40250-2-ankur.a.arora@oracle.com>
-References: <20260714073041.40250-2-ankur.a.arora@oracle.com>
-Subject: Re: [PATCH v14 01/15] asm-generic: barrier: Add smp_cond_load_relaxed_timeout()
-From: bot+bpf-ci@kernel.org
-To: ankur.a.arora@oracle.com,linux-kernel@vger.kernel.org,linux-arch@vger.kernel.org,linux-arm-kernel@lists.infradead.org,linux-pm@vger.kernel.org,bpf@vger.kernel.org
-Cc: arnd@arndb.de,catalin.marinas@arm.com,will@kernel.org,peterz@infradead.org,akpm@linux-foundation.org,mark.rutland@arm.com,harisokn@amazon.com,cl@gentwo.org,ast@kernel.org,rafael@kernel.org,daniel.lezcano@linaro.org,memxor@gmail.com,zhenglifeng1@huawei.com,xueshuai@linux.alibaba.com,rdunlap@infradead.org,david.laight.linux@gmail.com,broonie@kernel.org,joao.m.martins@oracle.com,boris.ostrovsky@oracle.com,konrad.wilk@oracle.com,ashok.bhat@arm.com,ankur.a.arora@oracle.com,ast@kernel.org,andrii@kernel.org,daniel@iogearbox.net,martin.lau@kernel.org,eddyz87@gmail.com,yonghong.song@linux.dev,clm@meta.com,ihor.solodrai@linux.dev
-Date: Tue, 14 Jul 2026 08:11:41 +0000 (UTC)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1784015941-26535-1-git-send-email-pengqh1@chinatelecom.cn>
 
---===============2756016215755141306==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
+On 14-07-26, 15:59, Qianheng Peng wrote:
+> The crash issue may occur when insmod amd_pstate_ut modules.
+> 
+>    amd_pstate_ut: 1    amd_pstate_ut_acpi_cpc_valid  success!
+>    amd_pstate_ut: 2    amd_pstate_ut_check_enabled   success!
+>    BUG: kernel NULL pointer dereference, address: 0000000000000080
+>    #PF: supervisor read access in kernel mode
+>    #PF: error_code(0x0000) - not-present page
+>    PGD 0 P4D 0
+>    Oops: 0000 [#1] SMP NOPTI
+>    CPU: 0 PID: 20300 Comm: modprobe
+>    Kdump: loaded Tainted: G O 6.6.0-0010.rc1.ctl4.x86_64 #1
+>    Hardware name: FiberHome R2200 V5/Xeon Boards, BIOS 3.1a 02/24/2020
+>    RIP: 0010:amd_pstate_ut_check_perf+0x141/0x280 [amd_pstate_ut]
+>    Call Trace:
+>     <TASK>
+>     amd_pstate_ut_init+0x1b/0xff0 [amd_pstate_ut]
+>     ? __pfx_amd_pstate_ut_init+0x10/0x10 [amd_pstate_ut]
+>     do_one_initcall+0x42/0x2e0
+>     ? kmalloc_trace+0x26/0x90
+>     do_init_module+0x60/0x240
+>     __se_sys_init_module+0x185/0x1c0
+>     do_syscall_64+0x62/0x190
+>     entry_SYSCALL_64_after_hwframe+0x76/0x7e
+>     </TASK>
+> 
+> Add invalidation check of cpudata in amd_pstate_ut_check_perf() and
+> amd_pstate_ut_check_freq() to avoid unpredicated null pointer dereference.
+> 
+> Fixes: 14eb1c96e3a3 ("cpufreq: amd-pstate: Add test module for amd-pstate driver")
+> Suggested-by: Li Xiong <xiongl24@chinatelecom.cn>
+> Suggested-by: Xibo Wang <wangxb12@chinatelecom.cn>
+> Signed-off-by: Qianheng Peng <pengqh1@chinatelecom.cn>
+> ---
+>  drivers/cpufreq/amd-pstate-ut.c | 8 ++++++++
+>  1 file changed, 8 insertions(+)
+> 
+> diff --git a/drivers/cpufreq/amd-pstate-ut.c b/drivers/cpufreq/amd-pstate-ut.c
+> index 735b29f..3b24260 100644
+> --- a/drivers/cpufreq/amd-pstate-ut.c
+> +++ b/drivers/cpufreq/amd-pstate-ut.c
+> @@ -157,6 +157,10 @@ static int amd_pstate_ut_check_perf(u32 index)
+>  		if (!policy)
+>  			continue;
+>  		cpudata = policy->driver_data;
+> +		if (!cpudata) {
+> +			pr_err("%s driver_data of %s is empty!\n", __func__, policy->kobj.name);
 
-> diff --git a/include/asm-generic/barrier.h b/include/asm-generic/barrier.h
-> index b99cb57dfccc..d1e9ed15bbfc 100644
-> --- a/include/asm-generic/barrier.h
-> +++ b/include/asm-generic/barrier.h
-> @@ -273,6 +273,85 @@ do {									\
->  })
->  #endif
->
-> +/*
-> + * Number of times we iterate in the loop before doing the time check.
-> + * Note that the iteration count assumes that the loop condition is
-> + * relatively cheap.
-> + */
-> +#ifndef SMP_TIMEOUT_POLL_COUNT
-> +#define SMP_TIMEOUT_POLL_COUNT		200
-> +#endif
-> +
-> +/*
-> + * cpu_poll_relax() stitches up two kinds of primitives: ones that provide
-> + * a momentary blip in the pipeline (ex. cpu_relax() on x86).
-> + * The second support waiting for @ptr value to change, coupled with a
-> + * with a precise (or imprecise) timeout.
+You can use kobject_name(), but I wonder why print kobj name here ? Other
+drivers just print policy->cpu normally and that is sufficient.
 
-This isn't a bug, but could this sentence be tightened?  The phrase
-"with a" is repeated across the line wrap, and "The second support"
-reads a little off, e.g. "The second kind supports waiting for @ptr to
-change, coupled with a (precise or imprecise) timeout".
-
-> + *
-> + * cpu_poll_relax() keeps them together, because its utility is in minimizing
-> + * expensive operations while polling on @ptr waiting for it to change.
-> + * The arguments to cpu_poll_relax() are only needed for the waiting
-> + * primitives.
-> + *
-> + * Also note that platforms with a suitable cpu_poll_relax() are expected
-> + * to define ARCH_HAS_CPU_RELAX.
-> + */
-> +#ifndef cpu_poll_relax
-> +#define cpu_poll_relax(ptr, val, timeout_ns)	cpu_relax()
-> +#endif
-> +
-
-[ ... ]
-
-> +#ifndef smp_cond_load_relaxed_timeout
-> +#define smp_cond_load_relaxed_timeout(ptr, cond_expr,			\
-> +				      time_expr_ns, timeout_ns)		\
-> +({									\
-> +	typeof(ptr) __PTR = (ptr);					\
-> +	__unqual_scalar_typeof(*(ptr)) VAL;				\
-> +	u32 __count = 0, __spin = SMP_TIMEOUT_POLL_COUNT;		\
-> +	s64 __timeout = (s64)timeout_ns;				\
-> +	s64 __time_now, __time_end = 0;					\
-> +									\
-> +	for (;;) {							\
-> +		VAL = READ_ONCE(*__PTR);				\
-> +		if (cond_expr)						\
-> +			break;						\
-> +		cpu_poll_relax(__PTR, VAL, (u64)__timeout);		\
-> +		if (++__count < __spin)					\
-> +			continue;					\
-
-The loop passes the full relative __timeout to cpu_poll_relax() on every
-iteration and resets __count to 0 each cycle after the time-check.
-
-For the asm-generic default this is harmless, since cpu_poll_relax()
-expands to cpu_relax() and ignores its arguments.
-
-But for an event-based wait that honours the timeout argument (for
-example an arm64 WFE override), wouldn't each of the
-SMP_TIMEOUT_POLL_COUNT iterations be allowed to block for up to the
-entire remaining __timeout before the next time-check, delaying the
-check and causing large overshoot?
-
-This came up in review of an earlier version, where the suggestion was
-to pass a bounded per-iteration timeout rather than the full remaining
-value.  Would it be worth carrying that bound here so the arch overrides
-land on a well-defined per-iteration wait?
-
-> +		__time_now = (s64)(time_expr_ns);			\
-> +		if (unlikely(__time_end == 0))				\
-> +			__time_end = __time_now + __timeout;		\
-> +		__timeout = __time_end - __time_now;			\
-> +		if (__time_now <= 0 || __timeout <= 0) {		\
-> +			VAL = READ_ONCE(*__PTR);			\
-> +			break;						\
-> +		}							\
-> +		__count = 0;						\
-> +	}								\
-> +	(typeof(*(ptr)))VAL;						\
-> +})
-> +#endif
-
-
----
-AI reviewed your patch. Please fix the bug or email reply why it's not a bug.
-See: https://github.com/kernel-patches/vmtest/blob/master/ci/claude/README.md
-
-CI run summary: https://github.com/kernel-patches/bpf/actions/runs/29315652884
---===============2756016215755141306==--
+-- 
+viresh
