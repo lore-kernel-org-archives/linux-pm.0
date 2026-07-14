@@ -1,189 +1,110 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4490F372EE2;
-	Tue, 14 Jul 2026 10:28:47 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+Received: from smtph3-07.21cn.com (smtph3-07.21cn.com [150.223.194.132])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id 39EB1364E98;
+	Tue, 14 Jul 2026 10:30:37 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=150.223.194.132
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1784024927; cv=none; b=trWudTvmqdakjiOi0TRsO3qjW4+qxJwHof5xwoNZMYOAxv7bz4hFkDtJfYzUrGoZ/LO+CSQ4xniypqcJD+L+YdzJu+W/cAeLSFiHSubvDxu/ldTCZ5wRzDkNMymVV6DXOpqnTsbiK5RBsc6xeCILemFignpeYk+9WUyI/F83fGw=
+	t=1784025043; cv=none; b=OO4UvikmEVy3ymMsRYtiyMq6mkzpcA+ECEjzNA511mx0BmjY2yEdQpG+nf1mUgEVuQRSV1KLC25HtJAmBLqBUqFKMjwcXBD3cSg1H+v7hJi58VHqz/eXPNI49xStXwHaiE8FIjwZ3r5CoTdRvChZC/wxMxaBNjN2F8g+DzRyECA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1784024927; c=relaxed/simple;
-	bh=iVgLZlJQ+vMNolXxqzGao5tv1EtYdzquxCIotgcJLJc=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=O0FqnZuDbDupI4OzDlANydpdfnqNqh5MdDa8Njm93/v4TrR5eQp1oO4aviYiQu6kLO1mBs9PxnsS/80Xey/yvfTXGjmT/eQ5lCSjcM3BJSJU0in4ZOZg0Qp/VYIvy3EOUJfLSF5gzHuWMLOT78hSKG669bt2zbkAkt8fi8L334k=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=t35gmi7u; arc=none smtp.client-ip=10.30.226.201
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="t35gmi7u"
-Received: by smtp.kernel.org (Postfix) with ESMTPS id CAD5EC2BD00;
-	Tue, 14 Jul 2026 10:28:46 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1784024926;
-	bh=iVgLZlJQ+vMNolXxqzGao5tv1EtYdzquxCIotgcJLJc=;
-	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
-	b=t35gmi7uKtBrLA+I1udsLGXZpkRUxo7suahFfAGRqAJA8sLMFqJgUtkJ2egOTVi7i
-	 0DVjTwK2cGvlxNYpRGn6+XlMLl/6z3NVE2gyTj8UIq6ZIqPK+WUuSnN78TMOcisYOA
-	 e2lUyvyRE5GLSuMPiM5RIu+BpflpdRGFAoWXDew75QYuAaCzJdmeeArc0HQEX+M6ID
-	 LAc/tQKmQXNt0NGdEa1VgBpFAR8aREJts7gHgobU7q94BrE3Sn68x17E+A8NFn3EJL
-	 wXmXM3Ak1t2aRw3kk5z9W/Sx1GCtzQpWlg+1bg2RDLFDJa7YTgPrZIj1YuJctpF9F/
-	 Oxr5e6ku5TPUA==
-Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B8759C44507;
-	Tue, 14 Jul 2026 10:28:46 +0000 (UTC)
-From: Haoning CHENG via B4 Relay <devnull+Haoning.CHENG.cn.bosch.com@kernel.org>
-Date: Tue, 14 Jul 2026 18:28:43 +0800
-Subject: [PATCH v8 3/3] thermal/drivers/imx: Add calibration offset support
+	s=arc-20240116; t=1784025043; c=relaxed/simple;
+	bh=Z5iBKYr70EpuKY3i8PlxSKlMS2ViQ2i7AuG0Y5iGVds=;
+	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References; b=ecR2Hz6yEyN0BGefFUFcIbaoJh7392PS2P2BL1M4lomLKd3VjHZPmA1MMe3AGwwFPUrCbDQpe4AyeJobm+ZAw0HYGw9y0fk+NOgMmzP0lf4kEUuQQBopYpC9UEUP+f4Nn6ia3nxrMi5qg+dRahawXKfbkQBTMzBSYvPk4irOaxo=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=chinatelecom.cn; spf=pass smtp.mailfrom=chinatelecom.cn; arc=none smtp.client-ip=150.223.194.132
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=chinatelecom.cn
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=chinatelecom.cn
+HMM_SOURCE_IP:172.27.0.98:0.502763977
+HMM_ATTACHE_NUM:0000
+HMM_SOURCE_TYPE:SMTP
+Received: from clientip-139.200.108.11 (unknown [172.27.0.98])
+	by smtph3-07.21cn.com (HERMES) with SMTP id 7E97D1402E11C;
+	Tue, 14 Jul 2026 18:21:11 +0800 (CST)
+X-189-SAVE-TO-SEND: +pengqh1@chinatelecom.cn
+Received: from  ([139.200.108.11])
+	by gateway-ssl-dep-657b8df9db-d66cm with ESMTP id 061489ed37054a598dcbbb4aba4db34a for viresh.kumar@linaro.org;
+	Tue, 14 Jul 2026 18:21:21 CST
+X-Transaction-ID: 061489ed37054a598dcbbb4aba4db34a
+X-Real-From: pengqh1@chinatelecom.cn
+X-Receive-IP: 139.200.108.11
+X-MEDUSA-Status: 0
+Sender: pengqh1@chinatelecom.cn
+From: Qianheng Peng <pengqh1@chinatelecom.cn>
+To: viresh.kumar@linaro.org
+Cc: kprateek.nayak@amd.com,
+	li.meng@amd.com,
+	linux-kernel@vger.kernel.org,
+	linux-pm@vger.kernel.org,
+	mario.limonciello@amd.com,
+	pengqh1@chinatelecom.cn,
+	perry.yuan@amd.com,
+	rafael@kernel.org,
+	ray.huang@amd.com,
+	skhan@linuxfoundation.org,
+	wangxb12@chinatelecom.cn,
+	xiongl24@chinatelecom.cn,
+	zhangar@chinatelecom.cn
+Subject: Re: [PATCH] cpufreq: amd-pstate-ut: fix null pointer dereference
+Date: Tue, 14 Jul 2026 18:21:10 +0800
+Message-Id: <1784024470-14747-1-git-send-email-pengqh1@chinatelecom.cn>
+X-Mailer: git-send-email 1.8.3.1
+In-Reply-To: <7fxgevkwbauh26jxm27x6yd3dcmi66znyqh4yud7vhm6cdwe4u@rskv6hd64pcp>
+References: <7fxgevkwbauh26jxm27x6yd3dcmi66znyqh4yud7vhm6cdwe4u@rskv6hd64pcp>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Message-Id: <20260714-b4-symana21-11221-imx-thermal-support-upstream-6-18-v8-3-d54d8690e16e@cn.bosch.com>
-References: <20260714-b4-symana21-11221-imx-thermal-support-upstream-6-18-v8-0-d54d8690e16e@cn.bosch.com>
-In-Reply-To: <20260714-b4-symana21-11221-imx-thermal-support-upstream-6-18-v8-0-d54d8690e16e@cn.bosch.com>
-To: "Rafael J. Wysocki" <rafael@kernel.org>, 
- Daniel Lezcano <daniel.lezcano@linaro.org>, Zhang Rui <rui.zhang@intel.com>, 
- Lukasz Luba <lukasz.luba@arm.com>, Rob Herring <robh@kernel.org>, 
- Krzysztof Kozlowski <krzk+dt@kernel.org>, 
- Conor Dooley <conor+dt@kernel.org>, Shawn Guo <shawnguo@kernel.org>, 
- Sascha Hauer <s.hauer@pengutronix.de>, 
- Pengutronix Kernel Team <kernel@pengutronix.de>, 
- Fabio Estevam <festevam@gmail.com>
-Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org, 
- imx@lists.linux.dev, linux-arm-kernel@lists.infradead.org, 
- linux-kernel@vger.kernel.org, Haoning CHENG <Haoning.CHENG@cn.bosch.com>
-X-Mailer: b4 0.15.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1784024921; l=4200;
- i=Haoning.CHENG@cn.bosch.com; s=20260709; h=from:subject:message-id;
- bh=fVZ8/nh0Wo4y9uiBm2vp04dsfqXgZZNI2dShzcEryTw=;
- b=/WnMq2zuNxvlbasuk2ft8ic81S5ZQT/nP29GZ+kVVgzJyYNVKsh42yxesFUiCuu0l94a4R6EH
- jNpzUSgxAk+AinG6HBgTnVpMp+wV9sQvEhQDlQAGyMwUq6U5P8ZiuYB
-X-Developer-Key: i=Haoning.CHENG@cn.bosch.com; a=ed25519;
- pk=glQGwad/fosRS5gZUJYbLDPPLGe7rFTrTV2VxY/ySdc=
-X-Endpoint-Received: by B4 Relay for Haoning.CHENG@cn.bosch.com/20260709
- with auth_id=860
-X-Original-From: Haoning CHENG <Haoning.CHENG@cn.bosch.com>
-Reply-To: Haoning.CHENG@cn.bosch.com
 
-From: Haoning CHENG <Haoning.CHENG@cn.bosch.com>
+On 14-07-26, 01:13:57 (PDT), Viresh Kumar wrote:
+>On 14-07-26, 15:59, Qianheng Peng wrote:
+>> The crash issue may occur when insmod amd_pstate_ut modules.
+>> 
+>>    amd_pstate_ut: 1    amd_pstate_ut_acpi_cpc_valid  success!
+>>    amd_pstate_ut: 2    amd_pstate_ut_check_enabled   success!
+>>    BUG: kernel NULL pointer dereference, address: 0000000000000080
+>>    #PF: supervisor read access in kernel mode
+>>    #PF: error_code(0x0000) - not-present page
+>>    PGD 0 P4D 0
+>>    Oops: 0000 [#1] SMP NOPTI
+>>    CPU: 0 PID: 20300 Comm: modprobe
+>>    Kdump: loaded Tainted: G O 6.6.0-0010.rc1.ctl4.x86_64 #1
+>>    Hardware name: FiberHome R2200 V5/Xeon Boards, BIOS 3.1a 02/24/2020
+>>    RIP: 0010:amd_pstate_ut_check_perf+0x141/0x280 [amd_pstate_ut]
+>>    Call Trace:
+>>     <TASK>
+>>     amd_pstate_ut_init+0x1b/0xff0 [amd_pstate_ut]
+>>     ? __pfx_amd_pstate_ut_init+0x10/0x10 [amd_pstate_ut]
+>>     do_one_initcall+0x42/0x2e0
+>>     ? kmalloc_trace+0x26/0x90
+>>     do_init_module+0x60/0x240
+>>     __se_sys_init_module+0x185/0x1c0
+>>     do_syscall_64+0x62/0x190
+>>     entry_SYSCALL_64_after_hwframe+0x76/0x7e
+>>     </TASK>
+>> 
+>> Add invalidation check of cpudata in amd_pstate_ut_check_perf() and
+>> amd_pstate_ut_check_freq() to avoid unpredicated null pointer dereference.
+>> 
+>> Fixes: 14eb1c96e3a3 ("cpufreq: amd-pstate: Add test module for amd-pstate driver")
+>> Suggested-by: Li Xiong <xiongl24@chinatelecom.cn>
+>> Suggested-by: Xibo Wang <wangxb12@chinatelecom.cn>
+>> Signed-off-by: Qianheng Peng <pengqh1@chinatelecom.cn>
+>> ---
+>>  drivers/cpufreq/amd-pstate-ut.c | 8 ++++++++
+>>  1 file changed, 8 insertions(+)
+>> 
+>> diff --git a/drivers/cpufreq/amd-pstate-ut.c b/drivers/cpufreq/amd-pstate-ut.c
+>> index 735b29f..3b24260 100644
+>> --- a/drivers/cpufreq/amd-pstate-ut.c
+>> +++ b/drivers/cpufreq/amd-pstate-ut.c
+>> @@ -157,6 +157,10 @@ static int amd_pstate_ut_check_perf(u32 index)
+>>  		if (!policy)
+>>  			continue;
+>>  		cpudata = policy->driver_data;
+>> +		if (!cpudata) {
+>> +			pr_err("%s driver_data of %s is empty!\n", __func__, policy->kobj.name);
+>
+>You can use kobject_name(), but I wonder why print kobj name here ? Other
+>drivers just print policy->cpu normally and that is sufficient.
+Thanks for review.I will change kobj name to policy->cpu in patch v2.
 
-Some boards need a small per-design correction to align the reported CPU
-temperature with board-level measurements. Read the optional
-fsl,temp-calibration-offset-millicelsius property from DT and apply it
-uniformly to the i.MX6/6SX/7D calibration formulas.
-
-The offset is applied symmetrically at two points to ensure the thermal
-framework sees calibrated temperatures while hardware thresholds remain
-correctly positioned:
-
-1. In imx_set_alarm_temp() and imx_set_panic_temp(): the temperature
-   threshold is *subtracted* by the offset before being converted to a
-   hardware register value. This shifts the hardware IRQ trigger to the
-   physical temperature that corresponds to the intended threshold.
-
-2. In imx_get_temp(): after computing physical temperature from the
-   hardware register, the offset is *added* back. The thermal framework
-   always sees the calibrated temperature.
-
-For example, if DT sets offset = +3000 m°C (board reads 3°C too low)
-and the passive trip is 95°C:
-
-  imx_set_alarm_temp(95000):
-    alarm_temp = 95000 - 3000 = 92000
-    → hardware register programmed for 92°C physical
-
-  Hardware IRQ fires at 92°C physical
-
-  imx_get_temp():
-    reads hardware, computes 92°C physical
-    *temp = 92000 + 3000 = 95000
-    → thermal framework sees 95°C → correct trip
-
-When the property is not present, the offset defaults to 0, preserving
-the current behavior.
-
-Signed-off-by: Haoning CHENG <Haoning.CHENG@cn.bosch.com>
----
- drivers/thermal/imx_thermal.c | 27 +++++++++++++++++++++++++++
- 1 file changed, 27 insertions(+)
-
-diff --git a/drivers/thermal/imx_thermal.c b/drivers/thermal/imx_thermal.c
-index 7f7d1116b9d6..d471acc16bce 100644
---- a/drivers/thermal/imx_thermal.c
-+++ b/drivers/thermal/imx_thermal.c
-@@ -85,6 +85,10 @@ enum imx_thermal_trip {
- #define TEMPMON_IMX6SX			2
- #define TEMPMON_IMX7D			3
- 
-+/* Calibration offset limits (±20 °C in millicelsius) */
-+#define IMX_TEMP_CALIB_OFFSET_MIN	(-20000)
-+#define IMX_TEMP_CALIB_OFFSET_MAX	20000
-+
- struct thermal_soc_data {
- 	u32 version;
- 
-@@ -207,6 +211,7 @@ struct imx_thermal_data {
- 	struct regmap *tempmon;
- 	u32 c1, c2; /* See formula in imx_init_calib() */
- 	int temp_max;
-+	s32 calibration_offset;
- 	int alarm_temp;
- 	int last_temp;
- 	bool irq_enabled;
-@@ -223,6 +228,7 @@ static void imx_set_panic_temp(struct imx_thermal_data *data,
- 	struct regmap *map = data->tempmon;
- 	int critical_value;
- 
-+	panic_temp -= data->calibration_offset;
- 	critical_value = (data->c2 - panic_temp) / data->c1;
- 
- 	regmap_write(map, soc_data->panic_alarm_ctrl + REG_CLR,
-@@ -239,6 +245,7 @@ static void imx_set_alarm_temp(struct imx_thermal_data *data,
- 	int alarm_value;
- 
- 	data->alarm_temp = alarm_temp;
-+	alarm_temp -= data->calibration_offset;
- 
- 	if (data->socdata->version == TEMPMON_IMX7D) {
- 		if (alarm_temp >= 0)
-@@ -283,6 +290,7 @@ static int imx_get_temp(struct thermal_zone_device *tz, int *temp)
- 		*temp = (n_meas - data->c1 + 25) * 1000;
- 	else
- 		*temp = data->c2 - n_meas * data->c1;
-+	*temp += data->calibration_offset;
- 
- 	/* Update alarm value to next higher trip point for TEMPMON_IMX6Q */
- 	if (data->socdata->version == TEMPMON_IMX6Q) {
-@@ -635,6 +643,25 @@ static int imx_thermal_probe(struct platform_device *pdev)
- 
- 	platform_set_drvdata(pdev, data);
- 
-+	if (of_property_present(dev->of_node,
-+				"fsl,temp-calibration-offset-millicelsius")) {
-+		ret = of_property_read_s32(dev->of_node,
-+					   "fsl,temp-calibration-offset-millicelsius",
-+					   &data->calibration_offset);
-+		if (ret)
-+			return dev_err_probe(dev, ret,
-+					     "failed to read calibration offset\n");
-+
-+		if (data->calibration_offset < IMX_TEMP_CALIB_OFFSET_MIN ||
-+		    data->calibration_offset > IMX_TEMP_CALIB_OFFSET_MAX)
-+			return dev_err_probe(dev, -EINVAL,
-+					     "calibration offset %d millicelsius out of range\n",
-+					     data->calibration_offset);
-+
-+		dev_dbg(dev, "calibration offset: %d millicelsius\n",
-+			data->calibration_offset);
-+	}
-+
- 	if (of_property_present(dev->of_node, "nvmem-cells")) {
- 		ret = imx_init_from_nvmem_cells(pdev);
- 		if (ret)
-
--- 
-2.43.0
-
-
+--
+Qianheng
