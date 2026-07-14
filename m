@@ -1,154 +1,260 @@
-Received: from mail-pl1-f172.google.com (mail-pl1-f172.google.com [209.85.214.172])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5F2DA44683D
-	for <linux-pm@vger.kernel.org>; Tue, 14 Jul 2026 16:39:54 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.172
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 35EC44DB56C;
+	Tue, 14 Jul 2026 16:54:22 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1784047195; cv=none; b=s1A1sAlloWZ/j5PK7VKOQpTenYgL+TZ3mlTJQw2KcY4S+uU58ukRnfcTtjjAMMCrpdoyRz8XaQs1/NjTpbrYvuSMHRI0OV0R/EdJJgwcEKNzzu0IqqoX6ojVahUNzMiPBrRDI8A5rir/c6LZenY/nhmExBp5WF+bLAcwMZPC5eg=
+	t=1784048063; cv=none; b=q2U9qnJp0IvjgeYJBDLFSmxKqgThdU2gXAOIpiVNKR428Atp11kvNDFeXVwdIgixhFfTqFFric1Tx4DMqT84BLzhxMlAE3a4WMf12yXb/EsG5oyIkXTiO/s+YmgK6J8OT/jIv3hQDyXn9Ty0eGDULwjYN++WuF0RRqq/VpR+e0Q=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1784047195; c=relaxed/simple;
-	bh=w1ayaFiykhXyStq+Fz4dl2B99MS+jLMfiGovaQyDklQ=;
-	h=Subject:From:To:Cc:Date:Message-ID:MIME-Version:Content-Type; b=Q9NgkeiBY1oIY0EfpFfoNvqSmAvYsJCcoY2F0Nf6nlJRESqCfIYNt6Mfnqh+HE6+yYhFOLOYQy6bQu99fUKXjINcOi5G1t4ccGm1VIm1onqyuLyehHt42N2QvDtI4icnnAzEMric6386dA0lzp4dZCvwmBpqw6ffdkwqF5zKKUQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=PONAYks2; arc=none smtp.client-ip=209.85.214.172
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1784048063; c=relaxed/simple;
+	bh=Sm1SxbPpqj/ww3QZH1OjL/J5OFtjvvxD40VS6UtKY4c=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=ampeU1l/73GTLLZd7HDbRKRG9aqfSnEJcF2Dv+WkavlEwJ9MjBE1syaacpcUOPX3Bx4eCwmEAC8vwERwkKCFAjNYdfVjjpYlfTnYbqXGE5ETwIfgp+v0OsH3FmAXO0fF2Kec6+tIOFRaKGy8xms4+uVO3G2YUueFoM7S1ewZZVQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=QOP03A3Q; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="PONAYks2"
-Received: by mail-pl1-f172.google.com with SMTP id d9443c01a7336-2ced3386430so10735455ad.1
-        for <linux-pm@vger.kernel.org>; Tue, 14 Jul 2026 09:39:54 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1784047194; x=1784651994; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:mime-version:user-agent
-         :message-id:date:cc:to:from:subject:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=fSSdPKad7upGTshmAAVeCJsnuIRzn7WTT52NBuduyY8=;
-        b=PONAYks2e4EZa1wYDAQqw4VOzmCfYY6yQyQYF1UKRQoNsYfSIT82Hz9JxnxbVuMMzm
-         3r04lUvB6/B7d8/t+4qqsmwi2tmVKXw0FT/brVhBs9PgBGnbtc4o7Oj6bWtW+qCfbbK1
-         AdGLkJi4We95hr5Fov+SKTrdeSgngSFqCfkWCGFePEblaMPowepj7o0w6zpxnyhWu1fh
-         1MyLoQIa2ugrP0J347YOYzfXTDa7M3Vz7jDEEFnV1sb6ivArGRv8xlTRxY0fxBsijkOQ
-         vHZKRQ3YWNun6sMo5+biGkRlkW/9hC7SQ5o2/NRb/fFnQbt9nTB25ZZw/R5uP0RAVnN2
-         8hUg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1784047194; x=1784651994;
-        h=content-transfer-encoding:content-type:mime-version:user-agent
-         :message-id:date:cc:to:from:subject:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=fSSdPKad7upGTshmAAVeCJsnuIRzn7WTT52NBuduyY8=;
-        b=RoK2SowI6B/ro3N59ya7WanglsWF37XguAGA5v+NUi9oNb4rgF3WJNlBlb8UnNdjhn
-         BuCvy5itM9c9v425hdw3pk/fN2+uXbJGAziB7fz4I+wN85jSJEhrJsX9oyd+kra5RqSE
-         kPB6GK2UisqcHZezJWv8M9rGVpzIfK2TMWjrmNVuXIpyumKa1x5tlJasR9BklItqqi+m
-         5bjvOsr9LY9rX9PalJ06Rdj7HILO4JgoIhNvbmW2HPsKOVF2PuVHoTSix/yBpPUlkizJ
-         4Yn3Cd31msJK0JTiHNjmf53EsT1x7cBvjKxuw5IswC24IYnmCWAUls163221veumEPat
-         idrw==
-X-Gm-Message-State: AOJu0YybExHFTZftrO2VhGkPB0BxZb4boWsPbv4ajcKRc5tJXpW7+Yk9
-	pyzp53eBmyrnd/wmV+RfHHM0GUHIrna6lqY/MVDxGnVQHJLKLioRMiGz
-X-Gm-Gg: AfdE7cnrWNVk9WEy3HNPMUG9fbaz6Zce6MvRbyjDtkdr0dDwgYanUlILYZNL4QAaT3D
-	kG4yr6H//pM/qYWw7dDSCgLrziDQYCCbf2zasM4GcAZZnTITqG9YirMBuJXIMWmCS+gg52LTC60
-	YwRIfeZ7hdD94fgXRJWB8rREr/qpKdQeQkN2W0vReJYYLTg00yELw7cS5IRipUK5hv1LQ5tIoCu
-	II+cRWTkR9DwcgFRbVSr/F4KZPDmgTNq34f9pY9OzK7rhKAMncWPMqUoxynWMW5haA0LQpIUWWP
-	WX6ZYXOpBsOqzkxulUSUtVkEzQal/vYoMiueMK8oLz46dQqxzxmL1TYMs3B6307p82dzRpU+VmY
-	R55lU424y1DnmiTEZKI26RMRuwvmeFCo/oFx60+1XySqcbWK4VTrOfotGnTu2vJvreVb6sglLyB
-	SXv8jC03OwQeK5uSXe+m4gwVrwfVy8Mty2jjOJVRZ5NObxPk86AgkVACMuu3OmefgPkH4rtQ==
-X-Received: by 2002:a17:902:f645:b0:2c9:fc14:588f with SMTP id d9443c01a7336-2ce9ec0f95fmr137040705ad.29.1784047193513;
-        Tue, 14 Jul 2026 09:39:53 -0700 (PDT)
-Received: from [192.168.0.160] (c-98-225-44-182.hsd1.wa.comcast.net. [98.225.44.182])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2ccc9d1e914sm118986685ad.50.2026.07.14.09.39.52
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 14 Jul 2026 09:39:52 -0700 (PDT)
-Subject: [RFC PATCH] freezer: Restrict unsafe freezable tasks to system sleep
-From: Stanislav Kinsburskii <skinsburskii@gmail.com>
-To: rafael@kernel.org, pavel@kernel.org, lenb@kernel.org, mingo@redhat.com,
- peterz@infradead.org, juri.lelli@redhat.com, vincent.guittot@linaro.org,
- dietmar.eggemann@arm.com, rostedt@goodmis.org, bsegall@google.com,
- mgorman@suse.de, vschneid@redhat.com, kprateek.nayak@amd.com,
- skinsburskii@gmail.com
-Cc: linux-pm@vger.kernel.org, linux-nfs@vger.kernel.org,
- linux-cifs@vger.kernel.org, samba-technical@lists.samba.org,
- linux-kernel@vger.kernel.org
-Date: Tue, 14 Jul 2026 09:39:51 -0700
-Message-ID: <178404715617.1031850.16243528040694432110.stgit@skinsburskii>
-User-Agent: StGit/0.19
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="QOP03A3Q"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 46EFC1F00A3A;
+	Tue, 14 Jul 2026 16:54:19 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1784048062;
+	bh=Q+tLcyOwHtF2vvwf2acxQjCBICX2eNchtDxbM2AnFOs=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=QOP03A3QAhh4nkGMFgFpCegL6XCrStv7YQS8bIi7KUlu3F27XjlSE2EGt0jOsK3HX
+	 0d/CFKzHpL0J4xggxpeZtVFTWPAaA+50KeuLt30r+jJYkZmTiicJhvdlW92q6LhNcJ
+	 Dxvg/J99U95HozGHJGubsNdW8sVqUL69Zkc51n1URbMKZl7TBlHLONv7e1D3XUz7be
+	 9nXGa0vy9oo24HThn/6X54YVQA7VN4+aW9MlA6t7Ktt1y9hkI8kLHdnjwMyT31E5db
+	 V+dGaRWihiYlQ7kDBrCSnJxoZE9S459WaozPER9pNwoXHIlL4F8pyAy2nGNKG4vVLT
+	 m1ATK56XdRCXg==
+Date: Tue, 14 Jul 2026 17:54:17 +0100
+From: Conor Dooley <conor@kernel.org>
+To: Binbin Zhou <zhoubb.aaron@gmail.com>
+Cc: Binbin Zhou <zhoubinbin@loongson.cn>,
+	Huacai Chen <chenhuacai@loongson.cn>, Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	"Rafael J . Wysocki" <rafael@kernel.org>,
+	Daniel Lezcano <daniel.lezcano@linaro.org>,
+	Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>,
+	Huacai Chen <chenhuacai@kernel.org>,
+	Xuerui Wang <kernel@xen0n.name>, loongarch@lists.linux.dev,
+	devicetree@vger.kernel.org, linux-pm@vger.kernel.org
+Subject: Re: [PATCH 1/2] dt-bindings: thermal: loongson,ls2k-thermal: Add
+ compatible for Loongson-2K0300
+Message-ID: <20260714-irritate-varying-9055895097b0@spud>
+References: <cover.1783670011.git.zhoubinbin@loongson.cn>
+ <7df0780e1b3d4c499a48cd862a12bda895e7818f.1783670011.git.zhoubinbin@loongson.cn>
+ <20260710-game-late-9347baafa7ab@spud>
+ <CAMpQs4+zXcNnZQnxWM7WUAM-heBYrTejm_dy3yVA4EFUrjA4CQ@mail.gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="mxs6UIz3nJYmRMyR"
+Content-Disposition: inline
+In-Reply-To: <CAMpQs4+zXcNnZQnxWM7WUAM-heBYrTejm_dy3yVA4EFUrjA4CQ@mail.gmail.com>
 
-TASK_FREEZABLE_UNSAFE is used by network filesystems for sleeps that may
-happen while a task holds locks or transport resources needed by other
-tasks. Allowing the freezer to park such tasks for administrative freezer
-requests can therefore block unrelated users of the same mount until the
-task is thawed.
+--mxs6UIz3nJYmRMyR
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-The original purpose of these unsafe freezable sleeps is to keep system
-sleep from being blocked indefinitely by RPC or filesystem waits. Preserve
-that behavior for suspend and hibernation, but do not freeze
-TASK_FREEZABLE_UNSAFE tasks for non-PM freezer requests.
+On Tue, Jul 14, 2026 at 02:53:40PM +0800, Binbin Zhou wrote:
+> Hi Conor:
+>=20
+> Thanks for your reply.
+>=20
+> On Sat, Jul 11, 2026 at 12:21=E2=80=AFAM Conor Dooley <conor@kernel.org> =
+wrote:
+> >
+> > On Fri, Jul 10, 2026 at 04:24:59PM +0800, Binbin Zhou wrote:
+> > > Add a new compatible string `loongson,ls2k0300-thermal` for the therm=
+al
+> > > sensor found on the Loongson-2K0300 SoC.
+> > >
+> > > The hardware differs from the existing SoCs in its register layout: it
+> > > requires two register regions (one for the thermal sensor control and
+> > > another for the CPU ID).
+> > >
+> > > Update the binding to describe this new requirement.
+> > >
+> > > Signed-off-by: Binbin Zhou <zhoubinbin@loongson.cn>
+> > > ---
+> > >  .../thermal/loongson,ls2k-thermal.yaml        | 68 ++++++++++++++---=
+--
+> > >  1 file changed, 50 insertions(+), 18 deletions(-)
+> > >
+> > > diff --git a/Documentation/devicetree/bindings/thermal/loongson,ls2k-=
+thermal.yaml b/Documentation/devicetree/bindings/thermal/loongson,ls2k-ther=
+mal.yaml
+> > > index 79e691b08341..b5cbfd201105 100644
+> > > --- a/Documentation/devicetree/bindings/thermal/loongson,ls2k-thermal=
+=2Eyaml
+> > > +++ b/Documentation/devicetree/bindings/thermal/loongson,ls2k-thermal=
+=2Eyaml
+> > > @@ -10,13 +10,11 @@ maintainers:
+> > >    - zhanghongchen <zhanghongchen@loongson.cn>
+> > >    - Yinbo Zhu <zhuyinbo@loongson.cn>
+> > >
+> > > -allOf:
+> > > -  - $ref: /schemas/thermal/thermal-sensor.yaml#
+> > > -
+> > >  properties:
+> > >    compatible:
+> > >      oneOf:
+> > >        - enum:
+> > > +          - loongson,ls2k0300-thermal
+> > >            - loongson,ls2k1000-thermal
+> > >            - loongson,ls2k2000-thermal
+> > >        - items:
+> > > @@ -39,23 +37,46 @@ required:
+> > >    - reg
+> > >    - interrupts
+> > >
+> > > -if:
+> > > -  properties:
+> > > -    compatible:
+> > > -      contains:
+> > > -        enum:
+> > > -          - loongson,ls2k2000-thermal
+> > > +allOf:
+> > > +  - $ref: /schemas/thermal/thermal-sensor.yaml#
+> > >
+> > > -then:
+> > > -  properties:
+> > > -    reg:
+> > > -      minItems: 2
+> > > -      maxItems: 2
+> > > +  - if:
+> > > +      properties:
+> > > +        compatible:
+> > > +          contains:
+> > > +            enum:
+> > > +              - loongson,ls2k0300-thermal
+> > > +    then:
+> > > +      properties:
+> > > +        reg:
+> > > +          items:
+> > > +            - description: Thermal base register region
+> > > +            - description: CPU ID register region
+> > >
+> > > -else:
+> > > -  properties:
+> > > -    reg:
+> > > -      maxItems: 1
+> > > +  - if:
+> > > +      properties:
+> > > +        compatible:
+> > > +          contains:
+> > > +            enum:
+> > > +              - loongson,ls2k1000-thermal
+> > > +    then:
+> > > +      properties:
+> > > +        reg:
+> > > +          items:
+> > > +            - description: Thermal base register region
+> > > +
+> > > +  - if:
+> > > +      properties:
+> > > +        compatible:
+> > > +          contains:
+> > > +            enum:
+> > > +              - loongson,ls2k2000-thermal
+> > > +    then:
+> > > +      properties:
+> > > +        reg:
+> > > +          items:
+> > > +            - description: Thermal base register region
+> > > +            - description: Thermal data output register region
+> > >
+> > >  unevaluatedProperties: false
+> > >
+> > > @@ -69,3 +90,14 @@ examples:
+> > >          interrupts =3D <7 IRQ_TYPE_LEVEL_LOW>;
+> > >          #thermal-sensor-cells =3D <1>;
+> > >      };
+> > > +
+> > > +  - |
+> > > +    #include <dt-bindings/interrupt-controller/irq.h>
+> > > +    thermal-sensor@16001500 {
+> > > +       compatible =3D "loongson,ls2k0300-thermal";
+> > > +       reg =3D <0x16001500 0x30>,
+> > > +             <0x16003ff0 0x8>;
+> >
+> > Quite frankly, the address and size of this look like the second
+> > register region here is actually a few bytes in a syscon that is being
+> > misrepresented.
+> > What lies at the addresses immediately before and after 0x16003ff0?
+>=20
+> Yes, it can be viewed as part of the system configuration registers,
+> which appear somewhat disorganized. Within this section,
+> 0x16003fe0=E2=80=930x16003ffc represents eight chip ID registers.
+>=20
+> 0x16003fe0 --> the 4th chip id
+> 0x16003fe4 --> the 5th chip id
+> 0x16003fe8 --> the 6th chip id
+> 0x16003fec --> the 7th chip id
+> 0x16003ff0 --> the 0th chip id
+> 0x16003ff4 --> the 1st chip id
+> 0x16003ff8 --> the 2nd chip id
+> 0x16003ffc --> the 3rd chip id
+>=20
+> Perhaps I shouldn=E2=80=99t have referenced `0x16003ff0` separately here.=
+ It
+> would be more reasonable to declare the entire chip ID address space
+> as a separate syscon and have it referenced by thermal driver.
 
-Make __TASK_FREEZABLE_UNSAFE independent of CONFIG_LOCKDEP so the freezer
-can test the unsafe state in all builds. The lockdep check still uses the
-same bit to suppress the locks-held warning for these known unsafe waits.
+Probably, but even being of size 0x20 feels suspiciously small and that
+it is likely that this is part of an even larger grouping of misc.
+registers.
 
-Document the PM-only freezer semantics for TASK_FREEZABLE_UNSAFE.
+>=20
+> For example:
+>=20
+> In DTS{i}:
+> chipid_syscon: syscon@16003fe0 {
+>        compatible =3D =E2=80=9Cloongson,ls2k0300-cphipid-syscon=E2=80=9D,=
+ =E2=80=9Csyscon=E2=80=9D;
+>        reg =3D <0x0 0x16003fe0 0x0 0x20>;
+> };
+>=20
+> In thermal driver:
+> Use
+> `syscon_regmap_lookup_by_phandle(np, "loongson,chipid"); `
+> Or:
+> `syscon_regmap_lookup_by_compatible("loongson,ls2k0300-cphipid-syscon");`
+>=20
+> get the chip id address space.
+>=20
+> >
+> >
+> > Thanks,
+> > Conor.
+> >
+> > > +       interrupt-parent =3D <&liointc1>;
+> > > +       interrupts =3D <20 IRQ_TYPE_LEVEL_HIGH>;
+> > > +       #thermal-sensor-cells =3D <1>;
+> > > +    };
+> > > --
+> > > 2.52.0
+> > >
+>=20
+> --=20
+> Thanks.
+> Binbin
 
-Signed-off-by: Stanislav Kinsburskii <skinsburskii@gmail.com>
----
- Documentation/power/freezing-of-tasks.rst |    3 +++
- include/linux/sched.h                     |    2 +-
- kernel/freezer.c                          |   10 ++++++++++
- 3 files changed, 14 insertions(+), 1 deletion(-)
+--mxs6UIz3nJYmRMyR
+Content-Type: application/pgp-signature; name=signature.asc
 
-diff --git a/Documentation/power/freezing-of-tasks.rst b/Documentation/power/freezing-of-tasks.rst
-index df9755bfbd94..0ccf2ea041cf 100644
---- a/Documentation/power/freezing-of-tasks.rst
-+++ b/Documentation/power/freezing-of-tasks.rst
-@@ -16,6 +16,9 @@ II. How does it work?
- 
- There is one per-task flag (PF_NOFREEZE) and three per-task states
- (TASK_FROZEN, TASK_FREEZABLE and __TASK_FREEZABLE_UNSAFE) used for that.
-+Tasks sleeping in TASK_FREEZABLE_UNSAFE may hold locks or other resources
-+that make them unsafe to freeze for administrative freezer requests, so the
-+freezer only freezes them during system-wide suspend or hibernation.
- The tasks that have PF_NOFREEZE unset (all user space tasks and some kernel
- threads) are regarded as 'freezable' and treated in a special way before the
- system enters a sleep state as well as before a hibernation image is created
-diff --git a/include/linux/sched.h b/include/linux/sched.h
-index 908aff695ef8..67e052dee1c4 100644
---- a/include/linux/sched.h
-+++ b/include/linux/sched.h
-@@ -122,7 +122,7 @@ struct user_event_mm;
- #define TASK_NEW			0x00000800
- #define TASK_RTLOCK_WAIT		0x00001000
- #define TASK_FREEZABLE			0x00002000
--#define __TASK_FREEZABLE_UNSAFE	       (0x00004000 * IS_ENABLED(CONFIG_LOCKDEP))
-+#define __TASK_FREEZABLE_UNSAFE		0x00004000
- #define TASK_FROZEN			0x00008000
- #define TASK_STATE_MAX			0x00010000
- 
-diff --git a/kernel/freezer.c b/kernel/freezer.c
-index a76bf957fb32..bf7bb15c144f 100644
---- a/kernel/freezer.c
-+++ b/kernel/freezer.c
-@@ -124,6 +124,16 @@ static int __set_task_frozen(struct task_struct *p, void *arg)
- 	if (!(state & (TASK_FREEZABLE | __TASK_STOPPED | __TASK_TRACED)))
- 		return 0;
- 
-+	/*
-+	 * TASK_FREEZABLE_UNSAFE waiters may hold locks or other resources that
-+	 * other tasks need in order to make forward progress.  Only freeze
-+	 * them for system-wide suspend or hibernation, where failing to freeze
-+	 * them can prevent the sleep transition from making progress.
-+	 */
-+	if ((state & __TASK_FREEZABLE_UNSAFE) &&
-+	    !pm_freezing && !pm_nosig_freezing)
-+		return 0;
-+
- 	/*
- 	 * Only TASK_NORMAL can be augmented with TASK_FREEZABLE, since they
- 	 * can suffer spurious wakeups.
+-----BEGIN PGP SIGNATURE-----
 
+iHUEABYKAB0WIQRh246EGq/8RLhDjO14tDGHoIJi0gUCalZpuQAKCRB4tDGHoIJi
+0hrJAP9oL8N9deSXz9dWt+ZEZYfbS19yv8wqpWxkFNHzB6DWwQEAtSc8DI7IDfPv
+ibyhUOue/ShcNI/iaFNCSty4HW1vkw0=
+=x7Y7
+-----END PGP SIGNATURE-----
 
+--mxs6UIz3nJYmRMyR--
