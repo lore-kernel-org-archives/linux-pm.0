@@ -1,192 +1,182 @@
-Received: from mail-wr1-f53.google.com (mail-wr1-f53.google.com [209.85.221.53])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from GVXPR05CU001.outbound.protection.outlook.com (mail-swedencentralazon11013012.outbound.protection.outlook.com [52.101.83.12])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D91A42356BE
-	for <linux-pm@vger.kernel.org>; Tue, 14 Jul 2026 14:17:39 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.53
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1784038661; cv=none; b=o2Sgk+7BTCwWjvankBEPv1Dk8Q+DhmgD9OrX0ExX5U1joSjy9EbSAVaY0mlTFDfJX5oTw4F0xc8RGNAzUUcGUPir3hjg1PhWTPH8wNZ1O/qKq5tW/nvy/xhcn6dGpYJJGi43vCUBzcMnOj27rmzIKOts+3CpE6UeAOiFwP5T78U=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1784038661; c=relaxed/simple;
-	bh=Qou9KF1ZyhKg/b4S+eAv/lKZWaeMGImXF6jVQFtad0w=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=ZkXFQkh1CQBsppc+aGedaHEV+vCdQKbh+Gbxp589KHz+I8SLn+9gTu6xxDuYYpiD5gPbxMrWnEHalhQ5EC4BvWXACu3WMY9zlx5AAXo5RJz+G8xd7MDI9kVdVqveIJJI3KIckNT3QQBfEfoQPjsMUFIBpRpnd1U/EvRfLiVPENo=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=layalina.io; spf=pass smtp.mailfrom=layalina.io; dkim=pass (2048-bit key) header.d=layalina-io.20251104.gappssmtp.com header.i=@layalina-io.20251104.gappssmtp.com header.b=Emz+EzJL; arc=none smtp.client-ip=209.85.221.53
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=layalina.io
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=layalina.io
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 59544445AFA;
+	Tue, 14 Jul 2026 14:30:09 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.83.12
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1784039411; cv=fail; b=bB+xDTNCaeR3YkpdtMD8TzerpUncewRPPD2VY8hg7iGv09hO7Z89cEmiIkL/Adlpa1WtNU+Tkyq+8LwlcafZtohyOioEBkIYqo4EQmv799iX6Cim1fn3evWQeLJNMmcqZby+Z8Uq5ABnC49UdGhydYagxbL1gnzWjCv1HUJFl4A=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1784039411; c=relaxed/simple;
+	bh=bfaX/5mcxhz4zbKKPLVsTZGtnNkALf6AEAAqQysqISs=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:Content-Type:
+	 Content-Disposition:In-Reply-To:MIME-Version; b=DWxpfsqu9yX5kxlUlWyrmfZD3pMDD5jKlTaKSw1JfWnvSp42DQxCf7lEXn7T4F6P5gFCQowaOm5rWfg1ujPoXDu8bbI4MjXntf9cScgCw/OvFdlSVao/1MDKBZ0uHX2zHBXAkVwYd/Do3nHaQx3oecOpKnFHuo0zqL9TVwM/wV4=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=oss.nxp.com; spf=pass smtp.mailfrom=oss.nxp.com; dkim=pass (2048-bit key) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.b=dL4qzYuk; arc=fail smtp.client-ip=52.101.83.12
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=oss.nxp.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.nxp.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=layalina-io.20251104.gappssmtp.com header.i=@layalina-io.20251104.gappssmtp.com header.b="Emz+EzJL"
-Received: by mail-wr1-f53.google.com with SMTP id ffacd0b85a97d-47df440fcd5so2439950f8f.3
-        for <linux-pm@vger.kernel.org>; Tue, 14 Jul 2026 07:17:39 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=layalina-io.20251104.gappssmtp.com; s=20251104; t=1784038658; x=1784643458; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=jMsfXHlyn80iYs5pu2l/GiQdJ127GeZd2nn2EHPSV04=;
-        b=Emz+EzJL/vbmZppcK/AxJwnPkSN1IPdpmcBWBvjD/e8eWuH+Y2HiADdKk2gpLF2qi6
-         nj0pCTp5FHs1bbV2u2Fuf77mcUmrKM1iW5nYTb3SoIc2hKn5rGI7eR5Wfm6tgYi0wgS3
-         bgxiSBngRSaZLSSvSlY2b/hAfahCHjZpQsx2tkIUe7Q8xgXunldCeZalK4bQXBljcNdE
-         IrkIohjgCEAPuOcP67fZwVEtVBk1loMlgZiilKFmWITs3WiiyqZkg9NpcOhm43wAHDXm
-         0bZQKYu0F9LQqJiLs1VvZdiXhM4EzxN1XYP07+KkzrXpSM29jpfib0Nh8gDFUVk7GdMw
-         jEuQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1784038658; x=1784643458;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=jMsfXHlyn80iYs5pu2l/GiQdJ127GeZd2nn2EHPSV04=;
-        b=ZZsc+aKFlEFmT25sEH3cM43Z294GWbsR8aEiqQZOc3mZu6LkTcH2wCx4G5VlBTaqoR
-         Y/eB45RmLpDi6103SCpoaqbLg/o5syng0wfj5oP4P4kBcjrIQTofDKchVZhe/OwZZgoU
-         BcUZUGnWUDrYVKAHSLuI9kb3ZF6cJnGy/WsR3Jfrpp8G1urhzAsUfyLSszil0DAjkl56
-         aU9J6EuPKlocfRNUxl4MdhS9SLC+kulmL+1AFvLX+yl1dXOg0nY9U2VIOrlHqppUOFmV
-         XftQ7UbtXKMYeEKNvgF0mx+CAlatXrbP95IL1QE+uKvhBtL2XpNndYwM02uXl/eCmb1M
-         wEgw==
-X-Forwarded-Encrypted: i=1; AHgh+Rofok4y251Jl0L/2vfm14e6uwkbZgfY+wF+/CBAxRt4xuxKkGTYMPEEew62kZATxi/psImeBOYajg==@vger.kernel.org
-X-Gm-Message-State: AOJu0YxoFWPyAuibnBdQG+9D2oVVruNlKjETxuzn4uVM8+xUHyKeC4i+
-	ny0+dJIGTeGx1vCI0uStDGaKm6XvEHXyskftdAq16nM2uVCQK53pGSxEReBvYtihR2Q=
-X-Gm-Gg: AfdE7cnNQXHQZNEw141pQWBTS2RB/PDNpDBa+cdgjUUKd2xCzKjznby/fMQ3FnTVYsh
-	YXZrbUomtYvlv1pw9MKVfgVEX9FpsXuZs7tmwWgUj2pa1sOR5VBBCUoQhzheny+Ve85GQp7Q0mt
-	uy2v1l4pbDmb1NIz7eWGAJOwpzSMou5UD8dPYVYyOcvN12s+Yhwo2pY44ouviHZyzEwMIe2CjFn
-	5cobG6P7O89Mug1J/BaeUSgWUamC06DhfdU2+SSVYvzFYMkBmpK9oZ010pchJPA45Jdvj72+lFH
-	agMKdYphWyZQq6UAoB/zB3esXnSYYpap+dbmVStfoKh+BygNOhAW9wkDX0zcp4s46x2nqIxDMj4
-	DdkJGSJyv8Sd0lrnzVZ4cKgQa57wonQGr4rCAVlr+Th3hu3FLiggd++BV7PDkwuw1nUSGVZT+GO
-	wrqRh6GrU=
-X-Received: by 2002:a05:6000:26c7:b0:47d:f441:5f93 with SMTP id ffacd0b85a97d-47f2dcc02eemr15424831f8f.25.1784038657983;
-        Tue, 14 Jul 2026 07:17:37 -0700 (PDT)
-Received: from airbuntu ([149.50.209.149])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-47f4829896asm6726842f8f.23.2026.07.14.07.17.35
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 14 Jul 2026 07:17:37 -0700 (PDT)
-Date: Tue, 14 Jul 2026 15:17:33 +0100
-From: Qais Yousef <qyousef@layalina.io>
-To: zhidao su <soolaugust@gmail.com>
-Cc: zhidao su <suzhidao@xiaomi.com>, Ingo Molnar <mingo@kernel.org>,
-	Peter Zijlstra <peterz@infradead.org>,
-	Vincent Guittot <vincent.guittot@linaro.org>,
-	"Rafael J . Wysocki" <rafael@kernel.org>,
-	Viresh Kumar <viresh.kumar@linaro.org>,
-	Juri Lelli <juri.lelli@redhat.com>,
-	Steven Rostedt <rostedt@goodmis.org>,
-	John Stultz <jstultz@google.com>,
-	Dietmar Eggemann <dietmar.eggemann@arm.com>,
-	Tim Chen <tim.c.chen@linux.intel.com>,
-	Chen Yu C <yu.c.chen@intel.com>, Thomas Gleixner <tglx@kernel.org>,
-	linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-Subject: Re: [PATCH v2 RFC 08/13] sched/qos: Add a new sched-qos interface
-Message-ID: <20260714141733.5zubzp64zm3f6p6a@airbuntu>
-References: <20260504020003.71306-1-qyousef@layalina.io>
- <20260504020003.71306-9-qyousef@layalina.io>
- <20260623102858.1866647-1-suzhidao@xiaomi.com>
+	dkim=pass (2048-bit key) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.b="dL4qzYuk"
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=veVwCDQHeIA9YekbB+yQdajdNpfJAtmeeAHNgnz3i4Qw1QIrAX/puu9QcqR1Aeeads3LzQtM5+qph4PmXe4clDm7+O3DuoIMvsK5bsNr9G0ALoUV6uT7seC5WPITrhmc+QMbVOg6VKtDAId4lKuL7kpzPN6rhTf+QIxIYETgCyTLKW4V4B8cYBMDSEkhkAoQaixjX7kPdnuvIjIEFwTkfAj9RFLJpcFA7j8R8ZC4djpmnyVzxjCyKeZpvEnFpLZb3nI9Wv8DDVlB7Bw9Qi04N9fFBrRnxmRfg4L1A/oxc4kClk5bC2ABbMnPpk+I5KS8KEvKojLy/j5JW7FxvI2bag==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=yVPunN/sc7tN/ea+d+QwiqqRjb7nh1U8N60Jz8k4knk=;
+ b=NxC++EmbQbCDnR05ctllNHEdcdsjgBy8/+i7Twr4xCZjfpNc1MhJ946yUeebDfPRKEPN8xrzgRK7P2Gjxvrt75KDXkDtpCS9+GSS1Qu2yKWYraj4J75+ddG90cjey53uMU1NZM1E4/KKNmHUXoqxXh4yqOOcVduL9LjyTXL07cFOrrPujiQZWklFBTt83JspkQoqvxDDiJdISoSoJwV/cX4i10yvprHpBZ4P7nMAv1YMMcL/qUkSviNW/MvINc58qZpy96OK9pjkOHqDpYKoUrafcqoXbC210d19dCDgHdgPy3dlxfFYTwApPFWYpuCmVjjGTMRQ/iZYQJEYNXco/A==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=oss.nxp.com; dmarc=pass action=none header.from=oss.nxp.com;
+ dkim=pass header.d=oss.nxp.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=NXP1.onmicrosoft.com;
+ s=selector1-NXP1-onmicrosoft-com;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=yVPunN/sc7tN/ea+d+QwiqqRjb7nh1U8N60Jz8k4knk=;
+ b=dL4qzYukerGGt1EAyE12SNj6txUzV516Cu8FJFrgmLj5rk5gWREwz4LQzhLpSbOUu/Nz1nYB4C0UbX10KpjOL5qp8Q3YBISMqjfwzXRUjj3lcheFQonlo3wxsNuYClPffA7DngZJTzFpQt/uQX+XiXCdZ+d4HPkBes08tYUEK6BtXSXBF7EIRBlGgi8TFp504JD4R+aD+M3Cu7XDA/lGApY4H97cZ83gmpnmZ4MwlEbJEeFjHKVtvNinLpG2kKrv8w6n4b8U11rQUZmMinCe6nSQm9jYp71tfsWFChUHDj+Y/U+xPeUZY18b9cdoQfmQLC83NAcrWBKU0h1plsso5Q==
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=oss.nxp.com;
+Received: from GV2PR04MB11799.eurprd04.prod.outlook.com (2603:10a6:150:2cf::9)
+ by DBBPR04MB7835.eurprd04.prod.outlook.com (2603:10a6:10:1ea::23) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.202.19; Tue, 14 Jul
+ 2026 14:30:05 +0000
+Received: from GV2PR04MB11799.eurprd04.prod.outlook.com
+ ([fe80::2146:83a2:5329:b7c]) by GV2PR04MB11799.eurprd04.prod.outlook.com
+ ([fe80::2146:83a2:5329:b7c%6]) with mapi id 15.21.0202.018; Tue, 14 Jul 2026
+ 14:30:05 +0000
+Date: Tue, 14 Jul 2026 09:29:51 -0500
+From: Frank Li <Frank.li@oss.nxp.com>
+To: Haoning.CHENG@cn.bosch.com
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>,
+	Daniel Lezcano <daniel.lezcano@linaro.org>,
+	Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>,
+	Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>, Shawn Guo <shawnguo@kernel.org>,
+	Sascha Hauer <s.hauer@pengutronix.de>,
+	Pengutronix Kernel Team <kernel@pengutronix.de>,
+	Fabio Estevam <festevam@gmail.com>, linux-pm@vger.kernel.org,
+	devicetree@vger.kernel.org, imx@lists.linux.dev,
+	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v8 2/3] thermal/drivers/imx: Fix rounding and clamp for
+ i.MX7D alarm
+Message-ID: <alZH33GsKgWdUDOi@SMW015318>
+References: <20260714-b4-symana21-11221-imx-thermal-support-upstream-6-18-v8-0-d54d8690e16e@cn.bosch.com>
+ <20260714-b4-symana21-11221-imx-thermal-support-upstream-6-18-v8-2-d54d8690e16e@cn.bosch.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260714-b4-symana21-11221-imx-thermal-support-upstream-6-18-v8-2-d54d8690e16e@cn.bosch.com>
+X-ClientProxiedBy: PH7P221CA0055.NAMP221.PROD.OUTLOOK.COM
+ (2603:10b6:510:33c::27) To GV2PR04MB11799.eurprd04.prod.outlook.com
+ (2603:10a6:150:2cf::9)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20260623102858.1866647-1-suzhidao@xiaomi.com>
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: GV2PR04MB11799:EE_|DBBPR04MB7835:EE_
+X-MS-Office365-Filtering-Correlation-Id: 9fbd95ac-d388-42c6-a986-08dee1b46583
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|1800799024|366016|376014|7416014|19092799006|23010399003|22082099003|18002099003|4143699003|11063799006|56012099006|6133799003;
+X-Microsoft-Antispam-Message-Info:
+	//whhQvAK9iW+mJxutbqMkkgSyYIDG+Zt6oDdadJWz7Ew3HUcFfEzaUcPSZA9uSWJHP9I1gAszyjC2sTQwBJfcuWq75f+15Y6t8pDtSTVoEwlXimIJKMB/dBVsFmPIrb24vWZttfDVfn4mpBCx19w0m/976+HJpmdUM+bwU2CIVFZXkujgo47DbRmi1PLMSHzmoEHTuk62WcHgZTfTvU7fgvOkbhLCebWutZhd6WV6JjG99sNB1AvAlaKBHGTeBVjNynlNjSJ+WSckerrylz35CCY5MWUJD8eReM2ccaBHSVT8sXqFSKeoa8iKv0MqoPmLEe4yo4ULb/5wxOKnMkAvhDTZPPfCSK6LZNe5HxuDWIY135+mnysSvtXYYSxMzABe//v6l+Gr9aEcvdwUcTCkpdC/HMRVAUmAbdoaVLaLbzf/d5JIzUrxK5+TQj+2wF1vLx1viSO6Hzf4bLXbf0hwCbDJYhgJxL7HOjmi5sZxNsPDkMh6eGEbfPCbZfGg5cxuEp9/i7sOd6xUeaAgTnRStzyMq13+Rn8ympjbRn/lh4tTBJrQY29pxxRDEP3MZzzs6GBg031e2Zwi5sM8sDry5k36xLDLUx1fiZQs3V+f+xawfSRFDZ6lUnOMPEwxKhljGFg/99IQ+RB31xqOt1PhDGjreuSlq/LV5go+oct0Q=
+X-Forefront-Antispam-Report:
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:GV2PR04MB11799.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(1800799024)(366016)(376014)(7416014)(19092799006)(23010399003)(22082099003)(18002099003)(4143699003)(11063799006)(56012099006)(6133799003);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	=?us-ascii?Q?KniaMN5ytJkC0jVLBFNwwbsh02c5m5L5DpuNnkBermy+WEFdf0rlCqN9Wh1z?=
+ =?us-ascii?Q?eN8F/MLO/eT/ld9SPLnay9FGvsq8x2YK7yNeHcThtMeMX868kX4D4wg7PQQ9?=
+ =?us-ascii?Q?3d7rPuRrC+Dd5ku++8jO3udyTEuJyhawUdvB3OxKfLcca87ufmDgsJ2f2Dsh?=
+ =?us-ascii?Q?eWcPIuF2QRB6v4wRgC+YiEL208CXu3Z6L11/oyWy0QcETvvjgpNyy5yyWU1f?=
+ =?us-ascii?Q?+LI6mhQOzy+/suIHIW0rdWtTrkP8aQvD1Vj8LU1FXlvk1B90f3jcaGMlUz0+?=
+ =?us-ascii?Q?6+LaSROaW2ddDgFNtsr9Qsfg11dyTzkWFHaDHuAUQHQTFETquGQMyw4ypwP9?=
+ =?us-ascii?Q?rywOWrbYZyIExCw6HXHOfN+y2iAEFaoHw3UVl7MOeLpNyxrEZU+HpybwAFyA?=
+ =?us-ascii?Q?vF+yrmUA6Ix3WmUY12OLCKViF1mJCxZyvPkIop4JzeY/8IelqiohK98RSBm0?=
+ =?us-ascii?Q?CrCUPsNZJBlu/GSDoGYsUfj7AiEzvdlHs4Zjg6ZL/U/SLHWlBjwE8wZvIjRJ?=
+ =?us-ascii?Q?3oIkC7MqJI8JUnShN0FFNMTEJow/NZIjx2x4Wc3ay1wMjRGwA0eravvA09kz?=
+ =?us-ascii?Q?EaMiW+ir06NTuCzexgTv0D7Qrcmz7Hm5O4cJXvpW+ta3Lmv2A3ztofxZYz+/?=
+ =?us-ascii?Q?vHYzi2+NQIDTy6on3aVqf2M0aPfBGKaPnu005W2EcdfJuSSceaaqWLWBntAX?=
+ =?us-ascii?Q?Y7PkTmAV2FHSG8uiSakB2lh2QPcy1OlwzneTuBqRn+SKt4w46Wno4hglEPEG?=
+ =?us-ascii?Q?+71eia1g2t0tNz3j/hK37GZitmLWOqL5mfibjSv02xYDuuhIC11KJJM16dIe?=
+ =?us-ascii?Q?gqOMjX1BvN/odM6B/JZuh/DDGaizCjL0onENOfw/PPsZQ9RWP0i+plvDIvqq?=
+ =?us-ascii?Q?Sheh8L/p4WBb782qNnlq/Q+q91SowvxtBp3UjgMUREtfEm1HiG30Mlp9jAUB?=
+ =?us-ascii?Q?mSdJxlYIs4U1H+2Vav5UOEL6emgEM+qNftS96HFh9FXEwj95WXgKOoEyWOcu?=
+ =?us-ascii?Q?E9rfoeKqdRCpkxBzQ9bNFi9IuljYKQm9L+9oBzEBGRyyqXx/2yoagxdrY76m?=
+ =?us-ascii?Q?tTJ47gNzT85sPqyvHbS7jd0dXPOt//9dWho7JtXtnWoDxVVQC25MgOvGpaBD?=
+ =?us-ascii?Q?0VhKHcdTFKglON6wEqsaEsQrQzp6K9QjfxA+Q7UUkJ75Hif7/YehU0yWN+Dh?=
+ =?us-ascii?Q?hj65sqciOZlD9d9NaS+8WavXUUPHlURgOZzrEVx9nSxyErV1kG5crnMpIGkm?=
+ =?us-ascii?Q?UhDUdCGN0UKOBgKPCX3/h4CgIKs/eINA7dunLIdxgkQ7vcgom8ZYpcngVugU?=
+ =?us-ascii?Q?Mg57m+EcghGbNlImDvcQHmCDKdxpl2prLEzebw0c+yQTkqloueRykQiDNc6D?=
+ =?us-ascii?Q?rQt9RNqeGlxxgbCTg99rw78lsNwjaTRZuPZs8qrrmYRB+082+PkSc752T95g?=
+ =?us-ascii?Q?88DxrrZjrAKHPYg0t9ACmrtcxeYF3aHjF9M0DkkfPMW1fS64O57qG9lT2NK5?=
+ =?us-ascii?Q?qxcIpymb8BdpoVFOc/KA+uGH5n/oyDkIWdV9bkqslLeFhFeowEiLikUvGQZq?=
+ =?us-ascii?Q?FdlXbkjjW5tNYF9uxnb/Jwz66VHf9X/jcEtr24PqQqNARFxROhWs5Rs0gOAf?=
+ =?us-ascii?Q?TUwabjyX5Ap3Xp4PtD1G/rUVGXI5rEVB/nuE30US5R/zYwhMQ/H8RqXydo/4?=
+ =?us-ascii?Q?ndlGqed7w0roZ8vVBiN0kZgV0lfXI529+DKsaSKUDR2CMy6iB+GGZIFCInqu?=
+ =?us-ascii?Q?x3VHyzkP8zliD8OEOTEvx99IDh7xXR1JgwBQ46RFCwb7XHJGLB9U?=
+X-OriginatorOrg: oss.nxp.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 9fbd95ac-d388-42c6-a986-08dee1b46583
+X-MS-Exchange-CrossTenant-AuthSource: GV2PR04MB11799.eurprd04.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 14 Jul 2026 14:30:05.2332
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: GHlHuHh/CvDjgH15V7D2CJhu5axIh3XMhhYeOwzF8MisbRT5pmz7KBZSmOmXLKAUab2RPEeRDoPN5FEXBpNPF29uluqKOL3GYfPw2guoTIglaFIxaEftO5SdSjWjII3F
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: DBBPR04MB7835
 
-On 06/23/26 18:28, zhidao su wrote:
-> On Mon, May 04, 2026 at 02:59:58AM +0100, Qais Yousef wrote:
-> > Provide a generic and extensible interface to describe arbitrary QoS
-> > tags to tell the kernel about specific behavior that is doesn't fall
-> > into the existing sched_attr.
-> >
-> > The interface is broken into three parts:
-> >
-> > * Type
-> > * Value
-> > * Cookie
-> 
-> Hi Qais,
-> 
-> I tested the proposed ABI on an Android device running
-> 6.18.20-android17-3-maybe-dirty-4k with this sched_qos series carried
-> locally. This was a direct syscall preflight rather than an app-level
-> benchmark:
-> 
->   - set SCHED_FLAG_QOS / SCHED_QOS_RAMPUP_MULTIPLIER=4 on an existing
->     task with sched_setattr();
->   - read it back with sched_getattr() and check type/value;
->   - repeat with value 0;
->   - fail the test if sched_setattr() returns 0 but readback does not match.
-> 
-> This exposed two ABI semantics that I think need to be nailed down.
-> 
-> First, a QoS-only sched_setattr() can return success without applying the
-> QoS state.
-> 
-> In __sched_setscheduler(), the policy-unchanged fast path checks whether
-> nice, RT priority, DL params, or util-clamp changed before deciding there
-> is nothing to do. It does not treat SCHED_FLAG_QOS as a change there, so a
-> call that only changes sched_qos_type/value can return 0 before reaching
-> __setscheduler_sched_qos().
+On Tue, Jul 14, 2026 at 06:28:42PM +0800, Haoning CHENG via B4 Relay wrote:
+> From: Haoning CHENG <Haoning.CHENG@cn.bosch.com>
+>
+> Convert the alarm temperature from millicelsius to degrees for i.MX7D
+> using ceiling division instead of integer division, ensuring rounding
+> errors do not cause the alarm to trigger below the intended threshold.
+> Use DIV_ROUND_UP() for non-negative values and plain integer division
+> for negative values, since C rounds toward zero which is equivalent to
+> ceiling when the divisor is positive.
+>
+> Add clamp() to ensure the hardware register value stays within the 9-bit
+> range (0..0x1ff) of the i.MX7D alarm field, preventing silent truncation
+> if an out-of-range value is written.
+>
+> Signed-off-by: Haoning CHENG <Haoning.CHENG@cn.bosch.com>
+> ---
 
-Oh, this is a bug. I'll fix it in next iteration, thanks for catching it.
+Reviewed-by: Frank Li <Frank.Li@nxp.com>
 
-> 
-> That makes syscall success ambiguous for a userspace manager: it needs to
-> read the state back to know whether the QoS request actually took effect.
-> I think SCHED_FLAG_QOS should be sufficient to force the change path.
-
-Yes, we should be only to query the value of a specific QoS.
-
-> 
-> Second, sched_getattr() uses sched_qos_type from the userspace sched_attr
-> buffer as the selector for which QoS value to report:
-> 
-> 	if (copy_from_user(&kattr.sched_qos_type,
-> 			   &uattr->sched_qos_type,
-> 			   sizeof(kattr.sched_qos_type)))
-> 		return -EFAULT;
-> 
-> 	switch (kattr.sched_qos_type) {
-> 	case SCHED_QOS_RAMPUP_MULTIPLIER:
-> 		kattr.sched_qos_value = p->sched_qos.rampup_multiplier;
-> 		kattr.sched_qos_cookie = 0;
-> 		break;
-> 	default:
-> 		break;
-> 	}
-> 
-> If this input-selector behavior is intentional, I think it should be
-> documented as part of the query ABI. Otherwise sched_getattr() looks like
-> an output-only operation, and helper code can easily confuse "I did not
-> select a QoS type to query" with "this task has no QoS state".
-
-It is intentional. If QoS is 0, this is treated as NONE and nothing is reported
-back. I'll improve the docs, I do try to say that these QoS must be set one at
-a time, which also means must be read back one at a time too.
-
-I tried to trigger discussion whether I should make this an array of 3 or
-5 elements to allow faster writing/reading. I'll keep this an open question
-that can be added at anytime once we address the remaining areas of supporting
-cookies etc.
-
-> 
-> The same preflight also checked that short sched_attr sizes with
-> SCHED_FLAG_QOS fail predictably. That part does fail today, but indirectly
-> because the short copy leaves sched_qos_type as SCHED_QOS_NONE. It may be
-> clearer to make the required size for SCHED_FLAG_QOS explicit, similar to
-> the util-clamp size check.
-
-You mean this uclamp check in sched_copy_attr()?, right?
-
-	if ((attr->sched_flags & SCHED_FLAG_UTIL_CLAMP) &&
-	    size < SCHED_ATTR_SIZE_VER1)
-		return -EINVAL;
-
-Yes, should add this too.
-
-> 
-> With set/readback checks in place, I can observe a narrow scheduler-layer
-> signal in a controlled native transition workload. I would not treat that
-> as a generic Android UI latency result or a Tested-by tag, but the
-> preflight made the set/query semantics above stand out.
-> 
-> Thanks.
-
-Thanks!
+>  drivers/thermal/imx_thermal.c | 12 +++++++++---
+>  1 file changed, 9 insertions(+), 3 deletions(-)
+>
+> diff --git a/drivers/thermal/imx_thermal.c b/drivers/thermal/imx_thermal.c
+> index 38c993d1bcb3..7f7d1116b9d6 100644
+> --- a/drivers/thermal/imx_thermal.c
+> +++ b/drivers/thermal/imx_thermal.c
+> @@ -240,10 +240,16 @@ static void imx_set_alarm_temp(struct imx_thermal_data *data,
+>
+>  	data->alarm_temp = alarm_temp;
+>
+> -	if (data->socdata->version == TEMPMON_IMX7D)
+> -		alarm_value = alarm_temp / 1000 + data->c1 - 25;
+> -	else
+> +	if (data->socdata->version == TEMPMON_IMX7D) {
+> +		if (alarm_temp >= 0)
+> +			alarm_temp = DIV_ROUND_UP(alarm_temp, 1000);
+> +		else
+> +			alarm_temp /= 1000;
+> +		alarm_value = alarm_temp + data->c1 - 25;
+> +		alarm_value = clamp(alarm_value, 0, 0x1ff);
+> +	} else {
+>  		alarm_value = (data->c2 - alarm_temp) / data->c1;
+> +	}
+>
+>  	regmap_write(map, soc_data->high_alarm_ctrl + REG_CLR,
+>  		     soc_data->high_alarm_mask);
+>
+> --
+> 2.43.0
+>
+>
+>
