@@ -1,227 +1,286 @@
-Received: from mail-pj1-f48.google.com (mail-pj1-f48.google.com [209.85.216.48])
+Received: from mail-wm1-f48.google.com (mail-wm1-f48.google.com [209.85.128.48])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EA17424113D
-	for <linux-pm@vger.kernel.org>; Tue, 14 Jul 2026 14:03:15 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.216.48
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1784037799; cv=pass; b=phCOEufq76k3FNPD9cX12KdvUYOEEjDLuRED2Wup2cWtcbJC6efbK3VQRL9CAjHx0RhUtjrD5yA17OhfCi/qXMozFfCNSxi3yNA3FaoVwmuPLrABDMFfIvca9ztlIjZqaK7lWyL3c7D9/dkNo7LN3VfrZRAR9MX0XdM8/ppYW2s=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1784037799; c=relaxed/simple;
-	bh=jcfCE/0TEkTsIVfXnYBhBH66bO22mTW43lzd2mIpj78=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=tg2hKmDKv5xk/mEIsFnkD7jNNGfAHoVgNy4/mIhQse3BK74G2YcPeK+vOAH2A049dzN9P2VX8iS1QpnzJUIbWxREhdRjMJ16ej7Smk91TFY3K+WDAaFpDlVTknszVTt0mmQFjM4irp7r/ocIr7HqZ9uxuZxUt0/i7P8i4VbWZbQ=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=lAK2SoBn; arc=pass smtp.client-ip=209.85.216.48
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D1EB347CC92
+	for <linux-pm@vger.kernel.org>; Tue, 14 Jul 2026 14:04:39 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.48
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1784037882; cv=none; b=nxG4qQspiFOr4+BPfbm8s+lZ1n6c+JaDaTD9l2X060XG1umT2W9lH1fjFDHSNrQ7z/Lt4gJirGVA9LZxh4CYHWNJYVCicNjGpy0DHZ8pR6n7SltLq5ITWYZihGR6W90jTCPwmZpBxWv3lqln1lEXuojvK1pre5mCDLP4oiIJ1fI=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1784037882; c=relaxed/simple;
+	bh=4DxiNj8LGc7bL1pawhem3WQOEu1nmY0/BoLG3Gvfp4M=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=KL93bitqyYwQdl/Cy06Tk5Atvvc6HjR89ggiadGWq9zg2j+07vlijKd0aEpGsJ5OrvOhdhTjcIA5L+DKI0uZ+CX/ZhO0Bz0eX0cbG8b2/DoJTQbxyLsOn99VBaacPldwgToS4kCld5AYz4HzWysg3NrZ3xkqOle0kaiJ87ah8Ss=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=layalina.io; spf=pass smtp.mailfrom=layalina.io; dkim=pass (2048-bit key) header.d=layalina-io.20251104.gappssmtp.com header.i=@layalina-io.20251104.gappssmtp.com header.b=lDRJ8mID; arc=none smtp.client-ip=209.85.128.48
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=layalina.io
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=layalina.io
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="lAK2SoBn"
-Received: by mail-pj1-f48.google.com with SMTP id 98e67ed59e1d1-381b831d535so1162645a91.0
-        for <linux-pm@vger.kernel.org>; Tue, 14 Jul 2026 07:03:15 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1784037795; cv=none;
-        d=google.com; s=arc-20260327;
-        b=eZ/3JlQf4KEZGZCJLQpatFYc9ewiNYkkanSjSTqv2GYlo9doFzoM+Oz1Ez28hxPFy2
-         fnHOj6nQPtF0tR1h4BWAEU4Q6BJ0+w4ROOvB0hZ41HZsRWs1Ff/zPk55ao0bodkLC1cn
-         SMp8K0S3nzAS6a0F8pSEKCBSV32Ryarw8usiMivMF78KGgstiGCbtTrcGMH80dXjqXBf
-         04cqziREgqSO4nnSyusP4aIkNkpIQUGirgCSS5E2oDrewz0i8IXR+0MH2TcROEDr3we4
-         YLek8ZApjXoIs41/usbSkmpE64X7lMbegZNU4O1MFVUXZ34e1dmyW8modl2nsLTxJE82
-         A9Cw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=myF6T21RyLYT6/CfTBKwlhYNyiiPbXPGvaRTBJcI6ZU=;
-        fh=Pe2gpsv47wgF3q3iva//fEB2UsJumsuAneCC/t296ao=;
-        b=fD4gI+hyF08HREpQhnyQdPy1miMY2lANPoqfUQhzuPeACZ9pfzHrM5HFwsv4yboKgW
-         H9TKmRRKfjYDQL6TZpK971Q26522RqDekABPr1EbXGAx5ULgfh+qmoSz7U4xjABz5RJg
-         1Rdek06idb7BCFGn+B8oc8DEKe1zcT/4SYIRpJhuf63HNhndbNrwf90/dJk1H/y+AdVA
-         uS2kUSVCmVJJ68HodmEEAZfrV/xwC+K1V45pxUfv+dKSQwHWzPRpuRTb9hAUT63rkZa5
-         yatsKLCwCsCDmVCtG/XPenySdmlho36uc22YmkC5GnfRZkAovouS7JRPlIXKZtrNK+Sw
-         JeHA==;
-        darn=vger.kernel.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
+	dkim=pass (2048-bit key) header.d=layalina-io.20251104.gappssmtp.com header.i=@layalina-io.20251104.gappssmtp.com header.b="lDRJ8mID"
+Received: by mail-wm1-f48.google.com with SMTP id 5b1f17b1804b1-493d92b7db3so8500695e9.2
+        for <linux-pm@vger.kernel.org>; Tue, 14 Jul 2026 07:04:39 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1784037795; x=1784642595; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
+        d=layalina-io.20251104.gappssmtp.com; s=20251104; t=1784037878; x=1784642678; darn=vger.kernel.org;
+        h=in-reply-to:content-disposition:content-type:mime-version
+         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
          :date:message-id:reply-to:content-type;
-        bh=myF6T21RyLYT6/CfTBKwlhYNyiiPbXPGvaRTBJcI6ZU=;
-        b=lAK2SoBneg8a79IZxLlhDsoAc5s20dBKXYEmWxNqZbpTv1QYHuXFFTg+NoFNbGZt2D
-         UEVjkRmdqrTUvXv7NUo+KyP47BDLcu4h6ndNAWy8SpgCyMfHyAHNG4l4y3KQQsVM+NfO
-         y3AuDDKNqrG2ji6rSNU4GXaj318V6nIpTK5NE9HzDHEqubMliMFQ/6DYBUTv7cRfhVko
-         3hLr+lBtOX3eNCTXc2oxsUbuLs3l5I4wzeDq7R6fv1ZZeVGJqY1ZEmMy5Km53CIK2+gt
-         sR/h7Ue36rW6UZW3hnySs1O74EAPlLqb2jBd8DkABTJgXXntJDpmIPLfyks3ke+Fgy3h
-         W7wg==
+        bh=1fqK+GBNhdCvtIbsu2YQsK51wtgWHCipu2zsRpqXFuU=;
+        b=lDRJ8mIDgstJQ7RU2u/ReqnBBpUT6tpDd9nUvM4YJMYb9Qwrx28vLVThunrf6+FhAV
+         zSGoQrXNVgVplxhiysljb2SAG4EV85ysqV7KYnGpuImZwdZJ883QPoy+dmirK//ZHOfv
+         gL/mw3fR8A6qKEcGSos1bcN709SNGdLQ+FtKFNld7/RDyn3dqpz1m0xXbvEQqzKQCLG9
+         oYasyFA1/8w7amKnom/UNx9oKNBDqvTickmAtrwzOcOjO7cKxlvVgOHONVqskTj6E41Q
+         nXHXm+zR1FSfB5dowvIShxEaHqDj3mYgp2D+aWiX1DhR+h9o9pG+oAyzrjKvAeeYOxWw
+         mQQg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1784037795; x=1784642595;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:x-gm-gg
+        d=1e100.net; s=20251104; t=1784037878; x=1784642678;
+        h=in-reply-to:content-disposition:content-type:mime-version
+         :references:message-id:subject:cc:to:from:date:x-gm-gg
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=myF6T21RyLYT6/CfTBKwlhYNyiiPbXPGvaRTBJcI6ZU=;
-        b=D2mx2OwFjHaZxMwp0hp/mfoQiOoWQSn56CfCU46thE0or7VOX9qvTENbenDOWRxevL
-         7i5FbGXzGrS4CmDd3rLWbUaG33Z6hLtr4Znav7FY0DQkRdbfNu0GZwJiTJBOt5f33E7F
-         Ar/M1ecpLou11vfRUx8wSyC4mwMzyW8b+uw7nSNKpR1zUzZzDwkxDCQl4sSnlsqhhCLw
-         AQTVnGXpiaHluF/LEdgQZSBehzL4I0BApuxtRW3WdI7Y8nUJvMKug4A4pmqUh+8cQv3h
-         dkfmLk77P/x2C1cLVSgr9gBVuQ09ErBsBbJ+aps1EbCxukZkRAF9fvfgaYZJtv2hfm82
-         3hRQ==
-X-Forwarded-Encrypted: i=1; AHgh+Rrnd9tCtx/QcjYHb7QdFNHagCXIWTneoeIB9bSr44UQJqtMaY3UrNqFYMArNFK0AYDM9/1i680B5A==@vger.kernel.org
-X-Gm-Message-State: AOJu0YwlKHYvRXBim2R8qbnHTf2iTWwCuv+89g6eXk2NTMqrH3d1Of18
-	QfsidIxEWKatewPlZcvy4R6dOsllfVXjkoTlrXhtV/sV28LTOZpOntDyqRjzi2TtaPbvhGo0x85
-	MhYFUIdS3bJJm9CObU8qIzkk99QTjWX0=
-X-Gm-Gg: AfdE7cnkD9aPnf8yo84aQLQyTT5n9xLj5bCcmkh1pignCqlI7ECZKxBC4FwJYHTBCJW
-	dv++VqCV4Fmib7C1Pbi1fEXIBsrezS8BKVUcZ3hxEc6lhaZ6HmIRwsd5kg6Jd6ss0499O+mlZ3b
-	UxXa/i98EiKI+f1Rk79fwy0qCr3WRBu74nk4lcq2fy9G1Iurv8H6RO3Fl3Kvvwy7e9zvMBufLFP
-	6Q5t7f/dbtr5gMyWqX5Fetj4SrHp8MMGPSnZwNxXrqT38rrQIVLRam6rJXz08YK5kmLjymAaTsE
-	UV77CVpa3RrOstN1SSTGEs1BwhJamg==
-X-Received: by 2002:a17:90b:5863:b0:36d:b424:4f17 with SMTP id
- 98e67ed59e1d1-38dc73bcfdfmr12462942a91.1.1784037794156; Tue, 14 Jul 2026
- 07:03:14 -0700 (PDT)
+        bh=1fqK+GBNhdCvtIbsu2YQsK51wtgWHCipu2zsRpqXFuU=;
+        b=B45Biz/5I7+tIJyg4XkvlAtYD1dPvFXwr+D0dI+eLoECirr9kuaiuBuS0ig9E7uL/L
+         xho8K4fH840H51JM9EfttiO7aHgTgkx0kaWbvgV/+ahj7P6LD97rwSZC1HRvX4eplB5c
+         clgOMDG3iSIHtUFH7eWAiw0DigWWJGkCHiQH9TvJxGGuC0rmlBYmOYZw2qlkuGGjDFjs
+         GIuBwB6Q9khDdZpfp9+YFxDFPIKGeu0Pv4lKsp7sZFTAXv/xvumTsF2katrF5x+CQ/Rp
+         3N6D84P8EnBIkVK3obQ5ELrPyD76qGGAWNHv+sBYWcG+enN43+wvoNWzJ8g9OUYfKK26
+         0wNA==
+X-Forwarded-Encrypted: i=1; AHgh+RoCCYGcywd8YCA9RecWHBPMih2OOCDsLTH0T3aYML7wTHNok8zzwevsFQf+YYgrBU8fewghEPN6ow==@vger.kernel.org
+X-Gm-Message-State: AOJu0YxGv5RXYTZlnQt8/Knih6jq2KOTtOoZaHYYf3NroT7ZLvBbjeXx
+	4woggJPEHfWiu6w7vw2FM4ckLs7Q1Nhn6PXonMGlNUP5r9vsuw13SzcczdI3TFRDN1w=
+X-Gm-Gg: AfdE7cnTwKiFbi6wX9lhCRSfWeRjpKJsj3GAw6x53r5pE/BpCGUA3ywI67ctkQMxTlr
+	3/xUXKevy5FcayDkhkbOYBJlKomxOXIbO2Nve7lGf2g5ISiXcwZI2Gc+0/TyF23Klxvk55+aPaT
+	z5TIsTHHXRWmK7q+uVEUlZdFyTsu08MyLIBsQm7EGalbZaINZ3FCxBi7iinB4tHZfaC6S7K/aZJ
+	FZWzMi7BAekOFhyV4Obvbc/vTRSqFgHYRdAGuqlFc92vuLAPq6Q1rFx0Db6eBXBZLnZdX6CSkbF
+	rgbayzfrvTXiqazKMbwh6aZzKGrOfNk2bH7N9lWGy5z8CW8kLgJT8MRyPlQfYQ+UucIRj8QtUYi
+	vNJbONkh+B2RSZEDGzFEoflUN61GnnK9yrhMnrcMnKIQkCn6yK1oeBQM+1BM4aZjgIL0hm7TMtX
+	ZEBDz6KujZvbEuYU7jEw==
+X-Received: by 2002:a05:600c:354e:b0:493:e38b:182d with SMTP id 5b1f17b1804b1-493f881800dmr151762695e9.22.1784037877743;
+        Tue, 14 Jul 2026 07:04:37 -0700 (PDT)
+Received: from airbuntu ([149.50.209.149])
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-493fd3ccfd4sm186652205e9.2.2026.07.14.07.04.33
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 14 Jul 2026 07:04:36 -0700 (PDT)
+Date: Tue, 14 Jul 2026 15:04:31 +0100
+From: Qais Yousef <qyousef@layalina.io>
+To: Vincent Guittot <vincent.guittot@linaro.org>
+Cc: Ingo Molnar <mingo@kernel.org>, Peter Zijlstra <peterz@infradead.org>,
+	"Rafael J. Wysocki" <rafael@kernel.org>,
+	Viresh Kumar <viresh.kumar@linaro.org>,
+	Juri Lelli <juri.lelli@redhat.com>,
+	Steven Rostedt <rostedt@goodmis.org>,
+	John Stultz <jstultz@google.com>,
+	Dietmar Eggemann <dietmar.eggemann@arm.com>,
+	Tim Chen <tim.c.chen@linux.intel.com>,
+	"Chen, Yu C" <yu.c.chen@intel.com>,
+	Thomas Gleixner <tglx@kernel.org>, linux-kernel@vger.kernel.org,
+	linux-pm@vger.kernel.org
+Subject: Re: [PATCH v2 04/13] sched/fair: Remove magic hardcoded margin in
+ fits_capacity()
+Message-ID: <20260714140431.i3zvadvrg54c5ij6@airbuntu>
+References: <20260504020003.71306-1-qyousef@layalina.io>
+ <20260504020003.71306-5-qyousef@layalina.io>
+ <CAKfTPtBKpFPS4AfsF_ihjW-m-FqcSXgg1fO_ZBV_Qjvr++iTHw@mail.gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260625081529.22447-1-clamor95@gmail.com> <20260625081529.22447-5-clamor95@gmail.com>
- <CAPVz0n1o+2NRQrLfbCMT0JdeFhhD4PS4UzSt3L6-QQ2ywHL+mA@mail.gmail.com>
-In-Reply-To: <CAPVz0n1o+2NRQrLfbCMT0JdeFhhD4PS4UzSt3L6-QQ2ywHL+mA@mail.gmail.com>
-From: Svyatoslav Ryhel <clamor95@gmail.com>
-Date: Tue, 14 Jul 2026 17:03:02 +0300
-X-Gm-Features: AUfX_myvMCwvq1yA3I4zoSr0hddrF32oflvRuyg70zCnHs7uf8DcWagE6S5UHa4
-Message-ID: <CAPVz0n3FkzoXJBffsOJzd4Rq9HmA0n1oFCU-9Xt=URmpXhY2UA@mail.gmail.com>
-Subject: Re: [PATCH v9 4/7] input: keyboard: Add driver for ASUS Transformer
- dock multimedia keys
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: Rob Herring <robh@kernel.org>, =?UTF-8?B?TWljaGHFgiBNaXJvc8WCYXc=?= <mirq-linux@rere.qmqm.pl>, 
-	Ion Agorria <ion@agorria.com>, Sebastian Reichel <sre@kernel.org>, Pavel Machek <pavel@kernel.org>, 
-	Lee Jones <lee@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
-	Krzysztof Kozlowski <krzk+dt@kernel.org>, devicetree@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, linux-input@vger.kernel.org, 
-	linux-leds@vger.kernel.org, linux-pm@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <CAKfTPtBKpFPS4AfsF_ihjW-m-FqcSXgg1fO_ZBV_Qjvr++iTHw@mail.gmail.com>
 
-=D0=BF=D1=82, 3 =D0=BB=D0=B8=D0=BF. 2026=E2=80=AF=D1=80. =D0=BE 11:53 Svyat=
-oslav Ryhel <clamor95@gmail.com> =D0=BF=D0=B8=D1=88=D0=B5:
->
-> =D1=87=D1=82, 25 =D1=87=D0=B5=D1=80=D0=B2. 2026=E2=80=AF=D1=80. =D0=BE 11=
-:16 Svyatoslav Ryhel <clamor95@gmail.com> =D0=BF=D0=B8=D1=88=D0=B5:
+On 06/04/26 12:08, Vincent Guittot wrote:
+> On Mon, 4 May 2026 at 04:00, Qais Yousef <qyousef@layalina.io> wrote:
 > >
-> > From: Micha=C5=82 Miros=C5=82aw <mirq-linux@rere.qmqm.pl>
+> > Replace hardcoded margin value in fits_capacity() with better dynamic
+> > logic.
 > >
-> > Add support for multimedia top button row of ASUS Transformer's Mobile
-> > Dock keyboard. Driver is made that function keys (F1-F12) are used by
-> > default which suits average Linux use better and with pressing
-> > ScreenLock + AltGr function keys layout is switched to multimedia keys.
-> > Only Dock keyboard input events are tracked for AltGr pressing.
+> > 80% margin is a magic value that has served its purpose for now, but it
+> > no longer fits the variety of systems that exist today. If a system is
+> > over powered specifically, this 80% will mean we leave a lot of capacity
+> > unused before we decide to upmigrate on HMP system.
 > >
-> > Co-developed-by: Ion Agorria <ion@agorria.com>
-> > Signed-off-by: Ion Agorria <ion@agorria.com>
-> > Signed-off-by: Micha=C5=82 Miros=C5=82aw <mirq-linux@rere.qmqm.pl>
-> > Signed-off-by: Svyatoslav Ryhel <clamor95@gmail.com>
+> > On many systems the little cores are under powered and ability to
+> > migrate faster away from them is desired.
+> >
+> > Redefine misfit migration to mean the utilization threshold at which the
+> > task would become misfit at the next load balance event assuming it
+> 
+> Do you mean at the next tick?
+
+Yes. But the way currently load balancer works it could take several ticks to
+trigger, but implementation wise we assume next tick. I'll update the wording.
+Hopefully with your push lb it will always trigger on next tick worst case
+scenario.
+
+> 
+> > becomes an always running task.
+> >
+> > To calculate this threshold, we use the new approximate_util_avg()
+> > function to find out the threshold, based on arch_scale_cpu_capacity()
+> > the task will be misfit if it continues to run for a TICK_USEC which is
+> > our worst case scenario for when misfit migration will kick in.
+> >
+> > Signed-off-by: Qais Yousef <qyousef@layalina.io>
 > > ---
-> >  drivers/input/keyboard/Kconfig                |  10 +
-> >  drivers/input/keyboard/Makefile               |   1 +
-> >  .../input/keyboard/asus-transformer-ec-keys.c | 314 ++++++++++++++++++
-> >  3 files changed, 325 insertions(+)
-> >  create mode 100644 drivers/input/keyboard/asus-transformer-ec-keys.c
+> >  kernel/sched/core.c  |  1 +
+> >  kernel/sched/fair.c  | 40 ++++++++++++++++++++++++++++++++--------
+> >  kernel/sched/sched.h |  1 +
+> >  3 files changed, 34 insertions(+), 8 deletions(-)
 > >
-> > diff --git a/drivers/input/keyboard/Kconfig b/drivers/input/keyboard/Kc=
-onfig
-> > index 9d1019ba0245..913cb4900565 100644
-> > --- a/drivers/input/keyboard/Kconfig
-> > +++ b/drivers/input/keyboard/Kconfig
-> > @@ -89,6 +89,16 @@ config KEYBOARD_APPLESPI
-> >           To compile this driver as a module, choose M here: the
-> >           module will be called applespi.
+> > diff --git a/kernel/sched/core.c b/kernel/sched/core.c
+> > index 49cd5d217161..47ec8ea7c52e 100644
+> > --- a/kernel/sched/core.c
+> > +++ b/kernel/sched/core.c
+> > @@ -8921,6 +8921,7 @@ void __init sched_init(void)
+> >                 rq->sd = NULL;
+> >                 rq->rd = NULL;
+> >                 rq->cpu_capacity = SCHED_CAPACITY_SCALE;
+> > +               rq->fits_capacity_threshold = SCHED_CAPACITY_SCALE;
+> >                 rq->balance_callback = &balance_push_callback;
+> >                 rq->active_balance = 0;
+> >                 rq->next_balance = jiffies;
+> > diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
+> > index f179faf7a6a1..4e1ed3c7f96e 100644
+> > --- a/kernel/sched/fair.c
+> > +++ b/kernel/sched/fair.c
+> > @@ -97,11 +97,15 @@ int __weak arch_asym_cpu_priority(int cpu)
+> >  }
 > >
-> > +config KEYBOARD_ASUS_TRANSFORMER_EC
-> > +       tristate "Asus Transformer's Mobile Dock multimedia keys"
-> > +       depends on MFD_ASUS_TRANSFORMER_EC
-> > +       help
-> > +         Say Y here if you want to use multimedia keys present on Asus
-> > +         Transformer's Mobile Dock.
-> > +
-> > +         To compile this driver as a module, choose M here: the
-> > +         module will be called asus-transformer-ec-keys.
-> > +
-> >  config KEYBOARD_ATARI
-> >         tristate "Atari keyboard"
-> >         depends on ATARI
-> > diff --git a/drivers/input/keyboard/Makefile b/drivers/input/keyboard/M=
-akefile
-> > index 60bb7baf802f..0d81096887ad 100644
-> > --- a/drivers/input/keyboard/Makefile
-> > +++ b/drivers/input/keyboard/Makefile
-> > @@ -11,6 +11,7 @@ obj-$(CONFIG_KEYBOARD_ADP5585)                +=3D ad=
-p5585-keys.o
-> >  obj-$(CONFIG_KEYBOARD_ADP5588)         +=3D adp5588-keys.o
-> >  obj-$(CONFIG_KEYBOARD_AMIGA)           +=3D amikbd.o
-> >  obj-$(CONFIG_KEYBOARD_APPLESPI)                +=3D applespi.o
-> > +obj-$(CONFIG_KEYBOARD_ASUS_TRANSFORMER_EC)     +=3D asus-transformer-e=
-c-keys.o
-> >  obj-$(CONFIG_KEYBOARD_ATARI)           +=3D atakbd.o
-> >  obj-$(CONFIG_KEYBOARD_ATKBD)           +=3D atkbd.o
-> >  obj-$(CONFIG_KEYBOARD_BCM)             +=3D bcm-keypad.o
-> > diff --git a/drivers/input/keyboard/asus-transformer-ec-keys.c b/driver=
-s/input/keyboard/asus-transformer-ec-keys.c
-> > new file mode 100644
-> > index 000000000000..53aff3ce7146
-> > --- /dev/null
-> > +++ b/drivers/input/keyboard/asus-transformer-ec-keys.c
-> > @@ -0,0 +1,314 @@
-> > +// SPDX-License-Identifier: GPL-2.0-or-later
-> > +
-> > +#include <linux/array_size.h>
-> > +#include <linux/err.h>
-> > +#include <linux/i2c.h>
-> > +#include <linux/input.h>
-> > +#include <linux/mfd/asus-transformer-ec.h>
-> > +#include <linux/module.h>
-> > +#include <linux/platform_device.h>
-> > +#include <linux/slab.h>
-> > +
-> > +#define ASUSEC_EXT_KEY_CODES           0x20
-> > +
-> > +struct asus_ec_keys_data {
-> > +       struct notifier_block nb;
-> > +       struct asusec_core *ec;
-> > +       struct input_dev *xidev;
-> > +       struct input_handler input_handler;
-> > +       unsigned short keymap[ASUSEC_EXT_KEY_CODES * 2];
-> > +       const char *kbc_phys;
-> > +       bool special_key_pressed;
-> > +       bool special_key_mode;
-> > +};
-> > +
-> > +static void asus_ec_input_event(struct input_handle *handle,
-> > +                               unsigned int event_type,
-> > +                               unsigned int event_code, int value)
+> >  /*
+> > - * The margin used when comparing utilization with CPU capacity.
+> > - *
+> > - * (default: ~20%)
+> > + * fits_capacity() must ensure that a task will not be 'stuck' on a CPU with
+> > + * lower capacity for too long. This the threshold is the util value at which
+> > + * if a task becomes always busy it could miss misfit migration load balance
+> > + * event. So we consider a task is misfit before it reaches this point.
+> >   */
+> > -#define fits_capacity(cap, max)        ((cap) * 1280 < (max) * 1024)
+> > +static inline bool fits_capacity(unsigned long util, int cpu)
 > > +{
-> > +       struct asus_ec_keys_data *priv =3D handle->handler->private;
-> > +
-> > +       /* Store special key state */
-> > +       if (event_type =3D=3D EV_KEY && event_code =3D=3D KEY_RIGHTALT)
-> > +               priv->special_key_pressed =3D !!value;
+> > +       return util < cpu_rq(cpu)->fits_capacity_threshold;
 > > +}
+> >
+> >  /*
+> >   * The margin used when comparing CPU capacities.
+> > @@ -5180,14 +5184,13 @@ static inline int util_fits_cpu(unsigned long util,
+> >                                 unsigned long uclamp_max,
+> >                                 int cpu)
+> >  {
+> > -       unsigned long capacity = capacity_of(cpu);
+> >         unsigned long capacity_orig;
+> >         bool fits, uclamp_max_fits;
+> >
+> >         /*
+> >          * Check if the real util fits without any uclamp boost/cap applied.
+> >          */
+> > -       fits = fits_capacity(util, capacity);
+> > +       fits = fits_capacity(util, cpu);
+> >
+> >         if (!uclamp_is_used())
+> >                 return fits;
+> > @@ -10299,12 +10302,33 @@ static void update_cpu_capacity(struct sched_domain *sd, int cpu)
+> >  {
+> >         unsigned long capacity = scale_rt_capacity(cpu);
+> >         struct sched_group *sdg = sd->groups;
+> > +       struct rq *rq = cpu_rq(cpu);
+> > +       u64 limit;
+> >
+> >         if (!capacity)
+> >                 capacity = 1;
+> >
+> > -       cpu_rq(cpu)->cpu_capacity = capacity;
+> > -       trace_sched_cpu_capacity_tp(cpu_rq(cpu));
+> > +       rq->cpu_capacity = capacity;
+> > +       trace_sched_cpu_capacity_tp(rq);
 > > +
-> > +static int asus_ec_input_connect(struct input_handler *handler,
-> > +                                struct input_dev *dev,
-> > +                                const struct input_device_id *id)
-> > +{
-> > +       struct asus_ec_keys_data *priv =3D handler->private;
-> > +       struct input_handle *handle;
-> > +       int error;
-> > +
-> > +       if (!dev->phys || !strstr(dev->phys, priv->kbc_phys))
-> > +               return -ENODEV;
-> > +
->
-> Hello Dmitry!
->
-> Would this approach be acceptable? Handler links strictly to asus-ec keyb=
-oard.
->
+> > +       /*
+> > +        * Calculate the util at which the task must be considered a misfit.
+> > +        *
+> > +        * We must ensure that a task experiences the same ramp-up time to
+> > +        * reach max performance point of the system regardless of the CPU it
+> > +        * is running on (due to invariance, time will stretch and task will
+> > +        * take longer to achieve the same util value compared to a task
+> > +        * running on a big CPU) and a delay in misfit migration which depends
+> > +        * on TICK doesn't end up hurting it as it can happen after we would
+> > +        * have crossed this threshold.
+> > +        *
+> > +        * To ensure that invaraince is taken into account, we don't scale time
+> > +        * and use it as-is, approximate_util_avg() will then let us know the
+> > +        * our threshold.
+> > +        */
+> > +       limit = approximate_runtime(arch_scale_cpu_capacity(cpu)) * USEC_PER_MSEC;
+> > +       limit -= TICK_USEC; /* sd->balance_interval is more accurate */
+> > +       rq->fits_capacity_threshold = approximate_util_avg(0, limit);
+> 
+> update_cpu_capacity() is called in build_sched_domain() and also
+> during periodic load balancing, but fits_capacity_threshold is fixed
+> and should be set once
+> 
+> I'm not sure to get what you want to do here. Do you want to get a
+> tick margin at max compute capacity compared to
+> arch_scale_cpu_capacity() ?
 
-Hello Dmitry! May you please take a look? ATM only ACK on input patches lef=
-t.
+Yes. If a task continues to run how will the util signal grow by the time the
+next tick arrives, if we are going to cross the capacity, then it is misfit
+now. This will automatically adjust the value to be low for little cores and
+high for bigger cores. IOW smaller cores need higher margin and bigger cores
+need smaller margin.
+
+> 
+> On the big core (1024), this means a threshold of 1023 which sounds reasonable.
+> On the little core (280), this means a threshold of 268 (1ms tick).
+> However, reaching 268 at max freq on the little core requires 41ms,
+> whereas the task will be at 602 after 41ms running on the big core
+
+I think you're talking about the invariance problem (black hole effect that
+distorts util at lower capacities/freqs). Yes this is a problem, but the new
+approximate function don't take invariance into account. And with util_est
+fixes using rampup multiplier of 1 we will always rise at a constant rate as if
+we are running at biggest core/max freq. So I'd expect util_est to rise to 602
+after 41ms regardless if we are on little or big core - which is the major
+problem the rest of the series fix. From what I've seen the little cores
+capacity can be hit within ~13ms if util rises normally. Which is a true
+reflection of how slow they are. And the major problem folks encounter of tasks
+stuck on little core for many 10s of ms.
+
+Even when the rampup multiplier is 0, the values are still correct. It is true
+they will take longer to reach this threshold, and arguably will need more than
+1 tick to hit the capacity once reached it, but two things to keep in mind:
+
+1. This current slow rise behavior is good for power, and we want to retain
+   this behavior for them.
+2. If we more accurately represent the threshold to counter for distortion,
+   the tasks will get double hit, the slow rise time AND the higher threshold,
+   which is genuinely a problem today with the 80% threshold for example. So
+   while it is not accurate when rampup multiplier is 0, but I do believe it is
+   correct as tasks are already getting a perf hit to rise to this value slower
+   than they should (due to invariance impact), and from experience this is
+   a high enough of a penalty already even for those tasks that are not
+   important. We don't want to grind them to a halt. That said we can work in
+   the future to create two thresholds, but I don't see the point at this
+   stage and not keen on the additional complexity in general.
+
+> 
+> 
+> 
+> 
+> >
+> >         sdg->sgc->capacity = capacity;
+> >         sdg->sgc->min_capacity = capacity;
+> > diff --git a/kernel/sched/sched.h b/kernel/sched/sched.h
+> > index a445add5cc3a..24008f1ec812 100644
+> > --- a/kernel/sched/sched.h
+> > +++ b/kernel/sched/sched.h
+> > @@ -1236,6 +1236,7 @@ struct rq {
+> >         unsigned char           nohz_idle_balance;
+> >         unsigned char           idle_balance;
+> >
+> > +       unsigned long           fits_capacity_threshold;
+> >         unsigned long           misfit_task_load;
+> >
+> >         /* For active balancing */
+> > --
+> > 2.34.1
+> >
