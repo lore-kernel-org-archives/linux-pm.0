@@ -1,227 +1,372 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pj1-f49.google.com (mail-pj1-f49.google.com [209.85.216.49])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1790B2D0C92;
-	Tue, 14 Jul 2026 17:33:16 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DED2B37E5C5
+	for <linux-pm@vger.kernel.org>; Tue, 14 Jul 2026 20:29:58 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.216.49
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1784050397; cv=none; b=qh16Lh6Sy3fePh6PjGd6aWC2fIUtHr0ELB50Rn6G547Kj4wtKSzlHU2xghNgi2jGc5noKaaachl6ggY2YMozdyhTPX7whqYUea6wCPJVb/1loIi2mvQzV5XPgJRYetoMa+xa0lXpcDeMBFPYMDHb435P/P42Y5s8Gf8Hv2UVKjU=
+	t=1784061000; cv=none; b=l/3qBFxa3ExpIlz9vINF5n0rI4ariWC17zR69bePTlpTFnvp4lMhvM86rZS05U6C2AxkHwAcneJp5n3Tvm6BnrYyg4h6RmZZxVHH8RDqEOrKUlGP0wf1MNQhCrTSPXjUqJsTQZGEvsZlYSTtA4lrXcHNHq5QmIIsQ/EVMWSUwOU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1784050397; c=relaxed/simple;
-	bh=KxAtcBTq6Q7LICGaMbA9miPeB2LC0QoPItQufKyIsK4=;
-	h=Date:From:To:Cc:Subject:Message-ID:MIME-Version:Content-Type:
-	 Content-Disposition:In-Reply-To; b=PsN4dkCPHzWz0zD31VW0WKWU3k9yP6CPXPPO5I3GhcTfkwTB8c5M94rHGYetkPlRkVyivL71wF1W7zFBrXHUUsLJQNEXavG5X4GVZHe3TYoukf67AVi+bJya6ei15YNUxxT0aIFnqyHqQDTcf+JcIpZ9xcXHYFFgx3T3dT6TIMs=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Rmai+x3I; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1784061000; c=relaxed/simple;
+	bh=1OZ/ItQmvcOi4wfkW/31N9/v4LF2+SHKTqUTxgY70x8=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=qMGZZmbwaWISCegoQYjaFaSRDpkHIy9JLVZ8Q7NkHI5kLxBSuhv1qJkY8TVWgrblYYA/D/WjwZSQJ3AER5Qf6GiiIYgwbgyHm8Fc1r/1LGx68Elj/oxA6fGBimXbTI7886lW/8t3EzTa3lPMAhIeypoHR4oImpHvlJQUf2Cxzww=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=uci.edu; spf=pass smtp.mailfrom=uci.edu; dkim=pass (2048-bit key) header.d=uci.edu header.i=@uci.edu header.b=CDHkXlC4; arc=none smtp.client-ip=209.85.216.49
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=uci.edu
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=uci.edu
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Rmai+x3I"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id C24681F000E9;
-	Tue, 14 Jul 2026 17:33:15 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1784050396;
-	bh=0/2Vbem4uUKn0p3ksAMM3bG5ETqwG60Y4I0HBdf6+4c=;
-	h=Date:From:To:Cc:Subject:In-Reply-To;
-	b=Rmai+x3I1QMlpO9dVhhmod4zVfFwmljwbEWEUgT1EClhdNQCaLmHKSCEJ1b7yFsq4
-	 VhdaPcEqLFwAi3zHZiMEXnPV7mQ6cBS1Vg91zUIinNxk7TV1xQisUXyDAq0cL1x3Zh
-	 jK1ur5PzG0bYUSc0WKIOdI01zzJyZxWq8dOLt+BfTVrE3zafDhL7EBd2pEFC8ZhKaF
-	 kYSqohgwfjZkkZxtfR761qpARxdpnccTXwMP6fHUHBbPqVFqaukLHu+vRm7sUSzLUm
-	 qWFr52i5UTo3JaBNAQrZxMu9vrLif2R4BhKZfuYE6KV9I0jPEEH9Dl1kTCbtWxtc6c
-	 0fEfXWoDLltcg==
-Date: Tue, 14 Jul 2026 12:33:14 -0500
-From: Bjorn Helgaas <helgaas@kernel.org>
-To: Rowan Cramer <rowan.cramer@gmail.com>
-Cc: linux-pci@vger.kernel.org, Nirmal Patel <nirmal.patel@linux.intel.com>,
-	Jonathan Derrick <jonathan.derrick@linux.dev>,
-	Nam Cao <namcao@linutronix.de>, Zide Chen <zide.chen@intel.com>,
-	Zhang Rui <rui.zhang@intel.com>,
-	"Rafael J. Wysocki" <rafael@kernel.org>,
-	Daniel Lezcano <daniel.lezcano@kernel.org>,
-	Christian Loehle <christian.loehle@arm.com>,
+	dkim=pass (2048-bit key) header.d=uci.edu header.i=@uci.edu header.b="CDHkXlC4"
+Received: by mail-pj1-f49.google.com with SMTP id 98e67ed59e1d1-381c51fde6bso4628288a91.2
+        for <linux-pm@vger.kernel.org>; Tue, 14 Jul 2026 13:29:58 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=uci.edu; s=google; t=1784060998; x=1784665798; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
+        bh=+nFGCNJT+qBca0G3lZDgeTtwSwP+svQar++woSWxRxU=;
+        b=CDHkXlC4ombHsyXk50VHKdaOxFXpKi97P+laP74EJ9qWBVP4dBhAoqX56LIw+OBpcG
+         8Pv+2BGHK5fekFINF+lHcK3QBK81j5PRzuWO0i1m/ecL3Y3KLSNyGoUV2csql57XXNAy
+         Qvxp34hUn7XWe6APujkJ4F9ylVmdGvnWb/mupXM9rbaRtSwt5wGxzhs04tvIlaZdO+BZ
+         EYRR8R24OYK3e+vPSrRlrwWRnlNjq/daTXOaRcSFFVOQWE0rJDRyLtjIC56aMR2FbwYe
+         5jgJgx8EL5U8waqnUR4hYxPbs+evR0+kgnGFmqGfAmDpRK8fZRs546SIn5DhaqoYcQg6
+         7dVg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1784060998; x=1784665798;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=+nFGCNJT+qBca0G3lZDgeTtwSwP+svQar++woSWxRxU=;
+        b=f1rQrYl5mufkpLuv0lqyRhTEMkuObXf1vTljwMUIfvOglTspuFKArDak82yE1Tc5aI
+         QXqcD1I2YZwPEXgjK9I81XX8cGA55KCr+BFJIAZPzqOiQy9g14eXlqThl67A4Kkz4RU7
+         wkLOU4eHc3YoJHGCcHgJUsjl5M39xyQK0PAkJxmGsBpW2RgTiQFntX2pp18JvCZa3qz2
+         YZuLBoQI6QTdpcdCP9I59w2Fi9yjuBMbFhK8ABvtXuqU/DqF0kohgXr6vHDsLPhA0YsO
+         Lxf/kbxJz9AKLoRxrZb/VSz5ceOqB/SYQiLGcyrgg8Z3sqw40y9UWGlDJugkBRqJvN1h
+         4rhg==
+X-Forwarded-Encrypted: i=1; AHgh+RomSTPOWBGkZsnG8ojlWgHTS7jKYzhSKHg0lScswcdrIYhJEWIrEHhWh6g64+hWiD9h9kIllqkJwg==@vger.kernel.org
+X-Gm-Message-State: AOJu0YzEE10WXbnp1s9F5zpvRKckW9gHYl1YcBKD9g8pvDY4GqdfhuxO
+	jfMyeha/yItkH/Y+221ORGGeicqww3B6h9wSx6lVRhGb+52u0odfD22CQdvaU84RRK8=
+X-Gm-Gg: AfdE7cnnAOBG/CRrypJEme+9AYFdD14SSJKmrprWpDU49z9SVv1HvWhIv76gR5zzHcG
+	dGQvTYYYb6Tdp9hfUdAy+WPonFIr1SqEPb95Cl+Gg3wKMfFQS/jPw3+xWv/M2Zr7t/+K6d0gTrH
+	BJ0hiICG06p5+VlZnhdH06W1ZRju/kvUe5JCq6C1gElxtKm+vL41CMVuV40AVtsqYe73A0zE5rO
+	rSBQiIvZGC+tR3rLYOYULjwMysB/UIwXvpShf+GkZw58a8bPalxgaKPuXewhcdxhIlCTJlu00/r
+	cw9GrgVJWH+WJ4BIO72iWr4tRzZODFaE6EvGNOPOOFmcN5hGtklYWFPVAuPelEqEZmgNG4u6EOI
+	lZlDhtnoqlAkQ4vE6u7B8/RuPC2MDR7bdlskpHoOrypk3YCzAmpk0DnjnyINR2Dy4EFpunmQlvn
+	L8DftAS2JoIX+BswdQbJ2Db9ziksuuQiq7MdVZ9WECkRfqZ5ayYw==
+X-Received: by 2002:a05:6a21:489:b0:3bf:98fc:3054 with SMTP id adf61e73a8af0-3c36c3e7591mr134059637.56.1784060998265;
+        Tue, 14 Jul 2026 13:29:58 -0700 (PDT)
+Received: from guest1.. (charm.ics.uci.edu. [128.195.4.118])
+        by smtp.googlemail.com with ESMTPSA id a92af1059eb24-13b659d8da9sm150647131c88.14.2026.07.14.13.29.57
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 14 Jul 2026 13:29:57 -0700 (PDT)
+From: Priya Bala Govindasamy <pgovind2@uci.edu>
+To: rafael@kernel.org,
+	viresh.kumar@linaro.org,
+	ojeda@kernel.org,
+	boqun@kernel.org,
+	rust-for-linux@vger.kernel.org,
 	linux-pm@vger.kernel.org
-Subject: Re: NVMe MSI-X completions lost behind VMD across package C-state
- exit (even PC2) on Arrow Lake client VMD [8086:7d0b]
-Message-ID: <20260714173314.GA1365789@bhelgaas>
+Cc: ardalan@uci.edu,
+	zhiyunq@cs.ucr.edu,
+	dzueck@uci.edu,
+	ytan089@ucr.edu,
+	pgovind2@uci.edu
+Subject: [PATCH 0/1] rust: cpufreq: Add CPUFREQ_TABLE_END as last table entry in TableBuilder::to_table
+Date: Tue, 14 Jul 2026 20:29:56 +0000
+Message-Id: <cover.1783548374.git.pgovind2@uci.edu>
+X-Mailer: git-send-email 2.34.1
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <CAPew1NKKWf7rr6eZXp=KooN43CKaTbcc-U9ZkKrBhcXaARTKUQ@mail.gmail.com>
 
-[+cc VMD, cpuidle folks]
+Dear Linux Kernel Maintainers,
 
-On Tue, Jul 14, 2026 at 08:57:17AM -0400, Rowan Cramer wrote:
-> Hi,
-> 
-> I have what looks like a platform/VMD interrupt-delivery bug on a
-> new Arrow Lake laptop, isolated with a reliable reproducer and a
-> three-arm test matrix. Reporting here because the fault sits below
-> the NVMe driver, in the VMD interrupt path, and is invisible unless
-> the package is allowed to idle. Happy to test patches or run any
-> further diagnostics.
-> 
-> Summary
-> -------
-> NVMe MSI-X completion interrupts are intermittently lost when they
-> arrive through VMD's interrupt remapper while the CPU package is in
-> (or exiting) ANY idle state deeper than C1 — including plain PC2.
-> The drive completes the I/O correctly (the kernel's timeout handler
-> always finds the completion already in the queue: "timeout,
-> completion polled"); only the interrupt vanishes. Holding PM-QoS
-> /dev/cpu_dma_latency at 100 us (C1-only idle) eliminates the fault
-> completely; nothing else does.
-> 
-> System
-> ------
-> - Dell 14 Premium / XPS 14 (DA14250), BIOS 1.11.0 (latest; Dell
->   ships VMD force-enabled, no BIOS toggle on this model)
-> - Intel Arrow Lake; VMD controller 8086:7d0b at 0000:00:0e.0
->   (client SKU -> VMD_FEATS_CLIENT, so MSI remapping is always on;
->   no VMD_FEAT_CAN_BYPASS_MSI_REMAP, no module parameter)
-> - NVMe: Micron 2650 1TB (DRAM-less/HMB), FW 26500101, at
->   10000:e1:00.0; all queues route via VMD-PCI-MSIX per
->   /proc/interrupts
-> - Fault is kernel-independent: reproduced identically on 6.18.33
->   (LTS), 7.0.9 and 7.0.10 (Arch builds, clean cmdline)
-> - intel_idle in ACPI mode; exposed states POLL / C1_ACPI (1 us) /
->   C2_ACPI (127 us) / C3_ACPI (1048 us)
-> 
-> Symptom
-> -------
->   nvme nvme0: I/O tag N QID Q timeout, completion polled
-> 
-> Present since the machine's very first boot (3 events in the first
-> 90 s of its life). Baseline ~125 events/day idle; 60-190/hr under
-> gaming I/O. Each event stalls the waiting I/O for io_timeout
-> seconds (we run nvme_core.io_timeout=10 as mitigation), which
-> manifests as multi-second system freezes. SMART is immaculate: 0
-> media errors, 0 controller error-log entries against >500 host-side
-> timeouts — the device completes the I/O; the notification is lost.
-> 
-> Key evidence
-> ------------
-> 1. Load is NOT the trigger. ~4 TB of worst-case saturating stress
->    (random reads at 2+ GiB/s, plus CPU, memory-bandwidth, GPU and
->    fsync-write pressure, combined) produced ZERO events. Saturating
->    I/O never lets the platform idle.
-> 
-> 2. Idle->active transitions ARE the trigger. A trivial reproducer
->    (bursty random reads separated by 1-8 s idle gaps, script below)
->    produces 13-16 lost interrupts per 15 min, every run.
-> 
-> 3. PM-QoS bisection puts the loss boundary exactly at C1|C2:
->      /dev/cpu_dma_latency hold   idle allowed        events/15min
->      none (stock)                C1+C2+C3            13-16
->      200 us                      C1+C2               19
->      100 us                      C1 only             0
->      0 us                        none (poll)         0
-> 
-> 4. Ruled out: drive APST (nvme set-feature 0x0c=0: no change), link
->    ASPM (runtime-disabled via sysfs on the VMD-domain link: no
->    change; note cmdline pcie_aspm=off does not govern VMD-managed
->    links, the vmd driver enables L1.1/L1.2 itself per
->    VMD_FEAT_BIOS_PM_QUIRK), kernel version, drive health, firmware
->    updates (none available).
-> 
-> 5. turbostat correlation (5 s intervals alongside the reproducer):
->    the package NEVER enters PC8/PC10 on this platform under bursty
->    I/O — deepest observed is PC6 — and every lost interrupt falls
->    in intervals showing only PC2/PC3/PC6 residency:
-> 
->      arm (900 s each)        Pkg%pc2/pc3/pc6/pc8/pc10   events
->      stock                   13.2 / 0.3 / 4.8 / 0 / 0     13
->      endpoint LTR clamped    19.8 /  0  /  0  / 0 / 0     14
->        to 102.4 us
->      cpu_dma_latency=100us    ~0  /  0  /  0  / 0 / 0      0
-> 
-> 6. LTR is irrelevant. Firmware sets the endpoint LTR to 15.7 ms
->    (0x100f100f — nonzero, so vmd's BIOS PM quirk never touches it).
->    Clamping it to 102.4 us via setpci was demonstrably honored by
->    the platform (PC3/PC6 residency dropped to zero) yet the loss
->    rate was unchanged (14 vs 13). The fault does not need deep
->    package states — losses occur with nothing deeper than PC2, with
->    cores in C6/C7.
-> 
-> Current mitigation
-> ------------------
-> A systemd unit holding /dev/cpu_dma_latency at 100 us. Fully
-> effective (a full day of gaming: 1 event vs the prior 60-190/hr),
-> but it costs ~2.5-4 W package power versus letting the machine
-> idle properly, since it must forbid core C6/C7 and PC2 everywhere.
-> 
-> Questions
-> ---------
-> 1. Is this a known Arrow Lake (or MTL-family) VMD erratum? The
->    machine shipped this way; Windows presumably masks it via its
->    own idle policy or is equally affected but silent.
-> 
-> 2. The client feature set forces MSI remapping on 8086:7d0b. Is the
->    VMCONFIG_MSI_REMAP bypass (as used for 28C0) architecturally
->    possible on client VMD? I am happy to test a patch enabling
->    bypass on 7d0b, or any other diagnostic/experimental patch —
->    the reproducer gives a decisive answer in 15 minutes.
-> 
-> 3. If the hardware genuinely cannot deliver remapped MSIs across
->    package C-state exit, should vmd.c be constraining PM (PM-QoS /
->    LTR / DMI-quirk) on affected platforms? As it stands, every
->    affected laptop loses NVMe interrupts silently at its default
->    idle settings.
-> 
-> Full journals since the machine's first boot, lspci -vvv, SMART
-> dumps, raw turbostat logs and the complete phase-by-phase test
-> history are preserved and available on request.
+The `TableBuilder::to_table` function adds `Hertz(c_ulong::MAX).as_khz()` 
+as the last frequency entry in the frequency table. 
+But the C API expects the last entry to have frequency set to 
+`CPUFREQ_TABLE_END` which is `~1u` as per include/linux/cpufreq.h.
 
-Can you make these available somewhere and include a URL?
+This prevents insertions of cpufreq modules that use the Rust API 
+to build frequency tables.
 
-> Reproducer
-> ----------
-> Point ROOT at any directory with a few multi-hundred-MB files on
-> the VMD-attached NVMe, run for 900 s, and count kernel "completion
-> polled" events (nvme_core.io_timeout=10 makes them visible within
-> 10 s):
-> 
->   #!/usr/bin/env python3
->   # bursty-I/O reproducer: idle gaps let the platform enter package
->   # idle; the first read of each burst rides the wake-up.
->   import os, sys, random, time
-> 
->   ROOT = os.path.expanduser("~/BG3_Game")   # adjust
->   CHUNK = 65536
->   MIN_SIZE = 200 * 1024 * 1024
-> 
->   files = []
->   for dirpath, _, names in os.walk(ROOT, followlinks=True):
->       for n in names:
->           p = os.path.join(dirpath, n)
->           try:
->               s = os.path.getsize(p)
->               if s >= MIN_SIZE:
->                   files.append((p, s))
->           except OSError:
->               pass
->   if not files:
->       sys.exit("no large files under " + ROOT)
-> 
->   deadline = time.time() + int(sys.argv[1])
->   bursts = 0
->   fds = {}
->   while time.time() < deadline:
->       time.sleep(random.uniform(1.0, 8.0))
->       for _ in range(random.randint(4, 40)):
->           path, size = random.choice(files)
->           fd = fds.get(path)
->           if fd is None:
->               fd = fds[path] = os.open(path, os.O_RDONLY)
->           off = random.randrange(0, max(1, size - CHUNK)) & ~4095
->           os.pread(fd, CHUNK, off)
->       bursts += 1
->   print(f"bursts={bursts}")
-> 
-> (Drop page caches before each run — echo 3 >
-> /proc/sys/vm/drop_caches — or cached reads will suppress the rate.)
-> 
-> Thanks,
-> Rowan Cramer
+Here is a PoC kernel module that uses the Rust API to build a frequency 
+table and register a cpufreq driver. This module fails to load with the 
+attached error message.
+
+  // SPDX-License-Identifier: GPL-2.0
+
+  //! Rust cpufreq proof-of-concept driver
+
+  use core::sync::atomic::{AtomicU32, Ordering};
+
+  use kernel::{
+      bindings,
+      clk::Hertz,
+      cpufreq,
+      error::code::*,
+      macros::vtable,
+      prelude::*,
+      sync::Arc,
+  };
+
+  const LOW_FREQ: Hertz = Hertz::from_mhz(1000);
+  const HIGH_FREQ: Hertz = Hertz::from_mhz(2000);
+  const BIOS_LIMIT_KHZ: u32 = 424_242;
+
+  module! {
+      type: CpuFreqPocModule,
+      name: "cpufreq_poc",
+      authors: ["Priya Govindasamy"],
+      description: "PoC cpufreq driver for the TableBuilder::to_table bug",
+      license: "GPL",
+  }
+
+  struct CpuFreqPocModule {
+      _driver: cpufreq::Registration<CpuFreqPocDriver>,
+  }
+
+  struct CpuFreqPocPolicyData {
+      table: cpufreq::TableBox,
+      current_freq_khz: AtomicU32,
+  }
+
+  #[derive(Default)]
+  struct CpuFreqPocDriver;
+
+  #[vtable]
+  impl cpufreq::Driver for CpuFreqPocDriver {
+      const NAME: &'static CStr = c"cpufreq-poc";
+      const FLAGS: u16 = 0;
+      const BOOST_ENABLED: bool = false;
+
+      type PData = Arc<CpuFreqPocPolicyData>;
+
+      fn init(policy: &mut cpufreq::Policy) -> Result<Self::PData> {
+          
+          let mut builder = cpufreq::TableBuilder::new();
+          builder.add(LOW_FREQ, 0, 0).unwrap();
+          builder.add(HIGH_FREQ, 0, 1).unwrap();
+          
+          let table = builder.to_table().unwrap();
+          let cpu = policy.cpu();
+
+          policy.cpus().set(cpu);
+          policy
+              .set_min(LOW_FREQ)
+              .set_max(HIGH_FREQ)
+              .set_cpuinfo_min_freq(LOW_FREQ)
+              .set_cpuinfo_max_freq(HIGH_FREQ)
+              .set_suspend_freq(LOW_FREQ)
+              .set_transition_latency_ns(cpufreq::DEFAULT_TRANSITION_LATENCY_NS);
+
+          unsafe { policy.set_freq_table(&table) };
+
+          Ok(Arc::new(
+              CpuFreqPocPolicyData {
+                  table,
+                  current_freq_khz: AtomicU32::new(HIGH_FREQ.as_khz() as u32),
+              },
+              GFP_KERNEL,
+          )?)
+      }
+
+      fn verify(data: &mut cpufreq::PolicyData) -> Result {
+          data.generic_verify()
+      }
+
+      fn target_index(policy: &mut cpufreq::Policy, index: cpufreq::TableIndex) -> Result {
+          let Some(data) = policy.data::<Self::PData>() else {
+              return Err(ENOENT);
+          };
+
+          let table = &data.table;
+          let freq = table.freq(index)?;
+          let freq_khz = freq.as_khz() as u32;
+
+          data.current_freq_khz.store(freq_khz, Ordering::Relaxed);
+          Ok(())
+      }
+
+      fn get(policy: &mut cpufreq::Policy) -> Result<u32> {
+          let Some(data) = policy.data::<Self::PData>() else {
+              return Err(ENOENT);
+          };
+
+          let freq = data.current_freq_khz.load(Ordering::Relaxed);
+
+          Ok(freq)
+      }
+
+      fn bios_limit(policy: &mut cpufreq::Policy, limit: &mut u32) -> Result {
+          *limit = BIOS_LIMIT_KHZ;
+          Ok(())
+      }
+
+      fn exit(_policy: &mut cpufreq::Policy, _data: Option<Self::PData>) -> Result {
+          Ok(())
+      }
+  }
+
+  impl kernel::Module for CpuFreqPocModule {
+      fn init(_module: &'static ThisModule) -> Result<Self> {
+          let driver = match cpufreq::Registration::<CpuFreqPocDriver>::new() {
+              Ok(driver) => driver,
+              Err(err) => {
+                  pr_err!(
+                      "cpufreq_poc: cpufreq driver registration failed: errno={}\n",
+                      err.to_errno()
+                  );
+                  return Err(err);
+              }
+          };
+
+          Ok(Self { _driver: driver })
+      }
+  }
+
+  impl Drop for CpuFreqPocModule {
+      fn drop(&mut self) {
+          pr_info!("cpufreq_poc: unloaded\n");
+      }
+  }
+
+
+Output:
+==================================================================
+[ 1166.691889] BUG: KASAN: slab-out-of-bounds in cpufreq_frequency_table_cpuinfo+0x141/0x2c0
+[ 1166.692782] Read of size 4 at addr ffff888281ddc038 by task insmod/5462
+
+[ 1166.693721] CPU: 13 UID: 0 PID: 5462 Comm: insmod Tainted: G           OE       7.2.0-rc1+ #27 PREEMPT(lazy) 
+[ 1166.693730] Tainted: [O]=OOT_MODULE, [E]=UNSIGNED_MODULE
+[ 1166.693732] Hardware name: QEMU Standard PC (i440FX + PIIX, 1996), BIOS 1.13.0-1ubuntu1.1 04/01/2014
+[ 1166.693735] Call Trace:
+[ 1166.693740]  <TASK>
+[ 1166.693749]  dump_stack_lvl+0x97/0xe0
+[ 1166.693773]  print_report+0x175/0x6f0
+[ 1166.693794]  ? __virt_addr_valid+0x33e/0x3a0
+[ 1166.693810]  ? cpufreq_frequency_table_cpuinfo+0x141/0x2c0
+[ 1166.693814]  ? kasan_complete_mode_report_info+0x45/0x230
+[ 1166.693825]  ? cpufreq_frequency_table_cpuinfo+0x141/0x2c0
+[ 1166.693829]  kasan_report+0xe4/0x120
+[ 1166.693832]  ? cpufreq_frequency_table_cpuinfo+0x141/0x2c0
+[ 1166.693837]  ? rust_helper_krealloc_node_align+0xd/0x20
+[ 1166.693861]  __asan_report_load4_noabort+0x18/0x20
+[ 1166.693865]  cpufreq_frequency_table_cpuinfo+0x141/0x2c0
+[ 1166.693869]  ? __pfx__RNvXs_NtCsbuTvttuFvbr_6kernel3fmtINtB4_7AdapterRmENtNtCsjYlAz7NZ3Sw_4core3fmt7Display3fmtCsgx7gD2tBKZx_12to_table_poc+0x10/0x10 [to_table_poc]
+[ 1166.693879]  cpufreq_table_validate_and_sort+0x56/0x390
+[ 1166.693883]  ? _RNvMsf_NtCsbuTvttuFvbr_6kernel7cpufreqINtB5_12RegistrationNtCsgx7gD2tBKZx_12to_table_poc16CpuFreqPocDriverE13init_callbackBW_+0x22/0x120 [to_table_poc]
+[ 1166.693889]  cpufreq_online+0xb0f/0x22a0
+[ 1166.693895]  cpufreq_add_dev+0x70/0x160
+[ 1166.693900]  subsys_interface_register+0x273/0x360
+[ 1166.693923]  cpufreq_register_driver+0x387/0x580
+[ 1166.693933]  _RNvXCsgx7gD2tBKZx_12to_table_pocNtB2_16CpuFreqPocModuleNtCsbuTvttuFvbr_6kernel6Module4init+0x98/0x1d0 [to_table_poc]
+[ 1166.693938]  ? stack_depot_save_flags+0x185/0x6e0
+[ 1166.693953]  ? __pfx__RNvXs_NtCsbuTvttuFvbr_6kernel3fmtINtB4_7AdapterRmENtNtCsjYlAz7NZ3Sw_4core3fmt7Display3fmtCsgx7gD2tBKZx_12to_table_poc+0x10/0x10 [to_table_poc]
+[ 1166.693961]  init_module+0x15/0xff0 [to_table_poc]
+[ 1166.693966]  do_one_initcall+0x118/0x4e0
+[ 1166.693973]  ? do_init_module+0x63/0x740
+[ 1166.694026]  ? __pfx_init_module+0x10/0x10 [to_table_poc]
+[ 1166.694030]  ? __se_sys_finit_module+0x39d/0x5f0
+[ 1166.694033]  ? __x64_sys_finit_module+0x7f/0x90
+[ 1166.694036]  ? x64_sys_call+0xa72/0x3030
+[ 1166.694040]  ? do_syscall_64+0x152/0x460
+[ 1166.694064]  ? entry_SYSCALL_64_after_hwframe+0x76/0x7e
+[ 1166.694073]  ? kvm_sched_clock_read+0x15/0x40
+[ 1166.694082]  ? __lock_acquire+0xd2f/0xe80
+[ 1166.694096]  ? kvm_sched_clock_read+0x15/0x40
+[ 1166.694101]  ? debug_smp_processor_id+0x1b/0x30
+[ 1166.694106]  ? _raw_spin_unlock_irqrestore+0x38/0x90
+[ 1166.694114]  ? __this_cpu_preempt_check+0x17/0x20
+[ 1166.694118]  ? lockdep_hardirqs_on+0xdb/0x160
+[ 1166.694123]  ? debug_smp_processor_id+0x1b/0x30
+[ 1166.694128]  ? kasan_save_alloc_info+0x3a/0x50
+[ 1166.694132]  ? __kasan_kmalloc+0x94/0xb0
+[ 1166.694138]  ? __kmalloc_cache_noprof+0x366/0x720
+[ 1166.694151]  ? do_init_module+0x63/0x740
+[ 1166.694154]  ? __kmalloc_cache_noprof+0x160/0x720
+[ 1166.694158]  ? kasan_unpoison+0x4c/0x70
+[ 1166.694162]  ? kasan_poison+0x44/0x60
+[ 1166.694168]  do_init_module+0x23f/0x740
+[ 1166.694176]  load_module+0x323c/0x3eb0
+[ 1166.694188]  __se_sys_finit_module+0x39d/0x5f0
+[ 1166.694202]  __x64_sys_finit_module+0x7f/0x90
+[ 1166.694206]  x64_sys_call+0xa72/0x3030
+[ 1166.694227]  do_syscall_64+0x152/0x460
+[ 1166.694232]  ? debug_smp_processor_id+0x1b/0x30
+[ 1166.694238]  ? do_syscall_64+0x39/0x460
+[ 1166.694242]  ? __this_cpu_preempt_check+0x17/0x20
+[ 1166.694247]  ? do_syscall_64+0x106/0x460
+[ 1166.694250]  ? entry_SYSCALL_64_after_hwframe+0x76/0x7e
+[ 1166.694254]  entry_SYSCALL_64_after_hwframe+0x76/0x7e
+[ 1166.694257] RIP: 0033:0x7f809171e90d
+[ 1166.694272] Code: 5b 41 5c c3 66 0f 1f 84 00 00 00 00 00 f3 0f 1e fa 48 89 f8 48 89 f7 48 89 d6 48 89 ca 4d 89 c2 4d 89 c8 4c 8b 4c 24 08 0f 05 <48> 3d 01 f0 ff ff 73 01 c3 48 8b 0d f3 b4 0f 00 f7 d8 64 89 01 48
+[ 1166.694278] RSP: 002b:00007ffd0c3840c8 EFLAGS: 00000246 ORIG_RAX: 0000000000000139
+[ 1166.694290] RAX: ffffffffffffffda RBX: 000055b8afd917d0 RCX: 00007f809171e90d
+[ 1166.694292] RDX: 0000000000000000 RSI: 000055b898d74cd2 RDI: 0000000000000003
+[ 1166.694294] RBP: 0000000000000000 R08: 0000000000000000 R09: 0000000000000000
+[ 1166.694296] R10: 0000000000000003 R11: 0000000000000246 R12: 000055b898d74cd2
+[ 1166.694298] R13: 000055b8afd91790 R14: 000055b898d73888 R15: 000055b8afd918e0
+[ 1166.694306]  </TASK>
+
+[ 1166.731860] Allocated by task 5462:
+[ 1166.732274]  kasan_save_track+0x2f/0x70
+[ 1166.732283]  kasan_save_alloc_info+0x3a/0x50
+[ 1166.732287]  __kasan_kmalloc+0x94/0xb0
+[ 1166.732292]  __kmalloc_node_track_caller_noprof+0x53f/0x830
+[ 1166.732298]  krealloc_node_align_noprof+0x189/0x3b0
+[ 1166.732302]  rust_helper_krealloc_node_align+0xd/0x20
+[ 1166.732308]  _RNvMs6_NtCsbuTvttuFvbr_6kernel7cpufreqNtB5_12TableBuilder3add+0x11e/0x2f0
+[ 1166.732326]  _RNvMs6_NtCsbuTvttuFvbr_6kernel7cpufreqNtB5_12TableBuilder8to_table+0x3b/0x360
+[ 1166.732332]  _RNvXs2_Csgx7gD2tBKZx_12to_table_pocNtB5_16CpuFreqPocDriverNtNtCsbuTvttuFvbr_6kernel7cpufreq6Driver4init+0x9a/0x630 [to_table_poc]
+[ 1166.732340]  _RNvMsf_NtCsbuTvttuFvbr_6kernel7cpufreqINtB5_12RegistrationNtCsgx7gD2tBKZx_12to_table_poc16CpuFreqPocDriverE13init_callbackBW_+0x22/0x120 [to_table_poc]
+[ 1166.732347]  cpufreq_online+0x920/0x22a0
+[ 1166.732351]  cpufreq_add_dev+0x70/0x160
+[ 1166.732355]  subsys_interface_register+0x273/0x360
+[ 1166.732360]  cpufreq_register_driver+0x387/0x580
+[ 1166.732365]  _RNvXCsgx7gD2tBKZx_12to_table_pocNtB2_16CpuFreqPocModuleNtCsbuTvttuFvbr_6kernel6Module4init+0x98/0x1d0 [to_table_poc]
+[ 1166.732371]  init_module+0x15/0xff0 [to_table_poc]
+[ 1166.732377]  do_one_initcall+0x118/0x4e0
+[ 1166.732381]  do_init_module+0x23f/0x740
+[ 1166.732386]  load_module+0x323c/0x3eb0
+[ 1166.732390]  __se_sys_finit_module+0x39d/0x5f0
+[ 1166.732394]  __x64_sys_finit_module+0x7f/0x90
+[ 1166.732398]  x64_sys_call+0xa72/0x3030
+[ 1166.732403]  do_syscall_64+0x152/0x460
+[ 1166.732408]  entry_SYSCALL_64_after_hwframe+0x76/0x7e
+
+[ 1166.732614] The buggy address belongs to the object at ffff888281ddc000
+                which belongs to the cache kmalloc-64 of size 64
+[ 1166.733704] The buggy address is located 8 bytes to the right of
+                allocated 48-byte region [ffff888281ddc000, ffff888281ddc030)
+
+[ 1166.734993] The buggy address belongs to the physical page:
+[ 1166.735584] page: refcount:0 mapcount:0 mapping:0000000000000000 index:0xffff888281ddce00 pfn:0x281ddc
+[ 1166.735595] flags: 0x17ffffc0000200(workingset|node=0|zone=2|lastcpupid=0x1fffff)
+[ 1166.735606] page_type: f5(slab)
+[ 1166.735614] raw: 0017ffffc0000200 ffff8881000428c0 ffff888100040590 ffff888100040590
+[ 1166.735618] raw: ffff888281ddce00 000000080020001c 00000000f5000000 0000000000000000
+[ 1166.735620] page dumped because: kasan: bad access detected
+
+[ 1166.735783] Memory state around the buggy address:
+[ 1166.736299]  ffff888281ddbf00: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+[ 1166.737006]  ffff888281ddbf80: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+[ 1166.737654] >ffff888281ddc000: 00 00 00 00 00 00 fc fc fc fc fc fc fc fc fc fc
+[ 1166.738309]                                         ^
+[ 1166.738769]  ffff888281ddc080: fc fc fc fc fc fc fc fc fc fc fc fc fc fc fc fc
+[ 1166.739582]  ffff888281ddc100: fc fc fc fc fc fc fc fc fc fc fc fc fc fc fc fc
+[ 1166.740331] ==================================================================
+
+
+
+
+Priya Bala Govindasamy (1):
+  rust: cpufreq: Add CPUFREQ_TABLE_END as last table entry in
+    TableBuilder::to_table
+
+ rust/kernel/cpufreq.rs | 10 ++++++++--
+ 1 file changed, 8 insertions(+), 2 deletions(-)
+
+-- 
+2.34.1
+
