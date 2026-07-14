@@ -1,238 +1,438 @@
 Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 27B7137DAA3
-	for <linux-pm@vger.kernel.org>; Tue, 14 Jul 2026 11:08:42 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1784027324; cv=none; b=e/8lZM2KdQGSsJWU1j7wm3LfwbWBFSSKStLl22Ii0ocZAXMgdMvHwS2VEZNnRaHAEPW/mR1RwN45p9/sm6n6v3pBrA/hpmY13XSu0J+vcwURlX/Clmptx+duUxpJQFQkCa8pYm5WXujDlIiTQyR8c2UVSl41IVyH7ji7YnBYMsE=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1784027324; c=relaxed/simple;
-	bh=w7ra1oZoLsoSUtZm1rl35A/GKCnTGB1TkkeeRr1zxQQ=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=mFbHOXEPt6y+fgfeG88EtvoTJA9brptoosZdlSg9rJJDNUJFfB30kRg6KNEb/fOAiSKOZBcYPaCAK8GENo577UmsXO5o6VcG4jnISx12KWIAnbPs2liY0sVda3wkFVDiHj5JmxGT+lzwdf/Ck1fzYpo3L77XD/TQ2b8yAvOmGhw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=bYNJCJhG; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=LBqM0GYy; arc=none smtp.client-ip=205.220.168.131
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A99503932C6
+	for <linux-pm@vger.kernel.org>; Tue, 14 Jul 2026 12:04:52 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=205.220.168.131
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1784030694; cv=pass; b=Ffzs10dRa+bTuCT62TRMBwHUJMXn0Gr+BUvCuu6A0qiYRdxlxaGf0dl5eLRIBKHDPpIOmtAiCnw1zzeqlaH+jJxQhka3KtkGOpRdWvaKDONWlGWqWE6qoBtJxn/p4lZPC5tA832BrCJBZn07RHwa0AqyWIczNwTrIcEc5+fYH10=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1784030694; c=relaxed/simple;
+	bh=IhOcu2PS4sBOU1d9rNLBRpPlon4qfEEhIsBef1KmHjc=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=CZ3rU3L59AuRqjmUcduTkhoVNDvwJug5ZEFAwI8ZoH3e0zirTqHFC+3VRW3q0lMbNhDmYIu53iwoDwyldpZqpsEBcrPxxxEhGxWkyG7DhamowzDb4QTevCKmMtM8z82ikHn2FXFM0G1W9ditWy8juUekXgtI3ZN5uzYC9MZHW6A=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=gmCTbNOv; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=Bq+aTNBR; arc=pass smtp.client-ip=205.220.168.131
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="bYNJCJhG";
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="LBqM0GYy"
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="gmCTbNOv";
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="Bq+aTNBR"
 Received: from pps.filterd (m0279862.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 66E6ST5c3743651
-	for <linux-pm@vger.kernel.org>; Tue, 14 Jul 2026 11:08:41 GMT
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 66EBNv57231236
+	for <linux-pm@vger.kernel.org>; Tue, 14 Jul 2026 12:04:52 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
 	cc:content-transfer-encoding:content-type:date:from:in-reply-to
 	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	OOV3Jx708g/F9ZxMn2phCG4uyQ912gSuTvQXRh31bc8=; b=bYNJCJhGvyTYhsjQ
-	1SNBQmlWoOnnCleso1MB3Le/RIuHFhygtaRwYuSresQHpziCoxumQ32k0rjx1/wn
-	umpZ7O0AY67V09m43W6A+mg99pJSdHDXkNIh8wm+3foYc+qG/FVPC4pmaVtHY300
-	pQ3XXP3xY3hqNfUZSBZRthu3RhC4O4dcUsNoPSgubVw696U8W+P494cmCQHeQCXd
-	X57fIRG2jW9mCnleXjh62OkSV+At37QVFr64+rEMU/RayruHLsKkR55Eu4Xnch3T
-	SBq6Te9xMNT51PFIOsek8DUqS0cXmxAddG3euT84l0BUQXbx7AQAwX1z8wCwYWXK
-	OwRW7g==
-Received: from mail-pl1-f200.google.com (mail-pl1-f200.google.com [209.85.214.200])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4fd44p3bdc-1
+	YAksXXcYTs7qreOl6ykQXBvBHyCNYeVnc316wr7L798=; b=gmCTbNOvkkQQpDE7
+	WXD2MuP7stI2PhhR6m9lpRh1z2YICzJdC+2PemJb2sWi5uUH2dHiIzphkM+yoiiB
+	59oQY6vUmBuuDkAWRUoJCrSTHgXAtkSc0lQ4mGSWJ8W/Prr43ZWKXLsO6Zz0Y5js
+	ZgMzc220iHs2jLL6DiRc1R2dfSn55rxqWZ96fq0JrUB3eYUU0eMytj08MT0X+kN4
+	qw4fhvR92SSAtAq3+IKEn2n82M88v91ywjkrkzp6ChZBP2mp7xaQk6Tb9QglSO0A
+	9LVAtYSGzjx6fgrcAM7R1iK6nIZlsgbTGvlKy3eDjJGffWkIZKlzuAs4NkHy8VE+
+	IQNTiw==
+Received: from mail-qk1-f197.google.com (mail-qk1-f197.google.com [209.85.222.197])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4fd44p3h32-1
 	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Tue, 14 Jul 2026 11:08:41 +0000 (GMT)
-Received: by mail-pl1-f200.google.com with SMTP id d9443c01a7336-2cceabd70f5so19089935ad.1
-        for <linux-pm@vger.kernel.org>; Tue, 14 Jul 2026 04:08:41 -0700 (PDT)
+	for <linux-pm@vger.kernel.org>; Tue, 14 Jul 2026 12:04:51 +0000 (GMT)
+Received: by mail-qk1-f197.google.com with SMTP id af79cd13be357-92ac0a54110so663359985a.2
+        for <linux-pm@vger.kernel.org>; Tue, 14 Jul 2026 05:04:51 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1784030690; cv=none;
+        d=google.com; s=arc-20260327;
+        b=L0237lTr3PxHo4HCxTCsyds+JFvRCM3n88SIYbPgpZbtbJLMEblCVWVwvjidS2FH7Q
+         uJLKeoMABXq0QJkWkELNeUvjs2uZZKhTkspojX+aDDIHQm8l/CiOdsDJTN1c9QEjRybf
+         X4jySooLmSFHgeZple8fCe5vxm69YII5/RDQI9NqKlfs2nkN6ZrZ42aaSzChjgodTFOl
+         /b6ay16kOnMO7wuxLw4Mv+avsAJCofy6dP68S+/c6mo48vk1Qu5CBXexu58XwlFUZt0I
+         awWrw4dx9dfuNz0GmXkRW30RhUso0FHura1Fa3b/b0AJdAFS46ygh007LzctVRQFVu7E
+         0LiQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=YAksXXcYTs7qreOl6ykQXBvBHyCNYeVnc316wr7L798=;
+        fh=Q0X3UgicSF8BQ7urVR6jtgNWZYVDW9B1D2XEz0E6ZW8=;
+        b=ctHOEbLdJ0N24J/DrrZGYm9Oo1uMizIUPJQHV4V5gk7V0oT9Ivw7jLsbna9P8o8SQI
+         +tQLSiwfeZp2cOd4HZw8D1op6HPY959OhnLc5FmTv4Yr4KwaYp/h3J7Rv5ua0d1MKlT8
+         dj+oNPskMou7B5L7e8srKaf8TE2wNAQtREalYUsnKq6BCBENlhpY4HVZmc/FKtQ8Jh42
+         ps8hAxhJJxTY+BzxvgOQYwMkzuH2/4XY5/C0xUlq8EXWo+BZ6DD7OUTNslI3uS1akcK+
+         /9Nj6vWf7Bc2wOOO7wNu7PMjN/bZ2zJN3AdRBkVrS+ku3TOoSeuLxvS+O8Dh9fLeLuRL
+         0uWw==;
+        darn=vger.kernel.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1784027321; x=1784632121; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:in-reply-to:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=OOV3Jx708g/F9ZxMn2phCG4uyQ912gSuTvQXRh31bc8=;
-        b=LBqM0GYyw9KXUZd3kjA06yA4gyL+CaBoV4FsPu4tGQ4PcuJafQnp40vI5Zaus6E+gw
-         8Slq4knmroxI5QXm93FdFa5CmLyv17zsNn+laTvgcoPSIyPpMHcI8/CU0b4JilMB1jgC
-         U56DKRc7VVGpx+m+QiZH74ex7EMbMD73yTKNx84WdpXILF2/yebdiG6Xm/bQR5hlU695
-         WGuRDVLGNvfi8wJk7OYKTTjfdv37hhO3SSgNmoTgG04iCQVuiE5KdGkfY+/ff+S8sGjx
-         QtY1k8MHFnQr9o4MVnDKr0sJ9djIVpBktU8aE1UwhMN6N/6bCYqa82XaVQUJaEdIK2ZA
-         4Liw==
+        d=oss.qualcomm.com; s=google; t=1784030690; x=1784635490; darn=vger.kernel.org;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=YAksXXcYTs7qreOl6ykQXBvBHyCNYeVnc316wr7L798=;
+        b=Bq+aTNBRekkBpgaP26yUPGCQewSP1dIbyAOXSeg92wehaX+Qm9ULcLGxcqXU5Zsdvi
+         oMX8XO4v0SjMkmzlYsaySCaITYG4p9VG4N2jo3n6NbxYXRYpgfma5Aac64iIq32qJzA0
+         CoLuzbgwRKmovI8fGsUjhwUecpibRgWMaykoeA0zRd20pPrxK1/S0fQ2vgSKoEjeI/kb
+         FN3kpik/1XJHkQj/6FAoTTV/3p4kqN80wvHAaj3ed58mBnEf7Qv9Rx/x9oncyv5rcVoi
+         u4sEOsi9J46ckJhKXgtfrf2Z1H7+icR4WqOwSATXCs6kk9b11EMJCd7zOxKuR+BUIHTi
+         iE3A==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1784027321; x=1784632121;
-        h=content-transfer-encoding:content-type:in-reply-to:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=OOV3Jx708g/F9ZxMn2phCG4uyQ912gSuTvQXRh31bc8=;
-        b=bBzoRGjhlgutsXPBg0GkV+HtW5LeCBvB0tBcgw4pZ9PJJUCX7EGUnjZCfkuj1zMeYD
-         9c0x8ClyVOL1sFEeszqTmiMwbntYV++iXih2Rrv7gt4+JYrTB561CpTLzFCRTGhRCvfW
-         6g13sqDjLjY7Qwbq6EZbmUxZ54o8w/Hp2KcKgUeAN2Q8IY91xMoQyvUEXq10HtU0ifuY
-         ggxYy0LyWIYtrqy6r52U/6GR6VKnLxm7HQtcEFKBPmMxm4W99rKdNKa0ieWRJC0hCkqi
-         hjc5ILGCnBiPQZMpQllbNX1rWDEfwFnrAnNyP19s/KVykVUELRHFawTq1Od14uxFC9tF
-         fxOA==
-X-Forwarded-Encrypted: i=1; AHgh+Rp63filc6YhNa7xWx24BsuY8jbIXds6JzV4A2oO+kUCHkxI8sbvaCJwY1TRt6eHntJESh7rGPxvhQ==@vger.kernel.org
-X-Gm-Message-State: AOJu0YzMC3rtE8oQXWKxAJOZMjQuwrKgGN1dOlpTdg/fvZH3zhZFowfv
-	l0jU3F1P0ux29QbmK+LDLSv6Qc1DC3TZEWE6iXDJt3eF3nfdbUwDYT7Yu7jqWUm/aD+CB1EkYMn
-	FCy3pg4ZhZ7XMZsGYJZKXyuq1wcSYv4ad8GaiSG6xaAUB5gEn3Pis51izW1uX2g==
-X-Gm-Gg: AfdE7ckH3koFBTUd0/Hi6qq62azYjWQm0NIsw/fImZ2BkxEaAo9JDpq7ZodkZemTg8z
-	JmMJrG/7YueZvVoE1bHEWsufCVHEgrv0oDACptEnTW1XXY7sib7jSZTcxg/BaTD8wIYntX1gLD+
-	YGR1OW85ezDm9BGlB4lTjXRDt7HhdVSkDqxeCDMsQXSMJeD2G0OSpG5R/FS9El4680Q31eNOq8c
-	Y5bG+Ld82Y8RDfYgfVS7LedoA3OcEeIaIxZ6RgFqiu/12XMnioMsOxxrc3574LVI8O1mAe0jpU5
-	s/z1I2+8dsSibnFc97+fsZXgRRFEZ7P1utRIPKB/2aEiFJXOogIh77/5UFUdanUpEgZNshNFsYN
-	5rv5nLOgFsH2LQOQq7xHOzg9jHQUO9fWMUskT6gIe1sVjyleSZ5zCUhb9Czwe+IYqZ7SCkmFsIe
-	UuEthKSA==
-X-Received: by 2002:a17:903:4b2d:b0:2c9:ceb9:865b with SMTP id d9443c01a7336-2ce9eab3aeemr110971975ad.21.1784027320702;
-        Tue, 14 Jul 2026 04:08:40 -0700 (PDT)
-X-Received: by 2002:a17:903:4b2d:b0:2c9:ceb9:865b with SMTP id d9443c01a7336-2ce9eab3aeemr110971565ad.21.1784027320167;
-        Tue, 14 Jul 2026 04:08:40 -0700 (PDT)
-Received: from [10.133.33.88] (tpe-colo-wan-fw-bordernet.qualcomm.com. [103.229.16.4])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2ccc99cc5aasm114996965ad.0.2026.07.14.04.08.36
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 14 Jul 2026 04:08:39 -0700 (PDT)
-Message-ID: <21f0957d-a8de-4262-a353-0e19fdac5481@oss.qualcomm.com>
-Date: Tue, 14 Jul 2026 19:08:34 +0800
+        d=1e100.net; s=20251104; t=1784030690; x=1784635490;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=YAksXXcYTs7qreOl6ykQXBvBHyCNYeVnc316wr7L798=;
+        b=BucgVp8cnbt++vCWpEXvtXzDRpI1na7dCKZ+tAn4lURXdY18Msdu3XfQl0wf+wgyWO
+         D3H+Uowqoe/WjtkNRCq0qo4+5z0U4gUsqfxOa9fwbLlQDygfxlNy+mm1A+01l7ghxL1s
+         HoRHc/oBftMtR+hvR+Bppk0XH7HQyAQY8LRmsWh9BuEMl3M1m8/C4EJsn15ggu90DkE7
+         pBFTkRyz+k7dRT2v0H66X7IU0qsKhEMuGCyLi+dNmFcDaAhA0isQF3tjvcL2wrcYejMK
+         jmIAf35B4HEB41Rl9sH84/FCWIcpYapBM6wyz5pBO46T5SIFQ4aurFg33sP20y9TRSDc
+         Fscw==
+X-Forwarded-Encrypted: i=1; AHgh+RqJnY8i49EJGcS0WO0syslE0dTxZsYAtF/Vpqaplmwtqqps+HTmNYe75HGiPdh7viRAmT2GP+Odzg==@vger.kernel.org
+X-Gm-Message-State: AOJu0YxcmVNV1vrutd2QONrqRZ7MN1JuP0lHbI8jeuEOXKPoSqEhX+0y
+	PCQYDeW+Q8crYHZm31cey4zKpYyQfeIEplkIfAMNnlcOYsJXpqoExrEx9TnL5N8/+fMCw7Y7fkZ
+	jiFOc49u9tsPZ21bYovmoLGo2yVzcMJ9oqPYg2N68hfcXKL8JH8AqKlrOghAk2YkglzI9eJPVb2
+	QN5fXBtlUmFUlJ00BRsc2Dhn8ZFxgPZdXT6SJx
+X-Gm-Gg: AfdE7ckAT8dA/hHoZPUkklyTSpqVU1xlLe8sI3sdtXOVQvDHGzXjjuGSCKJQ1E0ugWw
+	L+ON0aZHgfVN+vQd8wkBuG22YqtyQYkd5VWtzmFGAuZOCUYgx1xh6KbDmCnB3xJIcAHDNE/+hnM
+	jORBEGmglKrM5GKDMd5yhVUBcIVFXu7ocxvkhmyctiLTjxhUMcmfmgiIj9ezA9bmQnPVSD
+X-Received: by 2002:ac8:5f91:0:b0:51c:7b12:5fff with SMTP id d75a77b69052e-51cbf2ddef5mr127882981cf.75.1784030690344;
+        Tue, 14 Jul 2026 05:04:50 -0700 (PDT)
+X-Received: by 2002:ac8:5f91:0:b0:51c:7b12:5fff with SMTP id
+ d75a77b69052e-51cbf2ddef5mr127882421cf.75.1784030689773; Tue, 14 Jul 2026
+ 05:04:49 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] cpufreq: amd-pstate-ut: fix null pointer dereference
-To: Qianheng Peng <pengqh1@chinatelecom.cn>, kprateek.nayak@amd.com
-Cc: li.meng@amd.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
-        mario.limonciello@amd.com, perry.yuan@amd.com, rafael@kernel.org,
-        ray.huang@amd.com, skhan@linuxfoundation.org, viresh.kumar@linaro.org,
-        wangxb12@chinatelecom.cn, xiongl24@chinatelecom.cn,
-        zhangar@chinatelecom.cn, zhongqiu.han@oss.qualcomm.com
-References: <b2835252-409f-4188-aea7-195be3c4e69a@amd.com>
- <1784024553-16448-1-git-send-email-pengqh1@chinatelecom.cn>
-Content-Language: en-US
-From: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>
-In-Reply-To: <1784024553-16448-1-git-send-email-pengqh1@chinatelecom.cn>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Proofpoint-Spam-Info: AW1haW4tMjYwNzE0MDExNSBTYWx0ZWRfX1hI2R0dKOcHc
- 9Z9rL6x4odG7sqvfvgunSBTSUJHL8+VDIx6mVPohv0XbAi3VQXvz9Sc1Pany3bVV9J29v2vmGxt
- hc5qkwELMem1EZsgnfBShLQJViUYZuo=
-X-Proofpoint-GUID: cYSgfppWvw8KMGPfV41dJTW-jQ9yBOlv
-X-Proofpoint-ORIG-GUID: cYSgfppWvw8KMGPfV41dJTW-jQ9yBOlv
-X-Authority-Analysis: v=2.4 cv=BZroFLt2 c=1 sm=1 tr=0 ts=6a5618b9 cx=c_pps
- a=IZJwPbhc+fLeJZngyXXI0A==:117 a=nuhDOHQX5FNHPW3J6Bj6AA==:17
- a=IkcTkHD0fZMA:10 a=RAioF0-LDSMA:10 a=s4-Qcg_JpJYA:10
- a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=_K5XuSEh1TEqbUxoQ0s3:22
- a=tzYFbmKReUxiKNdrr1oA:9 a=QEXdDO2ut3YA:10 a=uG9DUKGECoFWVXl0Dc02:22
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzE0MDExNSBTYWx0ZWRfX4Ri0Umsjseef
- 5DYZvzGFdOfSMO4iXF+UWFaXpiajIOJCmDA2/dAhSVIqsZUCs0oRwrf9Elyu5ylIw4bKrGeEDNp
- Dxh8v1Y73FkgGS8Im9U/FE3KHq5dBlC0Y2L3e03cynUHlPvkhpW+Vky6y/cbzMv9Bl68xXZHQ0X
- ELiDrr3Z27FWnEzrrxJ2LlbGfxdlMQt3yovia7np07Ak8c1Wq05W4iv+kQX2SFCyTMCB0SSs3nt
- OXTVb73ZIdMLbC1usN784/2Yzg5jUVHET/efZLHexlFBVl+8y3VKNq9VNq7VoAMrIY5o9QgQO+a
- ERPGXHHPbmNby2voLf9sCm8LdCwB+fa0bdawhNrvtf4WmaR4xRwdVdg+fjsR0vwpP4niKsI2CGj
- 8u7ceiliWmH9QGa60+CVDoITUPSiw6j4mnb2FlfYFoLwZ/ow1TpaLZ06MxRM2+tuYSdjJumbBrh
- dgjXWk/ZoPiZ5ts1amA==
+References: <cover.1783505142.git.geert+renesas@glider.be> <23f979b0903ca11513ac339ab8b6dd40435603c5.1783505142.git.geert+renesas@glider.be>
+In-Reply-To: <23f979b0903ca11513ac339ab8b6dd40435603c5.1783505142.git.geert+renesas@glider.be>
+From: Ulf Hansson <ulf.hansson@oss.qualcomm.com>
+Date: Tue, 14 Jul 2026 14:04:38 +0200
+X-Gm-Features: AUfX_mz0pm1bKZMzEgKkx0pxSzyNhryLI17GoLwTGSkPYUe4ECmwKPI1jisfYfg
+Message-ID: <CAPx+jO-=LF9CvYDrC3O_GBtfHU6GYvq524OLmTG8R1-u27oyKw@mail.gmail.com>
+Subject: Re: [PATCH v2 4/6] pmdomain: renesas: Add R-Car X5H MDLC driver
+To: Geert Uytterhoeven <geert+renesas@glider.be>
+Cc: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
+        Conor Dooley <conor+dt@kernel.org>,
+        Michael Turquette <mturquette@baylibre.com>,
+        Stephen Boyd <sboyd@kernel.org>, Brian Masney <bmasney@redhat.com>,
+        Ulf Hansson <ulfh@kernel.org>, Philipp Zabel <p.zabel@pengutronix.de>,
+        Wolfram Sang <wsa+renesas@sang-engineering.com>,
+        Marek Vasut <marek.vasut+renesas@mailbox.org>,
+        Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>,
+        devicetree@vger.kernel.org, linux-clk@vger.kernel.org,
+        linux-pm@vger.kernel.org, linux-renesas-soc@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+X-Proofpoint-Spam-Info: AW1haW4tMjYwNzE0MDEyNSBTYWx0ZWRfX706BSfcwoPJI
+ R6uHOYn0ZSHmD3hxlNV3lsesDXx7g9onAf6Kxf3WFtZ+MCDQ/+GR5Fp4hstVrpjnqBNCJZgqUx/
+ kLpJgG0Xtx/0G5XXcjmyoS8wsom/lMs=
+X-Proofpoint-GUID: nHxEKFgBsP-txFHGzUBQymi737LbOuCe
+X-Proofpoint-ORIG-GUID: nHxEKFgBsP-txFHGzUBQymi737LbOuCe
+X-Authority-Analysis: v=2.4 cv=BZroFLt2 c=1 sm=1 tr=0 ts=6a5625e3 cx=c_pps
+ a=50t2pK5VMbmlHzFWWp8p/g==:117 a=IkcTkHD0fZMA:10 a=RAioF0-LDSMA:10
+ a=s4-Qcg_JpJYA:10 a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22
+ a=_K5XuSEh1TEqbUxoQ0s3:22 a=UmYWVhtEHbvSSgRh88EA:9 a=QEXdDO2ut3YA:10
+ a=IoWCM6iH3mJn3m4BftBB:22
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzE0MDEyNSBTYWx0ZWRfXxW4ZmtAgEr+l
+ 2qmY24xIto9FGIlOMFgluzDmYaWPPGTb+po3OiBsF6tVZVjBclLDEP2ttJTc28qRwRl+Xo92L5Z
+ /D/abIe+gf1wdETApR9s8PLxfgGzwypY728nmFLr/I6jL+WPr3DWBHvj7CxNmoeoD0kWcU5Jh+L
+ 4AA+04LZbBUAHkyopLARFclmxVryG2Z08ge3Bj1k/ptO+EdVFVANmwPq+MECvM737GALGGZvEP9
+ ofy6PW4hswqYlgbS9WIVOQsqO4x8zcqF/EgVnXqZaBcBTJ1YJIgljTBqLebNeu9she+NRH9aF5C
+ Gii1QEIjhqAyz4LExMAIAMzcItAYx0Etl+eIxKilscvZCj3kByFTg0bMeHaSBGWbagylTNk16tR
+ h3pgOqCEWwbnFh7GboL6tWY+4uuf/8lzjEHqAi4yTf5Z0G+1DOnZPlqCBQmZSEfvfIB3OTE5tLL
+ YzSpLFDGcf/vqmsDjPg==
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-07-14_02,2026-07-10_01,2025-10-01_01
+ definitions=2026-07-14_03,2026-07-10_01,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
  phishscore=0 spamscore=0 suspectscore=0 bulkscore=0 priorityscore=1501
  malwarescore=0 impostorscore=0 lowpriorityscore=0 adultscore=0 clxscore=1015
  classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2607140115
+ reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2607140125
 
-Hi Qianheng,
+On Wed, Jul 8, 2026 at 12:15=E2=80=AFPM Geert Uytterhoeven
+<geert+renesas@glider.be> wrote:
+>
+> Add a minimal Module Controller driver for the R-Car X5H (R8A78000) SoC.
+> For now this just supports the always-on power domains, and dummy clocks
+> and resets for the serial console (which is enabled by the boot loader).
+>
+> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+> ---
+> Calling genpd_add_provider() instead of of_genpd_add_provider_onecell()
+> would be sufficient, but the former is private.
 
-On 7/14/2026 6:22 PM, Qianheng Peng wrote:
-> Hello K Prateek,
-> Thanks for questions.
-> 
-> On 7/14/2026 14:39, K Prateek Nayak wrote:
->> On 7/14/2026 1:29 PM, Qianheng Peng wrote:
->>> The crash issue may occur when insmod amd_pstate_ut modules.
->>>
->>>     amd_pstate_ut: 1    amd_pstate_ut_acpi_cpc_valid  success!
->>>     amd_pstate_ut: 2    amd_pstate_ut_check_enabled   success!
->>>     BUG: kernel NULL pointer dereference, address: 0000000000000080
->>>     #PF: supervisor read access in kernel mode
->>>     #PF: error_code(0x0000) - not-present page
->>>     PGD 0 P4D 0
->>>     Oops: 0000 [#1] SMP NOPTI
->>>     CPU: 0 PID: 20300 Comm: modprobe
->>>     Kdump: loaded Tainted: G O 6.6.0-0010.rc1.ctl4.x86_64 #1
->>>     Hardware name: FiberHome R2200 V5/Xeon Boards, BIOS 3.1a 02/24/2020
->>
->> Is this an AMD platform?
-> No, it's Intel(R) Xeon(R) Gold 5128.
-> 
->>>     RIP: 0010:amd_pstate_ut_check_perf+0x141/0x280 [amd_pstate_ut]
->>>     Call Trace:
->>>      <TASK>
->>>      amd_pstate_ut_init+0x1b/0xff0 [amd_pstate_ut]
->>>      ? __pfx_amd_pstate_ut_init+0x10/0x10 [amd_pstate_ut]
->>>      do_one_initcall+0x42/0x2e0
->>>      ? kmalloc_trace+0x26/0x90
->>>      do_init_module+0x60/0x240
->>>      __se_sys_init_module+0x185/0x1c0
->>>      do_syscall_64+0x62/0x190
->>>      entry_SYSCALL_64_after_hwframe+0x76/0x7e
->>>      </TASK>
->>>
->>> Add invalidation check of cpudata in amd_pstate_ut_check_perf() and
->>> amd_pstate_ut_check_freq() to avoid unpredicated null pointer dereference.
->>>
->>> Fixes: 14eb1c96e3a3 ("cpufreq: amd-pstate: Add test module for amd-pstate driver")
->>> Suggested-by: Li Xiong <xiongl24@chinatelecom.cn>
->>> Suggested-by: Xibo Wang <wangxb12@chinatelecom.cn>
->>> Signed-off-by: Qianheng Peng <pengqh1@chinatelecom.cn>
->>> ---
->>>   drivers/cpufreq/amd-pstate-ut.c | 8 ++++++++
->>>   1 file changed, 8 insertions(+)
->>>
->>> diff --git a/drivers/cpufreq/amd-pstate-ut.c b/drivers/cpufreq/amd-pstate-ut.c
->>> index 735b29f..3b24260 100644
->>> --- a/drivers/cpufreq/amd-pstate-ut.c
->>> +++ b/drivers/cpufreq/amd-pstate-ut.c
->>> @@ -157,6 +157,10 @@ static int amd_pstate_ut_check_perf(u32 index)
->>>                  if (!policy)
->>>                          continue;
->>>                  cpudata = policy->driver_data;
->>> +               if (!cpudata) {
->>> +                       pr_err("%s driver_data of %s is empty!\n", __func__, policy->kobj.name);
->>> +                       return -EINVAL;
->>> +               }
->>>
->>>                  if (get_shared_mem()) {
->>>                          ret = cppc_get_perf_caps(cpu, &cppc_perf);
->>> @@ -229,6 +233,10 @@ static int amd_pstate_ut_check_freq(u32 index)
->>>                  if (!policy)
->>>                          continue;
->>>                  cpudata = policy->driver_data;
->>> +               if (!cpudata) {
->>> +                       pr_err("%s driver_data of %s is empty!\n", __func__, policy->kobj.name);
->>> +                       return -EINVAL;
->>> +               }
->>
->> The only time I think this can happen is when the amd-pstate-ut races with a
->> the amd_pstate.*_cpu_exit() (probably as a result of concurrent mode switch)
->> or if you are running this without running amd-pstate as the cpufreq driver
->> (which the ut doesn't check for beforehand)
->>
->> My setup fails at this exact same point when I have the driver unloaded.
->> What is the output of following before you run into this issue:
->>
->>     cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_driver
->>     cat /sys/devices/system/cpu/amd_pstate/status
->>
->> Are you doing any concurrent hotplug / mode switch?
->>
->>>
->>>                  if (!((policy->cpuinfo.max_freq >= cpudata->nominal_freq) &&
->>>                          (cpudata->nominal_freq > cpudata->lowest_nonlinear_freq) &&
-> In this machine, I got output as follow:
-> ======================================================================================
-> [root@ ~]# cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_driver
-> intel_cpufreq
-> [root@ ~]# cat /sys/devices/system/cpu/amd_pstate/status
-> cat: /sys/devices/system/cpu/amd_pstate/status: No such file or directory (os error 2)
-> ======================================================================================
-> Otherwise,I didn't do any concurrent hotplug / mode switch, just modprobe amd_pstate_ut.
-> 
+Right. Callers that need their own xlate callback should just assign
+it before calling of_genpd_add_provider_onecell(), as the below code
+does.
 
-It may be worth adding driver name detection to this ut driver, for
-example via cpufreq_get_current_driver().
+>
+> v2:
+>   - Spin off from "pmdomain: renesas: Add R-Car X5H MDLC SCMI remapping
+>     driver",
+>   - Add default support not using SCMI,
+>   - Drop all SCMI remapping support,
+>   - Document use of -1 as a sentinel,
+>   - Rename struct r8a78000_mdlc_info to mdlc_info,
+>   - Print HW IDs in hexadecimal,
+>   - Reduce log level for unsupported MDLC instances from warn to dbg,
+> ---
+>  drivers/pmdomain/renesas/Kconfig         |   4 +
+>  drivers/pmdomain/renesas/Makefile        |   1 +
+>  drivers/pmdomain/renesas/r8a78000-mdlc.c | 329 +++++++++++++++++++++++
+>  drivers/soc/renesas/Kconfig              |   1 +
+>  4 files changed, 335 insertions(+)
+>  create mode 100644 drivers/pmdomain/renesas/r8a78000-mdlc.c
+>
+> diff --git a/drivers/pmdomain/renesas/Kconfig b/drivers/pmdomain/renesas/=
+Kconfig
+> index b507c3e0d723efc6..f2f52d3c29a083f1 100644
+> --- a/drivers/pmdomain/renesas/Kconfig
+> +++ b/drivers/pmdomain/renesas/Kconfig
+> @@ -13,6 +13,10 @@ config SYSC_RMOBILE
+>         bool "System Controller support for R-Mobile" if COMPILE_TEST
+>
+>  # SoC
+> +config MDLC_R8A78000
+> +       bool "Module Controller support for R8A78000 (R-Car X5H)" if COMP=
+ILE_TEST
+> +       select RESET_CONTROLLER
+> +
+>  config SYSC_R8A7742
+>         bool "System Controller support for R8A7742 (RZ/G1H)" if COMPILE_=
+TEST
+>         select SYSC_RCAR
+> diff --git a/drivers/pmdomain/renesas/Makefile b/drivers/pmdomain/renesas=
+/Makefile
+> index 0391e6e67440a786..17849aad37a5ac4f 100644
+> --- a/drivers/pmdomain/renesas/Makefile
+> +++ b/drivers/pmdomain/renesas/Makefile
+> @@ -1,5 +1,6 @@
+>  # SPDX-License-Identifier: GPL-2.0
+>  # SoC
+> +obj-$(CONFIG_MDLC_R8A78000)    +=3D r8a78000-mdlc.o
+>  obj-$(CONFIG_SYSC_R8A7742)     +=3D r8a7742-sysc.o
+>  obj-$(CONFIG_SYSC_R8A7743)     +=3D r8a7743-sysc.o
+>  obj-$(CONFIG_SYSC_R8A7745)     +=3D r8a7745-sysc.o
+> diff --git a/drivers/pmdomain/renesas/r8a78000-mdlc.c b/drivers/pmdomain/=
+renesas/r8a78000-mdlc.c
+> new file mode 100644
+> index 0000000000000000..ed367e921a3341a7
+> --- /dev/null
+> +++ b/drivers/pmdomain/renesas/r8a78000-mdlc.c
+> @@ -0,0 +1,329 @@
+> +// SPDX-License-Identifier: GPL-2.0
+> +/*
+> + * R-Car X5H Module Controller
+> + *
+> + * Copyright (C) 2026 Glider bv
+> + */
+> +
+> +#include <linux/dev_printk.h>
+> +#include <linux/module.h>
+> +#include <linux/mod_devicetable.h>
+> +#include <linux/of.h>
+> +#include <linux/platform_device.h>
+> +#include <linux/pm_domain.h>
+> +#include <linux/reset-controller.h>
+> +#include <linux/slab.h>
+> +
+> +#include <dt-bindings/power/renesas,r8a78000-mdlc.h>
+> +
+> +struct mod_map {
+> +       int hw_id;              /* Hardware module ID or -1 sentinel */
+> +};
+> +
+> +struct mdlc_info {
+> +       u32 base;
+> +       const struct mod_map *mod_map;
+> +};
+> +
+> +/**
+> + * struct r8a78000_mdlc_priv - Module Controller Private Data
+> + *
+> + * @link: Link into list of MDLC instances
+> + * @genpd_data: PM domain provider data
+> + * @rcdev: Reset controller entity
+> + * @dev: MDLC device
+> + * @np: Device node in DT representing the MDLC
+> + * @mod_map: Mapping from hardware module IDs
+> + */
+> +struct r8a78000_mdlc_priv {
+> +       struct hlist_node link;
+> +       struct genpd_onecell_data genpd_data;
+> +       struct reset_controller_dev rcdev;
+> +       struct device *dev;
+> +       struct device_node *np;
+> +       const struct mod_map *mod_map;
+> +};
+> +
+> +static struct generic_pm_domain *r8a78000_genpd_always_on;
+> +static HLIST_HEAD(r8a78000_mdlc_list);
+> +static DEFINE_MUTEX(r8a78000_mdlc_lock);       /* protects the two above=
+ */
+> +
+> +static struct generic_pm_domain *r8a78000_genpd_xlate(
+> +                       const struct of_phandle_args *spec, void *data)
+> +{
+> +       struct r8a78000_mdlc_priv *priv =3D container_of(data,
+> +                                       struct r8a78000_mdlc_priv, genpd_=
+data);
+> +       struct device *dev =3D priv->dev;
+> +       u32 id;
+> +
+> +       if (spec->args_count !=3D 2)
+> +               return ERR_PTR(-EINVAL);
+> +
+> +       id =3D spec->args[0];
+> +
+> +       if (id >=3D R8A78000_MDLC_PD_AON) {
+> +               dev_dbg(dev,
+> +                       "Mapping HW power domain 0x%x to always-on domain=
+\n",
+> +                       id);
+> +               return r8a78000_genpd_always_on;
 
+This looks odd, but perhaps it's just a temporary mapping that you
+intend to change later, no?
 
--- 
-Thx and BRs,
-Zhongqiu Han
+> +       }
+> +
+> +       dev_err(dev, "Unknown power domain 0x%x\n", id);
+> +       return ERR_PTR(-ENOENT);
+> +}
+
+[...]
+
+> +
+> +static void r8a78000_genpd_del_provider(void *data)
+> +{
+> +       of_genpd_del_provider(data);
+> +}
+> +
+> +static int r8a78000_genpd_always_on_singleton(struct device *dev)
+> +{
+> +       struct generic_pm_domain *genpd;
+> +       int ret;
+> +
+> +       guard(mutex)(&r8a78000_mdlc_lock);
+> +
+> +       if (r8a78000_genpd_always_on)
+> +               return 0;
+> +
+
+I guess the mutex is used to protect the global
+r8a78000_genpd_always_on, but it looks like that isn't really needed
+based upon how things are being called during the probe.
+
+> +       genpd =3D kzalloc_obj(*genpd);
+> +       if (!genpd)
+> +               return -ENOMEM;
+> +
+> +       genpd->name =3D "always-on";
+> +       genpd->attach_dev =3D r8a78000_mdlc_attach_dev;
+> +
+> +       ret =3D pm_genpd_init(genpd, &pm_domain_always_on_gov, false);
+> +       if (ret) {
+> +               kfree(genpd);
+> +               return dev_err_probe(dev, ret,
+> +                                    "Failed to create always-on domain\n=
+");
+> +       }
+> +
+> +       r8a78000_genpd_always_on =3D genpd;
+> +       return 0;
+> +}
+> +
+> +static int r8a78000_mdlc_probe(struct platform_device *pdev)
+> +{
+> +       struct device *dev =3D &pdev->dev;
+> +       struct device_node *np =3D dev->of_node;
+> +       struct r8a78000_mdlc_priv *priv;
+> +       const struct mdlc_info *info;
+> +       struct resource *res;
+> +       int ret;
+> +
+> +       ret =3D r8a78000_genpd_always_on_singleton(dev);
+> +       if (ret)
+> +               return ret;
+> +
+> +       info =3D of_device_get_match_data(dev);
+> +       if (!info)
+> +               return -ENODEV;
+> +
+> +       priv =3D devm_kzalloc(dev, sizeof(*priv), GFP_KERNEL);
+> +       if (!priv)
+> +               return -ENOMEM;
+> +
+> +       priv->dev =3D dev;
+> +       priv->np =3D np;
+> +
+> +       res =3D platform_get_resource(pdev, IORESOURCE_MEM, 0);
+> +       if (!res)
+> +               return -ENODEV;
+> +
+> +       for (; info->base; info++) {
+> +               if (info->base =3D=3D res->start)
+> +                       break;
+> +       }
+> +
+> +       if (!info->base) {
+> +               dev_dbg(dev, "Unsupported MDLC instance 0x%pa\n", &res->s=
+tart);
+> +               return -ENODEV;
+> +       }
+> +
+> +       priv->mod_map =3D info->mod_map;
+> +
+> +       scoped_guard(mutex, &r8a78000_mdlc_lock) {
+> +               hlist_add_head(&priv->link, &r8a78000_mdlc_list);
+> +       }
+> +
+> +       ret =3D devm_add_action_or_reset(dev, r8a78000_mdlc_unlink, priv)=
+;
+> +       if (ret)
+> +               return dev_err_probe(dev, ret, "failed to add action\n");
+> +
+> +       /* Note that no actual domains are registered, just need translat=
+ion */
+> +       priv->genpd_data.xlate =3D r8a78000_genpd_xlate;
+> +       ret =3D of_genpd_add_provider_onecell(np, &priv->genpd_data);
+> +       if (ret)
+> +               return dev_err_probe(dev, ret,
+> +                                    "Failed to register genpd provider\n=
+");
+> +
+> +       ret =3D devm_add_action_or_reset(dev, r8a78000_genpd_del_provider=
+, np);
+> +       if (ret)
+> +               return dev_err_probe(dev, ret,
+> +                                    "failed to add unregister action\n")=
+;
+> +
+> +       priv->rcdev.ops =3D &r8a78000_mdlc_reset_ops;
+> +       priv->rcdev.of_node =3D np;
+> +       priv->rcdev.of_reset_n_cells =3D 1;
+> +       priv->rcdev.of_xlate =3D r8a78000_mdlc_reset_xlate;
+> +
+> +       ret =3D devm_reset_controller_register(dev, &priv->rcdev);
+> +       if (ret)
+> +               return dev_err_probe(dev, ret,
+> +                                    "Failed to register reset controller=
+\n");
+> +
+
+In some of the error paths above it looks like we end up leaking the
+data allocated for r8a78000_genpd_always_on. Perhaps clean up that
+somewhere here.
+
+> +       return 0;
+> +}
+
+[...]
+
+In regards to the merge strategy, I intend to pick patch 2 (shared via
+the immutable dt branch) and $subject patch. Please let me know if
+there are any issues with that.
+
+Kind regards
+Uffe
