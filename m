@@ -1,235 +1,225 @@
-Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 352AA3368B1
-	for <linux-pm@vger.kernel.org>; Tue, 14 Jul 2026 13:25:37 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=205.220.180.131
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1784035541; cv=pass; b=pVpxWJAVBVZsnrGV9Soh8qlZJFE1+1c9oFbb1fTP/LSKxOO5NvvJ2x391kzGfaEBL0h2rwklQLstlYaDETYBY3H52+jHySupah2+oHqNEtSvh0QkxNjf9GBvwzVA+FjwhIf7G20U7fIVAqzwIXL4vKTX44Gr2bBWNqNZi2UkWI4=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1784035541; c=relaxed/simple;
-	bh=U+IHAhlau1+FQ/9SnNbSqU3dkHQE3mjTxVianlAUiZY=;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5F75833FE15
+	for <linux-pm@vger.kernel.org>; Tue, 14 Jul 2026 13:26:18 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1784035582; cv=none; b=OREg+gR9P0lKCEblNGEOeFFmMl2Qlwpss3GAV5mEpWKXm6hO5enWrPNtLznkt9TC7HkMhir+DC1r/on1DJqc5N1YUAtnpOgMs3RUqnxF61tEWuo+eQSfKIN0B+mp3r4rHHVyUPIAsgQcSEZ9HSTNUMXmkssNhtYNQ7XNVDLsIjA=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1784035582; c=relaxed/simple;
+	bh=IbxqA5kI8UVWYKqQ6XdJ2Za06O/jAjIjAj1D4EYFRFQ=;
 	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=gfcUo7g+m5PG7aQ/qEINUoHHfFFE5WrLJzefQBNe430nZgBCrAovgHxYrNRlH28QkCTPv31+hyYxbH+VscntN84q1qupmX8Gc7ZV4mHLaNTi/OZpPgwVSTBpRd3811cx4mntePMHhgUz3genWIdr9EmBOZC+r30/8thzvS81duM=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=aRyaAp7a; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=XBAla5s4; arc=pass smtp.client-ip=205.220.180.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
+	 To:Cc:Content-Type; b=MTl0Q3B90PoJ4r9CFcoZTt5vuFSi26I+4ssSLfzzCykMEjz3S5kEFV5oBzOpPgeah5H4ATiPMCgwrmQsqzYP0WHTEEiCQBp6BiH/UW298cy4nEIEfuCygcGIkc1viuNYFHOQKXEjbts9hHjqft1+JGoF4WSvbaAdXv7J7sOp96E=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=BLCXNwpJ; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="aRyaAp7a";
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="XBAla5s4"
-Received: from pps.filterd (m0279869.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 66ED3dOr674000
-	for <linux-pm@vger.kernel.org>; Tue, 14 Jul 2026 13:25:37 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	717QVw0yJNdagVep2nzauZkl9EHE4Pz9tV4rojKV45c=; b=aRyaAp7aH5SEoQOK
-	km6Jmp/T234j31falyyM4QXkeHCbrZbFztEpbZvnNNmXArVNt3FbJjN1WhbJwh5T
-	2v8xcpJlodbeCawsXGGH/mEmKVsmcYyYcQ4ejfl9DQaiGcizak3TkjUdBJ0Mj3Te
-	Tli4AjYc8O2MtQtAhDgf8bAfjdn9oWY/GLlXMDEI4+njXIhhnqeI7Ll4jPJ3cCH8
-	oBxhFdUJhQi9o98L0UMDFRYUOnCBbT9Njm3AsTENO/q95S46WyLt7a5H7yv7Q2Ic
-	9idLhuTPPQ+miS7GRBhHle4zuMkm2bpsfojeVsmu++KmOWCLriII27sExOkUQnoC
-	omPPZA==
-Received: from mail-qt1-f199.google.com (mail-qt1-f199.google.com [209.85.160.199])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4fdnnqr498-1
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Tue, 14 Jul 2026 13:25:36 +0000 (GMT)
-Received: by mail-qt1-f199.google.com with SMTP id d75a77b69052e-51a8db414c7so60436361cf.0
-        for <linux-pm@vger.kernel.org>; Tue, 14 Jul 2026 06:25:36 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1784035536; cv=none;
-        d=google.com; s=arc-20260327;
-        b=YDmCY8hlLh8b7/UExakE8Gfq/ykEU5/ZCyTtywcw77dl6ZfYaBCcDtNGz1odmqymUl
-         OZpJmDnOp6MMG7GNqWOkgQDP914sGouxeXpxQJOVQZpr0mQVAxeGAtUqY64ft2BH10rE
-         8QR6MyCAyUYGH0WrNie0UQ37sdJaRWPAAdCoGrWlrsPldwlZ7OU21h/W3KkKzKEIZeaf
-         VgZYAdHD3E5y0X/9HjLh7nA8aplt1sWE8EJCHzlk1fZVJ+gRkCADOIwv7MMops5rmjuF
-         jGumO+e5k60Kbrq86hx7Mwm85i52r4m9H45dJ2nvKwx2KFDMNekAwyQbaI5O/kArOYq9
-         PrVA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=717QVw0yJNdagVep2nzauZkl9EHE4Pz9tV4rojKV45c=;
-        fh=8kjPlslNQg6+85/u3O5Zk0HfTr1uP6mWtrXn8WPV938=;
-        b=pTYuM1tKqyyBazuezn9jZ4nlkRHv3mBkIEy2Qrrg3YFPu4+X9UXLbzXJCZSk98oXCA
-         1bh8V2Qfpirjg0SGi+YOKcx0LPtwoONoGuCzenB3I7Xpf1KktAR8Cw7e7iug0UV3VoUw
-         1dAYmdPvCFy0+ak80HuGaxdrcJaDjnhdsyh0+YxBjSSfPAmRQK5i3T7wLXa+lQe/j/E0
-         cCYWKoTicICcV7g/tMM2exLdEUGJigCa/uS96V9H692pcM193zZHSXOfhvjdX8CVEI7m
-         ucyk7o4Pqtdi89K9tZ1pKW+jP4vf1GlUT2TOgrQh4CIM9785gTSwCkCZUIk1IBYp32At
-         dLgg==;
-        darn=vger.kernel.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1784035536; x=1784640336; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=717QVw0yJNdagVep2nzauZkl9EHE4Pz9tV4rojKV45c=;
-        b=XBAla5s4EseFgTWcBVSDel+aosRzU1sJyhb6NhUXwl2+ezshP0IE1w6KybB/7qw2tr
-         FkaYSdxriHOwVua2TNfdYWod46WWJa3ARNKC2dpqN/gnwG1SUhv9t4xCFGzt/3TPGScG
-         FMz512SMF6AvenxxxJXEVvpRYoQsQqunPREINhze6mEhlDWCRLq2PgOdupKnmm+8P3CU
-         AJz8dDywbz9sNl1fCO2WWsODv22kucC5abwwxk0Zc8fD1mQU0w/CB9IeE8W1SNNqceae
-         4K03XtM/lLNOU6haK4H2/F8daA5DZNipyVrCnvnyfnlC9MElm9pv1scXaN3W6uwj6Wao
-         l76w==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1784035536; x=1784640336;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=717QVw0yJNdagVep2nzauZkl9EHE4Pz9tV4rojKV45c=;
-        b=CCDxUowjV4scRjk8KgXpjLqpprrBimBXfQzq29qpSjeh6hPSoqo0UIHCAIqloQUQZI
-         b2/CQfsIWOmdsMCdRAE3viCrpi6Ry5yEiwasOoksRx4+uOIR4vwgQTfnlR3Q8PjeqiIk
-         C3Sgf6TVwbWGY23hgiLkoUF23VTRFfctODzFIrOujvJpITI2+TGHGA+dcmBsrMErNrjP
-         eKayDgFPJhhtSouaYaI5dIUmIKpMQRg/QT/kKSzQ2uQSIR/rTC84XzKIj7Ds+lf1VhXI
-         sQ2oDgw2fQIDa57ndN0BpI6iZjN73/p8pYhOg+zwcyKnYX9/WjdZe8xpQAWTjs6v2wZK
-         WhkQ==
-X-Forwarded-Encrypted: i=1; AHgh+RrD2iuBD+450lZkTUN1GpBvPPwQueHS5ptfiVT2iYZETYePzDh/4fc6WNy7PKEBYJBe2nx7rb2fRg==@vger.kernel.org
-X-Gm-Message-State: AOJu0YwjcL7t970UxqdBAkmiQeC9WP9sLTQ34B8WZ0mz41Y8boD6Qi9p
-	2hEe5CkWslfv5UAm4m+KWc5FFa6GVgqrWnS/5QJ6uhT0dpH6vkbADAfZBDkBTQFDzOz7uJkRj3v
-	6FM/uYaNFojV9YjI4VkB1dKtTUeqrOz6X+VuOV3QdjCVQl4IXTBZlgpBF20iWRSfW4B/q1LZvUN
-	NZJWDu+1uB6Oj+Cku8w+hmHQvU28U/2Q9Z3mqwjh2I1OTq
-X-Gm-Gg: AfdE7cms3nrrjN48Ma9LaxzjcCZU9yeUJcnwbsRPcsnhKT9zEo8ryFoz0KiHR9wmFFZ
-	mlqBK0qipJV45jGJKTiLge6tefTf0UjLUpOifWWWDtWkMxJ5bc40TuxLniVTvU3C94e6t8SZhbi
-	zmhzquaPyi538CPu/a6QqS/LRs7tXLLkIGRc8zIoPtRg8D9csHPdp9EaIhsSKCBoO/oht3
-X-Received: by 2002:a05:622a:4885:b0:51b:f0ab:2b1b with SMTP id d75a77b69052e-51cbf26daddmr133079591cf.49.1784035534511;
-        Tue, 14 Jul 2026 06:25:34 -0700 (PDT)
-X-Received: by 2002:a05:622a:4885:b0:51b:f0ab:2b1b with SMTP id
- d75a77b69052e-51cbf26daddmr133077151cf.49.1784035531296; Tue, 14 Jul 2026
- 06:25:31 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="BLCXNwpJ"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 128381F00A3E
+	for <linux-pm@vger.kernel.org>; Tue, 14 Jul 2026 13:26:18 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1784035578;
+	bh=lBHocEz/NlJmbo2Tn1hjIcEfq+hyYKUksKMIHrzslk0=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc;
+	b=BLCXNwpJlJt8I8UMqgfA5zm04seOGZkvGyZnIF/oW6VjkUROgv7DA8OS02wo9K3oi
+	 jZbLh/PQ14vTEcXIlOftHwt6G6mSw+Wz7p6paWBFZg0maY/0xahnhrO2T4RifUmCYO
+	 7ab8bxezASevRxVs1zksILy7+AFQTkCeSY90NNDI7/P5BnqiA7ncNAgIs0JLDm1AYd
+	 6UazhOS6/4IUJr4MLKk9rSBSGkA0NhSJOnHKyNIwNSRFseSzH9p1U6LLOZ6mT1hC3h
+	 T9Wtg+7DjpdcTMmEnaOboeagwBB8Noje2jRA/TAlXJGa+jApSTTy6iq8c2ixrw5T26
+	 rshF0fGPF1m3Q==
+Received: by mail-lf1-f45.google.com with SMTP id 2adb3069b0e04-5aebd52488cso4627436e87.2
+        for <linux-pm@vger.kernel.org>; Tue, 14 Jul 2026 06:26:17 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AHgh+RqdO9EUqyLl5NYmUNzH7oQGFMayC+73FBzZDwFjT/6pdHKeqP6VSY2ICJBk8qI3T3dsdXpWWTyY3A==@vger.kernel.org
+X-Gm-Message-State: AOJu0YwnoC5KZwZlIadsf07o24J3XiMF3rKp7WJzG1x7/PSrspOlC67o
+	7Z7IhoPhWlm6wF8ijsO+PvcyFU/BTiJDdt0SiQDTlQLH8V1B5JiztgL+BuaAAkZZcVcNPgUloz7
+	WOnkSBuN5fHA5mytwUVtVHBZv315d4YQ=
+X-Received: by 2002:a05:6512:ace:b0:5ae:b584:561c with SMTP id
+ 2adb3069b0e04-5b0236c689dmr3112183e87.62.1784035576434; Tue, 14 Jul 2026
+ 06:26:16 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260420022254.302740-1-zhipeng.wang_1@nxp.com>
-In-Reply-To: <20260420022254.302740-1-zhipeng.wang_1@nxp.com>
-From: Ulf Hansson <ulf.hansson@oss.qualcomm.com>
-Date: Tue, 14 Jul 2026 15:25:20 +0200
-X-Gm-Features: AUfX_myUc1dBICALtzRuHVKIlbb7qfNnmRBTvv_VDYs9K5Gif0zPw5ow6tXTGB4
-Message-ID: <CAPx+jO8WidzjwnGspSTLa6urva3w3qrigJ46CDnqOTLAh06XBg@mail.gmail.com>
-Subject: Re: [PATCH v4] pmdomain: imx: Make IMX8M/IMX9 BLK_CTRL tristate
-To: Zhipeng Wang <zhipeng.wang_1@nxp.com>
-Cc: ulfh@kernel.org, Frank.Li@nxp.com, s.hauer@pengutronix.de,
-        kernel@pengutronix.de, festevam@gmail.com, linux-pm@vger.kernel.org,
-        imx@lists.linux.dev, linux-arm-kernel@lists.infradead.org,
-        linux-kernel@vger.kernel.org, xuegang.liu@nxp.com, jindong.yue@nxp.com
+References: <4746278.LvFx2qVVIh@rafael.j.wysocki> <2280567.Icojqenx9y@rafael.j.wysocki>
+ <20260713-aquatic-okapi-of-wind-9e657c@sudeepholla>
+In-Reply-To: <20260713-aquatic-okapi-of-wind-9e657c@sudeepholla>
+From: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
+Date: Tue, 14 Jul 2026 15:25:58 +0200
+X-Gmail-Original-Message-ID: <CAJZ5v0heUWyDy7jpt2M3s+b_ir7q5KgUjrf_Ga817GfWoC6DsQ@mail.gmail.com>
+X-Gm-Features: AUfX_mzhIi96WL4hqFJy-bZzkY_623RqUQzDt0htGgnd_HR86krRSfcWZJJAnt0
+Message-ID: <CAJZ5v0heUWyDy7jpt2M3s+b_ir7q5KgUjrf_Ga817GfWoC6DsQ@mail.gmail.com>
+Subject: Re: [PATCH v1 17/17] intel_idle: Add ACPI _LPI support
+To: Sudeep Holla <sudeep.holla@kernel.org>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Linux PM <linux-pm@vger.kernel.org>, 
+	Linux ACPI <linux-acpi@vger.kernel.org>
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzE0MDEzOSBTYWx0ZWRfX47CHNQNY58M9
- TCEWuHWkjglvsiUb38sa3qfipSPUw6HRFmN0gJcyL/GNrEOZYP7sNILo8ctY/sczKwK/JJlIrzx
- jKKcGB4TVD4T0z7yPVBqh1ptaTViOv/ZPIfkrj8f3nxijTSFbgu5iW33xqs96XnOipQBffArfC/
- GFWjmCvINPQLApmXqy+zlFRSrCJtc9/Tl5EJmNcuyK5x2uJxGYShtiUCAq1CfJ63+7zXQwejUrM
- LmTe+02+LWuEfJCrfg5414XA5kDr4fqF+HMxBr0azRmh5GQpGn4VkdEyVIyUdwIdZf4cT8GYFrK
- HZ/1yXxO2ZzEoT/rKhBUUBswexrP6LdJ4NJTdIS00WcxQ/0H3BTDkiuFsUQGLJhGYtbA5iPKreP
- Tzb6N08o/UWlzgeKeR5fMGe6T7UwFkciP6mZi8krFMcHT/BACVvwAY6DnupP/rxb8pZGK3o57OA
- GMcuSdjLmhFUqjXN1RA==
-X-Proofpoint-Spam-Info: AW1haW4tMjYwNzE0MDEzOSBTYWx0ZWRfX6yV/6NeFkhWH
- Ghoi75Z01YGZH02nPzE3F2U3HrA3tm4cNTc6Sv7aDoVKxhPhaS8bemyBgX81PpKKvtaOFCpH/Ep
- UvARbkJ2q0VM5fDoZMoxH2oNLLFRsEU=
-X-Authority-Analysis: v=2.4 cv=U+Oiy+ru c=1 sm=1 tr=0 ts=6a5638d0 cx=c_pps
- a=WeENfcodrlLV9YRTxbY/uA==:117 a=IkcTkHD0fZMA:10 a=RAioF0-LDSMA:10
- a=s4-Qcg_JpJYA:10 a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22
- a=_glEPmIy2e8OvE2BGh3C:22 a=8AirrxEcAAAA:8 a=TQfnek6nW7prAsdi_scA:9
- a=QEXdDO2ut3YA:10 a=kacYvNCVWA4VmyqE58fU:22 a=ST-jHhOKWsTCqRlWije3:22
-X-Proofpoint-GUID: B0nsmsPLKm3uGEjJfFM_pbGimGHBR5_t
-X-Proofpoint-ORIG-GUID: B0nsmsPLKm3uGEjJfFM_pbGimGHBR5_t
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-07-14_03,2026-07-10_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- spamscore=0 malwarescore=0 bulkscore=0 lowpriorityscore=0 suspectscore=0
- clxscore=1015 priorityscore=1501 impostorscore=0 adultscore=0 phishscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2607140139
 
-On Mon, Apr 20, 2026 at 4:22=E2=80=AFAM Zhipeng Wang <zhipeng.wang_1@nxp.co=
-m> wrote:
+On Mon, Jul 13, 2026 at 4:56=E2=80=AFPM Sudeep Holla <sudeep.holla@kernel.o=
+rg> wrote:
 >
-> Convert IMX8M_BLK_CTRL and IMX9_BLK_CTRL from bool to tristate
-> to allow building as loadable modules.
+> On Thu, Jul 09, 2026 at 02:44:23PM +0200, Rafael J. Wysocki wrote:
+> > From: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
+> >
+> > Allow intel_idle to use idle states information coming from ACPI _LPI
+> > objects by making it call acpi_processor_extract_lpi_info() and, if
+> > that is successful, using the list of idle states produced by that
+> > function instead of the one coming from acpi_processor_evaluate_cst().
+> >
 >
-> This change is required to support Android devices using Generic Kernel
-> Image (GKI) kernels, where SoC-specific drivers must be built as loadable
-> modules rather than built into the core kernel image.
->
-> For i.MX8M and i.MX9 devices running Android with GKI kernels, the
-> BLK_CTRL drivers therefore need to be loadable. Without tristate
-> support, power domains cannot be initialized correctly, making these
-> systems non-functional under GKI.
->
-> Add prompt strings to make these options visible and configurable
-> in menuconfig, keeping them enabled by default on appropriate platforms.
->
-> Also remove the IMX_GPCV2_PM_DOMAINS dependency from IMX9_BLK_CTRL.
-> This dependency was incorrect from the beginning because i.MX93 uses a
-> different power domain architecture compared to i.MX8M series:
->
-> - i.MX8M uses GPCv2 (General Power Controller v2) for power domain
->   management, hence IMX8M_BLK_CTRL correctly depends on it.
->
-> - i.MX93 uses BLK_CTRL directly without GPCv2. The hardware doesn't
->   have GPCv2 at all.
->
-> Signed-off-by: Zhipeng Wang <zhipeng.wang_1@nxp.com>
-> Reviewed-by: Frank Li <Frank.Li@nxp.com>
+> May be it is lack of my knowledge. I always assumed intel_idle is fine
+> tuned with for specific intel cores. But now if the information is being
+> fetched from _LPI, what is the difference between intel_idle driver
+> and ACPI processor idle if the FFH backend can be MWAIT.
 
-Apologize for the delay, I have simply missed this one.
+The usage of _LPI in intel_idle is based on the same principle as the
+usage of _CST in it:
 
-Applied for next, thanks!
+ - There are processor models for which intel_idle doesn't include
+built-in tables of idle states and it is still desirable to use
+intel_idle as the cpuidle driver on them (mostly so that users don't
+need to deal with two different drivers for platforms based on Intel
+hardware).
 
-Kind regards
-Uffe
+ - Even if there is a built-in table of idle states for the given
+processor model in intel_idle, an OEM may want to prevent certain idle
+states from being utilized by avoiding exposing them via ACPI.  In
+those cases, intel_idle can validate its built-in table against the
+one coming from ACPI (either _CST or _LPI).
 
+Generally speaking, intel_idle is regarded as a one-stop-shop for
+Intel processors as far as cpuidle is concerned.
 
-> ---
-> Changes in v4:
-> - No functional changes
-> - Added detailed explanation about GKI (Generic Kernel Image) requirement
->   in the commit message to clarify why tristate support is needed for
->   Android devices
+> Couple of more questions below, all just for my understanding and it
+> doesn't add as a review comment.
+
+Sure.
+
+> > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > ---
+> >  drivers/idle/intel_idle.c | 160 ++++++++++++++++++++++++++++++++------
+> >  1 file changed, 138 insertions(+), 22 deletions(-)
+> >
+> > diff --git a/drivers/idle/intel_idle.c b/drivers/idle/intel_idle.c
+> > index fedaa8142121..bcc2725769c5 100644
+> > --- a/drivers/idle/intel_idle.c
+> > +++ b/drivers/idle/intel_idle.c
+> > @@ -1779,6 +1779,7 @@ module_param_named(no_native, no_native, bool, 04=
+44);
+> >  MODULE_PARM_DESC(no_native, "Ignore cpu specific (native) idle states =
+in lieu of ACPI idle states");
+> >
+> >  static struct acpi_processor_power acpi_state_table __initdata;
+> > +static bool acpi_lpi_available __initdata;
+> >
+> >  /**
+> >   * intel_idle_cst_usable - Check if the _CST information can be used.
+> > @@ -1803,18 +1804,37 @@ static bool __init intel_idle_cst_usable(void)
+> >       return true;
+> >  }
+> >
+> > -static bool __init intel_idle_acpi_cst_extract(void)
+> > +static bool __init intel_idle_acpi_extract_lpi_cstates(void)
+> >  {
+> >       unsigned int cpu;
+> >
+> > -     if (no_acpi) {
+> > -             pr_debug("Not allowed to use ACPI _CST\n");
+> > -             return false;
+> > +     for_each_possible_cpu(cpu) {
+> > +             struct acpi_processor *pr;
+> > +
+> > +             pr =3D per_cpu(processors, cpu);
+> > +             if (!pr)
+> > +                     continue;
+> > +
+> > +             if (acpi_processor_extract_lpi_info(pr->handle,
+> > +                                                 &acpi_state_table, tr=
+ue))
+> > +                     continue;
+> > +
+> > +             acpi_lpi_available =3D true;
+> > +             return true;
 >
-> Changes in v3:
-> - No functional changes
-> - Fixed typo reported by Frank
-> - Added Reviewed-by tag from Frank Li
+> On the first CPU for which acpi_processor_extract_lpi_info() returns 0,
+> it sets acpi_lpi_available and immediately returns true.
 >
-> Changes in v2:
-> - No functional changes
-> - Expanded commit message to explain the architectural differences betwee=
-n
->   i.MX8M and i.MX93 power domain management
-> - Clarified why IMX_GPCV2_PM_DOMAINS dependency removal is correct for
->   i.MX93
-> ---
->  drivers/pmdomain/imx/Kconfig | 11 +++++++----
->  1 file changed, 7 insertions(+), 4 deletions(-)
+> Consequently, one CPU=E2=80=99s _LPI data populates the global acpi_state=
+_table,
+> which initializes the single intel_idle_driver. Remaining CPUs are neithe=
+r
+> queried nor compared which is fine IIUC on x86. But then the questions is
+> why does this needs to be in a loop as you? Can't it be just the boot CPU
+> for instance.
+
+It could, but what if _LPI is not present for the boot CPU?
+
+This basically follows the _CST usage pattern.
+
+> >       }
+> >
+> > +     pr_debug("No ACPI _LPI idle states\n");
+> > +     return false;
+> > +}
+> > +
+> > +static bool __init intel_idle_acpi_extract_cst_cstates(void)
+> > +{
+> > +     unsigned int cpu;
+> > +
+> >       for_each_possible_cpu(cpu) {
+> > -             struct acpi_processor *pr =3D per_cpu(processors, cpu);
+> > +             struct acpi_processor *pr;
+> >
+> > +             pr =3D per_cpu(processors, cpu);
+> >               if (!pr)
+> >                       continue;
+> >
+> > @@ -1826,14 +1846,36 @@ static bool __init intel_idle_acpi_cst_extract(=
+void)
+> >               if (!intel_idle_cst_usable())
+> >                       continue;
+> >
+> > -             if (!acpi_processor_claim_cst_control())
+> > -                     break;
+> > +             return true;
+> > +     }
+> > +
+> > +     pr_debug("ACPI _CST not found or not usable\n");
+> > +     return false;
+> > +}
+> >
+> > +static bool __init intel_idle_acpi_extract_cstates(void)
+> > +{
+> > +     if (intel_idle_acpi_extract_lpi_cstates())
+> > +             return true;
+> > +
+> > +     if (intel_idle_acpi_extract_cst_cstates())
+> >               return true;
+> > +
+> > +     return false;
+> > +}
+> > +
+> > +static bool __init intel_idle_acpi_probe(void)
+> > +{
+> > +     if (no_acpi) {
+> > +             pr_debug("Not allowed to use ACPI for C-states extraction=
+\n");
+> > +             return false;
+> >       }
+> >
 >
-> diff --git a/drivers/pmdomain/imx/Kconfig b/drivers/pmdomain/imx/Kconfig
-> index 00203615c65e..9168d183b0c5 100644
-> --- a/drivers/pmdomain/imx/Kconfig
-> +++ b/drivers/pmdomain/imx/Kconfig
-> @@ -10,15 +10,18 @@ config IMX_GPCV2_PM_DOMAINS
->         default y if SOC_IMX7D
+> The intel_idle documentation and module parameter descriptions should be
+> updated to reflect _LPI support IMO.
 >
->  config IMX8M_BLK_CTRL
-> -       bool
-> -       default SOC_IMX8M && IMX_GPCV2_PM_DOMAINS
-> +       tristate "i.MX8M BLK CTRL driver"
-> +       depends on SOC_IMX8M
-> +       depends on IMX_GPCV2_PM_DOMAINS
->         depends on PM_GENERIC_DOMAINS
->         depends on COMMON_CLK
-> +       default y
->
->  config IMX9_BLK_CTRL
-> -       bool
-> -       default SOC_IMX9 && IMX_GPCV2_PM_DOMAINS
-> +       tristate "i.MX93 BLK CTRL driver"
-> +       depends on SOC_IMX9
->         depends on PM_GENERIC_DOMAINS
-> +       default y
->
->  config IMX_SCU_PD
->         bool "IMX SCU Power Domain driver"
-> --
-> 2.34.1
+> Documentation/admin-guide/pm/intel_idle.rst should no longer imply that
+> intel_idle only looks for _CST or only uses _CST-derived state
+> names/construction rules.
+
+Definitely a good point, but I'm planning to do a documentation update
+when the code changes have been queued up to avoid updating the
+documentation multiple times.
+
+So there will be a separate patch for a documentation update.
+
+Thanks so much for all of the reviews!
