@@ -1,48 +1,48 @@
-Received: from GVXPR05CU001.outbound.protection.outlook.com (mail-swedencentralazon11013012.outbound.protection.outlook.com [52.101.83.12])
+Received: from DUZPR83CU001.outbound.protection.outlook.com (mail-northeuropeazon11012026.outbound.protection.outlook.com [52.101.66.26])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 59544445AFA;
-	Tue, 14 Jul 2026 14:30:09 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.83.12
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EA2C747B409;
+	Tue, 14 Jul 2026 14:35:22 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.66.26
 ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1784039411; cv=fail; b=bB+xDTNCaeR3YkpdtMD8TzerpUncewRPPD2VY8hg7iGv09hO7Z89cEmiIkL/Adlpa1WtNU+Tkyq+8LwlcafZtohyOioEBkIYqo4EQmv799iX6Cim1fn3evWQeLJNMmcqZby+Z8Uq5ABnC49UdGhydYagxbL1gnzWjCv1HUJFl4A=
+	t=1784039727; cv=fail; b=mYOE/LSqo0FlqXOyqDcHQVAkFgtHi+5mwZidevYMFBOUCfhal65wfe5hcIrJKhu9jb3vSPbTaSZmPGmKwherBxh2wnyHuKIVLNz8BSOGBx6e0i3v1RrsBlx3O1jHQJcr7iIDjm1+LXH3Vz4LswbGG1lm0zQNmxnfGtmban7rgNI=
 ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1784039411; c=relaxed/simple;
-	bh=bfaX/5mcxhz4zbKKPLVsTZGtnNkALf6AEAAqQysqISs=;
+	s=arc-20240116; t=1784039727; c=relaxed/simple;
+	bh=B0D62jbvY+KUmr9vsJ7s3nA/yD2pdcUHtTNDPZSk1aE=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:Content-Type:
-	 Content-Disposition:In-Reply-To:MIME-Version; b=DWxpfsqu9yX5kxlUlWyrmfZD3pMDD5jKlTaKSw1JfWnvSp42DQxCf7lEXn7T4F6P5gFCQowaOm5rWfg1ujPoXDu8bbI4MjXntf9cScgCw/OvFdlSVao/1MDKBZ0uHX2zHBXAkVwYd/Do3nHaQx3oecOpKnFHuo0zqL9TVwM/wV4=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=oss.nxp.com; spf=pass smtp.mailfrom=oss.nxp.com; dkim=pass (2048-bit key) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.b=dL4qzYuk; arc=fail smtp.client-ip=52.101.83.12
+	 Content-Disposition:In-Reply-To:MIME-Version; b=IgEQqtH3ZFKxi6FMM6TuhC0qrgAJ/B0sCdUXnJntV39/axk3v9Y2jAlEsQ/+lfUCb+uHz4hXgPwasNthnxj1xGFqBE9fhmaW8qkFzDbYlzCOhYq2Xvz6y1j2Lk9HWbUnx21o2uNxro8YC7QBXQ9tj+eOngJe3FGHM3zFzoBqx9A=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=oss.nxp.com; spf=pass smtp.mailfrom=oss.nxp.com; dkim=pass (2048-bit key) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.b=Tf1j3CF/; arc=fail smtp.client-ip=52.101.66.26
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=oss.nxp.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.nxp.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.b="dL4qzYuk"
+	dkim=pass (2048-bit key) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.b="Tf1j3CF/"
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=veVwCDQHeIA9YekbB+yQdajdNpfJAtmeeAHNgnz3i4Qw1QIrAX/puu9QcqR1Aeeads3LzQtM5+qph4PmXe4clDm7+O3DuoIMvsK5bsNr9G0ALoUV6uT7seC5WPITrhmc+QMbVOg6VKtDAId4lKuL7kpzPN6rhTf+QIxIYETgCyTLKW4V4B8cYBMDSEkhkAoQaixjX7kPdnuvIjIEFwTkfAj9RFLJpcFA7j8R8ZC4djpmnyVzxjCyKeZpvEnFpLZb3nI9Wv8DDVlB7Bw9Qi04N9fFBrRnxmRfg4L1A/oxc4kClk5bC2ABbMnPpk+I5KS8KEvKojLy/j5JW7FxvI2bag==
+ b=xrdh0wKubAlvVAmJFr/vqpFqceMZWdMOcph3eY4K7c01SN4wkgRLoOtaCwDahZCNS0WnbH+GtEHmDhgYb3dQlo5KqCNsnlK6kbl1C7dMfOHSRfYTKi7WpcCyJJrtYg0/iJbqhDkzlCkr8oKIf5TEcjv9NMorrNg4fpJF6AnEy7qTCc+u12kj81x48hgBebbxTgygXloxcskzZZ7CaMerW2iLTSu3sSDvBAMAExg9NCY+TopUJvl8jdtRtUHrd6NZ196LB+5rQS258UCkvH1HLLg9hXGcrnSyu1pXxW4dqjkz7zOCRPPkp8riU7nw4P+Re6BIMCa2XLtUiiVYsl2orA==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector10001;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=yVPunN/sc7tN/ea+d+QwiqqRjb7nh1U8N60Jz8k4knk=;
- b=NxC++EmbQbCDnR05ctllNHEdcdsjgBy8/+i7Twr4xCZjfpNc1MhJ946yUeebDfPRKEPN8xrzgRK7P2Gjxvrt75KDXkDtpCS9+GSS1Qu2yKWYraj4J75+ddG90cjey53uMU1NZM1E4/KKNmHUXoqxXh4yqOOcVduL9LjyTXL07cFOrrPujiQZWklFBTt83JspkQoqvxDDiJdISoSoJwV/cX4i10yvprHpBZ4P7nMAv1YMMcL/qUkSviNW/MvINc58qZpy96OK9pjkOHqDpYKoUrafcqoXbC210d19dCDgHdgPy3dlxfFYTwApPFWYpuCmVjjGTMRQ/iZYQJEYNXco/A==
+ bh=tu8kjFHQD9n/W4C5mR3tlx/XfAAFJbYOzUzb0Wg1bRc=;
+ b=NQvA5xgjKo7CCEbDebTPhSVEnSJcUhqxgpFXRN5PB1qC/3NmwVP0Zm/328hrNx/9O4/lDhQZNXCiC5JkCOhHj6AEQEINOt+/EXzC2yCH4i4qsHwshaoIPexiZLXk8ZJAvhIZA78KSlpkgq6qbMggKUDvSUsMRLst+ZaZurB4ZbFycTGRTFOIfwqKCaFNlpa8CcLtdbmU1XFRkYWJAI2oOg8hXQeyE2W2rHUbyvGCdY43q4Jv+rG6e1WPuA/TR5PPz0dKVT9QarTTvvHqsDTSCW+73g57FfwtYVIjTHvWhjpHf0vn/MU7xyZ9LIbYYVm4eW+t8+Ab6MOLBGAkD1pDOw==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
  smtp.mailfrom=oss.nxp.com; dmarc=pass action=none header.from=oss.nxp.com;
  dkim=pass header.d=oss.nxp.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=NXP1.onmicrosoft.com;
  s=selector1-NXP1-onmicrosoft-com;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=yVPunN/sc7tN/ea+d+QwiqqRjb7nh1U8N60Jz8k4knk=;
- b=dL4qzYukerGGt1EAyE12SNj6txUzV516Cu8FJFrgmLj5rk5gWREwz4LQzhLpSbOUu/Nz1nYB4C0UbX10KpjOL5qp8Q3YBISMqjfwzXRUjj3lcheFQonlo3wxsNuYClPffA7DngZJTzFpQt/uQX+XiXCdZ+d4HPkBes08tYUEK6BtXSXBF7EIRBlGgi8TFp504JD4R+aD+M3Cu7XDA/lGApY4H97cZ83gmpnmZ4MwlEbJEeFjHKVtvNinLpG2kKrv8w6n4b8U11rQUZmMinCe6nSQm9jYp71tfsWFChUHDj+Y/U+xPeUZY18b9cdoQfmQLC83NAcrWBKU0h1plsso5Q==
+ bh=tu8kjFHQD9n/W4C5mR3tlx/XfAAFJbYOzUzb0Wg1bRc=;
+ b=Tf1j3CF/9/VREQQ3bpw/yyyOLbFrXfUpU+/ogckXffhXNA1QwkCa4Oe7aeCrKDAo3+M1celLsXec6Dxdme+oAeBWG3EmZuA2Z0Afg6Ajtffyqd4aY2yy+d9RV0EJbQ1IuVCrQ/Aqb7l9SQlxXopSQRXn3+l7AnvHykjZngTztkB9eGlSW6JCerkICKpG5Rwafge3n79d4jaoBFTnZVI5WTv7LIErt05blPogJg6h31rF06bb74UDGUMQJXFHZ6l2bRn6OjLuEZCWCPyTb8qUjNa9FV58UZ8imA48bp8fjkx1s+a0HPN9GRaJyn+Xf3jO/JM9x44YyXOfIhOpxwpe+g==
 Authentication-Results: dkim=none (message not signed)
  header.d=none;dmarc=none action=none header.from=oss.nxp.com;
 Received: from GV2PR04MB11799.eurprd04.prod.outlook.com (2603:10a6:150:2cf::9)
- by DBBPR04MB7835.eurprd04.prod.outlook.com (2603:10a6:10:1ea::23) with
+ by AM8PR04MB7474.eurprd04.prod.outlook.com (2603:10a6:20b:1d9::17) with
  Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.202.19; Tue, 14 Jul
- 2026 14:30:05 +0000
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.202.20; Tue, 14 Jul
+ 2026 14:35:16 +0000
 Received: from GV2PR04MB11799.eurprd04.prod.outlook.com
  ([fe80::2146:83a2:5329:b7c]) by GV2PR04MB11799.eurprd04.prod.outlook.com
  ([fe80::2146:83a2:5329:b7c%6]) with mapi id 15.21.0202.018; Tue, 14 Jul 2026
- 14:30:05 +0000
-Date: Tue, 14 Jul 2026 09:29:51 -0500
+ 14:35:16 +0000
+Date: Tue, 14 Jul 2026 09:35:04 -0500
 From: Frank Li <Frank.li@oss.nxp.com>
 To: Haoning.CHENG@cn.bosch.com
 Cc: "Rafael J. Wysocki" <rafael@kernel.org>,
@@ -56,16 +56,17 @@ Cc: "Rafael J. Wysocki" <rafael@kernel.org>,
 	Fabio Estevam <festevam@gmail.com>, linux-pm@vger.kernel.org,
 	devicetree@vger.kernel.org, imx@lists.linux.dev,
 	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v8 2/3] thermal/drivers/imx: Fix rounding and clamp for
- i.MX7D alarm
-Message-ID: <alZH33GsKgWdUDOi@SMW015318>
+Subject: Re: [PATCH v8 3/3] thermal/drivers/imx: Add calibration offset
+ support
+Message-ID: <alZJGAmh9WrEAAZ1@SMW015318>
 References: <20260714-b4-symana21-11221-imx-thermal-support-upstream-6-18-v8-0-d54d8690e16e@cn.bosch.com>
- <20260714-b4-symana21-11221-imx-thermal-support-upstream-6-18-v8-2-d54d8690e16e@cn.bosch.com>
-Content-Type: text/plain; charset=us-ascii
+ <20260714-b4-symana21-11221-imx-thermal-support-upstream-6-18-v8-3-d54d8690e16e@cn.bosch.com>
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20260714-b4-symana21-11221-imx-thermal-support-upstream-6-18-v8-2-d54d8690e16e@cn.bosch.com>
-X-ClientProxiedBy: PH7P221CA0055.NAMP221.PROD.OUTLOOK.COM
- (2603:10b6:510:33c::27) To GV2PR04MB11799.eurprd04.prod.outlook.com
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20260714-b4-symana21-11221-imx-thermal-support-upstream-6-18-v8-3-d54d8690e16e@cn.bosch.com>
+X-ClientProxiedBy: SA0PR11CA0050.namprd11.prod.outlook.com
+ (2603:10b6:806:d0::25) To GV2PR04MB11799.eurprd04.prod.outlook.com
  (2603:10a6:150:2cf::9)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
@@ -74,106 +75,189 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: GV2PR04MB11799:EE_|DBBPR04MB7835:EE_
-X-MS-Office365-Filtering-Correlation-Id: 9fbd95ac-d388-42c6-a986-08dee1b46583
+X-MS-TrafficTypeDiagnostic: GV2PR04MB11799:EE_|AM8PR04MB7474:EE_
+X-MS-Office365-Filtering-Correlation-Id: be01b524-34ad-4e62-8ea1-08dee1b51ee1
 X-MS-Exchange-SenderADCheck: 1
 X-MS-Exchange-AntiSpam-Relay: 0
 X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|1800799024|366016|376014|7416014|19092799006|23010399003|22082099003|18002099003|4143699003|11063799006|56012099006|6133799003;
+	BCL:0;ARA:13230040|19092799006|376014|7416014|366016|1800799024|23010399003|18002099003|22082099003|4143699003|11063799006|56012099006|6133799003;
 X-Microsoft-Antispam-Message-Info:
-	//whhQvAK9iW+mJxutbqMkkgSyYIDG+Zt6oDdadJWz7Ew3HUcFfEzaUcPSZA9uSWJHP9I1gAszyjC2sTQwBJfcuWq75f+15Y6t8pDtSTVoEwlXimIJKMB/dBVsFmPIrb24vWZttfDVfn4mpBCx19w0m/976+HJpmdUM+bwU2CIVFZXkujgo47DbRmi1PLMSHzmoEHTuk62WcHgZTfTvU7fgvOkbhLCebWutZhd6WV6JjG99sNB1AvAlaKBHGTeBVjNynlNjSJ+WSckerrylz35CCY5MWUJD8eReM2ccaBHSVT8sXqFSKeoa8iKv0MqoPmLEe4yo4ULb/5wxOKnMkAvhDTZPPfCSK6LZNe5HxuDWIY135+mnysSvtXYYSxMzABe//v6l+Gr9aEcvdwUcTCkpdC/HMRVAUmAbdoaVLaLbzf/d5JIzUrxK5+TQj+2wF1vLx1viSO6Hzf4bLXbf0hwCbDJYhgJxL7HOjmi5sZxNsPDkMh6eGEbfPCbZfGg5cxuEp9/i7sOd6xUeaAgTnRStzyMq13+Rn8ympjbRn/lh4tTBJrQY29pxxRDEP3MZzzs6GBg031e2Zwi5sM8sDry5k36xLDLUx1fiZQs3V+f+xawfSRFDZ6lUnOMPEwxKhljGFg/99IQ+RB31xqOt1PhDGjreuSlq/LV5go+oct0Q=
+	LODztohhwrBMPQop4DowOnVCIbTLspqJ25YJdJsc/EXmxjVdUW1X2/szBFRsNsP5qnnQ/ybYTrZjXc4bB10JvTSF8AYt/7pYx+Ou4p39Dc6ATRyADZ6WmepU9d2OVLcoQXLqPr1lO2KRzWrvEASE4ThKLzMONezSbnw3yUo7rhhyPhHlbsgx127KNoKqig5ovYirb0OwThAm3eAe0rV1dHOd1xaVUVwl65BIR04KVvLpq2ZeDKDE2frx28ckFCfs3PaJlH5LROLqsDBk8wYar8fphMZOp1ZhnKHUv0cUm96YmvmnvD203JtKsCamJ5/Fejc/5T42IfyGooeoU+Ar2LQx57EdlUSTh92f8FO5c2uqFhU6jNw5c0Kz3++53m25yjMKPGFg6RuvKtWDA2+glAfAAFnURNysVXmUcmLrhy3ROSonONNcsBHjc7yhttUYf94vE84SNynrI0vY/O5cV3xJpmR36hjM3y1xbK2dgAPunPIPy1CkvBY6Bk1DcnVZAgAHpTZ33q6w3Yu/1F4BzXJ3rbDU+wcTUlsqVJh2CCciSBGL7JlPCgBg4r2MvRdQBAROQWKtKgVzOjlC44JYP93goHsXnZM/iZbLLYfuSHgLpHa3N7/JmQOxgauey8v4EkxeM4WnzDyPEpCuL+i0X7Gb4Kl3In81zCuYYV9T860=
 X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:GV2PR04MB11799.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(1800799024)(366016)(376014)(7416014)(19092799006)(23010399003)(22082099003)(18002099003)(4143699003)(11063799006)(56012099006)(6133799003);DIR:OUT;SFP:1101;
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:GV2PR04MB11799.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(19092799006)(376014)(7416014)(366016)(1800799024)(23010399003)(18002099003)(22082099003)(4143699003)(11063799006)(56012099006)(6133799003);DIR:OUT;SFP:1101;
 X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
 X-MS-Exchange-AntiSpam-MessageData-0:
-	=?us-ascii?Q?KniaMN5ytJkC0jVLBFNwwbsh02c5m5L5DpuNnkBermy+WEFdf0rlCqN9Wh1z?=
- =?us-ascii?Q?eN8F/MLO/eT/ld9SPLnay9FGvsq8x2YK7yNeHcThtMeMX868kX4D4wg7PQQ9?=
- =?us-ascii?Q?3d7rPuRrC+Dd5ku++8jO3udyTEuJyhawUdvB3OxKfLcca87ufmDgsJ2f2Dsh?=
- =?us-ascii?Q?eWcPIuF2QRB6v4wRgC+YiEL208CXu3Z6L11/oyWy0QcETvvjgpNyy5yyWU1f?=
- =?us-ascii?Q?+LI6mhQOzy+/suIHIW0rdWtTrkP8aQvD1Vj8LU1FXlvk1B90f3jcaGMlUz0+?=
- =?us-ascii?Q?6+LaSROaW2ddDgFNtsr9Qsfg11dyTzkWFHaDHuAUQHQTFETquGQMyw4ypwP9?=
- =?us-ascii?Q?rywOWrbYZyIExCw6HXHOfN+y2iAEFaoHw3UVl7MOeLpNyxrEZU+HpybwAFyA?=
- =?us-ascii?Q?vF+yrmUA6Ix3WmUY12OLCKViF1mJCxZyvPkIop4JzeY/8IelqiohK98RSBm0?=
- =?us-ascii?Q?CrCUPsNZJBlu/GSDoGYsUfj7AiEzvdlHs4Zjg6ZL/U/SLHWlBjwE8wZvIjRJ?=
- =?us-ascii?Q?3oIkC7MqJI8JUnShN0FFNMTEJow/NZIjx2x4Wc3ay1wMjRGwA0eravvA09kz?=
- =?us-ascii?Q?EaMiW+ir06NTuCzexgTv0D7Qrcmz7Hm5O4cJXvpW+ta3Lmv2A3ztofxZYz+/?=
- =?us-ascii?Q?vHYzi2+NQIDTy6on3aVqf2M0aPfBGKaPnu005W2EcdfJuSSceaaqWLWBntAX?=
- =?us-ascii?Q?Y7PkTmAV2FHSG8uiSakB2lh2QPcy1OlwzneTuBqRn+SKt4w46Wno4hglEPEG?=
- =?us-ascii?Q?+71eia1g2t0tNz3j/hK37GZitmLWOqL5mfibjSv02xYDuuhIC11KJJM16dIe?=
- =?us-ascii?Q?gqOMjX1BvN/odM6B/JZuh/DDGaizCjL0onENOfw/PPsZQ9RWP0i+plvDIvqq?=
- =?us-ascii?Q?Sheh8L/p4WBb782qNnlq/Q+q91SowvxtBp3UjgMUREtfEm1HiG30Mlp9jAUB?=
- =?us-ascii?Q?mSdJxlYIs4U1H+2Vav5UOEL6emgEM+qNftS96HFh9FXEwj95WXgKOoEyWOcu?=
- =?us-ascii?Q?E9rfoeKqdRCpkxBzQ9bNFi9IuljYKQm9L+9oBzEBGRyyqXx/2yoagxdrY76m?=
- =?us-ascii?Q?tTJ47gNzT85sPqyvHbS7jd0dXPOt//9dWho7JtXtnWoDxVVQC25MgOvGpaBD?=
- =?us-ascii?Q?0VhKHcdTFKglON6wEqsaEsQrQzp6K9QjfxA+Q7UUkJ75Hif7/YehU0yWN+Dh?=
- =?us-ascii?Q?hj65sqciOZlD9d9NaS+8WavXUUPHlURgOZzrEVx9nSxyErV1kG5crnMpIGkm?=
- =?us-ascii?Q?UhDUdCGN0UKOBgKPCX3/h4CgIKs/eINA7dunLIdxgkQ7vcgom8ZYpcngVugU?=
- =?us-ascii?Q?Mg57m+EcghGbNlImDvcQHmCDKdxpl2prLEzebw0c+yQTkqloueRykQiDNc6D?=
- =?us-ascii?Q?rQt9RNqeGlxxgbCTg99rw78lsNwjaTRZuPZs8qrrmYRB+082+PkSc752T95g?=
- =?us-ascii?Q?88DxrrZjrAKHPYg0t9ACmrtcxeYF3aHjF9M0DkkfPMW1fS64O57qG9lT2NK5?=
- =?us-ascii?Q?qxcIpymb8BdpoVFOc/KA+uGH5n/oyDkIWdV9bkqslLeFhFeowEiLikUvGQZq?=
- =?us-ascii?Q?FdlXbkjjW5tNYF9uxnb/Jwz66VHf9X/jcEtr24PqQqNARFxROhWs5Rs0gOAf?=
- =?us-ascii?Q?TUwabjyX5Ap3Xp4PtD1G/rUVGXI5rEVB/nuE30US5R/zYwhMQ/H8RqXydo/4?=
- =?us-ascii?Q?ndlGqed7w0roZ8vVBiN0kZgV0lfXI529+DKsaSKUDR2CMy6iB+GGZIFCInqu?=
- =?us-ascii?Q?x3VHyzkP8zliD8OEOTEvx99IDh7xXR1JgwBQ46RFCwb7XHJGLB9U?=
+	=?utf-8?B?QlhlY3FjVGVpQVMrWStoZVk2WjZYUmZoYW00aXlaaXlGSGFiMjVLdkc2YTE4?=
+ =?utf-8?B?TklDUTFVY29ZMFArMHo5Z0dIUFhOU0VOdEx1VDN3eFhkL3dNMDZ1YnJyS2NP?=
+ =?utf-8?B?cWRpMUYwYk4rYlBsY3oxTE9ZYjUyYWtleDA0RFYrbzFLV2VGQ1A3elFYYzBE?=
+ =?utf-8?B?d1lTQmZiNnkxdXRlczNIcHBKQVFxQ2daUnM4MDdPRWIvclJNU3JITldQQkxu?=
+ =?utf-8?B?UStvUXZDY0QvNjBidURrdk5OWEpHOXQ2TEZpNzF0cTI1T1Jrc2I5ZzRwOGZL?=
+ =?utf-8?B?NTkzWUNYMTBPeUVqTFZaK3VZZGdJRGpvU0gzbFBwOFNQOWIzeUM0bjdiZWd5?=
+ =?utf-8?B?dEdiR1BuWlpudjBNQ2ROSytzTGxpbEI3dnhXZzVNRjFZMlV0MXoyd3ArbUxG?=
+ =?utf-8?B?ZW5YRnptOUdrODROUGl6akU2Tnd5Z3J3VW95YitleldiTkJoc3V4WVRiN1d6?=
+ =?utf-8?B?SE94OFQybkJOczJHOXFYbDRtQU8wbm5FUmo4OFV5b2NMQkNPbno2MWFWUlNS?=
+ =?utf-8?B?b1k5NUFhK2lCcmxidGZ2cUhGTlJoZDdMeGZhQnljL05vKzZDSXVuZGlhOGQv?=
+ =?utf-8?B?SEdUNHNVbmdIRDVyRkhPZDkzckhFS2JCOUJiWHZMUXVwM1YzYjBoQ3pSUVVP?=
+ =?utf-8?B?Z3I4cm5NcEtWdVhNQmh6Vm9PRnYvKzlQM1NYM1Q2VUs5RW5PUFdwN0NIRFFp?=
+ =?utf-8?B?M2I2R01hbDB3UFB2NnAzOWZzaG16RndscEkxVFRQaFVVWUFKYkxPU2FGQ1Y1?=
+ =?utf-8?B?WXllQjRUYUcyZDRIWkFLVkgwSFhFeDFNK1NDbElacUp6RlU1VHl5ZGUxQUp4?=
+ =?utf-8?B?Q1Q2c3RZV0FkTG8wZy9jaksydVJxZzhablJRb1JrRkRxVzdnNUZCTFp6b284?=
+ =?utf-8?B?Vmt2N01UdVBTTTZ3dmQ3QmpTSU43eHJVNkRxanp4MVl2OXVsZzhLczB0NDh0?=
+ =?utf-8?B?VUw5N1ZIQXNJbTBWNDB6TTZkYTZlWmUyaDlwMHhiS3p1WWhkcEQwK3Axa0wz?=
+ =?utf-8?B?aHZEc1krZm9kU0lUbkpZbXJjK050RVkxWk9RQVBGS1ZuK0x1RXVMZWVXakk1?=
+ =?utf-8?B?Um9vNEhaVENqckJSeGR2eUlzQjJ6U3dxZHVOYzJTd2dKUUFCemxHR3J5Znp5?=
+ =?utf-8?B?M3hFRWNrVDlES1lYWjVMaHFyQ0Q0bmVveHNSTFJrMVF4Mk5oMUE4Rnc0Y2Zt?=
+ =?utf-8?B?OGsvelhmcGpGQnM1Wk1RdG5vZ3pQMHBGODJEUjB4emRiOFhxenB1UWdmSmVY?=
+ =?utf-8?B?UE8vZUQvSUhDTVNsNnVEWHdzVHdzeDRNdWROS1R5UGhZVzNXN1F0UXdYMVhk?=
+ =?utf-8?B?UnZLS0tlQ25QY2I1RFM0MkRVL3FXUzBsQ294SkRySjQ1WUJsQUVRNE9rcWZj?=
+ =?utf-8?B?eGgxRjlQYmlOeFNFQmVYeEF2bDBQbEJkSkpudEJQbkZnbzNYeTRpZkxDNVhU?=
+ =?utf-8?B?L3F2aXJsRjdoM0NjbWVaT2lyVHBSRWpnamh1b3VFbmVRcXY2NnlGQlRyNkVB?=
+ =?utf-8?B?d1ZLdlVPWTBBdC8vRk5sd084NUVnSGJIR0FBMDlzYVU0TDZnV2ROcUpzNmJ2?=
+ =?utf-8?B?bFVIcTNCVk5GbTZkTkJiY2NvbkhQS1FoVjduU2hzV3VrdmtWYlp4eDBUQklB?=
+ =?utf-8?B?MGRaK3Q0VzZmSHJQUHRDQWpmRFFXVVBTV252bVRsQldJbGxWWEE3TXg5Y0pa?=
+ =?utf-8?B?amdzanNuV3I4TmRETzZZZHFwSStYUUsyaWplQ3NBd0ZuNzdlTEFXNVFSWGIy?=
+ =?utf-8?B?ZWVCQ2FjckhUN0lEWTBGM2pvLzE1MVcxTW9SSndmZ2ZJbkN0anN6bE54ZDR0?=
+ =?utf-8?B?ZW02b0NoQjRqWWMrSzFkREpXdEVnQTZ5MGFNdDZ4SWcyUGovZ3FHajJJb3U2?=
+ =?utf-8?B?UGkxUlR5SnNmam1JRjI1MVJHQXNwcml6ejFxTjFhd0xiUWpRL2YvRTdVa3VF?=
+ =?utf-8?B?MWNKOGNkS1dwajY2L0R4YUhVdzRSUE5mYnpLYXJXdUpvQVpUMFF6Q01PVzFF?=
+ =?utf-8?B?WEpnL2xzc0YwWXh0WTM2REFRZUhYTTk3aml0aUNyK2FtZ1JrVHkvWk1GRmRk?=
+ =?utf-8?B?WEVLeTVmWURFeWVRSll0dy9sSE9oZjhLZUVjQTBPSnkxYnhMZU1hRnJIcDky?=
+ =?utf-8?B?UDIyZ2dEbmJheUNKUFo1aHdtcE5uWGZOWGUyUEtVeWFCT0crbTVEZERib20y?=
+ =?utf-8?B?dVg0SHY0S3djYjJhY0J3aHBOdkF5N2JZQkhQNUtIQTdibFlyd0RHa2VpRUNG?=
+ =?utf-8?B?eUcycWdNR2VMaHQ1VWdWK2dBRWszQ2RCa0tuUnBxc1JMM001c3E3L1RTOGFI?=
+ =?utf-8?B?OHloMzFBOGpKdjZxc3Z0Vmd2ZXptRmpJOUNjUEJteU1IQmQ5WkJML1hLSVox?=
+ =?utf-8?Q?4vCp25DMnfXP0jexG6vtEVGCGq/cDIGxHR6a3?=
 X-OriginatorOrg: oss.nxp.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 9fbd95ac-d388-42c6-a986-08dee1b46583
+X-MS-Exchange-CrossTenant-Network-Message-Id: be01b524-34ad-4e62-8ea1-08dee1b51ee1
 X-MS-Exchange-CrossTenant-AuthSource: GV2PR04MB11799.eurprd04.prod.outlook.com
 X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 14 Jul 2026 14:30:05.2332
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 14 Jul 2026 14:35:15.9249
  (UTC)
 X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
 X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
 X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: GHlHuHh/CvDjgH15V7D2CJhu5axIh3XMhhYeOwzF8MisbRT5pmz7KBZSmOmXLKAUab2RPEeRDoPN5FEXBpNPF29uluqKOL3GYfPw2guoTIglaFIxaEftO5SdSjWjII3F
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: DBBPR04MB7835
+X-MS-Exchange-CrossTenant-UserPrincipalName: tiENWOBSLw/2wFgk34C+hAZknjQ7v03RSXG6n6lcGouMFMlLRJSQ5aoUcS8PjshtGgetDRjtMHS7eYNGZPLBjUAey34Pxi3cQrJAICF++izchq+RlNheisDoMDOikBFS
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: AM8PR04MB7474
 
-On Tue, Jul 14, 2026 at 06:28:42PM +0800, Haoning CHENG via B4 Relay wrote:
+On Tue, Jul 14, 2026 at 06:28:43PM +0800, Haoning CHENG via B4 Relay wrote:
 > From: Haoning CHENG <Haoning.CHENG@cn.bosch.com>
 >
-> Convert the alarm temperature from millicelsius to degrees for i.MX7D
-> using ceiling division instead of integer division, ensuring rounding
-> errors do not cause the alarm to trigger below the intended threshold.
-> Use DIV_ROUND_UP() for non-negative values and plain integer division
-> for negative values, since C rounds toward zero which is equivalent to
-> ceiling when the divisor is positive.
+> Some boards need a small per-design correction to align the reported CPU
+> temperature with board-level measurements. Read the optional
+> fsl,temp-calibration-offset-millicelsius property from DT and apply it
+> uniformly to the i.MX6/6SX/7D calibration formulas.
 >
-> Add clamp() to ensure the hardware register value stays within the 9-bit
-> range (0..0x1ff) of the i.MX7D alarm field, preventing silent truncation
-> if an out-of-range value is written.
+> The offset is applied symmetrically at two points to ensure the thermal
+> framework sees calibrated temperatures while hardware thresholds remain
+> correctly positioned:
+>
+> 1. In imx_set_alarm_temp() and imx_set_panic_temp(): the temperature
+>    threshold is *subtracted* by the offset before being converted to a
+>    hardware register value. This shifts the hardware IRQ trigger to the
+>    physical temperature that corresponds to the intended threshold.
+>
+> 2. In imx_get_temp(): after computing physical temperature from the
+>    hardware register, the offset is *added* back. The thermal framework
+>    always sees the calibrated temperature.
+>
+> For example, if DT sets offset = +3000 m°C (board reads 3°C too low)
+> and the passive trip is 95°C:
+>
+>   imx_set_alarm_temp(95000):
+>     alarm_temp = 95000 - 3000 = 92000
+>     → hardware register programmed for 92°C physical
+>
+>   Hardware IRQ fires at 92°C physical
+>
+>   imx_get_temp():
+>     reads hardware, computes 92°C physical
+>     *temp = 92000 + 3000 = 95000
+>     → thermal framework sees 95°C → correct trip
+>
+> When the property is not present, the offset defaults to 0, preserving
+> the current behavior.
 >
 > Signed-off-by: Haoning CHENG <Haoning.CHENG@cn.bosch.com>
 > ---
 
 Reviewed-by: Frank Li <Frank.Li@nxp.com>
 
->  drivers/thermal/imx_thermal.c | 12 +++++++++---
->  1 file changed, 9 insertions(+), 3 deletions(-)
+>  drivers/thermal/imx_thermal.c | 27 +++++++++++++++++++++++++++
+>  1 file changed, 27 insertions(+)
 >
 > diff --git a/drivers/thermal/imx_thermal.c b/drivers/thermal/imx_thermal.c
-> index 38c993d1bcb3..7f7d1116b9d6 100644
+> index 7f7d1116b9d6..d471acc16bce 100644
 > --- a/drivers/thermal/imx_thermal.c
 > +++ b/drivers/thermal/imx_thermal.c
-> @@ -240,10 +240,16 @@ static void imx_set_alarm_temp(struct imx_thermal_data *data,
+> @@ -85,6 +85,10 @@ enum imx_thermal_trip {
+>  #define TEMPMON_IMX6SX			2
+>  #define TEMPMON_IMX7D			3
+>
+> +/* Calibration offset limits (±20 °C in millicelsius) */
+> +#define IMX_TEMP_CALIB_OFFSET_MIN	(-20000)
+> +#define IMX_TEMP_CALIB_OFFSET_MAX	20000
+> +
+>  struct thermal_soc_data {
+>  	u32 version;
+>
+> @@ -207,6 +211,7 @@ struct imx_thermal_data {
+>  	struct regmap *tempmon;
+>  	u32 c1, c2; /* See formula in imx_init_calib() */
+>  	int temp_max;
+> +	s32 calibration_offset;
+>  	int alarm_temp;
+>  	int last_temp;
+>  	bool irq_enabled;
+> @@ -223,6 +228,7 @@ static void imx_set_panic_temp(struct imx_thermal_data *data,
+>  	struct regmap *map = data->tempmon;
+>  	int critical_value;
+>
+> +	panic_temp -= data->calibration_offset;
+>  	critical_value = (data->c2 - panic_temp) / data->c1;
+>
+>  	regmap_write(map, soc_data->panic_alarm_ctrl + REG_CLR,
+> @@ -239,6 +245,7 @@ static void imx_set_alarm_temp(struct imx_thermal_data *data,
+>  	int alarm_value;
 >
 >  	data->alarm_temp = alarm_temp;
+> +	alarm_temp -= data->calibration_offset;
 >
-> -	if (data->socdata->version == TEMPMON_IMX7D)
-> -		alarm_value = alarm_temp / 1000 + data->c1 - 25;
-> -	else
-> +	if (data->socdata->version == TEMPMON_IMX7D) {
-> +		if (alarm_temp >= 0)
-> +			alarm_temp = DIV_ROUND_UP(alarm_temp, 1000);
-> +		else
-> +			alarm_temp /= 1000;
-> +		alarm_value = alarm_temp + data->c1 - 25;
-> +		alarm_value = clamp(alarm_value, 0, 0x1ff);
-> +	} else {
->  		alarm_value = (data->c2 - alarm_temp) / data->c1;
+>  	if (data->socdata->version == TEMPMON_IMX7D) {
+>  		if (alarm_temp >= 0)
+> @@ -283,6 +290,7 @@ static int imx_get_temp(struct thermal_zone_device *tz, int *temp)
+>  		*temp = (n_meas - data->c1 + 25) * 1000;
+>  	else
+>  		*temp = data->c2 - n_meas * data->c1;
+> +	*temp += data->calibration_offset;
+>
+>  	/* Update alarm value to next higher trip point for TEMPMON_IMX6Q */
+>  	if (data->socdata->version == TEMPMON_IMX6Q) {
+> @@ -635,6 +643,25 @@ static int imx_thermal_probe(struct platform_device *pdev)
+>
+>  	platform_set_drvdata(pdev, data);
+>
+> +	if (of_property_present(dev->of_node,
+> +				"fsl,temp-calibration-offset-millicelsius")) {
+> +		ret = of_property_read_s32(dev->of_node,
+> +					   "fsl,temp-calibration-offset-millicelsius",
+> +					   &data->calibration_offset);
+> +		if (ret)
+> +			return dev_err_probe(dev, ret,
+> +					     "failed to read calibration offset\n");
+> +
+> +		if (data->calibration_offset < IMX_TEMP_CALIB_OFFSET_MIN ||
+> +		    data->calibration_offset > IMX_TEMP_CALIB_OFFSET_MAX)
+> +			return dev_err_probe(dev, -EINVAL,
+> +					     "calibration offset %d millicelsius out of range\n",
+> +					     data->calibration_offset);
+> +
+> +		dev_dbg(dev, "calibration offset: %d millicelsius\n",
+> +			data->calibration_offset);
 > +	}
->
->  	regmap_write(map, soc_data->high_alarm_ctrl + REG_CLR,
->  		     soc_data->high_alarm_mask);
+> +
+>  	if (of_property_present(dev->of_node, "nvmem-cells")) {
+>  		ret = imx_init_from_nvmem_cells(pdev);
+>  		if (ret)
 >
 > --
 > 2.43.0
