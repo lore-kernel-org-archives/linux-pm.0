@@ -1,109 +1,253 @@
-Received: from mail-oo1-f41.google.com (mail-oo1-f41.google.com [209.85.161.41])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from TYDPR03CU002.outbound.protection.outlook.com (mail-japaneastazon11023132.outbound.protection.outlook.com [52.101.127.132])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CBA4C34A791
-	for <linux-pm@vger.kernel.org>; Tue, 14 Jul 2026 15:46:31 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.161.41
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1784043993; cv=none; b=JhQpjH72ogEbJOAK8e7mQ3SGl1jKMHoMWB5udCGUzh2L9Y5CQCjImYeHcBLl7OEkDg7RCDfHf5vEjHPqxnzKL+xwrYeISUCgPrF4YT+9NEcVCUe2wOCJvpvW7bRQ70gnDmmVrgP5hAMVoM/938OfgAhqjfHQB6Qs1aowVgLCQyY=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1784043993; c=relaxed/simple;
-	bh=H8JQXRpqd/R7eiQaAagelhJW+xLzxqXCql6x2TIrkE8=;
-	h=Date:From:To:Cc:Subject:Message-ID:MIME-Version:Content-Type:
-	 Content-Disposition; b=M2MPUrk00/a2sDQLMpAwpsBPaQb01UeKQGzEI6hpru+WjgFslcOP9xp/+GQm2r7PtZoEpdeI9nD9Gb85i0wDjXJ10tgMyxg4abIeN1U/PAKE0IsUaPZmIt0y+S787hAwuvdGKsDXb2LDPicHBoWGL5jOV2cPWmkOaDW6ktnupW4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=YYMN7/hi; arc=none smtp.client-ip=209.85.161.41
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1872C466B7B;
+	Tue, 14 Jul 2026 15:54:45 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.127.132
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1784044488; cv=fail; b=f5N+XvKSGuACGPAJPZxtE6lc8Q13r/QseDl827gjDxzwW9bMYEX8jisqDHuvQlj2O+5oZUXmbuUUUeai6RJZ37lZuU+Lyyurc25mFE1ar0GTr4+dpSffflYeKs1Yyg0efrsgXg9eOJdPnoU2ROg6ug4oUDOub7XZbqHN6bKYtU4=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1784044488; c=relaxed/simple;
+	bh=wMMp4npTjkgvcvtY7cVHFmd8fOZPZ2Gt0CxGmbxMXGs=;
+	h=From:Subject:Date:Message-Id:Content-Type:To:Cc:MIME-Version; b=fVJUUxU3awcw6MWM6UU2tsBdSqLVutDureOFfuN81pxlP+DWB5I85VIPpbUTGJcsQid3NKNuCF+wscZhwKAGDp7FcmMGgXuK3+parxRkngvQIsbKol1JWtNYygpEfwI14gYjwg4UR6Bshjeodx8FjOdJtpf6DNtrS6qwLPacsD8=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=advantech.com; spf=pass smtp.mailfrom=advantech.de; dkim=pass (2048-bit key) header.d=advantech.com header.i=@advantech.com header.b=X0K0w1xs; arc=fail smtp.client-ip=52.101.127.132
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=advantech.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=advantech.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="YYMN7/hi"
-Received: by mail-oo1-f41.google.com with SMTP id 006d021491bc7-6a379b68f76so1467104eaf.3
-        for <linux-pm@vger.kernel.org>; Tue, 14 Jul 2026 08:46:31 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1784043990; x=1784648790; darn=vger.kernel.org;
-        h=content-disposition:content-type:mime-version:message-id:subject:cc
-         :to:from:date:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=lj8R2/2mEi74TIV5QrpV60lR2ndY+ekEIggjae+o8XY=;
-        b=YYMN7/hildu6lEedL3Foe8Ev7vNSISGkpqiyYg1o4QvX6W0yZZb6/3QhU/FYZVLodP
-         DLttDmWgzT1TNcyubAfcm7tiQxi31w9heRuTSqoryFn2MxfHK5aLmYy8wfbXCPzszoFW
-         aVUNewe661SSZqkdshwmJnw6jL+4BVJJPXBRfmdEEkR2MG2Mzt/u9lcuoRihWOob3XSf
-         ViKcrrT0k2ttOtgaLKqk0Fk9lPZOjPeO+7hfmJ6BVKtcPOWW4ZpdgkZzWIyw9dXf4iUq
-         H9SUivwVza8u13xh7Q6ksDMTKyHSmmv/mUqkuwP0zXqmjREukSjx+janZJCbADELbnoz
-         b7YQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1784043990; x=1784648790;
-        h=content-disposition:content-type:mime-version:message-id:subject:cc
-         :to:from:date:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=lj8R2/2mEi74TIV5QrpV60lR2ndY+ekEIggjae+o8XY=;
-        b=AwOz14yis8GQT+ReHg6Wivi7UqVvaWk9JBMQff+QV5lvQBpdl5i1Sa+aMS6UBHeHfQ
-         pM6PbS+l/YT3u8+t+kTmJQthE1R3swXRBpEJ6KpjiK4uYxZ+NFDLKy/+8R4aokoxKH9S
-         PniHcyUs6awpYe3j5eIequnaf5QFVsuAIKqfQLlmme47Xo6kfawnGpq/iTjFu3rD5qBN
-         o2PH+JmpeEdhbl4JzMbPDytSLRd6xnSrYVlfpPLcaRY/C8nHQdnlz63xRdUFfdYEWESf
-         abEvJrCE5NHiG7FE0ktc8Qek2elHj2sv7Jo0xqsTunD1t/RViqR+Ia6JdlQOBYdAY36b
-         Yl/A==
-X-Forwarded-Encrypted: i=1; AFNElJ8Aybeh+HBD2+cs1tFbIsmvQVg8Gagbtk69SvFbguSsa7u01rfQDyU3I+wkHhU45YVGedV+tTok4A==@vger.kernel.org
-X-Gm-Message-State: AOJu0YwjYvr0rZd0S12FonTp41KB8cSHNACrsXYNrR2InwudegonSpHJ
-	tz4mwWYbFt6JXC5GzxaBUjFXtyecn03NOm47bytozh+TkNmof1QKpEHc
-X-Gm-Gg: AfdE7clZzc53//7e8mlzafJb5jf1pXCG3FrL4vCfgYuHKmufjp1Bd6KJbmxEq4a3vF9
-	iwxXUJhy1dA7EPak36PKRInbaqq32gSNZHIjvfmO9B1SXoSRCNKIzG2XjkfQ+TLrDGkV2GhPZh3
-	nUGQehkMRgDx4lybydAeGyEQ8OL/WTlnAt5464lfEyODbyVR5u+gFkIZ3kAHvVbNS1ZKz8K3SDp
-	KA/b3sv+T0GOY01xQZCEcHHaYO3lO5jxatsIYcSZGe3q/GN3qzXrzryRntXsZlL/uxPR5sbWI7j
-	ZX87JHYBdP/DfMLJTICRXfllr6t2z0pjd9DzdGMLqmSFrSCD5UraJknBp8r8Tly/oeChrEDEOZU
-	JSaC6KvUnpBgMUBuokN252gHcRdSAAkilto2htDmxK8uuGBVE2N6+YR1BHTXaSFHWwjtJ+IxFrp
-	gSPGtn
-X-Received: by 2002:a05:6820:814:b0:6a3:7d24:7b7f with SMTP id 006d021491bc7-6a3cb80e54dmr1400261eaf.17.1784043990420;
-        Tue, 14 Jul 2026 08:46:30 -0700 (PDT)
-Received: from localhost ([74.80.182.78])
-        by smtp.gmail.com with ESMTPSA id 006d021491bc7-6a38e9bc8casm8811714eaf.2.2026.07.14.08.46.27
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 14 Jul 2026 08:46:28 -0700 (PDT)
-Date: Tue, 14 Jul 2026 18:46:22 +0300
-From: Dan Carpenter <error27@gmail.com>
-To: Deepak Sikri <deepak.sikri@st.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>,
-	Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: [PATCH v2] cpufreq: spear: Fix an IS_ERR() vs NULL bug in
- spear1340_set_cpu_rate()
-Message-ID: <alZZzlY9rfdAvWac@stanley.mountain>
+	dkim=pass (2048-bit key) header.d=advantech.com header.i=@advantech.com header.b="X0K0w1xs"
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=inDDIDp3KUkutCqEVN1a/xU7s1AdeeJNJ452uRf83yeC0LRKFmt8Vg1y/XzdsXVWZdoDS2Cnx1PjAae5xQLJqE2IvZTW4Vn5/EL1nVCYcAYwaOYpR86y/wgh2N2dPmPVEZ/GKEq9C6l1Wt+C1tVZ6uxzy1Aj2bfY7tBN9t3RK462KPy6j4SCw+jXjKdneN+3xZqjugsZKPLPo38l9yP/woThuo2YqHn050WVsUqX6XoObXI6CWX3d86zVY70F23rC1JsIz2uRLR/D0jbXS9NOsyboQVBK+/djpFf3FXY54ND/OfCBqxMN7esl1amhe5EMcY2EoPqjU35Xh9AY9ulMg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=/3mqKVxxuf7JSBBvFbFVIH2js7NM9iwRn3cPt4+Uql8=;
+ b=f7Pu9gJj+l6YEJDyTjHFsZPPS6l7Smu07Mboqkf6crCJ4z44ZkSsaUpROFduJ7o4iHXBH63NArZN5hhVNmIencF3LMOdnD9Nz1bZY9hLLw/HLyvO4y/+frt38o0/SjsZb3zRDePO1B5DNB4mhCWPRz8tVZhSLsTzaoOtmvxp5S0xHTcwF5ufCHES1SFzC+IOEWE8cYDxO26bpvJDhEjNvmCsrCeUCQZ5WKquUzSlMpPcM/eRViTrs6Y9ilC2dYkF5j/pk8aELiZ9gPnVZ4fSRa35D6iILaRmwhnvAFyxLmHjzfuojiRFQv65whgX4VJF3zce7A/xpXiJf+ZZSNueBg==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=advantech.de; dmarc=pass action=none header.from=advantech.com;
+ dkim=pass header.d=advantech.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=advantech.com;
+ s=selector2;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=/3mqKVxxuf7JSBBvFbFVIH2js7NM9iwRn3cPt4+Uql8=;
+ b=X0K0w1xsdDDdPYdpai6byqk7dDd8Ie8IVn3xu24jOrISw88VWls3EgxsZD0KzDYpxHsGjfFs9xms1kNmW5AZwbxf5IvKb4FMn56KXAwyrgOoa12gnd4tQ/cHfhITnDDBNJLqM6082bv9LyBwZexP9/hygmDDQD7jCT921s29Jrsdb2qnUkTaP79jWqqe8CNwzKQduqb3zRfEriNgolu6Gh4q4cFMU6QWlvyoH69hSDFP2X99c6whlwH1rizpwPxeNeZL28TFxbpFH40ZHMNNp5gU0HBcZsp3e5TU2WdmwYsqNppfpyT25i6R3Tl6s9uS2u0yVqb4YNzoCBys3R+0Bw==
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=advantech.com;
+Received: from PSAPR02MB4502.apcprd02.prod.outlook.com (2603:1096:301:21::6)
+ by KL1PR02MB6189.apcprd02.prod.outlook.com (2603:1096:820:bd::10) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.202.20; Tue, 14 Jul
+ 2026 15:54:40 +0000
+Received: from PSAPR02MB4502.apcprd02.prod.outlook.com
+ ([fe80::44e6:6433:8000:35aa]) by PSAPR02MB4502.apcprd02.prod.outlook.com
+ ([fe80::44e6:6433:8000:35aa%3]) with mapi id 15.21.0202.018; Tue, 14 Jul 2026
+ 15:54:40 +0000
+From: Ramiro Oliveira <ramiro.oliveira@advantech.com>
+Subject: [PATCH v2 0/8] Add support for Advantech EIO MFD series devices
+Date: Tue, 14 Jul 2026 17:54:14 +0200
+Message-Id: <20260714-upstream-v2-v2-0-76e5e41026db@advantech.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-B4-Tracking: v=1; b=H4sIAKdbVmoC/6tWKk4tykwtVrJSqFYqSi3LLM7MzwNyjHQUlJIzE
+ vPSU3UzU4B8JSMDIzMDc0MT3dKC4pKi1MRc3TIj3aTUxNRko6TExGSDFCWgjoKi1LTMCrBp0bG
+ 1tQCpQqb1XQAAAA==
+To: Lee Jones <lee@kernel.org>, Linus Walleij <linusw@kernel.org>, 
+ Bartosz Golaszewski <brgl@kernel.org>, Guenter Roeck <linux@roeck-us.net>, 
+ Andi Shyti <andi.shyti@kernel.org>, Daniel Thompson <danielt@kernel.org>, 
+ Jingoo Han <jingoohan1@gmail.com>, Helge Deller <deller@gmx.de>, 
+ Wim Van Sebroeck <wim@linux-watchdog.org>, 
+ "Rafael J. Wysocki" <rafael@kernel.org>, 
+ Daniel Lezcano <daniel.lezcano@kernel.org>, Zhang Rui <rui.zhang@intel.com>, 
+ Lukasz Luba <lukasz.luba@arm.com>
+Cc: linux-kernel@vger.kernel.org, mfd@lists.linux.dev, 
+ linux-gpio@vger.kernel.org, linux-hwmon@vger.kernel.org, 
+ linux-i2c@vger.kernel.org, dri-devel@lists.freedesktop.org, 
+ linux-fbdev@vger.kernel.org, linux-watchdog@vger.kernel.org, 
+ linux-pm@vger.kernel.org, Wenkai Chung <wenkai.chung@advantech.com.tw>, 
+ Francisco Aragon-Trivino <francisco.aragon-trivino@advantech.com>, 
+ Hongzhi Wang <hongzhi.wang@advantech.com>, 
+ Mikhail Tsukerman <mikhail.tsukerman@advantech.com>, 
+ Thomas Kastner <thomas.kastner@advantech.com>, 
+ Ramiro Oliveira <ramiro.oliveira@advantech.com>
+X-Mailer: b4 0.13.0
+X-Developer-Signature: v=1; a=openpgp-sha256; l=3220;
+ i=ramiro.oliveira@advantech.com; h=from:subject:message-id;
+ bh=wMMp4npTjkgvcvtY7cVHFmd8fOZPZ2Gt0CxGmbxMXGs=;
+ b=owEB7QES/pANAwAKAc7t0Ke8vbAJAcsmYgBqVlu0YNkY9NL15znGwiha+i99kJxcm8VHDOWO6
+ mBdLSae/7qJAbMEAAEKAB0WIQS1Nkng0ZvJmBKh6GLO7dCnvL2wCQUCalZbtAAKCRDO7dCnvL2w
+ CatIDADES7J1HWpYc5Ps303bGjQL4SJgqtfQJpvm4xRxTWSiNjZRFRSqnE3gxFX7F5fhIPkqYJQ
+ dOFDsuct3gpKr5gPJjQzhbWouKVbZCeYh9Llcv+kzt2ZX6E3oUSThQFavGpmXBQpmKwHVIAhuXf
+ 4r+yS0sgdREg3pGQaLZKQIDSN6BW+IUSAOf8+h0g6QD3fiiSwZp6K80N4m95WFQnvAUQIXTht5B
+ LT9M+QEtIlhIlzHYpz9IRfUodeDXeUV20rimtAt661TbxUrtHrPcmEG7OBKUascd1u1epGcbZJt
+ JXTFURjRycnQWiYkwsX97Z6kkWspjeMoas8hr2zMHWVZlhmnr1PR/hxfsUtFDypO6pWdcGXknUA
+ DrjtYU+fq9YbXMkVY7flialTN/NBeuuM8Hquvcui4h/sZrVZK0EAccrx7hRfQXIbb0KVxWXgNc1
+ wK1qi+ZotzICdh8jyglJR3+yCs7kWhWN8FBIWEzNDY1Y6vMo+KFGETFDKSdezftC8cp8s=
+X-Developer-Key: i=ramiro.oliveira@advantech.com; a=openpgp;
+ fpr=B53649E0D19BC99812A1E862CEEDD0A7BCBDB009
+X-ClientProxiedBy: FR2P281CA0086.DEUP281.PROD.OUTLOOK.COM
+ (2603:10a6:d10:9b::14) To PSAPR02MB4502.apcprd02.prod.outlook.com
+ (2603:1096:301:21::6)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-X-Mailer: git-send-email haha only kidding
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: PSAPR02MB4502:EE_|KL1PR02MB6189:EE_
+X-MS-Office365-Filtering-Correlation-Id: a3d789a8-8bad-44d3-df20-08dee1c036c1
+X-MS-Exchange-AtpMessageProperties: SA
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|366016|1800799024|23010399003|52116014|7416014|376014|921020|38350700014|56012099006|11063799006|6133799003|55112099003|18002099003;
+X-Microsoft-Antispam-Message-Info:
+	LONwMRbhfH9gmoT6wAIqYPzk+jHRg3lBFs6rlJppS4+hOBehzV0A+Sjyb7VlRimYoHDUcDdzOQK98cf8k4Cl/DFZfxorw9qu8ON9Sp4tnR9fxmNApKSV+2qy1vkk9JYe00iQKfloRFg5EONwddH634vli6M+4VE8dDidSFkexCYUtjoBABRMgvJA2zgs/zPiTg8ZeaPIUvQOHAecJVFZwy+5BhT33r3ByXtxIoiSSpi0BZ+WGdO0akTzJ5rwyvSdTxuC7qkgCZJQx7NKsoPvShHrGpLQJjjtpLNVCYbOVm0KBm3pl3dyd+MM2edhgy5UE2BW37+v5PdUXQsoLDHJY13LGEtov5KaapE/Zr9fcJ/NMdxfwV/CtO80+FsESZnZUZ/Nk6X738/wLDXVv3B13gMD1LkNHAmFB7skT0sikrMSUPqjGvtnya+8AXiSPpxaA9KVjgtTWH190/KllyeYZzTu/xCuB1CdRUCNCaFC3WqK5Ub9803AJCe3Sp0M03k6N0gDUsgo4pR/86ZKEUi4THluj35ZKkwvYzLnE5yMFaRE0b695psD3T82PPm/WTomrh58zVwcpUk0ASLWutGq26xuKdBdrEVcULTmxMs5l8BnDWbg6pKl/+E2fnUwLSu8K0uozUIKrZDLrQt4NMwISPY0M74jWOLdgX0nPe8KSgUp4RNfJGvW9rNLC5F7kqV9H3ItCZJBMMntphSDV8nLYi4lPiZecc9juDRATDE98hIUPb4Bpc6ss4rhsKDiZB95
+X-Forefront-Antispam-Report:
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:PSAPR02MB4502.apcprd02.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(1800799024)(23010399003)(52116014)(7416014)(376014)(921020)(38350700014)(56012099006)(11063799006)(6133799003)(55112099003)(18002099003);DIR:OUT;SFP:1102;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	=?utf-8?B?RG1IemxJZFhVZXg5N0VBWGNRTXlGZkVRRFI3NE9nNkdYTVI4bDd0ZGxZRjVv?=
+ =?utf-8?B?aVpJWm8rNVVCaUVxaHN6NldqMUE3Y1dMRm9uQXZSSFlFMi90bUdsM1VsVkxQ?=
+ =?utf-8?B?UnI5UDM3TEJLSGlRL2FqNUx6NHhFWG5rWUxjOUcwUzNWRjlVdnV5TW0yWjNR?=
+ =?utf-8?B?YUVNcmU5eDJmenhHeFdYYk1oSzFSRTJLNmhQaWIvck5WTkhYeWhnN2YvczE5?=
+ =?utf-8?B?elowTWRRRENDWncwOVlwVUJYV3JqRnNVZCsyZVlkMTNKekVQTGRMT2xJOXJX?=
+ =?utf-8?B?RzZUa2Rydnc3MjRoVXpCSUJrRjBZb1dkbWprV1paK2JHS0JlWmdkOVBWK2NR?=
+ =?utf-8?B?aUpHUnIvN1phN1hPR3BLTmJwZnd5RmhYamtWQ0RjcHhmTVA2Q2dSLzVMeWtk?=
+ =?utf-8?B?NWIvQXZ4am0wZmVwaWRtaThHdWRRRndwSEN4d2xCRkZIaXE4cmFZeXIrUGVn?=
+ =?utf-8?B?YWlDOEdXY3V4YnZvYzltVjRuTG4xV2c3RTNjNWpXQXhzR2w1bWdGN0JHbTBJ?=
+ =?utf-8?B?TXdHS1g3R2ltZWdGMndIblMvRUNkY0gwRkdJNjVQRGp5MXV6TGF6WC9RODE3?=
+ =?utf-8?B?aDl0MmlKKzRma1VJa2pCd1VxQ3RYS0N0eW5Edy9oTXNFaStrZXFDV2g0cmFG?=
+ =?utf-8?B?WSthQ3E1WGJNVzdONkVYZ2RwYXNEeWlWeDRHUkM4d1c5czc5M0RodUtmblE5?=
+ =?utf-8?B?VW5mMFU0RDdCSmNkRWJQd3QrLy9FZ3VZcGJFa2ZXMzdIVzBiSzFkQm13c2dR?=
+ =?utf-8?B?OXF2RG1VRER1a0ZHRGJkaVdRdE13M2lGWHowTS9uaENHekFaOVg5Q2RtVHMw?=
+ =?utf-8?B?b0FFQTh3a1YzbHRFUm9FbWlSc3JDVUt0eVJ3eitxSUI3UGxEcWd4UnZKaWlo?=
+ =?utf-8?B?a1JoTVNoN1RTK09XVHZqT0MvcG8xam41MFNaeEFpOTM2SWhkdmd5b0lCWTdB?=
+ =?utf-8?B?QS9IM1ZsWDJXKzVBSHJ0aGpRV0dpeHpEQjcvaG9OYldtbXhGQXB6Q3g4Tklh?=
+ =?utf-8?B?ZU82YzZEalR6U3Zpdy94d3hqcXR6TFlyNXFJR2FBOS9pNDU2OTQzNktlQmx1?=
+ =?utf-8?B?UHVKeS9NcTh2SGEvTGtuU3VoYURKdGZteUhNZ3RQSFMramFpa283MDhaMmFk?=
+ =?utf-8?B?dlhwbnBrL0xmczZ1bmptNFZ4dkR4WFdEZFhlREtUNThmOUlQVm82cWRrcW1y?=
+ =?utf-8?B?UStNZlpHdEJSblF0UGpzSkE1MitQTEgrZ0dQNzJhdjgwSy9kdlhZbTVtYWJm?=
+ =?utf-8?B?L1ZzY1pyQnAwZHBERlUxeTU4NDdnR1o0ZVdLcGsyZ0QzSm1pMm5xREdNMkI3?=
+ =?utf-8?B?WU82cmsrMkFWWHcrWWliVjlrdGdnSVJwNGFVOVNjL2loVkM5NzQwZWRLL01o?=
+ =?utf-8?B?d0tYdEEvK3RrVHZUTmYxQUxJUDhCY29iT1U5OFJLM2l5a3RGYUpEUW9XWDhF?=
+ =?utf-8?B?c2xJR2p3UnBqK2QycHVDTlQxYXJwOWg5U0NQSDJidSt1TFZrME9TQUI0WkN2?=
+ =?utf-8?B?bmkvRytGZnFoQ3RGR3prSXRCU2tLQkJucnBHTmZJdE1LRG9mMUhIQ1FPWVlH?=
+ =?utf-8?B?cnhveFg2V29nVXpIVWlseFF0SEhsb0lrMEF6S2MyRHZHWkRYaFFibElFc0Zy?=
+ =?utf-8?B?QnNEWi9DZnBrNHlOdDJpdTNRcHNjeFB6ZjNONCtEMkNYN1hKWTRLU0pIOE11?=
+ =?utf-8?B?K3Z6TS80cFpkM3FvWWQ2aDhMMkJsYS9oK09XSDlGeWRuOUU0TFhFY0xHZE5N?=
+ =?utf-8?B?ejR2NDZnbXNuT0ZhVnNNWUNmL0h1blBYeGRJTnE5QXkra01ZQWxEbW5Fcjk2?=
+ =?utf-8?B?R2pFa3ArMFJpNDZ6TmttTHpsaDVpOW9XcFFQNXEvbkF2U1pkbW1KdFczQ0hH?=
+ =?utf-8?B?bTY2aXIxQkJrNUtndUxuNzF5TTRzQXFoMGlSV2I4WGZrYmFJWHFReHdoMDZu?=
+ =?utf-8?B?OGI3aEVkZzF5OGhIMDhwUGVlWlJNd2pSTVM4WTZBWG5zL0lHN2xwRnBVN1JV?=
+ =?utf-8?B?ZmF6d0oxckdoR2t2azFMSnV3NllzTk1jalBhUXFUQVJlK3NWdkZKSmdCbnNP?=
+ =?utf-8?B?TjJ2WjhKak9VRFhGZGJYU2l6NS84ZHFwczM2LzdweWtPZVZHWnF6N2MyeXRP?=
+ =?utf-8?B?czUxNGRKajRJZE1wbmdqS2U3N25NYXZ4OW5LcW9lMUlrYmc5Mm04V1FmTThs?=
+ =?utf-8?B?aTVnRzVjNkhJZmtsQXhBN2tjeDFTb1JCc29ianBpcjJsLy83SUJPMm92eUlL?=
+ =?utf-8?B?a1FHbjVNb0UzaWxkWGxmRmVIMk1pMFZTZ1I4MUNoalBObE9mMXprMW4rZ3Jh?=
+ =?utf-8?B?NVNTL1h6UzZ6OXFsRUlKTHE4TnpmU0E1QTBtaWxpdFhoVGRoT0hwOVhVaHpO?=
+ =?utf-8?Q?Jf/hf8GI919nm3h0=3D?=
+X-OriginatorOrg: advantech.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: a3d789a8-8bad-44d3-df20-08dee1c036c1
+X-MS-Exchange-CrossTenant-AuthSource: PSAPR02MB4502.apcprd02.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 14 Jul 2026 15:54:40.3579
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: a77d40d9-dcba-4dda-b571-5f18e6da853f
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: VwIhwrgJz7k/mIzQ8vDOMVvJxUNyY3KVUPvq9GetXsj4tzG7nyfQ58RqhThPqoTVfUUFKZ/EcA70/rf/aZ9GqzRgV5whWh9HL+PAEdUd94E=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: KL1PR02MB6189
 
-The clk_get_parent() function doesn't return error pointers, it returns
-NULL on error.  Update the error checking to match.
+This series implements a set of drivers allowing to support the
+Advantech EIO-2xx series of devices.
 
-Fixes: 420993221175 ("cpufreq: SPEAr: Add CPUFreq driver")
-Signed-off-by: Dan Carpenter <error27@gmail.com>
+This includes GPIO, hwmon, I2C bus, backlight controller, watchdog,
+thermal and a fan driver.
+
+This series of patches targets several different subsystems, but the MFD
+subsystem is the main target.
+
+Changes in v2:
+- Rebased on v7.2
+MFD
+- code cleanup
+- Remove timeout from sysfs
+- Propagate errors
+- Remove version.h
+GPIO
+- Code cleanup
+- Move gpio_chip to probe
+- Remove timeout from sysfs
+HWMON
+- Code cleanup
+- Refactor to use hwmon register with info
+- Remove tacho, same interfaces as fan
+I2C
+- Remove timeout from sysfs
+Backlight
+- Code cleanup, remove ununsed max parameter
+- Remove timeout sysfs
+- Use helper functions instead of direct calls
+- Correct return value in bl_init
+- Initializing scal ein backlight_properties
+- Return correct value when no backlight is enabled
+- Remove log on successful probe
+Watchdog
+- Remove timeout and IRQ from sysfs
+- Remove unnecessary logging from set_timeout/pretimeout wdt_get_type
+- Remove timeleft function
+- Rewrite wdt_set_irq_io to correctly handle return codes
+- Remove unneeded watchdog_init_timeout
+Thermal
+- Remote timeout from sysfs
+Fan
+- Remove timeout from sysfs
+- Remove unused variable temps_mc
+
+- Link to v1: https://lore.kernel.org/all/20251212-upstream-v1-v1-0-d50d40ec8d8a@advantech.com/
+
+Signed-off-by: Ramiro Oliveira <ramiro.oliveira@advantech.com>
 ---
-v2: fix subsystem prefix in subject
+Ramiro Oliveira (8):
+      Add Advantech EIO driver
+      Add Advantech EIO GPIO driver
+      Add Advantech EIO Hardware Monitor driver
+      Add Advantech EIO I2C driver
+      Add Advantech EIO Backlight driver
+      Add Advantech EIO Watchdog driver
+      Add Advantech EIO Thermal driver
+      Add Advantech EIO Fan driver
 
- drivers/cpufreq/spear-cpufreq.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ MAINTAINERS                      |   19 +
+ drivers/gpio/Kconfig             |    6 +
+ drivers/gpio/Makefile            |    1 +
+ drivers/gpio/gpio-eio.c          |  252 +++++++++
+ drivers/hwmon/Kconfig            |   10 +
+ drivers/hwmon/Makefile           |    1 +
+ drivers/hwmon/eio-hwmon.c        |  461 ++++++++++++++++
+ drivers/i2c/busses/Kconfig       |    6 +
+ drivers/i2c/busses/Makefile      |    1 +
+ drivers/i2c/busses/i2c-eio.c     | 1135 ++++++++++++++++++++++++++++++++++++++
+ drivers/mfd/Kconfig              |   10 +
+ drivers/mfd/Makefile             |    1 +
+ drivers/mfd/eio_core.c           |  644 +++++++++++++++++++++
+ drivers/thermal/Kconfig          |   17 +
+ drivers/thermal/Makefile         |    2 +
+ drivers/thermal/eio_fan.c        |  478 ++++++++++++++++
+ drivers/thermal/eio_thermal.c    |  346 ++++++++++++
+ drivers/video/backlight/Kconfig  |    6 +
+ drivers/video/backlight/Makefile |    1 +
+ drivers/video/backlight/eio_bl.c |  243 ++++++++
+ drivers/watchdog/Kconfig         |    7 +
+ drivers/watchdog/Makefile        |    1 +
+ drivers/watchdog/eio_wdt.c       |  641 +++++++++++++++++++++
+ include/linux/mfd/eio.h          |  124 +++++
+ 24 files changed, 4413 insertions(+)
+---
+base-commit: 50c051a08a731c52933608fa8e9174cd9875fcc4
+change-id: 20260714-upstream-v2-beaec2baac0d
 
-diff --git a/drivers/cpufreq/spear-cpufreq.c b/drivers/cpufreq/spear-cpufreq.c
-index 81a0780b2ebf..ffe5eda82f0b 100644
---- a/drivers/cpufreq/spear-cpufreq.c
-+++ b/drivers/cpufreq/spear-cpufreq.c
-@@ -79,9 +79,9 @@ static int spear1340_set_cpu_rate(struct clk *sys_pclk, unsigned long newfreq)
- 	int ret = 0;
- 
- 	sys_clk = clk_get_parent(spear_cpufreq.clk);
--	if (IS_ERR(sys_clk)) {
-+	if (!sys_clk) {
- 		pr_err("failed to get cpu's parent (sys) clock\n");
--		return PTR_ERR(sys_clk);
-+		return -EINVAL;
- 	}
- 
- 	/* Set the rate of the source clock before changing the parent */
+Best regards,
 -- 
-2.53.0
+Ramiro Oliveira <ramiro.oliveira@advantech.com>
 
