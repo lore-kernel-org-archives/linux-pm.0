@@ -1,113 +1,427 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4B69A3218BA
-	for <linux-pm@vger.kernel.org>; Wed, 15 Jul 2026 12:10:30 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 85E9145BD7F
+	for <linux-pm@vger.kernel.org>; Wed, 15 Jul 2026 12:24:33 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1784117431; cv=none; b=aM/SbbnDyc4d4DctukpVJokSSFZxyAgfNc10SAsKf3nscwvcn8zZSt6kLsXYwNVK7ZKEhh9/IEnBfm/RVgJVcDKZCOVB6xGkCSL87nQFFYzGdxmCusuTcwVQEqRSY2i+hb1SLk3GTqAoqPWUw1aqqn6W0+JLHrkywKu8x0v7sho=
+	t=1784118275; cv=none; b=REIELolD2Q0YO8stY2o+GiX8aqlhwciezVJ3h+vYXAFd9vaQ29IJkvcOO6xBPBgqXJ7KpO07HrrGNUri7dwe4DmIsfUO1GiDFUQk4laSIV2ZZY3mVZHrOO/FdI9/uNtMMWpnqWaG+EaWv/H1ya2dhYtNBpcet59V/eSBcc0vt8E=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1784117431; c=relaxed/simple;
-	bh=PYNLDHGO6ov8H5x5qqX5IZL4rw+a3BqAyT9tBi7RhC4=;
+	s=arc-20240116; t=1784118275; c=relaxed/simple;
+	bh=WjkkhX8AE55jsgJgX1FzkMHLBoKDh6l6Q8k1teC3sDk=;
 	h=From:In-Reply-To:MIME-Version:References:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=rJpvhtFgu/cyBapjOkI5B2akZgqnmeilcFvV38csPogO3Tj44LsHn1HoyU63srPlESrNQeGVmVc06FgTweTjsXazTYy6lIFhooNIg/wRl1+pexTdEFdLhgk3Z/TkOsO+CyJm8cbZEkHh9vVKmtt1DxuHdE7zPpcEI2f0kqbQHWM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Q84hagRT; arc=none smtp.client-ip=100.103.45.18
+	 To:Cc:Content-Type; b=eUdZwzh2GRWxoGwLx7WCha+Gk7OLM8oYqfJ3+wlrc/V3JPKbY5lcUag1LD0TwvSJm1uRVhZqlYmNgOct9dCPw35zDtyK07r2W+ETj6fOkDIWEaZn8RjcBwD4O8XWoi1g35GM1bp93sBDZeTYWbPxl/uFZTQd7llojyPUTt9URFs=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=LAgfM15h; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Q84hagRT"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id A5D8C1F00A3D
-	for <linux-pm@vger.kernel.org>; Wed, 15 Jul 2026 12:10:29 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="LAgfM15h"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9F19A1F01562
+	for <linux-pm@vger.kernel.org>; Wed, 15 Jul 2026 12:24:31 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1784117429;
-	bh=DMCjy06zEXDnbWum2gCuxx6nJG7pOKzGSJuwH+iOivg=;
+	s=k20260515; t=1784118271;
+	bh=PclXy2Uq7OPMyI+t/qU2+B3wDB55fTcxu4iOX0BaM3I=;
 	h=From:In-Reply-To:References:Date:Subject:To:Cc;
-	b=Q84hagRT5mPR6Sg5DtuRlLw+qHQbfE0zv769VXXV9fdXQpiVBljonlJJa72YMpf7y
-	 iYZKdHDeOLn8CpItSXEjn1bhf/D4qCsfnSPEa7/PTcNChMqAhAqIRMVv6IPYnjTWNf
-	 f6fX48BpqcIK+ON+887Wu4FNF344byUQrM0B06tKW0vZac2Mc7MOJY+3WBJGIbOU+Y
-	 s+XfEqlz2dR3TJcJ/wfD5eHKBMjk+CX2g65Qv7jgY9vFpJ/lCvVHcRqKIqgqNj8AG2
-	 O0InDdM9pynSkxccpuvAM61EcsTe+9yFBOyTSh9Ps6BNkic3e+7+aR0leWcj1IPoJc
-	 1hyWYWU7Tv3Eg==
-Received: by mail-lf1-f53.google.com with SMTP id 2adb3069b0e04-5aec201b582so5151192e87.1
-        for <linux-pm@vger.kernel.org>; Wed, 15 Jul 2026 05:10:29 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AHgh+RquWKgkVqJIaMmH5C/aBlHGhQCb0GeZNX4P+1GY6l8zUmLlTM1R5QKj0dn9oo3NaaALQicWL30I8Q==@vger.kernel.org
-X-Gm-Message-State: AOJu0YxTx1v2afD6ROnh3zU5aL+lY3GkdNB2yMurOi/EvxusPS7bKHIn
-	l2aPnXurzqWp9oTEbQ1wkZMbv8fuWMevj/NxhYIT5SCsgMRI2GPRv8/rcMi29/xUdqg+zlaCQJB
-	pTkmQUeP6LU7YFUL+kmZN3Rxm8xDtLerwEmdCBzOm3w==
-X-Received: by 2002:a05:6512:2507:b0:5ae:bcf8:e7d0 with SMTP id
- 2adb3069b0e04-5b15d7baf00mr578542e87.55.1784117428284; Wed, 15 Jul 2026
- 05:10:28 -0700 (PDT)
+	b=LAgfM15hhVaC15vSj8XQxsRNvGquqsgUOdks7kt343R7a1N5g9nUkhGh/uXHD9xfk
+	 nHuL0dFcxgvuhWFebeKG/ml37YscroM+LGpmg6vTy/NYhLFGJkXcxF49V5NileYc42
+	 yFcBl+s67bzQ7PDTJyhysHWIH3tWgPuHTNtr9YG4smlEOxhmeOTfhh5daJaeq0q4VC
+	 dVM8Wgqjwvx9UaMSkun0m/2IJKP0e4vLDNXe4PMhRzEKFuvISWLu21N/04zi2Ia3kf
+	 EMfQpJbcuN8aNGEmfLMx1xjXLy5cpYICzJI1CA7lIsIjNYsegE++dezSLCFahJvia/
+	 vzzxugae/c9Fg==
+Received: by mail-lf1-f51.google.com with SMTP id 2adb3069b0e04-5aec6360133so4116324e87.1
+        for <linux-pm@vger.kernel.org>; Wed, 15 Jul 2026 05:24:31 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AHgh+Rop2YrHikLDI1eFkrZhXdFon/f8bb7W0Ij83InLeF8pyH9hvHk6rF8/ixP/r0svubn5JyZ8hjJ1PA==@vger.kernel.org
+X-Gm-Message-State: AOJu0YzLN6gk7Qfpx5ztkZcJY6E8YgEDC+LBBhWXJMl5jLgohPIYv4rB
+	/hB5m+r0i+1HAQY13ebJhKY+nnzdOaoK6zzYzXN0H/H25joIYFNxJD5mkAs0r6A/U1jjZIUUkQb
+	tRnYymcixNKarj+8Ll7Ob9VBGw1+4P0acZEZ9TDpoZQ==
+X-Received: by 2002:a05:6512:3a87:b0:5b0:12e1:4879 with SMTP id
+ 2adb3069b0e04-5b1582c715emr2068822e87.60.1784118270190; Wed, 15 Jul 2026
+ 05:24:30 -0700 (PDT)
 Received: from 969154062570 named unknown by gmailapi.google.com with
- HTTPREST; Wed, 15 Jul 2026 12:10:26 +0000
+ HTTPREST; Wed, 15 Jul 2026 05:24:27 -0700
 Received: from 969154062570 named unknown by gmailapi.google.com with
- HTTPREST; Wed, 15 Jul 2026 12:10:26 +0000
+ HTTPREST; Wed, 15 Jul 2026 05:24:27 -0700
 From: Bartosz Golaszewski <brgl@kernel.org>
-In-Reply-To: <aldS3qTympJuVXYj@ashevche-desk.local>
+In-Reply-To: <20260714-upstream-v2-v2-2-76e5e41026db@advantech.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260715085348.3457359-1-wenst@chromium.org> <20260715085348.3457359-4-wenst@chromium.org>
- <aldS3qTympJuVXYj@ashevche-desk.local>
-Date: Wed, 15 Jul 2026 12:10:26 +0000
-X-Gmail-Original-Message-ID: <CAMRc=MfHmejks83bPfe3fKzAzFySGXk2GHMA9oZdMQj0f44eTA@mail.gmail.com>
-X-Gm-Features: AUfX_mxpntQH8Qnw3cJ2vX6VfUBu9N4HciM9BCR-9eipAChzpXbQ2rXlvYEnYl8
-Message-ID: <CAMRc=MfHmejks83bPfe3fKzAzFySGXk2GHMA9oZdMQj0f44eTA@mail.gmail.com>
-Subject: Re: [PATCH v5 03/16] power: sequencing: Add pwrseq_power_is_on()
-To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Cc: Bartosz Golaszewski <brgl@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
-	Daniel Scally <djrscally@gmail.com>, Heikki Krogerus <heikki.krogerus@linux.intel.com>, 
-	Sakari Ailus <sakari.ailus@linux.intel.com>, "Rafael J. Wysocki" <rafael@kernel.org>, 
-	Danilo Krummrich <dakr@kernel.org>, Rob Herring <robh@kernel.org>, 
-	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
-	Matthias Brugger <matthias.bgg@gmail.com>, 
-	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>, 
-	Wei Deng <wei.deng@oss.qualcomm.com>, linux-acpi@vger.kernel.org, 
-	driver-core@lists.linux.dev, linux-pm@vger.kernel.org, 
-	linux-usb@vger.kernel.org, devicetree@vger.kernel.org, 
-	linux-mediatek@lists.infradead.org, linux-arm-kernel@lists.infradead.org, 
-	linux-kernel@vger.kernel.org, Manivannan Sadhasivam <mani@kernel.org>, 
-	Alan Stern <stern@rowland.harvard.edu>, 
-	Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>, Chen-Yu Tsai <wenst@chromium.org>
+References: <20260714-upstream-v2-v2-0-76e5e41026db@advantech.com> <20260714-upstream-v2-v2-2-76e5e41026db@advantech.com>
+Date: Wed, 15 Jul 2026 05:24:27 -0700
+X-Gmail-Original-Message-ID: <CAMRc=Mcnbv++YhPvocyiv9m_vuy2hWeuJ2sk9BNH=j7U3-dBFQ@mail.gmail.com>
+X-Gm-Features: AUfX_mzXdlShUuByf9jSWwdYpIzB9dN3xsnMMdNBfJC8EmPDXbPafGgehOl5DxQ
+Message-ID: <CAMRc=Mcnbv++YhPvocyiv9m_vuy2hWeuJ2sk9BNH=j7U3-dBFQ@mail.gmail.com>
+Subject: Re: [PATCH v2 2/8] Add Advantech EIO GPIO driver
+To: Ramiro Oliveira <ramiro.oliveira@advantech.com>
+Cc: linux-kernel@vger.kernel.org, mfd@lists.linux.dev, 
+	linux-gpio@vger.kernel.org, linux-hwmon@vger.kernel.org, 
+	linux-i2c@vger.kernel.org, dri-devel@lists.freedesktop.org, 
+	linux-fbdev@vger.kernel.org, linux-watchdog@vger.kernel.org, 
+	linux-pm@vger.kernel.org, Wenkai Chung <wenkai.chung@advantech.com.tw>, 
+	Francisco Aragon-Trivino <francisco.aragon-trivino@advantech.com>, 
+	Hongzhi Wang <hongzhi.wang@advantech.com>, 
+	Mikhail Tsukerman <mikhail.tsukerman@advantech.com>, 
+	Thomas Kastner <thomas.kastner@advantech.com>, Lee Jones <lee@kernel.org>, 
+	Linus Walleij <linusw@kernel.org>, Bartosz Golaszewski <brgl@kernel.org>, Guenter Roeck <linux@roeck-us.net>, 
+	Andi Shyti <andi.shyti@kernel.org>, Daniel Thompson <danielt@kernel.org>, 
+	Jingoo Han <jingoohan1@gmail.com>, Helge Deller <deller@gmx.de>, 
+	Wim Van Sebroeck <wim@linux-watchdog.org>, "Rafael J. Wysocki" <rafael@kernel.org>, 
+	Daniel Lezcano <daniel.lezcano@kernel.org>, Zhang Rui <rui.zhang@intel.com>, 
+	Lukasz Luba <lukasz.luba@arm.com>
 Content-Type: text/plain; charset="UTF-8"
 
-On Wed, 15 Jul 2026 11:29:02 +0200, Andy Shevchenko
-<andriy.shevchenko@linux.intel.com> said:
-> On Wed, Jul 15, 2026 at 04:53:33PM +0800, Chen-Yu Tsai wrote:
->> The power sequencing consumer API already does power on state tracking
->> internally. Expose the state to consumers through pwrseq_power_is_on()
->> so that they don't have to reimplement it locally.
->
-> Reviewed-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
->
-> ...
->
->> +/**
->> + * pwrseq_power_is_on() - Queries the last requested state of the power sequencer.
->> + * @desc: Descriptor referencing the power sequencer.
->> + *
->> + * This returns the last requested state of the power sequencer.
->> + *
->> + * Returns:
->> + * On success, 1 for on or desc is NULL (optional) and 0 for off;
->> + * negative error number on failure.
->
-> I would rephrase it a bit.
->
->  * On success, 1 for on and 0 for off; negative error number on failure.
->  * If desc is NULL (means optional) return 1.
->
-> And this rises a question: why 1? Shouldn't it be some "unknown" state?
-> (But since Bart Acked this, this doesn't prevent the patch to go, you
->  got my tag above.)
+On Tue, 14 Jul 2026 17:54:16 +0200, Ramiro Oliveira
+<ramiro.oliveira@advantech.com> said:
+> This driver controls the GPIO component of the Advantech EIO chip.
 >
 
-No, this is good feedback. Maybe we should prefer an enum like so:
+The subject should be: "gpio: add a driver for the Advantech EIO GPIO
+controller"
+or similar.
 
-enum pwrseq_state {
-	PWRSEQ_POWER_UNKNOWN,
-	PWRSEQ_POWER_ON,
-	PWRSEQ_POWER_OFF
-};
+> Signed-off-by: Ramiro Oliveira <ramiro.oliveira@advantech.com>
+> ---
+>  MAINTAINERS             |   7 ++
+>  drivers/gpio/Kconfig    |   6 ++
+>  drivers/gpio/Makefile   |   1 +
+>  drivers/gpio/gpio-eio.c | 252 ++++++++++++++++++++++++++++++++++++++++++++++++
+>  4 files changed, 266 insertions(+)
+>
+> diff --git a/MAINTAINERS b/MAINTAINERS
+> index 53b5f7412966..a7da47393815 100644
+> --- a/MAINTAINERS
+> +++ b/MAINTAINERS
+> @@ -609,6 +609,13 @@ S:	Maintained
+>  F:	Documentation/scsi/advansys.rst
+>  F:	drivers/scsi/advansys.c
+>
+> +ADVANTECH EIO DRIVER
+> +M:	Ramiro Oliveira <ramiro.oliveira@advantech.com>
+> +S:	Maintained
+> +F:	drivers/gpio/gpio-eio.c
+> +F:	drivers/mfd/eio_core.c
+> +F:	include/linux/mfd/eio.h
+
+Shouldn't this be part of the MFD entry?
+
+> +
+>  ADVANTECH SWBTN DRIVER
+>  M:	Andrea Ho <Andrea.Ho@advantech.com.tw>
+>  L:	platform-driver-x86@vger.kernel.org
+> diff --git a/drivers/gpio/Kconfig b/drivers/gpio/Kconfig
+> index f03c05288376..696065d77235 100644
+> --- a/drivers/gpio/Kconfig
+> +++ b/drivers/gpio/Kconfig
+> @@ -295,6 +295,12 @@ config GPIO_DWAPB
+>  	  Say Y or M here to build support for the Synopsys DesignWare APB
+>  	  GPIO block.
+>
+> +config GPIO_EIO
+> +	tristate "Advantech EIO GPIO"
+> +	depends on MFD_EIO
+> +	help
+> +	  Say Y or M to build support for Advantech EIO GPIO block.
+> +
+>  config GPIO_EIC_SPRD
+>  	tristate "Spreadtrum EIC support"
+>  	depends on ARCH_SPRD || COMPILE_TEST
+> diff --git a/drivers/gpio/Makefile b/drivers/gpio/Makefile
+> index fa14581e3995..628596705c21 100644
+> --- a/drivers/gpio/Makefile
+> +++ b/drivers/gpio/Makefile
+> @@ -64,6 +64,7 @@ obj-$(CONFIG_GPIO_DLN2)			+= gpio-dln2.o
+>  obj-$(CONFIG_GPIO_DS4520)		+= gpio-ds4520.o
+>  obj-$(CONFIG_GPIO_DWAPB)		+= gpio-dwapb.o
+>  obj-$(CONFIG_GPIO_EIC_SPRD)		+= gpio-eic-sprd.o
+> +obj-$(CONFIG_GPIO_EIO)			+= gpio-eio.o
+>  obj-$(CONFIG_GPIO_ELKHARTLAKE)		+= gpio-elkhartlake.o
+>  obj-$(CONFIG_GPIO_EM)			+= gpio-em.o
+>  obj-$(CONFIG_GPIO_EN7523)		+= gpio-en7523.o
+> diff --git a/drivers/gpio/gpio-eio.c b/drivers/gpio/gpio-eio.c
+> new file mode 100644
+> index 000000000000..34e1aefd0716
+> --- /dev/null
+> +++ b/drivers/gpio/gpio-eio.c
+> @@ -0,0 +1,252 @@
+> +// SPDX-License-Identifier: GPL-2.0-only
+> +/*
+> + * GPIO driver for Advantech EIO Embedded controller.
+> + *
+> + * Copyright (C) 2025 Advantech Corporation. All rights reserved.
+> + */
+> +
+> +#include <linux/errno.h>
+> +#include <linux/gpio/driver.h>
+> +#include <linux/mfd/core.h>
+> +#include <linux/mfd/eio.h>
+> +#include <linux/module.h>
+> +
+> +#define EIO_GPIO_MAX_PINS	48
+> +#define EIO_GPIO_WRITE		0x18
+> +#define EIO_GPIO_READ		0x19
+> +
+> +struct eio_gpio_dev {
+> +	u64 avail;
+> +	int max;
+> +	struct gpio_chip chip;
+> +	struct device *dev;
+> +};
+> +
+> +static struct {
+> +	int size;
+> +	bool write;
+> +} ctrl_para[] = {
+
+Please use a common prefix for all symbols. "eio_gpio" like above is fine.
+
+> +	{ 0x01, false }, { 0x00, false }, { 0x00, false }, { 0x02, false },
+> +	{ 0x01, false }, { 0x00, false }, { 0x00, false }, { 0x00, false },
+> +	{ 0x00, false }, { 0x00, false }, { 0x00, false }, { 0x00, false },
+> +	{ 0x00, false }, { 0x00, false }, { 0x00, false }, { 0x00, false },
+> +	{ 0x01, true  }, { 0x01, true  }, { 0x02, true  }, { 0x02, true  },
+> +	{ 0x02, false }, { 0x10, false }
+> +};
+> +
+> +enum gpio_ctrl {
+> +	EIO_GPIO_STATUS = 0x0,
+> +	EIO_GPIO_GROUP_AVAIL = 0x3,
+> +	EIO_GPIO_ERROR = 0x04,
+> +	EIO_GPIO_PIN_DIR = 0x10,
+> +	EIO_GPIO_PIN_LEVEL = 0x11,
+> +	EIO_GPIO_GROUP_DIR = 0x12,
+> +	EIO_GPIO_GROUP_LEVEL = 0x13,
+> +	EIO_GPIO_MAPPING = 0x14,
+> +	EIO_GPIO_NAME = 0x15
+> +};
+> +
+> +static struct {
+> +	int group;
+> +	int port;
+> +} group_map[] = {
+> +	{ 0, 0 }, { 0, 1 },
+> +	{ 1, 0 }, { 1, 1 },
+> +	{ 2, 0 }, { 2, 1 },
+> +	{ 3, 0 }, { 3, 1 },
+> +	{ 3, 2 }, { 3, 3 },
+> +	{ 3, 4 }, { 3, 5 },
+> +	{ 3, 6 }, { 3, 7 }
+> +};
+> +
+> +static int pmc_write(struct device *mfd_dev, u8 ctrl, u8 dev_id, void *data)
+> +{
+> +	struct pmc_op op = {
+> +		 .cmd       = EIO_GPIO_WRITE,
+> +		 .control   = ctrl,
+> +		 .device_id = dev_id,
+> +		 .payload   = (u8 *)data,
+> +	};
+> +
+> +	if (ctrl >= ARRAY_SIZE(ctrl_para))
+> +		return -ENOMEM;
+> +
+> +	if (!ctrl_para[ctrl].write)
+> +		return -EINVAL;
+> +
+> +	op.size = ctrl_para[ctrl].size;
+> +
+> +	return eio_core_pmc_operation(mfd_dev, &op);
+> +}
+> +
+> +static int pmc_read(struct device *mfd_dev, u8 ctrl, u8 dev_id, void *data)
+> +{
+> +	struct pmc_op op = {
+> +		 .cmd       = EIO_GPIO_READ,
+> +		 .control   = ctrl,
+> +		 .device_id = dev_id,
+> +		 .payload   = (u8 *)data,
+> +	};
+> +
+> +	if (ctrl > ARRAY_SIZE(ctrl_para))
+> +		return -ENOMEM;
+> +
+> +	op.size = ctrl_para[ctrl].size;
+> +
+> +	return eio_core_pmc_operation(mfd_dev, &op);
+> +}
+> +
+> +static int get_dir(struct gpio_chip *chip, unsigned int offset)
+> +{
+> +	u8 dir;
+> +	int ret;
+> +
+> +	ret = pmc_read(chip->parent, EIO_GPIO_PIN_DIR, offset, &dir);
+> +	if (ret)
+> +		return ret;
+> +
+> +	return dir ? 0 : 1;
+> +}
+> +
+> +static int dir_input(struct gpio_chip *chip, unsigned int offset)
+> +{
+> +	u8 dir = 0;
+> +
+> +	return pmc_write(chip->parent, EIO_GPIO_PIN_DIR, offset, &dir);
+> +}
+> +
+> +static int dir_output(struct gpio_chip *chip, unsigned int offset, int value)
+> +{
+> +	u8 dir = 1;
+> +	u8 val = value;
+> +
+> +	pmc_write(chip->parent, EIO_GPIO_PIN_DIR, offset, &dir);
+> +
+> +	return pmc_write(chip->parent, EIO_GPIO_PIN_LEVEL, offset, &val);
+> +}
+> +
+> +static int gpio_get(struct gpio_chip *chip, unsigned int offset)
+> +{
+> +	u8 level;
+> +	int ret;
+> +
+> +	ret = pmc_read(chip->parent, EIO_GPIO_PIN_LEVEL, offset, &level);
+> +	if (ret)
+> +		return ret;
+> +
+> +	return level;
+> +}
+> +
+> +static int gpio_set(struct gpio_chip *chip, unsigned int offset, int value)
+> +{
+> +	u8 val = value;
+> +
+> +	return pmc_write(chip->parent, EIO_GPIO_PIN_LEVEL, offset, &val);
+> +}
+> +
+> +static int check_support(struct device *dev)
+> +{
+> +	u8  data;
+> +	int ret;
+> +
+> +	ret = pmc_read(dev, EIO_GPIO_STATUS, 0, &data);
+> +	if (ret)
+> +		return ret;
+> +
+> +	if ((data & 0x01) == 0)
+> +		return -EOPNOTSUPP;
+> +
+> +	return 0;
+> +}
+> +
+> +static int check_pin(struct device *dev, int pin)
+> +{
+> +	int ret;
+> +	int group, bit;
+
+Why not put all ints on the same line? Same elsewhere.
+
+> +	u16 data;
+> +
+> +	/* Get pin mapping */
+> +	ret = pmc_read(dev, EIO_GPIO_MAPPING, pin, &data);
+> +	if (ret)
+> +		return ret;
+> +
+> +	if ((data & 0xFF) > ARRAY_SIZE(group_map))
+> +		return -EINVAL;
+> +
+> +	group = group_map[data & 0xFF].group;
+> +	bit   = data >> 8;
+> +
+> +	/* Check mapped pin */
+> +	ret = pmc_read(dev, EIO_GPIO_GROUP_AVAIL, group, &data);
+> +	if (ret)
+> +		return ret;
+> +
+> +	return data & BIT(bit) ? 0 : -EOPNOTSUPP;
+> +}
+> +
+> +static int gpio_init(struct device *mfd, struct eio_gpio_dev *eio_gpio)
+> +{
+> +	int ret, i;
+> +
+> +	ret = check_support(mfd);
+> +	if (ret)
+
+This warrants an -ENODEV. We don't want to retry probe here, do we?
+
+> +		return dev_err_probe(eio_gpio->dev, ret, "GPIO not supported\n");
+> +
+> +	eio_gpio->avail = 0;
+> +
+> +	for (i = 0 ; i < EIO_GPIO_MAX_PINS ; i++) {
+> +		ret = check_pin(mfd, i);
+> +		if (ret)
+> +			continue;
+> +
+> +		eio_gpio->avail |= BIT(i);
+> +		eio_gpio->max = i + 1;
+> +	}
+> +
+> +	return eio_gpio->max ? 0 : -EOPNOTSUPP;
+> +}
+> +
+> +static int gpio_probe(struct platform_device *pdev)
+> +{
+> +	struct device *dev = &pdev->dev;
+> +	struct eio_gpio_dev *eio_gpio;
+> +	struct eio_dev *eio_dev = dev_get_drvdata(dev->parent);
+> +
+> +	if (!eio_dev)
+> +		return dev_err_probe(dev, -ENODEV, "Error contact eio_core\n");
+
+-ENODEV is used for silently bailing out of probe and telling the driver core
+to not defer. Basically it means: this device cannot be enabled on this system
+or is not present at all. This means: don't use dev_err_probe() and don't emit
+any logs. Just return -ENODEV.
+
+Though it makes me think - can this even happen at all? MFD cells won't get
+created if parent's probe() failed.
+
+> +
+> +	eio_gpio = devm_kzalloc(dev, sizeof(*eio_gpio), GFP_KERNEL);
+> +	if (!eio_gpio)
+> +		return -ENOMEM;
+> +
+> +	eio_gpio->dev = dev;
+> +
+> +	if (gpio_init(dev->parent, eio_gpio))
+
+Can you use the ret = gpio_init() pattern for consistency with the rest of the
+code?
+
+> +		return -EIO;
+> +
+> +	eio_gpio->chip.parent = dev->parent;
+> +	eio_gpio->chip.ngpio = eio_gpio->max;
+> +	eio_gpio->chip.label = KBUILD_MODNAME;
+> +	eio_gpio->chip.owner = THIS_MODULE;
+> +	eio_gpio->chip.direction_input = dir_input;
+> +	eio_gpio->chip.get = gpio_get;
+> +	eio_gpio->chip.direction_output = dir_output;
+> +	eio_gpio->chip.set = gpio_set;
+> +	eio_gpio->chip.get_direction = get_dir;
+> +	eio_gpio->chip.base = -1;
+> +	eio_gpio->chip.can_sleep = true;
+> +
+> +	return devm_gpiochip_add_data(dev, &eio_gpio->chip, eio_gpio);
+> +}
+> +
+> +static struct platform_driver gpio_driver = {
+> +	.probe  = gpio_probe,
+> +	.driver = { .name = KBUILD_MODNAME, },
+> +};
+> +
+> +module_platform_driver(gpio_driver);
+> +
+> +MODULE_AUTHOR("Wenkai Chung <wenkai.chung@advantech.com.tw>");
+> +MODULE_AUTHOR("Ramiro Oliveira <ramiro.oliveira@advantech.com>");
+> +MODULE_DESCRIPTION("GPIO driver for Advantech EIO embedded controller");
+> +MODULE_LICENSE("GPL");
+>
+> --
+> 2.43.0
+>
+>
 
 Bart
