@@ -1,596 +1,272 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CC903320A04;
-	Wed, 15 Jul 2026 13:54:07 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AE39031716D
+	for <linux-pm@vger.kernel.org>; Wed, 15 Jul 2026 14:01:01 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.180.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1784123647; cv=none; b=K+mIju3BAtQd433fq8+8NOh79dMFfeqgvQxz027AqOj53rr9goracIWGADgCDvrfz7REb1exJAVpw3WwBt6xiVYmBG7Lkd8DKMXDkH4WFBpE1S9JJPh9/Jr8/Uh+O2iwtox4eAQGLUhbH5mtlF0ezXE/kf+GcxldkYKSV/BlQeg=
+	t=1784124063; cv=none; b=OmvLvlpdHmXry7IU5JH+G3dyEg2EihohKc5/tAmHMI3fnzrddZKGsgIYnWiGBbolmhSKSmYnDVLDV5gAoD9Rgak1fbNhyxoGGvfxhD/4pC21tlfw77bNRmoxu9EnzMi4O0tbZdvhBGn3FzGyTf2KJDxqsn3DkP5DKz1PadjpUm0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1784123647; c=relaxed/simple;
-	bh=7MDkv8ovVEQGet4MC8hjJGZfmKYJv8BP2lv/rJrUSGg=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=fQFDQsD/Z4aIUxPjgyK+zVgucg3IDaTy8w/b+XSE/EjZ8wss2MUSp6kfNBOIYGkB11HE8lyXTVmJpw9dVGal8H+d523rTakTggLpPhMQ5qHTt7Jq8K9ncdWljo7/m2vRUnDBokv/2IYb+xfp/OjxWsnZRSV+zPwSxmYY7rtU14Y=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=ZWBfBIiE; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1784124063; c=relaxed/simple;
+	bh=qVOdtxzIBYmdAG1iXlq25IWbzv8cZ/3iHmmI7Ynl5+4=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=NJa0/qlvyzqXPbsYP9H5DYk3075Z/ns2acRGafbhx8bQquelS7qVwB+DJX6CERLR28L2J3kWpcfrc6zeV/STKzcB8gsPv4xPeLZfjAODPxVQ2Dgg51FFrc0RdIxOPY+PPcwKZAbnvXNWlOeknkD6P7DcDqx1eLplcrPSFfP8qdw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=AAIrtIHe; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=e1azRXsq; arc=none smtp.client-ip=205.220.180.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="ZWBfBIiE"
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 9193BC2BCFA;
-	Wed, 15 Jul 2026 13:54:07 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1784123647;
-	bh=7MDkv8ovVEQGet4MC8hjJGZfmKYJv8BP2lv/rJrUSGg=;
-	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
-	b=ZWBfBIiEg+aSwAVzVi9L5VM/bS0LXSqTaAU7OA6aYvQsmlku9s9JxewVbGF/S9k0H
-	 yi8TF3iDlU1Mp/cHZx+hQM3uEbOM4hJxdphMW/Td5glPg37jh0TrflFPard6J/F2Nn
-	 6y8YmarNLmjW+SUwzJ0VGkEEHyE+anzBP81t9u/DjkMOV2tfoXIA7mm6899Ej1kEpU
-	 VFKJlcvBm3wo0aobZgOCXulPLvXdzchgpJkzqQYQvSVaMXypV1QZk1S6UOBXF+IP+j
-	 FDIakRHkiy6H+itdbUwghNSlO29x6Tt9ubinmfZ84+SkgGb7fc/wa9C4T2d9imEiSZ
-	 bKY/mgIfxwL0A==
-Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7E8DEC44501;
-	Wed, 15 Jul 2026 13:54:07 +0000 (UTC)
-From: Nikolai Burov via B4 Relay <devnull+nikolai.burov.jolla.com@kernel.org>
-Date: Wed, 15 Jul 2026 16:54:07 +0300
-Subject: [PATCH v2 3/3] pmdomain: mediatek: Add support for MT6858 SoC
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="AAIrtIHe";
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="e1azRXsq"
+Received: from pps.filterd (m0279871.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 66FBdUeV3697872
+	for <linux-pm@vger.kernel.org>; Wed, 15 Jul 2026 14:01:00 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
+	AkI9ZljfEAoSPZamC8DXcGGfqQBFXrQhqMpAP3gbVLc=; b=AAIrtIHeHH5286oP
+	4vA2We19ORsDYQebbfNvfHwlfyA2Yth67klVdkpgJAPXwFaIjlrCeWxW9yWF+Tct
+	psND1AxMxgMdTML3IbD3ui3+pu9MXvgJpMAX0iStAMYtOr8jT/J88aaCN5Fm53kZ
+	np53/l78oOBlBA9rc1wNuCwV1+7Pg7vrKA+m7Z0ft1142zk8AarAMawTyV89dX6X
+	a4LGGz6QUuz8P1+9P1TEYelkmfZSDhI5waW9uFRwEmDhyC3GmxtfOZGYQtYh46A2
+	bZbu3TBfZyYjmYnKaC/BSw7WlQ/6JnIXU3ppt+YvW2jGwuPaKVlTtjsuTofNye7P
+	bYQWNA==
+Received: from mail-pf1-f199.google.com (mail-pf1-f199.google.com [209.85.210.199])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4fe03vjn3s-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <linux-pm@vger.kernel.org>; Wed, 15 Jul 2026 14:01:00 +0000 (GMT)
+Received: by mail-pf1-f199.google.com with SMTP id d2e1a72fcca58-84a251c2e3eso1049608b3a.1
+        for <linux-pm@vger.kernel.org>; Wed, 15 Jul 2026 07:01:00 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=oss.qualcomm.com; s=google; t=1784124059; x=1784728859; darn=vger.kernel.org;
+        h=content-transfer-encoding:content-type:in-reply-to:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=AkI9ZljfEAoSPZamC8DXcGGfqQBFXrQhqMpAP3gbVLc=;
+        b=e1azRXsqAdUVWvIY6AhJNaiDyFYgi1UvU10ct6q6TTvm6NDUFPN8qVl6s95Q1M1SbF
+         El6vUgR5HzD99upgnqV761onuHhMTo9Cf888aOhYG4NuyUlZapIAHgLAdKgA/TFRlw7v
+         kCRvt+7OzREcI48FU7wLX9Uxd/OdZ7UESV9iY0ebU1oea2/CEJMh7ZTZsvI6FAGVDvvR
+         /sUvBHUu/yr2ptiiPvb82qPa38LJLbL0Jka1YFohw5w8DGVQVzi5p14XCoIaf2azaT8K
+         7ygOEZ4DtUooysol1OQhTWIghgeTP4bD8XqSlZAUFSHmlspDsxgl132BbpFftM4NgSt0
+         16gw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1784124059; x=1784728859;
+        h=content-transfer-encoding:content-type:in-reply-to:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=AkI9ZljfEAoSPZamC8DXcGGfqQBFXrQhqMpAP3gbVLc=;
+        b=iSVQbU1QV6gn0FM36ZI8UhoW63yW7GH/3Ut4Bt1yH+eAHDGp0RZ33rTcY9Y6Y6SxXH
+         WcQZEkhr+UJ05pENwZhDdNTP3Yfgtby5EknSgBbp66poCuraoEErHhIje4QDAxIe5Qdd
+         6WIXJBNc3iYNeygwaugkx0S0QJmNEIqoDKyLJON288jBDvJKC3Jp99OLkFmaC4yIqstT
+         Rs9mzxY2jXEVtuvG0c0jEKvVbYYLiQFf+uSBN5jmXzGctN+fEMEHr1rhWWw4Eu+5Ijt3
+         1KXMEdjPmD5XK005NhBoI6adfLqULAJX64ss7casCNV8Xsm/DcbEx9T2OtJGkBno8N61
+         IsyA==
+X-Gm-Message-State: AOJu0YxF8Ywtt1uIeIlmy051L74IxyTMthXec3dI0qVLbuAMZnI8Y9kV
+	edDn9N4pWokYElWWdOjPoDspn7tmWh8Up7wL4TqrQP3qLwzjUufe1dowZ2hIfS1uuw0g2Ja2Eos
+	4ELTmAzJaDHMVUpjG+ITMj23r+I6+Jb5Ay3jkZDNDCfZrUMIGh1cqY6Y1X/C9hA==
+X-Gm-Gg: AfdE7cmkyWlB5zFE5jQI4K5oGg/lVv1RDd+5muekdSa8Cja/ZvlVkEUnJq3Ks0cPFmL
+	US0pQ3DC8YW7l13NLWf6/oAH3Zzw4ZzG9vdOuXPWWxnJfGjeNKcHrhzqUf4mQSCOJrUJaxugVwV
+	cNL7aaDQRQKyOZe31eHO0SY/LA+vw0sjOEQdwYzXCLDt8Ki/dsOxgrNGavUWNj5/KvEaUL9yXmb
+	wAEC0iVxDDvpgRRtO3mizOhBhU1Jsmz+VLTshakSzaPB0j1JuaBrRoC8qnxxLw93LH1iRFibHx9
+	VhBE6H0e0pv6Tj12FSebJTIMqWDnxvtz/0QKFuL2q1Q7tnIgFWJ/YDLvcI9R3BlsEZgVI33n+sY
+	U2cRMgnjfrj71NJSDpZPALOnSX9f9FtRqWsCtKUhV
+X-Received: by 2002:a05:6a00:a14:b0:848:452d:9a14 with SMTP id d2e1a72fcca58-8487037f5c3mr21136249b3a.16.1784124059322;
+        Wed, 15 Jul 2026 07:00:59 -0700 (PDT)
+X-Received: by 2002:a05:6a00:a14:b0:848:452d:9a14 with SMTP id d2e1a72fcca58-8487037f5c3mr21136176b3a.16.1784124058715;
+        Wed, 15 Jul 2026 07:00:58 -0700 (PDT)
+Received: from [10.239.133.197] ([114.94.8.21])
+        by smtp.gmail.com with ESMTPSA id 41be03b00d2f7-cb258eb82desm273331a12.2.2026.07.15.07.00.53
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Wed, 15 Jul 2026 07:00:57 -0700 (PDT)
+Message-ID: <96c49e02-12bd-4f2b-b4bd-ccb98d2e530e@oss.qualcomm.com>
+Date: Wed, 15 Jul 2026 22:00:50 +0800
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v2] cpufreq: amd-pstate-ut: fix null pointer dereference
+To: Qianheng Peng <pengqh1@chinatelecom.cn>, ray.huang@amd.com,
+        mario.limonciello@amd.com, perry.yuan@amd.com, kprateek.nayak@amd.com,
+        rafael@kernel.org, viresh.kumar@linaro.org, skhan@linuxfoundation.org,
+        li.meng@amd.com
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+        wangxb12@chinatelecom.cn, xiongl24@chinatelecom.cn,
+        zhangar@chinatelecom.cn, zhongqiu.han@oss.qualcomm.com
+References: <1784108124-19988-1-git-send-email-pengqh1@chinatelecom.cn>
+Content-Language: en-US
+From: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>
+In-Reply-To: <1784108124-19988-1-git-send-email-pengqh1@chinatelecom.cn>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260715-mt6858-pmdomain-v2-3-6293e87fc093@jolla.com>
-References: <20260715-mt6858-pmdomain-v2-0-6293e87fc093@jolla.com>
-In-Reply-To: <20260715-mt6858-pmdomain-v2-0-6293e87fc093@jolla.com>
-To: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
- Conor Dooley <conor+dt@kernel.org>, 
- Matthias Brugger <matthias.bgg@gmail.com>, 
- AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>, 
- Ulf Hansson <ulfh@kernel.org>
-Cc: Matthias Brugger <mbrugger@suse.com>, devicetree@vger.kernel.org, 
- linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
- linux-mediatek@lists.infradead.org, linux-pm@vger.kernel.org, 
- Nikolai Burov <nikolai.burov@jolla.com>, 
- Nikolai Burov <nikolai.burov+review@abscue.de>
-X-Mailer: b4 0.15.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1784123646; l=18360;
- i=nikolai.burov@jolla.com; s=20260707; h=from:subject:message-id;
- bh=WhA/Hm8uQtSZcLQmlfL/zhG/ZOyaAbm+i/VIxvjvF5c=;
- b=bLM1rTPC28BDu4GYQbBVEj1mvsm7ezzHwe5xAygaXACm/0Pqz6/F+fWJp02SwipG4p57pDtDg
- V5D3g7srqDhAFjs/NMSyz7mgTsrq5epKFSHZ+V/OKPR5E/LnKQuNWpG
-X-Developer-Key: i=nikolai.burov@jolla.com; a=ed25519;
- pk=yzpa+PD+ovHUFMIOBA9o2QqGwI110jM6hdGHLc7jtoQ=
-X-Endpoint-Received: by B4 Relay for nikolai.burov@jolla.com/20260707 with
- auth_id=859
-X-Original-From: Nikolai Burov <nikolai.burov@jolla.com>
-Reply-To: nikolai.burov@jolla.com
+X-Authority-Analysis: v=2.4 cv=Ife3n2qa c=1 sm=1 tr=0 ts=6a57929c cx=c_pps
+ a=WW5sKcV1LcKqjgzy2JUPuA==:117 a=Uz3yg00KUFJ2y2WijEJ4bw==:17
+ a=IkcTkHD0fZMA:10 a=RAioF0-LDSMA:10 a=s4-Qcg_JpJYA:10
+ a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=3WHJM1ZQz_JShphwDgj5:22
+ a=VwQbUJbxAAAA:8 a=XyLTfj0TmM6u0BRaSL4A:9 a=QEXdDO2ut3YA:10
+ a=OpyuDcXvxspvyRM73sMx:22
+X-Proofpoint-ORIG-GUID: zECjxh3BrSpuyqHzNjwXB7vlIN-97fKE
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzE1MDEzOSBTYWx0ZWRfX12ZHkMZIQE5X
+ C1cK0vN9Ito5s+uPZY89EEOcIFsIZKYos0A0qJ56NbihRfXivdEOM6EKridSVgpdS7dAY++t8KO
+ kaLnktO5UUnO4xe8wBn2VShibbQlE56/dndbyBJHrzKqpSKnJ7RVWkMenf1+m59GNOgnilAJ40K
+ sjUgCaC3Dx6MKAsoXF9q5f9Qe9YsJblgIOii4yJ1Dgb3cdFWZFCIs0trFy5anjENlxUMnduFpvu
+ Sy8J640rPyeBKlNh+nnEklylmpaGZZawmL6e2QzrMt0uyI9NFoFiJpqaZCsc4smKIcFvLDdHUxT
+ 8HzHMnKic5Sk4zSh84kgViR6hJ/Yy6k3rlIftKHq/imc35C7x5i/ei9uHfTROdMXlNfYPHTRVQE
+ ikyg6+o6jgNtoKblBD9RiBLiTdCxOYqONafB4b0A1Z13CIjUorXYDxVZ3qFYPrLdyDGJNFXe8iV
+ E7k076YFyuUWOew8n6A==
+X-Proofpoint-Spam-Info: AW1haW4tMjYwNzE1MDEzOSBTYWx0ZWRfX+a9FT1L4zuTe
+ 79sLxeLRjaaEFGMYYQN+vo+lWkLF4Q0Vl2zc5b9JNfiEJQUM8rkoHSsF04Z4slP7L0BazVuwczf
+ svw+Dja6qcov7spNeaQ9FG7laF4Xo3U=
+X-Proofpoint-GUID: zECjxh3BrSpuyqHzNjwXB7vlIN-97fKE
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.134,FMLib:17.12.100.49
+ definitions=2026-07-15_02,2026-07-15_02,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ spamscore=0 suspectscore=0 bulkscore=0 clxscore=1015 adultscore=0
+ impostorscore=0 malwarescore=0 priorityscore=1501 phishscore=0
+ lowpriorityscore=0 classifier=typeunknown authscore=0 authtc= authcc=
+ route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2606150000
+ definitions=main-2607150139
 
-From: Nikolai Burov <nikolai.burov@jolla.com>
+Hi Qianheng,
 
-Add support for the power domains found in the MediaTek MT6858 SoC.
+On 7/15/2026 5:35 PM, Qianheng Peng wrote:
+> The crash issue may occur when insmod amd_pstate_ut module on intel platform.
+> 
+>     amd_pstate_ut: 1    amd_pstate_ut_acpi_cpc_valid  success!
+>     amd_pstate_ut: 2    amd_pstate_ut_check_enabled   success!
+>     BUG: kernel NULL pointer dereference, address: 0000000000000080
+>     #PF: supervisor read access in kernel mode
+>     #PF: error_code(0x0000) - not-present page
+>     PGD 0 P4D 0
+>     Oops: 0000 [#1] SMP NOPTI
+>     CPU: 0 PID: 20300 Comm: modprobe
+>     Kdump: loaded Tainted: G O 6.6.0-0010.rc1.ctl4.x86_64 #1
+>     Hardware name: FiberHome R2200 V5/Xeon Boards, BIOS 3.1a 02/24/2020
+>     RIP: 0010:amd_pstate_ut_check_perf+0x141/0x280 [amd_pstate_ut]
+>     Call Trace:
+>      <TASK>
+>      amd_pstate_ut_init+0x1b/0xff0 [amd_pstate_ut]
+>      ? __pfx_amd_pstate_ut_init+0x10/0x10 [amd_pstate_ut]
+>      do_one_initcall+0x42/0x2e0
+>      ? kmalloc_trace+0x26/0x90
+>      do_init_module+0x60/0x240
+>      __se_sys_init_module+0x185/0x1c0
+>      do_syscall_64+0x62/0x190
+>      entry_SYSCALL_64_after_hwframe+0x76/0x7e
+>      </TASK>
+> 
+> Add invalidation check of cpudata in amd_pstate_ut_check_perf() and
+> amd_pstate_ut_check_freq() to avoid unpredicated null pointer dereference.
+> Otherwise, add driver name detection for amd_pstate_ut driver to prevent it
 
-Reviewed-by: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
-Signed-off-by: Nikolai Burov <nikolai.burov@jolla.com>
----
- drivers/pmdomain/mediatek/mt6858-pm-domains.h | 466 ++++++++++++++++++++++++++
- drivers/pmdomain/mediatek/mtk-pm-domains.c    |   5 +
- drivers/pmdomain/mediatek/mtk-pm-domains.h    |   5 +
- 3 files changed, 476 insertions(+)
+The driver-name check in amd_pstate_ut_init() is the actual fix: it
+prevents this module from running its test cases on non-AMD platforms.
 
-diff --git a/drivers/pmdomain/mediatek/mt6858-pm-domains.h b/drivers/pmdomain/mediatek/mt6858-pm-domains.h
-new file mode 100644
-index 000000000000..177b2e86ab1e
---- /dev/null
-+++ b/drivers/pmdomain/mediatek/mt6858-pm-domains.h
-@@ -0,0 +1,466 @@
-+/* SPDX-License-Identifier: GPL-2.0-only */
-+/*
-+ * Copyright (c) 2025 MediaTek Inc.
-+ *                    KY Liu <ky.liu@mediatek.com>
-+ * Copyright (c) 2026 Jolla Mobile Ltd
-+ *                    Nikolai Burov <nikolai.burov@jolla.com>
-+ */
-+
-+#ifndef __SOC_MEDIATEK_MT6858_PM_DOMAINS_H
-+#define __SOC_MEDIATEK_MT6858_PM_DOMAINS_H
-+
-+#include "mtk-pm-domains.h"
-+#include <dt-bindings/power/mediatek,mt6858-power.h>
-+
-+/* TOP_AXI registers */
-+#define MT6858_TOP_AXI_PROT_EN_MMSYS_STA_0_SET		0x0c14
-+#define MT6858_TOP_AXI_PROT_EN_MMSYS_STA_0_CLR		0x0c18
-+#define MT6858_TOP_AXI_PROT_EN_MMSYS_STA_0_RDY		0x0c1c
-+
-+#define MT6858_TOP_AXI_PROT_EN_MMSYS_STA_0_DIS0		(BIT(0) | BIT(1) | BIT(18))
-+#define MT6858_TOP_AXI_PROT_EN_MMSYS_STA_0_ISP_IPE	BIT(2)
-+#define MT6858_TOP_AXI_PROT_EN_MMSYS_STA_0_ISP_IMG1	BIT(3)
-+#define MT6858_TOP_AXI_PROT_EN_MMSYS_STA_0_VEN0		BIT(12)
-+#define MT6858_TOP_AXI_PROT_EN_MMSYS_STA_0_VDE0		BIT(20)
-+#define MT6858_TOP_AXI_PROT_EN_MMSYS_STA_0_CAM_MAIN	(BIT(30) | BIT(31))
-+
-+#define MT6858_TOP_AXI_PROT_EN_MMSYS_STA_1_SET		0x0c24
-+#define MT6858_TOP_AXI_PROT_EN_MMSYS_STA_1_CLR		0x0c28
-+#define MT6858_TOP_AXI_PROT_EN_MMSYS_STA_1_RDY		0x0c2c
-+
-+#define MT6858_TOP_AXI_PROT_EN_MMSYS_STA_1_ISP_IMG1	BIT(7)
-+#define MT6858_TOP_AXI_PROT_EN_MMSYS_STA_1_ISP_IPE	BIT(8)
-+#define MT6858_TOP_AXI_PROT_EN_MMSYS_STA_1_CAM_MAIN	(BIT(9) | BIT(10))
-+#define MT6858_TOP_AXI_PROT_EN_MMSYS_STA_1_VEN0		BIT(12)
-+#define MT6858_TOP_AXI_PROT_EN_MMSYS_STA_1_VDE0		BIT(13)
-+#define MT6858_TOP_AXI_PROT_EN_MMSYS_STA_1_MM_INFRA	(GENMASK(3, 1) | BIT(6))
-+#define MT6858_TOP_AXI_PROT_EN_MMSYS_STA_1_MM_INFRA_2ND	(BIT(0) | BIT(5) | GENMASK(15, 7))
-+
-+#define MT6858_TOP_AXI_PROT_EN_INFRASYS_STA_0_SET	0x0c44
-+#define MT6858_TOP_AXI_PROT_EN_INFRASYS_STA_0_CLR	0x0c48
-+#define MT6858_TOP_AXI_PROT_EN_INFRASYS_STA_0_RDY	0x0c4c
-+
-+#define MT6858_TOP_AXI_PROT_EN_INFRASYS_STA_0_CONN	BIT(8)
-+#define MT6858_TOP_AXI_PROT_EN_INFRASYS_STA_0_MM_INFRA	BIT(16)
-+
-+#define MT6858_TOP_AXI_PROT_EN_INFRASYS_STA_1_SET	0x0c54
-+#define MT6858_TOP_AXI_PROT_EN_INFRASYS_STA_1_CLR	0x0c58
-+#define MT6858_TOP_AXI_PROT_EN_INFRASYS_STA_1_RDY	0x0c5c
-+
-+#define MT6858_TOP_AXI_PROT_EN_INFRASYS_STA_1_MM_INFRA	BIT(11)
-+#define MT6858_TOP_AXI_PROT_EN_INFRASYS_STA_1_CONN	BIT(12)
-+
-+#define MT6858_TOP_AXI_PROT_EN_EMISYS_STA_0_SET		0x0c64
-+#define MT6858_TOP_AXI_PROT_EN_EMISYS_STA_0_CLR		0x0c68
-+#define MT6858_TOP_AXI_PROT_EN_EMISYS_STA_0_RDY		0x0c6c
-+
-+#define MT6858_TOP_AXI_PROT_EN_EMISYS_STA_0_MM_INFRA	(BIT(20) | BIT(21))
-+
-+#define MT6858_TOP_AXI_PROT_EN_PERISYS_STA_0_SET	0x0c84
-+#define MT6858_TOP_AXI_PROT_EN_PERISYS_STA_0_CLR	0x0c88
-+#define MT6858_TOP_AXI_PROT_EN_PERISYS_STA_0_RDY	0x0c8c
-+
-+#define MT6858_TOP_AXI_PROT_EN_PERISYS_STA_0_AUDIO	BIT(6)
-+#define MT6858_TOP_AXI_PROT_EN_PERISYS_STA_0_SSUSB	BIT(7)
-+
-+#define MT6858_TOP_AXI_PROT_EN_MCU_STA_0_SET		0x0c94
-+#define MT6858_TOP_AXI_PROT_EN_MCU_STA_0_CLR		0x0c98
-+#define MT6858_TOP_AXI_PROT_EN_MCU_STA_0_RDY		0x0c9c
-+
-+#define MT6858_TOP_AXI_PROT_EN_MCU_STA_0_CONN		BIT(1)
-+#define MT6858_TOP_AXI_PROT_EN_MCU_STA_0_CONN_2ND	BIT(0)
-+
-+/* {IMG,IPE,CAM}_SUBx registers */
-+#define MT6858_SUBx_PROT_EN_SET				0x03c4
-+#define MT6858_SUBx_PROT_EN_CLR				0x03c8
-+#define MT6858_SUBx_PROT_EN_STA				0x03cc
-+
-+#define MT6858_IMG_SUB0_PROT_EN_SMI_ISP_IMG1		(BIT(0) | BIT(1))
-+
-+#define MT6858_IPE_SUB0_PROT_EN_SMI_ISP_IPE		(BIT(0) | BIT(1))
-+
-+#define MT6858_CAM_SUB0_PROT_EN_SMI_CAM_MAIN		BIT(0)
-+#define MT6858_CAM_SUB0_PROT_EN_SMI_CAM_SUBB		BIT(1)
-+
-+#define MT6858_CAM_SUB1_PROT_EN_SMI_CAM_MAIN		BIT(0)
-+#define MT6858_CAM_SUB1_PROT_EN_SMI_CAM_SUBA		BIT(1)
-+
-+/* VLP_AXI registers */
-+#define MT6858_VLP_AXI_PROT_EN_SET			0x0214
-+#define MT6858_VLP_AXI_PROT_EN_CLR			0x0218
-+#define MT6858_VLP_AXI_PROT_EN_STA			0x021c
-+
-+#define MT6858_VLP_AXI_PROT_EN_MM_PROC			BIT(8)
-+#define MT6858_VLP_AXI_PROT_EN_MM_PROC_2ND		(BIT(9) | BIT(10))
-+
-+/* PWR_CON registers */
-+#define MT6858_PWR_ACK					BIT(30)
-+#define MT6858_PWR_ACK_2ND				BIT(31)
-+
-+static enum scpsys_bus_prot_block scpsys_bus_prot_blocks_mt6858[] = {
-+	BUS_PROT_BLOCK_INFRA,
-+	BUS_PROT_BLOCK_IMG_SUB0,
-+	BUS_PROT_BLOCK_CAM_SUB1,
-+	BUS_PROT_BLOCK_CAM_SUB0,
-+	BUS_PROT_BLOCK_IPE_SUB0,
-+	BUS_PROT_BLOCK_VLP,
-+};
-+
-+static const struct scpsys_domain_data scpsys_domain_data_mt6858[] = {
-+	[MT6858_POWER_DOMAIN_MD] = {
-+		.name = "md",
-+		/*
-+		 * Note: the PWR_ACK_2ND bit is not used for the modem domain.
-+		 * Skip it and fall back to checking the 1st bit twice.
-+		 */
-+		.sta_mask = MT6858_PWR_ACK,
-+		.ctl_offs = 0xe00,
-+		.pwr_sta_offs = 0xe00,
-+		.pwr_sta2nd_offs = 0xe00,
-+		.ext_buck_iso_offs = 0xf20,
-+		.ext_buck_iso_mask = GENMASK(1, 0),
-+		.caps = MTK_SCPD_MODEM_SECURE_PWRSEQ | MTK_SCPD_EXT_BUCK_ISO |
-+			MTK_SCPD_KEEP_DEFAULT_OFF,
-+	},
-+	[MT6858_POWER_DOMAIN_CONN] = {
-+		.name = "conn",
-+		.sta_mask = MT6858_PWR_ACK,
-+		.sta2nd_mask = MT6858_PWR_ACK_2ND,
-+		.ctl_offs = 0xe04,
-+		.pwr_sta_offs = 0xe04,
-+		.pwr_sta2nd_offs = 0xe04,
-+		.bp_cfg = {
-+			BUS_PROT_WR_IGN(INFRA,
-+					MT6858_TOP_AXI_PROT_EN_MCU_STA_0_CONN,
-+					MT6858_TOP_AXI_PROT_EN_MCU_STA_0_SET,
-+					MT6858_TOP_AXI_PROT_EN_MCU_STA_0_CLR,
-+					MT6858_TOP_AXI_PROT_EN_MCU_STA_0_RDY),
-+			BUS_PROT_WR_IGN(INFRA,
-+					MT6858_TOP_AXI_PROT_EN_INFRASYS_STA_1_CONN,
-+					MT6858_TOP_AXI_PROT_EN_INFRASYS_STA_1_SET,
-+					MT6858_TOP_AXI_PROT_EN_INFRASYS_STA_1_CLR,
-+					MT6858_TOP_AXI_PROT_EN_INFRASYS_STA_1_RDY),
-+			BUS_PROT_WR_IGN(INFRA,
-+					MT6858_TOP_AXI_PROT_EN_MCU_STA_0_CONN_2ND,
-+					MT6858_TOP_AXI_PROT_EN_MCU_STA_0_SET,
-+					MT6858_TOP_AXI_PROT_EN_MCU_STA_0_CLR,
-+					MT6858_TOP_AXI_PROT_EN_MCU_STA_0_RDY),
-+			BUS_PROT_WR_IGN(INFRA,
-+					MT6858_TOP_AXI_PROT_EN_INFRASYS_STA_0_CONN,
-+					MT6858_TOP_AXI_PROT_EN_INFRASYS_STA_0_SET,
-+					MT6858_TOP_AXI_PROT_EN_INFRASYS_STA_0_CLR,
-+					MT6858_TOP_AXI_PROT_EN_INFRASYS_STA_0_RDY),
-+		},
-+		.caps = MTK_SCPD_KEEP_DEFAULT_OFF,
-+	},
-+	[MT6858_POWER_DOMAIN_AUDIO] = {
-+		.name = "audio",
-+		.sta_mask = MT6858_PWR_ACK,
-+		.sta2nd_mask = MT6858_PWR_ACK_2ND,
-+		.ctl_offs = 0xe18,
-+		.pwr_sta_offs = 0xe18,
-+		.pwr_sta2nd_offs = 0xe18,
-+		.sram_pdn_bits = BIT(8),
-+		.sram_pdn_ack_bits = BIT(12),
-+		.bp_cfg = {
-+			BUS_PROT_WR_IGN(INFRA,
-+					MT6858_TOP_AXI_PROT_EN_PERISYS_STA_0_AUDIO,
-+					MT6858_TOP_AXI_PROT_EN_PERISYS_STA_0_SET,
-+					MT6858_TOP_AXI_PROT_EN_PERISYS_STA_0_CLR,
-+					MT6858_TOP_AXI_PROT_EN_PERISYS_STA_0_RDY),
-+		},
-+	},
-+	[MT6858_POWER_DOMAIN_ISP_IMG1] = {
-+		.name = "isp-img1",
-+		.sta_mask = MT6858_PWR_ACK,
-+		.sta2nd_mask = MT6858_PWR_ACK_2ND,
-+		.ctl_offs = 0xe28,
-+		.pwr_sta_offs = 0xe28,
-+		.pwr_sta2nd_offs = 0xe28,
-+		.sram_pdn_bits = BIT(8),
-+		.sram_pdn_ack_bits = BIT(12),
-+		.bp_cfg = {
-+			BUS_PROT_WR_IGN(INFRA,
-+					MT6858_TOP_AXI_PROT_EN_MMSYS_STA_0_ISP_IMG1,
-+					MT6858_TOP_AXI_PROT_EN_MMSYS_STA_0_SET,
-+					MT6858_TOP_AXI_PROT_EN_MMSYS_STA_0_CLR,
-+					MT6858_TOP_AXI_PROT_EN_MMSYS_STA_0_RDY),
-+			BUS_PROT_WR_IGN(INFRA,
-+					MT6858_TOP_AXI_PROT_EN_MMSYS_STA_1_ISP_IMG1,
-+					MT6858_TOP_AXI_PROT_EN_MMSYS_STA_1_SET,
-+					MT6858_TOP_AXI_PROT_EN_MMSYS_STA_1_CLR,
-+					MT6858_TOP_AXI_PROT_EN_MMSYS_STA_1_RDY),
-+			BUS_PROT_WR_IGN(IMG_SUB0,
-+					MT6858_IMG_SUB0_PROT_EN_SMI_ISP_IMG1,
-+					MT6858_SUBx_PROT_EN_SET,
-+					MT6858_SUBx_PROT_EN_CLR,
-+					MT6858_SUBx_PROT_EN_STA),
-+		},
-+		.caps = MTK_SCPD_KEEP_DEFAULT_OFF,
-+	},
-+	[MT6858_POWER_DOMAIN_ISP_IMG2] = {
-+		.name = "isp-img2",
-+		.sta_mask = MT6858_PWR_ACK,
-+		.sta2nd_mask = MT6858_PWR_ACK_2ND,
-+		.ctl_offs = 0xe2c,
-+		.pwr_sta_offs = 0xe2c,
-+		.pwr_sta2nd_offs = 0xe2c,
-+		.sram_pdn_bits = BIT(8),
-+		.sram_pdn_ack_bits = BIT(12),
-+		.caps = MTK_SCPD_KEEP_DEFAULT_OFF,
-+	},
-+	[MT6858_POWER_DOMAIN_ISP_IPE] = {
-+		.name = "isp-ipe",
-+		.sta_mask = MT6858_PWR_ACK,
-+		.sta2nd_mask = MT6858_PWR_ACK_2ND,
-+		.ctl_offs = 0xe30,
-+		.pwr_sta_offs = 0xe30,
-+		.pwr_sta2nd_offs = 0xe30,
-+		.sram_pdn_bits = BIT(8),
-+		.sram_pdn_ack_bits = BIT(12),
-+		.bp_cfg = {
-+			BUS_PROT_WR_IGN(INFRA,
-+					MT6858_TOP_AXI_PROT_EN_MMSYS_STA_0_ISP_IPE,
-+					MT6858_TOP_AXI_PROT_EN_MMSYS_STA_0_SET,
-+					MT6858_TOP_AXI_PROT_EN_MMSYS_STA_0_CLR,
-+					MT6858_TOP_AXI_PROT_EN_MMSYS_STA_0_RDY),
-+			BUS_PROT_WR_IGN(INFRA,
-+					MT6858_TOP_AXI_PROT_EN_MMSYS_STA_1_ISP_IPE,
-+					MT6858_TOP_AXI_PROT_EN_MMSYS_STA_1_SET,
-+					MT6858_TOP_AXI_PROT_EN_MMSYS_STA_1_CLR,
-+					MT6858_TOP_AXI_PROT_EN_MMSYS_STA_1_RDY),
-+			BUS_PROT_WR_IGN(IPE_SUB0,
-+					MT6858_IPE_SUB0_PROT_EN_SMI_ISP_IPE,
-+					MT6858_SUBx_PROT_EN_SET,
-+					MT6858_SUBx_PROT_EN_CLR,
-+					MT6858_SUBx_PROT_EN_STA),
-+		},
-+		.caps = MTK_SCPD_KEEP_DEFAULT_OFF,
-+	},
-+	[MT6858_POWER_DOMAIN_VDE0] = {
-+		.name = "vde0",
-+		.sta_mask = MT6858_PWR_ACK,
-+		.sta2nd_mask = MT6858_PWR_ACK_2ND,
-+		.ctl_offs = 0xe34,
-+		.pwr_sta_offs = 0xe34,
-+		.pwr_sta2nd_offs = 0xe34,
-+		.sram_pdn_bits = BIT(8),
-+		.sram_pdn_ack_bits = BIT(12),
-+		.bp_cfg = {
-+			BUS_PROT_WR_IGN(INFRA,
-+					MT6858_TOP_AXI_PROT_EN_MMSYS_STA_0_VDE0,
-+					MT6858_TOP_AXI_PROT_EN_MMSYS_STA_0_SET,
-+					MT6858_TOP_AXI_PROT_EN_MMSYS_STA_0_CLR,
-+					MT6858_TOP_AXI_PROT_EN_MMSYS_STA_0_RDY),
-+			BUS_PROT_WR_IGN(INFRA,
-+					MT6858_TOP_AXI_PROT_EN_MMSYS_STA_1_VDE0,
-+					MT6858_TOP_AXI_PROT_EN_MMSYS_STA_1_SET,
-+					MT6858_TOP_AXI_PROT_EN_MMSYS_STA_1_CLR,
-+					MT6858_TOP_AXI_PROT_EN_MMSYS_STA_1_RDY),
-+		},
-+	},
-+	[MT6858_POWER_DOMAIN_VEN0] = {
-+		.name = "ven0",
-+		.sta_mask = MT6858_PWR_ACK,
-+		.sta2nd_mask = MT6858_PWR_ACK_2ND,
-+		.ctl_offs = 0xe3c,
-+		.pwr_sta_offs = 0xe3c,
-+		.pwr_sta2nd_offs = 0xe3c,
-+		.sram_pdn_bits = BIT(8),
-+		.sram_pdn_ack_bits = BIT(12),
-+		.bp_cfg = {
-+			BUS_PROT_WR_IGN(INFRA,
-+					MT6858_TOP_AXI_PROT_EN_MMSYS_STA_0_VEN0,
-+					MT6858_TOP_AXI_PROT_EN_MMSYS_STA_0_SET,
-+					MT6858_TOP_AXI_PROT_EN_MMSYS_STA_0_CLR,
-+					MT6858_TOP_AXI_PROT_EN_MMSYS_STA_0_RDY),
-+			BUS_PROT_WR_IGN(INFRA,
-+					MT6858_TOP_AXI_PROT_EN_MMSYS_STA_1_VEN0,
-+					MT6858_TOP_AXI_PROT_EN_MMSYS_STA_1_SET,
-+					MT6858_TOP_AXI_PROT_EN_MMSYS_STA_1_CLR,
-+					MT6858_TOP_AXI_PROT_EN_MMSYS_STA_1_RDY),
-+		},
-+	},
-+	[MT6858_POWER_DOMAIN_CAM_MAIN] = {
-+		.name = "cam-main",
-+		.sta_mask = MT6858_PWR_ACK,
-+		.sta2nd_mask = MT6858_PWR_ACK_2ND,
-+		.ctl_offs = 0xe44,
-+		.pwr_sta_offs = 0xe44,
-+		.pwr_sta2nd_offs = 0xe44,
-+		.sram_pdn_bits = BIT(8),
-+		.sram_pdn_ack_bits = BIT(12),
-+		.bp_cfg = {
-+			BUS_PROT_WR_IGN(INFRA,
-+					MT6858_TOP_AXI_PROT_EN_MMSYS_STA_0_CAM_MAIN,
-+					MT6858_TOP_AXI_PROT_EN_MMSYS_STA_0_SET,
-+					MT6858_TOP_AXI_PROT_EN_MMSYS_STA_0_CLR,
-+					MT6858_TOP_AXI_PROT_EN_MMSYS_STA_0_RDY),
-+			BUS_PROT_WR_IGN(INFRA,
-+					MT6858_TOP_AXI_PROT_EN_MMSYS_STA_1_CAM_MAIN,
-+					MT6858_TOP_AXI_PROT_EN_MMSYS_STA_1_SET,
-+					MT6858_TOP_AXI_PROT_EN_MMSYS_STA_1_CLR,
-+					MT6858_TOP_AXI_PROT_EN_MMSYS_STA_1_RDY),
-+			BUS_PROT_WR_IGN(CAM_SUB0,
-+					MT6858_CAM_SUB0_PROT_EN_SMI_CAM_MAIN,
-+					MT6858_SUBx_PROT_EN_SET,
-+					MT6858_SUBx_PROT_EN_CLR,
-+					MT6858_SUBx_PROT_EN_STA),
-+			BUS_PROT_WR_IGN(CAM_SUB1,
-+					MT6858_CAM_SUB1_PROT_EN_SMI_CAM_MAIN,
-+					MT6858_SUBx_PROT_EN_SET,
-+					MT6858_SUBx_PROT_EN_CLR,
-+					MT6858_SUBx_PROT_EN_STA),
-+		},
-+		.caps = MTK_SCPD_KEEP_DEFAULT_OFF,
-+	},
-+	[MT6858_POWER_DOMAIN_CAM_SUBA] = {
-+		.name = "cam-suba",
-+		.sta_mask = MT6858_PWR_ACK,
-+		.sta2nd_mask = MT6858_PWR_ACK_2ND,
-+		.ctl_offs = 0xe4c,
-+		.pwr_sta_offs = 0xe4c,
-+		.pwr_sta2nd_offs = 0xe4c,
-+		.sram_pdn_bits = BIT(8),
-+		.sram_pdn_ack_bits = BIT(12),
-+		.bp_cfg = {
-+			BUS_PROT_WR_IGN(CAM_SUB1,
-+					MT6858_CAM_SUB1_PROT_EN_SMI_CAM_SUBA,
-+					MT6858_SUBx_PROT_EN_SET,
-+					MT6858_SUBx_PROT_EN_CLR,
-+					MT6858_SUBx_PROT_EN_STA),
-+		},
-+		.caps = MTK_SCPD_KEEP_DEFAULT_OFF,
-+	},
-+	[MT6858_POWER_DOMAIN_CAM_SUBB] = {
-+		.name = "cam-subb",
-+		.sta_mask = MT6858_PWR_ACK,
-+		.sta2nd_mask = MT6858_PWR_ACK_2ND,
-+		.ctl_offs = 0xe50,
-+		.pwr_sta_offs = 0xe50,
-+		.pwr_sta2nd_offs = 0xe50,
-+		.sram_pdn_bits = BIT(8),
-+		.sram_pdn_ack_bits = BIT(12),
-+		.bp_cfg = {
-+			BUS_PROT_WR_IGN(CAM_SUB0,
-+					MT6858_CAM_SUB0_PROT_EN_SMI_CAM_SUBB,
-+					MT6858_SUBx_PROT_EN_SET,
-+					MT6858_SUBx_PROT_EN_CLR,
-+					MT6858_SUBx_PROT_EN_STA),
-+		},
-+		.caps = MTK_SCPD_KEEP_DEFAULT_OFF,
-+	},
-+	[MT6858_POWER_DOMAIN_DIS0] = {
-+		.name = "dis0",
-+		.sta_mask = MT6858_PWR_ACK,
-+		.sta2nd_mask = MT6858_PWR_ACK_2ND,
-+		.ctl_offs = 0xe6c,
-+		.pwr_sta_offs = 0xe6c,
-+		.pwr_sta2nd_offs = 0xe6c,
-+		.sram_pdn_bits = BIT(8),
-+		.sram_pdn_ack_bits = BIT(12),
-+		.bp_cfg = {
-+			BUS_PROT_WR_IGN(INFRA,
-+					MT6858_TOP_AXI_PROT_EN_MMSYS_STA_0_DIS0,
-+					MT6858_TOP_AXI_PROT_EN_MMSYS_STA_0_SET,
-+					MT6858_TOP_AXI_PROT_EN_MMSYS_STA_0_CLR,
-+					MT6858_TOP_AXI_PROT_EN_MMSYS_STA_0_RDY),
-+		},
-+	},
-+	[MT6858_POWER_DOMAIN_MM_INFRA] = {
-+		.name = "mm-infra",
-+		.sta_mask = MT6858_PWR_ACK,
-+		.sta2nd_mask = MT6858_PWR_ACK_2ND,
-+		.ctl_offs = 0xe74,
-+		.pwr_sta_offs = 0xe74,
-+		.pwr_sta2nd_offs = 0xe74,
-+		.sram_pdn_bits = BIT(8),
-+		.sram_pdn_ack_bits = BIT(12),
-+		.bp_cfg = {
-+			BUS_PROT_WR_IGN(INFRA,
-+					MT6858_TOP_AXI_PROT_EN_MMSYS_STA_1_MM_INFRA,
-+					MT6858_TOP_AXI_PROT_EN_MMSYS_STA_1_SET,
-+					MT6858_TOP_AXI_PROT_EN_MMSYS_STA_1_CLR,
-+					MT6858_TOP_AXI_PROT_EN_MMSYS_STA_1_RDY),
-+			BUS_PROT_WR_IGN(INFRA,
-+					MT6858_TOP_AXI_PROT_EN_INFRASYS_STA_1_MM_INFRA,
-+					MT6858_TOP_AXI_PROT_EN_INFRASYS_STA_1_SET,
-+					MT6858_TOP_AXI_PROT_EN_INFRASYS_STA_1_CLR,
-+					MT6858_TOP_AXI_PROT_EN_INFRASYS_STA_1_RDY),
-+			BUS_PROT_WR_IGN(INFRA,
-+					MT6858_TOP_AXI_PROT_EN_MMSYS_STA_1_MM_INFRA_2ND,
-+					MT6858_TOP_AXI_PROT_EN_MMSYS_STA_1_SET,
-+					MT6858_TOP_AXI_PROT_EN_MMSYS_STA_1_CLR,
-+					MT6858_TOP_AXI_PROT_EN_MMSYS_STA_1_RDY),
-+			BUS_PROT_WR_IGN(INFRA,
-+					MT6858_TOP_AXI_PROT_EN_INFRASYS_STA_0_MM_INFRA,
-+					MT6858_TOP_AXI_PROT_EN_INFRASYS_STA_0_SET,
-+					MT6858_TOP_AXI_PROT_EN_INFRASYS_STA_0_CLR,
-+					MT6858_TOP_AXI_PROT_EN_INFRASYS_STA_0_RDY),
-+			BUS_PROT_WR_IGN(INFRA,
-+					MT6858_TOP_AXI_PROT_EN_EMISYS_STA_0_MM_INFRA,
-+					MT6858_TOP_AXI_PROT_EN_EMISYS_STA_0_SET,
-+					MT6858_TOP_AXI_PROT_EN_EMISYS_STA_0_CLR,
-+					MT6858_TOP_AXI_PROT_EN_EMISYS_STA_0_RDY),
-+		},
-+	},
-+	[MT6858_POWER_DOMAIN_MM_PROC_DORMANT] = {
-+		.name = "mm-proc-dormant",
-+		.sta_mask = MT6858_PWR_ACK,
-+		.sta2nd_mask = MT6858_PWR_ACK_2ND,
-+		.ctl_offs = 0xe78,
-+		.pwr_sta_offs = 0xe78,
-+		.pwr_sta2nd_offs = 0xe78,
-+		.sram_pdn_bits = BIT(9),
-+		.sram_pdn_ack_bits = BIT(13),
-+		.bp_cfg = {
-+			BUS_PROT_WR_IGN(VLP,
-+					MT6858_VLP_AXI_PROT_EN_MM_PROC,
-+					MT6858_VLP_AXI_PROT_EN_SET,
-+					MT6858_VLP_AXI_PROT_EN_CLR,
-+					MT6858_VLP_AXI_PROT_EN_STA),
-+			BUS_PROT_WR_IGN(VLP,
-+					MT6858_VLP_AXI_PROT_EN_MM_PROC_2ND,
-+					MT6858_VLP_AXI_PROT_EN_SET,
-+					MT6858_VLP_AXI_PROT_EN_CLR,
-+					MT6858_VLP_AXI_PROT_EN_STA),
-+		},
-+		.caps = MTK_SCPD_SRAM_ISO | MTK_SCPD_SRAM_PDN_INVERTED,
-+	},
-+	[MT6858_POWER_DOMAIN_CSI_RX] = {
-+		.name = "csi-rx",
-+		.sta_mask = MT6858_PWR_ACK,
-+		.sta2nd_mask = MT6858_PWR_ACK_2ND,
-+		.ctl_offs = 0xe98,
-+		.pwr_sta_offs = 0xe98,
-+		.pwr_sta2nd_offs = 0xe98,
-+		.caps = MTK_SCPD_KEEP_DEFAULT_OFF,
-+	},
-+	[MT6858_POWER_DOMAIN_SSUSB] = {
-+		.name = "ssusb",
-+		.sta_mask = MT6858_PWR_ACK,
-+		.sta2nd_mask = MT6858_PWR_ACK_2ND,
-+		.ctl_offs = 0xea4,
-+		.pwr_sta_offs = 0xea4,
-+		.pwr_sta2nd_offs = 0xea4,
-+		.sram_pdn_bits = BIT(8),
-+		.sram_pdn_ack_bits = BIT(12),
-+		.bp_cfg = {
-+			BUS_PROT_WR_IGN(INFRA,
-+					MT6858_TOP_AXI_PROT_EN_PERISYS_STA_0_SSUSB,
-+					MT6858_TOP_AXI_PROT_EN_PERISYS_STA_0_SET,
-+					MT6858_TOP_AXI_PROT_EN_PERISYS_STA_0_CLR,
-+					MT6858_TOP_AXI_PROT_EN_PERISYS_STA_0_RDY),
-+		},
-+	},
-+};
-+
-+static const struct scpsys_soc_data mt6858_scpsys_data = {
-+	.domains_data = scpsys_domain_data_mt6858,
-+	.num_domains = ARRAY_SIZE(scpsys_domain_data_mt6858),
-+	.bus_prot_blocks = scpsys_bus_prot_blocks_mt6858,
-+	.num_bus_prot_blocks = ARRAY_SIZE(scpsys_bus_prot_blocks_mt6858),
-+	.type = SCPSYS_MTCMOS_TYPE_DIRECT_CTL,
-+};
-+
-+#endif /* __SOC_MEDIATEK_MT6858_PM_DOMAINS_H */
-diff --git a/drivers/pmdomain/mediatek/mtk-pm-domains.c b/drivers/pmdomain/mediatek/mtk-pm-domains.c
-index ada9ea8b45b7..70092f853469 100644
---- a/drivers/pmdomain/mediatek/mtk-pm-domains.c
-+++ b/drivers/pmdomain/mediatek/mtk-pm-domains.c
-@@ -20,6 +20,7 @@
- 
- #include "mt6735-pm-domains.h"
- #include "mt6795-pm-domains.h"
-+#include "mt6858-pm-domains.h"
- #include "mt6893-pm-domains.h"
- #include "mt8167-pm-domains.h"
- #include "mt8173-pm-domains.h"
-@@ -1287,6 +1288,10 @@ static const struct of_device_id scpsys_of_match[] = {
- 		.compatible = "mediatek,mt6795-power-controller",
- 		.data = &mt6795_scpsys_data,
- 	},
-+	{
-+		.compatible = "mediatek,mt6858-power-controller",
-+		.data = &mt6858_scpsys_data,
-+	},
- 	{
- 		.compatible = "mediatek,mt6893-power-controller",
- 		.data = &mt6893_scpsys_data,
-diff --git a/drivers/pmdomain/mediatek/mtk-pm-domains.h b/drivers/pmdomain/mediatek/mtk-pm-domains.h
-index 8690690335ad..45da83e9d649 100644
---- a/drivers/pmdomain/mediatek/mtk-pm-domains.h
-+++ b/drivers/pmdomain/mediatek/mtk-pm-domains.h
-@@ -66,6 +66,11 @@ enum scpsys_bus_prot_block {
- 	BUS_PROT_BLOCK_INFRA_NAO,
- 	BUS_PROT_BLOCK_SMI,
- 	BUS_PROT_BLOCK_SPM,
-+	BUS_PROT_BLOCK_IMG_SUB0,
-+	BUS_PROT_BLOCK_CAM_SUB1,
-+	BUS_PROT_BLOCK_CAM_SUB0,
-+	BUS_PROT_BLOCK_IPE_SUB0,
-+	BUS_PROT_BLOCK_VLP,
- 	BUS_PROT_BLOCK_COUNT,
- };
- 
+The NULL check should not be necessary. On an already-registered amd
+pstate driver, policy->driver_data is set only after a successful
+->init() and is cleared only in ->exit(), so it is never legitimately
+NULL for a live policy:
+
+1. Hotplug offline path: a normal CPU hotplug offline does not hit
+->exit(). The driver's .offline callback makes __cpufreq_offline() take
+the light-weight teardown path and return early, so ->exit() (and the
+kfree) is not invoked and cpudata stays valid. The full teardown only
+happens on driver unregister / device unbind.
+
+2. Driver exit path: the NULL check does not close the theoretical UAF
+window here, since the test does not hold policy->rwsem: cpudata can be
+kfree()'d between the check and the subsequent dereference. Worse, the
+passive amd_pstate_cpu_exit() frees cpudata but does not reset policy
+->driver_data to NULL, so the check would pass and then dereference a
+dangling pointer. This is a pre-existing issue and out of scope for this
+fix.
+
+so it is better to drop the "NULL check of cpudata" commit msg and code.
+
+(Others may have more context here, so please free free correct me if
+I'm wrong.)
+
+
+
+> from testing cpufreq driver on non-amd platform.
+> 
+> Fixes: 14eb1c96e3a3 ("cpufreq: amd-pstate: Add test module for amd-pstate driver")
+> Suggested-by: Li Xiong <xiongl24@chinatelecom.cn>
+> Suggested-by: Xibo Wang <wangxb12@chinatelecom.cn>
+> Signed-off-by: Qianheng Peng <pengqh1@chinatelecom.cn>
+> 
+> ---
+> v2:
+>    - Print policy->cpu instead of policy->kboj.name
+>    - Add cpufreq driver name detection to amd_pstate_ut
+> 
+> v1: https://lore.kernel.org/all/1784015941-26535-1-git-send-email-pengqh1@chinatelecom.cn
+> ---
+>   drivers/cpufreq/amd-pstate-ut.c | 17 +++++++++++++++++
+>   1 file changed, 17 insertions(+)
+> 
+> diff --git a/drivers/cpufreq/amd-pstate-ut.c b/drivers/cpufreq/amd-pstate-ut.c
+> index 735b29f..5d71315 100644
+> --- a/drivers/cpufreq/amd-pstate-ut.c
+> +++ b/drivers/cpufreq/amd-pstate-ut.c
+> @@ -157,6 +157,10 @@ static int amd_pstate_ut_check_perf(u32 index)
+>   		if (!policy)
+>   			continue;
+>   		cpudata = policy->driver_data;
+> +		if (!cpudata) {
+> +			pr_err("%s empty driver_data on cpu %d\n", __func__, policy->cpu);
+> +			return -EINVAL;
+
+Strictly speaking, it should be %u, right? Since policy->cpu is an
+unsigned int, using %d is a format-specifier type mismatch.
+
+> +		}
+>   
+>   		if (get_shared_mem()) {
+>   			ret = cppc_get_perf_caps(cpu, &cppc_perf);
+> @@ -229,6 +233,10 @@ static int amd_pstate_ut_check_freq(u32 index)
+>   		if (!policy)
+>   			continue;
+>   		cpudata = policy->driver_data;
+> +		if (!cpudata) {
+> +			pr_err("%s empty driver_data on cpu %d\n", __func__, policy->cpu);
+> +			return -EINVAL;
+> +		}
+>   
+>   		if (!((policy->cpuinfo.max_freq >= cpudata->nominal_freq) &&
+>   			(cpudata->nominal_freq > cpudata->lowest_nonlinear_freq) &&
+> @@ -560,6 +568,15 @@ static int amd_pstate_ut_check_freq_attrs(u32 index)
+>   static int __init amd_pstate_ut_init(void)
+>   {
+>   	u32 i = 0, arr_size = ARRAY_SIZE(amd_pstate_ut_cases);
+> +	const char *driver_name = NULL;
+> +
+> +	driver_name = cpufreq_get_current_driver();
+> +	if (!driver_name)
+> +		return -ENOENT;
+> +	/* don't test if non-amd cpufreq_driver exists */
+> +	else if (strcmp(driver_name, "amd-pstate") &&
+
+Nit: Redundant else after a return: since the previous branch already
+returns, control can never reach the else if, so it is better to drop
+the else and use a separate if.
+
+> +		 strcmp(driver_name, "amd-pstate-epp"))
+> +		return -EEXIST;
+
+How about -EOPNOTSUPP or -ENODEV? And it would be helpful to log
+error info here.
+
+
+>   
+>   	for (i = 0; i < arr_size; i++) {
+>   		int ret;
+
 
 -- 
-2.54.0
-
-
+Thx and BRs,
+Zhongqiu Han
