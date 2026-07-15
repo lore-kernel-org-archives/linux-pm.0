@@ -1,33 +1,33 @@
 Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id 06FD63C2BA2;
-	Wed, 15 Jul 2026 07:29:28 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id E80893A7F78;
+	Wed, 15 Jul 2026 07:30:28 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1784100572; cv=none; b=KQKId4xzwumAOglb9w+hKqmKwXlVieFQaAPayPb3xmxhwv7ipM49X3vQEGiYjAuhSqzOy7Pd6rELzKKbLjA1nyj8EMOv7zX/KvPIP3ZgrpHROHEaGiVCXVX09kpU7uNhdtK4QmaYgHWPTyUPZnLyIjp1+kyaT6W/CYvthRuQXOg=
+	t=1784100631; cv=none; b=NNvvMto7l7kPgM7p6cIKklC8UzyIolCx9kmdE+rq2Zb3grbG3wZ56xu7pOti2P9OvpNikGiz9xJJYZuCO9hlPjIhGFbJ9q6E7ZEjV9cWxHrq9YtyQkjtUDvpBYXr3xO8Z7LoGDiTk+hcHEqHGsiRZHB5CffCdjgul3abPEcQ2OM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1784100572; c=relaxed/simple;
-	bh=MsXvHNOp7jRLeDUmwfDBA82AWHhFNBc6/5erc1wQXKY=;
+	s=arc-20240116; t=1784100631; c=relaxed/simple;
+	bh=4ya+7e7Gq+zYCLAtPdaipzA7BT6Sc/L0MJYPLfGGWEY=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=PlTYBhYlWVzY05R4eVA3aXbUAzCkZx4G7wTReeDhjMI/D/PBn00tS64xFA5hOMYt0GJN/5HByG/NAmNo8jCWe1wjTVPuCR42WidGwkgq75vA7cCmFjXcGwDlcpFk4AjiWkRbuKchiZszAxmp/sL14M3eFMP6klEMgFx2XlRS64o=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=QsxDWt3K; arc=none smtp.client-ip=217.140.110.172
+	 In-Reply-To:Content-Type; b=pRjW1o8AyIxWeT3ZyxNSib/Rro+ToHNyp+mA4Qv/OqtJpiGVPxKhx43YEC7uQbiqdBVTbZpRoSqco9O4MRCLOYolY3reFi55U4LSZvZwswDTkQ6zbM2/4s3NAlWJmxD+E2VujXrbWMh2tEOJ5PPTcVCYai/jjoRgBC8PNWVqx6Y=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=JQ9F4qkP; arc=none smtp.client-ip=217.140.110.172
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="QsxDWt3K"
+	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="JQ9F4qkP"
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id BE8D5152B;
-	Wed, 15 Jul 2026 00:29:23 -0700 (PDT)
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 2C183339;
+	Wed, 15 Jul 2026 00:30:24 -0700 (PDT)
 Received: from [10.57.2.177] (unknown [10.57.2.177])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 58BF33F915;
-	Wed, 15 Jul 2026 00:29:25 -0700 (PDT)
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 4AE453F915;
+	Wed, 15 Jul 2026 00:30:25 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1784100567; bh=MsXvHNOp7jRLeDUmwfDBA82AWHhFNBc6/5erc1wQXKY=;
+	t=1784100628; bh=4ya+7e7Gq+zYCLAtPdaipzA7BT6Sc/L0MJYPLfGGWEY=;
 	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=QsxDWt3KD0gLwwOVoSwz6F9QcdMXkaoZzWSEXTWUDIGD8Wbyn3D8MGU6B6LhHga5H
-	 7BIEM0JS4ez1HsCRWPMHhfRoAtjGUsdKSVU/XGI2BRVs6ji9U/sUxioC0KlqV7r46w
-	 n5UTC4yHj6i0ZuJHGmRoDUwkvaiT8cfh48r7v5Eo=
-Message-ID: <a886ad87-d17a-4ace-8388-fab5c4c2ba3c@arm.com>
-Date: Wed, 15 Jul 2026 08:29:27 +0100
+	b=JQ9F4qkPn9tb7PtaqYn/7qPnch21Mul+K7fQNjLNWgOpnIKel1gNAKRYTC9uotjov
+	 c3M5hpvDf55JmHNvw8uXlsl5hQH9luF44JI+2PvOFg22OABp05XBT23oTj/av73sY6
+	 z2XaX3Sm0SU/mHP//r9Jf2FLW7ekkjiUJoMYC3cQ=
+Message-ID: <a2dda094-4f91-4af8-a0d2-646e526dcb85@arm.com>
+Date: Wed, 15 Jul 2026 08:30:26 +0100
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -35,71 +35,145 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v8 2/3] thermal/drivers/imx: Fix rounding and clamp for
- i.MX7D alarm
+Subject: Re: [PATCH v8 3/3] thermal/drivers/imx: Add calibration offset
+ support
 To: Haoning.CHENG@cn.bosch.com
-Cc: linux-pm@vger.kernel.org, Fabio Estevam <festevam@gmail.com>,
- Sascha Hauer <s.hauer@pengutronix.de>, Shawn Guo <shawnguo@kernel.org>,
- Conor Dooley <conor+dt@kernel.org>, Krzysztof Kozlowski
- <krzk+dt@kernel.org>, Rob Herring <robh@kernel.org>,
- Pengutronix Kernel Team <kernel@pengutronix.de>,
- Daniel Lezcano <daniel.lezcano@linaro.org>,
- "Rafael J. Wysocki" <rafael@kernel.org>, devicetree@vger.kernel.org,
- imx@lists.linux.dev, linux-arm-kernel@lists.infradead.org,
- linux-kernel@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>
+Cc: linux-pm@vger.kernel.org, Pengutronix Kernel Team
+ <kernel@pengutronix.de>, Shawn Guo <shawnguo@kernel.org>,
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, Zhang Rui <rui.zhang@intel.com>,
+ devicetree@vger.kernel.org, imx@lists.linux.dev,
+ Fabio Estevam <festevam@gmail.com>, linux-arm-kernel@lists.infradead.org,
+ linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rafael@kernel.org>,
+ Conor Dooley <conor+dt@kernel.org>,
+ Daniel Lezcano <daniel.lezcano@linaro.org>, Rob Herring <robh@kernel.org>,
+ Sascha Hauer <s.hauer@pengutronix.de>
 References: <20260714-b4-symana21-11221-imx-thermal-support-upstream-6-18-v8-0-d54d8690e16e@cn.bosch.com>
- <20260714-b4-symana21-11221-imx-thermal-support-upstream-6-18-v8-2-d54d8690e16e@cn.bosch.com>
+ <20260714-b4-symana21-11221-imx-thermal-support-upstream-6-18-v8-3-d54d8690e16e@cn.bosch.com>
 Content-Language: en-US
 From: Lukasz Luba <lukasz.luba@arm.com>
-In-Reply-To: <20260714-b4-symana21-11221-imx-thermal-support-upstream-6-18-v8-2-d54d8690e16e@cn.bosch.com>
+In-Reply-To: <20260714-b4-symana21-11221-imx-thermal-support-upstream-6-18-v8-3-d54d8690e16e@cn.bosch.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 
 
 
 On 7/14/26 11:28, Haoning CHENG via B4 Relay wrote:
 > From: Haoning CHENG <Haoning.CHENG@cn.bosch.com>
 > 
-> Convert the alarm temperature from millicelsius to degrees for i.MX7D
-> using ceiling division instead of integer division, ensuring rounding
-> errors do not cause the alarm to trigger below the intended threshold.
-> Use DIV_ROUND_UP() for non-negative values and plain integer division
-> for negative values, since C rounds toward zero which is equivalent to
-> ceiling when the divisor is positive.
+> Some boards need a small per-design correction to align the reported CPU
+> temperature with board-level measurements. Read the optional
+> fsl,temp-calibration-offset-millicelsius property from DT and apply it
+> uniformly to the i.MX6/6SX/7D calibration formulas.
 > 
-> Add clamp() to ensure the hardware register value stays within the 9-bit
-> range (0..0x1ff) of the i.MX7D alarm field, preventing silent truncation
-> if an out-of-range value is written.
+> The offset is applied symmetrically at two points to ensure the thermal
+> framework sees calibrated temperatures while hardware thresholds remain
+> correctly positioned:
+> 
+> 1. In imx_set_alarm_temp() and imx_set_panic_temp(): the temperature
+>     threshold is *subtracted* by the offset before being converted to a
+>     hardware register value. This shifts the hardware IRQ trigger to the
+>     physical temperature that corresponds to the intended threshold.
+> 
+> 2. In imx_get_temp(): after computing physical temperature from the
+>     hardware register, the offset is *added* back. The thermal framework
+>     always sees the calibrated temperature.
+> 
+> For example, if DT sets offset = +3000 m°C (board reads 3°C too low)
+> and the passive trip is 95°C:
+> 
+>    imx_set_alarm_temp(95000):
+>      alarm_temp = 95000 - 3000 = 92000
+>      → hardware register programmed for 92°C physical
+> 
+>    Hardware IRQ fires at 92°C physical
+> 
+>    imx_get_temp():
+>      reads hardware, computes 92°C physical
+>      *temp = 92000 + 3000 = 95000
+>      → thermal framework sees 95°C → correct trip
+> 
+> When the property is not present, the offset defaults to 0, preserving
+> the current behavior.
 > 
 > Signed-off-by: Haoning CHENG <Haoning.CHENG@cn.bosch.com>
 > ---
->   drivers/thermal/imx_thermal.c | 12 +++++++++---
->   1 file changed, 9 insertions(+), 3 deletions(-)
+>   drivers/thermal/imx_thermal.c | 27 +++++++++++++++++++++++++++
+>   1 file changed, 27 insertions(+)
 > 
 > diff --git a/drivers/thermal/imx_thermal.c b/drivers/thermal/imx_thermal.c
-> index 38c993d1bcb3..7f7d1116b9d6 100644
+> index 7f7d1116b9d6..d471acc16bce 100644
 > --- a/drivers/thermal/imx_thermal.c
 > +++ b/drivers/thermal/imx_thermal.c
-> @@ -240,10 +240,16 @@ static void imx_set_alarm_temp(struct imx_thermal_data *data,
+> @@ -85,6 +85,10 @@ enum imx_thermal_trip {
+>   #define TEMPMON_IMX6SX			2
+>   #define TEMPMON_IMX7D			3
+>   
+> +/* Calibration offset limits (±20 °C in millicelsius) */
+> +#define IMX_TEMP_CALIB_OFFSET_MIN	(-20000)
+> +#define IMX_TEMP_CALIB_OFFSET_MAX	20000
+> +
+>   struct thermal_soc_data {
+>   	u32 version;
+>   
+> @@ -207,6 +211,7 @@ struct imx_thermal_data {
+>   	struct regmap *tempmon;
+>   	u32 c1, c2; /* See formula in imx_init_calib() */
+>   	int temp_max;
+> +	s32 calibration_offset;
+>   	int alarm_temp;
+>   	int last_temp;
+>   	bool irq_enabled;
+> @@ -223,6 +228,7 @@ static void imx_set_panic_temp(struct imx_thermal_data *data,
+>   	struct regmap *map = data->tempmon;
+>   	int critical_value;
+>   
+> +	panic_temp -= data->calibration_offset;
+>   	critical_value = (data->c2 - panic_temp) / data->c1;
+>   
+>   	regmap_write(map, soc_data->panic_alarm_ctrl + REG_CLR,
+> @@ -239,6 +245,7 @@ static void imx_set_alarm_temp(struct imx_thermal_data *data,
+>   	int alarm_value;
 >   
 >   	data->alarm_temp = alarm_temp;
+> +	alarm_temp -= data->calibration_offset;
 >   
-> -	if (data->socdata->version == TEMPMON_IMX7D)
-> -		alarm_value = alarm_temp / 1000 + data->c1 - 25;
-> -	else
-> +	if (data->socdata->version == TEMPMON_IMX7D) {
-> +		if (alarm_temp >= 0)
-> +			alarm_temp = DIV_ROUND_UP(alarm_temp, 1000);
-> +		else
-> +			alarm_temp /= 1000;
-> +		alarm_value = alarm_temp + data->c1 - 25;
-> +		alarm_value = clamp(alarm_value, 0, 0x1ff);
-> +	} else {
->   		alarm_value = (data->c2 - alarm_temp) / data->c1;
+>   	if (data->socdata->version == TEMPMON_IMX7D) {
+>   		if (alarm_temp >= 0)
+> @@ -283,6 +290,7 @@ static int imx_get_temp(struct thermal_zone_device *tz, int *temp)
+>   		*temp = (n_meas - data->c1 + 25) * 1000;
+>   	else
+>   		*temp = data->c2 - n_meas * data->c1;
+> +	*temp += data->calibration_offset;
+>   
+>   	/* Update alarm value to next higher trip point for TEMPMON_IMX6Q */
+>   	if (data->socdata->version == TEMPMON_IMX6Q) {
+> @@ -635,6 +643,25 @@ static int imx_thermal_probe(struct platform_device *pdev)
+>   
+>   	platform_set_drvdata(pdev, data);
+>   
+> +	if (of_property_present(dev->of_node,
+> +				"fsl,temp-calibration-offset-millicelsius")) {
+> +		ret = of_property_read_s32(dev->of_node,
+> +					   "fsl,temp-calibration-offset-millicelsius",
+> +					   &data->calibration_offset);
+> +		if (ret)
+> +			return dev_err_probe(dev, ret,
+> +					     "failed to read calibration offset\n");
+> +
+> +		if (data->calibration_offset < IMX_TEMP_CALIB_OFFSET_MIN ||
+> +		    data->calibration_offset > IMX_TEMP_CALIB_OFFSET_MAX)
+> +			return dev_err_probe(dev, -EINVAL,
+> +					     "calibration offset %d millicelsius out of range\n",
+> +					     data->calibration_offset);
+> +
+> +		dev_dbg(dev, "calibration offset: %d millicelsius\n",
+> +			data->calibration_offset);
 > +	}
->   
->   	regmap_write(map, soc_data->high_alarm_ctrl + REG_CLR,
->   		     soc_data->high_alarm_mask);
+> +
+>   	if (of_property_present(dev->of_node, "nvmem-cells")) {
+>   		ret = imx_init_from_nvmem_cells(pdev);
+>   		if (ret)
 > 
+
 
 Reviewed-by: Lukasz Luba <lukasz.luba@arm.com>
