@@ -1,427 +1,102 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 85E9145BD7F
-	for <linux-pm@vger.kernel.org>; Wed, 15 Jul 2026 12:24:33 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 69F3C44C67C
+	for <linux-pm@vger.kernel.org>; Wed, 15 Jul 2026 12:26:46 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1784118275; cv=none; b=REIELolD2Q0YO8stY2o+GiX8aqlhwciezVJ3h+vYXAFd9vaQ29IJkvcOO6xBPBgqXJ7KpO07HrrGNUri7dwe4DmIsfUO1GiDFUQk4laSIV2ZZY3mVZHrOO/FdI9/uNtMMWpnqWaG+EaWv/H1ya2dhYtNBpcet59V/eSBcc0vt8E=
+	t=1784118407; cv=none; b=Dn5B9CqjMdf/8j4SBjgdSKplQQbvcCpP7c6QvaTQxKbCsKfaXApw6EHXMlNacZfqIu2Pu3pb7xR54TUBYSIONq1MuqDZ2FFoo4Xrf+jsUK43IePeDXev3xyeJ4vjZanioVi7Pypu7WaD88T58Gzw9TxyCpSjR8E5i77wUoRRbHM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1784118275; c=relaxed/simple;
-	bh=WjkkhX8AE55jsgJgX1FzkMHLBoKDh6l6Q8k1teC3sDk=;
+	s=arc-20240116; t=1784118407; c=relaxed/simple;
+	bh=TF12o4kxmUhjvdA6ouORMbeT1BJf7UjZuwxQoUAEn0g=;
 	h=From:In-Reply-To:MIME-Version:References:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=eUdZwzh2GRWxoGwLx7WCha+Gk7OLM8oYqfJ3+wlrc/V3JPKbY5lcUag1LD0TwvSJm1uRVhZqlYmNgOct9dCPw35zDtyK07r2W+ETj6fOkDIWEaZn8RjcBwD4O8XWoi1g35GM1bp93sBDZeTYWbPxl/uFZTQd7llojyPUTt9URFs=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=LAgfM15h; arc=none smtp.client-ip=100.103.45.18
+	 To:Cc:Content-Type; b=HaiENMS9kvaLy93zMeh6JVMNW90RvYk0cTv0+2qkDGMPMt19DRqjgCzR00gnlNl3rMFFDRrZPRTdtM68YDitKJg9UcLkQDi36EsdJ5bJVQEa3DwtU5y4xTyOcSlKyDfq4EFJjF2EoLGXR9ZK8tBOaW9uxSCT0OB6cwmINp+X/Fw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=QKykeVV+; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="LAgfM15h"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9F19A1F01562
-	for <linux-pm@vger.kernel.org>; Wed, 15 Jul 2026 12:24:31 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="QKykeVV+"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2D90B1F01562
+	for <linux-pm@vger.kernel.org>; Wed, 15 Jul 2026 12:26:46 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1784118271;
-	bh=PclXy2Uq7OPMyI+t/qU2+B3wDB55fTcxu4iOX0BaM3I=;
+	s=k20260515; t=1784118406;
+	bh=ufSU06HSFFf/HF9xxtT6zNddSL0W/3RadTy6uo0f3pw=;
 	h=From:In-Reply-To:References:Date:Subject:To:Cc;
-	b=LAgfM15hhVaC15vSj8XQxsRNvGquqsgUOdks7kt343R7a1N5g9nUkhGh/uXHD9xfk
-	 nHuL0dFcxgvuhWFebeKG/ml37YscroM+LGpmg6vTy/NYhLFGJkXcxF49V5NileYc42
-	 yFcBl+s67bzQ7PDTJyhysHWIH3tWgPuHTNtr9YG4smlEOxhmeOTfhh5daJaeq0q4VC
-	 dVM8Wgqjwvx9UaMSkun0m/2IJKP0e4vLDNXe4PMhRzEKFuvISWLu21N/04zi2Ia3kf
-	 EMfQpJbcuN8aNGEmfLMx1xjXLy5cpYICzJI1CA7lIsIjNYsegE++dezSLCFahJvia/
-	 vzzxugae/c9Fg==
-Received: by mail-lf1-f51.google.com with SMTP id 2adb3069b0e04-5aec6360133so4116324e87.1
-        for <linux-pm@vger.kernel.org>; Wed, 15 Jul 2026 05:24:31 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AHgh+Rop2YrHikLDI1eFkrZhXdFon/f8bb7W0Ij83InLeF8pyH9hvHk6rF8/ixP/r0svubn5JyZ8hjJ1PA==@vger.kernel.org
-X-Gm-Message-State: AOJu0YzLN6gk7Qfpx5ztkZcJY6E8YgEDC+LBBhWXJMl5jLgohPIYv4rB
-	/hB5m+r0i+1HAQY13ebJhKY+nnzdOaoK6zzYzXN0H/H25joIYFNxJD5mkAs0r6A/U1jjZIUUkQb
-	tRnYymcixNKarj+8Ll7Ob9VBGw1+4P0acZEZ9TDpoZQ==
-X-Received: by 2002:a05:6512:3a87:b0:5b0:12e1:4879 with SMTP id
- 2adb3069b0e04-5b1582c715emr2068822e87.60.1784118270190; Wed, 15 Jul 2026
- 05:24:30 -0700 (PDT)
+	b=QKykeVV+vjB0vBKkxzt1G8Vl5kKWhAKrI3T18ni2Hmw7Ye9vGMPmHsQOOafa6Rkz8
+	 Ms0JYatvX30UIvmhmwHhmdX9yRaau4XM7UMuftPm2YrvDgVpRTT9y0EvcfS+iJMopa
+	 wn5EvKEKra8RnO1k8aY6zl3W8kTP7P1IlnB4/LKGhKGxEg2xEMFyvVePT3Jcft61ug
+	 gLoOZQLE17mfUgB/wOuZnmcyg2/bXhPTd+ObHBKZgp4ncS4UOBn+dwfyO9BIdDE/Ik
+	 iVS87KexyX8aSDr2Cs39sUkAux0k+DNAdUQG8yS15R4tPMKJ4Ufu/ntoSvaqilpRBT
+	 Qrj1mAGszI78g==
+Received: by mail-lj1-f182.google.com with SMTP id 38308e7fff4ca-39ca0a30148so42691491fa.3
+        for <linux-pm@vger.kernel.org>; Wed, 15 Jul 2026 05:26:46 -0700 (PDT)
+X-Gm-Message-State: AOJu0YzA+ZvHpCnW/bK8PzULGI2m4skCts2jyBY3DjsA+Vfe5DumX8or
+	MsZojpYqLt+FrinxrQI5w+GgCoTz+tsAL813D+c9/sqgppPM/MuoXjWdOtpNNHgQI5rzkMXgQbo
+	s/uODeohs/0o4h7kDyhhXr8hwYj03xgQ4Ul8XQxPdtw==
+X-Received: by 2002:a05:651c:23db:20b0:39c:6e2c:23c3 with SMTP id
+ 38308e7fff4ca-39db6ba5ea7mr4965071fa.5.1784118404814; Wed, 15 Jul 2026
+ 05:26:44 -0700 (PDT)
 Received: from 969154062570 named unknown by gmailapi.google.com with
- HTTPREST; Wed, 15 Jul 2026 05:24:27 -0700
+ HTTPREST; Wed, 15 Jul 2026 05:26:43 -0700
 Received: from 969154062570 named unknown by gmailapi.google.com with
- HTTPREST; Wed, 15 Jul 2026 05:24:27 -0700
+ HTTPREST; Wed, 15 Jul 2026 05:26:42 -0700
 From: Bartosz Golaszewski <brgl@kernel.org>
-In-Reply-To: <20260714-upstream-v2-v2-2-76e5e41026db@advantech.com>
+In-Reply-To: <20260714-arm-psci-system_reset2-vendor-reboots-v23-2-e7453c548c21@oss.qualcomm.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260714-upstream-v2-v2-0-76e5e41026db@advantech.com> <20260714-upstream-v2-v2-2-76e5e41026db@advantech.com>
-Date: Wed, 15 Jul 2026 05:24:27 -0700
-X-Gmail-Original-Message-ID: <CAMRc=Mcnbv++YhPvocyiv9m_vuy2hWeuJ2sk9BNH=j7U3-dBFQ@mail.gmail.com>
-X-Gm-Features: AUfX_mzXdlShUuByf9jSWwdYpIzB9dN3xsnMMdNBfJC8EmPDXbPafGgehOl5DxQ
-Message-ID: <CAMRc=Mcnbv++YhPvocyiv9m_vuy2hWeuJ2sk9BNH=j7U3-dBFQ@mail.gmail.com>
-Subject: Re: [PATCH v2 2/8] Add Advantech EIO GPIO driver
-To: Ramiro Oliveira <ramiro.oliveira@advantech.com>
-Cc: linux-kernel@vger.kernel.org, mfd@lists.linux.dev, 
-	linux-gpio@vger.kernel.org, linux-hwmon@vger.kernel.org, 
-	linux-i2c@vger.kernel.org, dri-devel@lists.freedesktop.org, 
-	linux-fbdev@vger.kernel.org, linux-watchdog@vger.kernel.org, 
-	linux-pm@vger.kernel.org, Wenkai Chung <wenkai.chung@advantech.com.tw>, 
-	Francisco Aragon-Trivino <francisco.aragon-trivino@advantech.com>, 
-	Hongzhi Wang <hongzhi.wang@advantech.com>, 
-	Mikhail Tsukerman <mikhail.tsukerman@advantech.com>, 
-	Thomas Kastner <thomas.kastner@advantech.com>, Lee Jones <lee@kernel.org>, 
-	Linus Walleij <linusw@kernel.org>, Bartosz Golaszewski <brgl@kernel.org>, Guenter Roeck <linux@roeck-us.net>, 
-	Andi Shyti <andi.shyti@kernel.org>, Daniel Thompson <danielt@kernel.org>, 
-	Jingoo Han <jingoohan1@gmail.com>, Helge Deller <deller@gmx.de>, 
-	Wim Van Sebroeck <wim@linux-watchdog.org>, "Rafael J. Wysocki" <rafael@kernel.org>, 
-	Daniel Lezcano <daniel.lezcano@kernel.org>, Zhang Rui <rui.zhang@intel.com>, 
-	Lukasz Luba <lukasz.luba@arm.com>
+References: <20260714-arm-psci-system_reset2-vendor-reboots-v23-0-e7453c548c21@oss.qualcomm.com>
+ <20260714-arm-psci-system_reset2-vendor-reboots-v23-2-e7453c548c21@oss.qualcomm.com>
+Date: Wed, 15 Jul 2026 05:26:42 -0700
+X-Gmail-Original-Message-ID: <CAMRc=McKp4WsOY-EQ21n2wbqCp5V0Lr1Cbub5geEhz-LZvVkZw@mail.gmail.com>
+X-Gm-Features: AUfX_mylt-DYfwtCtULeZMicFYpxh50vEHg7XonNMSy71MZwRMycF3EtBgUVrSQ
+Message-ID: <CAMRc=McKp4WsOY-EQ21n2wbqCp5V0Lr1Cbub5geEhz-LZvVkZw@mail.gmail.com>
+Subject: Re: [PATCH v23 02/13] power: reset: reboot-mode: Support up to 3
+ magic values per mode
+To: Shivendra Pratap <shivendra.pratap@oss.qualcomm.com>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
+	linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
+	devicetree@vger.kernel.org, Florian Fainelli <florian.fainelli@broadcom.com>, 
+	Krzysztof Kozlowski <krzk@kernel.org>, Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>, 
+	Mukesh Ojha <mukesh.ojha@oss.qualcomm.com>, Andre Draszik <andre.draszik@linaro.org>, 
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
+	Kathiravan Thirumoorthy <kathiravan.thirumoorthy@oss.qualcomm.com>, mfd@lists.linux.dev, 
+	Srinivas Kandagatla <srini@kernel.org>, Sebastian Reichel <sre@kernel.org>, Mark Rutland <mark.rutland@arm.com>, 
+	Lorenzo Pieralisi <lpieralisi@kernel.org>, "Rafael J. Wysocki" <rafael@kernel.org>, 
+	Daniel Lezcano <daniel.lezcano@kernel.org>, Christian Loehle <christian.loehle@arm.com>, 
+	Ulf Hansson <ulfh@kernel.org>, Lee Jones <lee@kernel.org>, Rob Herring <robh@kernel.org>, 
+	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
+	Bjorn Andersson <andersson@kernel.org>, Konrad Dybcio <konradybcio@kernel.org>, 
+	Arnd Bergmann <arnd@arndb.de>, Souvik Chakravarty <Souvik.Chakravarty@arm.com>, 
+	Andy Yan <andy.yan@rock-chips.com>, Matthias Brugger <matthias.bgg@gmail.com>, 
+	John Stultz <john.stultz@linaro.org>, Moritz Fischer <moritz.fischer@ettus.com>, 
+	Bartosz Golaszewski <brgl@kernel.org>, Sudeep Holla <sudeep.holla@kernel.org>
 Content-Type: text/plain; charset="UTF-8"
 
-On Tue, 14 Jul 2026 17:54:16 +0200, Ramiro Oliveira
-<ramiro.oliveira@advantech.com> said:
-> This driver controls the GPIO component of the Advantech EIO chip.
+On Tue, 14 Jul 2026 19:16:30 +0200, Shivendra Pratap
+<shivendra.pratap@oss.qualcomm.com> said:
+> ARM PSCI vendor-specific resets, require a 32-bit reset_type and a 64-bit
+> cookie as arguments. This cannot be implemented via the reboot-mode
+> framework, which supports a single 32-bit argument as magic value.
 >
-
-The subject should be: "gpio: add a driver for the Advantech EIO GPIO
-controller"
-or similar.
-
-> Signed-off-by: Ramiro Oliveira <ramiro.oliveira@advantech.com>
+> Extend the reboot-mode framework to support up to three 32-bit arguments
+> as magic, per reboot-mode.
+>
+> Signed-off-by: Shivendra Pratap <shivendra.pratap@oss.qualcomm.com>
 > ---
->  MAINTAINERS             |   7 ++
->  drivers/gpio/Kconfig    |   6 ++
->  drivers/gpio/Makefile   |   1 +
->  drivers/gpio/gpio-eio.c | 252 ++++++++++++++++++++++++++++++++++++++++++++++++
->  4 files changed, 266 insertions(+)
->
-> diff --git a/MAINTAINERS b/MAINTAINERS
-> index 53b5f7412966..a7da47393815 100644
-> --- a/MAINTAINERS
-> +++ b/MAINTAINERS
-> @@ -609,6 +609,13 @@ S:	Maintained
->  F:	Documentation/scsi/advansys.rst
->  F:	drivers/scsi/advansys.c
->
-> +ADVANTECH EIO DRIVER
-> +M:	Ramiro Oliveira <ramiro.oliveira@advantech.com>
-> +S:	Maintained
-> +F:	drivers/gpio/gpio-eio.c
-> +F:	drivers/mfd/eio_core.c
-> +F:	include/linux/mfd/eio.h
+>  drivers/power/reset/nvmem-reboot-mode.c  | 10 ++++----
+>  drivers/power/reset/qcom-pon.c           |  8 ++++---
+>  drivers/power/reset/reboot-mode.c        | 41 +++++++++++++++++++++-----------
+>  drivers/power/reset/syscon-reboot-mode.c |  8 ++++---
+>  include/linux/reboot-mode.h              |  4 +++-
 
-Shouldn't this be part of the MFD entry?
+Could we avoid having to modify multiple files here by just providing a new
+function:
 
-> +
->  ADVANTECH SWBTN DRIVER
->  M:	Andrea Ho <Andrea.Ho@advantech.com.tw>
->  L:	platform-driver-x86@vger.kernel.org
-> diff --git a/drivers/gpio/Kconfig b/drivers/gpio/Kconfig
-> index f03c05288376..696065d77235 100644
-> --- a/drivers/gpio/Kconfig
-> +++ b/drivers/gpio/Kconfig
-> @@ -295,6 +295,12 @@ config GPIO_DWAPB
->  	  Say Y or M here to build support for the Synopsys DesignWare APB
->  	  GPIO block.
->
-> +config GPIO_EIO
-> +	tristate "Advantech EIO GPIO"
-> +	depends on MFD_EIO
-> +	help
-> +	  Say Y or M to build support for Advantech EIO GPIO block.
-> +
->  config GPIO_EIC_SPRD
->  	tristate "Spreadtrum EIC support"
->  	depends on ARCH_SPRD || COMPILE_TEST
-> diff --git a/drivers/gpio/Makefile b/drivers/gpio/Makefile
-> index fa14581e3995..628596705c21 100644
-> --- a/drivers/gpio/Makefile
-> +++ b/drivers/gpio/Makefile
-> @@ -64,6 +64,7 @@ obj-$(CONFIG_GPIO_DLN2)			+= gpio-dln2.o
->  obj-$(CONFIG_GPIO_DS4520)		+= gpio-ds4520.o
->  obj-$(CONFIG_GPIO_DWAPB)		+= gpio-dwapb.o
->  obj-$(CONFIG_GPIO_EIC_SPRD)		+= gpio-eic-sprd.o
-> +obj-$(CONFIG_GPIO_EIO)			+= gpio-eio.o
->  obj-$(CONFIG_GPIO_ELKHARTLAKE)		+= gpio-elkhartlake.o
->  obj-$(CONFIG_GPIO_EM)			+= gpio-em.o
->  obj-$(CONFIG_GPIO_EN7523)		+= gpio-en7523.o
-> diff --git a/drivers/gpio/gpio-eio.c b/drivers/gpio/gpio-eio.c
-> new file mode 100644
-> index 000000000000..34e1aefd0716
-> --- /dev/null
-> +++ b/drivers/gpio/gpio-eio.c
-> @@ -0,0 +1,252 @@
-> +// SPDX-License-Identifier: GPL-2.0-only
-> +/*
-> + * GPIO driver for Advantech EIO Embedded controller.
-> + *
-> + * Copyright (C) 2025 Advantech Corporation. All rights reserved.
-> + */
-> +
-> +#include <linux/errno.h>
-> +#include <linux/gpio/driver.h>
-> +#include <linux/mfd/core.h>
-> +#include <linux/mfd/eio.h>
-> +#include <linux/module.h>
-> +
-> +#define EIO_GPIO_MAX_PINS	48
-> +#define EIO_GPIO_WRITE		0x18
-> +#define EIO_GPIO_READ		0x19
-> +
-> +struct eio_gpio_dev {
-> +	u64 avail;
-> +	int max;
-> +	struct gpio_chip chip;
-> +	struct device *dev;
-> +};
-> +
-> +static struct {
-> +	int size;
-> +	bool write;
-> +} ctrl_para[] = {
+    nvmem_reboot_mode_write_full()
 
-Please use a common prefix for all symbols. "eio_gpio" like above is fine.
-
-> +	{ 0x01, false }, { 0x00, false }, { 0x00, false }, { 0x02, false },
-> +	{ 0x01, false }, { 0x00, false }, { 0x00, false }, { 0x00, false },
-> +	{ 0x00, false }, { 0x00, false }, { 0x00, false }, { 0x00, false },
-> +	{ 0x00, false }, { 0x00, false }, { 0x00, false }, { 0x00, false },
-> +	{ 0x01, true  }, { 0x01, true  }, { 0x02, true  }, { 0x02, true  },
-> +	{ 0x02, false }, { 0x10, false }
-> +};
-> +
-> +enum gpio_ctrl {
-> +	EIO_GPIO_STATUS = 0x0,
-> +	EIO_GPIO_GROUP_AVAIL = 0x3,
-> +	EIO_GPIO_ERROR = 0x04,
-> +	EIO_GPIO_PIN_DIR = 0x10,
-> +	EIO_GPIO_PIN_LEVEL = 0x11,
-> +	EIO_GPIO_GROUP_DIR = 0x12,
-> +	EIO_GPIO_GROUP_LEVEL = 0x13,
-> +	EIO_GPIO_MAPPING = 0x14,
-> +	EIO_GPIO_NAME = 0x15
-> +};
-> +
-> +static struct {
-> +	int group;
-> +	int port;
-> +} group_map[] = {
-> +	{ 0, 0 }, { 0, 1 },
-> +	{ 1, 0 }, { 1, 1 },
-> +	{ 2, 0 }, { 2, 1 },
-> +	{ 3, 0 }, { 3, 1 },
-> +	{ 3, 2 }, { 3, 3 },
-> +	{ 3, 4 }, { 3, 5 },
-> +	{ 3, 6 }, { 3, 7 }
-> +};
-> +
-> +static int pmc_write(struct device *mfd_dev, u8 ctrl, u8 dev_id, void *data)
-> +{
-> +	struct pmc_op op = {
-> +		 .cmd       = EIO_GPIO_WRITE,
-> +		 .control   = ctrl,
-> +		 .device_id = dev_id,
-> +		 .payload   = (u8 *)data,
-> +	};
-> +
-> +	if (ctrl >= ARRAY_SIZE(ctrl_para))
-> +		return -ENOMEM;
-> +
-> +	if (!ctrl_para[ctrl].write)
-> +		return -EINVAL;
-> +
-> +	op.size = ctrl_para[ctrl].size;
-> +
-> +	return eio_core_pmc_operation(mfd_dev, &op);
-> +}
-> +
-> +static int pmc_read(struct device *mfd_dev, u8 ctrl, u8 dev_id, void *data)
-> +{
-> +	struct pmc_op op = {
-> +		 .cmd       = EIO_GPIO_READ,
-> +		 .control   = ctrl,
-> +		 .device_id = dev_id,
-> +		 .payload   = (u8 *)data,
-> +	};
-> +
-> +	if (ctrl > ARRAY_SIZE(ctrl_para))
-> +		return -ENOMEM;
-> +
-> +	op.size = ctrl_para[ctrl].size;
-> +
-> +	return eio_core_pmc_operation(mfd_dev, &op);
-> +}
-> +
-> +static int get_dir(struct gpio_chip *chip, unsigned int offset)
-> +{
-> +	u8 dir;
-> +	int ret;
-> +
-> +	ret = pmc_read(chip->parent, EIO_GPIO_PIN_DIR, offset, &dir);
-> +	if (ret)
-> +		return ret;
-> +
-> +	return dir ? 0 : 1;
-> +}
-> +
-> +static int dir_input(struct gpio_chip *chip, unsigned int offset)
-> +{
-> +	u8 dir = 0;
-> +
-> +	return pmc_write(chip->parent, EIO_GPIO_PIN_DIR, offset, &dir);
-> +}
-> +
-> +static int dir_output(struct gpio_chip *chip, unsigned int offset, int value)
-> +{
-> +	u8 dir = 1;
-> +	u8 val = value;
-> +
-> +	pmc_write(chip->parent, EIO_GPIO_PIN_DIR, offset, &dir);
-> +
-> +	return pmc_write(chip->parent, EIO_GPIO_PIN_LEVEL, offset, &val);
-> +}
-> +
-> +static int gpio_get(struct gpio_chip *chip, unsigned int offset)
-> +{
-> +	u8 level;
-> +	int ret;
-> +
-> +	ret = pmc_read(chip->parent, EIO_GPIO_PIN_LEVEL, offset, &level);
-> +	if (ret)
-> +		return ret;
-> +
-> +	return level;
-> +}
-> +
-> +static int gpio_set(struct gpio_chip *chip, unsigned int offset, int value)
-> +{
-> +	u8 val = value;
-> +
-> +	return pmc_write(chip->parent, EIO_GPIO_PIN_LEVEL, offset, &val);
-> +}
-> +
-> +static int check_support(struct device *dev)
-> +{
-> +	u8  data;
-> +	int ret;
-> +
-> +	ret = pmc_read(dev, EIO_GPIO_STATUS, 0, &data);
-> +	if (ret)
-> +		return ret;
-> +
-> +	if ((data & 0x01) == 0)
-> +		return -EOPNOTSUPP;
-> +
-> +	return 0;
-> +}
-> +
-> +static int check_pin(struct device *dev, int pin)
-> +{
-> +	int ret;
-> +	int group, bit;
-
-Why not put all ints on the same line? Same elsewhere.
-
-> +	u16 data;
-> +
-> +	/* Get pin mapping */
-> +	ret = pmc_read(dev, EIO_GPIO_MAPPING, pin, &data);
-> +	if (ret)
-> +		return ret;
-> +
-> +	if ((data & 0xFF) > ARRAY_SIZE(group_map))
-> +		return -EINVAL;
-> +
-> +	group = group_map[data & 0xFF].group;
-> +	bit   = data >> 8;
-> +
-> +	/* Check mapped pin */
-> +	ret = pmc_read(dev, EIO_GPIO_GROUP_AVAIL, group, &data);
-> +	if (ret)
-> +		return ret;
-> +
-> +	return data & BIT(bit) ? 0 : -EOPNOTSUPP;
-> +}
-> +
-> +static int gpio_init(struct device *mfd, struct eio_gpio_dev *eio_gpio)
-> +{
-> +	int ret, i;
-> +
-> +	ret = check_support(mfd);
-> +	if (ret)
-
-This warrants an -ENODEV. We don't want to retry probe here, do we?
-
-> +		return dev_err_probe(eio_gpio->dev, ret, "GPIO not supported\n");
-> +
-> +	eio_gpio->avail = 0;
-> +
-> +	for (i = 0 ; i < EIO_GPIO_MAX_PINS ; i++) {
-> +		ret = check_pin(mfd, i);
-> +		if (ret)
-> +			continue;
-> +
-> +		eio_gpio->avail |= BIT(i);
-> +		eio_gpio->max = i + 1;
-> +	}
-> +
-> +	return eio_gpio->max ? 0 : -EOPNOTSUPP;
-> +}
-> +
-> +static int gpio_probe(struct platform_device *pdev)
-> +{
-> +	struct device *dev = &pdev->dev;
-> +	struct eio_gpio_dev *eio_gpio;
-> +	struct eio_dev *eio_dev = dev_get_drvdata(dev->parent);
-> +
-> +	if (!eio_dev)
-> +		return dev_err_probe(dev, -ENODEV, "Error contact eio_core\n");
-
--ENODEV is used for silently bailing out of probe and telling the driver core
-to not defer. Basically it means: this device cannot be enabled on this system
-or is not present at all. This means: don't use dev_err_probe() and don't emit
-any logs. Just return -ENODEV.
-
-Though it makes me think - can this even happen at all? MFD cells won't get
-created if parent's probe() failed.
-
-> +
-> +	eio_gpio = devm_kzalloc(dev, sizeof(*eio_gpio), GFP_KERNEL);
-> +	if (!eio_gpio)
-> +		return -ENOMEM;
-> +
-> +	eio_gpio->dev = dev;
-> +
-> +	if (gpio_init(dev->parent, eio_gpio))
-
-Can you use the ret = gpio_init() pattern for consistency with the rest of the
-code?
-
-> +		return -EIO;
-> +
-> +	eio_gpio->chip.parent = dev->parent;
-> +	eio_gpio->chip.ngpio = eio_gpio->max;
-> +	eio_gpio->chip.label = KBUILD_MODNAME;
-> +	eio_gpio->chip.owner = THIS_MODULE;
-> +	eio_gpio->chip.direction_input = dir_input;
-> +	eio_gpio->chip.get = gpio_get;
-> +	eio_gpio->chip.direction_output = dir_output;
-> +	eio_gpio->chip.set = gpio_set;
-> +	eio_gpio->chip.get_direction = get_dir;
-> +	eio_gpio->chip.base = -1;
-> +	eio_gpio->chip.can_sleep = true;
-> +
-> +	return devm_gpiochip_add_data(dev, &eio_gpio->chip, eio_gpio);
-> +}
-> +
-> +static struct platform_driver gpio_driver = {
-> +	.probe  = gpio_probe,
-> +	.driver = { .name = KBUILD_MODNAME, },
-> +};
-> +
-> +module_platform_driver(gpio_driver);
-> +
-> +MODULE_AUTHOR("Wenkai Chung <wenkai.chung@advantech.com.tw>");
-> +MODULE_AUTHOR("Ramiro Oliveira <ramiro.oliveira@advantech.com>");
-> +MODULE_DESCRIPTION("GPIO driver for Advantech EIO embedded controller");
-> +MODULE_LICENSE("GPL");
->
-> --
-> 2.43.0
->
->
+with the prototype you proposed and making the existing
+nvmem_reboot_mode_write() a thin wrapper around it?
 
 Bart
