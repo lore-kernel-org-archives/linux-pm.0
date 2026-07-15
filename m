@@ -1,22 +1,23 @@
 Received: from mailgw.kylinos.cn (mailgw.kylinos.cn [124.126.103.232])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1EC6E442122
-	for <linux-pm@vger.kernel.org>; Wed, 15 Jul 2026 10:42:07 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0D2112BDC26
+	for <linux-pm@vger.kernel.org>; Wed, 15 Jul 2026 10:57:16 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=124.126.103.232
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1784112131; cv=none; b=VP/ArZmCV9tOYKNa7kcqFiQApkMTxVMt9t63uC9a+mqedREyaUGTFVekwt203yVWPpkjGXG3sIoX8H4E34jvcrz6jgnGhwWZ19S94W+HjBId88BieIjx0xOY1XdQEGxCj5cPeEtncS25DJ9Nmyu3Q/FmSDVmEyheoQ/6eDfYHFA=
+	t=1784113040; cv=none; b=mHO/6pAVPikfBcCySi/9Gp7X9SY6ndyAZ7oxiHuBs6jW1akRvewpiP8fH+6oRhsL3iGevpaCW2/89AWx3NdpXnP93ICZHexFLSMX4fJu86JXEY6hYHqB7R7TyPPcl4EOvY8Va42NwuHe/wVOxdgi0pPtHD1e8kENlZ7ao1Phx/k=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1784112131; c=relaxed/simple;
-	bh=y6z/IfSQYHg5DjrEUamv7jJL5oNeOQkwWs8G20zy/5M=;
+	s=arc-20240116; t=1784113040; c=relaxed/simple;
+	bh=2flQMSEnN6Ykz5KYeUeUJqnDptDaQY6kfUkxZDjUZFI=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=l3PI/f3S9376Aleu3aX0H6oDSfppE4yafr8Zub2OBMJMOXuY6lsYKoPAQgxlH51b9m1lnTm5wKoTqkAOa9ag2+zjn9M8s5WWX4VT9rvj4z7trk9QHkt0GCMETSo8AKEGSSDATcxXX2tlfZLmGsmlyCMUH8Aaw4e6UsBkPbGySZQ=
+	 In-Reply-To:Content-Type; b=ApAC+ZEweM5+CE79LsucCKzxTLtogK8PKqzT4pXDvmDUmjWNX0mT+FaOjI5w72YMj5A8xLEfHgS+Y/j4RuKVXcdNg1Zr8vTdCDfjA31G38m8orrb10lR7PeKLcREj/PQ11EDWYYGidip6EgGfwBdBzaL2clhwru/MIRLq4HRNJk=
 ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kylinos.cn; spf=pass smtp.mailfrom=kylinos.cn; arc=none smtp.client-ip=124.126.103.232
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kylinos.cn
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=kylinos.cn
-X-UUID: d0718d7e803911f1aa26b74ffac11d73-20260715
+X-UUID: edcf4df0803b11f1aa26b74ffac11d73-20260715
+X-CID-CACHE: Type:Local,Time:202607151842+08,HitQuantity:1
 X-CID-P-RULE: Release_Ham
-X-CID-O-INFO: VERSION:1.3.12,REQID:0d2c604a-2949-4c6b-8d1f-c9c983c9e3eb,IP:0,U
+X-CID-O-INFO: VERSION:1.3.12,REQID:4bf9fc43-0a4b-4111-9513-611c2a90ec8e,IP:0,U
 	RL:0,TC:0,Content:0,EDM:0,RT:0,SF:0,FILE:0,BULK:0,RULE:Release_Ham,ACTION:
 	release,TS:0
 X-CID-META: VersionHash:e7bac3a,CLOUDID:245d68ba9b7df15c4e647fa3746cba0a,BulkI
@@ -27,14 +28,14 @@ X-CID-BVR: 2,SSN|SDN
 X-CID-BAS: 2,SSN|SDN,0,_
 X-CID-FACTOR: TF_CID_SPAM_SNR
 X-CID-RHF: D41D8CD98F00B204E9800998ECF8427E
-X-UUID: d0718d7e803911f1aa26b74ffac11d73-20260715
+X-UUID: edcf4df0803b11f1aa26b74ffac11d73-20260715
 X-User: lijun01@kylinos.cn
 Received: from [172.30.70.202] [(10.44.16.150)] by mailgw.kylinos.cn
 	(envelope-from <lijun01@kylinos.cn>)
 	(Generic MTA with TLSv1.3 TLS_AES_128_GCM_SHA256 128/128)
-	with ESMTP id 944350473; Wed, 15 Jul 2026 18:42:02 +0800
-Message-ID: <8bc6c280-2d36-4adf-a4ad-ece0289484ef@kylinos.cn>
-Date: Wed, 15 Jul 2026 18:42:00 +0800
+	with ESMTP id 431840831; Wed, 15 Jul 2026 18:57:10 +0800
+Message-ID: <290c98d1-0336-4def-a67a-49844805a862@kylinos.cn>
+Date: Wed, 15 Jul 2026 18:57:08 +0800
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -45,7 +46,7 @@ User-Agent: Mozilla Thunderbird
 Subject: Re: [PATCH] PM: hibernate: Add unlikely annotations to
  saveable_page()
 Content-Language: en-US
-To: "Rafael J. Wysocki" <rafael@kernel.org>
+To: "Rafael J. Wysocki" <rafael@kernel.org>, lijun01@kylinos.cn
 Cc: linux-pm@vger.kernel.org
 References: <20260603032255.2126508-1-lijun01@kylinos.cn>
  <CAJZ5v0hUYObm8QAB1DJ6wFb0wum+sFmR7VG-5YBnJ1eAMYyJsA@mail.gmail.com>
@@ -54,8 +55,9 @@ In-Reply-To: <CAJZ5v0hUYObm8QAB1DJ6wFb0wum+sFmR7VG-5YBnJ1eAMYyJsA@mail.gmail.com
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
 
-I measured the time using ftrace and ues 16G mem，add the 
-'trace_suspend_resume'  follow the next code:
+I measured the time using ftrace and ues 16G mem,
+
+add the 'trace_suspend_resume'  follow the next code:
 
 /**
   * count_data_pages - Compute the total number of saveable non-highmem 
@@ -98,126 +100,105 @@ begin
 2.
 #           TASK-PID   CPU#  ||||    TIMESTAMP  FUNCTION
 #              | |       |   ||||       |         |
-             bash-4763  [002] ....   134.297172: suspend_resume: gtt 
+             [002] ....   134.297172: suspend_resume: gtt 
 hibernate_preallocate_memory[0] begin
-             bash-4763  [002] ....   134.308849: suspend_resume: gtt[0] 
-begin
-             bash-4763  [002] ....   134.315070: suspend_resume: gtt[0] end
-             bash-4763  [002] .n..   134.387108: suspend_resume: gtt[0] 
-begin
-             bash-4763  [002] .n..   134.425987: suspend_resume: gtt[0] end
+             [002] ....   134.308849: suspend_resume: gtt[0] begin
+             [002] ....   134.315070: suspend_resume: gtt[0] end
+             [002] .n..   134.387108: suspend_resume: gtt[0] begin
+             [002] .n..   134.425987: suspend_resume: gtt[0] end
 3.
 #           TASK-PID   CPU#  ||||    TIMESTAMP  FUNCTION
 #              | |       |   ||||       |         |
-             bash-4763  [000] ....   290.611694: suspend_resume: gtt 
+             [000] ....   290.611694: suspend_resume: gtt 
 hibernate_preallocate_memory[0] begin
-             bash-4763  [000] ....   290.623367: suspend_resume: gtt[0] 
-begin
-             bash-4763  [000] .n..   290.629714: suspend_resume: gtt[0] end
-             bash-4763  [000] .n..   290.701410: suspend_resume: gtt[0] 
-begin
-             bash-4763  [000] .n..   290.740172: suspend_resume: gtt[0] end
+             [000] ....   290.623367: suspend_resume: gtt[0] begin
+             [000] .n..   290.629714: suspend_resume: gtt[0] end
+             [000] .n..   290.701410: suspend_resume: gtt[0] begin
+             [000] .n..   290.740172: suspend_resume: gtt[0] end
 4.
 #           TASK-PID   CPU#  ||||    TIMESTAMP  FUNCTION
 #              | |       |   ||||       |         |
-             bash-4763  [003] ....   725.819915: suspend_resume: gtt 
+             [003] ....   725.819915: suspend_resume: gtt 
 hibernate_preallocate_memory[0] begin
-             bash-4763  [003] ....   725.831599: suspend_resume: gtt[0] 
-begin
-             bash-4763  [003] ....   725.837876: suspend_resume: gtt[0] end
-             bash-4763  [003] ....   725.909548: suspend_resume: gtt[0] 
-begin
-             bash-4763  [003] ....   725.948195: suspend_resume: gtt[0] end
+             [003] ....   725.831599: suspend_resume: gtt[0] begin
+             [003] ....   725.837876: suspend_resume: gtt[0] end
+             [003] ....   725.909548: suspend_resume: gtt[0] begin
+             [003] ....   725.948195: suspend_resume: gtt[0] end
 5.
 #           TASK-PID   CPU#  ||||    TIMESTAMP  FUNCTION
 #              | |       |   ||||       |         |
-             bash-4763  [001] ....   916.628746: suspend_resume: gtt 
+             [001] ....   916.628746: suspend_resume: gtt 
 hibernate_preallocate_memory[0] begin
-             bash-4763  [001] ....   916.640480: suspend_resume: gtt[0] 
-begin
-             bash-4763  [001] ....   916.646784: suspend_resume: gtt[0] end
-             bash-4763  [001] .n..   916.718700: suspend_resume: gtt[0] 
-begin
-             bash-4763  [001] .n..   916.757641: suspend_resume: gtt[0] end
+             [001] ....   916.640480: suspend_resume: gtt[0] begin
+             [001] ....   916.646784: suspend_resume: gtt[0] end
+             [001] .n..   916.718700: suspend_resume: gtt[0] begin
+             [001] .n..   916.757641: suspend_resume: gtt[0] end
 6.
 #           TASK-PID   CPU#  ||||    TIMESTAMP  FUNCTION
 #              | |       |   ||||       |         |
-             bash-4763  [000] ....  1021.912180: suspend_resume: gtt 
+             [000] ....  1021.912180: suspend_resume: gtt 
 hibernate_preallocate_memory[0] begin
-             bash-4763  [000] ....  1021.923863: suspend_resume: gtt[0] 
-begin
-             bash-4763  [000] ....  1021.930089: suspend_resume: gtt[0] end
-             bash-4763  [000] .n..  1022.001849: suspend_resume: gtt[0] 
-begin
-             bash-4763  [000] .n..  1022.040800: suspend_resume: gtt[0] end
+             [000] ....  1021.923863: suspend_resume: gtt[0] begin
+             [000] ....  1021.930089: suspend_resume: gtt[0] end
+             [000] .n..  1022.001849: suspend_resume: gtt[0] begin
+             [000] .n..  1022.040800: suspend_resume: gtt[0] end
 
 add unlikely
 1.
 #           TASK-PID   CPU#  ||||    TIMESTAMP  FUNCTION
 #              | |       |   ||||       |         |
-             bash-4575  [000] ....   112.477071: suspend_resume: gtt 
+             [000] ....   112.477071: suspend_resume: gtt 
 hibernate_preallocate_memory[0] begin
-             bash-4575  [000] ....   112.488796: suspend_resume: gtt[1] 
-begin
-             bash-4575  [000] ....   112.494885: suspend_resume: gtt[1] end
-             bash-4575  [000] .n..   112.567024: suspend_resume: gtt[1] 
-begin
-             bash-4575  [000] .n..   112.604116: suspend_resume: gtt[1] end
+             [000] ....   112.488796: suspend_resume: gtt[1] begin
+             [000] ....   112.494885: suspend_resume: gtt[1] end
+             [000] .n..   112.567024: suspend_resume: gtt[1] begin
+             [000] .n..   112.604116: suspend_resume: gtt[1] end
 2.
 #           TASK-PID   CPU#  ||||    TIMESTAMP  FUNCTION
 #              | |       |   ||||       |         |
-             bash-4575  [000] ....  1154.893337: suspend_resume: gtt 
+             [000] ....  1154.893337: suspend_resume: gtt 
 hibernate_preallocate_memory[0] begin
-             bash-4575  [000] ....  1154.905017: suspend_resume: gtt[1] 
-begin
-             bash-4575  [000] ....  1154.911116: suspend_resume: gtt[1] end
-             bash-4575  [000] .n..  1154.982854: suspend_resume: gtt[1] 
-begin
-             bash-4575  [000] .n..  1155.019977: suspend_resume: gtt[1] end
+             [000] ....  1154.905017: suspend_resume: gtt[1] begin
+             [000] ....  1154.911116: suspend_resume: gtt[1] end
+             [000] .n..  1154.982854: suspend_resume: gtt[1] begin
+             [000] .n..  1155.019977: suspend_resume: gtt[1] end
 3.
 #           TASK-PID   CPU#  ||||    TIMESTAMP  FUNCTION
 #              | |       |   ||||       |         |
-             bash-4575  [003] ....  1439.914148: suspend_resume: gtt 
+             [003] ....  1439.914148: suspend_resume: gtt 
 hibernate_preallocate_memory[0] begin
-             bash-4575  [003] ....  1439.925880: suspend_resume: gtt[1] 
-begin
-             bash-4575  [003] ....  1439.932008: suspend_resume: gtt[1] end
-             bash-4575  [003] .n..  1440.003734: suspend_resume: gtt[1] 
-begin
-             bash-4575  [003] .n..  1440.040764: suspend_resume: gtt[1] end
+             [003] ....  1439.925880: suspend_resume: gtt[1] begin
+             [003] ....  1439.932008: suspend_resume: gtt[1] end
+             [003] .n..  1440.003734: suspend_resume: gtt[1] begin
+             [003] .n..  1440.040764: suspend_resume: gtt[1] end
 4.
 #           TASK-PID   CPU#  ||||    TIMESTAMP  FUNCTION
 #              | |       |   ||||       |         |
-             bash-4575  [001] ....  1781.264580: suspend_resume: gtt 
+             [001] ....  1781.264580: suspend_resume: gtt 
 hibernate_preallocate_memory[0] begin
-             bash-4575  [001] ....  1781.276264: suspend_resume: gtt[1] 
-begin
-             bash-4575  [001] ....  1781.282374: suspend_resume: gtt[1] end
-             bash-4575  [001] .n..  1781.354068: suspend_resume: gtt[1] 
-begin
-             bash-4575  [001] .n..  1781.391102: suspend_resume: gtt[1] end
+             [001] ....  1781.276264: suspend_resume: gtt[1] begin
+             [001] ....  1781.282374: suspend_resume: gtt[1] end
+             [001] .n..  1781.354068: suspend_resume: gtt[1] begin
+             [001] .n..  1781.391102: suspend_resume: gtt[1] end
 5.
 #           TASK-PID   CPU#  ||||    TIMESTAMP  FUNCTION
 #              | |       |   ||||       |         |
-             bash-4575  [001] ....  2048.269344: suspend_resume: gtt 
+             [001] ....  2048.269344: suspend_resume: gtt 
 hibernate_preallocate_memory[0] begin
-             bash-4575  [001] ....  2048.281028: suspend_resume: gtt[1] 
-begin
-             bash-4575  [001] ....  2048.287112: suspend_resume: gtt[1] end
+             [001] ....  2048.281028: suspend_resume: gtt[1] begin
+             [001] ....  2048.287112: suspend_resume: gtt[1] end
              bash-4575  [001] .n..  2048.359144: suspend_resume: gtt[1] 
 begin
              bash-4575  [001] .n..  2048.396316: suspend_resume: gtt[1] end
 6.
 #           TASK-PID   CPU#  ||||    TIMESTAMP  FUNCTION
 #              | |       |   ||||       |         |
-             bash-4575  [000] ....  2184.274783: suspend_resume: gtt 
+             [000] ....  2184.274783: suspend_resume: gtt 
 hibernate_preallocate_memory[0] begin
-             bash-4575  [000] .n..  2184.286520: suspend_resume: gtt[1] 
-begin
-             bash-4575  [000] .n..  2184.292586: suspend_resume: gtt[1] end
-             bash-4575  [000] .n..  2184.364327: suspend_resume: gtt[1] 
-begin
-             bash-4575  [000] .n..  2184.401569: suspend_resume: gtt[1] end
+             [000] .n..  2184.286520: suspend_resume: gtt[1] begin
+             [000] .n..  2184.292586: suspend_resume: gtt[1] end
+             [000] .n..  2184.364327: suspend_resume: gtt[1] begin
+             [000] .n..  2184.401569: suspend_resume: gtt[1] end
 
 
 The following results were obtained by analyzing these data：
@@ -238,7 +219,7 @@ ues unlikely in saveable_pages, the duration of the 'for':
 so  a difference between the max  0.045245  and the min  0.043144 is 
 0.002101sec.
 
-2026/6/8 21:29, Rafael J. Wysocki :
+  2026/6/8 21:29, Rafael J. Wysocki :
 > On Wed, Jun 3, 2026 at 5:23 AM Li Jun <lijun01@kylinos.cn> wrote:
 >> Add unlikely() branch prediction hints to conditions in saveable_page()
 >> that are expected to be false in the common case:
