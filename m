@@ -1,75 +1,75 @@
-Received: from mail-pj1-f48.google.com (mail-pj1-f48.google.com [209.85.216.48])
+Received: from mail-pj1-f49.google.com (mail-pj1-f49.google.com [209.85.216.49])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 099A02F5A0E
-	for <linux-pm@vger.kernel.org>; Wed, 15 Jul 2026 05:45:45 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.216.48
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A584A30674B
+	for <linux-pm@vger.kernel.org>; Wed, 15 Jul 2026 06:11:43 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.216.49
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1784094347; cv=none; b=gWvUB7lnt3Yz+/L7V9XYMospMNfZrSG2V9Moz5R1E8l4J7DwJTx6Voq0qqTjCgHddj0P3u8BghnON1rzf0/DreV36HyFq+rvULsbx09Jxiff2imJ3VSMQXu3cDonpnSLz0ReMZd4JGRUu4XlsZbBeA9qcukHSheHUHzU4wexoH0=
+	t=1784095904; cv=none; b=pJd+JrHRb3lzf/dFA2MGysVe8KJQry9r04F1TNITW+wlNW4CS6wtq58dvv2DXMnQ71j6bf6wGhvaXNNXGZf9fhbEplN8cTdBZjTkNbW4Fojbc8lhpREVZHPVClQHBaM1jRpQ1Q4Jmlhy/a6XdWgGTNxfFJ7fzKZ/VYEA0qxLDls=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1784094347; c=relaxed/simple;
-	bh=VeiS/HQ0/A//WgU8Q9019LQBqEPCs8FiGuXfWIXsHrY=;
+	s=arc-20240116; t=1784095904; c=relaxed/simple;
+	bh=5jEtSCjFGINh8jZTvok+8s30ii9/i+UPEHsVez/292o=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=MUvCmhd1pcB6gHcWUNG+UOSzk8hR4r4vL/lpUM2GxYl0V3TQnGoDrCmKH+x7zN/X53EZfgdi7B39MevtSLPj3cEbIssJItyp8HrFpVDcpENq4hgzpIdTAk+1dJ28jc3aJTlxkGfkmGrqUD0IY68UrYzi43Is0lwZ2YIPYL53lx8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=mN8uYx40; arc=none smtp.client-ip=209.85.216.48
+	 Content-Type:Content-Disposition:In-Reply-To; b=bFG0h6hWnmkaZLa+5AeB3+StU5CgYQUw4V+pT9tI2FY+mquPKFdFpuPB9nTdTscYk5x063rOAXme8m5bJFkiZfO16Bo8pfpMFVmJy1GoUWjvsN0Cy/pwO8qvTl2r89KcR4Huf/LBk31XQHJ60RGpzcGorwDPDqD66pyVE+0OXP8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=VwFdpM03; arc=none smtp.client-ip=209.85.216.49
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="mN8uYx40"
-Received: by mail-pj1-f48.google.com with SMTP id 98e67ed59e1d1-38de840f2f0so1911337a91.0
-        for <linux-pm@vger.kernel.org>; Tue, 14 Jul 2026 22:45:45 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="VwFdpM03"
+Received: by mail-pj1-f49.google.com with SMTP id 98e67ed59e1d1-383cb94f742so4700433a91.3
+        for <linux-pm@vger.kernel.org>; Tue, 14 Jul 2026 23:11:43 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1784094345; x=1784699145; darn=vger.kernel.org;
+        d=linaro.org; s=google; t=1784095903; x=1784700703; darn=vger.kernel.org;
         h=in-reply-to:content-disposition:content-type:mime-version
          :references:message-id:subject:cc:to:from:date:from:to:cc:subject
          :date:message-id:reply-to:content-type;
-        bh=d7JQLilasvtiBi3KqJRPfjtcOsV3KOV9/MjPpoDKsyw=;
-        b=mN8uYx40nB/KtBAJBjXVm/VLX863WeNtfzqg+4ZdGA5xVHb0BoTNplarvZlkt6f9aY
-         I1E6bQKqbrPpNcHCRF1aKixJWGkI9phhlTd+0hSrJCf9KXCea5n35KH4GwWkyn8PMnhl
-         1658vLg32+Me+Bpvn74X6hA0nxYENDP6I+aQzOufXi0EIkPWC2G/zypqE09yziCSoAEN
-         1xjKU/IgUh4gQPKSIYJsJ8EC62MxJ0wMbi5leQR4cCcOuuqtLCtGL3ls1iY1+5O19NoE
-         hstX2RjUZtfdS0gI4PxmDRWXixMjAl04EGQS0moHTs/EbRpGo3z5yWfnnms54sJp26Nc
-         eYrw==
+        bh=xAmPTM8zhZyttGnxHW8eJEUF0vL7fUh/w5+5tabBlR8=;
+        b=VwFdpM03UslmD9LR2mE+W8nrGYwHl2HT0IFOhPX5O7Ug+dXqlmznteUgqk4JXhIBM3
+         skuqB/CkprcGTWVyjA6ci51bwv+jyrqHOgj+qntSSRZiBwBIBf8dPMe+RkQxsznBLgda
+         6eg+Wwb6W3hb1eu8HoF7ROfxNuawu4taI34hV0t9TcKr6djxS1nocofaDGZQZ0bZW4Tk
+         6UWofOGlwHDAJQXrGz+2iW5YFziMwAWQF8V7vmNJOecqt/FQ2AtiukOTq0SMiYvjBsrn
+         yIma+OVNLTWWMvMuFgoPNR3JMF5b8eGX54TJVSd60w8lhBXqTGtyppZN3ES/Fs2I0kwp
+         wP1w==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1784094345; x=1784699145;
+        d=1e100.net; s=20251104; t=1784095903; x=1784700703;
         h=in-reply-to:content-disposition:content-type:mime-version
          :references:message-id:subject:cc:to:from:date:x-gm-gg
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=d7JQLilasvtiBi3KqJRPfjtcOsV3KOV9/MjPpoDKsyw=;
-        b=VaK9zkRxqSIRDNFWmP9r8O9d5jBxNZW4xtLx3h/i4Fd0I/I85FR3D+NTpkPGofEuOa
-         IYOt3/SbG8309SI70j1NqzRVkbm1LXaSqQGoFmCOXP/od+MI6rEaNJ69NCwlL/X2Z3FF
-         Wf0b8fcGrHNjLXPfJbor/oZYcc5OqdIR0gtX3VmFmnSTDppHBD1KXFmiDRpD3bbvgWi8
-         fT+GeI1/2cH/4ebFwv5XxG2F55DjWbwDut2EwjhU4VvXM/a3J109zYpFsGmzYBC+GMZb
-         buG5SizWM5mzLgVgEc4ue86+cxPf2blYjT4n1+GAPCVGHUbUD5Y0Ox66fFOpnRIjM2wL
-         VTyg==
-X-Forwarded-Encrypted: i=1; AHgh+Rra/ZZpWKehL2jSAYf6EnlGIPNYUun4wS/8NB7p1f6zbxJgGOyrCrzpuxym+Gum7XuD5GqL58MNUw==@vger.kernel.org
-X-Gm-Message-State: AOJu0YwEtybf2v38PVt9mK8JKuvK6u6o7+yj+z+SIzeX3zb8QW63tUIC
-	veU23p1Jr5OVkFoNe9fPjumMwMbAL5TyhNHdBhoUzdYHct58Cc+KctnvWew2WVOiKck=
-X-Gm-Gg: AfdE7cn3wD0ewY+w6qlPzoxADMMX5wsjYERt2CCxaJL4+y1trog3FsWeGtvPDvHEuEq
-	bcWpioOJM5lFjkogeTnWjmCt/Rf/sp1Dg7CN8fd6XwDKkdbg46aBqBn+KIHau2L5vTlk2FLBH7V
-	p5WkskKDD9S+PKBY85KWwjxG1n9DYjt8YwVCTdz86VhL0B9urHgnBBB7HXD1/b1kqfq4RR2TkoU
-	DldDoIF50U3K0IbpCsGIoiHfbvfmNZovtJlb2T6YUXDn/gAu0tyypPidu14tsbrVl7CJZnk76O5
-	ZuJpDhkIQ5NwB0LmYPDLOATPmLyTj8zu3JkrVsHO5Hs/cs3PQntx9qVshk9wGHkB/Zv/xFiYhAS
-	9ip0nAnrOyvfqt3ChF44PnxLz2XOh5IaT1sKi/F5AWNUSihkp1oq0hqn0Vsgokx3wlHC04w/yZI
-	crGnQiq3aplNjs
-X-Received: by 2002:a17:90b:3a81:b0:37f:e1b6:4c7d with SMTP id 98e67ed59e1d1-38dc782ab92mr15243246a91.6.1784094345259;
-        Tue, 14 Jul 2026 22:45:45 -0700 (PDT)
+        bh=xAmPTM8zhZyttGnxHW8eJEUF0vL7fUh/w5+5tabBlR8=;
+        b=pJ4vn4mB6eWAHejNOgbdQv/bx0AS7OJWPKaj0tT5WKzpmbHDdYwOusZrDpGPwITRJb
+         m2sYcPV4e1e/XrITKIp0P9fcPbi3lvXNggfVc/azjlOlVP20tJLRmnsdjrppqGTozy0E
+         nj/TphHXD5l93X6hokTy+ld310wsIvoJ+sxfUGmK2iHAmufaznEDtV9LkYCmldJJ9hCJ
+         hCa/GVxtMg9/TYtJiOt+S8CNa/uwYykoW8TJdt5h9FmfJsUKjgg3ZPy2pyht/GX5skxc
+         rvFUCqJKnYZg+BJcicu1lf8VqM1qVUuOUOUl/kV/Wx2WLCwM5v4Cr5jv+Q5/LN8RFc2I
+         3xSA==
+X-Forwarded-Encrypted: i=1; AHgh+RoPvlHb5tEcOa99FlMylgLPs9PdXr7sJeAeS8USQ6HUvWTlSEalqKsnZtLtjhMzeDEcJs2RXnUmMw==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yx/Pca4W95w7F1jgP9mKZuCoXbo6i+dcoaaTh/arxok0PkcWo78
+	Hz6M/UWMvBcZD2MyIz5kp0tncaI8SETibrPsWLj6jzwej4rFsa+zV1yq4jy9yTfiwxE=
+X-Gm-Gg: AfdE7cnsAwXTBpo7q3Vflff75diy+KL2h3Q4y/9lINoTjOQ/wSf42OGuTSjWJo6FGnR
+	XOw08sKWng6B+wEA/ELLZ8bt0lpk0wesetO6f39CQ7wPeuggaiCCEohjOA4x1Xax9CYVqupc9yC
+	64N5vnkoU3Hj4VYcHNbGjpCXrcGAD9EqPRdama7jrFMsyFFCxPmMXfib+DpHcPsaICNXlBctrDq
+	fO6Ljw/Gom5wifL/D0lCqLEvWm96vK4ee72P6dwsWngj2DSUMImHoYfS1SBFpnpEJY1kpQz1klj
+	Tp6cWjYQRSboL0KGUZHLcxqINdBH4wUcZ9aKwLOve3DYTvE+FjkSg7XgZ7P9nzsRsaG4BU7Su4V
+	dvUZ9GiUhIJKQAxowv5VWdExB0/X79MJ0KFhhSg101kHw98EWt4sA9F/0qJxOH04BgU6YkBdCQx
+	+1tPGXuCRE0JJo
+X-Received: by 2002:a17:90b:2650:b0:37f:ef32:d444 with SMTP id 98e67ed59e1d1-38e29ff9805mr1337073a91.1.1784095902763;
+        Tue, 14 Jul 2026 23:11:42 -0700 (PDT)
 Received: from localhost ([122.172.82.94])
-        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-3117d847e17sm88482627eec.18.2026.07.14.22.45.43
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-3117462f5c7sm93198720eec.0.2026.07.14.23.11.41
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 14 Jul 2026 22:45:44 -0700 (PDT)
-Date: Wed, 15 Jul 2026 11:15:41 +0530
+        Tue, 14 Jul 2026 23:11:41 -0700 (PDT)
+Date: Wed, 15 Jul 2026 11:41:39 +0530
 From: Viresh Kumar <viresh.kumar@linaro.org>
-To: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>
-Cc: Dan Carpenter <error27@gmail.com>, Deepak Sikri <deepak.sikri@st.com>, 
-	"Rafael J. Wysocki" <rafael@kernel.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	kernel-janitors@vger.kernel.org
-Subject: Re: [PATCH v2] cpufreq: spear: Fix an IS_ERR() vs NULL bug in
- spear1340_set_cpu_rate()
-Message-ID: <mfnihs23xwn6l5r626p7aunrxw34bizbaoka3zwromilg2znpl@jvjj3uxtwovt>
-References: <alZZzlY9rfdAvWac@stanley.mountain>
- <a32691c8-e48d-472a-91bc-a3f4e9edb00a@oss.qualcomm.com>
+To: Priya Bala Govindasamy <pgovind2@uci.edu>
+Cc: rafael@kernel.org, ojeda@kernel.org, boqun@kernel.org, 
+	rust-for-linux@vger.kernel.org, linux-pm@vger.kernel.org, ardalan@uci.edu, zhiyunq@cs.ucr.edu, 
+	dzueck@uci.edu, ytan089@ucr.edu
+Subject: Re: [PATCH 1/1] rust: cpufreq: Fix temporary write in
+ Registration::bios_limit_callback
+Message-ID: <ouf2qqkiqgvn5yy6umr36ii5ltgacx3qthyhbol7ly3qn6lypv@pmkv27ngsbcf>
+References: <cover.1783456063.git.pgovind2@uci.edu>
+ <f56e1010822963b2f8133c63de47645834281007.1783456063.git.pgovind2@uci.edu>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -78,21 +78,53 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <a32691c8-e48d-472a-91bc-a3f4e9edb00a@oss.qualcomm.com>
+In-Reply-To: <f56e1010822963b2f8133c63de47645834281007.1783456063.git.pgovind2@uci.edu>
 
-On 15-07-26, 08:10, Zhongqiu Han wrote:
-> On 7/14/2026 11:46 PM, Dan Carpenter wrote:
-> > The clk_get_parent() function doesn't return error pointers, it returns
-> > NULL on error.  Update the error checking to match.
-> > 
-> > Fixes: 420993221175 ("cpufreq: SPEAr: Add CPUFreq driver")
-> > Signed-off-by: Dan Carpenter <error27@gmail.com>
-> > ---
-> > v2: fix subsystem prefix in subject
+On 14-07-26, 20:30, Priya Bala Govindasamy wrote:
+> Writes made by `T::bios_limit` go to a temporary on the stack instead of the 
+> limit pointer passed by C. 
+> Fix by creating a mutable reference to the actual memory location of
+> the limit pointer.
 > 
-> Reviewed-by: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>
+> Additionally there is a creation of a reference from the 
+> uninitialized limit pointer which is unsound. 
+> Fix by initializing the limit pointer to 0 before 
+> calling `T::bios_limit`.
+> 
+> ---
+> Fixes: c6af9a1191d042839e56abff69e8b0302d117988 ("rust: cpufreq: Extend abstractions for driver registration")
+> Reported-by: Dylan Zueck<dzueck@uci.edu>
+> Reported-by: Yuan Tan<ytan089@ucr.edu>
+> Signed-off-by: Priya Bala Govindasamy<pgovind2@uci.edu>
+> Assisted-by: ChatGPT:gpt-5.4
+> 
+>  rust/kernel/cpufreq.rs | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+> 
+> diff --git a/rust/kernel/cpufreq.rs b/rust/kernel/cpufreq.rs
+> index 58ac04c650a1..0f9385d41b64 100644
+> --- a/rust/kernel/cpufreq.rs
+> +++ b/rust/kernel/cpufreq.rs
+> @@ -1349,12 +1349,12 @@ impl<T: Driver> Registration<T> {
+>      unsafe extern "C" fn bios_limit_callback(cpu: c_int, limit: *mut c_uint) -> c_int {
+>          // SAFETY: The C API guarantees that `cpu` refers to a valid CPU number.
+>          let cpu_id = unsafe { CpuId::from_i32_unchecked(cpu) };
+> -
+> +        unsafe { core::ptr::write(limit, 0); }
 
-Applied. Thanks.
+Maybe add a comment over this on why this is done ?
+
+Miguel, can we get around this somehow ? The driver is supposed to fill the
+`limit` field and not use the uninitialized value.
+
+>          from_result(|| {
+>              let mut policy = PolicyCpu::from_cpu(cpu_id)?;
+>  
+>              // SAFETY: `limit` is guaranteed by the C code to be valid.
+> -            T::bios_limit(&mut policy, &mut (unsafe { *limit })).map(|()| 0)
+> +            T::bios_limit(&mut policy, unsafe { &mut *limit }).map(|()| 0)
+>          })
+>      }
 
 -- 
 viresh
