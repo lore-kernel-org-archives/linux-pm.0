@@ -1,199 +1,113 @@
-Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 34256446829
-	for <linux-pm@vger.kernel.org>; Wed, 15 Jul 2026 11:16:33 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.180.131
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4B69A3218BA
+	for <linux-pm@vger.kernel.org>; Wed, 15 Jul 2026 12:10:30 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1784114194; cv=none; b=jeYrNBFmkjrqf7LbsPIbgZu6BuXCQ43YS4OsUj0bfTUCwNMwsuh4uDXm8IPSqBIYuYg06yzdaCqgED0gqpLevA3d/On8j23xbm0xPprGv1GxaaBOexecAEharSxqFiWMufSzD+67y+7i4REvPlr+OgGunyn228QmBn1GsUjX2Ek=
+	t=1784117431; cv=none; b=aM/SbbnDyc4d4DctukpVJokSSFZxyAgfNc10SAsKf3nscwvcn8zZSt6kLsXYwNVK7ZKEhh9/IEnBfm/RVgJVcDKZCOVB6xGkCSL87nQFFYzGdxmCusuTcwVQEqRSY2i+hb1SLk3GTqAoqPWUw1aqqn6W0+JLHrkywKu8x0v7sho=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1784114194; c=relaxed/simple;
-	bh=b8R7PMKX/mJOnKSAzw+WBIj3ErqOG2azS+7mDTf24aA=;
-	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=BvMBnWHFirBQ4+boI11rWy3ksqKHn3DK4StlADT1Dh2IGUAARs3HY+uCeESdgrO4O8i0ZG1MRvZ8HN8HTUVMh6GS4XLld6pkBUvqQVM55FvBwc/1wVsTKaxv1ErOs1NM5lxfh653chOgMCzIpRB41wxopECLI9HqH/SKZieY/kA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=C6T+UMfp; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=QXHjiXwZ; arc=none smtp.client-ip=205.220.180.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
+	s=arc-20240116; t=1784117431; c=relaxed/simple;
+	bh=PYNLDHGO6ov8H5x5qqX5IZL4rw+a3BqAyT9tBi7RhC4=;
+	h=From:In-Reply-To:MIME-Version:References:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=rJpvhtFgu/cyBapjOkI5B2akZgqnmeilcFvV38csPogO3Tj44LsHn1HoyU63srPlESrNQeGVmVc06FgTweTjsXazTYy6lIFhooNIg/wRl1+pexTdEFdLhgk3Z/TkOsO+CyJm8cbZEkHh9vVKmtt1DxuHdE7zPpcEI2f0kqbQHWM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Q84hagRT; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="C6T+UMfp";
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="QXHjiXwZ"
-Received: from pps.filterd (m0279869.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 66FB8fRn3640415
-	for <linux-pm@vger.kernel.org>; Wed, 15 Jul 2026 11:16:32 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:date:from:in-reply-to:message-id
-	:mime-version:references:subject:to; s=qcppdkim1; bh=nhogDVqJuu8
-	4Y9umWIh3a+QOZfhAgQxd/7sF5vPE2l0=; b=C6T+UMfpT8BjG6k2aEz9pwfcRRs
-	z7wofVtgxCGoTVn0Lfy7lfR7V8Pm7l/A5E/Ce7Z5GRsIvED0zN8TquZRfnI1c9ER
-	jBmmR8KnmmM8m0LoAfvQ1yzTZJ8CRKp15+uc+IOfE1iBlK7nqe4yR4Kx7nqGYTdy
-	zXK5QBjadiIenICy8Cm1PQPNuQjBLQg+GAx98EuHht6PLVZuPxxNNCuJn3aZEMJf
-	+clcOHyUB5QQHqecG5SOqKPK+RHMZVeWQCtiv3I6pOCigqFBWjO+hG9byvd69XPu
-	nP2Cl7oM1yoON2GeAvi1jqpE5sm8RW2vIcrEVWoN2pmzw6vcFxLCkUYDp1Q==
-Received: from mail-pl1-f200.google.com (mail-pl1-f200.google.com [209.85.214.200])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4fe7nmgd6d-1
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Wed, 15 Jul 2026 11:16:32 +0000 (GMT)
-Received: by mail-pl1-f200.google.com with SMTP id d9443c01a7336-2cca0ed258cso22007445ad.0
-        for <linux-pm@vger.kernel.org>; Wed, 15 Jul 2026 04:16:31 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1784114191; x=1784718991; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=nhogDVqJuu84Y9umWIh3a+QOZfhAgQxd/7sF5vPE2l0=;
-        b=QXHjiXwZ1f50787ReGmLoov/LE/Wy4+JsdKDK5fTs3Yo2OAfVpqiEMNuicovAoi+xY
-         tJma54Jvs6I9VOmFf/bBJUM/WJx7qCJdU+PLJfaeO5jh4mGARtaOCldGlkjep2QCGAup
-         dv1+7S0y5K1HrP6cmX4udQ5pC+0RBZM1f7LnRJADg1KefFNC34p7ikRZ1ppw/TSj9CWl
-         JnKllidnarh3n9i3W1smL+ao1jjp1f1hl1MEMQyZPPwmHNZlyD97mCE8ZGwEJMvG98Kp
-         kWPj98/iRUoeXKbk3O2PgK79oASRcU7uJ4BQLNPdInV/QXubZo/LlSs5GxHaJ3cRTLyN
-         m1Cg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1784114191; x=1784718991;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=nhogDVqJuu84Y9umWIh3a+QOZfhAgQxd/7sF5vPE2l0=;
-        b=OwMrptOkyKHLjD2vloSdG99r1t8X1FryBtPK+8PzbTsuqBi85bYtPQxU7Y36ZzBRMx
-         tQ53dbQRdC30dHwKdoyuLJ3o1WPVvoE4RQKO+uAW6sx20ogAN4a2124G2mcv1cBoZsOo
-         QIaZQtRhXXvkc+TPpwvWo8+5nlTrAu/Lpk9fdiCY5XEmMQZattimpeA1u/CB605fyLBG
-         KTLeHgCoswltBMz1WJNgjdIKYQzIvfuocRXikCjW0hMs2QlpVCHLFWZdfnejqus4RatD
-         n0XutlUZeIyS9TWP378j7fIBvWtKthP5U5raER6o0w3oC37WwOsclAZuEvp27kpcvkio
-         xdyw==
-X-Forwarded-Encrypted: i=1; AHgh+RqV2J9hmibU/nLo/UlF+8PR9hpYSXfpFNXRxch4sxjiNZDvzRKgNaRksF+IaSp7ip9i7GF85qUO0Q==@vger.kernel.org
-X-Gm-Message-State: AOJu0YxWF0HRJNDZVD86VaUp32RGaG38yehBK1ku06JOFsLIEExXi7WF
-	TN3+fGv6KS1NXddz9dG6hX6xWrEhabvTekJV7kGjwRGjUiQKfXNKnREjGqRXq5QDAFFKZ8XqT2W
-	c0+RtrayAXEpEjdSvjmVzxRMq1HKGzpSS/20eUemgzNdADPL7B9EEQkz/gGPX8A==
-X-Gm-Gg: AfdE7cmJrj/K5YDDR1LYF7aYEa1UXQ2ks6Fey+plH8vLe5IlXew9yX6sTJYxgOjKCOm
-	tCwZAjbGcBEMmrRKrw7L+fZKmiwARTvYD8eOVfbRH90ls8gJMdN5iWPxuhIkeWjIbESfnBa2JAC
-	VeRusu/Z4KLJXakAT234c6g399Qc5HlNi7wDGFIRJZh2wjM8dRWy7JN7bpoJl3uwOKj4kVHySkr
-	POoIoYulmRZsSgIk/JtZXMlAl2qeZtk4HitHSRy4nuqvkvVk7bvr6ieEpeCd4Y88GCDKUeiObz/
-	r9ZFISzhDN71zKl1cWd4rK3fBOVJR6jLk4JECWxMY3HrM8lgBLAUsmOCRr2q3WDwsvLabPO3/1f
-	RSUEO2v0kOqY0sr97SDIkqKHkiaFj5ZcCXX4Rqqke0jAAoMxW2v45Kg53fVI1tg==
-X-Received: by 2002:a17:903:2442:b0:2ce:aea4:5e80 with SMTP id d9443c01a7336-2ceaea45f9bmr114311025ad.6.1784114190801;
-        Wed, 15 Jul 2026 04:16:30 -0700 (PDT)
-X-Received: by 2002:a17:903:2442:b0:2ce:aea4:5e80 with SMTP id d9443c01a7336-2ceaea45f9bmr114310655ad.6.1784114190341;
-        Wed, 15 Jul 2026 04:16:30 -0700 (PDT)
-Received: from hu-weiden-sha.qualcomm.com (i-global052.qualcomm.com. [199.106.103.52])
-        by smtp.gmail.com with ESMTPSA id a92af1059eb24-13cd42b2c0bsm471669c88.8.2026.07.15.04.16.25
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 15 Jul 2026 04:16:29 -0700 (PDT)
-From: Wei Deng <wei.deng@oss.qualcomm.com>
-To: mani@kernel.org
-Cc: dmitry.baryshkov@oss.qualcomm.com, andersson@kernel.org,
-        konradybcio@kernel.org, robh@kernel.org, krzk+dt@kernel.org,
-        conor+dt@kernel.org, brgl@kernel.org, linux-arm-msm@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-pci@vger.kernel.org, linux-pm@vger.kernel.org,
-        wenst@chromium.org, mengshi.wu@oss.qualcomm.com,
-        quic_chezhou@quicinc.com, cheng.jiang@oss.qualcomm.com,
-        shuai.zhang@oss.qualcomm.com, jinwang.li@oss.qualcomm.com,
-        xiuzhuo.shang@oss.qualcomm.com
-Subject: Re: [PATCH 3/3] power: sequencing: pcie-m2: Deassert W_DISABLE2# when no UART serdev is created
-Date: Wed, 15 Jul 2026 16:46:22 +0530
-Message-Id: <20260715111622.2561730-1-wei.deng@oss.qualcomm.com>
-X-Mailer: git-send-email 2.34.1
-In-Reply-To: <bjcmn2euhpik54ytc7falqgcezvy2loimudm6v2ibzxx6autki@rex5cjq2o755>
-References: <bjcmn2euhpik54ytc7falqgcezvy2loimudm6v2ibzxx6autki@rex5cjq2o755>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Q84hagRT"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id A5D8C1F00A3D
+	for <linux-pm@vger.kernel.org>; Wed, 15 Jul 2026 12:10:29 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1784117429;
+	bh=DMCjy06zEXDnbWum2gCuxx6nJG7pOKzGSJuwH+iOivg=;
+	h=From:In-Reply-To:References:Date:Subject:To:Cc;
+	b=Q84hagRT5mPR6Sg5DtuRlLw+qHQbfE0zv769VXXV9fdXQpiVBljonlJJa72YMpf7y
+	 iYZKdHDeOLn8CpItSXEjn1bhf/D4qCsfnSPEa7/PTcNChMqAhAqIRMVv6IPYnjTWNf
+	 f6fX48BpqcIK+ON+887Wu4FNF344byUQrM0B06tKW0vZac2Mc7MOJY+3WBJGIbOU+Y
+	 s+XfEqlz2dR3TJcJ/wfD5eHKBMjk+CX2g65Qv7jgY9vFpJ/lCvVHcRqKIqgqNj8AG2
+	 O0InDdM9pynSkxccpuvAM61EcsTe+9yFBOyTSh9Ps6BNkic3e+7+aR0leWcj1IPoJc
+	 1hyWYWU7Tv3Eg==
+Received: by mail-lf1-f53.google.com with SMTP id 2adb3069b0e04-5aec201b582so5151192e87.1
+        for <linux-pm@vger.kernel.org>; Wed, 15 Jul 2026 05:10:29 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AHgh+RquWKgkVqJIaMmH5C/aBlHGhQCb0GeZNX4P+1GY6l8zUmLlTM1R5QKj0dn9oo3NaaALQicWL30I8Q==@vger.kernel.org
+X-Gm-Message-State: AOJu0YxTx1v2afD6ROnh3zU5aL+lY3GkdNB2yMurOi/EvxusPS7bKHIn
+	l2aPnXurzqWp9oTEbQ1wkZMbv8fuWMevj/NxhYIT5SCsgMRI2GPRv8/rcMi29/xUdqg+zlaCQJB
+	pTkmQUeP6LU7YFUL+kmZN3Rxm8xDtLerwEmdCBzOm3w==
+X-Received: by 2002:a05:6512:2507:b0:5ae:bcf8:e7d0 with SMTP id
+ 2adb3069b0e04-5b15d7baf00mr578542e87.55.1784117428284; Wed, 15 Jul 2026
+ 05:10:28 -0700 (PDT)
+Received: from 969154062570 named unknown by gmailapi.google.com with
+ HTTPREST; Wed, 15 Jul 2026 12:10:26 +0000
+Received: from 969154062570 named unknown by gmailapi.google.com with
+ HTTPREST; Wed, 15 Jul 2026 12:10:26 +0000
+From: Bartosz Golaszewski <brgl@kernel.org>
+In-Reply-To: <aldS3qTympJuVXYj@ashevche-desk.local>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Proofpoint-Spam-Info: AW1haW4tMjYwNzE1MDExMCBTYWx0ZWRfXyT5fVFMj38dl
- o32pSE1GxlZWestnGUKWv4RdrqV5ELCHoVsnIzYkYBYje612Q7CQP905LE1KgmRd33/KXO5cJDf
- UsEJ47KNqxllTMaJ7ZQm4tNpgfBX39M=
-X-Authority-Analysis: v=2.4 cv=cuGrVV4i c=1 sm=1 tr=0 ts=6a576c10 cx=c_pps
- a=IZJwPbhc+fLeJZngyXXI0A==:117 a=b9+bayejhc3NMeqCNyeLQQ==:17
- a=RAioF0-LDSMA:10 a=s4-Qcg_JpJYA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=u7WPNUs3qKkmUXheDGA7:22 a=_glEPmIy2e8OvE2BGh3C:22 a=VwQbUJbxAAAA:8
- a=cm27Pg_UAAAA:8 a=RcxsvD7BqTzStQuQcmYA:9 a=uG9DUKGECoFWVXl0Dc02:22
-X-Proofpoint-ORIG-GUID: UUDxnDRtxVVRM2L7JKZuLzbUToyKbpV4
-X-Proofpoint-GUID: UUDxnDRtxVVRM2L7JKZuLzbUToyKbpV4
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzE1MDExMCBTYWx0ZWRfX2C7zu1F2X244
- 7K6NtK6yn9XUPEdJ2icFEg1oCtK1slJPnJ3WJB7QgeBID/8h9SjbKxVyVBK7h1vyUSVAraF3R4K
- Nm51UFcGiwPWdz74F4XnNZayTP3w3ZAomnxGxrguI6nD4Ey8cBaWbWLLq6jyvcjEny8Gs1P9f3q
- xIjL+SfFhJRFWznc8l0qyygDnQPaNsU3fko8rnb/DEWPJbdper2/e84Y8JagEXbqRGv4haiYm25
- +6NwVFaoRpVrfuhrroXMrZio+V0BFmo0nk0XCu9nlsL+OmXorm5oSf815Z7+YLSbXVCF3PCODuw
- 1nk510hEd8kmSf2JzGRkdTL8MGrlzDpKcin7+dxkohY8Y0+N+wJJbPJ0sBSkr8wWsAIbKcLgtvL
- s7o0pZtxXjiGFZye5a+Onawn4O1ac2091Q/JOOGfps4AH8oIyxPakJPNDaN1Lq3NR+iAojSakL5
- 9U6hLDtKzleQgQ8PXaA==
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-07-15_02,2026-07-15_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- clxscore=1015 adultscore=0 bulkscore=0 lowpriorityscore=0 malwarescore=0
- phishscore=0 priorityscore=1501 spamscore=0 suspectscore=0 impostorscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2607150110
+References: <20260715085348.3457359-1-wenst@chromium.org> <20260715085348.3457359-4-wenst@chromium.org>
+ <aldS3qTympJuVXYj@ashevche-desk.local>
+Date: Wed, 15 Jul 2026 12:10:26 +0000
+X-Gmail-Original-Message-ID: <CAMRc=MfHmejks83bPfe3fKzAzFySGXk2GHMA9oZdMQj0f44eTA@mail.gmail.com>
+X-Gm-Features: AUfX_mxpntQH8Qnw3cJ2vX6VfUBu9N4HciM9BCR-9eipAChzpXbQ2rXlvYEnYl8
+Message-ID: <CAMRc=MfHmejks83bPfe3fKzAzFySGXk2GHMA9oZdMQj0f44eTA@mail.gmail.com>
+Subject: Re: [PATCH v5 03/16] power: sequencing: Add pwrseq_power_is_on()
+To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Cc: Bartosz Golaszewski <brgl@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
+	Daniel Scally <djrscally@gmail.com>, Heikki Krogerus <heikki.krogerus@linux.intel.com>, 
+	Sakari Ailus <sakari.ailus@linux.intel.com>, "Rafael J. Wysocki" <rafael@kernel.org>, 
+	Danilo Krummrich <dakr@kernel.org>, Rob Herring <robh@kernel.org>, 
+	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
+	Matthias Brugger <matthias.bgg@gmail.com>, 
+	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>, 
+	Wei Deng <wei.deng@oss.qualcomm.com>, linux-acpi@vger.kernel.org, 
+	driver-core@lists.linux.dev, linux-pm@vger.kernel.org, 
+	linux-usb@vger.kernel.org, devicetree@vger.kernel.org, 
+	linux-mediatek@lists.infradead.org, linux-arm-kernel@lists.infradead.org, 
+	linux-kernel@vger.kernel.org, Manivannan Sadhasivam <mani@kernel.org>, 
+	Alan Stern <stern@rowland.harvard.edu>, 
+	Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>, Chen-Yu Tsai <wenst@chromium.org>
+Content-Type: text/plain; charset="UTF-8"
 
-On Tue, 14 Jul 2026, Manivannan Sadhasivam wrote:
-> On Mon, Jul 13, 2026 at 02:46:16PM +0530, Wei Deng wrote:
-> > On Thu, 9 Jul 2026, Dmitry Baryshkov wrote:
-> > > On Thu, Jul 09, 2026 at 12:59:42PM +0530, Wei Deng wrote:
-> > > > The pwrseq_m2_pci_ids[] table lists PCIe BT devices that use UART as the
-> > > > BT transport and need a UART serdev created by the driver. When a PCIe
-> > > > device under the M.2 connector does not match any entry in this table,
-> > > > no UART serdev is created.
-> > > > 
-> > > > However, the BT subsystem of such a device may still require W_DISABLE2#
-> > > > to be deasserted to power up. Rather than adding every possible non-UART
-> > > > BT device ID to the table, add an else branch that deasserts W_DISABLE2#
-> > > > whenever a PCIe device is detected under the connector but does not match
-> > > > a UART BT entry. This allows any BT interface on the card (USB or other)
-> > > > to enumerate without requiring explicit knowledge of its device ID.
-> > > > 
-> > > > The primary use case is USB BT variants of combo chips that share the
-> > > > same PCIe device ID as their UART counterpart (e.g. WCN7851 NCM865 USB,
-> > > > sub 0x3378, vs NCM865A UART, sub 0x337c): no UART serdev is needed, but
-> > > > W_DISABLE2# must be deasserted so the USB BT device can enumerate.
-> > > 
-> > > Instead of forcibly toggling it, would it be more sensible to tie pwrseq
-> > > into the USB too? The onboard-usb-dev implements the same idea (of
-> > > powering up the USB device), but it predates pwrseq.
-> > > 
-> > > -- 
-> > > With best wishes
-> > > Dmitry
-> > > 
-> > 
-> > Hi Dmitry,
-> > 
-> > There is a patch series from Chen-Yu Tsai that appears to implement what
-> > you suggested:
-> > 
-> >   [PATCH v4 00/14] arm64: mediatek: Add M.2 E-key slot on Chromebooks
-> >   https://lore.kernel.org/all/20260709095726.704448-1-wenst@chromium.org/
-> > 
-> > We have been testing this on the Qualcomm Hamoa IoT EVK with both UART BT
-> > and USB BT M.2 cards.  Is this the direction you had in mind?
-> > 
-> 
-> IMO, we should move towards Chen's series.
-> 
-> - Mani
+On Wed, 15 Jul 2026 11:29:02 +0200, Andy Shevchenko
+<andriy.shevchenko@linux.intel.com> said:
+> On Wed, Jul 15, 2026 at 04:53:33PM +0800, Chen-Yu Tsai wrote:
+>> The power sequencing consumer API already does power on state tracking
+>> internally. Expose the state to consumers through pwrseq_power_is_on()
+>> so that they don't have to reimplement it locally.
+>
+> Reviewed-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+>
+> ...
+>
+>> +/**
+>> + * pwrseq_power_is_on() - Queries the last requested state of the power sequencer.
+>> + * @desc: Descriptor referencing the power sequencer.
+>> + *
+>> + * This returns the last requested state of the power sequencer.
+>> + *
+>> + * Returns:
+>> + * On success, 1 for on or desc is NULL (optional) and 0 for off;
+>> + * negative error number on failure.
+>
+> I would rephrase it a bit.
+>
+>  * On success, 1 for on and 0 for off; negative error number on failure.
+>  * If desc is NULL (means optional) return 1.
+>
+> And this rises a question: why 1? Shouldn't it be some "unknown" state?
+> (But since Bart Acked this, this doesn't prevent the patch to go, you
+>  got my tag above.)
+>
 
-Agreed.
+No, this is good feedback. Maybe we should prefer an enum like so:
 
-While testing Chen-Yu's v4 on the Qualcomm Hamoa IoT EVK with a board
-that needs to support both USB and UART BT cards, we found that the USB
-hub holds a reference to the "usb" pwrseq target permanently (acquired
-in hub_activate() and never released). When the UART BT driver later
-calls pwrseq_power_off(), the bt_unit enable_count only drops to 1 and
-bt_disable() is never invoked, leaving W_DISABLE2# deasserted. This
-prevents the BT chip from being properly reset, causing the next
-btmgmt power on to fail.
+enum pwrseq_state {
+	PWRSEQ_POWER_UNKNOWN,
+	PWRSEQ_POWER_ON,
+	PWRSEQ_POWER_OFF
+};
 
-This issue is addressed in v5 Patch 14 by splitting the Bluetooth
-pwrseq unit into independent uart and usb units, each with their own
-reference count:
-
-  [PATCH v5 00/16] arm64: mediatek: Add M.2 E-key slot on Chromebooks
-  https://lore.kernel.org/all/20260715085348.3457359-1-wenst@chromium.org/
-
-The series still needs review from you and other maintainers.
-
--- 
-Best Regards,
-Wei Deng
+Bart
