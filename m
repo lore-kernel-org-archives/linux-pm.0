@@ -1,136 +1,154 @@
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.14])
+Received: from fhigh-a8-smtp.messagingengine.com (fhigh-a8-smtp.messagingengine.com [103.168.172.159])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 43E1C42255D;
-	Wed, 15 Jul 2026 09:20:46 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.14
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7C9943ED3CF;
+	Wed, 15 Jul 2026 09:26:31 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=103.168.172.159
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1784107247; cv=none; b=YYzlX5q5ywq7GVU+tlzRgA0DaB7kDodOQGHlGohnUBXJxC5pUqSdaD/5Sbgvr2z4DB9Flps0LsCV51Eyeop5+vbyEVpOvnTlKsG2Ug8hx4pP66RM/yOWjbJkjchL4pcHBwv2RVNjE8sZRZ2/pwyYGYcsa9NPvT9UjLeixy/SGLE=
+	t=1784107596; cv=none; b=skvxqtmxX8gVeLRtS9J89pTegUe2cHkKrP8pbXhb1g+6rwixWU89/OdXV32mSIdwkQ57uJyDPpJE9GapQL6hq4cQLgWoqtJHgw+g7haIxyjP3Wyq2lLRaTAr0jj2vxj8x64I4P74p1jX+cjt/fJtzxzM6UG30KBBri+oa6XInF0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1784107247; c=relaxed/simple;
-	bh=GNwWwlwKmSHKcifYCWTeyGH5lZcsn6dd0tzvoKNoxb4=;
+	s=arc-20240116; t=1784107596; c=relaxed/simple;
+	bh=Gw9d+azDSiBHe7zI7M5WDXfQEEpbX27nlNrMMPDaPgI=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=OGpBewjPGSesUsPk7uOek1UvLW+6c5/qnSA4FIB6akRxKHfsDkWoehqfmzp7bxIMYIcU/x2yrQ7el89I5Gll1FEivoddQMuMbRCJxlWLhqBZRjdYM40keD6pZBr4FYSnASDa7aljuxRBoihAGhUqay239EfGvmg3aBT8sSSS2RA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=pass smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=E8TyQTIY; arc=none smtp.client-ip=192.198.163.14
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.intel.com
+	 Content-Type:Content-Disposition:In-Reply-To; b=Ek9ggZ3IjiLCZvEu2/t+rQHocagrVZ3JBJBEmk0EWF2shjzzIo4pDmTJVv5xIbUlFeQxnfbNQE3Rz4sBRkPLvqyMXiKhiuO9Cs9k0EyOChXo1jphNefqQSSu3WtAtNiuVk8mrmH3HyxtPblTEs0S4r+vA3DNILLK3F4Nprp3N+8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=ragnatech.se; spf=pass smtp.mailfrom=ragnatech.se; dkim=pass (2048-bit key) header.d=ragnatech.se header.i=@ragnatech.se header.b=QNsAILbF; dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b=FmSyGTFF; arc=none smtp.client-ip=103.168.172.159
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=ragnatech.se
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=ragnatech.se
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="E8TyQTIY"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1784107246; x=1815643246;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=GNwWwlwKmSHKcifYCWTeyGH5lZcsn6dd0tzvoKNoxb4=;
-  b=E8TyQTIYYYg4cyJUmvc3yuZvV/tST6cuhnR969CBzTbePw/gk78+ioHU
-   6t2S45LucpjHSUf5n508TxKDlQ4wvx6G4DKQE/9/ACdDptJ8/9WGw7xL3
-   ZOcuA/n8nAppf/wdSYfgEvVI5R449xb20KWwfi+VSM1iXf84SVQBe2c0V
-   SyWdVjtDnTGmxSA+GP0rOl08+Pr2BwsG6IFqtBejyF5ApmX/iXqs3BjDq
-   CspMyxonqJS02cfPtHxBNh/XHXDMjGpyhyBdUy/SFu2KiEWCcoTAKhh6T
-   VGyRR3ofry3nb1kDp907joAnTB8UcyXI+hlalu9GdnlCpdi5uB3hjOMiX
-   w==;
-X-CSE-ConnectionGUID: 1hVDg6AXT+yg/NPNUnWI2Q==
-X-CSE-MsgGUID: mJ/qyjLoQpSzkOvScnorfQ==
-X-IronPort-AV: E=McAfee;i="6800,10657,11847"; a="84781011"
-X-IronPort-AV: E=Sophos;i="6.25,165,1779174000"; 
-   d="scan'208";a="84781011"
-Received: from orviesa006.jf.intel.com ([10.64.159.146])
-  by fmvoesa108.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 15 Jul 2026 02:20:45 -0700
-X-CSE-ConnectionGUID: rohPZ6YPTZinj6UTJQYdjw==
-X-CSE-MsgGUID: Nj0Y0ejIQuSWjXGPb/1fOg==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.25,165,1779174000"; 
-   d="scan'208";a="254379157"
-Received: from mkosciow-mobl1.ger.corp.intel.com (HELO localhost) ([10.245.244.129])
-  by orviesa006-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 15 Jul 2026 02:20:40 -0700
-Date: Wed, 15 Jul 2026 12:20:38 +0300
-From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-To: Chen-Yu Tsai <wenst@chromium.org>
-Cc: Bartosz Golaszewski <brgl@kernel.org>,
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	Daniel Scally <djrscally@gmail.com>,
-	Heikki Krogerus <heikki.krogerus@linux.intel.com>,
-	Sakari Ailus <sakari.ailus@linux.intel.com>,
-	"Rafael J. Wysocki" <rafael@kernel.org>,
-	Danilo Krummrich <dakr@kernel.org>, Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Matthias Brugger <matthias.bgg@gmail.com>,
-	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>,
-	Wei Deng <wei.deng@oss.qualcomm.com>, linux-acpi@vger.kernel.org,
-	driver-core@lists.linux.dev, linux-pm@vger.kernel.org,
-	linux-usb@vger.kernel.org, devicetree@vger.kernel.org,
-	linux-mediatek@lists.infradead.org,
-	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
-	Manivannan Sadhasivam <mani@kernel.org>,
-	Alan Stern <stern@rowland.harvard.edu>,
-	Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
-Subject: Re: [PATCH v5 06/16] usb: hub: Associate port@ fwnode with USB port
- device
-Message-ID: <aldQ5odptfmK5aCw@ashevche-desk.local>
-References: <20260715085348.3457359-1-wenst@chromium.org>
- <20260715085348.3457359-7-wenst@chromium.org>
+	dkim=pass (2048-bit key) header.d=ragnatech.se header.i=@ragnatech.se header.b="QNsAILbF";
+	dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b="FmSyGTFF"
+Received: from phl-compute-05.internal (phl-compute-05.internal [10.202.2.45])
+	by mailfhigh.phl.internal (Postfix) with ESMTP id 26D7C14000CB;
+	Wed, 15 Jul 2026 05:26:31 -0400 (EDT)
+Received: from phl-frontend-04 ([10.202.2.163])
+  by phl-compute-05.internal (MEProxy); Wed, 15 Jul 2026 05:26:31 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ragnatech.se; h=
+	cc:cc:content-transfer-encoding:content-type:content-type:date
+	:date:from:from:in-reply-to:in-reply-to:message-id:mime-version
+	:references:reply-to:subject:subject:to:to; s=fm1; t=1784107591;
+	 x=1784193991; bh=RHheL60c0QV2tMAPkrEKcnYFAylqde2oM7O4i68nidI=; b=
+	QNsAILbFA97F3JtdVS0gYjZSS9yF12AP80UBjFfoRS3YuhEqejUZkaziEKAVZwsM
+	uZ7JL43teuDeXq2KKuTiVuCfxzeYwEi2IixGlKIiRQfTKB4269SV2EFf7hxv8MQ+
+	itCh+i0TCNIMmq0LwdnLm6hm8AM2XsUjo+s2YAY9jmIijgTh5b1w3zURjBeqpeSm
+	79vMXHowyjmE/Y71mfnP3NrUvSCtPuUdu+PvbM7vPF+J/koL12/qsokkXRejPpjX
+	LSHEDdHFc8S4PgRHhjRGNNWt5EgXj5dM0Kijw5bftoqhJdXtgOY7HN6d4s/MSpgB
+	VZpTuoYgSlV4sB06vCDAkQ==
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
+	messagingengine.com; h=cc:cc:content-transfer-encoding
+	:content-type:content-type:date:date:feedback-id:feedback-id
+	:from:from:in-reply-to:in-reply-to:message-id:mime-version
+	:references:reply-to:subject:subject:to:to:x-me-proxy
+	:x-me-sender:x-me-sender:x-sasl-enc; s=fm2; t=1784107591; x=
+	1784193991; bh=RHheL60c0QV2tMAPkrEKcnYFAylqde2oM7O4i68nidI=; b=F
+	mSyGTFFhk1eevGasfNhytFnt1F7xUgHAWGsUSIlizkr3cggdA+aeKq33Ec/4CVQL
+	2LyzWNvOzx+0Zr2QXeb0wl1lNom5UjJgvE7j12s5SaKvu3RtmZxB0FbQEORi/dP/
+	iVTJbcjqDo5Xp2tcOKJsaSHNRw3JfNuBVQhe9FUaFkn/Q+wJOotyfiFn6WX/cgN6
+	nAP4K/4Fr4iUCilVDBgo581c7GitCk/jiNNi4frrHra97VUZI8qjcSK3OBujLftd
+	EsHaxUgu2pxrnw/x5Ae0Og1pCKlX73POm7Pii2dKXWzJoOsWpqRRFleb4XShuwdF
+	zh023aMZE6v0ojQTTw3dA==
+X-ME-Sender: <xms:RlJXagJzJGPRK2_KgZQkz6qLh6oAjQNvVRTamULXpqqa8y261lHq2A>
+    <xme:RlJXar8u4nT3tRv7rC2uFGU3557u4h4p9L7E1yZSBDEJcGhKKs2HLrQpPxSLL6cLg
+    FzKdyYoiFkeL1JlLQjWjl2qFNBEI4eHUD9G5NXS839Z4RjAg1Of5Co4>
+X-ME-Received: <xmr:RlJXasG6snxbTeUxvpgM7CIjLlC2xsFbO7eRyK8SQKhp7OYkSGaXR5xnkFCCAaUxqfIK8Puu0LqnzefJ1Mp16PZmfEvVoRE>
+X-ME-Proxy-Cause: dmFkZTEVthRYG87x0RWI7lFO6KZoE6B1uews7yLk+z8qQMXlYp6TA5AvYq2s5o5IKlc4Ou
+    Ie6n3sgQCcf1VZ3CeQaVgIQhFAtdEiTV/xgLjh2yuh/E1dSNv7KXwqIxKswtheXWy7rxBN
+    xLjmhdTvw3ZVPeirLhFGuaEfSeEauJPrCojDsdERu1eJN/zMIaPJ7KT/pPjxQ2bS3tHbpu
+    X4gA5g19ZlAbEVhh6dbFee8fRBr2H1XHayzCSpWA0sUglxSBA+N/ItzLsN+CfXq1hpECmc
+    qFWCT6RfY4BqaeFTSO4DkvZF6iHtjUgv/b6MD15GRyk4dkT6nUcpo8gV7qjtnVuLOvdpJl
+    apS5SAEMSwDMclo2GTxG+TFXfmP2IStY7zsRxYoMy2VP7x2EBO2iVaIPD0uKRLheX36Osn
+    0Luuh7n+zEb/52udRUJqzMcFzp4j9uLix2N9Rz4XfDmZLAw1NIYHAluAiaLJxiu/UL0NJz
+    ll/Ziu+FLZJ0NCAMrzv8/9VjvXlpEuDWZgFzktPwQa3D3xPpF2748ztLqnB2Qk4KK3ugMz
+    z9ECo7+JzlyE+1mX5ONi6cZL+ILaKKOpdNaAjlMfd75K3G+WQgQVsvYxGReltIM50emKq1
+    b3Ec3nCN5iCKFCz0xCu4RqGMw+mAMnMkel8QTsOEEMwiLa1ww3CvUs2OGPZQ
+X-ME-Proxy: <xmx:RlJXam4nfWa4gscwE275DjUfffNPOe5tpqrutthZBQ3SfToHlEw9UA>
+    <xmx:RlJXalY0qRjTdD86zHiY0ZArQ3pMaLpaTiV6V9t82_vhbIH9bf4kMg>
+    <xmx:RlJXakheV4OIUu_5c1_3S9rVYtEe6YrUynKq5Jp7h4fl54rFvGt7TA>
+    <xmx:RlJXanfi4I4a-a2Y3qLZ2pNJgr_AKxZ-V_SiG0qRErPun5KxNOJxOw>
+    <xmx:R1JXam3tHO3TN2xAf8W-kNQpCfi7yYEZDq-liCN0S82_Q88ngJX0RVlY>
+Feedback-ID: i80c9496c:Fastmail
+Received: by mail.messagingengine.com (Postfix) with ESMTPA; Wed,
+ 15 Jul 2026 05:26:30 -0400 (EDT)
+Date: Wed, 15 Jul 2026 11:26:28 +0200
+From: Niklas =?utf-8?Q?S=C3=B6derlund?= <niklas.soderlund@ragnatech.se>
+To: Pan Chuang <panchuang@vivo.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>,
+	Daniel Lezcano <daniel.lezcano@kernel.org>,
+	Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>,
+	Geert Uytterhoeven <geert+renesas@glider.be>,
+	Magnus Damm <magnus.damm@gmail.com>,
+	John Madieu <john.madieu.xa@bp.renesas.com>,
+	"open list:RENESAS R-CAR THERMAL DRIVERS" <linux-renesas-soc@vger.kernel.org>,
+	"open list:THERMAL" <linux-pm@vger.kernel.org>,
+	open list <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 14/18] thermal/drivers/renesas: Remove redundant dev_err()
+Message-ID: <20260715092628.GF3059211@ragnatech.se>
+References: <20260709023048.599150-1-panchuang@vivo.com>
+ <20260709023048.599150-15-panchuang@vivo.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20260715085348.3457359-7-wenst@chromium.org>
-Organization: Intel Finland Oy - BIC 0357606-4 - c/o Alberga Business Park, 6
- krs, Bertel Jungin Aukio 5, 02600 Espoo
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20260709023048.599150-15-panchuang@vivo.com>
 
-On Wed, Jul 15, 2026 at 04:53:36PM +0800, Chen-Yu Tsai wrote:
-> When a USB hub port is connected to a connector in a firmware node
-> graph, the port itself has a node in the graph.
+Hi Pan,
+
+Thanks for your work.
+
+On 2026-07-09 10:30:17 +0800, Pan Chuang wrote:
+> The devm_request_threaded_irq() now automatically logs detailed error
+> messages on failure. This eliminates the need for driver-specific
+> dev_err() calls that previously printed generic messages.
 > 
-> Associate the port's firmware node with the USB port's device,
-> usb_port::dev. This is used in later changes for the M.2 slot power
-> sequencing provider to match against the requesting port.
+> Signed-off-by: Pan Chuang <panchuang@vivo.com>
+
+Reviewed-by: Niklas Söderlund <niklas.soderlund+renesas@ragnatech.se>
+
+> ---
+>  drivers/thermal/renesas/rcar_thermal.c  | 4 +---
+>  drivers/thermal/renesas/rzg3e_thermal.c | 4 +---
+>  2 files changed, 2 insertions(+), 6 deletions(-)
 > 
-> To avoid potential conflicts with ACPI firmware nodes and then causing
-> power management issues, only assign the firmware node if the hub's
-> firmware node is not an ACPI firmware node.
-
-...
-
-> int usb_hub_create_port_device(struct usb_hub *hub, int port1)
-
-What about adding
-
-	struct fwnode_handle *fwnode = dev_fwnode(&hdev->dev);
-
-to the top of the function, and...
-
->  	port_dev->dev.driver = &usb_port_driver;
->  	dev_set_name(&port_dev->dev, "%s-port%d", dev_name(&hub->hdev->dev),
->  			port1);
-> +	/*
-> +	 * ACPI FW nodes are associated later when device_register() happens.
-> +	 * Skip assigning one here to avoid potential conflicts.
-> +	 */
-> +	if (!is_acpi_node(dev_fwnode(&hdev->dev)))
-> +		device_set_node(&port_dev->dev,
-> +				fwnode_graph_get_port_by_id(dev_fwnode(&hdev->dev), port1,
-> +							    FWNODE_GRAPH_DEVICE_DISABLED));
-
-...shorten this a bit to
-
-	if (!is_acpi_node(fwnode)) {
-		struct fwnode_handle *ep;
-
-		ep = fwnode_graph_get_port_by_id(fwnode, port1, FWNODE_GRAPH_DEVICE_DISABLED);
-
-// Is NULL or error pointer is fine here to be set as fwnode in port device?
-// Perhaps add a comment?
-
-		device_set_node(&port_dev->dev, ep);
-	}
+> diff --git a/drivers/thermal/renesas/rcar_thermal.c b/drivers/thermal/renesas/rcar_thermal.c
+> index 6e5dcac5d47a..cf80e2655416 100644
+> --- a/drivers/thermal/renesas/rcar_thermal.c
+> +++ b/drivers/thermal/renesas/rcar_thermal.c
+> @@ -446,10 +446,8 @@ static int rcar_thermal_probe(struct platform_device *pdev)
+>  
+>  		ret = devm_request_irq(dev, irq, rcar_thermal_irq,
+>  				       IRQF_SHARED, dev_name(dev), common);
+> -		if (ret) {
+> -			dev_err(dev, "irq request failed\n");
+> +		if (ret)
+>  			goto error_unregister;
+> -		}
+>  
+>  		/* update ENR bits */
+>  		if (chip->irq_per_ch)
+> diff --git a/drivers/thermal/renesas/rzg3e_thermal.c b/drivers/thermal/renesas/rzg3e_thermal.c
+> index f0e29fe633db..c44f5b8858d0 100644
+> --- a/drivers/thermal/renesas/rzg3e_thermal.c
+> +++ b/drivers/thermal/renesas/rzg3e_thermal.c
+> @@ -461,10 +461,8 @@ static int rzg3e_thermal_probe(struct platform_device *pdev)
+>  	ret = devm_request_threaded_irq(dev, irq, rzg3e_thermal_irq,
+>  					rzg3e_thermal_irq_thread,
+>  					IRQF_ONESHOT, "rzg3e_thermal", priv);
+> -	if (ret) {
+> -		dev_err(dev, "Failed to request IRQ: %d\n", ret);
+> +	if (ret)
+>  		goto err_pm_put;
+> -	}
+>  
+>  	/* Add hwmon sysfs interface */
+>  	ret = devm_thermal_add_hwmon_sysfs(dev, priv->zone);
+> -- 
+> 2.34.1
+> 
 
 -- 
-With Best Regards,
-Andy Shevchenko
-
-
+Kind Regards,
+Niklas Söderlund
