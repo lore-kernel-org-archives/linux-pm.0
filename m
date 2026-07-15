@@ -1,143 +1,215 @@
-Received: from smtph3-08.21cn.com (smtph3-08.21cn.com [150.223.194.133])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id C21AE436BE9;
-	Wed, 15 Jul 2026 09:35:50 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=150.223.194.133
+Received: from bali.collaboradmins.com (bali.collaboradmins.com [148.251.105.195])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E086C2931C2;
+	Wed, 15 Jul 2026 09:57:01 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=148.251.105.195
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1784108160; cv=none; b=JeXAg7zWtzdSzsul9oEw+GWkWIH5sPMHExKdCNQ0Cni0pw/ZOkA3+CUa0aqZ/xvDXfs1dWc1L/umFGnXDcyuyrqcuJ00n0m/dwbbR8pXnldjFrdTUwF3txuK35534HPezwXDVIsPozBSj5VMRYUsL9mQwEBUToOicV9LI3wwGX4=
+	t=1784109423; cv=none; b=WrAdOTlyoPVj8QyGjxNIHnC0F6dZ4yXrgY7gANyOJ29NiSCEtFt9qE2ZrZF24wBvsK2J3YqYyEpq4V1YACsZ9vK8TQKzwwN7PYRdy0IH6Ef942nkAhetq2k6juJn+fmkoImBzEta8zAvV+Aqnti7CE4Z6sbpfKX7Fn5ipft+wKM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1784108160; c=relaxed/simple;
-	bh=YcxfcrHYqeLbyiw3uuKPRg2HsomhoFmT+3aey5ywoMs=;
-	h=From:To:Cc:Subject:Date:Message-Id; b=k2/gibs0Il5ttX+yPrgdA5QOTll6qXHEXJl4sLmfHULiTHw0FoF4uWuH9liuodkH/F7O9VB22ZhBAEFyV9goKK6v8YiOxYi+6HFQ0zSnStADzHuffzDpDeGHbDmz0YsYc62Fi/5x4e2zWXjNcVGvwhy/5l1x5d5v2MJKgTgS48s=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=chinatelecom.cn; spf=pass smtp.mailfrom=chinatelecom.cn; arc=none smtp.client-ip=150.223.194.133
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=chinatelecom.cn
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=chinatelecom.cn
-HMM_SOURCE_IP:172.27.0.101:0.1012423176
-HMM_ATTACHE_NUM:0000
-HMM_SOURCE_TYPE:SMTP
-Received: from clientip-139.200.108.11 (unknown [172.27.0.101])
-	by smtph3-08.21cn.com (HERMES) with SMTP id 89AF314065E24;
-	Wed, 15 Jul 2026 17:35:29 +0800 (CST)
-X-189-SAVE-TO-SEND: +pengqh1@chinatelecom.cn
-Received: from  ([139.200.108.11])
-	by gateway-ssl-dep-657b8df9db-xsh6f with ESMTP id d800384539cd41fcbb8212b0ebb51764 for ray.huang@amd.com;
-	Wed, 15 Jul 2026 17:35:39 CST
-X-Transaction-ID: d800384539cd41fcbb8212b0ebb51764
-X-Real-From: pengqh1@chinatelecom.cn
-X-Receive-IP: 139.200.108.11
-X-MEDUSA-Status: 0
-Sender: pengqh1@chinatelecom.cn
-From: Qianheng Peng <pengqh1@chinatelecom.cn>
-To: ray.huang@amd.com,
-	mario.limonciello@amd.com,
-	perry.yuan@amd.com,
-	kprateek.nayak@amd.com,
-	rafael@kernel.org,
-	viresh.kumar@linaro.org,
-	skhan@linuxfoundation.org,
-	li.meng@amd.com
-Cc: linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	wangxb12@chinatelecom.cn,
-	xiongl24@chinatelecom.cn,
-	zhangar@chinatelecom.cn,
-	pengqh1@chinatelecom.cn
-Subject: [PATCH v2] cpufreq: amd-pstate-ut: fix null pointer dereference
-Date: Wed, 15 Jul 2026 17:35:24 +0800
-Message-Id: <1784108124-19988-1-git-send-email-pengqh1@chinatelecom.cn>
-X-Mailer: git-send-email 1.8.3.1
+	s=arc-20240116; t=1784109423; c=relaxed/simple;
+	bh=fMk8TJrSHrg6OY4D5Lfg29sg5QIvU+Iw5yawJ5eEN4U=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=FYSgNABhl4C56LNQL60zPorSPJ0RYsA7Q2Ap6Nwwvp+Eb0IfZKeopIfDWHL08ntpADytZbOT9DE5aS+0rAX5vT+COAP1GBiLvDwkc/MtVBw6Tl5EylHaFEBSCHwUlWmQN1MdoSjPGuV/hEYJttKRzqSzVGSsvFLoyp25yN0jVPc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b=ZJyRj3VC; arc=none smtp.client-ip=148.251.105.195
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b="ZJyRj3VC"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
+	s=mail; t=1784109419;
+	bh=fMk8TJrSHrg6OY4D5Lfg29sg5QIvU+Iw5yawJ5eEN4U=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=ZJyRj3VCdfBxCbwpp7+xQIDgt1xgR91GtJ8NyjWtcKjyOHTUfGHVw3hO/qdXKo7Fa
+	 lQE4+KDd4bxXaJwHmL0eeq3dQXdYxORkYJdz86zGFp0FfnmAIh4RDX6ICwVsPM8wQF
+	 mQQ+8mNwTvUM1dWtKs9HOzHPQD87ctVgEkn3DFMfexjDDP5o0g9aAGMwSWLqKTmE2q
+	 TKILYi1uDWmnwB7fuQH4QbFi5mCGBIvwY5iHh81CFYE1nUi38NskPQbFO37q4yS8dL
+	 MfKQWXaxj2q9W0Xp539h6Kk+4zZ39BJj6nKHILbcznD5/upKfjZptnGKxnKafVYC1k
+	 Ndz4yUL7sixNA==
+Received: from [100.64.1.21] (unknown [100.64.1.21])
+	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+	 key-exchange x25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	(Authenticated sender: kholk11)
+	by bali.collaboradmins.com (Postfix) with ESMTPSA id 0F9E517E00F6;
+	Wed, 15 Jul 2026 11:56:59 +0200 (CEST)
+Message-ID: <0040e5e9-d219-4758-b402-c5e5b90ff667@collabora.com>
+Date: Wed, 15 Jul 2026 11:56:58 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
+MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 2/3] pmdomain: mediatek: Add support for secure modem
+ power domain control
+To: nikolai.burov@jolla.com, Rob Herring <robh@kernel.org>,
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
+ <conor+dt@kernel.org>, Matthias Brugger <matthias.bgg@gmail.com>,
+ Ulf Hansson <ulfh@kernel.org>
+Cc: Matthias Brugger <mbrugger@suse.com>, devicetree@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ linux-mediatek@lists.infradead.org, linux-pm@vger.kernel.org,
+ Nikolai Burov <nikolai.burov+review@abscue.de>
+References: <20260714-mt6858-pmdomain-v1-0-4f09bbb822e0@jolla.com>
+ <20260714-mt6858-pmdomain-v1-2-4f09bbb822e0@jolla.com>
+From: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
+Content-Language: en-US
+In-Reply-To: <20260714-mt6858-pmdomain-v1-2-4f09bbb822e0@jolla.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
-The crash issue may occur when insmod amd_pstate_ut module on intel platform.
+On 7/14/26 15:43, Nikolai Burov via B4 Relay wrote:
+> From: Nikolai Burov <nikolai.burov@jolla.com>
+> 
+> On recent MediaTek SoCs such as MT6858, the kernel is required to use
+> a secure monitor call (SMC) to enable or disable the modem power domain.
+> The power domain control register can be read, but firmware prevents it
+> from being modified directly. Other parts of the power sequence, such as
+> setting the ext_buck_iso register, still need to be performed on the
+> kernel side.
+> 
+> In preparation for modem support, add a flag to enable this new power
+> sequence for SoCs that need it.
+> 
+> Signed-off-by: Nikolai Burov <nikolai.burov@jolla.com>
+> ---
+>   drivers/pmdomain/mediatek/mtk-pm-domains.c | 54 +++++++++++++++++++++++++++---
+>   drivers/pmdomain/mediatek/mtk-pm-domains.h |  1 +
+>   include/linux/soc/mediatek/mtk_sip_svc.h   |  3 ++
+>   3 files changed, 53 insertions(+), 5 deletions(-)
+> 
+> diff --git a/drivers/pmdomain/mediatek/mtk-pm-domains.c b/drivers/pmdomain/mediatek/mtk-pm-domains.c
+> index e1cfd4223473..56437b32b252 100644
+> --- a/drivers/pmdomain/mediatek/mtk-pm-domains.c
+> +++ b/drivers/pmdomain/mediatek/mtk-pm-domains.c
+> @@ -57,6 +57,12 @@
+>   
+>   #define MTK_SIP_KERNEL_HWCCF_CONTROL	MTK_SIP_SMC_CMD(0x540)
+>   
+> +/* Power domain commands for MTK_SIP_KERNEL_CCCI_CONTROL */
+> +enum {
+> +	MTK_MD_MTCMOS_ENABLE = 18,
+> +	MTK_MD_MTCMOS_DISABLE = 19,
+> +};
 
-   amd_pstate_ut: 1    amd_pstate_ut_acpi_cpc_valid  success!
-   amd_pstate_ut: 2    amd_pstate_ut_check_enabled   success!
-   BUG: kernel NULL pointer dereference, address: 0000000000000080
-   #PF: supervisor read access in kernel mode
-   #PF: error_code(0x0000) - not-present page
-   PGD 0 P4D 0
-   Oops: 0000 [#1] SMP NOPTI
-   CPU: 0 PID: 20300 Comm: modprobe
-   Kdump: loaded Tainted: G O 6.6.0-0010.rc1.ctl4.x86_64 #1
-   Hardware name: FiberHome R2200 V5/Xeon Boards, BIOS 3.1a 02/24/2020
-   RIP: 0010:amd_pstate_ut_check_perf+0x141/0x280 [amd_pstate_ut]
-   Call Trace:
-    <TASK>
-    amd_pstate_ut_init+0x1b/0xff0 [amd_pstate_ut]
-    ? __pfx_amd_pstate_ut_init+0x10/0x10 [amd_pstate_ut]
-    do_one_initcall+0x42/0x2e0
-    ? kmalloc_trace+0x26/0x90
-    do_init_module+0x60/0x240
-    __se_sys_init_module+0x185/0x1c0
-    do_syscall_64+0x62/0x190
-    entry_SYSCALL_64_after_hwframe+0x76/0x7e
-    </TASK>
+I know in TZ firmware this is an enumeration, but makes little sense here, unless
+it's put in some place which only purpose is to do all CCCI communication.... but
+that's not a good idea for now. I can see that coming later though.
 
-Add invalidation check of cpudata in amd_pstate_ut_check_perf() and
-amd_pstate_ut_check_freq() to avoid unpredicated null pointer dereference.
-Otherwise, add driver name detection for amd_pstate_ut driver to prevent it
-from testing cpufreq driver on non-amd platform.
+For now, just do:
 
-Fixes: 14eb1c96e3a3 ("cpufreq: amd-pstate: Add test module for amd-pstate driver")
-Suggested-by: Li Xiong <xiongl24@chinatelecom.cn>
-Suggested-by: Xibo Wang <wangxb12@chinatelecom.cn>
-Signed-off-by: Qianheng Peng <pengqh1@chinatelecom.cn>
+/* Secure MTCMOS for modem subsystem */
+#define MTK_CCCI_MD_MTCMOS_ENABLE	18
+#define MTK_CCCI_MD_MTCMOS_ENABLE	19
 
----
-v2:
-  - Print policy->cpu instead of policy->kboj.name
-  - Add cpufreq driver name detection to amd_pstate_ut
+> +
+>   struct scpsys_domain {
+>   	struct generic_pm_domain genpd;
+>   	const struct scpsys_domain_data *data;
+> @@ -615,6 +621,34 @@ static void scpsys_modem_pwrseq_off(struct scpsys_domain *pd)
+>   		regmap_clear_bits(scpsys->base, pd->data->ctl_offs, PWR_RST_B_BIT);
+>   }
+>   
+> +static bool scpsys_modem_sec_poll(unsigned long cmd)
+> +{
+> +	struct arm_smccc_res res;
+> +
+> +	arm_smccc_smc(MTK_SIP_KERNEL_CCCI_CONTROL, cmd, 1, 0, 0, 0, 0, 0, &res);
+> +
+> +	return res.a0 == 0;
+> +}
+> +
+> +static int scpsys_modem_sec_power_on(bool on)
+> +{
+> +	struct arm_smccc_res res;
+> +	unsigned long cmd = on ? MTK_MD_MTCMOS_ENABLE : MTK_MD_MTCMOS_DISABLE;
+> +	bool tmp;
+> +	int ret;
+> +
+> +	arm_smccc_smc(MTK_SIP_KERNEL_CCCI_CONTROL, cmd, 0, 0, 0, 0, 0, 0, &res);
+> +	if (res.a0 == 0)
+> +		return 0;
+> +
+> +	ret = readx_poll_timeout(scpsys_modem_sec_poll, cmd, tmp, tmp,
+> +				 MTK_POLL_DELAY_US, MTK_POLL_TIMEOUT);
+> +	if (ret < 0)
+> +		return ret;
+> +
+> +	return 0;
+> +}
+> +
+>   static int scpsys_power_on(struct generic_pm_domain *genpd)
+>   {
+>   	struct scpsys_domain *pd = container_of(genpd, struct scpsys_domain, genpd);
+> @@ -633,7 +667,9 @@ static int scpsys_power_on(struct generic_pm_domain *genpd)
+>   		regmap_clear_bits(scpsys->base, pd->data->ext_buck_iso_offs,
+>   				  pd->data->ext_buck_iso_mask);
+>   
+> -	if (MTK_SCPD_CAPS(pd, MTK_SCPD_MODEM_PWRSEQ))
+> +	if (MTK_SCPD_CAPS(pd, MTK_SCPD_MODEM_SECURE))
+> +		ret = scpsys_modem_sec_power_on(true);
+> +	else if (MTK_SCPD_CAPS(pd, MTK_SCPD_MODEM_PWRSEQ))
+>   		ret = scpsys_modem_pwrseq_on(pd);
+>   	else
+>   		ret = scpsys_ctl_pwrseq_on(pd);
+> @@ -709,6 +745,12 @@ static int scpsys_power_off(struct generic_pm_domain *genpd)
+>   	if (ret < 0)
+>   		return ret;
+>   
+> +	if (MTK_SCPD_CAPS(pd, MTK_SCPD_MODEM_SECURE)) {
+> +		ret = scpsys_modem_sec_power_on(false);
+> +		if (ret)
+> +			return ret;
+> +	}
+> +
+>   	if (pd->data->ext_buck_iso_offs && MTK_SCPD_CAPS(pd, MTK_SCPD_EXT_BUCK_ISO))
+>   		regmap_set_bits(scpsys->base, pd->data->ext_buck_iso_offs,
+>   				pd->data->ext_buck_iso_mask);
+> @@ -719,10 +761,12 @@ static int scpsys_power_off(struct generic_pm_domain *genpd)
+>   	if (ret < 0)
+>   		return ret;
+>   
+> -	if (MTK_SCPD_CAPS(pd, MTK_SCPD_MODEM_PWRSEQ))
+> -		scpsys_modem_pwrseq_off(pd);
+> -	else
+> -		scpsys_ctl_pwrseq_off(pd);
+> +	if (!MTK_SCPD_CAPS(pd, MTK_SCPD_MODEM_SECURE)) {
+> +		if (MTK_SCPD_CAPS(pd, MTK_SCPD_MODEM_PWRSEQ))
+> +			scpsys_modem_pwrseq_off(pd);
+> +		else
+> +			scpsys_ctl_pwrseq_off(pd);
+> +	}
 
-v1: https://lore.kernel.org/all/1784015941-26535-1-git-send-email-pengqh1@chinatelecom.cn
----
- drivers/cpufreq/amd-pstate-ut.c | 17 +++++++++++++++++
- 1 file changed, 17 insertions(+)
+	if (MTK_SCPD_CAPS(pd, MTK_SCPD_MODEM_PWRSEQ))
+		scpsys_modem_pwrseq_off(pd);
+	else if (!MTK_SCPD_CAPS(pd, MTK_SCPD_MODEM_SECURE_PWRSEQ))
+		scpsys_ctl_pwrseq_off(pd);
 
-diff --git a/drivers/cpufreq/amd-pstate-ut.c b/drivers/cpufreq/amd-pstate-ut.c
-index 735b29f..5d71315 100644
---- a/drivers/cpufreq/amd-pstate-ut.c
-+++ b/drivers/cpufreq/amd-pstate-ut.c
-@@ -157,6 +157,10 @@ static int amd_pstate_ut_check_perf(u32 index)
- 		if (!policy)
- 			continue;
- 		cpudata = policy->driver_data;
-+		if (!cpudata) {
-+			pr_err("%s empty driver_data on cpu %d\n", __func__, policy->cpu);
-+			return -EINVAL;
-+		}
- 
- 		if (get_shared_mem()) {
- 			ret = cppc_get_perf_caps(cpu, &cppc_perf);
-@@ -229,6 +233,10 @@ static int amd_pstate_ut_check_freq(u32 index)
- 		if (!policy)
- 			continue;
- 		cpudata = policy->driver_data;
-+		if (!cpudata) {
-+			pr_err("%s empty driver_data on cpu %d\n", __func__, policy->cpu);
-+			return -EINVAL;
-+		}
- 
- 		if (!((policy->cpuinfo.max_freq >= cpudata->nominal_freq) &&
- 			(cpudata->nominal_freq > cpudata->lowest_nonlinear_freq) &&
-@@ -560,6 +568,15 @@ static int amd_pstate_ut_check_freq_attrs(u32 index)
- static int __init amd_pstate_ut_init(void)
- {
- 	u32 i = 0, arr_size = ARRAY_SIZE(amd_pstate_ut_cases);
-+	const char *driver_name = NULL;
-+
-+	driver_name = cpufreq_get_current_driver();
-+	if (!driver_name)
-+		return -ENOENT;
-+	/* don't test if non-amd cpufreq_driver exists */
-+	else if (strcmp(driver_name, "amd-pstate") &&
-+		 strcmp(driver_name, "amd-pstate-epp"))
-+		return -EEXIST;
- 
- 	for (i = 0; i < arr_size; i++) {
- 		int ret;
--- 
-1.8.3.1
+Less indent, looks a bit less messy... I still don't like it but I don't think that
+there's any other solution that doesn't imply adding one more power domain type, as
+in SCPSYS_MTCMOS_TYPE_SECURE.
+
+I think more will come, so perhaps let's wait for that to happen as to understand
+how to actually define the new type.
+
+
+>   
+>   	/* wait until PWR_ACK = 0 */
+>   	ret = readx_poll_timeout(scpsys_domain_is_on, pd, tmp, !tmp, MTK_POLL_DELAY_US,
+> diff --git a/drivers/pmdomain/mediatek/mtk-pm-domains.h b/drivers/pmdomain/mediatek/mtk-pm-domains.h
+> index a5dca24cbc2f..b1a3d54a7b01 100644
+> --- a/drivers/pmdomain/mediatek/mtk-pm-domains.h
+> +++ b/drivers/pmdomain/mediatek/mtk-pm-domains.h
+> @@ -17,6 +17,7 @@
+>   #define MTK_SCPD_MODEM_PWRSEQ		BIT(10)
+>   #define MTK_SCPD_SKIP_RESET_B		BIT(11)
+>   #define MTK_SCPD_INFRA_PWR_CTL		BIT(12)
+> +#define MTK_SCPD_MODEM_SECURE		BIT(13)
+
+MTK_SCPD_MODEM_SECURE_PWRSEQ
+
+Cheers,
+Angelo
 
