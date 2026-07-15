@@ -1,141 +1,151 @@
-Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
+Received: from DM1PR04CU001.outbound.protection.outlook.com (mail-centralusazon11010061.outbound.protection.outlook.com [52.101.61.61])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D1FDC3B7B96;
-	Wed, 15 Jul 2026 07:35:54 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=193.142.43.55
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1784100956; cv=none; b=Ov6n23Z78b/PUbJ0V6F/W70PmWbFAkAwfT3/PPwgShtIAA4gluoakgkQcz5/SWPEmBbDsi5xQEgAr0F214wP1jBDS7lP6ZUqkoXA6jYeocBVnDgm3L9YAfXOF34Gr1w0VjZ5LrJ1RH6tjSkP7ySxR5w31DDK2UU9YREvUCsV4Wc=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1784100956; c=relaxed/simple;
-	bh=uqwYcNgJeD07knxrZsoTgpn0CTfJVTAyGKxK0wadyjY=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:To:Cc; b=L0mOb93XBvwC0TkP2ewNxBNDOPYpW0EDKwWYUjpv3CdzbuIiuRv/mEBMicrUnVGbQa71QcC+Elb8IgPt4JKgK2JvmgF5htLJzo6Dv12ewro3egTKY10YADIB1PbrO7F4dPsUd3qDpfvqdoQDQEI3ar2L2b5tWIIWxhO3O69bJJk=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; spf=pass smtp.mailfrom=linutronix.de; dkim=pass (2048-bit key) header.d=linutronix.de header.i=@linutronix.de header.b=MfPtRVPU; dkim=permerror (0-bit key) header.d=linutronix.de header.i=@linutronix.de header.b=xLsStBKr; arc=none smtp.client-ip=193.142.43.55
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linutronix.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linutronix.de
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DC712318EC5;
+	Wed, 15 Jul 2026 07:48:49 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.61.61
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1784101731; cv=fail; b=F2XsxILlhrq4eaCS/caUucZpKLyI5pEHq4be/vQdHYPrnHTQd2C3jmRy1+6/wOyT8LcaDlmHbCmQEfUaJ/nN6U4aipRTnvEbdpTNL0DPiaRhE6JGYv0YtguyRCKPQlhUQkPAQLOWK1zOt3EpEdGLVzO7nI/YJ320/2vssyW5phc=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1784101731; c=relaxed/simple;
+	bh=YaB8Esv1zL/mA8w7ViRd+HJdKwylq6kAk+GgcKWe6ak=;
+	h=From:To:CC:Subject:Date:Message-ID:MIME-Version:Content-Type; b=TgFDUYorV4KdDyF8bMJgYb4v+dfAdkdaSp9swT5HWR2i0ykIu2UPZf2d3OsdpjVvXHb92f9spUp6ZH7zm2EwFxAkFJGwexdIlC9QJdDNJ1+3vichQdrmq4XsolpB5IpA2PmEaALnY8CdUlzIj6sQ5GNLLtYt0zfHHgwS3tU4UqI=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com; spf=fail smtp.mailfrom=amd.com; dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b=Yg8wiwuP; arc=fail smtp.client-ip=52.101.61.61
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com
+Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=amd.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="MfPtRVPU";
-	dkim=permerror (0-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="xLsStBKr"
-From: Gregor Herburger <gregor.herburger@linutronix.de>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020; t=1784100952;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding;
-	bh=pyjgng7RzInbAdvKsOuka4VgJrPS7BbFK8B+jLko8hs=;
-	b=MfPtRVPUXUQUhF375GQekw+8Jp2V5uKZuSoWqDCn9/k6XhwmJzli/4b52OYj8+noL79FJ0
-	t54TbvFQOlYrVKklIj6YLEK8QMfv8oTBdUcFqgFiUlCtwLO37qhb9zC1rLU96XfF4M90Ij
-	4ggrFal+C9Z0MoOm4VZHhswF1+qM2CBVd7Ef8eEvl5nEGBlF8mKepI3CbEAeEREoHJz4X0
-	9SqoHOHT3pCiP14jciITVcnF46vaVZhbbnCt8bt9Zgo65J3o+twpTZYDfgatWVNlUwNNBS
-	l4AQMFLUOFf4esP3Hc123XvivuJASexdZPuggTHNPyNjk5RRjfPzVedhEMjEIQ==
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020e; t=1784100952;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding;
-	bh=pyjgng7RzInbAdvKsOuka4VgJrPS7BbFK8B+jLko8hs=;
-	b=xLsStBKrF0nwJ4yKJrE9gmouyPFFVpNuCs/HbXfH/xhsPQODfubF+7tg2DTWk+fTpCzvPy
-	A5/2ITMpBJYZgHDw==
-Date: Wed, 15 Jul 2026 09:35:36 +0200
-Subject: [PATCH] OPP: Fix cleanup ordering
+	dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b="Yg8wiwuP"
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=OChT3aWP9/GNV2Riawg3vzWuaakNUhYF18J5lWwN4b68et9stgpEzvwQqSvTmx4hlgNF/+7DIyI/0Qb9da7BbqL4xQz2evdOgAJVio/uC5vruhQjhVnx57BpOtUbiPPfM9wVoQil0T8umHza9Mqcqw5jw5xN2JhQjsFB9zVCDQN8xnt0GcKCzZytvOmEyXS+m7bvIvQx6KloaI3e4Ugt2xbH8/KAk+9sxl6m0RDDc1SpBAdgJbdsI9eQO/HVUTX71tsbzznBHlZNDos+06Jz9xm3YuIkOAQfjY7+ItB7qReZVqupnhkOQTqnMjOuYUPOr1UOvPm/LP3Cn/MMgvOtkA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=fAKDHOvabpJyksqHJFUF3uHRbWKQss4Kk2yauKro1zk=;
+ b=UkqbgCnJW6YHkTX3OwVGw4HrIwr2kLDExVQpnRctmGxS60tVgHj2gZIQUpMToJVjvMmSphIjrIck62Hn9TO/B0HodOiVN5oG0G2hwWRp8WDB8o0UsLa5qmWBSk8xKr3nHFPLHc66gDFdk3aBZh9BsYgk3PMFzvMuHW8dYYFiAH0aPf5l4g8QNG4OiVvr5Nu95CHsUhrxu5Rsd8Nt0eUqb4eznadTP75M0kkYoPve4oMgjzlqn9Lu0sEEUXnpWiruhuC79lFjlJEmRrmvKhuefj1pv5IvmDyC6wp/BVgLkySu1XyVu6VIH49dAgzVhvAOdXL5SYL5syJ2r3mRszuwxQ==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
+ 165.204.84.17) smtp.rcpttodomain=kernel.org smtp.mailfrom=amd.com; dmarc=pass
+ (p=quarantine sp=quarantine pct=100) action=none header.from=amd.com;
+ dkim=none (message not signed); arc=none (0)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=fAKDHOvabpJyksqHJFUF3uHRbWKQss4Kk2yauKro1zk=;
+ b=Yg8wiwuPo9prTjmUIsrDNNs89N9oFPbTrOvJbrROlYvQSaBjWwXNY+DUjIxKFJRyVRdAAbhSnIt/aVBy2DMB8TDl09obRE6Mgg65bnGwjR+K2aKe4+IbB4iyHe/aOXqKZtkgh4PbDCcKRQAunUFk7FCCSyIevhJiSyVxxwoKxVE=
+Received: from BLAPR03CA0010.namprd03.prod.outlook.com (2603:10b6:208:32b::15)
+ by PH7PR12MB9204.namprd12.prod.outlook.com (2603:10b6:510:2e7::14) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.202.19; Wed, 15 Jul
+ 2026 07:48:43 +0000
+Received: from BL02EPF0001A0FC.namprd03.prod.outlook.com
+ (2603:10b6:208:32b:cafe::67) by BLAPR03CA0010.outlook.office365.com
+ (2603:10b6:208:32b::15) with Microsoft SMTP Server (version=TLS1_3,
+ cipher=TLS_AES_256_GCM_SHA384) id 15.21.202.20 via Frontend Transport; Wed,
+ 15 Jul 2026 07:48:43 +0000
+X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 165.204.84.17)
+ smtp.mailfrom=amd.com; dkim=none (message not signed)
+ header.d=none;dmarc=pass action=none header.from=amd.com;
+Received-SPF: Pass (protection.outlook.com: domain of amd.com designates
+ 165.204.84.17 as permitted sender) receiver=protection.outlook.com;
+ client-ip=165.204.84.17; helo=satlexmb07.amd.com; pr=C
+Received: from satlexmb07.amd.com (165.204.84.17) by
+ BL02EPF0001A0FC.mail.protection.outlook.com (10.167.242.103) with Microsoft
+ SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.21.223.9 via Frontend Transport; Wed, 15 Jul 2026 07:48:43 +0000
+Received: from BLRKPRNAYAK.amd.com (10.180.168.240) by satlexmb07.amd.com
+ (10.181.42.216) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.41; Wed, 15 Jul
+ 2026 02:48:39 -0500
+From: K Prateek Nayak <kprateek.nayak@amd.com>
+To: Huang Rui <ray.huang@amd.com>, Mario Limonciello
+	<mario.limonciello@amd.com>, "Rafael J. Wysocki" <rafael@kernel.org>, "Viresh
+ Kumar" <viresh.kumar@linaro.org>
+CC: "Mario Limonciello (AMD)" <superm1@kernel.org>, Perry Yuan
+	<perry.yuan@amd.com>, K Prateek Nayak <kprateek.nayak@amd.com>,
+	<linux-pm@vger.kernel.org>, <linux-kernel@vger.kernel.org>
+Subject: [RFC PATCH 0/2] cpufreq/amd-pstate: Fixes for "Requested CPU Min frequency" support
+Date: Wed, 15 Jul 2026 07:48:20 +0000
+Message-ID: <20260715074822.16324-1-kprateek.nayak@amd.com>
+X-Mailer: git-send-email 2.43.0
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20260715-opp-fix-v1-1-a3098d80afd8@linutronix.de>
-X-B4-Tracking: v=1; b=H4sIAEc4V2oC/yXMzQqAIBAE4FeJPSeo9P8q0SFrre2gohVB+O5ZH
- b9hZm4I6AkDdNkNHk8KZE2CyDOY1tEsyGhOBsllxWtRMusc03QxLFoteaNQKA2p7Tym+Hvqh9/
- hUBtO+zuHGB+YETlPawAAAA==
-X-Change-ID: 20260715-opp-fix-e49f208be1bf
-To: Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, 
- Stephen Boyd <sboyd@kernel.org>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, 
- linux-kernel@vger.kernel.org, 
- Gregor Herburger <gregor.herburger@linutronix.de>
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1784100952; l=2703;
- i=gregor.herburger@linutronix.de; s=20260226; h=from:subject:message-id;
- bh=uqwYcNgJeD07knxrZsoTgpn0CTfJVTAyGKxK0wadyjY=;
- b=lukprd7sBC03TwrbWFfSKdlrg6sC1uYrSXh208HxzUIb61QB9N4u1bKp70fOe8hedExJuduux
- 4FMx5pdJoPcAsR1xvEgfl5bxp6EH4ws5afDzEH0pDBb78PUMI9Dpl8p
-X-Developer-Key: i=gregor.herburger@linutronix.de; a=ed25519;
- pk=u72Lv7+/lS5CC1hmSrb17lv/6CK7HBh4Lvz77PHA5LM=
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-ClientProxiedBy: satlexmb08.amd.com (10.181.42.217) To satlexmb07.amd.com
+ (10.181.42.216)
+X-EOPAttributedMessage: 0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: BL02EPF0001A0FC:EE_|PH7PR12MB9204:EE_
+X-MS-Office365-Filtering-Correlation-Id: 59edb508-3dea-4b91-237a-08dee2457e6f
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|376014|82310400026|1800799024|36860700016|23010399003|6133799003|18002099003|11063799006|56012099006;
+X-Microsoft-Antispam-Message-Info:
+	CMzqiJXuKrcjdFs9UgGhkcSzFz9sZqJ3WFXdkmuIysh6KzG8BRlFjTKpr/khuO/h9IeahyP0HjQ68ohGWpvv11HizDhSGhCCrlHpd4+AX3dSgj4onqnns493QDsHZfNZNSgcYyss/PZAWUfQUz2yTbcC56cAtikk1PqFFXwMOQb9Y9sc3fCk1TQZmCGc7FkrmeJbN+xnI3mkImglm2nJhXyzeCZtVuP8wt6tp+14C1+8y8v71hz9G/lRSjU5exXreRrGhWFSouK2QcEwLlic/K9KpWeI+1Os1tW+01RTjeVsYwl4qUdb/v33eHHU7vde3l/apquZC45caP537a1rSKvuw6ZjmegqJ8iUnDguZ+biSgkGbtPRIUNKHKvOO4asifgN1QKpYSyjWQDeDq0lBssaPHc//B0TWVbO3/VTm8Uqz0gI7GyfUW927q2fSi/1Ar7vsRdDDTbeO52PXMH1b/ws//HkdCyxTrQ0degqWY6falOyHjn5Vh7IiXjR7Ah+aIVfGq2zoCJ/GJgScPtr4e9AN7wrfteq8vXI4lYOgHl61hTJPcCXeYxE6lrTTmbD9BIgYMR1LUsJLa/pfMz29HR3Nk2Jw7BjQRt4qjxoKAJ5gST6K3Xpyq9bB8r+Fo1bHFEpASbUDCsFMX0EJSgVlyqG+RQQklrDzRb5QHytxb+rIGMIkjNJ/a2S2l6RUIs4ciphtBvwldaEqNsTfyxgKw==
+X-Forefront-Antispam-Report:
+	CIP:165.204.84.17;CTRY:US;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:satlexmb07.amd.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230040)(376014)(82310400026)(1800799024)(36860700016)(23010399003)(6133799003)(18002099003)(11063799006)(56012099006);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	tljOL+uU8Q4i1JQvc2RsEdKW8OT26ap5FHC3aETKwXaCz/b4NL0T8Ks/de/WfH06AlWJX+1WBKRex82Ks7EpEUrf65Mqzn351zXVZUbwLbnH7x4iogf5A8bYzfun0wNydNf8Ajy9kawmFOvIdEgGdOPo8H/S41CLsEOMVkJcYK1P58XCkKIdfLGZ2havWqmYUubjB031jZrGto3XO7zKyZuItHyGJLIrOE749vCDzgN4ydzuIBJ4tQ2hgSuQv2QmsCb22e25xue8IKz6GUiu8L7BOO+mTR5QFFnFLUll+Yad1Tq3x276TGPOD9B593H35a5nT3W1iIgh2GXjatjf97sXrRnn0D9k3/OoteU9G0K60oExCvmO6jXpx5sXSPJfG54hPUFEIGKgGX7xSaqfa8NAJjJHM3X1WpGH7U75iOiQyUzlMxnU4riE9tQUQQSR
+X-OriginatorOrg: amd.com
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 15 Jul 2026 07:48:43.4414
+ (UTC)
+X-MS-Exchange-CrossTenant-Network-Message-Id: 59edb508-3dea-4b91-237a-08dee2457e6f
+X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
+X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=3dd8961f-e488-4e60-8e11-a82d994e183d;Ip=[165.204.84.17];Helo=[satlexmb07.amd.com]
+X-MS-Exchange-CrossTenant-AuthSource:
+	BL02EPF0001A0FC.namprd03.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Anonymous
+X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: PH7PR12MB9204
 
-Commit 173e02d67494 ("OPP: Initialize scope-based pointers inline")
-added initialization for all pointers. In some cases, the ordering was
-changed so that *opp_table was initialized after *opp. This also changes
-the order of the registered cleanup functions.
+It was noted during internal testing that amd-pstate active mode with
+performance governor always sets the min_perf to nominal_perf despite
+BIOS having supplied bios_min_perf as the preferred idling perf.
 
-When the cleanup happens, this can cause use-after-free errors when the
-last reference is released and the release function _opp_kref_release
-tries to access the already freed opp->opp_table.
+Users who set the "Requested CPU Min frequency" from BIOS are known to
+have profiled their workload at different operating frequency to know
+the best configuration and amd-pstate should use the same as the lower
+limit when configured.
 
-Initialize *opp_table before *opp again to fix this and ensure the
-correct cleanup order.
+While testing the fix for above, it was noted that kexec fails to
+persist bios_min_freq even when both, the old and new kernel are aware
+of bios_min_perf.
 
-Fixes: 173e02d67494 ("OPP: Initialize scope-based pointers inline")
-Signed-off-by: Gregor Herburger <gregor.herburger@linutronix.de>
----
- drivers/opp/core.c | 13 +++++--------
- 1 file changed, 5 insertions(+), 8 deletions(-)
+The suspend, offlining paths switched to persisting the CPPC_REQ MSR
+state at the time of suspend / offlining with only min_perf being reset
+to bios_min_perf.
 
-diff --git a/drivers/opp/core.c b/drivers/opp/core.c
-index ab0b0a2f85a17..b6966e509f7dd 100644
---- a/drivers/opp/core.c
-+++ b/drivers/opp/core.c
-@@ -1412,13 +1412,12 @@ static int _set_opp(struct device *dev, struct opp_table *opp_table,
-  */
- int dev_pm_opp_set_rate(struct device *dev, unsigned long target_freq)
- {
-+	struct opp_table *opp_table __free(put_opp_table) =
-+		_find_opp_table(dev);
- 	struct dev_pm_opp *opp __free(put_opp) = NULL;
- 	unsigned long freq = 0, temp_freq;
- 	bool forced = false;
- 
--	struct opp_table *opp_table __free(put_opp_table) =
--		_find_opp_table(dev);
--
- 	if (IS_ERR(opp_table)) {
- 		dev_err(dev, "%s: device's opp table doesn't exist\n", __func__);
- 		return PTR_ERR(opp_table);
-@@ -2870,11 +2869,10 @@ EXPORT_SYMBOL_GPL(dev_pm_opp_add_dynamic);
- static int _opp_set_availability(struct device *dev, unsigned long freq,
- 				 bool availability_req)
- {
--	struct dev_pm_opp *opp __free(put_opp) = ERR_PTR(-ENODEV), *tmp_opp;
--
- 	/* Find the opp_table */
- 	struct opp_table *opp_table __free(put_opp_table) =
- 		_find_opp_table(dev);
-+	struct dev_pm_opp *opp __free(put_opp) = ERR_PTR(-ENODEV), *tmp_opp;
- 
- 	if (IS_ERR(opp_table)) {
- 		dev_warn(dev, "%s: Device OPP not found (%ld)\n", __func__,
-@@ -2932,12 +2930,11 @@ int dev_pm_opp_adjust_voltage(struct device *dev, unsigned long freq,
- 			      unsigned long u_volt_max)
- 
- {
--	struct dev_pm_opp *opp __free(put_opp) = ERR_PTR(-ENODEV), *tmp_opp;
--	int r;
--
- 	/* Find the opp_table */
- 	struct opp_table *opp_table __free(put_opp_table) =
- 		_find_opp_table(dev);
-+	struct dev_pm_opp *opp __free(put_opp) = ERR_PTR(-ENODEV), *tmp_opp;
-+	int r;
- 
- 	if (IS_ERR(opp_table)) {
- 		r = PTR_ERR(opp_table);
+msr_init() path only accepts the configured min_perf as bios_min_perf
+when it finds rest of the bits in CPPC_REQ MSR to be 0. This is
+intentional to prevent stale value of last CPPC_REQ from kernels that
+are not aware of bios_min_perf to be mistakenly interpreted as the
+bios_min_perf during kexec boot.
 
----
-base-commit: 58717b2a1365d06c8c64b72aa948541b53fe31eb
-change-id: 20260715-opp-fix-e49f208be1bf
+Work around this limitation by stashing the state of CPPC_REQ during
+suspend / offlining in cpudata and then only programming the
+bios_min_perf into CPPC_REQ while keeping the rest of the bits as 0.
 
-Best regards,
---  
-Gregor Herburger <gregor.herburger@linutronix.de>
+Resume / onlining callbacks use the stashed state to restore the
+CPPC_REQ before the CPU resumes normal operation.
+
+Patches are prepared on top of linux-pm:bleeding-edge at commit
+0e4eef86f0f4d ("Merge branch 'thermal-intel' into bleeding-edge").
+
+-- 
+K Prateek Nayak (2):
+  cpufreq/amd-pstate: Set min_limit_freq based on bios_min_perf
+  cpufreq/amd-pstate: Correctly reset bios_min_perf during suspend and
+    offlining
+
+ drivers/cpufreq/amd-pstate.c | 82 ++++++++++++++++++++++++++++--------
+ 1 file changed, 65 insertions(+), 17 deletions(-)
+
+
+base-commit: 0e4eef86f0f4df58cb7526fdb968bb779fe66d81
+-- 
+2.34.1
 
