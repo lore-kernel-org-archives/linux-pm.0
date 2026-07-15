@@ -1,272 +1,267 @@
-Received: from BL0PR03CU003.outbound.protection.outlook.com (mail-eastusazon11012012.outbound.protection.outlook.com [52.101.53.12])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A1D71286D5E;
-	Wed, 15 Jul 2026 14:51:53 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.53.12
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1784127115; cv=fail; b=lJmzS9uEad2ltO9OahpSuow7GsuZrXK1qiRX7FH2/pKwA5RD2dPWpP9dLFTJVKrQ6s3jV3XJ/WJhFAk3RPvl8dDqWxIHccwa6vkG7ig120c5xXZQXh4eznuI/ZnJamxFhYi5X6HNEnZ8RA+6TB7oYcHT+PyamUiVSaVMx1DUTrs=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1784127115; c=relaxed/simple;
-	bh=++OVLa3Q+K27ibFdhjm5Ob/BEK8qwZzE6tNkpbKWhd8=;
-	h=Message-ID:Date:MIME-Version:Subject:To:CC:References:From:
-	 In-Reply-To:Content-Type; b=o1IZdL7NC7Ob/S92IqKUfLOSN6/C5SLu0O+S1Ps8leOT6zjHIdkApzFjOKOoBOhuQRoX3ACH2TDStXBYKSFiAaIBbCre3zSy597NeNn6JyFOp6A8UsMtCLQndRuQ9PpEFcbcGIt0IR71+pwK3BFR+J1lA8CoEIvsIznTyg/VnlQ=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com; spf=fail smtp.mailfrom=amd.com; dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b=b/wqXCVq; arc=fail smtp.client-ip=52.101.53.12
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com
-Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=amd.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C64403AE1A2;
+	Wed, 15 Jul 2026 16:05:33 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1784131541; cv=none; b=GoBtCtbkKNOpVxfcBYx2kBub2NZgAoMUins4ntIjm0wTq86m4erdA5PtWmUra0oEA+POenD8F5ZzrvROIAqVlWvZP7ev0DphLDALyBsClNBvMzRfzRPQtfeVSLDgdcTA6K4TOZgpjlykJXS470+zj2R3uJJD5C0GhKjJB5L1IqM=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1784131541; c=relaxed/simple;
+	bh=nNURNQIDiS1ooR+480wYZx+MKMeLkiR4OpihSyIBdEs=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=lII/GfCQDDaWniPTlMioGQczOx3/sBEcMYZqtcIxhCYNAD0cIgtlXkhCPjeqCyjrwW68VVrLJh8MvDIRbxvoCBMFfXq92ydQVQqH5JeAWjWrzFZvGOLXboQ9fqA5dSNLsau4r84ttvWMUJhNtOjKYmrEytadR2IQGvvuBAqcqUY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=CT13x8J0; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b="b/wqXCVq"
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=qg5AATBUEkVBUrkH5V0QQ1x/jU6EYxuL7AzYptvsc/IAK7QiuPS+rJXZu/J9zm45UrjCqBJQShKnbzjBGTev9QXrBvbfRdLYqwXVKbzvtPts+xmYcOT/Q1Rc0McAG6e5gOZcfnqYE+TZKBciYJE+V0GWL4DIuyDQugAYVVR2jBw7I7i0m+6dKXaSI9pgbP+MAYcfbUYATmFzJYx/kdQmp48G+NF+N0OJHWd3/3Ml0KI/8u9gCo9ukWoN1SkODRn6OfFn6pmbUN30t6cuQ4uEJkNgj/V4FxWs0C9m6lhY7eWc7wRUbHm9oRpElzyWqFUkyejWpFdSd6/97js90TNyIw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=wG7o6JpxKL0rMCUfMvx6/MerwkEHwn3KLXS4ZwTi0F8=;
- b=eZW6R814x3MxCMXLCzNVFjXOiYwcV/Gf0ZAEid884zn8PEjfQZ/2YzKSaEu68ZSmA7QSHXSDD2Gi3pYlxiJEzkQz87jgStLll9FPRjEu35VRDoAeU36uAQSpVz4Z/7iQTz2pqdiC+kHzaUdQd3bKXlxEVk4AQSQZ2/BxCr8bgfAcPo0W4NKAkIZv4o3B/515CzdkzU3VXPtaS8mjDKFxTfk1KfXHzOi6ObjhstNfKxHQBXjBaFMA/3vAuY6fDdTg8JctCalljCB5EhR2MiVbcYJvQdtk70tAsfsYOpPNWntyTm480aA86S56RfZNiG3WoJLSz9yyUXvdot3BRLH2Wg==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
- 165.204.84.17) smtp.rcpttodomain=oss.qualcomm.com smtp.mailfrom=amd.com;
- dmarc=pass (p=quarantine sp=quarantine pct=100) action=none
- header.from=amd.com; dkim=none (message not signed); arc=none (0)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=wG7o6JpxKL0rMCUfMvx6/MerwkEHwn3KLXS4ZwTi0F8=;
- b=b/wqXCVqpEizdgbEp/KLpn5xogDitPiH11aZwnXEOxxAdPU9QHj1eiOnftUQKMwLykUpNnETmz37uv2/S9jOURq+yJYl+UUEvadoKkjZbq88moLzTomCdwtybvS/DpevbTa7h7dae9KMyCPGPZoKdvxlXWzFX9Yg6Ei9s1uAGiI=
-Received: from MW4PR04CA0108.namprd04.prod.outlook.com (2603:10b6:303:83::23)
- by SJ0PR12MB6711.namprd12.prod.outlook.com (2603:10b6:a03:44d::22) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.223.10; Wed, 15 Jul
- 2026 14:51:48 +0000
-Received: from SJ1PEPF00002311.namprd03.prod.outlook.com
- (2603:10b6:303:83:cafe::49) by MW4PR04CA0108.outlook.office365.com
- (2603:10b6:303:83::23) with Microsoft SMTP Server (version=TLS1_3,
- cipher=TLS_AES_256_GCM_SHA384) id 15.21.223.11 via Frontend Transport; Wed,
- 15 Jul 2026 14:51:46 +0000
-X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 165.204.84.17)
- smtp.mailfrom=amd.com; dkim=none (message not signed)
- header.d=none;dmarc=pass action=none header.from=amd.com;
-Received-SPF: Pass (protection.outlook.com: domain of amd.com designates
- 165.204.84.17 as permitted sender) receiver=protection.outlook.com;
- client-ip=165.204.84.17; helo=satlexmb08.amd.com; pr=C
-Received: from satlexmb08.amd.com (165.204.84.17) by
- SJ1PEPF00002311.mail.protection.outlook.com (10.167.242.165) with Microsoft
- SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.21.223.9 via Frontend Transport; Wed, 15 Jul 2026 14:51:46 +0000
-Received: from satlexmb07.amd.com (10.181.42.216) by satlexmb08.amd.com
- (10.181.42.217) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.41; Wed, 15 Jul
- 2026 09:51:40 -0500
-Received: from [172.31.184.125] (10.180.168.240) by satlexmb07.amd.com
- (10.181.42.216) with Microsoft SMTP Server id 15.2.2562.41 via Frontend
- Transport; Wed, 15 Jul 2026 09:51:35 -0500
-Message-ID: <ed6781c7-8f10-4580-a3f3-c8819428d845@amd.com>
-Date: Wed, 15 Jul 2026 20:21:34 +0530
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="CT13x8J0"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 272CC1F000E9;
+	Wed, 15 Jul 2026 16:05:28 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1784131531;
+	bh=rT7bsQS8/zf1rCHInjAW3HLxDf78or085sWYXQzWL+I=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=CT13x8J0V73sHX37wE1JTb+Dosg4T+RPnhqaRbxU6BaTbiZ+bBMEL9pq0qYRL8K5M
+	 Ooq6cUEDrr558+WKU4nLzUK3oRgrNzR8Tc3PYYMVZ3NDyfg5w5aIoWcf1muNH09QyR
+	 YH3++eKpb0AyLFVmWXkNaP6Zvske3SKhf5b53pce8/s01fJBYF/Br71fJxwt3n88N9
+	 t38XbqmGVbyRK2QSA3IDZc/I18sY+wxluAKMY+A/4LXtxCo4oHE3CF0Td72ALqpzOV
+	 DVk0La/sx2l5+ao+hMLA8Lmlvo9DTENuwFuubAHwiV0/nbivoJ8m6BHOufP04soxRO
+	 EQg2asVRqpOCQ==
+Date: Wed, 15 Jul 2026 17:05:27 +0100
+From: Conor Dooley <conor@kernel.org>
+To: Binbin Zhou <zhoubb.aaron@gmail.com>
+Cc: Binbin Zhou <zhoubinbin@loongson.cn>,
+	Huacai Chen <chenhuacai@loongson.cn>, Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	"Rafael J . Wysocki" <rafael@kernel.org>,
+	Daniel Lezcano <daniel.lezcano@linaro.org>,
+	Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>,
+	Huacai Chen <chenhuacai@kernel.org>,
+	Xuerui Wang <kernel@xen0n.name>, loongarch@lists.linux.dev,
+	devicetree@vger.kernel.org, linux-pm@vger.kernel.org
+Subject: Re: [PATCH 1/2] dt-bindings: thermal: loongson,ls2k-thermal: Add
+ compatible for Loongson-2K0300
+Message-ID: <20260715-trickle-trash-afa8904a2aa8@spud>
+References: <cover.1783670011.git.zhoubinbin@loongson.cn>
+ <7df0780e1b3d4c499a48cd862a12bda895e7818f.1783670011.git.zhoubinbin@loongson.cn>
+ <20260710-game-late-9347baafa7ab@spud>
+ <CAMpQs4+zXcNnZQnxWM7WUAM-heBYrTejm_dy3yVA4EFUrjA4CQ@mail.gmail.com>
+ <20260714-irritate-varying-9055895097b0@spud>
+ <CAMpQs4Kd=qc6HNaup6GyWufPwhgd+cafLzRXhga1Z=Ez7LPXHA@mail.gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2] cpufreq: amd-pstate-ut: fix null pointer dereference
-To: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>, Qianheng Peng
-	<pengqh1@chinatelecom.cn>, <ray.huang@amd.com>, <mario.limonciello@amd.com>,
-	<perry.yuan@amd.com>, <rafael@kernel.org>, <viresh.kumar@linaro.org>,
-	<skhan@linuxfoundation.org>, <li.meng@amd.com>
-CC: <linux-pm@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
-	<wangxb12@chinatelecom.cn>, <xiongl24@chinatelecom.cn>,
-	<zhangar@chinatelecom.cn>
-References: <1784108124-19988-1-git-send-email-pengqh1@chinatelecom.cn>
- <96c49e02-12bd-4f2b-b4bd-ccb98d2e530e@oss.qualcomm.com>
-Content-Language: en-US
-From: K Prateek Nayak <kprateek.nayak@amd.com>
-In-Reply-To: <96c49e02-12bd-4f2b-b4bd-ccb98d2e530e@oss.qualcomm.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
-X-EOPAttributedMessage: 0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: SJ1PEPF00002311:EE_|SJ0PR12MB6711:EE_
-X-MS-Office365-Filtering-Correlation-Id: d8c42629-c797-4b6a-2e60-08dee28097f1
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|82310400026|36860700016|7416014|376014|23010399003|1800799024|6133799003|4143699003|10067099003|56012099006|11063799006|18002099003|5023799004|22082099003;
-X-Microsoft-Antispam-Message-Info:
-	0reyFEctvKM8yLeeDN8IGOfmsCoXThelbkeAJ7bLPjkIgvnaLwb1anLDQk6Kbd4g44DpfaJ3kVc3y8ZiMBzW//o+bdtmhCgUW0f59rSRoaOJPMhCXB6KI/M7Jq7FzWQO8Uaqi9mg/Er4tajxPXZ3xAil+/WyLqzDMTlZTwuIcNfEyunJgh/uSU2grYOeGDjMXtPnCK+vpEVg1CiNLdIuT7JUuJq94rL9PdCKSDFRHBNbKn4dKJzonOlM8koUZz6gq1iRAQiTNSAm9FDXlk0wBxJbg3ORZgh5/0p2heKJSz493esp5Um7PEvmAvRtEzNuYIj02d1zR6r+Nz77F0cu0CnWf9pAXDMSycZdhascfjmZfQ0a3SwZHFPrfiDHVlpoLQvTfaDkcUQFODdFvn7r5HYSJRb5LPJX4oUD6SWDfPBueIO34ZdngXsqn5sCVlV246eLSDM31GpKToULgmQ+qkm9QcNwIQONFpGZajaFkEchPSrouAUAZPS6fiInRvferydjCTHsuSy8wqzHuS+J0IODcLmjfVIxcj4OrLkvT0jVngSF4n8irXJibNErZOW3G1L7vAb0TxpGRrI1Naovks1ofrgMqxj0cK+hl3oWjuqMNQrEkg6PLF+qbYOQvYCmjSjkHFmKOceuKugISVd3I8hz2zJ+jykchRe1vri+siGNqZCqa5sWpOZVY3o3RDYU27kBD1P8IfyCJo0YUGCWBQ==
-X-Forefront-Antispam-Report:
-	CIP:165.204.84.17;CTRY:US;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:satlexmb08.amd.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230040)(82310400026)(36860700016)(7416014)(376014)(23010399003)(1800799024)(6133799003)(4143699003)(10067099003)(56012099006)(11063799006)(18002099003)(5023799004)(22082099003);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	Lz5KSZ8ZZzQ2XpDz6SRaG5np5/dEd5ai8Dk9cxTlr4t44/GQ//T6pubZHGWgOaCRGuh1jd01m+btK9K4uwxifwM2SRkligNNIzA6uoRKHOXnOy9IGqZVkmHzHu8psuSAhj+lL69RIz7QoS0WeB7i8Wt0EaEJQS3TT6tDGNcmLiOA7PSTRbDsXpz+IZoKz+IsEDKqsHWN0nlLekOhvpi/a6Yj+fWQo6trNZh+Z1LYIL+6Tg8HOD+guhiEJ1NPNQGhMQAVL+OwsiDPWvBYgbVoCQEGLe3ZPpsougzYZE9A0HzooQtsvCmZPL4ZYy1K9NT9MQCSrXpakoUV/Nj3mj5Fi+4o7oftXzXcNIpUNECjtf5wVQUd2qiRPZW/FnzpKga1+58I9fnefRNV52LAjMfYMiLL6pyFEC9EnUDtho6SRR0xh/WsEIhvisn7HNYP40Cy
-X-OriginatorOrg: amd.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 15 Jul 2026 14:51:46.4795
- (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: d8c42629-c797-4b6a-2e60-08dee28097f1
-X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
-X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=3dd8961f-e488-4e60-8e11-a82d994e183d;Ip=[165.204.84.17];Helo=[satlexmb08.amd.com]
-X-MS-Exchange-CrossTenant-AuthSource:
-	SJ1PEPF00002311.namprd03.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Anonymous
-X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: SJ0PR12MB6711
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="FboiViZLpLn3+H5A"
+Content-Disposition: inline
+In-Reply-To: <CAMpQs4Kd=qc6HNaup6GyWufPwhgd+cafLzRXhga1Z=Ez7LPXHA@mail.gmail.com>
 
-Hello Zhongqiu, Qianheng,
+--FboiViZLpLn3+H5A
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Thank you both for taking a look at this!
+On Wed, Jul 15, 2026 at 04:31:21PM +0800, Binbin Zhou wrote:
+> Hi Conor:
+>=20
+> On Wed, Jul 15, 2026 at 12:54=E2=80=AFAM Conor Dooley <conor@kernel.org> =
+wrote:
+> >
+> > On Tue, Jul 14, 2026 at 02:53:40PM +0800, Binbin Zhou wrote:
+> > > Hi Conor:
+> > >
+> > > Thanks for your reply.
+> > >
+> > > On Sat, Jul 11, 2026 at 12:21=E2=80=AFAM Conor Dooley <conor@kernel.o=
+rg> wrote:
+> > > >
+> > > > On Fri, Jul 10, 2026 at 04:24:59PM +0800, Binbin Zhou wrote:
+> > > > > Add a new compatible string `loongson,ls2k0300-thermal` for the t=
+hermal
+> > > > > sensor found on the Loongson-2K0300 SoC.
+> > > > >
+> > > > > The hardware differs from the existing SoCs in its register layou=
+t: it
+> > > > > requires two register regions (one for the thermal sensor control=
+ and
+> > > > > another for the CPU ID).
+> > > > >
+> > > > > Update the binding to describe this new requirement.
+> > > > >
+> > > > > Signed-off-by: Binbin Zhou <zhoubinbin@loongson.cn>
+> > > > > ---
+> > > > >  .../thermal/loongson,ls2k-thermal.yaml        | 68 +++++++++++++=
++-----
+> > > > >  1 file changed, 50 insertions(+), 18 deletions(-)
+> > > > >
+> > > > > diff --git a/Documentation/devicetree/bindings/thermal/loongson,l=
+s2k-thermal.yaml b/Documentation/devicetree/bindings/thermal/loongson,ls2k-=
+thermal.yaml
+> > > > > index 79e691b08341..b5cbfd201105 100644
+> > > > > --- a/Documentation/devicetree/bindings/thermal/loongson,ls2k-the=
+rmal.yaml
+> > > > > +++ b/Documentation/devicetree/bindings/thermal/loongson,ls2k-the=
+rmal.yaml
+> > > > > @@ -10,13 +10,11 @@ maintainers:
+> > > > >    - zhanghongchen <zhanghongchen@loongson.cn>
+> > > > >    - Yinbo Zhu <zhuyinbo@loongson.cn>
+> > > > >
+> > > > > -allOf:
+> > > > > -  - $ref: /schemas/thermal/thermal-sensor.yaml#
+> > > > > -
+> > > > >  properties:
+> > > > >    compatible:
+> > > > >      oneOf:
+> > > > >        - enum:
+> > > > > +          - loongson,ls2k0300-thermal
+> > > > >            - loongson,ls2k1000-thermal
+> > > > >            - loongson,ls2k2000-thermal
+> > > > >        - items:
+> > > > > @@ -39,23 +37,46 @@ required:
+> > > > >    - reg
+> > > > >    - interrupts
+> > > > >
+> > > > > -if:
+> > > > > -  properties:
+> > > > > -    compatible:
+> > > > > -      contains:
+> > > > > -        enum:
+> > > > > -          - loongson,ls2k2000-thermal
+> > > > > +allOf:
+> > > > > +  - $ref: /schemas/thermal/thermal-sensor.yaml#
+> > > > >
+> > > > > -then:
+> > > > > -  properties:
+> > > > > -    reg:
+> > > > > -      minItems: 2
+> > > > > -      maxItems: 2
+> > > > > +  - if:
+> > > > > +      properties:
+> > > > > +        compatible:
+> > > > > +          contains:
+> > > > > +            enum:
+> > > > > +              - loongson,ls2k0300-thermal
+> > > > > +    then:
+> > > > > +      properties:
+> > > > > +        reg:
+> > > > > +          items:
+> > > > > +            - description: Thermal base register region
+> > > > > +            - description: CPU ID register region
+> > > > >
+> > > > > -else:
+> > > > > -  properties:
+> > > > > -    reg:
+> > > > > -      maxItems: 1
+> > > > > +  - if:
+> > > > > +      properties:
+> > > > > +        compatible:
+> > > > > +          contains:
+> > > > > +            enum:
+> > > > > +              - loongson,ls2k1000-thermal
+> > > > > +    then:
+> > > > > +      properties:
+> > > > > +        reg:
+> > > > > +          items:
+> > > > > +            - description: Thermal base register region
+> > > > > +
+> > > > > +  - if:
+> > > > > +      properties:
+> > > > > +        compatible:
+> > > > > +          contains:
+> > > > > +            enum:
+> > > > > +              - loongson,ls2k2000-thermal
+> > > > > +    then:
+> > > > > +      properties:
+> > > > > +        reg:
+> > > > > +          items:
+> > > > > +            - description: Thermal base register region
+> > > > > +            - description: Thermal data output register region
+> > > > >
+> > > > >  unevaluatedProperties: false
+> > > > >
+> > > > > @@ -69,3 +90,14 @@ examples:
+> > > > >          interrupts =3D <7 IRQ_TYPE_LEVEL_LOW>;
+> > > > >          #thermal-sensor-cells =3D <1>;
+> > > > >      };
+> > > > > +
+> > > > > +  - |
+> > > > > +    #include <dt-bindings/interrupt-controller/irq.h>
+> > > > > +    thermal-sensor@16001500 {
+> > > > > +       compatible =3D "loongson,ls2k0300-thermal";
+> > > > > +       reg =3D <0x16001500 0x30>,
+> > > > > +             <0x16003ff0 0x8>;
+> > > >
+> > > > Quite frankly, the address and size of this look like the second
+> > > > register region here is actually a few bytes in a syscon that is be=
+ing
+> > > > misrepresented.
+> > > > What lies at the addresses immediately before and after 0x16003ff0?
+> > >
+> > > Yes, it can be viewed as part of the system configuration registers,
+> > > which appear somewhat disorganized. Within this section,
+> > > 0x16003fe0=E2=80=930x16003ffc represents eight chip ID registers.
+> > >
+> > > 0x16003fe0 --> the 4th chip id
+> > > 0x16003fe4 --> the 5th chip id
+> > > 0x16003fe8 --> the 6th chip id
+> > > 0x16003fec --> the 7th chip id
+> > > 0x16003ff0 --> the 0th chip id
+> > > 0x16003ff4 --> the 1st chip id
+> > > 0x16003ff8 --> the 2nd chip id
+> > > 0x16003ffc --> the 3rd chip id
+> > >
+> > > Perhaps I shouldn=E2=80=99t have referenced `0x16003ff0` separately h=
+ere. It
+> > > would be more reasonable to declare the entire chip ID address space
+> > > as a separate syscon and have it referenced by thermal driver.
+> >
+> > Probably, but even being of size 0x20 feels suspiciously small and that
+> > it is likely that this is part of an even larger grouping of misc.
+> > registers.
+>=20
+> According to the manual, the chip configuration registers are not
+> contiguous but are scattered throughout the memory. They are generally
+> as follows:
+>=20
+> 0x16000100 - 0x16000154:  General Chip Configuration / Chip Sampling
+> Parameters / Chip Counter Registers
+> 0x16000400 - 0x16000424:  PLL Clock Configuration Registers -> This is
+> already used in clk driver;
+> 0x16000490 - 0x160004a8:  GPIO Remapping Configuration Register ->
+> This is already used in pinctrl driver;
+> 0x16000500 - 0x1600050c:  USB PHY Configuration Register
+> 0x16001040 - 0x160014c0:  Interrupt routing Registers -> This is
+> already used in irqchip driver;
+> 0x16001500 - 0x16001524:  Thermal Registers -> This is already used in
+> thermal driver;
+> 0x16001600 - 0x1600180c:  External Interrupt Registers -> EIO irqchip dri=
+ver;
+> 0x16003fe0  - 0x16003ffc:  CHIP ID Registers
+>=20
+> Expanding the range to `0x16000100 - 0x16003ffc` might not be the best ap=
+proach.
+> In contrast, the chip ID register is independent. Additionally, apart
+> from the first section of general-purpose chip configuration
+> registers, the other registers are referenced by their respective
+> modules.
+>=20
+> So, is `reg =3D <0x0 0x16003fe0 0x0 0x20>;` a good choice?
 
-On 7/15/2026 7:30 PM, Zhongqiu Han wrote:
-> Hi Qianheng,
-> 
-> On 7/15/2026 5:35 PM, Qianheng Peng wrote:
->> The crash issue may occur when insmod amd_pstate_ut module on intel platform.
->>
->>     amd_pstate_ut: 1    amd_pstate_ut_acpi_cpc_valid  success!
->>     amd_pstate_ut: 2    amd_pstate_ut_check_enabled   success!
->>     BUG: kernel NULL pointer dereference, address: 0000000000000080
->>     #PF: supervisor read access in kernel mode
->>     #PF: error_code(0x0000) - not-present page
->>     PGD 0 P4D 0
->>     Oops: 0000 [#1] SMP NOPTI
->>     CPU: 0 PID: 20300 Comm: modprobe
->>     Kdump: loaded Tainted: G O 6.6.0-0010.rc1.ctl4.x86_64 #1
->>     Hardware name: FiberHome R2200 V5/Xeon Boards, BIOS 3.1a 02/24/2020
->>     RIP: 0010:amd_pstate_ut_check_perf+0x141/0x280 [amd_pstate_ut]
->>     Call Trace:
->>      <TASK>
->>      amd_pstate_ut_init+0x1b/0xff0 [amd_pstate_ut]
->>      ? __pfx_amd_pstate_ut_init+0x10/0x10 [amd_pstate_ut]
->>      do_one_initcall+0x42/0x2e0
->>      ? kmalloc_trace+0x26/0x90
->>      do_init_module+0x60/0x240
->>      __se_sys_init_module+0x185/0x1c0
->>      do_syscall_64+0x62/0x190
->>      entry_SYSCALL_64_after_hwframe+0x76/0x7e
->>      </TASK>
->>
->> Add invalidation check of cpudata in amd_pstate_ut_check_perf() and
->> amd_pstate_ut_check_freq() to avoid unpredicated null pointer dereference.
->> Otherwise, add driver name detection for amd_pstate_ut driver to prevent it
-> 
-> The driver-name check in amd_pstate_ut_init() is the actual fix: it
-> prevents this module from running its test cases on non-AMD platforms.
-> 
-> The NULL check should not be necessary. On an already-registered amd
-> pstate driver, policy->driver_data is set only after a successful
-> ->init() and is cleared only in ->exit(), so it is never legitimately
-> NULL for a live policy:
-> 
-> 1. Hotplug offline path: a normal CPU hotplug offline does not hit
-> ->exit(). The driver's .offline callback makes __cpufreq_offline() take
-> the light-weight teardown path and return early, so ->exit() (and the
-> kfree) is not invoked and cpudata stays valid. The full teardown only
-> happens on driver unregister / device unbind.
-> 
-> 2. Driver exit path: the NULL check does not close the theoretical UAF
-> window here, since the test does not hold policy->rwsem: cpudata can be
-> kfree()'d between the check and the subsequent dereference. Worse, the
-> passive amd_pstate_cpu_exit() frees cpudata but does not reset policy
-> ->driver_data to NULL, so the check would pass and then dereference a
-> dangling pointer. This is a pre-existing issue and out of scope for this
-> fix.
-> 
-> so it is better to drop the "NULL check of cpudata" commit msg and code.
-> 
-> (Others may have more context here, so please free free correct me if
-> I'm wrong.)
+Yeah, it is genuinely not a contiguous region, suspect as it may look!
+This seems fine, thanks.
 
-Ack! amd-pstate-ut was intended to be run in isolation without any
-other concurrent driver operation as a sanity check for developers.
-Races with hotplug / any user initiated changes during the test run
-can cause issues.
+--FboiViZLpLn3+H5A
+Content-Type: application/pgp-signature; name=signature.asc
 
-> 
-> 
-> 
->> from testing cpufreq driver on non-amd platform.
->>
->> Fixes: 14eb1c96e3a3 ("cpufreq: amd-pstate: Add test module for amd-pstate driver")
->> Suggested-by: Li Xiong <xiongl24@chinatelecom.cn>
->> Suggested-by: Xibo Wang <wangxb12@chinatelecom.cn>
->> Signed-off-by: Qianheng Peng <pengqh1@chinatelecom.cn>
->>
->> ---
->> v2:
->>    - Print policy->cpu instead of policy->kboj.name
->>    - Add cpufreq driver name detection to amd_pstate_ut
->>
->> v1: https://lore.kernel.org/all/1784015941-26535-1-git-send-email-pengqh1@chinatelecom.cn
->> ---
->>   drivers/cpufreq/amd-pstate-ut.c | 17 +++++++++++++++++
->>   1 file changed, 17 insertions(+)
->>
->> diff --git a/drivers/cpufreq/amd-pstate-ut.c b/drivers/cpufreq/amd-pstate-ut.c
->> index 735b29f..5d71315 100644
->> --- a/drivers/cpufreq/amd-pstate-ut.c
->> +++ b/drivers/cpufreq/amd-pstate-ut.c
->> @@ -157,6 +157,10 @@ static int amd_pstate_ut_check_perf(u32 index)
->>           if (!policy)
->>               continue;
->>           cpudata = policy->driver_data;
->> +        if (!cpudata) {
->> +            pr_err("%s empty driver_data on cpu %d\n", __func__, policy->cpu);
->> +            return -EINVAL;
-> 
-> Strictly speaking, it should be %u, right? Since policy->cpu is an
-> unsigned int, using %d is a format-specifier type mismatch.
-> 
->> +        }
->>             if (get_shared_mem()) {
->>               ret = cppc_get_perf_caps(cpu, &cppc_perf);
->> @@ -229,6 +233,10 @@ static int amd_pstate_ut_check_freq(u32 index)
->>           if (!policy)
->>               continue;
->>           cpudata = policy->driver_data;
->> +        if (!cpudata) {
->> +            pr_err("%s empty driver_data on cpu %d\n", __func__, policy->cpu);
->> +            return -EINVAL;
->> +        }
->>             if (!((policy->cpuinfo.max_freq >= cpudata->nominal_freq) &&
->>               (cpudata->nominal_freq > cpudata->lowest_nonlinear_freq) &&
->> @@ -560,6 +568,15 @@ static int amd_pstate_ut_check_freq_attrs(u32 index)
->>   static int __init amd_pstate_ut_init(void)
->>   {
->>       u32 i = 0, arr_size = ARRAY_SIZE(amd_pstate_ut_cases);
->> +    const char *driver_name = NULL;
->> +
->> +    driver_name = cpufreq_get_current_driver();
->> +    if (!driver_name)
->> +        return -ENOENT;
->> +    /* don't test if non-amd cpufreq_driver exists */
->> +    else if (strcmp(driver_name, "amd-pstate") &&
-> 
-> Nit: Redundant else after a return: since the previous branch already
-> returns, control can never reach the else if, so it is better to drop
-> the else and use a separate if.
+-----BEGIN PGP SIGNATURE-----
 
-A simpler check would be:
+iHUEABYKAB0WIQRh246EGq/8RLhDjO14tDGHoIJi0gUCalevxwAKCRB4tDGHoIJi
+0lDLAQDu6AjKg74+kqvhVdYkB1JqPrZjz5kG+X3lErk6G60FLQEA9RG17mVZ9OR3
+FOsdEYDvAtMg60UdM8V4VKu68e/qZAQ=
+=XcdU
+-----END PGP SIGNATURE-----
 
-  enum amd_pstate_mode mode = amd_pstate_get_status();
-
-  if (mode == AMD_PSTATE_UNDEFINED || mode == AMD_PSTATE_DISABLE) 
-           return -ENOENT;
-
-Status always starts out as undefined and if the driver doesn't
-load, it stays that way. If user has disabled the driver for any
-reason, the unit test should bail out too.
-
-> 
->> +         strcmp(driver_name, "amd-pstate-epp"))
->> +        return -EEXIST;
-> 
-> How about -EOPNOTSUPP or -ENODEV? And it would be helpful to log
-> error info here.
-> 
-> 
->>         for (i = 0; i < arr_size; i++) {
->>           int ret;
-> 
-> 
-
--- 
-Thanks and Regards,
-Prateek
-
+--FboiViZLpLn3+H5A--
