@@ -1,207 +1,256 @@
-Received: from CY3PR05CU001.outbound.protection.outlook.com (mail-westcentralusazon11013071.outbound.protection.outlook.com [40.93.201.71])
+Received: from mout02.posteo.de (mout02.posteo.de [185.67.36.66])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0EBE83BB112;
-	Wed, 15 Jul 2026 20:54:35 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.93.201.71
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1784148877; cv=fail; b=a1mFB4XYuECgZqfdc7MzBi0DMBnrDRnpkP+0EpeBrId5GNmEXQFxyvVzN6MXW7tUWUgxYwe8PfLKi+jZiUjonazrt83lNMvxGH+ZkAfHqPKt5CGsa+umhLXSTIk9FVGcOHVMPaD1wtLJ22mOSNftzRr77wTgJZprgHehVwKXB3w=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1784148877; c=relaxed/simple;
-	bh=jCAeUGJafQ4wuNKFnJRP6K4pzAkE+NVYvSgWoWlMHR0=;
-	h=Message-ID:Date:Subject:To:Cc:References:From:In-Reply-To:
-	 Content-Type:MIME-Version; b=jeRGXK03hRzmg/Y4OPd91OEDDTTKBev105Rh87Dz2hEvGq3Q75LhH8+3FhiBNxZC+jVa5hTmysF6S4awjj2zvzT7kS8jRmHl66ZAfTrpjJYeAGaoF01DNEA0qJw6fsFJl89PkIbYjTvCjsnlv3dur2vcwp4VTL9UnUFL+e8avV8=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com; spf=fail smtp.mailfrom=amd.com; dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b=Ss5Ave2W; arc=fail smtp.client-ip=40.93.201.71
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com
-Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=amd.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7512C3BBFD0
+	for <linux-pm@vger.kernel.org>; Wed, 15 Jul 2026 21:00:22 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=185.67.36.66
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1784149224; cv=none; b=bj3W4OB4sodzF38mpnRkEbBRqUSpUe1bCHrp/LFqldOeeoeEvvwSbBD7ZbM1dzjW/i3R9yP73TVyWhHuQfq3JtmdrsUMekwZc1nQchxePv4l9S2K32lBO2avI6usJGArFqHZByTwcgk2aG72dxrQl/f7xAOdl68Rrjsk3l2itgo=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1784149224; c=relaxed/simple;
+	bh=xZiQuQmKXBg8xRZVBYMava9XBcpTnYDvAlvLnwC5EuQ=;
+	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=CWbUvCmxkQXP7ln0us157Bly2igAjbKM/Zya9I9venMG6YDj3h4QSve2xlk5V3c8ZJmSZdJ5+EQm42yVfM/DEr2DMHcdxY3+9ix+tBpZB7CfnhQ30f4OrOPEu6Sp24t85gbj80I8HmmlYzURD48YaeMb+4OZOY4oE/xelK8X810=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=posteo.de; spf=pass smtp.mailfrom=posteo.de; dkim=pass (2048-bit key) header.d=posteo.de header.i=@posteo.de header.b=gLkZb4/g; arc=none smtp.client-ip=185.67.36.66
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=posteo.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=posteo.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b="Ss5Ave2W"
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=sbNZbIHiZhurXCL9J+5z0jv9rD5+mqjd6WdhiUcIuAxIVOBQVXO/W6HF8s9Erb3dYTJqI2wa9YDk/pERTQi32moS9Z2zoSgV4/35wGBS2r9dtKT+K9ZY9drZVCecdwCKXjVr56bcnE175Qcv/mVoX4JR82KebZoWBOBa04MKnCZiIiGzNxERjKbTwOfEeGtCOgo50FanyepdcoDZ2HnSZ0riogLhBZeTg5OsIVNf+qNL919KdafeIrjvnErpBzZXxAIXljn781HwuMJhaFeOICsU7qh6X78u9ETnB5wDNg0H/k3XxsEZOXVnY1nBAw7OpsKS3KSwVYXGf1729GeiAw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=SHtwmY4d4Izrn5oE6zIdEy0rlUpbkQ6oopddsdBpFc0=;
- b=ZLaIh5+vmN8Ye8eefgkY+dPFVQ3BIbbVqHXOhRWktUiXqtXGGimNTQ+j2sIELBnofyECBciPXjl2Aya7K+1HzXiPR+ClNY/ajjqSv+KpPH3xk4kXkr03F82cqbIwvHr8zz9XmqyTm3GSxjeDooByegnJLpIfoZ+cQHNp1PEOb0n9rcg5rogIOK96KkqbQhRnpfRBaEame7YAzOJmHm3exqviHezkLdcFvws5IiNM0LcCZJmMFlCBy4zv5LwquIlLiROyDU3DfIYJs2EoBNkUOreIpbcRq9ddjetXe8vYwpgCGg/WCgvWZl+Wo+KzFpsfRb4ecpLJ+NBWiRlJQZ7bcQ==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=amd.com; dmarc=pass action=none header.from=amd.com; dkim=pass
- header.d=amd.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=SHtwmY4d4Izrn5oE6zIdEy0rlUpbkQ6oopddsdBpFc0=;
- b=Ss5Ave2WMCKccirdSIeDrlonb5WizKr47fNcpQc7mIniXKacvMw1OIJHDioySezHjlT4sJjLSbkj3qYxJdJT97fOTlj/ITrevb6RfSPzd4YAQHR665SV2bgc8XHngJOOGB8Wg1HI5nMecrbafMPB9coiYTsr3dGp85wneK/5c/c=
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=amd.com;
-Received: from PH8PR12MB6914.namprd12.prod.outlook.com (2603:10b6:510:1cb::21)
- by SA0PR12MB4494.namprd12.prod.outlook.com (2603:10b6:806:94::20) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.223.11; Wed, 15 Jul
- 2026 20:54:33 +0000
-Received: from PH8PR12MB6914.namprd12.prod.outlook.com
- ([fe80::2893:177a:72b0:6000]) by PH8PR12MB6914.namprd12.prod.outlook.com
- ([fe80::2893:177a:72b0:6000%6]) with mapi id 15.21.0223.008; Wed, 15 Jul 2026
- 20:54:32 +0000
-Message-ID: <c4ab14b5-7e33-487a-9fbb-ec57ea3955b2@amd.com>
-Date: Wed, 15 Jul 2026 15:54:28 -0500
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] cpufreq/amd-pstate: Bail out early in virtual machines
- and don't warn
-Content-Language: en-US
-To: Jason Andryuk <jason.andryuk@amd.com>, Rong Zhang <i@rong.moe>,
- Borislav Petkov <bp@alien8.de>
-Cc: Huang Rui <ray.huang@amd.com>, Perry Yuan <perry.yuan@amd.com>,
- K Prateek Nayak <kprateek.nayak@amd.com>, linux-pm@vger.kernel.org,
- linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rafael@kernel.org>,
- Viresh Kumar <viresh.kumar@linaro.org>
-References: <20260716-amd-pstate-vm-v1-1-2ac97d3cf6e7@rong.moe>
- <0c55d331-bf98-4e6e-9de5-35803ead3c0a@amd.com>
- <20260715180454.GAalfLxn3Wyu-fRjoT@fat_crate.local>
- <ecc292377a145741f47ff2422b72fa95e57a725b.camel@rong.moe>
- <61a141cd-c72a-4ee5-8273-ee721aa13f68@amd.com>
-From: Mario Limonciello <mario.limonciello@amd.com>
-In-Reply-To: <61a141cd-c72a-4ee5-8273-ee721aa13f68@amd.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-ClientProxiedBy: BN0PR07CA0027.namprd07.prod.outlook.com
- (2603:10b6:408:141::29) To PH8PR12MB6914.namprd12.prod.outlook.com
- (2603:10b6:510:1cb::21)
+	dkim=pass (2048-bit key) header.d=posteo.de header.i=@posteo.de header.b="gLkZb4/g"
+Received: from submission (posteo.de [185.67.36.169]) 
+	by mout02.posteo.de (Postfix) with ESMTPS id 17D91240108
+	for <linux-pm@vger.kernel.org>; Wed, 15 Jul 2026 23:00:15 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=posteo.de;
+	s=1984.8680eb; t=1784149215;
+	bh=MpjNY5IInl4AXezLvpp//D60MOxckmr9BaeSeASTsOA=;
+	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:
+	 Content-Transfer-Encoding:To:Cc:Autocrypt:OpenPGP:From;
+	b=gLkZb4/gJp1fql5AYPvEKsT9+PexA2Rk4Ss240aLeHmWPC3T39hoRvNZAKLQ8g80P
+	 xE8KXjzhKhoqHeEoa4UvrfPqBwIvqgvKpDWHFpthyGST/zJgsx9nmcwAI/6fkQw4Sa
+	 cQlceLOGZj3R8wCzMeRlCVuj6d313WNUKlYeYscjJ6J+VG6URw9agp0MFHLbUsf5p7
+	 Vj0bGIoYr7BQ83djY19YGyEOFGgDCk/b+vLLkYZU2UELHXqzOlIUZwYeKvlPhcy+A6
+	 hnpszbAy7HtIjQ+yb/CU7rZkrOsgcnnze5NREMJKIoJ5Nu1M89D1opHeRxJJukX4lv
+	 1kKNlBlAB6+wg==
+Received: from customer (localhost [127.0.0.1])
+	by submission (posteo.de) with ESMTPSA id 4h0pTl0kTxz6tsb;
+	Wed, 15 Jul 2026 23:00:11 +0200 (CEST)
+From: Markus Probst <markus.probst@posteo.de>
+Subject: [PATCH v14 0/3] rust: add basic serial device bus abstractions
+Date: Wed, 15 Jul 2026 21:00:14 +0000
+Message-Id: <20260715-rust_serdev-v14-0-b4ed5c93606f@posteo.de>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: PH8PR12MB6914:EE_|SA0PR12MB4494:EE_
-X-MS-Office365-Filtering-Correlation-Id: 08809f7f-9adc-4d7c-f14f-08dee2b34584
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|23010399003|376014|1800799024|366016|11063799006|10067099003|6133799003|22082099003|18002099003|4143699003|56012099006;
-X-Microsoft-Antispam-Message-Info:
-	QDOxc10EM0GbD2/TD2uc0CFbpzaselwkXwSDG8RDWFzDdEasfjnlfv9OS4vqzq4Kdcnh5l22DliZOeoqSqokfEBgWUmMcj4Canp0kDcz3gqFvkFhX4WGan7feIMraidLgg6Up6kEJtdT4Od4eNFyKwgUYZgPbOPGBhjOsE2v6UgpbURaxz6SB6IPsiVIRiOEmz4hx7OYtaM+C676wLxuowxBwX/Kw8bEsktIojgkWua+40a9IYjtFdTb+ChXwKUQ01YX8prHTDMsM4ld8kgY2i3VtJ7i3vwMzpF3VJrobrxFrg9ew8XgzR1e6DxAIteQmVAHov/K+ZWiqUFiZ/Xj9n0S8ckenp5OPQd/vpPp+Qh6f7mHq/3/IJaXucD/XWx7lNfD966Pos9S0lEnv0MVz9XGvYLQ3P2um2T1xsXVFX7g2RRlNkCD1kwYB/8YBY9/Zkn/o0w0Oq7Mn+ChiIo3mYDOAKQpYck9uGzzEtygmY51MOFx0Ro92YPdmU1uNU/TUNAHcDg49STRSburiDsx4vsfoeBEt2ahpSgvRQRqxGbCpY2dwX0GCqjetMN6lgxsDyMmF5XreHLAJmihz1zglkl+ePONJRZCOKqeaWpSNuxi8U65sN6hsqDY5u0oGJOtKqbdXWns7IVcuquisTzkREDDIFxMVASFTia+pjcpHeE=
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:PH8PR12MB6914.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(23010399003)(376014)(1800799024)(366016)(11063799006)(10067099003)(6133799003)(22082099003)(18002099003)(4143699003)(56012099006);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?utf-8?B?UG1pY2c1NTBJZjVOaERHZlE2bTRoSVRSUkdZVnJuWlFZS0FpeTBQUU9oSEFw?=
- =?utf-8?B?MTJJT250NmdJbXAybnFxK2Vhb0xRb2R3WXJhSGgrWldlbTlxL3Z2WDlsRURn?=
- =?utf-8?B?UUd1WmJiTmd5V0lBSU1ENE10QXE2Y2dhMTVjNUdaTzRXNkRxdjlTVkx4VmZw?=
- =?utf-8?B?TGRXQ2xiU1JTdFZOUWVmaTJDeStta2JiUlF4TTJFY3BBbnhubnE1bHg2cWRJ?=
- =?utf-8?B?TTZ4bDMyeWZwcEU1ejRzYUFPV3JRRFpjRXJudHZ3d3ZzVmVHZEQwZTVEbVdj?=
- =?utf-8?B?YXhMQjE3YzF5M0dsbEY1YVVnZGhsbkJFUjY2SjVNWDlrZ3hpSGNzcEhHU0Qw?=
- =?utf-8?B?eVZpS1FiS1VWOWhQaFZLRi9mUE92bE96cXFYVmdMejFtcHc3cXJwUVYyYTFR?=
- =?utf-8?B?WVRuVW5kcUxCQ211U1JPbzlwbytmcUFQNlVoMEhycVdtM0VQUUtIbVg2VVVH?=
- =?utf-8?B?MEt2TDFlYWRvbWxmZit4eHp1UUR5VEJDNk9zMXNXNnNoKzNTTUQyaUtCMWdz?=
- =?utf-8?B?bE5ocTVmVzc3aTNOakxmZDUxOWxaVlJOZ1ZWMWNzUzBNYk5qYkl1ejNXQjF5?=
- =?utf-8?B?SmFlaGZLVEJYL0kxQ3puSU03V2gyMTc3dSt2VkdiNjlvVjdWeTNKN3JJNVUy?=
- =?utf-8?B?YWlCMmdNbzNXSmpGbVNJdTZyVWxlWTJKSGRYMjd6WkJYUDdjL1JVQ2xHL2cw?=
- =?utf-8?B?bVFFTUxqUmRZaDJQbzllcTF6RjQyelBkL3R6bDlLczYycDVLNlAvZDdSVEg1?=
- =?utf-8?B?K3c3MWxWcFpLY0szZEQ0VU9HNXBEN3l1T2hoOVZseXdaRWtwT2lkanJWbVV3?=
- =?utf-8?B?cFhtM0JzcVl1MU5WeDdnc2tQKzFNOCtna2UvRlVhTm1yUklOSHVLREM2SDR4?=
- =?utf-8?B?dWhlYTk3SGh6bFVqcTNWRUM0SHVNcFJDYmFQUStsaVQ3QktRbWtnQnlOZDM1?=
- =?utf-8?B?R3hkamhUc2dHOWlZS3d4VDh2WFhIQlEydE5LSDBSaVB5N1drcWhJQ1pWNEg5?=
- =?utf-8?B?YlhHd240TVVOanY1R2ZPdVFzZjk4VjIzSGUrbmhrUGJvSG9wZUpDVVZKMFp5?=
- =?utf-8?B?NHVaSGJOV2JheStTTkpXWnM3R3drVGZId0ljOVM0Vnh5OE9FaG45a3lLRWxp?=
- =?utf-8?B?VHJQUDdDcFp1dE0wdmNWUW5FUXNiQ3c5T1pZL3RTUllUNDNTbWdRRWJzU1pW?=
- =?utf-8?B?MHhwS0JudTd1OHYyQmRMcHVxRFA1aGlrdWNQUjRJOHAvYmdTYnorY041dDhv?=
- =?utf-8?B?cEdxNzY4MGhxeFBmQzJWSUtXTlN1bTNkUHFhTytibGtZQmpYbUxEU0xvODVE?=
- =?utf-8?B?dERkMC91cGhST21oSytiSW5DTVBSM0xnL3pYTUxiR3gwR3pPYVV3aDBiems2?=
- =?utf-8?B?Zlp3eWlUQkoxYUgxbHFUMGJBU2Nsbjl3MGVZTkI5KzNTYWo2YnY2NEZVUHV1?=
- =?utf-8?B?WVR3SktMK2NrQmk0a1c0bHB1K3Jtd21wdmdFRW1YWHdiY1dRTzJOWklhOUxt?=
- =?utf-8?B?RExua1BKVGRmaHlTZkUyTHc5TitKNkdYdHVYbXF5aDBSTlhuTmlyc2ZaWkl3?=
- =?utf-8?B?RXRZVEVtSG9LVUt1RkZVam94TkpTaFQ5UmhiRy8rOEFKVTlSbWtUczFWYVV5?=
- =?utf-8?B?VjQ2VEdDYUgwa0c1elh4QmVIdC9oVk5JWm1OeTAvWFZ1TUpsM1lUYVloeDJE?=
- =?utf-8?B?YjB5VGZjaXRKK0JOV0hwd3pJdnMrL2src1p1Kzkya1lCM25McWNySEZEL1BJ?=
- =?utf-8?B?TFNIc2oyVnd2RHdLTzlBSHF3TFN3SitJaDc0K1BLcUtaZkErYTJNNElCbnNm?=
- =?utf-8?B?N2xDVnpRMEVlbHlDRTJHQTB1RUZ3UWV0dkJnTmxnYW0wNHdZOVBrWHZkL3Y0?=
- =?utf-8?B?UUcyL1BZaEhBVklWeFpBVzJJMlVYNE1qZU4yaVNQVElOaUtIWE02UVNSeFBQ?=
- =?utf-8?B?c08wTUN6UFZpUjFEcGZhSHRDb3k1RDZ6d3NWbnBKRGtkQks2MVdWbU5ZeGk2?=
- =?utf-8?B?M0tqUEF2b2lYd3hXUDRUeFJ5ZkM0UFhGZlJZQlN2TEJkU2RSYm5BalpzOW03?=
- =?utf-8?B?d1RsOFRJNU42V3FSZUd0MFNDR0Y4MDBnSG8vOU01ZG1Wb0Y3L3ZOWWNhYmVy?=
- =?utf-8?B?NWRzdU5oSWlESTVyYllSRDNSRnpHNElHdjFaTm9yN2UvdFp6ZXBDQWVPOXRG?=
- =?utf-8?B?T0xFbURCVzNiNnlDWHVHcnJ6bEVMNGwvZmVNNExTc1YwQVRkQ2xtczQyayt3?=
- =?utf-8?B?bUpTOFFkUTQxTjhFNEY2Vy9zRDNWeEpielVONzF2VUhDbFpCS1NjYTFwTzVk?=
- =?utf-8?B?UW4yYTJ5Mm9KSldKRkt0cTFOdWFhUHRBNjBYOFR1dlRpWlFpMUs4QT09?=
-X-OriginatorOrg: amd.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 08809f7f-9adc-4d7c-f14f-08dee2b34584
-X-MS-Exchange-CrossTenant-AuthSource: PH8PR12MB6914.namprd12.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 15 Jul 2026 20:54:32.8636
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: +b77fBHy/kt9X7clr1AIR8ISq+OI+t6E+pN1ar3FeOKD1o0qGAdaaVkb6Rdb1/8e3Sr4gKLd48j5RF6VL2mgfQ==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: SA0PR12MB4494
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-B4-Tracking: v=1; b=H4sIAAAAAAAC/33T227bMAwG4FcJfD0HIiXqkKu+x1AUOlCt0SXu7
+ NTYUPTdR6cr6gPQSwn+aEr6+daMPHQ8NqfDWzPw1I1df5EFmB+HJj/FyyO3XZGNBhUSILh2eB2
+ vD6IKTy0zGQ8clKfciHgZuHZ/buV+3sv6qRuv/fD3Vn2Cefd/HVSrOhO0qmVjrCFnnUW4e+nHK
+ /fHws1cZ8JPa5VWdm1xtiGhTgYTEm2tXljQa6vF5hB1rAimurq15ssagLU1Yr0hDlZla9FtLS3
+ s9rwklhz7FBVBqHpr7dKu73yyYsFpF3whhrizbmnD2jqxqviQXYBE2W+t/7KkNz17sRgDVSgRM
+ e7OG76xQWz1iWrOyYS86xnUNxik59ZSgUIleWfzTsNSb54J5mwVZs9ycK3qLluwCJdEZKPndGm
+ jVK3J+wS404t4Ofl6red8YTZSN2XPWi31+8fADPz7Vcbu+jE1zZnHMd6m7nT4vA7Q6LQ9agyeT
+ GihLfF5uHvm4cK/jv3wOI9eiiO3uT+fu+vpMLmjdJK1/OT9H0PvQNzjAwAA
+X-Change-ID: 20251217-rust_serdev-ee5481e9085c
+To: Rob Herring <robh@kernel.org>, 
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
+ Jiri Slaby <jirislaby@kernel.org>, Miguel Ojeda <ojeda@kernel.org>, 
+ Gary Guo <gary@garyguo.net>, 
+ =?utf-8?q?Bj=C3=B6rn_Roy_Baron?= <bjorn3_gh@protonmail.com>, 
+ Benno Lossin <lossin@kernel.org>, Andreas Hindborg <a.hindborg@kernel.org>, 
+ Alice Ryhl <aliceryhl@google.com>, Trevor Gross <tmgross@umich.edu>, 
+ Danilo Krummrich <dakr@kernel.org>, 
+ Kari Argillander <kari.argillander@gmail.com>, 
+ "Rafael J. Wysocki" <rafael@kernel.org>, 
+ Viresh Kumar <viresh.kumar@linaro.org>, Boqun Feng <boqun@kernel.org>, 
+ David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>, 
+ Daniel Almeida <daniel.almeida@collabora.com>, 
+ Tamir Duberstein <tamird@kernel.org>, 
+ Alexandre Courbot <acourbot@nvidia.com>, 
+ =?utf-8?q?Onur_=C3=96zkan?= <work@onurozkan.dev>, 
+ Boqun Feng <boqun@kernel.org>
+Cc: linux-serial@vger.kernel.org, linux-kernel@vger.kernel.org, 
+ rust-for-linux@vger.kernel.org, linux-pm@vger.kernel.org, 
+ driver-core@lists.linux.dev, dri-devel@lists.freedesktop.org, 
+ Markus Probst <markus.probst@posteo.de>
+X-Developer-Signature: v=1; a=openpgp-sha256; l=4816;
+ i=markus.probst@posteo.de; h=from:subject:message-id;
+ bh=xZiQuQmKXBg8xRZVBYMava9XBcpTnYDvAlvLnwC5EuQ=;
+ b=owEBiQJ2/ZANAwAIATR2H/jnrUPSAcsmYgBqV/TaEGcRk7r6YvYvp6PZJcM/gXRQ71pj6Oont
+ 2JNI52P3ymJAk8EAAEIADkWIQSCdBjE9KxY53IwxHM0dh/4561D0gUCalf02hsUgAAAAAAEAA5t
+ YW51MiwyLjUrMS4xMiwyLDIACgkQNHYf+OetQ9KNsg//R2WvEI6+9A40HiLi63FY/ONWYq2PSTA
+ 6eejsCdbLQDdFa6iRuMtGImYR/hOsMlC7kGtRCRVvV1Kkc88Qx29eo3DxIDAOk2ja2God9xgIKt
+ cajR9tuAw9yBkHNBcP5RhQAxn/z6v2jEBZFoU5uqItWaJ6M3D+PAvyRISAyTwe9fyRyfQOxQGOz
+ h0JrWS0ufojhszVCQsXIdLlXLd8rOv7a8Ca/fA1aBVJXYQ65tE87cylm21rWR0Czn04uHWEIs8S
+ yeY24s1OxXzbb1uqxhpS80161PEiPMU0Pen2OI6gS4ZfOykN0kXXYA9koXk5iQbBPuCQJA8shiE
+ fIFUU6GHdFdYSYfpbaxl4ON99ce18QD1DImdU6chgG4vhWkaFEfTB9UA//84hHOe9ekErcVtGOU
+ Ew6Zya3FQPzgL8kYOcEOaj3Nt5Y/o7XSNSLiBORAJ74z0ZfaHMzVpE9Z20nMCles745CQDgMvjQ
+ YxDKBu7RYTXCCuYCmrSudiK70vjileoPbdmUFnxfVpkR9n9XR15EB0upPhVLUv9xbQWi+N1sCc1
+ zN4k73c4DlHVk+iA21sH5HaRYcIlJ8qx/CZj33hsiuL/nt9thui7iayvQi5h0+zE1z8TO9VGnhP
+ hirPco5s8F45ue/bM+xA/vc124jLowIwbzKXziNe8pnisomfNFrQ=
+X-Developer-Key: i=markus.probst@posteo.de; a=openpgp;
+ fpr=827418C4F4AC58E77230C47334761FF8E7AD43D2
+Autocrypt: addr=markus.probst@posteo.de; prefer-encrypt=mutual;
+  keydata=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
+  aBeNN4ijKZchBXHPgVx+YtWRHfcm4l8=
+OpenPGP: url=https://posteo.de/keys/markus.probst@posteo.de.asc; preference=encrypt
 
+This patch series adds the serdev device bus rust abstraction into the
+kernel.
 
+This abstraction will be used by a driver,
+which targets the MCU devices in Synology devices.
 
-On 7/15/26 15:32, Jason Andryuk wrote:
-> On 2026-07-15 15:21, Rong Zhang wrote:
->> Hi Borislav,
->>
->> Thanks for reviewing the patch.
->>
->> On Wed, 2026-07-15 at 11:04 -0700, Borislav Petkov wrote:
->>> On Wed, Jul 15, 2026 at 12:46:24PM -0500, Mario Limonciello wrote:
->>>> Conceptually this makes sense to me, but I would like some comments 
->>>> from
->>>> others if this is the right way forward.
->>>>
->>>> Jason, Boris,
->>>>
->>>> comments please?
->>>
->>> We don't care if someone "passes-through a relatively new CPUID" - I 
->>> am not
->>> sure what that means -
->>>
->>
->> Sorry, typo here. I meant CPU model.
->>
->> I usually boot a KVM with `qemu-system-x86_64 -accel kvm -cpu host
->> <other_args...>' to test various patches. These messages is a bit
->> disturbing to me as they are KERN_WARNING messages.
->>
->> FYI, my device is Zen 5 based and always triggers both messages.
->>
->> I can also reproduce both messages with `-cpu EPYC-Genoa' and `-cpu
->> EPYC-Turin'. It's just due to how amd_cppc_supported() is implemented.
->>
->>> but we won't patch the upstream kernel just because it
->>> dumped an error message in the guest.
->>
->> Well, the reason why I decided to send this is not only about how noisy
->> it is, but also about the correctness.
->>
->> The first messages says:
->>
->>     The CPPC feature is supported but currently disabled by the BIOS.
->>     Please enable it if your BIOS has the CPPC option.
->>
->> The CPPC feature is neither supported in a KVM nor disabled by the VM's
->> BIOS.
->>
->> IIUC, it's disabled by kvm_cpu_cap_init(CPUID_8000_0008_EBX, ...), so
->> the upstream kernel both disables it as a hypervisor and warns about it
->> as a guest. What a paradox!
->>
->> At least the first message is nonsense in this case and the paradox
->> should really be fixed. If you prefer preserving the second message
->> ("the _CPC object is not present in SBIOS or ACPI disabled") as an
->> informative hint anyway, how about moving the virtualization check into
->> amd_cppc_supported() to only mute the first one? ;-)
-> 
-> I think changing amd_cppc_supported() to return false for 
-> X86_FEATURE_HYPERVISOR makes sense and can remove the message.  The 
-> heuristic there doesn't seem relevant when virtualized.
-> 
-> With Xen, the Xen hypervisor itself controls CPPC.  dom0 
-> (xen_initial_domain()) doesn't need the amd-pstate driver.
-> 
-> Regards,
-> Jason
+Kari Argillander also messaged me, stating that he wants to write a
+watchdog driver with this abstraction (needing initial device data).
 
-OK, Rong - please send an updated patch.
+This series depends on [1].
+
+[1] https://lore.kernel.org/rust-for-linux/20260530132736.3298549-1-dakr@kernel.org/
+
+Signed-off-by: Markus Probst <markus.probst@posteo.de>
+---
+Changes in v14:
+- fix issues reported by Sashiko:
+  - fix missing Sync
+  - fix write buffers allowed with data.len() > i32::MAX
+  - fix sample driver possibly stalling on full tx buffer
+- Link to v13: https://patch.msgid.link/20260712-rust_serdev-v13-0-2c4060bc8e30@posteo.de
+
+Changes in v13:
+- Added Acked-by trailer from Rob. Consider this a RESEND.
+- Link to v12: https://patch.msgid.link/20260603-rust_serdev-v12-0-3400ffb88b12@posteo.de
+
+Changes in v12:
+- fix CoreInternal instead of BoundInternal
+- Link to v11: https://patch.msgid.link/20260531-rust_serdev-v11-0-dee8e0d830f1@posteo.de
+
+Changes in v11:
+- redo changes from v9 with the following fixes:
+  - fix memory leak on probe failure
+  - fix possible access of dropped drvdata from receive_buf
+- Link to v10: https://patch.msgid.link/20260530-rust_serdev-v10-0-65d1d5db876c@posteo.de
+
+Changes in v10:
+- revert everything from v9, except BoundInternal
+- use mutex to ensure receive_buf won't be called on a dropped drvdata.
+- Link to v9: https://patch.msgid.link/20260530-rust_serdev-v9-0-f8b5fccb49c3@posteo.de
+
+Changes in v9:
+- make use of BoundInternal
+- use PrivateData wrapper and drop rust_private_data field
+- use non-devm version of serdev_device_open
+- Link to v8: https://patch.msgid.link/20260530-rust_serdev-v8-0-2a95f1da22a7@posteo.de
+
+Changes in v8:
+- adapted to driver-lifetime v5 patch series
+- add MAINTAINERS file patch
+- Link to v7: https://patch.msgid.link/20260429-rust_serdev-v7-0-0d89c791b5c8@posteo.de
+
+Changes in v7:
+- adapted to driver-lifetime patch series
+- Link to v6: https://patch.msgid.link/20260427-rust_serdev-v6-0-173798d5e1a3@posteo.de
+
+Changes in v6:
+- rebased onto v7.1-rc1
+- Link to v5: https://patch.msgid.link/20260420-rust_serdev-v5-0-57e8ba0519f3@posteo.de
+
+Changes in v5:
+- fix typo in documentation
+- Link to v4: https://lore.kernel.org/r/20260411-rust_serdev-v4-0-845e960c6627@posteo.de
+
+Changes in v4:
+- fixed not selecting rust serdev abstraction in sample
+- Link to v3: https://lore.kernel.org/r/20260313-rust_serdev-v3-0-c9a3af214f7f@posteo.de
+
+Changes in v3:
+- fix vertical import style
+- add Kconfig entry for the rust abstraction
+- fix documentation in include/linux/serdev.h
+- rename private_data to rust_private_data
+- fix `complete_all` <-> `wait_for_completion` typo
+- move drvdata_borrow call after the completion
+- Link to v2: https://lore.kernel.org/r/20260306-rust_serdev-v2-0-e9b23b42b255@posteo.de
+
+Changes in v2:
+- fix documentation in `serdev::Driver::write` and
+  `serdev::Driver::write_all`
+- remove use of `dev_info` in probe from the sample
+- remove `properties_parse` from the sample
+- add optional `baudrate` property to the sample
+- remove 1. patch
+- remove `TryFrom<&device::Device<Ctx>> for &serdev::Device<Ctx>`
+  implementation
+- fix import style
+- add patch to return reference in `devres::register` to fix safety
+  issue
+- add patch to add private data to serdev_device, to fix
+  `Device.drvdata()` from failing
+- simplify abstraction by removing ability to receive the initial
+  transmission. It may be added later in a separate patch series if
+  needed.
+- Link to v1: https://lore.kernel.org/r/20251220-rust_serdev-v1-0-e44645767621@posteo.de
+
+---
+Markus Probst (3):
+      rust: add basic serial device bus abstractions
+      samples: rust: add Rust serial device bus sample device driver
+      MAINTAINERS: serdev: Add self for serdev
+
+ MAINTAINERS                        |   5 +-
+ drivers/tty/serdev/Kconfig         |   7 +
+ rust/bindings/bindings_helper.h    |   1 +
+ rust/helpers/helpers.c             |   1 +
+ rust/helpers/serdev.c              |  22 ++
+ rust/kernel/lib.rs                 |   2 +
+ rust/kernel/serdev.rs              | 599 +++++++++++++++++++++++++++++++++++++
+ samples/rust/Kconfig               |  11 +
+ samples/rust/Makefile              |   1 +
+ samples/rust/rust_driver_serdev.rs |  90 ++++++
+ 10 files changed, 738 insertions(+), 1 deletion(-)
+---
+base-commit: 1137d8b5df06137fb49513cc923b3b24d94cb809
+change-id: 20251217-rust_serdev-ee5481e9085c
+prerequisite-message-id: 20260530132736.3298549-1-dakr@kernel.org
+prerequisite-patch-id: 310c6bee038ca3909a8e5e58ec12b74f7189b869
+prerequisite-patch-id: 92812c3d42b29504838e6dc66c307ff5c035bb5e
 
