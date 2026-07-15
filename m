@@ -1,273 +1,179 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+Received: from SA9PR02CU001.outbound.protection.outlook.com (mail-southcentralusazon11013050.outbound.protection.outlook.com [40.93.196.50])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7F600233937;
-	Wed, 15 Jul 2026 20:44:59 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1784148300; cv=none; b=oS6ro56MdHOTUPJVTOFJkpBa9VAL0VJ3I3k1yVueUMViKafbfaHoGXs9eHjwtDwSeyuTS/UvZqhN8+jLRvNNFK2M2w7fcc3r0SFM09xAxxFUyThJ6mjT4zOPE7gpR1bw9h4/4NaqqTw+iEIiRnhMRR7gEhnaDtQekOZjRwXPey0=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1784148300; c=relaxed/simple;
-	bh=1bY+/qyX2LuBpanRkW7vAYLGDdzcDlgYpRZK4fiJYiQ=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=s8mb6NdoGUzxt83adNal1H2SFTEutu9uqNmIFPRiVFC9MZmaEkDIVOkxOPK//n3DNF/XQMR0l/apMdUpxv5W4a8ocVHZsxL4DHKtzkYnWKjoODYjDFxg8aqNFl0cjBTkN6HlUOJX50zSswKyxYtzv0GElkjkb0rKHL3uokhYkTc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=c6mvsBnM; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 399093C10A0;
+	Wed, 15 Jul 2026 20:48:00 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.93.196.50
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1784148482; cv=fail; b=W5eJPtwh3fMbPa2FpBzYfHY7FCiezyWHh3GySdvN5VCVogmXQSNbtJPhQxSAgJEYFUQY055UVBE9yCEriVX2DvARDLUnD8lOiQBVfSmjQx+3kd/4BLWdI7wB4aPaheV3FF1+e0/OTCNF8wn7ABmt/kXieT8COiXmh4vWB1P49F0=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1784148482; c=relaxed/simple;
+	bh=FWqFltcZxcTOLhu7DqNvOyO0lmG+bji7dQC1NVQX3+w=;
+	h=Message-ID:Date:MIME-Version:Subject:To:CC:References:From:
+	 In-Reply-To:Content-Type; b=G6hVGDSgfy77DGmqqZ7oMHycPhuZxbZl4idAh8M6lrBxBmDjmx8detSpscmxqV1thV1t40Jt34Mpqg4cKXwEn0v8XcO8c37psaboLXmhSH1/ayW+yLu3yuZEOnJM8vbXTBTCzCbrvY49a1tOnhxQ3NmiGWRQL8BWu+9yABP8BG8=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com; spf=fail smtp.mailfrom=amd.com; dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b=cXDx3BcG; arc=fail smtp.client-ip=40.93.196.50
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com
+Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=amd.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="c6mvsBnM"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id AC4CB1F000E9;
-	Wed, 15 Jul 2026 20:44:57 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1784148299;
-	bh=nP0r16HI0g8TlAa23nMBM941RGjBe5Aem38C/sHAXXw=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=c6mvsBnMITSp/9lTkwua8C95fb+syxVGbWN7QlyXTQMGlCdEy89PJtuuklmq4Pv6i
-	 T00BrxbzCwTgnrj7scdsxeQ276G9db+Q8IDbrkqQQvlxN0AGogBj8IywDjIX7jtLu7
-	 Ebe/IpB7HxR1CD+CMhhNhagDpgK2iT2h+Cm4Gx+o0Ean3Krd7vlsCcKXVgfZlW68Wc
-	 qkFinVYjJgePyNgMp/B4Wo1PI4hx2vvJCpMECBxFW79D01YblOG0Mh/3fPzkEmWLUz
-	 h28Chkn/MREjusF9fceulMNbSgQCxV6uXrxdWw/fsPviNNiEdkho3VLlaGjectISux
-	 5yv+upBmcFBpw==
-Date: Wed, 15 Jul 2026 15:44:55 -0500
-From: Bjorn Andersson <andersson@kernel.org>
-To: Pragnesh Papaniya <pragnesh.papaniya@oss.qualcomm.com>
-Cc: Sudeep Holla <sudeep.holla@kernel.org>, 
-	Cristian Marussi <cristian.marussi@arm.com>, Rob Herring <robh@kernel.org>, 
-	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
-	Sibi Sankar <sibi.sankar@oss.qualcomm.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, 
-	Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, 
-	Dmitry Osipenko <digetx@gmail.com>, Thierry Reding <thierry.reding@kernel.org>, 
-	Jonathan Hunter <jonathanh@nvidia.com>, Konrad Dybcio <konradybcio@kernel.org>, 
-	Rajendra Nayak <rajendra.nayak@oss.qualcomm.com>, Pankaj Patil <pankaj.patil@oss.qualcomm.com>, 
-	linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org, arm-scmi@vger.kernel.org, 
-	linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, 
-	linux-tegra@vger.kernel.org, Amir Vajid <amir.vajid@oss.qualcomm.com>, 
-	Ramakrishna Gottimukkula <ramakrishna.gottimukkula@oss.qualcomm.com>
-Subject: Re: [PATCH RFC v7 7/9] PM / devfreq: Introduce the QCOM SCMI Memlat
- devfreq driver
-Message-ID: <alfs7gOhE2D8wbVX@baldur>
-References: <20260610-rfc_v7_scmi_memlat-v7-0-f3f68c608f25@oss.qualcomm.com>
- <20260610-rfc_v7_scmi_memlat-v7-7-f3f68c608f25@oss.qualcomm.com>
- <akWBtfG1j7-53fec@baldur>
- <ee407cbf-3476-4209-ad40-b381535b94ac@oss.qualcomm.com>
+	dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b="cXDx3BcG"
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=Bb71ykzlvPefstt7NsbUBR82sTprS5bzO4DNyxESFKfr+phbrxZVYzoSSkLigeGHWNiMzY2xANyC6I7rj0p75FyjjPZWP2A74HPUdHFFvEdnFfUbCQ2xpZvQyDJJ/avhIRN1vawpBSaady+1ALRrQ4pZkcxN2Q+ZpJVORYMZ2Y+NctIx7Or/Vet/7LkyfkVFHZZtrZwsNDCZ5PDBD7C8pqMTy0W5boNEu8YPVxTCJBTW3oOSqGRfnQKrRhoINvYNsbTRzQGHtHxhRCN6tXgoKl7F/M1ZsKpjF5aDWdnVTTciBRhB4I412uuDB/s4G5F2AVdQqvW5u3yXEQEv3XXE2w==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=RTffuj54qVqTSvgwXaAAt3SU6foN55djpv1eDRmULZs=;
+ b=OXWlVHvICESzG+N0ZwtlAjmCP8+tREZjbY+cDr7wdS4Mtdd2Wa+gY7Hm5fdnZW6R72ViRGaN9Rtz+1fJuWorwYHYkKOT5cuS2ACEAV3liGcuh4Ok9Bunv7QSkcrI8yCWCEaDOJvEWTwUGgmuWZn9Kt4IIfgteCnZ0Myt94OprbIXY/ZMvpwzNI4EBsf+rhjnj0fz/FZaq0xsBCxtMMYpWkW1aia/HNThPLgbCuP3CmazRnygNwLfqf6kHh7ZV+LoIGyoz0PoMMXhlcXGE5jYFHwtSOZdQbK6Zuzjwf4c5biY4tfpoRsDLPioBiVFvWhRrzW5AL6AqKjD3fzX5Sb7Lg==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
+ 165.204.84.17) smtp.rcpttodomain=rong.moe smtp.mailfrom=amd.com; dmarc=pass
+ (p=quarantine sp=quarantine pct=100) action=none header.from=amd.com;
+ dkim=none (message not signed); arc=none (0)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=RTffuj54qVqTSvgwXaAAt3SU6foN55djpv1eDRmULZs=;
+ b=cXDx3BcG92L6p68noRvAdxailDOz+46gpJCDt0tSxjq6MA13hpbcQLpLN4wHs3TXIwGUrB0pZsl1Wier94kq/yJNr2LfzOL8cbTjAHSZciyqSGWcdIWuBQ0+OMs2WxEvfo2YTp9KbDVmTqiOtzSV2mzyrvF5YdUHaB7Tazl5yFM=
+Received: from SJ0PR13CA0079.namprd13.prod.outlook.com (2603:10b6:a03:2c4::24)
+ by SJ2PR12MB9086.namprd12.prod.outlook.com (2603:10b6:a03:55f::5) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.202.18; Wed, 15 Jul
+ 2026 20:47:56 +0000
+Received: from SJ1PEPF000026CA.namprd04.prod.outlook.com
+ (2603:10b6:a03:2c4:cafe::f3) by SJ0PR13CA0079.outlook.office365.com
+ (2603:10b6:a03:2c4::24) with Microsoft SMTP Server (version=TLS1_3,
+ cipher=TLS_AES_256_GCM_SHA384) id 15.21.223.10 via Frontend Transport; Wed,
+ 15 Jul 2026 20:47:56 +0000
+X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 165.204.84.17)
+ smtp.mailfrom=amd.com; dkim=none (message not signed)
+ header.d=none;dmarc=pass action=none header.from=amd.com;
+Received-SPF: Pass (protection.outlook.com: domain of amd.com designates
+ 165.204.84.17 as permitted sender) receiver=protection.outlook.com;
+ client-ip=165.204.84.17; helo=satlexmb08.amd.com; pr=C
+Received: from satlexmb08.amd.com (165.204.84.17) by
+ SJ1PEPF000026CA.mail.protection.outlook.com (10.167.244.107) with Microsoft
+ SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.21.223.9 via Frontend Transport; Wed, 15 Jul 2026 20:47:56 +0000
+Received: from satlexmb10.amd.com (10.181.42.219) by satlexmb08.amd.com
+ (10.181.42.217) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.41; Wed, 15 Jul
+ 2026 15:47:56 -0500
+Received: from satlexmb08.amd.com (10.181.42.217) by satlexmb10.amd.com
+ (10.181.42.219) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.41; Wed, 15 Jul
+ 2026 15:47:55 -0500
+Received: from [172.20.46.244] (10.180.168.240) by satlexmb08.amd.com
+ (10.181.42.217) with Microsoft SMTP Server id 15.2.2562.41 via Frontend
+ Transport; Wed, 15 Jul 2026 15:47:55 -0500
+Message-ID: <61a141cd-c72a-4ee5-8273-ee721aa13f68@amd.com>
+Date: Wed, 15 Jul 2026 16:32:53 -0400
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <ee407cbf-3476-4209-ad40-b381535b94ac@oss.qualcomm.com>
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] cpufreq/amd-pstate: Bail out early in virtual machines
+ and don't warn
+To: Rong Zhang <i@rong.moe>, Borislav Petkov <bp@alien8.de>, Mario Limonciello
+	<mario.limonciello@amd.com>
+CC: Huang Rui <ray.huang@amd.com>, Perry Yuan <perry.yuan@amd.com>, "K Prateek
+ Nayak" <kprateek.nayak@amd.com>, <linux-pm@vger.kernel.org>,
+	<linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rafael@kernel.org>,
+	Viresh Kumar <viresh.kumar@linaro.org>
+References: <20260716-amd-pstate-vm-v1-1-2ac97d3cf6e7@rong.moe>
+ <0c55d331-bf98-4e6e-9de5-35803ead3c0a@amd.com>
+ <20260715180454.GAalfLxn3Wyu-fRjoT@fat_crate.local>
+ <ecc292377a145741f47ff2422b72fa95e57a725b.camel@rong.moe>
+Content-Language: en-US
+From: Jason Andryuk <jason.andryuk@amd.com>
+In-Reply-To: <ecc292377a145741f47ff2422b72fa95e57a725b.camel@rong.moe>
+Content-Type: text/plain; charset="UTF-8"; format=flowed
+Content-Transfer-Encoding: 7bit
+X-EOPAttributedMessage: 0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: SJ1PEPF000026CA:EE_|SJ2PR12MB9086:EE_
+X-MS-Office365-Filtering-Correlation-Id: 1eacf181-60da-4b49-ebef-08dee2b25977
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|82310400026|1800799024|376014|23010399003|36860700016|18002099003|22082099003|4143699003|11063799006|10067099003|56012099006|6133799003;
+X-Microsoft-Antispam-Message-Info:
+	eGCPXd0Iw3bYl9rDZ259U96ysVM10MYKoB0WA+8/hSz3wiPRvZnaiEHT/KHsAraRpCO8Nduj30ESOvOwqAg4UsxBECh/4SWXUR6WLN0sWpZ0hQmiRbAolRyNBmhumqVTQPqSjmsTjy/HmmvJqFjMgAteM1ljAO8zbusrv4hgTZu4CjPC/E3Vh2hCjWnB23j+VzTBmzeEW/4UGW5OaGFCXVZT2pT5F6VjASMRI7RyB6c486Ba9U6FO6BEsBcWMZjfb7lQFX8s7BpBoHiO6a6vPM7BF61SfvzIA5cBmqw+GZ2ADLwUSMiOS5FVosutHUqdNgm+1WUJyQe3uAHUMte7mDwl19Cm1hQ/kXv3yp2xjtOIWE8DdtfjZjngOfaWMTKBm+bMlNE3V0Pvh2Wch2k46JoHwFnuvdDJjBnx/IBK8Q9qu6mdIk0GjD15OUDHD6CKThg4r1xg3u3P0Je6Lg046A/vyPdwJR2fPj1unRBR1VvlrbAvMRIX8PsW7NTCWU6rumS6gLhN4U87cu5QL4Y1ZMnITtCyEkwqBe10qjrDX+KZ+0ufE9cDlKthWUtVnpGkg0vp3IwYoHRZTgx0S8LSS5lNGFNY/SRRTAMaGAugiGakSBMRqY+3v+huR2itF/0COMsdG35d3t6xrk8wuhI5f/MdeeBBAltiWxCpY9ef5pdilXmMw4XAEtc888p/2UsbKnE+m/Yo6ooRqFgJinkpQw==
+X-Forefront-Antispam-Report:
+	CIP:165.204.84.17;CTRY:US;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:satlexmb08.amd.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230040)(82310400026)(1800799024)(376014)(23010399003)(36860700016)(18002099003)(22082099003)(4143699003)(11063799006)(10067099003)(56012099006)(6133799003);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	3wIzV/PEaO6qq5eSL4eag6nrr3gNLLApNBCQXibOjzVYLPClG7T/HB6icp1onmd3JGSTpGxd3q5/aKNVVjXf7mg9kbZi5tf6H4kgXIwqOusRN/3yVDA99XY2Iu8QvyRPqodSPLKumUdd1zyWk8JdvpcyZuz0k8jARbbLdN4KJJlNfgVAds+uvro1e6PW7rXxNQAKmynPHDFzNRNChO5EolBjcmJ425zqjzThMKTn/klBXSk6zFo6qzwbvglkjXoKU/r22qwoxmM8n7RSV8QwDuTgLgvqI0exciaa84KVT6VEjUrvezHn67JgBYIHN6PJBLGca+3jW1AZ1s9gxYaF+VB14CDPgo1jQGhSBFf6TpQU6Syr4HuLOB1IJ8sBVBddZ9qPo7DHNIiRqWnI/d2M2HwMq4v96LtAusCY9eX97+FAaCNwgq0e/kck/cuay/Iv
+X-OriginatorOrg: amd.com
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 15 Jul 2026 20:47:56.5009
+ (UTC)
+X-MS-Exchange-CrossTenant-Network-Message-Id: 1eacf181-60da-4b49-ebef-08dee2b25977
+X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
+X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=3dd8961f-e488-4e60-8e11-a82d994e183d;Ip=[165.204.84.17];Helo=[satlexmb08.amd.com]
+X-MS-Exchange-CrossTenant-AuthSource:
+	SJ1PEPF000026CA.namprd04.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Anonymous
+X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: SJ2PR12MB9086
 
-On Tue, Jul 14, 2026 at 01:14:23AM +0530, Pragnesh Papaniya wrote:
+On 2026-07-15 15:21, Rong Zhang wrote:
+> Hi Borislav,
 > 
+> Thanks for reviewing the patch.
 > 
-> On 02-Jul-26 10:51 PM, Bjorn Andersson wrote:
-> > On Wed, Jun 10, 2026 at 02:21:34PM +0530, Pragnesh Papaniya wrote:
-> >> From: Sibi Sankar <sibi.sankar@oss.qualcomm.com>
-> >>
-> >> On Qualcomm Glymur, Mahua and X1E/X1P (Hamoa) SoCs, the memlat governor and
-> >> the mechanism to control the various caches and RAM is hosted on the CPU
-> >> Control Processor (CPUCP), and configuration and control of this governor
-> >> is exposed through the QCOM SCMI Generic Extension Protocol, addressed via
-> >> the "MEMLAT" algorithm string.
-> >>
-> > 
-> > This explains that there's a bunch of functionality running on CPUCP and
-> > there's a "MEMLAT" string.
-> > 
+> On Wed, 2026-07-15 at 11:04 -0700, Borislav Petkov wrote:
+>> On Wed, Jul 15, 2026 at 12:46:24PM -0500, Mario Limonciello wrote:
+>>> Conceptually this makes sense to me, but I would like some comments from
+>>> others if this is the right way forward.
+>>>
+>>> Jason, Boris,
+>>>
+>>> comments please?
+>>
+>> We don't care if someone "passes-through a relatively new CPUID" - I am not
+>> sure what that means -
+>>
 > 
-> CPUCP does all the real work: it samples CPU perf counters, computes IPM/stall,
-> and votes the DDR/LLCC/DDR_QOS buses on its own timer. The Linux driver only
-> pushes static configuration (freq maps, ceilings) once at probe and
-> starts/stops the CPUCP timer. I'll rewrite the message to say this plainly.
+> Sorry, typo here. I meant CPU model.
 > 
-
-Thank you, that was not clear from reading this patch.
-
-> >> Introduce a devfreq SCMI client driver that uses the MEMLAT algorithm
-> >> string to detect memory-latency-bound workloads and control the
-> >> frequency/level of the memory buses (DDR, LLCC and DDR_QOS).
-> > 
-> > You established that there's stuff running in the firmware, now we're
-> > introducing a client driver to control memory buses.
-> > 
-> > But where did you explain how these two "facts" are related? Why is
-> > there a client driver, what is the actual distribution of roles in this
-> > dance?
-> > 
+> I usually boot a KVM with `qemu-system-x86_64 -accel kvm -cpu host
+> <other_args...>' to test various patches. These messages is a bit
+> disturbing to me as they are KERN_WARNING messages.
 > 
-> At runtime the driver is not in the control loop, CPUCP is. devfreq is used so
-> each bus shows up as a real device with trans_stat and the remote governor's
-> parameters like sample_ms and ipm_ceil are user-configurable. I'll make that
-> reasoning explicit in the commit text.
+> FYI, my device is Zen 5 based and always triggers both messages.
 > 
-
-Are you saying that there's no actual devfreq'ing going on, we just
-expose it through that framework in order to get the standardized
-metrics out of sysfs?
-
-Or that and to perform the initial configuration and start the memlat
-logic? Does the firmware do memlat adjustments without this driver?
-
-Please make sure that it's clear what role this driver has.
-
-[..]
-> >> diff --git a/drivers/devfreq/Kconfig b/drivers/devfreq/Kconfig
-> >> index 2caa87554914..98b5a50d3189 100644
-> >> --- a/drivers/devfreq/Kconfig
-> >> +++ b/drivers/devfreq/Kconfig
-> >> @@ -169,6 +169,19 @@ config ARM_SUN8I_A33_MBUS_DEVFREQ
-> >>  	  This adds the DEVFREQ driver for the MBUS controller in some
-> >>  	  Allwinner sun8i (A33 through H3) and sun50i (A64 and H5) SoCs.
-> >>  
-> >> +config SCMI_QCOM_MEMLAT_DEVFREQ
-> >> +	tristate "Qualcomm Technologies Inc. SCMI client driver"
-> >> +	depends on QCOM_SCMI_GENERIC_EXT || COMPILE_TEST
-> >> +	select DEVFREQ_GOV_REMOTE
-> >> +	help
-> >> +	  This driver uses the MEMLAT (memory latency) algorithm string
-> > 
-> > Is "driver uses X algorithm string" idiomatic SCMI terms?
-> > 
+> I can also reproduce both messages with `-cpu EPYC-Genoa' and `-cpu
+> EPYC-Turin'. It's just due to how amd_cppc_supported() is implemented.
 > 
-> No, "algorithm string" is an internal term. I'll drop the jargon and describe
-> it in plain SCMI vendor-protocol terms.
+>> but we won't patch the upstream kernel just because it
+>> dumped an error message in the guest.
 > 
-
-In line with our discussion above, please make sure that the help text
-is helpful for someone to understand the purpose of the driver and help
-them make that y/m/n decision.
-
-> >> +	  hosted on QCOM SCMI Vendor Protocol to detect memory latency
-> >> +	  workloads and control frequency/level of the various memory
-> >> +	  buses (DDR/LLCC/DDR_QOS).
-> >> +
-> >> +	  This driver defines/documents the parameter IDs used while configuring
-> >> +	  the memory buses.
-> > 
-> > Imagine an person outside your team, sitting there in menuconfig
-> > wondering if they should enable this driver or not.
-> > 
-> > There's a sentence in the middle ("control frequency/level of various
-> > memory buses" - that sounds like something I want. But "detect memory
-> > latency", is it just monitoring or does that part relate to the
-> > controlling part? "This driver defines" so what are those parameters
-> > used for, do I need some other driver for the control part? Is this last
-> > paragraph adding value to my understanding for that
-> > CONFIG_SCMI_QCOM_MEMLAT_DEVFREQ does?
-> > 
+> Well, the reason why I decided to send this is not only about how noisy
+> it is, but also about the correctness.
 > 
-> I'll rewrite it to say what you get (memory-bus scaling on these Qualcomm
-> SoCs), that CPUCP does the actual scaling, and that nothing else is required
-> to enable it. The parameter-ID paragraph will go.
+> The first messages says:
 > 
-
-Sounds good. I'm a bit puzzled about it being a devfreq driver, but if
-you can explain the bigger picture, I think that will help to reason
-about it.
-
-[..]
-> >> diff --git a/drivers/devfreq/scmi-qcom-memlat-cfg.h b/drivers/devfreq/scmi-qcom-memlat-cfg.h
-> >> new file mode 100644
-> >> index 000000000000..1ab8b61ea271
-> >> --- /dev/null
-> >> +++ b/drivers/devfreq/scmi-qcom-memlat-cfg.h
-> > 
-> > Are the entities declared in this header file used by anything other
-> > than scmi-qcom-memlat-devfreq.c? If not why is it a separate header file?
-> > 
+>     The CPPC feature is supported but currently disabled by the BIOS.
+>     Please enable it if your BIOS has the CPPC option.
 > 
-> No, only scmi-qcom-memlat-devfreq.c uses it. I split it out just to keep the
-> large config tables out of the driver logic. Happy either way: do you prefer
-> I fold it back into the .c, or keep it as a header?
+> The CPPC feature is neither supported in a KVM nor disabled by the VM's
+> BIOS.
 > 
-
-Please move it into the c-file, move things around so that you have
-clear segments of "definitions", "configuration", "logic", and "driver
-boilerplate".
-
-[..]
-> >> +struct scmi_qcom_monitor_cfg {
-> >> +	const struct scmi_qcom_map_table *table;
-> >> +	const char *name;
-> >> +	u32 be_stall_floor;
-> > 
-> > What is a "be stall floor"? Also, it seems to be 1 in all your cases. Is
-> > it boolean? Is it constant?
-> > 
+> IIUC, it's disabled by kvm_cpu_cap_init(CPUID_8000_0008_EBX, ...), so
+> the upstream kernel both disables it as a hypervisor and warns about it
+> as a guest. What a paradox!
 > 
-> It's a back-end-stall percentage threshold. It happens to be 1 in all current
-> configs (meaning almost any stall qualifies). I'll document it as a percent.
-> 
+> At least the first message is nonsense in this case and the paradox
+> should really be fixed. If you prefer preserving the second message
+> ("the _CPC object is not present in SBIOS or ACPI disabled") as an
+> informative hint anyway, how about moving the virtualization check into
+> amd_cppc_supported() to only mute the first one? ;-)
 
-back_end_stall_percentage is a bit log (and I'm not entirely sure that
-it is). Perhaps you can provide some kernel-doc and express what it is?
+I think changing amd_cppc_supported() to return false for 
+X86_FEATURE_HYPERVISOR makes sense and can remove the message.  The 
+heuristic there doesn't seem relevant when virtualized.
 
-[..]
-
-> >> +static const struct scmi_qcom_memory_cfg glymur_memory_cfg[] = {
-> >> +	{
-> >> +		.memory_type = MEMLAT_HW_DDR,
-> >> +		.name = "ddr",
-> >> +		.mem_table = glymur_ddr_table,
-> >> +		.num_opps = ARRAY_SIZE(glymur_ddr_table),
-> >> +		.grp_ev = glymur_ddr_grp_ev,
-> >> +		.monitor_cnt = 4,
-> >> +		.memory_range = { .min_freq = 547000, .max_freq = 4761000},
-> >> +		.monitor_cfg = (const struct scmi_qcom_monitor_cfg[]) {
-> >> +			{
-> >> +				.name = "mon_0",
-> >> +				.cpu_mask = 0x3f,
-> >> +				.ipm_ceil = 60000000,
-> >> +				.be_stall_floor = 1,
-> >> +				.table_len = 8,
-> >> +				.table = (const struct scmi_qcom_map_table[]) {
-> >> +					{ .cpu_freq = 960, .mem_freq = 547000 },
-> >> +					{ .cpu_freq = 1133, .mem_freq = 1353000 },
-> >> +					{ .cpu_freq = 1594, .mem_freq = 1555000 },
-> >> +					{ .cpu_freq = 1920, .mem_freq = 1708000 },
-> >> +					{ .cpu_freq = 2228, .mem_freq = 2736000 },
-> >> +					{ .cpu_freq = 2362, .mem_freq = 3187000 },
-> >> +					{ .cpu_freq = 2650, .mem_freq = 3686000 },
-> >> +					{ .cpu_freq = 2938, .mem_freq = 4761000 },
-> > 
-> > Why are these tables hard coded in the driver? Are they constant?
-> > 
-> 
-> These tables can be either in DT (like in earlier re-spins of the series) or in
-> the driver. For the former to work well with the existing OPP framework, we
-> would need a clock provider created for DDR/LLCC/DDR-QOS just to derive the
-> cpufreq to memfreq map tables. Having it in the driver simplifies the overall
-> implementation. 
-> 
-
-But are there not different SKUs of these SoCs which need different
-tables? Information that we today would encode in e.g. OPP-tables in
-DeviceTree.
-
-> >> +				}
-> >> +			},
-[..]
-> >> diff --git a/drivers/devfreq/scmi-qcom-memlat-devfreq.c b/drivers/devfreq/scmi-qcom-memlat-devfreq.c
-[..]
-> >> +	for (i = 0; i < info->memory_cnt; i++) {
-> >> +		struct scmi_qcom_memory_info *memory = info->memory[i];
-> >> +		struct platform_device *pdev = memory->pdev;
-> >> +		struct devfreq_dev_profile *profile = &memory->profile;
-> >> +
-> >> +		/* sampling time should be double the devfreq observing time */
-> > 
-> > That's interesting, tell me more...
-> > 
-> 
-> This follows Lukasz's earlier point on Nyquist criterion: sample about 2x
-> faster than the changes you want to observe. CPUCP updates every
-> cpucp_sample_ms, so the devfreq poll runs at half that (sample_ms / 2) to
-> actually catch the transitions in trans_stat.
-> 
-
-While that's true for sampling in general, please make the comment
-explain why it's true in this case.
+With Xen, the Xen hypervisor itself controls CPPC.  dom0 
+(xen_initial_domain()) doesn't need the amd-pstate driver.
 
 Regards,
-Bjorn
+Jason
