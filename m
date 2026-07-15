@@ -1,145 +1,159 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.14])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3BA09184524
-	for <linux-pm@vger.kernel.org>; Wed, 15 Jul 2026 13:14:47 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 287BD466B69;
+	Wed, 15 Jul 2026 13:25:28 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.14
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1784121288; cv=none; b=n1ADJbfE9+de6gvslR666ekA3obQFWgggqn49QIkUldW/ISuGwHH6yIjy2rq5ub7xaopwrg/S4yVNwFarqFQb68eDd8MwXbO8BIkvfz9S37lT4LYenHFGGKuREYbWtw7luOtqJCCErQb17WHzPGnlNZ0yDg625VUpfAsoXhTsuQ=
+	t=1784121932; cv=none; b=dG7BDTaKyDJZu4lH6lX2I8Yfw3whN/RudO/O3uk4HnHUV5tj9Zj8ymR8GiHj1xFpi/mqYDN+yLbk/RGo+y0Jyrd0VWAQBvtbhWcGWQNED+7miG2HaYWN4ZSHYzclW7IVlWZiU8V5i/6kcXmrQtcj4+/Og9jdedYCo3KDV9lMb78=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1784121288; c=relaxed/simple;
-	bh=pus+rxasav/taGhpBUi7QPYt39f/1MtSdVTeOE25RvE=;
-	h=From:In-Reply-To:MIME-Version:References:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=ee0HP4l5qR/cwUMeNQBYfRM5sT3mLKgHOfVz799plnRH8EM36aPHKViqTq5R4LjCTqcMrbMyyxqPOCNlC6LXXFODVbA6Iqtaq9JqpqdT66jJ3KbWmtAdoWmVY0vjeEHlrBe96CufRdjqGja9t5aLMOzw5qVhr+FKbSpXA3ZzSck=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=alrwdUAo; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1784121932; c=relaxed/simple;
+	bh=FoJio/rVwDwRIkKJBPFy4VQTYHNnMkd8RIsGPHmXYtU=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=llqLdWayjYGjdbbIWjlS4W8NkRrS6lJOifaX0mMIlBDJH4bzYtVN19sUlNwyZQrGpI4N8bHwiyur/5tWCggMVG+oZDYmFUXTzjQ3gCPoRLBgGrS744DtFUpAQZJZ++/6L43uoPn0+NJO/HeJo7vi+l9BborKh5liAldCGR1rVws=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=pass smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=dcZDUBLj; arc=none smtp.client-ip=198.175.65.14
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="alrwdUAo"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id EF1691F0155F
-	for <linux-pm@vger.kernel.org>; Wed, 15 Jul 2026 13:14:46 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1784121287;
-	bh=rDr2xKpUyoKz6duCK7Yln8g9yTIWkjHlaDKvOTnbv9c=;
-	h=From:In-Reply-To:References:Date:Subject:To:Cc;
-	b=alrwdUAowOICmwjwDWN8wv13EoPuwNeKSLO3+zU0fHS04iyJjdCz7ZamR7TElXeJD
-	 kyeWb2mqhnceQoak5ZrhY51MvQ1akCChlBU5EsNNAUzb0IOM8fr4mjbG6Y1BFpRU3r
-	 iNOEsgt5pGmy+zrRJxrnJppst+eQaCsAlrtmnl6p402klNpzjBvYUJCYVBnFxvHBWs
-	 fWq+ro2GpHe0PWhQ10+Lds5R4bn1aHkypqfG0Bb1hPthI0wsGjfVtm1btOWLtYD7rA
-	 s18SBxGIVsL7IlWqlLa6YrtXkcXKqZTWgk/togik844KFE752DvAMo1vj91Pucsbou
-	 KkHobdoAy5ZQg==
-Received: by mail-lj1-f173.google.com with SMTP id 38308e7fff4ca-39c74722e27so21495721fa.0
-        for <linux-pm@vger.kernel.org>; Wed, 15 Jul 2026 06:14:46 -0700 (PDT)
-X-Gm-Message-State: AOJu0YxuTDIy6+u6G/licHxEmKOOTXUMrZODU2c5l0F2fePUna/Dkk80
-	dfimMmi5rlzPFYkstevFikXdQFVWWnPuDjpppVBfqIO5FGmVm2oRw/IP6HGlRPJ/SgJD+0NJjRs
-	SE32IpfNLVCXP19WAxCbur9cIWk4l2Q1x2QWc0++i8A==
-X-Received: by 2002:a2e:bc0e:0:b0:39b:1026:e0cc with SMTP id
- 38308e7fff4ca-39c94c88bf2mr49157651fa.15.1784121285577; Wed, 15 Jul 2026
- 06:14:45 -0700 (PDT)
-Received: from 969154062570 named unknown by gmailapi.google.com with
- HTTPREST; Wed, 15 Jul 2026 08:14:42 -0500
-Received: from 969154062570 named unknown by gmailapi.google.com with
- HTTPREST; Wed, 15 Jul 2026 08:14:42 -0500
-From: Bartosz Golaszewski <brgl@kernel.org>
-In-Reply-To: <20260714-arm-psci-system_reset2-vendor-reboots-v23-9-e7453c548c21@oss.qualcomm.com>
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="dcZDUBLj"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1784121930; x=1815657930;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=FoJio/rVwDwRIkKJBPFy4VQTYHNnMkd8RIsGPHmXYtU=;
+  b=dcZDUBLjBET2LBgl9MBETb6uRVSr0B1SAZfslxjV1n4Yq/CRbY75+nUG
+   DntZv9ryf6K/xzzhKho6CkwYiBTQDqdTKsyBzpcTXUFlMdoy6AFYwcsTe
+   gxGPKF4vz7MScLE3e/AIjy4C3xk/tO2u+8rd8SKn3frKK1AYPlrpwDbdo
+   zLeI7AwUt0vjUoZ6pnCFT69Sv2qvj9C59RziTdvDcwxt6H4Dsc9dYexPI
+   EcE9rTGTRIuAF1nzES9xO2JMUXGZNSkgrmONlPuD2YCgaxA4wGHUx8R+q
+   VZOyO8CyNYc9TnWicEhsCoY14JXPaRRlpGqi2t+Rplkb54xHr+GvDvIpO
+   w==;
+X-CSE-ConnectionGUID: +JV7sRnZTvePQG64/plk/Q==
+X-CSE-MsgGUID: KMDB1qPmQ3Cewoz9f8B0cQ==
+X-IronPort-AV: E=McAfee;i="6800,10657,11847"; a="88661388"
+X-IronPort-AV: E=Sophos;i="6.25,165,1779174000"; 
+   d="scan'208";a="88661388"
+Received: from fmviesa004.fm.intel.com ([10.60.135.144])
+  by orvoesa106.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 15 Jul 2026 06:25:28 -0700
+X-CSE-ConnectionGUID: 9Wz6tj6iT3aKtxwO1JLjGw==
+X-CSE-MsgGUID: 7GiJrNRMTn+eeKAn9h7sFg==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.25,165,1779174000"; 
+   d="scan'208";a="258139844"
+Received: from mkosciow-mobl1.ger.corp.intel.com (HELO localhost) ([10.245.244.129])
+  by fmviesa004-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 15 Jul 2026 06:25:22 -0700
+Date: Wed, 15 Jul 2026 16:25:20 +0300
+From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+To: Chen-Yu Tsai <wenst@chromium.org>
+Cc: Bartosz Golaszewski <brgl@kernel.org>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	Daniel Scally <djrscally@gmail.com>,
+	Heikki Krogerus <heikki.krogerus@linux.intel.com>,
+	Sakari Ailus <sakari.ailus@linux.intel.com>,
+	"Rafael J. Wysocki" <rafael@kernel.org>,
+	Danilo Krummrich <dakr@kernel.org>, Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	Matthias Brugger <matthias.bgg@gmail.com>,
+	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>,
+	Wei Deng <wei.deng@oss.qualcomm.com>, linux-acpi@vger.kernel.org,
+	driver-core@lists.linux.dev, linux-pm@vger.kernel.org,
+	linux-usb@vger.kernel.org, devicetree@vger.kernel.org,
+	linux-mediatek@lists.infradead.org,
+	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+	Manivannan Sadhasivam <mani@kernel.org>,
+	Alan Stern <stern@rowland.harvard.edu>,
+	Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
+Subject: Re: [PATCH v5 10/16] usb: hub: Power on connected M.2 E-key
+ connectors with power sequencing API
+Message-ID: <aleKQKH2V-ck-SX6@ashevche-desk.local>
+References: <20260715085348.3457359-1-wenst@chromium.org>
+ <20260715085348.3457359-11-wenst@chromium.org>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260714-arm-psci-system_reset2-vendor-reboots-v23-0-e7453c548c21@oss.qualcomm.com>
- <20260714-arm-psci-system_reset2-vendor-reboots-v23-9-e7453c548c21@oss.qualcomm.com>
-Date: Wed, 15 Jul 2026 08:14:42 -0500
-X-Gmail-Original-Message-ID: <CAMRc=MezSb1hohMsNPR96-hnTr0fjrqZ2ZDKUhwnOWycW3Muzw@mail.gmail.com>
-X-Gm-Features: AUfX_mz41Xlqsl3ycck_QpukCeA4vsvH01ocLqEI9wOAfWdaf7PIm5nU2rkpdD8
-Message-ID: <CAMRc=MezSb1hohMsNPR96-hnTr0fjrqZ2ZDKUhwnOWycW3Muzw@mail.gmail.com>
-Subject: Re: [PATCH v23 09/13] mfd: psci-mfd: Add psci-reboot-mode child cell
-To: Shivendra Pratap <shivendra.pratap@oss.qualcomm.com>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
-	devicetree@vger.kernel.org, Florian Fainelli <florian.fainelli@broadcom.com>, 
-	Krzysztof Kozlowski <krzk@kernel.org>, Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>, 
-	Mukesh Ojha <mukesh.ojha@oss.qualcomm.com>, Andre Draszik <andre.draszik@linaro.org>, 
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
-	Kathiravan Thirumoorthy <kathiravan.thirumoorthy@oss.qualcomm.com>, mfd@lists.linux.dev, 
-	Srinivas Kandagatla <srini@kernel.org>, 
-	Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>, Sebastian Reichel <sre@kernel.org>, 
-	Mark Rutland <mark.rutland@arm.com>, Lorenzo Pieralisi <lpieralisi@kernel.org>, 
-	"Rafael J. Wysocki" <rafael@kernel.org>, Daniel Lezcano <daniel.lezcano@kernel.org>, 
-	Christian Loehle <christian.loehle@arm.com>, Ulf Hansson <ulfh@kernel.org>, Lee Jones <lee@kernel.org>, 
-	Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
-	Bjorn Andersson <andersson@kernel.org>, Konrad Dybcio <konradybcio@kernel.org>, 
-	Arnd Bergmann <arnd@arndb.de>, Souvik Chakravarty <Souvik.Chakravarty@arm.com>, 
-	Andy Yan <andy.yan@rock-chips.com>, Matthias Brugger <matthias.bgg@gmail.com>, 
-	John Stultz <john.stultz@linaro.org>, Moritz Fischer <moritz.fischer@ettus.com>, 
-	Bartosz Golaszewski <brgl@kernel.org>, Sudeep Holla <sudeep.holla@kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260715085348.3457359-11-wenst@chromium.org>
+Organization: Intel Finland Oy - BIC 0357606-4 - c/o Alberga Business Park, 6
+ krs, Bertel Jungin Aukio 5, 02600 Espoo
 
-On Tue, 14 Jul 2026 19:16:37 +0200, Shivendra Pratap
-<shivendra.pratap@oss.qualcomm.com> said:
-> The PSCI "reboot-mode" node does not define a compatible because it is a
-> configuration of boot-states provided by the underlying firmware. With
-> the new firmware-node based cells in mfd-core, this node can now be
-> exposed as a proper child cell.
->
-> Add the psci-reboot-mode child cell to the psci-mfd driver with a
-> named_fwnode. Add psci-cpuidle-domain cell first to isolate it from
-> reboot-mode failures.
->
-> Suggested-by: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
-> Signed-off-by: Shivendra Pratap <shivendra.pratap@oss.qualcomm.com>
-> ---
->  drivers/mfd/psci-mfd.c      | 30 +++++++++++++++++++++++++++++-
->  drivers/power/reset/Kconfig |  2 +-
->  2 files changed, 30 insertions(+), 2 deletions(-)
->
-> diff --git a/drivers/mfd/psci-mfd.c b/drivers/mfd/psci-mfd.c
-> index 7affd6bb09dd..8c6b78ac471b 100644
-> --- a/drivers/mfd/psci-mfd.c
-> +++ b/drivers/mfd/psci-mfd.c
-> @@ -7,6 +7,7 @@
->  #include <linux/module.h>
->  #include <linux/of.h>
->  #include <linux/platform_device.h>
-> +#include <linux/property.h>
->
->  static const struct mfd_cell psci_cells[] = {
->  	{
-> @@ -14,10 +15,37 @@ static const struct mfd_cell psci_cells[] = {
->  	},
->  };
->
-> +static const struct mfd_cell psci_reboot_mode_cell[] = {
-> +	{
-> +		.name = "psci-reboot-mode",
-> +		.named_fwnode = "reboot-mode",
-> +	},
-> +};
-> +
->  static int psci_mfd_probe(struct platform_device *pdev)
->  {
-> -	return devm_mfd_add_devices(&pdev->dev, PLATFORM_DEVID_AUTO, psci_cells,
-> +	struct fwnode_handle *fwnode;
-> +	int ret;
-> +
-> +	ret = devm_mfd_add_devices(&pdev->dev, PLATFORM_DEVID_AUTO, psci_cells,
->  				   ARRAY_SIZE(psci_cells), NULL, 0, NULL);
-> +	if (ret)
-> +		return ret;
-> +
-> +	fwnode = device_get_named_child_node(&pdev->dev, "reboot-mode");
-> +	if (!fwnode)
-> +		return 0;
-> +
-> +	fwnode_handle_put(fwnode);
-> +
-> +	ret = devm_mfd_add_devices(&pdev->dev, PLATFORM_DEVID_AUTO,
-> +				   psci_reboot_mode_cell,
-> +				   ARRAY_SIZE(psci_reboot_mode_cell),
-> +				   NULL, 0, NULL);
-> +	if (ret)
-> +		dev_warn(&pdev->dev, "reboot-mode child cell failed to add: %d\n", ret);
+On Wed, Jul 15, 2026 at 04:53:40PM +0800, Chen-Yu Tsai wrote:
+> The new M.2 E-key connector can have a USB connection. For the USB device
+> on this connector to work, its power must be enabled and the W_DISABLE2#
+> signal deasserted. The connector driver handles this and provides a
+> toggle over the power sequencing API.
+> 
+> This feature currently only supports a directly connected (no mux in
+> between) M.2 E-key connector. Existing USB connector types are not
+> covered. The USB A connector was recently added to the onboard devices
+> driver. USB B connectors have historically been managed by the USB
+> gadget or dual-role device controller drivers. USB C connectors are
+> handled by TCPM drivers.
+> 
+> The power sequencing API does not know whether a power sequence provider
+> is not needed or not available yet, so we only request it for connectors
+> that we know need it, which at this time is just the E-key connector.
+> 
+> On the USB side, the port firmware node (if present) is tied to the
+> usb_port device. This device is used to acquire the power sequencing
+> descriptor. This allows the provider to tell the different ports on one
+> hub apart.
+> 
+> This feature is not implemented in the onboard USB devices driver. The
+> power sequencing API expects the consumer device to make the request,
+> but there is no device node to instantiate a platform device to tie
+> the driver to. The connector is not a child node of the USB host or
+> hub, and the graph connection is from a USB port to the connector.
+> And the connector itself already has a driver.
+> 
+> Power sequencing is not directly enabled in the connector driver as
+> that would completely decouple the timing of it from the USB subsystem.
+> It would not be possible for the USB subsystem to toggle the power
+> for a power cycle or to disable the port.
 
-Why do we have to look up the named node here anyway? Shouldn't MFD core handle
-that already in a generic way?
+...
 
-Bart
+> static void usb_port_device_release(struct device *dev)
+
+>  	fwnode_handle_put(dev_fwnode(dev));
+> +	/* usb_hub_create_port_device() could leave an error value */
+> +	if (!IS_ERR(port_dev->pwrseq))
+> +		pwrseq_put(port_dev->pwrseq);
+
+Hmm... I would rather make pwrseq_put() NULL and error pointer-aware, so
+it will be no-op in such cases. But I think Bart has his own opinion about
+this.
+
+>  	kfree(port_dev->req);
+>  	kfree(port_dev);
+>  }
+
+>  		put_device(&port_dev->dev);
+> +		hub->ports[port1 - 1] = NULL;
+>  		return retval;
+>  	}
+
+...
+
+> int usb_hub_create_port_device(struct usb_hub *hub, int port1)
+
+> +	port_dev->pwrseq = usb_hub_port_pwrseq_get(port_dev);
+> +	if (IS_ERR(port_dev->pwrseq)) {
+> +		retval = dev_err_probe(&port_dev->dev, PTR_ERR(port_dev->pwrseq),
+> +				       "failed to get power sequencing descriptor\n");
+> +		goto err_put_kn;
+
+OTOH, how pwrseq can be non-NULL and at the same time port be created?
+
+> +	}
+
+-- 
+With Best Regards,
+Andy Shevchenko
+
+
