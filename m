@@ -1,133 +1,143 @@
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.17])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id ADF89430CC4;
-	Wed, 15 Jul 2026 09:31:29 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.17
+Received: from smtph3-08.21cn.com (smtph3-08.21cn.com [150.223.194.133])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id C21AE436BE9;
+	Wed, 15 Jul 2026 09:35:50 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=150.223.194.133
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1784107896; cv=none; b=KI+vxvz2aOQehz7IW8PsGv72F1wQHx20xahSulmIfsS/m+DNg/tKW6nrRtpRcmxuVBRO3YBquKCXxRgsrGUhKrAHMJTfjlSFSC4/F0fS2553nWfcb0rwe8NUjdDHNC/a27PfvlMaSDWUVPgQlIhApyJEgpjqQtZUrafdcN4bUJM=
+	t=1784108160; cv=none; b=JeXAg7zWtzdSzsul9oEw+GWkWIH5sPMHExKdCNQ0Cni0pw/ZOkA3+CUa0aqZ/xvDXfs1dWc1L/umFGnXDcyuyrqcuJ00n0m/dwbbR8pXnldjFrdTUwF3txuK35534HPezwXDVIsPozBSj5VMRYUsL9mQwEBUToOicV9LI3wwGX4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1784107896; c=relaxed/simple;
-	bh=k4Mxr2b2uXcaPiH3l9mMz8keQUEPR+TLeMo54YK8SQg=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=ZjmNEcoIawaTeOVGwX+qRJ7LfyNDi9BGZTpvHvUO/UBO7uLybAC3T3pB5jmXw9lYaZLIYRuMHX8WkcXYlDnU7FQwdz+wnFQ6Ggofn4WOPyoSwOrZ78Sc7yL7+s+vGydbK+AQGM0VfGlr/Y72BIrkKx+Dv27Z0l2QTnIpnqx4wWQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=pass smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=JBT8cc0+; arc=none smtp.client-ip=192.198.163.17
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.intel.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="JBT8cc0+"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1784107891; x=1815643891;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=k4Mxr2b2uXcaPiH3l9mMz8keQUEPR+TLeMo54YK8SQg=;
-  b=JBT8cc0+MGyymQ1W7X4DBNeNGOoVi0Uy81MBS3lOHht4S/rW+qqGYKal
-   ThJi5Lz1r1URxFHoTNrypsJOekCHyojgOCpDlYCucraEqf5fr8sFJ94NB
-   NFr0joiwasXM+Tsa2GHuvfUikbUC0Ayxn8c0fvN+DpIePAZGUKGOLF/UO
-   vKPINT02Ij/2zDhul5lJ37BwTPxFBNeIM6kAAhFQy5UgxDzqjB0dll7kW
-   Kc66BfTFxGuE0UixzGC8frXAKwFS7ZCqzzThsnB43Oj/7YFn8USXaB6zt
-   yqy9A3C1CR2q8ghdtIUaPHHKyzSZbHKJIRePtKLWXZKPHsTTss9OnT9jj
-   g==;
-X-CSE-ConnectionGUID: R3VZmNryRTiSxdQ2vGldmA==
-X-CSE-MsgGUID: qnZMFrhLSKKNWQljNgxr2w==
-X-IronPort-AV: E=McAfee;i="6800,10657,11847"; a="84621796"
-X-IronPort-AV: E=Sophos;i="6.25,165,1779174000"; 
-   d="scan'208";a="84621796"
-Received: from orviesa010.jf.intel.com ([10.64.159.150])
-  by fmvoesa111.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 15 Jul 2026 02:31:27 -0700
-X-CSE-ConnectionGUID: C6gWwrZiQoSdjr4Qi+bgqQ==
-X-CSE-MsgGUID: rexS2BC5TTm8ipg2rVuMgA==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.25,165,1779174000"; 
-   d="scan'208";a="255007837"
-Received: from mkosciow-mobl1.ger.corp.intel.com (HELO localhost) ([10.245.244.129])
-  by orviesa010-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 15 Jul 2026 02:31:22 -0700
-Date: Wed, 15 Jul 2026 12:31:19 +0300
-From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-To: Chen-Yu Tsai <wenst@chromium.org>
-Cc: Bartosz Golaszewski <brgl@kernel.org>,
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	Daniel Scally <djrscally@gmail.com>,
-	Heikki Krogerus <heikki.krogerus@linux.intel.com>,
-	Sakari Ailus <sakari.ailus@linux.intel.com>,
-	"Rafael J. Wysocki" <rafael@kernel.org>,
-	Danilo Krummrich <dakr@kernel.org>, Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Matthias Brugger <matthias.bgg@gmail.com>,
-	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>,
-	Wei Deng <wei.deng@oss.qualcomm.com>, linux-acpi@vger.kernel.org,
-	driver-core@lists.linux.dev, linux-pm@vger.kernel.org,
-	linux-usb@vger.kernel.org, devicetree@vger.kernel.org,
-	linux-mediatek@lists.infradead.org,
-	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
-	Manivannan Sadhasivam <mani@kernel.org>,
-	Alan Stern <stern@rowland.harvard.edu>,
-	Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
-Subject: Re: [PATCH v5 07/16] usb: core: Move struct usb_port and related
- APIs to port.h
-Message-ID: <aldTZ3ni4Uk3eTO8@ashevche-desk.local>
-References: <20260715085348.3457359-1-wenst@chromium.org>
- <20260715085348.3457359-8-wenst@chromium.org>
+	s=arc-20240116; t=1784108160; c=relaxed/simple;
+	bh=YcxfcrHYqeLbyiw3uuKPRg2HsomhoFmT+3aey5ywoMs=;
+	h=From:To:Cc:Subject:Date:Message-Id; b=k2/gibs0Il5ttX+yPrgdA5QOTll6qXHEXJl4sLmfHULiTHw0FoF4uWuH9liuodkH/F7O9VB22ZhBAEFyV9goKK6v8YiOxYi+6HFQ0zSnStADzHuffzDpDeGHbDmz0YsYc62Fi/5x4e2zWXjNcVGvwhy/5l1x5d5v2MJKgTgS48s=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=chinatelecom.cn; spf=pass smtp.mailfrom=chinatelecom.cn; arc=none smtp.client-ip=150.223.194.133
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=chinatelecom.cn
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=chinatelecom.cn
+HMM_SOURCE_IP:172.27.0.101:0.1012423176
+HMM_ATTACHE_NUM:0000
+HMM_SOURCE_TYPE:SMTP
+Received: from clientip-139.200.108.11 (unknown [172.27.0.101])
+	by smtph3-08.21cn.com (HERMES) with SMTP id 89AF314065E24;
+	Wed, 15 Jul 2026 17:35:29 +0800 (CST)
+X-189-SAVE-TO-SEND: +pengqh1@chinatelecom.cn
+Received: from  ([139.200.108.11])
+	by gateway-ssl-dep-657b8df9db-xsh6f with ESMTP id d800384539cd41fcbb8212b0ebb51764 for ray.huang@amd.com;
+	Wed, 15 Jul 2026 17:35:39 CST
+X-Transaction-ID: d800384539cd41fcbb8212b0ebb51764
+X-Real-From: pengqh1@chinatelecom.cn
+X-Receive-IP: 139.200.108.11
+X-MEDUSA-Status: 0
+Sender: pengqh1@chinatelecom.cn
+From: Qianheng Peng <pengqh1@chinatelecom.cn>
+To: ray.huang@amd.com,
+	mario.limonciello@amd.com,
+	perry.yuan@amd.com,
+	kprateek.nayak@amd.com,
+	rafael@kernel.org,
+	viresh.kumar@linaro.org,
+	skhan@linuxfoundation.org,
+	li.meng@amd.com
+Cc: linux-pm@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	wangxb12@chinatelecom.cn,
+	xiongl24@chinatelecom.cn,
+	zhangar@chinatelecom.cn,
+	pengqh1@chinatelecom.cn
+Subject: [PATCH v2] cpufreq: amd-pstate-ut: fix null pointer dereference
+Date: Wed, 15 Jul 2026 17:35:24 +0800
+Message-Id: <1784108124-19988-1-git-send-email-pengqh1@chinatelecom.cn>
+X-Mailer: git-send-email 1.8.3.1
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260715085348.3457359-8-wenst@chromium.org>
-Organization: Intel Finland Oy - BIC 0357606-4 - c/o Alberga Business Park, 6
- krs, Bertel Jungin Aukio 5, 02600 Espoo
 
-On Wed, Jul 15, 2026 at 04:53:37PM +0800, Chen-Yu Tsai wrote:
-> |struct usb_port| and its matching container_of() macro should live in
-> its own port.h, matching the split we have for .c files.
-> 
-> Move them as described. Also move usb_port_is_power_on(), since in the
-> next change its |struct usb_hub *| parameter will be changed to
-> |struct usb_port *|, and becomes a non-static function that only
-> references |struct usb_port|.
-> 
-> port.h is only included from hub.h, as a subsequent patch will directly
-> use fields from |struct usb_port| in a static inline helper in hub.h.
-> The USB internal headers don't have header guards to help with this.
-> 
-> Also drop 'extern' from the header declaration of usb_port_is_power_on().
-> This is not needed in modern C.
+The crash issue may occur when insmod amd_pstate_ut module on intel platform.
 
-...
+   amd_pstate_ut: 1    amd_pstate_ut_acpi_cpc_valid  success!
+   amd_pstate_ut: 2    amd_pstate_ut_check_enabled   success!
+   BUG: kernel NULL pointer dereference, address: 0000000000000080
+   #PF: supervisor read access in kernel mode
+   #PF: error_code(0x0000) - not-present page
+   PGD 0 P4D 0
+   Oops: 0000 [#1] SMP NOPTI
+   CPU: 0 PID: 20300 Comm: modprobe
+   Kdump: loaded Tainted: G O 6.6.0-0010.rc1.ctl4.x86_64 #1
+   Hardware name: FiberHome R2200 V5/Xeon Boards, BIOS 3.1a 02/24/2020
+   RIP: 0010:amd_pstate_ut_check_perf+0x141/0x280 [amd_pstate_ut]
+   Call Trace:
+    <TASK>
+    amd_pstate_ut_init+0x1b/0xff0 [amd_pstate_ut]
+    ? __pfx_amd_pstate_ut_init+0x10/0x10 [amd_pstate_ut]
+    do_one_initcall+0x42/0x2e0
+    ? kmalloc_trace+0x26/0x90
+    do_init_module+0x60/0x240
+    __se_sys_init_module+0x185/0x1c0
+    do_syscall_64+0x62/0x190
+    entry_SYSCALL_64_after_hwframe+0x76/0x7e
+    </TASK>
 
-> +struct usb_port {
-> +	struct usb_device *child;
-> +	struct device dev;
-> +	struct usb_dev_state *port_owner;
-> +	struct usb_port *peer;
-> +	struct typec_connector *connector;
-> +	struct dev_pm_qos_request *req;
-> +	enum usb_port_connect_type connect_type;
-> +	enum usb_device_state state;
-> +	struct kernfs_node *state_kn;
-> +	usb_port_location_t location;
-> +	struct mutex status_lock;
-> +	u32 over_current_count;
-> +	u8 portnum;
-> +	u32 quirks;
-> +	unsigned int early_stop:1;
-> +	unsigned int ignore_event:1;
-> +	unsigned int is_superspeed:1;
-> +	unsigned int usb3_lpm_u1_permit:1;
-> +	unsigned int usb3_lpm_u2_permit:1;
-> +};
+Add invalidation check of cpudata in amd_pstate_ut_check_perf() and
+amd_pstate_ut_check_freq() to avoid unpredicated null pointer dereference.
+Otherwise, add driver name detection for amd_pstate_ut driver to prevent it
+from testing cpufreq driver on non-amd platform.
 
-A side note for the future development (no need to change anything here
-right now). It might be that the layout is suboptimal and `pahole` might
-propose a better one.
+Fixes: 14eb1c96e3a3 ("cpufreq: amd-pstate: Add test module for amd-pstate driver")
+Suggested-by: Li Xiong <xiongl24@chinatelecom.cn>
+Suggested-by: Xibo Wang <wangxb12@chinatelecom.cn>
+Signed-off-by: Qianheng Peng <pengqh1@chinatelecom.cn>
 
+---
+v2:
+  - Print policy->cpu instead of policy->kboj.name
+  - Add cpufreq driver name detection to amd_pstate_ut
+
+v1: https://lore.kernel.org/all/1784015941-26535-1-git-send-email-pengqh1@chinatelecom.cn
+---
+ drivers/cpufreq/amd-pstate-ut.c | 17 +++++++++++++++++
+ 1 file changed, 17 insertions(+)
+
+diff --git a/drivers/cpufreq/amd-pstate-ut.c b/drivers/cpufreq/amd-pstate-ut.c
+index 735b29f..5d71315 100644
+--- a/drivers/cpufreq/amd-pstate-ut.c
++++ b/drivers/cpufreq/amd-pstate-ut.c
+@@ -157,6 +157,10 @@ static int amd_pstate_ut_check_perf(u32 index)
+ 		if (!policy)
+ 			continue;
+ 		cpudata = policy->driver_data;
++		if (!cpudata) {
++			pr_err("%s empty driver_data on cpu %d\n", __func__, policy->cpu);
++			return -EINVAL;
++		}
+ 
+ 		if (get_shared_mem()) {
+ 			ret = cppc_get_perf_caps(cpu, &cppc_perf);
+@@ -229,6 +233,10 @@ static int amd_pstate_ut_check_freq(u32 index)
+ 		if (!policy)
+ 			continue;
+ 		cpudata = policy->driver_data;
++		if (!cpudata) {
++			pr_err("%s empty driver_data on cpu %d\n", __func__, policy->cpu);
++			return -EINVAL;
++		}
+ 
+ 		if (!((policy->cpuinfo.max_freq >= cpudata->nominal_freq) &&
+ 			(cpudata->nominal_freq > cpudata->lowest_nonlinear_freq) &&
+@@ -560,6 +568,15 @@ static int amd_pstate_ut_check_freq_attrs(u32 index)
+ static int __init amd_pstate_ut_init(void)
+ {
+ 	u32 i = 0, arr_size = ARRAY_SIZE(amd_pstate_ut_cases);
++	const char *driver_name = NULL;
++
++	driver_name = cpufreq_get_current_driver();
++	if (!driver_name)
++		return -ENOENT;
++	/* don't test if non-amd cpufreq_driver exists */
++	else if (strcmp(driver_name, "amd-pstate") &&
++		 strcmp(driver_name, "amd-pstate-epp"))
++		return -EEXIST;
+ 
+ 	for (i = 0; i < arr_size; i++) {
+ 		int ret;
 -- 
-With Best Regards,
-Andy Shevchenko
-
+1.8.3.1
 
