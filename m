@@ -1,45 +1,45 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 69F3C44C67C
-	for <linux-pm@vger.kernel.org>; Wed, 15 Jul 2026 12:26:46 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1664746AF39
+	for <linux-pm@vger.kernel.org>; Wed, 15 Jul 2026 12:27:55 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1784118407; cv=none; b=Dn5B9CqjMdf/8j4SBjgdSKplQQbvcCpP7c6QvaTQxKbCsKfaXApw6EHXMlNacZfqIu2Pu3pb7xR54TUBYSIONq1MuqDZ2FFoo4Xrf+jsUK43IePeDXev3xyeJ4vjZanioVi7Pypu7WaD88T58Gzw9TxyCpSjR8E5i77wUoRRbHM=
+	t=1784118476; cv=none; b=PCO/aRVMSKVHrXQI12ZEDPjyKpdJ+ghj5eGGBY5s5OmfiQxld6uRyUK5lEzhYKuSOZ+vT2775IaKxRFYfl7f3BUEoIhYq34MPdNjNOqszAcZZ87QSuTvsgUqWVnU1XrLUT8mT02U+pR3M+mQHrGgvufJA5TE/L/5uFHl80SgTpI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1784118407; c=relaxed/simple;
-	bh=TF12o4kxmUhjvdA6ouORMbeT1BJf7UjZuwxQoUAEn0g=;
+	s=arc-20240116; t=1784118476; c=relaxed/simple;
+	bh=FyvVJli3cTKUMPT5HpsOpQIxQvLLkFu+nSooG+r5XBo=;
 	h=From:In-Reply-To:MIME-Version:References:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=HaiENMS9kvaLy93zMeh6JVMNW90RvYk0cTv0+2qkDGMPMt19DRqjgCzR00gnlNl3rMFFDRrZPRTdtM68YDitKJg9UcLkQDi36EsdJ5bJVQEa3DwtU5y4xTyOcSlKyDfq4EFJjF2EoLGXR9ZK8tBOaW9uxSCT0OB6cwmINp+X/Fw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=QKykeVV+; arc=none smtp.client-ip=100.103.45.18
+	 To:Cc:Content-Type; b=XQkEdH4y1URrfOPwa84zRo0U/qIS2vMvGkQG5ypcXNU25EVySzdIvlwb46zgjiBFfzyY5LgJNUG/UfLFGHwqO2Cdg4s1zhKNP91XVQIVYcNwn/CHhcaauNbitIA2LEzKE7EJSIJ8vS4k2n/plQqN7XTe5Z1OkJlpTB72s6b3aM0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=QloyeeZA; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="QKykeVV+"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2D90B1F01562
-	for <linux-pm@vger.kernel.org>; Wed, 15 Jul 2026 12:26:46 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="QloyeeZA"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id F06641F00A3E
+	for <linux-pm@vger.kernel.org>; Wed, 15 Jul 2026 12:27:54 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1784118406;
-	bh=ufSU06HSFFf/HF9xxtT6zNddSL0W/3RadTy6uo0f3pw=;
+	s=k20260515; t=1784118475;
+	bh=j28hcJjQkZPaS3yZ4782JQxyz8Zd4wPyi3h2uE2kkXA=;
 	h=From:In-Reply-To:References:Date:Subject:To:Cc;
-	b=QKykeVV+vjB0vBKkxzt1G8Vl5kKWhAKrI3T18ni2Hmw7Ye9vGMPmHsQOOafa6Rkz8
-	 Ms0JYatvX30UIvmhmwHhmdX9yRaau4XM7UMuftPm2YrvDgVpRTT9y0EvcfS+iJMopa
-	 wn5EvKEKra8RnO1k8aY6zl3W8kTP7P1IlnB4/LKGhKGxEg2xEMFyvVePT3Jcft61ug
-	 gLoOZQLE17mfUgB/wOuZnmcyg2/bXhPTd+ObHBKZgp4ncS4UOBn+dwfyO9BIdDE/Ik
-	 iVS87KexyX8aSDr2Cs39sUkAux0k+DNAdUQG8yS15R4tPMKJ4Ufu/ntoSvaqilpRBT
-	 Qrj1mAGszI78g==
-Received: by mail-lj1-f182.google.com with SMTP id 38308e7fff4ca-39ca0a30148so42691491fa.3
-        for <linux-pm@vger.kernel.org>; Wed, 15 Jul 2026 05:26:46 -0700 (PDT)
-X-Gm-Message-State: AOJu0YzA+ZvHpCnW/bK8PzULGI2m4skCts2jyBY3DjsA+Vfe5DumX8or
-	MsZojpYqLt+FrinxrQI5w+GgCoTz+tsAL813D+c9/sqgppPM/MuoXjWdOtpNNHgQI5rzkMXgQbo
-	s/uODeohs/0o4h7kDyhhXr8hwYj03xgQ4Ul8XQxPdtw==
-X-Received: by 2002:a05:651c:23db:20b0:39c:6e2c:23c3 with SMTP id
- 38308e7fff4ca-39db6ba5ea7mr4965071fa.5.1784118404814; Wed, 15 Jul 2026
- 05:26:44 -0700 (PDT)
+	b=QloyeeZA+L0U0Nakkwr/lWVJ2epmV8vXIHzwlA6j94fp0HUd+UPMioZEIUHbjDN8W
+	 iKIdi3aCx+rXYWbmwTIh1ICFS6PFQssNjQAquhZJqFjg0wA+njAN4N57PbyX7F9jNB
+	 WUXt06OccYpYq0vonrNCnwKy5yOELeoBdgAtUg/Q36E0h9C2Ls8aJLO14r7o82lxGp
+	 /FiDjbu1eD3n4ltGunskB6hppF21R6j9g5Zujnk0NI6TvUJOrZ4jy2IsFX0nUWRTwf
+	 qsO7X2nTHn4u7dgR8dLHesPpOA7XOin9U5dPJEmjhmViRqSGvWZNPtZNbaLKb5KvK4
+	 fP5r1UYPLKo9w==
+Received: by mail-lf1-f53.google.com with SMTP id 2adb3069b0e04-5aeba09900bso1530533e87.2
+        for <linux-pm@vger.kernel.org>; Wed, 15 Jul 2026 05:27:54 -0700 (PDT)
+X-Gm-Message-State: AOJu0YwT+xRHBzFPyW+tXNcmUKH4BneeUDfkUmGiHlXd3w1VhhGvppCP
+	3jgaJsp1Q0IO9WFjc15GgKxGXdele8Pb2EQ3Q9Ov6nG4UaxLcf7M+zGdmVg4xzZPBf8Eos1QRPn
+	rwHpwo7PsUy8br94wR+DrBQGQ53AloI/JY44PKcYtPQ==
+X-Received: by 2002:a05:6512:250f:b0:5b1:544e:7185 with SMTP id
+ 2adb3069b0e04-5b1544e721amr2489500e87.40.1784118473678; Wed, 15 Jul 2026
+ 05:27:53 -0700 (PDT)
 Received: from 969154062570 named unknown by gmailapi.google.com with
- HTTPREST; Wed, 15 Jul 2026 05:26:43 -0700
+ HTTPREST; Wed, 15 Jul 2026 05:27:51 -0700
 Received: from 969154062570 named unknown by gmailapi.google.com with
- HTTPREST; Wed, 15 Jul 2026 05:26:42 -0700
+ HTTPREST; Wed, 15 Jul 2026 05:27:51 -0700
 From: Bartosz Golaszewski <brgl@kernel.org>
-In-Reply-To: <20260714-arm-psci-system_reset2-vendor-reboots-v23-2-e7453c548c21@oss.qualcomm.com>
+In-Reply-To: <20260714-arm-psci-system_reset2-vendor-reboots-v23-0-e7453c548c21@oss.qualcomm.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -47,13 +47,11 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 References: <20260714-arm-psci-system_reset2-vendor-reboots-v23-0-e7453c548c21@oss.qualcomm.com>
- <20260714-arm-psci-system_reset2-vendor-reboots-v23-2-e7453c548c21@oss.qualcomm.com>
-Date: Wed, 15 Jul 2026 05:26:42 -0700
-X-Gmail-Original-Message-ID: <CAMRc=McKp4WsOY-EQ21n2wbqCp5V0Lr1Cbub5geEhz-LZvVkZw@mail.gmail.com>
-X-Gm-Features: AUfX_mylt-DYfwtCtULeZMicFYpxh50vEHg7XonNMSy71MZwRMycF3EtBgUVrSQ
-Message-ID: <CAMRc=McKp4WsOY-EQ21n2wbqCp5V0Lr1Cbub5geEhz-LZvVkZw@mail.gmail.com>
-Subject: Re: [PATCH v23 02/13] power: reset: reboot-mode: Support up to 3
- magic values per mode
+Date: Wed, 15 Jul 2026 05:27:51 -0700
+X-Gmail-Original-Message-ID: <CAMRc=Mc4e1Rso5Vr1ZoRTkAp4WYUz8H-dQWUjkyBg5sgXiDLOw@mail.gmail.com>
+X-Gm-Features: AUfX_mxYq9w3t7suoGM2tbsXEv1g058iRFyDqupc6ScLWcGXZxK2WeoKHlbXNCk
+Message-ID: <CAMRc=Mc4e1Rso5Vr1ZoRTkAp4WYUz8H-dQWUjkyBg5sgXiDLOw@mail.gmail.com>
+Subject: Re: [PATCH v23 00/13] Implement PSCI reboot mode driver for PSCI resets
 To: Shivendra Pratap <shivendra.pratap@oss.qualcomm.com>
 Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
 	linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
@@ -62,7 +60,9 @@ Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
 	Mukesh Ojha <mukesh.ojha@oss.qualcomm.com>, Andre Draszik <andre.draszik@linaro.org>, 
 	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
 	Kathiravan Thirumoorthy <kathiravan.thirumoorthy@oss.qualcomm.com>, mfd@lists.linux.dev, 
-	Srinivas Kandagatla <srini@kernel.org>, Sebastian Reichel <sre@kernel.org>, Mark Rutland <mark.rutland@arm.com>, 
+	Srinivas Kandagatla <srini@kernel.org>, Sebastian Reichel <sebastian.reichel@collabora.com>, 
+	Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>, Song Xue <quic_songxue@quicinc.com>, 
+	Sebastian Reichel <sre@kernel.org>, Mark Rutland <mark.rutland@arm.com>, 
 	Lorenzo Pieralisi <lpieralisi@kernel.org>, "Rafael J. Wysocki" <rafael@kernel.org>, 
 	Daniel Lezcano <daniel.lezcano@kernel.org>, Christian Loehle <christian.loehle@arm.com>, 
 	Ulf Hansson <ulfh@kernel.org>, Lee Jones <lee@kernel.org>, Rob Herring <robh@kernel.org>, 
@@ -74,29 +74,86 @@ Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
 	Bartosz Golaszewski <brgl@kernel.org>, Sudeep Holla <sudeep.holla@kernel.org>
 Content-Type: text/plain; charset="UTF-8"
 
-On Tue, 14 Jul 2026 19:16:30 +0200, Shivendra Pratap
+On Tue, 14 Jul 2026 19:16:28 +0200, Shivendra Pratap
 <shivendra.pratap@oss.qualcomm.com> said:
-> ARM PSCI vendor-specific resets, require a 32-bit reset_type and a 64-bit
-> cookie as arguments. This cannot be implemented via the reboot-mode
-> framework, which supports a single 32-bit argument as magic value.
+> Userspace should be able to initiate device reboots using the various
+> PSCI SYSTEM_RESET and SYSTEM_RESET2 types defined by PSCI spec. This
+> patch series introduces psci-reboot-mode driver that will induce
+> command-based resets to psci driver for executing the device reset.
 >
-> Extend the reboot-mode framework to support up to three 32-bit arguments
-> as magic, per reboot-mode.
+> The PSCI system reset calls takes two arguments: reset_type and cookie.
+> It defines predefined reset types, such as warm and cold reset, and
+> vendor-specific reset types which are SoC vendor specific. To support
+> these requirements, the reboot-mode framework is enhanced in two key
+> ways:
+> 1. 64-bit magic support: Extend reboot-mode to handle two 32-bit
+> arguments (reset_type and cookie) by encoding them into a single 64-bit
+> magic value.
+> 2. Predefined modes: Add support for predefined reboot modes in the
+> framework.
+>
+> With these enhancements, the patch series enables:
+>  - Arch Warm reset and system reset cold as predefined reboot modes.
+>  - Vendor-specific resets, configurable via the SoC-specific device tree.
+>
+> Together, these changes allow userspace to trigger all above PSCI resets
+> from userspace.
+>
+> Note on introducing PSCI-MFD:
+> In v19/20, psci-reboot-mode was implemented as a faux-device. Review
+> discussion suggested this may not be the best model for firmware-backed
+> consumers, and that representing PSCI users as regular platform devices
+> would be better. One suggestion was to add a PSCI-MFD driver, allowing
+> multiple consumers tied to a single PSCI node "arm,psci-1.0" be probed
+> as MFD cells.
+>
+> Following this, the series adds a PSCI-MFD driver and introduces
+> cpuidle-psci-domain and psci-reboot-mode as child cells. To meet the
+> psci-reboot-mode requirement, the MFD core is extended to support
+> fwnode.
+> Reference discussions on this:
+> https://lore.kernel.org/all/20260306-faux-dev-with-fwnode-v1-1-792a86a62530@oss.qualcomm.com/
+>
+> ---
+> The patch is tested on rb3Gen2, lemans-ride, lemans-evk, monaco-ride,
+> qcs615-ride.
 >
 > Signed-off-by: Shivendra Pratap <shivendra.pratap@oss.qualcomm.com>
-> ---
->  drivers/power/reset/nvmem-reboot-mode.c  | 10 ++++----
->  drivers/power/reset/qcom-pon.c           |  8 ++++---
->  drivers/power/reset/reboot-mode.c        | 41 +++++++++++++++++++++-----------
->  drivers/power/reset/syscon-reboot-mode.c |  8 ++++---
->  include/linux/reboot-mode.h              |  4 +++-
+>
+> Changes in v23:
+> mfd: core: Add firmware-node support to MFD cells
+>  - Add named_fwnode-based firmware node support in MFD cells.(by Bart)
+>  - Update the release path. (by Bart)
+>  - Add checks for duplicate fwnodes.
+>  - Update documentation for usage and limitations.
+> mfd: psci-mfd: Add psci-reboot-mode child cell
+>  - Update for a named_fwnode-based reboot-mode child cell. (By Bart)
+>  - Split psci-reboot-mode and psci-cpuidle-domain into separate child
+>    cells.
+> power: reset: Add psci-reboot-mode driver
+>  - Add COMPILE_TEST in Kconfig. (by Bart)
+>  - Update to support up to three u32 arguments to accommodate a
+>    32-bit reset_type and a 64-bit cookie. (By Sashiko, Lorenzo)
+> dt-bindings: arm: Document reboot mode magic
+>  - Update to support up to three u32 arguments to accommodate a
+>    32-bit reset_type and a 64-bit cookie.
+>  - Dropped reviewed by from Bart and Rob due to considerable changes.
+> firmware: psci: Introduce command-based resets
+>  - Update to support a 64-bit cookie. (By Sashiko, Lorenzo)
+>  - Update the flow so unsupported reset commands and any failures during
+>    reset command execution fall back to the
+>    Linux reboot_mode path. (By Sashiko)
+> power: reset: reboot-mode: Add support for predefined reboot modes
+>  - Handle errors and free lists in devm_reboot_mode_register(). (by Sashiko)
+>  - Update to support up to three u32 arguments.
+> power: reset: reboot-mode: Support up to 3 magic values per mode
+>  - Patch for 64 bit magic renamed.
+>  - Update to support up to three u32 arguments to accommodate a 32-bit
+>    reset_type and a 64-bit cookie.
+>  - Dropped reviewed by from Bart and Sebastian due to considerable changes.
+> - Link to v22: https://lore.kernel.org/r/20260514-arm-psci-system_reset2-vendor-reboots-v22-0-28a5bde07483@oss.qualcomm.com
+>
 
-Could we avoid having to modify multiple files here by just providing a new
-function:
-
-    nvmem_reboot_mode_write_full()
-
-with the prototype you proposed and making the existing
-nvmem_reboot_mode_write() a thin wrapper around it?
+Just wanted to say: thanks for being persistent, we'll get there eventually. :)
 
 Bart
