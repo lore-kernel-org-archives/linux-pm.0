@@ -1,75 +1,75 @@
-Received: from mail-pg1-f169.google.com (mail-pg1-f169.google.com [209.85.215.169])
+Received: from mail-pj1-f48.google.com (mail-pj1-f48.google.com [209.85.216.48])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B9AB93B3BF3
-	for <linux-pm@vger.kernel.org>; Wed, 15 Jul 2026 05:24:31 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.215.169
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 099A02F5A0E
+	for <linux-pm@vger.kernel.org>; Wed, 15 Jul 2026 05:45:45 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.216.48
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1784093072; cv=none; b=DHRc6MFWoYlugNlQOnYFWGEKnhQoz8hqRU/vimfIR/guf83jxJTn7iC3TZzagtp7F6vkYSr4QWbxRYeaCd1SnGWXtHGheLO7RGf5B9nXRtEQYY6N8U+B+a7aljgPipup5w/apuRt5aGGhLKm1PUqyR8h32ZIcOnhs+qebT9Cggk=
+	t=1784094347; cv=none; b=gWvUB7lnt3Yz+/L7V9XYMospMNfZrSG2V9Moz5R1E8l4J7DwJTx6Voq0qqTjCgHddj0P3u8BghnON1rzf0/DreV36HyFq+rvULsbx09Jxiff2imJ3VSMQXu3cDonpnSLz0ReMZd4JGRUu4XlsZbBeA9qcukHSheHUHzU4wexoH0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1784093072; c=relaxed/simple;
-	bh=CDBhUD07VqoOrZ7JPoq0Co54wzQWjl/AWvxNjZvCjn4=;
+	s=arc-20240116; t=1784094347; c=relaxed/simple;
+	bh=VeiS/HQ0/A//WgU8Q9019LQBqEPCs8FiGuXfWIXsHrY=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=CYx1Be74MMjGMYw87i6YA67dFhIqsEua1ez31EiaVN1Cx8aObfIEs+DZueqPGZ6QuuZ5chTjM6lZ3zR2ImoiP1s48jRhPiSyvhDJuFOTNHHzu1IY8VSrkMY/NPIlMUbjH4dBEafbeGdJ4qRq4Nmo3TPBfRQ3PJNYPT+W+pucges=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=IDdRAS/F; arc=none smtp.client-ip=209.85.215.169
+	 Content-Type:Content-Disposition:In-Reply-To; b=MUvCmhd1pcB6gHcWUNG+UOSzk8hR4r4vL/lpUM2GxYl0V3TQnGoDrCmKH+x7zN/X53EZfgdi7B39MevtSLPj3cEbIssJItyp8HrFpVDcpENq4hgzpIdTAk+1dJ28jc3aJTlxkGfkmGrqUD0IY68UrYzi43Is0lwZ2YIPYL53lx8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=mN8uYx40; arc=none smtp.client-ip=209.85.216.48
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="IDdRAS/F"
-Received: by mail-pg1-f169.google.com with SMTP id 41be03b00d2f7-ca766c1c9ccso2864860a12.0
-        for <linux-pm@vger.kernel.org>; Tue, 14 Jul 2026 22:24:31 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="mN8uYx40"
+Received: by mail-pj1-f48.google.com with SMTP id 98e67ed59e1d1-38de840f2f0so1911337a91.0
+        for <linux-pm@vger.kernel.org>; Tue, 14 Jul 2026 22:45:45 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1784093071; x=1784697871; darn=vger.kernel.org;
+        d=linaro.org; s=google; t=1784094345; x=1784699145; darn=vger.kernel.org;
         h=in-reply-to:content-disposition:content-type:mime-version
          :references:message-id:subject:cc:to:from:date:from:to:cc:subject
          :date:message-id:reply-to:content-type;
-        bh=qkAQWsDtozfXBoNsWKH68JrBdyZXkRqVk9vmTGGiMwc=;
-        b=IDdRAS/FyIOpHGdC7Bh7AFXk1Db0dVrcpGHwh1mm+WRfjBXnMotngKUWUjAnO0/d5L
-         3QId5jwnCUP0uW1ExLwSkwX9ClUhvuhZf/cMbN+IDRs96N3VWK/HDZhe+BcW2KzRa/V/
-         +81evVE9n01rbmUrRXqcfd8leEcG1VYNKVmmQVvJHN7sgVq7rBsJNA89X5RUDRSwsyFB
-         TqTcDCXzhq2oXr4UinOUDMQFerqxeeYlzayTYhA2VaN7hr22yNpA+HV5jvr+wbRuL4qj
-         OvW/AQJq69ETfknpKxLoxPQpvu00vMaplYwXXfEumF8aelrPlXtkEokfFzxpgKoLzTA3
-         OmfQ==
+        bh=d7JQLilasvtiBi3KqJRPfjtcOsV3KOV9/MjPpoDKsyw=;
+        b=mN8uYx40nB/KtBAJBjXVm/VLX863WeNtfzqg+4ZdGA5xVHb0BoTNplarvZlkt6f9aY
+         I1E6bQKqbrPpNcHCRF1aKixJWGkI9phhlTd+0hSrJCf9KXCea5n35KH4GwWkyn8PMnhl
+         1658vLg32+Me+Bpvn74X6hA0nxYENDP6I+aQzOufXi0EIkPWC2G/zypqE09yziCSoAEN
+         1xjKU/IgUh4gQPKSIYJsJ8EC62MxJ0wMbi5leQR4cCcOuuqtLCtGL3ls1iY1+5O19NoE
+         hstX2RjUZtfdS0gI4PxmDRWXixMjAl04EGQS0moHTs/EbRpGo3z5yWfnnms54sJp26Nc
+         eYrw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1784093071; x=1784697871;
+        d=1e100.net; s=20251104; t=1784094345; x=1784699145;
         h=in-reply-to:content-disposition:content-type:mime-version
          :references:message-id:subject:cc:to:from:date:x-gm-gg
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=qkAQWsDtozfXBoNsWKH68JrBdyZXkRqVk9vmTGGiMwc=;
-        b=VaQJoVCa33uxuk77d2Cr9t5Y2lkhWRLhhippY5Ov8C4U2oyQ384Hbi0jXag0DFXWKz
-         ryzyT00HFWc1g/oRNyJojjkCC6icTILXKJOlN7hU1UtDwl2J+CrMpRaKqu6pgIYsehFi
-         l/OPOzQpWz5nBwuXOd6bI9HHmaMhbQdoN1B4nC3DFr3naxefyXE/k8aQFGM9fwPDIYDq
-         lILMaern0+T6pBLCOARFJ2AMPSlpWkHBC9RjDxmMttUEABfQKUDc0KC/dHPyrL4EFO48
-         WFFa+vke8/fWoAWFa30Wd6nivqI6gZt4E9rqoCdG122d7psUmmyRIaijpO0ByIxc7Ol4
-         ggaw==
-X-Forwarded-Encrypted: i=1; AHgh+RrEDzATPz4tYuMJoMEYZsCwrJ22eJfYbm+LyHCNoZbnXWVkZLZgcsQUbv7DAryevVWwkzQNIZwTZg==@vger.kernel.org
-X-Gm-Message-State: AOJu0YwihsvZe57QvHIfN37p7gtUff8lvtzKgSzEeOq1B8Qfi+Bl1yyH
-	S9q5KCkG/3v80wRsSLJ+LD4bo+8AeAO0CoyucM1oUS+lfRQyTryIKIogZNs6D9/qr2A=
-X-Gm-Gg: AfdE7ckWrbwaqHSH7PVsO/kdQw4ywkpjMp4mz2BU2z5qHF9/esZ8s1fFnUuUCrcQHoP
-	eZOAX/rIK+S1yi8jOGUbB0wol1280M0T7IM+wLWvPRbpR1sxdbh7aEqnYnzXIBY6uEGj4ALzDOX
-	StT8IDJ0iZ30xuh9RVz0wtoG/bNZpaieIAmW5GJBNA0jiGZIjKyh3yE19ENMUh4PA3d5JHWiP71
-	41eKIkNvNt+nYRkKGI701CFUz2sQcKPJB+OpiZj7S/FxMbBaCW9r4gqRwgG1YS0I33KLiY0Kmu+
-	veX3oVAWUHZDKKc5Q0ETR9xe4ydNdfR61gd84xjgcr1FIRxXplEHTG1hEc/PRz1GQSDcNOl3FUT
-	/TxpEgSlVGXD8HFckHORrlYR+33MKtz+MX4Zr3OOH47j1kSSIt3x5vbt5yBvbmig0KdXGcCXL1W
-	x3GuHGo4FCiKLE
-X-Received: by 2002:a05:6a20:9183:b0:3bf:d62f:44e1 with SMTP id adf61e73a8af0-3c36c35d250mr1712601637.53.1784093070581;
-        Tue, 14 Jul 2026 22:24:30 -0700 (PDT)
+        bh=d7JQLilasvtiBi3KqJRPfjtcOsV3KOV9/MjPpoDKsyw=;
+        b=VaK9zkRxqSIRDNFWmP9r8O9d5jBxNZW4xtLx3h/i4Fd0I/I85FR3D+NTpkPGofEuOa
+         IYOt3/SbG8309SI70j1NqzRVkbm1LXaSqQGoFmCOXP/od+MI6rEaNJ69NCwlL/X2Z3FF
+         Wf0b8fcGrHNjLXPfJbor/oZYcc5OqdIR0gtX3VmFmnSTDppHBD1KXFmiDRpD3bbvgWi8
+         fT+GeI1/2cH/4ebFwv5XxG2F55DjWbwDut2EwjhU4VvXM/a3J109zYpFsGmzYBC+GMZb
+         buG5SizWM5mzLgVgEc4ue86+cxPf2blYjT4n1+GAPCVGHUbUD5Y0Ox66fFOpnRIjM2wL
+         VTyg==
+X-Forwarded-Encrypted: i=1; AHgh+Rra/ZZpWKehL2jSAYf6EnlGIPNYUun4wS/8NB7p1f6zbxJgGOyrCrzpuxym+Gum7XuD5GqL58MNUw==@vger.kernel.org
+X-Gm-Message-State: AOJu0YwEtybf2v38PVt9mK8JKuvK6u6o7+yj+z+SIzeX3zb8QW63tUIC
+	veU23p1Jr5OVkFoNe9fPjumMwMbAL5TyhNHdBhoUzdYHct58Cc+KctnvWew2WVOiKck=
+X-Gm-Gg: AfdE7cn3wD0ewY+w6qlPzoxADMMX5wsjYERt2CCxaJL4+y1trog3FsWeGtvPDvHEuEq
+	bcWpioOJM5lFjkogeTnWjmCt/Rf/sp1Dg7CN8fd6XwDKkdbg46aBqBn+KIHau2L5vTlk2FLBH7V
+	p5WkskKDD9S+PKBY85KWwjxG1n9DYjt8YwVCTdz86VhL0B9urHgnBBB7HXD1/b1kqfq4RR2TkoU
+	DldDoIF50U3K0IbpCsGIoiHfbvfmNZovtJlb2T6YUXDn/gAu0tyypPidu14tsbrVl7CJZnk76O5
+	ZuJpDhkIQ5NwB0LmYPDLOATPmLyTj8zu3JkrVsHO5Hs/cs3PQntx9qVshk9wGHkB/Zv/xFiYhAS
+	9ip0nAnrOyvfqt3ChF44PnxLz2XOh5IaT1sKi/F5AWNUSihkp1oq0hqn0Vsgokx3wlHC04w/yZI
+	crGnQiq3aplNjs
+X-Received: by 2002:a17:90b:3a81:b0:37f:e1b6:4c7d with SMTP id 98e67ed59e1d1-38dc782ab92mr15243246a91.6.1784094345259;
+        Tue, 14 Jul 2026 22:45:45 -0700 (PDT)
 Received: from localhost ([122.172.82.94])
-        by smtp.gmail.com with ESMTPSA id a92af1059eb24-13b987fc629sm48176784c88.0.2026.07.14.22.24.28
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-3117d847e17sm88482627eec.18.2026.07.14.22.45.43
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 14 Jul 2026 22:24:29 -0700 (PDT)
-Date: Wed, 15 Jul 2026 10:54:26 +0530
+        Tue, 14 Jul 2026 22:45:44 -0700 (PDT)
+Date: Wed, 15 Jul 2026 11:15:41 +0530
 From: Viresh Kumar <viresh.kumar@linaro.org>
-To: Priya Bala Govindasamy <pgovind2@uci.edu>
-Cc: rafael@kernel.org, ojeda@kernel.org, boqun@kernel.org, 
-	rust-for-linux@vger.kernel.org, linux-pm@vger.kernel.org, ardalan@uci.edu, zhiyunq@cs.ucr.edu, 
-	dzueck@uci.edu, ytan089@ucr.edu
-Subject: Re: [PATCH 1/1] rust: cpufreq: Add CPUFREQ_TABLE_END as last table
- entry in TableBuilder::to_table
-Message-ID: <64v2tabszrjrgdi4ietcj5ndmlstbdudrhen3bvzypsermnikn@xjns562yfh6y>
-References: <cover.1783548374.git.pgovind2@uci.edu>
- <833f1ca55f3709387804abe18e5759383ba7898b.1783548374.git.pgovind2@uci.edu>
+To: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>
+Cc: Dan Carpenter <error27@gmail.com>, Deepak Sikri <deepak.sikri@st.com>, 
+	"Rafael J. Wysocki" <rafael@kernel.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
+	kernel-janitors@vger.kernel.org
+Subject: Re: [PATCH v2] cpufreq: spear: Fix an IS_ERR() vs NULL bug in
+ spear1340_set_cpu_rate()
+Message-ID: <mfnihs23xwn6l5r626p7aunrxw34bizbaoka3zwromilg2znpl@jvjj3uxtwovt>
+References: <alZZzlY9rfdAvWac@stanley.mountain>
+ <a32691c8-e48d-472a-91bc-a3f4e9edb00a@oss.qualcomm.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -78,70 +78,21 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <833f1ca55f3709387804abe18e5759383ba7898b.1783548374.git.pgovind2@uci.edu>
+In-Reply-To: <a32691c8-e48d-472a-91bc-a3f4e9edb00a@oss.qualcomm.com>
 
-On 14-07-26, 20:29, Priya Bala Govindasamy wrote:
-> The `TableBuilder::to_table` function adds `Hertz(c_ulong::MAX).as_khz()` 
-> as the last frequency entry in the frequency table. 
-> But the C API expects the last entry to have frequency set to 
-> `CPUFREQ_TABLE_END` which is `~1u` as per include/linux/cpufreq.h.
+On 15-07-26, 08:10, Zhongqiu Han wrote:
+> On 7/14/2026 11:46 PM, Dan Carpenter wrote:
+> > The clk_get_parent() function doesn't return error pointers, it returns
+> > NULL on error.  Update the error checking to match.
+> > 
+> > Fixes: 420993221175 ("cpufreq: SPEAr: Add CPUFreq driver")
+> > Signed-off-by: Dan Carpenter <error27@gmail.com>
+> > ---
+> > v2: fix subsystem prefix in subject
 > 
-> Fix this by setting the last frequency entry to `CPUFREQ_TABLE_END` 
-> instead of `Hertz(c_ulong::MAX).as_khz()`.
-> 
-> ---
+> Reviewed-by: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>
 
-Did you hand edit the patch ? The above line (---) shouldn't be here. Please fix
-the commit properly and don't edit the patch once created.
-
-> Fixes: 2207856ff0bc8d953d6e89bda70b8978c2de8bab ("rust: cpufreq: Add initial abstractions for cpufreq framework")
-> Reported-by: Dylan Zueck<dzueck@uci.edu>
-> Reported-by: Yuan Tan<ytan089@ucr.edu>
-> Signed-off-by: Priya Bala Govindasamy<pgovind2@uci.edu>
-> Assisted-by: ChatGPT:gpt-5.4
-> 
->  rust/kernel/cpufreq.rs | 10 ++++++++--
->  1 file changed, 8 insertions(+), 2 deletions(-)
-> 
-> diff --git a/rust/kernel/cpufreq.rs b/rust/kernel/cpufreq.rs
-> index 58ac04c650a1..97ab97724931 100644
-> --- a/rust/kernel/cpufreq.rs
-> +++ b/rust/kernel/cpufreq.rs
-> @@ -377,8 +377,14 @@ pub fn add(&mut self, freq: Hertz, flags: u32, driver_data: u32) -> Result {
->      /// Consumes the [`TableBuilder`] and returns [`TableBox`].
->      pub fn to_table(mut self) -> Result<TableBox> {
->          // Add last entry to the table.
-> -        self.add(Hertz(c_ulong::MAX), 0, 0)?;
-> -
-> +        self.entries.push(
-> +            bindings::cpufreq_frequency_table {
-> +                flags: 0,
-> +                driver_data: 0,
-> +                frequency: bindings::CPUFREQ_TABLE_END as u32,
-> +            },
-> +            GFP_KERNEL,
-> +        )?;
->          TableBox::new(self.entries)
->      }
->  }
-
-Maybe do something like this as well:
-
-    fn push(&mut self, frequency: u32, flags: u32, driver_data: u32) -> Result {
-        Ok(self.entries.push(
-            bindings::cpufreq_frequency_table {
-                frequency,
-                flags,
-                driver_data,
-            },
-            GFP_KERNEL,
-        )?)
-    }
-
-    /// Adds a new entry to the table.
-    pub fn add(&mut self, freq: Hertz, flags: u32, driver_data: u32) -> Result {
-        self.push(freq.as_khz() as u32, flags, driver_data)
-    }
+Applied. Thanks.
 
 -- 
 viresh
