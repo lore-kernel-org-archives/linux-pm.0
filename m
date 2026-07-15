@@ -1,44 +1,37 @@
-Received: from sender4-op-o11.zoho.com (sender4-op-o11.zoho.com [136.143.188.11])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AE12F3043DB;
-	Wed, 15 Jul 2026 13:51:29 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=136.143.188.11
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1784123491; cv=pass; b=I+8qSeQJIT/+7I79+upYRktsIBuRqZyoP3X/PzHWr20daxBf0S/WJdBbxnW2Lgq0SN5214gTmtMIu7UoPCZPmZKaSBCa1+WWDjSCvhXKGdDy/Mvb/1yP8AByCV03cmo8DzRNETUA12BzkF1qPK5/W3boS6TZ6ze4Vweqj/fayi8=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1784123491; c=relaxed/simple;
-	bh=bCPLwA4kOudUqrPU5eA6lOnGtbkS3jRuiRxKZinBVW4=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:To:Cc; b=EtQ3BCWdr/lqsqhLQsRShdZMCOyJ5q/DNdBmtI3JVdLa31HCh0wMlmYxGej5IQLHE5F65LkQwtg28DvBStuARNAVBLJFMkTxcvN7z3ezfFNCvKRnf7MpBmgBVQ35pvzmMUfJfGn2peECplVgEnK+mzowSN7QyERqhkfpjezjYD0=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (1024-bit key) header.d=collabora.com header.i=nfraprado@collabora.com header.b=JGuERbjF; arc=pass smtp.client-ip=136.143.188.11
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B0CDD31E859;
+	Wed, 15 Jul 2026 13:54:07 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1784123647; cv=none; b=YIMxGZM41lQ7p01br3myfFaTnC+kIgwzGJANvRh1Qt74cW4DBKrhPkAwRlRTW6ufTUoahzoJUGca6ErEfhmRtgaYqycR7JxJjr2NL9bwSfiN6JTd2wZjmoqRdkwSj4z25Y06le4Dr/px69V+2DPoYrsOaxenz1UtNwgLq61TfVM=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1784123647; c=relaxed/simple;
+	bh=SndKUrIl65Q0YHdMMBjkX5YO+fLIisdvVTIzp4QFMcA=;
+	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=tjQfQ7Tgn78yQTzv11SttyUuApr7bqU+xtazckKl8Z4uDCpp6AOIQh4/yOT3KU/IfroUYqDA2mh+Od9jlsWoDwZARxp+bcziBgGYsRiXjSi+yQQfjPrEXrBdbLm5jFQXqtqPw4luTZ9t3px/0cDQ9zAh+LuHjFywVMUkdLnkUR0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=BR5Wo6Zi; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=collabora.com header.i=nfraprado@collabora.com header.b="JGuERbjF"
-ARC-Seal: i=1; a=rsa-sha256; t=1784123480; cv=none; 
-	d=zohomail.com; s=zohoarc; 
-	b=FUiYYmx3YCdbtnCuyly8Ci9CAzy5rzly2wV02oBSdDI5EQQr2eIB+pxnoYGqvwZRLFv9luaJKNWEcbeV3JtKsbVLrm4nmw8QfgbS2DLKqbzEYJrrU1VydIds8gJxPKDbr/sSerolvvWSo8IyJ6ecUtCNmOebaMzBm6gPmxtnRnA=
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=zohomail.com; s=zohoarc; 
-	t=1784123480; h=Content-Type:Content-Transfer-Encoding:Cc:Cc:Date:Date:From:From:MIME-Version:Message-ID:Subject:Subject:To:To:Message-Id:Reply-To; 
-	bh=LKNVMi0nMdMqvJz2LnP2SXcSswp0sRXMc6I/ZTbJ7Tg=; 
-	b=KORoZ023i46rXa/paaM8g2iikgI4Ci1oc0J9UCYCGp7FNQ3i+KGdJG0qQSHtzNi4gVUDZx7dtAD9+dOnT4Ppu4ehvi8s/4XapbbP2vE6oy89b0mTtUti3NngIW0/2Kw5tQn7aHiIrHJHDIj+PDRIYLdmYnzoZF9y3ZXNnYT5LRU=
-ARC-Authentication-Results: i=1; mx.zohomail.com;
-	dkim=pass  header.i=collabora.com;
-	spf=pass  smtp.mailfrom=nfraprado@collabora.com;
-	dmarc=pass header.from=<nfraprado@collabora.com>
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; t=1784123480;
-	s=zohomail; d=collabora.com; i=nfraprado@collabora.com;
-	h=From:From:Date:Date:Subject:Subject:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-Id:Message-Id:To:To:Cc:Cc:Reply-To;
-	bh=LKNVMi0nMdMqvJz2LnP2SXcSswp0sRXMc6I/ZTbJ7Tg=;
-	b=JGuERbjF0tfnezyJp6ImudKzhocdeyEF4yv6HhRoJS64Z9JIe6poXNkC/SVjN7t7
-	fpfepbSNBS0wSJkypMZk1v+oiF7vtZ/EHctFh5ysaS6ZXGTZ0nlbTdJtOYOAwO+8X3k
-	hPPpQ8KtXcIHT8J/CGh0ly4ENPh0GY1u5MHpmFsc=
-Received: by mx.zohomail.com with SMTPS id 1784123477985993.5621633664949;
-	Wed, 15 Jul 2026 06:51:17 -0700 (PDT)
-From: =?utf-8?q?N=C3=ADcolas_F=2E_R=2E_A=2E_Prado?= <nfraprado@collabora.com>
-Date: Wed, 15 Jul 2026 10:50:57 -0300
-Subject: [PATCH v2] PM: hibernate: Print speed statistics of
- copy_data_pages()
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="BR5Wo6Zi"
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 61BACC19425;
+	Wed, 15 Jul 2026 13:54:07 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1784123647;
+	bh=SndKUrIl65Q0YHdMMBjkX5YO+fLIisdvVTIzp4QFMcA=;
+	h=From:Subject:Date:To:Cc:Reply-To:From;
+	b=BR5Wo6ZiKp7S8y5HOpKPJvYeTGChxEX1Y7GKLZygA1GthyCVs8eNpo5zzaHwRPRHS
+	 Zby4xb69AlUmkSW5XxQFgNduGi+ohIFGqEOZXGO8zacL0M3KLFmpy+qe3X6WB5zg9c
+	 6IfkyT+3og52omwTF0BfS6EODr3nRUMLNksXqHF47fAQhycot+uf8/rmhw3zXBg+Rm
+	 n3TSB+gx2Sld614vuVYF4svE5Nast1rfhb11LksjvSYJhqiPt0TrRlLb7TNIF7f6WL
+	 Vymi/IIu7azw4nwGFX+QHIplWBllQypQ/SF21qi1rGksTRiZMTPTq2Ovvz6E0dgZBR
+	 pgfoX/BnNHQEw==
+Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4E872C44508;
+	Wed, 15 Jul 2026 13:54:07 +0000 (UTC)
+From: Nikolai Burov via B4 Relay <devnull+nikolai.burov.jolla.com@kernel.org>
+Subject: [PATCH v2 0/3] pmdomain: mediatek: Add MT6858 support
+Date: Wed, 15 Jul 2026 16:54:04 +0300
+Message-Id: <20260715-mt6858-pmdomain-v2-0-6293e87fc093@jolla.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -46,88 +39,96 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Message-Id: <20260715-copy-data-pages-show-speed-v2-1-6e30f15abcc1@collabora.com>
-X-B4-Tracking: v=1; b=H4sIAECQV2oC/x3MwQqDMAwA0F+RnA10cbPgrwwP0UbNxZZG3ET8d
- 4vHd3knmGQVg646IcuupnEtoLqCceF1FtRQDOSodf71wTGmAwNvjIlnMbQl/tCSSEA30DR4/yZ
- uGEqQskz6f/Jvf103sVFknWwAAAA=
-X-Change-ID: 20260715-copy-data-pages-show-speed-0b2fb7742a3a
-To: "Rafael J. Wysocki" <rafael@kernel.org>, 
- Pavel Machek <pavel@kernel.org>, Len Brown <lenb@kernel.org>
-Cc: kernel@collabora.com, linux-pm@vger.kernel.org, 
- linux-kernel@vger.kernel.org, 
- =?utf-8?q?N=C3=ADcolas_F=2E_R=2E_A=2E_Prado?= <nfraprado@collabora.com>
-X-Mailer: b4 0.14.3
-X-ZohoMailClient: External
+Content-Transfer-Encoding: 7bit
+X-B4-Tracking: v=1; b=H4sIAPyQV2oC/2WNwQ6CMBAFf4Xs2Zq2gQKe+A/DgZZFllBKWiQaw
+ r9bMJ48TjJv3gYBPWGAW7KBx5UCuSmCvCRg+mZ6IKM2MkguFc+FZHZRRVaw2bbONjQxLXSaKVM
+ qlWcQV7PHjl5n8V5/OTz1gGY5MofRU1icf5+Xqzi8Xz39q6+CcZZ2vNRaF1IirwY3js3VOAv1v
+ u8fY6KQ6MAAAAA=
+X-Change-ID: 20260712-mt6858-pmdomain-b1b456c96675
+To: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+ Conor Dooley <conor+dt@kernel.org>, 
+ Matthias Brugger <matthias.bgg@gmail.com>, 
+ AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>, 
+ Ulf Hansson <ulfh@kernel.org>
+Cc: Matthias Brugger <mbrugger@suse.com>, devicetree@vger.kernel.org, 
+ linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
+ linux-mediatek@lists.infradead.org, linux-pm@vger.kernel.org, 
+ Nikolai Burov <nikolai.burov@jolla.com>, 
+ Nikolai Burov <nikolai.burov+review@abscue.de>
+X-Mailer: b4 0.15.2
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1784123646; l=2497;
+ i=nikolai.burov@jolla.com; s=20260707; h=from:subject:message-id;
+ bh=SndKUrIl65Q0YHdMMBjkX5YO+fLIisdvVTIzp4QFMcA=;
+ b=GP/gTYWvBC55nTBI3qp/3X3jxAhhSE5tHraNPRtWw+Pvpd6bpDHywCmKpXmxFtlc5RfHtQU3j
+ ZJbIYEtaSdLAaFVNRT2BydqF5rKQehTqAISiXoONr/HBuL4TFuHF+2w
+X-Developer-Key: i=nikolai.burov@jolla.com; a=ed25519;
+ pk=yzpa+PD+ovHUFMIOBA9o2QqGwI110jM6hdGHLc7jtoQ=
+X-Endpoint-Received: by B4 Relay for nikolai.burov@jolla.com/20260707 with
+ auth_id=859
+X-Original-From: Nikolai Burov <nikolai.burov@jolla.com>
+Reply-To: nikolai.burov@jolla.com
 
-copy_data_pages() can take a long (multi-second) time to finish, and
-currently the only indication of that is the timestamp difference
-between print messages right before and right after. The timestamp is
-also immediately reset afterwards to the time before image creation,
-making it even harder to spot this delay. Furthermore this function runs
-in a critical section with a single CPU online and syscore suspended, so
-it should be kept as quick as possible to keep the system responsive.
+Add power domain driver support for the MediaTek Dimensity 7100 (MT6858)
+SoC. On this SoC, there are some new subsystem-specific bus protection
+blocks, which are listed here in ascending address order:
 
-Add a call to swsusp_show_speed() to report the amount of data copied,
-time taken, and copy speed of copy_data_pages() to make it easier to
-spot delays and verify performance improvements. The current time is
-obtained through local_clock() instead of ktime_get() since timekeeping
-is suspended in this region.
+- IMG_SUB0 at 0x1502f000
+- CAM_SUB1 at 0x1a00c000
+- CAM_SUB0 at 0x1a00d000
+- IPE_SUB0 at 0x1b00e000
 
-Signed-off-by: Nícolas F. R. A. Prado <nfraprado@collabora.com>
+The VLPCFG bus configuration registers at 0x1c00c000 are also new.
+
+Additionally, implement the SMC-based power sequence required for
+enabling the modem power domain on this SoC.
+
+Signed-off-by: Nikolai Burov <nikolai.burov@jolla.com>
 ---
 Changes in v2:
-- Patch split from series
-- Use local_clock() instead of sched_clock()
-- Account for total pages copied (nr_pages + nr_highmem) instead of
-  final number of pages in copy (nr_copy_pages)
+- Rebase
+- MTK_SCPD_MODEM_SECURE -> MTK_SCPD_MODEM_SECURE_PWRSEQ
+- Convert SMC command enum to defines
+- Based on the new SIMPLE_PWRSEQ changes, skip the sram_pdn stage for
+  MODEM_SECURE_PWRSEQ too since it wasn't intended to have an effect
+- Clarify that the SMC call also handles bus protection
+- Simply if/else code based on the assumption *_PWRSEQ are mutually
+  exclusive
+- Add comment explaining that PWR_STA_2ND is skipped for modem
+  (mentioned in Sashiko report)
+- Link to v1: https://patch.msgid.link/20260714-mt6858-pmdomain-v1-0-4f09bbb822e0@jolla.com
 
-v1: https://lore.kernel.org/all/20260518-hibernation-decrease-time-in-copy-data-pages-v1-1-3998bdf90ee5@collabora.com/
+To: Rob Herring <robh@kernel.org>
+To: Krzysztof Kozlowski <krzk+dt@kernel.org>
+To: Conor Dooley <conor+dt@kernel.org>
+To: Matthias Brugger <matthias.bgg@gmail.com>
+To: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
+To: Ulf Hansson <ulfh@kernel.org>
+Cc: Matthias Brugger <mbrugger@suse.com>
+Cc: devicetree@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Cc: linux-arm-kernel@lists.infradead.org
+Cc: linux-mediatek@lists.infradead.org
+Cc: linux-pm@vger.kernel.org
+
 ---
- kernel/power/snapshot.c | 9 +++++++++
- 1 file changed, 9 insertions(+)
+Nikolai Burov (3):
+      dt-bindings: power: Add MediaTek MT6858 power domain controller
+      pmdomain: mediatek: Add support for secure modem power domain control
+      pmdomain: mediatek: Add support for MT6858 SoC
 
-diff --git a/kernel/power/snapshot.c b/kernel/power/snapshot.c
-index d933b5b2c05d..42c730fadaed 100644
---- a/kernel/power/snapshot.c
-+++ b/kernel/power/snapshot.c
-@@ -13,6 +13,7 @@
- #include <linux/version.h>
- #include <linux/module.h>
- #include <linux/mm.h>
-+#include <linux/sched/clock.h>
- #include <linux/suspend.h>
- #include <linux/delay.h>
- #include <linux/bitops.h>
-@@ -2109,6 +2110,7 @@ static int swsusp_alloc(struct memory_bitmap *copy_bm,
- asmlinkage __visible int swsusp_save(void)
- {
- 	unsigned int nr_pages, nr_highmem;
-+	ktime_t start, stop;
- 
- 	pm_deferred_pr_dbg("Creating image\n");
- 
-@@ -2130,7 +2132,14 @@ asmlinkage __visible int swsusp_save(void)
- 	 * Kill them.
- 	 */
- 	drain_local_pages(NULL);
-+	start = ns_to_ktime(local_clock());
- 	nr_copy_pages = copy_data_pages(&copy_bm, &orig_bm, &zero_bm);
-+	stop = ns_to_ktime(local_clock());
-+	/*
-+	 * Zero pages are overwritten but still copied, so account for them
-+	 * in speed calculation.
-+	 */
-+	swsusp_show_speed(start, stop, nr_pages + nr_highmem, "Copied");
- 
- 	/*
- 	 * End of critical section. From now on, we can write to memory,
-
+ .../bindings/power/mediatek,power-controller.yaml  |  21 +-
+ drivers/pmdomain/mediatek/mt6858-pm-domains.h      | 466 +++++++++++++++++++++
+ drivers/pmdomain/mediatek/mtk-pm-domains.c         |  52 ++-
+ drivers/pmdomain/mediatek/mtk-pm-domains.h         |   6 +
+ include/dt-bindings/power/mediatek,mt6858-power.h  |  23 +
+ include/linux/soc/mediatek/mtk_sip_svc.h           |   3 +
+ 6 files changed, 566 insertions(+), 5 deletions(-)
 ---
 base-commit: cc2b5f627e8ccbae1188ef2d8be3e451d7f933a5
-change-id: 20260715-copy-data-pages-show-speed-0b2fb7742a3a
+change-id: 20260712-mt6858-pmdomain-b1b456c96675
 
 Best regards,
--- 
-Nícolas F. R. A. Prado <nfraprado@collabora.com>
+--  
+Nikolai Burov <nikolai.burov@jolla.com>
+
 
