@@ -1,229 +1,252 @@
-Received: from mail-yx1-f41.google.com (mail-yx1-f41.google.com [74.125.224.41])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from canpmsgout08.his.huawei.com (canpmsgout08.his.huawei.com [113.46.200.223])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8F3DB3BED59
-	for <linux-pm@vger.kernel.org>; Thu, 16 Jul 2026 09:39:31 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=74.125.224.41
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1784194774; cv=pass; b=bfL2PELkjIaLCIYS4obsZD1AFmFHVtx318vs3HMxpJ+5gaWERcT6TIesEJe00SYKeoBauENfCcGUC6U9UsfPlAWpERwQ2p4O1KV22eQXlO7uzNaKLIz48fAVN9boHtBvv8nOCyKXHIAoi3MtOGx7D7oFDVnF874PwrkzwXUCJOA=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1784194774; c=relaxed/simple;
-	bh=r+ToMI4+W+lt99JNWQfbUojCN1C49muMQY3/rKthzsg=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=AUp3uKq8SGT76uCbEC5IJVY5Nn+85pTWY9QNeC1bDYVaOkyulipU8X+kSgs7ncbEUw5OSkbovACnLoWn05f0qGVBsXrX36F+80xmGaRjCtVE0DBxFpAUJ4A1cZE63m5PrsAzyDYxeg0vBgDlxBMWzhj8ExDR4H0Gf6sHlix4Ji0=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=chromium.org; spf=pass smtp.mailfrom=chromium.org; dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b=lLFwUY7j; arc=pass smtp.client-ip=74.125.224.41
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=chromium.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=chromium.org
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7FC712E888A;
+	Thu, 16 Jul 2026 09:46:47 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=113.46.200.223
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1784195210; cv=none; b=u6hVPO4SkrgoL9l4rXuX+kDwzFAuLhZjGHC6HC5mugQzyK4ReD1mC+0EwPLwIz1QwSCpJZI/u2UX7Re9VbcZvxJ3SsC1yaLSEtB8Gm4weCvL5eLJXFTmt3+3KJKIP3BPL+34e5waOB11UBU7AtEVNu54B4/HQgfqwSlSF40VTyU=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1784195210; c=relaxed/simple;
+	bh=VRVS/GZI8z2WHs6m43fDbkGPnX/wnVTefmn1bUyi9NI=;
+	h=Message-ID:Date:MIME-Version:Subject:To:CC:References:From:
+	 In-Reply-To:Content-Type; b=PL0k0Pb/KVoalzUVOWr6T0lU8PdCYEz0yDcFImpeRueX8twGmJeRbDNzmiwtpHr2ICPL3iV31LIiqfM3K1i7ctgJOMFqO7roRpyUrMO+GylgXD/LtKmhNzh3n5YiYxrnAlgb6q7FfRktA3w0m2mAYQHZjsBv8qHSNb2KzIXpjxY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=fail (p=quarantine dis=none) header.from=huawei.com; spf=pass smtp.mailfrom=h-partners.com; dkim=pass (1024-bit key) header.d=h-partners.com header.i=@h-partners.com header.b=Bxa1ZyrO; arc=none smtp.client-ip=113.46.200.223
+Authentication-Results: smtp.subspace.kernel.org; dmarc=fail (p=quarantine dis=none) header.from=huawei.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=h-partners.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="lLFwUY7j"
-Received: by mail-yx1-f41.google.com with SMTP id 956f58d0204a3-6682b598e77so289107d50.1
-        for <linux-pm@vger.kernel.org>; Thu, 16 Jul 2026 02:39:31 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1784194770; cv=none;
-        d=google.com; s=arc-20260327;
-        b=QitVDrEmE0a8hha1q4fgzlvCY1Uzd6Nhni6jAeyfzY5j6STnBg2S8G91ND6snrfpt3
-         ZK2IgYxrWW4HkxcxiUx8zefeqXAcH69LVPeRQv4UXLZ9xPjX88bnZrjLzK4HF3tFAJsS
-         iPtPkWFHRMYgzhoWnrYeF+HmqwxOkyFcqyU5FWmt5EZ7q1o0RJKZiY+R876CdR+cBHl6
-         PzgAz0jMqkfl6ZKhdUj8EigEGmaRoNn1UO7p+Rqs05Kg3B/xJ1a2sW6TTINZky/3YEhe
-         HeAvzNyy1E2lFY/eEGWfEYwWyWXD7/Fz/IY0eiIGfGwMTtRZjuCQyHK9QbwxgzyjQ5yS
-         Aezw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=0CHRQwxG2g8NAYPuVqgPl5XkBCDxSDwrk5H6G4V1gVk=;
-        fh=JDPsujAFtegR8AY8/IVMB1prPG2EsURxIGZbIQh5WVw=;
-        b=FTnan1IOL8leJbGRscB+YVgc/0dOreAU7MOpisUsqNylIHM/PieT2D3f4R59qWAzuS
-         x3ln4UB91m/c52ZLVXip7+b2izwp2hVc8KM1YBtbhvBx8qScsy8vIqUYnXin3MmV0OCR
-         iQkz3BJ3ed1yx9yN6n8MgZ2zz7GGz6gkbW7nQI6a+IDNLiwAv5gdDghFmXkAUd8K2xq1
-         1AF0a660P0zrJ4q+zlIQpwjtKg+95quyGE5OS3IfknLh8FfPKF1PG6JQUpG0gqP0VfOi
-         Ll5Cx5EFZKMDXaLrSdi89fKKn0M3tFMYI69dtORlC4qVdkasWvE2mskuGxxCjRZV/Hg4
-         c1jQ==;
-        darn=vger.kernel.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=chromium.org; s=google; t=1784194770; x=1784799570; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=0CHRQwxG2g8NAYPuVqgPl5XkBCDxSDwrk5H6G4V1gVk=;
-        b=lLFwUY7jZl2FL45dDxrvV5aO08cC7FDULMDS/c29i2SPhEtMixURAkz+FMyJsK6m+u
-         KQQHMp6R/FPVBTm3LBVoP7iTukPr4FkKJrm1ssy/+7F9E9C8ScpfbaTIXNP414YLiDFC
-         EUEx5ovG3IaPQ3BeSCr+kKTeIyiyVTR7Lz0M4=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1784194770; x=1784799570;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=0CHRQwxG2g8NAYPuVqgPl5XkBCDxSDwrk5H6G4V1gVk=;
-        b=fkMfMlqzqyx2w7DNHcIDsWAQPXmpv5fggyiqnixbF9Jgm6YU2paMmmXfDJpo5pGeMI
-         KhkmF8182j+bgPfBSS2JpADIDwHWIUqxtkFBUSrzRFqy7iIJLL5opzJ6r/ho8O3IaqmE
-         xiLdlHdjPzQuKDVi04/ucua22Lhic0R7TJO2aHjzwFE3LhmkUkdYAGLfVw9C3+PHpaLd
-         G/4kl2Sarze2TAvZjlSktjwUl5Q4rQ1M7H77fOAn43Xz8wGxipiNESGhE5iukAEk+Akr
-         SWMTchKRaDUcwHcIoH+XuyGhHS63GgNT21/AhtrZTgeKCGdsVwN4bt3Os2p7y5cZf3OF
-         gb0Q==
-X-Forwarded-Encrypted: i=1; AHgh+Rq6A5OSoUrg10yhBp9DXqefL6UH65Ii4MgecomsRFYOiRAgBAISK0jlTtNwFtYvsz3zu6seS4dJ6g==@vger.kernel.org
-X-Gm-Message-State: AOJu0YytPnujuPCSs4nT+Rg9w9By7KGIfhcLxzm7KcszvwIK8p1QtUHJ
-	nBGG77zgU2IeSJh7rhtK5eIjPJ59CqEPD/nP2I/9mr0r9zWe3cYkIsgk1ZRuyrck2oXM5qa0qTE
-	Xd7fBH1d1UX86nuf2+H3FEvo3eer+kf/THh6TlgYQ
-X-Gm-Gg: AfdE7clFOVHBl4UCQZI3C6uuwdQfN9kaQNa9i27llTyH+4BC8p9dMEzfx/xKuqMSYGC
-	FLlIGIsxNPI+leOlAyhDJpWvmNg+jkuVoUakOyfJ9cuA/j82STAlSuaE+cxJWVSrvvivYXC6ip3
-	7Rf9xWUeJe/VgWqOh2LtKtfVe+byw/wzzvPPsdDC1ijeN4lCW/cSfbczydpqGC6RHW0YGEUsKD7
-	6jBxh2kuN/Ldm27vvLdVM3zCHDDWEgYga6c9+B5n86CUVvtDA/qGJrAVamynK0WRHo8OYKw+78W
-	AbFkei1K3zd9Cjli
-X-Received: by 2002:a53:c80e:0:b0:667:bb38:d969 with SMTP id
- 956f58d0204a3-667d7b0060amr9599454d50.16.1784194770410; Thu, 16 Jul 2026
- 02:39:30 -0700 (PDT)
+	dkim=pass (1024-bit key) header.d=h-partners.com header.i=@h-partners.com header.b="Bxa1ZyrO"
+dkim-signature: v=1; a=rsa-sha256; d=h-partners.com; s=dkim;
+	c=relaxed/relaxed; q=dns/txt;
+	h=From;
+	bh=kxvPnZOc4V5Z/IDHfLxJh518yDmoNkfjaBuhx5MIzSY=;
+	b=Bxa1ZyrO6It5GA8uSCESUOr4XutGx0Hv8qvs6V0e08ffIbBLdpHXXJHLpgfKrkeYBliVAKRKj
+	nMEO8OlI8TO96rRXFtwmLzsgNqzZ86/8re+ZMP0MsAitP7GmujFc4t4i+fhqGXt1OFFCKZmAOI0
+	FXW6aiMFSu2dcMYQkFhE48Q=
+Received: from mail.maildlp.com (unknown [172.19.163.163])
+	by canpmsgout08.his.huawei.com (SkyGuard) with ESMTPS id 4h17HS2t36zmV8f;
+	Thu, 16 Jul 2026 17:37:24 +0800 (CST)
+Received: from kwepemo100005.china.huawei.com (unknown [7.202.195.212])
+	by mail.maildlp.com (Postfix) with ESMTPS id 8A4E84048B;
+	Thu, 16 Jul 2026 17:46:43 +0800 (CST)
+Received: from [10.67.121.59] (10.67.121.59) by kwepemo100005.china.huawei.com
+ (7.202.195.212) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1544.36; Thu, 16 Jul
+ 2026 17:46:43 +0800
+Message-ID: <9ba08e86-d7ab-485d-b996-9f70d709071e@huawei.com>
+Date: Thu, 16 Jul 2026 17:46:42 +0800
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260715085348.3457359-1-wenst@chromium.org> <20260715085348.3457359-4-wenst@chromium.org>
- <aldS3qTympJuVXYj@ashevche-desk.local> <CAMRc=MfHmejks83bPfe3fKzAzFySGXk2GHMA9oZdMQj0f44eTA@mail.gmail.com>
- <CAGXv+5HGjGTrqqzJrpiQhLrCn3C6H20LXq3niPnoujQLOwgqPw@mail.gmail.com> <CAMRc=Mefxn81d0VUwmQgwFtffkL1=Er_1VQZCbC1Sa-Qph4t1w@mail.gmail.com>
-In-Reply-To: <CAMRc=Mefxn81d0VUwmQgwFtffkL1=Er_1VQZCbC1Sa-Qph4t1w@mail.gmail.com>
-From: Chen-Yu Tsai <wenst@chromium.org>
-Date: Thu, 16 Jul 2026 17:39:19 +0800
-X-Gm-Features: AUfX_mzbe7WMgo0cPdR-Yi-m3qfqJETc7DH9Y1NWKQqSMqgCgHS_ReKsQ1v2DI0
-Message-ID: <CAGXv+5G0Ffrh-8UohJuGPQ0e7KGpy11=X7t1JtDYLTJ_tZgMCA@mail.gmail.com>
-Subject: Re: [PATCH v5 03/16] power: sequencing: Add pwrseq_power_is_on()
-To: Bartosz Golaszewski <brgl@kernel.org>
-Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>, 
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Daniel Scally <djrscally@gmail.com>, 
-	Heikki Krogerus <heikki.krogerus@linux.intel.com>, 
-	Sakari Ailus <sakari.ailus@linux.intel.com>, "Rafael J. Wysocki" <rafael@kernel.org>, 
-	Danilo Krummrich <dakr@kernel.org>, Rob Herring <robh@kernel.org>, 
-	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
-	Matthias Brugger <matthias.bgg@gmail.com>, 
-	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>, 
-	Wei Deng <wei.deng@oss.qualcomm.com>, linux-acpi@vger.kernel.org, 
-	driver-core@lists.linux.dev, linux-pm@vger.kernel.org, 
-	linux-usb@vger.kernel.org, devicetree@vger.kernel.org, 
-	linux-mediatek@lists.infradead.org, linux-arm-kernel@lists.infradead.org, 
-	linux-kernel@vger.kernel.org, Manivannan Sadhasivam <mani@kernel.org>, 
-	Alan Stern <stern@rowland.harvard.edu>, 
-	Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v1 04/17] ACPI: processor: idle: Rearrange
+ acpi_processor_evaluate_lpi()
+To: "Rafael J. Wysocki" <rafael@kernel.org>, Linux PM
+	<linux-pm@vger.kernel.org>
+CC: Linux ACPI <linux-acpi@vger.kernel.org>, Sudeep Holla
+	<Sudeep.Holla@arm.com>
+References: <4746278.LvFx2qVVIh@rafael.j.wysocki>
+ <3426078.44csPzL39Z@rafael.j.wysocki>
+From: "lihuisong (C)" <lihuisong@huawei.com>
+In-Reply-To: <3426078.44csPzL39Z@rafael.j.wysocki>
+Content-Type: text/plain; charset="UTF-8"; format=flowed
+Content-Transfer-Encoding: 7bit
+X-ClientProxiedBy: kwepems500002.china.huawei.com (7.221.188.17) To
+ kwepemo100005.china.huawei.com (7.202.195.212)
 
-On Thu, Jul 16, 2026 at 4:14=E2=80=AFPM Bartosz Golaszewski <brgl@kernel.or=
-g> wrote:
+
+On 7/9/2026 8:33 PM, Rafael J. Wysocki wrote:
+> From: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
 >
-> On Thu, 16 Jul 2026 06:59:01 +0200, Chen-Yu Tsai <wenst@chromium.org> sai=
-d:
-> > On Wed, Jul 15, 2026 at 8:10=E2=80=AFPM Bartosz Golaszewski <brgl@kerne=
-l.org> wrote:
-> >>
-> >> On Wed, 15 Jul 2026 11:29:02 +0200, Andy Shevchenko
-> >> <andriy.shevchenko@linux.intel.com> said:
-> >> > On Wed, Jul 15, 2026 at 04:53:33PM +0800, Chen-Yu Tsai wrote:
-> >> >> The power sequencing consumer API already does power on state track=
-ing
-> >> >> internally. Expose the state to consumers through pwrseq_power_is_o=
-n()
-> >> >> so that they don't have to reimplement it locally.
-> >> >
-> >> > Reviewed-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-> >> >
-> >> > ...
-> >> >
-> >> >> +/**
-> >> >> + * pwrseq_power_is_on() - Queries the last requested state of the =
-power sequencer.
-> >> >> + * @desc: Descriptor referencing the power sequencer.
-> >> >> + *
-> >> >> + * This returns the last requested state of the power sequencer.
-> >> >> + *
-> >> >> + * Returns:
-> >> >> + * On success, 1 for on or desc is NULL (optional) and 0 for off;
-> >> >> + * negative error number on failure.
-> >> >
-> >> > I would rephrase it a bit.
-> >> >
-> >> >  * On success, 1 for on and 0 for off; negative error number on fail=
-ure.
-> >> >  * If desc is NULL (means optional) return 1.
-> >> >
-> >> > And this rises a question: why 1? Shouldn't it be some "unknown" sta=
-te?
-> >> > (But since Bart Acked this, this doesn't prevent the patch to go, yo=
-u
-> >> >  got my tag above.)
-> >> >
-> >>
-> >> No, this is good feedback. Maybe we should prefer an enum like so:
-> >>
-> >> enum pwrseq_state {
-> >>         PWRSEQ_POWER_UNKNOWN,
-> >>         PWRSEQ_POWER_ON,
-> >>         PWRSEQ_POWER_OFF
-> >> };
-> >
-> > Well I think the crux of it is whether the API considers the descriptor
-> > optional. The power on/off functions suggest that is the case.
-> >
+> Rearrange acpi_processor_evaluate_lpi() to make it somewhat easier to
+> follow and diagnose (if need be).  In particular:
 >
-> True. That may be an inconsistency of the API contract on my part. There'=
-s no
-> such thing as an optional variant of pwrseq_get() so perhaps pwrseq_power=
-_on()
-> and pwrseq_power_off() should be converted to returning -EINVAL on NULL
-> descriptor.
-
-OK. I guess the other resource subsystems allowed it more as a convenience
-to consumers.
-
-> > I modeled this on reset_control_status(). I believe the rationale is th=
-at
-> > if the reset control or pwrseq is optional, then either there is some
-> > other mechanism to deal with the reset (GPIO) or pwrseq (GPIO + regulat=
-or),
-> > or it's always on and operational.
-> >
-> > In such cases and the rare case where one has to query the state, the
-> > queries are possibly chained together and I think it makes sense to
-> > assume the "operational" state as the fallback.
-> >
-> > If this returns an enum, then I think the previous approach of returnin=
-g
-> > an error value for an invalid descriptor is better. One doesn't need to
-> > learn a new set of return values.
-> >
-> > I'm fine either way. I would just move the checks over to the consumer
-> > side. But I think the principles guiding the overall API design is
-> > something you need to provide:
-> >
-> >   - Is the descriptor optional? What should the action functions
-> >     (power on / off , or query status) return when NULL is given?
-> >   - Is the subsystem optional? Should the stub functions besides
-> >     pwrseq_get() return 0 instead of -ENOSYS?
-> >
-> > Right now the API feels like the descriptor is optional but the
-> > subsystem is not. One has to add IS_ENABLED(CONFIG_POWER_SEQUENCING)
-> > around the consumer API to make it an optional feature.
-> >
+>   * Rename some local variables and reorder their definitions.
 >
-> There's one more use-case where the power state trully can be *unknown*.
-> Please look at the proposed new function from Loic[1]. Here we deal with
-> targets over which linux has no direct power control even though it may s=
-till
-> control some of its dependencies. This is where an UNKNOWN state may make
-> sense.
+>   * Change the type of local variables used for storing firmware-provided
+>     values to unsigned int (they cannot be negative).
 >
-> This is where I also floated an idea of renaming pwrseq_power_on/off() to
-> pwrseq_vote_on/off() for better clarity of their purpose.
-
-OK. Would it make sense to revert to returning -EINVAL if the descriptor
-is NULL now, and then add a different error return value if !controllable
-in the future?
-
-
-Thanks
-ChenYu
-
-> Thanks,
-> Bartosz
+>   * Eliminate local variable "loop" that is redundant.
 >
-> [1] https://lore.kernel.org/all/20260710-monza-wireless-v3-3-46253587af64=
-@oss.qualcomm.com/
+>   * Avoid explicit pointer arithmetic.
+>
+>   * Print the correct number of _LPI state packages in the final debug
+>     message.
+>
+> No intentional functional impact beyond debug output.
+>
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> ---
+>   drivers/acpi/processor_idle.c | 64 +++++++++++++++++++----------------
+>   1 file changed, 34 insertions(+), 30 deletions(-)
+>
+> diff --git a/drivers/acpi/processor_idle.c b/drivers/acpi/processor_idle.c
+> index e8682f779249..cd506e9e5a84 100644
+> --- a/drivers/acpi/processor_idle.c
+> +++ b/drivers/acpi/processor_idle.c
+> @@ -872,12 +872,12 @@ static int obj_get_integer(union acpi_object *obj, u32 *value)
+>   static int acpi_processor_evaluate_lpi(acpi_handle handle,
+>   				       struct acpi_lpi_states_array *info)
+>   {
+> -	acpi_status status;
+> -	int ret = 0;
+> -	int pkg_count, state_idx = 1, loop;
+>   	struct acpi_buffer buffer = { ACPI_ALLOCATE_BUFFER, NULL };
+> -	union acpi_object *lpi_data;
+> +	union acpi_object *lpi_data, *lpi_pkg;
+> +	unsigned int lpi_pkg_count, state_idx;
+>   	struct acpi_lpi_state *lpi_state;
+> +	acpi_status status;
+> +	int ret = 0;
+>   
+>   	status = acpi_evaluate_object(handle, "_LPI", NULL, &buffer);
+>   	if (ACPI_FAILURE(status)) {
+> @@ -895,41 +895,46 @@ static int acpi_processor_evaluate_lpi(acpi_handle handle,
+>   		goto end;
+>   	}
+>   
+> -	pkg_count = lpi_data->package.elements[2].integer.value;
+> +	lpi_pkg_count = lpi_data->package.elements[2].integer.value;
+>   
+>   	/* Validate number of power states. */
+> -	if (pkg_count < 1 || pkg_count != lpi_data->package.count - 3) {
+> +	if (!lpi_pkg_count || lpi_pkg_count != lpi_data->package.count - 3) {
+>   		acpi_handle_debug(handle, "Invalid _LPI state count\n");
+>   		ret = -ENODATA;
+>   		goto end;
+>   	}
+>   
+> -	lpi_state = kzalloc_objs(*lpi_state, pkg_count);
+> +	lpi_state = kzalloc_objs(*lpi_state, lpi_pkg_count);
+>   	if (!lpi_state) {
+>   		ret = -ENOMEM;
+>   		goto end;
+>   	}
+>   
+> -	info->size = pkg_count;
+> +	info->size = lpi_pkg_count;
+>   	info->entries = lpi_state;
+>   
+> -	/* LPI States start at index 3 */
+> -	for (loop = 3; state_idx <= pkg_count; loop++, state_idx++, lpi_state++) {
+> -		union acpi_object *element, *pkg_elem, *obj;
+> +	/* _LPI State packages start at index 3. */
+> +	lpi_pkg = &lpi_data->package.elements[3];
+>   
+> -		element = &lpi_data->package.elements[loop];
+> -		if (element->type != ACPI_TYPE_PACKAGE || element->package.count < 7)
+> +	for (state_idx = 1; state_idx <= lpi_pkg_count;
+> +	     state_idx++, lpi_state++, lpi_pkg++) {
+> +		union acpi_object *lpi_pkg_elem, *obj;
+> +
+> +		lpi_state->index = state_idx;
+> +
+> +		if (lpi_pkg->type != ACPI_TYPE_PACKAGE || lpi_pkg->package.count < 7)
+>   			continue;
+
+The first place to verify the count of LPI package.
+
+>   
+> -		pkg_elem = element->package.elements;
+> +		lpi_pkg_elem = lpi_pkg->package.elements;
+>   
+> -		obj = pkg_elem + 6;
+> +		/* Get the entry method first and skip the state if that fails. */
+> +		obj = &lpi_pkg_elem[6];
+>   		if (obj->type == ACPI_TYPE_BUFFER) {
+>   			struct acpi_power_register *reg;
+>   
+>   			if (obj->buffer.length < sizeof(*reg)) {
+>   				acpi_handle_debug(handle,
+> -					"Invalid register data for _LPI state %d\n",
+> +					"Invalid register data for _LPI state %u\n",
+>   					state_idx);
+>   				continue;
+>   			}
+> @@ -937,7 +942,7 @@ static int acpi_processor_evaluate_lpi(acpi_handle handle,
+>   			reg = (struct acpi_power_register *)obj->buffer.pointer;
+>   			if (reg->space_id != ACPI_ADR_SPACE_FIXED_HARDWARE) {
+>   				acpi_handle_debug(handle,
+> -					"Unsupported entry method for _LPI state %d\n",
+> +					"Unsupported entry method for _LPI state %u\n",
+>   					state_idx);
+>   				continue;
+>   			}
+> @@ -949,36 +954,35 @@ static int acpi_processor_evaluate_lpi(acpi_handle handle,
+>   			lpi_state->address = obj->integer.value;
+>   		} else {
+>   			acpi_handle_debug(handle,
+> -					  "Invalid entry method for _LPI state %d\n",
+> +					  "Invalid entry method for _LPI state %u\n",
+>   					  state_idx);
+>   			continue;
+>   		}
+>   
+> -		lpi_state->index = state_idx;
+> -		if (obj_get_integer(pkg_elem + 0, &lpi_state->min_residency)) {
+> +		if (obj_get_integer(&lpi_pkg_elem[0], &lpi_state->min_residency)) {
+>   			acpi_handle_debug(handle,
+> -					  "Assuming 10 us min. residency for _LPI state %d\n",
+> +					  "Assuming 10 us min. residency for _LPI state %u\n",
+>   					  state_idx);
+>   			lpi_state->min_residency = 10;
+>   		}
+>   
+> -		if (obj_get_integer(pkg_elem + 1, &lpi_state->wake_latency)) {
+> +		if (obj_get_integer(&lpi_pkg_elem[1], &lpi_state->wake_latency)) {
+>   			acpi_handle_debug(handle,
+> -					  "Assuming 10 us wake latency for _LPI state %d\n",
+> +					  "Assuming 10 us wake latency for _LPI state %u\n",
+>   					  state_idx);
+>   			lpi_state->wake_latency = 10;
+>   		}
+>   
+> -		if (obj_get_integer(pkg_elem + 2, &lpi_state->flags))
+> +		if (obj_get_integer(&lpi_pkg_elem[2], &lpi_state->flags))
+>   			lpi_state->flags = 0;
+>   
+> -		if (obj_get_integer(pkg_elem + 3, &lpi_state->arch_flags))
+> +		if (obj_get_integer(&lpi_pkg_elem[3], &lpi_state->arch_flags))
+>   			lpi_state->arch_flags = 0;
+>   
+> -		if (obj_get_integer(pkg_elem + 4, &lpi_state->res_cnt_freq))
+> +		if (obj_get_integer(&lpi_pkg_elem[4], &lpi_state->res_cnt_freq))
+>   			lpi_state->res_cnt_freq = 1;
+>   
+> -		if (obj_get_integer(pkg_elem + 5, &lpi_state->enable_parent_state))
+> +		if (obj_get_integer(&lpi_pkg_elem[5], &lpi_state->enable_parent_state))
+>   			lpi_state->enable_parent_state = 0;
+>   
+>   		/* Skip elements [7-8] i.e. Residency/Usage counters. */
+> @@ -987,16 +991,16 @@ static int acpi_processor_evaluate_lpi(acpi_handle handle,
+>   		 * Avoid out-of-bounds access if the size of the package is less
+>   		 * than expected.
+>   		 */
+> -		if (element->package.count < 10)
+> +		if (lpi_pkg->package.count < 10)
+>   			continue;
+>   
+second place.
+
+I think the package count should be compared with 10 and placed at the 
+begin of the loop.
+Even the optional element in LPI package also should be define NULL 
+register or NULL string based on Spec 6.6.
+And they still occupy at least one position. For example, "State Name" 
+must be "" if platform doesn't support it.
+So this packet count is at least 10.
+> -		obj = pkg_elem + 9;
+> +		obj = &lpi_pkg_elem[9];
+>   		if (obj->type == ACPI_TYPE_STRING)
+>   			strscpy(lpi_state->desc, obj->string.pointer,
+>   				ACPI_CX_DESC_LEN);
+>   	}
+>   
+> -	acpi_handle_debug(handle, "Found %d power states\n", state_idx);
+> +	acpi_handle_debug(handle, "Found %u power states\n", lpi_pkg_count);
+>   end:
+>   	kfree(buffer.pointer);
+>   	return ret;
