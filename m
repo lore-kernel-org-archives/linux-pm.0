@@ -1,96 +1,123 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 29EAB425893
-	for <linux-pm@vger.kernel.org>; Thu, 16 Jul 2026 13:49:07 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 857D53BCD11
+	for <linux-pm@vger.kernel.org>; Thu, 16 Jul 2026 13:56:39 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1784209752; cv=none; b=kEAMFLBlu7/730gU4LXuYlcBDiTRTF5LG22g8IOv0rIelblD6rcNWQIOEJ8x93GtbKhO2Mj9rCcIwjpX0dLbg3gY8GcOxxQ3ggRH7w8z/98UWnjgj8eElVLa7643+sFGJaNK393CM4Mxlycw6dRJBU2QJEcgKpcffF9+UM+lAoA=
+	t=1784210200; cv=none; b=lXG/iGOP3+QvhgZHTYD780TlbYG0zPfZmPZNhHL3o5mfvwwuaUJGxlHA3PvXA9r0p01mNai+XaR2vkwvp25Hx7+7mPh4wrxQK6pOMIwie3MnQixR+FNE2R4lFNF+Qd83g8p4Ij2u4tbpQayoZ5a0gne3p1WQ9cbNKhg65QA+5dQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1784209752; c=relaxed/simple;
-	bh=4I+MVhRIU7iQIJVTyf8YSJmrKNVOmk7NzTfIM2UMz0I=;
-	h=MIME-Version:From:Date:Message-ID:Subject:To:Cc:Content-Type; b=UYjyEeK0R7ivsATRoICkrZHZxpt8PViGz39a1QlI8GkCERWgq4LRjOxORUEF2tm3+9BLZgLArZacUkeQPl2wl2Bou3APtrQvwnLkZIVnoMq/NcgRuuPxrOXlK9arBCPwWqvhCQAKgoZdRRdQz4yht/fvdPrvq4B8xQm/SX3Qfv0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=eT21gHpD; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1784210200; c=relaxed/simple;
+	bh=0DmqgbykD9XUoj6tr6kuvFA55tWPg05MCrVhBbT8GsE=;
+	h=From:In-Reply-To:MIME-Version:References:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=Hjbg3X9o3MvoROaEsGacI+5Gc1dVu6+EMWxeXhxBScgPkwQmUzbjfk0AFMS3FZy64gruzZdwArdxSWijfEaNup8a4tkd9BF810ZQYyWZ6tYZriEyKiXpC+VaGrj4PXWVuEz0AWvoCEFszLwA2ztVfPaHKtZJWtzyn0C3r0SrZi8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=POV7mxJa; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="eT21gHpD"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 432E11F00ACF
-	for <linux-pm@vger.kernel.org>; Thu, 16 Jul 2026 13:49:04 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="POV7mxJa"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 451AA1F00ACF
+	for <linux-pm@vger.kernel.org>; Thu, 16 Jul 2026 13:56:39 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1784209744;
-	bh=F0UKs47fMN7XsjPxqfqpp7DxGH6fNF2X342DBXM8ZyA=;
-	h=From:Date:Subject:To:Cc;
-	b=eT21gHpDVjBPcaEW5AraX1+fRnN7lWuquYKLkSuaZOAVksCCUbMLMTSjCu26mOol2
-	 35+/6ZQyoRzCgmgZERbUhBTRjE/6dSo5vcQ/eOK/TC4TUiHDzWpWZnbdpnaZ8JJRkU
-	 nnMHCa0LcFOUusyWwxC7t1xRQz4cuRoiP6OPN+C2KzEzZbiXSHRlg6Arhw9nizV5eH
-	 HLkxpYtCXkSkcts1ArG+uVKL/djHt1hZshHA8OLIm9CmpxQDtEBB2esLRfZ9Y6+JDo
-	 tETn71EarS+eq+JHUlkC5w1UMtFtpTSSLHgkn9bFSXtXd/FkbB3kp2hyTawoh4luzE
-	 Ms0bB3A1yKqDA==
-Received: by mail-lf1-f51.google.com with SMTP id 2adb3069b0e04-5b14d1f9315so5064060e87.2
-        for <linux-pm@vger.kernel.org>; Thu, 16 Jul 2026 06:49:04 -0700 (PDT)
-X-Gm-Message-State: AOJu0YzmVUYSc2vGFQKPgCDFB1CiaXUJ4ZpcDnArVER5N0+bK/O8PNJS
-	DjWhLqTAjz9z51IdipP20OE3+OMpFsD5CX9RZRQX1GXwh0twC4CbLe1QW22yKB5Yk4pxWNV61ST
-	yU4kE2Zfay54RN/PSjAy8FIAGvjySfQE=
-X-Received: by 2002:ac2:531c:0:b0:5ae:a995:c16c with SMTP id
- 2adb3069b0e04-5b15827ef3cmr1974863e87.27.1784209742624; Thu, 16 Jul 2026
- 06:49:02 -0700 (PDT)
+	s=k20260515; t=1784210199;
+	bh=mwOeiH6TQ8hwAzWbwmnJz/CIz4T49YDiQFjUY/QfsyQ=;
+	h=From:In-Reply-To:References:Date:Subject:To:Cc;
+	b=POV7mxJaOIibLP31szhb/xovSeQID8SQf5snSkkCOXVX3axwodvxoYOtwNoKUAhMg
+	 vki32sAf9pnnnH59Y7Kg+T+eaPSfi7BYj6Gp+gY261B+eHPTIWc75mCVn1fNlVwm6d
+	 u4KyNCjKVFNotIrP+gcxSd4MDc1riEEKEYXOexKTu0O/bh+Eb227QwKziHH7FOqxXE
+	 LKpCJfD1ldDGWJQerYBZwLIKOZVcY1mNATcFgTVjECxhaf+2lCShwcpRq0hh6kXIRj
+	 C6QsC/p3b8jgElwuGW7pL31W0tdUrlSFtIIPENdJy1fXyKece86c8ghkWf9gJCkwrP
+	 8uIJBKVl4T1lw==
+Received: by mail-lj1-f181.google.com with SMTP id 38308e7fff4ca-39b3931e259so60816021fa.2
+        for <linux-pm@vger.kernel.org>; Thu, 16 Jul 2026 06:56:39 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AHgh+RotMEnwDxSvkyT9qux9ZEMfq31vCzm0dm3GKYcEz31I0mVSHW/DtZxzFT9Uij1vtNN9VX0BGoZK9A==@vger.kernel.org
+X-Gm-Message-State: AOJu0YxPu9ax9TPb314b6iLfc7JTUeEWrfogbj8utIvjwECchvlhS7NM
+	l12sXSzbCKTAU4Sz7QGhjNHD/IBPkVtpuHCvxgu6GIl89dgAxBP3U8VXoeX988X8B0vCVtjI+0w
+	ytdD2Tzsd+0xxh8JPpZOOFqAy8C/9WWerKLUVVGD2Zg==
+X-Received: by 2002:a2e:a541:0:b0:39c:6e84:99b6 with SMTP id
+ 38308e7fff4ca-39db6c29ecemr15216291fa.23.1784210197958; Thu, 16 Jul 2026
+ 06:56:37 -0700 (PDT)
+Received: from 969154062570 named unknown by gmailapi.google.com with
+ HTTPREST; Thu, 16 Jul 2026 06:56:36 -0700
+Received: from 969154062570 named unknown by gmailapi.google.com with
+ HTTPREST; Thu, 16 Jul 2026 06:56:36 -0700
+From: Bartosz Golaszewski <brgl@kernel.org>
+In-Reply-To: <20260709-fix-hamoa-m2-w-disable2-v1-2-5e725091266a@oss.qualcomm.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-From: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
-Date: Thu, 16 Jul 2026 15:48:50 +0200
-X-Gmail-Original-Message-ID: <CAJZ5v0hDM05rLL869aAZ+JSd_7VJW1zC88CgrrRb=X28UqeNhQ@mail.gmail.com>
-X-Gm-Features: AUfX_mx0Vn05EiX5FGYAMKsa7ck3QOwnL4aPPSjx69pVsa-zoci4RqqobEUFCC8
-Message-ID: <CAJZ5v0hDM05rLL869aAZ+JSd_7VJW1zC88CgrrRb=X28UqeNhQ@mail.gmail.com>
-Subject: [GIT PULL] Power management fixes for 7.2-rc4
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Linux PM <linux-pm@vger.kernel.org>, 
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>
+References: <20260709-fix-hamoa-m2-w-disable2-v1-0-5e725091266a@oss.qualcomm.com>
+ <20260709-fix-hamoa-m2-w-disable2-v1-2-5e725091266a@oss.qualcomm.com>
+Date: Thu, 16 Jul 2026 06:56:36 -0700
+X-Gmail-Original-Message-ID: <CAMRc=MeowD++93_eaYSBp0mKoY0nRROLFncLP6Ec_TdJn3jJEg@mail.gmail.com>
+X-Gm-Features: AUfX_mzmx9GeLm3op_lLrefZoDCe5e4VmjadrLm9lyfOJ48w2ivaJ_TPEAAX-dk
+Message-ID: <CAMRc=MeowD++93_eaYSBp0mKoY0nRROLFncLP6Ec_TdJn3jJEg@mail.gmail.com>
+Subject: Re: [PATCH 2/3] power: sequencing: pcie-m2: Match WCN6855 and WCN7851
+ UART BT variants by subdevice ID
+To: Wei Deng <wei.deng@oss.qualcomm.com>
+Cc: linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org, 
+	linux-pm@vger.kernel.org, mengshi.wu@oss.qualcomm.com, 
+	Bjorn Andersson <andersson@kernel.org>, Konrad Dybcio <konradybcio@kernel.org>, 
+	Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
+	Manivannan Sadhasivam <mani@kernel.org>, Bartosz Golaszewski <brgl@kernel.org>
 Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Hi Linus,
+On Thu, 9 Jul 2026 09:29:41 +0200, Wei Deng <wei.deng@oss.qualcomm.com> sai=
+d:
+> The WCN6855 and WCN7851 combo chips are available in M.2 card variants
+> that differ by their BT interface: some expose BT over UART while others
+> expose BT over USB. Both variants use the same PCIe device ID for the
+> WiFi interface, distinguished only by their sub-system device ID.
+>
+> The bare PCI_DEVICE() entries match all sub-system IDs, so both UART and
+> USB variants hit the same table entry and trigger UART serdev creation.
+> For USB variants this is wrong =E2=80=94 there is no UART BT interface on=
+ such
+> a card, and the serdev probe will fail.
+>
+> Narrow the matches to UART variants only by using PCI_DEVICE_SUB with
+> their respective sub-system IDs. USB variants no longer match the table
+> and will be handled separately to deassert W_DISABLE2# for USB BT
+> enumeration.
+>
+> Signed-off-by: Wei Deng <wei.deng@oss.qualcomm.com>
+> ---
+>  drivers/power/sequencing/pwrseq-pcie-m2.c | 6 ++++--
+>  1 file changed, 4 insertions(+), 2 deletions(-)
+>
+> diff --git a/drivers/power/sequencing/pwrseq-pcie-m2.c b/drivers/power/se=
+quencing/pwrseq-pcie-m2.c
+> index 83fe6a1396bc..cf51122d54fd 100644
+> --- a/drivers/power/sequencing/pwrseq-pcie-m2.c
+> +++ b/drivers/power/sequencing/pwrseq-pcie-m2.c
+> @@ -191,9 +191,11 @@ static const struct pci_device_id pwrseq_m2_pci_ids[=
+] =3D {
+>  	  .driver_data =3D (kernel_ulong_t)"nxp,88w8987-bt" },
+>  	{ PCI_DEVICE_SUB(PCI_VENDOR_ID_QCOM, 0x1103, PCI_VENDOR_ID_QCOM, 0x0108=
+),
+>  	  .driver_data =3D (kernel_ulong_t)"qcom,qca2066-bt" },
+> -	{ PCI_DEVICE(PCI_VENDOR_ID_QCOM, 0x1103),
+> +	{ PCI_DEVICE_SUB(PCI_VENDOR_ID_QCOM, 0x1103, PCI_VENDOR_ID_FOXCONN, 0xe=
+105),
+>  	  .driver_data =3D (kernel_ulong_t)"qcom,wcn6855-bt" },
+> -	{ PCI_DEVICE(PCI_VENDOR_ID_QCOM, 0x1107),
+> +	{ PCI_DEVICE_SUB(PCI_VENDOR_ID_QCOM, 0x1103, PCI_VENDOR_ID_QCOM, 0x337e=
+),
+> +	  .driver_data =3D (kernel_ulong_t)"qcom,wcn6855-bt" },
+> +	{ PCI_DEVICE_SUB(PCI_VENDOR_ID_QCOM, 0x1107, PCI_VENDOR_ID_QCOM, 0x337c=
+),
+>  	  .driver_data =3D (kernel_ulong_t)"qcom,wcn7850-bt" },
+>  	{ PCI_DEVICE(PCI_VENDOR_ID_QCOM, 0x1112),
+>  	  .driver_data =3D (kernel_ulong_t)"qcom,qcc2072-bt" },
+>
+> --
+> 2.34.1
+>
+>
 
-Please pull from the tag
+Do you want me to queue this independently from patch 3/3?
 
- git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
- pm-7.2-rc4
-
-with top-most commit d2d5c129d07ea8eb91cd8a8633b5774116c4d171
-
- cpufreq: Make cpufreq_update_pressure() fall back to cpuinfo.max_freq
-
-on top of commit 8cdeaa50eae8dad34885515f62559ee83e7e8dda
-
- Linux 7.2-rc2
-
-to receive power management fixes for 7.2-rc4.
-
-These fix two cpufreq issues, one in the intel_pstate driver and one in
-the core:
-
- - Make cpufreq_update_pressure() use cpuinfo.max_freq as the default
-   reference frequency when arch_scale_freq_ref() returns 0 to allow
-   the scheduler to still take CPU frequency caps into account in those
-   cases (Rafael Wysocki)
-
- - Use the HWP guaranteed performance level as the full capacity
-   performance in intel_pstate on hybrid systems when turbo frequencies
-   are not allowed to be used to make scale-invariance work as expected
-   in those cases (Rafael Wysocki)
-
-Thanks!
-
-
----------------
-
-Rafael J. Wysocki (2):
-      cpufreq: intel_pstate: Set non-turbo capacity to HWP_GUARANTEED_PERF()
-      cpufreq: Make cpufreq_update_pressure() fall back to cpuinfo.max_freq
-
----------------
-
- drivers/cpufreq/cpufreq.c      | 3 +++
- drivers/cpufreq/intel_pstate.c | 6 ++++--
- 2 files changed, 7 insertions(+), 2 deletions(-)
+Bart
