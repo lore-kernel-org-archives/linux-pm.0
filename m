@@ -1,126 +1,96 @@
-Received: from mail-wr1-f49.google.com (mail-wr1-f49.google.com [209.85.221.49])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5DBE741F7C9
-	for <linux-pm@vger.kernel.org>; Thu, 16 Jul 2026 13:26:21 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.49
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 29EAB425893
+	for <linux-pm@vger.kernel.org>; Thu, 16 Jul 2026 13:49:07 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1784208383; cv=none; b=GauXpcC+xlPkBQZMs/sUfDbGRbMA+psZaKcilEdNGtYS0DomzNSnRktq4xyc7x+iB5ehMOrA2GDhmSWdbOzeqFqwzOgPhTOJGAXLit3iN9TqRzlFBXsFXQiGmKK+4Qly9LyJikiBKUpB0Wr0n3boj1rQcVc0bIoBrISOE32iglk=
+	t=1784209752; cv=none; b=kEAMFLBlu7/730gU4LXuYlcBDiTRTF5LG22g8IOv0rIelblD6rcNWQIOEJ8x93GtbKhO2Mj9rCcIwjpX0dLbg3gY8GcOxxQ3ggRH7w8z/98UWnjgj8eElVLa7643+sFGJaNK393CM4Mxlycw6dRJBU2QJEcgKpcffF9+UM+lAoA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1784208383; c=relaxed/simple;
-	bh=NHARLWYGn7PxNM5VybiPt8610aUjwy8ufPU3G4O7DKc=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=DTzV/JkLdBNbpZxu+K2xiFxkLOEiUQK1l03fYgSb1ntY5mBpe6UwD9ejkLidvcLF3l6jHuMnaLqAw62d9v+MVCJXf9ElnCewd8HCjfuP68pLvtQ5CS69RKPt5Izl6raue3aEB6o8jMHh675eh6Li1P5DxPnrCWAvhxfjjW/XomY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com; spf=pass smtp.mailfrom=baylibre.com; dkim=pass (2048-bit key) header.d=baylibre.com header.i=@baylibre.com header.b=mCjg2nd2; arc=none smtp.client-ip=209.85.221.49
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=baylibre.com
+	s=arc-20240116; t=1784209752; c=relaxed/simple;
+	bh=4I+MVhRIU7iQIJVTyf8YSJmrKNVOmk7NzTfIM2UMz0I=;
+	h=MIME-Version:From:Date:Message-ID:Subject:To:Cc:Content-Type; b=UYjyEeK0R7ivsATRoICkrZHZxpt8PViGz39a1QlI8GkCERWgq4LRjOxORUEF2tm3+9BLZgLArZacUkeQPl2wl2Bou3APtrQvwnLkZIVnoMq/NcgRuuPxrOXlK9arBCPwWqvhCQAKgoZdRRdQz4yht/fvdPrvq4B8xQm/SX3Qfv0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=eT21gHpD; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=baylibre.com header.i=@baylibre.com header.b="mCjg2nd2"
-Received: by mail-wr1-f49.google.com with SMTP id ffacd0b85a97d-4759b4f0897so1891682f8f.1
-        for <linux-pm@vger.kernel.org>; Thu, 16 Jul 2026 06:26:21 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=baylibre.com; s=google; t=1784208379; x=1784813179; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:mime-version:message-id:date
-         :subject:cc:to:from:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=ZFzMVT/fxpUw3oGY/5v1mJvn+DMLkKwLSq2ofWAuoMc=;
-        b=mCjg2nd20F/THMiI32AQHvA6G36LBSAh0bfIYFHT6ndBY9LY0Zzx6T3Xy90YRRsGsR
-         e6O2YFey7cmcn5AqvznXOHhdn0mp4Wuhg1+e0NXBUmCBWQAkVJDKqSfFyLmSLsPHu6Fy
-         GRV/1kA/eJzGl7SaC5z8aCnCnPp5R78O7KOQ/YHzULEEM4iDqxIvn7IpvRV5VEKHPsKl
-         mJkn1mOjUTl2Jmagwyc7XVg/pbXWToeTba9N0Kgk038XYPyC4MPCgHF5KzW7FegsbqAF
-         uZkxkogkbs/w4HA4uGxfGv5YWI5i3UgOYWR3RaimQJoXhI3nWJsNPeFPag5bzhLfoYxH
-         tQEA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1784208379; x=1784813179;
-        h=content-transfer-encoding:content-type:mime-version:message-id:date
-         :subject:cc:to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=ZFzMVT/fxpUw3oGY/5v1mJvn+DMLkKwLSq2ofWAuoMc=;
-        b=DY9gbxHYRRYFv+U5MXJzUBcelg0/VvYJ5iGL0m7kRjHAYVMb+Ssmrl+6AIu5Zvf7S+
-         dAj0IaWsMZMchzlHaWrTyWxsNVnXtPIKAm3J0yxYOjAw124i+RfJpkRtWVGd3DLChfbk
-         tW+9oT0NyZDg/P9pcci+FiriajLuw4dqMa/noM8D24GHrNnU1ccStXBrB7OiF5R2EIdU
-         71o0vfJDX8AdI3aNpltfHOHPc9a9iWXnw6UAciNwaBqvqGhzz1k076s+Z9gHdtBkSCjm
-         eHuYqh2aZRsuYa+m9FDUsfwTjRS93NkdYjT+g45JljFS/hq3GOFNVJUBLYD7HDVktTg7
-         ud3A==
-X-Forwarded-Encrypted: i=1; AHgh+RqnpA7mq0GvXahgfQw8oWZpBsZb9SjoxfxGNvO0OSxjMaHciOOmXOt4pr73TN8wOcNKoBkZeW1xsw==@vger.kernel.org
-X-Gm-Message-State: AOJu0YyYcNAO+ktLwvg+4xWEc7jsYOa2dPGdfHGKqr6UCVsBacsa/kJB
-	AcOAdQBf5y8ZJuEo9xmpRi+86BeqOVNDAItZVEIdH6loy59T5iha7mHEpFtgNhZhNHU=
-X-Gm-Gg: AfdE7cnbq9I/AKbmoQ6yIV2XEXiUK8cfgGZxewJMeNNcbTzKBKdxP1AZ/Jm2ZT7VHAP
-	jth+RqLhXNNThrNLtKmzx4HIX4a2sJ58Hd6dpztnR6pVmXkkWfpizhSpD4paIoLf8Tq3qrl3Csp
-	Y2UeInwt3WyYB7fwX3AZVIZRjFZz0mbHQDMRsEeci7KkcS9xYpJ0Uk4KYGnxJynxGE0G+FWccvx
-	vQBDKW21oDeApGCNmdY/XcZR9ZrtYylFE2K5IiBcVSvjdKKSAd7F2of6Tm5QmM3lESWth/qZjA3
-	PKDUSUurJvmAsMxwKBrCvaeRts/PJaErLJpi2qPLprgbXAYWrLZgp82xcuPHd58j6Kw61sfPF65
-	9PzpT1ydo8Qa2J9TEigYY317W7l9RRbzVVwjCoFHgk6FVyrLir49rmCbTydCgZwZ+Xfd3QTliSn
-	V4x33a0jZBrfYJ9eRtZqmwFhsuLQPnM0U43+8USt5miN9t5avDbW76/Xc9GvsX6lqRRg==
-X-Received: by 2002:a05:6000:4020:b0:474:d7a5:4b7a with SMTP id ffacd0b85a97d-47f2dcd7881mr26682749f8f.28.1784208379566;
-        Thu, 16 Jul 2026 06:26:19 -0700 (PDT)
-Received: from localhost (p200300f65f47db046a548a0537ec1e67.dip0.t-ipconnect.de. [2003:f6:5f47:db04:6a54:8a05:37ec:1e67])
-        by smtp.gmail.com with UTF8SMTPSA id ffacd0b85a97d-47f4635c86csm24865590f8f.16.2026.07.16.06.26.18
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 16 Jul 2026 06:26:19 -0700 (PDT)
-From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <u.kleine-koenig@baylibre.com>
-To: Ulf Hansson <ulfh@kernel.org>,
-	Frank Li <Frank.Li@nxp.com>,
-	Sascha Hauer <s.hauer@pengutronix.de>
-Cc: Pengutronix Kernel Team <kernel@pengutronix.de>,
-	Fabio Estevam <festevam@gmail.com>,
-	Peng Fan <peng.fan@nxp.com>,
-	Xu Yang <xu.yang_2@nxp.com>,
-	Ming Qian <ming.qian@oss.nxp.com>,
-	Jacky Bai <ping.bai@nxp.com>,
-	linux-pm@vger.kernel.org,
-	imx@lists.linux.dev,
-	linux-arm-kernel@lists.infradead.org,
-	linux-kernel@vger.kernel.org
-Subject: [PATCH] pmdomain: imx8m{p,}-blk-ctrl: Add MODULE_DESCRIPTION
-Date: Thu, 16 Jul 2026 15:26:03 +0200
-Message-ID: <20260716132603.2327847-2-u.kleine-koenig@baylibre.com>
-X-Mailer: git-send-email 2.47.3
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="eT21gHpD"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 432E11F00ACF
+	for <linux-pm@vger.kernel.org>; Thu, 16 Jul 2026 13:49:04 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1784209744;
+	bh=F0UKs47fMN7XsjPxqfqpp7DxGH6fNF2X342DBXM8ZyA=;
+	h=From:Date:Subject:To:Cc;
+	b=eT21gHpDVjBPcaEW5AraX1+fRnN7lWuquYKLkSuaZOAVksCCUbMLMTSjCu26mOol2
+	 35+/6ZQyoRzCgmgZERbUhBTRjE/6dSo5vcQ/eOK/TC4TUiHDzWpWZnbdpnaZ8JJRkU
+	 nnMHCa0LcFOUusyWwxC7t1xRQz4cuRoiP6OPN+C2KzEzZbiXSHRlg6Arhw9nizV5eH
+	 HLkxpYtCXkSkcts1ArG+uVKL/djHt1hZshHA8OLIm9CmpxQDtEBB2esLRfZ9Y6+JDo
+	 tETn71EarS+eq+JHUlkC5w1UMtFtpTSSLHgkn9bFSXtXd/FkbB3kp2hyTawoh4luzE
+	 Ms0bB3A1yKqDA==
+Received: by mail-lf1-f51.google.com with SMTP id 2adb3069b0e04-5b14d1f9315so5064060e87.2
+        for <linux-pm@vger.kernel.org>; Thu, 16 Jul 2026 06:49:04 -0700 (PDT)
+X-Gm-Message-State: AOJu0YzmVUYSc2vGFQKPgCDFB1CiaXUJ4ZpcDnArVER5N0+bK/O8PNJS
+	DjWhLqTAjz9z51IdipP20OE3+OMpFsD5CX9RZRQX1GXwh0twC4CbLe1QW22yKB5Yk4pxWNV61ST
+	yU4kE2Zfay54RN/PSjAy8FIAGvjySfQE=
+X-Received: by 2002:ac2:531c:0:b0:5ae:a995:c16c with SMTP id
+ 2adb3069b0e04-5b15827ef3cmr1974863e87.27.1784209742624; Thu, 16 Jul 2026
+ 06:49:02 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1475; i=u.kleine-koenig@baylibre.com; h=from:subject; bh=NHARLWYGn7PxNM5VybiPt8610aUjwy8ufPU3G4O7DKc=; b=owEBbQGS/pANAwAKAY+A+1h9Ev5OAcsmYgBqWNvr7p362KrSgGq/MwLyX8ePENAWBwuUho0S1 lBUfqJ+5pyJATMEAAEKAB0WIQQ/gaxpOnoeWYmt/tOPgPtYfRL+TgUCaljb6wAKCRCPgPtYfRL+ ThA4B/9DIt4u0eyuHj/nw4Z16VgiLTd8MFcgifqNi2C8wE6iMPf1Zrnp0omeMA/j5+vNpgbrl1b 4kV0Lnmg20mwZG+5yg7Ql0i/JqOSnv7SsM1fuhOHM19Hj8Gma+5H8Rk9T8aZtgxA05fXFrRJrRY wHgH3WWKLd6+TTw/qQHH+Bur8l+ACjmM4uKMH5t/5HmbwkrIQ8MlVVS6ETk8MwfWSVeq9cOjFHq nxA8HWCFjQBuoQQBICzPidpgeR5Lx+otFs9lV6TzFmz2vYRuOg0x0D7q/Ar8H267Ztm8rJFHFPZ A4FQIv2xwLveDoTdFYFpyClqJUquC1pZUib48KBQZ468YQ9F
-X-Developer-Key: i=u.kleine-koenig@baylibre.com; a=openpgp; fpr=0D2511F322BFAB1C1580266BE2DCDD9132669BD6
-Content-Transfer-Encoding: 8bit
+From: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
+Date: Thu, 16 Jul 2026 15:48:50 +0200
+X-Gmail-Original-Message-ID: <CAJZ5v0hDM05rLL869aAZ+JSd_7VJW1zC88CgrrRb=X28UqeNhQ@mail.gmail.com>
+X-Gm-Features: AUfX_mx0Vn05EiX5FGYAMKsa7ck3QOwnL4aPPSjx69pVsa-zoci4RqqobEUFCC8
+Message-ID: <CAJZ5v0hDM05rLL869aAZ+JSd_7VJW1zC88CgrrRb=X28UqeNhQ@mail.gmail.com>
+Subject: [GIT PULL] Power management fixes for 7.2-rc4
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Linux PM <linux-pm@vger.kernel.org>, 
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>
+Content-Type: text/plain; charset="UTF-8"
 
-Without a module description modpost emits a build warning:
+Hi Linus,
 
-	WARNING: modpost: missing MODULE_DESCRIPTION() in drivers/pmdomain/imx/imx8m-blk-ctrl.o
-	WARNING: modpost: missing MODULE_DESCRIPTION() in drivers/pmdomain/imx/imx8mp-blk-ctrl.o
+Please pull from the tag
 
-So add the required string to these two drivers.
+ git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
+ pm-7.2-rc4
 
-Signed-off-by: Uwe Kleine-König <u.kleine-koenig@baylibre.com>
----
- drivers/pmdomain/imx/imx8m-blk-ctrl.c  | 1 +
- drivers/pmdomain/imx/imx8mp-blk-ctrl.c | 1 +
- 2 files changed, 2 insertions(+)
+with top-most commit d2d5c129d07ea8eb91cd8a8633b5774116c4d171
 
-diff --git a/drivers/pmdomain/imx/imx8m-blk-ctrl.c b/drivers/pmdomain/imx/imx8m-blk-ctrl.c
-index 99d100e1d923..479789009c7f 100644
---- a/drivers/pmdomain/imx/imx8m-blk-ctrl.c
-+++ b/drivers/pmdomain/imx/imx8m-blk-ctrl.c
-@@ -953,4 +953,5 @@ static struct platform_driver imx8m_blk_ctrl_driver = {
- 	},
- };
- module_platform_driver(imx8m_blk_ctrl_driver);
-+MODULE_DESCRIPTION("NXP i.MX8M power domain driver");
- MODULE_LICENSE("GPL");
-diff --git a/drivers/pmdomain/imx/imx8mp-blk-ctrl.c b/drivers/pmdomain/imx/imx8mp-blk-ctrl.c
-index 3f5b9499d30a..d255c20f58e2 100644
---- a/drivers/pmdomain/imx/imx8mp-blk-ctrl.c
-+++ b/drivers/pmdomain/imx/imx8mp-blk-ctrl.c
-@@ -890,4 +890,5 @@ static struct platform_driver imx8mp_blk_ctrl_driver = {
- 	},
- };
- module_platform_driver(imx8mp_blk_ctrl_driver);
-+MODULE_DESCRIPTION("NXP i.MX8MP power domain driver");
- MODULE_LICENSE("GPL");
+ cpufreq: Make cpufreq_update_pressure() fall back to cpuinfo.max_freq
 
-base-commit: b8809969e1d7a591e0f49dd464a5d04b3cf02ab1
--- 
-2.55.0.11.g153666a7d9bb
+on top of commit 8cdeaa50eae8dad34885515f62559ee83e7e8dda
 
+ Linux 7.2-rc2
+
+to receive power management fixes for 7.2-rc4.
+
+These fix two cpufreq issues, one in the intel_pstate driver and one in
+the core:
+
+ - Make cpufreq_update_pressure() use cpuinfo.max_freq as the default
+   reference frequency when arch_scale_freq_ref() returns 0 to allow
+   the scheduler to still take CPU frequency caps into account in those
+   cases (Rafael Wysocki)
+
+ - Use the HWP guaranteed performance level as the full capacity
+   performance in intel_pstate on hybrid systems when turbo frequencies
+   are not allowed to be used to make scale-invariance work as expected
+   in those cases (Rafael Wysocki)
+
+Thanks!
+
+
+---------------
+
+Rafael J. Wysocki (2):
+      cpufreq: intel_pstate: Set non-turbo capacity to HWP_GUARANTEED_PERF()
+      cpufreq: Make cpufreq_update_pressure() fall back to cpuinfo.max_freq
+
+---------------
+
+ drivers/cpufreq/cpufreq.c      | 3 +++
+ drivers/cpufreq/intel_pstate.c | 6 ++++--
+ 2 files changed, 7 insertions(+), 2 deletions(-)
