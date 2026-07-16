@@ -1,60 +1,62 @@
-Received: from mail-pl1-f174.google.com (mail-pl1-f174.google.com [209.85.214.174])
+Received: from mail-pl1-f170.google.com (mail-pl1-f170.google.com [209.85.214.170])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E58ED370AFD
-	for <linux-pm@vger.kernel.org>; Thu, 16 Jul 2026 17:17:52 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.174
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8A11B43E079
+	for <linux-pm@vger.kernel.org>; Thu, 16 Jul 2026 17:18:01 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.170
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1784222276; cv=none; b=Q6AMRUtkMLG10UX8U5ZLwNTYb6bY2U1ENCFGRHStwqskdVvnWakM/2DXptfPE6ekmTqb5mBL2AqIAizLMt2xFChO+IQgSdISjMPkDBQFqRcIEp6IpdAds+mq2xMue0Ig/OUb839O69+CY4RnMHeKi/xB4VnI06Z86tMZ1k+CehE=
+	t=1784222287; cv=none; b=UNoQglfoZFmQ4xTLRVgfbp/55xiWE5rmbL7XhMZqxqjnJMimR3MyrqvHoFSurwo2Y50yD24ELOk21dNz0RQubjSQRtfSvW0vIyne60px3nuod1BP9i08XXc0D/jjklZjvtlK6fAuVxm9P3twrWuWuFYikJk98E1RpLKfjS5aaM0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1784222276; c=relaxed/simple;
-	bh=C3uQ3uiN7BajvYBUPArlf4lAnkFjTThYqlRS3waqqdw=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=dVrQciBlg1NDB0oKuiaYzViK9D6pqPC3Z5x5C7Mu+sqWv+RzIJObnzFga/nPQ6k39n3QOobmGoFjNM/MuyuCtJjosvbDjf/zpHYbglqewUi/3rmt2X7/4SSxXd49S/oiBPqI6emeXItlSUXVFEqz7f0vwfGutSHBKO+UTDMPOdw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=gTc+eSqr; arc=none smtp.client-ip=209.85.214.174
+	s=arc-20240116; t=1784222287; c=relaxed/simple;
+	bh=Y8Yhg9LDZgOOn4IYBYFpDiXxdAtcDCdbUesWkE9/tns=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=ukVbnjj0/V78xApwYjM2A13B1WQ36culnmIIRXMyW7NN4GUCtb4Ryxr6cFnYDi9PIxNKsvBKVIxcR/w/n8f0+VJtHGsaaaGHemt4XcS29BQdHtN+ZZGkm7SU+cd00f1wOGzFFtJkrgAzNoHHPebznrU95CSuR809lvGsrkIuDXM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=hCdB7emv; arc=none smtp.client-ip=209.85.214.170
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="gTc+eSqr"
-Received: by mail-pl1-f174.google.com with SMTP id d9443c01a7336-2ceab75934dso68538105ad.2
-        for <linux-pm@vger.kernel.org>; Thu, 16 Jul 2026 10:17:51 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="hCdB7emv"
+Received: by mail-pl1-f170.google.com with SMTP id d9443c01a7336-2ceab75934dso68539375ad.2
+        for <linux-pm@vger.kernel.org>; Thu, 16 Jul 2026 10:18:01 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1784222270; x=1784827070; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=GrO9yku15Nd4atEWaEXkVKcrXj8oZipRV1TYhFxDaxE=;
-        b=gTc+eSqr57Hschv/DIMenSbvYQiKc5G7Q7y839vp1njNlLgxfCNV9FwjKJ7PSfsytx
-         +AurB8L748MJsZ8FnqkyXzrVJMFdj1DXkd4rXIoPxWDQWvURE+KcxMvhhLI9yw+Mz4R6
-         IzvyyoKiYygr2DohbI/mD9HVadJ3K6Z3uUStEvVJ9dsg9gt5ZLMPMnmd/MwVRUmZDMlV
-         mw1GspW4xUBtElvTsXsk89SbNpE5Fz0rgwb2SWlfabqojV4YvqLVQEfex988r3dWA4DJ
-         C0+BCdogRD6xFk/9FIvhzJXPa1R6QGRcnmcSVJssX26wBWRRsON32yO3YT5TvDMUQloV
-         AmqQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1784222270; x=1784827070;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+        d=gmail.com; s=20251104; t=1784222277; x=1784827077; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=GrO9yku15Nd4atEWaEXkVKcrXj8oZipRV1TYhFxDaxE=;
-        b=njTl5eNovwX82GIqDfdFa4PdpfSS2qYFxallu+/ez1h/PBgqhzAqQOhUGS3ayUUVzW
-         cYCLSxRNcMSKIpLSAxxuqW0dSnEpOlz/B8ELBik7NTI8OPIU3a1Bx8zcwgBJjJAmyUZg
-         9lC9M+vrOsfqMETT++vy2WdUZ0l24u9vb1k7vq8EGJeLrm4cIbpxnTc7rOSS+YzgC1XH
-         DKFqDguW+yL0zqaC8AcUWDElDPOXF3j2xpF2GbkFUK1BPG8feSthT5lzzr1/Q2/i5enX
-         Zf6NS5SzZ74eB8nTAeeZxdSf2wjUF8/OrGSb1445nbv2GlaYCMtLdZJuQTwyfXhfLw4+
-         EMFQ==
-X-Gm-Message-State: AOJu0YzfrxF9uMbXVvGthQuFR8T+tB05M4ErV/uz1/d2uM+vUdZIsNEq
-	VWuE9KPFVDvJqTmKanakvsAZoN26CxnRZWeBKMQceGfd/9E4uaRXEvt9
-X-Gm-Gg: AfdE7clDRMIZA9XZ9i8bLc2bg4lUnqqMNC3tWdA7mqNFktAp71LwoyApg41wMZucgj+
-	N0dBV98NU5i17/TdBeyBNjBHa2BAAgx26VH00tv/iSq2MB3fGaAz0DtIaOpBPMdfYDl5x/6mc/D
-	edVGJmK/h2xILsThPLsU89o2rcaOQN0FadhfS6HReiQjP85yb8ThfGBpFvB/J/RMCrOLUl91OmT
-	6j7FQyLHKliE9sN37OAzejTXE61o6E1GhimvpKqVZsHT6eb+eO8LY93cC2yhRJA1tnaUizHyUQU
-	xpDqJDPxh0MuhUlLFQOE7lu+BEZ6pHSVFK3H4b4lnCL6O7kfviCr8OQcAZWyzuUV8Bm0qfC8Vs3
-	N2kq3zsJgKc1dMqCCrejfotKbTtYQYz4FnSUzo5o0nNAuKEaJMmJG7w7QWsh+pkiXOuenKXZ2Mb
-	GyFnthOxNBOYtELyKdq+90rKT5PWsz70EPDg==
-X-Received: by 2002:a17:903:2ec5:b0:2ca:17e2:2acc with SMTP id d9443c01a7336-2cf03cef19amr85530865ad.21.1784222270259;
-        Thu, 16 Jul 2026 10:17:50 -0700 (PDT)
+        bh=x+VQUfT4E2jpzaVYfn1xTQo+PWwjs/hsb3t7kl1meuo=;
+        b=hCdB7emv+75h4IkFh1xMx+pBtbjzjmnsR+CZnIl33l6AMh1Kga4EuQntgWs6bTNZsk
+         07eZprtW3kOQAg4y0WiCLa+/4HOuVC0mfvmTspbg/IT/0Ltu0xZwLnj3hNSinR/PJ63s
+         KmtfLgmRAWsusaU2Li5fvO8/DokvmNh370EIiRDOa2gsMZpmQLnu15PFtAhHvZnnBzPZ
+         brFwP3gg80TJhb/g9b2FoDIp/890dKtQmX/VOhFG2FvwJ7bihzVK47XobpkQr5YRErC2
+         40BbJcHaYVZLGzeCCZweOGxG+aTBU3dD/fr0akQS3wwn2+Q885uHwlKIla1c6naSNFUN
+         X93Q==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1784222277; x=1784827077;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to:content-type;
+        bh=x+VQUfT4E2jpzaVYfn1xTQo+PWwjs/hsb3t7kl1meuo=;
+        b=a1y1l3kLg4hNSr2AlXdnj3UQUveUyx9R9L2KfZsPo7x7BY8i/j1cM1KgxeNJRYqxN3
+         7uysacZwnChwp7EdChNNmF24pNRUAh97JK+aEKyBos6Fu6RWganj9xta6+gYlyBV8c8J
+         CWvHFEMgj3/D1zeXVpVwbSc1wHuGiQ5vfDVscEsAyPas7OFMyTEEK61sVELI47o0S77t
+         gSIKtfwT8Wtry9qYBoJYH8QbQ6ZOYvu729H1IbnyKfHDZrisEjgpZCOW1odlgTuHXh17
+         5jhk+eZxIFhEimTuGy2l1SmuSjmHtsqr6AZaj+aUyo9eAxSIxi90Nnw74q6YMiTEZANJ
+         YNlg==
+X-Gm-Message-State: AOJu0Yz3tf4q+Ue3Stvi9befr0QE+r1FvybehPHCfB5SDaKiUGlNVW+3
+	buowk2em4DvofXCzXztiebKFzRibRHsSU7B80qhYSMHHW45pnba+Fi2f
+X-Gm-Gg: AfdE7ckLLheuP0lOz8n7crIrI900AfvqXpYZB4fkigINGf3xvG12DBmQrK07zvuqXbh
+	3paaMbt8dbD8TfdRx9zX34EsahwPhySzA1IdqOKNfqiBAv+1VpGCm1dO7d/VO+Uj7omeXyo21Mn
+	QkknCSODSNMASJ84aK/8zsx8xlZRN464YnaNeuSlJwMoGpu0d+RLfM4OP2SNs6LJM9kPWOYrYS+
+	hWTzELJnKrI+YqEIRys+Wabv65Aqj5IVFg9tU+XY8YdCyqWYwh/HFkWrzEMkC3VEuZdYiWPY3b6
+	EajDqMwvEnmu7bR1PiRvl4egcpGEfhG257R3WP+FF2uiYvKveF/tnWfOkE1++KPg72fd1SbAwFU
+	DlMiVwMbCS089KyPByfwtfqOslFgfSVS4P7yzji7gWDE7HU+w9gOkbTzTPrVCZRWdYhXubza4RK
+	GPcMssdS1uZ1CRdtkmx3m7rmlmKsL0d/a30g==
+X-Received: by 2002:a17:902:da81:b0:2ca:e19c:986 with SMTP id d9443c01a7336-2cf03c7c756mr75109205ad.1.1784222276928;
+        Thu, 16 Jul 2026 10:17:56 -0700 (PDT)
 Received: from buffalo-ssd (M014013071096.v4.enabler.ne.jp. [14.13.71.96])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2cf1055de44sm22917255ad.51.2026.07.16.10.17.46
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2cf1055de44sm22917255ad.51.2026.07.16.10.17.53
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 16 Jul 2026 10:17:49 -0700 (PDT)
+        Thu, 16 Jul 2026 10:17:56 -0700 (PDT)
 From: Akari Tsuyukusa <akkun11.open@gmail.com>
 To: Sen Chu <sen.chu@mediatek.com>,
 	Sean Wang <sean.wang@mediatek.com>,
@@ -74,10 +76,12 @@ Cc: linux-pm@vger.kernel.org (open list:MEDIATEK BOARD LEVEL SHUTDOWN DRIVERS),
 	linux-kernel@vger.kernel.org (open list:ARM/Mediatek SoC support),
 	linux-arm-kernel@lists.infradead.org (moderated list:ARM/Mediatek SoC support),
 	linux-mediatek@lists.infradead.org (moderated list:ARM/Mediatek SoC support)
-Subject: [PATCH 0/3] soc: mediatek: pwrap: MT6589 + MT6320 support
-Date: Fri, 17 Jul 2026 02:17:30 +0900
-Message-ID: <20260716171733.300885-1-akkun11.open@gmail.com>
+Subject: [PATCH 2/3] dt-bindings: mfd: mediatek: mt6397: add MT6320 compatible string
+Date: Fri, 17 Jul 2026 02:17:32 +0900
+Message-ID: <20260716171733.300885-3-akkun11.open@gmail.com>
 X-Mailer: git-send-email 2.54.0
+In-Reply-To: <20260716171733.300885-1-akkun11.open@gmail.com>
+References: <20260716171733.300885-1-akkun11.open@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -86,22 +90,25 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-This patch series adds support for MediaTek MT6589 PWRAP and MT6320
-PMIC which are used together.
-It also adds minimum compatibility string for MT6320.
+Add compatible string for the MT6320 PMIC.
 
-Tested on Lenovo YOGA Tablet 10 Wi-Fi model.
+Signed-off-by: Akari Tsuyukusa <akkun11.open@gmail.com>
+---
+ Documentation/devicetree/bindings/mfd/mediatek,mt6397.yaml | 1 +
+ 1 file changed, 1 insertion(+)
 
-Akari Tsuyukusa (3):
-  dt-bindings: soc: mediatek: pwrap: Add compatible for MT6589 SoC
-  dt-bindings: mfd: mediatek: mt6397: add MT6320 compatible string
-  soc: mediatek: pwrap: add MT6589 PWARP and MT6320 PMIC support
-
- .../bindings/mfd/mediatek,mt6397.yaml         |   1 +
- .../bindings/soc/mediatek/mediatek,pwrap.yaml |   5 +-
- drivers/soc/mediatek/mtk-pmic-wrap.c          | 292 ++++++++++++++----
- 3 files changed, 239 insertions(+), 59 deletions(-)
-
+diff --git a/Documentation/devicetree/bindings/mfd/mediatek,mt6397.yaml b/Documentation/devicetree/bindings/mfd/mediatek,mt6397.yaml
+index 3cbc0dc12c31..f2823338cccd 100644
+--- a/Documentation/devicetree/bindings/mfd/mediatek,mt6397.yaml
++++ b/Documentation/devicetree/bindings/mfd/mediatek,mt6397.yaml
+@@ -34,6 +34,7 @@ properties:
+   compatible:
+     oneOf:
+       - enum:
++          - mediatek,mt6320
+           - mediatek,mt6323
+           - mediatek,mt6331 # "mediatek,mt6331" for PMIC MT6331 and MT6332.
+           - mediatek,mt6328
 -- 
 2.54.0
 
