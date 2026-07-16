@@ -1,250 +1,170 @@
-Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
+Received: from DU2PR03CU002.outbound.protection.outlook.com (mail-northeuropeazon11011023.outbound.protection.outlook.com [52.101.65.23])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E71E14248AD
-	for <linux-pm@vger.kernel.org>; Thu, 16 Jul 2026 14:11:11 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.180.131
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1784211074; cv=none; b=KVAQhNQz10KuN1ogK03MqM7A2WR40kz7YLjnuk28GpA+AiKZgD54Vrf0RIHmia8m7XiCgj4Dkq2LoOhjO7dG/CyKqzYXCnsSLxlSimij9F/Do/J9vJaPspBxKw6/KETTUVGNbWe6AU7XY0hqga7LXnPgWyLx3aW2v9sITSjfY1U=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1784211074; c=relaxed/simple;
-	bh=VdSrM8Fd8Og8p4MALRBaWDIz/aVawIHFve9OkaRw5PA=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=S89LBjWcO/Qn76tyGOWFp5RzMx+R8mOw3peO/ghu5pxtR5JPQAYms0+B8g2h0wjIJRIYcU8fHYOf6XgkQCo3kmBojTuv4PI/GR7SW7Hf/Nu+VYYv+IQL2Ka/ImChBIdWA4Aj3/tzkQtMtl1DXZzUp09eDY29eOC9v7awwsh1nN8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=ossHlQal; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=Hj50smpN; arc=none smtp.client-ip=205.220.180.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5187341F7CC;
+	Thu, 16 Jul 2026 14:11:38 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.65.23
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1784211099; cv=fail; b=GMUiZvNqBsGJez72Jmq7+tlS6PDshAuWF2pE3Hd0AL2hBILRVOP90De1DyByOPW6TYcDm7iQVbVqP+v7dIdUxOZe7NWY41xBAaK/6lxoj2svddthx7QbmIVwW7mFqY8OcuYijAPPyMAtbEm8y7qn39NsCHV19EckpuvMZz9Pgjw=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1784211099; c=relaxed/simple;
+	bh=oO8ZrEX93k90FWC7h6zdA2M2JBBzyrRtLnTJWYChp54=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:Content-Type:
+	 Content-Disposition:In-Reply-To:MIME-Version; b=Bp3r7CLjwtkndFG12tz1yqeoQy93fk6Vc2tbAMKSACJIkH4QkGkZZ9i2/mtzuNImK0xZdH3GIvSDST3sXeqamT2vntGEfqDoILWqgA6dPPbzTgIu/tIRJQUBpMNdv7t3gQ1VRSd3hdehCGBfOJdL/HG+8z33Q6LkgD/AjH/Pqf4=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=oss.nxp.com; spf=pass smtp.mailfrom=oss.nxp.com; dkim=fail (2048-bit key) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.b=uWkmBW8u reason="signature verification failed"; arc=fail smtp.client-ip=52.101.65.23
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=oss.nxp.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.nxp.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="ossHlQal";
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="Hj50smpN"
-Received: from pps.filterd (m0279868.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 66GDKSM92857935
-	for <linux-pm@vger.kernel.org>; Thu, 16 Jul 2026 14:11:11 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	OjIUystLYQEiwLo6aFI8saCO3ZV7wLC349fLsPtJmWs=; b=ossHlQalD6s8vBa8
-	8Zq84EMzX3ujU4YpDUxXC/FvT3BoIXerF4TI6PxpUEV3cPuDmGjqhPJuGtuoN0Z+
-	TH4jpq2wQO+85KZuePDxuppCy1qvGG840EhGRArFs1amjHVQDE2sOuhvibeDiNZl
-	V+O64kUZ51rCqF2K3NfZLlCi8LAZ1UEaXOltwwWRYsIhINJGYuZmbJDXLYB1Klps
-	EFX5dfWjRGsHxi4f6T+EKxeAs4oYeDMZkQiGI0j6ScnjN6/sIdo6fkUMq8ggVvBm
-	/Hhn8CH9CufMDgRx6L447kr6YqGGQMCGraT6c92cqJ5MbZibCEvFyjI9HOnfeL4G
-	qVs+kA==
-Received: from mail-pl1-f198.google.com (mail-pl1-f198.google.com [209.85.214.198])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4feuex1hqn-1
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Thu, 16 Jul 2026 14:11:10 +0000 (GMT)
-Received: by mail-pl1-f198.google.com with SMTP id d9443c01a7336-2ccd1958e8fso46192785ad.2
-        for <linux-pm@vger.kernel.org>; Thu, 16 Jul 2026 07:11:10 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1784211070; x=1784815870; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:in-reply-to:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=OjIUystLYQEiwLo6aFI8saCO3ZV7wLC349fLsPtJmWs=;
-        b=Hj50smpNLnSF85vaOkVxHoiSbNK9UfFbqz+wo7MK0o1p2nvdT4oxitXfW+IfrnSOUU
-         FfOUWhSj6biQI6wEzHEwxNoua1YBBO7Rj8NfKAicIk/Cq9lfURW4jedMtWPrjylFGvEV
-         MWhib3WvxIppRWBK8JovaXX1jliRZr8z6RimNYtqQN492IO94t+Q53RX6VIXFjkffj8Z
-         T+XTzPktGXgm9YwZhs8uHKHYV12PLYi/9PxQoqfwbeQ++6fOeSz22nCiJMJK82ilyvgF
-         L2oB6aBztDQdSeTY/Ry7cfpP25Xl7n0ybLPOuxu2ChR98pavYb7i5KJh9tWwYQaimo0y
-         yUtQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1784211070; x=1784815870;
-        h=content-transfer-encoding:content-type:in-reply-to:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=OjIUystLYQEiwLo6aFI8saCO3ZV7wLC349fLsPtJmWs=;
-        b=EnJPP3XqAgYtl1gSl4QvLFqI8O4SROMfAPnd5Oh/iWVG8GV9rOvhYM0Osf7zmV8Rmx
-         jHpdLYV1qeyOBHVsFcMzIWp1EElyLODGzEs35jeUzmb1QuqUMO7otY4Dl3noROWH6hOA
-         I/nOygFRhROXtA/tJn3ib5S1VaOtbyTUfKpoG0diDzTQq+YzoFgMgZ5UZpdKItnETUAJ
-         P6BL8/iZeLekO/Si53jpsvwZFCItC4BBEcxKrFwF13AFUgzTUOsULamzbrpK5pCuJ49B
-         L8mMkz8dhfmNI2OecdnMRhN+oDIcbaxP1RZoUS1GHh47nQdyhett5c+bHOOHVjB0GTwB
-         jxcQ==
-X-Gm-Message-State: AOJu0Yw+9OSVZTR2MUKkT4OMseNUP8pXWfhIi/pgLhZHVFY6tN5HLVK0
-	ZduDa3tjAFMGsPTLzPgR/wcbb/8S0hIa2Peb/ldGP+j5/3H683MTu2/i9g0OYNsr7Gvt/l5SB/F
-	OGhdr+bIGynsximsVnnkUg3sVJm6CptN2ShtTTqVQYdm5JTYd/HKb8CpyZW0V1MrdFPkmqcej
-X-Gm-Gg: AfdE7cmIRgq+vCJ3r2oUx0q5Gmp/vOBQ36dyIzbXtqRUio5w1U0h3JBgmstH5dMzr1F
-	E1rQmvbiaUH2tGdJtdv4Z0+1tWyEcYFDIKta+c6hZf7VXoPN2DSOgP+1zsJ/86nm+rljf7MGj3x
-	0IIw6vg+MyGKLJKHuWglnUuss6Yuwospw61mnmG6TvC+vrCD+jB10OeOGKz1LoxbTD++YA9WS/R
-	dedihbJocnKmRBWMIB1GKJplV1N4h/rMa2eojZf2c3vnOzXyVyrkn1x8O+72dxAxW06s88nqMEv
-	9RUdf7+6OPMoJpmHjDUmMykmT/DUsEa3rqfdGulMSn4GWKn67/KI2kPyHV5Bauaavebu1laE/az
-	nmeTSrkRyd2v3hHQfym+x09a7DiGtGA==
-X-Received: by 2002:a17:903:32cc:b0:2c9:854c:a45c with SMTP id d9443c01a7336-2ce9f02bb90mr225676795ad.34.1784211069495;
-        Thu, 16 Jul 2026 07:11:09 -0700 (PDT)
-X-Received: by 2002:a17:903:32cc:b0:2c9:854c:a45c with SMTP id d9443c01a7336-2ce9f02bb90mr225676285ad.34.1784211069010;
-        Thu, 16 Jul 2026 07:11:09 -0700 (PDT)
-Received: from [10.239.133.197] ([114.94.8.21])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2cf1059782csm20527265ad.58.2026.07.16.07.11.04
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Thu, 16 Jul 2026 07:11:08 -0700 (PDT)
-Message-ID: <09b4f56e-0bc7-4b5e-8d97-a0c924be67f7@oss.qualcomm.com>
-Date: Thu, 16 Jul 2026 22:11:02 +0800
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.b="uWkmBW8u"
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=vyK0P4r6LX+LPn0JfbCpzfwfiXmhEGvQC06vYNw/qEieb4yyeucljSTHTZ8+xcKdcodXMAWqRtQATEVJVgLRsU9GcQhoSyTpYADdpjDIGltYjegfAzN4NodHfjx3EqUsqmvjjSyj78VuMqgvo2M+xx6lsNHi33yngGpspYsyWtPpDosxfeLWLNF3oKQoopOFDJKgDZlNQumfQmbo03B+HzjnLd2/NNqGGQtGlB+pDW/+1UNRVzGtosQ31xoG5AiNL8/+FC2vpZ9gPxe8mAuszQOLzMtVrHBLQYrNjULI111gsiQ+n5igBlETzN1A2jzm9ELIydskG9csxlCVgoOVjA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=RKzLSsOH9tQWd94OZAEJI1s5d32RAM4zheBnSGKawSU=;
+ b=Sd9ezOaLXquwCpuy7IymHsPg2V7AkRRCSM0xOAAQx/+9A/73xSlwQFZa+G2EcQtIuMBvTFrmp+OTG397K02i3N9KYF3aik7X+Vvd+Q2UvPIksO63pi/S05rWxdhDZJQVA4OFLh3yJNs4FI6/j2xZfwysHU4fJ8qCWNSZiCRdO88v0q4IvjPsBvHwBZkUGJNrwnGCwJdjJ+N3BLV/QKwmzUEF6sVAVyhEsJwThR5W6Tjya0vXq5vGldnCX+7snNv4/dmVLbyMiYNgg9GJPmS3CrpW61QSFAhy9b0fGkgn6ZhVmV+1iwRYD4d2XkzHznPd71465/3ZJ8MGHzKTrQe9ZQ==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=oss.nxp.com; dmarc=pass action=none header.from=oss.nxp.com;
+ dkim=pass header.d=oss.nxp.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=NXP1.onmicrosoft.com;
+ s=selector1-NXP1-onmicrosoft-com;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=RKzLSsOH9tQWd94OZAEJI1s5d32RAM4zheBnSGKawSU=;
+ b=uWkmBW8uvJHyUkCUxPPfCarC4gOxx3pcj87oT0Kh75tog6pibDOs7bVMI5vjJ/k2uiH4YmdAMSPNQ5jDwFwR6tgKBqIoBFiLHCfR7U+f/GYT8CaSnzsM6Ytzdrrn9Ozd99xMAx7JAUts18F4UZSPaxiPj1gEnc2Ilpoh9sFN8/rXt1pCuwTokSRvWa44HLwd79aM0lmoeH5hhh39cBy0rbtncKYBPIJLZngwjcA4UTL1UJfUr52UPDuFQ2GuJmoeczT8umSIh8QP7vKrPqdDoGnNT2S7STFoZBEEV7ycgsKgi2eji7YBwKDJKAFW6Tn/R/0XDhA4nNp0jwA9e0Ycgw==
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=oss.nxp.com;
+Received: from GV2PR04MB11799.eurprd04.prod.outlook.com (2603:10a6:150:2cf::9)
+ by VI2PR04MB10689.eurprd04.prod.outlook.com (2603:10a6:800:26f::8) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.223.10; Thu, 16 Jul
+ 2026 14:11:33 +0000
+Received: from GV2PR04MB11799.eurprd04.prod.outlook.com
+ ([fe80::2146:83a2:5329:b7c]) by GV2PR04MB11799.eurprd04.prod.outlook.com
+ ([fe80::2146:83a2:5329:b7c%6]) with mapi id 15.21.0223.011; Thu, 16 Jul 2026
+ 14:11:33 +0000
+Date: Thu, 16 Jul 2026 09:11:24 -0500
+From: Frank Li <Frank.li@oss.nxp.com>
+To: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <u.kleine-koenig@baylibre.com>
+Cc: Ulf Hansson <ulfh@kernel.org>, Frank Li <Frank.Li@nxp.com>,
+	Sascha Hauer <s.hauer@pengutronix.de>,
+	Pengutronix Kernel Team <kernel@pengutronix.de>,
+	Fabio Estevam <festevam@gmail.com>, Peng Fan <peng.fan@nxp.com>,
+	Xu Yang <xu.yang_2@nxp.com>, Ming Qian <ming.qian@oss.nxp.com>,
+	Jacky Bai <ping.bai@nxp.com>, linux-pm@vger.kernel.org,
+	imx@lists.linux.dev, linux-arm-kernel@lists.infradead.org,
+	linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] pmdomain: imx8m{p,}-blk-ctrl: Add MODULE_DESCRIPTION
+Message-ID: <aljmjGXpbTOvdvvg@SMW015318>
+References: <20260716132603.2327847-2-u.kleine-koenig@baylibre.com>
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20260716132603.2327847-2-u.kleine-koenig@baylibre.com>
+X-ClientProxiedBy: PH8P222CA0014.NAMP222.PROD.OUTLOOK.COM
+ (2603:10b6:510:2d7::20) To GV2PR04MB11799.eurprd04.prod.outlook.com
+ (2603:10a6:150:2cf::9)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v3] cpufreq: amd-pstate-ut: bail out early on non-AMD
- platform
-To: Qianheng Peng <pengqh1@chinatelecom.cn>, ray.huang@amd.com,
-        mario.limonciello@amd.com, perry.yuan@amd.com, kprateek.nayak@amd.com,
-        rafael@kernel.org, viresh.kumar@linaro.org, skhan@linuxfoundation.org,
-        li.meng@amd.com
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        wangxb12@chinatelecom.cn, xiongl24@chinatelecom.cn,
-        zhangar@chinatelecom.cn, zhongqiu.han@oss.qualcomm.com
-References: <1784191899-28957-1-git-send-email-pengqh1@chinatelecom.cn>
-Content-Language: en-US
-From: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>
-In-Reply-To: <1784191899-28957-1-git-send-email-pengqh1@chinatelecom.cn>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Authority-Analysis: v=2.4 cv=JeeMa0KV c=1 sm=1 tr=0 ts=6a58e67e cx=c_pps
- a=MTSHoo12Qbhz2p7MsH1ifg==:117 a=Uz3yg00KUFJ2y2WijEJ4bw==:17
- a=IkcTkHD0fZMA:10 a=RAioF0-LDSMA:10 a=s4-Qcg_JpJYA:10
- a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=ZpdpYltYx_vBUK5n70dp:22
- a=VwQbUJbxAAAA:8 a=EUspDBNiAAAA:8 a=KMAsm0FWdzjmD8Gr-2AA:9 a=QEXdDO2ut3YA:10
- a=GvdueXVYPmCkWapjIL-Q:22
-X-Proofpoint-ORIG-GUID: gUas1nc33mHxA3VKjhMkW3J2xXM43ce5
-X-Proofpoint-GUID: gUas1nc33mHxA3VKjhMkW3J2xXM43ce5
-X-Proofpoint-Spam-Info: AW1haW4tMjYwNzE2MDE0NSBTYWx0ZWRfX+KHF8aWtIM25
- cSqKSVbnRGcimKjw+x2E33WHyj9yFO7UZrYBGXC6YS2MRAC6V7H2niKnU1+FHsYr2d1H0cAYM3A
- dC6opOoQ5VFKYffJrM7c8XA7EZJHCAU=
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzE2MDE0NSBTYWx0ZWRfX3xc3ZYiA2IJy
- U0QCvo609oyyMIoSxs3vOyNevltThW+DWcKUnzAaCBFjXBv2lk+EzkZZeJDoHrp2ONsxBGKN+3G
- 5+Akn6IRK340et5NQnGBKz6FpZaCYgXd1VM9JM46iOuvnIcb9GtsjHM0UxAzgPDGgshE/mwYA6i
- pcHi+fPMuKO2agauupqBiNxOvsslWGDELM8fiNXEMzH3SM4KIVw4Wy1LpyKo0JziQPiyVO5msrV
- T3cnzsI7L1xgmHpqjktILhYhSzDs8WkMU6Nc9zVXxth3GIdHLMKONiSzA7NFjgkOe2yoBl9oabJ
- NL6z7QeV3KiUWr8vZ9cS00kM1eDEoYGXXEfXJISrosGFh0LcKJDfcNBSlZmJKhq+RoVSEIRCOfk
- AMYGq8tPPcu9YW7GU8CI1Az3Vwr0yKoDvrjhpThYTa1sagMtj8/Jc0Y/ECRW1vMHBzq3nBzMPes
- lruw1oV/GFbB7lDA8eA==
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-07-16_05,2026-07-15_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- spamscore=0 adultscore=0 clxscore=1015 suspectscore=0 lowpriorityscore=0
- priorityscore=1501 impostorscore=0 phishscore=0 malwarescore=0 bulkscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2607160145
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: GV2PR04MB11799:EE_|VI2PR04MB10689:EE_
+X-MS-Office365-Filtering-Correlation-Id: 1aadd16c-7c63-49bc-0c11-08dee34423f3
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|23010399003|1800799024|376014|366016|19092799006|56012099006|11063799006|6133799003|22082099003|18002099003|10067099003;
+X-Microsoft-Antispam-Message-Info:
+	dR2ARhXUe+fIeua4rNee1+bNhvJOoEujqH+8waj+BVaHzzAQ5MbXEK+FY20K4NrO3Sntj1HopY2VCMBiOBGZm0m8ouUtw4BbanJQErGZkiHK/twvKSIFngheQiGJuPDsWcGnerEtXg3Vft0JrISE5IQQHhNn8ZNppzaEyw7voKv82LGbP0d+AHXqu2O1bTGE3g3fOawZjtttOgjDd1WjJnMAeLCtILoZLrmftYXy+U1e8QZrw3NSEPS0HE8z0Way3h9fnVQzE+6+1v/ABXrqQXsNqWrRC9oMSeywzUOTmmpTHPrCJ5tYWnHu5pOoKX9lZKC2ghRhrkHPG1wp8WeN86U9ogOxqZL3n4em+6JlSaNdnv23FeqJnlBk33iZifCTnlehXIsOekb5VJLqsJRobMxSK3A0TkQ4JCTEuBCv30XgeQIwLUWQKDZ+Yr/fHX8OJNFazbbdEbdceK1i3xk+DweYg0UK0hKpIaRT1jx/DnIEnUQ3aNTgXbWqZgHcZlfr46l1pM3NSWtp2rH/Yv2EAiBqWjTA3iBNJs/otjw+40kaD3+FqOjC3qMTDH4O0sPBuCYPYn76wHNChL/W0YhZ23etdAaw740TgliPiDwhYB9TFeaG2K4lh9mR3Y0/tKIHW8th+TbZKTyQFrMRFK3dnrr34RG2LCC3IWAlReZbaB0=
+X-Forefront-Antispam-Report:
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:GV2PR04MB11799.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(23010399003)(1800799024)(376014)(366016)(19092799006)(56012099006)(11063799006)(6133799003)(22082099003)(18002099003)(10067099003);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	=?iso-8859-1?Q?+XRqxNhWFacUgw/kQpxofPiYv47MTBjDw9pEmF9iS72I7QepW8/Wb2UxHg?=
+ =?iso-8859-1?Q?RLOjZLfMcTPC7ZYBs9WLaGm0L3dxum+jkmmDizws9/dR8helnuPzNahcbH?=
+ =?iso-8859-1?Q?1caBwcpyVj3hNGCRKd/nfpHUW2VuxtTPrWNOGnVfvEXGySDfXOf6uS2U+G?=
+ =?iso-8859-1?Q?BBbRA7WqS09KRrxIXscuJ9Nqyh8j4g9d7MBAg0HBkPgKX6lhuzsjT77h6A?=
+ =?iso-8859-1?Q?DrsCjmiOmBCn0zI9/l1lVEu2A8f5AuCLOqKqfFPQn0dl1J8C+bQp2EL5mc?=
+ =?iso-8859-1?Q?72W7tHPh3yxw8fJiAccv90dIYLuahBw4LnbyC0D9ZHvQ2mf4H1l5WQO33q?=
+ =?iso-8859-1?Q?19T6afrzvyWGTVS0vDgsfk0WTUISpwtlbHyJkeH0KexQb5ZfdoLPQnOHox?=
+ =?iso-8859-1?Q?1AoIWVJKUNF7iJrnmxTL9XJMvxPXI48cNtMwGmSv5pN1QlA7xelgeLvxRG?=
+ =?iso-8859-1?Q?snC372dZpUSfFvKwS9HLP/vUn4WXiv5rZ0VM/mB3Edo9duIlC99Xa2RHGw?=
+ =?iso-8859-1?Q?gYTqab1Q0+qD5KJfW8B2jkno65UpdAx2BriK2wKyRxxnLBCnarGTFiVn8e?=
+ =?iso-8859-1?Q?XklagVCF75dvsUOkpfLw7Ag1q9UlilLpyFv10OQjIo7hEzGO/cZxa8HdPD?=
+ =?iso-8859-1?Q?cijueA2CrozI+3JF/NblskCAMg2sXd6eUqUnDQ0SagxURJy58zsdcfM2Yx?=
+ =?iso-8859-1?Q?zVZQmXIUAvVGhXKvL+s1Vs2e4H258R14wEie++6fQcWVMjph+Z4N+lD79o?=
+ =?iso-8859-1?Q?dYzpnB/Ge5D5gyIj2APip0iLe9xVVuU6x8VmYD9JqiBa2haKbjmGZVn+H4?=
+ =?iso-8859-1?Q?T/z3sUOyQY59vug2KtbMGei4GM9CROITmgMjzrY/gvvzC8GGqjDvEZLydd?=
+ =?iso-8859-1?Q?2kj2HqbhfR/5ThbLZSyoaoISHi67ummoInCeI82lwGstwueLSytPY48WT+?=
+ =?iso-8859-1?Q?lhpIPEwxMWygHRwkLxdRRJzkCXhkmG7sAdusbfXYRCTGF0CZSZMKxQToYl?=
+ =?iso-8859-1?Q?QD6u+oBiCuUzgTmcUCIv9ne+QAniHeS8fpbQRKmxPemK5cw/tZbVmsxz7n?=
+ =?iso-8859-1?Q?GzZnE7TTU204M6An4m5mwvAMYkcDzdb14d4qIS8Hd6SecD+rTkw1AscFaN?=
+ =?iso-8859-1?Q?bFWX6I4hd7nimXElj7EMTEW630eaVPFV3bwSZ9+jO+5BuHZsTqAwnG+MFN?=
+ =?iso-8859-1?Q?KLzwvam/C0QoyFv9w7T8FRKrRyvwoJHKIJMGoSstfg6T8NQ/u5pvUuWmGx?=
+ =?iso-8859-1?Q?t8SLuF9KBLB4WdhR4b7iLExVqIfVeF84JEHJXXLqgdRyc7ZacEixha/o/G?=
+ =?iso-8859-1?Q?NZ5cmoxHZ7cqvsKsO7Q4k467OYKGURTH8FqNDQ3RI730uWkc/pmFQZQY3z?=
+ =?iso-8859-1?Q?Ajkk83Fx5ANzc8yLOakMX4gH67SiUwAlzp4FGB+KksW7sH8eR/B6rLgdvV?=
+ =?iso-8859-1?Q?6Y0PqKoqDbWe1FGJ5zdnNbD6M03hSBy4mLYepmyYRHyQwf0pnpK/QAhG45?=
+ =?iso-8859-1?Q?IfL4VE6UcNxFC/RrB59lMnq57ZSXWoV3UlRyIXRqcLsXJjBlLYxOQuQZDe?=
+ =?iso-8859-1?Q?c/LxbYYfsh2nB9A8u7lR144Equy/17vuRLr8wjbc/ZQD6V/UyaXGKRKeRG?=
+ =?iso-8859-1?Q?n6X6m2KZRFqudjpTYgIMDHTC+ZK4LTwsfAwCdZqNfkCUoOVl/sUxeRS1c7?=
+ =?iso-8859-1?Q?pfNMVmTVwN8qGk3AcpzgaOUjZC+NJcT+HKZyOszBS3jS1widYgbm0hW4D2?=
+ =?iso-8859-1?Q?qsX/MzpXryJm4JrkK0i9wfRZ90IJFM2IAdUqulQAhKF9zKwt0aIwXq338B?=
+ =?iso-8859-1?Q?0rXEd3DDTmlT92ldkDQM9EzpiVYKatqfbAPiNPL9zk1UXYg2n8H8?=
+X-OriginatorOrg: oss.nxp.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 1aadd16c-7c63-49bc-0c11-08dee34423f3
+X-MS-Exchange-CrossTenant-AuthSource: GV2PR04MB11799.eurprd04.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 16 Jul 2026 14:11:33.7232
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: T8/UYRfi40oAcJvXLUiwnJFPa6gqwteK0lVP6TT6ZQcJF53bhKSuF8Yc8A9PPJdbhL/NCwE4msGBJDqKk1xHJ9hlpB93eXRLwL8Fm1TpGDA8JRak9mmdPlLlTtOkEZ6h
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: VI2PR04MB10689
 
-Hi Qianheng,
-
-Thank you for your patience. It looks good to me overall, just a few
-nits inline.
-
-On 7/16/2026 4:51 PM, Qianheng Peng wrote:
-> The crash issue may occur when modprobe amd_pstate_ut on intel platform.
-> 
-
-It is better to start with:
-
-"Loading the amd-pstate-ut module on a non-AMD platform triggers a NULL
-pointer dereference:"
-
-or
-
-"A kernel NULL pointer dereference occurs when loading the amd-pstate-ut
-module on a non-AMD (e.g. Intel) platform"
-
->     amd_pstate_ut: 1    amd_pstate_ut_acpi_cpc_valid  success!
->     amd_pstate_ut: 2    amd_pstate_ut_check_enabled   success!
->     BUG: kernel NULL pointer dereference, address: 0000000000000080
->     #PF: supervisor read access in kernel mode
->     #PF: error_code(0x0000) - not-present page
->     PGD 0 P4D 0
->     Oops: 0000 [#1] SMP NOPTI
->     CPU: 0 PID: 20300 Comm: modprobe
->     Kdump: loaded Tainted: G O 6.6.0-0010.rc1.ctl4.x86_64 #1
->     Hardware name: FiberHome R2200 V5/Xeon Boards, BIOS 3.1a 02/24/2020
->     RIP: 0010:amd_pstate_ut_check_perf+0x141/0x280 [amd_pstate_ut]
->     Call Trace:
->      <TASK>
->      amd_pstate_ut_init+0x1b/0xff0 [amd_pstate_ut]
->      ? __pfx_amd_pstate_ut_init+0x10/0x10 [amd_pstate_ut]
->      do_one_initcall+0x42/0x2e0
->      ? kmalloc_trace+0x26/0x90
->      do_init_module+0x60/0x240
->      __se_sys_init_module+0x185/0x1c0
->      do_syscall_64+0x62/0x190
->      entry_SYSCALL_64_after_hwframe+0x76/0x7e
->      </TASK>
-> 
-> Add state detection to amd pstate driver to prevent amd_pstate_ut driver
-
-This change fixes the amd-pstate-ut module rather than the amd-pstate
-driver itself. Maybe something like:
-
-"Add driver-state detection to the amd-pstate-ut module ..."
-
-> from testing on non-AMD platforms.
-
-It also covers the AMD_PSTATE_DISABLE case but not only non-AMD platforms.
-
-And likewise, the subject may be changed as well, for example:
-
-"cpufreq: amd-pstate-ut: Bail out early if the amd-pstate driver is not
-running"
-
-or
-
-"cpufreq: amd-pstate-ut: Skip tests when amd-pstate driver is not
-active"
-
-
-> 
-> Fixes: 14eb1c96e3a3 ("cpufreq: amd-pstate: Add test module for amd-pstate driver")
-> Suggested-by: Li Xiong <xiongl24@chinatelecom.cn>
-> Suggested-by: Xibo Wang <wangxb12@chinatelecom.cn>
-> Signed-off-by: Qianheng Peng <pengqh1@chinatelecom.cn>
-> 
+On Thu, Jul 16, 2026 at 03:26:03PM +0200, Uwe Kleine-König wrote:
+> Without a module description modpost emits a build warning:
+>
+> 	WARNING: modpost: missing MODULE_DESCRIPTION() in drivers/pmdomain/imx/imx8m-blk-ctrl.o
+> 	WARNING: modpost: missing MODULE_DESCRIPTION() in drivers/pmdomain/imx/imx8mp-blk-ctrl.o
+>
+> So add the required string to these two drivers.
+>
+> Signed-off-by: Uwe Kleine-König <u.kleine-koenig@baylibre.com>
 > ---
-> v3:
->    - Remove unnecessary NULL check
->    - Add detection to driver state instead of driver name
-> 
-> v2: https://lore.kernel.org/all/1784108124-19988-1-git-send-email-pengqh1@chinatelecom.cn
->    - Print policy->cpu instead of policy->kboj.name
->    - Add cpufreq driver name detection to amd_pstate_ut
-> 
-> v1: https://lore.kernel.org/all/1784015941-26535-1-git-send-email-pengqh1@chinatelecom.cn
-> ---
->   drivers/cpufreq/amd-pstate-ut.c | 5 +++++
->   1 file changed, 5 insertions(+)
-> 
-> diff --git a/drivers/cpufreq/amd-pstate-ut.c b/drivers/cpufreq/amd-pstate-ut.c
-> index 735b29f..2142838 100644
-> --- a/drivers/cpufreq/amd-pstate-ut.c
-> +++ b/drivers/cpufreq/amd-pstate-ut.c
-> @@ -560,6 +560,11 @@ static int amd_pstate_ut_check_freq_attrs(u32 index)
->   static int __init amd_pstate_ut_init(void)
->   {
->   	u32 i = 0, arr_size = ARRAY_SIZE(amd_pstate_ut_cases);
-> +	enum amd_pstate_mode mode = amd_pstate_get_status();
-> +
-> +	/* don't test if no running amd-pstate driver */
 
-How about:
+Reviewed-by: Frank Li <Frank.Li@nxp.com>
 
-"/* Do not run tests when the amd-pstate driver is not active. */"
-
-> +	if (mode == AMD_PSTATE_UNDEFINED || mode == AMD_PSTATE_DISABLE)
-> +		return -EOPNOTSUPP;
->   
->   	for (i = 0; i < arr_size; i++) {
->   		int ret;
-
-
-Anyone, please feel free to correct or ignore any of the nits above.
-
-Regardless, the patch code looks good to me.
-
-Reviewed-by: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>
-
-
--- 
-Thx and BRs,
-Zhongqiu Han
+>  drivers/pmdomain/imx/imx8m-blk-ctrl.c  | 1 +
+>  drivers/pmdomain/imx/imx8mp-blk-ctrl.c | 1 +
+>  2 files changed, 2 insertions(+)
+>
+> diff --git a/drivers/pmdomain/imx/imx8m-blk-ctrl.c b/drivers/pmdomain/imx/imx8m-blk-ctrl.c
+> index 99d100e1d923..479789009c7f 100644
+> --- a/drivers/pmdomain/imx/imx8m-blk-ctrl.c
+> +++ b/drivers/pmdomain/imx/imx8m-blk-ctrl.c
+> @@ -953,4 +953,5 @@ static struct platform_driver imx8m_blk_ctrl_driver = {
+>  	},
+>  };
+>  module_platform_driver(imx8m_blk_ctrl_driver);
+> +MODULE_DESCRIPTION("NXP i.MX8M power domain driver");
+>  MODULE_LICENSE("GPL");
+> diff --git a/drivers/pmdomain/imx/imx8mp-blk-ctrl.c b/drivers/pmdomain/imx/imx8mp-blk-ctrl.c
+> index 3f5b9499d30a..d255c20f58e2 100644
+> --- a/drivers/pmdomain/imx/imx8mp-blk-ctrl.c
+> +++ b/drivers/pmdomain/imx/imx8mp-blk-ctrl.c
+> @@ -890,4 +890,5 @@ static struct platform_driver imx8mp_blk_ctrl_driver = {
+>  	},
+>  };
+>  module_platform_driver(imx8mp_blk_ctrl_driver);
+> +MODULE_DESCRIPTION("NXP i.MX8MP power domain driver");
+>  MODULE_LICENSE("GPL");
+>
+> base-commit: b8809969e1d7a591e0f49dd464a5d04b3cf02ab1
+> --
+> 2.55.0.11.g153666a7d9bb
+>
+>
