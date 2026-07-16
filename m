@@ -1,145 +1,229 @@
-Received: from TYDPR03CU002.outbound.protection.outlook.com (mail-japaneastazon11013029.outbound.protection.outlook.com [52.101.127.29])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-yx1-f41.google.com (mail-yx1-f41.google.com [74.125.224.41])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AA6863BBFD2;
-	Thu, 16 Jul 2026 09:23:06 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.127.29
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8F3DB3BED59
+	for <linux-pm@vger.kernel.org>; Thu, 16 Jul 2026 09:39:31 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=74.125.224.41
 ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1784193788; cv=fail; b=pDmIShcVAdrRSmMEhXRtFmi335Nuk9GUMc1EbjpsE1+Ge8ivqFXoA7/uW8G3gAwkav/M3Os9eAqbAQrNo+KNMRQl+acwhAjagINfS4eTMDbCDF7JUZVO0FEawALMnTaDoaF807Whid1V94xVRmR5B7uLaPL5w9NXtanxObfDdn0=
+	t=1784194774; cv=pass; b=bfL2PELkjIaLCIYS4obsZD1AFmFHVtx318vs3HMxpJ+5gaWERcT6TIesEJe00SYKeoBauENfCcGUC6U9UsfPlAWpERwQ2p4O1KV22eQXlO7uzNaKLIz48fAVN9boHtBvv8nOCyKXHIAoi3MtOGx7D7oFDVnF874PwrkzwXUCJOA=
 ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1784193788; c=relaxed/simple;
-	bh=9h57UDBUxVwrYkEvjRM5n1cJN8CUeIw24kfOKHUBidI=;
-	h=From:To:Cc:Subject:Date:Message-Id:Content-Type:MIME-Version; b=lLOyseUpeSaBkEDzZDoEa8a1NzK2nb+0uLot5pfR9qJhXQupW5ogwYicCpdFOtU4urvt3cDM+lWwPK0+P22Z5T5/ffrM60DlTZwZbUeY7f6ffKA9qlG/ozLLakbwpT93VxmE3v51BvAHKUR3GrV03cHx0b24AFsweD8hf6QeB78=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=vivo.com; spf=pass smtp.mailfrom=vivo.com; dkim=pass (2048-bit key) header.d=vivo.com header.i=@vivo.com header.b=AIgl+sDd; arc=fail smtp.client-ip=52.101.127.29
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=vivo.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=vivo.com
+	s=arc-20240116; t=1784194774; c=relaxed/simple;
+	bh=r+ToMI4+W+lt99JNWQfbUojCN1C49muMQY3/rKthzsg=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=AUp3uKq8SGT76uCbEC5IJVY5Nn+85pTWY9QNeC1bDYVaOkyulipU8X+kSgs7ncbEUw5OSkbovACnLoWn05f0qGVBsXrX36F+80xmGaRjCtVE0DBxFpAUJ4A1cZE63m5PrsAzyDYxeg0vBgDlxBMWzhj8ExDR4H0Gf6sHlix4Ji0=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=chromium.org; spf=pass smtp.mailfrom=chromium.org; dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b=lLFwUY7j; arc=pass smtp.client-ip=74.125.224.41
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=chromium.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=chromium.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=vivo.com header.i=@vivo.com header.b="AIgl+sDd"
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=N2hdto8aJ4gytLb7/tn6gUSn+8WpQmvHU0Yl2TR0iOnm8apB4ZDOi7rqZN00c2tqObLV0YKmGrZPLimlsa6SDClukeoGllrPmjPya6O9q08XbKrUs6hv9N2d8+IeX0Her6YixZOLfz8I8XDvW9X/awNdjuHOUnhNx9sogS4x4mR/yoWl24tJuzHGFkhtbt7a1PdTkQr1BUDZSv868Ykih4lf6Q9tTuYlNa14wcJrB+qXUnj2+PUeEKekh8c3r2N+YxEkt64LIyrN2BeSTVFBZl/ZYN5ThJeGXjh8MJ4eWXr35AzZ5Qyrgl4OP5vJ+YaOwN4iufjur+Dm1ONPgHa8XQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=iYpJdbNIeGIBd6gyNL6OnFOvFBQacy+QZhxMJw0CzPQ=;
- b=pmynwDEDNbQD4qym3CA+s778KfVlUC6DlIkvHQVL3ebV8Exu6zZm6qVZhzLzf+ddH/gzDDwzqfRXveVAAaxJrTx8pLS4olR8DOjy6he1WCfad8iYUQ2KRLKjmAy5q252g6FKr0OBLSTSIgrsSyq6XX4hnTr8HXLiWBdTWBg1Bbm/KbJfwIiJb1Rlqf2enwgmRxL+0ooQRZ2Tkz+gXi3tZxhmdDRW/CTUDCXmIMx4UF6F3exBZHpMJh3zwtzERCtioBKzvoDMCIWTP37alIjiPshQ8OhQX2IC7s6VjeCP3jNb1RJHdY7JiNWyROBvtSnRdEJmUM4Uf0FVg/rMUwL54A==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=vivo.com; dmarc=pass action=none header.from=vivo.com;
- dkim=pass header.d=vivo.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=vivo.com; s=selector2;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=iYpJdbNIeGIBd6gyNL6OnFOvFBQacy+QZhxMJw0CzPQ=;
- b=AIgl+sDd7+tuQZ9iT7oEN2c9Q5NhhD4d6Ev6yIYRJ+ALaO7DY9ZPFsC7IyU4aIkdtDS9NwN9VdrxtcUShTnq2nGsHplyAY1WdNmFmWcfGzniOPToMdIQPNZORO+RAkBA1x0IPDiXgU4hhH1IcYldpw/0rJshamp2jWbWHadX8Uvw1elRznIAk60rvLo5HVLUfZAJERmN1W8ZvEH/psdVivMEWo3gfMG0wPWtMvpaNgmlDfu8RVf4J2MD4y99XaFrgXrAAsnEy+Im66ypQzGg76wAJBpxCT88X8ILTgwJJzgL+63OHW8D/HT8fMUWC3OzU2C6lwjceERiXLlOtamkxg==
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=vivo.com;
-Received: from SEZPR06MB5832.apcprd06.prod.outlook.com (2603:1096:101:c8::12)
- by TYSPR06MB7344.apcprd06.prod.outlook.com (2603:1096:405:9b::5) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.223.12; Thu, 16 Jul
- 2026 09:23:04 +0000
-Received: from SEZPR06MB5832.apcprd06.prod.outlook.com
- ([fe80::f98:5e32:4ccb:d07b]) by SEZPR06MB5832.apcprd06.prod.outlook.com
- ([fe80::f98:5e32:4ccb:d07b%6]) with mapi id 15.21.0223.011; Thu, 16 Jul 2026
- 09:23:03 +0000
-From: Pan Chuang <panchuang@vivo.com>
-To: Walker Chen <walker.chen@starfivetech.com>,
-	Changhuang Liang <changhuang.liang@starfivetech.com>,
-	Ulf Hansson <ulfh@kernel.org>,
-	linux-pm@vger.kernel.org (open list:GENERIC PM DOMAINS),
-	linux-kernel@vger.kernel.org (open list)
-Cc: Pan Chuang <panchuang@vivo.com>
-Subject: [PATCH] pmdomain: starfive: Remove redundant dev_err()
-Date: Thu, 16 Jul 2026 17:22:52 +0800
-Message-Id: <20260716092252.251107-1-panchuang@vivo.com>
-X-Mailer: git-send-email 2.34.1
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-ClientProxiedBy: TP0P295CA0058.TWNP295.PROD.OUTLOOK.COM
- (2603:1096:910:3::17) To SEZPR06MB5832.apcprd06.prod.outlook.com
- (2603:1096:101:c8::12)
+	dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="lLFwUY7j"
+Received: by mail-yx1-f41.google.com with SMTP id 956f58d0204a3-6682b598e77so289107d50.1
+        for <linux-pm@vger.kernel.org>; Thu, 16 Jul 2026 02:39:31 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1784194770; cv=none;
+        d=google.com; s=arc-20260327;
+        b=QitVDrEmE0a8hha1q4fgzlvCY1Uzd6Nhni6jAeyfzY5j6STnBg2S8G91ND6snrfpt3
+         ZK2IgYxrWW4HkxcxiUx8zefeqXAcH69LVPeRQv4UXLZ9xPjX88bnZrjLzK4HF3tFAJsS
+         iPtPkWFHRMYgzhoWnrYeF+HmqwxOkyFcqyU5FWmt5EZ7q1o0RJKZiY+R876CdR+cBHl6
+         PzgAz0jMqkfl6ZKhdUj8EigEGmaRoNn1UO7p+Rqs05Kg3B/xJ1a2sW6TTINZky/3YEhe
+         HeAvzNyy1E2lFY/eEGWfEYwWyWXD7/Fz/IY0eiIGfGwMTtRZjuCQyHK9QbwxgzyjQ5yS
+         Aezw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=0CHRQwxG2g8NAYPuVqgPl5XkBCDxSDwrk5H6G4V1gVk=;
+        fh=JDPsujAFtegR8AY8/IVMB1prPG2EsURxIGZbIQh5WVw=;
+        b=FTnan1IOL8leJbGRscB+YVgc/0dOreAU7MOpisUsqNylIHM/PieT2D3f4R59qWAzuS
+         x3ln4UB91m/c52ZLVXip7+b2izwp2hVc8KM1YBtbhvBx8qScsy8vIqUYnXin3MmV0OCR
+         iQkz3BJ3ed1yx9yN6n8MgZ2zz7GGz6gkbW7nQI6a+IDNLiwAv5gdDghFmXkAUd8K2xq1
+         1AF0a660P0zrJ4q+zlIQpwjtKg+95quyGE5OS3IfknLh8FfPKF1PG6JQUpG0gqP0VfOi
+         Ll5Cx5EFZKMDXaLrSdi89fKKn0M3tFMYI69dtORlC4qVdkasWvE2mskuGxxCjRZV/Hg4
+         c1jQ==;
+        darn=vger.kernel.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=chromium.org; s=google; t=1784194770; x=1784799570; darn=vger.kernel.org;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=0CHRQwxG2g8NAYPuVqgPl5XkBCDxSDwrk5H6G4V1gVk=;
+        b=lLFwUY7jZl2FL45dDxrvV5aO08cC7FDULMDS/c29i2SPhEtMixURAkz+FMyJsK6m+u
+         KQQHMp6R/FPVBTm3LBVoP7iTukPr4FkKJrm1ssy/+7F9E9C8ScpfbaTIXNP414YLiDFC
+         EUEx5ovG3IaPQ3BeSCr+kKTeIyiyVTR7Lz0M4=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1784194770; x=1784799570;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=0CHRQwxG2g8NAYPuVqgPl5XkBCDxSDwrk5H6G4V1gVk=;
+        b=fkMfMlqzqyx2w7DNHcIDsWAQPXmpv5fggyiqnixbF9Jgm6YU2paMmmXfDJpo5pGeMI
+         KhkmF8182j+bgPfBSS2JpADIDwHWIUqxtkFBUSrzRFqy7iIJLL5opzJ6r/ho8O3IaqmE
+         xiLdlHdjPzQuKDVi04/ucua22Lhic0R7TJO2aHjzwFE3LhmkUkdYAGLfVw9C3+PHpaLd
+         G/4kl2Sarze2TAvZjlSktjwUl5Q4rQ1M7H77fOAn43Xz8wGxipiNESGhE5iukAEk+Akr
+         SWMTchKRaDUcwHcIoH+XuyGhHS63GgNT21/AhtrZTgeKCGdsVwN4bt3Os2p7y5cZf3OF
+         gb0Q==
+X-Forwarded-Encrypted: i=1; AHgh+Rq6A5OSoUrg10yhBp9DXqefL6UH65Ii4MgecomsRFYOiRAgBAISK0jlTtNwFtYvsz3zu6seS4dJ6g==@vger.kernel.org
+X-Gm-Message-State: AOJu0YytPnujuPCSs4nT+Rg9w9By7KGIfhcLxzm7KcszvwIK8p1QtUHJ
+	nBGG77zgU2IeSJh7rhtK5eIjPJ59CqEPD/nP2I/9mr0r9zWe3cYkIsgk1ZRuyrck2oXM5qa0qTE
+	Xd7fBH1d1UX86nuf2+H3FEvo3eer+kf/THh6TlgYQ
+X-Gm-Gg: AfdE7clFOVHBl4UCQZI3C6uuwdQfN9kaQNa9i27llTyH+4BC8p9dMEzfx/xKuqMSYGC
+	FLlIGIsxNPI+leOlAyhDJpWvmNg+jkuVoUakOyfJ9cuA/j82STAlSuaE+cxJWVSrvvivYXC6ip3
+	7Rf9xWUeJe/VgWqOh2LtKtfVe+byw/wzzvPPsdDC1ijeN4lCW/cSfbczydpqGC6RHW0YGEUsKD7
+	6jBxh2kuN/Ldm27vvLdVM3zCHDDWEgYga6c9+B5n86CUVvtDA/qGJrAVamynK0WRHo8OYKw+78W
+	AbFkei1K3zd9Cjli
+X-Received: by 2002:a53:c80e:0:b0:667:bb38:d969 with SMTP id
+ 956f58d0204a3-667d7b0060amr9599454d50.16.1784194770410; Thu, 16 Jul 2026
+ 02:39:30 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: SEZPR06MB5832:EE_|TYSPR06MB7344:EE_
-X-MS-Office365-Filtering-Correlation-Id: c4eba1ae-2307-451a-a26f-08dee31bd674
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|1800799024|52116014|376014|366016|23010399003|11063799006|56012099006|6133799003|18002099003|10067099003|38350700014;
-X-Microsoft-Antispam-Message-Info:
-	5nn/iMwCLcKNQ7C/w0O+jtcnQqZ8dMedVItDz6dQS/NIp3oUCZPUD+4rdourHCA7jYZcTwfwKgGe/mkd5FE4Jl5LQRrohMUIQ/u/1ybXkkp7Ww2fsMnV2Hp2Nc8Bp45esVpk9Nsvi8hRfdFBiPqzbfQnrLh9VglDlqSHw8zLAkM46yy1v45ITUaFsxdW5pBNPVKHO/4FJXafOul0+5zVNS4jW3s1cbHzRcRdq7r9CbsnvjFt5wRKctKThymtWl9esjFrRUYP9LKtCoMqHncC6gfF56j8k3fT9grloL1V3MafwmYrBDgT8Vss8N0yMa4tEwHBgtaQiB+XohxmKhydfk08tEBEBi0VIaSKOTIASE1ghKjgaDeaiAAfREISjoTfelpYbAxHorx11ui2YYCK+yqhJndvP3xmb6lB18rdOei6TbnpIg9pux36WaJ1+yvO2msl9EHv8+BLwfTT30DIFQz6jVqYd3CzMqeJCzJ0XdVCcsrNZD59YVqXs4Oavf/N15ngFGnZWBjIsnrCGG3f4UMPgwqM2GKTr2L9a6EEfojxEwGmSssfCkZE4bW88FByTxwTye4Y7j6tCwPDHl4hldhpaWig7p1J7Sz+8wJO9p00r1fsE2I7KkCwLrG2YpAvpbId3OAT8vc3tdDTgzBfV9FBMznyHbNk0o+imqfYCQbNF2XC14i8AgBTULjNriQob81SgYSLyvOp3jd5A3HSkZeu1a9Bzpjud47BwXVjcII=
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:SEZPR06MB5832.apcprd06.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(1800799024)(52116014)(376014)(366016)(23010399003)(11063799006)(56012099006)(6133799003)(18002099003)(10067099003)(38350700014);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?us-ascii?Q?BvI8x7Syxgb2Z8A7qpGaAcdgqE8Bokbjp5TgIQSbsCEiSaBn5tkUcqOMfRnv?=
- =?us-ascii?Q?WoleM69W5pcitQElx1Cn9d/dbdV9qwbx6DLezJgdDW4y7P1Eis1Ob+3aMQiQ?=
- =?us-ascii?Q?E1ITkl9fueXIa7VxTKPPAqY6//C++Z2WZsD5YIBR+rXuf7GS/3Qx+KvLegCj?=
- =?us-ascii?Q?c+kqR9e3HbYlM+SwdGMG4Z4tSvm9EJoSfs+s9ej9syh2FH+A2ir2EAPfPFC8?=
- =?us-ascii?Q?+8yIqLcZMxg5QfIJIusKlxCS2dFAqDYmn+VOafXUtC4XN0uVaDfuY40rRiqo?=
- =?us-ascii?Q?0N4qndoaLH03Cq3LrH13gvl2aq0jaBOhZ+4aTk1REfjGTUFuao4ipskyo5Gd?=
- =?us-ascii?Q?RzF4YiUvL+9g2eQn+ALWDF1kQTlQcFp1fERYQEYFBonBNVK5wrRIMBmxWzAh?=
- =?us-ascii?Q?0Z0ie/9WPzW1BHMvmVE2bjUogUB/bWN4uqQGPMIlLKkpH7VAyt+HoWP5voH2?=
- =?us-ascii?Q?Xl0j7s/RMzW29mtf7VxvwsBlPQ7i+cYduSuCbYIUNWkn4veUNUuaxNXPnzV7?=
- =?us-ascii?Q?Qs2xMrqe3BKAaBxUB9umlLgJ3CoGGOniw7AVtyginPUFAqwNYSIUCvoVVZ5E?=
- =?us-ascii?Q?iO40u8+3S9VoGkSu+NRqJXCLvAE5xPpfS0Am65yeHwQnxNwoIX0YIg9i1/YL?=
- =?us-ascii?Q?o1SipoMpAAPt4EMAxdVxs8i/O1f5Wvo+S5w6aHnWO2YexgXt5CfqIulWVT8A?=
- =?us-ascii?Q?RoHSbSKvS6kBRJh0DThdwT/eh9NLhyy+oFR0OLFJsLL4Io8SBjr6HCAB0t7z?=
- =?us-ascii?Q?xPErQcVTzFzD5TyoI20x8ljS9ORupR9y8/MzBr6W5/CANABKWiX1dSzzkkfB?=
- =?us-ascii?Q?U0ylexOweNoei9y6pCaVHx+j5dx4fccnlLWDuCRpQuvYVfbdJXCuRJxh/8y6?=
- =?us-ascii?Q?rD5k/OCPcJKPo9VBpKGL7sOaqB4MgNSt6GETTlJdc7sIqKcCSvubrVeOFYEo?=
- =?us-ascii?Q?sWKbdrvIwNvupoN582MGHBT9VCHdUVpXBUVC2bpGQIqs31R+E7WMiwUfkex4?=
- =?us-ascii?Q?35ySVxDVdjT9KhlP2KyyucgDBvPBx1vMjMurXnUOncGHlQQDrJZh5APn0n67?=
- =?us-ascii?Q?PTeeT1lRJ3X8i67FCfWWkrIp5ymMC36KStXPnC3KnHrRxzYTpzHXn6KhQzb3?=
- =?us-ascii?Q?4EnLXKjXibmTDaAxcacsBeyIYMf1rTdhs8EZmTqx5bYkqy0Lv4FGTlPwV8zE?=
- =?us-ascii?Q?Zdj3TYrlQb7Z1CBGNWFAsqfQm0Q42rIcRQcOtADDug6jdiU0GIoIFaxGn31w?=
- =?us-ascii?Q?gfRkIXzc+7oPnslJCsQ5t5FVpcpkX+DI3k2FajtweN0j1fJQH5jVL9ri83mR?=
- =?us-ascii?Q?DcyMaW6ll3RwQ0N1zhgUIfs255k8s0V4BKc2ANnbKY6++eRpeTVbKnJBBaMr?=
- =?us-ascii?Q?Th5/JERdIPkyon61tv57IDarBJQXKGzmPZe/ioLit+HvWDcX/hdeEsN4E9NK?=
- =?us-ascii?Q?QwVrVySaZ5+ztozOljvfmLLhz6lJ3wQjQ9uN91sRnWFmd4INTgtSCoE4Ibvu?=
- =?us-ascii?Q?Quxm6Cw7fRpSabZbCp8kL5mcugEQYO9K9e7LxJAUv8wlKOUD0CuBguEhYyls?=
- =?us-ascii?Q?JkSR9JmAymaEgID5t+hQGkXZWOC+i3Mu9S81seFwpMBwrifVzTwmFqV0ab+4?=
- =?us-ascii?Q?G9dPiZ+Ap1USooUxT6NsZQ/CxRjr20tRV4eft/6ToapXvpTMf15wFY8dMErL?=
- =?us-ascii?Q?Jh+FqboOspcXGtak7UF6SiQk+N+8k4WxSd/SQpT/eU4TdvEJ71rFkDxw3Br8?=
- =?us-ascii?Q?14ggYd8dDQ=3D=3D?=
-X-OriginatorOrg: vivo.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: c4eba1ae-2307-451a-a26f-08dee31bd674
-X-MS-Exchange-CrossTenant-AuthSource: SEZPR06MB5832.apcprd06.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 16 Jul 2026 09:23:03.7821
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 923e42dc-48d5-4cbe-b582-1a797a6412ed
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: uAjKleajsnflYTvQWEnXU/AdQpEUoh8hABTQZYDC3Bvi7hQmotgxV+WjNVEzbwO922cycsDrJv7+4fksykLKdA==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: TYSPR06MB7344
+References: <20260715085348.3457359-1-wenst@chromium.org> <20260715085348.3457359-4-wenst@chromium.org>
+ <aldS3qTympJuVXYj@ashevche-desk.local> <CAMRc=MfHmejks83bPfe3fKzAzFySGXk2GHMA9oZdMQj0f44eTA@mail.gmail.com>
+ <CAGXv+5HGjGTrqqzJrpiQhLrCn3C6H20LXq3niPnoujQLOwgqPw@mail.gmail.com> <CAMRc=Mefxn81d0VUwmQgwFtffkL1=Er_1VQZCbC1Sa-Qph4t1w@mail.gmail.com>
+In-Reply-To: <CAMRc=Mefxn81d0VUwmQgwFtffkL1=Er_1VQZCbC1Sa-Qph4t1w@mail.gmail.com>
+From: Chen-Yu Tsai <wenst@chromium.org>
+Date: Thu, 16 Jul 2026 17:39:19 +0800
+X-Gm-Features: AUfX_mzbe7WMgo0cPdR-Yi-m3qfqJETc7DH9Y1NWKQqSMqgCgHS_ReKsQ1v2DI0
+Message-ID: <CAGXv+5G0Ffrh-8UohJuGPQ0e7KGpy11=X7t1JtDYLTJ_tZgMCA@mail.gmail.com>
+Subject: Re: [PATCH v5 03/16] power: sequencing: Add pwrseq_power_is_on()
+To: Bartosz Golaszewski <brgl@kernel.org>
+Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>, 
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Daniel Scally <djrscally@gmail.com>, 
+	Heikki Krogerus <heikki.krogerus@linux.intel.com>, 
+	Sakari Ailus <sakari.ailus@linux.intel.com>, "Rafael J. Wysocki" <rafael@kernel.org>, 
+	Danilo Krummrich <dakr@kernel.org>, Rob Herring <robh@kernel.org>, 
+	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
+	Matthias Brugger <matthias.bgg@gmail.com>, 
+	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>, 
+	Wei Deng <wei.deng@oss.qualcomm.com>, linux-acpi@vger.kernel.org, 
+	driver-core@lists.linux.dev, linux-pm@vger.kernel.org, 
+	linux-usb@vger.kernel.org, devicetree@vger.kernel.org, 
+	linux-mediatek@lists.infradead.org, linux-arm-kernel@lists.infradead.org, 
+	linux-kernel@vger.kernel.org, Manivannan Sadhasivam <mani@kernel.org>, 
+	Alan Stern <stern@rowland.harvard.edu>, 
+	Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Since commit 55b48e23f5c4 ("genirq/devres: Add error handling in
-devm_request_*_irq()"), devm_request_irq() automatically logs
-detailed error messages on failure. Remove the now-redundant
-driver-specific dev_err() calls.
+On Thu, Jul 16, 2026 at 4:14=E2=80=AFPM Bartosz Golaszewski <brgl@kernel.or=
+g> wrote:
+>
+> On Thu, 16 Jul 2026 06:59:01 +0200, Chen-Yu Tsai <wenst@chromium.org> sai=
+d:
+> > On Wed, Jul 15, 2026 at 8:10=E2=80=AFPM Bartosz Golaszewski <brgl@kerne=
+l.org> wrote:
+> >>
+> >> On Wed, 15 Jul 2026 11:29:02 +0200, Andy Shevchenko
+> >> <andriy.shevchenko@linux.intel.com> said:
+> >> > On Wed, Jul 15, 2026 at 04:53:33PM +0800, Chen-Yu Tsai wrote:
+> >> >> The power sequencing consumer API already does power on state track=
+ing
+> >> >> internally. Expose the state to consumers through pwrseq_power_is_o=
+n()
+> >> >> so that they don't have to reimplement it locally.
+> >> >
+> >> > Reviewed-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+> >> >
+> >> > ...
+> >> >
+> >> >> +/**
+> >> >> + * pwrseq_power_is_on() - Queries the last requested state of the =
+power sequencer.
+> >> >> + * @desc: Descriptor referencing the power sequencer.
+> >> >> + *
+> >> >> + * This returns the last requested state of the power sequencer.
+> >> >> + *
+> >> >> + * Returns:
+> >> >> + * On success, 1 for on or desc is NULL (optional) and 0 for off;
+> >> >> + * negative error number on failure.
+> >> >
+> >> > I would rephrase it a bit.
+> >> >
+> >> >  * On success, 1 for on and 0 for off; negative error number on fail=
+ure.
+> >> >  * If desc is NULL (means optional) return 1.
+> >> >
+> >> > And this rises a question: why 1? Shouldn't it be some "unknown" sta=
+te?
+> >> > (But since Bart Acked this, this doesn't prevent the patch to go, yo=
+u
+> >> >  got my tag above.)
+> >> >
+> >>
+> >> No, this is good feedback. Maybe we should prefer an enum like so:
+> >>
+> >> enum pwrseq_state {
+> >>         PWRSEQ_POWER_UNKNOWN,
+> >>         PWRSEQ_POWER_ON,
+> >>         PWRSEQ_POWER_OFF
+> >> };
+> >
+> > Well I think the crux of it is whether the API considers the descriptor
+> > optional. The power on/off functions suggest that is the case.
+> >
+>
+> True. That may be an inconsistency of the API contract on my part. There'=
+s no
+> such thing as an optional variant of pwrseq_get() so perhaps pwrseq_power=
+_on()
+> and pwrseq_power_off() should be converted to returning -EINVAL on NULL
+> descriptor.
 
-Signed-off-by: Pan Chuang <panchuang@vivo.com>
----
- drivers/pmdomain/starfive/jh71xx-pmu.c | 2 --
- 1 file changed, 2 deletions(-)
+OK. I guess the other resource subsystems allowed it more as a convenience
+to consumers.
 
-diff --git a/drivers/pmdomain/starfive/jh71xx-pmu.c b/drivers/pmdomain/starfive/jh71xx-pmu.c
-index 74720c09a6e3..aff07b0f5523 100644
---- a/drivers/pmdomain/starfive/jh71xx-pmu.c
-+++ b/drivers/pmdomain/starfive/jh71xx-pmu.c
-@@ -276,8 +276,6 @@ static int jh7110_pmu_parse_irq(struct platform_device *pdev, struct jh71xx_pmu
- 
- 	ret = devm_request_irq(dev, pmu->irq, jh71xx_pmu_interrupt,
- 			       0, pdev->name, pmu);
--	if (ret)
--		dev_err(dev, "failed to request irq\n");
- 
- 	jh71xx_pmu_int_enable(pmu, JH71XX_PMU_INT_ALL_MASK & ~JH71XX_PMU_INT_PCH_FAIL, true);
- 
--- 
-2.34.1
+> > I modeled this on reset_control_status(). I believe the rationale is th=
+at
+> > if the reset control or pwrseq is optional, then either there is some
+> > other mechanism to deal with the reset (GPIO) or pwrseq (GPIO + regulat=
+or),
+> > or it's always on and operational.
+> >
+> > In such cases and the rare case where one has to query the state, the
+> > queries are possibly chained together and I think it makes sense to
+> > assume the "operational" state as the fallback.
+> >
+> > If this returns an enum, then I think the previous approach of returnin=
+g
+> > an error value for an invalid descriptor is better. One doesn't need to
+> > learn a new set of return values.
+> >
+> > I'm fine either way. I would just move the checks over to the consumer
+> > side. But I think the principles guiding the overall API design is
+> > something you need to provide:
+> >
+> >   - Is the descriptor optional? What should the action functions
+> >     (power on / off , or query status) return when NULL is given?
+> >   - Is the subsystem optional? Should the stub functions besides
+> >     pwrseq_get() return 0 instead of -ENOSYS?
+> >
+> > Right now the API feels like the descriptor is optional but the
+> > subsystem is not. One has to add IS_ENABLED(CONFIG_POWER_SEQUENCING)
+> > around the consumer API to make it an optional feature.
+> >
+>
+> There's one more use-case where the power state trully can be *unknown*.
+> Please look at the proposed new function from Loic[1]. Here we deal with
+> targets over which linux has no direct power control even though it may s=
+till
+> control some of its dependencies. This is where an UNKNOWN state may make
+> sense.
+>
+> This is where I also floated an idea of renaming pwrseq_power_on/off() to
+> pwrseq_vote_on/off() for better clarity of their purpose.
 
+OK. Would it make sense to revert to returning -EINVAL if the descriptor
+is NULL now, and then add a different error return value if !controllable
+in the future?
+
+
+Thanks
+ChenYu
+
+> Thanks,
+> Bartosz
+>
+> [1] https://lore.kernel.org/all/20260710-monza-wireless-v3-3-46253587af64=
+@oss.qualcomm.com/
