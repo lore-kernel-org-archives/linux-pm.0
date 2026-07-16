@@ -1,148 +1,201 @@
-Received: from mail-pj1-f44.google.com (mail-pj1-f44.google.com [209.85.216.44])
+Received: from mail-yw1-f178.google.com (mail-yw1-f178.google.com [209.85.128.178])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DB7A33DA5D1
-	for <linux-pm@vger.kernel.org>; Thu, 16 Jul 2026 09:50:46 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.216.44
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F1778344052
+	for <linux-pm@vger.kernel.org>; Thu, 16 Jul 2026 10:02:50 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.128.178
 ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1784195448; cv=pass; b=iAwuNj3cRFLBezM8ueDBc/yNanmBE25r0z6Zm/RoJLa3hCq0OBUoG9Etz+AsbUlhyL39/kULB6JLFf/G9OwENMEN/vivupP+zRDMfZ2zGJ1jk2AVrca1R429Qbkql2vJ6FTHn25AR7uAKL6lgpn9UMIJGU558dxZK8reiOpf5/o=
+	t=1784196172; cv=pass; b=CGFh44306nOgQafbziEp1Fp5A71oyCti4i3C+aQBUW7+dk8EyOy6Uob297RX3mQa8ZCZ93spy+qVqLRgPinsFYST51Gb2rX9vj0xfcMxt1v39t0fYHRGuJYoDtRCZ4scCGcwR1eadMY8zTWKsqg0rLM6mS24/5RMW6BD/H3xh34=
 ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1784195448; c=relaxed/simple;
-	bh=4PHDdxADWcJXcHELSsybkbYwxBBaZNxU4xqJtB2mqtY=;
-	h=MIME-Version:From:Date:Message-ID:Subject:To:Cc:Content-Type; b=RQeSL4nZDZM7RdFTe1mV7EwszuKoyXBMk0lAvl8YOt3iKbKX7/ZpzTMRzf/fcHdCSbPDnq/+cE6U/iAvoz31xHJepLnTQdvfb0BLItM8dQJqTRDRnrHLEZc/y2BfiHSVXyLRdZHgVRDfr5Yxt7QqTUuuQ7ASoiebuxUDsqAS29Q=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=mechasystems.com; spf=pass smtp.mailfrom=mechasystems.com; dkim=pass (2048-bit key) header.d=mechasystems.com header.i=@mechasystems.com header.b=jc6YljRp; arc=pass smtp.client-ip=209.85.216.44
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=mechasystems.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=mechasystems.com
+	s=arc-20240116; t=1784196172; c=relaxed/simple;
+	bh=wwzrrNyzpEPOxzsqP0CMmVuHMipqp7uhFBCNZZJQtZg=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=p/7ED9P/lMgQgyKQ+uQLqI1aG/RGmaqsCthlrl1UsJNImrgOL8mMWa7LfPywL2pbTzhiQVCMPpH/+awU4N2+4qR/IyikA43b/ZXQusQvbx16Kg+DtNy0o0gfjU9iAdKidq0e4ZuECGuMUOd0/9zNdHWq+wzKM6WzwToWhH074gc=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=chromium.org; spf=pass smtp.mailfrom=chromium.org; dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b=ABV4D2iP; arc=pass smtp.client-ip=209.85.128.178
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=chromium.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=chromium.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=mechasystems.com header.i=@mechasystems.com header.b="jc6YljRp"
-Received: by mail-pj1-f44.google.com with SMTP id 98e67ed59e1d1-383adaa461fso2246538a91.3
-        for <linux-pm@vger.kernel.org>; Thu, 16 Jul 2026 02:50:46 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1784195446; cv=none;
+	dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="ABV4D2iP"
+Received: by mail-yw1-f178.google.com with SMTP id 00721157ae682-81e6f0b4610so68478377b3.2
+        for <linux-pm@vger.kernel.org>; Thu, 16 Jul 2026 03:02:50 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1784196170; cv=none;
         d=google.com; s=arc-20260327;
-        b=AxrGXjgP2Y9jCLdbggPbjQpdm5/bdZucYGmOBEv6Ji9CNDbJ9kGF1JbRUInL5dBnh9
-         vSAejXDghQEy+lQDmh1brNd/0LY/9Vg3LkTdSCoB5aptYdIWH3iFKhZgdJjwPMgHrY94
-         8Rlwbw0D1B7IeTX6VRK6PORJHdoH849Se1xJq5etc1VQjIPF/mw2stcHGkAxDbF/3hu3
-         SrX4rsQL8vAQNYsuZtTPY4wQF3HmK384LFdPQOnXHk2/j5Xz8eCygqQsTo7DREDjE51x
-         O9I+UrTgMt5km4vMQr7e5H2aW+E7ajzizR62arriL+44viGV+vTFKvzfuC2P0BdG9IwN
-         B/JQ==
+        b=GGCq/FPCW9Nst2nLH7ahuLV40JuSut1m50D3Ja+l2qXdeoaufSs7Vch1eS1V0n0Czn
+         l1qZeHL28UZdZYngAKPbUPQsq/qpd9rOAZXTzLlwZ+Vuyi2FUUP/QRgt1x50gsqU/Y4C
+         PGG69iSLwxouSUGrvPfWrWEY15dhIpKTdwiWLQTnDDpaIKfTD3pc0dH3ksWP6ebZ8KYP
+         erda2/qIzSm/jh42IN7gtgpPhlei32f8LdY4yYoPnQY5Tq/JPbtimdxd6hJhyYZLUz2F
+         r4DMx/xkEuzhTnjgsYvss3tU70huUcZXA5mY5rm5lv46Wx18DfUPQCEz5wLL1Btl3B9d
+         Xyvg==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
-        h=cc:to:subject:message-id:date:from:mime-version:dkim-signature;
-        bh=7BnpV4VIJWWIXN3EfRYg7aDjYvj13ejddTvZNuKOsQM=;
-        fh=ukEMP+ZEBqqzFNLXVYKiS/LfuNTCMBdbU1TlxB6b9dU=;
-        b=XXhD1XgqjEvAFult6nGentZoJqDHgsbv7Xx/uU4TmaePWxBkuccXszPCKuolxpCWFC
-         1m5ETaseIZCTGNg4G2DY0KX1LFSDMdbbOvsWtlxy1kp1yiNUEmzJTVYt3qvFlxdhkIkt
-         I57WpxCHE1H4g3c27LFXtwDOPUDxZKvLowW9pcniLQOVIz/4FrX07ZTuUW3NN20tv/D1
-         62eREbTrPnokrHR/IzR5QLlV0oBQ9EKtIGGHB2clGU61bcBj1uyYgdwoqZO4UPIkJ1Z+
-         g0K1ipSw1NEfwVjUGcFQLsjooFGf9+6U5aVkePdf8f8sD8icg7MaSOtdcNDEOJG0K0Sv
-         cH4g==;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=R96tNKpQ1InkbXm6qFatnXomzIHe/efCkhtTBmjY1zk=;
+        fh=b65twQbD9jSDTaAZKS9FZ5Pu8AzRdLCsPQxE0zwW9c8=;
+        b=GzpqIhBXOEPEg8a7uuZmk4j91UG++au6YIhe2SErIECTfFlGxCS9cTs04sJ223LnDy
+         aNM+XN24NHL/Gy752sstDvGY55h5/ZazODrz22W7c/NB72vk6VRkmQW+EOZIpw8LIU+T
+         UddLnb0hrdBoWCD3q+GzXbjtuRKFLug/O8N2aYgC6tgwK6DZ1lSTktcutZnEtipNMf/c
+         HCz5gC/W3aSwuXdSrDdBWfyMAguTSZL1s8uamWcgAqS0A9yq/FE8I1NdhmgFYtsMgzyp
+         VTVqpPyZMplZl8Ml9BVndR5SELtuTB8HMddKQxSnMz8H50XjCXBcW7ksaX1zLaN9+3Om
+         QkmA==;
         darn=vger.kernel.org
 ARC-Authentication-Results: i=1; mx.google.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=mechasystems.com; s=google; t=1784195446; x=1784800246; darn=vger.kernel.org;
-        h=content-type:cc:to:subject:message-id:date:from:mime-version:from
-         :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=7BnpV4VIJWWIXN3EfRYg7aDjYvj13ejddTvZNuKOsQM=;
-        b=jc6YljRpihhinGwjESyROadIBljlKhUGqrIyGX+JCcnTTtykAVWK8zSpLZ/un1EAcY
-         hct3IFHN+HylULRsbh6hl5mjWAMUJOU1lYpz8uPIto1Dxt2Kd/YAB8HEKTYdFhcd2dxV
-         tcbESNGYaLIzcn0HO3xYm3Lr7LCf+QhxTsd3aw65+YQotqW1qzkf/aIMfhIWazfIeKv9
-         FVAYvbN0nglztF/bIas2bxwh2fTDMjsd773Tgh1QdjYUfdl9YSOdQdQRnVqDY7Zsbjf6
-         N+s/QPI5BKDkLQhCwwr734p3q7GpxKBjGrUC5cHoJxz5vwjkxDY3sDaAi7X7b6vkmLrM
-         BpOg==
+        d=chromium.org; s=google; t=1784196170; x=1784800970; darn=vger.kernel.org;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=R96tNKpQ1InkbXm6qFatnXomzIHe/efCkhtTBmjY1zk=;
+        b=ABV4D2iPUtxj4CcbzBlkr/xHAvpZIb4jj0kT/KRDzYy6KcqyzPpz+oqjugqR6KHvb6
+         H3vNIVspSuNhoRLCu5UB5DmdcIzU0a4D2lpG5zoZZ5sBQgktDEtbBbIreVT1dqACU7/e
+         pc0YQRwD7r0jfGvDaZD/XKMs2V0DnOrid4EJQ=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1784195446; x=1784800246;
-        h=content-type:cc:to:subject:message-id:date:from:mime-version
-         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to:content-type;
-        bh=7BnpV4VIJWWIXN3EfRYg7aDjYvj13ejddTvZNuKOsQM=;
-        b=iyttPb84T4Sr2uAvSm6xXGQqPwVJIZEbLh+I5Dqa/Fc1zVVuDlLazkfQTwk64H8YkH
-         5pgzZEB5GZzRm+2E7fKgfiPotoBNOtYWYM+8OFaWqCQbSHaNbAWbs/4ZwW7JnhOApSHx
-         CiLaFELnrmM3jm9qpW78AcJzqDLIRPdRRPfGzQut+kgmFH3iq3BJ8hyhNkhJuBWzdXWy
-         QJyvb/HeoSuNUUmxOJMXCUuxiFtavcSRiQwglQiQNh/ReKG7VWAp1U6LCx62zR4OhHYf
-         LyYdti3e6f3oKF+TD7wRjngTLH3ea8w3Puv7v8hfRC6J60jiVfiFxX6gHoRCRFsxJ1aP
-         3TCw==
-X-Gm-Message-State: AOJu0Yzg5Svhr4GSFyygtdCHghwDGqC3R+ctUVKUpbIiUxyOlMLz6bxL
-	6LugJQcPYyGWiwsIIsExPgsEJbBmvaY+P1TtJxTII17vCKhlgcnMsSDgLG6FmsPm8B83u3YnTwS
-	w+1x/5zLXP8AX6yVqCRM7mEpZkkxQqhMqGiYHHpFQ5q5bxEVfJyhwSN4=
-X-Gm-Gg: AfdE7cnCkvgFGIu27lL5bhytSOyim0ypCbMCVIuMjSlKxniX2thWJah/9ApS3CmuTxn
-	GALUQjah2aBpN8pVzDEKcmPzmqaWUjCsAXVmft4ASQJk1cWsukRYD5MNR4hdZBkydfQ6VdZVcHX
-	oT6rNQpmUCdN0Xm5QXP2UpNQ1p98zk542XAfZyQvUaCm7D1BgTXc4sNMSoK7hhYtjedc2bdO66I
-	CjJY1OBLwXK3CYGhSNnTL/X5BifpSRpbOlIuBuReXASbUHzj6W7GnzITu6h
-X-Received: by 2002:a05:6a20:c989:b0:3c3:94bb:ceb4 with SMTP id
- adf61e73a8af0-3c394bbd078mr1152070637.70.1784195446147; Thu, 16 Jul 2026
- 02:50:46 -0700 (PDT)
+        d=1e100.net; s=20251104; t=1784196170; x=1784800970;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=R96tNKpQ1InkbXm6qFatnXomzIHe/efCkhtTBmjY1zk=;
+        b=URMxspq6hDjvN1PZjRTQ2jdiBi83BoZVsKfVhyVK8KV8igEfEIT27BY41LgKvsStHK
+         v9mpxzpKVMD5/eHsv30R5WpJWzVnQH6Eyf4mp0vlNyf0f9/dtehmUwWX/DeY5s0t5m1J
+         eeq9Q7jw6I7T2rxyO3Rb2StiFcccbrz2kVQPG1B8nRoY21GNFazKZExZhwX9NDW6W9cK
+         OlkHVAqu9mkNWHfozTjqhW4NUqAvgw+6ozGyWSJpHxiTNWwPqw+oUe3v1cBlWBvRsmQx
+         y8cYdi6llpdNwwxgK7Bi+dkgEkM6fvYKBVHAko/fdXz6cCHH6ORXJnRGyDgU8JydM1zn
+         +a4w==
+X-Forwarded-Encrypted: i=1; AHgh+Rp6WrbEizeyWauTjLi0Oqy1zogDoQkpOFKYIA7nxROO4oNAUmQbDXPfE+EzYysgzM23kMYcxbgbQg==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yw5UNWmsMOYeFHAbHo3XPQCcDmtMkxIM0idWZQzKgzLDRG4uGsJ
+	ZTLenYyp7yr7xDymmAi1f1NGKc2zEbFzx8OMkSHhAS4L4eyIgRgBaTjjoQj9Cl1Mrr+r24vNIBr
+	Y6YS4TsINocxO8ztrPbOxUUsTRQMr31Mb2I+HLgpS
+X-Gm-Gg: AfdE7cnbwxROSvDwDsdx5AErvfVqKN4WgUlTQ4ceA5TsFp3dLeDTprJGj7tetArR+kI
+	mosnPgo9wqyjbvU3vvWsuqa8c8IUKuwMrZ4Jsuam2a/HsGNB9sTS4r1VdfuI8bTqIe8TBlmM/8q
+	wuTXUFzu7oAZJ7i2tvzDYKUM91Aom/h/xHthesxGUhyehD/At8Sg0ERH/JTJcZ+TL2RJyLd6dF6
+	/E88njSJRLzwZjfCQqLF2N8H8G9uglEcUhoFeiyJh2EGVCVGJ/Rg3EjOqMu3AZJzZtWnsuGvAxM
+	UMFkyE5ZOsbQfFZo
+X-Received: by 2002:a05:690e:d02:b0:668:15cc:bcc4 with SMTP id
+ 956f58d0204a3-66815ccc501mr4350974d50.53.1784196169785; Thu, 16 Jul 2026
+ 03:02:49 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-From: Advait Dhamorikar <advaitd@mechasystems.com>
-Date: Thu, 16 Jul 2026 15:20:33 +0530
-X-Gm-Features: AUfX_mxWjVGz1D1bqa6lo_mj3pKzEhFiBc4uYqQMLANU_mgqiNhYY5CmMp3yH84
-Message-ID: <CAAPs2HTo=4+AEw1+vcU6c9vt_O2BfF+gv3FFvx9G3KLLzCOsHw@mail.gmail.com>
-Subject: pmdomain: imx8m[p]-blk-ctrl: resume hangs when waking from suspended state
-To: linux-pm@vger.kernel.org, imx@lists.linux.dev
-Cc: linux-kernel@vger.kernel.org, ulfh@kernel.org, Frank.Li@nxp.com, 
-	s.hauer@pengutronix.de, kernel@pengutronix.de, festevam@gmail.com, 
-	bhushan.shah@machinesoul.in
+References: <20260715085348.3457359-1-wenst@chromium.org> <20260715085348.3457359-11-wenst@chromium.org>
+ <aleKQKH2V-ck-SX6@ashevche-desk.local>
+In-Reply-To: <aleKQKH2V-ck-SX6@ashevche-desk.local>
+From: Chen-Yu Tsai <wenst@chromium.org>
+Date: Thu, 16 Jul 2026 18:02:38 +0800
+X-Gm-Features: AUfX_mxuW_5D4-j7y5auPPMU8fitwu4GAwXYmX14uCHTJY4CutBJo0OlCAdX-_s
+Message-ID: <CAGXv+5Ed9Cn-NeHiXJ58er7NJs1P2ZUMrjqYac-gSky-TNV8Lw@mail.gmail.com>
+Subject: Re: [PATCH v5 10/16] usb: hub: Power on connected M.2 E-key
+ connectors with power sequencing API
+To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Cc: Bartosz Golaszewski <brgl@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
+	Daniel Scally <djrscally@gmail.com>, Heikki Krogerus <heikki.krogerus@linux.intel.com>, 
+	Sakari Ailus <sakari.ailus@linux.intel.com>, "Rafael J. Wysocki" <rafael@kernel.org>, 
+	Danilo Krummrich <dakr@kernel.org>, Rob Herring <robh@kernel.org>, 
+	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
+	Matthias Brugger <matthias.bgg@gmail.com>, 
+	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>, 
+	Wei Deng <wei.deng@oss.qualcomm.com>, linux-acpi@vger.kernel.org, 
+	driver-core@lists.linux.dev, linux-pm@vger.kernel.org, 
+	linux-usb@vger.kernel.org, devicetree@vger.kernel.org, 
+	linux-mediatek@lists.infradead.org, linux-arm-kernel@lists.infradead.org, 
+	linux-kernel@vger.kernel.org, Manivannan Sadhasivam <mani@kernel.org>, 
+	Alan Stern <stern@rowland.harvard.edu>, 
+	Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
 Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Hello all,
+On Wed, Jul 15, 2026 at 9:25=E2=80=AFPM Andy Shevchenko
+<andriy.shevchenko@linux.intel.com> wrote:
+>
+> On Wed, Jul 15, 2026 at 04:53:40PM +0800, Chen-Yu Tsai wrote:
+> > The new M.2 E-key connector can have a USB connection. For the USB devi=
+ce
+> > on this connector to work, its power must be enabled and the W_DISABLE2=
+#
+> > signal deasserted. The connector driver handles this and provides a
+> > toggle over the power sequencing API.
+> >
+> > This feature currently only supports a directly connected (no mux in
+> > between) M.2 E-key connector. Existing USB connector types are not
+> > covered. The USB A connector was recently added to the onboard devices
+> > driver. USB B connectors have historically been managed by the USB
+> > gadget or dual-role device controller drivers. USB C connectors are
+> > handled by TCPM drivers.
+> >
+> > The power sequencing API does not know whether a power sequence provide=
+r
+> > is not needed or not available yet, so we only request it for connector=
+s
+> > that we know need it, which at this time is just the E-key connector.
+> >
+> > On the USB side, the port firmware node (if present) is tied to the
+> > usb_port device. This device is used to acquire the power sequencing
+> > descriptor. This allows the provider to tell the different ports on one
+> > hub apart.
+> >
+> > This feature is not implemented in the onboard USB devices driver. The
+> > power sequencing API expects the consumer device to make the request,
+> > but there is no device node to instantiate a platform device to tie
+> > the driver to. The connector is not a child node of the USB host or
+> > hub, and the graph connection is from a USB port to the connector.
+> > And the connector itself already has a driver.
+> >
+> > Power sequencing is not directly enabled in the connector driver as
+> > that would completely decouple the timing of it from the USB subsystem.
+> > It would not be possible for the USB subsystem to toggle the power
+> > for a power cycle or to disable the port.
+>
+> ...
+>
+> > static void usb_port_device_release(struct device *dev)
+>
+> >       fwnode_handle_put(dev_fwnode(dev));
+> > +     /* usb_hub_create_port_device() could leave an error value */
+> > +     if (!IS_ERR(port_dev->pwrseq))
+> > +             pwrseq_put(port_dev->pwrseq);
+>
+> Hmm... I would rather make pwrseq_put() NULL and error pointer-aware, so
+> it will be no-op in such cases. But I think Bart has his own opinion abou=
+t
+> this.
+>
+> >       kfree(port_dev->req);
+> >       kfree(port_dev);
+> >  }
+>
+> >               put_device(&port_dev->dev);
+> > +             hub->ports[port1 - 1] =3D NULL;
+> >               return retval;
+> >       }
+>
+> ...
+>
+> > int usb_hub_create_port_device(struct usb_hub *hub, int port1)
+>
+> > +     port_dev->pwrseq =3D usb_hub_port_pwrseq_get(port_dev);
+> > +     if (IS_ERR(port_dev->pwrseq)) {
+> > +             retval =3D dev_err_probe(&port_dev->dev, PTR_ERR(port_dev=
+->pwrseq),
+> > +                                    "failed to get power sequencing de=
+scriptor\n");
+> > +             goto err_put_kn;
+>
+> OTOH, how pwrseq can be non-NULL and at the same time port be created?
 
-I'm debugging a suspend/resume issue on an i.MX8MP board, where my board
-suspends itself just fine but it gets stuck when I try to resume it using the
-SNVS powerkey.
+I assume by non-NULL you mean returning an error?
 
-```
-[  127.955231] imx-pgc imx-pgc-domain.6: PM: calling
-genpd_resume_noirq @ 963, parent: 303a0000.gpc
-[  127.966055] imx-pgc imx-pgc-domain.6: PM: genpd_resume_noirq
-returned 0 after 3 usecs
-[  127.975922] etnaviv-gpu 38008000.gpu: PM: calling
-genpd_resume_noirq @ 963, parent: soc@0
-[  127.986183] etnaviv-gpu 38008000.gpu: PM: genpd_resume_noirq
-returned 0 after 44 usecs
-[  127.996201] imx-mipi-csis 32e40000.csi: PM: calling
-genpd_resume_noirq @ 963, parent: 32c00000.bus
-```
+device_register(&port_dev->dev) is called some lines above this.
 
-I added some logs inside `imx8m_blk_ctrl_power_on()` in `imx8m-blk-ctrl.c`
-as well as in `imx_pgc_power_up` in `gpcv2.c` and have observed that the
-problem appears to occur during the first MMIO access to the Media BLK CTRL
-during resume.
+usb_port is weird in that usb_hub_create_port_device() does a bunch
+of stuff that is normally done in a driver's probe function. However
+usb_port's driver is just a stub driver add for userspace compatibility
+reasons. See commit d99f6b4130877 ("usb: rename usb_port device objects").
 
-```
-[   65.145718] MMIO: writel complete
-[   65.149030] MMIO: reg_write returned
-[   65.152617] PGC[gpu2d]: clear PCR -> 0
-[   65.156369] PGC[gpu2d]: deassert reset
-[   65.160124] PGC[gpu2d]: clk_bulk_disable_unprepare()
-[   65.165096] PGC[gpu2d]: ===== power_up success =====
-[   65.170067] etnaviv-gpu 38008000.gpu: PM: genpd_resume_noirq
-returned 0 after 137496 usecs
-[   65.178348] imx-mipi-csis 32e40000.csi: PM: calling
-genpd_resume_noirq @ 652, parent: 32c00000.bus
-[   65.187316] BLKCTRL[mediablk-mipi-csi2-1]: ===== power_on begin =====
-[   65.193762] BLKCTRL[mediablk-mipi-csi2-1]: pm_runtime_get_sync(bus)
-[   65.200034] BLKCTRL[mediablk-mipi-csi2-1]: pm_runtime_get_sync(bus) -> 1
-[   65.206740] BLKCTRL[mediablk-mipi-csi2-1]: asserting reset
-rst_mask=0xc phy_rst=0x10000
-[   65.214760] clear BLK_SFT_RSTN begin
-[   65.218340] MMIO: readl begin reg=0x0
-```
+So at this point the usb_port device has been added to the driver model.
+Or we can just zero out port_dev->pwrseq instead? I guess that is cleaner
+than having some weird check in the release function.
 
-No further messages are printed. The CPU never returns from the
-first readl() performed by regmap_clear_bits().
 
-Has anyone observed this behaviour before?
-
-Here are the full suspend/wake logs with PM debug enabled:
-https://paste.debian.net/hidden/5b4133dd
-
-Same logs with more verbose info:
-https://paste.debian.net/hidden/9f544ae7
-
-Any suggestions on what to investigate next would be greatly appreciated.
-
-Best Regards,
-Advait
+ChenYu
