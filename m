@@ -1,88 +1,162 @@
-Received: from mail.alien8.de (mail.alien8.de [65.109.113.108])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pl1-f176.google.com (mail-pl1-f176.google.com [209.85.214.176])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E36F43C5550;
-	Wed, 15 Jul 2026 22:59:09 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=65.109.113.108
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B0F952D6E64
+	for <linux-pm@vger.kernel.org>; Thu, 16 Jul 2026 00:29:04 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.176
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1784156352; cv=none; b=VIW0xow/Gsjlx6F/FMrFHiW9hRkAQv3mP4TThyCsiSJYXH3KZLQ+2dxVEBH9HUUdTqCKmOMfCA7R0ISCSox+58Oc6+CH0frYhGV4UrAgD6ef4l1pQY6m1kk75u8yePD6zjeIlkxlK76GK/J2lz5HWZDVoKuNmlvS0b2llkjANt0=
+	t=1784161746; cv=none; b=UqLWG+cAp2Q9Lp4H/MsEfHX6+p687c7iogv2g5Bv3jEBkpSjT+kTHmzKSEfM8bgbDme2g9+lOaxNxCUmXlNPPp6o07At+vCpip9oL0+xSUiofmLKF5wxs80hho8ui/718eWUy6O95gkVKZ36eF+m2cKkuGw6/ragSxB7UlgDeNE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1784156352; c=relaxed/simple;
-	bh=/lzFJhABRUy+KiQy0qiOYHx3t8OFYNnY7gqj2PnHe/g=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=mrRHYv0ZPBKU/PeT+pLnRzyIrMnJWY0Hf8675I1bI53/P2pzRBrR7MRCzPtpN/jGiJJny8BiUDSkDfwN3+1ZdmM1oY7uUsl7xjxRCJ2+qGd48Wa0YwdnDz8jBu+6jSm63YRfrqzJr6yR1yADHOAuSNC4jT2U949B0Kh3f3hYdhE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=alien8.de; spf=pass smtp.mailfrom=alien8.de; dkim=pass (4096-bit key) header.d=alien8.de header.i=@alien8.de header.b=Zd/LlOSh; arc=none smtp.client-ip=65.109.113.108
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=alien8.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=alien8.de
+	s=arc-20240116; t=1784161746; c=relaxed/simple;
+	bh=Pn412DYiAzxCT+4OPjStksFO/tbSj/zMlkHkGBtPatE=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=Efv0+Pg/7P9epfAmB5IKSHYtsFboliFJ1eJ+HsjERCRfzrKToxSnwspOOb52EnG3vc0Zb4JEieHWuQd+BoCdlk16bZu8bDXSqqXO0B5Qgi2Mrtu1GL92PSGIu9G/q6wBOZWAx++4xrTvqzQsd1YjxF9FPn+Z8JolXbYtM1sexMQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=roeck-us.net; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=cmd+edKm; arc=none smtp.client-ip=209.85.214.176
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=roeck-us.net
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (4096-bit key) header.d=alien8.de header.i=@alien8.de header.b="Zd/LlOSh"
-Received: from localhost (localhost.localdomain [127.0.0.1])
-	by mail.alien8.de (SuperMail on ZX Spectrum 128k) with ESMTP id 74B6B40E019E;
-	Wed, 15 Jul 2026 22:59:07 +0000 (UTC)
-X-Virus-Scanned: Debian amavisd-new at mail.alien8.de
-Authentication-Results: mail.alien8.de (amavisd-new); dkim=pass (4096-bit key)
-	header.d=alien8.de
-Received: from mail.alien8.de ([127.0.0.1])
-	by localhost (mail.alien8.de [127.0.0.1]) (amavisd-new, port 10026)
-	with ESMTP id XclVYafuI90z; Wed, 15 Jul 2026 22:58:57 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=alien8.de; s=alien8;
-	t=1784156337; bh=N7AjLxWBxSGpWfLKscRnhuR4xi9Boc26YLbIPUVpTHM=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=Zd/LlOSh9PkXIxBc+HKXIIAc7MlFvjreZMhVBJCPM5gRy6sty7F47teWoATdoMbIp
-	 2iuHi6xOIUzQ07RyNY+pVaSivy5hT5QnS9iuN497vSR0oXRzt+kHFKTBdQYvBWGunK
-	 fGbfEnQemHRtcZ8WPMNqQz81yUDCeTk1i5BYSEXvIXO8PXLFmPzJ++THIxQzZP+chK
-	 VjWNGGXtf+evW8XvMfIXiJwq/Swo9+8kR074zjCuhVULlA1OXXKAxV5TyoQKX5HnAM
-	 oXMIL8oHEb4qcKXoFg0omkNHFi9C7EW207zxahg+UKLHuYkr7O90oURB3GBhT/i1Bs
-	 cy3VGADrVwpYOhoe5sCVdl5KYGwVbJ8I/dNG95AyXn3Yo2VBLI9cmR+1SAmSuq99Jo
-	 Ypmh5vLq6JhPwYn92I3q5VM6rbStfMr8qcitmKJspM3EakJ+k47pyeAHLSTWtLwgPy
-	 hRHGOOOj20mQrYB3Ucs62dLOtc+m4/mmYPeC8XJH5m/kyEyhfJAQEIfx9D61Wr2Vdg
-	 +mUNtVrJd7TnuaMd5/Q0enEqqHlISKHGd/lTWZ1Txdg3fsBhld725qHeHJWMy7LHGQ
-	 rODWQW98VQNJl8fysSSlM6ddUR28hP7ykS8hyoUZQ27RIbb8W5/oghcw7N2l/cZUot
-	 r+B3iF4UMPXz6mXBoC0lzXxc=
-Received: from stx.tnic (unknown [12.110.208.163])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (P-256) server-signature ECDSA (P-256) server-digest SHA256)
-	(No client certificate requested)
-	by mail.alien8.de (SuperMail on ZX Spectrum 128k) with ESMTPSA id D2C7F40E00E6;
-	Wed, 15 Jul 2026 22:58:46 +0000 (UTC)
-Date: Wed, 15 Jul 2026 15:58:34 -0700
-From: Borislav Petkov <bp@alien8.de>
-To: Jason Andryuk <jason.andryuk@amd.com>
-Cc: Rong Zhang <i@rong.moe>, Mario Limonciello <mario.limonciello@amd.com>,
-	Huang Rui <ray.huang@amd.com>, Perry Yuan <perry.yuan@amd.com>,
-	K Prateek Nayak <kprateek.nayak@amd.com>, linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	"Rafael J. Wysocki" <rafael@kernel.org>,
-	Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq/amd-pstate: Bail out early in virtual machines
- and don't warn
-Message-ID: <20260715225834.GAalgQmpfnioYepdbz@fat_crate.local>
-References: <20260716-amd-pstate-vm-v1-1-2ac97d3cf6e7@rong.moe>
- <0c55d331-bf98-4e6e-9de5-35803ead3c0a@amd.com>
- <20260715180454.GAalfLxn3Wyu-fRjoT@fat_crate.local>
- <ecc292377a145741f47ff2422b72fa95e57a725b.camel@rong.moe>
- <61a141cd-c72a-4ee5-8273-ee721aa13f68@amd.com>
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="cmd+edKm"
+Received: by mail-pl1-f176.google.com with SMTP id d9443c01a7336-2cea3004256so67100085ad.0
+        for <linux-pm@vger.kernel.org>; Wed, 15 Jul 2026 17:29:04 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1784161744; x=1784766544; darn=vger.kernel.org;
+        h=content-transfer-encoding:content-type:in-reply-to:autocrypt:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:sender:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=OGQ6x2eWb0kXOAnv/GgXof7PDNge2C09gVvctRHhkCQ=;
+        b=cmd+edKmzKMPZggls0FDrWBDODabc9rJtrdobsoPsNoxEc9BKSZfGXCLzcTJq0+cHK
+         e1WfPqWDtA3jFpxSy+obtSQv5BrATtpz6kjW8Qlt29gcpr1uuZCKHtWtIWif0ceuh67Q
+         Zflci0J8UK88Ldd3y09dIo2emaskL5z+h+oLZarokmgaHnO4ZDq0XV0bTq8UxG07/ofk
+         rbNeLajf8Uz0xN0EZPtmTXjB86HFwRehGK6o+RhddP/xtNshX8tAKvwkl02w+ewCQqKy
+         iTZBcCh8uaalgOUBAfBdvSkGpIWTqXHmME8X1X0waha3N9gNd3m96MqQp49luQ/q/Udf
+         UWYQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1784161744; x=1784766544;
+        h=content-transfer-encoding:content-type:in-reply-to:autocrypt:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:sender:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to:content-type;
+        bh=OGQ6x2eWb0kXOAnv/GgXof7PDNge2C09gVvctRHhkCQ=;
+        b=LEh6d2KATIvEh+b7y+hxkNr/azJyqzDGx/sLkBXzRLDNw17yfzm0s+pPMHHPPRbuCx
+         aQv1NOgM0uY7KyxrmfLE6810DWaOcCjuTTvmsRxgckVpi52dpRcJ9ywI9wzKoVU4WWB2
+         /HoIzb3lokhlkaEgrrTBvOgCyOLYAuMeirwOhntHTQxxHbKt3/AC4i0RKHB6LNznJSEy
+         DTltR9jpxgb+4Lg6U+WQreOVtgl6BaXbqoBRZPVmLMGnMV5Yna8GkwoXcbbqXwyAVgrD
+         MOb5t/Y8wOSXWslR02A7FgEoyJNyIAHaVzEYdCL/4/ujRdB7bMjnQx57BLyde7M3ZlFh
+         xZUg==
+X-Forwarded-Encrypted: i=1; AHgh+RrsW3/KiGayUePqEBw398qBJNTtHwUgumZEFiKM50bZXNmIM8y6tuxLiRGhkXzIP01grCJ87e91Jg==@vger.kernel.org
+X-Gm-Message-State: AOJu0YwpS/hBsbQR9yBFCwvTee/DooBZorByRdUkXy+iKki90J2zmu97
+	9ETBaZwsmDjcl0PuzFjWleJTiwSooTxosHa8XjipSX8jih81KG7Qlzba
+X-Gm-Gg: AfdE7cm+p9SAVu9Oeg98DIn8Y7IKFQd7DPxVqnWCFeum3sbOW8LMKu4lR7/IDXXxMSh
+	A9hANrq9HAH3wb+nIPuRV7KdGozWyXbf30KmZYFd6gsCu+Blj1lPE71JFRlyMp7bdNJMrIuNOmZ
+	V9n+Ix0wHOY/zU/oceNuVpngOCgqX2nLQWq2oaD3yFqT80B2UI7nVy+Dofp0nMqeNBNyj0yLwiF
+	5TTozniZH3/Ia+fjgjAbWVOl7O5zM6Soys6KBbgf1x+lZHBjhqPri72HVP8uBtAOEKduNa/gzo2
+	CqyWxUybqd4aMmCOOaT07O/RZRT5Pdq+a1WSWlc69XEXdP7AnXo0udEwe/fVYgbmzPai8wca2Ds
+	N7DiWu5purqwDkRowKwRfBnPk/1fwVF+tZMimfqXQ9FjvSr0wxPYjdypsrJnxbFePp9J8iFi/lW
+	2cWaYnFRUInxH9rcFW1kpnu994vgVbcLHsMNfwFiGgIfG9ZeKVNdA=
+X-Received: by 2002:a17:902:f683:b0:2ca:1479:d9dc with SMTP id d9443c01a7336-2cef1326596mr78291255ad.12.1784161744012;
+        Wed, 15 Jul 2026 17:29:04 -0700 (PDT)
+Received: from ?IPV6:2600:1700:e321:62f0:da43:aeff:fecc:bfd5? ([2600:1700:e321:62f0:da43:aeff:fecc:bfd5])
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2cf10591d3dsm10278195ad.56.2026.07.15.17.29.02
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Wed, 15 Jul 2026 17:29:03 -0700 (PDT)
+Sender: Guenter Roeck <groeck7@gmail.com>
+Message-ID: <b7171173-aa64-4393-b9cf-77d92f2ec932@roeck-us.net>
+Date: Wed, 15 Jul 2026 17:29:01 -0700
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <61a141cd-c72a-4ee5-8273-ee721aa13f68@amd.com>
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v2 3/8] Add Advantech EIO Hardware Monitor driver
+To: Ramiro Oliveira <ramiro.oliveira@advantech.com>,
+ Lee Jones <lee@kernel.org>, Linus Walleij <linusw@kernel.org>,
+ Bartosz Golaszewski <brgl@kernel.org>, Andi Shyti <andi.shyti@kernel.org>,
+ Daniel Thompson <danielt@kernel.org>, Jingoo Han <jingoohan1@gmail.com>,
+ Helge Deller <deller@gmx.de>, Wim Van Sebroeck <wim@linux-watchdog.org>,
+ "Rafael J. Wysocki" <rafael@kernel.org>,
+ Daniel Lezcano <daniel.lezcano@kernel.org>, Zhang Rui <rui.zhang@intel.com>,
+ Lukasz Luba <lukasz.luba@arm.com>
+Cc: linux-kernel@vger.kernel.org, mfd@lists.linux.dev,
+ linux-gpio@vger.kernel.org, linux-hwmon@vger.kernel.org,
+ linux-i2c@vger.kernel.org, dri-devel@lists.freedesktop.org,
+ linux-fbdev@vger.kernel.org, linux-watchdog@vger.kernel.org,
+ linux-pm@vger.kernel.org, Wenkai Chung <wenkai.chung@advantech.com.tw>,
+ Francisco Aragon-Trivino <francisco.aragon-trivino@advantech.com>,
+ Hongzhi Wang <hongzhi.wang@advantech.com>,
+ Mikhail Tsukerman <mikhail.tsukerman@advantech.com>,
+ Thomas Kastner <thomas.kastner@advantech.com>
+References: <20260714-upstream-v2-v2-0-76e5e41026db@advantech.com>
+ <20260714-upstream-v2-v2-3-76e5e41026db@advantech.com>
+Content-Language: en-US
+From: Guenter Roeck <linux@roeck-us.net>
+Autocrypt: addr=linux@roeck-us.net; keydata=
+ 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
+ np3900V20aS7eD9K8GTU0TGC1pyz6IVJwIE=
+In-Reply-To: <20260714-upstream-v2-v2-3-76e5e41026db@advantech.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
-On Wed, Jul 15, 2026 at 04:32:53PM -0400, Jason Andryuk wrote:
-> I think changing amd_cppc_supported() to return false for
-> X86_FEATURE_HYPERVISOR makes sense and can remove the message.  The
-> heuristic there doesn't seem relevant when virtualized.
+On 7/14/26 08:54, Ramiro Oliveira wrote:
+> This driver controls the Hardware Monitor block of the Advantech EIO chip.
+> 
+> There is a separate driver for the thermal device driver
+> since it's a use case we support currently, but if it's
+> really necessary we can move it to the same driver.
+> 
+> Signed-off-by: Ramiro Oliveira <ramiro.oliveira@advantech.com>
 
-I don't maintain that code but if I were, I won't sprinkle if
-X86_FEATURE_HYPERVISOR for no good reason. And the guest warning is not good
-enough a reason.
+Normally there would be a hwmon driver instantiating the thermal zone(s)
+using HWMON_C_REGISTER_TZ. If the driver actively controls thermal zones
+since it also handles fans, that would be instantiated from the hwmon driver.
 
--- 
-Regards/Gruss,
-    Boris.
+Since you have both thermal temperature and thermal fan drivers, I am very
+concerned that there is functionality overlap andor even conflicts. You
+should drop this driver and configure the thermal temperature driver
+to instantiate a hwmon device from it if so desired.
 
-https://people.kernel.org/tglx/notes-about-netiquette
+Thanks,
+Guenter
+
