@@ -1,116 +1,126 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-oa1-f45.google.com (mail-oa1-f45.google.com [209.85.160.45])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 679CB37E5F6;
-	Thu, 16 Jul 2026 21:49:25 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 37BDD3D5666
+	for <linux-pm@vger.kernel.org>; Thu, 16 Jul 2026 22:16:09 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.160.45
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1784238566; cv=none; b=aLeZWPzpwxxL7EnBFiyZTq0nw3PulC6A69XSgnkwXNBGoLy2pkSleLGCBaoNLCBorNNG/bpqdpKOzH2Szrv087GGdj3Fv3jUJj+mhcMO9F8Q5zj1R+xfYMkEofKe6ZCRYL2OiCBvnEwllkxpfejvrcvxpf3G+nRafFWiNps5Tmo=
+	t=1784240172; cv=none; b=LGgfxW3TqB1K2UD7EyQ2JzqIm6tk5Mc3H5PY4GRwmTzehIkV1YMtiZRJKBACDUrpThqfO237BwU5nehE51+SzFmwDaUkKb5advelWIH7Uv0OkFwn7C4aW3mDBer0pLvMQp4tX+8xPLizuugXzO0K39cT7jpQWEmuNBnVajQdPns=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1784238566; c=relaxed/simple;
-	bh=LBMbmOs0P0G7nxvJZmumNqWf0/JfAYN9hCv/hs38PhY=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=tPd9CIhOqy9RjJwFNfbGKZD7qLEabAqo5TIVIYu9dhSCdXIc9Dk2bu4vYDHZBlM4aQTkyjVhuJyPqZWgdEZKA5EXR200wmUTkuuga6IPa84HVPzsXK9IDVr0c2UbyslKtIJuyQGCaFZmPVA4hYxnrdSNCNkFR4v91M8AQ96JlDw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=nFA2RyZw; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1784240172; c=relaxed/simple;
+	bh=nVcYram5qpUVW7KgNAVqxKC45xcHyj3dMYgE2oW7dlk=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=DFanTZ0DOJWV/I9xOPAniDjbpPV4B3cg52OxHd7Wp+2sDh8GKynpN4cqvJ4Ow97xdcfAUAP+FdzvVyPkaQvTU+N40f4jIjVsIttEfLMqU1zGy95keof2ePsNGXZgsXx4UUpS6fm0Rq0SZzPvvmz1Z8jrqK0AJb4ynN5SR9Nix1k=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linuxfoundation.org; spf=pass smtp.mailfrom=linuxfoundation.org; dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b=ghDfFKCb; arc=none smtp.client-ip=209.85.160.45
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linuxfoundation.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linuxfoundation.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="nFA2RyZw"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2030C1F000E9;
-	Thu, 16 Jul 2026 21:49:25 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1784238565;
-	bh=eOISDNQWs3+70L2z0Z/sRRYhHltwdBHFBDQdmATJlRU=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=nFA2RyZwvaxjwYUaBF3M0hVJbc/cCntzN4Rkn0dY4KzIkKk/dQa7lNM+h1EoeyW+u
-	 RpxJkG2WudhcGwtak8jbY2zB1Yyf4lx6fivlQJMKsBuhQifRrEpcIJek174FxExSr9
-	 kwbMTf2Nn/PCeS8iEn1tBpdtiUBaKlJwEQ2aISPTZo+VCqkC45i3bpkNLgiHPGnmS8
-	 Cr0ZrjOVwzt89sKbPEtCbeYjV8DXKUrzKMvYJAOREsAM8wnLQ7UVX+arefRXySS8ZD
-	 powCgSjKH2/ZfbzCxB++g81cDgnGnLxCkFh9fFHXdcPBz3qZPFB2TbWCEWaVXd74V7
-	 LiTLGOu3mAZNA==
-Date: Thu, 16 Jul 2026 16:49:24 -0500
-From: Rob Herring <robh@kernel.org>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Krzysztof Kozlowski <krzk@kernel.org>,
-	Sudeep Holla <sudeep.holla@kernel.org>,
-	Cristian Marussi <cristian.marussi@arm.com>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Saravana Kannan <saravanak@kernel.org>,
-	Ulf Hansson <ulfh@kernel.org>,
-	"Rafael J . Wysocki" <rafael@kernel.org>,
-	Philipp Zabel <p.zabel@pengutronix.de>,
-	Michael Turquette <mturquette@baylibre.com>,
-	Stephen Boyd <sboyd@kernel.org>, Brian Masney <bmasney@redhat.com>,
-	Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>,
-	Vinod Koul <vkoul@kernel.org>,
-	Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>,
-	Kevin Hilman <khilman@baylibre.com>,
-	Florian Fainelli <florian.fainelli@broadcom.com>,
-	Wolfram Sang <wsa+renesas@sang-engineering.com>,
-	Marek Vasut <marek.vasut+renesas@mailbox.org>,
-	Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>,
-	arm-scmi@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-	devicetree@vger.kernel.org, linux-pm@vger.kernel.org,
-	linux-clk@vger.kernel.org, linux-renesas-soc@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v2 05/10] dt-bindings: clock: renesas,r8a78000-cpg: Add
- firmware property
-Message-ID: <20260716214924.GA1477674-robh@kernel.org>
-References: <cover.1783505329.git.geert+renesas@glider.be>
- <49726acff0fee1c3606e83c4f242ef6aad25b4b8.1783505329.git.geert+renesas@glider.be>
- <20260710-adventurous-burgundy-chimera-b2fff9@quoll>
- <CAMuHMdV=ckONBbTYELPJU8YWoNzdu3PJ95VR8cz+f_7dUeiPUw@mail.gmail.com>
+	dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b="ghDfFKCb"
+Received: by mail-oa1-f45.google.com with SMTP id 586e51a60fabf-4566a5bc186so599022fac.1
+        for <linux-pm@vger.kernel.org>; Thu, 16 Jul 2026 15:16:09 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linuxfoundation.org; s=google; t=1784240168; x=1784844968; darn=vger.kernel.org;
+        h=content-transfer-encoding:content-type:in-reply-to:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=g1sBmXlOpVH98WdcMMDI8e0pxb+Bu4b2dLUtCYrsF68=;
+        b=ghDfFKCbau3DOaQ/h9B/Ze4QQJCFSSf4qcfRdbBuZePEZiEBdzBE6Nub9Bn3hc1VOc
+         bxEi/yqjUQKXzfXe6xYFNYPIrb7zFmhrRqsEBTD726s5QRUanv6akDKQOiF44A7b4oQw
+         2BhT9eJ7/RkRI0RncZOhqTpXKRIfex0DkokCs=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1784240168; x=1784844968;
+        h=content-transfer-encoding:content-type:in-reply-to:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=g1sBmXlOpVH98WdcMMDI8e0pxb+Bu4b2dLUtCYrsF68=;
+        b=tYUN5bDjwiBEsXmJJWaofrG+XKTvoGn4NUIEZxUGN+saS6jErW5KH/yYnmtazjlti8
+         kYRkcN0qdaCJNxJfPu9LQWVxNisZpSpplzk0EblU8SdC2n6a5KMraAlUdOeA+9sRbUzX
+         qVQkGzCosWzYCy3ZIrOiw5WCsgnCAVcAqfP4UyHLmbGJBoelJN0PleokAMLzbPXZ64e0
+         9Y41RaPiqk/E3K2lXDg4mcX2aO6UpPf3NdQWJ3mvquyPnFQK9f4IJvfE3vercEdgkZHz
+         FagloVGORT6XZ1JxeMbFW6M8Lush6bUy35aAFngt6aWDbs65cEzoMBnipwBWGRf2jAo/
+         raNw==
+X-Forwarded-Encrypted: i=1; AHgh+RpmB2+vNqSTFVnoipcS05YA+PNOhWYH9d+3GicqbgZCVcAGzOmjuAvlCikFNhY4qfQGvBOrTwXYoQ==@vger.kernel.org
+X-Gm-Message-State: AOJu0YzV3IhbJbgdYBwMlb9yMJ3zO4D1ZAhjFVpgvKCdQ6z9AEjYYP9B
+	pfEdLjofvxOHeNxvnkSNF/wbMMVPIrRzcHnThH1krvGUi5cxGLs4l7Cn413QxIk5kgU=
+X-Gm-Gg: AfdE7cnJ2wGbDcWf898ExuXf78YEh4733Af1LyI2TzcQyCtuHpbZzA6pmy/ssyvY/EW
+	3zU1kpKRPS6iwliLPkUM71bn5MgLcgmrtG7yHLQkCksKRAj21DuZukFo0x+TcDh0idrZXuhdIDL
+	nIXLhkekqkficl3KcfL/FSVpxDTt/5Fjkry9SjXk0sRZfGaLypbEE1FLKy9MRZdZZHWa49Rzb4A
+	pWQTWtjBJrEBgDmSyR771IfxDrGHeP6USy+6nBrQOMsUnT95i21XJcQ5NNbDG79X5gd6J0bgeRX
+	VxZPArCokoUF99tlNe9+63gC2p6twiI+HNhaL3s+2Yfq+mv54ozflZcZGHsdsrkvgQ/3yNPj17s
+	LGqtAAq6HGSjIl5VgXpw2VTUEsiHBtXs5NwdR02ZfyWkph0enr9J2a6OtQu6t0tolV27lA2UaxF
+	KCOfhRrI8VxcU=
+X-Received: by 2002:a05:6870:950d:b0:455:c1d1:9cc0 with SMTP id 586e51a60fabf-456828aadadmr731648fac.19.1784240167924;
+        Thu, 16 Jul 2026 15:16:07 -0700 (PDT)
+Received: from [192.168.1.128] ([38.15.57.99])
+        by smtp.gmail.com with ESMTPSA id 586e51a60fabf-455ad91df9esm14010377fac.9.2026.07.16.15.16.05
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Thu, 16 Jul 2026 15:16:07 -0700 (PDT)
+Message-ID: <71c8ae0d-cc20-4b99-92c6-69641b2a0f85@linuxfoundation.org>
+Date: Thu, 16 Jul 2026 16:16:04 -0600
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <CAMuHMdV=ckONBbTYELPJU8YWoNzdu3PJ95VR8cz+f_7dUeiPUw@mail.gmail.com>
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] cpupower: Fix NULL pointer dereference on allocation
+ failure
+To: Malaya Kumar Rout <malayarout91@gmail.com>, linux-kernel@vger.kernel.org,
+ linux-pm@vger.kernel.org
+Cc: mrout@redhat.com, me@brighamcampbell.com,
+ Thomas Renninger <trenn@suse.com>, Shuah Khan <shuah@kernel.org>,
+ "John B. Wyatt IV" <jwyatt@redhat.com>, John Kacur <jkacur@redhat.com>,
+ Brahadambal Srinivasan <latha@linux.vnet.ibm.com>,
+ Shuah Khan <skhan@linuxfoundation.org>
+References: <20260704084303.86113-1-malayarout91@gmail.com>
+Content-Language: en-US
+From: Shuah Khan <skhan@linuxfoundation.org>
+In-Reply-To: <20260704084303.86113-1-malayarout91@gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
-On Fri, Jul 10, 2026 at 01:02:39PM +0200, Geert Uytterhoeven wrote:
-> Hi Krzysztof,
+On 7/4/26 02:43, Malaya Kumar Rout wrote:
+> The bitmask_alloc() function can return NULL if memory allocation fails,
+> but the code in main() does not check the return values before using the
+> allocated bitmasks. This can lead to a NULL pointer dereference when
+> bitmask_setall() or bitmask_parselist() is called with NULL pointers.
 > 
-> On Fri, 10 Jul 2026 at 12:21, Krzysztof Kozlowski <krzk@kernel.org> wrote:
-> > On Wed, Jul 08, 2026 at 12:16:23PM +0200, Geert Uytterhoeven wrote:
-> > > Add a firmware property, for systems where SCMI must be used instead of
-> > > direct hardware access.
-> > >
-> > > Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
-> > > ---
-> > > v2:
-> > >   - Spin off from "dt-bindings: clock: Document Renesas R-Car X5H Clock
-> > >     Pulse Generator".
-> > > ---
-> > >  .../devicetree/bindings/clock/renesas,r8a78000-cpg.yaml    | 7 +++++++
-> > >  1 file changed, 7 insertions(+)
-> > >
-> > > diff --git a/Documentation/devicetree/bindings/clock/renesas,r8a78000-cpg.yaml b/Documentation/devicetree/bindings/clock/renesas,r8a78000-cpg.yaml
-> > > index 4e23bba334382346..fc499e7cf52e4f0c 100644
-> > > --- a/Documentation/devicetree/bindings/clock/renesas,r8a78000-cpg.yaml
-> > > +++ b/Documentation/devicetree/bindings/clock/renesas,r8a78000-cpg.yaml
-> > > @@ -35,6 +35,12 @@ properties:
-> > >        <dt-bindings/clock/renesas,r8a78000-cpg.h>.
-> > >      const: 1
-> > >
-> > > +  firmware:
-> >
-> > RPi is doing similar, but I have doubts. It looks way too close to
-> > generic "syscon" which is disallowed.
-> >
-> > I think this should be vendor+purpose specific, e.g.:
-> > "renesas,scmi-transport" or "renesas,scmi-firmware"
+> Add proper NULL checks after bitmask allocations and exit gracefully with
+> an error message if allocation fails.
+> 
+> Fixes: 748f0d70087c ("cpupower: Provide online and offline CPU information")
+> Signed-off-by: Malaya Kumar Rout <malayarout91@gmail.com>
+> ---
+>   tools/power/cpupower/utils/cpupower.c | 11 +++++++++++
+>   1 file changed, 11 insertions(+)
+> 
+> diff --git a/tools/power/cpupower/utils/cpupower.c b/tools/power/cpupower/utils/cpupower.c
+> index 9ec973165af1..8f7b18b8bb43 100644
+> --- a/tools/power/cpupower/utils/cpupower.c
+> +++ b/tools/power/cpupower/utils/cpupower.c
+> @@ -184,6 +184,17 @@ int main(int argc, const char *argv[])
+>   	online_cpus = bitmask_alloc(sysconf(_SC_NPROCESSORS_CONF));
+>   	offline_cpus = bitmask_alloc(sysconf(_SC_NPROCESSORS_CONF));
+>   
+> +	if (!cpus_chosen || !online_cpus || !offline_cpus) {
+> +		fprintf(stderr, _("Failed to allocate bitmasks\n"));
+> +		if (cpus_chosen)
+> +			bitmask_free(cpus_chosen);
+> +		if (online_cpus)
+> +			bitmask_free(online_cpus);
+> +		if (offline_cpus)
+> +			bitmask_free(offline_cpus);
+> +		return EXIT_FAILURE;
+> +	}
+> +
+>   	argc--;
+>   	argv += 1;
+>   
 
-If you can tell me the resource that a 'firmware' provider provides then 
-it is fine, but you can't.
+Usually these small allocations don't fail to warrant checks.
 
-
-> The disadvantage of a vendor-specific property is that there are more
-> cases to handle for fw_devlink, cfr. "[PATCH v2 02/10] of: property:
-> fw_devlink: Add support for firmware"[1].
-
-If vendor specific phandle properties are a problem for fw_devlink, then 
-we already have that problem to solve and 1 more doesn't matter.
-
-Rob
+thanks,
+-- Shuah
