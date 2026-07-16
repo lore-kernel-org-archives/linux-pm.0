@@ -1,163 +1,230 @@
-Received: from PH7PR06CU001.outbound.protection.outlook.com (mail-westus3azolkn19010031.outbound.protection.outlook.com [52.103.23.31])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-ed1-f49.google.com (mail-ed1-f49.google.com [209.85.208.49])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DD5682DCF57;
-	Thu, 16 Jul 2026 18:58:16 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.103.23.31
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BB6DC43030C
+	for <linux-pm@vger.kernel.org>; Thu, 16 Jul 2026 19:11:33 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.208.49
 ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1784228298; cv=fail; b=kQFosFSYjuKws4QD5+J5xaH3D4eIkTFRUQXGDYlvPibKsa/fN5FbKKsuOGQ9sNLFAJSmuKfvrnph8r9Yp7loYcUGvgGXrHpxh3vdz4xCBWdmLmM+bpbgFyFRz7LB3m0wgqqsTezdNZe6Ya9X50ZuWDizLToV3Es8wVaa6Vfxqac=
+	t=1784229095; cv=pass; b=sm9poYGA0xkELRnF1K+CFI0tPU4kIS4T5hUOx8WbK6Mn86QNQLuNzBqJH7mftom9ncQoOLJnAN1ct+bVofHzH3wi0OYtpAefpHJ4YsPocSkxUnTXsAfP8UQ/YznSFOavBG7P4kY7whNofjrrlyNGeOTUBPyk0Pr2Fn8mM+5svs4=
 ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1784228298; c=relaxed/simple;
-	bh=qSMnXQoHFHfE2LTHrmF0MZMKiemMXiDxQL944Q/DjsY=;
-	h=From:To:CC:Subject:Date:Message-ID:References:In-Reply-To:
-	 Content-Type:MIME-Version; b=Sx1ktHbkmAFfwBEn8qpPWwWwFpKOD6okriQIlbt/dKhx9EKWTJCBfRV9K6Q57q5AjTa6DZamW7mEYbH8gPDMbn+EeuR5sKPKFSU6xVB7gTxRbPF8wHD5UO0ZfDdKTOBlB5LyIaBkfihYToc9eURXoc9eZ549HmUt2MejBLenPxY=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=outlook.com; spf=pass smtp.mailfrom=outlook.com; dkim=pass (2048-bit key) header.d=outlook.com header.i=@outlook.com header.b=dU30aImC; arc=fail smtp.client-ip=52.103.23.31
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=outlook.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=outlook.com
+	s=arc-20240116; t=1784229095; c=relaxed/simple;
+	bh=4VapZJRDmF3WSIyi79B97xpzHYfeRA3NKNF4cn5+wm8=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=sV4Ml4N6dax+T0nCQgSL4le2wOlNPWL3vM/uaHWC44HP2MSvd2DIkhfjNDzqvglwKzL6A7dcRODPU+dSoyNx1UjpZpaugzx9vyyEY7/wrX2AxfolcGCDcD+FhUaiZ9Aebe8bANBdTXcFFoz8TLGtduCreE6JMm4tMr2+rHQzHew=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com; spf=pass smtp.mailfrom=google.com; dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b=kZ9MERHg; arc=pass smtp.client-ip=209.85.208.49
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=google.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=outlook.com header.i=@outlook.com header.b="dU30aImC"
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=R5v8XRHDFmc9j+eq1ovPg8UeLRzLVgkRHOpL+ThKVXJERL+xSfnDMQ4ob2o61MO7BRMmaTDfOblLpi16DIQuatoH7miH1SpKIbhL8xoJwbCLQEzozyZ+0M6RA6Luzvxh0KHTN9t6gYAgiiCgtI5si9rE8SRAdBO6z4i0cNW9bkxHlW1C0o3+unSe5wxaa6LIvjKa2DYX3wENaGhWjcTI8K4HeSPVnSwYa18HF5qFoq2hyNsDvzdPg1k2fOSNjGYZFD0g27LQ0b+aHphsUBx8UmljchcaU0JwM1Gaa7hv9sei8grBCzIKN2TO1SMBOCw54a7F204eKC2+yc4quezAdQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=qSMnXQoHFHfE2LTHrmF0MZMKiemMXiDxQL944Q/DjsY=;
- b=gQ8DrTqrpQpEfzeP4ocXGB+curE4KhSlVnMeJxQp6Yc+ujuVm2tvEeTyEiCxmTxz4IAUTsVJd6DFoGoC3Xzmw++39RHc/mN8xOsgLJnFKAgR79bPjxgC7W6QyGP0tNKqJqsJ6zq64xn/PO+kiXtp7SQipSzNDcGPENW/b7QKNVQ/CadCPGojKoC2g2uYSjxlZVuqth4iGRJwaCM6sA0kHKBSN/ZXazYAIn5VTtVS6e0mrJlvV6ZsMjJsGUFz+7vJesVS4BP7usEqpOW2L47qNTHUNv9zU502FwycYNxJosAt4PxPdW5R+j1W2lSfvu82/swR6A7r7fEpYNn40N/Xxw==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=none; dmarc=none;
- dkim=none; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=outlook.com;
- s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=qSMnXQoHFHfE2LTHrmF0MZMKiemMXiDxQL944Q/DjsY=;
- b=dU30aImCqFCc/R1ybaYgc0TV09qKxhRIxMVsB1gszu/0SajwJaGVkKQOrznrPDT1VH14dwFWpgQyhsWCJNahCU7KCpdfV9Nf78R472oKNvUmqnfyJ1OTPmZJep67iv+Y+PdjHk2Z4MHg8qOZpJEupJNKId1wG9ZPrmDz16GqD/vNMcd16ijQbBCKIPcMmI8yL0ql5WHOeQodFJ6gPyNDg5W16JK+MHiQXAomMoC1RLP/ndZLvqbm20IFv+NV6zuQ9bcNfrNPaBvxi/bOVplsxrOq+5fq8lsd6cLa/g/5l1dqgRU6yKPxX3IXIeE6E4IChwbOr5S0XP291dD1XjQUIw==
-Received: from SN6PR02MB4157.namprd02.prod.outlook.com (2603:10b6:805:33::23)
- by LV0PR02MB11496.namprd02.prod.outlook.com (2603:10b6:408:383::18) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.223.12; Thu, 16 Jul
- 2026 18:58:14 +0000
-Received: from SN6PR02MB4157.namprd02.prod.outlook.com
- ([fe80::900:1ccf:2b1e:52b6]) by SN6PR02MB4157.namprd02.prod.outlook.com
- ([fe80::900:1ccf:2b1e:52b6%3]) with mapi id 15.21.0223.008; Thu, 16 Jul 2026
- 18:58:14 +0000
-From: Michael Kelley <mhklinux@outlook.com>
-To: Rong Zhang <i@rong.moe>, K Prateek Nayak <kprateek.nayak@amd.com>, Jason
- Andryuk <jason.andryuk@amd.com>
-CC: Huang Rui <ray.huang@amd.com>, Mario Limonciello
-	<mario.limonciello@amd.com>, Perry Yuan <perry.yuan@amd.com>, "Rafael J.
- Wysocki" <rafael@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>,
-	"Gautham R. Shenoy" <gautham.shenoy@amd.com>, Borislav Petkov <bp@alien8.de>,
-	"linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
-	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: RE: [PATCH] cpufreq/amd-pstate: Bail out early in virtual machines
- and don't warn
-Thread-Topic: [PATCH] cpufreq/amd-pstate: Bail out early in virtual machines
- and don't warn
-Thread-Index: AQIrPSTZ8vlDsNovD5GCISbceOWLTLXUH6OAgAAIFYCAAAXkUA==
-Date: Thu, 16 Jul 2026 18:58:14 +0000
-Message-ID:
- <SN6PR02MB41575F5EDD2C5EBBA567EB49D4C72@SN6PR02MB4157.namprd02.prod.outlook.com>
-References: <20260716-amd-pstate-vm-v1-1-2ac97d3cf6e7@rong.moe>
-	 <7caa23a0-bcf0-41a5-a600-99b33f418020@amd.com>
- <e23f42a9e57220c49ced41d22d50618cf24948cf.camel@rong.moe>
-In-Reply-To: <e23f42a9e57220c49ced41d22d50618cf24948cf.camel@rong.moe>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach:
-X-MS-TNEF-Correlator:
-x-ms-publictraffictype: Email
-x-ms-traffictypediagnostic: SN6PR02MB4157:EE_|LV0PR02MB11496:EE_
-x-ms-office365-filtering-correlation-id: 3952b91b-950a-4b5a-0384-08dee36c3086
-x-microsoft-antispam:
- BCL:0;ARA:14566002|13091999003|31061999003|15080799012|19110799012|24021099003|8060799015|8062599012|4140399003|51005399006|25010399006|37011999003|40105399003|102099032|3412199025|440099028;
-x-microsoft-antispam-message-info:
- =?utf-8?B?QUJZaUVzdXdLQkRjZnYxcm1VSko0UE92TlBWd0FwY09XbWpSZVZnV1haVEx6?=
- =?utf-8?B?bC9PRWNaMGlpdk1OZVExL0FGMEQ0RVJoRVRoYmFnbEtEaHROL1A3cVdTL1E4?=
- =?utf-8?B?alc2bnpOSmZvWC9mcjZKcS9lSkI2c0tpQjBPc3FKSjFTSGo4ekwvNnk3dzRJ?=
- =?utf-8?B?LzVKcHNkTnNzOU9ySzh0eWhqN20ycEpSWFE5TEszS2MyYWtYa2pMT1NoaUIv?=
- =?utf-8?B?OVhJOGtXQktHMEEzbU04TzFVcG5KMGJIdWxLWUMwUkdRWGhLUXFoUWFZcEdV?=
- =?utf-8?B?VGhEbC93Ni9pRWJuQlVmWndWSGZ5QkZVaElvSlZJRkwxNTRWME1WT0E3Q3k2?=
- =?utf-8?B?aFBHNjl5cVd2bkpXRFRPWEowV0Vuc0ttdjhRbDl3QzNxNWo1M3BLM1FTM2gz?=
- =?utf-8?B?WU5aa3ROM1haSlN5cmp1VXVvR0kzckY4Zm9aZEluWDlHRldHaVpiODRvL2ZT?=
- =?utf-8?B?K1J1ajY0OGdwN09rV2hvRzBXZ2tpQ2lLVHNOZmFaQldkQkZURDliWlcwZU42?=
- =?utf-8?B?aFZVSElJOGg5RjN3RnhuSGdnTHBMMzFwYWJzKzN0b0llcDZtV0ZGcjcvZnZH?=
- =?utf-8?B?VWRHL2VQY0lVeENFV2F0ekE1MGxPamFxRno0bUVzU1VmOThwaEV2WGVocWx0?=
- =?utf-8?B?d2R4RDhBSm1PMlBsTXpWRmIwckVuclpsSjdGV1RVb0R1LzcrS2VuUG15RUt5?=
- =?utf-8?B?aTBqYlkybjQ0MGROL2Q0QlgvcVhZeWwvMm1qbkdMSmhPaCtFMEk3RzhvR0tm?=
- =?utf-8?B?eVI5ZGxEMndwOG5CQWlmS1hlNTQ0eUNiWmZuN3VLSDBGVkZvUHhyR2N3R25i?=
- =?utf-8?B?b1FlSVFQVnlrQ3RGSmZWTjZNWEM3ZnZHYWhFZ1BlS2JENk4vVUtHa2R5dGFQ?=
- =?utf-8?B?WDZaRkNCbWhuUnU1bXJJVGFsaGxRdDJ0ZkluTVRWUFlUSk1Uc1RLcXd6enJN?=
- =?utf-8?B?R3dWLzVSc0EyMjk0Q29tNUhOSStleURPQ09naUVubnRHOUYya1QrQld3aFVD?=
- =?utf-8?B?NmQ4dDhYQXZrM0xQTEVmUkltdFNBekwrVHgxdUFwTXozUituSWxVcG1DeUoz?=
- =?utf-8?B?RTJUOUZSK0VhRnZkMnY5QmJoNEZrNG8za2xzL2tITHc2dUUwazhYVnJ4anhP?=
- =?utf-8?B?ZExOc0hkbWphQ0VPTzdCaWJ1TkJJb2xBcWFrY0lNUTFWRmdtQWoxV29RVmVw?=
- =?utf-8?B?SDIvamovVm1CVmZkSDQ4Wkk0WUE2ZTJhTG1HWlpiemtyaTROQVJEMnVUUnJC?=
- =?utf-8?B?cHpMdkNRZVd3RjZkTjBNc0IxQkdWSnBjWlhXZElwbmVjU1UwckRXdEMrQlBJ?=
- =?utf-8?Q?XWnLWBy7/Kw93vwtbtaEGqndd4jRZm/k9p?=
-x-ms-exchange-antispam-messagedata-chunkcount: 1
-x-ms-exchange-antispam-messagedata-0:
- =?utf-8?B?UTFIMHVhOTJYVmxWSXRDY1dpeXdTcktYc1BDZ3VQOE13ZEdlZGJnZFJCa2Zs?=
- =?utf-8?B?MzJaUiszREZXK3ozTiswY0lKL0U3R2pZYmlpd1Y2MURDSEhLUGU1bGJOWHBp?=
- =?utf-8?B?YnAzcVROeDY1R3ZCRWNBTXBKQjZqUCtqRGsrc24vbURIc2dGSndEQ2NUMmZo?=
- =?utf-8?B?SlNSaUM2TE1WUVRqQWtHeUcwaVFna1AxS0krQi9MYzU3eHpUUThaT0NKWFh2?=
- =?utf-8?B?WjVOUzVxZXRCTm1LSFoySk54WXBCUk1DQWxDeFBXVWs1UmZtSmltUHFMZG9v?=
- =?utf-8?B?Z3pvOUJaQmpTQkptMDJNVlpuMTNGTkN4NFVmMlJBVXVvSVhEZFlUL2F0YWRo?=
- =?utf-8?B?YXBFMFVoeE5uS2o4cWJHMmMxM2wwNHdHNkF4V001QnFrRXh0MVkvRmpxVGFK?=
- =?utf-8?B?eXI5Y3AzckdYcjAvRnVQUUZHellocVRSRWhtdDZVcDZtS21YZjB5S1pRK3Yx?=
- =?utf-8?B?SVV6YUNKRjhxdVUzQ0JzT0FwU0R4R3RiRGdiaHFPbkJSdStiaUdDaWNWVFNY?=
- =?utf-8?B?R29yWENNUU1WUmhyVFpzVm9iYm5Sc0ZuMU8xcW9YbHlMdVdiT3FBV1pMQnMx?=
- =?utf-8?B?THU1M1IybzduTGduMHh1SWNrWHNORHdUYjFjWVp0dHZjR2VlUTV3NUd5VEdI?=
- =?utf-8?B?WGt1MXMydVRGQU5KM1RwbzVoREJEWWJWWkJoYkFnM3Q4UTZNYVJvMkhjdzZ4?=
- =?utf-8?B?TUpROERVR2U0U2I2eWVGOVYwTXJzQTF4NEpSa3ZidXd3Vlo4M1RseVA3c2ZN?=
- =?utf-8?B?c0daSm0yTC9EcmphSFQ3K2ttSW8wOUpINE5IbGsxdDR4blk5SVpRYVZsYU1J?=
- =?utf-8?B?bUZVNVFid0FvSXlsV0d4aG1ZMTBLNU51SVFZZnp3SmFSeGFQNTIxQWE5S0hQ?=
- =?utf-8?B?VTh0OFJ4QkJkNko2OFFXNlh3N0xlNlg0Zndhc21ac0Z1dThMbHhUOHM3NnRu?=
- =?utf-8?B?R1RpT3czejRuallSbndQS2lsUm1JZ2E5MzQ1Q2V2dUpYTGpCMzZoK3pOWWJL?=
- =?utf-8?B?RHZuTE03a3V5VHRUZXM4eVoya2JLRkxRd1NxaGRuNVRnRGcvWnREZWxTL2VW?=
- =?utf-8?B?ZmJRanZJVlgvRW15OUEyRlBxL3JOUHRYeHFjY3hIby81VTR4ci9VZ3Z5RDJG?=
- =?utf-8?B?U0lYcE4yT2lwWDlkUmJnVG40YmFFbmJNczlJSDUwUnRUb0thL0x0Nk9OdTUx?=
- =?utf-8?B?NWx3Y2thQTRuL2xsZzc4V0xlellsWlpGQ2RZTDd1VDZBbVFaaC8xcVhucFVL?=
- =?utf-8?B?OE91cCtGbGtOS201SG5mUmczWkxkS3pEY1JEOFZTQlgra1ZCdHZ4cm56QnBt?=
- =?utf-8?B?Z1JMOThKdVkwOEdRUmJ5R254eXV2N0hiN2JYWDFJV2VqNm95anQvU1ZDa2pC?=
- =?utf-8?B?YSsyRDRrZk1ISTVKaHNHQk1tMi8vUU5UNzAzNzhVN3FLMUpZRk5oMFcrcEJK?=
- =?utf-8?B?WllUQjJrOGh5NzRneWpjZktPL3BES1NUUGtzZThQWklHTnkvSzk3dmE0WnAx?=
- =?utf-8?B?bGhWM3Nwdks0VVFHblJTN0lKeUs1dlczdWRrc3JDU29EWEU2VE9pa2hQcFkz?=
- =?utf-8?B?UjYwS3NZaUJSTTdUdlpRQXVUWHVrWXR1MlB0UVZjU1lJMGlaUkF0cDkzc0kv?=
- =?utf-8?B?S1ExbFpRT1ROL1A2UnZ1ZGsyVHFqNEZEOU1jcW9lRlNKTW91WUVMK1FnSDU1?=
- =?utf-8?B?b2h1cUxZdE1NTExUaTBjelo4QW03R1NveGU3SWxJL0ZyVzk5ZkVVbWlKNnAx?=
- =?utf-8?B?Qit3b0w4UEVKSzVibVBVbzJuZUN0YjNyYjN3RS82bm1sRW5jZjZlZWEydVBV?=
- =?utf-8?Q?7lpQX3NtJdXx181D3QjO368PiYwfxtrYUQtBk=3D?=
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b="kZ9MERHg"
+Received: by mail-ed1-f49.google.com with SMTP id 4fb4d7f45d1cf-698b78c05b0so5151a12.1
+        for <linux-pm@vger.kernel.org>; Thu, 16 Jul 2026 12:11:33 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1784229092; cv=none;
+        d=google.com; s=arc-20260327;
+        b=kzNxupxHGeOypeFiZVqDnIWSA0YPLggrakKEK0l6LGYcHsdOAtXEQ2OpNZ8nCNTDtn
+         7pNMbuhvZhEZshKapAr5wyVBHcgN2VcJLL13qcNQdsrUp62fCK4h1NJ/XYcPUaXHyNBs
+         wq2lAc6GHQdDL99MlVSJTPLAU+RPn+8Na69XTqh/cPdFhTF5mMXr43PfQWKpsDr3EYF6
+         MihhAxgI5PcSNcsw08RJVymzXzivlvSYdaMM2zZLcfa4tP1mIp9bsjbpAk2DRS7Y9BQ3
+         geOUZlyxCirw8Avnhy0kTvCREvNaGOIEeqdsBcmZqorrJKLX+AU8NTD6ASeH9Xl5Bjxx
+         JSlg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=66IJRi/rauwLRinBZlzo5PXKwTqAJj2LwQRJbCuIN6c=;
+        fh=hFxZfXCTWw/hTi9jH6isfFAfogetbxrzyls3khaA4qk=;
+        b=Pq15nE0+/l2z/jqoa5AoSDeVc5P+SwyIa5p0B/4wkGwKa5P0uYzPNveF+HRjSozMNb
+         Rm4cZ1CqK06gxfpcx24w2O6SMsjnDqwi4LbxkmD109linI7yomFl2CeU0bxqnagDO1hT
+         1tytwmizirJwaNQqq12fdDVgO5TZN+u11/O5KIvLxDWMqa5r5BDQWZWwMZbVQ3FbGMFD
+         BE/dJLz8MAqnhW9vrpfVUw+w0L6MZ87d+jwcgg/R97sYH/5egT6UO/qPYJDOB9eL8RpX
+         9mZREBJGW7H3oZSUvXgrBzVLxnSgBAKjqNdgWLf/YoHlUOJFopiiw0BXds6ryersmcY2
+         CpVw==;
+        darn=vger.kernel.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20251104; t=1784229092; x=1784833892; darn=vger.kernel.org;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=66IJRi/rauwLRinBZlzo5PXKwTqAJj2LwQRJbCuIN6c=;
+        b=kZ9MERHgoYSbFBo/HgoYlOKUFJtd6gTSodTJuyMbhgId0zQZenLLTMGVfDjx9bwg18
+         OP3vaQ/NIYlvHiicME0Pex/w1QMieyVA7ZAlZ7rA4aJyzQczP5pw9PY5N2eE52chdOVz
+         t28Ts8o8rCQ+I8wRCXZ3uKUzLXpbN1f8AelS8KOPyV/qcyBW4V+6/oGCrekd6hAFj9re
+         vXw5HE0/Oxk+Vu6WIVCf/g8VKaIr8QeOWB0ePvH88aYu54WIEc1ID2VqKJw3QnU3nw/9
+         vPYALxoifCMHIEEKKAt1CDbhAqddXRPscoPyB4hey6pXnsugkToo+YUGEZlS93qlpUOo
+         HvrA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1784229092; x=1784833892;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=66IJRi/rauwLRinBZlzo5PXKwTqAJj2LwQRJbCuIN6c=;
+        b=fUZJl0dEV7xGT7KZwODU7/n14Icg+OVJFvsLX8bkTwUcNieLg6BjQ0UjYLNSIVBpV4
+         IGdDLXUaRPguUD/pnyxtmBsNZ6eGvfkQYEMC19MZTTk6/cVg9DquS9H73R2kJ9kEYmVs
+         /1r+ihDwX+RkNxi2FZckFzqhWHXsu/AvI48UkZQmu5aV3cthgdu+A+cjp7pTffo2ldGy
+         B3O8rBBeTlZNAkzCS87qNYyUyQYV7lF7AeviuU4khLbDnD3ut0IvpYhisabXyXmglVmO
+         ihZDzXACNuYqYpk8NaZcFkytXHy73MYSqC+zh4liH9QcOnpKSgufSU5dflOpaVR93FgF
+         zCSA==
+X-Forwarded-Encrypted: i=1; AHgh+RqIFkRbFZh9Z6tgeHUfSWSDjDaWbABoABkIaQH0ibYhY83rEbtp0reDc9zWP9mwR56CBMEDWEbouA==@vger.kernel.org
+X-Gm-Message-State: AOJu0YzCegnlQbV21Ausrei9wtQ9JavoEOOltIboDUr0KSzQHaJZxIfz
+	fAh2tjKRnT1aB32FPeoqQF8xX2/HbbZBzf5xSUAOpHbWA2V+5qQ11MEmLszjCJDwk9OtjQXds6U
+	hvKXih0AuI7osf9Z3EKWzg4DUtJklh2LMlFxKmiIO
+X-Gm-Gg: AfdE7cms8THTvWztNq1/VjWicpTmLi4P6nmG4fjm75OUD0F0s92GWXtH9fCymn+E2Rx
+	93oykUnXVPoncw/JrMT8hAtr/3XRMIVMp9Fa1P7vTfxcUEegqt4GxdPwjA5++GdDo8tFL/TejWn
+	dpII6Vfv8UuS0xD4SrHGZLSJ3vyCleXwOgNHktbURXAeDyGT0ZguiyL+JcmTlVwBFBCpODNI1OR
+	YhybiusBkN+C23+ICYAq+xfqIfh9Fjk+Io9hPuyJsu887JwdL/G6a39GdLHUQ==
+X-Received: by 2002:a05:6402:1210:b0:697:be5e:3c26 with SMTP id
+ 4fb4d7f45d1cf-69e601882c7mr5404a12.7.1784229091383; Thu, 16 Jul 2026 12:11:31
+ -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-OriginatorOrg: outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-AuthSource: SN6PR02MB4157.namprd02.prod.outlook.com
-X-MS-Exchange-CrossTenant-RMS-PersistedConsumerOrg: 00000000-0000-0000-0000-000000000000
-X-MS-Exchange-CrossTenant-Network-Message-Id: 3952b91b-950a-4b5a-0384-08dee36c3086
-X-MS-Exchange-CrossTenant-originalarrivaltime: 16 Jul 2026 18:58:14.2481
- (UTC)
-X-MS-Exchange-CrossTenant-fromentityheader: Hosted
-X-MS-Exchange-CrossTenant-id: 84df9e7f-e9f6-40af-b435-aaaaaaaaaaaa
-X-MS-Exchange-CrossTenant-rms-persistedconsumerorg: 00000000-0000-0000-0000-000000000000
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: LV0PR02MB11496
+References: <20260618224527.1506419-1-jmattson@google.com> <20260618224527.1506419-4-jmattson@google.com>
+ <CAJZ5v0jeJCN3Zu4uWoOYTYcu9o4BpkWLitNToGbPdwm8Tub=hg@mail.gmail.com>
+ <a962064f-fcd5-4ad2-bc7d-4249ec8fa495@oss.qualcomm.com> <CAJZ5v0iJ=gLpjX2ZGhH7v0QQKROkoOto6R6-pOk=76ADrNWySw@mail.gmail.com>
+ <d05b97f9-140d-4937-8c83-de688e392d6e@oss.qualcomm.com>
+In-Reply-To: <d05b97f9-140d-4937-8c83-de688e392d6e@oss.qualcomm.com>
+From: Jim Mattson <jmattson@google.com>
+Date: Thu, 16 Jul 2026 12:11:18 -0700
+X-Gm-Features: AUfX_mzO4GTg9LCXqc0-audqW_vY4qoqUo27A3yIEj39gttfZUq-Y0wrGQJ65AI
+Message-ID: <CALMp9eR1_ud8-qi+iHHRmCYtrwU2vKE5PkQDPDS=7Rja5eKnQw@mail.gmail.com>
+Subject: Re: [PATCH v3 3/4] cpufreq: ACPI: Use IPI to update boost MSR in cpufreq_boost_down_prep()
+To: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, bp@alien8.de, tglx@kernel.org, x86@kernel.org, 
+	viresh.kumar@linaro.org, yosry@kernel.org, andrew.cooper3@citrix.com, 
+	ludloff@gmail.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, 
+	Sashiko <sashiko-bot@kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-RnJvbTogUm9uZyBaaGFuZyA8aUByb25nLm1vZT4gU2VudDogVGh1cnNkYXksIEp1bHkgMTYsIDIw
-MjYgMTE6MjkgQU0NCj4gDQo+IEhpIEsgUHJhdGVlaywNCj4gDQo+IFRoYW5rcyBmb3IgcmV2aWV3
-aW5nIHRoaXMuDQo+IA0KDQpbc25pcF0NCg0KPiANCj4gQXMgSmFzb24gc2FpZDoNCj4gDQo+ICAg
-IFdpdGggWGVuLCB0aGUgWGVuIGh5cGVydmlzb3IgaXRzZWxmIGNvbnRyb2xzIENQUEMuICBkb20w
-DQo+ICAgICh4ZW5faW5pdGlhbF9kb21haW4oKSkgZG9lc24ndCBuZWVkIHRoZSBhbWQtcHN0YXRl
-IGRyaXZlci4NCj4gDQo+IEkgdGhpbmsgd2UgZG9uJ3QgbmVlZCB0byB3b3JyeSBhYm91dCBYZW4u
-DQo+IA0KPiBATWljaGFlbCwgaWYgeW91IGhhdmUgdGhlIHRpbWUsIGNvdWxkIHlvdSB0ZXN0IGlm
-IEh5cGVyLVYgZXhwb3Nlcw0KPiBYODZfRkVBVFVSRV9IV19QU1RBVEUgKGkuZS4sIDB4ODAwMDAw
-MDcvZWR4IGJpdCA3KT8NCg0KSSBjaGVja2VkIGEgVk0gcnVubmluZyBvbiBIeXBlci1WIG9uIGFu
-IEFNRCBaZW4gMiAoRVBZQyA3NDUyKSwNCmFuZCBhbm90aGVyIG9uIGEgWmVuIDQgKEVQWUMgOVY3
-NCkgcHJvY2Vzc29yLiBOZWl0aGVyIGhhcw0KWDg2X0ZFQVRVUkVfSFdfUFNUQVRFIHNldC4gVGhl
-cmUgYXJlIG90aGVyIHZhcmlhdGlvbnMgdGhhdA0KY291bGQgYWZmZWN0IHdoYXQgYSBndWVzdCBv
-biBIeXBlci1WIHNlZXMsIGJ1dCB0aGVzZSBzcG90IHRlc3RzDQphcmUgc3VmZmljaWVudCBldmlk
-ZW5jZSB0aGF0IHRoaXMgZmxhZyBkb2VzIHdoYXQgd2Ugd2FudCBmb3INCkh5cGVyLVYgZ3Vlc3Rz
-Lg0KDQpNaWNoYWVsDQo=
+On Thu, Jun 25, 2026 at 8:50=E2=80=AFAM Zhongqiu Han
+<zhongqiu.han@oss.qualcomm.com> wrote:
+
+> Hi Rafael,
+> Thanks for the clarification.
+>
+> I agree. Just for discussion, two possible approaches come to mind:
+>
+> Option 1 (structurally clean):
+> Introduce an optional per-CPU cpufreq_driver->set_boost_cpu(cpu, enable)
+> hook and call it from __cpufreq_offline() before cpumask_clear_cpu(),
+> but only on the unbind path (not on plain CPU hotplug-offline - clearing
+> it there maybe wrongly re-enable boost on a still-online sibling on
+> shared-scope HW). Roughly (rough sketch only):
+>
+> diff --git a/drivers/cpufreq/acpi-cpufreq.c b/drivers/cpufreq/acpi-cpufre=
+q.c
+> index 21639d9ac753..5f298fbb0d8c 100644
+> --- a/drivers/cpufreq/acpi-cpufreq.c
+> +++ b/drivers/cpufreq/acpi-cpufreq.c
+> @@ -525,13 +525,10 @@ static void free_acpi_perf_data(void)
+>          free_percpu(acpi_perf_data);
+>   }
+>
+> -static int cpufreq_boost_down_prep(unsigned int cpu)
+> +static void acpi_cpufreq_set_boost_cpu(unsigned int cpu, bool enable)
+>   {
+> -       /*
+> -        * Clear the boost-disable bit on the CPU_DOWN path so that
+> -        * this cpu cannot block the remaining ones from boosting.
+> -        */
+> -       return boost_set_msr(1);
+> +       smp_call_function_single(cpu, boost_set_msr_each,
+> +                                (void *)(long)enable, 1);
+>   }
+>
+>   /*
+> @@ -951,7 +948,6 @@ static void acpi_cpufreq_cpu_exit(struct
+> cpufreq_policy *policy)
+>
+>          pr_debug("%s\n", __func__);
+>
+> -       cpufreq_boost_down_prep(policy->cpu);
+>          policy->fast_switch_possible =3D false;
+>          policy->driver_data =3D NULL;
+>          acpi_processor_unregister_performance(data->acpi_perf_cpu);
+> @@ -986,6 +982,7 @@ static struct cpufreq_driver acpi_cpufreq_driver =3D =
+{
+>          .bios_limit     =3D acpi_processor_get_bios_limit,
+>          .init           =3D acpi_cpufreq_cpu_init,
+>          .exit           =3D acpi_cpufreq_cpu_exit,
+> +       .set_boost_cpu  =3D acpi_cpufreq_set_boost_cpu,
+>          .resume         =3D acpi_cpufreq_resume,
+>          .name           =3D "acpi-cpufreq",
+>          .attr           =3D acpi_cpufreq_attr,
+> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> index 507224c9ecd3..c4952ca3e8a5 100644
+> --- a/drivers/cpufreq/cpufreq.c
+> +++ b/drivers/cpufreq/cpufreq.c
+> @@ -1669,13 +1669,18 @@ static int cpufreq_add_dev(struct device *dev,
+> struct subsys_interface *sif)
+>          return 0;
+>   }
+>
+> -static void __cpufreq_offline(unsigned int cpu, struct cpufreq_policy
+> *policy)
+> +static void __cpufreq_offline(unsigned int cpu, struct cpufreq_policy
+> *policy,
+> +                             bool unbinding)
+>   {
+>          int ret;
+>
+>          if (has_target())
+>                  cpufreq_stop_governor(policy);
+>
+> +       if (unbinding && cpufreq_driver->set_boost_cpu &&
+> +           policy->boost_supported)
+> +               cpufreq_driver->set_boost_cpu(cpu, true);
+> +
+>          cpumask_clear_cpu(cpu, policy->cpus);
+>
+>          if (!policy_is_inactive(policy)) {
+> @@ -1730,7 +1735,7 @@ static int cpufreq_offline(unsigned int cpu)
+>
+>          guard(cpufreq_policy_write)(policy);
+>
+> -       __cpufreq_offline(cpu, policy);
+> +       __cpufreq_offline(cpu, policy, false);
+>
+>          return 0;
+>   }
+> @@ -1750,7 +1755,7 @@ static void cpufreq_remove_dev(struct device *dev,
+> struct subsys_interface *sif)
+>
+>          scoped_guard(cpufreq_policy_write, policy) {
+>                  if (cpu_online(cpu))
+> -                       __cpufreq_offline(cpu, policy);
+> +                       __cpufreq_offline(cpu, policy, true);
+>
+>                  remove_cpu_dev_symlink(policy, cpu, dev);
+>
+> diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
+> index ae9d1ce4f49c..c174b013dd76 100644
+> --- a/include/linux/cpufreq.h
+> +++ b/include/linux/cpufreq.h
+> @@ -413,6 +413,8 @@ struct cpufreq_driver {
+>          int             (*online)(struct cpufreq_policy *policy);
+>          int             (*offline)(struct cpufreq_policy *policy);
+>          void            (*exit)(struct cpufreq_policy *policy);
+> +       /* Optional */
+> +       void            (*set_boost_cpu)(unsigned int cpu, bool enable);
+>          int             (*suspend)(struct cpufreq_policy *policy);
+>          int             (*resume)(struct cpufreq_policy *policy);
+>
+>
+>
+> Option 2 (lighter, but it is at odds with the direction discussed
+> above): stay in acpi-cpufreq's ->exit() and restore over
+> policy->related_cpus instead.
+>
+>
+>
+>
+> --
+> Thx and BRs,
+> Zhongqiu Han
+
+While you negotiate the cleanup, should I remove this change from the serie=
+s?
