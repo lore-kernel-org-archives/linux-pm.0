@@ -1,228 +1,177 @@
-Received: from smtpnm6-03.21cn.com (smtpnm6-03.21cn.com [182.42.153.190])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id 4B87B1A6828;
-	Thu, 16 Jul 2026 04:00:50 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=182.42.153.190
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1784174453; cv=none; b=rC+VwkMxwf3dE6f0cdIG2JtQVYvaYwQKfLxOz8JppmwUWoxvVZYy7KBLrwbH0ptpEsmiNYXSpG0/sfMuMskDt275jHtuTaZ23mRTr7xjqoAG02cuBoo6jlgNbo9DFHEFmuODm5a7JDYCLW+I5pPE27ePi9/is1R14xNDsFvhoNg=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1784174453; c=relaxed/simple;
-	bh=SBDM/h/GJ4zEgPmRAEdO3OW0zxm5iJDBhfXdtnodVTw=;
-	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=clylLOKwX/YQT3g/hfifj58YJy5v/7YfUmQtYX8qS5T2AUsqx+ej6tUQxJfFHV922hol0CATOjHp+HiXVM+yupSGRtGIRxEl+jCkAW9HJqZz5JozGwMU16CKkPlqOIhEwT6G9+gvV6dWvGt7QCyv3JeFslIlrmJddn9DML3CTdI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=chinatelecom.cn; spf=pass smtp.mailfrom=chinatelecom.cn; arc=none smtp.client-ip=182.42.153.190
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=chinatelecom.cn
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=chinatelecom.cn
-HMM_SOURCE_IP:172.27.0.101:0.1442045292
-HMM_ATTACHE_NUM:0000
-HMM_SOURCE_TYPE:SMTP
-Received: from clientip-139.200.108.11 (unknown [172.27.0.101])
-	by smtpnm6-03.21cn.com (HERMES) with SMTP id 65689C02099C;
-	Thu, 16 Jul 2026 11:52:22 +0800 (CST)
-X-189-SAVE-TO-SEND: +pengqh1@chinatelecom.cn
-Received: from  ([139.200.108.11])
-	by gateway-ssl-dep-657b8df9db-xsh6f with ESMTP id 930635a2917d48349cb7d6736a9f402c for kprateek.nayak@amd.com;
-	Thu, 16 Jul 2026 11:52:35 CST
-X-Transaction-ID: 930635a2917d48349cb7d6736a9f402c
-X-Real-From: pengqh1@chinatelecom.cn
-X-Receive-IP: 139.200.108.11
-X-MEDUSA-Status: 0
-Sender: pengqh1@chinatelecom.cn
-From: Qianheng Peng <pengqh1@chinatelecom.cn>
-To: kprateek.nayak@amd.com
-Cc: li.meng@amd.com,
-	linux-kernel@vger.kernel.org,
-	linux-pm@vger.kernel.org,
-	mario.limonciello@amd.com,
-	pengqh1@chinatelecom.cn,
-	perry.yuan@amd.com,
-	rafael@kernel.org,
-	ray.huang@amd.com,
-	skhan@linuxfoundation.org,
-	viresh.kumar@linaro.org,
-	wangxb12@chinatelecom.cn,
-	xiongl24@chinatelecom.cn,
-	zhangar@chinatelecom.cn,
-	zhongqiu.han@oss.qualcomm.com
-Subject: Re: [PATCH v2] cpufreq: amd-pstate-ut: fix null pointer dereference
-Date: Thu, 16 Jul 2026 11:52:21 +0800
-Message-Id: <1784173941-13565-1-git-send-email-pengqh1@chinatelecom.cn>
-X-Mailer: git-send-email 1.8.3.1
-In-Reply-To: <ed6781c7-8f10-4580-a3f3-c8819428d845@amd.com>
-References: <ed6781c7-8f10-4580-a3f3-c8819428d845@amd.com>
+Received: from mail-yw1-f178.google.com (mail-yw1-f178.google.com [209.85.128.178])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 22D95184540
+	for <linux-pm@vger.kernel.org>; Thu, 16 Jul 2026 04:31:47 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.128.178
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1784176309; cv=pass; b=mNrsnkX+Mp8DD5GrapY+4LvGhHiNUVLFIBilxEmd1qjpnvcQp2q5i6/t17V7Np2pO8eLupjI+siis213ZP7kylwlr5W7KdRgTK2lgMmOgi9Sb3jeFMOZDuPC3Z5qfFjYWKrig4jBwBYst/P1qPIq2qHqFZ3q/byBk+3hgWg6GIY=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1784176309; c=relaxed/simple;
+	bh=nhYyNn6r73D9XtB76IT5BMo5NhG30UFFcOOZMpuXDho=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=M6pyQr0cyLioqIJixavDVqIcKD+pm9LtdiqrTrwuC3Xnkgf8JbKf1/ETweNcPT3dkn80koXUrQy/5VNBkzsy/fyUJEp3ICkZ6g4m9CUFf6zsNArLoTfAHVuERM7M3OL4FMRN+e6Nnv809MrfiZB0EwtFfFfLPzyuhvBNG2qm7B0=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=chromium.org; spf=pass smtp.mailfrom=chromium.org; dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b=BbIlmPiT; arc=pass smtp.client-ip=209.85.128.178
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=chromium.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=chromium.org
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="BbIlmPiT"
+Received: by mail-yw1-f178.google.com with SMTP id 00721157ae682-81e86df8987so85654017b3.3
+        for <linux-pm@vger.kernel.org>; Wed, 15 Jul 2026 21:31:47 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1784176307; cv=none;
+        d=google.com; s=arc-20260327;
+        b=LiBr3zB4qD1ov4e8wifoi0H8seoTC+RfKDOgbzAbkHNmOSoBf9UtVJukN7vDmIGAff
+         U0lDLQb0IbYGmGP9Ox0DK9DSLy5yWBlH7dkJ27hC8bRZLXsSVMhn2t8LOfmz9rEH/6AM
+         9PCvoY03/BRgicpGnlpCPvostk7OnFilC1x0bDahts0F9mEbD6Qi2AObzH1IY1V5JW1Q
+         sUHDFoxj5J4qPYn1Ab4lqj73wVjsHp8DkMFoRIgvlkldayMKPlu9CVbwOTejsKdel+Uj
+         VNvGtWNoentYIFXqLHtvR5VdzJ1XsJaJPeSM7Q84zGrf20Nqcd7yI/977GPIjyQRi5J3
+         Vvbg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=cWTekTqlq1/95QNv5fW/dcyHl3msvMXWSc0NTUyJpNA=;
+        fh=TRCmTAbbtq12M9pQfFxbhiTIBiDVcDEUn0ysHe9bCv0=;
+        b=S211SU2CMgB/WldakmBd/Vq1rej4dGmvkf1CfWLbuDPisTbprOXHYcd9430ne+Smy8
+         SH4YoEGeVhvRToxeeIJZ99sSDwFQDl+bRvEBuKwKcE39KXbXZpEYUW8VnExt2ITSKQR/
+         6ZxaHINzCbbPkoUntd2Uo25w9M4BzS/u3tav9hVvGoVo4HajAp7VPDPMQIpxwRnU76Jp
+         BM7vXr1dXxZ+/2+xVfqDWKq9iIiGdabBHF3GBoNbS0HqpVuY4AoR5KylqfhdBMjxKSNW
+         gKEVGZAxin81IIkoPw1st0lG7qg/XklmX7a5FZylOaqR7v2x7Lyn4xfEnlhZkIsy2LNC
+         rnog==;
+        darn=vger.kernel.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=chromium.org; s=google; t=1784176307; x=1784781107; darn=vger.kernel.org;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=cWTekTqlq1/95QNv5fW/dcyHl3msvMXWSc0NTUyJpNA=;
+        b=BbIlmPiThl4qtC2ZN7JQZl+L2ZooPvu5YEwEDvQfZB+ebI+hS/c29Vq0ahKfNxgu3H
+         Y2dKQR08UIvbW04KcyCZxX8NOGetwY5g3XdreHta5FewJNT1+6IGkqv4QqXcQKnXrya3
+         CREYMhgoOS0wLEmkqgUzYoB3Kjlg3MA3uZjMk=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1784176307; x=1784781107;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=cWTekTqlq1/95QNv5fW/dcyHl3msvMXWSc0NTUyJpNA=;
+        b=lHOVz3nf+nufo91no5hcE7rWbWlTe2GwdMSsvLVWlLkd/LW3Itkdfn/SF1nIqVDvQV
+         JnD9h53HQ1hnc6+0borGvL5k+PiUAnGXC66nvQwhc1zB4Y3VbUWlAAFaycC8TtRXwOZ0
+         CvldiBpXw5LfNr/MaRwNsAnEwGZNyPdz8ugvPgOuHCmDARDgkeaCRdsQXKdDfcxTGyv6
+         upkzcovIpcrzI8C+0eSr9vMY3Obr/WN2Hhn1LyTnJzOKqJSsTOV0bHlhFZ4LVw9hVm/O
+         96+dwy6z0LJFXdnqBfrqyJaTLlh2QAYXtV5bSSivmCdBRpeCd0LIpcTOJek6KCXjryt1
+         NJsA==
+X-Forwarded-Encrypted: i=1; AHgh+Rop+krfVyXr6vp3uWtNV4gW/dFq3aGUoQsZcaBqvRWTxD4VQ3Z271YvNBYqWnXcQpstEyt2uD0A9g==@vger.kernel.org
+X-Gm-Message-State: AOJu0YyahHgK1AMeVD5idm1M4Z5u+SG7rEpzO8gv5kSGD/I6z+XYc+Pf
+	QcLNjTA3KqJ4jK0LLlOzzSaBWNDDDw/QLtd6NWnmgJoObn8Gq2S36jDK3YP8UnuAqZQ/YMP7RCi
+	LPrX2qlQF8IStoifDlyq5dDYwS8lto0uNmyvBmxtM
+X-Gm-Gg: AfdE7cmGhNyllq/0V59uLqkRSt8Bb7iu3bmK2pcjGirqq6opVnqyuydETdBgP9esI9F
+	x5FeDLptlGHHDrx+mG3k3k6TDh3X8HFQwaW9IEsPPgMlooJNfNVT+iRvhahb4LLqyeZri3oAroU
+	Xg/KV5xSlskLLIpTkiGXDOyvWLZsmJSaMv17deg2JmkgxKObcVxrPEpu3zldDIgpkiRFizzuXXr
+	VosyzPiYWSy4Vi2+TDqBTpBohvsEe5PcD1da6tx+ImkMP4uw+nsyhsgzxDwU5RoSl9qR/YiYh6k
+	myj5+zVksgMvC8eK
+X-Received: by 2002:a05:690e:1c0d:b0:668:19ff:7eff with SMTP id
+ 956f58d0204a3-66819ff937dmr2943635d50.38.1784176307120; Wed, 15 Jul 2026
+ 21:31:47 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=y
-Content-Transfer-Encoding: 8bit
+References: <20260715085348.3457359-1-wenst@chromium.org> <20260715085348.3457359-7-wenst@chromium.org>
+ <aldQ5odptfmK5aCw@ashevche-desk.local>
+In-Reply-To: <aldQ5odptfmK5aCw@ashevche-desk.local>
+From: Chen-Yu Tsai <wenst@chromium.org>
+Date: Thu, 16 Jul 2026 12:31:36 +0800
+X-Gm-Features: AUfX_mzQbv55XMQ4uR8jO2hQgRvrbYnVnLlttvP6FASpWrSMQxMLCCNzy4VYT9I
+Message-ID: <CAGXv+5FAHZP-u1ZyWSUkUrOx7R5-YgBs5y9V4mGTycyrJG3UKA@mail.gmail.com>
+Subject: Re: [PATCH v5 06/16] usb: hub: Associate port@ fwnode with USB port device
+To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Cc: Bartosz Golaszewski <brgl@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
+	Daniel Scally <djrscally@gmail.com>, Heikki Krogerus <heikki.krogerus@linux.intel.com>, 
+	Sakari Ailus <sakari.ailus@linux.intel.com>, "Rafael J. Wysocki" <rafael@kernel.org>, 
+	Danilo Krummrich <dakr@kernel.org>, Rob Herring <robh@kernel.org>, 
+	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
+	Matthias Brugger <matthias.bgg@gmail.com>, 
+	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>, 
+	Wei Deng <wei.deng@oss.qualcomm.com>, linux-acpi@vger.kernel.org, 
+	driver-core@lists.linux.dev, linux-pm@vger.kernel.org, 
+	linux-usb@vger.kernel.org, devicetree@vger.kernel.org, 
+	linux-mediatek@lists.infradead.org, linux-arm-kernel@lists.infradead.org, 
+	linux-kernel@vger.kernel.org, Manivannan Sadhasivam <mani@kernel.org>, 
+	Alan Stern <stern@rowland.harvard.edu>, 
+	Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Hello Prateek, Zhongqiu,
-Thank you both for the awesome analyses.
+On Wed, Jul 15, 2026 at 5:20=E2=80=AFPM Andy Shevchenko
+<andriy.shevchenko@linux.intel.com> wrote:
+>
+> On Wed, Jul 15, 2026 at 04:53:36PM +0800, Chen-Yu Tsai wrote:
+> > When a USB hub port is connected to a connector in a firmware node
+> > graph, the port itself has a node in the graph.
+> >
+> > Associate the port's firmware node with the USB port's device,
+> > usb_port::dev. This is used in later changes for the M.2 slot power
+> > sequencing provider to match against the requesting port.
+> >
+> > To avoid potential conflicts with ACPI firmware nodes and then causing
+> > power management issues, only assign the firmware node if the hub's
+> > firmware node is not an ACPI firmware node.
+>
+> ...
+>
+> > int usb_hub_create_port_device(struct usb_hub *hub, int port1)
+>
+> What about adding
+>
+>         struct fwnode_handle *fwnode =3D dev_fwnode(&hdev->dev);
+>
+> to the top of the function, and...
+>
+> >       port_dev->dev.driver =3D &usb_port_driver;
+> >       dev_set_name(&port_dev->dev, "%s-port%d", dev_name(&hub->hdev->de=
+v),
+> >                       port1);
+> > +     /*
+> > +      * ACPI FW nodes are associated later when device_register() happ=
+ens.
+> > +      * Skip assigning one here to avoid potential conflicts.
+> > +      */
+> > +     if (!is_acpi_node(dev_fwnode(&hdev->dev)))
+> > +             device_set_node(&port_dev->dev,
+> > +                             fwnode_graph_get_port_by_id(dev_fwnode(&h=
+dev->dev), port1,
+> > +                                                         FWNODE_GRAPH_=
+DEVICE_DISABLED));
+>
+> ...shorten this a bit to
 
-On 7/15/2026 20:21:34, K Prateek Nayak wrote:
->Hello Zhongqiu, Qianheng,
->
->Thank you both for taking a look at this!
->
->On 7/15/2026 7:30 PM, Zhongqiu Han wrote:
->> Hi Qianheng,
->> 
->> On 7/15/2026 5:35 PM, Qianheng Peng wrote:
->>> The crash issue may occur when insmod amd_pstate_ut module on intel platform.
->>>
->>>     amd_pstate_ut: 1    amd_pstate_ut_acpi_cpc_valid  success!
->>>     amd_pstate_ut: 2    amd_pstate_ut_check_enabled   success!
->>>     BUG: kernel NULL pointer dereference, address: 0000000000000080
->>>     #PF: supervisor read access in kernel mode
->>>     #PF: error_code(0x0000) - not-present page
->>>     PGD 0 P4D 0
->>>     Oops: 0000 [#1] SMP NOPTI
->>>     CPU: 0 PID: 20300 Comm: modprobe
->>>     Kdump: loaded Tainted: G O 6.6.0-0010.rc1.ctl4.x86_64 #1
->>>     Hardware name: FiberHome R2200 V5/Xeon Boards, BIOS 3.1a 02/24/2020
->>>     RIP: 0010:amd_pstate_ut_check_perf+0x141/0x280 [amd_pstate_ut]
->>>     Call Trace:
->>>      <TASK>
->>>      amd_pstate_ut_init+0x1b/0xff0 [amd_pstate_ut]
->>>      ? __pfx_amd_pstate_ut_init+0x10/0x10 [amd_pstate_ut]
->>>      do_one_initcall+0x42/0x2e0
->>>      ? kmalloc_trace+0x26/0x90
->>>      do_init_module+0x60/0x240
->>>      __se_sys_init_module+0x185/0x1c0
->>>      do_syscall_64+0x62/0x190
->>>      entry_SYSCALL_64_after_hwframe+0x76/0x7e
->>>      </TASK>
->>>
->>> Add invalidation check of cpudata in amd_pstate_ut_check_perf() and
->>> amd_pstate_ut_check_freq() to avoid unpredicated null pointer dereference.
->>> Otherwise, add driver name detection for amd_pstate_ut driver to prevent it
->> 
->> The driver-name check in amd_pstate_ut_init() is the actual fix: it
->> prevents this module from running its test cases on non-AMD platforms.
->> 
->> The NULL check should not be necessary. On an already-registered amd
->> pstate driver, policy->driver_data is set only after a successful
->> ->init() and is cleared only in ->exit(), so it is never legitimately
->> NULL for a live policy:
->> 
->> 1. Hotplug offline path: a normal CPU hotplug offline does not hit
->> ->exit(). The driver's .offline callback makes __cpufreq_offline() take
->> the light-weight teardown path and return early, so ->exit() (and the
->> kfree) is not invoked and cpudata stays valid. The full teardown only
->> happens on driver unregister / device unbind.
->> 
->> 2. Driver exit path: the NULL check does not close the theoretical UAF
->> window here, since the test does not hold policy->rwsem: cpudata can be
->> kfree()'d between the check and the subsequent dereference. Worse, the
->> passive amd_pstate_cpu_exit() frees cpudata but does not reset policy
->> ->driver_data to NULL, so the check would pass and then dereference a
->> dangling pointer. This is a pre-existing issue and out of scope for this
->> fix.
->> 
->> so it is better to drop the "NULL check of cpudata" commit msg and code.
->> 
->> (Others may have more context here, so please free free correct me if
->> I'm wrong.)
->
->Ack! amd-pstate-ut was intended to be run in isolation without any
->other concurrent driver operation as a sanity check for developers.
->Races with hotplug / any user initiated changes during the test run
->can cause issues.
->
-Yes, I agree that dropping NULL check of cpudata is reasonable
-for the real user cases.
->> 
->> 
->> 
->>> from testing cpufreq driver on non-amd platform.
->>>
->>> Fixes: 14eb1c96e3a3 ("cpufreq: amd-pstate: Add test module for amd-pstate driver")
->>> Suggested-by: Li Xiong <xiongl24@chinatelecom.cn>
->>> Suggested-by: Xibo Wang <wangxb12@chinatelecom.cn>
->>> Signed-off-by: Qianheng Peng <pengqh1@chinatelecom.cn>
->>>
->>> ---
->>> v2:
->>>    - Print policy->cpu instead of policy->kboj.name
->>>    - Add cpufreq driver name detection to amd_pstate_ut
->>>
->>> v1: https://lore.kernel.org/all/1784015941-26535-1-git-send-email-pengqh1@chinatelecom.cn
->>> ---
->>>   drivers/cpufreq/amd-pstate-ut.c | 17 +++++++++++++++++
->>>   1 file changed, 17 insertions(+)
->>>
->>> diff --git a/drivers/cpufreq/amd-pstate-ut.c b/drivers/cpufreq/amd-pstate-ut.c
->>> index 735b29f..5d71315 100644
->>> --- a/drivers/cpufreq/amd-pstate-ut.c
->>> +++ b/drivers/cpufreq/amd-pstate-ut.c
->>> @@ -157,6 +157,10 @@ static int amd_pstate_ut_check_perf(u32 index)
->>>           if (!policy)
->>>               continue;
->>>           cpudata = policy->driver_data;
->>> +        if (!cpudata) {
->>> +            pr_err("%s empty driver_data on cpu %d\n", __func__, policy->cpu);
->>> +            return -EINVAL;
->> 
->> Strictly speaking, it should be %u, right? Since policy->cpu is an
->> unsigned int, using %d is a format-specifier type mismatch.
->> 
->>> +        }
->>>             if (get_shared_mem()) {
->>>               ret = cppc_get_perf_caps(cpu, &cppc_perf);
->>> @@ -229,6 +233,10 @@ static int amd_pstate_ut_check_freq(u32 index)
->>>           if (!policy)
->>>               continue;
->>>           cpudata = policy->driver_data;
->>> +        if (!cpudata) {
->>> +            pr_err("%s empty driver_data on cpu %d\n", __func__, policy->cpu);
->>> +            return -EINVAL;
->>> +        }
->>>             if (!((policy->cpuinfo.max_freq >= cpudata->nominal_freq) &&
->>>               (cpudata->nominal_freq > cpudata->lowest_nonlinear_freq) &&
->>> @@ -560,6 +568,15 @@ static int amd_pstate_ut_check_freq_attrs(u32 index)
->>>   static int __init amd_pstate_ut_init(void)
->>>   {
->>>       u32 i = 0, arr_size = ARRAY_SIZE(amd_pstate_ut_cases);
->>> +    const char *driver_name = NULL;
->>> +
->>> +    driver_name = cpufreq_get_current_driver();
->>> +    if (!driver_name)
->>> +        return -ENOENT;
->>> +    /* don't test if non-amd cpufreq_driver exists */
->>> +    else if (strcmp(driver_name, "amd-pstate") &&
->> 
->> Nit: Redundant else after a return: since the previous branch already
->> returns, control can never reach the else if, so it is better to drop
->> the else and use a separate if.
->
->A simpler check would be:
->
->  enum amd_pstate_mode mode = amd_pstate_get_status();
->
->  if (mode == AMD_PSTATE_UNDEFINED || mode == AMD_PSTATE_DISABLE) 
->           return -ENOENT;
->
->Status always starts out as undefined and if the driver doesn't
->load, it stays that way. If user has disabled the driver for any
->reason, the unit test should bail out too.
->
->> 
->>> +         strcmp(driver_name, "amd-pstate-epp"))
->>> +        return -EEXIST;
->> 
->> How about -EOPNOTSUPP or -ENODEV? And it would be helpful to log
->> error info here.
->> 
->> 
->>>         for (i = 0; i < arr_size; i++) {
->>>           int ret;
->> 
->> 
-The simple check is honestly graceful, I will send it in patch v3.
-And I also think -EOPNOTSUPP is better for telling current error.
+Makes sense.
 
---
-Thanks and Regards,
-Qianheng
+>         if (!is_acpi_node(fwnode)) {
+>                 struct fwnode_handle *ep;
+>
+>                 ep =3D fwnode_graph_get_port_by_id(fwnode, port1, FWNODE_=
+GRAPH_DEVICE_DISABLED);
+>
+> // Is NULL or error pointer is fine here to be set as fwnode in port devi=
+ce?
+> // Perhaps add a comment?
+
+fwnode_graph_get_port_by_id returns NULL, but not error pointers.
+And passing NULL to device_set_node() basically erases the current
+associated node (which is NULL anyway, since we just created the
+device) so it's a no-op. I'll add a comment.
+
+ChenYu
+
+>                 device_set_node(&port_dev->dev, ep);
+>         }
+>
+> --
+> With Best Regards,
+> Andy Shevchenko
+>
+>
