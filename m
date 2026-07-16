@@ -1,179 +1,199 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pj1-f54.google.com (mail-pj1-f54.google.com [209.85.216.54])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CD87C3CF20C
-	for <linux-pm@vger.kernel.org>; Thu, 16 Jul 2026 08:14:41 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6F7863E00AA
+	for <linux-pm@vger.kernel.org>; Thu, 16 Jul 2026 08:31:47 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.216.54
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1784189683; cv=none; b=m16btdjsoZW1KCQvJXZRRprgawf4LFuUVjFhQdP6UB4OftYdYEWuji45c+NQehAH6XYdEmtJzejcYQ1ctUh55duiNlDmrMb3sbADdSH+8unVaz5ykfLJbv0SbGtfuNNL5c1VeT/cKzEn/8dYYXNws1A4IvjUHiL/qZhmd9AKzK4=
+	t=1784190708; cv=none; b=LICkIiQt706Jlq/B1RgU0iD20eDXvDDXYX2T40DyEfJejWAiko0CWOVDtd9LtwvZIV3A4niYFuXypXIG8PFy/FVoffiQ+KvYnonX0nwWh2+xZqtAZURyK1lPvic0HE4sQjNkt5AWMMsfjHHcbvgfapD/jvziiPEL5GTTi+/FHv0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1784189683; c=relaxed/simple;
-	bh=NXTOoEEEs1TNjwS3eVeqIN1iuZ+ICzInI+C7HcEYipc=;
-	h=From:In-Reply-To:MIME-Version:References:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=diOr7fLD5y5mI6D59ty+WuijTsFM3jIHr3d85wCQ9b5/7YOv8jY4p2xyrfJlyj+u00dmTBS3tPAbHTMGx8X/zd2GJ0T/3CkCZhE3NQRNwLzYBoDk1Ghl6e6B3MvsCJWuI6hDpu/1uaVW2D12xRLMCqY61G+OZo2ql+eROYXqvGA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=ILXJIECA; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1784190708; c=relaxed/simple;
+	bh=6DHfUJVqQheLEpAIKU2YHLWqGBbQ8kKr9sjbdC1PERk=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=NrAan1BR14jvMzZBbF1cK2reqkNV7HyoKXoUAUCAgmJrB+xPd/Ybfo5auf4sUU3bOU6KA7Lw+lGYLvmefGqkgBH+nw5GnGX82AXenamIxv360BW8aG/zRVj/ckZPWrD6qyU57ZEDWlUAv0nLi6SAgNV6Nm5w0kZqp95m45e2wkM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=chromium.org; spf=pass smtp.mailfrom=chromium.org; dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b=cKJ0mHMg; arc=none smtp.client-ip=209.85.216.54
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=chromium.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=chromium.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="ILXJIECA"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id ACEAB1F0155F
-	for <linux-pm@vger.kernel.org>; Thu, 16 Jul 2026 08:14:41 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1784189681;
-	bh=S6dzhBrZchW3iZvyn1hIvbsasMrCxNEsko6TeLvbddM=;
-	h=From:In-Reply-To:References:Date:Subject:To:Cc;
-	b=ILXJIECAsF50gCjzfPbo9WZ++uCuclPTHWsj/RRBjDVaQXiS3A7eKkrJVaM45nwRq
-	 vsR1AL39qNsL/TTa/+zhzhQr29o2VwZneXGkKEgx5yicEAaup/pXqZ68oTzSJneAyH
-	 a+FRUiiHHdUA7WHqKNVU/W60AN0scXOCedQyLqpc/HK4PgLeXxvTPVL1F0+L2EKQNX
-	 f4hTAs5bekpCWzp1JXckxrMcTSkYloomfCYNDgvEkzvxRIIhdGW7a4oZccDNG4fm3a
-	 JQ+dsMXn47utt2p1g69B6V/aJc5bjHuE9GewcW9IgwAZw4lT2SjDrlVI/EzTMYOlNM
-	 37zTJ6KOsRoOg==
-Received: by mail-lj1-f171.google.com with SMTP id 38308e7fff4ca-39b3931e259so57831191fa.2
-        for <linux-pm@vger.kernel.org>; Thu, 16 Jul 2026 01:14:41 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AHgh+RpxhtxmDy/GBc3wE6mae5GTCfNi+iM1d3NEQVLYcbAOyqhSz1DcC9T56EBlNWaZOPgo4ngqlUh2zw==@vger.kernel.org
-X-Gm-Message-State: AOJu0YxeMoZStQ7Ep4FnqzgtofqiV39ww+MUiC7tjw7Q81Wv4qK7YbxB
-	TPW6tPWX0VxepJrwCikdKCQmg1+xSxd3PdFGD/a3G4MMerudFIApK1T5k7au9FLxzXPMexqRDti
-	HB0oLt4CEd5MIJAjCXcMpu/iKKe6jU4+xvp8BmHmYoA==
-X-Received: by 2002:a2e:bc82:0:b0:393:6934:6104 with SMTP id
- 38308e7fff4ca-39db6c2a16fmr12970681fa.19.1784189680282; Thu, 16 Jul 2026
- 01:14:40 -0700 (PDT)
-Received: from 969154062570 named unknown by gmailapi.google.com with
- HTTPREST; Thu, 16 Jul 2026 01:14:39 -0700
-Received: from 969154062570 named unknown by gmailapi.google.com with
- HTTPREST; Thu, 16 Jul 2026 01:14:39 -0700
-From: Bartosz Golaszewski <brgl@kernel.org>
-In-Reply-To: <CAGXv+5HGjGTrqqzJrpiQhLrCn3C6H20LXq3niPnoujQLOwgqPw@mail.gmail.com>
+	dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="cKJ0mHMg"
+Received: by mail-pj1-f54.google.com with SMTP id 98e67ed59e1d1-383cb94f742so5996267a91.3
+        for <linux-pm@vger.kernel.org>; Thu, 16 Jul 2026 01:31:47 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=chromium.org; s=google; t=1784190707; x=1784795507; darn=vger.kernel.org;
+        h=in-reply-to:content-disposition:content-type:mime-version
+         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=Bc4d8vqk+lliMKPmpqbLIgPhIFDsMX/hIWVD5yj9aEU=;
+        b=cKJ0mHMg6aEmy0v65cg1aQr6syhYObFrAAz3Ipw+5pyERDObvZIzibmBLAiGagP3hC
+         aRtfqHQLa8QGwLsgtmh7oillq20h7IeK0W9uE3ybzhwz9W1Uji6/vw7l/CSFdGv6znBv
+         i7dFNY2eg56Mjp71OZbFuVxetr78jDR48UPQM=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1784190707; x=1784795507;
+        h=in-reply-to:content-disposition:content-type:mime-version
+         :references:message-id:subject:cc:to:from:date:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=Bc4d8vqk+lliMKPmpqbLIgPhIFDsMX/hIWVD5yj9aEU=;
+        b=TTqV2TRehhV8+gYP4rb7m7u/KAUuwEPn8vdeJNhj9LZlrPplBfVYBrzsvqXca+jGYs
+         8p2TVq5ZYa9wkzJYTLgexJfJhhsh9ftp9SYKXGEbNF4BRyt9zPBuaqZVtyB0oBXQIJaK
+         bwtAUcamLrf160KfOUYt3CtlnwNPvkZY41gIoAtVp3xu0y2Tz5+xvk918DzX8aei7k/S
+         wJEhb/ncJv6O3o3l32vzjEsDWajXM3KhbS/eIjzCXoVUfRJAJ1162e3hw7LY3Kh5l6Mw
+         taRZgPEwo/fsXfHODxbaJIEIk8w6UT6pYI6nbfOjghRme58AyxIEH2PPhBPqXFDtDCwv
+         +OxA==
+X-Forwarded-Encrypted: i=1; AHgh+Rqbmd2yqqroRDyK78k4yeSZhJNfpTM//nl0cqziP73rpSKX37mEmYtoCz/cnadwYGfO+vb/n/ABTw==@vger.kernel.org
+X-Gm-Message-State: AOJu0YylgddqM97nY4fVOw1/6zWts4RnQs4M74RNTmpKOBYFtUZ2iJRp
+	90MDjh2XDdFRuRGDNEOtHLEml9b5U4thqryRJom9DRMBkiPeZzUY38ztUdaXCrJ6lA==
+X-Gm-Gg: AfdE7ckcTNnNu5qs6VEpWpSlzQFgLl96GX/FukmZWi+jaNpuwYzVJ0g6nmt9caSJKsU
+	67QC9VMeNuywqMTmzIgJziOrS+oSLNgE3FbOZo37GsQMPwkKqd7Zxi0+xcXiv1qjMjCzIFmHSZv
+	WIsZbepseUiGKW4JZGpR4/ipivRhxHH9bAAK+YO/L5okSKbaK/8Mu3x1rDqGANCCIr5GMTYdh6t
+	T0jO5n3IBwJk7kvsavGrghjhvX0eUB88EjeTZ5fcvueV/PtE1Mji1NHfiW4SC9ruyZY2V9gTEdw
+	lXFS3UtR+t0iICw4hBrKynQeF4pGMOdSoFmQIfoKbTq7XkR426Pbnm4LcXSNz3ABDeZcFIZZWuB
+	tmZ5HUTfos3G+CAxC3ez2UOmFjDF2z2UepnEPTu/tipCkNX6CWBEgv4z0lHLy2V88+DqL6hRLwY
+	NGzh+3Ll9FC1/wMqtRkLXCaD8GQvtNbDopHg==
+X-Received: by 2002:a17:90b:4a04:b0:387:e0bb:5802 with SMTP id 98e67ed59e1d1-38e2a12332amr5930901a91.41.1784190706821;
+        Thu, 16 Jul 2026 01:31:46 -0700 (PDT)
+Received: from google.com ([2a00:79e0:201d:8:8cee:ac9c:232c:cca3])
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-38e39e5f713sm923742a91.14.2026.07.16.01.31.43
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 16 Jul 2026 01:31:46 -0700 (PDT)
+Date: Thu, 16 Jul 2026 16:31:41 +0800
+From: Chen-Yu Tsai <wenst@chromium.org>
+To: Loic Poulain <loic.poulain@oss.qualcomm.com>
+Cc: Manivannan Sadhasivam <mani@kernel.org>,
+	Bartosz Golaszewski <brgl@kernel.org>,
+	Marcel Holtmann <marcel@holtmann.org>,
+	Luiz Augusto von Dentz <luiz.dentz@gmail.com>,
+	Bjorn Andersson <andersson@kernel.org>,
+	Konrad Dybcio <konradybcio@kernel.org>,
+	Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>, linux-pci@vger.kernel.org,
+	linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linux-arm-msm@vger.kernel.org, linux-bluetooth@vger.kernel.org,
+	devicetree@vger.kernel.org,
+	Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>
+Subject: Re: [PATCH v3 08/11] Bluetooth: hci_qca: Support QCA2066 on M.2
+ connector via pwrseq
+Message-ID: <20260716083141.GA4101439@google.com>
+References: <20260710-monza-wireless-v3-0-46253587af64@oss.qualcomm.com>
+ <20260710-monza-wireless-v3-8-46253587af64@oss.qualcomm.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260715085348.3457359-1-wenst@chromium.org> <20260715085348.3457359-4-wenst@chromium.org>
- <aldS3qTympJuVXYj@ashevche-desk.local> <CAMRc=MfHmejks83bPfe3fKzAzFySGXk2GHMA9oZdMQj0f44eTA@mail.gmail.com>
- <CAGXv+5HGjGTrqqzJrpiQhLrCn3C6H20LXq3niPnoujQLOwgqPw@mail.gmail.com>
-Date: Thu, 16 Jul 2026 01:14:39 -0700
-X-Gmail-Original-Message-ID: <CAMRc=Mefxn81d0VUwmQgwFtffkL1=Er_1VQZCbC1Sa-Qph4t1w@mail.gmail.com>
-X-Gm-Features: AUfX_mxn6Bl7rEMqDoJ22rvXDaXvLC48Woi6Y6ypETbOrTpITKxwxCyFT1q8e60
-Message-ID: <CAMRc=Mefxn81d0VUwmQgwFtffkL1=Er_1VQZCbC1Sa-Qph4t1w@mail.gmail.com>
-Subject: Re: [PATCH v5 03/16] power: sequencing: Add pwrseq_power_is_on()
-To: Chen-Yu Tsai <wenst@chromium.org>
-Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>, 
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Daniel Scally <djrscally@gmail.com>, 
-	Heikki Krogerus <heikki.krogerus@linux.intel.com>, 
-	Sakari Ailus <sakari.ailus@linux.intel.com>, "Rafael J. Wysocki" <rafael@kernel.org>, 
-	Danilo Krummrich <dakr@kernel.org>, Rob Herring <robh@kernel.org>, 
-	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
-	Matthias Brugger <matthias.bgg@gmail.com>, 
-	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>, 
-	Wei Deng <wei.deng@oss.qualcomm.com>, linux-acpi@vger.kernel.org, 
-	driver-core@lists.linux.dev, linux-pm@vger.kernel.org, 
-	linux-usb@vger.kernel.org, devicetree@vger.kernel.org, 
-	linux-mediatek@lists.infradead.org, linux-arm-kernel@lists.infradead.org, 
-	linux-kernel@vger.kernel.org, Manivannan Sadhasivam <mani@kernel.org>, 
-	Alan Stern <stern@rowland.harvard.edu>, 
-	Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>, 
-	Bartosz Golaszewski <brgl@kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260710-monza-wireless-v3-8-46253587af64@oss.qualcomm.com>
 
-On Thu, 16 Jul 2026 06:59:01 +0200, Chen-Yu Tsai <wenst@chromium.org> said:
-> On Wed, Jul 15, 2026 at 8:10=E2=80=AFPM Bartosz Golaszewski <brgl@kernel.=
-org> wrote:
->>
->> On Wed, 15 Jul 2026 11:29:02 +0200, Andy Shevchenko
->> <andriy.shevchenko@linux.intel.com> said:
->> > On Wed, Jul 15, 2026 at 04:53:33PM +0800, Chen-Yu Tsai wrote:
->> >> The power sequencing consumer API already does power on state trackin=
-g
->> >> internally. Expose the state to consumers through pwrseq_power_is_on(=
-)
->> >> so that they don't have to reimplement it locally.
->> >
->> > Reviewed-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
->> >
->> > ...
->> >
->> >> +/**
->> >> + * pwrseq_power_is_on() - Queries the last requested state of the po=
-wer sequencer.
->> >> + * @desc: Descriptor referencing the power sequencer.
->> >> + *
->> >> + * This returns the last requested state of the power sequencer.
->> >> + *
->> >> + * Returns:
->> >> + * On success, 1 for on or desc is NULL (optional) and 0 for off;
->> >> + * negative error number on failure.
->> >
->> > I would rephrase it a bit.
->> >
->> >  * On success, 1 for on and 0 for off; negative error number on failur=
-e.
->> >  * If desc is NULL (means optional) return 1.
->> >
->> > And this rises a question: why 1? Shouldn't it be some "unknown" state=
-?
->> > (But since Bart Acked this, this doesn't prevent the patch to go, you
->> >  got my tag above.)
->> >
->>
->> No, this is good feedback. Maybe we should prefer an enum like so:
->>
->> enum pwrseq_state {
->>         PWRSEQ_POWER_UNKNOWN,
->>         PWRSEQ_POWER_ON,
->>         PWRSEQ_POWER_OFF
->> };
->
-> Well I think the crux of it is whether the API considers the descriptor
-> optional. The power on/off functions suggest that is the case.
->
+On Fri, Jul 10, 2026 at 11:57:34AM +0200, Loic Poulain wrote:
+> For QCA2066 (and other QCA chips) on M.2 connectors, the UART enable is
+> controlled by the W_DISABLE2# signal managed by the pcie-m2 power sequencer
+> rather than a dedicated BT enable GPIO.
+> 
+> When the serdev controller has an OF graph (indicating it is connected to
+> an M.2 connector), acquire the 'uart' pwrseq target from the connector's
+> power sequencer and use it to control BT power instead of the bt-enable
+> GPIO. This is factored out into qca_serdev_get_m2_pwrseq().
+> 
+> Reviewed-by: Manivannan Sadhasivam <mani@kernel.org>
+> Signed-off-by: Loic Poulain <loic.poulain@oss.qualcomm.com>
+> ---
+>  drivers/bluetooth/hci_qca.c | 35 ++++++++++++++++++++++++-----------
+>  1 file changed, 24 insertions(+), 11 deletions(-)
+> 
+> diff --git a/drivers/bluetooth/hci_qca.c b/drivers/bluetooth/hci_qca.c
+> index 24dc5bf6d192be7e1d500df6bdf36e6184f9eaf7..f6529d359ffbd97f8a3c4c0593680ab200215b36 100644
+> --- a/drivers/bluetooth/hci_qca.c
+> +++ b/drivers/bluetooth/hci_qca.c
+> @@ -1872,6 +1872,9 @@ static int qca_power_on(struct hci_dev *hdev)
+>  			/* Controller needs time to bootup. */
+>  			msleep(150);
+>  		}
+> +
+> +		if (qcadev->bt_power.pwrseq)
+> +			pwrseq_power_on(qcadev->bt_power.pwrseq);
+>  	}
+>  
+>  	clear_bit(QCA_BT_OFF, &qca->flags);
+> @@ -2387,6 +2390,20 @@ static int qca_init_regulators(struct qca_power *qca,
+>  	return 0;
+>  }
+>  
+> +static int qca_serdev_get_m2_pwrseq(struct qca_serdev *qcadev)
+> +{
+> +	struct serdev_device *serdev = qcadev->serdev_hu.serdev;
+> +
+> +	if (!of_graph_is_present(dev_of_node(&serdev->ctrl->dev)))
+> +		return 0;
+> +
+> +	qcadev->bt_power.pwrseq = devm_pwrseq_get(&serdev->ctrl->dev, "uart");
 
-True. That may be an inconsistency of the API contract on my part. There's =
-no
-such thing as an optional variant of pwrseq_get() so perhaps pwrseq_power_o=
-n()
-and pwrseq_power_off() should be converted to returning -EINVAL on NULL
-descriptor.
+Note that this ultimately ties the lifecycle of the returned pwrseq
+descriptor to the uart, which is probably not what you want.
 
-> I modeled this on reset_control_status(). I believe the rationale is that
-> if the reset control or pwrseq is optional, then either there is some
-> other mechanism to deal with the reset (GPIO) or pwrseq (GPIO + regulator=
-),
-> or it's always on and operational.
->
-> In such cases and the rare case where one has to query the state, the
-> queries are possibly chained together and I think it makes sense to
-> assume the "operational" state as the fallback.
->
-> If this returns an enum, then I think the previous approach of returning
-> an error value for an invalid descriptor is better. One doesn't need to
-> learn a new set of return values.
->
-> I'm fine either way. I would just move the checks over to the consumer
-> side. But I think the principles guiding the overall API design is
-> something you need to provide:
->
->   - Is the descriptor optional? What should the action functions
->     (power on / off , or query status) return when NULL is given?
->   - Is the subsystem optional? Should the stub functions besides
->     pwrseq_get() return 0 instead of -ENOSYS?
->
-> Right now the API feels like the descriptor is optional but the
-> subsystem is not. One has to add IS_ENABLED(CONFIG_POWER_SEQUENCING)
-> around the consumer API to make it an optional feature.
->
+I ended up manually doing pwrseq_get() with devm_add_action_or_reset()
+so that the descriptor is released when the serdev driver is unbound.
+This was for the Realtek driver. I haven't sent patches yet.
 
-There's one more use-case where the power state trully can be *unknown*.
-Please look at the proposed new function from Loic[1]. Here we deal with
-targets over which linux has no direct power control even though it may sti=
-ll
-control some of its dependencies. This is where an UNKNOWN state may make
-sense.
+> +	if (IS_ERR(qcadev->bt_power.pwrseq))
+> +		return PTR_ERR(qcadev->bt_power.pwrseq);
+> +
+> +	return 0;
+> +}
+> +
+>  static int qca_serdev_probe(struct serdev_device *serdev)
+>  {
+>  	struct qca_serdev *qcadev;
+> @@ -2417,6 +2434,10 @@ static int qca_serdev_probe(struct serdev_device *serdev)
+>  	else
+>  		qcadev->btsoc_type = QCA_ROME;
+>  
+> +	err = qca_serdev_get_m2_pwrseq(qcadev);
+> +	if (err)
+> +		return err;
+> +
+>  	switch (qcadev->btsoc_type) {
+>  	case QCA_WCN3950:
+>  	case QCA_WCN3988:
+> @@ -2426,17 +2447,9 @@ static int qca_serdev_probe(struct serdev_device *serdev)
+>  	case QCA_WCN6750:
+>  	case QCA_WCN6855:
+>  	case QCA_WCN7850:
+> -		/*
+> -		 * OF graph link is only present for BT devices attached through
+> -		 * the M.2 Key E connector.
+> -		 */
+> -		if (of_graph_is_present(dev_of_node(&serdev->ctrl->dev))) {
+> -			qcadev->bt_power.pwrseq = devm_pwrseq_get(&serdev->ctrl->dev,
+> -								  "uart");
 
-This is where I also floated an idea of renaming pwrseq_power_on/off() to
-pwrseq_vote_on/off() for better clarity of their purpose.
+It's already incorrect here. But I think the original patch that
+introduces this hasn't landed?
 
-Thanks,
-Bartosz
 
-[1] https://lore.kernel.org/all/20260710-monza-wireless-v3-3-46253587af64@o=
-ss.qualcomm.com/
+ChenYu
+
+> -			if (IS_ERR(qcadev->bt_power.pwrseq))
+> -				return PTR_ERR(qcadev->bt_power.pwrseq);
+> +		/* M.2 connector modules are powered by the pwrseq acquired above. */
+> +		if (qcadev->bt_power.pwrseq)
+>  			break;
+> -		}
+>  
+>  		if (!device_property_present(&serdev->dev, "enable-gpios")) {
+>  			/*
+> @@ -2528,7 +2541,7 @@ static int qca_serdev_probe(struct serdev_device *serdev)
+>  			return PTR_ERR(qcadev->susclk);
+>  		}
+>  	}
+> -	
+> +
+>  	if (qcadev->bt_power.pwrseq) {
+>  		bt_en_available = pwrseq_power_is_controllable(qcadev->bt_power.pwrseq);
+>  		if (!bt_en_available) {
+> 
+> -- 
+> 2.34.1
+> 
