@@ -1,51 +1,33 @@
-Received: from szxga01-in.huawei.com (szxga01-in.huawei.com [45.249.212.187])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DCBEF3D5679;
-	Thu, 16 Jul 2026 12:06:38 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=45.249.212.187
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id A6A0330F95F;
+	Thu, 16 Jul 2026 12:25:38 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1784203601; cv=none; b=n6EW+Z6+3w3mcsaWs7yXeP5dDDmeZxQiKTcQWvGGAGI/MSEYGh495BVJOvA6JZqYctBNIoZEMkiQo441I+Yc1sdwTslPWWQrtZcMYUVcrik9CyGyYBBf9Nt4FC4Ie9xH6/bpqbDb0FuoVYn+fwBrgcfqF4BrIesafEVIu5gRgBI=
+	t=1784204740; cv=none; b=A3yV1+TxjG9ljiWcgVcbkxOV+NVNY/4CIpFwShGBGHMOfhfdW7ctuW9ItYCA4jMXbXpt4lCNftQ02n0GSLTs+QkqIuszizN3LF/zyYjvve8QlfA2YDGzxwm/H5Eh4Oo6ugvIB+wypaId4g8pOaF8b2edFOUGgiGIJyBvji/MU3o=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1784203601; c=relaxed/simple;
-	bh=Gw6yBQPcUqWoJn/6AxO9+zvuiaQwTsI7oUY1U4vQilQ=;
-	h=Message-ID:Date:MIME-Version:Subject:To:CC:References:From:
-	 In-Reply-To:Content-Type; b=Ex9EuYDLcRdzTLEfd0kAbywppAWhQwdDmDhuRhM2YAOpIr1wGkPFeF8UMq+FvUxvtNqgoq/r2aMTeE1mUuU9mtl+kSmi9F5yJocZyDpASAMo3UKzg4pwuvuv84vplZf00rLGLyQbdhg8chmzFhk5B4Y3b8+AX/f2ZsfB7BmpNYo=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=fail (p=quarantine dis=none) header.from=huawei.com; spf=pass smtp.mailfrom=h-partners.com; dkim=pass (1024-bit key) header.d=h-partners.com header.i=@h-partners.com header.b=hBpzdXGn; dkim=pass (1024-bit key) header.d=h-partners.com header.i=@h-partners.com header.b=hBpzdXGn; arc=none smtp.client-ip=45.249.212.187
-Authentication-Results: smtp.subspace.kernel.org; dmarc=fail (p=quarantine dis=none) header.from=huawei.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=h-partners.com
+	s=arc-20240116; t=1784204740; c=relaxed/simple;
+	bh=7D3mEZM8Y5itCOdYNjaIRBivbto40cRIDLjs2IqZBWs=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=eFzwJupGrslvDFJRWGuGnoc0kILksg5rkKqrmNAleaCL1sZ8EayzLJg9dpGef2K41ZAhYcXMlkepKO7KS6geEZfQUxPWAel0FiNTaeDTHgPMZD4pqr2fNjJ9ONmXPIMxP2KIDL4Ao+yuEV5k4ARsZNg+HkZmIZDjXNCNO+8zjmw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=nyCIW1He; arc=none smtp.client-ip=217.140.110.172
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=h-partners.com header.i=@h-partners.com header.b="hBpzdXGn";
-	dkim=pass (1024-bit key) header.d=h-partners.com header.i=@h-partners.com header.b="hBpzdXGn"
-dkim-signature: v=1; a=rsa-sha256; d=h-partners.com; s=dkim;
-	c=relaxed/relaxed; q=dns/txt;
-	h=From;
-	bh=NAhHo8nnJnMcWdAbjB+sr6l3n/AZsvsqLWHkpaYUrTM=;
-	b=hBpzdXGnpHp+/+9vqOv4yCBq3tkLe/b4D2dMmIYW1PFVxSQw46jWM3U40omR5npqeHsgzSxg6
-	K7xWOSd2gk10wAAnU/NU/P5HAd0K74yxM4EnBjAGsM0j/Nz3ivd6qrMalvuSbpzLjCv7Vc2Pl9x
-	tSqfNpmV0wHqojwNcNA1ik4=
-Received: from canpmsgout03.his.huawei.com (unknown [172.19.92.159])
-	by szxga01-in.huawei.com (SkyGuard) with ESMTPS id 4h1Bb85722z1BFqp;
-	Thu, 16 Jul 2026 20:06:12 +0800 (CST)
-dkim-signature: v=1; a=rsa-sha256; d=h-partners.com; s=dkim;
-	c=relaxed/relaxed; q=dns/txt;
-	h=From;
-	bh=NAhHo8nnJnMcWdAbjB+sr6l3n/AZsvsqLWHkpaYUrTM=;
-	b=hBpzdXGnpHp+/+9vqOv4yCBq3tkLe/b4D2dMmIYW1PFVxSQw46jWM3U40omR5npqeHsgzSxg6
-	K7xWOSd2gk10wAAnU/NU/P5HAd0K74yxM4EnBjAGsM0j/Nz3ivd6qrMalvuSbpzLjCv7Vc2Pl9x
-	tSqfNpmV0wHqojwNcNA1ik4=
-Received: from mail.maildlp.com (unknown [172.19.162.144])
-	by canpmsgout03.his.huawei.com (SkyGuard) with ESMTPS id 4h1BP21pBszpSv5;
-	Thu, 16 Jul 2026 19:57:26 +0800 (CST)
-Received: from kwepemo100005.china.huawei.com (unknown [7.202.195.212])
-	by mail.maildlp.com (Postfix) with ESMTPS id C24124056D;
-	Thu, 16 Jul 2026 20:06:20 +0800 (CST)
-Received: from [10.67.121.59] (10.67.121.59) by kwepemo100005.china.huawei.com
- (7.202.195.212) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1544.36; Thu, 16 Jul
- 2026 20:06:20 +0800
-Message-ID: <7cc71741-8799-4f8b-85a8-b86baac0cf17@huawei.com>
-Date: Thu, 16 Jul 2026 20:06:19 +0800
+	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="nyCIW1He"
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id C58631476;
+	Thu, 16 Jul 2026 05:25:33 -0700 (PDT)
+Received: from [10.1.39.63] (e127648.arm.com [10.1.39.63])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 6D8773F7B4;
+	Thu, 16 Jul 2026 05:25:34 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
+	t=1784204738; bh=7D3mEZM8Y5itCOdYNjaIRBivbto40cRIDLjs2IqZBWs=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=nyCIW1He0y/JV3r/g8aBNYA1vZGeAE1KL1FB85gjN0pCFbEILq+XprsPcvvI+JBgT
+	 fAwxgWo9SEWH8lCNS5HvvJEWzz+ivwMTdUmEgFzicHf2LkxBD4YLT+mG3wkosK/SXG
+	 cc5C4MqKVvHx1Q+J8L0iPSAfs/BDbZyYuEx4p+CA=
+Message-ID: <6abab7b9-71cf-47d4-b7dd-def43be935bc@arm.com>
+Date: Thu, 16 Jul 2026 13:25:32 +0100
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -53,36 +35,81 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v1 07/17] ACPI: processor: idle: Rearrange
- acpi_processor_get_lpi_info()
-To: "Rafael J. Wysocki" <rafael@kernel.org>, Linux PM
-	<linux-pm@vger.kernel.org>
-CC: Linux ACPI <linux-acpi@vger.kernel.org>, Sudeep Holla
-	<Sudeep.Holla@arm.com>
-References: <4746278.LvFx2qVVIh@rafael.j.wysocki>
- <7965163.EvYhyI6sBW@rafael.j.wysocki>
-From: "lihuisong (C)" <lihuisong@huawei.com>
-In-Reply-To: <7965163.EvYhyI6sBW@rafael.j.wysocki>
-Content-Type: text/plain; charset="UTF-8"; format=flowed
+Subject: Re: [PATCH] cpufreq: schedutil: Publish util hooks only after all
+ sg_cpu are initialized
+To: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>, rafael@kernel.org,
+ viresh.kumar@linaro.org, mingo@redhat.com, peterz@infradead.org,
+ juri.lelli@redhat.com, vincent.guittot@linaro.org, dietmar.eggemann@arm.com,
+ rostedt@goodmis.org, bsegall@google.com, mgorman@suse.de,
+ vschneid@redhat.com, kprateek.nayak@amd.com, liaochang1@huawei.com
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+ stable@vger.kernel.org
+References: <20260716115159.848403-1-zhongqiu.han@oss.qualcomm.com>
+Content-Language: en-US
+From: Christian Loehle <christian.loehle@arm.com>
+In-Reply-To: <20260716115159.848403-1-zhongqiu.han@oss.qualcomm.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-ClientProxiedBy: kwepems500002.china.huawei.com (7.221.188.17) To
- kwepemo100005.china.huawei.com (7.202.195.212)
 
-
-On 7/9/2026 8:36 PM, Rafael J. Wysocki wrote:
-> From: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
->
-> Reorder the definitions of local variables in
-> acpi_processor_get_lpi_info() and drop local variable
-> pr_ahandle that is not really necessary from it.
->
-> Additionally, move two definitions of local variables to
-> the loop in which they are used and rearrange the code
-> slightly to prepare it for subsequent changes.
->
-> No intentional functional impact.
->
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On 7/16/26 12:51, Zhongqiu Han wrote:
+> Commit 16a03c71bba0 ("cpufreq: schedutil: Merge initialization code of
+> sg_cpu in single loop") merged the per-CPU initialization and the
+> utilization-hook registration into a single loop in sugov_start().
+> 
+> For a shared cpufreq policy this re-introduces the race originally fixed
+> by commit ab2f7cf141aa ("cpufreq: schedutil: Fix sugov_start() versus
+> sugov_update_shared() race").
+> 
+> The scheduler's util path reaches the hook under RCU-sched and never takes
+> policy->rwsem, so the rwsem held across sugov_start() cannot serialize the
+> two. Once the first CPU's hook is published, sugov_update_shared() may run
+> and, via sugov_next_freq_shared(), read/write each sibling sugov_cpu
+> (iowait_boost, util, bw_min, ...) concurrently with the memset() still
+> initializing them, with no lock common to both sides: the update side holds
+> sg_policy->update_lock while the init side holds only policy->rwsem, which
+> the scheduler's util path never takes.
+> 
+> The walk only accesses scalar members, never a pointer like ->sg_policy,
+> so it does not crash today; it merely uses stale (or zero on first start)
+> values that skew the frequency selection and tracepoints. It is still a
+> genuine data race, and a latent crash once any pointer member is
+> dereferenced there.
+> 
+> Restore the two-phase approach: initialize all per-CPU structures first,
+> and only then publish the per-CPU utilization update hooks.
+> 
+> Fixes: 16a03c71bba0 ("cpufreq: schedutil: Merge initialization code of sg_cpu in single loop")
+> Cc: stable@vger.kernel.org
+> Signed-off-by: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>
 > ---
->   
-Acked-by: Huisong Li <lihuisong@huawei.com>
+>  kernel/sched/cpufreq_schedutil.c | 11 +++++++++++
+>  1 file changed, 11 insertions(+)
+> 
+> diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
+> index dc0835ceee98..6ad080de8644 100644
+> --- a/kernel/sched/cpufreq_schedutil.c
+> +++ b/kernel/sched/cpufreq_schedutil.c
+> @@ -872,8 +872,19 @@ static int sugov_start(struct cpufreq_policy *policy)
+>  		memset(sg_cpu, 0, sizeof(*sg_cpu));
+>  		sg_cpu->cpu = cpu;
+>  		sg_cpu->sg_policy = sg_policy;
+> +	}
+> +
+> +	/*
+> +	 * Publish the hooks only after all per-CPU data is initialized, so a
+> +	 * shared policy's sugov_update_shared() never reads an uninitialized
+> +	 * sibling sugov_cpu.
+> +	 */
+> +	for_each_cpu(cpu, policy->cpus) {
+> +		struct sugov_cpu *sg_cpu = &per_cpu(sugov_cpu, cpu);
+> +
+>  		cpufreq_add_update_util_hook(cpu, &sg_cpu->update_util, uu);
+>  	}
+> +
+>  	return 0;
+>  }
+>  
+
+
+Good catch!
+Reviewed-by: Christian Loehle <christian.loehle@arm.com>
