@@ -1,303 +1,184 @@
-Received: from mout-p-102.mailbox.org (mout-p-102.mailbox.org [80.241.56.152])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-yx1-f54.google.com (mail-yx1-f54.google.com [74.125.224.54])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D7FAD382F1F;
-	Thu, 16 Jul 2026 04:40:02 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=80.241.56.152
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1784176804; cv=none; b=Dub4lxompXldPZl5eVUNUHOwaBKj2JSJU6A6Mjnc2z7+dlvkaop5IdkEO+sm5yX46qBhScs8GUfUWt5wNb5OQ2Nwgg3YuHkS+YlbpwDKCHwMjmtxLNn9SOnhO1hiINdGNS3yIjtMbzbh8cxZKmJouszZWM9PeECZMvLea8oX54k=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1784176804; c=relaxed/simple;
-	bh=c3RN7BRpX8QKB3ff0Sn+PujzwmiYcJUf1hhXXZ5BExI=;
-	h=Mime-Version:Content-Type:Date:Message-Id:Subject:From:To:
-	 References:In-Reply-To; b=EF8kQwDiT4G/cWnsLfhCL2J62OaF/aaag2H/CuUNnAmTYfL9682EnFgOVcK6ifLAPEjXQl0/Avpcaq2gBerUBHo+1bY7idYe5ShLK08jdv9dhEqBI0kBJ3VuEQfBOL1RXdF04o6arXkJiWDWItA6vRLfDWV1/cmG2QGhkMYnw8c=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=mailbox.org; spf=pass smtp.mailfrom=mailbox.org; dkim=pass (2048-bit key) header.d=mailbox.org header.i=@mailbox.org header.b=kObxUABI; dkim=pass (2048-bit key) header.d=mailbox.org header.i=@mailbox.org header.b=RPBrLGvj; arc=none smtp.client-ip=80.241.56.152
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=mailbox.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=mailbox.org
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E88FB26ED41
+	for <linux-pm@vger.kernel.org>; Thu, 16 Jul 2026 04:59:12 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=74.125.224.54
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1784177954; cv=pass; b=ZglW/4NrMIatMa30K5kmb+U01EDq6Qn45cLd43Z3szHqU8kBjsHvsJLD9NyO6In/UT+qwlfkK40Ef4nYX3JoFr5nTvI+b5Mr6yZBh5H04ugPB+qDjhai0jcJRogTBvbjEMsQpWJh1MB85Ayg/NntGLSjrcWAlmueTpPZUPNYBgI=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1784177954; c=relaxed/simple;
+	bh=wYBaQ8XwVTIMSwIIpuk8mhwuYTe+2pxVToi3w/umSE4=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=LAqWWeAxCzMH0Uxs6OeZ87dLH23ybMCarSHkpi71A5il3fLXCUwRo8kOeEZl7r0ZgjenjqNUE2IgRkqmm59FmLPmW1A/V1BUpug96/0RLlTs5q2lufaGkxHaH47zB8dRn7/0bzRGiDq/pjpXyqiIdeOh6itv3x++dXNPY4/6rAg=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=chromium.org; spf=pass smtp.mailfrom=chromium.org; dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b=lORVSP9i; arc=pass smtp.client-ip=74.125.224.54
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=chromium.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=chromium.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=mailbox.org header.i=@mailbox.org header.b="kObxUABI";
-	dkim=pass (2048-bit key) header.d=mailbox.org header.i=@mailbox.org header.b="RPBrLGvj"
-Received: from smtp1.mailbox.org (smtp1.mailbox.org [IPv6:2001:67c:2050:b231:465::1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (4096 bits) server-digest SHA512)
-	(No client certificate requested)
-	by mout-p-102.mailbox.org (Postfix) with ESMTPS id 4h10hC1dx1zKsGZ;
-	Thu, 16 Jul 2026 06:39:55 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=mailbox.org; s=mail20150812;
-	t=1784176795;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=JcpkV9siobUpO+f7IdelxmPLDPFX/aFAfSsv5BsO2uo=;
-	b=kObxUABIKDkKw1LnU/pAk1nBEJo1kIXNiOx3DMGefy5Jd+NpXcSKuTl89RxJhR09FmDTqf
-	cXyYUNsy+MqcQYG8/MjoKqnzkk46UOI8x9x0LSr4vY8QmJz8IEIG/lBvWAyl2sLqgvlArL
-	IEqHCXAkW75S+jSpJX3naAOfwklnmWwYASn4MeyyxaPe/NLvcfakLE/p14oVSsqv7MiWRb
-	C3Ydf6AkVm42eU2056hAXGo4I7HuNF68srLr2tdzMECPon2SClj+ZPWq/f6ytb7k8yya2u
-	RiND1A9m5HiUNMmbN7EdJF9g7Ou10D3ayE0+fkCOJhg3G2bbxI+Q97xmEpNC8Q==
-Authentication-Results: outgoing_mbo_mout;
-	dkim=pass header.d=mailbox.org header.s=mail20150812 header.b=RPBrLGvj;
-	spf=pass (outgoing_mbo_mout: domain of shuwei.wu@mailbox.org designates 2001:67c:2050:b231:465::1 as permitted sender) smtp.mailfrom=shuwei.wu@mailbox.org
+	dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="lORVSP9i"
+Received: by mail-yx1-f54.google.com with SMTP id 956f58d0204a3-6682259cb3dso401491d50.1
+        for <linux-pm@vger.kernel.org>; Wed, 15 Jul 2026 21:59:12 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1784177952; cv=none;
+        d=google.com; s=arc-20260327;
+        b=AUxcU6Uyb17AGg2/rme1mjYq5P0Mf7dR0fQRBsjZJNHiaT6cuxnkG0v5DTNalCOACg
+         ro+ZFV7e61K7UmIDf9jYwZxYC4W62wqO+VwZQXqcI8CL/WZZyGCc2c11GXMBnSicxvss
+         kjeM3qmTuhuFt382TN0B982sxH1wnnyL1T0xVmxJLYouIH02SiwdKe+DWsxD6mdjo662
+         9/mXKnGMVj2Msx9EkqXtXMsqyUDGyItINvOqdHqZ56bUrDuMMItjd1OF4aba24v9u7C5
+         Y5c/kwLYx7Ho2sS6RYuuv4rGxsVhNjoPLQLgCFJICEYnUCGGoIsEL0T2ijIryKpZ5/EX
+         H4Qg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=Z8dI52NQd5mdA4AuWKzP1mtoK+n7nzP2uY77NXwFDCM=;
+        fh=2+d2sgOTnlB8J+wg27PSZACe4sekcdcYv/mO/xGJeJc=;
+        b=MhBokNz4xj5V8PaP7exCnFKQcW09JDlDAHd6aY6RqTwINFK1RJI//ZZvug6keLyDaW
+         J2B1LR3ieOjGT2ILbyHvcTXhast65jBg/JxxlHL0Z4NmlPbb9Rydt3CqjPsLh218OMKA
+         cksHIkDArYGNRqFtfftgjRK2vk/mWtylWcaL93ZfeOnwg2awjsXeP4cZu0jGca/H8mbB
+         K/+DQctOb9ZzQZP3H3XmKbA6h4df//O/oQhIN5e/gypZ55vpjf+z3c7nlWqNml98GT7e
+         WS46dlCvTv3L5ANbOAL+q6JIvu34Xrkxob/LoVSym83mZBOVo2aKBTt8CdUsKOHXsAh0
+         Zq5A==;
+        darn=vger.kernel.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=chromium.org; s=google; t=1784177952; x=1784782752; darn=vger.kernel.org;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=Z8dI52NQd5mdA4AuWKzP1mtoK+n7nzP2uY77NXwFDCM=;
+        b=lORVSP9ifVJ5Czr3v+5Isv3jhIIjZBkC9sryjLysjdwkMBfxclWDa71JGfz8pk6Qnj
+         /40j8/WK/P7lXw/XIIdMVyklagrk3ZN7bs2reZkWjyVV3khmc0R7jzM/2S4AIymnmSci
+         f7WcILaqA3AQ9U6ita7v/9x/Lu54P3lIoVsus=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1784177952; x=1784782752;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=Z8dI52NQd5mdA4AuWKzP1mtoK+n7nzP2uY77NXwFDCM=;
+        b=PlhC8LYK0BBr74OMbm/KJ+xBsmEo9D/M3XJbMVBmbzmFPJ3FS680vow2wPsZ4DI7Bk
+         xZasOW+VOjVwj3bBhbFtEEv1vKJPCd/67YyFpaTYer2QXz2R5XfOxM20PjCv0PFLOdEv
+         BQ4/SdIne+Opr9sk7lypVPDCg5D0Zbl4lRnvJFvYGuJhHuDwTzIi1P9s91uWBfsEva0E
+         15AF4LoZyjzVTX40sI4o/gikaz1sO3wHo0kJIDWNrNGn7XK2iNHIzo2O15KSs3s7HCoZ
+         ymXMittZU2jRbSH8mVm+E/TX1o9WC/AUnUb/AOyBcwnQoq6e8iv7ma8HmMa74wbprv3A
+         oj5g==
+X-Forwarded-Encrypted: i=1; AHgh+Rqm2QHh5MDGdNnDdkwbeZ2j8EJK2Ur6P8PayNeLz9uDsGj7qNrR4Exmph4499FF65zRbTPotaAPmg==@vger.kernel.org
+X-Gm-Message-State: AOJu0YzcGorOfr/Sy95FBw0RWUSqWJcJGode4tLkHZ8uMM77dxAep1KU
+	ZC9HQquvu7RSJK66jjbTwqK04fez00/+rH7uTefsw/3tMfs8xAGsdQTnRTAvtuOt0VKluT86ZCU
+	0+azjpd2xWv5iFDP2fFW5sQ8sN5ELvDmWpJ4kcYKC
+X-Gm-Gg: AfdE7ck6kGvsV0FjySx32sBuyNWyZs6ptJ0DVIYVuCpYcnNVd2M+1V1S2FVKogY+0jO
+	loVTbxdxtQrcHYrPjxLKZxBtMs/vdvueO/5LFqZ52nc3ZDbV2dBwPYfNjbk3LXCsfopDG/t6KDC
+	pdoEAIFUHJZ2QxXzIpMNM277nxkNiLV6HKxLfeoNWRQAG0HYR07gC8kWeioFBDWXSEN7b1v4Eoc
+	d7XJjxfR6WyltBN/1Z/FnqOXpcZVuPS992C92F3H6P8weTBF8Ot19rSndMwYDcBWu8i1pFBqam9
+	bpzUA8Ro5VTfd3ec
+X-Received: by 2002:a53:b784:0:b0:664:b559:d524 with SMTP id
+ 956f58d0204a3-66829f39e58mr611543d50.4.1784177951944; Wed, 15 Jul 2026
+ 21:59:11 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
-Mime-Version: 1.0
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=mailbox.org; s=mail20150812;
-	t=1784176794;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=JcpkV9siobUpO+f7IdelxmPLDPFX/aFAfSsv5BsO2uo=;
-	b=RPBrLGvjcV/+Lfmvn4bVyUypkYIW58wSNxEe8hKBD4BaPZCUFLNRGclbguxtwPHxuZ/JHS
-	uUVl5qgoNHTh0uu/AruB1EhUS1dYxN57JUxROMfvSKV0rSSrQR5VONGPyU6G07BR7PtQD7
-	p8y0QG9GLngtry0pwfpuRrEpmUzKQ5kt4q0UbHf5283711EMxhgJV9o7oEEdSn4feBV+0t
-	+Df22U9+gjPvAuQW9vWgdcEUMEtlB8Bs1fsGv5YbKQqWiq9JgA1N8oOP50QtphAXGNYrDD
-	NUQW4Gu4W0eZ0liZBSM3eIg5VB5SypU1C/Evx8wmZjlNzfoWRntmLAa/ZvjgdA==
+MIME-Version: 1.0
+References: <20260715085348.3457359-1-wenst@chromium.org> <20260715085348.3457359-4-wenst@chromium.org>
+ <aldS3qTympJuVXYj@ashevche-desk.local> <CAMRc=MfHmejks83bPfe3fKzAzFySGXk2GHMA9oZdMQj0f44eTA@mail.gmail.com>
+In-Reply-To: <CAMRc=MfHmejks83bPfe3fKzAzFySGXk2GHMA9oZdMQj0f44eTA@mail.gmail.com>
+From: Chen-Yu Tsai <wenst@chromium.org>
+Date: Thu, 16 Jul 2026 12:59:01 +0800
+X-Gm-Features: AUfX_myfMUyRbxWwYQRsbuThILT6idiwmNtqsd830qG3sUgPLjemD-RPoobAiuo
+Message-ID: <CAGXv+5HGjGTrqqzJrpiQhLrCn3C6H20LXq3niPnoujQLOwgqPw@mail.gmail.com>
+Subject: Re: [PATCH v5 03/16] power: sequencing: Add pwrseq_power_is_on()
+To: Bartosz Golaszewski <brgl@kernel.org>
+Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>, 
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Daniel Scally <djrscally@gmail.com>, 
+	Heikki Krogerus <heikki.krogerus@linux.intel.com>, 
+	Sakari Ailus <sakari.ailus@linux.intel.com>, "Rafael J. Wysocki" <rafael@kernel.org>, 
+	Danilo Krummrich <dakr@kernel.org>, Rob Herring <robh@kernel.org>, 
+	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
+	Matthias Brugger <matthias.bgg@gmail.com>, 
+	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>, 
+	Wei Deng <wei.deng@oss.qualcomm.com>, linux-acpi@vger.kernel.org, 
+	driver-core@lists.linux.dev, linux-pm@vger.kernel.org, 
+	linux-usb@vger.kernel.org, devicetree@vger.kernel.org, 
+	linux-mediatek@lists.infradead.org, linux-arm-kernel@lists.infradead.org, 
+	linux-kernel@vger.kernel.org, Manivannan Sadhasivam <mani@kernel.org>, 
+	Alan Stern <stern@rowland.harvard.edu>, 
+	Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset=UTF-8
-Date: Thu, 16 Jul 2026 12:39:41 +0800
-Message-Id: <DJZPVU5G5M3L.QJOUYNYKKDCJ@mailbox.org>
-Subject: Re: [PATCH] thermal: spacemit: k1: disable hardware on driver
- remove
-From: "Shuwei Wu" <shuwei.wu@mailbox.org>
-To: "Pei Xiao" <xiaopei01@kylinos.cn>, "Shuwei Wu" <shuwei.wu@mailbox.org>,
- <dlan@kernel.org>, <rafael@kernel.org>, <troy.mitchell@linux.spacemit.com>,
- <linux-pm@vger.kernel.org>, <linux-riscv@lists.infradead.org>,
- <spacemit@lists.linux.dev>, <linux-kernel@vger.kernel.org>
-References: <1db7d94eeaced9a92e3670d28e0c97c22f15f108.1783931396.git.xiaopei01@kylinos.cn> <DJY88BBD7RCM.20K3BATZ6JIM7@mailbox.org> <c054b269-9507-4da1-8e20-cbc85cdafe23@kylinos.cn>
-In-Reply-To: <c054b269-9507-4da1-8e20-cbc85cdafe23@kylinos.cn>
-X-MBO-RS-ID: f29254968fa440c7861
-X-MBO-RS-META: qwk9mydffxwmycptreb4fndyc16ocqj7
-X-Rspamd-Queue-Id: 4h10hC1dx1zKsGZ
 
-Hi Pei,
-
-On Wed Jul 15, 2026 at 11:11 AM CST, Pei Xiao wrote:
+On Wed, Jul 15, 2026 at 8:10=E2=80=AFPM Bartosz Golaszewski <brgl@kernel.or=
+g> wrote:
 >
+> On Wed, 15 Jul 2026 11:29:02 +0200, Andy Shevchenko
+> <andriy.shevchenko@linux.intel.com> said:
+> > On Wed, Jul 15, 2026 at 04:53:33PM +0800, Chen-Yu Tsai wrote:
+> >> The power sequencing consumer API already does power on state tracking
+> >> internally. Expose the state to consumers through pwrseq_power_is_on()
+> >> so that they don't have to reimplement it locally.
+> >
+> > Reviewed-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+> >
+> > ...
+> >
+> >> +/**
+> >> + * pwrseq_power_is_on() - Queries the last requested state of the pow=
+er sequencer.
+> >> + * @desc: Descriptor referencing the power sequencer.
+> >> + *
+> >> + * This returns the last requested state of the power sequencer.
+> >> + *
+> >> + * Returns:
+> >> + * On success, 1 for on or desc is NULL (optional) and 0 for off;
+> >> + * negative error number on failure.
+> >
+> > I would rephrase it a bit.
+> >
+> >  * On success, 1 for on and 0 for off; negative error number on failure=
+.
+> >  * If desc is NULL (means optional) return 1.
+> >
+> > And this rises a question: why 1? Shouldn't it be some "unknown" state?
+> > (But since Bart Acked this, this doesn't prevent the patch to go, you
+> >  got my tag above.)
+> >
 >
-> =E5=9C=A8 2026/7/14 18:36, Shuwei Wu =E5=86=99=E9=81=93:
->> Hi Pei,
->>
->> On Mon Jul 13, 2026 at 4:32 PM CST, Pei Xiao wrote:
->>> The driver uses devm_request_threaded_irq() but never disables the
->>> hardware interrupt enable, sensor enable, or sensor power bits when
->>> the driver is unbound.
->>>
->>> Add a devm action that clears K1_TSENSOR_INT_EN_REG,
->>> K1_TSENSOR_EN_ALL, and K1_TSENSOR_PCTRL_ENABLE on remove, mirroring
->>> what k1_tsensor_init() sets up.
->>>
->>> Signed-off-by: Pei Xiao <xiaopei01@kylinos.cn>
->>> ---
->>>  drivers/thermal/spacemit/k1_tsensor.c | 27 +++++++++++++++++++++++++++
->>>  1 file changed, 27 insertions(+)
->>>
->>> diff --git a/drivers/thermal/spacemit/k1_tsensor.c b/drivers/thermal/sp=
-acemit/k1_tsensor.c
->>> index 79222d233129..cf79dc7d403f 100644
->>> --- a/drivers/thermal/spacemit/k1_tsensor.c
->>> +++ b/drivers/thermal/spacemit/k1_tsensor.c
->>> @@ -199,6 +199,29 @@ static irqreturn_t k1_tsensor_irq_thread(int irq, =
-void *data)
->>>  	return IRQ_HANDLED;
->>>  }
->>> =20
->>> +static void k1_tsensor_shutdown(struct k1_tsensor *ts)
->>> +{
->>> +	u32 val;
->>> +
->>> +	/* Disable all interrupts */
->>> +	writel(0xffffffff, ts->base + K1_TSENSOR_INT_EN_REG);
->>> +
->>> +	/* Disable all sensor */
->>> +	val =3D readl(ts->base + K1_TSENSOR_EN_REG);
->>> +	val &=3D ~K1_TSENSOR_EN_ALL;
->>> +	writel(val, ts->base + K1_TSENSOR_EN_REG);
->>> +
->>> +	/* Power down the sensor module */
->>> +	val =3D readl(ts->base + K1_TSENSOR_PCTRL_REG);
->>> +	val &=3D ~K1_TSENSOR_PCTRL_ENABLE;
->>> +	writel(val, ts->base + K1_TSENSOR_PCTRL_REG);
->>> +}
->>> +
->>> +static void devm_k1_tsensor_shutdown(void *data)
->>> +{
->>> +	k1_tsensor_shutdown(data);
->>> +}
->>> +
->>>  static int k1_tsensor_probe(struct platform_device *pdev)
->>>  {
->>>  	struct device *dev =3D &pdev->dev;
->>> @@ -229,6 +252,10 @@ static int k1_tsensor_probe(struct platform_device=
- *pdev)
->>> =20
->>>  	k1_tsensor_init(ts);
->>> =20
->>> +	ret =3D devm_add_action_or_reset(dev, devm_k1_tsensor_shutdown, ts);
->>> +	if (ret)
->>> +		return ret;
->>> +
->>>  	irq =3D platform_get_irq(pdev, 0);
->>>  	if (irq < 0)
->>>  		return irq;
->> Sorry, I missed the hardware cleanup in the original driver.
->> Thanks for fixing it.
->>
->> I also found that registering the shutdown action immediately after
->> k1_tsensor_init() would cause the thermal zones to be released before
->> the IRQ during devres cleanup. The IRQ thread may then access an
->> unregistered thermal zone.
->>
->> I changed the order so that the thermal zones are registered first,
->> followed by the IRQ and the shutdown action.
->> On removal, the hardware interrupt is disabled first, then the IRQ
->> is released, and finally the thermal zones are released.
-> I notice that the changes you've made are significantly more extensive
-> than my original patch.
-> =C2=A0Could you please let me know whether you plan to submit this patch
-> yourself,=C2=A0
-> or whether you would like me to send it? If you would prefer me to
-> submit it,=C2=A0
-> I would be delighted to contribute to the community.
-
-Thank you for your reply. Since the original cleanup issue was
-identified by you, I would be happy for you to submit the update patch.
-
+> No, this is good feedback. Maybe we should prefer an enum like so:
 >
-> Thanks=EF=BC=81
-> Pei.
->
->> -> % git --no-pager diff drivers/thermal/spacemit/k1_tsensor.c
->> diff --git a/drivers/thermal/spacemit/k1_tsensor.c b/drivers/thermal/spa=
-cemit/k1_tsensor.c
->> index 79222d233129..57dbc652a405 100644
->> --- a/drivers/thermal/spacemit/k1_tsensor.c
->> +++ b/drivers/thermal/spacemit/k1_tsensor.c
->> @@ -199,6 +199,32 @@ static irqreturn_t k1_tsensor_irq_thread(int irq, v=
-oid *data)
->>  	return IRQ_HANDLED;
->>  }
->>
->> +static void k1_tsensor_shutdown(struct k1_tsensor *ts)
->> +{
->> +	u32 val;
->> +
->> +	/* Disable all interrupts */
->> +	writel(0xffffffff, ts->base + K1_TSENSOR_INT_EN_REG);
->> +
->> +	/* Disable all sensors */
->> +	val =3D readl(ts->base + K1_TSENSOR_EN_REG);
->> +	val &=3D ~K1_TSENSOR_EN_ALL;
->> +	writel(val, ts->base + K1_TSENSOR_EN_REG);
->> +
->> +	/* Clear the sampling configuration set by k1_tsensor_init(). */
->> +	val =3D readl(ts->base + K1_TSENSOR_TIME_REG);
->> +	val &=3D ~(K1_TSENSOR_TIME_FILTER_PERIOD |
->> +		 K1_TSENSOR_TIME_ADC_CNT_RST |
->> +		 K1_TSENSOR_TIME_WAIT_REF_CNT);
->> +	writel(val, ts->base + K1_TSENSOR_TIME_REG);
->> +
->> +	/* Clear the control bits configured by k1_tsensor_init(). */
->> +	val =3D readl(ts->base + K1_TSENSOR_PCTRL_REG);
->> +	val &=3D ~(K1_TSENSOR_PCTRL_RAW_SEL |
->> +		 K1_TSENSOR_PCTRL_TEMP_MODE |
->> +		 K1_TSENSOR_PCTRL_HW_AUTO_MODE |
->> +		 K1_TSENSOR_PCTRL_ENABLE);
->> +	writel(val, ts->base + K1_TSENSOR_PCTRL_REG);
->> +}
->> +
->> +static void devm_k1_tsensor_shutdown(void *data)
->> +{
->> +	k1_tsensor_shutdown(data);
->> +}
->> +
->>  static int k1_tsensor_probe(struct platform_device *pdev)
->>  {
->>  	struct device *dev =3D &pdev->dev;
->> @@ -229,34 +255,48 @@ static int k1_tsensor_probe(struct platform_device=
- *pdev)
->>
->>  	k1_tsensor_init(ts);
->>
->> -	irq =3D platform_get_irq(pdev, 0);
->> -	if (irq < 0)
->> -		return irq;
->> -
->> -	ret =3D devm_request_threaded_irq(dev, irq, NULL,
->> -					k1_tsensor_irq_thread,
->> -					IRQF_ONESHOT, "k1_tsensor", ts);
->> -	if (ret < 0)
->> -		return ret;
->> -
->>  	for (i =3D 0; i < MAX_SENSOR_NUMBER; ++i) {
->>  		ts->ch[i].id =3D i;
->>  		ts->ch[i].ts =3D ts;
->>  		ts->ch[i].tzd =3D devm_thermal_of_zone_register(dev, i, ts->ch + i, &=
-k1_tsensor_ops);
->> -		if (IS_ERR(ts->ch[i].tzd))
->> -			return PTR_ERR(ts->ch[i].tzd);
->> +		if (IS_ERR(ts->ch[i].tzd)) {
->> +			ret =3D PTR_ERR(ts->ch[i].tzd);
->> +			goto err_shutdown;
->> +		}
->>
->>  		/* Attach sysfs hwmon attributes for userspace monitoring */
->>  		ret =3D devm_thermal_add_hwmon_sysfs(dev, ts->ch[i].tzd);
->>  		if (ret)
->>  			dev_warn(dev, "Failed to add hwmon sysfs attributes\n");
->> +	}
->>
->> -		k1_tsensor_enable_irq(ts->ch + i);
->> +	ret =3D platform_get_irq(pdev, 0);
->> +	if (ret < 0) {
->> +		goto err_shutdown;
->>  	}
-> irq =3D platform_get_irq(pdev, 0); if (irq < 0) { ret =3D irq; goto
-> err_shutdown; }=C2=A0 =C2=A0=C2=A0
+> enum pwrseq_state {
+>         PWRSEQ_POWER_UNKNOWN,
+>         PWRSEQ_POWER_ON,
+>         PWRSEQ_POWER_OFF
+> };
 
-agreed.
+Well I think the crux of it is whether the API considers the descriptor
+optional. The power on/off functions suggest that is the case.
 
->
->>
->> +	ret =3D devm_request_threaded_irq(dev, irq, NULL,
->> +					k1_tsensor_irq_thread,
->> +					IRQF_ONESHOT, "k1_tsensor", ts);
->> +	if (ret < 0)
->> +		goto err_shutdown;
->> +
->> +	ret =3D devm_add_action_or_reset(dev, devm_k1_tsensor_shutdown, ts);
-> *Do we need to rename=C2=A0|devm_k1_tsensor_shutdown|=C2=A0to a function =
-name=C2=A0
-> without the=C2=A0|devm|=C2=A0prefix? I feel the=C2=A0|devm|=C2=A0prefix i=
-s a bit redundant.
+I modeled this on reset_control_status(). I believe the rationale is that
+if the reset control or pwrseq is optional, then either there is some
+other mechanism to deal with the reset (GPIO) or pwrseq (GPIO + regulator),
+or it's always on and operational.
 
-yes, k1_tsensor_shutdown_action() would be a clearer name.
+In such cases and the rare case where one has to query the state, the
+queries are possibly chained together and I think it makes sense to
+assume the "operational" state as the fallback.
 
->
-> *
->> +	if (ret)
->> +		return ret;
->> +
->> +	/* Enable interrupts only after all zones and the handler are ready. *=
-/
->> +	for (i =3D 0; i < MAX_SENSOR_NUMBER; ++i)
->> +		k1_tsensor_enable_irq(ts->ch + i);
->> +
->>  	platform_set_drvdata(pdev, ts);
->>
->>  	return 0;
->> +
->> +err_shutdown:
->> +	k1_tsensor_shutdown(ts);
->> +	return ret;
->>  }
->>
->>  static const struct of_device_id k1_tsensor_dt_ids[] =3D {
->>
+If this returns an enum, then I think the previous approach of returning
+an error value for an invalid descriptor is better. One doesn't need to
+learn a new set of return values.
 
---=20
-Best regards,
-Shuwei Wu
+I'm fine either way. I would just move the checks over to the consumer
+side. But I think the principles guiding the overall API design is
+something you need to provide:
+
+  - Is the descriptor optional? What should the action functions
+    (power on / off , or query status) return when NULL is given?
+  - Is the subsystem optional? Should the stub functions besides
+    pwrseq_get() return 0 instead of -ENOSYS?
+
+Right now the API feels like the descriptor is optional but the
+subsystem is not. One has to add IS_ENABLED(CONFIG_POWER_SEQUENCING)
+around the consumer API to make it an optional feature.
+
+
+Thanks
+ChenYu
