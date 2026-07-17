@@ -1,158 +1,169 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9A6E83C555C;
-	Thu, 16 Jul 2026 23:54:40 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 74A0C175A6A;
+	Fri, 17 Jul 2026 00:12:36 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1784246081; cv=none; b=afcfS8W6Tfp870XzeDzS1jrz40L/fpAD07vk5JM8kCcJt+yZZzJOYq4zHJq50iZuWraXuy4HsJiuiQtFiRzX1RVPAiZ485Dw9xymT7fMy9rdUuKsvcOM8hR+0yEEA5QGcz+QoUrJ+fiCQcwyosXjOyGHeeI9P1u+wP+U2Kbxnnc=
+	t=1784247158; cv=none; b=PWJO9WPZHtTG3bcPBqIiyW1jvmw2UR9dCW1LMIWxGHMzRxD285qZPlHdIDYDPp/lnP1kfExoJO4eid5JcP0Jmg5yOXKre2zaGnsLJJLUED5g4atV1PuC5rEsHH+nGnk8S4q+2KaAmha1WUARdZ/LJ8M5ciO7uB54C5S4pWvVYyo=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1784246081; c=relaxed/simple;
-	bh=oKryMjn/Bv+TD3xDwZkSTjSU65baeeUI7G2vo+rGOnU=;
+	s=arc-20240116; t=1784247158; c=relaxed/simple;
+	bh=KIAwAAQokTNdCR3ckxl4/D1QUgaY77KFcvLQMPr8uqQ=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=Ni3YUyE3DB77WT2zJXq87hx9eMAnIuMp6n63GPWIeI+Vw/yy35/6uZ3YpU7yS9LAZxB4M0NZlPtCcKOi1yAdOHD5oNn7q6FNZjTJVNrggFj2WLpVzm9zluPdndHIhhgUesRWP735yzyOaBngqjWxKsi1+a3q2Gewo8aYzp5FvxY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=MpOU9k9B; arc=none smtp.client-ip=100.103.45.18
+	 Content-Type:Content-Disposition:In-Reply-To; b=itVU3rzeWD5sfwksx5ENc41nVzG9O81jD3xMbXDF3Tfj3HhOhTqAIOntimSMwvk+4NeobNdc+yDhHSae/XFEl3fAL5L1LPIqoLAIfpQCBpGwbP3D0YdXZpzpeDx/i1zUPmuLZvev3fWij938Nuh1V0BamzoABUdE/DaTEdKlx3Q=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=mG0YaV2L; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="MpOU9k9B"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5E9D51F000E9;
-	Thu, 16 Jul 2026 23:54:39 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="mG0YaV2L"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 930EA1F00A3F;
+	Fri, 17 Jul 2026 00:12:35 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1784246080;
-	bh=cAUYF08DgPZe/OGbTm1DR248/7tqQEZns4ftTrKyuZE=;
+	s=k20260515; t=1784247156;
+	bh=arF6rlh8o7ke4rkjfVNLQeaX4PXR9UGuNplSZpPUZ1s=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=MpOU9k9BSQXGN7h9Lx/uUKqj/mqtkGeXdQ2zVPjWFOG/iR0U/ZVUjJLYLgNr21tR+
-	 s3Ar3dWEBKO3ZvUA2NHfPirwwem/eGz78eVL9jqjo1+6IgW+WKWxR1Q7fD5XU4AMKV
-	 oePysyVI/S93r7TLe6Jhzz8wx7eRIL7oZAluTb5Qxn/R1L4OCCdDsvnjI0mE/4clYo
-	 W+h9H1dh9DDSKXh5Cc1ju7ovFLAwC727u77GPN4iyuMW2pOxL1J5kA3cN7DAzk39St
-	 zbBPoNWu+mRRQ+6vgv9KMichl7CXK742gTgp1smQcuhNpvO8EC+4fJ5VmBu52H6sqI
-	 NunOzpvrQ5Ebg==
-Date: Thu, 16 Jul 2026 18:54:36 -0500
+	b=mG0YaV2LY5jIMgQsUbOAOjP66EjwMkaigqGNtP5mOFoyENN+Fs8l8hJXmnHlQTibe
+	 p334Z144jeHDhOkHESTUtJSqw9WvSTxExckvlcfiFIfONp1NN2INZhcSXH9oQYuotP
+	 8p0cLwZvYoAJuuimpIHnPZ7sK0FV9hX6TpersG7+1re3CWlqL09BZb+urRnRNnq9jQ
+	 J1oXEaAI7CaaxM23KfjCksZmNDFb/1ecTz7M4FKHL+XTpI4tcyCqn9ODCvZ3ERoYQU
+	 WUXCuuy+aml8PvoHbFTqcEpWScF1Em0uM6ciL7Q19PRDR4nrUxhdt52BdSDLJXUPI0
+	 WimwVHYIhOWOA==
+Date: Thu, 16 Jul 2026 19:12:32 -0500
 From: Bjorn Andersson <andersson@kernel.org>
 To: Rakesh Kota <rakesh.kota@oss.qualcomm.com>
-Cc: Krzysztof Kozlowski <krzk@kernel.org>, 
-	Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>, Konrad Dybcio <konradybcio@kernel.org>, 
-	Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
-	Conor Dooley <conor+dt@kernel.org>, Sebastian Reichel <sre@kernel.org>, 
-	linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	linux-pm@vger.kernel.org, jishnu.prakash@oss.qualcomm.com, kamal.wadhwa@oss.qualcomm.com
-Subject: Re: [PATCH 0/2] qcom_battmgr: Add batteryless DC-adapter MAINS
- support
-Message-ID: <alltBcYWULOv7nEv@baldur>
+Cc: Konrad Dybcio <konradybcio@kernel.org>, Rob Herring <robh@kernel.org>, 
+	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
+	Sebastian Reichel <sre@kernel.org>, linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Subject: Re: [PATCH 2/2] power: supply: qcom_battmgr: Add support batteryless
+ boards as MAINS
+Message-ID: <allv5PQRd8kr2JG1@baldur>
 References: <20260518-add_dc_in_support-v1-0-31fbaa329879@oss.qualcomm.com>
- <56a54a34-1040-44ae-92e2-ce65a3d3acb5@oss.qualcomm.com>
- <20260519065938.4i5wot72pfxy4m3d@hu-kotarake-hyd.qualcomm.com>
- <ag-NLvh4ROgTCs_L@baldur>
- <d4001407-cdb0-48ee-a138-87c94b5dab01@oss.qualcomm.com>
- <20260702111737.2qtjcfskulav4usd@hu-kotarake-hyd.qualcomm.com>
- <5d5c693b-bd07-40a4-aea5-d9e1884aac50@kernel.org>
- <20260703091319.5kcsqjtx4e4rshsy@hu-kotarake-hyd.qualcomm.com>
- <7c7ab43f-45c0-48bc-921a-8820408c88c9@kernel.org>
- <20260716084850.gssw67izy6vq36tg@hu-kotarake-hyd.qualcomm.com>
+ <20260518-add_dc_in_support-v1-2-31fbaa329879@oss.qualcomm.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20260716084850.gssw67izy6vq36tg@hu-kotarake-hyd.qualcomm.com>
+In-Reply-To: <20260518-add_dc_in_support-v1-2-31fbaa329879@oss.qualcomm.com>
 
-On Thu, Jul 16, 2026 at 02:18:50PM +0530, Rakesh Kota wrote:
-> On Fri, Jul 03, 2026 at 11:16:59AM +0200, Krzysztof Kozlowski wrote:
-> > On 03/07/2026 11:13, Rakesh Kota wrote:
-> > > On Thu, Jul 02, 2026 at 01:28:35PM +0200, Krzysztof Kozlowski wrote:
-> > >> On 02/07/2026 13:17, Rakesh Kota wrote:
-> > >>> On Tue, Jun 30, 2026 at 04:16:13PM +0200, Konrad Dybcio wrote:
-> > >>>> On 5/22/26 12:56 AM, Bjorn Andersson wrote:
-> > >>>>> On Tue, May 19, 2026 at 12:29:38PM +0530, Rakesh Kota wrote:
-> > >>>>>> On Mon, May 18, 2026 at 04:36:32PM +0200, Konrad Dybcio wrote:
-> > >>>>>>> On 5/18/26 3:49 PM, Rakesh Kota wrote:
-> > >>>>>>>> On batteryless boards powered by 12V DC adapters, registering the
-> > >>>>>>>> power supply as BATTERY causes userspace to incorrectly trigger
-> > >>>>>>>> battery power-saving sequences.
-> > >>>>>>>
-> > >>>>>>> Does battman really offer no way of differentiating whether a battery
-> > >>>>>>> is *actually* present in such cases?
-> > >>>>>>>
-> > >>>>>>> What boards are affected?
-> > >>>>>>>
-> > >>>>>> Currently, batteryless support is only implemented for the
-> > >>>>>> qcs6490-rb3gen2(Kodiak) board.
-> > >>>>>>
-> > >>>>>
-> > >>>>> What do you mean?
-> > >>>>>
-> > >>>>> Are you saying that the pmic_glink firmware in Kodiak has a one-off hack
-> > >>>>> that no other implementation of this firmware has?
-> > >>>>>
-> > >>>>> My Lenovo IdeaCentre (hamoa) doesn't have battery, what should I do now?
-> > >>>>
-> > >>>> I was going through my inbox.
-> > >>>> This remains unanswered, and I don't see the discussion progressing
-> > >>>> without resolving this.
-> > >>>>
-> > >>> To clarify — there is no platform-side hack involved. The Kodiak board
-> > >>> has a batteryless variant, but the pmic_glink firmware provides no way
-> > >>> to distinguish whether a battery is physically present or not. Since
-> > >>> this can't be determined from firmware, we introduced a DT-based
-> > >>> property to describe the hardware configuration explicitly.
-> > >>>
-> > >>> This is not Kodiak-specific — any batteryless board, including hamoa,
-> > >>> can use the same DT property to avoid incorrect BATTERY registration
-> > >>
-> > >> Unfortunately the answer might be: fix your firmware. Since your
-> > >> firmware is the interface and we do not expose battery in DT, then you
-> > >> do not get additional properties. You made conscious design choice of
-> > >> abstracting some things in the firmware, so you do control that part of
-> > >> the software stack. If you make one choice, it might lead to other, like
-> > >> rejecting such properties.
-> > >>
-> > > 
-> > > This is a hardware limitation — both the debug board and batteryless
-> > > platform use the same Batt_ID resistor (10K), so the firmware has no way
-> > > to distinguish between the two at runtime. There is nothing to fix on
-> > > the firmware side.
-> > > 
-> > > Given this, would a new compatible string (e.g.,qcom,pmic-glink-batteryless)
-> > > be preferred over a DT property, or do you have another suggestion?
-> > 
-> > Debug board is not a end device, thus you basically have only one real
-> > use case: battery less. Treat everything that.
+On Mon, May 18, 2026 at 07:19:40PM +0530, Rakesh Kota wrote:
+> Add support for the "qcom,batteryless" device tree property.
+> When this boolean property is present, the driver registers the power
+> supply as POWER_SUPPLY_TYPE_MAINS instead of BATTERY. This prevents
+> userspace from triggering battery power-saving sequences when using
+> powered by 12V adapters.
 > 
+> Signed-off-by: Rakesh Kota <rakesh.kota@oss.qualcomm.com>
+> ---
+>  drivers/power/supply/qcom_battmgr.c | 47 ++++++++++++++++++++++++++++++++++++-
+>  1 file changed, 46 insertions(+), 1 deletion(-)
 > 
-> can we have 2 supplies added - (fake) battery and mains?  if we detect 10K bat id?
-> since mobile/production platforms share the same firmware and driver code,
-> the debug board still requires a fake battery registration to keep the common
-> code path functional. In that scenario, should we register both the main power
-> supply (DC adapter) and a fake battery, so the shared code continues to work
-> correctly without requiring platform-specific divergence?
-> 
+> diff --git a/drivers/power/supply/qcom_battmgr.c b/drivers/power/supply/qcom_battmgr.c
+> index 490137a23d00e97a9e6ced21d1e66fe637db6c9d..35d266375d8c46b161a64f9c2a8c6054dc2211de 100644
+> --- a/drivers/power/supply/qcom_battmgr.c
+> +++ b/drivers/power/supply/qcom_battmgr.c
+> @@ -332,6 +332,7 @@ struct qcom_battmgr {
+>  	struct qcom_battmgr_wireless wireless;
+>  
+>  	struct work_struct enable_work;
+> +	bool batteryless;
 
-My Hamoa-based PC (desktop) currently reports: ac, battery, usb, and
-wireless. I would expect that it reports on AC (or no battmgr
-interfaces?).
+This is a local variable used only within qcom_battmgr_probe()
 
-If I understand what you're saying, the pmic-glink firmware is generic
-across all Hamoa targets, so there is no configuration in that firmware
-to differentiate between this and a laptop usecase?
+>  
+>  	/*
+>  	 * @lock is used to prevent concurrent power supply requests to the
+> @@ -930,6 +931,47 @@ static const struct power_supply_desc sm8550_bat_psy_desc = {
+>  	.property_is_writeable = qcom_battmgr_bat_is_writeable,
+>  };
+>  
+> +static int qcom_battmgr_dcin_get_property(struct power_supply *psy,
+> +					  enum power_supply_property psp,
+> +					  union power_supply_propval *val)
+> +{
+> +	struct qcom_battmgr *battmgr = power_supply_get_drvdata(psy);
+> +	int ret;
+> +
+> +	if (!battmgr->service_up)
+> +		return -EAGAIN;
+> +
+> +	ret = qcom_battmgr_bat_sm8350_update(battmgr, psp);
+> +	if (ret < 0)
+> +		return ret;
+> +
+> +	switch (psp) {
+> +	case POWER_SUPPLY_PROP_STATUS:
+> +		val->intval = battmgr->status.status;
+> +		break;
+> +	case POWER_SUPPLY_PROP_PRESENT:
+> +		val->intval = battmgr->info.present;
+> +		break;
+> +	default:
+> +		return -EINVAL;
+> +	}
+> +
+> +	return 0;
+> +}
+> +
+> +static const enum power_supply_property dcin_props[] = {
+> +	POWER_SUPPLY_PROP_STATUS,
+> +	POWER_SUPPLY_PROP_PRESENT,
+> +};
+> +
+> +static const struct power_supply_desc dcin_psy_desc = {
 
-Similarly, my Hamoa laptop doesn't have wireless charging, but you're
-saying the pmic-glink firmware doesn't know about this - it just don't
-get any input power on those pins?
+Everything else in this driver is prefixed based on which firmware
+interface it's operating against, but you decided to ignore that
+convention...
 
+Don't do that.
 
-I think this is similar to if we had a discrete charger block that we
-describe in DeviceTree, we would somehow have to describe the
-"configuration" of that component.
+> +	.name = "qcom-battmgr-dcin",
 
-But I don't think you considered those other use cases. Perhaps this
-should be an optional qcom,battmgr-interfaces = "ac", "usb" ...; taking
-the list of interfaces that is actually implemented.
+Isn't this what we call qcom-battmgr-ac for the compute targets?
+
+Is there any reason to not unify the naming?
+
+> +	.type = POWER_SUPPLY_TYPE_MAINS,
+> +	.properties = dcin_props,
+> +	.num_properties = ARRAY_SIZE(dcin_props),
+> +	.get_property = qcom_battmgr_dcin_get_property,
+> +};
+> +
+>  static int qcom_battmgr_ac_get_property(struct power_supply *psy,
+>  					enum power_supply_property psp,
+>  					union power_supply_propval *val)
+> @@ -1652,6 +1694,7 @@ static int qcom_battmgr_probe(struct auxiliary_device *adev,
+>  	mutex_init(&battmgr->lock);
+>  	init_completion(&battmgr->ack);
+>  
+> +	battmgr->batteryless = device_property_read_bool(dev, "qcom,batteryless");
+>  	match = of_match_device(qcom_battmgr_of_variants, dev->parent);
+>  	if (match)
+>  		battmgr->variant = (unsigned long)match->data;
+> @@ -1690,7 +1733,9 @@ static int qcom_battmgr_probe(struct auxiliary_device *adev,
+>  			return dev_err_probe(dev, PTR_ERR(battmgr->wls_psy),
+>  					     "failed to register wireless charing power supply\n");
+>  	} else {
+> -		if (battmgr->variant == QCOM_BATTMGR_SM8550)
+> +		if (battmgr->batteryless)
+> +			psy_desc = &dcin_psy_desc;
+
+The psy_desc here is what is used to register the bat_psy on the line
+below. Why would you register "dcin" as your bat_psy?
+
+Is there an actual reason or are you just lazy?
 
 Regards,
 Bjorn
 
-> regards
-> Rakesh Kota
+> +		else if (battmgr->variant == QCOM_BATTMGR_SM8550)
+>  			psy_desc = &sm8550_bat_psy_desc;
+>  		else
+>  			psy_desc = &sm8350_bat_psy_desc;
+> 
+> -- 
+> 2.34.1
+> 
