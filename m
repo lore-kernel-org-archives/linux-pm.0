@@ -1,117 +1,167 @@
-Received: from smtpout-04.galae.net (smtpout-04.galae.net [185.171.202.116])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 769D63DD533;
-	Fri, 17 Jul 2026 07:37:43 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=185.171.202.116
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0C8BF2EDD78;
+	Fri, 17 Jul 2026 08:05:16 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1784273868; cv=none; b=PsgRbUuMAdXWhHpyG0xCiuRoWtLTFHMHpN0fK3fqc3BdKfDvQcAGdYXP34TYJDqB+2BBXMjucJK3M2foiIHPld6H2a6/Ddz4HY+DZnVJymkcgiWHsBxYet+PiGuFZdyklGTG5yIHU+fp+M5D/nto+k36Rz+kAl1GDitXqTgEJok=
+	t=1784275518; cv=none; b=KouT+CMxNS7hsa4WhQJoxOzbsVN6TxtQQfUJp+NM5o3b3jOLGlgGqL6TXGi8jQiT4AfnaRwIzpyRmrUahKKSNMcHFO9xmbe7u3LhpiWDLK9dPlrOcrRWoIjE8p7F9NbiBkYf5oBwiyBZmJTawTOSxUijQMGmRnqR187Ja5VlLCQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1784273868; c=relaxed/simple;
-	bh=qZkQOIOG8Kl3936adbYcP2Yh8w6XNbgYkOrvcA3q2GM=;
-	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
-	 MIME-Version:Content-Type; b=kSBA2uPTtJLLMbyQY++W4TXn1sZEnQ9bnxt52jRnl+4Dmm7d0qD7d88T+k6hLXbkO/oh5uEx5rpoamtKixGerkjGtDyn3T9AS3C4RWMW9pkJ40UR9sN+fjBex4JPaOgdIC20hMOkuYTVfhbp0B75wkwJry6GtJZkcAt49rlm1aI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com; spf=pass smtp.mailfrom=bootlin.com; dkim=pass (2048-bit key) header.d=bootlin.com header.i=@bootlin.com header.b=kon2YfH/; arc=none smtp.client-ip=185.171.202.116
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=bootlin.com
+	s=arc-20240116; t=1784275518; c=relaxed/simple;
+	bh=x9JygAPOcH52L+hYgzFwecjlCVuIqXcwZPNFrDd78eM=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=GG2s1EgTS7BJxfyYKqfy205HZ+shVMwBbfZtxIMVTzQlCIdbt58fYpwYziHMkWEgt4OrmsAdHq8MS907Wn+n3ef56mJ97qMuyOdxL/7VnN2TBpaBeo3d2tQG+GaDGrZDCVvfGSg4VMR3ex725P+dWK1yCANfsm6saoP7VNVe/kQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=AAYnRLYR; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=bootlin.com header.i=@bootlin.com header.b="kon2YfH/"
-Received: from smtpout-01.galae.net (smtpout-01.galae.net [212.83.139.233])
-	by smtpout-04.galae.net (Postfix) with ESMTPS id 6485BC2B9F5;
-	Fri, 17 Jul 2026 07:37:52 +0000 (UTC)
-Received: from mail.galae.net (mail.galae.net [212.83.136.155])
-	by smtpout-01.galae.net (Postfix) with ESMTPS id 943D660361;
-	Fri, 17 Jul 2026 07:37:34 +0000 (UTC)
-Received: from [127.0.0.1] (localhost [127.0.0.1]) by localhost (Mailerdaemon) with ESMTPSA id DC0A611BD3D44;
-	Fri, 17 Jul 2026 09:37:18 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bootlin.com; s=dkim;
-	t=1784273852; h=from:subject:date:message-id:to:cc:mime-version:content-type:
-	 content-transfer-encoding:in-reply-to:references;
-	bh=Cdb0RCCdG1Y5r/It8CwrJzVJ0JbWRfQ0sD99bdj9c+M=;
-	b=kon2YfH/dOK4tDt53OBaDo5FFMl+LDNwDVUop5ds1NRI/Wg1uSfOdRPoX//xppPkYw4F4k
-	i7WIsxXBl1un2FVxbtH0z+MNg/Pxf/kDZFkkmQMF7GWX2KDvfCGfcNPlsGE/XeWd6UWU5+
-	GU0KvK2Qz5NhcKTqLYeMaoODnDSsLW8zaf8j7HAZsl2HX2a+q1UNwnNfj8/t2YSHY0CoOJ
-	iuHvYWwy+oF8TF5SvX8WUIAoCWzZZkD3fHymApMwuHuo/Ci0SwMn3oduihoRjpk8TrJJuw
-	dKfxpFRA4xRbQoh0VoLeExcl0443IzDaZd45c4NSu8UobUALaKN9EhlqiiNUTA==
-From: Miquel Raynal <miquel.raynal@bootlin.com>
-To: Pan Chuang <panchuang@vivo.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>,  Daniel Lezcano
- <daniel.lezcano@kernel.org>,  Zhang Rui <rui.zhang@intel.com>,  Lukasz
- Luba <lukasz.luba@arm.com>,  Markus Mayer <mmayer@broadcom.com>,  Broadcom
- internal kernel review list <bcm-kernel-feedback-list@broadcom.com>,
-  Florian Fainelli <florian.fainelli@broadcom.com>,  Frank Li
- <Frank.Li@nxp.com>,  Sascha Hauer <s.hauer@pengutronix.de>,  Pengutronix
- Kernel Team <kernel@pengutronix.de>,  Fabio Estevam <festevam@gmail.com>,
-  zhanghongchen <zhanghongchen@loongson.cn>,  Yinbo Zhu
- <zhuyinbo@loongson.cn>,  Amit Kucheria <amitk@kernel.org>,  Thara Gopinath
- <thara.gopinath@gmail.com>,  Niklas =?utf-8?Q?S=C3=B6derlund?=
- <niklas.soderlund@ragnatech.se>,  Geert Uytterhoeven
- <geert+renesas@glider.be>,  Magnus Damm <magnus.damm@gmail.com>,  John
- Madieu <john.madieu.xa@bp.renesas.com>,  Heiko Stuebner <heiko@sntech.de>,
-  Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,  Krzysztof Kozlowski
- <krzk@kernel.org>,  Peter Griffin <peter.griffin@linaro.org>,  Alim Akhtar
- <alim.akhtar@samsung.com>,  Maxime Coquelin <mcoquelin.stm32@gmail.com>,
-  Alexandre Torgue <alexandre.torgue@foss.st.com>,  Thierry Reding
- <thierry.reding@kernel.org>,  Jonathan Hunter <jonathanh@nvidia.com>,
-  Matthias Brugger <matthias.bgg@gmail.com>,  AngeloGioacchino Del Regno
- <angelogioacchino.delregno@collabora.com>,  Srinivas Pandruvada
- <srinivas.pandruvada@linux.intel.com>,  Andy Shevchenko
- <andriy.shevchenko@linux.intel.com>,  Laura Nao <laura.nao@collabora.com>,
-  Fei Shao <fshao@chromium.org>,  Chen-Yu Tsai <wenst@chromium.org>,
-  Jiapeng Chong <jiapeng.chong@linux.alibaba.com>,  Frank Wunderlich
- <frank-w@public-files.de>,  Mikko Perttunen <mperttunen@nvidia.com>,
-  Svyatoslav Ryhel <clamor95@gmail.com>,  linux-pm@vger.kernel.org (open
- list:THERMAL),  linux-kernel@vger.kernel.org (open list),
-  linux-arm-kernel@lists.infradead.org (moderated list:BROADCOM BCM7XXX ARM
- ARCHITECTURE),  imx@lists.linux.dev (open list:ARM/FREESCALE IMX / MXC ARM
- ARCHITECTURE),  linux-arm-msm@vger.kernel.org (open list:ARM/QUALCOMM
- MAILING LIST),  linux-renesas-soc@vger.kernel.org (open list:RENESAS R-CAR
- THERMAL DRIVERS),  linux-rockchip@lists.infradead.org (open
- list:ARM/Rockchip SoC support),  linux-samsung-soc@vger.kernel.org (open
- list:SAMSUNG THERMAL DRIVER),  linux-stm32@st-md-mailman.stormreply.com
- (moderated list:ARM/STM32 ARCHITECTURE),  linux-tegra@vger.kernel.org
- (open list:TEGRA ARCHITECTURE SUPPORT),
-  linux-mediatek@lists.infradead.org (moderated list:ARM/Mediatek SoC
- support:Keyword:mediatek),  Niklas S?derlund
- <niklas.soderlund+renesas@ragnatech.se>
-Subject: Re: [PATCH v2] thermal/drivers: Remove redundant error messages on
- IRQ request failure
-In-Reply-To: <20260717024733.374913-1-panchuang@vivo.com> (Pan Chuang's
-	message of "Fri, 17 Jul 2026 10:47:10 +0800")
-References: <20260717024733.374913-1-panchuang@vivo.com>
-User-Agent: mu4e 1.12.7; emacs 30.2
-Date: Fri, 17 Jul 2026 09:37:18 +0200
-Message-ID: <87v7aekqxd.fsf@bootlin.com>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="AAYnRLYR"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 010A51F000E9;
+	Fri, 17 Jul 2026 08:05:11 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1784275516;
+	bh=d5wRCC0mU/NbriydP8DlwWMqdbFD0Kyhuy6entsN1ak=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=AAYnRLYR5nSHilgjUq+StjglS3Z+PMb8Planx0U8fjwQeAHn4RuQzeoBuYVptnCay
+	 hku53KZqFAbAVa7h4Ur35l9BwX3MzN2SZY5br4g07/43LCF+AmtuNeuuUooSE03UpF
+	 3X9EBWBd2/Vqy1wnwGyJwPiGB4RSPotIGA0rNEMgCrMfoTRjsAGxYP7j0FTVcqqlhJ
+	 levtY1yoCi31iphVl8xLgppZIvS7g2It7xNujZvWEL0FIjD6HN8Ryz/k5tJgxCGCrO
+	 3GzAUHnZKNs09FbPeDvIOMIG+yF8vPhoO2eFPFCL8tFWBsG2cZDKTyEM5H7ky/b5oU
+	 eASES6yHaGAiw==
+Date: Fri, 17 Jul 2026 09:05:09 +0100
+From: Sudeep Holla <sudeep.holla@kernel.org>
+To: Geert Uytterhoeven <geert+renesas@glider.be>
+Cc: Cristian Marussi <cristian.marussi@arm.com>,
+	Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	Sudeep Holla <sudeep.holla@kernel.org>,
+	Saravana Kannan <saravanak@kernel.org>,
+	Ulf Hansson <ulfh@kernel.org>,
+	"Rafael J . Wysocki" <rafael@kernel.org>,
+	Philipp Zabel <p.zabel@pengutronix.de>,
+	Michael Turquette <mturquette@baylibre.com>,
+	Stephen Boyd <sboyd@kernel.org>, Brian Masney <bmasney@redhat.com>,
+	Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>,
+	Vinod Koul <vkoul@kernel.org>,
+	Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>,
+	Kevin Hilman <khilman@baylibre.com>,
+	Florian Fainelli <florian.fainelli@broadcom.com>,
+	Wolfram Sang <wsa+renesas@sang-engineering.com>,
+	Marek Vasut <marek.vasut+renesas@mailbox.org>,
+	Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>,
+	arm-scmi@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+	devicetree@vger.kernel.org, linux-pm@vger.kernel.org,
+	linux-clk@vger.kernel.org, linux-renesas-soc@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v2 00/10] R-Car X5H Ironhide CPG/MDLC SCMI remapping
+ support
+Message-ID: <20260715-greedy-ocelot-of-feminism-5be3bf@sudeepholla>
+References: <cover.1783505329.git.geert+renesas@glider.be>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
-X-Last-TLS-Session-Version: TLSv1.3
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <cover.1783505329.git.geert+renesas@glider.be>
 
-On 17/07/2026 at 10:47:10 +08, Pan Chuang <panchuang@vivo.com> wrote:
+On Wed, Jul 08, 2026 at 12:16:18PM +0200, Geert Uytterhoeven wrote:
+> 	Hi all,
+> 
+> TL;DR:
+> 
+>     Describe hardware in DT, and perform the mapping to SCMI in Linux.
+> 
+> The Renesas R-Car X5H-based Ironhide board is the first Renesas
+> SoC/board combination that implements the ARM System Control and
+> Management Interface (SCMI).
+> 
+> This means Linux can no longer perform various system operations (e.g.
+> clock, power domain, and reset control) by accessing the hardware
+> directly.  Instead, these operations are abstracted according to various
+> SCMI sub-protocols, and Linux has to send messages to an SCMI-compliant
+> firmware running on a System Control Processor (SCP).
+> More specifically, the R-Car X5H SCP FW SCMI controls access to:
+>   1. Core clocks and module clocks,
+>   2. Module resets,
+>   3. Power domains,
+>   4. System power.
+> The latter is not relevant for this discussion.
+> 
+> Using SCMI also has an impact on the board DTS: besides the addition of
+> a firmware/scmi node with protocol-specific subnodes, devices using
+> SCMI-abstracted system resources now have to refer to these resources
+> using resource specifiers containing phandles to the SCMI protocol
+> subnodes, and firmware-specific object IDs[1].
+> 
+> Unfortunately we encountered several issues with this:
+>   - The clock, reset, and power domain IDs are not stable by design,
+>     causing DT incompatibilities.
+>     SCMI requires that the ID space exposed to an agent (i.e. Linux)
+>     starts at zero and is contiguous.  Hence any change in system
+>     partitioning (Application CPU core vs. Realtime CPU core,
+>     virtualization, ...) may mean a renumbering of all SCMI IDs,
+>     implying a massive change to the DT.
 
-> Since commit 55b48e23f5c4 ("genirq/devres: Add error handling in
-> devm_request_*_irq()"), devm_request_irq() and devm_request_threaded_irq()
-> automatically log detailed error messages on failure. Remove the
-> now-redundant driver-specific dev_err() and dev_err_probe() calls.
->
-> Signed-off-by: Pan Chuang <panchuang@vivo.com>
-> Reviewed-by: Frank Li <Frank.Li@nxp.com>
-> Reviewed-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-> Reviewed-by: Geert Uytterhoeven <geert+renesas@glider.be>
-> Reviewed-by: Niklas S?derlund <niklas.soderlund+renesas@ragnatech.se>
+Yes it is well known fact. But where this is a feature or limitation
+is debatable. Why would SCP firmware churn and re-number or re-assign
+a differ domain ID everytime it is updated is questionable to me.
 
-                       ^
-There is an encoding issue here
+>   - There may be different SCP firmware lineages, e.g. proprietary and
+>     certified variants, and FLOSS variants,
 
->  drivers/thermal/armada_thermal.c                          | 5 +----
+No sure if I understand the issue here.
 
-Reviewed-by: Miquel Raynal <miquel.raynal@bootlin.com>
+>   - SCMI features may differ across firmware versions,
 
-Thanks,
-Miqu=C3=A8l
+Again, features must be discoverable that is the advantage of DT vs this
+firmware interface, so not sure what is the issue in this matter.
 
+>   - SCMI may abstract the hardware in a different way, requiring changes
+>     in (possibly existing) DT bindings and drivers to support the same
+>     hardware with and without SCMI:
+>       - E.g. the number of SCMI clocks inputs to a hardware block may
+> 	differ from the actual hardware,
+>       - E.g. hardware clock inputs may be abstracted as SCMI power
+> 	domains (or vice versa), like on Qualcomm SA8255P[2].
+
+True, the moment SCMI like interface is used in OSPM, the firmware
+description hides real h/w details and provide what firmware thinks
+OSPM must view hardware as(how VMMs virtualise things for VMs, firmware
+can have similar effect with such interfaces).
+
+>     Experience has taught that not describing the hardware in DT may
+>     lead to major issues later.
+
+OK, that's interesting. But the whole point with these interfaces is to
+hide those, so just don't use such abstraction interface if you want the
+hardware to be described as is to the OSPM.
+
+>   - SCMI does not support the concept of a clock domain, so existing
+>     drivers can no longer rely on Runtime PM, but need to be changed to
+>     manage functional clocks explicitly,
+
+Not sure what that means, you mean clock protocol is not good enough to
+model the h/w clock domains on your platform ? If so, you are welcome to
+improve the specification.
+
+>   - U-Boot IPL (Initial Program Loader) needs a proper hardware
+>     description in DT, not using SCMI.
+> 
+
+I am going to ignore that.
+
+> This list deliberately ignores ID instability and the need for SCMI
+> quirks during development of the SCMI firmware.  While upstream Linux
+> must only support sufficiently mature firmware versions, vendor trees
+> (e.g. renesas-lts) may still want to support development firmware
+> versions.
+> 
+
+Fair enough, but the acceptance of such changes depends on maintenance
+and possible absuse with such spec deviations.
+
+-- 
+Regards,
+Sudeep
