@@ -1,38 +1,37 @@
-Received: from canpmsgout05.his.huawei.com (canpmsgout05.his.huawei.com [113.46.200.220])
+Received: from canpmsgout02.his.huawei.com (canpmsgout02.his.huawei.com [113.46.200.217])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CA0E52FDC53;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 271782F90E0;
 	Fri, 17 Jul 2026 02:46:57 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=113.46.200.220
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=113.46.200.217
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1784256421; cv=none; b=t5aYQJt2SuCYjHcZtKjtb9NqmZe27R6TAhrKWdRC57x/c0pusPV9JSX+2DbtrxmKjk3JYF3K1BE/eEuAHz6ycnM7pUFrZluRRYnXj3Hc52Wz59k1rzsewywc8YwIExC3b3fh9gdzE2vDrX/774n8RRycWGKwVvREoapCZY2mF/g=
+	t=1784256421; cv=none; b=NbE9xCHnXnr3j7+Cp3Mv9p9wmzveVHWPZAOJ3SCOm2ffhLDtdYDnbZtmTuUll7r4xewtBv0pnAwI+oAbfhiBcXiXvdKxGd7YaGxjUR/dVmSO19p4pNj1CgmLrJdaj7Xqy6gFhVfPUruzKfxvvJTkuQDnMLUGxM6tWi1jwV+KPZE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1784256421; c=relaxed/simple;
-	bh=aj2/1FoBAbPQ5UNkEYCQD0HUBE7zR3L/cqMz8pIQrmw=;
-	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=KE0In6vduPVvAHqtF/mTrgAJaOgiRyK3vIkSPMxsDbvVtkaDskov3yTM6p0MfCbKlLEU5L8qXwYOogY8/a3jYNYpTIh1PiP7dpwghDYHoAc6DH7xgmm2bPC5BZKeoRPjB4Al2OjQoUPV4GK07qggdeFTuLezTQO05B3+XmxFFgw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; spf=pass smtp.mailfrom=huawei.com; dkim=pass (1024-bit key) header.d=huawei.com header.i=@huawei.com header.b=emLOYlTI; arc=none smtp.client-ip=113.46.200.220
+	bh=+gwv/YdXtyyuBCvt8mKVABm4jTBGmrYVmrdRCjc2Y4E=;
+	h=From:To:CC:Subject:Date:Message-ID:MIME-Version:Content-Type; b=flFhzSlNGeot91VpqOdr9KwaEOdFILHDG+CAMBWvp6gvq3AhpQqBmrfA4mbAxZweEw56yMd/Et8tsdEI9GHoINXDe9bIYoguis/tbxGA4mCrkEdO6nuopDUPIx/3NGYAbBgIbFFV8ckFE2CQ4shkLZbpGw1bW1QWFxFFRYMWlaI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; spf=pass smtp.mailfrom=huawei.com; dkim=pass (1024-bit key) header.d=huawei.com header.i=@huawei.com header.b=qSdUmurI; arc=none smtp.client-ip=113.46.200.217
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=huawei.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=huawei.com header.i=@huawei.com header.b="emLOYlTI"
+	dkim=pass (1024-bit key) header.d=huawei.com header.i=@huawei.com header.b="qSdUmurI"
 dkim-signature: v=1; a=rsa-sha256; d=huawei.com; s=dkim;
 	c=relaxed/relaxed; q=dns/txt;
 	h=From;
-	bh=m3qOPmBnKIpyYgkwdWQ0ZW/IYIyKdTGwEkjgt1jSqPA=;
-	b=emLOYlTIKz9BppCM6jXFkpWIjoRJEdLhtydojpD+vOW7pL9hjJP9/msimP732nmGi5OXqoAKk
-	nXoXVhXRBQcgK21nHYuCR64urbO4fUkD/Yi2O0RmLTjDjwIKVAA/DAOyGsJpQQGMlWAFAmuwSET
-	2a93wi43+s1+GZAmudwatio=
-Received: from mail.maildlp.com (unknown [172.19.162.140])
-	by canpmsgout05.his.huawei.com (SkyGuard) with ESMTPS id 4h1YwG5Lbhz12LDF;
-	Fri, 17 Jul 2026 10:37:18 +0800 (CST)
+	bh=taOEHieoAmnmZe92hrNPclFpwDHjy1cJ8iio6ST/EAs=;
+	b=qSdUmurIrQFeZ9KUi89ruciNvfqVFE0KSVLNNkAmn/cBoxGeCFJu4RhfkW3kmDkVDu/NbVs7S
+	ai1lxHO9qUBC5QUmZzLidYP/Plh+F33arvrD/hkfD9gCMmL1yukfnmw6XqLXA5/epbsJ8l4d7wP
+	1uui03JkHSHHos8NdNOw19A=
+Received: from mail.maildlp.com (unknown [172.19.163.104])
+	by canpmsgout02.his.huawei.com (SkyGuard) with ESMTPS id 4h1YwY58CHzcZy9;
+	Fri, 17 Jul 2026 10:37:33 +0800 (CST)
 Received: from kwepemf100001.china.huawei.com (unknown [7.202.181.215])
-	by mail.maildlp.com (Postfix) with ESMTPS id 8DC482012A;
-	Fri, 17 Jul 2026 10:46:55 +0800 (CST)
+	by mail.maildlp.com (Postfix) with ESMTPS id D38ED4058C;
+	Fri, 17 Jul 2026 10:46:52 +0800 (CST)
 Received: from localhost.localdomain (10.50.163.32) by
  kwepemf100001.china.huawei.com (7.202.181.215) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.1544.36; Fri, 17 Jul 2026 10:46:54 +0800
+ 15.2.1544.36; Fri, 17 Jul 2026 10:46:52 +0800
 From: Lifeng Zheng <zhenglifeng1@huawei.com>
 To: <rafael@kernel.org>, <viresh.kumar@linaro.org>, <saket.dumbre@intel.com>,
 	<lenb@kernel.org>, <zhanjie9@hisilicon.com>, <pierre.gondois@arm.com>,
@@ -42,12 +41,10 @@ CC: <linux-acpi@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
 	<linuxarm@huawei.com>, <lihuisong@huawei.com>, <yubowen8@huawei.com>,
 	<zhangpengjie2@huawei.com>, <wangzhi12@huawei.com>,
 	<linhongye@h-partners.com>, <zhenglifeng1@huawei.com>
-Subject: [PATCH 6/8] ACPI: CPPC: Factor out cpc_read_reg() and cpc_write_reg()
-Date: Fri, 17 Jul 2026 10:45:00 +0800
-Message-ID: <20260717024502.3520445-7-zhenglifeng1@huawei.com>
+Subject: [PATCH 0/8] ACPI: CPPC: Resource Priority Register support and sysfs interface
+Date: Fri, 17 Jul 2026 10:44:54 +0800
+Message-ID: <20260717024502.3520445-1-zhenglifeng1@huawei.com>
 X-Mailer: git-send-email 2.33.0
-In-Reply-To: <20260717024502.3520445-1-zhenglifeng1@huawei.com>
-References: <20260717024502.3520445-1-zhenglifeng1@huawei.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -59,161 +56,68 @@ Content-Type: text/plain
 X-ClientProxiedBy: kwepems100002.china.huawei.com (7.221.188.206) To
  kwepemf100001.china.huawei.com (7.202.181.215)
 
-cppc_get_reg_val() and cppc_set_reg_val() combine two responsibilities:
-looking up the per-CPU cpc_desc and then performing the actual register
-read/write (including null/optional checks and PCC handling).
+This series implements support for the CPPC v4 Resource Priority Register
+mechanism defined in ACPI 6.6, Section 8.4.6.1.2.7, and exposes it to
+userspace via sysfs.
 
-Split out the register I/O logic into cpc_read_reg() and cpc_write_reg()
-that accept a struct cpc_register_resource pointer directly.  This allows
-callers that already hold a register reference -- such as the upcoming
-Resource Priority accessors -- to read or write a register without going
-through the per-CPU descriptor lookup by index.
+Resource Priority allows OSPM to control the relative priority among
+processors for shared resources.  The controlled resource types include
+processor boost, throttle, L2 cache, L3 cache, and memory bandwidth.
+Each Resource Priority group consists of:
 
-Also rename the PCC wrappers from cppc_get/set_reg_val_in_pcc() to
-cpc_read/write_in_pcc() to align with the new naming convention.
+  - CONTROLLED_RESOURCES: which resource types the group affects
+  - ENABLE_VALUE / ENABLE_REGISTER: enable/disable the group
+  - PRIORITY_COUNT / PRIORITY_REGISTER: read/write the priority level
 
-Signed-off-by: Lifeng Zheng <zhenglifeng1@huawei.com>
+The patch series is organized in three parts:
+
+  - patches 1-4 extend the CPPC data structures and _CPC parser to handle
+    Package-type entries and parse Resource Priority sub-packages into
+    structured descriptors.
+
+  - patches 5-7 refactor existing register I/O helpers to support direct
+    register access and add accessor functions for Resource Priority
+    attributes (enable, priority count, priority value).
+
+  - patch 8 creates a "resource_priority" sysfs hierarchy under each
+    cpufreq policy to expose the Resource Priority attributes to userspace.
+
 ---
- drivers/acpi/cppc_acpi.c | 89 ++++++++++++++++++++++++++--------------
- 1 file changed, 58 insertions(+), 31 deletions(-)
 
-diff --git a/drivers/acpi/cppc_acpi.c b/drivers/acpi/cppc_acpi.c
-index 3f1b61c984d4..0037fca47eea 100644
---- a/drivers/acpi/cppc_acpi.c
-+++ b/drivers/acpi/cppc_acpi.c
-@@ -1378,7 +1378,7 @@ static int cpc_write(int cpu, struct cpc_register_resource *reg_res, u64 val)
- 	return ret_val;
- }
- 
--static int cppc_get_reg_val_in_pcc(int cpu, struct cpc_register_resource *reg, u64 *val)
-+static int cpc_read_in_pcc(int cpu, struct cpc_register_resource *reg, u64 *val)
- {
- 	int pcc_ss_id = per_cpu(cpu_pcc_subspace_idx, cpu);
- 	struct cppc_pcc_data *pcc_ss_data = NULL;
-@@ -1403,35 +1403,52 @@ static int cppc_get_reg_val_in_pcc(int cpu, struct cpc_register_resource *reg, u
- 	return ret;
- }
- 
--static int cppc_get_reg_val(int cpu, enum cppc_regs reg_idx, u64 *val)
-+/**
-+ * cpc_read_reg - Read value from a register element that may be Integer or Buffer.
-+ * @cpu: CPU number.
-+ * @reg: Pointer to the CPC register element.
-+ * @val: Output value.
-+ *
-+ * Return: 0 on success, -EOPNOTSUPP if null/unsupported, negative on error.
-+ */
-+static int cpc_read_reg(int cpu, struct cpc_register_resource *reg, u64 *val)
- {
--	struct cpc_desc *cpc_desc = per_cpu(cpc_desc_ptr, cpu);
--	struct cpc_register_resource *reg;
--
- 	if (val == NULL)
- 		return -EINVAL;
- 
--	if (!cpc_desc) {
--		pr_debug("No CPC descriptor for CPU:%d\n", cpu);
--		return -ENODEV;
--	}
--
--	reg = &cpc_desc->cpc_regs[reg_idx];
--
--	if ((reg->type == ACPI_TYPE_INTEGER && reg->optional &&
--	     !reg->cpc_entry.int_value) || (reg->type != ACPI_TYPE_INTEGER &&
--	     IS_NULL_REG(&reg->cpc_entry.reg))) {
--		pr_debug("CPC register is not supported\n");
--		return -EOPNOTSUPP;
-+	if (reg->type == ACPI_TYPE_INTEGER) {
-+		if (reg->optional && !reg->cpc_entry.int_value)
-+			goto err_unsupported;
-+	} else if (reg->type == ACPI_TYPE_BUFFER) {
-+		if (IS_NULL_REG(&reg->cpc_entry.reg))
-+			goto err_unsupported;
-+	} else {
-+		goto err_unsupported;
- 	}
- 
- 	if (CPC_IN_PCC(reg))
--		return cppc_get_reg_val_in_pcc(cpu, reg, val);
-+		return cpc_read_in_pcc(cpu, reg, val);
- 
- 	return cpc_read(cpu, reg, val);
-+
-+err_unsupported:
-+	pr_debug("CPC register is not supported\n");
-+	return -EOPNOTSUPP;
-+}
-+
-+static int cppc_get_reg_val(int cpu, enum cppc_regs reg_idx, u64 *val)
-+{
-+	struct cpc_desc *cpc_desc = per_cpu(cpc_desc_ptr, cpu);
-+
-+	if (!cpc_desc) {
-+		pr_debug("No CPC descriptor for CPU:%d\n", cpu);
-+		return -ENODEV;
-+	}
-+
-+	return cpc_read_reg(cpu, &cpc_desc->cpc_regs[reg_idx], val);
- }
- 
--static int cppc_set_reg_val_in_pcc(int cpu, struct cpc_register_resource *reg, u64 val)
-+static int cpc_write_in_pcc(int cpu, struct cpc_register_resource *reg, u64 val)
- {
- 	int pcc_ss_id = per_cpu(cpu_pcc_subspace_idx, cpu);
- 	struct cppc_pcc_data *pcc_ss_data = NULL;
-@@ -1456,18 +1473,16 @@ static int cppc_set_reg_val_in_pcc(int cpu, struct cpc_register_resource *reg, u
- 	return ret;
- }
- 
--static int cppc_set_reg_val(int cpu, enum cppc_regs reg_idx, u64 val)
-+/**
-+ * cpc_write_reg - Write a CPC register.
-+ * @cpu: CPU number.
-+ * @reg: Pointer to the CPC register resource.
-+ * @val: Value to write.
-+ *
-+ * Return: 0 on success, negative error code otherwise.
-+ */
-+static int cpc_write_reg(int cpu, struct cpc_register_resource *reg, u64 val)
- {
--	struct cpc_desc *cpc_desc = per_cpu(cpc_desc_ptr, cpu);
--	struct cpc_register_resource *reg;
--
--	if (!cpc_desc) {
--		pr_debug("No CPC descriptor for CPU:%d\n", cpu);
--		return -ENODEV;
--	}
--
--	reg = &cpc_desc->cpc_regs[reg_idx];
--
- 	/* if a register is writeable, it must be a buffer and not null */
- 	if ((reg->type != ACPI_TYPE_BUFFER) || IS_NULL_REG(&reg->cpc_entry.reg)) {
- 		pr_debug("CPC register is not supported\n");
-@@ -1475,11 +1490,23 @@ static int cppc_set_reg_val(int cpu, enum cppc_regs reg_idx, u64 val)
- 	}
- 
- 	if (CPC_IN_PCC(reg))
--		return cppc_set_reg_val_in_pcc(cpu, reg, val);
-+		return cpc_write_in_pcc(cpu, reg, val);
- 
- 	return cpc_write(cpu, reg, val);
- }
- 
-+static int cppc_set_reg_val(int cpu, enum cppc_regs reg_idx, u64 val)
-+{
-+	struct cpc_desc *cpc_desc = per_cpu(cpc_desc_ptr, cpu);
-+
-+	if (!cpc_desc) {
-+		pr_debug("No CPC descriptor for CPU:%d\n", cpu);
-+		return -ENODEV;
-+	}
-+
-+	return cpc_write_reg(cpu, &cpc_desc->cpc_regs[reg_idx], val);
-+}
-+
- /**
-  * cppc_get_desired_perf - Get the desired performance register value.
-  * @cpunum: CPU from which to get desired performance.
+RFC: sysfs placement
+
+The sysfs interface is currently placed under /sys/devices/system/cpu/cpufreq/
+(i.e. the cpufreq policy directory). I am unsure whether this is the best
+location and would appreciate reviewer feedback.
+
+The concern is that Resource Priority covers resource types beyond CPU
+frequency control:
+
+  - PROCESSOR_BOOST, PROCESSOR_THROTTLE -- clearly CPU-frequency related
+  - L2_CACHE, L3_CACHE -- cache partitioning, not frequency
+  - MEMORY_BANDWIDTH -- memory QoS, not frequency
+
+Placing the attributes under cpufreq makes sense for boost/throttle but
+feels semantically wrong for cache and memory bandwidth resources.
+
+I would appreciate feedback on whether cpufreq is the right home for
+this interface, or whether a different location would be more appropriate.
+
+Lifeng Zheng (8):
+  ACPI: CPPC: Prepare cpc_register_resource for Package-type entries
+  ACPI: CPPC: Refactor element parsing into parse_cpc_element()
+  ACPI: CPPC: Refactor resource cleanup into free_reg_resource()
+  ACPI: CPPC: Parse Resource Priority Register entries from _CPC package
+  ACPI: CPPC: Store optional flag in cpc_register_resource
+  ACPI: CPPC: Factor out cpc_read_reg() and cpc_write_reg()
+  ACPI: CPPC: Add Resource Priority accessors
+  cpufreq: cppc: Expose Resource Priority attributes via sysfs
+
+ drivers/acpi/cppc_acpi.c       | 729 +++++++++++++++++++++++++++------
+ drivers/cpufreq/cppc_cpufreq.c | 270 ++++++++++++
+ include/acpi/cppc_acpi.h       |  60 +++
+ 3 files changed, 927 insertions(+), 132 deletions(-)
+
 -- 
 2.33.0
 
