@@ -1,107 +1,117 @@
-Received: from mail-qt1-f176.google.com (mail-qt1-f176.google.com [209.85.160.176])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtpout-04.galae.net (smtpout-04.galae.net [185.171.202.116])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1388D3BD643
-	for <linux-pm@vger.kernel.org>; Fri, 17 Jul 2026 07:01:49 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.160.176
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1784271711; cv=pass; b=IOvOi+zPqg7+wW+inORsrGJb5AQIBXbcHfRNXJHeul0x7Rcb0GTq+d3T8YkK0Ay+iCkdbVHp52fj84WFrQbiR05JEF2ldfR1QtgI9/tFM2hYwAsu3+1S+27T8wLlF00ihXvLAM1nsxY/SyqUrmnZk6HKlBebI9Woh1SFYrbgINc=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1784271711; c=relaxed/simple;
-	bh=RwJxTFnJ5CXL7SNwJ3FzpgAg/ebATche5LLJ2ldkVUg=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=Z6VKqpsWs7OWJIuaHxGw5QUwQz+M0UfKMc1EFe1fvuYOSI7lPApV+xP33bFuxFSJuifOuPMuQzLLy0f8Hj+gi9M1vFfhYqQZako5CGG8NPTMQ9AP8puhdDsKWtWQPM7KKHG3s1/z7x+GXVrupERvRzPeY6Mw8BXwZsaNeLNjI8U=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=iba2jLX7; arc=pass smtp.client-ip=209.85.160.176
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 769D63DD533;
+	Fri, 17 Jul 2026 07:37:43 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=185.171.202.116
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1784273868; cv=none; b=PsgRbUuMAdXWhHpyG0xCiuRoWtLTFHMHpN0fK3fqc3BdKfDvQcAGdYXP34TYJDqB+2BBXMjucJK3M2foiIHPld6H2a6/Ddz4HY+DZnVJymkcgiWHsBxYet+PiGuFZdyklGTG5yIHU+fp+M5D/nto+k36Rz+kAl1GDitXqTgEJok=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1784273868; c=relaxed/simple;
+	bh=qZkQOIOG8Kl3936adbYcP2Yh8w6XNbgYkOrvcA3q2GM=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
+	 MIME-Version:Content-Type; b=kSBA2uPTtJLLMbyQY++W4TXn1sZEnQ9bnxt52jRnl+4Dmm7d0qD7d88T+k6hLXbkO/oh5uEx5rpoamtKixGerkjGtDyn3T9AS3C4RWMW9pkJ40UR9sN+fjBex4JPaOgdIC20hMOkuYTVfhbp0B75wkwJry6GtJZkcAt49rlm1aI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com; spf=pass smtp.mailfrom=bootlin.com; dkim=pass (2048-bit key) header.d=bootlin.com header.i=@bootlin.com header.b=kon2YfH/; arc=none smtp.client-ip=185.171.202.116
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=bootlin.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="iba2jLX7"
-Received: by mail-qt1-f176.google.com with SMTP id d75a77b69052e-51c2808dbc3so46328101cf.1
-        for <linux-pm@vger.kernel.org>; Fri, 17 Jul 2026 00:01:49 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1784271709; cv=none;
-        d=google.com; s=arc-20260327;
-        b=e3Wqo8gdQ6a+w38Ewf2Hh0h1HKN6iJfHPcUvcgbdFnRXLpQ9JVFJkkGEitAPUzPJBt
-         FK4LZLu7oxLFC0wZvzY18wTOPDYutXnQM/y2z2aKerKsJhqeYJ3iF6o+TelcjdrsGtp8
-         tH66aD+rokzIFPrb9W0B+mmZ+qdNYJ5q2rMjdELwo+8HLOOdg6qCi7mXq5tpZl3DtTEj
-         XmlfbdlKm+P176MyH9Bs2RnT+910Oz4N73MsmfSbLNNZFx2Crzz9nxGwAPB9BnIwDFHK
-         U42eyGN2RJnUAOCMKkutcJhF9cQh0iokfkTDOrXXKbK6aHV2ivJ/KAXWCHroA07fYkaV
-         TTXA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:dkim-signature;
-        bh=RwJxTFnJ5CXL7SNwJ3FzpgAg/ebATche5LLJ2ldkVUg=;
-        fh=mLpbie9/6H3mZzrwUVOl+AZn0E8Y7jhdKjiKOlLBrjA=;
-        b=kGMebfbtbGl861UyXjAhj+8REAsWab374fOqsbOrWnQlnTD71yMCvYAEDPgI7/50mL
-         mDFKUlh21mEsyb2O4AaukFE7CLV9IZBJawBg6VyzON5tjNrkIJwcJ+Xif9Co+FQuejCq
-         oAp//KGaNSAO9ZnBya2x3Bp1VbOPTu/P3YRBjiBJn2iCJ3zrE++RtJ+iOlH8X4t6gra9
-         vsRsIds96hrLObLsZgktQc7zxxMbwZ0xytvO2Ad+3qtdOg8ewAcX/ZF3tYIfWzwIMkTQ
-         ImtMlc0TwPtsM6dvPj/foKfIAmegU9TYbZ0R5QC82IlQNReuapCRTG/XqB8RPzeeMMJ+
-         iwCg==;
-        darn=vger.kernel.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1784271709; x=1784876509; darn=vger.kernel.org;
-        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
-         :references:mime-version:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=RwJxTFnJ5CXL7SNwJ3FzpgAg/ebATche5LLJ2ldkVUg=;
-        b=iba2jLX7sYz11VR5J9XKKR068YRf3KgpbSfXz2vfpqk9bYxorkfkewRxLn8Vk4a28d
-         A1EaIoJC9MvOe7a9U4GSEQF+e7rBQen0/PXBwhBXYOsZWDYChqpd3W6Pwhl6iFcmapmn
-         1rvXdHzRWbcHxx2TIxveIBBDfGKesF2ztZvUwLfrhJMKDSvFWCoeo5rjTaOwP87iu3hA
-         jccK9duHTf0ZSDWBrb2vrmX83zp94HltwaQpAlQZPwzDqf2lEK3IziaRscM5G+zhbId0
-         7FpgDnYsBpPWxsZ1zzx724HXo0WUih2xZlrhFR9MOB4C0Edo67UFYHFuU9Blm24+Xib8
-         S53Q==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1784271709; x=1784876509;
-        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
-         :references:mime-version:x-gm-gg:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to:content-type;
-        bh=RwJxTFnJ5CXL7SNwJ3FzpgAg/ebATche5LLJ2ldkVUg=;
-        b=MMxCRbdWz8kdyXlCGIHGYLdukDmWBMllxs4bST81EJYjOVf/ETiNvQOglv9xp6Jf8q
-         TDgvXi9MZZQxhwqhOFvGkQrOQcU3DytRBq11eM8FHaY0SYDJuSZkLtjnynxKzXXQSuZh
-         a+tCDuk5w6kPIZQhT0Urx6pxwjlJedUarffT+Hv61hKZ/dQ1zDJM+U+miWzhdBLCzrbq
-         gtX/N+hsLdnvcECcBU0YVXuRqynOBjuaUou+m5jmGXSBkBvpqkwmhKEWZUg0siB+i9ii
-         wQeyPLfmKlEEjqjhQ4p+Ckuog/qzXENIW19TVUsz1m/JgKwj9yIYYldVF/91BrTuFTYO
-         HFjQ==
-X-Gm-Message-State: AOJu0YyqMcVFVwGlQyJPk0KzUrb32ofN6sgHRl3PZ3GSJFItWEbqLlUn
-	h5sactLtxMN6pRe6v02rytS7bJy71a0FW/Kr8QJP81/iWV4RQQkaiiGSjUW3YZqq7p5aHvw6VMB
-	V2Osy754tHLsExMKMedqdro7KQqvtn8E=
-X-Gm-Gg: AfdE7ckDDtA9olZx9mpngwVkHZzcWgtd8u4CzqJSkPNZqMUs5hO7kVeTjctWS2XrKOD
-	sMbBzOtsNVammDtBy6vVJ7wzE4vII+bTKW0B7ROsU782WgLTrVygHY8TrKOgS5gDEUsNflER5Dd
-	qb09me/cnomC9rGRERkVIgjNgPCM6waRY1E9e41IPW9LG7uWPC4Ww+wRgetojsn0Ix2jzKbIvFR
-	MKWTpPlsHOrrkMHB0lSxywOJ9au/8qC23fbGvOsGMRVvWqe/5ZQTZO/X5XMqAz4
-X-Received: by 2002:a05:622a:1307:b0:51c:73f:e3a7 with SMTP id
- d75a77b69052e-5213c9db3f6mr11147141cf.26.1784271708847; Fri, 17 Jul 2026
- 00:01:48 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=bootlin.com header.i=@bootlin.com header.b="kon2YfH/"
+Received: from smtpout-01.galae.net (smtpout-01.galae.net [212.83.139.233])
+	by smtpout-04.galae.net (Postfix) with ESMTPS id 6485BC2B9F5;
+	Fri, 17 Jul 2026 07:37:52 +0000 (UTC)
+Received: from mail.galae.net (mail.galae.net [212.83.136.155])
+	by smtpout-01.galae.net (Postfix) with ESMTPS id 943D660361;
+	Fri, 17 Jul 2026 07:37:34 +0000 (UTC)
+Received: from [127.0.0.1] (localhost [127.0.0.1]) by localhost (Mailerdaemon) with ESMTPSA id DC0A611BD3D44;
+	Fri, 17 Jul 2026 09:37:18 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bootlin.com; s=dkim;
+	t=1784273852; h=from:subject:date:message-id:to:cc:mime-version:content-type:
+	 content-transfer-encoding:in-reply-to:references;
+	bh=Cdb0RCCdG1Y5r/It8CwrJzVJ0JbWRfQ0sD99bdj9c+M=;
+	b=kon2YfH/dOK4tDt53OBaDo5FFMl+LDNwDVUop5ds1NRI/Wg1uSfOdRPoX//xppPkYw4F4k
+	i7WIsxXBl1un2FVxbtH0z+MNg/Pxf/kDZFkkmQMF7GWX2KDvfCGfcNPlsGE/XeWd6UWU5+
+	GU0KvK2Qz5NhcKTqLYeMaoODnDSsLW8zaf8j7HAZsl2HX2a+q1UNwnNfj8/t2YSHY0CoOJ
+	iuHvYWwy+oF8TF5SvX8WUIAoCWzZZkD3fHymApMwuHuo/Ci0SwMn3oduihoRjpk8TrJJuw
+	dKfxpFRA4xRbQoh0VoLeExcl0443IzDaZd45c4NSu8UobUALaKN9EhlqiiNUTA==
+From: Miquel Raynal <miquel.raynal@bootlin.com>
+To: Pan Chuang <panchuang@vivo.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>,  Daniel Lezcano
+ <daniel.lezcano@kernel.org>,  Zhang Rui <rui.zhang@intel.com>,  Lukasz
+ Luba <lukasz.luba@arm.com>,  Markus Mayer <mmayer@broadcom.com>,  Broadcom
+ internal kernel review list <bcm-kernel-feedback-list@broadcom.com>,
+  Florian Fainelli <florian.fainelli@broadcom.com>,  Frank Li
+ <Frank.Li@nxp.com>,  Sascha Hauer <s.hauer@pengutronix.de>,  Pengutronix
+ Kernel Team <kernel@pengutronix.de>,  Fabio Estevam <festevam@gmail.com>,
+  zhanghongchen <zhanghongchen@loongson.cn>,  Yinbo Zhu
+ <zhuyinbo@loongson.cn>,  Amit Kucheria <amitk@kernel.org>,  Thara Gopinath
+ <thara.gopinath@gmail.com>,  Niklas =?utf-8?Q?S=C3=B6derlund?=
+ <niklas.soderlund@ragnatech.se>,  Geert Uytterhoeven
+ <geert+renesas@glider.be>,  Magnus Damm <magnus.damm@gmail.com>,  John
+ Madieu <john.madieu.xa@bp.renesas.com>,  Heiko Stuebner <heiko@sntech.de>,
+  Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,  Krzysztof Kozlowski
+ <krzk@kernel.org>,  Peter Griffin <peter.griffin@linaro.org>,  Alim Akhtar
+ <alim.akhtar@samsung.com>,  Maxime Coquelin <mcoquelin.stm32@gmail.com>,
+  Alexandre Torgue <alexandre.torgue@foss.st.com>,  Thierry Reding
+ <thierry.reding@kernel.org>,  Jonathan Hunter <jonathanh@nvidia.com>,
+  Matthias Brugger <matthias.bgg@gmail.com>,  AngeloGioacchino Del Regno
+ <angelogioacchino.delregno@collabora.com>,  Srinivas Pandruvada
+ <srinivas.pandruvada@linux.intel.com>,  Andy Shevchenko
+ <andriy.shevchenko@linux.intel.com>,  Laura Nao <laura.nao@collabora.com>,
+  Fei Shao <fshao@chromium.org>,  Chen-Yu Tsai <wenst@chromium.org>,
+  Jiapeng Chong <jiapeng.chong@linux.alibaba.com>,  Frank Wunderlich
+ <frank-w@public-files.de>,  Mikko Perttunen <mperttunen@nvidia.com>,
+  Svyatoslav Ryhel <clamor95@gmail.com>,  linux-pm@vger.kernel.org (open
+ list:THERMAL),  linux-kernel@vger.kernel.org (open list),
+  linux-arm-kernel@lists.infradead.org (moderated list:BROADCOM BCM7XXX ARM
+ ARCHITECTURE),  imx@lists.linux.dev (open list:ARM/FREESCALE IMX / MXC ARM
+ ARCHITECTURE),  linux-arm-msm@vger.kernel.org (open list:ARM/QUALCOMM
+ MAILING LIST),  linux-renesas-soc@vger.kernel.org (open list:RENESAS R-CAR
+ THERMAL DRIVERS),  linux-rockchip@lists.infradead.org (open
+ list:ARM/Rockchip SoC support),  linux-samsung-soc@vger.kernel.org (open
+ list:SAMSUNG THERMAL DRIVER),  linux-stm32@st-md-mailman.stormreply.com
+ (moderated list:ARM/STM32 ARCHITECTURE),  linux-tegra@vger.kernel.org
+ (open list:TEGRA ARCHITECTURE SUPPORT),
+  linux-mediatek@lists.infradead.org (moderated list:ARM/Mediatek SoC
+ support:Keyword:mediatek),  Niklas S?derlund
+ <niklas.soderlund+renesas@ragnatech.se>
+Subject: Re: [PATCH v2] thermal/drivers: Remove redundant error messages on
+ IRQ request failure
+In-Reply-To: <20260717024733.374913-1-panchuang@vivo.com> (Pan Chuang's
+	message of "Fri, 17 Jul 2026 10:47:10 +0800")
+References: <20260717024733.374913-1-panchuang@vivo.com>
+User-Agent: mu4e 1.12.7; emacs 30.2
+Date: Fri, 17 Jul 2026 09:37:18 +0200
+Message-ID: <87v7aekqxd.fsf@bootlin.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260716171733.300885-1-akkun11.open@gmail.com>
-In-Reply-To: <20260716171733.300885-1-akkun11.open@gmail.com>
-From: Akari Tsuyukusa <akkun11.open@gmail.com>
-Date: Fri, 17 Jul 2026 16:01:36 +0900
-X-Gm-Features: AUfX_mxBhDopugmTygQCr_ewrvNPScsxhXpSrlqnE3VeMGuqzfUam913liCneCI
-Message-ID: <CAKr_iV4=TAKGb829nXWBBiPkQHo7dFyhT41K7+Twv=VjaEypyA@mail.gmail.com>
-Subject: Re: [PATCH 0/3] soc: mediatek: pwrap: MT6589 + MT6320 support
-To: Sen Chu <sen.chu@mediatek.com>, Sean Wang <sean.wang@mediatek.com>, 
-	Macpaul Lin <macpaul.lin@mediatek.com>, Lee Jones <lee@kernel.org>, Rob Herring <robh@kernel.org>, 
-	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
-	Matthias Brugger <matthias.bgg@gmail.com>, 
-	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>, 
-	Akari Tsuyukusa <akkun11.open@gmail.com>, Flora Fu <flora.fu@mediatek.com>, 
-	Alexandre Mergnat <amergnat@baylibre.com>
-Cc: "open list:MEDIATEK BOARD LEVEL SHUTDOWN DRIVERS" <linux-pm@vger.kernel.org>, 
-	"open list:MULTIFUNCTION DEVICES (MFD)" <mfd@lists.linux.dev>, 
-	"open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" <devicetree@vger.kernel.org>, 
-	"open list:ARM/Mediatek SoC support" <linux-kernel@vger.kernel.org>, 
-	"moderated list:ARM/Mediatek SoC support" <linux-arm-kernel@lists.infradead.org>, 
-	"moderated list:ARM/Mediatek SoC support" <linux-mediatek@lists.infradead.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
+X-Last-TLS-Session-Version: TLSv1.3
 
-[PATCH 3/3] has a bug, I'll fix in v2.
-Please ignore this series for now.
+On 17/07/2026 at 10:47:10 +08, Pan Chuang <panchuang@vivo.com> wrote:
 
-Link: https://sashiko.dev/#/patchset/20260716171733.300885-1-akkun11.open@gmail.com?part=3
+> Since commit 55b48e23f5c4 ("genirq/devres: Add error handling in
+> devm_request_*_irq()"), devm_request_irq() and devm_request_threaded_irq()
+> automatically log detailed error messages on failure. Remove the
+> now-redundant driver-specific dev_err() and dev_err_probe() calls.
+>
+> Signed-off-by: Pan Chuang <panchuang@vivo.com>
+> Reviewed-by: Frank Li <Frank.Li@nxp.com>
+> Reviewed-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+> Reviewed-by: Geert Uytterhoeven <geert+renesas@glider.be>
+> Reviewed-by: Niklas S?derlund <niklas.soderlund+renesas@ragnatech.se>
+
+                       ^
+There is an encoding issue here
+
+>  drivers/thermal/armada_thermal.c                          | 5 +----
+
+Reviewed-by: Miquel Raynal <miquel.raynal@bootlin.com>
+
+Thanks,
+Miqu=C3=A8l
+
