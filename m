@@ -1,69 +1,69 @@
-Received: from mail-wm1-f46.google.com (mail-wm1-f46.google.com [209.85.128.46])
+Received: from mail-wm1-f54.google.com (mail-wm1-f54.google.com [209.85.128.54])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 53ACF36F429
-	for <linux-pm@vger.kernel.org>; Sat, 18 Jul 2026 20:12:23 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.46
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4A443335555
+	for <linux-pm@vger.kernel.org>; Sat, 18 Jul 2026 20:16:28 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.54
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1784405545; cv=none; b=gmoNM+bipIKAUeCfVdX2tty2PSWc9FaY9n4Kivlodb606JwqQZpfubkvl5owrisud0OOP38fu5di/X5k/AvY8nKfjBS+rvli5ZgYv52x+8u8oMItkFd15goghgpbRGHDNs+8GIFoTDCLA0QDjdG9gSy1lbXR71L5Lk36++gA7l8=
+	t=1784405789; cv=none; b=NAxVWeuI4zuS0zKb2DOGSVVsvb+d9CQJbDU7mr6W9UKR3uy8GCZzYl/7iQ8mu7jU5HNGm0I8xdexVr1zSGCtnbuKAcD1XN8SxZPJf/lMOf5oOl1w7rYam/7Uu9PbS1ryYe0s+ioSQxeqN5S8qtXGw/dHcL+Mgm8R2J2Yn3n3IcA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1784405545; c=relaxed/simple;
-	bh=li33/8fhFwKh3rutK1aZi8p/AhIxFXnSun0dwvu/rA4=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=fD3hceE/iNbWBRUB76uueKuW42il7DBd6zfq2iMpORIqbwmuRMlZTM392/LR8INB08CuCbt/sUTI9M84UczgxCIie5N1dLuUiuXwZM+kIqWXmbqXJHvlqQSusbVOj8BtdfkgT1H7FgS4v02xUJAxj2MssVlcnEmrm0dFv4dWZtE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=KQAAFV6P; arc=none smtp.client-ip=209.85.128.46
+	s=arc-20240116; t=1784405789; c=relaxed/simple;
+	bh=RVdr4Y/X/yb+0PQrulGq6kXr/kKNsDC1apbC0Kz2AGU=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=Iunh1Ff8TeECrwTeURdq8mkFqUxM86B4vM3EwERuA+ZTaB024BHPKZ6/efG6GRlGg5MLgmxDMx0HidA5JYWaD+OAgma/MPOTm3r0BNBdOCil32/eI8ZblTTAZg/CpM2/SELbjrB5bJ9NnIIAShC6uY4mF45dHL/QRFR3wVf/wNQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=jJDyi0eg; arc=none smtp.client-ip=209.85.128.54
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="KQAAFV6P"
-Received: by mail-wm1-f46.google.com with SMTP id 5b1f17b1804b1-4954a9e8490so8132965e9.1
-        for <linux-pm@vger.kernel.org>; Sat, 18 Jul 2026 13:12:22 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="jJDyi0eg"
+Received: by mail-wm1-f54.google.com with SMTP id 5b1f17b1804b1-49550ec592cso3008415e9.0
+        for <linux-pm@vger.kernel.org>; Sat, 18 Jul 2026 13:16:28 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1784405541; x=1785010341; darn=vger.kernel.org;
+        d=gmail.com; s=20251104; t=1784405786; x=1785010586; darn=vger.kernel.org;
         h=content-transfer-encoding:content-type:mime-version:message-id:date
          :subject:cc:to:from:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=V2Rrex7WoPSx1nYfMdIIPuaBUKcG4pjSlG61jV8MWYk=;
-        b=KQAAFV6PoVyYUSzCJuKWAs6wYbDsfI8aIe99sqY0+pyca0w7SyAib+v8ht4nsBf25B
-         kv9aflRIHUipGVEph7DFdLem9h38Ix0qFcd0Zga1/8sEcy5K49/y6S3vDKAdxu3+ocJ9
-         GS4We6iKkPD4vFlt5ya2ws/yzmsLqIBDL/JuEO/zhXBacLQ2vUQNqEklQZNO/Eym+72e
-         b8fQDAjGeK0fsSK1VRS2KX9FQtIKV0jbnOElUbD4kzrWXsgE/P0aoP04GWIPgLkqbZem
-         TYr2xzW2RMR4WA5g331HOntJ8rXUUPmeQ6FN4OVTVSlc5l/X7nfbQdr3Ba6NVyb/D4/B
-         bthA==
+        bh=5aawCgyOLcY9dWaq3NdPKpHFfWs7j94zNUTTRb31dic=;
+        b=jJDyi0eg3P2ThyR9jyCKxmSvHon5a80EpO9w14e3VVQL3sIkti7NUSvf0e9TuNZPlV
+         l3Qs/MwFvHPBNIP76eJ1j6NRCI1n0DErObx3ef1Pd0QeAf/HMG3NcH1onv4w5yXI8tDB
+         x1L4c5hAg6z/xxtrOi2UYPgu3X+fPk87IX2SXq6Te5L42xb3hkZyUeZ/dz2rnWQouY9g
+         n1gZkUQyarE2QoGvL120ub0fxZEfduMMhDBBGqB9pOJbWyhVGqnuMDdw8NFRHcs/5vb9
+         KwScMdJlHTbp2Eh3M9ZHexPW9bXhWIk96sLZ39xhgc9MFUQsdIjujnZSSWif2CKsN7Xo
+         EtNg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1784405541; x=1785010341;
+        d=1e100.net; s=20251104; t=1784405786; x=1785010586;
         h=content-transfer-encoding:content-type:mime-version:message-id:date
          :subject:cc:to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject
          :date:message-id:reply-to:content-type;
-        bh=V2Rrex7WoPSx1nYfMdIIPuaBUKcG4pjSlG61jV8MWYk=;
-        b=J1TOh4IWZ1QXUecA3DYkwyZWmdt89RYY/FMaJjHaWTA6HT7VXgquPkLh227jTCq/lM
-         xb1H/rwjCEe5yidlVmApmOWJjFQeqT7QAl8/GbQTGucyBikZqG3yfzYw33p7Pt5R8fKx
-         Q15Fij2iQDCUBla2DO+edIi7HGNwj9dDk2WmvrC5p44CiC7rkvppl2jhDpYto/GTff87
-         +89BHLsKUoDSbdJkjNvnSyG6y/hUJFqunRR0q2b7+3gUTG5/d6fzIE9o4Xs8yxL+0Li6
-         naCbXIrbqEMI+7setOYSpcuqRX8YFgpSpZbIAmTU+iOmmDb58Wtub94UL+mUXpNak8Rf
-         UgUw==
-X-Gm-Message-State: AOJu0YzkKZmvNJIUW7jGjvQ33FFsXpF/mbMcI7MLY9s+dxizMz6gWRyd
-	m4HW9OojOF/mYJ26Q+EfRFmfy+jv1np1eEjuDn4ESw7ADM3nlVKz5ML1
-X-Gm-Gg: AfdE7cmFSSWbJxYgZp8KY8iLGL2ztXzogBZ/DDWnV+W94FRDkct7ZtT984EXGklYcDc
-	kPrD017rrX6ksoR3yOfupps8Ny7dRWeYUqtg5BVF0mPLvMZC8rmUYhMd9C+DD1TWAdLDjoZrZMX
-	X9l1dMQwom/IzIxxpaPsU69xBb252X9VeyJqu/ZJ17yKmCIAYZgsA5cqXDqNQmknLZAshh5gUZ/
-	kEnvobCdjdreZMHdmQNy9iKWx6reGdcoty9H3ViZmq2T5QJ/zw9ha98B4MXQ22Ak3JhS16/Qo+L
-	fSBB1V/wXClhr7lzzprsFJiwZ5BWlphrnE6tTc79ICEqtwT7XXMpuRHDQ3qLxILjEEHOJmL2ibu
-	UvXQ+Gbjy8WBigeBfUziSUucw04OMaDWyNCdLWQvmGzMmn7JP8u1SVhqdli0nmwDrA1wbVFR9bc
-	b9
-X-Received: by 2002:a05:600c:c053:b0:493:f13c:9c03 with SMTP id 5b1f17b1804b1-4954a341bd8mr54871325e9.19.1784405541159;
-        Sat, 18 Jul 2026 13:12:21 -0700 (PDT)
+        bh=5aawCgyOLcY9dWaq3NdPKpHFfWs7j94zNUTTRb31dic=;
+        b=hjiJh949n42I0zsrcxKJIlIK8rfKq2IP4qbXG76zNW/AXPdvH1/DqFBaPMBIuHmH5o
+         pXtUuJ2Rv46HdC3+EVH9iyA/BYgpg9r7xDc34bhs9EX7fUBKXeidG7Dik+ZpiNTuV7aK
+         hGEHGIqzkrC5ayIKb2DVn0vmdp71/TObjHeH+YDjBN7o6uVp637vMp/Al4usZ3m6PSNp
+         z606yWqKYSUqmGv9VCzG/+3neKId8tbqwf6V+zqVdXNBvbUVv9XAQVnCr3l9QvKj3P+D
+         F9toaAubDsA0L3myutGb713Slsob2+u1Xt28j8xxe8XORob0eCU1wWAqseFZ/sLXKN6T
+         3o7w==
+X-Gm-Message-State: AOJu0YyIxKpPGEcuHHrDDNweVG6sXK4iS9JrvGvy/iWMdWp/plt9tKyi
+	rhh0e9UshtmHyOEjHRnOErCGsNB/17Bb3y3oB9s5ij0evqIG/Trk07ziwaCHYw==
+X-Gm-Gg: AfdE7cldIqWgfnkcoIFcKFaD/0IpWZy+hexFNA8VdOCZ0Y+lK7mdJRo1CrBpkBQTbrm
+	4iuuBkqoVb5/+M5F/XOu46EkOL2kvOTBpoNfbiKgK+CrWpsnRSgQuwStA9nydkyephQIehTVGnM
+	+CNgFu12xNWhhlxmaF2Ve3OESE8PJQantL0dD14yIrVTH3IFLzDRnb4lc8GVkFTbJaOcjnUQt3l
+	YefAc9MyIz87CBsNANg3GxWI1WgQeBywny4d9EtzYskVgGVRjudtNbmlCYh+DzGtD5ySTDmZmOF
+	KhVzQzJkq1aAzf8gUj5N4pRCbPG6hy606P0ryIIekIaZfbZlMTiiEdtDu4FDoAcDq1qka/KWZZO
+	uey/s+5LWIgi/E2UVThrV8+eK6wmaO8jvuxix9jCe25EKeHtbRaZ2UaDxAPpuHpxCu596NN0aeU
+	+A
+X-Received: by 2002:a05:600c:6289:b0:493:b4a3:5ab0 with SMTP id 5b1f17b1804b1-4954a33dc26mr77214325e9.13.1784405786407;
+        Sat, 18 Jul 2026 13:16:26 -0700 (PDT)
 Received: from localhost ([78.173.4.49])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4954a2b074csm158316445e9.6.2026.07.18.13.12.20
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4954a2e8529sm143192075e9.11.2026.07.18.13.16.25
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 18 Jul 2026 13:12:20 -0700 (PDT)
+        Sat, 18 Jul 2026 13:16:25 -0700 (PDT)
 From: =?UTF-8?q?Muhammed=20=C3=87evik?= <talhaderyavahap@gmail.com>
 To: rafael.j.wysocki@intel.com
 Cc: linux-pm@vger.kernel.org,
 	linux-kernel@vger.kernel.org,
-	Your Name <your.email@example.com>
+	=?UTF-8?q?Muhammed=20Talha=20=C3=87evik?= <talhaderyavahap@gmail.com>
 Subject: [PATCH] power: fix whitespace and type inconsistencies in poweroff.c and user.c
-Date: Sat, 18 Jul 2026 23:12:09 +0300
-Message-ID: <20260718201211.6038-1-talhaderyavahap@gmail.com>
+Date: Sat, 18 Jul 2026 23:16:19 +0300
+Message-ID: <20260718201621.7203-1-talhaderyavahap@gmail.com>
 X-Mailer: git-send-email 2.54.0
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
@@ -74,7 +74,7 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 
-From: Your Name <your.email@example.com>
+From: Muhammed Talha Çevik <talhaderyavahap@gmail.com>
 
 Fix a number of coding style issues and a type inconsistency found in
 kernel/power/poweroff.c and kernel/power/user.c:
@@ -97,7 +97,7 @@ kernel/power/poweroff.c and kernel/power/user.c:
   to match the label used in snapshot_write(), and adjust indentation
   to be consistent (no leading space).
 
-Signed-off-by: Your Name <your.email@example.com>
+Signed-off-by: Muhammed Talha ÇEVİK <talhaderyavahap@gmail.com>
 ---
  kernel/power/poweroff.c |  8 +++----
  kernel/power/user.c     | 50 ++++++++++++++++++++---------------------
