@@ -1,33 +1,33 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5F9503B2FCE;
-	Mon, 20 Jul 2026 20:09:34 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 89E483B1EFC;
+	Mon, 20 Jul 2026 20:09:55 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1784578175; cv=none; b=JlHhzh4J2KGcEABes+bXZFwr/vZOBC8KjMyaBP5XHySB2ydq3DkGWfg6o0mePFvFiOJU6MgNkJL7tOwO+ycJJZfcDkdjKVhImquV00sQQKEfaesEpA0IxV8J3InBPNYX+eBuuLinyHCGcwZtJADy9btTXkZNcf9uDFszdVlSFC8=
+	t=1784578196; cv=none; b=YvuP9craHHLQjXuCKvw7dHlB6i/UVCG6bEuiUwGjfgOysARAZNO1xbqidLlIdAmIK42vDFy0fSFrQsMRY40PDcuMFazVzsa/uQWNCklzImTAi8koQDU28BEmGQM4s2u9MgbkMoAxMo60Yx9DBoCPOvdpv4ySLy+9/Ptlv9Exrio=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1784578175; c=relaxed/simple;
-	bh=7xSoBenBtyFggLe6QOpmG40DF03eqMPTxhfMbtfeWic=;
+	s=arc-20240116; t=1784578196; c=relaxed/simple;
+	bh=UUnOIuHQuYcfwiEDZR/JWXxnCmjbeOGL9CW4xtr1NBg=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=ZDRPWK87y/CG3CRbTLCxYItcR3EqjWclV+tP5Ni66RX6Ch8eRtYiGnjgtO+6H/7o+w6PfbulynNorJjfWcIG4/sXa2X3BYfAUtDbCtucGcabd8ueAhetUSe/Ewbz6c1AsVz3RJP29tFifG/zJwIs330Bv49hP7jCmb4b9ZESBhs=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=ax7QJy5I; arc=none smtp.client-ip=100.103.45.18
+	 In-Reply-To:Content-Type; b=dhRhj8OB7R4HHZ93sKWTUTGDY/vrpp4GXrhcKqu4eP4lPwsvlzUeXzRKcDDA80fU8M67Q6WUj3KdiwH0q29d8t83/kXsueRTXBXANoDo1TQUHhjDUwxESPYpe8h+Tf+LdXfW4lfRHGym7O8ffzgzRlw2stAKuLgk8nF5t+B0myI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=KslcyemO; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="ax7QJy5I"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 268671F000E9;
-	Mon, 20 Jul 2026 20:09:28 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="KslcyemO"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2C09A1F000E9;
+	Mon, 20 Jul 2026 20:09:50 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1784578174;
-	bh=v+umRzPFk9xQ5Xmah/kPJWGDKwAbojiTzvV5y+9Yews=;
+	s=k20260515; t=1784578195;
+	bh=nZ063Cr5IysRq6HcyQ+1TKilKDDKztM/HVWJR8czcj4=;
 	h=Date:Subject:To:Cc:References:From:In-Reply-To;
-	b=ax7QJy5ICzU1aVwS1PDBbUm5DbJTetaj7J/+oAvcsd2fSqVBBlsRGkwmDsxt+pv3x
-	 Higtnn5mtrFxhcseFj1StlbinSQdUvr80NTzzMqaUDNyDDwM+oj75D0WQQUmv2tA/y
-	 2JgfxyX1EnZNynWJGNwveF3lETjQKzZ/eDisQbvsXHmIs6PCW6bNno7OWEGvJH4GcV
-	 JTGWnz2d1lawN1MCe/M+5OPMXguMckIPyaB2QSVpUvRRvZ3Zc4lUqOzymLB7Mwzo3A
-	 DGH+36iOlBaX8TulLUJ3aUG53AKCKbiJ1l3uUJNi9fTLKFHcaiuIlph2fS/EDNYX/a
-	 x0ZKmBcsrd/Rw==
-Message-ID: <39943736-4051-4b21-9ac1-b8f28ee9a480@kernel.org>
-Date: Mon, 20 Jul 2026 22:09:25 +0200
+	b=KslcyemOTwbV2E03AeYY4oo1GtzemQCxDq2kWyHW1c1oRK99hV6KqC2lns6Ov6a58
+	 Fcr5mtkfINO3B+o8cCONe5vwWLaQnAqmReXRJaDJUjvRazKEBmFEzkOAFquLzsTYjs
+	 Bdp4dufOjnq4UFS3ZPVoFxyJTBcXGKcFoqKNVi7KYy3UXMFGalfWP6Uv2VGQgswxU5
+	 G/4Ds7/zIjcNh+AOJiG8fWqIjNyw33AUUxBZz1T1xykDr3jgiazpbmWpDL8rQe1cfF
+	 10DGG+vgUI0EDL5+EhUd9MOnQYIE4Dy5dhyfwo2Z0DkUk8xex0J92A83X3GigH/SK2
+	 anXOcHOqsv+aQ==
+Message-ID: <0b4984b4-8729-4125-b09d-8136ee79ac0f@kernel.org>
+Date: Mon, 20 Jul 2026 22:09:49 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -37,17 +37,19 @@ MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
 Subject: Re: [PATCH v2 1/3] dt-bindings: power: Add MediaTek MT6858 power
  domain controller
-To: nikolai.burov@jolla.com, Rob Herring <robh@kernel.org>,
- Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
- <conor+dt@kernel.org>, Matthias Brugger <matthias.bgg@gmail.com>,
+To: Nikolai Burov <nikolai.burov+review@abscue.de>
+Cc: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
+ Conor Dooley <conor+dt@kernel.org>, Matthias Brugger
+ <matthias.bgg@gmail.com>,
  AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>,
- Ulf Hansson <ulfh@kernel.org>
-Cc: Matthias Brugger <mbrugger@suse.com>, devicetree@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- linux-mediatek@lists.infradead.org, linux-pm@vger.kernel.org,
- Nikolai Burov <nikolai.burov+review@abscue.de>
+ Ulf Hansson <ulfh@kernel.org>, Matthias Brugger <mbrugger@suse.com>,
+ devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, linux-mediatek@lists.infradead.org,
+ linux-pm@vger.kernel.org, Nikolai Burov <nikolai.burov@jolla.com>
 References: <20260715-mt6858-pmdomain-v2-0-6293e87fc093@jolla.com>
  <20260715-mt6858-pmdomain-v2-1-6293e87fc093@jolla.com>
+ <20260720-vigorous-groovy-cassowary-9912d9@quoll>
+ <db76f500-0db5-4c5f-b4cb-60818702787e@abscue.de>
 From: Krzysztof Kozlowski <krzk@kernel.org>
 Content-Language: en-US
 Autocrypt: addr=krzk@kernel.org; keydata=
@@ -93,24 +95,52 @@ Autocrypt: addr=krzk@kernel.org; keydata=
  K9bCVaboTA2T77QYkRcRJYSsO1alGX0ome/hMLD1daXlkrNUp1HWa3K4iytLRXjCSIorWiGs
  n+q3krnpXu3TFkA8qtOFZMdnIiFuiq1yLT8hptsV5xh1TA2nsVvSYiaCr3q4s4BKjS/KrLDb
  qoxzw8ISjdUp4pA85vb6YLCmb39NgidD+7PmAr65lBNveIFynTgsja1rRQ4=
-In-Reply-To: <20260715-mt6858-pmdomain-v2-1-6293e87fc093@jolla.com>
+In-Reply-To: <db76f500-0db5-4c5f-b4cb-60818702787e@abscue.de>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 
-On 15/07/2026 15:54, Nikolai Burov via B4 Relay wrote:
-> From: Nikolai Burov <nikolai.burov@jolla.com>
+On 20/07/2026 21:09, Nikolai Burov wrote:
+> On 7/20/26 8:05 AM, Krzysztof Kozlowski wrote:
+>> On Wed, Jul 15, 2026 at 04:54:05PM +0300, Nikolai Burov wrote:
+>>> Add a new compatible and document bindings for the power domain
+>>> controller of the MT6858 SoC.
+>>>
+>>> Reviewed-by: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
+>>
+>> To provide review, please open and read the entire file.
+>>
+>>> Signed-off-by: Nikolai Burov <nikolai.burov@jolla.com>
+>>> ---
+>>>  .../bindings/power/mediatek,power-controller.yaml  | 21 +++++++++++++++++++-
+>>>  include/dt-bindings/power/mediatek,mt6858-power.h  | 23 ++++++++++++++++++++++
+>>>  2 files changed, 43 insertions(+), 1 deletion(-)
+>>>
+>>> diff --git a/Documentation/devicetree/bindings/power/mediatek,power-controller.yaml b/Documentation/devicetree/bindings/power/mediatek,power-controller.yaml
+>>> index 070c6e5666dc..d03e4a925163 100644
+>>> --- a/Documentation/devicetree/bindings/power/mediatek,power-controller.yaml
+>>> +++ b/Documentation/devicetree/bindings/power/mediatek,power-controller.yaml
+>>> @@ -25,6 +25,7 @@ properties:
+>>>      enum:
+>>>        - mediatek,mt6735-power-controller
+>>>        - mediatek,mt6795-power-controller
+>>> +      - mediatek,mt6858-power-controller
+>>>        - mediatek,mt6893-power-controller
+>>>        - mediatek,mt8167-power-controller
+>>>        - mediatek,mt8173-power-controller
+>>> @@ -56,7 +57,7 @@ properties:
+>>>        faults while enabling or disabling a power domain.
+>>>        For example, this may hold phandles to INFRACFG and SMI.
+>>>      minItems: 1
+>>> -    maxItems: 3
+>>> +    maxItems: 6
+>>
+>> And the rest? Why does this device have flexible number of access
+>> controllers?
 > 
-> Add a new compatible and document bindings for the power domain
-> controller of the MT6858 SoC.
-> 
-> Reviewed-by: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
-> Signed-off-by: Nikolai Burov <nikolai.burov@jolla.com>
-> ---
->  .../bindings/power/mediatek,power-controller.yaml  | 21 +++++++++++++++++++-
->  include/dt-bindings/power/mediatek,mt6858-power.h  | 23 ++++++++++++++++++++++
->  2 files changed, 43 insertions(+), 1 deletion(-)
+> For mt6858, the "items" list I provided already overrides both minItems 
+> and maxItems, so it has a fixed number (6) of access controllers.
 
-Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
+Correct, somehow I missed that part of the diff for this file.
 
 Best regards,
 Krzysztof
