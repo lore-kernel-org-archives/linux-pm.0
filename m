@@ -1,127 +1,121 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E95073C98BF;
-	Mon, 20 Jul 2026 21:48:12 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5656642E8D6;
+	Mon, 20 Jul 2026 22:00:02 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1784584095; cv=none; b=KyiKw8UfiwvkzO6mjAKSqcIdW7JgwF1YOsCiF+W2obFLkQ3LLAbFNnXssCruf/HJTz0t3E7QSgG1rwd3vvtj00HcSzL+n4fvm1KhdORTBDb92817cu9Nl15LEDjyb9Z4kOS8WW5G03a4D7JGxUfDxubYUi0JedVgL5tsJpFUZf8=
+	t=1784584803; cv=none; b=U15OOUYOWXEPj0d7jZirmna3DQI3WcoYmJRWmeUtR04fEsh6sVRB2ue6GysEX9Xz23KsQgv5tf1VnCvwYnv6qT5SSAD5uv2ObYPev/3jJDLof4jtGfo3jeN/J9EA22P4eLKKAX73lfxAJEtMachtAnbABP/AMFAoX4L+bPYh+FE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1784584095; c=relaxed/simple;
-	bh=2IlGTqZQpEd0dOfNli5TZqPpwK0gx01YgJUnZ3l8VII=;
+	s=arc-20240116; t=1784584803; c=relaxed/simple;
+	bh=a/lH/DibqdjYAra5LPRTjJgK4H0NusKAxMUK+sPzdYA=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=t677lqxhKhyIw6fJHAoZGvyH34R6uNlancebNPIwH9H7CuhgFtZ8iBLhq0Psr1UV0betIpkhwS7Niw/vwHD62xy7RrQASQBt7qDNoE5XhdDMQSR9XoQ+4KAK1t9GVprkIy2teurK7ayoyd81bf1sx3lolMEpl4EfhXVmy++QZ2U=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=B6aixEgX; arc=none smtp.client-ip=100.103.45.18
+	 Content-Type:Content-Disposition:In-Reply-To; b=lrZFAEnfWisUusRVV2nvQuAvDMBlkFpQSnEy/mvEP3OP/JytRwjRe7piDfHhEU17OozZrDlEkgV84HzoQHfrqWFZJfroRK2pwyl7XR6f7AZ046Pu2SxBl5+y8ffIJC6GxT+jUyN0omhf6Mf85mEOUoCWdHVs1IY7cbsXt+w/gos=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=CtmadWVN; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="B6aixEgX"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id C63011F000E9;
-	Mon, 20 Jul 2026 21:48:10 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="CtmadWVN"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id CEAA41F000E9;
+	Mon, 20 Jul 2026 22:00:01 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1784584090;
-	bh=J4eoFhH6gmEKwRw2WseDnQQMVN8sL8rgy37P+Poa568=;
+	s=k20260515; t=1784584802;
+	bh=/HFPGnFT5xQPTJel+8S9XjVz+99UaWkvqMJ91wRwak8=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=B6aixEgXkTy7qgiMoEY6afuTFN9EhfWYVdz6MtIax04oR9Aj1IooCmm8XKinZgpIg
-	 sP3SYMDS/mEATNCFsKqlQSxca8GCh3hsWf6mwBPt0V7iTRWHZVknY8p7XCZCMAgkhO
-	 rCO68PAq43n9yIf616oO5SOCAsPt5F6KhB/opAxIcTmZ4wk0p/7HxZTG3jejloS/Ng
-	 DTovSVWQio0gC+DnevRi23nTnqP3+IiQtoYvQaUqcmdK6THX4L0riDSrgSSBKKkgcY
-	 hrGBqpUdGPJ78gMCTgOEcMB7xzzt7/Rrl0wpCaJq0jAJAE5JsSjDHo/EI34cbHtJVj
-	 RNUV8Lg/lZO2Q==
+	b=CtmadWVNvqP7/U41uGh42YWbf1xyZeS3ezGfVqFEEL/zwIDCH7tTILQfi3ZwkChWS
+	 PPNmzRseJf+VoJdsgO2/S503cBfmsu71y2qGPLV1UcAapCigUnfgCWRnxWPSPig2vL
+	 KU31LbrN48yZH06yeXfYnxwL9fp/qXqtxJt/zCrlPTITqMPmnDFtk8tnVKqsVVu4/J
+	 7t5auaQDt53Qjp7pN7oY/MEzVgr4BBFDaKKXCnuCcN4U+ZD3ONHByOnUaml9nLMJA6
+	 dR9vLq+DY3WZrb1dZscgXs91RBujMBR+RF8GdU4l+JQ1d1/EykJjoK87J2LIo0nx3v
+	 gwmhQ2Zhw3h9A==
 Received: by venus (Postfix, from userid 1000)
-	id 44BC7180A25; Mon, 20 Jul 2026 23:48:09 +0200 (CEST)
-Date: Mon, 20 Jul 2026 23:48:09 +0200
+	id EA3491809C8; Mon, 20 Jul 2026 23:59:59 +0200 (CEST)
+Date: Mon, 20 Jul 2026 23:59:59 +0200
 From: Sebastian Reichel <sre@kernel.org>
-To: Boris Shtrasman <borissh1983@gmail.com>
-Cc: Shuah Khan <shuah@kernel.org>, linux-pm@vger.kernel.org, 
-	linux-kselftest@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v2 2/2] selftests: test possible usb type values from
- documentation
-Message-ID: <al6WlrksIVUkhSHG@venus>
-References: <20260625160556.54830-1-borissh1983@gmail.com>
- <20260625160556.54830-3-borissh1983@gmail.com>
+To: Uday Khare <udaykhare77@gmail.com>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/4] power: supply: rk817: Fix battery info memory leak
+ on error paths
+Message-ID: <al6aD588lDLlXkYu@venus>
+References: <20260618132151.11227-1-udaykhare77@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="qw4ef3bnkxf6j4sb"
-Content-Disposition: inline
-In-Reply-To: <20260625160556.54830-3-borissh1983@gmail.com>
-
-
---qw4ef3bnkxf6j4sb
-Content-Type: text/plain; protected-headers=v1; charset=us-ascii
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
-Subject: Re: [PATCH v2 2/2] selftests: test possible usb type values from
- documentation
-MIME-Version: 1.0
+In-Reply-To: <20260618132151.11227-1-udaykhare77@gmail.com>
 
 Hi,
 
-On Thu, Jun 25, 2026 at 07:05:55PM +0300, Boris Shtrasman wrote:
-> modify kselftest to check for usb_types values from
-> Documentation/ABI/testing/sysfs-class-power instead of only checking for
-> property.
+On Thu, Jun 18, 2026 at 06:51:51PM +0530, Uday Khare wrote:
+> In rk817_charger_probe(), power_supply_get_battery_info() is called to
+> retrieve battery info. However, if the sanity check for required battery
+> properties fails, or if rk817_battery_init() returns an error, the
+> function returns immediately without calling
+> power_supply_put_battery_info() to release the allocated battery info
+> structure, causing a memory leak.
 >=20
-> Added the
-> "Unknown", "SDP", "DCP", "CDP", "ACA", "C", "PD",
-> "PD_DRP", "PD_PPS", "BrickID", "PD_SPR_AVS",
-> "PD_PPS_SPR_AVS" values from the
->  /sys/class/power_supply/<supply_name>/usb_type section.
+> Fix this by introducing an error label 'err_put_bat_info' that calls
+> power_supply_put_battery_info() before returning the error code, and
+> jumping to it from both error paths.
 >=20
-> Signed-off-by: Boris Shtrasman <borissh1983@gmail.com>
+> Fixes: 11cb8da0189b ("power: supply: Add charger driver for Rockchip RK81=
+7")
+> Signed-off-by: Uday Khare <udaykhare77@gmail.com>
 > ---
->  .../selftests/power_supply/test_power_supply_properties.sh   | 5 ++++-
->  1 file changed, 4 insertions(+), 1 deletion(-)
->=20
-> diff --git a/tools/testing/selftests/power_supply/test_power_supply_prope=
-rties.sh b/tools/testing/selftests/power_supply/test_power_supply_propertie=
-s.sh
-> index a66b1313ed88..7bf76af4cfd5 100755
-> --- a/tools/testing/selftests/power_supply/test_power_supply_properties.sh
-> +++ b/tools/testing/selftests/power_supply/test_power_supply_properties.sh
-> @@ -58,7 +58,10 @@ for DEVNAME in $supplies; do
->  	# This fails on kernels < 5.8 (needs 2ad3d74e3c69f)
->  	test_uevent_prop TYPE "$SUPPLY_TYPE"
-> =20
-> -	test_sysfs_prop_optional usb_type
-> +	test_sysfs_prop_optional_list \
-> +		usb_type "Unknown","SDP","DCP","CDP","ACA","C","PD"\
-> +			,"PD_DRP","PD_PPS","BrickID", "PD_SPR_AVS" \
-> +			,"PD_PPS_SPR_AVS"
 
-I've picked up the other patch, but skipped this one, because it
-does not work. The usb_type property reports back differently from
-what the test_sysfs_prop_optional_list function expects:
-
-sre@venus ~ % cat /sys/class/power_supply/ucsi-source-psy-pmic_glink.ucsi.0=
-1/usb_type
-[C] PD PD_PPS
-
-Greetings,
+What is this patch 3/4 and why do you think memory is leaked even
+though device managed resources are being used internally?
 
 -- Sebastian
 
---qw4ef3bnkxf6j4sb
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAmpel5QACgkQ2O7X88g7
-+pon0RAAlgetSydT4Qwps4msPFSNF23S76lxFXe6XY3A6mo/GZYeAVqqxDXCL3qc
-VRLQxLM/cbIlGfq2vPnbNcebGqggF52Ce4yxKWEMBSIvw8sZVoJe74bNkWw8CFid
-OrTJVYWjfD6y3blN7UTQwglETvUhpYfJUW/PvS2SM/mkyHmK9dlv4ieBLcXWlIWa
-BgZedSxDwsl7ZzwLac3cxLcKn2hyA/5kLqAtXFUNiX3zDr0y95XlSlRoLuoF2dj3
-KrlQ9oZ3UyoSSSbP3+mELrYw05Ts+xTb3zE8juAKCZ95Y/t91/Oxmg2xGzmgKs3o
-Jn5dyHNPTtkTXK+UBb2Vi/sHPDb1pefxy7T/sqAKF/zb7V96RLSshBHmBtQojZ+o
-71z0Gec1fydayyDMXnPSJwnAgWGABFDUOklFsWZqQofaN3eW8n6RBMAgOJPBSLs5
-tAmilcYS1/TVTgXXaPluHfkuAY1E8ht9NiRCNXSMhBcZEhADRtNEkP9QQEBL/lBb
-FctsOz8fa20uIHA5DWxB/ZFnPQhvuh4V5XkwOCHgyTk5pmBSqwkQ7OA4Xzj2S/DV
-uey+ixVAjaLuNq2b8Q6441Kuyr3gUhYtYrG3/5GqzpqdvVKWe4snOb9kR87ELqYM
-lceMYlo8bTg/WtwMIJ55UFEv07No4Kgf9tNJ4EogDpWzPNx3Xfw=
-=q0ET
------END PGP SIGNATURE-----
-
---qw4ef3bnkxf6j4sb--
+>  drivers/power/supply/rk817_charger.c | 12 +++++++++---
+>  1 file changed, 9 insertions(+), 3 deletions(-)
+>=20
+> diff --git a/drivers/power/supply/rk817_charger.c b/drivers/power/supply/=
+rk817_charger.c
+> index 9436c6bbf51f..a2ca2b46b2f2 100644
+> --- a/drivers/power/supply/rk817_charger.c
+> +++ b/drivers/power/supply/rk817_charger.c
+> @@ -1156,8 +1156,10 @@ static int rk817_charger_probe(struct platform_dev=
+ice *pdev)
+>  	    (bat_info->constant_charge_voltage_max_uv <=3D 0) ||
+>  	    (bat_info->constant_charge_current_max_ua <=3D 0) ||
+>  	    (bat_info->charge_term_current_ua <=3D 0)) {
+> -		return dev_err_probe(dev, -EINVAL,
+> -				     "Required bat info missing or invalid\n");
+> +		dev_err_probe(dev, -EINVAL,
+> +			      "Required bat info missing or invalid\n");
+> +		ret =3D -EINVAL;
+> +		goto err_put_bat_info;
+>  	}
+> =20
+>  	charger->bat_charge_full_design_uah =3D bat_info->charge_full_design_ua=
+h;
+> @@ -1170,7 +1172,7 @@ static int rk817_charger_probe(struct platform_devi=
+ce *pdev)
+>  	 */
+>  	ret =3D rk817_battery_init(charger, bat_info);
+>  	if (ret)
+> -		return ret;
+> +		goto err_put_bat_info;
+> =20
+>  	power_supply_put_battery_info(charger->bat_ps, bat_info);
+> =20
+> @@ -1209,6 +1211,10 @@ static int rk817_charger_probe(struct platform_dev=
+ice *pdev)
+>  	mod_delayed_work(system_percpu_wq, &charger->work, 0);
+> =20
+>  	return 0;
+> +
+> +err_put_bat_info:
+> +	power_supply_put_battery_info(charger->bat_ps, bat_info);
+> +	return ret;
+>  }
+> =20
+>  static int __maybe_unused rk817_suspend(struct device *dev)
+> --=20
+> 2.54.0
+>=20
