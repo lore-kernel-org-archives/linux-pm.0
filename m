@@ -1,59 +1,126 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-oa1-f48.google.com (mail-oa1-f48.google.com [209.85.160.48])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DBF1939D3FC;
-	Mon, 20 Jul 2026 23:12:59 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C56D530CD82
+	for <linux-pm@vger.kernel.org>; Mon, 20 Jul 2026 23:16:36 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.160.48
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1784589180; cv=none; b=JkmJQF5Rd0kbhxvBRja46U74wTPe7tLN+S4FS8IRmzDWwQYkb2cV9JwS7gvVpMD7NwSDpwEHms11mNrHSdl97r11f5S6sGXS/XROb6UScwnej95WOZmjDxEKiKG+LI8URf38Fyk1XXlcNaKN898ElgYyma3m7guElB0noV6whoo=
+	t=1784589398; cv=none; b=eoten26EvSxd1qKUBpdBSM4q+Btw6PSIn3gDrN1GmyaaG5MczyoWG01LiMAAhK85M6GkVgc39k/Xhu+JUJa7TN1lgmUpVhzqM/VK0y91PSh2y3uQPV8Vj24XVSOGRyFJVL3Hd/ryVTuM+YjgTsuUVbJKNN3ZFzGbQzHoFW9ntrQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1784589180; c=relaxed/simple;
-	bh=u6J1ltItLMhgelEGn8IFT93Zx+nTgSkLBi1K3s39WU8=;
-	h=From:To:In-Reply-To:References:Subject:Message-Id:Date:
-	 MIME-Version:Content-Type; b=E+szNlITvbhB7qphocK30yoPMkXDDXtPDJOuy0i5pt4ooaxJMrtgYj8id0DXJ8kx/H+7i1cIQMcfcPLOsJ7XeBsqJdJpdgBN18gd4KJAXqwBVaTsIas77c5ZESNpVrNkgLCJz6juL2yLmIP4KhFGm0mt528zVHhULEftYMHEmPU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8E87D1F00A3A;
-	Mon, 20 Jul 2026 23:12:59 +0000 (UTC)
-Received: by venus (Postfix, from userid 1000)
-	id F2FC318081D; Tue, 21 Jul 2026 01:12:57 +0200 (CEST)
-From: Sebastian Reichel <sebastian.reichel@collabora.com>
-To: Sebastian Reichel <sre@kernel.org>, Rob Herring <robh@kernel.org>, 
- Krzysztof Kozlowski <krzk+dt@kernel.org>, 
- Conor Dooley <conor+dt@kernel.org>, Vinod Koul <vkoul@kernel.org>, 
- linux-pm@vger.kernel.org, devicetree@vger.kernel.org, 
- linux-kernel@vger.kernel.org, 
- Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
-In-Reply-To: <20260701105907.197150-2-krzysztof.kozlowski@oss.qualcomm.com>
-References: <20260701105907.197150-2-krzysztof.kozlowski@oss.qualcomm.com>
-Subject: Re: [PATCH] dt-bindings: power: reset: qcom,pon: Narrow allowed
- reboot modes
-Message-Id: <178458917797.375902.13225239483719054866.b4-ty@collabora.com>
-Date: Tue, 21 Jul 2026 01:12:57 +0200
+	s=arc-20240116; t=1784589398; c=relaxed/simple;
+	bh=iJTvM7FzbQufcWwG5DlwV7gilgwCwXQxdewlBg0Uckk=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=LzHpgljVByJ4q0vh/KZ6P/6qwgVRWHVd7Rx5K5qjrnLFZ5CCwWfUf6h7EhBblHrvePMqgm0fjyKdSITKmAF+gKHu6lTX/c7UcxFYXRFw8tdBFDa0qQ+0TEjF5ChhCli6NyZjiCazU5EjpvnjfkvXOcXLhCCa8Gqxr4cu+PcA0H0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linuxfoundation.org; spf=pass smtp.mailfrom=linuxfoundation.org; dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b=V1LwWaCe; arc=none smtp.client-ip=209.85.160.48
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linuxfoundation.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linuxfoundation.org
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b="V1LwWaCe"
+Received: by mail-oa1-f48.google.com with SMTP id 586e51a60fabf-456f7012050so1115933fac.0
+        for <linux-pm@vger.kernel.org>; Mon, 20 Jul 2026 16:16:36 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linuxfoundation.org; s=google; t=1784589395; x=1785194195; darn=vger.kernel.org;
+        h=content-transfer-encoding:content-type:in-reply-to:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=nruANn1J2b318QWYJd0dvVE8ypNBnKBF2jdRb6cl/xM=;
+        b=V1LwWaCe3Hg73zAlf2TvIVl5gc215CTSTVZ3HR21qgvORVee8jwPdKYakN0nHywtjE
+         kHYkSl/DXTGg/GU4DE13xVl+61yUleSG4ClBKVcNc0UypyVJ2GR/9z7WHCvgQV0TdmWS
+         y0RD7rpZrwV38564P03SCDap+wtwGPtl2jAGo=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1784589395; x=1785194195;
+        h=content-transfer-encoding:content-type:in-reply-to:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=nruANn1J2b318QWYJd0dvVE8ypNBnKBF2jdRb6cl/xM=;
+        b=k8jbjReYJBXV/6zIybOr17T7cN1jd8quji4ZdqfiLlq7BDVf+zkFVA89De2Z7pd8xU
+         OQ/GGp+MaT8LDCy4CbpIpGHGavwb4fZfk7hNu2JVvtNd9MEtJrg3quqfnO/JrbBVnXn6
+         vHu3SCIqXUTxZ0FtIwCcpHMjShmy3ASO3ct7AMmxVHTT5MvXL6lFV4lAjIxPmF3dwcJl
+         kdC7PYwz7BQ7I31o8mfwP22rLX2TNJ/p8cYpWW/km3yauMicqXtYDfQk9jXZvtpWgBTX
+         xX3mr78+0ATx1r96W546QHAavDNUtdJ+UPQ9vElcP7aNBaCGyhpGyH1JGMpWHTFsjJNL
+         T9ug==
+X-Forwarded-Encrypted: i=1; AHgh+RptlfCyjGmlCKncx/mlhfyMvU12mS+orfbdxGgn2q0FclH3/Jc04wpZeVKocMh1qncD8RZ4OxKJcQ==@vger.kernel.org
+X-Gm-Message-State: AOJu0YxY0pd3+35LIuU3mu4t0BW/WZGNVkvEPBapOj/TseZowyjWGy1Q
+	q/Cwg78yOD5Cja+sDoRiU7JR18eYETtbm6Sx8VVHBH1WnhZ2XzcIToPgV+2MtgF5LGE=
+X-Gm-Gg: AfdE7ck4AaOYBMjpkIj47jflzz3chOTE4lLTyKKGyGj8S4Xo2oz41tsJC3M151hi66Q
+	AailWoV1n/XQwl98fj2uoMIqOZtLPu2Xvr1j3hwTcvNMuKJD2womdgr5MVwMC0ngOT9iFKTQ//P
+	5LDbBCf0nwUOUu9tUOS4dArsfsdnx1UV/22rN5dmJORQHhv+cI2SjdiyIj3RMfP2EnC3h67dQo4
+	HBpLOY2v7TB8CcQnPWMywQ88o41Uk1mtcrm2df7MxGDXXp7UAWHeO0DsCvDnBE0HM5VUEpxuSMF
+	EuGt//JmVHj/iJz+3Zrzc6/NPw31DLiIhzNovGFDOA3XKLPqrtjjk/dKjYzM7QGnQ1Nkn7cSkHy
+	7Op+7msb7YA4LGQY2l0Cupcy7e/RzxzxJNm9GXBpaG3RhN8wF1UaNN5SET0E+SSlXcUlNhJR7Lk
+	3hSWxmIYOEvkk=
+X-Received: by 2002:a05:6820:16a4:b0:6a1:8132:cb27 with SMTP id 006d021491bc7-6a51d57315emr7717381eaf.9.1784589395464;
+        Mon, 20 Jul 2026 16:16:35 -0700 (PDT)
+Received: from [192.168.1.128] ([38.15.57.99])
+        by smtp.gmail.com with ESMTPSA id 006d021491bc7-6a51a253d56sm8324491eaf.12.2026.07.20.16.16.31
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Mon, 20 Jul 2026 16:16:33 -0700 (PDT)
+Message-ID: <46d783d4-5887-4d01-8260-233e484123f1@linuxfoundation.org>
+Date: Mon, 20 Jul 2026 17:16:30 -0600
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v3] cpupower/debug/i386: check mmap return value in main
+To: longlong yan <yanlonglong@kylinos.cn>
+Cc: jkacur@redhat.com, jwyatt@redhat.com, linux-kernel@vger.kernel.org,
+ linux-pm@vger.kernel.org, sageofredondo@gmail.com, shuah@kernel.org,
+ trenn@suse.com, Shuah Khan <skhan@linuxfoundation.org>
+References: <7f6a28eb-ea4d-4c9e-9aed-ed184b5d22e4@linuxfoundation.org>
+ <20260720013437.428-1-yanlonglong@kylinos.cn>
+Content-Language: en-US
+From: Shuah Khan <skhan@linuxfoundation.org>
+In-Reply-To: <20260720013437.428-1-yanlonglong@kylinos.cn>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Mailer: b4 0.14.3
 
-
-On Wed, 01 Jul 2026 12:59:08 +0200, Krzysztof Kozlowski wrote:
-> reboot-mode schema allows arbitrary "mode-.* properties but only a
-> subset actually makes sense and is valid.  Provide negative look-ahead
-> pattern to disallow any modes not supported by the device, which
-> tightens the binding.
+On 7/19/26 19:34, longlong yan wrote:
+> The return value of mmap() is not checked. On failure mmap() returns
+> MAP_FAILED, not NULL. If mmap() fails, the subsequent for-loop
+> dereferences the invalid pointer (MAP_FAILED), causing a segfault.
 > 
+> Add a check for MAP_FAILED after mmap(), consistent with the existing
+> error handling style for open() in the same function.
 > 
+> Fixes: 7fe2f6399a84 ("cpupowerutils - cpufrequtils extended with quite some features")
+> Signed-off-by: longlong yan <yanlonglong@kylinos.cn>
+> 
+> Changes in v2:
+> - Remove trailing whitespace and blank row
+> 
+> Changes in v3:
+> - Format Adjustment
+> ---
 
-Applied, thanks!
+This is where the change information needs to be placed.
 
-[1/1] dt-bindings: power: reset: qcom,pon: Narrow allowed reboot modes
-      commit: 792c48a7751346ea5e5069ec733f005d42a35b26
+It is still not correct. Please refer to submitting patches
+documentation.
 
-Best regards,
--- 
-Sebastian Reichel <sebastian.reichel@collabora.com>
+>   tools/power/cpupower/debug/i386/dump_psb.c | 5 +++++
+>   1 file changed, 5 insertions(+)
+> 
+> diff --git a/tools/power/cpupower/debug/i386/dump_psb.c b/tools/power/cpupower/debug/i386/dump_psb.c
+> index 6fb81b42ea61..fcbb73b48acb 100644
+> --- a/tools/power/cpupower/debug/i386/dump_psb.c
+> +++ b/tools/power/cpupower/debug/i386/dump_psb.c
+> @@ -182,6 +182,11 @@ main(int argc, char *argv[])
+>   	mem = mmap(mem, 0x100000 - 0xc0000, PROT_READ, MAP_SHARED, fd, 0xc0000);
+>   	close(fd);
+>   
+> +	if (mem == MAP_FAILED) {
+> +		printf("Couldn't mmap /dev/mem\n");
+> +		exit(1);
+> +	}
+> +
+>   	for (p = mem; p - mem < LEN; p+=16) {
+>   		if (memcmp(p, "AMDK7PNOW!", 10) == 0) {
+>   			decode_psb(p, numpst);
 
+thanks,
+-- Shuah
