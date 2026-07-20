@@ -1,33 +1,33 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7BCC738F227;
-	Mon, 20 Jul 2026 18:55:53 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 64C912BEC2C;
+	Mon, 20 Jul 2026 19:01:52 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1784573754; cv=none; b=ZPQFMXLBaC1WDEzxSaUbsOCs/r67m6MhgSSAoGA8d6pEvN9nPm4aOsZ58mX7+yLU7woZNy+HasEEJxzNZj0LQySZVIXjiV9axUrC6umo/uXie8J3xAoxIDruk5e82Ot0XaltyfxNVw28N0aslOrPriZHrnpi66KGMGwaaPF465o=
+	t=1784574113; cv=none; b=at8Qv1fFenPZFbCN2ZDKfCFrhBn55F8dphthExgubSMx76fzWZQetSJHPV71Y3DYbIJOWrDa/UWZ/ZvcpS0tgN/eYGCqAn8TyP6uaDWpMS3YEcED64MmnlkbY9Hm+aeLHVG2goTaCeoHDqmmkcEGC0cXRrMqphs+uIosu9XIF7Q=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1784573754; c=relaxed/simple;
-	bh=n+vf+uGdfFK3xwCRtQ3rJZO0kviQpKYLDmIF21spK+Y=;
+	s=arc-20240116; t=1784574113; c=relaxed/simple;
+	bh=ZZ/sqpoAZBc5LVKp/7yXcmiDwNH8uJaRmdlO645n07A=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=eV9oDnCzY1Jem/JIblgECqcIqt7ytsCL7S+WSz9WVvEQ6zxJrX4rgFrisC6p0XbPW1AyyULsujL28N+pyYP2MTlcF/P3hNd+ckakGmuh8K0m5MNGmZttL/ZyFVdwkHe6MWD7UZ82QNpAe5xfXVLA5Zl4QxboctYZw5UGymPm/is=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=EMkIz7ya; arc=none smtp.client-ip=100.103.45.18
+	 In-Reply-To:Content-Type; b=I1MxyssIs0FWTpYir2dNJPTn/4dsyeoP+tZ+AeXPSeYDr3XMTcYoXM82cUG7cfho7Xv+CTzZhbngDtSxdQnMwuKHtenG5nn58tWLrJ4kUYbWW1+yflLe1aUEC1wKfwWDyuaZ1WhmwOkfLZhGzjlNCPP3Fjjw5m2H7GjSOgftDWs=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Xcc8fVKF; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="EMkIz7ya"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8570C1F000E9;
-	Mon, 20 Jul 2026 18:55:50 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Xcc8fVKF"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5DF4C1F000E9;
+	Mon, 20 Jul 2026 19:01:51 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1784573753;
-	bh=IyqdRB8kwy15swIpu2zJ10mWz5m4cEqMe0aubUhgmc8=;
+	s=k20260515; t=1784574112;
+	bh=uEHlLDkK5rkivUu8706eDnB9C5bcKVgdYUNU7PZAd9M=;
 	h=Date:Subject:To:Cc:References:From:In-Reply-To;
-	b=EMkIz7yaaOs8nrqeQfnPPF9SeVKH0VFZO8m0LwbuWYiUT+VPzeGfHLS6N+4uH9kSt
-	 2iPohvZvCTlStDesouIY9ZwFPUV6wSij/2uky7dlCL6S268dfA4h6eKp18IvzJyI07
-	 3Qit+QOKaPgcC6eiUoUghWu2rhsql2HqYJHhSRmr+/WmtC2OMDykNe+om4ZszQRECX
-	 hRCAOngLP9scj2wUlKIQAGN1Hw5et7wNOr0Y7hV+tsvZTckXtn7/+M83RQPcnqg2Ta
-	 weK+VTxR5MCrYeVRHA1hN0BUsLHqfkDn4imZE3WgSQ+5c6Wk2rsgcyHSrTXIX3GNQO
-	 REE056fkz5D5A==
-Message-ID: <db9c20b2-9a5a-4782-8f47-d42c18c59079@kernel.org>
-Date: Mon, 20 Jul 2026 20:55:48 +0200
+	b=Xcc8fVKFpldcqbgB61TxfWOqHbiz60qrfHY1Ok8NMDWzlUxN4CNu6ovm/lM/a3wsy
+	 W5waHO+6oaPYrmssP1ntYniJKXmCIzFUB8OSogtD409jgppadG+8QizwENj5Fc6/Vu
+	 MTn83/yaLpVlXNS4AlWrEiLrkb8mb5pIH0kg15DkPz4lAt8FFkIAYpXRn/EcuCqwAy
+	 S9IFEfEs/KNMeBsd4B1p5XhU2qGxui1YsiR6nZS2sJcXsZUY9y7wp8PSYklA3O+Zdx
+	 Cp6BaGK9HDc02pPovaxrYHWsrFxitvFEC7b1EHcylSV4q+kLuH4q1JJE7DYQ0jf1RM
+	 EtEOE1WYRE8Tw==
+Message-ID: <c357ccea-4eb7-4493-b148-280aceffc24d@kernel.org>
+Date: Mon, 20 Jul 2026 14:01:50 -0500
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -35,82 +35,112 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] interconnect: qcom: Enable Shikra interconnect driver by
- default for ARCH_QCOM
-To: Raviteja Laggyshetty <raviteja.laggyshetty@oss.qualcomm.com>,
- Georgi Djakov <djakov@kernel.org>,
- Odelu Kukatla <odelu.kukatla@oss.qualcomm.com>,
- Komal Bajaj <komal.bajaj@oss.qualcomm.com>
-Cc: linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
+Subject: Re: [PATCH v3] cpufreq/amd-pstate: Bail out early if
+ !X86_FEATURE_HW_PSTATE
+To: Rong Zhang <i@rong.moe>, Huang Rui <ray.huang@amd.com>,
+ Perry Yuan <perry.yuan@amd.com>, K Prateek Nayak <kprateek.nayak@amd.com>,
+ "Rafael J. Wysocki" <rafael@kernel.org>,
+ Viresh Kumar <viresh.kumar@linaro.org>, Borislav Petkov <bp@alien8.de>,
+ Jason Andryuk <jason.andryuk@amd.com>
+Cc: Michael Kelley <mhklinux@outlook.com>,
+ Michael Kelley <mhklkml@zohomail.com>, linux-pm@vger.kernel.org,
  linux-kernel@vger.kernel.org
-References: <20260526-shikra_icc_kconfig-v1-1-c589db2d023c@oss.qualcomm.com>
-From: Krzysztof Kozlowski <krzk@kernel.org>
+References: <20260721-amd-pstate-vm-v3-1-8b59574fb714@rong.moe>
 Content-Language: en-US
-Autocrypt: addr=krzk@kernel.org; keydata=
- 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
-In-Reply-To: <20260526-shikra_icc_kconfig-v1-1-c589db2d023c@oss.qualcomm.com>
-Content-Type: text/plain; charset=UTF-8
+From: Mario Limonciello <superm1@kernel.org>
+In-Reply-To: <20260721-amd-pstate-vm-v3-1-8b59574fb714@rong.moe>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 
-On 26/05/2026 19:21, Raviteja Laggyshetty wrote:
-> Interconnect drivers provide fundamental NoC bandwidth management
-> required for correct system behavior. Although systems can boot without
-> them, power and performance are impacted.
-> These drivers need to enabled irresepective of the board variant, design
-> or configuration.
+
+
+On 7/20/26 13:47, Rong Zhang wrote:
+> When booting a VM that simulates or passes-through a relatively new CPU
+> model, these warning messages are printed to kmsg:
 > 
-> Enable the Shikra interconnect driver by default on ARCH_QCOM by setting
->  "default ARCH_QCOM".
+>      amd_pstate: The CPPC feature is supported but currently disabled by the BIOS.
+>      Please enable it if your BIOS has the CPPC option.
+>      amd_pstate: the _CPC object is not present in SBIOS or ACPI disabled
 > 
-> Signed-off-by: Raviteja Laggyshetty <raviteja.laggyshetty@oss.qualcomm.com>
+> Technically the check is not wrong and acts as a safetynet that prevents
+> the driver from being registered incorrectly, but the warning messages
+> are noisy and incorrect, as the CPPC feature is neither supported in a
+> VM nor disabled by the VM's BIOS.
+> 
+> The CPPC feature is disabled by the hypervisor as it makes no sense to
+> expose them to guests. It creates a paradox that the same kernel both
+> disables CPPC as a hypervisor (KVM) and warns about it being disabled
+> as a guest.
+> 
+> X86_FEATURE_HW_PSTATE indicates if the processor supports frequency
+> scaling or not. It is disabled on virtualized platforms (namely, KVM and
+> Hyper-V have been reported to do so) and is always set on physical
+> platforms that support frequency scaling.
+> 
+> Check for X86_FEATURE_HW_PSTATE as a prerequisite and bail out early if
+> it's unsupported. A debug message is also added to help debug driver
+> loading issues.
+> 
+> Fixes: cb817ec6673b ("cpufreq: amd-pstate: show CPPC debug message if CPPC is not supported")
+> Reviewed-by: Michael Kelley <mhklinux@outlook.com>
+> Tested-by: Michael Kelley <mhklinux@outlook.com>
+> Signed-off-by: Rong Zhang <i@rong.moe>
 > ---
->  drivers/interconnect/qcom/Kconfig | 1 +
->  1 file changed, 1 insertion(+)
+Acked-by: Mario Limonciello (AMD) <superm1@kernel.org>
 
-Please do not send conflicting works. You saw me doing this and you saw
-that my patch was not yet applied and there will be v3.
+I'll get this picked up this week.
 
-Best regards,
-Krzysztof
+> Changes in v3:
+> - Move the check into amd_cppc_supported() and add a pr_debug_once()
+>    message (thanks K Prateek Nayak and Mario Limonciello)
+>    - The check is added before the existing family 17h model 0h-2Fh one,
+>      as print_cpu_info() already shows family, model, and stepping, and
+>      will help debugging even if the new check overrides the existing
+>      one, but not vice versa
+> - Link to v2: https://patch.msgid.link/20260718-amd-pstate-vm-v2-1-6ed5f3b2c89e@rong.moe
+> 
+> Changes in v2:
+> - Check for X86_FEATURE_HW_PSTATE instead of X86_FEATURE_HYPERVISOR
+>    (thanks K Prateek Nayak)
+> - Remove the check against Xen dom0, as it doesn't need the amd-pstate
+>    driver (thanks Jason Andryuk)
+> - Reword comments and the commit message
+> - Remove Gautham R. Shenoy from the To list due to email bounces
+> - Link to v1: https://patch.msgid.link/20260716-amd-pstate-vm-v1-1-2ac97d3cf6e7@rong.moe
+> ---
+>   drivers/cpufreq/amd-pstate.c | 6 ++++++
+>   1 file changed, 6 insertions(+)
+> 
+> diff --git a/drivers/cpufreq/amd-pstate.c b/drivers/cpufreq/amd-pstate.c
+> index a74a4cf99d22..b0b651380732 100644
+> --- a/drivers/cpufreq/amd-pstate.c
+> +++ b/drivers/cpufreq/amd-pstate.c
+> @@ -2167,6 +2167,7 @@ static struct cpufreq_driver amd_pstate_epp_driver = {
+>   };
+>   
+>   /*
+> + * Processors without frequency scaling support can't do CPPC.
+>    * CPPC function is not supported for family ID 17H with model_ID ranging from 0x10 to 0x2F.
+>    * show the debug message that helps to check if the CPU has CPPC support for loading issue.
+>    */
+> @@ -2175,6 +2176,11 @@ static bool amd_cppc_supported(void)
+>   	struct cpuinfo_x86 *c = &cpu_data(0);
+>   	bool warn = false;
+>   
+> +	if (!cpu_feature_enabled(X86_FEATURE_HW_PSTATE)) {
+> +		pr_debug_once("frequency scaling is not supported by the processor\n");
+> +		return false;
+> +	}
+> +
+>   	if ((boot_cpu_data.x86 == 0x17) && (boot_cpu_data.x86_model < 0x30)) {
+>   		pr_debug_once("CPPC feature is not supported by the processor\n");
+>   		return false;
+> 
+> ---
+> base-commit: 1590cf0329716306e948a8fc29f1d3ee87d3989f
+> change-id: 1cc24037-amd-pstate-vm-d6ab4c959bd3
+> 
+> Thanks,
+> Rong
+> 
 
