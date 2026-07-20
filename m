@@ -1,35 +1,33 @@
-Received: from srv01.abscue.de (abscue.de [89.58.28.240])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EDEDD31B83B;
-	Mon, 20 Jul 2026 19:17:14 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=89.58.28.240
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5F9503B2FCE;
+	Mon, 20 Jul 2026 20:09:34 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1784575039; cv=none; b=a/rC5UAdMnHclV07PSKsWi52zn8YPzlHlU792FjEo9KPpSEFil4Kt0Gg5SREY366k8eFkk5dcdxkrcUBJIPzpFuRVyCDtBomQuunocejlY4YQu4RI7wMBGNJxOP6iHq/G4u7SmyFOezMeS/cKRzQRL47avHbZK7K6aMKV5nM6cA=
+	t=1784578175; cv=none; b=JlHhzh4J2KGcEABes+bXZFwr/vZOBC8KjMyaBP5XHySB2ydq3DkGWfg6o0mePFvFiOJU6MgNkJL7tOwO+ycJJZfcDkdjKVhImquV00sQQKEfaesEpA0IxV8J3InBPNYX+eBuuLinyHCGcwZtJADy9btTXkZNcf9uDFszdVlSFC8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1784575039; c=relaxed/simple;
-	bh=FicYVxL8CqM4rHtHygFFSyuWTQYgAAAWu9kFeTZFuDM=;
+	s=arc-20240116; t=1784578175; c=relaxed/simple;
+	bh=7xSoBenBtyFggLe6QOpmG40DF03eqMPTxhfMbtfeWic=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=kmeTjZe13p4jZiFio79L3rnujBnm3kx7LcXhDVu4z2/oSQVFlzcBPf7Q8mBvmYoGoJj1/8ZEfQ6jyfQnpsjH8m0omk5p4f0WQ/Nvnmh+VuIUvvqs0A5lB6GaspW00tbmgwOUtIZGyQ9fpOEwvsR8uKAt+i3nvyvZm8rfHfkXpZQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=abscue.de; spf=pass smtp.mailfrom=abscue.de; dkim=pass (2048-bit key) header.d=abscue.de header.i=@abscue.de header.b=nrGp+KFD; arc=none smtp.client-ip=89.58.28.240
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=abscue.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=abscue.de
+	 In-Reply-To:Content-Type; b=ZDRPWK87y/CG3CRbTLCxYItcR3EqjWclV+tP5Ni66RX6Ch8eRtYiGnjgtO+6H/7o+w6PfbulynNorJjfWcIG4/sXa2X3BYfAUtDbCtucGcabd8ueAhetUSe/Ewbz6c1AsVz3RJP29tFifG/zJwIs330Bv49hP7jCmb4b9ZESBhs=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=ax7QJy5I; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=abscue.de header.i=@abscue.de header.b="nrGp+KFD"
-Message-ID: <db76f500-0db5-4c5f-b4cb-60818702787e@abscue.de>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=abscue.de; s=dkim;
-	t=1784574589;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=4btInc59l/zVSR9tA9MgzSoFhT1e6g3u0GbEChOxhsM=;
-	b=nrGp+KFDtZK5cXMRQftZ9o1RD7uBJBYEEkvLa9ny5cg4VsDgBHNNG86pCox2hxlidSF7zf
-	EyjOWtc46Vzhn6ZkkAhqI7EWv5p0Apjd/O3zl+rmvD8DaobdBh5Qk9XSUREW+NDjoT/Clp
-	t8Emny+a+r2CevayhKk682KiqKmJZmaXVhktGFpZcQAt9QUftl5xRyxXEpicxbTtpxE7zQ
-	3bhBo/NtlDXgfTgMd1GusTfwR2yxzM1WQPqkX6mrBZNxxzIakPMEVFTgIsAky1iAz122qd
-	6TShAEZu73Wd9ZLfQ6aupzHmh2ogMq46HHqesM+3WHXYkvX8bSHYkp84Vh023A==
-Date: Mon, 20 Jul 2026 21:09:46 +0200
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="ax7QJy5I"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 268671F000E9;
+	Mon, 20 Jul 2026 20:09:28 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1784578174;
+	bh=v+umRzPFk9xQ5Xmah/kPJWGDKwAbojiTzvV5y+9Yews=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To;
+	b=ax7QJy5ICzU1aVwS1PDBbUm5DbJTetaj7J/+oAvcsd2fSqVBBlsRGkwmDsxt+pv3x
+	 Higtnn5mtrFxhcseFj1StlbinSQdUvr80NTzzMqaUDNyDDwM+oj75D0WQQUmv2tA/y
+	 2JgfxyX1EnZNynWJGNwveF3lETjQKzZ/eDisQbvsXHmIs6PCW6bNno7OWEGvJH4GcV
+	 JTGWnz2d1lawN1MCe/M+5OPMXguMckIPyaB2QSVpUvRRvZ3Zc4lUqOzymLB7Mwzo3A
+	 DGH+36iOlBaX8TulLUJ3aUG53AKCKbiJ1l3uUJNi9fTLKFHcaiuIlph2fS/EDNYX/a
+	 x0ZKmBcsrd/Rw==
+Message-ID: <39943736-4051-4b21-9ac1-b8f28ee9a480@kernel.org>
+Date: Mon, 20 Jul 2026 22:09:25 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -39,85 +37,80 @@ MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
 Subject: Re: [PATCH v2 1/3] dt-bindings: power: Add MediaTek MT6858 power
  domain controller
-To: Krzysztof Kozlowski <krzk@kernel.org>
-Cc: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
- Conor Dooley <conor+dt@kernel.org>, Matthias Brugger
- <matthias.bgg@gmail.com>,
+To: nikolai.burov@jolla.com, Rob Herring <robh@kernel.org>,
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
+ <conor+dt@kernel.org>, Matthias Brugger <matthias.bgg@gmail.com>,
  AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>,
- Ulf Hansson <ulfh@kernel.org>, Matthias Brugger <mbrugger@suse.com>,
- devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, linux-mediatek@lists.infradead.org,
- linux-pm@vger.kernel.org, Nikolai Burov <nikolai.burov@jolla.com>
+ Ulf Hansson <ulfh@kernel.org>
+Cc: Matthias Brugger <mbrugger@suse.com>, devicetree@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ linux-mediatek@lists.infradead.org, linux-pm@vger.kernel.org,
+ Nikolai Burov <nikolai.burov+review@abscue.de>
 References: <20260715-mt6858-pmdomain-v2-0-6293e87fc093@jolla.com>
  <20260715-mt6858-pmdomain-v2-1-6293e87fc093@jolla.com>
- <20260720-vigorous-groovy-cassowary-9912d9@quoll>
+From: Krzysztof Kozlowski <krzk@kernel.org>
 Content-Language: en-US
-From: Nikolai Burov <nikolai.burov+review@abscue.de>
-In-Reply-To: <20260720-vigorous-groovy-cassowary-9912d9@quoll>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Autocrypt: addr=krzk@kernel.org; keydata=
+ xsFNBFVDQq4BEAC6KeLOfFsAvFMBsrCrJ2bCalhPv5+KQF2PS2+iwZI8BpRZoV+Bd5kWvN79
+ cFgcqTTuNHjAvxtUG8pQgGTHAObYs6xeYJtjUH0ZX6ndJ33FJYf5V3yXqqjcZ30FgHzJCFUu
+ JMp7PSyMPzpUXfU12yfcRYVEMQrmplNZssmYhiTeVicuOOypWugZKVLGNm0IweVCaZ/DJDIH
+ gNbpvVwjcKYrx85m9cBVEBUGaQP6AT7qlVCkrf50v8bofSIyVa2xmubbAwwFA1oxoOusjPIE
+ J3iadrwpFvsZjF5uHAKS+7wHLoW9hVzOnLbX6ajk5Hf8Pb1m+VH/E8bPBNNYKkfTtypTDUCj
+ NYcd27tjnXfG+SDs/EXNUAIRefCyvaRG7oRYF3Ec+2RgQDRnmmjCjoQNbFrJvJkFHlPeHaeS
+ BosGY+XWKydnmsfY7SSnjAzLUGAFhLd/XDVpb1Een2XucPpKvt9ORF+48gy12FA5GduRLhQU
+ vK4tU7ojoem/G23PcowM1CwPurC8sAVsQb9KmwTGh7rVz3ks3w/zfGBy3+WmLg++C2Wct6nM
+ Pd8/6CBVjEWqD06/RjI2AnjIq5fSEH/BIfXXfC68nMp9BZoy3So4ZsbOlBmtAPvMYX6U8VwD
+ TNeBxJu5Ex0Izf1NV9CzC3nNaFUYOY8KfN01X5SExAoVTr09ewARAQABzSVLcnp5c3p0b2Yg
+ S296bG93c2tpIDxrcnprQGtlcm5lbC5vcmc+wsGPBBMBCgA5AhsDBgsJCAcDAgYVCAIJCgsE
+ FgIDAQIeAQIXgBYhBJvQfg4MUfjVlne3VBuTQ307QWKbBQJp2mE8AAoJEBuTQ307QWKbeaIP
+ /ihHTkTW4KsN/DQ945JJbyu5tI0J80Wue7QyyLPglyKfhgb5cLLNPpOC8cCIJsc7+W3i2P38
+ s2c1cOH6CYGE7E9ur3Vfme8NW2S2I/Z8VC7bZnzyS23wT17LrsdS/qCpx4o8U+pt/xdXDKph
+ EGRYrIEmMpUWvyYzyYKGIe25FtaayIIKpq8eZYyFcp2f/sG5IkOW5uZzHPMPdcm87jU7fyuQ
+ rAU2vx9r+ulUfQ/q9Z2roC/ode3l7t2pN7BCBCsUDp6JCrUyZrtT1e7EbA0ZRP3aOBNk2P2E
+ DQOgJGjGdO5Yx2Y9LFtltu6JbsBJHi1syGRX3AtQYOMc4Y1WGoeZJmMlvKj2ZqqXNkcWi2DS
+ IQEWB0uW6CqFsBBIMGDa+6OzdaVO/uAVXWDWml02Men3CILdI1MbVjoh8ECqYUY7OQ+JJvNN
+ vnliuq5WM3Ghd3jg/LZZrxXjdIginRHFQCjIJYLKpLZWm1/iDFedcfzqRNYmTtqscdCNHW41
+ oT3Z7BmO9xwdjuwBS6nmS6JJwkbf5Ot2QR4pB/DRU7ZwjT1qHe+9r9gF32wXVQatHNGK/VVu
+ sfwOnkdxCWkp/qb2gdQRmZh+SedStWshigH6sNfuHBloF/q+hjMRc8b2m326OZdrbSHwY1Sz
+ vti8Hn7n8NjdHO9LKB7BIdjkA9DA5WsqOuVCzsFNBFVDXDQBEADNkrQYSREUL4D3Gws46JEo
+ Z9HEQOKtkrwjrzlw/tCmqVzERRPvz2Xg8n7+HRCrgqnodIYoUh5WsU84N03KlLueMNsWLJBv
+ BaubYN4JuJIdRr4dS4oyF1/fQAQPHh8Thpiz0SAZFx6iWKB7Qrz3OrGCjTPcW6eiOMheesVS
+ 5hxietSmlin+SilmIAPZHx7n242u6kdHOh+/SyLImKn/dh9RzatVpUKbv34eP1wAGldWsRxb
+ f3WP9pFNObSzI/Bo3kA89Xx2rO2roC+Gq4LeHvo7ptzcLcrqaHUAcZ3CgFG88CnA6z6lBZn0
+ WyewEcPOPdcUB2Q7D/NiUY+HDiV99rAYPJztjeTrBSTnHeSBPb+qn5ZZGQwIdUW9YegxWKvX
+ XHTwB5eMzo/RB6vffwqcnHDoe0q7VgzRRZJwpi6aMIXLfeWZ5Wrwaw2zldFuO4Dt91pFzBSO
+ IpeMtfgb/Pfe/a1WJ/GgaIRIBE+NUqckM+3zJHGmVPqJP/h2Iwv6nw8U+7Yyl6gUBLHFTg2h
+ YnLFJI4Xjg+AX1hHFVKmvl3VBHIsBv0oDcsQWXqY+NaFahT0lRPjYtrTa1v3tem/JoFzZ4B0
+ p27K+qQCF2R96hVvuEyjzBmdq2esyE6zIqftdo4MOJho8uctOiWbwNNq2U9pPWmu4vXVFBYI
+ GmpyNPYzRm0QPwARAQABwsF2BBgBCgAgAhsMFiEEm9B+DgxR+NWWd7dUG5NDfTtBYpsFAmna
+ YUkACgkQG5NDfTtBYptX+BAApg32CkxwNucNEi8WfWA8oKkW0y8YDuY6ORMo9FWNGiT/OTy0
+ vyJrLocrpn86zwfjVp+eCrssPYh8eqJfnWqmYv6ACQtHPYzPZQ3mSo8H97Z01oUxITzCxpXm
+ ZkLgPIqtDPcC2E3dPM/fVxcyowM8XsaMA9wcsaUYrta8toOq2b9tKcjleKMfMrm0gQ9u7wUc
+ QbLkwj6TCLOwucb07GXzLTNF9PZmaDUpKAZjMjmrW+le+SFvQbhamx0rxLWPR0NWntXpbCn+
+ +ACch03p/JyTBVktxFsFyCt7pTPE1kEaeuXBTe/a2D9iQvRxRW19LvuO2e59/u1wYUiH/orz
+ wbIC2S4dBsPAPihL3ztOU1yE86GPyQtSE0kU+/7snnLt4QGi6PChf3t5gnNjAzjUUovO8rgI
+ c+5yN5heq5loYHgK6OQ9OlHzsPHO9e9MOQcKlFycs1pyijFGzDwdNUm/SchK8iWT2QApTx4A
+ K9bCVaboTA2T77QYkRcRJYSsO1alGX0ome/hMLD1daXlkrNUp1HWa3K4iytLRXjCSIorWiGs
+ n+q3krnpXu3TFkA8qtOFZMdnIiFuiq1yLT8hptsV5xh1TA2nsVvSYiaCr3q4s4BKjS/KrLDb
+ qoxzw8ISjdUp4pA85vb6YLCmb39NgidD+7PmAr65lBNveIFynTgsja1rRQ4=
+In-Reply-To: <20260715-mt6858-pmdomain-v2-1-6293e87fc093@jolla.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 
-On 7/20/26 8:05 AM, Krzysztof Kozlowski wrote:
-> On Wed, Jul 15, 2026 at 04:54:05PM +0300, Nikolai Burov wrote:
->> Add a new compatible and document bindings for the power domain
->> controller of the MT6858 SoC.
->>
->> Reviewed-by: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
+On 15/07/2026 15:54, Nikolai Burov via B4 Relay wrote:
+> From: Nikolai Burov <nikolai.burov@jolla.com>
 > 
-> To provide review, please open and read the entire file.
+> Add a new compatible and document bindings for the power domain
+> controller of the MT6858 SoC.
 > 
->> Signed-off-by: Nikolai Burov <nikolai.burov@jolla.com>
->> ---
->>  .../bindings/power/mediatek,power-controller.yaml  | 21 +++++++++++++++++++-
->>  include/dt-bindings/power/mediatek,mt6858-power.h  | 23 ++++++++++++++++++++++
->>  2 files changed, 43 insertions(+), 1 deletion(-)
->>
->> diff --git a/Documentation/devicetree/bindings/power/mediatek,power-controller.yaml b/Documentation/devicetree/bindings/power/mediatek,power-controller.yaml
->> index 070c6e5666dc..d03e4a925163 100644
->> --- a/Documentation/devicetree/bindings/power/mediatek,power-controller.yaml
->> +++ b/Documentation/devicetree/bindings/power/mediatek,power-controller.yaml
->> @@ -25,6 +25,7 @@ properties:
->>      enum:
->>        - mediatek,mt6735-power-controller
->>        - mediatek,mt6795-power-controller
->> +      - mediatek,mt6858-power-controller
->>        - mediatek,mt6893-power-controller
->>        - mediatek,mt8167-power-controller
->>        - mediatek,mt8173-power-controller
->> @@ -56,7 +57,7 @@ properties:
->>        faults while enabling or disabling a power domain.
->>        For example, this may hold phandles to INFRACFG and SMI.
->>      minItems: 1
->> -    maxItems: 3
->> +    maxItems: 6
-> 
-> And the rest? Why does this device have flexible number of access
-> controllers?
+> Reviewed-by: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
+> Signed-off-by: Nikolai Burov <nikolai.burov@jolla.com>
+> ---
+>  .../bindings/power/mediatek,power-controller.yaml  | 21 +++++++++++++++++++-
+>  include/dt-bindings/power/mediatek,mt6858-power.h  | 23 ++++++++++++++++++++++
+>  2 files changed, 43 insertions(+), 1 deletion(-)
 
-For mt6858, the "items" list I provided already overrides both minItems 
-and maxItems, so it has a fixed number (6) of access controllers.
+Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
 
-The top-level constraints are intentionally broad so that the 
-SoC-specific constraints below, which all have minItems == maxItems, 
-don't contradict them. Those are missing for some SoCs, but isn't that 
-an existing weakness in the bindings?
-
-Looking at the driver, apparently those missing SoCs are the ones that 
-only need infracfg. That's a single access controller. So they would 
-never have 3 or 2 items, only 1. This is not specified in the bindings 
-though.
-
-If you mean that it can't stay like this, I could change the bindings to 
-add such a constraint for the remaining SoCs, provided that this is 
-allowed - theoretically it could break some hypothetical device trees 
-with excess items in access-controllers.
-
-Alternatively, I guess one solution would be to add a minItems: 1 and 
-maxItems: 3 constraint for the remaining SoCs to keep their bindings 
-unaffected, even though that seems wrong from a HW point of view. But 
-I'm not sure if that is what you mean.
-
-
--- 
 Best regards,
-Nikolai
+Krzysztof
