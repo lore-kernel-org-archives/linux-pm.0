@@ -1,89 +1,58 @@
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.11])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3146143846C;
-	Mon, 20 Jul 2026 23:12:27 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.11
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B548D29B8D0;
+	Mon, 20 Jul 2026 23:12:59 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1784589151; cv=none; b=D0w5wlm4NfBVabeATzzfb4+oUWToSzJmDyFjlqQfu/shIup9k/EHh9LksR3u5mz+7uBFqB2wJh/v2BJookgGYckH5zFUnBrlIvBNkIwBa8DpllfShVsKRgsyMhYvsBd4uhOgafhfAbjFgjecl7Sh1TuwUSubaVYQbufWuErzIlI=
+	t=1784589180; cv=none; b=H4js2Y/PPgdfbWBHovakUh/V5Lyu46R0pRlYVnNY6RM/Fzf/64Lz8NGnXGer0vmbrpaWnTiJ+1DUqEnwA0MGS32bBAwTo53eOkXl9ZATYONtbPnTOZ5SVpKP/fG2Oi24HfE81cU/gK8JZRohQg5HYlWRKgmNOLLpBWNdCw85c20=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1784589151; c=relaxed/simple;
-	bh=HyP43Mkp3GpAnBOOEvncuUhBvaLcGvJeTHAlEqL95Y8=;
-	h=From:To:Subject:Date:Message-ID:MIME-Version; b=qzM8spMPw1oJyj7VyYyDnNbQrtxTmQKaCddb/AXEgd+OVLWgt5ZqLgVirKc3feS4jv913j0nhqkhu46GmCz++PE1oToCyUauAjUWqR4FQHDcvN0CFpzbL0J/4laIOAvOreuzgrHoKToFlWyi/oFeBi44TiWhjYsCzg2vb/Zx8z8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=pass smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=m9zV74+W; arc=none smtp.client-ip=192.198.163.11
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.intel.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="m9zV74+W"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1784589148; x=1816125148;
-  h=from:to:subject:date:message-id:mime-version:
-   content-transfer-encoding;
-  bh=HyP43Mkp3GpAnBOOEvncuUhBvaLcGvJeTHAlEqL95Y8=;
-  b=m9zV74+WDyqF+8S+D9UYDICJ1BF80XQCEeU2QJWGTfHGx0/gUEmSGuD8
-   GI5UlPxsGWv/R0K5pmgHFZbXJn9iEh9YCA+4edpS2j8bX66EAQCEuvfrK
-   dVqU893roHezqP4coItjTQ+B7nzzKVKKk/ZQSXq1yqK0cfR+hWNjatxat
-   NWf9Y4o283/GnP3eNtggB0N7qmR49TVA1fHSUMIgutZ2YVYj9ahuubesY
-   azU+9nIHmdwo8M+uwhBcHb141xSJi5Un9NTJ+WHPVv+jWQ5nrUaGNUOF4
-   Q+MTy5m31qgKohrcSpPGx8MoguTKd4/a6L9ZqPpElCXRULibowAYbkrQl
-   w==;
-X-CSE-ConnectionGUID: FjiR5rC4TRe4KCJKPqwpBg==
-X-CSE-MsgGUID: SeFNVP2tQQibvYsVu6n1pQ==
-X-IronPort-AV: E=McAfee;i="6800,10657,11852"; a="95776088"
-X-IronPort-AV: E=Sophos;i="6.25,175,1779174000"; 
-   d="scan'208";a="95776088"
-Received: from fmviesa002.fm.intel.com ([10.60.135.142])
-  by fmvoesa105.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 20 Jul 2026 16:12:27 -0700
-X-CSE-ConnectionGUID: gAu4egYwR52oeqmV6e4FYA==
-X-CSE-MsgGUID: Q6DfXGwARASboENC3aliNA==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.25,175,1779174000"; 
-   d="scan'208";a="280861458"
-Received: from vverma7-desk1.amr.corp.intel.com (HELO xpardee-desk.lan) ([10.125.109.207])
-  by fmviesa002-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 20 Jul 2026 16:12:27 -0700
-From: Xi Pardee <xi.pardee@linux.intel.com>
-To: xi.pardee@linux.intel.com,
-	irenic.rajneesh@gmail.com,
-	david.e.box@linux.intel.com,
-	ilpo.jarvinen@linux.intel.com,
-	platform-driver-x86@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	linux-pm@vger.kernel.org
-Subject: [PATCH] platform/x86/intel/pmc: Update NVLS PCDS LPM request GUID
-Date: Mon, 20 Jul 2026 16:12:10 -0700
-Message-ID: <20260720231219.1278923-1-xi.pardee@linux.intel.com>
-X-Mailer: git-send-email 2.43.0
+	s=arc-20240116; t=1784589180; c=relaxed/simple;
+	bh=tj/Acjm51K3m2QA5JE4EmnzfXv6yJBpT6wZWDv2WjPY=;
+	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
+	 MIME-Version:Content-Type; b=n0K5Et8yzqSikv6EhfhrQ177WXwhA7kw7qq8PqBs1nZ1aLmJmx3NyFdIhzuiKrhMa3sC9BDw1Nkqy/+ZSUH03oLb40oaAbefuJzzt8wcl/EGG/WlXeDKLbycBhDhA5Z7P9pEFst/XcF7l4CC4bvokwUtGMTwC5XKQQgpMtM9S0Q=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 741321F000E9;
+	Mon, 20 Jul 2026 23:12:59 +0000 (UTC)
+Received: by venus (Postfix, from userid 1000)
+	id 0426C180882; Tue, 21 Jul 2026 01:12:58 +0200 (CEST)
+From: Sebastian Reichel <sebastian.reichel@collabora.com>
+To: Sebastian Reichel <sre@kernel.org>, Anas Khan <anxkhn28@gmail.com>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20260702194547.65209-1-anxkhn28@gmail.com>
+References: <20260702194547.65209-1-anxkhn28@gmail.com>
+Subject: Re: [PATCH] power: supply: bq256xx: drop always-true inner
+ condition
+Message-Id: <178458917800.375902.7827717389755566253.b4-ty@collabora.com>
+Date: Tue, 21 Jul 2026 01:12:58 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-Mailer: b4 0.14.3
 
-Now that NVL support is available, update the PCDS_LPM_REQ_GUID for
-Nova Lake S (NVLS) from 0x01091102 to 0x01091103. The PMC core driver
-requires the correct GUID to load successfully.
 
-Signed-off-by: Xi Pardee <xi.pardee@linux.intel.com>
----
- drivers/platform/x86/intel/pmc/nvl.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+On Fri, 03 Jul 2026 01:15:47 +0530, Anas Khan wrote:
+> In bq256xx_array_parse() the inner "if (val < array[i])" repeats the
+> second half of the enclosing "if (val > array[i - 1] && val < array[i])",
+> so it is always true and the "else return i" arm is dead code. The
+> function performs a round-down table lookup, so returning i - 1 for a
+> value that falls strictly between two entries is the intended result.
+> Collapse the redundant branch into a single "return i - 1;"; no
+> functional change.
+> 
+> [...]
 
-diff --git a/drivers/platform/x86/intel/pmc/nvl.c b/drivers/platform/x86/intel/pmc/nvl.c
-index 8dabf2511dd9d..1ed02332dbfce 100644
---- a/drivers/platform/x86/intel/pmc/nvl.c
-+++ b/drivers/platform/x86/intel/pmc/nvl.c
-@@ -14,7 +14,7 @@
- /* PMC SSRAM PMT Telemetry GUIDS */
- #define PCDH_LPM_REQ_GUID 0x01093101
- #define PCHS_LPM_REQ_GUID 0x01092101
--#define PCDS_LPM_REQ_GUID 0x01091102
-+#define PCDS_LPM_REQ_GUID 0x01091103
- 
- /*
-  * Die Mapping to Product.
+Applied, thanks!
+
+[1/1] power: supply: bq256xx: drop always-true inner condition
+      commit: c41f57bb3b65fe0b2f5f556752dc03ac66b8c5db
+
+Best regards,
 -- 
-2.43.0
+Sebastian Reichel <sebastian.reichel@collabora.com>
 
