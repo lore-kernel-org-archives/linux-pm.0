@@ -1,184 +1,63 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7159E3B95EC;
-	Mon, 20 Jul 2026 21:32:35 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B53B6266B46;
+	Mon, 20 Jul 2026 21:43:47 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1784583156; cv=none; b=puLletzWSLL4qnW/Lz2B29QyTXNN0SB7kt96T4WLhd14YrQOJCcX4mZ6zAK3+7OTPdSqSTiH12b3BGGacZerOuqP9x9O15wNzueK3HSe8N3J8keqCgHsyhqejDuUSG/ElcReBy0ngjG7bc5AdQMehyAgnSz13FDZ6yIxrRpQgno=
+	t=1784583828; cv=none; b=RegEybupYOGiKMILJ1pnomGelYjemNrhrtzxPhrEwEmhikf78yt13wesUPpxFge49nQsvcU8gpvEO9U3MdlfxWGsrfVqhtNR07lKQvAnFKBlFJ2YU6w1YguXOMcbAYus6vnXIcqoIS4zT3+r7VWyh6Q5IUqifAVc11jjEDKojwM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1784583156; c=relaxed/simple;
-	bh=LlIxelTikGMdw1rKf35LX+BEaisYFnZKcwaALW2PemE=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=KDR/Od6flInFtLvPFKZAjUj7yfjJO7FvCrShbeBpJuYjNRirajLfU3ax8ndOOmGxREd9c7fDjwxEm2tPcHsLRLHL/BJkXDpXcp8tz1l5Dxm9sCw6J6X6h1o1Sqrm6oYMRyu+OJAl5qipCb7LkXr9MtxXfhZjQNM/tHNzaOKQB/g=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=iEoW3pdI; arc=none smtp.client-ip=100.103.45.18
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="iEoW3pdI"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id D676C1F000E9;
-	Mon, 20 Jul 2026 21:32:34 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1784583155;
-	bh=mKrex1umT6hG+AjDNIvo1szzKdWcUC0cBJWpzB+A6CY=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=iEoW3pdIStA3NkMQhjsNeiy9UI4ohlJkG0JheD9KZkvncSwSebzO3ohaK+q23jqi9
-	 ZUE5bKMQQKE5ppx8ci11pk+1LryXEcxJ3bZxiiRxoMnM6APchxulqlmqJnuW4dAxYj
-	 zBYPdEWfpLA1yqGgFCpcr7CNJ2uf6tERcOjuygHBH5JunzSOZzVBcvV02vXLFTDLtt
-	 zL4L6Ce6oJHQvJ2tVmxHzyQJlgkl5xlgWP2JXjzTv8o6/qwd36lKbc3QqGBoZj5fKt
-	 wnFvOdWiC1vqSMjvTWnmz2Km2/YBRwWqouGdbJMzrjQdJs6nmmmHCrLRoTghxBHZAk
-	 ICQNAROuDxyIQ==
+	s=arc-20240116; t=1784583828; c=relaxed/simple;
+	bh=Aj/WK0wneOpE2vP8H7iwjacRk0G6xA0Om/pREqe4ebY=;
+	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
+	 MIME-Version:Content-Type; b=Yh1TK/PhZVutvKuEwKbjk4a61tWFsiOg/rYm+ymnsqqGQ81z9h3efXEs8v/LTVzR5w4gDvIOQZkbhRR0HJZqoHlxAHfXjbd5XphbBl3Z5FQF4wHiBije0/jMFIo78XIRtLxR0RxWAN+7ManxDnEJjt9Kyc35dmwc+JTgfkI/3iQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5D77D1F000E9;
+	Mon, 20 Jul 2026 21:43:47 +0000 (UTC)
 Received: by venus (Postfix, from userid 1000)
-	id 3239B1809C8; Mon, 20 Jul 2026 23:32:33 +0200 (CEST)
-Date: Mon, 20 Jul 2026 23:32:33 +0200
-From: Sebastian Reichel <sre@kernel.org>
-To: Ma Ke <make_ruc2021@163.com>
-Cc: hansg@kernel.org, marex@denx.de, linux-pm@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, akpm@linux-foundation.org, stable@vger.kernel.org
-Subject: Re: [RESEND PATCH] power: supply: bq25890: Fix power_supply
- reference leak
-Message-ID: <al6SZUG_RY5SXSQu@venus>
-References: <20260630083352.1841720-1-make_ruc2021@163.com>
+	id E0D76180D65; Mon, 20 Jul 2026 23:43:45 +0200 (CEST)
+From: Sebastian Reichel <sebastian.reichel@collabora.com>
+To: Geert Uytterhoeven <geert@linux-m68k.org>, 
+ Sebastian Reichel <sre@kernel.org>, Greg Ungerer <gerg@linux-m68k.org>, 
+ Jean-Michel Hautbois <jeanmichel.hautbois@yoseli.org>
+Cc: linux-m68k@lists.linux-m68k.org, linux-kernel@vger.kernel.org, 
+ linux-pm@vger.kernel.org, 
+ =?utf-8?q?Uwe_Kleine-K=C3=B6nig?= <u.kleine-koenig@baylibre.com>
+In-Reply-To: <20260617-coldfire-rcm-power-on-reason-v3-0-1a7c7b6b14e7@yoseli.org>
+References: <20260617-coldfire-rcm-power-on-reason-v3-0-1a7c7b6b14e7@yoseli.org>
+Subject: Re: (subset) [PATCH v3 0/2] Coldfire m5441x: add RCM power-on
+ reason driver
+Message-Id: <178458382591.311390.7037869995875502817.b4-ty@collabora.com>
+Date: Mon, 20 Jul 2026 23:43:45 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="7zzn7grzvaxgknmi"
-Content-Disposition: inline
-In-Reply-To: <20260630083352.1841720-1-make_ruc2021@163.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-Mailer: b4 0.14.3
 
 
---7zzn7grzvaxgknmi
-Content-Type: text/plain; protected-headers=v1; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-Subject: Re: [RESEND PATCH] power: supply: bq25890: Fix power_supply
- reference leak
-MIME-Version: 1.0
+On Wed, 17 Jun 2026 21:17:14 +0200, Jean-Michel Hautbois wrote:
+> This series adds a power_on_reason driver for the Freescale ColdFire
+> MCF5441x Reset Controller Module.
+> 
+> The MCF5441x has six documented sources of reset (power-on, external
+> pin, software, PLL loss-of-clock, PLL loss-of-lock and core watchdog
+> timeout). They are latched in the Reset Status Register (RSR) at
+> 0xec090001. The new driver decodes that register once at probe time
+> and exposes the result through the power_on_reason sysfs ABI.
+> 
+> [...]
 
-Hi,
+Applied, thanks!
 
-On Tue, Jun 30, 2026 at 04:33:52PM +0800, Ma Ke wrote:
-> bq25890_fw_probe() acquires a reference to a secondary charger via
-> power_supply_get_by_name(). This helper internally calls
-> class_find_device() which gets a reference on the found device.
-> However, the driver does not release this reference on error paths.
-> The devm cleanup callback also does not put the reference, so normal
-> driver unload leaks it as well.
->=20
-> Fix the leak by adding a power_supply_put() call in the new error
-> label of bq25890_fw_probe() and in the devm cleanup routine.
->=20
-> Found by code review.
->=20
-> Signed-off-by: Ma Ke <make_ruc2021@163.com>
-> Cc: stable@vger.kernel.org
-> Fixes: d54bf877fd87 ("power: supply: bq25890: Add support for having a se=
-condary charger IC")
-> ---
->  drivers/power/supply/bq25890_charger.c | 17 +++++++++++++++--
->  1 file changed, 15 insertions(+), 2 deletions(-)
->=20
-> diff --git a/drivers/power/supply/bq25890_charger.c b/drivers/power/suppl=
-y/bq25890_charger.c
-> index c1c12a447178..b50be3fca77c 100644
-> --- a/drivers/power/supply/bq25890_charger.c
-> +++ b/drivers/power/supply/bq25890_charger.c
-> @@ -1411,7 +1411,8 @@ static int bq25890_fw_probe(struct bq25890_device *=
-bq)
->  	if (ret =3D=3D 0) {
->  		if (val > 100) {
->  			dev_err(bq->dev, "Error linux,iinlim-percentage %u > 100\n", val);
-> -			return -EINVAL;
-> +			ret =3D -EINVAL;
-> +			goto err_put_charger;
->  		}
->  		bq->iinlim_percentage =3D val;
->  	} else {
-> @@ -1426,12 +1427,19 @@ static int bq25890_fw_probe(struct bq25890_device=
- *bq)
-> =20
->  	ret =3D bq25890_fw_read_u32_props(bq);
->  	if (ret < 0)
-> -		return ret;
-> +		goto err_put_charger;
-> =20
->  	init->ilim_en =3D device_property_read_bool(bq->dev, "ti,use-ilim-pin");
->  	init->boostf =3D device_property_read_bool(bq->dev, "ti,boost-low-freq"=
-);
-> =20
->  	return 0;
-> +
-> +err_put_charger:
-> +	if (bq->secondary_chrg) {
-> +		power_supply_put(bq->secondary_chrg);
-> +		bq->secondary_chrg =3D NULL;
-> +	}
-> +	return ret;
->  }
+[1/2] power: reset: add MCF5441x RCM power-on reason driver
+      commit: f0ec0d960c99837dc61e1604c3ec83e53c8c829f
 
-The fix is incomplete. It only handles errors in bq25890_fw_probe,
-but does not release if bq25890_hw_init() fails. It's a lot simpler
-to register a new cleanup function:
+Best regards,
+-- 
+Sebastian Reichel <sebastian.reichel@collabora.com>
 
-static void bq25890_release_secondary_chrg(void *data)
-{
-	struct bq25890_device *bq =3D data;
-
-    power_supply_put(bq->secondary_chrg);
-	bq->secondary_chrg =3D NULL;
-}
-
-	if (ret =3D=3D 0) {
-		bq->secondary_chrg =3D power_supply_get_by_name(str);
-		if (!bq->secondary_chrg)
-			return -EPROBE_DEFER;
-        ret =3D devm_add_action_or_reset(dev, bq25890_release_secondary_chr=
-g, bq);
-        if (ret)
-            return ret;
-	}
-
-Greetings,
-
--- Sebastian
-
->  static void bq25890_non_devm_cleanup(void *data)
-> @@ -1440,6 +1448,11 @@ static void bq25890_non_devm_cleanup(void *data)
-> =20
->  	cancel_delayed_work_sync(&bq->pump_express_work);
-> =20
-> +	if (bq->secondary_chrg) {
-> +		power_supply_put(bq->secondary_chrg);
-> +		bq->secondary_chrg =3D NULL;
-> +	}
-> +
->  	if (bq->id >=3D 0) {
->  		mutex_lock(&bq25890_id_mutex);
->  		idr_remove(&bq25890_id, bq->id);
-> --=20
-> 2.43.0
->=20
-
---7zzn7grzvaxgknmi
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAmpek+0ACgkQ2O7X88g7
-+pqGtQ//S6hl3JxBfjJb/dNWVNlNDZFZSsfWNLUx0RArgb5nzHG3CuT0d6OaNdLo
-j6Kb5sG5aAVSJNiE6LTu9Ax6tufEPx344/4YXbUeAFGMeUoIoCBv80AK5KJuqPvg
-uMYgnYb834CrAIw5CDSHq1ScE464nxx9Pefh9vJ2oyV3QY3KnJwSAcgdw/RkHbNm
-6+6959Vg1mCCsLopGMqbC+DFsn6CcbT0x8/VUTqZqJCZFzWuJveJn1SSeohEHXC0
-5/TyaejK8QjahVtoJk1znoCbrIipQ69WAm/x04/Zc8Kfoqb3YZK2Vhtf+M+jlx87
-PZv0bzwJyjDjrg2yrRcLSWzT+lM63NF3CiG07tm06+qwDuEVdJLvsu3DWf1XM/Un
-DDBH0cq2q2NFWH62nGyAzvqw4NGvEsMg/+RPhzH5lk4x0bRuJg8O6kIgLvzoRwd5
-ygzy8R4dVqveOu40bUTK/hOkT5v7G1XJnY4gmCxieq9oQUtVawMfGYYae+Ft8ILI
-dOiMKUpmNSdo4LUT2p0iuSVBkFzNRb/nWXTh0tARZJq9IBRA2nZhsgF/qFPsZaL5
-fdAbjMnQGQ0NxFU15y2f4KLM4qAK/pH7OAn9mfnV3vdmU+A59E8N8uEj6U5mC4Cs
-2g4feGH8h774QbImtpW03E/gYbECbOQl6Cc5NXiSg2qMPIgh/oY=
-=PIWV
------END PGP SIGNATURE-----
-
---7zzn7grzvaxgknmi--
