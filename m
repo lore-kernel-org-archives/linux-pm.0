@@ -1,64 +1,97 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+Received: from chaosmail.tech (chaosmail.tech [77.81.229.115])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0433A3B636C;
-	Mon, 20 Jul 2026 07:06:15 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 85B033C07A;
+	Mon, 20 Jul 2026 07:25:59 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=77.81.229.115
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1784531176; cv=none; b=DzU0DIgaSQj3D9txtprmXNUnktXPQELyB+EOrOFLWePykts2VPMF5e057r52GZIJ0tqQMmQH4wfbQRF5XoVvaRJJ7cIEKGl80nERJjjjEyDYP4JOUjrQrReOJFbX9ZCH1Q7pgH6OGERiOTAffbMJKwm/0ob1For4JLV/LUT0eZ4=
+	t=1784532361; cv=none; b=l+tYR/WhLo9gkqeArqlrrH/hMC1qMpZGb1w2vLa+op9c0dAWfPh2MmhW8o2i5zNNy0VLHKC4L2YzzCLAKnzsY2QebAhHhjCs/zSja+pNZ0nGbrx4jsNrSpIi/68HI/4JCwSrnPvgBA1GpTAUop6hhGoklDBcxus43e4w9pr6ZJY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1784531176; c=relaxed/simple;
-	bh=Mo5iW0ecp5dDtDsHCPdHbqYD0jDODScvF1yMPhYFuwY=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=XBfI4038yWEgNpj3qAeLEryBhJc4x2AZrQTlvjsDt4E7Eg7iZcmMQ+jdQi0GBQJ+9bZllkr6vSdI7qtE+i0i7HTWp0Y6dG/ZkK9wnpQ1xvlLjucDR18Xiu+8tOQ5MMi0pEIKepMZ9ekcKArEc79P0OH09RbtsE1E3+hj/Ry/Dv8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=UYnVqfs2; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1784532361; c=relaxed/simple;
+	bh=tZhM/iGRRI+oZD5fXQ5GSzTaLhc9y+lLypS7IUaOEQk=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:To:Cc; b=mhp63TtK3PdPS1nWbIycGpUS7Qdp5bs7+8LTG1f6/AC11k3vLl1pNdvotuk8V/9U74XenN3+0EhPZwLw/h+gmCKzDrzaWFMzzl0rDm2/7E3Qa+Us/0GCR70XCSgKBwTEeZAnGWaRLpY3Kv0ssESJ8yxXW6jHBbGm9JL47g66k7o=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=chaosmail.tech; spf=pass smtp.mailfrom=chaosmail.tech; dkim=pass (1024-bit key) header.d=chaosmail.tech header.i=@chaosmail.tech header.b=WZLAR6na; arc=none smtp.client-ip=77.81.229.115
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=chaosmail.tech
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=chaosmail.tech
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="UYnVqfs2"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 14E7A1F000E9;
-	Mon, 20 Jul 2026 07:06:13 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1784531174;
-	bh=VzOto6V24zCwZjm5rqJ05WkrIRAlb4Vob9mKqX7ilFc=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=UYnVqfs2F35rcEctNNcOwtP/OIZUIff3dx+bOhjscnl16W6NU/BUZP9jdru4P4hbb
-	 t5rxHyoHqCs5K4UsvWlSpYul6BG4nqbcZiHWJN47dD+w3I30cgGgM4kmKMv/Vgo9ky
-	 JVpAC+WHd4IqChLc4r7qf1JJJBeL7lEvDiAK2Ny3vBY5S/hWEPHnlwT5+9XuRwk3Zl
-	 22yqIiVsv5rxAimwRh+t5nCqqxYdZyOJMeryfjzHgb+hbLpVJIL+X+oBjKUVIXTK8W
-	 SCu0W8ECciLy8S6YQSSA0BuOQR/8hyPhxT4YvHXR6ng2YoUeOWyopNZj2VZVlrfRf3
-	 4dZjTQxfz7Qvw==
-Date: Mon, 20 Jul 2026 09:06:11 +0200
-From: Krzysztof Kozlowski <krzk@kernel.org>
-To: Vincent Cloutier <vincent.cloutier@icloud.com>
-Cc: Sebastian Reichel <sre@kernel.org>, Hans de Goede <hansg@kernel.org>, 
-	Marek Szyprowski <m.szyprowski@samsung.com>, Sebastian Krzyszkowiak <sebastian.krzyszkowiak@puri.sm>, 
-	Purism Kernel Team <kernel@puri.sm>, Rob Herring <robh@kernel.org>, 
-	Conor Dooley <conor+dt@kernel.org>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, Vincent Cloutier <vincent@cloutier.co>
-Subject: Re: [PATCH v2 4/4] dt-bindings: power: supply: max17042: Allow
- monitored-battery
-Message-ID: <20260720-fresh-vehement-toucan-07c895@quoll>
-References: <20260720011144.1280219-1-vincent.cloutier@icloud.com>
- <20260720011144.1280219-5-vincent.cloutier@icloud.com>
+	dkim=pass (1024-bit key) header.d=chaosmail.tech header.i=@chaosmail.tech header.b="WZLAR6na"
+Received: by chaosmail.tech (Postfix) id 3AE4A1C8676;
+	Mon, 20 Jul 2026 07:25:57 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=chaosmail.tech;
+	s=mail; t=1784532357;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding;
+	bh=ZU8H4o4KTkb6BEX2VrLFhnIWaFZnnK8taJBxY5eb+bI=;
+	b=WZLAR6na6wI7D9oror3TOoNxolFu58n2FIqQpLaY3PSIGomx6kX0seBrLulwSys8LDwSsX
+	MgAjnD1PWjv/S3A0hFFxYQu9yE8T/CrjyOL3qPf/nf2YQPp+gJXd/I2/ymdqdM1+1UIPvH
+	rJVGA/V/b9Kibo4xZP49fI8ZO8Gk+Ic=
+From: Sasha Finkelstein <k@chaosmail.tech>
+Date: Mon, 20 Jul 2026 09:25:10 +0200
+Subject: [PATCH v2] cpufreq: apple-soc: Calculate frequency as a 64-bit
+ value
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20260720011144.1280219-5-vincent.cloutier@icloud.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20260720-cpufreq-64-v2-1-72bd9b4e5ca0@chaosmail.tech>
+X-B4-Tracking: v=1; b=H4sIAAAAAAAC/22Oyw6CMBREf4XctTV9YBtc8R+GRS0XuUYBW2g0h
+ H+3xa3Lk8ycmRUCesIA52IFj5ECjUMCeSjA9Xa4IaM2MUguNTdcMTctnccX0yWTVqrWSC2QV5A
+ Kk8eO3rvs0vw4LNc7ujkbcqKnMI/+s69FkXN/xVEwwVzJtTP8pERl6/RlDE9Lj+OMrodm27Yvc
+ l/rhrsAAAA=
+X-Change-ID: 20260703-cpufreq-64-2a23d7261e09
+To: Sven Peter <sven@kernel.org>, Janne Grunau <j@jannau.net>, 
+ Neal Gompa <neal@gompa.dev>, "Rafael J. Wysocki" <rafael@kernel.org>, 
+ Viresh Kumar <viresh.kumar@linaro.org>
+Cc: asahi@lists.linux.dev, linux-arm-kernel@lists.infradead.org, 
+ linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
+ Sasha Finkelstein <k@chaosmail.tech>
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1784532357; l=1448;
+ i=k@chaosmail.tech; s=20241124; h=from:subject:message-id;
+ bh=tZhM/iGRRI+oZD5fXQ5GSzTaLhc9y+lLypS7IUaOEQk=;
+ b=8SXwAKh7TXuOgyGGdO2AwRp/Tzz/IEEkfMgzHejSJrJTksw4kmQHgHd+K6CsujzN5ORVt2YwL
+ QJRRTKA3HnlA/lOU8JsMyRsR0MBdClhN6lno4cT+7mq8Gv//EBIaApK
+X-Developer-Key: i=k@chaosmail.tech; a=ed25519;
+ pk=aSkp1PdZ+eF4jpMO6oLvz/YfT5XkBUneWwyhQrOgmsU=
 
-On Sun, Jul 19, 2026 at 09:11:40PM -0400, Vincent Cloutier wrote:
-> From: Vincent Cloutier <vincent@cloutier.co>
-> 
-> The MAX17042 family binding references the generic power-supply schema,
-> but its additionalProperties restriction means generic properties must
-> also be admitted explicitly.
+The current frequency calculation is done in 32 bit, causing problems
+if run on a future SoC that can boost higher than 4.2GHz. Ideally, we
+should use a true u64 instead of unsigned long and "knowning" that this
+only runs on 64 bit machines, but the core code uses ulong everywhere,
+so this should be good enough.
 
-With the same explanation, just change additionalProps into
-unevaluatedProperties.
+Signed-off-by: Sasha Finkelstein <k@chaosmail.tech>
+---
+Changes in v2:
+- Minor style fixes
+- Link to v1: https://patch.msgid.link/20260703-cpufreq-64-v1-1-c406c705319a@chaosmail.tech
+---
+ drivers/cpufreq/apple-soc-cpufreq.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/cpufreq/apple-soc-cpufreq.c b/drivers/cpufreq/apple-soc-cpufreq.c
+index 638e5bf72185..5ad274a1e6ae 100644
+--- a/drivers/cpufreq/apple-soc-cpufreq.c
++++ b/drivers/cpufreq/apple-soc-cpufreq.c
+@@ -288,7 +288,7 @@ static int apple_soc_cpufreq_init(struct cpufreq_policy *policy)
+ 
+ 	/* Get OPP levels (p-state indexes) and stash them in driver_data */
+ 	for (i = 0; freq_table[i].frequency != CPUFREQ_TABLE_END; i++) {
+-		unsigned long rate = freq_table[i].frequency * 1000 + 999;
++		unsigned long rate = freq_table[i].frequency * 1000UL + 999;
+ 		struct dev_pm_opp *opp = dev_pm_opp_find_freq_floor(cpu_dev, &rate);
+ 
+ 		if (IS_ERR(opp)) {
+
+---
+base-commit: 4a50a141f05a8d1737661b19ee22ff8455b94409
+change-id: 20260703-cpufreq-64-2a23d7261e09
 
 Best regards,
-Krzysztof
+--  
+Sasha Finkelstein <k@chaosmail.tech>
 
