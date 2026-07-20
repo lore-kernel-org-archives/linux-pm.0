@@ -1,37 +1,38 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4B9363BED24;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4BABC3CB2D0;
 	Mon, 20 Jul 2026 20:46:50 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1784580410; cv=none; b=qYuT8B8QGFmlLpE0n3OYeN+z+isNpY2KqaSIpie4P8GUV9sZxUiq2cdscNvose4Gsr0N1u0Awctuqk8tuZ2RMNotidfIYS2SWAe6m6qRkRXhpAPaJRRFkq3dUaDs9L/VgPZ5fs0jy8ChMWASHbA0Ftt7Xq5s3dY6l1AQabM612U=
+	t=1784580410; cv=none; b=oyM+0HpLu7d2Lbfr8ZzTmcu26pkg7QnZ20oBrViwQLPHk4ss+bEpgZ1Olt1cwOYr2Dux71GxOrMdYgn3hyMj3tRDkvuKe2FqlxFefZFps5NlrVh94rWP9Ik80joycrX6MvDbZP5VrxLW5iJSMDMT+snAuyAMxIyjLLlnqa05Koc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1784580410; c=relaxed/simple;
-	bh=v+gyiP3F5En4Mzp5K0FZ5ZTCbmOS6wGQ+d/V1cnkflY=;
-	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=eP/Kn3WD8vicWReTmKl+6l9oJvPO0YFo88eQ0UMZ6jzffq2Z4+EoOYxQSevo4VivJ3V5JjVesuVxcUnqVoXORd4A0vGviOLLaZ/zTkDHVt1AUXUjemsfJsLYX1lpvsCStsv7FxDRVJu59Nsc1R3urbe4qCiB7sTBgbjteVXMr9Y=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=bz33iz0P; arc=none smtp.client-ip=10.30.226.201
+	bh=Nh/Fdy7HDE4Q2St9NslvRK6v/ceaWYfT/X8hid8P7Ds=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=CqhBlXCsXsj2B2wRJpnMfL9VvF0DqB0kE7x9F8D9oFvCagssj1wjcU+SDpO0IoUglH2EOCRrcFKUZ7Hhrq63vOOcNV1lCzw9gPU/iQhiWqZ8c1gnXoEse2RYlEp7WY9zeEZfJ/Kk5q9Wcj/lDuBdSe+n/2r8vm1zJ/1OQzdPn8M=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=GWUnkGuB; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="bz33iz0P"
-Received: by smtp.kernel.org (Postfix) with ESMTPS id DD272C2BCF6;
-	Mon, 20 Jul 2026 20:46:49 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="GWUnkGuB"
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 06960C2BCFA;
+	Mon, 20 Jul 2026 20:46:50 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1784580409;
-	bh=v+gyiP3F5En4Mzp5K0FZ5ZTCbmOS6wGQ+d/V1cnkflY=;
-	h=From:Subject:Date:To:Cc:Reply-To:From;
-	b=bz33iz0PZwUg92faQOMbeOWANCIQw34JkZCLs1cgYUo+G2ef6iiII/9xLJf4990uN
-	 mlqxSQ863zIUNG2pd6YeBcStKOsniHwRazJfa3dWKQZvRcv2zYybpELSedAkMokQMK
-	 kRKG5bKsvr3Hy8kfmdXtrjNqKfJXXmxaM3kYKJUV7iaA+fg8pUiPdiwiUo2sfnvSY4
-	 rTu2ni70vREw8WuOOF+/7yDbhAVxcS/6isrss2h7/cTazyztj1Rk2pFbfEZchsyI4v
-	 WatfM5Jj++Sagv9f0NIu63j3nBlNqgOYJl0ucFCe5L5k/yS69KMfnxWWy2LFHoBnOx
-	 DXe9MRlEinIsw==
+	s=k20201202; t=1784580410;
+	bh=Nh/Fdy7HDE4Q2St9NslvRK6v/ceaWYfT/X8hid8P7Ds=;
+	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
+	b=GWUnkGuBFTePzB2pyPLy0feznS3YM8Lc4qGaANHQFNtbxSXAYjHFQuZPUbjGwhI7T
+	 Ks0yiUGvunSaT5+I24dA2mXqeFKFmJe4D9zwpL7oy8/PLAM0Kn3pTQPYIhjpHdFu0m
+	 DX0qTRiwbaqNFudCWiWEYhY4WSZ5TofDsduCUsN8coALGR9GCpNd3hb/fjqEBWWd3h
+	 I6kIYX2ucdkPOgy2vHhyztdglEfoUYOt5mXvP0qs6tMCBtX5ExmG5QNiXVmm7eXxF0
+	 5vK0wiOBuATpaDrF6V95ZVBO5jweyXzW8AWI55ZCRY2P3a4VfJMfney95dlwrMIHP9
+	 4jsO0hkovE3XA==
 Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B5620C44520;
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DCC37C44515;
 	Mon, 20 Jul 2026 20:46:49 +0000 (UTC)
 From: Nikolai Burov via B4 Relay <devnull+nikolai.burov.jolla.com@kernel.org>
-Subject: [PATCH v3 0/3] pmdomain: mediatek: Add MT6858 support
-Date: Mon, 20 Jul 2026 23:46:45 +0300
-Message-Id: <20260720-mt6858-pmdomain-v3-0-8966d8de93c8@jolla.com>
+Date: Mon, 20 Jul 2026 23:46:47 +0300
+Subject: [PATCH v3 2/3] pmdomain: mediatek: Add support for secure modem
+ power domain control
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -40,11 +41,9 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-B4-Tracking: v=1; b=H4sIADWJXmoC/2WN0QqDIABFfyV8nkMtTfe0/xh7SLNlzAxtshH9+
- 7QxCHo8cM+5CwjaGx3ApViA19EE48YE5akAqm/Gh4amTQwIIgzVmEA7M045nGzrbGNGKLGsKFO
- CsZqCZE1ed+a9FW/3H4eXHLSacyYvehNm5z/bZcR5969Xh3rEEMGqQ0JKyQnR6Dq457M5K2dBr
- key9+nRJ8lnRJSa151Cotz767p+AVdnEVgAAQAA
-X-Change-ID: 20260712-mt6858-pmdomain-b1b456c96675
+Message-Id: <20260720-mt6858-pmdomain-v3-2-8966d8de93c8@jolla.com>
+References: <20260720-mt6858-pmdomain-v3-0-8966d8de93c8@jolla.com>
+In-Reply-To: <20260720-mt6858-pmdomain-v3-0-8966d8de93c8@jolla.com>
 To: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
  Conor Dooley <conor+dt@kernel.org>, 
  Matthias Brugger <matthias.bgg@gmail.com>, 
@@ -54,14 +53,13 @@ Cc: Matthias Brugger <mbrugger@suse.com>, devicetree@vger.kernel.org,
  linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
  linux-mediatek@lists.infradead.org, linux-pm@vger.kernel.org, 
  Nikolai Burov <nikolai.burov@jolla.com>, 
- Nikolai Burov <nikolai.burov+review@abscue.de>, 
- Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
+ Nikolai Burov <nikolai.burov+review@abscue.de>
 X-Mailer: b4 0.15.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1784580408; l=2706;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1784580408; l=5639;
  i=nikolai.burov@jolla.com; s=20260707; h=from:subject:message-id;
- bh=v+gyiP3F5En4Mzp5K0FZ5ZTCbmOS6wGQ+d/V1cnkflY=;
- b=us8g3ckdvk3t87RuXqPirheNWUBIN2a3SyiS4ZM13IU1iIzPELzMCVooL0FeU/86E2JqlpDvj
- 3bcHU8tKQD6BYYg61dC1QFG66x/70B3cMmmoYQbdaosUKVBbfJxCmA+
+ bh=5fzedbDsvOEQ+tbIFJcPFkJMjBII9+Zs4ulc0FKFtSM=;
+ b=w8SvxSigsQlH1XUxPiYE9WlkOvNrUTghaVUa0Xl4qlFnAUFL6G+Zc7sZAG1KEPA4FVaivBQYM
+ A9Jnl/H/q7vD2oUcAORV0KR2NFFlWsdCevne1m/5Jqj05fwEXpzyzd7
 X-Developer-Key: i=nikolai.burov@jolla.com; a=ed25519;
  pk=yzpa+PD+ovHUFMIOBA9o2QqGwI110jM6hdGHLc7jtoQ=
 X-Endpoint-Received: by B4 Relay for nikolai.burov@jolla.com/20260707 with
@@ -69,72 +67,158 @@ X-Endpoint-Received: by B4 Relay for nikolai.burov@jolla.com/20260707 with
 X-Original-From: Nikolai Burov <nikolai.burov@jolla.com>
 Reply-To: nikolai.burov@jolla.com
 
-Add power domain driver support for the MediaTek Dimensity 7100 (MT6858)
-SoC. On this SoC, there are some new subsystem-specific bus protection
-blocks, which are listed here in ascending address order:
+From: Nikolai Burov <nikolai.burov@jolla.com>
 
-- IMG_SUB0 at 0x1502f000
-- CAM_SUB1 at 0x1a00c000
-- CAM_SUB0 at 0x1a00d000
-- IPE_SUB0 at 0x1b00e000
+On recent MediaTek SoCs such as MT6858, the kernel is required to use
+a secure monitor call (SMC) to enable or disable the modem power domain.
+The power domain control register can be read, but firmware prevents it
+from being modified directly. Some other parts of the power sequence,
+such as setting the ext_buck_iso register, still need to be performed on
+the kernel side.
 
-The VLPCFG bus configuration registers at 0x1c00c000 are also new.
-
-Additionally, implement the SMC-based power sequence required for
-enabling the modem power domain on this SoC.
+In preparation for modem support, add a flag to enable this new power
+sequence for SoCs that need it. Power domains using this flag are not
+expected to configure any bus protection registers, since these are
+handled internally by the SMC call.
 
 Signed-off-by: Nikolai Burov <nikolai.burov@jolla.com>
 ---
-Changes in v3:
-- Fix error path to also skip sram_pdn for MODEM_SECURE_PWRSEQ
-  (discovered in Sashiko report)
-- Link to v2: https://patch.msgid.link/20260715-mt6858-pmdomain-v2-0-6293e87fc093@jolla.com
+ drivers/pmdomain/mediatek/mtk-pm-domains.c | 50 +++++++++++++++++++++++++++---
+ drivers/pmdomain/mediatek/mtk-pm-domains.h |  1 +
+ include/linux/soc/mediatek/mtk_sip_svc.h   |  3 ++
+ 3 files changed, 49 insertions(+), 5 deletions(-)
 
-Changes in v2:
-- Rebase
-- MTK_SCPD_MODEM_SECURE -> MTK_SCPD_MODEM_SECURE_PWRSEQ
-- Convert SMC command enum to defines
-- Based on the new SIMPLE_PWRSEQ changes, skip the sram_pdn stage for
-  MODEM_SECURE_PWRSEQ too since it wasn't intended to have an effect
-- Clarify that the SMC call also handles bus protection
-- Simply if/else code based on the assumption *_PWRSEQ are mutually
-  exclusive
-- Add comment explaining that PWR_STA_2ND is skipped for modem
-  (mentioned in Sashiko report)
-- Link to v1: https://patch.msgid.link/20260714-mt6858-pmdomain-v1-0-4f09bbb822e0@jolla.com
+diff --git a/drivers/pmdomain/mediatek/mtk-pm-domains.c b/drivers/pmdomain/mediatek/mtk-pm-domains.c
+index 8309a4b46afb..5b4d860318a4 100644
+--- a/drivers/pmdomain/mediatek/mtk-pm-domains.c
++++ b/drivers/pmdomain/mediatek/mtk-pm-domains.c
+@@ -57,6 +57,10 @@
+ 
+ #define MTK_SIP_KERNEL_HWCCF_CONTROL	MTK_SIP_SMC_CMD(0x540)
+ 
++/* Secure MTCMOS commands for modem subsystem */
++#define MTK_MD_MTCMOS_ENABLE		18
++#define MTK_MD_MTCMOS_DISABLE		19
++
+ struct scpsys_domain {
+ 	struct generic_pm_domain genpd;
+ 	const struct scpsys_domain_data *data;
+@@ -668,6 +672,34 @@ static int scpsys_modem_pwrseq_off(struct scpsys_domain *pd)
+ 	return 0;
+ }
+ 
++static bool scpsys_modem_sec_poll(unsigned long cmd)
++{
++	struct arm_smccc_res res;
++
++	arm_smccc_smc(MTK_SIP_KERNEL_CCCI_CONTROL, cmd, 1, 0, 0, 0, 0, 0, &res);
++
++	return res.a0 == 0;
++}
++
++static int scpsys_modem_sec_power_on(bool on)
++{
++	struct arm_smccc_res res;
++	unsigned long cmd = on ? MTK_MD_MTCMOS_ENABLE : MTK_MD_MTCMOS_DISABLE;
++	bool tmp;
++	int ret;
++
++	arm_smccc_smc(MTK_SIP_KERNEL_CCCI_CONTROL, cmd, 0, 0, 0, 0, 0, 0, &res);
++	if (res.a0 == 0)
++		return 0;
++
++	ret = readx_poll_timeout(scpsys_modem_sec_poll, cmd, tmp, tmp,
++				 MTK_POLL_DELAY_US, MTK_POLL_TIMEOUT);
++	if (ret < 0)
++		return ret;
++
++	return 0;
++}
++
+ static int scpsys_power_on(struct generic_pm_domain *genpd)
+ {
+ 	struct scpsys_domain *pd = container_of(genpd, struct scpsys_domain, genpd);
+@@ -686,7 +718,9 @@ static int scpsys_power_on(struct generic_pm_domain *genpd)
+ 		regmap_clear_bits(scpsys->base, pd->data->ext_buck_iso_offs,
+ 				  pd->data->ext_buck_iso_mask);
+ 
+-	if (MTK_SCPD_CAPS(pd, MTK_SCPD_MODEM_PWRSEQ))
++	if (MTK_SCPD_CAPS(pd, MTK_SCPD_MODEM_SECURE_PWRSEQ))
++		ret = scpsys_modem_sec_power_on(true);
++	else if (MTK_SCPD_CAPS(pd, MTK_SCPD_MODEM_PWRSEQ))
+ 		ret = scpsys_modem_pwrseq_on(pd);
+ 	else if (MTK_SCPD_CAPS(pd, MTK_SCPD_SIMPLE_PWRSEQ))
+ 		ret = scpsys_simple_pwrseq_on(pd);
+@@ -717,7 +751,8 @@ static int scpsys_power_on(struct generic_pm_domain *genpd)
+ 			goto err_pwr_ack;
+ 	}
+ 
+-	if (!MTK_SCPD_CAPS(pd, MTK_SCPD_SIMPLE_PWRSEQ)) {
++	if (!MTK_SCPD_CAPS(pd, MTK_SCPD_SIMPLE_PWRSEQ) &&
++	    !MTK_SCPD_CAPS(pd, MTK_SCPD_MODEM_SECURE_PWRSEQ)) {
+ 		ret = scpsys_sram_enable(pd);
+ 		if (ret < 0)
+ 			goto err_disable_subsys_clks;
+@@ -739,7 +774,8 @@ static int scpsys_power_on(struct generic_pm_domain *genpd)
+ err_enable_bus_protect:
+ 	scpsys_bus_protect_enable(pd, 0);
+ err_disable_sram:
+-	if (!MTK_SCPD_CAPS(pd, MTK_SCPD_SIMPLE_PWRSEQ))
++	if (!MTK_SCPD_CAPS(pd, MTK_SCPD_SIMPLE_PWRSEQ) &&
++	    !MTK_SCPD_CAPS(pd, MTK_SCPD_MODEM_SECURE_PWRSEQ))
+ 		scpsys_sram_disable(pd);
+ err_disable_subsys_clks:
+ 	if (!MTK_SCPD_CAPS(pd, MTK_SCPD_STRICT_BUS_PROTECTION))
+@@ -761,7 +797,11 @@ static int scpsys_power_off_internal(struct scpsys_domain *pd)
+ 	if (ret < 0)
+ 		return ret;
+ 
+-	if (!MTK_SCPD_CAPS(pd, MTK_SCPD_SIMPLE_PWRSEQ)) {
++	if (MTK_SCPD_CAPS(pd, MTK_SCPD_MODEM_SECURE_PWRSEQ)) {
++		ret = scpsys_modem_sec_power_on(false);
++		if (ret)
++			return ret;
++	} else if (!MTK_SCPD_CAPS(pd, MTK_SCPD_SIMPLE_PWRSEQ)) {
+ 		ret = scpsys_sram_disable(pd);
+ 		if (ret < 0)
+ 			return ret;
+@@ -781,7 +821,7 @@ static int scpsys_power_off_internal(struct scpsys_domain *pd)
+ 		ret = scpsys_modem_pwrseq_off(pd);
+ 	else if (MTK_SCPD_CAPS(pd, MTK_SCPD_SIMPLE_PWRSEQ))
+ 		ret = scpsys_simple_pwrseq_off(pd);
+-	else
++	else if (!MTK_SCPD_CAPS(pd, MTK_SCPD_MODEM_SECURE_PWRSEQ))
+ 		ret = scpsys_ctl_pwrseq_off(pd);
+ 
+ 	if (ret < 0) {
+diff --git a/drivers/pmdomain/mediatek/mtk-pm-domains.h b/drivers/pmdomain/mediatek/mtk-pm-domains.h
+index 092403de66fa..8690690335ad 100644
+--- a/drivers/pmdomain/mediatek/mtk-pm-domains.h
++++ b/drivers/pmdomain/mediatek/mtk-pm-domains.h
+@@ -18,6 +18,7 @@
+ #define MTK_SCPD_SKIP_RESET_B		BIT(11)
+ #define MTK_SCPD_INFRA_PWR_CTL		BIT(12)
+ #define MTK_SCPD_SIMPLE_PWRSEQ		BIT(13)
++#define MTK_SCPD_MODEM_SECURE_PWRSEQ	BIT(14)
+ #define MTK_SCPD_CAPS(_scpd, _x)	((_scpd)->data ?		\
+ 					 (_scpd)->data->caps & (_x) :	\
+ 					 (_scpd)->hwv_data->caps & (_x))
+diff --git a/include/linux/soc/mediatek/mtk_sip_svc.h b/include/linux/soc/mediatek/mtk_sip_svc.h
+index abe24a73ee19..6c95a29b79fa 100644
+--- a/include/linux/soc/mediatek/mtk_sip_svc.h
++++ b/include/linux/soc/mediatek/mtk_sip_svc.h
+@@ -22,6 +22,9 @@
+ 	ARM_SMCCC_CALL_VAL(ARM_SMCCC_FAST_CALL, MTK_SIP_SMC_CONVENTION, \
+ 			   ARM_SMCCC_OWNER_SIP, fn_id)
+ 
++/* Modem related SMC call */
++#define MTK_SIP_KERNEL_CCCI_CONTROL	MTK_SIP_SMC_CMD(0x505)
++
+ /* DVFSRC SMC calls */
+ #define MTK_SIP_DVFSRC_VCOREFS_CONTROL	MTK_SIP_SMC_CMD(0x506)
+ 
 
-To: Rob Herring <robh@kernel.org>
-To: Krzysztof Kozlowski <krzk+dt@kernel.org>
-To: Conor Dooley <conor+dt@kernel.org>
-To: Matthias Brugger <matthias.bgg@gmail.com>
-To: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
-To: Ulf Hansson <ulfh@kernel.org>
-Cc: Matthias Brugger <mbrugger@suse.com>
-Cc: devicetree@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Cc: linux-arm-kernel@lists.infradead.org
-Cc: linux-mediatek@lists.infradead.org
-Cc: linux-pm@vger.kernel.org
-
----
-Nikolai Burov (3):
-      dt-bindings: power: Add MediaTek MT6858 power domain controller
-      pmdomain: mediatek: Add support for secure modem power domain control
-      pmdomain: mediatek: Add support for MT6858 SoC
-
- .../bindings/power/mediatek,power-controller.yaml  |  21 +-
- drivers/pmdomain/mediatek/mt6858-pm-domains.h      | 466 +++++++++++++++++++++
- drivers/pmdomain/mediatek/mtk-pm-domains.c         |  55 ++-
- drivers/pmdomain/mediatek/mtk-pm-domains.h         |   6 +
- include/dt-bindings/power/mediatek,mt6858-power.h  |  23 +
- include/linux/soc/mediatek/mtk_sip_svc.h           |   3 +
- 6 files changed, 568 insertions(+), 6 deletions(-)
----
-base-commit: 3fe08b9796f36ef437ab9328e7dd1e5ff2d66603
-change-id: 20260712-mt6858-pmdomain-b1b456c96675
-
-Best regards,
---  
-Nikolai Burov <nikolai.burov@jolla.com>
+-- 
+2.54.0
 
 
