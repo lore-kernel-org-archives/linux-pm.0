@@ -1,139 +1,96 @@
-Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A501F43C7A3;
-	Mon, 20 Jul 2026 17:07:15 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=193.142.43.55
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id 98357445AD3;
+	Mon, 20 Jul 2026 17:56:47 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1784567237; cv=none; b=a8a4WfEU41Tc8rZvjU0ujigz9P42jfxpIQKa5qMZR44qJWNcndJQUUbMGWbXPV8ovuWwZtF4hNfVViMy4nAgf3zh96DuoO2RXHvD8IMIq8kZft/F7kdIyV/GGxMIlZ67ZzJY6Dn5STs0Jq4+tk6x9yrJlXHU+mQFaoV5zphp+uo=
+	t=1784570212; cv=none; b=ZjymbQY+rIZTBH2VtlMBBlRkQmmc2mDXT1DyCLisYRNyJmbSyRR9hU0xd7S4ZiZynji3YqUG/CNeLR4V9r9fpv7vf/p66aZWdtOqr/M+W926cWI/Z95pQl8wdHtq77ScfIdp06CvFlBDWpSceyZpeHOddfWnwoDgXUVfhr/uRq4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1784567237; c=relaxed/simple;
-	bh=QpJayyGRfwIwgnPrJtwvRRAyWecvSEQUQJg07vqTn5s=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=XKiqvYU4mIROqhwG3N1XC1Qs0EhejMihDO/O6j1SR/0ovI4F9PwRqlGWR6EXT6K2iJU8gETIYbeCi61jQ9QvrkN0ASn3xNstGVPpUupK5+1UQgUud47GTBZNjZrXOWyLogOvWg2apDZFV68kD8dowW4yknTj9UF5KBZ/tTWNoiY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; spf=pass smtp.mailfrom=linutronix.de; dkim=pass (2048-bit key) header.d=linutronix.de header.i=@linutronix.de header.b=RT5H9kx3; dkim=permerror (0-bit key) header.d=linutronix.de header.i=@linutronix.de header.b=+jTIHKGj; arc=none smtp.client-ip=193.142.43.55
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linutronix.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linutronix.de
+	s=arc-20240116; t=1784570212; c=relaxed/simple;
+	bh=SkixE224soWrrcHibLZOzDF6dZMgPntKaiJ5Bvw64vE=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=KYMna8ylzcNnn5Sg8fnCL8VlTz2Gl8dw+MyqiVXDe/MoM4GdnQvJj6hhx6PScpV+Ogyp7R+uzEsSy4tMSN50CaaX66l53Xup2Us2FC53RE2bDbUCBs6dr1xt3os3OwKkx9EM07SuWWUuAqejKEi6Xsk/Q1OmfxllKnsTUSxPhz8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=JRNyBrKb; arc=none smtp.client-ip=217.140.110.172
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="RT5H9kx3";
-	dkim=permerror (0-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="+jTIHKGj"
-Date: Mon, 20 Jul 2026 19:07:09 +0200
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020; t=1784567231;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=1spDH2aWpNawTi0FWzkm9K/w4h9xxsbHldprDmhqKsY=;
-	b=RT5H9kx3G44z2XjMJsjzGLqwn4nQ/Mr4/ossQTkxVUJTH0uxkCSFLJ9SwmAd2rlaDcWlfF
-	vQ5dWDszbRMuQ8fFo87nnehRNxsx3JHlSB75MkAQi/TfUc9E2K0KnYac4I89Qd/A8FhhBh
-	jG04FWyPMhs6E7m88cw0NOs59MRTKIjwzpzEI6xL9TrRaAjYHyvgV7DtLxq8Hoz5D+ywCh
-	fpbgsZxYbBi0dLFDc7e6xxkbDTGlml0m4VDQPRRfiOdy8DXGv58GEhmCULSzS3J2tX5HfZ
-	C/h6ZpoQXEEVR8GJKgxWJwbkm3BnmuxeFNA51e4e06k8t99IVs28dX7tXy5uKQ==
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020e; t=1784567231;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=1spDH2aWpNawTi0FWzkm9K/w4h9xxsbHldprDmhqKsY=;
-	b=+jTIHKGjppA7EJKqPdXiM7obdAt7VNTHbDUO7gYxpaB4llwkHJKu9Z+aXMXm24fZ2X6toi
-	SulR1eRipcFVc9CQ==
-From: Gregor Herburger <gregor.herburger@linutronix.de>
-To: Ulf Hansson <ulf.hansson@oss.qualcomm.com>
-Cc: Ulf Hansson <ulfh@kernel.org>, 
-	Florian Fainelli <florian.fainelli@broadcom.com>, 
-	Broadcom internal kernel review list <bcm-kernel-feedback-list@broadcom.com>, linux-pm@vger.kernel.org, linux-rpi-kernel@lists.infradead.org, 
-	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] pmdomain: raspberrypi-power: add remove function
-Message-ID: <ifzlb2b3rdoo3hckhga7ggmmd3j5ub4a2krb4g25sh6naoxeyj@64ownhquehue>
-References: <20260715-rpi-pm-remove-v1-1-e4eed226e08a@linutronix.de>
- <CAPx+jO8EPX2br9vsuFXBDPoQTF+Ks09MFcFQzchZxZVaj7y=-w@mail.gmail.com>
+	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="JRNyBrKb"
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id CC239143D;
+	Mon, 20 Jul 2026 10:56:40 -0700 (PDT)
+Received: from [192.168.20.93] (usa-sjc-mx-foss1.foss.arm.com [172.31.20.19])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 13B0C3F86F;
+	Mon, 20 Jul 2026 10:56:43 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
+	t=1784570205; bh=SkixE224soWrrcHibLZOzDF6dZMgPntKaiJ5Bvw64vE=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=JRNyBrKbRG5+iwjey7s0Tv+9eiAuYLT4Wu8n9RMz3U1PRW1m84oFMG/DW3UqmxTDs
+	 ZDMt+Kqob3NelfynPFV/ViyeOtRfOmp5l9rRHrdHTyxGNOOWuKQBuVf3UNfFqBVzRI
+	 soyxtmEXCB3gGCKYQqbXLfAUbZ8yMuvGDlQ5vcLU=
+Message-ID: <279d48e9-9a10-4057-ba60-76fad79fde79@arm.com>
+Date: Mon, 20 Jul 2026 12:56:29 -0500
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <CAPx+jO8EPX2br9vsuFXBDPoQTF+Ks09MFcFQzchZxZVaj7y=-w@mail.gmail.com>
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 1/3] cpupower: Add generic CPPC performance display
+To: Thorsten Leemhuis <linux@leemhuis.info>, linux-pm@vger.kernel.org
+Cc: trenn@suse.com, shuah@kernel.org, jwyatt@redhat.com, jkacur@redhat.com,
+ kaushlendra.kumar@intel.com, sashal@kernel.org, fj5851bi@fujitsu.com,
+ rui.zhang@intel.com, linux-kernel@vger.kernel.org
+References: <20260709221344.1919794-1-jeremy.linton@arm.com>
+ <20260709221344.1919794-2-jeremy.linton@arm.com>
+ <b87c77da-d207-4b9d-a36a-5cdfd03eacde@leemhuis.info>
+Content-Language: en-US
+From: Jeremy Linton <jeremy.linton@arm.com>
+In-Reply-To: <b87c77da-d207-4b9d-a36a-5cdfd03eacde@leemhuis.info>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
-On Thu, Jul 16, 2026 at 02:28:15PM +0200, Ulf Hansson wrote:
-> On Wed, Jul 15, 2026 at 10:16 AM Gregor Herburger
-> <gregor.herburger@linutronix.de> wrote:
-> >
-> > The raspberrypi-power driver registers resources with
-> > of_genpd_add_provider_onecell and pm_genpd_init but never removes them.
-> > When the driver gets unbound and bound again this causes error. Add a
-> > remove function to cleanup all registered resources.
-> >
-> > Signed-off-by: Gregor Herburger <gregor.herburger@linutronix.de>
-> > ---
-> >  drivers/pmdomain/bcm/raspberrypi-power.c | 12 ++++++++++++
-> >  1 file changed, 12 insertions(+)
-> >
-> > diff --git a/drivers/pmdomain/bcm/raspberrypi-power.c b/drivers/pmdomain/bcm/raspberrypi-power.c
-> > index b87ea7adb7bea..2c2135c17afb0 100644
-> > --- a/drivers/pmdomain/bcm/raspberrypi-power.c
-> > +++ b/drivers/pmdomain/bcm/raspberrypi-power.c
-> > @@ -232,6 +232,17 @@ static int rpi_power_probe(struct platform_device *pdev)
-> >         return 0;
-> >  }
-> >
-> > +static void rpi_power_remove(struct platform_device *pdev)
-> > +{
-> > +       struct rpi_power_domains *rpi_domains = platform_get_drvdata(pdev);
-> > +       int nr_domains = RPI_POWER_DOMAIN_COUNT - 1;
-> > +
-> > +       of_genpd_del_provider(pdev->dev.of_node);
-> > +
-> > +       for (int i = nr_domains; i >= 0; i--)
-> > +               pm_genpd_remove(&rpi_domains->domains[i].base);
-> > +}
-> > +
-> >  static const struct of_device_id rpi_power_of_match[] = {
-> >         { .compatible = "raspberrypi,bcm2835-power", },
-> >         {},
-> > @@ -244,6 +255,7 @@ static struct platform_driver rpi_power_driver = {
-> >                 .of_match_table = rpi_power_of_match,
-> >         },
-> >         .probe          = rpi_power_probe,
-> > +       .remove         = rpi_power_remove,
+On 7/18/26 1:12 AM, Thorsten Leemhuis wrote:
+> On 7/10/26 00:13, Jeremy Linton wrote:
+>> Arm64 machines, and possibly others, use the standard ACPI defined CPPC
+>> infrastructure. cpupower has CPPC support, but it's largely written
+>> around the intricacies of AMD processors, using platform MSRs to avoid
+>> shortcomings in the specification.
+>>
+>> [...]
+>> +#include <stdio.h>
+>> +#include <errno.h>
+>> +#include <stdlib.h>
+>> +#include <string.h>
+>> +#include <math.h>
+>> +
+>> +#include "helpers/helpers.h"
+>> +#include "cpufreq.h"
+>> +#include "acpi_cppc.h"
+>> +
+>> +#define cppc_to_frequency(perf) (roundf(slope * (perf) + intercept))
+> FYI, this patch showed up in -next yesterday and I suspect it caused
+> this build error for me on x86_64:
 > 
-> In general it's not a good idea to allow unbinding power domain
-> drivers, as it will probably break consumers and their drivers.
-> Although, I don't know whether it makes sense in this particular case.
+> """  CC       cpupower
+> /usr/bin/ld.bfd: /tmp/ccjOeWLF.ltrans0.ltrans.o: in function
+> `get_perf_cap.isra.0':
+> /builddir/build/BUILD/kernel-7.2.0-build/kernel-next-20260717/linux-7.2.0-0.0.next.20260717.330.vanilla.fc44.x86_64/tools/power/cpupower/utils/helpers/cppc.c:39:(.text+0x45cc):
+> undefined reference to `roundf'
+> /usr/bin/ld.bfd:
+> /tmp/ccjOeWLF.ltrans0.ltrans.o:/builddir/build/BUILD/kernel-7.2.0-build/kernel-next-20260717/linux-7.2.0-0.0.next.20260717.330.vanilla.fc44.x86_64/tools/power/cpupower/utils/helpers/cppc.c:49:(.text+0x46a2):
+> undefined reference to `roundf'
+> collect2: error: ld returned 1 exit status
+> make: *** [Makefile:238: cpupower] Error 1
+
+Right, when its not inline it needs -lm, I will toss a patch against it 
+in a moment.
+
+
+> """
+>> [...]
 > 
-Ok. I stumbled on this when I was trying to fix an error in the remove path of
-the raspberrypi-firmware driver. I have not checked if all the drivers still
-work so you are probably right.
-
-> Another option is to prevent user-space from unbinding by adding the below here:
-> ".suppress_bind_attrs = true,"
-
-That would be the simpler solution. If I add this for this driver, it should
-also be added to raspberrypi-firmware and to bcm2835-mbox. Because without those
-drivers this driver wouldn't work anyways. Should I add this to those drivers?
-And remove the remove callbacks?
+> Full log:
+> https://download.copr.fedorainfracloud.org/results/@kernel-vanilla/next/fedora-44-x86_64/10739303-next-next-all/builder-live.log.gz
 > 
-> >  };
-> >  builtin_platform_driver(rpi_power_driver);
-> >
-> 
-> Kind regards
-> Uffe
+> Ciao, Thorsten
 
--- 
-Gregor Herburger
-Linutronix GmbH | Bahnhofstrasse 3 | D-88690 Uhldingen-Mühlhofen
-Phone: +49 7556 25 999 35; Fax.: +49 7556 25 999 99
-
-Hinweise zum Datenschutz finden Sie hier (Informations on data privacy 
-can be found here): https://linutronix.de/legal/data-protection.php
-
-Linutronix GmbH | Firmensitz (Registered Office): Uhldingen-Mühlhofen | 
-Registergericht (Registration Court): Amtsgericht Freiburg i.Br., HRB700 
-806 | Geschäftsführer (Managing Directors): Dr. Wilfried Wessner, 
-Katharina Kopp, Alexander Gieringer
