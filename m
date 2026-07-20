@@ -1,121 +1,100 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from smtp.forwardemail.net (smtp.forwardemail.net [121.127.44.73])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BA7083DB326
-	for <linux-pm@vger.kernel.org>; Mon, 20 Jul 2026 16:01:42 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E92EF3E1225
+	for <linux-pm@vger.kernel.org>; Mon, 20 Jul 2026 16:06:35 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=121.127.44.73
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1784563304; cv=none; b=SEnbbbaHcsEpv9eXbCQRb77vAn3yIlC9fMGjsztgTTiymsURgCAtHo/1w9FmmkI9Z1tj38RWDJYnn4NLo+rtdcOZYfhDAhDqF2KaZMr7JBiWjUa3dmkc/OHjPeLVX1/9qgmPW6K8PLbkjmOAOstsmoJFRHElj/Mmb50QD4l7E6g=
+	t=1784563599; cv=none; b=QyszA7UQmeVLrxNmlwodflbYqjwJgZbVJICkDf/hQwQX27hMCJacHtcTyb9yD9AAa/upoIAgxhpGTCqc5lkzca7+yqWvG3JvQCkpbnvuMs/7UyY0PY14HKHNF2U0QcXG0VguiyuyH96QkfVqVnNQSKLvE1ZFQdpNB14NjV7e+Cw=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1784563304; c=relaxed/simple;
-	bh=ikfWm5DL/5sYnkDYH488sa/zQcW6oHrRAu4seAl+qa4=;
-	h=From:In-Reply-To:MIME-Version:References:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=LfCIMNdXawmqta8ChAQz5odZsK5sr4duZfwsf4W8nCTjgorqK34gMj+fhPZIv4AH8MVIfMsKXJbCk89gWeRSc0jwLLrvurpTFJ3DCxQHXUmmq0DC7m3f+DZff5vEGGXgWOljGs5X1TCOIlIE2YkFuuG9OIrgA9PnbrwyWfcGjTE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=CmI9exjG; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1784563599; c=relaxed/simple;
+	bh=Rl4gtFq9U9GnBRV2RK17LMlMovBDRPjRJ9dKTTad/Pc=;
+	h=Mime-Version:Content-Type:Date:Message-Id:Subject:From:To:Cc:
+	 References:In-Reply-To; b=TdX9RHK9y83ODWPYxM9zIKwH25ekHiwxscr+Yf6vkpEmh2e3gUvpdcpZfu/liad7Y6XhMKF0b/FjWjunP8UBaCkdsCg8sSUgpBvSKvgU1tfjq9xhxIUZ9B+2V9g22kAKg5KFQoEpuVGy+HXMfSs4Czwra0TNBMoCN/DCK7d3Dmk=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=ubuntu.com; spf=pass smtp.mailfrom=fe-bounces.ubuntu.com; dkim=pass (2048-bit key) header.d=ubuntu.com header.i=@ubuntu.com header.b=NZg7uAbH; arc=none smtp.client-ip=121.127.44.73
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=ubuntu.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=fe-bounces.ubuntu.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="CmI9exjG"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id B05E51F01558
-	for <linux-pm@vger.kernel.org>; Mon, 20 Jul 2026 16:01:41 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1784563301;
-	bh=cy2ZkxCpNVSDLVTKtd8tQZtQMok6N80r7SDOQ9XS6Ps=;
-	h=From:In-Reply-To:References:Date:Subject:To:Cc;
-	b=CmI9exjGe/Q9lpN/jDKjGYcZAhE82h4JhNs/XWbdbT2QKOv9Vt/lJRkWSNzc2sTDK
-	 bT7H2HlxBn7PRd35GrUlcJXAkBZ/htEGpxajzqT8x+LQ9JKk55GrVmyrUIS+VwrASy
-	 ex7zrBxyL4kKER0PbZqRA66QIdxuVaYzzXmIP4+VcaHIcdtYLEOA+9DLMG2S+JTXPB
-	 7Dja9EFj7xhGycntJmC877y3Ph7X6yhMSvvn0ClkvGzRg4VXz75VMJGEj8vEBkESvB
-	 HWh8zfEm7bAVxCLzbZXYqaMpxHTM9TEEaYT8KSHa+fLKy+x1CPl/UGD5zTR0ZeiVqX
-	 P9CvaeVK0zUyg==
-Received: by mail-lf1-f47.google.com with SMTP id 2adb3069b0e04-5b2a4359d16so7584e87.3
-        for <linux-pm@vger.kernel.org>; Mon, 20 Jul 2026 09:01:41 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AHgh+RrEOm9MPFB70qMFSFO2KhRX0rUXJNyzCXCOASc2eYTcuUMZJCzwn1t8rUDyxtUjO3VRFatIgs1IOA==@vger.kernel.org
-X-Gm-Message-State: AOJu0YxGVeTPKh53QrLbuqtbV4r1A9z4y5bjmxXHo1n7Av4lGpqGU4N7
-	s7sgXEZAiofQVCrMxaSrm0s7jpTKpEPKIRswGDYwCJ0vqRk3e9SiPdo4lwaT4ercLOkTsUrJTSd
-	HbnTPIqcawodGCovjfDcn/G3LPPcNPEbbh8ICMmQ5wg==
-X-Received: by 2002:a05:6512:23a5:b0:5b0:1ab1:2640 with SMTP id
- 2adb3069b0e04-5b28f9a56f2mr2858457e87.41.1784563299555; Mon, 20 Jul 2026
- 09:01:39 -0700 (PDT)
-Received: from 969154062570 named unknown by gmailapi.google.com with
- HTTPREST; Mon, 20 Jul 2026 18:01:37 +0200
-Received: from 969154062570 named unknown by gmailapi.google.com with
- HTTPREST; Mon, 20 Jul 2026 18:01:37 +0200
-From: Bartosz Golaszewski <brgl@kernel.org>
-In-Reply-To: <86b2aba7-b049-47e6-bc94-6cb499b30ce4@lunn.ch>
+	dkim=pass (2048-bit key) header.d=ubuntu.com header.i=@ubuntu.com header.b="NZg7uAbH"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ubuntu.com;
+ h=In-Reply-To: References: Cc: To: From: Subject: Message-Id: Date:
+ Content-Type: Content-Transfer-Encoding: Mime-Version; q=dns/txt;
+ s=fe-953a8a3ca9; t=1784563595;
+ bh=4V1kLYIy9VLaH4izcRngdk5f4+oVLN80Pe1S3oyCuaM=;
+ b=NZg7uAbHnm7eupu7n5GAhHFJKB3ygOZJsdrBm98QQNwClE/VmM4lf8H0X88dt/JWN+QWnDhKc
+ 5HDR+fiCSW9olhz3dRb8KjhsW2+OWRQ55EYlz+UXT1puuJhtqdLfInGGh4DtCWmo2M2V5894Oyf
+ de/iBzGaXS1INnHA8ErLzb3Dz7gi/lss9EwhONJQLko9bCc8NBTQgyP/xV62no0S82eehUG2rWp
+ XEP9vl337hMHFLJtSjnqYP5vgZDG0QmcB0+MN3ogUOXssHVF3Pu4FAuNJMbT1ew9loe/7303Qwb
+ g72QD7+bTfKVcUWFTLjeP7LN1K3NWReCupzcZo1T1yVQ==
+X-Forward-Email-ID: 6a5e473e79814abe71f8e3c1
+X-Forward-Email-Sender: rfc822; jpeisach@ubuntu.com, smtp.forwardemail.net,
+ 121.127.44.73
+X-Forward-Email-Version: 2.11.4
+X-Forward-Email-Website: https://forwardemail.net
+X-Complaints-To: abuse@forwardemail.net
+X-Report-Abuse: abuse@forwardemail.net
+X-Report-Abuse-To: abuse@forwardemail.net
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
-MIME-Version: 1.0
-References: <20260720-pdev-set-fwnode-instead-of-of-node-v1-0-2dee93f42c54@oss.qualcomm.com>
- <20260720-pdev-set-fwnode-instead-of-of-node-v1-7-2dee93f42c54@oss.qualcomm.com>
- <86b2aba7-b049-47e6-bc94-6cb499b30ce4@lunn.ch>
-Date: Mon, 20 Jul 2026 18:01:37 +0200
-X-Gmail-Original-Message-ID: <CAMRc=Mduv_KiB42d4AZddTrFSHmKogd2wh6vBDXomW6ssdfq9A@mail.gmail.com>
-X-Gm-Features: AUfX_mzoRVqC1tUK_OfVS-B_bFewvPArrOEoPGLWKm-p7iGJrfuSSI_-EnPQPN4
-Message-ID: <CAMRc=Mduv_KiB42d4AZddTrFSHmKogd2wh6vBDXomW6ssdfq9A@mail.gmail.com>
-Subject: Re: [PATCH 7/8] net: mv643xx: use platform_device_set_fwnode()
-To: Andrew Lunn <andrew@lunn.ch>
-Cc: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>, 
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rafael@kernel.org>, 
-	Danilo Krummrich <dakr@kernel.org>, Madhavan Srinivasan <maddy@linux.ibm.com>, 
-	Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, 
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, Andi Shyti <andi.shyti@kernel.org>, 
-	"Joerg Roedel (AMD)" <joro@8bytes.org>, Will Deacon <will@kernel.org>, Robin Murphy <robin.murphy@arm.com>, 
-	Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Doug Berger <opendmb@gmail.com>, 
-	Florian Fainelli <florian.fainelli@broadcom.com>, 
-	Broadcom internal kernel review list <bcm-kernel-feedback-list@broadcom.com>, Andrew Lunn <andrew+netdev@lunn.ch>, 
-	"David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>, 
-	Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, Ulf Hansson <ulfh@kernel.org>, 
-	Frank Li <Frank.Li@nxp.com>, Sascha Hauer <s.hauer@pengutronix.de>, 
-	Pengutronix Kernel Team <kernel@pengutronix.de>, Fabio Estevam <festevam@gmail.com>, Lee Jones <lee@kernel.org>, 
-	Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Srinivas Kandagatla <srini@kernel.org>, brgl@kernel.org, 
-	driver-core@lists.linux.dev, linuxppc-dev@lists.ozlabs.org, 
-	linux-kernel@vger.kernel.org, linux-i2c@vger.kernel.org, 
-	iommu@lists.linux.dev, netdev@vger.kernel.org, linux-pm@vger.kernel.org, 
-	imx@lists.linux.dev, linux-arm-kernel@lists.infradead.org, 
-	mfd@lists.linux.dev, linux-arm-msm@vger.kernel.org, 
-	linux-sound@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=UTF-8; format=Flowed
+Date: Mon, 20 Jul 2026 12:05:17 -0400
+Message-Id: <DK3IYY2FP62G.2ZOAUMLYJP77P@ubuntu.com>
+Subject: Re: [PATCH v2] cpufreq: apple-soc: Calculate frequency as a 64-bit
+ value
+From: "Joshua Peisach" <jpeisach@ubuntu.com>
+To: "Sasha Finkelstein" <k@chaosmail.tech>, "Sven Peter" <sven@kernel.org>,
+ "Janne Grunau" <j@jannau.net>, "Neal Gompa" <neal@gompa.dev>, "Rafael J.
+ Wysocki" <rafael@kernel.org>, "Viresh Kumar" <viresh.kumar@linaro.org>
+Cc: <asahi@lists.linux.dev>, <linux-arm-kernel@lists.infradead.org>,
+ <linux-pm@vger.kernel.org>, <linux-kernel@vger.kernel.org>
+X-Mailer: aerc 0.21.0
+References: <20260720-cpufreq-64-v2-1-72bd9b4e5ca0@chaosmail.tech>
+In-Reply-To: <20260720-cpufreq-64-v2-1-72bd9b4e5ca0@chaosmail.tech>
 
-On Mon, 20 Jul 2026 16:43:40 +0200, Andrew Lunn <andrew@lunn.ch> said:
-> On Mon, Jul 20, 2026 at 11:24:54AM +0200, Bartosz Golaszewski wrote:
->> Prefer the higher-level platform_device_set_fwnode() over the
->> OF-specific platform_device_set_of_node() for dynamically allocated
->> platform devices.
->>
->> Signed-off-by: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
->> ---
->>  drivers/net/ethernet/marvell/mv643xx_eth.c | 2 +-
->>  1 file changed, 1 insertion(+), 1 deletion(-)
->>
->> diff --git a/drivers/net/ethernet/marvell/mv643xx_eth.c b/drivers/net/ethernet/marvell/mv643xx_eth.c
->> index 9caa1e47c174c9d7a161b7f2e2ee12a829b813d4..2f2d6cce8d852b9ec3ab42678a04a7915d1f00cc 100644
->> --- a/drivers/net/ethernet/marvell/mv643xx_eth.c
->> +++ b/drivers/net/ethernet/marvell/mv643xx_eth.c
->> @@ -2780,7 +2780,7 @@ static int mv643xx_eth_shared_of_add_port(struct platform_device *pdev,
->>  		goto put_err;
->>  	}
->>  	ppdev->dev.coherent_dma_mask = DMA_BIT_MASK(32);
->> -	platform_device_set_of_node(ppdev, pnp);
->> +	platform_device_set_fwnode(ppdev, of_fwnode_handle(pnp));
+On Mon Jul 20, 2026 at 3:25 AM EDT, Sasha Finkelstein wrote:
+> The current frequency calculation is done in 32 bit, causing problems
+> if run on a future SoC that can boost higher than 4.2GHz. Ideally, we
+> should use a true u64 instead of unsigned long and "knowning" that this
+> only runs on 64 bit machines, but the core code uses ulong everywhere,
+> so this should be good enough.
 >
-> This is definitely an OF only driver. There are no other calls to
-> fwnode functions in this driver, so this is the wrong thing to do.
+> Signed-off-by: Sasha Finkelstein <k@chaosmail.tech>
+> ---
+> Changes in v2:
+> - Minor style fixes
+> - Link to v1: https://patch.msgid.link/20260703-cpufreq-64-v1-1-c406c7053=
+19a@chaosmail.tech
+> ---
+>  drivers/cpufreq/apple-soc-cpufreq.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 >
-> Sorry, NACK.
+> diff --git a/drivers/cpufreq/apple-soc-cpufreq.c b/drivers/cpufreq/apple-=
+soc-cpufreq.c
+> index 638e5bf72185..5ad274a1e6ae 100644
+> --- a/drivers/cpufreq/apple-soc-cpufreq.c
+> +++ b/drivers/cpufreq/apple-soc-cpufreq.c
+> @@ -288,7 +288,7 @@ static int apple_soc_cpufreq_init(struct cpufreq_poli=
+cy *policy)
+> =20
+>  	/* Get OPP levels (p-state indexes) and stash them in driver_data */
+>  	for (i =3D 0; freq_table[i].frequency !=3D CPUFREQ_TABLE_END; i++) {
+> -		unsigned long rate =3D freq_table[i].frequency * 1000 + 999;
+> +		unsigned long rate =3D freq_table[i].frequency * 1000UL + 999;
+>  		struct dev_pm_opp *opp =3D dev_pm_opp_find_freq_floor(cpu_dev, &rate);
+> =20
+>  		if (IS_ERR(opp)) {
 >
+> ---
+> base-commit: 4a50a141f05a8d1737661b19ee22ff8455b94409
+> change-id: 20260703-cpufreq-64-2a23d7261e09
+>
+> Best regards,
+> -- =20
+> Sasha Finkelstein <k@chaosmail.tech>
 
-I'm not going to die on this hill but drivers are OF-only until they're not.
-For example, Qualcomm is now working on a hybrid ACPI-OF approach for
-laptops[1] and we may end up needing to start converting drivers to fwnode
-after all.
-
-There's no real benefit to sticking to OF-specific APIs unless you need to
-iterate over all properties of a node or use some other functionality not
-available in fwnode. The overhead is minimal and it's never a hot path.
-
-Thanks,
-Bartosz
-
-[1] https://lore.kernel.org/all/20260623145225.143218-1-johannes.goede@oss.qualcomm.com/
+Reviewed-by: Joshua Peisach <jpeisach@ubuntu.com>
