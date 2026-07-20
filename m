@@ -1,184 +1,222 @@
-Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
+Received: from DU2PR03CU002.outbound.protection.outlook.com (mail-northeuropeazon11021119.outbound.protection.outlook.com [52.101.65.119])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A12073CF97F
-	for <linux-pm@vger.kernel.org>; Mon, 20 Jul 2026 08:23:17 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1784535798; cv=none; b=ht6Exs4NKRWw5Ho4YOiMbYyGD/L7ccwztMt854oWNltX8ieBT3+gyK4RFmo2/CgYVIVIQ2M2o25bcCnM9ZVM42BAgmgazflAIT8LM3bFLwlodZfFTqBRC66RvOe73NwsdZCtictoSHd0faCTDe5Zq0APCvbDtjPwAMXRRWCzDAo=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1784535798; c=relaxed/simple;
-	bh=8xulqPcrGT3G4v6kMgpUnZtZlTdQx0MSEYnJpaZgohU=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=tf2Mz+40+9VQXBoNAVaqlkewFR+TIkuG2A/1VucxvDDtDIeYAMECu16/pzvyEA6bVYKPtRS/mSy42cWYpNvCNduk2EWMZaXTYNERSmP1Nhxkh8rU9hh4LtuqiMp5BL0HUvZbpidEbrC/1m3U2hbbHpwtpSueeTOH4PTXnshtN9A=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=CkVgk1Ih; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=OwG0YPH4; arc=none smtp.client-ip=205.220.168.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DDB243CCFDE;
+	Mon, 20 Jul 2026 08:27:44 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.65.119
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1784536068; cv=fail; b=k8v6FQVIN41/r3UA1eJbGRh+5Cow4rOFbsSc3/ucfgqsHE0iCpuM6tXnO3JC5mveF5nyOPP+cJkx7oqsyZMIclcohzbWpOFRhP9IXmxMhG5h9/mY9/+jecCXDMIzNqSOxLv/39a6I9NnptezGGHhP0zOhC5rbPqbEYHT30SfS0c=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1784536068; c=relaxed/simple;
+	bh=nrDpF95wu4UKeEVyPUHEGF4kyKSe3fZaWcMXzp/uz+c=;
+	h=Message-ID:Date:Subject:To:Cc:References:From:In-Reply-To:
+	 Content-Type:MIME-Version; b=mCKZ2L/n/8NgKG7mko4MYoONLFkRzEXWUHpQrkN7BKaXnWtnNacSda0oRn1YolySx8RcI6R5f0pQ7AzKArwkEEHU53ZChUYMrxqLYN2pZhRaNouKf03vril6O3tAemALZA1c8enmTpdQv+65djURPuaI53UBUzcekY8UkMWgORY=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kontron.de; spf=pass smtp.mailfrom=kontron.de; dkim=pass (2048-bit key) header.d=kontron.de header.i=@kontron.de header.b=R5MmloeC; arc=fail smtp.client-ip=52.101.65.119
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kontron.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=kontron.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="CkVgk1Ih";
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="OwG0YPH4"
-Received: from pps.filterd (m0279864.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 66K6Rnxu1263187
-	for <linux-pm@vger.kernel.org>; Mon, 20 Jul 2026 08:23:17 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	YdHOvi6op9PZsp0dCdMAIUCpZ6ygglE1WyUlQZxnVkw=; b=CkVgk1Ih0dV7+IyQ
-	Es3Q06Bw345082P7HpCeFPGlxI6iZQDQQyVeO2wnFJ6nEWLotxuEAEs1C0mpygnJ
-	WDSE+pcDLL2q99BpBfrvlPnVUoHF5kWXq1Jd+qpwnNy2V2zMhQHJDLPh+MaYNT1L
-	cMtFPa1NZD/3n+P/mlyacQ94Cx7QYgDtd/SGZIaVSPg7hiQ3v0VQG0ZQ9e4bsnMQ
-	Hvz5h0eKO6KYdrEmsIOtkFVmeOgw6HD6FoIwruXrj250UKIjPvJqL53tJydBXNzh
-	LwPyWkT1+gGJTvsvhgIs5zb0vI87yXpy4L3W3n8VeZWo1wPFRcvselcERU+0tt0F
-	/9NbPQ==
-Received: from mail-pf1-f198.google.com (mail-pf1-f198.google.com [209.85.210.198])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4fg2nhn5by-1
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Mon, 20 Jul 2026 08:23:16 +0000 (GMT)
-Received: by mail-pf1-f198.google.com with SMTP id d2e1a72fcca58-847a00bcbd0so12594278b3a.0
-        for <linux-pm@vger.kernel.org>; Mon, 20 Jul 2026 01:23:16 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1784535796; x=1785140596; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:in-reply-to:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=YdHOvi6op9PZsp0dCdMAIUCpZ6ygglE1WyUlQZxnVkw=;
-        b=OwG0YPH4axrikoGCYUy54ywy07TCi4MVuhSZAD8rOgGiiAptZhWMG5cHKT+q2/aOMz
-         zUG1QSuGZTTbB0wIze5xEmBgxA48tW9wwEYvQaNJ4XBUrV6X2Kh4nzKDlGhX1qRnk0Pm
-         jaUX4k0rf+a1tqn/IELvlVFcdA6fgl1pnVoKqCRTkvGRLq43R0nPrL7WWAtYZrSFvPdg
-         4kpZvFyBIGYpQu1JhKZWsGCit1O7Hc4uJdv/5rDYoPrpgmTq5BsPpg386qH5+a8Hs7nc
-         5n0JIRzdfXF3EavDeb0xDK4+lTsPeGltOWg/ga3pZGVCKcf6vwCDFLBptEN7I7J1bzz/
-         C+RQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1784535796; x=1785140596;
-        h=content-transfer-encoding:content-type:in-reply-to:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=YdHOvi6op9PZsp0dCdMAIUCpZ6ygglE1WyUlQZxnVkw=;
-        b=RVUSwkkb7YPmGUMHUutDowgtCho8pX54qsd0Tjc/4raCwJTpGzcFkGDIKsMuSYeEcA
-         d0jIiAe+0lvBQj6fl0kJ5wqY3mAB3zE4rvjZXGEvwM6rwmj1F7Dy81eEUr3C0x014EoR
-         5s7P2dQXTG5OgOAhj9fHDG+BN6I1Hr0n2m0USDSIEBLCQJlkEb62y4d/sfzXlMm36HRt
-         t99y4XsbgTX2FkDfOHTznjOI/U0x8oG+dByUeTrodXZsP82JC2U0XfMu+qeezaaGHROF
-         bEu75xbY9y8srVD1C95ZIwKFXtCG3wqL5vNJVxfUPoour5ipHHhse+cXumsTcn65XxGC
-         a4Tw==
-X-Forwarded-Encrypted: i=1; AHgh+Rr27aWhnuEBeBarREhVUWFmZaz9Uuy1aAZg6tqMKj28qxhZMaZimDxvr7gWMCuIHIPUkPH+t3Wx+g==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yz9eQb0wgRsK9neMMdhM9PNAXJT1DftrAU00RCKdIA9x2xFixtR
-	9/QwdeLoxEpkW9+AcDn8ZE9drKjDIEaT1sX6UmN+l3s4kcjikH1e/hss+j3mtMeqaZBNfaWJy9O
-	Al0R9CyGwlmKAGLAyuvyaMoR0nhXejCBQ1o9mntYs63vijBkBri88J/4sDL7ATm+JqO8Z2g==
-X-Gm-Gg: AfdE7cm5aThWRfQ1FTTySyatItO/y4hHMtKZgW/5euZvBAyItT7gJgTfoxDXbSXsJYS
-	45nKLflFLPaLE9GGwg9yC8rjDUrTVxpeQlLptMPXYySQmW5skqfF/nqxDNBC/pMvfWlF1NFBNbJ
-	ku7dQL6yHIGGjM4bj//jq1AzIhuQiMXFCAb6km2YPrxftCm61+nc4fP8SWoT8M92kfEgzZ5iKR6
-	On9zXoZz1Ol0s1+AxZgQ20zNRgmQ2Yha2MgKCMuNt5RhlrdrSRgJ7KOw1HzPju+wna1NtL5pB+4
-	4S1m8pF2gMQOEQ29qyOKL00qGzBYR1tseIPq+ZHgmED6LJG5ZyqLXfR8/VYSYqzws+DaOK226SL
-	7EJpT2u8AEnIztCNztI833W+r9IAokYRh5BQAFPfdAxEuhNCciKl4r+dlGtiVXgR8ojvXDoO0
-X-Received: by 2002:a05:6a00:391f:b0:847:83bd:6676 with SMTP id d2e1a72fcca58-84c2927e709mr13775016b3a.17.1784535796232;
-        Mon, 20 Jul 2026 01:23:16 -0700 (PDT)
-X-Received: by 2002:a05:6a00:391f:b0:847:83bd:6676 with SMTP id d2e1a72fcca58-84c2927e709mr13774994b3a.17.1784535795785;
-        Mon, 20 Jul 2026 01:23:15 -0700 (PDT)
-Received: from [10.133.33.234] (tpe-colo-wan-fw-bordernet.qualcomm.com. [103.229.16.4])
-        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-84c2af9f00bsm5233431b3a.56.2026.07.20.01.23.10
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 20 Jul 2026 01:23:15 -0700 (PDT)
-Message-ID: <cefa6f15-c20d-42f0-a39e-6582a841b595@oss.qualcomm.com>
-Date: Mon, 20 Jul 2026 16:23:02 +0800
+	dkim=pass (2048-bit key) header.d=kontron.de header.i=@kontron.de header.b="R5MmloeC"
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=xM+V0+Wu6/2psQT1OBx77pEn7rXE9GfBCS6E6FjpXBeDjIJw4U7ZVXtnT+YK31pEWRsIO+hNbnN83QI1cGs50fA2j+l5TroUzhzVk+8nvGGQBJXeSVh4MUeSl1G1b1CRqUwFURSkXZlmxZiFlvm5g7xlk3NvV81qsfjRJTPTgEgtCnPwPogx8g082BjO7BISWlbImoQOoVHOWVZbhEHHJ9cZSRPL7BDPgEQMWhGdzOI6Y9QiTwyZtcFgHKlJKdYDHIY5DzjcL/2klBpaaA+OxYpFW8oqRMjHJavSMiK/8tbES4EGKz+iOwkeYrIazfMDSRTXD6vID8b4rPuk6y9cJg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=1RfFJezOgIiNsgp05GP4syUtkTURbMDdxIP6+LImR8w=;
+ b=zHCA9ZQsOx9i8pFEk2tKQBPEVGJTNddGi9tI8rOu/U91siH97nw6AO8bUtxb77qy2mq+YqgMEvZmOD2rEnFHQEa51BuVgpXsCfJz+jYAaGELzAgEbSPDAdS+M9ilRmlcfXG4dvGs3TOLIVIwngqVi8NNVF4Ot3cnn25uMQQsSrUlt+zvRebtEYAKFYqFxguPhzRDMNiEDZXoi0sji46g2w5xZAghLkWCstNb5BMKRchATmSEW7KWblTSMrxaSOMCdnn8rWkYOWiqPS6Ht00FmAFQBiy0iccJfdqdEw2MiLmwNPkl3tFH1wqta5ykz1lMnVpMw8s1zgm5KBk9rJ8g0g==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=kontron.de; dmarc=pass action=none header.from=kontron.de;
+ dkim=pass header.d=kontron.de; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kontron.de;
+ s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=1RfFJezOgIiNsgp05GP4syUtkTURbMDdxIP6+LImR8w=;
+ b=R5MmloeCMNmQtyuLgvA5I1AKd4YJ6Gs4pFTyb7XOj42om8YhN88sUlP0/7BOCJfHYlBPHWvNTBAeKpg9jUbWqFxmA2OsbY40qSd0/aY0AYuz2720fw8edOsivgQf9gaMxDX0x3z6OeDhKkKgpyGgHKAdcPCQIH1AWuwOMHHyNdSUEwjA2QeHRPIAKiJAIRFdKK7Gvg1IFlNTb+WEGgl6zvxgGFrU4oTpOJ+sQzNLwEDVjZOC2W1/K2ieHrlbGZeoY1BISvMBkXuxVYNMtSrhrxN0SlxJhUG9aILnLKHHVqeH+zZOzQLhc4QVx0N9piOX60LxUcZqQ1I0yrdYM/dLaw==
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=kontron.de;
+Received: from PR3PR10MB4288.EURPRD10.PROD.OUTLOOK.COM (2603:10a6:102:97::22)
+ by AS8PR10MB5949.EURPRD10.PROD.OUTLOOK.COM (2603:10a6:20b:528::18) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.223.13; Mon, 20 Jul
+ 2026 08:27:34 +0000
+Received: from PR3PR10MB4288.EURPRD10.PROD.OUTLOOK.COM
+ ([fe80::6aec:a389:7814:860f]) by PR3PR10MB4288.EURPRD10.PROD.OUTLOOK.COM
+ ([fe80::6aec:a389:7814:860f%4]) with mapi id 15.21.0223.015; Mon, 20 Jul 2026
+ 08:27:34 +0000
+Message-ID: <cf03ce93-bd08-411c-9ca3-2a3238e38eec@kontron.de>
+Date: Mon, 20 Jul 2026 10:27:33 +0200
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v8 3/3] thermal/drivers/imx: Add calibration offset
+ support
+To: "CHENG Haoning (BCSC/ENG1)" <Haoning.CHENG@cn.bosch.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>,
+ Daniel Lezcano <daniel.lezcano@linaro.org>, Zhang Rui <rui.zhang@intel.com>,
+ Lukasz Luba <lukasz.luba@arm.com>, Rob Herring <robh@kernel.org>,
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
+ <conor+dt@kernel.org>, Shawn Guo <shawnguo@kernel.org>,
+ Sascha Hauer <s.hauer@pengutronix.de>,
+ Pengutronix Kernel Team <kernel@pengutronix.de>,
+ Fabio Estevam <festevam@gmail.com>,
+ "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "imx@lists.linux.dev" <imx@lists.linux.dev>,
+ "linux-arm-kernel@lists.infradead.org"
+ <linux-arm-kernel@lists.infradead.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+References: <20260714-b4-symana21-11221-imx-thermal-support-upstream-6-18-v8-0-d54d8690e16e@cn.bosch.com>
+ <20260714-b4-symana21-11221-imx-thermal-support-upstream-6-18-v8-3-d54d8690e16e@cn.bosch.com>
+ <5a000235-5e17-4d54-8bbe-42fda0b59db0@kontron.de>
+ <PAWPR10MB741520A95E4822E935A0B7C0C2C62@PAWPR10MB7415.EURPRD10.PROD.OUTLOOK.COM>
+ <PAWPR10MB7415DE998EA3CCA639F14EF2C2C32@PAWPR10MB7415.EURPRD10.PROD.OUTLOOK.COM>
+Content-Language: en-US, de-DE
+From: Frieder Schrempf <frieder.schrempf@kontron.de>
+In-Reply-To: <PAWPR10MB7415DE998EA3CCA639F14EF2C2C32@PAWPR10MB7415.EURPRD10.PROD.OUTLOOK.COM>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-ClientProxiedBy: FR0P281CA0232.DEUP281.PROD.OUTLOOK.COM
+ (2603:10a6:d10:b2::16) To PR3PR10MB4288.EURPRD10.PROD.OUTLOOK.COM
+ (2603:10a6:102:97::22)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2] cpufreq: apple-soc: Calculate frequency as a 64-bit
- value
-To: Sasha Finkelstein <k@chaosmail.tech>, Sven Peter <sven@kernel.org>,
-        Janne Grunau <j@jannau.net>, Neal Gompa <neal@gompa.dev>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Viresh Kumar <viresh.kumar@linaro.org>
-Cc: asahi@lists.linux.dev, linux-arm-kernel@lists.infradead.org,
-        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        zhongqiu.han@oss.qualcomm.com
-References: <20260720-cpufreq-64-v2-1-72bd9b4e5ca0@chaosmail.tech>
-Content-Language: en-US
-From: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>
-In-Reply-To: <20260720-cpufreq-64-v2-1-72bd9b4e5ca0@chaosmail.tech>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Authority-Analysis: v=2.4 cv=Le0MLDfi c=1 sm=1 tr=0 ts=6a5ddaf4 cx=c_pps
- a=m5Vt/hrsBiPMCU0y4gIsQw==:117 a=nuhDOHQX5FNHPW3J6Bj6AA==:17
- a=IkcTkHD0fZMA:10 a=RAioF0-LDSMA:10 a=s4-Qcg_JpJYA:10
- a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=DJpcGTmdVt4CTyJn9g5Z:22
- a=bC-a23v3AAAA:8 a=EUspDBNiAAAA:8 a=iQvuD4D9eR7FdX2dW0kA:9 a=QEXdDO2ut3YA:10
- a=IoOABgeZipijB_acs4fv:22 a=FO4_E8m0qiDe52t0p3_H:22
-X-Proofpoint-GUID: IJvMtMdFXMmDvsEiOxat6i0twmNOxbVz
-X-Proofpoint-ORIG-GUID: IJvMtMdFXMmDvsEiOxat6i0twmNOxbVz
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzIwMDA5MiBTYWx0ZWRfXyUKVJ2auA5+v
- OpBsw/BxFRTyezmFLUh8RIdueDH5ViBhpvmTympj1vk6uXwHTCknnoWvTVEPlByGJVAQg+gBsWN
- gf8xqfZY4j07cI76Tlppg92HfX/GYG1vgek3kJXgsoLFRA+Ju5hkpqBRhTk8g5B/prhKhTIaHHR
- tk08b52lw/ElN2+g3QBm785alUojDqDaazzBOQ0sgjtcy47wDE4+CxAFqS4tk6XqqnV0DObN4s6
- bC9JtQmtMefU+CZJS2blHTRxgfNE8eUpT8I0l7Z0yk5jNeMYl/9Iqbeq7q6DDkWYg8LyZieVBXE
- GA3rrYoWgExWcliUNhhi1znQiJA87V9aRPj2UGSDdUUM7JNijFJwDpTbB7tf7VhFJjuYu36GUT3
- LGmvk0OZnuaTWfp2ZJMqSj/Cdi1ESgXTZZKl1inVRluNEA6plTAQx/RCtHInWBpeDU3dndlLhMN
- ENTqdqlgTwvLQS0i2EA==
-X-Proofpoint-Spam-Info: AW1haW4tMjYwNzIwMDA5MiBTYWx0ZWRfX858S05V355S5
- Zyhi9CcSNPVYGbn2zsnhbEUzYasUxEGNYpSBe9m+iq+JbQDFuFvAEHGJs3tWwgB9HArsF4JYflp
- zkMsD43Nej9w+kUzx6sdIgT93esvPT4=
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-07-20_01,2026-07-17_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- suspectscore=0 lowpriorityscore=0 clxscore=1015 adultscore=0 phishscore=0
- bulkscore=0 impostorscore=0 priorityscore=1501 malwarescore=0 spamscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2607200092
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: PR3PR10MB4288:EE_|AS8PR10MB5949:EE_
+X-MS-Office365-Filtering-Correlation-Id: aa9017c8-65e6-447c-5715-08dee638bfdb
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|23010399003|366016|1800799024|376014|7416014|6133799003|10067099003|56012099006|11063799006|4143699003|18002099003|22082099003;
+X-Microsoft-Antispam-Message-Info:
+	vfQZgyu1GC78LYUGz6kJET9aCJmQ21hu9A0zJIkaiJMJd6bA4IMjJwepdpszR4VAr+y2/eeM+A7KZyL1sF6GscOfYzmBj7W42W5nUdMJdb5OIcb8fn9X5YXJ//jt7WfrVPKJNJKD+9Ka6uZZ9k8d8lgFXd2tk25lqq2fV3DZRYOlxa5My95qv3QQXJlbo/YV6fOnzsW9JPY3buX/TXa09rWQOmqLDcXXuxthQA5GcscP+bYsixJxchHGveus/R7LVpcs7uCLXp6f0cfFNVCOJUAl33NyolkxMlF2Q42jlkHmUNTYPj/2MBnXu00PVQCL0IF4S5ZNRDYsnUkCtzwy1gYPPTNZzBsEp0VY4/CpBZWBRQPund7s5erxwflUGDCjhtolO0VP6h3vOVWoZQWn5vM8BlrH31OwAcplKyXHODK/7Cqr7P/Tiz8Td88x6DXCxVvddwvRfhzfjy4dtgrjiSqS/jWjhmmYnfJfq8tiLyTiShXzw0YKOSioP/uwqPYIE8nU9XdDwgAJeLyict2yqPn8N4SaqlX2R9EfnCjPcEwrW0Fypjz/jInGCvO6f949IwjkhGC16uoWQNYhjk/h++kHEwhWMLditiPvbuu2akEiPxS/0WWQnxw04Lsabr0TS+zT0Ywf14l8LcpHNp8zyzyDrm4FwF/xTKqViSaTVFM=
+X-Forefront-Antispam-Report:
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:PR3PR10MB4288.EURPRD10.PROD.OUTLOOK.COM;PTR:;CAT:NONE;SFS:(13230040)(23010399003)(366016)(1800799024)(376014)(7416014)(6133799003)(10067099003)(56012099006)(11063799006)(4143699003)(18002099003)(22082099003);DIR:OUT;SFP:1102;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	=?utf-8?B?WmVnSDFRbzM3TU1UK1ZqVXJ0bGZoZ2FtbUk1L2svQlBodGpUMis2N3FVQjFw?=
+ =?utf-8?B?VEFOWTBsWkdzSVE5Y0FsdTl2UW0xb1VGU1AwVWg2WVFHL1hKdHdBQlRyMnVE?=
+ =?utf-8?B?aVR6MitndTVpeUpUQW9odGtxcnJYTzVJMUNmMklaZ01Na1Q0SnJCdWxJSkgv?=
+ =?utf-8?B?Sm0velJmMHAxZGVnZDUxTndlTVphdmt5elJKUTdId2NHTGVXY1ZFTEN0QmNT?=
+ =?utf-8?B?UDJiTzQzckJuNitGc2lGRTVzbjlRdGNZdTZPR3l6VGk4M01kM2FBRlVGT2tR?=
+ =?utf-8?B?UW9XRlVHbjhGeVh3RSszL3ErTi9qbXZkSEZEZTA1QmlLdXFTUXUyRHdxYSto?=
+ =?utf-8?B?NGhqT08vU25OYTYzWHhpdU1sUk90N3JYampEa0M4ckV3emdxRVdERzhzcldX?=
+ =?utf-8?B?R1VHMHN0UWRveXVvU0dtQzd2VnhYN2k2WHVteUhwVUhLMGphbG5HWU9LT2tW?=
+ =?utf-8?B?ei95NjRNTTErcEx2L0MxR2I5b3JPRG5iWkZZM3RRNlhpTWpNSkg0cXBNREtW?=
+ =?utf-8?B?MXFOK1ZjYldORGk1VXFJdEN6Y1k5eWtVNFgrS0wvWEVYVDRmaGV0LzROOGJM?=
+ =?utf-8?B?aEEvL21LeGZxTEc3bXJPeEpEanhleVBEeUlrcnY5WjJQQURSVm8wdEFYNTVT?=
+ =?utf-8?B?SWVSdDV3QXBrQXBoZm9rV1pTRUE4NitCVWpsT2hIVVBHeTZDVU1scmEwbkpM?=
+ =?utf-8?B?cUp4bHN0L2JBM2JWMnJqUmdFNTR3QTViMEk5SFBaUkltOG1peG9EbE9NRHN0?=
+ =?utf-8?B?cXU5WnZPMURkSDlmTlNjUXBEZW92WUhTTzc5eGtBR2NHc2JGVkUxV2tIeWY4?=
+ =?utf-8?B?TjdQUEM1T2tib1pENzk1SU5YZWFVczJVZ3NTa3RVdEZrdFpnKzNyMEpSOGp4?=
+ =?utf-8?B?T2c3NDZLb0QrQXk4OHRENTJqY2J0K1NMcXFDTEorbElVZndIU2wvdVI5NEtO?=
+ =?utf-8?B?S0V3TjQ3QVRIa3pTd0NWMlRCelBDZVlLSTcxUys1M2NXQmtkSDE2blQvRVFn?=
+ =?utf-8?B?dTI2OU1GQ3pneG5QcXFyWTRFYXovbkF4ZHRkSXFtUS82UmlnaEJSMDVmb1Fx?=
+ =?utf-8?B?M1FRVHFQTGV4Y09VRXVXb1ZsVUxIeGpGekYxZ2Q1djVhWERZVzZwWEx4R3dk?=
+ =?utf-8?B?TGp1NnE2N3oxNlE1RWtEYlRCdy9qQm9aUk9BMjhGMHF2OUIvRHM5QnVENmZo?=
+ =?utf-8?B?b2szSWVEbVhENHhCWDliMlR4NHhOTlp0VkRtenMxZlk1UnhGM2VpK1FMNTd2?=
+ =?utf-8?B?MUovNlZlSFdLTkRXWUpYZVJKUjV0REFCaWVrQmhwQVJRaHRDSDdGWDRTV3FF?=
+ =?utf-8?B?azh0YmFCTjAxdmFBcFAyaElmOUNjeUVBOFZXUWpKUTVoVEpVRkhWdXR0OTdt?=
+ =?utf-8?B?MjVtVk1POTA3ZjZhNllpSUo5cldlUHlrSWRkUkFJSVdnRDZiYkRFOUxPK0ky?=
+ =?utf-8?B?a3ppQy9XNXNINFEzakNBVTQwK01tQ1RaTlBZdXFTU3l3WnlMUnczcWtEMmlu?=
+ =?utf-8?B?N1ltSVZyQStJcitSdjR1N1ZIbGRBNzRXSFFUUmt6T1hGQWRNOXpKTHMrWFZT?=
+ =?utf-8?B?TktiNWhFWjd2SmNKYUsyMlk2OVFMTDNKZ2IvYlJVZFZmdVM5WmZDVG82SGtP?=
+ =?utf-8?B?cTFMZDdLNGIzTi9rMXRnblNUVTNVK3p2S3EvWnNGNDVOVE83UGUwU2VzVlhZ?=
+ =?utf-8?B?SzYyR29DNFEwdUFxWkVUM0xvZXlQMnBTYXN5emRjbHczZWxNSE1HRG1SNjVN?=
+ =?utf-8?B?SnRWdGtwMEY3M2c2SVNjZ2VOWnpxSFhIaEVSWXBKaDlreHhOczNDYXR3aTdn?=
+ =?utf-8?B?d0FBZnFHam9CU1FJZXRranRra1lsMGZYeUtKMXBtUVJpV0pRVFFmSFJsV3lL?=
+ =?utf-8?B?bHhGNU4vUjdCZURSSGUrZXFCVzB3cll6eVBiZm1yYlMrWEo0QlQrL3h5RCtE?=
+ =?utf-8?B?WVIzNk1CVWRZMmUxSDdGc0xTTTR4MlRzMFB5d2xyRVZlR2ZzNWlPZldyOExr?=
+ =?utf-8?B?eWl3bGQ0QWZIaFBMSmVFZi85bmlhSDYvaWRMZDg5VlVPbVU2MUxsOVZWaUJN?=
+ =?utf-8?B?dmN6OU9DUWRKaitJYVVHSFE5SnZOdjhZdUcvRjFyUnRrWGk3Q1VSSG1vckc5?=
+ =?utf-8?B?Y3lmYU5NQVVNZFhub2pXcC9MQk1Nb0xVVG9RV3M1WWZaaVoyMjRnNnI2VlFO?=
+ =?utf-8?B?cGloNEdkeVROYkZ6d3pBZ3E2VDhsY2J6NkxEb3lYaHNKaUJrRGxxajlLRXIx?=
+ =?utf-8?B?RnZ0UzFKT053R3p3UEhSTFFJZE0zc2pBWkh0U1dkUFRwemljZTFKUG5MN0kx?=
+ =?utf-8?B?dXVKRmZNRW41OXJ0SzdSMnpSaGhzWDVxbGlJamxRKzFrMmxtYUthU2JwanhW?=
+ =?utf-8?Q?YedFL4sefPo587Zs=3D?=
+X-OriginatorOrg: kontron.de
+X-MS-Exchange-CrossTenant-Network-Message-Id: aa9017c8-65e6-447c-5715-08dee638bfdb
+X-MS-Exchange-CrossTenant-AuthSource: PR3PR10MB4288.EURPRD10.PROD.OUTLOOK.COM
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 20 Jul 2026 08:27:34.6072
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 8c9d3c97-3fd9-41c8-a2b1-646f3942daf1
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: H31ntylUCJu8xeOvdUig3nv1b5UOqiQW0+a2iATSIrGpbTass96EC9Pv9WvgrlGlxZMhWc4cDwug9TKFcKtqQ+ImI54QANteEuKRBKutWIc=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: AS8PR10MB5949
 
-On 7/20/2026 3:25 PM, Sasha Finkelstein wrote:
-> The current frequency calculation is done in 32 bit, causing problems
-> if run on a future SoC that can boost higher than 4.2GHz. Ideally, we
-> should use a true u64 instead of unsigned long and "knowning" that this
-> only runs on 64 bit machines, but the core code uses ulong everywhere,
-> so this should be good enough.
+On 20.07.26 04:10, CHENG Haoning (BCSC/ENG1) wrote:
+> [Sie erhalten nicht h?ufig E-Mails von haoning.cheng@cn.bosch.com. Weitere Informationen, warum dies wichtig ist, finden Sie unter https://aka.ms/LearnAboutSenderIdentification ]
 > 
-> Signed-off-by: Sasha Finkelstein <k@chaosmail.tech>
-> ---
-> Changes in v2:
-> - Minor style fixes
-> - Link to v1: https://patch.msgid.link/20260703-cpufreq-64-v1-1-c406c705319a@chaosmail.tech
-
-Looks good to me.
-
-Reviewed-by: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>
-
-
-> ---
->   drivers/cpufreq/apple-soc-cpufreq.c | 2 +-
->   1 file changed, 1 insertion(+), 1 deletion(-)
+> On 2026-07-17 06:23:44+00:00, CHENG Haoning (BCSC/ENG1) wrote:
+>> On Wed, Jul 15, 2026 at 11:06:07AM +0200, Frieder Schrempf wrote:
+>>
+>>> On 14.07.26 12:28, Haoning CHENG via B4 Relay wrote:
+>>>
+>>> Sorry to chime in so late. I just want to understand what this
+>>> calibration offset is about. Why would there be a need of a
+>>> board-specific offset? The sensor is in the SoC and if you add a
+>>> board-specific offset, you no longer measure the SoC core temperature,
+>>> right?
+>>>
+>>> How would you determine the offset in the first place? How would I know
+>>> what fsl,temp-calibration-offset-millicelsius should be set to? I could
+>>> put a sensor on the SoC case and use the delta as offset, but then I
+>>> would just account for the thermal resistance of the casing and not
+>>> measure the SoC core temperature anymore, right?
+>>
+>> Hi Frieder,
+>>
+>> Thanks for pointing this out. Your understanding is correct: after
+>> applying the offset, the reported value no longer represents the raw
+>> SoC die or junction temperature.
+>>
+>> For this board, the required "SoC temperature" is the package-surface
+>> temperature. The offset was derived by comparing the TEMPMON reading
+>> against a calibrated external sensor placed near the SoC package
+>> surface under steady-state thermal conditions, and is used to
+>> approximate the package-surface temperature from the internal TEMPMON
+>> reading.
+>>
+>> The Linux thermal framework does not require a thermal zone to use a
+>> specific temperature reference. It only requires the reported
+>> temperature and trip points to use the same temperature domain.
+>>
+>> In this driver, the offset is added in get_temp() and subtracted in
+>> set_alarm() and set_panic() when programming the hardware thresholds.
+>> This keeps the reported temperature and trip points in the same
+>> package-surface temperature domain. Doing this in the driver is
+>> necessary because the hardware alarm thresholds must also be offset-
+>> corrected; applying the offset only in userspace would cause the
+>> TEMPMON IRQ to fire at the wrong die temperature.
+>>
+>> I agree that "calibration offset" is misleading, since this does not
+>> calibrate TEMPMON to a more accurate junction temperature. In the next
+>> revision, the commit messages and DT binding have been updated to
+>> describe this as a board-specific conversion offset from the internal
+>> sensor reading to an estimated package-surface temperature.
+>>
+>> Thanks,
+>> Haoning
+> Hi Frieder,
 > 
-> diff --git a/drivers/cpufreq/apple-soc-cpufreq.c b/drivers/cpufreq/apple-soc-cpufreq.c
-> index 638e5bf72185..5ad274a1e6ae 100644
-> --- a/drivers/cpufreq/apple-soc-cpufreq.c
-> +++ b/drivers/cpufreq/apple-soc-cpufreq.c
-> @@ -288,7 +288,7 @@ static int apple_soc_cpufreq_init(struct cpufreq_policy *policy)
->   
->   	/* Get OPP levels (p-state indexes) and stash them in driver_data */
->   	for (i = 0; freq_table[i].frequency != CPUFREQ_TABLE_END; i++) {
-> -		unsigned long rate = freq_table[i].frequency * 1000 + 999;
-> +		unsigned long rate = freq_table[i].frequency * 1000UL + 999;
->   		struct dev_pm_opp *opp = dev_pm_opp_find_freq_floor(cpu_dev, &rate);
->   
->   		if (IS_ERR(opp)) {
+> I need to correct my previous reply. After further discussion with our hardware team, the offset does NOT convert die temperature to package-surface temperature.
 > 
-> ---
-> base-commit: 4a50a141f05a8d1737661b19ee22ff8455b94409
-> change-id: 20260703-cpufreq-64-2a23d7261e09
+> Their thermal characterization shows that the raw TEMPMON sensor reading itself deviates from the theoretical junction temperature - this deviation exists even at the die level, before any board or package influence. The offset corrects the sensor reading toward the actual junction temperature, so it is a genuine sensor calibration.
 > 
-> Best regards,
-> --
-> Sasha Finkelstein <k@chaosmail.tech>
-> 
-> 
+> Board-level effects may contribute additionally, but they are not the primary reason for this feature. I apologize for the confusion - my earlier description was inaccurate. The v10 series reflects this corrected understanding.
+Thanks for the update. If that is the case, then I would still be
+interested to know:
 
+1. How is the value for fsl,temp-calibration-offset-millicelsius
+determined, if it is not provided by the SoC vendor.
 
--- 
-Thx and BRs,
-Zhongqiu Han
+2. Why do we need an additional offset, if there is already a
+calibration using the value that NXP stores in the OTPs.
+
+3. Who is supposed to set this property and where does it belong? The
+SoC dtsi, the board dts?
+
+Thanks
+Frieder
