@@ -1,59 +1,59 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6C7643C13EF
-	for <linux-pm@vger.kernel.org>; Tue, 21 Jul 2026 09:09:11 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A368B3C1413
+	for <linux-pm@vger.kernel.org>; Tue, 21 Jul 2026 09:09:25 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1784624952; cv=none; b=c6f2eSZvjsot1xJSDdNfMbV7hNtwiDJTwKeNgSmKcaWRWKbGMX2BhFTgic3vxF+ri9jcznoQMJNYfWsCx4G6Lrnj7jAC3q22V1NyVu2woS9QK3wjulyDWpfJOaj314f94gHmNoDXnV/sSk8AABdqY80Uhm/SewuOzzZAaROEbSA=
+	t=1784624968; cv=none; b=sRuTmOc4AMnmndHNGaqbirWyQWF1uI/RuYyjNwl5YmqN8QUPmtADHe9s3i7ZLyQ7vm/iBWKhFeurVrciskOcrHEpsdi1sO86V3pNEh/bVBG61SG4NrkfwbB+37E3mtqWSMTldwjLKS1TxmoFd1wsc/B0ne4L+XCf/jYmDhUokoY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1784624952; c=relaxed/simple;
-	bh=jJAWY5I+EE7ypsQMmGeF7ePDs3+5/nc9dm1EvLwWSd8=;
+	s=arc-20240116; t=1784624968; c=relaxed/simple;
+	bh=4wB31opfSJxQGOyhrpE5g1SMhfmWmHTES3FuDZOGSPA=;
 	h=From:In-Reply-To:MIME-Version:References:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=ejuEAgBCLmST1hy/LUDQNPYIXm6k93htQfXCb5BqgIX6SH1wGfFo605FTI9JR8qXZCw7Hm82lxo9nb+pQt2h2+6RYc7krIuadi99yZN/k8rCX2w6r2TVaSLRF/L4kuTVKWOk1QKtDNSMS9rOlNDAolWmY4GdA9MdS/AlPjplX+8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=foJLZx2I; arc=none smtp.client-ip=100.103.45.18
+	 To:Cc:Content-Type; b=Z8H27OIVUCaH5OKLgiPFyoT1pHkU9FWPx/fQFeEM4kLx8gnzOdpnr4wM/gjO0kLnC5RRCmQoOSJhLKcIf6vzMG2LOvBemMe0k3hE7FNpsl2QdyLRfbY8RIiIf6DBrLQIi4W8pMgA0WNynLWi+gYUmDP3l1UBgoYOvPoLidRtbyg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=IC701rNZ; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="foJLZx2I"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4D4361F00ACF
-	for <linux-pm@vger.kernel.org>; Tue, 21 Jul 2026 09:09:11 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="IC701rNZ"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 859F31F01558
+	for <linux-pm@vger.kernel.org>; Tue, 21 Jul 2026 09:09:25 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1784624951;
-	bh=jJAWY5I+EE7ypsQMmGeF7ePDs3+5/nc9dm1EvLwWSd8=;
+	s=k20260515; t=1784624965;
+	bh=4wB31opfSJxQGOyhrpE5g1SMhfmWmHTES3FuDZOGSPA=;
 	h=From:In-Reply-To:References:Date:Subject:To:Cc;
-	b=foJLZx2IuPGexbJUlKxQfk3MNY2hO2lFMjD0RSceNM8RULTHr4+o/wqsxvk6DIN9y
-	 5EMoJIi9qFWUvo6eCQ3RU2QKmGxty1nssDEOUVW0NBDgP0tEZqitllWU92bL+ol5j+
-	 jg/daGT6XERjIfctGw1bMlNIDh9Mc/4sNP7F+qXWBlV2hVazImQqf1PsZwSGzOT9rh
-	 09JLrururGcpRhAvU5e5XfPEjErnhW3JGm8U+MLPaNPzh/BcSiyUYXbB+gHnLbQsKQ
-	 553dfAT1SWrjh3e506iY1pDNGi53cfxNlXn9WsG6QFJR4zwbN7BHj5beils/2Cvioj
-	 x4nQMUNJBKHuQ==
-Received: by mail-lf1-f44.google.com with SMTP id 2adb3069b0e04-5b013084dc2so6637770e87.0
-        for <linux-pm@vger.kernel.org>; Tue, 21 Jul 2026 02:09:11 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AHgh+RrZQWo6CV4PHQVu6nQ7cjTF/OUszNtdVMcOEelb2IBBg2GOV+81HmY0NbSyaeNxMb3QJBNezKb49w==@vger.kernel.org
-X-Gm-Message-State: AOJu0YzhwSJ/HHunORDu3GVx3KoWlXGwIl0Lgk5dJ9s+Se5Hqtu3jQKX
-	NYt87/ijthP0F9enWOIt3bqupEUgKcwBVpa5dEoQ49WTQm3sRaKRuUaMTZV5zaA7NLckg6TCikv
-	k+2OOFAAbVeK+wWh6DxRrGtCr9VaIWjGGsymhmFAWjg==
-X-Received: by 2002:a05:6512:8054:b0:5b0:d25:fa6b with SMTP id
- 2adb3069b0e04-5b28f9aa2acmr2799921e87.33.1784624950061; Tue, 21 Jul 2026
- 02:09:10 -0700 (PDT)
+	b=IC701rNZje+dgfTqbLnJ30zaA30NDt/Xo4YfQs5LzmrHX9HZyeYyKzyUX2HvEPF97
+	 1u4VvvvWC38WaQa274nSGTyUrcyKsap2cHKcgCYFePScep8erTz1dw5qfrFDKomFZn
+	 dxFq+CVi3oKPHbY7xwFOFO38JVrztihw1pXlx7pbJOzO035qZw8vWmiYdourkFBo0U
+	 okYvfFTI0oetvbPPM+HdJfbKD8rfTpQplzEcPEEF6w0l4wzzNgOjYGxRifx3uNrh1B
+	 l1zWF7sG1v2LTDfKq78JBivVrcm9XKWD+bI1GzHNk3frZd6RQelOQNwbDInWQy+Fsr
+	 SkkgFzrv/BznQ==
+Received: by mail-lf1-f51.google.com with SMTP id 2adb3069b0e04-5b2a5dcd5b2so543257e87.1
+        for <linux-pm@vger.kernel.org>; Tue, 21 Jul 2026 02:09:25 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AHgh+Rq7lVKqE0PD9eelmVXQBjKhGDFPeuSYbEmy90XN1mH8l6IkEgnwfVfDcDScysfMT/gXgSxgSOAtfg==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yx9OwW0JXDhqBDDEc9qCrYDAe6RXSXslQw5X1jkoHZs4k+GJd1d
+	iJgvlEElQrai/XiLw94Q3AJBtWyINYw5uflNS2c6d1UXTY3lrnifnjVu2cvrHIHlegz0x3jdBG+
+	zLosmGNpo0iZdpes7VWgx0dpA1u6psHSxzj9Ha1I0sw==
+X-Received: by 2002:ac2:4846:0:b0:5b2:8ad7:93b7 with SMTP id
+ 2adb3069b0e04-5b28fabf50cmr2774646e87.53.1784624964271; Tue, 21 Jul 2026
+ 02:09:24 -0700 (PDT)
 Received: from 969154062570 named unknown by gmailapi.google.com with
- HTTPREST; Tue, 21 Jul 2026 09:09:09 +0000
+ HTTPREST; Tue, 21 Jul 2026 02:09:22 -0700
 Received: from 969154062570 named unknown by gmailapi.google.com with
- HTTPREST; Tue, 21 Jul 2026 09:09:09 +0000
+ HTTPREST; Tue, 21 Jul 2026 02:09:22 -0700
 From: Bartosz Golaszewski <brgl@kernel.org>
-In-Reply-To: <20260721065413.2306137-17-wenst@chromium.org>
+In-Reply-To: <20260721065413.2306137-16-wenst@chromium.org>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260721065413.2306137-1-wenst@chromium.org> <20260721065413.2306137-17-wenst@chromium.org>
-Date: Tue, 21 Jul 2026 09:09:09 +0000
-X-Gmail-Original-Message-ID: <CAMRc=Mfv7P74+cpvmHaF=aSYLO=RtFbxenJHMrCjgOMoHuLvQQ@mail.gmail.com>
-X-Gm-Features: AUfX_myi0Upu0FA2vAaH9dLIsivFKjcILpMP1JD9Wz9GpUGoO5swX9n-_RCCXGU
-Message-ID: <CAMRc=Mfv7P74+cpvmHaF=aSYLO=RtFbxenJHMrCjgOMoHuLvQQ@mail.gmail.com>
-Subject: Re: [PATCH v6 16/16] arm64: dts: mediatek: mt8188-geralt: Add WiFi/BT
- as M.2 E-key slot
+References: <20260721065413.2306137-1-wenst@chromium.org> <20260721065413.2306137-16-wenst@chromium.org>
+Date: Tue, 21 Jul 2026 02:09:22 -0700
+X-Gmail-Original-Message-ID: <CAMRc=MedLNu+xzDW=L6_EhVMQphkWEp020HC9hpmDcueN1R6_Q@mail.gmail.com>
+X-Gm-Features: AUfX_mx6IxoN9pFtIb0B19rivB9mMh-kCXBeeOUX0vuwCx66Zlnj8MCY6QcZGPk
+Message-ID: <CAMRc=MedLNu+xzDW=L6_EhVMQphkWEp020HC9hpmDcueN1R6_Q@mail.gmail.com>
+Subject: Re: [PATCH v6 15/16] arm64: dts: mediatek: mt8195-cherry: Add M.2
+ E-key slot
 To: Chen-Yu Tsai <wenst@chromium.org>
 Cc: linux-acpi@vger.kernel.org, driver-core@lists.linux.dev, 
 	linux-pm@vger.kernel.org, linux-usb@vger.kernel.org, 
@@ -70,23 +70,14 @@ Cc: linux-acpi@vger.kernel.org, driver-core@lists.linux.dev,
 	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
 Content-Type: text/plain; charset="UTF-8"
 
-On Tue, 21 Jul 2026 08:54:11 +0200, Chen-Yu Tsai <wenst@chromium.org> said:
-> The MT8188 Geralt design features a chip-on-board WiFi/BT solution. This
-> is a M.2 E-key WiFi/BT board layout directly inserted into the mainboard
-> design. The connections to the rest of the board are almost the same as
-> if it were a separate M.2 card. The only addition is the PMU_EN pin on
-> the chip; on M.2 cards this would be tied to the primary power source.
+On Tue, 21 Jul 2026 08:54:10 +0200, Chen-Yu Tsai <wenst@chromium.org> said:
+> The Mt8195 Cherry design features an M.2 E-key slot for WiFi/BT combo
+> cards. Only PCIe and USB are wired from the SoC to the slot, along with
+> some auxiliary signals.
 >
-> Model the chip-on-board WiFi/BT solution as a M.2 E-key slot with PCIe,
-> USB and auxiliary signals. The PMU_EN pin, which enables the internal
-> power controls and regulators, is modeled as a regulator fed by the
-> pp3300_wlan regulator. Since power sequencing is now correctly modeled
-> using the M.2 E-key slot, drop the "regulator-always-on" property one
-> pp3300_wlan regulator. Also drop the comment in xhci2 saying "MT7921's
-> power is controlled by PCIe".
->
-> Also drop the voltage range on the pp3300_wlan regulator. This
-> "regulator" is just a load switch and does not provide any regulation.
+> Add the proper representation for it, replacing the PCIe wifi node and
+> vpcie3v3-supply property under the PCIe controller, and the vbus-supply
+> property under the xhci3 node.
 >
 > Signed-off-by: Chen-Yu Tsai <wenst@chromium.org>
 > ---
