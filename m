@@ -1,159 +1,166 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+Received: from gloria.sntech.de (gloria.sntech.de [185.11.138.130])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2602A38B150;
-	Tue, 21 Jul 2026 14:05:21 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9E89A2C21DD;
+	Tue, 21 Jul 2026 14:19:58 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=185.11.138.130
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1784642723; cv=none; b=uzHnLER3PMA24qCqF0rhOhKIdj+Kckb6Xb2Z9CCkNiNvvFolfjv+WbxGS9P5U/y+3JS9nmVva8WEyBXiY76bNlGdDLZ8ZGG/k1Q062+0D0vCZup3hILfnFI/hz9xzxW98xDlhgtZiCBRKuixJwTxR+rE8j61dty+l3IVMo8uFGc=
+	t=1784643602; cv=none; b=frSjO7gJW+EXTK9UvAqDNloK9H22oMsdc5xwZDy0lVAt1l4MYxcD0OZkUYYMBwoQzrxkHfas2vjfQwJ9zFqDVXtNULYuq/7Ridyz9ScoY9Ii9ENzE+OCLZ73CPTDwP1rNdZRt8ovpmfciZCsfjqw+HRlKlLO14312EoBnKMf+/8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1784642723; c=relaxed/simple;
-	bh=q4K5gcXU5klye82gxHcjUi2gsyTVSgkJ2NW3fIBt/Ew=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=q9pq51lMGFk6fXfURC+OB7NTR/dOpcEcnyoYoDBxZh62J6vh2J+env1pAcLqmA+xQN2PvdiDjCCSuFpEaAfQFaB3kPNSsU8NBCyMEyiyEpLVu0DFtuXNeu59HNpa4nhWcAT7ci1MczwZsxaCmPL7t0A/N4V4gra6P4Ig7DjEfb8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Uy8XuX7y; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1784643602; c=relaxed/simple;
+	bh=7eml2cVgglNEXDFmlh7ik9YlzrAFl25/pITqfgn9Lys=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=OF+bTAEKqPKDmXV+VzGAca+VNwkshfpZyQWI/uTMC/nnYXh1slpjF+3MSslHXY9WM2v2ExsmsGTBykkdA9xKhLHXxqXLdyZaOZO7oK31judMnQLO4sEt3pTPduLEPbkSyug11LgCG5/GMIScwu22kJXQeh7h2pXZFkPKbscDMLo=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=sntech.de; spf=pass smtp.mailfrom=sntech.de; dkim=pass (2048-bit key) header.d=sntech.de header.i=@sntech.de header.b=OVpTMXCr; arc=none smtp.client-ip=185.11.138.130
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=sntech.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=sntech.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Uy8XuX7y"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6419C1F00A3E;
-	Tue, 21 Jul 2026 14:05:18 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1784642720;
-	bh=PehfNGx1mNxRgN9BHnDwgkSZMR8L+TVhpX7WdRj9MNU=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=Uy8XuX7yCRMYpQkrkEnTlTFFoP05gHXxaeW26pKb9iOdD8MHSVa8D5G4ByzfZsfM6
-	 9AJbqCjygcqJgnZWZUNBbq+ruf5IVeYvApX3lidZePsL6Kk/xvju2mNehb6S6sIvWt
-	 qV1d5x2+uhtW/FNtzmK6ta855Emy1iqIpzdz4pwANMPK5VvI73kjGg9XR+Q7byMuw2
-	 DchREMsKibVBYYNuh9lFI2d4XpyDayyuifEBmWwaY3dyyQs3LlH3v1XPo0KYVU8vRa
-	 uUdhoi2eqinCrWXrBEcmfT6K7hRFWdyVqckoCDncK1hXVDzqmEqmyesIVaZAdyIr+D
-	 lXwKKWGrPnzgA==
-Date: Tue, 21 Jul 2026 15:05:16 +0100
-From: Sudeep Holla <sudeep.holla@kernel.org>
-To: Sneh Mankad <sneh.mankad@oss.qualcomm.com>
-Cc: Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>,
-	Sudeep Holla <sudeep.holla@kernel.org>,
-	Thomas Gleixner <tglx@kernel.org>,
-	Peter Zijlstra <peterz@infradead.org>,
-	"Rafael J. Wysocki" <rafael@kernel.org>,
-	Pavel Machek <pavel@kernel.org>, Len Brown <lenb@kernel.org>,
-	Catalin Marinas <catalin.marinas@arm.com>,
-	Mark Rutland <mark.rutland@arm.com>,
-	Lorenzo Pieralisi <lpieralisi@kernel.org>,
-	Will Deacon <will@kernel.org>, linux-arm-msm@vger.kernel.org,
-	linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org
-Subject: Re: [PATCH v2] arm64: Disallow disabling boot CPU based on config
-Message-ID: <20260721-towering-orchid-foxhound-d804bc@sudeepholla>
-References: <20260703-disable_boot_cpu_offline-v2-1-782d16ff58c3@oss.qualcomm.com>
- <20260703-competent-adaptable-coot-f8daaf@sudeepholla>
- <4b7fe7e6-2531-4d26-9085-43f40a2ce2e0@oss.qualcomm.com>
- <20260706-practical-inchworm-of-experience-d4e0ed@sudeepholla>
- <05081037-9ed8-4e0d-8480-cfa45e950727@oss.qualcomm.com>
+	dkim=pass (2048-bit key) header.d=sntech.de header.i=@sntech.de header.b="OVpTMXCr"
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=sntech.de;
+	s=gloria202408; h=Content-Type:Content-Transfer-Encoding:MIME-Version:
+	References:In-Reply-To:Message-ID:Date:Subject:Cc:To:From:Reply-To;
+	bh=lqOes41LH2R5Gf0PK0AJH1iaQEMKUucvCK1kHGbVyJk=; b=OVpTMXCriwGe3iTno5qEzPtJiz
+	BwnAKcp1blHGzxRomYNZbj4wiM8wGslAXG5VKLG58zJYWbXbuyHhjuf8Q13exCxzKGQBNnrnPQ8mG
+	0Cd8Q+WaGQrDAmmdv9SVW4lB5NEvHzqrdmAVo9MlTvSe+E/comWlnOz2lQZLH1Fq4SvOom6SPUpYm
+	xnIXPJD8eGd48hzgOrOdR35dtjCoMJ53cwXWtQjUYgH38VAuerJcGNXQbos/4YvyrCVkhIp/fR5rX
+	j99ydA/2WVJqpIx3KPgwXRNRsOrgCuypPYcjVQezr3SzbhXtzXROZKjh72At4SkjpatbmCjMLsKj4
+	C7fjjqBQ==;
+From: Heiko =?UTF-8?B?U3TDvGJuZXI=?= <heiko@sntech.de>
+To: Ulf Hansson <ulfh@kernel.org>, MidG971 <midgy971@gmail.com>
+Cc: Chaoyi Chen <chaoyi.chen@rock-chips.com>,
+ Sebastian Reichel <sebastian.reichel@collabora.com>,
+ Shawn Lin <shawn.lin@rock-chips.com>,
+ Finley Xiao <finley.xiao@rock-chips.com>, ulf.hansson@oss.qualcomm.com,
+ linux-pm@vger.kernel.org, linux-rockchip@lists.infradead.org,
+ linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+ Midgy BALON <midgy971@gmail.com>
+Subject:
+ Re: [PATCH] pmdomain: rockchip: Add a regulator to the RK3568 NPU power
+ domain
+Date: Tue, 21 Jul 2026 16:19:40 +0200
+Message-ID: <8838591.5OynTdThKG@diego>
+In-Reply-To: <20260708234614.499613-1-midgy971@gmail.com>
+References: <20260708234614.499613-1-midgy971@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <05081037-9ed8-4e0d-8480-cfa45e950727@oss.qualcomm.com>
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="utf-8"
 
-On Tue, Jul 21, 2026 at 02:58:49PM +0530, Sneh Mankad wrote:
-> 
-> 
-> On 06-Jul-26 2:46 PM, Sudeep Holla wrote:
-> > On Sat, Jul 04, 2026 at 08:43:39AM +0200, Daniel Lezcano wrote:
-> >>
-> >> Hi Sudeep,
-> >>
-> >> Le 03/07/2026 à 17:51, Sudeep Holla a écrit :
-> >>> (It is always good to cc all PSCI maintainer for any ARM64 CPU
-> >>> hotpug/suspend related changes)
-> >>>
-> >>> On Fri, Jul 03, 2026 at 04:50:02PM +0530, Sneh Mankad wrote:
-> >>>> The Qualcomm SoCs like LeMans, Monaco support suspend to ram which leads
-> >>>> the SoC to ACPI S3 similar state where SoC is turned off and DDR is
-> >>>> retained. The hardware design on these SoCs forces a constraint to suspend
-> >>>> and resume the system on boot CPU / CPU0.
-> >>>>
-> >>> And you fail to explain why they have that constraint.
-> >>>
-> > 
-> > I still need the above to understand the issue/constraint better.
-> 
-> Above mentioned SoCs have boot CPU fixed to CPU0 in HW, whenever SoC boots
-> up/cold boots it starts with CPU0.
-> 
-> These SoCs support suspend to ram which leads to ACPI S3 similar state
-> (where SoC is turned off and DDR is retained).
-> PSCI SYSTEM_SUSPEND typically will be executed on boot core itself unless it
-> is already offlined and non boot CPUs gets offlined using PSCI CPU_OFF.
-> 
-> As HW constraint always makes the SoC to boot with boot CPU, consider a
-> scenario, where
-> 
-> Boot CPU is already disabled / offline => suspend to ram is triggered => SoC
-> enters ACPI S3 similar state (only DDR is retained and rest of the SoC is
-> off).
-> <So far good>
+Am Donnerstag, 9. Juli 2026, 01:46:14 Mitteleurop=C3=A4ische Sommerzeit sch=
+rieb MidG971:
+> From: Midgy BALON <midgy971@gmail.com>
+>=20
+> The RK3568 NPU rail (vdd_npu) needs to be enabled before the domain is
+> powered on and disabled after it is powered off. Give DOMAIN_RK3568 a
+> regulator parameter (like DOMAIN_RK3588 already has) so the NPU domain
+> can set need_regulator, letting genpd manage the rail wired up as the
+> domain's domain-supply instead of marking it always-on in DT.
+>=20
+> Suggested-by: Chaoyi Chen <chaoyi.chen@rock-chips.com>
+> Signed-off-by: Midgy BALON <midgy971@gmail.com>
 
-Not really, see below ...
+Reviewed-by: Heiko Stuebner <heiko@sntech.de>
 
-> 
-> External wake up arrives (say power key press) => SoC starts booting with
-> CPU0 => CPU0 becomes first one to "land" in kernel now.
-> 
+> ---
+> This patch was part of the RFC NPU series [1]; Ulf Hansson and Heiko
+> St=C3=BCbner reviewed it there and confirmed it can be applied independen=
+tly of
+> the rest of the (still-RFC) rocket driver and DT patches, so it is repost=
+ed
+> standalone. The NPU domain's domain-supply DT wiring follows in a separate
+> patch, so this change alone is a no-op at runtime.
+>=20
+> Changes since the RFC posting:
+> - Move DOMAIN_M_R below the other DOMAIN_M_* macros so they stay
+>   alphabetically sorted (Heiko St=C3=BCbner).
+>=20
+> [1] https://lore.kernel.org/linux-rockchip/20260613070116.438906-1-midgy9=
+71@gmail.com/
+>=20
+>  drivers/pmdomain/rockchip/pm-domains.c | 36 ++++++++++++++++++--------
+>  1 file changed, 25 insertions(+), 11 deletions(-)
+>=20
+> diff --git a/drivers/pmdomain/rockchip/pm-domains.c b/drivers/pmdomain/ro=
+ckchip/pm-domains.c
+> index 490bbb1d1d8e8..ba66ae7194289 100644
+> --- a/drivers/pmdomain/rockchip/pm-domains.c
+> +++ b/drivers/pmdomain/rockchip/pm-domains.c
+> @@ -204,6 +204,20 @@ struct rockchip_pmu {
+>  	.active_wakeup =3D wakeup,			\
+>  }
+> =20
+> +#define DOMAIN_M_R(_name, pwr, status, req, idle, ack, wakeup, regulator=
+)	\
+> +{							\
+> +	.name =3D _name,				\
+> +	.pwr_w_mask =3D (pwr) << 16,			\
+> +	.pwr_mask =3D (pwr),				\
+> +	.status_mask =3D (status),			\
+> +	.req_w_mask =3D (req) << 16,			\
+> +	.req_mask =3D (req),				\
+> +	.idle_mask =3D (idle),				\
+> +	.ack_mask =3D (ack),				\
+> +	.active_wakeup =3D wakeup,			\
+> +	.need_regulator =3D regulator,			\
+> +}
+> +
+>  #define DOMAIN_RK3036(_name, req, ack, idle, wakeup)		\
+>  {							\
+>  	.name =3D _name,				\
+> @@ -241,8 +255,8 @@ struct rockchip_pmu {
+>  #define DOMAIN_RK3562(name, pwr, req, g_mask, mem, wakeup)		\
+>  	DOMAIN_M_G_SD(name, pwr, pwr, req, req, req, g_mask, mem, wakeup, false)
+> =20
+> -#define DOMAIN_RK3568(name, pwr, req, wakeup)		\
+> -	DOMAIN_M(name, pwr, pwr, req, req, req, wakeup)
+> +#define DOMAIN_RK3568(name, pwr, req, wakeup, regulator)		\
+> +	DOMAIN_M_R(name, pwr, pwr, req, req, req, wakeup, regulator)
+> =20
+>  #define DOMAIN_RK3576(name, p_offset, pwr, status, r_status, r_offset, r=
+eq, idle, g_mask, wakeup)	\
+>  	DOMAIN_M_O_R_G(name, p_offset, pwr, status, 0, r_status, r_status, r_of=
+fset, req, idle, idle, g_mask, wakeup)
+> @@ -1274,15 +1288,15 @@ static const struct rockchip_domain_info rk3562_p=
+m_domains[] =3D {
+>  };
+> =20
+>  static const struct rockchip_domain_info rk3568_pm_domains[] =3D {
+> -	[RK3568_PD_NPU]		=3D DOMAIN_RK3568("npu",  BIT(1), BIT(2),  false),
+> -	[RK3568_PD_GPU]		=3D DOMAIN_RK3568("gpu",  BIT(0), BIT(1),  false),
+> -	[RK3568_PD_VI]		=3D DOMAIN_RK3568("vi",   BIT(6), BIT(3),  false),
+> -	[RK3568_PD_VO]		=3D DOMAIN_RK3568("vo",   BIT(7), BIT(4),  false),
+> -	[RK3568_PD_RGA]		=3D DOMAIN_RK3568("rga",  BIT(5), BIT(5),  false),
+> -	[RK3568_PD_VPU]		=3D DOMAIN_RK3568("vpu",  BIT(2), BIT(6),  false),
+> -	[RK3568_PD_RKVDEC]	=3D DOMAIN_RK3568("vdec", BIT(4), BIT(8),  false),
+> -	[RK3568_PD_RKVENC]	=3D DOMAIN_RK3568("venc", BIT(3), BIT(7),  false),
+> -	[RK3568_PD_PIPE]	=3D DOMAIN_RK3568("pipe", BIT(8), BIT(11), false),
+> +	[RK3568_PD_NPU]		=3D DOMAIN_RK3568("npu",  BIT(1), BIT(2),  false, true=
+),
+> +	[RK3568_PD_GPU]		=3D DOMAIN_RK3568("gpu",  BIT(0), BIT(1),  false, fals=
+e),
+> +	[RK3568_PD_VI]		=3D DOMAIN_RK3568("vi",   BIT(6), BIT(3),  false, false=
+),
+> +	[RK3568_PD_VO]		=3D DOMAIN_RK3568("vo",   BIT(7), BIT(4),  false, false=
+),
+> +	[RK3568_PD_RGA]		=3D DOMAIN_RK3568("rga",  BIT(5), BIT(5),  false, fals=
+e),
+> +	[RK3568_PD_VPU]		=3D DOMAIN_RK3568("vpu",  BIT(2), BIT(6),  false, fals=
+e),
+> +	[RK3568_PD_RKVDEC]	=3D DOMAIN_RK3568("vdec", BIT(4), BIT(8),  false, fa=
+lse),
+> +	[RK3568_PD_RKVENC]	=3D DOMAIN_RK3568("venc", BIT(3), BIT(7),  false, fa=
+lse),
+> +	[RK3568_PD_PIPE]	=3D DOMAIN_RK3568("pipe", BIT(8), BIT(11), false, fals=
+e),
+>  };
+> =20
+>  static const struct rockchip_domain_info rk3576_pm_domains[] =3D {
+>=20
 
-Ideally the firmware could have handled it by booting/waking the suspended
-CPU and turning itself off even if it is some h/w limitation to ensure
-the firmware is PSCI spec compliant.
-
-> Kernel may later bring up other non-boot CPUs via PSCI CPU_ON calls.
-> However Kernel had already marked CPU0 as disabled/ offline but same ended
-> up in kernel without PSCI CPU_ON call.
-> 
-
-... You resumed back on a wrong CPU.
 
 
-> To prevent this inconsistent state, before starting suspend to ram, need to
-> make sure CPU0 is always online from kernel/ disable offlining of the boot CPU.
-> 
 
-At least not in the way this patch does. Kconfig is not an option. Why is
-the firmware not handling it properly ? Just resuming random CPU into the
-kernel is firmware bug which either needs to be handled as f/w errata
-or good if the firmware can be fixed.
-
-> Although the HW constraint needs boot CPU to be online only when suspend to
-> ram is triggered, current patch disallows disabling it for simplicity.
-> 
-
-That's very strange, so it sounds like not a real h/w constrain to make CPU0
-as non-hotpluggable. PSCI CPU_SUSPEND resume path must handle wake up on
-wrong CPU correctly and land/resume on the correct CPU in the kernel.
-
-> > 
-> >>> Is it because some secure context is not allowed to migrate ?
-> >>>
-> >>> We already have a mechanism for that in place and this hack is not at all
-> >>> required.
-> >> Do you mean a mechanism for the secure context or for preventing CPU0 ?
-> >>
-> > 
-> > I meant constraint based on secure context.
-> > 
-> 
-> This is not because secure context not allowed to migrate but above
-> mentioned HW constraints.
-> 
-
-Sure not secure context related but a HW constraint that secure/PSCI
-firmware ignored to handle correctly.
-
-Fix the firmware or explore ways to handle it as FW errata.
-
--- 
-Regards,
-Sudeep
