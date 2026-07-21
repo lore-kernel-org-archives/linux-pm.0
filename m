@@ -1,20 +1,20 @@
 Received: from mailgw.kylinos.cn (mailgw.kylinos.cn [124.126.103.232])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E743930566C;
-	Tue, 21 Jul 2026 09:25:46 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 292B042D750;
+	Tue, 21 Jul 2026 09:25:54 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=124.126.103.232
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1784625950; cv=none; b=QmEzNr5/NmjfyXEVqz1r+zpv1rjTxfZUMCUrTuN9w5i/LUG5wR0Kc582mkoHKTBI74eNfIQsqxWo2BroS2SuS4hCEvjFfp5OHdKTHhOqLemrCoQK8+dWlIOGcDmqDDEWKlLTmd4fVzdWklYrRaWyF1n0oGeTfg2raFiQdusy2qI=
+	t=1784625958; cv=none; b=IcGUvuFtioJoTmci+XMgpE/N2fLa41B5Cy2Ee05yqmH5JdNCkg6T8buItaaddfOwBnrLuvfeZBP2JGRrgMtanqH09be5ozW6HfA72KdFI1tsKOffQBCvDeeuLdZXRXI0GS5joAxr4Apg6diBm0JBi8uMfnSZpY1pKksTEspDUCk=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1784625950; c=relaxed/simple;
-	bh=D4MIUHXlhkumx8h96KZ7RU4b3HNTX3DDdQy4oHrg9/E=;
+	s=arc-20240116; t=1784625958; c=relaxed/simple;
+	bh=kJJjg4HGyYeu3gNC8MTBbPuChpFiVjqZ8Wcvo6sfNsI=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=bNBY3N7IFSveGGIPkVZ5rQ8cfa0CfnA49I4WOmvVKaYMm4IR6Wy0FR7LaU14DqTuXwQqp9VchTeAwebtQfZyq+953CEnDSgoiBCKtYZs2ZcDby+i5/+Z49RzqqiZI+/VJ17qbvI1aoAjCjjA66jbiRsidBCk0vIwmAv1ws2FD6k=
+	 MIME-Version; b=QBdSfonBv6VRXLgwNdwCRV/oMGikZswmSEU2uDtcastRashkQbwbrt6nIJYLk7nT1kM5VhSCo8lHuhSAcbX8CeiXLabp5IAqcagl/I7U6koSwxe+XYRGiGSCHlIgyHS6cz7iGpSGqhjx2Tn4ffila5OCPipNieo7tC3m/tby6/Y=
 ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kylinos.cn; spf=pass smtp.mailfrom=kylinos.cn; arc=none smtp.client-ip=124.126.103.232
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kylinos.cn
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=kylinos.cn
-X-UUID: 229ac3bc84e611f1aa26b74ffac11d73-20260721
+X-UUID: 27847b7a84e611f1aa26b74ffac11d73-20260721
 X-CTIC-Tags:
 	HR_CC_COUNT, HR_CC_DOMAIN_COUNT, HR_CC_NAME, HR_CC_NO_NAME, HR_CTE_8B
 	HR_CTT_MISS, HR_DATE_H, HR_DATE_WKD, HR_DATE_ZONE, HR_FROM_NAME
@@ -26,27 +26,27 @@ X-CTIC-Tags:
 	CIE_UNKNOWN, GTI_FG_BS, GTI_RG_INFO, GTI_C_BU, AMN_GOOD
 	ABX_MISS_RDNS
 X-CID-P-RULE: Release_Ham
-X-CID-O-INFO: VERSION:1.3.12,REQID:df4f7e0b-2fd5-4800-8ab2-ca99319e9ae4,IP:10,
-	URL:0,TC:0,Content:0,EDM:25,RT:0,SF:0,FILE:0,BULK:0,RULE:Release_Ham,ACTIO
-	N:release,TS:35
-X-CID-INFO: VERSION:1.3.12,REQID:df4f7e0b-2fd5-4800-8ab2-ca99319e9ae4,IP:10,UR
-	L:0,TC:0,Content:0,EDM:25,RT:0,SF:0,FILE:0,BULK:0,RULE:Release_Ham,ACTION:
-	release,TS:35
-X-CID-META: VersionHash:e7bac3a,CLOUDID:f872efece75d71c7aa5bc6ee5e263e50,BulkI
-	D:260721172540CARXOK64,BulkQuantity:0,Recheck:0,SF:17|19|38|66|78|81|82|10
-	2|127|865|898,TC:nil,Content:0|15|50,EDM:5,IP:-2,URL:0,File:nil,RT:nil,Bul
-	k:nil,QS:nil,BEC:nil,COL:0,OSI:0,OSA:0,AV:0,LES:1,SPR:NO,DKR:0,DKP:0,BRR:0
-	,BRE:0,ARC:0
+X-CID-O-INFO: VERSION:1.3.12,REQID:a180ae83-c957-4b23-bcd1-1c0a00492c25,IP:10,
+	URL:0,TC:0,Content:-25,EDM:0,RT:0,SF:0,FILE:0,BULK:0,RULE:Release_Ham,ACTI
+	ON:release,TS:-15
+X-CID-INFO: VERSION:1.3.12,REQID:a180ae83-c957-4b23-bcd1-1c0a00492c25,IP:10,UR
+	L:0,TC:0,Content:-25,EDM:0,RT:0,SF:0,FILE:0,BULK:0,RULE:Release_Ham,ACTION
+	:release,TS:-15
+X-CID-META: VersionHash:e7bac3a,CLOUDID:c57ef94c313522ea6f4f69231031d214,BulkI
+	D:2607211725493N8X2PR8,BulkQuantity:0,Recheck:0,SF:17|19|38|66|78|81|82|10
+	2|127|865|898,TC:nil,Content:0|15|50,EDM:-3,IP:-2,URL:0,File:nil,RT:nil,Bu
+	lk:nil,QS:nil,BEC:nil,COL:0,OSI:0,OSA:0,AV:0,LES:1,SPR:NO,DKR:0,DKP:0,BRR:
+	0,BRE:0,ARC:0
 X-CID-BVR: 2,SSN|SDN
 X-CID-BAS: 2,SSN|SDN,0,_
 X-CID-FACTOR: TF_CID_SPAM_SNR,TF_CID_SPAM_FAS,TF_CID_SPAM_FSD
 X-CID-RHF: D41D8CD98F00B204E9800998ECF8427E
-X-UUID: 229ac3bc84e611f1aa26b74ffac11d73-20260721
+X-UUID: 27847b7a84e611f1aa26b74ffac11d73-20260721
 X-User: tianyaxiong@kylinos.cn
 Received: from tian-x86.. [(175.2.17.192)] by mailgw.kylinos.cn
 	(envelope-from <tianyaxiong@kylinos.cn>)
 	(Generic MTA)
-	with ESMTP id 1050882661; Tue, 21 Jul 2026 17:25:38 +0800
+	with ESMTP id 687754928; Tue, 21 Jul 2026 17:25:46 +0800
 From: Yaxiong Tian <tianyaxiong@kylinos.cn>
 To: rafael@kernel.org,
 	daniel.lezcano@kernel.org,
@@ -58,9 +58,9 @@ Cc: linux-kernel@vger.kernel.org,
 	linux-pm@vger.kernel.org,
 	linux-kselftest@vger.kernel.org,
 	Yaxiong Tian <tianyaxiong@kylinos.cn>
-Subject: [PATCH 1/5] pm: qos: add notifiers for CPU latency and wakeup latency QoS
-Date: Tue, 21 Jul 2026 17:25:34 +0800
-Message-ID: <20260721092534.18718-1-tianyaxiong@kylinos.cn>
+Subject: [PATCH 2/5] cpuidle: subscribe to global latency QoS notifiers
+Date: Tue, 21 Jul 2026 17:25:42 +0800
+Message-ID: <20260721092542.18788-1-tianyaxiong@kylinos.cn>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <20260721092324.17508-1-tianyaxiong@kylinos.cn>
 References: <20260721092324.17508-1-tianyaxiong@kylinos.cn>
@@ -72,161 +72,96 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Expose notifier registration for the system-wide CPU latency and
-wakeup latency QoS constraints so listeners can react when the
-aggregate target value changes.  pm_qos_update_target() already
-invokes constraint notifiers when the effective value changes.
+Register for CPU latency and wakeup latency QoS notifications and
+bump a per-CPU generation counter when either aggregate constraint
+changes.  This prepares for caching the governor latency requirement
+without introducing a direct qos-to-cpuidle call dependency.
 
 Signed-off-by: Yaxiong Tian <tianyaxiong@kylinos.cn>
 ---
- include/linux/pm_qos.h | 23 +++++++++++++++++++
- kernel/power/qos.c     | 50 ++++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 73 insertions(+)
+ drivers/cpuidle/governor.c | 58 ++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 58 insertions(+)
 
-diff --git a/include/linux/pm_qos.h b/include/linux/pm_qos.h
-index 6cea4455f867..3759b453c6d6 100644
---- a/include/linux/pm_qos.h
-+++ b/include/linux/pm_qos.h
-@@ -149,6 +149,8 @@ bool cpu_latency_qos_request_active(struct pm_qos_request *req);
- void cpu_latency_qos_add_request(struct pm_qos_request *req, s32 value);
- void cpu_latency_qos_update_request(struct pm_qos_request *req, s32 new_value);
- void cpu_latency_qos_remove_request(struct pm_qos_request *req);
-+int cpu_latency_qos_add_notifier(struct notifier_block *notifier);
-+int cpu_latency_qos_remove_notifier(struct notifier_block *notifier);
- #else
- static inline s32 cpu_latency_qos_limit(void) { return INT_MAX; }
- static inline bool cpu_latency_qos_request_active(struct pm_qos_request *req)
-@@ -160,15 +162,36 @@ static inline void cpu_latency_qos_add_request(struct pm_qos_request *req,
- static inline void cpu_latency_qos_update_request(struct pm_qos_request *req,
- 						  s32 new_value) {}
- static inline void cpu_latency_qos_remove_request(struct pm_qos_request *req) {}
-+static inline int cpu_latency_qos_add_notifier(struct notifier_block *notifier)
-+{
-+	return 0;
-+}
-+static inline int
-+cpu_latency_qos_remove_notifier(struct notifier_block *notifier)
-+{
-+	return 0;
-+}
- #endif
+diff --git a/drivers/cpuidle/governor.c b/drivers/cpuidle/governor.c
+index 5d0e7f78c6c5..bc4a70d30c34 100644
+--- a/drivers/cpuidle/governor.c
++++ b/drivers/cpuidle/governor.c
+@@ -8,10 +8,13 @@
+  * This code is licenced under the GPL.
+  */
  
- #ifdef CONFIG_PM_QOS_CPU_SYSTEM_WAKEUP
- s32 cpu_wakeup_latency_qos_limit(void);
-+int cpu_wakeup_latency_qos_add_notifier(struct notifier_block *notifier);
-+int cpu_wakeup_latency_qos_remove_notifier(struct notifier_block *notifier);
- #else
- static inline s32 cpu_wakeup_latency_qos_limit(void)
- {
- 	return PM_QOS_RESUME_LATENCY_NO_CONSTRAINT;
- }
-+static inline int
-+cpu_wakeup_latency_qos_add_notifier(struct notifier_block *notifier)
-+{
-+	return 0;
-+}
-+static inline int
-+cpu_wakeup_latency_qos_remove_notifier(struct notifier_block *notifier)
-+{
-+	return 0;
-+}
- #endif
++#include <linux/atomic.h>
+ #include <linux/cpu.h>
+ #include <linux/cpuidle.h>
++#include <linux/init.h>
+ #include <linux/mutex.h>
+ #include <linux/module.h>
++#include <linux/notifier.h>
+ #include <linux/pm_qos.h>
  
- #ifdef CONFIG_PM
-diff --git a/kernel/power/qos.c b/kernel/power/qos.c
-index 1944dbeb0d4c..392ab3dbb923 100644
---- a/kernel/power/qos.c
-+++ b/kernel/power/qos.c
-@@ -212,12 +212,15 @@ bool pm_qos_update_flags(struct pm_qos_flags *pqf,
- #ifdef CONFIG_CPU_IDLE
- /* Definitions related to the CPU latency QoS. */
+ #include "cpuidle.h"
+@@ -22,6 +25,61 @@ LIST_HEAD(cpuidle_governors);
+ struct cpuidle_governor *cpuidle_curr_governor;
+ struct cpuidle_governor *cpuidle_prev_governor;
  
-+static BLOCKING_NOTIFIER_HEAD(cpu_latency_qos_notifiers);
-+
- static struct pm_qos_constraints cpu_latency_constraints = {
- 	.list = PLIST_HEAD_INIT(cpu_latency_constraints.list),
- 	.target_value = PM_QOS_CPU_LATENCY_DEFAULT_VALUE,
- 	.default_value = PM_QOS_CPU_LATENCY_DEFAULT_VALUE,
- 	.no_constraint_value = PM_QOS_CPU_LATENCY_DEFAULT_VALUE,
- 	.type = PM_QOS_MIN,
-+	.notifiers = &cpu_latency_qos_notifiers,
- };
- 
- static inline bool cpu_latency_qos_value_invalid(s32 value)
-@@ -335,6 +338,28 @@ void cpu_latency_qos_remove_request(struct pm_qos_request *req)
- }
- EXPORT_SYMBOL_GPL(cpu_latency_qos_remove_request);
- 
-+/**
-+ * cpu_latency_qos_add_notifier - Add CPU latency QoS change notifier.
-+ * @notifier: Notifier block managed by the caller.
++/*
++ * Per-CPU generation bumped to invalidate that CPU's cached latency
++ * constraint.  Consumers of the generation are added in later changes.
 + */
-+int cpu_latency_qos_add_notifier(struct notifier_block *notifier)
++static DEFINE_PER_CPU(atomic_t, latency_req_gen);
++
++static void cpuidle_latency_req_invalidate_cpu(unsigned int cpu)
 +{
-+	return blocking_notifier_chain_register(&cpu_latency_qos_notifiers,
-+						notifier);
++	atomic_inc(per_cpu_ptr(&latency_req_gen, cpu));
 +}
-+EXPORT_SYMBOL_GPL(cpu_latency_qos_add_notifier);
 +
-+/**
-+ * cpu_latency_qos_remove_notifier - Remove CPU latency QoS change notifier.
-+ * @notifier: Notifier block previously registered.
-+ */
-+int cpu_latency_qos_remove_notifier(struct notifier_block *notifier)
++static void cpuidle_latency_req_invalidate_all(void)
 +{
-+	return blocking_notifier_chain_unregister(&cpu_latency_qos_notifiers,
-+						  notifier);
++	unsigned int cpu;
++
++	for_each_possible_cpu(cpu)
++		cpuidle_latency_req_invalidate_cpu(cpu);
 +}
-+EXPORT_SYMBOL_GPL(cpu_latency_qos_remove_notifier);
 +
- /* User space interface to the CPU latency QoS via misc device. */
- 
- static int cpu_latency_qos_open(struct inode *inode, struct file *filp)
-@@ -417,12 +442,15 @@ static struct miscdevice cpu_latency_qos_miscdev = {
- 
- #ifdef CONFIG_PM_QOS_CPU_SYSTEM_WAKEUP
- /* The CPU system wakeup latency QoS. */
-+static BLOCKING_NOTIFIER_HEAD(cpu_wakeup_latency_qos_notifiers);
++static int cpuidle_global_qos_notify(struct notifier_block *nb,
++				     unsigned long action, void *data)
++{
++	cpuidle_latency_req_invalidate_all();
++	return NOTIFY_OK;
++}
 +
- static struct pm_qos_constraints cpu_wakeup_latency_constraints = {
- 	.list = PLIST_HEAD_INIT(cpu_wakeup_latency_constraints.list),
- 	.target_value = PM_QOS_RESUME_LATENCY_NO_CONSTRAINT,
- 	.default_value = PM_QOS_RESUME_LATENCY_NO_CONSTRAINT,
- 	.no_constraint_value = PM_QOS_RESUME_LATENCY_NO_CONSTRAINT,
- 	.type = PM_QOS_MIN,
-+	.notifiers = &cpu_wakeup_latency_qos_notifiers,
- };
- 
++static struct notifier_block cpuidle_latency_qos_nb = {
++	.notifier_call = cpuidle_global_qos_notify,
++};
++
++#ifdef CONFIG_PM_QOS_CPU_SYSTEM_WAKEUP
++static struct notifier_block cpuidle_wakeup_qos_nb = {
++	.notifier_call = cpuidle_global_qos_notify,
++};
++#endif
++
++static int __init cpuidle_latency_req_init(void)
++{
++	int ret;
++
++	ret = cpu_latency_qos_add_notifier(&cpuidle_latency_qos_nb);
++	if (ret)
++		return ret;
++
++#ifdef CONFIG_PM_QOS_CPU_SYSTEM_WAKEUP
++	ret = cpu_wakeup_latency_qos_add_notifier(&cpuidle_wakeup_qos_nb);
++	if (ret) {
++		cpu_latency_qos_remove_notifier(&cpuidle_latency_qos_nb);
++		return ret;
++	}
++#endif
++	return 0;
++}
++core_initcall(cpuidle_latency_req_init);
++
  /**
-@@ -436,6 +464,28 @@ s32 cpu_wakeup_latency_qos_limit(void)
- 	return pm_qos_read_value(&cpu_wakeup_latency_constraints);
- }
- 
-+/**
-+ * cpu_wakeup_latency_qos_add_notifier - Add wakeup latency QoS notifier.
-+ * @notifier: Notifier block managed by the caller.
-+ */
-+int cpu_wakeup_latency_qos_add_notifier(struct notifier_block *notifier)
-+{
-+	return blocking_notifier_chain_register(&cpu_wakeup_latency_qos_notifiers,
-+						notifier);
-+}
-+EXPORT_SYMBOL_GPL(cpu_wakeup_latency_qos_add_notifier);
-+
-+/**
-+ * cpu_wakeup_latency_qos_remove_notifier - Remove wakeup latency QoS notifier.
-+ * @notifier: Notifier block previously registered.
-+ */
-+int cpu_wakeup_latency_qos_remove_notifier(struct notifier_block *notifier)
-+{
-+	return blocking_notifier_chain_unregister(&cpu_wakeup_latency_qos_notifiers,
-+						  notifier);
-+}
-+EXPORT_SYMBOL_GPL(cpu_wakeup_latency_qos_remove_notifier);
-+
- static int cpu_wakeup_latency_qos_open(struct inode *inode, struct file *filp)
- {
- 	struct pm_qos_request *req;
+  * cpuidle_find_governor - finds a governor of the specified name
+  * @str: the name
 -- 
 2.43.0
 
