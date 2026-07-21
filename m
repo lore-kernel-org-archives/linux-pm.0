@@ -1,84 +1,80 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+Received: from bali.collaboradmins.com (bali.collaboradmins.com [148.251.105.195])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 05EE83C279D
-	for <linux-pm@vger.kernel.org>; Tue, 21 Jul 2026 09:09:49 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 59EB23976A7;
+	Tue, 21 Jul 2026 09:19:50 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=148.251.105.195
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1784624991; cv=none; b=r57FKzTFhmooyJZfhNBAxzfhUiiM9xjuqJ7t/XHzdEDEt1OedxukA21ZSyOQDvkMUkPpfspqMQBzQ7dn8lfPpRSjrAr79Qa5T9yq4BD63+dLcT/Uze18rQO25LsMWIaugfERoDzkowhS/Dtlskv2a+8nZogatU+3LECItWZjVOw=
+	t=1784625591; cv=none; b=reJ8V/1hVw4m2LcaV+XMXaS6eTkUGWbFQcVl/MJu8sH5d+bx7rsrdNY+1VvttN2JGySSgCD3Q+pVqaTR7F9i1ShmUBspSfA3K227yV8D/moJsfyfvJvrugVPUTwJpTcsFHdroWgAjmm+VQcABwYqrEs8ma4sFtuZ74iB7r/T4LQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1784624991; c=relaxed/simple;
-	bh=uvM+G7VRk/YqTwwm/37jHxsh/YM0a3jwdT/iGpNt7ns=;
-	h=From:In-Reply-To:MIME-Version:References:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=Kj9oIbvZ8rbwXwhfaircntKQnkuR5jTyYxgv9v+DKHTDByOXA5+M/aHhwJEbLBBfiZuj+r+Iv/Y26fIxj97v0IjOh/ZP4GohNjKSXeiVsMkax4fDO5f59SD8zP0yko37Hbx1ajkgWNcJ2MsNJPc53oBOVCfaYKtHHsqkpyLLbdQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=MVQO9e13; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1784625591; c=relaxed/simple;
+	bh=VNm4zMuC/cY2KdIr3jVDAGU5TNHGIenW9B8Its2FuNw=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=fcbCzOmxzbD0m29TO8ug4dKTntU5TxeoI1E7mBzEoGfj60vnh/P3pO28clm19p2sfI1Mg8UbkMdyoC4X3Y5UmLAoX3yKAPje7tLw4RqtIBFM5TWWctv7oRK6tjq9KbQENXlHXNR03xOtm/A5+X7q72p0OPmSln7mHRCE7TqNAiY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b=HBIolR8J; arc=none smtp.client-ip=148.251.105.195
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="MVQO9e13"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id BD76E1F00ADB
-	for <linux-pm@vger.kernel.org>; Tue, 21 Jul 2026 09:09:49 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1784624989;
-	bh=uvM+G7VRk/YqTwwm/37jHxsh/YM0a3jwdT/iGpNt7ns=;
-	h=From:In-Reply-To:References:Date:Subject:To:Cc;
-	b=MVQO9e13QUrl1ydM9tLxQtUaLCsnbcAtu8NgunLGYE4inVyVPW19Oav9+VQRrvtqa
-	 wmKELzHocua82VssA7btIuIuDdOSyzsdxQUjVe1815Zw/htwZXJ+yQtpe+a+6wt5wh
-	 +4j1aVXPzGCBf7oD26cJMav8pl/WEdSZrXJuFV0Zy0Fg4XrpxIa68x5pQQNY8vbOon
-	 2Jb4Om5yt/pVv3lweKK87+3r6/K0Ayn0C1tuO52khz0O+QvalM2yny3NEZ0hZ9HF7h
-	 frdv1XoaboFv7IEsh69K3VaUb3f5IZL78qHP2sWT5Aq9Z3gHI3BUoRl6RBQJCedg/p
-	 0FRgkMqlPYC1A==
-Received: by mail-lj1-f170.google.com with SMTP id 38308e7fff4ca-39c74722e27so55735361fa.0
-        for <linux-pm@vger.kernel.org>; Tue, 21 Jul 2026 02:09:49 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AHgh+RothsB1jFu3ufa4jDA2NWzas7IZLclNL+bqEpvpS92PYObim+xtDXmiBNF4ll61M1Me29odCnS7cA==@vger.kernel.org
-X-Gm-Message-State: AOJu0YyS+kKjhbj/pNHnEFQtYID5mAyEBOY3TIk/v/XyxLQgbBGogJXT
-	Gs90GqtN/VcP8fjArolt5u2Uko1jgQ8oSFhsqqpaNhXFVsGank0jVpfa2Z5B415S13Ays9CX6EZ
-	ZQp3iJlI3dpMvubN1iZaNNZxD6gfUZqRog3KSpKOQCg==
-X-Received: by 2002:a2e:b8c7:0:b0:394:8fc:8c3d with SMTP id
- 38308e7fff4ca-39eb273c8e4mr29254061fa.4.1784624988499; Tue, 21 Jul 2026
- 02:09:48 -0700 (PDT)
-Received: from 969154062570 named unknown by gmailapi.google.com with
- HTTPREST; Tue, 21 Jul 2026 09:09:46 +0000
-Received: from 969154062570 named unknown by gmailapi.google.com with
- HTTPREST; Tue, 21 Jul 2026 09:09:46 +0000
-From: Bartosz Golaszewski <brgl@kernel.org>
-In-Reply-To: <20260721065413.2306137-5-wenst@chromium.org>
+	dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b="HBIolR8J"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
+	s=mail; t=1784625588;
+	bh=VNm4zMuC/cY2KdIr3jVDAGU5TNHGIenW9B8Its2FuNw=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=HBIolR8JvWb6/Pg9E/k0p6NmwVt4W57w+dwxP8WhbTecU2uYVcgMLkwJhmveXmed2
+	 VKJPxf/hzgVpc6ifJwzWFzvlego4Nk2vYCLKizimaQqrDRInyvVftbLBEdv8D6rgaH
+	 VeYTT253ziuTzQid8JlO/8zcgmVA496jna947vjcsBmjAPuO2ji8326cnbvuHpqR0B
+	 UNf2Y/PW2Qy7no4m7tnImWnNsOfEWYAaiIgqpdwvi/1ytCp5l0Du6IZ7s0rn0jv/ym
+	 +xn5Q+d62IVtKv7xGGLzo8UiiUw1o/EVvrVIt7MGDh1LG+sZfEbf1md8C9keGhYb8v
+	 uvYruRQkAUTTA==
+Received: from [100.64.1.21] (unknown [100.64.1.21])
+	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+	 key-exchange x25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	(Authenticated sender: kholk11)
+	by bali.collaboradmins.com (Postfix) with ESMTPSA id C11A117E0564;
+	Tue, 21 Jul 2026 11:19:47 +0200 (CEST)
+Message-ID: <cc9ffb02-4175-48c2-89d6-b538bf75a350@collabora.com>
+Date: Tue, 21 Jul 2026 11:19:47 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260721065413.2306137-1-wenst@chromium.org> <20260721065413.2306137-5-wenst@chromium.org>
-Date: Tue, 21 Jul 2026 09:09:46 +0000
-X-Gmail-Original-Message-ID: <CAMRc=McBNjvJK-dMBgifFxtgw0-bM_jaMYwJOWCRnV1PTLt-2w@mail.gmail.com>
-X-Gm-Features: AUfX_mwsGGPfxToi9CFWvHg8F0vayIDb1DET27lB_HvrcHXw8Ht65VkjHJmkwKw
-Message-ID: <CAMRc=McBNjvJK-dMBgifFxtgw0-bM_jaMYwJOWCRnV1PTLt-2w@mail.gmail.com>
-Subject: Re: [PATCH v6 04/16] usb: hub: Use assign_bit() in usb_hub_set_port_power()
-To: Chen-Yu Tsai <wenst@chromium.org>
-Cc: linux-acpi@vger.kernel.org, driver-core@lists.linux.dev, 
-	linux-pm@vger.kernel.org, linux-usb@vger.kernel.org, 
-	devicetree@vger.kernel.org, linux-mediatek@lists.infradead.org, 
-	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, 
-	Manivannan Sadhasivam <mani@kernel.org>, Alan Stern <stern@rowland.harvard.edu>, 
-	Bartosz Golaszewski <brgl@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
-	Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Daniel Scally <djrscally@gmail.com>, 
-	Heikki Krogerus <heikki.krogerus@linux.intel.com>, 
-	Sakari Ailus <sakari.ailus@linux.intel.com>, "Rafael J. Wysocki" <rafael@kernel.org>, 
-	Danilo Krummrich <dakr@kernel.org>, Rob Herring <robh@kernel.org>, 
-	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
-	Matthias Brugger <matthias.bgg@gmail.com>, 
-	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
-Content-Type: text/plain; charset="UTF-8"
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v3 2/3] pmdomain: mediatek: Add support for secure modem
+ power domain control
+To: nikolai.burov@jolla.com, Rob Herring <robh@kernel.org>,
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
+ <conor+dt@kernel.org>, Matthias Brugger <matthias.bgg@gmail.com>,
+ Ulf Hansson <ulfh@kernel.org>
+Cc: Matthias Brugger <mbrugger@suse.com>, devicetree@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ linux-mediatek@lists.infradead.org, linux-pm@vger.kernel.org,
+ Nikolai Burov <nikolai.burov+review@abscue.de>
+References: <20260720-mt6858-pmdomain-v3-0-8966d8de93c8@jolla.com>
+ <20260720-mt6858-pmdomain-v3-2-8966d8de93c8@jolla.com>
+From: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
+Content-Language: en-US
+In-Reply-To: <20260720-mt6858-pmdomain-v3-2-8966d8de93c8@jolla.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
-On Tue, 21 Jul 2026 08:53:59 +0200, Chen-Yu Tsai <wenst@chromium.org> said:
-> usb_hub_set_port_power() open-codes assign_bit(). Just use the
-> assign_bit() macro instead. This makes subsequent additions to
-> usb_hub_set_port_power() easier to read.
->
-> This change does not introduce any functional changes.
->
-> Suggested-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-> Reviewed-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-> Signed-off-by: Chen-Yu Tsai <wenst@chromium.org>
-> ---
+On 7/20/26 22:46, Nikolai Burov via B4 Relay wrote:
+> From: Nikolai Burov <nikolai.burov@jolla.com>
+> 
+> On recent MediaTek SoCs such as MT6858, the kernel is required to use
+> a secure monitor call (SMC) to enable or disable the modem power domain.
+> The power domain control register can be read, but firmware prevents it
+> from being modified directly. Some other parts of the power sequence,
+> such as setting the ext_buck_iso register, still need to be performed on
+> the kernel side.
+> 
+> In preparation for modem support, add a flag to enable this new power
+> sequence for SoCs that need it. Power domains using this flag are not
+> expected to configure any bus protection registers, since these are
+> handled internally by the SMC call.
+> 
+> Signed-off-by: Nikolai Burov <nikolai.burov@jolla.com>
 
-Reviewed-by: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
+Reviewed-by: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
