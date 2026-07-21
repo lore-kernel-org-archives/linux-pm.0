@@ -1,122 +1,149 @@
-Received: from mail-wm1-f48.google.com (mail-wm1-f48.google.com [209.85.128.48])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 75B1F3BB9E0
-	for <linux-pm@vger.kernel.org>; Tue, 21 Jul 2026 08:32:40 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.48
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4C2033C1413
+	for <linux-pm@vger.kernel.org>; Tue, 21 Jul 2026 09:08:50 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1784622764; cv=none; b=C5GaInF2IUPk2U024LDd2uphDdTeNeRzCjGt3jyL0X7DVVr4TZYW0zvufJLuYZ5Rsip2Hl8Kv+jwcFmGRe3pt0vmLSfm8gTI/Po3LO5hu2ie8o1cxiOPqBJznvpin+u5iGFMuUP09+yf3U1KDVnU5K/tFo53hkABsefqRPFEL70=
+	t=1784624931; cv=none; b=Ec162cDnyuemvYZtl+PXcIg3FW7qMsFm3cRyJ8bEI7VBuiqQXZBW54WXVByTFfj+CuErZRsWCwxVgMyajycEVcTZ6hj5/ZTh8Wvg17m2rn05+GSi1XznSXeZYkTGauEXN+p4FT+WJcgQLd+g8xIQ8YvmevRAnCnrdU3W3/Gee5k=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1784622764; c=relaxed/simple;
-	bh=jKbnK5jQJRNRxwNvjRw0RLSi9BVxk18FKKDZGSgAhpE=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=APF0jAUX6m36+Z83SEl6KhARHymuj1xbWn3ZftSZxF6HvxT8iD8Do6GJK/YOkBkmrAWqsEuz5uNWS8nuUAMaB9C7U2bDXZDZZlMP8sXm3CbHI8gCVEDQjw1AGD2krRQcwTdQtIgxXyJL2KugOCdhifpobM0uBNAEeVxGjptuOpk=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=haufler.info; spf=pass smtp.mailfrom=h2-ventures.de; dkim=pass (2048-bit key) header.d=haufler.info header.i=@haufler.info header.b=B1BYC5YS; arc=none smtp.client-ip=209.85.128.48
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=haufler.info
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=h2-ventures.de
+	s=arc-20240116; t=1784624931; c=relaxed/simple;
+	bh=LWQhAMESFWDYUhOqi0N4NltBuuvLqrOk9w5ZbaPhgTs=;
+	h=From:In-Reply-To:MIME-Version:References:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=MRaxfq51IsWrNIt+Nag+Emyi8uLFdzoco9vIONJHQ07UPp1hvGM7QPSrunr1GFZBY85QaBuh3yhuht4MqVwY6KeXJ7vAUz++43aaU2qFp5oLMi8ELX5cq5mYGlSQv16vWPBStCcvufT2HtWdffKBY5P+q0BHbARY2g2wwXZkAhQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=e2rKA2Qo; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=haufler.info header.i=@haufler.info header.b="B1BYC5YS"
-Received: by mail-wm1-f48.google.com with SMTP id 5b1f17b1804b1-495522bc0e2so1724335e9.2
-        for <linux-pm@vger.kernel.org>; Tue, 21 Jul 2026 01:32:39 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=haufler.info; s=google; t=1784622758; x=1785227558; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=mP8ESsGp3PDnVGRH0j1wFoDB1NTpcMuyoXK5rjNdngQ=;
-        b=B1BYC5YSCXxhIi2x5Y1xE/DzshM3owS8E4TnDBEFtTY/DrtI1qDClHPNJtj/ruVpun
-         jkF7Jhug7QBoS0begD7k71aNMgecpPgZYnhMUH67yBMQPANcrwjNWX+OmwwMRxtjoA6V
-         cVvZx9XCEnwNRfiDTddTgcEjAE0hxQSmlH985dJa8czWtpp1OdY5k/r8UiuUZki/RuWs
-         apC3i51mJDfYKw847WS8dwsH+UiqH+OFzEqHGpejJfJ38BxZJqg3GowSBVbc5cINIQBI
-         AmlqMICLm01H9y2c9LOcgOZuxMZPyb0MMYZAlegOxj1/OuiGnFCoQ47qSsQ8LJqaCJSw
-         k85w==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1784622758; x=1785227558;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=mP8ESsGp3PDnVGRH0j1wFoDB1NTpcMuyoXK5rjNdngQ=;
-        b=U3JqufbtrSqPfcpaz99sAzce5BseCOVogfzhNzgOHbaaTvMVOHTqYWL9yW4NKBmOdr
-         UoOG6UAQF6aw7KQha0iC84AtBY4U03sPC/rRrnaQHE6UTX3F9I2fCy339IHdZ0HwDIl1
-         JfFbqZ7Ii7JGj7l6OTT/dKbdsJythZ7i8ZETTaRK+coi11F/OrUlK17uTqwuRreJnNXi
-         EuOBhopSJ1YY3gXonrmK/ZNFsijpmITudXKv+rDi5FPgXVlBvL/2ELxUbQLSWnjPoIZw
-         VK5cPshHmg1S1H1UbPavFThNQ/kOHEX6WdV0EVHm/vVdUYdOUBhtla8sWDd8HWf9J3Iz
-         TvLw==
-X-Forwarded-Encrypted: i=1; AHgh+Rp4uEmPElHI50RE0VzqusdSfemBPtiBY+xjj5GH9hZKHUBzDnwiwVEaDb/u7IcclRrUJcdB2UQ0Vg==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yyv4d+3UWqNmMJbkc68Iie+zh74Me/9n6xBlTTulC6nio5OVzBo
-	cXkGn0v4j7ZjG7/A2TxUyrXXt3EhLPnq5ARRF/ZZrJGz/BpGXZ06NEBl5FwJUEbfNSg=
-X-Gm-Gg: AfdE7ckNeJD+ohIMXkfkvTFgp9nTSf2O2wo+RRVU552UDfCTV4bBOnxUFg6byoaCk7k
-	fLK/dAWtE4oOVUvmAgWLFW+phXAdzJU/UiOFXhTgcCsTjXDdJaCLrrqqIfoFjG8UdnqeexukVE8
-	+IYBGXfiZ3HJe7G1y6yOhdTTW+lKCLAM+XsPdy9GC2AQEk7Pw8boJYfYQ2R+S8Rkv9youmqnPD5
-	pJelBUfl2WiLmzDujMo9VMFAIoU0lxeo1fPBaGvvHfx/ucsnOeP45BFdfyTqX3xo2MT+8bKz/Rp
-	BB3AOVoPxpOHMm158a6KLJ5JqXwenYTWBasEICPEcgLp+HRXQaPSqMvqJTnZOgc0OUWT+wlC2RA
-	kwuFOO6lievATJ4SJt8Uz88TE1ZUsvJG5zGc5bLsCoup8ml1NNQOaT9jXCkecz2nCUnO5TLtTpQ
-	bkcRG4n6RRYf00i8lvuq1E/G7VlKlfe05zlony8qag0c3wZPBd5b6QdDidd/Cd7+H/d+H5Wsz0+
-	JtdKg==
-X-Received: by 2002:a05:600c:3553:b0:495:4a33:2c34 with SMTP id 5b1f17b1804b1-4954a39955emr114409155e9.0.1784622758339;
-        Tue, 21 Jul 2026 01:32:38 -0700 (PDT)
-Received: from Mac (p200300c3bf03e04c047ae254e768247a.dip0.t-ipconnect.de. [2003:c3:bf03:e04c:47a:e254:e768:247a])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-49548e075d4sm250421095e9.1.2026.07.21.01.32.37
-        (version=TLS1_3 cipher=TLS_CHACHA20_POLY1305_SHA256 bits=256/256);
-        Tue, 21 Jul 2026 01:32:37 -0700 (PDT)
-From: Andreas Haufler <andreas@haufler.info>
-To: "Rafael J . Wysocki" <rafael@kernel.org>,
-	Daniel Lezcano <daniel.lezcano@kernel.org>
-Cc: Zhang Rui <rui.zhang@intel.com>,
-	Lukasz Luba <lukasz.luba@arm.com>,
-	linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	Andreas Haufler <andreas@haufler.info>
-Subject: [PATCH] tools/lib/thermal: fix misplaced extern "C" closing brace
-Date: Tue, 21 Jul 2026 10:32:13 +0200
-Message-ID: <20260721083230.91246-1-andreas@haufler.info>
-X-Mailer: git-send-email 2.50.1
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="e2rKA2Qo"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 121081F0155B
+	for <linux-pm@vger.kernel.org>; Tue, 21 Jul 2026 09:08:50 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1784624930;
+	bh=3xqu6DOCRis3ts8JU1eK1hQauNPqKuaV4g+S3+L3WS0=;
+	h=From:In-Reply-To:References:Date:Subject:To:Cc;
+	b=e2rKA2QoRAl6qUhMs9hQ1Eem9usUIBCUP4Q+OaZ3u0if2/XZI9Lioxy0NBFyDPryy
+	 S8S5SeBLBgooqyplAkD00YNDXDjVV+kqgYF2g6JJ+ha+i2RCLuhpwfV3XAeBSd1O4s
+	 Wj69Gm1/Wspw95I89hylmpns/qCqzELkR7ali+NjMd9pFZVuih/FtDIx7FM8NSfDNx
+	 CvCxQDoIXGcegrKfYENKCPGlVIVdYtx6oNm2uYMuQ1r19juAwtZMVopvj1P7F3aZB5
+	 hvGRxrcmxIt7Lf8kVkizYLhw+9XVTVP0ATFPuzHD+p6CxSpaXideDHYmVvzmyrzD/W
+	 dDjs7PUlOlGAg==
+Received: by mail-lf1-f47.google.com with SMTP id 2adb3069b0e04-5aea0fff535so8786295e87.3
+        for <linux-pm@vger.kernel.org>; Tue, 21 Jul 2026 02:08:49 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AHgh+RozXGEzOWxT8vQjWPeAOzib9b2yrqgTYVXFyyVdod6zu+NW60BAL0QGwgD3Hu3OP/wZSn8eIUgWLw==@vger.kernel.org
+X-Gm-Message-State: AOJu0YzxK0P40kLYO18Ok1DG8kDckY1uCzwZNLZlUcFGqYioJ0lQ0hMA
+	E66qpfDcQ1vlfM3dFssHd9LqZVCG0kaTqkZDZS59HWGRDYnbpXs9zaqU3dXvZnNxkopKd/3U3cU
+	U4L24w5F/Py1pMZPyrsOABN9TYalnjlU9COigvd8W2Q==
+X-Received: by 2002:a05:6512:239e:b0:5ad:58c8:5de8 with SMTP id
+ 2adb3069b0e04-5b28f854e5amr3537391e87.1.1784624928719; Tue, 21 Jul 2026
+ 02:08:48 -0700 (PDT)
+Received: from 969154062570 named unknown by gmailapi.google.com with
+ HTTPREST; Tue, 21 Jul 2026 09:08:45 +0000
+Received: from 969154062570 named unknown by gmailapi.google.com with
+ HTTPREST; Tue, 21 Jul 2026 09:08:45 +0000
+From: Bartosz Golaszewski <brgl@kernel.org>
+In-Reply-To: <20260721065413.2306137-4-wenst@chromium.org>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+References: <20260721065413.2306137-1-wenst@chromium.org> <20260721065413.2306137-4-wenst@chromium.org>
+Date: Tue, 21 Jul 2026 09:08:45 +0000
+X-Gmail-Original-Message-ID: <CAMRc=McsCRBxXMj0xC8H0cgdZZ=Z9_4u_DS9b2z0pLE0=gZr+g@mail.gmail.com>
+X-Gm-Features: AUfX_mzwzLN239CObNW1gLp59KRlXCiikBTT40SGbitpk5WIVatni_t3viiU0PQ
+Message-ID: <CAMRc=McsCRBxXMj0xC8H0cgdZZ=Z9_4u_DS9b2z0pLE0=gZr+g@mail.gmail.com>
+Subject: Re: [PATCH v6 03/16] power: sequencing: Add pwrseq_power_is_on()
+To: Chen-Yu Tsai <wenst@chromium.org>
+Cc: linux-acpi@vger.kernel.org, driver-core@lists.linux.dev, 
+	linux-pm@vger.kernel.org, linux-usb@vger.kernel.org, 
+	devicetree@vger.kernel.org, linux-mediatek@lists.infradead.org, 
+	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, 
+	Manivannan Sadhasivam <mani@kernel.org>, Alan Stern <stern@rowland.harvard.edu>, 
+	Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>, 
+	Bartosz Golaszewski <brgl@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
+	Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Daniel Scally <djrscally@gmail.com>, 
+	Heikki Krogerus <heikki.krogerus@linux.intel.com>, 
+	Sakari Ailus <sakari.ailus@linux.intel.com>, "Rafael J. Wysocki" <rafael@kernel.org>, 
+	Danilo Krummrich <dakr@kernel.org>, Rob Herring <robh@kernel.org>, 
+	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
+	Matthias Brugger <matthias.bgg@gmail.com>, 
+	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
+Content-Type: text/plain; charset="UTF-8"
 
-The public libthermal header opens the C++ 'extern "C" {' block inside
-the __LIBTHERMAL_H include guard, but places the closing brace after
-the guard has already ended:
+On Tue, 21 Jul 2026 08:53:58 +0200, Chen-Yu Tsai <wenst@chromium.org> said:
+> The power sequencing consumer API already does power on state tracking
+> internally. Expose the state to consumers through pwrseq_power_is_on()
+> so that they don't have to reimplement it locally.
+>
+> Acked-by: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
+> Signed-off-by: Chen-Yu Tsai <wenst@chromium.org>
+> ---
+> Changes since v5:
+> - Reverted back to returning -EINVAL if descriptor is NULL
+>
+> Changes since v4:
+> - Make pwrseq_power_is_on() return 1 if descriptor is NULL, i.e. if
+>   the descriptor is optional, matching the other pwrseq consumer APIs
+>
+> Changes since v3:
+> - Added missing stub function for !POWER_SEQUENCING
+>
+> Changes since v2:
+> - New patch
+>
+> Needs to go in with "usb: hub: Power on connected M.2 E-key connectors"
+> as it is a build time dependency. Bartosz wants the change on an
+> immutable branch to pull into the pwrseq tree.
+> ---
+>  drivers/power/sequencing/core.c | 18 ++++++++++++++++++
+>  include/linux/pwrseq/consumer.h |  6 ++++++
+>  2 files changed, 24 insertions(+)
+>
+> diff --git a/drivers/power/sequencing/core.c b/drivers/power/sequencing/core.c
+> index 02f42da91598..72b96d36920e 100644
+> --- a/drivers/power/sequencing/core.c
+> +++ b/drivers/power/sequencing/core.c
+> @@ -968,6 +968,24 @@ int pwrseq_power_off(struct pwrseq_desc *desc)
+>  }
+>  EXPORT_SYMBOL_GPL(pwrseq_power_off);
+>
+> +/**
+> + * pwrseq_power_is_on() - Queries the last requested state of the power sequencer.
+> + * @desc: Descriptor referencing the power sequencer.
+> + *
+> + * This returns the last requested state of the power sequencer.
+> + *
+> + * Returns:
+> + * On success, 1 for on and 0 for off; negative error number on failure.
+> + */
+> +int pwrseq_power_is_on(struct pwrseq_desc *desc)
+> +{
+> +	if (!desc)
+> +		return -EINVAL;
+> +
+> +	return desc->powered_on;
+> +}
+> +EXPORT_SYMBOL_GPL(pwrseq_power_is_on);
+> +
 
-	#endif /* __LIBTHERMAL_H */
+Didn't we agree on introducing an enum to make it future-proof for when we
+also pull in pwrseq_is_controllable() from Loic?
 
-	#ifdef __cplusplus
-	}
-	#endif
+I think this should work like so:
 
-On a single inclusion the braces still balance, so the problem is
-invisible. On the second inclusion of the header in the same C++
-translation unit the include guard skips the opening 'extern "C" {',
-while the closing '}' lives outside the guard and is emitted anyway.
-This leaves a stray '}' and breaks compilation for any C++ consumer
-that includes the header more than once.
+enum {
+	PWRSEQ_STATE_UNKNOWN,
+	PWRSEQ_STATE_ON,
+	PWRSEQ_STATE_OFF,
+};
 
-Move the closing block inside the include guard so both halves of the
-'extern "C"' declaration are guarded consistently.
+int pwrseq_get_state(struct pwrseq_desc *desc)
+{
+	/* Only once this is upstream. */
+	if (!pwrseq_is_controllable(desc))
+		return PWRSEQ_STATE_UNKNOWN;
 
-Signed-off-by: Andreas Haufler <andreas@haufler.info>
----
- tools/lib/thermal/include/thermal.h | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+	return desc->powred_on ? PWRSEQ_STATE_ON : PWRSEQ_STATE_OFF;
+}
 
-diff --git a/tools/lib/thermal/include/thermal.h b/tools/lib/thermal/include/thermal.h
-index 818ecdfb4..d9097271d 100644
---- a/tools/lib/thermal/include/thermal.h
-+++ b/tools/lib/thermal/include/thermal.h
-@@ -175,8 +175,8 @@ LIBTHERMAL_API thermal_error_t thermal_sampling_handle(struct thermal_handler *t
- 
- LIBTHERMAL_API int thermal_sampling_fd(struct thermal_handler *th);
- 
--#endif /* __LIBTHERMAL_H */
--
- #ifdef __cplusplus
- }
- #endif
-+
-+#endif /* __LIBTHERMAL_H */
--- 
-2.50.1 (Apple Git-155)
-
+Bart
