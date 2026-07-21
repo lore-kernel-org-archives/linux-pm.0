@@ -1,196 +1,183 @@
-Received: from outbound.qs.icloud.com (qs-2002c-snip4-3.eps.apple.com [57.103.87.154])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E997446EF6A
-	for <linux-pm@vger.kernel.org>; Tue, 21 Jul 2026 18:59:40 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=57.103.87.154
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8BB7346EC8D
+	for <linux-pm@vger.kernel.org>; Tue, 21 Jul 2026 19:04:35 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1784660383; cv=none; b=aVTpRPcg1NwVvi8rdE8wDZq/VcAu8DdODwVtrIsN02Pp+iNKH1J0AUczrzHJsUf6piuoT9+XURZ8QcYGLiUE4JgatuZQzc39OmqtBR0bDIo0vFWd/+1NrGamDWvUeWup+dUBL0y1ct2G2mYpv1XlWCfdtJY4oWse/q3OnUnarig=
+	t=1784660676; cv=none; b=Yo5yYT2gTybX5U8WIS0PPYQkcY++CmzSh614WstaEzhla++y+eBPt9C2iefgv7Ygg4D8L8mhBiMs7hHnXyi6fsg0/u4KghoPOSh1d3n7Fy3/QWSFTnQxoHiFbDPSLcu0BK9A6p1rFl35R6imAp2Oln09iA+U7nkuBlW4mQ2+4pE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1784660383; c=relaxed/simple;
-	bh=zYPDk0dFuqI3SWYSbwOOATjyNJP19NdKD/Zid6+2nB0=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=XYMhtHwnn98yZcot2aPkOtGC/vtPwe70ofIJUUbCVSAMll+GfqewzMJ+O7qdht33rFso0UfRiDF2+mP15zwwx2le8XFkpQ6t8Y7sN6fd0vJCZA1J2nuSacCoFIGTRggpnKRKkDSXuM/Bm2/vUoTdYyBFbZWjacbvGMln2d8DFHI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=icloud.com; spf=pass smtp.mailfrom=icloud.com; dkim=pass (2048-bit key) header.d=icloud.com header.i=@icloud.com header.b=s8NvcgRV; arc=none smtp.client-ip=57.103.87.154
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=icloud.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=icloud.com
+	s=arc-20240116; t=1784660676; c=relaxed/simple;
+	bh=XmrxWTkcjVspufkodyx+ge4eYe4VLMyPyPEm+0gNY1E=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=BhIlfmqcL3TCtOYUeGBwLNfPnnykzTHH33hHxPEj5+s+L7DSChMpUb0/KZFprfq2ZL5MJBrQNnLBO6765f9PZzMIDFK41zdP4CaxP45ZK4GfXG7FRZlhCeo+U1J0NyrcNLYFSNyhfazPMga6ZKdFujCAUyR6biYwsx7AZg5Gm20=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=kU2ucBuS; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=icloud.com header.i=@icloud.com header.b="s8NvcgRV"
-Received: from outbound.qs.icloud.com (unknown [127.0.0.2])
-	by p00-icloudmta-asmtp-us-east-2d-60-percent-3 (Postfix) with ESMTPS id 7799618004D8;
-	Tue, 21 Jul 2026 18:59:36 +0000 (UTC)
-X-ICL-RepId: 019f860c-3b17-7494-9120-83c21685520b
-X-ICL-Out-Info: HUtFAUMEWwJACUgBTUQeDx5WFlZNRAJCTQhPAEMGXAVeC1YBXwFLVxQEDloDVA5cBBcbXwJCH1sVSzhaDlsERxQXG1wAFw1WTVAbXwJCDxwTVhUTH1RWA0IZEFYBWFZdBU0aXBhZDxwBSlZaDlsERxQXG1wAFxtGAgQjAl8ARQJeCVYBMBcPVk1QG18CQg8cE1YVEwBeDw9MC0gBWwdcAEEIQAZUB18cRAlPBlsaXx8GUBZQCFkfHBNVF0YZXg5AMFAbXwJCDxwTVhUNTUMSQhUEEVABWB5W
-Dkim-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=icloud.com; s=1a1hai; t=1784660380; x=1787252380; bh=xVEkIySqC2w1VTBoBLzRmkBJvvkPdFwntWG87jLmjgU=; h=From:To:Subject:Date:Message-ID:MIME-Version:x-icloud-hme; b=s8NvcgRVaH4oWAxO2ECYrcTt0vNoNYMheub05EhlPaCH7EkCpsrKMc7vJY9KBC0uttNBxJcL2ujJG+uSUW4kQ62yubESUzLItfsL4Roy2EAiCcquibFQBTO5t5ZxH5OZ8pX7REBEZYNYGn+6drB/nLfAnwqjsugzmRPa1GB7J5mgM2nIOvMj9nMUNqsaxt7hyXb+kl/+/urM2900K1VJtyLqlGqKxVDUIMPnyTGD9wrjb3tnAtqfN6BeDG7dqOARzZwR4+L/BUxq09H2KLVhzI7k1WLQM6QLlV3DMCi70AHA6g8wF6QPfob5z3w0+miWPjdf7y6nQIcDfyjpzMFhfQ==
-Received: from bigre.localdomain (unknown [17.57.155.37])
-	by p00-icloudmta-asmtp-us-east-2d-60-percent-3 (Postfix) with ESMTPSA id 13D5A1801822;
-	Tue, 21 Jul 2026 18:59:35 +0000 (UTC)
-From: Vincent Cloutier <vincent.cloutier@icloud.com>
-To: Sebastian Reichel <sre@kernel.org>
-Cc: Hans de Goede <hansg@kernel.org>,
-	Krzysztof Kozlowski <krzk@kernel.org>,
-	Marek Szyprowski <m.szyprowski@samsung.com>,
-	Sebastian Krzyszkowiak <sebastian.krzyszkowiak@puri.sm>,
-	Purism Kernel Team <kernel@puri.sm>,
-	Rob Herring <robh@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	linux-pm@vger.kernel.org,
-	devicetree@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	Vincent Cloutier <vincent@cloutier.co>
-Subject: [PATCH v3 3/4] power: supply: max17042_battery: Honor MAX17055 charge voltage
-Date: Tue, 21 Jul 2026 14:57:35 -0400
-Message-ID: <20260721185904.40756-4-vincent.cloutier@icloud.com>
-X-Mailer: git-send-email 2.55.0
-In-Reply-To: <20260721185904.40756-1-vincent.cloutier@icloud.com>
-References: <20260721185904.40756-1-vincent.cloutier@icloud.com>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="kU2ucBuS"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4F4041F00ACA
+	for <linux-pm@vger.kernel.org>; Tue, 21 Jul 2026 19:04:35 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1784660675;
+	bh=3dioA8pf9XHWq9/2SVxSD3KAwITdY7k4nNvRgGtvA/Q=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc;
+	b=kU2ucBuSU1sHkOZMJsE52DPzCkyBf/i1Yy20edMov4yvyzGYP9z96ZE8s4y9yL0vu
+	 RzQD3o6SdalgXGK/xXN18Y/Xz8ie3Hn+NalHxdGsdWSX1eRBvu8JRk3prksZbiqfvr
+	 Z4FWrkd10jYLSbnYne/wCBnytgiT3UOZmYfsZolahVMhCLXaou4eCHyKd4nU4gCa2D
+	 vs9vTeaF4vFutlpWfrjlYQavLycEe2DJ7dCrauzpQhA3JsXMShOGULe/LBxcdQie6W
+	 6ZFhkFWk6oyggG/6h2HZlNV+G24PlLz13BWmVX7MBacksnzhdGmZTIHBw1k4ccrFFY
+	 uGf0sIcv0Jq6g==
+Received: by mail-lf1-f48.google.com with SMTP id 2adb3069b0e04-5b0117d49dcso10782819e87.3
+        for <linux-pm@vger.kernel.org>; Tue, 21 Jul 2026 12:04:35 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AHgh+RocldYadfne4ulo3WX7EusiTaFixcRinaPVi6KYQ/qoSx3mca4eBwjLfB3fGZGYp1DKVaYeEtVvWw==@vger.kernel.org
+X-Gm-Message-State: AOJu0YzNJY1P7V6huMTpsAqMOQm0V4VleqNLunDzphPH6IK15uIZIb5c
+	HRtAKlcFlwTHZg3t4OO5EeYAprgJ+7yjxnl93LhyswoftO7buvUYOmzFlSGKDrvKHH+HpsMwk8e
+	Jp3zad+FCnJOVPOubHbb7OlH2N1sjLvs=
+X-Received: by 2002:a05:6512:63ce:10b0:5b1:4c6f:92f9 with SMTP id
+ 2adb3069b0e04-5b28f864239mr2769254e87.20.1784660673659; Tue, 21 Jul 2026
+ 12:04:33 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzIxMDE5OSBTYWx0ZWRfX+Cx+dPXcv0XU
- g8V1LgJBEBL04zjys+Asq2Kp0ZIfIvaero0kefwMk6PZLYl5pRYv2RZW9PxpnO2tLhLb/G8DdUc
- 5pWVQV/6xT0EIFi7z3rzZZAxMpc33UkoYVJMB/kt01bFaGcg/7NPEroL4QhK1CiwWxAfBV79vzX
- FIMJ9xwcTxQ6rYfwb/AB5HTHf2ajopSZlM9Y66hROmRFgt1sqnVfeHe5F4czbeE9zbfuKxnt6x6
- bDTxefYMNikjw+kOc4noij6hR4fIJZMXE1tcEEhOG6yMT1Jh8eUzBKrwRI6EeD5dlesgbNALyNI
- JDr52FTAPEJxZML/MiB
-X-Proofpoint-GUID: Iddilkg9rgge7z6L683povkqfllri423
-X-Proofpoint-ORIG-GUID: Iddilkg9rgge7z6L683povkqfllri423
+References: <20260717024502.3520445-1-zhenglifeng1@huawei.com> <20260717024502.3520445-2-zhenglifeng1@huawei.com>
+In-Reply-To: <20260717024502.3520445-2-zhenglifeng1@huawei.com>
+From: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
+Date: Tue, 21 Jul 2026 21:04:21 +0200
+X-Gmail-Original-Message-ID: <CAJZ5v0ggjYqUe+J97=iSBQ5UzqLixQaXKXf=tNre2unPZOvUyQ@mail.gmail.com>
+X-Gm-Features: AUfX_mxafGdaDCgZYKegX2mf7sM8WihZClUjxldyeNLi8YDSRdv8TxjVkSFhHTs
+Message-ID: <CAJZ5v0ggjYqUe+J97=iSBQ5UzqLixQaXKXf=tNre2unPZOvUyQ@mail.gmail.com>
+Subject: Re: [PATCH 1/8] ACPI: CPPC: Prepare cpc_register_resource for
+ Package-type entries
+To: Lifeng Zheng <zhenglifeng1@huawei.com>
+Cc: rafael@kernel.org, viresh.kumar@linaro.org, saket.dumbre@intel.com, 
+	lenb@kernel.org, zhanjie9@hisilicon.com, pierre.gondois@arm.com, 
+	sumitg@nvidia.com, linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org, 
+	linux-pm@vger.kernel.org, acpica-devel@lists.linux.dev, linuxarm@huawei.com, 
+	lihuisong@huawei.com, yubowen8@huawei.com, zhangpengjie2@huawei.com, 
+	wangzhi12@huawei.com, linhongye@h-partners.com
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-From: Vincent Cloutier <vincent@cloutier.co>
+On Fri, Jul 17, 2026 at 4:46=E2=80=AFAM Lifeng Zheng <zhenglifeng1@huawei.c=
+om> wrote:
+>
+> CPPC v4 (ACPI 6.6, Section 8.4.6.1.2.7) introduces the Resource
+> Priority entry, which is a Package of sub-packages rather than a
+> plain Integer or Buffer register.  The existing cpc_register_resource
+> union only accommodates Integer and Buffer (register descriptor)
+> fields.
+>
+> Add a Package variant to the cpc_entry union so that nested
+> structures such as RESOURCE_PRIORITY can store their element count
+> and a dynamically allocated array of child cpc_register_resource
+> descriptors.
+>
+> Update the CPC_SUPPORTED() macro to recognise Package-type entries
+> with a non-zero element count, and switch the unsupported-Package
+> fallback from a zero Integer to an empty Package (count =3D 0,
+> elements =3D NULL) so that CPC_SUPPORTED() correctly reports such
+> entries as unsupported.
+>
+> No functional change intended; the new Package fields are not yet
+> consumed by any caller.
+>
+> Signed-off-by: Lifeng Zheng <zhenglifeng1@huawei.com>
+> ---
+>  drivers/acpi/cppc_acpi.c | 19 +++++++++++++------
+>  include/acpi/cppc_acpi.h |  8 ++++++++
+>  2 files changed, 21 insertions(+), 6 deletions(-)
+>
+> diff --git a/drivers/acpi/cppc_acpi.c b/drivers/acpi/cppc_acpi.c
+> index 9f572f481241..d7e654f2a66c 100644
+> --- a/drivers/acpi/cppc_acpi.c
+> +++ b/drivers/acpi/cppc_acpi.c
+> @@ -124,10 +124,16 @@ static DEFINE_PER_CPU(struct cpc_desc *, cpc_desc_p=
+tr);
+>                                 (reg)->bit_offset =3D=3D 0 &&            =
+   \
+>                                 (reg)->access_width =3D=3D 0)
+>
+> -/* Evaluates to True if an optional cpc field is supported */
+> -#define CPC_SUPPORTED(cpc) ((cpc)->type =3D=3D ACPI_TYPE_INTEGER ?      =
+   \
+> -                               !!(cpc)->cpc_entry.int_value :          \
+> -                               !IS_NULL_REG(&(cpc)->cpc_entry.reg))
+> +/*
+> + * Evaluates to True if an optional cpc field is supported.
+> + * Integer: non-zero value; Buffer: non-NULL register; Package: non-empt=
+y.
+> + */
+> +#define CPC_SUPPORTED(cpc) (((cpc)->type =3D=3D ACPI_TYPE_INTEGER &&    =
+   \
+> +                            !!(cpc)->cpc_entry.int_value) ||           \
+> +                           ((cpc)->type =3D=3D ACPI_TYPE_BUFFER &&      =
+   \
+> +                            !IS_NULL_REG(&(cpc)->cpc_entry.reg)) ||    \
+> +                           ((cpc)->type =3D=3D ACPI_TYPE_PACKAGE &&     =
+   \
+> +                            (cpc)->cpc_entry.package.count !=3D 0))
 
-MAX17055 ModelCfg.VChg selects the charge-voltage range used by EZ Config.
-Consume voltage-max-design-microvolt from monitored-battery and set VChg
-only when the value is strictly greater than 4.275 V. Reject an explicit
-zero voltage and preserve the register when the property is absent.
+My immediate concern regarding this change in particular is that it
+potentially causes invalid data structures to be used as "supported".
 
-Update only the VChg bit and verify its read-back so unrelated ModelCfg
-fields remain intact. Treat a VChg-only override as an accumulator change:
-read effective DesignCap and dQAcc, derive and verify the matching dPAcc,
-then request model refresh. This keeps voltage-only firmware descriptions
-coherent with the selected charge-voltage range.
+Suppose that some defective platform firmware supplies a package in a
+field that by the spec can only be a buffer and the length of that
+package is greater than zero.  The macro will produce 'true' then
+which is invalid.
 
-Assisted-by: OpenCode:gpt-5.6-sol
-Signed-off-by: Vincent Cloutier <vincent@cloutier.co>
----
- drivers/power/supply/max17042_battery.c | 42 +++++++++++++++++++++++--
- 1 file changed, 39 insertions(+), 3 deletions(-)
+It looks like there should be three different macros like the above
+for the three different types of _CPC fields: the buffer/integer ones,
+the buffer-only ones and the single package field.
 
-diff --git a/drivers/power/supply/max17042_battery.c b/drivers/power/supply/max17042_battery.c
-index b25bf26135e0..0f6bf6d4c031 100644
---- a/drivers/power/supply/max17042_battery.c
-+++ b/drivers/power/supply/max17042_battery.c
-@@ -66,6 +66,7 @@
- #define MAX17055_DPACC_FACTOR		44138
- #define MAX17055_DPACC_VCHG_FACTOR	51200
- #define MAX17055_FSTAT_DNR_BIT		BIT(0)
-+#define MAX17055_VCHG_THRESHOLD_UV	4275000
- #define MAX17055_DNR_POLL_US		10000
- #define MAX17055_DNR_TIMEOUT_US		2000000
- #define MAX17055_INIT_RETRY_DELAY_MS	10000
-@@ -83,6 +84,7 @@ struct max17042_chip {
- 	int    task_period;
- 	bool   enable_current_sense;
- 	bool   enable_por_init;
-+	bool   enable_vchg_override;
- 	bool   init_complete;
- 	bool   hib_restore_pending;
- 	u16    hib_cfg;
-@@ -879,7 +881,8 @@ static inline void max17042_override_por_values(struct max17042_chip *chip)
- 		max17042_override_por(map, MAX17047_V_empty, config->vempty);
- 	}
- 
--	if (chip->chip_type == MAXIM_DEVICE_TYPE_MAX17055)
-+	if (chip->chip_type == MAXIM_DEVICE_TYPE_MAX17055 &&
-+	    !chip->enable_vchg_override)
- 		max17042_override_por(map, MAX17055_ModelCfg, config->model_cfg);
- }
- 
-@@ -914,7 +917,19 @@ static int max17055_override_battery_values(struct max17042_chip *chip)
- 			return ret;
- 	}
- 
--	if (!config->design_cap && !config->dqacc)
-+	if (chip->enable_vchg_override) {
-+		ret = regmap_update_bits(map, MAX17055_ModelCfg,
-+					 MAX17055_MODELCFG_VCHG_BIT,
-+					 config->model_cfg &
-+					 MAX17055_MODELCFG_VCHG_BIT);
-+		if (ret)
-+			return ret;
-+
-+		usleep_range(1000, 2000);
-+	}
-+
-+	if (!config->design_cap && !config->dqacc &&
-+	    !chip->enable_vchg_override)
- 		return 0;
- 
- 	ret = regmap_read(map, MAX17042_DesignCap, &design_cap);
-@@ -928,6 +943,10 @@ static int max17055_override_battery_values(struct max17042_chip *chip)
- 	ret = regmap_read(map, MAX17055_ModelCfg, &model_cfg);
- 	if (ret)
- 		return ret;
-+	if (chip->enable_vchg_override &&
-+	    (model_cfg & MAX17055_MODELCFG_VCHG_BIT) !=
-+	    (config->model_cfg & MAX17055_MODELCFG_VCHG_BIT))
-+		return -EIO;
- 
- 	if (!design_cap || !dqacc)
- 		return -ERANGE;
-@@ -1248,9 +1267,11 @@ static int max17042_apply_battery_properties(struct max17042_chip *chip,
- 	struct device *dev = chip->dev;
- 	bool have_design_cap;
- 	bool have_ichgt_term;
-+	bool have_vchg;
- 	u16 design_cap = 0;
- 	u16 ichgt_term = 0;
- 	u16 dqacc = 0;
-+	u16 model_cfg = 0;
- 	u64 data64;
- 
- 	if (!info || chip->chip_type != MAXIM_DEVICE_TYPE_MAX17055)
-@@ -1260,7 +1281,8 @@ static int max17042_apply_battery_properties(struct max17042_chip *chip,
- 		info->charge_full_design_uah >= 0;
- 	have_ichgt_term = chip->enable_current_sense &&
- 		info->charge_term_current_ua >= 0;
--	if (!have_design_cap && !have_ichgt_term)
-+	have_vchg = info->voltage_max_design_uv >= 0;
-+	if (!have_design_cap && !have_ichgt_term && !have_vchg)
- 		return 0;
- 
- 	if (have_design_cap) {
-@@ -1301,6 +1323,15 @@ static int max17042_apply_battery_properties(struct max17042_chip *chip,
- 		ichgt_term = (u16)data64;
- 	}
- 
-+	if (have_vchg) {
-+		if (!info->voltage_max_design_uv)
-+			return dev_err_probe(dev, -EINVAL,
-+					     "battery design voltage must be positive\n");
-+
-+		if (info->voltage_max_design_uv > MAX17055_VCHG_THRESHOLD_UV)
-+			model_cfg = MAX17055_MODELCFG_VCHG_BIT;
-+	}
-+
- 	config = chip->config_data;
- 	if (!config) {
- 		config = devm_kzalloc(dev, sizeof(*config), GFP_KERNEL);
-@@ -1314,6 +1345,11 @@ static int max17042_apply_battery_properties(struct max17042_chip *chip,
- 	}
- 	if (have_ichgt_term)
- 		config->ichgt_term = ichgt_term;
-+	if (have_vchg) {
-+		config->model_cfg &= ~MAX17055_MODELCFG_VCHG_BIT;
-+		config->model_cfg |= model_cfg;
-+		chip->enable_vchg_override = true;
-+	}
- 
- 	chip->config_data = config;
- 	chip->enable_por_init = true;
--- 
-2.55.0
+And I'm not sure how much of a value there is in complicating the
+overall parsing of all fields just in order to be able to handle the
+last special one in a "generic" fashion.
 
+As this stands now, it is a "no" from me, sorry.
+
+>
+>  /*
+>   * Each bit indicates the optionality of the register in per-cpu
+> @@ -859,8 +865,9 @@ int acpi_cppc_processor_probe(struct acpi_processor *=
+pr)
+>                          * Mark the register as unsupported for now.
+>                          */
+>                         pr_debug("CPU:%d Resource Priority not supported\=
+n", pr->id);
+> -                       cpc_ptr->cpc_regs[i-2].type =3D ACPI_TYPE_INTEGER=
+;
+> -                       cpc_ptr->cpc_regs[i-2].cpc_entry.int_value =3D 0;
+> +                       cpc_ptr->cpc_regs[i-2].type =3D ACPI_TYPE_PACKAGE=
+;
+> +                       cpc_ptr->cpc_regs[i-2].cpc_entry.package.count =
+=3D 0;
+> +                       cpc_ptr->cpc_regs[i-2].cpc_entry.package.elements=
+ =3D NULL;
+>                 } else {
+>                         pr_debug("Invalid entry type (%d) in _CPC for CPU=
+:%d\n",
+>                                  i, pr->id);
+> diff --git a/include/acpi/cppc_acpi.h b/include/acpi/cppc_acpi.h
+> index 8693890a7275..1839582b80be 100644
+> --- a/include/acpi/cppc_acpi.h
+> +++ b/include/acpi/cppc_acpi.h
+> @@ -71,6 +71,14 @@ struct cpc_register_resource {
+>         union {
+>                 struct cpc_reg reg;
+>                 u64 int_value;
+> +               /*
+> +                * CPPC v4: nested Package (e.g. RESOURCE_PRIORITY),
+> +                * elements dynamically allocated
+> +                */
+> +               struct {
+> +                       u32 count;
+> +                       struct cpc_register_resource *elements;
+> +               } package;
+>         } cpc_entry;
+>  };
+>
+> --
+> 2.33.0
+>
