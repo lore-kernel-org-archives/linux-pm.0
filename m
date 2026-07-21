@@ -1,306 +1,121 @@
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id 6DAFE46A5E8;
-	Tue, 21 Jul 2026 15:37:17 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9902946AA93;
+	Tue, 21 Jul 2026 15:39:13 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1784648239; cv=none; b=oR18icA4aeJbkJ1G8u6hl36ps1js2UHCBmoZv0FQbAlrYyEjMjevbq9AXz8oNLVqMwsOUAOGzDJeVihhgl+BYKYG/aQcz/1rLirvXYIqL/oAMspqavaehjiOB0OjxfD1eGiucWdyWg2BB2Jf4HvaOvCLCPGt7daW9ARZx7Yekvk=
+	t=1784648354; cv=none; b=DuVG4+kvKgSXkNF9K8tnP7Xz1bLS48Iln9uxbx/Nuy7KEEMudUPHQNabLN5/sam+JXHn9IkzxdIB4hR168rzv9SiEREZBUR4E1es9shJ0iqZJwHzF0CoXjMCozp1wnVlO0+RlTOxcntRQwAOt6QoqHEEtuFR022mYcQPN+8Xuno=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1784648239; c=relaxed/simple;
-	bh=q4MF5E4h5/8qkpfjUgErQgWgG2L7kAUOY6NiD5Eq7LY=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=paEFQRXGOv44gCZCPhVUL83T6E91r/ZTDireGXgz+DE8imi3ocnPOQdtIiEOz6vu2K8H3Trbf3C3/x2YrchRVhWphRRN8Ivh/FWu/MHlDwPngvyqM4aibnMM8CgB5sQJGqhC80RRvq2jbUaGiLzF7tLnD9eD+Zgsss66gH86W+Y=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=Zt7Pv+Hh; arc=none smtp.client-ip=217.140.110.172
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
+	s=arc-20240116; t=1784648354; c=relaxed/simple;
+	bh=cz+yaxPCKGydsCShz+e64g051Q//+9R/77njKWpmjQY=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=CyfPIPxqUn+lYbI/Hox6plqUEMgSlKGV9BoLw9DpxyW8T7RT1Om1uh9koO6n5i18OpPjXzswiU0YhU8rxcVJ3wN9144WMK13WjCmU8op8kyhSOULOrexaqzjjrW7JgImuQIv7u8iMAMn5eYhTXfVKBR+dSRDBnLCeHQ6dn9x4Tc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=VWsHDJRC; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="Zt7Pv+Hh"
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id B0650152B;
-	Tue, 21 Jul 2026 08:37:12 -0700 (PDT)
-Received: from e143943.arm.com (unknown [10.57.39.15])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id 6F2043F58B;
-	Tue, 21 Jul 2026 08:37:12 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1784648236; bh=q4MF5E4h5/8qkpfjUgErQgWgG2L7kAUOY6NiD5Eq7LY=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=Zt7Pv+Hhb0MmL0k7IcXlMcXV0TUq8hAzqgJvADMF1NwVbfuW8k4ITZrhccW98rijx
-	 KRySIaYMn8LhQbmvWCwxBGxbqqtPY/8VspNrdCG221CZB9ykyB4zlwGCFwVwEtwcyi
-	 IJKqyh0j+EeelvhSF41vYnkgxHhEtXWk54UCeBb0=
-From: Beata Michalska <beata.michalska@arm.com>
-To: ojeda@kernel.org,
-	dakr@kernel.org,
-	gregkh@linuxfoundation.org,
-	rafael@kernel.org
-Cc: boqun@kernel.org,
-	gary@garyguo.net,
-	bjorn3_gh@protonmail.com,
-	lossin@kernel.org,
-	a.hindborg@kernel.org,
-	aliceryhl@google.com,
-	tmgross@umich.edu,
-	daniel.almeida@collabora.com,
-	boris.brezillon@collabora.com,
-	work@onurozkan.dev,
-	samitolvanen@google.com,
-	rust-for-linux@vger.kernel.org,
-	driver-core@lists.linux.dev,
-	linux-kernel@vger.kernel.org,
-	linux-pm@vger.kernel.org
-Subject: [PATCH v2 3/3] drm/tyr: enable runtime PM
-Date: Tue, 21 Jul 2026 17:34:04 +0200
-Message-ID: <20260721153617.869933-4-beata.michalska@arm.com>
-X-Mailer: git-send-email 2.43.0
-In-Reply-To: <20260721153617.869933-1-beata.michalska@arm.com>
-References: <20260721153617.869933-1-beata.michalska@arm.com>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="VWsHDJRC"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1221C1F00A3A;
+	Tue, 21 Jul 2026 15:39:09 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1784648353;
+	bh=hLQWPFMCTeHsHxMG2mIadddYhi94/3UwmE2L3HrNJbo=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=VWsHDJRC6YHuuimgcQEchBVC8lxQKFw/4AI0Vf4OFV+Qmo8pig0CJlRKR+wdQ4myQ
+	 j9xW2WnYc8zvnmxtHMNkMaebW+c2W3ssd/TFUmxhbaQNa6oYDJooYPg39GLvIQeWsX
+	 aBKwwm+i9oN3+8jNGlzU1pXlJbi9tI62ejBlCSU22ri5fM27ECFsUIRR8cTg424vWM
+	 e1Q5jBKX+KQ33s9ozKVr1SL2hw0n/Xtke8LrrEqGM1R4fnlAwDoitf3+KTsEFY85nE
+	 480QvD1tcxzJBFZy2HAPkInRsUaAnPrs6ooy4u+QBCgLC/yFbMFmTKiVNoHmttP2T3
+	 qmVWkn2TnpF7g==
+Date: Tue, 21 Jul 2026 16:39:07 +0100
+From: Conor Dooley <conor@kernel.org>
+To: Binbin Zhou <zhoubinbin@loongson.cn>
+Cc: Binbin Zhou <zhoubb.aaron@gmail.com>,
+	Huacai Chen <chenhuacai@loongson.cn>, Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>, Lee Jones <lee@kernel.org>,
+	Yinbo Zhu <zhuyinbo@loongson.cn>,
+	zhanghongchen <zhanghongchen@loongson.cn>,
+	"Rafael J . Wysocki" <rafael@kernel.org>,
+	Daniel Lezcano <daniel.lezcano@linaro.org>,
+	Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>,
+	Huacai Chen <chenhuacai@kernel.org>,
+	Xuerui Wang <kernel@xen0n.name>, loongarch@lists.linux.dev,
+	devicetree@vger.kernel.org, linux-pm@vger.kernel.org,
+	mfd@lists.linux.dev
+Subject: Re: [PATCH v2 2/4] dt-bindings: mfd: syscon: Allow syscon compatible
+ for Loongson-2K0300 chip id
+Message-ID: <20260721-unearned-triage-841b68880057@spud>
+References: <cover.1784619512.git.zhoubinbin@loongson.cn>
+ <bab36775095bb85827676b2db917e6cb9527b325.1784619512.git.zhoubinbin@loongson.cn>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="GK7sGhgenbKn2aR3"
+Content-Disposition: inline
+In-Reply-To: <bab36775095bb85827676b2db917e6cb9527b325.1784619512.git.zhoubinbin@loongson.cn>
 
-Add runtime PM support to the Tyr platform driver. Move the clocks and
-regulators used by runtime suspend and resume into the PM payload, register the
-PM callbacks, configure autosuspend, and let DRM paths take a PM usage
-reference while querying device state.
+--GK7sGhgenbKn2aR3
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Beata Michalska <beata.michalska@arm.com>
----
- drivers/gpu/drm/tyr/driver.rs | 112 ++++++++++++++++++++++++++++------
- drivers/gpu/drm/tyr/file.rs   |   7 ++-
- 2 files changed, 98 insertions(+), 21 deletions(-)
+On Tue, Jul 21, 2026 at 08:24:21PM +0800, Binbin Zhou wrote:
+> The Loongson-2K0300 SoC exposes its chip ID registers through a syscon
+> interface. Add the specific compatible `loongson,ls2k0300-chipid-syscon`
+> to the allowed list of syscon bindings so that it can be referenced from
+> the thermal node via a phandle.
+>=20
+> Signed-off-by: Binbin Zhou <zhoubinbin@loongson.cn>
+> ---
+>  Documentation/devicetree/bindings/mfd/syscon.yaml | 2 ++
+>  1 file changed, 2 insertions(+)
+>=20
+> diff --git a/Documentation/devicetree/bindings/mfd/syscon.yaml b/Document=
+ation/devicetree/bindings/mfd/syscon.yaml
+> index e22867088063..c5b2e28f6ced 100644
+> --- a/Documentation/devicetree/bindings/mfd/syscon.yaml
+> +++ b/Documentation/devicetree/bindings/mfd/syscon.yaml
+> @@ -76,6 +76,7 @@ select:
+>            - hpe,gxp-sysreg
+>            - loongson,ls1b-syscon
+>            - loongson,ls1c-syscon
+> +          - loongson,ls2k0300-cphipid-syscon
 
-diff --git a/drivers/gpu/drm/tyr/driver.rs b/drivers/gpu/drm/tyr/driver.rs
-index 8348c6cd3929..89fe216be0de 100644
---- a/drivers/gpu/drm/tyr/driver.rs
-+++ b/drivers/gpu/drm/tyr/driver.rs
-@@ -1,6 +1,7 @@
- // SPDX-License-Identifier: GPL-2.0 or MIT
- 
- use kernel::{
-+    bindings,
-     clk::{
-         Clk,
-         OptionalClk, //
-@@ -20,16 +21,16 @@
-         poll,
-         Io, //
-     },
--    new_mutex,
-     of,
-     platform,
-+    pm,
-+    pm::*,
-     prelude::*,
-     regulator,
-     regulator::Regulator,
-     sizes::SZ_2M,
-     sync::{
-         aref::ARef,
--        Mutex, //
-     },
-     time, //
- };
-@@ -55,18 +56,21 @@
- pub(crate) struct TyrPlatformDriverData<'bound> {
-     _device: ARef<TyrDrmDevice>,
-     _reg: drm::Registration<'bound, TyrDrmDriver>,
-+    // This needs to be dropped after drm::Registration as this one borrows
-+    // borrows PMContext.
-+    pub(crate) pm: pm::Registration<'bound, TyrPlatformDriver>,
-+
-+}
-+
-+#[pin_data]
-+pub(crate) struct TyrRuntimePM<'bound> {
-+    pub(crate) pm: PMContext<'bound, TyrPlatformDriver>,
- }
- 
- #[pin_data]
- pub(crate) struct TyrDrmDeviceData {
-     pub(crate) pdev: ARef<platform::Device>,
- 
--    #[pin]
--    clks: Mutex<Clocks>,
--
--    #[pin]
--    regulators: Mutex<Regulators>,
--
-     /// Some information on the GPU.
-     ///
-     /// This is mainly queried by userspace, i.e.: Mesa.
-@@ -101,6 +105,7 @@ impl platform::Driver for TyrPlatformDriver {
-     type IdInfo = ();
-     type Data<'bound> = TyrPlatformDriverData<'bound>;
-     const OF_ID_TABLE: Option<of::IdTable<Self::IdInfo>> = Some(&OF_TABLE);
-+    const PM_OPS: Option<&'static bindings::dev_pm_ops> = Some(&PMContext::<Self>::PM_OPS);
- 
-     fn probe<'bound>(
-         pdev: &'bound platform::Device<Core<'_>>,
-@@ -117,6 +122,25 @@ fn probe<'bound>(
-         let mali_regulator = Regulator::<regulator::Enabled>::get(pdev.as_ref(), c"mali")?;
-         let sram_regulator = Regulator::<regulator::Enabled>::get(pdev.as_ref(), c"sram")?;
- 
-+	let runtime_payload = TyrRuntimePMPayload {
-+            clks: Clocks {
-+                core: core_clk,
-+                stacks: stacks_clk,
-+                coregroup: coregroup_clk,
-+            },
-+            _regulators: Regulators {
-+                    _mali: mali_regulator,
-+                    _sram: sram_regulator,
-+            }
-+        };
-+
-+        let mut pm_configs = KVec::<PMConfig>::with_capacity(2, GFP_KERNEL)?;
-+        pm_configs.push(PMConfig::AutoSuspend(true), GFP_KERNEL)?;
-+        pm_configs.push(PMConfig::AutoSuspendDelay(300), GFP_KERNEL)?;
-+
-+        let pm_registration = pm::Registration::new(pdev.as_ref(), None, Some(pm_configs), Some(runtime_payload))?;
-+        let pm_context = pm_registration.ctx().clone();
-+
-         let request = pdev.io_request_by_index(0).ok_or(ENODEV)?;
-         let iomem = request.iomap_sized::<SZ_2M>()?;
- 
-@@ -138,28 +162,26 @@ fn probe<'bound>(
- 
-         let data = try_pin_init!(TyrDrmDeviceData {
-                 pdev: platform.clone(),
--                clks <- new_mutex!(Clocks {
--                    core: core_clk,
--                    stacks: stacks_clk,
--                    coregroup: coregroup_clk,
--                }),
--                regulators <- new_mutex!(Regulators {
--                    _mali: mali_regulator,
--                    _sram: sram_regulator,
--                }),
-                 gpu_info,
-         });
- 
-         let tdev = drm::UnregisteredDevice::<TyrDrmDriver>::new(pdev, data)?;
-         // SAFETY: `reg` is stored in `TyrPlatformDriverData` and dropped when the driver is
-         // unbound; it is never forgotten.
--        let reg = unsafe { drm::Registration::new(pdev.as_ref(), tdev, (), 0)? };
-+        let reg = unsafe { drm::Registration::new(
-+            pdev.as_ref(),
-+            tdev,
-+            pin_init!(TyrRuntimePM { pm: pm_context, }),
-+            0
-+        )? };
- 
-         let driver = TyrPlatformDriverData {
-             _device: reg.device().into(),
-             _reg: reg,
-+            pm: pm_registration,
-         };
- 
-+        driver.pm.ctx().enable(RuntimePMState::RESUMED)?;
-         // We need this to be dev_info!() because dev_dbg!() does not work at
-         // all in Rust for now, and we need to see whether probe succeeded.
-         dev_info!(pdev, "Tyr initialized correctly.\n");
-@@ -185,7 +207,7 @@ fn drop(self: Pin<&mut Self>) {}
- #[vtable]
- impl drm::Driver for TyrDrmDriver {
-     type Data = TyrDrmDeviceData;
--    type RegistrationData<'a> = ();
-+    type RegistrationData<'a> = TyrRuntimePM<'a>;
-     type File = TyrDrmFileData;
-     type Object = drm::gem::shmem::Object<BoData>;
-     type ParentDevice<Ctx: DeviceContext> = platform::Device<Ctx>;
-@@ -216,3 +238,55 @@ struct Regulators {
-     _mali: Regulator<regulator::Enabled>,
-     _sram: Regulator<regulator::Enabled>,
- }
-+
-+pub(crate) struct TyrRuntimePMPayload {
-+    clks: Clocks,
-+    _regulators: Regulators,
-+}
-+
-+#[vtable]
-+impl PMOps for TyrPlatformDriver {
-+    type DeviceType = platform::Device<kernel::device::Bound>;
-+    type RuntimePayloadType = TyrRuntimePMPayload;
-+
-+    fn runtime_suspend<'a>(
-+        _dev: &'a Self::DeviceType,
-+        payload: Option<TyrRuntimePMPayload>,
-+    ) -> Result<Option<TyrRuntimePMPayload>, (Option<TyrRuntimePMPayload>, Error)>  {
-+
-+        let Some(payload) = payload else {
-+          return Err((None, EINVAL));
-+        };
-+
-+        payload.clks.coregroup.disable_unprepare();
-+        payload.clks.stacks.disable_unprepare();
-+        payload.clks.core.disable_unprepare();
-+        Ok(Some(payload))
-+    }
-+    fn runtime_resume<'a>(
-+        _dev: &'a Self::DeviceType,
-+        payload: Option<TyrRuntimePMPayload>,
-+    ) -> Result<Option<TyrRuntimePMPayload>, (Option<TyrRuntimePMPayload>, Error)> {
-+
-+      let Some(payload) = payload else {
-+          return Err((None, EINVAL));
-+      };
-+
-+      if let Err(e) = payload.clks.core.prepare_enable() {
-+          return Err((Some(payload), e));
-+      }
-+
-+      if let Err(e) = payload.clks.stacks.prepare_enable() {
-+          payload.clks.core.disable_unprepare();
-+          return Err((Some(payload), e));
-+      }
-+
-+      if let Err(e) = payload.clks.coregroup.prepare_enable() {
-+          payload.clks.stacks.disable_unprepare();
-+          payload.clks.core.disable_unprepare();
-+          return Err((Some(payload), e));
-+      }
-+
-+      Ok(Some(payload))
-+   }
-+}
-diff --git a/drivers/gpu/drm/tyr/file.rs b/drivers/gpu/drm/tyr/file.rs
-index b686041d5d6b..d9371ddfb5f3 100644
---- a/drivers/gpu/drm/tyr/file.rs
-+++ b/drivers/gpu/drm/tyr/file.rs
-@@ -5,6 +5,7 @@
-         self,
-         Registered, //
-     },
-+    pm::PMProfile,
-     prelude::*,
-     uaccess::UserSlice,
-     uapi, //
-@@ -12,7 +13,8 @@
- 
- use crate::driver::{
-     TyrDrmDevice,
--    TyrDrmDriver, //
-+    TyrDrmDriver,
-+    TyrRuntimePM,//
- };
- 
- #[pin_data]
-@@ -32,10 +34,11 @@ fn open(_dev: &drm::Device<Self::Driver>) -> Result<Pin<KBox<Self>>> {
- impl TyrDrmFileData {
-     pub(crate) fn dev_query(
-         ddev: &TyrDrmDevice<Registered>,
--        _reg_data: &(),
-+        reg_data: &TyrRuntimePM<'_>,
-         devquery: &mut uapi::drm_panthor_dev_query,
-         _file: &TyrDrmFile,
-     ) -> Result<u32> {
-+        let _pm_scope = reg_data.pm.get(PMProfile::new())?;
-         if devquery.pointer == 0 {
-             match devquery.type_ {
-                 uapi::drm_panthor_dev_query_type_DRM_PANTHOR_DEV_QUERY_GPU_INFO => {
--- 
-2.43.0
+You've spelt both of these wrong, "cphip" instead of "chip".
 
+pw-bot: changes-requested
+
+Thanks,
+Conor.
+
+>            - lsi,axxia-syscon
+>            - marvell,armada-3700-cpu-misc
+>            - marvell,armada-3700-nb-pm
+> @@ -189,6 +190,7 @@ properties:
+>                - hpe,gxp-sysreg
+>                - loongson,ls1b-syscon
+>                - loongson,ls1c-syscon
+> +              - loongson,ls2k0300-cphipid-syscon
+>                - lsi,axxia-syscon
+>                - marvell,armada-3700-cpu-misc
+>                - marvell,armada-3700-nb-pm
+> --=20
+> 2.52.0
+>=20
+
+--GK7sGhgenbKn2aR3
+Content-Type: application/pgp-signature; name=signature.asc
+
+-----BEGIN PGP SIGNATURE-----
+
+iHUEABYKAB0WIQRh246EGq/8RLhDjO14tDGHoIJi0gUCal+SmAAKCRB4tDGHoIJi
+0jPVAQCvJHInKelqh3513UPi1ZsC7cbxUrsaq0g/JroEIrahzwD+IiLXI9AFi2iA
+p+pjuAzP3h8rH+Xb6lKhUUdZurMyKgg=
+=+rX3
+-----END PGP SIGNATURE-----
+
+--GK7sGhgenbKn2aR3--
