@@ -1,152 +1,634 @@
-Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C12153B9950
-	for <linux-pm@vger.kernel.org>; Tue, 21 Jul 2026 21:31:42 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.180.131
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 69193443AA0;
+	Tue, 21 Jul 2026 22:23:44 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1784669504; cv=none; b=hA4A9RYTCgl1h7oszO6rqA6cvKGWAVNFXaTJLYEH2pD55ajyVLrrG154r0PIkaB5eXdnptd5bC5qcaFxEFIZXjtcNOvsHsn33LmvUSzTMX+Tl8xBaU4Aar8x5t0Joa3ei5NsrS8QkyKyvKsKRS/Ut7TbQqTsWmekc6vyOzdLfl4=
+	t=1784672626; cv=none; b=LHn4uBvkF9rQOBqrw5/r5MWoJaN4v7v2JWvzD0fiIVgAHOT5iqGuIvN0g3LXLU0W/76uLNd0jT6EenWQ2IfrDRHDXHVSJuthLi6kPcf7Z1e1q68JGmDrYOjnN21xvI90TNcBls0qccc73CDz6Umy0isHfchoHaXukY0lkf+vd4k=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1784669504; c=relaxed/simple;
-	bh=ghsOcvtIMyp7Jnv2eUuE49/03XKoS3fIPWjk30ayLPk=;
+	s=arc-20240116; t=1784672626; c=relaxed/simple;
+	bh=aXG9nAAAfUlPSzfrPl35X/bhXXdEbu+xRIp6Ii7P/qM=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=IylPuPRrZLivTdGkh0YIqG4Ae0R5vb62RmP7C2LJ0ft0KLU9zdAgmFmY25g4c3BH6vFxcfUTTXGMtRb5wVUar/sibsgExOuZrVq3cW/2oAKi8dtw4fjEb9X8SCQBgkBrbOshDO3VMRAjN7JbDftnTJMIkwl4tF6MjUprVHi3uSE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=ZMw6WCLp; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=DJ+Ct6Wt; arc=none smtp.client-ip=205.220.180.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
+	 Content-Type:Content-Disposition:In-Reply-To; b=rDpq6UiDddVp41CwMWah+EWfE9I5zpZYuxMlFpTNE8OIOtT/rB4esl5WIIljD3SSU7aikSJJt4M/CS0T3rmODwOjQ9pD1uWKWKiPyrygnCs5toQHmK97D1R/Gt2khq+0LwSaagI24G8+817JC+OnOVAS2Og+RTVi2i4PQOESI8U=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=OEd5UH7K; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="ZMw6WCLp";
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="DJ+Ct6Wt"
-Received: from pps.filterd (m0279869.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 66LKlpMq2963723
-	for <linux-pm@vger.kernel.org>; Tue, 21 Jul 2026 21:31:41 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-type:date:from:in-reply-to:message-id:mime-version
-	:references:subject:to; s=qcppdkim1; bh=Zacs26RwRJa5c3PMx36Tgw3F
-	UuGrJQfN/mmxDci20xk=; b=ZMw6WCLp2ZB1sok/8mhe9Av8ncBNfKzGrn667RG5
-	7V7+MHCTk5FR27ZG9uZFV14r8dpwJyyipqKmGpryUGKzOUxl1enFrDM9kQoJNCuZ
-	61B+IfuNu4j04HkBaNYaIePwt6J2HMQpEWnBNsWUhxKVOUwwR1TavEyZKo4KzUJ5
-	G6xI2pVizgssh765g5XAHzsiw8bakUqjfRFpq3swPvKMNe4P25Q+NdHBls2WZVvy
-	MuQvLUtGRw1Sy4fRkMkYvKnQA/AsD3qI6LeOMCs8KwURESdbVt8H8VchcdRkYBI4
-	KFO04rvNVikJjFA4yoVZXdYDRiQjlL0Lmazv81CPPaNbWQ==
-Received: from mail-vs1-f69.google.com (mail-vs1-f69.google.com [209.85.217.69])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4fj686367x-1
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Tue, 21 Jul 2026 21:31:41 +0000 (GMT)
-Received: by mail-vs1-f69.google.com with SMTP id ada2fe7eead31-73a1de16ea7so5785578137.1
-        for <linux-pm@vger.kernel.org>; Tue, 21 Jul 2026 14:31:41 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1784669501; x=1785274301; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=Zacs26RwRJa5c3PMx36Tgw3FUuGrJQfN/mmxDci20xk=;
-        b=DJ+Ct6WtMibPUVOe+Dn8cwi41OBbYpK/p/8n4Bv6dQkJ143kDymYc5SkJ2Lzf/i5dP
-         Nw61JFnzDnrzATTlFajKnYR5b7kp4AKXkdC1wzY6+S8lifiXBkcB8wSJUXDyCLiuzY8M
-         5yFs8gAO2igHPxzHpvY5WxThm6Y1a3dAQJXOSvRigfw1dk0hpoJvX6ECEEO9ND7zJBse
-         2wtzjwdXvDJXaSY9w7uQD9CZrdz3zB1Sm2Pe/LfT8mlG0MiCBTSlE3r/jTB/uFUAWddv
-         giBG2IMIUkggeaZFzzgKYbzDLVmLGQQNQNkw8Jx+DK21vV3Ckc7s0iVtcjdflF13r0W1
-         g3gw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1784669501; x=1785274301;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=Zacs26RwRJa5c3PMx36Tgw3FUuGrJQfN/mmxDci20xk=;
-        b=otBRlHcoeObmfuyNf6kCsEkHQ2duuLLlCUfMm2Z/arXgg405YMrBtqf7cWWQ68A2sU
-         zDauOZeHPzI564aFCKUcFVoZ34KRFpP6KakSToQQ2KWVCX/RMQQLchnzQlrCHwelZyzH
-         O3/a4tjcbAb/ipZRnpkXFo0PdnTJG8mUJq2NzwBgspnYUm5XESxFK3crVky/hARh7C0G
-         wUKu9Phejr5RIJI0z5cNs8hm5rOYmkuNGUf2RHZ1qgCGGDW11F1hKJ3eoUXvP3nndrrF
-         amwvs393t86pf8g4J4NDyt3uVE9k529AzESdS02eJ+Sx9aWtOAIlMc56NmXC8G/fSvE2
-         psRA==
-X-Forwarded-Encrypted: i=1; AHgh+RrzTF2k97OCHA6ShwDanUxi35iRy8+oG5i+USg1dPiefHX6RHZZC278uChm/Fws0l8N31s4u/xUIQ==@vger.kernel.org
-X-Gm-Message-State: AOJu0YyiANuUvph4l9W39XazAAnd+Ng7eri/K2BEtT4sIbOvqjs3MERU
-	u/FWibYIo65J19SFUJSjgrfA/vQordI35YIvunk9IMmXOS/Qath3HgzTnncx1vrWRvvIR5ia8og
-	BjAsMoOixnzSPFtwy7LS4jod1NVC6JsOYyavcJRu/U35AbvMIE/QEfRND97QYFA==
-X-Gm-Gg: AR+sD11P/7QPhZJhpMStePpDkBYPTC//Fm//mE+nTooCIBiKfq/npRAupu5Z6WW5dT+
-	Zum2umIESTHkdpCnIi0OEgjUicOLtmyRJcLMvsfDBupBCKkDuvRvDZPhRLTtZ9tve9n+RSRUR5K
-	XjOb/JFEOne0lU4PIyULuaPCB4AqUErsx8R+TDuKM7lW7odUWBaIyXHAxGxeaaqa7sEpzKvvmd+
-	0iQgMbbLHjLoTEWPidqjVcofMyg2XkAFah5+77X0R5HUfifyfIf9gBXJl0kkfHTUL/j5XnJuAGj
-	tNcdEpErGi3HXsDkwKEfvW/KUFjR3PiPShIHk9/Q/ZEsquISeN5XRDb/X+fE9u6PWpPBMc0Jbs1
-	AnzQtGnUtuE7kgPyXfMG4yoHqaA7wj/+IEXGCJC+4+XfudYm4H+TbKUMnZNTQ/2SjUsWkFR0Fru
-	MK1kgtnHGv0wQPMw==
-X-Received: by 2002:a05:6102:5f93:b0:6cb:b3db:c31c with SMTP id ada2fe7eead31-74ad126317cmr422423137.0.1784669500867;
-        Tue, 21 Jul 2026 14:31:40 -0700 (PDT)
-X-Received: by 2002:a05:6102:5f93:b0:6cb:b3db:c31c with SMTP id ada2fe7eead31-74ad126317cmr422402137.0.1784669500370;
-        Tue, 21 Jul 2026 14:31:40 -0700 (PDT)
-Received: from umbar.lan (2001-14ba-a073-af00-264b-feff-fe8b-be8a.rev.dnainternet.fi. [2001:14ba:a073:af00:264b:feff:fe8b:be8a])
-        by smtp.gmail.com with ESMTPSA id 38308e7fff4ca-39ef6c41f93sm1179221fa.27.2026.07.21.14.31.36
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 21 Jul 2026 14:31:37 -0700 (PDT)
-Date: Wed, 22 Jul 2026 00:31:35 +0300
-From: Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>
-To: Luca Weiss <luca.weiss@fairphone.com>
-Cc: Krzysztof Kozlowski <krzk@kernel.org>, Georgi Djakov <djakov@kernel.org>,
-        Rob Herring <robh@kernel.org>, Conor Dooley <conor+dt@kernel.org>,
-        Bjorn Andersson <andersson@kernel.org>,
-        Konrad Dybcio <konradybcio@kernel.org>,
-        Krzysztof Kozlowski <krzk+dt@kernel.org>,
-        ~postmarketos/upstreaming@lists.sr.ht, phone-devel@vger.kernel.org,
-        linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/2] arm64: dts: qcom: milos: Add CPU-to-DDR BWMON support
-Message-ID: <x5aesfqzdvsfc5rfjefykoljn5cgrl4nzzxwyup636x2qrtfyd@kuolfkfj6cbl>
-References: <20260717-milos-cpu-bwmon-v1-0-dfe0bac9898c@fairphone.com>
- <20260717-milos-cpu-bwmon-v1-2-dfe0bac9898c@fairphone.com>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="OEd5UH7K"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id CBCFA1F00A3A;
+	Tue, 21 Jul 2026 22:23:43 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1784672624;
+	bh=yAD4QHVbUUp12Y7UuDM4XN9kCLrWF3SSqkkSI/rpVM8=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=OEd5UH7K/5gAgmfTwb5cNEVViIdW0Gw1g/y9nfsyRfaD/WtYAQCum3gPy74ZcmOiq
+	 OBcXd+MJtyrY32/eIAc5eafuS1pTIrszPCd6qAEfgXS3Uh0QFemCJOsWpeCfztr8t7
+	 Xfq+74lms+rvZAoUveW6I2YThO06157HCkFVJkZdPrlB0dYywOKK4rNaPIDKGgwXJP
+	 MHxnTvBanDb9ueawgCm6UIZ406YmOR49B4h0wbVnuaaQKXiV4eZ3fyUxIrft12B2Cw
+	 h/TKkcbHPeE+/bNTG+dBcx5u1ctr2EfvCwpAoVQBUVRs3N3FT912krdH8TZRxqUSKy
+	 A9OD7WEkxxH7A==
+Received: by venus (Postfix, from userid 1000)
+	id 31997180765; Wed, 22 Jul 2026 00:23:42 +0200 (CEST)
+Date: Wed, 22 Jul 2026 00:23:41 +0200
+From: Sebastian Reichel <sre@kernel.org>
+To: Vincent Cloutier <vincent.cloutier@icloud.com>
+Cc: Hans de Goede <hansg@kernel.org>, 
+	Krzysztof Kozlowski <krzk@kernel.org>, Marek Szyprowski <m.szyprowski@samsung.com>, 
+	Sebastian Krzyszkowiak <sebastian.krzyszkowiak@puri.sm>, Purism Kernel Team <kernel@puri.sm>, 
+	Rob Herring <robh@kernel.org>, Conor Dooley <conor+dt@kernel.org>, linux-pm@vger.kernel.org, 
+	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
+	Vincent Cloutier <vincent@cloutier.co>
+Subject: Re: [PATCH v3 2/4] power: supply: max17042_battery: Initialize
+ MAX17055 from battery info
+Message-ID: <al_qZdt-_DbSMFta@venus>
+References: <20260721185904.40756-1-vincent.cloutier@icloud.com>
+ <20260721185904.40756-3-vincent.cloutier@icloud.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="l73eowacs2ivgz2q"
 Content-Disposition: inline
-In-Reply-To: <20260717-milos-cpu-bwmon-v1-2-dfe0bac9898c@fairphone.com>
-X-Proofpoint-Spam-Info: AW1haW4tMjYwNzIxMDIyMyBTYWx0ZWRfX9a02HXBZzTst
- oPf2uFWsL0XcT2OQ4b5aVd0dOJ08YLx90fW556BeJtPUfeU/Dkcyqm2KKOTc0r47g3QQBRwiaGq
- vuqL0aaYKeCMjgqsbeepj0phrOoc0zs=
-X-Proofpoint-ORIG-GUID: OdYHaYdheCJYlg4uOz13mGN9w0DLdBSR
-X-Proofpoint-GUID: OdYHaYdheCJYlg4uOz13mGN9w0DLdBSR
-X-Authority-Analysis: v=2.4 cv=X75i7mTe c=1 sm=1 tr=0 ts=6a5fe53d cx=c_pps
- a=5HAIKLe1ejAbszaTRHs9Ug==:117 a=xqWC_Br6kY4A:10 a=kj9zAlcOel0A:10
- a=RAioF0-LDSMA:10 a=s4-Qcg_JpJYA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=u7WPNUs3qKkmUXheDGA7:22 a=_glEPmIy2e8OvE2BGh3C:22 a=6H0WHjuAAAAA:8
- a=EUspDBNiAAAA:8 a=9qgqu1SA9pjVKMr9YXcA:9 a=CjuIK1q_8ugA:10
- a=gYDTvv6II1OnSo0itH1n:22 a=Soq9LBFxuPC4vsCAQt-j:22
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzIxMDIyMyBTYWx0ZWRfXzLEPFuKvdwPn
- /nWUSv8vIC+xGTcEqEAkHiKtoKIrxbkoOzo1W9aP6wwjE9YNxIgbrDmEiGPJFlqgYHAf8BS6tEd
- JShu5GxSCM9YM6LKovA/0J3oETPNZVB/DCr8ssHkaHGqTsnj5Jy8O7PngWsFQTFPkj26kB3vjUv
- wHMSpKGhYF/kN/FvzY7ws+DWmEonyaBK2RdLvL1Br77mDrf9cUTWVe/Zl3tIcR4HruQMcGPJ2iI
- 8uoBG+krQ+9N2Bc6/XJb4KzMPZqY70abaAxvBM88NAZeihEOEZfGWmX3b+0iikIWc0FGI4/QAPi
- eydmjHWOJt4oFM70mQi3BofEMRJwx4M+2N441UK+P7rtFWGWbfvcETB3g8AURESDMqNBbqZ4p4U
- jv+yyuhlhp0qoluh0GXCSY9rdSSXVO1gnUpYzU2EKnvTImpU6d5HjT/giCujeP5ZX3mXKyZ2Evp
- bWtXwOxCMuSNv8d6cnw==
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-07-21_04,2026-07-21_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- impostorscore=0 bulkscore=0 lowpriorityscore=0 clxscore=1015 spamscore=0
- malwarescore=0 phishscore=0 adultscore=0 suspectscore=0 priorityscore=1501
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2607210223
+In-Reply-To: <20260721185904.40756-3-vincent.cloutier@icloud.com>
 
-On Fri, Jul 17, 2026 at 01:45:03PM +0200, Luca Weiss wrote:
-> Add a node for the CPU-to-DDR BWMON on the Milos SoC and the
-> corresponding OPP table.
-> 
-> Currently, the table is for DDR5, the values for DDR4 are put into a
-> TODO comment, until the kernel can differentiate between DDR variants.
-> 
-> Signed-off-by: Luca Weiss <luca.weiss@fairphone.com>
+
+--l73eowacs2ivgz2q
+Content-Type: text/plain; protected-headers=v1; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+Subject: Re: [PATCH v3 2/4] power: supply: max17042_battery: Initialize
+ MAX17055 from battery info
+MIME-Version: 1.0
+
+Hello Vincent,
+
+On Tue, Jul 21, 2026 at 02:57:34PM -0400, Vincent Cloutier wrote:
+> From: Vincent Cloutier <vincent@cloutier.co>
+>=20
+> MAX17055 can use charge-full-design-microamp-hours and
+> charge-term-current-microamp from monitored-battery for its POR
+> configuration. Prepare quantized DesignCap, IChgTerm, and EZ Config dQAcc
+> values in the power-supply registration callback after the core has parsed
+> battery information.
+>=20
+> Validate all supplied values before changing the sparse configuration.
+> Reject zero, values that quantize to zero, capacities that cannot produce
+> dQAcc, and positive termination currents outside the signed register rang=
+e.
+> Limit this path to MAX17055 because the other supported gauges require
+> complete characterization data.
+>=20
+> Follow the documented POR sequence. Wait for FSTAT.DNR, save HibCfg, exit
+> hibernate, write stable battery registers once and verify them after 1 ms,
+> issue command writes directly, poll until refresh clears, and restore
+> HibCfg. Clear POR only after every step succeeds.
+>=20
+> Keep driver-backed properties unavailable while initialization is
+> incomplete. If an I/O error interrupts the transaction, restore hibernate
+> before the next attempt and retry periodically so a transient startup
+> failure does not become permanent.
+>=20
+> Assisted-by: OpenCode:gpt-5.6-sol
+> Signed-off-by: Vincent Cloutier <vincent@cloutier.co>
 > ---
->  arch/arm64/boot/dts/qcom/milos.dtsi | 49 +++++++++++++++++++++++++++++++++++++
->  1 file changed, 49 insertions(+)
-> 
 
-Reviewed-by: Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>
+Please split this into smaller patches doing one thing at a time,
+which makes it a lot easier to review and also helps to identify
+potential bugs with git bisect in the future.
 
+At least the init_complete and the change from 'struct work_struct
+work' to 'struct delayed_work work' could be done in advance.
 
--- 
-With best wishes
-Dmitry
+>  drivers/power/supply/max17042_battery.c | 335 +++++++++++++++++++++---
+>  include/linux/power/max17042_battery.h  |   2 +
+>  2 files changed, 306 insertions(+), 31 deletions(-)
+>=20
+> diff --git a/drivers/power/supply/max17042_battery.c b/drivers/power/supp=
+ly/max17042_battery.c
+> index d409d2f0d383..b25bf26135e0 100644
+> --- a/drivers/power/supply/max17042_battery.c
+> +++ b/drivers/power/supply/max17042_battery.c
+> @@ -62,18 +62,30 @@
+>  #define MAX17042_RESISTANCE_LSB		1 / 4096 /* =CE=A9 */
+>  #define MAX17042_TEMPERATURE_LSB	1 / 256 /* =C2=B0C */
+> =20
+> +#define MAX17055_DQACC_DIV		32
+> +#define MAX17055_DPACC_FACTOR		44138
+> +#define MAX17055_DPACC_VCHG_FACTOR	51200
+> +#define MAX17055_FSTAT_DNR_BIT		BIT(0)
+> +#define MAX17055_DNR_POLL_US		10000
+> +#define MAX17055_DNR_TIMEOUT_US		2000000
+> +#define MAX17055_INIT_RETRY_DELAY_MS	10000
+> +#define MAX17055_REFRESH_POLL_US		10000
+> +#define MAX17055_REFRESH_TIMEOUT_US	1000000
+> +
+>  struct max17042_chip {
+>  	struct device *dev;
+>  	struct regmap *regmap;
+>  	struct power_supply *battery;
+>  	enum max170xx_chip_type chip_type;
+>  	struct max17042_config_data *config_data;
+> -	struct work_struct work;
+> -	int    init_complete;
+> +	struct delayed_work work;
+>  	int    irq;
+>  	int    task_period;
+>  	bool   enable_current_sense;
+>  	bool   enable_por_init;
+> +	bool   init_complete;
+> +	bool   hib_restore_pending;
+> +	u16    hib_cfg;
+>  	unsigned int r_sns;
+>  	int    vmin;	/* in millivolts */
+>  	int    vmax;	/* in millivolts */
+> @@ -256,7 +268,7 @@ static int max17042_get_property(struct power_supply =
+*psy,
+>  	u32 data;
+>  	u64 data64;
+> =20
+> -	if (!chip->init_complete)
+> +	if (!READ_ONCE(chip->init_complete))
+>  		return -EAGAIN;
+> =20
+>  	switch (psp) {
+> @@ -566,6 +578,24 @@ static int max17042_write_verify_reg(struct regmap *=
+map, u8 reg, u32 value)
+>  	return ret;
+>  }
+> =20
+> +static int max17055_write_verify_reg(struct regmap *map, u8 reg, u32 val=
+ue)
+> +{
+> +	u32 read_value;
+> +	int ret;
+> +
+> +	ret =3D regmap_write(map, reg, value);
+> +	if (ret)
+> +		return ret;
+> +
+> +	usleep_range(1000, 2000);
+> +
+> +	ret =3D regmap_read(map, reg, &read_value);
+> +	if (ret)
+> +		return ret;
+> +
+> +	return read_value =3D=3D value ? 0 : -EIO;
+> +}
+> +
+>  static inline void max17042_override_por(struct regmap *map,
+>  					 u8 reg, u16 value)
+>  {
+> @@ -801,8 +831,12 @@ static inline void max17042_override_por_values(stru=
+ct max17042_chip *chip)
+>  	max17042_override_por(map, MAX17042_CONFIG, config->config);
+>  	max17042_override_por(map, MAX17042_SHDNTIMER, config->shdntimer);
+> =20
+> -	max17042_override_por(map, MAX17042_DesignCap, config->design_cap);
+> -	max17042_override_por(map, MAX17042_ICHGTerm, config->ichgt_term);
+> +	if (chip->chip_type !=3D MAXIM_DEVICE_TYPE_MAX17055) {
+> +		max17042_override_por(map, MAX17042_DesignCap,
+> +				      config->design_cap);
+> +		max17042_override_por(map, MAX17042_ICHGTerm,
+> +				      config->ichgt_term);
+> +	}
+> =20
+>  	max17042_override_por(map, MAX17042_AtRate, config->at_rate);
+>  	max17042_override_por(map, MAX17042_LearnCFG, config->learn_cfg);
+> @@ -812,8 +846,10 @@ static inline void max17042_override_por_values(stru=
+ct max17042_chip *chip)
+> =20
+>  	max17042_override_por(map, MAX17042_FullCAP, config->fullcap);
+>  	max17042_override_por(map, MAX17042_FullCAPNom, config->fullcapnom);
+> -	max17042_override_por(map, MAX17042_dQacc, config->dqacc);
+> -	max17042_override_por(map, MAX17042_dPacc, config->dpacc);
+> +	if (chip->chip_type !=3D MAXIM_DEVICE_TYPE_MAX17055) {
+> +		max17042_override_por(map, MAX17042_dQacc, config->dqacc);
+> +		max17042_override_por(map, MAX17042_dPacc, config->dpacc);
+> +	}
+> =20
+>  	max17042_override_por(map, MAX17042_RCOMP0, config->rcomp0);
+>  	max17042_override_por(map, MAX17042_TempCo, config->tcompc0);
+> @@ -847,26 +883,162 @@ static inline void max17042_override_por_values(st=
+ruct max17042_chip *chip)
+>  		max17042_override_por(map, MAX17055_ModelCfg, config->model_cfg);
+>  }
+> =20
+> -static int max17042_init_chip(struct max17042_chip *chip)
+> +static int max17055_override_battery_values(struct max17042_chip *chip)
+>  {
+> +	struct max17042_config_data *config =3D chip->config_data;
+>  	struct regmap *map =3D chip->regmap;
+> +	unsigned int design_cap;
+> +	unsigned int model_cfg;
+> +	unsigned int dqacc;
+> +	u64 dpacc;
+>  	int ret;
+> =20
+> +	if (config->design_cap) {
+> +		ret =3D max17055_write_verify_reg(map, MAX17042_DesignCap,
+> +						config->design_cap);
+> +		if (ret)
+> +			return ret;
+> +	}
+> +
+> +	if (config->dqacc) {
+> +		ret =3D max17055_write_verify_reg(map, MAX17042_dQacc,
+> +						config->dqacc);
+> +		if (ret)
+> +			return ret;
+> +	}
+> +
+> +	if (config->ichgt_term) {
+> +		ret =3D max17055_write_verify_reg(map, MAX17042_ICHGTerm,
+> +						config->ichgt_term);
+> +		if (ret)
+> +			return ret;
+> +	}
+> +
+> +	if (!config->design_cap && !config->dqacc)
+> +		return 0;
+> +
+> +	ret =3D regmap_read(map, MAX17042_DesignCap, &design_cap);
+> +	if (ret)
+> +		return ret;
+> +
+> +	ret =3D regmap_read(map, MAX17042_dQacc, &dqacc);
+> +	if (ret)
+> +		return ret;
+> +
+> +	ret =3D regmap_read(map, MAX17055_ModelCfg, &model_cfg);
+> +	if (ret)
+> +		return ret;
+> +
+> +	if (!design_cap || !dqacc)
+> +		return -ERANGE;
+> +
+> +	dpacc =3D (u64)dqacc *
+> +		(model_cfg & MAX17055_MODELCFG_VCHG_BIT ?
+> +		 MAX17055_DPACC_VCHG_FACTOR : MAX17055_DPACC_FACTOR);
+> +	do_div(dpacc, design_cap);
+> +	if (dpacc > U16_MAX)
+> +		return -ERANGE;
+> +
+> +	return max17055_write_verify_reg(map, MAX17042_dPacc, (u16)dpacc);
+> +}
+> +
+> +static int max17055_restore_hibernate(struct max17042_chip *chip)
+> +{
+> +	int restore_hib_ret;
+> +	int soft_wakeup_ret;
+> +
+> +	soft_wakeup_ret =3D regmap_write(chip->regmap, MAX17055_SoftWakeup, 0);
+> +	restore_hib_ret =3D max17055_write_verify_reg(chip->regmap,
+> +						    MAX17055_HibCfg,
+> +						    chip->hib_cfg);
+> +	if (!soft_wakeup_ret && !restore_hib_ret)
+> +		chip->hib_restore_pending =3D false;
+> +
+> +	return soft_wakeup_ret ?: restore_hib_ret;
+> +}
+> +
+> +static int max17055_init_chip(struct max17042_chip *chip)
+> +{
+> +	struct regmap *map =3D chip->regmap;
+> +	unsigned int hib_cfg;
+> +	unsigned int model_cfg;
+> +	unsigned int fstat;
+> +	int restore_ret;
+> +	int ret;
+> +
+> +	if (chip->hib_restore_pending) {
+> +		ret =3D max17055_restore_hibernate(chip);
+> +		if (ret)
+> +			return ret;
+> +	}
+> +
+> +	ret =3D regmap_read_poll_timeout(map, MAX17042_FSTAT, fstat,
+> +				       !(fstat & MAX17055_FSTAT_DNR_BIT),
+> +				       MAX17055_DNR_POLL_US,
+> +				       MAX17055_DNR_TIMEOUT_US);
+> +	if (ret)
+> +		return ret;
+> +
+> +	ret =3D regmap_read(map, MAX17055_HibCfg, &hib_cfg);
+> +	if (ret)
+> +		return ret;
+> +
+> +	chip->hib_cfg =3D hib_cfg;
+> +	chip->hib_restore_pending =3D true;
+> +
+> +	ret =3D regmap_write(map, MAX17055_SoftWakeup, 0x0090);
+> +	if (ret)
+> +		goto restore_hibernate;
+> +
+> +	ret =3D max17055_write_verify_reg(map, MAX17055_HibCfg, 0);
+> +	if (ret)
+> +		goto restore_hibernate;
+> +
+> +	ret =3D regmap_write(map, MAX17055_SoftWakeup, 0);
+> +	if (ret)
+> +		goto restore_hibernate;
+> +
+>  	max17042_override_por_values(chip);
+> =20
+> +	ret =3D max17055_override_battery_values(chip);
+> +	if (ret)
+> +		goto restore_hibernate;
+> +
+> +	ret =3D regmap_write_bits(map, MAX17055_ModelCfg,
+> +				MAX17055_MODELCFG_REFRESH_BIT,
+> +				MAX17055_MODELCFG_REFRESH_BIT);
+> +	if (ret)
+> +		goto restore_hibernate;
+> +
+> +	ret =3D regmap_read_poll_timeout(map, MAX17055_ModelCfg, model_cfg,
+> +				       !(model_cfg &
+> +					 MAX17055_MODELCFG_REFRESH_BIT),
+> +				       MAX17055_REFRESH_POLL_US,
+> +				       MAX17055_REFRESH_TIMEOUT_US);
+> +
+> +restore_hibernate:
+> +	restore_ret =3D max17055_restore_hibernate(chip);
+> +	if (restore_ret)
+> +		return restore_ret;
+> +
+> +	return ret;
+> +}
+> +
+> +static int max17042_init_chip(struct max17042_chip *chip)
+> +{
+> +	struct regmap *map =3D chip->regmap;
+> +	int ret;
+> +
+>  	if (chip->chip_type =3D=3D MAXIM_DEVICE_TYPE_MAX17055) {
+> -		regmap_write_bits(map, MAX17055_ModelCfg,
+> -				  MAX17055_MODELCFG_REFRESH_BIT,
+> -				  MAX17055_MODELCFG_REFRESH_BIT);
+> -	}
+> +		ret =3D max17055_init_chip(chip);
+> +		if (ret)
+> +			return ret;
+> +	} else {
+> +		max17042_override_por_values(chip);
+> =20
+> -	/* After Power up, the MAX17042 requires 500mS in order
+> -	 * to perform signal debouncing and initial SOC reporting
+> -	 */
+> -	msleep(500);
+> +		/* Allow signal debouncing and initial SOC reporting. */
+> +		msleep(500);
+> =20
+> -	if (chip->chip_type !=3D MAXIM_DEVICE_TYPE_MAX17055) {
+> -		/* Initialize configuration */
+>  		max17042_write_config_regs(chip);
+> =20
+>  		/* write cell characterization data */
+> @@ -902,8 +1074,7 @@ static int max17042_init_chip(struct max17042_chip *=
+chip)
+>  	}
+> =20
+>  	/* Init complete, Clear the POR bit */
+> -	regmap_update_bits(map, MAX17042_STATUS, STATUS_POR_BIT, 0x0);
+> -	return 0;
+> +	return regmap_clear_bits(map, MAX17042_STATUS, STATUS_POR_BIT);
+
+another correct, but unrelated change.
+
+>  }
+> =20
+>  static void max17042_set_soc_threshold(struct max17042_chip *chip, u16 o=
+ff)
+> @@ -989,18 +1160,28 @@ static irqreturn_t max17042_thread_handler(int id,=
+ void *dev)
+> =20
+>  static void max17042_init_worker(struct work_struct *work)
+>  {
+> -	struct max17042_chip *chip =3D container_of(work,
+> +	struct max17042_chip *chip =3D container_of(to_delayed_work(work),
+>  				struct max17042_chip, work);
+> -	int ret;
+> +	int ret =3D 0;
+> =20
+>  	/* Initialize registers according to values from config_data */
+> -	if (chip->enable_por_init && chip->config_data) {
+> +	if (chip->enable_por_init && chip->config_data)
+>  		ret =3D max17042_init_chip(chip);
+> -		if (ret)
+> -			return;
+> +
+> +	if (ret) {
+> +		if (chip->chip_type =3D=3D MAXIM_DEVICE_TYPE_MAX17055) {
+> +			dev_warn_ratelimited(chip->dev,
+> +				"initialization failed: %d, retrying\n", ret);
+> +			queue_delayed_work(system_freezable_wq, &chip->work,
+> +				msecs_to_jiffies(MAX17055_INIT_RETRY_DELAY_MS));
+> +		} else {
+> +			dev_err(chip->dev, "initialization failed: %d\n", ret);
+> +		}
+> +		return;
+>  	}
+> =20
+> -	chip->init_complete =3D 1;
+> +	WRITE_ONCE(chip->init_complete, true);
+> +	power_supply_changed(chip->battery);
+>  }
+> =20
+>  #ifdef CONFIG_OF
+> @@ -1060,6 +1241,93 @@ static int max17042_init_defaults(struct max17042_=
+chip *chip)
+>  	return 0;
+>  }
+> =20
+> +static int max17042_apply_battery_properties(struct max17042_chip *chip,
+> +					     struct power_supply_battery_info *info)
+> +{
+> +	struct max17042_config_data *config;
+> +	struct device *dev =3D chip->dev;
+> +	bool have_design_cap;
+> +	bool have_ichgt_term;
+> +	u16 design_cap =3D 0;
+> +	u16 ichgt_term =3D 0;
+> +	u16 dqacc =3D 0;
+> +	u64 data64;
+> +
+> +	if (!info || chip->chip_type !=3D MAXIM_DEVICE_TYPE_MAX17055)
+> +		return 0;
+> +
+> +	have_design_cap =3D chip->enable_current_sense &&
+> +		info->charge_full_design_uah >=3D 0;
+> +	have_ichgt_term =3D chip->enable_current_sense &&
+> +		info->charge_term_current_ua >=3D 0;
+> +	if (!have_design_cap && !have_ichgt_term)
+> +		return 0;
+> +
+> +	if (have_design_cap) {
+> +		if (!info->charge_full_design_uah)
+> +			return dev_err_probe(dev, -EINVAL,
+> +					     "battery design capacity must be positive\n");
+
+If it's negative you set have_design_cap=3Dfalse. This would only be
+printed for charge_full_design_uah =3D 0. It seems more sensible to
+also set have_design_cap to false for this case and drop this extra
+check.
+
+Greetings,
+
+-- Sebastian
+
+> +		data64 =3D (u64)info->charge_full_design_uah * chip->r_sns;
+> +		do_div(data64, MAX17042_CAPACITY_LSB);
+> +		if (!data64)
+> +			return dev_err_probe(dev, -ERANGE,
+> +					     "battery design capacity is too small for sense resistor\n");
+> +		if (data64 > U16_MAX)
+> +			return dev_err_probe(dev, -ERANGE,
+> +					     "battery design capacity exceeds register range\n");
+> +
+> +		design_cap =3D (u16)data64;
+> +		dqacc =3D design_cap / MAX17055_DQACC_DIV;
+> +		if (!dqacc)
+> +			return dev_err_probe(dev, -ERANGE,
+> +					     "battery design capacity is too small for EZ config\n");
+> +	}
+> +
+> +	if (have_ichgt_term) {
+> +		if (!info->charge_term_current_ua)
+> +			return dev_err_probe(dev, -EINVAL,
+> +					     "charge termination current must be positive\n");
+> +
+> +		data64 =3D (u64)info->charge_term_current_ua * chip->r_sns;
+> +		do_div(data64, MAX17042_CURRENT_LSB);
+> +		if (!data64)
+> +			return dev_err_probe(dev, -ERANGE,
+> +					     "charge termination current is too small for sense resistor\n"=
+);
+> +		if (data64 > S16_MAX)
+> +			return dev_err_probe(dev, -ERANGE,
+> +					     "charge termination current exceeds positive register range\n"=
+);
+> +
+> +		ichgt_term =3D (u16)data64;
+> +	}
+> +
+> +	config =3D chip->config_data;
+> +	if (!config) {
+> +		config =3D devm_kzalloc(dev, sizeof(*config), GFP_KERNEL);
+> +		if (!config)
+> +			return -ENOMEM;
+> +	}
+> +
+> +	if (have_design_cap) {
+> +		config->design_cap =3D design_cap;
+> +		config->dqacc =3D dqacc;
+> +	}
+> +	if (have_ichgt_term)
+> +		config->ichgt_term =3D ichgt_term;
+> +
+> +	chip->config_data =3D config;
+> +	chip->enable_por_init =3D true;
+> +
+> +	return 0;
+> +}
+> +
+> +static int max17042_init_battery(struct power_supply *psy)
+> +{
+> +	struct max17042_chip *chip =3D power_supply_get_drvdata(psy);
+> +
+> +	return max17042_apply_battery_properties(chip, psy->battery_info);
+> +}
+> +
+>  static const struct regmap_config max17042_regmap_config =3D {
+>  	.name =3D "max17042",
+>  	.reg_bits =3D 8,
+> @@ -1113,6 +1381,7 @@ static const struct power_supply_desc max17042_psy_=
+desc =3D {
+>  	.set_property	=3D max17042_set_property,
+>  	.property_is_writeable	=3D max17042_property_is_writeable,
+>  	.external_power_changed	=3D power_supply_changed,
+> +	.init		=3D max17042_init_battery,
+>  	.properties	=3D max17042_battery_props,
+>  	.num_properties	=3D ARRAY_SIZE(max17042_battery_props),
+>  };
+> @@ -1123,6 +1392,7 @@ static const struct power_supply_desc max17042_no_c=
+urrent_sense_psy_desc =3D {
+>  	.get_property	=3D max17042_get_property,
+>  	.set_property	=3D max17042_set_property,
+>  	.property_is_writeable	=3D max17042_property_is_writeable,
+> +	.init		=3D max17042_init_battery,
+>  	.properties	=3D max17042_battery_props,
+>  	.num_properties	=3D ARRAY_SIZE(max17042_battery_props) - 2,
+>  };
+> @@ -1242,15 +1512,18 @@ static int max17042_probe(struct i2c_client *clie=
+nt, struct device *dev, int irq
+> =20
+>  	chip->irq =3D irq;
+> =20
+> -	regmap_read(chip->regmap, MAX17042_STATUS, &val);
+> +	ret =3D regmap_read(chip->regmap, MAX17042_STATUS, &val);
+> +	if (ret)
+> +		return dev_err_probe(dev, ret, "failed to read status\n");
+> +
+>  	if (val & STATUS_POR_BIT) {
+> -		ret =3D devm_work_autocancel(dev, &chip->work,
+> -					   max17042_init_worker);
+> +		ret =3D devm_delayed_work_autocancel(dev, &chip->work,
+> +						   max17042_init_worker);
+>  		if (ret)
+>  			return ret;
+> -		schedule_work(&chip->work);
+> +		queue_delayed_work(system_freezable_wq, &chip->work, 0);
+>  	} else {
+> -		chip->init_complete =3D 1;
+> +		WRITE_ONCE(chip->init_complete, true);
+>  	}
+> =20
+>  	return 0;
+> diff --git a/include/linux/power/max17042_battery.h b/include/linux/power=
+/max17042_battery.h
+> index 13aeab1597c6..810e068eafd2 100644
+> --- a/include/linux/power/max17042_battery.h
+> +++ b/include/linux/power/max17042_battery.h
+> @@ -25,6 +25,7 @@
+>  #define MAX17042_CHARACTERIZATION_DATA_SIZE 48
+> =20
+>  #define MAX17055_MODELCFG_REFRESH_BIT	BIT(15)
+> +#define MAX17055_MODELCFG_VCHG_BIT	BIT(10)
+> =20
+>  enum max17042_register {
+>  	MAX17042_STATUS		=3D 0x00,
+> @@ -124,6 +125,7 @@ enum max17055_register {
+> =20
+>  	MAX17055_ConvgCfg	=3D 0x49,
+>  	MAX17055_VFRemCap	=3D 0x4A,
+> +	MAX17055_SoftWakeup	=3D 0x60,
+> =20
+>  	MAX17055_STATUS2	=3D 0xB0,
+>  	MAX17055_POWER		=3D 0xB1,
+> --=20
+> 2.55.0
+>=20
+>=20
+
+--l73eowacs2ivgz2q
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAmpf8WUACgkQ2O7X88g7
++pqvOBAAg82wA/V0mKEXeE6kTqWVayCtH9Ne0TZifpIG+Knw1M/z6oMMKMi/9dTj
+a7ZUvTI7JJTcwj1MYH7rOiENcvKuwWi/5UT+0gpN/U4EnPZTdmsHYRsfuVsAuDkZ
+QEZdHNqnUR6wLTAphxHywpAdhk4yP/W/l/p7ZiTgbSk73ZJ4IpCELYE3XQ4zjNsI
+ZjKz1Y2VDQPR5M2lRf6Lnl12JYA8twO2s22UCLAaxrhuqW0pdLPqxikSvezs6WRF
+53a4AX7Wak5iYwW6ns/GODbUyk2bMybKFtGOemfCAFe9O/BdfNU7bc2C2Akw9Ozk
+Ec98/xg+Lf4DLElKh6Klv2yoXJFSnpnDm0kc1/wUjuyZOfpA756go0KURGT8efg6
+VtI+k+BKZGxp3L8H2e7xOA7eFQ3LabVNFTNTSgSS3liAmeuthreLnyZC0K5JWZ/T
+6AfFqCN9yUPAtEr2Pab289XmsedIKpVYqbigR1Kgjy+AbYnqWxn3quluOru3sPZ4
+ZZsSUO+fCtE5kYBWMfuMA5coDQLxLPHigWbJImjp8BPgJLKKpMG4xCkAJW4bOlXa
+0xFQLB0N2eRx+CkmgIkZKI4rjwMC7LgiDKpfq++/CO9COeXKKnl3w1xihsQDDy/e
+cKBMkea8oZSq736UkO+x0KAc1/UEc4Ixpfc14qiJw2uVF4qft8c=
+=rwoI
+-----END PGP SIGNATURE-----
+
+--l73eowacs2ivgz2q--
