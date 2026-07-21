@@ -1,64 +1,64 @@
-Received: from mail-wm1-f47.google.com (mail-wm1-f47.google.com [209.85.128.47])
+Received: from mail-wm1-f41.google.com (mail-wm1-f41.google.com [209.85.128.41])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E7ED044C644
-	for <linux-pm@vger.kernel.org>; Tue, 21 Jul 2026 09:53:14 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.47
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C457C44D68A
+	for <linux-pm@vger.kernel.org>; Tue, 21 Jul 2026 09:53:16 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.41
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1784627598; cv=none; b=UNC/3xt9TwgkHQDF+oX6LMwQItbpb79z+X4ZN14K7kYyVQr0w7zyxsUy8Cix/JrxxuLtkq//RLH6vnLIDmkMpoZAp1zeiaMElKWL0G6LTYatOSKEH4I+fsO4XLE5O+1NjXr3CGaa1RrrOTfORcvoKnCHvS/qHi/mOP0iiVJfUWU=
+	t=1784627602; cv=none; b=mqvu8GLHY8E1wE5jiVGIi1c9+nXUnMIQgUamtGjn7Nwy8liwYH+eMlSC/JZybiZvQ5gpsWL+QmsaXKy9LeKqranXh+spr68woWrNeZV7d6sezxW9Stsz8tLt7jL0hzunO6k2lwiz078SupGxd1iDpwugGB9MLtESp6HAShesoxM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1784627598; c=relaxed/simple;
-	bh=WKmMyVJmmm3/p6J2LsRvBrQbLiDxoyq8N/mTapyKyU0=;
+	s=arc-20240116; t=1784627602; c=relaxed/simple;
+	bh=36Fm0XKKpglJqJTQXDjBBwGW+jY6X8re7o5+BQh56H8=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=C/NWola8JQjMPye4Z/hE0/+o6WIzYWDmi4QHket+5fR/z71NgiSqJ9W3/wa+Sf1TXAm9oRFtWPyfu2ptxn36LcUJoDb7IsfLcVuI8MVtGE4+G/k+GldnQF5LYvd10cqp0xW/G0FQj0bBrn8EUfgFqNRxND2neUb64vfvCtGX5f8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=M4lAs18R; arc=none smtp.client-ip=209.85.128.47
+	 MIME-Version:Content-Type; b=PhyLXNfgzYK4N6PGeo2n6cQ5w23RE059ckowEigXEgRveKVPfXynVzxbtkiaBhVqbDjpiwxjwcp5ngVcVkKhxOTKLcPfUEOdvmWsBuUxKaNDelcnqhhfTOSlXSi80TEH3zSD1lDEqGUoAxIN60LJe5YYSgj1xyDF7ziUWgHX9Io=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=YCb7jdFu; arc=none smtp.client-ip=209.85.128.41
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="M4lAs18R"
-Received: by mail-wm1-f47.google.com with SMTP id 5b1f17b1804b1-4956869750eso2235455e9.2
-        for <linux-pm@vger.kernel.org>; Tue, 21 Jul 2026 02:53:14 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="YCb7jdFu"
+Received: by mail-wm1-f41.google.com with SMTP id 5b1f17b1804b1-495635a85d2so12353655e9.0
+        for <linux-pm@vger.kernel.org>; Tue, 21 Jul 2026 02:53:16 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1784627593; x=1785232393; darn=vger.kernel.org;
+        d=gmail.com; s=20251104; t=1784627595; x=1785232395; darn=vger.kernel.org;
         h=content-transfer-encoding:content-type:mime-version:references
          :in-reply-to:message-id:date:subject:cc:to:from:from:to:cc:subject
          :date:message-id:reply-to:content-type;
-        bh=dzLAVPMJ+xd48Qvd/jRYNAR8Ds6btdovTB3v7WFVom8=;
-        b=M4lAs18RiWvtV9SeMgYjGewLh0gy1LfEnLF5SKHnmc30b1aYclJzcrGHFWC+WpMmEZ
-         X6wldj6KoPlKqojAxTXhFaK5fXMHIUvda+XuhwCUWBXap9p4IGOhr4zV7r/WEgPAq4x3
-         tnsohwkA6yCxn7NMKFQ/DN/7eFJqbyuIrkSWJqsYN961KrIwIrRN3B/vze7zymRUyerv
-         eafgkSShyCXpJvnL3K8bfvf1iGxjGlVd+yaIfRWou8w4t1S08VSAYDxv2ys27EGoRPxC
-         a1/4GTZFXKop/QgD9e3gRWQdUz2+5/xxE899CAwD1a1pYKnFil7D64hpSWJgjF5w68B6
-         9axw==
+        bh=2YqtUSJZQXU32v22oGNWv7m7+Rsi7u5BUjEL4bNYMHE=;
+        b=YCb7jdFuNDOVUtPQRTsRsUs9xx4PhwXgmg/oVorOt43VStdNb48t6hm+7f4yqUGox2
+         gfj5kI1JxlbK/8UUz5CbK/PrvUHbtb3iczt/MX04emoxsvmeY8EKUzkVus7WSMgsl+qL
+         t5zOQ4ex+uiJ4/ZgoHQ+cB0NU2IJvar8AbB0IrVuEe2UYztUKF/aDk/ldph4K1nPfIp6
+         VbHyr8v3O3iUk2hpaqL/mreEq78EaMP/hyaLkE7njvJQIfTSLkVzB6KSISXuW3hluv9p
+         rNE2bhmib/Ejg1j+UOHSOsPjnzuWNlAXMsmbyAo6oodrrZPrqL4++u/Dxjutw7pNehuC
+         +pAg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1784627593; x=1785232393;
+        d=1e100.net; s=20251104; t=1784627595; x=1785232395;
         h=content-transfer-encoding:content-type:mime-version:references
          :in-reply-to:message-id:date:subject:cc:to:from:x-gm-gg
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=dzLAVPMJ+xd48Qvd/jRYNAR8Ds6btdovTB3v7WFVom8=;
-        b=F4S5hnTCKkTVd+zH4FUfOM/SFVwaS0moeSS6D/PcggQ/XYN7rGDEDX51pQTzovYyej
-         txUTS+zGFxTv8jxWJ0sfTRJH44dWO/19Nu8Pg7tLc8Gc7FtcFPkRic3NZQp5ixBxM6Ef
-         LY84y7N63RsSR3I7asuLJtYnP6u0CSuUqlTcgjeK8RTvf0OD/27dI8J66QxQRsOx+Fxl
-         yPbM8/jxNz8b7bD/PrJV72o31fxVURIMPRwxOA5r2wG+jdpDJYdHVfmqzP9espAhjnmM
-         DLNd2pwspS5FsobfsCK49jkhsFksTcz0zeXBGN+xs+iNCxYdRDwW4KA7LfOPL+EwCEs0
-         SSXw==
-X-Forwarded-Encrypted: i=1; AHgh+RqW15tFW8K+hTQn4XJ1DnS2RtCKlc6iVHzIlh58C9vnr6VWoCKqksSGVCD5lxRsA2P6tDIR8J0aCg==@vger.kernel.org
-X-Gm-Message-State: AOJu0YyzJ7dEtfCtAk/aEg0WQNFQrhPqhkRFQKTduZ2QUoUHmuv2uVkj
-	otMqeGXxREfTydzRtxQ0QIBMQ2+flhoZ5cdlN+fb2g71DZJECeS7OJpj
-X-Gm-Gg: AfdE7cn66HOWmqZPFpT/AO7DjmUfwF0LVY5p+wrXeRJQI6K64XO0/VId4EWmTCUEEu8
-	JSlkX84YhBTlthQFC0EE+EZJRLVIHidKfcMMeYLPfyxzKt//LaSyVTK4TJqmTvux4s7aemoZnrY
-	5WndBBR8eI0DUcnhZv0m6KbVNal5AYAuiGn/medruFhWH9Vo8iPZRTbAuUHdNEfkjTt/HPBRTVv
-	ncADfxZlrz9etV1YJYmqvaF+YcWTAPMQXLQKO3VEV5yCWX4qmvPOvVxGIJHH+wtw8dkc+AlUOzN
-	GRLiWpNxkxxNPfqwpgtLs5P7GGtQOCcsO+5fMy2Jy801b2W5CaT4fgen5Op2cSqMG1ZLeDuyjW2
-	P31TSCXvz54aXkF42g6AL9qtCBvqQEoUr5deUAgpeKkeOsElIQx+/b4mNkx+wqDd2X0t1I6c5Sk
-	dXbjBYLayEnEY4UTNYJgJ8cB0=
-X-Received: by 2002:a05:600c:19c8:b0:495:6134:6d61 with SMTP id 5b1f17b1804b1-4956202554emr66612155e9.19.1784627592871;
-        Tue, 21 Jul 2026 02:53:12 -0700 (PDT)
+        bh=2YqtUSJZQXU32v22oGNWv7m7+Rsi7u5BUjEL4bNYMHE=;
+        b=bmJ4amY5/yx//s7ZgyjZl5k1SFdKIfeM8iSdkT36YuS9HcCzT2fOMJYAd+Qnn7TwsW
+         m5pIgoQ7YqUSTahqGHxe7T1thCn93EG9AR3HfUNF4SoNZmkHSEIkW0o+ChUMNKpf+s3d
+         8r4gFxnl2hsqZ6lI95ukqUhl5eNpSKCQJOeo61gP4eSTtZUKtfrFSBvjWxnPDptOjUs+
+         sKEIrD7qN+hvADp3RZfWQfhOSe/XrcsP5nX5/q8suCGnhTXoudEWsuXSl10GNFsKR/8I
+         lyihK9OJ+5TSBxhO3gaaztT0obd5zbAWMOKU8092ClBs9yhJNMghi/uRsXtxyShcd+08
+         qjgA==
+X-Forwarded-Encrypted: i=1; AHgh+RrBJYb6a9M3eb9LQjLw9NBBCn7wNmrMcWBZz1a+Q5Kyd60ASAE4Gj99Vq7zaPOMcbl8F4FRaNvzpQ==@vger.kernel.org
+X-Gm-Message-State: AOJu0YxV3smPNb9A52Ef2IH8C9erd52kNoh7SOGHBQZCw5VpMin+a34V
+	tVYeuIck821mLD7B0PsqsiwFKyQoPwuZpLPsfbIxWeGNF9mZdHpzcb7Y
+X-Gm-Gg: AfdE7ckXIcAIJ17iFoESPxfsQrGJyfmKfWXvcUOSadmcauMVKbV8h1QHt9l2gy2yd9k
+	MVvvVfeK3DM5YUg/BdOzhOIKiJQtSvwoK5562LSHMCX//z7r45I6cUQFyLk90ZJpAesjNNVqXm3
+	tj5Qy/4nQv/ywSp+uC9Nf7XDw5733Ep83HnIfRKl4IqzGzfQkaZphzFdEEAxE1fyTG2wwbKY30F
+	XCmydBnALdhCwHlU+A/FDbUQXr3ovcSKgxaV4qJ1conPgRe3kt3qxxxM4tByyJ9oBHfDw3NaTNQ
+	4IEPTjRjCs3gpPfC9QBiSMlFBzs/bLlw5Wqd1e5Nc8RIikFedLswjeC5g6f86PCB8VavjlS4h8H
+	PhwZajDXu4LD+ho4rn5+FYIgZJhJsI7paHiDasUo8/tXkPSFo+U0/MXvn0eOxWTKaUELM2OwX1W
+	I6X+fMpOcWDjQLFOz6Pb8mFyI=
+X-Received: by 2002:a05:600c:b85:b0:495:5365:c0d1 with SMTP id 5b1f17b1804b1-49553d85ea0mr149031905e9.14.1784627594424;
+        Tue, 21 Jul 2026 02:53:14 -0700 (PDT)
 Received: from xeon ([188.163.112.51])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-49565482c5asm82834285e9.10.2026.07.21.02.53.11
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-49565482c5asm82834285e9.10.2026.07.21.02.53.13
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 21 Jul 2026 02:53:12 -0700 (PDT)
+        Tue, 21 Jul 2026 02:53:13 -0700 (PDT)
 From: Svyatoslav Ryhel <clamor95@gmail.com>
 To: Rob Herring <robh@kernel.org>,
 	Krzysztof Kozlowski <krzk+dt@kernel.org>,
@@ -75,9 +75,9 @@ Cc: devicetree@vger.kernel.org,
 	linux-input@vger.kernel.org,
 	linux-leds@vger.kernel.org,
 	linux-pm@vger.kernel.org
-Subject: [PATCH v10 3/7] input: serio: Add driver for ASUS Transformer dock keyboard and touchpad
-Date: Tue, 21 Jul 2026 12:52:29 +0300
-Message-ID: <20260721095233.420823-4-clamor95@gmail.com>
+Subject: [PATCH v10 4/7] input: keyboard: Add driver for ASUS Transformer dock multimedia keys
+Date: Tue, 21 Jul 2026 12:52:30 +0300
+Message-ID: <20260721095233.420823-5-clamor95@gmail.com>
 X-Mailer: git-send-email 2.53.0
 In-Reply-To: <20260721095233.420823-1-clamor95@gmail.com>
 References: <20260721095233.420823-1-clamor95@gmail.com>
@@ -92,234 +92,371 @@ Content-Transfer-Encoding: 8bit
 
 From: Michał Mirosław <mirq-linux@rere.qmqm.pl>
 
-Add input driver for ASUS Transformer dock keyboard and touchpad.
-
-Some keys in ASUS Dock report keycodes that don't make sense according to
-their position, this patch modifies the incoming data that is sent to
-serio to send proper scancodes.
+Add support for multimedia top button row of ASUS Transformer's Mobile
+Dock keyboard. Driver is made that function keys (F1-F12) are used by
+default which suits average Linux use better and with pressing
+ScreenLock + AltGr function keys layout is switched to multimedia keys.
+Only Dock keyboard input events are tracked for AltGr pressing.
 
 Co-developed-by: Ion Agorria <ion@agorria.com>
 Signed-off-by: Ion Agorria <ion@agorria.com>
 Signed-off-by: Michał Mirosław <mirq-linux@rere.qmqm.pl>
 Signed-off-by: Svyatoslav Ryhel <clamor95@gmail.com>
 ---
- drivers/input/serio/Kconfig                   |  15 ++
- drivers/input/serio/Makefile                  |   1 +
- drivers/input/serio/asus-transformer-ec-kbc.c | 168 ++++++++++++++++++
- 3 files changed, 184 insertions(+)
- create mode 100644 drivers/input/serio/asus-transformer-ec-kbc.c
+ drivers/input/keyboard/Kconfig                |  10 +
+ drivers/input/keyboard/Makefile               |   1 +
+ .../input/keyboard/asus-transformer-ec-keys.c | 310 ++++++++++++++++++
+ 3 files changed, 321 insertions(+)
+ create mode 100644 drivers/input/keyboard/asus-transformer-ec-keys.c
 
-diff --git a/drivers/input/serio/Kconfig b/drivers/input/serio/Kconfig
-index bacab1f584009..efb5aa59c364b 100644
---- a/drivers/input/serio/Kconfig
-+++ b/drivers/input/serio/Kconfig
-@@ -84,6 +84,21 @@ config SERIO_RPCKBD
+diff --git a/drivers/input/keyboard/Kconfig b/drivers/input/keyboard/Kconfig
+index 9d1019ba0245b..913cb4900565c 100644
+--- a/drivers/input/keyboard/Kconfig
++++ b/drivers/input/keyboard/Kconfig
+@@ -89,6 +89,16 @@ config KEYBOARD_APPLESPI
  	  To compile this driver as a module, choose M here: the
- 	  module will be called rpckbd.
+ 	  module will be called applespi.
  
-+config SERIO_ASUS_TRANSFORMER_EC
-+	tristate "Asus Transformer's Dock keyboard and touchpad controller"
++config KEYBOARD_ASUS_TRANSFORMER_EC
++	tristate "Asus Transformer's Mobile Dock multimedia keys"
 +	depends on MFD_ASUS_TRANSFORMER_EC
 +	help
-+	  Say Y here if you want to use the keyboard and/or touchpad on
-+	  Asus Transformed's Mobile Dock.
++	  Say Y here if you want to use multimedia keys present on Asus
++	  Transformer's Mobile Dock.
 +
-+	  For keyboard support you also need atkbd driver.
++	  To compile this driver as a module, choose M here: the
++	  module will be called asus-transformer-ec-keys.
 +
-+	  For touchpad support you also need psmouse driver with Elantech
-+	  touchpad option enabled.
-+
-+	  To compile this driver as a module, choose M here: the module will
-+	  be called asus-transformer-ec-kbc.
-+
- config SERIO_AMBAKMI
- 	tristate "AMBA KMI keyboard controller"
- 	depends on ARM_AMBA
-diff --git a/drivers/input/serio/Makefile b/drivers/input/serio/Makefile
-index 7f5137dc02e26..bed2a7a92a13d 100644
---- a/drivers/input/serio/Makefile
-+++ b/drivers/input/serio/Makefile
-@@ -12,6 +12,7 @@ obj-$(CONFIG_SERIO_SERPORT)	+= serport.o
- obj-$(CONFIG_SERIO_RPCKBD)	+= rpckbd.o
- obj-$(CONFIG_SERIO_SA1111)	+= sa1111ps2.o
- obj-$(CONFIG_SERIO_AMBAKMI)	+= ambakmi.o
-+obj-$(CONFIG_SERIO_ASUS_TRANSFORMER_EC)	+= asus-transformer-ec-kbc.o
- obj-$(CONFIG_SERIO_Q40KBD)	+= q40kbd.o
- obj-$(CONFIG_SERIO_GSCPS2)	+= gscps2.o
- obj-$(CONFIG_HP_SDC)		+= hp_sdc.o
-diff --git a/drivers/input/serio/asus-transformer-ec-kbc.c b/drivers/input/serio/asus-transformer-ec-kbc.c
+ config KEYBOARD_ATARI
+ 	tristate "Atari keyboard"
+ 	depends on ATARI
+diff --git a/drivers/input/keyboard/Makefile b/drivers/input/keyboard/Makefile
+index 60bb7baf802f7..0d81096887ada 100644
+--- a/drivers/input/keyboard/Makefile
++++ b/drivers/input/keyboard/Makefile
+@@ -11,6 +11,7 @@ obj-$(CONFIG_KEYBOARD_ADP5585)		+= adp5585-keys.o
+ obj-$(CONFIG_KEYBOARD_ADP5588)		+= adp5588-keys.o
+ obj-$(CONFIG_KEYBOARD_AMIGA)		+= amikbd.o
+ obj-$(CONFIG_KEYBOARD_APPLESPI)		+= applespi.o
++obj-$(CONFIG_KEYBOARD_ASUS_TRANSFORMER_EC)	+= asus-transformer-ec-keys.o
+ obj-$(CONFIG_KEYBOARD_ATARI)		+= atakbd.o
+ obj-$(CONFIG_KEYBOARD_ATKBD)		+= atkbd.o
+ obj-$(CONFIG_KEYBOARD_BCM)		+= bcm-keypad.o
+diff --git a/drivers/input/keyboard/asus-transformer-ec-keys.c b/drivers/input/keyboard/asus-transformer-ec-keys.c
 new file mode 100644
-index 0000000000000..c6d12c44449d0
+index 0000000000000..44235e4a7f548
 --- /dev/null
-+++ b/drivers/input/serio/asus-transformer-ec-kbc.c
-@@ -0,0 +1,168 @@
++++ b/drivers/input/keyboard/asus-transformer-ec-keys.c
+@@ -0,0 +1,310 @@
 +// SPDX-License-Identifier: GPL-2.0-or-later
 +
++#include <linux/array_size.h>
 +#include <linux/err.h>
 +#include <linux/i2c.h>
-+#include <linux/i8042.h>
++#include <linux/input.h>
 +#include <linux/mfd/asus-transformer-ec.h>
 +#include <linux/module.h>
 +#include <linux/platform_device.h>
-+#include <linux/serio.h>
++#include <linux/slab.h>
 +
-+struct asus_ec_kbc_data {
++#define ASUSEC_EXT_KEY_CODES		0x20
++
++struct asus_ec_keys_data {
 +	struct notifier_block nb;
 +	struct asusec_core *ec;
-+	struct i2c_client *parent;
-+	struct serio *sdev[2];
++	struct input_dev *xidev;
++	struct input_handler input_handler;
++	unsigned short keymap[ASUSEC_EXT_KEY_CODES * 2];
++	const char *kbc_phys;
++	bool special_key_pressed;
++	bool special_key_mode;
 +};
 +
-+static int asus_ec_kbc_notify(struct notifier_block *nb,
-+			      unsigned long action, void *data_)
++static void asus_ec_input_event(struct input_handle *handle,
++				unsigned int event_type,
++				unsigned int event_code, int value)
 +{
-+	struct asus_ec_kbc_data *priv = container_of(nb, struct asus_ec_kbc_data, nb);
-+	unsigned int port_idx, n;
-+	u8 *data = data_;
++	struct asus_ec_keys_data *priv = handle->handler->private;
 +
-+	if (action & (ASUSEC_SMI_MASK | ASUSEC_SCI_MASK))
++	/* Store special key state */
++	if (event_type == EV_KEY && event_code == KEY_RIGHTALT)
++		priv->special_key_pressed = !!value;
++}
++
++static int asus_ec_input_connect(struct input_handler *handler,
++				 struct input_dev *dev,
++				 const struct input_device_id *id)
++{
++	struct asus_ec_keys_data *priv = handler->private;
++	struct input_handle *handle;
++	int error;
++
++	if (!dev->phys || !strstr(dev->phys, priv->kbc_phys))
++		return -ENODEV;
++
++	handle = kzalloc_obj(*handle);
++	if (!handle)
++		return -ENOMEM;
++
++	handle->dev = dev;
++	handle->handler = handler;
++	handle->name = handler->name;
++
++	error = input_register_handle(handle);
++	if (error)
++		goto err_free_handle;
++
++	error = input_open_device(handle);
++	if (error)
++		goto err_unregister_handle;
++
++	return 0;
++
++ err_unregister_handle:
++	input_unregister_handle(handle);
++ err_free_handle:
++	kfree(handle);
++
++	return error;
++}
++
++static void asus_ec_input_disconnect(struct input_handle *handle)
++{
++	input_close_device(handle);
++	input_unregister_handle(handle);
++	kfree(handle);
++}
++
++static const struct input_device_id asus_ec_input_ids[] = {
++	{
++		.flags = INPUT_DEVICE_ID_MATCH_EVBIT,
++		.evbit = { BIT_MASK(EV_KEY) },
++	},
++	{ }
++};
++
++static const unsigned short asus_ec_dock_ext_keys[] = {
++	/* Function keys [0x00 - 0x19] */
++	[0x01] = KEY_DELETE,
++	[0x02] = KEY_F1,
++	[0x03] = KEY_F2,
++	[0x04] = KEY_F3,
++	[0x05] = KEY_F4,
++	[0x06] = KEY_F5,
++	[0x07] = KEY_F6,
++	[0x08] = KEY_F7,
++	[0x10] = KEY_F8,
++	[0x11] = KEY_F9,
++	[0x12] = KEY_F10,
++	[0x13] = KEY_F11,
++	[0x14] = KEY_F12,
++	[0x15] = KEY_MUTE,
++	[0x16] = KEY_VOLUMEDOWN,
++	[0x17] = KEY_VOLUMEUP,
++	/* Multimedia keys [0x20 - 0x39] */
++	[0x21] = KEY_SCREENLOCK,
++	[0x22] = KEY_WLAN,
++	[0x23] = KEY_BLUETOOTH,
++	[0x24] = KEY_TOUCHPAD_TOGGLE,
++	[0x25] = KEY_BRIGHTNESSDOWN,
++	[0x26] = KEY_BRIGHTNESSUP,
++	[0x27] = KEY_BRIGHTNESS_AUTO,
++	[0x28] = KEY_PRINT,
++	[0x30] = KEY_WWW,
++	[0x31] = KEY_CONFIG,
++	[0x32] = KEY_PREVIOUSSONG,
++	[0x33] = KEY_PLAYPAUSE,
++	[0x34] = KEY_NEXTSONG,
++	[0x35] = KEY_MUTE,
++	[0x36] = KEY_VOLUMEDOWN,
++	[0x37] = KEY_VOLUMEUP,
++};
++
++static void asus_ec_keys_report_key(struct input_dev *dev, unsigned int code,
++				    unsigned int key, bool value)
++{
++	input_event(dev, EV_MSC, MSC_SCAN, code);
++	input_report_key(dev, key, value);
++	input_sync(dev);
++}
++
++static int asus_ec_keys_process_key(struct input_dev *dev, u8 code)
++{
++	struct asus_ec_keys_data *priv = dev_get_drvdata(dev->dev.parent);
++	unsigned int key = 0;
++
++	if (code == 0)
 +		return NOTIFY_DONE;
-+	else if (action & ASUSEC_AUX_MASK)
-+		port_idx = 1;
-+	else if (action & (ASUSEC_KBC_MASK | ASUSEC_KEY_MASK))
-+		port_idx = 0;
-+	else
++
++	/* Flip special key mode state when pressing SCREEN LOCK + R ALT */
++	if (priv->special_key_pressed && code == 1) {
++		priv->special_key_mode = !priv->special_key_mode;
 +		return NOTIFY_DONE;
-+
-+	/*
-+	 * The data[0] is the length of the packet including itself. The data[]
-+	 * buffer has to be at least 3 bytes (length + ctrl + 1 data byte) and
-+	 * must not exceed the EC entry size.
-+	 */
-+	if (data[0] < 2 || data[0] > ASUSEC_ENTRY_SIZE)
-+		return NOTIFY_BAD;
-+
-+	n = data[0] - 2;
-+	data += 2;
-+
-+	if (port_idx == 0) {
-+		/*
-+		 * Remap keyboard key codes to match AT layout:
-+		 * SEARCH: RIGHT-META [E0 27] -> LEFT-ALT   [11]
-+		 * MENU:   COMPOSE    [E0 2F] -> RIGHT-META [E0 27]
-+		 */
-+		if ((n == 2 || (n == 3 && data[1] == 0xF0)) && data[0] == 0xE0) {
-+			u8 *keycode = &data[n - 1];
-+
-+			switch (*keycode) {
-+			case 0x27:
-+				*keycode = 0x11;
-+				++data;
-+				--n;
-+				break;
-+			case 0x2F:
-+				*keycode = 0x27;
-+				break;
-+			}
-+		}
 +	}
 +
-+	while (n--)
-+		serio_interrupt(priv->sdev[port_idx], *data++, 0);
++	/*
++	 * Relocate code to second "page" if pressed state XOR's mode state
++	 * This way special key will invert the current mode
++	 */
++	if (priv->special_key_mode ^ priv->special_key_pressed)
++		code += ASUSEC_EXT_KEY_CODES;
++
++	if (code < dev->keycodemax) {
++		unsigned short *map = dev->keycode;
++
++		key = map[code];
++	}
++
++	if (!key)
++		key = KEY_UNKNOWN;
++
++	asus_ec_keys_report_key(dev, code, key, 1);
++	asus_ec_keys_report_key(dev, code, key, 0);
 +
 +	return NOTIFY_OK;
 +}
 +
-+static int asus_ec_serio_write(struct serio *port, unsigned char data)
++static int asus_ec_keys_notify(struct notifier_block *nb,
++			       unsigned long action, void *data_)
 +{
-+	struct asus_ec_kbc_data *priv = port->port_data;
++	struct asus_ec_keys_data *priv =
++		container_of(nb, struct asus_ec_keys_data, nb);
++	u8 *data = data_;
 +
-+	return i2c_smbus_write_word_data(priv->parent, ASUSEC_WRITE_BUF,
-+					 (data << 8) | port->id.extra);
++	if (action & ASUSEC_SMI_MASK)
++		return NOTIFY_DONE;
++
++	if (action & ASUSEC_SCI_MASK)
++		return asus_ec_keys_process_key(priv->xidev, data[2]);
++
++	return NOTIFY_DONE;
 +}
 +
-+static void asus_ec_serio_remove(void *data)
++static void asus_ec_keys_setup_keymap(struct asus_ec_keys_data *priv)
 +{
-+	serio_unregister_port(data);
++	struct input_dev *dev = priv->xidev;
++	unsigned int i;
++
++	BUILD_BUG_ON(ARRAY_SIZE(priv->keymap) < ARRAY_SIZE(asus_ec_dock_ext_keys));
++
++	dev->keycode = priv->keymap;
++	dev->keycodesize = sizeof(*priv->keymap);
++	dev->keycodemax = ARRAY_SIZE(priv->keymap);
++
++	input_set_capability(dev, EV_MSC, MSC_SCAN);
++	input_set_capability(dev, EV_KEY, KEY_UNKNOWN);
++
++	for (i = 0; i < ARRAY_SIZE(asus_ec_dock_ext_keys); i++) {
++		unsigned int code = asus_ec_dock_ext_keys[i];
++
++		if (!code)
++			continue;
++
++		__set_bit(code, dev->keybit);
++		priv->keymap[i] = code;
++	}
 +}
 +
-+static int asus_ec_register_serio(struct platform_device *pdev, int idx,
-+				  const char *name, int cmd)
++static int asus_ec_keys_register_handler(struct device *dev,
++					 struct asus_ec_keys_data *priv)
 +{
-+	struct asus_ec_kbc_data *priv = platform_get_drvdata(pdev);
-+	struct i2c_client *parent = priv->parent;
-+	struct serio *port = kzalloc_obj(*port);
-+
-+	if (!port)
-+		return -ENOMEM;
-+
-+	priv->sdev[idx] = port;
-+	port->dev.parent = &pdev->dev;
-+	port->id.type = SERIO_8042;
-+	port->id.extra = cmd & 0xFF;
-+	port->write = asus_ec_serio_write;
-+	port->port_data = (void *)priv;
-+	snprintf(port->name, sizeof(port->name), "%s %s",
-+		 priv->ec->model, name);
-+	snprintf(port->phys, sizeof(port->phys), "i2c-%u-%04x/serio%d",
-+		 i2c_adapter_id(parent->adapter), parent->addr, idx);
-+
-+	serio_register_port(port);
-+
-+	return devm_add_action_or_reset(&pdev->dev, asus_ec_serio_remove, port);
-+}
-+
-+static void asus_ec_notifier_chain_unregister(void *data)
-+{
-+	struct asus_ec_kbc_data *priv = data;
-+	struct asusec_core *ec = priv->ec;
-+
-+	blocking_notifier_chain_unregister(&ec->notify_list, &priv->nb);
-+}
-+
-+static int asus_ec_kbc_probe(struct platform_device *pdev)
-+{
-+	struct asusec_core *ec = dev_get_drvdata(pdev->dev.parent);
-+	struct asus_ec_kbc_data *priv;
++	struct i2c_client *parent = to_i2c_client(dev->parent);
 +	int error;
 +
-+	priv = devm_kzalloc(&pdev->dev, sizeof(*priv), GFP_KERNEL);
-+	if (!priv)
++	priv->input_handler.event = asus_ec_input_event;
++	priv->input_handler.connect = asus_ec_input_connect;
++	priv->input_handler.disconnect = asus_ec_input_disconnect;
++	priv->input_handler.id_table = asus_ec_input_ids;
++	priv->input_handler.passive_observer = true;
++	priv->input_handler.private = priv;
++	priv->input_handler.name = devm_kasprintf(dev, GFP_KERNEL,
++						  "%s-media-handler",
++						  priv->ec->name);
++	if (!priv->input_handler.name)
 +		return -ENOMEM;
 +
-+	platform_set_drvdata(pdev, priv);
++	priv->kbc_phys = devm_kasprintf(dev, GFP_KERNEL, "i2c-%u-%04x/serio0",
++					i2c_adapter_id(parent->adapter),
++					parent->addr);
++	if (!priv->kbc_phys)
++		return -ENOMEM;
 +
-+	priv->ec = ec;
-+	priv->parent = to_i2c_client(pdev->dev.parent);
-+
-+	priv->nb.notifier_call = asus_ec_kbc_notify;
-+
-+	error = blocking_notifier_chain_register(&ec->notify_list, &priv->nb);
-+	if (error)
-+		return dev_err_probe(&pdev->dev, error,
-+				     "failed to register blocking notifier chain");
-+
-+	error = devm_add_action_or_reset(&pdev->dev,
-+					 asus_ec_notifier_chain_unregister,
-+					 priv);
-+	if (error)
-+		return error;
-+
-+	error = asus_ec_register_serio(pdev, 0, "Keyboard", 0);
-+	if (error)
-+		return error;
-+
-+	error = asus_ec_register_serio(pdev, 1, "Touchpad", I8042_CMD_AUX_SEND);
++	error = input_register_handler(&priv->input_handler);
 +	if (error)
 +		return error;
 +
 +	return 0;
 +}
 +
-+static struct platform_driver asus_ec_kbc_driver = {
-+	.driver.name = "asus-transformer-ec-kbc",
-+	.probe = asus_ec_kbc_probe,
-+};
-+module_platform_driver(asus_ec_kbc_driver);
++static int asus_ec_keys_probe(struct platform_device *pdev)
++{
++	struct i2c_client *parent = to_i2c_client(pdev->dev.parent);
++	struct asusec_core *ec = dev_get_drvdata(pdev->dev.parent);
++	struct device *dev = &pdev->dev;
++	struct asus_ec_keys_data *priv;
++	int error;
 +
-+MODULE_ALIAS("platform:asus-transformer-ec-kbc");
++	priv = devm_kzalloc(dev, sizeof(*priv), GFP_KERNEL);
++	if (!priv)
++		return -ENOMEM;
++
++	platform_set_drvdata(pdev, priv);
++	priv->ec = ec;
++
++	priv->xidev = devm_input_allocate_device(dev);
++	if (!priv->xidev)
++		return -ENOMEM;
++
++	priv->xidev->name = devm_kasprintf(dev, GFP_KERNEL, "%s Keyboard Ext",
++					   ec->model);
++	priv->xidev->phys = devm_kasprintf(dev, GFP_KERNEL, "i2c-%u-%04x",
++					   i2c_adapter_id(parent->adapter),
++					   parent->addr);
++
++	if (!priv->xidev->name || !priv->xidev->phys)
++		return -ENOMEM;
++
++	asus_ec_keys_setup_keymap(priv);
++
++	error = input_register_device(priv->xidev);
++	if (error)
++		return dev_err_probe(dev, error,
++				     "failed to register extension keys\n");
++
++	error = asus_ec_keys_register_handler(dev, priv);
++	if (error)
++		return error;
++
++	priv->nb.notifier_call = asus_ec_keys_notify;
++
++	error = blocking_notifier_chain_register(&ec->notify_list, &priv->nb);
++	if (error) {
++		input_unregister_handler(&priv->input_handler);
++		return error;
++	}
++
++	return 0;
++}
++
++static void asus_ec_keys_remove(struct platform_device *pdev)
++{
++	struct asus_ec_keys_data *priv = platform_get_drvdata(pdev);
++	struct asusec_core *ec = priv->ec;
++
++	blocking_notifier_chain_unregister(&ec->notify_list, &priv->nb);
++	input_unregister_handler(&priv->input_handler);
++}
++
++static struct platform_driver asus_ec_keys_driver = {
++	.driver.name = "asus-transformer-ec-keys",
++	.probe = asus_ec_keys_probe,
++	.remove = asus_ec_keys_remove,
++};
++module_platform_driver(asus_ec_keys_driver);
++
++MODULE_ALIAS("platform:asus-transformer-ec-keys");
 +MODULE_AUTHOR("Michał Mirosław <mirq-linux@rere.qmqm.pl>");
-+MODULE_DESCRIPTION("ASUS Transformer's Dock keyboard and touchpad driver");
++MODULE_DESCRIPTION("ASUS Transformer's multimedia keys driver");
 +MODULE_LICENSE("GPL");
 -- 
 2.53.0
