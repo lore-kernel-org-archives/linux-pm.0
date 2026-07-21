@@ -1,360 +1,291 @@
-Received: from mail-wm1-f54.google.com (mail-wm1-f54.google.com [209.85.128.54])
+Received: from mail-wr1-f47.google.com (mail-wr1-f47.google.com [209.85.221.47])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5C45145BD78
-	for <linux-pm@vger.kernel.org>; Tue, 21 Jul 2026 09:53:21 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.54
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CD302337BA4
+	for <linux-pm@vger.kernel.org>; Tue, 21 Jul 2026 10:04:23 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.47
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1784627607; cv=none; b=lOUA0Cc0uTZ9tUj0FVWiAiN111hpXkCp4H0yqPNwIkPvEPq53pWhmgSQWN+VIggCvQphHlw5/0qi3W8pIWo+QuEkZXzTc3sw9MixVLSaSvqjAUKNPY4Ph+8gjAnYwxGAFQdqLT4hXogiUYmSby7FtHy81/vZ5AyclA9Y8WsLQ+0=
+	t=1784628267; cv=none; b=fR5T0XtipMXgMDjn/35A9JTiOM8MZH0qjWZKjPPy/QSWfUXJtRaaXUVA4owuSHGuEiFFn9B3DyxY11gp6RUwuizEu0C4+qd3AMm1x0hh7Dv44S9bAbj0Ob9fNOVBAhTpgW89cnCjQWfXjHN7JcbI7LSLTgFBMVucPSr1mxvcYkM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1784627607; c=relaxed/simple;
-	bh=02XPcfBtKKLG5GBMMe/FBuJUPOFEPkwRhl6fhRVoCEw=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=ZqORYz19nlGQCu7NYjnuYrrP1wOWpicqkYcxZg9WVSPHhCDw9CWwUaCZXFCXx4PZhrXD4BnvNJUZ7dHEvcng1zs/SoR4wrMM29uJ0Cae9IuagnMHeGLo2e8gCqytuIMJVGA6Em31kEQVfTQFlmwH04RDAP46gpE5CXkBCiN1RSQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=cFN+lyH+; arc=none smtp.client-ip=209.85.128.54
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1784628267; c=relaxed/simple;
+	bh=WSP4K5mDBZtz2TmsSpWu2Au8Ihf1zXcU/eoIaZ1Yv78=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=FPI8IOxi32N7ksl6GisefsX/upcr3SqLz7M5MaEWWocdiJ3hLSfIr1RMBEWzG0QjYJb409NFYtJh71zqQiFHQ7Sr/4UyiqHfINClXakUFDmK5olt9QT0B4W6TXeLEWdEDWK/v6S4wvYYbBdrd10PgAMgpflBPlv5WO0yKc4BpBg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com; spf=pass smtp.mailfrom=suse.com; dkim=pass (2048-bit key) header.d=suse.com header.i=@suse.com header.b=ggRy2ina; arc=none smtp.client-ip=209.85.221.47
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="cFN+lyH+"
-Received: by mail-wm1-f54.google.com with SMTP id 5b1f17b1804b1-49556f97a9dso16601795e9.1
-        for <linux-pm@vger.kernel.org>; Tue, 21 Jul 2026 02:53:21 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=suse.com header.i=@suse.com header.b="ggRy2ina"
+Received: by mail-wr1-f47.google.com with SMTP id ffacd0b85a97d-47f7854678bso598275f8f.3
+        for <linux-pm@vger.kernel.org>; Tue, 21 Jul 2026 03:04:23 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1784627599; x=1785232399; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:mime-version:references
-         :in-reply-to:message-id:date:subject:cc:to:from:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=b5EMKQXklGPjLSVJt2boktipJrdZnyMaVeQ/pA6Pdts=;
-        b=cFN+lyH+Ln9tRQJxfgSIll3RLFgyXu2y5Dq+dGmV19bMerk9HjZeVqA11h4hGUMlpr
-         q1rPwXNVitzonSoH4um6xMSoGgNoLVTMLtfv9YeAyBCs8uifLFe02eeX1khH3Qm5VNCy
-         zITnPdnUk16pChLwlBe8OnPygLhkbZFYIm1L07727JvEBcd/AuXzFqY2u65hq6CXxrFe
-         pO7JiELFONCBQOIAWGM56c4oWAsMM2uLm+qcHdePFB9oJsGmcE+HBGrhgXada4HpUDuH
-         HoqecqmsvK9KhJCuZ+oJgZ6VKlGzUoG57xfgZ/JjmJebXcVTYqtoWqqn/XFjEEPLEU/N
-         A5QQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1784627599; x=1785232399;
-        h=content-transfer-encoding:content-type:mime-version:references
-         :in-reply-to:message-id:date:subject:cc:to:from:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+        d=suse.com; s=google; t=1784628262; x=1785233062; darn=vger.kernel.org;
+        h=content-transfer-encoding:content-type:in-reply-to:autocrypt:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=b5EMKQXklGPjLSVJt2boktipJrdZnyMaVeQ/pA6Pdts=;
-        b=VlQxsbyG4R5gHS544E6+xXoz8+bkLY89CK6RiAptUCIjWt2Fg90oRtQj9oma7jhWjk
-         hXFfJUBTv1gPH+dZORtVcSj4omJ4dWN5wJdp0gZdGfzC8a88mL9Ocw//Eey2FWNWeH9B
-         8F0GVv3YFVA4F848LmtUcTr+tviP4rrqrrSUgsurTdAwHsPCD6Yk08+Phe+jLGsgB/iu
-         X4SfDTk1XUynKvK6GD+0qdr/aiuTlBEFBYSHDDzlfst9LIeRaXgY6mbrRsG56vwKWT1s
-         MBoH1/3f67eKoutqEHFWLtGjdS/u+VpCHpyrt04gu5BJ09d4+X1kp25st9EZUnqzw65U
-         SQIQ==
-X-Forwarded-Encrypted: i=1; AHgh+RqSKGQstuq0MIqK1cPgQvWPLTqpluTlTSWi5t77HYpCIVQvWGJ287fj1Fs4wfqJrC628SBmk4l+TA==@vger.kernel.org
-X-Gm-Message-State: AOJu0YxO8+W+79dpfgBmI3Tq9QeP3JDiL2vZRrNZMplgzPtbNMAVmNwj
-	LJZoZtQc71za6wxUOP6YeEzJ/Lpfg2266xBwkAiTtHQthNjgMehsxe3L
-X-Gm-Gg: AfdE7cmPiUOws29q9bemJKIBFxUcXj9noaVLm2ezLb0qNQhFinxa3wHSds7ILc1wrld
-	YQpTD7r7y2aShprg7DngGJCmhjNIRBlohdVtar0wo6Pa9/VhjlWGXxO+OROd2cPUa8KzYJK7Jzc
-	ijuFX+KjRQVpCZGwfezvt8UvEOOdROUzOWgRCaGORfFQQ7TDDyJoNOBAFgqbVWBrkOe7In4L4i2
-	r829yTdekjdAqEgpbmYd00gC0mt/FD3/UZ1olFGywYXee++aedDaQRIx0Ru7La2AVV7CZ2x0ghS
-	EkerEBbjDKdYeaSDycGL5TsqmoeMQY2vXksc33CGEEvE3k9qRbxs2TUM9ZeXgDh/woNTbAOb498
-	I3YMmKfY6ns0ywntrQPZYFaG+Jq/aTRbkdGJbBTz9EVR3JQybdrqi0T2GQxlZasgJ0PQ1eTrI6j
-	TVkkOUVy7de/S8/m290+VwN/k=
-X-Received: by 2002:a05:600c:3b10:b0:495:4aff:5fce with SMTP id 5b1f17b1804b1-4954aff609amr193705855e9.32.1784627599015;
-        Tue, 21 Jul 2026 02:53:19 -0700 (PDT)
-Received: from xeon ([188.163.112.51])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-49565482c5asm82834285e9.10.2026.07.21.02.53.17
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 21 Jul 2026 02:53:18 -0700 (PDT)
-From: Svyatoslav Ryhel <clamor95@gmail.com>
-To: Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-	Lee Jones <lee@kernel.org>,
-	Pavel Machek <pavel@kernel.org>,
-	Sebastian Reichel <sre@kernel.org>,
-	Svyatoslav Ryhel <clamor95@gmail.com>,
-	Ion Agorria <ion@agorria.com>,
-	=?UTF-8?q?Micha=C5=82=20Miros=C5=82aw?= <mirq-linux@rere.qmqm.pl>
-Cc: devicetree@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	linux-input@vger.kernel.org,
-	linux-leds@vger.kernel.org,
-	linux-pm@vger.kernel.org
-Subject: [PATCH v10 7/7] power: supply: Add charger driver for Asus Transformers
-Date: Tue, 21 Jul 2026 12:52:33 +0300
-Message-ID: <20260721095233.420823-8-clamor95@gmail.com>
-X-Mailer: git-send-email 2.53.0
-In-Reply-To: <20260721095233.420823-1-clamor95@gmail.com>
-References: <20260721095233.420823-1-clamor95@gmail.com>
+        bh=kLeL9jKfipa/VjS3zS2dWv9s5mmuFH1TcnG1jZ4V6xI=;
+        b=ggRy2inaEUsEEKky28TlEMOKLVioAN7Z8QqTkeNe9LW/EbbHNC5CTVm0NvedojAXoX
+         h6vMX95u7vuwk/hZMckivgIiviZWD6heZs4cyNGPUDTzBvpa1rAzMGbU7HoS81gULkRf
+         2h1LauwrjECmFAdura3sznbG9hv/tdwdioI+HBAP5WUrC+bj5lVrwsoK9wAdm10qLVLd
+         Lxv8Y4JqTDNiEgBHVF1mDiLaeQ4yYupThdgKJ7Hw5Jrk1UUrpAFp0ufTJ3r36GKzPym0
+         tzQeW2/40G0h6mS1QcJKFP2DFI5bNfNfYokdj2mGxtWURJlN/yn0jLC9PvCzRFl4Fo1c
+         CpRg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1784628262; x=1785233062;
+        h=content-transfer-encoding:content-type:in-reply-to:autocrypt:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=kLeL9jKfipa/VjS3zS2dWv9s5mmuFH1TcnG1jZ4V6xI=;
+        b=BjzyVg8qKPVan7pxs2ngJpXgLmCDa6xzPBDv/7UYDwYH5C/laQ4GSdN6rhxJ0x42T1
+         tvxLSTm6ajA9iljnxA5HH8xO6V7Pq1/ZOLUaqV9Ztc0VyK0ZVUUI5H4a2TMOfrwaJWxY
+         HbURTdkjKeXkmbx/xTQo9B++mYrscZTV+F+SrRd+erNYoAoxrL9ZI85k/4T0e9elLzKa
+         po9bljAycDrRdiM/nZb9ZoFHzuPO+l7kgmweqXXeRKOcBzmJq9Rr5KdjK6ijdUugV1mZ
+         zVWkuekxiO8W5p0mKAl+Sz7pT/E0pxxYen+jjgPbzVj4Lu6up83f5tDNCoRB9UIaM7bg
+         cfXw==
+X-Forwarded-Encrypted: i=1; AHgh+Rri2HmmgWF/jL2BKfWpvAklo1s12iZN2KnJ7aDSFRYAgRZTve8Q11Vd7hcnpmSrO2CjGYfZI9sErg==@vger.kernel.org
+X-Gm-Message-State: AOJu0YxB9VBCu5Vl2Du4zmFR6uduSHO9gD+l6032qzkqTLVkQti51PVL
+	eC1jCrBhcRq08RF+4q/noGwuVXzgnEm0dHj2TGZBtYZ5qbZzrQ9juhCVBgWtUWLVLe3lQLT47sL
+	F28+TCME=
+X-Gm-Gg: AR+sD13D+INPJmblMncgggB0d2GhdlYZb5d+75D7UAdWsHx30X/83ehF+0m7rLXljW5
+	ZLNQbSXHxREOLABjf8esgJwY6PGt442g7M9BV2LgTIYmv/xhcyAlc/vRD8ipZKz22iWpqui5V+f
+	pobBoz61UDEefjw2PfopXNAXjdyPOURP7ho7sNxnviOVCR6YgzazkHn1wWVp1FN2kdWfirUH23S
+	4xl9tv+rEWbfRl731LIyDAPzQeERlalQg4s6F0huxnFIP5EqGuzzZwGP6xjbWL6InWhK+m1QJB+
+	EV+Z6LdETG0s8LDlK16HYP91/jQZWJTRmndPA5cNXKy06spRczlsBpAGPQvgpSKXC3w6Ms0Ciwa
+	rfVf4XZx3FxScfMLIKxh49vzW+0x7TU53JW1iHWy8pBmSn+EyDS0uNQhEjHQAWkOiDi8WMpP5OP
+	fU0hnEv27Pb3yM3LJJuhNzOUSC356wKgKWCNTkm+AVnHWkIDTzXQ==
+X-Received: by 2002:a05:6000:238a:b0:475:3a97:8e3c with SMTP id ffacd0b85a97d-47f6230f633mr19834090f8f.18.1784628261969;
+        Tue, 21 Jul 2026 03:04:21 -0700 (PDT)
+Received: from [192.168.2.177] (48.85-85-171.dynamic.clientes.euskaltel.es. [85.85.171.48])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-47f63ee9281sm40830238f8f.36.2026.07.21.03.04.20
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Tue, 21 Jul 2026 03:04:21 -0700 (PDT)
+Message-ID: <d0ec1fd7-89b6-4bf1-8d63-a31554b46932@suse.com>
+Date: Tue, 21 Jul 2026 12:04:15 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v3 2/3] pmdomain: mediatek: Add support for secure modem
+ power domain control
+To: nikolai.burov@jolla.com, Rob Herring <robh@kernel.org>,
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
+ <conor+dt@kernel.org>, Matthias Brugger <matthias.bgg@gmail.com>,
+ AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>,
+ Ulf Hansson <ulfh@kernel.org>
+Cc: devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, linux-mediatek@lists.infradead.org,
+ linux-pm@vger.kernel.org, Nikolai Burov <nikolai.burov+review@abscue.de>
+References: <20260720-mt6858-pmdomain-v3-0-8966d8de93c8@jolla.com>
+ <20260720-mt6858-pmdomain-v3-2-8966d8de93c8@jolla.com>
+Content-Language: en-US, ca-ES, es-ES
+From: Matthias Brugger <mbrugger@suse.com>
+Autocrypt: addr=mbrugger@suse.com; keydata=
+ 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
+ PVrr2NoUqi/bxI8fFQJD1jVj8K0=
+In-Reply-To: <20260720-mt6858-pmdomain-v3-2-8966d8de93c8@jolla.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
-From: Michał Mirosław <mirq-linux@rere.qmqm.pl>
 
-Add support for charger detection capabilities found in the embedded
-controller of ASUS Transformer devices.
 
-Suggested-by: Maxim Schwalm <maxim.schwalm@gmail.com>
-Suggested-by: Svyatoslav Ryhel <clamor95@gmail.com>
-Signed-off-by: Michał Mirosław <mirq-linux@rere.qmqm.pl>
-Signed-off-by: Svyatoslav Ryhel <clamor95@gmail.com>
-Reviewed-by: Sebastian Reichel <sebastian.reichel@collabora.com>
----
- drivers/power/supply/Kconfig                  |  11 +
- drivers/power/supply/Makefile                 |   1 +
- .../supply/asus-transformer-ec-charger.c      | 208 ++++++++++++++++++
- 3 files changed, 220 insertions(+)
- create mode 100644 drivers/power/supply/asus-transformer-ec-charger.c
+On 20/07/2026 22:46, Nikolai Burov via B4 Relay wrote:
+> From: Nikolai Burov <nikolai.burov@jolla.com>
+> 
+> On recent MediaTek SoCs such as MT6858, the kernel is required to use
+> a secure monitor call (SMC) to enable or disable the modem power domain.
+> The power domain control register can be read, but firmware prevents it
+> from being modified directly. Some other parts of the power sequence,
+> such as setting the ext_buck_iso register, still need to be performed on
+> the kernel side.
+> 
+> In preparation for modem support, add a flag to enable this new power
+> sequence for SoCs that need it. Power domains using this flag are not
+> expected to configure any bus protection registers, since these are
+> handled internally by the SMC call.
+> 
+> Signed-off-by: Nikolai Burov <nikolai.burov@jolla.com>
 
-diff --git a/drivers/power/supply/Kconfig b/drivers/power/supply/Kconfig
-index 24996ee6d90dd..3011591c9d755 100644
---- a/drivers/power/supply/Kconfig
-+++ b/drivers/power/supply/Kconfig
-@@ -508,6 +508,17 @@ config CHARGER_88PM860X
- 	help
- 	  Say Y here to enable charger for Marvell 88PM860x chip.
- 
-+config CHARGER_ASUS_TRANSFORMER_EC
-+	tristate "Asus Transformer's charger driver"
-+	depends on MFD_ASUS_TRANSFORMER_EC
-+	help
-+	  Say Y here to enable support AC plug detection on Asus Transformer
-+	  Dock.
-+
-+	  This sub-driver supports charger detection mechanism found in Asus
-+	  Transformer tablets and mobile docks and controlled by special
-+	  embedded controller.
-+
- config CHARGER_PF1550
- 	tristate "NXP PF1550 battery charger driver"
- 	depends on MFD_PF1550
-diff --git a/drivers/power/supply/Makefile b/drivers/power/supply/Makefile
-index 05c306817b449..9d51fdb76eee8 100644
---- a/drivers/power/supply/Makefile
-+++ b/drivers/power/supply/Makefile
-@@ -69,6 +69,7 @@ obj-$(CONFIG_CHARGER_RT9471)	+= rt9471.o
- obj-$(CONFIG_CHARGER_RT9756)	+= rt9756.o
- obj-$(CONFIG_BATTERY_TWL4030_MADC)	+= twl4030_madc_battery.o
- obj-$(CONFIG_CHARGER_88PM860X)	+= 88pm860x_charger.o
-+obj-$(CONFIG_CHARGER_ASUS_TRANSFORMER_EC)	+= asus-transformer-ec-charger.o
- obj-$(CONFIG_CHARGER_PF1550)	+= pf1550-charger.o
- obj-$(CONFIG_BATTERY_RX51)	+= rx51_battery.o
- obj-$(CONFIG_AB8500_BM)		+= ab8500_bmdata.o ab8500_charger.o ab8500_fg.o ab8500_btemp.o ab8500_chargalg.o
-diff --git a/drivers/power/supply/asus-transformer-ec-charger.c b/drivers/power/supply/asus-transformer-ec-charger.c
-new file mode 100644
-index 0000000000000..c7a6bd2ba533f
---- /dev/null
-+++ b/drivers/power/supply/asus-transformer-ec-charger.c
-@@ -0,0 +1,208 @@
-+// SPDX-License-Identifier: GPL-2.0-or-later
-+
-+#include <linux/err.h>
-+#include <linux/mfd/asus-transformer-ec.h>
-+#include <linux/module.h>
-+#include <linux/platform_device.h>
-+#include <linux/power_supply.h>
-+#include <linux/property.h>
-+
-+struct asus_ec_charger_data {
-+	struct notifier_block nb;
-+	struct asusec_core *ec;
-+	struct power_supply *psy;
-+	struct power_supply_desc psy_desc;
-+};
-+
-+static enum power_supply_property asus_ec_charger_properties[] = {
-+	POWER_SUPPLY_PROP_USB_TYPE,
-+	POWER_SUPPLY_PROP_CHARGE_BEHAVIOUR,
-+	POWER_SUPPLY_PROP_ONLINE,
-+	POWER_SUPPLY_PROP_MODEL_NAME,
-+};
-+
-+static int asus_ec_charger_get_property(struct power_supply *psy,
-+					enum power_supply_property psp,
-+					union power_supply_propval *val)
-+{
-+	struct asus_ec_charger_data *priv = power_supply_get_drvdata(psy);
-+	enum power_supply_usb_type psu;
-+	int ret;
-+	u64 ctl;
-+
-+	/* Check if model name is requested first since it needs no hw access */
-+	if (psp == POWER_SUPPLY_PROP_MODEL_NAME) {
-+		val->strval = priv->ec->model;
-+		return 0;
-+	}
-+
-+	ret = asus_dockram_access_ctl(priv->ec->dockram, &ctl, 0, 0);
-+	if (ret)
-+		return ret;
-+
-+	switch (ctl & (ASUSEC_CTL_FULL_POWER_SOURCE | ASUSEC_CTL_DIRECT_POWER_SOURCE)) {
-+	case ASUSEC_CTL_FULL_POWER_SOURCE:
-+		psu = POWER_SUPPLY_USB_TYPE_CDP;	/* DOCK */
-+		break;
-+	case ASUSEC_CTL_DIRECT_POWER_SOURCE:
-+		psu = POWER_SUPPLY_USB_TYPE_SDP;	/* USB */
-+		break;
-+	case 0:
-+		psu = POWER_SUPPLY_USB_TYPE_UNKNOWN;	/* no power source connected */
-+		break;
-+	default:
-+		psu = POWER_SUPPLY_USB_TYPE_ACA;	/* power adapter */
-+		break;
-+	}
-+
-+	switch (psp) {
-+	case POWER_SUPPLY_PROP_ONLINE:
-+		val->intval = psu != POWER_SUPPLY_USB_TYPE_UNKNOWN;
-+		return 0;
-+
-+	case POWER_SUPPLY_PROP_USB_TYPE:
-+		val->intval = psu;
-+		return 0;
-+
-+	case POWER_SUPPLY_PROP_CHARGE_BEHAVIOUR:
-+		if (ctl & ASUSEC_CTL_TEST_DISCHARGE)
-+			val->intval = POWER_SUPPLY_CHARGE_BEHAVIOUR_FORCE_DISCHARGE;
-+		else if (ctl & ASUSEC_CTL_USB_CHARGE)
-+			val->intval = POWER_SUPPLY_CHARGE_BEHAVIOUR_AUTO;
-+		else
-+			val->intval = POWER_SUPPLY_CHARGE_BEHAVIOUR_INHIBIT_CHARGE;
-+		return 0;
-+
-+	default:
-+		return -EINVAL;
-+	}
-+}
-+
-+static int asus_ec_charger_set_property(struct power_supply *psy,
-+					enum power_supply_property psp,
-+					const union power_supply_propval *val)
-+{
-+	struct asus_ec_charger_data *priv = power_supply_get_drvdata(psy);
-+
-+	switch (psp) {
-+	case POWER_SUPPLY_PROP_CHARGE_BEHAVIOUR:
-+		switch ((enum power_supply_charge_behaviour)val->intval) {
-+		case POWER_SUPPLY_CHARGE_BEHAVIOUR_AUTO:
-+			return asus_dockram_access_ctl(priv->ec->dockram, NULL,
-+				ASUSEC_CTL_TEST_DISCHARGE | ASUSEC_CTL_USB_CHARGE,
-+				ASUSEC_CTL_USB_CHARGE);
-+
-+		case POWER_SUPPLY_CHARGE_BEHAVIOUR_INHIBIT_CHARGE:
-+			return asus_dockram_access_ctl(priv->ec->dockram, NULL,
-+				ASUSEC_CTL_TEST_DISCHARGE | ASUSEC_CTL_USB_CHARGE, 0);
-+
-+		case POWER_SUPPLY_CHARGE_BEHAVIOUR_FORCE_DISCHARGE:
-+			return asus_dockram_access_ctl(priv->ec->dockram, NULL,
-+				ASUSEC_CTL_TEST_DISCHARGE | ASUSEC_CTL_USB_CHARGE,
-+				ASUSEC_CTL_TEST_DISCHARGE);
-+		default:
-+			return -EINVAL;
-+		}
-+
-+	default:
-+		return -EINVAL;
-+	}
-+}
-+
-+static int asus_ec_charger_property_is_writeable(struct power_supply *psy,
-+						 enum power_supply_property psp)
-+{
-+	switch (psp) {
-+	case POWER_SUPPLY_PROP_CHARGE_BEHAVIOUR:
-+		return true;
-+	default:
-+		return false;
-+	}
-+}
-+
-+static const struct power_supply_desc asus_ec_charger_desc = {
-+	.name = "asus-ec-charger",
-+	.type = POWER_SUPPLY_TYPE_USB,
-+	.charge_behaviours = BIT(POWER_SUPPLY_CHARGE_BEHAVIOUR_AUTO) |
-+			     BIT(POWER_SUPPLY_CHARGE_BEHAVIOUR_INHIBIT_CHARGE) |
-+			     BIT(POWER_SUPPLY_CHARGE_BEHAVIOUR_FORCE_DISCHARGE),
-+	.usb_types = BIT(POWER_SUPPLY_USB_TYPE_UNKNOWN) |
-+		     BIT(POWER_SUPPLY_USB_TYPE_SDP) |
-+		     BIT(POWER_SUPPLY_USB_TYPE_CDP) |
-+		     BIT(POWER_SUPPLY_USB_TYPE_ACA),
-+	.properties = asus_ec_charger_properties,
-+	.num_properties = ARRAY_SIZE(asus_ec_charger_properties),
-+	.get_property = asus_ec_charger_get_property,
-+	.set_property = asus_ec_charger_set_property,
-+	.property_is_writeable = asus_ec_charger_property_is_writeable,
-+	.no_thermal = true,
-+};
-+
-+static int asus_ec_charger_notify(struct notifier_block *nb,
-+				  unsigned long action, void *data)
-+{
-+	struct asus_ec_charger_data *priv =
-+		container_of(nb, struct asus_ec_charger_data, nb);
-+
-+	switch (action) {
-+	case ASUSEC_SMI_ACTION(POWER_NOTIFY):
-+	case ASUSEC_SMI_ACTION(ADAPTER_EVENT):
-+		power_supply_changed(priv->psy);
-+		break;
-+	}
-+
-+	return NOTIFY_DONE;
-+}
-+
-+static int asus_ec_charger_probe(struct platform_device *pdev)
-+{
-+	struct asusec_core *ec = dev_get_drvdata(pdev->dev.parent);
-+	struct asus_ec_charger_data *priv;
-+	struct device *dev = &pdev->dev;
-+	struct power_supply_config cfg = { };
-+
-+	priv = devm_kzalloc(dev, sizeof(*priv), GFP_KERNEL);
-+	if (!priv)
-+		return -ENOMEM;
-+
-+	platform_set_drvdata(pdev, priv);
-+	priv->ec = ec;
-+
-+	cfg.fwnode = dev_fwnode(dev->parent);
-+	cfg.drv_data = priv;
-+
-+	memcpy(&priv->psy_desc, &asus_ec_charger_desc, sizeof(priv->psy_desc));
-+	priv->psy_desc.name = devm_kasprintf(dev, GFP_KERNEL, "%s-charger",
-+					     priv->ec->name);
-+	if (!priv->psy_desc.name)
-+		return -ENOMEM;
-+
-+	priv->psy = devm_power_supply_register(dev, &priv->psy_desc, &cfg);
-+	if (IS_ERR(priv->psy))
-+		return dev_err_probe(dev, PTR_ERR(priv->psy),
-+				     "Failed to register power supply\n");
-+
-+	priv->nb.notifier_call = asus_ec_charger_notify;
-+
-+	return blocking_notifier_chain_register(&ec->notify_list, &priv->nb);
-+}
-+
-+static void asus_ec_charger_remove(struct platform_device *pdev)
-+{
-+	struct asus_ec_charger_data *priv = platform_get_drvdata(pdev);
-+	struct asusec_core *ec = priv->ec;
-+
-+	blocking_notifier_chain_unregister(&ec->notify_list, &priv->nb);
-+}
-+
-+static struct platform_driver asus_ec_charger_driver = {
-+	.driver.name = "asus-transformer-ec-charger",
-+	.probe = asus_ec_charger_probe,
-+	.remove = asus_ec_charger_remove,
-+};
-+module_platform_driver(asus_ec_charger_driver);
-+
-+MODULE_ALIAS("platform:asus-transformer-ec-charger");
-+MODULE_AUTHOR("Michał Mirosław <mirq-linux@rere.qmqm.pl>");
-+MODULE_DESCRIPTION("ASUS Transformer Pad battery charger driver");
-+MODULE_LICENSE("GPL");
--- 
-2.53.0
+Reviewed-by: Matthias Brugger <matthias.bgg@gmail.com>
+
+> ---
+>   drivers/pmdomain/mediatek/mtk-pm-domains.c | 50 +++++++++++++++++++++++++++---
+>   drivers/pmdomain/mediatek/mtk-pm-domains.h |  1 +
+>   include/linux/soc/mediatek/mtk_sip_svc.h   |  3 ++
+>   3 files changed, 49 insertions(+), 5 deletions(-)
+> 
+> diff --git a/drivers/pmdomain/mediatek/mtk-pm-domains.c b/drivers/pmdomain/mediatek/mtk-pm-domains.c
+> index 8309a4b46afb..5b4d860318a4 100644
+> --- a/drivers/pmdomain/mediatek/mtk-pm-domains.c
+> +++ b/drivers/pmdomain/mediatek/mtk-pm-domains.c
+> @@ -57,6 +57,10 @@
+>   
+>   #define MTK_SIP_KERNEL_HWCCF_CONTROL	MTK_SIP_SMC_CMD(0x540)
+>   
+> +/* Secure MTCMOS commands for modem subsystem */
+> +#define MTK_MD_MTCMOS_ENABLE		18
+> +#define MTK_MD_MTCMOS_DISABLE		19
+> +
+>   struct scpsys_domain {
+>   	struct generic_pm_domain genpd;
+>   	const struct scpsys_domain_data *data;
+> @@ -668,6 +672,34 @@ static int scpsys_modem_pwrseq_off(struct scpsys_domain *pd)
+>   	return 0;
+>   }
+>   
+> +static bool scpsys_modem_sec_poll(unsigned long cmd)
+> +{
+> +	struct arm_smccc_res res;
+> +
+> +	arm_smccc_smc(MTK_SIP_KERNEL_CCCI_CONTROL, cmd, 1, 0, 0, 0, 0, 0, &res);
+> +
+> +	return res.a0 == 0;
+> +}
+> +
+> +static int scpsys_modem_sec_power_on(bool on)
+> +{
+> +	struct arm_smccc_res res;
+> +	unsigned long cmd = on ? MTK_MD_MTCMOS_ENABLE : MTK_MD_MTCMOS_DISABLE;
+> +	bool tmp;
+> +	int ret;
+> +
+> +	arm_smccc_smc(MTK_SIP_KERNEL_CCCI_CONTROL, cmd, 0, 0, 0, 0, 0, 0, &res);
+> +	if (res.a0 == 0)
+> +		return 0;
+> +
+> +	ret = readx_poll_timeout(scpsys_modem_sec_poll, cmd, tmp, tmp,
+> +				 MTK_POLL_DELAY_US, MTK_POLL_TIMEOUT);
+> +	if (ret < 0)
+> +		return ret;
+> +
+> +	return 0;
+> +}
+> +
+>   static int scpsys_power_on(struct generic_pm_domain *genpd)
+>   {
+>   	struct scpsys_domain *pd = container_of(genpd, struct scpsys_domain, genpd);
+> @@ -686,7 +718,9 @@ static int scpsys_power_on(struct generic_pm_domain *genpd)
+>   		regmap_clear_bits(scpsys->base, pd->data->ext_buck_iso_offs,
+>   				  pd->data->ext_buck_iso_mask);
+>   
+> -	if (MTK_SCPD_CAPS(pd, MTK_SCPD_MODEM_PWRSEQ))
+> +	if (MTK_SCPD_CAPS(pd, MTK_SCPD_MODEM_SECURE_PWRSEQ))
+> +		ret = scpsys_modem_sec_power_on(true);
+> +	else if (MTK_SCPD_CAPS(pd, MTK_SCPD_MODEM_PWRSEQ))
+>   		ret = scpsys_modem_pwrseq_on(pd);
+>   	else if (MTK_SCPD_CAPS(pd, MTK_SCPD_SIMPLE_PWRSEQ))
+>   		ret = scpsys_simple_pwrseq_on(pd);
+> @@ -717,7 +751,8 @@ static int scpsys_power_on(struct generic_pm_domain *genpd)
+>   			goto err_pwr_ack;
+>   	}
+>   
+> -	if (!MTK_SCPD_CAPS(pd, MTK_SCPD_SIMPLE_PWRSEQ)) {
+> +	if (!MTK_SCPD_CAPS(pd, MTK_SCPD_SIMPLE_PWRSEQ) &&
+> +	    !MTK_SCPD_CAPS(pd, MTK_SCPD_MODEM_SECURE_PWRSEQ)) {
+>   		ret = scpsys_sram_enable(pd);
+>   		if (ret < 0)
+>   			goto err_disable_subsys_clks;
+> @@ -739,7 +774,8 @@ static int scpsys_power_on(struct generic_pm_domain *genpd)
+>   err_enable_bus_protect:
+>   	scpsys_bus_protect_enable(pd, 0);
+>   err_disable_sram:
+> -	if (!MTK_SCPD_CAPS(pd, MTK_SCPD_SIMPLE_PWRSEQ))
+> +	if (!MTK_SCPD_CAPS(pd, MTK_SCPD_SIMPLE_PWRSEQ) &&
+> +	    !MTK_SCPD_CAPS(pd, MTK_SCPD_MODEM_SECURE_PWRSEQ))
+>   		scpsys_sram_disable(pd);
+>   err_disable_subsys_clks:
+>   	if (!MTK_SCPD_CAPS(pd, MTK_SCPD_STRICT_BUS_PROTECTION))
+> @@ -761,7 +797,11 @@ static int scpsys_power_off_internal(struct scpsys_domain *pd)
+>   	if (ret < 0)
+>   		return ret;
+>   
+> -	if (!MTK_SCPD_CAPS(pd, MTK_SCPD_SIMPLE_PWRSEQ)) {
+> +	if (MTK_SCPD_CAPS(pd, MTK_SCPD_MODEM_SECURE_PWRSEQ)) {
+> +		ret = scpsys_modem_sec_power_on(false);
+> +		if (ret)
+> +			return ret;
+> +	} else if (!MTK_SCPD_CAPS(pd, MTK_SCPD_SIMPLE_PWRSEQ)) {
+>   		ret = scpsys_sram_disable(pd);
+>   		if (ret < 0)
+>   			return ret;
+> @@ -781,7 +821,7 @@ static int scpsys_power_off_internal(struct scpsys_domain *pd)
+>   		ret = scpsys_modem_pwrseq_off(pd);
+>   	else if (MTK_SCPD_CAPS(pd, MTK_SCPD_SIMPLE_PWRSEQ))
+>   		ret = scpsys_simple_pwrseq_off(pd);
+> -	else
+> +	else if (!MTK_SCPD_CAPS(pd, MTK_SCPD_MODEM_SECURE_PWRSEQ))
+>   		ret = scpsys_ctl_pwrseq_off(pd);
+>   
+>   	if (ret < 0) {
+> diff --git a/drivers/pmdomain/mediatek/mtk-pm-domains.h b/drivers/pmdomain/mediatek/mtk-pm-domains.h
+> index 092403de66fa..8690690335ad 100644
+> --- a/drivers/pmdomain/mediatek/mtk-pm-domains.h
+> +++ b/drivers/pmdomain/mediatek/mtk-pm-domains.h
+> @@ -18,6 +18,7 @@
+>   #define MTK_SCPD_SKIP_RESET_B		BIT(11)
+>   #define MTK_SCPD_INFRA_PWR_CTL		BIT(12)
+>   #define MTK_SCPD_SIMPLE_PWRSEQ		BIT(13)
+> +#define MTK_SCPD_MODEM_SECURE_PWRSEQ	BIT(14)
+>   #define MTK_SCPD_CAPS(_scpd, _x)	((_scpd)->data ?		\
+>   					 (_scpd)->data->caps & (_x) :	\
+>   					 (_scpd)->hwv_data->caps & (_x))
+> diff --git a/include/linux/soc/mediatek/mtk_sip_svc.h b/include/linux/soc/mediatek/mtk_sip_svc.h
+> index abe24a73ee19..6c95a29b79fa 100644
+> --- a/include/linux/soc/mediatek/mtk_sip_svc.h
+> +++ b/include/linux/soc/mediatek/mtk_sip_svc.h
+> @@ -22,6 +22,9 @@
+>   	ARM_SMCCC_CALL_VAL(ARM_SMCCC_FAST_CALL, MTK_SIP_SMC_CONVENTION, \
+>   			   ARM_SMCCC_OWNER_SIP, fn_id)
+>   
+> +/* Modem related SMC call */
+> +#define MTK_SIP_KERNEL_CCCI_CONTROL	MTK_SIP_SMC_CMD(0x505)
+> +
+>   /* DVFSRC SMC calls */
+>   #define MTK_SIP_DVFSRC_VCOREFS_CONTROL	MTK_SIP_SMC_CMD(0x506)
+>   
+> 
 
