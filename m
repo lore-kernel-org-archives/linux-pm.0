@@ -1,23 +1,23 @@
 Received: from mail.loongson.cn (mail.loongson.cn [114.242.206.163])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id 19583248896;
-	Tue, 21 Jul 2026 12:25:07 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id 1EBE52D9EDB;
+	Tue, 21 Jul 2026 12:25:17 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=114.242.206.163
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1784636710; cv=none; b=E/NiC8wK3Z75pIUeHnhHHoiFFI3Urdpg565sI0C1qV9fSx+DSt4UYkCx4pkUtxcwL7u/IBhsLzt6xXFHi/UOwcUwhCTagWz1MtqdtkOvQ0pBX22GB69ZZayf//tEp8/6mH6GNlUJlc7/tGbh7J4etOnLFQa8oSmsSRs3wXiQhxM=
+	t=1784636720; cv=none; b=frganb8uG4tUvpDymmSuG7/gZTRidn1BW8DGpY7G6ZcMwr8zXfte3pMbXC15LXSvXFH4h2r2ZaQRtyxPyqUFqemELyaUK55XhieGfxGKrQS+LymCHH5gKXKCLGebkLq/8c6IMyF6NGDC5Ou2tLyPpcYwM/S9Z8xCbn0zTE59HvI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1784636710; c=relaxed/simple;
-	bh=fT4tIqv2cqumD85Iw5AxwOsERPCS0vVaRYH8+oQzFHM=;
+	s=arc-20240116; t=1784636720; c=relaxed/simple;
+	bh=ZUeVQHklf0SxxCO21tasS0zXAODkPRuTw5sVOy+hkjI=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=P57gwv6F0vlV0nilT4j3kawAguA24zkcoUe39PycavW+MZ8HG7/1k8DwSVsfORXIsNKzT6A0EwcY7kCl0YI4iVPYOXiu+Zq372jF3HXw21963fUc5m75VxbMj97ZKHPiisgaJazeqz8Ns+5k8HUuF7az0/ineMW64MENZ3A5Sjw=
+	 MIME-Version; b=gflOeR2cnCS1287kKAN12Mv6L+IxdCBGquoE1HnkUKZ5UOwDogW0OuMKbENEjdZ6We1OQRuyauIClV0LytbgxXqfI9JjwoqNNWKW9IfJ8/v49altTZKwkU07aoz74OYbKHbeSAEXFlOfzqM6BSfWq7MenxxymH4KURbhiMLJQQs=
 ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=loongson.cn; spf=pass smtp.mailfrom=loongson.cn; arc=none smtp.client-ip=114.242.206.163
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=loongson.cn
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=loongson.cn
 Received: from loongson.cn (unknown [223.64.68.205])
-	by gateway (Coremail) with SMTP id _____8AxBOoiZV9q16AFAA--.17055S3;
-	Tue, 21 Jul 2026 20:25:06 +0800 (CST)
+	by gateway (Coremail) with SMTP id _____8Dx6vAsZV9q5KAFAA--.22331S3;
+	Tue, 21 Jul 2026 20:25:16 +0800 (CST)
 Received: from kernelserver (unknown [223.64.68.205])
-	by front1 (Coremail) with SMTP id qMiowJCxq8QRZV9qRfsTAA--.52432S3;
-	Tue, 21 Jul 2026 20:25:02 +0800 (CST)
+	by front1 (Coremail) with SMTP id qMiowJCxq8QRZV9qRfsTAA--.52432S4;
+	Tue, 21 Jul 2026 20:25:15 +0800 (CST)
 From: Binbin Zhou <zhoubinbin@loongson.cn>
 To: Binbin Zhou <zhoubb.aaron@gmail.com>,
 	Huacai Chen <chenhuacai@loongson.cn>,
@@ -37,12 +37,10 @@ Cc: Huacai Chen <chenhuacai@kernel.org>,
 	devicetree@vger.kernel.org,
 	linux-pm@vger.kernel.org,
 	mfd@lists.linux.dev,
-	Binbin Zhou <zhoubinbin@loongson.cn>,
-	stable@vger.kernel.org,
-	Sashiko <sashiko-bot@kernel.org>
-Subject: [PATCH v2 1/4] thermal/drivers/loongson2: Correct thermal sensor registration loop
-Date: Tue, 21 Jul 2026 20:24:20 +0800
-Message-ID: <38116cb29537aecc7ae88a6e4c2916f1a7966c4f.1784619512.git.zhoubinbin@loongson.cn>
+	Binbin Zhou <zhoubinbin@loongson.cn>
+Subject: [PATCH v2 2/4] dt-bindings: mfd: syscon: Allow syscon compatible for Loongson-2K0300 chip id
+Date: Tue, 21 Jul 2026 20:24:21 +0800
+Message-ID: <bab36775095bb85827676b2db917e6cb9527b325.1784619512.git.zhoubinbin@loongson.cn>
 X-Mailer: git-send-email 2.52.0
 In-Reply-To: <cover.1784619512.git.zhoubinbin@loongson.cn>
 References: <cover.1784619512.git.zhoubinbin@loongson.cn>
@@ -53,70 +51,56 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-CM-TRANSID:qMiowJCxq8QRZV9qRfsTAA--.52432S3
-X-CM-SenderInfo: p2kr3uplqex0o6or00hjvr0hdfq/1tbiAQEPCGpe808I+QAAs+
-X-Coremail-Antispam: 1Uk129KBj93XoW7tr1UCFW8ZFy5Jw13Wr43CFX_yoW8Cr18pF
-	sxC3WYkry5GFs7Z34DArWUXan0ya4ftFW7WF4xWw1rWrnxJ34agryrJFW2qa40yFy8ZF1Y
-	qrZ8tFWDCayDZrXCm3ZEXasCq-sJn29KB7ZKAUJUUUUx529EdanIXcx71UUUUU7KY7ZEXa
-	sCq-sGcSsGvfJ3Ic02F40EFcxC0VAKzVAqx4xG6I80ebIjqfuFe4nvWSU5nxnvy29KBjDU
-	0xBIdaVrnRJUUUBIb4IE77IF4wAFF20E14v26r1j6r4UM7CY07I20VC2zVCF04k26cxKx2
-	IYs7xG6rWj6s0DM7CIcVAFz4kK6r1Y6r17M28lY4IEw2IIxxk0rwA2F7IY1VAKz4vEj48v
-	e4kI8wA2z4x0Y4vE2Ix0cI8IcVAFwI0_Gr0_Xr1l84ACjcxK6xIIjxv20xvEc7CjxVAFwI
-	0_Gr0_Cr1l84ACjcxK6I8E87Iv67AKxVW8Jr0_Cr1UM28EF7xvwVC2z280aVCY1x0267AK
+X-CM-TRANSID:qMiowJCxq8QRZV9qRfsTAA--.52432S4
+X-CM-SenderInfo: p2kr3uplqex0o6or00hjvr0hdfq/1tbiAgEPCGpe+S4IdAAAsb
+X-Coremail-Antispam: 1Uk129KBj9xXoW7GF1xCrW5ur4rCF1fXrykXrc_yoWkKrb_u3
+	Wxtw4rAa98AFyFg390vF48KrW3XwsIkr17Cr17G3Z7G340qas5Xr97trWayr1xuF4rurnx
+	Aan7W3yYv3Z7GosvyTuYvTs0mTUanT9S1TB71UUUUj7qnTZGkaVYY2UrUUUUj1kv1TuYvT
+	s0mT0YCTnIWjqI5I8CrVACY4xI64kE6c02F40Ex7xfYxn0WfASr-VFAUDa7-sFnT9fnUUI
+	cSsGvfJTRUUUbSkYFVCjjxCrM7AC8VAFwI0_Jr0_Gr1l1xkIjI8I6I8E6xAIw20EY4v20x
+	vaj40_Wr0E3s1l1IIY67AEw4v_Jrv_JF1l8cAvFVAK0II2c7xJM28CjxkF64kEwVA0rcxS
+	w2x7M28EF7xvwVC0I7IYx2IY67AKxVW5JVW7JwA2z4x0Y4vE2Ix0cI8IcVCY1x0267AKxV
+	WxJVW8Jr1l84ACjcxK6I8E87Iv67AKxVW8Jr0_Cr1UM28EF7xvwVC2z280aVCY1x0267AK
 	xVW8Jr0_Cr1UM2kKe7AKxVWUAVWUtwAS0I0E0xvYzxvE52x082IY62kv0487Mc804VCY07
 	AIYIkI8VC2zVCFFI0UMc02F40EFcxC0VAKzVAqx4xG6I80ewAv7VC0I7IYx2IY67AKxVWU
 	tVWrXwAv7VC2z280aVAFwI0_Gr0_Cr1lOx8S6xCaFVCjc4AY6r1j6r4UM4x0Y48IcxkI7V
 	AKI48JMxkF7I0En4kS14v26r1q6r43MxAIw28IcxkI7VAKI48JMxC20s026xCaFVCjc4AY
 	6r1j6r4UMxCIbckI1I0E14v26r126r1DMI8I3I0E5I8CrVAFwI0_Jr0_Jr4lx2IqxVCjr7
 	xvwVAFwI0_JrI_JrWlx4CE17CEb7AF67AKxVW8ZVWrXwCIc40Y0x0EwIxGrwCI42IY6xII
-	jxv20xvE14v26r4j6ryUMIIF0xvE2Ix0cI8IcVCY1x0267AKxVW8JVWxJwCI42IY6xAIw2
+	jxv20xvE14v26ryj6F1UMIIF0xvE2Ix0cI8IcVCY1x0267AKxVW8JVWxJwCI42IY6xAIw2
 	0EY4v20xvaj40_Jr0_JF4lIxAIcVC2z280aVAFwI0_Gr0_Cr1lIxAIcVC2z280aVCY1x02
 	67AKxVW8JVW8JrUvcSsGvfC2KfnxnUUI43ZEXa7IU8XTm3UUUUU==
 
-The registration loop in loongson2_thermal_probe() incorrectly uses
-dev_err_probe() when the sensor is not present (-ENODEV). In that case,
-the driver should continue to the next sensor index rather than treating
-it as a fatal error.
+The Loongson-2K0300 SoC exposes its chip ID registers through a syscon
+interface. Add the specific compatible `loongson,ls2k0300-chipid-syscon`
+to the allowed list of syscon bindings so that it can be referenced from
+the thermal node via a phandle.
 
-Fix this by correctly handling -ENODEV and only returning on other
-errors. Also add a final check to ensure at least one thermal zone was
-registered.
-
-Cc: stable@vger.kernel.org
-Reported-by: Sashiko <sashiko-bot@kernel.org>
-Closes: https://sashiko.dev/#/patchset/cover.1783670011.git.zhoubinbin@loongson.cn?part=2
-Fixes: e7e3a7c35791 ("thermal/drivers/loongson-2: Add thermal management support")
 Signed-off-by: Binbin Zhou <zhoubinbin@loongson.cn>
 ---
- drivers/thermal/loongson2_thermal.c | 8 +++++---
- 1 file changed, 5 insertions(+), 3 deletions(-)
+ Documentation/devicetree/bindings/mfd/syscon.yaml | 2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/drivers/thermal/loongson2_thermal.c b/drivers/thermal/loongson2_thermal.c
-index ea4dd2fb1f47..d7d221c3136d 100644
---- a/drivers/thermal/loongson2_thermal.c
-+++ b/drivers/thermal/loongson2_thermal.c
-@@ -161,16 +161,18 @@ static int loongson2_thermal_probe(struct platform_device *pdev)
- 
- 	for (i = 0; i <= LOONGSON2_MAX_SENSOR_SEL_NUM; i++) {
- 		tzd = devm_thermal_of_zone_register(dev, i, data, thermal_ops);
--
- 		if (!IS_ERR(tzd))
- 			break;
- 
--		if (PTR_ERR(tzd) != -ENODEV)
-+		if (PTR_ERR(tzd) == -ENODEV)
- 			continue;
- 
--		return dev_err_probe(dev, PTR_ERR(tzd), "failed to register");
-+		return dev_err_probe(dev, PTR_ERR(tzd), "failed to register sensor %d", i);
- 	}
- 
-+	if (IS_ERR(tzd))
-+		return dev_err_probe(dev, -ENODEV, "No thermal sensor registered\n");
-+
- 	ret = devm_request_threaded_irq(dev, irq, NULL, loongson2_thermal_irq_thread,
- 					IRQF_ONESHOT, "loongson2_thermal", tzd);
- 	if (ret < 0)
+diff --git a/Documentation/devicetree/bindings/mfd/syscon.yaml b/Documentation/devicetree/bindings/mfd/syscon.yaml
+index e22867088063..c5b2e28f6ced 100644
+--- a/Documentation/devicetree/bindings/mfd/syscon.yaml
++++ b/Documentation/devicetree/bindings/mfd/syscon.yaml
+@@ -76,6 +76,7 @@ select:
+           - hpe,gxp-sysreg
+           - loongson,ls1b-syscon
+           - loongson,ls1c-syscon
++          - loongson,ls2k0300-cphipid-syscon
+           - lsi,axxia-syscon
+           - marvell,armada-3700-cpu-misc
+           - marvell,armada-3700-nb-pm
+@@ -189,6 +190,7 @@ properties:
+               - hpe,gxp-sysreg
+               - loongson,ls1b-syscon
+               - loongson,ls1c-syscon
++              - loongson,ls2k0300-cphipid-syscon
+               - lsi,axxia-syscon
+               - marvell,armada-3700-cpu-misc
+               - marvell,armada-3700-nb-pm
 -- 
 2.52.0
 
