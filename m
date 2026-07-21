@@ -1,148 +1,98 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 034FC43711D
-	for <linux-pm@vger.kernel.org>; Tue, 21 Jul 2026 07:57:59 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 04E943B4EB7;
+	Tue, 21 Jul 2026 08:24:37 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1784620682; cv=none; b=fXraxEvkvD6aq/VCaMR7t9qfwA5j/MThLPskDKjZJRnNfI+UDZRV9irPzM67IgoqvYIaNaJXYWV/Wrz+jDmJFNRzQ73j76KCg9BPbSEeYxNWoMG2P1I12E9XK67wxYTiEcPSAaEQb4DWbNL1NVha5m8EZivhw1PMCkaE0iq3Q6c=
+	t=1784622279; cv=none; b=Tkzh9qMmPOFSpt5F37VITA0+1+0CdVkoBsfd+w85uBaETJYhfnPsNCljmDUc1elBrt5JL/3qOTJHkia+yI/IflaoXJAwKpJFu/Sh1/bemtvCWk2EYBvx0LvO/Y70F4+W5xBR3dzioStS/VakbpAAhgdi4bnbiCblgOWjMQ0w7IM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1784620682; c=relaxed/simple;
-	bh=Qu6V/jFa3L0ra7v1UlZyzgbe/1V/e5d4AsjK/MKCp8c=;
-	h=From:In-Reply-To:MIME-Version:References:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=IYCOMmquSTdwc0EGdEDYFi5PO/nTKFBCJaNw90wGs1eMvPtE5RZjB6paxJbm9GSUoXQpmE4Czm+ujIFFxt1M4IKG950LolGdZnXAmFr9n4QH49d3/gv/wMTN8UPnCjTojGxePVt4c1ymNjn/opB5HnS9GkMilCrdn4v5J4RaVAg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=YVmvwJVT; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1784622279; c=relaxed/simple;
+	bh=Iz3hgGuTUl3Zn7E2HnO+ANEaXHOTLFX0kWsksu+bKjE=;
+	h=From:Date:To:cc:Subject:In-Reply-To:Message-ID:References:
+	 MIME-Version:Content-Type; b=IycjagntiCQgBjJdo1SXWM7TiPvzwmnsAXPfs3YLhCVT1/LNhrSjoV/qBIThLwKgfpqFD5GUNuSukZSpB2xVZh1WhEsQkTAw376D73cKWUy5owAxmSNIAtr/UdE3tsSsUBAg52TghGGaZ4IOLrV6+Z1WgjBDC7EpEyyfCOxNWlA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=pass smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=LAlpBo1N; arc=none smtp.client-ip=198.175.65.18
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="YVmvwJVT"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id B8CD01F00ACA
-	for <linux-pm@vger.kernel.org>; Tue, 21 Jul 2026 07:57:59 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1784620679;
-	bh=y8ZQiTN586DKOzGjE0xQTVjSc0oG6CWcbCqpe2Jy2M4=;
-	h=From:In-Reply-To:References:Date:Subject:To:Cc;
-	b=YVmvwJVT9Qyay4HbMhb49B9CjDlZz7ft+lQj9lbS0gACumnC1Iv2/dsdm1MV9mu4c
-	 zAFU0hI7Xau7B4/YM37CP9pXGedF5Cl9Ux1RfADSqooiQWl5++I9UPNLx9bYcxW1m8
-	 dWwOXXbyLjJgKyY5IIabDL3n7y2Qbv9FbuP/aoVu6GwF4dZ4uDwHKNeaHY0jS2eqLz
-	 RXoTf9r6Ejv9blA7uC5ei4TYzAeV966wu8kwI6AZd0WBupxsdSKzxFL2wT4iB1WSxL
-	 qBk3K/JlKeou8FmssItan6rHnzpwi6jaVlRe/TmBqMy6lmtyvBR91Q78CeI2qT2hly
-	 ZQt1jND0CNHjw==
-Received: by mail-lf1-f41.google.com with SMTP id 2adb3069b0e04-5b2a4359d16so860352e87.3
-        for <linux-pm@vger.kernel.org>; Tue, 21 Jul 2026 00:57:59 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AHgh+RqViporeuxTXMX28kp6RNgYOTcK9tVvHp+N34PNFKR9v7Onh+lS+M8GP2ykJy61HBJMWC3IBVM+TA==@vger.kernel.org
-X-Gm-Message-State: AOJu0YzfRqGnam3HW86NgWFVhTCL407/wUOSbnomv7wyeN/WvUuyhxuG
-	0+JM+bY0GLpQruVeiYU3XZlayhdUrutMVRCPCRT7dPZJ/JbbkA5JsQnH+sIyVKfCDIbdwcdfhki
-	4PMV/g4RprOHCTtVkP6do6WbiXINq5WaTxapiJNe0oA==
-X-Received: by 2002:ac2:554c:0:b0:5ae:bcf8:e7d0 with SMTP id
- 2adb3069b0e04-5b28f9bd551mr2209166e87.55.1784620678478; Tue, 21 Jul 2026
- 00:57:58 -0700 (PDT)
-Received: from 969154062570 named unknown by gmailapi.google.com with
- HTTPREST; Tue, 21 Jul 2026 00:57:57 -0700
-Received: from 969154062570 named unknown by gmailapi.google.com with
- HTTPREST; Tue, 21 Jul 2026 00:57:56 -0700
-From: Bartosz Golaszewski <brgl@kernel.org>
-In-Reply-To: <3e14e41f-ecd5-432b-9f52-690a05b38a8a@lunn.ch>
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="LAlpBo1N"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1784622278; x=1816158278;
+  h=from:date:to:cc:subject:in-reply-to:message-id:
+   references:mime-version;
+  bh=Iz3hgGuTUl3Zn7E2HnO+ANEaXHOTLFX0kWsksu+bKjE=;
+  b=LAlpBo1Nm0V8LjeYNSN+FYc7VC5UPCuofJCy+DOHsZTX6eZ1CMn4ZZLB
+   Pyw6vIVMhbKe+CSC02trrHv6fy6urMN73uQP3ES1+TIdYOhdWMSfzu1i3
+   UjDR5rwH2ntivfJZXpU1Ctjue6rTonoO4ll9kFwcVYvOuRvQvvGtYTNmt
+   ddDBBndYGU5nim3/tpImBxD/MoZD/OZaVGiFESDRJSXwOpFeRznXjVE2l
+   xR+uM6rGBrQZYp1IkteDPsQUNKP1K6U/tKyJz5WBIZ2H3DqS0g7AyQWkd
+   Opkbws+6J/MLN+e0HFHnGYBDLHobfcjyMD1hKHpANSVvxTG7wh6W1hwEY
+   g==;
+X-CSE-ConnectionGUID: c8fb7lZ+Tt67suYGeBoY7w==
+X-CSE-MsgGUID: j8FwEt3CSB2qD6VTn67ZLQ==
+X-IronPort-AV: E=McAfee;i="6800,10657,11852"; a="85306674"
+X-IronPort-AV: E=Sophos;i="6.25,176,1779174000"; 
+   d="scan'208";a="85306674"
+Received: from orviesa004.jf.intel.com ([10.64.159.144])
+  by orvoesa110.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 21 Jul 2026 01:24:37 -0700
+X-CSE-ConnectionGUID: Gs7+8AW2SZaxvr2Xe1jRSw==
+X-CSE-MsgGUID: BOy5TSkrQuec/qN2vCinvA==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.25,176,1779174000"; 
+   d="scan'208";a="261472685"
+Received: from ijarvine-mobl1.ger.corp.intel.com (HELO localhost) ([10.245.245.47])
+  by orviesa004-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 21 Jul 2026 01:24:35 -0700
+From: =?UTF-8?q?Ilpo=20J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>
+Date: Tue, 21 Jul 2026 11:24:32 +0300 (EEST)
+To: Xi Pardee <xi.pardee@linux.intel.com>
+cc: irenic.rajneesh@gmail.com, david.e.box@linux.intel.com, 
+    platform-driver-x86@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, 
+    linux-pm@vger.kernel.org
+Subject: Re: [PATCH] platform/x86/intel/pmc: Update NVLS PCDS LPM request
+ GUID
+In-Reply-To: <20260720231219.1278923-1-xi.pardee@linux.intel.com>
+Message-ID: <4f188cff-9339-4677-c686-ff5f6f66b6f0@linux.intel.com>
+References: <20260720231219.1278923-1-xi.pardee@linux.intel.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260720-pdev-set-fwnode-instead-of-of-node-v1-0-2dee93f42c54@oss.qualcomm.com>
- <20260720-pdev-set-fwnode-instead-of-of-node-v1-7-2dee93f42c54@oss.qualcomm.com>
- <86b2aba7-b049-47e6-bc94-6cb499b30ce4@lunn.ch> <CAMRc=Mduv_KiB42d4AZddTrFSHmKogd2wh6vBDXomW6ssdfq9A@mail.gmail.com>
- <3e14e41f-ecd5-432b-9f52-690a05b38a8a@lunn.ch>
-Date: Tue, 21 Jul 2026 00:57:56 -0700
-X-Gmail-Original-Message-ID: <CAMRc=Md_zUwYW5KL+p=BRixSaf3Rrc5jnBA3x8Ze+fK+fAOctQ@mail.gmail.com>
-X-Gm-Features: AUfX_mxrzWF5f1w8uOBbvKVmYCYI9DGFBZVEBrX2uI1sc7agH6iCfKo0CQST8Mw
-Message-ID: <CAMRc=Md_zUwYW5KL+p=BRixSaf3Rrc5jnBA3x8Ze+fK+fAOctQ@mail.gmail.com>
-Subject: Re: [PATCH 7/8] net: mv643xx: use platform_device_set_fwnode()
-To: Andrew Lunn <andrew@lunn.ch>
-Cc: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>, 
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rafael@kernel.org>, 
-	Danilo Krummrich <dakr@kernel.org>, Madhavan Srinivasan <maddy@linux.ibm.com>, 
-	Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, 
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, Andi Shyti <andi.shyti@kernel.org>, 
-	"Joerg Roedel (AMD)" <joro@8bytes.org>, Will Deacon <will@kernel.org>, Robin Murphy <robin.murphy@arm.com>, 
-	Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Doug Berger <opendmb@gmail.com>, 
-	Florian Fainelli <florian.fainelli@broadcom.com>, 
-	Broadcom internal kernel review list <bcm-kernel-feedback-list@broadcom.com>, Andrew Lunn <andrew+netdev@lunn.ch>, 
-	"David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>, 
-	Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, Ulf Hansson <ulfh@kernel.org>, 
-	Frank Li <Frank.Li@nxp.com>, Sascha Hauer <s.hauer@pengutronix.de>, 
-	Pengutronix Kernel Team <kernel@pengutronix.de>, Fabio Estevam <festevam@gmail.com>, Lee Jones <lee@kernel.org>, 
-	Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Srinivas Kandagatla <srini@kernel.org>, 
-	driver-core@lists.linux.dev, linuxppc-dev@lists.ozlabs.org, 
-	linux-kernel@vger.kernel.org, linux-i2c@vger.kernel.org, 
-	iommu@lists.linux.dev, netdev@vger.kernel.org, linux-pm@vger.kernel.org, 
-	imx@lists.linux.dev, linux-arm-kernel@lists.infradead.org, 
-	mfd@lists.linux.dev, linux-arm-msm@vger.kernel.org, 
-	linux-sound@vger.kernel.org, Bartosz Golaszewski <brgl@kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=US-ASCII
 
-On Mon, 20 Jul 2026 20:28:39 +0200, Andrew Lunn <andrew@lunn.ch> said:
-> On Mon, Jul 20, 2026 at 06:01:37PM +0200, Bartosz Golaszewski wrote:
->> On Mon, 20 Jul 2026 16:43:40 +0200, Andrew Lunn <andrew@lunn.ch> said:
->> > On Mon, Jul 20, 2026 at 11:24:54AM +0200, Bartosz Golaszewski wrote:
->> >> Prefer the higher-level platform_device_set_fwnode() over the
->> >> OF-specific platform_device_set_of_node() for dynamically allocated
->> >> platform devices.
->> >>
->> >> Signed-off-by: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
->> >> ---
->> >>  drivers/net/ethernet/marvell/mv643xx_eth.c | 2 +-
->> >>  1 file changed, 1 insertion(+), 1 deletion(-)
->> >>
->> >> diff --git a/drivers/net/ethernet/marvell/mv643xx_eth.c b/drivers/net/ethernet/marvell/mv643xx_eth.c
->> >> index 9caa1e47c174c9d7a161b7f2e2ee12a829b813d4..2f2d6cce8d852b9ec3ab42678a04a7915d1f00cc 100644
->> >> --- a/drivers/net/ethernet/marvell/mv643xx_eth.c
->> >> +++ b/drivers/net/ethernet/marvell/mv643xx_eth.c
->> >> @@ -2780,7 +2780,7 @@ static int mv643xx_eth_shared_of_add_port(struct platform_device *pdev,
->> >>  		goto put_err;
->> >>  	}
->> >>  	ppdev->dev.coherent_dma_mask = DMA_BIT_MASK(32);
->> >> -	platform_device_set_of_node(ppdev, pnp);
->> >> +	platform_device_set_fwnode(ppdev, of_fwnode_handle(pnp));
->> >
->> > This is definitely an OF only driver. There are no other calls to
->> > fwnode functions in this driver, so this is the wrong thing to do.
->> >
->> > Sorry, NACK.
->> >
->>
->> I'm not going to die on this hill but drivers are OF-only until they're not.
->> For example, Qualcomm is now working on a hybrid ACPI-OF approach for
->> laptops[1] and we may end up needing to start converting drivers to fwnode
->> after all.
->>
->> There's no real benefit to sticking to OF-specific APIs unless you need to
->> iterate over all properties of a node or use some other functionality not
->> available in fwnode. The overhead is minimal and it's never a hot path.
->
-> There is a lot of benefit to sticking to OF specific APIs, because
-> within the kernel OF is well maintained, has active maintainers, there
-> are tools to validate bindings, etc. ACPI is a Wild West, each driver
-> is a snow flake, there is no review, no binding documentation, no
-> validation tools etc.
->
-> I hope you allow plenty of time to convert any networking drivers,
-> where Linux is driving the hardware, to ACPI. Your first stop will be
-> the UEFI forum making a proposal for MDIO busses, because that
-> currently is not part of ACPI. You will then need to spend time
-> understanding the DT bindings, and figuring out which properties are
-> deprecated so need to stay OF only, and which can be converted to dual
-> OF/ACPI. I've seen too many naive attempts which blindly convert
-> everything, copying all the past errors in the DT binding into the
-> brand new ACPI binding. That will get NACKed.
->
-> OF != ACPI
->
+On Mon, 20 Jul 2026, Xi Pardee wrote:
 
-I've never said that and ACPI is actually irrelevant to this discussion. Fwnode
-is the abstraction layer and OF happens to implement it. Unless you need
-fine-grained control (only exposed by the lower-level abstraction) or
-performance - neither of which is the case here - you should use the top-level
-API. As I said: there's no good reason to stick to OF-specific interfaces for
-drivers that don't really require it - and even then, we should strive to fill
-the gaps in the fwnode API instead.
+> Now that NVL support is available, update the PCDS_LPM_REQ_GUID for
+> Nova Lake S (NVLS) from 0x01091102 to 0x01091103. The PMC core driver
+> requires the correct GUID to load successfully.
 
-Bart
+Hi,
+
+You need to explain why this has to be changed. Preferrably so that it is
+followable to anyone without inside knowledge.
+
+> Signed-off-by: Xi Pardee <xi.pardee@linux.intel.com>
+> ---
+>  drivers/platform/x86/intel/pmc/nvl.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/drivers/platform/x86/intel/pmc/nvl.c b/drivers/platform/x86/intel/pmc/nvl.c
+> index 8dabf2511dd9d..1ed02332dbfce 100644
+> --- a/drivers/platform/x86/intel/pmc/nvl.c
+> +++ b/drivers/platform/x86/intel/pmc/nvl.c
+> @@ -14,7 +14,7 @@
+>  /* PMC SSRAM PMT Telemetry GUIDS */
+>  #define PCDH_LPM_REQ_GUID 0x01093101
+>  #define PCHS_LPM_REQ_GUID 0x01092101
+> -#define PCDS_LPM_REQ_GUID 0x01091102
+> +#define PCDS_LPM_REQ_GUID 0x01091103
+>  
+>  /*
+>   * Die Mapping to Product.
+> 
+
+-- 
+ i.
+
