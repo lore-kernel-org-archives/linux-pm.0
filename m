@@ -1,65 +1,87 @@
-Received: from BL0PR03CU003.outbound.protection.outlook.com (mail-eastusazon11012002.outbound.protection.outlook.com [52.101.53.2])
+Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 34CBE449B1C;
-	Tue, 21 Jul 2026 05:16:46 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.53.2
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1784611008; cv=fail; b=rKvCRW2ggLpGGPnJhzc/Sx9r72jO6g32b7KujEaTwzgHDOVdNfhDhhmAx4l8yP0Ix1wAcfs9GODuSOunZ5I8Cq2v0V6L362qQLBHbFo3YLu2aMEJReSEqnRMQTq5r2+3XUzxVuBqsbAkUPJwYmFzp51Zuiu/Be5C+FZorpK6o9I=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1784611008; c=relaxed/simple;
-	bh=p0WguAv6c+P2Q0SNaDIj8CiymKeZUh0+wYagYr8s+FQ=;
-	h=Message-ID:Date:MIME-Version:Subject:To:CC:References:From:
-	 In-Reply-To:Content-Type; b=nVqjFoWOmwCyr0uL/x2gw7NYNJ8en+ahmr9qGXyrK5nBSJ8jM14ydBOork0Th6INFpFnDL4mUQ0UiYUe3YqeMV7wygAYbnWGdRGDae1Oqd6hHQ+U5RAFQ+DXY1eKsdexAf1MJXNJG3cc+7D4J8mmdmw6Kzquf2mop5JkYXcaUfE=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com; spf=fail smtp.mailfrom=amd.com; dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b=faUcDvKk; arc=fail smtp.client-ip=52.101.53.2
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com
-Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=amd.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id ADDD53B2FC7
+	for <linux-pm@vger.kernel.org>; Tue, 21 Jul 2026 05:26:28 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1784611590; cv=none; b=R8aSHAL1qVSR+j8VxobXlEzSyAiTDdj8G4lm8pF9AxlyC5+V4POeSROBC1K6CDiBWDavfdYSDHGCP4k3ZRisU2ev5wPeKgUuYtBPnz+2Pi2yyasUI5R207KsLd8fsLRMIImAvydN3/0Afh5gwGxVDDb7DegpNPTbeZI9XKV8bJA=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1784611590; c=relaxed/simple;
+	bh=LANuCJkB6nXzMBBjiSyLvoxsquUOuL54/jiE6FqHLOI=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=gwFdim2YU2lrzV74g9xfYaLnSB4TAG1Fc2uAWojFyXW0DsV38GEMUJBou5hENUDswQwhDrc8+Rnb3ySn3bA+AxfjbiUPsdK2s3ax71A/p5y1Uk82LwoAy51ICQlcgJH798KfxAg52sMTTAzNgopcSkxzC/LReXFTSBfUXzH9hgI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=XexN0C7L; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=PlWAvdtE; arc=none smtp.client-ip=205.220.168.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b="faUcDvKk"
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=nfuO3z2wRaJAFVJktjMgmYC29gT5nvmbhKOQWlpb0A7nl1KsNICBLEIPCOhoWjLW0jKyAlsagC2jOnUp/ZuJmbmLpOxamHc17xFnR10S7P2p44qBGqhtpgkejTUkwjm02nI4EyopGwHXnoWOesNa2RsrUseMnVQ70wn8w0eosteGkg53w2YlYJzy5IbyrDA9L1l5LApKvaqnHeaP4FZl05RwMFoQtPHn8ZzK3Klja0EolkRK4Txufg4Yafpz1TcEmqiffGVWNxOeG4Bh5gToN26stCaV9OwFdK2MYZXkng6NKKMcyBMPfmZR0LOcih6Dqx5myq9ORmpub46S7ejYQg==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=RVPGJ2sAaTFHaUQeDhqDWGGCxKWWkczxS3Olp1Xz7/g=;
- b=cmUqQJrm+4P66eD52PVWR8qH+shOEwUPyg+eIY/kl6egPJIH9g0sN3FRehwUeMNPnP/PiVm5tWkZ9EjEFl7chrowW7sJIK3MAOvSFRsIIk8/oMhvxIh/gqUfOPCdN1uP7q/7z/m6OhIAMdKFl9SxU8k/IucythdVedvcwIGqTthZKCTKqGyadT/nVEzl0YpO0jKiCFqWd74NO710c1cZ+hoH9tgmSvBwbpgwxFoCdNEbpLopS3DDOwbSCF3GU9ho/o+bmEm1JZwYvn+YGsaFuZxu3FZajHYoOEfYV0ZWvR85Gyb1QReLWMuLlRDyVzz6g2mh5EaClbuzfxSUpPADEw==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
- 165.204.84.17) smtp.rcpttodomain=rong.moe smtp.mailfrom=amd.com; dmarc=pass
- (p=quarantine sp=quarantine pct=100) action=none header.from=amd.com;
- dkim=none (message not signed); arc=none (0)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=RVPGJ2sAaTFHaUQeDhqDWGGCxKWWkczxS3Olp1Xz7/g=;
- b=faUcDvKk40+WLnUaTpT6yFGyqYsvk3WTPRsw7QNbQUsZldOBQNsn3XHJxYQ3LDwccP8fH99RJvzFH16yUjrDdlxzr5YHAfh3fAXt/QnpERiV5lfBSUxNhmyB3Om8cm9RKJmdrVvp2lKrrO+k02AeQuOD2t86BU4b2c+HsNCsVNg=
-Received: from DS7P220CA0108.NAMP220.PROD.OUTLOOK.COM (2603:10b6:8:25d::14) by
- DS5PPFB297DAF97.namprd12.prod.outlook.com (2603:10b6:f:fc00::65d) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.223.18; Tue, 21 Jul
- 2026 05:16:43 +0000
-Received: from DS2PEPF00003442.namprd04.prod.outlook.com
- (2603:10b6:8:25d:cafe::36) by DS7P220CA0108.outlook.office365.com
- (2603:10b6:8:25d::14) with Microsoft SMTP Server (version=TLS1_3,
- cipher=TLS_AES_256_GCM_SHA384) id 15.21.245.10 via Frontend Transport; Tue,
- 21 Jul 2026 05:16:43 +0000
-X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 165.204.84.17)
- smtp.mailfrom=amd.com; dkim=none (message not signed)
- header.d=none;dmarc=pass action=none header.from=amd.com;
-Received-SPF: Pass (protection.outlook.com: domain of amd.com designates
- 165.204.84.17 as permitted sender) receiver=protection.outlook.com;
- client-ip=165.204.84.17; helo=satlexmb07.amd.com; pr=C
-Received: from satlexmb07.amd.com (165.204.84.17) by
- DS2PEPF00003442.mail.protection.outlook.com (10.167.17.69) with Microsoft
- SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.21.245.5 via Frontend Transport; Tue, 21 Jul 2026 05:16:42 +0000
-Received: from satlexmb07.amd.com (10.181.42.216) by satlexmb07.amd.com
- (10.181.42.216) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.41; Tue, 21 Jul
- 2026 00:16:42 -0500
-Received: from [10.136.38.108] (10.180.168.240) by satlexmb07.amd.com
- (10.181.42.216) with Microsoft SMTP Server id 15.2.2562.41 via Frontend
- Transport; Tue, 21 Jul 2026 00:16:38 -0500
-Message-ID: <88f20967-7f4a-4734-bde8-940e338bded9@amd.com>
-Date: Tue, 21 Jul 2026 10:46:37 +0530
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="XexN0C7L";
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="PlWAvdtE"
+Received: from pps.filterd (m0279864.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 66L460LK037544
+	for <linux-pm@vger.kernel.org>; Tue, 21 Jul 2026 05:26:27 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
+	Uto5B3n0eGCHOA43nYgEYRfaslRQmvbRDMXREj3vbCE=; b=XexN0C7Lrij6xWQV
+	MbbvwH6jE8ckCVIjfwyVPt/k3+AetSZ3YOWR7N9K9W6M/3x1GfVdZIoaVpRv8aoP
+	qUc0RqD1X8SFypXFqJyAHrm66PNvvIMZU3I3ZAEzNYi5e7ELiZEEDtANq705JSjT
+	GnuUrL/WwXccJmP92qwwstypoG6SujTnv2wL/FKe3a5ghvLlUxpSP6ydaGyt8DMP
+	BfK5xp1hBE2hmnmzwbbhOExWBaOBMeshlWbUc9OKgyTcHmkgzKbmFG8Lh13SjIQH
+	Nqm6/bVnURd+onH3b+BSl3E9rJ0jwF3smL/tJvgjm9H4ku0kU9j1dasxR04e8ELx
+	Wa+qBw==
+Received: from mail-pf1-f198.google.com (mail-pf1-f198.google.com [209.85.210.198])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4fj1es08v6-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <linux-pm@vger.kernel.org>; Tue, 21 Jul 2026 05:26:27 +0000 (GMT)
+Received: by mail-pf1-f198.google.com with SMTP id d2e1a72fcca58-8484ba00601so8930541b3a.1
+        for <linux-pm@vger.kernel.org>; Mon, 20 Jul 2026 22:26:27 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=oss.qualcomm.com; s=google; t=1784611587; x=1785216387; darn=vger.kernel.org;
+        h=content-transfer-encoding:content-type:in-reply-to:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=Uto5B3n0eGCHOA43nYgEYRfaslRQmvbRDMXREj3vbCE=;
+        b=PlWAvdtEZayOS2Uz3cQQQw/pYmCFHl1OmMkrxX87w1vHGQlWDvDf99rMOjZqoeFree
+         H9e9H8pIn7CH2y/yOtngnCjnVryVplmzLPxjvaCzJBhNz0PvhPIEoNjAm8txwFyoNRIA
+         3GuEQf1DPdmXAI4au6ek8TsM7ITzog+mgAhiK5j9dwu724O1KbXFY/Z5ihia76Q965Zs
+         vk4vlUUISaoP3dCV8DB0E2StV96neaBmFcTvVBtI9PaR2o4EzY1drPBFLT5WcBWxgZy3
+         Y5eGAARkXAu6zz4jghQcg55Xso4663cccdBMWH9k8pRR3Tj8KAPbISovU887llMDMfMY
+         AP1A==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1784611587; x=1785216387;
+        h=content-transfer-encoding:content-type:in-reply-to:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=Uto5B3n0eGCHOA43nYgEYRfaslRQmvbRDMXREj3vbCE=;
+        b=q92/GKr72Qq0nc3OCjx0SIFIFE8vcblprWOhtbzCAxLlq//DJcSB647FznN4xqOV6c
+         t6v9iht8FiZ/K0Cz/PIQnA9zylqmfE360I96KR36lTTzaWDnNesHUTHxmC8qM9AGQD8n
+         Oo+CM90mnMY7rVANd3wIRw8wWmQxkG3wv3dPDYdUVZAfrAJR5gJCbM9lBKje7RphdnUd
+         SMowkfA9t5wayaI8vLS0ee8TsdO3i8gnNIF0bLYG6qPP5zJXOBWRhoP6eJHECkH8P9l6
+         H+UacUcn1wllwzk3WrZb58Jl2zYJUpYEUR7o13XgezvOEYsC/5pAMb7IdSvrXadQcsLc
+         vyvw==
+X-Forwarded-Encrypted: i=1; AHgh+RrMhu5wO9vq3UTOt6HJQUth1hjJFpxQpP45bY+o73K4cDYcZESNdFHJVChXpUmUkHGNSrMj1oT9qg==@vger.kernel.org
+X-Gm-Message-State: AOJu0YxheB4ZdV2pf0ErEiaj4rqEFoXbVQtIwamcNTr9P41tBUtJRlHw
+	7b9bX138a/VDVJyQpaB68N4LMP+p2qS2QyIe4hZ1/GNVkf/Q5NtXGaLZssSt3+fxfB4bD6Bnd5Q
+	qe+IMUKmvOu15J4IX49npkeePIiH3XSUZ4RRbFFZGqLncv+DehEZpkpprtzJ1dA==
+X-Gm-Gg: AR+sD11bvsph4pUbnHETg4gvBsnzptTlnS2E3ieHjRGGksSca6pnRMj2yds3+XEjBDN
+	Tf01o5V9IPAB03uAnbGVASQun/5QsZc0T31obMV6M6e8BVPfUkjpiIjY5+YByFQKFEqoCrRDxY4
+	dFc7ugz5Z9hkEEK5WtGTc+MrBRc0FKF9oZviSgqGebB9JZ5ZVvy+zQ+r8xr0SNpFL/GXsJ7pRbx
+	/z8FI9GR3Ubr0UdqB8z9W20F0JLACPtNW68OizcDwUM9FIcIfe78tovVGuVauwrNV93aXe8QR1v
+	+tJbi4AzsHYAVJUKcVDtCJxli6tiG/l1J4TYsasbTGmlXsPiLfiB0ydyY7NjcS5bQ23VcG8tzxA
+	0cBCcByNO9T1VWDuZ4asNmJkpt7vS7P1M
+X-Received: by 2002:a05:6a00:3e26:b0:848:2f74:d8da with SMTP id d2e1a72fcca58-84c294c870bmr15377107b3a.75.1784611586688;
+        Mon, 20 Jul 2026 22:26:26 -0700 (PDT)
+X-Received: by 2002:a05:6a00:3e26:b0:848:2f74:d8da with SMTP id d2e1a72fcca58-84c294c870bmr15377086b3a.75.1784611586174;
+        Mon, 20 Jul 2026 22:26:26 -0700 (PDT)
+Received: from [10.218.35.45] ([202.46.22.19])
+        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-84c2af6e401sm6649207b3a.48.2026.07.20.22.26.22
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Mon, 20 Jul 2026 22:26:25 -0700 (PDT)
+Message-ID: <76288f31-57ea-4a42-ad50-8504d8eccfa0@oss.qualcomm.com>
+Date: Tue, 21 Jul 2026 10:56:20 +0530
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -67,88 +89,226 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v3] cpufreq/amd-pstate: Bail out early if
- !X86_FEATURE_HW_PSTATE
-To: Rong Zhang <i@rong.moe>, Huang Rui <ray.huang@amd.com>, Mario Limonciello
-	<mario.limonciello@amd.com>, Perry Yuan <perry.yuan@amd.com>, "Rafael J.
- Wysocki" <rafael@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>,
-	Borislav Petkov <bp@alien8.de>, Jason Andryuk <jason.andryuk@amd.com>
-CC: Michael Kelley <mhklinux@outlook.com>, Michael Kelley
-	<mhklkml@zohomail.com>, <linux-pm@vger.kernel.org>,
-	<linux-kernel@vger.kernel.org>
-References: <20260721-amd-pstate-vm-v3-1-8b59574fb714@rong.moe>
+Subject: Re: [PATCH v2 2/2] arm64: dts: qcom: eliza-evk: Add PCIe1 with TC9563
+ PCIe switch
+To: Manivannan Sadhasivam <mani@kernel.org>
+Cc: Bjorn Andersson <andersson@kernel.org>,
+        Konrad Dybcio <konradybcio@kernel.org>, Rob Herring <robh@kernel.org>,
+        Krzysztof Kozlowski <krzk+dt@kernel.org>,
+        Conor Dooley
+ <conor+dt@kernel.org>,
+        Bartosz Golaszewski <brgl@kernel.org>, linux-arm-msm@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-pci@vger.kernel.org, linux-pm@vger.kernel.org
+References: <20260708-eliza_evk-v2-0-c599246ceba1@oss.qualcomm.com>
+ <20260708-eliza_evk-v2-2-c599246ceba1@oss.qualcomm.com>
+ <n4s25nftmn3ginddls4u3tpzabkgiotwzh4kws5s4jfppup36s@ccbfrrrqxihq>
 Content-Language: en-US
-From: K Prateek Nayak <kprateek.nayak@amd.com>
-In-Reply-To: <20260721-amd-pstate-vm-v3-1-8b59574fb714@rong.moe>
-Content-Type: text/plain; charset="UTF-8"
+From: Krishna Chaitanya Chundru <krishna.chundru@oss.qualcomm.com>
+In-Reply-To: <n4s25nftmn3ginddls4u3tpzabkgiotwzh4kws5s4jfppup36s@ccbfrrrqxihq>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-EOPAttributedMessage: 0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: DS2PEPF00003442:EE_|DS5PPFB297DAF97:EE_
-X-MS-Office365-Filtering-Correlation-Id: 53e7dcf9-0685-4b0a-f743-08dee6e74084
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|1800799024|376014|23010399003|82310400026|32650700020|36860700016|6133799003|18002099003|22082099003|56012099006|11063799006|10067099003;
-X-Microsoft-Antispam-Message-Info:
-	roGWIY7ybP5yvi2N+iqRfcxdvOS1g7PihcRxVV1GKl/xiwC+7FOIhX4dwYuW6SLWqoAUl4UhZoQBDurfnpAv3ycqh8ACIPJuHD8EQ1WBBLTUiQzPtqib0/0WWJ3QB3eP0mkEdM1+/1qa6Kr0CukmE0/no/YhzX19Lwy7UqgZkBKDUdF0PeVCRMzx8Z3+F7yUeYckr/CaAYaMZotSzk0pIriwiCXyckExSAFL5zzFTXY1AzTVvuaGRx3KNpRNpNG5kyY6E+GU8NXkvnwM9wxTSPZjQDpIqgcXjs4TrqDqLKCDwCK7a13qls3wDP42jkSejJQzruAi0g5FOS4n9nBqtrnLpsl3CAMFImU4qRc5lw90kDW3eZ5j7WTFmIRtXX9dCWWQTHpgeV33+F0950swvAUn9E+6xeep84QoxqB1wTJfdmvJGtAqQ/xXwMAobUtXlAiUCD7xmIGHo9fIPjcvObsKyhRil4JkER9rsiVxCFIeqMMHd39xqxY2I5Qk+HSragWmAwAGE1xObgeZtZCm+o79Cub66PlXbyRwD2zzQgmbqKNJLjZMBz/qglgVnfRwuckKE/blVYMOSWJAfSU2PdSbLqk0y08EgfkLKa9Cxbgee5OIOgPn66GHcOj++p7qlFSrENqgyjTUWKWjUdUhq9YGrgJr+fNbwhZakEwncOjGkgdRxCR3EkHpb8m4HoaEkRIuDEsTt+Aq9mHiJhSv9Q==
-X-Forefront-Antispam-Report:
-	CIP:165.204.84.17;CTRY:US;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:satlexmb07.amd.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230040)(1800799024)(376014)(23010399003)(82310400026)(32650700020)(36860700016)(6133799003)(18002099003)(22082099003)(56012099006)(11063799006)(10067099003);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	+GK0ekI1Ux5S+Wsznwn8syFQbRXaRuGcTzMXeJ7v68jFyO30wXV6zwucgudOn3Ok04G7+PQejbnKpYGRG4Fdw8ZlAkT/DBs3cy1EKgKZP/TfbY7MF6Kz7vkKigLUYHYThT0JJ2Gp1gWy5UkJMt6IWp9afxnNxEqX21SWn3627lgQnL+X+DJa+1RCIc8ZpdsbBBC0AsyaUKcmSgCjfjnIawA2CFE3isCRJL65Mgye+Jp3G+P7F1EjNIfVRkjt0mbOG0lhdoYUv9Y3cpRFlCyFIP/s/2amPesAHSI3q8POek7OBHSKoRvl1/TRHxOqgptMDVPm7qKQQBk96+OQvu8utNFSsHnqY22zn6OWfxFduYxjxwiAlzc7743mOXHu1a1vRlXjtzi6vIrUUTQ4HCBfB9UEDPj1oZxEAb8qIgItmYFaPQ7oIadNA5roh+FFlKgX
-X-OriginatorOrg: amd.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 21 Jul 2026 05:16:42.6666
- (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: 53e7dcf9-0685-4b0a-f743-08dee6e74084
-X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
-X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=3dd8961f-e488-4e60-8e11-a82d994e183d;Ip=[165.204.84.17];Helo=[satlexmb07.amd.com]
-X-MS-Exchange-CrossTenant-AuthSource:
-	DS2PEPF00003442.namprd04.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Anonymous
-X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: DS5PPFB297DAF97
+X-Authority-Analysis: v=2.4 cv=SPZykuvH c=1 sm=1 tr=0 ts=6a5f0303 cx=c_pps
+ a=m5Vt/hrsBiPMCU0y4gIsQw==:117 a=fChuTYTh2wq5r3m49p7fHw==:17
+ a=IkcTkHD0fZMA:10 a=RAioF0-LDSMA:10 a=s4-Qcg_JpJYA:10
+ a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=DJpcGTmdVt4CTyJn9g5Z:22
+ a=EUspDBNiAAAA:8 a=WptVsyCosi7Mub_EgEwA:9 a=QEXdDO2ut3YA:10
+ a=IoOABgeZipijB_acs4fv:22
+X-Proofpoint-GUID: VUbAg_XgxmNabw1I4Z1o8bQiZsiGVKAj
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzIxMDA1NCBTYWx0ZWRfX/Frb6h+HFbqW
+ SEx7kwgFLV5DcC/9RqFMQOZM7dg3+43Qfm4fbjlXQbgZL5+5J83/sW0vS5kqqepcOSnlvRsj4iF
+ l6Lq70p2WN4foOYWTXZENw5K+qgaE/GTALuocMxXDVCGkE4VGFdqIvRGO5SkDNp91qjwj9Ffllu
+ FJIBeip9ID8QDV7r4JvkdLHs0LvNUkkLM1dtnouVpJ9seGMUi9lTIzcWMpgHUwvWY1yMeRIuaBZ
+ 32aS8fgMRrTzoanXWTU4ObztLVYJfZpam3Ttukdc/Mdnp4JQVuRaBnhQwSS+aqW7a5cHmcnI5CT
+ y091ZO5tWdh1wrZOiRcOoYWuPCzi70XNgZHKkHlSD6SN4a3laC/4BBHLpJq+JfOxAR1hZ7B5MuM
+ jg3XorNSwQiRt4Q9pbwueyr9Kll1IpDlSs89CnKbmTtTfeTS5X0HzdfwFisHsQn260oVq+EJcbq
+ 0oixvN/pjRNpP4y9+CQ==
+X-Proofpoint-ORIG-GUID: VUbAg_XgxmNabw1I4Z1o8bQiZsiGVKAj
+X-Proofpoint-Spam-Info: AW1haW4tMjYwNzIxMDA1NCBTYWx0ZWRfXzwNx7YDPrR1O
+ TSZQtxVZkivnY3rDsS9fofx19VcF2s8vhpuClaGhHETKL0KHbUzQAhgwGeR7K6UYbRY61rulca/
+ EQ22X53kf42uh/3EB2QVZIy2XaenHNo=
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.134,FMLib:17.12.100.49
+ definitions=2026-07-20_06,2026-07-20_03,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ adultscore=0 priorityscore=1501 bulkscore=0 phishscore=0 lowpriorityscore=0
+ spamscore=0 clxscore=1015 suspectscore=0 malwarescore=0 impostorscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2607210054
 
-Hello Rong,
 
-On 7/21/2026 12:17 AM, Rong Zhang wrote:
-> When booting a VM that simulates or passes-through a relatively new CPU
-> model, these warning messages are printed to kmsg:
-> 
->     amd_pstate: The CPPC feature is supported but currently disabled by the BIOS.
->     Please enable it if your BIOS has the CPPC option.
->     amd_pstate: the _CPC object is not present in SBIOS or ACPI disabled
-> 
-> Technically the check is not wrong and acts as a safetynet that prevents
-> the driver from being registered incorrectly, but the warning messages
-> are noisy and incorrect, as the CPPC feature is neither supported in a
-> VM nor disabled by the VM's BIOS.
-> 
-> The CPPC feature is disabled by the hypervisor as it makes no sense to
-> expose them to guests. It creates a paradox that the same kernel both
-> disables CPPC as a hypervisor (KVM) and warns about it being disabled
-> as a guest.
-> 
-> X86_FEATURE_HW_PSTATE indicates if the processor supports frequency
-> scaling or not. It is disabled on virtualized platforms (namely, KVM and
-> Hyper-V have been reported to do so) and is always set on physical
-> platforms that support frequency scaling.
-> 
-> Check for X86_FEATURE_HW_PSTATE as a prerequisite and bail out early if
-> it's unsupported. A debug message is also added to help debug driver
-> loading issues.
-> 
-> Fixes: cb817ec6673b ("cpufreq: amd-pstate: show CPPC debug message if CPPC is not supported")
-> Reviewed-by: Michael Kelley <mhklinux@outlook.com>
-> Tested-by: Michael Kelley <mhklinux@outlook.com>
-> Signed-off-by: Rong Zhang <i@rong.moe>
 
-Thank you for your patience! Feel free to include:
+On 7/9/2026 6:37 PM, Manivannan Sadhasivam wrote:
+> On Wed, Jul 08, 2026 at 11:47:17AM +0530, Krishna Chaitanya Chundru wrote:
+>> The Eliza EVK board connects PCIe1 (8GT/s x2) to a Toshiba TC9563
+>> PCIe switch. Enable PCIe1 and its QMP PHY nodes.
+>>
+>> TC9563 uses I2C (at address 0x77 on I2C4) for its management interface.
+>>
+>> Override the base iommu-map with the expanded set covering all the
+>> switch's downstream ports (0x1400-0x1408 SID range).
+>>
+>> The TC9563 RESX# and PERST# are OR-ed internally to assert reset on the
+>> switch. Use TC9563 RESX# pin via a TLMM GPIO and skip wiring PERST#
+>> from the PCIe controller.
+>>
+>> Signed-off-by: Krishna Chaitanya Chundru <krishna.chundru@oss.qualcomm.com>
+>> ---
+>>  arch/arm64/boot/dts/qcom/eliza-evk.dtsi | 112 ++++++++++++++++++++++++++++++++
+>>  arch/arm64/boot/dts/qcom/eliza.dtsi     |   1 +
+>>  2 files changed, 113 insertions(+)
+>>
+>> diff --git a/arch/arm64/boot/dts/qcom/eliza-evk.dtsi b/arch/arm64/boot/dts/qcom/eliza-evk.dtsi
+>> index 6d76715ccffb..e099b7c8c371 100644
+>> --- a/arch/arm64/boot/dts/qcom/eliza-evk.dtsi
+>> +++ b/arch/arm64/boot/dts/qcom/eliza-evk.dtsi
+>> @@ -12,6 +12,26 @@ chosen {
+>>  		stdout-path = "serial0:115200n8";
+>>  	};
+>>  
+>> +	vreg_0p9: regulator-0v9 {
+>> +		compatible = "regulator-fixed";
+>> +		regulator-name = "VREG_0P9";
+>> +
+>> +		regulator-min-microvolt = <900000>;
+>> +		regulator-max-microvolt = <900000>;
+>> +		regulator-always-on;
+>> +		regulator-boot-on;
+>> +	};
+>> +
+>> +	vreg_1p8: regulator-1v8 {
+>> +		compatible = "regulator-fixed";
+>> +		regulator-name = "VREG_1P8";
+>> +
+>> +		regulator-min-microvolt = <1800000>;
+>> +		regulator-max-microvolt = <1800000>;
+>> +		regulator-always-on;
+>> +		regulator-boot-on;
+>> +	};
+>> +
+>>  	vreg_pcie_m_3p3: regulator-3p3 {
+>>  		compatible = "regulator-fixed";
+>>  
+>> @@ -99,6 +119,98 @@ pcieport0_ep: endpoint {
+>>  	};
+>>  };
+>>  
+>> +&pcie1 {
+>> +	iommu-map = <0x0 &apps_smmu 0x1400 0x1>,
+>> +		    <0x100 &apps_smmu 0x1401 0x1>,
+>> +		    <0x208 &apps_smmu 0x1402 0x1>,
+>> +		    <0x210 &apps_smmu 0x1403 0x1>,
+>> +		    <0x218 &apps_smmu 0x1404 0x1>,
+>> +		    <0x300 &apps_smmu 0x1405 0x1>,
+>> +		    <0x400 &apps_smmu 0x1406 0x1>,
+>> +		    <0x500 &apps_smmu 0x1407 0x1>,
+>> +		    <0x501 &apps_smmu 0x1408 0x1>;
+>> +
+>> +	status = "okay";
+>> +};
+>> +
+>> +&pcie1_phy {
+>> +	vdda-phy-supply = <&vreg_l1k>;
+>> +	vdda-pll-supply = <&vreg_l3k>;
+>> +
+>> +	status = "okay";
+>> +};
+>> +
+>> +&pcie1port0 {
+>> +	wake-gpios = <&tlmm 53 GPIO_ACTIVE_LOW>;
+> No reset-gpios?
+RESX & PERST are ORed in this platform, as we can declare at only
+one place we declared it in the tc9563 node as resx-gpios
 
-Reviewed-by: K Prateek Nayak <kprateek.nayak@amd.com>
-Tested-by: K Prateek Nayak <kprateek.nayak@amd.com>
-
--- 
-Thanks and Regards,
-Prateek
+- Krishna Chaitanya.
+> - Mani
+>
+>> +
+>> +	tc9563: pcie@0,0 {
+>> +		compatible = "pci1179,0623";
+>> +		reg = <0x10000 0x0 0x0 0x0 0x0>;
+>> +		#address-cells = <3>;
+>> +		#size-cells = <2>;
+>> +
+>> +		device_type = "pci";
+>> +		ranges;
+>> +		bus-range = <0x2 0xff>;
+>> +
+>> +		vddc-supply = <&vreg_0p9>;
+>> +		vdd18-supply = <&vreg_1p8>;
+>> +		vdd09-supply = <&vreg_0p9>;
+>> +		vddio1-supply = <&vreg_1p8>;
+>> +		vddio2-supply = <&vreg_1p8>;
+>> +		vddio18-supply = <&vreg_1p8>;
+>> +
+>> +		i2c-parent = <&i2c4 0x77>;
+>> +
+>> +		resx-gpios = <&tlmm 54 GPIO_ACTIVE_LOW>;
+>> +
+>> +		pcie@1,0 {
+>> +			reg = <0x20800 0x0 0x0 0x0 0x0>;
+>> +			#address-cells = <3>;
+>> +			#size-cells = <2>;
+>> +
+>> +			device_type = "pci";
+>> +			ranges;
+>> +			bus-range = <0x3 0xff>;
+>> +		};
+>> +
+>> +		pcie@2,0 {
+>> +			reg = <0x21000 0x0 0x0 0x0 0x0>;
+>> +			#address-cells = <3>;
+>> +			#size-cells = <2>;
+>> +
+>> +			device_type = "pci";
+>> +			ranges;
+>> +			bus-range = <0x4 0xff>;
+>> +		};
+>> +
+>> +		pcie@3,0 {
+>> +			reg = <0x21800 0x0 0x0 0x0 0x0>;
+>> +			#address-cells = <3>;
+>> +			#size-cells = <2>;
+>> +			device_type = "pci";
+>> +			ranges;
+>> +			bus-range = <0x5 0xff>;
+>> +
+>> +			pci@0,0 {
+>> +				reg = <0x50000 0x0 0x0 0x0 0x0>;
+>> +				#address-cells = <3>;
+>> +				#size-cells = <2>;
+>> +				device_type = "pci";
+>> +				ranges;
+>> +			};
+>> +
+>> +			pci@0,1 {
+>> +				reg = <0x50100 0x0 0x0 0x0 0x0>;
+>> +				#address-cells = <3>;
+>> +				#size-cells = <2>;
+>> +				device_type = "pci";
+>> +				ranges;
+>> +			};
+>> +		};
+>> +	};
+>> +};
+>> +
+>>  &uart13 {
+>>  	compatible = "qcom,geni-debug-uart";
+>>  
+>> diff --git a/arch/arm64/boot/dts/qcom/eliza.dtsi b/arch/arm64/boot/dts/qcom/eliza.dtsi
+>> index cce65e18f979..363cabc5f55c 100644
+>> --- a/arch/arm64/boot/dts/qcom/eliza.dtsi
+>> +++ b/arch/arm64/boot/dts/qcom/eliza.dtsi
+>> @@ -2102,6 +2102,7 @@ opp-16000000-3 {
+>>  
+>>  			};
+>>  			pcie1port0: pcie@0 {
+>> +				compatible = "pciclass,0604";
+>>  				device_type = "pci";
+>>  				reg = <0x0 0x0 0x0 0x0 0x0>;
+>>  				bus-range = <0x01 0xff>;
+>>
+>> -- 
+>> 2.34.1
+>>
 
