@@ -1,38 +1,38 @@
 Received: from bali.collaboradmins.com (bali.collaboradmins.com [148.251.105.195])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 660F84446E4;
-	Tue, 21 Jul 2026 09:36:34 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A1F29446820;
+	Tue, 21 Jul 2026 09:36:35 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=148.251.105.195
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1784626595; cv=none; b=XzckiQ5NKkbtOMBM4vZIPj/iCDNr1/dPnPpqBVDu55oAHSEZOr02ErA2M09Y2Ll71tUwAX0BZS4NEGfJ06z4ZRFSwIX6IFa4SPgxV+OVa2JpIKR1wRjoxyYSeyH1AYCAgmz2lga2Tvohia7EaSubP8LgM0ANu0et6yiayMs0bow=
+	t=1784626597; cv=none; b=NziVO73JA/e6FH5+ZtBpYBWtRSWJ9rarZvqPiQPA6Uxw1ztEBkVmsdT0ToBJ8W/zllPX90yakvBERWX/caxYV+mJBYTbtK4PnmAbGmNVoDe2vVVUcU6fsC6bkHFnxm34+D4JXoQWrOD5bZz/K/A7mp1km3wluRd+za7wB0BiYU8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1784626595; c=relaxed/simple;
-	bh=UjfNXgF3s7L3FTzKJThRG5oNM8jZglNFcKi7mxpewEs=;
+	s=arc-20240116; t=1784626597; c=relaxed/simple;
+	bh=905MNourViHGaJJBpixKwz5Mbeb1p5GGyszaYtGn488=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=Pvs7JYpg8P1eEpk89vxkybKcxHp4k4APBUbKWZxTGbP43rRSftFlKQLb3RS1UxQdLirISICN4nSOwFUDo8sA+Dg2q0tsHJTuAjSg1gVPiMP5H3P1XvII8OboValmjhyzZ87hclXlVpnREDTVJ60UaUAELBedV4Tttz3QpWxJsYg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b=JwwI4juo; arc=none smtp.client-ip=148.251.105.195
+	 MIME-Version; b=M64Q32jvffQI/MYN0TEwabJJZjdHdBSnf3XX+ZuOjIeDjNsTRTcOyMpLnRKCYLeS3iCtP8XtgOBkFuwavnef245F3gcBNpBbd08sMwr/hzWE6bzHONDJOTUeJsyZtTrQhYmdXESfivf+NqVwkW6+tYgvqbw44jjTicxfsc0/RuU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b=XPrYhABN; arc=none smtp.client-ip=148.251.105.195
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b="JwwI4juo"
+	dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b="XPrYhABN"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
-	s=mail; t=1784626592;
-	bh=UjfNXgF3s7L3FTzKJThRG5oNM8jZglNFcKi7mxpewEs=;
+	s=mail; t=1784626593;
+	bh=905MNourViHGaJJBpixKwz5Mbeb1p5GGyszaYtGn488=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=JwwI4juou5roxp/z2ALzzKtSkD9s5yP505LwJBEY4To2VYfc+BqIh5TJ8HGY85MEw
-	 sSY6H6GTNiL4adCOL9V6XD6yXON/DrcVBLkYovYQMaRH0+aV70mXmYE6cDm40ZcEBm
-	 9+MTXGQ/XGgmVZ7UVI2NgF/cIICgml4BTI7AmZP/XBTNmdPWWxaSsD7Y91q7mcrKh+
-	 dmr5TIzW4Wte/S2zFahF/f7407pYNHGxAsTxBEiZB57tvFd2zjaC0zrsaTdI8qceBX
-	 MrSIuH3fFOZFTWYqoVst0Cju4wRDTxN3LgrzIPkYj2SWtnywrKty8oiVUUM/NF0Vnf
-	 tQL6OCh8FQl+w==
+	b=XPrYhABN8EiYO3hWcaAwedNAtcdQ+UepRgsJGqGrtnPtXUdhCr+K0FvygPnVDIONg
+	 4RBBwZyjsGD8NdN/ELSb1vdDfOCnkv5NQJKBVkzo+y8f7ERbE55EzvPMvJYpjop2Bc
+	 PtNFK7zakQKD8njIV6jwVvXz0IQvbTl/TTTfLG/5phBV55LgjPMp1Cj8fE/ozlKy1M
+	 JgvVryMknO9HkH32EOaM/KGT/oQCC/6vJJwF4o5UGENERbiRByfgr/cgi72ZUo9O3k
+	 2/Yc/Rb85mX5RZx4jyl0fNDGgdBKWsZVsLZlN38ZTpKGiuQy8TFU4GQWN/72uOCZnM
+	 QutUha266EqwQ==
 Received: from IcarusMOD.eternityproject.eu (unknown [100.64.1.21])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
 	(Authenticated sender: kholk11)
-	by bali.collaboradmins.com (Postfix) with ESMTPSA id 7F41817E071A;
-	Tue, 21 Jul 2026 11:36:31 +0200 (CEST)
+	by bali.collaboradmins.com (Postfix) with ESMTPSA id BB9F217E0B71;
+	Tue, 21 Jul 2026 11:36:32 +0200 (CEST)
 From: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
 To: jic23@kernel.org,
 	sboyd@kernel.org
@@ -63,11 +63,10 @@ Cc: dlechner@baylibre.com,
 	linux-phy@lists.infradead.org,
 	linux-pm@vger.kernel.org,
 	kernel@collabora.com,
-	stable@vger.kernel.org,
-	Sashiko Bot <sashiko-bot@kernel.org>
-Subject: [PATCH v13 01/12] spmi: Fix potential use-after-free by grabbing of_node reference
-Date: Tue, 21 Jul 2026 11:36:15 +0200
-Message-ID: <20260721093626.96264-2-angelogioacchino.delregno@collabora.com>
+	Andy Shevchenko <andriy.shevchenko@intel.com>
+Subject: [PATCH v13 02/12] spmi: Remove redundant dev_name() print in spmi_device_add()
+Date: Tue, 21 Jul 2026 11:36:16 +0200
+Message-ID: <20260721093626.96264-3-angelogioacchino.delregno@collabora.com>
 X-Mailer: git-send-email 2.55.0
 In-Reply-To: <20260721093626.96264-1-angelogioacchino.delregno@collabora.com>
 References: <20260721093626.96264-1-angelogioacchino.delregno@collabora.com>
@@ -79,49 +78,40 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-As noticed by Sashiko during a review run of an unrelated patch,
-in of_spmi_register_devices(), for_each_available_child_of_node()
-is used to loop through children, and to also assign a node to a
-newly created SPMI child device.
+Function spmi_device_add() uses dev_{dbg,err}() for respectively
+debug and error prints, and passes the same device pointer as both
+the dev_{dbg,err}() parameters and to a dev_name() that is part of
+the actual message.
+This means that the device name gets printed twice!
 
-Problem is that the refcount is dropped at every iteration so, in
-the specific case of DT overlays, a use-after-free may occur when
-an overlay is dynamically unloaded!
+Remove the redundant dev_name() from the messages.
 
-To resolve this, increase the of_node refcount when assigning (in
-function of_spmi_register_devices) and release the reference in
-spmi_device_remove().
-
-Fixes: bc32bbd04011 ("spmi: Set fwnode for spmi devices")
-Cc: stable@vger.kernel.org
-Reported-by: Sashiko Bot <sashiko-bot@kernel.org>
-Closes: https://sashiko.dev/#/patchset/20260608100949.36309-1-angelogioacchino.delregno@collabora.com?part=2
+Acked-by: Stephen Boyd <sboyd@kernel.org>
+Reviewed-by: Andy Shevchenko <andriy.shevchenko@intel.com>
 Signed-off-by: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
 ---
- drivers/spmi/spmi.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ drivers/spmi/spmi.c | 5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
 
 diff --git a/drivers/spmi/spmi.c b/drivers/spmi/spmi.c
-index 57b7c0cb4240..f6d2f4bddfcd 100644
+index f6d2f4bddfcd..7cd81394c925 100644
 --- a/drivers/spmi/spmi.c
 +++ b/drivers/spmi/spmi.c
-@@ -24,6 +24,7 @@ static void spmi_dev_release(struct device *dev)
- {
- 	struct spmi_device *sdev = to_spmi_device(dev);
+@@ -69,12 +69,11 @@ int spmi_device_add(struct spmi_device *sdev)
  
-+	of_node_put(dev->of_node);
- 	kfree(sdev);
- }
+ 	err = device_add(&sdev->dev);
+ 	if (err < 0) {
+-		dev_err(&sdev->dev, "Can't add %s, status %d\n",
+-			dev_name(&sdev->dev), err);
++		dev_err(&sdev->dev, "Can't add device, status %d\n", err);
+ 		goto err_device_add;
+ 	}
  
-@@ -517,7 +518,7 @@ static void of_spmi_register_devices(struct spmi_controller *ctrl)
- 		if (!sdev)
- 			continue;
+-	dev_dbg(&sdev->dev, "device %s registered\n", dev_name(&sdev->dev));
++	dev_dbg(&sdev->dev, "device registered\n");
  
--		device_set_node(&sdev->dev, of_fwnode_handle(node));
-+		device_set_node(&sdev->dev, of_fwnode_handle(of_node_get(node)));
- 		sdev->usid = (u8)reg[0];
- 
- 		err = spmi_device_add(sdev);
+ err_device_add:
+ 	return err;
 -- 
 2.55.0
 
