@@ -1,98 +1,122 @@
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.18])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-wm1-f48.google.com (mail-wm1-f48.google.com [209.85.128.48])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 04E943B4EB7;
-	Tue, 21 Jul 2026 08:24:37 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 75B1F3BB9E0
+	for <linux-pm@vger.kernel.org>; Tue, 21 Jul 2026 08:32:40 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.48
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1784622279; cv=none; b=Tkzh9qMmPOFSpt5F37VITA0+1+0CdVkoBsfd+w85uBaETJYhfnPsNCljmDUc1elBrt5JL/3qOTJHkia+yI/IflaoXJAwKpJFu/Sh1/bemtvCWk2EYBvx0LvO/Y70F4+W5xBR3dzioStS/VakbpAAhgdi4bnbiCblgOWjMQ0w7IM=
+	t=1784622764; cv=none; b=C5GaInF2IUPk2U024LDd2uphDdTeNeRzCjGt3jyL0X7DVVr4TZYW0zvufJLuYZ5Rsip2Hl8Kv+jwcFmGRe3pt0vmLSfm8gTI/Po3LO5hu2ie8o1cxiOPqBJznvpin+u5iGFMuUP09+yf3U1KDVnU5K/tFo53hkABsefqRPFEL70=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1784622279; c=relaxed/simple;
-	bh=Iz3hgGuTUl3Zn7E2HnO+ANEaXHOTLFX0kWsksu+bKjE=;
-	h=From:Date:To:cc:Subject:In-Reply-To:Message-ID:References:
-	 MIME-Version:Content-Type; b=IycjagntiCQgBjJdo1SXWM7TiPvzwmnsAXPfs3YLhCVT1/LNhrSjoV/qBIThLwKgfpqFD5GUNuSukZSpB2xVZh1WhEsQkTAw376D73cKWUy5owAxmSNIAtr/UdE3tsSsUBAg52TghGGaZ4IOLrV6+Z1WgjBDC7EpEyyfCOxNWlA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=pass smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=LAlpBo1N; arc=none smtp.client-ip=198.175.65.18
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.intel.com
+	s=arc-20240116; t=1784622764; c=relaxed/simple;
+	bh=jKbnK5jQJRNRxwNvjRw0RLSi9BVxk18FKKDZGSgAhpE=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=APF0jAUX6m36+Z83SEl6KhARHymuj1xbWn3ZftSZxF6HvxT8iD8Do6GJK/YOkBkmrAWqsEuz5uNWS8nuUAMaB9C7U2bDXZDZZlMP8sXm3CbHI8gCVEDQjw1AGD2krRQcwTdQtIgxXyJL2KugOCdhifpobM0uBNAEeVxGjptuOpk=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=haufler.info; spf=pass smtp.mailfrom=h2-ventures.de; dkim=pass (2048-bit key) header.d=haufler.info header.i=@haufler.info header.b=B1BYC5YS; arc=none smtp.client-ip=209.85.128.48
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=haufler.info
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=h2-ventures.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="LAlpBo1N"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1784622278; x=1816158278;
-  h=from:date:to:cc:subject:in-reply-to:message-id:
-   references:mime-version;
-  bh=Iz3hgGuTUl3Zn7E2HnO+ANEaXHOTLFX0kWsksu+bKjE=;
-  b=LAlpBo1Nm0V8LjeYNSN+FYc7VC5UPCuofJCy+DOHsZTX6eZ1CMn4ZZLB
-   Pyw6vIVMhbKe+CSC02trrHv6fy6urMN73uQP3ES1+TIdYOhdWMSfzu1i3
-   UjDR5rwH2ntivfJZXpU1Ctjue6rTonoO4ll9kFwcVYvOuRvQvvGtYTNmt
-   ddDBBndYGU5nim3/tpImBxD/MoZD/OZaVGiFESDRJSXwOpFeRznXjVE2l
-   xR+uM6rGBrQZYp1IkteDPsQUNKP1K6U/tKyJz5WBIZ2H3DqS0g7AyQWkd
-   Opkbws+6J/MLN+e0HFHnGYBDLHobfcjyMD1hKHpANSVvxTG7wh6W1hwEY
-   g==;
-X-CSE-ConnectionGUID: c8fb7lZ+Tt67suYGeBoY7w==
-X-CSE-MsgGUID: j8FwEt3CSB2qD6VTn67ZLQ==
-X-IronPort-AV: E=McAfee;i="6800,10657,11852"; a="85306674"
-X-IronPort-AV: E=Sophos;i="6.25,176,1779174000"; 
-   d="scan'208";a="85306674"
-Received: from orviesa004.jf.intel.com ([10.64.159.144])
-  by orvoesa110.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 21 Jul 2026 01:24:37 -0700
-X-CSE-ConnectionGUID: Gs7+8AW2SZaxvr2Xe1jRSw==
-X-CSE-MsgGUID: BOy5TSkrQuec/qN2vCinvA==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.25,176,1779174000"; 
-   d="scan'208";a="261472685"
-Received: from ijarvine-mobl1.ger.corp.intel.com (HELO localhost) ([10.245.245.47])
-  by orviesa004-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 21 Jul 2026 01:24:35 -0700
-From: =?UTF-8?q?Ilpo=20J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>
-Date: Tue, 21 Jul 2026 11:24:32 +0300 (EEST)
-To: Xi Pardee <xi.pardee@linux.intel.com>
-cc: irenic.rajneesh@gmail.com, david.e.box@linux.intel.com, 
-    platform-driver-x86@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, 
-    linux-pm@vger.kernel.org
-Subject: Re: [PATCH] platform/x86/intel/pmc: Update NVLS PCDS LPM request
- GUID
-In-Reply-To: <20260720231219.1278923-1-xi.pardee@linux.intel.com>
-Message-ID: <4f188cff-9339-4677-c686-ff5f6f66b6f0@linux.intel.com>
-References: <20260720231219.1278923-1-xi.pardee@linux.intel.com>
+	dkim=pass (2048-bit key) header.d=haufler.info header.i=@haufler.info header.b="B1BYC5YS"
+Received: by mail-wm1-f48.google.com with SMTP id 5b1f17b1804b1-495522bc0e2so1724335e9.2
+        for <linux-pm@vger.kernel.org>; Tue, 21 Jul 2026 01:32:39 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=haufler.info; s=google; t=1784622758; x=1785227558; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
+        bh=mP8ESsGp3PDnVGRH0j1wFoDB1NTpcMuyoXK5rjNdngQ=;
+        b=B1BYC5YSCXxhIi2x5Y1xE/DzshM3owS8E4TnDBEFtTY/DrtI1qDClHPNJtj/ruVpun
+         jkF7Jhug7QBoS0begD7k71aNMgecpPgZYnhMUH67yBMQPANcrwjNWX+OmwwMRxtjoA6V
+         cVvZx9XCEnwNRfiDTddTgcEjAE0hxQSmlH985dJa8czWtpp1OdY5k/r8UiuUZki/RuWs
+         apC3i51mJDfYKw847WS8dwsH+UiqH+OFzEqHGpejJfJ38BxZJqg3GowSBVbc5cINIQBI
+         AmlqMICLm01H9y2c9LOcgOZuxMZPyb0MMYZAlegOxj1/OuiGnFCoQ47qSsQ8LJqaCJSw
+         k85w==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1784622758; x=1785227558;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=mP8ESsGp3PDnVGRH0j1wFoDB1NTpcMuyoXK5rjNdngQ=;
+        b=U3JqufbtrSqPfcpaz99sAzce5BseCOVogfzhNzgOHbaaTvMVOHTqYWL9yW4NKBmOdr
+         UoOG6UAQF6aw7KQha0iC84AtBY4U03sPC/rRrnaQHE6UTX3F9I2fCy339IHdZ0HwDIl1
+         JfFbqZ7Ii7JGj7l6OTT/dKbdsJythZ7i8ZETTaRK+coi11F/OrUlK17uTqwuRreJnNXi
+         EuOBhopSJ1YY3gXonrmK/ZNFsijpmITudXKv+rDi5FPgXVlBvL/2ELxUbQLSWnjPoIZw
+         VK5cPshHmg1S1H1UbPavFThNQ/kOHEX6WdV0EVHm/vVdUYdOUBhtla8sWDd8HWf9J3Iz
+         TvLw==
+X-Forwarded-Encrypted: i=1; AHgh+Rp4uEmPElHI50RE0VzqusdSfemBPtiBY+xjj5GH9hZKHUBzDnwiwVEaDb/u7IcclRrUJcdB2UQ0Vg==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yyv4d+3UWqNmMJbkc68Iie+zh74Me/9n6xBlTTulC6nio5OVzBo
+	cXkGn0v4j7ZjG7/A2TxUyrXXt3EhLPnq5ARRF/ZZrJGz/BpGXZ06NEBl5FwJUEbfNSg=
+X-Gm-Gg: AfdE7ckNeJD+ohIMXkfkvTFgp9nTSf2O2wo+RRVU552UDfCTV4bBOnxUFg6byoaCk7k
+	fLK/dAWtE4oOVUvmAgWLFW+phXAdzJU/UiOFXhTgcCsTjXDdJaCLrrqqIfoFjG8UdnqeexukVE8
+	+IYBGXfiZ3HJe7G1y6yOhdTTW+lKCLAM+XsPdy9GC2AQEk7Pw8boJYfYQ2R+S8Rkv9youmqnPD5
+	pJelBUfl2WiLmzDujMo9VMFAIoU0lxeo1fPBaGvvHfx/ucsnOeP45BFdfyTqX3xo2MT+8bKz/Rp
+	BB3AOVoPxpOHMm158a6KLJ5JqXwenYTWBasEICPEcgLp+HRXQaPSqMvqJTnZOgc0OUWT+wlC2RA
+	kwuFOO6lievATJ4SJt8Uz88TE1ZUsvJG5zGc5bLsCoup8ml1NNQOaT9jXCkecz2nCUnO5TLtTpQ
+	bkcRG4n6RRYf00i8lvuq1E/G7VlKlfe05zlony8qag0c3wZPBd5b6QdDidd/Cd7+H/d+H5Wsz0+
+	JtdKg==
+X-Received: by 2002:a05:600c:3553:b0:495:4a33:2c34 with SMTP id 5b1f17b1804b1-4954a39955emr114409155e9.0.1784622758339;
+        Tue, 21 Jul 2026 01:32:38 -0700 (PDT)
+Received: from Mac (p200300c3bf03e04c047ae254e768247a.dip0.t-ipconnect.de. [2003:c3:bf03:e04c:47a:e254:e768:247a])
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-49548e075d4sm250421095e9.1.2026.07.21.01.32.37
+        (version=TLS1_3 cipher=TLS_CHACHA20_POLY1305_SHA256 bits=256/256);
+        Tue, 21 Jul 2026 01:32:37 -0700 (PDT)
+From: Andreas Haufler <andreas@haufler.info>
+To: "Rafael J . Wysocki" <rafael@kernel.org>,
+	Daniel Lezcano <daniel.lezcano@kernel.org>
+Cc: Zhang Rui <rui.zhang@intel.com>,
+	Lukasz Luba <lukasz.luba@arm.com>,
+	linux-pm@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	Andreas Haufler <andreas@haufler.info>
+Subject: [PATCH] tools/lib/thermal: fix misplaced extern "C" closing brace
+Date: Tue, 21 Jul 2026 10:32:13 +0200
+Message-ID: <20260721083230.91246-1-andreas@haufler.info>
+X-Mailer: git-send-email 2.50.1
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8bit
 
-On Mon, 20 Jul 2026, Xi Pardee wrote:
+The public libthermal header opens the C++ 'extern "C" {' block inside
+the __LIBTHERMAL_H include guard, but places the closing brace after
+the guard has already ended:
 
-> Now that NVL support is available, update the PCDS_LPM_REQ_GUID for
-> Nova Lake S (NVLS) from 0x01091102 to 0x01091103. The PMC core driver
-> requires the correct GUID to load successfully.
+	#endif /* __LIBTHERMAL_H */
 
-Hi,
+	#ifdef __cplusplus
+	}
+	#endif
 
-You need to explain why this has to be changed. Preferrably so that it is
-followable to anyone without inside knowledge.
+On a single inclusion the braces still balance, so the problem is
+invisible. On the second inclusion of the header in the same C++
+translation unit the include guard skips the opening 'extern "C" {',
+while the closing '}' lives outside the guard and is emitted anyway.
+This leaves a stray '}' and breaks compilation for any C++ consumer
+that includes the header more than once.
 
-> Signed-off-by: Xi Pardee <xi.pardee@linux.intel.com>
-> ---
->  drivers/platform/x86/intel/pmc/nvl.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/drivers/platform/x86/intel/pmc/nvl.c b/drivers/platform/x86/intel/pmc/nvl.c
-> index 8dabf2511dd9d..1ed02332dbfce 100644
-> --- a/drivers/platform/x86/intel/pmc/nvl.c
-> +++ b/drivers/platform/x86/intel/pmc/nvl.c
-> @@ -14,7 +14,7 @@
->  /* PMC SSRAM PMT Telemetry GUIDS */
->  #define PCDH_LPM_REQ_GUID 0x01093101
->  #define PCHS_LPM_REQ_GUID 0x01092101
-> -#define PCDS_LPM_REQ_GUID 0x01091102
-> +#define PCDS_LPM_REQ_GUID 0x01091103
->  
->  /*
->   * Die Mapping to Product.
-> 
+Move the closing block inside the include guard so both halves of the
+'extern "C"' declaration are guarded consistently.
 
+Signed-off-by: Andreas Haufler <andreas@haufler.info>
+---
+ tools/lib/thermal/include/thermal.h | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/tools/lib/thermal/include/thermal.h b/tools/lib/thermal/include/thermal.h
+index 818ecdfb4..d9097271d 100644
+--- a/tools/lib/thermal/include/thermal.h
++++ b/tools/lib/thermal/include/thermal.h
+@@ -175,8 +175,8 @@ LIBTHERMAL_API thermal_error_t thermal_sampling_handle(struct thermal_handler *t
+ 
+ LIBTHERMAL_API int thermal_sampling_fd(struct thermal_handler *th);
+ 
+-#endif /* __LIBTHERMAL_H */
+-
+ #ifdef __cplusplus
+ }
+ #endif
++
++#endif /* __LIBTHERMAL_H */
 -- 
- i.
+2.50.1 (Apple Git-155)
 
