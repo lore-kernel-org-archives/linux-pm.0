@@ -1,96 +1,168 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6EB943E0725
-	for <linux-pm@vger.kernel.org>; Wed, 22 Jul 2026 15:45:07 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7DB314749D1
+	for <linux-pm@vger.kernel.org>; Wed, 22 Jul 2026 16:02:01 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1784735109; cv=none; b=JkaPDdrd8/snE05mMAp6tUGouOzrMCbeKy8ewuYT3eo+gP61uq0zxExGCjG3dZhewyBUA2K0026ZVIwC6Nq8d7jxzzrqoShY9xnzXdcXLmSQN7AQyjAetGDr056xkjIJaCS8uTDJK+D9Da4IGgGwVQ81MN+58o6ARHphpwcfLUQ=
+	t=1784736122; cv=none; b=gLXf49ANvR0vdYMa2J56NyinR9g+RM/aeJ1GQW8sLV9FX5GrO1y+jnhGBV1E/AcFWWhpYRMOHO8MN7PZW/9cC4Hi7f8ZMO/NaRjWo6SgDUuZBy89f/ss1ddzFhpJsTqdb614QnaVWz0cjTGK9jBgbU+THf4tWva/d0bRVRp50HY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1784735109; c=relaxed/simple;
-	bh=OkgcOV5Ul5J63h6nwql5R8DCz8pLNgpXgyXIBOjoO0w=;
+	s=arc-20240116; t=1784736122; c=relaxed/simple;
+	bh=uH75007pzbG6vEhcvEo/qoov9cMFfPJPobKudXdCdgw=;
 	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=q3KlCVm6lrJVV3liyqk02GSIkDP03GtehbpSVGM6UvX/MnSL94ufzj9/TdcvpN4+THzXc4S1ZCNSCAcaOwWXXjD2ctd+rjXeWfmElfPgA2Pf2emf3VCAKRQIjHBSXGfBmTrz0AQb9euWUkbUFZbgbjYn62bdmmrTa42ZAAESVtw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=bQjrfv1g; arc=none smtp.client-ip=100.103.45.18
+	 To:Cc:Content-Type; b=e/8+AmO+o9cmjmhURsBw+44eD2LCtrZ2X/JUo0vJZAlF7QzMH5YZIZyLEPmx+50QOnrNO13uaWPJcCOzI1dBJDfFJkE7QE0nfkqNshgtn1xCQPI1t/MVGdsTXGjtypHpYEOlHNsbVOP7lR5k9oQhMDa7H+P/GNts+p1tssFfUJs=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=heln2W2G; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="bQjrfv1g"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id ECA1D1F00A3D
-	for <linux-pm@vger.kernel.org>; Wed, 22 Jul 2026 15:45:06 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="heln2W2G"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2A38E1F00A3A
+	for <linux-pm@vger.kernel.org>; Wed, 22 Jul 2026 16:02:01 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1784735107;
-	bh=nZp5zAc/XaV1QO/J4j6Adp1+PrWzaOG1vQMu45wrwJY=;
+	s=k20260515; t=1784736121;
+	bh=lhUvTbt9t3dMflaBKyF1NSYkPvp1/DelqmmbpEyB8n0=;
 	h=References:In-Reply-To:From:Date:Subject:To:Cc;
-	b=bQjrfv1g6W8r6thTzPS57sztAAULlnYZ8sqe7205eLsJI9l4jrcqSI/uaKPG5u0i+
-	 1PKqgPyvEW/jNsABaWz9SKO8SsvjDEngs2Ju0J0vcJx1r/2cJASjO/SRi+GoL8OhXB
-	 It9YE2g4z5tHlxumia256gLxCrqky9rpC1JhAbiqoMQKyvw2ngaTfygYoa5KiCkDNe
-	 /qCvxHIlYeh4IXm1N8IxJC3njoaD1HHD4ljdSy686FH1l3cw+JnxfwrN4UZVXVDVQj
-	 MqFXWtXcQy0c6MXzt9Jody1XLQI6V6EU4azaYzq/HyiprEkFZjWIBqBqE4UvEDAE47
-	 5JXsCJmaJ2wFg==
-Received: by mail-lf1-f43.google.com with SMTP id 2adb3069b0e04-5b021916bd3so11770284e87.3
-        for <linux-pm@vger.kernel.org>; Wed, 22 Jul 2026 08:45:06 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AHgh+RppblhfKKYf/Sia1eZZYRK8I7H2GVqcb7CANSaGJxdijAAfBGt6NLVd8rIdAbtoyXHPo2L3BqUEvg==@vger.kernel.org
-X-Gm-Message-State: AOJu0YwBaUjxsh52yN/9mwqCtllzcym9RJ2XHy83ZTokaMUG05lPntch
-	1Ue2BGAXAmmFxbIJNTjWLiwO8EcQ1QVb9Ih7hDhBdO+DJhDT06w9bZXKfLuk32vb5Lx6aiJq1Zs
-	t9fwgF0KSRzhNU5Tx1wXADyRy5QiAmOI=
-X-Received: by 2002:a05:6512:6206:b0:5ae:b713:f26d with SMTP id
- 2adb3069b0e04-5b28fab5346mr4692658e87.58.1784735105462; Wed, 22 Jul 2026
- 08:45:05 -0700 (PDT)
+	b=heln2W2Gfopvq/Kq3PrBE+62jnxiLNViopZ7yfi5xpl4e4gxJsbirUtxhWO+wNu03
+	 AmY0Bn/JzrhP7Rs5hOtVVgZA5mErz7URWhMucL/5q9LjNIRJbxgBy4rSPO3t+TvNRY
+	 N86x6G/qqrwnIrpz1aMNWoQcuV1TGmaoZDaZALkbQD04C++ssRuOqE2/bYJtqdUkHe
+	 EaorL/x+fSX+K9qzJHTvrNunY53M9592POu3mgWjTsWYwfZzcmBUXVeFfhAu2ZyFjW
+	 P81DKOe2K4fHrcildz0qZuusCOPAeANfZsnb3Xn7L3oIghj14w5HkPxOY/c0xtDxBP
+	 cKEn8saIvi1bw==
+Received: by mail-lf1-f52.google.com with SMTP id 2adb3069b0e04-5b013084dc2so7958051e87.0
+        for <linux-pm@vger.kernel.org>; Wed, 22 Jul 2026 09:02:01 -0700 (PDT)
+X-Gm-Message-State: AOJu0YyOSJnLlsjuuMGW3oV1S+2qT5x/LfourbpkwoWUy4i0ltDnnuff
+	tofdQGFIfF0vovdtC9589l4yr+QCOogsVVRR9wl+qsTsJbOOyunMsHE1riq02l/o+oKebqEYvR/
+	bfLkGUVt7RiVU30BC3D5D12wqdetd2wQ=
+X-Received: by 2002:a05:6512:a89:b0:5b0:e938:8f28 with SMTP id
+ 2adb3069b0e04-5b28f9a7cb5mr5257257e87.34.1784736119537; Wed, 22 Jul 2026
+ 09:01:59 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260620074157.1059161-1-amarjeet@intel.com> <20260620122637.1334927-1-amarjeet@intel.com>
-In-Reply-To: <20260620122637.1334927-1-amarjeet@intel.com>
+References: <20260624122747.5418-1-alhouseenyousef@gmail.com> <31f103769bc42ad4ab03aea7131fc6d3ceb248d5.camel@linux.intel.com>
+In-Reply-To: <31f103769bc42ad4ab03aea7131fc6d3ceb248d5.camel@linux.intel.com>
 From: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
-Date: Wed, 22 Jul 2026 17:44:53 +0200
-X-Gmail-Original-Message-ID: <CAJZ5v0gpZk6F2sZEu+CGO79Z_rUaBrMzoCXrw4H3g1MxzttCPQ@mail.gmail.com>
-X-Gm-Features: AUfX_myDBt-45sA6ahxlSkbYlVGWoAbUDU9X-Lsb8ZLdkwJJmreF25Y4-Lrx9xY
-Message-ID: <CAJZ5v0gpZk6F2sZEu+CGO79Z_rUaBrMzoCXrw4H3g1MxzttCPQ@mail.gmail.com>
-Subject: Re: [PATCH v2] tools/thermal/thermometer: close fd on realloc failure
-To: amarjeet@intel.com
-Cc: "Rafael J . Wysocki" <rafael@kernel.org>, Daniel Lezcano <daniel.lezcano@kernel.org>, 
-	Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>, linux-pm@vger.kernel.org, 
-	linux-kernel@vger.kernel.org
+Date: Wed, 22 Jul 2026 18:01:47 +0200
+X-Gmail-Original-Message-ID: <CAJZ5v0i92qp86bY2k0GqP8YWx55Wi8y8Cascr8egWFRLkD=+DA@mail.gmail.com>
+X-Gm-Features: AUfX_myftylHs2GQXP8UlLrP8SMrKw6R6vopjCO_sqD-S9eLJ2mY0xgCr9RNFr0
+Message-ID: <CAJZ5v0i92qp86bY2k0GqP8YWx55Wi8y8Cascr8egWFRLkD=+DA@mail.gmail.com>
+Subject: Re: [PATCH] tools/power: intel_pstate_tracer: avoid optional imports
+ for help
+To: srinivas pandruvada <srinivas.pandruvada@linux.intel.com>, 
+	Yousef Alhouseen <alhouseenyousef@gmail.com>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Sat, Jun 20, 2026 at 2:27=E2=80=AFPM <amarjeet@intel.com> wrote:
+On Thu, Jul 9, 2026 at 1:33=E2=80=AFAM srinivas pandruvada
+<srinivas.pandruvada@linux.intel.com> wrote:
 >
-> From: Amarjeet <amarjeet@intel.com>
+> On Wed, 2026-06-24 at 14:27 +0200, Yousef Alhouseen wrote:
+> > intel_pstate_tracer imports Gnuplot and numpy before parsing command-
+> > line
+> > options. As a result, even "-h" fails if those optional runtime
+> > modules are
+> > not installed.
+> >
+> > Move the imports to the paths that need them. This lets the help and
+> > invalid-argument paths describe usage without requiring plotting/data
+> > dependencies. While there, fix a typo in the help text and matching
+> > comments.
+> >
+> > Signed-off-by: Yousef Alhouseen <alhouseenyousef@gmail.com>
 >
-> thermometer_add_tz() opens tz_path and then reallocates thermometer->tz.
-> If realloc fails, the function returns without closing fd.
->
-> Close fd before returning on realloc failure to avoid leaking a file desc=
-riptor.
->
-> Signed-off-by: Amarjeet <amarjeet@intel.com>
->
-> ---
-> v2:
-> - drop close(fd) on open() failure path
-> - keep close(fd) only on realloc failure path
-> ---
->  tools/thermal/thermometer/thermometer.c | 1 +
->  1 file changed, 1 insertion(+)
->
-> diff --git a/tools/thermal/thermometer/thermometer.c b/tools/thermal/ther=
-mometer/thermometer.c
-> index 022865da8e3c..1ae6c3ecedb4 100644
-> --- a/tools/thermal/thermometer/thermometer.c
-> +++ b/tools/thermal/thermometer/thermometer.c
-> @@ -272,6 +272,7 @@ static int thermometer_add_tz(const char *path, const=
- char *name, int polling,
->         tz =3D realloc(thermometer->tz, sizeof(*thermometer->tz) * (therm=
-ometer->nr_tz + 1));
->         if (!tz) {
->                 ERROR("Failed to allocate thermometer->tz\n");
-> +               close(fd);
->                 return -1;
->         }
->
-> --
+>     Acked-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 
 Applied as 7.3 material, thanks!
+
+> > ---
+> >  .../intel_pstate_tracer/intel_pstate_tracer.py | 18 ++++++++++------
+> > --
+> >  1 file changed, 10 insertions(+), 8 deletions(-)
+> >
+> > diff --git
+> > a/tools/power/x86/intel_pstate_tracer/intel_pstate_tracer.py
+> > b/tools/power/x86/intel_pstate_tracer/intel_pstate_tracer.py
+> > index 38cfbdcde..64001bc80 100755
+> > --- a/tools/power/x86/intel_pstate_tracer/intel_pstate_tracer.py
+> > +++ b/tools/power/x86/intel_pstate_tracer/intel_pstate_tracer.py
+> > @@ -32,8 +32,6 @@ import re
+> >  import signal
+> >  import sys
+> >  import getopt
+> > -import Gnuplot
+> > -from numpy import *
+> >  from decimal import *
+> >
+> >  __author__ =3D "Srinivas Pandruvada"
+> > @@ -88,8 +86,8 @@ def print_help(driver_name):
+> >      print('      kbytes: Kilo bytes of memory per CPU to allocate to
+> > the trace buffer. Default: 10240')
+> >      print('  Output:')
+> >      print('    If not already present, creates a "results/test_name"
+> > folder in the current working directory with:')
+> > -    print('      cpu.csv - comma seperated values file with trace
+> > contents and some additional calculations.')
+> > -    print('      cpu???.csv - comma seperated values file for CPU
+> > number ???.')
+> > +    print('      cpu.csv - comma separated values file with trace
+> > contents and some additional calculations.')
+> > +    print('      cpu???.csv - comma separated values file for CPU
+> > number ???.')
+> >      print('      *.png - a variety of PNG format plot files created
+> > from the trace contents and the additional calculations.')
+> >      print('  Notes:')
+> >      print('    Avoid the use of _ (underscore) in test names,
+> > because in gnuplot it is a subscript directive.')
+> > @@ -295,6 +293,8 @@ def common_all_gnuplot_settings(output_png):
+> >  def common_gnuplot_settings():
+> >      """ common gnuplot settings. """
+> >
+> > +    import Gnuplot
+> > +
+> >      g_plot =3D Gnuplot.Gnuplot(persist=3D1)
+> >  #   The following line is for rigor only. It seems to be assumed for
+> > .csv files
+> >      g_plot('set datafile separator \",\"')
+> > @@ -343,7 +343,7 @@ def store_csv(cpu_int, time_pre_dec,
+> > time_post_dec, core_busy, scaled, _from, _t
+> >      graph_data_present =3D True;
+> >
+> >  def split_csv(current_max_cpu, cpu_mask):
+> > -    """ seperate the all csv file into per CPU csv files. """
+> > +    """ separate the main csv file into per CPU csv files. """
+> >
+> >      if os.path.exists('cpu.csv'):
+> >          for index in range(0, current_max_cpu + 1):
+> > @@ -482,7 +482,7 @@ def read_trace_data(filename, cpu_mask):
+> >              if cpu_int > current_max_cpu:
+> >                  current_max_cpu =3D cpu_int
+> >  # End of for each trace line loop
+> > -# Now seperate the main overall csv file into per CPU csv files.
+> > +# Now separate the main overall csv file into per CPU csv files.
+> >      split_csv(current_max_cpu, cpu_mask)
+> >
+> >  def signal_handler(signal, frame):
+> > @@ -508,8 +508,6 @@ if __name__ =3D=3D "__main__":
+> >      valid1 =3D False
+> >      valid2 =3D False
+> >
+> > -    cpu_mask =3D zeros((MAX_CPUS,), dtype=3Dint)
+> > -
+> >      try:
+> >          opts, args =3D
+> > getopt.getopt(sys.argv[1:],"ht:i:c:n:m:",["help","trace_file=3D","inter
+> > val=3D","cpu=3D","name=3D","memory=3D"])
+> >      except getopt.GetoptError:
+> > @@ -538,6 +536,10 @@ if __name__ =3D=3D "__main__":
+> >          print_help('intel_pstate')
+> >          sys.exit()
+> >
+> > +    from numpy import zeros
+> > +
+> > +    cpu_mask =3D zeros((MAX_CPUS,), dtype=3Dint)
+> > +
+> >      if cpu_list:
+> >          for p in re.split("[,]", cpu_list):
+> >              if int(p) < MAX_CPUS :
