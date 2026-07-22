@@ -1,190 +1,160 @@
-Received: from mail-oo1-f47.google.com (mail-oo1-f47.google.com [209.85.161.47])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1E4AF33939C
-	for <linux-pm@vger.kernel.org>; Wed, 22 Jul 2026 17:51:00 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.161.47
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1784742662; cv=pass; b=EbDzM8G93AR0tW83g4mTvpf5lmtmvHnYPvEY1rqcAZD60dSuDl4NrR2mN6Ljuv4tuo11OyDULq4rUBQWGiGutowQ3e6I9m5LYKg8IVgholjt7xIYMArSN4NYoIKj8hbGR0wr0ZAOjm4HlPcH23hmJ7/jjocCYBPVuA9xdOyfJ1M=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1784742662; c=relaxed/simple;
-	bh=+IapzB/cjQFVBZDKL2WRZGFhLGkuPIF3Is9sosJS+uA=;
-	h=MIME-Version:From:Date:Message-ID:Subject:To:Cc:Content-Type; b=oPOs8KTDZuEhuxfH58Hm3Zg7HRCjQMOLeKXRV04DJ/h85iW8HvtlBIqdtOQjUGepYYKmdcmhRU54mKDOLHC2gYj+00X/dwg6BhwuH8cVoWBENaIti7mbzOh5WOhBWQS1ZlOg79Ar7nqxkPbplcnNtWda/e8T6UBEyXqOh0gSDAM=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=Scm/vv+9; arc=pass smtp.client-ip=209.85.161.47
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 35515414A16
+	for <linux-pm@vger.kernel.org>; Wed, 22 Jul 2026 19:43:36 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1784749417; cv=none; b=aMTQgAKGjypRy+wairNbdjZyoz/LBCuvd8Q9nTZP5wTKmeZNCFfeCjqS7RYy7hnti+UxukUEtll/f9iX4O7MQZGzCGnr38RtP3Prdf0EB2b91HIAT1F5VEz3+WGYWz8lnLAC1sd0VtbnW9B2u0HS/XsePdrI7++FjSquqOv6xIg=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1784749417; c=relaxed/simple;
+	bh=FCiiZxZtsxJcPy3cXjMetXRRhY1ay6BeI7kHCG5i78A=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=oysexzFha8o0tE5ORT3pI6gBeLj0H/vP2/rG0ATvwn/knDLsjsqdPVIey7DPYHpJYEp2wDcYQ4jJ8KfBFik/zPUnXUjIfzdUDTiAf2SPjlkg/oKk2HPU0xnwj7ftTChCCHfj4mSKEGuADt9yQecr4RFyjlJ9ORbqzj123VHHltY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=CxrVnZVT; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Scm/vv+9"
-Received: by mail-oo1-f47.google.com with SMTP id 006d021491bc7-6a384e29a20so1323842eaf.1
-        for <linux-pm@vger.kernel.org>; Wed, 22 Jul 2026 10:51:00 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1784742660; cv=none;
-        d=google.com; s=arc-20260327;
-        b=g5yKyA/VZFUENrFxKk9nO78GfZ8mEs0tl3bk/8hNOUconeKsgQmrfCIkA7hmGel4+m
-         7cPwabmNwiEHyJszfwkOq7r+/yyoGJvfF+pL8w10p2w8HLGTlCqrldk8JpJ4cql67cw1
-         DjDgXPQ/BDMDD8lweKWtKyJ0o6cPvuyWpVQ6r9OpdOQk5vihE3RhXWTsCoCF9gGE9WmQ
-         +S4C52Hz8QRGv4i0ttKU1sZGwpz5VPozcd1Rxs+yQHbzZ7udK9SXWVbEnsIMnLVNon+L
-         XZW1agpNfkXoetAV6U3IaWfv7CcNfHIEQkBqJ4oRpIygQoiU2qADDnGQU2mlufGy57F1
-         C6pA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
-        h=cc:to:subject:message-id:date:from:mime-version:dkim-signature;
-        bh=+IapzB/cjQFVBZDKL2WRZGFhLGkuPIF3Is9sosJS+uA=;
-        fh=RbpT+nvZbw5m4MQMNfXw6TbWN9Lz0KqZ5T2VV5TWLmA=;
-        b=CV9afF3e7zAqIeFA4gCuEXNrZ7ztUnQmKIXNVL2ySN4ZV87KZ8lk50kS9udGYdRXLi
-         ju0FYNRnnUMyebQEq/PpikWyhOJLESNb+fCXcSOTIf84ZUev6yC99e7eGYKRa4udf0vG
-         MWk5jEK1jFDhmMeGmyaz9sDOmOe7GZkh842fH+jB7QX3iqy0ZV9pKQGYM2x1FzVhwIpp
-         gZ7xOvJCXMWA1Rk6DlV0eFk+z8nfdN7weH2YHdI0f8rox6x60jhKvUQEDBqPCzGte0q1
-         QcHomQIrWff5ofAHPMDDIfF+1HOcZ1D6bz7U5g6LtCQu5urDWp0wL7SA5ueSWuLN5zv9
-         iB7A==;
-        darn=vger.kernel.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1784742660; x=1785347460; darn=vger.kernel.org;
-        h=content-type:cc:to:subject:message-id:date:from:mime-version:from
-         :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=+IapzB/cjQFVBZDKL2WRZGFhLGkuPIF3Is9sosJS+uA=;
-        b=Scm/vv+9JOzKmFuZC1KOot31vO168yNgV4NCgD6l0NHhPR5Kas8mWImLWDqP9LpWP3
-         +BwRvEtTOSpw8NOlsf3Fo6KZWJqZ2tO+IcUiQogVh41vyoRPjE7k+NzePTyGaucnEd1f
-         FIJ/ZdMjRWKD42GNuNg94MCWX8amAlsrj/qB2U83PwddrvNEhQwNOAKkb7f7EzWJwwNv
-         UTKGm6UIrVviliL37GCB55xWIgVVQBRrpKwCQYjWeLtth7DbYBafhMUBNrS5WNRwDmlx
-         Kw9yHehWHI9asnA58d5a84pEowmsC9lKd2AZ6F2F6iqGO+eXWZ9p0VK/1KenINmpkKsl
-         52fw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1784742660; x=1785347460;
-        h=content-type:cc:to:subject:message-id:date:from:mime-version
-         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to:content-type;
-        bh=+IapzB/cjQFVBZDKL2WRZGFhLGkuPIF3Is9sosJS+uA=;
-        b=jigJh15BB/2iIDg+5uDcYdGqrKuqlpLHu65nXNyVSa5DNhgrdhomsDWnP5M3ieb7uh
-         GgfLrsrwzvjQOox6rVjgY/lJ6v9ZMZ+d5n29E3cMi/Si+xoqAzh5rrVOb/xAUSiIiaad
-         LWLrY8K6i2FWaKF6aH3aVAoLVmLqrlJFclwGkwP41OOxE9IQcrPwa+19Ei29jy4E12VF
-         bJQcBhFiZZag/MK3ev6VprtodOBkD8ZS9SRoZO9Jdr2Z3/B3KlFySCgHQPAimXkw0EEg
-         GdcKMK9+7ApZRUoae9Qf8XenhGOcq/Hd8NaeiuaJS8W3N6a/wPPqi75PvQ34u6YmjRuK
-         uqVA==
-X-Gm-Message-State: AOJu0YzgapGcCiwJUbCC+Gt9hDCBkoEfGEaPXxFd7sJUF5us36I5pkGn
-	IeSY3dav75JiQiMwBU/+MwH/AokEBOEhB4dq/l5lCtdhqU8YiOVB0VgUf05SwxsXsV6DNuA0nz2
-	ND3HXKkijRdqAhTam3dekfFzjUhB814JfHg==
-X-Gm-Gg: AR+sD12V7Dezay4KrH+VJ/hg7+stwTr4abJ9ShzUOzjBKEnqhRW8ijIrJDzZh8lusYT
-	P9Gz5UWZ1qGDuzavKY9ymZb8Pg0q+R4+KK1dzwhRwm2Js1VBD5dhe6wGpDDgobfLST1d6cao2Yo
-	yzH2rJKTQ/PvPTnmC1+1z4RmRNpyA8cdf4IP/tKz1oAq3jjyUK3NonvHylzzNd67jUqedlYlyW5
-	ogVCUNGNtX8kQVfrDUgHTrxrAdOy9d+RYm857tOmJdJ0LdkYGOjV9shnVAlKQE06es39Dlv
-X-Received: by 2002:a05:6820:4d01:b0:6a3:e0fb:6f39 with SMTP id
- 006d021491bc7-6a5367fb337mr11292956eaf.23.1784742659748; Wed, 22 Jul 2026
- 10:50:59 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="CxrVnZVT"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id EC7DF1F00A3D
+	for <linux-pm@vger.kernel.org>; Wed, 22 Jul 2026 19:43:35 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1784749416;
+	bh=s3SKrXzi1JOGYNffyHvnqOO4r5F9XfIfUMWExef267Y=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc;
+	b=CxrVnZVT2fTZ7xN1MPA8pzNP06LqclZGFjf/mdlbT6avL0f8xHv2hsiFP9KxGjnc5
+	 sDZpw6Wi+2RL0x60VJEflwRDnswhVkH91ZTnOU2s0wNVGsWk9a7gns8b70E7SuuhPG
+	 Ayjd+MMgbGcoPmSGcQwMzIeFrvnJypkASVyKJdcskl59LZD8hjTFiqa/jTYmPGcdv4
+	 8KErwIClUDxvnhoM/LNrid7D7OtyYACzuoKfZ1Y59UR3FsBkM5N1P5uWmp/EMUguQ2
+	 cT5pGZXrmkDvg9ytMkGgYLZKfMN0dTnGtUX6USgP4BaKIRkGq4BZeujPtv/UU/0cQ5
+	 ZPZ1R/JupEAUw==
+Received: by mail-lj1-f178.google.com with SMTP id 38308e7fff4ca-39f00ce92d5so4891971fa.2
+        for <linux-pm@vger.kernel.org>; Wed, 22 Jul 2026 12:43:35 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AHgh+RoEeauyC7ywxqilGqgPrB5G/RKl/VRTWaeYZK3J2Kg8TTOJArA9JuOt60Iv3Y6DMv/paQxv9A2hvw==@vger.kernel.org
+X-Gm-Message-State: AOJu0YwPxRhLgw8gDr7rJOIIiEe+8yoM5QU5WzsCqeBLyPzlCXiZCcok
+	VF8OItr1vTmaMgD7XGW1Qj3dPjstRtqBOAdm77XaR377ydC44WD+LyhRuHfjlVW8umTGlKKlXvO
+	K9GGQWQYfosVrbK49FlPEIDt5gXJXgPE=
+X-Received: by 2002:a05:651c:b1f:b0:39c:7130:f0db with SMTP id
+ 38308e7fff4ca-39f07c27a0cmr196021fa.6.1784749414352; Wed, 22 Jul 2026
+ 12:43:34 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-From: =?UTF-8?Q?Javier_Dom=C3=ADnguez?= <javi.dominguez.ib@gmail.com>
-Date: Wed, 22 Jul 2026 19:50:47 +0200
-X-Gm-Features: AUfX_myZUe5TUERR55mulFcDQ4cMPyrTep9f37vrRB0pBr8nplfubkArDlAeYvY
-Message-ID: <CADiKKdJKbak5xQ+0=WFpQpA7=-iRJbbqzi3VnnRbCQ7=P5FogQ@mail.gmail.com>
-Subject: [BUG] intel_rapl: PSys registration on LG Gram 17Z90SP (Meteor Lake)
- triggers firmware clamp of all cores to 400 MHz
-To: linux-pm@vger.kernel.org
-Cc: rui.zhang@intel.com, rafael@kernel.org
+References: <20260710-critical_trip-v1-1-780d0b40bb96@oss.qualcomm.com>
+In-Reply-To: <20260710-critical_trip-v1-1-780d0b40bb96@oss.qualcomm.com>
+From: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
+Date: Wed, 22 Jul 2026 21:43:21 +0200
+X-Gmail-Original-Message-ID: <CAJZ5v0hD7OvQfOUja7mC+nXpH2cDfYjeGMgf7WKREXt3rSNOEw@mail.gmail.com>
+X-Gm-Features: AUfX_mxgurxjeu56PlKd3cLVW9Cs1wOiMjSr9TI0_HPkRQj5oxszkNPwhDNqz0A
+Message-ID: <CAJZ5v0hD7OvQfOUja7mC+nXpH2cDfYjeGMgf7WKREXt3rSNOEw@mail.gmail.com>
+Subject: Re: [PATCH] thermal: core: warn on non-critical trips at or above
+ critical temp
+To: Gaurav Kohli <gaurav.kohli@oss.qualcomm.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Daniel Lezcano <daniel.lezcano@kernel.org>, 
+	Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>, linux-pm@vger.kernel.org, 
+	linux-kernel@vger.kernel.org
 Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Hi,
+On Fri, Jul 10, 2026 at 11:12=E2=80=AFAM Gaurav Kohli
+<gaurav.kohli@oss.qualcomm.com> wrote:
+>
+> Thermal zones can be registered or updated with non-critical trips at or
+> above the critical trip temperature. Such trips cannot provide useful
+> mitigation before critical trip handling runs, and a HOT trip at that
+> temperature can coincide with shutdown.
+>
+> Warn at registration time and on trip temperature changes to surface
+> misconfigured platform data and incorrect dynamic updates early. When
+> multiple critical trips exist, warn against the lowest one.
+>
+> Signed-off-by: Gaurav Kohli <gaurav.kohli@oss.qualcomm.com>
 
-On the LG Gram 17Z90SP (Intel Core Ultra 7 155H, Meteor Lake-H), kernels
-whose intel_rapl_msr driver registers the PSys platform-power domain wake up
-a buggy platform-limit enforcement in the LG EC/firmware: after any boost
-episode reaching ~100C package temperature, all cores are clamped to 400 MHz
-(min frequency) for ~6 minutes per episode, even while package temperature
-falls to ~65-70C and actual power draw is a few watts. The system becomes
-essentially unusable during each episode.
+There are a couple of reasons why I don't like this, the most
+important one being the overhead: two walks over all trips added to
+every trip temperature update is a bit of a stretch.
 
-Kernel 6.8 (Ubuntu 6.8.0-134-generic), whose intel_rapl_msr does not
-register PSys on this SoC, never exhibits the problem. Kernel 6.17 (Ubuntu
-HWE 6.17.0-35-generic) registers PSys as intel-rapl:1 and the clamping
-episodes begin. Blacklisting intel_rapl_msr + intel_rapl_tpmi on 6.17
-greatly reduces episode frequency; an EC reset (power off, unplug, hold
-power button 30 s) clears a wedged PSys sensor reading and stops the
-remaining episodes.
+Moreover, the messages produced by this code may not even be noticed
+on systems in the field and users may not be able to do anything about
+them, so the benefit is questionable.
 
-System information
-------------------
-- Machine: LG Electronics 17Z90SP-E.AD88B (board 17Z90SP), LG Gram 17 (2024)
-- CPU: Intel(R) Core(TM) Ultra 7 155H (Meteor Lake-H)
-- BIOS: M2ZI0450 X64, 2024-06-10 (latest available from LG as of 2026-07-22)
-- EC firmware release: 51.0
-- Distro: Linux Mint 22.1 (Ubuntu 24.04 base)
-- Good kernel: 6.8.0-134-generic (no PSys registration on this SoC)
-- Bad kernel: 6.17.0-35-generic HWE (PSys registered by intel_rapl_msr)
-
-Symptom
--------
-Intermittent system-wide freezes: all 22 CPU threads pinned at 400-500 MHz
-for ~6 minutes per episode. Episodes always begin immediately after a burst
-that reaches >=100C package temp (chassis is thermally weak; brief all-core
-load hits 100-104C in seconds, which is handled fine by regular HW thermal
-throttling on the good kernel).
-
-Evidence
---------
-1. During a clamp episode (package at 65-70C, all knobs sane):
-- MSR_CORE_PERF_LIMIT_REASONS (0x64F) = 0x1dc20400 -- active status
-bit 10 (Package/Platform PL1) while clamped at 400 MHz.
-- IA32_THERM_STATUS (0x19C) = 0x882f2c00, PKG_THERM_STATUS (0x1B1) =
-0x882c0c00 -- power-limitation status/log bits set; PROCHOT bits clear.
-- Hardware throttle counters (thermal_throttle/package_throttle_count)
-stop incrementing during the pinned phase -- not thermal throttling.
-
-2. The clamp ignores all OS-visible controls. Reproduced with:
-- thermald stopped;
-- MSR RAPL package limits at 200 W / 64 W, MMIO at 24.6 W / 64 W (sane);
-- PSys PL1/PL2 raised from firmware defaults 80 W / 0 W to 200/200 W;
-- intel-rapl:1/enabled set to 0 during an active episode.
-None of these prevent or release the clamp once triggered.
-
-3. The firmware PSys sensor itself misreads. With the machine idle (~5%
-load, screen on), intel-rapl:1/energy_uj deltas showed ~48 W "platform
-power" -- ~40 W above plausible. After an EC reset (power off, unplug AC,
-hold power button 30 s), the same measurement reads 18.6 W -- sane.
-With the inflated reading, any sustained boost pushes the firmware's
-running average over the 80 W PSys PL1 default, and pcode clamps to min
-frequency until the average recovers (~6 min), matching observations.
-
-4. Kernel dependency:
-- 6.8.0-134: /sys/class/powercap/ has no psys domain; 90 s all-core
-test: healthy thermal throttling, sustained 2.2-2.4 GHz @ 100C,
-no clamp.
-- 6.17.0-35: psys registered as intel-rapl:1 (parent intel-rapl, MSR
-driver); same test clamps to 400 MHz at t~65 s and stays pinned while
-temperature falls.
-- 6.17.0-35 with blacklist intel_rapl_msr + intel_rapl_tpmi: psys gone;
-same test clean (graceful PL1 equilibrium at ~1.4-2 GHz late in the
-run, no min-freq pinning). Occasional episodes remained possible until
-the EC reset (the EC also reads its sensor autonomously once wedged);
-after the EC reset none observed.
-
-5. Reading /sys/class/powercap/intel-rapl:1/constraint_0_max_power_uw hangs
-for ~2 minutes on this machine (separate firmware oddity, mentioned for
-completeness).
-
-6. Firmware defaults for the PSys domain look bogus: PL1 = 80 W with
-PL2 (short_term) = 0 W, enabled = 1.
-
-Workaround in use
------------------
-/etc/modprobe.d/blacklist-rapl-psys.conf:
-blacklist intel_rapl_tpmi
-install intel_rapl_tpmi /bin/false
-blacklist intel_rapl_msr
-install intel_rapl_msr /bin/false
-Plus a one-time EC reset to clear the wedged sensor state.
-
-Suggested fix
--------------
-A DMI-based deny-list entry to skip PSys domain registration on LG 17Z90SP
-(and likely sibling 2024 LG Gram models sharing this EC), similar in spirit
-to existing PSys quirks. Losing the psys sysfs domain seems a far better
-trade than the firmware clamping behavior its registration awakens.
-
-I am happy to test patches, provide further MSR dumps, or run instrumented
-kernels on this machine.
-
-Thanks,
-Javi
+> ---
+>  drivers/thermal/thermal_core.c | 35 +++++++++++++++++++++++++++++++++++
+>  1 file changed, 35 insertions(+)
+>
+> diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_cor=
+e.c
+> index 28a20d4b475c..0e37e3787565 100644
+> --- a/drivers/thermal/thermal_core.c
+> +++ b/drivers/thermal/thermal_core.c
+> @@ -434,6 +434,38 @@ static void thermal_trip_crossed(struct thermal_zone=
+_device *tz,
+>         thermal_governor_trip_crossed(governor, tz, trip, upward);
+>  }
+>
+> +static void thermal_zone_check_trip_ordering(struct thermal_zone_device =
+*tz)
+> +{
+> +       const struct thermal_trip_desc *td;
+> +       int crit_temp =3D INT_MAX;
+> +
+> +       for_each_trip_desc(tz, td) {
+> +               const struct thermal_trip *trip =3D &td->trip;
+> +
+> +               if (trip->type =3D=3D THERMAL_TRIP_CRITICAL &&
+> +                   trip->temperature !=3D THERMAL_TEMP_INVALID &&
+> +                   trip->temperature < crit_temp)
+> +                       crit_temp =3D trip->temperature;
+> +       }
+> +
+> +       if (crit_temp =3D=3D INT_MAX)
+> +               return;
+> +
+> +       for_each_trip_desc(tz, td) {
+> +               const struct thermal_trip *trip =3D &td->trip;
+> +
+> +               if (trip->type =3D=3D THERMAL_TRIP_CRITICAL ||
+> +                   trip->temperature =3D=3D THERMAL_TEMP_INVALID)
+> +                       continue;
+> +
+> +               if (trip->temperature >=3D crit_temp)
+> +                       dev_warn(&tz->device,
+> +                                "%s trip temperature %d is not below cri=
+tical trip temperature %d\n",
+> +                                thermal_trip_type_name(trip->type),
+> +                                trip->temperature, crit_temp);
+> +       }
+> +}
+> +
+>  void thermal_zone_set_trip_hyst(struct thermal_zone_device *tz,
+>                                 struct thermal_trip *trip, int hyst)
+>  {
+> @@ -462,6 +494,7 @@ void thermal_zone_set_trip_temp(struct thermal_zone_d=
+evice *tz,
+>
+>         WRITE_ONCE(trip->temperature, temp);
+>         thermal_notify_tz_trip_change(tz, trip);
+> +       thermal_zone_check_trip_ordering(tz);
+>
+>         if (old_temp =3D=3D THERMAL_TEMP_INVALID) {
+>                 /*
+> @@ -1509,6 +1542,8 @@ thermal_zone_device_register_with_trips(const char =
+*type,
+>         if (result)
+>                 goto remove_id;
+>
+> +       thermal_zone_check_trip_ordering(tz);
+> +
+>         thermal_zone_device_init(tz);
+>
+>         result =3D thermal_zone_init_governor(tz);
+>
+> ---
+> base-commit: 4f441960e691d37c880d2cc004de06bb5b6bd5e4
+> change-id: 20260710-critical_trip-7b015d270e36
+>
+> Best regards,
+> --
+> Gaurav Kohli <gaurav.kohli@oss.qualcomm.com>
+>
