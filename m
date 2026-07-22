@@ -1,34 +1,42 @@
-Received: from cstnet.cn (smtp25.cstnet.cn [159.226.251.25])
-	(using TLSv1.2 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Received: from m16.mail.163.com (m16.mail.163.com [117.135.210.3])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A6B1B23C8AE;
-	Wed, 22 Jul 2026 04:11:49 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=159.226.251.25
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4A64B40BCC1;
+	Wed, 22 Jul 2026 04:45:07 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=117.135.210.3
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1784693512; cv=none; b=PpWm3aEhp538FNlSFcn4h9ArltSeXG0fq4ON44znZkMeCjmuN08FErfIEsm3m66weHchoL+gM3SAI8S8ApkR29vRAygmUepIt1regq6/jt2OL5uwZI9gLWfTjU1Ux+pHAskV4L7vWunAyaVFlucNKO/FEvml68T+0xzUplPLT0Y=
+	t=1784695514; cv=none; b=i3dq1JnYZ7VOg3gaEAdOUgghV39EnFWgITbPcAUlcLV2FuldWGzrvOu91pitWxH+UHL63uQmqGLu9GLi5adwGQeCXlwMR6vm6ZHf1otweVbMWYiO5Qu989rq/FexF22N177FW3glzbZLPFRocPncmmNPMHpXt4UAFZI3FZHq36M=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1784693512; c=relaxed/simple;
-	bh=MePh0sqzq4a+/ssR3YJm9DFwTmnwEvu24IsLfvzvbmk=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=PfkHakveyTyR7lxMCDyWaz+kc6hmRv7iPOmTcsNePDQUI3GGNFmZemjMPo9ptqN/A9zBalKBVjYYPTofBYd1EzV0TyAQyigW71c5AcOo2/MjRpSTAB4TkeOFM7RY2HM4BM1/2LvCtZRuPNL4XV+uQbpwpi8rEMA9KZ7cq4hl260=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=iscas.ac.cn; spf=pass smtp.mailfrom=iscas.ac.cn; arc=none smtp.client-ip=159.226.251.25
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=iscas.ac.cn
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=iscas.ac.cn
-Received: from localhost.localdomain (unknown [111.196.245.140])
-	by APP-05 (Coremail) with SMTP id zQCowAB35T_+QmBqYBe7AA--.34013S2;
-	Wed, 22 Jul 2026 12:11:42 +0800 (CST)
-From: Pengpeng Hou <pengpeng@iscas.ac.cn>
-To: Nishanth Menon <nm@ti.com>
-Cc: Tero Kristo <kristo@kernel.org>,
-	Santosh Shilimkar <ssantosh@kernel.org>,
-	Ulf Hansson <ulfh@kernel.org>,
-	linux-arm-kernel@lists.infradead.org,
-	linux-pm@vger.kernel.org,
+	s=arc-20240116; t=1784695514; c=relaxed/simple;
+	bh=XTJM4JXyv6n6bIOLiPXZrk4ir73+PuI70tbzz/gvMIg=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=VTt2YlCcEmbXHYim82RtYaEWGQG7i4RXVMHMFYHSnLbdFVNVluXz/PlHEfmG/v47Wr//pPc19ks+Uyj4UIt3wCjSprqR5TnuYHi4lRlcpbSZXbHw8jOC2s6ap7SoDG4gHDMwPjHaTvdYJA7RmFK5GRaRwV/DeMeIJ91WuTi/T4k=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=163.com; spf=pass smtp.mailfrom=163.com; dkim=pass (1024-bit key) header.d=163.com header.i=@163.com header.b=lP807RNY; arc=none smtp.client-ip=117.135.210.3
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=163.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=163.com
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (1024-bit key) header.d=163.com header.i=@163.com header.b="lP807RNY"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=163.com;
+	s=s110527; h=From:To:Subject:Date:Message-ID:MIME-Version; bh=8u
+	L9wxmTDiGmPX7XiQPtB/bhCd/sMQuICx/Pz7FrusI=; b=lP807RNYsY1zpww2VF
+	Jzds2NenyYQwXmRaWqgw2l+GjG5kNWwobpc8gyEHplEUZE4wO8xZ4y029MJjhLBu
+	ffeyvBR+azi3ndu1OZewiP6fxe5KRQwSnT7GMG/BRM3II/wDVZvn73tDHIDUPaP4
+	s+BdNrI5mBiOG0bSuWwbTxALM=
+Received: from ubuntu.. (unknown [])
+	by gzga-smtp-mtada-g1-2 (Coremail) with SMTP id _____wB35_ehSmBq0f2bKw--.61647S4;
+	Wed, 22 Jul 2026 12:44:28 +0800 (CST)
+From: Ma Ke <make_ruc2021@163.com>
+To: sre@kernel.org,
+	marex@denx.de,
+	hansg@kernel.org
+Cc: linux-pm@vger.kernel.org,
 	linux-kernel@vger.kernel.org,
-	Pengpeng Hou <pengpeng@iscas.ac.cn>
-Subject: [PATCH] pmdomain: ti-sci: reject maximal power-domain ID
-Date: Wed, 22 Jul 2026 12:11:42 +0800
-Message-ID: <20260722041142.95204-1-pengpeng@iscas.ac.cn>
-X-Mailer: git-send-email 2.50.1
+	akpm@linux-foundation.org,
+	Ma Ke <make_ruc2021@163.com>,
+	stable@vger.kernel.org
+Subject: [PATCH v2] power: supply: bq25890: Fix power_supply reference leak
+Date: Wed, 22 Jul 2026 12:44:16 +0800
+Message-ID: <20260722044416.1623621-1-make_ruc2021@163.com>
+X-Mailer: git-send-email 2.43.0
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -36,55 +44,68 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-CM-TRANSID:zQCowAB35T_+QmBqYBe7AA--.34013S2
-X-Coremail-Antispam: 1UD129KBjvdXoW7Xw1Utry3Jw1UXrWDKF1ftFb_yoWkXrg_Cw
-	1jkFZIkrW5Grn09r4Syr43ZFy09FWDuw1j9F4Igry3Aw1DXw18J398u3Z7W3ZxWrWDG3sx
-	tas8Zr1fArs3ujkaLaAFLSUrUUUUjb8apTn2vfkv8UJUUUU8Yxn0WfASr-VFAUDa7-sFnT
-	9fnUUIcSsGvfJTRUUUb4kFF20E14v26r4j6ryUM7CY07I20VC2zVCF04k26cxKx2IYs7xG
-	6rWj6s0DM7CIcVAFz4kK6r1j6r18M28lY4IEw2IIxxk0rwA2F7IY1VAKz4vEj48ve4kI8w
-	A2z4x0Y4vE2Ix0cI8IcVAFwI0_Gr0_Xr1l84ACjcxK6xIIjxv20xvEc7CjxVAFwI0_Cr0_
-	Gr1UM28EF7xvwVC2z280aVAFwI0_Cr1j6rxdM28EF7xvwVC2z280aVCY1x0267AKxVWxJr
-	0_GcWle2I262IYc4CY6c8Ij28IcVAaY2xG8wAqx4xG64xvF2IEw4CE5I8CrVC2j2WlYx0E
-	2Ix0cI8IcVAFwI0_JF0_Jw1lYx0Ex4A2jsIE14v26r1j6r4UMcvjeVCFs4IE7xkEbVWUJV
-	W8JwACjcxG0xvY0x0EwIxGrwACjI8F5VA0II8E6IAqYI8I648v4I1lc7CjxVAaw2AFwI0_
-	JF0_Jw1l42xK82IYc2Ij64vIr41l4I8I3I0E4IkC6x0Yz7v_Jr0_Gr1lx2IqxVAqx4xG67
-	AKxVWUJVWUGwC20s026x8GjcxK67AKxVWUGVWUWwC2zVAF1VAY17CE14v26r1q6r43MIIY
-	rxkI7VAKI48JMIIF0xvE2Ix0cI8IcVAFwI0_Jr0_JF4lIxAIcVC0I7IYx2IY6xkF7I0E14
-	v26r4j6F4UMIIF0xvE42xK8VAvwI8IcIk0rVWUJVWUCwCI42IY6I8E87Iv67AKxVWUJVW8
-	JwCI42IY6I8E87Iv6xkF7I0E14v26r4j6r4UJbIYCTnIWIevJa73UjIFyTuYvjfUO73vUU
-	UUU
-X-CM-SenderInfo: pshqw1xhqjqxpvfd2hldfou0/
+X-CM-TRANSID:_____wB35_ehSmBq0f2bKw--.61647S4
+X-Coremail-Antispam: 1Uf129KBjvJXoW7ZrW7Wr1DGFWxGF4xGryrXrb_yoW8ur1xpF
+	s5ArWYyr4UXF47Ca1Utrn7ur9aka4fCFyYyr1xGw1vqw13Gw1DJr4xJrnaqrykGrZYgr4v
+	qa1ayrn2kFsxuFJanT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
+	9KBjDUYxBIdaVFxhVjvjDU0xZFpf9x0pRkhLbUUUUU=
+X-CM-SenderInfo: 5pdnvshuxfjiisr6il2tof0z/xtbC9gxwe2pgSqylRgAA3+
 
-Each power-domain ID comes from Device Tree. The driver allocates the
-onecell table with max_id + 1 and later uses every saved ID as an index.
-If an ID is U32_MAX, the allocation count wraps to zero while the index
-remains maximal.
+bq25890_fw_probe() acquires a reference to a secondary charger using
+power_supply_get_by_name(), but the reference is not released on later
+probe failures or on driver detach.
 
-Reject U32_MAX while collecting IDs, before the arithmetic and indexed
-store can diverge.
+In particular, failures after bq25890_fw_probe() returns successfully,
+such as a failure in bq25890_hw_init(), also leak the reference.
 
-Signed-off-by: Pengpeng Hou <pengpeng@iscas.ac.cn>
+Register a device-managed cleanup action immediately after acquiring
+the secondary charger. This releases the reference on all subsequent
+probe failures and on driver detach.
+
+Found by code review.
+
+Signed-off-by: Ma Ke <make_ruc2021@163.com>
+Cc: stable@vger.kernel.org
+Fixes: d54bf877fd87 ("power: supply: bq25890: Add support for having a secondary charger IC")
 ---
- drivers/pmdomain/ti/ti_sci_pm_domains.c | 6 ++++++
- 1 file changed, 6 insertions(+)
+Changes in v2:
+- Register a dedicated devm cleanup action immediately after acquiring the secondary charger.
+- Cover failures occurring after bq25890_fw_probe(), including failures from bq25890_hw_init().
+- Thanks for Sebastian Reichel's suggestions.
+---
+ drivers/power/supply/bq25890_charger.c | 12 ++++++++++++
+ 1 file changed, 12 insertions(+)
 
-diff --git a/drivers/pmdomain/ti/ti_sci_pm_domains.c b/drivers/pmdomain/ti/ti_sci_pm_domains.c
-index 949e4115f930..5fad21c317c4 100644
---- a/drivers/pmdomain/ti/ti_sci_pm_domains.c
-+++ b/drivers/pmdomain/ti/ti_sci_pm_domains.c
-@@ -251,6 +251,12 @@ static int ti_sci_pm_domain_probe(struct platform_device *pdev)
- 			if (args.args_count >= 1 && args.np == dev->of_node) {
- 				bool is_on;
+diff --git a/drivers/power/supply/bq25890_charger.c b/drivers/power/supply/bq25890_charger.c
+index c1c12a447178..119d651712a4 100644
+--- a/drivers/power/supply/bq25890_charger.c
++++ b/drivers/power/supply/bq25890_charger.c
+@@ -1389,6 +1389,14 @@ static int bq25890_fw_read_u32_props(struct bq25890_device *bq)
+ 	return 0;
+ }
  
-+				if (args.args[0] == U32_MAX) {
-+					dev_err(dev, "power-domain ID is too large\n");
-+					of_node_put(args.np);
-+					return -EINVAL;
-+				}
++static void bq25890_release_secondary_chrg(void *data)
++{
++	struct bq25890_device *bq = data;
 +
- 				of_node_put(args.np);
- 				if (args.args[0] > max_id) {
- 					max_id = args.args[0];
++	power_supply_put(bq->secondary_chrg);
++	bq->secondary_chrg = NULL;
++}
++
+ static int bq25890_fw_probe(struct bq25890_device *bq)
+ {
+ 	int ret;
+@@ -1401,6 +1409,10 @@ static int bq25890_fw_probe(struct bq25890_device *bq)
+ 		bq->secondary_chrg = power_supply_get_by_name(str);
+ 		if (!bq->secondary_chrg)
+ 			return -EPROBE_DEFER;
++
++		ret = devm_add_action_or_reset(bq->dev, bq25890_release_secondary_chrg, bq);
++		if (ret)
++			return ret;
+ 	}
+ 
+ 	/* Optional, left at 0 if property is not present */
 -- 
 2.43.0
 
