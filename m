@@ -1,123 +1,90 @@
-Received: from mail-yw1-f182.google.com (mail-yw1-f182.google.com [209.85.128.182])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from cstnet.cn (smtp25.cstnet.cn [159.226.251.25])
+	(using TLSv1.2 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4B7CB3DCD87
-	for <linux-pm@vger.kernel.org>; Wed, 22 Jul 2026 03:37:20 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.128.182
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1784691443; cv=pass; b=UhIbIZYFOYfHqdEWWFablJKo+/hP+x/kgQFGpN6uxDnIDS72KEeozZ22QTOez8b02/vUOsCWSjWpjDRbA4Qmvl3UGbFh7y5ppfm+cAOMhTea2XYF2+cnRZWVHAuLi60ESYz7TgJ52MHvNAccinRCgpKLAIhDoXtHE/finPpuIAw=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1784691443; c=relaxed/simple;
-	bh=FKTf/d7nFmKcsSFUbAB3exdk2dVsrnMxmbCxkgyTBek=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=CsDTQc9m0JitoPI5oR2Ybo3Ij5CM3/mIUec2ou9WteCaV8hBZR0s8QR4aBL5+R90PzVb4XlTJ1fd9JCH+PX2XuClscFg+8BC8/DTbu2KOWXPUBGgQY//k4ATa4FzQt8BiYBK3wq1mGt/x0tF6DoupmDbfmV3hrmJOCp1pBtCBi4=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=chromium.org; spf=pass smtp.mailfrom=chromium.org; dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b=I+YBlPFe; arc=pass smtp.client-ip=209.85.128.182
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=chromium.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=chromium.org
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="I+YBlPFe"
-Received: by mail-yw1-f182.google.com with SMTP id 00721157ae682-81ed000b507so65938827b3.0
-        for <linux-pm@vger.kernel.org>; Tue, 21 Jul 2026 20:37:19 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1784691437; cv=none;
-        d=google.com; s=arc-20260327;
-        b=WZdLKp65txEUYnh5Kx0hW3jNaLci7xSurnqSp8goNyW6veFpYAFh13SKfMki5dGMBa
-         eaWyPwr+zboiVaJXYfIOLvslPwMKvMLrmJlnf+Cx1LcWxbJ35Oxa0sEI3UOkFYMWw19i
-         lF45VNQhvsCucmS/rH0L7Us6IWqoXHVJVAJGQM8mwLVL5RHO5ppCptderNtdjdwhSKlh
-         V42M5oPyGmnZ5kvIHGVLO+vy/s/zt8Q/1rVeYZTCMm+zxmNuTl6SHT/YJ8U31zxWHmMV
-         iY/unw0VRHC+WabXy+fWi+oiCDIbFAGI/7xDrCGfGuMRDFuBXa/DElwzXEq+5ZPPyOMY
-         BVLA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=FKTf/d7nFmKcsSFUbAB3exdk2dVsrnMxmbCxkgyTBek=;
-        fh=9Rq9sTcZOFURd22opOz70I0D++fKr2CAddg+IxEGsXY=;
-        b=pLc6r7Kaz7ou8rMJ56gj6Ewh9hx1D3/gGGBu/OBlHWLanQiF1dv1iiTFC3sBcrptSd
-         b72YfJKKBSsu7GM10Jk97naMOBp3tuYAr9x7VMqhOI+OpMYun2QwEOYU0murjwD728Zd
-         1T1I5SJihSk7y517Vd1Uwg/7wzkHmD3fiFxebTw77+2cqTalls6xndAvXvcbGsvVNy+z
-         s8f9oT4wq0Kfbz5SbkkZnQdVIPYN5zTTND4vQrSkds5oLn8sIJ+oerXL3HB9KNIVKF9M
-         pDNSuo82q4MrKRoMjFZQ7+GZy/KT/8w4mWjDO1gnFXbgyTZC6+nxNRh9JVmjjQjHfk/T
-         vN2Q==;
-        darn=vger.kernel.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=chromium.org; s=google; t=1784691437; x=1785296237; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=FKTf/d7nFmKcsSFUbAB3exdk2dVsrnMxmbCxkgyTBek=;
-        b=I+YBlPFetDH0VadtA+QUTCMaFJyWpmjAB32wo/PnbkoJXgZj4u5Mt8uZEg6pXgCJA7
-         KUE1RSSMBOn/vnYvL3vgQ+HZwqFgQpBgQuwFgICTKMGyifTB4fC4gwrywyjw0OBk08e4
-         ZkVpS5feb4wraETvzbXGQCGjPIgCKkis24DMw=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1784691437; x=1785296237;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=FKTf/d7nFmKcsSFUbAB3exdk2dVsrnMxmbCxkgyTBek=;
-        b=IOuPkz6dn8Z8OwY4zOBDn44GMIhk3uWzIv6gNyH28+Qx07mfC6Qb/Oke3C8KZdJHeS
-         ZCcQ+mbm8UY9zfiG10gkBDPVf1F+afUNqS0JJhiBYdRfY3/lHPIQ4AQMXhqtZJdsPszA
-         dTuo9MReixbVWUtnI4sa+WKCqUgrJo4CGZz95RJc9Fno5T0ww5+aIIyV59UxsI3l3acU
-         QYzzpzV9jmWXzK6YEl2cHl6M6zEVSIeHVrlrUmfN3irwiGGL6msnnnois2mFVQEnotjI
-         bNUACDM93a0GQdBsyVWjaNBQM9nca7ZMleqqlKB9jc/kxcgCsLiDvEvaryyTjIiYAxzk
-         d/Og==
-X-Forwarded-Encrypted: i=1; AHgh+RqoUpaIofIIoQ3BImJJ6Y8dRWZRAdXeoGRF4IjXr8nDjDV5CI/PQ0w65u2i4pCMcLZ+ge/ImW1Bqw==@vger.kernel.org
-X-Gm-Message-State: AOJu0YwvC/L+SwdJ3eIv7wKpEt0+I9pKtxMYyGE5M/g9YKO2+sojHgMn
-	mkBgH1gq1RU0iXP7nvJGZcbnzOQk+nproCtrKPav7oEq8SXv6aeMEAAjR5p/HsKXBas0Oz7QWe+
-	WUT1po6VNzfzmPFlim7JbHC6oz35vZa/tleXS+ZYm
-X-Gm-Gg: AR+sD115SfJ4qZIzPaYDcHPDYOg7IVEmlqThCAALAMBFQ7+jUwUbyA/DmT/ckGTAYog
-	+9GlKElEwNAq77UoiSX68vjp6WDaC48EOGb7LyTDYWn0titJtLOvBYVtrbftdM5nEc/LIFCp21B
-	nfup1WSKtCdjIySu0p56+8gpcMCf70IkZfmv8BjSRG3CPLlNEm2+6LP/GoSba5nZ0OAywg152VR
-	bLJE5sgj/Hn496lLjqnUbgphIt5Z2CSOYZDAia6UHKtAdj6jx1id8ucJExGQuOEFXp7fJGaSZFo
-	/vFpdg+RgxWHxzI=
-X-Received: by 2002:a05:690c:6c0d:b0:812:996f:176f with SMTP id
- 00721157ae682-81ef22d3ea4mr70445607b3.11.1784691436993; Tue, 21 Jul 2026
- 20:37:16 -0700 (PDT)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A6B1B23C8AE;
+	Wed, 22 Jul 2026 04:11:49 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=159.226.251.25
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1784693512; cv=none; b=PpWm3aEhp538FNlSFcn4h9ArltSeXG0fq4ON44znZkMeCjmuN08FErfIEsm3m66weHchoL+gM3SAI8S8ApkR29vRAygmUepIt1regq6/jt2OL5uwZI9gLWfTjU1Ux+pHAskV4L7vWunAyaVFlucNKO/FEvml68T+0xzUplPLT0Y=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1784693512; c=relaxed/simple;
+	bh=MePh0sqzq4a+/ssR3YJm9DFwTmnwEvu24IsLfvzvbmk=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=PfkHakveyTyR7lxMCDyWaz+kc6hmRv7iPOmTcsNePDQUI3GGNFmZemjMPo9ptqN/A9zBalKBVjYYPTofBYd1EzV0TyAQyigW71c5AcOo2/MjRpSTAB4TkeOFM7RY2HM4BM1/2LvCtZRuPNL4XV+uQbpwpi8rEMA9KZ7cq4hl260=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=iscas.ac.cn; spf=pass smtp.mailfrom=iscas.ac.cn; arc=none smtp.client-ip=159.226.251.25
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=iscas.ac.cn
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=iscas.ac.cn
+Received: from localhost.localdomain (unknown [111.196.245.140])
+	by APP-05 (Coremail) with SMTP id zQCowAB35T_+QmBqYBe7AA--.34013S2;
+	Wed, 22 Jul 2026 12:11:42 +0800 (CST)
+From: Pengpeng Hou <pengpeng@iscas.ac.cn>
+To: Nishanth Menon <nm@ti.com>
+Cc: Tero Kristo <kristo@kernel.org>,
+	Santosh Shilimkar <ssantosh@kernel.org>,
+	Ulf Hansson <ulfh@kernel.org>,
+	linux-arm-kernel@lists.infradead.org,
+	linux-pm@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	Pengpeng Hou <pengpeng@iscas.ac.cn>
+Subject: [PATCH] pmdomain: ti-sci: reject maximal power-domain ID
+Date: Wed, 22 Jul 2026 12:11:42 +0800
+Message-ID: <20260722041142.95204-1-pengpeng@iscas.ac.cn>
+X-Mailer: git-send-email 2.50.1
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260721105230.101906-1-angelogioacchino.delregno@collabora.com> <20260721105230.101906-3-angelogioacchino.delregno@collabora.com>
-In-Reply-To: <20260721105230.101906-3-angelogioacchino.delregno@collabora.com>
-From: Chen-Yu Tsai <wenst@chromium.org>
-Date: Wed, 22 Jul 2026 11:37:05 +0800
-X-Gm-Features: AUfX_my3u1BuHiEh3Upx2wok8eAOOGJ_r8yDp0XbplwggDqqh2JVTYtoDhYXOKI
-Message-ID: <CAGXv+5GrPZCZ=jNRi1AtduyZoB8DF_FUZev2CXhu4WzGri6U3A@mail.gmail.com>
-Subject: Re: [PATCH v2 2/2] thermal/drivers/mediatek/lvts_thermal: Make reset
- optional for MT8196
-To: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
-Cc: rafael@kernel.org, daniel.lezcano@kernel.org, rui.zhang@intel.com, 
-	lukasz.luba@arm.com, robh@kernel.org, krzk+dt@kernel.org, conor+dt@kernel.org, 
-	p.zabel@pengutronix.de, matthias.bgg@gmail.com, laura.nao@collabora.com, 
-	fshao@chromium.org, jiapeng.chong@linux.alibaba.com, frank-w@public-files.de, 
-	bchihi@baylibre.com, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
-	linux-mediatek@lists.infradead.org, kernel@collabora.com
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
+X-CM-TRANSID:zQCowAB35T_+QmBqYBe7AA--.34013S2
+X-Coremail-Antispam: 1UD129KBjvdXoW7Xw1Utry3Jw1UXrWDKF1ftFb_yoWkXrg_Cw
+	1jkFZIkrW5Grn09r4Syr43ZFy09FWDuw1j9F4Igry3Aw1DXw18J398u3Z7W3ZxWrWDG3sx
+	tas8Zr1fArs3ujkaLaAFLSUrUUUUjb8apTn2vfkv8UJUUUU8Yxn0WfASr-VFAUDa7-sFnT
+	9fnUUIcSsGvfJTRUUUb4kFF20E14v26r4j6ryUM7CY07I20VC2zVCF04k26cxKx2IYs7xG
+	6rWj6s0DM7CIcVAFz4kK6r1j6r18M28lY4IEw2IIxxk0rwA2F7IY1VAKz4vEj48ve4kI8w
+	A2z4x0Y4vE2Ix0cI8IcVAFwI0_Gr0_Xr1l84ACjcxK6xIIjxv20xvEc7CjxVAFwI0_Cr0_
+	Gr1UM28EF7xvwVC2z280aVAFwI0_Cr1j6rxdM28EF7xvwVC2z280aVCY1x0267AKxVWxJr
+	0_GcWle2I262IYc4CY6c8Ij28IcVAaY2xG8wAqx4xG64xvF2IEw4CE5I8CrVC2j2WlYx0E
+	2Ix0cI8IcVAFwI0_JF0_Jw1lYx0Ex4A2jsIE14v26r1j6r4UMcvjeVCFs4IE7xkEbVWUJV
+	W8JwACjcxG0xvY0x0EwIxGrwACjI8F5VA0II8E6IAqYI8I648v4I1lc7CjxVAaw2AFwI0_
+	JF0_Jw1l42xK82IYc2Ij64vIr41l4I8I3I0E4IkC6x0Yz7v_Jr0_Gr1lx2IqxVAqx4xG67
+	AKxVWUJVWUGwC20s026x8GjcxK67AKxVWUGVWUWwC2zVAF1VAY17CE14v26r1q6r43MIIY
+	rxkI7VAKI48JMIIF0xvE2Ix0cI8IcVAFwI0_Jr0_JF4lIxAIcVC0I7IYx2IY6xkF7I0E14
+	v26r4j6F4UMIIF0xvE42xK8VAvwI8IcIk0rVWUJVWUCwCI42IY6I8E87Iv67AKxVWUJVW8
+	JwCI42IY6I8E87Iv6xkF7I0E14v26r4j6r4UJbIYCTnIWIevJa73UjIFyTuYvjfUO73vUU
+	UUU
+X-CM-SenderInfo: pshqw1xhqjqxpvfd2hldfou0/
 
-On Tue, Jul 21, 2026 at 6:52=E2=80=AFPM AngeloGioacchino Del Regno
-<angelogioacchino.delregno@collabora.com> wrote:
->
-> Depending on the SoC+Firmware combination, the LVTS hardware may be
-> may be actively used by one or even multiple concurrent MCUs!
-> In this case, resetting it may produce either a severe slowdown of
-> the entire system, or even a thermal protection AP reset, as some
-> MCU(s) may be reading a very high or very low temperature while the
-> LVTS is being reset.
->
-> On those, don't fail if no reset is found as that may be omitted on
-> purpose, but still check if there's one, because some board(s) may
-> be running on a different bootchain with reduced firmwares or using
-> firmwares with reduced functionality.
->
-> So, use devm_reset_control_get_optional_exclusive() instead, as the
-> LVTS controller always had only one reset and retrieving that by
-> index, specifically, always made little sense anyway.
->
-> Signed-off-by: AngeloGioacchino Del Regno <angelogioacchino.delregno@coll=
-abora.com>
+Each power-domain ID comes from Device Tree. The driver allocates the
+onecell table with max_id + 1 and later uses every saved ID as an index.
+If an ID is U32_MAX, the allocation count wraps to zero while the index
+remains maximal.
 
-Reviewed-by: Chen-Yu Tsai <wenst@chromium.org>
+Reject U32_MAX while collecting IDs, before the arithmetic and indexed
+store can diverge.
+
+Signed-off-by: Pengpeng Hou <pengpeng@iscas.ac.cn>
+---
+ drivers/pmdomain/ti/ti_sci_pm_domains.c | 6 ++++++
+ 1 file changed, 6 insertions(+)
+
+diff --git a/drivers/pmdomain/ti/ti_sci_pm_domains.c b/drivers/pmdomain/ti/ti_sci_pm_domains.c
+index 949e4115f930..5fad21c317c4 100644
+--- a/drivers/pmdomain/ti/ti_sci_pm_domains.c
++++ b/drivers/pmdomain/ti/ti_sci_pm_domains.c
+@@ -251,6 +251,12 @@ static int ti_sci_pm_domain_probe(struct platform_device *pdev)
+ 			if (args.args_count >= 1 && args.np == dev->of_node) {
+ 				bool is_on;
+ 
++				if (args.args[0] == U32_MAX) {
++					dev_err(dev, "power-domain ID is too large\n");
++					of_node_put(args.np);
++					return -EINVAL;
++				}
++
+ 				of_node_put(args.np);
+ 				if (args.args[0] > max_id) {
+ 					max_id = args.args[0];
+-- 
+2.43.0
+
