@@ -1,82 +1,123 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+Received: from perceval.ideasonboard.com (perceval.ideasonboard.com [213.167.242.64])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 86C923E559C
-	for <linux-pm@vger.kernel.org>; Wed, 22 Jul 2026 19:58:30 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CAF623FA5F0;
+	Wed, 22 Jul 2026 20:06:24 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=213.167.242.64
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1784750312; cv=none; b=h0HrzAvhseQDfnRHiyOf6mxtffqTmXifY2sH79QCuBP677PGqInDaYGj53imb1Xv6XEqe20n9iMTsvcxgvtdi+oFIEa7lbZ5bp9xUeq3FbecD6w5xjxsL3BiR1JWaHYMcxar20F0yeSeSsfuZ/xIJc/RlXJMpj+BZ0ZK+l9OzPY=
+	t=1784750786; cv=none; b=q3UtJCOXIOQEO7+FUQfZwtuhCnFTnVH5t46Z2tIXv0xa1AoU0Fxkv2p9GF3kmU/V7Km+21+QOhqMcmwPRoGBLT/sEHcIaquSPInAQpVVAD6LMx6RRyQcU5ksCj9I86htm+hBI0J1SD/Kl/guFJQFDFsJ5SAngzN1deGl/0lW2jk=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1784750312; c=relaxed/simple;
-	bh=A7AitE/XDd3LqWQmorPTs2ptcRNDrTYGhZT8AjRw8EQ=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=bUXAn+8oBlXG/EvHSyE74CNLYOOexgjEGXy/54DVabxUjeWklwLgON6QhqmFyoS2rATbngIvOL1I2jgSeZ4Fs/OEKZ5Fr/rLxOrFMhBHF7EBytkvO5/Z/tFiujO3O08PeiLQkHy6cL4CPgajqAcGJjTCM2uaP8RCqp8uqIuV0oU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=ebyQcg/T; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1784750786; c=relaxed/simple;
+	bh=stshlyFU5jeSS4sb+KL/9qGL6v351n1j1DTdzSeYxms=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=Ynp2YjqBeMMaOJxMRbE9C/YMHSOI4+J5r+fxnp+P4t+FSqvPY8M2ULxBC31Pv+y9zr2qfgk1YZEw+5RPBxIEeSX87tDhfqnyl8XIKyJjZkPKadcRoOd6WdvR1bvZrRtWXvBXu1ar3qT/jDkNMzO9hLQkrWM+CfmpxtdDVty7C5A=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=ideasonboard.com; spf=pass smtp.mailfrom=ideasonboard.com; dkim=pass (1024-bit key) header.d=ideasonboard.com header.i=@ideasonboard.com header.b=ToqILh9C; arc=none smtp.client-ip=213.167.242.64
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=ideasonboard.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=ideasonboard.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="ebyQcg/T"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3D4561F00A3E
-	for <linux-pm@vger.kernel.org>; Wed, 22 Jul 2026 19:58:30 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1784750310;
-	bh=nR4O5DANIva3goaebxkg4Sh/ghkWjyLukyGQAqgAAvs=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc;
-	b=ebyQcg/T7sRabO/k8ourFCDiSdv5/HNN9pAaufxQej+k8+avaxcJCChUrElEVEvLg
-	 USobHRHReRO8Cy3qYgYaw4MtHK8m1viaLunmOuMbfcQknx8tTCvtIs6eAY4ODzCzVd
-	 J18lP1c0BuX/EyAL6ZCwsKbi756l+emh4m2APL/FRHwxpX3mU0/Whz0AEKvC91Nqk/
-	 bspvL765PfG/srxKHaBxP+uzpNUqREX08IEwe1dQrVXV0n/CfyvypMT4pKEtqF8n9T
-	 FnWprs3L5mAX15mdfDrmTr3sgA1lOlulunn7ypjtqkJF6sB4x/qtsPVDSg1n5aC1w9
-	 dp9Zp9VfDjF0w==
-Received: by mail-lf1-f41.google.com with SMTP id 2adb3069b0e04-5b01cb18515so12382080e87.2
-        for <linux-pm@vger.kernel.org>; Wed, 22 Jul 2026 12:58:30 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AHgh+RpjtLu6whQ7xeCfn9ZWDx7ITXxwHrAKOwQNeuL0gyfZTz9QBa0N19aPw0QUBSPsBQhHi+ZVMbDirA==@vger.kernel.org
-X-Gm-Message-State: AOJu0YyUK3oiAA646n+xdPRhy6ZxcspR/qXYFbKaFTJtzm4/dJOWRR27
-	KwbdGSIang+m12VJF+eMrn7VJoqrzEcPiWGYXtT0S8oIdrMHZFgk83r5XjblutMY1oJ4CAQqf9A
-	l9oBqQMORPm2wf176YXNEm3lpLdkvgXE=
-X-Received: by 2002:a05:6512:2388:b0:5b2:95b3:b90d with SMTP id
- 2adb3069b0e04-5b295b3ba31mr4050255e87.43.1784750308651; Wed, 22 Jul 2026
- 12:58:28 -0700 (PDT)
+	dkim=pass (1024-bit key) header.d=ideasonboard.com header.i=@ideasonboard.com header.b="ToqILh9C"
+Received: from killaraus.ideasonboard.com (2001-14ba-70f3-e800--a06.rev.dnainternet.fi [IPv6:2001:14ba:70f3:e800::a06])
+	by perceval.ideasonboard.com (Postfix) with ESMTPSA id 25E6E594;
+	Wed, 22 Jul 2026 22:05:22 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ideasonboard.com;
+	s=mail; t=1784750722;
+	bh=stshlyFU5jeSS4sb+KL/9qGL6v351n1j1DTdzSeYxms=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=ToqILh9CPGJo0smEwP7rP4LkNeMgmIrJ+Q9iCToV2K2r361f3GHLEh8QgGGyhpyjl
+	 ip4IuQea7teP2RyzbNfgzH7OmAUnSK2gT5T1wKtAAixCwsWhGB/HGiMD/k494dvbU8
+	 VnXbholLCrbgR3UiGSTBYqggNj3fjvXwk+TWetOI=
+Date: Wed, 22 Jul 2026 23:06:20 +0300
+From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+To: Haowen Tu <tuhaowen@uniontech.com>
+Cc: rafael@kernel.org, gregkh@linuxfoundation.org, hansg@kernel.org,
+	kernel@uniontech.com, lenb@kernel.org, linux-kernel@vger.kernel.org,
+	linux-media@vger.kernel.org, linux-pm@vger.kernel.org,
+	linux-usb@vger.kernel.org, mchehab@kernel.org, oneukum@suse.com,
+	pavel@kernel.org, stern@rowland.harvard.edu
+Subject: Re: [PATCH v3 3/3] media: uvcvideo: skip streaming restart after
+ hibernation snapshot
+Message-ID: <20260722200620.GC648629@killaraus.ideasonboard.com>
+References: <20260602032413.1540166-1-tuhaowen@uniontech.com>
+ <20260618013133.1047270-1-tuhaowen@uniontech.com>
+ <20260618013133.1047270-4-tuhaowen@uniontech.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260707163647.6646-1-s921975628@gmail.com> <wh5m5ymcadonlywszmepriuxagc3jf4mictlvf3id6hezdpj7l@y25j7iqdg6qd>
-In-Reply-To: <wh5m5ymcadonlywszmepriuxagc3jf4mictlvf3id6hezdpj7l@y25j7iqdg6qd>
-From: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
-Date: Wed, 22 Jul 2026 21:58:15 +0200
-X-Gmail-Original-Message-ID: <CAJZ5v0haO-CwdtSCX15NSiUwRWzpgWtgN3APHhJbJB7gB7LL2A@mail.gmail.com>
-X-Gm-Features: AUfX_mzVjbo9JANfzPLm2bqDe7CTq6XvSe0qSAr1Gyyq5OqdzjpBLf9s6TzwpKE
-Message-ID: <CAJZ5v0haO-CwdtSCX15NSiUwRWzpgWtgN3APHhJbJB7gB7LL2A@mail.gmail.com>
-Subject: Re: [PATCH v2] kselftest: cpufreq: Backup and restore governor for sptests
-To: Viresh Kumar <viresh.kumar@linaro.org>, Yiwei Lin <s921975628@gmail.com>
-Cc: shuah@kernel.org, linux-pm@vger.kernel.org, 
-	linux-kselftest@vger.kernel.org, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20260618013133.1047270-4-tuhaowen@uniontech.com>
 
-On Wed, Jul 8, 2026 at 5:44=E2=80=AFAM Viresh Kumar <viresh.kumar@linaro.or=
-g> wrote:
->
-> On 08-07-26, 00:36, Yiwei Lin wrote:
-> > After executing cpufreq sptest, the system governor
-> > will be overwritten with the governor switched
-> > during the test. Restore this setting to maintain
-> > consistency before and after the test.
-> >
-> > Signed-off-by: Yiwei Lin <s921975628@gmail.com>
-> >
-> > ---
-> > Change-Logs in V2:
-> > - Wait for all background processes to finish before restoring governor=
-s
-> >   in sptest4
-> >
-> > ---
-> >  tools/testing/selftests/cpufreq/governor.sh   | 21 +++++++++++++++++++
-> >  .../selftests/cpufreq/special-tests.sh        | 14 +++++++++++++
-> >  2 files changed, 35 insertions(+)
->
-> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+On Thu, Jun 18, 2026 at 09:31:33AM +0800, Haowen Tu wrote:
+> After the hibernation snapshot is created, devices are resumed with
+> PMSG_THAW before the image is written and the system is powered off.
+> Restarting an active UVC stream during this phase reinitializes the
+> camera and visibly turns its indicator LED back on.
+> 
+> Skip only the UVC streaming hardware restart while the snapshot is
+> available.  The driver's frozen state and clock are still updated before
+> the check, and a subsequent UVC suspend can stop the stream and select
+> alternate setting 0 as usual.
 
-Applied as 7.3 material, thanks!
+Why is that desired (both the decision to only block the resume of the
+video interface, and the decision to not block the next suspend) ?
+
+> uvcvideo does not provide a shutdown
+> callback that requires the streaming hardware to be restarted first.
+> 
+> This is a device-specific use of pm_hibernation_snapshot_done().  The
+> helper does not cause other drivers or USB core to skip THAW resume.
+
+I don't think this sentence belongs to the commit message.
+
+> Tested with hibernation image written to local storage and resumed from
+> disk on a system with a USB UVC camera attached; the camera LED remains
+> off during image writing and the video stream resumes correctly after
+> restore.
+> 
+> Signed-off-by: Haowen Tu <tuhaowen@uniontech.com>
+> ---
+> Changes in v3:
+> - Clarify that only the UVC streaming hardware restart is skipped.
+> - Explain the subsequent UVC suspend and shutdown handling.
+> 
+> Changes in v2:
+> - Use pm_hibernation_snapshot_done() after the PM helper was renamed.
+> - Move the check after clearing the frozen state and resetting the clock.
+> 
+>  drivers/media/usb/uvc/uvc_video.c | 8 ++++++++
+>  1 file changed, 8 insertions(+)
+> 
+> diff --git a/drivers/media/usb/uvc/uvc_video.c b/drivers/media/usb/uvc/uvc_video.c
+> index f6c8e3223796..1744298f4b1f 100644
+> --- a/drivers/media/usb/uvc/uvc_video.c
+> +++ b/drivers/media/usb/uvc/uvc_video.c
+> @@ -12,6 +12,7 @@
+>  #include <linux/list.h>
+>  #include <linux/module.h>
+>  #include <linux/slab.h>
+> +#include <linux/suspend.h>
+>  #include <linux/usb.h>
+>  #include <linux/usb/hcd.h>
+>  #include <linux/videodev2.h>
+> @@ -2151,6 +2152,13 @@ int uvc_video_resume(struct uvc_streaming *stream, int reset)
+>  	if (!uvc_queue_streaming(&stream->queue))
+>  		return 0;
+>  
+> +	/*
+> +	 * Avoid restarting the streaming hardware during the transient THAW
+> +	 * phase after a hibernation snapshot has been created.
+> +	 */
+> +	if (pm_hibernation_snapshot_done())
+> +		return 0;
+> +
+>  	ret = uvc_commit_video(stream, &stream->ctrl);
+>  	if (ret < 0)
+>  		return ret;
+
+-- 
+Regards,
+
+Laurent Pinchart
