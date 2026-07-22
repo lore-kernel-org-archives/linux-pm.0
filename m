@@ -1,63 +1,63 @@
-Received: from mail-wm1-f50.google.com (mail-wm1-f50.google.com [209.85.128.50])
+Received: from mail-wr1-f44.google.com (mail-wr1-f44.google.com [209.85.221.44])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 63EFB43C057
-	for <linux-pm@vger.kernel.org>; Wed, 22 Jul 2026 20:34:04 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.50
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5AAE89475
+	for <linux-pm@vger.kernel.org>; Wed, 22 Jul 2026 21:01:16 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.44
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1784752446; cv=none; b=iD9eEd1OlXEVgSq7fvOVLIk8AsDNHgPI2Eum3dez5w2uOXSfCwGOUO99PzqRZG/YTP76xm0wr/EA34E/ghlo7ILQm4mextCfSX1TbpW+BEJ3E0kPSd2hAWro+hbvFjzJMP6iMeFs07w/eooJF+Tc9AWiIA49VPAcq1dxePUn7x4=
+	t=1784754079; cv=none; b=eI2O98rm0AwjKd8piz8u9zVAhFDM3hg1Nf9SvWjx4ETfGrTlrc+RlhWukUTgRprNfEAqxValvFeBzHxUzrBxl0mhik6ptzeE2ru0wrV3asDek9VBTFHRp1AblIPdELSQQONNKWPFVknyWH6TxTpA42grQstQ17pWdNnxHr+I9EM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1784752446; c=relaxed/simple;
-	bh=6esLaWMxVzWgBgD3LBUpQLC+g+cCbkEItwcvYGe7Tc8=;
+	s=arc-20240116; t=1784754079; c=relaxed/simple;
+	bh=t46Babqj/B+1dHlW5fmgPaxIjdyCrT3Rb/Vc6H+uGPI=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=W1sDI4QCKE4h8cy2WRJ0qACrRn4AoZKXcLEzSISPFuwMoBz0RFa/BPrLGKyxb0E1EkG7VuhqkKOSYCVL/jMtNiL54VATl1+4yhXFpK0fPR2P+e6+GYx8u0hjTuAuXsaCiZQdZjWSRDqdZSnFU1evD0i3TjtqXUAGPJCnT1Q/3N4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=AKub94+c; arc=none smtp.client-ip=209.85.128.50
+	 MIME-Version:Content-Type; b=YpZLB8DRFnhfmgrkohTalUAf8q5OKODMlgLrM4p8jirXpSa5hBuy5N4SUh6vE26e2wypsAMvotgWs7C7GVEUsbUed8encVqXs1V9OBBZDNIsj/w2XbArNQbrOzL9guB3gza7Nh2u8BUdHc26e1ucjhsThsJEKxsN8uf0xt8ayuM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=Cdz6ImZJ; arc=none smtp.client-ip=209.85.221.44
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="AKub94+c"
-Received: by mail-wm1-f50.google.com with SMTP id 5b1f17b1804b1-4955de8797cso23797365e9.3
-        for <linux-pm@vger.kernel.org>; Wed, 22 Jul 2026 13:34:04 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Cdz6ImZJ"
+Received: by mail-wr1-f44.google.com with SMTP id ffacd0b85a97d-4758bd3731bso5208815f8f.0
+        for <linux-pm@vger.kernel.org>; Wed, 22 Jul 2026 14:01:16 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1784752442; x=1785357242; darn=vger.kernel.org;
+        d=gmail.com; s=20251104; t=1784754074; x=1785358874; darn=vger.kernel.org;
         h=content-transfer-encoding:content-type:mime-version:references
          :in-reply-to:message-id:date:subject:cc:to:from:from:to:cc:subject
          :date:message-id:reply-to:content-type;
-        bh=WOd+XZss+YRv1olA4v5j/GA2GS28MPr0U93YAb8IAO0=;
-        b=AKub94+cdO/vzVJoDB8o+/wBEWWTXCGwD7BZOODijafDKZa6BNOG84txtRQTU4GLJj
-         7Rk9r/P1DQ5OEjIf7ga6FxdloZUUwPlZ9BUodWG7/qwf5mnPlBpiYDJAuKD+KrWYaIJ3
-         tUVDyyhaiuhu8jCjPMX7gmBF5vvtNY1EmHhIQ4wIT70CdAKWmLFEaTX6vt1q54xWo89Q
-         Qg72JkXFUz9HPd+lWwuFK8ObWqWgU6pQP+IRi8fn3URQZEkZ9QIFM9LCnwt7GbuGU+Cu
-         v621SqcA2F7v+bNXhuY0FPcVLht/xFt1co7AIy8vHQeYET7ya3RWs1Zg1Hy9vBVblXtv
-         8z9w==
+        bh=q/5F0oA5i8F/L34a9owjNm1QgCmiW32I4DyCKgmPKrs=;
+        b=Cdz6ImZJOjMEYP3+fmwoevVV0Kh5TmHdUQTcONkQqFjz7+HT1/gCDP93QdAa/DMdJq
+         ++ZGAmuqUEILjdUjUHhuQpopaH6PbIAPY+TfUj91fSE017PamuZZhnvzbTW7a6J/AN5Q
+         UTfzt9mzYSoYAzJxpcOYjI3KgYQSaZPQ1hlnl57ZUDelhttXhdVOLp6rQlXsdS8EQ65m
+         sSAliQ0vFbUwXgZxOpso0lMknwPXWmkWkW9p2MUukiaQ3jwHfp9unpSOM0aqnPldvjfo
+         VmNSxzCKIH0pl4CeagTly88dCdz5Jj+1X+mIklGoFd16DcZmOA4/u2Hn5pFMuCCqKgkM
+         nkvw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1784752442; x=1785357242;
+        d=1e100.net; s=20251104; t=1784754074; x=1785358874;
         h=content-transfer-encoding:content-type:mime-version:references
          :in-reply-to:message-id:date:subject:cc:to:from:x-gm-gg
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=WOd+XZss+YRv1olA4v5j/GA2GS28MPr0U93YAb8IAO0=;
-        b=Faw7qTfB2wRcfJQ4fgtJlBHySp3uUrxDO51xvoYxo0Z9Gmfc4AZApbCBOEnNNHyGr0
-         HjJiQezhbi2oaIyV1wk1tfKKw5ZMs/BhAM6AyCArme631qNrV2r3a9Lil1jiJmWjo7mo
-         v22cyUCYIaDoR8He9RkbOAKhNLzYU/rfX55Yhqnau+L/ND89/38b+al59xY8Hp/zeHh3
-         Zcr7n3unU6zG1qIMNn0fXliX7i+nxXjQ7v4yzE6jIB8DH5M1S2cx4OdeeMV/hp0JiSzc
-         Q2UYcx1BhLUUala2ckQdfjMZlldgxCrNmvgm8bMaGbAmiqv0EVF0NMueMUqtkoAnK0hQ
-         hQRQ==
-X-Gm-Message-State: AOJu0YydfJtOxV5KS4XehmaDVb/Uh+K5GBQgYAwrlTMAw+995tEce6Hj
-	LuB69Pcom+nkLNtrWC2gXNJpahS/4kvEMU8MtG0N8vnvg7vM6LiFpKArrg3KFOSZVkM2Tg==
-X-Gm-Gg: AR+sD13QKtEFsBGJ5GwZeAWGQXTcqgzev5qnK7L7Mw37ipHJ4de5YYzWxHGBCdLEHyk
-	Wv80We2svA2cHwi9exEMGubimTvWVlQ9b3bDAr6Y46OYpcKSHkjLWZK2sss7lLJQXcprqrlqkem
-	aiqH1JDgo/LhQ1ibRNf1Hk4SZ0s4oua9OJSraXtpfOEJFlGZ+2GwL3CDk56HkdtOe+xvY7dZYEV
-	m+R054M6RNurNHf/UxioFX41wm3GceALZbFO/wef6UBgDZgYgsqhQ90hAcUIgyU/uzUrDqK35KE
-	qRfB/jsq0x21vwxVCkHdvqArSmAL+qU6ZkWB1XORhF6AJzunjg0pJi5iog0cfgFi2mCpXXZgzGt
-	+8sH1UtBe9XRo3I2p5peaAs9N6/Pp4Et1S6gtpSBg72BDCKLpBgZHaixLGjRV5H+YsG/cdsWt6m
-	PM6e4IlxqB5kjFWY3kUCBiSAL+EuOuxZfKFN8=
-X-Received: by 2002:a05:600c:1390:b0:495:5a0e:6d8c with SMTP id 5b1f17b1804b1-49573ce8e74mr3160235e9.27.1784752442311;
-        Wed, 22 Jul 2026 13:34:02 -0700 (PDT)
+        bh=q/5F0oA5i8F/L34a9owjNm1QgCmiW32I4DyCKgmPKrs=;
+        b=T+l7bOrpz8YjMSOOKbYZTseH7z0pNJTVz3shFo/8tiiacblVrUNwMYYZJhc/DqZDAj
+         MNzxVhBNj+ZtLtExHPioBLJb8Ranhf8ojMp2Ag2b+WAy36gtNMmrbH7groYSzYv9zO4W
+         aVaU7KkmdhUeVWB50zB2mgAz9d0yjT/DScsNUdJLR1lx/iaag2L9yctCtLrMA552IRf8
+         5wjTMjV2ItpIG/prLlNe2hjP2aECghfIL7dQYV/cw5VzVw4m5QDaeLvhJbd/Ee7MeHGj
+         MjNkg+P5oa0vPYRZrPlxU7ROhheNZtGbvrlyh0JSFF4FZrVeo8SrylniNNTR/r/k0Dc7
+         fVlQ==
+X-Gm-Message-State: AOJu0Yw9A2nKmEcaAEGNP/a7LCi1acKTLa9QFbdmgadFnodju4W8VIbH
+	SvYMG+J/9Iu1+vTeQ1O0U5gIK7CLrjYNSFvuBDZBjdHlO1d3qxIZI/n1WI25kSlux3sZbw==
+X-Gm-Gg: AR+sD12ftfkauq5H71he4A5bgpx2QagwJ1cHXelB1Ae30eQ6QaG6oEDF2CUVFJj8svO
+	3FT7fa+C5xRHQCfT/EM6QbrjlFCf0D8k7LhOdk9I/LfzMqp7pq0rZoolwPcjC5y29F6fyovunTV
+	X/HjnJ5XbxbgPcbyy2MOmBHqRXf+iGQDU9vYRTzC+l713ff0KC3tz1prNny+VJsK8wCss8W9D7M
+	eL/K9S6cyVz8mRlfIi+vENX6BF4py/izG9/Rl8cyxT8VcjSkM8LDS/V1Rtel9m0iXA+Heu2Ssbi
+	sutSdgKiOV9qYuqOZlTXjd0rD7XQ3xK+8Cy92uQau9pkCahZK/kENGtg+BjWHeKKPjo5soKfLU2
+	H5cffMHC4ed1WRI41VObOc/X+41QxYW2eD4BaM9heeT2a0Diwr9+B4G0Da5pxRze+zYJcc34erg
+	FxcM1hjpLHnuCMfTX777/vxTlXF5r8+tyh/hw=
+X-Received: by 2002:a05:6000:42ca:b0:45a:5392:3a19 with SMTP id ffacd0b85a97d-47f840c94dcmr5450029f8f.16.1784754074458;
+        Wed, 22 Jul 2026 14:01:14 -0700 (PDT)
 Received: from coolemuke.fritz.box ([2a00:6020:b320:1a00:c256:1463:a40b:d8c6])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4956ab2f0a2sm63134945e9.1.2026.07.22.13.34.00
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-47f85c63678sm8610812f8f.29.2026.07.22.14.01.13
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 22 Jul 2026 13:34:00 -0700 (PDT)
+        Wed, 22 Jul 2026 14:01:13 -0700 (PDT)
 From: "=?UTF-8?q?S=C3=B6ren=20Hantel?=" <fugininsane@gmail.com>
 X-Google-Original-From: =?UTF-8?q?S=C3=B6ren=20Hantel?= <fugininsane@googlemail.com>
 To: linux-pm@vger.kernel.org
@@ -76,11 +76,10 @@ Cc: Vasily Khoruzhick <anarsoul@gmail.com>,
 	linux-arm-kernel@lists.infradead.org,
 	linux-sunxi@lists.linux.dev,
 	linux-kernel@vger.kernel.org,
-	Claude Fable 5 <noreply@anthropic.com>,
-	=?UTF-8?q?S=C3=B6ren=20Hantel?= <fugininsane@googlemail.com>
-Subject: [PATCH 3/3] ARM: dts: sun9i-a80: Add thermal sensor and thermal zones
-Date: Wed, 22 Jul 2026 22:33:41 +0200
-Message-ID: <20260722203341.2917852-4-fugininsane@googlemail.com>
+	FuginInsanE <FuginInsanE@googlemail.com>
+Subject: [PATCH v2 0/3] thermal/drivers/sun8i: Add support for the Allwinner A80 thermal sensor
+Date: Wed, 22 Jul 2026 23:00:43 +0200
+Message-ID: <20260722210046.2932498-1-fugininsane@googlemail.com>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <20260722203341.2917852-1-fugininsane@googlemail.com>
 References: <20260722203341.2917852-1-fugininsane@googlemail.com>
@@ -93,111 +92,60 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 
-From: Philipp Rossak <embed3d@gmail.com>
+From: FuginInsanE <FuginInsanE@googlemail.com>
 
-Now that the A80 thermal sensor is supported, add its device node and
-the thermal zones to the device tree.
+This series adds support for the thermal sensor of the Allwinner A80
+(sun9i), the last SoC of the family with an in-tree DT but no THS
+support.
 
-The clocks and the resets are shared between the GPADC and the THS
-sensor. Sensor 0 is located beside the big CPU cluster, sensor 1
-beside the DRAM controller, sensor 2 beside the GPU and sensor 3
-beside the little CPU cluster.
+The A80 THS is an early relative of the A83T/H3-era sensor generation:
+same register semantics, but the block, bus gate, module clock and
+reset line are shared with the GPADC, the THS registers start at
+offset 0x40, and there are four sensors (big cluster, DRAM, GPU,
+little cluster).
 
-Signed-off-by: Philipp Rossak <embed3d@gmail.com>
-[soeren: rebased from the 2018 series, fixed the interrupt number
-(SPI 115 as in the vendor BSP; verified on hardware - SPI 31 stays
-silent), added critical trip points matching the driver's emergency
-shutdown threshold]
-Co-authored-by: Claude Fable 5 <noreply@anthropic.com>
-Signed-off-by: Sören Hantel <fugininsane@googlemail.com>
----
- arch/arm/boot/dts/allwinner/sun9i-a80.dtsi | 68 ++++++++++++++++++++++
- 1 file changed, 68 insertions(+)
+Philipp Rossak posted a driver for this hardware back in 2018 as part
+of a larger THS rework which never landed for the A80; Armbian has
+been carrying his DT patches ever since. This series takes the
+mainline sun8i_thermal driver as the base instead: patch 2 adds a
+chip description derived from the vendor BSP (register init values,
+protection thresholds and the temperature formula), and patch 3
+revives Philipp's DT patch with a fixed interrupt number (SPI 115 as
+in the vendor BSP - verified on hardware, the original SPI 31 never
+fires) and critical trip points.
 
-diff --git a/arch/arm/boot/dts/allwinner/sun9i-a80.dtsi b/arch/arm/boot/dts/allwinner/sun9i-a80.dtsi
-index a1ae092..8e7f8cd 100644
---- a/arch/arm/boot/dts/allwinner/sun9i-a80.dtsi
-+++ b/arch/arm/boot/dts/allwinner/sun9i-a80.dtsi
-@@ -941,6 +941,16 @@
- 			#reset-cells = <1>;
- 		};
- 
-+		ths: thermal-sensor@6004c00 {
-+			compatible = "allwinner,sun9i-a80-ths";
-+			reg = <0x06004c00 0x100>;
-+			interrupts = <GIC_SPI 115 IRQ_TYPE_LEVEL_HIGH>;
-+			clocks = <&ccu CLK_BUS_GPADC>, <&ccu CLK_GPADC>;
-+			clock-names = "bus", "mod";
-+			resets = <&ccu RST_BUS_GPADC>;
-+			#thermal-sensor-cells = <1>;
-+		};
-+
- 		timer@6000c00 {
- 			compatible = "allwinner,sun4i-a10-timer";
- 			reg = <0x06000c00 0xa0>;
-@@ -1250,4 +1260,62 @@
- 			#size-cells = <0>;
- 		};
- 	};
-+
-+	thermal-zones {
-+		cpu0_thermal: cpu0-thermal {
-+			polling-delay-passive = <1000>;
-+			polling-delay = <5000>;
-+			thermal-sensors = <&ths 0>;
-+
-+			trips {
-+				cpu0_crit: cpu0-crit {
-+					temperature = <100000>;
-+					hysteresis = <2000>;
-+					type = "critical";
-+				};
-+			};
-+		};
-+
-+		dram_thermal: dram-thermal {
-+			polling-delay-passive = <1000>;
-+			polling-delay = <5000>;
-+			thermal-sensors = <&ths 1>;
-+
-+			trips {
-+				dram_crit: dram-crit {
-+					temperature = <100000>;
-+					hysteresis = <2000>;
-+					type = "critical";
-+				};
-+			};
-+		};
-+
-+		gpu_thermal: gpu-thermal {
-+			polling-delay-passive = <1000>;
-+			polling-delay = <5000>;
-+			thermal-sensors = <&ths 2>;
-+
-+			trips {
-+				gpu_crit: gpu-crit {
-+					temperature = <100000>;
-+					hysteresis = <2000>;
-+					type = "critical";
-+				};
-+			};
-+		};
-+
-+		cpu2_thermal: cpu2-thermal {
-+			polling-delay-passive = <1000>;
-+			polling-delay = <5000>;
-+			thermal-sensors = <&ths 3>;
-+
-+			trips {
-+				cpu2_crit: cpu2-crit {
-+					temperature = <100000>;
-+					hysteresis = <2000>;
-+					type = "critical";
-+				};
-+			};
-+		};
-+	};
- };
+The A80 SID is not yet supported by the sunxi nvmem driver, so
+calibration data is unavailable for now and the driver falls back to
+defaults, which produce plausible values on real hardware.
+
+Tested on a Cubietech Cubieboard4: all four zones report
+load-reactive temperatures (idle ~40 degC, ~54 degC under sustained
+full load) tracking the BSP formula across the range we could
+provoke.
+
+Changes in v2:
+- Guard the calibrate callback invocation in sun8i_ths_calibrate()
+  against chips without a calibrate op (would have oopsed if a
+  calibration nvmem cell were ever added for the A80)
+- Do not enable the alarm interrupt: being level triggered it would
+  retrigger at conversion rate for as long as an over-temperature
+  condition persists; only the emergency shutdown interrupt remains
+  enabled
+- Note: the unconditional IRQ_HANDLED in the existing interrupt
+  handler predates this series and is left untouched here
+
+Philipp Rossak (1):
+  ARM: dts: sun9i-a80: Add thermal sensor and thermal zones
+
+Sören Hantel (2):
+  dt-bindings: thermal: sun8i: Add binding for the A80 THS controller
+  thermal/drivers/sun8i: Add support for the A80 THS
+
+ .../thermal/allwinner,sun8i-a83t-ths.yaml     |  1 +
+ arch/arm/boot/dts/allwinner/sun9i-a80.dtsi    | 68 +++++++++++++
+ drivers/thermal/sun8i_thermal.c               | 98 ++++++++++++++++++-
+ 3 files changed, 166 insertions(+), 1 deletion(-)
+
 -- 
 2.43.0
 
