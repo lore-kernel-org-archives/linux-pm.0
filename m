@@ -1,37 +1,38 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CBF104C97;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DB53836F8FE;
 	Wed, 22 Jul 2026 08:39:36 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1784709576; cv=none; b=YFjPPf9jYER7i0xskvIzw2S7le7Scae6/D2Mfvd4u/A5kc8/PnHiXFKJHhBrnMqq9Yza3sLiGMwh1JURlUkTi7K5231YNFHeMGHcj7LmoKoLME8IQvdyDPTmgc98E0Sw4A2Xv56yzx8ZP6KY1tBJWDcKqyOU4JgMnMAeuibJpUs=
+	t=1784709576; cv=none; b=Ynq0IAt2oqDg+YO4CxtlKYWnclk1QZL/TdBlSpGLhcEm6r1+NpUkxzoSzlfqO4C3Ooe6JeeTEdRbZV0N1rSJ6EfjpohQ406a0iI3P9WkzgCOZe9ZmXxirQFK49EsG1VQhabprMUyZcNU5DS+nK5F6Sw6SfIs5D15FUE8TyxE42U=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1784709576; c=relaxed/simple;
-	bh=mT9CPnievwR2Vlu+sM5I4sxsoKNQaEXEI5Zu+SVC4BA=;
+	bh=/CtfcRiNZmIDjw0LmLMal82IJMGbUeAVONk2Kky6N14=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=JFRXwf7Ghu2/GPx+CGnVTkJon1PR9jn1LThF0FwkZo18prwFNTRqbZwvk5N3JJjtyXvVW5rnrdA6LtJNmVE6JONZJ8C7rqv1hBEU9TXKAOmkmV6lcXVyCpZa39xSmOmHy+8EcIZufxae8Qau6S348+8XoYU6uBetwXkIlDvDdyc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=QIbqLvyA; arc=none smtp.client-ip=10.30.226.201
+	 In-Reply-To:To:Cc; b=nqhhUm9kpDJoWrtQt6h0mis7BAyXGBunu6GBXXY5nLQO9bi8ugho9FTTm/o0oQc6DdprruKtz2n+i7K4wNUJarnjTbV5+pFZA0VrDQzSYsC0B/fbq+ZHR8Lac1E+1QMUWnBAxhyS2hbYO3sPmbr6Cj+40qTwIu2HCmYYlnBaLLI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=oNHdOlra; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="QIbqLvyA"
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 7C4CEC2BCF7;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="oNHdOlra"
+Received: by smtp.kernel.org (Postfix) with ESMTPS id A69C0C2BD00;
 	Wed, 22 Jul 2026 08:39:36 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
 	s=k20201202; t=1784709576;
-	bh=mT9CPnievwR2Vlu+sM5I4sxsoKNQaEXEI5Zu+SVC4BA=;
+	bh=/CtfcRiNZmIDjw0LmLMal82IJMGbUeAVONk2Kky6N14=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
-	b=QIbqLvyAugBhJcr+NOTz3WNliMKOI3yJyO/dJHVrgo861yG4h89YiONl/vIjZoQ8l
-	 pX//tr8/S/5rGGqmMxx4wHYIaQozOoLnQpKT4+R+HKy54pXfYkoRLYr+WGcH/J8MWA
-	 terO/ybQtSj6Rg1DJ/Agn7DyU+LOZKZz/LkuKIYkOgyKwSoMJObV/BT3Uwwc2c/5XP
-	 GMX/Xr/ycedzkDHPMufBbCOL4GuwntgegLisTnGqjRh7bzLf0m/RslaMiyqpBfFmDr
-	 HniSgkK8MUwKOq+cahmlJB5typaelV3q8vvn/RhQRRAmuvVOkY5k6r2G+6qIK4wHNd
-	 9O/ICO0aH5ShQ==
+	b=oNHdOlraHo+Y14/Ovs6YzBJBV36uW+MUta/e+nK4VatrdD1OCMINZDd6AsESFUjW4
+	 R+lrppCBOUs2iXb0NLZWzyFhD+emjmGeAgN9vbA/fMCiAzjW62BegG+fQKW2p8pdWE
+	 gEQqCzG+e7BvVjhpWbAXExzzyWT7Cg+UPF8CqgzrFtFq3iH5f7e2/fJ9vZEM+LdLzQ
+	 o7c1/FtRL9j3Ww5Z+WYF87rGro3tXesyn0+DoobiNzixatFX81XrfAbT7v8KA+MvEl
+	 fLsLG28Rv3ZYj0R5cqXPUGPX2kvF/iBm8DyKC2D3SuMUbcFxTgmTUesm8JjbcoxfXj
+	 kyg50pSITti6g==
 Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 69107C44539;
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9299FC44533;
 	Wed, 22 Jul 2026 08:39:36 +0000 (UTC)
 From: Xianwei Zhao via B4 Relay <devnull+xianwei.zhao.amlogic.com@kernel.org>
-Date: Wed, 22 Jul 2026 08:39:31 +0000
-Subject: [PATCH 1/3] dt-bindings: power: Add Amlogic A9 power domains
+Date: Wed, 22 Jul 2026 08:39:33 +0000
+Subject: [PATCH 3/3] arm64: dts: amlogic: a9: Add power domain controller
+ node
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -40,7 +41,7 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260722-a9-pm-v1-1-1fe20a44bf2d@amlogic.com>
+Message-Id: <20260722-a9-pm-v1-3-1fe20a44bf2d@amlogic.com>
 References: <20260722-a9-pm-v1-0-1fe20a44bf2d@amlogic.com>
 In-Reply-To: <20260722-a9-pm-v1-0-1fe20a44bf2d@amlogic.com>
 To: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
@@ -53,11 +54,11 @@ Cc: devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
  linux-amlogic@lists.infradead.org, linux-kernel@vger.kernel.org, 
  linux-pm@vger.kernel.org, Xianwei Zhao <xianwei.zhao@amlogic.com>
 X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1784709572; l=3033;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1784709572; l=1059;
  i=xianwei.zhao@amlogic.com; s=20251216; h=from:subject:message-id;
- bh=vpFb6MO7p6AA5kHtUgazEsyrRR4E6EHks7lJJa+cLZ8=;
- b=9/FHHo814FjLOz0QZGsCYKIUd6uaz9LzMRoMhURLgnw9IdTZWGXSrNkRltgjH38S7Tv9q6wHl
- xty8DlG0G24Cym43lnpsTeg8qi3ngLKiWaY75sejCxz/epehbUliSB5
+ bh=xo1Aubxoy/JqFSkmWDscfP/W3QukIsgCeqLnk3l3H2c=;
+ b=8m2xj7Wdhudv3R9CMZS9z6M+V7M9mHlKRD7/9v7ugrfgIHOsm2Z43TnkReKOjQANfg6+hGJW7
+ CJVRk7lvnCpBLpygK1jOTD3xy+wTNafcwO0b2uGVTJhA5kLx7f2QAbf
 X-Developer-Key: i=xianwei.zhao@amlogic.com; a=ed25519;
  pk=dWwxtWCxC6FHRurOmxEtr34SuBYU+WJowV/ZmRJ7H+k=
 X-Endpoint-Received: by B4 Relay for xianwei.zhao@amlogic.com/20251216 with
@@ -67,94 +68,41 @@ Reply-To: xianwei.zhao@amlogic.com
 
 From: Xianwei Zhao <xianwei.zhao@amlogic.com>
 
-Add devicetree binding document and related header file for
-Amlogic A9 secure power domains.
+Add power domain controller node for Amlogic A9 SoC.
 
 Signed-off-by: Xianwei Zhao <xianwei.zhao@amlogic.com>
 ---
- .../bindings/power/amlogic,meson-sec-pwrc.yaml     |  1 +
- include/dt-bindings/power/amlogic,a9-pwrc.h        | 61 ++++++++++++++++++++++
- 2 files changed, 62 insertions(+)
+ arch/arm64/boot/dts/amlogic/amlogic-a9.dtsi | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
 
-diff --git a/Documentation/devicetree/bindings/power/amlogic,meson-sec-pwrc.yaml b/Documentation/devicetree/bindings/power/amlogic,meson-sec-pwrc.yaml
-index 12b71688dd34..e608a0c75961 100644
---- a/Documentation/devicetree/bindings/power/amlogic,meson-sec-pwrc.yaml
-+++ b/Documentation/devicetree/bindings/power/amlogic,meson-sec-pwrc.yaml
-@@ -22,6 +22,7 @@ properties:
-       - amlogic,meson-s4-pwrc
-       - amlogic,a4-pwrc
-       - amlogic,a5-pwrc
-+      - amlogic,a9-pwrc
-       - amlogic,c3-pwrc
-       - amlogic,t7-pwrc
-       - amlogic,s6-pwrc
-diff --git a/include/dt-bindings/power/amlogic,a9-pwrc.h b/include/dt-bindings/power/amlogic,a9-pwrc.h
-new file mode 100644
-index 000000000000..c1c2308a0d0c
---- /dev/null
-+++ b/include/dt-bindings/power/amlogic,a9-pwrc.h
-@@ -0,0 +1,61 @@
-+/* SPDX-License-Identifier: (GPL-2.0-only OR MIT) */
-+/*
-+ * Copyright (C) 2026 Amlogic, Inc. All rights reserved
-+ */
+diff --git a/arch/arm64/boot/dts/amlogic/amlogic-a9.dtsi b/arch/arm64/boot/dts/amlogic/amlogic-a9.dtsi
+index b0e0fadeed82..3652b2034c96 100644
+--- a/arch/arm64/boot/dts/amlogic/amlogic-a9.dtsi
++++ b/arch/arm64/boot/dts/amlogic/amlogic-a9.dtsi
+@@ -7,6 +7,7 @@
+ #include <dt-bindings/interrupt-controller/arm-gic.h>
+ #include <dt-bindings/gpio/gpio.h>
+ #include <dt-bindings/pinctrl/amlogic,pinctrl.h>
++#include <dt-bindings/power/amlogic,a9-pwrc.h>
+ 
+ / {
+ 	interrupt-parent = <&gic>;
+@@ -72,6 +73,15 @@ cpu7: cpu@700 {
+ 		};
+ 	};
+ 
++	sm: secure-monitor {
++		compatible = "amlogic,meson-gxbb-sm";
 +
-+#ifndef _DT_BINDINGS_AMLOGIC_A9_POWER_H
-+#define _DT_BINDINGS_AMLOGIC_A9_POWER_H
++		pwrc: power-controller {
++			compatible = "amlogic,a9-pwrc";
++			#power-domain-cells = <1>;
++		};
++	};
 +
-+#define PWRC_A9_DSPA_ID			0
-+#define PWRC_A9_U3HSG_U3_ID		1
-+#define PWRC_A9_DP_ID			2
-+#define PWRC_A9_DOS_HCODEC_ID		3
-+#define PWRC_A9_TAHOE_ID		4
-+#define PWRC_A9_DOS_HEVC_ID		5
-+#define PWRC_A9_U2H_ID			6
-+#define PWRC_A9_U3DRD_B_ID		7
-+#define PWRC_A9_VPU_HDMI_ID		8
-+#define PWRC_A9_U2DRD_ID		9
-+#define PWRC_A9_U3DRD_A_ID		10
-+#define PWRC_A9_SD_EMMC_C_ID		11
-+#define PWRC_A9_GE2D_ID			12
-+#define PWRC_A9_AMFC_ID			13
-+#define PWRC_A9_EDPTX_ID		14
-+#define PWRC_A9_OPP_ID			15
-+#define PWRC_A9_VICP_ID			16
-+#define PWRC_A9_SD_EMMC_A_ID		17
-+#define PWRC_A9_SD_EMMC_B_ID		18
-+#define PWRC_A9_ETH_ID			19
-+#define PWRC_A9_PCIE_A_ID		20
-+#define PWRC_A9_PCIE_B_ID		21
-+#define PWRC_A9_NNA_4T_ID		22
-+#define PWRC_A9_HDMIRX_ID		23
-+#define PWRC_A9_CVE_ID			24
-+#define PWRC_A9_ISP_ID			25
-+#define PWRC_A9_ETH_1G_ID		26
-+#define PWRC_A9_U3HSG_HSG_ID		27
-+#define PWRC_A9_U3DPPHY_U3_ID		28
-+#define PWRC_A9_U3DPPHY_DP_ID		29
-+#define PWRC_A9_PCIE3PHY_ID		30
-+#define PWRC_A9_U3HSG_PCIE2_ID		31
-+#define PWRC_A9_MALI_TOP_ID		32
-+#define PWRC_A9_AO_SED_ID		33
-+#define PWRC_A9_AO_IR_ID		34
-+#define PWRC_A9_AO_UART_B_ID		35
-+#define PWRC_A9_AO_UART_C_ID		36
-+#define PWRC_A9_AO_UART_D_ID		37
-+#define PWRC_A9_AO_SPISG_ID		38
-+#define PWRC_A9_AO_UART_E_ID		39
-+#define PWRC_A9_AO_CEC_ID		40
-+#define PWRC_A9_EE_SRAMA_ID		41
-+#define PWRC_A9_AUDIO_ID		42
-+#define PWRC_A9_DMC0_ID			43
-+#define PWRC_A9_GIC_ID			44
-+#define PWRC_A9_DDRPHY_ID		45
-+#define PWRC_A9_AUCPU_ID		46
-+#define PWRC_A9_DSI0_ID			47
-+#define PWRC_A9_DSI1_ID			48
-+#define PWRC_A9_CAN0_ID			49
-+#define PWRC_A9_CAN1_ID			50
-+
-+#endif
+ 	timer {
+ 		compatible = "arm,armv8-timer";
+ 		interrupts = <GIC_PPI 13 IRQ_TYPE_LEVEL_LOW>,
 
 -- 
 2.52.0
