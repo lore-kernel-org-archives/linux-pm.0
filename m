@@ -1,130 +1,100 @@
-Received: from sender4-op-o11.zoho.com (sender4-op-o11.zoho.com [136.143.188.11])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D2403238C16;
-	Wed, 22 Jul 2026 13:28:23 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=136.143.188.11
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1784726905; cv=pass; b=XhbbPdWDM+nPCW+trm+8J5HRmRSINvrLDQVQXu0oqfcOyEFA4N5HdOItUW3YavsLs4LsQavSVZMHT+st1qZ1TfSvCi0cllYveKz6YyLouebw3GCSsNSJf8ydWLJ/dNErnmsyi5g5ilFUbg5jVzo5H2qd9PnYAIl8aS4fl6QiFgc=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1784726905; c=relaxed/simple;
-	bh=b55u5YqXivlSxnmTT/tsMYorVuAn384SVClNW+zVE3w=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=Ih8oFSzlDSuXdND4dW/h5pb4r2NmKZVjjz1BDf8rFShCpYCCAnbczy7f5uIGIvEvujVvnEbqYzIFWX/SDF5CanPQUs/Ko/2NSdIlYc8Qzlm9R9MqM73lMTKhQ4wmvpRtwtX0K9423GIap5aKGHuau2HR2bKixCsiSCSsZwja35w=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (1024-bit key) header.d=collabora.com header.i=dmitry.osipenko@collabora.com header.b=JBWoBTor; arc=pass smtp.client-ip=136.143.188.11
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CB420335BB4
+	for <linux-pm@vger.kernel.org>; Wed, 22 Jul 2026 13:31:04 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1784727065; cv=none; b=s7odRDtHvuUHpgVkQ5p5DcpSy74ZvpkhH8TnObfl8JkUhcubLDpRgZnXNl+UMssQfsWaOXcKfJ5BIVArmizaQiiwtfh3XIU/eJxkv2O1vmKzsMekgwdPSNv045qtLA3JG56BYZ5fXYBkePnANvW0/JgKsTNf1uWIxZCUz+AmQ90=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1784727065; c=relaxed/simple;
+	bh=31d5IuqC1wUQ3t04MMXovT6AAvbZncgvCgLiIn8iJfM=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=fr7zSCQRukeaivvJhlnhUrBLmqYt63vyq/merAzW54OJFQr4AkrM0UDJWgocudzeKhbhVXgJuzxLGVz+0HtHkDLx5jGQMMZ4OMqkf/0DQ0PKBp/mDt/2XdXcQXfRWmsyBrdEDK2SmZ/6r6rSZyav3+TOjoK9Wl7oLiEADg/wI80=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=BS9meq3J; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=collabora.com header.i=dmitry.osipenko@collabora.com header.b="JBWoBTor"
-ARC-Seal: i=1; a=rsa-sha256; t=1784726897; cv=none; 
-	d=zohomail.com; s=zohoarc; 
-	b=JsH11sfaEpvPdeSAnNZMv+HGKpSuWf+97/sRVY2CJCPYRUfuEyLNQj7wUYdoVRRoX18/aC2eHxmqVJfwsqi/o+2CZY+dkMBYYfTzwYomc2OWacm1wlcRh6jr1ZmKX9YwUQt6ptD9GuCe+coOJcIeIfKWsxQQCgfNivZ1lwA5jC8=
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=zohomail.com; s=zohoarc; 
-	t=1784726897; h=Content-Transfer-Encoding:Cc:Cc:Date:Date:From:From:MIME-Version:Message-ID:Subject:Subject:To:To:Message-Id:Reply-To; 
-	bh=6Eu1BsE+rTW0N75H/qUvuzJ34PWMjXXH1yhZ74i5vdw=; 
-	b=MAF8QjXYBukouXwbLnSXoOi8aoiS3ZPq+F6ylyHxQ/b8Uu2yaR4apJwpo6M+lJAoukp/+nz++n5DwBVwLqJWhnmKkp3C/r1pNmx2Co7sihcOLEdxO7LV935bPd9mBbgWbJHlKRqSsGaD94+n/6wGb7/q/xn5TonOuDdqKRFfzqo=
-ARC-Authentication-Results: i=1; mx.zohomail.com;
-	dkim=pass  header.i=collabora.com;
-	spf=pass  smtp.mailfrom=dmitry.osipenko@collabora.com;
-	dmarc=pass header.from=<dmitry.osipenko@collabora.com>
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; t=1784726897;
-	s=zohomail; d=collabora.com; i=dmitry.osipenko@collabora.com;
-	h=From:From:To:To:Cc:Cc:Subject:Subject:Date:Date:Message-ID:MIME-Version:Content-Transfer-Encoding:Message-Id:Reply-To;
-	bh=6Eu1BsE+rTW0N75H/qUvuzJ34PWMjXXH1yhZ74i5vdw=;
-	b=JBWoBTorBSeVHxp5DLZcdf0RnZcYzV7gcspjiE/oUmFO3SLus+wmywiresnFmgfN
-	xBkxYzODqPSmeNfWJHzOxdFwKLo7A+JKAZTjF38XXKlE9nV2TcjAb7ycUm7s56ogwyl
-	oSTXzP7cPhVGnhGDg+u/BIxJL6EgrHlNVvP8nZu8=
-Received: by mx.zohomail.com with SMTPS id 17847268956531017.741593921343;
-	Wed, 22 Jul 2026 06:28:15 -0700 (PDT)
-From: Dmitry Osipenko <dmitry.osipenko@collabora.com>
-To: Ulf Hansson <ulfh@kernel.org>,
-	Matthias Brugger <matthias.bgg@gmail.com>,
-	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
-Cc: linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org,
-	linux-mediatek@lists.infradead.org
-Subject: [PATCH v1] pmdomain: mediatek: Fix MT8183 hang on boot
-Date: Wed, 22 Jul 2026 16:27:29 +0300
-Message-ID: <20260722132729.302067-1-dmitry.osipenko@collabora.com>
-X-Mailer: git-send-email 2.54.0
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="BS9meq3J"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6CADD1F00A3A
+	for <linux-pm@vger.kernel.org>; Wed, 22 Jul 2026 13:31:04 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1784727064;
+	bh=rDPXtrURAOR3loMTBgMcjS6utOdp6bmi2HxcjdGau7Y=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc;
+	b=BS9meq3Jw7CqNt93I606QN0L/os3RKlbg/ryHyS2WcS0FQBmYuBHpJINdD/jUs4Vs
+	 4aH1O5vNW93qnMj3oaTxw9vli0FwhK8o1kmlO55pGjoMnWRWQicxQX8qvWToiS7ylv
+	 ajbAgAxnlKc54zJaQ5Y1L/EU5zoTSuS1mjCkAf9Z0g+mzbflmGuMwhT88EkJVnliRy
+	 4NYBZfHSC/Gm+0HPpW1Ip9NIYSoQhZAiMzTF+I5jEZGVXzS+b7G3li+bJzKkUJ9YVC
+	 T0EbxbHmOxh/sEd+sbVhvoiG56Pxj8sXYVY/TbfJ+jedIHY8INOCwUkbZ6KTYZIMA3
+	 eDgp6XNeZNLRg==
+Received: by mail-lj1-f176.google.com with SMTP id 38308e7fff4ca-39c7ac9b8c3so85067161fa.0
+        for <linux-pm@vger.kernel.org>; Wed, 22 Jul 2026 06:31:04 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AHgh+RpJMhqNOpRPsU0WksfRZ/rpyqVt6mqTXIpOD1RG4vS6i5s13M2jyiRQRQ49ya7cDOK+5mCH5/9Asg==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yw9amrYlttFSDlyr1X5hCLk9slIgjBs+Bbpi2eYK5yq2r/11NlZ
+	70yqYrB4MVx2fDhfyEjm6GaX+e/dHCg2X2O6AV5WIRNofKJOdIJXxnLlg/b4gmonxKpqypY5Go4
+	XTqLnewdQgwwP1FcaGal5yqGMRL+epo4=
+X-Received: by 2002:a05:651c:881:b0:39c:650c:454e with SMTP id
+ 38308e7fff4ca-39eb2768f76mr42061291fa.13.1784727062890; Wed, 22 Jul 2026
+ 06:31:02 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-ZohoMailClient: External
+References: <20260611033213.11252-1-ankun@uniontech.com>
+In-Reply-To: <20260611033213.11252-1-ankun@uniontech.com>
+From: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
+Date: Wed, 22 Jul 2026 15:30:50 +0200
+X-Gmail-Original-Message-ID: <CAJZ5v0jEFLQC=-p=Ybxi_JMcLZk-=Vc1MxngTEGZS=obr8WuPQ@mail.gmail.com>
+X-Gm-Features: AUfX_myNQOcj4BeOp0OmJ48mdCquGlM4AjBedVSnZ1rqhLYQNKMbMP4DQRhNX5Y
+Message-ID: <CAJZ5v0jEFLQC=-p=Ybxi_JMcLZk-=Vc1MxngTEGZS=obr8WuPQ@mail.gmail.com>
+Subject: Re: [PATCH] PM: Avoid TOCTOU race in pm_wakeup_irq_show()
+To: ankun <ankun@uniontech.com>
+Cc: rafael@kernel.org, pavel@kernel.org, lenb@kernel.org, 
+	linux-pm@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Depending on firmware, part of the MFG domains may be left ON at boot
-leaving only some MFG cores powered, to let the ACP to prefetch the GPU
-region when the display controller is brought up. This doesn't play well
-with an eventual delay in probing Panfrost when the display controller is
-fully set up, as that would make genpd's sync_state() to power off the
-domain while ACP tries to prefetch: this is causing an AXI stall,
-effectively freezing the AP indefinitely. In order to prevent this from
-happening, the sync_state() functionality must be obliterated on all of
-the MFG domains: while this guarantees a power leakage if the bootloader
-boots the kernel with MFG PDs partially powered on, this is the only way
-to ensure stable operation of the SoC during boot on devices with such
-firmware because, of course, those will never officially receive a
-firmware update.
+On Thu, Jun 11, 2026 at 5:34=E2=80=AFAM ankun <ankun@uniontech.com> wrote:
+>
+> pm_wakeup_irq_show() reads the global pm_wakeup_irq variable twice:
+> first to check if it is zero (returning -ENODATA if so), and then again
+> to format the value for sysfs output. Between these two calls, the
+> wakeup IRQ could be cleared (e.g. by writing 0 to the same sysfs file),
+> leading to a time-of-check-to-time-of-use race. The result may be a
+> printed value of 0 despite the check having passed, or other
+> inconsistencies.
+>
+> Cache the value in a local variable after a single read, and use that
+> for both the check and the output. This closes the race window and
+> makes the operation atomic from the caller's perspective.
+>
+> Signed-off-by: ankun <ankun@uniontech.com>
+> ---
+>  kernel/power/main.c | 6 ++++--
+>  1 file changed, 4 insertions(+), 2 deletions(-)
+>
+> diff --git a/kernel/power/main.c b/kernel/power/main.c
+> index 5429e9f19b65..08a25117e38c 100644
+> --- a/kernel/power/main.c
+> +++ b/kernel/power/main.c
+> @@ -683,10 +683,12 @@ static ssize_t pm_wakeup_irq_show(struct kobject *k=
+obj,
+>                                         struct kobj_attribute *attr,
+>                                         char *buf)
+>  {
+> -       if (!pm_wakeup_irq())
+> +       unsigned int irq =3D pm_wakeup_irq();
+> +
+> +       if (!irq)
+>                 return -ENODATA;
+>
+> -       return sysfs_emit(buf, "%u\n", pm_wakeup_irq());
+> +       return sysfs_emit(buf, "%u\n", irq);
+>  }
+>
+>  power_attr_ro(pm_wakeup_irq);
+> --
 
-Fixes Kappa Chromebook hanging during system boot.
-
-Fixes: 0e789b491ba0 ("pmdomain: core: Leave powered-on genpds on until sync_state")
-Fixes: 13a4b7fb6260 ("pmdomain: core: Leave powered-on genpds on until late_initcall_sync")
-Signed-off-by: Dmitry Osipenko <dmitry.osipenko@collabora.com>
----
- drivers/pmdomain/mediatek/mt8183-pm-domains.h | 7 +++++--
- 1 file changed, 5 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/pmdomain/mediatek/mt8183-pm-domains.h b/drivers/pmdomain/mediatek/mt8183-pm-domains.h
-index 3742782a2702..5e33b8628e85 100644
---- a/drivers/pmdomain/mediatek/mt8183-pm-domains.h
-+++ b/drivers/pmdomain/mediatek/mt8183-pm-domains.h
-@@ -47,7 +47,7 @@ static const struct scpsys_domain_data scpsys_domain_data_mt8183[] = {
- 		.pwr_sta2nd_offs = 0x0184,
- 		.sram_pdn_bits = 0,
- 		.sram_pdn_ack_bits = 0,
--		.caps = MTK_SCPD_DOMAIN_SUPPLY,
-+		.caps = MTK_SCPD_DOMAIN_SUPPLY | MTK_SCPD_KEEP_DEFAULT_OFF,
- 	},
- 	[MT8183_POWER_DOMAIN_MFG] = {
- 		.name = "mfg",
-@@ -57,7 +57,7 @@ static const struct scpsys_domain_data scpsys_domain_data_mt8183[] = {
- 		.pwr_sta2nd_offs = 0x0184,
- 		.sram_pdn_bits = GENMASK(8, 8),
- 		.sram_pdn_ack_bits = GENMASK(12, 12),
--		.caps = MTK_SCPD_DOMAIN_SUPPLY,
-+		.caps = MTK_SCPD_DOMAIN_SUPPLY | MTK_SCPD_KEEP_DEFAULT_OFF,
- 	},
- 	[MT8183_POWER_DOMAIN_MFG_CORE0] = {
- 		.name = "mfg_core0",
-@@ -67,6 +67,7 @@ static const struct scpsys_domain_data scpsys_domain_data_mt8183[] = {
- 		.pwr_sta2nd_offs = 0x0184,
- 		.sram_pdn_bits = GENMASK(8, 8),
- 		.sram_pdn_ack_bits = GENMASK(12, 12),
-+		.caps = MTK_SCPD_KEEP_DEFAULT_OFF,
- 	},
- 	[MT8183_POWER_DOMAIN_MFG_CORE1] = {
- 		.name = "mfg_core1",
-@@ -76,6 +77,7 @@ static const struct scpsys_domain_data scpsys_domain_data_mt8183[] = {
- 		.pwr_sta2nd_offs = 0x0184,
- 		.sram_pdn_bits = GENMASK(8, 8),
- 		.sram_pdn_ack_bits = GENMASK(12, 12),
-+		.caps = MTK_SCPD_KEEP_DEFAULT_OFF,
- 	},
- 	[MT8183_POWER_DOMAIN_MFG_2D] = {
- 		.name = "mfg_2d",
-@@ -85,6 +87,7 @@ static const struct scpsys_domain_data scpsys_domain_data_mt8183[] = {
- 		.pwr_sta2nd_offs = 0x0184,
- 		.sram_pdn_bits = GENMASK(8, 8),
- 		.sram_pdn_ack_bits = GENMASK(12, 12),
-+		.caps = MTK_SCPD_KEEP_DEFAULT_OFF,
- 		.bp_cfg = {
- 			BUS_PROT_WR(INFRA,
- 				    MT8183_TOP_AXI_PROT_EN_1_MFG,
--- 
-2.54.0
-
+After the change though a stale pm_wakeup_irq() value may be printed
+(if it is updated in the meantime), so why bother?
