@@ -1,221 +1,203 @@
-Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
+Received: from mx0b-0002e601.pphosted.com (mx0b-0002e601.pphosted.com [148.163.154.28])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E9043360EE1
-	for <linux-pm@vger.kernel.org>; Wed, 22 Jul 2026 07:40:27 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1784706030; cv=none; b=WyRy5bbLKoR47WlwTIsSNsTp+i2DW7C5edXSjLbhwn3JoMxAUZrQ1WZbB9JQFqD9bzH+yZX9xeZqS25v3MuI+nGnuLNGgVDRap26kY31svQKhYJj+3DCvho1Mpzpjj4E+LEmS2lcLM+N8vv8zxqxHvl8/6kRziLYViUw82XbmMk=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1784706030; c=relaxed/simple;
-	bh=swFDNlNTbzSmuQjfxksa3smW5BDv4wRCtW3Ecnxg8V4=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=LhFGtMg4ooGHW4TXsvW/YwgkLl4tz/exP/Q47Uil9ZP38vP634go2LKkqoHs4dT7JvanNnJklJe4IZH1GJGjON7ksTsJUq16wUb9jdCuzCDjgxgc6pVG3o6uGajfq19hmXIAiR0mwnn3vj1OAvqpGM0Hs5NqyJWwHMAyKJoQvKg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=a6Aiptuv; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=DuTHNAtX; arc=none smtp.client-ip=205.220.168.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 02D83471254;
+	Wed, 22 Jul 2026 07:53:32 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=148.163.154.28
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1784706814; cv=fail; b=TM5FKfDHuCKk9/7YY0AXhiIdqr49w+G/f/u7fIoO38Tg0Uy3lRGEOKaRaV86y7mcrYc/ozcfQFfDi685tSAM4oOHzpUrHyYZzCKPJpelgndS1sPRH0BmFts4VNTUr99quSkYpMSu4kPXSikf3y8Vui9uTDJgYAffS62ag+tqL3c=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1784706814; c=relaxed/simple;
+	bh=U/4L6x2COJt6BnssLm3QKzMAM1hORfxmJYo1xD0X78A=;
+	h=Message-ID:Date:MIME-Version:Subject:To:CC:References:From:
+	 In-Reply-To:Content-Type; b=q2DxKgOwArl1jCCF7n/riNdCRqXJPvCCXBbVg6mNYOCWvoaRHWn/DQFEGJyc/lsiLcK8Z/vMNJ/10qoD0ANF+v+QE388nWjeaN8F6liplvcL4k9on5s+CBkCq8VfX34jj1MEHuCp0Yr7uuponUD9ELmsbmCWoEdoP667Ahx7J+E=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=ti.com; spf=pass smtp.mailfrom=ti.com; dkim=pass (2048-bit key) header.d=ti.com header.i=@ti.com header.b=NYjtViwN; dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b=UiztIHHM; arc=fail smtp.client-ip=148.163.154.28
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=ti.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=ti.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="a6Aiptuv";
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="DuTHNAtX"
-Received: from pps.filterd (m0279864.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 66M53irX3473730
-	for <linux-pm@vger.kernel.org>; Wed, 22 Jul 2026 07:40:27 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-type:date:from:in-reply-to:message-id:mime-version
-	:references:subject:to; s=qcppdkim1; bh=T/sjeRpn9BssHS0FCtGdQxM5
-	xUeDnRf/+QPldCey/10=; b=a6AiptuvNdJiTbm64FRiiwTW4/xZa1RuSpl6OVUl
-	4QPetK5kihgfJFPFKj7iMnQV4q3npN1dTs81MkXarbti4nzalNQJQ+vnJx3+d5ja
-	Pqbt5OQOpJup6Z/x8DgC9EPu21QubXNJKDRBnwoCcUOmh434Ow/ZlIhYH8EP5OYM
-	UkHorDzdJUt0fjixZJI5/TfAViZG+fUuCCMMpF+uPrRpsoEa55J4MPAw+4d9l0Ac
-	H67NO3iFRdrZvIKQk7ng8oqe2ShZ3PxrsOpSjC5eOuxyyvaxUuQG+qiOhYL4mpzg
-	KEiZJDbfGXRkkJsFq0iaxNnk9u+Srd4hjO00MJ/PmUtOuQ==
-Received: from mail-pj1-f69.google.com (mail-pj1-f69.google.com [209.85.216.69])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4fjd6ftvyr-1
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Wed, 22 Jul 2026 07:40:26 +0000 (GMT)
-Received: by mail-pj1-f69.google.com with SMTP id 98e67ed59e1d1-37fca5f21b1so5641500a91.0
-        for <linux-pm@vger.kernel.org>; Wed, 22 Jul 2026 00:40:26 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1784706026; x=1785310826; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=T/sjeRpn9BssHS0FCtGdQxM5xUeDnRf/+QPldCey/10=;
-        b=DuTHNAtXxsQHMIaBqGoPTh6G5C5gD04og1gQABF/gF39fx42m1mbvlBFpOqXC1Zlzo
-         GQaWmrh4lZEEqPEKExe8es6nAHidWhlcVqIzesaWnapw4YbjIdgtxf8t7f5IQ/CE0wEl
-         SfrEglklUUo9YT8/aZFrD3orvyIw36YX/rFSJC7KoVQPcVu34KZoq0+yBeoJY84Z/Aus
-         wcc4DPoQ+ZqIxWNAw1pBjCLoDm20WCDbQS1U8/gx0sNQFWiXzYh7HkEW+F6xnWpyYOwm
-         zzZgr4XytUEcvA0tvJfzJq2BgyyLBuFLPwqkWMxNddL6f3fgcG9P2H4nZOx81HzV4pRy
-         cA7Q==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1784706026; x=1785310826;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=T/sjeRpn9BssHS0FCtGdQxM5xUeDnRf/+QPldCey/10=;
-        b=sAlgz48pCozzh6NN2NYjnif3nub/CnSomXlY132AszqhgL2x8DbqaNHtAlsox6Gba0
-         XWBghYGMhY0r58dTs48y+AxYIDJOwIXogOnbxuZ09VzG1+V0djnVeUXaxfW6OVzPI/ah
-         4r0RBxTgMkermjV81mcKWPPB1rvqsq+Kkx9a5RW5rGtsJkUtuqONuFHDDjBNVal5kV5P
-         0sqC/bXYSvrzWh9Cx0QbhfsRyPhyMZtXQIKKue2Wkaw/VI8ebUymZZXZcf/MkJQfjBha
-         l/Em6ODKiCH5bbmue98BhzMjfcqj2Pb/Zru9pTzHle9MrUM5G0JmAUS+XwG3YSNGEgnn
-         wO0g==
-X-Forwarded-Encrypted: i=1; AHgh+Rq8/HiXpidUCwYLgTd8wwGsk6LiOqDc09RJxfZchGsL/Isq7yLyH+FaYZVn1uUthbLHr2JWxEstkA==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yxl1Fdm5YJEsTw/nJ+w/Qk9Y09EPHZKpaK6OuaV6sKywEySVRHU
-	BLCL8yKORTIsjVYgw1lyGNC+oslq+MI1EOilrsBvOEFwhZQDP4LrttbI9zOg/ti6E0CWEtzrnuP
-	CWBOnQilLH7kiJrtlilyF0rKt5xid5fra2l0eLZBEfm6wKsm9crTRK86NSUBkkg==
-X-Gm-Gg: AR+sD12SBuDTfdlUDruhiAmtjImsagLxEqdh9EhkLuGidw5xqENaecmiZZ8eJrqJ4k8
-	VygnGZG5hZUUFjd35mAUWMZFC2u7Bl4Tn+CZkL9IxAWI+kBy4Tw3/D7qSRtoAxuwRZhIrZ07sDu
-	UIVtFTLiE4W13VMw8Y98JZ6X/G5W0nDHvXdI01PArR9zgpRC0dgypRTmuyyB6c3dK88HCYDgOeH
-	zBqfaLPQBKzXJ1QLmV1IvTPIdKU5M6Ub8W+XkTdza/0G9tgaDt7VLIAIIO5vD6vseiNyW6fajcF
-	KdeFyTbVHzJlOByI/ttxnnFgJI6NhA4Vvob1jSC0yqaSVa7h0r7XsY/u+ykeUMLkyOTODE/+E76
-	pb3fvSnzKa7e/I1/F/Ki+HMvKWNqqKuTySA==
-X-Received: by 2002:a17:90b:5844:b0:37f:a913:1554 with SMTP id 98e67ed59e1d1-38ea37961d2mr2544856a91.16.1784706026127;
-        Wed, 22 Jul 2026 00:40:26 -0700 (PDT)
-X-Received: by 2002:a17:90b:5844:b0:37f:a913:1554 with SMTP id 98e67ed59e1d1-38ea37961d2mr2544812a91.16.1784706025638;
-        Wed, 22 Jul 2026 00:40:25 -0700 (PDT)
-Received: from hu-pkondeti-hyd.qualcomm.com ([202.46.22.19])
-        by smtp.gmail.com with ESMTPSA id a92af1059eb24-13d130a7738sm3935997c88.9.2026.07.22.00.40.15
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 22 Jul 2026 00:40:25 -0700 (PDT)
-Date: Wed, 22 Jul 2026 13:10:13 +0530
-From: Pavan Kondeti <pavan.kondeti@oss.qualcomm.com>
-To: Shivendra Pratap <shivendra.pratap@oss.qualcomm.com>
-Cc: Sebastian Reichel <sre@kernel.org>, Mark Rutland <mark.rutland@arm.com>,
-        Lorenzo Pieralisi <lpieralisi@kernel.org>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Daniel Lezcano <daniel.lezcano@kernel.org>,
-        Christian Loehle <christian.loehle@arm.com>,
-        Ulf Hansson <ulfh@kernel.org>, Lee Jones <lee@kernel.org>,
-        Rob Herring <robh@kernel.org>,
-        Krzysztof Kozlowski <krzk+dt@kernel.org>,
-        Conor Dooley <conor+dt@kernel.org>,
-        Bjorn Andersson <andersson@kernel.org>,
-        Konrad Dybcio <konradybcio@kernel.org>, Arnd Bergmann <arnd@arndb.de>,
-        Souvik Chakravarty <Souvik.Chakravarty@arm.com>,
-        Andy Yan <andy.yan@rock-chips.com>,
-        Matthias Brugger <matthias.bgg@gmail.com>,
-        John Stultz <john.stultz@linaro.org>,
-        Moritz Fischer <moritz.fischer@ettus.com>,
-        Bartosz Golaszewski <brgl@kernel.org>,
-        Sudeep Holla <sudeep.holla@kernel.org>, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org,
-        Florian Fainelli <florian.fainelli@broadcom.com>,
-        Krzysztof Kozlowski <krzk@kernel.org>,
-        Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>,
-        Mukesh Ojha <mukesh.ojha@oss.qualcomm.com>,
-        Andre Draszik <andre.draszik@linaro.org>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Kathiravan Thirumoorthy <kathiravan.thirumoorthy@oss.qualcomm.com>,
-        mfd@lists.linux.dev, Srinivas Kandagatla <srini@kernel.org>
-Subject: Re: [PATCH v23 03/13] power: reset: reboot-mode: Add support for
- predefined reboot modes
-Message-ID: <0c55125d-5304-415d-86c0-a589c612babf@quicinc.com>
-References: <20260714-arm-psci-system_reset2-vendor-reboots-v23-0-e7453c548c21@oss.qualcomm.com>
- <20260714-arm-psci-system_reset2-vendor-reboots-v23-3-e7453c548c21@oss.qualcomm.com>
+	dkim=pass (2048-bit key) header.d=ti.com header.i=@ti.com header.b="NYjtViwN";
+	dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b="UiztIHHM"
+Received: from pps.filterd (m0374955.ppops.net [127.0.0.1])
+	by mx0b-0002e601.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 66M507ir2797164;
+	Wed, 22 Jul 2026 02:53:23 -0500
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ti.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=
+	proofpoint-05-2026; bh=3WacAD3Syue1Alpk5SpO43Ck7Bpm3IsGZlZ043iXb
+	+w=; b=NYjtViwNYdQA0vxLXvWUSrkpeXtNsu7USPW1MIdN7r7Jnt4MdU5De9Rnf
+	RnH83nV70JMKMh0TaoRe4OvIe9XOjaDAEUaWRQvzvVaW9MFsl/0JWGyGze6coE2w
+	qySxZRHlOSKmx2O2dPxn74Ab0qeHj5/XpsirnyzTaOkIAACmsXrX4cN+ml1GrgSy
+	8swBkG6jYreNOkbyCcX3nE4L+iWkD7kqaYO0Up7RedY8ahm5IPlms+1lDRneEwhq
+	tBVvFEJmnvI4rnbaIDZ32GG7qqnW+Cu8WRdu+P7r/pdG9eiWHuNw5Bep9KSRhodY
+	k8YmBs1vCDj0KuePLquPOtZ23PFtg==
+Received: from ch5pr02cu005.outbound.protection.outlook.com (mail-northcentralusazon11012017.outbound.protection.outlook.com [40.107.200.17])
+	by mx0b-0002e601.pphosted.com (PPS) with ESMTPS id 4fjpxvrwhy-1
+	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
+	Wed, 22 Jul 2026 02:53:23 -0500 (CDT)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=RtHPw4C19VSEyQdz27JeuqMs5VdqO3y+xP+0VRwtJn11PqIBmNmfisJzA3vC44RKzr4/VHrE9IxfRsMKINl5QXDdQfQBc1G9Hb7dYM+WyMKy9vpmanRNNjmLeN5ITx7JwUvU7dGLE93K76naPzP3vx2fa+f9BNJq6aJ514HEZWQNxxN7hVG1nIMguzhVwX4xaYOjfqUkqlFtFYYj+l7q+zc2pi7hULb+d+Rs4N60ORZ7Vi31hF0ahLCZMGtdTYycNQhRG4GBGWB9oKJaeCkhz2G3GvMjUJa/vnLeZd9XCNtACRqpyIL7ClD9EyfWUqryI4qg2xlWKJwZtrnQuEin8g==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=3WacAD3Syue1Alpk5SpO43Ck7Bpm3IsGZlZ043iXb+w=;
+ b=gIIEOxrk2pHaOaIl3sDdRYa2JhNGDlq2ZkLuVKnujpL74CxKy1tRzKyFCJ0M+vAHc6Y+qzD9kA384v3qLcsYyo9dXhL1ybwZaNjsiOJK9xe3rL0klKKHtbY2FvkV/PU0gCFxnZ0Q/L4oMjk2STsOyoK+6wD5VNl1IyBqCEV/ThGqHceOHavmvjsA2Ew0/5/kQhWr1+o4JxrofO9LnMTPq93s2MAxA7zw4MxP9BvuVsTIzCL+kH2od02sA3+o+B/4vIHHgn1XUWkwNSNVNizEpmqUdACNaxH7zB/+H2AgMLMrM2vjOshA9YQRESkg8No1af0ijff1zXAT8CLiPbG0Fw==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
+ 198.47.23.194) smtp.rcpttodomain=vger.kernel.org smtp.mailfrom=ti.com;
+ dmarc=pass (p=quarantine sp=none pct=100) action=none header.from=ti.com;
+ dkim=none (message not signed); arc=none (0)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ti.com; s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=3WacAD3Syue1Alpk5SpO43Ck7Bpm3IsGZlZ043iXb+w=;
+ b=UiztIHHMx/jCdE2njfFthgFjR0GPykyGYhnLZEZgq+iVzX1IaU1vm79ZE1dRipB+D3xz/VtMp6f3QAMfWaqv8UgT77qfu9gTsxvW26rDutojiXcKeQ6/joWC/CuLwIif+MeahVi6KroD9ffV10Vg1ca/cb7OFCY0WLTA+tsbQ9Y=
+Received: from BY3PR10CA0013.namprd10.prod.outlook.com (2603:10b6:a03:255::18)
+ by CH3PR10MB6836.namprd10.prod.outlook.com (2603:10b6:610:14f::10) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.245.10; Wed, 22 Jul
+ 2026 07:53:20 +0000
+Received: from SJ1PEPF000023D7.namprd21.prod.outlook.com
+ (2603:10b6:a03:255:cafe::4a) by BY3PR10CA0013.outlook.office365.com
+ (2603:10b6:a03:255::18) with Microsoft SMTP Server (version=TLS1_3,
+ cipher=TLS_AES_256_GCM_SHA384) id 15.21.245.10 via Frontend Transport; Wed,
+ 22 Jul 2026 07:53:20 +0000
+X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 198.47.23.194)
+ smtp.mailfrom=ti.com; dkim=none (message not signed) header.d=none;dmarc=pass
+ action=none header.from=ti.com;
+Received-SPF: Pass (protection.outlook.com: domain of ti.com designates
+ 198.47.23.194 as permitted sender) receiver=protection.outlook.com;
+ client-ip=198.47.23.194; helo=lewvzet200.ext.ti.com; pr=C
+Received: from lewvzet200.ext.ti.com (198.47.23.194) by
+ SJ1PEPF000023D7.mail.protection.outlook.com (10.167.244.72) with Microsoft
+ SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.21.270.0 via Frontend Transport; Wed, 22 Jul 2026 07:53:20 +0000
+Received: from DLEE211.ent.ti.com (157.170.170.113) by lewvzet200.ext.ti.com
+ (10.4.14.103) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.37; Wed, 22 Jul
+ 2026 02:53:17 -0500
+Received: from DLEE209.ent.ti.com (157.170.170.98) by DLEE211.ent.ti.com
+ (157.170.170.113) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.37; Wed, 22 Jul
+ 2026 02:53:17 -0500
+Received: from lelvem-mr05.itg.ti.com (10.180.75.9) by DLEE209.ent.ti.com
+ (157.170.170.98) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.37 via Frontend
+ Transport; Wed, 22 Jul 2026 02:53:17 -0500
+Received: from [10.249.138.105] ([10.249.138.105])
+	by lelvem-mr05.itg.ti.com (8.18.1/8.18.1) with ESMTP id 66M7rDlE3345699;
+	Wed, 22 Jul 2026 02:53:15 -0500
+Message-ID: <90ce9862-9698-4158-b417-9e5ee71652b8@ti.com>
+Date: Wed, 22 Jul 2026 13:23:12 +0530
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260714-arm-psci-system_reset2-vendor-reboots-v23-3-e7453c548c21@oss.qualcomm.com>
-X-Proofpoint-GUID: AAuD6QnPjPClJCt2_PX-BC5QNvnEtVLO
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzIyMDA3MCBTYWx0ZWRfX86+f/XIoghfJ
- H8HUNagCIeFN35bTZ/ikG/UOXpgNTr0LifXUWzmnsVkGNn4wcVMS8vvHgdWe0wsJakcxWuCQhJd
- rjPVFa3WbwRSHaVICGyTRT2Cf6BKfTcH8wmOTM9BeO+QuCbbVzhpHzUWvzPs9NBFdTITw2ClaZ2
- XiOo8SbtmzYzRvD1XCxaipLzPxigBHKpoXqV4TkJjy0av/Y/IsJAkEtAj9BNWmxxiB8X5RftUYi
- +hvfv4FG/hLKvRdJtgWqm4csocNaiRmNFG2dsfvBdK3K7UZ0ycqTp5eVgJkJClmKzclpSUEYDoL
- y63bb0+RM2q7r0kvGcwxOnqqQYjNIXmLZ+L0zlAIQUsPwsRIdf5D0xQ587C73gG4zWENxuyo5Yr
- iW4wiFgRp4PblxjurlRv9d/zdDXwe528K9j25ZUZzC7K9kr2ISuJhz4xLHO8/qPYtBgJdP7ihFy
- 27ts/gHpurFIEiuoccA==
-X-Authority-Analysis: v=2.4 cv=e/o2j6p/ c=1 sm=1 tr=0 ts=6a6073ea cx=c_pps
- a=vVfyC5vLCtgYJKYeQD43oA==:117 a=fChuTYTh2wq5r3m49p7fHw==:17
- a=kj9zAlcOel0A:10 a=RAioF0-LDSMA:10 a=s4-Qcg_JpJYA:10
- a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=DJpcGTmdVt4CTyJn9g5Z:22
- a=EUspDBNiAAAA:8 a=ZcGSZn2CXGzCaGrIrKoA:9 a=CjuIK1q_8ugA:10
- a=rl5im9kqc5Lf4LNbBjHf:22
-X-Proofpoint-ORIG-GUID: AAuD6QnPjPClJCt2_PX-BC5QNvnEtVLO
-X-Proofpoint-Spam-Info: AW1haW4tMjYwNzIyMDA3MCBTYWx0ZWRfX5/gMtMm8NrFS
- y1IDGEZXdvxaPQhEaJ+tBS8Ia7yfsvFLAWe8f7Nxmd4TPyZoXZSp9SELsGgE+tswGd+xUxYV2rs
- oDgM4qvZ1LJzoDXXoVWl3syTByoB/LQ=
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] pmdomain: ti-sci: reject maximal power-domain ID
+To: Pengpeng Hou <pengpeng@iscas.ac.cn>, Nishanth Menon <nm@ti.com>
+CC: Tero Kristo <kristo@kernel.org>, Santosh Shilimkar <ssantosh@kernel.org>,
+        Ulf Hansson <ulfh@kernel.org>, <linux-arm-kernel@lists.infradead.org>,
+        <linux-pm@vger.kernel.org>, <linux-kernel@vger.kernel.org>
+References: <20260722041142.95204-1-pengpeng@iscas.ac.cn>
+Content-Language: en-US
+From: Hari Prasath G E <gehariprasath@ti.com>
+In-Reply-To: <20260722041142.95204-1-pengpeng@iscas.ac.cn>
+Content-Type: text/plain; charset="UTF-8"; format=flowed
+Content-Transfer-Encoding: 7bit
+X-C2ProcessedOrg: 333ef613-75bf-4e12-a4b1-8e3623f5dcea
+X-EOPAttributedMessage: 0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: SJ1PEPF000023D7:EE_|CH3PR10MB6836:EE_
+X-MS-Office365-Filtering-Correlation-Id: 18d516fc-ce00-4632-1d1e-08dee7c64c4b
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|36860700016|1800799024|82310400026|376014|23010399003|22082099003|18002099003|10067099003|56012099006;
+X-Microsoft-Antispam-Message-Info:
+	vMET4Wlmn214X+vdljM/jSrir7q37uAtQmztRXakKb2EDbSK9HNcQlY4Oce9ShUrLW9uz4rJv1nWbcFdwsfQCuhGTpIlAbxBeGyCplDJI+IvT9KcL/R6hD9e96nUl/MOTCLZ5jGktF7pfVgdEWqMGdOrHjT06ZUc1dsm68ZRqpCSCq0pL+8NXAABteT2MOv0oIC9Q84Po231oys+wMvorEa/Y2NUxPz/wo7cfJDto3IJ74kUBwCEh+7X9fYp1y6Zj0DXnvCfW8mExFTlRjiWw4TcMzfwPV9ZRBUEFfaKYsRzkIpi4CR5ZhroZUGfPmJV8ToGNftSKsraWW72nMn5qWLqQr2yc/u0o40WZS12gEcablDptHMRZ8XmzEFd+VvcVLqL4BMDONvLtt7j75TVRk7eYCGv4Ck597VAJvoJYZVl9mxBbjBEjAfI8LqqEunH117nQuEddQS/D8YYVrNPzO2J2SxOH1Gmu18NhX7AcBwJylIUKP2l5rAdCauj4gyK5u96MVK2KdgPfa+/tLnSciAAkAFwZDTZkDs44a846nrw4PfMXMBuAf7S7BEWr1fsMt6fwaHr5p3oR7br+vke/8LciAV6h6LIIHXssWyH/gZMq4VxfpEippr12FS7acGb3vpw8E7OvV1Ff5plt54oqJH3qdJte9eRsz8V+4CBcMHf2InNx5z2BUztakfUebgC+w2MHdTUEk6Q7ED4AQZ3PQ==
+X-Forefront-Antispam-Report:
+	CIP:198.47.23.194;CTRY:US;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:lewvzet200.ext.ti.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230040)(36860700016)(1800799024)(82310400026)(376014)(23010399003)(22082099003)(18002099003)(10067099003)(56012099006);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	g7af7hNG+FIkh7uPsPfmJT4EuYDh5ksyl8yUbkxmjM/hHTZOGY4Niwe42wl6ndHrFeilrGC0TgCDYITI/1qs4P2UbljUWFgB6BM4yuh8dbcR3omGzmgF5xwrEUlvP3yYXJQCdzukdPr6TFNT27Lhg/xyDEqPvdJjB6gkNia9RUWwR4/kSZtpkJKq4nfQEHh0A5QhmHEsaDhWWVYQyabRJ64XheL6Z1CogloMvvk3Dp4B5WQUPeVh3dU22DeByA4SECZw7Ei3J7O8Q6XkrZhj2jww5tnkgy1z1tz9oYUqndACl+CTDQXszyDQQm+KupJU2KVtZx5qWdH5fX+hTVqjhqnj4KWITm3FVYwZU3Rs6RvCuaeyGTcyD0/ucjXTQ/Vol/eOlZwyAf0HQwQrDQO9teggKc9sS2YM6plPgM7EWhBpAHK9KbJafOgkdXHySJis
+X-Exchange-RoutingPolicyChecked:
+	q3xlaliRVUCaOmpMVpGeXZAM6fwb8Am8R6u3qs2lyThu+ZS8l3xKCYNPiVAH0T12lmz1VWWskuZ7OktFFDOuN7SxIpVhyF2GBWZ5obT4ZmxbUK0SbpG0dE/W9AVyXlAsjwQMo5mf3E0jJhL8FtCKhoquJ2KYhCGeyQ6+3YuYbKQmpvSgXZguf3QWP7HzGhUzv62+CwWtVZ2u1VnQ4NSGpHvF1P8XRLJv57xb9N1W+tqoZ3N+hj6TSbxqPI4ilX38KNDnTD0i9ABTnDkiFuUqcDChhD2wSJgvNPLgesjxLRRnJ4JgFiQMVLNrbhYJRdtBWmZUrncJ2gDhtCCQgJbbEw==
+X-OriginatorOrg: ti.com
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 22 Jul 2026 07:53:20.1406
+ (UTC)
+X-MS-Exchange-CrossTenant-Network-Message-Id: 18d516fc-ce00-4632-1d1e-08dee7c64c4b
+X-MS-Exchange-CrossTenant-Id: e5b49634-450b-4709-8abb-1e2b19b982b7
+X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=e5b49634-450b-4709-8abb-1e2b19b982b7;Ip=[198.47.23.194];Helo=[lewvzet200.ext.ti.com]
+X-MS-Exchange-CrossTenant-AuthSource:
+	SJ1PEPF000023D7.namprd21.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Anonymous
+X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: CH3PR10MB6836
+X-Authority-Analysis: v=2.4 cv=J+uaKgnS c=1 sm=1 tr=0 ts=6a6076f3 cx=c_pps
+ a=Pcpo/nSjxNMkuCW/QO6CAA==:117 a=WotqVVQAdb04rnGuttW3Kw==:17
+ a=6eWqkTHjU83fiwn7nKZWdM+Sl24=:19 a=IkcTkHD0fZMA:10 a=RAioF0-LDSMA:10
+ a=s63m1ICgrNkA:10 a=V5UXEbMT0ywA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=Z8NIEmU8O1QQgoT56wFK:22 a=fPAWb5peG099m5CrUpKH:22 a=VwQbUJbxAAAA:8
+ a=1JBX0sna3Uie_MwCzK4A:9 a=QEXdDO2ut3YA:10
+X-Proofpoint-GUID: lLJPacgV0Tqb5yjiCb2tRtsnPLHCqHbv
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzIyMDA3MiBTYWx0ZWRfXwDzbAHFyUY51
+ nZ1JFA3qOloIFIqhc6kQab09L21Wj+ppShXO8QMxgp43q8KFo8V/lQ8AfzlQ3O037I/DH9vseO0
+ uANZFQU1jB9UGiW77LNOH11IX9LLJGpyrXtfCq7df/hIMAusrV3ZFO+Er2B2fBjg6ZOAaax1i0X
+ I5ywNPbinsPlJnDv6lrl0xiMovshICvC63576rKRSOgUWNfW3W3Y+1bLrH6XXjlv/Dp429NgXB1
+ 3451xgrq+9yG2r3xcPIcZGvZSFqvLBTqN0NVAAo+jDvc9X/i3fz7y0fie0Qc2aUiNi7REPffoFO
+ RQdnhUbTmfPtaHh4SJ65wnwBRoG1G/vUom0bnEv1rEboC6vNN7zaYrreUI89KMfQsGJooOW1vZ7
+ 73+EzRCHEFAU+NSWfcyTrXxeV6TbFLysyOoGhWh/lL5K0FaTJcvrrc4en+24SQXey5GPdVkIezg
+ 3mUdEw7B4wg7O0a81kQ==
+X-Proofpoint-ORIG-GUID: lLJPacgV0Tqb5yjiCb2tRtsnPLHCqHbv
+X-Proofpoint-Spam-Info: AW1haW4tMjYwNzIyMDA3MiBTYWx0ZWRfX1fNv9iA7lV+t
+ YTWi8csZilKYrl1OhnZKiMtj5naceklqLMhNrig1w6S+Nn9mDYPucOid51EpnUF5vvlrxE3vJ+V
+ k1/EROcTLluw36pez/X2jqbprZGn1iI=
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.134,FMLib:17.12.100.49
  definitions=2026-07-22_02,2026-07-21_01,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- malwarescore=0 suspectscore=0 spamscore=0 bulkscore=0 priorityscore=1501
- impostorscore=0 lowpriorityscore=0 phishscore=0 clxscore=1015 adultscore=0
+ malwarescore=0 bulkscore=0 clxscore=1011 priorityscore=1501 phishscore=0
+ adultscore=0 lowpriorityscore=0 suspectscore=0 spamscore=0 impostorscore=0
  classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2607220070
+ reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2607220072
 
-On Tue, Jul 14, 2026 at 10:46:31PM +0530, Shivendra Pratap wrote:
-> reboot-mode based drivers can define a reboot-mode by adding it under
-> the reboot-mode node in device tree. This limits such drivers, to define
-> any predefined reboot-modes statically within the driver and creates a
-> dependency on device-tree.
+On 7/22/2026 9:41 AM, Pengpeng Hou wrote:
+> Each power-domain ID comes from Device Tree. The driver allocates the
+> onecell table with max_id + 1 and later uses every saved ID as an index.
+> If an ID is U32_MAX, the allocation count wraps to zero while the index
+> remains maximal.
 > 
-> Extend the reboot-mode framework to handle predefined modes alongside
-> those defined in device tree. Drivers can now define their own
-> reboot-modes and register them via the framework. A centralized init
-> call has been added to the reboot-mode framework and adopted by
-> existing drivers. This ensures driver state is initialized together
-> with predefined modes.
+> Reject U32_MAX while collecting IDs, before the arithmetic and indexed
+> store can diverge.
 > 
-> Signed-off-by: Shivendra Pratap <shivendra.pratap@oss.qualcomm.com>
-> @@ -195,35 +264,17 @@ int reboot_mode_register(struct reboot_mode_driver *reboot)
->  			continue;
->  		}
->  
-> -		info = kzalloc(sizeof(*info), GFP_KERNEL);
-> -		if (!info) {
-> -			ret = -ENOMEM;
-> -			goto error;
-> -		}
-> -
-> -		if (!memchr_inv(magic, 0, count * sizeof(u32))) {
-> -			pr_debug("reboot mode %s with zero magic values\n", prop->name);
-> -			info->count = -1;
-> -		} else {
-> -			memcpy(info->magic, magic, count * sizeof(u32));
-> -			info->count = count;
-> -		}
-> -
-> -		info->mode = kstrdup_const(prop->name + len, GFP_KERNEL);
-> -		if (!info->mode) {
-> -			ret =  -ENOMEM;
-> -			goto error;
-> -		} else if (info->mode[0] == '\0') {
-> -			kfree_const(info->mode);
-> -			ret = -EINVAL;
-> -			pr_err("invalid mode name(%s): too short!\n", prop->name);
-> +		info = reboot_mode_create_info(prop->name + len, magic, count);
-> +		if (IS_ERR(info)) {
-> +			ret = PTR_ERR(info);
->  			goto error;
->  		}
->  
->  		list_add_tail(&info->list, &reboot->head);
-> -		info = NULL;
->  	}
->  
-> +predefined_modes:
-> +	list_splice_tail_init(&reboot->predefined_modes, &reboot->head);
->  	reboot->reboot_notifier.notifier_call = reboot_mode_notify;
->  	register_reboot_notifier(&reboot->reboot_notifier);
->  
 
-This splice here makes me ask why we need separate API for registering
-pre-defined reboot modes? why not extend `struct reboot_mode_driver` to
-pass on the pre-defined modes and let `reboot_mode_register()` take care
-of both OF & pre-defined modes. 
+Pls add fixes tag and add CC:stable@vger.kernel.org considering this is 
+a memory corruption fix. Both should go in the commit description above 
+the SOB.
 
-The semantics of `reboot_mode_reset_predefined_modes()` is very
-confusing. It is not clear if any client driver needs to really call
-before unregistering? The unregister it self is cleaning up these
-pre-defined modes since they are spliced.
+Cheers,
+Hari Prasath G.E
 
-Thanks,
-Pavan
+> Signed-off-by: Pengpeng Hou <pengpeng@iscas.ac.cn>
+> ---
+>   drivers/pmdomain/ti/ti_sci_pm_domains.c | 6 ++++++
+>   1 file changed, 6 insertions(+)
+> 
+> diff --git a/drivers/pmdomain/ti/ti_sci_pm_domains.c b/drivers/pmdomain/ti/ti_sci_pm_domains.c
+> index 949e4115f930..5fad21c317c4 100644
+> --- a/drivers/pmdomain/ti/ti_sci_pm_domains.c
+> +++ b/drivers/pmdomain/ti/ti_sci_pm_domains.c
+> @@ -251,6 +251,12 @@ static int ti_sci_pm_domain_probe(struct platform_device *pdev)
+>   			if (args.args_count >= 1 && args.np == dev->of_node) {
+>   				bool is_on;
+>   
+> +				if (args.args[0] == U32_MAX) {
+> +					dev_err(dev, "power-domain ID is too large\n");
+> +					of_node_put(args.np);
+> +					return -EINVAL;
+> +				}
+> +
+>   				of_node_put(args.np);
+>   				if (args.args[0] > max_id) {
+>   					max_id = args.args[0];
+
