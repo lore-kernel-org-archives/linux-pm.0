@@ -1,32 +1,32 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CB79F438033
-	for <linux-pm@vger.kernel.org>; Wed, 22 Jul 2026 20:20:57 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0D50F43935F
+	for <linux-pm@vger.kernel.org>; Wed, 22 Jul 2026 20:20:58 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1784751658; cv=none; b=JgzaiucLV541IZWl9bkHKVR9G1BVdEvdV2fJajbJxv0+SHdomFUf9Gm2zHbuQKM41HnasQWo5HAhjcJFCmv2qpGwVoFNlMwe5xbBJEZNUr7fUv6h1CTviiBiIr1Q2VRAq5+Aaklp7sCcZZKy+1QdGg+qf+VB4RgxFcJhxy7iTps=
+	t=1784751659; cv=none; b=P1SVirVGzkeuupPgIWXJ1+gLtuhcA3AC0PUuUP6/+nXT8yjWsyDiqG4/uRcbYCWNr98gdYpLluCG7B9fIs0Tj3jWrnV/h4Uhv6nKOOCVT1vS7CGMJYn78xoptHilVENIKVOXWi/la7zhZjmlt4U+j0Cg2+UyYtxZaICLPyCEEPs=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1784751658; c=relaxed/simple;
-	bh=Zm7poqjZQ+v271GCBUGheeR3AiOvaj5M78I++L+5k4g=;
-	h=Message-ID:Date:MIME-Version:To:Cc:From:Subject:Content-Type; b=igC/8oFoA6Bn03R5Ov1l0Chfxc3iC+sZjN2ZrU9nOhsV9/IbZk7nQrPuYOyuJN6XaEJmBiXr7DzuhRk5VaqwKwGjryDiTK681zAw03V2lOMU285V5NCBhZeTLQjcLG3WZsG5Www7Cke8LTtknEz1a6COaoejboypvHOU6TENzBM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=kMgmOKNH; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1784751659; c=relaxed/simple;
+	bh=JUhkIA6FkS8XA050tpJxgpNtl3u80xTZnSZx7T86nmE=;
+	h=Message-ID:Date:MIME-Version:To:Cc:From:Subject:Content-Type; b=tsEBnBzbdASRDhXmZr6+zXI3F63bmtDo0xbMvj3izlbkJsGMx3vHPv63+GjBe7gyUdHrmpn9vdPprMDwcAshNzIQVMIwIgDmRsF7leScitC2b1ZgHUrVGIOgaLh4wPTLO43NSE095sckde9dm+tKi+iVLey01W+r7qE+gjGI9Do=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=a7g20pr2; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="kMgmOKNH"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 43AF21F000E9;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="a7g20pr2"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id BF2451F00A3D;
 	Wed, 22 Jul 2026 20:20:57 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
 	s=k20260515; t=1784751657;
-	bh=XadH3laBKz0Z1hc7gsM312N3y/s1V6z0tczR8Wg8zGA=;
+	bh=hE4U8/QZoCJYuK9Wo2W2a0F2IT63KeDgoUzSrIv5Uso=;
 	h=Date:To:Cc:From:Subject;
-	b=kMgmOKNHvuUCXzpM9qwt5Pb6OTEd0Px6FAZB5QFabwI6MHGM4KQDPzNxhuVkDxoXj
-	 m0fFTZK03o/hRBUJvje3Qj0FacJDfsphNu4Le/jVDdtTmikUzV0GN6bz/x0n/V85QH
-	 gxqsx76gUOQCiizuxo9uLGgc0Yzzy0/362aHNDYhV612iOLJO1EQBqWr9/n8v2C9fJ
-	 lQf6ZgigSw75Ev7N49nlGjF9HhoFOZrbjJzrcUyjqHEC47047NJuMF5uzPlw4AWsL2
-	 OfYzQ2RuyGKIlxJFJJlJ1JskopJAHy9IlOpODxlhVlbt/iDoUGgkXklGp8JbDk+z/s
-	 Yyp07tD+6Johg==
-Message-ID: <52cc1241-639d-4946-bd61-9618ac53f053@kernel.org>
-Date: Wed, 22 Jul 2026 15:20:56 -0500
+	b=a7g20pr2JRsReSlHahSuRwyn1vOWk1KITM+RoLtMLDieQAf3a+ddbrsIG72xKFfSp
+	 /fJzU3saXBx1JHV47EmfVWWhgaFdrWWQdS6FtE+1ysFhaLHOJuwZCl/cNogo7229x1
+	 7nBZgFMolbHluRhOfVPFEv47RlBk/rMTEIQJSZXU0A/lOLk+i4+1h1n/HTZv4F8NbD
+	 VMbGCwaj3v1Ygu1DpnRli121q3knVzmWpW1nZwThuXVmXA7jIxCD0aHle8091S/Eli
+	 o3qvYJPKM53mz15MmPnO7j52hQyeUWdYZfeOxz3brjyJhUTIH+d7dlo3O0jj9v8Inw
+	 YoJ5vYal4sTTg==
+Message-ID: <a58cf551-1d29-4269-9be7-2dcba48c51a0@kernel.org>
+Date: Wed, 22 Jul 2026 15:20:57 -0500
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -38,40 +38,57 @@ Content-Language: en-US
 To: "Rafael J. Wysocki" <rafael@kernel.org>
 Cc: "open list:CPU FREQUENCY SCALING FRAMEWORK" <linux-pm@vger.kernel.org>
 From: Mario Limonciello <superm1@kernel.org>
-Subject: [GIT PULL] amd-pstate fixes for 7.2 (7/22/26)
+Subject: [GIT PULL] amd-pstate fixes for 7.3 (7/22/26)
 Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
 
 The following changes since commit 1590cf0329716306e948a8fc29f1d3ee87d3989f:
 
-   Linux 7.2-rc4 (2026-07-19 13:54:41 -0700)
+   Linux 7.2-rc4 (2026-07-19 13:54:41 -0700)
 
 are available in the Git repository at:
 
+  
 ssh://git@gitolite.kernel.org/pub/scm/linux/kernel/git/superm1/linux.git 
-tags/amd-pstate-v7.2-2026-07-22
+tags/amd-pstate-v7.3-2026-07-22
 
-for you to fetch changes up to 08fc1e7b31f8832e356ede8afae1ad1ff0d5a1fc:
+for you to fetch changes up to 39c0cf62fc7851a17782e7efe8dfb2948739c681:
 
-   cpufreq/amd-pstate: Prevent the driver from loading on unsupported 
-hardware (2026-07-22 13:45:32 -0500)
-
-----------------------------------------------------------------
-amd-pstate fixes for 7.2 (7/22/26)
-
-* Fix a case blocking amd-pstate from binding
-   when lowest nonlinear freq == minimum freq
-* Stop trying to bind in guests
+   cpufreq/amd-pstate: handle missing policy in dynamic EPP callbacks 
+(2026-07-22 13:45:48 -0500)
 
 ----------------------------------------------------------------
+amd-pstate content for 7.3 (07/22/26)
+
+* Avoid running unit tests without amd-pstate
+* Fixes for EPP on shared memory systems
+* Fixes for dynamic EPP callbacks
+* Avoid loading on guests
+* Allow lowest nonlinear == minimum freq
+
+----------------------------------------------------------------
+EDAMAMEX (1):
+       cpufreq/amd-pstate: handle missing policy in dynamic EPP callbacks
+
+Marco Scardovi (3):
+       cpufreq/amd-pstate: Fix EPP return type and handle errors during 
+initialization
+       cpufreq/amd-pstate: Toggle auto_sel in active mode on shared 
+memory systems
+       cpufreq/amd-pstate: Cache the firmware programmed EPP value
+
 Mario Limonciello (1):
-       cpufreq/amd-pstate: Loosen requirement on lowest nonlinear 
+       cpufreq/amd-pstate: Loosen requirement on lowest nonlinear 
 frequency != min freq
 
+Qianheng Peng (1):
+       cpufreq: amd-pstate-ut: Skip tests when amd-pstate driver is not 
+active
+
 Rong Zhang (1):
-       cpufreq/amd-pstate: Prevent the driver from loading on 
+       cpufreq/amd-pstate: Prevent the driver from loading on 
 unsupported hardware
 
-  drivers/cpufreq/amd-pstate.c | 8 +++++++-
-  1 file changed, 7 insertions(+), 1 deletion(-)
-
+  drivers/cpufreq/amd-pstate-ut.c |  5 +++++
+  drivers/cpufreq/amd-pstate.c    | 34 ++++++++++++++++++++++++++--------
+  2 files changed, 31 insertions(+), 8 deletions(-)
