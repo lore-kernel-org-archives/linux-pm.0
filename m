@@ -1,86 +1,88 @@
 Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0125A3AFCEB
-	for <linux-pm@vger.kernel.org>; Wed, 22 Jul 2026 10:44:52 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3108B3AFCEB
+	for <linux-pm@vger.kernel.org>; Wed, 22 Jul 2026 10:45:00 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1784717094; cv=none; b=GL2LEplS2cT0XiQBuTb6R/MpnsPbJnXOECS5+I5trHnJpXTgkWPBsib5KO8SBMfkEWX/gXGgzFsJ0YcYYIwGa5946mBUBJTeEasY8Uu7LfaWbnSjXBrULyVKNW7CZyc0J1emu050vtK+eQ2tTijMdX7c6qqs37GNMgvWQxMdrQQ=
+	t=1784717101; cv=none; b=sJ5p9Bh9Bk3g3FUG3A9tGb5yxmHrbTnJdI+ALluXHO3L4fRIcbql7YGlVnwV3hFjuG6q6R8wiqm5Wcz+UNCLabU64fpLDnj7+TWaT0wZG5GUTCV+0iuu4bEpBrxc9YANenurgSLi45SVqvL8KL5ECU2mDXK9eibd3Y4GWmvSgOI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1784717094; c=relaxed/simple;
-	bh=/hhzK5a/lIOKTiOtAp1IjbgyGrXH+zft7tpO5DhdPZo=;
-	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=rvbS+vAKPn2hGo0ngmHy873gkZI72z83+ieA8y0qBpxxRTiBCW4kMtnNmgk2SCfOmUdjNDaXLb0o4EgVK0TLYsAPOLdegYEd/35EFQIobc+gp7GMjqFZcz4pG5ONNybK4wXVPMBJxI8PkFQL61HJEU3XolNl6daPjkE3Ajf3J8I=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=JvO+2d+2; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=HMAxfAn9; arc=none smtp.client-ip=205.220.168.131
+	s=arc-20240116; t=1784717101; c=relaxed/simple;
+	bh=we1L1lQ5lcQSoRayGEALtC+WkaOOAukyLvGKMNh/VIQ=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=FbmkXEqiVpgVTbNyKQUvh9wTuywv9z9gPkLJitPVIHULnS8GHyM7mbD9oUUWDqBiJVH7Oe5vOOh8DIVPrgNSuwlJ2d7HXNE6CyMt0m0EBHcuVvytT+9LRx9uuvmIAQXZinY5J1M4bbOAlHhDEhLzfRm159mmpfCEZZw29tKH2o0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=pojz5FDA; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=CiRV5ZIE; arc=none smtp.client-ip=205.220.168.131
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="JvO+2d+2";
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="HMAxfAn9"
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="pojz5FDA";
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="CiRV5ZIE"
 Received: from pps.filterd (m0279864.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 66M8xIpH4018311
-	for <linux-pm@vger.kernel.org>; Wed, 22 Jul 2026 10:44:52 GMT
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 66M8xIxb4018323
+	for <linux-pm@vger.kernel.org>; Wed, 22 Jul 2026 10:44:59 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:content-type:date:from:message-id
-	:mime-version:subject:to; s=qcppdkim1; bh=TziaN4U3nrUm+NPafU8G8C
-	93XGXYt0jtmEq2paxzJuk=; b=JvO+2d+26nKPRuzfFOIPM8lZELhNwYm4AYrExF
-	Tc0HQuMEVfCLe7A13vYk9VciariP2hRr10e0ZP70EFY1iArRf7DA5GDjZHy1LWj/
-	f4/a+qsTF5COq4cPsVh3dsv8NjNOlsPyhqyA2sxIRRVQdxt0ThV+xbUzLe/RVbTv
-	i6k4RY+zUQy1V69h99EMKt4zk0YRIJFjOP6+Ndkn9OSqXSl5IJPzCCBlNFdYqCfr
-	kJHFG6mPDYixZgT+qOoZw5paxlUdTqXk1Uj79zfUrfZpG1Sny4YrTL6ckAekJu1T
-	aT+SNKNpGBgQhBrleRqmPdv3bFnlCi+Ko09Ct65jEIvKBEvw==
-Received: from mail-pl1-f198.google.com (mail-pl1-f198.google.com [209.85.214.198])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4fjd6fumxk-1
+	cc:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
+	GAAgAP0V7LjmvDcg7cU4QtLN1FT+eQx8NoMPuNIkpro=; b=pojz5FDAs1WmH/Zz
+	4eurqxyoIhAan8Z/MhvynjLMSxvi9LDSn7SmcvhBLzwKdkPJcU7cWsYXoRRknodT
+	eePyk/b3ZXY62uuKtMXQt2CjiKfNQiQsQ5kGHuBGW8UG8if20VkyXFLauNKhEx+l
+	AjPq80rdF0hCvA6yt4z73pUrLukFvEPLzJBKLxKcu9D50cyDYxnr+qe8fN2w9E3k
+	uiyGppf8cRFl5J1WTe3pwBd//dNYZ0rGuyxHbLq9y64TSsfs+o1LUNIRdapo4mi0
+	k7LBXoIjXiendtEBCZs1wK95NPVrmhQ/JgdZb8sScBbOqnFMwIQMma4JC+4CshSb
+	seCGRQ==
+Received: from mail-pl1-f199.google.com (mail-pl1-f199.google.com [209.85.214.199])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4fjd6fumy3-1
 	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Wed, 22 Jul 2026 10:44:52 +0000 (GMT)
-Received: by mail-pl1-f198.google.com with SMTP id d9443c01a7336-2ccafc5e82cso120800675ad.3
-        for <linux-pm@vger.kernel.org>; Wed, 22 Jul 2026 03:44:52 -0700 (PDT)
+	for <linux-pm@vger.kernel.org>; Wed, 22 Jul 2026 10:44:59 +0000 (GMT)
+Received: by mail-pl1-f199.google.com with SMTP id d9443c01a7336-2ccb6823efcso109468815ad.0
+        for <linux-pm@vger.kernel.org>; Wed, 22 Jul 2026 03:44:59 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1784717092; x=1785321892; darn=vger.kernel.org;
-        h=cc:to:content-transfer-encoding:content-type:mime-version
-         :message-id:date:subject:from:from:to:cc:subject:date:message-id
-         :reply-to:content-type;
-        bh=TziaN4U3nrUm+NPafU8G8C93XGXYt0jtmEq2paxzJuk=;
-        b=HMAxfAn92CuMUHLCO6sIU8cDqYecJZbabpK3sllny2xM8pIjxs8N0vPQOzPCfYB7+j
-         5LiSUKWf6w6ciyODIj470+carYcvnL5pg7Aj52XfUVAdxClut2YYD+nsayc4sUHgT9nX
-         j3TTyMZ7WwfjcabwcfxutvSgOuWi9sTGrX6Ba5lcCs/QzFhnP0ma1fwE0lz6pIPxkBKE
-         c/MBJucJxsaR4Ewo0FVGbiPjiwsNorgsegprfR1iK637fBufVC80kLCvrIxBoFBG+/yJ
-         eSYeAT3z6HPww6GxsHabV0lFfyj8/Ft/0q4ZCoLzAt8f6m0YTaKKIi0j41CIMAwShqz1
-         RV+g==
+        d=oss.qualcomm.com; s=google; t=1784717098; x=1785321898; darn=vger.kernel.org;
+        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
+         :content-type:mime-version:subject:date:from:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=GAAgAP0V7LjmvDcg7cU4QtLN1FT+eQx8NoMPuNIkpro=;
+        b=CiRV5ZIE17zpGIkQ1WwqjmX2zadsb7Rios0bRvZeRWgdOJ37cE0RWV86Q7DZyE8czQ
+         l2XlnwEec8+C7Udl1LRm7znCSCd3wboKsv0VWc7jgcb17S/jQt+H2TjybnxENy7bB9G/
+         8HmVwiy6aIEDE+JzIoP47ZaUfFdOX9+A7x6P+Ko1/XNI9PQPGdUt7OF4pk3oC2TFC9qG
+         yMlenx4hEoxe2dTc2Wvh6BIPw7F2DEgxpDu7C7AmDr9RGsLtFua2zV6L56bCorZAHE5R
+         KqcCDc+g6otthxNIcE0KlpKwuie5fUnA1bnLPx2Fs8AAa1+ZdbsJN8n8WVZMmWnug34b
+         V7Pw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1784717092; x=1785321892;
-        h=cc:to:content-transfer-encoding:content-type:mime-version
-         :message-id:date:subject:from:x-gm-gg:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to:content-type;
-        bh=TziaN4U3nrUm+NPafU8G8C93XGXYt0jtmEq2paxzJuk=;
-        b=U5jYpqOpJQNkXTJ/A/zHMtmvgFYXr5YGe27uVjpc6mL1Uze2+CYCiBdQ9Ep35efXKe
-         ANwklIL97lc/RQa7YmqoVYpT4qkFuXxOzrj/P5Coja7+Zz3Cj/Jak81WO/eJ8Wx+6fZx
-         CTDvsmjzaIVEoAsrz9iHd31KizrWGYk6kuAGCIY17ctRykWfBcoaPmmJHBLp89b6KHan
-         UIquA4LhWKZwvW3GA9uOEoD+iayqMRd2O7w6SPnef67/TufbkYQwrcerumkjBnhg1USE
-         eFSaE78WCbpPNmPtjLCiVbV8/xpis9UPHzfEDlBgcM0p7kWz9MvEnT06hz046TI3SaWr
-         Gb0w==
-X-Forwarded-Encrypted: i=1; AHgh+Rpbw94sII6CxWMgfKLhZjNepJLlPP+ofEJbTaRBc7ozFw0DzJjUns98iBF/NxV5TyiqfTYfGIjKbg==@vger.kernel.org
-X-Gm-Message-State: AOJu0YwGF0CEbd9MT2XxZEsP7GGJG4whAX4oll1nMWAXkDmvxgjLmG65
-	k9dio1ur0bGANVuC0fUTPn/N4Mi21Ih6auEsuDHhPZd7xNzggObtlaaZra3to2HjXVqbf+InBSw
-	Dryh8hBYoeopLJDlCpRhVFa/tTkp9fywPpTwSFaZnaI47s3k+/e4eCiiYmjD2/g==
-X-Gm-Gg: AR+sD12q+iPMnekm73zsGNKpSoWgkodgAGFbRplDe0l00984oQeWy6w2NTU1tPqIdsM
-	eNg13uabwWHZfky8K91MVjQ8eEMQzrBRATlBdoQrTzOH6yOZXts1O6uYjygVi2TL1n/EbSptOPS
-	f0DNUyo6vLcpX3qwB/NImyfCl2ERo4aNG10jivgCfRv0rBcyZRhmO/fGDdZDfxcCMJw48komfwE
-	qNtc+vLI33yJDj52xIBOPZYiIA5y6uk+sktAxVX32FAic6ldsBQVU/w8FW9kcc0SkpWH6cU0bEc
-	lCTqaCA0ragbXTWL5lwHk2QgwS0UAHYaA54wUHgEbq++B4dYMVb+zIXmHUgEqGZucFv0Yjc1tJr
-	TiqN5b4IlPLsocR2CEf5x8kXEACK4WRm+
-X-Received: by 2002:a17:903:234d:b0:2cc:f4d4:29a7 with SMTP id d9443c01a7336-2cf3499781cmr240607085ad.24.1784717091471;
-        Wed, 22 Jul 2026 03:44:51 -0700 (PDT)
-X-Received: by 2002:a17:903:234d:b0:2cc:f4d4:29a7 with SMTP id d9443c01a7336-2cf3499781cmr240606795ad.24.1784717091000;
-        Wed, 22 Jul 2026 03:44:51 -0700 (PDT)
+        d=1e100.net; s=20251104; t=1784717098; x=1785321898;
+        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
+         :content-type:mime-version:subject:date:from:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=GAAgAP0V7LjmvDcg7cU4QtLN1FT+eQx8NoMPuNIkpro=;
+        b=qV8T99U44SMUlX/JUSe45ay/+3W8UfOmkri+rK55ayti9DbjLg05EsEJNvT/z1q1vS
+         MsHvrbT27yQ/Y5YADTE9X097b7w0JtT/4ornt/kwvL4HNQG4oGGPPoLg9a/AqLzPy3Qn
+         dQf9vBF99T3hM48AnEGcuWNTpXFF4JwgMsTN8jGxoVf6HcLv+AaVDnk3XOLbbTXe+95s
+         tYD7Ou+mFK2yQFXD2kj+b4fYnSeXlM+BlH4F9vY+4JYsGIzs4Rm8VqdJ14t7faeCW/AT
+         I67IZLtixA8ztOUpv+BytDTa6jDuv1+SM2HcAGz2Hsy1M98m2rjn4AvHukPDejnWr6RN
+         xDAA==
+X-Forwarded-Encrypted: i=1; AHgh+Ro+foKSHF9x2KAWRqL3xIvLbWtGX4/Xtw+5VW0HB1HdF+HOokvMTCAA0lvPo8PIaE1zT9uTnwes8A==@vger.kernel.org
+X-Gm-Message-State: AOJu0YzqqRHQp+KDynDcxVZIXKu1G2GCZjx0hjZ6H8hx/Aey8L+Q7yLZ
+	Fk7bjHu2lvDsG8NVfE29aG6thhn1NTjoosqBcO3regf/F4LIgiXfrdXi8mmy52Xq3xGlC13B9tf
+	KYQPMVIWl6OmsIXRbnf7z32hd5b7I80LjfytbnkfW2GZPCzzmENeXB2LHufie3w==
+X-Gm-Gg: AR+sD13Bs7JFC52QrjYdqT7s9yRxEygIHIqovwQHUWjkqRdjOLOpSIRh9vKOeh7eHyT
+	iSkUR/Mz2Pe1nFg6QvhRPYOJDrCYYyWLM0dZNHJzyYiTwbvVDUoVKz9nfbULr6zMm/9NRXFtnGn
+	CwqSsf3b7zfPrLSz5gntfcSqqX63RWGt+YGlvvvLkSd55++w/qodaVov9NMkATJcxfB6etx/Y5S
+	kJkCRGCi5YntR71vfLbb/YLkPuBDRF9agZ71pPuiOIYSAYH+kZBwTg2qXYa0foBgUF1lIg+zmDX
+	Gatl2tjMv6M1Tn/x7ba1RG4U9XeXNoUW3uNc9QVqSU2ye1bF1TDg2ByualQ+YdJHUKXobA8CPO0
+	jngMrTxUNSc5YwApSEAVc+y8aVoi+jCHG
+X-Received: by 2002:a17:903:1c7:b0:2c8:1f56:9fc5 with SMTP id d9443c01a7336-2cf349fb45amr235093165ad.35.1784717098431;
+        Wed, 22 Jul 2026 03:44:58 -0700 (PDT)
+X-Received: by 2002:a17:903:1c7:b0:2c8:1f56:9fc5 with SMTP id d9443c01a7336-2cf349fb45amr235092945ad.35.1784717097973;
+        Wed, 22 Jul 2026 03:44:57 -0700 (PDT)
 Received: from hu-sachgupt-hyd.qualcomm.com ([202.46.22.19])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2cf8f2e797asm12382455ad.39.2026.07.22.03.44.44
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2cf8f2e797asm12382455ad.39.2026.07.22.03.44.51
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 22 Jul 2026 03:44:50 -0700 (PDT)
+        Wed, 22 Jul 2026 03:44:57 -0700 (PDT)
 From: Sachin Gupta <sachin.gupta@oss.qualcomm.com>
-Subject: [PATCH v3 0/2] thermal: qcom: Add Qualcomm SPMI MBG thermal
+Date: Wed, 22 Jul 2026 16:14:41 +0530
+Subject: [PATCH v3 1/2] dt-bindings: thermal: Add Qualcomm MBG thermal
  monitor support
-Date: Wed, 22 Jul 2026 16:14:40 +0530
-Message-Id: <20260722-spmi-mbg-driver-v3-0-ef73064f2789@oss.qualcomm.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -89,11 +91,9 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-B4-Tracking: v=1; b=H4sIABifYGoC/3XNQQ7CIBQE0Ks0rKUBKhRdeQ/jAlpoMVIqtETT9
- O5CXbhQNz+ZZP6bBQTljQrgWCzAq2iCcUMK1a4ATS+GTkHTpgwIIgwxhGEYrYFWdrD1JioPKSd
- CSCoEEwykr9ErbR6beL68c5jlVTVTZnKjN2Fy/rlNRpx7//WIIYJyzw9EUipwrU8uhPI+i1vjr
- C3TAXkkkg9TI/bNkMRoziutcctrfPjBrOv6Ak0BfxAOAQAA
-X-Change-ID: 20260601-spmi-mbg-driver-582aab5aa6a6
+Message-Id: <20260722-spmi-mbg-driver-v3-1-ef73064f2789@oss.qualcomm.com>
+References: <20260722-spmi-mbg-driver-v3-0-ef73064f2789@oss.qualcomm.com>
+In-Reply-To: <20260722-spmi-mbg-driver-v3-0-ef73064f2789@oss.qualcomm.com>
 To: Lee Jones <lee@kernel.org>, Rob Herring <robh@kernel.org>,
         Krzysztof Kozlowski <krzk+dt@kernel.org>,
         Conor Dooley <conor+dt@kernel.org>,
@@ -113,29 +113,28 @@ Cc: Ajit Pandey <ajit.pandey@oss.qualcomm.com>,
         linux-pm@vger.kernel.org,
         Satya Priya Kakitapalli <quic_skakitap@quicinc.com>,
         Sachin Gupta <sachin.gupta@oss.qualcomm.com>,
-        Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>,
-        Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
+        Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
 X-Mailer: b4 0.15.2
-X-Proofpoint-GUID: u3KiYaV7xthhG93KU1AxAgOqis6ODvRp
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzIyMDEwMyBTYWx0ZWRfX6rBAlemMw9yv
- XVm8P6s6+qc1vhs3qw6m49fA3kO0H7mFH0TsHipKswFz+tcoCHCdbHUPTJBwepWW5Np6GtIi8Hg
- QB3/XykcaAdAb/ewCzizzKvUNkiPedw3UMa0TtABMKystzLb0BdZKf8VWqUVnG3SwtKW5wjUxBh
- NMVqrO5Pbs1CCMRkIUbKE2MIMUwrILzMTM4FMiMl6w3FC+BaX11z3u8iFRhjU7Zp5zhYy6hKKDU
- mjybPHPcuiHH0cFopJu2gexSjdCtNMqhmK+Fm+ZQ5ZXEUE6nhyHdwsKoz/kJU8/s/pjC58T69Nf
- vOalrhDojDqdqVxhBUbt5G1aY2SftI2twSbJYMMVDtL1XCwj2sP7ZnLtCc8QltMHNYA21Uk3luB
- 15wvn1m0z7xnNtaL9GvIKWAwlEwclvtg34lgLaIU7013tXje7sgK8y0o4FGhoH75pf8ichbkKZP
- pAWZfsFtujytZE6KsnQ==
-X-Authority-Analysis: v=2.4 cv=e/o2j6p/ c=1 sm=1 tr=0 ts=6a609f24 cx=c_pps
- a=MTSHoo12Qbhz2p7MsH1ifg==:117 a=fChuTYTh2wq5r3m49p7fHw==:17
+X-Proofpoint-GUID: 97F_ank_eLbCPM_Qsdug3rDwcxmcMxl0
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzIyMDEwMyBTYWx0ZWRfX+AqS8di5zrSu
+ xCKJEZRWLCLriux4FbpzYkj4riZ4oNUJMtzlhx/nrk0zjN70yyqKB5NGjrB4wdVxZvatnaAyqtQ
+ WatPB/PQWp7EmkWGSy5QWnUhazZngI/an4YYtDGR9fLy58RDnDeV+rouEtTIyDib7lhu3KCz30b
+ igSrPJwmPRYpG7srkf/ZzDOlKJANU9LzU8Rt9A3AVVrU01FFJzpP6C5DTCWo5fk2ybHhW1WMZqp
+ 2z/p+Opj4jMolXEP/vJlgvEgDilrdaJG+twlRE9ffVrdbWURLztAPPn97MZOOEFhYFxrgSGEKRK
+ jnJ7951eYgYKdo4s33QFpgqrPU1usJRjvlPXMp+xv6KwQ20Sepf3M3/zlxBkT8scbAEgnVs0thM
+ 2KQ51kTPB1tP1AIxdIDXWM9/526lgxm2Il5EwF0xswyxLlzh3cWS3W87sq46JnMYwRjoZXp0OrN
+ OJUjls6pNVvvoVGvBKw==
+X-Authority-Analysis: v=2.4 cv=e/o2j6p/ c=1 sm=1 tr=0 ts=6a609f2b cx=c_pps
+ a=JL+w9abYAAE89/QcEU+0QA==:117 a=fChuTYTh2wq5r3m49p7fHw==:17
  a=IkcTkHD0fZMA:10 a=RAioF0-LDSMA:10 a=s4-Qcg_JpJYA:10
  a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=DJpcGTmdVt4CTyJn9g5Z:22
- a=VwQbUJbxAAAA:8 a=bC-a23v3AAAA:8 a=EUspDBNiAAAA:8 a=COk6AnOGAAAA:8
- a=iUTBZumk_BVKSr9I0GoA:9 a=QEXdDO2ut3YA:10 a=GvdueXVYPmCkWapjIL-Q:22
- a=FO4_E8m0qiDe52t0p3_H:22 a=TjNXssC_j7lpFel5tvFf:22
-X-Proofpoint-ORIG-GUID: u3KiYaV7xthhG93KU1AxAgOqis6ODvRp
-X-Proofpoint-Spam-Info: AW1haW4tMjYwNzIyMDEwMyBTYWx0ZWRfX7ZLyiqGswCEV
- lQ4CTkS0T37wgkHs5dNj8Mtx33CfGKLzPbRxbHvXmuErktI5Eku2QrF6jmsT0iCnUr0b8hmh/a2
- i2zXaV2eRHVUoSYesZ36mJR9mcEHpxE=
+ a=gEfo2CItAAAA:8 a=COk6AnOGAAAA:8 a=EUspDBNiAAAA:8 a=E-gG5h9l_blIFwvKag4A:9
+ a=QEXdDO2ut3YA:10 a=324X-CrmTo6CU4MGRt3R:22 a=sptkURWiP4Gy88Gu7hUp:22
+ a=TjNXssC_j7lpFel5tvFf:22
+X-Proofpoint-ORIG-GUID: 97F_ank_eLbCPM_Qsdug3rDwcxmcMxl0
+X-Proofpoint-Spam-Info: AW1haW4tMjYwNzIyMDEwMyBTYWx0ZWRfXyp1MltXxKB3k
+ M6ZtbdFSe7kyoaiUQzOEoSmtBAC48v2hIZkQUD3Qzw3oxk3Cn0He+SOLWTkPJoSQnBCn5QXNviF
+ rLQQYOUp1NWtk/NMKOZKwURT61AgGf8=
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.134,FMLib:17.12.100.49
  definitions=2026-07-22_03,2026-07-21_01,2025-10-01_01
@@ -145,48 +144,117 @@ X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
  classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
  reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2607220103
 
-This series adds support for Qualcomm MBG thermal monitoring.
+From: Satya Priya Kakitapalli <quic_skakitap@quicinc.com>
 
-Adding support for:
-- DT bindings for the MBG thermal monitor peripheral on PM8775
-- A new Qualcomm SPMI MBG thermal monitor driver under `drivers/thermal/qcom/`
- 
-The driver monitors die temperature alarms, handles the MBG interrupt on
-upper-threshold violation, reads the fault status, and reports events to the
-thermal framework.
- 
-RFC patch:
-https://lore.kernel.org/all/qq3cggafexwpdrv46eqijxfmrdbqusl2vpbuswqmcvshqueaiw@r4mrmap4nwkt/
+Add bindings for the Qualcomm MBG (Master Bandgap) temperature alarm
+peripheral found on the PM8775 PMIC. Unlike the existing SPMI temp alarm
+peripheral, the MBG peripheral supports both hot and cold threshold
+monitoring across two programmable levels (LVL1 and LVL2), with interrupt
+status reported via a fault status register over SPMI.
 
+Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
 Signed-off-by: Satya Priya Kakitapalli <quic_skakitap@quicinc.com>
+Co-developed-by: Sachin Gupta <sachin.gupta@oss.qualcomm.com>
 Signed-off-by: Sachin Gupta <sachin.gupta@oss.qualcomm.com>
 ---
-Changes in v3:
-- Fix Kconfig description and update commit message. [Daniel] 
-- Link to v2: https://patch.msgid.link/20260706-spmi-mbg-driver-v2-0-f883ff1d8719@oss.qualcomm.com
+ .../devicetree/bindings/mfd/qcom,spmi-pmic.yaml    |  4 ++
+ .../bindings/thermal/qcom,pm8775-mbg-tm.yaml       | 72 ++++++++++++++++++++++
+ 2 files changed, 76 insertions(+)
 
-Changes in v2:
-- Fix locking, -ERANGE, enum check, and flag race. [Sashiko AI]
-- Rewrap commit text, rename binding file to match compatible. [Krzysztof] 
-- Drop redundant comment, return -ERANGE, fix ISR locking. [Konrad]
-- Link to v1: https://patch.msgid.link/20260601-spmi-mbg-driver-v1-0-b4892b55a17f@oss.qualcomm.com
+diff --git a/Documentation/devicetree/bindings/mfd/qcom,spmi-pmic.yaml b/Documentation/devicetree/bindings/mfd/qcom,spmi-pmic.yaml
+index 809be2756a0c..bd77cb7173e2 100644
+--- a/Documentation/devicetree/bindings/mfd/qcom,spmi-pmic.yaml
++++ b/Documentation/devicetree/bindings/mfd/qcom,spmi-pmic.yaml
+@@ -194,6 +194,10 @@ patternProperties:
+     type: object
+     $ref: /schemas/thermal/qcom,spmi-temp-alarm.yaml#
+ 
++  "^temperature-sensor@[0-9a-f]+$":
++    type: object
++    $ref: /schemas/thermal/qcom,pm8775-mbg-tm.yaml#
++
+   "^typec@[0-9a-f]+$":
+     type: object
+     $ref: /schemas/usb/qcom,pmic-typec.yaml#
+diff --git a/Documentation/devicetree/bindings/thermal/qcom,pm8775-mbg-tm.yaml b/Documentation/devicetree/bindings/thermal/qcom,pm8775-mbg-tm.yaml
+new file mode 100644
+index 000000000000..2e084d040625
+--- /dev/null
++++ b/Documentation/devicetree/bindings/thermal/qcom,pm8775-mbg-tm.yaml
+@@ -0,0 +1,72 @@
++# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/thermal/qcom,pm8775-mbg-tm.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
++
++title: Qualcomm's SPMI PMIC MBG Thermal Monitoring
++
++maintainers:
++  - Jishnu Prakash <jishnu.prakash@oss.qualcomm.com>
++  - Kamal Wadhwa <kamal.wadhwa@oss.qualcomm.com>
++
++description:
++  Qualcomm's MBG(Master Bandgap) temperature alarm monitors the die
++  temperature and generates an interrupt if the PMIC die temperature is
++  over a set of programmable temperature thresholds. It allows monitoring
++  for both hot and cold, LVL1 and LVL2 thresholds, which makes it different
++  from the existing temp alarm peripheral. The interrupt comes over SPMI
++  and the MBG's fault status register gives details to understand whether
++  it is a hot/cold and LVL1/LVL2 violation.
++
++properties:
++  compatible:
++    const: qcom,pm8775-mbg-tm
++
++  reg:
++    maxItems: 1
++
++  interrupts:
++    maxItems: 1
++
++  io-channels:
++    items:
++      - description: ADC channel, which reports chip die temperature.
++
++  io-channel-names:
++    items:
++      - const: thermal
++
++  '#thermal-sensor-cells':
++    const: 0
++
++required:
++  - compatible
++  - reg
++  - interrupts
++  - io-channels
++  - io-channel-names
++
++allOf:
++  - $ref: thermal-sensor.yaml#
++
++unevaluatedProperties: false
++
++examples:
++  - |
++    #include <dt-bindings/interrupt-controller/irq.h>
++
++    pmic {
++        #address-cells = <1>;
++        #size-cells = <0>;
++
++        temperature-sensor@d700 {
++            compatible = "qcom,pm8775-mbg-tm";
++            reg = <0xd700>;
++            interrupts = <0x1 0xd7 0x0 IRQ_TYPE_EDGE_RISING>;
++            io-channels = <&pm8775_adc 0x3>;
++            io-channel-names = "thermal";
++            #thermal-sensor-cells = <0>;
++        };
++    };
++...
 
----
-Satya Priya Kakitapalli (2):
-      dt-bindings: thermal: Add Qualcomm MBG thermal monitor support
-      thermal: qcom: Add support for Qualcomm MBG thermal monitoring
-
- .../devicetree/bindings/mfd/qcom,spmi-pmic.yaml    |   4 +
- .../bindings/thermal/qcom,pm8775-mbg-tm.yaml       |  72 ++++++
- drivers/thermal/qcom/Kconfig                       |  14 ++
- drivers/thermal/qcom/Makefile                      |   1 +
- drivers/thermal/qcom/qcom-spmi-mbg-tm.c            | 256 +++++++++++++++++++++
- 5 files changed, 347 insertions(+)
----
-base-commit: 3fe08b9796f36ef437ab9328e7dd1e5ff2d66603
-change-id: 20260601-spmi-mbg-driver-582aab5aa6a6
-
-Best regards,
---  
-Sachin Gupta <sachin.gupta@oss.qualcomm.com>
+-- 
+2.34.1
 
