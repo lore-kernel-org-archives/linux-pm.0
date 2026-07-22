@@ -1,128 +1,116 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 481DB40F727
-	for <linux-pm@vger.kernel.org>; Wed, 22 Jul 2026 14:54:16 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E8A18367F58
+	for <linux-pm@vger.kernel.org>; Wed, 22 Jul 2026 14:57:45 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1784732057; cv=none; b=ckiCABEuHWuKTjKotya0ZVJWgPk5xZc/MtaKmO4CFhev/FYERJb46ndJTJr3eSRXEYqnYak5jbMLZ0cD2TcoaQJ+PDxNwjCcHKaAjbqe18q3wrRXwsgppbduPyN2N+e60MDG7581q7wvKcInYj7xB4sfLiE8QF0TkzEco3xY/gs=
+	t=1784732266; cv=none; b=M5f8i8mUW5gv139ooNoqqooQyyaG3qzHvD96Acp6Llk0iPlc4I6bMaM/rxhqDKot2cXpFn4SS4HQ5yuvZJ1uga+AwitMVbZf7qFQrlVM8+HXNJZ9rpuI7Sx9di0v8nNWaLOh4cp27wugIE41WW09/8ureemlbO4GALlAbg3bi4Q=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1784732057; c=relaxed/simple;
-	bh=BF/7/Y7jW7oN5PDK7b5DdfNkvh82/y+i1JXP2HcRn7E=;
+	s=arc-20240116; t=1784732266; c=relaxed/simple;
+	bh=x01gOdSAVBG/JXUmB8lqiA+DCQezffFucL8Q6INmBJ8=;
 	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=lOl3frObRA13JjIYk93mhU8+KhgGs2THJ9aYcZ29CmmvO0dTupPgzSEJ5LE8gA5/SqSTK2XdL5utktTQcaQrR3AgrJslmJAMFh0jrl2R3WwsJMIRIRH66rmX3IZLmVmWrKVeali2R7vxmplRsT1jmup/U1keKG0P3Z65Wnw3R90=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=gvXFdVqi; arc=none smtp.client-ip=100.103.45.18
+	 To:Cc:Content-Type; b=P5/fj4YM7sv4NHuET5RBoIpVMtIUC6QyLpdXxin3Tuf8rLv78vg7UWxPcGtsvrAIaf5YjVkvBZAWwSs1fQB9E1DlzTMpyeJafjzGp3NZIB895TC9iMhtwOXWF64phWQl+YW6dbuH2E1rrmYPI3Zt13d1QjfJTymUQFEw3vkjdBA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=boh/VowD; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="gvXFdVqi"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id E4FFA1F00A3F
-	for <linux-pm@vger.kernel.org>; Wed, 22 Jul 2026 14:54:15 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="boh/VowD"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id C6BFA1F00A3D
+	for <linux-pm@vger.kernel.org>; Wed, 22 Jul 2026 14:57:45 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1784732055;
-	bh=rB6dSmF/Ms+yKDipyXAeWRZEO1IFePs1yvMjwRt6mxk=;
+	s=k20260515; t=1784732265;
+	bh=1zAPNhcKC/QKO76XoSh16NKEgtof+Blw7m0BVxdTB9I=;
 	h=References:In-Reply-To:From:Date:Subject:To:Cc;
-	b=gvXFdVqi8sVLlwMV/hYIHjLdfTu2lqzjEHTN0BT090Ss6OgRYVTLbUwWC6Ye23Lab
-	 sPlar8keZ/caUDauRtFeMPzD+qqC1IaMuW56LnClQqdIE0qWgTaAzveT1eyYtfvdXv
-	 Nf5kpn35P6OKfHD5s8FKrlSeWbXPl5PMDEJl7eUCsdpm/UF3LnKBHANfRsRLSZp04n
-	 7Cx+e6cYYKC9LH/qu4ujm161Po/L3ZMMvxtcR0sWSchZ2tPQwI+HO6Zor8ZJTKh7Ik
-	 ddfvk+4FbEZs0qEisTUnpTVifuV7F0b4RdBLTykV0qfzcQmqEMO6WxHVE1bnz/j2S9
-	 I5L3BzWzr307w==
-Received: by mail-lf1-f49.google.com with SMTP id 2adb3069b0e04-5b0115b9e17so8924132e87.0
-        for <linux-pm@vger.kernel.org>; Wed, 22 Jul 2026 07:54:15 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AHgh+RpgsX3cNSItCk3vATOgccg9hqJCViznpZ9jM7s+4KEfuiiHjkzdDkI/Sh4+j6ksf6qSOuqPXISxJg==@vger.kernel.org
-X-Gm-Message-State: AOJu0YyNtbqj3WQq9Q3r8y9IDkdZ/pS2Tu4YWUj80019lqrjIqTCqsqw
-	/V3zob/q3sbzX3YARG421CzqeXw0Npv5hP95gb4RfICmDSHcvHbzSkjzU/QsqVWikdV3Vy97Rex
-	QEDdHNM9tLDkhKBnfyJFRoIIamo1OEJQ=
-X-Received: by 2002:ac2:482f:0:b0:5ae:ba8f:f9fa with SMTP id
- 2adb3069b0e04-5b28f88317fmr3446365e87.18.1784732054341; Wed, 22 Jul 2026
- 07:54:14 -0700 (PDT)
+	b=boh/VowDr2UYOCyX2MhtoNCWrNIHhdmkpV2evLElg1LDmpXz5iS+3d1NyS0r911XT
+	 h3rNeHfhBywv2BAJ5piDxygA6mBgXVGEtTKKCFUgCTuGEhAwR9yWYYNhaBMJmOwZ9T
+	 DayJ3tVy1Pe4wJBFAgsl0HYRae3qXHB2DuyDh9lNCco78ZsbPHTxsP6UrhmN7TJNyr
+	 RpcH903Z8jF2E7AqI69xq/Ettqezr47/Io5sdo9ywSfevg1GvZaX7gYYpwLiv/8KKj
+	 3NfKauj23rDl139plY0H65jXD8xGX8aRVAsPzXW7np8POC2HO8f7YZdfeZ9BeGOFpv
+	 6ClibyA8rYSpQ==
+Received: by mail-lf1-f41.google.com with SMTP id 2adb3069b0e04-5aeb59d54b1so8234599e87.1
+        for <linux-pm@vger.kernel.org>; Wed, 22 Jul 2026 07:57:45 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AHgh+Rq+ecjYSTYyJ0+ndMG/KDG7TO3ftdqJARJSkyCbg5GDvFIAhlFqwUg2MDGEmTmHChNqoZw32YAsHA==@vger.kernel.org
+X-Gm-Message-State: AOJu0YzK0Mwu2jJZ8Hfu+focJo85H9/958iM7AuS5xHns4BJK7i1BBsr
+	7/FmMLaCopTUurAFaQkoM6IIh9/MexcBhlFa80DZA5oB3EiA5ryXloIVn2OschNtUzhkkqjMnZE
+	jJoR9XNJoGREj3gGveTVFQ1QdjAwjh4M=
+X-Received: by 2002:ac2:4c46:0:b0:5ae:c239:6a2c with SMTP id
+ 2adb3069b0e04-5b28f9b02c7mr4659700e87.53.1784732264218; Wed, 22 Jul 2026
+ 07:57:44 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260623015140.19300-1-pengpeng@iscas.ac.cn>
-In-Reply-To: <20260623015140.19300-1-pengpeng@iscas.ac.cn>
+References: <20260709023048.599150-1-panchuang@vivo.com> <20260709023048.599150-11-panchuang@vivo.com>
+In-Reply-To: <20260709023048.599150-11-panchuang@vivo.com>
 From: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
-Date: Wed, 22 Jul 2026 16:54:02 +0200
-X-Gmail-Original-Message-ID: <CAJZ5v0hJr0mLVVFWQHLrzXiu4NZuKzy8X=Q24G_9rENCUA4K6g@mail.gmail.com>
-X-Gm-Features: AUfX_mwWbsMTjFm8OO_wLw-fZ1pVqEIBOfGR8GfoMHydQKtmtiHv4RQEMu7EgRk
-Message-ID: <CAJZ5v0hJr0mLVVFWQHLrzXiu4NZuKzy8X=Q24G_9rENCUA4K6g@mail.gmail.com>
-Subject: Re: [PATCH v3] thermal: intel: int3400: clean up ODVP on probe failures
-To: Pengpeng Hou <pengpeng@iscas.ac.cn>
-Cc: "Rafael J . Wysocki" <rafael@kernel.org>, Daniel Lezcano <daniel.lezcano@kernel.org>, 
+Date: Wed, 22 Jul 2026 16:57:32 +0200
+X-Gmail-Original-Message-ID: <CAJZ5v0iPcw66dpA+jJh3p3h5piYo1-znSLgfwTmQUrQGO=30KA@mail.gmail.com>
+X-Gm-Features: AUfX_mwgU8at6U_EHVc1KK4NbSTwzG3ZtrSvFyninvxS6hQWWMjizjRMWx3HdNw
+Message-ID: <CAJZ5v0iPcw66dpA+jJh3p3h5piYo1-znSLgfwTmQUrQGO=30KA@mail.gmail.com>
+Subject: Re: [PATCH 10/18] thermal: intel: int340x: Remove redundant dev_err()
+To: Pan Chuang <panchuang@vivo.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Daniel Lezcano <daniel.lezcano@kernel.org>, 
 	Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>, 
-	Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Matthew Garrett <mjg59@google.com>, 
-	linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+	Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, 
+	"open list:THERMAL" <linux-pm@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Tue, Jun 23, 2026 at 3:51=E2=80=AFAM Pengpeng Hou <pengpeng@iscas.ac.cn>=
- wrote:
+On Thu, Jul 9, 2026 at 4:32=E2=80=AFAM Pan Chuang <panchuang@vivo.com> wrot=
+e:
 >
-> evaluate_odvp() creates per-ODVP sysfs files before the thermal zone
-> and later probe resources are registered. The current unwind path only
-> calls cleanup_odvp() from the late sysfs failure path, so failures after
-> evaluate_odvp() but before that label, including
-> thermal_tripless_zone_device_register() failures, leave the ODVP files
-> and storage behind.
+> The devm_request_threaded_irq() now automatically logs detailed error
+> messages on failure. This eliminates the need for driver-specific
+> dev_err() calls that previously printed generic messages.
 >
-> Move the ODVP cleanup to the common ART/TRT unwind path so every failure
-> after evaluate_odvp() releases the ODVP state. Also clear the cached
-> ODVP pointers in cleanup_odvp(), because evaluate_odvp() can already call
-> it for partial setup failures while probe continues.
->
-> Fixes: 006f006f1e5c ("thermal/int340x_thermal: Export OEM vendor variable=
-s")
-> Signed-off-by: Pengpeng Hou <pengpeng@iscas.ac.cn>
+> Signed-off-by: Pan Chuang <panchuang@vivo.com>
 > ---
-> Changes since v2: https://lore.kernel.org/all/20260622153306.79258-1-peng=
-peng@iscas.ac.cn/
-> - move cleanup_odvp() to the common free_art_trt unwind path so it also
->   covers thermal_tripless_zone_device_register() failures
-> - drop the unrelated data_vault cleanup change from v2
-> - make cleanup_odvp() idempotent by clearing the cached ODVP pointers
->   after freeing them
+>  .../intel/int340x_thermal/processor_thermal_device_pci.c  | 8 ++------
+>  1 file changed, 2 insertions(+), 6 deletions(-)
 >
->  drivers/thermal/intel/int340x_thermal/int3400_thermal.c | 4 +++-
->  1 file changed, 3 insertions(+), 1 deletion(-)
+> diff --git a/drivers/thermal/intel/int340x_thermal/processor_thermal_devi=
+ce_pci.c b/drivers/thermal/intel/int340x_thermal/processor_thermal_device_p=
+ci.c
+> index c693d934103a..c5131423ec9b 100644
+> --- a/drivers/thermal/intel/int340x_thermal/processor_thermal_device_pci.=
+c
+> +++ b/drivers/thermal/intel/int340x_thermal/processor_thermal_device_pci.=
+c
+> @@ -308,10 +308,8 @@ static int proc_thermal_setup_msi(struct pci_dev *pd=
+ev, struct proc_thermal_pci
+>                 ret =3D devm_request_threaded_irq(&pdev->dev, irq, proc_t=
+hermal_irq_handler,
+>                                                 proc_thermal_irq_thread_h=
+andler,
+>                                                 0, KBUILD_MODNAME, pci_in=
+fo);
+> -               if (ret) {
+> -                       dev_err(&pdev->dev, "Request IRQ %d failed\n", ir=
+q);
+> +               if (ret)
+>                         goto err_free_msi_vectors;
+> -               }
 >
-> diff --git a/drivers/thermal/intel/int340x_thermal/int3400_thermal.c b/dr=
-ivers/thermal/intel/int340x_thermal/int3400_thermal.c
-> index d200734625ee..5d70301d4a3d 100644
-> --- a/drivers/thermal/intel/int340x_thermal/int3400_thermal.c
-> +++ b/drivers/thermal/intel/int340x_thermal/int3400_thermal.c
-> @@ -356,8 +356,10 @@ static void cleanup_odvp(struct int3400_thermal_priv=
- *priv)
->                         kfree(priv->odvp_attrs[i].attr.attr.name);
->                 }
->                 kfree(priv->odvp_attrs);
-> +               priv->odvp_attrs =3D NULL;
+>                 proc_thermal_msi_map[i] =3D irq;
 >         }
->         kfree(priv->odvp);
-> +       priv->odvp =3D NULL;
->         priv->odvp_count =3D 0;
->  }
+> @@ -394,10 +392,8 @@ static int proc_thermal_pci_probe(struct pci_dev *pd=
+ev, const struct pci_device_
+>                 ret =3D devm_request_threaded_irq(&pdev->dev, irq, proc_t=
+hermal_irq_handler,
+>                                                 proc_thermal_irq_thread_h=
+andler, irq_flag,
+>                                                 KBUILD_MODNAME, pci_info)=
+;
+> -               if (ret) {
+> -                       dev_err(&pdev->dev, "Request IRQ %d failed\n", pd=
+ev->irq);
+> +               if (ret)
+>                         goto err_ret_tzone;
+> -               }
+>         }
 >
-> @@ -635,7 +637,6 @@ static int int3400_thermal_probe(struct platform_devi=
-ce *pdev)
->         acpi_remove_notify_handler(priv->adev->handle, ACPI_DEVICE_NOTIFY=
-,
->                                    int3400_notify);
->  free_sysfs:
-> -       cleanup_odvp(priv);
->         if (!ZERO_OR_NULL_PTR(priv->data_vault)) {
->                 device_remove_bin_file(&pdev->dev, &bin_attr_data_vault);
->                 kfree(priv->data_vault);
-> @@ -649,6 +650,7 @@ static int int3400_thermal_probe(struct platform_devi=
-ce *pdev)
->                 acpi_thermal_rel_misc_device_remove(priv->adev->handle);
->         thermal_zone_device_unregister(priv->thermal);
->  free_art_trt:
-> +       cleanup_odvp(priv);
->         kfree(priv->trts);
->         kfree(priv->arts);
->  free_priv:
+>         ret =3D thermal_zone_device_enable(pci_info->tzone);
 > --
 
 Applied as 7.3 material, thanks!
