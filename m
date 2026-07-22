@@ -1,129 +1,128 @@
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id 884B14C6EF6;
-	Wed, 22 Jul 2026 10:19:01 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
+Received: from fhigh-b5-smtp.messagingengine.com (fhigh-b5-smtp.messagingengine.com [202.12.124.156])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 00EDB40F75C;
+	Wed, 22 Jul 2026 10:24:32 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=202.12.124.156
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1784715542; cv=none; b=Z2VTL+FdHpTjHNa2EG9ZIe2gYGy0QdX1XHspJUWcI/Ykranwxg9Olg+BDjdrw0xm9ol7B3EmAyarId9kqJ2/uCAEmW4GmtI2cNRTOfrXvYTlbMWm19YE80peYAuVU53uCWH1b6XRPFU4XCCbk4Q1yKGJYF1CwZV/QXqwR9uR4uI=
+	t=1784715874; cv=none; b=GEX8lFNO1tnGpAEcaudpZyXHP8QP4F3ueovNWMTmci4/uxGQfXgfPRZeTFTDikh2v7lzR81STdzrOlzmlbD078lcnVvl8pmh2xhD+OE0tCbi4x0XkPbCbGUcrlrhB/jZAYzzfSkV7Xd1D5xypG3ZCF4bPLL+7EXI7+7TjTBxyQY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1784715542; c=relaxed/simple;
-	bh=6pQbfUf6qFxNFEfwCwxXQNTOh/NnINY/VwM1E/ShKZI=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=XZefYJyx5Z8dy9gIMn+W1lnhvBiR/7mDtTDSG7kSw5xYVHypd9+dmGoZB3C3EvD3OwCajHOOrCA8HMnwbvHdYJzvc8wKZtp246bbfEiJ44HgMBO7DYBrRPSRqgxpVvMK7Xgt4jKky5xXxUaUn9L/sDaSsegszfFNnSziYvYYcpM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=DMls2/5G; arc=none smtp.client-ip=217.140.110.172
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
+	s=arc-20240116; t=1784715874; c=relaxed/simple;
+	bh=abIPqrOTfy3BAZu24y9FuBEYyH3Ibb9k6P/aZudvNbY=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=BMWTt1qiYts7jPB3jwHXgQfAXzKBXDbsE7MxU/+g83uaiJck1syV3UnASB/0q9B0Q0DkkxuTr4SAiWxVvRd+y0DN98Y4DIFG6xmA4lyNhLiH+w/XqHvQdJetqlzYm4szicCEzyip3znlleY3HMTFyA/EAv1jYmO01NXBGqUJQ0k=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=jannau.net; spf=pass smtp.mailfrom=jannau.net; dkim=pass (2048-bit key) header.d=jannau.net header.i=@jannau.net header.b=PNyLSZhQ; dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b=fJoKYZRu; arc=none smtp.client-ip=202.12.124.156
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=jannau.net
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=jannau.net
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="DMls2/5G"
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 7495D1595;
-	Wed, 22 Jul 2026 03:18:56 -0700 (PDT)
-Received: from [10.1.39.91] (e127648.arm.com [10.1.39.91])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 10F653F58B;
-	Wed, 22 Jul 2026 03:18:57 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1784715540; bh=6pQbfUf6qFxNFEfwCwxXQNTOh/NnINY/VwM1E/ShKZI=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=DMls2/5GZfyNtx3+Cbrf0Ma+C24h/OJpaX1LQDFpVmUjvljjIzhpH2xCeUeqkQTWJ
-	 OUtFDUyppPxMhBTljVuo+I7A8uk5Np17mmd/EtjviZXoBZnOvF1paLfcj8kBv5ST5G
-	 zCvfjYJeh60FqYqo/0RjwpJLDepSJuQy8TStWhbw=
-Message-ID: <bc0ba136-7f40-4198-8b71-557de0babc0f@arm.com>
-Date: Wed, 22 Jul 2026 11:18:56 +0100
+	dkim=pass (2048-bit key) header.d=jannau.net header.i=@jannau.net header.b="PNyLSZhQ";
+	dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b="fJoKYZRu"
+Received: from phl-compute-06.internal (phl-compute-06.internal [10.202.2.46])
+	by mailfhigh.stl.internal (Postfix) with ESMTP id E47607A0141;
+	Wed, 22 Jul 2026 06:24:31 -0400 (EDT)
+Received: from phl-frontend-04 ([10.202.2.163])
+  by phl-compute-06.internal (MEProxy); Wed, 22 Jul 2026 06:24:32 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=jannau.net; h=cc
+	:cc:content-type:content-type:date:date:from:from:in-reply-to
+	:in-reply-to:message-id:mime-version:references:reply-to:subject
+	:subject:to:to; s=fm1; t=1784715871; x=1784802271; bh=d7KPqKKtt3
+	2qdvy6pdhb4zQY6/OdX+QnrgvqOiCn6pU=; b=PNyLSZhQMIjX+s9LApIcugWgZr
+	8RJto+1uQmDxR+797Ab3+s9DxXNrnriBohsVcUbNlNt5zxa58EOos50Sfzjt+QCQ
+	i9BobrwpD2KaffuwlNldy3UNSBn54gLZIpQ3dgKLaSzHD5SPj+q2gudKkjeZBtUN
+	C0iggNgeh2Yi0JTPD8HXFuW1F14ML7ScJ9qLeTYP02iAdtJqCRN9XdWIYlNsO5r3
+	2CfSMeIzEHN0fqDMyKUdAYiowG+FbeB3cwSuAa+2Yh618Vi0Rma3CZE9LnNOwKo+
+	2N9Rn9XvLTdPfVeHAiqFRhxrWf8sDkOWa81z24cmJynGvWi9XERnN57bvciA==
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
+	messagingengine.com; h=cc:cc:content-type:content-type:date:date
+	:feedback-id:feedback-id:from:from:in-reply-to:in-reply-to
+	:message-id:mime-version:references:reply-to:subject:subject:to
+	:to:x-me-proxy:x-me-sender:x-me-sender:x-sasl-enc; s=fm2; t=
+	1784715871; x=1784802271; bh=d7KPqKKtt32qdvy6pdhb4zQY6/OdX+Qnrgv
+	qOiCn6pU=; b=fJoKYZRufhJM22N65aLY1OcDi2jgt2GOVNoLtW2Y5P8OmseV9CX
+	21or68/LSP8ew/VhK0E9dLYRX8waN6TuXf9yrhBt5nvgjWax7aro6LXa2LfulZCe
+	VE6aOwomiDDW0wFOL8UyJTR2WvVwkdwaGI1HxNzb3ALi8QdONQgDKKlW0hA++i5O
+	V75Ktx6D3toIGsX/c/cEMXg9hoEV4Le7M0qrTQ7JjwJi3OS4V01LwEjSjibDP3Ib
+	FwqUi2WQ84k54RZ99d1h54eIhVhuegYnXZmbjcAMvaf5ikTDZjTDq+ecueNN/Xra
+	qqG9zLtqKCTDJDsiUQ7+zmL4/ZBtKxIaXew==
+X-ME-Sender: <xms:X5pgavF5VobabwctdUJSi54TqKjyGl9o2CnYAaO663t1gTwWDGJt5g>
+    <xme:X5pgao5YWMRe4gcqSrccwNUMWNqCmdbdoDnwAYBB3xz0gM3qK6J9AEE6ab9WkoHUM
+    qxGhgvN7fT1E88lXpnAoNPrY7zfXb0ekDPp9-ryImBXm8BlJNDXn8Q>
+X-ME-Received: <xmr:X5pgalmBuzOUAsSr08pSRYWf8Ix5ZBubVmKTCVju84RYCxHqqhepqLwgIBYjt1ILTZnE2lgl-DlaOT4-kmREsVjlmCDRn90B2mI>
+X-ME-Proxy-Cause: dmFkZTFR4qs4EzJbzKeAVnWQV4FuYpX9MCEikNX0fQpLTgiwJwvXpFXR8ZcfR3FjZgIlXL
+    2IYhwWJDSLDALFeP3nrh0kStT1Vg4aX7W4wIo41jab3eEk6zTW8TgM9jk32vgYakBUlw1X
+    Uc2Ndl7wl9YUY+E4/SA+lGWFdt2z1K7L+kKb0MxZfJU+I4Fhp3JMttrP8m91O4sJCWRVp9
+    mR2Wxtuf3Weeju/eMDM18yXKM0e8BgV9sURH/GO2K1uRsdZ+5MTr5DkanEkjF0Iy43wEK2
+    jSk0/t3pZdUO9vv7+2igz0Q7OaGAOrJUFP9BfBhcvtK2IxOCiSXzX/8jg/O4ojVk//7Yoe
+    +P6BzpWV27uIv3uUqBYC0rgiqgbB+gg6G3qpp60jLwSUMnO9WpMk6yE7mNQ2lnzl0ht3MK
+    kIxt6IuHvNgADyhja2n8talh7Ljyfftj7WLypBp5Af9QFR8FhAugsrqU5e7Ou/EHLaV14V
+    CYWeKcIIl/TNYdyQsmnJTeHbNJQITQRoaNd5MAqPbiasCEiS2uO9pkvV+iIUzLSadgTWKb
+    T9bL8NMJYlSpuAEdF6in+N0Sww/rE/ITATpEk8td1N7t5C42H6tzSp3HMNzhqVfSHHuIkB
+    ZpwkjlI9eWQztJXGRvs/ejpVxlKaXk2JYHSudZA3d2Pq2rh3dVko6V/P2ewA
+X-ME-Proxy: <xmx:X5pgaj4KjRmzHlomMjuRDoCLNp5ilCnr1jdvcMPYytOc80-u0DXQAA>
+    <xmx:X5pgamTohimYc8LOelQxWT7dkXc6eLarokdnHcxw9AGxtVHuvejuQg>
+    <xmx:X5pgahxCbbBCeIOEUlU-ZWOEuBzbPsbPl4SRTEg4iMTkvldRxD1jww>
+    <xmx:X5pgauq2ehUIREMCCXcNvG8KjNr1Lm0JDONZupyAOVDoMADKtFNpaw>
+    <xmx:X5pgarB-YygeEoIA-CoL5IS75cOnbpXN7sWseERvwmYZNrqhdU1PQ7h0>
+Feedback-ID: i47b949f6:Fastmail
+Received: by mail.messagingengine.com (Postfix) with ESMTPA; Wed,
+ 22 Jul 2026 06:24:30 -0400 (EDT)
+Date: Wed, 22 Jul 2026 12:24:29 +0200
+From: Janne Grunau <j@jannau.net>
+To: Sasha Finkelstein <k@chaosmail.tech>
+Cc: Sven Peter <sven@kernel.org>, Neal Gompa <neal@gompa.dev>,
+	"Rafael J. Wysocki" <rafael@kernel.org>,
+	Viresh Kumar <viresh.kumar@linaro.org>, asahi@lists.linux.dev,
+	linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v2] cpufreq: apple-soc: Calculate frequency as a 64-bit
+ value
+Message-ID: <20260722102429.GB4159739@robin.jannau.net>
+References: <20260720-cpufreq-64-v2-1-72bd9b4e5ca0@chaosmail.tech>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 1/3] cpufreq: CPPC: Keep the policy across CPU hotplug
-To: Sumit Gupta <sumitg@nvidia.com>, rafael@kernel.org,
- viresh.kumar@linaro.org, pierre.gondois@arm.com, ionela.voinescu@arm.com,
- zhenglifeng1@huawei.com, zhanjie9@hisilicon.com, saket.dumbre@intel.com,
- lenb@kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
- linux-acpi@vger.kernel.org, acpica-devel@lists.linux.dev,
- linux-tegra@vger.kernel.org
-Cc: treding@nvidia.com, jonathanh@nvidia.com, vsethi@nvidia.com,
- ksitaraman@nvidia.com, sanjayc@nvidia.com, mochs@nvidia.com, bbasu@nvidia.com
-References: <20260716153820.2007095-1-sumitg@nvidia.com>
- <20260716153820.2007095-2-sumitg@nvidia.com>
-Content-Language: en-US
-From: Christian Loehle <christian.loehle@arm.com>
-In-Reply-To: <20260716153820.2007095-2-sumitg@nvidia.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20260720-cpufreq-64-v2-1-72bd9b4e5ca0@chaosmail.tech>
 
-On 7/16/26 16:38, Sumit Gupta wrote:
-> Without online()/offline() callbacks, the cpufreq core fully tears
-> down a policy during exit() when its last online CPU is offlined,
-> and rebuilds it during init() when it comes back.
-> 
-> Add lightweight online()/offline() callbacks so the core instead
-> keeps the policy live and reuses the driver's cpu_data across
-> CPU hotplug. This avoids re-reading the CPPC capabilities on every
-> offline/online, making CPU hotplug faster.
-> 
-> Re-enable CPPC from online(), as it may have been disabled while
-> the CPU was offline.
-> 
-> Signed-off-by: Sumit Gupta <sumitg@nvidia.com>
+On Mon, Jul 20, 2026 at 09:25:10AM +0200, Sasha Finkelstein wrote:
+> The current frequency calculation is done in 32 bit, causing problems
+> if run on a future SoC that can boost higher than 4.2GHz. Ideally, we
+> should use a true u64 instead of unsigned long and "knowning" that this
+> only runs on 64 bit machines, but the core code uses ulong everywhere,
+> so this should be good enough.
+
+It depends on 'ARCH_APPLE || (COMPILE_TEST && 64BIT)' so it only gets
+built for 64-bit architectures so the unsigned long won't cause compiler
+warnings/errors.
+
+> Signed-off-by: Sasha Finkelstein <k@chaosmail.tech>
 > ---
->  drivers/cpufreq/cppc_cpufreq.c | 27 +++++++++++++++++++++++++++
->  1 file changed, 27 insertions(+)
+> Changes in v2:
+> - Minor style fixes
+> - Link to v1: https://patch.msgid.link/20260703-cpufreq-64-v1-1-c406c705319a@chaosmail.tech
+> ---
+>  drivers/cpufreq/apple-soc-cpufreq.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 > 
-> diff --git a/drivers/cpufreq/cppc_cpufreq.c b/drivers/cpufreq/cppc_cpufreq.c
-> index f6cea0c54dd9..432c6a6288a7 100644
-> --- a/drivers/cpufreq/cppc_cpufreq.c
-> +++ b/drivers/cpufreq/cppc_cpufreq.c
-> @@ -722,6 +722,31 @@ static int cppc_cpufreq_cpu_init(struct cpufreq_policy *policy)
->  	return ret;
->  }
+> diff --git a/drivers/cpufreq/apple-soc-cpufreq.c b/drivers/cpufreq/apple-soc-cpufreq.c
+> index 638e5bf72185..5ad274a1e6ae 100644
+> --- a/drivers/cpufreq/apple-soc-cpufreq.c
+> +++ b/drivers/cpufreq/apple-soc-cpufreq.c
+> @@ -288,7 +288,7 @@ static int apple_soc_cpufreq_init(struct cpufreq_policy *policy)
 >  
-> +/*
-> + * With offline() defined, the cpufreq core keeps the policy alive when
-> + * a CPU is hotplugged out.
-> + */
-> +static int cppc_cpufreq_cpu_offline(struct cpufreq_policy *policy)
-> +{
-> +	return 0;
-> +}
-> +
-> +/*
-> + * Re-enable CPPC when the policy's CPU comes back online, since the platform
-> + * may have disabled it while the CPU was offline.
-> + */
-> +static int cppc_cpufreq_cpu_online(struct cpufreq_policy *policy)
-> +{
-> +	unsigned int cpu = policy->cpu;
-> +	int ret;
-> +
-> +	ret = cppc_set_enable(cpu, true);
-> +	if (ret && ret != -EOPNOTSUPP)
-> +		pr_warn("Failed to re-enable CPPC for CPU%d (%d)\n", cpu, ret);
+>  	/* Get OPP levels (p-state indexes) and stash them in driver_data */
+>  	for (i = 0; freq_table[i].frequency != CPUFREQ_TABLE_END; i++) {
+> -		unsigned long rate = freq_table[i].frequency * 1000 + 999;
+> +		unsigned long rate = freq_table[i].frequency * 1000UL + 999;
+>  		struct dev_pm_opp *opp = dev_pm_opp_find_freq_floor(cpu_dev, &rate);
+>  
+>  		if (IS_ERR(opp)) {
+> 
 
-Keeping the policy alive means cpu_data->perf_ctrls survives hotplug, but the callback does not
-reapply it. A governor restart does not guarantee an immediate target callback, so the controls
-may remain reset indefinitely.
+Reviewed-by: Janne Grunau <j@jannau.net>
 
-I think the online path needs to restore a complete, current performance-control request before
-returning. MIN/MAX should be recomputed from the policy and the last requested DESIRED value
-clamped into that range.
-
-Also, what about suspend/resume?
-
-> +
-> +	return 0;
-> +}
-> +
->  static void cppc_cpufreq_cpu_exit(struct cpufreq_policy *policy)
->  {
->  	struct cppc_cpudata *cpu_data = policy->driver_data;
-> @@ -1034,6 +1059,8 @@ static struct cpufreq_driver cppc_cpufreq_driver = {
->  	.fast_switch = cppc_cpufreq_fast_switch,
->  	.init = cppc_cpufreq_cpu_init,
->  	.exit = cppc_cpufreq_cpu_exit,
-> +	.online = cppc_cpufreq_cpu_online,
-> +	.offline = cppc_cpufreq_cpu_offline,
->  	.set_boost = cppc_cpufreq_set_boost,
->  	.attr = cppc_cpufreq_attr,
->  	.name = "cppc_cpufreq",
-
+Janne
