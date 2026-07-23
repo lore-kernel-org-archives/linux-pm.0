@@ -1,153 +1,166 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.13])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4906441D201
-	for <linux-pm@vger.kernel.org>; Thu, 23 Jul 2026 13:42:25 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DB8053630AF;
+	Thu, 23 Jul 2026 13:47:09 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.13
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1784814146; cv=none; b=cwansSclygxgArC/BEwQNPNELuFLqgYtfSCtbRwu3ChPMrrOFC1Z2HkIs5O42J53ah53yv9nB9RUn9WcoJYJ8DMMIIeWOlUAfIeAfdfhh41y3LVP9sjTs1y7AKRMUTaH5Mi9lA2FAwlIaX1UsOroPKXMoqIeEfVibWIhtkX/jT4=
+	t=1784814435; cv=none; b=j8fwBink/SMblObeBVmGyImrhBzs9nHZNzng3EB2E8bOXV+f3qISI5Nkqo1Ix6B+v2+1n5vH539wc5Es/wnd3I/nR3hRfXQpTE6cj4AFSJiDVz5e7x35hyBf/D3cpuVsz5D47/2mWXKTirFACsE0rhF8inPh1C7o3XcA3CHte5I=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1784814146; c=relaxed/simple;
-	bh=E0JCz5YGlaU/MEUjn/RT+NGKoCIPiPfw/qcpQir7G2I=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=ngMOi5dFXkJSzkGhz9FpTpe9vOC87rJTtLFW4FsPP3wqUBd47BpRmJzC6R6oFud1mxslCn9Wl5iKRLOXV2AGwlqxL1dNEoH+sPGb+xZ4qi69u5YaHtm7l90mnP5RDthxdPLraCEVJjnB6sG6i1vJWFAfFreNoWaTD3dCgPVK1ns=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id E6D231F000E9
-	for <linux-pm@vger.kernel.org>; Thu, 23 Jul 2026 13:42:24 +0000 (UTC)
-Received: by mail-lf1-f52.google.com with SMTP id 2adb3069b0e04-5b15dcaca31so716028e87.0
-        for <linux-pm@vger.kernel.org>; Thu, 23 Jul 2026 06:42:24 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AHgh+Rqrhsaeft7CcSHaV64jpvnnUexr6Y4NRLKNwHv0rXlt1QIwwm8O3LlP7Rzq7L6ylgg5zGIKXBebKA==@vger.kernel.org
-X-Gm-Message-State: AOJu0YwG76hmf1TysqodeG+RwOTv2GYu16lORnzgihgqhoL7h1/8fAn0
-	EnnLRzrmziUwBPlSA+v9UogWdPJ33S0m0Nt/gduT8QJt+2z5SxL1/DQwbOqSbz+jneh75z0zCCN
-	KPidlqtD+Y4/IJ49AmF9LGjL5hzXL5U8=
-X-Received: by 2002:a05:6512:3e23:b0:5ae:c34c:aefe with SMTP id
- 2adb3069b0e04-5b2b2f7eed7mr701769e87.62.1784814142672; Thu, 23 Jul 2026
- 06:42:22 -0700 (PDT)
+	s=arc-20240116; t=1784814435; c=relaxed/simple;
+	bh=TTOiuNpKd3ZCkUsJNnXQtcBfFIarUNgpz9bYK41z5To=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=joh7u196R+FLRvMD3K1Q9hPCGzyINAyfDmU6S/WWcL2t8h4A6G8t1XHGKm5iuPDRTgg4jklSojskmsZp4Gl6uvEJjp/RPnt6bHvZEIVMR1gBHoO1FIPumi1WsAKNs/p6G5+D37+8A6QjFSEuTx8R2wpZiaYyA/4BS2Pmrorym8c=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=pass smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=QJfmqszm; arc=none smtp.client-ip=192.198.163.13
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.intel.com
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="QJfmqszm"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1784814433; x=1816350433;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:content-transfer-encoding:in-reply-to;
+  bh=TTOiuNpKd3ZCkUsJNnXQtcBfFIarUNgpz9bYK41z5To=;
+  b=QJfmqszmoazUO4TQ/refWGwArlf6IJPRlRFK0xkl/SMmu/MyHpA1fZLZ
+   J6KPIMvKuZJnjTMRZLVYWn3jOKQ5pK+TMOYIwxcIdc6S9dx5KzUcF3jnB
+   wqi5GC2CTUQ3beFpsJRBvV4bWjww1EEzeJrKT1DJSfc3S8xjd8kGqPvpp
+   IRn7RJdwsNvCh/8IFDIHm0ALH9bw8Bm5K/BxscfpLH4n2C4PnUL5qtSEn
+   XNjaixnWuz22MwRdkgxhYbbn8u11KGwm7URWqPJgsnPiDPk+a6ae+ycYP
+   Z9X3jmZPOIlyVMItHNX/wwNl0sic+1pqbp1V9DvU1AbBYPRG2gvXH+KpY
+   A==;
+X-CSE-ConnectionGUID: hiYwjM9US0GVdBYAznH/3A==
+X-CSE-MsgGUID: +qWTSrdSR2Oep9xtgrq7uw==
+X-IronPort-AV: E=McAfee;i="6800,10657,11854"; a="88008518"
+X-IronPort-AV: E=Sophos;i="6.25,180,1779174000"; 
+   d="scan'208";a="88008518"
+Received: from orviesa003.jf.intel.com ([10.64.159.143])
+  by fmvoesa107.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 23 Jul 2026 06:47:07 -0700
+X-CSE-ConnectionGUID: 5I8g06L0RzW2DP7JqA5g0A==
+X-CSE-MsgGUID: b1+2gPZ+TkuUBaWrc2aoow==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.25,180,1779174000"; 
+   d="scan'208";a="261962172"
+Received: from tassilo.jf.intel.com (HELO tassilo) ([10.54.38.190])
+  by ORVIESA003-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 23 Jul 2026 06:47:07 -0700
+Date: Thu, 23 Jul 2026 06:47:00 -0700
+From: Andi Kleen <ak@linux.intel.com>
+To: Markus Elfring <Markus.Elfring@web.de>
+Cc: acpica-devel@lists.linux.dev, bpf@vger.kernel.org,
+	coresight@lists.linaro.org, kvm@vger.kernel.org,
+	linux-acpi@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+	linux-gpio@vger.kernel.org, linux-kselftest@vger.kernel.org,
+	linux-mm@kvack.org, linux-perf-users@vger.kernel.org,
+	linux-pm@vger.kernel.org, linux-trace-kernel@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org, mptcp@lists.linux.dev,
+	netdev@vger.kernel.org, platform-driver-x86@vger.kernel.org,
+	virtualization@lists.linux.dev,
+	Adrian Hunter <adrian.hunter@intel.com>,
+	Alex Mastro <amastro@fb.com>, Alex Williamson <alex@shazbot.org>,
+	Alexander Shishkin <alexander.shishkin@linux.intel.com>,
+	Alexei Starovoitov <ast@kernel.org>,
+	Andrew Lunn <andrew+netdev@lunn.ch>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Andrii Nakryiko <andrii@kernel.org>,
+	Ankur Arora <ankur.a.arora@oracle.com>,
+	Arnaldo Carvalho de Melo <acme@kernel.org>,
+	Bartosz Golaszewski <brgl@kernel.org>,
+	Bobby Eshleman <bobbyeshleman@meta.com>,
+	Christian =?iso-8859-1?Q?Borntr=E4ger?= <borntraeger@linux.ibm.com>,
+	Christophe Leroy <chleroy@kernel.org>,
+	Chun-Tse Shao <ctshao@google.com>,
+	Claudio Imbrenda <imbrenda@linux.ibm.com>,
+	Costa Shulyupin <costa.shul@redhat.com>,
+	Crystal Wood <crwood@redhat.com>,
+	Daniel Borkmann <daniel@iogearbox.net>,
+	Daniel Lezcano <daniel.lezcano@kernel.org>,
+	David Hildenbrand <david@kernel.org>,
+	David Matlack <dmatlack@google.com>,
+	"David S. Miller" <davem@davemloft.net>,
+	Donald Hunter <donald.hunter@gmail.com>,
+	Eduard Zingerman <eddyz87@gmail.com>,
+	Emil Tsalapatis <emil@etsalapatis.com>,
+	Eric Dumazet <edumazet@google.com>,
+	Gabriele Monaco <gmonaco@redhat.com>,
+	Geliang Tang <geliang@kernel.org>, Ian Rogers <irogers@google.com>,
+	Ingo Molnar <mingo@redhat.com>,
+	Ivan Pravdin <ipravdin.official@gmail.com>,
+	Jakub Kicinski <kuba@kernel.org>,
+	James Clark <james.clark@linaro.org>,
+	Janosch Frank <frankja@linux.ibm.com>,
+	Jason Xing <kerneljasonxing@gmail.com>,
+	Jiri Olsa <jolsa@kernel.org>, Joe Damato <joe@dama.to>,
+	John Garry <john.g.garry@oracle.com>,
+	Josh Poimboeuf <jpoimboe@kernel.org>,
+	Kaushlendra Kumar <kaushlendra.kumar@intel.com>,
+	Kent Gibson <warthog618@gmail.com>,
+	Kumar Kartikeya Dwivedi <memxor@gmail.com>,
+	Len Brown <lenb@kernel.org>, Leo Yan <leo.yan@linux.dev>,
+	Lukasz Luba <lukasz.luba@arm.com>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Mark Rutland <mark.rutland@arm.com>,
+	Martin KaFai Lau <martin.lau@linux.dev>,
+	Masami Hiramatsu <mhiramat@kernel.org>,
+	Mat Martineau <martineau@kernel.org>,
+	Matthieu Baerts <matttbe@kernel.org>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Mike Leach <mike.leach@arm.com>,
+	Mina Almasry <almasrymina@google.com>,
+	Mykyta Yatsenko <yatsenko@meta.com>, Nam Cao <namcao@linutronix.de>,
+	Namhyung Kim <namhyung@kernel.org>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	Paolo Abeni <pabeni@redhat.com>,
+	Paolo Bonzini <pbonzini@redhat.com>,
+	Pawel Chmielewski <pawel.chmielewski@intel.com>,
+	Peter Zijlstra <peterz@infradead.org>,
+	Quentin Monnet <qmo@kernel.org>,
+	"Rafael J. Wysocki" <rafael@kernel.org>,
+	Raghavendra Rao Ananta <rananta@google.com>,
+	Saket Dumbre <saket.dumbre@intel.com>,
+	Shuah Khan <shuah@kernel.org>, Simon Horman <horms@kernel.org>,
+	Song Liu <song@kernel.org>,
+	Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
+	Stanislav Fomichev <sdf@fomichev.me>,
+	Stefano Garzarella <sgarzare@redhat.com>,
+	Steven Rostedt <rostedt@goodmis.org>,
+	Suzuki K Poulose <suzuki.poulose@arm.com>,
+	Swapnil Sapkal <swapnil.sapkal@amd.com>,
+	Thomas =?iso-8859-1?Q?Wei=DFschuh?= <linux@weissschuh.net>,
+	Tomas Glozar <tglozar@redhat.com>,
+	Vipin Sharma <vipinsh@google.com>,
+	Wander Lairson Costa <wander@redhat.com>,
+	Will Deacon <will@kernel.org>,
+	Willem de Bruijn <willemdebruijn.kernel@gmail.com>,
+	Willy Tarreau <w@1wt.eu>, Yonghong Song <yonghong.song@linux.dev>,
+	Zhang Chujun <zhangchujun@cmss.chinamobile.com>,
+	Zhang Rui <rui.zhang@intel.com>,
+	LKML <linux-kernel@vger.kernel.org>,
+	kernel-janitors@vger.kernel.org
+Subject: Re: [PATCH] tools: Use fputc() calls in some functions
+Message-ID: <amIbVOIsOeZgcBZF@tassilo>
+References: <48f2d61f-d468-49b7-881e-f00777db073f@web.de>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260719132251.31936-3-thorsten.blum@linux.dev>
-In-Reply-To: <20260719132251.31936-3-thorsten.blum@linux.dev>
-From: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
-Date: Thu, 23 Jul 2026 15:42:10 +0200
-X-Gmail-Original-Message-ID: <CAJZ5v0i5eXx8_T5ysmgmqv+1K5z3RqgGRuhN1+HQoprbrKgOkA@mail.gmail.com>
-X-Gm-Features: AUfX_mw3VjQKS2UYbnnWtBvBRsFKjuJ4VXcpP7KnPP85HQF5E20pVNX6Np2EDgQ
-Message-ID: <CAJZ5v0i5eXx8_T5ysmgmqv+1K5z3RqgGRuhN1+HQoprbrKgOkA@mail.gmail.com>
-Subject: Re: [PATCH] thermal: sysfs: Use sysfs_emit_at() in trans_table_show()
-To: Thorsten Blum <thorsten.blum@linux.dev>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Daniel Lezcano <daniel.lezcano@kernel.org>, 
-	Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>, linux-pm@vger.kernel.org, 
-	linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <48f2d61f-d468-49b7-881e-f00777db073f@web.de>
 
-On Sun, Jul 19, 2026 at 3:23=E2=80=AFPM Thorsten Blum <thorsten.blum@linux.=
-dev> wrote:
->
-> Replace snprintf() with sysfs_emit_at() in trans_table_show().
-> sysfs_emit_at() is preferred for formatting sysfs output because it
-> provides safer bounds checking.
->
-> Convert multiple PAGE_SIZE length checks to check the number of bytes
-> actually copied by sysfs_emit_at(), thus avoiding manual buffer size
-> accounting.
->
-> Consistently return -EFBIG when the transition table output exceeds the
-> sysfs buffer, including the header row.
->
-> Signed-off-by: Thorsten Blum <thorsten.blum@linux.dev>
-> ---
->  drivers/thermal/thermal_sysfs.c | 49 ++++++++++++++++-----------------
->  1 file changed, 24 insertions(+), 25 deletions(-)
->
-> diff --git a/drivers/thermal/thermal_sysfs.c b/drivers/thermal/thermal_sy=
-sfs.c
-> index b44abfc997ed..adbcb2c011e8 100644
-> --- a/drivers/thermal/thermal_sysfs.c
-> +++ b/drivers/thermal/thermal_sysfs.c
-> @@ -706,7 +706,7 @@ static ssize_t trans_table_show(struct device *dev,
->         struct thermal_cooling_device *cdev =3D to_cooling_device(dev);
->         struct cooling_dev_stats *stats;
->         ssize_t len =3D 0;
-> -       int i, j;
-> +       int i, j, copied;
->
->         guard(cooling_dev)(cdev);
->
-> @@ -714,41 +714,40 @@ static ssize_t trans_table_show(struct device *dev,
->         if (!stats)
->                 return -ENODATA;
->
-> -       len +=3D snprintf(buf + len, PAGE_SIZE - len, " From  :    To\n")=
-;
-> -       len +=3D snprintf(buf + len, PAGE_SIZE - len, "       : ");
-> +       len +=3D sysfs_emit_at(buf, len, " From  :    To\n");
-> +       len +=3D sysfs_emit_at(buf, len, "       : ");
->         for (i =3D 0; i <=3D cdev->max_state; i++) {
-> -               if (len >=3D PAGE_SIZE)
-> -                       break;
-> -               len +=3D snprintf(buf + len, PAGE_SIZE - len, "state%2u  =
-", i);
-> +               copied =3D sysfs_emit_at(buf, len, "state%2u  ", i);
-> +               if (!copied)
-> +                       goto buf_full;
-> +               len +=3D copied;
->         }
-> -       if (len >=3D PAGE_SIZE)
-> -               return PAGE_SIZE;
-> -
-> -       len +=3D snprintf(buf + len, PAGE_SIZE - len, "\n");
-> +       len +=3D sysfs_emit_at(buf, len, "\n");
->
->         for (i =3D 0; i <=3D cdev->max_state; i++) {
-> -               if (len >=3D PAGE_SIZE)
-> -                       break;
-> -
-> -               len +=3D snprintf(buf + len, PAGE_SIZE - len, "state%2u:"=
-, i);
-> +               copied =3D sysfs_emit_at(buf, len, "state%2u:", i);
-> +               if (!copied)
-> +                       goto buf_full;
-> +               len +=3D copied;
->
->                 for (j =3D 0; j <=3D cdev->max_state; j++) {
-> -                       if (len >=3D PAGE_SIZE)
-> -                               break;
-> -                       len +=3D snprintf(buf + len, PAGE_SIZE - len, "%8=
-u ",
-> +                       copied =3D sysfs_emit_at(buf, len, "%8u ",
->                                 stats->trans_table[i * (cdev->max_state +=
- 1) + j]);
-> +                       if (!copied)
-> +                               goto buf_full;
-> +                       len +=3D copied;
->                 }
-> -               if (len >=3D PAGE_SIZE)
-> -                       break;
-> -               len +=3D snprintf(buf + len, PAGE_SIZE - len, "\n");
-> -       }
-> -
-> -       if (len >=3D PAGE_SIZE) {
-> -               pr_warn_once("Thermal transition table exceeds PAGE_SIZE.=
- Disabling\n");
-> -               len =3D -EFBIG;
-> +               copied =3D sysfs_emit_at(buf, len, "\n");
-> +               if (!copied)
-> +                       goto buf_full;
-> +               len +=3D copied;
->         }
->
->         return len;
-> +
-> +buf_full:
-> +       pr_warn_once("Thermal transition table exceeds PAGE_SIZE. Disabli=
-ng\n");
-> +       return -EFBIG;
->  }
->
->  static DEVICE_ATTR_RO(total_trans);
+On Thu, Jul 23, 2026 at 12:25:25PM +0200, Markus Elfring wrote:
+> From: Markus Elfring <elfring@users.sourceforge.net>
+> Date: Thu, 23 Jul 2026 11:13:30 +0200
+> Subject: [PATCH] tools: Use fputc() calls in some functions
+> MIME-Version: 1.0
+> Content-Type: text/plain; charset=UTF-8
+> Content-Transfer-Encoding: 8bit
+> 
+> Single characters should occasionally be transferred into the output.
+> Thus use the corresponding function “fputc” (or even “putchar”).
+> 
+> The source code was transformed by using the Coccinelle software.
 
-Applied as 7.3 material, thanks!
+gcc already does this transformation automatically.
