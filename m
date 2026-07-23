@@ -1,122 +1,133 @@
-Received: from mail-pf1-f176.google.com (mail-pf1-f176.google.com [209.85.210.176])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C102A379C48
-	for <linux-pm@vger.kernel.org>; Thu, 23 Jul 2026 17:23:30 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.210.176
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id ACB5B396B68;
+	Thu, 23 Jul 2026 17:54:49 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1784827412; cv=none; b=A228Ub6vAn6GbuEOGZe6hT9y1LrhaRBCnahpKOm3tq+9enHG1ZJsaubp6hIXqqLKRiis+mPGAdOeqiZFOE8E6GNLokPlApt57ukznilvDhPssYI8Caa4ajSBOTRy0wWfKhalgwlRcZzKx2AvXfOH5jFL65huKk++eDLeCDCR6TA=
+	t=1784829292; cv=none; b=maGiFcA+jIYRm+fHmzs1QlPTlCvOXqzofXBM31LFl4CcopQI992S6E+0sgnwBeomNASIBSXxL7ortq7ys+niVGCYCxQWfzL3bwpkOWCQyQL+GHGMm7575VsuX21CDC7dalU77cgUzA7THx9A7iFM7W/f/0Kj7P6XD5vHGSD7dWw=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1784827412; c=relaxed/simple;
-	bh=Z2Eq6tPQ8IU+EbAZvLPYmcLwjEeENPPS88GFAlG6sKo=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=pJ4VnCNWqiitxKEFzo0Zz8ouYW8WgiEYXmpqiGRoBFy37HAUwf3aDC1fq8eWrl7IrVfK1RDdt2bpx536rKKfALhPqqaZIqoLMRt+dLR0EzlHho6gn/R7bP07xru7Iw/ptTTRew89e29SWFFI+NwL4VsY5OFmoRzuQ4drIAK+CjY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=hmOCzdqS; arc=none smtp.client-ip=209.85.210.176
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="hmOCzdqS"
-Received: by mail-pf1-f176.google.com with SMTP id d2e1a72fcca58-84864086bfeso906960b3a.1
-        for <linux-pm@vger.kernel.org>; Thu, 23 Jul 2026 10:23:30 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1784827410; x=1785432210; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=eBG5HEmpJKSGr0OHWB4+9YhE4TrW0R0G3idJnIf77oM=;
-        b=hmOCzdqS63l7Ezcz/FGCSHTx5XKohoUpyIhdCr8SCkREmQ1ITJWdMdnZ6Pgc9DNvH0
-         99zl9f8pIgLrwI1Id/acFjCLUCU5gHs/b13tRae7RRbeWDA+yOC/+ZsBWEmxH8eEa93t
-         Mcw3AzdAk0cC9r4omKlrCiQ4ogweXAW9xtsD1tjERVQYP3xRy1BD/ziBsip4ifWokpRi
-         MdvOF4YsNzjvjjnQOJxPSPhzeOYHxQbfJJClX6a/XMnK9387b/4Zz/l562TjVwd6HiLW
-         lmAuscj0L9vxxtppzCnhVYqw/WebkH0nmgr0q2kgZX7SMbu90Ge2eQM2fsQhCdMDy8xT
-         gBAw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1784827410; x=1785432210;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=eBG5HEmpJKSGr0OHWB4+9YhE4TrW0R0G3idJnIf77oM=;
-        b=eWFU6aMWhYW4D2sTm72KWF0o5uNDj7qa7rNo94Sot0kqhZT+c+6mmSxPAfFy8u/eF6
-         lhr8OofQK/kOGxqsQnSY7ihUwxhSJ9CD31XGyrkVZvlA7eS+qZEo395iSFCsnTkGxGAs
-         tjtWU4kBAD7hrPK7wpcxorSL1/Mrqhls1qqszi7LarbAzIIyIGZlv3xRQoKNmPygY8EU
-         bWhRhEwO5fm9aG4xY3AtlrC4OdLCQ8A20wTD4UR88XtGPqzpCTPsbPyaGUHzvzIiWf8M
-         CSg4r9rl+VxVjKEyBtwIyPQlXSPhkKfavVitw6lCvA13s+UyVg7g4u/9W63FTu5FZhvh
-         0+iw==
-X-Forwarded-Encrypted: i=1; AHgh+RoJj3wAa7fIOtUZzWUSnnGuuEUcOi0cZrNVpijsqXYMk+RsCdihtuz0ByHORpJCwzGCmMV/ysadvQ==@vger.kernel.org
-X-Gm-Message-State: AOJu0YxUQxHtuGzyxv5krSIDn+/qwl3Iz6c8UWNPpmtpZ6Q0dTd/6pl8
-	xS3V7esNzyy0RhgtIjrRGHxA4NjL+Hwy5mZD4szhnsnuNfJ4MRL1jPNsBNTGlA==
-X-Gm-Gg: AR+sD13TqA7AByrATLu596kAKjGnAVyElEjmlVONBbGXkG7xkyxERsY3gqG5P0q73Xu
-	raMppVFAcmjfpL+nNOe3+Hu3Ps/3RCpPMovEOGak+usIF9c43GCkQbbCYn3VNckR4rf7D60li7F
-	g/64H8VDeoX8sLslmSokeh3iW9XJNJ1mFUuLXv8qeKPisaIbsG6RMiLjH1xAyIAT8n0+Nsz3unG
-	RqfkrDNlt7QvC4ZOKj9WoEhsbw4PoxRMgkX6AsJFvujyL9SJteSwJrFsYVlEv2ojvNPENMr4DzJ
-	yOkkhnF374EQPg8vuI+N113uGwYj5EEvgyBybSxubffDqM6h50O2M1pjahABv5BBig45gKKfLtC
-	JElwxxLFmsDIPxis9FUz8yBs5EnqKOJ3/XeKoAj/gdf4NfOAKxz8Y4tu8+LYU8jqpQGOwvNR3VT
-	rC
-X-Received: by 2002:a05:6a21:1398:b0:3c3:8bab:804 with SMTP id adf61e73a8af0-3c44b18f692mr4493645637.49.1784827409946;
-        Thu, 23 Jul 2026 10:23:29 -0700 (PDT)
-Received: from gmail.com ([58.84.62.107])
-        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-3147dc6162csm21287676eec.7.2026.07.23.10.23.27
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 23 Jul 2026 10:23:29 -0700 (PDT)
-From: Sumeet Pawnikar <sumeet4linux@gmail.com>
-To: rafael@kernel.org,
-	rui.zhang@intel.com,
-	linux-pm@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org,
-	sumeet4linux@gmail.com
-Subject: [PATCH v3] powercap: intel_rapl_tpmi: Handle PMU registration failure during probe
-Date: Thu, 23 Jul 2026 22:53:20 +0530
-Message-ID: <20260723172321.5960-1-sumeet4linux@gmail.com>
-X-Mailer: git-send-email 2.43.0
+	s=arc-20240116; t=1784829292; c=relaxed/simple;
+	bh=4HgACGrFInHbGQzg75GMMOTedzoqj60aSoXWkFd1/1c=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=U856TEbC8qSEZxkwWJYnELtUHVVz5vCjArBjSKJokguKpbWATQ4J0qsD3S1l6bMEtizDuF1m8fXyMb7oQIVkeVQPNyaAV3/u/+HdDW0goBGf36KWiMlVw6DeizzSc0T4EVPu6kWveQCSxLFEMTTfiucbWj9Pv0B95oSwZk5AT3Y=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7477B1F000E9;
+	Thu, 23 Jul 2026 17:54:47 +0000 (UTC)
+Date: Thu, 23 Jul 2026 12:54:44 -0500
+From: Bjorn Andersson <andersson@kernel.org>
+To: Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>
+Cc: Rakesh Kota <rakesh.kota@oss.qualcomm.com>, 
+	Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>, Krzysztof Kozlowski <krzk@kernel.org>, 
+	Kamal Wadhwa <kamal.wadhwa@oss.qualcomm.com>, jishnu.prakash@oss.qualcomm.com, 
+	Konrad Dybcio <konradybcio@kernel.org>, Rob Herring <robh@kernel.org>, 
+	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
+	Sebastian Reichel <sre@kernel.org>, linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Subject: Re: [PATCH 1/2] dt-bindings: soc: qcom: pmic-glink: Document
+ batteryless property
+Message-ID: <amJTpv7FY3uh8KcX@baldur>
+References: <20260521071341.q4efqssppvettaey@hu-kamalw-hyd.qualcomm.com>
+ <86f76a81-832d-4ba5-81d5-38b46b7dc0a7@kernel.org>
+ <6c595a5f-b979-4e8b-ae77-d28d24700588@oss.qualcomm.com>
+ <e07085c5-0fe8-4ea7-8e51-ebe104e7aa2d@kernel.org>
+ <82019c2e-6b6e-4edd-91b3-a28ef6eb09eb@oss.qualcomm.com>
+ <20260525120139.dyfnm6nwfzuoxd7p@hu-kotarake-hyd.qualcomm.com>
+ <20260702113010.zjrk4kr7fpjp6asj@hu-kotarake-hyd.qualcomm.com>
+ <dqe3ntmtmjqixp2l5n7qm6zpcwh4sizr7jd5g3cl3tzpvl6tvo@casnjg3orldd>
+ <allz1-dD9V_Ck8LK@baldur>
+ <gnmx5m5dt5676oox5cypzg26vbwtmzhzkh4bhyq6z27kwi2bf3@z24ov6esgtx4>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
+In-Reply-To: <gnmx5m5dt5676oox5cypzg26vbwtmzhzkh4bhyq6z27kwi2bf3@z24ov6esgtx4>
 
-intel_rapl_tpmi_probe() invokes rapl_package_add_pmu() but ignores its
-return value, so a PMU registration failure would leave the driver
-reporting probe success despite the PMU being absent, with no log
-trace.
+On Wed, Jul 22, 2026 at 04:59:32PM +0300, Dmitry Baryshkov wrote:
+> On Thu, Jul 16, 2026 at 07:14:37PM -0500, Bjorn Andersson wrote:
+> > On Thu, Jul 02, 2026 at 02:49:37PM +0300, Dmitry Baryshkov wrote:
+> > > On Thu, Jul 02, 2026 at 05:00:10PM +0530, Rakesh Kota wrote:
+> > > > On Mon, May 25, 2026 at 05:31:39PM +0530, Rakesh Kota wrote:
+> > > > > On Fri, May 22, 2026 at 11:24:19AM +0200, Konrad Dybcio wrote:
+> > > > > > On 5/21/26 11:58 AM, Krzysztof Kozlowski wrote:
+> > > > > > > On 21/05/2026 10:46, Konrad Dybcio wrote:
+> > > > > > >> On 5/21/26 9:20 AM, Krzysztof Kozlowski wrote:
+> > > > > > >>>> Since firmware does not have a way to dynamically tell if it on a
+> > > > > > >>>> debug-board powered device or a DCIN powered device, We are required to
+> > > > > > >>>> add this new DT property.
+> > > > > > >>>
+> > > > > > >>> Neither debug-board powered device nor battery-less will have
+> > > > > > >>> monitored-battery, thus again, why lack of that property cannot tell you
+> > > > > > >>> what you need?
+> > > > > > >>
+> > > > > > >> A device with a battery will not have a monitored-battery either
+> > > > > > > But why? If for such device property "no battery" is suitable, then for
+> > > > > > > me "monitored-battery" is suitable as well. IOW, if you say that having
+> > > > > > > a property describing batter is not a accurate hardware property here,
+> > > > > > > then neither saying "no battery" is, because no batter is basically some
+> > > > > > > sort of battery (just like empty set is still a set, empty array is
+> > > > > > > still an array).
+> > > > > > 
+> > > > > > The battmgr service running on one of the remoteprocs already has all
+> > > > > > the information about the battery and it also handles all the type-c,
+> > > > > > PD and charger configuration, only letting the OS know about the
+> > > > > > results.
+> > > > > > 
+> > > > > > Hence, unless there's some other hardware at play (e.g. for custom
+> > > > > > 200 W charging), which wasn't fully implemented in the QC firmware,
+> > > > > > there is no reason to describe a battery separately, since the OS
+> > > > > > can't do anything useful with that information
+> > > > > > 
+> > > > > > In some abstract way, perhaps monitored_battery = <&pmic_glink> could
+> > > > > > be thought of as valid (since that's the data source the OS gets to
+> > > > > > see)
+> > > > > 
+> > > > > Should we use monitored-battery = <&pmic_glink>; If so, would it be
+> > > > > incorrect to mark pmic_glink as simple-battery, as that may cause the
+> > > > > schema validation to fail?
+> > > > 
+> > > > Hi @Konrad Dybcio, @Krzysztof Kozlowski , 
+> > > > 
+> > > > Following up on the earlier discussion — is monitored-battery =
+> > > > <&pmic_glink>; a valid pattern? And if so, would marking pmic_glink as
+> > > > simple-battery cause DT schema validation failures?
+> > > 
+> > > I'd say, no, monitored-battery should be pointing to the battery device.
+> > > Please fix this on the firmware side, so that the firmware can report
+> > > having no battery at all.
+> > > 
+> > 
+> > This won't be fixed in the firmware on my devices.
+> 
+> Why?
+> 
 
-Since PMU registration is an optional auxiliary feature for perf energy
-counters, its failure should not break the primary powercap functionality.
-Check the return value and log a warning to ensure graceful degradation.
+Because at least the presence/absence of the battery is modelled in the
+ACPI tables that ships together with this platform firmware.
 
-Fixes: 963a9ad3c589 ("powercap: intel_rapl_tpmi: Enable PMU support")
-Signed-off-by: Sumeet Pawnikar <sumeet4linux@gmail.com>
----
-v2->v3:
-  * Fix the format string as per the Sashiko comment:
-    https://sashiko.dev/#/patchset/20260719085100.145555-1-sumeet4linux%40gmail.com)
+That said, I'm not aware of a standard mechanisms for e.g. wireless
+charging or how this is implemented in the Windows drivers. This part
+requires some more research.
 
-v1->v2:
-  * Since PMU registration is an optional auxiliary feature here,
-    treat it's failure as a non fatal error and log a warning
-    and continue, similar to other RAPL drivers like intel_rapl_msr,
-    to ensure graceful degradation (Based on Sashiko feedback:
-    https://sashiko.dev/#/patchset/20260515184250.228062-1-sumeet4linux%40gmail.com)
-  * Add Fixes tag in changelog.
----
- drivers/powercap/intel_rapl_tpmi.c | 5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
+But even then, I don't expect this to be fixed and deployed in older
+firmware.
 
-diff --git a/drivers/powercap/intel_rapl_tpmi.c b/drivers/powercap/intel_rapl_tpmi.c
-index 7f41491d9cd1..a870199a9272 100644
---- a/drivers/powercap/intel_rapl_tpmi.c
-+++ b/drivers/powercap/intel_rapl_tpmi.c
-@@ -414,7 +414,10 @@ static int intel_rapl_tpmi_probe(struct auxiliary_device *auxdev,
- 		goto err;
- 	}
- 
--	rapl_package_add_pmu(trp->rp);
-+	ret = rapl_package_add_pmu(trp->rp);
-+	if (ret)
-+		dev_warn(&auxdev->dev, "Failed to add RAPL PMU for Package%d, %d\n",
-+			info->package_id, ret);
- 
- 	auxiliary_set_drvdata(auxdev, trp);
- 
--- 
-2.43.0
+Regards,
+Bjorn
 
+> > 
+> > Regards,
+> > Bjorn
+> > 
+> > > -- 
+> > > With best wishes
+> > > Dmitry
+> 
+> -- 
+> With best wishes
+> Dmitry
