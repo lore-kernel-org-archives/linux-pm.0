@@ -1,104 +1,73 @@
-Received: from smtpbgbr2.qq.com (smtpbgbr2.qq.com [54.207.22.56])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 117E83D903E;
-	Thu, 23 Jul 2026 06:55:11 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=54.207.22.56
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7D7E335C685;
+	Thu, 23 Jul 2026 07:22:27 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1784789720; cv=none; b=AJyrtwgdw8X5XiH8ioboma012Lq3xiZAvOWCWe/nIyp6EMo9846mv9P8M1dCjbFmTMZxvxw17k2uo1WMgzEL5ul7H0uTV4FuMw7sD0BUKzWaCh3eU5YGAY9wncGEnncFSUkc56zevbT3bBfUB+01VL1CXz7Gv0MIRBHIjEW6hEA=
+	t=1784791348; cv=none; b=JHaTadDVEKMarUVgsxRQxj13Bz/ilkmOAZjlk+CaYQYbvDclr13P00gJOzcfpVb3csp0V318hGuvZ3y9vz47/r9u0+eGWHkgLT+kJ+WTQECwO04pdIc48A6IcSMsr2i2QOBNedbKdlhVyaOF6GsCNFuTg4KWO53xzXJo7bQHHpo=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1784789720; c=relaxed/simple;
-	bh=ZTyzKpDWjooXPIMH+/kDVH4gODnc1V0RGAFDV9MFbyw=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=OskNtgzLfIzbKXyhXQYCNa+25PgUkF5bia924nUl2QmsEx+hiWNX2vtJuYZbY2QSbt7yMSWh4VWbrxR5rP0bnSXDc/2MemeajUCSaeTH/L2/zJlV2/Pl1SWSOeCWKxwmG4fPzyUSvwUY7EMyil/UPRb1rmkr2y6zsEpkbAEuFG0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=uniontech.com; spf=pass smtp.mailfrom=uniontech.com; dkim=pass (1024-bit key) header.d=uniontech.com header.i=@uniontech.com header.b=nle1UaRG; arc=none smtp.client-ip=54.207.22.56
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=uniontech.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=uniontech.com
+	s=arc-20240116; t=1784791348; c=relaxed/simple;
+	bh=mA3U7pWvFVNGxEPqn4zWz9kbraUWwUOw/sRiQbOhzuo=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=a9h9PE2xkk/4jpkrvbFqWtHJ06nP9rl/09jYPK1Mjv4MhimjZaRyJtf+bCGDLi/kixWmKjxrDha9hRLjecPKFphos18MjqSafcHSz50FoNXspdS0j3b7QbPETg14zAWWtnxAy5Uk47eN7lbR3G+9PbaSkJ7E25+mVxFdGcqyASU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=WXpQgxVZ; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=uniontech.com header.i=@uniontech.com header.b="nle1UaRG"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=uniontech.com;
-	s=onoh2408; t=1784789693;
-	bh=JJFkdysbB0s1rRifCK+Xrms1xIj7Y5ESqta/6bqZtJY=;
-	h=From:To:Subject:Date:Message-ID:MIME-Version;
-	b=nle1UaRG3O5o7mWStWY1tUM79RGW2bJNs1aIh8V/UJKQ36ds0qYQ0J9ansKAzeK1k
-	 xyfUBQgwZ+aLZC72a+0iDaz458NRy2kK7vUL+TvKQP8KVcE8l7knhXS9eWXzgtB+Z6
-	 MZXLmu8BPLTwlvgiEoTKQicZKFk2ae1d894Dm7fo=
-X-QQ-mid: esmtpgz12t1784789688ta4a6cea0
-X-QQ-Originating-IP: v7IhKmgQxHhRSISRqV0OMfHq0etKDpiJ/zM2v4qHTbE=
-Received: from PEN202512010004 ( [113.57.152.160])
-	by bizesmtp.qq.com (ESMTP) with 
-	id ; Thu, 23 Jul 2026 14:54:46 +0800 (CST)
-X-QQ-SSF: 0000000000000000000000000000000
-X-QQ-GoodBg: 1
-X-BIZMAIL-ID: 3200143436947129304
-EX-QQ-RecipientCnt: 5
-From: raoxu <raoxu@uniontech.com>
-To: sre@kernel.org
-Cc: linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	raoxu@uniontech.com,
-	stable@vger.kernel.org
-Subject: [PATCH] power: supply: bq25890: fix the -10 C NTC lookup entry
-Date: Thu, 23 Jul 2026 14:54:44 +0800
-Message-ID: <0619C8BF15F43B7C+20260723065444.1796002-1-raoxu@uniontech.com>
-X-Mailer: git-send-email 2.50.1
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="WXpQgxVZ"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4A8001F000E9;
+	Thu, 23 Jul 2026 07:22:26 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1784791347;
+	bh=sqEqx/dsEBv1eP8UyW1cZ7pHK0Q+V0EqkrcAbtlOXUQ=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=WXpQgxVZ5AtlZV2o2NpWt4AFrXuCoyHa4hA3yGPbXDN1Rb0df98k38s8Rx8DWF6mq
+	 ZbEvS6IjppLXdfUUnK4eepeD/UK2ThTeXbk6jtyZmts1z4oYnkkiTlOI/IjnIwM9jI
+	 cVEQEcEObkLf2HwKYbSOoBGRw9R8vmi7HwIlSEkJgFLnRacsehThCdZNpc/0iUpxhI
+	 wzBpAoPO7oF+hKgpW61+R7pHR2fG+m5QW+UQVpvfpUGoekHiQ/NBKemdPmIhNFTVfq
+	 lD3V63ptoploAmtAawSFPEG5E2xcznwYA9wYBxpckiCth144vZ6SvtZOoTxuD9+Zb0
+	 Gi8Ij4FjUJUbg==
+Date: Thu, 23 Jul 2026 09:22:23 +0200
+From: Krzysztof Kozlowski <krzk@kernel.org>
+To: Gaurav Kohli <gaurav.kohli@oss.qualcomm.com>
+Cc: Bjorn Andersson <andersson@kernel.org>, 
+	Mathieu Poirier <mathieu.poirier@linaro.org>, Rob Herring <robh@kernel.org>, 
+	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
+	Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>, Amit Kucheria <amit.kucheria@oss.qualcomm.com>, 
+	Konrad Dybcio <konradybcio@kernel.org>, "Rafael J. Wysocki" <rafael@kernel.org>, 
+	Daniel Lezcano <daniel.lezcano@kernel.org>, Zhang Rui <rui.zhang@intel.com>, 
+	Lukasz Luba <lukasz.luba@arm.com>, Manivannan Sadhasivam <mani@kernel.org>, 
+	Kees Cook <kees@kernel.org>, "Gustavo A. R. Silva" <gustavoars@kernel.org>, 
+	cros-qcom-dts-watchers@chromium.org, linux-arm-msm@vger.kernel.org, linux-remoteproc@vger.kernel.org, 
+	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, 
+	linux-hardening@vger.kernel.org, manaf.pallikunhi@oss.qualcomm.com
+Subject: Re: [PATCH v5 1/9] dt-bindings: remoteproc: qcom,pas: add
+ #cooling-cells property
+Message-ID: <20260723-encouraging-flexible-skylark-c92ab6@quoll>
+References: <20260721-b4-qmi-tmd-v5-0-99620e07f505@oss.qualcomm.com>
+ <20260721-b4-qmi-tmd-v5-1-99620e07f505@oss.qualcomm.com>
+ <20260722-active-kangaroo-of-order-ebb28f@quoll>
+ <f3864ed8-34bb-42e2-a821-ac2d1a653076@oss.qualcomm.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-QQ-SENDSIZE: 520
-Feedback-ID: esmtpgz:uniontech.com:qybglogicsvrgz:qybglogicsvrgz6b-0
-X-QQ-XMAILINFO: OBJ8LfKEepDbxrbkPNEKJj5ejl9XbtZPW5FIVQuIgUSzeW8kFxUitEfA
-	N922RbVSqmpEsqA5zyNs6X8GLF9tl6JmU0yaQ9PbTx/RU7ifHrs8i91uBZiKDDyGkTyctoS
-	78Ppenrpg90eVbG05TRcbbsRuZieVNnLwjNkyB1BV24op9EAzqBghNfdyB/nDDeuFFPKNou
-	eFLqzsNfy0Yg/oQFEqVKB9WITQyXGKOeCQXkziBz8SNXeDDqnVC2zOaGJ+xLQTz04gSLQYx
-	4sq8n/uNVIZUM4dX2V75cg6rjwJn9V+zoVtE/lcjF/4OZnx4rtZVfoo3eNiI+RIQIwkk1ly
-	WHhOi8Kb1HTV0liRYvrV7z59FNmQqyyp8UgYTpIdEMGGFchAfy9RZlHpJNUPRWHhP1tahXk
-	gsm8MRmEybApiUTAG9CqzpaWnlAXUUG0WvWbMLkxN4/7fhaEV772VJHVmLr5uGCm4F/GH9t
-	ApD02JUfGseyF6Hy/8zTEmfiQ8l6JcA1l3T/ejCjyq/1p+bUmbqFIq1x8jsBHBZOH2zJsCZ
-	daH5uNlSLS6UYq7iK5TLgkfQAjQUSvCdGaGEhm+M1QYzYtKenTwJrI8XLhW7uNavRqtssYx
-	0KElWTMawe1tutA06EsAKb3RGvsIKvvuuQRkbcMpIcCmrJ2/T0k5a4IBGd6eKaTWRoN7XTm
-	m1izALtP2+jK2y/yRUxYu6z8PwGV56kV7b2IG6a0c9qaDi8TGKLNMNvYJoKB7Xmd8gOimaQ
-	fwVvZl2IZekrghKB+bpvtbb3NEhHNL3ZbClyi9y4qq/ZbC5eK2P+jq5SxQvOlgKrbOFho+3
-	QRINv6PyMbEt3qHmEw/vUirbdQWO4bDX+mU0mzGysXY1LjqasujARn59J4Wqu182w0MYb4Y
-	qlZ1Swg5EVfZG8RE+KDqA1BT9kLNgR3xv6PoKwICMWlA9+NVJebiFDGELo7d7ABxpYJNeXJ
-	K1qznlGu5WZoXL9UbPeEw/yYuCtYA1HH/leQYh2ZELBdkOnFmze01+3FHHDrCJSnmdCJAmc
-	AxEzMZdKZD4hPfhqftTn23j9rNuW15d++tQLP5ICooDx0iCDaO
-X-QQ-XMRINFO: Mp0Kj//9VHAxzExpfF+O8yhSrljjwrznVg==
-X-QQ-RECHKSPAM: 0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <f3864ed8-34bb-42e2-a821-ac2d1a653076@oss.qualcomm.com>
 
-From: Xu Rao <raoxu@uniontech.com>
+On Wed, Jul 22, 2026 at 07:08:07PM +0530, Gaurav Kohli wrote:
+> > Filename must match compatible. There are no qcom,qmi-tmd or qcom,.*tmd
+> > or qcom,.*qmi compatibles.
+> > 
+> > Which device is providing this ABI? PAS?
+> 
+> thanks for review.
+> Yes, this belongs under PAS. Should i rename the file to pas?
 
-The TSPCT lookup table is monotonically decreasing except for ADC code
-121, where the sequence reads -9.0 C, -1.0 C, -12.0 C.  This makes the
-reported battery temperature jump upward by eight degrees for one code
-and then downward by eleven degrees for the next code.
+qcom,pas.yaml would work for me.
 
-The entry is a missing zero: use -10.0 C so the sequence remains
-monotonic between -9.0 C and -12.0 C.
-
-Fixes: 9652c02428f3 ("power: bq25890: add POWER_SUPPLY_PROP_TEMP")
-Cc: stable@vger.kernel.org
-Signed-off-by: Xu Rao <raoxu@uniontech.com>
----
- drivers/power/supply/bq25890_charger.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/power/supply/bq25890_charger.c b/drivers/power/supply/bq25890_charger.c
-index c1c12a447178..180bc137a863 100644
---- a/drivers/power/supply/bq25890_charger.c
-+++ b/drivers/power/supply/bq25890_charger.c
-@@ -320,7 +320,7 @@ static const u32 bq25890_tspct_tbl[] = {
- 	145, 140, 130, 120, 115, 110, 100, 90,
- 	80, 70, 60, 50, 40, 30, 20, 10,
- 	0, -10, -20, -30, -40, -60, -70, -80,
--	-90, -10, -120, -140, -150, -170, -190, -210,
-+	-90, -100, -120, -140, -150, -170, -190, -210,
- };
-
- #define BQ25890_TSPCT_TBL_SIZE		ARRAY_SIZE(bq25890_tspct_tbl)
---
-2.50.1
+Best regards,
+Krzysztof
 
