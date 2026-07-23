@@ -1,215 +1,1434 @@
-Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
+Received: from mout.web.de (mout.web.de [217.72.192.78])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8C68E43712F
-	for <linux-pm@vger.kernel.org>; Thu, 23 Jul 2026 10:03:31 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.180.131
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BF87C40627B;
+	Thu, 23 Jul 2026 10:26:38 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.72.192.78
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1784801013; cv=none; b=aKvNtykHPzTbwuI2AD3bhdnQAv7k1y8yo3Of2uDcB9mvp3GLfGDCY8c6ug631Gvi/uQX4wqBrur7aUScYsi/9s6jae/RZ0hcY+NMJxzB7vOYIveOEmYpWMQAaJTF+jhNwXlAmJl8vlv+dTIc1misE3SZ0uCZ/LC3hLggEyXEwtc=
+	t=1784802402; cv=none; b=KRNxPvuVsjZI/TtPVwslLIAO7dHbJjunB640WoXAgz+mp7rm0QzLDscFvXzG20IVh/EFFd/rfD/0nJEfgseNmvE26pqIBiMt4Cr7ZMihMpnAA+RzHRDjavjUf6yzhhh2PICyMWEackjso4dCMZXrXqYYjkHcpaErn8uMCh1QWLk=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1784801013; c=relaxed/simple;
-	bh=V8afFD2W1M6xvgYB6p4r45dfdu5hamisHl2AIG19+MY=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=eEIlJj7byTJ89KLJynCtTFpUg8zqPG39O8ShX6qdCyviqD0fl7O8gPZPaivf33Z4Icr7BriRhZRb7b5ddPbC+H/Unhz9T3iPoZyufPr/+SfMZ0v0KJo/upbQjAmM6D0ES4F4j4K0nSK6uH+kglueLwg3kdL4ywGaBv1IyT3gdNI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=bN1SGZWZ; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=RsRcSe3Y; arc=none smtp.client-ip=205.220.180.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
+	s=arc-20240116; t=1784802402; c=relaxed/simple;
+	bh=UHnYUVMQfa4XXVIN6iWBBK295C6ljfWQQOHolKPogs4=;
+	h=Message-ID:Date:MIME-Version:Cc:From:Subject:To:Content-Type; b=jCSRl8GJ3fsu4rHf2uefa1lUhXhYfbcHZXGA3n8rqG9HBFBv/FT8daePWJXz36njCpm6B43XoyMc+uuw+TObilRoVFYdSddeADXwRa2LTuX4xKrh2rINCRYzu89c1YY5K1Ev14p7lqfNmMdk9Jeut9rUcmDy7LkwaBnryF+cQhc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=web.de; spf=pass smtp.mailfrom=web.de; dkim=pass (2048-bit key) header.d=web.de header.i=markus.elfring@web.de header.b=pzTE6pTg; arc=none smtp.client-ip=217.72.192.78
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=web.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=web.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="bN1SGZWZ";
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="RsRcSe3Y"
-Received: from pps.filterd (m0279872.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 66N8qWhF3390464
-	for <linux-pm@vger.kernel.org>; Thu, 23 Jul 2026 10:03:30 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-type:date:from:in-reply-to:message-id:mime-version
-	:references:subject:to; s=qcppdkim1; bh=8Ug7bLBpHjX45qP49mU8fjcs
-	QGVMwERqU7kYczg+3I4=; b=bN1SGZWZtHqfxPzfnWJn8XsbpIVSBzFjK/U8LRb1
-	IBLC+uduGtW+znDgG6mAZy/iXiUTW7RyKAmbdKOdgPNNPFl7ZGbfjNfftbqmKseF
-	zTYOyDchPPxnsV5V2CZWz5N/VfrSa68+NYJ4Prml3/OfM4qfiC5GBjyx+GpuzFx+
-	GTtge9eQtUzSG8PWv/2uI2K39lKFK0W3grrP4wo/75vt8NqDkKjlZ2qcYrJec6aH
-	oYGm0nr4wLwnO1XbFdzOB6vpJkrzUPqkX+DuVUHPJKIczk3ZqYyIk3/TPXgZju7N
-	jd8H/RVkGQsve6P0SxdCYUZ5HTijG2I98T+2ZhJRwbkdoA==
-Received: from mail-pj1-f71.google.com (mail-pj1-f71.google.com [209.85.216.71])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4fke0krrry-1
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Thu, 23 Jul 2026 10:03:30 +0000 (GMT)
-Received: by mail-pj1-f71.google.com with SMTP id 98e67ed59e1d1-38e54b6556aso612243a91.2
-        for <linux-pm@vger.kernel.org>; Thu, 23 Jul 2026 03:03:30 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1784801009; x=1785405809; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=8Ug7bLBpHjX45qP49mU8fjcsQGVMwERqU7kYczg+3I4=;
-        b=RsRcSe3YLQ52Wbzvg6Js3SCuwTKq82phpMXamuithHse+Yh1rKBqgqB6BTFz3253At
-         klOcdHYng4EUs6fclKDOIUldpH2gZP55TkCI3r2hxpzNBbY4Tg0ZSxlF73h4gOkZANGr
-         FRIxRqztblrtT/O4yo5GNsEV0L+wOhpD1EqCOQt4WoJ9yVytbkospGDxQadRmlukwr02
-         182H/ZaeTXVrwW4wWfAEOJ5jDe84V1MJGdwlFwnapMPW2qT4XlWxFapRrgTvnPzjfpHi
-         5KzaNEoSb21tMs5vO0bwWUfjYRSv0zXPUENfPAQlyygW13TUQBHxThWDreL/vri1LTNs
-         fTsw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1784801009; x=1785405809;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=8Ug7bLBpHjX45qP49mU8fjcsQGVMwERqU7kYczg+3I4=;
-        b=KbhntxNftOPh40RlR7x4relHcm8Xz1v9GNvMoR1tapT6mzEoiI8iKc7CxRteeAiRCW
-         6+YS5kcPLB+8VCQjDqvYUO0Z6eLBBHFxPhDvBRRYYGD3rRFBl1pDqZ2MUFVBKnITPd3b
-         3UtJ8FrNmhH7R/VmWnYfm7eGhAZ+ecq0GfQJLyayEaCNbps8vavJHucC4SeU6DhIWI7y
-         qBauxST+URGy8plSK2Zs+0dTUHa3B8qNd5k7xghiI6/uUWa9OLpfzQhnF5JTW0qjFOR9
-         O7N5/w2X/0C7Nu/jpv5QwHzW91ZldVFPJBNh0uTatPfX56DU1krsWxU0ls7SSerCB1iT
-         CUTA==
-X-Forwarded-Encrypted: i=1; AHgh+RoIbR6D9h5qldwxuuY85oBb5gOO4PRy73y4RHBFSv0DvfSoq+zFUSX2t8/oIqQf6M+Gs/zoQaJKPA==@vger.kernel.org
-X-Gm-Message-State: AOJu0YwZ/NISRAUUCdhzBicdO88jFdmnt8HVNOAdhGf2LZutLVkdIJnK
-	xKkLvCd+acDnM2KyqdvPFsesmYPBU78KQj4FnHIhTNvAiimN5ahiUi3wYOX2vNqb0NhHNC2Cs3+
-	OeN7aLprMfv8ywDAwZDuOUoLlBbWwJBbGJF45sUWSwLHDcTx9PsQ1jTeAyslFNg==
-X-Gm-Gg: AR+sD12RxNhBg2HnnLApdtGC+y2Op94UmtMpU6pdRNsWCzk2W9LQxlqVbl3P0/k8UuY
-	D2UjshJe/ljyNxzjJgyQOkypEiFQZi06JsKcvT3gr/XXvdPNs2rQPjHUXac26Hc87Kt1PaoQzHz
-	RibzC/wMCVWsYHdRfKF3H8ipv28e/xPKne4GhePhzjtluei/LqIjosFCxY3/dcgxbwEEWw/GDD7
-	of4kCUx6E6Yl3YKwJtXX7fQ1YLmPnc5z/i9aFV7sngSdImX78xnoggCK09iBad/JhJunhkN3hSO
-	YSWy1YW8uJeid9p6GgHXjGMGrf1SA3KZTdslv8Y2syM43LkLATfs5DtUxXlIcj8bVC6TXd0+oW5
-	KLkQqbaOHXtQaQ1xzMzZruN9sNWGsb4PQmw==
-X-Received: by 2002:a17:90b:1d52:b0:38e:75f3:ad4d with SMTP id 98e67ed59e1d1-38ec69575acmr2477435a91.7.1784801009207;
-        Thu, 23 Jul 2026 03:03:29 -0700 (PDT)
-X-Received: by 2002:a17:90b:1d52:b0:38e:75f3:ad4d with SMTP id 98e67ed59e1d1-38ec69575acmr2477359a91.7.1784801008638;
-        Thu, 23 Jul 2026 03:03:28 -0700 (PDT)
-Received: from hu-pkondeti-hyd.qualcomm.com ([202.46.22.19])
-        by smtp.gmail.com with ESMTPSA id a92af1059eb24-13d130f42bbsm15811644c88.14.2026.07.23.03.03.18
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 23 Jul 2026 03:03:28 -0700 (PDT)
-Date: Thu, 23 Jul 2026 15:33:15 +0530
-From: Pavan Kondeti <pavan.kondeti@oss.qualcomm.com>
-To: Shivendra Pratap <shivendra.pratap@oss.qualcomm.com>
-Cc: Pavan Kondeti <pavan.kondeti@oss.qualcomm.com>,
-        Sebastian Reichel <sre@kernel.org>,
-        Mark Rutland <mark.rutland@arm.com>,
-        Lorenzo Pieralisi <lpieralisi@kernel.org>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Daniel Lezcano <daniel.lezcano@kernel.org>,
-        Christian Loehle <christian.loehle@arm.com>,
-        Ulf Hansson <ulfh@kernel.org>, Lee Jones <lee@kernel.org>,
-        Rob Herring <robh@kernel.org>,
-        Krzysztof Kozlowski <krzk+dt@kernel.org>,
-        Conor Dooley <conor+dt@kernel.org>,
-        Bjorn Andersson <andersson@kernel.org>,
-        Konrad Dybcio <konradybcio@kernel.org>, Arnd Bergmann <arnd@arndb.de>,
-        Souvik Chakravarty <Souvik.Chakravarty@arm.com>,
-        Andy Yan <andy.yan@rock-chips.com>,
-        Matthias Brugger <matthias.bgg@gmail.com>,
-        John Stultz <john.stultz@linaro.org>,
-        Moritz Fischer <moritz.fischer@ettus.com>,
-        Bartosz Golaszewski <brgl@kernel.org>,
-        Sudeep Holla <sudeep.holla@kernel.org>, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org,
-        Florian Fainelli <florian.fainelli@broadcom.com>,
-        Krzysztof Kozlowski <krzk@kernel.org>,
-        Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>,
-        Mukesh Ojha <mukesh.ojha@oss.qualcomm.com>,
-        Andre Draszik <andre.draszik@linaro.org>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Kathiravan Thirumoorthy <kathiravan.thirumoorthy@oss.qualcomm.com>,
-        mfd@lists.linux.dev, Srinivas Kandagatla <srini@kernel.org>
-Subject: Re: [PATCH v23 02/13] power: reset: reboot-mode: Support up to 3
- magic values per mode
-Message-ID: <3430f083-37c8-482d-8110-dd161ebcc269@quicinc.com>
-References: <20260714-arm-psci-system_reset2-vendor-reboots-v23-0-e7453c548c21@oss.qualcomm.com>
- <20260714-arm-psci-system_reset2-vendor-reboots-v23-2-e7453c548c21@oss.qualcomm.com>
- <38115586-9913-4d6e-9447-e82aee811dd1@quicinc.com>
- <fac2633e-db28-494c-9b31-358ed6d0ce14@oss.qualcomm.com>
+	dkim=pass (2048-bit key) header.d=web.de header.i=markus.elfring@web.de header.b="pzTE6pTg"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=web.de;
+	s=s29768273; t=1784802338; x=1785407138; i=markus.elfring@web.de;
+	bh=ET0AwCFbueyIrbxwEwyenRyXyFcvsqwk26HKdPa/aR0=;
+	h=X-UI-Sender-Class:Message-ID:Date:MIME-Version:Cc:From:Subject:
+	 To:Content-Type:Content-Transfer-Encoding:cc:
+	 content-transfer-encoding:content-type:date:from:message-id:
+	 mime-version:reply-to:subject:to;
+	b=pzTE6pTgQl3hCzS4TVSqDVce4csMOqT03Ok+uS2PfBSujwVbv+IcAOdhGOF1SoEn
+	 0VXwkww7ZRfs4O7V2g2TYwHFGl9UQw/2S6Bho2xgEwN9EbdbMJe7gtWzl3ZQY6ePk
+	 HUI2l0Oa5H13+/JO1zrZALLDoebVbMzbYOUlDpEgRWLe46Vq8/164KFdkBvqxIk3W
+	 Li7MohyY21hf18b/alcst9jboWxhsZs+UbWksAHfK11kT3/ZTeB8YDA+ciirpNFRx
+	 D+qsxi+6yCWFzcQfIDUhezqfhM+Xx9igXVUxToScM2h1ANy4u2sXSojfeFtiuG1r4
+	 dXD92AegwFQslSH+qQ==
+X-UI-Sender-Class: 814a7b36-bfc1-4dae-8640-3722d8ec6cd6
+Received: from client.hidden.invalid by smtp.web.de (mrweb105
+ [213.165.67.124]) with ESMTPSA (Nemesis) id 1MQPdr-1wZK791RKL-00XnHW; Thu, 23
+ Jul 2026 12:25:38 +0200
+Message-ID: <48f2d61f-d468-49b7-881e-f00777db073f@web.de>
+Date: Thu, 23 Jul 2026 12:25:25 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <fac2633e-db28-494c-9b31-358ed6d0ce14@oss.qualcomm.com>
-X-Proofpoint-ORIG-GUID: td-xA77rOJVHQNruXJNyNwJGQTMzOsHa
-X-Proofpoint-Spam-Info: AW1haW4tMjYwNzIzMDA5OCBTYWx0ZWRfX+0if0gU8C2dc
- OnskbiJzojG04JzzVCW5SMMGVhkWf2tLYEqa+SYr2h4HIafRM1LU9hoAWakirtXY3BRukKAt5xD
- OMWELesMRuErvF9vNzqp3PvLtQc/kW4=
-X-Authority-Analysis: v=2.4 cv=S7DpBosP c=1 sm=1 tr=0 ts=6a61e6f2 cx=c_pps
- a=UNFcQwm+pnOIJct1K4W+Mw==:117 a=fChuTYTh2wq5r3m49p7fHw==:17
- a=kj9zAlcOel0A:10 a=RAioF0-LDSMA:10 a=s4-Qcg_JpJYA:10
- a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=yx91gb_oNiZeI1HMLzn7:22
- a=EUspDBNiAAAA:8 a=SS_D-kt5JMbThxPhXzQA:9 a=CjuIK1q_8ugA:10
- a=uKXjsCUrEbL0IQVhDsJ9:22
-X-Proofpoint-GUID: td-xA77rOJVHQNruXJNyNwJGQTMzOsHa
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzIzMDA5OCBTYWx0ZWRfXyAbmrg2FwAq3
- w6jYzI1Q/caqjmAYvitqkP3tRwWRZCB//QdNqp7FywZAigUp1xu0K4+L/OjuC9tdyP5XHLorX0l
- Foxash8OOrilYZcPElubv/MM+OI7O79QY0/jPEr9RZBfWd16HNgSGSsnWZ94e7Ho08rAUWTxyxU
- 7Y8ux9F+tYlWtnwMccygg/4G/ccVROGFlbtpVUBzm4ut0XEgS1c3KCEQsV7nYxCzjCj7dDdAhmK
- 5zVQpbWKgTu3dVxDqluBI2+EtOqgXTvYjxqjUvFGxxEtln5aTGUWphLH5GZL/m+H6wg68Y0392S
- 0ptVsQDPC5gwqAGHPzfGV+yOeuqe5PQcGcz4m4tTo0hbNnUCNhcT2YtDqIWp4vGsEtoaO97BmmJ
- 8GcYAvdfsJ7uJzHKUSKZV4rbYMCOOf4xCU7hxVTqtGDnIlCnjZcPR3m5PW37ZIhB5AgExGsJOs/
- XqkP83PhauKDMc+fb7w==
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-07-23_03,2026-07-22_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- spamscore=0 lowpriorityscore=0 malwarescore=0 suspectscore=0 bulkscore=0
- priorityscore=1501 adultscore=0 impostorscore=0 phishscore=0 clxscore=1015
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2607230098
+User-Agent: Mozilla Thunderbird
+Content-Language: en-GB, de-DE
+Cc: LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org
+From: Markus Elfring <Markus.Elfring@web.de>
+Subject: [PATCH] tools: Use fputc() calls in some functions
+To: acpica-devel@lists.linux.dev, bpf@vger.kernel.org,
+ coresight@lists.linaro.org, kvm@vger.kernel.org, linux-acpi@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, linux-gpio@vger.kernel.org,
+ linux-kselftest@vger.kernel.org, linux-mm@kvack.org,
+ linux-perf-users@vger.kernel.org, linux-pm@vger.kernel.org,
+ linux-trace-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ mptcp@lists.linux.dev, netdev@vger.kernel.org,
+ platform-driver-x86@vger.kernel.org, virtualization@lists.linux.dev,
+ Adrian Hunter <adrian.hunter@intel.com>, Alex Mastro <amastro@fb.com>,
+ Alex Williamson <alex@shazbot.org>,
+ Alexander Shishkin <alexander.shishkin@linux.intel.com>,
+ Alexei Starovoitov <ast@kernel.org>, Andi Kleen <ak@linux.intel.com>,
+ Andrew Lunn <andrew+netdev@lunn.ch>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Andrii Nakryiko <andrii@kernel.org>, Ankur Arora <ankur.a.arora@oracle.com>,
+ Arnaldo Carvalho de Melo <acme@kernel.org>,
+ Bartosz Golaszewski <brgl@kernel.org>,
+ Bobby Eshleman <bobbyeshleman@meta.com>,
+ =?UTF-8?Q?Christian_Borntr=C3=A4ger?= <borntraeger@linux.ibm.com>,
+ Christophe Leroy <chleroy@kernel.org>, Chun-Tse Shao <ctshao@google.com>,
+ Claudio Imbrenda <imbrenda@linux.ibm.com>,
+ Costa Shulyupin <costa.shul@redhat.com>, Crystal Wood <crwood@redhat.com>,
+ Daniel Borkmann <daniel@iogearbox.net>,
+ Daniel Lezcano <daniel.lezcano@kernel.org>,
+ David Hildenbrand <david@kernel.org>, David Matlack <dmatlack@google.com>,
+ "David S. Miller" <davem@davemloft.net>,
+ Donald Hunter <donald.hunter@gmail.com>, Eduard Zingerman
+ <eddyz87@gmail.com>, Emil Tsalapatis <emil@etsalapatis.com>,
+ Eric Dumazet <edumazet@google.com>, Gabriele Monaco <gmonaco@redhat.com>,
+ Geliang Tang <geliang@kernel.org>, Ian Rogers <irogers@google.com>,
+ Ingo Molnar <mingo@redhat.com>, Ivan Pravdin <ipravdin.official@gmail.com>,
+ Jakub Kicinski <kuba@kernel.org>, James Clark <james.clark@linaro.org>,
+ Janosch Frank <frankja@linux.ibm.com>, Jason Xing
+ <kerneljasonxing@gmail.com>, Jiri Olsa <jolsa@kernel.org>,
+ Joe Damato <joe@dama.to>, John Garry <john.g.garry@oracle.com>,
+ Josh Poimboeuf <jpoimboe@kernel.org>,
+ Kaushlendra Kumar <kaushlendra.kumar@intel.com>,
+ Kent Gibson <warthog618@gmail.com>,
+ Kumar Kartikeya Dwivedi <memxor@gmail.com>, Len Brown <lenb@kernel.org>,
+ Leo Yan <leo.yan@linux.dev>, Lukasz Luba <lukasz.luba@arm.com>,
+ Madhavan Srinivasan <maddy@linux.ibm.com>,
+ Mark Rutland <mark.rutland@arm.com>, Martin KaFai Lau
+ <martin.lau@linux.dev>, Masami Hiramatsu <mhiramat@kernel.org>,
+ Mat Martineau <martineau@kernel.org>, Matthieu Baerts <matttbe@kernel.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, Mike Leach <mike.leach@arm.com>,
+ Mina Almasry <almasrymina@google.com>, Mykyta Yatsenko <yatsenko@meta.com>,
+ Nam Cao <namcao@linutronix.de>, Namhyung Kim <namhyung@kernel.org>,
+ Nicholas Piggin <npiggin@gmail.com>, Paolo Abeni <pabeni@redhat.com>,
+ Paolo Bonzini <pbonzini@redhat.com>,
+ Pawel Chmielewski <pawel.chmielewski@intel.com>,
+ Peter Zijlstra <peterz@infradead.org>, Quentin Monnet <qmo@kernel.org>,
+ "Rafael J. Wysocki" <rafael@kernel.org>,
+ Raghavendra Rao Ananta <rananta@google.com>,
+ Saket Dumbre <saket.dumbre@intel.com>, Shuah Khan <shuah@kernel.org>,
+ Simon Horman <horms@kernel.org>, Song Liu <song@kernel.org>,
+ Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
+ Stanislav Fomichev <sdf@fomichev.me>,
+ Stefano Garzarella <sgarzare@redhat.com>,
+ Steven Rostedt <rostedt@goodmis.org>,
+ Suzuki K Poulose <suzuki.poulose@arm.com>,
+ Swapnil Sapkal <swapnil.sapkal@amd.com>,
+ =?UTF-8?Q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>,
+ Tomas Glozar <tglozar@redhat.com>, Vipin Sharma <vipinsh@google.com>,
+ Wander Lairson Costa <wander@redhat.com>, Will Deacon <will@kernel.org>,
+ Willem de Bruijn <willemdebruijn.kernel@gmail.com>, Willy Tarreau
+ <w@1wt.eu>, Yonghong Song <yonghong.song@linux.dev>,
+ Zhang Chujun <zhangchujun@cmss.chinamobile.com>,
+ Zhang Rui <rui.zhang@intel.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+X-Provags-ID: V03:K1:oE8+mhZLuuzPoVJveX8dSfMkqZ93/zc2FhN7LFb/WMxxY+dB4Es
+ JaCb3i9i/BSjlGWfdbgCSfbEQNg2sbCVc92d24AbT2dWephWnWBsG7pSsstJDKm6DVf+bP0
+ en2uHvC2gbKpdwda7vnUTLbJOQn6OhyBHUiC616utqSRP2VXQYaMWzz7H0MGYhCoUCxsona
+ O2fmE39On4igp2bhYFboQ==
+X-Spam-Flag: NO
+UI-OutboundReport: notjunk:1;M01:P0:Fh109ZqTVW4=;hGHBZ9krLx9F0kqbNfURx2t5yL6
+ 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
+ yNIZaYTUcpAR9q+hOhSRI
 
-On Wed, Jul 22, 2026 at 07:03:22PM +0530, Shivendra Pratap wrote:
-> 
-> 
-> On 22-07-2026 15:20, Pavan Kondeti wrote:
-> > On Tue, Jul 14, 2026 at 10:46:30PM +0530, Shivendra Pratap wrote:
-> > > ARM PSCI vendor-specific resets, require a 32-bit reset_type and a 64-bit
-> > > cookie as arguments. This cannot be implemented via the reboot-mode
-> > > framework, which supports a single 32-bit argument as magic value.
-> > > 
-> > > Extend the reboot-mode framework to support up to three 32-bit arguments
-> > > as magic, per reboot-mode.
-> > > 
-> > > Signed-off-by: Shivendra Pratap <shivendra.pratap@oss.qualcomm.com>
-> > > ---
-> > >   drivers/power/reset/nvmem-reboot-mode.c  | 10 ++++----
-> > >   drivers/power/reset/qcom-pon.c           |  8 ++++---
-> > >   drivers/power/reset/reboot-mode.c        | 41 +++++++++++++++++++++-----------
-> > >   drivers/power/reset/syscon-reboot-mode.c |  8 ++++---
-> > >   include/linux/reboot-mode.h              |  4 +++-
-> > >   5 files changed, 46 insertions(+), 25 deletions(-)
-> > > 
-> > > diff --git a/drivers/power/reset/nvmem-reboot-mode.c b/drivers/power/reset/nvmem-reboot-mode.c
-> > > index d260715fccf6..ac69b5f39fb4 100644
-> > > --- a/drivers/power/reset/nvmem-reboot-mode.c
-> > > +++ b/drivers/power/reset/nvmem-reboot-mode.c
-> > > @@ -17,14 +17,16 @@ struct nvmem_reboot_mode {
-> > >   	struct nvmem_cell *cell;
-> > >   };
-> > > -static int nvmem_reboot_mode_write(struct reboot_mode_driver *reboot,
-> > > -				    unsigned int magic)
-> > > +static int nvmem_reboot_mode_write(struct reboot_mode_driver *reboot, u32 *magic, int count)
-> > >   {
-> > >   	struct nvmem_reboot_mode *nvmem_rbm;
-> > >   	size_t buf_len;
-> > >   	void *buf;
-> > >   	int ret;
-> > > +	if (count != 1)
-> > > +		return -EINVAL;
-> > > +
-> > 
-> > The count can be different per mode. Because `struct mode_info` has
-> > `count` member. This single `count` check across all modes may not be
-> > useful.
-> > 
-> > Either drivers need to use count passed to them or drivers needs to
-> > receive `struct mode_info` in the callabck.
-> 
-> will add a once more write function in reboot-mode to handle the multi-count
-> support. If a driver implements it, the multi-count write function will be
-> called. And no change in existing drivers.
-> Does that address this concern?
-> 
-sounds good. it is just that `count` is not fixed for a given driver but
-it is fixed per mode which needs to be handled or provison must be be
-there to handle it.
+From: Markus Elfring <elfring@users.sourceforge.net>
+Date: Thu, 23 Jul 2026 11:13:30 +0200
+Subject: [PATCH] tools: Use fputc() calls in some functions
+MIME-Version: 1.0
+Content-Type: text/plain; charset=3DUTF-8
+Content-Transfer-Encoding: 8bit
 
-Thanks,
-Pavan
+Single characters should occasionally be transferred into the output.
+Thus use the corresponding function =E2=80=9Cfputc=E2=80=9D (or even =E2=
+=80=9Cputchar=E2=80=9D).
+
+The source code was transformed by using the Coccinelle software.
+
+See also:
+Improving output for single characters (with SmPL)?
+https://lore.kernel.org/kernel-janitors/202dfb21-f5a2-4550-8a1f-aa07d84db3=
+45@web.de/
+
+Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
+=2D--
+ tools/bpf/bpftool/common.c                         |  4 ++--
+ tools/bpf/bpftool/main.c                           |  2 +-
+ tools/bpf/bpftool/netlink_dumper.h                 |  6 +++---
+ tools/bpf/bpftool/prog.c                           |  2 +-
+ tools/gpio/gpio-event-mon.c                        |  2 +-
+ tools/gpio/gpio-hammer.c                           |  4 ++--
+ tools/gpio/lsgpio.c                                |  4 ++--
+ tools/include/nolibc/err.h                         |  2 +-
+ tools/mm/page_owner_sort.c                         |  2 +-
+ tools/net/ynl/ynltool/main.c                       |  4 ++--
+ tools/objtool/builtin-check.c                      |  2 +-
+ tools/objtool/disas.c                              |  2 +-
+ tools/perf/builtin-c2c.c                           | 10 +++++-----
+ tools/perf/builtin-daemon.c                        |  4 ++--
+ tools/perf/builtin-lock.c                          | 14 +++++++-------
+ tools/perf/builtin-script.c                        |  8 ++++----
+ tools/perf/ui/gtk/util.c                           |  6 +++---
+ tools/perf/ui/stdio/hist.c                         |  8 ++++----
+ tools/perf/util/cs-etm.c                           |  2 +-
+ tools/perf/util/debug.c                            |  2 +-
+ tools/perf/util/header.c                           |  6 +++---
+ tools/perf/util/intel-pt-decoder/intel-pt-log.c    |  8 ++++----
+ tools/perf/util/libbfd.c                           |  2 +-
+ tools/perf/util/session.c                          |  4 ++--
+ tools/perf/util/stat-display.c                     | 12 ++++++------
+ tools/perf/util/values.c                           |  4 ++--
+ tools/power/acpi/tools/acpidump/apdump.c           |  2 +-
+ tools/power/x86/intel-speed-select/isst-display.c  |  6 +++---
+ tools/power/x86/turbostat/turbostat.c              |  4 ++--
+ .../testing/selftests/bpf/benchs/bench_htab_mem.c  |  2 +-
+ tools/testing/selftests/bpf/jit_disasm_helpers.c   |  2 +-
+ tools/testing/selftests/bpf/test_progs.c           | 12 ++++++------
+ tools/testing/selftests/bpf/veristat.c             |  2 +-
+ tools/testing/selftests/drivers/net/hw/ncdevmem.c  |  2 +-
+ tools/testing/selftests/kvm/s390/keyop.c           |  2 +-
+ tools/testing/selftests/net/mptcp/pm_nl_ctl.c      |  2 +-
+ tools/testing/selftests/net/psock_tpacket.c        |  4 ++--
+ tools/testing/selftests/net/txtimestamp.c          | 10 +++++-----
+ .../testing/selftests/powerpc/nx-gzip/gunz_test.c  |  2 +-
+ .../selftests/vfio/lib/include/libvfio/assert.h    |  2 +-
+ tools/testing/selftests/vfio/lib/libvfio.c         | 10 +++++-----
+ tools/testing/vsock/vsock_diag_test.c              |  4 ++--
+ tools/thermal/tmon/sysfs.c                         |  2 +-
+ tools/thermal/tmon/tmon.c                          |  2 +-
+ tools/tracing/latency/latency-collector.c          |  2 +-
+ tools/tracing/rtla/src/common.c                    |  2 +-
+ tools/tracing/rtla/src/utils.c                     |  2 +-
+ tools/usb/ffs-test.c                               |  2 +-
+ tools/verification/rv/src/in_kernel.c              |  2 +-
+ 49 files changed, 104 insertions(+), 104 deletions(-)
+
+diff --git a/tools/bpf/bpftool/common.c b/tools/bpf/bpftool/common.c
+index ef366ccc9650..3133058cfe40 100644
+=2D-- a/tools/bpf/bpftool/common.c
++++ b/tools/bpf/bpftool/common.c
+@@ -53,7 +53,7 @@ void p_err(const char *fmt, ...)
+ 	} else {
+ 		fprintf(stderr, "Error: ");
+ 		vfprintf(stderr, fmt, ap);
+-		fprintf(stderr, "\n");
++		fputc(stderr, '\n');
+ 	}
+ 	va_end(ap);
+ }
+@@ -67,7 +67,7 @@ void p_info(const char *fmt, ...)
+=20
+ 	va_start(ap, fmt);
+ 	vfprintf(stderr, fmt, ap);
+-	fprintf(stderr, "\n");
++	fputc(stderr, '\n');
+ 	va_end(ap);
+ }
+=20
+diff --git a/tools/bpf/bpftool/main.c b/tools/bpf/bpftool/main.c
+index c91e1a6e1a1e..aecfc778625f 100644
+=2D-- a/tools/bpf/bpftool/main.c
++++ b/tools/bpf/bpftool/main.c
+@@ -273,7 +273,7 @@ void fprint_hex(FILE *f, void *arg, unsigned int n, co=
+nst char *sep)
+ 		if (!i)
+ 			/* nothing */;
+ 		else if (!(i % 16))
+-			fprintf(f, "\n");
++			fputc(f, '\n');
+ 		else if (!(i % 8))
+ 			fprintf(f, "  ");
+ 		else
+diff --git a/tools/bpf/bpftool/netlink_dumper.h b/tools/bpf/bpftool/netlin=
+k_dumper.h
+index 96318106fb49..bf0919b4f52a 100644
+=2D-- a/tools/bpf/bpftool/netlink_dumper.h
++++ b/tools/bpf/bpftool/netlink_dumper.h
+@@ -25,7 +25,7 @@
+ 	if (json_output)				\
+ 		jsonw_start_object(json_wtr);		\
+ 	else						\
+-		fprintf(stdout, "{");			\
++		putchar('{');				\
+ }
+=20
+ #define NET_END_OBJECT_NESTED				\
+@@ -33,7 +33,7 @@
+ 	if (json_output)				\
+ 		jsonw_end_object(json_wtr);		\
+ 	else						\
+-		fprintf(stdout, "}");			\
++		putchar('}');				\
+ }
+=20
+ #define NET_END_OBJECT					\
+@@ -47,7 +47,7 @@
+ 	if (json_output)				\
+ 		jsonw_end_object(json_wtr);		\
+ 	else						\
+-		fprintf(stdout, "\n");			\
++		putchar('\n');				\
+ }
+=20
+ #define NET_START_ARRAY(name, fmt_str)			\
+diff --git a/tools/bpf/bpftool/prog.c b/tools/bpf/bpftool/prog.c
+index a9f730d407a9..d27cb9d49860 100644
+=2D-- a/tools/bpf/bpftool/prog.c
++++ b/tools/bpf/bpftool/prog.c
+@@ -1266,7 +1266,7 @@ static void hex_print(void *data, unsigned int size,=
+ FILE *f)
+ 			fprintf(f, "%c%s", c, j =3D=3D i + 7 ? " " : "");
+ 		}
+=20
+-		fprintf(f, "\n");
++		fputc(f, '\n');
+ 	}
+ }
+=20
+diff --git a/tools/gpio/gpio-event-mon.c b/tools/gpio/gpio-event-mon.c
+index b70813b0bf8e..e12e14780c0e 100644
+=2D-- a/tools/gpio/gpio-event-mon.c
++++ b/tools/gpio/gpio-event-mon.c
+@@ -121,7 +121,7 @@ int monitor_device(const char *device_name,
+ 		default:
+ 			fprintf(stdout, "unknown event");
+ 		}
+-		fprintf(stdout, "\n");
++		putchar('\n');
+=20
+ 		i++;
+ 		if (i =3D=3D loops)
+diff --git a/tools/gpio/gpio-hammer.c b/tools/gpio/gpio-hammer.c
+index ba0866eb3581..b76c94fee04d 100644
+=2D-- a/tools/gpio/gpio-hammer.c
++++ b/tools/gpio/gpio-hammer.c
+@@ -87,7 +87,7 @@ int hammer_device(const char *device_name, unsigned int =
+*lines, int num_lines,
+ 		if (j =3D=3D sizeof(swirr) - 1)
+ 			j =3D 0;
+=20
+-		fprintf(stdout, "[");
++		putchar('[');
+ 		for (i =3D 0; i < num_lines; i++) {
+ 			fprintf(stdout, "%u: %d", lines[i],
+ 				gpiotools_test_bit(values.bits, i));
+@@ -101,7 +101,7 @@ int hammer_device(const char *device_name, unsigned in=
+t *lines, int num_lines,
+ 		if (loops && iteration =3D=3D loops)
+ 			break;
+ 	}
+-	fprintf(stdout, "\n");
++	putchar('\n');
+ 	ret =3D 0;
+=20
+ exit_close_error:
+diff --git a/tools/gpio/lsgpio.c b/tools/gpio/lsgpio.c
+index 52a0be45410c..abb2c6fbc3d7 100644
+=2D-- a/tools/gpio/lsgpio.c
++++ b/tools/gpio/lsgpio.c
+@@ -152,9 +152,9 @@ int list_device(const char *device_name)
+ 		if (linfo.flags) {
+ 			fprintf(stdout, " [");
+ 			print_attributes(&linfo);
+-			fprintf(stdout, "]");
++			putchar(']');
+ 		}
+-		fprintf(stdout, "\n");
++		putchar('\n');
+=20
+ 	}
+=20
+diff --git a/tools/include/nolibc/err.h b/tools/include/nolibc/err.h
+index e22ae87a7289..89c9a3d3bc77 100644
+=2D-- a/tools/include/nolibc/err.h
++++ b/tools/include/nolibc/err.h
+@@ -27,7 +27,7 @@ void vwarnx(const char *fmt, va_list args)
+ {
+ 	fprintf(stderr, "%s: ", program_invocation_short_name);
+ 	vfprintf(stderr, fmt, args);
+-	fprintf(stderr, "\n");
++	fputc(stderr, '\n');
+ }
+=20
+ static __attribute__((unused))
+diff --git a/tools/mm/page_owner_sort.c b/tools/mm/page_owner_sort.c
+index 35d3d254941c..0293a838211e 100644
+=2D-- a/tools/mm/page_owner_sort.c
++++ b/tools/mm/page_owner_sort.c
+@@ -917,7 +917,7 @@ int main(int argc, char **argv)
+ 			}
+ 			if (cull & CULL_STACKTRACE)
+ 				fprintf(fout, ":\n%s", list[i].stacktrace);
+-			fprintf(fout, "\n");
++			fputc(fout, '\n');
+ 		}
+ 	}
+=20
+diff --git a/tools/net/ynl/ynltool/main.c b/tools/net/ynl/ynltool/main.c
+index 5d0f428eed0a..245d7f58c8fb 100644
+=2D-- a/tools/net/ynl/ynltool/main.c
++++ b/tools/net/ynl/ynltool/main.c
+@@ -156,7 +156,7 @@ void p_err(const char *fmt, ...)
+ 	} else {
+ 		fprintf(stderr, "Error: ");
+ 		vfprintf(stderr, fmt, ap);
+-		fprintf(stderr, "\n");
++		fputc(stderr, '\n');
+ 	}
+ 	va_end(ap);
+ }
+@@ -170,7 +170,7 @@ void p_info(const char *fmt, ...)
+=20
+ 	va_start(ap, fmt);
+ 	vfprintf(stderr, fmt, ap);
+-	fprintf(stderr, "\n");
++	fputc(stderr, '\n');
+ 	va_end(ap);
+ }
+=20
+diff --git a/tools/objtool/builtin-check.c b/tools/objtool/builtin-check.c
+index 118c3de2f293..b6d27d326b8a 100644
+=2D-- a/tools/objtool/builtin-check.c
++++ b/tools/objtool/builtin-check.c
+@@ -297,7 +297,7 @@ int make_backup(void)
+ 			fprintf(stderr, " %s", arg);
+ 	}
+=20
+-	fprintf(stderr, "\n");
++	fputc(stderr, '\n');
+ 	return 0;
+ }
+=20
+diff --git a/tools/objtool/disas.c b/tools/objtool/disas.c
+index e6a54a83605c..339d1d5690c4 100644
+=2D-- a/tools/objtool/disas.c
++++ b/tools/objtool/disas.c
+@@ -537,7 +537,7 @@ void disas_print_insn(FILE *stream, struct disas_conte=
+xt *dctx,
+ 		return;
+=20
+ 	if (strcmp(format, "\n") =3D=3D 0) {
+-		fprintf(stream, "\n");
++		fputc(stream, '\n');
+ 		return;
+ 	}
+=20
+diff --git a/tools/perf/builtin-c2c.c b/tools/perf/builtin-c2c.c
+index c9584dbedf77..fc9b6b18eded 100644
+=2D-- a/tools/perf/builtin-c2c.c
++++ b/tools/perf/builtin-c2c.c
+@@ -2511,7 +2511,7 @@ static void print_cacheline(struct c2c_hists *c2c_hi=
+sts,
+ 		hists__fprintf_headers(&c2c_hists->hists, out);
+ 		once =3D true;
+ 	} else {
+-		fprintf(out, "\n");
++		fputc(out, '\n');
+ 	}
+=20
+ 	fprintf(out, "  --------------------------------------------------------=
+=2D-------------\n");
+@@ -2590,15 +2590,15 @@ static void perf_c2c__hists_fprintf(FILE *out, str=
+uct perf_session *session)
+ 	setup_pager();
+=20
+ 	print_c2c__display_stats(out);
+-	fprintf(out, "\n");
++	fputc(out, '\n');
+ 	print_shared_cacheline_info(out);
+-	fprintf(out, "\n");
++	fputc(out, '\n');
+ 	print_c2c_info(out, session);
+=20
+ 	if (c2c.stats_only)
+ 		return;
+=20
+-	fprintf(out, "\n");
++	fputc(out, '\n');
+ 	fprintf(out, "=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D\n");
+ 	fprintf(out, "           Shared Data Cache Line Table          \n");
+ 	fprintf(out, "=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D\n");
+@@ -2606,7 +2606,7 @@ static void perf_c2c__hists_fprintf(FILE *out, struc=
+t perf_session *session)
+=20
+ 	hists__fprintf(&c2c.hists.hists, true, 0, 0, 0, stdout, true);
+=20
+-	fprintf(out, "\n");
++	fputc(out, '\n');
+ 	fprintf(out, "=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D\n");
+ 	fprintf(out, "      Shared Cache Line Distribution Pareto      \n");
+ 	fprintf(out, "=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D\n");
+diff --git a/tools/perf/builtin-daemon.c b/tools/perf/builtin-daemon.c
+index c4632577d129..7cb20b3a03e4 100644
+=2D-- a/tools/perf/builtin-daemon.c
++++ b/tools/perf/builtin-daemon.c
+@@ -691,7 +691,7 @@ static int cmd_session_list(struct daemon *daemon, uni=
+on cmd *cmd, FILE *out)
+ 			/* session up time */
+ 			csv_sep, (uint64_t)((curr - daemon->start) / 60));
+=20
+-		fprintf(out, "\n");
++		fputc(out, '\n');
+ 	} else {
+ 		fprintf(out, "[%d:daemon] base: %s\n", getpid(), daemon->base);
+ 		if (cmd->list.verbose) {
+@@ -730,7 +730,7 @@ static int cmd_session_list(struct daemon *daemon, uni=
+on cmd *cmd, FILE *out)
+ 				/* session up time */
+ 				csv_sep, (uint64_t)((curr - session->start) / 60));
+=20
+-			fprintf(out, "\n");
++			fputc(out, '\n');
+ 		} else {
+ 			fprintf(out, "[%d:%s] perf record %s\n",
+ 				session->pid, session->name, session->run);
+diff --git a/tools/perf/builtin-lock.c b/tools/perf/builtin-lock.c
+index d5c0d55cb82d..3706aff25883 100644
+=2D-- a/tools/perf/builtin-lock.c
++++ b/tools/perf/builtin-lock.c
+@@ -1319,9 +1319,9 @@ static void print_result(void)
+=20
+ 		list_for_each_entry(key, &lock_keys, list) {
+ 			key->print(key, st);
+-			fprintf(lock_output, " ");
++			fputc(lock_output, ' ');
+ 		}
+-		fprintf(lock_output, "\n");
++		fputc(lock_output, '\n');
+=20
+ 		if (++printed >=3D print_nr_entries)
+ 			break;
+@@ -1598,7 +1598,7 @@ static void print_header_csv(const char *sep)
+ 		fprintf(lock_output, "%s%s %s", "type", sep, "caller");
+ 		if (verbose > 0)
+ 			fprintf(lock_output, "%s %s", sep, "stacktrace");
+-		fprintf(lock_output, "\n");
++		fputc(lock_output, '\n');
+ 		break;
+ 	case LOCK_AGGR_ADDR:
+ 		fprintf(lock_output, "%s%s %s%s %s\n", "address", sep, "symbol", sep, "=
+type");
+@@ -1629,7 +1629,7 @@ static void print_lock_stat_stdio(struct lock_conten=
+tion *con, struct lock_stat
+=20
+ 	list_for_each_entry(key, &lock_keys, list) {
+ 		key->print(key, st);
+-		fprintf(lock_output, " ");
++		fputc(lock_output, ' ');
+ 	}
+=20
+ 	switch (aggr_mode) {
+@@ -1687,7 +1687,7 @@ static void print_lock_stat_csv(struct lock_contenti=
+on *con, struct lock_stat *s
+ 	case LOCK_AGGR_CALLER:
+ 		fprintf(lock_output, "%s%s %s", get_type_flags_name(st->flags), sep, st=
+->name);
+ 		if (verbose <=3D 0)
+-			fprintf(lock_output, "\n");
++			fputc(lock_output, '\n');
+ 		break;
+ 	case LOCK_AGGR_TASK:
+ 		pid =3D st->addr;
+@@ -1721,7 +1721,7 @@ static void print_lock_stat_csv(struct lock_contenti=
+on *con, struct lock_stat *s
+ 			get_symbol_name_offset(kmap, sym, ip, buf, sizeof(buf));
+ 			fprintf(lock_output, "%s %#lx %s", i ? ":" : sep, (unsigned long) ip, =
+buf);
+ 		}
+-		fprintf(lock_output, "\n");
++		fputc(lock_output, '\n');
+ 	}
+ }
+=20
+@@ -1781,7 +1781,7 @@ static void print_footer_csv(int total, int bad, str=
+uct lock_contention_fails *f
+ 		for (i =3D 0; i < BROKEN_MAX; i++)
+ 			fprintf(lock_output, "%s bad_%s=3D%d", sep, name[i], bad_hist[i]);
+ 	}
+-	fprintf(lock_output, "\n");
++	fputc(lock_output, '\n');
+ }
+=20
+ static void print_footer(int total, int bad, struct lock_contention_fails=
+ *fails)
+diff --git a/tools/perf/builtin-script.c b/tools/perf/builtin-script.c
+index f91d8b1fbd01..2b202018ba59 100644
+=2D-- a/tools/perf/builtin-script.c
++++ b/tools/perf/builtin-script.c
+@@ -2563,7 +2563,7 @@ static void process_event(struct perf_script *script=
+,
+=20
+ 	perf_sample__fprintf_ipc(sample, evsel, fp);
+=20
+-	fprintf(fp, "\n");
++	fputc(fp, '\n');
+=20
+ 	if (PRINT_FIELD(SRCCODE)) {
+ 		if (map__fprintf_srccode(al->map, al->addr, stdout,
+@@ -2817,7 +2817,7 @@ static int process_deferred_sample_event(const struc=
+t perf_tool *tool,
+ 				    cursor, symbol_conf.bt_stop_list, fp);
+ 	}
+=20
+-	fprintf(fp, "\n");
++	fputc(fp, '\n');
+=20
+ 	if (verbose > 0)
+ 		fflush(fp);
+@@ -3273,11 +3273,11 @@ static int list_available_languages_cb(struct scri=
+pting_ops *ops, const char *sp
+=20
+ static void list_available_languages(void)
+ {
+-	fprintf(stderr, "\n");
++	fputc(stderr, '\n');
+ 	fprintf(stderr, "Scripting language extensions (used in "
+ 		"perf script -s [spec:]script.[spec]):\n\n");
+ 	script_spec__for_each(&list_available_languages_cb);
+-	fprintf(stderr, "\n");
++	fputc(stderr, '\n');
+ }
+=20
+ /* Find script file relative to current directory or exec path */
+diff --git a/tools/perf/ui/gtk/util.c b/tools/perf/ui/gtk/util.c
+index c47f5c387838..037ebc47f7dc 100644
+=2D-- a/tools/perf/ui/gtk/util.c
++++ b/tools/perf/ui/gtk/util.c
+@@ -37,7 +37,7 @@ static int perf_gtk__error(const char *format, va_list a=
+rgs)
+ 	    vasprintf(&msg, format, args) < 0) {
+ 		fprintf(stderr, "Error:\n");
+ 		vfprintf(stderr, format, args);
+-		fprintf(stderr, "\n");
++		fputc(stderr, '\n');
+ 		return -1;
+ 	}
+=20
+@@ -62,7 +62,7 @@ static int perf_gtk__warning_info_bar(const char *format=
+, va_list args)
+ 	    vasprintf(&msg, format, args) < 0) {
+ 		fprintf(stderr, "Warning:\n");
+ 		vfprintf(stderr, format, args);
+-		fprintf(stderr, "\n");
++		fputc(stderr, '\n');
+ 		return -1;
+ 	}
+=20
+@@ -83,7 +83,7 @@ static int perf_gtk__warning_statusbar(const char *forma=
+t, va_list args)
+ 	    vasprintf(&msg, format, args) < 0) {
+ 		fprintf(stderr, "Warning:\n");
+ 		vfprintf(stderr, format, args);
+-		fprintf(stderr, "\n");
++		fputc(stderr, '\n');
+ 		return -1;
+ 	}
+=20
+diff --git a/tools/perf/ui/stdio/hist.c b/tools/perf/ui/stdio/hist.c
+index 8c4c8925df2c..044d2aa3b312 100644
+=2D-- a/tools/perf/ui/stdio/hist.c
++++ b/tools/perf/ui/stdio/hist.c
+@@ -691,7 +691,7 @@ static int hists__fprintf_hierarchy_headers(struct his=
+ts *hists,
+ 		}
+=20
+ next_line:
+-		fprintf(fp, "\n");
++		fputc(fp, '\n');
+ 	}
+=20
+ 	fprintf(fp, "# ");
+@@ -783,7 +783,7 @@ hists__fprintf_standard_headers(struct hists *hists,
+ 		if (line)
+ 			fprintf(fp, "# ");
+ 		fprintf_line(hists, hpp, line, fp);
+-		fprintf(fp, "\n");
++		fputc(fp, '\n');
+ 	}
+=20
+ 	if (sep)
+@@ -806,10 +806,10 @@ hists__fprintf_standard_headers(struct hists *hists,
+=20
+ 		width =3D fmt->width(fmt, hpp, hists);
+ 		for (i =3D 0; i < width; i++)
+-			fprintf(fp, ".");
++			fputc(fp, '.');
+ 	}
+=20
+-	fprintf(fp, "\n");
++	fputc(fp, '\n');
+ 	fprintf(fp, "#\n");
+ 	return hpp_list->nr_header_lines + 2;
+ }
+diff --git a/tools/perf/util/cs-etm.c b/tools/perf/util/cs-etm.c
+index 95e3ec1171ac..d4534b489252 100644
+=2D-- a/tools/perf/util/cs-etm.c
++++ b/tools/perf/util/cs-etm.c
+@@ -912,7 +912,7 @@ static void cs_etm__dump_event(struct cs_etm_queue *et=
+mq,
+ 	const char *color =3D PERF_COLOR_BLUE;
+ 	size_t buffer_used =3D 0;
+=20
+-	fprintf(stdout, "\n");
++	putchar('\n');
+ 	color_fprintf(stdout, color,
+ 		     ". ... CoreSight %s Trace data: size %#zx bytes\n",
+ 		     cs_etm_decoder__get_name(etmq->decoder), buffer->size);
+diff --git a/tools/perf/util/debug.c b/tools/perf/util/debug.c
+index 6b5ffe81f141..5429984ab49c 100644
+=2D-- a/tools/perf/util/debug.c
++++ b/tools/perf/util/debug.c
+@@ -350,7 +350,7 @@ void __dump_stack(FILE *file, void **stackdump, size_t=
+ stackdump_size)
+ 			fprintf(file, "    #%zd %p ", i, stackdump[i]);
+=20
+ 		map__fprintf_srcline(al.map, al.addr, "", file);
+-		fprintf(file, "\n");
++		fputc(file, '\n');
+ 		addr_location__exit(&al);
+ 	}
+ 	thread__put(thread);
+diff --git a/tools/perf/util/header.c b/tools/perf/util/header.c
+index e90e541f546b..e3a2a6e52ef0 100644
+=2D-- a/tools/perf/util/header.c
++++ b/tools/perf/util/header.c
+@@ -2454,7 +2454,7 @@ static void __print_pmu_caps(FILE *fp, int nr_caps, =
+char **caps, char *pmu_name)
+ 		delimiter =3D ", ";
+ 	}
+=20
+-	fprintf(fp, "\n");
++	fputc(fp, '\n');
+ }
+=20
+ static void print_cpu_pmu_caps(struct feat_fd *ff, FILE *fp)
+@@ -2513,7 +2513,7 @@ static void print_pmu_mappings(struct feat_fd *ff, F=
+ILE *fp)
+ 		pmu_num--;
+ 	}
+=20
+-	fprintf(fp, "\n");
++	fputc(fp, '\n');
+=20
+ 	if (!pmu_num)
+ 		return;
+@@ -4349,7 +4349,7 @@ int perf_header__fprintf_info(struct perf_session *s=
+ession, FILE *fp, bool full)
+ 			fprintf(fp, "%s ", feat_ops[bit].name);
+ 	}
+=20
+-	fprintf(fp, "\n");
++	fputc(fp, '\n');
+ 	return 0;
+ }
+=20
+diff --git a/tools/perf/util/intel-pt-decoder/intel-pt-log.c b/tools/perf/=
+util/intel-pt-decoder/intel-pt-log.c
+index ef55d6232cf0..0a35493b854a 100644
+=2D-- a/tools/perf/util/intel-pt-decoder/intel-pt-log.c
++++ b/tools/perf/util/intel-pt-decoder/intel-pt-log.c
+@@ -70,14 +70,14 @@ static void intel_pt_print_data(const unsigned char *b=
+uf, int len, uint64_t pos,
+ 	int i;
+=20
+ 	for (i =3D 0; i < indent; i++)
+-		fprintf(f, " ");
++		fputc(f, ' ');
+=20
+ 	fprintf(f, "  %08" PRIx64 ": ", pos);
+ 	for (i =3D 0; i < len; i++)
+ 		fprintf(f, " %02x", buf[i]);
+ 	for (; i < 16; i++)
+ 		fprintf(f, "   ");
+-	fprintf(f, " ");
++	fputc(f, ' ');
+ }
+=20
+ static void intel_pt_print_no_data(uint64_t pos, int indent)
+@@ -85,12 +85,12 @@ static void intel_pt_print_no_data(uint64_t pos, int i=
+ndent)
+ 	int i;
+=20
+ 	for (i =3D 0; i < indent; i++)
+-		fprintf(f, " ");
++		fputc(f, ' ');
+=20
+ 	fprintf(f, "  %08" PRIx64 ": ", pos);
+ 	for (i =3D 0; i < 16; i++)
+ 		fprintf(f, "   ");
+-	fprintf(f, " ");
++	fputc(f, ' ');
+ }
+=20
+ static ssize_t log_buf__write(void *cookie, const char *buf, size_t size)
+diff --git a/tools/perf/util/libbfd.c b/tools/perf/util/libbfd.c
+index d8241c7caac5..efbfdad8b330 100644
+=2D-- a/tools/perf/util/libbfd.c
++++ b/tools/perf/util/libbfd.c
+@@ -603,7 +603,7 @@ int symbol__disassemble_bpf_libbfd(struct symbol *sym =
+__maybe_unused,
+ 		} else
+ 			srcline =3D NULL;
+=20
+-		fprintf(s, "\n");
++		fputc(s, '\n');
+ 		prev_buf_size =3D buf_size;
+ 		fflush(s);
+=20
+diff --git a/tools/perf/util/session.c b/tools/perf/util/session.c
+index 3237870a1a34..ef2b3226187c 100644
+=2D-- a/tools/perf/util/session.c
++++ b/tools/perf/util/session.c
+@@ -1257,7 +1257,7 @@ int perf_event__process_finished_round(const struct =
+perf_tool *tool __maybe_unus
+ 				       struct ordered_events *oe)
+ {
+ 	if (dump_trace)
+-		fprintf(stdout, "\n");
++		putchar('\n');
+ 	return ordered_events__flush(oe, OE_FLUSH__ROUND);
+ }
+=20
+@@ -4015,7 +4015,7 @@ int perf_event__process_id_index(const struct perf_t=
+ool *tool __maybe_unused,
+ 				fprintf(stdout, "  machine_pid: %"PRI_ld64, e2->machine_pid);
+ 				fprintf(stdout, "  vcpu: %"PRI_lu64"\n", e2->vcpu);
+ 			} else {
+-				fprintf(stdout, "\n");
++				putchar('\n');
+ 			}
+ 		}
+=20
+diff --git a/tools/perf/util/stat-display.c b/tools/perf/util/stat-display=
+.c
+index f94f1324d24a..b90e3be95549 100644
+=2D-- a/tools/perf/util/stat-display.c
++++ b/tools/perf/util/stat-display.c
+@@ -529,7 +529,7 @@ static void print_metric_json(struct perf_stat_config =
+*config __maybe_unused,
+ 		}
+ 	}
+ 	if (!config->metric_only)
+-		fprintf(out, "}");
++		fputc(out, '}');
+ }
+=20
+ static void new_line_json(struct perf_stat_config *config, void *ctx)
+@@ -1316,7 +1316,7 @@ static void print_header_std(struct perf_stat_config=
+ *config,
+ 	FILE *output =3D config->output;
+ 	int i;
+=20
+-	fprintf(output, "\n");
++	fputc(output, '\n');
+ 	fprintf(output, " Performance counter stats for ");
+ 	if (_target->bpf_str)
+ 		fprintf(output, "\'BPF program(s) %s", _target->bpf_str);
+@@ -1333,7 +1333,7 @@ static void print_header_std(struct perf_stat_config=
+ *config,
+ 	else
+ 		fprintf(output, "thread id \'%s", _target->tid);
+=20
+-	fprintf(output, "\'");
++	fputc(output, '\'');
+ 	if (config->run_count > 1)
+ 		fprintf(output, " (%d runs)", config->run_count);
+ 	fprintf(output, ":\n\n");
+@@ -1406,9 +1406,9 @@ static void print_table(struct perf_stat_config *con=
+fig, FILE *output, double av
+ 		fprintf(output, " %17.9f (%+.9f) ", run, run - avg);
+=20
+ 		for (h =3D 0; h < n; h++)
+-			fprintf(output, "#");
++			fputc(output, '#');
+=20
+-		fprintf(output, "\n");
++		fputc(output, '\n');
+ 	}
+=20
+ 	fprintf(output, "\n%*s# Final result:\n", indent, "");
+@@ -1428,7 +1428,7 @@ static void print_footer(struct perf_stat_config *co=
+nfig)
+ 		return;
+=20
+ 	if (!config->null_run)
+-		fprintf(output, "\n");
++		fputc(output, '\n');
+=20
+ 	if (config->run_count =3D=3D 1) {
+ 		fprintf(output, " %17.9f seconds time elapsed", avg);
+diff --git a/tools/perf/util/values.c b/tools/perf/util/values.c
+index 6eaddfcf833e..2c5340a928dd 100644
+=2D-- a/tools/perf/util/values.c
++++ b/tools/perf/util/values.c
+@@ -217,7 +217,7 @@ static void perf_read_values__display_pretty(FILE *fp,
+ 	fprintf(fp, "# %*s  %*s", pidwidth, "PID", tidwidth, "TID");
+ 	for (j =3D 0; j < values->num_counters; j++)
+ 		fprintf(fp, "  %*s", counterwidth[j], evsel__name(values->counters[j]))=
+;
+-	fprintf(fp, "\n");
++	fputc(fp, '\n');
+=20
+ 	for (i =3D 0; i < values->threads; i++) {
+ 		fprintf(fp, "  %*d  %*d", pidwidth, values->pid[i],
+@@ -225,7 +225,7 @@ static void perf_read_values__display_pretty(FILE *fp,
+ 		for (j =3D 0; j < values->num_counters; j++)
+ 			fprintf(fp, "  %*" PRIu64,
+ 				counterwidth[j], values->value[i][j]);
+-		fprintf(fp, "\n");
++		fputc(fp, '\n');
+ 	}
+ 	free(counterwidth);
+ }
+diff --git a/tools/power/acpi/tools/acpidump/apdump.c b/tools/power/acpi/t=
+ools/acpidump/apdump.c
+index 72ad7915b04f..600d5b6e04a8 100644
+=2D-- a/tools/power/acpi/tools/acpidump/apdump.c
++++ b/tools/power/acpi/tools/acpidump/apdump.c
+@@ -171,7 +171,7 @@ ap_dump_table_buffer(struct acpi_table_header *table,
+ 	acpi_ut_dump_buffer_to_file(gbl_output_file,
+ 				    ACPI_CAST_PTR(u8, table), table_length,
+ 				    DB_BYTE_DISPLAY, 0);
+-	fprintf(gbl_output_file, "\n");
++	fputc(gbl_output_file, '\n');
+ 	return (0);
+ }
+=20
+diff --git a/tools/power/x86/intel-speed-select/isst-display.c b/tools/pow=
+er/x86/intel-speed-select/isst-display.c
+index e4884eb02837..5d492780aad9 100644
+=2D-- a/tools/power/x86/intel-speed-select/isst-display.c
++++ b/tools/power/x86/intel-speed-select/isst-display.c
+@@ -122,7 +122,7 @@ static void format_and_print(FILE *outf, int level, ch=
+ar *header, char *value)
+=20
+ 	if (level =3D=3D 0) {
+ 		if (header)
+-			fprintf(outf, "{");
++			fputc(outf, '{');
+ 		else
+ 			fprintf(outf, "\n}\n");
+=20
+@@ -138,7 +138,7 @@ static void format_and_print(FILE *outf, int level, ch=
+ar *header, char *value)
+=20
+ 		if (value) {
+ 			if (last_level !=3D level)
+-				fprintf(outf, "\n");
++				fputc(outf, '\n');
+=20
+ 			fprintf(outf, "%s\"%s\": ", delimiters, header);
+ 			fprintf(outf, "\"%s\"", value);
+@@ -156,7 +156,7 @@ static void format_and_print(FILE *outf, int level, ch=
+ar *header, char *value)
+ 					fprintf(outf, "\n%s}", delimiters);
+ 			}
+ 			if (abs(last_level - level) < 3)
+-				fprintf(outf, "\n");
++				fputc(outf, '\n');
+ 			if (header)
+ 				fprintf(outf, "%s\"%s\": {", delimiters,
+ 					header);
+diff --git a/tools/power/x86/turbostat/turbostat.c b/tools/power/x86/turbo=
+stat/turbostat.c
+index 4ad7cb1df5c5..bfa38199275f 100644
+=2D-- a/tools/power/x86/turbostat/turbostat.c
++++ b/tools/power/x86/turbostat/turbostat.c
+@@ -9022,7 +9022,7 @@ void dump_cpuid_hypervisor(void)
+ 	dump_word_chars(ebx);
+ 	dump_word_chars(ecx);
+ 	dump_word_chars(edx);
+-	fprintf(outf, "\n");
++	fputc(outf, '\n');
+ }
+=20
+ void process_cpuid()
+@@ -9692,7 +9692,7 @@ void topology_probe(bool startup)
+ 		fprintf(outf, " siblings");
+ 		for (ht_id =3D 0; ht_id <=3D MAX_HT_ID; ++ht_id)
+ 			fprintf(outf, " %d", cpus[i].ht_sibling_cpu_id[ht_id]);
+-		fprintf(outf, "\n");
++		fputc(outf, '\n');
+ 	}
+=20
+ }
+diff --git a/tools/testing/selftests/bpf/benchs/bench_htab_mem.c b/tools/t=
+esting/selftests/bpf/benchs/bench_htab_mem.c
+index 1ee217d97434..64b97a41af45 100644
+=2D-- a/tools/testing/selftests/bpf/benchs/bench_htab_mem.c
++++ b/tools/testing/selftests/bpf/benchs/bench_htab_mem.c
+@@ -148,7 +148,7 @@ static const struct htab_mem_use_case *htab_mem_find_u=
+se_case_or_exit(const char
+ 	fprintf(stderr, "available use case:");
+ 	for (i =3D 0; i < ARRAY_SIZE(use_cases); i++)
+ 		fprintf(stderr, " %s", use_cases[i].name);
+-	fprintf(stderr, "\n");
++	fputc(stderr, '\n');
+ 	exit(1);
+ }
+=20
+diff --git a/tools/testing/selftests/bpf/jit_disasm_helpers.c b/tools/test=
+ing/selftests/bpf/jit_disasm_helpers.c
+index 3558fe10e28c..58ea2a2ec13e 100644
+=2D-- a/tools/testing/selftests/bpf/jit_disasm_helpers.c
++++ b/tools/testing/selftests/bpf/jit_disasm_helpers.c
+@@ -228,7 +228,7 @@ int get_jited_program_text(int fd, char *text, size_t =
+text_sz)
+ 	for (pc =3D 0, i =3D 0; i < jited_funcs; ++i) {
+ 		fprintf(text_out, "func #%d:\n", i);
+ 		disasm_one_func(text_out, image + pc, func_lens[i]);
+-		fprintf(text_out, "\n");
++		fputc(text_out, '\n');
+ 		pc +=3D func_lens[i];
+ 	}
+=20
+diff --git a/tools/testing/selftests/bpf/test_progs.c b/tools/testing/self=
+tests/bpf/test_progs.c
+index 7ba82974ee78..b520be1bf7aa 100644
+=2D-- a/tools/testing/selftests/bpf/test_progs.c
++++ b/tools/testing/selftests/bpf/test_progs.c
+@@ -383,7 +383,7 @@ static void print_test_result(const struct prog_test_d=
+ef *test, const struct tes
+ 	else
+ 		fprintf(env.stdout_saved, "OK (SKIP: %d/%d)", skipped_cnt, subtests_cnt=
+);
+=20
+-	fprintf(env.stdout_saved, "\n");
++	fputc(env.stdout_saved, '\n');
+ }
+=20
+ static void print_test_log(char *log_buf, size_t log_cnt)
+@@ -391,7 +391,7 @@ static void print_test_log(char *log_buf, size_t log_c=
+nt)
+ 	log_buf[log_cnt] =3D '\0';
+ 	fprintf(env.stdout_saved, "%s", log_buf);
+ 	if (log_buf[log_cnt - 1] !=3D '\n')
+-		fprintf(env.stdout_saved, "\n");
++		fputc(env.stdout_saved, '\n');
+ }
+=20
+ static void print_subtest_name(int test_num, int subtest_num,
+@@ -409,7 +409,7 @@ static void print_subtest_name(int test_num, int subte=
+st_num,
+ 	if (result)
+ 		fprintf(env.stdout_saved, ":%s", result);
+=20
+-	fprintf(env.stdout_saved, "\n");
++	fputc(env.stdout_saved, '\n');
+ }
+=20
+ static void jsonw_write_log_message(json_writer_t *w, char *log_buf, size=
+_t log_cnt)
+@@ -1333,14 +1333,14 @@ void hexdump(const char *prefix, const void *buf, =
+size_t len)
+ 	for (int i =3D 0; i < len; i++) {
+ 		if (!(i % 16)) {
+ 			if (i)
+-				fprintf(stdout, "\n");
++				putchar('\n');
+ 			fprintf(stdout, "%s", prefix);
+ 		}
+ 		if (i && !(i % 8) && (i % 16))
+-			fprintf(stdout, "\t");
++			putchar('\t');
+ 		fprintf(stdout, "%02X ", ((uint8_t *)(buf))[i]);
+ 	}
+-	fprintf(stdout, "\n");
++	putchar('\n');
+ }
+=20
+ static void sigint_handler(int signum)
+diff --git a/tools/testing/selftests/bpf/veristat.c b/tools/testing/selfte=
+sts/bpf/veristat.c
+index c9c257784ee3..61ea29bb35d7 100644
+=2D-- a/tools/testing/selftests/bpf/veristat.c
++++ b/tools/testing/selftests/bpf/veristat.c
+@@ -1628,7 +1628,7 @@ static void dump(__u32 prog_id, enum dump_mode mode,=
+ const char *file_name, cons
+ 	printf("DUMP (%s) %s/%s:\n", mode =3D=3D DUMP_JITED ? "JITED" : "XLATED"=
+, file_name, prog_name);
+ 	while (fgets(buf, sizeof(buf), fp))
+ 		fputs(buf, stdout);
+-	fprintf(stdout, "\n");
++	putchar('\n');
+=20
+ 	if (ferror(fp))
+ 		fprintf(stderr, "Failed to dump BPF prog with error: %d\n", errno);
+diff --git a/tools/testing/selftests/drivers/net/hw/ncdevmem.c b/tools/tes=
+ting/selftests/drivers/net/hw/ncdevmem.c
+index d96e8a3b5a65..7bdcc4114dba 100644
+=2D-- a/tools/testing/selftests/drivers/net/hw/ncdevmem.c
++++ b/tools/testing/selftests/drivers/net/hw/ncdevmem.c
+@@ -135,7 +135,7 @@ static void pr_err(const char *fmt, ...)
+=20
+ 	if (errno !=3D 0)
+ 		fprintf(stderr, ": %s", strerror(errno));
+-	fprintf(stderr, "\n");
++	fputc(stderr, '\n');
+ }
+=20
+ static struct memory_buffer *udmabuf_alloc(size_t size)
+diff --git a/tools/testing/selftests/kvm/s390/keyop.c b/tools/testing/self=
+tests/kvm/s390/keyop.c
+index c7805e87d12c..120834f8ba0d 100644
+=2D-- a/tools/testing/selftests/kvm/s390/keyop.c
++++ b/tools/testing/selftests/kvm/s390/keyop.c
+@@ -117,7 +117,7 @@ static void dump_sk(const unsigned char skeys[], const=
+ char *descr)
+ 		fprintf(stderr, "# %3d: ", i);
+ 		for (j =3D 0; j < 32; j++)
+ 			fprintf(stderr, "%02x ", skeys[i + j]);
+-		fprintf(stderr, "\n");
++		fputc(stderr, '\n');
+ 	}
+ }
+=20
+diff --git a/tools/testing/selftests/net/mptcp/pm_nl_ctl.c b/tools/testing=
+/selftests/net/mptcp/pm_nl_ctl.c
+index 78180da1efcc..40467e86bfd4 100644
+=2D-- a/tools/testing/selftests/net/mptcp/pm_nl_ctl.c
++++ b/tools/testing/selftests/net/mptcp/pm_nl_ctl.c
+@@ -208,7 +208,7 @@ static int capture_events(int fd, int event_group)
+ 		}
+ 		if (server_side)
+ 			fprintf(stderr, ",server_side:1");
+-		fprintf(stderr, "\n");
++		fputc(stderr, '\n');
+ 	} while (1);
+=20
+ 	return 0;
+diff --git a/tools/testing/selftests/net/psock_tpacket.c b/tools/testing/s=
+elftests/net/psock_tpacket.c
+index 7caf3135448d..724da9222ad9 100644
+=2D-- a/tools/testing/selftests/net/psock_tpacket.c
++++ b/tools/testing/selftests/net/psock_tpacket.c
+@@ -116,7 +116,7 @@ static int pfsocket(int ver)
+ static void status_bar_update(void)
+ {
+ 	if (total_packets % 10 =3D=3D 0) {
+-		fprintf(stderr, ".");
++		fputc(stderr, '.');
+ 		fflush(stderr);
+ 	}
+ }
+@@ -825,7 +825,7 @@ static int test_tpacket(int version, int type)
+ 	unmap_ring(sock, &ring);
+ 	close(sock);
+=20
+-	fprintf(stderr, "\n");
++	fputc(stderr, '\n');
+ 	return 0;
+ }
+=20
+diff --git a/tools/testing/selftests/net/txtimestamp.c b/tools/testing/sel=
+ftests/net/txtimestamp.c
+index 170be192f5c7..86c8d4945d73 100644
+=2D-- a/tools/testing/selftests/net/txtimestamp.c
++++ b/tools/testing/selftests/net/txtimestamp.c
+@@ -200,10 +200,10 @@ static void __print_timestamp(const char *name, stru=
+ct timespec *cur,
+ 		ts_delta =3D timespec_to_ns64(cur) - timespec_to_ns64(&ts_usr);
+ 		fprintf(stderr, "  (USR +");
+ 		__print_ts_delta_formatted(ts_delta);
+-		fprintf(stderr, ")");
++		fputc(stderr, ')');
+ 	}
+=20
+-	fprintf(stderr, "\n");
++	fputc(stderr, '\n');
+ }
+=20
+ static void record_timestamp_usr(void)
+@@ -254,7 +254,7 @@ static void print_timing_event(char *name, struct timi=
+ng_event *te)
+ 	__print_ts_delta_formatted(te->min);
+ 	fprintf(stderr, ", max=3D");
+ 	__print_ts_delta_formatted(te->max);
+-	fprintf(stderr, "\n");
++	fputc(stderr, '\n');
+ }
+=20
+ /* TODO: convert to check_and_print payload once API is stable */
+@@ -271,7 +271,7 @@ static void print_payload(char *data, int len)
+ 	fprintf(stderr, "payload: ");
+ 	for (i =3D 0; i < len; i++)
+ 		fprintf(stderr, "%02hhx ", data[i]);
+-	fprintf(stderr, "\n");
++	fputc(stderr, '\n');
+ }
+=20
+ static void print_pktinfo(int family, int ifindex, void *saddr, void *dad=
+dr)
+@@ -933,7 +933,7 @@ int main(int argc, char **argv)
+ 	fprintf(stderr, "protocol:     %s\n", sock_names[cfg_proto]);
+ 	fprintf(stderr, "payload:      %u\n", cfg_payload_len);
+ 	fprintf(stderr, "server port:  %u\n", dest_port);
+-	fprintf(stderr, "\n");
++	fputc(stderr, '\n');
+=20
+ 	if (do_ipv4) {
+ 		if (cfg_do_listen)
+diff --git a/tools/testing/selftests/powerpc/nx-gzip/gunz_test.c b/tools/t=
+esting/selftests/powerpc/nx-gzip/gunz_test.c
+index 7c23d3dd7d6d..412defe98271 100644
+=2D-- a/tools/testing/selftests/powerpc/nx-gzip/gunz_test.c
++++ b/tools/testing/selftests/powerpc/nx-gzip/gunz_test.c
+@@ -363,7 +363,7 @@ int decompress_file(int argc, char **argv, void *devha=
+ndle)
+ 			goto err3;
+ 		fprintf(stderr, "%02x ", tmp[i]);
+ 		if (i =3D=3D 5)
+-			fprintf(stderr, "\n");
++			fputc(stderr, '\n');
+ 	}
+ 	fprintf(stderr, "gzHeader MTIME, XFL, OS ignored\n");
+=20
+diff --git a/tools/testing/selftests/vfio/lib/include/libvfio/assert.h b/t=
+ools/testing/selftests/vfio/lib/include/libvfio/assert.h
+index 9fff88f6e4e1..682267bb71e3 100644
+=2D-- a/tools/testing/selftests/vfio/lib/include/libvfio/assert.h
++++ b/tools/testing/selftests/vfio/lib/include/libvfio/assert.h
+@@ -11,7 +11,7 @@
+=20
+ #define VFIO_LOG_AND_EXIT(...) do {		\
+ 	fprintf(stderr, "  " __VA_ARGS__);	\
+-	fprintf(stderr, "\n");			\
++	fputc(stderr, '\n');			\
+ 	exit(KSFT_FAIL);			\
+ } while (0)
+=20
+diff --git a/tools/testing/selftests/vfio/lib/libvfio.c b/tools/testing/se=
+lftests/vfio/lib/libvfio.c
+index 3a3d1ed635c1..80a312f149a6 100644
+=2D-- a/tools/testing/selftests/vfio/lib/libvfio.c
++++ b/tools/testing/selftests/vfio/lib/libvfio.c
+@@ -60,16 +60,16 @@ char **vfio_selftests_get_bdfs(int *argc, char *argv[]=
+, int *nr_bdfs)
+ 	}
+=20
+ 	fprintf(stderr, "Unable to determine which device(s) to use, skipping te=
+st.\n");
+-	fprintf(stderr, "\n");
++	fputc(stderr, '\n');
+ 	fprintf(stderr, "To pass the device address via environment variable:\n"=
+);
+-	fprintf(stderr, "\n");
++	fputc(stderr, '\n');
+ 	fprintf(stderr, "    export VFIO_SELFTESTS_BDF=3D\"segment:bus:device.fu=
+nction\"\n");
+ 	fprintf(stderr, "    %s [options]\n", argv[0]);
+-	fprintf(stderr, "\n");
++	fputc(stderr, '\n');
+ 	fprintf(stderr, "To pass the device address(es) via argv:\n");
+-	fprintf(stderr, "\n");
++	fputc(stderr, '\n');
+ 	fprintf(stderr, "    %s [options] segment:bus:device.function ...\n", ar=
+gv[0]);
+-	fprintf(stderr, "\n");
++	fputc(stderr, '\n');
+ 	exit(KSFT_SKIP);
+ }
+=20
+diff --git a/tools/testing/vsock/vsock_diag_test.c b/tools/testing/vsock/v=
+sock_diag_test.c
+index 081e045f4696..cc903cdb45d9 100644
+=2D-- a/tools/testing/vsock/vsock_diag_test.c
++++ b/tools/testing/vsock/vsock_diag_test.c
+@@ -86,7 +86,7 @@ static void print_vsock_addr(FILE *fp, unsigned int cid,=
+ unsigned int port)
+ 		fprintf(fp, "%u:", cid);
+=20
+ 	if (port =3D=3D VMADDR_PORT_ANY)
+-		fprintf(fp, "*");
++		fputc(fp, '*');
+ 	else
+ 		fprintf(fp, "%u", port);
+ }
+@@ -94,7 +94,7 @@ static void print_vsock_addr(FILE *fp, unsigned int cid,=
+ unsigned int port)
+ static void print_vsock_stat(FILE *fp, struct vsock_stat *st)
+ {
+ 	print_vsock_addr(fp, st->msg.vdiag_src_cid, st->msg.vdiag_src_port);
+-	fprintf(fp, " ");
++	fputc(fp, ' ');
+ 	print_vsock_addr(fp, st->msg.vdiag_dst_cid, st->msg.vdiag_dst_port);
+ 	fprintf(fp, " %s %s %s %u\n",
+ 		sock_type_str(st->msg.vdiag_type),
+diff --git a/tools/thermal/tmon/sysfs.c b/tools/thermal/tmon/sysfs.c
+index cb1108bc9249..ebdb95819a76 100644
+=2D-- a/tools/thermal/tmon/sysfs.c
++++ b/tools/thermal/tmon/sysfs.c
+@@ -522,7 +522,7 @@ int update_thermal_data()
+ 	}
+=20
+ 	if (tmon_log) {
+-		fprintf(tmon_log, "\n");
++		fputc(tmon_log, '\n');
+ 		fflush(tmon_log);
+ 	}
+=20
+diff --git a/tools/thermal/tmon/tmon.c b/tools/thermal/tmon/tmon.c
+index 7eb3216a27f4..9a972f73a2c0 100644
+=2D-- a/tools/thermal/tmon/tmon.c
++++ b/tools/thermal/tmon/tmon.c
+@@ -199,7 +199,7 @@ static void prepare_logging(void)
+ 		fprintf(tmon_log, "%s%d ", ptdata.cdi[i].type,
+ 			ptdata.cdi[i].instance);
+=20
+-	fprintf(tmon_log, "\n");
++	fputc(tmon_log, '\n');
+ }
+=20
+ static struct option opts[] =3D {
+diff --git a/tools/tracing/latency/latency-collector.c b/tools/tracing/lat=
+ency/latency-collector.c
+index ef97916e3873..3dc6fb9df926 100644
+=2D-- a/tools/tracing/latency/latency-collector.c
++++ b/tools/tracing/latency/latency-collector.c
+@@ -1999,7 +1999,7 @@ static void scan_arguments(int argc, char *argv[])
+ "been enabled. Random sleep is intended for the following tracers:\n");
+ 			for (i =3D 0; random_tracers[i]; i++)
+ 				fprintf(stderr, "%s\n", random_tracers[i]);
+-			fprintf(stderr, "\n");
++			fputc(stderr, '\n');
+ 		}
+ 	}
+=20
+diff --git a/tools/tracing/rtla/src/common.c b/tools/tracing/rtla/src/comm=
+on.c
+index 8c7f5e75b2ec..e81e676d51d2 100644
+=2D-- a/tools/tracing/rtla/src/common.c
++++ b/tools/tracing/rtla/src/common.c
+@@ -449,7 +449,7 @@ void common_usage(const char *tool, const char *mode,
+ 		fprintf(stderr, "%s [-h] ", mode);
+=20
+ 	print_msg_array(start_msgs);
+-	fprintf(stderr, "\n");
++	fputc(stderr, '\n');
+ 	print_msg_array(common_options);
+ 	print_msg_array(opt_msgs);
+=20
+diff --git a/tools/tracing/rtla/src/utils.c b/tools/tracing/rtla/src/utils=
+.c
+index cb187e7d48d1..3532da2f2296 100644
+=2D-- a/tools/tracing/rtla/src/utils.c
++++ b/tools/tracing/rtla/src/utils.c
+@@ -67,7 +67,7 @@ void fatal(const char *fmt, ...)
+ 	va_start(ap, fmt);
+ 	vfprintf(stderr, fmt, ap);
+ 	va_end(ap);
+-	fprintf(stderr, "\n");
++	fputc(stderr, '\n');
+=20
+ 	exit(ERROR);
+ }
+diff --git a/tools/usb/ffs-test.c b/tools/usb/ffs-test.c
+index 22b938fbdfb7..e993736ba0d6 100644
+=2D-- a/tools/usb/ffs-test.c
++++ b/tools/usb/ffs-test.c
+@@ -562,7 +562,7 @@ empty_out_buf(struct thread *ignore, const void *buf, =
+size_t nbytes)
+ 				fprintf(stderr, "%4zd:", len);
+ 			fprintf(stderr, " %02x", *p);
+ 			if (31 =3D=3D (len % 32))
+-				fprintf(stderr, "\n");
++				fputc(stderr, '\n');
+ 		}
+ 		fflush(stderr);
+ 		errno =3D EILSEQ;
+diff --git a/tools/verification/rv/src/in_kernel.c b/tools/verification/rv=
+/src/in_kernel.c
+index e6dea4040f8f..26132171f600 100644
+=2D-- a/tools/verification/rv/src/in_kernel.c
++++ b/tools/verification/rv/src/in_kernel.c
+@@ -667,7 +667,7 @@ static void ikm_usage_print_reactors(void)
+ 		end =3D strstr(start, "\n");
+ 	}
+=20
+-	fprintf(stderr, "\n");
++	fputc(stderr, '\n');
+ }
+ /*
+  * ikm_usage - print usage
+=2D-=20
+2.55.0
+
