@@ -1,140 +1,187 @@
-Received: from smtpbg150.qq.com (smtpbg150.qq.com [18.132.163.193])
+Received: from MRWPR03CU001.outbound.protection.outlook.com (mail-francesouthazon11011019.outbound.protection.outlook.com [40.107.130.19])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C56922FE056;
-	Thu, 23 Jul 2026 01:40:18 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=18.132.163.193
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1784770823; cv=none; b=CUcozUWILO5SlzwsKcqYzVo4VepcaxnVV7ucfYrzHKMaQxfS0nby7/jRdyP3e+NH8rFdXipVQwi4sna/YZ4wU+01nMbgkwv6+alhBQqomUeSm7bRmQ32gvV0ef3p0dkJc/hJ3BzGKajJL16bDg4ZdudRd2Pe8H20m+bpu0zWDsg=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1784770823; c=relaxed/simple;
-	bh=tDiVFKZNRc4Xa4VPQB5587fGdq0BGe1G0rK39Z3yEBg=;
-	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=Wq/cVx233njxCWj5JtHlJF5dk6hNuyViPYEOCPgeDTMUWjH5Ycc5FNJ+3jfGnqxeKglpA/B6sWyLdJFCmjsR3JObIP/aCKBzoMvm0NZ8l1APM6t5CtrcEONQhtKB4lDTSE8CPN9AzFE5dqF3uiFBu0fb1x4/knU3Dq7V0+pEizE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=uniontech.com; spf=pass smtp.mailfrom=uniontech.com; dkim=pass (1024-bit key) header.d=uniontech.com header.i=@uniontech.com header.b=p2jPaWGQ; arc=none smtp.client-ip=18.132.163.193
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=uniontech.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=uniontech.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B6E1F224F3;
+	Thu, 23 Jul 2026 02:05:53 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.107.130.19
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1784772356; cv=fail; b=HMCkRSQkuTcV6EGUcfBqzkKIALA0m0fKJ8ztMfK6LhIYneFYOOYZeaPqnM208C8UMw48oL4E4PwEVQh9vPTbzW0DStmIvmNxWwpsfoFyV/u5M//ZRy49z0hZvOOLkozbR7uByh1+Mdv803DxR7Kn8lNJHS3SHWENhh0dz1JVXXs=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1784772356; c=relaxed/simple;
+	bh=Bg0qJJ+0YOAVWd2E1+aXZaIq2h1ZaJZPIfGz6NGxJGA=;
+	h=From:To:Cc:Subject:Date:Message-Id:Content-Type:MIME-Version; b=lK7lQLsdGvIhtH6SJvD5r9C3fKKY/usTLmNc5pq+Btd6rhSr7XT/HCXGJdcpcgSSNCNMcNII2PmZPWI7nqEDB35cifOpRKFQaGH1KuYreev+v6LyONlNVzlhxSgKds1t6q1Z0rlkYl9RHrPTA8pHYFyFe35m7QT/9rxrxHN/HsI=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=oss.nxp.com; spf=pass smtp.mailfrom=oss.nxp.com; dkim=pass (2048-bit key) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.b=K4N6JoMT; arc=fail smtp.client-ip=40.107.130.19
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=oss.nxp.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.nxp.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=uniontech.com header.i=@uniontech.com header.b="p2jPaWGQ"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=uniontech.com;
-	s=onoh2408; t=1784770813;
-	bh=39BXAVAV22NPOzYN+mKCQLJtCYn25wFR01/w/75Csns=;
-	h=From:To:Subject:Date:Message-Id:MIME-Version;
-	b=p2jPaWGQmaa/lmwOFIGhxV1ZDUP6bxEbCjxhtR2sLXO4ei7ZugH0kZfskN75pui4w
-	 Ke3HD+vKQzfQRPqJK4rYP+pG9a8SnBYwpb1H4YnG0DdGhB9MfuNzKx0mrO/qIPK9U/
-	 X3unKiN8eOTIHE/o/qZYx2n9cXQZj2SgtNJk/dSI=
-X-QQ-mid: zesmtpgz7t1784770801t1c349629
-X-QQ-Originating-IP: tTDg4oK26foSmXmz/lkoC55/Q2YBBwv5cAWyXcflEm4=
-Received: from localhost.localdomain ( [113.57.152.160])
-	by bizesmtp.qq.com (ESMTP) with 
-	id ; Thu, 23 Jul 2026 09:39:58 +0800 (CST)
-X-QQ-SSF: 0000000000000000000000000000000
-X-QQ-GoodBg: 1
-X-BIZMAIL-ID: 2330629455518813040
-EX-QQ-RecipientCnt: 15
-From: Haowen Tu <tuhaowen@uniontech.com>
-To: laurent.pinchart@ideasonboard.com
-Cc: gregkh@linuxfoundation.org,
-	hansg@kernel.org,
-	kernel@uniontech.com,
-	lenb@kernel.org,
-	linux-kernel@vger.kernel.org,
-	linux-media@vger.kernel.org,
+	dkim=pass (2048-bit key) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.b="K4N6JoMT"
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=f5KTE5hIbLQ2O2o9hSbKihwN/kWoA3UlaTGX2ydvzEMCOL7/oHCoStHvfHJbXKVc9JYPWQL6Vc7nA45+8ci9bPXETq6i6eq7GeGFRKpzXpI2QbNIsOxalmFBmmL6LIm/A1bO7PXM7IRIA5LUyBxcXNLlv/bI0UwAq4mJcIUOvnE9t28IMoLbwVzgYAHp19DkDDvdOsdpnYuq3gQPvY4DkQQkebak4TXrYD1EKwAeIm6l+hpQlaMcwFOrd2x/jkYKqF3AatLeRpzoCh8qrn0s69eLJAdpGSMRZkB9/pDYhVcIN7EbBiLD8p1xitY0OI31U/GRdWcpirbXBsqT/tsQKA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=Fvry66dAVAORaPK/Dr3YiRSBdUlE6KETP5cb2QHuPnI=;
+ b=dpcJT6kf1bq1KeAR0pcZymTMSEjo9W0Xb7ZWx+hF0ftBXMWNYx1cvVELvdxAiKlP3oxM2op7mZtsY8PDsmgjSBB4Zt1ghN2KVovriDhTcPiLe9WFbxB4MkpHr+Tq64biw9/+VMFf8g52IN7+32QOX6UkRCMOBFa0ittk+ikkXjWupDc+yAJFYum9BBHJfruBH74sjShecSz4HlDM5uLSCZ1Bb7iHrFp4j60KALzyUyjRlibfnc1mdhLkcVCw0usdsy4LagqCekCUP3ys4TS31HYieQ8dUDMbz/AOhofMIw7O+PGH7zcoo/ma2S0/EdAS8a0oOpfsgPQ5zxQQvIPnLA==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=oss.nxp.com; dmarc=pass action=none header.from=oss.nxp.com;
+ dkim=pass header.d=oss.nxp.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=NXP1.onmicrosoft.com;
+ s=selector1-NXP1-onmicrosoft-com;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=Fvry66dAVAORaPK/Dr3YiRSBdUlE6KETP5cb2QHuPnI=;
+ b=K4N6JoMTdv4Ev3M58YdRq067s/PhXHdyEwi3feNnkuDyuGCodCv0unODDU4Ke0yXlZtKtgFY7+BTTzsDLotxitnEkmbZElUpak7tedfPA+Dh3U76EY2supRvfm2ViLaLwcrFsDBHtzBW8NC/oJOOa4H7XOR3419dmwvl1xzkELVnQCRraDcVacw9DQYSA0D44EZh0P662yVStOZr0QSpoiey43x1t0wI9mXaLYdNREyAWPnszrh0Z6L09AswlnJgd0zMuBdRiy9oGg+JHmBcA4o4yu106natCT/ZzJhW6anJHoQdiOvxJC6BwEVKFI8wb7BSIsCKpEWESAA14F/T0A==
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=oss.nxp.com;
+Received: from DB8PR04MB6858.eurprd04.prod.outlook.com (2603:10a6:10:113::9)
+ by DU4PR04MB11053.eurprd04.prod.outlook.com (2603:10a6:10:589::15) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.245.10; Thu, 23 Jul
+ 2026 02:05:50 +0000
+Received: from DB8PR04MB6858.eurprd04.prod.outlook.com
+ ([fe80::bc6f:5fd7:462:d0b5]) by DB8PR04MB6858.eurprd04.prod.outlook.com
+ ([fe80::bc6f:5fd7:462:d0b5%4]) with mapi id 15.21.0245.009; Thu, 23 Jul 2026
+ 02:05:47 +0000
+From: Zhipeng.wang_1@oss.nxp.com
+To: robh@kernel.org,
+	saravanak@kernel.org,
+	ulfh@kernel.org,
+	Frank.Li@nxp.com,
+	s.hauer@pengutronix.de
+Cc: kernel@pengutronix.de,
+	festevam@gmail.com,
+	peng.fan@nxp.com,
+	aisheng.dong@nxp.com,
+	jindong.yue@nxp.com,
+	xuegang.liu@nxp.com,
+	devicetree@vger.kernel.org,
 	linux-pm@vger.kernel.org,
-	linux-usb@vger.kernel.org,
-	mchehab@kernel.org,
-	oneukum@suse.com,
-	pavel@kernel.org,
-	rafael@kernel.org,
-	stern@rowland.harvard.edu,
-	tuhaowen@uniontech.com
-Subject: Re: [PATCH v3 3/3] media: uvcvideo: skip streaming restart after hibernation snapshot
-Date: Thu, 23 Jul 2026 09:39:55 +0800
-Message-Id: <20260723013955.3724344-1-tuhaowen@uniontech.com>
-X-Mailer: git-send-email 2.20.1
-In-Reply-To: <20260722200620.GC648629@killaraus.ideasonboard.com>
-References: <20260618013133.1047270-4-tuhaowen@uniontech.com> <20260722200620.GC648629@killaraus.ideasonboard.com>
+	imx@lists.linux.dev,
+	linux-arm-kernel@lists.infradead.org,
+	linux-kernel@vger.kernel.org,
+	linux-clk@vger.kernel.org
+Subject: [PATCH v5 0/3] pmdomain: imx: build the SCU power domain driver as a module
+Date: Thu, 23 Jul 2026 11:05:21 +0900
+Message-Id: <20260723020524.1886806-1-Zhipeng.wang_1@oss.nxp.com>
+X-Mailer: git-send-email 2.34.1
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-ClientProxiedBy: MA5P287CA0223.INDP287.PROD.OUTLOOK.COM
+ (2603:1096:a01:1b4::10) To DB8PR04MB6858.eurprd04.prod.outlook.com
+ (2603:10a6:10:113::9)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-QQ-SENDSIZE: 520
-Feedback-ID: zesmtpgz:uniontech.com:qybglogicsvrsz:qybglogicsvrsz3b-0
-X-QQ-XMAILINFO: MNzjxjeHhySas2iGtuu7+sD6lZe414OW8U6CJsmcJcGT1t5BxshT6a6G
-	sS2jnhjIV1/j4SQKXGi2JnjSnLd+e6R1pWel3NXkq+bDxgK8r2O09vGLOKHDA/rIh48FOIS
-	dbhw7bSclKUf6Hazs2KZIu3tqpqkjiBSkTq8tCjCF9wAG3Exd2itNwTOw+c7GNNyC9XCiru
-	hZqfhp7OZ5kxcUDf6j3W1UkeMbNDow+/42h6gccUrrAcdYZRzoQNpgNLEhiwhlz0hxi+iBj
-	Jj3QdwBiooPyo1S+SOOlL25M046k/V+fB843R86jF6Rmhm3zmnNw8bu5ryCwlN8zfKxIoxU
-	6SZ1gFifhtRzv3+gGURXs2DnukfpedPh/puXGmh4acPjIb37joYA/HvTjc7Y6g57GYQOdYU
-	WucEuVSu47JHw6Fktgz0gCbBcNmzHMzwNAPZ8HU32FyxFcIHMyR3S5yx1VFNiBVcqdI9Sn/
-	wv+ownELyxNU94/wbGZ0a7t3e2cBrZdiTKAfKKz/xW0DKtI++gCXptjwain4Vur3P+7ctkX
-	vIwJqNZcM1PdGnEKP0RkFruyalh65JZf4klo2AIYF60A8nhRvl1MhU5yquXTZWQJnZza0Xl
-	Vl48y1dUxGYs5t07wVseRYKwPwImBe72x5D12Q9zKtgFRCGK2vwF7ZoCUmr3E5ArO7z8nhp
-	g3nqly3mFkVWEP10OJHfg8TtGI6PKEi/w7lXYW4ksDreBQckA0hAX6/yyDBIE+0ZUxrohVv
-	rAO6jjLGEV2Jcsi7JlwfLaeXyGd64utr7Tgsqw3gmKpL9fkeSbwlnVaoOQxa3NBerPT+ezx
-	43mOEPtBXU1Q+SYOuvyaNtYKCeRUzrFZWNkjMj/zg8FcQpARSqC5ylUbcoCTtlfH79gCHRd
-	TNBUveDRES4iaSiRyIJirvLGZFsVWCnAbMwMMPSFMO8pbKJLNNkug6p7BlWCOHuKy9BHDJ+
-	nukXeS3H4iKRheOMJNxlgJkBCMC+YkO3SLhBoAKtkB6K2ajz2vCMbnHK7cPQB4CgykiKgpb
-	fAGjPxvXLzmrfzT3FDezr1qXHDegE=
-X-QQ-XMRINFO: OD9hHCdaPRBwH5bRRRw8tsiH4UAatJqXfg==
-X-QQ-RECHKSPAM: 0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: DB8PR04MB6858:EE_|DU4PR04MB11053:EE_
+X-MS-Office365-Filtering-Correlation-Id: 1302d8fc-a960-4df4-1945-08dee85ee36a
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|1800799024|366016|19092799006|23010399003|7416014|376014|10067099003|11063799006|56012099006|18002099003;
+X-Microsoft-Antispam-Message-Info:
+	g2D85arAm4BM3blDhI9Szb+77ox2dg0uYLH6vGVn4/kwxmac1AGfqyS/g3p0d0pW3/C4dA357xfeUf6PMkPrIdSJXxxvXqnWV4o7ar/14Fu+LY8a5KHb3jgN+Uz4WeSid6wfHhOBrI3gA0YhxSE6WGyGV0vvJmXne/6Azrgr15zd27OBAZnQPEg1vp4hK5u2QlY3eGB6ietdF21ZRAeKYoB/Q5yEuRwV/gyGUvBaenFAsl/8OP7XimI0+9nFgOQs7mW7uKCm6ojf8x+vNqwl8WtMWxBswnPUlagEIxcvsvnEsardVj3iEPGImYI4Lxx560URm4nbdzUoDvxPorT+TqnqnUgQEnsFHZcL0OiDYbtHoG2EyzmakcvdRms85/5fuBt3bUn/DGgG4HMWYpXJeoxteyY6C92dXUO47Sxz1mJ9x5tKy4+8G0gbONlqO020icvM7WVCi3Rld5TJfIWirNgZLSvRbyHsjO35Qs7O9wdQFETYgcJvVzxTSIQsMq4DSFVpxTgsCtVgLZNQgDr2PMxzEz8jjE5CAtVPIRB3d6woSkX7kS1J+vNz37LurqvFIeAZAMq5egASwmPk1lf1U65RLBoBxTZH9PrFk6WfZ44WVeoVqdAVWnTqAouE7CBUSu0v0C6dIqWfOfXmd04Rt6KlqqXGOghm+p2m1gqcW4s=
+X-Forefront-Antispam-Report:
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:DB8PR04MB6858.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(1800799024)(366016)(19092799006)(23010399003)(7416014)(376014)(10067099003)(11063799006)(56012099006)(18002099003);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 2
+X-MS-Exchange-AntiSpam-MessageData-0:
+	=?us-ascii?Q?UdVvZxJVdrYfR1Tg2GNfRpgOsMnBj95wqtxi+3xJT32W+YlXxDx6nSo4FmR8?=
+ =?us-ascii?Q?YGRz1durRI22yrCn05kISg8gcd2LE68cn2JZnRrTSpqqn/It5sMfJYGy1c3v?=
+ =?us-ascii?Q?aLQ+URszsJk00FsS7FErpwvCqvYFxY5L/r3UPs+Q+rczNre6iOVc0EQXvAbO?=
+ =?us-ascii?Q?jBXjDkALxdZ4Lfbn6gibRopxzuZDW+WigQpVtFhvjourJmt9O2bLslqaZu4G?=
+ =?us-ascii?Q?bEuc20PaER5KnqBlRF/qAXB851iUzotBTtnejJ1Gs48Fz16wcWU4yCYArspi?=
+ =?us-ascii?Q?zmpQp21ndJTbk2uWDrtdStwKZbn55ed8kAqnPj26xBhtVlRRE+SJB8SswYlN?=
+ =?us-ascii?Q?Evq21nlzvo4ZVNeeG8dfnF3AB3rW1AKPtSA4c50CKP3GxklGEz3d4wLJWMLF?=
+ =?us-ascii?Q?MR0vNSsmsd7TJ2ZbyJikkTR+kK4yD6phagQV60WrJzfyinqb5gZZ1IQzx6u7?=
+ =?us-ascii?Q?zBJd3NwmsrItvMpfDNrJny8E+7mc76LsAtQG0sx7POd1nF/GLAGl+d8GELBx?=
+ =?us-ascii?Q?YK2SmDgraHwGc5hbi7rQd3FHFWQ+5onIeBjwss+NR4+2m5C7FAFfTwHgBrk5?=
+ =?us-ascii?Q?o9kZsU80nEpFcTlLyW1MimWTERyD3pjjXrqXUfThh7wV8tyyb7S1xgAUsRzB?=
+ =?us-ascii?Q?hHp7kITWmJREJLIiRC0ATbsaWo7WMQQJTrJK1LvZ2v/NNkwmDS2YL7ZZwwi8?=
+ =?us-ascii?Q?Yr/CTPU8rov8En0A4nHwXa3xs6DauXv7IMshzNVqoFQt0YoLUc+y/HSLIC9Y?=
+ =?us-ascii?Q?Cen3QyNvphnUHwRoY7w/dSyRYWDPKmTMkHzdl+rK2Dg9UWMQaBYVNsQhQgGT?=
+ =?us-ascii?Q?mF4PElzg6k1cXCHpnRWqBFrB+IStAEqYOgDotF3M4rvkFNDG1oi/ilPIBOYy?=
+ =?us-ascii?Q?fePC22t0XOyZNE+6CuDu/7uCYQVX/Ign6tu6VTNxSVrVBt3XvWc9MluSZlvg?=
+ =?us-ascii?Q?sZKp35+cHaCH/PsRGWXroQylAOpaQOJex745gpBEqFqqngr0C3vMUvd9FihU?=
+ =?us-ascii?Q?sCH7ISRjq4JFovdf8bCS35hEtWQbt2E7SZ2FObnni97Edasfcp+VCVUoHWJF?=
+ =?us-ascii?Q?q2tOFpDdkiQ6ZFEW61RRF265ENuscJTt7kHA1WskC17wYum9aZK5w1O1xFu7?=
+ =?us-ascii?Q?gRw/y8cwXpQ+tYgVdbOu8EyJpfMbgo4qJOgBuwvD+VVw22cdGkfbSk11vjR/?=
+ =?us-ascii?Q?byrqPKDd0rRMAf9psidALKFSfsQb+wOw79JxfJhDcbuosBLVOWzCgyXLKwsQ?=
+ =?us-ascii?Q?krlyjSkLxZpwJTeXzHV0o+B59sduLhLYkipsmXf8tku5LPBKFQkstOpsOfQr?=
+ =?us-ascii?Q?eL7PyZ9VsU8DjElhuMYJTnV87NTcJ7eluiFeAtRjZRZvFmsFzI/DAhHxGzv8?=
+ =?us-ascii?Q?cBExmTRQBkEXTrejKHXaqpOjgb/F0dM0UYNbmfSUU6JQK556FwtUd5Gnhb8C?=
+ =?us-ascii?Q?sqM5nm1lOe7F7y5d53NL+deWJJi2DBUUatbAZGObGH1hlmHwHFO7w6I1IL6B?=
+ =?us-ascii?Q?6imEr3X6MN1re1bET6GPJ1u5UQjiNucvqWxgU2lCVDupXNwMkdzLMjv35qrD?=
+ =?us-ascii?Q?GOTPbnU4R/S8hWgk3YPwYdndV8zr25fXeg3nAWdzOHf0MRLXGmwOh/vOmmwF?=
+ =?us-ascii?Q?WIASuQ4Nljkdc/GrbRltNc4EN/rzCxz02FWMZi5/utiPw+vurfKGleE230Db?=
+ =?us-ascii?Q?6ixWNnoGCtgWlgdPiPFxHu38XTKrFuVTkxyqu7Cf623MrfO2+8PXrQUG4HmX?=
+ =?us-ascii?Q?xIMkRHxtUCIc1C4YmMUB7lAtRtuseUCusC7A2sck+VH4+Pu/FKcAtqj1f+m+?=
+X-MS-Exchange-AntiSpam-MessageData-1: uJ+L4ed5JRxoTQ==
+X-OriginatorOrg: oss.nxp.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 1302d8fc-a960-4df4-1945-08dee85ee36a
+X-MS-Exchange-CrossTenant-AuthSource: DB8PR04MB6858.eurprd04.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 23 Jul 2026 02:05:46.9669
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: i5PrXsgSQwffIyOMPcbilO0pCYZEO31sGEmXuY3yDE16MaYRIOB8Hgz5/avCLjsSxqupL9w7dNSPZqobeO+A5p7M+eQefGGBnTslp2pP8ehcgAZ/RSrlDbj25FMBuDnH
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: DU4PR04MB11053
 
-Hi Laurent,
+From: Zhipeng Wang <zhipeng.wang_1@nxp.com>
 
-On Wed, Jul 22, 2026 at 11:06:20PM +0300, Laurent Pinchart wrote:
-> On Thu, Jun 18, 2026 at 09:31:33AM +0800, Haowen Tu wrote:
-> > After the hibernation snapshot is created, devices are resumed with
-> > PMSG_THAW before the image is written and the system is powered off.
-> > Restarting an active UVC stream during this phase reinitializes the
-> > camera and visibly turns its indicator LED back on.
-> > 
-> > Skip only the UVC streaming hardware restart while the snapshot is
-> > available.  The driver's frozen state and clock are still updated before
-> > the check, and a subsequent UVC suspend can stop the stream and select
-> > alternate setting 0 as usual.
->
-> Why is that desired (both the decision to only block the resume of the
-> video interface, and the decision to not block the next suspend) ?
+This series makes the i.MX SCU power domain driver buildable as a
+loadable module, which is required for Android devices using the
+Generic Kernel Image (GKI) where SoC-specific drivers must be modules.
 
-The intention is not to block the whole video interface resume callback.
-The callback still clears stream->frozen and resets the stream clock
-before the new check.  The patch only skips the final streaming hardware
-restart, namely uvc_commit_video() and uvc_video_start_transfer().
+Patch 1 exports of_stdout (which the driver references to find the
+console's power domain) from the OF core with EXPORT_SYMBOL_GPL().
 
-In the earlier version the check was placed before those state updates.
-After Oliver pointed out the image write failure path, I moved it later
-in uvc_video_resume().  If swsusp_write() fails, the system continues
-running in the original kernel, and the driver should not be left with
-stream->frozen still set from the preceding FREEZE suspend.
+Patch 2 converts CONFIG_IMX_SCU_PD from bool to tristate and adds
+MODULE_DEVICE_TABLE() for autoloading. subsys_initcall() is used so
+that when built-in the provider probes before its consumers (e.g. the
+SCU clock driver at device_initcall level). No module_exit() is
+provided since the provider cannot be safely removed at runtime.
 
-That is the part that reconfigures the camera and restarts USB video
-transfers, which is what turns the camera indicator LED back on during
-the hibernation image-write phase.  The control interface resume path is
-left unchanged because it is not the source of that visible side effect,
-and because I do not want to change more of the UVC PM flow than needed
-for this case.
+Patch 3 adds MODULE_SOFTDEP("pre: scu_pd") to the i.MX8QXP clock
+driver so that modprobe loads the power domain module first when both
+are built as modules.
 
-The later suspend is also intentionally left unchanged.  The patch should
-not alter the PM core sequencing.  If the platform hibernation path or an
-error recovery path later asks the UVC streaming interface to suspend
-again, uvc_video_suspend() can still run the existing cleanup path and
-select alternate setting 0 as usual.  This keeps the interface in the
-same state that the existing suspend path expects, instead of introducing
-a special case where the later suspend is skipped too.
+Because of the cross-subsystem dependency (patches touch drivers/of,
+drivers/pmdomain, and drivers/clk), I would suggest taking the whole
+series through one tree.
 
-> > uvcvideo does not provide a shutdown
-> > callback that requires the streaming hardware to be restarted first.
-> > 
-> > This is a device-specific use of pm_hibernation_snapshot_done().  The
-> > helper does not cause other drivers or USB core to skip THAW resume.
->
-> I don't think this sentence belongs to the commit message.
+Changes in v5:
+- Fix MODULE_SOFTDEP module name from imx_scu_pd to scu_pd. (Sashiko
+  bot)
+- Add Acked-by from Rob Herring for patch 1.
 
-Agreed, I can drop that sentence from the commit message in the next
-version.  It belongs more in the cover letter, if anywhere.
+Changes in v4:
+- Add patch 3: MODULE_SOFTDEP in clk-imx8qxp to guarantee module load
+  order when both drivers are modules. (Sashiko bot)
 
-Thanks,
-Haowen
+Changes in v3:
+- Use subsys_initcall() instead of module_init() to fix probe ordering
+  between the power domain provider and the SCU clock consumer when
+  both are built-in. (Sashiko bot)
+
+Changes in v2:
+- Drop module_platform_driver() which provides module_exit() and could
+  lead to use-after-free on module unload. Use module_init() only, so
+  the module cannot be unloaded. (Sashiko bot)
+
+Zhipeng Wang (3):
+  of: export of_stdout symbol
+  pmdomain: imx: scu-pd: allow building as a module
+  clk: imx: imx8qxp: add soft dependency on SCU power domain driver
+
+ drivers/clk/imx/clk-imx8qxp.c | 1 +
+ drivers/of/base.c             | 1 +
+ drivers/pmdomain/imx/Kconfig  | 2 +-
+ drivers/pmdomain/imx/scu-pd.c | 8 +++++++-
+ 4 files changed, 10 insertions(+), 2 deletions(-)
+
+-- 
+2.34.1
