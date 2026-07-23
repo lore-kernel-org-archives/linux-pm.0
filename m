@@ -1,109 +1,127 @@
-Received: from mail-pj1-f41.google.com (mail-pj1-f41.google.com [209.85.216.41])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EF1A548EBD2
-	for <linux-pm@vger.kernel.org>; Thu, 23 Jul 2026 18:47:25 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.216.41
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 01CF8308F32;
+	Thu, 23 Jul 2026 19:22:11 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1784832455; cv=none; b=MaqkPrQnwwlkcjpG7iwN496uzmK/AVrraJWDpRrc4dpC5DraRhv5H/hQ98RXEywss0FgHBBD9+LDmwUW3tXBLzcWRZG/LSUvxaXZgmEqT/2IbwVwiXm1HujjvMPqry0Mw8T2kRn2xDOq6j1kTitnJB3xf77K0nRtov+vFidVwLo=
+	t=1784834533; cv=none; b=aMLHCc3xwBZQ04rCYpb/UHQx8XP4BQxKaA2upXsTPNsuQlzzgmB8lkFSq0h/PU6yY2/Tf5gvPbSxru/ZcILXs5GNbC5HNHheYRXiSN/KBPF8enGeFs/ERGWpeVqYRC5nswHEBd/0sHBWmnte8ODXUKTr3FT4LCAakGD8yI7+22w=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1784832455; c=relaxed/simple;
-	bh=8A2S62PZzrC8JPpHbdE/IFoS+mlqyAjg7X22tpKj+Os=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=H7JNSuLKqI7C/O1qHzkgmvjSP3qb0XjEyrB8/A1OPMuiVWBKu0LSgBNs1HAjv91lFAbGsl7r3aW9+foqFTdSWsxij/oA6X9ieb04+P9JSkFlUVcxaCXqAF38Hf3ekQ6TGPPYlbep68/SXvriTlZGZwPvB9GCjLwLkczZFJbAkRg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=ZLv7KMdK; arc=none smtp.client-ip=209.85.216.41
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1784834533; c=relaxed/simple;
+	bh=+RpcCgv21DCM016Wz9/zOl4+4jh4NH6ChHCTXBLwl7o=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=Cy0ZL10wJ1ZDpUOS1VPcbk2UNOmm+7p5imfStNueK3eWkTUmN07FCZvWB1OhBNGx4azUfzwgizyMnouOemFZDyZXE/TnQcuQJkFszq/BFzBWCQ7BpjBkqJekrS3O/CtrAFOSS0IektpjXtrdSEwt72boXfTZIMm0mMANPaIfH1E=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=XqJ1j51f; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="ZLv7KMdK"
-Received: by mail-pj1-f41.google.com with SMTP id 98e67ed59e1d1-38e08baf860so1122527a91.2
-        for <linux-pm@vger.kernel.org>; Thu, 23 Jul 2026 11:47:25 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1784832443; x=1785437243; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=y+eSaDxt3Oy3svRwCwnnMubzPU6lsf5Q8Wmnj1h35P0=;
-        b=ZLv7KMdKbwdFR79zu/nnXxy3rl4fzgknndDl24jFVOROdLtJnGHusGmd0mbUGV14Vi
-         X2hY8EoYIRI1RUVVima9X0/V/lzNEC0E6NfVTjcFt9wfN9j5A6cC56Hfnd3STA2XvTFl
-         NS8h8Emkbj++rYbSu3CuhjymZQ1t50zCi3bJdyaqcgmTVvNMLhLQX4sxAnwAQXMobU6A
-         ET4sDccUJ32njKrzcgEtIvKOjwDhd1xzwTDe0HBVJiI3yc0CJGrkvdJFYTQ8Mtikofc0
-         W/UXneWCd0oNpmlUALy8TLacJohYWozfpTHD+CaQIEgf0xjLDLvns69PqFFW+Pf+hi70
-         bdMA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1784832443; x=1785437243;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=y+eSaDxt3Oy3svRwCwnnMubzPU6lsf5Q8Wmnj1h35P0=;
-        b=FG7C2x+mkKuX42hItSXQzWpsBejSM4TIbtiFxYzR/8bMZCZAkUk4xN45MCcvD6DQDv
-         VFNtSL6lt94F0d0lmCobjGJyG66FL+DibK0XbFS8EDmZ2fZfzsG02qgtbwIrQ5npH5sA
-         OF9r/ewH5/kGhQTEp8ySEjlZzFQzPYR/gjQ/kev5TKlDYPkEm5gXWCFwfEx0d89g1FCa
-         AW7JSlnW4duvN/G1/g4JfPdGI5WUWKnZSKmp3oGuH3eV93YUaAzLl/xvEelQrw8MAfp6
-         yKK6hgDEXdIHan13/P2wa695iHit3ba3AAIk/cwOzgTlx00mHSdS7g12/50uN3y3tIjq
-         vh6Q==
-X-Forwarded-Encrypted: i=1; AHgh+RqNQfvs4hwweD2uF+rHlS1qCUG8ISfqLyaYCs/xOivA+spPpZ9x/qGd8xgckTeyHaTLdoNx6mn1mw==@vger.kernel.org
-X-Gm-Message-State: AOJu0YxE75+nMW6Z/uvl22UMT24bgBcuCzj6E4d/vF1CvEuJnwpnJFmY
-	vxjqEZ2F0POTS78e8iz97oAB7+VK/YsGgWgYSVhmuZywvnSgCSb5Rh1P
-X-Gm-Gg: AR+sD12qhDEkEe/9XWH7wKTLeMPI4FvvocnfXIHCjhx8qiBuCUqVO5/BLljsGgbs2ll
-	R/gvjm8Ek5bdmGG6CVyTHYq8PuVtcXKREbrnznEsOqpAU4c1VZCfxSjoy64QIjFZGD6KwX7Ro5z
-	DF1VEi/iWiHK0HZA6jPGhE2PVLnWx/R1vKYf7o3QRfRslLiKJYLK0GERob8SjNXOBEOFm73A9nB
-	5YkLk8+Ij2URWD3oMozWYlCQk+slTTxxpjI/JcbyGVVRuUXeznqzE3YPr7snXRI2hsWzoPbFyA5
-	7LIiX2Q1Df+gwFPE16M2TFjGtZ7T4yJqNxafpYpWnHQ3DtAty+2Df59rTjnsuVyNPBZIqnPeF56
-	6+pF6c9XFnII3mtY+NejTnjireiEaNLzVJKBYBxfswiTIpGMoPbopALHeZkecjwsby7CiDJau
-X-Received: by 2002:a17:90b:3d43:b0:38d:dc13:6f94 with SMTP id 98e67ed59e1d1-38ec6649d4fmr4940781a91.37.1784832443347;
-        Thu, 23 Jul 2026 11:47:23 -0700 (PDT)
-Received: from ubuntu.. ([110.9.142.4])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-38f03af8a45sm308155a91.10.2026.07.23.11.47.21
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 23 Jul 2026 11:47:22 -0700 (PDT)
-From: Sang-Heon Jeon <ekffu200098@gmail.com>
-To: Julia.Lawall@inria.fr,
-	Thomas Renninger <trenn@suse.com>,
-	Shuah Khan <shuah@kernel.org>,
-	"John B. Wyatt IV" <jwyatt@redhat.com>,
-	John Kacur <jkacur@redhat.com>
-Cc: cocci@inria.fr,
-	linux-kernel@vger.kernel.org,
-	linux-pm@vger.kernel.org
-Subject: [PATCH 35/36] cpupower: remove conditional return with no effect
-Date: Fri, 24 Jul 2026 03:45:37 +0900
-Message-ID: <20260723184538.3888637-36-ekffu200098@gmail.com>
-X-Mailer: git-send-email 2.43.0
-In-Reply-To: <20260723184538.3888637-1-ekffu200098@gmail.com>
-References: <20260723184538.3888637-1-ekffu200098@gmail.com>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="XqJ1j51f"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 18FEC1F000E9;
+	Thu, 23 Jul 2026 19:22:05 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1784834531;
+	bh=+UVgw9SS39ORb8/aVu/+0NFZ+th3kWmIhwdefbORwmg=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To;
+	b=XqJ1j51fRGHG8JRtpcnW6N5WjpOZD++glkmXO6uctnlpGOTeJi+bPUIi0eY1ju5uh
+	 q8lgNeicBe82DNIR7uZ697B0nsYI6Tk95LTvDg194D2/sTo3+azZnW1DmaUvius2zH
+	 sxtvIs7GmHpGSpDW97DgLlJ4ihrkZhBY/8VtZIBjwrM/LPZVhbOJe23xpGxIUZDJXb
+	 hxIHf0D9FcWSh8rIb2yq5CiaG7TITUhqWDM5G/4oLQtEGzQtu5TZhI2c9tiUdVh0ho
+	 VdWmpmK8NxLU9p6/WXgpB4zhJLYt17E7YbkC0omr7mgHwwwJljJjYpwjZM0qIJVr0q
+	 9wwWGi6FT5XqA==
+Message-ID: <9cc5af16-d95e-4f10-8b4a-5e29c136079c@kernel.org>
+Date: Thu, 23 Jul 2026 21:22:03 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 3/3] power: sequencing: pwrseq-pcie-m2: Add QCC2072 BT PCI
+ device ID
+To: Krishna Chaitanya Chundru <krishna.chundru@oss.qualcomm.com>,
+ Bjorn Andersson <andersson@kernel.org>,
+ Konrad Dybcio <konradybcio@kernel.org>, Rob Herring <robh@kernel.org>,
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
+ <conor+dt@kernel.org>, Manivannan Sadhasivam <mani@kernel.org>,
+ Bartosz Golaszewski <brgl@kernel.org>
+Cc: linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
+ linux-pm@vger.kernel.org
+References: <20260703-eliza_evk-v1-0-7624440bd76d@oss.qualcomm.com>
+ <20260703-eliza_evk-v1-3-7624440bd76d@oss.qualcomm.com>
+From: Krzysztof Kozlowski <krzk@kernel.org>
+Content-Language: en-US
+Autocrypt: addr=krzk@kernel.org; keydata=
+ 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
+In-Reply-To: <20260703-eliza_evk-v1-3-7624440bd76d@oss.qualcomm.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-Both branches of the check return the same value, so the check has
-no effect. Remove it and return the value directly.
+On 03/07/2026 14:38, Krishna Chaitanya Chundru wrote:
+> Add the Qualcomm QCC2072 Bluetooth device (PCI ID 0x1112) to the
+> pwrseq_m2_pci_ids table so the M.2 power sequencer can create the
+> serdev node for its BT interface on enumeration.
+> 
+> Signed-off-by: Krishna Chaitanya Chundru <krishna.chundru@oss.qualcomm.com>
+> ---
+>  drivers/power/sequencing/pwrseq-pcie-m2.c | 2 ++
+>  1 file changed, 2 insertions(+)
+> 
+> diff --git a/drivers/power/sequencing/pwrseq-pcie-m2.c b/drivers/power/sequencing/pwrseq-pcie-m2.c
+> index b5ed80d03953..4aac52062fae 100644
+> --- a/drivers/power/sequencing/pwrseq-pcie-m2.c
+> +++ b/drivers/power/sequencing/pwrseq-pcie-m2.c
+> @@ -190,6 +190,8 @@ static const struct pci_device_id pwrseq_m2_pci_ids[] = {
+>  	  .driver_data = (kernel_ulong_t)"qcom,wcn6855-bt" },
+>  	{ PCI_DEVICE(PCI_VENDOR_ID_QCOM, 0x1107),
+>  	  .driver_data = (kernel_ulong_t)"qcom,wcn7850-bt" },
+> +	{ PCI_DEVICE(PCI_VENDOR_ID_QCOM, 0x1112),
+> +	  .driver_data = (kernel_ulong_t)"qcom,qcc2072-bt" },
 
-This is the result of running the Coccinelle script from
-scripts/coccinelle/misc/cond_return_no_effect.cocci.
 
-Signed-off-by: Sang-Heon Jeon <ekffu200098@gmail.com>
----
- tools/power/cpupower/utils/powercap-info.c | 2 --
- 1 file changed, 2 deletions(-)
+Bartosz,
+Please push back on this. This is undocumented (indirect) compatible.
+This cannot get accepted to kernel in such form.
 
-diff --git a/tools/power/cpupower/utils/powercap-info.c b/tools/power/cpupower/utils/powercap-info.c
-index e53033488218..88a5edb76315 100644
---- a/tools/power/cpupower/utils/powercap-info.c
-+++ b/tools/power/cpupower/utils/powercap-info.c
-@@ -47,8 +47,6 @@ static int powercap_print_one_zone(struct powercap_zone *zone)
- 
- 	printf("\n");
- 
--	if (ret != 0)
--		return ret;
- 	return ret;
- }
- 
--- 
-2.43.0
-
+Best regards,
+Krzysztof
