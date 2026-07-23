@@ -1,101 +1,145 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A00BD46D577
-	for <linux-pm@vger.kernel.org>; Thu, 23 Jul 2026 11:29:46 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id A0BC64A13B6;
+	Thu, 23 Jul 2026 12:44:53 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1784806187; cv=none; b=SCN9bU/0ZM+HsIvFRtnrf1hM4dSd0NsclDFk/Js35ISoEHmscRrvdpuczxoZVWOlQnCzgdXOy9OfdaxvcoYAcQvZf3h9FUyqw+XvJiS6d3lNPxp0SI413xB+kiRTui5iAonSeAHxpF3vin7fr2d0GqMLj/YAcZjdsDAM6V+15bI=
+	t=1784810705; cv=none; b=ZgU4PfjSTsAn30Vqt5Djjk+CkWDdEVpj4lZP984PAwggTTnSQtVo8xRRlCxOXkq2wS9yP+KQs5YKy0J1EK/g7aiT30OOyzyNryr51IP83DpW5wkujMFetF37C/TxBDkbKyrttBdD3x46+GqVwey+0gjFhmMXLIea8Fxv1Oxa6OY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1784806187; c=relaxed/simple;
-	bh=du/U2XaDDncamHTpd6Y4lILTrjaZhpZ+lMxIU63QbVo=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=OsFrq2gA0EqXbDmL8G054Jw0GFtmRzOF9m7ba64+IsVberKGOgDHzRIOARXFLn2zBEY2huMNqKeYwBHMjI3o+qWyILAAUZ8lNMMAZFl1WSyATcvISmPk4gGRp9TvuLRVC0j3f5sQ8g9Rq/BIaAdY+ZGfG1Xz9XK8CvCjyZRVHWk=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1B45B1F00A3D
-	for <linux-pm@vger.kernel.org>; Thu, 23 Jul 2026 11:29:46 +0000 (UTC)
-Received: by mail-lj1-f171.google.com with SMTP id 38308e7fff4ca-39dbe684115so2659361fa.1
-        for <linux-pm@vger.kernel.org>; Thu, 23 Jul 2026 04:29:46 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AHgh+RqxW2dmv+/xdJDGg88xIeI0rDWk3gUKxG9J8NMgbQ2qmxrK+i7rPWvNyFqxkzQ6dWyeeM1h6QtM/A==@vger.kernel.org
-X-Gm-Message-State: AOJu0YzR24EWnvXrXMkKcti3s6EbpboctIzASrGqNv6r7c7BkQtWDiny
-	h8ZVSsWKMZDcaWD2ZzwoLZkpQ13ldYqZwtdidG+SfGkwFnQoFcslkl6ESmMzeCXYLgjN6t7lRsu
-	dWhkHT4Igh47g4EdjYx2bN0QsIIfSj9k=
-X-Received: by 2002:a05:6512:3402:b0:5ae:b5d7:4b99 with SMTP id
- 2adb3069b0e04-5b2b2fe18abmr524522e87.0.1784806184524; Thu, 23 Jul 2026
- 04:29:44 -0700 (PDT)
+	s=arc-20240116; t=1784810705; c=relaxed/simple;
+	bh=BuUzWCouzpbbg2lPlgVYUKj5Ugh36+qSD5tNZJolJJs=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=fPHbFh8igHG1Gi/GKtKrAgPqfDfnkqhXGoregc0uztWDw6sT6FgSnPsno3WUbXrXr1rKkBezLevpeweQnaGMWaQ0EjpLj19X6z5f/dqykjg8m1bMa3UNZUKWf6eUsgKLidJgWXfrFv5yKMGp3KeWqFqDddOwv/TqcWT5r5MVsr4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=h3iKsP1m; arc=none smtp.client-ip=217.140.110.172
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="h3iKsP1m"
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id CC4E71477;
+	Thu, 23 Jul 2026 05:44:48 -0700 (PDT)
+Received: from [10.1.39.91] (e127648.arm.com [10.1.39.91])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id EDC523F59E;
+	Thu, 23 Jul 2026 05:44:50 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
+	t=1784810693; bh=BuUzWCouzpbbg2lPlgVYUKj5Ugh36+qSD5tNZJolJJs=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=h3iKsP1moCJAhfAuwc685G5jUgL/Xz8jD4QcjUKj9EtWiwEvpf1YWW+dykI6sJYs7
+	 p/EbrgiDQGQOscZTsLxe4/88mRhxTg7t4SIowXEz1IvqBL3okDeoY4A5QJ1qth86ew
+	 nS91XcAKy86wHOi8uuG7HRZXfCepJZkfY7QsTO4w=
+Message-ID: <cfea177c-b618-4cac-9a74-1a442353849a@arm.com>
+Date: Thu, 23 Jul 2026 13:44:48 +0100
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <a58cf551-1d29-4269-9be7-2dcba48c51a0@kernel.org>
-In-Reply-To: <a58cf551-1d29-4269-9be7-2dcba48c51a0@kernel.org>
-From: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
-Date: Thu, 23 Jul 2026 13:29:30 +0200
-X-Gmail-Original-Message-ID: <CAJZ5v0hwoZzJ158Vs5kkWwKFnTnBzdGkD5tZ_2CH6CO+4JpOSQ@mail.gmail.com>
-X-Gm-Features: AUfX_mxinKCw4pcWVXQXzdLdHX2foIsbx6kBKHKwr5v5-N6NI9FeoT6hHUP6864
-Message-ID: <CAJZ5v0hwoZzJ158Vs5kkWwKFnTnBzdGkD5tZ_2CH6CO+4JpOSQ@mail.gmail.com>
-Subject: Re: [GIT PULL] amd-pstate fixes for 7.3 (7/22/26)
-To: Mario Limonciello <superm1@kernel.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, 
-	"open list:CPU FREQUENCY SCALING FRAMEWORK" <linux-pm@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 4/5] cpuidle: cache aggregated governor latency QoS
+ constraint
+To: Yaxiong Tian <tianyaxiong@kylinos.cn>, rafael@kernel.org,
+ daniel.lezcano@kernel.org, lenb@kernel.org, pavel@kernel.org,
+ shuah@kernel.org
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+ linux-kselftest@vger.kernel.org
+References: <20260721092324.17508-1-tianyaxiong@kylinos.cn>
+ <20260721092559.18921-1-tianyaxiong@kylinos.cn>
+Content-Language: en-US
+From: Christian Loehle <christian.loehle@arm.com>
+In-Reply-To: <20260721092559.18921-1-tianyaxiong@kylinos.cn>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-On Wed, Jul 22, 2026 at 10:20=E2=80=AFPM Mario Limonciello <superm1@kernel.=
-org> wrote:
->
-> The following changes since commit 1590cf0329716306e948a8fc29f1d3ee87d398=
-9f:
->
->    Linux 7.2-rc4 (2026-07-19 13:54:41 -0700)
->
-> are available in the Git repository at:
->
->
-> ssh://git@gitolite.kernel.org/pub/scm/linux/kernel/git/superm1/linux.git
-> tags/amd-pstate-v7.3-2026-07-22
->
-> for you to fetch changes up to 39c0cf62fc7851a17782e7efe8dfb2948739c681:
->
->    cpufreq/amd-pstate: handle missing policy in dynamic EPP callbacks
-> (2026-07-22 13:45:48 -0500)
->
-> ----------------------------------------------------------------
-> amd-pstate content for 7.3 (07/22/26)
->
-> * Avoid running unit tests without amd-pstate
-> * Fixes for EPP on shared memory systems
-> * Fixes for dynamic EPP callbacks
-> * Avoid loading on guests
-> * Allow lowest nonlinear =3D=3D minimum freq
->
-> ----------------------------------------------------------------
-> EDAMAMEX (1):
->        cpufreq/amd-pstate: handle missing policy in dynamic EPP callbacks
->
-> Marco Scardovi (3):
->        cpufreq/amd-pstate: Fix EPP return type and handle errors during
-> initialization
->        cpufreq/amd-pstate: Toggle auto_sel in active mode on shared
-> memory systems
->        cpufreq/amd-pstate: Cache the firmware programmed EPP value
->
-> Mario Limonciello (1):
->        cpufreq/amd-pstate: Loosen requirement on lowest nonlinear
-> frequency !=3D min freq
->
-> Qianheng Peng (1):
->        cpufreq: amd-pstate-ut: Skip tests when amd-pstate driver is not
-> active
->
-> Rong Zhang (1):
->        cpufreq/amd-pstate: Prevent the driver from loading on
-> unsupported hardware
->
->   drivers/cpufreq/amd-pstate-ut.c |  5 +++++
->   drivers/cpufreq/amd-pstate.c    | 34 ++++++++++++++++++++++++++--------
->   2 files changed, 31 insertions(+), 8 deletions(-)
+On 7/21/26 10:25, Yaxiong Tian wrote:
+> cpuidle_governor_latency_req() runs on every idle-state selection and
+> aggregates per-CPU resume latency with the global CPU latency and
+> wakeup latency QoS limits.  That path repeatedly walks get_cpu_device()
+> and pm_qos_read_value(), which shows up hot under menu_select().
+> 
+> Cache the aggregated constraint per CPU and refresh it only when the
+> corresponding per-CPU generation changes.  The generation is already
+> bumped by the global and per-CPU resume latency QoS notifiers added
+> earlier in this series.
+> 
+> On a menu governor profile, cpuidle_governor_latency_req() drops from
+> about 19.9% of menu_select time to about 4.2%, roughly a 6x reduction
+> in cost per call (~1.9 us down to ~0.3 us).
+> 
+> Signed-off-by: Yaxiong Tian <tianyaxiong@kylinos.cn>
+> ---
+>  drivers/cpuidle/governor.c | 37 ++++++++++++++++++++++++++++++++-----
+>  1 file changed, 32 insertions(+), 5 deletions(-)
+> 
+> diff --git a/drivers/cpuidle/governor.c b/drivers/cpuidle/governor.c
+> index d286ccf19a69..67909470c14b 100644
+> --- a/drivers/cpuidle/governor.c
+> +++ b/drivers/cpuidle/governor.c
+> @@ -32,11 +32,17 @@ struct cpuidle_governor *cpuidle_prev_governor;
+>   */
+>  static DEFINE_PER_CPU(atomic_t, latency_req_gen);
+>  
+> +struct cpuidle_latency_req_cache {
+> +	unsigned int gen;
+> +	s64 latency_ns;
+> +};
+> +
+>  struct cpuidle_cpu_qos_nb {
+>  	struct notifier_block nb;
+>  	unsigned int cpu;
+>  };
+>  
+> +static DEFINE_PER_CPU(struct cpuidle_latency_req_cache, latency_req_cache);
 
-Pulled and added to linux-pm.git/linux-next, thanks!
+So this will initialize with latency_req_cache.gen = 0 and latency.req_cache.latency_ns = 0...
+Come to think of it maybe a no-req run is also good as the first and last selftest case.
+
+>  static DEFINE_PER_CPU(struct cpuidle_cpu_qos_nb, cpuidle_cpu_qos_nb);
+>  
+>  static void cpuidle_latency_req_invalidate_cpu(unsigned int cpu)
+> @@ -212,10 +218,22 @@ int cpuidle_register_governor(struct cpuidle_governor *gov)
+>   */
+>  s64 cpuidle_governor_latency_req(unsigned int cpu)
+>  {
+> -	struct device *device = get_cpu_device(cpu);
+> -	int device_req = dev_pm_qos_raw_resume_latency(device);
+> -	int global_req = cpu_latency_qos_limit();
+> -	int global_wake_req = cpu_wakeup_latency_qos_limit();
+> +	struct cpuidle_latency_req_cache *cache;
+> +	unsigned int gen;
+> +	struct device *device;
+> +	int device_req, global_req, global_wake_req;
+> +	s64 latency_ns;
+> +
+> +	cache = per_cpu_ptr(&latency_req_cache, cpu);
+> +	gen = atomic_read(per_cpu_ptr(&latency_req_gen, cpu));
+> +
+> +	if (likely(READ_ONCE(cache->gen) == gen))
+> +		return READ_ONCE(cache->latency_ns);
+> +
+> +	device = get_cpu_device(cpu);
+> +	device_req = dev_pm_qos_raw_resume_latency(device);
+> +	global_req = cpu_latency_qos_limit();
+> +	global_wake_req = cpu_wakeup_latency_qos_limit();
+>  
+>  	if (global_req > global_wake_req)
+>  		global_req = global_wake_req;
+> @@ -223,5 +241,14 @@ s64 cpuidle_governor_latency_req(unsigned int cpu)
+>  	if (device_req > global_req)
+>  		device_req = global_req;
+>  
+> -	return (s64)device_req * NSEC_PER_USEC;
+> +	latency_ns = (s64)device_req * NSEC_PER_USEC;
+> +
+> +	WRITE_ONCE(cache->latency_ns, latency_ns);
+> +	/*
+> +	 * Store gen last so a concurrent invalidate cannot leave a stale
+> +	 * latency_ns marked as current.
+> +	 */
+
+This doesn't guarantee the ordering.
+
+> +	WRITE_ONCE(cache->gen, gen);
+> +
+> +	return latency_ns;
+>  }
+
