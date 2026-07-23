@@ -1,162 +1,104 @@
-Received: from mail-wr1-f44.google.com (mail-wr1-f44.google.com [209.85.221.44])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtpbgbr2.qq.com (smtpbgbr2.qq.com [54.207.22.56])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 281BF38CFED
-	for <linux-pm@vger.kernel.org>; Thu, 23 Jul 2026 06:25:17 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.44
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 117E83D903E;
+	Thu, 23 Jul 2026 06:55:11 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=54.207.22.56
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1784787920; cv=none; b=GiX855Tw1U240QdAsTebdWDqv9d5tlc/Fu1VxsDYmSIWSb4Q7dY6gGDMUuyZEc3LN+zI7iX7xUx83WX6RqZ11+Yjm3nNefMvZojNdCd6NQ9+V4EBHAz1Km/U3vvmxrIqfZN8Is7TjqsK2FVpP+WNM43b050L7gKPOoQmR5CwBoc=
+	t=1784789720; cv=none; b=AJyrtwgdw8X5XiH8ioboma012Lq3xiZAvOWCWe/nIyp6EMo9846mv9P8M1dCjbFmTMZxvxw17k2uo1WMgzEL5ul7H0uTV4FuMw7sD0BUKzWaCh3eU5YGAY9wncGEnncFSUkc56zevbT3bBfUB+01VL1CXz7Gv0MIRBHIjEW6hEA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1784787920; c=relaxed/simple;
-	bh=lR4BrEKUWwFUgV5r/hY0SmpZYAvqTCmveLJxkUYJjco=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=LFhnuFNIcQ+X/l1io9GbTIYfjChJUoYyMh3D7iXHz72OBhHBhTA3y/5X6/ja+fjwl3JBfFRGNEE8i7HMC3A8W5VX0yuYu81UOZcio1DsvR1cW6Ol4ENY7CrtqsjW+ul3U2jc7y+gIaPiIjPUWXS6EpzqUn8qnbCjgVi71MjWQpE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com; spf=pass smtp.mailfrom=baylibre.com; dkim=pass (2048-bit key) header.d=baylibre.com header.i=@baylibre.com header.b=EbSO3bwx; arc=none smtp.client-ip=209.85.221.44
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=baylibre.com
+	s=arc-20240116; t=1784789720; c=relaxed/simple;
+	bh=ZTyzKpDWjooXPIMH+/kDVH4gODnc1V0RGAFDV9MFbyw=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=OskNtgzLfIzbKXyhXQYCNa+25PgUkF5bia924nUl2QmsEx+hiWNX2vtJuYZbY2QSbt7yMSWh4VWbrxR5rP0bnSXDc/2MemeajUCSaeTH/L2/zJlV2/Pl1SWSOeCWKxwmG4fPzyUSvwUY7EMyil/UPRb1rmkr2y6zsEpkbAEuFG0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=uniontech.com; spf=pass smtp.mailfrom=uniontech.com; dkim=pass (1024-bit key) header.d=uniontech.com header.i=@uniontech.com header.b=nle1UaRG; arc=none smtp.client-ip=54.207.22.56
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=uniontech.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=uniontech.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=baylibre.com header.i=@baylibre.com header.b="EbSO3bwx"
-Received: by mail-wr1-f44.google.com with SMTP id ffacd0b85a97d-47f7854678bso59857f8f.3
-        for <linux-pm@vger.kernel.org>; Wed, 22 Jul 2026 23:25:16 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=baylibre.com; s=google; t=1784787915; x=1785392715; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=rY35TAUlD5S7ktpUnfbUq2XEBmoTSaPuxjiwa+138dw=;
-        b=EbSO3bwxvI+2nmAxICX4zeRqbAsg2kMl/e2dR3cbMAVLVsPoeguIg8TtU6k8y2Qo+T
-         mdPhKrw1sNBlySFpfgpqejlNKxtnoDAhfzr61hfvB0mFc/wkNCAnloURPSxM1eI0/gB6
-         N2mnyIlcBRVejMB87U/beyiogkWg8LbHcRvRjGUBJOd63kjTToRqnhatqpDx6KJpwZkW
-         bv/1wY9kKqvFarDvo+pHhuntl5RAC7nIinKoHMIr35dz4Lb7R9PB16yIW82Fa0EX6KXf
-         mBDf34RABR6x0W0KbcSIS5EhrEVONSXArH7mYZghNodTmvxAH34fUT4ROLPdQot417Xm
-         ukMw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1784787915; x=1785392715;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=rY35TAUlD5S7ktpUnfbUq2XEBmoTSaPuxjiwa+138dw=;
-        b=ZRQO6UUS1R28DgksxEQ9whcEFLBp6LhbnTKA74i//s3o9W2D8NFnvfgYPpMf9DDEH0
-         5/+hLQA3IQawqDCry7R7JIBZuIM+MfXSBybeN4xn1nVNuZOJV9whcSmTpnjnXQNUM90u
-         jSCuhqDU6oHyKKMHIBUhZxh5rIslUTjtqh7Tsn2+qB6MGW0pneF70bH/oxaWiz4qhyqU
-         PsG//OckNrTwLw9+hU4cLQSDpKEghLqMnDaDbe5qaDGH+qonH735AYnDnFQqB4JQ14Wj
-         jce6S4WkXY5QUsWiCYArl7Fw3SEagHa2VEOgLGcMUv9X/67WLyBVV/o0UElheb4WgXIT
-         y4Vg==
-X-Forwarded-Encrypted: i=1; AHgh+Rox0OvAm0iMFAgfZOspca8naqhLGN8Mny67sPBm7nBxSFDtBsgDgQ39ALABMM7tI/hB7fTUdbo60Q==@vger.kernel.org
-X-Gm-Message-State: AOJu0YxGvHWgIXoHy6zQp4IIe2yFDUpe1upgAIFpXBtNvK/furoAIOrJ
-	XWJD+fqm5GBK6M3j4SXKbfvznAr//MKAYiinvqdFiyABMMp/YT0PgDdZjT6gQtFsMZ8=
-X-Gm-Gg: AR+sD10xJefilC9Yrq9J4xxcYhARsHv99ivtY5GpftidG7ouNobXmetegfVdPddmsVR
-	N+o1g8k9lF6l78r/vfj1gAwHH7s+xp8rXViZyeyKGUUTTXXdWD9Q4U3w9W/y0VIYkYN9lhWBJTE
-	/icL8DeSn1UH1mhaBFAPNOmF4yMfsknE5Ue0T181dqtwuKwYQAj/vLCjnYfQDjl2bWLPrDd1Crn
-	o8H0dLwrRXcKQN92TWxQ7NcJsZxzODzsm4e82U3uMvGBtOeKHz+whm1qWuaGBXtwxyX+VjIpTLu
-	PcqWBgM3I2TcED2KwbCY6icO6oAyvRqLbs/HH9bGBxJaRdW6hhdPsSmy7MkvTW3qjIhr4lvJGQS
-	JUuhICzQA+3AbTcfeJzy12UVqfDmwhMoZ2hCbIZtmmGI0h81Ni77+gjXo3rET6hBggJfwtuRrAq
-	62JaEWNOQ0al0IHAAFtA==
-X-Received: by 2002:a05:6000:46db:b0:47f:91e3:3cbf with SMTP id ffacd0b85a97d-47f91e33d93mr526287f8f.19.1784787915407;
-        Wed, 22 Jul 2026 23:25:15 -0700 (PDT)
-Received: from localhost ([2a02:8071:56d1:2de0:1d24:d58d:2b65:c291])
-        by smtp.gmail.com with UTF8SMTPSA id ffacd0b85a97d-47f85c6f076sm12633187f8f.34.2026.07.22.23.25.14
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 22 Jul 2026 23:25:14 -0700 (PDT)
-Date: Thu, 23 Jul 2026 08:25:13 +0200
-From: Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <u.kleine-koenig@baylibre.com>
-To: Svyatoslav Ryhel <clamor95@gmail.com>
-Cc: Rob Herring <robh@kernel.org>, 
-	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
-	Dmitry Torokhov <dmitry.torokhov@gmail.com>, Lee Jones <lee@kernel.org>, Pavel Machek <pavel@kernel.org>, 
-	Sebastian Reichel <sre@kernel.org>, Ion Agorria <ion@agorria.com>, 
-	=?utf-8?B?TWljaGHFgiBNaXJvc8WCYXc=?= <mirq-linux@rere.qmqm.pl>, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	linux-input@vger.kernel.org, linux-leds@vger.kernel.org, linux-pm@vger.kernel.org
-Subject: Re: [PATCH v10 2/7] mfd: Add driver for ASUS Transformer embedded
- controller
-Message-ID: <amGx2fJCUB4_XW1M@monoceros>
-References: <20260721095233.420823-1-clamor95@gmail.com>
- <20260721095233.420823-3-clamor95@gmail.com>
+	dkim=pass (1024-bit key) header.d=uniontech.com header.i=@uniontech.com header.b="nle1UaRG"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=uniontech.com;
+	s=onoh2408; t=1784789693;
+	bh=JJFkdysbB0s1rRifCK+Xrms1xIj7Y5ESqta/6bqZtJY=;
+	h=From:To:Subject:Date:Message-ID:MIME-Version;
+	b=nle1UaRG3O5o7mWStWY1tUM79RGW2bJNs1aIh8V/UJKQ36ds0qYQ0J9ansKAzeK1k
+	 xyfUBQgwZ+aLZC72a+0iDaz458NRy2kK7vUL+TvKQP8KVcE8l7knhXS9eWXzgtB+Z6
+	 MZXLmu8BPLTwlvgiEoTKQicZKFk2ae1d894Dm7fo=
+X-QQ-mid: esmtpgz12t1784789688ta4a6cea0
+X-QQ-Originating-IP: v7IhKmgQxHhRSISRqV0OMfHq0etKDpiJ/zM2v4qHTbE=
+Received: from PEN202512010004 ( [113.57.152.160])
+	by bizesmtp.qq.com (ESMTP) with 
+	id ; Thu, 23 Jul 2026 14:54:46 +0800 (CST)
+X-QQ-SSF: 0000000000000000000000000000000
+X-QQ-GoodBg: 1
+X-BIZMAIL-ID: 3200143436947129304
+EX-QQ-RecipientCnt: 5
+From: raoxu <raoxu@uniontech.com>
+To: sre@kernel.org
+Cc: linux-pm@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	raoxu@uniontech.com,
+	stable@vger.kernel.org
+Subject: [PATCH] power: supply: bq25890: fix the -10 C NTC lookup entry
+Date: Thu, 23 Jul 2026 14:54:44 +0800
+Message-ID: <0619C8BF15F43B7C+20260723065444.1796002-1-raoxu@uniontech.com>
+X-Mailer: git-send-email 2.50.1
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="hohtbe7p7bme7m4a"
-Content-Disposition: inline
-In-Reply-To: <20260721095233.420823-3-clamor95@gmail.com>
+Content-Transfer-Encoding: 8bit
+X-QQ-SENDSIZE: 520
+Feedback-ID: esmtpgz:uniontech.com:qybglogicsvrgz:qybglogicsvrgz6b-0
+X-QQ-XMAILINFO: OBJ8LfKEepDbxrbkPNEKJj5ejl9XbtZPW5FIVQuIgUSzeW8kFxUitEfA
+	N922RbVSqmpEsqA5zyNs6X8GLF9tl6JmU0yaQ9PbTx/RU7ifHrs8i91uBZiKDDyGkTyctoS
+	78Ppenrpg90eVbG05TRcbbsRuZieVNnLwjNkyB1BV24op9EAzqBghNfdyB/nDDeuFFPKNou
+	eFLqzsNfy0Yg/oQFEqVKB9WITQyXGKOeCQXkziBz8SNXeDDqnVC2zOaGJ+xLQTz04gSLQYx
+	4sq8n/uNVIZUM4dX2V75cg6rjwJn9V+zoVtE/lcjF/4OZnx4rtZVfoo3eNiI+RIQIwkk1ly
+	WHhOi8Kb1HTV0liRYvrV7z59FNmQqyyp8UgYTpIdEMGGFchAfy9RZlHpJNUPRWHhP1tahXk
+	gsm8MRmEybApiUTAG9CqzpaWnlAXUUG0WvWbMLkxN4/7fhaEV772VJHVmLr5uGCm4F/GH9t
+	ApD02JUfGseyF6Hy/8zTEmfiQ8l6JcA1l3T/ejCjyq/1p+bUmbqFIq1x8jsBHBZOH2zJsCZ
+	daH5uNlSLS6UYq7iK5TLgkfQAjQUSvCdGaGEhm+M1QYzYtKenTwJrI8XLhW7uNavRqtssYx
+	0KElWTMawe1tutA06EsAKb3RGvsIKvvuuQRkbcMpIcCmrJ2/T0k5a4IBGd6eKaTWRoN7XTm
+	m1izALtP2+jK2y/yRUxYu6z8PwGV56kV7b2IG6a0c9qaDi8TGKLNMNvYJoKB7Xmd8gOimaQ
+	fwVvZl2IZekrghKB+bpvtbb3NEhHNL3ZbClyi9y4qq/ZbC5eK2P+jq5SxQvOlgKrbOFho+3
+	QRINv6PyMbEt3qHmEw/vUirbdQWO4bDX+mU0mzGysXY1LjqasujARn59J4Wqu182w0MYb4Y
+	qlZ1Swg5EVfZG8RE+KDqA1BT9kLNgR3xv6PoKwICMWlA9+NVJebiFDGELo7d7ABxpYJNeXJ
+	K1qznlGu5WZoXL9UbPeEw/yYuCtYA1HH/leQYh2ZELBdkOnFmze01+3FHHDrCJSnmdCJAmc
+	AxEzMZdKZD4hPfhqftTn23j9rNuW15d++tQLP5ICooDx0iCDaO
+X-QQ-XMRINFO: Mp0Kj//9VHAxzExpfF+O8yhSrljjwrznVg==
+X-QQ-RECHKSPAM: 0
 
+From: Xu Rao <raoxu@uniontech.com>
 
---hohtbe7p7bme7m4a
-Content-Type: text/plain; protected-headers=v1; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-Subject: Re: [PATCH v10 2/7] mfd: Add driver for ASUS Transformer embedded
- controller
-MIME-Version: 1.0
+The TSPCT lookup table is monotonically decreasing except for ADC code
+121, where the sequence reads -9.0 C, -1.0 C, -12.0 C.  This makes the
+reported battery temperature jump upward by eight degrees for one code
+and then downward by eleven degrees for the next code.
 
-Hello,
+The entry is a missing zero: use -10.0 C so the sequence remains
+monotonic between -9.0 C and -12.0 C.
 
-On Tue, Jul 21, 2026 at 12:52:28PM +0300, Svyatoslav Ryhel wrote:
-> From: Micha=C5=82 Miros=C5=82aw <mirq-linux@rere.qmqm.pl>
->=20
-> Support Nuvoton NPCE795-based ECs as used in Asus Transformer TF201,
-> TF300T, TF300TG, TF300TL and TF700T pad and dock, as well as TF101 dock
-> and TF600T, P1801-T and TF701T pad. This is a glue driver handling
-> detection and common operations for EC's functions.
->=20
-> Co-developed-by: Svyatoslav Ryhel <clamor95@gmail.com>
-> Signed-off-by: Svyatoslav Ryhel <clamor95@gmail.com>
-> Signed-off-by: Micha=C5=82 Miros=C5=82aw <mirq-linux@rere.qmqm.pl>
+Fixes: 9652c02428f3 ("power: bq25890: add POWER_SUPPLY_PROP_TEMP")
+Cc: stable@vger.kernel.org
+Signed-off-by: Xu Rao <raoxu@uniontech.com>
+---
+ drivers/power/supply/bq25890_charger.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Documentation/process/submitting-patches.rst has:
+diff --git a/drivers/power/supply/bq25890_charger.c b/drivers/power/supply/bq25890_charger.c
+index c1c12a447178..180bc137a863 100644
+--- a/drivers/power/supply/bq25890_charger.c
++++ b/drivers/power/supply/bq25890_charger.c
+@@ -320,7 +320,7 @@ static const u32 bq25890_tspct_tbl[] = {
+ 	145, 140, 130, 120, 115, 110, 100, 90,
+ 	80, 70, 60, 50, 40, 30, 20, 10,
+ 	0, -10, -20, -30, -40, -60, -70, -80,
+-	-90, -10, -120, -140, -150, -170, -190, -210,
++	-90, -100, -120, -140, -150, -170, -190, -210,
+ };
 
-	[...] the ordering of Signed-off-by: tags should reflect the
-	chronological history of the patch insofar as possible [...]
+ #define BQ25890_TSPCT_TBL_SIZE		ARRAY_SIZE(bq25890_tspct_tbl)
+--
+2.50.1
 
-So your S-o-b should be last when you submit a patch.
-
-> +#include <linux/i2c.h>
-> [...]
-> +#include <linux/mod_devicetable.h>
-
-<linux/mod_devicetable.h> will go away soon. Please rely on
-<linux/i2c.h> to provide a definition of struct of_device_id and drop
-the #include of mod_devicetable.h.
-
-> +static const struct of_device_id asus_ec_match[] =3D {
-> +	{
-> +		.compatible =3D "asus,sl101-ec-dock",
-> +		.data =3D &asus_ec_sl101_dock_data
-> +	}, {
-> +		.compatible =3D "asus,tf101-ec-dock",
-> +		.data =3D &asus_ec_tf101_dock_data
-> +	}, {
-> +		.compatible =3D "asus,tf201-ec-pad",
-> +		.data =3D &asus_ec_tf201_pad_data
-> +	}, {
-> +		.compatible =3D "asus,tf600t-ec-pad",
-> +		.data =3D &asus_ec_tf600t_pad_data
-> +	},
-> +	{ /* sentinel */ }
-> +};
-
-Trailing comma after the assignments to .data please.
-
-Best regards
-Uwe
-
---hohtbe7p7bme7m4a
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQEzBAABCgAdFiEEP4GsaTp6HlmJrf7Tj4D7WH0S/k4FAmphs8YACgkQj4D7WH0S
-/k5hUggAntVLl+JSiaF4SxkXV/Dfehd2NCWtfs+cUwmB6WJFteJP+BcAhhOkk+1E
-ttUWLQylbkdzFp3xbddXPZWpS5IFjn4vqMbpPOZvtx/sWiA+m4vBqFCozSGwu8/F
-9UNUZa3I0cptOeMgAnAVDApboD4tQ3pZlKAF31EzAJnDEz9mFj+5IgedjpVENEeN
-5bDcmqTS8xRqlkYuBDphF6wxnp1epbtkJ7knefFwNEqHz/B4ZQc1gtAWgJyIMklZ
-fasfEq+2cwMArlqDN/bb6iJTIXh9QxBHHuVUqCCHuI4QgEI+QijDdeXmUN56PebB
-UR+136xjTmkYxJ2dIDxPAY7dj/DVaw==
-=58oj
------END PGP SIGNATURE-----
-
---hohtbe7p7bme7m4a--
