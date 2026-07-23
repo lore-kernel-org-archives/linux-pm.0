@@ -1,54 +1,42 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DA6FD46AF0D
-	for <linux-pm@vger.kernel.org>; Thu, 23 Jul 2026 11:29:15 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A00BD46D577
+	for <linux-pm@vger.kernel.org>; Thu, 23 Jul 2026 11:29:46 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1784806157; cv=none; b=iO3ssuGOl/DnvS+kznyMZQmZ7V4eY7JvBTtKtOA+FH7jJxfdVYigUiLiabXhZHZZwXy/vsMgYisH7vAIc0/7kG8IIEwplTWPIrF6ZJNBBR5eNjEjfPq/tiy5DPygVGwf/XWvSEE38o+B9dNRwLEGLPiuCVetoMoOwYf/WyFKjrQ=
+	t=1784806187; cv=none; b=SCN9bU/0ZM+HsIvFRtnrf1hM4dSd0NsclDFk/Js35ISoEHmscRrvdpuczxoZVWOlQnCzgdXOy9OfdaxvcoYAcQvZf3h9FUyqw+XvJiS6d3lNPxp0SI413xB+kiRTui5iAonSeAHxpF3vin7fr2d0GqMLj/YAcZjdsDAM6V+15bI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1784806157; c=relaxed/simple;
-	bh=0gnWq7J6UsKYRgQGTWIpbvuMmmM/gFO0L62LC0Ygx8o=;
+	s=arc-20240116; t=1784806187; c=relaxed/simple;
+	bh=du/U2XaDDncamHTpd6Y4lILTrjaZhpZ+lMxIU63QbVo=;
 	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=P8qhCBIY6MCKGDfOSHCAxoLQmQqTWEIqBlKwfkfjlXN1Ya3GfNmnEIjQAMlQSQTarcV1aAN5hHkkZukfrwdjwAM9G4XnrwKshk8G35O0QcPSknWkfHyuGlbH+FQ7p76plL7je9D2+G0OYjJa1HC+ONEkakQFY592GN8xOhclqkI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=ev5TxP6d; arc=none smtp.client-ip=100.103.45.18
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="ev5TxP6d"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 87AB91F00A3A
-	for <linux-pm@vger.kernel.org>; Thu, 23 Jul 2026 11:29:15 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1784806155;
-	bh=ccpaQUdsnyNVfm2zZMgeL3KgOrK4gYIP856PhacjGY0=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc;
-	b=ev5TxP6dQAQ1i/pXTKQ3hPzLCArypD41JQucTipyX0S7UOIUoWH94ipn8xFTOCQiM
-	 HG/Wc0yAbDUIlnL9j9d3fh8+W4nztg4rtMdrUXMVTosnKEqcjcnmxwRUrvDm6msiH2
-	 oB7VAlaiKJmcJk4WDUNLbYKRnGEkRt7lgmF522vUX7ip3clhow9EqQPqQOxdZL4pXA
-	 fPjYYZtKb+OMxKAia3KgDWrcJOLseGEFCY88rRe8YHJQHlvy/TTjhMl9TvlT5n7HOP
-	 Ik/2yLvamvgMO+L7f+HlMqvHVPt1W6tLBqL6y6/QfudpTr5qDhYShxUBPYOidN3IeR
-	 hyb7sp2D+Q17A==
-Received: by mail-lf1-f43.google.com with SMTP id 2adb3069b0e04-5b29599b81cso551554e87.1
-        for <linux-pm@vger.kernel.org>; Thu, 23 Jul 2026 04:29:15 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AHgh+Rqsd3hx5vji+OZkk53rgip1t2wWQwxL2bKaEybTE5uppcvRBM+wZoGhATi8WcjjZCXp/3+BLkAj9Q==@vger.kernel.org
-X-Gm-Message-State: AOJu0YyQ8KlmAA+SEJiXxDeQpQFQphMUbtBgTcoPhEuQNNYEZKgsTkzL
-	xVB55aepoXu7jcfwFkQds38roawxlLBpCjlSyfJH2aTG/ievMgjQOgWCBdKQnBSwj73942poHiv
-	3P6elPm9L0m98srl/djdvg5+ZiXG1LF0=
-X-Received: by 2002:a05:6512:3750:b0:5b1:5bb6:d620 with SMTP id
- 2adb3069b0e04-5b2b2f7325amr327351e87.55.1784806153978; Thu, 23 Jul 2026
- 04:29:13 -0700 (PDT)
+	 To:Cc:Content-Type; b=OsFrq2gA0EqXbDmL8G054Jw0GFtmRzOF9m7ba64+IsVberKGOgDHzRIOARXFLn2zBEY2huMNqKeYwBHMjI3o+qWyILAAUZ8lNMMAZFl1WSyATcvISmPk4gGRp9TvuLRVC0j3f5sQ8g9Rq/BIaAdY+ZGfG1Xz9XK8CvCjyZRVHWk=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1B45B1F00A3D
+	for <linux-pm@vger.kernel.org>; Thu, 23 Jul 2026 11:29:46 +0000 (UTC)
+Received: by mail-lj1-f171.google.com with SMTP id 38308e7fff4ca-39dbe684115so2659361fa.1
+        for <linux-pm@vger.kernel.org>; Thu, 23 Jul 2026 04:29:46 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AHgh+RqxW2dmv+/xdJDGg88xIeI0rDWk3gUKxG9J8NMgbQ2qmxrK+i7rPWvNyFqxkzQ6dWyeeM1h6QtM/A==@vger.kernel.org
+X-Gm-Message-State: AOJu0YzR24EWnvXrXMkKcti3s6EbpboctIzASrGqNv6r7c7BkQtWDiny
+	h8ZVSsWKMZDcaWD2ZzwoLZkpQ13ldYqZwtdidG+SfGkwFnQoFcslkl6ESmMzeCXYLgjN6t7lRsu
+	dWhkHT4Igh47g4EdjYx2bN0QsIIfSj9k=
+X-Received: by 2002:a05:6512:3402:b0:5ae:b5d7:4b99 with SMTP id
+ 2adb3069b0e04-5b2b2fe18abmr524522e87.0.1784806184524; Thu, 23 Jul 2026
+ 04:29:44 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <52cc1241-639d-4946-bd61-9618ac53f053@kernel.org>
-In-Reply-To: <52cc1241-639d-4946-bd61-9618ac53f053@kernel.org>
+References: <a58cf551-1d29-4269-9be7-2dcba48c51a0@kernel.org>
+In-Reply-To: <a58cf551-1d29-4269-9be7-2dcba48c51a0@kernel.org>
 From: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
-Date: Thu, 23 Jul 2026 13:28:59 +0200
-X-Gmail-Original-Message-ID: <CAJZ5v0jh1ArJgPTQevwk205BWfqMyuuyZ4y1mROujQ-g-YaASQ@mail.gmail.com>
-X-Gm-Features: AUfX_mzeeJVyqVRt1nIc2mjZdaQHscVMP8YAkyFmqN5i0JYI0U5PYRi5Kd7xlLw
-Message-ID: <CAJZ5v0jh1ArJgPTQevwk205BWfqMyuuyZ4y1mROujQ-g-YaASQ@mail.gmail.com>
-Subject: Re: [GIT PULL] amd-pstate fixes for 7.2 (7/22/26)
+Date: Thu, 23 Jul 2026 13:29:30 +0200
+X-Gmail-Original-Message-ID: <CAJZ5v0hwoZzJ158Vs5kkWwKFnTnBzdGkD5tZ_2CH6CO+4JpOSQ@mail.gmail.com>
+X-Gm-Features: AUfX_mxinKCw4pcWVXQXzdLdHX2foIsbx6kBKHKwr5v5-N6NI9FeoT6hHUP6864
+Message-ID: <CAJZ5v0hwoZzJ158Vs5kkWwKFnTnBzdGkD5tZ_2CH6CO+4JpOSQ@mail.gmail.com>
+Subject: Re: [GIT PULL] amd-pstate fixes for 7.3 (7/22/26)
 To: Mario Limonciello <superm1@kernel.org>
 Cc: "Rafael J. Wysocki" <rafael@kernel.org>, 
 	"open list:CPU FREQUENCY SCALING FRAMEWORK" <linux-pm@vger.kernel.org>
@@ -65,31 +53,49 @@ org> wrote:
 >
 > are available in the Git repository at:
 >
+>
 > ssh://git@gitolite.kernel.org/pub/scm/linux/kernel/git/superm1/linux.git
-> tags/amd-pstate-v7.2-2026-07-22
+> tags/amd-pstate-v7.3-2026-07-22
 >
-> for you to fetch changes up to 08fc1e7b31f8832e356ede8afae1ad1ff0d5a1fc:
+> for you to fetch changes up to 39c0cf62fc7851a17782e7efe8dfb2948739c681:
 >
->    cpufreq/amd-pstate: Prevent the driver from loading on unsupported
-> hardware (2026-07-22 13:45:32 -0500)
->
-> ----------------------------------------------------------------
-> amd-pstate fixes for 7.2 (7/22/26)
->
-> * Fix a case blocking amd-pstate from binding
->    when lowest nonlinear freq =3D=3D minimum freq
-> * Stop trying to bind in guests
+>    cpufreq/amd-pstate: handle missing policy in dynamic EPP callbacks
+> (2026-07-22 13:45:48 -0500)
 >
 > ----------------------------------------------------------------
+> amd-pstate content for 7.3 (07/22/26)
+>
+> * Avoid running unit tests without amd-pstate
+> * Fixes for EPP on shared memory systems
+> * Fixes for dynamic EPP callbacks
+> * Avoid loading on guests
+> * Allow lowest nonlinear =3D=3D minimum freq
+>
+> ----------------------------------------------------------------
+> EDAMAMEX (1):
+>        cpufreq/amd-pstate: handle missing policy in dynamic EPP callbacks
+>
+> Marco Scardovi (3):
+>        cpufreq/amd-pstate: Fix EPP return type and handle errors during
+> initialization
+>        cpufreq/amd-pstate: Toggle auto_sel in active mode on shared
+> memory systems
+>        cpufreq/amd-pstate: Cache the firmware programmed EPP value
+>
 > Mario Limonciello (1):
 >        cpufreq/amd-pstate: Loosen requirement on lowest nonlinear
 > frequency !=3D min freq
+>
+> Qianheng Peng (1):
+>        cpufreq: amd-pstate-ut: Skip tests when amd-pstate driver is not
+> active
 >
 > Rong Zhang (1):
 >        cpufreq/amd-pstate: Prevent the driver from loading on
 > unsupported hardware
 >
->   drivers/cpufreq/amd-pstate.c | 8 +++++++-
->   1 file changed, 7 insertions(+), 1 deletion(-)
+>   drivers/cpufreq/amd-pstate-ut.c |  5 +++++
+>   drivers/cpufreq/amd-pstate.c    | 34 ++++++++++++++++++++++++++--------
+>   2 files changed, 31 insertions(+), 8 deletions(-)
 
-Pulled and added to linux-pm.git/fixes, thanks!
+Pulled and added to linux-pm.git/linux-next, thanks!
