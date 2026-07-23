@@ -1,72 +1,122 @@
-Received: from mail-06.mail-europe.com (mail-06.mail-europe.com [85.9.210.45])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pf1-f176.google.com (mail-pf1-f176.google.com [209.85.210.176])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3170E4963A9;
-	Thu, 23 Jul 2026 16:16:44 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=85.9.210.45
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C102A379C48
+	for <linux-pm@vger.kernel.org>; Thu, 23 Jul 2026 17:23:30 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.210.176
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1784823406; cv=none; b=aKzN3vIvp9PtiJ1kpB4yxI0mdEzDfIfTw6xrPDh+xgALPMkYZcMNlOdmgSZYlvC5yXJs+M4K1fqYXwhoy8pJhe3LdxAopSYouRDpP7FRrh3V4hbqaVtsX7OYiib2TwnyCdk+P6u85UR+8wul7W1+YN39vBjeTB8czEOugyaicZA=
+	t=1784827412; cv=none; b=A228Ub6vAn6GbuEOGZe6hT9y1LrhaRBCnahpKOm3tq+9enHG1ZJsaubp6hIXqqLKRiis+mPGAdOeqiZFOE8E6GNLokPlApt57ukznilvDhPssYI8Caa4ajSBOTRy0wWfKhalgwlRcZzKx2AvXfOH5jFL65huKk++eDLeCDCR6TA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1784823406; c=relaxed/simple;
-	bh=r50T2MhBYrVuycRIdrfmAMALY4mxSQ0LJC3LFARhy8E=;
-	h=Date:To:From:Cc:Subject:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=XIr8XzHVG5SPK0ACHMUQEDSAwhx/F84DFv79QPa2/hFP1B35Td2wkkuaRbxN3DxA++lQYlAbFVu1bviu2hhE/stoGG4EeLTG0kpC8y8OLig3JbNXt7bywBB/E53n5HC6tbUPC1IWkRP8+K6Od/PfjClLf2P+Luc+djBg5ijoijE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=protonmail.com; spf=pass smtp.mailfrom=protonmail.com; dkim=pass (2048-bit key) header.d=protonmail.com header.i=@protonmail.com header.b=xlNYzpBi; arc=none smtp.client-ip=85.9.210.45
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=protonmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=protonmail.com
+	s=arc-20240116; t=1784827412; c=relaxed/simple;
+	bh=Z2Eq6tPQ8IU+EbAZvLPYmcLwjEeENPPS88GFAlG6sKo=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=pJ4VnCNWqiitxKEFzo0Zz8ouYW8WgiEYXmpqiGRoBFy37HAUwf3aDC1fq8eWrl7IrVfK1RDdt2bpx536rKKfALhPqqaZIqoLMRt+dLR0EzlHho6gn/R7bP07xru7Iw/ptTTRew89e29SWFFI+NwL4VsY5OFmoRzuQ4drIAK+CjY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=hmOCzdqS; arc=none smtp.client-ip=209.85.210.176
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=protonmail.com header.i=@protonmail.com header.b="xlNYzpBi"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=protonmail.com;
-	s=protonmail3; t=1784823392; x=1785082592;
-	bh=lHj2JaKn6I/rJijt+vIp+5NEvZ+qxwlBgSIZwX/C1FU=;
-	h=Date:To:From:Cc:Subject:Message-ID:In-Reply-To:References:
-	 Feedback-ID:From:To:Cc:Date:Subject:Reply-To:Feedback-ID:
-	 Message-ID:BIMI-Selector;
-	b=xlNYzpBieqQuUSccbe6VE+8q6ZS1yleTG5agbdXP6hhaIWGPxJ07RGkAQukayfpiv
-	 BEGrE/J0I5mpcDeDRYHa56Dc3m6URjULGPV+4K6pZMM9xUC22iSZ00c1ZFmJ1JwF/x
-	 xUNisBiFtg1WIUiLbsixtqWYBGpu3eyC3tnWqRzQONnTMG/Rp8T5wbq9oRlntbGFn/
-	 bYkBwh8RwRAKffdSITgRtvSxrVvY3bmdLZtPnmQ2gnP/VMCqCrfyRqh/syYaVjmHK3
-	 QuxUf453uyasa4YaClzO1aoC4i4UlBpqD17MJEyrsC2EyY47Vy/lR3+vlDdwRqzxxf
-	 Cv28wlJOzyiNw==
-Date: Thu, 23 Jul 2026 16:16:24 +0000
-To: Lee Jones <lee@kernel.org>
-From: Roman Vivchar <rva333@protonmail.com>
-Cc: Sen Chu <sen.chu@mediatek.com>, Sean Wang <sean.wang@mediatek.com>, Macpaul Lin <macpaul.lin@mediatek.com>, Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, Matthias Brugger <matthias.bgg@gmail.com>, AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>, Srinivas Kandagatla <srini@kernel.org>, Andy Shevchenko <andy@kernel.org>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-mediatek@lists.infradead.org, Ben Grisdale <bengris32@protonmail.ch>, Conor Dooley <conor.dooley@microchip.com>
-Subject: Re: [PATCH v3 1/3] dt-bindings: mfd: mediatek: mt6397: add mt6323 PMIC EFUSE
-Message-ID: <ZNHaOI0ufFpvkyR3fCOd7I-CO8x9-adM0bJfk2U_TGsQrUGvhUV_8oXVnGWaS3bt9AuhxjXfcJGVtFFFg2X7FOWVcMf1sLK6OpRbtYe9BlQ=@protonmail.com>
-In-Reply-To: <20260723160059.GB3526803@google.com>
-References: <20260713-mt6323-nvmem-v3-0-205c39267a24@protonmail.com> <20260713-mt6323-nvmem-v3-1-205c39267a24@protonmail.com> <20260723160059.GB3526803@google.com>
-Feedback-ID: 173184497:user:proton
-X-Pm-Message-ID: e13033346bb107811f977e1b6967b3e0e4fc03a8
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="hmOCzdqS"
+Received: by mail-pf1-f176.google.com with SMTP id d2e1a72fcca58-84864086bfeso906960b3a.1
+        for <linux-pm@vger.kernel.org>; Thu, 23 Jul 2026 10:23:30 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1784827410; x=1785432210; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
+        bh=eBG5HEmpJKSGr0OHWB4+9YhE4TrW0R0G3idJnIf77oM=;
+        b=hmOCzdqS63l7Ezcz/FGCSHTx5XKohoUpyIhdCr8SCkREmQ1ITJWdMdnZ6Pgc9DNvH0
+         99zl9f8pIgLrwI1Id/acFjCLUCU5gHs/b13tRae7RRbeWDA+yOC/+ZsBWEmxH8eEa93t
+         Mcw3AzdAk0cC9r4omKlrCiQ4ogweXAW9xtsD1tjERVQYP3xRy1BD/ziBsip4ifWokpRi
+         MdvOF4YsNzjvjjnQOJxPSPhzeOYHxQbfJJClX6a/XMnK9387b/4Zz/l562TjVwd6HiLW
+         lmAuscj0L9vxxtppzCnhVYqw/WebkH0nmgr0q2kgZX7SMbu90Ge2eQM2fsQhCdMDy8xT
+         gBAw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1784827410; x=1785432210;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=eBG5HEmpJKSGr0OHWB4+9YhE4TrW0R0G3idJnIf77oM=;
+        b=eWFU6aMWhYW4D2sTm72KWF0o5uNDj7qa7rNo94Sot0kqhZT+c+6mmSxPAfFy8u/eF6
+         lhr8OofQK/kOGxqsQnSY7ihUwxhSJ9CD31XGyrkVZvlA7eS+qZEo395iSFCsnTkGxGAs
+         tjtWU4kBAD7hrPK7wpcxorSL1/Mrqhls1qqszi7LarbAzIIyIGZlv3xRQoKNmPygY8EU
+         bWhRhEwO5fm9aG4xY3AtlrC4OdLCQ8A20wTD4UR88XtGPqzpCTPsbPyaGUHzvzIiWf8M
+         CSg4r9rl+VxVjKEyBtwIyPQlXSPhkKfavVitw6lCvA13s+UyVg7g4u/9W63FTu5FZhvh
+         0+iw==
+X-Forwarded-Encrypted: i=1; AHgh+RoJj3wAa7fIOtUZzWUSnnGuuEUcOi0cZrNVpijsqXYMk+RsCdihtuz0ByHORpJCwzGCmMV/ysadvQ==@vger.kernel.org
+X-Gm-Message-State: AOJu0YxUQxHtuGzyxv5krSIDn+/qwl3Iz6c8UWNPpmtpZ6Q0dTd/6pl8
+	xS3V7esNzyy0RhgtIjrRGHxA4NjL+Hwy5mZD4szhnsnuNfJ4MRL1jPNsBNTGlA==
+X-Gm-Gg: AR+sD13TqA7AByrATLu596kAKjGnAVyElEjmlVONBbGXkG7xkyxERsY3gqG5P0q73Xu
+	raMppVFAcmjfpL+nNOe3+Hu3Ps/3RCpPMovEOGak+usIF9c43GCkQbbCYn3VNckR4rf7D60li7F
+	g/64H8VDeoX8sLslmSokeh3iW9XJNJ1mFUuLXv8qeKPisaIbsG6RMiLjH1xAyIAT8n0+Nsz3unG
+	RqfkrDNlt7QvC4ZOKj9WoEhsbw4PoxRMgkX6AsJFvujyL9SJteSwJrFsYVlEv2ojvNPENMr4DzJ
+	yOkkhnF374EQPg8vuI+N113uGwYj5EEvgyBybSxubffDqM6h50O2M1pjahABv5BBig45gKKfLtC
+	JElwxxLFmsDIPxis9FUz8yBs5EnqKOJ3/XeKoAj/gdf4NfOAKxz8Y4tu8+LYU8jqpQGOwvNR3VT
+	rC
+X-Received: by 2002:a05:6a21:1398:b0:3c3:8bab:804 with SMTP id adf61e73a8af0-3c44b18f692mr4493645637.49.1784827409946;
+        Thu, 23 Jul 2026 10:23:29 -0700 (PDT)
+Received: from gmail.com ([58.84.62.107])
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-3147dc6162csm21287676eec.7.2026.07.23.10.23.27
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 23 Jul 2026 10:23:29 -0700 (PDT)
+From: Sumeet Pawnikar <sumeet4linux@gmail.com>
+To: rafael@kernel.org,
+	rui.zhang@intel.com,
+	linux-pm@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org,
+	sumeet4linux@gmail.com
+Subject: [PATCH v3] powercap: intel_rapl_tpmi: Handle PMU registration failure during probe
+Date: Thu, 23 Jul 2026 22:53:20 +0530
+Message-ID: <20260723172321.5960-1-sumeet4linux@gmail.com>
+X-Mailer: git-send-email 2.43.0
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
 
-Hi Lee,
+intel_rapl_tpmi_probe() invokes rapl_package_add_pmu() but ignores its
+return value, so a PMU registration failure would leave the driver
+reporting probe success despite the PMU being absent, with no log
+trace.
 
-On Thursday, July 23rd, 2026 at 7:01 PM, Lee Jones <lee@kernel.org> wrote:
+Since PMU registration is an optional auxiliary feature for perf energy
+counters, its failure should not break the primary powercap functionality.
+Check the return value and log a warning to ensure graceful degradation.
 
-> On Mon, 13 Jul 2026, Roman Vivchar via B4 Relay wrote:
+Fixes: 963a9ad3c589 ("powercap: intel_rapl_tpmi: Enable PMU support")
+Signed-off-by: Sumeet Pawnikar <sumeet4linux@gmail.com>
+---
+v2->v3:
+  * Fix the format string as per the Sashiko comment:
+    https://sashiko.dev/#/patchset/20260719085100.145555-1-sumeet4linux%40gmail.com)
 
-...
+v1->v2:
+  * Since PMU registration is an optional auxiliary feature here,
+    treat it's failure as a non fatal error and log a warning
+    and continue, similar to other RAPL drivers like intel_rapl_msr,
+    to ensure graceful degradation (Based on Sashiko feedback:
+    https://sashiko.dev/#/patchset/20260515184250.228062-1-sumeet4linux%40gmail.com)
+  * Add Fixes tag in changelog.
+---
+ drivers/powercap/intel_rapl_tpmi.c | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
 
-> > +        efuse {
-> > +          compatible =3D "mediatek,mt6323-efuse";
->=20
-> Nit: This tabbing looks off to me.
->=20
-> The example below uses 4-spaces, this uses 2.
+diff --git a/drivers/powercap/intel_rapl_tpmi.c b/drivers/powercap/intel_rapl_tpmi.c
+index 7f41491d9cd1..a870199a9272 100644
+--- a/drivers/powercap/intel_rapl_tpmi.c
++++ b/drivers/powercap/intel_rapl_tpmi.c
+@@ -414,7 +414,10 @@ static int intel_rapl_tpmi_probe(struct auxiliary_device *auxdev,
+ 		goto err;
+ 	}
+ 
+-	rapl_package_add_pmu(trp->rp);
++	ret = rapl_package_add_pmu(trp->rp);
++	if (ret)
++		dev_warn(&auxdev->dev, "Failed to add RAPL PMU for Package%d, %d\n",
++			info->package_id, ret);
+ 
+ 	auxiliary_set_drvdata(auxdev, trp);
+ 
+-- 
+2.43.0
 
-Oops, you're right... Good catch :)
-
-We had some troubles with driver merge, so it was dropped from the nvmem
-tree for now. I will resend it with fixes (and spacing) when dependencies
-arrive.
-
-Best regards,
-Roman
