@@ -1,461 +1,245 @@
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id 8622848BD40;
-	Thu, 23 Jul 2026 12:52:02 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1784811124; cv=none; b=ZLyD0MFV6pDwm63iwWgzukSzwZVtPOXMxp8WxwkS2RrT45cz8yqq+BOrW8BhMMgmP3j1xJm924zFweLFGmjsyIIDs2NcZNLkkF+k1pNf1gB8xm2oVA2biwNAni4wn6pqR5lIPeKYI+ssMRu/NI5UpfKkqOdGJTKATXLjBNuYr7k=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1784811124; c=relaxed/simple;
-	bh=mOZ0TJX6e8rqLNiCsPM84CE6kX8FLgk4/HwFxbewc94=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=f1wYtJc8JI6/mlYW9tMGAKj2OQkrxNbVaM94klmO7lRG635Z62HwXs4NvhNFSHXHwNWo1fdP9/S273hW181T3IU0cfsjNFFkVgU4Ds/ASFcXECL/A+Mnz85JsobxKFvcnm6jJDzOUc95/eS/Fum6nP1frzdib5eLjky1TY6Seqg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=r2oFS7Ii; arc=none smtp.client-ip=217.140.110.172
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
+Received: from AM0PR02CU008.outbound.protection.outlook.com (mail-westeuropeazon11023114.outbound.protection.outlook.com [52.101.72.114])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AAD4E4A13AE;
+	Thu, 23 Jul 2026 13:01:18 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.72.114
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1784811681; cv=fail; b=k2nrmDcKQLect8Bk7/BBxi7qfhDhIrcfiIhDf5ATq8XG/kjhxH5Al6LRnAB/S16c7ZjwnsZpaAL4w1F6FjHvqqO07bifE/Fxr2srZ18bAi9GbCfVPHt8/iONw0NDNHCYDdNqNWSSo/eQKNOPzxAb6QRR8/he+rRdc1YreeGr1OA=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1784811681; c=relaxed/simple;
+	bh=iywA4RNK5Tdrt+nGPqh6aEY1BNq9JDzajy+6X9f61F4=;
+	h=Message-ID:Date:Subject:From:To:Cc:References:In-Reply-To:
+	 Content-Type:MIME-Version; b=q2NxtWpQoVS5ai5wxHtoUMVVMzA1tz/rP2s4k9eNuNLsdH82ZpEQeCBg6zjpcL3hHr8rk6Gdv1rFVLfa/4kGrKgDy+uVNLNDBrad2+txRUPKpjMoUGqashq6u2ZDStki9TbP9BevyaKH3I+boag+syayTXsG6KsQoXMJRIYKYII=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kontron.de; spf=pass smtp.mailfrom=kontron.de; dkim=pass (2048-bit key) header.d=kontron.de header.i=@kontron.de header.b=uksot+r0; arc=fail smtp.client-ip=52.101.72.114
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kontron.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=kontron.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="r2oFS7Ii"
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 78BD61477;
-	Thu, 23 Jul 2026 05:51:57 -0700 (PDT)
-Received: from [10.1.39.91] (e127648.arm.com [10.1.39.91])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 50F2F3F59E;
-	Thu, 23 Jul 2026 05:51:59 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1784811121; bh=mOZ0TJX6e8rqLNiCsPM84CE6kX8FLgk4/HwFxbewc94=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=r2oFS7IiqCS68Y+4vAKtN3RLFaboKMaU0iIfYaYqM/5H6z5SL+65CSJnSj3mx0WY2
-	 vmby9EKmKpidwmm0gl+y3SWWxdPXQf1SG6/uLOmjHmQGWNpRR/M32IQCga7PB+lNyD
-	 JmRtVhwk6PXVQgsEo8WomSlV2Au+LqkptX4cu5Bw=
-Message-ID: <76302363-4a2e-403f-a72e-ee250aadee9c@arm.com>
-Date: Thu, 23 Jul 2026 13:51:57 +0100
+	dkim=pass (2048-bit key) header.d=kontron.de header.i=@kontron.de header.b="uksot+r0"
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=YDU5pJL3CyfFEQboxgfySezV5n197PU9pyh+5OnOsiEZi3Svoa0TEwy4iQONiinDPK8BaS8IxQavC+hL2fXEPM52U1z/CnQYHIsS1pgHP6l9OTG4Z1KULjrSmT0sS2tKXkLdKKhCe+N3ZU42TwTk0Uy6DMTYvR1Tl916DZa8p5OBkM5GTyvUvyeSv6sumjPUKnyn+bn0hNe4ES8BgUr9DM3443wWbsZf6aV4tQ4YqglM7b57Ft9BJH+itgsB2v1V637i3eEheVUJn3ES/Ok1oeoRF6mXioAlty7w8sxKAWoTYBK9OZ4peDNZnThhr6tey7p4oh/zHR5lHKdf745qqw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=U5wdYWawjgeCZOI9JYi5rHfqLOSdVZ28risoVJQhfHI=;
+ b=MrOyteD9VertBctweGIluF2mvVSOHg1C/EeKjRzI90/5wMG3nDX4bo3XLiTdqCTD6h/c780vBVsWvgol7fvcTpxVv5JK7ygG0tHq1INdGZYAFa7G57CsE+NfWys7JuuaUxILQNrnp31sJsIRLnYhyfRLL+ajIcAulbgqoY1kXg4tp8FLgkGgqJC2lYrmtrKWGKGPP1tzZSXWnng4+SsOanKmuuqwh/Q1EACtUJYjWN0r8cAXW3czHttMSTk46JeZ9S4jyB3Jm5rDr1W+b6Nn9U4TqBjFj4XvoVrkdE2n6S1kC0C864HPfJFt63LYkA9ZpTMSAyc51CNDGs/imjs5IA==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=kontron.de; dmarc=pass action=none header.from=kontron.de;
+ dkim=pass header.d=kontron.de; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kontron.de;
+ s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=U5wdYWawjgeCZOI9JYi5rHfqLOSdVZ28risoVJQhfHI=;
+ b=uksot+r0VUnMWyttWcvU3QhcnwIDrnRuVsb5h8Dti8BSl2CIhm/kJBZ06gnSv2TS67djwsBho2eDKMT+i4Uv03rR8chNZSonxaCEeONMT1TmXsKUclZUn2Pd3txvsN3M1cG4ATZB+ww6j3aTEmrikj0WSlYx+a07ir8BVKHtDPzEtTYmcoXWLdCQwPOSP1L04hdsglmOfDYpzdc0uUrerWk9OvkxS3X2Jt3vT+akC7GVELwcaM/X38DzR1wqMtrtU6puaKlzaifnZG1++taOW1FgRND2G/qmagsZsIjl4RE/3OIeMh/wiMpExmqaKV75+4TpymgdKMuh8KhpMvf8kQ==
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=kontron.de;
+Received: from AM9PR10MB4277.EURPRD10.PROD.OUTLOOK.COM (2603:10a6:20b:1fb::23)
+ by PA2PR10MB8941.EURPRD10.PROD.OUTLOOK.COM (2603:10a6:102:421::19) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.245.10; Thu, 23 Jul
+ 2026 13:01:14 +0000
+Received: from AM9PR10MB4277.EURPRD10.PROD.OUTLOOK.COM
+ ([fe80::a276:4ad7:962:da22]) by AM9PR10MB4277.EURPRD10.PROD.OUTLOOK.COM
+ ([fe80::a276:4ad7:962:da22%6]) with mapi id 15.21.0245.009; Thu, 23 Jul 2026
+ 13:01:14 +0000
+Message-ID: <03e70a16-3be4-4780-8404-17b6f011af5c@kontron.de>
+Date: Thu, 23 Jul 2026 15:01:13 +0200
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v2 1/2] pmdomain: imx8mp-blk-ctrl: keep gpc power domain
+ on if blk-ctrl pd is on during system pm
+From: Frieder Schrempf <frieder.schrempf@kontron.de>
+To: Xu Yang <xu.yang_2@nxp.com>, ulf.hansson@linaro.org, Frank.Li@nxp.com,
+ s.hauer@pengutronix.de, kernel@pengutronix.de, festevam@gmail.com,
+ peng.fan@nxp.com, jun.li@nxp.com, rafael.j.wysocki@intel.com,
+ a.fatoum@pengutronix.de, ping.bai@nxp.com, shawnguo@kernel.org,
+ l.stach@pengutronix.de
+Cc: linux-pm@vger.kernel.org, imx@lists.linux.dev,
+ linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+References: <20260204111142.2147646-1-xu.yang_2@nxp.com>
+ <fd6268c7-18e2-40bf-9d78-5f3a45ba319d@kontron.de>
+Content-Language: en-US, de-DE
+In-Reply-To: <fd6268c7-18e2-40bf-9d78-5f3a45ba319d@kontron.de>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-ClientProxiedBy: FR4P281CA0233.DEUP281.PROD.OUTLOOK.COM
+ (2603:10a6:d10:e9::15) To AM9PR10MB4277.EURPRD10.PROD.OUTLOOK.COM
+ (2603:10a6:20b:1fb::23)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 5/5] selftests/cpuidle: add latency_req QoS idle-state
- selection test
-To: Yaxiong Tian <tianyaxiong@kylinos.cn>, rafael@kernel.org,
- daniel.lezcano@kernel.org, lenb@kernel.org, pavel@kernel.org,
- shuah@kernel.org
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
- linux-kselftest@vger.kernel.org
-References: <20260721092324.17508-1-tianyaxiong@kylinos.cn>
- <20260721092608.18973-1-tianyaxiong@kylinos.cn>
-Content-Language: en-US
-From: Christian Loehle <christian.loehle@arm.com>
-In-Reply-To: <20260721092608.18973-1-tianyaxiong@kylinos.cn>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: AM9PR10MB4277:EE_|PA2PR10MB8941:EE_
+X-MS-Office365-Filtering-Correlation-Id: 70fd1c1c-603b-47a5-983f-08dee8ba79fb
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|7416014|23010399003|376014|1800799024|366016|921020|6133799003|56012099006|10067099003|11063799006|4143699003|18002099003|22082099003;
+X-Microsoft-Antispam-Message-Info:
+	B5f1KAjAZ2aOdpYrftsuXrb6jr4ZKvZ9Q9CrYYiioiCo9QWszS7gsnIxDlCiXx7jAN97DsGrOphMDzA+yBssunIDncIrv9F6GN7ZdnVM+avb01BcygCjX55YhDnv1ODS7ESpaTz1HPkeVEMMJ1FXdSjX6eVNIu0DBkl+4en07Md9wHdJy93IZL6Y+RKl3wgkIWEUVbMsf+35z/X03tpkCjct9OuGEofcDSG5wWPxGOp0BhblMaUGELcx6ohaW04zNn9T0dQMOlqgio57AVlFQOnlhxscS7LNxkFUVaCrJD3LHRtwk1IOQCcPTh96XoCgLPRdyDJZcLAjgsLBK3o634EH164fmD8EFpCiuZXEIO/bJBNLF5hEEKh+EWNG0+JnOEyTk86iOtrzDVqu8wLViiKimZg89haYiiD24/AfXP5j7hZJmvQEozEirjnrTcwlXz4nblstwmM3NYCFQBg1N8pcJWrdau3WNk990sWkgVpX2xLReo8+Pic9fV5bxoSRWrnBfIRrYPsqTqZ4QD1CNHlLtTMgK7OrP29wVFbIoQ5A0ntAdL6uZuFVI/YnnO9yBF6yLC4MJYhmgu/t9hkG8BnrtREAevdpVjuJhupQdX2VTl3gvb+elfwL4MgUHT+Pbrzt3qvO5EGFnOP3YsUktOoboiqQaHusNSZOE2H69iEFkiz9rRPsJ6//+wmt72jSY6lJHW6TnRGT6rNmkOOXbg==
+X-Forefront-Antispam-Report:
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:AM9PR10MB4277.EURPRD10.PROD.OUTLOOK.COM;PTR:;CAT:NONE;SFS:(13230040)(7416014)(23010399003)(376014)(1800799024)(366016)(921020)(6133799003)(56012099006)(10067099003)(11063799006)(4143699003)(18002099003)(22082099003);DIR:OUT;SFP:1102;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	=?utf-8?B?NWdGZW1iNFliVnlURG5UR0xPMk0xMURhNFhMUklFVXZRb0hLdGQxVFcwbXAv?=
+ =?utf-8?B?VE9KMHNsNGhGWXR1V3BnMTcxcmZGb2xoaXEwQUYrTGNnOGxEOGRtN0trVW5y?=
+ =?utf-8?B?RjVYS3g4UkJIRENiUnFTOE8zOE9sTjVHMmRDYnJlSU53MVFYK2IzeGluWjVQ?=
+ =?utf-8?B?c2c5cURJbmthbVJIdEJBMllOQlROVEtDYk9EVkpyVXRtVFBBZ3hKUUZNNWxY?=
+ =?utf-8?B?VkZDckxGWHlDTnNHT0x1Nnh1YXpOMmtadWc2a21EMkVJM1J2Vnpra1ZTVlJy?=
+ =?utf-8?B?YTMvY2FCT2dQY1d6WGR5d0RLVWhISVArYS9VZ1kzQ25WeEkxZHNmS1gzbkJo?=
+ =?utf-8?B?d2plV2FabXY2QXBYd2FteU1PQStlK1VCQmhIY0xaUUh0dHI1d2I0YXZiMnk0?=
+ =?utf-8?B?OGJlOGtrWHVkdDFtZkFBVmhqTU15dE5xZEh4RWZRRURpMlVJbkZqek50K1lE?=
+ =?utf-8?B?d0V6SG1kckVjOEkyeDhJK01jeFZzV2ZKa3JiWTMramtKREhydFY2bFRxdmFq?=
+ =?utf-8?B?bWJjVGg4Ym5sK3FmK2ZTOVo2NVA0bXNsQ0pDbEtIcmF4WDhHMXRqRVAyV3Mz?=
+ =?utf-8?B?dERnRk5WOUpSSmRKWlFXSFhteDFRZmhVdi9kSzhLU0p2VlI3UGhHbkpzZEp5?=
+ =?utf-8?B?RnBiQVRRYy9OM3k1cU1EelV2d3lXZGYwMzRCNjlTU0hGV0FzUC9TWTRpTzgz?=
+ =?utf-8?B?VXY2YW54bWw3RFVVYVh2U1U3SFRjb2o0alg3TUhUMVNPN1JtS0VNaGpweklp?=
+ =?utf-8?B?SDRzeUd6TzRyZFV0MjFtZldVaUJEU3JwSkpBZ2JkTDB2aUlQZjNuWmkyc1VV?=
+ =?utf-8?B?clNZNTBzdUY1d28wNEdLY0FCUkZVL2daWW1jMmwvL3IwVXJscERBekNTWWow?=
+ =?utf-8?B?RkVPTVFScmNTVUhLZGM1WlhSK2FKSWdvcUM4R2ExYTFZb25aQ1pPcWVwYTFq?=
+ =?utf-8?B?dllPenhTcW9ockJMSHRrM2NlYVA5amZBVDVRTENhUlVza3RSMVkxZTZUNVNn?=
+ =?utf-8?B?UWFlaDI4SmduNWZFd1dXeXk4bFpub1FFL3lneml1S0U3ZHVaT0RweG9XUnhS?=
+ =?utf-8?B?Q05naHZ1czVKOTRWbG96T3BxMnlKNENSd0k4a2JRd2VNWTZXOSszRDgycTVE?=
+ =?utf-8?B?ejJOaTJoRFZiVkR2UDZxcmhDZm8yTXVyUVVGR0hEZkxycGRJQ0txVldvZzVl?=
+ =?utf-8?B?TFk0VXAzelpZTlVJamlhYmg3TFdIL0RmYjQ4L0I0UmhDWVExVE1vaG9hZXVo?=
+ =?utf-8?B?Nk0vb2JTenVjbDRNZGZXWm1WSlRUSi9rSUY4UW53VDhMRWFyTHBhcTNtdHhV?=
+ =?utf-8?B?K3FtTkFyT3pTMmhkYUxmeUE4WE84Q1ZER0g0VDAxeFZubUNDZGVtN1N1dlQz?=
+ =?utf-8?B?MW91dER4Ry84bnFna0tJRi8rc2NrVWdRbE9tNFA4YWphN2ptbzF6c0pXVFU2?=
+ =?utf-8?B?NVBvRFFyN3hHZ1llaVdFQnEwZ0tkeHZxU3JlVjRsTmR0dUM2SmRuUnBoUnY5?=
+ =?utf-8?B?N043WWhENjI0dFF6SjZVbGQzVkFXMXRNb3N1UGVzUEdGY3U1VTUrNmgybWMw?=
+ =?utf-8?B?Q05jc1QzQk5pWU1UNVNQRHhpeFY4OUpRRjJ1SXorY05kTjIzMnF6MFg0c3J0?=
+ =?utf-8?B?MXQySmVDWmM4enZPN0dFWXRmdmdCQzJGNk9KS3pLM3FVWXM4eEhBWVpQRWQr?=
+ =?utf-8?B?eUM0SlZZaU9qeDAzQW1tRldsMElGZC9ocFpQdEJHWTJrMjkweTNzcnZzL0cx?=
+ =?utf-8?B?enh0YmpiZDkycjAxTHVQYXk2RFNXdCtoOHJvUkxGT1puWHU4WXd1QXR3SkZz?=
+ =?utf-8?B?bGo2bUVaR2MxbmZCZk5LT01DQ1NWWGVtQWZXaHo2RTc3VVNFVktSQWlPR3BF?=
+ =?utf-8?B?MnBjbVZ6Ykw5R1c5cFB5cXp5aTNwdkF1UGpNZ0s2UkpQdVY1aUdGWFVLZ2wv?=
+ =?utf-8?B?TVgzZGxQWWpyNGJzRlg2NmNyVnFILzBMUUZqcVlOeS9SbitObExPUVBjdlJw?=
+ =?utf-8?B?VGptcldzWVZYUHlqcW5GVklUVDUrTlNWOUd2ZUZyTzZFVlR0WDloUUwyQW9D?=
+ =?utf-8?B?cXhrUFZFN1k4UjdTWnpJK090M01IVFM5RmZ4OHlac1J5RUpqUzBYRHZ6dW5k?=
+ =?utf-8?B?Y1BiQkdROVB1dWVrb2FlYjhGUDhqRGlCdlpHNTlzVjh3bERDWk5iaitFZEM1?=
+ =?utf-8?B?WHprV2tSK1h4c1lxSGhCUm03cE9WUWtIWTByR2RURGtTc2p5S1ZlN2c0bWgx?=
+ =?utf-8?B?WTdpVWpqaWdINVZJbTRuenU2T2lxV0tkWTJibkV2bjRjZCs2bXJWbWZrZWhK?=
+ =?utf-8?B?K3h4ZTZ1VnNoOExzbjU1NmxDazRuVFl0TXE3S0JWM0xwMTNOY0svbnV6QVNw?=
+ =?utf-8?Q?g0jhm/lgZF5CHmIM=3D?=
+X-OriginatorOrg: kontron.de
+X-MS-Exchange-CrossTenant-Network-Message-Id: 70fd1c1c-603b-47a5-983f-08dee8ba79fb
+X-MS-Exchange-CrossTenant-AuthSource: AM9PR10MB4277.EURPRD10.PROD.OUTLOOK.COM
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 23 Jul 2026 13:01:14.2336
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 8c9d3c97-3fd9-41c8-a2b1-646f3942daf1
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: JBiSdcoLUmg+H5VyUuz7kLjke3BX7e8hzxKQtJuUmq10Zkqsa5MkZpT/wdWFMi3+a0S1ukuh46Y6j07jPQlf8CfNhKya2ZFN8Plr1evt9dQ=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: PA2PR10MB8941
 
-On 7/21/26 10:26, Yaxiong Tian wrote:
-> Verify that CPU latency, wakeup latency, and per-CPU resume latency
-> QoS ceilings prevent governors from selecting idle states whose exit
-> latency exceeds the constraint, by comparing cpuidle state usage
-> deltas under each QoS path.
+On 23.07.26 14:49, Frieder Schrempf wrote:
+> Hi,
 > 
-> USE:
-> sudo make -C tools/testing/selftests TARGETS=cpuidle run_tests
-
-FWIW since you're mostly there anyway, can you extend this to cover cpuidle
-state disable too? Ideally also interaction between disable and latency_req.
-I think that would be quite useful.
-
+> On 04.02.26 12:11, Xu Yang wrote:
+>> Current design will power off all dependent GPC power domains in
+>> imx8mp_blk_ctrl_suspend(), even though the user device has enabled
+>> wakeup capability. The result is that wakeup function never works
+>> for such device.
+>>
+>> An example will be USB wakeup on i.MX8MP. PHY device '382f0040.usb-phy'
+>> is attached to power domain 'hsioblk-usb-phy2' which is spawned by hsio
+>> block control. A virtual power domain device 'genpd:3:32f10000.blk-ctrl'
+>> is created to build connection with 'hsioblk-usb-phy2' and it depends on
+>> GPC power domain 'usb-otg2'. If device '382f0040.usb-phy' enable wakeup,
+>> only power domain 'hsioblk-usb-phy2' keeps on during system suspend,
+>> power domain 'usb-otg2' is off all the time. So the wakeup event can't
+>> happen.
+>>
+>> In order to further establish a connection between the power domains
+>> related to GPC and block control during system pm, register a notifier
+>> to power_dev, so that GPC power domain will know that block control power
+>> domain is on and will not power off itself.
+>>
+>> Suggested-by: Ulf Hansson <ulf.hansson@linaro.org>
+>> Fixes: 556f5cf9568a ("soc: imx: add i.MX8MP HSIO blk-ctrl")
+>> Cc: stable@kernel.org
+>> Signed-off-by: Xu Yang <xu.yang_2@nxp.com>
+> This patch got backported to v6.1.y and for me it breaks the boot on
+> i.MX8MP with the log below (tested with 6.1.175).
 > 
-> Signed-off-by: Yaxiong Tian <tianyaxiong@kylinos.cn>
-> ---
->  tools/testing/selftests/Makefile              |   1 +
->  tools/testing/selftests/cpuidle/Makefile      |   6 +
->  tools/testing/selftests/cpuidle/config        |   3 +
->  .../cpuidle/cpuidle_latency_req_qos.py        | 331 ++++++++++++++++++
->  tools/testing/selftests/cpuidle/settings      |   2 +
->  5 files changed, 343 insertions(+)
->  create mode 100644 tools/testing/selftests/cpuidle/Makefile
->  create mode 100644 tools/testing/selftests/cpuidle/config
->  create mode 100755 tools/testing/selftests/cpuidle/cpuidle_latency_req_qos.py
->  create mode 100644 tools/testing/selftests/cpuidle/settings
+> Reverting the two patches of this series fixes the issue. What is the
+> correct way to fix this for the 6.1 stable branch? Should the patches be
+> reverted?
 > 
-> diff --git a/tools/testing/selftests/Makefile b/tools/testing/selftests/Makefile
-> index 8189f333814c..a8fb620bebd1 100644
-> --- a/tools/testing/selftests/Makefile
-> +++ b/tools/testing/selftests/Makefile
-> @@ -12,6 +12,7 @@ TARGETS += clone3
->  TARGETS += connector
->  TARGETS += core
->  TARGETS += cpufreq
-> +TARGETS += cpuidle
->  TARGETS += cpu-hotplug
->  TARGETS += damon
->  TARGETS += devices/error_logs
-> diff --git a/tools/testing/selftests/cpuidle/Makefile b/tools/testing/selftests/cpuidle/Makefile
-> new file mode 100644
-> index 000000000000..f960d72c3a65
-> --- /dev/null
-> +++ b/tools/testing/selftests/cpuidle/Makefile
-> @@ -0,0 +1,6 @@
-> +# SPDX-License-Identifier: GPL-2.0
-> +all:
-> +
-> +TEST_PROGS := cpuidle_latency_req_qos.py
-> +
-> +include ../lib.mk
-> diff --git a/tools/testing/selftests/cpuidle/config b/tools/testing/selftests/cpuidle/config
-> new file mode 100644
-> index 000000000000..86e8f87d4e62
-> --- /dev/null
-> +++ b/tools/testing/selftests/cpuidle/config
-> @@ -0,0 +1,3 @@
-> +CONFIG_CPU_IDLE=y
-> +CONFIG_CPU_IDLE_GOV_MENU=y
-> +CONFIG_PM_QOS_CPU_SYSTEM_WAKEUP=y
-> diff --git a/tools/testing/selftests/cpuidle/cpuidle_latency_req_qos.py b/tools/testing/selftests/cpuidle/cpuidle_latency_req_qos.py
-> new file mode 100755
-> index 000000000000..875b623da530
-> --- /dev/null
-> +++ b/tools/testing/selftests/cpuidle/cpuidle_latency_req_qos.py
-> @@ -0,0 +1,331 @@
-> +#!/usr/bin/env python3
-> +# SPDX-License-Identifier: GPL-2.0
-> +"""
-> +cpuidle: verify latency_req QoS ceilings restrict idle-state selection.
-> +
-> +Constrains exit latency via each of the three QoS inputs and checks that
-> +cpuidle states whose exit latency exceeds the ceiling do not gain usage:
-> +
-> +  1) /dev/cpu_dma_latency
-> +  2) /dev/cpu_wakeup_latency
-> +  3) /sys/devices/system/cpu/cpuN/power/pm_qos_resume_latency_us
-> +"""
-> +
-> +from __future__ import annotations
-> +
-> +import glob
-> +import os
-> +import struct
-> +import sys
-> +import time
-> +from dataclasses import dataclass
-> +from typing import Dict, List, Optional, Tuple
-> +
-> +# Source tree: tools/testing/selftests/cpuidle/../kselftest
-> +# Install tree: kselftest_install/cpuidle/../kselftest
-> +sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)),
-> +				"..", "kselftest"))
-> +import ksft
-> +
-> +
-> +CPUIDLE_BASE = "/sys/devices/system/cpu"
-> +DMA_LAT_DEV = "/dev/cpu_dma_latency"
-> +WAKEUP_LAT_DEV = "/dev/cpu_wakeup_latency"
-> +
-> +# Keep windows short so the whole collection fits under settings timeout.
-> +IDLE_SEC = 2.0
-> +CPU = 0
-> +
-> +
-> +@dataclass
-> +class IdleState:
-> +	index: int
-> +	name: str
-> +	latency_us: int
-> +	residency_us: int
-> +	usage: int
-> +	time_us: int
-> +
-> +
-> +def read_states(cpu: int) -> Dict[int, IdleState]:
-> +	base = f"{CPUIDLE_BASE}/cpu{cpu}/cpuidle"
-> +	states: Dict[int, IdleState] = {}
-> +	paths = sorted(
-> +		glob.glob(f"{base}/state*"),
-> +		key=lambda p: int(os.path.basename(p).replace("state", "")),
-> +	)
-> +	for path in paths:
-> +		idx = int(os.path.basename(path).replace("state", ""))
-> +		states[idx] = IdleState(
-> +			index=idx,
-> +			name=open(f"{path}/name").read().strip(),
-> +			latency_us=int(open(f"{path}/latency").read()),
-> +			residency_us=int(open(f"{path}/residency").read()),
-> +			usage=int(open(f"{path}/usage").read()),
-> +			time_us=int(open(f"{path}/time").read()),
-> +		)
-> +	return states
-> +
-> +
-> +def usage_delta(before: Dict[int, IdleState],
-> +		after: Dict[int, IdleState]) -> Dict[int, int]:
-> +	return {i: after[i].usage - before[i].usage for i in before}
-> +
-> +
-> +def pick_ceilings(states: Dict[int, IdleState]) -> List[int]:
-> +	nonzero = sorted({s.latency_us for s in states.values() if s.latency_us > 0})
-> +	out: List[int] = []
-> +	if nonzero:
-> +		out.append(nonzero[0])
-> +	if len(nonzero) >= 2:
-> +		mid = (nonzero[0] + nonzero[1]) // 2
-> +		out.append(mid if mid > nonzero[0] else max(1, nonzero[1] - 1))
-> +	if len(nonzero) >= 3:
-> +		out.append((nonzero[1] + nonzero[2]) // 2)
-> +	# Dedup, keep order
-> +	seen = set()
-> +	uniq = []
-> +	for c in out:
-> +		if c not in seen and c >= 1:
-> +			seen.add(c)
-> +			uniq.append(c)
-> +	return uniq or [1]
-> +
-> +
-> +def idle_on_cpu(seconds: float) -> None:
-> +	end = time.monotonic() + seconds
-> +	burn_end = time.monotonic() + min(0.1, seconds / 10)
-> +	while time.monotonic() < burn_end:
-> +		pass
-> +	while time.monotonic() < end:
-> +		time.sleep(0.05)
-> +
-> +
-> +def allowed_states(states: Dict[int, IdleState], ceiling: int) -> List[int]:
-> +	return [i for i, s in states.items() if s.latency_us <= ceiling]
-> +
-> +
-> +def forbidden_states(states: Dict[int, IdleState], ceiling: int) -> List[int]:
-> +	return [i for i, s in states.items() if s.latency_us > ceiling]
-> +
-> +
-> +def fmt_state_list(states: Dict[int, IdleState], idxs: List[int]) -> str:
-> +	if not idxs:
-> +		return "(none)"
-> +	return ", ".join(
-> +		f"state{i}:{states[i].name}(lat={states[i].latency_us})"
-> +		for i in idxs
-> +	)
-> +
-> +
-> +def forbidden_violations(states: Dict[int, IdleState], udelta: Dict[int, int],
-> +			 ceiling: int) -> List[str]:
-> +	"""States that must not be entered but still gained usage."""
-> +	bad = []
-> +	for i in forbidden_states(states, ceiling):
-> +		if udelta[i] > 0:
-> +			s = states[i]
-> +			bad.append(
-> +				f"state{i}({s.name},lat={s.latency_us}) usage+={udelta[i]}"
-> +			)
-> +	return bad
-> +
-> +
-> +def print_usage_table(states: Dict[int, IdleState], udelta: Dict[int, int],
-> +		      ceiling: int) -> None:
-> +	ksft.print_msg(
-> +		f"{'idx':>3} {'name':<12} {'lat':>6} {'d_usage':>8} {'expect':>8}"
-> +	)
-> +	for i in sorted(states):
-> +		s = states[i]
-> +		expect = "allow" if s.latency_us <= ceiling else "forbid"
-> +		ksft.print_msg(
-> +			f"{i:3d} {s.name:<12} {s.latency_us:6d} {udelta[i]:8d} {expect:>8}"
-> +		)
-> +
-> +
-> +class DmaLatencyGuard:
-> +	def __init__(self, latency_us: int):
-> +		self.latency_us = latency_us
-> +		self.fd = -1
-> +
-> +	def __enter__(self):
-> +		self.fd = os.open(DMA_LAT_DEV, os.O_RDWR)
-> +		os.write(self.fd, struct.pack("i", int(self.latency_us)))
-> +		return self
-> +
-> +	def __exit__(self, *args):
-> +		if self.fd >= 0:
-> +			os.close(self.fd)
-> +			self.fd = -1
-> +
-> +
-> +class WakeupLatencyGuard:
-> +	def __init__(self, latency_us: int):
-> +		self.latency_us = latency_us
-> +		self.fd = -1
-> +
-> +	def __enter__(self):
-> +		self.fd = os.open(WAKEUP_LAT_DEV, os.O_RDWR)
-> +		os.write(self.fd, struct.pack("i", int(self.latency_us)))
-> +		return self
-> +
-> +	def __exit__(self, *args):
-> +		if self.fd >= 0:
-> +			os.close(self.fd)
-> +			self.fd = -1
-> +
-> +
-> +class ResumeLatencyGuard:
-> +	def __init__(self, cpu: int, latency_us: int):
-> +		self.path = f"{CPUIDLE_BASE}/cpu{cpu}/power/pm_qos_resume_latency_us"
-> +		self.latency_us = latency_us
-> +		self.prev: Optional[str] = None
-> +
-> +	def __enter__(self):
-> +		self.prev = open(self.path).read().strip()
-> +		with open(self.path, "w") as f:
-> +			f.write(f"{int(self.latency_us)}\n")
-> +		return self
-> +
-> +	def __exit__(self, *args):
-> +		restore = "0" if self.prev in ("0", "n/a", None) else self.prev
 
-See pm_qos_resume_latency_us_store(), n/a and 0 are distinct.
+Ah, this is probably related to the fact, that I also carry backported
+HDMI support in our 6.1 tree. This likely triggers the exception and I'm
+probably the only one seeing this as this is specific to our tree.
 
-> +		with open(self.path, "w") as f:
-> +			f.write(f"{restore}\n")
-> +
-> +
-> +def run_case(desc: str, states: Dict[int, IdleState], ceiling: int,
-> +	     guard) -> None:
-> +	allow = allowed_states(states, ceiling)
-> +	forbid = forbidden_states(states, ceiling)
-> +
-> +	ksft.print_msg(f"=== {desc} ===")
-> +	ksft.print_msg(f"ceiling={ceiling}us")
-> +	ksft.print_msg(f"allowed:   {fmt_state_list(states, allow)}")
-> +	ksft.print_msg(f"forbidden: {fmt_state_list(states, forbid)}")
-> +
-> +	with guard:
-> +		time.sleep(0.05)
-> +		before = read_states(CPU)
-> +		idle_on_cpu(IDLE_SEC)
-> +		after = read_states(CPU)
-> +
-> +	ud = usage_delta(before, after)
-> +	total = sum(ud.values())
-> +	violations = forbidden_violations(states, ud, ceiling)
-> +
-> +	print_usage_table(states, ud, ceiling)
-> +	ksft.print_msg(
-> +		f"total_usage+={total} "
-> +		f"violations={violations if violations else 'none'}"
-> +	)
-> +
-> +	if total <= 0:
-> +		ksft.test_result_fail(f"{desc}: too little idle activity ({total})")
-> +		return
-> +	if violations:
-> +		ksft.test_result_fail(f"{desc}: {'; '.join(violations)}")
-> +		return
-> +	ksft.test_result_pass(desc)
-> +
-> +
-> +def build_plan(states: Dict[int, IdleState],
-> +	       ceilings: List[int]) -> List[Tuple[str, int, object]]:
-> +	"""Return list of (description, ceiling, context-manager factory args)."""
-> +	cases: List[Tuple[str, int, object]] = []
-> +
-> +	have_dma = os.path.exists(DMA_LAT_DEV)
-> +	have_wakeup = os.path.exists(WAKEUP_LAT_DEV)
-> +	resume_path = f"{CPUIDLE_BASE}/cpu{CPU}/power/pm_qos_resume_latency_us"
-> +	have_resume = os.path.exists(resume_path)
-> +
-> +	for ceiling in ceilings:
-> +		if have_dma:
-> +			cases.append(
-> +				(f"cpu_dma_latency ceiling={ceiling}", ceiling,
-> +				 ("dma", ceiling))
-> +			)
-> +		else:
-> +			cases.append(
-> +				(f"cpu_dma_latency ceiling={ceiling}", ceiling,
-> +				 ("skip", "missing /dev/cpu_dma_latency"))
-> +			)
-> +
-> +		if have_wakeup:
-> +			cases.append(
-> +				(f"cpu_wakeup_latency ceiling={ceiling}", ceiling,
-> +				 ("wakeup", ceiling))
-> +			)
-> +		else:
-> +			cases.append(
-> +				(f"cpu_wakeup_latency ceiling={ceiling}", ceiling,
-> +				 ("skip", "missing /dev/cpu_wakeup_latency"))
-> +			)
-> +
-> +		if have_resume:
-> +			cases.append(
-> +				(f"pm_qos_resume_latency_us ceiling={ceiling}",
-> +				 ceiling, ("resume", ceiling))
-> +			)
-> +		else:
-> +			cases.append(
-> +				(f"pm_qos_resume_latency_us ceiling={ceiling}",
-> +				 ceiling, ("skip", f"missing {resume_path}"))
-> +			)
-> +
-> +	return cases
-> +
-> +
-> +def main() -> None:
-> +	ksft.print_header()
-> +
-> +	if os.geteuid() != 0:
-> +		ksft.set_plan(1)
-> +		ksft.test_result_skip("must run as root")
-> +		ksft.finished()
-> +
-> +	cpuidle_dir = f"{CPUIDLE_BASE}/cpu{CPU}/cpuidle"
-> +	if not os.path.isdir(cpuidle_dir):
-> +		ksft.set_plan(1)
-> +		ksft.test_result_skip(f"no cpuidle sysfs at {cpuidle_dir}")
-> +		ksft.finished()
-> +
-> +	states = read_states(CPU)
-> +	if not states:
-> +		ksft.set_plan(1)
-> +		ksft.test_result_skip("no cpuidle states")
-> +		ksft.finished()
-> +
-> +	gov_path = f"{CPUIDLE_BASE}/cpuidle/current_governor"
-> +	gov = open(gov_path).read().strip() if os.path.exists(gov_path) else "?"
-> +	ksft.print_msg(f"governor={gov} cpu={CPU}")
-> +	for i in sorted(states):
-> +		s = states[i]
-> +		ksft.print_msg(
-> +			f"state{i}: {s.name} latency={s.latency_us}us "
-> +			f"residency={s.residency_us}us"
-> +		)
-> +
-> +	ceilings = pick_ceilings(states)
-> +	ksft.print_msg(f"ceilings_us={ceilings}")
-> +	cases = build_plan(states, ceilings)
-> +	ksft.set_plan(len(cases))
-> +
-> +	for desc, ceiling, kind in cases:
-> +		tag, arg = kind[0], kind[1]
-> +		if tag == "skip":
-> +			ksft.test_result_skip(f"{desc}: {arg}")
-> +			continue
-> +		if tag == "dma":
-> +			guard = DmaLatencyGuard(arg)
-> +		elif tag == "wakeup":
-> +			guard = WakeupLatencyGuard(arg)
-> +		else:
-> +			guard = ResumeLatencyGuard(CPU, arg)
-> +		run_case(desc, states, ceiling, guard)
-> +
-> +	ksft.finished()
-> +
-> +
-> +if __name__ == "__main__":
-> +	main()
-> diff --git a/tools/testing/selftests/cpuidle/settings b/tools/testing/selftests/cpuidle/settings
-> new file mode 100644
-> index 000000000000..5b445e716562
-> --- /dev/null
-> +++ b/tools/testing/selftests/cpuidle/settings
-> @@ -0,0 +1,2 @@
-> +# Multiple QoS paths x several latency ceilings x idle windows.
-> +timeout=180
+> Thanks
+> Frieder
+> 
+> [    1.164011] imx8mp-blk-ctrl 32fc0000.blk-ctrl: error -ENODEV: failed
+> to add power notifier
+> [    1.171108] Unable to handle kernel NULL pointer dereference at
+> virtual address 0000000000000210
+> [    1.179932] Mem abort info:
+> [    1.182731]   ESR = 0x0000000096000004
+> [    1.186492]   EC = 0x25: DABT (current EL), IL = 32 bits
+> [    1.191833]   SET = 0, FnV = 0
+> [    1.194891]   EA = 0, S1PTW = 0
+> [    1.198041]   FSC = 0x04: level 0 translation fault
+> [    1.202960] Data abort info:
+> [    1.205836]   ISV = 0, ISS = 0x00000004
+> [    1.209676]   CM = 0, WnR = 0
+> [    1.212662] [0000000000000210] user address but active_mm is swapper
+> [    1.219044] Internal error: Oops: 0000000096000004 [#1] PREEMPT SMP
+> [    1.225340] Modules linked in:
+> [    1.228403] CPU: 2 PID: 1 Comm: swapper/0 Not tainted
+> 6.1.175-ktn-ked-0.0.0 #1
+> [    1.235663] Hardware name: Kontron BL i.MX8MP OSM-S (DT)
+> [    1.241001] pstate: 60000005 (nZCv daif -PAN -UAO -TCO -DIT -SSBS
+> BTYPE=--)
+> [    1.247999] pc : dev_pm_domain_detach+0x0/0x40
+> [    1.252461] lr : imx8mp_blk_ctrl_probe+0x494/0x580
+> [    1.257276] sp : ffff80000997ba00
+> [    1.260601] x29: ffff80000997bb70 x28: ffff0000c0aaa9a0 x27:
+> 00000000ffffffed
+> [    1.267774] x26: ffff800008e37c78 x25: ffff800008e37ab8 x24:
+> ffff800008e37af0
+> [    1.274949] x23: 0000000000000007 x22: ffff0000c0945010 x21:
+> 0000000000000038
+> [    1.282124] x20: 0000000000000188 x19: ffff0000c0fa6580 x18:
+> ffffffffffffffff
+> [    1.289299] x17: 20646461206f7420 x16: 64656c696166203a x15:
+> 5645444f4e452d20
+> [    1.296474] x14: 726f727265203a6c x13: 7265696669746f6e x12:
+> ffff80000962c280
+> [    1.303649] x11: 00000000000000dd x10: ffff80000962c280 x9 :
+> 00000000ffffdfff
+> [    1.310824] x8 : ffff8000096dc280 x7 : 000000000002ffe8 x6 :
+> 0000000000000000
+> [    1.318001] x5 : 80000000ffffe000 x4 : 0000000000000000 x3 :
+> 0000000000000000
+> [    1.325174] x2 : 0000000000000000 x1 : 0000000000000001 x0 :
+> 0000000000000000
+> [    1.332351] Call trace:
+> [    1.334801]  dev_pm_domain_detach+0x0/0x40
+> [    1.338913]  platform_probe+0x68/0xe0
+> [    1.342586]  really_probe+0xc0/0x3e0
+> [    1.346174]  __driver_probe_device+0x84/0x190
+> [    1.350549]  driver_probe_device+0x3c/0x110
+> [    1.354751]  __driver_attach+0xf4/0x200
+> [    1.358599]  bus_for_each_dev+0x74/0xe0
+> [    1.362451]  driver_attach+0x24/0x30
+> [    1.366038]  bus_add_driver+0x17c/0x240
+> [    1.369886]  driver_register+0x78/0x130
+> [    1.373736]  __platform_driver_register+0x24/0x30
+> [    1.378463]  imx8mp_blk_ctrl_driver_init+0x1c/0x28
+> [    1.383274]  do_one_initcall+0x48/0x2b0
+> [    1.387126]  kernel_init_freeable+0x22c/0x29c
+> [    1.391499]  kernel_init+0x24/0x134
+> [    1.395001]  ret_from_fork+0x10/0x20
+> [    1.398592] Code: d65f03c0 d65f03c0 00000000 00000000 (f9410802)
+> [    1.404715] ---[ end trace 0000000000000000 ]---
+> 
+> 
 
