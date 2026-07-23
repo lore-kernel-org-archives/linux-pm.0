@@ -1,167 +1,280 @@
-Received: from confino.investici.org (confino.investici.org [93.190.126.19])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AF3AD45D187;
-	Thu, 23 Jul 2026 15:38:13 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=93.190.126.19
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D9E65448B91;
+	Thu, 23 Jul 2026 15:49:19 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1784821096; cv=none; b=M/zfZdpAYrShIhzYt8TD8owFeP9zy43egHwI/obtbfmBuDn2t1bI3HjpsMSZH/ST1sOvFQH1x8tLV28usCh204/xbHHpJockbdgml35c94zWgpNJYdKvtSk7iZ6vPSqeh3WLkIH+EhQ/uXifIdW6d76STdnHccRUfHL2OxYrdac=
+	t=1784821763; cv=none; b=t+hhSt+uyd2E2W25kckc0A41ydkt2G1KAfPQbwzeI3Io+vhERFSbLHg49eVamWAR+uz5QBqgbpDzfe2dK91HNuhut+cwIPUQAi8YuudJmdKjsDlFM43ZtassDHTV4MNzNxKjGSjtaV347DazPK7Jt4rwgNNrlUAIQTPOH7B6B2o=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1784821096; c=relaxed/simple;
-	bh=wHZMhUKDS0YelnT1aMEzyqq+P0yADbTyUreJsQeVZUA=;
-	h=Date:From:To:CC:Subject:In-Reply-To:References:Message-ID:
-	 MIME-Version:Content-Type; b=mu9LFGGfnZr2Zh4ZFNhuzdnJ0isSbH0aOns5EC8f9z/Gz1kCRbK6LxidcTpbQ7PPGT0VUnvlk4vGlE2SjBrCnAsu/dxFAkynK+8pH9c0MPnAz6wz4njcIUlNW5+CeIsdJ2aWH1TA0/db67Hyzv5jAhkRcYZSiQCMS5aEO+FCht8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=grrlz.net; spf=pass smtp.mailfrom=grrlz.net; dkim=pass (1024-bit key) header.d=grrlz.net header.i=@grrlz.net header.b=s8WfEio2; arc=none smtp.client-ip=93.190.126.19
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=grrlz.net
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=grrlz.net
+	s=arc-20240116; t=1784821763; c=relaxed/simple;
+	bh=/DSvfdI17PeLSJ9INrDWndXh3pMB9X4p73oEV1GeG3s=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=hLl+GbmWlo+covTVlrnAs0zjjSb2Jhl+PJN6lpXcbos0tIxzqfcbq9WcrED6SyTO3S7tILHXASkLeryvysQ92zCDv+KeOqtux/EG01cu5SEkBDamCu9cyXpP3fEmi7DAESzByAp/p99VRyNikQ7C7V3PhTf4v61qKANihxPwIk0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=PHCmPjDn; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=grrlz.net header.i=@grrlz.net header.b="s8WfEio2"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=grrlz.net;
-	s=stigmate; t=1784821091;
-	bh=OxDEn/Flx2JsTbvw3aRK9+ph/beITac4a1J9fuT8ijI=;
-	h=Date:From:To:CC:Subject:In-Reply-To:References:From;
-	b=s8WfEio2i6aDEx3X+OET6fhU25nviJreNTtsIY2D9Dt5zAlXRP8tF1AeAqiwQbSyL
-	 8DLMu2l59j02mMzzOevUEx5NmMEDP2q1iESU04SYXpfkklk9d0KNAGxqKayQ7341gB
-	 A0MG8gOOUs5/Px6dKRZfrPmK044WFCgD/9yR5iCo=
-Received: from mx1.investici.org (unknown [127.0.0.1])
-	by confino.investici.org (Postfix) with ESMTP id 4h5ZyW44TBz12rr;
-	Thu, 23 Jul 2026 15:38:11 +0000 (UTC)
-Received: by mx1.investici.org (Postfix) id 4h5ZyV5KP0z12rq;
-	Thu, 23 Jul 2026 15:38:10 +0000 (UTC)
-Date: Thu, 23 Jul 2026 16:38:09 +0100
-From: Bradley Morgan <include@grrlz.net>
-To: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
-CC: akpm@linux-foundation.org, baoquan.he@linux.dev, rppt@kernel.org,
- pasha.tatashin@soleen.com, pratyush@kernel.org, lenb@kernel.org,
- pavel@kernel.org, kees@kernel.org, tony.luck@intel.com, gpiccoli@igalia.com,
- linux-kernel@vger.kernel.org, kexec@lists.infradead.org,
- linux-pm@vger.kernel.org
-Subject: =?US-ASCII?Q?Re=3A_=5BPATCH_v2_3/3=5D_PM=3A_hibernate=3A_log_?=
- =?US-ASCII?Q?the_task_that_initiated_the_power_down?=
-In-Reply-To: <CAJZ5v0g-=5fmRLrJJg=HBvnEew+LhPN4gV1OJJhDLS4tW49Dnw@mail.gmail.com>
-References: <20260721151358.4185467-1-include@grrlz.net> <20260721151358.4185467-4-include@grrlz.net> <CAJZ5v0jN0QQordGJ+7EyO42Zwidok0j+TKZLCmRhU8CFeRHMuQ@mail.gmail.com> <22B60EFE-21BC-4E2F-9542-93D9FC2AAAB1@grrlz.net> <CAJZ5v0g-=5fmRLrJJg=HBvnEew+LhPN4gV1OJJhDLS4tW49Dnw@mail.gmail.com>
-Message-ID: <B254B844-AA37-437D-827B-B13E27166D08@grrlz.net>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="PHCmPjDn"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0AE281F000E9;
+	Thu, 23 Jul 2026 15:49:11 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1784821756;
+	bh=U01kuOATGHA1fUMiHEUhqkKZsOtYtgmMdQbRp82P+Hk=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=PHCmPjDn1fSziPa+BM08GsiE+UPsJZ+fv77G5TEjtX+n6njvYj954SkQE4kKDhyD0
+	 ARpcyfZBX47nlpJnStKP0X1dtnLyWywBBJGj70iLej4kgNq2vFiYkQ9S7GpIAxFLFy
+	 tIbmrHq/FBnLK3zhL1iJ+NqabGwQCB4aq8klAXD01ICeeiK2g08aPTovK3PfhXQzYe
+	 AJjqS3Mji+tLWvi2plC928sXlaJCD6D8OhCoYb/DKe/jhIW8jFLCfEcE+6l7YQWU8J
+	 rZRD+y4Q7wxUcYQnBMYhnBWfL/bHl2JaKdzUoscYO4pCBDwvHJ1Wl1TIDaERFlc3+c
+	 T4oX6zLKQLnLg==
+Date: Thu, 23 Jul 2026 16:48:47 +0100
+From: Lee Jones <lee@kernel.org>
+To: linux-kernel-dev@aliel.fr
+Cc: Neil Armstrong <neil.armstrong@linaro.org>,
+	Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	Andi Shyti <andi.shyti@kernel.org>,
+	Kevin Hilman <khilman@baylibre.com>,
+	Jerome Brunet <jbrunet@baylibre.com>,
+	Martin Blumenstingl <martin.blumenstingl@googlemail.com>,
+	Beniamino Galvani <b.galvani@gmail.com>,
+	"Rafael J. Wysocki" <rafael@kernel.org>,
+	Daniel Lezcano <daniel.lezcano@kernel.org>,
+	Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>,
+	Liam Girdwood <lgirdwood@gmail.com>,
+	Mark Brown <broonie@kernel.org>, linux-amlogic@lists.infradead.org,
+	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linux-i2c@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+	linux-pm@vger.kernel.org
+Subject: Re: [PATCH v8 4/8] mfd: khadas-mcu: Add support for VIM4 MCU variant
+Message-ID: <20260723154847.GP3363113@google.com>
+References: <20260702-add-mcu-fan-khadas-vim4-v8-0-244feee91a36@aliel.fr>
+ <20260702-add-mcu-fan-khadas-vim4-v8-4-244feee91a36@aliel.fr>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
- charset=utf-8
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
+In-Reply-To: <20260702-add-mcu-fan-khadas-vim4-v8-4-244feee91a36@aliel.fr>
 
-On July 23, 2026 3:55:10 PM GMT+01:00, "Rafael J. Wysocki (Intel)"
-<rafael@kernel.org> wrote:
->On Thu, Jul 23, 2026 at 4:46 PM Bradley Morgan <include@grrlz.net> wrote:
->>
->> On July 23, 2026 2:55:41 PM GMT+01:00, "Rafael J. Wysocki (Intel)"
->> <rafael@kernel.org> wrote:
->> >On Tue, Jul 21, 2026 at 5:14 PM Bradley Morgan <include@grrlz.net>
->wrote:
->> >>
->> >> Give the hibernation power down the same treatment as the reboot
->> >> syscall commands.
->> >
->> >Why?
->>
->> 1: Andrew suggested it [1]
->> 2: because going down for hibernation is the same as "Wait, who the hell
->took the box down?!"
->
->No, it is not the same unless the system doesn't resume.
->
->> >
->> >> hibernate() runs in the context of the task that
->> >> asked for it, whether through the reboot syscall or a write to
->> >
->> >It doesn't use the reboot syscall.
->>
->> Hmmm.... I may embarrass myself here, but it *could* (wink)
->>
->> See kernel/reboot.c:
->>
->> #ifdef CONFIG_HIBERNATION
->>         case LINUX_REBOOT_CMD_SW_SUSPEND:
->>                 ret = hibernate();
->>                 break;
->> #endif
->
->Ah, I'm wondering if anyone actually uses this, but fair enough.
->
->> >> /sys/power/disk,
->>
->> I'm wrong: /sys/power/state
->>
->>  so when power_down() runs current is still the
->> >> initiating task.
->> >>
->> >> Log it once the image has been written and the machine is committed
->> >> to going down:
->> >>
->> >>   reboot: initiated by systemd-sleep[812]
->> >>   reboot: Power down
->> >>
->> >> The line comes from kernel/reboot.c so it keeps the "reboot:" prefix
->> >> and sits right next to the final "Restarting system", "Power down"
->> >> or "System halted" line, same as a plain reboot.
->> >>
->> >> The one exception is platform mode rolling back on a pending wakeup
->> >> event after the line has been printed. The existing "Wakeup event
->> >> detected during hibernation, rolling back." line follows immediately
->> >> in that case, so the log stays real about what happened.
->> >
->> >(a) Why is this information in the log useful?
->>
->> when the box just randomly goes down, some people prefer to know
->> "And what process did this? Or what did this?", say
->>
->> "Was it systemd-sleep? Or some random power daemon?? Or some stray
->> reboot(SW_SUSPEND)??"
->>
->> Userspace logging can't really do this...
->
->But it doesn't really go down in the case of hibernation.  It's more
->like suspend in that respect.
->
->> There is software out there which can do this, but it's not the
->greatest.
->> [2]
->>
->> Hence, this series!
->>
->> >(b) Do you realize that it only appears in the log when hibernation
->> >fails or it may appear on a serial console or similar?
->>
->> yeah. The image is written when the line prints, so after a successful
->> hibernate and resume dmesg won't have it.
->>
->> Thats exactly the
->> same visibility as the final "Power down" / "Restarting system"  line it
->> sits next to
->>
->> Well, if you want it, please say.
->>
->>
->> [1]:
->>
->https://lore.kernel.org/all/20260719231540.455bd5c3eac842686c05bd7f@linux-foundation.org/
->>
->> [2]: https://docs.memfault.com/docs/linux/reboot-reason-tracking
->>
->>
->> (oh and btw, if you don't buy in, it's ok, just say.. any questions,
->ask)
->> :)
->
->Yeah, I'm not convinced.
->
+/* Sashiko Automation: Reviewed (0 Findings) */
 
+On Thu, 02 Jul 2026, Ronald Claveau via B4 Relay wrote:
 
-ack, dropped.
+> From: Ronald Claveau <linux-kernel-dev@aliel.fr>
+> 
+> Refactor probe() to use per-variant values
+> instead of hardcoded globals.
+> 
+> Add dedicated regmap configuration for the VIM4 MCU,
+> with its own volatile/writeable registers.
+> 
+> Add the fan control register
+> (0–100 levels vs 0–3 for previous supported boards).
+> 
+> Add a new compatible string "khadas,vim4-mcu".
+> 
+> Reviewed-by: Neil Armstrong <neil.armstrong@linaro.org>
+> Signed-off-by: Ronald Claveau <linux-kernel-dev@aliel.fr>
+> ---
+> 
+>  drivers/mfd/khadas-mcu.c | 118 ++++++++++++++++++++++++++++++++++++++++-------
+>  1 file changed, 102 insertions(+), 16 deletions(-)
+> 
+> diff --git a/drivers/mfd/khadas-mcu.c b/drivers/mfd/khadas-mcu.c
+> index ba981a7886921..d2ca7deda45c6 100644
+> --- a/drivers/mfd/khadas-mcu.c
+> +++ b/drivers/mfd/khadas-mcu.c
+> @@ -13,6 +13,9 @@
+>  #include <linux/module.h>
+>  #include <linux/regmap.h>
+>  
+> #define KHADAS_MCU_FAN_LEVEL_MAX 3
+> #define KHADAS_MCU_VIM4_FAN_LEVEL_MAX 0x64
+> +
+>  static bool khadas_mcu_reg_volatile(struct device *dev, unsigned int reg)
+>  {
+>  	if (reg >= KHADAS_MCU_USER_DATA_0_REG &&
+> @@ -75,47 +78,129 @@ static const struct regmap_config khadas_mcu_regmap_config = {
+>  	.cache_type	= REGCACHE_MAPLE,
+>  };
+>  
+> -static struct mfd_cell khadas_mcu_fan_cells[] = {
+> +static const struct khadas_mcu_fan_pdata khadas_mcu_fan_pdata = {
+> +	.fan_reg	= KHADAS_MCU_CMD_FAN_STATUS_CTRL_REG,
+> +	.max_level	= KHADAS_MCU_FAN_LEVEL_MAX,
+> +};
+> +
+> +static const struct mfd_cell khadas_mcu_fan_cells[] = {
+>  	/* VIM1/2 Rev13+ and VIM3 only */
+> -	{ .name = "khadas-mcu-fan-ctrl", },
+> +	{
+> +		.name = "khadas-mcu-fan-ctrl",
+> +		.platform_data = &khadas_mcu_fan_pdata,
+> +		.pdata_size = sizeof(khadas_mcu_fan_pdata),
+> +	},
+>  };
 
-btw. I wasn't the surest anyway abt swusp, don't worry.
+If you're tweaking, feel free to get more upstream creds by laying down
+a prelim patch changing these to MFD_CELL_*().
 
-thanks for the review and sorry for wasting your time
+> -static struct mfd_cell khadas_mcu_cells[] = {
+> +static const struct mfd_cell khadas_mcu_cells[] = {
+>  	{ .name = "khadas-mcu-user-mem", },
+>  };
+>  
+> +static bool khadas_mcu_vim4_reg_volatile(struct device *dev, unsigned int reg)
+> +{
+> +	switch (reg) {
+> +	case KHADAS_MCU_PWR_OFF_CMD_REG:
+> +	case KHADAS_MCU_VIM4_REST_CONF_REG:
+> +	case KHADAS_MCU_WOL_INIT_START_REG:
+> +	case KHADAS_MCU_VIM4_LED_ON_RAM_REG:
+> +	case KHADAS_MCU_VIM4_FAN_CTRL_REG:
+> +	case KHADAS_MCU_VIM4_WDT_EN_REG:
+> +	case KHADAS_MCU_VIM4_SYS_RST_REG:
+> +		return true;
+> +	default:
+> +		return false;
+> +	}
+> +}
+> +
+> +static bool khadas_mcu_vim4_reg_writeable(struct device *dev, unsigned int reg)
+> +{
+> +	switch (reg) {
+> +	case KHADAS_MCU_VERSION_0_REG:
+> +	case KHADAS_MCU_VERSION_1_REG:
+> +	case KHADAS_MCU_SHUTDOWN_NORMAL_STATUS_REG:
+> +		return false;
+> +	default:
+> +		return true;
+> +	}
+> +}
+> +
+> +static const struct regmap_config khadas_mcu_vim4_regmap_config = {
+> +	.reg_bits	= 8,
+> +	.reg_stride	= 1,
+> +	.val_bits	= 8,
+> +	.max_register	= KHADAS_MCU_VIM4_SYS_RST_REG,
+> +	.volatile_reg	= khadas_mcu_vim4_reg_volatile,
+> +	.writeable_reg	= khadas_mcu_vim4_reg_writeable,
+> +	.cache_type	= REGCACHE_MAPLE,
+> +};
+> +
+> +static const struct khadas_mcu_fan_pdata khadas_vim4_fan_pdata = {
+> +	.fan_reg	= KHADAS_MCU_VIM4_FAN_CTRL_REG,
+> +	.max_level	= KHADAS_MCU_VIM4_FAN_LEVEL_MAX,
+> +};
+> +
+> +static const struct mfd_cell khadas_mcu_vim4_cells[] = {
+> +	{
+> +		.name		= "khadas-mcu-fan-ctrl",
+> +		.platform_data	= &khadas_vim4_fan_pdata,
+> +		.pdata_size	= sizeof(khadas_vim4_fan_pdata),
+> +	},
+> +};
+> +
+>  static int khadas_mcu_probe(struct i2c_client *client)
+>  {
+> +	const struct mfd_cell *cells, *fan_cells;
+> +	const struct regmap_config *regmap_cfg;
+>  	struct device *dev = &client->dev;
+> +	int ncells, nfan_cells, ret;
+>  	struct khadas_mcu *ddata;
+> -	int ret;
+>  
+>  	ddata = devm_kzalloc(dev, sizeof(*ddata), GFP_KERNEL);
+>  	if (!ddata)
+>  		return -ENOMEM;
+>  
+> +	switch ((uintptr_t)i2c_get_match_data(client)) {
 
-Thanks!
+Let's pull this out of the switch():
+
+	const void *match;
+
+	match = i2c_get_match_data(client);
+	if (!match)
+		return -ENODEV;
+
+This would separate the declaration from the potentially failing
+function call and prevent implicitly matching 'KHADAS_MCU_GENERIC' (if
+its value is 0) should the lookup fail.
+
+> +	case KHADAS_MCU_GENERIC:
+> +		regmap_cfg	= &khadas_mcu_regmap_config;
+> +		cells		= khadas_mcu_cells;
+> +		ncells		= ARRAY_SIZE(khadas_mcu_cells);
+> +		fan_cells	= khadas_mcu_fan_cells;
+> +		nfan_cells	= ARRAY_SIZE(khadas_mcu_fan_cells);
+> +		break;
+> +	case KHADAS_MCU_VIM4:
+> +		regmap_cfg	= &khadas_mcu_vim4_regmap_config;
+> +		cells		= NULL;
+> +		ncells		= 0;
+> +		fan_cells	= khadas_mcu_vim4_cells;
+> +		nfan_cells	= ARRAY_SIZE(khadas_mcu_vim4_cells);
+> +		break;
+> +	default:
+> +		return -ENODEV;
+> +	}
+> +
+>  	i2c_set_clientdata(client, ddata);
+>  
+>  	ddata->dev = dev;
+>  
+> -	ddata->regmap = devm_regmap_init_i2c(client, &khadas_mcu_regmap_config);
+> +	ddata->regmap = devm_regmap_init_i2c(client, regmap_cfg);
+>  	if (IS_ERR(ddata->regmap)) {
+>  		ret = PTR_ERR(ddata->regmap);
+> -		dev_err(dev, "Failed to allocate register map: %d\n", ret);
+> -		return ret;
+> +		return dev_err_probe(dev, ret, "Failed to allocate register map\n");
+>  	}
+>  
+> -	ret = devm_mfd_add_devices(dev, PLATFORM_DEVID_NONE,
+> -				   khadas_mcu_cells,
+> -				   ARRAY_SIZE(khadas_mcu_cells),
+> -				   NULL, 0, NULL);
+> -	if (ret)
+> -		return ret;
+> +	if (cells && ncells) {
+> +		ret = devm_mfd_add_devices(dev, PLATFORM_DEVID_NONE,
+> +					   cells,
+> +					   ncells,
+> +					   NULL, 0, NULL);
+> +		if (ret)
+> +			return ret;
+> +	}
+>  
+>  	if (of_property_present(dev->of_node, "#cooling-cells"))
+>  		return devm_mfd_add_devices(dev, PLATFORM_DEVID_NONE,
+> -					    khadas_mcu_fan_cells,
+> -					    ARRAY_SIZE(khadas_mcu_fan_cells),
+> +					    fan_cells,
+> +					    nfan_cells,
+>  					    NULL, 0, NULL);
+>  
+>  	return 0;
+> @@ -123,7 +208,8 @@ static int khadas_mcu_probe(struct i2c_client *client)
+>  
+>  #ifdef CONFIG_OF
+>  static const struct of_device_id khadas_mcu_of_match[] = {
+> -	{ .compatible = "khadas,mcu", },
+> +	{ .compatible = "khadas,mcu", .data = (void *)KHADAS_MCU_GENERIC },
+> +	{ .compatible = "khadas,vim4-mcu", .data = (void *)KHADAS_MCU_VIM4 },
+>  	{},
+>  };
+>  MODULE_DEVICE_TABLE(of, khadas_mcu_of_match);
+> 
+> -- 
+> 2.49.0
+> 
+> 
+
+-- 
+Lee Jones
