@@ -1,33 +1,32 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F3180476686;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3A434476689;
 	Fri, 24 Jul 2026 23:35:09 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1784936111; cv=none; b=YA28zrpYSEKrRWplhakbpLK4s4jHBDDnjef8zs7rEDVTE9iUYIi2Ar5XvXLUzplHDalQkNJ9bZXwXXE/ia8TmrVPb9zQosdF2RrxC4gYEh5G133Osh4e+K69/iY/t5VBW/pqqqgMc92/ewqeYp4A03NuKvoEH7e4zO9dVpwIT0g=
+	t=1784936111; cv=none; b=b1uzG1IlN0Nx+bw94+elRGK57XQxRuA3hsf1rEa2y3K5SWFldNtRPT8zMM4oVuHiZRAhf6jOa5T8fEMLnW6WdcY54XwJSy5FkftpzLagG9aItk3XGtSxldbpmfLShyxEnNpfCGbqOhlVH4UU8J1iwCxzj4FlOmkqfcsoMV+llnc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1784936111; c=relaxed/simple;
-	bh=a1Y+1qktpV6dQWtoUNiMc9BN61DJ7wml2FGJ28fwvBU=;
+	bh=F3/tCE7x6Cqg/jVmMsd9bq7Rinyr7sZcb4LkSCQymRQ=;
 	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
-	 MIME-Version:Content-Type; b=qL4LIOORo085WVXhNckistTHM1UcFJ/Shx87z2PvchG6kyCkF8EVndIScXab3aH8dwVPzGLnUFdBGzUDB9DUGK/+xBJ+H6GycadhSDbFp01BYKWBIvJrWVzHhRdzJwdebX42o4NJRKw6MWiZCLcPQEv+Oem0t/OLMDhYguPnrtI=
+	 MIME-Version:Content-Type; b=SiO/wmK6tzSrHTKYzHLO8ickkYp4M3jfRDNxlWsA1DM42DOjfZ/+xsvRp+Ra5lqgwywHTIWbc2XN1eVgQndrUpgRs9VgjPfWoEMnfKDVCVicncMmSu20Q/MNPUcbX3eD1OcPvG18jta0BLwu+PDTmGmS3WCkbeaAKJHZl/rgMqs=
 ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id BBE261F00A3D;
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id B83EA1F000E9;
 	Fri, 24 Jul 2026 23:35:09 +0000 (UTC)
 Received: by venus (Postfix, from userid 1000)
-	id 36D66181F18; Sat, 25 Jul 2026 01:35:08 +0200 (CEST)
+	id 3A945181F1A; Sat, 25 Jul 2026 01:35:08 +0200 (CEST)
 From: Sebastian Reichel <sebastian.reichel@collabora.com>
 To: Sebastian Reichel <sre@kernel.org>, 
- Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>, 
- Pavan Kumar Kondeti <pavan.kondeti@oss.qualcomm.com>, 
- Shivendra Pratap <shivendra.pratap@oss.qualcomm.com>
+ Steffen Dirkwinkel <lists@steffen.cc>
 Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
- linux-arm-msm@vger.kernel.org, kernel test robot <lkp@intel.com>
-In-Reply-To: <20260724-arm-psci-system_reset2-vendor-reboots-v24-1-ed5125785ef6@oss.qualcomm.com>
-References: <20260724-arm-psci-system_reset2-vendor-reboots-v24-1-ed5125785ef6@oss.qualcomm.com>
-Subject: Re: [PATCH v24] power: reset: reboot-mode: Remove devres based
- allocations
-Message-Id: <178493610821.699463.8406176306210857245.b4-ty@collabora.com>
+ Chaitanya Kumar Borah <chaitanya.kumar.borah@intel.com>, 
+ Steffen Dirkwinkel <s.dirkwinkel@beckhoff.com>
+In-Reply-To: <20260724-power-supply-triggers-lockdep-v1-1-9b451b1f1916@beckhoff.com>
+References: <20260724-power-supply-triggers-lockdep-v1-1-9b451b1f1916@beckhoff.com>
+Subject: Re: [PATCH] power: supply: hold extensions_sem when creating LED
+ triggers
+Message-Id: <178493610823.699463.8029797889539744312.b4-ty@collabora.com>
 Date: Sat, 25 Jul 2026 01:35:08 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
@@ -40,20 +39,20 @@ Content-Transfer-Encoding: 7bit
 X-Mailer: b4 0.14.3
 
 
-On Fri, 24 Jul 2026 18:46:04 +0530, Shivendra Pratap wrote:
-> Devres APIs are intended for use in drivers, where the managed lifetime
-> of resources is tied directly to the driver attach/detach cycle.
-> 
-> To ensure correct lifetime handling, avoid using devres-based
-> allocations in the reboot-mode and explicitly handle allocation and
-> cleanup of resources.
+On Fri, 24 Jul 2026 09:27:35 +0200, Steffen Dirkwinkel wrote:
+> LED triggers were created in __power_supply_register without holding the
+> extensions_sem lock. Since commit b04510c3af6d ("power: supply: leds: create
+> triggers based on properties, not type") we call power_supply_has_property
+> during trigger creation and access the extensions there.
+> Move power_supply_create_triggers down into the lock scope used for
+> power_supply_add_hwmon_sysfs for the same reason.
 > 
 > [...]
 
 Applied, thanks!
 
-[1/1] power: reset: reboot-mode: Remove devres based allocations
-      commit: 42326d59391cf287bf21224f3fdca528be31ece2
+[1/1] power: supply: hold extensions_sem when creating LED triggers
+      commit: 25453aaffac01909232a20409dff1a9e6d609a11
 
 Best regards,
 -- 
