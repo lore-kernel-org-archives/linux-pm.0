@@ -1,171 +1,129 @@
-Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
+Received: from smtpbgjp3.qq.com (smtpbgjp3.qq.com [54.92.39.34])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D3FEF36EAB2
-	for <linux-pm@vger.kernel.org>; Fri, 24 Jul 2026 09:02:30 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.180.131
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 132A13EAC8D;
+	Fri, 24 Jul 2026 09:04:45 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=54.92.39.34
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1784883752; cv=none; b=ZeTmUEjo8nkVn0lP1vpEtjXtGHG0ECY9jyUqoyJa/Ulbn8TXFQI/7MQjyV7X7SWC6tnyzxKpZ9r5W/PJq9Jbk225q95N2uU3jXpPSuBLMvnlBfWlkINvorUFuMI82S0rGiy+fggaLtZvTOLGw5OKHR5SU5QQdd414X+1A9I8quw=
+	t=1784883889; cv=none; b=JVkUeT/hr1y+k/Vu7sU0tVqOmxYSeWOzjspbIJl3/gPvIYiiH7eD3HgJaM6p3d1yMayz9eO7765aOfC/CbJUwhpa5P4P/lsTRxG8Ww75MpNvSiruluQjJoDmqYTPgjE7KYC+0xhR/5oYgQ3Kly8mIU1Pb4lO9AIwtWV33a+1Mis=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1784883752; c=relaxed/simple;
-	bh=uGEwcFqsud+F9B3NSbZNTWlyAJ0KhUGW/Uwq6LX6VHU=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=UzJBoP8uwOzm10Z6qOCIHeTY2mo30gDoZUildW4bOUYLZIEdKqNH7haH453PfWxYM84Qq8Ex95JKYVuR4a52Vef+n4m/WxGsiuCRhA413O4a0Cg4rWJBHdE73boLIcb+eINZJuEtn6M0jbrtiUl4C+nzip/EhsjLUXh6L4di0yg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=a7jaVvqr; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=VZBQ5eFI; arc=none smtp.client-ip=205.220.180.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
+	s=arc-20240116; t=1784883889; c=relaxed/simple;
+	bh=jnrZmWTFeMxFTUwStiBfwvMQ8RkfQc/nNrHZyeKGKeo=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=WOqTR1sR3c3C35IIgX2uOTQgExRXr10gFdsUzOiGhULvvhcIs4RGtN+ezMTKFa5QutZcuCA8+W0D+S+jVV9ihhkpcDtwDgm8YAFFXqGZzflWRmUk3s7L0DHnJAd/e3CPTrROOaYVud1g5Kk1XD5/veauJ9ipLh4Y7NJZ0oy2lSQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=uniontech.com; spf=pass smtp.mailfrom=uniontech.com; dkim=pass (1024-bit key) header.d=uniontech.com header.i=@uniontech.com header.b=SmQdg2+P; arc=none smtp.client-ip=54.92.39.34
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=uniontech.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=uniontech.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="a7jaVvqr";
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="VZBQ5eFI"
-Received: from pps.filterd (m0279868.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 66O4lpEE1993084
-	for <linux-pm@vger.kernel.org>; Fri, 24 Jul 2026 09:02:29 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	6zMh1KmHao1LhCLxddpBcSUgeQd+7Z2xRwAtyaliLo0=; b=a7jaVvqrETP7JElo
-	NqTryjz8Pj/g+f7EJ+foE0wTJQccpblUSr4FD2Rfp/7SeR4iyEcY27EduZ75LE+c
-	6YMl7ZqlfcKGfI3dRD85KNNf8mdny8uUG4csvs6Jk5zhscv4tLwC6RIPnKOdLTDl
-	2EZ/Go4zOZH7qUWrhPp1Vnoe8oBRG5MyCrSdMl7l5VK5M+q9Uao6GbZ376cXHPop
-	N1q6ZfozVvsoC1qBlbWkMmRmIeSzy48kPNSC8/RNMO7jIKb8VksI2qHtU+JUa1EC
-	ZgNVlhwndCA8AKQo3vlhhRM1JDjxEH9euO8bB9reUbaiz4o/O5nh6IoBA5bwpnyu
-	UkAANg==
-Received: from mail-pl1-f200.google.com (mail-pl1-f200.google.com [209.85.214.200])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4fm0p510e9-1
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Fri, 24 Jul 2026 09:02:29 +0000 (GMT)
-Received: by mail-pl1-f200.google.com with SMTP id d9443c01a7336-2cc7e86e7c5so4601005ad.3
-        for <linux-pm@vger.kernel.org>; Fri, 24 Jul 2026 02:02:29 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1784883749; x=1785488549; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:in-reply-to:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=6zMh1KmHao1LhCLxddpBcSUgeQd+7Z2xRwAtyaliLo0=;
-        b=VZBQ5eFILRSwJeY2wE54Yrg4IAyp6lx3XYQH6EFVSaFcZLhGUl9MzJMpEge3RJYpgk
-         2yHtaCJyTy+trIC3kceB0sbW1kFgSlJWlYm9sLzi/6EShjujvSFVARnvXRlO4GJ4cUSQ
-         +EEGYaORDmxnn5k4S3do+LjZMIX298yWnwcknWr7Wph428vqoVrTTho2CfD9dujuW7UF
-         HlQfibsRAHnwdJ+XjfQDoVZXcw6eutgJpQL75RBMyPpzCwghmOJREdgqQ+buNe965670
-         0/zJyZ5vTTRDiylixu07fC0SNRdxHIygE4r94eV1M5+HkLAnHDi2Dms+Z2+PZR4nlnoM
-         t+Yg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1784883749; x=1785488549;
-        h=content-transfer-encoding:content-type:in-reply-to:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=6zMh1KmHao1LhCLxddpBcSUgeQd+7Z2xRwAtyaliLo0=;
-        b=bXv6AxwMI6g2zcGbxZTWynEqpQzY1rZzlND5kNCObk2x4hMX23PpDr0QU9tSTjivpF
-         +AKXkqF7gCb08t2x0qnmqeHHbLOnmfZ//XvKj23tiHVRq967QDlcjnrBLZQbvgtBilF2
-         kHvWBAnuN3MxAIjCDJDZki9461p3m8zrAGe899CuN23gcl5iyL81zOwXvZt1NFfdp+lv
-         jQTxgCAQpHrYF5Ba2nRrb+iOgvH5gGNkXjgZ9fBgZHQIqm4aOr3y/Xbksg+ER8ekkUjr
-         mfJ9vRxxeYyVK41cc3LF0T5Fk7JNkY5rGNOfgqZERxPtuEdVDpz07PiZ9sCyAcZQouZN
-         yp1w==
-X-Forwarded-Encrypted: i=1; AHgh+RqQTyHZkCZ5younBqrVfE/X2Li9LsdT13fLl5eqAcCu4DrSGo/yDSQZVLllKcCgS+9gMpgP3IU6nA==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yxnnko58NPcnIZiO8HyQVZen41PmOdr9bN4kERjEgbbHF3C9Q7f
-	AhSIlcRuVDDmZPHWO8f1OebxOPd/VAQTaaI76gaZPoUWNoep4rEBnGTWoZH5QGOP+mgTUZkurbo
-	gSgBZnjxpNj7Ls3Mj1xlZV+H6q1b6Acbnq1HNETGRrye1xoNZkBbNeSnHFZOiQw==
-X-Gm-Gg: AR+sD117to094waucPJ6ZroYquOcUWDAcamrL7QUrGzKcbsRqF6fLvXc2xv9xwRG77o
-	IvOtOuhqKX6NiR2xcZOUcBLZxZiWBgQVIhwS038hnehC8Gvxca044KlCwISaB+Td5GZTzXSxJAD
-	xwhTtaPtgPizZ5TD0LR0aJ11H+kghcvOfuTsvG++B/rhIZEAw4y4QBJh0Jho3AWjz4oXARevUDu
-	FIuUHyFoOQNgBFY0iWlGVp7QDx+AWAW7xTeAVswIFNOjS91R/vr4TGCouwYcDTauBwI9ke0fCrx
-	rBgHTYAmhJ3ts1VdSxjitiu71gEY6LzATkXZ3z3iCYjLTkFGMIrJUM2YYV21hE8oxMfU/dPfcZa
-	BI/M0yGE3O2quaSRufZKyMXwBcusic+f7wJV0WwsO0o1GDekhYfDyLdte9xb1PBUcNROICIrD9w
-	qG1vxo2WXQdZ+gZdO4M7CbyRmZQw==
-X-Received: by 2002:a17:902:d2c7:b0:2cf:ba0c:aa5a with SMTP id d9443c01a7336-2cfba0cb91amr39535145ad.47.1784883748698;
-        Fri, 24 Jul 2026 02:02:28 -0700 (PDT)
-X-Received: by 2002:a17:902:d2c7:b0:2cf:ba0c:aa5a with SMTP id d9443c01a7336-2cfba0cb91amr39534615ad.47.1784883748164;
-        Fri, 24 Jul 2026 02:02:28 -0700 (PDT)
-Received: from [10.190.200.168] (blr-bdr-fw-01_GlobalNAT_AllZones-Outside.qualcomm.com. [103.229.18.19])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2cf8efddfe1sm48392965ad.32.2026.07.24.02.02.20
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Fri, 24 Jul 2026 02:02:27 -0700 (PDT)
-Message-ID: <cce14564-9f74-48d1-a18d-8db6a265b7ac@oss.qualcomm.com>
-Date: Fri, 24 Jul 2026 14:32:19 +0530
+	dkim=pass (1024-bit key) header.d=uniontech.com header.i=@uniontech.com header.b="SmQdg2+P"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=uniontech.com;
+	s=onoh2408; t=1784883844;
+	bh=hmRF4Eq5A6tckPpf8JZ4Rd+UeZxcZzoQLn9CAt6h6jw=;
+	h=From:To:Subject:Date:Message-ID:MIME-Version;
+	b=SmQdg2+Pb2usdZ+r3140GvI+Sy0CtSwG3t7qewIR3TwtxVF+aKquvnJo1fxnKCq2w
+	 V+wDoIzkDP1Qnzz2X2X1xlHfepv2uCAAjox+B+inXXSJHoi7WhpzC4/3a2HIv/i+XG
+	 oq7OVU6zgEk2DTVjrqe51LUpusk7+gRwK8cz3PnY=
+X-QQ-mid: zesmtpgz4t1784883824t58784818
+X-QQ-Originating-IP: 0ZLd6iLlcwCMXtIzKSUDmafX3fUFpYo/W0NNqky4P7Q=
+Received: from PEN202512010004 ( [113.57.152.160])
+	by bizesmtp.qq.com (ESMTP) with 
+	id ; Fri, 24 Jul 2026 17:03:43 +0800 (CST)
+X-QQ-SSF: 0000000000000000000000000000000
+X-QQ-GoodBg: 1
+X-BIZMAIL-ID: 6979303866208148507
+EX-QQ-RecipientCnt: 7
+From: raoxu <raoxu@uniontech.com>
+To: samkay014@gmail.com
+Cc: sre@kernel.org,
+	imx@lists.linux.dev,
+	linux-pm@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	raoxu@uniontech.com,
+	stable@vger.kernel.org
+Subject: [PATCH] power: supply: pf1550: enable charging when battery profile exists
+Date: Fri, 24 Jul 2026 17:03:41 +0800
+Message-ID: <D5A5255CD2B683AC+20260724090341.297438-1-raoxu@uniontech.com>
+X-Mailer: git-send-email 2.50.1
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH RFC 00/10] firmware: arm_scmi: vendors: Qualcomm Generic
- Vendor Extensions
-To: Sudeep Holla <sudeep.holla@kernel.org>
-Cc: Cristian Marussi <cristian.marussi@arm.com>,
-        Rob Herring
- <robh@kernel.org>,
-        Krzysztof Kozlowski <krzk+dt@kernel.org>,
-        Conor Dooley <conor+dt@kernel.org>,
-        Sibi Sankar <sibi.sankar@oss.qualcomm.com>,
-        MyungJoo Ham <myungjoo.ham@samsung.com>,
-        Kyungmin Park <kyungmin.park@samsung.com>,
-        Chanwoo Choi <cw00.choi@samsung.com>,
-        Dmitry Osipenko <digetx@gmail.com>,
-        Thierry Reding <thierry.reding@kernel.org>,
-        Jonathan Hunter <jonathanh@nvidia.com>,
-        Bjorn Andersson <andersson@kernel.org>,
-        Konrad Dybcio <konradybcio@kernel.org>,
-        Rajendra Nayak <rajendra.nayak@oss.qualcomm.com>,
-        Pankaj Patil <pankaj.patil@oss.qualcomm.com>,
-        linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        arm-scmi@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-        devicetree@vger.kernel.org, linux-pm@vger.kernel.org,
-        linux-tegra@vger.kernel.org, Amir Vajid <amir.vajid@oss.qualcomm.com>,
-        Ramakrishna Gottimukkula <ramakrishna.gottimukkula@oss.qualcomm.com>,
-        Jia Yang <jia.yang@oss.qualcomm.com>
-References: <20260724-rfc_v8_scmi_memlat-v1-0-cb732bcff1f4@oss.qualcomm.com>
- <20260724-space-magpie-of-promise-b71ead@sudeepholla>
-Content-Language: en-US
-From: Pragnesh Papaniya <pragnesh.papaniya@oss.qualcomm.com>
-In-Reply-To: <20260724-space-magpie-of-promise-b71ead@sudeepholla>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-Authority-Analysis: v=2.4 cv=Pq6jqQM3 c=1 sm=1 tr=0 ts=6a632a25 cx=c_pps
- a=IZJwPbhc+fLeJZngyXXI0A==:117 a=Ou0eQOY4+eZoSc0qltEV5Q==:17
- a=IkcTkHD0fZMA:10 a=RAioF0-LDSMA:10 a=s4-Qcg_JpJYA:10
- a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=ZpdpYltYx_vBUK5n70dp:22
- a=mBLlwB273A3eCssxvk8A:9 a=QEXdDO2ut3YA:10 a=uG9DUKGECoFWVXl0Dc02:22
-X-Proofpoint-GUID: PfbDLhuEMHP4_5bNT-dtOzyuL0dXA7ZB
-X-Proofpoint-ORIG-GUID: PfbDLhuEMHP4_5bNT-dtOzyuL0dXA7ZB
-X-Proofpoint-Spam-Info: AW1haW4tMjYwNzI0MDA4MiBTYWx0ZWRfXxELPe8JMmSLl
- FnQsNQ2hR2acGJZZoEuwVy1yET+bJQPJubsM2LHUsyICqcLOIBh5U8GzwCxgZn3xqweNjlVpHWg
- 4y0jrNEI5kTxL7zNmoU3JTwX0Jafwsk=
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzI0MDA4MiBTYWx0ZWRfXzIXNjy3iSLnI
- vMvTe6ojuNSIs57NVKlvv/y1yXZQl3Yl2QpHHYEtZRBFG36fMFhq383Rb2M0tt1ecloHmeiCG5X
- c+vBA2e5wgzfrxceKGpE1uZ0+iScCOZU5V+JAqC8q5BLJHZPBRG8WjDV6P1wRg7w8CegCSUA6xR
- LoktZVSu1eMVdsFVQtzLmBTOgcmWawsFIUU4MNT56T+bh6Y9dAkEmP0V0CMq57Gdaq6hqJr1f/2
- UeYOJOn6xsTpCEx3mjkKhA5rNi+rmWnlrKMPvUcX+ZrgubKch7LfOer0EGlMSBTJ4nc6WNRhpMh
- J2GOEP1AYi5+ZVh0/vobPPlQG5YsNiZLo4sXdFjqE56pdhzekFGmr6FrTEpSxbxKnj5s8/+SIPE
- nmGFODCd+5lg+qgXkmg4Wx/njYgOu0+SWtEFHNBmP4KUPgpOFRRO6ZgbXiwc0eMGOULzhTnyziw
- CCfXo8bexb2W6UbDH4A==
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-07-24_01,2026-07-22_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501 malwarescore=0 spamscore=0 lowpriorityscore=0 adultscore=0
- bulkscore=0 clxscore=1015 impostorscore=0 suspectscore=0 phishscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2607240082
+Content-Transfer-Encoding: 8bit
+X-QQ-SENDSIZE: 520
+Feedback-ID: zesmtpgz:uniontech.com:qybglogicsvrgz:qybglogicsvrgz6b-0
+X-QQ-XMAILINFO: MHVOuy5eETPyWBgdUDgEreV6/zlBevCEAv7fAAw06Gvf2hyLGYaf0WZG
+	2SqkwbHYQjsVRBj2rAbeSe9rk3KJFFVqkGi5GQpS0TmUcAXzdAAtaWjTC6HIcSIlSRq5Fcv
+	C8RLdaqTTF4C4meu9oBT7i+eEXe0FYeF/ygrwuaU+JI91Oq1AP8A8CX97Wlg15Lc67T5cqa
+	O8j+rhSgDCtHOcch6kjfIZbhfeU2SxWCkm7+m4mwnVY38hxSZj1Hlva/9Wy5M/ASywiaxTu
+	6y0K6aVNvA1pujYvwxe09FwA240QFRC60/y7ic34tvG3ahT4/EtsHFvTDcJC2pKluVQKHi1
+	2hEllD1N7N72t2B3g7SEqurGpfQAWH9EPlrxP9hDsjS8Mch3Yk7XfJVawrICStiTlMfD0ML
+	OJ9dw3+qINgHO530N8KKaHcoWwwgAxyBoHDMLOu8AsMqKKUKx/0jzDhEDeMKthF8IMmaL9j
+	gbyqGqNVLh4prAMGYPnBkK7YYy3kMHyK24hMF4oyqwy1PGOi+pGQk4IXnsNF/sVt4AirNYJ
+	8LvVGjz4O1sSQJNNcF/D/Ny8Irwlw14xTMqmo3b+Du2Vlu6Sg0lhOLWggTBUohw8k6eSHdp
+	LQf7CUpsw26jzTl8fi/oJXI9ee1LAOKFj34g+PFMzo0+x7IRoeX5sozQ6HJkIVpeRofFZ1W
+	ilNJ/BvbmHHmZvTsOXqtnANOQZLVha2erNRNtm6kTAmVuhtKuir3v+2l7m0EsrrIavGP+kK
+	qTzcBzv5Kchsyo3hEjCE0vILZ8hDuBVaBYRYOMC6VEM+0qWi3MCgggW91NAlgmih8zOtyPG
+	Icf555lceuRkfda5HnLVO8fmgnUT/gZjyMbYb7bRkkF2etRJ08A2XSqUW9j8Yrtf9ggpPBx
+	Ciit4fPP94aXkTuq2Z6AcyukWniIdSEwfnnKFSqUmYTbBz2vG6z3r52isSYEGXvS6k9Xa8P
+	YBm8Q2hqscYH04SWJf/YoAKajMalNODWOPsdKxNkZDq00sR9lR812MExBHRDcwek6sHYyrX
+	yKxfTFjHIjq7V03mI6N4Mn4QG7fFnk1gB2IaVlGOLItL9LkDKCcIN7xcBU42eW5tW4NX5Ig
+	2OOjA22PojDq/fanSk1HeeVGJ5YDqrBZS9L/Qv/5dP070fVggSSF4c=
+X-QQ-XMRINFO: NS+P29fieYNwqS3WCnRCOn9D1NpZuCnCRA==
+X-QQ-RECHKSPAM: 0
 
+From: Xu Rao <raoxu@uniontech.com>
 
+PF1550 starts in charger mode 1, where charging is disabled. The driver
+comment says that mode 2 should be selected for applications using a
+battery, but the condition is inverted: PF1550_CHG_BAT_ON is written only
+when power_supply_get_battery_info() fails.
 
-On 24-Jul-26 2:10 PM, Sudeep Holla wrote:
-> On Fri, Jul 24, 2026 at 12:48:05PM +0530, Pragnesh Papaniya wrote:
-> 
-> [...]
-> 
->>
->> Changes in v8:
-> 
-> Yet the patches are labelled as if they are RFC and/or v1, so it gets really
-> hard to track.
+Consequently, a board with a valid monitored-battery profile is left in
+the default charger-off mode, while a board without battery information
+enables charging with the fallback voltage.
 
-It was a miss. Won't happen again.
+Select mode 2 when battery information is available. Also release the
+battery-info objects after use.
 
-Thanks,
-pragnesh
+Fixes: 4b6b6433a97d ("power: supply: pf1550: add battery charger support")
+Cc: stable@vger.kernel.org
+Signed-off-by: Xu Rao <raoxu@uniontech.com>
+---
+ drivers/power/supply/pf1550-charger.c | 11 ++++++++---
+ 1 file changed, 8 insertions(+), 3 deletions(-)
 
-> 
+diff --git a/drivers/power/supply/pf1550-charger.c b/drivers/power/supply/pf1550-charger.c
+index 41036f4cb64a..f698becd662a 100644
+--- a/drivers/power/supply/pf1550-charger.c
++++ b/drivers/power/supply/pf1550-charger.c
+@@ -514,7 +514,10 @@ static int pf1550_reg_init(struct pf1550_charger *chg)
+ 	 * a battery. The other supported mode is mode 2, the charger is turned
+ 	 * on to charge a battery when present.
+ 	 */
+-	if (power_supply_get_battery_info(chg->charger, &info)) {
++	ret = power_supply_get_battery_info(chg->charger, &info);
++	if (!ret) {
++		power_supply_put_battery_info(chg->charger, info);
++
+ 		ret = regmap_write(chg->pf1550->regmap,
+ 				   PF1550_CHARG_REG_CHG_OPER,
+ 				   PF1550_CHG_BAT_ON);
+@@ -540,10 +543,12 @@ static void pf1550_dt_parse_dev_info(struct pf1550_charger *chg)
+ 				     &chg->thermal_regulation_temp))
+ 		chg->thermal_regulation_temp = PF1550_DEFAULT_THERMAL_TEMP;
+
+-	if (power_supply_get_battery_info(chg->charger, &info))
++	if (power_supply_get_battery_info(chg->charger, &info)) {
+ 		chg->constant_volt = PF1550_DEFAULT_CONSTANT_VOLT;
+-	else
++	} else {
+ 		chg->constant_volt = info->constant_charge_voltage_max_uv;
++		power_supply_put_battery_info(chg->charger, info);
++	}
+ }
+
+ static int pf1550_charger_probe(struct platform_device *pdev)
+--
+2.50.1
 
