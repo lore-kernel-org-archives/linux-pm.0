@@ -1,183 +1,184 @@
-Received: from DM1PR04CU001.outbound.protection.outlook.com (mail-centralusazon11010066.outbound.protection.outlook.com [52.101.61.66])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 558EE38F624;
-	Fri, 24 Jul 2026 19:07:42 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.61.66
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1784920064; cv=fail; b=Dvf1sMSLiHzleBEHpodwveF8N9FB6HUoKZhX03U3zRQHVRz2tURapqBykiu+ukv87LeI80Kztyt4DefQSS9FUZAkmlMbY19VbNCZTw7HxiiclHquWpPRBXpy8YSJgWsEwPcNhERmRRY5Nw+wjbSGeBNT17WjpKS3SIPbCbKE390=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1784920064; c=relaxed/simple;
-	bh=pIb8Ffak78fnvQEipda7E0LT1kkSsjRRCozjm4G3ffI=;
-	h=Message-ID:Date:Subject:To:Cc:References:From:In-Reply-To:
-	 Content-Type:MIME-Version; b=h5/36DjnlVcml9dyoR5l5MD/2739XwUqNXVxw4NGVuCFuYGbjF08HB3xLPYhHXicCAdC0U3bAq6YY8ocUUYhWHsCHMKRKuijgmnS3eSvRqO4UkTV/oeS6P+Hn/oJ/m+/MZXOxzsZiBCOAJ6Z5lWQZsfPA5WM1eyMiOVfvM06z1c=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com; spf=fail smtp.mailfrom=amd.com; dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b=DfUoILZW; arc=fail smtp.client-ip=52.101.61.66
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com
-Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=amd.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 70D813B47D9
+	for <linux-pm@vger.kernel.org>; Fri, 24 Jul 2026 21:31:43 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1784928704; cv=none; b=iuTe99pVEhoHqcMcHPl41btJ0emxhIViAccFaPkI3sL/81cpRSg9NNgR0lb8FEzQb5wErFrAJnsRhW7nliQGKzN78cE9LVMi7x7ZBcYUUF4MJIMp+mnbOJkkL/frOKr0V6/WcVSQBNuS3fR8fbR2h8KmHpIIchQMwakEmj/mupw=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1784928704; c=relaxed/simple;
+	bh=3BXWnD402hSfrfyEk+w77kbuQrHpzt9R/PGME+Cz84g=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=KBqVFmFyVJcPiuMXI/MUgPA5J8dK6ZYqEnL07GlI8ZmgklqLaeXGRP+WZcNaEF5jKPBLUEQjEsWuCGKlnykQJIy8sG3c5AIrfKiVGyi5T7TOEjnzd9q8WQ1MUYtEewwoLBtSsqOkeaK1oxtObHkIUvhOWYwZDHuSv7liCh539IY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=OCoFx7j2; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b="DfUoILZW"
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=vDhm1c7NYcVO2kFszvqrzvezZQCyhyVXUwo5YDKxOO+NBSQ5i6j7m1mjNTZvzgRpLa0OQxLqE2aVflqYVJN+Uck8BfZUlhzypxWx36f03uvizoLTpxCcVHBMlCs39dWu6SQ1W11/0wNmVoyIfaffWnAXB1Ja+C18IhcW4vwPsKjfWrTEAEAGOiG/yfT5AFf7x7rDNuYt0laZwY7AR+mu358v2IwwOdJ80RdV9Gylhj5FIWvyW2Q59Z+ERmPBtQ0tgtsmG0Mhgf1mYDCGXug+bu7TJHu55sw1Xar9pmL9Bb06HhyyT8Y5zusMUe5/VMXNWUyPO/YLhZb0v7iuQUjtlA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=R3Cp7z6LU1vLerRWwtLZ6wsQDVVHfWB33l90G2Qsy+k=;
- b=dqDOtO7DIZxqC4K3CXN4D3Ss/ktQ0sIyVye2ckAHR2pGZnm2jojNS5rbPVIj/V4FIHGLPTAUhZAUW7XCmBrh66wAVlIb/G+ZZK3y5WUiGDmSiItA/0fOsRBYiX9SZ2UpgYIRa0u0rC//QqpNpaE+dvvYIMFo6Rtcr7mRe7bmctyufL8ucZECkWwIaPybEcXl1ie3uQPBhN9qmYUrRFWQKEIqqrY5yu12uCsrzFK1+sDrACwmpaky+nbOPopHG/eYwZTuSahwNKUl/y50ILVlpLCr03Ux5vEsW4SkYlBwkFG0MPzo+gzrXGrKz2/Rkz3eAjGT3IEme3TPHTKIKYMtvQ==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=amd.com; dmarc=pass action=none header.from=amd.com; dkim=pass
- header.d=amd.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=R3Cp7z6LU1vLerRWwtLZ6wsQDVVHfWB33l90G2Qsy+k=;
- b=DfUoILZWdOhcM31HY7VQ1MmsrdFjRGYpXd59U3pVlc/PtcCXUoetpyVoLj60mY+wiosJmuusrbXxzoiVMni/uE74IVt1qyQxMr33Z56hL4id7ryGNxNAcYczzot9lgAXEIgjfQEMT8HPGkILbLkhBygGYQ9X3nzEXKdxhGA0ArY=
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=amd.com;
-Received: from PH8PR12MB6914.namprd12.prod.outlook.com (2603:10b6:510:1cb::21)
- by IA1PR12MB6532.namprd12.prod.outlook.com (2603:10b6:208:3a3::12) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.245.11; Fri, 24 Jul
- 2026 19:07:38 +0000
-Received: from PH8PR12MB6914.namprd12.prod.outlook.com
- ([fe80::2893:177a:72b0:6000]) by PH8PR12MB6914.namprd12.prod.outlook.com
- ([fe80::2893:177a:72b0:6000%6]) with mapi id 15.21.0245.012; Fri, 24 Jul 2026
- 19:07:38 +0000
-Message-ID: <a841ceef-8d94-4134-9c04-a96cc4f4cdd2@amd.com>
-Date: Fri, 24 Jul 2026 14:07:35 -0500
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 0/9] cpufreq/amd-pstate: BIOS min perf fixes and
- Dynamic EPP rework
-Content-Language: en-US
-To: K Prateek Nayak <kprateek.nayak@amd.com>, Huang Rui <ray.huang@amd.com>,
- "Rafael J. Wysocki" <rafael@kernel.org>,
- Viresh Kumar <viresh.kumar@linaro.org>, Jonathan Corbet <corbet@lwn.net>,
- Shuah Khan <skhan@linuxfoundation.org>,
- Kalpana Shetty <kalpana.shetty@amd.com>
-Cc: Mario Limonciello <superm1@kernel.org>, Perry Yuan <perry.yuan@amd.com>,
- linux-pm@vger.kernel.org, linux-doc@vger.kernel.org,
- linux-kernel@vger.kernel.org
-References: <20260723201228.22584-1-kprateek.nayak@amd.com>
-From: Mario Limonciello <mario.limonciello@amd.com>
-In-Reply-To: <20260723201228.22584-1-kprateek.nayak@amd.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-ClientProxiedBy: CH2PR18CA0004.namprd18.prod.outlook.com
- (2603:10b6:610:4f::14) To PH8PR12MB6914.namprd12.prod.outlook.com
- (2603:10b6:510:1cb::21)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="OCoFx7j2"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5191D1F00A3F
+	for <linux-pm@vger.kernel.org>; Fri, 24 Jul 2026 21:31:43 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1784928703;
+	bh=1lyKPNn2+QBheUHLLKeFUz3rZkaxAhPd6rt5QtwoqWY=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc;
+	b=OCoFx7j2pIEMeh9nhRSL8q/TYgVfqJjt4dtbiICKctHvcakmeRD09WLrhX6nKPJu0
+	 dVndMg9nCsYBR6MLTXYiH2aATB7R79iQp0JN9vuhmWubEnXHCytzsVrVdCNdffdJmU
+	 dpYnFt1ZYDI2GJPyp452rcXEi8stnsMn/HpGFR9LcatN7nAVjuHJa7tztCCtmLXET0
+	 hmUCtkuP5lUKHcvJhw1IWPuOnRHoHurSUf354KkaNVSGR39tW7IZtGtDh2UQvuoV+f
+	 rFz0D08y4+BuGwd69jzb0XhxjEVtAPJ7NvGUNXzAFkKnqRrRBNTKBtom0VsTmxqLjT
+	 esqUfx3aGyY2g==
+Received: by mail-lf1-f44.google.com with SMTP id 2adb3069b0e04-5b15dcaca31so857784e87.0
+        for <linux-pm@vger.kernel.org>; Fri, 24 Jul 2026 14:31:43 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AHgh+RqQq+1LRVR2AwJCkA2OUEP6aLblPFwIw77gNzcD5ATpupIev3yKBwncP3F6sMkxwrxPhgxgIL8l8g==@vger.kernel.org
+X-Gm-Message-State: AOJu0YzIaZpPfzORgtVkdV05cfVNBYnDHrkidVYEZFmg5TheZ6WvhDnz
+	5ng8y5zdLnLRS/CnbCkKTCEvIixpkfxz01i9eeqk4MSpxsR5i4SMMnQtPKjCKN2UMotQJbbYDtJ
+	VhigVmpkxkarDIRhp/qtZflQxfJYqqg4=
+X-Received: by 2002:a05:6512:368e:b0:5ae:b584:562b with SMTP id
+ 2adb3069b0e04-5b2b2f76626mr1381067e87.48.1784928701837; Fri, 24 Jul 2026
+ 14:31:41 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: PH8PR12MB6914:EE_|IA1PR12MB6532:EE_
-X-MS-Office365-Filtering-Correlation-Id: 70010918-c705-4a3c-cda8-08dee9b6d401
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|1800799024|366016|23010399003|376014|56012099006|11063799006|10067099003|22082099003|18002099003;
-X-Microsoft-Antispam-Message-Info:
-	0xkxPKBiJEDhoSLPHUjL+SKDSJ3b5FrCLgnszNsVYmS8BBPelWTYcinrbcIk+ISj0pTUORtfNTeQRz0LLPOux/Rr8x9nU0Z8orlJFqPMK5SgRiSv6xRON9IkznK/MEHJlKn8UYdqiHwTYp8nYF0fv4XG+MZRVSatJKDKSI3D2y4bPu1puTxVyg8RKu0aRLwen1JL4pY2REXNEwRr9RSJjTRdVpldTAOtIX9/lsqwwUVDcAerYh0XY9RRJENj6tj7dlZdSjPPMakiNeREHLwAlfFrL840Ke4Td2FtmwXUgv04vp7f343ItoaH0EfHBp7k22iONQmtdiqgTBoruw0X8D34/H0QzvaPaeUDX2el96cQnkFO9irgeeFcRKzO5S6U/+6V4FkB6sPVpSq4turHaBAMyMcwooktu59z65hWP+/ELAIFGisdHpzgLFJy0fZOwqtPF6v1MTuh3+bBQCyo52FGWSKDbqIWoarLHQAtLe6SN7+/DsfQ5oIc0HWPn5/KkdV3yK6XysDDpeBlJV9rvdm6W5KwyzFQxjXg/axTV/aKQWInoEiLKovayxpsxZsJ/NJ7hWwEDAZdmUtyPenN9f26GN7Qf+qUUPBzCiG1qnM=
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:PH8PR12MB6914.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(1800799024)(366016)(23010399003)(376014)(56012099006)(11063799006)(10067099003)(22082099003)(18002099003);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?utf-8?B?QTRJMUFHVUNtNDZieURZNWFQUnpiT1BIN3N5K3duTVVseGRabWFiejhEcDds?=
- =?utf-8?B?MFJ2MWpYWHFvU3FXRmZVelVYcHM2enQ1OGFVZ3g4V0tUV3FwMWNSNHZLeHQ3?=
- =?utf-8?B?TFAvei8vSUZwb2x5KzJiUTMrNWJFM3V2V2xaZTA0b3VTU3hoZy9FTWpkeXBw?=
- =?utf-8?B?WTU3Y3I0dnZueStGNkllcUxiUWF1aTl5RkdDd29tK25aN0R0dFVvb3g1RXlL?=
- =?utf-8?B?K2xRaHdxVFJOajRzQlMzK3RGOThSQncxZmMzTmkzTlN6U2lxZlRqeXVWbmU4?=
- =?utf-8?B?MHREaS9iWHAvQWFya3psN0V6QkpVMGhRa1VpQ281ZWROVW9JS3ROSVg4bXZv?=
- =?utf-8?B?SUVKNHN6QXZvQ3puN1JCSHRQcFBlR0J6RWR5cTQxTmVNU2p2SmNnTGFDRzhp?=
- =?utf-8?B?bEZySmhvdlpNN012QjJ2V1hIV2duWDg4cE03a2lRUENObm1OQ25lQWxJT0JT?=
- =?utf-8?B?VTRuU0dJVDgrZlVCai9Sa1FQMHZQQnNLdVJJNlpLd2FiTitVemY3OWtuT25Y?=
- =?utf-8?B?dzdEL2ZQc2IvaUNneHJqODVEYzIwMEZqbTRHcWwrTDZWQ2F1c05nSHBsdjh5?=
- =?utf-8?B?VVU4ekZzUnJ4bjN4cytzWVFveFEyWUVmUUMyL1RNdmhGN25ha2xHejNvZVlj?=
- =?utf-8?B?ZWhSVnhmdVBWQXREMjlPM3JTVVljRkJZeHl3NTBXcWVoVHRpZ3NmcEtaZHZY?=
- =?utf-8?B?WXZod1RDM3NGblUrZExtRW1ZZ3FZOWhsWllUcUtPQzE4UTZEUGQwd1ZKcjUv?=
- =?utf-8?B?MXNNV0c3eEtwdldLTDg4N1hzVkZmZEJxWDltUExPNDB1LzJHdjZmdmdYRFBU?=
- =?utf-8?B?YzFMVHpzd0ZzOXR3TExtUHErSHJZdFpLSGtXVDhEOUJhR0lRM3FWQ0xCZWRS?=
- =?utf-8?B?NFg2SGF2SVhnSTZxSWwrdE5zZ2RqWHkyY2djSGY0dlQ4VHlmaGJSWTNiUFlB?=
- =?utf-8?B?WnRBSVk4ZVlLVlNMS1BZaFpsakpiWWp2ZWlLNEY0dEh6Wkp2NmxtZ3NQVHVH?=
- =?utf-8?B?SEdCN0lZZmQ0SzRyK3JwWjJzb3R4amJrWUZSUUFYcFYxb0pQbytWbjRoTHNM?=
- =?utf-8?B?MkV0MkRHNERNbEZtMk1zeE9ndkl3dFRjeUZTMXhDZEMyM1FpQmZFMDVnWUph?=
- =?utf-8?B?TDJHRTFubXpRTTZKWklQdjJjZGFEc3NPS3J5NGI1Ym9HSWNXU0lQMU5VNGNY?=
- =?utf-8?B?YzFIeFBFZXN1c0FOLzR3bWJ3Vk41Z1NhSmI2a1FMWXk5dDNuTFIwaW1UUWRr?=
- =?utf-8?B?djhWNnRMc04yWVE3MDRQeVg2RHpwYVFJMFQvSEl2YlRlUi9rS3VqeVdFdVVx?=
- =?utf-8?B?TDBJM3dCSUpFVXJSUWt5L0s2SEhnS0w3TjZGSzE4NEdUbmNHSHRaMXVsc20y?=
- =?utf-8?B?eEd5KytvUWZpRlovZTljOU9xTW5rdnhpaHJNSGR5UXBHczRJUXZOK2ltZDJm?=
- =?utf-8?B?UW1mZWp5UFd2YWs4bW56ZG4xOGhZQktJWkxwK2Y4WWROVlhsM1pRblhTTW1h?=
- =?utf-8?B?RXQwZWZ4YzZyOUszd00ySE82SWpSRGEwY2FDMTBrRTM3NU1ISldqMEZQeGhU?=
- =?utf-8?B?ajVvL1BKYlJLUVU2enExcnJ6M2FZdHJRUjFJMy9RT25MMGM2ZHdvcDZKZS9u?=
- =?utf-8?B?ZGZJS3lQVUV3b2FiMjNCUWViN1poYS9KSSt6VjBpcVVUOWI0OFZSVTdqZ2t2?=
- =?utf-8?B?b2RlS0YyQlNRNzljeXBuc2M5T2QrQi9EN0Z1UiswbllwWXVqdzJCQk56dmZk?=
- =?utf-8?B?RXQ0azJyNGVXWmJ2T2x4NTd2bG5XZWlnZTluaEdoOE1DbjUzK1BjcmhuQ0xT?=
- =?utf-8?B?S2tDejhLcUsxL2hnblFOallPVU9TR01lWUZBa0szV0s0Q0RLNnBBZWhnYzRK?=
- =?utf-8?B?aGJabjd5MjBkN1orVlB5b091VTR5a2NKaU5ORWJ5akM2MmhxckhsM3RocE5x?=
- =?utf-8?B?eXZON2hyS3RvSFJSYy9FNUNpZVNwL2phNTRsTkZRQ0orTjk3NXA4dTBNUmhy?=
- =?utf-8?B?WGY1Zk56QU1ncUNSQ1lyaGZkd28wUFlaa05PVmt3VHVGNVFhVFlkbUdyUis0?=
- =?utf-8?B?TlJEMmRYWFZpcVpUblBDeEJqZXVRNHlSVmhhdEg4VHBhS1YzUTdjc25kbTQz?=
- =?utf-8?B?cGQrMGVhVnk3ZFdGcHJxdis0UCtUN1ZNa21tSVEyY2Z1NG1LQi9ZMmVqN016?=
- =?utf-8?B?ZjlHS080d1JvR1NDRkV3eGdoUGtBbncwdGpIdnNOUWpkTzlkN2I3eUhVcmYw?=
- =?utf-8?B?Zm44VlFYbFdQM0FyVk1kYnY1OXdpZHRLN29UMjRuZ1k0L3VJUTdERzM3NTJt?=
- =?utf-8?Q?upMfhsRYALEX3g9oNv?=
-X-OriginatorOrg: amd.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 70010918-c705-4a3c-cda8-08dee9b6d401
-X-MS-Exchange-CrossTenant-AuthSource: PH8PR12MB6914.namprd12.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 24 Jul 2026 19:07:38.5398
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: eR9B9RLAt02TP02ind1F28Uva2GuQ2j11exwZMhnMNnslzEpHBX25llHNiK8mtVRT3FiDCue96X+JISqWcUnNg==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: IA1PR12MB6532
+References: <20260714-upstream-v2-v2-0-76e5e41026db@advantech.com> <20260714-upstream-v2-v2-2-76e5e41026db@advantech.com>
+In-Reply-To: <20260714-upstream-v2-v2-2-76e5e41026db@advantech.com>
+From: Linus Walleij <linusw@kernel.org>
+Date: Fri, 24 Jul 2026 23:31:29 +0200
+X-Gmail-Original-Message-ID: <CAD++jLn9VMq5RcGQy-1TB=SdgkynSDbjeeKoNQ7Z4ZArw-AGFw@mail.gmail.com>
+X-Gm-Features: AUfX_mx-62JQQDBcTKutXOrN-Q2fNr59laJWx5ddo44mrkoC0a-8lhzFzZvvk98
+Message-ID: <CAD++jLn9VMq5RcGQy-1TB=SdgkynSDbjeeKoNQ7Z4ZArw-AGFw@mail.gmail.com>
+Subject: Re: [PATCH v2 2/8] Add Advantech EIO GPIO driver
+To: Ramiro Oliveira <ramiro.oliveira@advantech.com>
+Cc: Lee Jones <lee@kernel.org>, Bartosz Golaszewski <brgl@kernel.org>, Guenter Roeck <linux@roeck-us.net>, 
+	Andi Shyti <andi.shyti@kernel.org>, Daniel Thompson <danielt@kernel.org>, 
+	Jingoo Han <jingoohan1@gmail.com>, Helge Deller <deller@gmx.de>, 
+	Wim Van Sebroeck <wim@linux-watchdog.org>, "Rafael J. Wysocki" <rafael@kernel.org>, 
+	Daniel Lezcano <daniel.lezcano@kernel.org>, Zhang Rui <rui.zhang@intel.com>, 
+	Lukasz Luba <lukasz.luba@arm.com>, linux-kernel@vger.kernel.org, mfd@lists.linux.dev, 
+	linux-gpio@vger.kernel.org, linux-hwmon@vger.kernel.org, 
+	linux-i2c@vger.kernel.org, dri-devel@lists.freedesktop.org, 
+	linux-fbdev@vger.kernel.org, linux-watchdog@vger.kernel.org, 
+	linux-pm@vger.kernel.org, Wenkai Chung <wenkai.chung@advantech.com.tw>, 
+	Francisco Aragon-Trivino <francisco.aragon-trivino@advantech.com>, 
+	Hongzhi Wang <hongzhi.wang@advantech.com>, 
+	Mikhail Tsukerman <mikhail.tsukerman@advantech.com>, 
+	Thomas Kastner <thomas.kastner@advantech.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+
+Hi Ramiro,
+
+thanks for your patch!
+
+On Tue, Jul 14, 2026 at 5:54=E2=80=AFPM Ramiro Oliveira
+<ramiro.oliveira@advantech.com> wrote:
 
 
+> +static int get_dir(struct gpio_chip *chip, unsigned int offset)
+> +{
+> +       u8 dir;
+> +       int ret;
+> +
+> +       ret =3D pmc_read(chip->parent, EIO_GPIO_PIN_DIR, offset, &dir);
+> +       if (ret)
+> +               return ret;
+> +
+> +       return dir ? 0 : 1;
 
-On 7/23/26 15:12, K Prateek Nayak wrote:
-> This is essentially a combined v2 of the following series:
-> 
->    https://lore.kernel.org/lkml/20260715074822.16324-1-kprateek.nayak@amd.com/
->    https://lore.kernel.org/lkml/20260630185904.5602-1-kprateek.nayak@amd.com/
-> 
-> The first two patches fix BIOS min perf setting and its persistence
-> across kexec. The next set of patches rework the Dynamic EPP feature
-> into an energy_performance_preference mode.
-> 
-> Unit tests are extended to cover the new dynamic_epp mode and also the
-> floor perf (CPPC Performance Priority) feature for completeness.
-> 
-> Patches are based on:
-> 
->    git.kernel.org/pub/scm/linux/kernel/git/superm1/linux.git bleeding-edge
-> 
-> at commit 39c0cf62fc78 ("cpufreq/amd-pstate: handle missing policy in
-> dynamic EPP callbacks")
-> 
-> Everyone has been Cc'd on the cover letter. Respective maintainers have
-> been Cc'd on the relevant patches to reduce noise. Lists get the full
-> series.
-> 
-> ---
-> Changelog rfc v1..v2:
-> 
-> o Simplified bios_min_perf handover during kexec by removing the
->    defensive check (Mario).
-> 
-> o Removed the amd_dynamic_epp kernel cmdline and the dynamic_epp sysfs
->    file as they are now redundant.
-> 
-> o Updated the documentation.
-> 
-> o Updated unit test to account for dynamic_epp removal.
-> 
-> o Added unit test for floor frequency. (Kalpana)
-> 
-> Individual patches have breief changelogs attached. Reviews and testing
-> is highly appreciated.
+Please use:
+return dir ? GPIO_LINE_DIRECTION_OUT : GPIO_LINE_DIRECTION_IN;
 
-Can you take a look at the Sashiko feedback?  Especially on patch 1, I 
-think another safe guard makes sense.
+> +static int dir_input(struct gpio_chip *chip, unsigned int offset)
+> +{
+> +       u8 dir =3D 0;
 
-https://sashiko.dev/#/patchset/20260723201228.22584-1-kprateek.nayak%40amd.com
+Use some local define for this stuff like:
+
+#define EIO_GPIO_DIR_IN 0
+#define EIO_GPIO_DIR_OUT 1
+
+> +static int dir_output(struct gpio_chip *chip, unsigned int offset, int v=
+alue)
+> +{
+> +       u8 dir =3D 1;
+
+Also here.
+
+> +       u8 val =3D value;
+> +
+> +       pmc_write(chip->parent, EIO_GPIO_PIN_DIR, offset, &dir);
+> +
+> +       return pmc_write(chip->parent, EIO_GPIO_PIN_LEVEL, offset, &val);
+> +}
+> +
+> +static int gpio_get(struct gpio_chip *chip, unsigned int offset)
+> +{
+> +       u8 level;
+> +       int ret;
+> +
+> +       ret =3D pmc_read(chip->parent, EIO_GPIO_PIN_LEVEL, offset, &level=
+);
+> +       if (ret)
+> +               return ret;
+> +
+> +       return level;
+
+return !!level;
+
+so you clamp this to [0, 1]
+
+> +static int check_support(struct device *dev)
+
+Check support for what? Spell it out.
+
+> +{
+> +       u8  data;
+> +       int ret;
+> +
+> +       ret =3D pmc_read(dev, EIO_GPIO_STATUS, 0, &data);
+> +       if (ret)
+> +               return ret;
+> +
+> +       if ((data & 0x01) =3D=3D 0)
+> +               return -EOPNOTSUPP;
+
+Use:
+
+#define EIO_GPIO_HAS_SUPPORT_FOR_X BIT(0)
+
+if (!(data & EIO_GPIO_HAS_SUPPORT_FOR_X))
+        return -EOPNOTSUPP;
+
+> +static int check_pin(struct device *dev, int pin)
+> +{
+> +       int ret;
+> +       int group, bit;
+> +       u16 data;
+> +
+> +       /* Get pin mapping */
+> +       ret =3D pmc_read(dev, EIO_GPIO_MAPPING, pin, &data);
+> +       if (ret)
+> +               return ret;
+> +
+> +       if ((data & 0xFF) > ARRAY_SIZE(group_map))
+> +               return -EINVAL;
+> +
+> +       group =3D group_map[data & 0xFF].group;
+> +       bit   =3D data >> 8;
+> +
+> +       /* Check mapped pin */
+> +       ret =3D pmc_read(dev, EIO_GPIO_GROUP_AVAIL, group, &data);
+> +       if (ret)
+> +               return ret;
+> +
+> +       return data & BIT(bit) ? 0 : -EOPNOTSUPP;
+> +}
+
+So there is some pin muxing going on here. If that should be made dynamic
+at some point this should make use of the pin control subsystem, but I gues=
+s
+it is currently hard-coded?
+
+Yours,
+Linus Walleij
