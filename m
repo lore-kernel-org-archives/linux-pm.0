@@ -1,95 +1,80 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+Received: from mailgw.kylinos.cn (mailgw.kylinos.cn [124.126.103.232])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 713293B6370
-	for <linux-pm@vger.kernel.org>; Fri, 24 Jul 2026 07:59:47 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0913C35E1C0
+	for <linux-pm@vger.kernel.org>; Fri, 24 Jul 2026 08:06:26 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=124.126.103.232
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1784879988; cv=none; b=bRAW/elAatf/mv/L5AbPgnjK9vqjrBMp4iT+onOIJqf/52Y8ABaYRDhnH1zjT8KT4j9BFMEvcd0E/VIjVl9kVitNy6Q2DQ7+bvm3yKVohSiI3eXcnlMgSdTkTNs6a16jspIwMSlsal/BgpfNM6aLBZB7P1PVdQHxlpsECsJjc5c=
+	t=1784880393; cv=none; b=AMAg5s6OGC92vlb8rwXHXjMPbLXq/7jRjj07JJHmvrmEAkdEmyFZaZjx6Ef0nW7oynYRs3J6G94Z79MfUbJHGzv9Gs+85Alxf3dKyB+TrJf+wmAtqOmkfTMnwC6h3i3RMBunNYoPFJ/ZeFKW8p6HYwLYFVqo/gooIkCANHWZZcc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1784879988; c=relaxed/simple;
-	bh=gguC+/stcGzXeWlEBtDdJshd9M9E+gPl/OhO8fGPQPI=;
-	h=From:In-Reply-To:MIME-Version:References:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=M7fUrJ6UG155PUZQFcQPZ8+9h72h+ETJ+SLfxVJzm47gPvmWhLW6zsJ1jtPe1C9KGeV5FgLr2+pu212l00JaWeE9dVG9KaA165lLf1UEYHc7hH7i0mL3k/LS8ip7JOhJufBS2tYnv7w8VRbNc5TbNPtSkk/9B3EK1SaqvOXdVsE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=LZfTXROs; arc=none smtp.client-ip=100.103.45.18
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="LZfTXROs"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2A01D1F00ADE
-	for <linux-pm@vger.kernel.org>; Fri, 24 Jul 2026 07:59:47 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1784879987;
-	bh=gguC+/stcGzXeWlEBtDdJshd9M9E+gPl/OhO8fGPQPI=;
-	h=From:In-Reply-To:References:Date:Subject:To:Cc;
-	b=LZfTXROs1Jm4p5xUBV67X+EsnN4cwsm/xI8sIqeDH6K3jqE3pl/Fc2BdrIgskrkNX
-	 01kF8ELhYWxIy4ulIA5aGeMgoNu6lJGQeNjiVM6cRh5OiMp63mc6nZESDznegmsOlZ
-	 0rkV9n7PpZMdqOvIxxGYrTJnUd80VSH8eHaABNJ7w7mh8ApOyI6N12Q4fNV7Gy3v2/
-	 dr3l4kSCDSZD8jPFSPITVjRWdMosbgRBM4MJTdVyrNb9U75F+ZgfjJnU01+SO95le/
-	 zxKSLZXgGqdRbkDF7Bq8ngBh7oVlDyCYlUITWM02LVINtQM22hhVWAGjQWvJ40Aoos
-	 UOWckRm74ubNA==
-Received: by mail-lf1-f52.google.com with SMTP id 2adb3069b0e04-5b2b92065ffso163791e87.1
-        for <linux-pm@vger.kernel.org>; Fri, 24 Jul 2026 00:59:47 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AHgh+Rp93qfaSKBtqzbxw57L9TApjULa2p7knXrNlkHyQE+C2Ra7Yri1mQt+aO7nK1uTfAljwTJKYA/VWg==@vger.kernel.org
-X-Gm-Message-State: AOJu0YwWo8DjlZ5lDEqrwz/MmSBQcX81qsSZd9gsvJMHYJDpcJ+sVB42
-	OsZ2tXfsp1pVJWRewBz6Wf0BoB6tnegIAFucwtL6C3Ja7agzOBmPHK/+519DmE+gaPvc5xZ1IZy
-	UcPSzfH3qEdaQtVpne4Vzxe3gyXSGIGj4uH7/epC2Yg==
-X-Received: by 2002:a05:651c:25d0:20b0:39c:7089:8052 with SMTP id
- 38308e7fff4ca-39f07eb388amr10114611fa.19.1784879985843; Fri, 24 Jul 2026
- 00:59:45 -0700 (PDT)
-Received: from 969154062570 named unknown by gmailapi.google.com with
- HTTPREST; Fri, 24 Jul 2026 00:59:44 -0700
-Received: from 969154062570 named unknown by gmailapi.google.com with
- HTTPREST; Fri, 24 Jul 2026 00:59:44 -0700
-From: Bartosz Golaszewski <brgl@kernel.org>
-In-Reply-To: <20260723-hamoa-m2-sub-id-v2-v2-1-f10f95eb9ebf@oss.qualcomm.com>
+	s=arc-20240116; t=1784880393; c=relaxed/simple;
+	bh=Hw5+Q73+ZWi9YmoMS+ZX9S0GXOSKMnNzUKiQEKe40vw=;
+	h=From:To:Subject:Date:Message-Id:MIME-Version; b=rDYHandWR6QgY3CcRFRrkhxRbfX+xc9y1lHrh1uzREolexZ/ovtnP/lP7SlDLUf3W1n3Gkzzyhan+BwwrhyM+YBIDOdDInZx3/babNs9Dv38mlTfVqSnywpYFPPYe6kkxTSeC108kOMDdx4QPNI+BlIqdDEzXoNrG83p4wYOuHA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kylinos.cn; spf=pass smtp.mailfrom=kylinos.cn; arc=none smtp.client-ip=124.126.103.232
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kylinos.cn
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=kylinos.cn
+X-UUID: 8e3a7e3a873611f1aa26b74ffac11d73-20260724
+X-CID-P-RULE: Release_Ham
+X-CID-O-INFO: VERSION:1.3.12,REQID:bbcb072c-3fb2-4077-a284-1c0044953157,IP:0,U
+	RL:0,TC:0,Content:0,EDM:-25,RT:0,SF:0,FILE:0,BULK:0,RULE:Release_Ham,ACTIO
+	N:release,TS:-25
+X-CID-META: VersionHash:e7bac3a,CLOUDID:30d74f645cd7322d1f00739a6d0a8e4e,BulkI
+	D:nil,BulkQuantity:0,Recheck:0,SF:102|136|850|865|898,TC:nil,Content:0|15|
+	50,EDM:2,IP:nil,URL:0,File:nil,RT:nil,Bulk:nil,QS:nil,BEC:nil,COL:0,OSI:0,
+	OSA:0,AV:0,LES:1,SPR:NO,DKR:0,DKP:0,BRR:0,BRE:0,ARC:0
+X-CID-BVR: 2,SSN|SDN
+X-CID-BAS: 2,SSN|SDN,0,_
+X-CID-FACTOR: TF_CID_SPAM_SNR
+X-CID-RHF: D41D8CD98F00B204E9800998ECF8427E
+X-UUID: 8e3a7e3a873611f1aa26b74ffac11d73-20260724
+X-User: lijun01@kylinos.cn
+Received: from localhost.localdomain [(10.44.16.150)] by mailgw.kylinos.cn
+	(envelope-from <lijun01@kylinos.cn>)
+	(Generic MTA with TLSv1.3 TLS_AES_256_GCM_SHA384 256/256)
+	with ESMTP id 1727008886; Fri, 24 Jul 2026 16:06:20 +0800
+From: Li Jun <lijun01@kylinos.cn>
+To: lijun01@kylinos.cn,
+	rafael@kernel.org,
+	lenb@kernel.org,
+	pavel@kernel.org,
+	linux-pm@vger.kernel.org
+Subject: [PATCH] doc: power: update swsusp.txt references to swsusp.rst
+Date: Fri, 24 Jul 2026 16:06:10 +0800
+Message-Id: <20260724080610.3487628-1-lijun01@kylinos.cn>
+X-Mailer: git-send-email 2.25.1
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260723-hamoa-m2-sub-id-v2-v2-1-f10f95eb9ebf@oss.qualcomm.com>
-Date: Fri, 24 Jul 2026 00:59:44 -0700
-X-Gmail-Original-Message-ID: <CAMRc=MfH3XrkNopMshkFUoXh8PWCfH_fTpU+CvxzsQbGwZ9d8g@mail.gmail.com>
-X-Gm-Features: AUfX_mwhJtgQj9rw5_1Y85Mea9gZMXhy1GlwBwYjgaueBtm7pw6ZEt5ibaDIVyY
-Message-ID: <CAMRc=MfH3XrkNopMshkFUoXh8PWCfH_fTpU+CvxzsQbGwZ9d8g@mail.gmail.com>
-Subject: Re: [PATCH v2] power: sequencing: pcie-m2: Match WCN6855 and WCN7851
- UART BT variants by subdevice ID
-To: Wei Deng <wei.deng@oss.qualcomm.com>
-Cc: linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, quic_chezhou@quicinc.com, 
-	cheng.jiang@oss.qualcomm.com, shuai.zhang@oss.qualcomm.com, 
-	jinwang.li@oss.qualcomm.com, xiuzhuo.shang@oss.qualcomm.com, 
-	mengshi.wu@oss.qualcomm.com, Manivannan Sadhasivam <mani@kernel.org>, 
-	Bartosz Golaszewski <brgl@kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
 
-On Thu, 23 Jul 2026 05:34:24 +0200, Wei Deng <wei.deng@oss.qualcomm.com> sa=
-id:
-> The WCN6855 and WCN7851 combo chips are available in M.2 card variants
-> that differ by their BT interface: some expose BT over UART while others
-> expose BT over USB. Both variants use the same PCIe device ID for the
-> WiFi interface, distinguished only by their sub-system device ID.
->
-> The bare PCI_DEVICE() entries match all sub-system IDs, so both UART and
-> USB variants hit the same table entry and trigger UART serdev creation.
-> For USB variants this is wrong =E2=80=94 there is no UART BT interface on=
- such
-> a card, and the serdev probe will fail.
->
-> Narrow the matches to UART variants only by using PCI_DEVICE_SUB with
-> their respective sub-system IDs, so USB variants no longer trigger
-> UART serdev creation.
->
-> Reviewed-by: Manivannan Sadhasivam <mani@kernel.org>
-> Signed-off-by: Wei Deng <wei.deng@oss.qualcomm.com>
-> ---
+The swsusp.txt documentation file has been renamed to swsusp.rst.
+Update the references in the Documentation/power/userland-swsusp.rst
+comments to use the correct filename.
 
-Hi!
+Signed-off-by: Li Jun <lijun01@kylinos.cn>
+---
+ Documentation/power/userland-swsusp.rst | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-I needed to drop a previously queued patch from my tree, can you rebase thi=
-s on
-top of current pwrseq/for-next and resend?
+diff --git a/Documentation/power/userland-swsusp.rst b/Documentation/power/userland-swsusp.rst
+index 1cf62d80a9ca..b00b850148b2 100644
+--- a/Documentation/power/userland-swsusp.rst
++++ b/Documentation/power/userland-swsusp.rst
+@@ -4,9 +4,9 @@ Documentation for userland software suspend interface
+ 
+ 	(C) 2006 Rafael J. Wysocki <rjw@sisk.pl>
+ 
+-First, the warnings at the beginning of swsusp.txt still apply.
++First, the warnings at the beginning of swsusp.rst still apply.
+ 
+-Second, you should read the FAQ in swsusp.txt _now_ if you have not
++Second, you should read the FAQ in swsusp.rst _now_ if you have not
+ done it already.
+ 
+ Now, to use the userland interface for software suspend you need special
+-- 
+2.25.1
 
-Thanks
-Bart
