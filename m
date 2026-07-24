@@ -1,243 +1,225 @@
-Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
+Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B14B829D270
-	for <linux-pm@vger.kernel.org>; Fri, 24 Jul 2026 15:01:47 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=205.220.180.131
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6D3222F549F
+	for <linux-pm@vger.kernel.org>; Fri, 24 Jul 2026 15:04:50 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=205.220.168.131
 ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1784905309; cv=pass; b=eOH9L3fo7YEGHFMuUN25LnQzn6P62kUBwYciDiswlZkjUSl9l8VPwz2yQYr9CI2gpV8TvND89z7PaZfUQpglSapXlsSTLblleBljrvvwqwgmNa42TeVyA9hh5Caq1WUoEM0n/okqwrwNM4aIk+rLvpzd9x/YlJVR6SIsfbbaGXY=
+	t=1784905491; cv=pass; b=aKYVmoBBnzor0+qNVfpgwifofMxo/QLmz04F0qe9RyC/8Dph1d02Ay5BtHM0AydMRbl58uQvgoZDNPTq7DNNk+TAlJ9opMvjYh2aRu8xZDoVdQOh4LQZXxXnbP2Ln/Sc4HJ5w3F/Z+9/GQUX1ITkcNkBtUvz7Rp2TUi57N3E9pU=
 ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1784905309; c=relaxed/simple;
-	bh=EqDR5beolQbAND9edYz9jbgsmTNRiGSPJrAez8I3okw=;
+	s=arc-20240116; t=1784905491; c=relaxed/simple;
+	bh=1yHOw4P4o3+O/DBp60Yv8U9QuZtvtdOsTb8sPScZobc=;
 	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=SyBLvtNsYWRj2KWnY6ixY3fgC1qxW6V0I89uCSG438eChZPqSQPmE4Kz63Bsq1bTDmWtu4HT4ur3N9k7xKoe6gyeeGdM+WI3yqTpFR2BC3PQFOnE5bdb9qzKpt/5XgiEVwyzStfeF5x3pTaw2NcCPTiCUvRUK4zFoBOt2iSoe6s=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=Y4OGqcDo; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=VAs5+kuA; arc=pass smtp.client-ip=205.220.180.131
+	 To:Cc:Content-Type; b=klCBTFGBz4/j0Ef2LHN9aSJJw69avC2SjdDMmFnPkLX24TnVNURBIaTnw+R4M+NWLsED97oCkT5iTRJtu1bKMGsjhm91WBIoqjmML1gSopIsK4AyTPSom0AMpiwlNRlxG32JIhIcS7uSKr83r4bfJ4XQTOFLvKYZgl/OaH+aJ/w=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=oRXtDmS3; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=QgpXI1/H; arc=pass smtp.client-ip=205.220.168.131
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="Y4OGqcDo";
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="VAs5+kuA"
-Received: from pps.filterd (m0279871.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 66ODbNpb3335787
-	for <linux-pm@vger.kernel.org>; Fri, 24 Jul 2026 15:01:46 GMT
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="oRXtDmS3";
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="QgpXI1/H"
+Received: from pps.filterd (m0279865.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 66ODbD5p3487364
+	for <linux-pm@vger.kernel.org>; Fri, 24 Jul 2026 15:04:49 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
 	cc:content-transfer-encoding:content-type:date:from:in-reply-to
 	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	uD+5izwod7lzNMQrYKeunGpTKt32Jca4KiCQa3SdMss=; b=Y4OGqcDoSP91mLoj
-	Ie/WNF1TbGYkZhheGKZuMX7DXMpAOzWGIEIkPV97Pilj/04TI6bPRTjT7cwbc/dR
-	mdNLx93Phh11sEc9a9uh+h9xGPWpE9wEVWkFPD62qsIkVp0ewA/IvuCopDh9xPRf
-	Odv/D+eUk8/HMyqxdQfGlARylz7WlM6PPSi/GE5GYO2d6LFBc/To4woo9XLp/W68
-	9pneAbBjBA33iRUWbUF3T/kqgkHKigWGA8ORqYjSPRELA8hvAma+vewxRqXomP1L
-	WjTEtCcONNzguVikCaGnqoQ6IeWIp8rj5XvTYrMOYYsbEC3tos5PNrNfYPTORVw4
-	UM4FZw==
-Received: from mail-yx1-f69.google.com (mail-yx1-f69.google.com [74.125.224.69])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4fm5bys8cx-1
+	HH4wO6nyRrZiBShi9lrjkrI2flnam11wcKl2gFHmy0g=; b=oRXtDmS3bz5bCRAA
+	Xrtyft8XmVNUktvTsBKk6PH7dx2YwG9wHqGzfQhzzzHscbrpzGoTexLy+OaMwCcd
+	Yo9lo+BHdJ/Ygy1NJrgLnqN5Vxu3P2RK4/sgS23aZAZcLn+pYMB7rMHqlSSTH2bq
+	Ljo1qSBiDQH+tGcF7Qgrxstfuo55QOr3RRA0JFmJRxbOzVYvGTQeC070WaF4Vh5M
+	F5LNzWhhWuG5/MbfTNpQhsoVXqhBQ+AcaP5s7oNx3vEjEsEbSjC6zTD53P0yrR57
+	WYLwjpiHf4CjY/zdWIkd8B90i4/n7rlQ1uHC2BkHpW/9EHDQQbm2dgwTa/mcSMNH
+	9sVGNg==
+Received: from mail-qk1-f199.google.com (mail-qk1-f199.google.com [209.85.222.199])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4fkqa0ca63-1
 	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Fri, 24 Jul 2026 15:01:46 +0000 (GMT)
-Received: by mail-yx1-f69.google.com with SMTP id 956f58d0204a3-667bb944299so529338d50.0
-        for <linux-pm@vger.kernel.org>; Fri, 24 Jul 2026 08:01:46 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1784905306; cv=none;
+	for <linux-pm@vger.kernel.org>; Fri, 24 Jul 2026 15:04:49 +0000 (GMT)
+Received: by mail-qk1-f199.google.com with SMTP id af79cd13be357-92e56b2b350so107751785a.3
+        for <linux-pm@vger.kernel.org>; Fri, 24 Jul 2026 08:04:49 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1784905489; cv=none;
         d=google.com; s=arc-20260327;
-        b=L9m/O6prVU1a/t77kVMLjeQIFBS2hqrRt0hTNZSUnJAuiwOBPV9fq/7RbP0bbVr6PN
-         I9y1aKXy95zLzgVNN7MB6faQIjYi30K3LeQzp0qWrg2a5peNRZpbbB1R48IUajWF/oAU
-         C7AHYra2qK7ur1aAuaZXeVQqo7oYnX/S3C49MgcYszxsz4RbWJ3XqRCO+XkXtoYse8YT
-         z5X/7gbuw6XghvqS/htwJF8mp8mSzt43hsjAiTsDfoggRuomvRGd0jprO0N6RlJvWAlR
-         7Ce2F12mV1QEwCgoT0GVix8WbflvJhFVsD+0xg9MEBxjvRrXa8RBn9BvN2MHnrkm2KFT
-         SN/Q==
+        b=Mdw0QDqGLljRwPviZK8E200JekFdYqgE8emq7Q36T9vqRZ5KHwiAv4QkSTmW8DeZtg
+         TLwXoXhdifct44du074xbZSlHYs84y7C6mqO2d54GrVxs+RYaIVdWvitrsLUZKrDBMYx
+         otRAHjPvZ3gNvywNwIAR2MqSvlu0HX2BAUiTBdx3wmMzNYFN7DNtrVCsHenNDN4d6DMy
+         pumrsSGA4sm/8zjCBC5oQwvQXjy/NL1ojNvgKJ9/bSzDEg1pnIQ+jHArX2fofxfvv26v
+         bS2/Zm5yBN/mL/BM1nxcdYE3m7Gv1s1pXRUgVS+Ki2cSXZfhqDBf0kiAxkDkfo6kexpc
+         toFA==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
         h=content-transfer-encoding:cc:to:subject:message-id:date:from
          :in-reply-to:references:mime-version:dkim-signature;
-        bh=uD+5izwod7lzNMQrYKeunGpTKt32Jca4KiCQa3SdMss=;
-        fh=xKBHZWR7yN0Hlqfi1sRt+twpHgs/411vwzMxTWi/X2c=;
-        b=JsbmVPOThhqeAPOhP8QFsaS7LTxSDh2pNhcGorjtFeVVYBuhJ3g/fAGFJaJ/SG9hJu
-         DhDAIUXmamOLngTlBT5rcnDJFtb8uWtnAKOLYGpvRz6N1oUvFcmRzKtNYlqn4I/prSOi
-         lD1IzkQbW20t/TN+8vjjrtkrcDLwPUuPsZ7/axcxOfcrzyKEBQ6c3uP0tb1eAdojb92J
-         rJaBKfWrJF0RIu2zH+mZ8c+605mbBoetXFpQVZ60kv9QNiEkn+TF8ABRUG8RlgsGf7zA
-         qTbP3HbgtxTvSnasOjljLxPKGW9JBQQDkAENucozndcE+pYJimSEKQky5K1UUhoAop/S
-         PEPw==;
+        bh=HH4wO6nyRrZiBShi9lrjkrI2flnam11wcKl2gFHmy0g=;
+        fh=PzYEwNQC95d3jsHUgF3SPvtZvsqWbPR94Nr3FiDEF8E=;
+        b=lXnAq0cfeU00050i2q5XUaC+nYkvF7FqMcpaJTmW5fgnOGcNRXK/qjdLiYA1C2uuEa
+         cLXX5Wk8+E/2eKWbSDSbPGuWwKJoXmbTWmKRCNOCJYfjW3PbxGz3g6gJ91cBbUjlGSTY
+         0fU0bSVxS6BsB52lvBQWj3H5dEps+NeNEjlrRqhPffP04EA2ai/3+1kPgULPF6067oG9
+         /UT+cHYTX1Frtu8dRgyqnFg+WCftbG9NfBHe5sy+77BL6GkFg738UPuAOsRORRP7Ch0/
+         cXnr6TIQrpK3IwcJATheXaliB9SZDVUfx2CovwwKEqLAQomWrwe1iS1szsf8HybTHtMr
+         0blw==;
         darn=vger.kernel.org
 ARC-Authentication-Results: i=1; mx.google.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1784905306; x=1785510106; darn=vger.kernel.org;
+        d=oss.qualcomm.com; s=google; t=1784905489; x=1785510289; darn=vger.kernel.org;
         h=content-transfer-encoding:content-type:cc:to:subject:message-id
          :date:from:in-reply-to:references:mime-version:from:to:cc:subject
          :date:message-id:reply-to:content-type;
-        bh=uD+5izwod7lzNMQrYKeunGpTKt32Jca4KiCQa3SdMss=;
-        b=VAs5+kuAYC/8ocCfDAZxsMVcrBo3SKZ23f7beBvvEqm9CW2SuyBQ7bS0GHG1qkasEB
-         p/jW7UTjgNJtT70Ci9rJgATPTf4F3FvAy0SC2nj+MFyuQIUo4mAMZsYNxxGo7mvY41mK
-         SjFmarEhCwZGFnIJgYqPc/ADCYxih6fdWIbFq8i7p79RWKi/muQw8VYQ9yqUA4/HiqLx
-         FwzNvHFIVthMGWX7ZCk5OVeUneEtYTKL5JwPP0Vlh0zhgclnYmaOtY2rD95LXGmE6QaS
-         mIr4I3KRJrHK2u9yXF/nzBuPpbjaGLzx68KoqdVkq9D4Z0CsYPD/hSdfQKtQ2G1sr9UB
-         RQOQ==
+        bh=HH4wO6nyRrZiBShi9lrjkrI2flnam11wcKl2gFHmy0g=;
+        b=QgpXI1/HnPJpMcvw/34D6EpKsh39EkvyhTY8qhHSNj2ZbE9PpOFYMcz7/tuUPFrhPR
+         Pk0zJfiIdJ71bfmxfvHj4vceE/n1r7XKE6FTl4TGbvDhVsxT22P3+pMTCGQoZ0C4V8eJ
+         p4QEW+C4ndkGaRhTCzrRaw1jQWRFX1KakN7LRtZCngEPb/na5HQGPdVJm22RZaSOJrkR
+         joLDZ+V7G3MQq8mA1XPeR+T8w67RsJZQndaQUvL8Ar3GhQtLSzU4W/ApZ2RAAjPuBMXH
+         RUmIOQtaqU2QGbaOiFxfYM2dMfRj3ctGND1gzt2IU8M9Bmu4QmUEexp8RGV86wRlguey
+         fePA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1784905306; x=1785510106;
+        d=1e100.net; s=20251104; t=1784905489; x=1785510289;
         h=content-transfer-encoding:content-type:cc:to:subject:message-id
          :date:from:in-reply-to:references:mime-version:x-gm-gg
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=uD+5izwod7lzNMQrYKeunGpTKt32Jca4KiCQa3SdMss=;
-        b=SweS8QljRnhTAQ4A/58rooz2WPrIiPZmCDZs4MnHnkAJBIymwKgC9pGQnlm10wYfVZ
-         MdUmyFlgA766vtZ+Hfi9fnLlzBPxysY+gUU8NPSPSJMn2jn9H74XCqyDz+svcahvTreY
-         lqdLN0ZWrtw49i6FVG2yXWjr+gaTxru9AwDhCn9yKUg5cMDGKXdGvKkm3mvRu20qD3qO
-         uTHG2cVyh0ysBNXorL3MRSTMc515egZaVZ4k/VKeZfJj0CVdCWfJ0siqI30J6AIyZha9
-         jGw/eIjds/jLyYoyWYBkjoekyvuqBMrWh5V/5cFD0kew/ACYEL+b+i5uHPb7MKrg0SHs
-         o3/w==
-X-Forwarded-Encrypted: i=1; AHgh+RpMRxZNGN8ffsWUD9A70BrbFNPANwL3o0up98YZwduSKCIF71k5/6e9Jm2z+rbSxzHlxSAqV97fmA==@vger.kernel.org
-X-Gm-Message-State: AOJu0YxK7tC5DkSrkjCBPA+psZ8if8Q5XdIXsFRThOaA/VDK7rRVzncK
-	vwREqFApDZHYmpZ+og8prOHtiudpERbWjiBsIDHC7jX8HNHFwEo63YZhgrQeqnxQBKXhD+Il82w
-	MuAenJNR8IpqdhXak7/4wh/Cl+64bsFK+N0n972xwwlOhf1JFNSoArrAng+eHrtiOhs7HY6h/6l
-	C8nMKGiFLwJPjnrBjEij2WXxWf5XvVjxfR6Ba6
-X-Gm-Gg: AR+sD10hUJqVHSm964ub9zQLS3gTfJRbGGtyQ276/CH4LMiC+Hgp3lby+c4Gm4YMO6p
-	oOGtdtkdvm8LM7il++IpOuJhoK8YwHgdITTIWFDEEwa1gHMVwJo0tkwboo7oh5SmxfcGLL7d0GE
-	uKyv8sNwtllMOyif0PGyEnqyM61txNNEct0DEt2/LWBuIYHniTvXUj8cSVxA==
-X-Received: by 2002:a05:690e:440d:b0:668:7e4:aeac with SMTP id 956f58d0204a3-668a504e648mr1538828d50.106.1784905306071;
-        Fri, 24 Jul 2026 08:01:46 -0700 (PDT)
-X-Received: by 2002:a05:690e:440d:b0:668:7e4:aeac with SMTP id
- 956f58d0204a3-668a504e648mr1538798d50.106.1784905305595; Fri, 24 Jul 2026
- 08:01:45 -0700 (PDT)
+        bh=HH4wO6nyRrZiBShi9lrjkrI2flnam11wcKl2gFHmy0g=;
+        b=newg6GTCVGzFF1xcXj8mKPA2Rlj0ZTsG1O4Q0kt+6lbCiY/RI22IDA2AbFWoCUJVhq
+         fpp17vrJv3Mo7RwLOaZMtnZXh6f5Wubo8NjP9az2E1Lt7NgfywBOawKpSN8t0JOug6uj
+         ViSe1C+qvgivPFYMfBnFzdg/EYT8kt7vG4yszX4XZDgh6t+P4xyF/UVqjUkkFSY+eGkT
+         KsOU5+7ygjoyD7TxCtYIf6WBxLVi6LhbGUNMkX90qW3GUAL03NTR1YJ/3IioK5n6sUnU
+         /IV20nww8qiXtCOa72Gplhcl+5E3JNajFFG8NMAy8p+Ivwws0hsKUAiDg/IolIqS0yLI
+         ZOsQ==
+X-Forwarded-Encrypted: i=1; AHgh+RpJfZSQotHUrp5ToIn2ogyN2ILlKZ/Y8uGj5HWv0bvFKYfFE7UJbJ4OtOgDUuRWoYJUzO8DPjJm3Q==@vger.kernel.org
+X-Gm-Message-State: AOJu0YyFqzvMd08Z7yZ5yCQx0VS+0lvsHUoJgKaG7TTLDogfQ3C6X440
+	9g/AuSXFaQUnVW8Fz4+nJRNFEi+bwsIYSQr6tvWxwWp1Df6dE+Ymp0oacPCVhnUaUSHlH89UP1K
+	oa+QSE0SyziWQx06fnSKCCSqZTyNII2fvOePKT8xl09NYTR1F1deVBgi9iADlA9xJB/tuk0ekKN
+	aojLnfE3ZaoKcfz26mlrdFY4eEuSZNBMV7y2QJ
+X-Gm-Gg: AR+sD13kW76IkwDnJEiPFSVpPAn2mzJ4Uh7L2zundguO2mwYXqMTFVGnxWuO69oMJVK
+	9zea9vtBuLgctKrbmMn+i/8vk6mUjyNRkEVRGz7xPkXWj9fZZ9f2+sGsAHx7VlHZfWPyFT9Sxjd
+	TNQchHpISpdT0A2Z/dWyyu+uMehPEiK9+7gtKuwy7MQQXcMQF83k8106q/hg==
+X-Received: by 2002:a05:620a:2a15:b0:92e:46cd:72a1 with SMTP id af79cd13be357-9310391f2b5mr828737085a.5.1784905488417;
+        Fri, 24 Jul 2026 08:04:48 -0700 (PDT)
+X-Received: by 2002:a05:620a:2a15:b0:92e:46cd:72a1 with SMTP id
+ af79cd13be357-9310391f2b5mr828731585a.5.1784905487953; Fri, 24 Jul 2026
+ 08:04:47 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260722132729.302067-1-dmitry.osipenko@collabora.com>
-In-Reply-To: <20260722132729.302067-1-dmitry.osipenko@collabora.com>
+References: <20260715-rpi-pm-remove-v1-1-e4eed226e08a@linutronix.de>
+ <CAPx+jO8EPX2br9vsuFXBDPoQTF+Ks09MFcFQzchZxZVaj7y=-w@mail.gmail.com> <ifzlb2b3rdoo3hckhga7ggmmd3j5ub4a2krb4g25sh6naoxeyj@64ownhquehue>
+In-Reply-To: <ifzlb2b3rdoo3hckhga7ggmmd3j5ub4a2krb4g25sh6naoxeyj@64ownhquehue>
 From: Ulf Hansson <ulf.hansson@oss.qualcomm.com>
-Date: Fri, 24 Jul 2026 17:01:34 +0200
-X-Gm-Features: AUfX_mzjLOgOcCUz76_T9HJlbASNTyiIQVZ65cjhf0ZB5m8FWwTsm9XV6DD0K38
-Message-ID: <CAPx+jO-1_ZpYcnPtoYxRn5vv34tiP7TXnjKZ3SaWkEzdeTfXpA@mail.gmail.com>
-Subject: Re: [PATCH v1] pmdomain: mediatek: Fix MT8183 hang on boot
-To: Dmitry Osipenko <dmitry.osipenko@collabora.com>
-Cc: Ulf Hansson <ulfh@kernel.org>, Matthias Brugger <matthias.bgg@gmail.com>,
-        AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>,
-        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org,
-        linux-mediatek@lists.infradead.org
+Date: Fri, 24 Jul 2026 17:04:36 +0200
+X-Gm-Features: AUfX_myV3Jm-ftEp1guJqTHh984-A-3KKl2vVDttM8ic7zL9cWO2QF5T5wk0EMc
+Message-ID: <CAPx+jO_eG7Eu5C_PxykYwDpQOqGzD+3Kf7OgYC_4pE68rT1D2A@mail.gmail.com>
+Subject: Re: [PATCH] pmdomain: raspberrypi-power: add remove function
+To: Gregor Herburger <gregor.herburger@linutronix.de>
+Cc: Ulf Hansson <ulfh@kernel.org>,
+        Florian Fainelli <florian.fainelli@broadcom.com>,
+        Broadcom internal kernel review list <bcm-kernel-feedback-list@broadcom.com>,
+        linux-pm@vger.kernel.org, linux-rpi-kernel@lists.infradead.org,
+        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
-X-Proofpoint-ORIG-GUID: P8eDsVJtpK3JHoOGFdg1zHx9uL80LlO8
-X-Proofpoint-Spam-Info: AW1haW4tMjYwNzI0MDEzNSBTYWx0ZWRfX2jDxDK/lFvun
- XLnSxdkgpDwb4Pmj0OXNNQ9h6d74O09otJTRUyYC+tu11VX4Xpii4WTDDDRx0GwPqg9KJv5qRD3
- mv9VAqbOzBMbdJbYiV51BWMN+dmtC+c=
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzI0MDEzNSBTYWx0ZWRfX8GaK6Mj6fZR8
- VFt1mabOWW3NMPsh1DH6MFgRv2chajLawbd8beEOMDqeuI+HnFlvE0P9sHNBRTqvwuMwaHoa919
- H9+HbYGN8TJDfybw/dNEQL7Ipi2usUuOwmIHbXNKaTfOvnBdrGnyFuFYkNR47VQDX8wnbRfeIVU
- iP0WmKyvC1oXsL4kHptKo4cLMEw0/WjkNYitYoj8+sREhxtIXsSA5DqKolYjre+MFABADAyQw5c
- M+DmDOmVkiafX7uYQibf/aLkoBy7Bpf/2XOSLxLwxsCSdNJMScJdfy72FDhWxZiijP1/82zh5l2
- FmxxZ7SBsQS1pqxDzhDekZtI++BMgZ4kUXLkpWKubIEynhH3NabNR38l6nYu/e6BcTtQ4PJXAho
- lPTUAepq5m9FO+Y6wfSueWGs9qAPXAzlaEt/Q39eoR39iHs+3b0FCyHLtRKNDAj2Ns5V0W/njk8
- dYSeVwBmH+ztvdISx+Q==
-X-Proofpoint-GUID: P8eDsVJtpK3JHoOGFdg1zHx9uL80LlO8
-X-Authority-Analysis: v=2.4 cv=GMA41ONK c=1 sm=1 tr=0 ts=6a637e5a cx=c_pps
- a=J+5FMm3BkXb42VdG8aMU9w==:117 a=IkcTkHD0fZMA:10 a=RAioF0-LDSMA:10
+X-Proofpoint-ORIG-GUID: PFfmQsxg-IkSel6UHjTrRvppBYmNoIfB
+X-Proofpoint-GUID: PFfmQsxg-IkSel6UHjTrRvppBYmNoIfB
+X-Authority-Analysis: v=2.4 cv=e/k2j6p/ c=1 sm=1 tr=0 ts=6a637f11 cx=c_pps
+ a=HLyN3IcIa5EE8TELMZ618Q==:117 a=IkcTkHD0fZMA:10 a=RAioF0-LDSMA:10
  a=s4-Qcg_JpJYA:10 a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22
- a=3WHJM1ZQz_JShphwDgj5:22 a=QX4gbG5DAAAA:8 a=W51c6IlItZHyHODVoFAA:9
- a=QEXdDO2ut3YA:10 a=Epx66wHExT0cjJnnR-oj:22 a=AbAUZ8qAyYyZVLSsDulk:22
+ a=Um2Pa8k9VHT-vaBCBUpS:22 a=UovKDt9gyfZwSysGnsYA:9 a=QEXdDO2ut3YA:10
+ a=bTQJ7kPSJx9SKPbeHEYW:22
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzI0MDEzNSBTYWx0ZWRfX1WiASaTZ2Xjz
+ uOaCLYICt8T+xUzxOnx9v89yurUPWwTw+xgiXnWZUu2OZLCcQ8No6kxMwGBvfEuCVNtnqjn601S
+ E0VlCVhU0BFYKLdjRqOvr2YYpJvIGV7x7Qo1Uzhn6m8x9W0n3VzXB3aA/yJMvcy/Ue/saNexdpc
+ XBimUsFV5TAYAM9wqe8XMNK1XTB5ker3fbHYe4RU0Qn86pq3KJ+/nuSfmsetzhiESTTulcyWwbK
+ 99zU99aOcNqdu9+LwMIHulLBrUOuE4n+bNhhXzlCf/UccSgw8xUTx7VhvC1iDPHd6RnXPpGWjDj
+ n6tCzgkKjMZjOHCQv19DmVDlDNzFQ+qzhKB0djTGFbFq2s3ZA3pPGoXKEyWUkLSKlE3GjqlHPtd
+ EUmTpH06szyE468Q71qqIX9wMXiYoEwx3nPpgG4DP2HucLTw6vXYRMFwSVonottA8prW5W3F91Q
+ usPQ2oCniyAujIVOCXA==
+X-Proofpoint-Spam-Info: AW1haW4tMjYwNzI0MDEzNSBTYWx0ZWRfX6qK7Z1sMdDvQ
+ n+7cCjnVU1m1t1FSiYquFVOePH7nEpVy03DElBldfkt0K7zADaaD05DAEs6TRDwXW2S5LKH4y3K
+ X+6IK1i5W14nEyKsOXc8lI65akG7Qrs=
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.134,FMLib:17.12.100.49
  definitions=2026-07-24_03,2026-07-24_02,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- clxscore=1015 impostorscore=0 phishscore=0 lowpriorityscore=0
- priorityscore=1501 suspectscore=0 bulkscore=0 adultscore=0 malwarescore=0
- spamscore=0 classifier=typeunknown authscore=0 authtc= authcc= route=outbound
- adjust=0 reason=mlx scancount=1 engine=8.22.0-2606150000
+ suspectscore=0 priorityscore=1501 lowpriorityscore=0 impostorscore=0
+ malwarescore=0 clxscore=1015 spamscore=0 phishscore=0 bulkscore=0
+ adultscore=0 classifier=typeunknown authscore=0 authtc= authcc=
+ route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2606150000
  definitions=main-2607240135
 
-On Wed, Jul 22, 2026 at 3:28=E2=80=AFPM Dmitry Osipenko
-<dmitry.osipenko@collabora.com> wrote:
+On Mon, Jul 20, 2026 at 7:07=E2=80=AFPM Gregor Herburger
+<gregor.herburger@linutronix.de> wrote:
 >
-> Depending on firmware, part of the MFG domains may be left ON at boot
-> leaving only some MFG cores powered, to let the ACP to prefetch the GPU
-> region when the display controller is brought up. This doesn't play well
-> with an eventual delay in probing Panfrost when the display controller is
-> fully set up, as that would make genpd's sync_state() to power off the
-> domain while ACP tries to prefetch: this is causing an AXI stall,
-> effectively freezing the AP indefinitely. In order to prevent this from
-
-I haven't made any detailed investigation, but to me, it sounds like
-there is a missing consumer somewhere.
-
-Should the ACP/panfrost devices be a consumer of the MFG domains as
-well? Or perhaps, if the ACP/panfrost should rely on the display
-controller to be probed and powered-on, to be able to probe?
-
-> happening, the sync_state() functionality must be obliterated on all of
-> the MFG domains: while this guarantees a power leakage if the bootloader
-> boots the kernel with MFG PDs partially powered on, this is the only way
-> to ensure stable operation of the SoC during boot on devices with such
-> firmware because, of course, those will never officially receive a
-> firmware update.
+> On Thu, Jul 16, 2026 at 02:28:15PM +0200, Ulf Hansson wrote:
+> > On Wed, Jul 15, 2026 at 10:16=E2=80=AFAM Gregor Herburger
+> > <gregor.herburger@linutronix.de> wrote:
+> > >
+> > > The raspberrypi-power driver registers resources with
+> > > of_genpd_add_provider_onecell and pm_genpd_init but never removes the=
+m.
+> > > When the driver gets unbound and bound again this causes error. Add a
+> > > remove function to cleanup all registered resources.
+> > >
+> > > Signed-off-by: Gregor Herburger <gregor.herburger@linutronix.de>
+> > > ---
+> > >  drivers/pmdomain/bcm/raspberrypi-power.c | 12 ++++++++++++
+> > >  1 file changed, 12 insertions(+)
+> > >
+> > > diff --git a/drivers/pmdomain/bcm/raspberrypi-power.c b/drivers/pmdom=
+ain/bcm/raspberrypi-power.c
+> > > index b87ea7adb7bea..2c2135c17afb0 100644
+> > > --- a/drivers/pmdomain/bcm/raspberrypi-power.c
+> > > +++ b/drivers/pmdomain/bcm/raspberrypi-power.c
+> > > @@ -232,6 +232,17 @@ static int rpi_power_probe(struct platform_devic=
+e *pdev)
+> > >         return 0;
+> > >  }
+> > >
+> > > +static void rpi_power_remove(struct platform_device *pdev)
+> > > +{
+> > > +       struct rpi_power_domains *rpi_domains =3D platform_get_drvdat=
+a(pdev);
+> > > +       int nr_domains =3D RPI_POWER_DOMAIN_COUNT - 1;
+> > > +
+> > > +       of_genpd_del_provider(pdev->dev.of_node);
+> > > +
+> > > +       for (int i =3D nr_domains; i >=3D 0; i--)
+> > > +               pm_genpd_remove(&rpi_domains->domains[i].base);
+> > > +}
+> > > +
+> > >  static const struct of_device_id rpi_power_of_match[] =3D {
+> > >         { .compatible =3D "raspberrypi,bcm2835-power", },
+> > >         {},
+> > > @@ -244,6 +255,7 @@ static struct platform_driver rpi_power_driver =
+=3D {
+> > >                 .of_match_table =3D rpi_power_of_match,
+> > >         },
+> > >         .probe          =3D rpi_power_probe,
+> > > +       .remove         =3D rpi_power_remove,
+> >
+> > In general it's not a good idea to allow unbinding power domain
+> > drivers, as it will probably break consumers and their drivers.
+> > Although, I don't know whether it makes sense in this particular case.
+> >
+> Ok. I stumbled on this when I was trying to fix an error in the remove pa=
+th of
+> the raspberrypi-firmware driver. I have not checked if all the drivers st=
+ill
+> work so you are probably right.
 >
-> Fixes Kappa Chromebook hanging during system boot.
+> > Another option is to prevent user-space from unbinding by adding the be=
+low here:
+> > ".suppress_bind_attrs =3D true,"
 >
-> Fixes: 0e789b491ba0 ("pmdomain: core: Leave powered-on genpds on until sy=
-nc_state")
-> Fixes: 13a4b7fb6260 ("pmdomain: core: Leave powered-on genpds on until la=
-te_initcall_sync")
-> Signed-off-by: Dmitry Osipenko <dmitry.osipenko@collabora.com>
+> That would be the simpler solution. If I add this for this driver, it sho=
+uld
+> also be added to raspberrypi-firmware and to bcm2835-mbox. Because withou=
+t those
+> drivers this driver wouldn't work anyways. Should I add this to those dri=
+vers?
+> And remove the remove callbacks?
+
+Yes, that seems reasonable to me.
+
+[...]
 
 Kind regards
 Uffe
-
-> ---
->  drivers/pmdomain/mediatek/mt8183-pm-domains.h | 7 +++++--
->  1 file changed, 5 insertions(+), 2 deletions(-)
->
-> diff --git a/drivers/pmdomain/mediatek/mt8183-pm-domains.h b/drivers/pmdo=
-main/mediatek/mt8183-pm-domains.h
-> index 3742782a2702..5e33b8628e85 100644
-> --- a/drivers/pmdomain/mediatek/mt8183-pm-domains.h
-> +++ b/drivers/pmdomain/mediatek/mt8183-pm-domains.h
-> @@ -47,7 +47,7 @@ static const struct scpsys_domain_data scpsys_domain_da=
-ta_mt8183[] =3D {
->                 .pwr_sta2nd_offs =3D 0x0184,
->                 .sram_pdn_bits =3D 0,
->                 .sram_pdn_ack_bits =3D 0,
-> -               .caps =3D MTK_SCPD_DOMAIN_SUPPLY,
-> +               .caps =3D MTK_SCPD_DOMAIN_SUPPLY | MTK_SCPD_KEEP_DEFAULT_=
-OFF,
->         },
->         [MT8183_POWER_DOMAIN_MFG] =3D {
->                 .name =3D "mfg",
-> @@ -57,7 +57,7 @@ static const struct scpsys_domain_data scpsys_domain_da=
-ta_mt8183[] =3D {
->                 .pwr_sta2nd_offs =3D 0x0184,
->                 .sram_pdn_bits =3D GENMASK(8, 8),
->                 .sram_pdn_ack_bits =3D GENMASK(12, 12),
-> -               .caps =3D MTK_SCPD_DOMAIN_SUPPLY,
-> +               .caps =3D MTK_SCPD_DOMAIN_SUPPLY | MTK_SCPD_KEEP_DEFAULT_=
-OFF,
->         },
->         [MT8183_POWER_DOMAIN_MFG_CORE0] =3D {
->                 .name =3D "mfg_core0",
-> @@ -67,6 +67,7 @@ static const struct scpsys_domain_data scpsys_domain_da=
-ta_mt8183[] =3D {
->                 .pwr_sta2nd_offs =3D 0x0184,
->                 .sram_pdn_bits =3D GENMASK(8, 8),
->                 .sram_pdn_ack_bits =3D GENMASK(12, 12),
-> +               .caps =3D MTK_SCPD_KEEP_DEFAULT_OFF,
->         },
->         [MT8183_POWER_DOMAIN_MFG_CORE1] =3D {
->                 .name =3D "mfg_core1",
-> @@ -76,6 +77,7 @@ static const struct scpsys_domain_data scpsys_domain_da=
-ta_mt8183[] =3D {
->                 .pwr_sta2nd_offs =3D 0x0184,
->                 .sram_pdn_bits =3D GENMASK(8, 8),
->                 .sram_pdn_ack_bits =3D GENMASK(12, 12),
-> +               .caps =3D MTK_SCPD_KEEP_DEFAULT_OFF,
->         },
->         [MT8183_POWER_DOMAIN_MFG_2D] =3D {
->                 .name =3D "mfg_2d",
-> @@ -85,6 +87,7 @@ static const struct scpsys_domain_data scpsys_domain_da=
-ta_mt8183[] =3D {
->                 .pwr_sta2nd_offs =3D 0x0184,
->                 .sram_pdn_bits =3D GENMASK(8, 8),
->                 .sram_pdn_ack_bits =3D GENMASK(12, 12),
-> +               .caps =3D MTK_SCPD_KEEP_DEFAULT_OFF,
->                 .bp_cfg =3D {
->                         BUS_PROT_WR(INFRA,
->                                     MT8183_TOP_AXI_PROT_EN_1_MFG,
-> --
-> 2.54.0
->
