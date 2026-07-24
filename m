@@ -1,119 +1,114 @@
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id C4CA3439F8B;
-	Fri, 24 Jul 2026 13:43:15 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.16])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7F29531D366;
+	Fri, 24 Jul 2026 14:58:47 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.16
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1784900598; cv=none; b=L8guaKhCSrzVKnsqjbvfUsyqf9F+/D8kJvmtGRlrWd7xNw7RgxpBTMFjxvbSut2FhL70fw4mTF3GR0pLXow04sPpbT49d8VZTclLUxyucn6e8Yg42MfhiJguuMUdQ4P/1oOleqRFm6TwJWaaKBuTgUPJ4ah3aAKhCaqyMt2nAUs=
+	t=1784905130; cv=none; b=DxhQ9mQPhTy8t44BnIm1uIonxuZlDQZvKBXm/+iCc4m36lqoU43CSYRZA3MKHbmv5NBCSZO7uaurVTgN/nwO5cX9PnOHxr0sfLFr1uFgRMVSle5xSmb7c0KIfcfwZTP0enM9pl/sS82cgre9SI38Md3CHwzc0i1Er4OPcv2y51s=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1784900598; c=relaxed/simple;
-	bh=eNP5GqOW7zsH2R03Okaf82MSE794/afd4AaWtwVDhXs=;
-	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=TteoIVAlD0afXaJU4UX2wjM8s5LowR9UbweymcXtLaWjif+y2j5ZfTX34fVHELrnX+FbbxfHba6P8Zd9imk+FHZI0me1O4+PVyvwFmkp8bdyfD1bqSjt3b6lwaUzQnRavLM405ujA3BnxL9aSEJN2ufxwl5gj36LABkZghA3pDg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=vAneIkqs; arc=none smtp.client-ip=217.140.110.172
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
+	s=arc-20240116; t=1784905130; c=relaxed/simple;
+	bh=Z37F1Y/y5gZJSWE1m+vZX0+yXqCgiPgCG/Ql/3FzlKc=;
+	h=From:Date:To:cc:Subject:In-Reply-To:Message-ID:References:
+	 MIME-Version:Content-Type; b=D5WrRLG1MX7hj/m/Yt4dLet9L0EhUDKRbHLQs+2MBGSbXmrHyz3sMhWvWIcO7TAzsOebSlpObrdgvpRcmk6MH/GxIvs118kMty+14lu58SVMjYhHqxUK0ynixALweATZb17eAfWi9XxAuHPgF/K6Dyu7SCweZQfUWVXIEeuEw6U=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=pass smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=gmmidWge; arc=none smtp.client-ip=198.175.65.16
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="vAneIkqs"
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 828281477;
-	Fri, 24 Jul 2026 06:43:10 -0700 (PDT)
-Received: from e127648.arm.com (unknown [10.57.66.189])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id 0ACDE3F59E;
-	Fri, 24 Jul 2026 06:43:10 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1784900594; bh=eNP5GqOW7zsH2R03Okaf82MSE794/afd4AaWtwVDhXs=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=vAneIkqsNtELSt78+OyV+SJPCbyfA9QhK6ZqhTD75Y5FT9klhlElzdTL7S1oGcRuw
-	 9vcVcKD2Pd3hriq3ISSr7GQupl+n/3JzvZYAix8DiIjyCJKNi5Z8hW5FGKEGS3ayFY
-	 fNzW/Fuelg95UXMcGeW2HYYnzmvtVqulgs/F/6KA=
-From: Christian Loehle <christian.loehle@arm.com>
-To: "Rafael J . Wysocki" <rafael@kernel.org>,
-	Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linux-pm@vger.kernel.org,
-	linux-acpi@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	Len Brown <lenb@kernel.org>,
-	Jie Zhan <zhanjie9@hisilicon.com>,
-	Lifeng Zheng <zhenglifeng1@huawei.com>,
-	Pierre Gondois <pierre.gondois@arm.com>,
-	Sumit Gupta <sumitg@nvidia.com>,
-	Sudeep Holla <sudeep.holla@arm.com>,
-	Ionela Voinescu <ionela.voinescu@arm.com>,
-	Christian Loehle <christian.loehle@arm.com>
-Subject: [PATCH 3/3] ACPI: CPPC: Evaluate performance-control PCC use once
-Date: Fri, 24 Jul 2026 14:42:51 +0100
-Message-Id: <20260724134251.1632824-4-christian.loehle@arm.com>
-X-Mailer: git-send-email 2.34.1
-In-Reply-To: <20260724134251.1632824-1-christian.loehle@arm.com>
-References: <20260724134251.1632824-1-christian.loehle@arm.com>
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="gmmidWge"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1784905127; x=1816441127;
+  h=from:date:to:cc:subject:in-reply-to:message-id:
+   references:mime-version;
+  bh=Z37F1Y/y5gZJSWE1m+vZX0+yXqCgiPgCG/Ql/3FzlKc=;
+  b=gmmidWge6s92dH258HyDH9xIOfXKSpIXu8Y3JKAVMNpiHwubk97GHU5p
+   hzOubxcU5tIISJYHo3AbCNsUz2JqHVk7Pu4AQ/YYd7uysS+3nbDkZyLiY
+   EVtkhzXOd3addPlpJ8uCffQlNZ4xuii5XbFEm2YLCHkaIMX9R2RxspVho
+   QgPUrqMxt1nxttWdN7tjP9MC6I2pWpwHC6DGf8K01RUu2L9wE80HqG0+W
+   +/KV+fbSLUaAPvAr7YF2n4gzysNj4udGf69Qi30nG7pjeeNQ+0X0FCb7P
+   3euEn6QQEpZzR9QmuACpwT6Sslmq+395USmWdW8I0fVCzBZ3lvcVNyfWj
+   Q==;
+X-CSE-ConnectionGUID: MuVZOwa/S5q4eLP519HiOw==
+X-CSE-MsgGUID: 38QSr4+DQcuevNeqxbgR8g==
+X-IronPort-AV: E=McAfee;i="6800,10657,11854"; a="85764053"
+X-IronPort-AV: E=Sophos;i="6.25,182,1779174000"; 
+   d="scan'208";a="85764053"
+Received: from orviesa003.jf.intel.com ([10.64.159.143])
+  by orvoesa108.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 24 Jul 2026 07:58:47 -0700
+X-CSE-ConnectionGUID: i2h0bnRiSkmiUyIOuUZ3pw==
+X-CSE-MsgGUID: lcUP54QYS9OEn4xfKJhLog==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.25,182,1779174000"; 
+   d="scan'208";a="262248862"
+Received: from ijarvine-mobl1.ger.corp.intel.com (HELO localhost) ([10.245.245.8])
+  by ORVIESA003-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 24 Jul 2026 07:58:44 -0700
+From: =?UTF-8?q?Ilpo=20J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>
+Date: Fri, 24 Jul 2026 17:58:41 +0300 (EEST)
+To: Xi Pardee <xi.pardee@linux.intel.com>
+cc: irenic.rajneesh@gmail.com, david.e.box@linux.intel.com, 
+    platform-driver-x86@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, 
+    linux-pm@vger.kernel.org
+Subject: Re: [PATCH v2] platform/x86/intel/pmc: Update NVLS PCDS LPM request
+ GUID
+In-Reply-To: <20260722215259.1382305-1-xi.pardee@linux.intel.com>
+Message-ID: <d332044c-c1e8-c3cb-113d-1bc79043f2a8@linux.intel.com>
+References: <20260722215259.1382305-1-xi.pardee@linux.intel.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=US-ASCII
 
-cppc_set_perf() evaluates the same immutable address-space predicates
-before and after each phase of a performance-control update. This repeats
-the three-control PCC test three times for every target request.
+On Wed, 22 Jul 2026, Xi Pardee wrote:
 
-Evaluate the predicate once after resolving the control descriptors and
-reuse the result throughout the transaction.
+> The PMC SSRAM PMT telemetry GUID for Nova Lake S (NVLS) PCDS die
+> changed due to a firmware version bump. The GUID is used by the PMC
+> core driver to locate the correct PMT telemetry entry in SSRAM; if it
+> doesn't match the firmware-reported value, the driver fails to find the
+> LPM (Low Power Mode) data and cannot load properly.
+> 
+> Update PCDS_LPM_REQ_GUID from 0x01091102 to 0x01091103 to match the
+> new firmware version.
 
-Signed-off-by: Christian Loehle <christian.loehle@arm.com>
----
- drivers/acpi/cppc_acpi.c | 9 ++++++---
- 1 file changed, 6 insertions(+), 3 deletions(-)
+Hi,
 
-diff --git a/drivers/acpi/cppc_acpi.c b/drivers/acpi/cppc_acpi.c
-index 2793d6b7d40d..cd1c4a30eb6f 100644
---- a/drivers/acpi/cppc_acpi.c
-+++ b/drivers/acpi/cppc_acpi.c
-@@ -2002,6 +2002,7 @@ int cppc_set_perf(int cpu, struct cppc_perf_ctrls *perf_ctrls)
- 	struct cpc_register_resource *desired_reg, *min_perf_reg, *max_perf_reg;
- 	int pcc_ss_id = per_cpu(cpu_pcc_subspace_idx, cpu);
- 	struct cppc_pcc_data *pcc_ss_data = NULL;
-+	bool regs_in_pcc;
- 	int ret = 0;
- 
- 	if (!cpc_desc) {
-@@ -2012,6 +2013,8 @@ int cppc_set_perf(int cpu, struct cppc_perf_ctrls *perf_ctrls)
- 	desired_reg = &cpc_desc->cpc_regs[DESIRED_PERF];
- 	min_perf_reg = &cpc_desc->cpc_regs[MIN_PERF];
- 	max_perf_reg = &cpc_desc->cpc_regs[MAX_PERF];
-+	regs_in_pcc = CPC_IN_PCC(desired_reg) || CPC_IN_PCC(min_perf_reg) ||
-+		      CPC_IN_PCC(max_perf_reg);
- 
- 	/*
- 	 * This is Phase-I where we want to write to CPC registers
-@@ -2020,7 +2023,7 @@ int cppc_set_perf(int cpu, struct cppc_perf_ctrls *perf_ctrls)
- 	 * Since read_lock can be acquired by multiple CPUs simultaneously we
- 	 * achieve that goal here
- 	 */
--	if (CPC_IN_PCC(desired_reg) || CPC_IN_PCC(min_perf_reg) || CPC_IN_PCC(max_perf_reg)) {
-+	if (regs_in_pcc) {
- 		if (pcc_ss_id < 0) {
- 			pr_debug("Invalid pcc_ss_id\n");
- 			return -ENODEV;
-@@ -2056,7 +2059,7 @@ int cppc_set_perf(int cpu, struct cppc_perf_ctrls *perf_ctrls)
- 	if (perf_ctrls->max_perf && CPC_SUPPORTED(max_perf_reg))
- 		cpc_write(cpu, max_perf_reg, perf_ctrls->max_perf);
- 
--	if (CPC_IN_PCC(desired_reg) || CPC_IN_PCC(min_perf_reg) || CPC_IN_PCC(max_perf_reg))
-+	if (regs_in_pcc)
- 		up_read(&pcc_ss_data->pcc_lock);	/* END Phase-I */
- 	/*
- 	 * This is Phase-II where we transfer the ownership of PCC to Platform
-@@ -2104,7 +2107,7 @@ int cppc_set_perf(int cpu, struct cppc_perf_ctrls *perf_ctrls)
- 	 * case during a CMD_READ and if there are pending writes it delivers
- 	 * the write command before servicing the read command
- 	 */
--	if (CPC_IN_PCC(desired_reg) || CPC_IN_PCC(min_perf_reg) || CPC_IN_PCC(max_perf_reg)) {
-+	if (regs_in_pcc) {
- 		if (down_write_trylock(&pcc_ss_data->pcc_lock)) {/* BEGIN Phase-II */
- 			/* Update only if there are pending write commands */
- 			if (pcc_ss_data->pending_pcc_write_cmd)
+Unfortunately this still lacks the reason why it's okay to not have 
+0x01091102 at all in the kernel.
+
+Whenever there's two (or more) FW versions mentioned in the changelog 
+and one is taken away, it should be explained why "removing" one does 
+not result in taking away functionality for systems that have the old 
+FW version.
+
+It may be dead obvious to you at this moment such as that this thing 
+hasn't launched but it should still be recorded into the changelog so 
+others don't need to lookup such details.
+
+It seems to become a theme these get updated so hopefully next time we 
+don't need 3 patch versions. :-)
+
 -- 
-2.34.1
+ i.
 
+> Signed-off-by: Xi Pardee <xi.pardee@linux.intel.com>
+> ---
+>  drivers/platform/x86/intel/pmc/nvl.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/drivers/platform/x86/intel/pmc/nvl.c b/drivers/platform/x86/intel/pmc/nvl.c
+> index 8dabf2511dd9d..1ed02332dbfce 100644
+> --- a/drivers/platform/x86/intel/pmc/nvl.c
+> +++ b/drivers/platform/x86/intel/pmc/nvl.c
+> @@ -14,7 +14,7 @@
+>  /* PMC SSRAM PMT Telemetry GUIDS */
+>  #define PCDH_LPM_REQ_GUID 0x01093101
+>  #define PCHS_LPM_REQ_GUID 0x01092101
+> -#define PCDS_LPM_REQ_GUID 0x01091102
+> +#define PCDS_LPM_REQ_GUID 0x01091103
+>  
+>  /*
+>   * Die Mapping to Product.
+> 
