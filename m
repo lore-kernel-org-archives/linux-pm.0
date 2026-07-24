@@ -1,135 +1,183 @@
-Received: from mail-ej1-f52.google.com (mail-ej1-f52.google.com [209.85.218.52])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from canpmsgout08.his.huawei.com (canpmsgout08.his.huawei.com [113.46.200.223])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F254735F60F
-	for <linux-pm@vger.kernel.org>; Fri, 24 Jul 2026 06:17:25 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.218.52
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1784873847; cv=pass; b=p/HaLtPn0rACQ0tWdowDDvKWNeNuvz3EKGbDZeeuh4MIgjHu/u9MsOEv+JSp60PNktiyHyLNRVzulWzw1iGxI5YAX/rhGUg6WbtcsbosL3rpXzkW2imshRey3ek7QKz9ZgvRJgEWj/ftRwg1rOk1S8apSJU8Nj++xHS4K7kaXlQ=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1784873847; c=relaxed/simple;
-	bh=rfB18QkequAMi7q527ExqBIt6L8KePBeYTedPVnEYxs=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=DJVSWtceybmYn+4nMvUCVVWQHWokm3ZF1dmesRhfRIBa4hyMTvucehllbiewN0VhzknUzpmx70KDB+Ji4fE3GbGFBP5ggH2Y0gE0TnvOlAQiv/PfIC75AkH1MAwtBi5F4hO54KypgVJWqoXKv7ZTTOFHxSRN0r2/osg5RwXvTlA=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=mGx7RgOM; arc=pass smtp.client-ip=209.85.218.52
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 458252459CF;
+	Fri, 24 Jul 2026 06:54:43 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=113.46.200.223
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1784876090; cv=none; b=o8KNozuH57jxAlawI5GLvQvjQUEyu5Zx/JfJ8Y3GzCdMx1V34sTlWK0zeAG0fmiTC4U1+uJ3GZTvaQmupJyNa0JeobHLRxOM9u/fJ0AK4a3Cewo3yTfgNQxx+87jvqvPDz9XUliyaMP3xmlYcbAQV6OR4zqnRuXv4VVa1Z9W6oU=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1784876090; c=relaxed/simple;
+	bh=UcYsclmSnXDuRJxtXEqaOrEFSqfjn1nfujfydkAukX0=;
+	h=Message-ID:Date:MIME-Version:Subject:To:CC:References:From:
+	 In-Reply-To:Content-Type; b=PL59LnZ2ZSd3VLQ5KGJ67sk2MI6/TDD5exU/13WUqVsx3D0tPE5UE4Rn+fBm8QTzaDFD84+Itg3s6oEJS+qZUrtB9fUT8sRWRhX2CSQo/MBMONBkp4Dx0zzZkhMOu600Vg1/OYNZ/2bWiJ+LTIJsEE/0qV/L6fFQOSPZdLn0R3Y=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; spf=pass smtp.mailfrom=huawei.com; dkim=pass (1024-bit key) header.d=huawei.com header.i=@huawei.com header.b=RL3cb0dI; arc=none smtp.client-ip=113.46.200.223
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=huawei.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="mGx7RgOM"
-Received: by mail-ej1-f52.google.com with SMTP id a640c23a62f3a-c15dd4b9132so13442666b.1
-        for <linux-pm@vger.kernel.org>; Thu, 23 Jul 2026 23:17:25 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1784873844; cv=none;
-        d=google.com; s=arc-20260327;
-        b=HJanrLUmPwy8ZO1THnAgEqnlXXrcvkmtwoPW7skuH1OV3crSv9yu3mQrTYgkkxag4D
-         Qk+Vh+h/mD8w47hMSS/ySN4xMz2GRfZ5ERSSyaNqt8Pq9sxFMf5CYnvBcf4iVWVDcZBA
-         RYMkx+YBxA91rctGX93FtbfwrqilpTofH9+Nm1LVomy0KiRenieybyrrNFLx3riostwT
-         y0hiYRzyeXap+tAJ+06gN2AStdvKPdTTb/R9NdpGCYmUltRF5Q5GbedU+ALqNMamsCPs
-         DZp6/foWWN7Ui3QAWetM0Lb0enlEGNZ6gNEfTmK9ul2Et+lmmbiLc0iW1iqd9LkDAKee
-         ghjA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=C9dvx2Xg4Kep8o+g6NfZeUbYsB/V217osUaYBiTunb4=;
-        fh=9tG75GyjUownw0I+L4eI/8/Ua3cIN09Uu7NqFsfT1Bc=;
-        b=JOVztbp3DsNmXfe4tJtkm4pi8yNXtsAUjUPsbbTlnkyrJF89sbJxeD3ABs0Iwj7PAZ
-         B4LU1iN+YvLO5LCLqBxxQAQU9eXonlA1FVqS27y99/badK4ZJkDXD9jViVaJfGMySxT8
-         5OnITR9gYMzNUyeiaWfmdboehIVR94CPEkzdUEo7LDJUqujB9r7XI66SPMx5qWEPof1W
-         jEJd/8GZMqlWyLV3dlHPBMj5W1dVzInay6GFaZxCCde4o37eogPxrLyJ/9aj/PMQ+YmF
-         IxJDfrUV3OuwwmNddgew8TMLxPBvAYJ2tJzwr8L51U/iD4XuoqtzWGIH+hwma6zjSye6
-         vmLw==;
-        darn=vger.kernel.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1784873844; x=1785478644; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=C9dvx2Xg4Kep8o+g6NfZeUbYsB/V217osUaYBiTunb4=;
-        b=mGx7RgOMx2H39eWd8iGpCjbk3Sb5R7Pau4ZMS6mpM+nw0nBA53xVuORPaX5yU+9/6K
-         EHkAu97u0fozl6cQoNmNVzwhiyzI0ufVOb3u+QaJKx+MbAS8uI/Vbcgbs95tgvgD2Bjp
-         4noUhkb2E4caOuN3HS5iMLKenumBbhBscA1PMVjgqCvTLz1LzpXzfeY8EGGYeKHjzOrc
-         B5A3yZswBt6S0C6y1KwlSGQWFN+8qFaz1MwhFsFpVNVM4uJwy5tTSApOsxAtRZTJkY91
-         ClNw6a1nQcY7L2ihNURoEAPYkVlHBlYPUHDi2J+v6ft5DF3zTMb4FbXaHIAvAVrHS7nM
-         rMBw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1784873844; x=1785478644;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=C9dvx2Xg4Kep8o+g6NfZeUbYsB/V217osUaYBiTunb4=;
-        b=P+4uVYXknsef3usHIIOIxLEfamc6cIgF3VNIhWyCagL14Y6YHSFYuna8FkMX5AVRat
-         vkNSwcjlmXKuJHxP47fEiTe9Ps1056zABCxwcBnmVtweWcrAJYiMqYN04cAJLDxeSeWJ
-         t4mziUslDvPDBHDiD37AOFfsSok5iGzVF8PbKn4K2lcBINKLv1qipIWzPgUDKGM0sZFi
-         6hp+KVgolsDjC5a9BQgBIkIHHdSc1yLkKZGTZ+aCXYkCY+PIJIyeYtqhgVtetvER4Z0f
-         8vdsp7aOJsEZnLseJ98JiYsk0pYV6TMxebsZWLk60Ex9eaSo8OyU4RgDlacgja7IhxYq
-         qWxw==
-X-Gm-Message-State: AOJu0YzyelnoPeFo5Aht98gItpCWG/07KOSuqnCAQqKpFbA1zkCrCCc5
-	HAvr+FM3lYmgVz2TI7hiwwRokQX3GZFj6sQCVX4+4wM5QTW0Ktd8QrXTcECHAU9TUxhBzQ4t9mF
-	V4UL/ClzLwBlXDsBOJ7holYc/XlJwpvGaIIAc
-X-Gm-Gg: AR+sD12EaHXtFN3PdxGGYoFf9m8ybq/gTNaGgMC9TJrZ9t1bOBBhhu13ZWvrhu++Vx4
-	JcgLAzHUrwjVW9l+ib3zC0FrH7ma9Wn2kl0r3zmydE5drLnV63fBgndnIyr9pfRm6tUV3+rqpzG
-	BW06J1mKsXlp+Vi0Z2JDM53IMGMUPKixfjGOFQB0P4Kjjbg4GrnQaJHIz1Rzms5FC4Kz3PT2PkC
-	p3yCr19rLzS2w4LYo4FSt3zm9/roO4dwZJ13nx4JmJfoYX7AbwezKaFMuPRutI=
-X-Received: by 2002:a17:907:928e:b0:c16:8ae2:b9d1 with SMTP id
- a640c23a62f3a-c1c50a3387cmr293252266b.57.1784873844003; Thu, 23 Jul 2026
- 23:17:24 -0700 (PDT)
+	dkim=pass (1024-bit key) header.d=huawei.com header.i=@huawei.com header.b="RL3cb0dI"
+dkim-signature: v=1; a=rsa-sha256; d=huawei.com; s=dkim;
+	c=relaxed/relaxed; q=dns/txt;
+	h=From;
+	bh=ZZ9wD0bHu7C6FIU0gbjSx9ENwrDAhD2GONzun/GEI6E=;
+	b=RL3cb0dIVM2NH26gCgWpNRXxZK5ew9qpMyXKHy/GXxIHcgVBpBR43cQEbeMiUm/8SBCWVypNr
+	NQWN/Vl8KT5cFmoz0kdiyKh+C1IQXGBkRzVra2gtpnYYdrPjzu7ygVzeLge4qyE/6SuhONPm2EN
+	s4RhlKI+BPCdQxVClRu5DeE=
+Received: from mail.maildlp.com (unknown [172.19.163.15])
+	by canpmsgout08.his.huawei.com (SkyGuard) with ESMTPS id 4h5z533lFczmVWf;
+	Fri, 24 Jul 2026 14:45:11 +0800 (CST)
+Received: from kwepemf100001.china.huawei.com (unknown [7.202.181.215])
+	by mail.maildlp.com (Postfix) with ESMTPS id 852BA40586;
+	Fri, 24 Jul 2026 14:54:35 +0800 (CST)
+Received: from [10.67.121.90] (10.67.121.90) by kwepemf100001.china.huawei.com
+ (7.202.181.215) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1544.36; Fri, 24 Jul
+ 2026 14:54:34 +0800
+Message-ID: <300d0c34-4d40-4d9b-86e6-c47ca776fc6e@huawei.com>
+Date: Fri, 24 Jul 2026 14:54:34 +0800
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260704163238.115819-1-malayarout91@gmail.com>
-In-Reply-To: <20260704163238.115819-1-malayarout91@gmail.com>
-From: malaya kumar rout <malayarout91@gmail.com>
-Date: Fri, 24 Jul 2026 11:47:11 +0530
-X-Gm-Features: AUfX_mwDZb3CwUkOeGHFak8aHTksZHidAWivUXcbg_QtuZ2T-Dbj2RrGuw1s420
-Message-ID: <CAE2+fR9MSXaZrvMECqCTnFqNZxGKOFXRxw614RKPy+BOwLEDdw@mail.gmail.com>
-Subject: Re: [PATCH] PM / devfreq: userspace: Fix memory leak in userspace_init()
-To: linux-pm@vger.kernel.org, MyungJoo Ham <myungjoo.ham@samsung.com>, 
-	Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, 
-	Kant Fan <kant@allwinnertech.com>
-Cc: mrout@redhat.com, skhan@linuxfoundation.org, me@brighamcampbell.com
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 1/8] ACPI: CPPC: Prepare cpc_register_resource for
+ Package-type entries
+To: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
+CC: <viresh.kumar@linaro.org>, <saket.dumbre@intel.com>, <lenb@kernel.org>,
+	<zhanjie9@hisilicon.com>, <pierre.gondois@arm.com>, <sumitg@nvidia.com>,
+	<linux-acpi@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
+	<linux-pm@vger.kernel.org>, <acpica-devel@lists.linux.dev>,
+	<linuxarm@huawei.com>, <lihuisong@huawei.com>, <yubowen8@huawei.com>,
+	<zhangpengjie2@huawei.com>, <wangzhi12@huawei.com>,
+	<linhongye@h-partners.com>
+References: <20260717024502.3520445-1-zhenglifeng1@huawei.com>
+ <20260717024502.3520445-2-zhenglifeng1@huawei.com>
+ <CAJZ5v0ggjYqUe+J97=iSBQ5UzqLixQaXKXf=tNre2unPZOvUyQ@mail.gmail.com>
+From: "zhenglifeng (A)" <zhenglifeng1@huawei.com>
+In-Reply-To: <CAJZ5v0ggjYqUe+J97=iSBQ5UzqLixQaXKXf=tNre2unPZOvUyQ@mail.gmail.com>
 Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
+X-ClientProxiedBy: kwepems200001.china.huawei.com (7.221.188.67) To
+ kwepemf100001.china.huawei.com (7.202.181.215)
 
-On Sat, Jul 4, 2026 at 10:03=E2=80=AFPM Malaya Kumar Rout
-<malayarout91@gmail.com> wrote:
->
-> Fix a memory leak in the userspace_init() function where allocated
-> memory is not freed when sysfs_create_group() fails.
->
-> When sysfs_create_group() fails, the function returns without freeing
-> the memory allocated for 'data', leading to a memory leak. This patch
-> adds proper error handling to free the allocated memory and reset
-> governor_data to NULL on failure.
->
-> Fixes: 5fdded844892 ("PM/devfreq: governor: Add a private governor_data f=
-or governor")
-> Signed-off-by: Malaya Kumar Rout <malayarout91@gmail.com>
-> ---
->  drivers/devfreq/governor_userspace.c | 6 ++++++
->  1 file changed, 6 insertions(+)
->
-> diff --git a/drivers/devfreq/governor_userspace.c b/drivers/devfreq/gover=
-nor_userspace.c
-> index 3906ebedbae8..b9fbcacdfba1 100644
-> --- a/drivers/devfreq/governor_userspace.c
-> +++ b/drivers/devfreq/governor_userspace.c
-> @@ -97,6 +97,12 @@ static int userspace_init(struct devfreq *devfreq)
->         devfreq->governor_data =3D data;
->
->         err =3D sysfs_create_group(&devfreq->dev.kobj, &dev_attr_group);
-> +
-> +       if (err) {
-> +               kfree(data);
-> +               devfreq->governor_data =3D NULL;
-> +       }
-> +
->  out:
->         return err;
->  }
-> --
-> 2.54.0
->
+On 7/22/2026 3:04 AM, Rafael J. Wysocki (Intel) wrote:
+> On Fri, Jul 17, 2026 at 4:46 AM Lifeng Zheng <zhenglifeng1@huawei.com> wrote:
+>>
+>> CPPC v4 (ACPI 6.6, Section 8.4.6.1.2.7) introduces the Resource
+>> Priority entry, which is a Package of sub-packages rather than a
+>> plain Integer or Buffer register.  The existing cpc_register_resource
+>> union only accommodates Integer and Buffer (register descriptor)
+>> fields.
+>>
+>> Add a Package variant to the cpc_entry union so that nested
+>> structures such as RESOURCE_PRIORITY can store their element count
+>> and a dynamically allocated array of child cpc_register_resource
+>> descriptors.
+>>
+>> Update the CPC_SUPPORTED() macro to recognise Package-type entries
+>> with a non-zero element count, and switch the unsupported-Package
+>> fallback from a zero Integer to an empty Package (count = 0,
+>> elements = NULL) so that CPC_SUPPORTED() correctly reports such
+>> entries as unsupported.
+>>
+>> No functional change intended; the new Package fields are not yet
+>> consumed by any caller.
+>>
+>> Signed-off-by: Lifeng Zheng <zhenglifeng1@huawei.com>
+>> ---
+>>  drivers/acpi/cppc_acpi.c | 19 +++++++++++++------
+>>  include/acpi/cppc_acpi.h |  8 ++++++++
+>>  2 files changed, 21 insertions(+), 6 deletions(-)
+>>
+>> diff --git a/drivers/acpi/cppc_acpi.c b/drivers/acpi/cppc_acpi.c
+>> index 9f572f481241..d7e654f2a66c 100644
+>> --- a/drivers/acpi/cppc_acpi.c
+>> +++ b/drivers/acpi/cppc_acpi.c
+>> @@ -124,10 +124,16 @@ static DEFINE_PER_CPU(struct cpc_desc *, cpc_desc_ptr);
+>>                                 (reg)->bit_offset == 0 &&               \
+>>                                 (reg)->access_width == 0)
+>>
+>> -/* Evaluates to True if an optional cpc field is supported */
+>> -#define CPC_SUPPORTED(cpc) ((cpc)->type == ACPI_TYPE_INTEGER ?         \
+>> -                               !!(cpc)->cpc_entry.int_value :          \
+>> -                               !IS_NULL_REG(&(cpc)->cpc_entry.reg))
+>> +/*
+>> + * Evaluates to True if an optional cpc field is supported.
+>> + * Integer: non-zero value; Buffer: non-NULL register; Package: non-empty.
+>> + */
+>> +#define CPC_SUPPORTED(cpc) (((cpc)->type == ACPI_TYPE_INTEGER &&       \
+>> +                            !!(cpc)->cpc_entry.int_value) ||           \
+>> +                           ((cpc)->type == ACPI_TYPE_BUFFER &&         \
+>> +                            !IS_NULL_REG(&(cpc)->cpc_entry.reg)) ||    \
+>> +                           ((cpc)->type == ACPI_TYPE_PACKAGE &&        \
+>> +                            (cpc)->cpc_entry.package.count != 0))
+> 
+> My immediate concern regarding this change in particular is that it
+> potentially causes invalid data structures to be used as "supported".
+> 
+> Suppose that some defective platform firmware supplies a package in a
+> field that by the spec can only be a buffer and the length of that
+> package is greater than zero.  The macro will produce 'true' then
+> which is invalid.
+> 
+> It looks like there should be three different macros like the above
+> for the three different types of _CPC fields: the buffer/integer ones,
+> the buffer-only ones and the single package field.
+> 
+> And I'm not sure how much of a value there is in complicating the
+> overall parsing of all fields just in order to be able to handle the
+> last special one in a "generic" fashion.
+> 
+> As this stands now, it is a "no" from me, sorry.
+
+See your point. Currently, this macro is used solely to check for support
+before reading or writing cpc_reg. Therefore, it doesn't need to cover the
+package type and can remain unchanged. I will remove this modification in
+the next version.
+
+The remaining patches do not depend on this modification and can continue
+to be reviewed. Requesting further feedback on the remaining patches.
+
+Thanks.
+
+> 
+>>
+>>  /*
+>>   * Each bit indicates the optionality of the register in per-cpu
+>> @@ -859,8 +865,9 @@ int acpi_cppc_processor_probe(struct acpi_processor *pr)
+>>                          * Mark the register as unsupported for now.
+>>                          */
+>>                         pr_debug("CPU:%d Resource Priority not supported\n", pr->id);
+>> -                       cpc_ptr->cpc_regs[i-2].type = ACPI_TYPE_INTEGER;
+>> -                       cpc_ptr->cpc_regs[i-2].cpc_entry.int_value = 0;
+>> +                       cpc_ptr->cpc_regs[i-2].type = ACPI_TYPE_PACKAGE;
+>> +                       cpc_ptr->cpc_regs[i-2].cpc_entry.package.count = 0;
+>> +                       cpc_ptr->cpc_regs[i-2].cpc_entry.package.elements = NULL;
+>>                 } else {
+>>                         pr_debug("Invalid entry type (%d) in _CPC for CPU:%d\n",
+>>                                  i, pr->id);
+>> diff --git a/include/acpi/cppc_acpi.h b/include/acpi/cppc_acpi.h
+>> index 8693890a7275..1839582b80be 100644
+>> --- a/include/acpi/cppc_acpi.h
+>> +++ b/include/acpi/cppc_acpi.h
+>> @@ -71,6 +71,14 @@ struct cpc_register_resource {
+>>         union {
+>>                 struct cpc_reg reg;
+>>                 u64 int_value;
+>> +               /*
+>> +                * CPPC v4: nested Package (e.g. RESOURCE_PRIORITY),
+>> +                * elements dynamically allocated
+>> +                */
+>> +               struct {
+>> +                       u32 count;
+>> +                       struct cpc_register_resource *elements;
+>> +               } package;
+>>         } cpc_entry;
+>>  };
+>>
+>> --
+>> 2.33.0
+>>
+
