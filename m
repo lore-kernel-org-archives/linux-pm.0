@@ -1,183 +1,110 @@
-Received: from canpmsgout08.his.huawei.com (canpmsgout08.his.huawei.com [113.46.200.223])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 458252459CF;
-	Fri, 24 Jul 2026 06:54:43 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=113.46.200.223
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 79548376A16;
+	Fri, 24 Jul 2026 07:09:46 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1784876090; cv=none; b=o8KNozuH57jxAlawI5GLvQvjQUEyu5Zx/JfJ8Y3GzCdMx1V34sTlWK0zeAG0fmiTC4U1+uJ3GZTvaQmupJyNa0JeobHLRxOM9u/fJ0AK4a3Cewo3yTfgNQxx+87jvqvPDz9XUliyaMP3xmlYcbAQV6OR4zqnRuXv4VVa1Z9W6oU=
+	t=1784876987; cv=none; b=S+LBSFObre/qd00tdWpPmpcCxO2esydWQEMLs+6G4ii1g4256RQJmXgMUJDT0Xe9plIrcDPIhyi2gRP23tOa1mzjMNOKslvgf52YZH10NiYtF8KxfiwDqmAlxXTKJbNBxwTPEfOnw0k4NqgRET197ljS2tGhPz3tN9VDMTf0tqc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1784876090; c=relaxed/simple;
-	bh=UcYsclmSnXDuRJxtXEqaOrEFSqfjn1nfujfydkAukX0=;
-	h=Message-ID:Date:MIME-Version:Subject:To:CC:References:From:
-	 In-Reply-To:Content-Type; b=PL59LnZ2ZSd3VLQ5KGJ67sk2MI6/TDD5exU/13WUqVsx3D0tPE5UE4Rn+fBm8QTzaDFD84+Itg3s6oEJS+qZUrtB9fUT8sRWRhX2CSQo/MBMONBkp4Dx0zzZkhMOu600Vg1/OYNZ/2bWiJ+LTIJsEE/0qV/L6fFQOSPZdLn0R3Y=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; spf=pass smtp.mailfrom=huawei.com; dkim=pass (1024-bit key) header.d=huawei.com header.i=@huawei.com header.b=RL3cb0dI; arc=none smtp.client-ip=113.46.200.223
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=huawei.com
+	s=arc-20240116; t=1784876987; c=relaxed/simple;
+	bh=gdWY8ZLwlDTBzBNlMhvzyfEPsb0Ak6kT0MKLCSCvxkQ=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=AwY8YZUVc9driXQbAjMJn3qBNdriwJrjA4XH0zVfeJ5e5bZ+LpurtuHDCyAjqxZ6JIOnKyIz1H6AXT1pVOJuZHtfnvhmENp9aNXxgak7k/L/DpgwYwnuk1Q2f/n2Z0z79QLM8UhrdSt527Ch5+g4cJEOqG/rjrk5g6Dr6dA5wgA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Xhe4gmK1; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=huawei.com header.i=@huawei.com header.b="RL3cb0dI"
-dkim-signature: v=1; a=rsa-sha256; d=huawei.com; s=dkim;
-	c=relaxed/relaxed; q=dns/txt;
-	h=From;
-	bh=ZZ9wD0bHu7C6FIU0gbjSx9ENwrDAhD2GONzun/GEI6E=;
-	b=RL3cb0dIVM2NH26gCgWpNRXxZK5ew9qpMyXKHy/GXxIHcgVBpBR43cQEbeMiUm/8SBCWVypNr
-	NQWN/Vl8KT5cFmoz0kdiyKh+C1IQXGBkRzVra2gtpnYYdrPjzu7ygVzeLge4qyE/6SuhONPm2EN
-	s4RhlKI+BPCdQxVClRu5DeE=
-Received: from mail.maildlp.com (unknown [172.19.163.15])
-	by canpmsgout08.his.huawei.com (SkyGuard) with ESMTPS id 4h5z533lFczmVWf;
-	Fri, 24 Jul 2026 14:45:11 +0800 (CST)
-Received: from kwepemf100001.china.huawei.com (unknown [7.202.181.215])
-	by mail.maildlp.com (Postfix) with ESMTPS id 852BA40586;
-	Fri, 24 Jul 2026 14:54:35 +0800 (CST)
-Received: from [10.67.121.90] (10.67.121.90) by kwepemf100001.china.huawei.com
- (7.202.181.215) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1544.36; Fri, 24 Jul
- 2026 14:54:34 +0800
-Message-ID: <300d0c34-4d40-4d9b-86e6-c47ca776fc6e@huawei.com>
-Date: Fri, 24 Jul 2026 14:54:34 +0800
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Xhe4gmK1"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 675881F000E9;
+	Fri, 24 Jul 2026 07:09:44 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1784876986;
+	bh=smCE3zkHSVpYMLVZBYOzeCcQF45U8Re7SgEYlbSp9cs=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=Xhe4gmK199U6siaMOiI145Lh0UaipXg9Lq6s7iLK2YY7Zyw8HlTfA68LYyREDo837
+	 Qk9dbNouTA9JSeee4mAlk7VXy6znA3L4dmoZEw24xayrctYlwWviR73ZgfO7KH+N/b
+	 U9xt3dTdRdpc5bVQ1xIULJ/nJ6YIsoh7FcEYLfTvBZuD5t0SX8gJmpLg/ZtuYLh5VS
+	 ewEPV3CB470jf65SHg5rj83+cf2hyrU+7QKKltUoMyDJkzUHsV8bZ88H4Ckw9SPfoc
+	 xSqSdK2KuV/JeJhRcdCW37cBEpdrJVf5dG3rgtVTsTLrAo0UrGxNcAwx8enXQ1zTse
+	 lE9S2sUHvDDXg==
+Date: Fri, 24 Jul 2026 09:09:41 +0200
+From: Krzysztof Kozlowski <krzk@kernel.org>
+To: =?utf-8?B?U8O2cmVu?= Hantel <fugininsane@gmail.com>
+Cc: linux-pm@vger.kernel.org, Vasily Khoruzhick <anarsoul@gmail.com>, 
+	Yangtao Li <tiny.windzz@gmail.com>, "Rafael J . Wysocki" <rafael@kernel.org>, 
+	Daniel Lezcano <daniel.lezcano@kernel.org>, Chen-Yu Tsai <wens@kernel.org>, 
+	Jernej Skrabec <jernej.skrabec@gmail.com>, Samuel Holland <samuel@sholland.org>, 
+	Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+	Conor Dooley <conor+dt@kernel.org>, Philipp Rossak <embed3d@gmail.com>, devicetree@vger.kernel.org, 
+	linux-arm-kernel@lists.infradead.org, linux-sunxi@lists.linux.dev, linux-kernel@vger.kernel.org, 
+	=?utf-8?B?U8O2cmVu?= Hantel <fugininsane@googlemail.com>, Claude Fable 5 <noreply@anthropic.com>
+Subject: Re: [PATCH v2 1/3] dt-bindings: thermal: sun8i: Add binding for the
+ A80 THS controller
+Message-ID: <20260724-hysterical-fantastic-koala-1756c6@quoll>
+References: <20260722203341.2917852-1-fugininsane@googlemail.com>
+ <20260722210046.2932498-1-fugininsane@googlemail.com>
+ <20260722210046.2932498-2-fugininsane@googlemail.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 1/8] ACPI: CPPC: Prepare cpc_register_resource for
- Package-type entries
-To: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
-CC: <viresh.kumar@linaro.org>, <saket.dumbre@intel.com>, <lenb@kernel.org>,
-	<zhanjie9@hisilicon.com>, <pierre.gondois@arm.com>, <sumitg@nvidia.com>,
-	<linux-acpi@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
-	<linux-pm@vger.kernel.org>, <acpica-devel@lists.linux.dev>,
-	<linuxarm@huawei.com>, <lihuisong@huawei.com>, <yubowen8@huawei.com>,
-	<zhangpengjie2@huawei.com>, <wangzhi12@huawei.com>,
-	<linhongye@h-partners.com>
-References: <20260717024502.3520445-1-zhenglifeng1@huawei.com>
- <20260717024502.3520445-2-zhenglifeng1@huawei.com>
- <CAJZ5v0ggjYqUe+J97=iSBQ5UzqLixQaXKXf=tNre2unPZOvUyQ@mail.gmail.com>
-From: "zhenglifeng (A)" <zhenglifeng1@huawei.com>
-In-Reply-To: <CAJZ5v0ggjYqUe+J97=iSBQ5UzqLixQaXKXf=tNre2unPZOvUyQ@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
-X-ClientProxiedBy: kwepems200001.china.huawei.com (7.221.188.67) To
- kwepemf100001.china.huawei.com (7.202.181.215)
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+In-Reply-To: <20260722210046.2932498-2-fugininsane@googlemail.com>
 
-On 7/22/2026 3:04 AM, Rafael J. Wysocki (Intel) wrote:
-> On Fri, Jul 17, 2026 at 4:46 AM Lifeng Zheng <zhenglifeng1@huawei.com> wrote:
->>
->> CPPC v4 (ACPI 6.6, Section 8.4.6.1.2.7) introduces the Resource
->> Priority entry, which is a Package of sub-packages rather than a
->> plain Integer or Buffer register.  The existing cpc_register_resource
->> union only accommodates Integer and Buffer (register descriptor)
->> fields.
->>
->> Add a Package variant to the cpc_entry union so that nested
->> structures such as RESOURCE_PRIORITY can store their element count
->> and a dynamically allocated array of child cpc_register_resource
->> descriptors.
->>
->> Update the CPC_SUPPORTED() macro to recognise Package-type entries
->> with a non-zero element count, and switch the unsupported-Package
->> fallback from a zero Integer to an empty Package (count = 0,
->> elements = NULL) so that CPC_SUPPORTED() correctly reports such
->> entries as unsupported.
->>
->> No functional change intended; the new Package fields are not yet
->> consumed by any caller.
->>
->> Signed-off-by: Lifeng Zheng <zhenglifeng1@huawei.com>
->> ---
->>  drivers/acpi/cppc_acpi.c | 19 +++++++++++++------
->>  include/acpi/cppc_acpi.h |  8 ++++++++
->>  2 files changed, 21 insertions(+), 6 deletions(-)
->>
->> diff --git a/drivers/acpi/cppc_acpi.c b/drivers/acpi/cppc_acpi.c
->> index 9f572f481241..d7e654f2a66c 100644
->> --- a/drivers/acpi/cppc_acpi.c
->> +++ b/drivers/acpi/cppc_acpi.c
->> @@ -124,10 +124,16 @@ static DEFINE_PER_CPU(struct cpc_desc *, cpc_desc_ptr);
->>                                 (reg)->bit_offset == 0 &&               \
->>                                 (reg)->access_width == 0)
->>
->> -/* Evaluates to True if an optional cpc field is supported */
->> -#define CPC_SUPPORTED(cpc) ((cpc)->type == ACPI_TYPE_INTEGER ?         \
->> -                               !!(cpc)->cpc_entry.int_value :          \
->> -                               !IS_NULL_REG(&(cpc)->cpc_entry.reg))
->> +/*
->> + * Evaluates to True if an optional cpc field is supported.
->> + * Integer: non-zero value; Buffer: non-NULL register; Package: non-empty.
->> + */
->> +#define CPC_SUPPORTED(cpc) (((cpc)->type == ACPI_TYPE_INTEGER &&       \
->> +                            !!(cpc)->cpc_entry.int_value) ||           \
->> +                           ((cpc)->type == ACPI_TYPE_BUFFER &&         \
->> +                            !IS_NULL_REG(&(cpc)->cpc_entry.reg)) ||    \
->> +                           ((cpc)->type == ACPI_TYPE_PACKAGE &&        \
->> +                            (cpc)->cpc_entry.package.count != 0))
-> 
-> My immediate concern regarding this change in particular is that it
-> potentially causes invalid data structures to be used as "supported".
-> 
-> Suppose that some defective platform firmware supplies a package in a
-> field that by the spec can only be a buffer and the length of that
-> package is greater than zero.  The macro will produce 'true' then
-> which is invalid.
-> 
-> It looks like there should be three different macros like the above
-> for the three different types of _CPC fields: the buffer/integer ones,
-> the buffer-only ones and the single package field.
-> 
-> And I'm not sure how much of a value there is in complicating the
-> overall parsing of all fields just in order to be able to handle the
-> last special one in a "generic" fashion.
-> 
-> As this stands now, it is a "no" from me, sorry.
+On Wed, Jul 22, 2026 at 11:00:44PM +0200, S=C3=B6ren Hantel wrote:
+> The Allwinner A80 has a thermal sensor with four channels which shares
+> its MMIO block, bus gate, module clock and reset line with the GPADC.
+> Register-wise it is an early version of the THS found in the A83T and
+> later SoCs, with the THS registers starting at offset 0x40 of the
+> shared block.
+>=20
+> Add the compatible to the sun8i THS binding. The A80 takes a bus and a
+> module clock plus a reset line, so the existing conditionals already
+> describe it correctly.
+>=20
+> Co-authored-by: Claude Fable 5 <noreply@anthropic.com>
 
-See your point. Currently, this macro is used solely to check for support
-before reading or writing cpc_reg. Therefore, it doesn't need to cover the
-package type and can remain unchanged. I will remove this modification in
-the next version.
+NAK. Tools cannot certify DCO, cannot be authors.
 
-The remaining patches do not depend on this modification and can continue
-to be reviewed. Requesting further feedback on the remaining patches.
+> Signed-off-by: S=C3=B6ren Hantel <fugininsane@googlemail.com>
 
-Thanks.
+Messed DCO even more.
 
-> 
->>
->>  /*
->>   * Each bit indicates the optionality of the register in per-cpu
->> @@ -859,8 +865,9 @@ int acpi_cppc_processor_probe(struct acpi_processor *pr)
->>                          * Mark the register as unsupported for now.
->>                          */
->>                         pr_debug("CPU:%d Resource Priority not supported\n", pr->id);
->> -                       cpc_ptr->cpc_regs[i-2].type = ACPI_TYPE_INTEGER;
->> -                       cpc_ptr->cpc_regs[i-2].cpc_entry.int_value = 0;
->> +                       cpc_ptr->cpc_regs[i-2].type = ACPI_TYPE_PACKAGE;
->> +                       cpc_ptr->cpc_regs[i-2].cpc_entry.package.count = 0;
->> +                       cpc_ptr->cpc_regs[i-2].cpc_entry.package.elements = NULL;
->>                 } else {
->>                         pr_debug("Invalid entry type (%d) in _CPC for CPU:%d\n",
->>                                  i, pr->id);
->> diff --git a/include/acpi/cppc_acpi.h b/include/acpi/cppc_acpi.h
->> index 8693890a7275..1839582b80be 100644
->> --- a/include/acpi/cppc_acpi.h
->> +++ b/include/acpi/cppc_acpi.h
->> @@ -71,6 +71,14 @@ struct cpc_register_resource {
->>         union {
->>                 struct cpc_reg reg;
->>                 u64 int_value;
->> +               /*
->> +                * CPPC v4: nested Package (e.g. RESOURCE_PRIORITY),
->> +                * elements dynamically allocated
->> +                */
->> +               struct {
->> +                       u32 count;
->> +                       struct cpc_register_resource *elements;
->> +               } package;
->>         } cpc_entry;
->>  };
->>
->> --
->> 2.33.0
->>
+> ---
+>  .../devicetree/bindings/thermal/allwinner,sun8i-a83t-ths.yaml    | 1 +
+>  1 file changed, 1 insertion(+)
+>=20
+> diff --git a/Documentation/devicetree/bindings/thermal/allwinner,sun8i-a8=
+3t-ths.yaml b/Documentation/devicetree/bindings/thermal/allwinner,sun8i-a83=
+t-ths.yaml
+> index 3e61689..718c44d 100644
+> --- a/Documentation/devicetree/bindings/thermal/allwinner,sun8i-a83t-ths.=
+yaml
+> +++ b/Documentation/devicetree/bindings/thermal/allwinner,sun8i-a83t-ths.=
+yaml
+> @@ -18,6 +18,7 @@ properties:
+>        - allwinner,sun8i-a83t-ths
+>        - allwinner,sun8i-h3-ths
+>        - allwinner,sun8i-r40-ths
+> +      - allwinner,sun9i-a80-ths
+
+Really, single compatible was co-authored by the tool? Folks cannot
+write a single line of code nowadays or how does it work exactly?
+
+And the tool did not even read the rules about sending patches, DCO,
+proper subject for DT bindings? What is the use of the tool if it
+produces obviously incorrect patch?
+
+ subject: drop second/last, redundant "binding for". The "dt-bindings"
+prefix is already stating that these are bindings.  See also:
+https://elixir.bootlin.com/linux/v7.1-rc7/source/Documentation/devicetree/b=
+indings/submitting-patches.rst#L23
+
+Ask your tool to read the docs before using it, please.
+
+Best regards,
+Krzysztof
 
