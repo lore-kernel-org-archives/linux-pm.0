@@ -1,42 +1,48 @@
-Received: from m16.mail.163.com (m16.mail.163.com [117.135.210.5])
+Received: from smtpbgbr1.qq.com (smtpbgbr1.qq.com [54.207.19.206])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D230B3DAABB;
-	Fri, 24 Jul 2026 09:48:49 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=117.135.210.5
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 42D81376A0C;
+	Fri, 24 Jul 2026 09:55:36 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=54.207.19.206
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1784886535; cv=none; b=GInu+RG1kLNEQTo2Q+YkclQ6/e92ZnodOnha0sLNtKG4BhBxipVTTXItJIFCqZj8oVr9iyenGR7s5Dp2xPM2ByH63CqvmMYliCubTcR0RVEyvZ1biv8XCFJK8shpyOLvDub3vlTBqhtx8FCuuFxup0dCnJx6RftwuSpCk4MriEo=
+	t=1784886943; cv=none; b=maE1Klm8gpS0oVcA4oh0g+nSGFusl57MG8rHhRMrqxrmBRP/x33TO0p7MdlH6K4hrKMxqo5/HvPMAS7ucE/lHZ3SRIg8z5XxKngrHfdIO3Mxtyf7GcwOuP//GUylfTO0igX+wAMxADYGyKLp84Kckw/p7YzmhL5dTX00HP+p8LA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1784886535; c=relaxed/simple;
-	bh=pxtHOcJbFKxOkoLlbzwW0DxQD7uFg+0oE5SkF3UtaoY=;
-	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=Kv6iaqnhEWWTLV6cbgwOyLugqYLN/v/gXZVU8CRaonYV764W2bWtAdQz5xfcw3fKKhQYH0VzS1f8WznMKxBVcd7zMlZCjtA1obgr/MZPQea48RO0Ixl28ixlvzuRhyDmd7QTfBxub2d1nhDSuzE8gm0DOyBrWyeYH7JabUVt4zY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=163.com; spf=pass smtp.mailfrom=163.com; dkim=pass (1024-bit key) header.d=163.com header.i=@163.com header.b=ifqfPuP/; arc=none smtp.client-ip=117.135.210.5
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=163.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=163.com
+	s=arc-20240116; t=1784886943; c=relaxed/simple;
+	bh=ISf/fcfsxb/7A12ng8flieQ6Km2aMX2qcDbWR0OVq60=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=l76qs1CBbT617/YQAaehAmHLds1IWZyvHljXN1BVNJJxOl+Im/nRV5g0Algf5+DEe6tbKtqFPikM+SUkwst0VLwSwp+RckjTzgY/A5NeWvkOZJq6dTMd96eEZW1xB1htmM8IZS3GvA5n1Z135oH2PRji+tOoUmUs1sm5JCuOd8w=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=uniontech.com; spf=pass smtp.mailfrom=uniontech.com; dkim=pass (1024-bit key) header.d=uniontech.com header.i=@uniontech.com header.b=JZI9T3Ft; arc=none smtp.client-ip=54.207.19.206
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=uniontech.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=uniontech.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=163.com header.i=@163.com header.b="ifqfPuP/"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=163.com;
-	s=s110527; h=From:To:Subject:Date:Message-Id:MIME-Version; bh=Gx
-	7mdo4pUDWI/erjpt6QpJ2OWfAEDJaemcerLl7F9hs=; b=ifqfPuP/PCBfRiZHoD
-	Z0F2ZB0CDRB8Av6kVzy4XixJ+nDZ7dIKHlKqxbmNwVgRrK2zDww4Mqp29sxSO41k
-	2QVrgZyPlO+wOGGyRbx2vytX8HZGvB8dgE0aP/Sw0M9gc+g5pDsI0PkoSuFE7B0a
-	U+Kb09y2JmiVwt/YovnKoHwtU=
-Received: from QD202103290168A.neusoft.internal (unknown [])
-	by gzga-smtp-mtada-g1-2 (Coremail) with SMTP id _____wD3vJLVNGNqc5tILQ--.52442S2;
-	Fri, 24 Jul 2026 17:48:07 +0800 (CST)
-From: Jianing Li <m13940358460@163.com>
-To: Sebastian Reichel <sre@kernel.org>
-Cc: Iskren Chernev <me@iskren.info>,
-	Krzysztof Kozlowski <krzk@kernel.org>,
-	Marek Szyprowski <m.szyprowski@samsung.com>,
-	Matheus Castello <matheus@castello.eng.br>,
+	dkim=pass (1024-bit key) header.d=uniontech.com header.i=@uniontech.com header.b="JZI9T3Ft"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=uniontech.com;
+	s=onoh2408; t=1784886899;
+	bh=ESAfwVqYnYTkT6H8Hu9AQ967kCY6HTSE9AsbwnGyibE=;
+	h=From:To:Subject:Date:Message-ID:MIME-Version;
+	b=JZI9T3Ftsmw8xFFxWRaC32A0PjluMvnzqQRbcDiXfJy/V97BHVtCeEw9IKu/P+QGr
+	 erXR5yZjrq90ds4GB/z77Kh4fS7+S/UY2A9HJW3ZDUL2sV7rUlWWXSVR/0RMh0DLtc
+	 os+IdNCH3Sa2eF2uOe5oZiu9urYmL2gsrkyiHMSk=
+X-QQ-mid: esmtpsz18t1784886880t90f81de7
+X-QQ-Originating-IP: d2LkRACRXDf/JaT5K08zTTGPqYMCoLT1I65bSu3IuI8=
+Received: from PEN202512010004 ( [113.57.152.160])
+	by bizesmtp.qq.com (ESMTP) with 
+	id ; Fri, 24 Jul 2026 17:54:39 +0800 (CST)
+X-QQ-SSF: 0000000000000000000000000000000
+X-QQ-GoodBg: 1
+X-BIZMAIL-ID: 11193573203578943115
+EX-QQ-RecipientCnt: 7
+From: raoxu <raoxu@uniontech.com>
+To: samkay014@gmail.com
+Cc: sre@kernel.org,
+	imx@lists.linux.dev,
 	linux-pm@vger.kernel.org,
 	linux-kernel@vger.kernel.org,
-	Jianing Li <m13940358460@163.com>
-Subject: [PATCH] power: supply: max17040: propagate register read errors
-Date: Fri, 24 Jul 2026 17:47:59 +0800
-Message-Id: <20260724094759.3568-1-m13940358460@163.com>
-X-Mailer: git-send-email 2.23.0.windows.1
+	raoxu@uniontech.com,
+	stable@vger.kernel.org
+Subject: [PATCH v2] power: supply: pf1550: enable charging when battery profile exists
+Date: Fri, 24 Jul 2026 17:54:37 +0800
+Message-ID: <097F0559A936ACCB+20260724095437.368905-1-raoxu@uniontech.com>
+X-Mailer: git-send-email 2.50.1
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -44,91 +50,67 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-CM-TRANSID:_____wD3vJLVNGNqc5tILQ--.52442S2
-X-Coremail-Antispam: 1Uf129KBjvJXoWxWF1UKw1ruFy3uF17Kr13XFb_yoW5Xw4rpa
-	15KFn8Grn8Jayru397ta15AFy3K3yDtrWxCrWxC39YyF12yr4UK345ta43KFyUCryxZF4x
-	tr4xKa45GrsIqwUanT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
-	9KBjDUYxBIdaVFxhVjvjDU0xZFpf9x0pErcT9UUUUU=
-X-CM-SenderInfo: jprtmkaqtvmkiwq6il2tof0z/xtbC4Bi28GpjNNhXaAAA3k
+X-QQ-SENDSIZE: 520
+Feedback-ID: esmtpsz:uniontech.com:qybglogicsvrgz:qybglogicsvrgz6b-0
+X-QQ-XMAILINFO: M/f9iSOkHncYMgeJtDk19P9OR/hhcJUiJD+Tv7Iql6qY/o6W5EEUW5df
+	RBDPVbNHjABplmhj4AyiQqxR/ePMhDnu7vid6GufiBbukFZveclLTMfql9FiuWH64ZwXCob
+	UXOs6fVb5acQuW1sJ0W5vzAcc7EEw+shipaUO9sNaoJjra/3U7ucahZkZRcygigb/s7UZXt
+	VYfFITumhVW3WXlHpQlWPnRdqaEEqWnVsXlJt1vzSyhy3yqRvZtiPaqPk5YfSZHWWRpinJ/
+	eKWaY9EyKgj2WnQlQdhmxPunGkEQaziNz/zrnnGap2bZIWCgSiPan3nF5yiNspvbCe/oJLo
+	raFl0MX2Rje9QfJ9N5XsVUydFPcDcSXjntKWB4HJI3t19e1rVY8tAUYFN44iYPxwfUILwKG
+	e21c+PWYUSIvulC7heGNdxg9bMfDfBfQHhoQizwzihsld5VEhfb2HTUPnThjkKqRxA/HVI2
+	jGj61uHyrsc2VhyED1/zGoajX2wdui2EgsZUsCaT+xzr5UlpTiUKReQ/HaH1s8f3woFoOL2
+	Jg1d9U9PX4u+e+Mqbbg0PrqPLw98kUpf/JboxJqSEb1eF3w+n+usuCDylpTAPcanuVLqMzf
+	0mt8gwj32LEjDDrCQk0aiw2XoZE8Qp/aPUAbFF9C7gBfixzGUE2e9ZdHGPePwEkMYveAsIe
+	oWLO/7WCpq6pyMfoLH3oqd2N6aEhxQCyAzvae6MqUqzbz6jgT1VII02C2f8ZK+5octZUS3G
+	CBNxMotsqJNKxJyUhEUpCVeb2fvNLs5p5h/EuLDLZwtsDmaERe/7Xh763MTpdr91DloZQFV
+	2GspmvbNPKk02nusIp5rWRN/1V56AW1b1VQ2A+YO8Z1rvLARsTh1pO1y0lZUDVTES+g8PPM
+	vlO+DAJRxd8Msbn40kYI2D6rUsQwAaVBGxmUkObYUJt8DzbsnsZEIlp0Au6its/VR2GYYP3
+	YjBjE/2hXgGLqheIVRyukZJv4WDeVOgXhcUklLx29XYxcKsCReW2yeWDHy8vCd8lzyvCr2h
+	/1IKbHlqphLnkQFjAaEMT9KTlLeJEDfoNYsh8JcWz+XOvHxy0+xx75Fdu6t51DWwmd7pWl6
+	cJmPFPpb9730t87nezj9oNNTYWsxIXjjbz4rXAX2gXGZYGbg/uSmC+LFjzANCXOtFlos957
+	HqNgz27jXxVV2RZV3DYomVUCBg==
+X-QQ-XMRINFO: M/715EihBoGS47X28/vv4NpnfpeBLnr4Qg==
+X-QQ-RECHKSPAM: 0
 
-max17040_get_vcell() and max17040_get_soc() ignore errors returned by
-regmap_read().  When an I2C transfer fails, the uninitialized register
-value is converted and reported to userspace as a valid voltage or state
-of charge.  The polling worker can also replace the cached state of charge
-with the bogus value and emit a spurious change event.
+From: Xu Rao <raoxu@uniontech.com>
 
-Propagate read errors through the power supply get_property callback and
-keep the last valid cached state of charge when polling fails.
+PF1550 starts in charger mode 1, where charging is disabled. The driver
+comment says that mode 2 should be selected for applications using a
+battery, but the condition is inverted: PF1550_CHG_BAT_ON is written only
+when power_supply_get_battery_info() fails.
 
-Fixes: c6f4a42de60b ("Add MAX17040 Fuel Gauge driver")
+Consequently, a board with a valid monitored-battery profile is left in
+the default charger-off mode, while a board without battery information
+enables charging with fallback settings.
+
+Select mode 2 when battery information is available.
+
+Fixes: 4b6b6433a97d ("power: supply: pf1550: add battery charger support")
 Cc: stable@vger.kernel.org
-Signed-off-by: Jianing Li <m13940358460@163.com>
+Signed-off-by: Xu Rao <raoxu@uniontech.com>
 ---
- drivers/power/supply/max17040_battery.c | 26 +++++++++++++++++++-------
- 1 file changed, 19 insertions(+), 7 deletions(-)
+Changes in v2:
+- Drop power_supply_put_battery_info() calls because static battery
+  profiles are not devm allocated.
+- Leave the pre-existing handling of an unspecified constant charge
+  voltage for a separate fix.
 
-diff --git a/drivers/power/supply/max17040_battery.c b/drivers/power/supply/max17040_battery.c
-index e94d53b36aa4..948670fb6c4a 100644
---- a/drivers/power/supply/max17040_battery.c
-+++ b/drivers/power/supply/max17040_battery.c
-@@ -192,19 +192,21 @@ static int max17040_raw_vcell_to_uvolts(struct max17040_chip *chip, u16 vcell)
- static int max17040_get_vcell(struct max17040_chip *chip)
- {
- 	u32 vcell;
-+	int ret;
- 
--	regmap_read(chip->regmap, MAX17040_VCELL, &vcell);
-+	ret = regmap_read(chip->regmap, MAX17040_VCELL, &vcell);
- 
--	return max17040_raw_vcell_to_uvolts(chip, vcell);
-+	return ret ? ret : max17040_raw_vcell_to_uvolts(chip, vcell);
- }
- 
- static int max17040_get_soc(struct max17040_chip *chip)
- {
- 	u32 soc;
-+	int ret;
- 
--	regmap_read(chip->regmap, MAX17040_SOC, &soc);
-+	ret = regmap_read(chip->regmap, MAX17040_SOC, &soc);
- 
--	return soc >> (chip->quirk_double_soc ? 9 : 8);
-+	return ret ? ret : soc >> (chip->quirk_double_soc ? 9 : 8);
- }
- 
- static int max17040_get_version(struct max17040_chip *chip)
-@@ -261,7 +263,11 @@ static int max17040_get_of_data(struct max17040_chip *chip)
- 
- static void max17040_check_changes(struct max17040_chip *chip)
- {
--	chip->soc = max17040_get_soc(chip);
-+	int soc;
-+
-+	soc = max17040_get_soc(chip);
-+	if (soc >= 0)
-+		chip->soc = soc;
- }
- 
- static void max17040_queue_work(struct max17040_chip *chip)
-@@ -396,10 +402,16 @@ static int max17040_get_property(struct power_supply *psy,
- 		val->intval = max17040_get_online(chip);
- 		break;
- 	case POWER_SUPPLY_PROP_VOLTAGE_NOW:
--		val->intval = max17040_get_vcell(chip);
-+		ret = max17040_get_vcell(chip);
-+		if (ret < 0)
-+			return ret;
-+		val->intval = ret;
- 		break;
- 	case POWER_SUPPLY_PROP_CAPACITY:
--		val->intval = max17040_get_soc(chip);
-+		ret = max17040_get_soc(chip);
-+		if (ret < 0)
-+			return ret;
-+		val->intval = ret;
- 		break;
- 	case POWER_SUPPLY_PROP_CAPACITY_ALERT_MIN:
- 		val->intval = chip->low_soc_alert;
--- 
-2.39.0
+ drivers/power/supply/pf1550-charger.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
+diff --git a/drivers/power/supply/pf1550-charger.c b/drivers/power/supply/pf1550-charger.c
+index 41036f4cb64a..38cac156d2e6 100644
+--- a/drivers/power/supply/pf1550-charger.c
++++ b/drivers/power/supply/pf1550-charger.c
+@@ -514,7 +514,7 @@ static int pf1550_reg_init(struct pf1550_charger *chg)
+ 	 * a battery. The other supported mode is mode 2, the charger is turned
+ 	 * on to charge a battery when present.
+ 	 */
+-	if (power_supply_get_battery_info(chg->charger, &info)) {
++	if (!power_supply_get_battery_info(chg->charger, &info)) {
+ 		ret = regmap_write(chg->pf1550->regmap,
+ 				   PF1550_CHARG_REG_CHG_OPER,
+ 				   PF1550_CHG_BAT_ON);
+--
+2.50.1
