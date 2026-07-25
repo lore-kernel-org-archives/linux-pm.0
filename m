@@ -1,32 +1,33 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 45F82388E5B;
-	Sat, 25 Jul 2026 16:15:15 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4D04831E845;
+	Sat, 25 Jul 2026 16:35:31 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1784996122; cv=none; b=NdyLHUccwX+SULm/1MKZ+l5g6c5hwR5jD40WDx6Lb6gvhKzloXRoRB4QruRBmA4zmfSPYnrQT12QMHyHYeoVJ3UvLUE0rYYGs8SfZYXdOgeRZ7UOd1DEy8IMun1IBOYWlHkeccTZeRgFezC2bOLLKz0SD8RlF2Y0KBepjvpo/Ao=
+	t=1784997332; cv=none; b=BV07Kpt0tQQNqAET5GVOMQGSKljKTnO0yHXZLL8ooCWSAR5ZbT+KZIwwun0MUYMn9vqKb2HE3FnwXD2EJp336ZmLGrpXFxdOpAlgfe7jSgQ7TFpBaxlg+mwrpisJ2gO2jtp/G/eMRDGyxw1vWXZ3JzoiNu3wChuPKoLGTG9wzoM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1784996122; c=relaxed/simple;
-	bh=9EO/mVg/U1v9peEdseao4EiW3MgxiPx6N2Z9oSllmJE=;
+	s=arc-20240116; t=1784997332; c=relaxed/simple;
+	bh=exmQsfyQGG/+MJh2nyZwkSJHOIFE90WzEqGKB1dq3IY=;
 	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
-	 MIME-Version:Content-Type; b=nwrOxTnuEVlzEPyQyReCvP90qQshF4G1OOzvpdCsNPH8PrcFBw2GiwcgrzfzF0uEg0mtBtcb+C6tuHtd37SWqOIThWwi3/sxL0YGO2CR6oAYGIQGOVuegxcxZHrzXjC474MDXozhQjqcPdqRTtTrQUOoAKDAjiTGQdPEm6KrurI=
+	 MIME-Version:Content-Type; b=lQ3VsPhjBgcigXSXq0xjShzsMK4J5QixEg3bweRYkjG8O+UiEJn8l/rYIGupDQv86R0nKjUl20dGcmaMfyks61dsUBTDTweXL0M5QFjwxyFt1nxijVbN7XKstio5VjmzbC1Ibk7hrZ7TfHtPiKz65NKEjdVuz0H+hNyJ+oq3CqQ=
 ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3C35D1F000E9;
-	Sat, 25 Jul 2026 16:15:11 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id C124D1F000E9;
+	Sat, 25 Jul 2026 16:35:30 +0000 (UTC)
 Received: by venus (Postfix, from userid 1000)
-	id 82FD0181F17; Sat, 25 Jul 2026 18:15:09 +0200 (CEST)
+	id 1FEFC181F17; Sat, 25 Jul 2026 18:35:29 +0200 (CEST)
 From: Sebastian Reichel <sebastian.reichel@collabora.com>
-To: Sebastian Reichel <sre@kernel.org>, Maoyi Xie <maoyixie.tju@gmail.com>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
- stable@vger.kernel.org, "H . Nikolaus Schaller" <hns@goldelico.com>, 
- Anton Vorontsov <cbouatmailru@gmail.com>
-In-Reply-To: <20260725072540.3092504-1-maoyixie.tju@gmail.com>
-References: <20260725072540.3092504-1-maoyixie.tju@gmail.com>
-Subject: Re: [PATCH] power: supply: twl4030_charger: cancel workers via
- devm
-Message-Id: <178499610950.774435.8676334469368857883.b4-ty@collabora.com>
-Date: Sat, 25 Jul 2026 18:15:09 +0200
+To: Chris Morgan <macromorgan@hotmail.com>, Mark Brown <broonie@kernel.org>, 
+ Sebastian Reichel <sre@kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, 
+ Lee Jones <lee@kernel.org>, Alexey Charkov <alchark@flipper.net>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, 
+ stable@vger.kernel.org
+In-Reply-To: <20260603-bq25792-v7-0-d487bed276d0@flipper.net>
+References: <20260603-bq25792-v7-0-d487bed276d0@flipper.net>
+Subject: Re: (subset) [PATCH v7 0/7] Add support for the TI BQ25792 battery
+ charger
+Message-Id: <178499732910.781280.8061315305197638408.b4-ty@collabora.com>
+Date: Sat, 25 Jul 2026 18:35:29 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -38,24 +39,17 @@ Content-Transfer-Encoding: 7bit
 X-Mailer: b4 0.14.3
 
 
-On Sat, 25 Jul 2026 15:25:40 +0800, Maoyi Xie wrote:
-> bci is devm-allocated. Two workers (bci->work and bci->current_worker)
-> dereference it. twl4030_bci_remove() disables charging and masks
-> interrupts. It cancels neither worker. A worker pending at remove() can
-> run after devm frees bci.
+On Wed, 03 Jun 2026 00:10:48 +0400, Alexey Charkov wrote:
+> This adds support for the TI BQ25792 battery charger, which is similar in
+> overall logic to the BQ25703A, but has a different register layout and
+> slightly different lower-level programming logic.
 > 
-> The USB transceiver comes from devm_usb_get_phy_by_node(). devm
-> unregisters its notifier only after remove() returns. A cancel_work_sync()
-> in remove() can then race a notifier reschedule. devm_work_autocancel()
-> and devm_delayed_work_autocancel() avoid that. They cancel the workers
-> during devm release, before bci is freed.
 > 
-> [...]
 
 Applied, thanks!
 
-[1/1] power: supply: twl4030_charger: cancel workers via devm
-      commit: 6eba34732524067da2aad5ddfdfbc641ded10e9e
+[7/7] power: supply: bq257xx: Add support for BQ25792
+      commit: 13cf94703737b4b9a6826987b46020df0642b1e0
 
 Best regards,
 -- 
