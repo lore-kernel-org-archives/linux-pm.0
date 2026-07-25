@@ -1,107 +1,105 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2D0BC625;
-	Sat, 25 Jul 2026 20:31:10 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CB2F0625;
+	Sat, 25 Jul 2026 21:40:49 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1785011472; cv=none; b=aTgBjb9cj0tsiNCIRNgwNLQgX0d4hZvqBukP+Rg2l7tWTaje0908uRIqsphDDLpNn90NS7itft0NcPZn0kT/lLzw0lkWg+AGJ+lbKUrBFyLPInQnST1u4p1GrXrFF2jSYORyEQQo4xyOyaRpTavkuvEMlc1C2OJHvum7JLtMtJs=
+	t=1785015650; cv=none; b=gxkmGfcRM2kSQyc7nk/MehFMLC21JHpnptUrFqkoGg1WqOXTNUTn/adZY8mst3ARTKhAampsGyfXBjhJ+/glK1I+7amTKCGTGZ7BXaaGDr1xuTA2QuQygfs9J5JkbX43zbInEsI7F058gR11Pww/l1BBD8lnwbxluw8Bk/yHQ30=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1785011472; c=relaxed/simple;
-	bh=e6KMoD3bd5/q6p3xQeg23qgiuejFXySUo/aGZ6esyCc=;
-	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
-	 MIME-Version:Content-Type; b=JKAGydDvVpvukxAV9Q1NF4vPSEA0b15yWfsrQ+p8Z/gHAJTBkG3dE+5eiVca8cKXSa3+Noh0ZRnip2j1grPveDwhnKx5JBqbrqP+cZ/zdtyC9p92rmeO423HfMKXTQCZvNPA2mBE33TwVY9FNnKOF7f2Gxtd/dBn9DwNGDP2Zzo=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=hAfTn9kP; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1785015650; c=relaxed/simple;
+	bh=qyCyhcPCK0MGIjwMUP1F4pB4FKfPc1liJrLOMavqTY0=;
+	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=nOt/0wiLz1ie/Xw3cL8p3JuqXT1IMCSGvZSjn/Wlnf/G4CnbzG7yxZZ5VeShC2rvOMlpbExp0ZB3QeGoRjmjzd8EApNkEg4vrO3JgS/a4kBb0VqjQUA2KCCzakH4eJXcZhAgqjhMP2iyKoBy3TULTpZT8+MyhwCAd/bkkeBWX4k=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=f1BQpjQD; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="hAfTn9kP"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id DFFA01F000E9;
-	Sat, 25 Jul 2026 20:31:09 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="f1BQpjQD"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7DE591F000E9;
+	Sat, 25 Jul 2026 21:40:47 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1785011470;
-	bh=e6KMoD3bd5/q6p3xQeg23qgiuejFXySUo/aGZ6esyCc=;
-	h=From:To:Cc:Subject:In-Reply-To:References:Date;
-	b=hAfTn9kP3ZABFKIwidJBkzkwUEnV03/r5N7p8kmUos3uDtUKUWtEJzQPpdypzC87s
-	 s8zXrjsDbl2M4eM1W7J86H4KiLLuZnMtxMMILtEw98qiQcngdzhm3Z933lwVaUuZ1u
-	 NLkyUWEUlaRXQiJD2BrV3+doGFNu5m2sLbsSq0EGZklaA6R4wtvLOLLa2OnPQe5qNl
-	 qRc/eqpUyUDjcyObmg1ruSpXH9PI078U1i4aarlF7k3SAVuPPwJdBfCiYHUHqv1JgK
-	 gHSHbd+Pb+4KEwvFVr0Xj05kVhoMd7+HPlRE8f80fEhbz02ckPWPFwbzdqixw/v4UL
-	 pVfAw00n8dMXA==
-From: Thomas Gleixner <tglx@kernel.org>
-To: Petr Pavlu <petr.pavlu@suse.com>, Tony Luck <tony.luck@intel.com>,
- Borislav Petkov <bp@alien8.de>, Ingo Molnar <mingo@redhat.com>, Dave
- Hansen <dave.hansen@linux.intel.com>, x86@kernel.org, "H. Peter Anvin"
- <hpa@zytor.com>, Philipp Reisner <philipp.reisner@linbit.com>, Lars
- Ellenberg <lars.ellenberg@linbit.com>, Christoph =?utf-8?Q?B=C3=B6hmwalde?=
- =?utf-8?Q?r?=
- <christoph.boehmwalder@linbit.com>, Jens Axboe <axboe@kernel.dk>, Johan
- Hovold <johan@kernel.org>, Alex Elder <elder@kernel.org>, Greg
- Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J. Wysocki"
- <rafael@kernel.org>, Michal Januszewski <spock@gentoo.org>, Helge Deller
- <deller@gmx.de>, Alexander Viro <viro@zeniv.linux.org.uk>, Christian
- Brauner <brauner@kernel.org>, Jan Kara <jack@suse.cz>, Trond Myklebust
- <trondmy@kernel.org>, Anna Schumaker <anna@kernel.org>, Chuck Lever
- <cel@kernel.org>, Jeff Layton <jlayton@kernel.org>, NeilBrown
- <neil@brown.name>, Olga Kornievskaia <okorniev@redhat.com>, Dai Ngo
- <Dai.Ngo@oracle.com>, Tom Talpey <tom@talpey.com>, Mark Fasheh
- <mark@fasheh.com>, Joel Becker <jlbec@evilplan.org>, Joseph Qi
- <joseph.qi@linux.alibaba.com>, Tejun Heo <tj@kernel.org>, Johannes Weiner
- <hannes@cmpxchg.org>, Michal =?utf-8?Q?Koutn=C3=BD?= <mkoutny@suse.com>,
- Luis Chamberlain
- <mcgrof@kernel.org>, Petr Pavlu <petr.pavlu@suse.com>, Daniel Gomez
- <da.gomez@kernel.org>, Sami Tolvanen <samitolvanen@google.com>, Aaron
- Tomlin <atomlin@atomlin.com>, Pavel Machek <pavel@kernel.org>, Len Brown
- <lenb@kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Danilo
- Krummrich <dakr@kernel.org>, Nikolay Aleksandrov <razor@blackwall.org>,
- Ido Schimmel <idosch@nvidia.com>, "David S. Miller" <davem@davemloft.net>,
- Eric Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>,
- Paolo Abeni <pabeni@redhat.com>, Simon Horman <horms@kernel.org>, David
- Howells <dhowells@redhat.com>, Jarkko Sakkinen <jarkko@kernel.org>, Paul
- Moore <paul@paul-moore.com>, James Morris <jmorris@namei.org>, "Serge E.
- Hallyn" <serge@hallyn.com>, Kentaro Takeda <takedakn@nttdata.co.jp>,
- Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-Cc: linux-edac@vger.kernel.org, linux-kernel@vger.kernel.org,
- drbd-dev@lists.linux.dev, linux-block@vger.kernel.org,
- greybus-dev@lists.linaro.org, linuxppc-dev@lists.ozlabs.org,
- linux-acpi@vger.kernel.org, linux-fbdev@vger.kernel.org,
- dri-devel@lists.freedesktop.org, linux-fsdevel@vger.kernel.org,
- linux-nfs@vger.kernel.org, ocfs2-devel@lists.linux.dev,
- cgroups@vger.kernel.org, linux-modules@vger.kernel.org,
- linux-pm@vger.kernel.org, driver-core@lists.linux.dev,
- bridge@lists.linux.dev, netdev@vger.kernel.org, keyrings@vger.kernel.org,
- linux-security-module@vger.kernel.org
-Subject: Re: [PATCH v2 2/3] time/jiffies: Include linux/sysctl.h for
- proc_int_u2k_conv_uop(), ...
-In-Reply-To: <20260721131207.803760-3-petr.pavlu@suse.com>
-References: <20260721131207.803760-1-petr.pavlu@suse.com>
- <20260721131207.803760-3-petr.pavlu@suse.com>
-Date: Sat, 25 Jul 2026 22:31:07 +0200
-Message-ID: <874ihmke0k.ffs@fw13>
+	s=k20260515; t=1785015649;
+	bh=DtlvVsw7NCv7y3/Q1wKXm9/39JV54+n13G3ySQjLkCg=;
+	h=Date:From:To:Cc:Subject:In-Reply-To:References;
+	b=f1BQpjQD69WssFkQsA2wArP+ybAChrPUic2AEqr9yHkAJaPVYRlJuxmnIcOmeKH7C
+	 s3hY6ElYlXWLBvVYKlShHJY6ciRtm21mx97WRh379ORwWWczIgxtbxtD1merMxYsa1
+	 xB7AeQ7/zBYij3ne6B0opeGTC43EHt/HQ6mZiTCzq5C/FDVPgcZX45n9eKkXSGGRns
+	 LtwHGZQmPRCDU+knEn/4uCwlyjVQhkHYTHeknDOGYftbqg+eejpVfduBMgsgYNKfLB
+	 /BBhvzHf359/1ffgj+vLfUOfCSNz8ocKQItpGTlT2HNyUHyzXMweboRV3Ee/dkIOlP
+	 Ws9fH36IB2VfA==
+Date: Sat, 25 Jul 2026 22:40:43 +0100
+From: Jonathan Cameron <jic23@kernel.org>
+To: Rakesh Kota <rakesh.kota@oss.qualcomm.com>
+Cc: Amit Kucheria <amitk@kernel.org>, Thara Gopinath
+ <thara.gopinath@gmail.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Daniel
+ Lezcano <daniel.lezcano@kernel.org>, Zhang Rui <rui.zhang@intel.com>,
+ Lukasz Luba <lukasz.luba@arm.com>, Svyatoslav Ryhel <clamor95@gmail.com>,
+ Hans de Goede <johannes.goede@oss.qualcomm.com>, linux-pm@vger.kernel.org,
+ linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org, Kamal Wadhwa
+ <kamal.wadhwa@oss.qualcomm.com>, Jishnu Prakash
+ <jishnu.prakash@oss.qualcomm.com>, linux-iio@vger.kernel.org
+Subject: Re: [PATCH] thermal: qcom-spmi-adc-tm5: drop IIO_VAL_INT check in
+ adc_tm5_get_temp
+Message-ID: <20260725224043.62b15ea3@jic23-huawei>
+In-Reply-To: <20260724-adc-tm5-drop-iio-val-int-check-v1-1-0b85a0895dd7@oss.qualcomm.com>
+References: <20260724-adc-tm5-drop-iio-val-int-check-v1-1-0b85a0895dd7@oss.qualcomm.com>
+X-Mailer: Claws Mail 4.4.0 (GTK 3.24.52; x86_64-pc-linux-gnu)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 
-On Tue, Jul 21 2026 at 15:11, Petr Pavlu wrote:
+On Fri, 24 Jul 2026 16:30:24 +0530
+Rakesh Kota <rakesh.kota@oss.qualcomm.com> wrote:
 
-> The kernel/time/jiffies.c file uses proc_int_u2k_conv_uop(),
+> Commit bb21ee31f575 ("iio: Fix iio_multiply_value use in
+> iio_read_channel_processed_scale") fixed the
+> iio_read_channel_processed_scale to return 0 on success instead
+> of IIO_VAL_INT (1). The existing check in adc_tm5_get_temp()
+> treated a successful return as an error because it expected
+> IIO_VAL_INT. Drop the redundant `ret != IIO_VAL_INT` condition
+> and rely solely on the negative error check.
+> 
+> Fixes: bb21ee31f575 ("iio: Fix iio_multiply_value use in iio_read_channel_processed_scale")
+> Signed-off-by: Rakesh Kota <rakesh.kota@oss.qualcomm.com>
+Ah.  Sorry we missed that!
 
-jiffies.c uses ...
+Change is fine but you might as well just 
+return iio_read_channel_processed() as it only returns 0 or negative error.
 
-> proc_int_k2u_conv_kop(), proc_int_conv(), proc_dointvec_conv() and
-> proc_doulongvec_minmax_conv(), which are declared in linux/sysctl.h. It
-> currently relies on this header being included indirectly through
-> linux/module.h -> linux/kmod.h. Add the missing include in preparation for
-> removing the linux/sysctl.h include from linux/kmod.h.
+Either way
 
-Can you please split that spaghetti sentence into paragraphs?
+Reviewed-by: Jonathan Cameron <jonathan.cameron@oss.qualcomm.com>
 
-https://docs.kernel.org/process/maintainer-tip.html#changelog
++CC linux-iio for info.
+> ---
+>  drivers/thermal/qcom/qcom-spmi-adc-tm5.c | 3 ---
+>  1 file changed, 3 deletions(-)
+> 
+> diff --git a/drivers/thermal/qcom/qcom-spmi-adc-tm5.c b/drivers/thermal/qcom/qcom-spmi-adc-tm5.c
+> index bb6222c8cc5f..af72db6299cd 100644
+> --- a/drivers/thermal/qcom/qcom-spmi-adc-tm5.c
+> +++ b/drivers/thermal/qcom/qcom-spmi-adc-tm5.c
+> @@ -369,9 +369,6 @@ static int adc_tm5_get_temp(struct thermal_zone_device *tz, int *temp)
+>  	if (ret < 0)
+>  		return ret;
+>  
+> -	if (ret != IIO_VAL_INT)
+> -		return -EINVAL;
+> -
+>  	return 0;
+>  }
+>  
+> 
+> ---
+> base-commit: 9eebf259d5352b87080d67758f483583d9e763d7
+> change-id: 20260724-adc-tm5-drop-iio-val-int-check-38e27c4018c7
+> 
+> Best regards,
+> --  
+> Rakesh Kota <rakesh.kota@oss.qualcomm.com>
+> 
 
-> Signed-off-by: Petr Pavlu <petr.pavlu@suse.com>
-
-Other than that.
-
-Acked-by: Thomas Gleixner <tglx@kernel.org>
