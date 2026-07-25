@@ -1,54 +1,52 @@
-Received: from sender4-op-o11.zoho.com (sender4-op-o11.zoho.com [136.143.188.11])
+Received: from sender4-op-o12.zoho.com (sender4-op-o12.zoho.com [136.143.188.12])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A18CE30F531;
-	Sat, 25 Jul 2026 01:41:54 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=136.143.188.11
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D52023090D7;
+	Sat, 25 Jul 2026 02:40:14 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=136.143.188.12
 ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1784943716; cv=pass; b=le6njyzWbRplIyxN1txZsCIIlmHQb2CZd3sdua3V/4OesVx+kUoeP2fbsevzAFizhGRLHzYK3Nlvo2I7ye9d7bbtaO8RSLGDZLiXYXmNe/aeODxRUPaQyU/RyINn4m6bi3m02KdOW683JLoSwyTEwyVRApeQYFGeR92b0MgoOTE=
+	t=1784947217; cv=pass; b=EeRMOTZm2/QxCH4/WRyaRAcvq6/Huoqzp4aVbNLHBihuTjZG66BErmMH+Od5W/YhvGHi9s1VGQUf9vIdEqNY0YUkwEOU1z7G1DbwShdnbziFW0XRaPkg2HCQ1r6MU/OK2pGVGtCNiygfO97glp2KoUARVwS74W/U+Oh02aP81Ac=
 ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1784943716; c=relaxed/simple;
-	bh=NZyVFpIRyK2rNwaMXjWMJlx5PJeZGjemTrC+PWB+WmY=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=ebqCrIqESpAtA9iy2HZ0/SLKFxGrDhVGPKyFTwdWLT/QX2xqZBmfHGgqsKSLF5gvFFeeXN3VmaU5LWhLg5TiAUKgbxIkMH40S32fF9XjLdrKl4MwSO6P4UwAeUa4n0HDxETThHpqYGaS3Q3g54uX30med5X3oeIpvpAOyU+BOIg=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (1024-bit key) header.d=collabora.com header.i=sebastian.reichel@collabora.com header.b=kDM2xX65; arc=pass smtp.client-ip=136.143.188.11
+	s=arc-20240116; t=1784947217; c=relaxed/simple;
+	bh=EBuUb00s3/5Qe+t92Dn2L9BPl8kdUBUNL8M+AkHOyW0=;
+	h=Date:From:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=se2MBrhkstBYpeV972Q/n3QgeVzEQZjWo5HISjMilipC4xcsR7z7ay794SONSr9vZzdH59mLqtQG7IYm/EIYU5m2CZbTYmSkG0jJFrX10UUmFa7qUG8j7GTxutBuGqnMThXld7VkTDm7Hv6nbQ1ch3CmZ0njv+/7XMPGTkIl3Xk=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (1024-bit key) header.d=collabora.com header.i=sebastian.reichel@collabora.com header.b=fngl8UYm; arc=pass smtp.client-ip=136.143.188.12
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=collabora.com header.i=sebastian.reichel@collabora.com header.b="kDM2xX65"
-ARC-Seal: i=1; a=rsa-sha256; t=1784943702; cv=none; 
+	dkim=pass (1024-bit key) header.d=collabora.com header.i=sebastian.reichel@collabora.com header.b="fngl8UYm"
+ARC-Seal: i=1; a=rsa-sha256; t=1784947212; cv=none; 
 	d=zohomail.com; s=zohoarc; 
-	b=lMrrV9vou/udhD54x/d1OJXy38OqQLeUw1vHRFqX4cThDHyh74iHVoUmq334x+yzGnbSZM09NpPBTw8vu2cjZM5n5ErUyzyZcquLu3tXxXOBZGd0Gqy2fD7mznQuXKPKPAYc0KD1dZDlQWKg+qXTkgjDwBOTjHbt8vqcPqDxJ6c=
+	b=GjbWC07I+o7Aq2ph/nIIFP41KxlDOmIjEFkpDLgGWZSSBbWfp4hQZDS8I2edqNy70AlPtFGn6cJlCHDk3qdXx9E4WE1LEotSYj4G4/b+N3iARAFrEac8C0sczjqcP3V+S4W+NwrALy4/BqqGR1N/RY7ZyUmxeHw8epumdUzF3sA=
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=zohomail.com; s=zohoarc; 
-	t=1784943702; h=Content-Type:Cc:Cc:Date:Date:From:From:In-Reply-To:MIME-Version:Message-ID:Subject:Subject:To:To:Message-Id:Reply-To; 
-	bh=sH6CqLJTGi8ISCigCTRSI5cDrts97yVGtVPSig9GIGk=; 
-	b=RTr4lha7eCMULJZyHNUR1LxWTw3vTGrP9Tq+dPcM3pPnEPvcdklDS2ClvqWxdMkvIoZPYrvthf0nHK0IvzZmRK/goUCh48d1mksled/CCBOpDOF0n62Qb0JLYUdmWvmuq+jPA/CQvCL2DJ9Z7BEr07gylXmk+jTSinPzvIVabHo=
+	t=1784947212; h=Content-Type:Cc:Cc:Date:Date:From:From:In-Reply-To:MIME-Version:Message-ID:Subject:Subject:Message-Id:Reply-To:To; 
+	bh=1E2XTXDpQtjlzW1VOQI0W43iH8CavnEQDTPwlGOvurY=; 
+	b=RyNyPHHl3CRCwvKfvLqL+rcXfR8w1iLki4o+gJV650xHcJIKAf5RnShs3hGX2vbgExMXuqcAVNbkUAOMOsRTGpwtb+HLR1/Xs2qlG+gI13zLkkmcZ+8yPKWHOH9eJSLog2GgJgLooYnZIpDMufkcEO/jkzrhoFRvdO471GzPZXs=
 ARC-Authentication-Results: i=1; mx.zohomail.com;
 	dkim=pass  header.i=collabora.com;
 	spf=pass  smtp.mailfrom=sebastian.reichel@collabora.com;
 	dmarc=pass header.from=<sebastian.reichel@collabora.com>
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; t=1784943702;
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; t=1784947212;
 	s=zohomail; d=collabora.com; i=sebastian.reichel@collabora.com;
-	h=Date:Date:From:From:To:To:Cc:Cc:Subject:Subject:Message-ID:MIME-Version:Content-Type:In-Reply-To:Message-Id:Reply-To;
-	bh=sH6CqLJTGi8ISCigCTRSI5cDrts97yVGtVPSig9GIGk=;
-	b=kDM2xX65FhVl5v1HHE7bUlOtCmlEFWjYuLu/2bXo+Coekl4Bu/IlPfXXuypWeRUH
-	iCvxNU7vfE83f5WNFPe7zEA38ZIVOKZfhUpZiaY3XhczGFt0DW3Uj1DBrcWitzMiX0f
-	+N+aYGzfqS4oy0WtbFsLuQi8plWza7pEtJuyhpi0=
-Received: by mx.zohomail.com with SMTPS id 1784943699375320.3677950223381;
-	Fri, 24 Jul 2026 18:41:39 -0700 (PDT)
+	h=Date:Date:From:From:Cc:Cc:Subject:Subject:Message-ID:MIME-Version:Content-Type:In-Reply-To:Message-Id:Reply-To:To;
+	bh=1E2XTXDpQtjlzW1VOQI0W43iH8CavnEQDTPwlGOvurY=;
+	b=fngl8UYmoVqHZi75pVkZhk9COM+4wl5nYjVrgDeByoMmoryDsALUrN91LRzCKqvb
+	Ev1f+iAMkIpnj2s5gqnmOGtYXdR0/saLOpIqIzSxuxdz99rK7ywMF/vcqK0KfWHHnV0
+	XovuYC/pipS+eaM19QJSBxodZgI6ETCDrra72Xj0=
+Received: by mx.zohomail.com with SMTPS id 1784947211626271.6279091495768;
+	Fri, 24 Jul 2026 19:40:11 -0700 (PDT)
 Received: by venus (Postfix, from userid 1000)
-	id 9CED8181F16; Sat, 25 Jul 2026 03:41:35 +0200 (CEST)
-Date: Sat, 25 Jul 2026 03:41:35 +0200
+	id 65984181F16; Sat, 25 Jul 2026 04:40:09 +0200 (CEST)
+Date: Sat, 25 Jul 2026 04:40:09 +0200
 From: Sebastian Reichel <sebastian.reichel@collabora.com>
-To: Bruce Robertson <brucer42@gmail.com>
-Cc: rust-for-linux@vger.kernel.org, linux-pm@vger.kernel.org, 
-	linux-i2c@vger.kernel.org, linux-kernel@vger.kernel.org, Miguel Ojeda <ojeda@kernel.org>, 
-	Igor Korotin <igor.korotin@linux.dev>, Gary Guo <gary@garyguo.net>, 
-	Tamir Duberstein <tamird@kernel.org>, Alice Ryhl <aliceryhl@google.com>, Boqun Feng <boqun@kernel.org>
-Subject: Re: [RFC PATCH 0/3] rust: power_supply class abstraction and SMB347
- charger driver
-Message-ID: <amQPYhBkj9rIdSZ_@venus>
-References: <20260708214738.25008-1-brucer42@gmail.com>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/2] power: supply: leds: add a not-charging trigger
+Message-ID: <amQWViWt8ovRisp0@venus>
+References: <20260625-std-power-supply-triggers-v1-0-d80db570d329@beckhoff.com>
+ <20260625-std-power-supply-triggers-v1-2-d80db570d329@beckhoff.com>
+ <al6dJek_lLPGARdU@venus>
+ <b31e36e3c6b36e1b65880d91b53f6f3f9611a102.camel@dirkwinkel.cc>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -56,147 +54,119 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="t4jkyeocqyd2wit6"
+	protocol="application/pgp-signature"; boundary="hgyayp5vuh366c4u"
 Content-Disposition: inline
-In-Reply-To: <20260708214738.25008-1-brucer42@gmail.com>
+In-Reply-To: <b31e36e3c6b36e1b65880d91b53f6f3f9611a102.camel@dirkwinkel.cc>
 X-Zoho-Virus-Status: 1
-X-Zoho-AV-Stamp: zmail-av-0.2.10.1.5.2/284.919.37
+X-Zoho-AV-Stamp: zmail-av-0.2.10.1.5.2/284.942.77
 X-ZohoMailClient: External
 
 
---t4jkyeocqyd2wit6
+--hgyayp5vuh366c4u
 Content-Type: text/plain; protected-headers=v1; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
-Subject: Re: [RFC PATCH 0/3] rust: power_supply class abstraction and SMB347
- charger driver
+Subject: Re: [PATCH 2/2] power: supply: leds: add a not-charging trigger
 MIME-Version: 1.0
 
 Hi,
 
-On Wed, Jul 08, 2026 at 09:47:35PM +0000, Bruce Robertson wrote:
-> This series adds a Rust abstraction for the power supply class -- which
-> does not currently exist in mainline or rust-next -- together with the
-> SMBus helpers needed to drive an I2C charger from Rust,
-
-Having Rust bindings for new drivers sounds good to me.
-
-> and a Rust port of the Summit SMB347 battery charger as the first
-> consumer.
-
-Any reason for Summit SMB347 specifically? I would prefer not to
-have two drivers for the same hardware. Looks like this is used
-by just three relatively old devices:
-
-rg -l '"summit,smb347"' arch
-arch/arm/boot/dts/ti/omap/omap4-samsung-espresso10.dts
-arch/arm/boot/dts/nvidia/tegra30-asus-nexus7-grouper-common.dtsi
-arch/arm/boot/dts/samsung/exynos4412-p4note.dtsi
-
-All are ARM32 based, so Rust is at least available by all users.
-So I suppose replacing this C driver would be an option, OTOH I
-don't want to motivate people to rewrite things either :)
-
-> Motivation
-> ----------
-> Rust drivers for power supply hardware are currently blocked: there is
-> no safe Rust interface to the power supply class, and the I2cClient
-> abstraction exposes no register I/O. This series provides a minimal,
-> self-contained path from binding an I2C charger to reporting charging
-> state through sysfs, entirely in safe Rust, with the unsafe FFI confined
-> to the two abstraction layers.
+On Tue, Jul 21, 2026 at 08:56:47AM +0200, Steffen Dirkwinkel wrote:
+> On Tue, 2026-07-21 at 00:23 +0200, Sebastian Reichel wrote:
+> > On Thu, Jun 25, 2026 at 07:07:35PM +0200, Steffen Dirkwinkel wrote:
+> > > From: Steffen Dirkwinkel <s.dirkwinkel@beckhoff.com>
+> > >=20
+> > > We intend to use this with a gpio-charger ups device that reports
+> > > charging or not-charging based on a gpio to set a "power failure" led.
+> > >=20
+> > > Signed-off-by: Steffen Dirkwinkel <s.dirkwinkel@beckhoff.com>
+> > > ---
+> > >  drivers/power/supply/power_supply_leds.c | 7 +++++++
+> > >  include/linux/power_supply.h             | 1 +
+> > >  2 files changed, 8 insertions(+)
+> >=20
+> > POWER_SUPPLY_STATUS_NOT_CHARGING means, that a battery is neither
+> > charged **nor discharged**. I think the NOT_CHARGING status has a
+> > bad name, but it's ABI and cannot be changed easily. But I certainly
+> > don't want it to spread further. Let's find a better name for this
+> > trigger. Maybe idle?
 >=20
-> The series is structured abstraction-first:
+> Hm, I guess I was also mislead by the name, as it's somewhat correct for =
+my
+> usecase, our gpio connected ups is indicating "not-charging" via a gpio a=
+nd I'm
+> using it as a gpio-charger charge-status-gpio.
 >=20
->   1/3  Safe SMBus read/write/update_bits over i2c::I2cClient.
->   2/3  A power_supply Driver trait, a generic get_property trampoline,
->        and an RAII Registration that owns the descriptor lifetime.
->   3/3  A Rust SMB347 charger driver consuming both: it binds over I2C
->        and reports STATUS, ONLINE and CHARGE_TYPE.
+> I guess it would be more correct if I could map the gpio-charger charge s=
+tatus
+> to switch between charging and discharging instead of indicating not-char=
+ging.
+> If you agree I'd add that as an option via device tree binding there and =
+add a
+> discharging trigger instead of the not charging one to the led triggers:
+>=20
+>   charge-status-discharging:
+>       type: boolean
+>       description:
+>         Interpret a deasserted charge-status-gpio as "discharging" instea=
+d of
+> 	"not charging".
 
-A new driver supporting CHARGE_TYPE should also support
-CHARGE_TYPES.
+For a normal charger your gpio would be the ONLINE state effectively
+(i.e. "gpios" in the binding). For most devices that's basically the
+only thing a charger reports.
 
-> Testing
-> -------
-> Built and exercised against an emulated SMB347 using i2c-stub: seeding
-> the chip's status registers and reading back the corresponding sysfs
-> attributes (status, online, charge_type) confirms the full C->Rust->C
-> path. No physical hardware or interrupt path has been tested.
+Looking at UPS support in the mainline kernel, it does not look like
+anyone used it so far (not just with gpio-charger; I cannot finy *any*
+user for POWER_SUPPLY_TYPE_UPS). I do see some issues with some of
+the power-supply framework's properties as a UPS is basically a
+combination of a charger and a battery. I wonder if it's better to
+simply expose them separately to avoid these problems.
 
-If the idea is to just have a user for the Rust binding and
-something to test/play around: Maybe convert test_power instead? It
-would also decouple the power-supply Rust bindings from I2C/SMBus.
-The disadvantage is, that this driver is a special-case, since it
-has no parent device :)
+Can you share a bit more details about your platform? Would it be
+possible to expose your UPS like this?
+
+ups_charger: charger {
+    compatible =3D "gpio-charger";
+    charger-type =3D "mains";
+    gpios =3D <your_status_gpio>;
+};
+
+ups_battery: battery {
+    compatible =3D "gpio-battery";
+    power-supplies =3D <&ups_charger>;
+
+    /*
+     * does not yet exist, any GPIOs are optional. In the simple
+     * case it creates a TYPE_BATTERY device, which sets its own
+     * status based on the ONLINE state of the charger it is being
+     * supplied from. Potentially could have a gpio to notify
+     * critical battery status.
+     */
+};
 
 Greetings,
 
 -- Sebastian
 
-> Open questions / known limitations (hence RFC)
-> ----------------------------------------------
->   - get_property recovers the driver's private data via the parent
->     device's drvdata. The current code relies on the observed ordering
->     (callbacks only fire after probe() has set drvdata); the contract
->     should be made explicit.
->   - smbus_update_bits() is not atomic against concurrent callers; a lock
->     will be required before a charger IRQ handler is added (not yet
->     implemented).
->   - Only get_property and a handful of properties are wired up;
->     set_property, property_is_writeable and the IRQ-driven
->     power_supply_changed() notification are future work.
->=20
-> Feedback on the abstraction's shape -- especially the descriptor
-> lifetime and the drvdata recovery -- would be very welcome.
->=20
-> checkpatch emits one MAINTAINERS warning on patch 3/3 (new driver file);
-> it is a false positive -- the driver is covered by the existing POWER
-> SUPPLY CLASS "F: drivers/power/supply/" glob and needs no new entry.
-> Patch 2/3 adds the one file outside any existing glob
-> (rust/kernel/power_supply.rs) and updates MAINTAINERS accordingly.
->=20
-> Based on rust-next (v7.2-rc1).
->=20
-> Bruce Robertson (3):
->   rust: i2c: add SMBus byte transfer helpers
->   rust: power_supply: add power supply class abstraction
->   power: supply: add Rust SMB347 charger driver
->=20
->  MAINTAINERS                                 |   1 +
->  drivers/power/supply/Kconfig                |  14 ++
->  drivers/power/supply/Makefile               |   1 +
->  drivers/power/supply/smb347-charger_rust.rs | 180 ++++++++++++++++++++
->  rust/bindings/bindings_helper.h             |   1 +
->  rust/kernel/i2c.rs                          |  42 +++++
->  rust/kernel/lib.rs                          |   1 +
->  rust/kernel/power_supply.rs                 | 133 +++++++++++++++
->  8 files changed, 373 insertions(+)
->  create mode 100644 drivers/power/supply/smb347-charger_rust.rs
->  create mode 100644 rust/kernel/power_supply.rs
->=20
-> --=20
-> 2.43.0
->=20
-
---t4jkyeocqyd2wit6
+--hgyayp5vuh366c4u
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAmpkFEsACgkQ2O7X88g7
-+pqG5A/+OXDSMBBeBQeHtPnntBd8Wx6nflqqmyNWgjtgNzc1Hmk+yQzj2BFnvkwq
-UwzB7KOiUxVJbNzOuV19yRqVeSFmxYHGXEUzNsQNFHBpvSPopOj/IN/sd3uw6eEw
-w8a356v9gJdEP/cMd2pKOKQmRzDDDwNbMSOYaAxhMLaBa8kSepf37L2nWx8RnxoK
-7Usvij75cQN4RIsGzg5QsjwujoSNuBdk0naHkGUsdVjq0eTPLiYMeIck6nQ69VtU
-NUsUy96WDAgiZJU+iir1rh/IVRJQS+nNO/Kd41ANyMhP47e3idOVJ24PJivjFnWw
-wq8wKSGxOT9rhkrLDddgJwFKKeZYp5AH2NmvquSCS3xF3k1uSow2uPmBYpP9nx4K
-Aay0TjibqIJWt58swQegj2OpogWn72VTs7l3HQUp6ARy06FOv/LXxFMPKWDnH22u
-vL4MrUC+Brbt5751q6hOfna9399fv+C8KO6WblFlBXs5hfumLNjbWilNCy/BH+6v
-7QOcT1WvOuwbNAsMnECGSsf/Tlv4EVh/6XBYl9eN8PrlIM/r6lnXGVZUgwtwbz0w
-3MsLJwdBiqHKPYZsHr1NN5Uy5+GUhkHORT3Rc+3YbxyR0PRrnanu3dTvSY6pHsLQ
-mhW9p1sgguehZBDH6411FwsEkO+dMSCV8v1Q0AyPI2Q4RDCnaqQ=
-=V0FH
+iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAmpkIgEACgkQ2O7X88g7
++po2zw//YJK0dY2pNa4rOGLaZzlc2ovAWnnMzAQ0WOd81vAw4OJvhAW3Vk1K3VAV
+kED6MIN0Z3YVLsxMEQh8W5O6rZmmeMtLZkIcpo+RyELfVahqhDQ9kX3drcY2sGvj
+UeVAEDqy/P4O8gsZqv+kyAhOS3z9ENX/fN8m2RPOSF2PetjFYudahUO2Qb7Ud1Qa
+u3ETUxBXPDUWcACQl8oziVTiS8qQAA3JuC8ptup7+NaI5gGsTnLB4RULm0QpPXEs
+opsYugwxMy9+HTV/Z8lD3bq6ZXarmrJ9fhpdfmWPC7tDvuR/3aZTrMHfRllqz5Nu
+N3U98flvxplGAoeTNAuLEahgXljRw3ar6nTCO/tUDZ7rcHbYJNORl2Au9TaGxB5N
+9WPI1pqy9LD42lZ7XspNgcd1vo7oEowakznGY+yuAK1hGJeF8j6ATa0ZxAadquew
+2O+T7c8OVYxinsu5GdlZ1xnmVmRx+nSa3eao0WetG8qx8clOhWyXOwbjn32Lh5vM
+O8jEyz84ZJs91ajo00UKpCt07SxYFhV3BEBeFxeouGY8m1om/f1VJ0hcqez1VRuo
+CATSaY9XsDl4hjIoQpWqdbHPrLU0X7fq1NuvYtut+QD7CLQ5OmUH2CFc3yg18237
+irA6H3cHCLCktj7JcDZ6hHbmLYidZCKYebsK/4hRbBxDkGL26rw=
+=L8F/
 -----END PGP SIGNATURE-----
 
---t4jkyeocqyd2wit6--
+--hgyayp5vuh366c4u--
