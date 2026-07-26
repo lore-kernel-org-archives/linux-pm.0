@@ -1,94 +1,118 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+Received: from mx1.white.stw.pengutronix.de (mx1.white.stw.pengutronix.de [185.203.200.13])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 59035258EF9;
-	Sun, 26 Jul 2026 15:01:16 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B2EE7376BD9;
+	Sun, 26 Jul 2026 20:04:38 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=185.203.200.13
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1785078077; cv=none; b=FGLEerzTsvt0KqlaZIQEb4Ws1dOE8d1yDHjCkIbRmYe7Ci7HxrNNCq3c5OeoWLVxevooEJK29EtN36EJM217S7CXXE69UxBh0ZsQkZt+Wt1svsNn+AUAkcSMrBH7mp5jwfGjT1S4SDtqvEbhQLYzSBlxV2IdGctTvVSuAeBIBPU=
+	t=1785096281; cv=none; b=jkpGTD4RaBAr+A+ASyliiSOwEHIPspTPwLQlPpFnQ2apDWt4Ztg382sNmFvLvOe3HpWvKsvs4WaBkENf1oUGufqDgq7wrf0B1tbZdOa6LFsro2ybIidt7vDV4AqIpkHRetQ8UO1XBbBz3VV4Olr3C3Sfi33b8IOMc6cAGeD3Gng=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1785078077; c=relaxed/simple;
-	bh=Co/haKjVOYZQ+2iJ7vMmnKszHHqfkBsokaFLudtYZ1c=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=sfcaFlctnDGSEjg5Epbv/CRGkbIRDSZgGm+9ubv6V1znsejNoXHCB1vdypt8kVoXKJUbJE7BP0ME1qyPBdHHLseNy1ZFD6Ku1PIyoEUNWvA7SDhkgOH/h1ir37Fo4C1EqPzNKpikKsHGwZEgPzP5usfl7cF5BsDvGsUwOhR7JMc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=k8ADJwIM; arc=none smtp.client-ip=100.103.45.18
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="k8ADJwIM"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id B267C1F00A3D;
-	Sun, 26 Jul 2026 15:01:11 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1785078076;
-	bh=KF3WLDnzhawv1E63jb1eZQJNVi9jAWSGddOpTswPwi8=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References;
-	b=k8ADJwIM/9K4aDbthIc6E0Kkyy/oEv6J9w5YEtQwANBLNeCvAdtfmcvcKBClC7kgS
-	 Vu4oxdUR9yQ9vPt0xvaXnpDtb/pLbjmJ39fp9kFIozkvK45h8UiK7QV0Gwfck02YMQ
-	 3s88yuKoxxEgdEoY2v6/gk2rt2+mORJE8CcVZwhObDIWMsdIxJBvZqvjW9MITAl+q+
-	 2Zje31YvYIGq+fQqg00uLmyEqb95ZlKqG93iprGDDNSCeqqJQaLAUiYDkMdyUQE2Fh
-	 ql+wTAFv5Udl1ZNbbrbSTUno603bDlMWXmeWUjbEkUnEK13zCEjloPgCr9R7+Mz5nX
-	 mz0TuyBRixPNg==
-From: Will Deacon <will@kernel.org>
-To: tomeu@tomeuvizoso.net,
-	heiko@sntech.de,
-	robh@kernel.org,
-	krzk+dt@kernel.org,
-	conor+dt@kernel.org,
-	joro@8bytes.org,
-	robin.murphy@arm.com,
-	ulfh@kernel.org,
-	p.zabel@pengutronix.de,
-	ogabbay@kernel.org,
-	Jiaxing Hu <gahing@gahingwoo.com>
-Cc: catalin.marinas@arm.com,
-	kernel-team@android.com,
-	Will Deacon <will@kernel.org>,
-	chaoyi.chen@rock-chips.com,
-	dri-devel@lists.freedesktop.org,
-	linux-rockchip@lists.infradead.org,
-	iommu@lists.linux.dev,
+	s=arc-20240116; t=1785096281; c=relaxed/simple;
+	bh=o/ZkTxHN92Ux508EsSCnImcb/mYYjoiY375fVhJlGI0=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=qPXTqZzYCiXpGr5bE+2d3E/M1zU5As8Hw9y4mwHpOR8MdeMuJc2EWAv8a1aQBX5OpoyJqe0XdzFyFAiOP9gdAinGgupiPFetwL7CFarZmJ7lJo74RAcwdLgrb0ugjolfz5dW4XzBYQDbm0DyeU0IrdSjl35jdPoDHPPvysWbI2k=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=pengutronix.de; spf=pass smtp.mailfrom=pengutronix.de; arc=none smtp.client-ip=185.203.200.13
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=pengutronix.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=pengutronix.de
+Received: from drehscheibe.grey.stw.pengutronix.de (drehscheibe.grey.stw.pengutronix.de [IPv6:2a0a:edc0:0:c01:1d::a2])
+	(Authenticated sender: relay-from-drehscheibe.grey.stw.pengutronix.de)
+	by mx1.white.stw.pengutronix.de (Postfix) with ESMTPSA id E5C0020258A;
+	Sun, 26 Jul 2026 22:04:29 +0200 (CEST)
+Received: from pty.whiteo.stw.pengutronix.de ([2a0a:edc0:2:b01:1d::c5])
+	by drehscheibe.grey.stw.pengutronix.de with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+	(Exim 4.96)
+	(envelope-from <ore@pengutronix.de>)
+	id 1wo55J-001QVo-2f;
+	Sun, 26 Jul 2026 22:04:29 +0200
+Received: from ore by pty.whiteo.stw.pengutronix.de with local (Exim 4.98.2)
+	(envelope-from <ore@pengutronix.de>)
+	id 1wo55J-00000004lit-2pOz;
+	Sun, 26 Jul 2026 22:04:29 +0200
+Date: Sun, 26 Jul 2026 22:04:29 +0200
+From: Oleksij Rempel <o.rempel@pengutronix.de>
+To: Faruque Ansari <faruque.ansari@oss.qualcomm.com>
+Cc: Sebastian Reichel <sre@kernel.org>,
+	Srinivas Kandagatla <srinivas.kandagatla@linaro.org>,
+	Benson Leung <bleung@chromium.org>,
+	Tzung-Bi Shih <tzungbi@kernel.org>,
+	Daniel Lezcano <daniel.lezcano@linaro.org>, kernel@pengutronix.de,
+	linux-kernel@vger.kernel.org, Liam Girdwood <lgirdwood@gmail.com>,
+	Mark Brown <broonie@kernel.org>,
+	"Rafael J. Wysocki" <rafael@kernel.org>,
+	Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>,
 	linux-pm@vger.kernel.org,
-	devicetree@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org,
-	linux-kernel@vger.kernel.org
-Subject: Re: [RFC PATCH v2 0/8] accel/rocket: RK3576 NPU (RKNN) enablement
-Date: Sun, 26 Jul 2026 16:00:53 +0100
-Message-ID: <178507139795.2055528.4355657426833307310.b4-ty@kernel.org>
-X-Mailer: git-send-email 2.47.3
-In-Reply-To: <20260718031146.3368811-1-gahing@gahingwoo.com>
-References: <20260718031146.3368811-1-gahing@gahingwoo.com>
+	=?utf-8?B?U8O4cmVu?= Andersen <san@skov.dk>,
+	Guenter Roeck <groeck@chromium.org>,
+	Matti Vaittinen <mazziesaccount@gmail.com>,
+	Ahmad Fatoum <a.fatoum@pengutronix.de>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	chrome-platform@lists.linux.dev, avaneesh.dwivedi@oss.qualcomm.com,
+	umang.chheda@oss.qualcomm.com, faiyaz.mohammed@oss.qualcomm.com
+Subject: Re: [PATCH v11 0/7] Introduction of PSCR Framework and Related
+ Components
+Message-ID: <amZoTd1w6okw0Rw6@pengutronix.de>
+References: <20250618120255.3141862-1-o.rempel@pengutronix.de>
+ <3309e88e-e189-42ea-b74e-346aec1b4b5f@oss.qualcomm.com>
+ <729b0e26-bdbc-42f9-8245-79b2942272c2@oss.qualcomm.com>
+ <akJaAesz35Ml3iW4@pengutronix.de>
+ <4b5321e8-05c8-4f3f-bc22-d3776e008151@oss.qualcomm.com>
+ <akXnLLl_nq2G8EGI@pengutronix.de>
+ <f1400208-0c47-4dc0-8b69-d3ca2b054bb4@oss.qualcomm.com>
+ <e78ac252-1631-4f8c-a0e7-e48c66c20d9c@oss.qualcomm.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
+In-Reply-To: <e78ac252-1631-4f8c-a0e7-e48c66c20d9c@oss.qualcomm.com>
+X-Sent-From: Pengutronix Hildesheim
+X-URL: http://www.pengutronix.de/
+X-Accept-Language: de,en
+X-Accept-Content-Type: text/plain
 
-On Sat, 18 Jul 2026 15:11:38 +1200, Jiaxing Hu wrote:
-> This adds RK3576 NPU support to accel/rocket.  RFC: the NPU brings up and
-> runs, but full inference is not correct yet, and I would rather get
-> feedback now than sit on it.
+Hi Faruque,
+
+On Fri, Jul 24, 2026 at 01:17:40PM +0530, Faruque Ansari wrote:
+> Hi Oleksij,
+> > > > On representating nvmem cell to the framework  - if not DT what
+> > > > is your plan
+> > > > to represent it ?
+> > > > 
+> > > > How would framework discover the nvmem cell if its not DT based ?
+> > > 
+> > > I'll need to re-spin it and send a new version.
+> > > 
+> > > Are you on linux plumbers conference this year?
+> > > 
+> > > Best Regards,
+> > > Oleksij
+> > 
 > 
-> Tested on a Radxa ROCK 4D.  The NPU probes, powers on, brings up its
-> IOMMUs, and runs jobs to completion (rocket + Mesa Teflon).  Getting there
-> took a few fixes outside the driver too: a power-domain settle delay and
-> reset cycling (else a cold power-on throws an async SError), the full
-> clock set on the MMU nodes, clearing a stale firmware page fault, and both
-> NPU power domains on the core.
-> 
-> [...]
+> Just checking in - Do you have a rough timeline for the re-spin and posting
+> the next revision?
 
-Applied driver changes to iommu (rockchip), thanks!
+Hier is updated version,
 
-[4/8] iommu/rockchip: take all DT clocks
-      https://git.kernel.org/iommu/c/841363ebb508
-[5/8] iommu/rockchip: clear stale page faults before enabling stall
-      https://git.kernel.org/iommu/c/b10d5920cafa
+I did some framework refactoring to address some of comments. There are
+sysfs interface changes:
 
-Cheers,
+https://github.com/olerem/linux-2.6/commits/v7.2/topic/pscr/
+
+My plan is to send first 6 patches without drivers (if acceptable to reduce
+review overhead). Can you please test the new interfaces and give me
+some feedback.
+
+May be, if you have some time pressure for this functionality, you can
+take over the up streaming. Otherwise i'll continue..
+
+Best Regards,
+Oleksij
 -- 
-Will
-
-https://fixes.arm64.dev
-https://next.arm64.dev
-https://will.arm64.dev
+Pengutronix e.K.                           |                             |
+Steuerwalder Str. 21                       | http://www.pengutronix.de/  |
+31137 Hildesheim, Germany                  | Phone: +49-5121-206917-0    |
+Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
