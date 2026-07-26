@@ -1,59 +1,59 @@
 Received: from sender4-op-o11.zoho.com (sender4-op-o11.zoho.com [136.143.188.11])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1EBB52772E;
-	Sun, 26 Jul 2026 00:01:38 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D34C013FEE;
+	Sun, 26 Jul 2026 00:05:01 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=136.143.188.11
 ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1785024100; cv=pass; b=u+TRYbmWZJUU7HfnexzXCwhTrZ0PG0CQrBh/noWX2DGg1SIgjd9Rfu+ubOquqH+Y8sI7EfBDajqrxyewozM6qnk1oUP98DUYfs+/jAc7M9JZDtW1Qb+eS7/WnIHmDCosLdZmumDdX81MrlqzYTOZAHT/bbJttPaNm1t9lN9CQhs=
+	t=1785024303; cv=pass; b=cBke5bAHJ9HZNzVNO2EOEv4s24L+yQxaHed0sb87UkmUuIYaTur98mGSCuBB52+mzOMoWI8Skvj/EQmHW5Ee6Bw4kk43WFI9K4kA46ZZd79bwwfBMZox9QX9zDYuAdPM9DoVISOGInp6XN7xzBI201FnOfn2hYcvbXVEpPVFPRw=
 ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1785024100; c=relaxed/simple;
-	bh=oNFVY4CDk2cf7NSVzzy9rHNhASkP0Sq2Hamjgif4Kkw=;
+	s=arc-20240116; t=1785024303; c=relaxed/simple;
+	bh=zdwmwSjlv5HSJMCjXoAa8XOTBONbWO6Dxow9THKZBYE=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=cxi8rtoTTvEDJGXb/uj8V0ROVUL4maQ4UcN4qamJPpliWfZ3zvHjXJdfjUl/3EEte+PBuAXs81XX7a2nxYzbxE9h33FFM9ievb2vw7SzeJvhxPdZ+6xxXuAw1//3yG2VnFAZ7fzCQRVEOQTaeYR0i2d9p8WxJYZQitD3vnIpz2A=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (1024-bit key) header.d=collabora.com header.i=sebastian.reichel@collabora.com header.b=VrBibcFn; arc=pass smtp.client-ip=136.143.188.11
+	 Content-Type:Content-Disposition:In-Reply-To; b=kmbd9r9wpHFEbe3qxCfnbYBdP4l5FhsTUlkQ23u+n188+89tXv0Dgw/aTW8NqxgqAsXN7RnU1EmDYAes2Cw3FrjbdJ2Pya4WjbhCV3jelA7NviGKjvoxaInoNyEPMfR3TV53nwDqY9TWd0M0YDZj8K1jvDhJwNIgfY5EJ7exonc=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (1024-bit key) header.d=collabora.com header.i=sebastian.reichel@collabora.com header.b=Jkj0JhS1; arc=pass smtp.client-ip=136.143.188.11
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=collabora.com header.i=sebastian.reichel@collabora.com header.b="VrBibcFn"
-ARC-Seal: i=1; a=rsa-sha256; t=1785024080; cv=none; 
+	dkim=pass (1024-bit key) header.d=collabora.com header.i=sebastian.reichel@collabora.com header.b="Jkj0JhS1"
+ARC-Seal: i=1; a=rsa-sha256; t=1785024283; cv=none; 
 	d=zohomail.com; s=zohoarc; 
-	b=gP6xIXKkIb2CBMzMakz3m+zlzA2Wo15oMdXRKWKhiuu71L5fGarZpdg1RkPdI+6svd472YQ0IvrZrAZ0U5FmhFOnAXdGnaPNgnupQJr34D6WeQVNYZEhUGJX3OeYHc26vycT0oNrbqj7d+bNzK5cPDU1IjBbaXzqxkMMLd9hvok=
+	b=O4C27WDzyRE6JF3uSatgl1SCTUoywkMJLxKBRFkf3aUb1IdNkWHxbFexsHqhj/iTUnrqA+O6clRt8CJYGEpWZx5ZKUTtd/Ea6IMOCBJACkeP1wyvr/6E8Ia465LTKMGJObhv6X9FScXUIjsOi9qLP70bAQ8Dr91EOKf1tqFDFvw=
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=zohomail.com; s=zohoarc; 
-	t=1785024080; h=Content-Type:Cc:Cc:Date:Date:From:From:In-Reply-To:MIME-Version:Message-ID:Subject:Subject:To:To:Message-Id:Reply-To; 
-	bh=gTR4Fxc7C9VBSL4Vg/8xY18ZJ1z/hE0tDTAhqmt+GUk=; 
-	b=Hqdm4vD0G/z12nzAwDLtg/UdQLMKD5LUshgA5JtP0d5TmOUvbwWTiqTsnGQM34D5yHKuFmx0q7icmK3EKwfaav+MMMjcUAFkvmaV07um+uTHdpUijYQPW2O+8K/T58atrU4Xli+whiYQLyiSBl5kIhzPW6QayVnr5+Qr3Kgmay4=
+	t=1785024283; h=Content-Type:Cc:Cc:Date:Date:From:From:In-Reply-To:MIME-Version:Message-ID:Subject:Subject:To:To:Message-Id:Reply-To; 
+	bh=GXBUHeWmx05A7NG2QHLd/WXxw6+eRlY+JwG0eU+0yMA=; 
+	b=OdnOWQF1Cxx4uSOEdAhcadVmsQEZGpJBBzgl0d8Y2iu3JJyunFPQMx0XwKhfqXOhLct1aoMDyqxjfZ9OgeSlB4ganwNsKVbsE3/61lSvv5nUMs/qZn2B9HPEqZQE3g5c1gGhT1AOoyOiyLcXV3J0iPcm8xk7GJH2M5ykGAOAask=
 ARC-Authentication-Results: i=1; mx.zohomail.com;
 	dkim=pass  header.i=collabora.com;
 	spf=pass  smtp.mailfrom=sebastian.reichel@collabora.com;
 	dmarc=pass header.from=<sebastian.reichel@collabora.com>
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; t=1785024080;
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; t=1785024283;
 	s=zohomail; d=collabora.com; i=sebastian.reichel@collabora.com;
 	h=Date:Date:From:From:To:To:Cc:Cc:Subject:Subject:Message-ID:MIME-Version:Content-Type:In-Reply-To:Message-Id:Reply-To;
-	bh=gTR4Fxc7C9VBSL4Vg/8xY18ZJ1z/hE0tDTAhqmt+GUk=;
-	b=VrBibcFnyDBdEHMP6SC/NZwd/P/AzvJF2kC05ufkhHMNvq92M5TQBxqZ2yRi7SAM
-	YdeH0Ky13OaEqYNZOUuuGWcRC+PD9ey9wLvhye4c7MJDTtZExl3uZTjCh/vnzqF8NU/
-	bPQSTe0yLr1ldG+6rTF1rpAWICpzVBjWhBUKxLOI=
-Received: by mx.zohomail.com with SMTPS id 1785024077557305.1154739495653;
-	Sat, 25 Jul 2026 17:01:17 -0700 (PDT)
+	bh=GXBUHeWmx05A7NG2QHLd/WXxw6+eRlY+JwG0eU+0yMA=;
+	b=Jkj0JhS1RdaUdEuKsuubBQ4AaN+7UMfMZJzkgk5LHagcV41+QHcsp0P99nGuODaI
+	6yykw/Kmxr8oAYkqd88sgzgth70vim0rrJx9VscXDcrbsRCR7NU61Qmy9TkhyZM/0P7
+	i7pd9DF8NeT8YiA+kLbGaQ1mMdBbsC9gh3570zY4=
+Received: by mx.zohomail.com with SMTPS id 1785024280358794.0851362361248;
+	Sat, 25 Jul 2026 17:04:40 -0700 (PDT)
 Received: by venus (Postfix, from userid 1000)
-	id 4DB1C1802A1; Sun, 26 Jul 2026 02:01:13 +0200 (CEST)
-Date: Sun, 26 Jul 2026 02:01:13 +0200
+	id 0D0361802A1; Sun, 26 Jul 2026 02:04:36 +0200 (CEST)
+Date: Sun, 26 Jul 2026 02:04:35 +0200
 From: Sebastian Reichel <sebastian.reichel@collabora.com>
-To: amitsd@google.com
-Cc: Badhri Jagan Sridharan <badhri@google.com>, 
+To: Badhri Jagan Sridharan <badhri@google.com>, 
 	Heikki Krogerus <heikki.krogerus@linux.intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
 	Hans de Goede <hansg@kernel.org>, Krzysztof Kozlowski <krzk@kernel.org>, 
 	Marek Szyprowski <m.szyprowski@samsung.com>, Sebastian Krzyszkowiak <sebastian.krzyszkowiak@puri.sm>, 
-	Purism Kernel Team <kernel@puri.sm>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
+	Purism Kernel Team <kernel@puri.sm>, Amit Sunil Dhamne <amitsd@google.com>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
 	linux-usb@vger.kernel.org, =?utf-8?B?QW5kcsOp?= Draszik <andre.draszik@linaro.org>, 
 	Tudor Ambarus <tudor.ambarus@linaro.org>, Peter Griffin <peter.griffin@linaro.org>, 
-	RD Babiera <rdbabiera@google.com>, Kyle Tso <kyletso@google.com>
-Subject: Re: [PATCH v5 2/2] usb: typec: tcpm: Add support for Battery Status
- response message
-Message-ID: <amVJ1u67qHENBQ5l@venus>
+	RD Babiera <rdbabiera@google.com>, Kyle Tso <kyletso@google.com>, 
+	Hans de Goede <johannes.goede@oss.qualcomm.com>
+Subject: Re: (subset) [PATCH v5 0/2] Add support for Battery Status AMS
+Message-ID: <amVOuVIW7WFCckfN@venus>
 References: <20260714-batt-status-v5-0-9de4aa900b69@google.com>
- <20260714-batt-status-v5-2-9de4aa900b69@google.com>
+ <178502408322.829727.13725435987030791049.b4-ty@collabora.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -61,151 +61,92 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="hzx7euwwupsd5hfj"
+	protocol="application/pgp-signature"; boundary="bk3fbf2cmj33nl56"
 Content-Disposition: inline
-In-Reply-To: <20260714-batt-status-v5-2-9de4aa900b69@google.com>
+In-Reply-To: <178502408322.829727.13725435987030791049.b4-ty@collabora.com>
 X-Zoho-Virus-Status: 1
 X-Zoho-AV-Stamp: zmail-av-0.2.10.1.5.2/284.966.17
 X-ZohoMailClient: External
 
 
---hzx7euwwupsd5hfj
+--bk3fbf2cmj33nl56
 Content-Type: text/plain; protected-headers=v1; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
-Subject: Re: [PATCH v5 2/2] usb: typec: tcpm: Add support for Battery Status
- response message
+Subject: Re: (subset) [PATCH v5 0/2] Add support for Battery Status AMS
 MIME-Version: 1.0
 
 Hi,
 
-On Tue, Jul 14, 2026 at 09:10:53PM +0000, Amit Sunil Dhamne via B4 Relay wr=
-ote:
-> From: Amit Sunil Dhamne <amitsd@google.com>
+On Sun, Jul 26, 2026 at 02:01:23AM +0200, Sebastian Reichel wrote:
 >=20
-> Add support for responding to a Get_Battery_Status request with a
-> Battery_Status message. The port partner shall request the status of a
-> port's battery by providing an index in the Get_Battery_Status AMS. In
-> case of failure to identify the battery, the port shall reply with an
-> appropriate message indicating so.
+> On Tue, 14 Jul 2026 21:10:51 +0000, Amit Sunil Dhamne wrote:
+> > PD 3.1 v1.8 Spec necessitates a response to Get_Battery_Status request
+> > from the port partner (see "6.13.2 Applicability of Data Message").
+> > This patchset adds support to get all the battery type power supplies
+> > and query them to report the telemetry required to build a Battery
+> > Status Message. Right now, this submission assumes all the battery type
+> > power supplies that exist in the system are fixed (meaning cannot be hot
+> > swapped).
+> >=20
+> > [...]
 >=20
-> Support for Battery_Status message is required for sinks that contain
-> battery as specified in USB PD Rev3.1 v1.8
-> ("Applicability of Data Messages" section).
+> Applied, thanks!
 >=20
-> Signed-off-by: Amit Sunil Dhamne <amitsd@google.com>
-> Reviewed-by: Badhri Jagan Sridharan <badhri@google.com>
-> Acked-by: Heikki Krogerus <heikki.krogerus@linux.intel.com>
-> ---
->  drivers/usb/typec/tcpm/tcpm.c | 138 ++++++++++++++++++++++++++++++++++++=
-++++--
->  include/linux/usb/pd.h        |  29 +++++++++
->  2 files changed, 163 insertions(+), 4 deletions(-)
->=20
-> diff --git a/drivers/usb/typec/tcpm/tcpm.c b/drivers/usb/typec/tcpm/tcpm.c
-> index 7ef746a90a17..cd33ee131ebd 100644
-> --- a/drivers/usb/typec/tcpm/tcpm.c
-> +++ b/drivers/usb/typec/tcpm/tcpm.c
-> @@ -12,6 +12,7 @@
->  #include <linux/jiffies.h>
->  #include <linux/kernel.h>
->  #include <linux/kthread.h>
-> +#include <linux/math64.h>
->  #include <linux/minmax.h>
->  #include <linux/module.h>
->  #include <linux/mutex.h>
-> @@ -232,7 +233,8 @@ enum pd_msg_request {
->  	PD_MSG_DATA_SINK_CAP,
->  	PD_MSG_DATA_SOURCE_CAP,
->  	PD_MSG_DATA_REV,
-> -	PD_MSG_EXT_SINK_CAP_EXT
-> +	PD_MSG_EXT_SINK_CAP_EXT,
-> +	PD_MSG_DATA_BATT_STATUS
->  };
-> =20
->  enum adev_actions {
-> @@ -387,7 +389,15 @@ struct pd_timings {
->  };
-> =20
->  /* Convert microwatt to watt */
-> -#define UW_TO_W(pow)					((pow) / 1000000)
-> +#define UW_TO_W(pow)				(div_u64((pow), 1000000))
-> +
-> +/*
-> + * As per USB PD Spec Rev 3.18 (Sec. 6.5.13.11), the number of fixed bat=
-teries
-> + * that a port can be queried is restricted to 4.
-> + */
-> +#define MAX_NUM_FIXED_BATT				4
+> [1/2] power: supply: Add helpers to get and put arrays of power supply ha=
+ndles
+>       commit: 0962125d9001077e91bc90656245f009e3c6c129
 
-If I understand the spec correctly, the presence of a fixed battery
-should never change for fixed batteries. I guess the rationale is,
-that one only has to the battery capabilities once for these kind of
-batteries. But for the Linux kernel this concept does not exist and
-all batteries are potentialle hot-swappable. For real hardware with
-TCPM and hot-swappable battery, this code will now incorrectly
-expose them as fixed battery and violate the spec. I think this should
-at least be mentioned in the commit message.
+Here is a signed immutable branch/tag for the USB subsystem to
+handle patch 2 (I also left some review feedback for that one):
 
-> [...]
-> +	batt =3D port->fixed_batt[batt_id];
-> +	ret =3D power_supply_get_property(batt, POWER_SUPPLY_PROP_PRESENT, &val=
-);
-> +	if (ret)
-> +		tcpm_log(port,
-> +			 "Failed to fetch power_supply_prop_present ret %d",
-> +			 ret);
-> +	else
-> +		batt_present =3D val.intval > 0;
-> +
-> +	ret =3D power_supply_get_property(batt, POWER_SUPPLY_PROP_CHARGE_NOW,
-> +					&val);
-> +	if (!ret) {
-> +		charge_now =3D val.intval;
-> +		ret =3D power_supply_get_property(batt,
-> +						POWER_SUPPLY_PROP_VOLTAGE_AVG,
-> +						&val);
-> +		if (!ret) {
-> +			energy_now =3D div_u64((u64)charge_now * val.intval,
-> +					     1000000);
-> +
-> +			/*
-> +			 * Battery Present Charge is reported in
-> +			 * increments of 0.1WH.
-> +			 */
-> +			present_charge =3D (u16)UW_TO_W(energy_now * 10);
-> +		}
-> +	}
-> [...]
+The following changes since commit dc59e4fea9d83f03bad6bddf3fa2e52491777482:
 
-What about fuel gauges, which expose POWER_SUPPLY_PROP_ENERGY_NOW
-instead of POWER_SUPPLY_PROP_CHARGE_NOW?
+  Linux 7.2-rc1 (2026-06-28 12:01:31 -0700)
 
-P.S.: Sorry for slow review.
+are available in the Git repository at:
 
-Greetings,
+  https://git.kernel.org/pub/scm/linux/kernel/git/sre/linux-power-supply.gi=
+t tags/ib-psy-array-helpers-for-v7.3-signed
+
+for you to fetch changes up to 0962125d9001077e91bc90656245f009e3c6c129:
+
+  power: supply: Add helpers to get and put arrays of power supply handles =
+(2026-07-26 01:31:43 +0200)
+
+----------------------------------------------------------------
+Immutable branch for battery array helpers for power-supply and USB
+
+----------------------------------------------------------------
+Amit Sunil Dhamne (1):
+      power: supply: Add helpers to get and put arrays of power supply hand=
+les
+
+ drivers/power/supply/power_supply_core.c | 153 +++++++++++++++++++++++++++=
+++++
+ include/linux/power_supply.h             |  15 +++
+ 2 files changed, 168 insertions(+)
 
 -- Sebastian
 
-
---hzx7euwwupsd5hfj
+--bk3fbf2cmj33nl56
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAmplTj4ACgkQ2O7X88g7
-+prIfRAAh33TdgbuXUdlV4quXvm5E+k3lALrL6M3chuUD6OMu1z+oJmGrbU6dDGe
-hDudLtDJ1I6UtkzZgOTKXy/k2BKjfXtQsfPZGYFYTPLGfn9kEr1CSdhFQElPAP3M
-U76J0thiaxxp0aEV994oQE+mXortKl+9hTlu9umuXl/56B4FafZ1/AsOsEt5vi23
-BFkexzACq5LXaJ7bNGC8ZAho4OC5HbxwpockJ1ap1qb9kvF2azC+TnJfoiY27Ior
-MKpKTerpVUhKT1SJyaeqcpX+CCj3SU8WKPYDxcOvlSYUMDYe5UJhHC4Y1ztqEi4S
-c4pZYTXpK4QOGZL0bVn8a/UMANWTbfF/m9ffzm5miS8VnfmGNBK5rdNDorGJfdEO
-SP8WIc6DVZ7jdJpfrslZdZogwvApGgcNqSkfIzrDK6oIcQrk2EvI2dt4wH4LXRtM
-CqgUNZINImA0eCRZyqrJS7nbExtjdWYl3EbgkCXdf8iJ7AGcpvtblfKP3n/QXGAX
-Xe3tPN49cZwxHWmx0LS9/7NKVaRP4gUWE6TbwrSVNCO6hcDsxBXB7wZ0LN2Hkoy+
-b+x0aVVN39nOUSwIm0Exeq0xo+60WcB3qBO3M/rlEpmp4GgVBSGV/hNXH3W5wwov
-tZEAkut8fJE2L6h/VEvD6bfGjM00ldh9Wl/8kvimm+OB22j/omQ=
-=JF6I
+iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAmplTxMACgkQ2O7X88g7
++pp4jA//eH9yHH+lFgxlN69qbhh8SunlrsCUxR0Z2Eob4EDAye2KknJhJHpW2O7c
+ZVEeiaesxJoztTl2hGztveEu0eFyIpF5oIlX270I77R11RBBG0BGa9kXXpgD0npU
+peTSHjSJ0GUGFdlOMbMVNy/wMwI/4shjEcydKq0RPVyDJ4WeM8rrB0Pj+VCfX3iX
+egCn9R9XuFMUxCjR5yFrRJ0gCnO0IujglIonjng4S8oPR0l2HNC3cssMlvdiHM2p
+NwPQNweTZeOU4nGlEjO28iSVIRZRvjC77LDaHCIR8WDLn9+WyuBYj+khugZvbaFp
+vh5Mce86LwdVcUl5wLqewlrAKGXHiZBRcxyQGiGnGvpHDIGHyMwv8c6DGFR70fI9
+58ljpXMpw3Mk6adkUeub21poDxu+nCYMeaooXQH8GCOrZubQsVPSJV8YE+VHxaJg
+kwxBJm4JE08ahqRn98WguzFAycIFCX154zYJ2l08jEzIjCAIXhacGwxAFMtQJxqL
+tBuNBQskpepUmfGsPcA4Uv+6mxDySmgjPkTpB27MHYLv1gW07ycpGpL6gHzhaJc8
+f6fWsQO0e2xRx3c+yp7qqXAbP+kq75TA+Sh18MyIQB+bISIaf5rQd7WY7taWjswT
+xdiMpohL6nTULhaqzdw1FHVYQK0d8BAckzfxBSpiZIICIHP3/K0=
+=3P8d
 -----END PGP SIGNATURE-----
 
---hzx7euwwupsd5hfj--
+--bk3fbf2cmj33nl56--
