@@ -1,152 +1,194 @@
-Received: from sender4-op-o11.zoho.com (sender4-op-o11.zoho.com [136.143.188.11])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pg1-f178.google.com (mail-pg1-f178.google.com [209.85.215.178])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D34C013FEE;
-	Sun, 26 Jul 2026 00:05:01 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=136.143.188.11
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1785024303; cv=pass; b=cBke5bAHJ9HZNzVNO2EOEv4s24L+yQxaHed0sb87UkmUuIYaTur98mGSCuBB52+mzOMoWI8Skvj/EQmHW5Ee6Bw4kk43WFI9K4kA46ZZd79bwwfBMZox9QX9zDYuAdPM9DoVISOGInp6XN7xzBI201FnOfn2hYcvbXVEpPVFPRw=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1785024303; c=relaxed/simple;
-	bh=zdwmwSjlv5HSJMCjXoAa8XOTBONbWO6Dxow9THKZBYE=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=kmbd9r9wpHFEbe3qxCfnbYBdP4l5FhsTUlkQ23u+n188+89tXv0Dgw/aTW8NqxgqAsXN7RnU1EmDYAes2Cw3FrjbdJ2Pya4WjbhCV3jelA7NviGKjvoxaInoNyEPMfR3TV53nwDqY9TWd0M0YDZj8K1jvDhJwNIgfY5EJ7exonc=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (1024-bit key) header.d=collabora.com header.i=sebastian.reichel@collabora.com header.b=Jkj0JhS1; arc=pass smtp.client-ip=136.143.188.11
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A95382EEE84
+	for <linux-pm@vger.kernel.org>; Sun, 26 Jul 2026 02:33:29 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.215.178
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1785033211; cv=none; b=JKoiMLTksrG0Yz1aAOCcWuuPily1phXsyIvM4ODS8otZ2pDzoJy3uQ2OFbv4mGORjyMm2GCXYoIxiSGeVs9k/uAYnHpKR1KKGxuwuZFdmdxqFk3JabKKeXqIQ1yvS3eL9qZeX/tyXoVgTfalKopIOCfeRAtfW7EeaEfUbXCwO14=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1785033211; c=relaxed/simple;
+	bh=Z8o+7L5AcN0mc5L4ZBXWEkwZ88tRim+Z49ttFoGnBwk=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=BsZ8K2dtbdArGFzDQyFWx0+D4wDbikZfE6THdVRhNhF0I0QKxjVOeaMdY8Ty1UEpKGCtJYuByGeElp5npZj65WaauOb22jX41ubjkB0vsm9YVdVL8R8Ts6cvYURZQH6/kgop6uJPFknkgRKx20b6Jiz+0flTMvyC+RzgWeKtHK0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=Pf0116UP; arc=none smtp.client-ip=209.85.215.178
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=collabora.com header.i=sebastian.reichel@collabora.com header.b="Jkj0JhS1"
-ARC-Seal: i=1; a=rsa-sha256; t=1785024283; cv=none; 
-	d=zohomail.com; s=zohoarc; 
-	b=O4C27WDzyRE6JF3uSatgl1SCTUoywkMJLxKBRFkf3aUb1IdNkWHxbFexsHqhj/iTUnrqA+O6clRt8CJYGEpWZx5ZKUTtd/Ea6IMOCBJACkeP1wyvr/6E8Ia465LTKMGJObhv6X9FScXUIjsOi9qLP70bAQ8Dr91EOKf1tqFDFvw=
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=zohomail.com; s=zohoarc; 
-	t=1785024283; h=Content-Type:Cc:Cc:Date:Date:From:From:In-Reply-To:MIME-Version:Message-ID:Subject:Subject:To:To:Message-Id:Reply-To; 
-	bh=GXBUHeWmx05A7NG2QHLd/WXxw6+eRlY+JwG0eU+0yMA=; 
-	b=OdnOWQF1Cxx4uSOEdAhcadVmsQEZGpJBBzgl0d8Y2iu3JJyunFPQMx0XwKhfqXOhLct1aoMDyqxjfZ9OgeSlB4ganwNsKVbsE3/61lSvv5nUMs/qZn2B9HPEqZQE3g5c1gGhT1AOoyOiyLcXV3J0iPcm8xk7GJH2M5ykGAOAask=
-ARC-Authentication-Results: i=1; mx.zohomail.com;
-	dkim=pass  header.i=collabora.com;
-	spf=pass  smtp.mailfrom=sebastian.reichel@collabora.com;
-	dmarc=pass header.from=<sebastian.reichel@collabora.com>
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; t=1785024283;
-	s=zohomail; d=collabora.com; i=sebastian.reichel@collabora.com;
-	h=Date:Date:From:From:To:To:Cc:Cc:Subject:Subject:Message-ID:MIME-Version:Content-Type:In-Reply-To:Message-Id:Reply-To;
-	bh=GXBUHeWmx05A7NG2QHLd/WXxw6+eRlY+JwG0eU+0yMA=;
-	b=Jkj0JhS1RdaUdEuKsuubBQ4AaN+7UMfMZJzkgk5LHagcV41+QHcsp0P99nGuODaI
-	6yykw/Kmxr8oAYkqd88sgzgth70vim0rrJx9VscXDcrbsRCR7NU61Qmy9TkhyZM/0P7
-	i7pd9DF8NeT8YiA+kLbGaQ1mMdBbsC9gh3570zY4=
-Received: by mx.zohomail.com with SMTPS id 1785024280358794.0851362361248;
-	Sat, 25 Jul 2026 17:04:40 -0700 (PDT)
-Received: by venus (Postfix, from userid 1000)
-	id 0D0361802A1; Sun, 26 Jul 2026 02:04:36 +0200 (CEST)
-Date: Sun, 26 Jul 2026 02:04:35 +0200
-From: Sebastian Reichel <sebastian.reichel@collabora.com>
-To: Badhri Jagan Sridharan <badhri@google.com>, 
-	Heikki Krogerus <heikki.krogerus@linux.intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
-	Hans de Goede <hansg@kernel.org>, Krzysztof Kozlowski <krzk@kernel.org>, 
-	Marek Szyprowski <m.szyprowski@samsung.com>, Sebastian Krzyszkowiak <sebastian.krzyszkowiak@puri.sm>, 
-	Purism Kernel Team <kernel@puri.sm>, Amit Sunil Dhamne <amitsd@google.com>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	linux-usb@vger.kernel.org, =?utf-8?B?QW5kcsOp?= Draszik <andre.draszik@linaro.org>, 
-	Tudor Ambarus <tudor.ambarus@linaro.org>, Peter Griffin <peter.griffin@linaro.org>, 
-	RD Babiera <rdbabiera@google.com>, Kyle Tso <kyletso@google.com>, 
-	Hans de Goede <johannes.goede@oss.qualcomm.com>
-Subject: Re: (subset) [PATCH v5 0/2] Add support for Battery Status AMS
-Message-ID: <amVOuVIW7WFCckfN@venus>
-References: <20260714-batt-status-v5-0-9de4aa900b69@google.com>
- <178502408322.829727.13725435987030791049.b4-ty@collabora.com>
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Pf0116UP"
+Received: by mail-pg1-f178.google.com with SMTP id 41be03b00d2f7-ca913a601fbso1211760a12.3
+        for <linux-pm@vger.kernel.org>; Sat, 25 Jul 2026 19:33:29 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1785033209; x=1785638009; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=sjXzoSujIP+9dDYXqm3Aab2DrXJeEn6UY/TChtANBQI=;
+        b=Pf0116UPcFARZ5UI+z00eqkzao7AiZ4Fi5S8Zh50yL13JqalyzfoxqBU2PaJdzWnqO
+         J5c4hq9CPKJuFeuanxV2/MK3ijJ/3SCckcyCtdyWTvzeoHz4J45ONp27jXuMIv4T1Yv2
+         7xdNLC5r0dvXpKhsegaKrU3DF1oQvS2naECqY4QiLDvag2Ed50AIPnfe6aBZFU1ldrlN
+         hA6e58iqZnwyxoUn7Anx9Mh/sDCXivUUv0P/JoRltBsz34+XwvcMx8oQi1gVIYB7h15T
+         JTen9AsTO0FCWmfpoWyvAyDn8my8kZJuhoNgp7kLCrO1FDggo9ZSutwDB3o22zrDD4KP
+         iDGQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1785033209; x=1785638009;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to:content-type;
+        bh=sjXzoSujIP+9dDYXqm3Aab2DrXJeEn6UY/TChtANBQI=;
+        b=oTLSsPJbqZVNyvM4RLSLKbUcMPi6cgUuEglgdkglbarTr5GMhpabtPdWAzzIWSQCc/
+         6pVsEyDvxb+1daZjFQct8vKlgdT3HyLpoGnSzZVfcepDoASpYWplK4Vercukq8j6bEQB
+         o4/P0rOPbJA9kEUEx3+gDX8/NJXpLIMowkDL6pVBMGbPMFlpmgoKEyLy2eMOuMRn1qjb
+         WYjNBdR5j5yNCTz+Tnsz14MB585mK48P31/YIfYBNCEwd4TBXICCHZXv/WoxZw6cGs3Q
+         l9lxrN9RjHnc6g+XXAB4uyK0h9gxOzaKIgclph4ksieWB1uNq/sXRZ99ek2M0zrT7fkZ
+         P0IA==
+X-Forwarded-Encrypted: i=1; AHgh+RpDYggESyBJL7v3cjMm5MMu0jJOoTSBLtO3abdZZWKf+zgwU9xhCRZDEUxeDLWMjSvRSBaEml0GvA==@vger.kernel.org
+X-Gm-Message-State: AOJu0YyVbH8GY9HzqRxCRXMu11kj4sDix74xmAJ794r9Ve13GVvxfBth
+	AcsITgCaHArH0DStqHKfyh1swmrVbjr6q4jAMrs0H4SIPkQLWK0gEogj
+X-Gm-Gg: AR+sD10MqEsr1dqS/6rQoEYTmGhDcKevYKBsFV6zwHTyfQGQTqBEaVAz8K0Wh8brYga
+	4O8BJk6/luA+Cjg8BPO9LyCYZyEkCSwKIXycC9/DN82v17Po0v06ylkday/tDESarOa9TG0NX9Z
+	sGKFjUA1rCdCSXrJYRDO+tgPc6FJMGX9tRbMsE4W30S2EbqT13Os6Ff4pVpqWCsaFXqCD6nm3CD
+	QxoBgTMsZSWRlHx00n/fjv3JbagrcZbAbXFmA/rCaq7oK+ylx17nao+h1EKa59QKMY0ByW0WLhM
+	SH6jTKZ9AAfz+SsR3N11/WjvYmPUhqs2L9+ZQemY8JdsnlvFx1wCSJHKY/kKq/f4G36j2uCz6O4
+	FIPPAD3HkuYsZUZXG8Dj+UqsqUq/zod2UqwZjV32nQ2TQH+H0eyrdRzRzonFfLANb6/kEGpBoor
+	ftLy3nalJ6vqiD6A8mTh5oqOp0uJu54PNrCASRGrp8ihBGAUngfpyPAiXZnQPAemrufabhvlJXB
+	rvqBocHsbocj8R0tjO8AfJTO8uh/Dlzw9HYDJ5ke2g+RXMmHA==
+X-Received: by 2002:a05:6a21:a09:b0:3c0:9c19:6586 with SMTP id adf61e73a8af0-3c67e159021mr3525765637.64.1785033208757;
+        Sat, 25 Jul 2026 19:33:28 -0700 (PDT)
+Received: from localhost ([50.38.60.151])
+        by smtp.gmail.com with ESMTPSA id 41be03b00d2f7-cbbb66b282asm1722846a12.18.2026.07.25.19.33.27
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sat, 25 Jul 2026 19:33:28 -0700 (PDT)
+From: Bruce Robertson <brucer42@gmail.com>
+To: Sebastian Reichel <sebastian.reichel@collabora.com>
+Cc: rust-for-linux@vger.kernel.org,
+	linux-pm@vger.kernel.org,
+	linux-i2c@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	ojeda@kernel.org,
+	igor.korotin@linux.dev,
+	gary@garyguo.net,
+	tamird@kernel.org,
+	aliceryhl@google.com,
+	boqun@kernel.org
+Subject: Re: [RFC PATCH 0/3] rust: power_supply class abstraction and SMB347 charger driver
+Date: Sat, 25 Jul 2026 19:33:27 -0700
+Message-ID: <20260726023327.51519-1-brucer42@gmail.com>
+X-Mailer: git-send-email 2.44.0
+In-Reply-To: <amQPYhBkj9rIdSZ_@venus>
+References: <amQPYhBkj9rIdSZ_@venus>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="bk3fbf2cmj33nl56"
-Content-Disposition: inline
-In-Reply-To: <178502408322.829727.13725435987030791049.b4-ty@collabora.com>
-X-Zoho-Virus-Status: 1
-X-Zoho-AV-Stamp: zmail-av-0.2.10.1.5.2/284.966.17
-X-ZohoMailClient: External
+Content-Transfer-Encoding: 8bit
 
+[Resent as plain text -- my first attempt was rejected by the vger
+lists for containing HTML, so it reached only the people Cc'd
+directly. Apologies to those of you getting this twice; please reply
+to this copy, as the first one never made it to the archives.]
 
---bk3fbf2cmj33nl56
-Content-Type: text/plain; protected-headers=v1; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-Subject: Re: (subset) [PATCH v5 0/2] Add support for Battery Status AMS
-MIME-Version: 1.0
+On Sat, Jul 25, 2026 at 01:41:35 +0000, Sebastian Reichel wrote:
+> Having Rust bindings for new drivers sounds good to me.
 
-Hi,
+Thanks -- good to hear. That was the part I most wanted confirmed
+before putting more time into it.
 
-On Sun, Jul 26, 2026 at 02:01:23AM +0200, Sebastian Reichel wrote:
->=20
-> On Tue, 14 Jul 2026 21:10:51 +0000, Amit Sunil Dhamne wrote:
-> > PD 3.1 v1.8 Spec necessitates a response to Get_Battery_Status request
-> > from the port partner (see "6.13.2 Applicability of Data Message").
-> > This patchset adds support to get all the battery type power supplies
-> > and query them to report the telemetry required to build a Battery
-> > Status Message. Right now, this submission assumes all the battery type
-> > power supplies that exist in the system are fixed (meaning cannot be hot
-> > swapped).
-> >=20
-> > [...]
->=20
-> Applied, thanks!
->=20
-> [1/2] power: supply: Add helpers to get and put arrays of power supply ha=
-ndles
->       commit: 0962125d9001077e91bc90656245f009e3c6c129
+One status note first: patch 1/3 (the SMBus helpers) is dropped. Igor
+Korotin pointed out that I2cClient is meant to implement
+kernel::io::Io rather than grow standalone SMBus methods, and there is
+an in-flight series from Muchamad Coirul Anwar doing exactly that [1].
+The SMB347 driver will consume those accessors once they land.
+Patches 2/3 and 3/3 are unaffected -- more on that at the end.
 
-Here is a signed immutable branch/tag for the USB subsystem to
-handle patch 2 (I also left some review feedback for that one):
+> Any reason for Summit SMB347 specifically? I would prefer not to
+> have two drivers for the same hardware.
 
-The following changes since commit dc59e4fea9d83f03bad6bddf3fa2e52491777482:
+I wrote the C one. drivers/power/supply/smb347-charger.c came in via
+commit ed1a230f96eb ("Add I2C driver for Summit Microelectronics
+SMB347 Battery Charger.") in v3.4, back in 2012, and the file header
+still carries my name. So this is me porting my own driver rather than
+a drive-by rewrite of someone else's -- which I think also speaks to:
 
-  Linux 7.2-rc1 (2026-06-28 12:01:31 -0700)
+> All are ARM32 based, so Rust is at least available by all users.
+> So I suppose replacing this C driver would be an option, OTOH I
+> don't want to motivate people to rewrite things either :)
 
-are available in the Git repository at:
+Agreed on both counts, and I don't want two drivers either.
+Replacement is the goal. But I should be straight that the RFC is
+nowhere near it yet: the C driver is ~1640 lines, the Rust one is 180,
+with three properties, no IRQ, no set_property, no OTG/regulator
+support and no DT charge-parameter configuration.
 
-  https://git.kernel.org/pub/scm/linux/kernel/git/sre/linux-power-supply.gi=
-t tags/ib-psy-array-helpers-for-v7.3-signed
+Two things I can do in the meantime:
 
-for you to fetch changes up to 0962125d9001077e91bc90656245f009e3c6c129:
+ - Make the two mutually exclusive in Kconfig so that no configuration
+   ever builds both. For v2 I was planning the ax88796b arrangement --
+   the Rust option as a bool modifier on CHARGER_SMB347 with the
+   Makefile selecting the object -- rather than a second tristate.
 
-  power: supply: Add helpers to get and put arrays of power supply handles =
-(2026-07-26 01:31:43 +0200)
+ - Build-test ARM32. So far I have only built and run this on x86_64
+   against i2c-stub; I don't have any of the three boards.
 
-----------------------------------------------------------------
-Immutable branch for battery array helpers for power-supply and USB
+What would you want to see before the C driver could actually go away
+-- parity against a specific feature list, a hardware test from one of
+the espresso10 / nexus7 / p4note users, a deprecation cycle? I can aim
+at whatever the bar is, but I can't self-certify a swap on hardware I
+don't have.
 
-----------------------------------------------------------------
-Amit Sunil Dhamne (1):
-      power: supply: Add helpers to get and put arrays of power supply hand=
-les
+> A new driver supporting CHARGE_TYPE should also support CHARGE_TYPES.
 
- drivers/power/supply/power_supply_core.c | 153 +++++++++++++++++++++++++++=
-++++
- include/linux/power_supply.h             |  15 +++
- 2 files changed, 168 insertions(+)
+Happy to add it. One question on how it should map here.
 
--- Sebastian
+Reading the ABI and the in-tree users, charge_types is read-write: the
+supported set comes from the desc->charge_types bitmask, the active
+one from get_property, and writing selects an algorithm. On the SMB347
+the charge type isn't selectable -- the progression from trickle/
+pre-charge through fast to taper is autonomous hardware state that the
+driver only reports out of STAT_C. That is why the C driver has never
+had a set_property or property_is_writeable at all.
 
---bk3fbf2cmj33nl56
-Content-Type: application/pgp-signature; name="signature.asc"
+So: would you want CHARGE_TYPES exposed read-only here, with a
+Trickle|Fast|N/A bitmask and the active value from STAT_C? Or do you
+consider a read-only CHARGE_TYPE to be exactly the mis-modelling that
+CHARGE_TYPES is meant to replace? I'll follow whichever you prefer.
 
------BEGIN PGP SIGNATURE-----
+Either way it lands on the abstraction rather than just the driver:
+desc->charge_types is a descriptor field, not a property callback, so
+the Rust Driver trait needs a way to express it, and the writable case
+needs set_property and property_is_writeable plumbed through. Those
+were on the cover letter's future-work list; this moves them up.
 
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAmplTxMACgkQ2O7X88g7
-+pp4jA//eH9yHH+lFgxlN69qbhh8SunlrsCUxR0Z2Eob4EDAye2KknJhJHpW2O7c
-ZVEeiaesxJoztTl2hGztveEu0eFyIpF5oIlX270I77R11RBBG0BGa9kXXpgD0npU
-peTSHjSJ0GUGFdlOMbMVNy/wMwI/4shjEcydKq0RPVyDJ4WeM8rrB0Pj+VCfX3iX
-egCn9R9XuFMUxCjR5yFrRJ0gCnO0IujglIonjng4S8oPR0l2HNC3cssMlvdiHM2p
-NwPQNweTZeOU4nGlEjO28iSVIRZRvjC77LDaHCIR8WDLn9+WyuBYj+khugZvbaFp
-vh5Mce86LwdVcUl5wLqewlrAKGXHiZBRcxyQGiGnGvpHDIGHyMwv8c6DGFR70fI9
-58ljpXMpw3Mk6adkUeub21poDxu+nCYMeaooXQH8GCOrZubQsVPSJV8YE+VHxaJg
-kwxBJm4JE08ahqRn98WguzFAycIFCX154zYJ2l08jEzIjCAIXhacGwxAFMtQJxqL
-tBuNBQskpepUmfGsPcA4Uv+6mxDySmgjPkTpB27MHYLv1gW07ycpGpL6gHzhaJc8
-f6fWsQO0e2xRx3c+yp7qqXAbP+kq75TA+Sh18MyIQB+bISIaf5rQd7WY7taWjswT
-xdiMpohL6nTULhaqzdw1FHVYQK0d8BAckzfxBSpiZIICIHP3/K0=
-=3P8d
------END PGP SIGNATURE-----
+> If the idea is to just have a user for the Rust binding and
+> something to test/play around: Maybe convert test_power instead? It
+> would also decouple the power-supply Rust bindings from I2C/SMBus.
 
---bk3fbf2cmj33nl56--
+The decoupling is already there, as it happens. Patch 2/3 touches only
+MAINTAINERS, rust/kernel/lib.rs, rust/bindings/bindings_helper.h and
+the new rust/kernel/power_supply.rs -- no I2C dependency at all. It is
+only the driver in 3/3 that consumes both. And with 1/3 dropped, the
+SMBus layer leaves this series entirely.
+
+> The disadvantage is, that this driver is a special-case, since it
+> has no parent device :)
+
+That is the part that gives me pause about it as the *first* consumer.
+The open question I flagged in the cover letter -- how the get_property
+trampoline recovers the driver's private data -- is specifically about
+the parent-device path, and it is what reviewers have pushed on most.
+A consumer with no parent device wouldn't exercise it at all, so I'd
+risk shaping the abstraction around the special case.
+
+For v2 I'm moving the private data into power_supply_config::drv_data
+at registration time instead of recovering it from parent drvdata,
+which removes the ordering dependency Alice and I discussed [2] -- and
+that is also what a parentless supply would need. test_power becomes
+straightforward once that's in. I'd be glad to do it as a second
+consumer on top; I'd just rather it not be the only one.
+
+[1] https://lore.kernel.org/all/20260707151542.91997-1-muchamadcoirulanwar@gmail.com/
+[2] https://lore.kernel.org/all/ak9kAP1SZF8AchQT@google.com/
+
+Bruce
