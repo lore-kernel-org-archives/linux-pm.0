@@ -1,146 +1,185 @@
-Received: from sender4-op-o12.zoho.com (sender4-op-o12.zoho.com [136.143.188.12])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9AD3E3D6479
-	for <linux-pm@vger.kernel.org>; Mon, 27 Jul 2026 20:50:14 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=136.143.188.12
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1785185416; cv=pass; b=YTAnK6KrNpvWcvQUlKYRbUVDw8HxaQgNgUlXTb5mVaLHbPJkFLWpsdg/utuELqAd9TlKBmA5e11K8Jw/6MC/cYODr2yaQYBlBVHs9UbeWO0hdjVPl/GVK0WOLvo1RDMTMyoAd3AjTGH51yMgnYayaoYlEbm7921jdCtCIWUOcTE=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1785185416; c=relaxed/simple;
-	bh=Nl1brM1XJYVZpsTVGem0WfMuC7sWOuAFyUsBz20pHUg=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=B5UsHIPRMGpbUPcoBxS8dOZ2dK8uniHpUkgSfHTa7ueTtG+tX9Gyd27sR7B/+k6YF9KTfWF6REI8fs/B2qtRFw+ACH5JfnTPtZk29OcI6HqD/4PSyEjIVjPtkkqM511y0kTkPUK6P/N/cgul2/gGPFIubEq8q7azWpA2BERduEI=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (1024-bit key) header.d=collabora.com header.i=sebastian.reichel@collabora.com header.b=A7CS0YbG; arc=pass smtp.client-ip=136.143.188.12
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id 3C68637B00E;
+	Mon, 27 Jul 2026 21:24:01 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1785187444; cv=none; b=qJ7O6Kk7SywK7zPwTdJZsDnraunsopFLnuZNvaphraZnMxJDIzxeRyld6++NNlTEv41Fh0dMaTUkKmtkOf1wFZnQ/14mXgwcoLdb8Vydeynf7Eq5M1QGK+zCh62i+UnAnW+rUg5DFT5hwAkJVJ08q8o/Mm36tldjvha2XY5ilKA=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1785187444; c=relaxed/simple;
+	bh=FdL6LIz/Kt2J+IpaU3NUBsRxiO6DY20+fL1C2qGHYZc=;
+	h=Message-ID:Date:MIME-Version:Subject:From:To:Cc:References:
+	 In-Reply-To:Content-Type; b=KSOAXZr90uPHnz161Gg9ufi8aVAjya5Z8aJdmWe+ki+vgj03kODrPOk1MvPw/r2FTL+1KGT1AamVZMxat2rpS+ZsUpuYSCDKER24d1GxAK89HJvs4QOQvfVvAkzXoEiroc+wlN0hfDEcl80wLgohXtpG3jwzxA/iWqpgWRGV2wk=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=XK84qoHE; arc=none smtp.client-ip=217.140.110.172
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=collabora.com header.i=sebastian.reichel@collabora.com header.b="A7CS0YbG"
-ARC-Seal: i=1; a=rsa-sha256; t=1785185400; cv=none; 
-	d=zohomail.com; s=zohoarc; 
-	b=hfC0PRnki1MNgk5Qi6LOD05IXGuPeLT7sgEnnj6wI0u3iTfdRfuEmm/87+HPcNxZ1DMggh7Acfiq9ccmrG8v0kyJP0liFd4QmbJkbMlvKr8yh/q0KCkBJ207qjEzT3LPm61VdRCigKAP7C9PDjEtoWbXAoqzphdFnRrjKXx5sxw=
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=zohomail.com; s=zohoarc; 
-	t=1785185400; h=Content-Type:Cc:Cc:Date:Date:From:From:In-Reply-To:MIME-Version:Message-ID:Subject:Subject:To:To:Message-Id:Reply-To; 
-	bh=sRBYMtiEbfSgJmYWtsfYSAOVB/aghCdNqybvywfcGdM=; 
-	b=Tou6MVZYAmkZ9zmxUsG+ol8PYYvOrUNKOtpFW2h3EQGWdadEJCi7BusdKaOV8GKDubMDeo+4PR5fP2FEOXvlEofClY6gGmyfxxMEXm5zjMJ8L6yJ23iOHpq0ZhZ59KY8VXBtHIukBmEz6ldwL3pFJDdsRzVvHQwkMhyPTxXo7tQ=
-ARC-Authentication-Results: i=1; mx.zohomail.com;
-	dkim=pass  header.i=collabora.com;
-	spf=pass  smtp.mailfrom=sebastian.reichel@collabora.com;
-	dmarc=pass header.from=<sebastian.reichel@collabora.com>
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; t=1785185400;
-	s=zohomail; d=collabora.com; i=sebastian.reichel@collabora.com;
-	h=Date:Date:From:From:To:To:Cc:Cc:Subject:Subject:Message-ID:MIME-Version:Content-Type:In-Reply-To:Message-Id:Reply-To;
-	bh=sRBYMtiEbfSgJmYWtsfYSAOVB/aghCdNqybvywfcGdM=;
-	b=A7CS0YbGDyzgw+pc6hjFEAVFNo6WnQLX1BgCmtV9AsglWpFxMgdyARwaeUESTzg7
-	lAzzCYfBdbGksFDSkisbf7vNtrZuFXZEoBgEHqGmVMF8bZxyjaKZ8n7Aw+BnPzlR57P
-	zdn3A9Oqq13FHn1392Nkb55hPGgNijh0TcPWlowE=
-Received: by mx.zohomail.com with SMTPS id 17851853988061006.1905572064304;
-	Mon, 27 Jul 2026 13:49:58 -0700 (PDT)
-Received: by venus (Postfix, from userid 1000)
-	id 090B818090B; Mon, 27 Jul 2026 22:49:56 +0200 (CEST)
-Date: Mon, 27 Jul 2026 22:49:56 +0200
-From: Sebastian Reichel <sebastian.reichel@collabora.com>
-To: Waqar Hameed <waqar.hameed@axis.com>
-Cc: Linmao Li <lilinmao@kylinos.cn>, linux-pm@vger.kernel.org
-Subject: Re: [PATCH] power: supply: bq25630: Release battery information
- after setup
-Message-ID: <amfC7EN4d_72zLqH@venus>
-References: <20260727093738.2611185-1-lilinmao@kylinos.cn>
- <pndjyqgob5y.a.out@axis.com>
+	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="XK84qoHE"
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 1AC9B1691;
+	Mon, 27 Jul 2026 14:23:56 -0700 (PDT)
+Received: from [10.57.1.72] (unknown [10.57.1.72])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id BED023F763;
+	Mon, 27 Jul 2026 14:23:55 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
+	t=1785187440; bh=FdL6LIz/Kt2J+IpaU3NUBsRxiO6DY20+fL1C2qGHYZc=;
+	h=Date:Subject:From:To:Cc:References:In-Reply-To:From;
+	b=XK84qoHEIuZZPq3uHajxJb9nVVbJgrW6RsiG443CZzmh6BPvTh821vmKT7aZIwEHs
+	 XxtaXuA9WSGRA6EOqUzRkmKBx/x9XIVPvo6yq1puuKIqF0qexUI/46wBODIfVcnRZS
+	 vNxZnuZjzF+RDIz9vKCZlHqqAmtrcYi/pRlXem+A=
+Message-ID: <d75cbdd0-4372-48b6-8445-03f2401a6784@arm.com>
+Date: Mon, 27 Jul 2026 22:23:48 +0100
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="p52nonaenuoecvor"
-Content-Disposition: inline
-In-Reply-To: <pndjyqgob5y.a.out@axis.com>
-X-Zoho-Virus-Status: 1
-X-Zoho-AV-Stamp: zmail-av-0.2.10.1.5.2/285.167.77
-X-ZohoMailClient: External
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v6 1/2] ACPI: CPPC: Add ospm_nominal_perf support
+From: Christian Loehle <christian.loehle@arm.com>
+To: Sumit Gupta <sumitg@nvidia.com>, rafael@kernel.org,
+ viresh.kumar@linaro.org, pierre.gondois@arm.com, ionela.voinescu@arm.com,
+ zhenglifeng1@huawei.com, zhanjie9@hisilicon.com, lenb@kernel.org,
+ saket.dumbre@intel.co, linux-kernel@vger.kernel.org,
+ linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org,
+ acpica-devel@lists.linux.dev, linux-tegra@vger.kernel.org
+Cc: treding@nvidia.com, jonathanh@nvidia.com, vsethi@nvidia.com,
+ ksitaraman@nvidia.com, sanjayc@nvidia.com, mochs@nvidia.com, bbasu@nvidia.com
+References: <20260717215330.2215058-1-sumitg@nvidia.com>
+ <20260717215330.2215058-2-sumitg@nvidia.com>
+ <436ae296-cc68-4313-bf76-86908a1e5b29@arm.com>
+ <498f0051-e549-4be4-b5bf-56aba1670881@arm.com>
+Content-Language: en-US
+In-Reply-To: <498f0051-e549-4be4-b5bf-56aba1670881@arm.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
+On 7/27/26 18:49, Christian Loehle wrote:
+> On 7/27/26 15:01, Christian Loehle wrote:
+>> On 7/17/26 22:53, Sumit Gupta wrote:
+>>> Expose the OSPM Nominal Performance register (ACPI 6.6, Section
+>>> 8.4.6.1.2.6), which conveys the desired nominal performance level
+>>> at which the platform may run. Unlike the existing read-only
+>>> Nominal Performance register, it is writable and lets OSPM
+>>> request a lower nominal level than the platform-reported nominal.
+>>> The platform classifies performance above this level as boosted
+>>> and below as throttled for its power/thermal decisions.
+>>>
+>>> It is exposed as a per-policy cpufreq sysfs attribute in kHz, to
+>>> match the cpufreq sysfs unit convention:
+>>>
+>>>   /sys/devices/system/cpu/cpuX/cpufreq/ospm_nominal_freq
+>>>
+>>> The attribute is documented in
+>>> Documentation/ABI/testing/sysfs-devices-system-cpu.
+>>>
+>>> Writes are converted to perf via cppc_khz_to_perf(), validated
+>>> against [Lowest Performance, Nominal Performance], and applied to
+>>> the policy->cpu. The register is assumed shared across the
+>>> policy->cpus.
+>>>
+>>> On read, the current register value is returned, or
+>>> "<unsupported>" if the platform does not implement the register.
+>>>
+>>> Also add the register to the OSPM-set register save/restore
+>>> table, so its value survives CPU hotplug and reverts to the
+>>> firmware value on driver unload, like the other registers in
+>>> the table.
+>>>
+>>> Signed-off-by: Sumit Gupta <sumitg@nvidia.com>
+>>> ---
+>>>  .../ABI/testing/sysfs-devices-system-cpu      | 26 ++++++++++
+>>>  drivers/acpi/cppc_acpi.c                      | 32 +++++++++++++
+>>>  drivers/cpufreq/cppc_cpufreq.c                | 47 +++++++++++++++++++
+>>>  include/acpi/cppc_acpi.h                      | 10 ++++
+>>>  4 files changed, 115 insertions(+)
+>>>
+>>> diff --git a/Documentation/ABI/testing/sysfs-devices-system-cpu b/Documentation/ABI/testing/sysfs-devices-system-cpu
+>>> index 82d10d556cc8..a8d592c08823 100644
+>>> --- a/Documentation/ABI/testing/sysfs-devices-system-cpu
+>>> +++ b/Documentation/ABI/testing/sysfs-devices-system-cpu
+>>> @@ -346,6 +346,32 @@ Description:	Performance Limited
+>>>  
+>>>  		This file is only present if the cppc-cpufreq driver is in use.
+>>>  
+>>> +What:		/sys/devices/system/cpu/cpuX/cpufreq/ospm_nominal_freq
+>>> +Date:		May 2026
+>>> +Contact:	linux-pm@vger.kernel.org
+>>> +Description:	OSPM Nominal Performance (kHz)
+>>> +
+>>> +		OSPM uses this attribute to request a nominal performance
+>>> +		level lower than the platform-reported nominal. The
+>>> +		platform treats performance above this level as boost
+>>> +		and below as throttle for power and thermal decisions.
+>>> +
+>>> +		Read returns the current value in kHz, or "<unsupported>"
+>>> +		if the platform does not implement the register. Write a
+>>> +		kHz value in the range [lowest_freq, nominal_freq].
+>>> +
+>>> +		Note that tasks may be migrated from one CPU to another
+>>> +		by the scheduler's load-balancing algorithm, and if
+>>> +		different OSPM Nominal Performance values are set for
+>>> +		those CPUs (through different cpufreq policies), that may
+>>> +		lead to undesirable outcomes. To avoid such issues it is
+>>> +		better to set the same value across all policies, or to
+>>> +		pin every task potentially sensitive to it to a specific
+>>> +		CPU.
+>>> +
+>>> +		This file is only present if the cppc-cpufreq driver is
+>>> +		in use.
+>>> +
+>>>  What:		/sys/devices/system/cpu/cpu*/cache/index3/cache_disable_{0,1}
+>>>  Date:		August 2008
+>>>  KernelVersion:	2.6.27
+>>> diff --git a/drivers/acpi/cppc_acpi.c b/drivers/acpi/cppc_acpi.c
+>>> index a7fec6c93178..681d4fd40c11 100644
+>>> --- a/drivers/acpi/cppc_acpi.c
+>>> +++ b/drivers/acpi/cppc_acpi.c
+>>> @@ -1685,6 +1685,38 @@ int cppc_set_epp(int cpu, u64 epp_val)
+>>>  }
+>>>  EXPORT_SYMBOL_GPL(cppc_set_epp);
+>>>  
+>>> +/**
+>>> + * cppc_set_ospm_nominal_perf() - Write OSPM Nominal Performance register.
+>>> + * @cpu: CPU on which to write register.
+>>> + * @ospm_nominal_perf: Value to write to the OSPM Nominal Performance register.
+>>> + *
+>>> + * OSPM Nominal Performance conveys the desired nominal performance level
+>>> + * at which the platform may run. Per ACPI 6.6, s8.4.6.1.2.6, the value
+>>> + * must lie within [Lowest Performance, Nominal Performance] and may be
+>>> + * set independently of Minimum, Maximum and Desired performance. The
+>>> + * caller is responsible for validating the range.
+>>> + *
+>>> + * Return: 0 on success or negative error code.
+>>> + */
+>>> +int cppc_set_ospm_nominal_perf(int cpu, u64 ospm_nominal_perf)
+>>> +{
+>>> +	return cppc_set_reg_val(cpu, OSPM_NOMINAL_PERF, ospm_nominal_perf);
+>>> +}
+>>> +EXPORT_SYMBOL_GPL(cppc_set_ospm_nominal_perf);
+>>> +
+>>> +/**
+>>> + * cppc_get_ospm_nominal_perf() - Read OSPM Nominal Performance register.
+>>> + * @cpu: CPU from which to read register.
+>>> + * @ospm_nominal_perf: Pointer to store the OSPM Nominal Performance value.
+>>> + *
+>>> + * Return: 0 on success or negative error code.
+>>> + */
+>>> +int cppc_get_ospm_nominal_perf(int cpu, u64 *ospm_nominal_perf)
+>>> +{
+>>> +	return cppc_get_reg_val(cpu, OSPM_NOMINAL_PERF, ospm_nominal_perf);
+>>> +}
+>>> +EXPORT_SYMBOL_GPL(cppc_get_ospm_nominal_perf);
+>>
+>> It's a write-only register, we need to track everything in the driver.
+>>
+> 
+> So just reread Pierre's comments, TBH I don't see the point of ever
+> reading it, even for sysfs reads, but I don't think
+> reading it for cppc_cpufreq_get_effective_nominal() would be valid
+> in any case?
 
---p52nonaenuoecvor
-Content-Type: text/plain; protected-headers=v1; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-Subject: Re: [PATCH] power: supply: bq25630: Release battery information
- after setup
-MIME-Version: 1.0
-
-Hi,
-
-On Mon, Jul 27, 2026 at 02:43:37PM +0200, Waqar Hameed wrote:
-> On Mon, Jul 27, 2026 at 17:37 +0800 Linmao Li <lilinmao@kylinos.cn> wrote:
->=20
-> > data->batinfo is only used by bq25630_setup() to program the initial
-> > charge limits, but power_supply_get_battery_info() allocates it on
-> > psy->dev, so it stays around for the lifetime of the device. Nothing
-> > else in the driver uses it. Release it right after setup, as bq256xx
-> > and bq257xx do.
-> >
-> > Signed-off-by: Linmao Li <lilinmao@kylinos.cn>
-> > ---
-> >  drivers/power/supply/bq25630_charger.c | 5 ++---
-> >  1 file changed, 2 insertions(+), 3 deletions(-)
-> >
-> > diff --git a/drivers/power/supply/bq25630_charger.c b/drivers/power/sup=
-ply/bq25630_charger.c
-> > index 165f8c67b4895..efcdb1f5bc351 100644
-> > --- a/drivers/power/supply/bq25630_charger.c
-> > +++ b/drivers/power/supply/bq25630_charger.c
-> > @@ -1045,10 +1045,9 @@ static int bq25630_probe(struct i2c_client *clie=
-nt)
-> >  		return dev_err_probe(data->dev, ret, "Could not request IRQ\n");
-> > =20
-> >  	ret =3D bq25630_setup(data);
-> > -	if (ret)
-> > -		return ret;
-> > +	power_supply_put_battery_info(data->psy, data->batinfo);
-> > =20
-> > -	return 0;
-> > +	return ret;
-> >  }
-> > =20
-> >  static const struct of_device_id bq25630_of_match[] =3D {
->=20
-> The initial thought was that `batinfo` could/would be used elsewhere,
-> but as you point out, it's currently not. A better design is then to
-> move the `power_supply_get_battery_info()` into `bq25630_setup()`, in
-> order to scope the `get/put()`. So let's get `batinfo` there, just
-> before using it, and have an error/clean-up-path there as well.
-
-Agreed. Keeping an invalid pointer makes no sense.
-
-The setup routine is also a good candidate for the new
-=2Einit callback now available in struct power_supply_desc,
-so that the registers are initialized before the device
-is exposed to the system.
-
-Greetings,
-
--- Sebastian
-
---p52nonaenuoecvor
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAmpnxHAACgkQ2O7X88g7
-+prGVQ//eNA6uJh4EZCUhxWFMKXSnhKVR81uq1rDW4iJOonoruQ7zAG12hIjWDf+
-qR7auzrypE5BDa2SVHhok0QWH6pC1Alk83Sc8Qd+o8xaiWkAh0Qi2GCl61CbNnxB
-hYq0rVxZkqiw7cQ3xmuQTPrnKZo9s7964aT/GsbHpdTY2C9t9cVynF9fsIE5yqby
-Ox6pWTpeI04HHp/2gN8NlYoFqpGnB671f8IYM0jzYU7LucB/NRYm4iA35mwaUiat
-iENe/+wm4ukM04fAOiukUFcVAAtNIok8gLewBywEthwd4/G4jRV/bk6BFpfqkoNd
-s7LPzgJSIKdjT3U8PLPUINRImxlUj98uVdbnfs7FAX/DkhY6dPP94z7UZUQh4XuX
-Bii1cgyMN/mIiiGit2SxEad2v9Z3ROZB8Lq0KMuyAoQHMgziTUdfXl39PJRl76p5
-TitSDS0viX3j0EssPSowJUpMGzuRNeePcotfZFXWlW8ha1BWAVNvfW7CWTVoCmUC
-r1+ZGg4hmYpgC5BppuwMHrYPhFDQNHBEkOqN1M6+EkPOdLeao1sQLK5hiYdbrNuy
-EoxHf4nr0/IFb6xdfJ7s6tYy6KPnuA83PvtDFDuT2+mtr1BzA7DLVyfqMGzVCzfz
-svC6hdqeDHTYJKXRlmIMWAydCD67tynPGm5yML6FkifQb8j5+8k=
-=PnnC
------END PGP SIGNATURE-----
-
---p52nonaenuoecvor--
+FWIW desired_perf was read/write up until ACPI 6.5 and only 6.6 marked
+it as write-only. I don't think we should be reading it either on
+platforms advertising 6.6.
+I will clarify and send a patch.
