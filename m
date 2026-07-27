@@ -1,79 +1,73 @@
-Received: from mail-pj1-f48.google.com (mail-pj1-f48.google.com [209.85.216.48])
+Received: from mail-pg1-f173.google.com (mail-pg1-f173.google.com [209.85.215.173])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 63AF33F6C24
-	for <linux-pm@vger.kernel.org>; Mon, 27 Jul 2026 10:15:44 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.216.48
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8929D3F4122
+	for <linux-pm@vger.kernel.org>; Mon, 27 Jul 2026 10:20:51 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.215.173
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1785147346; cv=none; b=VpgKyQ3cnRsPE2g09mZ0blb7UKuSkpqZ+fU4u23AnH/aMsDlPpWT2EAsJHAt4Q+jCNRYOnJ6z8VgfH1BkxgNthy5pMdJTFXuje+q1sBe7wZgu6U/1BnvdYObmG2LZzBdpGCUKF2qKi6Zl4BYNYGvkNAycNvi+NChfewWrESsJB8=
+	t=1785147652; cv=none; b=fqFICg9sZg1cPkBiivScdW5agQA/uVGoWzspvOAdQcer0ggLprqVTrrD03KI1bpT2pXSOGJ55YwbJRzzlKOutaw6gYhXRC6HmZ2dsD1zZ1Gx3g2M3tU+DRl9J5Pq08UZI5OjEfKzpAbOp/5MlswudYqbeqbZm/4zReYOosRJUV8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1785147346; c=relaxed/simple;
-	bh=7ZL2/7XAgS2B4TY66zRi2gl89g6BBqqcK4ySsTVVchM=;
+	s=arc-20240116; t=1785147652; c=relaxed/simple;
+	bh=VoXS2qISjgbEj7DrZplv9UdB9S9LcMbT7fAL2IrBvoI=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=L5+1CDqvdeVlbshgPpZuk5xx6MePCLZ1Dzyxyvl70i21XOO+0YGY4CTVVcRrX9Iujsmxniztk6R/0QWl294pLyEZ3cpoSGyN6DmknyMYCNjCuaMkcIaUXnWEngDE08dpiGhFC6ZEteMkmvikDauC9Cj5D9oPdZqDvyEKZiUDSRg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=TqIzQIfo; arc=none smtp.client-ip=209.85.216.48
+	 Content-Type:Content-Disposition:In-Reply-To; b=M7SAQ7J5vN1RVGolFxUfqVLZWBznlIUvBiZgMciOUNEyAM0cRhUHxwZKmMufe5a6hGyQQFR3yhyarZn6sTnbMWl0XTyC5SXw0tRRBjnCPJjGTmzbkDdDxDNMJI5RObjpXUUFVJWMhMkTQsU75SfAoft2vwXR7+OmLgm6+zfsxPA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=a67h0+/l; arc=none smtp.client-ip=209.85.215.173
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="TqIzQIfo"
-Received: by mail-pj1-f48.google.com with SMTP id 98e67ed59e1d1-38d489b6b71so2314264a91.0
-        for <linux-pm@vger.kernel.org>; Mon, 27 Jul 2026 03:15:44 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="a67h0+/l"
+Received: by mail-pg1-f173.google.com with SMTP id 41be03b00d2f7-cb5b8572b70so1865219a12.2
+        for <linux-pm@vger.kernel.org>; Mon, 27 Jul 2026 03:20:51 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1785147344; x=1785752144; darn=vger.kernel.org;
+        d=linaro.org; s=google; t=1785147651; x=1785752451; darn=vger.kernel.org;
         h=in-reply-to:content-disposition:content-type:mime-version
          :references:message-id:subject:cc:to:from:date:from:to:cc:subject
          :date:message-id:reply-to:content-type;
-        bh=QDQyB8vRHvZ09GDkbysJcR4DVdc4heeWzZnU8EgTPAI=;
-        b=TqIzQIfoGVOlXTiJK1d7iwkFqryW8gadTYl+H7Gbqg1vEIRJicRyabwPg82X0vs4nM
-         DlGgfJTSeG9leyv0WRwrRe/X8vTvS43GJ+07IOHSG4XG5t3RJJ85F4TcCUjlR0hM8THW
-         C5t0N7J+HNWb3i3NhPZDl8vgr4EKk+sJ44TeWzEKUp5y8Y1srA5Dx0Q2WfqKsxYgTigC
-         tUtos3ETrHeQQq9Z4jUHFZCsAKUyh6kSR4z2r2/f/s+/DG3sVgZmYp2osjVcSK6YRKY5
-         bO1VTWlbF1QCymvIxy9NkbwGrk8pjL0fHsklpd829WwOK6G8pao9Z3oCDrgG5kJrHu+h
-         s7kQ==
+        bh=uMEQZfc1c9H83jiVzjz2a7rMNH747ZhRmD+viGRTQsc=;
+        b=a67h0+/lLQW0OFGmTVtm5p/QujWnIYEgX8qY6aYqv9fbBAiGhfkXPQ+dsnMzGlU0yg
+         pfAtHD2tjAk6sPie7jSGTd+ws6TBa8+rkixAvGeNmBg3Zwn336/Onhbzubovkbrz9LZR
+         JML0gR4hghUtzJrFMZhS1nELzPJsfQLGI95qvPWgYxi9eGBBEq9/9X/TNibZacbj2e3G
+         vXsZZrni1fCaQ3axT8rsA95ynlMG8F3Ibo2PwX+YtgYxz6x4v2EKOfc49BpfSb5Yf3u5
+         i3Z5dXJF++ESXDjOco34vg1iEcsS2WHNAc4evH/DYKw79JSq7rqN+lTZzgeT6r68xirg
+         8OBw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1785147344; x=1785752144;
+        d=1e100.net; s=20251104; t=1785147651; x=1785752451;
         h=in-reply-to:content-disposition:content-type:mime-version
          :references:message-id:subject:cc:to:from:date:x-gm-gg
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=QDQyB8vRHvZ09GDkbysJcR4DVdc4heeWzZnU8EgTPAI=;
-        b=E5vzOo2TySUWanKawMkFFcJOCT3Gg/8Mpz4PEzQVIix50DBKE16nRkG3l4QYhxGq2q
-         /TUzTHCx9yX0zR5a/WJOT8YREZWvj5guhefWUYuq//Yr00+Iab5qSuvWW+2vRXuSpv0s
-         4kZ9DHt42kesqHYYo1zd77jz0IqnAvLhEWwBO3K5PIJTF+x4oHZt1TjKqx7y2IrprOom
-         8IcifkSpMdMjdF9I5BOjuRH4q7vBdLqmyEFhzdOFv/10zsC0GJZQpyAW46ZSs5m6BB6l
-         3c/P222HV7tnaXAi0YVzinlCX4fgBTNiZc4a67SRxSBc54AhnvkEr+v0TrwXdNAI4m0A
-         l39A==
-X-Forwarded-Encrypted: i=1; AHgh+Rq0Hok4DybL7L73hSTWBwQzBO/yu4QQLbrr2Uq4EwI8JAFmSM3ZP2V+62qAh56edghJb0DAy0mCRw==@vger.kernel.org
-X-Gm-Message-State: AOJu0YwRVhQtVxysCeoaZogAougu8qmQWI0yMQ/EeyhP6nk5rcDQvfzg
-	sdBD9LgXFywztclrvIj4IJRuBASKw28cDgR29FTdxkqynGiVXPM2FG7x7QP1wOrwApg=
-X-Gm-Gg: AR+sD11v1UqtRnPf1MwikONJg/vFG4J+k63OsCV/M+a6Xv8WZluHVCIqcirDGLVjnGd
-	vAdKoya7c/Lq39O8rlY7TTsUt4e238aMc5hrdWrwbBH5elct6yf3ZkWObWYOD7j/t5WPI101caK
-	9Nq7D/gJIQCP9nui+I4EKHK/RkkamgpGzYigln+obvIo91nmDPKNHbX9exSvXv4oPTW7Ol9OWW8
-	U+YAHRRxOrg1pt8X2Ta3y2B75BNFUhL2tzhdUtszD1fQ2dtBwzUZPs6ET4jbK3gJcdpKV7VYehF
-	hM22sO81taz4tMUTONzsK97xz7pDSmr5WtNUSyzfOb5ABQXYfMd7rdJ1XUriA4eODH0y1CBiUrO
-	6jQ7IEP/ZyqmKll3R5Zv4/V+bu6SZWHE8CSBSJzch9hbv+N4/1tdJ+raR9hrKatoVOHMzEqSVTT
-	6Bnw==
-X-Received: by 2002:a05:6a21:4c16:b0:3c3:a969:2cf with SMTP id adf61e73a8af0-3c6c26d254fmr78923637.53.1785147343534;
-        Mon, 27 Jul 2026 03:15:43 -0700 (PDT)
+        bh=uMEQZfc1c9H83jiVzjz2a7rMNH747ZhRmD+viGRTQsc=;
+        b=OCy5o8+fiigq1d5Ncp1zNgX9QIO4vObGvCecTfURyCSRn4Nf6b7C9pDoXsvbE+UH0v
+         SqD9cgobf/KHJ0wgSO0+obmj/iEyeXgorfAfijQYx0YTo/b9hAhMH2fqzG4gbqWMg2An
+         aKqI34vhH/mu1AnzUWsifrBmjjfGi5eIj4GAEH57XhHT+gW6YJESjl95rd42x6O64scm
+         AniqdWAyxoridzWX1R9EiXJLdrfnImJEaGxRuB7aRlb759dj84Q+ljV9805uksrbea1W
+         /nbQWdGMpCQ7CMPwvIf6AZxvDQVsWhNl8D3cHiRyqLk7o6H2tXDnLc+nRWysUqJLLSTc
+         afNw==
+X-Forwarded-Encrypted: i=1; AHgh+Rrkar5+1bzXnHYAEo6OrTAunEGInfjMX01sGMFxwgqE8vX2SP68vfTOkkeiQhO1WG13Db1X8S347A==@vger.kernel.org
+X-Gm-Message-State: AOJu0YwwfMd3WMAYiO+/VkCk24XZlGiqSQl3Hvn7tgiuwJNV3D3z6O+d
+	AT3dUcpiAjqI14nZY88mjEbt9t2oxwUNgHILEIFDbI6uaQLJmikWFAUv8IM3oBPJtl4=
+X-Gm-Gg: AR+sD11iz9Yt+Q94OyhgZNHHEy06cQS5MDE3nO3SfjyHXJSs+vJUvbBEJx+9T48wYpU
+	PhPNFizhP1ltVu7N78/xIJRccwpj5bJmT2txhIU5fbafYsS7YoLudKXxlQS0ZpGJWTMc8e7Fvg0
+	YBbaijNlKi7QYmD/9aUM+bq0xS86sCtM50xBcpcNxWL56UGcqCjPU3YODlSsskI7kNRPiCAAajK
+	UrplDcgjYqJJzttbAJZ8D77HVx+4lcGa9lxcLj4nTLVWdcPQcWEkA/lx5k8bd5NdaeUWtM4QZ9h
+	paE6jnAwngDWWRnCFDArRERvABV8fZz8A08Bez86DAvnzMTJgiYe1WWhgYLFm5sGGaCFrqB8Oau
+	7AqV4I2Z9GFk1d/wsnJvoAW2wB1SCIn30xnJm16FftfEpenIEr80p+if1uQP39xu5FTzK+sh3j/
+	3Hr8CAUZn6cnlz
+X-Received: by 2002:a05:6a20:d497:b0:3b4:8f18:33a with SMTP id adf61e73a8af0-3c67dadcc25mr8054267637.1.1785147650540;
+        Mon, 27 Jul 2026 03:20:50 -0700 (PDT)
 Received: from localhost ([122.172.82.94])
-        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-314bc59434fsm31061551eec.24.2026.07.27.03.15.42
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-314bc593b57sm43881131eec.25.2026.07.27.03.20.49
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 27 Jul 2026 03:15:42 -0700 (PDT)
-Date: Mon, 27 Jul 2026 15:45:39 +0530
+        Mon, 27 Jul 2026 03:20:49 -0700 (PDT)
+Date: Mon, 27 Jul 2026 15:50:47 +0530
 From: Viresh Kumar <viresh.kumar@linaro.org>
-To: Praveen Talari <praveen.talari@oss.qualcomm.com>
-Cc: bjorn.andersson@oss.qualcomm.com, 
-	Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@kernel.org>, 
-	Brian Masney <bmasney@redhat.com>, konrad.dybcio@oss.qualcomm.com, mukesh.savaliya@oss.qualcomm.com, 
-	linux-clk@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	chandana.chiluveru@oss.qualcomm.com, Sebastian Reichel <sre@kernel.org>, 
-	Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, linux-pm@vger.kernel.org
-Subject: Re: [PATCH v3] opp: Use clk_get_optional() to avoid leaving
- opp_table->clk as an error pointer
-Message-ID: <5dcfpfeu4hxvtap5rj5ybioazcejrsdptcdwq553c64snp4wmo@rrkslurmb46x>
-References: <20260727-fix_ptr_check_on_clk-v3-1-94629ac7aaae@oss.qualcomm.com>
- <sl7wx7n2bocrfcsqj72vp3snchbgvtkuahq4pjzpor54bg46ek@ar62czwob4j5>
- <f4a3c2a7-0732-4d4c-b252-2ac5ea3db35a@oss.qualcomm.com>
+To: Abdun Nihaal <nihaal@cse.iitm.ac.in>
+Cc: rafael@kernel.org, linux-pm@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, stable@vger.kernel.org
+Subject: Re: [PATCH] cpufreq: powernow-k8: Fix possible memory leak in
+ powernowk8_cpu_init()
+Message-ID: <5zxdn4jnqu22k2s7roo3wxykwsusah7mp4telybmzlc5zgilac@pf5svblpx7nj>
+References: <20260727093553.98246-1-nihaal@cse.iitm.ac.in>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -82,39 +76,36 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <f4a3c2a7-0732-4d4c-b252-2ac5ea3db35a@oss.qualcomm.com>
+In-Reply-To: <20260727093553.98246-1-nihaal@cse.iitm.ac.in>
 
-On 27-07-26, 15:11, Praveen Talari wrote:
-> I have followed below steps but faced conflict while rebasing it.
+On 27-07-26, 15:05, Abdun Nihaal wrote:
+> The memory allocated for data->powernow_table inside
+> powernow_k8_cpu_init_acpi() or find_psb_table() is not freed in one of
+> the error paths in powernowk8_cpu_init(). Fix that by adding a kfree().
 > 
-> git clone https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git
-> git remote add viresh
-> https://git.kernel.org/pub/scm/linux/kernel/git/vireshk/pm.git
-> git fetch viresh
-> git rebase viresh/cpufreq/arm/linux-next
+> Fixes: 1ff6e97f1d99 ("[CPUFREQ] cpumask: avoid playing with cpus_allowed in powernow-k8.c")
+> Cc: stable@vger.kernel.org
+> Signed-off-by: Abdun Nihaal <nihaal@cse.iitm.ac.in>
+> ---
+> Compile tested only. Issue found using static analysis.
 > 
-> $git rebase viresh/cpufreq/arm/linux-next
-> Auto-merging drivers/gpio/gpio-shared-proxy.c
-> CONFLICT (content): Merge conflict in drivers/gpio/gpio-shared-proxy.c
-> error: could not apply efecde8a254d... gpio: shared-proxy: always serialize
-> with a sleeping mutex
-> hint: Resolve all conflicts manually, mark them as resolved with
-> hint: "git add/rm <conflicted_files>", then run "git rebase --continue".
-> hint: You can instead skip this commit: run "git rebase --skip".
-> hint: To abort and get back to the state before "git rebase", run "git
-> rebase --abort".
+>  drivers/cpufreq/powernow-k8.c | 1 +
+>  1 file changed, 1 insertion(+)
 > 
-> Could not apply efecde8a254d... gpio: shared-proxy: always serialize with a
-> sleeping mutex
+> diff --git a/drivers/cpufreq/powernow-k8.c b/drivers/cpufreq/powernow-k8.c
+> index fe1f499b4fc0..c9bcc6f0ab7b 100644
+> --- a/drivers/cpufreq/powernow-k8.c
+> +++ b/drivers/cpufreq/powernow-k8.c
+> @@ -1085,6 +1085,7 @@ static int powernowk8_cpu_init(struct cpufreq_policy *pol)
+>  
+>  err_out_exit_acpi:
+>  	powernow_k8_cpu_exit_acpi(data);
+> +	kfree(data->powernow_table);
+>  
+>  err_out:
+>  	kfree(data);
 
-Looks like you are trying to rebase Linus's master branch over my
-branch ? This commit is already merged in the kernel and you shouldn't
-be rebasing it over.
-
-Please apply the $subject patch only over my branch, maybe with git
-cherry-pick, and then send me the same.
-
-> How to proceed further?
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
 -- 
 viresh
