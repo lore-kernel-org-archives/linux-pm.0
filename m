@@ -1,147 +1,115 @@
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id CAD2741A4F1;
-	Mon, 27 Jul 2026 13:27:31 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 096BA412BFC
+	for <linux-pm@vger.kernel.org>; Mon, 27 Jul 2026 13:28:02 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1785158859; cv=none; b=ixx+3MTcIpObDtb++GKNhwATyWdqHQASpt8Ja8OeoR1t51fvUGrLngKPvzBtPUM5NYJh2OQDHPobd5IvFQ3EIsES66CqH7Ez2Y18CU7wfj7aqWJyFieavNCPa7NgUsqvYPzIm8cueko/IVnXAhVLUhvsx8zWGrqLMas3KwGznGk=
+	t=1785158893; cv=none; b=XmuERH2XZws09clmPWAHYulC9aZgBw0WC7BALaq8OsjPhTjc3330bespsZdc39JyJU5ksKdDroXUZdxSd+510gzM6Vw+/t/+K/WQtcsf08j7SVcSBTZWMPaWDR7PrPhrM1wDelvZbGy6TbK3+Pbx9Q+2btVhMRiNegQGXEVGddg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1785158859; c=relaxed/simple;
-	bh=tuOO9BJ4e09hCOeSOpQbs/7qt+nSUQ8BheAUn/4agCQ=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=JvGPE7/enq0/Ttd8EuXdx3sDT/zAKT1V31c6Hp8JpXgwxurtYFZoLg9x33rnZvdLq0ZpQ4AfzIQPs0kwRZcvVvHP/z+7+cA0tfYEgS7KV4E+sSG+gOUfHaVpd7viJ9ouYSUQBkXAwjiFRF1kqAi3Yzr7viE8RxslB1+DJ+6Y4nQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=MnJHjHFO; arc=none smtp.client-ip=217.140.110.172
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
+	s=arc-20240116; t=1785158893; c=relaxed/simple;
+	bh=MjOLtdbnHINQiZsUbyUdq0JT2ExAvNVto4UrqMDkKXI=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=oLMdg6V3qVKGa3Br5sTBXq7ve02BzpZqw64LDMfxYxr6qep+x9FY/c9LMm05NRgZiYWm1KUdME5IZ2AEQKyvudz8MNMyQ/C2oP1CPuePMivbouvQHU5k7tqx+6q0af6L5UAOo1hj146SiwM8XEgNLDcl6uxHGnXnWxx6HoAeacI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=a0wXjZON; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="MnJHjHFO"
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id B97E21476;
-	Mon, 27 Jul 2026 06:27:22 -0700 (PDT)
-Received: from [192.168.0.248] (usa-sjc-mx-foss1.foss.arm.com [172.31.20.19])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id B73D23F763;
-	Mon, 27 Jul 2026 06:27:21 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1785158846; bh=tuOO9BJ4e09hCOeSOpQbs/7qt+nSUQ8BheAUn/4agCQ=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=MnJHjHFOU90Xjrw9Fs7gEnHBf6JEsQGEhZdRkM/mVfr8QcmAQ0IBQTm98WJ3kbqX4
-	 rpwdSlfvy5KUrgbHl1wbRiUkr1q9JRExW1XiEsLjwwkZSuqDg01ojmfHPaMCqMknkg
-	 aVNU90AEr4QoeJe09WTUugXjpzyg8j29bLzNiGWQ=
-Message-ID: <40d72385-0b3f-46e5-9f32-a27be3842d7c@arm.com>
-Date: Mon, 27 Jul 2026 14:27:19 +0100
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="a0wXjZON"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 381F41F00ACA
+	for <linux-pm@vger.kernel.org>; Mon, 27 Jul 2026 13:27:57 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1785158877;
+	bh=jo1uDciI4hvqGlusKkjXRbJpZ2yEY32stvntK0agl24=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc;
+	b=a0wXjZONqRUfwF8IFBW1Ed9ylkWDBJ9tPy5PYtFwEfD3Uv6ER6mE+dBgq7qI/q7PM
+	 pulbUIOQeQdzm7Vi1em59Iuq+Py1wCXD1h2iFuw5B3yPorb6Osv3Q3qgiXkXq0rb/j
+	 UVih/N/2Cj706niYtyRU9eq/ozayy5lTjiPcq78EzMtxyKxztX0xlaAw6PwGMbQXa+
+	 X/BYZJE0DEiQHKoEsVz4ZFW4NOQLsQealE/fxQboeY8dy+GCCKFoW/np3IeLK22Bda
+	 L1BkrOpTgw8/Z1eaG9Dspl6L3QIZTw2yjNOv9OZpKEFOPMyPPjxXvn5/y7K1jLGi+X
+	 8VGFQ0HTx1kFw==
+Received: by mail-lf1-f54.google.com with SMTP id 2adb3069b0e04-5b28c91fba5so3171343e87.1
+        for <linux-pm@vger.kernel.org>; Mon, 27 Jul 2026 06:27:57 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AHgh+RpWTMBLKzYJ7BBfVMG8m4VlLz2dMlzCMKyOymzbvvTKtFOCeBR4DMn1ShbnhqZe9mj04fKRphDPEg==@vger.kernel.org
+X-Gm-Message-State: AOJu0YyZd/pGeihP4kMt47SOEVEBhntpP7g9/zNGDsBRPRgr6Cpi4yeK
+	i/HwMLKF9WLcSbnmhHjvrmfTqIClTWLdePUgwso5Zi7t967VWEP1AFhCgZxnfcBK9rBK9QGfpbd
+	yjNXXy9ntlhf800iwLlq1lWrze4cTLyI=
+X-Received: by 2002:a05:6512:3d21:b0:5b2:b08a:ef9 with SMTP id
+ 2adb3069b0e04-5b2c19a2600mr1455909e87.0.1785158875656; Mon, 27 Jul 2026
+ 06:27:55 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v3 1/4] cpufreq: CPPC: Keep the policy across CPU hotplug
-To: Sumit Gupta <sumitg@nvidia.com>, rafael@kernel.org,
- viresh.kumar@linaro.org, pierre.gondois@arm.com, ionela.voinescu@arm.com,
- zhenglifeng1@huawei.com, zhanjie9@hisilicon.com, lenb@kernel.org,
- saket.dumbre@intel.co, ray.huang@amd.com, mario.limonciello@amd.com,
- perry.yuan@amd.com, kprateek.nayak@amd.com, linux-kernel@vger.kernel.org,
- linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org,
- acpica-devel@lists.linux.dev, linux-tegra@vger.kernel.org
-Cc: treding@nvidia.com, jonathanh@nvidia.com, vsethi@nvidia.com,
- ksitaraman@nvidia.com, sanjayc@nvidia.com, mochs@nvidia.com, bbasu@nvidia.com
-References: <20260724215937.3368276-1-sumitg@nvidia.com>
- <20260724215937.3368276-2-sumitg@nvidia.com>
-Content-Language: en-US
-From: Christian Loehle <christian.loehle@arm.com>
-In-Reply-To: <20260724215937.3368276-2-sumitg@nvidia.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+References: <20260717215330.2215058-1-sumitg@nvidia.com>
+In-Reply-To: <20260717215330.2215058-1-sumitg@nvidia.com>
+From: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
+Date: Mon, 27 Jul 2026 15:27:42 +0200
+X-Gmail-Original-Message-ID: <CAJZ5v0jdF+PYjxTqUSp_oJiCcPR4UUrQdBPt0K3f08BLRB4L4g@mail.gmail.com>
+X-Gm-Features: AUfX_mziGygpLsC-M2M15skm83Ku8CRgNdaAig39SbPrrccs_TRF337AG_LqlDs
+Message-ID: <CAJZ5v0jdF+PYjxTqUSp_oJiCcPR4UUrQdBPt0K3f08BLRB4L4g@mail.gmail.com>
+Subject: Re: [PATCH v6 0/2] ACPI / cpufreq: CPPC: Add ospm_nominal_perf support
+To: Sumit Gupta <sumitg@nvidia.com>, christian.loehle@arm.com, pierre.gondois@arm.com
+Cc: viresh.kumar@linaro.org, ionela.voinescu@arm.com, zhenglifeng1@huawei.com, 
+	zhanjie9@hisilicon.com, linux-kernel@vger.kernel.org, 
+	linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org, 
+	linux-tegra@vger.kernel.org, treding@nvidia.com, jonathanh@nvidia.com, 
+	vsethi@nvidia.com, ksitaraman@nvidia.com, sanjayc@nvidia.com, 
+	mochs@nvidia.com, bbasu@nvidia.com
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-On 7/24/26 22:59, Sumit Gupta wrote:
-> Without online()/offline() callbacks, the cpufreq core fully tears
-> down a policy during exit() when its last online CPU is offlined, and
-> rebuilds it during init() when it comes back.
-> 
-> Add lightweight online()/offline() callbacks so the core instead keeps
-> the policy live and reuses the driver's cpu_data across CPU hotplug.
-> This avoids re-reading the CPPC capabilities on every offline/online,
-> making CPU hotplug faster.
-> 
-> From online(), re-enable CPPC, as the platform may have disabled it
-> while the CPU was offline. Since the policy is no longer rebuilt via
-> init(), online() also reprograms the CPPC performance controls
-> (desired/min/max).
-> 
-> Signed-off-by: Sumit Gupta <sumitg@nvidia.com>
-> ---
->  drivers/cpufreq/cppc_cpufreq.c | 44 ++++++++++++++++++++++++++++++++++
->  1 file changed, 44 insertions(+)
-> 
-> diff --git a/drivers/cpufreq/cppc_cpufreq.c b/drivers/cpufreq/cppc_cpufreq.c
-> index f6cea0c54dd9..6dc59f99d880 100644
-> --- a/drivers/cpufreq/cppc_cpufreq.c
-> +++ b/drivers/cpufreq/cppc_cpufreq.c
-> @@ -722,6 +722,48 @@ static int cppc_cpufreq_cpu_init(struct cpufreq_policy *policy)
->  	return ret;
->  }
->  
-> +/*
-> + * With offline() defined, the cpufreq core keeps the policy alive when
-> + * a CPU is hotplugged out.
-> + */
-> +static int cppc_cpufreq_cpu_offline(struct cpufreq_policy *policy)
-> +{
-> +	return 0;
-> +}
-> +
-> +/*
-> + * Re-enable CPPC when the policy's CPU comes back online, since the platform
-> + * may have disabled it while the CPU was offline.
-> + */
-> +static int cppc_cpufreq_cpu_online(struct cpufreq_policy *policy)
-> +{
-> +	struct cppc_cpudata *cpu_data = policy->driver_data;
-> +	unsigned int cpu = policy->cpu;
-> +	int ret;
-> +
-> +	ret = cppc_set_enable(cpu, true);
-> +	if (ret && ret != -EOPNOTSUPP)
-> +		pr_warn("Failed to re-enable CPPC for CPU%d (%d)\n", cpu, ret);
+On Fri, Jul 17, 2026 at 11:54=E2=80=AFPM Sumit Gupta <sumitg@nvidia.com> wr=
+ote:
+>
+> This series adds support for the OSPM Nominal Performance register
+> (ACPI 6.6, Section 8.4.6.1.2.6) to the CPPC ACPI and cpufreq drivers.
+>
+> Unlike the read-only Nominal Performance register, OSPM Nominal
+> Performance is writable and lets OSPM request a nominal level below
+> the platform-reported nominal. The platform treats performance above
+> this level as boost and below as throttle for its power and thermal
+> decisions.
+>
+> Patch 1: adds the cppc_{get,set}_ospm_nominal_perf() helpers, a
+> per-policy cpufreq sysfs attribute (ospm_nominal_freq, in kHz), and
+> hooks the register into the OSPM-set save/restore table.
+>
+> Patch 2: reflects the OSPM nominal in the cpufreq policy so that boost
+> and the frequency limits stay consistent with the register.
+>
+> This series applies on top of the series
+> "cpufreq: CPPC: Preserve OSPM-set registers across hotplug and unload",
+> which provides the save/restore table that patch 1 hooks into:
+> https://lore.kernel.org/lkml/20260716153820.2007095-1-sumitg@nvidia.com/
+>
+> v5[5] -> v6:
+> - New patch 2: reflect the OSPM nominal in the policy's boost state
+>   and frequency limits.
+> - Patch 1:
+>   - write only policy->cpu instead of looping over policy->cpus with
+>     rollback. the register is treated as shared across a policy's CPUs.
+>   - add the register to the OSPM-set save/restore table.
 
-What's the intention of continuing restoring CPPC register values here?
+Christian, Pierre, any chance to have a look at this, please?
 
-> +
-> +	/*
-> +	 * The platform may reset the controls while the CPU is offline, so
-> +	 * recompute min/max, clamp desired_perf into range, and reprogram them.
-> +	 */
-> +	cppc_cpufreq_update_perf_limits(cpu_data, policy);
-> +
-> +	cpu_data->perf_ctrls.desired_perf =
-> +		clamp_t(u32, cpu_data->perf_ctrls.desired_perf,
-> +			cpu_data->perf_ctrls.min_perf,
-> +			cpu_data->perf_ctrls.max_perf);
-> +
-> +	ret = cppc_set_perf(cpu, &cpu_data->perf_ctrls);
-> +	if (ret)
-> +		pr_debug("Failed to reapply perf request on CPU%d (%d)\n",
-> +			 cpu, ret);
-
-I think cppc_set_perf() needs some prep first before using it on reset values.
-We assume that reset value may be Autonomous Mode on, right? So we must never
-write MIN>MAX and vice versa. I think we may just have to read and write
-the 'otherwise-offending' value first on reset.
-
-> +
-> +	return 0;
-> +}
-> +
->  static void cppc_cpufreq_cpu_exit(struct cpufreq_policy *policy)
->  {
->  	struct cppc_cpudata *cpu_data = policy->driver_data;
-> @@ -1034,6 +1076,8 @@ static struct cpufreq_driver cppc_cpufreq_driver = {
->  	.fast_switch = cppc_cpufreq_fast_switch,
->  	.init = cppc_cpufreq_cpu_init,
->  	.exit = cppc_cpufreq_cpu_exit,
-> +	.online = cppc_cpufreq_cpu_online,
-> +	.offline = cppc_cpufreq_cpu_offline,
->  	.set_boost = cppc_cpufreq_set_boost,
->  	.attr = cppc_cpufreq_attr,
->  	.name = "cppc_cpufreq",
-
+> Sumit Gupta (2):
+>   ACPI: CPPC: Add ospm_nominal_perf support
+>   cpufreq: CPPC: Reflect ospm_nominal_perf in boost and limits
+>
+>  .../ABI/testing/sysfs-devices-system-cpu      |  26 +++
+>  drivers/acpi/cppc_acpi.c                      |  32 ++++
+>  drivers/cpufreq/cppc_cpufreq.c                | 166 +++++++++++++++++-
+>  include/acpi/cppc_acpi.h                      |  10 ++
+>  4 files changed, 226 insertions(+), 8 deletions(-)
+>
+> v5: https://lore.kernel.org/lkml/20260615185934.2383514-1-sumitg@nvidia.c=
+om/
+> v4: https://lore.kernel.org/lkml/20260527194626.185286-1-sumitg@nvidia.co=
+m/
+> v3: https://lore.kernel.org/lkml/20260514194822.1841748-1-sumitg@nvidia.c=
+om/
+> v2: https://lore.kernel.org/lkml/20260430142430.755437-1-sumitg@nvidia.co=
+m/
+> v1: https://lore.kernel.org/lkml/20260427051823.280419-1-sumitg@nvidia.co=
+m/
