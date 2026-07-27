@@ -1,86 +1,146 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+Received: from sender4-op-o12.zoho.com (sender4-op-o12.zoho.com [136.143.188.12])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8009042B728;
-	Mon, 27 Jul 2026 20:42:52 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1785184973; cv=none; b=mD28x9sY57POnE9z7kZsfWl16PMM0fAVhIN0QhEF3y5iTL5BfSBr/eR4MD1Yq7HmbYD8tGl7eAF2Yt7IM1N11HzC37iFUg7mLIPvystNLECU/27jRr1FI7hUEDMNG6qYL9uTDNWp8cnWI5S7irDv7zkTG+dU1G6vbk4VWtvLaSY=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1785184973; c=relaxed/simple;
-	bh=CnZw60aN40UE7gn1aCrL/l/UUpPdhORKebRsWJFJq7I=;
-	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
-	 MIME-Version:Content-Type; b=k/J58dK4+ukVGv8tIMy7WaEHaG7etQFdtf5qNLtFOZVlziGUs+YLaLKr5R0WS0mYnCN1eDgTvDcdLs7HCGojERMeozcvy4hf4f2ig/lj3QkZk3CUhhVAJUK5il4UwPsUyOvxI79lW1Tc+1wPOOS93vbMi0h4OGwJjmLIJjHbVas=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id E4BC61F000E9;
-	Mon, 27 Jul 2026 20:42:51 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9AD3E3D6479
+	for <linux-pm@vger.kernel.org>; Mon, 27 Jul 2026 20:50:14 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=136.143.188.12
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1785185416; cv=pass; b=YTAnK6KrNpvWcvQUlKYRbUVDw8HxaQgNgUlXTb5mVaLHbPJkFLWpsdg/utuELqAd9TlKBmA5e11K8Jw/6MC/cYODr2yaQYBlBVHs9UbeWO0hdjVPl/GVK0WOLvo1RDMTMyoAd3AjTGH51yMgnYayaoYlEbm7921jdCtCIWUOcTE=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1785185416; c=relaxed/simple;
+	bh=Nl1brM1XJYVZpsTVGem0WfMuC7sWOuAFyUsBz20pHUg=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=B5UsHIPRMGpbUPcoBxS8dOZ2dK8uniHpUkgSfHTa7ueTtG+tX9Gyd27sR7B/+k6YF9KTfWF6REI8fs/B2qtRFw+ACH5JfnTPtZk29OcI6HqD/4PSyEjIVjPtkkqM511y0kTkPUK6P/N/cgul2/gGPFIubEq8q7azWpA2BERduEI=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (1024-bit key) header.d=collabora.com header.i=sebastian.reichel@collabora.com header.b=A7CS0YbG; arc=pass smtp.client-ip=136.143.188.12
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (1024-bit key) header.d=collabora.com header.i=sebastian.reichel@collabora.com header.b="A7CS0YbG"
+ARC-Seal: i=1; a=rsa-sha256; t=1785185400; cv=none; 
+	d=zohomail.com; s=zohoarc; 
+	b=hfC0PRnki1MNgk5Qi6LOD05IXGuPeLT7sgEnnj6wI0u3iTfdRfuEmm/87+HPcNxZ1DMggh7Acfiq9ccmrG8v0kyJP0liFd4QmbJkbMlvKr8yh/q0KCkBJ207qjEzT3LPm61VdRCigKAP7C9PDjEtoWbXAoqzphdFnRrjKXx5sxw=
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=zohomail.com; s=zohoarc; 
+	t=1785185400; h=Content-Type:Cc:Cc:Date:Date:From:From:In-Reply-To:MIME-Version:Message-ID:Subject:Subject:To:To:Message-Id:Reply-To; 
+	bh=sRBYMtiEbfSgJmYWtsfYSAOVB/aghCdNqybvywfcGdM=; 
+	b=Tou6MVZYAmkZ9zmxUsG+ol8PYYvOrUNKOtpFW2h3EQGWdadEJCi7BusdKaOV8GKDubMDeo+4PR5fP2FEOXvlEofClY6gGmyfxxMEXm5zjMJ8L6yJ23iOHpq0ZhZ59KY8VXBtHIukBmEz6ldwL3pFJDdsRzVvHQwkMhyPTxXo7tQ=
+ARC-Authentication-Results: i=1; mx.zohomail.com;
+	dkim=pass  header.i=collabora.com;
+	spf=pass  smtp.mailfrom=sebastian.reichel@collabora.com;
+	dmarc=pass header.from=<sebastian.reichel@collabora.com>
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; t=1785185400;
+	s=zohomail; d=collabora.com; i=sebastian.reichel@collabora.com;
+	h=Date:Date:From:From:To:To:Cc:Cc:Subject:Subject:Message-ID:MIME-Version:Content-Type:In-Reply-To:Message-Id:Reply-To;
+	bh=sRBYMtiEbfSgJmYWtsfYSAOVB/aghCdNqybvywfcGdM=;
+	b=A7CS0YbGDyzgw+pc6hjFEAVFNo6WnQLX1BgCmtV9AsglWpFxMgdyARwaeUESTzg7
+	lAzzCYfBdbGksFDSkisbf7vNtrZuFXZEoBgEHqGmVMF8bZxyjaKZ8n7Aw+BnPzlR57P
+	zdn3A9Oqq13FHn1392Nkb55hPGgNijh0TcPWlowE=
+Received: by mx.zohomail.com with SMTPS id 17851853988061006.1905572064304;
+	Mon, 27 Jul 2026 13:49:58 -0700 (PDT)
 Received: by venus (Postfix, from userid 1000)
-	id AEFDC18090B; Mon, 27 Jul 2026 22:42:49 +0200 (CEST)
+	id 090B818090B; Mon, 27 Jul 2026 22:49:56 +0200 (CEST)
+Date: Mon, 27 Jul 2026 22:49:56 +0200
 From: Sebastian Reichel <sebastian.reichel@collabora.com>
-To: Sebastian Reichel <sre@kernel.org>, 
- Vincent Cloutier <vincent.cloutier@icloud.com>
-Cc: Hans de Goede <hansg@kernel.org>, Krzysztof Kozlowski <krzk@kernel.org>, 
- Marek Szyprowski <m.szyprowski@samsung.com>, 
- Sebastian Krzyszkowiak <sebastian.krzyszkowiak@puri.sm>, 
- Purism Kernel Team <kernel@puri.sm>, Rob Herring <robh@kernel.org>, 
- Conor Dooley <conor+dt@kernel.org>, linux-pm@vger.kernel.org, 
- devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
- Vincent Cloutier <vincent@cloutier.co>
-In-Reply-To: <20260727011319.621794-1-vincent.cloutier@icloud.com>
-References: <20260727011319.621794-1-vincent.cloutier@icloud.com>
-Subject: Re: [PATCH v4 00/11] power: supply: initialize MAX17055 from
- battery info
-Message-Id: <178518496968.34440.14212828403765826609.b4-ty@collabora.com>
-Date: Mon, 27 Jul 2026 22:42:49 +0200
+To: Waqar Hameed <waqar.hameed@axis.com>
+Cc: Linmao Li <lilinmao@kylinos.cn>, linux-pm@vger.kernel.org
+Subject: Re: [PATCH] power: supply: bq25630: Release battery information
+ after setup
+Message-ID: <amfC7EN4d_72zLqH@venus>
+References: <20260727093738.2611185-1-lilinmao@kylinos.cn>
+ <pndjyqgob5y.a.out@axis.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-X-Mailer: b4 0.14.3
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="p52nonaenuoecvor"
+Content-Disposition: inline
+In-Reply-To: <pndjyqgob5y.a.out@axis.com>
+X-Zoho-Virus-Status: 1
+X-Zoho-AV-Stamp: zmail-av-0.2.10.1.5.2/285.167.77
+X-ZohoMailClient: External
 
 
-On Sun, 26 Jul 2026 21:12:58 -0400, Vincent Cloutier wrote:
-> From: Vincent Cloutier <vincent@cloutier.co>
-> 
-> Hi,
-> 
-> This is the remaining unmerged tail of the MAX17042/MAX17055 v1 series.
-> Six v1 patches are upstream, and the v1 cleanup patch is covered by
-> 699f0f71ac98. This revision retains the requested registration callback
-> architecture and splits the MAX17055 driver work into smaller steps.
-> 
-> [...]
+--p52nonaenuoecvor
+Content-Type: text/plain; protected-headers=v1; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+Subject: Re: [PATCH] power: supply: bq25630: Release battery information
+ after setup
+MIME-Version: 1.0
 
-Applied, thanks!
+Hi,
 
-[01/11] power: supply: Add registration init callback
-        commit: c1eb5905fdce35a66173658a93819641e5220c18
-[02/11] power: supply: max17042_battery: Separate MAX17055 initialization
-        commit: f05e30fd2ffd962e6f30dc0abd528b4182ecdf4b
-[03/11] power: supply: max17042_battery: Use bool for init_complete
-        commit: e8e7cdd9ce46a763e5428e2673e90c6a5f91f6d8
-[04/11] power: supply: max17042_battery: Convert initialization to delayed work
-        commit: 01da1f4a6373f8d6a5a2d5d5adc256431087ccc4
-[05/11] power: supply: max17042_battery: Propagate status register errors
-        commit: 98d02b5128833c3d812e62a2616f33f1524c8394
-[06/11] power: supply: max17042_battery: Retry failed MAX17055 initialization
-        commit: fc9ff915b1fb6f6f826953d1bef3087d7a489d65
-[07/11] power: supply: max17042_battery: Program MAX17055 EZ Config values
-        commit: 6f384023851d67bd242bf40e5a91328eb92edb5d
-[08/11] power: supply: max17042_battery: Follow MAX17055 POR sequence
-        commit: 111a2d606a493c3b2f03864ea34a29df3a9e7c06
-[09/11] power: supply: max17042_battery: Initialize MAX17055 from battery info
-        commit: ed2b9b4b9694239f9a39f3e5087d879f5e37e315
-[10/11] power: supply: max17042_battery: Honor MAX17055 charge voltage
-        commit: 6a376b843d937d2330b0111404b62589236620c1
-[11/11] dt-bindings: power: supply: max17042: Allow generic power-supply properties
-        commit: c84ccde22d9d3070a9ee144e825270a7a784c570
+On Mon, Jul 27, 2026 at 02:43:37PM +0200, Waqar Hameed wrote:
+> On Mon, Jul 27, 2026 at 17:37 +0800 Linmao Li <lilinmao@kylinos.cn> wrote:
+>=20
+> > data->batinfo is only used by bq25630_setup() to program the initial
+> > charge limits, but power_supply_get_battery_info() allocates it on
+> > psy->dev, so it stays around for the lifetime of the device. Nothing
+> > else in the driver uses it. Release it right after setup, as bq256xx
+> > and bq257xx do.
+> >
+> > Signed-off-by: Linmao Li <lilinmao@kylinos.cn>
+> > ---
+> >  drivers/power/supply/bq25630_charger.c | 5 ++---
+> >  1 file changed, 2 insertions(+), 3 deletions(-)
+> >
+> > diff --git a/drivers/power/supply/bq25630_charger.c b/drivers/power/sup=
+ply/bq25630_charger.c
+> > index 165f8c67b4895..efcdb1f5bc351 100644
+> > --- a/drivers/power/supply/bq25630_charger.c
+> > +++ b/drivers/power/supply/bq25630_charger.c
+> > @@ -1045,10 +1045,9 @@ static int bq25630_probe(struct i2c_client *clie=
+nt)
+> >  		return dev_err_probe(data->dev, ret, "Could not request IRQ\n");
+> > =20
+> >  	ret =3D bq25630_setup(data);
+> > -	if (ret)
+> > -		return ret;
+> > +	power_supply_put_battery_info(data->psy, data->batinfo);
+> > =20
+> > -	return 0;
+> > +	return ret;
+> >  }
+> > =20
+> >  static const struct of_device_id bq25630_of_match[] =3D {
+>=20
+> The initial thought was that `batinfo` could/would be used elsewhere,
+> but as you point out, it's currently not. A better design is then to
+> move the `power_supply_get_battery_info()` into `bq25630_setup()`, in
+> order to scope the `get/put()`. So let's get `batinfo` there, just
+> before using it, and have an error/clean-up-path there as well.
 
-Best regards,
--- 
-Sebastian Reichel <sebastian.reichel@collabora.com>
+Agreed. Keeping an invalid pointer makes no sense.
 
+The setup routine is also a good candidate for the new
+=2Einit callback now available in struct power_supply_desc,
+so that the registers are initialized before the device
+is exposed to the system.
+
+Greetings,
+
+-- Sebastian
+
+--p52nonaenuoecvor
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAmpnxHAACgkQ2O7X88g7
++prGVQ//eNA6uJh4EZCUhxWFMKXSnhKVR81uq1rDW4iJOonoruQ7zAG12hIjWDf+
+qR7auzrypE5BDa2SVHhok0QWH6pC1Alk83Sc8Qd+o8xaiWkAh0Qi2GCl61CbNnxB
+hYq0rVxZkqiw7cQ3xmuQTPrnKZo9s7964aT/GsbHpdTY2C9t9cVynF9fsIE5yqby
+Ox6pWTpeI04HHp/2gN8NlYoFqpGnB671f8IYM0jzYU7LucB/NRYm4iA35mwaUiat
+iENe/+wm4ukM04fAOiukUFcVAAtNIok8gLewBywEthwd4/G4jRV/bk6BFpfqkoNd
+s7LPzgJSIKdjT3U8PLPUINRImxlUj98uVdbnfs7FAX/DkhY6dPP94z7UZUQh4XuX
+Bii1cgyMN/mIiiGit2SxEad2v9Z3ROZB8Lq0KMuyAoQHMgziTUdfXl39PJRl76p5
+TitSDS0viX3j0EssPSowJUpMGzuRNeePcotfZFXWlW8ha1BWAVNvfW7CWTVoCmUC
+r1+ZGg4hmYpgC5BppuwMHrYPhFDQNHBEkOqN1M6+EkPOdLeao1sQLK5hiYdbrNuy
+EoxHf4nr0/IFb6xdfJ7s6tYy6KPnuA83PvtDFDuT2+mtr1BzA7DLVyfqMGzVCzfz
+svC6hdqeDHTYJKXRlmIMWAydCD67tynPGm5yML6FkifQb8j5+8k=
+=PnnC
+-----END PGP SIGNATURE-----
+
+--p52nonaenuoecvor--
