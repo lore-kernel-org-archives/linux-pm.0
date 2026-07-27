@@ -1,123 +1,135 @@
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id 9DC6340EB82;
-	Mon, 27 Jul 2026 13:15:20 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id ED22B418A52
+	for <linux-pm@vger.kernel.org>; Mon, 27 Jul 2026 13:22:12 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1785158122; cv=none; b=f2g8MDxqa7uigvOjSkG3Mr0fqy1G4i4WfJ+L+jhMdzNE/tO31WPr1BOGYALru9OdkTIjz5uv0nzDRYzXE+CqWOLqZ+ueY3SkOr6yoN945LzSQS9m0bD3TVOov/ZJec7AoKC3tBrUKIdSbRcbdeYbbfONFkByeijEcSJCeV2S+GA=
+	t=1785158535; cv=none; b=YoZhvJujMLunALZ0oHkrVFQ/3CEmMxwGirLmQXqf+zMsMaeyWlVC9UG7FpmPKL0CqW6U1bSqAUVyDI09AUK59ONxJ3ju4RazwtdALJTAJ7gr3pgA3soHBuTNv3k+RzrlrJN4lYMDkEfZlCwnmrgM3EJeAzTvqB0ma/PlO+SYAk0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1785158122; c=relaxed/simple;
-	bh=rJWbiUDF0aztC9MsTrWCyMFzdxKTMeetPyv9Jiug1vE=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=Se6gWmp2yM1ATQl4IfCljDHOHXVD8exfjyCsKvFQA6X2kY1VwYV2qJ35lIANkPGxSLpJ1nyq1S/ZSzhTUe69dDjlH2toSa7rr2r3OWWudF8vJB5QdhOpGsZs5f1FFgOZ+JSipfXPCL7lzVoaZs9RCI5kV9wGQaAonRAgQBPIjC8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=sNJCLHZl; arc=none smtp.client-ip=217.140.110.172
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
+	s=arc-20240116; t=1785158535; c=relaxed/simple;
+	bh=MNj/qSfquGY/IJvlO35QQRUB5x/GG8PvKOI6sL4i1hk=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=YcoEJNeek46WTAkxUuqkfzQLQpO89y/AEbNPjpYtbTGvj55nWHd2BxTShDaoc2ciDOzu5rrvexFydUIpW4PrCcF37M2Hj5qWBkFfGwAtQoQzo0CVUS2pxkjCYYGo9lNDDpTE5tmLT4b7BIAhpYLw7KwF8hYuUDzi5YczIMm22+Q=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=AYHwhB3J; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="sNJCLHZl"
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id AD7E8143D;
-	Mon, 27 Jul 2026 06:15:15 -0700 (PDT)
-Received: from [192.168.0.248] (usa-sjc-mx-foss1.foss.arm.com [172.31.20.19])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 7A1083F66F;
-	Mon, 27 Jul 2026 06:15:14 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1785158119; bh=rJWbiUDF0aztC9MsTrWCyMFzdxKTMeetPyv9Jiug1vE=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=sNJCLHZl3ezzii8fE0VbcnIc3jKhAEHaCReMaVpdIO8HWwFU2T2bytKObfYZV+K4A
-	 wK6tnmdpIcgrmDYSRfEY7hNK8A8QvRVhmeO7MXlY6lhZDHKX6Msnwp9or3WFDwNTyq
-	 aP1KqOd95oYPUAUfEnij5FStgfOVYVMCF/vO4UjA=
-Message-ID: <c8f62b1d-4ab5-4d85-ae15-b5fc9ec2e3bc@arm.com>
-Date: Mon, 27 Jul 2026 14:15:12 +0100
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="AYHwhB3J"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9B09F1F00AC4
+	for <linux-pm@vger.kernel.org>; Mon, 27 Jul 2026 13:22:11 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1785158531;
+	bh=pyG9IetWNXw/s7lNLiGozcnJuoHs5Ya5WvVHszipDKU=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc;
+	b=AYHwhB3JuqTrnd3Ic5SdU8hEdCYUAp9ui6DXJM4lybXqE7EdseT+qhhZljg5yCV+9
+	 SLA7Yxm0VuCT1vCMCgt5aJ4SWBBSNo2OnFuftwMxlyyFXBeKnFmmVz/9p4DIADm2IC
+	 190Kg6CxAWW+c/0mTRzVQH3cNQVyMz+OxAPiiiDqjhipFF+8NqXaeykSHXt5ZQ4d1/
+	 oOFqNZJB60erRDvhhGG53y3wp5h4kk90bwHuGRFux8xb28M3TAmgjXJyW+S6I8QJpA
+	 smmf7sIVzZ4IYCge6BjjSeOAQeXacqz/6/8W0pAYhiVsI43RxgAi2CJXue80iP0iFA
+	 Q2iUNJh70HRxQ==
+Received: by mail-lj1-f177.google.com with SMTP id 38308e7fff4ca-39ca0a30148so26286981fa.3
+        for <linux-pm@vger.kernel.org>; Mon, 27 Jul 2026 06:22:11 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AHgh+Rom9q5bzjfPn2K1X1+cZgejtN8MhKYJZ5SZF1IzqHdPT19ydFsbgd9lLbuOVr8Wcx56amuYGxvdSw==@vger.kernel.org
+X-Gm-Message-State: AOJu0YwLILYePXGwd0nzw34t78tWqMhdiDEiwV8k+3W2a+F8vrNSCOyi
+	GC7dfRamp3dbeoUDf1e/FXtB0h+jwPqdMrA6W0w628JkNyN1mOQM0JKv9obCxvPkzn7Y/qC97y8
+	L9/ai4UVxp8wC80WylDsLG6WB6eBzy5U=
+X-Received: by 2002:a2e:a99a:0:b0:39e:e845:7f23 with SMTP id
+ 38308e7fff4ca-39f287721acmr15254561fa.16.1785158530030; Mon, 27 Jul 2026
+ 06:22:10 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v3 3/4] cpufreq: CPPC: Preserve OSPM-set registers across
- hotplug and unload
-To: Sumit Gupta <sumitg@nvidia.com>, rafael@kernel.org,
- viresh.kumar@linaro.org, pierre.gondois@arm.com, ionela.voinescu@arm.com,
- zhenglifeng1@huawei.com, zhanjie9@hisilicon.com, lenb@kernel.org,
- saket.dumbre@intel.co, ray.huang@amd.com, mario.limonciello@amd.com,
- perry.yuan@amd.com, kprateek.nayak@amd.com, linux-kernel@vger.kernel.org,
- linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org,
- acpica-devel@lists.linux.dev, linux-tegra@vger.kernel.org
-Cc: treding@nvidia.com, jonathanh@nvidia.com, vsethi@nvidia.com,
- ksitaraman@nvidia.com, sanjayc@nvidia.com, mochs@nvidia.com, bbasu@nvidia.com
-References: <20260724215937.3368276-1-sumitg@nvidia.com>
- <20260724215937.3368276-4-sumitg@nvidia.com>
-Content-Language: en-US
-From: Christian Loehle <christian.loehle@arm.com>
-In-Reply-To: <20260724215937.3368276-4-sumitg@nvidia.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+References: <20260724104042.1481804-1-christian.loehle@arm.com>
+ <6174756a-b779-422a-a67d-d677961d99f0@huawei.com> <9fa94c64-c4ed-45b5-85ab-c6f8f04107e5@arm.com>
+In-Reply-To: <9fa94c64-c4ed-45b5-85ab-c6f8f04107e5@arm.com>
+From: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
+Date: Mon, 27 Jul 2026 15:21:58 +0200
+X-Gmail-Original-Message-ID: <CAJZ5v0hZbV0iNQksGqSJ3BzjFUcuYLQEf226THg5_PQo-h9TDA@mail.gmail.com>
+X-Gm-Features: AUfX_myl7xANmROMqw95ZigNHuq6vzGtODbnuhbQrnpdUsZqdrFi08Aw0-ptetw
+Message-ID: <CAJZ5v0hZbV0iNQksGqSJ3BzjFUcuYLQEf226THg5_PQo-h9TDA@mail.gmail.com>
+Subject: Re: [PATCH] ACPI: CPPC: Skip writes to unsupported performance controls
+To: Christian Loehle <christian.loehle@arm.com>
+Cc: "zhenglifeng (A)" <zhenglifeng1@huawei.com>, "Rafael J . Wysocki" <rafael@kernel.org>, 
+	Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, 
+	linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org, 
+	Len Brown <lenb@kernel.org>, Jie Zhan <zhanjie9@hisilicon.com>, 
+	Pierre Gondois <pierre.gondois@arm.com>, Sumit Gupta <sumitg@nvidia.com>, 
+	Sudeep Holla <sudeep.holla@arm.com>, Ionela Voinescu <ionela.voinescu@arm.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-On 7/24/26 22:59, Sumit Gupta wrote:
-> Values written to OSPM-set CPPC registers (via sysfs or the autonomous
-> boot parameter) can be lost in two ways:
-> 
->   - Across CPU hotplug: the platform may reset a CPU's registers while it
->     is offline.
->   - On driver unload: the value the driver wrote is left in the register
->     instead of returning to its pre-driver state.
-> 
-> Add a small table-driven mechanism that handles both:
-> 
->   - On init(), capture each register's firmware value before the
->     driver programs anything.
->   - On offline(), read back each register's current value (whatever was
->     last set via sysfs or the boot parameter) so it can be reapplied, then
->     restore the firmware value.
->   - On online(), reapply the value captured at offline() after the
->     performance request is re-established.
-> 
-> Keep Autonomous Selection (auto_sel) last in the table so that, on
-> online(), its saved value is reapplied after the other registers that
-> shape its behaviour.
-> 
-> Cover the Autonomous Selection (auto_sel), Energy Performance Preference
-> (EPP) and Autonomous Activity Window (auto_act_window) registers.
-> 
-> Suggested-by: Pierre Gondois <pierre.gondois@arm.com>
-> Link: https://lore.kernel.org/all/86780f97-29ee-4a72-b311-38c89434b707@arm.com/
-> Signed-off-by: Sumit Gupta <sumitg@nvidia.com>
-> ---
->  drivers/cpufreq/cppc_cpufreq.c | 157 +++++++++++++++++++++++++++++++++
->  1 file changed, 157 insertions(+)
-> 
-> diff --git a/drivers/cpufreq/cppc_cpufreq.c b/drivers/cpufreq/cppc_cpufreq.c
-> index 34cdba00e61a..8a13ec49eb9d 100644
-> --- a/drivers/cpufreq/cppc_cpufreq.c
-> +++ b/drivers/cpufreq/cppc_cpufreq.c
-> @@ -28,6 +28,150 @@
->  
->  static struct cpufreq_driver cppc_cpufreq_driver;
->  
-> +/*
-> + * OSPM-set CPPC registers tracked for save/restore. A value set via sysfs or
-> + * the autonomous boot parameter is reapplied from online() across CPU
-> + * hotplug, and the firmware value is restored from offline().
-> + *
-> + * Autonomous Selection (auto_sel) is kept last so its saved value is
-> + * reapplied after the other registers that shape its behaviour.
+On Mon, Jul 27, 2026 at 2:27=E2=80=AFPM Christian Loehle
+<christian.loehle@arm.com> wrote:
+>
+> On 7/27/26 12:14, zhenglifeng (A) wrote:
+> > On 7/24/2026 6:40 PM, Christian Loehle wrote:
+> >> MIN_PERF and MAX_PERF are optional CPPC controls. DESIRED_PERF is also
+> >> optional with CPPC2 when autonomous selection is supported.
+> >>
+> >> The cppc-cpufreq target callbacks populate both limits for every reque=
+st
+> >> without checking whether the controls are implemented. cppc_set_perf()
+> >> consequently passes NULL register descriptors to cpc_write(). The writ=
+es
+> >> fail width validation and their return values are ignored, so the fail=
+ed
+> >> access paths are repeated on every target request. An autonomous-only
+> >> platform can take the same path for DESIRED_PERF.
+> >>
+> >> Check that each performance control is supported before calling
+> >> cpc_write().
+> >>
+> >> Fixes: ea3db45ae476 ("cpufreq: cppc: Update MIN_PERF/MAX_PERF in targe=
+t callbacks")
+> >> Reviewed-by: Sumit Gupta <sumitg@nvidia.com>
+> >> Signed-off-by: Christian Loehle <christian.loehle@arm.com>
+> >> ---
+> >> v2: Also added desired_perf check (Sumit)
+> >>
+> >>  drivers/acpi/cppc_acpi.c | 7 ++++---
+> >>  1 file changed, 4 insertions(+), 3 deletions(-)
+> >>
+> >> diff --git a/drivers/acpi/cppc_acpi.c b/drivers/acpi/cppc_acpi.c
+> >> index 1d3a94100491..53d09ca98f06 100644
+> >> --- a/drivers/acpi/cppc_acpi.c
+> >> +++ b/drivers/acpi/cppc_acpi.c
+> >> @@ -1963,16 +1963,17 @@ int cppc_set_perf(int cpu, struct cppc_perf_ct=
+rls *perf_ctrls)
+> >>              cpc_desc->write_cmd_status =3D 0;
+> >>      }
+> >>
+> >> -    cpc_write(cpu, desired_reg, perf_ctrls->desired_perf);
+> >> +    if (CPC_SUPPORTED(desired_reg))
+> >> +            cpc_write(cpu, desired_reg, perf_ctrls->desired_perf);
+> >>
+> >>      /*
+> >>       * Only write if min_perf and max_perf not zero. Some drivers pas=
+s zero
+> >>       * value to min and max perf, but they don't mean to set the zero=
+ value,
+> >>       * they just don't want to write to those registers.
+> >>       */
+> >> -    if (perf_ctrls->min_perf)
+> >> +    if (perf_ctrls->min_perf && CPC_SUPPORTED(min_perf_reg))
+> >>              cpc_write(cpu, min_perf_reg, perf_ctrls->min_perf);
+> >> -    if (perf_ctrls->max_perf)
+> >> +    if (perf_ctrls->max_perf && CPC_SUPPORTED(max_perf_reg))
+> >>              cpc_write(cpu, max_perf_reg, perf_ctrls->max_perf);
+> >>
+> >>      if (CPC_IN_PCC(desired_reg) || CPC_IN_PCC(min_perf_reg) || CPC_IN=
+_PCC(max_perf_reg))
+> >
+> > LGTM.
+> >
+> > Reviewed-by: Lifeng Zheng <zhenglifeng1@huawei.com>
+> >
+> > Apologize for replying to v1 before seeing v2.
+> >
+>
+> Thanks for taking a look!
+> You can blame it on me for messing up the title and forgetting to put v2 =
+there :/
 
-While that would make sense, unfortunately:
-"8.4.6.1.6 Autonomous Activity Window Register
-Writes to this register only have meaning when Autonomous Selection is enabled."
-I think restoring an inappropriate EPP/AUTO_ACT_WINDOW temporarily is okay though.
-AFAICS it has to be:
-1. enable CPPC
-2. restore a valid DESIRED/MIN/MAX
-3. restore AUTO_SEL_ENABLE
-4. if autonomous mode is enabled, restore EPP and AUTO_ACT_WINDOW
-
-> + */
-> +enum cppc_saved_reg_id {
-> +	CPPC_SAVED_EPP,
-> +	CPPC_SAVED_AUTO_ACT_WINDOW,
-> +	CPPC_SAVED_AUTO_SEL,
-> +	CPPC_NR_SAVED_REGS,
-> +};
-> [snip]
+Applied as 7.2-rc material, thanks!
