@@ -1,30 +1,30 @@
-Received: from outbound.ms.icloud.com (ms-2002b-snip4-11.eps.apple.com [57.103.74.123])
+Received: from outbound.ms.icloud.com (ms-2002e-snip4-7.eps.apple.com [57.103.74.50])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E533A25C80E
-	for <linux-pm@vger.kernel.org>; Mon, 27 Jul 2026 01:14:57 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=57.103.74.123
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5DA532BEFF6
+	for <linux-pm@vger.kernel.org>; Mon, 27 Jul 2026 01:15:00 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=57.103.74.50
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1785114899; cv=none; b=oF/E6PScWen0jvvbHlInH/DKqfxKTsaHW05uD8HevsPfcZAbp83IFGUOCRiMSKhAzBD8HVdxgDidJpUbHX8xTCDHnFxp+11CyW4dS/V3oXO+CtzqoDlndQNJlFczepCxcVz99EBTl9SXOhXl9hkw1P5QiZCN/qOKEZumeWD5F14=
+	t=1785114902; cv=none; b=Vnf0ltEwbYh7qYYYDJpusqIvbP9GcyeNguAgCXYeDWJvcL0MAdXX8LVZDXEgHJNSkuZaMic1GA1peM8OqhaGkNS5nTSHAM4SYl+31g8Ge9Hve7xIRSgK/WhdgoGPuIaL+dV164+3qGOElRkx5ieGG7Obunu4gEeE5JH1z9/WZCg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1785114899; c=relaxed/simple;
-	bh=i9IUhNeLjKAxNgsi8lY2B6DapxEsRfX9No0yKsjkA58=;
+	s=arc-20240116; t=1785114902; c=relaxed/simple;
+	bh=usYBqeip2dBJv6lU0uctHLF8zcvXqdaHUpE6zxxT7VI=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=nqdMZ6w++dLfGiYBXQYep6XCazn2FZLNSzLqIb/rLq02PwKzjHPHeK1FKTAdeGWooD2Vye9dpQFUSMf988WsJT766TxbQrUj5l47HqwhTYI1fkp5o75aDPGzdHlhqoCnM/DdZDmjdV60rF72gJ16VL4Jc+GraykHD+KFYRbZW5A=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=icloud.com; spf=pass smtp.mailfrom=icloud.com; dkim=pass (2048-bit key) header.d=icloud.com header.i=@icloud.com header.b=dKIDGIH0; arc=none smtp.client-ip=57.103.74.123
+	 MIME-Version; b=j3DAPWVgeST/dVkpoe3MN96i9RMLfHLgnN6oVjYt92Cc3MPnuFLDrnfeH8wg5Mp4XhxMiHR62iaL4zRwu3s3T22yVTmJWa1p0NZkH11taJ4j8/UAyd2wDv3z154iPky9O4AOQ6FTDr0mCAj0jrLB+CUndbaNfQLuDoXjJ0TrmCg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=icloud.com; spf=pass smtp.mailfrom=icloud.com; dkim=pass (2048-bit key) header.d=icloud.com header.i=@icloud.com header.b=LYsYs+qO; arc=none smtp.client-ip=57.103.74.50
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=icloud.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=icloud.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=icloud.com header.i=@icloud.com header.b="dKIDGIH0"
+	dkim=pass (2048-bit key) header.d=icloud.com header.i=@icloud.com header.b="LYsYs+qO"
 Received: from outbound.ms.icloud.com (unknown [127.0.0.2])
-	by p00-icloudmta-asmtp-us-west-3a-10-percent-1 (Postfix) with ESMTPS id 379D518000DB;
-	Mon, 27 Jul 2026 01:14:52 +0000 (UTC)
-X-ICL-RepId: 019fa123-9b24-795d-96e4-da8bf2ead925
-X-ICL-Out-Info: HUtFAUMEWwJACUgBTUQeDx5WFlZNRAJCTQhPAEMGXAVeC1YBXwFLVxQEDloDVA5cBBcbXwJCH1sVSzhaDlsERxQXG1wAFw1WTVAbXwJCDxwTVhUTH1RWA0IZEFYBWFZdBU0aXBhZDxwdSlZaDlsERxQXG1wAFxtGAgQjAl8ARQJeCVYBMBcPVk1QG18CQg8cE1YVEwBeDw9MC0gBWwdcAEcJSQJeBlIcRgtJBFQDRgNBFA5aA1QOXAQXG18CQh9bFUs4Wg5bBEcUFxtcAAlLRglJHQ4EVAddBV0=
-Dkim-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=icloud.com; s=1a1hai; t=1785114897; x=1787706897; bh=LKUvWmlm8qW9R0rdKSrLgcPx21c4L2fSBbpnVUL3Yqw=; h=From:To:Subject:Date:Message-ID:MIME-Version:x-icloud-hme; b=dKIDGIH0C8CK9KylerKj5vF28LD/nOuxGaKEbQ7OO3PEbCfeRW4GKFNa3bXslgOkUC4Ds09IL9Q6i0OlYnTWuCxTC88J2OVbtwmDjHF2K8VPV2zh/X5icgd4bMajTH/pdkbzTCYJbvzIcxEU8hcO9/oDPclshP4il+X84DE85nVhb0vuI4cSMxOBVcBngyEVAjHonsujOu2g+qHxDD4a2aLqrGaEYKb3BMtsp85grYwSyYR12jqF+Y+wKwmOgHFcF9YQAf4BMePk9emNNKpuy8sk3Cl/AVxMC8BmbAvpIb6sRWIHlE3451lfDbihCWDkdF6N5ipFr+0eZ8nYoyhTGw==
+	by p00-icloudmta-asmtp-us-west-3a-10-percent-1 (Postfix) with ESMTPS id 97C4B18000E0;
+	Mon, 27 Jul 2026 01:14:55 +0000 (UTC)
+X-ICL-RepId: 019fa123-a483-7ab7-bd66-c31df4e5e1dd
+X-ICL-Out-Info: HUtFAUMEWwJACUgBTUQeDx5WFlZNRAJCTQhPAEMGXAVeC1YBXwFLVxQEDloDVA5cBBcbXwJCH1sVSzhaDlsERxQXG1wAFw1WTVAbXwJCDxwTVhUTH1RWA0IZEFYBWFZdBU0aXBhZDxwdSlZaDlsERxQXG1wAFxtGAgQjAl8ARQJeCVYBMBcPVk1QG18CQg8cE1YVEwBeDw9MC0gBWwdcAEcJSQJeBlIcRgtJBFQDRgNCFA5aA1QOXAQXG18CQh9bFUs4Wg5bBEcUFxtcAAlLRglJHQ4EVAddBV0=
+Dkim-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=icloud.com; s=1a1hai; t=1785114899; x=1787706899; bh=BBT7fFRPuQ3q9mMuxefKECo62xh/OLvWDwewqKkovL0=; h=From:To:Subject:Date:Message-ID:MIME-Version:x-icloud-hme; b=LYsYs+qONEm6Anb2dwnDAFj1O+cJFcxeIUwBuim/pxXv0LYSz3LdEZ3FG+6QOfWbFlizdk/2qSsg+DG56eNhbzbb9EZ8LIB/QMbth/PKdUSVzVczCscWmWYopNqLFR5MOciuVuYWMjfVIBHfR6mDTzLhbe+biZU9XIIA8U3x8IbJDKxMwRmJvdUZDursIf9DiAOztX47OxW7h1Dq9wol6lPkMNw5cJsV/yJ6riPCfSfvq6StnIWLnz3BGabJhFS6i8R2uxCi4Q+bfF91zZgstHisGr6/CrN0eDhD+hujt1U/JU7BBE58tE3pPyeltsNZybQ/Dv8e1gkuP944G9Spow==
 Received: from bigre.localdomain (unknown [17.57.154.37])
-	by p00-icloudmta-asmtp-us-west-3a-10-percent-1 (Postfix) with ESMTPSA id 12E0218000C2;
-	Mon, 27 Jul 2026 01:14:49 +0000 (UTC)
+	by p00-icloudmta-asmtp-us-west-3a-10-percent-1 (Postfix) with ESMTPSA id 6BC2B18000D5;
+	Mon, 27 Jul 2026 01:14:52 +0000 (UTC)
 From: Vincent Cloutier <vincent.cloutier@icloud.com>
 To: Sebastian Reichel <sre@kernel.org>
 Cc: Hans de Goede <hansg@kernel.org>,
@@ -38,9 +38,9 @@ Cc: Hans de Goede <hansg@kernel.org>,
 	devicetree@vger.kernel.org,
 	linux-kernel@vger.kernel.org,
 	Vincent Cloutier <vincent@cloutier.co>
-Subject: [PATCH v4 10/11] power: supply: max17042_battery: Honor MAX17055 charge voltage
-Date: Sun, 26 Jul 2026 21:13:08 -0400
-Message-ID: <20260727011319.621794-11-vincent.cloutier@icloud.com>
+Subject: [PATCH v4 11/11] dt-bindings: power: supply: max17042: Allow generic power-supply properties
+Date: Sun, 26 Jul 2026 21:13:09 -0400
+Message-ID: <20260727011319.621794-12-vincent.cloutier@icloud.com>
 X-Mailer: git-send-email 2.55.0
 In-Reply-To: <20260727011319.621794-1-vincent.cloutier@icloud.com>
 References: <20260727011319.621794-1-vincent.cloutier@icloud.com>
@@ -51,150 +51,55 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzI3MDAwOSBTYWx0ZWRfX2YRL9SPxL/7g
- bT0UNCMk24ZY8qmKxx4owvZbCggShFC9NyUimS3cRAK8/XlRYLiMQlL7Ua4aBrpNQ+QQZ8G/fkd
- HCv7gzO8fhF8eUYWZ66MpqAn5tNyO3AaPgRwDs5aBB+fi3ujx+e0IB4IvTeAs4iqey5xq0vS1b0
- LDHwMRuMd/A58DX6s+GHPaQwNuw+zcR1ldHaB5jBCFVZueheX7MDpPFNDGLNozxC63kEsbovqRA
- mxIBWy0at8CWLVUvaNCX5q1jmv5EncFb9Jt/AhGGgixqeD/yRAx/UQLZqcAn5O0NeOEpUCIOQM1
- H0Po/+FXurTKwQoksvUl1GvtzPzuyUIlBaMuUsDqNx4MWOycfC6FjULHKc6kQ8=
-X-Proofpoint-ORIG-GUID: sYqcHoX6o1SSCG6-lubS-he2-KS9WVZ8
-X-Proofpoint-GUID: sYqcHoX6o1SSCG6-lubS-he2-KS9WVZ8
-X-Authority-Info-Out: v=2.4 cv=bY1mkePB c=1 sm=1 tr=0 ts=6a66b10f
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzI3MDAwOSBTYWx0ZWRfX6+hGsenUsrXi
+ T2ZCe/RpAEOy99RArE/sRHiVc9+tpClJrjHzQWBNc6fsgbSlyPsZa6SZ4arNbAM7EN0X98oDRtM
+ RqNQ8dh9FlIedtjtwA8U/OEk5rFri0iibTl2CgnRvyCS+W3H6TfAwhgHx4gpStqQdDjR7F64VQY
+ f9WToT5W/vGDPm/PYbfYg5vFXyNnVvp7UN6eV5O75Do/6036E396Z96GxvPgz4BhA/H6d8u4Sz2
+ h0YHDE7qbupj0420p6k0MDrSCZ8xrhLmD43h5OISSXjrP49i5+RlMssCmJjcuV4L9nN0A8Pu+SX
+ Y3icWhPFvJydY5qabv31SiV+z5bgjmxRUQsCSW03X3S9u5D5DUuDam5NZsk57k=
+X-Authority-Info-Out: v=2.4 cv=G54R0tk5 c=1 sm=1 tr=0 ts=6a66b111
  cx=c_apl:c_pps:t_out a=qkKslKyYc0ctBTeLUVfTFg==:117 a=RAioF0-LDSMA:10
  a=x7bEGLp0ZPQA:10 a=5j__JWfIoqoA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=Y7L-nm5eWvuGTx37qJkA:9
+ a=kTEV35riwKV6YT2q8aQA:9
+X-Proofpoint-GUID: JJRJZt4ZRn0m_Mv-bfHBiduB5XgCJYfL
+X-Proofpoint-ORIG-GUID: JJRJZt4ZRn0m_Mv-bfHBiduB5XgCJYfL
 
 From: Vincent Cloutier <vincent@cloutier.co>
 
-MAX17055 ModelCfg.VChg selects the charge-voltage range used by EZ Config.
-Consume voltage-max-design-microvolt from monitored-battery and set VChg
-only when the value is strictly greater than 4.275 V. Reject an explicit
-zero voltage and preserve the register when the property is absent.
+The MAX17042 family binding references the generic power-supply schema,
+but additionalProperties only recognizes properties declared directly by
+this schema.
 
-Update only the VChg bit and verify its read-back so unrelated ModelCfg
-fields remain intact. Treat a VChg-only override as an accumulator change:
-read effective DesignCap and dQAcc, derive and verify the matching dPAcc,
-then request model refresh. This keeps voltage-only firmware descriptions
-coherent with the selected charge-voltage range.
+Use unevaluatedProperties so generic properties such as monitored-battery
+are accepted while unknown properties remain rejected. Remove the local
+power-supplies declaration because it is already inherited from
+power-supply.yaml.
 
 Assisted-by: OpenCode:gpt-5.6-sol
 Signed-off-by: Vincent Cloutier <vincent@cloutier.co>
 ---
- drivers/power/supply/max17042_battery.c | 42 +++++++++++++++++++++++--
- 1 file changed, 39 insertions(+), 3 deletions(-)
+ .../devicetree/bindings/power/supply/maxim,max17042.yaml      | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
 
-diff --git a/drivers/power/supply/max17042_battery.c b/drivers/power/supply/max17042_battery.c
-index db3b1bc5388f..6278e7c89bdd 100644
---- a/drivers/power/supply/max17042_battery.c
-+++ b/drivers/power/supply/max17042_battery.c
-@@ -66,6 +66,7 @@
- #define MAX17055_DPACC_FACTOR		44138
- #define MAX17055_DPACC_VCHG_FACTOR	51200
- #define MAX17055_FSTAT_DNR_BIT		BIT(0)
-+#define MAX17055_VCHG_THRESHOLD_UV	4275000
- #define MAX17055_DNR_POLL_US		10000
- #define MAX17055_DNR_TIMEOUT_US		2000000
- #define MAX17055_INIT_RETRY_DELAY_MS	10000
-@@ -83,6 +84,7 @@ struct max17042_chip {
- 	int    task_period;
- 	bool   enable_current_sense;
- 	bool   enable_por_init;
-+	bool   enable_vchg_override;
- 	bool   init_complete;
- 	bool   hib_restore_pending;
- 	u16    hib_cfg;
-@@ -879,7 +881,8 @@ static inline void max17042_override_por_values(struct max17042_chip *chip)
- 		max17042_override_por(map, MAX17047_V_empty, config->vempty);
- 	}
+diff --git a/Documentation/devicetree/bindings/power/supply/maxim,max17042.yaml b/Documentation/devicetree/bindings/power/supply/maxim,max17042.yaml
+index 242b33f2bcba..b2e5ddc5c580 100644
+--- a/Documentation/devicetree/bindings/power/supply/maxim,max17042.yaml
++++ b/Documentation/devicetree/bindings/power/supply/maxim,max17042.yaml
+@@ -67,13 +67,11 @@ properties:
+       Voltage threshold to report battery as over voltage (in mV).
+       Default is not to report over-voltage events.
  
--	if (chip->chip_type == MAXIM_DEVICE_TYPE_MAX17055)
-+	if (chip->chip_type == MAXIM_DEVICE_TYPE_MAX17055 &&
-+	    !chip->enable_vchg_override)
- 		max17042_override_por(map, MAX17055_ModelCfg, config->model_cfg);
- }
+-  power-supplies: true
+-
+ required:
+   - compatible
+   - reg
  
-@@ -914,7 +917,19 @@ static int max17055_override_battery_values(struct max17042_chip *chip)
- 			return ret;
- 	}
+-additionalProperties: false
++unevaluatedProperties: false
  
--	if (!config->design_cap && !config->dqacc)
-+	if (chip->enable_vchg_override) {
-+		ret = regmap_update_bits(map, MAX17055_ModelCfg,
-+					 MAX17055_MODELCFG_VCHG_BIT,
-+					 config->model_cfg &
-+					 MAX17055_MODELCFG_VCHG_BIT);
-+		if (ret)
-+			return ret;
-+
-+		usleep_range(1000, 2000);
-+	}
-+
-+	if (!config->design_cap && !config->dqacc &&
-+	    !chip->enable_vchg_override)
- 		return 0;
- 
- 	ret = regmap_read(map, MAX17042_DesignCap, &design_cap);
-@@ -928,6 +943,10 @@ static int max17055_override_battery_values(struct max17042_chip *chip)
- 	ret = regmap_read(map, MAX17055_ModelCfg, &model_cfg);
- 	if (ret)
- 		return ret;
-+	if (chip->enable_vchg_override &&
-+	    (model_cfg & MAX17055_MODELCFG_VCHG_BIT) !=
-+	    (config->model_cfg & MAX17055_MODELCFG_VCHG_BIT))
-+		return -EIO;
- 
- 	if (!design_cap || !dqacc)
- 		return -ERANGE;
-@@ -1248,9 +1267,11 @@ static int max17042_apply_battery_properties(struct max17042_chip *chip,
- 	struct device *dev = chip->dev;
- 	bool have_design_cap;
- 	bool have_ichgt_term;
-+	bool have_vchg;
- 	u16 design_cap = 0;
- 	u16 ichgt_term = 0;
- 	u16 dqacc = 0;
-+	u16 model_cfg = 0;
- 	u64 data64;
- 
- 	if (!info || chip->chip_type != MAXIM_DEVICE_TYPE_MAX17055)
-@@ -1260,7 +1281,8 @@ static int max17042_apply_battery_properties(struct max17042_chip *chip,
- 		info->charge_full_design_uah > 0;
- 	have_ichgt_term = chip->enable_current_sense &&
- 		info->charge_term_current_ua > 0;
--	if (!have_design_cap && !have_ichgt_term)
-+	have_vchg = info->voltage_max_design_uv >= 0;
-+	if (!have_design_cap && !have_ichgt_term && !have_vchg)
- 		return 0;
- 
- 	if (have_design_cap) {
-@@ -1293,6 +1315,15 @@ static int max17042_apply_battery_properties(struct max17042_chip *chip,
- 		ichgt_term = (u16)data64;
- 	}
- 
-+	if (have_vchg) {
-+		if (!info->voltage_max_design_uv)
-+			return dev_err_probe(dev, -EINVAL,
-+					     "battery design voltage must be positive\n");
-+
-+		if (info->voltage_max_design_uv > MAX17055_VCHG_THRESHOLD_UV)
-+			model_cfg = MAX17055_MODELCFG_VCHG_BIT;
-+	}
-+
- 	config = chip->config_data;
- 	if (!config) {
- 		config = devm_kzalloc(dev, sizeof(*config), GFP_KERNEL);
-@@ -1306,6 +1337,11 @@ static int max17042_apply_battery_properties(struct max17042_chip *chip,
- 	}
- 	if (have_ichgt_term)
- 		config->ichgt_term = ichgt_term;
-+	if (have_vchg) {
-+		config->model_cfg &= ~MAX17055_MODELCFG_VCHG_BIT;
-+		config->model_cfg |= model_cfg;
-+		chip->enable_vchg_override = true;
-+	}
- 
- 	chip->config_data = config;
- 	chip->enable_por_init = true;
+ examples:
+   - |
 -- 
 2.55.0
 
