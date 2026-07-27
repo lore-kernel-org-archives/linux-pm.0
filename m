@@ -1,30 +1,32 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 45BE53A8723;
-	Mon, 27 Jul 2026 13:05:08 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id ED30140A95F;
+	Mon, 27 Jul 2026 13:05:09 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1785157510; cv=none; b=oc/wfTZnqMLRMN+pncd3VpSqfobD8/4BEvkiHNyjoorDCB3crD6jE+cBz7G5Va29ExGd1AvPpono1bWbGi3ItW49IRugnuB4Hm97lPCajbFNGfQp4INDpgquKr2EbrJL2+z+e1Si47StwnXMU0HyetpMlojS7/sOjspSvAEVs+M=
+	t=1785157511; cv=none; b=UTu3+HNnW8iv+hzq4l2Wquq/wPZ/DD+emTIrNr0tSt7Zdzw/zgo8yDof7vc1kj+CkR4tClh7tn55DNE4vBgxqe3zBatSNKdKEUydlbi1So2YG9zbwmGRW71DPIAWzMqbAklbEaAWMGOl+W6X9/oC8uup1TZJi/kSpDBfTMESGV0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1785157510; c=relaxed/simple;
-	bh=6CksDhHD4eKRMsWogMPUMLna+oUT8V4fEyevu0kt9uw=;
+	s=arc-20240116; t=1785157511; c=relaxed/simple;
+	bh=NXNzhGWs5g5rocltNcpUXX2DuyrxUwfBBf2B9E0AG+A=;
 	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
-	 MIME-Version:Content-Type; b=VYdQfKrql2Jts9eONBXn08nD6sMW3QRR17pVBM0xEMMUmyPSNlGxPmvuTSbHxH/pJuqbQM7IvAeq81NV+zerVrXkJwMGNG+F67wW1utRI0CRkkKHiVcDVnbSqwjOUGPCtrbYJZo9aixiJWE/vjFocM0CuO1SWKSr5MYBqGbSPqA=
+	 MIME-Version:Content-Type; b=S1PANPVYAnHP3L+G/2DURJZDR07dULocX+kV6K9GqD5qZ+M0sD1+o214zAMvxd82HNd4hnFYk5TSIQvUc1hPDHa1dTNBSGMy55irh6m3hBcfUCwUCsa4sCPbjrlnZlHGnNhIOf11YUt5dMDdL83kUZN8zn1EbbpH1v0Mcs49rVk=
 ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id A40071F00A3A;
-	Mon, 27 Jul 2026 13:05:08 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id B6AEF1F00A3D;
+	Mon, 27 Jul 2026 13:05:09 +0000 (UTC)
 Received: by venus (Postfix, from userid 1000)
-	id 8796618090B; Mon, 27 Jul 2026 15:05:06 +0200 (CEST)
+	id 8D0EF18090C; Mon, 27 Jul 2026 15:05:06 +0200 (CEST)
 From: Sebastian Reichel <sebastian.reichel@collabora.com>
-To: Sebastian Reichel <sre@kernel.org>, 
- Babanpreet Singh <bbnpreetsingh@gmail.com>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20260726072206.7-1-bbnpreetsingh@gmail.com>
-References: <20260726072206.7-1-bbnpreetsingh@gmail.com>
-Subject: Re: [PATCH 0/2] power: supply: sbs-battery: Fix the shared serial
- number buffer
-Message-Id: <178515750651.21558.7984059994326193856.b4-ty@collabora.com>
+To: Sebastian Reichel <sre@kernel.org>, Jianing Li <m13940358460@163.com>
+Cc: Iskren Chernev <me@iskren.info>, Krzysztof Kozlowski <krzk@kernel.org>, 
+ Marek Szyprowski <m.szyprowski@samsung.com>, 
+ Matheus Castello <matheus@castello.eng.br>, linux-pm@vger.kernel.org, 
+ linux-kernel@vger.kernel.org
+In-Reply-To: <20260727064825.948-1-m13940358460@163.com>
+References: <20260727064825.948-1-m13940358460@163.com>
+Subject: Re: [PATCH v2] power: supply: max17040: propagate register read
+ errors
+Message-Id: <178515750656.21558.5278453766547447375.b4-ty@collabora.com>
 Date: Mon, 27 Jul 2026 15:05:06 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
@@ -37,28 +39,22 @@ Content-Transfer-Encoding: 7bit
 X-Mailer: b4 0.14.3
 
 
-On Sun, 26 Jul 2026 07:22:04 +0000, Babanpreet Singh wrote:
-> The serial number of every sbs-battery instance is formatted into one
-> file-scope buffer, so concurrent reads on two batteries can make one
-> battery report the other's serial number. Patch 1 gives each device its
-> own buffer.
+On Mon, 27 Jul 2026 14:48:25 +0800, Jianing Li wrote:
+> max17040_get_vcell() and max17040_get_soc() ignore errors returned by
+> regmap_read().  When an I2C transfer fails, the uninitialized register
+> value is converted and reported to userspace as a valid voltage or state
+> of charge.  The polling worker can also replace the cached state of charge
+> with the bogus value and emit a spurious change event.
 > 
-> While rewriting that sprintf() call it became apparent that the
-> conversion is also the only W=1 warning in this driver: the value is
-> carried in an int and only its negative half is rejected, so gcc cannot
-> prove that four hex digits fit the five-byte buffer. Patch 2 casts to
-> the register's actual width. It is a separate patch because it is a
-> distinct (and purely cosmetic) change - please just drop it if you would
-> rather not carry it.
+> Propagate read errors through the power supply get_property callback and
+> keep the last valid cached state of charge when polling fails.
 > 
 > [...]
 
 Applied, thanks!
 
-[1/2] power: supply: sbs-battery: Use a per-device serial number buffer
-      commit: 6027892925b8d19d2245c2d077e2ae35b49cc2b1
-[2/2] power: supply: sbs-battery: Bound the serial number conversion to 16 bits
-      commit: 645448becbd0b52216c6741897dd412f9ff1b925
+[1/1] power: supply: max17040: propagate register read errors
+      commit: 659cc3d8d5ef246263873fce72c8cadeeed073cc
 
 Best regards,
 -- 
