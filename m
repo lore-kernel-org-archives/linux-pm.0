@@ -1,444 +1,236 @@
 Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B7A873F7A84
-	for <linux-pm@vger.kernel.org>; Mon, 27 Jul 2026 09:57:55 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1785146277; cv=none; b=Y+qIjvyQYlqiME6IgwXe5WT77+3sZrBBeimq2X7Jl3F9LZvef6YshyuEUKypb99ixPxHuKMxR5GRWVklJcxQgsNEUqslc4iejZJKy1cZf7zje25KwjrsWMFe+kT6/XYwqCVo3NdehphYTJDJkSxbEhCZ1eiyjJf82efTiORN1Ic=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1785146277; c=relaxed/simple;
-	bh=G7OuZnFzXRxi+fDAYiRyDUKp+x0C6VA6eN1JvMlufl4=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:To:Cc; b=cbY/xaxiI3uTuu1ikTB6n3ZyPg5FiZwj0+pDh8nl3+JIOe5gUmDhTDtJ3Xr3+gGCn9gvOxwD2cT89uGCk3SjTxfdi68UAfKcH0fDHKMKf0BIFyIIrq6bRhklNN97TIoHHbWcDYh8UBU/D5OeTq/RsXBQIUQk7SVwpYGUKsbunVs=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=I5+4aNDG; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=SLQPlQ+3; arc=none smtp.client-ip=205.220.168.131
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8D71436F901
+	for <linux-pm@vger.kernel.org>; Mon, 27 Jul 2026 10:01:05 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=205.220.168.131
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1785146466; cv=pass; b=T6DkfDX7uj9pXv/Ee/yiUThguqTnTARdfNjyqwfk6GimsX8k6NzDBLrLwJfqs3gAORvmwGddlSPXG8g/vUHx0QJqWmVciJ1Z6NVSSi6GvXjNCInkNVgz63+3K68uMC4PUq6SdngDhaT9r58Pz6Y9mPcTccfPD4Z2MFOwn5eYZA8=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1785146466; c=relaxed/simple;
+	bh=4IkRrpqM8951uHU9fku6S7khAgR8gubGxVaPfcIAafU=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=LMhewqfmqvZFfTE1MAI1LgVPmDXS/3PZBBzZAi8Cq2NAGs3Kds/9vEb6snxqogprFwWGTr7bbVH7s58lpdbPvLRV5johyWQ7Q+pUZyr0Z0v6Q5wq9EJiqEhD3nMFdUrwQc1xr7GsdXY03bZe/I2e4LaCq/4n7a0SPypo89lQQbY=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=chWU9KHW; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=C9RwnHzK; arc=pass smtp.client-ip=205.220.168.131
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="I5+4aNDG";
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="SLQPlQ+3"
-Received: from pps.filterd (m0279863.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 66R9Wvrn3490831
-	for <linux-pm@vger.kernel.org>; Mon, 27 Jul 2026 09:57:55 GMT
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="chWU9KHW";
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="C9RwnHzK"
+Received: from pps.filterd (m0279867.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 66R9WvAC278847
+	for <linux-pm@vger.kernel.org>; Mon, 27 Jul 2026 10:01:05 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:content-type:date:from:message-id
-	:mime-version:subject:to; s=qcppdkim1; bh=cTfkRuh1qMz6daNEBghoLo
-	xTzu0WE8KxCU7LeuEabmM=; b=I5+4aNDG3QRbCXqL80MbnJjywj9Jrnz1zXpdSc
-	hyfxnrWHR1+9c2Rxgw5uEjAd9NRO05v9bEC9r7Z17VXOZVMtMYF/UTH4ojUomfV5
-	bJ4qnItwyxJRV4esxyRIcgT8FCB9cMVQ9jLmDES0h5esalX8Bn78TiQpWfcTaUV9
-	4qFU80/l3uB9t13YBGGhjD/O58PEHe5JC0rCL1TXfkaVMijFd23eC5ZIl9QvrWsj
-	pML/9uZya91IPI/TP9WVZNe+jakXNHXpJq02aV0iuGzUv4/84qVW5BvT/K0xY/Mw
-	q8Wt2mqJxKrryqWC73ZeaKckmIIqi8GgjdeUs1pCnTkIy4NA==
-Received: from mail-qt1-f198.google.com (mail-qt1-f198.google.com [209.85.160.198])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4fngystwba-1
+	cc:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
+	KmDiEXxACfljywIFz1W9JSRHmKR6p36Yja9EDW/O9BQ=; b=chWU9KHW7HHUtuwi
+	ckvJe60dImllbKRrEXpmMbo43YJLOwI6raHkUQD+DgAlCs6stQKakPt8Ji7/+xt8
+	pUi9OZPOBY10f61PgprMwz3cRIxeWuad4Ip1Fell9knLu6U5KMIOnHDRV4XF8k+g
+	zDxgz0SvApLDoFIzh2s1jnhFj6oAyxjCfgQg+mf+sNcMy/SwGahJ7goATVTbU+8z
+	pKvxnxCtzHii4tkT3y//ITKDoMpqG35gjDeDwGh3hV6YvAXuAHwSDQLlRIntkgva
+	hmbzqaOitfFQg6cDCQTGQg/NJUuVhkRV/flLziRJBj2/AqVFm8u0DbGVKqIpbABQ
+	ooAPsg==
+Received: from mail-qv1-f72.google.com (mail-qv1-f72.google.com [209.85.219.72])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4fny9whdn6-1
 	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Mon, 27 Jul 2026 09:57:55 +0000 (GMT)
-Received: by mail-qt1-f198.google.com with SMTP id d75a77b69052e-52827090cc5so32826031cf.0
-        for <linux-pm@vger.kernel.org>; Mon, 27 Jul 2026 02:57:54 -0700 (PDT)
+	for <linux-pm@vger.kernel.org>; Mon, 27 Jul 2026 10:01:04 +0000 (GMT)
+Received: by mail-qv1-f72.google.com with SMTP id 6a1803df08f44-8eeba1d9e47so41136846d6.2
+        for <linux-pm@vger.kernel.org>; Mon, 27 Jul 2026 03:01:04 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1785146464; cv=none;
+        d=google.com; s=arc-20260327;
+        b=LyYSYfBHKhnacH0bX0rPPdZL23p9ltyHt2nD0dDJ+CXcKpH1nbw5USwMmall2Abt2V
+         Zr+qGCsCX/kPWrHazcNhjN/Jd2cip0EzFRMkCBgL1x0ecw8wDOUebT8kT04/CkJYH2nV
+         8YGoe/tsk4tC8hpiSEhwcCkUoIhXy6FT5kEpEZeaXvVim5i7JyIhXBAmbvUg948VNezZ
+         Hsh0WZh3F+2S6cfSznFKUq9M9yucY0r3FG7S4ecYn2Lm9d6uQEZrd25/+jDB9nKZVDBS
+         UioBHsUI1uEDv1FZvyh7+3ZxgJPyWPrkuvQBnNl8Dp5NOdJd4KJtDZP2bSQvFiXXu9wE
+         LWIQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=KmDiEXxACfljywIFz1W9JSRHmKR6p36Yja9EDW/O9BQ=;
+        fh=xdL6cKG0m1iDKT0fwN8LMzqRJqYbgcZHhINukx9+7lk=;
+        b=BQcoyHaIE7JUWDO4MoOnaImHBKx2kddNNiXNPtOWuuicsfVfpjMOPPSTgEhOdHqzF3
+         3lmoNT11jy3Gm7QynXE2sGXxmE4udXp5sIAtI8LEE5gtQGYTJYqrUN5MRjGqd5MopIC9
+         M7BikrVxzeP/mO5zLxz4cDLTQVG91guwkd1zmq98bFccFqSvm0J82FKL9AYPPnS3sHfQ
+         XoIyH62oDxSwdl/Th/4vzvw3VzpIWtIErj0IeGi7BMkotO09xrsvPydLOMJPKvb1ZlME
+         MEmv4J3PVm69nTHmfAlA55Z57b0FJQElRu1dx99RQcMd2llzLnZ4UHx6ugGZSnptU0J4
+         6g1A==;
+        darn=vger.kernel.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1785146274; x=1785751074; darn=vger.kernel.org;
-        h=cc:to:message-id:content-transfer-encoding:content-type
-         :mime-version:subject:date:from:from:to:cc:subject:date:message-id
-         :reply-to:content-type;
-        bh=cTfkRuh1qMz6daNEBghoLoxTzu0WE8KxCU7LeuEabmM=;
-        b=SLQPlQ+3zwpQS5a6eIrLxfC2pJ7AFOd7yiYJRjKzz9GLvIBaqjLdrKej136AyD39Ag
-         cRn+drgHpl0J60pBKGYIZMvaD/VcDKcg35GymRl3aNmiA1lKF+OfJ3iO391vd5sqZUV8
-         mrY5YUCXww1okohwukGpS1z74wcXtVAnbdRZMJjE8jm/Ulo5+JIueU1DO9gH4MbDiP3F
-         wWWQiUbWQh+o/oh59iexLGY615+SPWPMDaUdSm3RwzOZv/ByfkXQJZqYYAR9rN0mh4IQ
-         EyEL2Ow9QpvuKDhimXaLx5Tjk3t9JcaR+WPaa3y7mDtoTXO8FoxSMSiwMfcniUlo4Xwo
-         G+pw==
+        d=oss.qualcomm.com; s=google; t=1785146464; x=1785751264; darn=vger.kernel.org;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=KmDiEXxACfljywIFz1W9JSRHmKR6p36Yja9EDW/O9BQ=;
+        b=C9RwnHzK05Jv24esizZ9a884xhfdrlKk39rbRpOP/i7OieQBn8+kSIVsleSQZ6QwDf
+         M5HNUcpMeMhu6SmKX+nrfS2vtP9Tkg0pg+2T+olWQ0BdXD5eC9+VL1A+bQxyPwIMVoEb
+         T4BwTcuZIhCfsxiW1MaaMYNEFCPME5S9kie4gJFyEb4jF7/vNGDQmoIirUGTEzgnS5pa
+         Xnr1euw/OllZJ7qlaWzTmbOrXh6occJspwcRTZbXS4tk40DE3/GaEYKjN7cIne4dn0E2
+         ufMuee/nYzVkOB0tRUCoNQtDUgdTiO4KCZjdV+FGoZsmRjDXHMBlEOkdqPdDpzSxLcGh
+         QhHQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1785146274; x=1785751074;
-        h=cc:to:message-id:content-transfer-encoding:content-type
-         :mime-version:subject:date:from:x-gm-gg:x-gm-message-state:from:to
-         :cc:subject:date:message-id:reply-to:content-type;
-        bh=cTfkRuh1qMz6daNEBghoLoxTzu0WE8KxCU7LeuEabmM=;
-        b=qW0M4tVawCcy382tddp/R3w0xEXu7vaeNgtHAd1Hr2LVkrZNzK89HBBvKS4cdWacYr
-         2HYbSZYyTRmhoLnwI4XcCRIJeKcw3vhrcbXkruvUt+S6ocTCWdGXlaMZm94P0T8wojbF
-         Szv0slVdsbzZU45A0R7PgTsk2sZ0BeRNQFb+iwAJd1gTLp/4V75A5bVk0w8j6AdIhOoy
-         1SW0KVWCHY++jiBZtSgJgZ8xppFv1JND0rd5LaAXcBN3tPW+5F8G6nt+gTwt7gayFuot
-         WYuKSFA3LFa57Hc+NqTbyay1m5KVM4P0qCeRPKRy71BCCx4goRbzPOspjSEqJY9t/Xb/
-         5AZA==
-X-Gm-Message-State: AOJu0YzRAQE0URwOoZbPVdPvMJWLd7QQ1kUYt+guMpp32uOH2Jtw9R9H
-	vqUMuX8kjCdf4EBoyfStGJxroEgR1eedto0uQCnf6sSlmAPw/inPfM0tMGfuJlgsVwESTWoeRIn
-	saIzX0LPaJwzspy1oBmegd2Y0EGgvcPR67ecp3+o2CnRGWS8aE2YEV3pPP6BsIQ==
-X-Gm-Gg: AR+sD13BDcVitpXK+M+evi1P/uBppUhMo8/vwaQvZDTFvcSw8JqoAqrlEClnIN5xikf
-	n3VZz+gHnwioDLBh0pgbZ1mkKVqGlwJmhN8V9ZifWrEGaA5gi6P9cUAKDsKp3YYQxZAVqsQF7ve
-	HPMdoD/Zdos8zsQ8ORpjr9j4jwJBqsCtu0OltCltlS3Fp9ceqIROnveUdH68FOQCdZZJXxMDE2F
-	aHWG4CPpjF3kszx9RNXuB4Oxguv4Ju5c/ZKWZLhBtmnAn4CdktyRxVg6i0TFEMAeemngZNKsKQZ
-	9ye3kRyH7gbwfTidxa5fAuLRIhtGqc9zhGpDohXKNt56dZUxEZ2vE9F/NcuLmnXzWVYiAT34V4v
-	ahvFHMLRh73IMJ/+M04rIMiy7RE0B
-X-Received: by 2002:ac8:6f11:0:b0:528:ce0:e9f8 with SMTP id d75a77b69052e-5295d270a04mr106677591cf.3.1785146273857;
-        Mon, 27 Jul 2026 02:57:53 -0700 (PDT)
-X-Received: by 2002:ac8:6f11:0:b0:528:ce0:e9f8 with SMTP id d75a77b69052e-5295d270a04mr106677341cf.3.1785146273405;
-        Mon, 27 Jul 2026 02:57:53 -0700 (PDT)
-Received: from brgl-qcom.local ([2a01:cb1d:dc:7e00:1449:2d40:6dd2:20d])
-        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-c1c32f19c4csm611477266b.63.2026.07.27.02.57.51
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 27 Jul 2026 02:57:52 -0700 (PDT)
-From: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
-Date: Mon, 27 Jul 2026 11:57:38 +0200
-Subject: [PATCH RFC] power: sequencing: rename pwrseq_power_on/off() to
- pwrseq_vote_on/off()
+        d=1e100.net; s=20251104; t=1785146464; x=1785751264;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=KmDiEXxACfljywIFz1W9JSRHmKR6p36Yja9EDW/O9BQ=;
+        b=FcPLxg84GDJAKVhdcpSePp5ikVkTDXhxQALZk20A5LiYaMaWR+qc+bz2sfiOKceHdH
+         LtaXduK9AHciadezWU8oIdznTgw/BOuXOVWvLLkkbYMS0/T1y+M7+eIoMvJYD8ihCkTq
+         cci4GFOjyMatpRfX73s99W14OUnUcDna2v2VyUIzxhj48+wIMfD7ZN/8ikLHYCoqTL4B
+         c91mjAhSVNGnFGEyKefwhu3THSouUfyVsKvc8tdWrpgq/yb458Hg9u99CJecEKczyFDg
+         kAXB8f+CBRQOwdzoq4Mq4tY5aVN094YaMkug7rzuevOg6maYAUnhzehO5b2gVLjnYNOe
+         AVXw==
+X-Forwarded-Encrypted: i=1; AHgh+RpDroGSHmdKfGtnx6QhAfMh22kA/bPgjE3J4Am6yteoWXXVEzuVvYyPmo0kndMMBrp9lnsnhRfo/A==@vger.kernel.org
+X-Gm-Message-State: AOJu0YxIx738Zzld7A6TNDSgUFBBl74iaMYx+8OS7F+Y5tOxyKqGAaKl
+	TnrU+l8AF7gS0Cw9vTJfAZ9FzWKzBBPjyvWNZpl195QC1mOOp2rmZgJXNHUmIxGP9CRWzgcbHhi
+	Q8FLgcxO7qBg8A0IQLzyFsOIGWaBmp90hE936DAL+fCUTfCpW9K+K155pZ7RVIiboPkRqP/gN48
+	/azDbHjWx2CoY7y+2cG9dWx8nA4oYVzzAbsXUo
+X-Gm-Gg: AR+sD10FAfz5T1TcLhplNYqGSVdC+/h9Q2PQud5R85gTfWYrR46XMeUsmiw+UsXnZrQ
+	BtcqVT2+5ijBGbnh8pIRz7S+gq+Z0A3TQ2g8owEys2YV4r/o/ysCJZFsUmUUwXUWXJ41fMA+NZj
+	UTKJXAsT74BOVQQruMtwggCOP00psQfVC8HascjMEP38zLHUVSF52D9HkhNQ==
+X-Received: by 2002:a05:6214:5a09:b0:8e8:b302:8afb with SMTP id 6a1803df08f44-907ec5e5c77mr86121116d6.0.1785146463816;
+        Mon, 27 Jul 2026 03:01:03 -0700 (PDT)
+X-Received: by 2002:a05:6214:5a09:b0:8e8:b302:8afb with SMTP id
+ 6a1803df08f44-907ec5e5c77mr86120416d6.0.1785146463265; Mon, 27 Jul 2026
+ 03:01:03 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20260727-pwrseq-vote-rename-v1-1-a2029aeeac65@oss.qualcomm.com>
-X-B4-Tracking: v=1; b=H4sIAJErZ2oC/6tWKk4tykwtVrJSqFYqSi3LLM7MzwNyDHUUlJIzE
- vPSU3UzU4B8JSMDIzMDcyNz3YLyouLUQt2y/JJU3aLUvMTcVN0k8+QUI0MDYyMzMwsloMaCotS
- 0zAqwodFKQW7OSrG1tQCp4jesaQAAAA==
-X-Change-ID: 20260727-pwrseq-vote-rename-b7cd21032668
-To: Bartosz Golaszewski <brgl@kernel.org>, Jonathan Corbet <corbet@lwn.net>,
-        Shuah Khan <skhan@linuxfoundation.org>,
-        Marcel Holtmann <marcel@holtmann.org>,
-        Luiz Augusto von Dentz <luiz.dentz@gmail.com>,
-        Alessio Belle <alessio.belle@imgtec.com>,
-        Luigi Santivetti <luigi.santivetti@imgtec.com>,
-        Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
-        Maxime Ripard <mripard@kernel.org>,
-        Thomas Zimmermann <tzimmermann@suse.de>,
-        David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>,
-        Jeff Johnson <jjohnson@kernel.org>,
-        Manivannan Sadhasivam <mani@kernel.org>,
-        Bjorn Helgaas <bhelgaas@google.com>, Chen-Yu Tsai <wens@kernel.org>,
-        Loic Poulain <loic.poulain@oss.qualcomm.com>
-Cc: linux-pm@vger.kernel.org, linux-doc@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org,
-        linux-bluetooth@vger.kernel.org, imagination@lists.freedesktop.org,
-        dri-devel@lists.freedesktop.org, linux-wireless@vger.kernel.org,
-        ath10k@lists.infradead.org, linux-pci@vger.kernel.org,
-        Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
-X-Mailer: b4 0.14.2
-X-Developer-Signature: v=1; a=openpgp-sha256; l=11233;
- i=bartosz.golaszewski@oss.qualcomm.com; h=from:subject:message-id;
- bh=G7OuZnFzXRxi+fDAYiRyDUKp+x0C6VA6eN1JvMlufl4=;
- b=owEBbQKS/ZANAwAKAQWdLsv/NoTDAcsmYgBqZyua6+kj7mv/zzmBMIis+gdWuocontWnq+eD+
- vv740HUnhyJAjMEAAEKAB0WIQSR5RMt5bVGHXuiZfwFnS7L/zaEwwUCamcrmgAKCRAFnS7L/zaE
- w9XLD/9fSN/wxCKeUPmwVIqjM6yzfNVAPIBYsenBC17Ef51V+D542ya4dKvWfOck0ahoGK8h1ES
- fCsIdb6yUiLOXdXE1N7WtKH/bmHWrKnmXrgpH3j8J9YwApddS/jwfnAr7KSwTchMurvib/KFXyi
- P970euD779qbQdjTUm//egbj70HYVr12XoKea/M6suEWXE2hbdsed+qgibBXGSuCYkSMRKBcGHp
- xri0RBKzDEDXkyIU2Yax1X+KsDClbCCOP+uvsrUsFDmvL+iG5VDV81txFmfJyU9Ywb7yXJMabgn
- 9InJCDQjwFOf8N9p3g/gMRm+9KQxRAE4rgDYNjQck4b3ktI0dDbumeOi+y57YdDp/F+0KgErSoi
- /SEq/slk2oqnBZmzIZcFUAFRHG1tb1SU2aMFLnGl21eN+DQSDhnVGR/wh/i29p24hgZ7Ph+d3El
- Ty31M0gixh7rEQEZd7g15mOvTdvKan0cojXEvOjGCORFuVzEgu8Y0dJ/okF0nUifFkROr+oPoi7
- kGMN7iRtpUrzssjjW8+cD31Nj2fGuaa4o4Mu4t3h6qMp964o+6MOtZd5QKRmEUj6ymhsaD9v57E
- 9VHzB97Yy25qtF/aV4dnpAJM9GU4gy/ZARWp189Jad+AaYMrA746ewg1ONLdSFrLwQFyL6r49+h
- s2Mplu1/U1vA/Lg==
-X-Developer-Key: i=bartosz.golaszewski@oss.qualcomm.com; a=openpgp;
- fpr=169DEB6C0BC3C46013D2C79F11A72EA01471D772
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzI3MDA5NyBTYWx0ZWRfXx8lQAw1xsWwy
- MBo+AMf58sMuVVzPTTiUh1nieQnQnDDINnOvEfoer0Nj1+/mJFgeodudPfEMFV0wMcc22OH1T9w
- 4CBDGApvmoZsH4RWRMMaex32zRmpMDLK/9KiKC3S/bEkS4Sqz82omi6BzxcQiwo2tPyo4LeqhM0
- HPdjYG2qqHIRkGzTMIVXIOjhBrmcBmg9AB/8xGOga3J7oBhBivNeLSJmJ+H/0D6XMhKp5K4VfmW
- gJ6aC2IVqnQv/soNbsNTZoREnh+2EFJWhnP5nmz0h8GIjtOmAyAepmqSzLaeGh7EMF+lwbxVxlD
- zQ2bPFZ9gk7OlXJeGNX63ytVhuLeKu4Xs39lBXvzb5iiVRbLOPlhJjcILiGgvGX4tM4i50p3mSD
- Nx6IU8E8AsF3D4vDb5OlLA/JDWI1e2ZWGmMfZAoYujLvLfGNeh7duaTilnOxLtR4RCEwFodpNlv
- aerXFVjZPXzGVWb3XFg==
-X-Proofpoint-GUID: xodTObsFLq83dQAYoCLjztSk_pGer_ff
-X-Authority-Analysis: v=2.4 cv=DNG/JSNb c=1 sm=1 tr=0 ts=6a672ba3 cx=c_pps
- a=mPf7EqFMSY9/WdsSgAYMbA==:117 a=xqWC_Br6kY4A:10 a=IkcTkHD0fZMA:10
- a=RAioF0-LDSMA:10 a=s4-Qcg_JpJYA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=u7WPNUs3qKkmUXheDGA7:22 a=yOCtJkima9RkubShWh1s:22 a=VwQbUJbxAAAA:8
- a=pGLkceISAAAA:8 a=EUspDBNiAAAA:8 a=BH6fHGR_65QtqvMn8p4A:9 a=QEXdDO2ut3YA:10
- a=dawVfQjAaf238kedN5IG:22
-X-Proofpoint-Spam-Info: AW1haW4tMjYwNzI3MDA5NyBTYWx0ZWRfXwIWM7CENk5qZ
- k3ejfTiSx+LIGkTHDkF0BTQbyDRs9gYenx4T+e+Q5JresNYGdektAEy4mHsJXF/1uhM7wcrMgyR
- mvIyTBxwV/ywZbmQrUiiEPHchh4pDB0=
-X-Proofpoint-ORIG-GUID: xodTObsFLq83dQAYoCLjztSk_pGer_ff
+References: <20260708092038.741308-1-lgs201920130244@gmail.com>
+In-Reply-To: <20260708092038.741308-1-lgs201920130244@gmail.com>
+From: Ulf Hansson <ulf.hansson@oss.qualcomm.com>
+Date: Mon, 27 Jul 2026 12:00:49 +0200
+X-Gm-Features: AUfX_mxRMxe0tuzgdBvzQ99tJNh8MEcfgARzgUQyUvcrVWwi5yEYYKrgP-hzda4
+Message-ID: <CAPx+jO-fnCyJqKz6sZR=y4=-CWLicrT5gvw6xqoecJk_dimGMw@mail.gmail.com>
+Subject: Re: [PATCH] pmdomain: mediatek: fix remaining %pOF after of_node_put()
+To: Guangshuo Li <lgs201920130244@gmail.com>
+Cc: Ulf Hansson <ulfh@kernel.org>, Matthias Brugger <matthias.bgg@gmail.com>,
+        AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>,
+        =?UTF-8?B?TsOtY29sYXMgRi4gUi4gQS4gUHJhZG8=?= <nfraprado@collabora.com>,
+        Irving-CH Lin <irving-ch.lin@mediatek.com>,
+        Macpaul Lin <macpaul.lin@mediatek.com>, Adam Ford <aford173@gmail.com>,
+        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org,
+        linux-mediatek@lists.infradead.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzI3MDA5NyBTYWx0ZWRfX11kQCFr4voHc
+ 4a5v4OlaQ4DagHbA7rnzrO9pldR+g+5exd6GZofG9fyLHV1+oOmiyP28lttcD0sqdC+bEE1G9wn
+ xeqQ1y2oQYKOLPFoppg7TZumZBlcLjuzMh/8ne0CmlX4Qhpp7a2wuWtALTFwZ4iFhZ1MadvseRt
+ 9CHdH68I4rkG+qd73O8Cu2AGPvuoDt1DvXupZSbKvbi17TiCdHcJu/CzIFtYbEl1Em+aoAQshD2
+ t0vigTuhPDVJOBmZtEYO+oilxFVA4Zhz5SwRSPqybjZzGVsl9e4sW1Ady+oHH8hxDzTnj9bVN3L
+ t+GV92Vez+XJbmtGjhCvM5n/iCJQK9Y9MZz26YeF6RgWjJ0kq57zelonh18ImnK4OaCVchA8HOO
+ JD0yapsAXIofrmZfTw2KhP7BAug1Q9USnzX/K5OSkdBD0wvKwsrAoC9TzvTF6c+0b0zesK1MDzK
+ UHYI1kGelPTjxAR1ctg==
+X-Proofpoint-Spam-Info: AW1haW4tMjYwNzI3MDA5NyBTYWx0ZWRfX3Sy7bNJKmcEp
+ qWZa9hB21zdPNfzSAHoHZKBqAGfUGLtUs59wDlVakuTyyEkjCPKFkHsM6Cxnu6Eqd3rOefMYQ1b
+ P/UC/3EnSPRa5p+Cz70mMbfSBQDchTI=
+X-Proofpoint-ORIG-GUID: tY-S_jJYesuK7KbqaqAueNTnzRW89IVa
+X-Authority-Analysis: v=2.4 cv=E4b9Y6dl c=1 sm=1 tr=0 ts=6a672c60 cx=c_pps
+ a=7E5Bxpl4vBhpaufnMqZlrw==:117 a=IkcTkHD0fZMA:10 a=RAioF0-LDSMA:10
+ a=s4-Qcg_JpJYA:10 a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22
+ a=eoimf2acIAo5FJnRuUoq:22 a=pGLkceISAAAA:8 a=R5A58VEcyW3-00s9QQ4A:9
+ a=QEXdDO2ut3YA:10 a=pJ04lnu7RYOZP9TFuWaZ:22
+X-Proofpoint-GUID: tY-S_jJYesuK7KbqaqAueNTnzRW89IVa
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.134,FMLib:17.12.100.49
  definitions=2026-07-27_02,2026-07-24_02,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501 clxscore=1015 malwarescore=0 bulkscore=0 adultscore=0
- suspectscore=0 impostorscore=0 lowpriorityscore=0 phishscore=0 spamscore=0
+ spamscore=0 clxscore=1015 priorityscore=1501 impostorscore=0 bulkscore=0
+ lowpriorityscore=0 adultscore=0 suspectscore=0 malwarescore=0 phishscore=0
  classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
  reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2607270097
 
-The way power sequencing works means that a call to pwrseq_power_on()
-does not necessarily result in the pwrseq target being powered-on at
-that time: it may have already been powered on before. Similarly: a call
-to pwrseq_power_off() does not have to result in an actual powering off
-of resources: there may still be other users that requested a power-on
-before.
+On Wed, Jul 8, 2026 at 11:23=E2=80=AFAM Guangshuo Li <lgs201920130244@gmail=
+.com> wrote:
+>
+> scpsys_get_bus_protection_legacy() looks up several legacy bus
+> protection regmaps from device-tree nodes.
+>
+> Two error paths put the device node before checking whether the regmap
+> lookup failed, but still pass that node to dev_err_probe() with %pOF on
+> failure. If of_node_put() drops the last reference, the later %pOF
+> formatting can dereference a freed device node.
+>
+> Keep the node reference until after the error message has been emitted in
+> the infracfg and SMI lookup paths. Also drop the SMI node before
+> returning when the SMI phandle is missing.
+>
+> Fixes: c29345fa5f66 ("pmdomain: mediatek: Refactor bus protection regmaps=
+ retrieval")
+> Signed-off-by: Guangshuo Li <lgs201920130244@gmail.com>
 
-We will also introduce the concept of "non-controllable" pwrseq targets
-soon which further increases the disconnect between the naming
-convention and the actual semantics.
+Applied for fixes and by adding a stable tag, thanks!
 
-What consumers of pwrseq descriptors actually do is: they *vote* for a
-powering on of a given target or retract that vote. These operations
-could be called get/put in line with runtime PM but this could become
-confusing since we already provide pwrseq_get/put() for a different
-purpose.
+Kind regards
+Uffe
 
-Change the name of the two functions to pwrseq_vote_on/off() which
-better reflects their purpose and semantics. No functional change
-intended.
 
-If at any point users need to know *when* the exact power event happens,
-we can provide that information in the form of a notifier.
-
-Signed-off-by: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
----
-I've floated the idea to rename the two pwrseq functions from "power
-on/off" to "vote on/off". Here's a concrete proposal.
-
-I'm sending it as an RFC but if there's agreement, I can queue it as is.
-
-I'm doing it in a single commit that should go through the pwrseq tree
-with Acks from subsystem maintainers.
-
-[1] https://lore.kernel.org/all/CAMRc=Mefxn81d0VUwmQgwFtffkL1=Er_1VQZCbC1Sa-Qph4t1w@mail.gmail.com/
----
- Documentation/driver-api/pwrseq.rst      |  4 ++--
- drivers/bluetooth/hci_qca.c              |  4 ++--
- drivers/gpu/drm/imagination/pvr_power.c  |  4 ++--
- drivers/net/wireless/ath/ath10k/snoc.c   |  6 +++---
- drivers/pci/pwrctrl/generic.c            |  4 ++--
- drivers/pci/pwrctrl/pci-pwrctrl-pwrseq.c |  4 ++--
- drivers/power/sequencing/core.c          | 16 ++++++++--------
- include/linux/pwrseq/consumer.h          |  8 ++++----
- 8 files changed, 25 insertions(+), 25 deletions(-)
-
-diff --git a/Documentation/driver-api/pwrseq.rst b/Documentation/driver-api/pwrseq.rst
-index ad18b2326b689a41471216f3889480b11768ca82..faba5a8e3337e878c6dac0cc91d23b3577cab6fd 100644
---- a/Documentation/driver-api/pwrseq.rst
-+++ b/Documentation/driver-api/pwrseq.rst
-@@ -50,9 +50,9 @@ Consumer interface
- The consumer API is aimed to be as simple as possible. The driver interested in
- getting a descriptor from the power sequencer should call pwrseq_get() and
- specify the name of the target it wants to reach in the sequence after calling
--pwrseq_power_up(). The descriptor can be released by calling pwrseq_put() and
-+pwrseq_vote_on(). The descriptor can be released by calling pwrseq_put() and
- the consumer can request the powering down of its target with
--pwrseq_power_off(). Note that there is no guarantee that pwrseq_power_off()
-+pwrseq_vote_off(). Note that there is no guarantee that pwrseq_vote_off()
- will have any effect as there may be multiple users of the underlying resources
- who may keep them active.
- 
-diff --git a/drivers/bluetooth/hci_qca.c b/drivers/bluetooth/hci_qca.c
-index e6d107f67759f54eee2647d92bb8bfd4e68c9358..5aaabc9fb1b66eb6b24da25f77158690a2f03c84 100644
---- a/drivers/bluetooth/hci_qca.c
-+++ b/drivers/bluetooth/hci_qca.c
-@@ -2259,7 +2259,7 @@ static void qca_power_off(struct hci_uart *hu)
- 	}
- 
- 	if (power && power->pwrseq) {
--		pwrseq_power_off(power->pwrseq);
-+		pwrseq_vote_off(power->pwrseq);
- 		set_bit(QCA_BT_OFF, &qca->flags);
- 		return;
-         }
-@@ -2319,7 +2319,7 @@ static int qca_regulator_enable(struct qca_serdev *qcadev)
- 	int ret;
- 
- 	if (power->pwrseq)
--		return pwrseq_power_on(power->pwrseq);
-+		return pwrseq_vote_on(power->pwrseq);
- 
- 	/* Already enabled */
- 	if (power->vregs_on)
-diff --git a/drivers/gpu/drm/imagination/pvr_power.c b/drivers/gpu/drm/imagination/pvr_power.c
-index a71d5b35601e7b996428312028a4c0542a5b1350..c6dfa2685ee64086c53281d06563e6169109c00f 100644
---- a/drivers/gpu/drm/imagination/pvr_power.c
-+++ b/drivers/gpu/drm/imagination/pvr_power.c
-@@ -352,12 +352,12 @@ static int pvr_power_init_pwrseq(struct pvr_device *pvr_dev)
- 
- static int pvr_power_on_sequence_pwrseq(struct pvr_device *pvr_dev)
- {
--	return pwrseq_power_on(pvr_dev->pwrseq);
-+	return pwrseq_vote_on(pvr_dev->pwrseq);
- }
- 
- static int pvr_power_off_sequence_pwrseq(struct pvr_device *pvr_dev)
- {
--	return pwrseq_power_off(pvr_dev->pwrseq);
-+	return pwrseq_vote_off(pvr_dev->pwrseq);
- }
- 
- const struct pvr_power_sequence_ops pvr_power_sequence_ops_pwrseq = {
-diff --git a/drivers/net/wireless/ath/ath10k/snoc.c b/drivers/net/wireless/ath/ath10k/snoc.c
-index 3106502275781d32d17a45a661362206144df6b3..f87e56576e29124902dccd1a21600fd3407b2922 100644
---- a/drivers/net/wireless/ath/ath10k/snoc.c
-+++ b/drivers/net/wireless/ath/ath10k/snoc.c
-@@ -1025,7 +1025,7 @@ static int ath10k_hw_power_on(struct ath10k *ar)
- 
- 	ath10k_dbg(ar, ATH10K_DBG_SNOC, "soc power on\n");
- 
--	ret = pwrseq_power_on(ar_snoc->pwrseq);
-+	ret = pwrseq_vote_on(ar_snoc->pwrseq);
- 	if (ret)
- 		return ret;
- 
-@@ -1042,7 +1042,7 @@ static int ath10k_hw_power_on(struct ath10k *ar)
- vreg_off:
- 	regulator_bulk_disable(ar_snoc->num_vregs, ar_snoc->vregs);
- pwrseq_off:
--	pwrseq_power_off(ar_snoc->pwrseq);
-+	pwrseq_vote_off(ar_snoc->pwrseq);
- 
- 	return ret;
- }
-@@ -1060,7 +1060,7 @@ static int ath10k_hw_power_off(struct ath10k *ar)
- 	ret_vreg = regulator_bulk_disable(ar_snoc->num_vregs, ar_snoc->vregs);
- 
- 	if (ar_snoc->pwrseq)
--		ret_seq = pwrseq_power_off(ar_snoc->pwrseq);
-+		ret_seq = pwrseq_vote_off(ar_snoc->pwrseq);
- 
- 	return ret_vreg ? : ret_seq;
- }
-diff --git a/drivers/pci/pwrctrl/generic.c b/drivers/pci/pwrctrl/generic.c
-index a7e599d841e6289db161b19a93ba5a61d9e0ab1c..8872f6501352d7273a9b4f20589c2f74d6accc65 100644
---- a/drivers/pci/pwrctrl/generic.c
-+++ b/drivers/pci/pwrctrl/generic.c
-@@ -29,7 +29,7 @@ static int slot_pwrctrl_power_on(struct pci_pwrctrl *pwrctrl)
- 	int ret;
- 
- 	if (slot->pwrseq) {
--		pwrseq_power_on(slot->pwrseq);
-+		pwrseq_vote_on(slot->pwrseq);
- 		return 0;
- 	}
- 
-@@ -48,7 +48,7 @@ static int slot_pwrctrl_power_off(struct pci_pwrctrl *pwrctrl)
- 						struct slot_pwrctrl, pwrctrl);
- 
- 	if (slot->pwrseq) {
--		pwrseq_power_off(slot->pwrseq);
-+		pwrseq_vote_off(slot->pwrseq);
- 		return 0;
- 	}
- 
-diff --git a/drivers/pci/pwrctrl/pci-pwrctrl-pwrseq.c b/drivers/pci/pwrctrl/pci-pwrctrl-pwrseq.c
-index a308bf4b5fc01d23b75db4cd396201c3ba3fe695..86822f0f645eb757455f575000f81122bce82e60 100644
---- a/drivers/pci/pwrctrl/pci-pwrctrl-pwrseq.c
-+++ b/drivers/pci/pwrctrl/pci-pwrctrl-pwrseq.c
-@@ -56,7 +56,7 @@ static int pwrseq_pwrctrl_power_on(struct pci_pwrctrl *pwrctrl)
- 	struct pwrseq_pwrctrl *pwrseq = container_of(pwrctrl,
- 					   struct pwrseq_pwrctrl, pwrctrl);
- 
--	return pwrseq_power_on(pwrseq->pwrseq);
-+	return pwrseq_vote_on(pwrseq->pwrseq);
- }
- 
- static int pwrseq_pwrctrl_power_off(struct pci_pwrctrl *pwrctrl)
-@@ -64,7 +64,7 @@ static int pwrseq_pwrctrl_power_off(struct pci_pwrctrl *pwrctrl)
- 	struct pwrseq_pwrctrl *pwrseq = container_of(pwrctrl,
- 					   struct pwrseq_pwrctrl, pwrctrl);
- 
--	return pwrseq_power_off(pwrseq->pwrseq);
-+	return pwrseq_vote_off(pwrseq->pwrseq);
- }
- 
- static int pwrseq_pwrctrl_probe(struct platform_device *pdev)
-diff --git a/drivers/power/sequencing/core.c b/drivers/power/sequencing/core.c
-index 02f42da915985339d3de507fc36dd158b0035a99..c630b14f6f2c478f05e4b2893b386aab0cddaaf5 100644
---- a/drivers/power/sequencing/core.c
-+++ b/drivers/power/sequencing/core.c
-@@ -708,7 +708,7 @@ void pwrseq_put(struct pwrseq_desc *desc)
- 	pwrseq = desc->pwrseq;
- 
- 	if (desc->powered_on)
--		pwrseq_power_off(desc);
-+		pwrseq_vote_off(desc);
- 
- 	kfree(desc);
- 	module_put(pwrseq->owner);
-@@ -874,7 +874,7 @@ static int pwrseq_unit_disable(struct pwrseq_device *pwrseq,
- }
- 
- /**
-- * pwrseq_power_on() - Issue a power-on request on behalf of the consumer
-+ * pwrseq_vote_on() - Issue a power-on request on behalf of the consumer
-  *                     device.
-  * @desc: Descriptor referencing the power sequencer.
-  *
-@@ -887,7 +887,7 @@ static int pwrseq_unit_disable(struct pwrseq_device *pwrseq,
-  * Returns:
-  * 0 on success, negative error number on failure.
-  */
--int pwrseq_power_on(struct pwrseq_desc *desc)
-+int pwrseq_vote_on(struct pwrseq_desc *desc)
- {
- 	struct pwrseq_device *pwrseq;
- 	struct pwrseq_target *target;
-@@ -925,14 +925,14 @@ int pwrseq_power_on(struct pwrseq_desc *desc)
- 
- 	return ret;
- }
--EXPORT_SYMBOL_GPL(pwrseq_power_on);
-+EXPORT_SYMBOL_GPL(pwrseq_vote_on);
- 
- /**
-- * pwrseq_power_off() - Issue a power-off request on behalf of the consumer
-+ * pwrseq_vote_off() - Issue a power-off request on behalf of the consumer
-  *                      device.
-  * @desc: Descriptor referencing the power sequencer.
-  *
-- * This undoes the effects of pwrseq_power_on(). It issues a power-off request
-+ * This undoes the effects of pwrseq_vote_on(). It issues a power-off request
-  * on behalf of the consumer and when the last remaining user does so, the
-  * power-down sequence will be started. If one is in progress, the function
-  * will block until it's complete and then return.
-@@ -940,7 +940,7 @@ EXPORT_SYMBOL_GPL(pwrseq_power_on);
-  * Returns:
-  * 0 on success, negative error number on failure.
-  */
--int pwrseq_power_off(struct pwrseq_desc *desc)
-+int pwrseq_vote_off(struct pwrseq_desc *desc)
- {
- 	struct pwrseq_device *pwrseq;
- 	struct pwrseq_unit *unit;
-@@ -966,7 +966,7 @@ int pwrseq_power_off(struct pwrseq_desc *desc)
- 
- 	return ret;
- }
--EXPORT_SYMBOL_GPL(pwrseq_power_off);
-+EXPORT_SYMBOL_GPL(pwrseq_vote_off);
- 
- /**
-  * pwrseq_to_device() - Get the pwrseq device pointer from a descriptor.
-diff --git a/include/linux/pwrseq/consumer.h b/include/linux/pwrseq/consumer.h
-index 3c907c9e1885dc2958043a9a733fbe20bdf95f6e..e4d2cb321354f0cb7e1d1d72e6b5a96b94129da3 100644
---- a/include/linux/pwrseq/consumer.h
-+++ b/include/linux/pwrseq/consumer.h
-@@ -20,8 +20,8 @@ void pwrseq_put(struct pwrseq_desc *desc);
- struct pwrseq_desc * __must_check
- devm_pwrseq_get(struct device *dev, const char *target);
- 
--int pwrseq_power_on(struct pwrseq_desc *desc);
--int pwrseq_power_off(struct pwrseq_desc *desc);
-+int pwrseq_vote_on(struct pwrseq_desc *desc);
-+int pwrseq_vote_off(struct pwrseq_desc *desc);
- 
- struct device *pwrseq_to_device(struct pwrseq_desc *desc);
- 
-@@ -43,12 +43,12 @@ devm_pwrseq_get(struct device *dev, const char *target)
- 	return ERR_PTR(-ENOSYS);
- }
- 
--static inline int pwrseq_power_on(struct pwrseq_desc *desc)
-+static inline int pwrseq_vote_on(struct pwrseq_desc *desc)
- {
- 	return -ENOSYS;
- }
- 
--static inline int pwrseq_power_off(struct pwrseq_desc *desc)
-+static inline int pwrseq_vote_off(struct pwrseq_desc *desc)
- {
- 	return -ENOSYS;
- }
-
----
-base-commit: c5e32e86ca02b003f86e095d379b38148999293d
-change-id: 20260727-pwrseq-vote-rename-b7cd21032668
-
-Best regards,
--- 
-Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
-
+> ---
+>  drivers/pmdomain/mediatek/mtk-pm-domains.c | 22 +++++++++++++++-------
+>  1 file changed, 15 insertions(+), 7 deletions(-)
+>
+> diff --git a/drivers/pmdomain/mediatek/mtk-pm-domains.c b/drivers/pmdomai=
+n/mediatek/mtk-pm-domains.c
+> index e1cfd4223473..f877d6694dd5 100644
+> --- a/drivers/pmdomain/mediatek/mtk-pm-domains.c
+> +++ b/drivers/pmdomain/mediatek/mtk-pm-domains.c
+> @@ -1032,12 +1032,15 @@ static int scpsys_get_bus_protection_legacy(struc=
+t device *dev, struct scpsys *s
+>         node =3D of_find_node_with_property(np, "mediatek,infracfg");
+>         if (node) {
+>                 regmap[0] =3D syscon_regmap_lookup_by_phandle(node, "medi=
+atek,infracfg");
+> -               of_node_put(node);
+>                 num_regmaps++;
+> -               if (IS_ERR(regmap[0]))
+> -                       return dev_err_probe(dev, PTR_ERR(regmap[0]),
+> +               if (IS_ERR(regmap[0])) {
+> +                       ret =3D dev_err_probe(dev, PTR_ERR(regmap[0]),
+>                                              "%pOF: failed to get infracf=
+g regmap\n",
+>                                              node);
+> +                       of_node_put(node);
+> +                       return ret;
+> +               }
+> +               of_node_put(node);
+>         } else {
+>                 regmap[0] =3D NULL;
+>         }
+> @@ -1046,17 +1049,22 @@ static int scpsys_get_bus_protection_legacy(struc=
+t device *dev, struct scpsys *s
+>         node =3D of_find_node_with_property(np, "mediatek,smi");
+>         if (node) {
+>                 smi_np =3D of_parse_phandle(node, "mediatek,smi", 0);
+> -               of_node_put(node);
+> -               if (!smi_np)
+> +               if (!smi_np) {
+> +                       of_node_put(node);
+>                         return -ENODEV;
+> +               }
+>
+>                 regmap[1] =3D device_node_to_regmap(smi_np);
+>                 num_regmaps++;
+>                 of_node_put(smi_np);
+> -               if (IS_ERR(regmap[1]))
+> -                       return dev_err_probe(dev, PTR_ERR(regmap[1]),
+> +               if (IS_ERR(regmap[1])) {
+> +                       ret =3D dev_err_probe(dev, PTR_ERR(regmap[1]),
+>                                              "%pOF: failed to get SMI reg=
+map\n",
+>                                              node);
+> +                       of_node_put(node);
+> +                       return ret;
+> +               }
+> +               of_node_put(node);
+>         } else {
+>                 regmap[1] =3D NULL;
+>         }
+> --
+> 2.43.0
+>
