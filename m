@@ -1,187 +1,99 @@
-Received: from mail-yw1-f182.google.com (mail-yw1-f182.google.com [209.85.128.182])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from canpmsgout05.his.huawei.com (canpmsgout05.his.huawei.com [113.46.200.220])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7A4993F88BE
-	for <linux-pm@vger.kernel.org>; Mon, 27 Jul 2026 11:08:46 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.128.182
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1785150528; cv=pass; b=Lq8z0kislbHJRyhp8KoAP+TgcGvxS+N7KRQdY9QjIeOttd2AXm+IZtvNHLzN1qrqF59uo/6b1QeVMkcveXWfb++JHgRgZBbauCL2M4Zl55adbY3pV8Yl5hdX8dqme/mXHFT9G/iEdPq9r79ECiDs8vXt1Yhq481nxbWsY5gp+10=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1785150528; c=relaxed/simple;
-	bh=pV1TDUaa2YAV2kxJY3x35Y0FQXGiZRc6WWYevwzWDGg=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=A/iDC1oO+Knxx7ZvGIC+G1adXY4NMagUc6YUjK2aav93OUgJ4K2c1SVSrHaqUxOqmwd0deoGlIzR2puLqM1ZkgUvRZ1AhOVtQt3BpHQWtCGJKrDKNtu0TRZEXTOlWZKBWblNfRDHVlT2sXleM+T5Ye6XH9GLWonMAQ83oi2bpHc=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=M3mRoCn4; arc=pass smtp.client-ip=209.85.128.182
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3088D34B1AD;
+	Mon, 27 Jul 2026 11:10:27 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=113.46.200.220
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1785150633; cv=none; b=BcQIZSdHD6BNDTDzkAP9liHTJB4PcXMIXq9mdf4tUe2/8PrvEMX1lFrAC9Q0SN7adINa5Bk7BO4PHlB3AzRF2y/GCkqcvP1WUN69ZKGlKRxNbYY9cz/DJ0J6Us9a+b6phs2GNj0Iw9Wy7YyRML4EAJug/YK+YOnQVMqGUP5Q1VY=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1785150633; c=relaxed/simple;
+	bh=QKO9lbMTBob3NkIoChN1b9t58q06pcd1zYqZNCrXl8g=;
+	h=Message-ID:Date:MIME-Version:Subject:To:CC:References:From:
+	 In-Reply-To:Content-Type; b=mgd1Uq8U/mlrDzg4voZoRGbdZXqylM+ZOedfPbVRTiMELxEAiYxkWGdMbD1yK1toJvDJYK95Dnw8503NZuYNrKMFaz9SF/gltKc8ucZNViKmSe/atB2SNChQpx2vtuBBNJCX2Y08O7RA2h/uFuuLStAJtKSjV83krVKGRnTL1RY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; spf=pass smtp.mailfrom=huawei.com; dkim=pass (1024-bit key) header.d=huawei.com header.i=@huawei.com header.b=1Vqpc+Ip; arc=none smtp.client-ip=113.46.200.220
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=huawei.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="M3mRoCn4"
-Received: by mail-yw1-f182.google.com with SMTP id 00721157ae682-81e69a2db34so34332797b3.0
-        for <linux-pm@vger.kernel.org>; Mon, 27 Jul 2026 04:08:46 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1785150525; cv=none;
-        d=google.com; s=arc-20260327;
-        b=lYgVvlOYSk/asMP8/iX+cav5kRLAFTfx4ap+ZkHQcpqZhkSFsAAlmlz/R96v2Ph42c
-         KZXti4RsA5kFp+Ip4mfOZfnjM08H4d0FrD9Y9Yw+YhyaH2wrT7eepTgB9IzSc2291ucG
-         fvvgRl3tgEQVNr4HumiSNa0ik6/+Qukfv5vMmVN5A6S20RGBiM1CmIcz3rPUyloQ6YjQ
-         zVdoxFn0k6py57ElJtMjZUX6xw1dvif3xYQgCgoJxQyG2vm+O7MUUH93TOuLdN2Wlm6x
-         UJbseALeg6Pr+mzl/ImCxK//pt/VmndvtGzdVDtNuowoYN35OdNc8cSxow7QYcGn78/K
-         4pSA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=pV1TDUaa2YAV2kxJY3x35Y0FQXGiZRc6WWYevwzWDGg=;
-        fh=6iS5rBFTE7drBo+tVej1fTki3I0IeDZRxoVhhzThLwA=;
-        b=FOmyO0JP0mEq0hk0hFQo9kDcwD2YNCm9bjbRaJTGk9yrAiDCX8wt4jMkaz+JIYHcuY
-         BECiNiSYf7RXvCJKZe2B5lPiOJ73sZNyV44siQmzcbeMfLMsmIJE9ECq+6Pf7CLjYB3X
-         BMQbxYdxBVwMMJZ0VOF/c3nTqDcsdLNXsil+4WVhpYslzPPTUSXEtPLbzaDabFdYs6rr
-         fn6rQ6VJGqPK8rTBn45Rsq00U/oK1IVeMiY46SDL7NbeyZO+/y+VDFwt96aBefD6rEuM
-         XZcuHEAvqYE/r/ba7X2kChKcoLZIUyJXFfU1yvXwalem6xe9O8l5wYN2YB6/EBJqG5so
-         qZbQ==;
-        darn=vger.kernel.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1785150525; x=1785755325; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=pV1TDUaa2YAV2kxJY3x35Y0FQXGiZRc6WWYevwzWDGg=;
-        b=M3mRoCn4tl8RPjfQixKwIWWGSOwAsLGhmh+pOW5tV4opu6k/FIUqHgtBSUi/lYWXNo
-         K98eF+P/A41j+K8iwFXw6liU49SqTYrvvms0nmGWFjNMcapwdxy/m16HBI26xKOSiPvw
-         bHpYUNToOx9zQJmLUksPduoTCqqE2dSxgHeSldgGIbLqv2CWqoDhAou0N3efVhSwmwfM
-         VQbpCmhybFLItirVtnzw4TnneJchaVYJVzYdQrFlaDO4vxp9qnK66elczaAbAPUjs+C1
-         1bvSmITqLw2KhR3gNZaWHhZGr+7ZSQD962od3gweFtTkzKTtbvFjOOIGdEoRbtgOHS17
-         oVMA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1785150525; x=1785755325;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=pV1TDUaa2YAV2kxJY3x35Y0FQXGiZRc6WWYevwzWDGg=;
-        b=Q2jwH+z3iguOXx94P5LP7UanWAPaeVDrZ2SUe4BmcmsAo8YummDjSxeuv+C356WTLX
-         rIU6VVAabSTFInZ8CjOhlWzBDbNmjvgHxk/Rxe12YfGrMuf1tEb/D55ZYONxgbdpvEhu
-         xM7/PH4/hTUxxQMcGKPNTMk+1YOcEnNNTbeSbPiO0rXbUd4Vkwe3qZ5n4qlLLhcwgt5C
-         1FCBfUK9UeKvWu4d6LJndQK3AMbIAo5lb+G3m2mRDf4AG/EYqgvG7vw2DWBihwTXK6UJ
-         FlTi0Zdgrz855d/Ju5qQzFVP3/KkQlxGbxLhbXGlKGonwM+9ow7+u6cW/ExKz7ZCkwsV
-         Jxmw==
-X-Forwarded-Encrypted: i=1; AHgh+RpAQqkByOALIZsLFD7irNcSleRJcHOSq7EKOcOh+hAwxnD2pNqYZQ1LoJpH6psh6MZz6R59GQx9qw==@vger.kernel.org
-X-Gm-Message-State: AOJu0YyxPI+9BmQFmr90ZkWnDlDp69+1/EtOa3zOmvbzohQqm0ctlDyU
-	dme9gtlBlmE0MEtCAJKuWczSSFFhZ6XPmZTxkAC7VhVod+Rq1xUOdIys+s+vIf9QFfuoac9g1we
-	jM+3Qd7v/7x+4bv4tK/KMEO7zBsQ0AoU=
-X-Gm-Gg: AR+sD11Gd7ky9qsuWbBjq50fG5krwN4r3wQn91XVzjyFmMF+YBD7OxcUvqzun0D5YuZ
-	4nQIu1x1ByFVkrdJyT66Ia7uR7ryFLvZECrFQzb3oY2kmyym9OUWvQYlBolg5k8fHKS0xizJfet
-	lMGZQuIoC4fWKSdvsEwVAcE35CPts0WHSVvLz7WXMTvFemiQyio449tn/hAIScMU/m2bt8OM5uZ
-	T5GgQI3D7j4N5CGOBS+Np4VgRahXPDgfw68yFVZqOyTgcDjlQmVjglhYls=
-X-Received: by 2002:a05:690c:3747:b0:809:86c6:ee18 with SMTP id
- 00721157ae682-81f69e3978bmr27868337b3.37.1785150525277; Mon, 27 Jul 2026
- 04:08:45 -0700 (PDT)
+	dkim=pass (1024-bit key) header.d=huawei.com header.i=@huawei.com header.b="1Vqpc+Ip"
+dkim-signature: v=1; a=rsa-sha256; d=huawei.com; s=dkim;
+	c=relaxed/relaxed; q=dns/txt;
+	h=From;
+	bh=qGlhyl0QgTqQJuJzB1qy7KrRgVCa5Qg/xO/DDzmxrCo=;
+	b=1Vqpc+Ip7QNBF4L6ubPwOXbw9BzZ2m/j9wl7IF2L5Gxc7BE3GVa4ib7LoZBQ2zNCCYKL1hRMF
+	XVzEdijzNQT0RVnuRm1Ker/kV6iRAj/nsG8oXM7EDrJ1dnBLajzEKddelhB3I4X0z5EU55WF7mS
+	ncRpnvcNZtC8XemELP3UefU=
+Received: from mail.maildlp.com (unknown [172.19.162.223])
+	by canpmsgout05.his.huawei.com (SkyGuard) with ESMTPS id 4h7wcj5RhCz12LG8;
+	Mon, 27 Jul 2026 19:00:53 +0800 (CST)
+Received: from kwepemf100001.china.huawei.com (unknown [7.202.181.215])
+	by mail.maildlp.com (Postfix) with ESMTPS id B01F840577;
+	Mon, 27 Jul 2026 19:10:24 +0800 (CST)
+Received: from [10.67.121.90] (10.67.121.90) by kwepemf100001.china.huawei.com
+ (7.202.181.215) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1544.36; Mon, 27 Jul
+ 2026 19:10:23 +0800
+Message-ID: <65e5d124-0fb3-4948-9b06-fd42cb5643cd@huawei.com>
+Date: Mon, 27 Jul 2026 19:10:23 +0800
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260723184538.3888637-1-ekffu200098@gmail.com>
- <20260724144822.6af8213f@kernel.org> <0ee1ef4aa7daa908bf28397ccc639c89b6aabd9c@intel.com>
-In-Reply-To: <0ee1ef4aa7daa908bf28397ccc639c89b6aabd9c@intel.com>
-From: Sang-Heon Jeon <ekffu200098@gmail.com>
-Date: Mon, 27 Jul 2026 20:08:33 +0900
-X-Gm-Features: AUfX_mzhfgKW48GB4CRuyNKliFu1x1EH8aDGDqYePXeE0rGOBX3Wid5IOU1hKpc
-Message-ID: <CABFDxMFMOAZ_3kYxEGCutnGt1OSSmgvmwx-=M1RxGc3VGKORYQ@mail.gmail.com>
-Subject: Re: [PATCH 00/36] treewide: remove conditional returns with no effect
-To: Jani Nikula <jani.nikula@linux.intel.com>
-Cc: Jakub Kicinski <kuba@kernel.org>, Julia.Lawall@inria.fr, 
-	Alex Deucher <alexander.deucher@amd.com>, 
-	Alexander Shishkin <alexander.shishkin@linux.intel.com>, 
-	Alexandre Belloni <alexandre.belloni@bootlin.com>, Andrew Lunn <andrew@lunn.ch>, 
-	Andrew Morton <akpm@linux-foundation.org>, 
-	Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>, Borislav Petkov <bp@alien8.de>, 
-	=?UTF-8?Q?Christian_K=C3=B6nig?= <christian.koenig@amd.com>, 
-	Daniel Lezcano <daniel.lezcano@kernel.org>, David Airlie <airlied@gmail.com>, 
-	"David S. Miller" <davem@davemloft.net>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, 
-	Eric Dumazet <edumazet@google.com>, Florian Westphal <fw@strlen.de>, 
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Hans de Goede <hansg@kernel.org>, 
-	Hans Verkuil <hverkuil@kernel.org>, Heikki Krogerus <heikki.krogerus@linux.intel.com>, 
-	Herbert Xu <herbert@gondor.apana.org.au>, 
-	=?UTF-8?Q?Ilpo_J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>, 
-	"James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>, Jaroslav Kysela <perex@perex.cz>, 
-	Jason Gunthorpe <jgg@ziepe.ca>, Jiri Pirko <jiri@resnulli.us>, "Joerg Roedel (AMD)" <joro@8bytes.org>, 
-	Johan Hovold <johan@kernel.org>, Jonathan Cameron <jic23@kernel.org>, 
-	Joonas Lahtinen <joonas.lahtinen@linux.intel.com>, Julian Anastasov <ja@ssi.bg>, 
-	Leon Romanovsky <leon@kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, Linus Walleij <linusw@kernel.org>, 
-	Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, Mark Brown <broonie@kernel.org>, 
-	"Martin K. Petersen" <martin.petersen@oracle.com>, Matthew Sakai <msakai@redhat.com>, 
-	Mauro Carvalho Chehab <mchehab@kernel.org>, Maxime Ripard <mripard@kernel.org>, 
-	Michael Turquette <mturquette@baylibre.com>, Mike Rapoport <rppt@kernel.org>, 
-	Miri Korenblit <miriam.rachel.korenblit@intel.com>, Nicolas Palix <nicolas.palix@imag.fr>, 
-	Pablo Neira Ayuso <pablo@netfilter.org>, Paolo Abeni <pabeni@redhat.com>, 
-	Ping-Ke Shih <pkshih@realtek.com>, "Rafael J. Wysocki" <rafael@kernel.org>, 
-	Rodrigo Vivi <rodrigo.vivi@intel.com>, Sebastian Reichel <sre@kernel.org>, Shuah Khan <shuah@kernel.org>, 
-	Simona Vetter <simona@ffwll.ch>, Simon Horman <horms@verge.net.au>, Stephen Boyd <sboyd@kernel.org>, 
-	Steve French <sfrench@samba.org>, Takashi Iwai <tiwai@suse.com>, Thomas Renninger <trenn@suse.com>, 
-	Thomas Zimmermann <tzimmermann@suse.de>, Tony Luck <tony.luck@intel.com>, 
-	Tvrtko Ursulin <tursulin@ursulin.net>, Vadim Fedorenko <vadim.fedorenko@linux.dev>, 
-	Vinod Koul <vkoul@kernel.org>, Will Deacon <will@kernel.org>, 
-	Yazen Ghannam <Yazen.Ghannam@amd.com>, cocci@inria.fr, amd-gfx@lists.freedesktop.org, 
-	dmaengine@vger.kernel.org, dm-devel@lists.linux.dev, 
-	dri-devel@lists.freedesktop.org, intel-gfx@lists.freedesktop.org, 
-	intel-wired-lan@lists.osuosl.org, iommu@lists.linux.dev, 
-	linux-cifs@vger.kernel.org, linux-clk@vger.kernel.org, 
-	linux-crypto@vger.kernel.org, linux-edac@vger.kernel.org, 
-	linux-gpio@vger.kernel.org, linux-iio@vger.kernel.org, 
-	linux-input@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	linux-media@vger.kernel.org, linux-mm@kvack.org, linux-pm@vger.kernel.org, 
-	linux-rdma@vger.kernel.org, linux-rtc@vger.kernel.org, 
-	linux-s390@vger.kernel.org, linux-scsi@vger.kernel.org, 
-	linux-sound@vger.kernel.org, linux-usb@vger.kernel.org, 
-	linux-wireless@vger.kernel.org, lvs-devel@vger.kernel.org, 
-	netdev@vger.kernel.org, netfilter-devel@vger.kernel.org, 
-	nouveau@lists.freedesktop.org, platform-driver-x86@vger.kernel.org
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] ACPI: CPPC: Skip writes to unsupported performance limits
+To: Christian Loehle <christian.loehle@arm.com>, "Rafael J . Wysocki"
+	<rafael@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>
+CC: <linux-pm@vger.kernel.org>, <linux-acpi@vger.kernel.org>,
+	<linux-kernel@vger.kernel.org>, Len Brown <lenb@kernel.org>, Jie Zhan
+	<zhanjie9@hisilicon.com>, Pierre Gondois <pierre.gondois@arm.com>, Sumit
+ Gupta <sumitg@nvidia.com>, Sudeep Holla <sudeep.holla@arm.com>, Ionela
+ Voinescu <ionela.voinescu@arm.com>
+References: <20260723215634.1062264-1-christian.loehle@arm.com>
+From: "zhenglifeng (A)" <zhenglifeng1@huawei.com>
+In-Reply-To: <20260723215634.1062264-1-christian.loehle@arm.com>
 Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
+X-ClientProxiedBy: kwepems500002.china.huawei.com (7.221.188.17) To
+ kwepemf100001.china.huawei.com (7.202.181.215)
 
-Hello,
+On 7/24/2026 5:56 AM, Christian Loehle wrote:
+> MIN_PERF and MAX_PERF are optional CPPC controls. The cppc-cpufreq
+> target callbacks nevertheless populate both values for every request
+> without checking whether the controls are implemented.
+> 
+> cppc_set_perf() consequently passes a NULL register descriptor to
+> cpc_write(). The write fails width validation and its return value is
+> ignored, so the failed access path is repeated on every target request.
+> 
+> Check that each optional limit control is supported before calling
+> cpc_write().
+> 
+> Fixes: ea3db45ae476 ("cpufreq: cppc: Update MIN_PERF/MAX_PERF in target callbacks")
+> Signed-off-by: Christian Loehle <christian.loehle@arm.com>
+> ---
+>  drivers/acpi/cppc_acpi.c | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/acpi/cppc_acpi.c b/drivers/acpi/cppc_acpi.c
+> index 1d3a94100491..7bac6d5da24b 100644
+> --- a/drivers/acpi/cppc_acpi.c
+> +++ b/drivers/acpi/cppc_acpi.c
+> @@ -1970,9 +1970,9 @@ int cppc_set_perf(int cpu, struct cppc_perf_ctrls *perf_ctrls)
+>  	 * value to min and max perf, but they don't mean to set the zero value,
+>  	 * they just don't want to write to those registers.
+>  	 */
+> -	if (perf_ctrls->min_perf)
+> +	if (perf_ctrls->min_perf && CPC_SUPPORTED(min_perf_reg))
+>  		cpc_write(cpu, min_perf_reg, perf_ctrls->min_perf);
+> -	if (perf_ctrls->max_perf)
+> +	if (perf_ctrls->max_perf && CPC_SUPPORTED(max_perf_reg))
+>  		cpc_write(cpu, max_perf_reg, perf_ctrls->max_perf);
+>  
+>  	if (CPC_IN_PCC(desired_reg) || CPC_IN_PCC(min_perf_reg) || CPC_IN_PCC(max_perf_reg))
 
-On Mon, Jul 27, 2026 at 5:30=E2=80=AFPM Jani Nikula <jani.nikula@linux.inte=
-l.com> wrote:
->
-> On Fri, 24 Jul 2026, Jakub Kicinski <kuba@kernel.org> wrote:
-> > On Fri, 24 Jul 2026 03:45:02 +0900 Sang-Heon Jeon wrote:
-> >> Patch 1 adds a Coccinelle script that matches the pattern, including
-> >> negation and constant-comparison variants. Where a local variable is
-> >> assigned right before the check, the assignment and the two returns
-> >> turn into a single return of the assigned expression.
-> >
-> > Huh, I thought we already had such script. Various script children have
-> > been sending such "cleanups" in the past.
->
-> We did, and it was removed, I believe in 1a617a8475e8 ("coccinelle:
-> misc: remove "complex return code" warnings"), because people just don't
-> want this constant churn.
->
-> It's perfectly fine to have the error case and happy day scenario
-> separated.
+LGTM.
 
-Thanks for sharing the history.
+Reviewed-by: Lifeng Zheng <zhenglifeng1@huawei.com>
 
-I checked the mailing list. The removed script looks similar to the
-new one, but it is different. The removed script reported a
-conditional return followed by an explicit return 0, where the error
-case and happy day scenario are separated as you mentioned, and Johan
-also complained about this 10 years ago.
-
-But the new script only reports when both branches return the same
-variable, not the explicit 0. So, I think the new script is close to
-the restricted version that Julia mentioned 10 years ago, and it
-should be acceptable.
-
->
-> BR,
-> Jani.
->
->
-> --
-> Jani Nikula, Intel
-
-Best Regards,
-Sang-Heon Jeon
