@@ -1,143 +1,171 @@
-Received: from DU2PR03CU002.outbound.protection.outlook.com (mail-northeuropeazon11011047.outbound.protection.outlook.com [52.101.65.47])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-wr1-f54.google.com (mail-wr1-f54.google.com [209.85.221.54])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BBE6831F9BC;
-	Mon, 27 Jul 2026 07:42:33 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.65.47
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1785138155; cv=fail; b=sfo+q5uA2j2tnLBS14rbG33QNeVcGtTNSRVMjQiKNJvTUWIqsXVklTF/cvEiacwZRQQ21M1vyG0s8cvjFcsjJ+Cf5e3oricTdn1rjpHQtxISkjw4WswRb6pPOREx5fZYNPDE+XgnsRqoRixEDqgKREkCTVH0iNmhJCh980r++o8=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1785138155; c=relaxed/simple;
-	bh=MQupnrWN2q//SCTRz+YvcixFuGoStQIwQLVWAVWhTV0=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:Content-Type:
-	 Content-Disposition:In-Reply-To:MIME-Version; b=BCNnMZHUp9Z8ehMcXBw5DRXxHoTdm+x00k/kEpwkxxKh4cF5ih7mOnDUM1956daIsE7W1otlZNHvRClyc1FojwNoakxy47F+hYlm4S2up05YRX8qIlt+HBbyJwoW0sBnIAQw/WUNWlAz1xkingxCKlGiXcwz6+hVleffPSNZIFU=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=oss.nxp.com; spf=pass smtp.mailfrom=oss.nxp.com; dkim=pass (2048-bit key) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.b=YzSNGHWA; arc=fail smtp.client-ip=52.101.65.47
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=oss.nxp.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.nxp.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 16AE53DDDAA
+	for <linux-pm@vger.kernel.org>; Mon, 27 Jul 2026 07:52:59 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.54
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1785138781; cv=none; b=Zoncx7oTknXj8Y6iKJ0AQ05b1djHECVzQEwBVnbDFheTzRMqjO9qht8jWsZR2UUkEUHGeTKQiFPzzW21JRKHaHY8htcIEjOMpL2s/3kuyuvfpqjSpJeFIFeGZngdaQWK9m2AQqmH/f6sJZ7npkEOY3TXv4LMicyVjaKGCkn6mPU=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1785138781; c=relaxed/simple;
+	bh=H7pWTSeb1xk0+d5w9/EXCzJ3Dxx2A5cyzA707Rjw0m8=;
+	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=iZV+m2zFK5E1l6+52jQk1nvzv6bpFB/KreS4TmPCz8nApyzB8R1HELXt5d8v0vEIanTCAxYFR9DVQX18LqqtIl0Kbf+hOd96duIWMoxW456D1XBujMWzzLT7HdUqoc6mi2dv9Y3HUaU+p68Q6CFq/QeRiGnV6UsSrS1lbfEFj3w=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=flipper.net; spf=pass smtp.mailfrom=flipper.net; dkim=pass (2048-bit key) header.d=flipper.net header.i=@flipper.net header.b=537XhasB; arc=none smtp.client-ip=209.85.221.54
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=flipper.net
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=flipper.net
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.b="YzSNGHWA"
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=Gn3o6xWZpsXu/WXJrH6JxJdnzY9CZMVTXrHj98JbmAurM/cbdVKb1f7kgw0vtSy5NITlYqxCvGPMaFKK54fbLVhykxqtwTfdGA9uX71+xHYn0NS5bbqu0ac5jA6hTHOIleOztn61xrQKK+fGkMYqUXHH2NIp/8O3wTvnrEO80rA4L6PhKf1zPA2z4e1se6J0+w8r0RD0m2VWl8JLq07FyEeIK74SLgBHnIORRAzyfoZdZrpIu/Xa5WmjqTwoVum1gJbl0NPeDlXibGRcIDWCA0cyhVQWqSCJGlK5KZvqXaqGVTyC5JXN71OL6kHuV6RURMPEvoTOG5yu+FlQIODhlQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=MQupnrWN2q//SCTRz+YvcixFuGoStQIwQLVWAVWhTV0=;
- b=t6JUy3t2sVoFAe2UVGY5hIhmFM9Oly3HZNg7XAbBhIRVE9c5XR1JuUf7mlfddfCSI+74rHpGtsl946tHC4sSC+eVl6kqcRvYoGxHGBjKG2XjU05yP0x1iFvvT5VoEu/70IMeINvucS1If32NKVKN5U/2MLNDMAU65ARW/9eJ4KGcWXi/PeTepeEUuX21xnol7SYKjh9wW4lZUpLsS4wTXcGxfUHCFj60vzqiCEKPRcW7CU21du/6+VRmiwlFfZZTVNQrriQt62nWRyxEOR3r1YTBRkBLTJNEMegHRl3OB6mCVu65nQtIB8HIuHiKVeV0k3RIfufmV7gX24bY+6hAaA==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=oss.nxp.com; dmarc=pass action=none header.from=oss.nxp.com;
- dkim=pass header.d=oss.nxp.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=NXP1.onmicrosoft.com;
- s=selector1-NXP1-onmicrosoft-com;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=MQupnrWN2q//SCTRz+YvcixFuGoStQIwQLVWAVWhTV0=;
- b=YzSNGHWAep6UWC4H9OG1c5oTjFBKpcKTjsDgV1+tJrRoc7x5aDj6i9IIB/P5sBSYruQ2ULcztwDCF+B21vSJbrM2/W0N2ivPddOjkmswhjBSdBCizhbD2jtQ4qYHoLuBhso+Hw6KcW5/l4yTGh/DoxAA6tizYPjjxM/vmkqk6ifpRgR2oU4/Mrd3Fo0gELuvwDPQIOiPSjltbbEayhEttkH7UTGDDyghFPUImCPkVZX2IXqGB7X2FEIYbvu4N2eyZK5wAE3jwwtQA4iMiBOmE78cuWLi1Mo005UcQKrECWnJ5oW4KBN9JNg82bAaNc5BvD1d+vayG6FK5h0wJxIdKg==
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=oss.nxp.com;
-Received: from AM8PR04MB7874.eurprd04.prod.outlook.com (2603:10a6:20b:24d::9)
- by GV4PR04MB11331.eurprd04.prod.outlook.com (2603:10a6:150:29e::21) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.245.13; Mon, 27 Jul
- 2026 07:42:30 +0000
-Received: from AM8PR04MB7874.eurprd04.prod.outlook.com
- ([fe80::ac38:1699:6f18:c5d9]) by AM8PR04MB7874.eurprd04.prod.outlook.com
- ([fe80::ac38:1699:6f18:c5d9%6]) with mapi id 15.21.0245.010; Mon, 27 Jul 2026
- 07:42:30 +0000
-Date: Mon, 27 Jul 2026 15:46:13 +0800
-From: Peng Fan <peng.fan@oss.nxp.com>
-To: Zhipeng.wang_1@oss.nxp.com
-Cc: robh@kernel.org, saravanak@kernel.org, ulfh@kernel.org,
-	Frank.Li@nxp.com, s.hauer@pengutronix.de, kernel@pengutronix.de,
-	festevam@gmail.com, peng.fan@nxp.com, aisheng.dong@nxp.com,
-	jindong.yue@nxp.com, xuegang.liu@nxp.com,
-	devicetree@vger.kernel.org, linux-pm@vger.kernel.org,
-	imx@lists.linux.dev, linux-arm-kernel@lists.infradead.org,
-	linux-kernel@vger.kernel.org, linux-clk@vger.kernel.org
-Subject: Re: [PATCH v5 3/3] clk: imx: imx8qxp: add soft dependency on SCU
- power domain driver
-Message-ID: <amcMxdNzd7M5kSAF@shlinux89>
-References: <20260723020524.1886806-1-Zhipeng.wang_1@oss.nxp.com>
- <20260723020524.1886806-4-Zhipeng.wang_1@oss.nxp.com>
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260723020524.1886806-4-Zhipeng.wang_1@oss.nxp.com>
-X-ClientProxiedBy: SI1PR02CA0030.apcprd02.prod.outlook.com
- (2603:1096:4:1f4::8) To AM8PR04MB7874.eurprd04.prod.outlook.com
- (2603:10a6:20b:24d::9)
+	dkim=pass (2048-bit key) header.d=flipper.net header.i=@flipper.net header.b="537XhasB"
+Received: by mail-wr1-f54.google.com with SMTP id ffacd0b85a97d-47c2b362ee2so2009716f8f.1
+        for <linux-pm@vger.kernel.org>; Mon, 27 Jul 2026 00:52:59 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=flipper.net; s=google; t=1785138778; x=1785743578; darn=vger.kernel.org;
+        h=cc:to:content-transfer-encoding:content-type:mime-version
+         :message-id:date:subject:from:from:to:cc:subject:date:message-id
+         :reply-to:content-type;
+        bh=OoCCE+8WEegpz3erKr7ATAfAUKMHripHI7m6gAg6Azk=;
+        b=537XhasBJgfOUrNxpUCIcojPVBLAhZxDh4Mr7MPBVYaZ0XZJKjuLGW1AixOMyEg8+L
+         PlIUgaMybwwsQm5aTejedpKR5iwrClmidqaW1T+bUxa4qPBhY36xma8FzQiCS4s9R+x/
+         orD40SAFoeZdZgLB8xddD5A8z5xrJHsJJi2fBinpOalG7607/646L6Y0kSLmRJKi5Aip
+         9wUTBPogARSimjdk6oINDdsOB1IKRRcKfewY4pnu1uWCWYHaWwJ4QKfAw5Eg4a8bgooK
+         0yeoCIy3PCqW2jSIZ19vONk0jVoJQcMQ4BSPCfz5kqomQGbNKbeOZCz2XogZTb6qpSbL
+         LKsg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1785138778; x=1785743578;
+        h=cc:to:content-transfer-encoding:content-type:mime-version
+         :message-id:date:subject:from:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to:content-type;
+        bh=OoCCE+8WEegpz3erKr7ATAfAUKMHripHI7m6gAg6Azk=;
+        b=IvZ1IgAKXrZHgFZp0tcrK7DKyoEBkc0lJ9tuNuxkc0+qM1N9TIJay86QDUNVAnYPrH
+         LIvj4xIziQ9VVSwE3UtxG9+uGkVw0gnf7gHBluuMEYl0JCJHPNmcWY6SibJHdctApveP
+         3X0LO6ktpdaD763ZsCjmgbx5Q+HXcitVfeJGlD7wJkO9oHHgrmic1HkigAIvrQ/5KVdJ
+         g5z+0kd+aXP/lTWoiK56owkYZYXkfnsw09y8n3JlXydhoo91SofcnTnnDrZPvM65lSzp
+         y+RiZpJbBqdlvWntUXCHiXwTrN2Y1OSqSXmuJsvqnWUar9B2ZxqIOe+OUPlEJ4VC1l5k
+         5k9w==
+X-Forwarded-Encrypted: i=1; AHgh+RrssRPypaKsGxrnSQUCvRqwQsUj4/44Ydn++ClAwZ1+Hqf214MGZfoqLAHdRudbuRyEMM2WrCDD3w==@vger.kernel.org
+X-Gm-Message-State: AOJu0YxVT/7WX2csi2XCM6uCcgPp0Z6P5mVo1CBGqBrNkMD8efQ6ppcs
+	JmtUEUQfokd5HybYoeFwlx4mYcwLRvW3LFqTuYKnUnZYpAKkL1EABot+u5f9Mj9Wo6LgU5ymbpd
+	qWe8Yk/E=
+X-Gm-Gg: AR+sD11k1p//GknCD2SHR0Fi+2NFaqaeYdcL8MeOVslt9IqGpg07b+60+ZPP/8n49JA
+	STfeBSUihvHTaCz2p/ES/keKCNZmqDvFeeQcR0SR+Jkzv1C5v8Q53cYUHqSeohPkhF00/Oxnj5T
+	OnaeJk7sc6YMwogqWw2+iX13O2VQkxKi1c+ISszUD+gTcZolPHNStRi16NkKt6bGZBunzPUbuHu
+	lbtHQuQMwqiRgUFd48cHHeg1AHo9hnjdbaq5Oow0Nrc7rJAqYDKa6KV7dW03YQ0geQKFqq91nXC
+	NB5V2flmPgejMkZqPZFLqBQn30XKLJfeCnbhz9yB/9naFltcbtDVfDjYa78yq0txF/VHSgNn73C
+	VNlLvUNaWe0YZk0EhttO7kX/Vg0Uci9kO227pyH0R7dBpc6Y4GPRo/E3aUtkQbxkAHWSWF4DduS
+	Nn/Hts3syRJw/rb/uTl1e0hjEWciWss4Yb7I94IQkuJ9XsBqso4cN88w==
+X-Received: by 2002:a05:6000:26c7:b0:47f:943a:45fa with SMTP id ffacd0b85a97d-47f9fe98f1cmr8016862f8f.29.1785138778249;
+        Mon, 27 Jul 2026 00:52:58 -0700 (PDT)
+Received: from alchark-surface.localdomain (bba-92-99-174-41.alshamil.net.ae. [92.99.174.41])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-47f85c531basm50841449f8f.19.2026.07.27.00.52.56
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 27 Jul 2026 00:52:57 -0700 (PDT)
+From: Alexey Charkov <alchark@flipper.net>
+Subject: [PATCH v8 0/2] Add support for the TI BQ25792 battery charger
+ (regulator part)
+Date: Mon, 27 Jul 2026 11:52:35 +0400
+Message-Id: <20260727-bq25792-v8-0-c1c70473bbe7@flipper.net>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: AM8PR04MB7874:EE_|GV4PR04MB11331:EE_
-X-MS-Office365-Filtering-Correlation-Id: 981128ee-aaef-4ddf-6436-08deebb29cf2
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|7416014|1800799024|376014|23010399003|19092799006|366016|56012099006|11063799006|4143699003|10067099003|22082099003|18002099003;
-X-Microsoft-Antispam-Message-Info:
-	1TbYI34tTQEzlyhGF08jgcjNpecHzKWfOVBW30mXnHNtLIGcvClBD0tp+RpBtKqvcPX7QI1R/PNmrphsLyFvtTcyndlHA4ItHZez35/Q9N1m+ca2AsnexGUOo3VJ/sN0NxUEkpUAnAog+X1Ihpz3oWg7gGKkjqGE9uOqHxl8iVmNEUMtq/mpLMkzG6EW1kCyp47omtPKRmWLWKFD4h67BjLgXV9zGsXldzYZ2cof7I4470QD80JR7arC4ttl2zK/X9ajoGxLifFugax5xo5symXgob3WLYoSOlOAS3QlzAJ/HNousJOiauT2eaoy2DrEzhHGZy9czoI4QI5iUJgwK5lmUFOM6VoNc+yEKupGigeCGqoiwY/pgA0EHBco63EYeAihUpOR5u4YTg392Fvq4bqf/ivWp+6urtIX6lTiwdCCyZTgDu2DXh4LgieTjmoY9Mt3vdWlRKV0H0vAs7dl0HxfofI2vHCbm2IZTnKTG4AiWIthkMxMftc+4Pulc1F+i/THl2D/nOqjIQ9bDNHjeQ7O38o+0zP0q2rXDF8JVWf5owrueyvvMmvknFvIW5GmaBsshxg+p3nD0usSQDsMZwp0z7rp+hEiIy5ZGIOaZ4XF3xexR+h3AEhA0h8nedo/KkheMehJbuRGShCX03tbXKBW9dwHnM8lbe326/QJT2k=
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:AM8PR04MB7874.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(7416014)(1800799024)(376014)(23010399003)(19092799006)(366016)(56012099006)(11063799006)(4143699003)(10067099003)(22082099003)(18002099003);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?us-ascii?Q?LxEF/4IhzyTI3SDswi7/I7v7GY/1/jjdS8sh4YVYJd1u0JTD3HTWW1gU94f+?=
- =?us-ascii?Q?S6uJIftWFfVZJxS+ibfxRG1n6WrfiqZUxQEN4HTOuk19+hVaz4Ziq1SF7cLs?=
- =?us-ascii?Q?UbdLDKzGJvd0ZKkLidZGgjUt89s5F6u6r2+7vwWR+wUlZS0PmznFZ+SLJ2qU?=
- =?us-ascii?Q?jNs289s4L/ZkziA1qCV9Hb36zgEg/HdCe+h0sEgObqt4ylQAt5BGD1dlS677?=
- =?us-ascii?Q?D47JyTjgzmqpfFva1sOlK9KW3ai/OlLWAB219cnbn1WuNtGRCUxxg5BMPnx+?=
- =?us-ascii?Q?BYMpIFukfRL2l9X7GLfE7+V4MsU/k5dgGleH99OfVqFIe2gd1MozvVE/s7SM?=
- =?us-ascii?Q?Cim4H6UiPg1bb11mJe0RDXZs6YwX1TEbDim5BU/13BOpWlr6Ut4RWtzJh5nq?=
- =?us-ascii?Q?vn+qrwkvXEsWl7c+tiOj+dw+Tezeax62g3ZS1QrnQtYm8YgHd+xJY+ZoJ2sH?=
- =?us-ascii?Q?4niBbxLTF5iBTnaVJxtGL5ZZ3SboXuqzGh1qre9SxDro9Iz5GQ3MGFUTzEaa?=
- =?us-ascii?Q?kKNONLVRdu2sfYDFlFgwqLl3TSKwGIOWk+rijJJB8g9iBnzJMI4fpIP834fH?=
- =?us-ascii?Q?d8pSUa6jFSojAL1OFCT/Dgw138nVOs+g40WUGXkEGHqlhZmdXHHIW9VSogiz?=
- =?us-ascii?Q?0bMl5mkl4eJfVNKSLvXSKZOaXuNF2uh5IQemg+TGEJJ2bWMOpp9L6rlKQoPe?=
- =?us-ascii?Q?bfI6yWlllGtuFZ0/7DeVSjZVnqFgr4qZOuVk5jhBQJT+elB4cw1Qvx9eSnmG?=
- =?us-ascii?Q?dM+ZzuyrZcIaFCqVzYr5RnYIaPP7Ga/Im0nnA3Ymc7u9YmuJgezKQtzlqIRp?=
- =?us-ascii?Q?tvO1zBKLyXE5GxvIoCUt0YIb9KxI0Ng6Zwyh40n/CPWit3fr+tm/6rlj39KO?=
- =?us-ascii?Q?EeRO0qk8t2oABOvxtac1ZDpkTabrPxpU7Q3uQT482cq62Vl15P5SblLwOCYb?=
- =?us-ascii?Q?A3nAiFO2Oxst/PHVmxcs6qfofbX0B5n9Q1ZBS6G1cZWJOs1WJYxV0ghu4JDI?=
- =?us-ascii?Q?AUMvBetgU2rdasSnqoZJyTAXkCiPzw628PhhtyDH4d3oZ9G1VZOOvPI+WYNg?=
- =?us-ascii?Q?OXL/OoAqHobc1/P6C3+jHaJEjiS/JtRWPFzLhbjt6MqUv999zf1HvaL4PTOJ?=
- =?us-ascii?Q?X7NNpj6HFbcKpvKGF06nizuZErrJMQvkPWmzlV20iz8mai3cVfnPbmMer8U5?=
- =?us-ascii?Q?vR0+1YFpxvLMRhYm7o7+njsrNHH7QWywMszR3550gqNd5eKCyWUyUCDjLWFo?=
- =?us-ascii?Q?W+uZmcVqgAuZe46ceNIv0nKC+yPiAEonPBsx3KPiawbGHuO/JFvIqeUkOHpC?=
- =?us-ascii?Q?cBdR2kOqEWas1ileso3FpOg6kmmIXaur1/5ud8KA2tHEg+dOuXjLc/WWAH7r?=
- =?us-ascii?Q?3JbITHlFcu6N8NdOfPQ9+65CxGByF325Lc6g/cQT4+pyOpici7f188gR5a96?=
- =?us-ascii?Q?3I2NdD3nvMGj+k/h/04GvboM67YkulAJRHuF5t6sDbqvagA9pa+yLGa9A0ap?=
- =?us-ascii?Q?s1cTmIsbfariHsxRv/AF5dP+YFfaM8pB3g2qlBKJnVm57Oy0zNVseUk9+Rgo?=
- =?us-ascii?Q?C22PeX3/IqWxl3AGkBp7PB/jT79TQP2FpcjUgx/baoH02jNmOSM4VsSmDKK9?=
- =?us-ascii?Q?mGL1vPsEvN9BWgT/T5WB4063HPn9OQUl93am7p2oL+dwreKGsMIC5FWxNouI?=
- =?us-ascii?Q?sBxglt1tlsjdZBPTEet4y/AtXRG9h80cpgHNdfXctzr9Lc5TfKBni/XCHOcL?=
- =?us-ascii?Q?k4DFqjeVKry07x8LpEpZAOMsTqvoLsPI3gRwlmtVjsflVDf3JkYl?=
-X-OriginatorOrg: oss.nxp.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 981128ee-aaef-4ddf-6436-08deebb29cf2
-X-MS-Exchange-CrossTenant-AuthSource: AM8PR04MB7874.eurprd04.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 27 Jul 2026 07:42:30.4074
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: +FQxfkY/NDoRRNvHTAMfuAvPKTMnGi/T3KdgltMaTq1pGMvOqMg64GGyaicy9oUN/4vHTPDp3LYeW4IxpihKfOu4DtYYXR4Ayu5PFNR9Qhv1UpfOBu8Jn7xe/00C0JeI
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: GV4PR04MB11331
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-B4-Tracking: v=1; b=H4sIAAAAAAAC/2XQQW7EIAwF0KuMWJcKbDCkq96j6iIE00GqMplkF
+ LUa5e4l2YSK5Ue8b8tPsfCceRFvl6eYec1Lvo0l+JeLGK79+MUyx5IFKCCFCmW4g3UdSKUR+sG
+ TNxRF+T3NnPLP0fTxWfI1L4/b/HsUr3p/bTtWLZVkYstKIRrr39N3niaeX0d+iL1lhVrSKcsCk
+ mxnwXSRmFIrsZJanRKLVJA8A0IkDK00tdSnNEU60Gi0jR3z0EpbSTCntPvMHjhYPyStYyupklj
+ NpGNb51PoETl0rXSnpPq2rshovAscwVFU/+W2bX8fRywL/AEAAA==
+X-Change-ID: 20260303-bq25792-0132ac86846d
+To: Chris Morgan <macromorgan@hotmail.com>, Mark Brown <broonie@kernel.org>, 
+ Sebastian Reichel <sre@kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, 
+ Lee Jones <lee@kernel.org>
+Cc: linux-kernel@vger.kernel.org, 
+ Sebastian Reichel <sebastian.reichel@collabora.com>, 
+ linux-pm@vger.kernel.org, Alexey Charkov <alchark@flipper.net>
+X-Mailer: b4 0.15.2
+X-Developer-Signature: v=1; a=openpgp-sha256; l=3410; i=alchark@flipper.net;
+ h=from:subject:message-id; bh=H7pWTSeb1xk0+d5w9/EXCzJ3Dxx2A5cyzA707Rjw0m8=;
+ b=owGbwMvMwCW2adGNfoHIK0sZT6slMWSl8wUH+TRk6euKx8mfkPg1q0yepfuGdy/z9+lKiW+aP
+ 3dnCTZ3TGRhEONisBRTZJn7bYntVCO+Wbs8PL7CzGFlAhkiLdLAAAQsDHy5iXmlRjpGeqbahnqG
+ RjrGOkYMXJwCMNV1Mxn+h69dvn9KJ/OjercwqdU8x3fEZZrf38KwQqhn9sfeQ/NXn2D478w/cXe
+ /5LN9cn1CqsdlnL+/aq2Z6Ph2HqO6mf+DBycncQMA
+X-Developer-Key: i=alchark@flipper.net; a=openpgp;
+ fpr=9DF6A43D95320E9ABA4848F5B2A2D88F1059D4A5
 
-On Thu, Jul 23, 2026 at 11:05:24AM +0900, Zhipeng.wang_1@oss.nxp.com wrote:
->From: Zhipeng Wang <zhipeng.wang_1@nxp.com>
->
->The i.MX8QXP SCU clock driver manually attaches power domains to each
->clock device via of_genpd_add_device() in imx_clk_scu_attach_pd().
->If the SCU power domain provider has not probed yet, the attachment
->fails silently with a pr_warn() and the clock device is registered
->without a power domain.
->
->When both drivers are built as modules, there is no implicit
->dependency to guarantee load order. Add MODULE_SOFTDEP("pre:
->scu_pd") so that modprobe loads the SCU power domain module
->before the clock module.
->
->Signed-off-by: Zhipeng Wang <zhipeng.wang_1@nxp.com>
+This adds support for the TI BQ25792 battery charger, which is similar in
+overall logic to the BQ25703A, but has a different register layout and
+slightly different lower-level programming logic.
 
-Reviewed-by: Peng Fan <peng.fan@nxp.com>
+Mark, would you mind applying the regulator part, which already carries
+your Ack, and which is the only part outstanding from this series?
+
+No cross-tree dependencies here, as the MFD part is already in master.
+
+Signed-off-by: Alexey Charkov <alchark@flipper.net>
+---
+Changes in v8:
+- Rebased onto recent -next and dropped patches already applied by Sebastian (thanks!)
+- Link to v7: https://patch.msgid.link/20260603-bq25792-v7-0-d487bed276d0@flipper.net
+
+Changes in v7:
+- Rebase onto recent -next and dropped patches already applied by Mark and Lee
+- Enable the Input Current Optimizer to improve reliability with unrecognized chargers
+- Explicitly program the battery cell count at init time to alleviate transient glitches
+  with the charger going into spurious battery overvoltage state due to misdetected
+  battery cell count
+- Handle return values of all regmap writes in the init function
+- Link to v6: https://lore.kernel.org/r/20260331-bq25792-v6-0-0278fba33eb9@flipper.net
+
+Changes in v6:
+- Changed -EINVAL to -ENODEV for non-match cases in the MFD driver, to stay
+  in line with what other drivers do in similar situations (Lee Jones)
+- Link to v5: https://lore.kernel.org/r/20260324-bq25792-v5-0-0a2eb58cf11d@flipper.net
+
+Changes in v5:
+- Added non-OF match data and switched to i2c_get_match_data() to support
+  non-OF platforms (Lee Jones)
+- Shifted the types in the enum to start at 1 to avoid confusion with
+  zero-initialized data and non-match cases (Lee Jones)
+- Reinstated the const qualifier on the MFD cell array (Lee Jones)
+- Link to v4: https://lore.kernel.org/r/20260311-bq25792-v4-0-7213415d9eec@flipper.net
+
+Changes in v4:
+- Avoid additional data structures and pass 'type' within the existing
+  struct bq257xx_device instead (Lee Jones)
+- Move comments for new struct fields to the patches where those fields
+  are added (Sebastian Reichel)
+- Collect tags from Sebastian Reichel (thanks!)
+- Link to v3: https://lore.kernel.org/r/20260310-bq25792-v3-0-02f8e232d63b@flipper.net
+
+Changes in v3:
+- Move MFD cell definitions back out of the probe function (Lee Jones)
+- Collect tags from Mark Brown, Krzysztof Kozlowski and Chris Morgan (thanks!)
+- Enable ship FET functionality at init for BQ25792
+- Link to v2: https://lore.kernel.org/r/20260306-bq25792-v2-0-6595249d6e6f@flipper.net
+
+Changes in v2:
+- Fix an error in DT schema (thanks Rob's bot)
+- Ensure the broadest constraints for all variants remain in the common
+  part of the schema, per writing-schema doc (thanks Krzysztof)
+- Link to v1: https://lore.kernel.org/r/20260303-bq25792-v1-0-e6e5e0033458@flipper.net
+
+To: Liam Girdwood <lgirdwood@gmail.com>
+To: Mark Brown <broonie@kernel.org>
+Cc: linux-kernel@vger.kernel.org
+
+---
+Alexey Charkov (2):
+      regulator: bq257xx: Drop the regulator_dev from the driver data
+      regulator: bq257xx: Add support for BQ25792
+
+ drivers/regulator/bq257xx-regulator.c | 106 ++++++++++++++++++++++++++++++++--
+ 1 file changed, 101 insertions(+), 5 deletions(-)
+---
+base-commit: c5e32e86ca02b003f86e095d379b38148999293d
+change-id: 20260303-bq25792-0132ac86846d
+
+Best regards,
+--  
+Alexey Charkov <alchark@flipper.net>
+
