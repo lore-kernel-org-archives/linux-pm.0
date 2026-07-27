@@ -1,46 +1,46 @@
-Received: from AS8PR04CU009.outbound.protection.outlook.com (mail-westeuropeazon11011016.outbound.protection.outlook.com [52.101.70.16])
+Received: from AM0PR83CU005.outbound.protection.outlook.com (mail-westeuropeazon11010027.outbound.protection.outlook.com [52.101.69.27])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8827740DB40;
-	Mon, 27 Jul 2026 12:29:17 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.70.16
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F03831E8342
+	for <linux-pm@vger.kernel.org>; Mon, 27 Jul 2026 12:43:42 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.69.27
 ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1785155360; cv=fail; b=J9IUsvEKUz6jH0ju5f4DrsIR+uKtIUE4ox6TnKgTOwaLHpXr6qv5I5+T8MJtuwzrV+6Hpm5yay9LergJp5C0ohT0lk35dgJ+NHMf/BeGfCTRoSQLLLYa7oypsTi4aNkoyG9BO3b/NOIDSD/bzjnnido2lRMkQ10zNLgIknUDvyU=
+	t=1785156224; cv=fail; b=cLBa3uOkqGrnloafXN0+iRkJm5oMCjxd8i2SrDMKXNDZu5TvT3/EByMnqUfZvXNrHpHUtRLm8te1PIaOrwtxocOm2Wx0/1ZkyA6B6KJbSFdUyvdbnompddYgoXKTJVG2lBjfqSjjL05kCBrrhSik+isul4z3XIRqk4b3iCm1qAg=
 ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1785155360; c=relaxed/simple;
-	bh=AD1EOnml7lT2ZCMJ6wZdERp4P+fNQgSzyGI6cx4ZVQI=;
+	s=arc-20240116; t=1785156224; c=relaxed/simple;
+	bh=TSN9gL55A7Ag3raf82N9KWhH7vvMUMHmUl4Tkg6QycE=;
 	h=From:To:CC:Subject:In-Reply-To:References:Date:Message-ID:
-	 MIME-Version:Content-Type; b=E1t2xUlUlC703BgZ6/kJOpxVT5ZriF0Lcaef7G0fAExaHcaod/uAmCZsj7YaOBKWI4iJfHwiiRIRwHhuhBAw+25sUkfUx5furFzPJuCpcpAqcP3VWufbPvlLAfZJfK2ycKWIFeix1xnAXktHoqneH7KLjAYNaCT3aW4+chKEvcs=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=axis.com; spf=pass smtp.mailfrom=axis.com; dkim=pass (1024-bit key) header.d=axis.com header.i=@axis.com header.b=IBUR+n8k; arc=fail smtp.client-ip=52.101.70.16
+	 MIME-Version:Content-Type; b=tYFKSR9DHOKSZN8yaF6a6i6pSOipiDhFMtdGGukr8vlbrER47ykC+FJ0fr/TmkR0c4Dy920Tt88YjLL2L+uV6F8S2jio0pitM/FcnhvpyN2CT8bymSHlGhSAroVtlWK4i9wrBkBj+Lbjh5Da6j2j8JydBScuF15CEftvB+lJy/M=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=axis.com; spf=pass smtp.mailfrom=axis.com; dkim=pass (1024-bit key) header.d=axis.com header.i=@axis.com header.b=YKj4SlxO; arc=fail smtp.client-ip=52.101.69.27
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=axis.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=axis.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=axis.com header.i=@axis.com header.b="IBUR+n8k"
+	dkim=pass (1024-bit key) header.d=axis.com header.i=@axis.com header.b="YKj4SlxO"
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=XveR6bbR+8FTeZpUhIUbSOgRV8bxXhfoV72JpUQT5eCqyCdFjJqIb+2r342H9etC6hmDKn9nvS6msQLEGQN3/O6dFMtkeIEBLk2GVxwQ6/DqAQnCl4OI63GlFforLwT+STYMoPBYj0+OAwm236CGMGPZ3Bg8OKIJDumooMDp93+dkJsnRHozsOvicvC1c1OyGS0HCXNFiZCGRiEe58frRrT7xA2h020KSxBE8oP95DiL2Q0zLJaT9G4QVW342NwhZPE9wbWT7fgQXHS9fbIg49R9Smi8cYWN3jHKtBpjOu86gWVty2JV5Kf1WKNoNqE3au5VJ+bsaT/Q3uQyYqp6rA==
+ b=hiyiskLCyAMIMOHIW7No6aKay1vAIDEJwqQP9SAOSJd36DvUsKRpEPUL8Quh5MaAy/pf1YKya2iC3j8oB+v31eNqWP5otpTMNGRBYUMaP1NI/tj6l6S3btS8OPb0s83uiS2Cgt3ikrersh/ioqNbf6X//+l8TDEUP+PTxAe4UhymWIbyxI2Dp0IqbQB7VC8JNipDS0oSXfaylPupajbGBG6JXN4jFvgNzrXE5XW6OYUcy/vgfpk8klT241sR1O0ZPQN85NyGnDBCs9fGm9j2ZOQ15X6V6hUj+wyUARzAsE/GtNjX0cBEgzEBk9Mwk/aDoBWqXGfkYT9CnYZBKuMxVQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector10001;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=5tfcqKH+mT+3EheBAR38k5qT8tMyx5J6PlQxdqj6xJ8=;
- b=lLwpa17tALygT1yEfLKlBCI9n7O3VUHe5EW2B03bgXrmt7dveJ1iAspW+vD9D+OHZfAlE8PbtxYyHSBsBOCJ5Bd1z14zTonOYZnHONsCquYrkjxD9Z1ESopihcP3tZm+DjeT2eeLbsKzVSG0Znwvw4hAgYIT9vTINMIeZF//R7mxR6SK923atmqNDF+apC6xY0ax46j6jD7JYHc/MNW1g3FLfLuI59sAFA6nk5VVdaUItF/41dAdDm+TNDDy69XGUcoE3sVss0mv00gZa3J0Hd+eY/SRI8rik+IAC/iSKigXxF+QA5dTkYCgLjVbI/7AdVGxA4oIO+Aeq4HBElIhYA==
+ bh=D8AIII2V2RFH35akKOekE5WKF3RXuYI2l5LTvYvTgNo=;
+ b=olwBh6Sd5F6UycsOU5vNCrWyToQdjr4TTZ/gEuEyYBTW4k0Vhj8aR5A/gtc/VP0LFGW5wM5xUfAc8MLQ5xlIjBK3bfXbPRzXhxe0HOEvr9BkkqeCgFu5Vv9579ilQeOxATBIktQJTM7ZLWAIboAKe2S5MG8oedEvtatZIu6rkLsO6PQFHmSpzxoSxJzII360h2+rhSJpjEPFJ3jz40EMN6loIkKTFtRWIaWhIGVkDJQ6h7XSR8gsIWFXIOndFPdu6/I4eQZfjLQEtlb7RrzbGIDygVa6NH0PvBCMrHA4kjhvzzxqCxRPrRAHbzUSO2RhJFNBGzIicjZkVvQcRGu6tw==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
  195.60.68.100) smtp.rcpttodomain=vger.kernel.org smtp.mailfrom=axis.com;
  dmarc=pass (p=none sp=none pct=100) action=none header.from=axis.com;
  dkim=none (message not signed); arc=none (0)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=axis.com; s=selector1;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=5tfcqKH+mT+3EheBAR38k5qT8tMyx5J6PlQxdqj6xJ8=;
- b=IBUR+n8kS/5a6FlvomfSJQ8cUgzg/pC6UpJ3DzKfr/dhjKdabC7JMHWdEjzqPFF0yjroCkxPvtIrnFILv7tvcEj8pI5mF3z0opHuTbQm55+0LcF2aCCba9DVidJmetffbRStmEDWCguTdJ+Skvs/l8subIJoHRClFkynORpIsFk=
-Received: from DUZPR01CA0074.eurprd01.prod.exchangelabs.com
- (2603:10a6:10:3c2::20) by PAXPR02MB7312.eurprd02.prod.outlook.com
- (2603:10a6:102:1cd::21) with Microsoft SMTP Server (version=TLS1_2,
+ bh=D8AIII2V2RFH35akKOekE5WKF3RXuYI2l5LTvYvTgNo=;
+ b=YKj4SlxOxUU9+gq8du0bsLjnjcYlaVsOMVOD4Xag2S33K+0qBB7qkNCStnhidfCWy3C2BdTul1fujCZX9pPFxpJTYJSgsr52hlcXJu7jdT08HrmaXEhGnELzRoAIfYSn7S7u10pLVj8sogqKe9+5rkT/RhJet3Hestpl4gsS6BU=
+Received: from DU2PR04CA0190.eurprd04.prod.outlook.com (2603:10a6:10:28d::15)
+ by DU0PR02MB8038.eurprd02.prod.outlook.com (2603:10a6:10:352::18) with
+ Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.245.13; Mon, 27 Jul
- 2026 12:29:12 +0000
-Received: from DU6PEPF00009529.eurprd02.prod.outlook.com
- (2603:10a6:10:3c2:cafe::34) by DUZPR01CA0074.outlook.office365.com
- (2603:10a6:10:3c2::20) with Microsoft SMTP Server (version=TLS1_3,
+ 2026 12:43:38 +0000
+Received: from DU2PEPF00028D07.eurprd03.prod.outlook.com
+ (2603:10a6:10:28d:cafe::d) by DU2PR04CA0190.outlook.office365.com
+ (2603:10a6:10:28d::15) with Microsoft SMTP Server (version=TLS1_3,
  cipher=TLS_AES_256_GCM_SHA384) id 15.21.245.13 via Frontend Transport; Mon,
- 27 Jul 2026 12:29:12 +0000
+ 27 Jul 2026 12:43:37 +0000
 X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 195.60.68.100)
  smtp.mailfrom=axis.com; dkim=none (message not signed)
  header.d=none;dmarc=pass action=none header.from=axis.com;
@@ -48,26 +48,24 @@ Received-SPF: Pass (protection.outlook.com: domain of axis.com designates
  195.60.68.100 as permitted sender) receiver=protection.outlook.com;
  client-ip=195.60.68.100; helo=mail.axis.com; pr=C
 Received: from mail.axis.com (195.60.68.100) by
- DU6PEPF00009529.mail.protection.outlook.com (10.167.8.10) with Microsoft SMTP
- Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.21.270.5 via Frontend Transport; Mon, 27 Jul 2026 12:29:12 +0000
+ DU2PEPF00028D07.mail.protection.outlook.com (10.167.242.167) with Microsoft
+ SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.21.245.5 via Frontend Transport; Mon, 27 Jul 2026 12:43:37 +0000
 Received: from pc67007-2609 (10.4.0.13) by se-mail10w.axis.com (10.20.40.10)
  with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1748.39; Mon, 27 Jul
- 2026 14:29:11 +0200
+ 2026 14:43:37 +0200
 From: Waqar Hameed <waqar.hameed@axis.com>
-To: Sebastian Reichel <sebastian.reichel@collabora.com>
-CC: <kernel@axis.com>, <linux-kernel@vger.kernel.org>,
-	<linux-pm@vger.kernel.org>
-Subject: Re: [PATCH v3 2/2] power: supply: Add driver for TI BQ25630 charger
-In-Reply-To: <amQD4oydNkzlOIeC@venus> (Sebastian Reichel's message of "Sat, 25
-	Jul 2026 02:57:51 +0200")
-References: <cover.1782683551.git.waqar.hameed@axis.com>
-	<ca5228dc74705adf96f0af5363ccb65bb965640b.1782683551.git.waqar.hameed@axis.com>
-	<amQD4oydNkzlOIeC@venus>
+To: Linmao Li <lilinmao@kylinos.cn>
+CC: Sebastian Reichel <sre@kernel.org>, <linux-pm@vger.kernel.org>
+Subject: Re: [PATCH] power: supply: bq25630: Release battery information
+ after setup
+In-Reply-To: <20260727093738.2611185-1-lilinmao@kylinos.cn> (Linmao Li's
+	message of "Mon, 27 Jul 2026 17:37:38 +0800")
+References: <20260727093738.2611185-1-lilinmao@kylinos.cn>
 User-Agent: a.out
-Date: Mon, 27 Jul 2026 14:29:11 +0200
-Message-ID: <pndpl08obu0.a.out@axis.com>
+Date: Mon, 27 Jul 2026 14:43:37 +0200
+Message-ID: <pndjyqgob5y.a.out@axis.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -79,48 +77,64 @@ X-ClientProxiedBy: se-mail10w.axis.com (10.20.40.10) To se-mail10w.axis.com
  (10.20.40.10)
 X-EOPAttributedMessage: 0
 X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: DU6PEPF00009529:EE_|PAXPR02MB7312:EE_
-X-MS-Office365-Filtering-Correlation-Id: 47a500ae-4197-4cb8-51e3-08deebdaaa54
+X-MS-TrafficTypeDiagnostic: DU2PEPF00028D07:EE_|DU0PR02MB8038:EE_
+X-MS-Office365-Filtering-Correlation-Id: 427a1506-2c09-49a1-483f-08deebdcae1e
 X-MS-Exchange-SenderADCheck: 1
 X-MS-Exchange-AntiSpam-Relay: 0
 X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|36860700016|82310400026|376014|1800799024|23010399003|6133799003|18002099003|10067099003|22082099003|56012099006|4143699003|11063799006;
+	BCL:0;ARA:13230040|36860700016|82310400026|376014|1800799024|23010399003|18002099003|10067099003|22082099003|11063799006|5023799004|56012099006;
 X-Microsoft-Antispam-Message-Info:
-	W/g4IuAjnAKsgGt4MAcB/xHzeEPi+G3UyAV/nAFLg3RHd7ISg7FQnkQPr4PVRXpMayaPp9a60s44L+NwbVVe/VoNHOvNWTty5ojDVmok6niOtHF1vsNine1QZH/4z7KmkN0ZULcsIrFsFJudl4CXFYmcS+MCNbJv7TaTPHh1F3T7KoVgybw5Va6muCPt5x4owakzdDKgHGqFEQebqCs/aoWFquE4oo9rD01h9SIKGwyedjIv9Y1/I1LflI/AbIhuOI/knn0Xk3efyeVPfEXpLvAzWIdSaqPCP1ea+huO+zoGIMZ8KyOP5gzG+9jhiScY22iFrXvH1NZsSu+mk16qGjlh4pRdVW4W6IPt36BKOyRbgBhB27gQX1GdUvRQ/LvFjazE+9I2RsSqdZMkairv6SfTwFiHGm6dt0zqQFwfNut5kQrpJnCgu/UykDAGwEIpueLuUF3uQFfO7PZ4rAuEJmVdMTPHvUBexsiqWk2nJbByMVKWQVLz6dcfRHsEzQH8eo2NW9ekRlNJODArJxXPUoUkgn0ys/LnjMGfyvD/gYWTQ7/pX/otstjLjZ44mrJGorT9mcJNvl4fsPV7XR6vMxhpObAvGesE9f3rYWNGMeEnmvyDiFrfEYOJegFvmz0W5j/dL7vtUhwWTRHctJkxvQnEXta7TU0HCT3XOlvY7fxIgq24dL99XjcgQnp77Sw1hIDMWLsJPyZF0qekvW2o0g==
+	kTbcprTQlqKXM6V9m7HxH8TJgqsE8ZWXkLx7jTxzLeRenqmp+eBLi+3W9OoMpb+BrVcdwOTk4M370yPDCWQS3D/KyfKROdjPgPvJylm5e3YF2oN4KMsYEBeTig5W1HubgIbvkLgsTj0EtG7lyRVEeoUFbDKcol4Tv1GaqOIH6PkCdKYfALuE2lMT172DHvkN4C8GIzGdhNorM9TIY+imUEqTnPEIEM1hemntZICefh2gYqoKzEMvSMWOHD4X72OCd3Y2zURGtvI/+ttvNR77uvGlUTsELEsBH5Ao2Fzx33AuTSUZyyx8WfACuiiBCxKIA1XEvBPsSAtBU5ScFKRtKL2jx3PPFFpNX6rOeoBLnRjHXK3xRjPnhvqc6wF908vd30M/GiKBQPM7axjfvtkw2ObEvrtEAKuO8rfBW5tCcuLzDO+Wq6PUGu38Pdtl9GQcxCp4GNPouDNGuFAwWjKESK6OWV/LgEGk6z3ZZ9Bz98aD4rBZ8hoqPwhmYrfO4EZprfb0q7owQU4olfFOPdnq08NeUAg8phQdqxMLDy4FMWAKF9h+V+k5HjmxBDAxAfMObwGqRnbiSbYMGAQwmkrH16ShXSxXPDt9/1etJKhlp5UC3QVpuupPZCmjlgwhkHZYLaeEhLOHW5G2sMQBsW1tUdKqnEAX5EwjOmG/moF3vQjBLRHrWHIC7mnrW+4HXh46xB6SfHHRgg/nAN3kya4a6Q==
 X-Forefront-Antispam-Report:
-	CIP:195.60.68.100;CTRY:SE;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:mail.axis.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230040)(36860700016)(82310400026)(376014)(1800799024)(23010399003)(6133799003)(18002099003)(10067099003)(22082099003)(56012099006)(4143699003)(11063799006);DIR:OUT;SFP:1101;
+	CIP:195.60.68.100;CTRY:SE;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:mail.axis.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230040)(36860700016)(82310400026)(376014)(1800799024)(23010399003)(18002099003)(10067099003)(22082099003)(11063799006)(5023799004)(56012099006);DIR:OUT;SFP:1101;
 X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
 X-MS-Exchange-AntiSpam-MessageData-0:
-	MTqenSigi29BPxXei35rLvb8phDp3A62+lkZmxoEEfIaaAe2blPmAzxEHZxuvL3Z7vnoq70pq3UJidhJ5ST3oDe0HXZeQjy76NbgvWt2KPIXELcP9XU75mN4L0fqYfQHSoQGIiPfxrBh/k3xEZfKBMdyOHiEBC5y5Je5v/GQ4jeU4/kSwe5jGEOFpXpTQFnTAGo8pcII5bxQZeufx//Ci0/g7l0RGvVzNcaNYdCLlz1ZtpYmdY0+I049GD6dS5W7gr0Mz1sZgO0V9L//jAP8FO47qbbRbIpyndmr/a9jk3fVTiv4ZBOeDaZXehPGISb0r3+rex0CAFXhlJweWpqn1WfG8JMD7ygdbDuwrlSBa57oI4zDabRQLNxYAq0WQhjwIFPTizLtx9oyeonxHaVWhAFdtfoxZWkWnNjHi4EH9x04Ir3vKFOBdatXFLticsM+
+	WIwU4UFuBlG1DkrfKo171xvyLnJ7HWomphPBs9yIlO1yr7adBEFNqC1q0kWCPeF15rZF4bEBq4yhJcMpIFAFmncR5RYiBvpif++0lo16Ijt9QDredY0VF8j0j/wcf/iyc4rZknPZz+f0ZZ6L2SLCR+wZZpiy71i3fHIuWSvrAhOVhiR/wsNigGCBivNrky77HQv/A/k6DMyjbR2D+6B9Vvn3WaJObfV8Niu0JJNt0EmFSDHklZ23X7pSpMKX+RJaT++NS9sVLLX64qyV07jy/9TcYIVsZKEatFouC9/7s2a6Kz7nHLkDgA61sbDslvxklCuyzK9MSBDX54jRH+KoXL9AN/Nj4gYs5449DTkNxKa57/uXXFqgFGfkJ4A3zeGHz/o96zcPDRVrmPYI9tJE2aB5QXk3bIOsy0YAoFj3dKc6jcEAxOfK+OAyAqK3xI6s
 X-OriginatorOrg: axis.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 27 Jul 2026 12:29:12.5760
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 27 Jul 2026 12:43:37.9248
  (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: 47a500ae-4197-4cb8-51e3-08deebdaaa54
+X-MS-Exchange-CrossTenant-Network-Message-Id: 427a1506-2c09-49a1-483f-08deebdcae1e
 X-MS-Exchange-CrossTenant-Id: 78703d3c-b907-432f-b066-88f7af9ca3af
 X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=78703d3c-b907-432f-b066-88f7af9ca3af;Ip=[195.60.68.100];Helo=[mail.axis.com]
 X-MS-Exchange-CrossTenant-AuthSource:
-	DU6PEPF00009529.eurprd02.prod.outlook.com
+	DU2PEPF00028D07.eurprd03.prod.outlook.com
 X-MS-Exchange-CrossTenant-AuthAs: Anonymous
 X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: PAXPR02MB7312
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: DU0PR02MB8038
 
-On Sat, Jul 25, 2026 at 02:57 +0200 Sebastian Reichel <sebastian.reichel@collabora.com> wrote:
+On Mon, Jul 27, 2026 at 17:37 +0800 Linmao Li <lilinmao@kylinos.cn> wrote:
 
-[...]
-
->> +static const struct power_supply_desc bq25630_charger_psy_desc = {
->> +	.name = BQ25630_DRV_NAME,
->> +	.type = POWER_SUPPLY_TYPE_USB_TYPE_C,
+> data->batinfo is only used by bq25630_setup() to program the initial
+> charge limits, but power_supply_get_battery_info() allocates it on
+> psy->dev, so it stays around for the lifetime of the device. Nothing
+> else in the driver uses it. Release it right after setup, as bq256xx
+> and bq257xx do.
 >
-> Just POWER_SUPPLY_TYPE_USB, other USB details should be done via
-> USB_TYPES (as you do already). I just cannot remove those types
-> because they are used by some old drivers and exposed to userspace
-> and thus ABI. I guesss I should add a _DEPRECATED to the in-kernel
-> name.
-
-Yeah, maybe we should do that. It would surely help the next person :)
-
+> Signed-off-by: Linmao Li <lilinmao@kylinos.cn>
+> ---
+>  drivers/power/supply/bq25630_charger.c | 5 ++---
+>  1 file changed, 2 insertions(+), 3 deletions(-)
 >
-> I will fix that up while applying.
+> diff --git a/drivers/power/supply/bq25630_charger.c b/drivers/power/supply/bq25630_charger.c
+> index 165f8c67b4895..efcdb1f5bc351 100644
+> --- a/drivers/power/supply/bq25630_charger.c
+> +++ b/drivers/power/supply/bq25630_charger.c
+> @@ -1045,10 +1045,9 @@ static int bq25630_probe(struct i2c_client *client)
+>  		return dev_err_probe(data->dev, ret, "Could not request IRQ\n");
+>  
+>  	ret = bq25630_setup(data);
+> -	if (ret)
+> -		return ret;
+> +	power_supply_put_battery_info(data->psy, data->batinfo);
+>  
+> -	return 0;
+> +	return ret;
+>  }
+>  
+>  static const struct of_device_id bq25630_of_match[] = {
 
-Thanks!
+The initial thought was that `batinfo` could/would be used elsewhere,
+but as you point out, it's currently not. A better design is then to
+move the `power_supply_get_battery_info()` into `bq25630_setup()`, in
+order to scope the `get/put()`. So let's get `batinfo` there, just
+before using it, and have an error/clean-up-path there as well.
