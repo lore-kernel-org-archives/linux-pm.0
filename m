@@ -1,163 +1,99 @@
-Received: from mail-wm1-f46.google.com (mail-wm1-f46.google.com [209.85.128.46])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 17AA9415F16
-	for <linux-pm@vger.kernel.org>; Mon, 27 Jul 2026 14:58:15 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.46
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 464C241B352
+	for <linux-pm@vger.kernel.org>; Mon, 27 Jul 2026 15:00:39 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1785164299; cv=none; b=QgZ3ZgQAhfKehDA4QYWcjaikysGhnkcVtcdSoGlsdFRrsEYdZWxQzw28Ws9js5v06qXiU8dB9cP5EsM3bt4JlJOOrTzOaOGogEDihK5mtWKdSi69S2w+zW0rISeU/PnTRYqXvFcn13IFuGDStue0fBZhROwkYOB4URJl64B8Pe8=
+	t=1785164441; cv=none; b=l4VD649T5E+Qbmg6P/nzAiaU/ewtpxP5MRrNnQAeOGGEKrsEie0w1AkmfPf1JCF+V9yUt6uwtce426P3VwWcLC0YQxgB2aRgaOPXDN7mqCliEQep6Y4Shi7auejjrPNbcD/G9vwrVRNByaYZMBI/czgfah3JNADux73s4Oie44Y=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1785164299; c=relaxed/simple;
-	bh=/pHEhqhHim6zbvXlXGSytIteuWLfY5Kr9gwBWC8fFio=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=B9FJoI+/J7bcW5Fk+fB0vFSYhaTUK721cjjAwBowt00TopjdNpZ2yhQduKSssPWwsT0i3hSTvOFNbDg84nlt7xYaGHHdKZcX5T9+twdaWkUcfu8EJWEot7xjdG5Pj3nCX/qtLuk/KgbRMGYXtj5ee1O0+gXvOhPkPJ9+/3Jydd8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com; spf=pass smtp.mailfrom=suse.com; dkim=pass (2048-bit key) header.d=suse.com header.i=@suse.com header.b=WtIrJspU; arc=none smtp.client-ip=209.85.128.46
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.com
+	s=arc-20240116; t=1785164441; c=relaxed/simple;
+	bh=1zPiUVwsOeKtDXPiVPn8kiW5f00zllQR+VUv5azggXc=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=UfLfPNBbwHvjz/gU6oZKJCcgJQa08hfIxF2A3hcVCfDulgwYbopFSxqOzro6eTnLNUWLtsPR5hUQ6k+sQutVb252jMHaOFZu09Im+tKiejxNc90D06IV82rJtsSCJ7Hyi8JQdQelaTzzGNRSskT2L3vgWlWmdQ6a8/CrmPYLynI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=faOysDKP; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=suse.com header.i=@suse.com header.b="WtIrJspU"
-Received: by mail-wm1-f46.google.com with SMTP id 5b1f17b1804b1-49548aebcd8so21239165e9.3
-        for <linux-pm@vger.kernel.org>; Mon, 27 Jul 2026 07:58:15 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=suse.com; s=google; t=1785164294; x=1785769094; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:in-reply-to:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=cdTAOusKdU7cIGVdiXhGRlX7Lluomu67uAna+oJrbLI=;
-        b=WtIrJspUFDv9uYL8E4OhCURfnCutsSkbOm+juL/6yCshO8FMCiFZrYMSEpcfsdW4Nh
-         iKdHsW3hXXVC8Pl4kUTysqT9Zr8oF1RzlXcRzFSGc2UBRbewwmpIc4cUdB8jmp3pl1An
-         f6O93wZ1uT86BMhjp0hkFyCYKEgWqWi968vQRJXARDoAz7+tu8TEFguRFWLq/na2hZxb
-         h+/lKgJgJ7KvEmuOlPlx1TgAEAOP3gxpUS2jY/c4WBF4cEndQhBSKAsMyUFZVAH/YqQT
-         oXvZ+5VFrjrP5i1FIj+Vs0SajlFsW+dWgVvOzDcsFpUW8FB2tzSLDDUFkca3REdCvM53
-         ZAVA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1785164294; x=1785769094;
-        h=content-transfer-encoding:content-type:in-reply-to:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=cdTAOusKdU7cIGVdiXhGRlX7Lluomu67uAna+oJrbLI=;
-        b=qoRkfX13vHTDdKzwcBDmH8o+l1bYzQXfsT3iXsFXlF07PGT5LneCJ7ZnC5Id2zoGBs
-         YxH5gCwIurhwXDjMyvkLX6hDnsNjPhzqUxHnfJFqtIZVBT51cBdsZozfUGXSg9PcJpqj
-         Z5qWyyhxamntMB08v/QBSAbeoTfhERB9Ocqklf9wnKOZ/WvSFkoYCjAphfdKmEMkdHtP
-         STrtBcBgPecXnZRwwiit2im3zwh5lwly+dQb1SqWUIMbwwy06tYog4wXW+n5zR8T7HzW
-         ShbLS3B9eCrzlBynO+fLqZF81VF7lna2fmJWzxn+ajevAp4Ag7P48xKBf8skt4Lk9Gjt
-         xCuQ==
-X-Forwarded-Encrypted: i=1; AHgh+RrDFDnhUijXNDszOnpSisXFOzr7pYAt02rwqNhECnNo4S+NQMsiesnGKecbfUDAeTfJoznx7U1zlA==@vger.kernel.org
-X-Gm-Message-State: AOJu0YwDjrCuLDzxm0VEPlkncuixR3e08YRmyGX5MYmOWrd50DXLYHya
-	Q0f2ywWGrPEd3VCPnf9xiRg2AraTx8nSzjCpuFs2oInh+oam2yX5zpPM/sgMaXfjOHs=
-X-Gm-Gg: AR+sD11govgFIRl4zAN72ZlP/+AEIV4JgbugGpQUB1+flCk+5eQkVk/SgdOvQRfeThI
-	ETBftKpvcKsWQyt5SwbKLjQ8S+FE8qfGMy7VCZjVuEt6L9rYhSXYBqVWZLjsadm3wWVZaZN0bpE
-	OawT8/aInEIKEoIenM5twMz24nGUr1UPDVa+orBq0iWR+6N+Dle+e5luY/4lKbMJkqJvXIkUz6q
-	Vl5killxzQK8t10D7/5v3OdurQDifwefQIAwLZpjPPCpSSUu3J9yPizaz2CfhRcqW7nZ7zsMJJS
-	7D12zceIOq5e3gRhb1TESa0SLrNE05zIaDCEbhwM2lR2CUsx8EM8yJ150NXuTJ43zRvQoIA7c93
-	X81vIncB9B++5dvR1auz7+18db8jEp5SdHgEnNXYZX03AV3xUvehXXOWl1Yy4UL9Vyce5s1schO
-	6PM3IaSDS7SiW9MXZ4/25MtPvLCgkPUYBh76FTIq0=
-X-Received: by 2002:a05:600c:1553:b0:493:e97c:216e with SMTP id 5b1f17b1804b1-496b5731987mr114339235e9.39.1785164294020;
-        Mon, 27 Jul 2026 07:58:14 -0700 (PDT)
-Received: from ?IPV6:2a07:de40:8100:0:fc6c:f9a2:4a0a:6354? ([2001:af0:8000:1409:193:86:92:181])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-496b4ee0e91sm231594995e9.4.2026.07.27.07.58.11
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 27 Jul 2026 07:58:13 -0700 (PDT)
-Message-ID: <ead73f81-26ef-4a46-9ad8-fcd2915563e1@suse.com>
-Date: Mon, 27 Jul 2026 16:58:11 +0200
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="faOysDKP"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id EE8CB1F00A3D
+	for <linux-pm@vger.kernel.org>; Mon, 27 Jul 2026 15:00:38 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1785164439;
+	bh=DX5ydf/ZthU4S0pAcWaJEr/nv6UdGQv1ZEKCA/p12Fs=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc;
+	b=faOysDKPB2JrK2v/giPhIAf9atJJCv1HlGa43nsjP09wpDeIN0AXhED9NcKyzMbh1
+	 P6+KPfRkZTx6xEA/7gwvU4rgPITtwRaYeqZlGEh3lKU+JecJx8LnrRj7db2jhrf0Os
+	 yh9hmJoXGP3StX5r63CHVxL3mNiii/eCldTyvgi1rjMqUoH1o5WPgPT/Cft6l9VLFE
+	 TIG86QN09KCHDlAGbE1WlatVzOIVvh4GW9AqG3x5ic9SsG8V2N79c5XjRitAQaTxcX
+	 7Q8l/wyefMG7B4V6Xg9m6+L0usISesxl0JDqd/lSxFIIrP/a+WeSD/PD5M4qyN92JG
+	 Axa3o6Yx9Y1Yg==
+Received: by mail-lf1-f45.google.com with SMTP id 2adb3069b0e04-5b2a4359d16so3158404e87.3
+        for <linux-pm@vger.kernel.org>; Mon, 27 Jul 2026 08:00:38 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AHgh+Rp85pUvhnDgzz5CvmIOkE2cVUvl4jcdAddS8TG1q6afTLOrHuotVcyh7f/2Y3ADq1hp6PliB3QcYQ==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yxd1NLjQHZ633iHi5VJYiIAE2IzBlEs2YqNTDNlwEaMq/zeVBgU
+	og0irNQM29kko2G9SOrPp5NCXF1uwzKWuy9TAwuIEijfBHZFp0MdnjaQ2WhYw5vHIKzEM1yNjGk
+	DI1ktpL50ZqsmFjLJEJ4LURxbEsyRZoQ=
+X-Received: by 2002:a05:6512:308b:b0:5b0:1e16:f3a2 with SMTP id
+ 2adb3069b0e04-5b2c1b7058cmr1629287e87.57.1785164437416; Mon, 27 Jul 2026
+ 08:00:37 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 2/3] time/jiffies: Include linux/sysctl.h for
- proc_int_u2k_conv_uop(), ...
-To: Thomas Gleixner <tglx@kernel.org>
-Cc: Tony Luck <tony.luck@intel.com>, Borislav Petkov <bp@alien8.de>,
- Ingo Molnar <mingo@redhat.com>, Dave Hansen <dave.hansen@linux.intel.com>,
- x86@kernel.org, "H. Peter Anvin" <hpa@zytor.com>,
- Philipp Reisner <philipp.reisner@linbit.com>,
- Lars Ellenberg <lars.ellenberg@linbit.com>,
- =?UTF-8?Q?Christoph_B=C3=B6hmwalder?= <christoph.boehmwalder@linbit.com>,
- Jens Axboe <axboe@kernel.dk>, Johan Hovold <johan@kernel.org>,
- Alex Elder <elder@kernel.org>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- "Rafael J. Wysocki" <rafael@kernel.org>,
- Michal Januszewski <spock@gentoo.org>, Helge Deller <deller@gmx.de>,
- Alexander Viro <viro@zeniv.linux.org.uk>,
- Christian Brauner <brauner@kernel.org>, Jan Kara <jack@suse.cz>,
- Trond Myklebust <trondmy@kernel.org>, Anna Schumaker <anna@kernel.org>,
- Chuck Lever <cel@kernel.org>, Jeff Layton <jlayton@kernel.org>,
- NeilBrown <neil@brown.name>, Olga Kornievskaia <okorniev@redhat.com>,
- Dai Ngo <Dai.Ngo@oracle.com>, Tom Talpey <tom@talpey.com>,
- Mark Fasheh <mark@fasheh.com>, Joel Becker <jlbec@evilplan.org>,
- Joseph Qi <joseph.qi@linux.alibaba.com>, Tejun Heo <tj@kernel.org>,
- Johannes Weiner <hannes@cmpxchg.org>, =?UTF-8?Q?Michal_Koutn=C3=BD?=
- <mkoutny@suse.com>, Luis Chamberlain <mcgrof@kernel.org>,
- Daniel Gomez <da.gomez@kernel.org>, Sami Tolvanen <samitolvanen@google.com>,
- Aaron Tomlin <atomlin@atomlin.com>, Pavel Machek <pavel@kernel.org>,
- Len Brown <lenb@kernel.org>, Andrew Morton <akpm@linux-foundation.org>,
- Danilo Krummrich <dakr@kernel.org>, Nikolay Aleksandrov
- <razor@blackwall.org>, Ido Schimmel <idosch@nvidia.com>,
- "David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>,
- Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
- Simon Horman <horms@kernel.org>, David Howells <dhowells@redhat.com>,
- Jarkko Sakkinen <jarkko@kernel.org>, Paul Moore <paul@paul-moore.com>,
- James Morris <jmorris@namei.org>, "Serge E. Hallyn" <serge@hallyn.com>,
- Kentaro Takeda <takedakn@nttdata.co.jp>,
- Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>,
- linux-edac@vger.kernel.org, linux-kernel@vger.kernel.org,
- drbd-dev@lists.linux.dev, linux-block@vger.kernel.org,
- greybus-dev@lists.linaro.org, linuxppc-dev@lists.ozlabs.org,
- linux-acpi@vger.kernel.org, linux-fbdev@vger.kernel.org,
- dri-devel@lists.freedesktop.org, linux-fsdevel@vger.kernel.org,
- linux-nfs@vger.kernel.org, ocfs2-devel@lists.linux.dev,
- cgroups@vger.kernel.org, linux-modules@vger.kernel.org,
- linux-pm@vger.kernel.org, driver-core@lists.linux.dev,
- bridge@lists.linux.dev, netdev@vger.kernel.org, keyrings@vger.kernel.org,
- linux-security-module@vger.kernel.org
-References: <20260721131207.803760-1-petr.pavlu@suse.com>
- <20260721131207.803760-3-petr.pavlu@suse.com> <874ihmke0k.ffs@fw13>
-Content-Language: en-US
-From: Petr Pavlu <petr.pavlu@suse.com>
-In-Reply-To: <874ihmke0k.ffs@fw13>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+References: <20260727093553.98246-1-nihaal@cse.iitm.ac.in> <5zxdn4jnqu22k2s7roo3wxykwsusah7mp4telybmzlc5zgilac@pf5svblpx7nj>
+ <5265823c-9b69-417f-80cf-5b06b1106b42@oss.qualcomm.com>
+In-Reply-To: <5265823c-9b69-417f-80cf-5b06b1106b42@oss.qualcomm.com>
+From: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
+Date: Mon, 27 Jul 2026 17:00:25 +0200
+X-Gmail-Original-Message-ID: <CAJZ5v0ijun5UYQs1r+bTK_x6BgTCUbzvdGCxncW9Wc=K400gkw@mail.gmail.com>
+X-Gm-Features: AUfX_mww97u56FKwBrMsueK_m3H6aQzi_oA4gkv6GF_EFZ01Lg1YZuB5_VBZH9Q
+Message-ID: <CAJZ5v0ijun5UYQs1r+bTK_x6BgTCUbzvdGCxncW9Wc=K400gkw@mail.gmail.com>
+Subject: Re: [PATCH] cpufreq: powernow-k8: Fix possible memory leak in powernowk8_cpu_init()
+To: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>, Abdun Nihaal <nihaal@cse.iitm.ac.in>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, 
+	linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-On 7/25/26 10:31 PM, Thomas Gleixner wrote:
-> On Tue, Jul 21 2026 at 15:11, Petr Pavlu wrote:
-> 
->> The kernel/time/jiffies.c file uses proc_int_u2k_conv_uop(),
-> 
-> jiffies.c uses ...
-> 
->> proc_int_k2u_conv_kop(), proc_int_conv(), proc_dointvec_conv() and
->> proc_doulongvec_minmax_conv(), which are declared in linux/sysctl.h. It
->> currently relies on this header being included indirectly through
->> linux/module.h -> linux/kmod.h. Add the missing include in preparation for
->> removing the linux/sysctl.h include from linux/kmod.h.
-> 
-> Can you please split that spaghetti sentence into paragraphs?
-> 
-> https://docs.kernel.org/process/maintainer-tip.html#changelog
+On Mon, Jul 27, 2026 at 12:39=E2=80=AFPM Zhongqiu Han
+<zhongqiu.han@oss.qualcomm.com> wrote:
+>
+> On 7/27/2026 6:20 PM, Viresh Kumar wrote:
+> > On 27-07-26, 15:05, Abdun Nihaal wrote:
+> >> The memory allocated for data->powernow_table inside
+> >> powernow_k8_cpu_init_acpi() or find_psb_table() is not freed in one of
+> >> the error paths in powernowk8_cpu_init(). Fix that by adding a kfree()=
+.
+> >>
+> >> Fixes: 1ff6e97f1d99 ("[CPUFREQ] cpumask: avoid playing with cpus_allow=
+ed in powernow-k8.c")
+> >> Cc: stable@vger.kernel.org
+> >> Signed-off-by: Abdun Nihaal <nihaal@cse.iitm.ac.in>
+> >> ---
+> >> Compile tested only. Issue found using static analysis.
+> >>
+> >>   drivers/cpufreq/powernow-k8.c | 1 +
+> >>   1 file changed, 1 insertion(+)
+> >>
+> >> diff --git a/drivers/cpufreq/powernow-k8.c b/drivers/cpufreq/powernow-=
+k8.c
+> >> index fe1f499b4fc0..c9bcc6f0ab7b 100644
+> >> --- a/drivers/cpufreq/powernow-k8.c
+> >> +++ b/drivers/cpufreq/powernow-k8.c
+> >> @@ -1085,6 +1085,7 @@ static int powernowk8_cpu_init(struct cpufreq_po=
+licy *pol)
+> >>
+> >>   err_out_exit_acpi:
+> >>      powernow_k8_cpu_exit_acpi(data);
+> >> +    kfree(data->powernow_table);
+> >>
+> >>   err_out:
+> >>      kfree(data);
+> >
+> > Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+> >
+>
+> Reviewed-by: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>
 
-I will update it to:
-
-    jiffies.c uses proc_int_u2k_conv_uop(), proc_int_k2u_conv_kop(),
-    proc_int_conv(), proc_dointvec_conv() and proc_doulongvec_minmax_conv(),
-    which are declared in linux/sysctl.h. It currently gets that header
-    indirectly through linux/module.h -> linux/kmod.h, but the latter no longer
-    needs to include linux/sysctl.h.
-
-    Include linux/sysctl.h directly in jiffies.c ahead of removing the
-    unnecessary include from linux/kmod.h.
-
-> 
->> Signed-off-by: Petr Pavlu <petr.pavlu@suse.com>
-> 
-> Other than that.
-> 
-> Acked-by: Thomas Gleixner <tglx@kernel.org>
-
--- 
-Thanks,
-Petr
+Applied as 7.2-rc material, thanks!
