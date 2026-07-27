@@ -1,245 +1,444 @@
-Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
+Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A90C43F12EF
-	for <linux-pm@vger.kernel.org>; Mon, 27 Jul 2026 09:41:45 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.180.131
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B7A873F7A84
+	for <linux-pm@vger.kernel.org>; Mon, 27 Jul 2026 09:57:55 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1785145307; cv=none; b=camAzTZh+7rJ9Rh1wDCPcC12KJQa3WzDZn04/uLZb1PMb2XEtHXYBv96aP+k1xMXcPs8P6ETL5+FE19BmIzVPTy6y/X3ATLLbnnu7R2AUnqBe+CSJqNTaNO0c9X7I/P3Ill90gxF0j0M/Hi3SdusMiGxgP9yzouaQaRZbDEWS5M=
+	t=1785146277; cv=none; b=Y+qIjvyQYlqiME6IgwXe5WT77+3sZrBBeimq2X7Jl3F9LZvef6YshyuEUKypb99ixPxHuKMxR5GRWVklJcxQgsNEUqslc4iejZJKy1cZf7zje25KwjrsWMFe+kT6/XYwqCVo3NdehphYTJDJkSxbEhCZ1eiyjJf82efTiORN1Ic=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1785145307; c=relaxed/simple;
-	bh=Y5Xn8qE7LpNOzTT8++pEzgKR0yaA8en+5bwEYjw3AC8=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=Iu4Di/Dfoi21U0NWgnUf/OfQvz5BxlbgmpmVzvj0PnJcGl8BYTIehhyFye/J5YUMkYSDKLFcCAdLwS4rHONZaeFtp2e57XoM/2ebu+Axlhc2ExlWmz2G8xaD8IU66Jjixkwe9myQpW+EWMFvJJElncD7/Lpoe/JipceVAC7zK/c=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=F0FB+cBv; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=JQkQ4DD7; arc=none smtp.client-ip=205.220.180.131
+	s=arc-20240116; t=1785146277; c=relaxed/simple;
+	bh=G7OuZnFzXRxi+fDAYiRyDUKp+x0C6VA6eN1JvMlufl4=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:To:Cc; b=cbY/xaxiI3uTuu1ikTB6n3ZyPg5FiZwj0+pDh8nl3+JIOe5gUmDhTDtJ3Xr3+gGCn9gvOxwD2cT89uGCk3SjTxfdi68UAfKcH0fDHKMKf0BIFyIIrq6bRhklNN97TIoHHbWcDYh8UBU/D5OeTq/RsXBQIUQk7SVwpYGUKsbunVs=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=I5+4aNDG; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=SLQPlQ+3; arc=none smtp.client-ip=205.220.168.131
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="F0FB+cBv";
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="JQkQ4DD7"
-Received: from pps.filterd (m0279871.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 66R9WxoE3481646
-	for <linux-pm@vger.kernel.org>; Mon, 27 Jul 2026 09:41:44 GMT
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="I5+4aNDG";
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="SLQPlQ+3"
+Received: from pps.filterd (m0279863.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 66R9Wvrn3490831
+	for <linux-pm@vger.kernel.org>; Mon, 27 Jul 2026 09:57:55 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	oTc9/pF/S1BGmHsWWo0LXh7x2vLZLHXs+ToLsh0cTy4=; b=F0FB+cBvDbVl2sRz
-	hsVrjp8FpZT906w/GYcq7Zr2q3U+nPtPLR6FSBLTo2Vg33LRdSiHVw4T975JUAMQ
-	b4Ky1t+JfZgiCxznzezQ8I+nFv+EMLlZswIob2Pb/rpgVBdwTsJMPzclPcejsH0+
-	+W3TE+nwGonT/r1+x0aji5mHD2UY88p91SEehOYSEOAVi5sq97mUNx5wPcwDz1e5
-	hZaG2cH4tC45sULIrx3yJ6g+Kl7HANQCMAy5Y7O5PgfUfj6MvMKmbF/Czm//3tQW
-	7ojcFkQDyCiJL/cX8gMD2C/s69qRA4X/r6p5Q9Td8e27B61vJGX3/t59JnS0oWYD
-	me2jlw==
-Received: from mail-pl1-f198.google.com (mail-pl1-f198.google.com [209.85.214.198])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4fp4mq02pp-1
+	cc:content-transfer-encoding:content-type:date:from:message-id
+	:mime-version:subject:to; s=qcppdkim1; bh=cTfkRuh1qMz6daNEBghoLo
+	xTzu0WE8KxCU7LeuEabmM=; b=I5+4aNDG3QRbCXqL80MbnJjywj9Jrnz1zXpdSc
+	hyfxnrWHR1+9c2Rxgw5uEjAd9NRO05v9bEC9r7Z17VXOZVMtMYF/UTH4ojUomfV5
+	bJ4qnItwyxJRV4esxyRIcgT8FCB9cMVQ9jLmDES0h5esalX8Bn78TiQpWfcTaUV9
+	4qFU80/l3uB9t13YBGGhjD/O58PEHe5JC0rCL1TXfkaVMijFd23eC5ZIl9QvrWsj
+	pML/9uZya91IPI/TP9WVZNe+jakXNHXpJq02aV0iuGzUv4/84qVW5BvT/K0xY/Mw
+	q8Wt2mqJxKrryqWC73ZeaKckmIIqi8GgjdeUs1pCnTkIy4NA==
+Received: from mail-qt1-f198.google.com (mail-qt1-f198.google.com [209.85.160.198])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4fngystwba-1
 	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Mon, 27 Jul 2026 09:41:44 +0000 (GMT)
-Received: by mail-pl1-f198.google.com with SMTP id d9443c01a7336-2cfbf3e4a63so72716175ad.0
-        for <linux-pm@vger.kernel.org>; Mon, 27 Jul 2026 02:41:44 -0700 (PDT)
+	for <linux-pm@vger.kernel.org>; Mon, 27 Jul 2026 09:57:55 +0000 (GMT)
+Received: by mail-qt1-f198.google.com with SMTP id d75a77b69052e-52827090cc5so32826031cf.0
+        for <linux-pm@vger.kernel.org>; Mon, 27 Jul 2026 02:57:54 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1785145303; x=1785750103; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:in-reply-to:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=oTc9/pF/S1BGmHsWWo0LXh7x2vLZLHXs+ToLsh0cTy4=;
-        b=JQkQ4DD7GnSF/BkvUx2tCoOeFT09BP4RAaePfPqLJKJII2OvgZ/VC8rjbwdGWRJwfz
-         YOlDfcKte8fQoLoFDzMmeoeN/WX0ua7vnntaRldNR5+zh72nSy5nWaYbNtL0igi4t1yl
-         rE/ZHjpoZltYO+mU+uNTidSBEEXnWh2qj7een9PqY/ncjVYui6K22OHj6ynhFiMHi7zZ
-         tsZSrNyxOqQXQUyr1RdQeIOf0eH5/XoUNHxSd+ie8ar2u9BIonbH14Qf8UYIaQgKIDgD
-         AisqVf4KdiwBTDy9vzgxiiQIjb6i1pIBcBjNkzbR1CxrSbC2FxMNu3pg2mAVHyCwjT9i
-         oiOQ==
+        d=oss.qualcomm.com; s=google; t=1785146274; x=1785751074; darn=vger.kernel.org;
+        h=cc:to:message-id:content-transfer-encoding:content-type
+         :mime-version:subject:date:from:from:to:cc:subject:date:message-id
+         :reply-to:content-type;
+        bh=cTfkRuh1qMz6daNEBghoLoxTzu0WE8KxCU7LeuEabmM=;
+        b=SLQPlQ+3zwpQS5a6eIrLxfC2pJ7AFOd7yiYJRjKzz9GLvIBaqjLdrKej136AyD39Ag
+         cRn+drgHpl0J60pBKGYIZMvaD/VcDKcg35GymRl3aNmiA1lKF+OfJ3iO391vd5sqZUV8
+         mrY5YUCXww1okohwukGpS1z74wcXtVAnbdRZMJjE8jm/Ulo5+JIueU1DO9gH4MbDiP3F
+         wWWQiUbWQh+o/oh59iexLGY615+SPWPMDaUdSm3RwzOZv/ByfkXQJZqYYAR9rN0mh4IQ
+         EyEL2Ow9QpvuKDhimXaLx5Tjk3t9JcaR+WPaa3y7mDtoTXO8FoxSMSiwMfcniUlo4Xwo
+         G+pw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1785145303; x=1785750103;
-        h=content-transfer-encoding:content-type:in-reply-to:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=oTc9/pF/S1BGmHsWWo0LXh7x2vLZLHXs+ToLsh0cTy4=;
-        b=eRWPDHmCtED2lJJkHN4mmmRdY29p2WZhtYpRcxXfmaM6vsfgtYIe3EntB+WGzs6+7C
-         kzeNh9Id1OBYBU6VlImUshrXYZUr5JvMB0A+ECSW4O1vFckFwyreBKuFnBWl6CAH8aIt
-         bJco32pP+Nyl++adXhcbF91tztPUQd3IdwbBWNKEcNH0d74jPilmQcjNL67UqJXYpB42
-         qFGgILSj6hR7XjQ8TPC6cd5XQ++Ua9E6DdnG7P6N+BOatOhPx7NpBN6SR1zwgp74Z9rl
-         neayQfIEoUKcNnMbyO6z47PHiV1lHoUn3z0y42fLrR9v2zy/tjBh66Z1DFzvhMJ3xStI
-         eGPQ==
-X-Forwarded-Encrypted: i=1; AHgh+RrxadcqjsJI+34gDolRbi+ttzF9McwcbdEcozfaqvxjCC1s2Y7WlU37wlmIK9eMegNmKX1eGWsZ9w==@vger.kernel.org
-X-Gm-Message-State: AOJu0YzFZdlmy0GaEwFjvFSAOjL4djUrvDnTYNsP0oHrYSguKc9hulMg
-	JJ1OVtUO6upsX5Ee8EAdppfi5Il3tCek0d/Okg3mlT06XKBP+C/+XFZlxbNfjCULh9qSVDX2Ewt
-	LM76Axj6OvSyfkzrnHIleAITZMHvzeSHP8133ieP3Tqn4p2K+SlL7HSL9zp9DJA==
-X-Gm-Gg: AR+sD12TNKgDBkDVMq9PdtYVpOUHou6Iz3fdKQuMiB05GHEbAHqfBqKpNBdk9zzAZZ1
-	nxsqmaUITqwdXCxRgIhHCws/Wk34Tp5+QZGQMQ8qI+Rez0gIyXdFF4y6Xg1EORKcV9D3uSHMFpS
-	9FsV0D3iCxDwF0VIJ9S2OhjN3cZyEWQkjZ8Aa2BKRghjv7O3ls4IBF2enGqFf4tz59A1egDiMGl
-	JFR4s7D9q7Jl35yma88GP4Y5nhhY25+F3+Do2+oQMFmXWnBDF4o+TQhMPbvMvk/nS1JV3cFhfSr
-	AVSvYkYHAu8BV9V7+CEl9cos3702qUfdv5IP/aKbWfsqGrP4f9JlKqmeoPmfYgvGjPURPPDTEyl
-	xPTV5VWQPI3Vt+dv6uSFMLS2RfZVROoY=
-X-Received: by 2002:a17:903:1a24:b0:2ca:329:3d96 with SMTP id d9443c01a7336-2cfde795581mr78353495ad.3.1785145303321;
-        Mon, 27 Jul 2026 02:41:43 -0700 (PDT)
-X-Received: by 2002:a17:903:1a24:b0:2ca:329:3d96 with SMTP id d9443c01a7336-2cfde795581mr78353235ad.3.1785145302847;
-        Mon, 27 Jul 2026 02:41:42 -0700 (PDT)
-Received: from [10.218.14.97] ([202.46.22.19])
-        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-314bc548e29sm30948601eec.15.2026.07.27.02.41.38
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 27 Jul 2026 02:41:42 -0700 (PDT)
-Message-ID: <f4a3c2a7-0732-4d4c-b252-2ac5ea3db35a@oss.qualcomm.com>
-Date: Mon, 27 Jul 2026 15:11:35 +0530
+        d=1e100.net; s=20251104; t=1785146274; x=1785751074;
+        h=cc:to:message-id:content-transfer-encoding:content-type
+         :mime-version:subject:date:from:x-gm-gg:x-gm-message-state:from:to
+         :cc:subject:date:message-id:reply-to:content-type;
+        bh=cTfkRuh1qMz6daNEBghoLoxTzu0WE8KxCU7LeuEabmM=;
+        b=qW0M4tVawCcy382tddp/R3w0xEXu7vaeNgtHAd1Hr2LVkrZNzK89HBBvKS4cdWacYr
+         2HYbSZYyTRmhoLnwI4XcCRIJeKcw3vhrcbXkruvUt+S6ocTCWdGXlaMZm94P0T8wojbF
+         Szv0slVdsbzZU45A0R7PgTsk2sZ0BeRNQFb+iwAJd1gTLp/4V75A5bVk0w8j6AdIhOoy
+         1SW0KVWCHY++jiBZtSgJgZ8xppFv1JND0rd5LaAXcBN3tPW+5F8G6nt+gTwt7gayFuot
+         WYuKSFA3LFa57Hc+NqTbyay1m5KVM4P0qCeRPKRy71BCCx4goRbzPOspjSEqJY9t/Xb/
+         5AZA==
+X-Gm-Message-State: AOJu0YzRAQE0URwOoZbPVdPvMJWLd7QQ1kUYt+guMpp32uOH2Jtw9R9H
+	vqUMuX8kjCdf4EBoyfStGJxroEgR1eedto0uQCnf6sSlmAPw/inPfM0tMGfuJlgsVwESTWoeRIn
+	saIzX0LPaJwzspy1oBmegd2Y0EGgvcPR67ecp3+o2CnRGWS8aE2YEV3pPP6BsIQ==
+X-Gm-Gg: AR+sD13BDcVitpXK+M+evi1P/uBppUhMo8/vwaQvZDTFvcSw8JqoAqrlEClnIN5xikf
+	n3VZz+gHnwioDLBh0pgbZ1mkKVqGlwJmhN8V9ZifWrEGaA5gi6P9cUAKDsKp3YYQxZAVqsQF7ve
+	HPMdoD/Zdos8zsQ8ORpjr9j4jwJBqsCtu0OltCltlS3Fp9ceqIROnveUdH68FOQCdZZJXxMDE2F
+	aHWG4CPpjF3kszx9RNXuB4Oxguv4Ju5c/ZKWZLhBtmnAn4CdktyRxVg6i0TFEMAeemngZNKsKQZ
+	9ye3kRyH7gbwfTidxa5fAuLRIhtGqc9zhGpDohXKNt56dZUxEZ2vE9F/NcuLmnXzWVYiAT34V4v
+	ahvFHMLRh73IMJ/+M04rIMiy7RE0B
+X-Received: by 2002:ac8:6f11:0:b0:528:ce0:e9f8 with SMTP id d75a77b69052e-5295d270a04mr106677591cf.3.1785146273857;
+        Mon, 27 Jul 2026 02:57:53 -0700 (PDT)
+X-Received: by 2002:ac8:6f11:0:b0:528:ce0:e9f8 with SMTP id d75a77b69052e-5295d270a04mr106677341cf.3.1785146273405;
+        Mon, 27 Jul 2026 02:57:53 -0700 (PDT)
+Received: from brgl-qcom.local ([2a01:cb1d:dc:7e00:1449:2d40:6dd2:20d])
+        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-c1c32f19c4csm611477266b.63.2026.07.27.02.57.51
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 27 Jul 2026 02:57:52 -0700 (PDT)
+From: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
+Date: Mon, 27 Jul 2026 11:57:38 +0200
+Subject: [PATCH RFC] power: sequencing: rename pwrseq_power_on/off() to
+ pwrseq_vote_on/off()
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v3] opp: Use clk_get_optional() to avoid leaving
- opp_table->clk as an error pointer
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: bjorn.andersson@oss.qualcomm.com,
-        Michael Turquette <mturquette@baylibre.com>,
-        Stephen Boyd
- <sboyd@kernel.org>, Brian Masney <bmasney@redhat.com>,
-        konrad.dybcio@oss.qualcomm.com, mukesh.savaliya@oss.qualcomm.com,
-        linux-clk@vger.kernel.org, linux-kernel@vger.kernel.org,
-        chandana.chiluveru@oss.qualcomm.com,
-        Sebastian Reichel <sre@kernel.org>, Viresh Kumar <vireshk@kernel.org>,
-        Nishanth Menon <nm@ti.com>, linux-pm@vger.kernel.org
-References: <20260727-fix_ptr_check_on_clk-v3-1-94629ac7aaae@oss.qualcomm.com>
- <sl7wx7n2bocrfcsqj72vp3snchbgvtkuahq4pjzpor54bg46ek@ar62czwob4j5>
-Content-Language: en-US
-From: Praveen Talari <praveen.talari@oss.qualcomm.com>
-In-Reply-To: <sl7wx7n2bocrfcsqj72vp3snchbgvtkuahq4pjzpor54bg46ek@ar62czwob4j5>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-Proofpoint-Spam-Info: AW1haW4tMjYwNzI3MDA5NSBTYWx0ZWRfX0TEOkcnMErBR
- Zr0luSGnCMKDsfqWBwfYbxAzFuPRYfWxTz3Z1B9V5b78f8Mu4diKjsr2Edu050iUub78OzaeGHB
- gZZGtrZRr3Ne+16JsuHSCRv2EXaBb/g=
-X-Proofpoint-ORIG-GUID: 9N7lWf3K7czNOsOr5EmmXl33_lbGQTyt
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzI3MDA5NSBTYWx0ZWRfXzwWTZowr8fn9
- fK8rP2ckhzdF1gMcIwBf6WviXs6Cy6qOXf+WNJiKv3DD5LlZp05/5Y5zjZZg5FuWanB4Dx+ir0U
- mdEobpKtWqbn31fbPaqgGPU8M4bXa3+nDEcLvyP/G0hK0HLAN7n38/OyT4qu/dh73Acxr6ZM5Cl
- 65tHHBEpik2rwQDv8IqPblBvchkm1KqDgT8k5Db+OvBF5SDFLYUHbZPCLyIiLvJO8NGUnQYH9Kv
- xvmYolONOfu0bMjybkTjPKeB3wlGP5VS3sSs9dgZDLxpd8Q1tQqMrYXS/EN8nhGjXH2QsapMukg
- 4g8PLF7UHWElVmmkHkaTOnJ7CbbPcEny5ZtPqDCMQF9496skKbEisjRfvgzXO02vWXNM2FULLPv
- trYEYcFhtCnspuUTUtxDg5jUcuSOXkl62VehDPJx/C3BqbtvTtHEjBUn4gse+fKHym2ZaYGylXx
- NmXPDdO+IWC+Ck3MVkg==
-X-Proofpoint-GUID: 9N7lWf3K7czNOsOr5EmmXl33_lbGQTyt
-X-Authority-Analysis: v=2.4 cv=TemmcxQh c=1 sm=1 tr=0 ts=6a6727d8 cx=c_pps
- a=MTSHoo12Qbhz2p7MsH1ifg==:117 a=fChuTYTh2wq5r3m49p7fHw==:17
- a=IkcTkHD0fZMA:10 a=RAioF0-LDSMA:10 a=s4-Qcg_JpJYA:10
- a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=3WHJM1ZQz_JShphwDgj5:22
- a=VwQbUJbxAAAA:8 a=EUspDBNiAAAA:8 a=aVMEk7OLGE4JoB244ZkA:9 a=QEXdDO2ut3YA:10
- a=GvdueXVYPmCkWapjIL-Q:22
+Message-Id: <20260727-pwrseq-vote-rename-v1-1-a2029aeeac65@oss.qualcomm.com>
+X-B4-Tracking: v=1; b=H4sIAJErZ2oC/6tWKk4tykwtVrJSqFYqSi3LLM7MzwNyDHUUlJIzE
+ vPSU3UzU4B8JSMDIzMDcyNz3YLyouLUQt2y/JJU3aLUvMTcVN0k8+QUI0MDYyMzMwsloMaCotS
+ 0zAqwodFKQW7OSrG1tQCp4jesaQAAAA==
+X-Change-ID: 20260727-pwrseq-vote-rename-b7cd21032668
+To: Bartosz Golaszewski <brgl@kernel.org>, Jonathan Corbet <corbet@lwn.net>,
+        Shuah Khan <skhan@linuxfoundation.org>,
+        Marcel Holtmann <marcel@holtmann.org>,
+        Luiz Augusto von Dentz <luiz.dentz@gmail.com>,
+        Alessio Belle <alessio.belle@imgtec.com>,
+        Luigi Santivetti <luigi.santivetti@imgtec.com>,
+        Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+        Maxime Ripard <mripard@kernel.org>,
+        Thomas Zimmermann <tzimmermann@suse.de>,
+        David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>,
+        Jeff Johnson <jjohnson@kernel.org>,
+        Manivannan Sadhasivam <mani@kernel.org>,
+        Bjorn Helgaas <bhelgaas@google.com>, Chen-Yu Tsai <wens@kernel.org>,
+        Loic Poulain <loic.poulain@oss.qualcomm.com>
+Cc: linux-pm@vger.kernel.org, linux-doc@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org,
+        linux-bluetooth@vger.kernel.org, imagination@lists.freedesktop.org,
+        dri-devel@lists.freedesktop.org, linux-wireless@vger.kernel.org,
+        ath10k@lists.infradead.org, linux-pci@vger.kernel.org,
+        Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
+X-Mailer: b4 0.14.2
+X-Developer-Signature: v=1; a=openpgp-sha256; l=11233;
+ i=bartosz.golaszewski@oss.qualcomm.com; h=from:subject:message-id;
+ bh=G7OuZnFzXRxi+fDAYiRyDUKp+x0C6VA6eN1JvMlufl4=;
+ b=owEBbQKS/ZANAwAKAQWdLsv/NoTDAcsmYgBqZyua6+kj7mv/zzmBMIis+gdWuocontWnq+eD+
+ vv740HUnhyJAjMEAAEKAB0WIQSR5RMt5bVGHXuiZfwFnS7L/zaEwwUCamcrmgAKCRAFnS7L/zaE
+ w9XLD/9fSN/wxCKeUPmwVIqjM6yzfNVAPIBYsenBC17Ef51V+D542ya4dKvWfOck0ahoGK8h1ES
+ fCsIdb6yUiLOXdXE1N7WtKH/bmHWrKnmXrgpH3j8J9YwApddS/jwfnAr7KSwTchMurvib/KFXyi
+ P970euD779qbQdjTUm//egbj70HYVr12XoKea/M6suEWXE2hbdsed+qgibBXGSuCYkSMRKBcGHp
+ xri0RBKzDEDXkyIU2Yax1X+KsDClbCCOP+uvsrUsFDmvL+iG5VDV81txFmfJyU9Ywb7yXJMabgn
+ 9InJCDQjwFOf8N9p3g/gMRm+9KQxRAE4rgDYNjQck4b3ktI0dDbumeOi+y57YdDp/F+0KgErSoi
+ /SEq/slk2oqnBZmzIZcFUAFRHG1tb1SU2aMFLnGl21eN+DQSDhnVGR/wh/i29p24hgZ7Ph+d3El
+ Ty31M0gixh7rEQEZd7g15mOvTdvKan0cojXEvOjGCORFuVzEgu8Y0dJ/okF0nUifFkROr+oPoi7
+ kGMN7iRtpUrzssjjW8+cD31Nj2fGuaa4o4Mu4t3h6qMp964o+6MOtZd5QKRmEUj6ymhsaD9v57E
+ 9VHzB97Yy25qtF/aV4dnpAJM9GU4gy/ZARWp189Jad+AaYMrA746ewg1ONLdSFrLwQFyL6r49+h
+ s2Mplu1/U1vA/Lg==
+X-Developer-Key: i=bartosz.golaszewski@oss.qualcomm.com; a=openpgp;
+ fpr=169DEB6C0BC3C46013D2C79F11A72EA01471D772
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzI3MDA5NyBTYWx0ZWRfXx8lQAw1xsWwy
+ MBo+AMf58sMuVVzPTTiUh1nieQnQnDDINnOvEfoer0Nj1+/mJFgeodudPfEMFV0wMcc22OH1T9w
+ 4CBDGApvmoZsH4RWRMMaex32zRmpMDLK/9KiKC3S/bEkS4Sqz82omi6BzxcQiwo2tPyo4LeqhM0
+ HPdjYG2qqHIRkGzTMIVXIOjhBrmcBmg9AB/8xGOga3J7oBhBivNeLSJmJ+H/0D6XMhKp5K4VfmW
+ gJ6aC2IVqnQv/soNbsNTZoREnh+2EFJWhnP5nmz0h8GIjtOmAyAepmqSzLaeGh7EMF+lwbxVxlD
+ zQ2bPFZ9gk7OlXJeGNX63ytVhuLeKu4Xs39lBXvzb5iiVRbLOPlhJjcILiGgvGX4tM4i50p3mSD
+ Nx6IU8E8AsF3D4vDb5OlLA/JDWI1e2ZWGmMfZAoYujLvLfGNeh7duaTilnOxLtR4RCEwFodpNlv
+ aerXFVjZPXzGVWb3XFg==
+X-Proofpoint-GUID: xodTObsFLq83dQAYoCLjztSk_pGer_ff
+X-Authority-Analysis: v=2.4 cv=DNG/JSNb c=1 sm=1 tr=0 ts=6a672ba3 cx=c_pps
+ a=mPf7EqFMSY9/WdsSgAYMbA==:117 a=xqWC_Br6kY4A:10 a=IkcTkHD0fZMA:10
+ a=RAioF0-LDSMA:10 a=s4-Qcg_JpJYA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=u7WPNUs3qKkmUXheDGA7:22 a=yOCtJkima9RkubShWh1s:22 a=VwQbUJbxAAAA:8
+ a=pGLkceISAAAA:8 a=EUspDBNiAAAA:8 a=BH6fHGR_65QtqvMn8p4A:9 a=QEXdDO2ut3YA:10
+ a=dawVfQjAaf238kedN5IG:22
+X-Proofpoint-Spam-Info: AW1haW4tMjYwNzI3MDA5NyBTYWx0ZWRfXwIWM7CENk5qZ
+ k3ejfTiSx+LIGkTHDkF0BTQbyDRs9gYenx4T+e+Q5JresNYGdektAEy4mHsJXF/1uhM7wcrMgyR
+ mvIyTBxwV/ywZbmQrUiiEPHchh4pDB0=
+X-Proofpoint-ORIG-GUID: xodTObsFLq83dQAYoCLjztSk_pGer_ff
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.134,FMLib:17.12.100.49
  definitions=2026-07-27_02,2026-07-24_02,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501 clxscore=1015 impostorscore=0 adultscore=0 suspectscore=0
- lowpriorityscore=0 malwarescore=0 phishscore=0 spamscore=0 bulkscore=0
+ priorityscore=1501 clxscore=1015 malwarescore=0 bulkscore=0 adultscore=0
+ suspectscore=0 impostorscore=0 lowpriorityscore=0 phishscore=0 spamscore=0
  classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2607270095
+ reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2607270097
 
-Hi viresh
+The way power sequencing works means that a call to pwrseq_power_on()
+does not necessarily result in the pwrseq target being powered-on at
+that time: it may have already been powered on before. Similarly: a call
+to pwrseq_power_off() does not have to result in an actual powering off
+of resources: there may still be other users that requested a power-on
+before.
 
-On 27-07-2026 10:44, Viresh Kumar wrote:
-> On 27-07-26, 09:46, Praveen Talari wrote:
->> _update_opp_table_clk() uses clk_get(dev, NULL) to acquire the
->> device's clock. On platforms where the perf domain device has no
->> Linux clock and is instead managed entirely by firmware via
->> devm_pm_opp_of_add_table() (through
->> of_genpd_add_provider_simple()/onecell()), clk_get() returns
->> -ENOENT. That case is treated as valid (the OPP table can still
->> have entries sourced from firmware), but opp_table->clk is left
->> holding ERR_PTR(-ENOENT) rather than being reset to NULL:
->>
->> 	opp_table->clk = clk_get(dev, NULL);
->> 	ret = PTR_ERR_OR_ZERO(opp_table->clk);
->> 	...
->> 	if (ret == -ENOENT) {
->> 		opp_table->clk_count = 1;
->> 		return opp_table;   /* opp_table->clk is still ERR_PTR(-ENOENT) */
->> 	}
->>
->> Consumers that only check IS_ERR(opp_table->clk) treat this as a
->> valid clk and pass it straight into the clk consumer API. In
->> particular, dev_pm_opp_set_rate() calls
->> clk_round_rate(opp_table->clk, target_freq), and clk_round_rate()
->> only guards against a NULL clk, so it dereferences the error pointer
->> to read clk->exclusive_count and crashes:
->>
->>    Unable to handle kernel NULL pointer dereference at virtual
->>    address 000000000000002e
->>    ...
->>    pc : clk_round_rate+0x3c/0x188
->>    ...
->>    Call trace:
->>     clk_round_rate+0x3c/0x188 (P)
->>     dev_pm_opp_set_rate+0x114/0x33c
->>
->> Rather than teaching every clk consumer API to special-case
->> ERR_PTR(-ENOENT), fix it at the source: use clk_get_optional()
->> instead of clk_get() in _update_opp_table_clk(), which already
->> translates -ENOENT into a NULL clk. This documents that the clock is
->> genuinely optional for such devices, and keeps opp_table->clk holding
->> either a valid clk or NULL, never a lingering -ENOENT error pointer.
->> _opp_config_clk_single() is only wired up via opp_table->config_clks
->> when a clk was actually found, and every other opp_table->clk
->> consumer already tolerates NULL through the standard clk API (which
->> treats a NULL clk as a no-op), so no other call site needs to change.
->>
->> Suggested-by: Sebastian Reichel <sre@kernel.org>
->> Reviewed-by: Sebastian Reichel <sre@kernel.org>
->> Signed-off-by: Praveen Talari <praveen.talari@oss.qualcomm.com>
->> ---
-> I am getting this with git am -3, please rebase over [1].
-I have followed below steps but faced conflict while rebasing it.
+We will also introduce the concept of "non-controllable" pwrseq targets
+soon which further increases the disconnect between the naming
+convention and the actual semantics.
 
-git clone https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git
-git remote add viresh 
-https://git.kernel.org/pub/scm/linux/kernel/git/vireshk/pm.git
-git fetch viresh
-git rebase viresh/cpufreq/arm/linux-next
+What consumers of pwrseq descriptors actually do is: they *vote* for a
+powering on of a given target or retract that vote. These operations
+could be called get/put in line with runtime PM but this could become
+confusing since we already provide pwrseq_get/put() for a different
+purpose.
 
-$git rebase viresh/cpufreq/arm/linux-next
-Auto-merging drivers/gpio/gpio-shared-proxy.c
-CONFLICT (content): Merge conflict in drivers/gpio/gpio-shared-proxy.c
-error: could not apply efecde8a254d... gpio: shared-proxy: always 
-serialize with a sleeping mutex
-hint: Resolve all conflicts manually, mark them as resolved with
-hint: "git add/rm <conflicted_files>", then run "git rebase --continue".
-hint: You can instead skip this commit: run "git rebase --skip".
-hint: To abort and get back to the state before "git rebase", run "git 
-rebase --abort".
+Change the name of the two functions to pwrseq_vote_on/off() which
+better reflects their purpose and semantics. No functional change
+intended.
 
-Could not apply efecde8a254d... gpio: shared-proxy: always serialize 
-with a sleeping mutex
+If at any point users need to know *when* the exact power event happens,
+we can provide that information in the form of a notifier.
 
-How to proceed further?
+Signed-off-by: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
+---
+I've floated the idea to rename the two pwrseq functions from "power
+on/off" to "vote on/off". Here's a concrete proposal.
 
->
-> Applying: opp: Use clk_get_optional() to avoid leaving opp_table->clk as an error pointer
-> error: unrecognized input
-> error: could not build fake ancestor
->
->> diff --git a/drivers/opp/core.c b/drivers/opp/core.c
->> +	opp_table->clk = clk_get_optional(dev, NULL);
->>   
->>   	ret = PTR_ERR_OR_ZERO(opp_table->clk);
->> -	if (!ret) {
->> -		opp_table->config_clks = _opp_config_clk_single;
->> -		opp_table->clk_count = 1;
->> -		return opp_table;
->> +	if (ret) {
-> Since `ret` isn't used later anymore, you can instead do this and drop
-> `ret` ?
->          if (IS_ERR(opp_table->clk))
+I'm sending it as an RFC but if there's agreement, I can queue it as is.
 
-Sure, will fix in next patch.
+I'm doing it in a single commit that should go through the pwrseq tree
+with Acks from subsystem maintainers.
 
+[1] https://lore.kernel.org/all/CAMRc=Mefxn81d0VUwmQgwFtffkL1=Er_1VQZCbC1Sa-Qph4t1w@mail.gmail.com/
+---
+ Documentation/driver-api/pwrseq.rst      |  4 ++--
+ drivers/bluetooth/hci_qca.c              |  4 ++--
+ drivers/gpu/drm/imagination/pvr_power.c  |  4 ++--
+ drivers/net/wireless/ath/ath10k/snoc.c   |  6 +++---
+ drivers/pci/pwrctrl/generic.c            |  4 ++--
+ drivers/pci/pwrctrl/pci-pwrctrl-pwrseq.c |  4 ++--
+ drivers/power/sequencing/core.c          | 16 ++++++++--------
+ include/linux/pwrseq/consumer.h          |  8 ++++----
+ 8 files changed, 25 insertions(+), 25 deletions(-)
 
-Thanks,
+diff --git a/Documentation/driver-api/pwrseq.rst b/Documentation/driver-api/pwrseq.rst
+index ad18b2326b689a41471216f3889480b11768ca82..faba5a8e3337e878c6dac0cc91d23b3577cab6fd 100644
+--- a/Documentation/driver-api/pwrseq.rst
++++ b/Documentation/driver-api/pwrseq.rst
+@@ -50,9 +50,9 @@ Consumer interface
+ The consumer API is aimed to be as simple as possible. The driver interested in
+ getting a descriptor from the power sequencer should call pwrseq_get() and
+ specify the name of the target it wants to reach in the sequence after calling
+-pwrseq_power_up(). The descriptor can be released by calling pwrseq_put() and
++pwrseq_vote_on(). The descriptor can be released by calling pwrseq_put() and
+ the consumer can request the powering down of its target with
+-pwrseq_power_off(). Note that there is no guarantee that pwrseq_power_off()
++pwrseq_vote_off(). Note that there is no guarantee that pwrseq_vote_off()
+ will have any effect as there may be multiple users of the underlying resources
+ who may keep them active.
+ 
+diff --git a/drivers/bluetooth/hci_qca.c b/drivers/bluetooth/hci_qca.c
+index e6d107f67759f54eee2647d92bb8bfd4e68c9358..5aaabc9fb1b66eb6b24da25f77158690a2f03c84 100644
+--- a/drivers/bluetooth/hci_qca.c
++++ b/drivers/bluetooth/hci_qca.c
+@@ -2259,7 +2259,7 @@ static void qca_power_off(struct hci_uart *hu)
+ 	}
+ 
+ 	if (power && power->pwrseq) {
+-		pwrseq_power_off(power->pwrseq);
++		pwrseq_vote_off(power->pwrseq);
+ 		set_bit(QCA_BT_OFF, &qca->flags);
+ 		return;
+         }
+@@ -2319,7 +2319,7 @@ static int qca_regulator_enable(struct qca_serdev *qcadev)
+ 	int ret;
+ 
+ 	if (power->pwrseq)
+-		return pwrseq_power_on(power->pwrseq);
++		return pwrseq_vote_on(power->pwrseq);
+ 
+ 	/* Already enabled */
+ 	if (power->vregs_on)
+diff --git a/drivers/gpu/drm/imagination/pvr_power.c b/drivers/gpu/drm/imagination/pvr_power.c
+index a71d5b35601e7b996428312028a4c0542a5b1350..c6dfa2685ee64086c53281d06563e6169109c00f 100644
+--- a/drivers/gpu/drm/imagination/pvr_power.c
++++ b/drivers/gpu/drm/imagination/pvr_power.c
+@@ -352,12 +352,12 @@ static int pvr_power_init_pwrseq(struct pvr_device *pvr_dev)
+ 
+ static int pvr_power_on_sequence_pwrseq(struct pvr_device *pvr_dev)
+ {
+-	return pwrseq_power_on(pvr_dev->pwrseq);
++	return pwrseq_vote_on(pvr_dev->pwrseq);
+ }
+ 
+ static int pvr_power_off_sequence_pwrseq(struct pvr_device *pvr_dev)
+ {
+-	return pwrseq_power_off(pvr_dev->pwrseq);
++	return pwrseq_vote_off(pvr_dev->pwrseq);
+ }
+ 
+ const struct pvr_power_sequence_ops pvr_power_sequence_ops_pwrseq = {
+diff --git a/drivers/net/wireless/ath/ath10k/snoc.c b/drivers/net/wireless/ath/ath10k/snoc.c
+index 3106502275781d32d17a45a661362206144df6b3..f87e56576e29124902dccd1a21600fd3407b2922 100644
+--- a/drivers/net/wireless/ath/ath10k/snoc.c
++++ b/drivers/net/wireless/ath/ath10k/snoc.c
+@@ -1025,7 +1025,7 @@ static int ath10k_hw_power_on(struct ath10k *ar)
+ 
+ 	ath10k_dbg(ar, ATH10K_DBG_SNOC, "soc power on\n");
+ 
+-	ret = pwrseq_power_on(ar_snoc->pwrseq);
++	ret = pwrseq_vote_on(ar_snoc->pwrseq);
+ 	if (ret)
+ 		return ret;
+ 
+@@ -1042,7 +1042,7 @@ static int ath10k_hw_power_on(struct ath10k *ar)
+ vreg_off:
+ 	regulator_bulk_disable(ar_snoc->num_vregs, ar_snoc->vregs);
+ pwrseq_off:
+-	pwrseq_power_off(ar_snoc->pwrseq);
++	pwrseq_vote_off(ar_snoc->pwrseq);
+ 
+ 	return ret;
+ }
+@@ -1060,7 +1060,7 @@ static int ath10k_hw_power_off(struct ath10k *ar)
+ 	ret_vreg = regulator_bulk_disable(ar_snoc->num_vregs, ar_snoc->vregs);
+ 
+ 	if (ar_snoc->pwrseq)
+-		ret_seq = pwrseq_power_off(ar_snoc->pwrseq);
++		ret_seq = pwrseq_vote_off(ar_snoc->pwrseq);
+ 
+ 	return ret_vreg ? : ret_seq;
+ }
+diff --git a/drivers/pci/pwrctrl/generic.c b/drivers/pci/pwrctrl/generic.c
+index a7e599d841e6289db161b19a93ba5a61d9e0ab1c..8872f6501352d7273a9b4f20589c2f74d6accc65 100644
+--- a/drivers/pci/pwrctrl/generic.c
++++ b/drivers/pci/pwrctrl/generic.c
+@@ -29,7 +29,7 @@ static int slot_pwrctrl_power_on(struct pci_pwrctrl *pwrctrl)
+ 	int ret;
+ 
+ 	if (slot->pwrseq) {
+-		pwrseq_power_on(slot->pwrseq);
++		pwrseq_vote_on(slot->pwrseq);
+ 		return 0;
+ 	}
+ 
+@@ -48,7 +48,7 @@ static int slot_pwrctrl_power_off(struct pci_pwrctrl *pwrctrl)
+ 						struct slot_pwrctrl, pwrctrl);
+ 
+ 	if (slot->pwrseq) {
+-		pwrseq_power_off(slot->pwrseq);
++		pwrseq_vote_off(slot->pwrseq);
+ 		return 0;
+ 	}
+ 
+diff --git a/drivers/pci/pwrctrl/pci-pwrctrl-pwrseq.c b/drivers/pci/pwrctrl/pci-pwrctrl-pwrseq.c
+index a308bf4b5fc01d23b75db4cd396201c3ba3fe695..86822f0f645eb757455f575000f81122bce82e60 100644
+--- a/drivers/pci/pwrctrl/pci-pwrctrl-pwrseq.c
++++ b/drivers/pci/pwrctrl/pci-pwrctrl-pwrseq.c
+@@ -56,7 +56,7 @@ static int pwrseq_pwrctrl_power_on(struct pci_pwrctrl *pwrctrl)
+ 	struct pwrseq_pwrctrl *pwrseq = container_of(pwrctrl,
+ 					   struct pwrseq_pwrctrl, pwrctrl);
+ 
+-	return pwrseq_power_on(pwrseq->pwrseq);
++	return pwrseq_vote_on(pwrseq->pwrseq);
+ }
+ 
+ static int pwrseq_pwrctrl_power_off(struct pci_pwrctrl *pwrctrl)
+@@ -64,7 +64,7 @@ static int pwrseq_pwrctrl_power_off(struct pci_pwrctrl *pwrctrl)
+ 	struct pwrseq_pwrctrl *pwrseq = container_of(pwrctrl,
+ 					   struct pwrseq_pwrctrl, pwrctrl);
+ 
+-	return pwrseq_power_off(pwrseq->pwrseq);
++	return pwrseq_vote_off(pwrseq->pwrseq);
+ }
+ 
+ static int pwrseq_pwrctrl_probe(struct platform_device *pdev)
+diff --git a/drivers/power/sequencing/core.c b/drivers/power/sequencing/core.c
+index 02f42da915985339d3de507fc36dd158b0035a99..c630b14f6f2c478f05e4b2893b386aab0cddaaf5 100644
+--- a/drivers/power/sequencing/core.c
++++ b/drivers/power/sequencing/core.c
+@@ -708,7 +708,7 @@ void pwrseq_put(struct pwrseq_desc *desc)
+ 	pwrseq = desc->pwrseq;
+ 
+ 	if (desc->powered_on)
+-		pwrseq_power_off(desc);
++		pwrseq_vote_off(desc);
+ 
+ 	kfree(desc);
+ 	module_put(pwrseq->owner);
+@@ -874,7 +874,7 @@ static int pwrseq_unit_disable(struct pwrseq_device *pwrseq,
+ }
+ 
+ /**
+- * pwrseq_power_on() - Issue a power-on request on behalf of the consumer
++ * pwrseq_vote_on() - Issue a power-on request on behalf of the consumer
+  *                     device.
+  * @desc: Descriptor referencing the power sequencer.
+  *
+@@ -887,7 +887,7 @@ static int pwrseq_unit_disable(struct pwrseq_device *pwrseq,
+  * Returns:
+  * 0 on success, negative error number on failure.
+  */
+-int pwrseq_power_on(struct pwrseq_desc *desc)
++int pwrseq_vote_on(struct pwrseq_desc *desc)
+ {
+ 	struct pwrseq_device *pwrseq;
+ 	struct pwrseq_target *target;
+@@ -925,14 +925,14 @@ int pwrseq_power_on(struct pwrseq_desc *desc)
+ 
+ 	return ret;
+ }
+-EXPORT_SYMBOL_GPL(pwrseq_power_on);
++EXPORT_SYMBOL_GPL(pwrseq_vote_on);
+ 
+ /**
+- * pwrseq_power_off() - Issue a power-off request on behalf of the consumer
++ * pwrseq_vote_off() - Issue a power-off request on behalf of the consumer
+  *                      device.
+  * @desc: Descriptor referencing the power sequencer.
+  *
+- * This undoes the effects of pwrseq_power_on(). It issues a power-off request
++ * This undoes the effects of pwrseq_vote_on(). It issues a power-off request
+  * on behalf of the consumer and when the last remaining user does so, the
+  * power-down sequence will be started. If one is in progress, the function
+  * will block until it's complete and then return.
+@@ -940,7 +940,7 @@ EXPORT_SYMBOL_GPL(pwrseq_power_on);
+  * Returns:
+  * 0 on success, negative error number on failure.
+  */
+-int pwrseq_power_off(struct pwrseq_desc *desc)
++int pwrseq_vote_off(struct pwrseq_desc *desc)
+ {
+ 	struct pwrseq_device *pwrseq;
+ 	struct pwrseq_unit *unit;
+@@ -966,7 +966,7 @@ int pwrseq_power_off(struct pwrseq_desc *desc)
+ 
+ 	return ret;
+ }
+-EXPORT_SYMBOL_GPL(pwrseq_power_off);
++EXPORT_SYMBOL_GPL(pwrseq_vote_off);
+ 
+ /**
+  * pwrseq_to_device() - Get the pwrseq device pointer from a descriptor.
+diff --git a/include/linux/pwrseq/consumer.h b/include/linux/pwrseq/consumer.h
+index 3c907c9e1885dc2958043a9a733fbe20bdf95f6e..e4d2cb321354f0cb7e1d1d72e6b5a96b94129da3 100644
+--- a/include/linux/pwrseq/consumer.h
++++ b/include/linux/pwrseq/consumer.h
+@@ -20,8 +20,8 @@ void pwrseq_put(struct pwrseq_desc *desc);
+ struct pwrseq_desc * __must_check
+ devm_pwrseq_get(struct device *dev, const char *target);
+ 
+-int pwrseq_power_on(struct pwrseq_desc *desc);
+-int pwrseq_power_off(struct pwrseq_desc *desc);
++int pwrseq_vote_on(struct pwrseq_desc *desc);
++int pwrseq_vote_off(struct pwrseq_desc *desc);
+ 
+ struct device *pwrseq_to_device(struct pwrseq_desc *desc);
+ 
+@@ -43,12 +43,12 @@ devm_pwrseq_get(struct device *dev, const char *target)
+ 	return ERR_PTR(-ENOSYS);
+ }
+ 
+-static inline int pwrseq_power_on(struct pwrseq_desc *desc)
++static inline int pwrseq_vote_on(struct pwrseq_desc *desc)
+ {
+ 	return -ENOSYS;
+ }
+ 
+-static inline int pwrseq_power_off(struct pwrseq_desc *desc)
++static inline int pwrseq_vote_off(struct pwrseq_desc *desc)
+ {
+ 	return -ENOSYS;
+ }
 
-Praveen Talari
+---
+base-commit: c5e32e86ca02b003f86e095d379b38148999293d
+change-id: 20260727-pwrseq-vote-rename-b7cd21032668
 
->
->> +		dev_pm_opp_put_opp_table(opp_table);
->> +		dev_err_probe(dev, ret, "Couldn't find clock\n");
->> +		return ERR_PTR(ret);
->>   	}
+Best regards,
+-- 
+Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
+
