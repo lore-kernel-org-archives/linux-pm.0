@@ -1,140 +1,161 @@
-Received: from AM0PR83CU005.outbound.protection.outlook.com (mail-westeuropeazon11010027.outbound.protection.outlook.com [52.101.69.27])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-yw1-f171.google.com (mail-yw1-f171.google.com [209.85.128.171])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F03831E8342
-	for <linux-pm@vger.kernel.org>; Mon, 27 Jul 2026 12:43:42 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.69.27
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 306ED409289
+	for <linux-pm@vger.kernel.org>; Mon, 27 Jul 2026 12:59:43 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.128.171
 ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1785156224; cv=fail; b=cLBa3uOkqGrnloafXN0+iRkJm5oMCjxd8i2SrDMKXNDZu5TvT3/EByMnqUfZvXNrHpHUtRLm8te1PIaOrwtxocOm2Wx0/1ZkyA6B6KJbSFdUyvdbnompddYgoXKTJVG2lBjfqSjjL05kCBrrhSik+isul4z3XIRqk4b3iCm1qAg=
+	t=1785157187; cv=pass; b=s3v86InfwaUS284woaTU5CilBsTWDXRsjCRUKNz3uvl4t5r/e7JH/uasIfdLnxnIQNgxJbokAJXb8L+K7+7evRRjLTFfMe1/l1uGzM/xaC9spcOqV/C2C3Gy2ev4ydLTfe03NEnZfeDSVcWnWVQowefTYesBh4Mp2ao8FGrvMaw=
 ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1785156224; c=relaxed/simple;
-	bh=TSN9gL55A7Ag3raf82N9KWhH7vvMUMHmUl4Tkg6QycE=;
-	h=From:To:CC:Subject:In-Reply-To:References:Date:Message-ID:
-	 MIME-Version:Content-Type; b=tYFKSR9DHOKSZN8yaF6a6i6pSOipiDhFMtdGGukr8vlbrER47ykC+FJ0fr/TmkR0c4Dy920Tt88YjLL2L+uV6F8S2jio0pitM/FcnhvpyN2CT8bymSHlGhSAroVtlWK4i9wrBkBj+Lbjh5Da6j2j8JydBScuF15CEftvB+lJy/M=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=axis.com; spf=pass smtp.mailfrom=axis.com; dkim=pass (1024-bit key) header.d=axis.com header.i=@axis.com header.b=YKj4SlxO; arc=fail smtp.client-ip=52.101.69.27
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=axis.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=axis.com
+	s=arc-20240116; t=1785157187; c=relaxed/simple;
+	bh=luUc9ZQFmCjynsr/029wplBmFfuONlqLQlNMir6ffmc=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=qJGhdhjnzBT4jotwlYa6iRYeP0FXFmD+YbGTBdkEzMszfzFWDpgOzp9GkROctnVWbhNGA7PIuRKcTIn8V4HRMm0MjsMMRRcq4yGb5B23mzSRsiF1tVimKc8Sn1HHnSxYR5qjkpQNcPERFiGgfM6rg0b0ulIpMkca64729tuuj+8=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=Jq+uwgTQ; arc=pass smtp.client-ip=209.85.128.171
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=axis.com header.i=@axis.com header.b="YKj4SlxO"
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=hiyiskLCyAMIMOHIW7No6aKay1vAIDEJwqQP9SAOSJd36DvUsKRpEPUL8Quh5MaAy/pf1YKya2iC3j8oB+v31eNqWP5otpTMNGRBYUMaP1NI/tj6l6S3btS8OPb0s83uiS2Cgt3ikrersh/ioqNbf6X//+l8TDEUP+PTxAe4UhymWIbyxI2Dp0IqbQB7VC8JNipDS0oSXfaylPupajbGBG6JXN4jFvgNzrXE5XW6OYUcy/vgfpk8klT241sR1O0ZPQN85NyGnDBCs9fGm9j2ZOQ15X6V6hUj+wyUARzAsE/GtNjX0cBEgzEBk9Mwk/aDoBWqXGfkYT9CnYZBKuMxVQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=D8AIII2V2RFH35akKOekE5WKF3RXuYI2l5LTvYvTgNo=;
- b=olwBh6Sd5F6UycsOU5vNCrWyToQdjr4TTZ/gEuEyYBTW4k0Vhj8aR5A/gtc/VP0LFGW5wM5xUfAc8MLQ5xlIjBK3bfXbPRzXhxe0HOEvr9BkkqeCgFu5Vv9579ilQeOxATBIktQJTM7ZLWAIboAKe2S5MG8oedEvtatZIu6rkLsO6PQFHmSpzxoSxJzII360h2+rhSJpjEPFJ3jz40EMN6loIkKTFtRWIaWhIGVkDJQ6h7XSR8gsIWFXIOndFPdu6/I4eQZfjLQEtlb7RrzbGIDygVa6NH0PvBCMrHA4kjhvzzxqCxRPrRAHbzUSO2RhJFNBGzIicjZkVvQcRGu6tw==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
- 195.60.68.100) smtp.rcpttodomain=vger.kernel.org smtp.mailfrom=axis.com;
- dmarc=pass (p=none sp=none pct=100) action=none header.from=axis.com;
- dkim=none (message not signed); arc=none (0)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=axis.com; s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=D8AIII2V2RFH35akKOekE5WKF3RXuYI2l5LTvYvTgNo=;
- b=YKj4SlxOxUU9+gq8du0bsLjnjcYlaVsOMVOD4Xag2S33K+0qBB7qkNCStnhidfCWy3C2BdTul1fujCZX9pPFxpJTYJSgsr52hlcXJu7jdT08HrmaXEhGnELzRoAIfYSn7S7u10pLVj8sogqKe9+5rkT/RhJet3Hestpl4gsS6BU=
-Received: from DU2PR04CA0190.eurprd04.prod.outlook.com (2603:10a6:10:28d::15)
- by DU0PR02MB8038.eurprd02.prod.outlook.com (2603:10a6:10:352::18) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.245.13; Mon, 27 Jul
- 2026 12:43:38 +0000
-Received: from DU2PEPF00028D07.eurprd03.prod.outlook.com
- (2603:10a6:10:28d:cafe::d) by DU2PR04CA0190.outlook.office365.com
- (2603:10a6:10:28d::15) with Microsoft SMTP Server (version=TLS1_3,
- cipher=TLS_AES_256_GCM_SHA384) id 15.21.245.13 via Frontend Transport; Mon,
- 27 Jul 2026 12:43:37 +0000
-X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 195.60.68.100)
- smtp.mailfrom=axis.com; dkim=none (message not signed)
- header.d=none;dmarc=pass action=none header.from=axis.com;
-Received-SPF: Pass (protection.outlook.com: domain of axis.com designates
- 195.60.68.100 as permitted sender) receiver=protection.outlook.com;
- client-ip=195.60.68.100; helo=mail.axis.com; pr=C
-Received: from mail.axis.com (195.60.68.100) by
- DU2PEPF00028D07.mail.protection.outlook.com (10.167.242.167) with Microsoft
- SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.21.245.5 via Frontend Transport; Mon, 27 Jul 2026 12:43:37 +0000
-Received: from pc67007-2609 (10.4.0.13) by se-mail10w.axis.com (10.20.40.10)
- with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1748.39; Mon, 27 Jul
- 2026 14:43:37 +0200
-From: Waqar Hameed <waqar.hameed@axis.com>
-To: Linmao Li <lilinmao@kylinos.cn>
-CC: Sebastian Reichel <sre@kernel.org>, <linux-pm@vger.kernel.org>
-Subject: Re: [PATCH] power: supply: bq25630: Release battery information
- after setup
-In-Reply-To: <20260727093738.2611185-1-lilinmao@kylinos.cn> (Linmao Li's
-	message of "Mon, 27 Jul 2026 17:37:38 +0800")
-References: <20260727093738.2611185-1-lilinmao@kylinos.cn>
-User-Agent: a.out
-Date: Mon, 27 Jul 2026 14:43:37 +0200
-Message-ID: <pndjyqgob5y.a.out@axis.com>
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Jq+uwgTQ"
+Received: by mail-yw1-f171.google.com with SMTP id 00721157ae682-81f36179d72so31143967b3.2
+        for <linux-pm@vger.kernel.org>; Mon, 27 Jul 2026 05:59:43 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1785157182; cv=none;
+        d=google.com; s=arc-20260327;
+        b=L0LsVsQfhpdxhQvRIbVct3PKf6fnSJiLUgbDS7sM7VU+66ko6wafv38Nm8gU8PzqXU
+         WRQbXFRPTCWD/1LgLUwv99+hh3LDVA0qKG2h7Ak5ZRBu52z8+GBgny95Hcbg/wJyypmS
+         gziHZmA/guy7ZbG/BNE/lXJhw6+iz2RwOdZw3Yx//Oe/OplFz56JBdyZ6dBuu4jqMRUc
+         Ue2Mdy9xeycM1vh3DbmQ/3iC0HCtkyShnWLKJj4gO/gD9mOt+x8MQ+osTkiJZF4ixapf
+         4m/eAbDmmeiq6T80jfLIRwWlUZOvbFqrWLojZkNyODkX/q7su7oJAPq4MoVm+dNvE911
+         ds4g==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=ix29oOBbLOf7nlyiJN1FbRfyq7KaaHwmDtcPHELsDuI=;
+        fh=0Oqpg8AAmY5RWJwggmcmmkZZnn2LlVEJvU9kMoD8/+s=;
+        b=fi4BcSWh6i0hc0ITdue6PafqESyntKsc5eGXsyZSNl+T0iOLeUsDcWBdWOr5qvY77N
+         5J71dGezanG+y60kEFxxCoJ6iEZtKvZDBBmK8QRg7F+QG6yAU4YMQNI3Ut/Hjt0+wfAg
+         rYwFBpkKpA5tOAVYfKt2rEE3ik4YyMRHqYSFjFxA2or5lqdjq6hksT7+7JvumcmpYyCy
+         8nS22sZvFpr0/JltzrZKum+DJDltCIOFnHe7ClOlsWVxwi+0Sx9WVNZwCp+2H0oMkEKF
+         n2ujk0xBTErae6sJ+oUliL0GnoeGzutk6gmxppxnO8/q8iTxJPYBzsyBEFBsoqx4k7VV
+         8Zhw==;
+        darn=vger.kernel.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1785157182; x=1785761982; darn=vger.kernel.org;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=ix29oOBbLOf7nlyiJN1FbRfyq7KaaHwmDtcPHELsDuI=;
+        b=Jq+uwgTQ0O1mmHxnBGxWcL+kdE/a9RtHdIP1tjT7Ei9n+xl4gDgXDSpklqMXUWUDZJ
+         ac+GrumYYzSuNYK88A3/T4fkN6MG4wQqkhyc+crip1OV9Ijk+VP1IqgTH+CDfXD7MNfK
+         izYR0QrNtnZH5422kCYtXpZUgaLbeTRubkLzot33FEHtm/0zOCL+zY/SYXVb/YZMHfi9
+         1UT3syyMpKMiD5iEheioIjGtc40Mtnrnje0QPSkcU+JF6Fi7cbHX042hz4Kxs0mUOVq5
+         ese1af/Z/IOALMSRWCj+UGhUzDc90HKs6jlW61M0+1P4+BJjqXHXw0K6Q6tEdTQomu6E
+         hxMw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1785157182; x=1785761982;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=ix29oOBbLOf7nlyiJN1FbRfyq7KaaHwmDtcPHELsDuI=;
+        b=BYn9fvbWRs1YSsX7r660wfpgp3g6zJDTYlA+vxTeoVAdUR2T8G/QbANaPV8HlvfYLh
+         CnQ7Vk2m2QIXhfuKc7iL4fZqkwm2TPdHGrnqXfxnPg/eAe6N/gKg91+Om16NRx4V3Xw+
+         b1Mc7m9/6UMrTAoSb/weMEHkV+fhlPGEF49cEcoDmkDP63M35T+wjDAw5KsX27ygodv+
+         tjY0gUNKDqTZUsgtDeR8IFtY4KuK3BI7+8L8H7oiu1QnNnQ8lb+9BgAfI/T+JQCnh8Ls
+         0FJnA42oo245uVyAVU2UYa2cGQmTDPHORiYu0VFhXRvneBw4t+DjBwXYVrCIfp4iTUuO
+         eu+w==
+X-Forwarded-Encrypted: i=1; AHgh+RrKwxKJZad57vDobhU1qSJaPSY4t4HbXRQj8VVPUSujb7XBiP0VAnqdsVqmjmG8Ufe+ZyoP149uhQ==@vger.kernel.org
+X-Gm-Message-State: AOJu0YxvMLvPn0TSjxVanh4dL8WrQxS5JQrvYbiBNfExG27jcV/gg2vF
+	MsNNYxxlqyLucD5WpxozKKwQFw9dymFosRvSGFWDi2ZPHQj1RqQk/5HajQPn8yAi3DBljWCYNvQ
+	iCFKpcmGjDxrSbjRgOjV7PxS70T8LTlQ=
+X-Gm-Gg: AR+sD128O+qHqV8lXXH2VdrGQPiW73IWHs0gSyvML9UsAmIQ/sFtJ9n/dYLgnkEXc+u
+	whynzYhz6az/3dR8bKlgvn2bHYLJhVDGIxTQlFl8t5tqvkShqkITLkXKsK8QjFlZdf25welFXHk
+	zC7DgTL0Rl8cwbBewceGmTIMPE0U87Sv8/t5/sIG4vstqhDFDUB6Ekee8yampyH8Mw0VIAtD5lZ
+	+lTybCmrRe4espfLazCOxknEX/OK9jtocoUK+SNo7FuwZqd6Np8QhfzqTrJG1Vt75+09w==
+X-Received: by 2002:a05:690c:6f02:b0:81e:97e2:2210 with SMTP id
+ 00721157ae682-81f69ebac17mr31274727b3.69.1785157182142; Mon, 27 Jul 2026
+ 05:59:42 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain
-X-ClientProxiedBy: se-mail10w.axis.com (10.20.40.10) To se-mail10w.axis.com
- (10.20.40.10)
-X-EOPAttributedMessage: 0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: DU2PEPF00028D07:EE_|DU0PR02MB8038:EE_
-X-MS-Office365-Filtering-Correlation-Id: 427a1506-2c09-49a1-483f-08deebdcae1e
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|36860700016|82310400026|376014|1800799024|23010399003|18002099003|10067099003|22082099003|11063799006|5023799004|56012099006;
-X-Microsoft-Antispam-Message-Info:
-	kTbcprTQlqKXM6V9m7HxH8TJgqsE8ZWXkLx7jTxzLeRenqmp+eBLi+3W9OoMpb+BrVcdwOTk4M370yPDCWQS3D/KyfKROdjPgPvJylm5e3YF2oN4KMsYEBeTig5W1HubgIbvkLgsTj0EtG7lyRVEeoUFbDKcol4Tv1GaqOIH6PkCdKYfALuE2lMT172DHvkN4C8GIzGdhNorM9TIY+imUEqTnPEIEM1hemntZICefh2gYqoKzEMvSMWOHD4X72OCd3Y2zURGtvI/+ttvNR77uvGlUTsELEsBH5Ao2Fzx33AuTSUZyyx8WfACuiiBCxKIA1XEvBPsSAtBU5ScFKRtKL2jx3PPFFpNX6rOeoBLnRjHXK3xRjPnhvqc6wF908vd30M/GiKBQPM7axjfvtkw2ObEvrtEAKuO8rfBW5tCcuLzDO+Wq6PUGu38Pdtl9GQcxCp4GNPouDNGuFAwWjKESK6OWV/LgEGk6z3ZZ9Bz98aD4rBZ8hoqPwhmYrfO4EZprfb0q7owQU4olfFOPdnq08NeUAg8phQdqxMLDy4FMWAKF9h+V+k5HjmxBDAxAfMObwGqRnbiSbYMGAQwmkrH16ShXSxXPDt9/1etJKhlp5UC3QVpuupPZCmjlgwhkHZYLaeEhLOHW5G2sMQBsW1tUdKqnEAX5EwjOmG/moF3vQjBLRHrWHIC7mnrW+4HXh46xB6SfHHRgg/nAN3kya4a6Q==
-X-Forefront-Antispam-Report:
-	CIP:195.60.68.100;CTRY:SE;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:mail.axis.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230040)(36860700016)(82310400026)(376014)(1800799024)(23010399003)(18002099003)(10067099003)(22082099003)(11063799006)(5023799004)(56012099006);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	WIwU4UFuBlG1DkrfKo171xvyLnJ7HWomphPBs9yIlO1yr7adBEFNqC1q0kWCPeF15rZF4bEBq4yhJcMpIFAFmncR5RYiBvpif++0lo16Ijt9QDredY0VF8j0j/wcf/iyc4rZknPZz+f0ZZ6L2SLCR+wZZpiy71i3fHIuWSvrAhOVhiR/wsNigGCBivNrky77HQv/A/k6DMyjbR2D+6B9Vvn3WaJObfV8Niu0JJNt0EmFSDHklZ23X7pSpMKX+RJaT++NS9sVLLX64qyV07jy/9TcYIVsZKEatFouC9/7s2a6Kz7nHLkDgA61sbDslvxklCuyzK9MSBDX54jRH+KoXL9AN/Nj4gYs5449DTkNxKa57/uXXFqgFGfkJ4A3zeGHz/o96zcPDRVrmPYI9tJE2aB5QXk3bIOsy0YAoFj3dKc6jcEAxOfK+OAyAqK3xI6s
-X-OriginatorOrg: axis.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 27 Jul 2026 12:43:37.9248
- (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: 427a1506-2c09-49a1-483f-08deebdcae1e
-X-MS-Exchange-CrossTenant-Id: 78703d3c-b907-432f-b066-88f7af9ca3af
-X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=78703d3c-b907-432f-b066-88f7af9ca3af;Ip=[195.60.68.100];Helo=[mail.axis.com]
-X-MS-Exchange-CrossTenant-AuthSource:
-	DU2PEPF00028D07.eurprd03.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Anonymous
-X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: DU0PR02MB8038
+References: <20260723184538.3888637-1-ekffu200098@gmail.com> <adcfc6f2-3309-4496-8331-1ae31e85d363@sirena.org.uk>
+In-Reply-To: <adcfc6f2-3309-4496-8331-1ae31e85d363@sirena.org.uk>
+From: Sang-Heon Jeon <ekffu200098@gmail.com>
+Date: Mon, 27 Jul 2026 21:59:30 +0900
+X-Gm-Features: AUfX_mxOitBR08KsPWHGWKTOhvBmlqBsOevQYdsbBN1kI3uyZROYcZJFQfRk1pk
+Message-ID: <CABFDxMEmB=5UZx6RZgFNZyB5sg-+e2hgx_T1QjV0JzqP+auTFQ@mail.gmail.com>
+Subject: Re: [PATCH 00/36] treewide: remove conditional returns with no effect
+To: Mark Brown <broonie@kernel.org>
+Cc: Julia.Lawall@inria.fr, Alex Deucher <alexander.deucher@amd.com>, 
+	Alexander Shishkin <alexander.shishkin@linux.intel.com>, 
+	Alexandre Belloni <alexandre.belloni@bootlin.com>, Andrew Lunn <andrew@lunn.ch>, 
+	Andrew Morton <akpm@linux-foundation.org>, 
+	Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>, Borislav Petkov <bp@alien8.de>, 
+	=?UTF-8?Q?Christian_K=C3=B6nig?= <christian.koenig@amd.com>, 
+	Daniel Lezcano <daniel.lezcano@kernel.org>, David Airlie <airlied@gmail.com>, 
+	"David S. Miller" <davem@davemloft.net>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, 
+	Eric Dumazet <edumazet@google.com>, Florian Westphal <fw@strlen.de>, 
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Hans de Goede <hansg@kernel.org>, 
+	Hans Verkuil <hverkuil@kernel.org>, Heikki Krogerus <heikki.krogerus@linux.intel.com>, 
+	Herbert Xu <herbert@gondor.apana.org.au>, 
+	=?UTF-8?Q?Ilpo_J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>, 
+	Jakub Kicinski <kuba@kernel.org>, 
+	"James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>, 
+	Jani Nikula <jani.nikula@linux.intel.com>, Jaroslav Kysela <perex@perex.cz>, 
+	Jason Gunthorpe <jgg@ziepe.ca>, Jiri Pirko <jiri@resnulli.us>, "Joerg Roedel (AMD)" <joro@8bytes.org>, 
+	Johan Hovold <johan@kernel.org>, Jonathan Cameron <jic23@kernel.org>, 
+	Joonas Lahtinen <joonas.lahtinen@linux.intel.com>, Julian Anastasov <ja@ssi.bg>, 
+	Leon Romanovsky <leon@kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, Linus Walleij <linusw@kernel.org>, 
+	Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, 
+	"Martin K. Petersen" <martin.petersen@oracle.com>, Matthew Sakai <msakai@redhat.com>, 
+	Mauro Carvalho Chehab <mchehab@kernel.org>, Maxime Ripard <mripard@kernel.org>, 
+	Michael Turquette <mturquette@baylibre.com>, Mike Rapoport <rppt@kernel.org>, 
+	Miri Korenblit <miriam.rachel.korenblit@intel.com>, Nicolas Palix <nicolas.palix@imag.fr>, 
+	Pablo Neira Ayuso <pablo@netfilter.org>, Paolo Abeni <pabeni@redhat.com>, 
+	Ping-Ke Shih <pkshih@realtek.com>, "Rafael J. Wysocki" <rafael@kernel.org>, 
+	Rodrigo Vivi <rodrigo.vivi@intel.com>, Sebastian Reichel <sre@kernel.org>, Shuah Khan <shuah@kernel.org>, 
+	Simona Vetter <simona@ffwll.ch>, Simon Horman <horms@verge.net.au>, Stephen Boyd <sboyd@kernel.org>, 
+	Steve French <sfrench@samba.org>, Takashi Iwai <tiwai@suse.com>, Thomas Renninger <trenn@suse.com>, 
+	Thomas Zimmermann <tzimmermann@suse.de>, Tony Luck <tony.luck@intel.com>, 
+	Tvrtko Ursulin <tursulin@ursulin.net>, Vadim Fedorenko <vadim.fedorenko@linux.dev>, 
+	Vinod Koul <vkoul@kernel.org>, Will Deacon <will@kernel.org>, 
+	Yazen Ghannam <Yazen.Ghannam@amd.com>, cocci@inria.fr, amd-gfx@lists.freedesktop.org, 
+	dmaengine@vger.kernel.org, dm-devel@lists.linux.dev, 
+	dri-devel@lists.freedesktop.org, intel-gfx@lists.freedesktop.org, 
+	intel-wired-lan@lists.osuosl.org, iommu@lists.linux.dev, 
+	linux-cifs@vger.kernel.org, linux-clk@vger.kernel.org, 
+	linux-crypto@vger.kernel.org, linux-edac@vger.kernel.org, 
+	linux-gpio@vger.kernel.org, linux-iio@vger.kernel.org, 
+	linux-input@vger.kernel.org, linux-kernel@vger.kernel.org, 
+	linux-media@vger.kernel.org, linux-mm@kvack.org, linux-pm@vger.kernel.org, 
+	linux-rdma@vger.kernel.org, linux-rtc@vger.kernel.org, 
+	linux-s390@vger.kernel.org, linux-scsi@vger.kernel.org, 
+	linux-sound@vger.kernel.org, linux-usb@vger.kernel.org, 
+	linux-wireless@vger.kernel.org, lvs-devel@vger.kernel.org, 
+	netdev@vger.kernel.org, netfilter-devel@vger.kernel.org, 
+	nouveau@lists.freedesktop.org, platform-driver-x86@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-On Mon, Jul 27, 2026 at 17:37 +0800 Linmao Li <lilinmao@kylinos.cn> wrote:
-
-> data->batinfo is only used by bq25630_setup() to program the initial
-> charge limits, but power_supply_get_battery_info() allocates it on
-> psy->dev, so it stays around for the lifetime of the device. Nothing
-> else in the driver uses it. Release it right after setup, as bq256xx
-> and bq257xx do.
+On Mon, Jul 27, 2026 at 9:12=E2=80=AFPM Mark Brown <broonie@kernel.org> wro=
+te:
 >
-> Signed-off-by: Linmao Li <lilinmao@kylinos.cn>
-> ---
->  drivers/power/supply/bq25630_charger.c | 5 ++---
->  1 file changed, 2 insertions(+), 3 deletions(-)
+> On Fri, Jul 24, 2026 at 03:45:02AM +0900, Sang-Heon Jeon wrote:
 >
-> diff --git a/drivers/power/supply/bq25630_charger.c b/drivers/power/supply/bq25630_charger.c
-> index 165f8c67b4895..efcdb1f5bc351 100644
-> --- a/drivers/power/supply/bq25630_charger.c
-> +++ b/drivers/power/supply/bq25630_charger.c
-> @@ -1045,10 +1045,9 @@ static int bq25630_probe(struct i2c_client *client)
->  		return dev_err_probe(data->dev, ret, "Could not request IRQ\n");
->  
->  	ret = bq25630_setup(data);
-> -	if (ret)
-> -		return ret;
-> +	power_supply_put_battery_info(data->psy, data->batinfo);
->  
-> -	return 0;
-> +	return ret;
->  }
->  
->  static const struct of_device_id bq25630_of_match[] = {
+> > All patches are independent and can be applied separately, but for
+> > everyone's convenience, it would be nice if they were merged through
+> > a single tree.
+>
+> Please don't do this, it does not make anything more convenient - it
+> results in huge CC lists and makes it more difficult to work out who
+> will actually apply things.  If there's no dependencies just send to
+> each subsystem independently.
 
-The initial thought was that `batinfo` could/would be used elsewhere,
-but as you point out, it's currently not. A better design is then to
-move the `power_supply_get_battery_info()` into `bq25630_setup()`, in
-order to scope the `get/put()`. So let's get `batinfo` there, just
-before using it, and have an error/clean-up-path there as well.
+Thanks for letting me know. I'll keep that in mind. In v2, I will send
+the cleanup patches to each subsystem independently.
+
+Best Regards,
+Sang-Heon Jeon
