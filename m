@@ -1,282 +1,123 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pg1-f173.google.com (mail-pg1-f173.google.com [209.85.215.173])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 17F4040DB5E
-	for <linux-pm@vger.kernel.org>; Tue, 28 Jul 2026 08:45:11 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 52F1B3DC4D0
+	for <linux-pm@vger.kernel.org>; Tue, 28 Jul 2026 08:47:21 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.215.173
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1785228313; cv=none; b=BLzy5b9pMr7Ar56v0quHW8BiP8twvjARk7UkV5IzsCA4wQPAuLunI+o55b8hcfezfVWTplSuvK5RrkUymkU3/WI1CK2Rk6XRt2JYsQH4bJU2fyw3fewyd5ePvkVQ3YgZwVY5/MmlTL5sBGYYO8/1lc6mxbd6VrUL68NSRGjIv+A=
+	t=1785228442; cv=none; b=rlMsJWtVlQM0nf54Yd+yqvOKp+1e0QjohZixuokrGb9duzRgn/c7riWS8rXDS99oYCiIg90IlEp9ba4REuMGpfKIjDYnTKzU7hJLu0jqg9Z9g/aoO3UPXxSfJASxWo6MbEiTGOYQ/C625rVXF/bJAHp8u4t/CGzmoYx1+gRIJ5c=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1785228313; c=relaxed/simple;
-	bh=d98ko6GW4nNVHZNTReRBulpKIT/3cDqdTo7mLtF/Ovg=;
-	h=From:In-Reply-To:MIME-Version:References:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=CGJJKWhM3S8lKEFWMMMCn8es078WUXvomNNM3WzfTZlklKIk/skaglFPXEKbiydJykxUdgvObGJVRBv240QWQeCQ3cl/yId4mSGGVQkDuUpGtX4aKPTfMjiFVoFIh4L2CKqMkdj7waebv4OOkJnb+gEfuRlD5uzoiBfh+nzWSdo=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=lJ/+GREL; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1785228442; c=relaxed/simple;
+	bh=ctjKkFPlSuVU2qeHE9Gy5zi4ZQOiPmU6J70mT4/ZarI=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=gbdtI+Siv2ZPWwGif3oQQUREnxz8KzmH75wgj7JYYlkgk/4CvBwSA3dMTlczelcjTj0elcUpfZOhEq4I5mgYoMkAzoW2zZKzmakx7wHLcmRPB9Z5keGjBoTbZxjX33P2xzUcmYt0vlM7uskC1Gc2x4LzjuyLkTccNj4kmYfKqIQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=J8lZAsBq; arc=none smtp.client-ip=209.85.215.173
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="lJ/+GREL"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 901951F000E9
-	for <linux-pm@vger.kernel.org>; Tue, 28 Jul 2026 08:45:11 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1785228311;
-	bh=mgwGnw1LeMBzci1Stejigw1agDkrzH3L3vKTklQqu0Q=;
-	h=From:In-Reply-To:References:Date:Subject:To:Cc;
-	b=lJ/+GRELN5p5BIXZGWxhOP+2RkpOhJv24Wk+BSpH++uFx2hzWtuNDV/5Gk1pozYUU
-	 vdI4eU9mu5E6cO6qBH00CkTk3hnHrqHSbTimTN2gssEGhpcyA55JMBWz2rZwnq3hFF
-	 9+7PvP2EHlrOYX1cECCf1pKiVpV9tjmNgf9fbtZDUiCKxAWYbRT2fTtmYujixtSyzW
-	 Oh/9vBCZ4+ZtI6K7HKuGiRuzMuQd3EqzmM+U3p/92620qZyVW0jF5N5rAdOkbJ2AVF
-	 w84R8b9Qitxkp6TSXQe0gxj7kTSb+lGr7GdkBwwtyswo058OEMLgWUjLzCtvuxWWTb
-	 BlV262DBlv+Jw==
-Received: by mail-lf1-f49.google.com with SMTP id 2adb3069b0e04-5b013084dc2so2762704e87.0
-        for <linux-pm@vger.kernel.org>; Tue, 28 Jul 2026 01:45:11 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AHgh+Rpnbo7CNJ0JWNG6It/NtSaB5Fib6bJDA7X58PHRFq0Hux67x2dsJWSWZxFSCDHbCh4YdmrhhnErjA==@vger.kernel.org
-X-Gm-Message-State: AOJu0YyWNW3pni1GAYQikFfweKRkgm+3uxxm7zKdWA3vvK45F3vupplN
-	+lhwl8UknM29ay5An47SkOSMiz90wuA2NfXu+TxNNQdHzsoi+J5nZs6uDWsN8y0jCpHx+f9Fwow
-	LM5+I4XMlgRLwiKl5Vky1ThAIOr4fK00e1SSdtsZ/mA==
-X-Received: by 2002:a05:6512:238b:b0:5b2:aaa2:1d8d with SMTP id
- 2adb3069b0e04-5b2d0106076mr317721e87.2.1785228310309; Tue, 28 Jul 2026
- 01:45:10 -0700 (PDT)
-Received: from 969154062570 named unknown by gmailapi.google.com with
- HTTPREST; Tue, 28 Jul 2026 08:45:09 +0000
-Received: from 969154062570 named unknown by gmailapi.google.com with
- HTTPREST; Tue, 28 Jul 2026 08:45:09 +0000
-From: Bartosz Golaszewski <brgl@kernel.org>
-In-Reply-To: <20260725123433.162348-3-biju.das.jz@bp.renesas.com>
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="J8lZAsBq"
+Received: by mail-pg1-f173.google.com with SMTP id 41be03b00d2f7-c9aea40d799so1870915a12.0
+        for <linux-pm@vger.kernel.org>; Tue, 28 Jul 2026 01:47:21 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1785228441; x=1785833241; darn=vger.kernel.org;
+        h=in-reply-to:content-disposition:content-type:mime-version
+         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=Zqi8cIj/t2mh1e51achfPCocTPBcrX0WCBo7rDCEZ0w=;
+        b=J8lZAsBqCsaZmKToHleuuSI6QaAXIVVYTT/CIjUIRuCpsyjCjEcnCWNcCq17U3S9HR
+         x7+r+QQBhhpSFUTatpqwXxvqfUiexBYWbXxEH+Q5WaQpZXQf+Fm6WCWa/uxxWQNUUR1q
+         HBPF6S0BcerQCEEtT29FJO/WL+FQD+EUKLCFfbjKcL3wA0R5yXNmwyexyb8E3UZgCMhz
+         QPw64Q8+vyAS5FNwwTVbH35HOflX0w05bYbEiJqtPvgsDG4n7NyGAmZG/WhZRvAvTkx/
+         3eNajQ4F/VWohakFu5BCzomnbMkJ3iz+RznM5yXmXGAkb3AUp16Sor1SLZg7XUMd+xlP
+         nv1A==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1785228441; x=1785833241;
+        h=in-reply-to:content-disposition:content-type:mime-version
+         :references:message-id:subject:cc:to:from:date:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=Zqi8cIj/t2mh1e51achfPCocTPBcrX0WCBo7rDCEZ0w=;
+        b=O+gWoDKvVYMHbxfOYqNnCIy1Z2cb2Cx492oov17Dq6nJpzMS+FVsf4SAPUSpJBGzRV
+         sShkuioZkTQ9QKyvFH4Cs+jQxu+1/P3OG1qVfxkzu8R81Fajx3r7Nitepbt6oEv8Aa52
+         BUdszGsCb+/QTjzk90MRT041Z0fPFXq1fGUglD4CWE5YO7lnN2rIEmuT8YxoXc1rUuOn
+         bKz5lWsmMBIeKN97fK7UaHtSUvwHr5XdykxTgZWwZB+EIL/atgCS3Zd8DmxrnCjzC7zw
+         iJQZrOtixenK1iQ4TYSmtxZfnvWsEmamYRvx04MwBGNlH6bUdyPGEXMwtPUvKN1ZfXV4
+         hrRQ==
+X-Forwarded-Encrypted: i=1; AHgh+RqdckAwh5USXwED8xiz69wJKjXnz54XWiG4fE2IJAZQ1iQZ8o/FGiixxKp6lD7xYzWoJzjQEbSPPA==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yzp90Qy4GGKgik1rmx5Fuy3CKkFkLiGBf+R12sxns7+z25Bb3Mh
+	loANda1oWLO89wHZHj6x2CZbYq7st6572Pc04qw4AxGPhTnYHLquodAgyg7UMsJOnHk=
+X-Gm-Gg: AR+sD108hm5HAjKDVoyjQf5ujRz1m9QuraqnptmgxhvYK128OzeDHMjGGuazWkG1bNn
+	NS6GVah0RgHELmzJP3SQuu7XNkpKyPY3ohlkjVj5daIQ5H4oJXqU9chcrdGeytxXXnLmZ1ijJPn
+	pM957jN0QgK0rL/T14GfV6su5aEcF/EbK/FSzm9GKLCvZHGWRO5rNcIcAyI6o6BDlGBwUMUV1+B
+	ePOU3W/207fRmFytj+Ol5z8fpZ1lvmnbSpWnHjs2Jy+AgCg3XfEkitfMyhMJbHa/pS76efFgOUB
+	HyuzfVF28+Ex1LhqcCUB2WLip0UGfXe8ilQSsCEX6d5TPVLjD5oIwbSVSEcvlzqUAGtK8MpYCVP
+	UUxfs+7X4exttFFgao/5JxJ2gJrn04tkVtXk73UcE+MnlZpEo+Cc6UkgLlN9zCbdA/qSy0ht+AJ
+	zs0cELqcGtiuZs
+X-Received: by 2002:a05:6a21:3204:b0:3c6:5673:2bd1 with SMTP id adf61e73a8af0-3c8ba5da101mr1810776637.42.1785228440488;
+        Tue, 28 Jul 2026 01:47:20 -0700 (PDT)
+Received: from localhost ([122.172.82.94])
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-314bc3e1290sm41201957eec.1.2026.07.28.01.47.17
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 28 Jul 2026 01:47:18 -0700 (PDT)
+Date: Tue, 28 Jul 2026 14:17:14 +0530
+From: Viresh Kumar <viresh.kumar@linaro.org>
+To: Priya Bala Govindasamy <pgovind2@uci.edu>
+Cc: rafael@kernel.org, ojeda@kernel.org, aliceryhl@google.com, 
+	gary@garyguo.net, boqun@kernel.org, rust-for-linux@vger.kernel.org, 
+	linux-pm@vger.kernel.org, ardalan@uci.edu, zhiyunq@cs.ucr.edu, dzueck@uci.edu, 
+	ytan089@ucr.edu
+Subject: Re: [PATCH v3] rust: cpufreq: Fix temporary write in
+ Registration::bios_limit_callback
+Message-ID: <dwdbn7ea6evjhxtpobcg3cxgi3shb65ddsvk6xrqbujbq22hqz@5hxvifua2zyo>
+References: <c38ed08b34af92e134f5aefc993d349bd1dd11ef.1784569723.git.pgovind2@uci.edu>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260725123433.162348-1-biju.das.jz@bp.renesas.com> <20260725123433.162348-3-biju.das.jz@bp.renesas.com>
-Date: Tue, 28 Jul 2026 08:45:09 +0000
-X-Gmail-Original-Message-ID: <CAMRc=Mf_oNCQK3o5-s4u8zejkVWM4WN_R9YO+NA4od0qqtGjow@mail.gmail.com>
-X-Gm-Features: AUfX_mzgkXgviY5xRYVFcqN9ouUjg2z7AvPic1BafteY-WRWusmm3WJ1keIqbkM
-Message-ID: <CAMRc=Mf_oNCQK3o5-s4u8zejkVWM4WN_R9YO+NA4od0qqtGjow@mail.gmail.com>
-Subject: Re: [PATCH 2/3] power: sequencing: Add Renesas RZ/G3L Power Ready driver
-To: Biju <biju.das.au@gmail.com>
-Cc: Biju Das <biju.das.jz@bp.renesas.com>, linux-kernel@vger.kernel.org, 
-	linux-pm@vger.kernel.org, 
-	Prabhakar Mahadev Lad <prabhakar.mahadev-lad.rj@bp.renesas.com>, linux-renesas-soc@vger.kernel.org, 
-	Bartosz Golaszewski <brgl@kernel.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Rob Herring <robh@kernel.org>, 
-	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
-	Laurent Pinchart <Laurent.pinchart@ideasonboard.com>, Philipp Zabel <p.zabel@pengutronix.de>, 
-	Magnus Damm <magnus.damm@gmail.com>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <c38ed08b34af92e134f5aefc993d349bd1dd11ef.1784569723.git.pgovind2@uci.edu>
 
-On Sat, 25 Jul 2026 14:34:29 +0200, Biju <biju.das.au@gmail.com> said:
-> From: Biju Das <biju.das.jz@bp.renesas.com>
->
-> Add a power sequencing driver for the Renesas RZ/G3L PWRRDY module,
-> which signals power readiness for various IPs (USB, DSI, CSI etc.) on the
-> SoC. The driver binds as an auxiliary device to the parent SYSC driver,
-> using its regmap to toggle the SYS_PWRRDY_N register bits, and exposes
-> {usb,dsi,csi}-pwrrdy pwrseq targets.
->
-> Signed-off-by: Biju Das <biju.das.jz@bp.renesas.com>
+On 20-07-26, 18:00, Priya Bala Govindasamy wrote:
+> In `Registration::bios_limit_callback`, the expression
+> `&mut (unsafe { *limit })` creates a reference to a temporary copy
+> of the value pointed to by `limit` on the stack.
+> Therefore, writes made by `T::bios_limit` go to this temporary
+> instead of the memory location pointed to by `limit`.
+> 
+> Additionally, `limit` may be uninitialized, such as when
+> `Registration::bios_limit_callback` is invoked by `show_bios_limit`
+> in drivers/cpufreq/cpufreq.c. Therefore creating a reference to 
+> `limit` is unsound.
+> 
+> Fix this by changing the signature of `T::bios_limit` to return the limit
+> value.
+> `Registration::bios_limit_callback` can then update `limit` directly.
+> 
+> Fixes: c6af9a1191d042839e56abff69e8b0302d117988 ("rust: cpufreq: Extend abstractions for driver registration")
+> Reported-by: Dylan Zueck<dzueck@uci.edu>
+> Reported-by: Yuan Tan<ytan089@ucr.edu>
+> Assisted-by: ChatGPT:gpt-5.4
+> Signed-off-by: Priya Bala Govindasamy<pgovind2@uci.edu>
+> 
+> changes in v3:
+>  - Update documentation for `bios_limit`
+>  - Use direct raw pointer assignment instead of non-dropping write for
+>    `limit`
+>  - v2 Link: https://lore.kernel.org/rust-for-linux/2fd4425697efb6d52459cd886115edd281bd5f44.1784155370.git.pgovind2@uci.edu/
+>  - v1 Link: https://lore.kernel.org/rust-for-linux/cover.1783456063.git.pgovind2@uci.edu/T/#t
 > ---
->  drivers/power/sequencing/Kconfig              |   8 +
->  drivers/power/sequencing/Makefile             |   1 +
->  .../power/sequencing/pwrseq-renesas-pwrrdy.c  | 141 ++++++++++++++++++
->  3 files changed, 150 insertions(+)
->  create mode 100644 drivers/power/sequencing/pwrseq-renesas-pwrrdy.c
->
-> diff --git a/drivers/power/sequencing/Kconfig b/drivers/power/sequencing/Kconfig
-> index 1c5f5820f5b7..245961cc8123 100644
-> --- a/drivers/power/sequencing/Kconfig
-> +++ b/drivers/power/sequencing/Kconfig
-> @@ -27,6 +27,14 @@ config POWER_SEQUENCING_QCOM_WCN
->  	  this driver is needed for correct power control or else we'd risk not
->  	  respecting the required delays between enabling Bluetooth and WLAN.
->
-> +config POWER_SEQUENCING_RENESAS_PWRRDY
-> +	tristate "Renesas Power Ready sequencing driver"
-> +	depends on SYSC_RZ || COMPILE_TEST
-> +	help
-> +	  Say Y here to enable the power sequencing driver for the Renesas
-> +	  Power Ready signals. This driver handles the power ready signals
-> +	  required to power on the various IP's on RZ/G3L platform.
-> +
->  config POWER_SEQUENCING_TH1520_GPU
->  	tristate "T-HEAD TH1520 GPU power sequencing driver"
->  	depends on (ARCH_THEAD && AUXILIARY_BUS) || COMPILE_TEST
-> diff --git a/drivers/power/sequencing/Makefile b/drivers/power/sequencing/Makefile
-> index 0911d4618298..b33d08d82f43 100644
-> --- a/drivers/power/sequencing/Makefile
-> +++ b/drivers/power/sequencing/Makefile
-> @@ -4,5 +4,6 @@ obj-$(CONFIG_POWER_SEQUENCING)		+= pwrseq-core.o
->  pwrseq-core-y				:= core.o
->
->  obj-$(CONFIG_POWER_SEQUENCING_QCOM_WCN)	+= pwrseq-qcom-wcn.o
-> +obj-$(CONFIG_POWER_SEQUENCING_RENESAS_PWRRDY) += pwrseq-renesas-pwrrdy.o
->  obj-$(CONFIG_POWER_SEQUENCING_TH1520_GPU) += pwrseq-thead-gpu.o
->  obj-$(CONFIG_POWER_SEQUENCING_PCIE_M2)	+= pwrseq-pcie-m2.o
-> diff --git a/drivers/power/sequencing/pwrseq-renesas-pwrrdy.c b/drivers/power/sequencing/pwrseq-renesas-pwrrdy.c
-> new file mode 100644
-> index 000000000000..a3d187dd3247
-> --- /dev/null
-> +++ b/drivers/power/sequencing/pwrseq-renesas-pwrrdy.c
-> @@ -0,0 +1,141 @@
-> +// SPDX-License-Identifier: GPL-2.0
-> +/*
-> + * Renesas RZ/G3L Power Ready driver
-> + *
-> + */
-> +
-> +#include <linux/auxiliary_bus.h>
-> +#include <linux/module.h>
-> +#include <linux/pwrseq/provider.h>
-> +#include <linux/regmap.h>
-> +
-> +#define SYS_PWRRDY_N		0xd70
-> +#define SYS_PWRRDY_N_USB_MASK	BIT(0)
-> +#define SYS_PWRRDY_N_DSI_MASK	BIT(1)
-> +#define SYS_PWRRDY_N_CSI_MASK	BIT(2)
-> +
-> +static int pwrseq_rzg3l_set_pwrrdy(struct pwrseq_device *pwrseq, u32 mask, u32 val)
-> +{
-> +	struct regmap *regmap = pwrseq_device_get_drvdata(pwrseq);
-> +
-> +	return regmap_update_bits(regmap, SYS_PWRRDY_N, mask, val);
-> +}
-> +
-> +static int pwrseq_rzg3l_usb_pwrrdy_enable(struct pwrseq_device *pwrseq)
-> +{
-> +	return pwrseq_rzg3l_set_pwrrdy(pwrseq, SYS_PWRRDY_N_USB_MASK, 0);
-> +}
-> +
-> +static int pwrseq_rzg3l_usb_pwrrdy_disable(struct pwrseq_device *pwrseq)
-> +{
-> +	return pwrseq_rzg3l_set_pwrrdy(pwrseq, SYS_PWRRDY_N_USB_MASK, 1);
-> +}
-> +
-> +static const struct pwrseq_unit_data pwrseq_rzg3l_usb_pwrrdy_unit = {
-> +	.name = "usb-pwrrdy-power-sequence",
-> +	.enable = pwrseq_rzg3l_usb_pwrrdy_enable,
-> +	.disable = pwrseq_rzg3l_usb_pwrrdy_disable,
-> +};
-> +
-> +static int pwrseq_rzg3l_dsi_pwrrdy_enable(struct pwrseq_device *pwrseq)
-> +{
-> +	return pwrseq_rzg3l_set_pwrrdy(pwrseq, SYS_PWRRDY_N_DSI_MASK, 0);
-> +}
-> +
-> +static int pwrseq_rzg3l_dsi_pwrrdy_disable(struct pwrseq_device *pwrseq)
-> +{
-> +	return pwrseq_rzg3l_set_pwrrdy(pwrseq, SYS_PWRRDY_N_DSI_MASK, 1);
-> +}
-> +
-> +static const struct pwrseq_unit_data pwrseq_rzg3l_dsi_pwrrdy_unit = {
-> +	.name = "dsi-pwrrdy-sequence",
-> +	.enable = pwrseq_rzg3l_dsi_pwrrdy_enable,
-> +	.disable = pwrseq_rzg3l_dsi_pwrrdy_disable,
-> +};
-> +
-> +static int pwrseq_rzg3l_csi_pwrrdy_enable(struct pwrseq_device *pwrseq)
-> +{
-> +	return pwrseq_rzg3l_set_pwrrdy(pwrseq, SYS_PWRRDY_N_CSI_MASK, 0);
-> +}
-> +
-> +static int pwrseq_rzg3l_csi_pwrrdy_disable(struct pwrseq_device *pwrseq)
-> +{
-> +	return pwrseq_rzg3l_set_pwrrdy(pwrseq, SYS_PWRRDY_N_CSI_MASK, 1);
-> +}
-> +
-> +static const struct pwrseq_unit_data pwrseq_rzg3l_csi_pwrrdy_unit = {
-> +	.name = "csi-pwrrdy-power-sequence",
-> +	.enable = pwrseq_rzg3l_csi_pwrrdy_enable,
-> +	.disable = pwrseq_rzg3l_csi_pwrrdy_disable,
-> +};
-> +
-> +static const struct pwrseq_target_data pwrseq_rzg3l_usb_pwrrdy_target = {
-> +	.name = "usb-pwrrdy",
-> +	.unit = &pwrseq_rzg3l_usb_pwrrdy_unit,
-> +};
-> +
-> +static const struct pwrseq_target_data pwrseq_rzg3l_dsi_pwrrdy_target = {
-> +	.name = "dsi-pwrrdy",
-> +	.unit = &pwrseq_rzg3l_dsi_pwrrdy_unit,
-> +};
-> +
-> +static const struct pwrseq_target_data pwrseq_rzg3l_csi_pwrrdy_target = {
-> +	.name = "csi-pwrrdy",
-> +	.unit = &pwrseq_rzg3l_csi_pwrrdy_unit,
-> +};
-> +
-> +static const struct pwrseq_target_data *pwrseq_rzg3l_pwrrdy_targets[] = {
-> +	&pwrseq_rzg3l_usb_pwrrdy_target,
-> +	&pwrseq_rzg3l_dsi_pwrrdy_target,
-> +	&pwrseq_rzg3l_csi_pwrrdy_target,
-> +	NULL
-> +};
-> +
-> +static int pwrseq_rzg3l_pwrrdy_match(struct pwrseq_device *pwrseq,
-> +				     struct device *dev)
-> +{
-> +	return PWRSEQ_MATCH_OK;
 
-When I see an always-tru match() callback, it always raises an alarm bell.
-Typically, I'd expect there to be some validation of the consumer happening.
+The above part which shouldn't be part of the commit (Changes in v3),
+should be added here after the `---` line. Else git am picks this up
+as well in commit log.
 
-Please at least provide an explanation of why it's ok.
+>  rust/kernel/cpufreq.rs | 9 ++++++---
+>  1 file changed, 6 insertions(+), 3 deletions(-)
 
-> +}
-> +
-> +static int pwrseq_rzg3l_pwrrdy_probe(struct auxiliary_device *adev,
-> +				     const struct auxiliary_device_id *id)
-> +{
-> +	struct device *dev = &adev->dev;
-> +	struct pwrseq_config config = {};
-> +	struct pwrseq_device *pwrseq;
-> +	struct regmap *regmap;
-> +
-> +	regmap = dev_get_regmap(adev->dev.parent, NULL);
-> +	if (!regmap)
-> +		return dev_err_probe(dev, -ENODEV, "Failed to retrieve parent regmap\n");
-> +
-> +	config.parent = dev;
-> +	config.owner = THIS_MODULE;
-> +	config.drvdata = regmap;
-> +	config.match = pwrseq_rzg3l_pwrrdy_match;
-> +	config.targets = pwrseq_rzg3l_pwrrdy_targets;
+Applied. Thanks.
 
-Add newline here.
-
-It wouldn't also hurt to use a compound literal like so:
-
-	config = (struct pwrseq_config){
-		.parent = dev,
-		...
-	};
-
-> +	pwrseq = devm_pwrseq_device_register(dev, &config);
-> +	if (IS_ERR(pwrseq))
-> +		return dev_err_probe(dev, PTR_ERR(pwrseq), "Failed to register power sequencer\n");
-> +
-
-I'd just return devm_pwrseq_device_register() here.
-
-> +	return 0;
-> +}
-> +
-> +static const struct auxiliary_device_id pwrseq_rzg3l_pwrrdy_id_table[] = {
-> +	{ .name = "rz_sysc.pwrseq-pwrrdy" },
-> +	{ /* sentinel */ }
-> +};
-> +MODULE_DEVICE_TABLE(auxiliary, pwrseq_rzg3l_pwrrdy_id_table);
-> +
-> +static struct auxiliary_driver pwrseq_rzg3l_pwrrdy_driver = {
-> +	.driver = {
-> +		.name = "pwrseq-rzg3l-pwrrdy",
-> +	},
-> +	.probe = pwrseq_rzg3l_pwrrdy_probe,
-> +	.id_table = pwrseq_rzg3l_pwrrdy_id_table,
-> +};
-> +module_auxiliary_driver(pwrseq_rzg3l_pwrrdy_driver);
-> +
-> +MODULE_AUTHOR("Biju Das <biju.das.jz@bp.renesas.com>");
-> +MODULE_DESCRIPTION("Renesas RZ/G3L Power Ready Driver");
-> +MODULE_LICENSE("GPL");
-> --
-> 2.43.0
->
->
+-- 
+viresh
