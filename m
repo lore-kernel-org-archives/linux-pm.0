@@ -1,131 +1,129 @@
-Received: from mail-m49198.qiye.163.com (mail-m49198.qiye.163.com [45.254.49.198])
+Received: from canpmsgout05.his.huawei.com (canpmsgout05.his.huawei.com [113.46.200.220])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F3A47439F90;
-	Tue, 28 Jul 2026 12:34:35 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=45.254.49.198
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E54243AA1B0
+	for <linux-pm@vger.kernel.org>; Tue, 28 Jul 2026 12:48:22 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=113.46.200.220
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1785242079; cv=none; b=mjli6ce2b1PESK2WHjoNwv3nQjzIraxT7KOK/+moJz9LO/PnxKlp9+myBMxiiULmVNLS9z+fEVHm9DL9r1Pui9xpSvzyhxKGrIAIkxPcI6DERwzZShd1hqaSIbwGXTzCM3L1XNrtry0AJRzOHQOw9wYL2n+a/h/E8aAJ5tDfN78=
+	t=1785242908; cv=none; b=A2K3pnuh6+sigq52rdc6YyI3bv+Lpd6rdxTlCEZFqZds3p5QYOTHcN2XC8LRiQMkQMV5ZkVUX9K+S/l2F8U6TKYJ9IBV7cEkJHsxUKQI87+UZk0YPnBZc5Klr72uPW/NW+M3zjouNRIXqU9Wt5MGDHIiqujb+u9hXTvowK/JI3M=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1785242079; c=relaxed/simple;
-	bh=srDHrrYHNHqXcgd8UvzqgeQEK3hizWRslW5D7hLWoyY=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=iWaR08BttEL4m8dIO1/HtZBtjd5U91vTWJOpTjoMEuTehT0GRpLf9wN4BApkk1LOWPRNY2/MslFGrjy6eVRkyOftKislbdxlAa55eYzsgNH+XdMwgRA4Xaaa2rBpO3yaeCvuT3kbwQeboZggkAtpxqRIKSJBXez/fa02ove/ntI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=seu.edu.cn; spf=pass smtp.mailfrom=seu.edu.cn; dkim=pass (1024-bit key) header.d=seu.edu.cn header.i=@seu.edu.cn header.b=EOj3hA4u; arc=none smtp.client-ip=45.254.49.198
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=seu.edu.cn
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=seu.edu.cn
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=seu.edu.cn header.i=@seu.edu.cn header.b="EOj3hA4u"
-Received: from LAPTOP-99KJFSET (unknown [221.228.238.82])
-	by smtp.qiye.163.com (Hmail) with ESMTP id 47e10a90f;
-	Tue, 28 Jul 2026 20:34:29 +0800 (GMT+08:00)
-From: Hongyan Xu <getshell@seu.edu.cn>
-To: sre@kernel.org
-Cc: Hongyan Xu <getshell@seu.edu.cn>,
-	linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	jianhao.xu@seu.edu.cn
-Subject: [PATCH] power: supply: twl4030_charger: cancel work on remove
-Date: Tue, 28 Jul 2026 20:33:41 +0800
-Message-ID: <20260728123423.781-7-getshell@seu.edu.cn>
-X-Mailer: git-send-email 2.50.1.windows.1
+	s=arc-20240116; t=1785242908; c=relaxed/simple;
+	bh=O2lZN+g/+jmL2bQSsuFX8GqrsHx8a4o2KM9iAshYPdk=;
+	h=Message-ID:Date:MIME-Version:Subject:To:CC:References:From:
+	 In-Reply-To:Content-Type; b=Mxlk1CFf/GjcUVR+Fx0y4gKmQoHRKX1PiBiqX9EyvwVVuO5jFOonaipknZppkg1GHHdu06oVlarU07MWTLpQdRps+WylJTtZBWQPGBwR3qXVe/fTms6Te4gBYvuDjGadqxIycMpCyW4hCpoDEgMNvF4VQ/f6AcGFQmjgtmB9QAM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=hisilicon.com; spf=pass smtp.mailfrom=hisilicon.com; arc=none smtp.client-ip=113.46.200.220
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=hisilicon.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=hisilicon.com
+Received: from mail.maildlp.com (unknown [172.19.162.140])
+	by canpmsgout05.his.huawei.com (SkyGuard) with ESMTPS id 4h8ZlD15Snz12LG0;
+	Tue, 28 Jul 2026 20:38:48 +0800 (CST)
+Received: from kwepemf200017.china.huawei.com (unknown [7.202.181.10])
+	by mail.maildlp.com (Postfix) with ESMTPS id 7F42F202E6;
+	Tue, 28 Jul 2026 20:48:18 +0800 (CST)
+Received: from [10.67.121.58] (10.67.121.58) by kwepemf200017.china.huawei.com
+ (7.202.181.10) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1544.11; Tue, 28 Jul
+ 2026 20:48:17 +0800
+Message-ID: <649b3e33-8829-48bc-9e60-5d2935ec9cc9@hisilicon.com>
+Date: Tue, 28 Jul 2026 20:48:16 +0800
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-HM-Tid: 0a9fa8b828f303a1kunm4c64fbaeeecf6
-X-HM-MType: 10
-X-HM-Spam-Status: e1kfGhgUHx5ZQUpXWQgPGg8OCBgUHx5ZQUlOS1dZFg8aDwILHllBWSg2Ly
-	tZV1koWUFITzdXWRgWCB1ZQUpXWS1ZQUlXWQ8JGhUIEh9ZQVlCHkxKVklDQx5LTktIGEsdGlYeHw
-	5VEwETFhoSFyQUDg9ZV1kYEgtZQVlJSUpVSUlDVUlIQ1VDSVlXWRYaDxIVHRRZQVlPS0hVSktJSE
-	5DQ1VKS0tVS1kG
-DKIM-Signature: a=rsa-sha256;
-	b=EOj3hA4u+/qYZV8jT3fgij47047yU/1N0YDSpMKGrQZrHpRhoImaj5jYk8010E8nkeUhY9yNASkvO3xorTz9BKAlqIQDjugm9xe0zkrd3HAHG9g86Wo0CKR7oFPlF3B3rKyq6XLO70e4//2ux15F6LcUwNP0L727RoPc5NNzwlo=; s=default; c=relaxed/relaxed; d=seu.edu.cn; v=1;
-	bh=dUIx2K9aKvDHpEc8tdZ804T27tJDAnvaPEp+ayPa+CM=;
-	h=date:mime-version:subject:message-id:from;
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v3 4/4] devfreq: Refcount governor modules while in use
+To: "zhenglifeng (A)" <zhenglifeng1@huawei.com>, <cwchoi00@gmail.com>,
+	<cw00.choi@samsung.com>, <myungjoo.ham@samsung.com>,
+	<kyungmin.park@samsung.com>, <linux-pm@vger.kernel.org>,
+	<linux-arm-kernel@lists.infradead.org>
+CC: <linuxarm@huawei.com>, <tianyaxiong@kylinos.cn>,
+	<zhangpengjie2@huawei.com>, <lihuisong@huawei.com>,
+	<prime.zeng@hisilicon.com>
+References: <20260519113251.3745140-1-zhanjie9@hisilicon.com>
+ <20260519113251.3745140-5-zhanjie9@hisilicon.com>
+ <5e503177-95e6-460a-b6b8-39f725da34a8@huawei.com>
+ <ceb7d509-39d1-4d80-91a0-e129d0c2ce7b@hisilicon.com>
+Content-Language: en-US
+From: Jie Zhan <zhanjie9@hisilicon.com>
+In-Reply-To: <ceb7d509-39d1-4d80-91a0-e129d0c2ce7b@hisilicon.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+X-ClientProxiedBy: kwepems500001.china.huawei.com (7.221.188.70) To
+ kwepemf200017.china.huawei.com (7.202.181.10)
 
-The USB notifier schedules bci->work and the charger current path can
-requeue bci->current_worker. Both work items use bci, but bci is
-devm-allocated and remove did not stop them before devres cleanup.
 
-Get the USB PHY without a managed notifier, register the notifier
-explicitly, then unregister it and mask external event sources before
-cancelling both work items in remove.
 
-This issue was found by a static analysis tool.
+On 6/1/2026 10:03 AM, Jie Zhan wrote:
+> 
+> 
+> On 5/21/2026 4:13 PM, zhenglifeng (A) wrote:
+>> On 5/19/2026 7:32 PM, Jie Zhan wrote:
+>>> A governor module can be inserted or removed dynamically when built as a
+>>> kernel module.  'devfreq->governor' would become NULL if the governor
+>>> module is removed when it's in use.
+>>>
+>>> Add a refcount mechanism for governor modules to prevent the governor
+>>> module from being removed (except for force unload):
+>>> 1. Add an optional 'owner' member to struct devfreq_governor so the devfreq
+>>>    core can identify the module that holds the governor code.
+>>> 2. Get and put a refcount of the governor module when starting and stopping
+>>>    the governor.
+>>>
+>>> The new 'owner' field is optional:
+>>> - Common governor modules (performance, powersave, simple_ondemand,
+>>>   userspace, passive) set 'owner' to THIS_MODULE.
+>>> - Governors that are bundled into a device driver module must leave 'owner'
+>>>   NULL.  The device's lifetime already pins that module, and setting
+>>>   'owner' would create a self-reference that blocks the driver from being
+>>>   unloaded.
+>>>
+>>> As a result, a non-forced rmmod of an in-use stand-alone governor now
+>>> fails with -EBUSY, e.g.:
+>>>
+>>>   $ cat governor
+>>>   performance
+>>>   $ rmmod governor_performance
+>>>   rmmod: ERROR: Module governor_performance is in use
+>>>
+>>> Force unloads (rmmod -f, if configured) can't be blocked.
+>>>
+>>> Signed-off-by: Jie Zhan <zhanjie9@hisilicon.com>
+>>> ---
+>>>  drivers/devfreq/devfreq.c                 | 17 ++++++++++++++++-
+>>>  drivers/devfreq/governor_passive.c        |  1 +
+>>>  drivers/devfreq/governor_performance.c    |  1 +
+>>>  drivers/devfreq/governor_powersave.c      |  1 +
+>>>  drivers/devfreq/governor_simpleondemand.c |  1 +
+>>>  drivers/devfreq/governor_userspace.c      |  1 +
+>>>  include/linux/devfreq-governor.h          | 11 +++++++++++
+>>>  7 files changed, 32 insertions(+), 1 deletion(-)
+>>>
+>>> diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
+>>> index 9e3e6a7348f8..1cee43636ded 100644
+>>> --- a/drivers/devfreq/devfreq.c
+>>> +++ b/drivers/devfreq/devfreq.c
+>>> @@ -345,24 +345,37 @@ static int devfreq_set_governor(struct devfreq *df,
+>>>  				 __func__, df->governor->name, ret);
+>>>  			return ret;
+>>>  		}
+>>> +		module_put(old_gov->owner);
+>>>  	}
+>>>  
+>>>  	/* Start the new governor */
+>>> +	if (!try_module_get(new_gov->owner)) {
+>>> +		df->governor = NULL;
+>>
+>> Shouldn't the old governor be restored here?
+>>
+> Yeah.  Perhaps we just move try_module_get() before stopping the old
+> governor so as to avoid another hunk of restoring governor.
 
-Signed-off-by: Hongyan Xu <getshell@seu.edu.cn>
----
- drivers/power/supply/twl4030_charger.c | 26 ++++++++++++++++++++++----
- 1 file changed, 22 insertions(+), 4 deletions(-)
+Follow up (after a long while though):
+I found it quite hard to restore the old governor here while keep the code
+clear.  I'd suggest that leaving it NULL for this rare error path.  The
+current devfreq-next code is able to handle a NULL df->governor.
 
-diff --git a/drivers/power/supply/twl4030_charger.c b/drivers/power/supply/twl4030_charger.c
-index 9dcb5457b..0142259ec 100644
---- a/drivers/power/supply/twl4030_charger.c
-+++ b/drivers/power/supply/twl4030_charger.c
-@@ -116,6 +116,7 @@ struct twl4030_bci {
- 	struct usb_phy		*transceiver;
- 	struct notifier_block	usb_nb;
- 	struct work_struct	work;
-+	bool			usb_nb_registered;
- 	int			irq_chg;
- 	int			irq_bci;
- 	int			usb_enabled;
-@@ -1024,7 +1025,7 @@ static int twl4030_bci_probe(struct platform_device *pdev)
- 		if (phynode) {
- 			bci->usb_nb.notifier_call = twl4030_bci_usb_ncb;
- 			bci->transceiver = devm_usb_get_phy_by_node(
--				bci->dev, phynode, &bci->usb_nb);
-+				bci->dev, phynode, NULL);
- 			of_node_put(phynode);
- 			if (IS_ERR(bci->transceiver)) {
- 				ret = PTR_ERR(bci->transceiver);
-@@ -1033,6 +1034,15 @@ static int twl4030_bci_probe(struct platform_device *pdev)
- 				dev_warn(&pdev->dev, "could not request transceiver (%d)",
- 					ret);
- 				bci->transceiver = NULL;
-+			} else {
-+				ret = usb_register_notifier(bci->transceiver,
-+							    &bci->usb_nb);
-+				if (ret)
-+					dev_warn(&pdev->dev,
-+						 "could not register USB notifier (%d)\n",
-+						 ret);
-+				else
-+					bci->usb_nb_registered = true;
- 			}
- 		}
- 	}
-@@ -1112,17 +1122,25 @@ static void twl4030_bci_remove(struct platform_device *pdev)
- {
- 	struct twl4030_bci *bci = platform_get_drvdata(pdev);
- 
--	twl4030_charger_enable_ac(bci, false);
--	twl4030_charger_enable_usb(bci, false);
--	twl4030_charger_enable_backup(0, 0);
-+	if (bci->usb_nb_registered)
-+		usb_unregister_notifier(bci->transceiver, &bci->usb_nb);
- 
- 	device_remove_file(&bci->usb->dev, &dev_attr_mode);
- 	device_remove_file(&bci->ac->dev, &dev_attr_mode);
-+
- 	/* mask interrupts */
- 	twl_i2c_write_u8(TWL4030_MODULE_INTERRUPTS, 0xff,
- 			 TWL4030_INTERRUPTS_BCIIMR1A);
- 	twl_i2c_write_u8(TWL4030_MODULE_INTERRUPTS, 0xff,
- 			 TWL4030_INTERRUPTS_BCIIMR2A);
-+
-+	cancel_work_sync(&bci->work);
-+	bci->usb_cur_target = 0;
-+	cancel_delayed_work_sync(&bci->current_worker);
-+
-+	twl4030_charger_enable_ac(bci, false);
-+	twl4030_charger_enable_usb(bci, false);
-+	twl4030_charger_enable_backup(0, 0);
- }
- 
- static const struct of_device_id twl_bci_of_match[] __maybe_unused = {
--- 
-2.50.1.windows.1
+Thanks!
+Jie
