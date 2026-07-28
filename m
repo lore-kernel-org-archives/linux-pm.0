@@ -1,63 +1,63 @@
-Received: from mail-oo1-f47.google.com (mail-oo1-f47.google.com [209.85.161.47])
+Received: from mail-oo1-f41.google.com (mail-oo1-f41.google.com [209.85.161.41])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1BDE34028F5
-	for <linux-pm@vger.kernel.org>; Tue, 28 Jul 2026 07:32:04 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.161.47
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1535140D588
+	for <linux-pm@vger.kernel.org>; Tue, 28 Jul 2026 07:32:05 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.161.41
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1785223926; cv=none; b=n5iy9pEl5o0oRQBCfbSnIXdOzO8VKdqIlehweqooPzYarxX9kJT2r7Kmu5T5BNE1+lFqWnqZ42LBi6KDsd8dmsVD7DZfnlxIZIm2VnOO+GLw6WeT+/CLv/9cWL30QIPoo4SEMFuIxR94CHFMFcnWFqVqBgbZIVx31H1N3mBoRJE=
+	t=1785223927; cv=none; b=cUk5q6W3GKqYehxOv5Z8UQcV3cHd7KWCTtzcLdiizyYQBRhU5pFmUVu85x8N99lL+pe0x2n/lyDmSMgyJDyZ5qGg52hvpAXda1F0ADAnM+Fb2fHMUdcoMOd11IAFubc+r5y9b5Qp43lk6LfmsjFkURCUlGUsoBQtL38f3Ht2MbM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1785223926; c=relaxed/simple;
-	bh=UsTgwXFrxH1khBQ6A73VBQ94prD4pM+U/GwK5VNoUhU=;
+	s=arc-20240116; t=1785223927; c=relaxed/simple;
+	bh=7qBIsb7cZtls+1Q4n80+8yqOlu8lXYGX8HbJOH3oTEs=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=krqSO1osAT4lD8UWzCZWB7N96ZSqqMeG1/TWtjgkwUIgbUy3P21IURbUmWGPmhwRZU17LhYYdxH6VDcukOnfJTNg5jVgjSIqzUDCHIXQbxtGaQX3VfMot0rgZP3+pzk/Og+fiZ0lbSoCbeY29VLvUC3qxP91v6MqbG3e9ZI/Vc0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=manifault.com; spf=pass smtp.mailfrom=manifault.com; dkim=pass (2048-bit key) header.d=manifault-com.20251104.gappssmtp.com header.i=@manifault-com.20251104.gappssmtp.com header.b=AC0h6wKQ; arc=none smtp.client-ip=209.85.161.47
+	 MIME-Version; b=fbjMDaG3mvZSE1mAjTkcrHuW5VEsxdxypx61j2lCyk8ZkOzNqble0F59MsFQ1Ep7+MfeZPar8DZM3326AguOYRqfql1zVFkZOsYpbnn7dQUB1ukidci4RFoMp/ijLWUvK4C+af1tr5VIBerHVmT4aMa3rssKhJPbkWdsgbeGwDA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=manifault.com; spf=pass smtp.mailfrom=manifault.com; dkim=pass (2048-bit key) header.d=manifault-com.20251104.gappssmtp.com header.i=@manifault-com.20251104.gappssmtp.com header.b=HfEeOXjQ; arc=none smtp.client-ip=209.85.161.41
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=manifault.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=manifault.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=manifault-com.20251104.gappssmtp.com header.i=@manifault-com.20251104.gappssmtp.com header.b="AC0h6wKQ"
-Received: by mail-oo1-f47.google.com with SMTP id 006d021491bc7-6a168dc590cso2113592eaf.0
-        for <linux-pm@vger.kernel.org>; Tue, 28 Jul 2026 00:32:03 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=manifault-com.20251104.gappssmtp.com header.i=@manifault-com.20251104.gappssmtp.com header.b="HfEeOXjQ"
+Received: by mail-oo1-f41.google.com with SMTP id 006d021491bc7-6aae5eb0ee0so1214574eaf.3
+        for <linux-pm@vger.kernel.org>; Tue, 28 Jul 2026 00:32:05 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=manifault-com.20251104.gappssmtp.com; s=20251104; t=1785223923; x=1785828723; darn=vger.kernel.org;
+        d=manifault-com.20251104.gappssmtp.com; s=20251104; t=1785223925; x=1785828725; darn=vger.kernel.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=9oi4NEmqd87fux3K0MjGlzsM/fqmW6tDlHNgOMiyjRQ=;
-        b=AC0h6wKQs2FV82amrmCywu4dkXf27mQUIstdPQ3fyLL1eQqryWywjNYkQycHNzfZik
-         xEHp1UYC/n1IxhoMJD+cVat4hFzIWCIVHp/aeTnStehLJyUl32hdQRPD47r+fzEq//M7
-         TkxqONoqYG0zX9s8GDuSU+8PekLH0y9wxmPy88q1OTCk245MROkTRfPSxrFhhqDT5h/A
-         ap3WHl32wNih8/ohSKr+jJJtJ9EVmK+Etqa8RKekexegwe1m1Iubex/3cYZ4tONxkX8c
-         1eq1fA+7TqUJfkqibLYGn7Zht09DTcwB6Xq38Xtm1h9CPxJaxtBqMdxMqrcKA1gztXdE
-         +waA==
+        bh=TBPFV7mE/o+ifYMGJXqsFhj2vvcUzVogsfKmm2PsKxY=;
+        b=HfEeOXjQrpSdcTFonnG3MqgGNEbpqBLRIel01E4cfu6T2a4I/+I3d6V45qwuq/GfaM
+         +xt4kKR5eo3tpe0BFGA0of5yu18GhD88l2nJQh593he7LKBmeOR4y3rq2sKet4B6VCXe
+         pLYna2WWYzWLe+YEtOPhOmsHZPsBKYiPhXbWiofaWbqNwsNNYVejEM7IbdhswUUCF2nJ
+         qp+mpZXu4rN/gdvdJFpe4RE9TKUBfsxgRnZUYQhl/QLcLubzQdl20DiZwQ9UUOcX+Luc
+         t8AT6ZuN7Ir6sD+BRyEmJalJk5vnWe6WNauE/z+lvclFapAR+1AlSKqel8dVwmaVbw+m
+         usiw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1785223923; x=1785828723;
+        d=1e100.net; s=20251104; t=1785223925; x=1785828725;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=9oi4NEmqd87fux3K0MjGlzsM/fqmW6tDlHNgOMiyjRQ=;
-        b=f/tCVlwRQtiaUyeMStKewM2L235LwcQcsQFG4M0QxD1RTbnOE8eH7aP+efxH5RCmTG
-         CfABbRO6LBTVnY1NZB4jk/yOTYGzhPxdqDNmT7Xm78LLMtzD+o/ibxpRbCqBq87xYqgc
-         6rNgVcXtQgRiJA/hvP9yPyHxPYUNaHE+TLahAiGfeBDPCjdFP8f9KHfABcBor7LwpYwq
-         2RK0PLU1GJMAJaMNTnV6R02hMybjVp7XFjpDTu+Yu6wH5/vpw3xhpHcCCg9hlp/HSczg
-         g8FOEr8KD2f4eGxrAN1KR2ulan1C7tvzvUNgJ9851V7FizlQ0hxQ3JIunrvEBdcQOwmQ
-         2o4Q==
-X-Forwarded-Encrypted: i=1; AHgh+RqRNhH/FLSKJ0SbWkhz0CF5DKLi1y4mIWSwq4ks9zDBWKCGxL5Qj0yzMk4j+tNyK7GNH/TVXhGRUw==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yzz46SIfJ7XqjI/ngGcEWXssMn8k1gFB0e4Zw4ZbX9C9IfJNp6y
-	UfF0a7fwuWgiMbhS1ndAfMc/H9exQpl6jl3+3MwKAYZXrwVxsBthZU5tj5uNHbHo9Yz5
-X-Gm-Gg: AR+sD11ce2c2sCSr7R+2Qly/6joRYxic7XNU+3C+DKSciReDkxBAlNJOtpiVjEs+g7B
-	g8LPtBMVQdddtXbI8WT57vjNvP+o7ujLV5fzxee0C5D+aKHfxpl7TfPh5cNFWZ3ThG2tQFaEu8K
-	TI6epN3l2eRedP8W/Cr5SsiK7DmyBgyPSy/lKS3t1yGsfpG0VU0zzi9mezc8Lm5IqETB1dksLYq
-	2JUkGsXDpEAuX//jA2iOBnhyl8Np/tMIdgCqEaA8HY2S9jx81asjZgDrDEal+5yVGKpCpFFJAFv
-	1T7LhXJVfWEvco2UrglawFlfQnDQ5Ea97z+9NZ4vrmOcfQbtplucR4K8zagtz/WVUAXUM4Ly0Xj
-	8RQ5qJX94cpZNIuezDJ7Mt7IP5KPJebR0Vu/id/WL06cW3qMwn8zMCM34H4xfcYtPbhwcgpxqtQ
-	hQipyPxO4BqOrJAYrSvWEEGOsdb5rh7xquG7pS6A==
-X-Received: by 2002:a05:6820:1990:b0:6a3:97a0:b234 with SMTP id 006d021491bc7-6ac96c1e043mr657251eaf.47.1785223918243;
-        Tue, 28 Jul 2026 00:31:58 -0700 (PDT)
+        bh=TBPFV7mE/o+ifYMGJXqsFhj2vvcUzVogsfKmm2PsKxY=;
+        b=AsIxbxwr7LYmdAgxLl0ngRFcUDPzbfjrhtk8XXDGmQCsRga9yLwCqBLIDFZ0zHXzxe
+         Rcxw5DL1NA/7vcWMvQaM0leofxtYow0lKd7RNKflBr8mth72mYqfs5++gzrgEY1lS+ad
+         NNBCq+3GIXwEB2vULvRZiuQpWEVreRDNM/f0bWeBBEkBI0ZYM5zJf8dnTJt8sompafWy
+         LS0zANi+LDyK5HxjuySJ+sHay3cCfQhbbK43UZZo2/xcVtSu15/Kcnl6iAZCTqExLirm
+         2GC3RpbdXu+QwvvqW/GyOC/FbcYpGr+U2Ok8XM9Vg/kZkEmiKsd3394GoYXSc5r1k72n
+         YDlQ==
+X-Forwarded-Encrypted: i=1; AHgh+RrTVrS/l8vxhzvOyuj52BQ7Fu4mUOxdjzG7tV0v7/p9oF9bvk70azp3JHTU04MnJKmRQ5zS4eGnZg==@vger.kernel.org
+X-Gm-Message-State: AOJu0YxduWL+0GUoNHTw2DE02pnpwiR1sdxNQR2Veuq0zySbMDIw2+/5
+	urcOIhnd9uKbG2niIDfoXKlTqXynk2VORqxAv8YYO7OIkRBspOsjCVc/+5+vW6sStCEB
+X-Gm-Gg: AR+sD119qfTlEPoarDQQslYi4A6oy/GE1sVopEsEHrbqDyHc4XVaXgnlM4NGN7WRLC5
+	U8qL2mOHvEJ+9cJyEaODP9EAU61RkCN6xgFwCdXrmoBWg8dJOKvYnjzH7Z3LJnSLApMeXvRiBEs
+	DC1nHgHZol1Q2bBkFCyFTD0np1IolLiDgW6fDCmHFGxjswBFS2dDL9pPKBYGxvxUxdrBvwTvRPH
+	Aq7AQCq6Mr9eMvnRPmSlVMISrnLGL5pAzi18UzQPotDIi2Dac/7AQETjebzyel0u0iJnSUBkn89
+	L2qOI6JRcPXRQAQAHXoR6nkuo9gglJtVch4Ja4arvnbm86w/XGYR/RF7LTtxFSrSrsfqufI/gE5
+	8zWwy3GxyDIS2BZbOa2fJTCaKMEEh6CL5AtPdFGK/xhNR0CzwBtiRT0y3I4TWjOtpyjSAD/51+l
+	ESpNaJ5j6btzbD0FtEpmCIW/TMs34H8rTlUHUevQ==
+X-Received: by 2002:a05:6820:3397:20b0:6ac:9779:ce07 with SMTP id 006d021491bc7-6ac9779d811mr461472eaf.59.1785223920141;
+        Tue, 28 Jul 2026 00:32:00 -0700 (PDT)
 Received: from localhost (c-76-141-129-107.hsd1.il.comcast.net. [76.141.129.107])
-        by smtp.gmail.com with ESMTPSA id 006d021491bc7-6aaf96f5dd0sm6488052eaf.13.2026.07.28.00.31.57
+        by smtp.gmail.com with ESMTPSA id 006d021491bc7-6aaf9385b35sm6699039eaf.7.2026.07.28.00.31.59
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 28 Jul 2026 00:31:57 -0700 (PDT)
+        Tue, 28 Jul 2026 00:31:59 -0700 (PDT)
 From: David Vernet <void@manifault.com>
 To: "Rafael J. Wysocki" <rafael@kernel.org>
 Cc: Mario Limonciello <mario.limonciello@amd.com>,
@@ -66,9 +66,9 @@ Cc: Mario Limonciello <mario.limonciello@amd.com>,
 	linux-kernel@vger.kernel.org,
 	=?UTF-8?q?Andr=C3=A9=20Almeida?= <andrealmeid@igalia.com>,
 	Changwoo Min <changwoo@igalia.com>
-Subject: [RFC PATCH 3/4] cpufreq/amd-pstate: Add per-core EPP boost for recently-busy CPUs
-Date: Tue, 28 Jul 2026 02:31:49 -0500
-Message-ID: <20260728073150.54964-4-void@manifault.com>
+Subject: [RFC PATCH 4/4] Documentation: amd-pstate: Document the epp_boost parameter
+Date: Tue, 28 Jul 2026 02:31:50 -0500
+Message-ID: <20260728073150.54964-5-void@manifault.com>
 X-Mailer: git-send-email 2.53.0
 In-Reply-To: <20260728073150.54964-1-void@manifault.com>
 References: <20260728073150.54964-1-void@manifault.com>
@@ -80,434 +80,41 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-In active (EPP) mode the platform autonomously picks the operating point
-between min_perf and max_perf, biased by the EPP hint, and the kernel
-only rewrites the CPPC request on policy/limit changes. A workload
-dominated by one mostly-busy thread that takes frequent short sleeps
-(e.g. a game render thread blocking on a futex waiting for the GPU or a
-worker thread on every frame) can defeat the platform's utilization
-tracking. Each sleep decays the hardware's performance signal, so
-post-wakeup bursts start at a low operating point and the frame-time
-tail inflates even though the CPU is ~100% busy during the frame itself.
-
-This is a common problem in gaming workloads, and is not easy to solve
-at the cpufreq layer. We have to toe the line between running at a high
-voltage unnecessarily and draining battery (and potentially contending
-with e.g. the GPU for power draw), and lowering frequency on the core
-that's running the game's main and/or render threads (thus materially
-increasing frame latency and causing a tail increase in stale frames).
-
-Unity, for example, has a main thread and a render thread which run
-(mostly) serialized on the frame-rendering pipeline, and Unity games'
-fps typically experience much lower stale frame rates when CPU frequency
-is higher on cores while they're running those threads. On the other
-hand, for e.g. a 60 fps game (a ~16.7 ms frame deadline), the CPU may be
-idle for some portion of that window when the frame completes ahead of
-the deadline. We also have to contend with the fact that leaving the
-core boosted unnecessarily can be actively harmful, even aside from
-battery consumption. For example, keeping a high min_perf floor in place
-even during short idle and vsync waits can regress performance by
-perturbing SMU boost management.
-
-We thus need a cpufreq solution that boosts a high-priority core as soon
-as it becomes utilized, and then restores the requested policy value
-when the core goes idle. This diff implements a new mechanism called
-"per-core EPP boost", which achieves this by adding an opt-in per-core
-mechanism that temporarily applies the EPP=performance policy to a core
-that stays at least 50% busy over some sampled window.
-
-The mechanism works as follows: When the epp_boost module parameter is
-enabled, an update-util hook samples each core's C0 residency (delta
-MPERF over delta TSC) at most once every 10 ms. If a sample shows the
-core at least 50% busy, the EPP field of its MSR_AMD_CPPC_REQ is set to
-performance (0) and held there until 300 ms pass without another busy
-sample. The hook then writes back the request that policy management
-last stored in cppc_req_cached. Both writes happen only on the busy and
-idle edges, so the CPPC_REQ write rate matches that of a global
-EPP=performance setting. min, max and desired perf are never touched.
-This mirrors intel_pstate's hwp_boost, except that hwp_boost triggers on
-SCHED_CPUFREQ_IOWAIT, which the waits at issue here (futex waits and
-amdgpu fence waits) do not set, so a residency trigger is used instead.
-
-Note that this mechanism is only available in active mode on MSR
-(X86_FEATURE_CPPC) systems, as the hook does local MSR accesses from
-scheduler context which the shared memory interface cannot do. It
-composes with dynamic_epp, which selects the policy EPP from the
-platform profile and power source. epp_boost temporarily overrides
-whatever policy EPP is installed and restores it when the core goes
-idle.
-
-I ran a series of benchmarks on a Steam Deck (Van Gogh APU,
-EPP=balance_performance) which illustrate the patch:
-
-*Civ VI graphics benchmark (single-thread CPU-bound)*
-
-Default settings
-================
-The busy core's median frequency sat at 2.43 GHz despite 98% utilization.
-
-Global EPP=performance
-======================
-Globally forcing EPP=performance lifts the median to 3.5 GHz, cuts
-frame-time p999 by ~40% and raises 1%-low fps by ~16%, but does so on
-every core and every workload.
-
-Raising min_perf to nominal on the busy core
-============================================
-A variant of this patch that instead raised min_perf to nominal on the
-busy core reached the same 3.5 GHz median yet regressed p999 by 13-21%
-for the reasons described above.
-
-epp_boost enabled
-=================
-With epp_boost enabled (interleaved A/B tests with 6 iterations, using
-Welch's t-test to arrive at the deltas), the busy core running the Civ VI
-main thread runs at a 3.5 GHz median and the benchmark gains 31.8% in
-1%-low fps (p=0.014) and 4.1% in frame-time p99 (p=0.015), with p999 and
-average fps unchanged.
+Document the per-core EPP boost mechanism and its epp_boost module
+parameter added by the previous patch.
 
 Signed-off-by: David Vernet <void@manifault.com>
 ---
- drivers/cpufreq/amd-pstate.c | 214 ++++++++++++++++++++++++++++++++++-
- drivers/cpufreq/amd-pstate.h |  14 +++
- 2 files changed, 224 insertions(+), 4 deletions(-)
+ Documentation/admin-guide/pm/amd-pstate.rst | 16 ++++++++++++++++
+ 1 file changed, 16 insertions(+)
 
-diff --git a/drivers/cpufreq/amd-pstate.c b/drivers/cpufreq/amd-pstate.c
-index 5d7debb5a35c..771a74e04f86 100644
---- a/drivers/cpufreq/amd-pstate.c
-+++ b/drivers/cpufreq/amd-pstate.c
-@@ -27,6 +27,7 @@
- #include <linux/module.h>
- #include <linux/init.h>
- #include <linux/smp.h>
-+#include <linux/cpu.h>
- #include <linux/sched.h>
- #include <linux/cpufreq.h>
- #include <linux/compiler.h>
-@@ -262,6 +263,10 @@ static int msr_update_perf(struct cpufreq_policy *policy, u8 min_perf,
- 	if (value == prev)
- 		return 0;
+diff --git a/Documentation/admin-guide/pm/amd-pstate.rst b/Documentation/admin-guide/pm/amd-pstate.rst
+index a95e2ebce005..004b79ff925c 100644
+--- a/Documentation/admin-guide/pm/amd-pstate.rst
++++ b/Documentation/admin-guide/pm/amd-pstate.rst
+@@ -372,6 +372,22 @@ based on the power source and will not react to user desired power state.
+ Attempting to manually write to the ``energy_performance_preference`` sysfs
+ file will fail when ``dynamic_epp`` is enabled.
  
-+	/*
-+	 * Must come before MSR write to ensure amd_pstate_epp_boost_release()
-+	 * doesn't write a stale value.
-+	 */
- 	WRITE_ONCE(cpudata->cppc_req_cached, value);
++Energy performance preference boosting
++======================================
++On MSR-based systems running in the ``active mode``, the driver can optionally
++bias the energy performance preference of a recently-busy CPU toward
++performance while leaving all other CPUs at the policy value.  C0 residency is
++sampled at most every 10 ms; while a CPU has been at least 50% busy within the
++last 300 ms, the EPP field of its CPPC request is set to ``performance`` (0).
++The policy value is restored once 300 ms pass without a busy sample.
++
++This behavior is disabled by default.  It can be enabled with the module
++parameter ``amd_pstate.epp_boost=1`` on the kernel command line, or at runtime
++by writing ``1`` to ``/sys/module/amd_pstate/parameters/epp_boost``.  The
++mechanism only runs while the parameter is enabled and has no overhead when
++disabled.  It has no effect in the ``passive`` and ``guided`` modes or on
++shared-memory (non-MSR) systems.
++
+ ``amd-pstate`` vs ``acpi-cpufreq``
+ ======================================
  
- 	if (fast_switch) {
-@@ -314,6 +319,7 @@ static int msr_set_epp(struct cpufreq_policy *policy, u8 epp)
- 	if (value == prev)
- 		return 0;
- 
-+	/* Must update cached value prior to wrmsrq -- see msr_update_perf() */
- 	WRITE_ONCE(cpudata->cppc_req_cached, value);
- 
- 	ret = wrmsrq_on_cpu(cpudata->cpu, MSR_AMD_CPPC_REQ, value);
-@@ -1877,6 +1883,187 @@ static bool amd_pstate_acpi_pm_profile_undefined(void)
- 	return false;
- }
- 
-+/*
-+ * Per-core EPP boost.
-+ *
-+ * While the epp_boost module parameter is enabled, each CPU in active (EPP)
-+ * mode on an MSR (X86_FEATURE_CPPC) system has a cpufreq update-util hook
-+ * registered which puts the core in EPP=performance mode when the core is
-+ * sufficiently utilized.
-+ *
-+ * Enables more efficient frequency scaling on cores that have strict latency
-+ * requirements, such as e.g. gaming workloads where render threads use a CPU
-+ * for some period during frame windows, and then go idle until the next frame.
-+ */
-+static bool epp_boost __read_mostly;
-+
-+#define AMD_PSTATE_EPP_BOOST_SAMPLE_NS	(10 * NSEC_PER_MSEC)
-+/*
-+ * Busy threshold is deliberately low and the decay window wide so that a
-+ * render thread which is only ~50-80% busy (periodic vsync and GPU-fence
-+ * waits) holds the boost across its whole busy period at a couple of CPPC_REQ
-+ * writes total.
-+ */
-+#define AMD_PSTATE_EPP_BOOST_DECAY_NS	(300 * NSEC_PER_MSEC)
-+#define AMD_PSTATE_EPP_BOOST_BUSY_PCT	50
-+
-+static void amd_pstate_epp_boost_apply(struct amd_cpudata *cpudata, u64 cached)
-+{
-+	union perf_cached perf = READ_ONCE(cpudata->perf);
-+
-+	/* never boost a request whose limits are not populated */
-+	if (!perf.max_limit_perf)
-+		return;
-+
-+	cached &= ~AMD_CPPC_EPP_PERF_MASK;
-+	cached |= FIELD_PREP(AMD_CPPC_EPP_PERF_MASK, AMD_CPPC_EPP_PERFORMANCE);
-+
-+	wrmsrq(MSR_AMD_CPPC_REQ, cached);
-+}
-+
-+static void amd_pstate_epp_boost_release(struct amd_cpudata *cpudata)
-+{
-+	wrmsrq(MSR_AMD_CPPC_REQ, READ_ONCE(cpudata->cppc_req_cached));
-+}
-+
-+static void amd_pstate_epp_boost_update_util(struct update_util_data *data,
-+					     u64 time, unsigned int flags)
-+{
-+	struct amd_cpudata *cpudata = container_of(data, struct amd_cpudata,
-+						   epp_boost_update_util);
-+	union perf_cached perf;
-+	bool first_sample;
-+	u64 busy_pct;
-+	bool active;
-+
-+	if (smp_processor_id() != cpudata->cpu)
-+		return;
-+
-+	first_sample = !cpudata->epp_boost_last_sample;
-+	if (!first_sample &&
-+	    time - cpudata->epp_boost_last_sample < AMD_PSTATE_EPP_BOOST_SAMPLE_NS)
-+		return;
-+	cpudata->epp_boost_last_sample = time;
-+
-+	/*
-+	 * Counters can reset across suspend or hotplug (so their values would
-+	 * be garbage), so just recalculate baselines.
-+	 */
-+	if (amd_pstate_sample(cpudata) && !first_sample) {
-+		busy_pct = div64_u64(cpudata->cur.mperf * 100, cpudata->cur.tsc);
-+		if (busy_pct >= AMD_PSTATE_EPP_BOOST_BUSY_PCT)
-+			cpudata->epp_boost_last_busy = time;
-+	}
-+
-+	perf = READ_ONCE(cpudata->perf);
-+	active = perf.max_limit_perf &&
-+		 (time - cpudata->epp_boost_last_busy < AMD_PSTATE_EPP_BOOST_DECAY_NS);
-+
-+	if (active && !cpudata->epp_boost_active)
-+		amd_pstate_epp_boost_apply(cpudata,
-+					   READ_ONCE(cpudata->cppc_req_cached));
-+	else if (!active && cpudata->epp_boost_active)
-+		amd_pstate_epp_boost_release(cpudata);
-+
-+	cpudata->epp_boost_active = active;
-+}
-+
-+static void amd_pstate_epp_boost_enable(struct cpufreq_policy *policy)
-+{
-+	struct amd_cpudata *cpudata = policy->driver_data;
-+
-+	if (!READ_ONCE(epp_boost))
-+		return;
-+
-+	if (cppc_state != AMD_PSTATE_ACTIVE ||
-+	    !cpu_feature_enabled(X86_FEATURE_CPPC))
-+		return;
-+
-+	if (cpudata->epp_boost_registered)
-+		return;
-+
-+	cpudata->epp_boost_last_sample = 0;
-+	cpudata->epp_boost_last_busy = 0;
-+	cpufreq_add_update_util_hook(policy->cpu, &cpudata->epp_boost_update_util,
-+				     amd_pstate_epp_boost_update_util);
-+	cpudata->epp_boost_registered = true;
-+}
-+
-+static void amd_pstate_epp_boost_disable(struct cpufreq_policy *policy)
-+{
-+	struct amd_cpudata *cpudata = policy->driver_data;
-+
-+	if (cpudata->epp_boost_registered) {
-+		cpufreq_remove_update_util_hook(policy->cpu);
-+		synchronize_rcu();
-+		cpudata->epp_boost_registered = false;
-+	}
-+
-+	if (cpudata->epp_boost_active) {
-+		u64 cached = READ_ONCE(cpudata->cppc_req_cached);
-+
-+		wrmsrq_on_cpu(cpudata->cpu, MSR_AMD_CPPC_REQ, cached);
-+
-+		/*
-+		 * Cross-CPU restore is not ordered against a concurrent
-+		 * limit/EPP writer that doesn't hold the policy rwsem, so
-+		 * recheck the cache once to ensure that the MSR reflects the
-+		 * cached value
-+		 */
-+		if (READ_ONCE(cpudata->cppc_req_cached) != cached)
-+			wrmsrq_on_cpu(cpudata->cpu, MSR_AMD_CPPC_REQ,
-+				      READ_ONCE(cpudata->cppc_req_cached));
-+
-+		cpudata->epp_boost_active = false;
-+	}
-+}
-+
-+static int epp_boost_param_set(const char *val, const struct kernel_param *kp)
-+{
-+	unsigned int cpu;
-+	bool enabled;
-+	int ret;
-+
-+	ret = kstrtobool(val, &enabled);
-+	if (ret)
-+		return ret;
-+
-+	guard(mutex)(&amd_pstate_driver_lock);
-+
-+	if (epp_boost == enabled)
-+		return 0;
-+
-+	WRITE_ONCE(epp_boost, enabled);
-+
-+	if (!current_pstate_driver)
-+		return 0;
-+
-+	guard(cpus_read_lock)();
-+
-+	for_each_online_cpu(cpu) {
-+		struct cpufreq_policy *policy __free(put_cpufreq_policy) =
-+							cpufreq_cpu_get(cpu);
-+
-+		if (!policy)
-+			continue;
-+
-+		if (enabled)
-+			amd_pstate_epp_boost_enable(policy);
-+		else
-+			amd_pstate_epp_boost_disable(policy);
-+	}
-+
-+	return 0;
-+}
-+
-+static const struct kernel_param_ops epp_boost_param_ops = {
-+	.set = epp_boost_param_set,
-+	.get = param_get_bool,
-+};
-+module_param_cb(epp_boost, &epp_boost_param_ops, &epp_boost, 0644);
-+MODULE_PARM_DESC(epp_boost,
-+		 "boost EPP toward performance on recently-busy CPUs (active mode, MSR systems only)");
-+
- static int amd_pstate_epp_cpu_init(struct cpufreq_policy *policy)
- {
- 	struct amd_cpudata *cpudata;
-@@ -1970,6 +2157,8 @@ static int amd_pstate_epp_cpu_init(struct cpufreq_policy *policy)
- 
- 	current_pstate_driver->adjust_perf = NULL;
- 
-+	amd_pstate_epp_boost_enable(policy);
-+
- 	return 0;
- 
- free_cpudata1:
-@@ -1989,6 +2178,8 @@ static void amd_pstate_epp_cpu_exit(struct cpufreq_policy *policy)
- 		if (cpudata->dynamic_epp)
- 			amd_pstate_clear_dynamic_epp(policy);
- 
-+		amd_pstate_epp_boost_disable(policy);
-+
- 		/* Reset CPPC_REQ MSR to the BIOS value */
- 		amd_pstate_update_perf(policy, perf.bios_min_perf, 0U, 0U, 0U, false);
- 		amd_pstate_set_floor_perf(policy, cpudata->bios_floor_perf);
-@@ -2057,7 +2248,13 @@ static int amd_pstate_cpu_online(struct cpufreq_policy *policy)
- 		return ret;
- 
- 	cached_floor_perf = freq_to_perf(perf, cpudata->nominal_freq, cpudata->floor_freq);
--	return amd_pstate_set_floor_perf(policy, cached_floor_perf);
-+	ret = amd_pstate_set_floor_perf(policy, cached_floor_perf);
-+	if (ret)
-+		return ret;
-+
-+	amd_pstate_epp_boost_enable(policy);
-+
-+	return 0;
- }
- 
- static int amd_pstate_cpu_offline(struct cpufreq_policy *policy)
-@@ -2066,6 +2263,8 @@ static int amd_pstate_cpu_offline(struct cpufreq_policy *policy)
- 	union perf_cached perf = READ_ONCE(cpudata->perf);
- 	int ret;
- 
-+	amd_pstate_epp_boost_disable(policy);
-+
- 	/*
- 	 * Reset CPPC_REQ MSR to the BIOS value, this will allow us to retain the BIOS specified
- 	 * min_perf value across kexec reboots. If this CPU is just onlined normally after this, the
-@@ -2088,6 +2287,8 @@ static int amd_pstate_suspend(struct cpufreq_policy *policy)
- 	union perf_cached perf = READ_ONCE(cpudata->perf);
- 	int ret;
- 
-+	amd_pstate_epp_boost_disable(policy);
-+
- 	/*
- 	 * Reset CPPC_REQ MSR to the BIOS value, this will allow us to retain the BIOS specified
- 	 * min_perf value across kexec reboots. If this CPU is just resumed back without kexec,
-@@ -2134,10 +2335,9 @@ static int amd_pstate_epp_resume(struct cpufreq_policy *policy)
- 	struct amd_cpudata *cpudata = policy->driver_data;
- 	union perf_cached perf = READ_ONCE(cpudata->perf);
- 	u8 cached_floor_perf;
-+	int ret;
- 
- 	if (cpudata->suspended) {
--		int ret;
--
- 		/* enable amd pstate from suspend state*/
- 		ret = amd_pstate_epp_update_limit(policy, false);
- 		if (ret)
-@@ -2147,7 +2347,13 @@ static int amd_pstate_epp_resume(struct cpufreq_policy *policy)
- 	}
- 
- 	cached_floor_perf = freq_to_perf(perf, cpudata->nominal_freq, cpudata->floor_freq);
--	return amd_pstate_set_floor_perf(policy, cached_floor_perf);
-+	ret = amd_pstate_set_floor_perf(policy, cached_floor_perf);
-+	if (ret)
-+		return ret;
-+
-+	amd_pstate_epp_boost_enable(policy);
-+
-+	return 0;
- }
- 
- static struct cpufreq_driver amd_pstate_driver = {
-diff --git a/drivers/cpufreq/amd-pstate.h b/drivers/cpufreq/amd-pstate.h
-index 99532595150e..0408fc331633 100644
---- a/drivers/cpufreq/amd-pstate.h
-+++ b/drivers/cpufreq/amd-pstate.h
-@@ -10,6 +10,7 @@
- 
- #include <linux/pm_qos.h>
- #include <linux/platform_profile.h>
-+#include <linux/sched/cpufreq.h>
- 
- /*********************************************************************
-  *                        AMD P-state INTERFACE                       *
-@@ -96,6 +97,12 @@ struct amd_aperf_mperf {
-  * @current_profile: Currently selected platform profile option
-  * @ppdev: Device registered with the platform profile handler
-  * @profile_name: Name under which @ppdev is registered
-+ * @epp_boost_update_util: update-util hook for the per-core EPP boost
-+ * @epp_boost_last_sample: last C0-residency sample time (ns; 0 means the
-+ *			   next callback only re-baselines the counters)
-+ * @epp_boost_last_busy: last time the CPU sampled as busy (ns)
-+ * @epp_boost_active: EPP boost currently applied to MSR_AMD_CPPC_REQ
-+ * @epp_boost_registered: update-util hook currently registered
-  *
-  * The amd_cpudata is key private data for each CPU thread in AMD P-State, and
-  * represents all the attributes and goals that AMD P-State requests at runtime.
-@@ -139,6 +146,13 @@ struct amd_cpudata {
- 	enum platform_profile_option current_profile;
- 	struct device *ppdev;
- 	char *profile_name;
-+
-+	/* per-core EPP boost (active mode, MSR systems only) */
-+	struct	update_util_data epp_boost_update_util;
-+	u64	epp_boost_last_sample;
-+	u64	epp_boost_last_busy;
-+	bool	epp_boost_active;
-+	bool	epp_boost_registered;
- };
- 
- /*
 -- 
 2.53.0
 
