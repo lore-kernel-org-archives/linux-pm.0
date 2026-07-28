@@ -1,130 +1,221 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 66F403E638E;
-	Tue, 28 Jul 2026 10:20:21 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1785234022; cv=none; b=dhx37iqmnxZsmH6vw0KlgWKWD7O4GAQnLzOGM/Yows2h9sN3r78OsAPnIa7npOybK4J1KxYBr7NpMjvfb/yPiv9BpU/JJ3aUTspP22P05VoSEfkFt1dNRM+sRF9oq7JRe4E7JV8AuABedsH213TjVe2n8aM5dKEWbkuKfvlhvMQ=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1785234022; c=relaxed/simple;
-	bh=fKw85KVXRLi4QXqCb/P7we/zdwA/I29yPM/Girk/sUg=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=dB9HYA4HWy/Mll6HZl3VMOoyGtV1aif1Y16lfYNA9RRyzBxDY4j0lK7Q6tZuE9yVKcHf2B+j6s3rjBKo4tPNPDxbB34Pe7zrPTDAOKfMv4ftAT9V8FwlddKqCWYeZiJ8ViHwLUzBLU3D/kV9ILHAOmjNK12rhKINsTOzucFXLPk=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=eLGgne3c; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CD2233002AB
+	for <linux-pm@vger.kernel.org>; Tue, 28 Jul 2026 10:32:11 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=205.220.180.131
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1785234733; cv=pass; b=kQMesffeuE3hLk2jujSPlayWCk6K3ErecZfMtwKhKlrZHCKusdNavc7E0j2UiuQ9h/8IppyMdgkx/3Hv62T+dL/RecPx/GoeMCWKfdIoz+81Yt5g/WFyIeJBX8ldeYVFS/J3vD6ZxZZvjPdTS1kjKcOnHVwQhUtmVMQbkokwTVM=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1785234733; c=relaxed/simple;
+	bh=SlwrPGZk2tMiLQKxq283mBOQeeMJtKxGhEtF19KYueY=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=oAR8OWx9oAu3bFSxcBDwslGeky8uJrn7VzQfXyxMnozytnOPr2E+rrrA3eZpafIN8kxpqRyxd4E/UKf//ns+2h/ac+Hy4inDKLz91+A3O4XuZcpH4Jy0ICLDXexxenabbt1TELSruijjVo9pkQ6J2pAOFuU3qKNiVqzkWmXxwW8=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=HmkCQTI1; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=PsKc1ehf; arc=pass smtp.client-ip=205.220.180.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="eLGgne3c"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 615EC1F000E9;
-	Tue, 28 Jul 2026 10:20:15 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1785234021;
-	bh=kSPnhViqx3Kje71wTQOzYJlariIKYc5Rlrp3Gssb9RU=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To;
-	b=eLGgne3cdhdphYSsfMWhkGGynLD5eXG5PARcG1Kx9nK6bq1dP4OaE9zLqqur2lUcY
-	 6p2ZnnE4cgbsCOzNqLU0SQLC8fkC9roFxVQbU6uJbT52rIwdRCryZ7oUNbn14+Jwzc
-	 g0AXGPxmYrwdF++oG/pDgGfJow82MdN0z/2K+vMKhYFuThtC6+EOkKjCnCt2PLjBIM
-	 6iWs4qAnVZmQfYYDNDohcEJCqCTjT8gknoDumbCxNml13sp0Fesyb52+Qcss9L310O
-	 uGu7SwG/EPs/eVqUYcN92ogwZknPiihl3rpIWsbDZ4/F1QzMSlLi+ccTPEnBgwK9mD
-	 1UqjuZZn9rHgg==
-Message-ID: <3e50d846-e850-4c85-97c2-60a34b66e976@kernel.org>
-Date: Tue, 28 Jul 2026 12:20:12 +0200
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="HmkCQTI1";
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="PsKc1ehf"
+Received: from pps.filterd (m0279870.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 66S82kGD2275973
+	for <linux-pm@vger.kernel.org>; Tue, 28 Jul 2026 10:32:10 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
+	HW7nK91TFv9fL78pEO66gVW1LSmg7sz4PPMdk8VtV1E=; b=HmkCQTI1v8O5o2wC
+	UkT2ZsPDXdjoUqMnhp5DtTNZ+f9mApVcNX+kZgBFeE6J6QzGikSFIClPUNyLJm61
+	PepCa5fsUZSgB7x26Q5mc2MXlI2RSZBN10nzactmj5qs0Vxm1Hj0kGG6QWME7tdk
+	p4ElGhP1X1c0/wmjvLhMHc6+joHIqkpRfdSQy9hjTgJowKSoJidSfZRdw17SjoIm
+	a6PtLyn1tttHEM/S9r2dFSlr521PstOJzaSLeqE/qRQ/YfSmFTNwFRUEwJcYtmP8
+	+aS78gTFvg4Hx55ZcdX2hbNsIvYclgbMVSk2jtnHKl6Wdpige6rwhGh9gMSO3RVh
+	viRn8Q==
+Received: from mail-yw1-f197.google.com (mail-yw1-f197.google.com [209.85.128.197])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4fpbrsur93-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <linux-pm@vger.kernel.org>; Tue, 28 Jul 2026 10:32:10 +0000 (GMT)
+Received: by mail-yw1-f197.google.com with SMTP id 00721157ae682-81eedabbefcso98636797b3.3
+        for <linux-pm@vger.kernel.org>; Tue, 28 Jul 2026 03:32:10 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1785234730; cv=none;
+        d=google.com; s=arc-20260327;
+        b=oxDbv86T/M58jjC/kSML7YYJPUNsjYqauaLVYerKWMsaHeQvl/LDPrkvLQYvFPUOtC
+         oq2EUe+3pUIC7rfjW0n2pm0Yn5WrNEBU6ZCmeWen9KFIq9OzeoZEeCG8Gbq9AVp/HTMd
+         LfsPKXZqkHM0p9VB0nFZLr4gNn81dVyJOPDy7djCLPRwNiARUinAli5pN+hACtR+lppm
+         7rPavZqkoxR0flpP83itoMSMw/MtCQhRVX/KQUHe54sh56oj55lGhLyjqI8K5ecR+HVd
+         bH+cQmQdsoszlNBKQousO9HJyJNIDEWLXWmJiUMHIjlVMVVdQA5mFqZCAARTQrkMswpz
+         PKvg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=HW7nK91TFv9fL78pEO66gVW1LSmg7sz4PPMdk8VtV1E=;
+        fh=JkhCOsXHD1pbzRANOHYL73khgiAIVNPPfWj1WEZldK8=;
+        b=pg9eOHxAiXTNy+H9fey54kaJQWWCOLohBf8bYJrLn0gUXh+kK+1Gw3sVUxrBFX9GUt
+         hYooxejKA2xWEt6Fq/cByh96E4qerX+QIRRV7T5K1hBcVJIeG8u60cwV7k0zu7eLCFbp
+         2Yz9llj28ifbLS8lwR0NnCI73tYQgeJ288HjMVhfNbecamP0bcyJSZP71aAhfnCXj5jm
+         +NxDZd8kyeZBGlIzMpA+UUW8w3iZA0Niojd3aLY5TIBG+NCm3J74R0tN5px6vwXSJOVA
+         BYwA1TEMBUPqzdOYReENcSijRgWmp+MoVmrTsTE4DY4kKFsJmJqIhuM1ohcrJKs6Vl0w
+         u6ng==;
+        darn=vger.kernel.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=oss.qualcomm.com; s=google; t=1785234730; x=1785839530; darn=vger.kernel.org;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=HW7nK91TFv9fL78pEO66gVW1LSmg7sz4PPMdk8VtV1E=;
+        b=PsKc1ehfujoqcyQrrkMYlPFLw7/4RDamn8zhFCLDGQmy5HPr/MLGnea366WOgNYNBB
+         GVcRcLGNZ7TlUIGQT3LBoN6jnOfIUydjexxB+005ziAe/NQwnrAyPQ8GTNH8HUi0RnY5
+         tS9rQZZL+71bdwO7IDvDXpJmX8FqlJape7ZB40da5DuSJM5cwPpSVnuCIV0jbrGg6mFO
+         iD11pW1kjQoDxvlIdCLxPsQ4i1wu8N40aZRKbsdqP8XPYAf92I2agaZuwVxr3lfnDWId
+         O40/ddGv6QkaB4K3FHx5f03/AaFUV3ymrojQlOhAyXbFsUNsthPdjfvmq1jrZSAquuLh
+         fNyQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1785234730; x=1785839530;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=HW7nK91TFv9fL78pEO66gVW1LSmg7sz4PPMdk8VtV1E=;
+        b=sS8d/miHPseZkvhLL7Gta2oEt4Pg8IuYR3dC1f2AV/WfB/MwZegKuiSP1JrHl9J7W4
+         FcmQtWX/9zdGXsZlcjL73bbY6Owqs1cYIuU93tUs6Mb/FBfCPHD9GROGotKd8YLJ+YHV
+         v2pSy/jvpU3tdxx9+YvC+b+tY6YVO8tl8acn4/jcZlYLoUHkwBfGCJ9kGes1SxIvRR06
+         kEQQy+8BOY7LQAegDHRIvoYOcJkJfTkJwC6A7ljgFrDZde0vtd/FxwY1H95OhKYsE/KY
+         Gc1PMybAYWO5UFJjLsPC6dpTlvOWMWBqXSEXP5Q7aRX7oi2JhfCOg5Yxx2PcTiVyLarC
+         SUfA==
+X-Forwarded-Encrypted: i=1; AHgh+RqWIf+Rt/LmzN75X0MCB9bGlGvThyty3WTh6GQOvehY1+DdL+g0SG/c4jskaVeSF3vStLT0WrE+Jw==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yw8uot2OIMIQaM8S8vNWpBAPCLwWJTGT2zRZHIXAHfNqJv2rEeD
+	qLqcHSjokQc+TVZqz/i/9vmFNjr+uxdRJBET/8BxYANJPTLofVR2pYsZGjy8o8Y8FHXHzsvlAzb
+	gUpaY8S14l7k4Yly+T8HiUO7nDHLv/42cz4VmyXwOXe9aIc6QFQOcBGmpaohXUKlT1MspYStBb6
+	wwmIisLbDG/AXNotbv47AgdZKiyO8ct6T3psr+
+X-Gm-Gg: AR+sD10feUnK0aME2okfJa3VRY6aOivgLQJ9oYuwL/RjwzR5ebO9nLFkVvNORST/hGr
+	w8PD2pdaT12ehTbOath9yIfEBSPaf4owl3jJd4LMQGXaCGnlZF1630wLMNv+C5qeI9e+XK64luv
+	v+0xvXbQ9nm3hKFAqyzJI9iTyjcTYklWoKHOJuvC8KjV77pFxc9DgraYBgHA==
+X-Received: by 2002:a05:690c:a98:b0:80c:85e5:875e with SMTP id 00721157ae682-81f9942cbb0mr7432697b3.71.1785234730107;
+        Tue, 28 Jul 2026 03:32:10 -0700 (PDT)
+X-Received: by 2002:a05:690c:a98:b0:80c:85e5:875e with SMTP id
+ 00721157ae682-81f9942cbb0mr7432467b3.71.1785234729554; Tue, 28 Jul 2026
+ 03:32:09 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v6 2/3] dt-bindings: power: reset: fix minimum reg count
- for pmk8350-pon
-To: Rakesh Kota <rakesh.kota@oss.qualcomm.com>
-Cc: Sebastian Reichel <sre@kernel.org>, Rob Herring <robh@kernel.org>,
- Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
- <conor+dt@kernel.org>, Vinod Koul <vkoul@kernel.org>,
- Bjorn Andersson <andersson@kernel.org>,
- Konrad Dybcio <konradybcio@kernel.org>, linux-pm@vger.kernel.org,
- devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
- linux-arm-msm@vger.kernel.org, Kamal Wadhwa <kamal.wadhwa@oss.qualcomm.com>,
- Jishnu Prakash <jishnu.prakash@oss.qualcomm.com>
-References: <20260724-b4-add_pwrkey_and_resin-v6-0-41acc214d93a@oss.qualcomm.com>
- <20260724-b4-add_pwrkey_and_resin-v6-2-41acc214d93a@oss.qualcomm.com>
- <20260727-weightless-fierce-tiger-a9c6ed@quoll>
- <20260728101223.5uvgmqmpwgvjvysz@hu-kotarake-hyd.qualcomm.com>
-From: Krzysztof Kozlowski <krzk@kernel.org>
-Content-Language: en-US
-Autocrypt: addr=krzk@kernel.org; keydata=
- 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
-In-Reply-To: <20260728101223.5uvgmqmpwgvjvysz@hu-kotarake-hyd.qualcomm.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+References: <20260703-disable_boot_cpu_offline-v2-1-782d16ff58c3@oss.qualcomm.com>
+ <akfHIH_dZrr5bosu@J2N7QTR9R3> <f2d4b312-4a11-425e-8329-33838ed37d15@oss.qualcomm.com>
+ <al9uRagYJSQPJr7_@J2N7QTR9R3.cambridge.arm.com> <20260721-wandering-romantic-buffalo-ebbc4f@sudeepholla>
+In-Reply-To: <20260721-wandering-romantic-buffalo-ebbc4f@sudeepholla>
+From: Ulf Hansson <ulf.hansson@oss.qualcomm.com>
+Date: Tue, 28 Jul 2026 12:31:57 +0200
+X-Gm-Features: AUfX_mx4FYBv0CDzLfSFCClFXJjPNUK_fqBRZnaSA4S674r4_XuDaeJlCBcbxE8
+Message-ID: <CAPx+jO-t1fRrS=-ufM11DAchi4uAki6mnnkJ+qh=M1G-qs4c=g@mail.gmail.com>
+Subject: Re: [PATCH v2] arm64: Disallow disabling boot CPU based on config
+To: Sudeep Holla <sudeep.holla@kernel.org>
+Cc: Sneh Mankad <sneh.mankad@oss.qualcomm.com>,
+        Mark Rutland <mark.rutland@arm.com>, Thomas Gleixner <tglx@kernel.org>,
+        Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>,
+        Peter Zijlstra <peterz@infradead.org>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Pavel Machek <pavel@kernel.org>, Len Brown <lenb@kernel.org>,
+        Catalin Marinas <catalin.marinas@arm.com>,
+        Will Deacon <will@kernel.org>, linux-arm-msm@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzI4MDA5MiBTYWx0ZWRfX5rhkPHkpjpMa
+ vNO2q9qu2Bi8alWXiNsiCYcxrLV4HwSoXkzNt8MQjK48Ljxv2YA9gnk9gcQ1BLlB1geqq2ym9OR
+ Ui+evAnuRVIb+l3vVe1vftGzMPZJowG9qnUYXyQECIgescg0rT4/PrEgQvepIckdwws2swwj24u
+ /X2yF1tRjsTQgDsR52Y5q1N6rHJIYKF9aARncScx+ybi5UrYPbuw2n4bGyo/HdtQLwOFKFqjnbR
+ Vi3HvESL7PNvg5lEiFHeAz5DJ+rGJw/AxDsiqLC7VIQPJpFud8PVNIJU9o0qssrjC0K/wJYsS2i
+ zAHnv15hChkv9tlOHzgIDFNbUgVZVJuvnNtQFrceeZ1WpaSzwM2rEyXceowgN3UqPjUCmXFbEiy
+ AU7ueWS5g0Gir9kUwG1ZlmtqVbgLNPCY3MD2c0Vt9RRAa7L9EZCFDOuq25Kwwe7ZQZ4I2AV3h8A
+ aRavGERtr3gqtzyubDw==
+X-Proofpoint-ORIG-GUID: 49ZWj81_0HjRleujotQodj8PTXjoQkH_
+X-Proofpoint-GUID: 49ZWj81_0HjRleujotQodj8PTXjoQkH_
+X-Authority-Analysis: v=2.4 cv=ALkdLnG8 c=1 sm=1 tr=0 ts=6a68852a cx=c_pps
+ a=0mLRTIufkjop4KoA/9S1MA==:117 a=IkcTkHD0fZMA:10 a=RAioF0-LDSMA:10
+ a=s4-Qcg_JpJYA:10 a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22
+ a=gowsoOTTUOVcmtlkKump:22 a=VwQbUJbxAAAA:8 a=7CQSdrXTAAAA:8
+ a=Th27373rO5TmSeHawX8A:9 a=QEXdDO2ut3YA:10 a=WgItmB6HBUc_1uVUp3mg:22
+ a=a-qgeE7W1pNrGK8U0ZQC:22
+X-Proofpoint-Spam-Info: AW1haW4tMjYwNzI4MDA5MiBTYWx0ZWRfX3uFJ3EdfD+wm
+ IckRTAhrDK6E6GxMl2goJ3cV2xHBTEuGTTFZzzSe5znJbnceYPpDa7wxJpLA0N3QBs5Cd+8/DTD
+ U2adQ8ImkXEUDmpjQPmaVFjJYbGcQCs=
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.134,FMLib:17.12.100.49
+ definitions=2026-07-28_02,2026-07-27_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ spamscore=0 impostorscore=0 phishscore=0 bulkscore=0 clxscore=1015
+ priorityscore=1501 adultscore=0 suspectscore=0 malwarescore=0
+ lowpriorityscore=0 classifier=typeunknown authscore=0 authtc= authcc=
+ route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2606150000
+ definitions=main-2607280092
 
-On 28/07/2026 12:12, Rakesh Kota wrote:
-> On Mon, Jul 27, 2026 at 08:36:38AM +0200, Krzysztof Kozlowski wrote:
->> On Fri, Jul 24, 2026 at 03:44:12PM +0530, Rakesh Kota wrote:
->>> The GEN3 PON peripheral requires two register address spaces: "hlos"
->>> for the primary PON block and "pbs" for the address needs to be
->>> specified to facilitate software debouncing. Set minItems: 2 for reg
->>
->> That's ABI break and I do not underestand if this was broken before or
->> not. Driver ignores the PBS, so everything was working fine, no? Then
->> why PBS is required now? Is it actually working or not?
->>
-> 
-> Not an ABI break. All in-tree GEN3 DTs using qcom,pmk8350-pon have
-> always specified both "hlos" and "pbs" reg entries — pmk8350.dtsi,
+On Tue, Jul 21, 2026 at 3:53=E2=80=AFPM Sudeep Holla <sudeep.holla@kernel.o=
+rg> wrote:
+>
+> On Tue, Jul 21, 2026 at 02:04:05PM +0100, Mark Rutland wrote:
+> > On Tue, Jul 21, 2026 at 12:29:54PM +0530, Sneh Mankad wrote:
+> > > On 03-Jul-26 7:58 PM, Mark Rutland wrote:
+> > > > On Fri, Jul 03, 2026 at 04:50:02PM +0530, Sneh Mankad wrote:
+> > >
+> > > FW permits CPU0 disablement because it functions properly in regular =
+run time.
+> > > But there is an additional hardware constraint in above mentioned pla=
+tforms, that
+> > > suspend to ram has to be performed via boot CPU / CPU0. Due to this c=
+onstraint,
+> > > CPU0 is required to be online when suspend to ram is triggered.
+> >
+> > The PSCI spec doesn't permit that.
+> >
+> > Even if HW has that constraint, it's up to FW to hide that from the OS.
+> >
+> > [...]
+> >
+> > > > This is a platform-specific property, and it's possible to build a
+> > > > kernel that boots on this platform and/or other platforms.
+> > >
+> > > Yes, but for that reason the config will only be enabled for SoCs tha=
+t have this
+> > > constraint, it will remain disabled for other SoCs.
+> >
+> > Please re-read what I said. A config option can't help if you have a
+> > single kernel that supports multiple platforms.
+> >
+>
+> +1
+>
+> > > As mentioned above, its not a FW bug. CPU0 is allowed to be disabled
+> > > from FW and HW constraint is for suspend to ram to be performed on
+> > > boot CPU.
+> >
+> > Please see my other reply at:
+> >
+> >   https://lore.kernel.org/linux-arm-kernel/al9tdvOxYb83zBxd@J2N7QTR9R3.=
+cambridge.arm.com/T/#m872da3cc4ded3386dce92d4bd4bdf9c33d3e2d0b
+> >
+> > This is *definitely* a firmware bug.
+> >
+> > To be clear, I'm not saying we can't do something to address that, but
+> > let's not pretend that this is compliant with the PSCI spec.
+> >
+>
+> +1
+>
+> Just curious if CPU_OFF on this CPU0 returns DENIED or just proceeds and
+> ends up with cpu and/or system hang ?
 
-That's not related to ABI.
+My apologies for side-stepping the discussion, I just wanted to share
+that I have explored the exact same problem with other vendor's PSCI
+implementations.
 
-What about my DTS?
+In fact, I think it would be interesting to see how many PSCI
+implementations that really got this correct. :-)
 
-> pmk8550.dtsi, pmk8850.dtsi, sc8280xp-pmics.dtsi. No issues were seen
-> precisely because PBS was never omitted on any GEN3 platform.
-> 
-> minItems: 2 simply enforces in the schema what has always been present
-> in practice, ensuring future GEN3 DTs cannot accidentally omit the PBS
-> address space which is a GEN3 hardware requirement.
-This does not answer my questions.
+That said, I think a DT property should be a generic PSCI DT property,
+but then set for those platforms that need it.
 
-Best regards,
-Krzysztof
+Kind regards
+Uffe
