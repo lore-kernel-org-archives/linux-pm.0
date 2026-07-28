@@ -1,222 +1,126 @@
-Received: from azure-sdnproxy.icoremail.net (azure-sdnproxy.icoremail.net [13.76.78.106])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id 890B92AE76;
-	Tue, 28 Jul 2026 03:02:36 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=13.76.78.106
+Received: from canpmsgout06.his.huawei.com (canpmsgout06.his.huawei.com [113.46.200.221])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F1F702C3255;
+	Tue, 28 Jul 2026 03:06:30 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=113.46.200.221
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1785207764; cv=none; b=kErIhqxwFd9C4SMmT1WAmSKaRKQDH0r39O1iwolJRpbbcTKolygXxlPO11oETJY8AaMSmpS1K4Wbg3XZCpG4IQx8nWgz57+KlIRiJeA0XNBAUMeRz6f6DEWvBLdpUmydYrdj9XHU7XXMGBfLm/e6vfSNzom+ta+2oepX0zWwsPw=
+	t=1785207994; cv=none; b=ENAVMlU/h3K2Op2kkhg8GMiLy1/VHaOmzl0UnATvYYMeMubU0k9Q+K6V5SLD5fDk6JUaDjulQFXhMwR2zav2e+lz4tEIqMAdBhB5WoTNG8oKg9+KUOdesxfoZy/Ju0N6A7svN84HeuioRg0e7p0WUGUsaZ5jGq2qJejQLWEX+D0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1785207764; c=relaxed/simple;
-	bh=xFUyaqXp3ABuHnNL/QOz1iQV6lP9hwJLKIcmx2/1JOM=;
-	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=edfI0mrMPHHdwdqPyDNaYLqp4kx1WQYR68SIpd1w/FYea5HkmrMhyVxStxRdgS+0lQo65NdkPwUC3qEUHwffQZlVM1baoSKAqNSdZn415TGcKwEb1mHiGGiZ/jOnqXB26tBbWRc/zS2T5OYoTpWW050JHpAECsp2QSb6rkD44zk=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=zju.edu.cn; spf=pass smtp.mailfrom=zju.edu.cn; arc=none smtp.client-ip=13.76.78.106
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=zju.edu.cn
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=zju.edu.cn
-Received: from zju.edu.cn (unknown [10.98.66.117])
-	by mtasvr (Coremail) with SMTP id _____wCH8zy7G2hqf11GAA--.57565S3;
-	Tue, 28 Jul 2026 11:02:20 +0800 (CST)
-Received: from localhost.localdomain (unknown [10.98.66.117])
-	by mail-app2 (Coremail) with SMTP id zC_KCgAnl8y6G2hq0SdHAw--.57572S2;
-	Tue, 28 Jul 2026 11:02:19 +0800 (CST)
-From: Fan Wu <fanwu01@zju.edu.cn>
-To: sre@kernel.org
-Cc: linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	myungjoo.ham@samsung.com,
-	Fan Wu <fanwu01@zju.edu.cn>,
-	stable@vger.kernel.org
-Subject: [PATCH v2] power: supply: charger-manager: register regulators before exposing sysfs
-Date: Tue, 28 Jul 2026 03:01:23 +0000
-Message-Id: <20260728030123.230202-1-fanwu01@zju.edu.cn>
-X-Mailer: git-send-email 2.34.1
-In-Reply-To: <20260726051540.35579-1-fanwu01@zju.edu.cn>
-References: <20260726051540.35579-1-fanwu01@zju.edu.cn>
+	s=arc-20240116; t=1785207994; c=relaxed/simple;
+	bh=BUIslYAPA2K6CKq4j0CEiejAnj5vY8yhOwu5INtAYtI=;
+	h=Message-ID:Date:MIME-Version:Subject:To:References:From:
+	 In-Reply-To:Content-Type; b=CUuC5tNyV/vgDksEn16Wencs7/ekXYcxiKuR1obrat2ndRmw/KACSZ2wKCZLwOd9PnASiZW6vj7+G/n9TS7Y54LnrxKeQc2QLnqhVWeX0PTnsaPd5cYZ40kisI2HpvnfABmLuS8GZ1dnFy5p7JAS/InoqiihgzKMv48CKLWUikw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=hisilicon.com; spf=pass smtp.mailfrom=hisilicon.com; arc=none smtp.client-ip=113.46.200.221
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=hisilicon.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=hisilicon.com
+Received: from mail.maildlp.com (unknown [172.19.162.140])
+	by canpmsgout06.his.huawei.com (SkyGuard) with ESMTPS id 4h8Kqy1r7gzRhWS;
+	Tue, 28 Jul 2026 10:57:02 +0800 (CST)
+Received: from kwepemf200017.china.huawei.com (unknown [7.202.181.10])
+	by mail.maildlp.com (Postfix) with ESMTPS id 4D622202E6;
+	Tue, 28 Jul 2026 11:06:27 +0800 (CST)
+Received: from [10.67.121.58] (10.67.121.58) by kwepemf200017.china.huawei.com
+ (7.202.181.10) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1544.11; Tue, 28 Jul
+ 2026 11:06:26 +0800
+Message-ID: <4e1b7360-4ab9-4c50-b4b9-61a44707068a@hisilicon.com>
+Date: Tue, 28 Jul 2026 11:06:25 +0800
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-CM-TRANSID:zC_KCgAnl8y6G2hq0SdHAw--.57572S2
-X-CM-SenderInfo: qrstjiaswqq6lmxovvfxof0/
-X-CM-DELIVERINFO: =?B?yCjN8QXKKxbFmtjJiESix3B1w3vZ3A9ovKVTomAyoQazvoRs/NHSP8GI2EvgeEEW7R
-	sfncGSG+szpQCInt5Y8rbJUI0QIK3RCkGu16jD5Ed6OBleY1ktfbnzGkLOtE65gvSLK8i6
-	+KWMv48lIsOl9ip0fV6p9E6mavGmQbzmcFsnzP86
-X-Coremail-Antispam: 1Uk129KBj93XoW3Jr17Ww4UurW3Zr1fZw1DurX_yoWxWF1kpF
-	s8CrnxKr40yFWFqw4qk3W2k3W5GF4fA39FvrW8Gay3ZwnxJ3W5Xr1UAFWayF18Krn7ZF42
-	yFW5tw4IyF1UurXCm3ZEXasCq-sJn29KB7ZKAUJUUUUU529EdanIXcx71UUUUU7KY7ZEXa
-	sCq-sGcSsGvfJ3Ic02F40EFcxC0VAKzVAqx4xG6I80ebIjqfuFe4nvWSU5nxnvy29KBjDU
-	0xBIdaVrnRJUUU9lb4IE77IF4wAFF20E14v26r1j6r4UM7CY07I20VC2zVCF04k26cxKx2
-	IYs7xG6rWj6s0DM7CIcVAFz4kK6r1j6r18M28lY4IEw2IIxxk0rwA2F7IY1VAKz4vEj48v
-	e4kI8wA2z4x0Y4vE2Ix0cI8IcVAFwI0_tr0E3s1l84ACjcxK6xIIjxv20xvEc7CjxVAFwI
-	0_Gr1j6F4UJwA2z4x0Y4vEx4A2jsIE14v26rxl6s0DM28EF7xvwVC2z280aVCY1x0267AK
-	xVW0oVCq3wAac4AC62xK8xCEY4vEwIxC4wAS0I0E0xvYzxvE52x082IY62kv0487Mc804V
-	CY07AIYIkI8VC2zVCFFI0UMc02F40EFcxC0VAKzVAqx4xG6I80ewAv7VC0I7IYx2IY67AK
-	xVWUJVWUGwAv7VC2z280aVAFwI0_Jr0_Gr1lOx8S6xCaFVCjc4AY6r1j6r4UM4x0Y48Icx
-	kI7VAKI48JM4x0Y48IcxkI7VAKI48G6xCjnVAKz4kxMxAIw28IcxkI7VAKI48JMxC20s02
-	6xCaFVCjc4AY6r1j6r4UMI8I3I0E5I8CrVAFwI0_Jr0_Jr4lx2IqxVCjr7xvwVAFwI0_Jr
-	I_JrWlx4CE17CEb7AF67AKxVWUAVWUtwCIc40Y0x0EwIxGrwCI42IY6xIIjxv20xvE14v2
-	6r1j6r1xMIIF0xvE2Ix0cI8IcVCY1x0267AKxVWUJVW8JwCI42IY6xAIw20EY4v20xvaj4
-	0_Jr0_JF4lIxAIcVC2z280aVAFwI0_Jr0_Gr1lIxAIcVC2z280aVCY1x0267AKxVWUJVW8
-	JbIYCTnIWIevJa73UjIFyTuYvjxU2LIDUUUUU
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v1] PM / devfreq: governor_userspace: Guard against NULL
+ governor_data during switch
+To: Finley Xiao <finley.xiao@rock-chips.com>, <heiko@sntech.de>,
+	<myungjoo.ham@samsung.com>, <kyungmin.park@samsung.com>,
+	<cw00.choi@samsung.com>, <linux-pm@vger.kernel.org>,
+	<linux-kernel@vger.kernel.org>
+References: <20260723080806.1451-1-finley.xiao@rock-chips.com>
+Content-Language: en-US
+From: Jie Zhan <zhanjie9@hisilicon.com>
+In-Reply-To: <20260723080806.1451-1-finley.xiao@rock-chips.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+X-ClientProxiedBy: kwepems500001.china.huawei.com (7.221.188.70) To
+ kwepemf200017.china.huawei.com (7.202.181.10)
 
-charger_manager_remove() and the err_reg_extcon probe error path free each
-charger regulator with regulator_put() before tearing down the power_supply
-sysfs entries (power_supply_unregister()). charger_manager_remove() also
-calls try_charger_enable(cm, false) after the regulator_put() loop. A
-concurrent write to a charger's externally_control sysfs attribute that
-lands between regulator_put() and power_supply_unregister() can run
-charger_externally_control_store() and call try_charger_enable(), which,
-when charging is enabled, dereferences the already-freed consumer handle.
-When charging is enabled, try_charger_enable(cm, false) in .remove() also
-dereferences the freed handles directly. Both leave use-after-free windows.
-Symmetrically, probe registers the sysfs entries (power_supply_register)
-before acquiring the regulators (regulator_get, inside
-charger_manager_register_extcon), so userspace can reach externally_control
-before the regulators are available.
 
-Split charger_manager_register_extcon() on the sync/async boundary:
-charger_manager_get_regulators() (regulator_get only, no async producer)
-now runs before power_supply_register() so sysfs is not live before
-regulators are available, and charger_manager_register_extcon() keeps only
-the extcon notifier/work setup, still after power_supply_register() so a
-power_supply_register() failure cannot reach extcon setup. This keeps the
-sysfs setup/teardown ordering symmetric without introducing an asynchronous
-producer on the earlier probe-error path.
+Hi Finley,
 
-Move power_supply_unregister() and try_charger_enable(cm, false) ahead of
-the regulator_put() loop on both teardown paths, and adjust err_reg_extcon
-(power_supply_unregister() then fall through err_regulator for
-regulator_put(); get_regulators self-rolls back on its own failure).
+On 7/23/2026 4:08 PM, Finley Xiao wrote:
+> The userspace governor is the only one that uses devfreq->governor_data,
+> allocated in its DEVFREQ_GOV_START handler (userspace_init()) and freed
+> in its DEVFREQ_GOV_STOP handler (userspace_exit()).
+> 
+> When switching governors via sysfs (governor_store in devfreq.c), the
+> sequence is:
+> 
+> STOP(old) -> df->governor = userspace -> START(userspace) -> userspace_init
+> 
+> Between the df->governor assignment and userspace_init() completing,
+> governor_data is still NULL (the previous governor never touched it,
+> and the core does not clear or pre-allocate it). During that window,
+> asynchronous paths that call update_devfreq() outside of the driver's
+> control -- the OPP notifier (devfreq.c:686) and the pm_qos notifier
+> (devfreq.c:707) -- run devfreq_update_target() under df->lock and reach
+> devfreq_userspace_func(), which dereferences governor_data without a
+> NULL check, causing:
+> 
+>   Unable to handle kernel access to user memory outside uaccess routines
+>   pc : devfreq_userspace_func+0xc/0x28
+>   lr : devfreq_update_target+0x58/0x158
+> 
+> Add a NULL check in devfreq_userspace_func() and fall back to
+> previous_freq, which is the same behaviour as the existing "no user
+> frequency specified yet" branch. This closes the race for all callers
+> since every path ultimately goes through get_target_freq.
+> 
+> Additionally, take devfreq->lock around the kfree()/NULL assignment in
+> userspace_exit(). Without it, a concurrent OPP/pm_qos notifier running
+> under devfreq->lock could read governor_data after it is freed but
+> before it is set to NULL, constituting a use-after-free.
+> 
+> Signed-off-by: Finley Xiao <finley.xiao@rock-chips.com>
+> ---
+>  drivers/devfreq/governor_userspace.c | 4 +++-
+>  1 file changed, 3 insertions(+), 1 deletion(-)
+> 
+> diff --git a/drivers/devfreq/governor_userspace.c b/drivers/devfreq/governor_userspace.c
+> index 3906ebedbae8..f7a485c43fd7 100644
+> --- a/drivers/devfreq/governor_userspace.c
+> +++ b/drivers/devfreq/governor_userspace.c
+> @@ -24,7 +24,7 @@ static int devfreq_userspace_func(struct devfreq *df, unsigned long *freq)
+>  {
+>  	struct userspace_data *data = df->governor_data;
+>  
+> -	if (data->valid)
+> +	if (data && data->valid)
+This one is fine.
+>  		*freq = data->user_frequency;
+>  	else
+>  		*freq = df->previous_freq; /* No user freq specified yet */
+> @@ -110,8 +110,10 @@ static void userspace_exit(struct devfreq *devfreq)
+>  	if (devfreq->dev.kobj.sd)
+>  		sysfs_remove_group(&devfreq->dev.kobj, &dev_attr_group);
+>  
+> +	mutex_lock(&devfreq->lock);
+>  	kfree(devfreq->governor_data);
+>  	devfreq->governor_data = NULL;
+> +	mutex_unlock(&devfreq->lock);
+However, for this one, I'm not sure it's the proper place to add the lock.
 
-This does not address the separate extcon-notifier-driven deref of the same
-handles, which needs its own synchronization design.
+Why should we allow the whole governor switching to be concurrent with
+frequency switching?  I guess there might be something wrong elsewhere.
+The devfreq->lock should be held around governor switching.
+Can you have a try?  but be careful of deadlock because the governor
+switching currently holds devfreq_list_lock.
 
-Found by an in-house static analysis tool.
-
-Fixes: 3950c7865cd7 ("charger-manager: Add support sysfs entry for charger")
-Cc: stable@vger.kernel.org
-Assisted-by: Codex:gpt-5.6
-Signed-off-by: Fan Wu <fanwu01@zju.edu.cn>
----
-Changes in v2 (per Sebastian Reichel's review of v1):
-- Split charger_manager_register_extcon() so regulator acquisition
-  (charger_manager_get_regulators) happens before power_supply_register(),
-  while notifier/work setup remains after it. Keeps sysfs setup/teardown
-  ordering symmetric without an async producer on the earlier probe-error
-  path.
-- Add err_regulator label; get_regulators self-rolls back on failure.
-- Move try_charger_enable(cm, false) before the regulator_put() loop.
-
- drivers/power/supply/charger-manager.c | 54 +++++++++++++++++++-------
- 1 file changed, 39 insertions(+), 15 deletions(-)
-
-diff --git a/drivers/power/supply/charger-manager.c b/drivers/power/supply/charger-manager.c
-index c49e0e4d02f7..1d3f3f2295e0 100644
---- a/drivers/power/supply/charger-manager.c
-+++ b/drivers/power/supply/charger-manager.c
-@@ -1016,6 +1016,29 @@ static int charger_extcon_init(struct charger_manager *cm,
- 	return 0;
- }
- 
-+static int charger_manager_get_regulators(struct charger_manager *cm)
-+{
-+	struct charger_desc *desc = cm->desc;
-+	struct charger_regulator *charger;
-+	int i, ret;
-+
-+	for (i = 0; i < desc->num_charger_regulators; i++) {
-+		charger = &desc->charger_regulators[i];
-+		charger->consumer = regulator_get(cm->dev,
-+						  charger->regulator_name);
-+		if (IS_ERR(charger->consumer)) {
-+			dev_err(cm->dev, "Cannot find charger(%s)\n",
-+				charger->regulator_name);
-+			ret = PTR_ERR(charger->consumer);
-+			while (i-- > 0)
-+				regulator_put(desc->charger_regulators[i].consumer);
-+			return ret;
-+		}
-+		charger->cm = cm;
-+	}
-+	return 0;
-+}
-+
- /**
-  * charger_manager_register_extcon - Register extcon device to receive state
-  *				     of charger cable.
-@@ -1038,15 +1061,6 @@ static int charger_manager_register_extcon(struct charger_manager *cm)
- 	for (i = 0; i < desc->num_charger_regulators; i++) {
- 		charger = &desc->charger_regulators[i];
- 
--		charger->consumer = regulator_get(cm->dev,
--					charger->regulator_name);
--		if (IS_ERR(charger->consumer)) {
--			dev_err(cm->dev, "Cannot find charger(%s)\n",
--				charger->regulator_name);
--			return PTR_ERR(charger->consumer);
--		}
--		charger->cm = cm;
--
- 		for (j = 0; j < charger->num_cables; j++) {
- 			struct charger_cable *cable = &charger->cables[j];
- 
-@@ -1582,13 +1596,23 @@ static int charger_manager_probe(struct platform_device *pdev)
- 	}
- 	psy_cfg.attr_grp = desc->sysfs_groups;
- 
-+	/*
-+	 * Acquire charger regulators before exposing the sysfs entries, so
-+	 * userspace cannot reach externally_control before the regulators
-+	 * (and charger->cm) are available.  Mirrors the order in remove().
-+	 */
-+	ret = charger_manager_get_regulators(cm);
-+	if (ret < 0)
-+		return ret;
-+
- 	cm->charger_psy = power_supply_register(&pdev->dev,
- 						&cm->charger_psy_desc,
- 						&psy_cfg);
- 	if (IS_ERR(cm->charger_psy)) {
- 		dev_err(&pdev->dev, "Cannot register charger-manager with name \"%s\"\n",
- 			cm->charger_psy_desc.name);
--		return PTR_ERR(cm->charger_psy);
-+		ret = PTR_ERR(cm->charger_psy);
-+		goto err_regulator;
- 	}
- 
- 	/* Register extcon device for charger cable */
-@@ -1622,11 +1646,11 @@ static int charger_manager_probe(struct platform_device *pdev)
- 	return 0;
- 
- err_reg_extcon:
-+	power_supply_unregister(cm->charger_psy);
-+err_regulator:
- 	for (i = 0; i < desc->num_charger_regulators; i++)
- 		regulator_put(desc->charger_regulators[i].consumer);
- 
--	power_supply_unregister(cm->charger_psy);
--
- 	return ret;
- }
- 
-@@ -1644,12 +1668,12 @@ static void charger_manager_remove(struct platform_device *pdev)
- 	cancel_work_sync(&setup_polling);
- 	cancel_delayed_work_sync(&cm_monitor_work);
- 
--	for (i = 0 ; i < desc->num_charger_regulators ; i++)
--		regulator_put(desc->charger_regulators[i].consumer);
-+	try_charger_enable(cm, false);
- 
- 	power_supply_unregister(cm->charger_psy);
- 
--	try_charger_enable(cm, false);
-+	for (i = 0 ; i < desc->num_charger_regulators ; i++)
-+		regulator_put(desc->charger_regulators[i].consumer);
- }
- 
- static const struct platform_device_id charger_manager_id[] = {
--- 
-2.34.1
-
+Thanks!
+Jie
+>  }
+>  
+>  static int devfreq_userspace_handler(struct devfreq *devfreq,
