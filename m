@@ -1,40 +1,33 @@
-Received: from bali.collaboradmins.com (bali.collaboradmins.com [148.251.105.195])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AAF6D3D6CDE;
-	Tue, 28 Jul 2026 08:29:14 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=148.251.105.195
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id D98F61A9F97;
+	Tue, 28 Jul 2026 08:30:44 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1785227356; cv=none; b=FyQIuBJD3VX864j2t2L8IrowPU8PtjDD1SmSd8sCN3kKYBpDf3X7uTxCYlrf5Clkws2tFjA0L0Dg3PAtG/zT9UE6rOIz2nkcJmvW1VtjvDmn90hO6q3aLKhhk15SHyS4ZA5A0Z1Lu5LhZa607DekOQqPROfxf8QDqAoM4OF3blM=
+	t=1785227447; cv=none; b=Dh2xba2kB2GphlZ8ffcliozs73g7mg1woo+hu46cMqens+sAnoSjiwziazZ5Qa2ddTZil40kwOU7vST6aWkcYWesHslRDTTyRIFxJngBgWN82RVZFCXbj8TYKbq4IlYCDC/SqpQew7XnWnFPn+U/B6ILGRTpxxxYVp353YPsyo4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1785227356; c=relaxed/simple;
-	bh=f6ahL+mDCp4GOtiCvt/A5VrHg763alI3Zyu7EZLrDO4=;
+	s=arc-20240116; t=1785227447; c=relaxed/simple;
+	bh=1DhaFrMGu2dVoCXyx4GwAvYmLRjOUI1HXAe1hwbT1Yw=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=CgDlhpnTmzzYwCoLbzvB30g8hOxBno89/g/NO5qKobICP79p7wi8Tz+EyIZiKWsV+a/U8augysu9oof1dhzLbGa7cAti7Q3IBJiBTg++iyqNoz/5iAj8M+6TiAX/8T6LPrLCrubudI8yxCtKn4WfQ9WA1KkUrFfJjr/Aj05uK2s=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b=jbgG64dt; arc=none smtp.client-ip=148.251.105.195
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
+	 In-Reply-To:Content-Type; b=LIZndVdlKyVuDIcLwgVBHUo6l96d/WlfzqY+RjBWPO8x15OZWFMMinTEP7wU269EgqxDiWH/xyFp3caXFrQtR05UONYkmKzg8QnUjQzwPpTz0VVIXixBkaGCjU83UcyQzaD64W6yzOlWOFDVoQEoXMyXNAyHT0/skWAoE1d468Y=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=vKPMUkNL; arc=none smtp.client-ip=217.140.110.172
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b="jbgG64dt"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
-	s=mail; t=1785227352;
-	bh=f6ahL+mDCp4GOtiCvt/A5VrHg763alI3Zyu7EZLrDO4=;
+	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="vKPMUkNL"
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 170501A9A;
+	Tue, 28 Jul 2026 01:30:40 -0700 (PDT)
+Received: from [10.57.1.72] (unknown [10.57.1.72])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 8F2513F86F;
+	Tue, 28 Jul 2026 01:30:41 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
+	t=1785227444; bh=1DhaFrMGu2dVoCXyx4GwAvYmLRjOUI1HXAe1hwbT1Yw=;
 	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=jbgG64dtvkMpnQhap0BIoWtTEWNeR6xJXF1mYIpzsC8tvlHd6lAqK2F0rI7SxHnnZ
-	 Qya/631YjBP3P/jh4uFND0KOMDIzYPeuYaNYYGIUcQiw0CedLdlwsgNf7yOtBo97FG
-	 o2I6RMiBEOpQJDNXbB1lRm6X8OJUE/xVUJ7Nyz3YmYNyMgQvxCDPIZmJORBjZqkapO
-	 pSXM4hMofpAz1Nk3EoAv7hV88XAFHEsDMEhimQ0PH6Otbts07LuQu7XbX6VotcEo/1
-	 d9sYooEpijM/oItOAOqmO/eKCPJWPwgmjz/SNMfH1UL3DJwjd5RMhQYK8wSEmWjcJa
-	 7KBGKahI8RCqA==
-Received: from [100.64.1.21] (unknown [100.64.1.21])
-	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
-	 key-exchange x25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	(Authenticated sender: kholk11)
-	by bali.collaboradmins.com (Postfix) with ESMTPSA id 1858017E063E;
-	Tue, 28 Jul 2026 10:29:12 +0200 (CEST)
-Message-ID: <9ae852e3-97bb-48bb-ba6f-bf2ab9ae8dd6@collabora.com>
-Date: Tue, 28 Jul 2026 10:29:11 +0200
+	b=vKPMUkNLq/ZvE70GQE0Krb29tRW6ALs3kKwVRjK+mNR0rg+Jk4G66EDJRdh0Vzm11
+	 jRoZ2EwJIALVu6bTSwQgigZpunlD3RT/Yxz/vyLcZvU+EAH7lZzB5kwl+6MS8P5Q3t
+	 LHv1UBeZFxPjUcCQ5BvXAKj/w13kS2+evy7Genno=
+Message-ID: <774c3a68-6a6b-4e2e-a347-03e36953b750@arm.com>
+Date: Tue, 28 Jul 2026 09:30:39 +0100
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -42,131 +35,159 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v1] pmdomain: mediatek: Fix MT8183 hang on boot
-To: Ulf Hansson <ulf.hansson@oss.qualcomm.com>
-Cc: Dmitry Osipenko <dmitry.osipenko@collabora.com>,
- Ulf Hansson <ulfh@kernel.org>, Matthias Brugger <matthias.bgg@gmail.com>,
- linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, linux-mediatek@lists.infradead.org
-References: <20260722132729.302067-1-dmitry.osipenko@collabora.com>
- <CAPx+jO-1_ZpYcnPtoYxRn5vv34tiP7TXnjKZ3SaWkEzdeTfXpA@mail.gmail.com>
- <3130633c-fbff-4b1a-a127-bd4eb678c3f6@collabora.com>
- <CAPx+jO9-b_XyhS_CtX1ZFiH96WMYjjcvOEcO6u6CLEZq61rpaw@mail.gmail.com>
-From: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
+Subject: Re: [REGRESSION] sched/idle: Sysbench threads regression after
+ f4c31b07b136
+To: Joseph Salisbury <joseph.salisbury@oracle.com>,
+ "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
+Cc: rafael.j.wysocki@intel.com, Ingo Molnar <mingo@redhat.com>,
+ Peter Zijlstra <peterz@infradead.org>, Juri Lelli <juri.lelli@redhat.com>,
+ Vincent Guittot <vincent.guittot@linaro.org>,
+ Dietmar Eggemann <dietmar.eggemann@arm.com>, frederic@kernel.org,
+ linux-pm@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+ regressions@lists.linux.dev
+References: <096b42fa-107f-450d-b3b1-03bcad3f1e04@oracle.com>
+ <CAJZ5v0g+SkTxuP5fqUMisQAh19v-JzpmRZHiKtYzJH1sVt656g@mail.gmail.com>
+ <5f5cb821-92ae-4539-ae81-a43e33a7ded5@arm.com>
+ <f5946a8a-43be-49d4-a827-25149112b21f@oracle.com>
 Content-Language: en-US
-In-Reply-To: <CAPx+jO9-b_XyhS_CtX1ZFiH96WMYjjcvOEcO6u6CLEZq61rpaw@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+From: Christian Loehle <christian.loehle@arm.com>
+In-Reply-To: <f5946a8a-43be-49d4-a827-25149112b21f@oracle.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 
-On 7/27/26 18:48, Ulf Hansson wrote:
-> On Mon, Jul 27, 2026 at 1:04 PM AngeloGioacchino Del Regno
-> <angelogioacchino.delregno@collabora.com> wrote:
->>
->> On 7/24/26 17:01, Ulf Hansson wrote:
->>> On Wed, Jul 22, 2026 at 3:28 PM Dmitry Osipenko
->>> <dmitry.osipenko@collabora.com> wrote:
+On 7/24/26 18:20, Joseph Salisbury wrote:
+> Hi Rafael, Christian,
+> 
+> On 7/6/26 10:29 AM, Christian Loehle wrote:
+>> On 7/2/26 19:47, Rafael J. Wysocki (Intel) wrote:
+>>> Hi,
+>>>
+>>> On Thu, Jul 2, 2026 at 6:30 PM Joseph Salisbury
+>>> <joseph.salisbury@oracle.com> wrote:
+>>>> Hi Rafael,
 >>>>
->>>> Depending on firmware, part of the MFG domains may be left ON at boot
->>>> leaving only some MFG cores powered, to let the ACP to prefetch the GPU
->>>> region when the display controller is brought up. This doesn't play well
->>>> with an eventual delay in probing Panfrost when the display controller is
->>>> fully set up, as that would make genpd's sync_state() to power off the
->>>> domain while ACP tries to prefetch: this is causing an AXI stall,
->>>> effectively freezing the AP indefinitely. In order to prevent this from
+>>>> We are seeing a reproducible MySQL Sysbench threads regression.  A
+>>>> bisect indicated the following commit as the first bad commit:
+>>>> f4c31b07b136 ("sched: idle: Consolidate the handling of two special cases")
+>>>>
+>>>> The regression was found in Oracle kernel performance testing on OCI VM
+>>>> shapes:
+>>>>
+>>>> VM Details:
+>>>> * VM.Standard2.1:
+>>>>         x86 OCI VM shape, 1 OCPU / 2 hardware threads, about 14.5 GB RAM
+>>>>
+>>>>    * VM.Standard.A1.Flex.2:
+>>>>         Arm/Ampere A1 flexible VM shape, 2 vCPU threads, about 10.9 GB RAM
+>>>>
+>>>>
+>>>> The ResultsDB runs show the regression in the Sysbench threads metric:
+>>>>
+>>>>     - VM.Standard2.1:       333 -> 236  (-29.1%)
+>>>>     - VM.Standard.A1.Flex.2: 1286 -> 1152 (-10.4%)
+>>>>
+>>>> A test kernel was built with f4c31b07b136 reverted and the performance
+>>>> regression was recovered.
+>>>>
+>>>>   From the code, it is possible the regression is due to the new
+>>>> previous-wakeup heuristic in the special idle cases.  Before the commit:
+>>>>
+>>>>     - no cpuidle driver:
+>>>>         tick_nohz_idle_stop_tick()
+>>>>         default_idle_call()
+>>>>
+>>>>     - one idle state:
+>>>>         tick_nohz_idle_retain_tick()
+>>>>         cpuidle state 0
+>>> I think that this is your case and the tick stops for you sometimes
+>>> now while it had never stopped before.
 >>>
->>> I haven't made any detailed investigation, but to me, it sounds like
->>> there is a missing consumer somewhere.
+>>> Can you confirm?
+> The guest-visible data does not show the single-idle-state cpuidle case.
+> Both affected guests report:
+> 
+> /sys/devices/system/cpu/cpuidle/current_driver = none
+> /sys/devices/system/cpu/cpuidle/current_governor = menu
+> 
+> There are also no /sys/devices/system/cpu/cpu*/cpuidle entries on either guest.  So from the guest data, this looks like the no-cpuidle-driver special case rather than the one-idle-state case.
+> 
+> The full revert of f4c31b07b136 recovered the regression. I also tested Rafael's suggested one-line change, applied as:
+> 
+>     -        idle_call_stop_or_retain_tick(stop_tick);
+>    +        idle_call_stop_or_retain_tick(false);
+> 
+> That test kernel still showed regressed performance on VM.Standard2.1.
+> 
+> 
 >>>
->>> Should the ACP/panfrost devices be a consumer of the MFG domains as
->>> well? Or perhaps, if the ACP/panfrost should rely on the display
->>> controller to be probed and powered-on, to be able to probe?
+>>> Overall, it would be good to know the idle state lists for both the VM
+>>> and the host.
+> For the VMs, there are no guest cpuidle state lists exposed because the cpuidle driver is "none".
+> 
+> I do not currently have the host-side idle-state lists from the OCI hosts.  I can try to get that data if it would still be useful.
 >>>
->>
->> This is about how the bootloader is leaving the display controller, the ACP,
->> and the MFG registers before booting the kernel.
+>> +1, but also which HZ are you using?
+> VM.Standard2.1, x86_64:
 > 
-> Right.
+> CONFIG_HZ_1000=y
+> CONFIG_HZ=1000
 > 
->>
->> The kernel drivers themselves will reset this weird state when the HW gets
->> to full probe so there won't be any more issue(s) from that point onwards.
->>
->> Actually, there would be A LOT to say about this, but I'll be very brief...
->>
->> Basically, before booting the kernel, the bootloader is leaving a half-assed
->> setup to potentially support continuous splash functionality, but without it
->> being actually used on the device(s) that we're talking about here...
+> VM.Standard.A1.Flex.2, aarch64:
 > 
-> So does that mean that the print in scpsys_add_one_domain() ("A
-> default off power domain has been ON") gets printed for these PM
-> domains?
+> CONFIG_HZ_250=y
+> CONFIG_HZ=250
 > 
-
-Yeah...
-
-> If so, perhaps it would be better to turn off the PM domains (if
-> possible) before registering them with genpd?
+>> Both systems reported have 2 logical CPUs then?
 > 
-
-Eh, that's not possible :-(
-
-Doing that would bring us back to square 1. The SoC will lockup.... ACP is still
-trying to constantly prefetch, and the issue here is going totally unpowered, as
-explained in the commit description - because that's the HW condition that causes
-the stall eventually.
-
-To make things "funnier" (in this case) for everyone, the ACP is always-on, of
-course, so there's no cleaner way around it.
-
->>
->> Again, I should put a remark on every word of that last paragraph, but this
->> is the gist of it.
->>
->> If you're curious or need more information, of course I can expand a bit,
->> there's no secret involved here, it's just that I'm avoiding to write a wall
->> of text around that...
->>
->> P.S.: We've been discussing that internally and chasing this issue for months
->> before deciding to "solve" it like this.
+> Yes:
 > 
-> Huh, I see, thanks for sharing.
+> VM.Standard2.1:
 > 
-> I think it would be nice to clarify a little bit more in the commit
-> message, as it all kind of indicates to me that there is a missing
-> consumer or that a parent needs to be runtime resumed before a child
-> is probed.
+> CPU(s): 2
+> Thread(s) per core: 2
+> Core(s) per socket: 1
+> Socket(s): 1
+> 
+> VM.Standard.A1.Flex.2:
+> 
+> CPU(s): 2
+> Thread(s) per core: 1
+> Core(s) per socket: 2
+> Socket(s): 1
+> 
+>> Were higher core counts also
+>> tested and how does it affect them?
+> Yes. Higher-core-count runs were checked. The regression appears limited to the smaller core-count shapes.
+> 
+> The current data shows regressions on:
+> 
+> - VM.Standard2.1
+> - VM.Standard.A1.Flex.2
+> - VM.Standard.E4.Flex.1
+> 
+> The larger tested shapes did not show the same regression pattern. The test runs use one sysbench thread per online CPU/core count as encoded in the metric name.
+> 
 > 
 
-Eh for both me and Dmitry the commit message looked clear, but yeah, it's surely
-just because we bashed our heads over this issue, and our knowledge makes things
-look obvious when they are definitely *not*, as you just pointed out - so thanks
-for that!
+Interesting, so your guests (no cpuidle) need the tick stopped at every
+idle entry to not regress, i.e. the below?
+Is there anything obvious that shows why that would be? Maybe in the
+hypervisor behaviour?
 
-So yeah, Dmitry, if you can please send a v2 with some more clarification in the
-commit message (practically, add the information that I shared in this topic),
-that would be awesome.
+----
 
-> Or another way of looking at it, that perhaps makes better sense.
-> Based on your latest information, it seems like the PM domain isn't
-> really fully powered-on by the bootloader, but still we are telling
-> genpd that it is, leading to an inconsistent state and errors.
-> 
+diff --git a/kernel/sched/idle.c b/kernel/sched/idle.c
+index 052435f4d3e3..d91a102ef028 100644
+--- a/kernel/sched/idle.c
++++ b/kernel/sched/idle.c
+@@ -194,8 +194,7 @@ static void cpuidle_idle_call(bool stop_tick)
+        }
+ 
+        if (cpuidle_not_available(drv, dev)) {
+-               idle_call_stop_or_retain_tick(stop_tick);
+-
++               idle_call_stop_or_retain_tick(true);
+                default_idle_call();
+                goto exit_idle;
+        }
 
-Yeah, the bootloader is doing random things, leaving the PDs only partially powered
-ON (just the SRAM, which is half of the MFG_ASYNC setup, and 2D accelerator, but
-not the rest, which makes little sense because there's another parent in the middle
-that is not powered at all...) and that's why this issue is experienced.
-
-I think this is really just a bootloader bug in this case, so if we lived in a
-parallel universe where the MediaTek kernel drivers supported continuous splash on
-upstream... I'm mostly sure that this issue would still be there, and that this SoC
-would still randomly and spectacularly freeze without this commit.
-
-Cheers,
-Angelo
-
-
-> [...]
-> 
-> Kind regards
-> Uffe
