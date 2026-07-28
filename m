@@ -1,75 +1,74 @@
-Received: from mail-pg1-f173.google.com (mail-pg1-f173.google.com [209.85.215.173])
+Received: from mail-pf1-f180.google.com (mail-pf1-f180.google.com [209.85.210.180])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 52F1B3DC4D0
-	for <linux-pm@vger.kernel.org>; Tue, 28 Jul 2026 08:47:21 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.215.173
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D060540EB90
+	for <linux-pm@vger.kernel.org>; Tue, 28 Jul 2026 08:47:46 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.210.180
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1785228442; cv=none; b=rlMsJWtVlQM0nf54Yd+yqvOKp+1e0QjohZixuokrGb9duzRgn/c7riWS8rXDS99oYCiIg90IlEp9ba4REuMGpfKIjDYnTKzU7hJLu0jqg9Z9g/aoO3UPXxSfJASxWo6MbEiTGOYQ/C625rVXF/bJAHp8u4t/CGzmoYx1+gRIJ5c=
+	t=1785228468; cv=none; b=ob6dxruNnEB2pCGqgbZiUmy/A+StSbYLVLWolWNemqSnTu0JIXQ0ZRxkJtCTfAtqd9JIms82+ndH6+IpXsRGvhb45nKpxHo1yZwNJm3qGhKSl076v0BHs5LM7nXDTTrS89i81koj5ho52+wAan/9ir+bE13AY+hQjOxL2mwa/V4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1785228442; c=relaxed/simple;
-	bh=ctjKkFPlSuVU2qeHE9Gy5zi4ZQOiPmU6J70mT4/ZarI=;
+	s=arc-20240116; t=1785228468; c=relaxed/simple;
+	bh=fGKlNxg9YLsPLBpDCSEKog+Wv6vCRO5W9ykgw0AMKyU=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=gbdtI+Siv2ZPWwGif3oQQUREnxz8KzmH75wgj7JYYlkgk/4CvBwSA3dMTlczelcjTj0elcUpfZOhEq4I5mgYoMkAzoW2zZKzmakx7wHLcmRPB9Z5keGjBoTbZxjX33P2xzUcmYt0vlM7uskC1Gc2x4LzjuyLkTccNj4kmYfKqIQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=J8lZAsBq; arc=none smtp.client-ip=209.85.215.173
+	 Content-Type:Content-Disposition:In-Reply-To; b=MPvQ9/gEkxRz2sv6BYjtf6ONH0zzzGpjKZZ9W7hPZrxPy7R4ke71cRrCXQlgko/rvQy6xPfZCVyBNPtbmEm2q4FyioPiQjOdizNEokcLlxheitgGC+1du+N2yTpGBT0vxdQgDQS3nSHVeDP3tzxfQUoGLplVtxV6ovzAJEiGeUs=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=zKTbeQWE; arc=none smtp.client-ip=209.85.210.180
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="J8lZAsBq"
-Received: by mail-pg1-f173.google.com with SMTP id 41be03b00d2f7-c9aea40d799so1870915a12.0
-        for <linux-pm@vger.kernel.org>; Tue, 28 Jul 2026 01:47:21 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="zKTbeQWE"
+Received: by mail-pf1-f180.google.com with SMTP id d2e1a72fcca58-845c92bc464so2979546b3a.2
+        for <linux-pm@vger.kernel.org>; Tue, 28 Jul 2026 01:47:46 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1785228441; x=1785833241; darn=vger.kernel.org;
+        d=linaro.org; s=google; t=1785228466; x=1785833266; darn=vger.kernel.org;
         h=in-reply-to:content-disposition:content-type:mime-version
          :references:message-id:subject:cc:to:from:date:from:to:cc:subject
          :date:message-id:reply-to:content-type;
-        bh=Zqi8cIj/t2mh1e51achfPCocTPBcrX0WCBo7rDCEZ0w=;
-        b=J8lZAsBqCsaZmKToHleuuSI6QaAXIVVYTT/CIjUIRuCpsyjCjEcnCWNcCq17U3S9HR
-         x7+r+QQBhhpSFUTatpqwXxvqfUiexBYWbXxEH+Q5WaQpZXQf+Fm6WCWa/uxxWQNUUR1q
-         HBPF6S0BcerQCEEtT29FJO/WL+FQD+EUKLCFfbjKcL3wA0R5yXNmwyexyb8E3UZgCMhz
-         QPw64Q8+vyAS5FNwwTVbH35HOflX0w05bYbEiJqtPvgsDG4n7NyGAmZG/WhZRvAvTkx/
-         3eNajQ4F/VWohakFu5BCzomnbMkJ3iz+RznM5yXmXGAkb3AUp16Sor1SLZg7XUMd+xlP
-         nv1A==
+        bh=tA6/MY5PF2Grnw4dPL2r7KgNhjVu2XUJf38B+92A4LY=;
+        b=zKTbeQWEXCQO8FBPjqbHWwBLMwPhuvMQpnMgN6w+CcX44VAOvVGbxbIo2TDDW+sXn1
+         s5EPDFcW+GzK1Z1PDH39P0iy4lx+HUUOrKj7rE49czAfMzl6L5jCH5v+ZThv+Zsa8teW
+         BtAnv2mwZHEZBuJ58oSnuD8NQc//PK7+aMjKn2IC4zHDpuAOOr29ZjkhPc1FJyC9e0AC
+         6toUtt7geTi0EQ9B8utmlsEaLljQ+kGs+zjQ7HNg1L0Nswx6k9mteg2VVCWJQ9zbGlaM
+         hkm5TpXBBo8jU3VlvJx4IACetG79PqilfZx47m3+7qToDuz45QwV8GJYu+0UVykWnMC+
+         MYhA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1785228441; x=1785833241;
+        d=1e100.net; s=20251104; t=1785228466; x=1785833266;
         h=in-reply-to:content-disposition:content-type:mime-version
          :references:message-id:subject:cc:to:from:date:x-gm-gg
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=Zqi8cIj/t2mh1e51achfPCocTPBcrX0WCBo7rDCEZ0w=;
-        b=O+gWoDKvVYMHbxfOYqNnCIy1Z2cb2Cx492oov17Dq6nJpzMS+FVsf4SAPUSpJBGzRV
-         sShkuioZkTQ9QKyvFH4Cs+jQxu+1/P3OG1qVfxkzu8R81Fajx3r7Nitepbt6oEv8Aa52
-         BUdszGsCb+/QTjzk90MRT041Z0fPFXq1fGUglD4CWE5YO7lnN2rIEmuT8YxoXc1rUuOn
-         bKz5lWsmMBIeKN97fK7UaHtSUvwHr5XdykxTgZWwZB+EIL/atgCS3Zd8DmxrnCjzC7zw
-         iJQZrOtixenK1iQ4TYSmtxZfnvWsEmamYRvx04MwBGNlH6bUdyPGEXMwtPUvKN1ZfXV4
-         hrRQ==
-X-Forwarded-Encrypted: i=1; AHgh+RqdckAwh5USXwED8xiz69wJKjXnz54XWiG4fE2IJAZQ1iQZ8o/FGiixxKp6lD7xYzWoJzjQEbSPPA==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yzp90Qy4GGKgik1rmx5Fuy3CKkFkLiGBf+R12sxns7+z25Bb3Mh
-	loANda1oWLO89wHZHj6x2CZbYq7st6572Pc04qw4AxGPhTnYHLquodAgyg7UMsJOnHk=
-X-Gm-Gg: AR+sD108hm5HAjKDVoyjQf5ujRz1m9QuraqnptmgxhvYK128OzeDHMjGGuazWkG1bNn
-	NS6GVah0RgHELmzJP3SQuu7XNkpKyPY3ohlkjVj5daIQ5H4oJXqU9chcrdGeytxXXnLmZ1ijJPn
-	pM957jN0QgK0rL/T14GfV6su5aEcF/EbK/FSzm9GKLCvZHGWRO5rNcIcAyI6o6BDlGBwUMUV1+B
-	ePOU3W/207fRmFytj+Ol5z8fpZ1lvmnbSpWnHjs2Jy+AgCg3XfEkitfMyhMJbHa/pS76efFgOUB
-	HyuzfVF28+Ex1LhqcCUB2WLip0UGfXe8ilQSsCEX6d5TPVLjD5oIwbSVSEcvlzqUAGtK8MpYCVP
-	UUxfs+7X4exttFFgao/5JxJ2gJrn04tkVtXk73UcE+MnlZpEo+Cc6UkgLlN9zCbdA/qSy0ht+AJ
-	zs0cELqcGtiuZs
-X-Received: by 2002:a05:6a21:3204:b0:3c6:5673:2bd1 with SMTP id adf61e73a8af0-3c8ba5da101mr1810776637.42.1785228440488;
-        Tue, 28 Jul 2026 01:47:20 -0700 (PDT)
+        bh=tA6/MY5PF2Grnw4dPL2r7KgNhjVu2XUJf38B+92A4LY=;
+        b=op3FGLyAiPwfknk6WHX4osXXU3SN9R8cZVyGjDGZ2Ggj5C2UhPT6mCn8XXdKpzIwN/
+         RyB4FiYSaPdazZfY0ogC9XRnO6JSVqKW8fGw/FzKAJdEnkxue9fSiEAjLG+9pL0Z8CVz
+         9fEPhv8rh3lcMZWrmLXs83xTph7K907PPAd1lMfIbc6khjc2dL28WnpDzHh+FaVuJN2X
+         XhtqaJ60zEa0bFueKmPES0OzRYUGVofEF4a30/RneY0NMUIvUbgsqrfIAr9My5hwFZz9
+         IP4ssbmyyI16FPkbF2/7UFgFLCaYfe3cSWafBtLPaez92gDtruOf1Y219Hs/Azf/wse6
+         PAVg==
+X-Forwarded-Encrypted: i=1; AHgh+RrV4QQu2EE27+V5jrZckMw8CZhoHNTr48IRIJTO9lMYToBE9Ru/Oo2wgNsDr8z50EaG/XcfDpB3ww==@vger.kernel.org
+X-Gm-Message-State: AOJu0YzpoQEDB70UGFpAHyOP3Egm7mxUdar5iAS1M+VzYd888fyyF5wg
+	XlpHx3nNwgc8x34ivdmvdlcrp1UsWOPqisG+3PpoYPJN7q8iPGl9QDwJiJeb8gwtl+w=
+X-Gm-Gg: AR+sD11pMQfk89X2oS7pxWAtont6EoaoZUHOqj1hNOjpwPL8Bp9+9i3zRT0zgZWEYbz
+	sgzpWCKF7eDmbvRmujey9WXXv4oiKFHNN6a0roWnugRhUqSZzxlqqw9wbO+njJtGe5III5sZFF3
+	5qQm2sMHKKuBxdH9EhtiIh+I3V+7+PetpoM7diNqD81XoQYxSVPTbmdAx2WsAysPDopYHQsqxvP
+	8mCWDPPmwCX23D+MwSffNG0tSdd7s6r8UFKcawh7LDRJ3ZfqGeydom8MCGrDuCLXpnDAc9+PHYq
+	t3jxBVHEwSHLYIfi9khxWQs9tuhU3Z8zIRkYrj1rqU5gixfJIe+QbpK55puC89vrQ59LiZFnx6q
+	sQnRDrs6mR4h7+LRsYoLjL2FLQtijVXS/DP93t/h/OS/9LUKPsBE2IqHXxxR2wGyB1Rh5TsmyNY
+	+BkWo2xwzH9Kj5
+X-Received: by 2002:a05:6a20:d808:b0:3c3:66c5:68d6 with SMTP id adf61e73a8af0-3c8aafbb717mr2008641637.9.1785228466130;
+        Tue, 28 Jul 2026 01:47:46 -0700 (PDT)
 Received: from localhost ([122.172.82.94])
-        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-314bc3e1290sm41201957eec.1.2026.07.28.01.47.17
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-314bc579819sm34918375eec.20.2026.07.28.01.47.44
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 28 Jul 2026 01:47:18 -0700 (PDT)
-Date: Tue, 28 Jul 2026 14:17:14 +0530
+        Tue, 28 Jul 2026 01:47:44 -0700 (PDT)
+Date: Tue, 28 Jul 2026 14:17:42 +0530
 From: Viresh Kumar <viresh.kumar@linaro.org>
 To: Priya Bala Govindasamy <pgovind2@uci.edu>
-Cc: rafael@kernel.org, ojeda@kernel.org, aliceryhl@google.com, 
-	gary@garyguo.net, boqun@kernel.org, rust-for-linux@vger.kernel.org, 
-	linux-pm@vger.kernel.org, ardalan@uci.edu, zhiyunq@cs.ucr.edu, dzueck@uci.edu, 
-	ytan089@ucr.edu
-Subject: Re: [PATCH v3] rust: cpufreq: Fix temporary write in
- Registration::bios_limit_callback
-Message-ID: <dwdbn7ea6evjhxtpobcg3cxgi3shb65ddsvk6xrqbujbq22hqz@5hxvifua2zyo>
-References: <c38ed08b34af92e134f5aefc993d349bd1dd11ef.1784569723.git.pgovind2@uci.edu>
+Cc: rafael@kernel.org, ojeda@kernel.org, boqun@kernel.org, 
+	rust-for-linux@vger.kernel.org, linux-pm@vger.kernel.org, ardalan@uci.edu, zhiyunq@cs.ucr.edu, 
+	dzueck@uci.edu, ytan089@ucr.edu
+Subject: Re: [PATCH v2] rust: cpufreq: Add CPUFREQ_TABLE_END as last table
+ entry in TableBuilder::to_table
+Message-ID: <qyjrkxlyqgn5wpfl456mdhwidouupghnaaznsisotri7bkqvl4@4xe5y46nzehh>
+References: <4dcb9b9c756e413c13616e46cb27669bc5b32cf5.1784576749.git.pgovind2@uci.edu>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -78,44 +77,34 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <c38ed08b34af92e134f5aefc993d349bd1dd11ef.1784569723.git.pgovind2@uci.edu>
+In-Reply-To: <4dcb9b9c756e413c13616e46cb27669bc5b32cf5.1784576749.git.pgovind2@uci.edu>
 
-On 20-07-26, 18:00, Priya Bala Govindasamy wrote:
-> In `Registration::bios_limit_callback`, the expression
-> `&mut (unsafe { *limit })` creates a reference to a temporary copy
-> of the value pointed to by `limit` on the stack.
-> Therefore, writes made by `T::bios_limit` go to this temporary
-> instead of the memory location pointed to by `limit`.
+On 20-07-26, 20:50, Priya Bala Govindasamy wrote:
+> The `TableBuilder::to_table` function adds `Hertz(c_ulong::MAX).as_khz()`
+> as the last frequency entry in the frequency table.
+> But the C API expects the last entry to have frequency set to
+> `CPUFREQ_TABLE_END` which is `~1u` as per include/linux/cpufreq.h.
 > 
-> Additionally, `limit` may be uninitialized, such as when
-> `Registration::bios_limit_callback` is invoked by `show_bios_limit`
-> in drivers/cpufreq/cpufreq.c. Therefore creating a reference to 
-> `limit` is unsound.
+> Fix this by setting the last frequency entry to `CPUFREQ_TABLE_END`
+> instead of `Hertz(c_ulong::MAX).as_khz()`.
 > 
-> Fix this by changing the signature of `T::bios_limit` to return the limit
-> value.
-> `Registration::bios_limit_callback` can then update `limit` directly.
-> 
-> Fixes: c6af9a1191d042839e56abff69e8b0302d117988 ("rust: cpufreq: Extend abstractions for driver registration")
+> Fixes: 2207856ff0bc8d953d6e89bda70b8978c2de8bab ("rust: cpufreq: Add initial abstractions for cpufreq framework")
 > Reported-by: Dylan Zueck<dzueck@uci.edu>
 > Reported-by: Yuan Tan<ytan089@ucr.edu>
-> Assisted-by: ChatGPT:gpt-5.4
+> Assisted-by: ChatGPT:gpt-5.6-terra
 > Signed-off-by: Priya Bala Govindasamy<pgovind2@uci.edu>
 > 
-> changes in v3:
->  - Update documentation for `bios_limit`
->  - Use direct raw pointer assignment instead of non-dropping write for
->    `limit`
->  - v2 Link: https://lore.kernel.org/rust-for-linux/2fd4425697efb6d52459cd886115edd281bd5f44.1784155370.git.pgovind2@uci.edu/
->  - v1 Link: https://lore.kernel.org/rust-for-linux/cover.1783456063.git.pgovind2@uci.edu/T/#t
+> Changes in v2:
+>  - Create `TableBuilder::push` method to add entries to the table
+>    without converting the frequency to kHz.
+>  - `TableBuilder::add` now internally uses `TableBuilder::push` to add
+>    entries to the table after converting the frequency to kHz.
+>  - Use the new `TableBuilder::push` method to add to the last table
+>    entry.
+>  - Link to v1: https://lore.kernel.org/rust-for-linux/cover.1783548374.git.pgovind2@uci.edu/T/#t
 > ---
-
-The above part which shouldn't be part of the commit (Changes in v3),
-should be added here after the `---` line. Else git am picks this up
-as well in commit log.
-
->  rust/kernel/cpufreq.rs | 9 ++++++---
->  1 file changed, 6 insertions(+), 3 deletions(-)
+>  rust/kernel/cpufreq.rs | 13 +++++++++----
+>  1 file changed, 9 insertions(+), 4 deletions(-)
 
 Applied. Thanks.
 
