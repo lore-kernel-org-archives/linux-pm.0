@@ -1,199 +1,114 @@
-Received: from mailgw.kylinos.cn (mailgw.kylinos.cn [124.126.103.232])
+Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1EE712EEE90;
-	Tue, 28 Jul 2026 02:46:17 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=124.126.103.232
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2C97F4908D5;
+	Tue, 28 Jul 2026 02:49:08 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.180.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1785206780; cv=none; b=mkQlgsRbkLoCtfNmeoEiYvcNqRqLDPVI2bfvePg1pPTtiuaspiplm7483dODRpST8oH7JOsFUNA7R8lD6YFPotc60K8CPKvNLxVP49IWI/UP2qOxD+RqMmQ5By8HL5k8UjqM4Vhxz25Zvlg6MhH7QvLj02fFjckTHTVcHU1h3pM=
+	t=1785206950; cv=none; b=JDFXYPyDc+wdcm1adaYdnaz6F3jZnhZ5l/+XQGmsVznqNm0Sm5Pkhr1nGhpk/fRg1+X9TEo0QSY2Uo1Dhez8DfQtwL1QRPnLQw46Q4H1jmIk5uQzPDmgqbDZu6GtWQBhL09e5PFHQBmhEej5cDVKpl/5CQnwDSLGyL1ZxOImjzQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1785206780; c=relaxed/simple;
-	bh=+U/z1msrg3CYonScQa4aeTQHExXHzJGQwBwyArnQUW0=;
-	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=NwXtNJpnwP83GJPyXmyB9Yv5DZ1++REo8aIa7fehi+p5B6rWckwryhQ6XCO5VX+410c4oabAa5MsWmxXZV7ySneD4ge3gopU3TnmlaBraCBg0rFTZ1hdS1HJ2n68oSinzzAqBoJHDPsNn7pnlB4RzSqa2rCI6hs894AC7j6X688=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kylinos.cn; spf=pass smtp.mailfrom=kylinos.cn; arc=none smtp.client-ip=124.126.103.232
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kylinos.cn
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=kylinos.cn
-X-UUID: 7b2e9ce08a2e11f1aa26b74ffac11d73-20260728
-X-CID-P-RULE: Release_Ham
-X-CID-O-INFO: VERSION:1.3.12,REQID:c79008cd-69f3-47ea-8d8e-e942d57ed68c,IP:0,U
-	RL:0,TC:0,Content:0,EDM:0,RT:0,SF:0,FILE:0,BULK:0,RULE:Release_Ham,ACTION:
-	release,TS:0
-X-CID-META: VersionHash:e7bac3a,CLOUDID:d2649bd3603f15ee24ec0c4601c2a7c2,BulkI
-	D:nil,BulkQuantity:0,Recheck:0,SF:81|82|102|850|865|898,TC:nil,Content:0|1
-	5|50,EDM:-3,IP:nil,URL:0,File:nil,RT:nil,Bulk:nil,QS:nil,BEC:nil,COL:0,OSI
-	:0,OSA:0,AV:0,LES:1,SPR:NO,DKR:0,DKP:0,BRR:0,BRE:0,ARC:0
-X-CID-BVR: 2,SSN|SDN
-X-CID-BAS: 2,SSN|SDN,0,_
-X-CID-FACTOR: TF_CID_SPAM_SNR
-X-CID-RHF: D41D8CD98F00B204E9800998ECF8427E
-X-UUID: 7b2e9ce08a2e11f1aa26b74ffac11d73-20260728
-X-User: lilinmao@kylinos.cn
-Received: from localhost.localdomain [(10.44.16.150)] by mailgw.kylinos.cn
-	(envelope-from <lilinmao@kylinos.cn>)
-	(Generic MTA with TLSv1.3 TLS_AES_256_GCM_SHA384 256/256)
-	with ESMTP id 748232452; Tue, 28 Jul 2026 10:46:06 +0800
-From: Linmao Li <lilinmao@kylinos.cn>
-To: Sebastian Reichel <sre@kernel.org>
-Cc: Waqar Hameed <waqar.hameed@axis.com>,
-	linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	Linmao Li <lilinmao@kylinos.cn>
-Subject: [PATCH v2 1/2] power: supply: bq25630: Scope battery information to bq25630_setup()
-Date: Tue, 28 Jul 2026 10:45:57 +0800
-Message-Id: <20260728024558.3611522-2-lilinmao@kylinos.cn>
-X-Mailer: git-send-email 2.25.1
-In-Reply-To: <20260728024558.3611522-1-lilinmao@kylinos.cn>
-References: <20260728024558.3611522-1-lilinmao@kylinos.cn>
+	s=arc-20240116; t=1785206950; c=relaxed/simple;
+	bh=SdnzaNponC8K8aEpuIfM/Pomn7Z72ppEXNDIvkqCTPE=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=r0AJnq90KftCb4CQMG75d4cFsKJ1vxpvRw3HgEmQfzlczuDISbiS9GRxIMW8JRA6zUYuzH2QkEKj6vguc6J3utPA4D7Tv3R9Hzg0YPDuSEOJTV/9aRrGtUEkxZMxZkbep314SOSmKLp1KP1XEsRjcOnidOBXS/+kQSUnqE+K7is=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=qti.qualcomm.com; spf=pass smtp.mailfrom=qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=DzLCHAT4; arc=none smtp.client-ip=205.220.180.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=qti.qualcomm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=qualcomm.com
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="DzLCHAT4"
+Received: from pps.filterd (m0279868.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 66S0ktqn1165824;
+	Tue, 28 Jul 2026 02:49:01 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-transfer-encoding:date:from:message-id:mime-version
+	:subject:to; s=qcppdkim1; bh=NTbyiIYbQDf/iOr4Hu4MyioEXHrrpQ6oqDk
+	uRdUsc9A=; b=DzLCHAT4ZeIgQvFwhOej3uDdMs/bxnJFAFDcjagpUCpkfPl62zb
+	VELjHug9pKdcGwC+5eXXYFbK1497yxPz525XzT3tQEifNbWkViAlIW62bKGJlUHM
+	g4B3vBYCHEUzKrjcBD0NKjgT7g6xsQx8Wfl+EnoQCkpdf9leWAr62yvrvAHD1GVj
+	mfodg693EBbhlcH9voatbkvmGG8OeVkFJeqCWpjPX/Gw6U0DySz5HtOR7wZvD47O
+	FMiZxEBEyKtgnsYF0M08mgf701cVv/gQ4ctPS2qrwODKEe9vstC4fK/Qzlja/YBs
+	h29/8v4/0nEdlv+kv91NgpdwIt6kkJW6I4Q==
+Received: from nalasppmta03.qualcomm.com (Global_NAT1.qualcomm.com [129.46.96.20])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4fp4ukuynq-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 28 Jul 2026 02:49:00 +0000 (GMT)
+Received: from pps.filterd (NALASPPMTA03.qualcomm.com [127.0.0.1])
+	by NALASPPMTA03.qualcomm.com (8.18.1.7/8.18.1.7) with ESMTP id 66S2mxbZ019674;
+	Tue, 28 Jul 2026 02:48:59 GMT
+Received: from pps.reinject (localhost [127.0.0.1])
+	by NALASPPMTA03.qualcomm.com (PPS) with ESMTPS id 4fpgxn1arb-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 28 Jul 2026 02:48:59 +0000 (GMT)
+Received: from NALASPPMTA03.qualcomm.com (NALASPPMTA03.qualcomm.com [127.0.0.1])
+	by pps.reinject (8.18.1.12/8.18.1.12) with ESMTP id 66S2mxN0019668;
+	Tue, 28 Jul 2026 02:48:59 GMT
+Received: from hu-devc-lv-u22-c.qualcomm.com (hu-jipihuan-lv.qualcomm.com [10.81.95.164])
+	by NALASPPMTA03.qualcomm.com (PPS) with ESMTPS id 66S2mx58019667
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 28 Jul 2026 02:48:59 +0000 (GMT)
+Received: by hu-devc-lv-u22-c.qualcomm.com (Postfix, from userid 4741875)
+	id 86B81ABD; Mon, 27 Jul 2026 19:48:59 -0700 (PDT)
+From: jipinghuang <jipihuan@qti.qualcomm.com>
+To: rafael@kernel.org, daniel.lezcano@kernel.org
+Cc: rui.zhang@intel.com, lukasz.luba@arm.com, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org, jipinghuang <jipihuan@qti.qualcomm.com>
+Subject: [PATCH] Fixed a bug related to thermal framework boundary conditions: trip points do not need to be updated when polling is active, whereas they must be update to re-enable the irq when polling is inactive
+Date: Mon, 27 Jul 2026 19:48:56 -0700
+Message-Id: <20260728024856.1596951-1-jipihuan@qti.qualcomm.com>
+X-Mailer: git-send-email 2.34.1
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=y
 Content-Transfer-Encoding: 8bit
+X-QCInternal: smtphost
+X-QCInternal: smtphost
+X-Proofpoint-GUID: -8WAZY9_fbJFB7FmNV5opdzd5jZoLcSU
+X-Proofpoint-ORIG-GUID: -8WAZY9_fbJFB7FmNV5opdzd5jZoLcSU
+X-Proofpoint-Spam-Info: AW1haW4tMjYwNzI4MDAyMyBTYWx0ZWRfX5vV0S+6FcRLh
+ ckj8myV0R4He7+vzG9Nwjks0hkh/f9jlbI5QEuw4Jb3OEu1LZilaWI37gCBqWoiNmubuzO/mPHh
+ nOxxB63RpjLHwz5B313TZWrYYrQc6Y0=
+X-Authority-Analysis: v=2.4 cv=PeHPQChd c=1 sm=1 tr=0 ts=6a68189c cx=c_pps
+ a=ouPCqIW2jiPt+lZRy3xVPw==:117 a=ouPCqIW2jiPt+lZRy3xVPw==:17
+ a=vB7aHD0Tg5Jax0qT:21 a=RAioF0-LDSMA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=u7WPNUs3qKkmUXheDGA7:22 a=ZpdpYltYx_vBUK5n70dp:22 a=EUspDBNiAAAA:8
+ a=K9TXTzV5CTbLTHSpVscA:9
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzI4MDAyMyBTYWx0ZWRfX3z2RV8KCjTm9
+ rlt5sZLTDkWD2+5BcV9LVMM/MJlKZSe0g4zGQBj+dLoOC5qZVfP89W6gkY40nGxE7CeXcwRCM88
+ 1dpZxyI8TCYQWeu5qY6AMxnYnTjeSZNBX9LthU5YwOajCrqcGBD/chOv+AF4wusWdzCs9vH34+u
+ DzfWFxNNUJID+LhS7xgL8ErFGBDETDZPZptoJtZaHQ2XW9R/xMVor5BaLIRFO+p65IpHP4XQZ7p
+ hlutFgv5Yz5ftsJSVMUGdRTT4qrr0yjsFCUYczgWpo0/EVDTP0wr5QhFmWG38R/6pxPaaw68ID3
+ S5cMBSe7ctTfPpWYYHUB7fP9nwgwlC2Y6Dkvp+qH/3wdmBW8caWOJ3rxgYz697BoaGmPsdNZri2
+ LmAN4yD8S+R1TZpg+zseUoSQ/9blJe5HIe+shEv45r9uIqV/XfSJQahw0chOA8227gOr6MiKb3w
+ ifamWFTyWbx0yQ047Ig==
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.134,FMLib:17.12.100.49
+ definitions=2026-07-27_07,2026-07-27_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ impostorscore=0 malwarescore=0 clxscore=1015 adultscore=0 spamscore=0
+ phishscore=0 lowpriorityscore=0 bulkscore=0 priorityscore=1501 suspectscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2607280023
 
-data->batinfo is only used by bq25630_setup() to program the initial
-charge limits, but power_supply_get_battery_info() allocates it on
-psy->dev, so it stays around for the lifetime of the device. Nothing
-else in the driver uses it.
-
-Get the battery information in bq25630_setup(), just before it is read,
-and release it on every path out of that function. The driver data no
-longer has to carry the pointer.
-
-Signed-off-by: Linmao Li <lilinmao@kylinos.cn>
+Signed-off-by: jipinghuang <jipihuan@qti.qualcomm.com>
 ---
- drivers/power/supply/bq25630_charger.c | 47 ++++++++++++++------------
- 1 file changed, 25 insertions(+), 22 deletions(-)
+ drivers/thermal/thermal_trip.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/power/supply/bq25630_charger.c b/drivers/power/supply/bq25630_charger.c
-index 165f8c67b489..9b5f524505d3 100644
---- a/drivers/power/supply/bq25630_charger.c
-+++ b/drivers/power/supply/bq25630_charger.c
-@@ -356,7 +356,6 @@ struct bq25630_data {
- 	struct regmap_field *regfields[BQ25630_REGF_MAX];
+diff --git a/drivers/thermal/thermal_trip.c b/drivers/thermal/thermal_trip.c
+index 4b8238468b53..b6f868f7a310 100644
+--- a/drivers/thermal/thermal_trip.c
++++ b/drivers/thermal/thermal_trip.c
+@@ -61,7 +61,7 @@ void thermal_zone_set_trips(struct thermal_zone_device *tz, int low, int high)
+ 		return;
  
- 	struct power_supply *psy;
--	struct power_supply_battery_info *batinfo;
+ 	/* No need to change trip points */
+-	if (tz->prev_low_trip == low && tz->prev_high_trip == high)
++	if (tz->prev_low_trip == low && tz->prev_high_trip == high && tz->temperature >= trip_temp)
+ 		return;
  
- 	/* State status from IRQs. */
- 	u8 statregs[BQ25630_NR_STAT_REGS];
-@@ -668,6 +667,7 @@ static int bq25630_reset(struct bq25630_data *data)
- 
- static int bq25630_setup(struct bq25630_data *data)
- {
-+	struct power_supply_battery_info *batinfo;
- 	int ret;
- 
- 	ret = bq25630_reset(data);
-@@ -684,69 +684,77 @@ static int bq25630_setup(struct bq25630_data *data)
- 		return ret;
- 	}
- 
-+	ret = power_supply_get_battery_info(data->psy, &batinfo);
-+	if (ret)
-+		return dev_err_probe(data->dev, ret,
-+				     "Could not get battery info\n");
-+
- 	/*
- 	 * Set values according to battery info. Warn on missing "dangerous"
- 	 * properties.
- 	 */
--	if (data->batinfo->voltage_min_design_uv >= 0) {
-+	if (batinfo->voltage_min_design_uv >= 0) {
- 		ret = bq25630_write_limit(data, BQ25630_REGF_VSYSMIN,
- 					  BQ25630_VSYSMIN_MIN,
- 					  BQ25630_VSYSMIN_MAX,
- 					  BQ25630_VSYSMIN_STEP,
- 					  BQ25630_VSYSMIN_MIN_REGVAL,
--					  data->batinfo->voltage_min_design_uv);
-+					  batinfo->voltage_min_design_uv);
- 		if (ret)
--			return ret;
-+			goto out_put_batinfo;
- 	} else
- 		dev_warn(data->dev,
- 			 "Using default value for minimum voltage\n");
- 
--	if (data->batinfo->constant_charge_voltage_max_uv >= 0) {
-+	if (batinfo->constant_charge_voltage_max_uv >= 0) {
- 		ret = bq25630_write_limit(
- 			data, BQ25630_REGF_VREG, BQ25630_VREG_MIN,
- 			BQ25630_VREG_MAX, BQ25630_VREG_STEP,
- 			BQ25630_VREG_MIN_REGVAL,
--			data->batinfo->constant_charge_voltage_max_uv);
-+			batinfo->constant_charge_voltage_max_uv);
- 		if (ret)
--			return ret;
-+			goto out_put_batinfo;
- 	} else
- 		dev_warn(data->dev,
- 			 "Using default value for maximum constant charge voltage\n");
- 
--	if (data->batinfo->constant_charge_current_max_ua >= 0) {
-+	if (batinfo->constant_charge_current_max_ua >= 0) {
- 		ret = bq25630_write_limit(
- 			data, BQ25630_REGF_ICHG, BQ25630_ICHG_MIN,
- 			BQ25630_ICHG_MAX, BQ25630_ICHG_STEP,
- 			BQ25630_ICHG_MIN_REGVAL,
--			data->batinfo->constant_charge_current_max_ua);
-+			batinfo->constant_charge_current_max_ua);
- 		if (ret)
--			return ret;
-+			goto out_put_batinfo;
- 	} else
- 		dev_warn(data->dev,
- 			 "Using default value for maximum constant charge current\n");
- 
--	if (data->batinfo->charge_term_current_ua >= 0) {
-+	if (batinfo->charge_term_current_ua >= 0) {
- 		ret = bq25630_write_limit(
- 			data, BQ25630_REGF_ITERM, BQ25630_ITERM_MIN,
- 			BQ25630_ITERM_MAX, BQ25630_ITERM_STEP,
- 			BQ25630_ITERM_MIN_REGVAL,
--			data->batinfo->charge_term_current_ua);
-+			batinfo->charge_term_current_ua);
- 		if (ret)
--			return ret;
-+			goto out_put_batinfo;
- 	}
- 
--	if (data->batinfo->precharge_current_ua >= 0) {
-+	if (batinfo->precharge_current_ua >= 0) {
- 		ret = bq25630_write_limit(data, BQ25630_REGF_IPRECHG,
- 					  BQ25630_IPRECHG_MIN,
- 					  BQ25630_IPRECHG_MAX,
- 					  BQ25630_IPRECHG_STEP,
- 					  BQ25630_IPRECHG_MIN_REGVAL,
--					  data->batinfo->precharge_current_ua);
-+					  batinfo->precharge_current_ua);
- 		if (ret)
--			return ret;
-+			goto out_put_batinfo;
- 	}
- 
--	return 0;
-+out_put_batinfo:
-+	power_supply_put_battery_info(data->psy, batinfo);
-+
-+	return ret;
- }
- 
- static int bq25630_charger_get_property(struct power_supply *psy,
-@@ -1024,11 +1032,6 @@ static int bq25630_probe(struct i2c_client *client)
- 		return dev_err_probe(data->dev, PTR_ERR(data->psy),
- 			      "Could not register power supply\n");
- 
--	ret = power_supply_get_battery_info(data->psy, &data->batinfo);
--	if (ret)
--		return dev_err_probe(data->dev, ret,
--				     "Could not get battery info\n");
--
- 	/*
- 	 * Device sends active low 256 µs pulse to report status and fault.
- 	 *
+ 	tz->prev_low_trip = low;
 -- 
-2.25.1
+2.34.1
 
