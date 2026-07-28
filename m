@@ -1,64 +1,63 @@
-Received: from mail-ot1-f51.google.com (mail-ot1-f51.google.com [209.85.210.51])
+Received: from mail-oo1-f51.google.com (mail-oo1-f51.google.com [209.85.161.51])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 450583EF650
-	for <linux-pm@vger.kernel.org>; Tue, 28 Jul 2026 07:31:57 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.210.51
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3DC9B3F4DDC
+	for <linux-pm@vger.kernel.org>; Tue, 28 Jul 2026 07:32:00 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.161.51
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1785223919; cv=none; b=IE+GEnWSP5zKNzpbvLBKmIUtF96750Vn6xJtbX5QihImAJWkqGa0d8qdqM1v6JHA+rJw5ePoXzI364Z6kyyYDkl51MEtqssbbnf4wL2UtDTfAmQ7yEKbMjPOwl5CVEfG/eJhIIHh8h7ab1XR5OwvtHxtPBdX3XqO2t4YOfFIX50=
+	t=1785223921; cv=none; b=eqlYXk8+GsOZCqsAPhYSxeI4Ie2EjrSuhEWMZ6D3a1XDU6C7pNTN8DNn1ggMN08NluscRY7ANIyZskJJjqDfndEDiM1zJ+Drf3K1vEqWHf365aWqokhHKksVcoH6H8Ehp/boE7ykXo2bSRUWWY7C/KYjPmk7qHMTnKJEJ2IZt74=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1785223919; c=relaxed/simple;
-	bh=nHz26HyX2icLFETYR9Iev6Jeil3DeEl+pOtquaWQhWI=;
+	s=arc-20240116; t=1785223921; c=relaxed/simple;
+	bh=8BdMURF69/uBF2yJWJR2TWG337rslns4sjCBwv/dzXg=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=Pc3/3798Mrp/uA8Ga0b+LVQGvF8ya5EWBUrsMTluBSz/bFYj8RTySux71/2PmY70sFGYXjw4YsOqREaHu5iKZXQiScZO3H6hBkTXa8Zz655bl1hZx8esZwyhDi0SftMv0J8S+EaxlbmLTr/5Ep2iAy+afiFpMtOApWIqkKbrlts=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=manifault.com; spf=pass smtp.mailfrom=manifault.com; dkim=pass (2048-bit key) header.d=manifault-com.20251104.gappssmtp.com header.i=@manifault-com.20251104.gappssmtp.com header.b=eBUiDwtn; arc=none smtp.client-ip=209.85.210.51
+	 MIME-Version; b=aPWYjo9C8xNdzgeOl/IyOgjGML1sFBDoMLTz9vizNiWBAwinXOkTHB0KCAHiJrFFzLO0LzlOYc5plvFw/tj0wdZCjd84ESC6R5hbPP4aiZZzTXgUoCEq2z8RfkeOaflmk4utl6jEYUcgkyNL+aylqKVrMFDq78+ruTuAU+9sD+4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=manifault.com; spf=pass smtp.mailfrom=manifault.com; dkim=pass (2048-bit key) header.d=manifault-com.20251104.gappssmtp.com header.i=@manifault-com.20251104.gappssmtp.com header.b=z0Dw9ttQ; arc=none smtp.client-ip=209.85.161.51
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=manifault.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=manifault.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=manifault-com.20251104.gappssmtp.com header.i=@manifault-com.20251104.gappssmtp.com header.b="eBUiDwtn"
-Received: by mail-ot1-f51.google.com with SMTP id 46e09a7af769-7e9eaf04bfaso1092413a34.1
-        for <linux-pm@vger.kernel.org>; Tue, 28 Jul 2026 00:31:57 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=manifault-com.20251104.gappssmtp.com header.i=@manifault-com.20251104.gappssmtp.com header.b="z0Dw9ttQ"
+Received: by mail-oo1-f51.google.com with SMTP id 006d021491bc7-6aae2766d48so516341eaf.0
+        for <linux-pm@vger.kernel.org>; Tue, 28 Jul 2026 00:32:00 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=manifault-com.20251104.gappssmtp.com; s=20251104; t=1785223916; x=1785828716; darn=vger.kernel.org;
+        d=manifault-com.20251104.gappssmtp.com; s=20251104; t=1785223919; x=1785828719; darn=vger.kernel.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=l5A0TG1ydLAI7SFr9to4UPVUQL8Gvvi1TATrMVTL7lw=;
-        b=eBUiDwtnvdrs0NllzmxWMNYrNHjQ1q5ztSZhJ5XmgRyFwFIhEa5B+tGai7ezrw8kc4
-         Yt8Tuv62yeCzwb/PFoV8DkPYNHVTZX/PM8X8fInyNYZsZxQKiyU/Hz622zxA+5flmx7Y
-         9nkNUr1qZYgbfCAKV5k+WejjFY5tyEh7W7VjcVMOfJnSOQOkHRMJleoft4sbOIIVjfk1
-         EEi87pvuEIF4xdah+J6/tOY7U/ksoXKmqmZnM6jsaS+Z7sIffC8Q9Pp7JXr8WWR9FWqZ
-         ERD2EdEirfz3kqI0/Ri8VCMJmzEAMpufq1/91yYuGsmgLEKXIGb/ABRp4HoPbU4XlhZy
-         M2bg==
+        bh=aKsoUL/x0BWL8hOHZwkWcIVk7QHl+uLVAwgOItINi2Y=;
+        b=z0Dw9ttQQ7hpjlkPwvqTuLQI8fkWkm8fynB7NVpWbnOLOZMjdIIm7SqcpwFlewuGYe
+         q/yudp65j6veEOQGmcKC/QLrCEmzNeaiU4XllPaBJR0lNZOKs3/EQwCubYdLX7IfuFEz
+         hiunQabF6ZKqh3GLdiOCLe8loSZaxhBzcg4Gon1CgsCbgWmyjvIp23NwKWuwEXFoPZPP
+         Mj5hD0NldHv4s1J9VSoTfrHyN/Mv8ilRNv8Oalqi1RYsekITqCuFHb5khIP5UIxC4o2K
+         R0dHb/GIkemjGMMbQBRHMjE6NIDzhojHsn0evm6RiUpPqeRrBI1S8e9ntbQWEmbR4HfS
+         VsHw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1785223916; x=1785828716;
+        d=1e100.net; s=20251104; t=1785223919; x=1785828719;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=l5A0TG1ydLAI7SFr9to4UPVUQL8Gvvi1TATrMVTL7lw=;
-        b=YB8SG4Z8nCkK8hkc6xHvfBUHNTpSePt4swOY/xHkXTjwqmA4ZlfK0tdHCUGOksJ327
-         XNnQcDSRrj7AARr8USosFoznpdfJqzSO0s9BP3avdGIMpAy5O9E7XUt4iD0D7S6aGDoW
-         k/3zsB1ZbzPXk5TGFxoPd8DoDJACqNrYhe65m3Y5jD1pnzm3yMAFy3rkqIxKRupyNu3j
-         CuSU4I/x/9f0FYbUIYgtcL2ybVaSGWJCCpTKx1wrL/zOXICDiKrsbpiwFnAdGvmL1mOP
-         kRMcttpbmsuVTJciLKAMKt4x9Pb4c2Y0YP2xZNnKwIm41HnXgsaLCo+Uc2EzE/aucycQ
-         VlJw==
-X-Forwarded-Encrypted: i=1; AHgh+Rp7eGOY1lQmek5DprVJlxV2vFp5MzSy8JDXa5GJgDIZk73LQLxBMTufkqYMUsAOe4aSdlIElXXNiQ==@vger.kernel.org
-X-Gm-Message-State: AOJu0YxI+NKNmvTA9tXfLFpWsGYtqWHOPP6jKE8TeHUyRNbZMgn8gY8W
-	8qrXo57F98EW08XdHkUGzNQJIb/zymDFctPaRWkiPgNWVv2xAwroyatIu64efGiqRbZ4HJrSr+/
-	5BfL3ScYI
-X-Gm-Gg: AR+sD11CIlBRUEvjclFmm3WM1fUyMHlgeRhriBvGP+KMcFynVXGh90M2YceI2SXyEy0
-	mEttqlnqsh03W7WhbVPoCWdRXC7PHy9DmdQy5zLMdD/z2qZDr9dQkZ3J4bpF0UrgWHVB17UlG3Z
-	2+dIbDaiD+CxWOOjZNCNdL1LUDwODIqMDcZVKHbY5aFqi8dFgY/ynIpKvQJac/Jrrr5lcBn9cWO
-	9U82AitWdySctNe3UwzWZVZno3loLbVvZMfs/QFEdtt3ERZKi1nsVJjdWGJeeyA0TOa7XNqLuGg
-	6QEPyCLi3yksg7I/yNoIwXPRDNMnYCEwsFs9Fk81YNODP4XoEMGKNGWZZS2TqkRWdXO+Gmpw5G0
-	uT0ZoeSBwb4ZVgjLRilaOJuAD0gjqs13oFeItSjX6/Hn9zd/4xpMiQvYsiO2YWWE4oBU5ju1AQD
-	4ISLicNZQPLDxlC9ll7dDfRnht8DitGeAmuox+1Q==
-X-Received: by 2002:a05:6830:928:b0:7e9:5022:3639 with SMTP id 46e09a7af769-7efff036be0mr1163450a34.15.1785223916145;
-        Tue, 28 Jul 2026 00:31:56 -0700 (PDT)
+        bh=aKsoUL/x0BWL8hOHZwkWcIVk7QHl+uLVAwgOItINi2Y=;
+        b=FVPg6+epkUsNwuULuLV5PTIKjErh4Hi5tQc7GAhb9E4Qvhm0rSno9RejR/fO6fv2Kj
+         RideDiFbfd75F+3EduJsH0l1qdRmn0NuouE569TnwuYWsKFVnKOzYslSxSytBDHAP6lF
+         UIr5ryzcTVHmpb3Yes7CNCOkReiLDEmdhac9onqK/qQfjqIY2jIE383HIONh1FIP7SYi
+         vyj5PIH2aF6WjaIgFkSxE70RN34DPrgcQvDdXRuwJDprub8COIVuPhxoHiWpLej6RRbk
+         FXyr3nLLrETu/MzH+NV0P0b3ErQ9SNiIqCXei22+fvJZ+ErpO086c2LdXq+W+UfQT4ZL
+         QcZg==
+X-Forwarded-Encrypted: i=1; AHgh+RpytMEK+/lsq9caS5/epzvDI9hCweLy4T7rbx9qgo1OHZWcOxBOsLtq9rosJoe+ghWZb+4fJDGtgw==@vger.kernel.org
+X-Gm-Message-State: AOJu0YyA6T18IGJspPhwNCjS3cT5Vx85u3pR80jv1oGZY5WRD6FGoFSF
+	HptBX/B1GdtzVd3N+5oGmW+cpclJ1MUBOcFcdSAWgbvBfz6W35mkKV40Ulb4KJRQUq0I
+X-Gm-Gg: AR+sD11JFd08+aFXKM8PTTUkFws+YSzit4DQCn0JxgaST7fhBFPoPEP4fqMXwNVXyjM
+	YD3DnPGp8gdpOlMF7FuYchV7iOLqGYTVUz8Il4T1RAEqe68ouMjEpft6udmy+AvNAA/uFDlubUa
+	UH8JKqr1Sx726GQheg9cMvn+NYjeR4DThldermEGnE/JLeQvrIuGd3PLpvbCFRfqdhC6z0L3UDu
+	uRRDRAU4ydFvDaEzztaYo640mY1HhXty3p+WtOS0HAwJQpZlD+xwrNmQeqCGv62g4FehM4J3q41
+	xOECyUtDsLZdUs2vTpYfylYW5Dj30Y8gaEmeFJCGRrkvVyYZyLafB2ei3i9LRaHQYFM15zDD+oS
+	rOkTBBzaYxZHFUnEdUzfsjVIHDvT+ktguD+QtyWj3KgIypOfNH7roN619HMOOD5HFnLIqCei7tf
+	lH5ZaWVr/x285UM39oMQsrzpDeP1jTNkRPJYH5O1q0GkDqVjgc
+X-Received: by 2002:a05:6820:80cc:b0:6aa:dfbc:65ab with SMTP id 006d021491bc7-6ac969f1caemr610511eaf.5.1785223914280;
+        Tue, 28 Jul 2026 00:31:54 -0700 (PDT)
 Received: from localhost (c-76-141-129-107.hsd1.il.comcast.net. [76.141.129.107])
-        by smtp.gmail.com with ESMTPSA id 46e09a7af769-7ee2a108679sm14304390a34.27.2026.07.28.00.31.55
+        by smtp.gmail.com with ESMTPSA id 46e09a7af769-7ee2a102120sm14168192a34.26.2026.07.28.00.31.53
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 28 Jul 2026 00:31:55 -0700 (PDT)
+        Tue, 28 Jul 2026 00:31:53 -0700 (PDT)
 From: David Vernet <void@manifault.com>
 To: "Rafael J. Wysocki" <rafael@kernel.org>
 Cc: Mario Limonciello <mario.limonciello@amd.com>,
@@ -67,9 +66,9 @@ Cc: Mario Limonciello <mario.limonciello@amd.com>,
 	linux-kernel@vger.kernel.org,
 	=?UTF-8?q?Andr=C3=A9=20Almeida?= <andrealmeid@igalia.com>,
 	Changwoo Min <changwoo@igalia.com>
-Subject: [RFC PATCH 2/4] cpufreq/amd-pstate: Update cppc_req_cached before writing the MSR
-Date: Tue, 28 Jul 2026 02:31:48 -0500
-Message-ID: <20260728073150.54964-3-void@manifault.com>
+Subject: [RFC PATCH 1/4] cpufreq/amd-pstate: Document missing kernel-doc members
+Date: Tue, 28 Jul 2026 02:31:47 -0500
+Message-ID: <20260728073150.54964-2-void@manifault.com>
 X-Mailer: git-send-email 2.53.0
 In-Reply-To: <20260728073150.54964-1-void@manifault.com>
 References: <20260728073150.54964-1-void@manifault.com>
@@ -81,72 +80,40 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-msr_update_perf() and msr_set_epp() currently write MSR_AMD_CPPC_REQ
-first and update cppc_req_cached only after the write succeeds. This
-leaves a window in which the MSR holds the new request while the cache
-holds the previous one. That's fine right now, but a subsequent patch
-will add a per-core EPP boost that runs from scheduling context and
-mutates that MSR from the contents of the cached value. If we update the
-cache after writing the MSR, the sched callback could run between the
-wrmsrq and the cache being updated, and accidentally overwrite the
-intended value of the MSR by issuing a wrmsrq on the stale cached value.
-
-To avoid this, let's update the cache prior to the MSR write, as is done
-in intel_pstate_set_epp(). This should be a functional no-op.
+kernel-doc warns about five undescribed members in amd-pstate.h:
+union perf_cached's @val and struct amd_cpudata's @raw_epp,
+@current_profile, @ppdev and @profile_name. Describe them.
 
 Signed-off-by: David Vernet <void@manifault.com>
 ---
- drivers/cpufreq/amd-pstate.c | 16 +++++++++-------
- 1 file changed, 9 insertions(+), 7 deletions(-)
+ drivers/cpufreq/amd-pstate.h | 6 ++++++
+ 1 file changed, 6 insertions(+)
 
-diff --git a/drivers/cpufreq/amd-pstate.c b/drivers/cpufreq/amd-pstate.c
-index 6e255a22a0b8..5d7debb5a35c 100644
---- a/drivers/cpufreq/amd-pstate.c
-+++ b/drivers/cpufreq/amd-pstate.c
-@@ -262,17 +262,19 @@ static int msr_update_perf(struct cpufreq_policy *policy, u8 min_perf,
- 	if (value == prev)
- 		return 0;
- 
-+	WRITE_ONCE(cpudata->cppc_req_cached, value);
-+
- 	if (fast_switch) {
- 		wrmsrq(MSR_AMD_CPPC_REQ, value);
- 	} else {
- 		int ret = wrmsrq_on_cpu(cpudata->cpu, MSR_AMD_CPPC_REQ, value);
- 
--		if (ret)
-+		if (ret) {
-+			WRITE_ONCE(cpudata->cppc_req_cached, prev);
- 			return ret;
-+		}
- 	}
- 
--	WRITE_ONCE(cpudata->cppc_req_cached, value);
--
- 	return 0;
- }
- 
-@@ -312,16 +314,16 @@ static int msr_set_epp(struct cpufreq_policy *policy, u8 epp)
- 	if (value == prev)
- 		return 0;
- 
-+	WRITE_ONCE(cpudata->cppc_req_cached, value);
-+
- 	ret = wrmsrq_on_cpu(cpudata->cpu, MSR_AMD_CPPC_REQ, value);
- 	if (ret) {
-+		WRITE_ONCE(cpudata->cppc_req_cached, prev);
- 		pr_err("failed to set energy perf value (%d)\n", ret);
- 		return ret;
- 	}
- 
--	/* update both so that msr_update_perf() can effectively check */
--	WRITE_ONCE(cpudata->cppc_req_cached, value);
--
--	return ret;
-+	return 0;
- }
- 
- DEFINE_STATIC_CALL(amd_pstate_set_epp, msr_set_epp);
+diff --git a/drivers/cpufreq/amd-pstate.h b/drivers/cpufreq/amd-pstate.h
+index 23e8baa05849..99532595150e 100644
+--- a/drivers/cpufreq/amd-pstate.h
++++ b/drivers/cpufreq/amd-pstate.h
+@@ -32,6 +32,7 @@
+  * @min_limit_perf: Cached value of the performance corresponding to policy->min
+  * @max_limit_perf: Cached value of the performance corresponding to policy->max
+  * @bios_min_perf: Cached perf value corresponding to the "Requested CPU Min Frequency" BIOS option
++ * @val: Raw 64-bit value for atomic access via READ_ONCE()/WRITE_ONCE()
+  */
+ union perf_cached {
+ 	struct {
+@@ -89,7 +90,12 @@ struct amd_aperf_mperf {
+  * @epp_default_ac: Default EPP value for AC power source
+  * @epp_default_dc: Default EPP value for DC power source
+  * @dynamic_epp: Whether dynamic EPP is enabled
++ * @raw_epp: Whether the last EPP write was a raw numeric value rather than a
++ *	     named preference
+  * @power_nb: Notifier block for power events
++ * @current_profile: Currently selected platform profile option
++ * @ppdev: Device registered with the platform profile handler
++ * @profile_name: Name under which @ppdev is registered
+  *
+  * The amd_cpudata is key private data for each CPU thread in AMD P-State, and
+  * represents all the attributes and goals that AMD P-State requests at runtime.
 -- 
 2.53.0
 
