@@ -1,68 +1,64 @@
-Received: from BYAPR05CU005.outbound.protection.outlook.com (mail-westusazon11010001.outbound.protection.outlook.com [52.101.85.1])
+Received: from AS8PR04CU009.outbound.protection.outlook.com (mail-westeuropeazon11011047.outbound.protection.outlook.com [52.101.70.47])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EE9921A681E;
-	Tue, 28 Jul 2026 19:43:52 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.85.1
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D17A644C51A;
+	Tue, 28 Jul 2026 20:04:00 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.70.47
 ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1785267834; cv=fail; b=IDookeZ8L42A24FNtl6Uoo2eL5jM+DIlT5AbfHdGuL+wSXpRjoVHV1H4R+Dh7a55U8ISSD26L7Drr+GiJGKQ3JzC3nNklN+k6TCNpy5AJ9ZRdB1I3QPIbttJhjAwpgbPMQE8S3k2mjyn3txr2zhjllRWybH68ve0H53h8EIC7Ic=
+	t=1785269042; cv=fail; b=RSpsGU5/YSRa340QBz/j7iRnt1NvGz+4hzzOGTUZODykQdTDZcXbX+nTOeVP3HbHXbzqawvo4c1e+GVFVCarv9eQqtAageZlDuGdIZEHnZd3P/vv4sFZIZejwjzJMAgr51FQqgd3J0sBPzTj7JLGwCDl+nmbboEDTBwQJeh5TNI=
 ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1785267834; c=relaxed/simple;
-	bh=1kHQ0qdnSupoxy27OtN+mcdcUL4IVnJHOdX5r6xLGXw=;
-	h=Message-ID:Date:Subject:To:Cc:References:From:In-Reply-To:
-	 Content-Type:MIME-Version; b=t3Q6yMzsDc9uhxDBHt4OLB0I9og9xqMt98JqQ4jiKpxfG60nsbgGzGZpagHgvMaTGtmVQysSEemPyPDCJ2P0qYroFc+8VOTSpTWPeuErDx+L+c8XAFwUbsSIRtOfQhKiRDWOyI0Cg0HvsfBCa2thq+qAuFYE/k3Zhwfek3SL1QY=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com; spf=fail smtp.mailfrom=amd.com; dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b=sWTPXTO9; arc=fail smtp.client-ip=52.101.85.1
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com
-Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=amd.com
+	s=arc-20240116; t=1785269042; c=relaxed/simple;
+	bh=0Ww8C3COR8mXc6LbRjUMV7UDl1BPgvTQLUN0CbiIUb0=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:Content-Type:
+	 Content-Disposition:In-Reply-To:MIME-Version; b=aEPSC9pvj9ZsYtuwhUAFSalOBByKQMHng+Y58kku6sRRePnO7zcMJrIHvuDVtBcZlK4Q86VkLcPsDNBKs9T292BtsiPzjeMWPb/PtZ/XjpR52cx+mpxLeupdIGWyrEOMfqb8ujaVG/coIx5yZyVXLo3NLKpKlSWtYav8tRUH8Wk=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=oss.nxp.com; spf=pass smtp.mailfrom=oss.nxp.com; dkim=pass (2048-bit key) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.b=ozVOwboK; arc=fail smtp.client-ip=52.101.70.47
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=oss.nxp.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.nxp.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b="sWTPXTO9"
+	dkim=pass (2048-bit key) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.b="ozVOwboK"
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=Wk3dP+Q1f9WWz8IEdvIj8hQKjQTsOHAH7gHPc6s9VB8ERMi6phyQh47Ayh7V4ab/eNlNxRFRepK0EqU06j5JPTMBrCBcJ9f/MFwUBQc1edoDJgOyh+TzJ5363fz2oI7xb/Nf3lUg5NmBhZNoXUuF49sQYY364bJS9xp0tM4xNbn/hAkunFK729gGoka/HQo9o/60C6KsbTkjIFGW38I3fKhvU7Cc4Sw79K8gjCC/XngyUXVdlB88uNPTmWfnCxz0+hZK6+2i2BZb0+3ZgYxHomEFh11xi34FK43sqxhtYG+3PHhpcS1T1WMWNeSkO0QyvxcEj3myaC5Gn3tUXKQZng==
+ b=yPJ29mL9lXnIgI58OtDSg3T/MJn5uzigPuf2c3H74/nPsxewD7O+w2s7mUyM4rTIVF6b67c/unNN4hHfRNaThtWWNLEmKfFV++8nMrgn6bYGJ5t2wi6pJAd1VHTFLnUNSHenoqtLXtWa4V3/7nozECYpSm3zpP396y0NXxoYYAx7pQDosOiDHZ/dzl6wwk+I0k+epLSw17cJJb/S/wRi9RYuediJl3QoZQo9chLe7XZLzyJUJUFMarnrOJR/hGTenPL53F+vQEKvNtX9tSMrKIIBpuDwFqf7p/SFVPIyjkELZqG9KvDJItO3ifEPlTH+gjjGctbGnVVwenN1XjVzQw==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector10001;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=J/zKGme/lwRHLKj7VpCrKLs0NCA8Hjf7RUabR/mfIW4=;
- b=E8iVda0MYeA7WneGtadPUSFCiFkC7/Lmkpd7tP6EeSiVSUFn0hFM0TjX68HJC+wbQErmGM1Z8/snQ6sJSmfLcQb2+hOdTDjKI0rUZhoLTWdpS1SjhdFqFY60KhxkCw28lxk2KxtRwFnwAhuKHoeodWXk0L9YQwbrwj1E8oDATMCGrWNB62lkBj79O0/KIIW6MhKxM6+ym46CUEmbaqEneBnlOoldnslMm1cIhLY6hEKaZr6Lw88+4vwskh16RTf4x4pJs5xx9IIGnIPuYJtSbqTks6mMrF5kOQTkm/xncnvHDIq1gmxO0q4KozTaKHxEPLi1ACrIrPaKe/tkf6YFIQ==
+ bh=lFBXbAX1y92IAvNjMAdPo5OmTgSMm8oBAqdn/3EGIuw=;
+ b=DueTFAK/kZr45HZSw38DtPSiVIlROb0go64ngRlLlkSIS7cXg8EpTCA8cjIHvPsPtXs3UCYfECny9ZLsetHyxawk7Mll1J2gJKxSLaOWlClH3N+aReg8hjTB0037WI6zfMh3O5jUWCK7gYtc0J+NA+utTV2wNmZmMgqExxGuS7S7X0JRp4SswfXiDczZPpmpmGCq96JzuR9U0yarCHUmVBibrZlsYxL+XfusAe9354UFGcP15MLEnJtYtaM0PN+DeQsDWF7VEa20CME9Fzwuc1ZUvQaELT4xFlwc8UD32Nv4TssvBvl4OnlT6WdXqtN6mS6Bczas80ZKjVlIpSmiAw==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=amd.com; dmarc=pass action=none header.from=amd.com; dkim=pass
- header.d=amd.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
+ smtp.mailfrom=oss.nxp.com; dmarc=pass action=none header.from=oss.nxp.com;
+ dkim=pass header.d=oss.nxp.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=NXP1.onmicrosoft.com;
+ s=selector1-NXP1-onmicrosoft-com;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=J/zKGme/lwRHLKj7VpCrKLs0NCA8Hjf7RUabR/mfIW4=;
- b=sWTPXTO9snTNrt0/XqxK1ssJJH0DptWd8CcCj8fM3hDw3lYydRfkPJE4PQ4AKidReImunZKFOqUf+bJmz7kARajEp5VTb0EIKi1uT+fNwZqymx1wg2L/cCz6IHkqELL0drXWLoe9TQnITcGDHC1HjDTg0mHaAGkyk9w27pq5QrI=
+ bh=lFBXbAX1y92IAvNjMAdPo5OmTgSMm8oBAqdn/3EGIuw=;
+ b=ozVOwboKF+PfQnscB6jXfUgHSAzHh8Sq3AwK9ic1bQNnVIK4l6vrZQwVO9CgcEq/ofdg2lGBaqnfKL+IOkfX9nQycMMivVC99LpCdBXnfqyx8d107REIESisxt/O1PSsFa2cLBAkVw+AtmPgyk5HQacAzjXgyWkC2N1/YZsPSAI+MuQjP6OZQW72j2hIDznqSbjjaokFqsqxkzlVHsm1Q4BVYvxH5RHqzCiNK9SqcD9OksCmgViUmiiuFHc4z6MtdFbHKz8xX1wVZBOgtAODeDmMdTzRpLR8tBIg2k75nTpOjmTHig//c+fc5XWtWeC2MksavD2cd5iJ1gezOFW60g==
 Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=amd.com;
-Received: from PH8PR12MB6914.namprd12.prod.outlook.com (2603:10b6:510:1cb::21)
- by IA0PR12MB8931.namprd12.prod.outlook.com (2603:10b6:208:48a::14) with
+ header.d=none;dmarc=none action=none header.from=oss.nxp.com;
+Received: from GV2PR04MB11799.eurprd04.prod.outlook.com (2603:10a6:150:2cf::9)
+ by PA1PR04MB10673.eurprd04.prod.outlook.com (2603:10a6:102:480::13) with
  Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.245.13; Tue, 28 Jul
- 2026 19:43:49 +0000
-Received: from PH8PR12MB6914.namprd12.prod.outlook.com
- ([fe80::2893:177a:72b0:6000]) by PH8PR12MB6914.namprd12.prod.outlook.com
- ([fe80::2893:177a:72b0:6000%6]) with mapi id 15.21.0270.009; Tue, 28 Jul 2026
- 19:43:49 +0000
-Message-ID: <40ab4c65-faf5-4a85-8761-bc6ebd1aec90@amd.com>
-Date: Tue, 28 Jul 2026 14:43:46 -0500
-User-Agent: Mozilla Thunderbird
-Subject: Re: [RFC PATCH 0/4] cpufreq/amd-pstate: Per-core EPP boost for
- recently-busy CPUs
-Content-Language: en-US
-To: David Vernet <void@manifault.com>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
- =?UTF-8?Q?Andr=C3=A9_Almeida?= <andrealmeid@igalia.com>,
- Changwoo Min <changwoo@igalia.com>,
- Christian Loehle <christian.loehle@arm.com>,
- "Rafael J. Wysocki" <rafael@kernel.org>,
- K Prateek Nayak <KPrateek.Nayak@amd.com>
-References: <20260728073150.54964-1-void@manifault.com>
- <700ebebe-f4ab-4329-ad43-716d74d6621c@arm.com>
-From: Mario Limonciello <mario.limonciello@amd.com>
-In-Reply-To: <700ebebe-f4ab-4329-ad43-716d74d6621c@arm.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-ClientProxiedBy: CH2PR18CA0005.namprd18.prod.outlook.com
- (2603:10b6:610:4f::15) To PH8PR12MB6914.namprd12.prod.outlook.com
- (2603:10b6:510:1cb::21)
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.270.12; Tue, 28 Jul
+ 2026 20:03:57 +0000
+Received: from GV2PR04MB11799.eurprd04.prod.outlook.com
+ ([fe80::2146:83a2:5329:b7c]) by GV2PR04MB11799.eurprd04.prod.outlook.com
+ ([fe80::2146:83a2:5329:b7c%7]) with mapi id 15.21.0270.009; Tue, 28 Jul 2026
+ 20:03:57 +0000
+Date: Tue, 28 Jul 2026 16:03:51 -0400
+From: Frank Li <Frank.li@oss.nxp.com>
+To: Adrian Hunter <adrian.hunter@intel.com>
+Cc: alexandre.belloni@bootlin.com, Frank.Li@nxp.com, rafael@kernel.org,
+	linux-i3c@lists.infradead.org, linux-kernel@vger.kernel.org,
+	linux-pci@vger.kernel.org, linux-pm@vger.kernel.org
+Subject: Re: [PATCH V2 4/8] i3c: master: Add helper to query bus wakeup
+ requirements
+Message-ID: <amkLJ_sbc8AoflzR@lizhi-Precision-Tower-5810>
+References: <20260728155308.142713-1-adrian.hunter@intel.com>
+ <20260728155308.142713-5-adrian.hunter@intel.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260728155308.142713-5-adrian.hunter@intel.com>
+X-ClientProxiedBy: SA1PR04CA0021.namprd04.prod.outlook.com
+ (2603:10b6:806:2ce::24) To GV2PR04MB11799.eurprd04.prod.outlook.com
+ (2603:10a6:150:2cf::9)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -70,237 +66,149 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: PH8PR12MB6914:EE_|IA0PR12MB8931:EE_
-X-MS-Office365-Filtering-Correlation-Id: 14df185f-0f50-4ceb-b422-08deece08bb2
+X-MS-TrafficTypeDiagnostic: GV2PR04MB11799:EE_|PA1PR04MB10673:EE_
+X-MS-Office365-Filtering-Correlation-Id: 70d1ebce-d253-49a0-9737-08deece35bc8
 X-MS-Exchange-SenderADCheck: 1
 X-MS-Exchange-AntiSpam-Relay: 0
 X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|23010399003|1800799024|376014|366016|4143699003|10067099003|11063799006|5023799004|6133799003|56012099006|18002099003|3023799007|22082099003;
+	BCL:0;ARA:13230040|19092799006|366016|1800799024|23010399003|376014|56012099006|4143699003|11063799006|10067099003|18002099003|22082099003;
 X-Microsoft-Antispam-Message-Info:
-	Ep1EbUcIxA5htmrTNnUkbfdWyLasIqR8hg1QopnowN9tU/WhxrRHToE+QQAvtKYOLj4VY0cNEAskjlvEBeot8ivkN/JhLaW08U8NYJWgDmHpCVW23mCjOnfIhREw6P9ZQE2by1G3tWKF3Vruox8RHZKRLarI2WGOygDwPg0bGYO5el4Kr/nT0KB3RDAGjwabChecb4sTkKe69EcSSIWAiA18ZpibT01e7yXtjwonQGvEo6fkYEMFcjrPnYi11V945kVLkYXdSwpKBRLMVNR7X3au8bhhr6tEccz06NaQR5gx1xYxypTc4opn9ZGeVqetOJ70Ta4u/NFNhqKqNPQ66vo7wUFTWqLuM16KinYeIAB5v30KLrJ82Gsy/G017Hvy480j/EJ8f8wLooHUmqIlPBnxnO4zvG+qLNJ87idXkUFE0B8RV+z64+LfiZkHmHD8rqcz7RF6eB727j9M/WzvGrQTaMzaSwscIguh82ckxslVMNs55RwL5TBJ8YePdJB4wUpzn639E5YstuuPgh+dNLQmNgtfqah8IBccaDCakDdZzlJTmPGhT8rnR5DG8H4dsMNMu5+vZhvhcmHANAhqgAAegKUVaj4aXvPqFz69Jps9h92tZAdw2gHZflSOL1QYkX/u8R1jCjYXW5WBTiqhMcD7eykuimKH2i2UY8RwARQ=
+	3gMLBb1qIQPrXT58wu+eLqYlwB6GQXNODnOsEvFK1Ljb5vZT0dOAdoe6wAj4mbx2X1Hce2KYlSrt/TB2yjQmGxFE+FNZWbK5rq1xY4mgEKbHmTevVitx39LoG3FzWsPmgo2+UdVgEFiolrhcy5lSRnD509hCUPsghGfV24ABCWnkdaX8cHVUvfGkiNC6shtPkPALvSGSA9rRv496a0g7sTjak1O/cVotESymmrAIXpS0wJGnOOfPPdP70xWNJ6jensRJCYTmeo/xmX7XK7tjjpyEFCBTQ5tXAFNIENLepzUpPqAdP1jaOwQz3+zBeZ2x8aM84x6f5zHgFYDDtP4qslvU+YIkSMoTFcYxtBnHKvAdLH+y95RaBgcRJLESDO9lnPsmV0ZJHzU8Sbes9+IHb+pH0rZXYTmmMjjopes5NSo9X/TNP4zXKebEsM6aZIjkO870XiI81SYELGaLwH0wfhELsu9r43yI5wGAnryPBzS43TUibp1ofd9u12uhVLcjca2UbGUfGMsmGAYuh4ezPHc9a/L0++csOgLeh77owtO540NBRtHL6p9CDoM5BIsDV/Pebczp+SYSbhefNUK2TlCSnmNDSIIHcuhvdq70Esu4VjG1vL/P9VanhRN5IBe6OHtY20/rkZoJqMIwONnixGRTvFmEVuppZ/Wmsh3teoY=
 X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:PH8PR12MB6914.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(23010399003)(1800799024)(376014)(366016)(4143699003)(10067099003)(11063799006)(5023799004)(6133799003)(56012099006)(18002099003)(3023799007)(22082099003);DIR:OUT;SFP:1101;
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:GV2PR04MB11799.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(19092799006)(366016)(1800799024)(23010399003)(376014)(56012099006)(4143699003)(11063799006)(10067099003)(18002099003)(22082099003);DIR:OUT;SFP:1101;
 X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
 X-MS-Exchange-AntiSpam-MessageData-0:
-	=?utf-8?B?UThBcU05UHRKUTAxckxvdVN6NGJOYnljanJHQWFXYTRWWHN3N293SlpIaDdw?=
- =?utf-8?B?cCtwb2FpbHpoK2FESlRsQVUyL1NDbEpSVW9xODgwdzdUbk8wd2h5bGx5elY2?=
- =?utf-8?B?NFVkYzF1dmpYM0t1WGNpQ29FYktNaEpEbzN2KzZIS3FOcjJENDd3Z05rMSsx?=
- =?utf-8?B?amNlK2tNb0FNejREbVZLbGJLd2pNaWlmMTR5bnBhVUtYS0JOVC9ML2J5SmU0?=
- =?utf-8?B?RWtUWFoyaWFGL1ZFa3NYOG9GN2xnVzVadVB4aFA5RkN2UXlpTmtiUUliM0h6?=
- =?utf-8?B?UDdvSkxSUnhMbytOcmNPaVdtL0kzeEhpSmdPTGlpQmhIOWgvK2lhQ2VoOFZW?=
- =?utf-8?B?bnlwYXd4SDZaK2ltTXFRMmFvMjdnS0pEbGFNeGwvRHdFaVd6VDJzQ2g2eXJE?=
- =?utf-8?B?M0R6bnRSUGNTVkJ3Z28xdWMzbWNrb3BsdjhId0VYOS9IdnZCTlFxcVkzcXJK?=
- =?utf-8?B?Y09LNnA0S3I2Mzh4YnU2N3ZTNXhHUW5IbHNXQTV2UG9zWFhUbm5IeExwMHBU?=
- =?utf-8?B?Um0ybjkzTXdzMjRyTGdKQmVnaWNzZEZ2a3lkSkdleGorcXRTOWJqWXZxRVBH?=
- =?utf-8?B?QVB5aEpPREZNMElqd00vVFYxUS9oTXVjWXFSQU5wUitwdytrT09mU1pPSlRn?=
- =?utf-8?B?akRyVUZzcEVoTFVFYkxGQ2pRTTBPcXpxUjhNdmNSeFJhTW5wWG1PSTFYT21s?=
- =?utf-8?B?dWl2VEhDQ05mZ2ppb25xNjRndzRxNE1lVi95dWRpV1BjNlI1Y0lRL3JJbzBN?=
- =?utf-8?B?Q1o3RlhjUERyZ2RPdm1uOHNYWlFYU3F2c1dpR2NiWEpkQnBEb09JUjJiQlpY?=
- =?utf-8?B?ZXI4cmdOYUh0bGxKYlV4VmJxUjNmRTJKVThYaU5OZ211akJQOVo3UW5SMmw5?=
- =?utf-8?B?Um8rNVBuYmIwYkYwN0d5TGpnUlJCdlAyb3dTeGs1N0FaM1c2YllqdkVXOW5W?=
- =?utf-8?B?cjF6ZDR2MFJWd1NZZlFncWFMZ1NHdWc2ZHprTjZjT2VsNE9YTUI2OHBxcXFO?=
- =?utf-8?B?VlNjZjVlekxTSTc3TFA4UE1TNjhpdVpWVWtvbHdHcTVxcnBPSmRGSXpKQlZW?=
- =?utf-8?B?Um1PMGx4eHEweFdxMVA0Qk1TcWpoTFZGbVd4WUJ3dkhnbjhYYW5ObEZwTUhi?=
- =?utf-8?B?RS9GK3daU2Q1ZFRpS3pXVTRNUlI1cDFBaGtjK3R0M2tvWnFBK3d5ZGRab004?=
- =?utf-8?B?Qi85Um9VaE9CTmJpZCtpVTNNdHplTXNCNHZQRDJHZXRsZ1FIT3dQUGhRcFFp?=
- =?utf-8?B?YjZmTEhrT01mWncvemllVG4zWUdtK05SVUJRZHFIRE1EM1Bad0pzQ2V6VDk1?=
- =?utf-8?B?a3lIc1I1L3RQbG5VZEtXdVA2K3ZiTS9mVnBCRGUxamJuMDRmSExXMVFqQkpH?=
- =?utf-8?B?eXE0N3QvMldMaGNQTE1EWjlBRkNScUljb0Nwdi8wNFBhays2NmJkS2FvNHhZ?=
- =?utf-8?B?dGJ0ZnNWZStnUEJXVzlqQ3UraVFtRTdqUkRkaWZEMUJwVHdUSVBXVGxJVWo4?=
- =?utf-8?B?bi9FMmROK2hrdDl6ckg4UGU5ak02MVgrU1JHZ2pxN1Rsc3Jtd3d6cVNFeG5y?=
- =?utf-8?B?TUxRRmxKV3pMR3NmWHhGbVhFTDNyZ0ExRnhkME5QM3hUQndOMTJlWEZFM2xI?=
- =?utf-8?B?eTZhdHpoT01MeExtZFdRQ09CcFpFcVpuZ0pDZS9aOXVsSVVxWk5JZDFpSHZk?=
- =?utf-8?B?Q3poQnJYRWxjQ2JwSXh6Tkl2YVZ1UHhZTVZPTTlYWU5jckViTWlpOFpKdW9E?=
- =?utf-8?B?bUpYOW5CWThmUjQra3l3N2xYM3NEMjJtSklQQ3NpT09RamZ3WGxoREk1cHlq?=
- =?utf-8?B?WUJuY0tHMXdOQU15bW5kSndGVy9IRGZ0cDB6RVpJQmhDM3JnUlNRanRScHlt?=
- =?utf-8?B?bGNYY2pLeno0QUhBU054SFJMK3hsb3RVeWlFN2hucVJiQlYrdW1KdTlPbDAw?=
- =?utf-8?B?anlUeEhtajg4Uis1L1pEb1llVWJ3UHBjRVdvY2RlT2JwbEt4UWRlV3pDSHBx?=
- =?utf-8?B?d1lqUWw2ejRKN1EwU1E1M2FJcUozOC9semNRMnMvT0Y4M0p6dHh5aFk4Q2wr?=
- =?utf-8?B?NXVJeTVxVlo2TDM4NGdUZlIzQlUxdW1vWThCenhCUFVUTFBrU1FMTGNIOHpP?=
- =?utf-8?B?enM3MUlVZ09tREx0dHZtTVIrMGRHQXhXb3huaGM3V1VEQk84M0VMUUhUNlZo?=
- =?utf-8?B?QXJRWlhTTk5FSVNDaGtKUWo3TlNrRTBlZkh1bElLN3NUbE1LeFBhUG1KbWV6?=
- =?utf-8?B?QzdIVUV1Y1UvSjEyODd1d2s2N2lJQVVHelp6Rk9pUVN5WEtmYWtTeTFnS3pk?=
- =?utf-8?B?REtWSk8wNWU0OFVnbjUxejdCTWR6aDFnYnVqWlg2WnVuSk9YbG0yQT09?=
-X-OriginatorOrg: amd.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 14df185f-0f50-4ceb-b422-08deece08bb2
-X-MS-Exchange-CrossTenant-AuthSource: PH8PR12MB6914.namprd12.prod.outlook.com
+	=?us-ascii?Q?/MfcDmYNCCLSwababpKb9I/5MxVLawcWIpdPbjI2hMTLpZ/u9btQa3mv44jy?=
+ =?us-ascii?Q?QTCtgwDuUJu8KfAK/hJbQpxNITXZ9xHNofjome0mAI+dAqQf4voGPpOBnlQT?=
+ =?us-ascii?Q?iCzDjzV/feXR1KltiCehnGL+lJhyJcmFzQQkZJxKOZusgafsynTz3gbgz1qz?=
+ =?us-ascii?Q?iaDQrGhHYOAWtvWCqNSsP8QjZTLXPV09Xt3WrSvgePe3XN7T8b9ARXp5dyjh?=
+ =?us-ascii?Q?CAmUCBbU/4h9MSJGIUnxlX6IBIm7+pbDU1QnxTk3M05+uRXBzmkcnD1tXnRF?=
+ =?us-ascii?Q?FAp1epWmfV+nsFLqGuFr67Gc3rS1228GE4foA7YTpFfCAfqVjpw9Q22x+Sqs?=
+ =?us-ascii?Q?mnilIF3a5MrBpwbYQ4R4XMCf4BXRic7bDR18r0FzNLg6wks8qtqW0XowslFQ?=
+ =?us-ascii?Q?t3NyeDs/2myqrqTI5A/Olbg8dwFsIWI/4kIQcwCmmkTP0bcNPw5VqRwjaE/f?=
+ =?us-ascii?Q?JzmpBY+brMShJf+waJcFDOqq/Zbk7M20Wn0/7y9y5hgmV8ayk28abVvYJ5oZ?=
+ =?us-ascii?Q?vO7pw7YwznGNoCMv7RE1DhU23Gupi46XdPHmyrxGwKTsNcsagT96+5Bb32Ck?=
+ =?us-ascii?Q?K2Jb57MWMLnwk3xc7AB8FzP13XEFQkOWwZPsWrW72foSXVZwHOkbGeYwViwu?=
+ =?us-ascii?Q?Gq3PraakRzv/SfAp6N5VxpqlcKzQDBJinfN/cOH2XRW+r4v1r01VI+f7/SKv?=
+ =?us-ascii?Q?dS6VNOsd51dCMtBlIJ3A6wmWokz+CaPh73+eFzXwe3A39orgVO1No6idTGIy?=
+ =?us-ascii?Q?CfzbE8I/tBtsiXkcaAsV4JqnjVayVw4d0p7qb4e5aS/LRjUP+9nF0M0Tpp99?=
+ =?us-ascii?Q?MUqdCvZZaVn4fcHoAmFJUO/GIesnDvzXgKc5d+WOu4BiL26ayukZXo0cAIff?=
+ =?us-ascii?Q?Sp0uFO0Atk3bEwhk6JBXrRRXPHoIKhI0iGmnBTz9oIKowgUU5E0dZx88PFXd?=
+ =?us-ascii?Q?0BLE/QYocT/U+GHS4vC+56xhw80i9jZ7nKF8ZAGISiA/8Nw39mB4KWKElMOm?=
+ =?us-ascii?Q?xfyYWHq7NmPK8l1qJe+CrL3XhbfeudXY1PgX9r06YT5ogo+pubGL4kgyWtXq?=
+ =?us-ascii?Q?1b+RE7A230cguUtAFEVC9GlcPQMdBEOS3SqEhF+ORIgGFigSVlz1+xgsGV0z?=
+ =?us-ascii?Q?KcbrWbX6YnB2GmouBuROd1aBV+Bx5pd3FeJUl09A8sUNpsMstBgQDrV/fLyL?=
+ =?us-ascii?Q?7hpHB7HKhZy2o3B3zVzvQqSw9woapJshpcLzcPK3k4vxdq4mMNZbj58GGd2r?=
+ =?us-ascii?Q?9GUItJYVnta368mX4LqdQhQDVzxPZVdFu7GV3qGRSt5mRUWIDZ0+VSG2KmUB?=
+ =?us-ascii?Q?kTANyYwENAY3MinpPfe7VKCN77v2q9F02weOxgq1LGGJhhqADX6q9AJW6id8?=
+ =?us-ascii?Q?ukrtZFloybz/nogIiYQ5LB0iIMAKScIHJPCRKr2mTo6GBGjBPtRjMr3Gg42z?=
+ =?us-ascii?Q?978tRnTMlPLBPa9dbHYXamsMXk23pDrWIcTvAVjAbwAqtWokkjOr1m00EnnM?=
+ =?us-ascii?Q?F4AGcMbgTvkZnuirkKRG4rK5NCq5tpbTkbjDkCS6CgErYVj/OG3za9ecZvdJ?=
+ =?us-ascii?Q?jI/h53ZO6FeJzh0ix2HQ7cCXWVCVQ0oSbAkGAUDmY+GyO+dh+z888LZahX2N?=
+ =?us-ascii?Q?c+dnfloxRMd0MjnGeP4f4pSPLXW3n9MpJdzLzcLFAe7G4I8zsvluCUlDLPW0?=
+ =?us-ascii?Q?bQhcIma6KcVf77WESsuSoGb8PsapjaeJdls3X6X2y6Ppm4Lry4yVO8lyfJNy?=
+ =?us-ascii?Q?u1POFQTsXYkCm97srqqv1AU1+xSDgJTxeGbmVKjUl7ZYNUauzG2q?=
+X-OriginatorOrg: oss.nxp.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 70d1ebce-d253-49a0-9737-08deece35bc8
+X-MS-Exchange-CrossTenant-AuthSource: GV2PR04MB11799.eurprd04.prod.outlook.com
 X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 28 Jul 2026 19:43:49.5526
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 28 Jul 2026 20:03:57.6721
  (UTC)
 X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
+X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
 X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: i+QKZ58A0JAbjhicyxuPuureWJErCCa7uhx2r2zkcw+Z7Hbi+GYcFuKhixUsaoMi5P41G2KO4o6xOAuPZI+B/Q==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: IA0PR12MB8931
+X-MS-Exchange-CrossTenant-UserPrincipalName: 3fm4xegOLCWMgEf7KkIVamQkXrLsXVo15oS+TdxGbyBpqXV4009AFJ/KaYyGq653ziCWcGMjWXAaHY0ZjjH8YVkYGCLtMWg6JJTulWdzd15LIFa/tCZQ9TlQ3bLCNoPz
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: PA1PR04MB10673
 
-+Prateek
+On Tue, Jul 28, 2026 at 06:53:04PM +0300, Adrian Hunter wrote:
+> Add i3c_master_any_wakeup_enabled(), which iterates over the devices on
+> an I3C bus and reports whether any of them are enabled for system
+> wakeup and have IBI enabled.
+>
+> Controller drivers can use this helper to determine whether wakeup
+> support must remain available while the system is suspended.
+>
+> Signed-off-by: Adrian Hunter <adrian.hunter@intel.com>
+> ---
+>
+>
+> Changes in V2:
+>
+> 	i3c_master_any_wakeup_enabled() now also requires the device to
+> 	have IBI enabled, not just system wakeup enabled, so that a
+> 	device with no active IBI request does not keep PCI PME enabled.
+> 	desc->ibi_lock is taken while checking.  The commit message and
+> 	kernel-doc are updated to match.
+>
+>
+>  drivers/i3c/master.c       | 30 ++++++++++++++++++++++++++++++
+>  include/linux/i3c/master.h |  1 +
+>  2 files changed, 31 insertions(+)
+>
+> diff --git a/drivers/i3c/master.c b/drivers/i3c/master.c
+> index 9d56ca08569a..dd49652425b4 100644
+> --- a/drivers/i3c/master.c
+> +++ b/drivers/i3c/master.c
+> @@ -2048,6 +2048,36 @@ static void i3c_master_reg_work_fn(struct work_struct *work)
+>  	i3c_master_register_new_i3c_devs(master);
+>  }
+>
+> +/**
+> + * i3c_master_any_wakeup_enabled() - check if any device can wake the system
+> + * @master: I3C master controller
+> + *
+> + * Iterate over devices on the bus and return true if any device has
+> + * system wakeup enabled and IBI enabled.
+> + *
+> + * Return: true if any device may wake the system via IBI, false otherwise.
+> + */
+> +bool i3c_master_any_wakeup_enabled(struct i3c_master_controller *master)
+> +{
 
-On 7/28/26 09:17, Christian Loehle wrote:
-> On 7/28/26 08:31, David Vernet wrote:
->> In active (EPP) mode the platform autonomously picks the operating point
->> between min_perf and max_perf, biased by the EPP hint, and the kernel
->> only rewrites the CPPC request on policy or limit changes. A workload
->> dominated by one mostly-busy thread that takes frequent short sleeps
->> (common in gaming workloads, for example) can fare poorly under this
->> strategy. Each sleep decays the hardware's performance signal, causing
->> post-wakeup bursts to start at a low operating point and inflating tail
->> latency even though the CPU is essentially fully busy while work is
->> available.
->>
->> As mentioned above, the motivating case here is gaming. A game's main or
->> render thread typically blocks briefly on a futex or a GPU fence every
->> frame, and the resulting frequency droop shows up directly as stale
->> frames and inflated frame-time percentiles.
->>
->> Solving this at the cpufreq layer requires walking a fairly narrow
->> path. Globally forcing EPP=performance fixes the tail but burns power
->> on every core for every workload, which matters on handhelds where the
->> CPU and GPU share a power budget. Raising min_perf on the busy core
->> seems like the obvious surgical fix, but it pins the core at or above
->> nominal even during micro-idle and vsync waits. On Van Gogh (Steam
->> Deck) experiments that I ran, that perturbs the SMU's shared CPU/GPU
->> boost management enough to regress the frame-time tail relative to doing
->> nothing (numbers below).
->>
->> This series instead adds an opt-in, per-core EPP boost. When the
->> epp_boost module parameter is enabled, an update-util hook samples each
->> core's C0 residency (delta MPERF over delta TSC) at most once every
->> 10 ms. If a sample shows the core at least 50% busy, the EPP field of
->> its MSR_AMD_CPPC_REQ is set to performance (0) and held there until
->> 300 ms pass without another busy sample, at which point the hook
->> restores the request that policy management last stored in
->> cppc_req_cached. Both writes happen only on the busy and idle edges, so
->> the CPPC_REQ write rate matches that of a global EPP=performance
->> setting. min, max and desired perf are never touched. The mechanism is
->> only available in active mode on MSR (X86_FEATURE_CPPC) systems, since
->> the hook does local MSR accesses from scheduler context which the
->> shared memory interface cannot do. It composes with dynamic_epp, which
->> selects the policy EPP from the platform profile and power source.
->> epp_boost temporarily overrides whatever policy EPP is installed and
->> restores it when the core goes idle.
+This check most like introdouce rise condition.
 
-Have you seen the series from Prateek that reworks how dynamic EPP works 
-[1]?  It becomes an energy_performance_preference that userspace can opt 
-into.
+if (i3c_master_any_wakeup_enabled())
+	do_some_thing()
 
-I did have aspirations to hook into more changes than just platform 
-profile and power source eventually, so it sounds like we're at least 
-thinking in the same area.
+no lock protection, so between check i3c_master_any_wakeup_enabled() and
+do_some_thing(), condtion may be changed.
 
-[1] 
-https://lore.kernel.org/linux-pm/20260727072056.1248-1-kprateek.nayak@amd.com/
+Frank
 
-Can you rework your series on top of that and see how the mechanics work 
-out?
-
->>
->> Precedents
->> ==========
->>
->> The closest precedent is intel_pstate's hwp_boost. It has the same
->> overall shape as this feature. It is an opt-in update-util hook that
->> temporarily rewrites the HWP request from scheduler context on a boost
->> edge and restores the unboosted request after a hardcoded hold time
->> (hwp_boost_hold_time_ns). It differs in two ways, both deliberate:
->>
->> 1. Trigger. hwp_boost activates on SCHED_CPUFREQ_IOWAIT. The waits
->>     that matter here are futex waits and amdgpu fence waits, which do
->>     not set the iowait flag, so a C0 residency trigger is used instead.
->>     Residency also naturally covers the "mostly busy with short gaps"
->>     pattern rather than only the wakeup instant.
->>
->> 2. Knob being boosted. hwp_boost raises the HWP min. As described
->>     above, a min_perf floor measurably regressed the tail on Van Gogh,
->>     so this feature biases only the EPP hint and leaves the platform
->>     free to drop the operating point during the idle portions of the
->>     frame.
->>
->> On the thresholds themselves, the sample period, busy threshold and
->> decay window are hardcoded rather than exposed as tunables. I'm not sure
->> if this is appropriate or not, but it seemed like it followed existing
->> contours.
->>
->> hwp_boost_hold_time_ns for example is a hardcoded 3 ms, and schedutil's
->> iowait boost decay is tied to TICK_NSEC, with no knobs for either. The
->> 300 ms decay is sized so that a render thread which is only 50-80% busy
->> from periodic vsync and GPU-fence waits holds the boost across its whole
->> busy period at a couple of CPPC_REQ writes total, while an idle core
->> sheds the boost well before it can matter. The energy exposure of a wide
->> window is small because EPP only influences behavior in C0 and an idle
->> core sits in CC6 regardless. If folks want me to make these tunable I am
->> happy to expose them.
-
-In a lot of ways I feel like you're fighting with the hardware (and 
-active mode) by doing it this way.  Did you look into using passive or 
-guided mode instead?  They might be better suited for what you're trying 
-to do.
-
->>
->> Testing methodology
->> ===================
->>
->> All numbers are from a Steam Deck LCD (Van Gogh APU) running in active
->> mode at EPP=balance_performance, using the Civilization VI graphics
->> benchmark as a single-thread CPU-bound workload with a repeatable
->> built-in benchmark pass.
->>
->> Comparisons were run as interleaved A/B tests with 6 iterations per
->> configuration. For each run I collected per-frame frame times and the
->> busy core's frequency, and derived average fps, 1%-low fps and the p99
->> and p999 frame-time percentiles. Deltas were evaluated with Welch's
->> t-test, and I report the p-values alongside the deltas below.
->>
->> Results:
->>
->> Default settings
->> ----------------
->> The busy core's median frequency sat at 2.43 GHz despite 98%
->> utilization, which is the frequency droop described above.
-> 
-> Two things to confirm for my understanding:
-> -Median frequency is the 50th percentile when weighing the OPPs by
-> residency, right?
-> - You're also using busy_pct = delta_MPERF * 100 / delta_TSC as
-> utilization, right? (Not util_avg or anything like that)
-> 
-> Your observation looks like a firmware or SMU issue.
-> Can we confirm the (short) sleeps reset the demand-estimation, i.e.
-> by tracing cpu_idle/sched_switch and sample APERF/MPERF alongside it?
-> Also rt-app might be helpful to get a feel of how this behaves (and
-> create a similar pathological case like the single-threaded game).
-> 
->>
->> Global EPP=performance
->> ----------------------
->> Globally forcing EPP=performance lifts the median to 3.5 GHz, cuts
->> frame-time p999 by ~40% and raises 1%-low fps by ~16%, but does so on
->> every core and for every workload.
->>
->> Raising min_perf to nominal on the busy core
->> --------------------------------------------
->> A variant of this patch that instead raised min_perf to nominal on the
->> busy core reached the same 3.5 GHz median yet regressed p999 by 13-21%
->> by perturbing the SMU boost management as described above.
->>
->> epp_boost enabled
->> -----------------
->> With epp_boost enabled, the busy core running the Civ VI main thread
->> runs at a 3.5 GHz median and the benchmark gains 31.8% in 1%-low fps
->> (p=0.014) and 4.1% in frame-time p99 (p=0.015), with p999 and average
->> fps unchanged.
->>
->> David Vernet (4):
->>    cpufreq/amd-pstate: Document missing kernel-doc members
->>    cpufreq/amd-pstate: Update cppc_req_cached before writing the MSR
->>    cpufreq/amd-pstate: Add per-core EPP boost for recently-busy CPUs
->>    Documentation: amd-pstate: Document the epp_boost parameter
->>
->>   Documentation/admin-guide/pm/amd-pstate.rst |  16 ++
->>   drivers/cpufreq/amd-pstate.c                | 230 ++++++++++++++++++++++++++--
->>   drivers/cpufreq/amd-pstate.h                |  20 +++
->>   3 files changed, 255 insertions(+), 11 deletions(-)
->>
->>
->> base-commit: 92bf086d086f7cfe0d6f807dfd6b8d11bc61b626
-> 
-
+> +	struct i3c_dev_desc *desc;
+> +	bool wakeup = false;
+> +
+> +	i3c_bus_normaluse_lock(&master->bus);
+> +	i3c_bus_for_each_i3cdev(&master->bus, desc) {
+> +		if (!desc->dev || !device_may_wakeup(&desc->dev->dev))
+> +			continue;
+> +		guard(mutex)(&desc->ibi_lock);
+> +		if (desc->ibi && desc->ibi->enabled) {
+> +			wakeup = true;
+> +			break;
+> +		}
+> +	}
+> +	i3c_bus_normaluse_unlock(&master->bus);
+> +
+> +	return wakeup;
+> +}
+> +EXPORT_SYMBOL_GPL(i3c_master_any_wakeup_enabled);
+> +
+>  /**
+>   * i3c_master_dma_map_single() - Map buffer for single DMA transfer
+>   * @dev: device object of a device doing DMA
+> diff --git a/include/linux/i3c/master.h b/include/linux/i3c/master.h
+> index 99f89fef7653..d8cdc7ff2459 100644
+> --- a/include/linux/i3c/master.h
+> +++ b/include/linux/i3c/master.h
+> @@ -748,6 +748,7 @@ void i3c_generic_ibi_recycle_slot(struct i3c_generic_ibi_pool *pool,
+>  				  struct i3c_ibi_slot *slot);
+>
+>  void i3c_master_queue_ibi(struct i3c_dev_desc *dev, struct i3c_ibi_slot *slot);
+> +bool i3c_master_any_wakeup_enabled(struct i3c_master_controller *master);
+>
+>  struct i3c_ibi_slot *i3c_master_get_free_ibi_slot(struct i3c_dev_desc *dev);
+>
+> --
+> 2.53.0
+>
