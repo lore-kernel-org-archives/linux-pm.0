@@ -1,215 +1,130 @@
-Received: from DM1PR04CU001.outbound.protection.outlook.com (mail-centralusazon11010007.outbound.protection.outlook.com [52.101.61.7])
+Received: from mailgw.kylinos.cn (mailgw.kylinos.cn [124.126.103.232])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1CDC01A6811;
-	Tue, 28 Jul 2026 00:47:47 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.61.7
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1785199669; cv=fail; b=uHhsZqT38R8bj9IneC7IPaNrU8ms/MLz3EAfI0aBI0ynqB6efNE0uDdBb8WVnAppsloJp/T03RkgcRbSTo2M0X9CoBfvbwWY+Oja1eY93TWdstfobUFR2USCnSCwbnwDA83Uisy7D3eSsLJhdC2Cshb0Dk9hfUrQWQiYif9kAgY=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1785199669; c=relaxed/simple;
-	bh=ZpTGObf8rUSlhS4lkliwZelWhSxVQX5rDSKprqU8ExY=;
-	h=Message-ID:Date:Subject:To:Cc:References:From:In-Reply-To:
-	 Content-Type:MIME-Version; b=j4m/VKs4fOB+SV5gZvt8cqvcbNiFd3ECpaX2BdyUou5yWXj4lMBuqaYwhdbEyhZg6vydMYCiGNlpw+X0ZUx64A+UW2XGP2KKEpcWoQChnyXp+YnNouVl6iwDJQiv8f4/tzobE09x9aieL0O8zq2HcJepl1firvMgNHDYrMiOfSo=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com; spf=fail smtp.mailfrom=amd.com; dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b=W8rS1LqW; arc=fail smtp.client-ip=52.101.61.7
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com
-Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=amd.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b="W8rS1LqW"
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=i7MkDTtiwBKxc8IJ+T3Xp58XmKhQC7uoDmtoRlK2wmfYf1U6qLJ1+InRhy8Dsj2CpBOlkHACU1ZRoYLeM5rOGf99KMrfQXFIfjtT5ICVopFpGmh7r6DmsD5zLeEwrRAoV77SILLaKm7Hu6LTUdaS0nrp00/FGmg00zW91jKV1HlFgYLvsedhUnq1r7kbPQjJerwJDedeY6ZI5OopkQDwoUR0nRhBpPwm9Pci0Xknp00VErteLwg5hTXJSlc+l18ttkv4ENfcPhoEiawxbifS/4aYnZFzvtVfNcX9R6mfZF9txVTd8Gt6xSH2wuJmWek9qT6wP8kKnFyAxEsMclwyaw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=d438Lngub5sZP69PdqDTItybzfIZiXycWYLAmQpcYuE=;
- b=clpahxfFeTJ60qeqwETy9l/hVtk1cNoXbFIHliMOB/M2nDwpUM7I1OMjDo4c+cp0hC1fXseT6PUWGBhFf5gCXMiRIzChUZ1Grnuu2PzIWm/mLebU2eh/tU8TNaMNz8XD5a7fRSiPGY8EvqOqbzDg8J3FYtVoTcIBSiJ1iR2hr+lryn8Gc3DJtbM6GV2NpxaqRMQDEa7VUut/ypvBkWtZT8YtPuIQ9kZH7JS6XHfBSF3xYsaSVY0y+fNT1FVidNnOOz4U1lC0zhqCVbrrwMaTXcu0jUFbRoTkpAuTD8AWWrj/HSoK5/R0GXqJROGiaQ6cn9NM5CH4TN1Z2l7z4H46wg==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=amd.com; dmarc=pass action=none header.from=amd.com; dkim=pass
- header.d=amd.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=d438Lngub5sZP69PdqDTItybzfIZiXycWYLAmQpcYuE=;
- b=W8rS1LqWyrXtmJxCrmH5KMRE9pi1DPJtUODH38Fu3diDf0ptMc5h4KDXda1iXtHmcAQzPQ7QH2knobmgFmEM6shxVzzOEOBiTxuYMosSAa32xzQHJsynfm2rMrhGnxPv7RzQb4kXcvS4FFg1MliUnX1YgKX1aDc7xmg1vxQUyhk=
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=amd.com;
-Received: from PH8PR12MB6914.namprd12.prod.outlook.com (2603:10b6:510:1cb::21)
- by SN7PR12MB8146.namprd12.prod.outlook.com (2603:10b6:806:323::10) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.245.13; Tue, 28 Jul
- 2026 00:47:43 +0000
-Received: from PH8PR12MB6914.namprd12.prod.outlook.com
- ([fe80::2893:177a:72b0:6000]) by PH8PR12MB6914.namprd12.prod.outlook.com
- ([fe80::2893:177a:72b0:6000%6]) with mapi id 15.21.0245.012; Tue, 28 Jul 2026
- 00:47:43 +0000
-Message-ID: <4f4595f9-943f-4509-93ec-484746dce126@amd.com>
-Date: Mon, 27 Jul 2026 19:47:40 -0500
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v3 0/9] cpufreq/amd-pstate: BIOS min perf fixes and
- Dynamic EPP rework
-Content-Language: en-US
-To: K Prateek Nayak <kprateek.nayak@amd.com>
-Cc: Perry Yuan <perry.yuan@amd.com>, linux-pm@vger.kernel.org,
- linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org,
- Huang Rui <ray.huang@amd.com>, "Rafael J. Wysocki" <rafael@kernel.org>,
- Viresh Kumar <viresh.kumar@linaro.org>, Jonathan Corbet <corbet@lwn.net>,
- Shuah Khan <skhan@linuxfoundation.org>,
- Kalpana Shetty <kalpana.shetty@amd.com>
-References: <20260727072056.1248-1-kprateek.nayak@amd.com>
-From: Mario Limonciello <mario.limonciello@amd.com>
-In-Reply-To: <20260727072056.1248-1-kprateek.nayak@amd.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-ClientProxiedBy: SN7PR04CA0206.namprd04.prod.outlook.com
- (2603:10b6:806:126::31) To PH8PR12MB6914.namprd12.prod.outlook.com
- (2603:10b6:510:1cb::21)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7A56E153BE9;
+	Tue, 28 Jul 2026 02:46:14 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=124.126.103.232
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1785206779; cv=none; b=duUuzopzaF+7Pmm54FG3f1pAW386XR9ABUqqXC8Gn4CtMdVM4S4+xmK6cjuVeokfykjpFsy51kD9OqBOVrVVDT/LjQ87/MTfPGIgpo+ky2XcNDna+UnUa6E33tqc9b5nyEi5yMLnzaLLXpcsAAo1b0Jz7c5TpmqUKHL1utKC7wU=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1785206779; c=relaxed/simple;
+	bh=uxYNviuNv8xDiggHOWL/Lw7LSSQ8hcOaMRm4WUCy/GI=;
+	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
+	 MIME-Version; b=goeXovZBfttVGQwKjtUH66nc2W2R40edCnnDx4ZGLnVEjQP1Pi5xH0kN31T340fGQkY2xxvSm8Tzl1Wvk4lbw6yH5RHAy4SPI6qxiLv7dN4uCvOqr5GHDOBTp1YinwEZZzHaerrAegEw9WSuKKx/j+9VkhacAFMVEGt0brckWpM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kylinos.cn; spf=pass smtp.mailfrom=kylinos.cn; arc=none smtp.client-ip=124.126.103.232
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kylinos.cn
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=kylinos.cn
+X-UUID: 7c6af6bc8a2e11f1aa26b74ffac11d73-20260728
+X-CID-P-RULE: Release_Ham
+X-CID-O-INFO: VERSION:1.3.12,REQID:92870a9b-9878-4884-afcd-03e17741e21a,IP:0,U
+	RL:0,TC:0,Content:0,EDM:0,RT:0,SF:0,FILE:0,BULK:0,RULE:Release_Ham,ACTION:
+	release,TS:0
+X-CID-META: VersionHash:e7bac3a,CLOUDID:e785c7049938ccc3253ea488074da439,BulkI
+	D:nil,BulkQuantity:0,Recheck:0,SF:81|82|102|850|865|898,TC:nil,Content:0|1
+	5|50,EDM:-3,IP:nil,URL:0,File:nil,RT:nil,Bulk:nil,QS:nil,BEC:nil,COL:0,OSI
+	:0,OSA:0,AV:0,LES:1,SPR:NO,DKR:0,DKP:0,BRR:0,BRE:0,ARC:0
+X-CID-BVR: 2,SSN|SDN
+X-CID-BAS: 2,SSN|SDN,0,_
+X-CID-FACTOR: TF_CID_SPAM_SNR
+X-CID-RHF: D41D8CD98F00B204E9800998ECF8427E
+X-UUID: 7c6af6bc8a2e11f1aa26b74ffac11d73-20260728
+X-User: lilinmao@kylinos.cn
+Received: from localhost.localdomain [(10.44.16.150)] by mailgw.kylinos.cn
+	(envelope-from <lilinmao@kylinos.cn>)
+	(Generic MTA with TLSv1.3 TLS_AES_256_GCM_SHA384 256/256)
+	with ESMTP id 1378301874; Tue, 28 Jul 2026 10:46:08 +0800
+From: Linmao Li <lilinmao@kylinos.cn>
+To: Sebastian Reichel <sre@kernel.org>
+Cc: Waqar Hameed <waqar.hameed@axis.com>,
+	linux-pm@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	Linmao Li <lilinmao@kylinos.cn>
+Subject: [PATCH v2 2/2] power: supply: bq25630: Initialize hardware before exposing the power supply
+Date: Tue, 28 Jul 2026 10:45:58 +0800
+Message-Id: <20260728024558.3611522-3-lilinmao@kylinos.cn>
+X-Mailer: git-send-email 2.25.1
+In-Reply-To: <20260728024558.3611522-1-lilinmao@kylinos.cn>
+References: <20260728024558.3611522-1-lilinmao@kylinos.cn>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: PH8PR12MB6914:EE_|SN7PR12MB8146:EE_
-X-MS-Office365-Filtering-Correlation-Id: 02e1bc48-038f-476e-e395-08deec41d557
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|366016|1800799024|376014|23010399003|6133799003|5023799004|11063799006|56012099006|10067099003|22082099003|18002099003|3023799007;
-X-Microsoft-Antispam-Message-Info:
-	0qvsnHy2ilkzJB1zo1A+TiBZ8DdtwYpIIYTrHENauIVatTeMYB2P39O377YYqne/BAdu7vVO4jmi25QYuZZ3PJR/EwhAr7JsII1xx6+cUO8hUSA1eTBs8jFEqDMuEI5+sNnGMc/dwclCb45LpFJF4q2d8D54MNsXtFb4un5E6jjl/dWELdYXSV4Qmj7KWfl+nTM3rXjmXuIBt3+RICnwZ8oDt5l5YIo/cWwa9SXVKUkWSNcyxo8olXt0LgThnaPxSlsWYQrYI63dL1cfmzf7qXjuB9bzklNOfLmQPdiGPjwkOv3B/T4ZKgrxG/KoOBYp3TqED/ULru2eBm6XCDQ4+8UAbZMx4EqNVKs0A7676XvwzAO0EO9yKKmnniLWjhYfd74aa4y/BuOzycOqeUP1aqdZ4BMzqJwGtdK/Eu5nHgznuu6ZPf7Z1XR+70EWLl+TOyQGOAJ08ikJhw2qlTaJDOOhKDwuFr8d5xoLwLBVtkNMJ+eaUYrILhyLV5yrP1NeNPjAVRPkvYBBU1ztKnnaKY1XaXGOZdR8oWxgD9t5BtTqoxlKfaSpYrJzddxt9IjSzXoXcDM1rmf+QELlTV50a8qcLr67SkZMgqxutHZA9+n31l0RolMDcVJx8Er5PUwG
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:PH8PR12MB6914.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(1800799024)(376014)(23010399003)(6133799003)(5023799004)(11063799006)(56012099006)(10067099003)(22082099003)(18002099003)(3023799007);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?utf-8?B?bkZmenFCZ2NLbUZkNlI4MWlxRlE3TmFzZkhiNmpWWW1oUXN1dkdqcFNBTHMy?=
- =?utf-8?B?aUlLQXlrVjkzRmxaZmxqUzdVVTZXdjQxVEg1SFlzak9ZNkd6Mml5NjlSR3JE?=
- =?utf-8?B?WXd0dm5tWDdJdnVPQVhYbHpuZko2bXFybVVXSU5HZHRUZkxWTmZudmhON25K?=
- =?utf-8?B?RFBCSmQ1YmlWRUxoZGo3UlE4R2tmU1JYeURSamk5WUxTZVhMTlo3YUVuWERr?=
- =?utf-8?B?UFNtNGZFdFFlZXEvNXN5dzJVY1pMTlY4Ri9vUWVGSk5nMTZ1VHl1TmlNRnpN?=
- =?utf-8?B?dWNqTVNPR3hMeU0yY1VwK2RDVy91Ym5jeE9penptMGdpUHEyRVczQWUvRzhW?=
- =?utf-8?B?U1gwRk1vb3dOZFFPTUZTMUY2dmNCS1pTdkVFcTNZSURjcFl5cDNQaWUzbW1i?=
- =?utf-8?B?ZW1OWnBPZmhRUnlIbHNtUm1zZ0RKbHN1SHI0U1M3ZmJNOWxQc2NLcm43MEll?=
- =?utf-8?B?ekx2YmdBSkcwekhVZUE4SmpuQml2ZmROSEUvSHJqZk91YWt6aXBXbWo3ZzUw?=
- =?utf-8?B?ZHNCY2lqWlg5bFo1ekU0V2daWERCa2hmcndCUnpKVGxSenNFRE5XbnUzc01m?=
- =?utf-8?B?SHBVbStyZ2pNUi9DT2tUSzhHYVlreEFaRmtwTWdVYlBGY3lVTEo1TVlKanVV?=
- =?utf-8?B?RDA3MmZuMzhmUmMyMHdKS1U3ZENva0JEOGJYb3FWSXp6em9DSlp2bjdIQVpI?=
- =?utf-8?B?SmVCRWVxWllQWUtCWXJidzNyS2cyTi9yVTMwSjRFcWlsTlpHUU9VbjhLZDI5?=
- =?utf-8?B?VlNiMXRYNWNsTG5zVDVudFBhMmIvVGlJNEdObWJrdC9KOTFBVkNkU28vSGFQ?=
- =?utf-8?B?dXBMT0VmK2xsWFl2OXpYdGtpdHRoeTVNVklCMWZSOWxMdDdEMXE5Q1J1SWpo?=
- =?utf-8?B?clIyUkhnZDdvZkdBVUswMDlPMmFTQ0lReithdDVBM2REOXl5a1A0WVVGVHhx?=
- =?utf-8?B?VkhKNXMvOGNIc3gvVGlnMEN2U3NiM1RtZVdEVEN2T1FQWnNCSnhjS2JBKzFs?=
- =?utf-8?B?NzJ4Q0lDQXdJckpLOVZwK2EvSzkvWXhwYVU3Z0dZc1piNjYvL0FwdVVhUDY0?=
- =?utf-8?B?WlVuRXFWN0krSjdGM2lMeVM5RTVsc1JZZXNSRVFYYW9yYmMrSkdLNW5LTjJP?=
- =?utf-8?B?Z1dPR2Q5aWxuRjVkSHcyVXdSbWlzV1VNVis5YmpVOWc4eFRMRHdxaDdRZHhK?=
- =?utf-8?B?d3dqcW8vTjQva09WWFpNTnpzcVhRWm5vRHBzWllFZjI1WFhlNVhSekU1L0Vo?=
- =?utf-8?B?dk81V2hsVS9NSGlQZ2RETjhab1RhYTNtZWxmb1dTZFlIQ3FGM3kzblFvS2R2?=
- =?utf-8?B?cmhWYng0V1liS3VYQU4ySXRHUDQxNUFnbWFXNjVDcnJjaUpRMWxSenBsUlBa?=
- =?utf-8?B?aW5VSnJQd3NvVVVKcGJwUENYSUk2MVp5aE1xYTFTeGZpYmMxWE52YWkvLzRi?=
- =?utf-8?B?RWk2T25WclpCZmNhaTE2QUJ6R2N1T28rTmtqM0thOSsvYWtYSFp3M3paeGRZ?=
- =?utf-8?B?ejZuYVVvNSswR2RJQ0s1V1lvd3VwWldIMDRMSlhURFZDU2xDcmE4UjNHZVp6?=
- =?utf-8?B?aVY4TTJzbUNwMEswNzM0NVRVVzRabzB6aXFBYk1VS2I4allLWGZ1VFVRQ1dz?=
- =?utf-8?B?em9scng2aHBiY1dGL1ZzWFNibStzQmN0V3dMbWZPaTEvMXF5Z09ZbGZCRGJx?=
- =?utf-8?B?VHMyM1FGWFcwcGZxRXlzU0o3RkNSMWRyKyt3RHd0bVRlZVlCWG9zaVVGZDMz?=
- =?utf-8?B?U1o3TnJsUTcrN3luT0wxTWpCRkZscXVRWUZVV3Rqbkh4ZkxiVXR0QUxFai8y?=
- =?utf-8?B?R1crUVdUenFmMzV4aG1sWityVVlNZ3c2UDhTT2ZvVTZXNmdBdktzYWFsNEhM?=
- =?utf-8?B?blZLSThwM0s4WUhFTjVHS0dPUmxiVmJmbjBQNFhnSHhhQ2sxWC9LaFZNanRH?=
- =?utf-8?B?N21iUFlqdGpodWZDeTRXNThDNUlISEZndng1aXZoL2E5Y0lzQVdvRWxGVnRT?=
- =?utf-8?B?MlhwQnVrWFZ2ankxV1ZSTXd3a3ZxWmkyc3ZDbXJDMjdpRlc2MElWUTFOVTJC?=
- =?utf-8?B?LzQvcE1TZ3VTK1FlWGdhdHFRcEVKcDFnUDhmOEFkdVZ0SjlEWUdkeDgxOUp5?=
- =?utf-8?B?Sjd1b1NwcGx6ckNOekxIaHFMSWEwenZteTU5V2dKSnNSTEU0QUEwT2NGK0Vo?=
- =?utf-8?B?Zk02ZGZVL0NaUUN1QTRQQkZmUUV2UGRhejBwR3htWXdqQTFRSE4vSUdxWlNV?=
- =?utf-8?B?Kzgycy9VV0VyUEZGMXVoMkhvL2duRGE3SkRyNjRsTGg5VW9lS2lobmVpZ0lQ?=
- =?utf-8?B?RVZrbDQ0RHNDTzRqaHkxYXFYNUI5cndmNi9DMzIxczVCK3dMTVZzUT09?=
-X-OriginatorOrg: amd.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 02e1bc48-038f-476e-e395-08deec41d557
-X-MS-Exchange-CrossTenant-AuthSource: PH8PR12MB6914.namprd12.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 28 Jul 2026 00:47:43.1861
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: d561X6qRDhwZE5otw/3oiRDMB3YYQlxaSJebIS6djEs8G6Di0D4bhQTHgIXulHo1jl3ssVtLsF8HgjUcePL0WA==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: SN7PR12MB8146
+Content-Transfer-Encoding: 8bit
 
+bq25630_setup() resets the device, disables the watchdog and programs
+the charge limits from the battery information. It runs at the end of
+bq25630_probe(), that is after the power supply has been registered, so
+the device is already exposed to the system while the hardware still
+holds its power-on defaults.
 
+power_supply_desc::init runs during registration, after the driver data
+and the fwnode are available and before the device is added. Use it for
+bq25630_setup() and drop the explicit call from bq25630_probe().
 
-On 7/27/26 02:20, K Prateek Nayak wrote:
-> This is a follow up of
-> https://lore.kernel.org/lkml/20260723201228.22584-1-kprateek.nayak@amd.com/
-> with comments from Mario and Sashiko addressed.
-> 
-> Patches are based on:
-> 
->    git.kernel.org/pub/scm/linux/kernel/git/superm1/linux.git bleeding-edge
-> 
-> at commit 39c0cf62fc78 ("cpufreq/amd-pstate: handle missing policy in
-> dynamic EPP callbacks")
-> 
-> Everyone has been Cc'd on the cover letter. Respective maintainers have
-> been Cc'd on the relevant patches to reduce noise. Lists get the full
-> series.
-> ---
-> changelog v2..v3:
-> 
-> o Ensure min_limit_perf is always <= max_limi_perf when adhering to
->    bios_min_perf constraints. (Sashiko)
-> 
-> o Fix the units in debug message to KHz. (Sashiko)
-> 
-> o Added a policy check for dynamic mode toggle. (Sashiko)
-> 
-> o Reworded documentation based on suggestion. (Mario)
-> 
-> o Collected tags from Mario and fix typos highlighted. (Thanks a ton!)
-> 
-> Some Sashiko reviews haven't been addressed in this series:
-> 
-> Mixing of __free() and goto was considered safe as long as they are in
-> the same scope and programmers know what they are doing. (See
-> https://lore.kernel.org/all/20260327152052.GJ3738010@noisy.programming.kicks-ass.net/)
-> (The flagging was unrelated to changes in this series)
-> 
-> Kdump scenario for bios_floor_perf is ignored as (afaik) kdump kernels
-> are loaded temporarily for debug and dumping out data structures that
-> are preserved from last crash, and an inaccurate bios_min_perf during
-> this process should be acceptable.
-> 
-> System profile notifiers do not grab the policy sem to prevent a
-> deadlock with disable path. Disable path already grabs the read end and
-> a pending notifier must finish for it to be removed. Since the driver
-> disallows EPP modifications in dynamic mode, this is handled by the
-> driver without needing to grab the policy sem in notifier handler.
-> 
-> amd-pstate-ut is considered a developer test and is supposed to be run
-> in isolation without any parallel modifications to driver settings. As
-> such, any of those concerns have not been addressed here.
-> ---
-> K Prateek Nayak (9):
->    cpufreq/amd-pstate: Set min_limit_freq based on bios_min_perf
->    cpufreq/amd-pstate: Remove the defensive check for bios_min_perf
->    cpufreq/amd-pstate: Extract platform profile to EPP conversion into a
->      helper
->    cpufreq/amd-pstate: Add dynamic EPP as an
->      "energy_performance_preference" mode
->    cpufreq/amd-pstate: Remove "amd_dynamic_epp" cmdline and "dynamic_epp"
->      sysfs
->    Documentation/amd-pstate: Update dynamic_epp documentation with new
->      behavior
->    cpufreq/amd-pstate: Reduce the scope of exported symbols
->    cpufreq/amd-pstate-ut: Add unit test for "dynamic" EPP mode
->    cpufreq/amd-pstate-ut: Add unit test for CPPC Performance Priority
-> 
->   Documentation/admin-guide/pm/amd-pstate.rst |  45 ++--
->   drivers/cpufreq/amd-pstate-ut.c             | 131 ++++++++--
->   drivers/cpufreq/amd-pstate.c                | 251 ++++++++++----------
->   drivers/cpufreq/amd-pstate.h                |   9 +
->   4 files changed, 262 insertions(+), 174 deletions(-)
-> 
-> 
-> base-commit: 39c0cf62fc7851a17782e7efe8dfb2948739c681
+The callback is passed the power supply, so take the driver data from it
+and use it for the battery information as well: data->psy is only
+assigned once devm_power_supply_register() returns, which is after the
+callback has run.
 
-Thanks, I'll pick these up and continue to test.  If all looks good I'll 
-include in my last PR for 7.3.
+Signed-off-by: Linmao Li <lilinmao@kylinos.cn>
+---
+ drivers/power/supply/bq25630_charger.c | 12 +++++-------
+ 1 file changed, 5 insertions(+), 7 deletions(-)
 
-Thanks!
+diff --git a/drivers/power/supply/bq25630_charger.c b/drivers/power/supply/bq25630_charger.c
+index 9b5f524505d3..2f6878ad0033 100644
+--- a/drivers/power/supply/bq25630_charger.c
++++ b/drivers/power/supply/bq25630_charger.c
+@@ -665,8 +665,9 @@ static int bq25630_reset(struct bq25630_data *data)
+ 	return 0;
+ }
+ 
+-static int bq25630_setup(struct bq25630_data *data)
++static int bq25630_setup(struct power_supply *psy)
+ {
++	struct bq25630_data *data = power_supply_get_drvdata(psy);
+ 	struct power_supply_battery_info *batinfo;
+ 	int ret;
+ 
+@@ -684,7 +685,7 @@ static int bq25630_setup(struct bq25630_data *data)
+ 		return ret;
+ 	}
+ 
+-	ret = power_supply_get_battery_info(data->psy, &batinfo);
++	ret = power_supply_get_battery_info(psy, &batinfo);
+ 	if (ret)
+ 		return dev_err_probe(data->dev, ret,
+ 				     "Could not get battery info\n");
+@@ -752,7 +753,7 @@ static int bq25630_setup(struct bq25630_data *data)
+ 	}
+ 
+ out_put_batinfo:
+-	power_supply_put_battery_info(data->psy, batinfo);
++	power_supply_put_battery_info(psy, batinfo);
+ 
+ 	return ret;
+ }
+@@ -975,6 +976,7 @@ static const struct power_supply_desc bq25630_charger_psy_desc = {
+ 	.get_property = bq25630_charger_get_property,
+ 	.set_property = bq25630_charger_set_property,
+ 	.property_is_writeable = bq25630_charger_property_is_writeable,
++	.init = bq25630_setup,
+ };
+ 
+ static int bq25630_probe(struct i2c_client *client)
+@@ -1047,10 +1049,6 @@ static int bq25630_probe(struct i2c_client *client)
+ 	if (ret)
+ 		return dev_err_probe(data->dev, ret, "Could not request IRQ\n");
+ 
+-	ret = bq25630_setup(data);
+-	if (ret)
+-		return ret;
+-
+ 	return 0;
+ }
+ 
+-- 
+2.25.1
+
