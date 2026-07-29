@@ -1,248 +1,153 @@
-Received: from gloria.sntech.de (gloria.sntech.de [185.11.138.130])
+Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 901343B05BD;
-	Wed, 29 Jul 2026 15:20:43 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=185.11.138.130
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7BE1D4119F9
+	for <linux-pm@vger.kernel.org>; Wed, 29 Jul 2026 15:32:54 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.180.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1785338447; cv=none; b=h3A+NIM2qTGvmlltPOAsq+5uujgLrgAhm0JPqoBQq2L9kq8Z3JT2HEdqvDYxGEwGkNHnykpbXwSVl8JRblO49ksoQnZT7sOnlf+1Rn27TA2rFShgBsPfltCnpsy5HTYMQaQDPbizE7xGR0nh6z9Sk0gh8CM/yOhlgOfqZ1d95Cs=
+	t=1785339176; cv=none; b=Nl4JkTq5gllIqlIoSGTI0XCjNjeQA9Os7dd/P0ew+dkVkbJdjQvSo0ICgifsVKa356mZw+/4ScP+cDPKPKMR+Zu0wAYpPK8LbE3c8F2Dk9G2lBq8pc26KFeYJzcbUqK1U9hq1fRxc3+dKf1/pP7ZPz/rOjtPkbenHUzXPF8E2UE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1785338447; c=relaxed/simple;
-	bh=MFHbaHaVVt153tSYrZv3eQ0iNJf9O/3fITl/yXkrOX0=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=AViPAcZR1Pa6MEybWAund0I90OCwo8BQu9KL/zriH2Mfxzct0l3dI3xc0/bErJwBVCPyjYM8WJLdKLY4egMrWf/VO5C/r6MmdXCfxg8VcQM/1fXBt9x3Jr5hkcfNFxy1DTFg0QNpO7PjFeJcQLqXIIeiDFhKNGAtUmObWD1sm/8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=sntech.de; spf=pass smtp.mailfrom=sntech.de; dkim=pass (2048-bit key) header.d=sntech.de header.i=@sntech.de header.b=S/3Q0Bnq; arc=none smtp.client-ip=185.11.138.130
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=sntech.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=sntech.de
+	s=arc-20240116; t=1785339176; c=relaxed/simple;
+	bh=yfrsC50ioGPIMFrNhawpkz8O61LnsoDnGzPO6q6DRQw=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=QeAt3WGenSM+4rUnsEZcSsbER4Ro1oqZ0hhCXpWpVjQamBhXeo8Gdn7T8WFimgHTqIx5vOv7TmN1FCZOVDSmwrLwlAKU+30q62a08EaaINey/1Hkl0D0/Inbogb8RNn+2b42NT8RKNvVPLjJIKs0mSVIwKKHpWMbUfxH0GOr8Pk=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=b4Mtw74K; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=e365tQXW; arc=none smtp.client-ip=205.220.180.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=sntech.de header.i=@sntech.de header.b="S/3Q0Bnq"
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=sntech.de;
-	s=gloria202408; h=Content-Type:Content-Transfer-Encoding:MIME-Version:
-	References:In-Reply-To:Message-ID:Date:Subject:Cc:To:From:Reply-To;
-	bh=mABh2OQBhAUA7eN+87r478yGoqxajXeOENCfKZxWJeA=; b=S/3Q0Bnq4xPJ4O8no5JeqAx3On
-	L9u7qtyvrLbPLK4sNmOsNDmzx9YGxap/s+dXIkE2DVu1ePPrSMnIV79P7QE9N5XcLzNxY09nJ3xCF
-	rEEgJamiwBjfHBhSX9+f8Bz+22fl2aj3ZRymXrTXZIV2N+Thzq55RYVYtQhl50/RwmGEKqAe5Bhi9
-	qZ+EKCMhKWJ0nD4k4/RSkthYkuh2tL43W+0nlOMTkyxN9NjgW8j2PDHfREpLbzMmdW36IwtGhWVVG
-	i/W+ZxBUrMtVlZieZ0H0WZJ/58Ih5M3OwisS3zcDQ/thjEONoREPev7ACzSt4YaVIO6oJmSsSWMJj
-	FRPC5c7g==;
-From: Heiko =?UTF-8?B?U3TDvGJuZXI=?= <heiko@sntech.de>
-To: tomeu@tomeuvizoso.net, robh@kernel.org, krzk+dt@kernel.org,
- conor+dt@kernel.org, joro@8bytes.org, will@kernel.org, robin.murphy@arm.com,
- ulfh@kernel.org, p.zabel@pengutronix.de, ogabbay@kernel.org,
- Jiaxing Hu <gahing@gahingwoo.com>
-Cc: chaoyi.chen@rock-chips.com, dri-devel@lists.freedesktop.org,
- linux-rockchip@lists.infradead.org, iommu@lists.linux.dev,
- linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
- Jiaxing Hu <gahing@gahingwoo.com>
-Subject:
- Re: [RFC PATCH v2 2/8] pmdomain/rockchip: add optional per-domain power-on
- settle delay
-Date: Wed, 29 Jul 2026 17:20:20 +0200
-Message-ID: <3322194.D8ZAKjAxdT@diego>
-In-Reply-To: <20260718031146.3368811-3-gahing@gahingwoo.com>
-References:
- <20260718031146.3368811-1-gahing@gahingwoo.com>
- <20260718031146.3368811-3-gahing@gahingwoo.com>
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="b4Mtw74K";
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="e365tQXW"
+Received: from pps.filterd (m0279873.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 66TF3FgV2181889
+	for <linux-pm@vger.kernel.org>; Wed, 29 Jul 2026 15:32:53 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-type:date:from:in-reply-to:message-id:mime-version
+	:references:subject:to; s=qcppdkim1; bh=yoh+63SttaOY9zCSusjP2waN
+	JNCY11RiLRNnfqSUL5Y=; b=b4Mtw74Knj8bjb3cqtocKVGS+Excgkj2UhNKT3vP
+	1APzxR86R2TYk/YbG+ThF+rRPJN6LI/7PyviOP9OC0GLbtmSme0Uw69qVrMk7Gcf
+	3fPQfTPNKocTd3Nd5xBWbX2rPN6LWDLVQWFuLbtIDXeNEqENT1ONWhmcfiTJ3uvQ
+	tMqfX7/NWnvZyhcNNAjFIfYyjkO9yKreTrDe8UrcVahi2HvmZywrhP+hN+YjyjrV
+	reWQ/qQhsLBS8cgKwC+wQKYWVx3jMdfPMBNHCNYm88Q5BV5n6aymLzVI/2OS33Ar
+	YrUQYkmBqt5Jfc8CsIhs6LVXYtbELRsR4fcA4+4syKampA==
+Received: from mail-qt1-f198.google.com (mail-qt1-f198.google.com [209.85.160.198])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4fqhg8rysy-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <linux-pm@vger.kernel.org>; Wed, 29 Jul 2026 15:32:52 +0000 (GMT)
+Received: by mail-qt1-f198.google.com with SMTP id d75a77b69052e-51bff5c7035so20890011cf.2
+        for <linux-pm@vger.kernel.org>; Wed, 29 Jul 2026 08:32:52 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=oss.qualcomm.com; s=google; t=1785339172; x=1785943972; darn=vger.kernel.org;
+        h=in-reply-to:content-disposition:content-type:mime-version
+         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=yoh+63SttaOY9zCSusjP2waNJNCY11RiLRNnfqSUL5Y=;
+        b=e365tQXWa99gI9WiJ7DsXJTtjwZJeeSn5mKsw6a3DoyWv+Fz+4qtoz3PMnJ02h0EJC
+         rf4zprChOH0OYcXPQH6SOUJB4kKJI8auF/ocMwDGzemR4jZ/bmE+ipX+Z+x79qr0HVtl
+         dUzIB1uqLD1Mme0IQHcxUyf7b+tkhjSnpFohMiyHzqkMlmwk6On8wVkv3FagvTTQCUtZ
+         57Y1etHoDnqSnaZuIxvYcqcBq3JPg1H519AOYMlhA35XcuuvajEY1HjgXP8iReMdMzvm
+         rP0pxdIvyEiefp7NQbQ7ml+asDTzNysVUJ/4SMIpLGXbcfBNhkixZb2p7yJDGS4Hgq43
+         dF5A==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1785339172; x=1785943972;
+        h=in-reply-to:content-disposition:content-type:mime-version
+         :references:message-id:subject:cc:to:from:date:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=yoh+63SttaOY9zCSusjP2waNJNCY11RiLRNnfqSUL5Y=;
+        b=CDVCZN2awj/F6giSgjwfc7IEvZkkSiqc74FD3/ksn71CllcRaSnUxqqL3FYWzS3p2S
+         B6SZX2P8uhOBtjcEMzcCGRSnj1pwVKwFHqtxYLAXVDFqAuzIpIq8D5cIjIVOm+A4hQUl
+         9VhqJq6dghmB3r0dQA+Dutg2Aui5T0oOqLNV/V9Ep0xNDX4WDPBT5Dtb4bvJDKeSW7oF
+         9+Y8ChV0oM6KgSPINqQGAioe88yl0w8b8YOC/5y6K096pEi43/w4rIYbE10a34dcpcg/
+         PmjhtqsFFSPw1ngXf4xJxt+ZAx/dfdZaQgRZgAoONXjtcOvbpckSDh+ZxdjwZk52OYVk
+         qoqA==
+X-Forwarded-Encrypted: i=1; AHgh+RpewLIE4KKFkNDeaccdWEld0hTMDQMtB425zlXNZigbAWpF/xSZn6WeFX8V9pALk6Mr5lmKgWHZgQ==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yy9WbSnbGmAfLwCaW1FTYc38cT2tjsGo+hVReuaxIl8br4XS8cE
+	54znr/E4DISxGztXy/KieQj4/rW6C3UgdKzOWsswbOzFzXQLl6L9f+bdq29z5MvBzSGGaTh1GQo
+	GnKUAqJQ2abreJE/NQu+LOGixVK84pCGQqkVjt6fneqFWBQ0KYukNWMih96gZJw==
+X-Gm-Gg: AR+sD10/8M85LjP3m0pc0yJAbBYz/9TaS86FmkL9ihRqIX8QA1RNEPZJRcQ8A2Wzy/5
+	gf+rrCUNz9Nko2KEjEiLtfxsqXY0ezlEwGS8C3l4UKZOCY2FtIC0Wre4F82b0OpKTtGWiusekFd
+	YP69o+dngjuRxYxJiek1IsKYxocF/zGc9KRBguxe++xJlHjiWr7NePTPcCPTKmbJd7/c+apQXU9
+	RLeDC3CHT/jEO1u/vg5lBVUOwqh2zs7PtGt3D9kYKy1t8Z9lfflQenE7GIZVSJV0KNohzGnV7DI
+	O9y87skH+6EXSVuVuiFl4NHoFRL7mtPTf59eSV/V0R2y6hUcf7zlFe+x+ANJ7Sh6r48Ps+OFTof
+	AvTzGslubs43qze4=
+X-Received: by 2002:ac8:7dc7:0:b0:51a:8c86:bd42 with SMTP id d75a77b69052e-529d7148884mr64378971cf.63.1785339171989;
+        Wed, 29 Jul 2026 08:32:51 -0700 (PDT)
+X-Received: by 2002:ac8:7dc7:0:b0:51a:8c86:bd42 with SMTP id d75a77b69052e-529d7148884mr64378391cf.63.1785339171272;
+        Wed, 29 Jul 2026 08:32:51 -0700 (PDT)
+Received: from oss.qualcomm.com ([86.121.163.114])
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4976bd83fabsm66366305e9.15.2026.07.29.08.32.49
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 29 Jul 2026 08:32:50 -0700 (PDT)
+Date: Wed, 29 Jul 2026 18:32:48 +0300
+From: Abel Vesa <abel.vesa@oss.qualcomm.com>
+To: Krishna Chaitanya Chundru <krishna.chundru@oss.qualcomm.com>
+Cc: Bjorn Andersson <andersson@kernel.org>,
+        Konrad Dybcio <konradybcio@kernel.org>, Rob Herring <robh@kernel.org>,
+        Krzysztof Kozlowski <krzk+dt@kernel.org>,
+        Conor Dooley <conor+dt@kernel.org>,
+        Manivannan Sadhasivam <mani@kernel.org>,
+        Bartosz Golaszewski <brgl@kernel.org>, linux-arm-msm@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-pci@vger.kernel.org, linux-pm@vger.kernel.org,
+        Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>,
+        Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
+Subject: Re: [PATCH v5 3/3] arm64: dts: qcom: eliza-evk: Add PCIe1 with
+ TC9563 PCIe switch
+Message-ID: <aajfoxioypwxysjme7wmdlkhfdvklwjc26dldvdnkp2axlizp2@df3gcwfgjadg>
+References: <20260729-eliza_evk-v5-0-41790a5a24de@oss.qualcomm.com>
+ <20260729-eliza_evk-v5-3-41790a5a24de@oss.qualcomm.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset="utf-8"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260729-eliza_evk-v5-3-41790a5a24de@oss.qualcomm.com>
+X-Proofpoint-Spam-Info: AW1haW4tMjYwNzI5MDEyNSBTYWx0ZWRfX2RereyeaWJ4R
+ ABalUAwFUq5ZDLYcMBXj78YlqeaE/PkbkAcXZhhLgFURL1tD269PS7ia4+2CaTQ6QL5bEcYDA82
+ SwaCH7KvW8AtPBCnuepEgafiO2Y93os=
+X-Proofpoint-GUID: 3H7fKfjSytWXxfv8Vuaq4NOyKlN-IZpU
+X-Authority-Analysis: v=2.4 cv=LOdWhpW9 c=1 sm=1 tr=0 ts=6a6a1d24 cx=c_pps
+ a=mPf7EqFMSY9/WdsSgAYMbA==:117 a=6dw9+iwJWV8PcCi9M4lOBg==:17
+ a=kj9zAlcOel0A:10 a=RAioF0-LDSMA:10 a=s4-Qcg_JpJYA:10
+ a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=rJkE3RaqiGZ5pbrm-msn:22
+ a=EUspDBNiAAAA:8 a=adJbRHicXYsKkr84VsUA:9 a=CjuIK1q_8ugA:10
+ a=dawVfQjAaf238kedN5IG:22
+X-Proofpoint-ORIG-GUID: 3H7fKfjSytWXxfv8Vuaq4NOyKlN-IZpU
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzI5MDEyNSBTYWx0ZWRfX5P1td2WQFREE
+ BEGnQVMq3P/KE+WiqiE9Jq5atAUTNiuZADwR9jzzf7vH7ryBN4xFhnyVJ2dRcNEGnM2Nk99v+dK
+ fYxxqw4JzKON02T1DJgc4U24cRyfxw2EQMySQkgWbc8xdQae6AWpm6KWPRKzr4276ep6PiMnMnm
+ UTrDAd3u2uR0A+7pRdJI/7vWTtGHVMpnuf5vBIk1FPzq5iF8FlFQHiuNRhkCq5fdFisJ7FaHCeM
+ g4QaHncBREBqyOb77l8mHzAvspYZQoEkr/VBszZBC19noEk8GGDRXMbArF/r6gweoxwJAlO2tWg
+ GWY1APPeFI3A75R64ESa61JFISI22iwQb//jS+xJB+R7YRxHtbXmSQqREk6o+9d2t6GQHP8Xv4L
+ S9RcvD8Osa5v3F75AMg+lDZoCB5s8GzvK1MPleyxCjPNxl9MYRhIDf6nCOnhd9e/ISXW3eLgMti
+ e9Oc4ComPA9JrjGccQw==
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.134,FMLib:17.12.100.49
+ definitions=2026-07-29_06,2026-07-29_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ bulkscore=0 clxscore=1015 impostorscore=0 suspectscore=0 adultscore=0
+ spamscore=0 phishscore=0 priorityscore=1501 lowpriorityscore=0 malwarescore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2607290125
 
-Am Samstag, 18. Juli 2026, 05:11:40 Mitteleurop=C3=A4ische Sommerzeit schri=
-eb Jiaxing Hu:
-> The RK3576 NPU domains need a short settle time after the idle
-> request is released before the QoS registers behind the domain are
-> written: restoring QoS immediately after de-idle can raise an SError
-> on the register access while the NoC is still settling (observed on
-> ROCK 4D as a panic inside rockchip_pd_power() during NPU runtime-PM
-> cycling).
->=20
-> The vendor kernel handles this with a per-domain delay_us field
-> applied between the de-idle request and the QoS restore, carrying
-> 15us for the RK3576 NPUTOP domain.  Mirror that: add delay_us to
-> rockchip_domain_info, honor it in rockchip_pd_power() right before
-> rockchip_pmu_restore_qos(), and set 15us for NPUTOP, NPU0 and NPU1
-> (the two core domains power-cycle constantly under runtime PM and
-> showed the same symptom during bring-up).  All other domains keep 0,
-> so nothing changes for them.
->=20
-> Signed-off-by: Jiaxing Hu <gahing@gahingwoo.com>
-> ---
->  drivers/pmdomain/rockchip/pm-domains.c | 51 ++++++++++++++------------
->  1 file changed, 28 insertions(+), 23 deletions(-)
->=20
-> diff --git a/drivers/pmdomain/rockchip/pm-domains.c b/drivers/pmdomain/ro=
-ckchip/pm-domains.c
-> index 490bbb1d1..1787f62ba 100644
-> --- a/drivers/pmdomain/rockchip/pm-domains.c
-> +++ b/drivers/pmdomain/rockchip/pm-domains.c
-> @@ -59,6 +59,7 @@ struct rockchip_domain_info {
->  	u32 pwr_offset;
->  	u32 mem_offset;
->  	u32 req_offset;
-> +	u32 delay_us;
->  };
-> =20
->  struct rockchip_pmu_info {
-> @@ -185,7 +186,7 @@ struct rockchip_pmu {
->  	.need_regulator =3D regulator,			\
->  }
-> =20
-> -#define DOMAIN_M_O_R_G(_name, p_offset, pwr, status, m_offset, m_status,=
- r_status, r_offset, req, idle, ack, g_mask, wakeup)	\
-> +#define DOMAIN_M_O_R_G(_name, p_offset, pwr, status, m_offset, m_status,=
- r_status, r_offset, req, idle, ack, g_mask, delay, wakeup)	\
+On 26-07-29 20:18:38, Krishna Chaitanya Chundru wrote:
+> The Eliza EVK board connects PCIe1 (8GT/s x2) to a Toshiba TC9563
+> PCIe switch. Enable PCIe1 and its QMP PHY nodes.
+> 
+> TC9563 uses I2C (at address 0x77 on I2C4) for its management interface.
+> 
+> Override the base iommu-map with the expanded set covering all the
+> switch's downstream ports (0x1400-0x1408 SID range).
+> 
+> The TC9563 RESX# and PERST# are OR-ed internally to assert reset on the
+> switch. Use TC9563 RESX# pin via a TLMM GPIO and skip wiring PERST#
+> from the PCIe controller.
+> 
+> Reviewed-by: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
+> Reviewed-by: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
+> Signed-off-by: Krishna Chaitanya Chundru <krishna.chundru@oss.qualcomm.com>
 
-DOMAIN_M_O_R_G describes the fields it sets (mask, offset,  regulator clk-u=
-ngate)
-
-So if you're adding the new wakeup delay that is specific to this one
-implementation-variant, please also add a _W the name DOMAIN_M_O_R_G_W
-
-
-Otherwise looks good.
-
-
-Heiko
->  {							\
->  	.name =3D _name,					\
->  	.pwr_offset =3D p_offset,				\
-> @@ -200,6 +201,7 @@ struct rockchip_pmu {
->  	.req_mask =3D (req),				\
->  	.idle_mask =3D (idle),				\
->  	.clk_ungate_mask =3D (g_mask),			\
-> +	.delay_us =3D (delay),				\
->  	.ack_mask =3D (ack),				\
->  	.active_wakeup =3D wakeup,			\
->  }
-> @@ -244,8 +246,8 @@ struct rockchip_pmu {
->  #define DOMAIN_RK3568(name, pwr, req, wakeup)		\
->  	DOMAIN_M(name, pwr, pwr, req, req, req, wakeup)
-> =20
-> -#define DOMAIN_RK3576(name, p_offset, pwr, status, r_status, r_offset, r=
-eq, idle, g_mask, wakeup)	\
-> -	DOMAIN_M_O_R_G(name, p_offset, pwr, status, 0, r_status, r_status, r_of=
-fset, req, idle, idle, g_mask, wakeup)
-> +#define DOMAIN_RK3576(name, p_offset, pwr, status, r_status, r_offset, r=
-eq, idle, g_mask, delay, wakeup)	\
-> +	DOMAIN_M_O_R_G(name, p_offset, pwr, status, 0, r_status, r_status, r_of=
-fset, req, idle, idle, g_mask, delay, wakeup)
-> =20
->  /*
->   * Dynamic Memory Controller may need to coordinate with us -- see
-> @@ -612,7 +614,6 @@ static int rockchip_do_pmu_set_power_domain(struct ro=
-ckchip_pm_domain *pd,
->  			return ret;
->  	}
-> =20
-> -
->  	ret =3D readx_poll_timeout_atomic(rockchip_pmu_domain_is_on, pd, is_on,
->  					is_on =3D=3D on, 0, 10000);
->  	if (ret) {
-> @@ -667,6 +668,9 @@ static int rockchip_pd_power(struct rockchip_pm_domai=
-n *pd, bool power_on)
->  		if (ret < 0)
->  			goto out;
-> =20
-> +		if (pd->info->delay_us)
-> +			udelay(pd->info->delay_us);
-> +
->  		rockchip_pmu_restore_qos(pd);
->  	}
-> =20
-> @@ -1286,25 +1290,26 @@ static const struct rockchip_domain_info rk3568_p=
-m_domains[] =3D {
->  };
-> =20
->  static const struct rockchip_domain_info rk3576_pm_domains[] =3D {
-> -	[RK3576_PD_NPU]		=3D DOMAIN_RK3576("npu",    0x0, BIT(0),  BIT(0), 0,  =
-     0x0, 0,       0,       0,       false),
-> -	[RK3576_PD_NVM]		=3D DOMAIN_RK3576("nvm",    0x0, BIT(6),  0,      BIT(=
-6),  0x4, BIT(2),  BIT(18), BIT(2),  false),
-> -	[RK3576_PD_SDGMAC]	=3D DOMAIN_RK3576("sdgmac", 0x0, BIT(7),  0,      BI=
-T(7),  0x4, BIT(1),  BIT(17), 0x6,     false),
-> -	[RK3576_PD_AUDIO]	=3D DOMAIN_RK3576("audio",  0x0, BIT(8),  0,      BIT=
-(8),  0x4, BIT(0),  BIT(16), BIT(0),  false),
-> -	[RK3576_PD_PHP]		=3D DOMAIN_RK3576("php",    0x0, BIT(9),  0,      BIT(=
-9),  0x0, BIT(15), BIT(15), BIT(15), false),
-> -	[RK3576_PD_SUBPHP]	=3D DOMAIN_RK3576("subphp", 0x0, BIT(10), 0,      BI=
-T(10), 0x0, 0,       0,       0,       false),
-> -	[RK3576_PD_VOP]		=3D DOMAIN_RK3576("vop",    0x0, BIT(11), 0,      BIT(=
-11), 0x0, 0x6000,  0x6000,  0x6000,  false),
-> -	[RK3576_PD_VO1]		=3D DOMAIN_RK3576("vo1",    0x0, BIT(14), 0,      BIT(=
-14), 0x0, BIT(12), BIT(12), 0x7000,  false),
-> -	[RK3576_PD_VO0]		=3D DOMAIN_RK3576("vo0",    0x0, BIT(15), 0,      BIT(=
-15), 0x0, BIT(11), BIT(11), 0x6800,  false),
-> -	[RK3576_PD_USB]		=3D DOMAIN_RK3576("usb",    0x4, BIT(0),  0,      BIT(=
-16), 0x0, BIT(10), BIT(10), 0x6400,  true),
-> -	[RK3576_PD_VI]		=3D DOMAIN_RK3576("vi",     0x4, BIT(1),  0,      BIT(1=
-7), 0x0, BIT(9),  BIT(9),  BIT(9),  false),
-> -	[RK3576_PD_VEPU0]	=3D DOMAIN_RK3576("vepu0",  0x4, BIT(2),  0,      BIT=
-(18), 0x0, BIT(7),  BIT(7),  0x280,   false),
-> -	[RK3576_PD_VEPU1]	=3D DOMAIN_RK3576("vepu1",  0x4, BIT(3),  0,      BIT=
-(19), 0x0, BIT(8),  BIT(8),  BIT(8),  false),
-> -	[RK3576_PD_VDEC]	=3D DOMAIN_RK3576("vdec",   0x4, BIT(4),  0,      BIT(=
-20), 0x0, BIT(6),  BIT(6),  BIT(6),  false),
-> -	[RK3576_PD_VPU]		=3D DOMAIN_RK3576("vpu",    0x4, BIT(5),  0,      BIT(=
-21), 0x0, BIT(5),  BIT(5),  BIT(5),  false),
-> -	[RK3576_PD_NPUTOP]	=3D DOMAIN_RK3576("nputop", 0x4, BIT(6),  0,      BI=
-T(22), 0x0, 0x18,    0x18,    0x18,    false),
-> -	[RK3576_PD_NPU0]	=3D DOMAIN_RK3576("npu0",   0x4, BIT(7),  0,      BIT(=
-23), 0x0, BIT(1),  BIT(1),  0x1a,    false),
-> -	[RK3576_PD_NPU1]	=3D DOMAIN_RK3576("npu1",   0x4, BIT(8),  0,      BIT(=
-24), 0x0, BIT(2),  BIT(2),  0x1c,    false),
-> -	[RK3576_PD_GPU]		=3D DOMAIN_RK3576("gpu",    0x4, BIT(9),  0,      BIT(=
-25), 0x0, BIT(0),  BIT(0),  BIT(0),  false),
-> +	/*                                               name    p_offset pwr  =
-    status  r_status r_offset req      idle     g_mask   delay wakeup */
-> +	[RK3576_PD_NPU]		=3D DOMAIN_RK3576("npu",    0x0, BIT(0),  BIT(0), 0,  =
-     0x0, 0,       0,       0,       0,    false),
-> +	[RK3576_PD_NVM]		=3D DOMAIN_RK3576("nvm",    0x0, BIT(6),  0,      BIT(=
-6),  0x4, BIT(2),  BIT(18), BIT(2),  0,    false),
-> +	[RK3576_PD_SDGMAC]	=3D DOMAIN_RK3576("sdgmac", 0x0, BIT(7),  0,      BI=
-T(7),  0x4, BIT(1),  BIT(17), 0x6,     0,    false),
-> +	[RK3576_PD_AUDIO]	=3D DOMAIN_RK3576("audio",  0x0, BIT(8),  0,      BIT=
-(8),  0x4, BIT(0),  BIT(16), BIT(0),  0,    false),
-> +	[RK3576_PD_PHP]		=3D DOMAIN_RK3576("php",    0x0, BIT(9),  0,      BIT(=
-9),  0x0, BIT(15), BIT(15), BIT(15), 0,    false),
-> +	[RK3576_PD_SUBPHP]	=3D DOMAIN_RK3576("subphp", 0x0, BIT(10), 0,      BI=
-T(10), 0x0, 0,       0,       0,       0,    false),
-> +	[RK3576_PD_VOP]		=3D DOMAIN_RK3576("vop",    0x0, BIT(11), 0,      BIT(=
-11), 0x0, 0x6000,  0x6000,  0x6000,  0,    false),
-> +	[RK3576_PD_VO1]		=3D DOMAIN_RK3576("vo1",    0x0, BIT(14), 0,      BIT(=
-14), 0x0, BIT(12), BIT(12), 0x7000,  0,    false),
-> +	[RK3576_PD_VO0]		=3D DOMAIN_RK3576("vo0",    0x0, BIT(15), 0,      BIT(=
-15), 0x0, BIT(11), BIT(11), 0x6800,  0,    false),
-> +	[RK3576_PD_USB]		=3D DOMAIN_RK3576("usb",    0x4, BIT(0),  0,      BIT(=
-16), 0x0, BIT(10), BIT(10), 0x6400,  0,    true),
-> +	[RK3576_PD_VI]		=3D DOMAIN_RK3576("vi",     0x4, BIT(1),  0,      BIT(1=
-7), 0x0, BIT(9),  BIT(9),  BIT(9),  0,    false),
-> +	[RK3576_PD_VEPU0]	=3D DOMAIN_RK3576("vepu0",  0x4, BIT(2),  0,      BIT=
-(18), 0x0, BIT(7),  BIT(7),  0x280,   0,    false),
-> +	[RK3576_PD_VEPU1]	=3D DOMAIN_RK3576("vepu1",  0x4, BIT(3),  0,      BIT=
-(19), 0x0, BIT(8),  BIT(8),  BIT(8),  0,    false),
-> +	[RK3576_PD_VDEC]	=3D DOMAIN_RK3576("vdec",   0x4, BIT(4),  0,      BIT(=
-20), 0x0, BIT(6),  BIT(6),  BIT(6),  0,    false),
-> +	[RK3576_PD_VPU]		=3D DOMAIN_RK3576("vpu",    0x4, BIT(5),  0,      BIT(=
-21), 0x0, BIT(5),  BIT(5),  BIT(5),  0,    false),
-> +	[RK3576_PD_NPUTOP]	=3D DOMAIN_RK3576("nputop", 0x4, BIT(6),  0,      BI=
-T(22), 0x0, 0x18,    0x18,    0x18,    15,   false),
-> +	[RK3576_PD_NPU0]	=3D DOMAIN_RK3576("npu0",   0x4, BIT(7),  0,      BIT(=
-23), 0x0, BIT(1),  BIT(1),  0x1a,    15,   false),
-> +	[RK3576_PD_NPU1]	=3D DOMAIN_RK3576("npu1",   0x4, BIT(8),  0,      BIT(=
-24), 0x0, BIT(2),  BIT(2),  0x1c,    15,   false),
-> +	[RK3576_PD_GPU]		=3D DOMAIN_RK3576("gpu",    0x4, BIT(9),  0,      BIT(=
-25), 0x0, BIT(0),  BIT(0),  BIT(0),  0,    false),
->  };
-> =20
->  static const struct rockchip_domain_info rk3588_pm_domains[] =3D {
->=20
-
-
-
-
+Reviewed-by: Abel Vesa <abel.vesa@oss.qualcomm.com>
