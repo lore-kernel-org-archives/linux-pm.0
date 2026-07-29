@@ -1,190 +1,201 @@
-Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-wm1-f48.google.com (mail-wm1-f48.google.com [209.85.128.48])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id ED5C348124F
-	for <linux-pm@vger.kernel.org>; Wed, 29 Jul 2026 12:31:35 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B2A5247D442
+	for <linux-pm@vger.kernel.org>; Wed, 29 Jul 2026 12:34:03 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.48
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1785328298; cv=none; b=lhBREH6pIUswiBeTmAlVZRqMUfCqg+lnTje7BCoca0MPc1w+5G3T9i7K7ncHkPn3akPdJ7ScgLihBFjcFEPdkPGYRYWBV4rrKwGVa9t9xr7sV2PqNk6udO9AwZAS4C2tqjm3fzILGnurllFiT4ggYsqLW+dpPu3/Sb67hxGa1YA=
+	t=1785328448; cv=none; b=uCLPEdeB1MYPXVcfp48qaj6H9xkNsqg4MI5kvDydgkEUF6jirfnLC8UNkrTjq5LAqHaYQMKh82RH2XifVzia+AjBdUWnj+EHOaCUulw/0z/GLij+tVjkI+b877yZE3QD/9A7APxoaIphBIzDZCS8QwiW3qfBBSQUibTyTUET4qk=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1785328298; c=relaxed/simple;
-	bh=K7JENK6sa1LbpG3FYRwucrEeQvC/xIG5ldJRqbSaYOc=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=rhNwPhW537ZiFmAUUgT5MsW7EYGS7ueL3bQtieot/V1SW2Oy9Gyn8hjkShpsxa0S/QlfINfN2u7YQB0GH7CXBkbjOKu20DuabrhesFkq7L6FIYtj5SrO0OyTEPU34zJRDkIuQKwssAkOiCF6W1BjHLMkyluuP4GNQNQ/XPUFf5k=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=oimkaaSG; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=f8pzdW9V; arc=none smtp.client-ip=205.220.168.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
+	s=arc-20240116; t=1785328448; c=relaxed/simple;
+	bh=HeAEDpOyWDfK0HywfMKKJR7m/lfHHAOTVtMyX32Yin4=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=lrVwvPtL1dnpc3QYtnfAqTAPY9WpBSzSi0t7BivXrWAuY+U7bVFTI6PXweNQ3lRFgE3UGDAYVsb3bcYduvf0QMvAOlcUHWtU/S0SU8CjvpvCqN1GRcPb1hpFUobqKx7rY2NBRS2SKRSyVnpoChimBePo8Qsr2IU05DjMdOpqD5I=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com; spf=pass smtp.mailfrom=baylibre.com; dkim=pass (2048-bit key) header.d=baylibre.com header.i=@baylibre.com header.b=JyLSAyA7; arc=none smtp.client-ip=209.85.128.48
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=baylibre.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="oimkaaSG";
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="f8pzdW9V"
-Received: from pps.filterd (m0279864.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 66TBXV0S1218101
-	for <linux-pm@vger.kernel.org>; Wed, 29 Jul 2026 12:31:32 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	lxiDiTYlOyIpoH+2VCVs4iz6grC8x089+hk593hC4o0=; b=oimkaaSGYveBTVoV
-	NF53THaowvNxWrC4+ahInrr7lPlHlaj2dt7cdHXh7yQsp1anuipsBiiZWGgZX1nE
-	OzbVZWbolbrK9WZkD8MNuOBZO2Npe+0CFnB9aHJcI5np66pCARahSPetP6v1qmKy
-	rG5YMf3XA+vKy9BD8ld89TYf2fuQ/tknyCnhWum5lbwhaYTmy9hl8JbCX26RPQLe
-	jXCIPhHupJLakuDls2Oel/5ZvE63fRaO2S2bV+SiCnXTpcnM+y8zNtRYszmCX/3n
-	8sgpZ1Vj96aQLGfc4dmc+1tWcjmIU2zLWP4UEImOefuNI86dSxG1WGs8/09K+Wgt
-	cjEmBg==
-Received: from mail-vk1-f200.google.com (mail-vk1-f200.google.com [209.85.221.200])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4fqgrj07hv-1
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Wed, 29 Jul 2026 12:31:32 +0000 (GMT)
-Received: by mail-vk1-f200.google.com with SMTP id 71dfb90a1353d-5bfc23053f6so17082e0c.0
-        for <linux-pm@vger.kernel.org>; Wed, 29 Jul 2026 05:31:32 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=baylibre.com header.i=@baylibre.com header.b="JyLSAyA7"
+Received: by mail-wm1-f48.google.com with SMTP id 5b1f17b1804b1-49553515a8bso11534145e9.1
+        for <linux-pm@vger.kernel.org>; Wed, 29 Jul 2026 05:34:03 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1785328292; x=1785933092; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:in-reply-to:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=lxiDiTYlOyIpoH+2VCVs4iz6grC8x089+hk593hC4o0=;
-        b=f8pzdW9V2f1amQtrgm362KNmOSxSGhPbcOynvBNqehkSQguSJXiSB3RJqNmjjG9Tsj
-         kAT/5bdDOzFKpZ6RN+SA9CUPOEcSnOrjR1EiuoAO/UnIrkOY6+EWpt7lRfw16zrrTYWy
-         g+Urrc6pg1MRe3UJY5IF71wfRheFuAad/RGUuVr3gCdi4I66eMFoPpVd4dvZBy15hc33
-         A1nzQDN2V4+I6aO27L+zWpQwoPltBW0kf2HnpRpZQM8jXPcc1os+RxkZkZUnYchKY8c0
-         81y8ldYTWKUSrp3u+XdamC4h7ClN/nPKRiuC6kxH36QU/Nv8nNOLCnqq6BlyrWu1/bIz
-         XW5w==
+        d=baylibre.com; s=google; t=1785328442; x=1785933242; darn=vger.kernel.org;
+        h=in-reply-to:content-disposition:content-type:mime-version
+         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=hj7jv6pRB6x5AF5ocoOAZbiwUraKrz6rxk84/RgEz0M=;
+        b=JyLSAyA7JLsBjzsv5sIAMPO8UgSES5gspaHVhSgXArmDW4bnZ3K4YkR+4qtU1fywnQ
+         Irjg6ff/Nvjc9ubPdR9GnYaiSVWJ6Da7YS4a2hnizuFlf9PDpqpYTwK03dtfX8cAxayz
+         3UIZ5GdqQYnTu1hiva6mTgO8/7DP+6yIaC7oIU6+J9wmD2Rn8dcoVWOezjHdTsbyn5Mk
+         wpC1l0wxXWdOpnXu+GBVY3mIhqePwqtPbHJTgwmpDO+x1laQYOe+JfuOWdoTQefrmkOK
+         MowjE8U9DfsaCnyRNE5JCeZysqJapQ45v5K48JDGha168J44FXT5NQUi73Yy62IRY1vI
+         IhkQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1785328292; x=1785933092;
-        h=content-transfer-encoding:content-type:in-reply-to:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=lxiDiTYlOyIpoH+2VCVs4iz6grC8x089+hk593hC4o0=;
-        b=J4mqr/Fsxua6SAIglDNo2amsN+1J8IIbef59XmOsZs0rQ+xoriaCfbQ+Baf7SE8iKt
-         mzdDCkJLWaAUBaVax5eT27vW/sPKE4exe4gDisf86/xopFTIekv/qEdg3TazdytGnEuA
-         ln0Hs2uZt8r2UVbm3AYaibWwGqJY9SpRY/YZHIdKqoOPgZCC3aah53qUo9W0xv3+3KRf
-         aZnwqk+8Yb/9PWEio6q5i1MUFlGVMQ2SniJ5Dk0s3IJUXLQ20N6Z0RO6hJpfEUpujvpF
-         bZlM3s7su1gI30/am94K8y8NLgygK+FY9lIVqYZ/Iq6nAQge0CBla4aFiohzToHjLrGH
-         qcLg==
-X-Forwarded-Encrypted: i=1; AHgh+RonWE416nfnChNcrcjIiSc3HKgxzNF/pPEmv5xAcyPRiNc7A4U9x3kd1vkJbeG/82f0KiKGlXGFMw==@vger.kernel.org
-X-Gm-Message-State: AOJu0YzPmG0Q4xFFDc6Irh57M9zmSLqx9WY6UoU5HmuWIGD5+42J26vN
-	qU4GeESh2RFHdzHKZC6LgCGU5qc7ajUOyQxa9bAoHUb5kg18CRCTQ5ChWapIwnlXSivCUh66ndm
-	ajaERqSsfarUhvVInneeh9j/WC7N24p9mtoIsdFxov7pCTdcjCFcWp4vdbTPN4w==
-X-Gm-Gg: AR+sD11FAQoqlL7FGehkB4sAR69hLWjqqekUrTiAsmVj+xkK869uu0g30EwpYzHH4av
-	ksow9sM0mDRWSqeHJGINMGf4fOHaSnkOCLkJGk0fas5e0KLm7mB2kUG+lxB3rSjNgDuWS4JB5TA
-	ukAc6JH8Bm5Gb9jFo3/N88wEUOCDhapyZepgpP8aMgy2UNZIKJObRCdmsJt4s7APz9HT+1FcTor
-	jiwP2NUCGw+V2Q+/xI+4xDaA58fclKM0b3Qg+S6QIuQbPJjH2kwSzrzTn+ZYft3uY/kJBmWge/q
-	YL79R81rtuZZNifIMSWUJL2U4M0LHl3kAnjlfoPSQjJ481AnsxOMbKdYpJk77XoSOo+gYeT3Xih
-	PK0FMG3J/O/AS3WRHFrmcqCLy
-X-Received: by 2002:a05:6102:3591:b0:745:17b0:10d5 with SMTP id ada2fe7eead31-754a1ba976amr1357737137.3.1785328291543;
-        Wed, 29 Jul 2026 05:31:31 -0700 (PDT)
-X-Received: by 2002:a05:6102:3591:b0:745:17b0:10d5 with SMTP id ada2fe7eead31-754a1ba976amr1357686137.3.1785328290927;
-        Wed, 29 Jul 2026 05:31:30 -0700 (PDT)
-Received: from [192.168.120.193] ([178.235.128.140])
-        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-c1f83cde9cbsm109495366b.16.2026.07.29.05.31.27
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Wed, 29 Jul 2026 05:31:30 -0700 (PDT)
-Message-ID: <794424df-4714-43a4-b4b8-e960998ad1f1@oss.qualcomm.com>
-Date: Wed, 29 Jul 2026 14:31:26 +0200
+        d=1e100.net; s=20251104; t=1785328442; x=1785933242;
+        h=in-reply-to:content-disposition:content-type:mime-version
+         :references:message-id:subject:cc:to:from:date:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=hj7jv6pRB6x5AF5ocoOAZbiwUraKrz6rxk84/RgEz0M=;
+        b=V0hirmoW0K18TS21k+KJyL9u5xt3xl/smVFwZ1f5wV4lpIe57rRYJW1WVMb5gX/Mcg
+         5t5+HNY5qxmgS0jpk9B+qb5YIIObeDShrdePqWkp6Wg8c5XqhNnkE37a9RxtY4AjHh8+
+         8BdAVco74mnqo/hy3yY/Qo5UpsPkpNbZCTYJmOUVQ8yuM9qn2HKJNeLeWTE1mzO9BnvN
+         trD6WUsRMYM8ospbtYv9cP2W7G+oRynefc5t0dH2Gzx2yP+vu0TN31ORKrPzrVf2OKBj
+         1+5m3hkJOFUO1DeS8rRq3bDr6cWAlKxFInTgDxoDR2HY5mD4yHtwKmo3fYumWbOfnJRY
+         HDjQ==
+X-Forwarded-Encrypted: i=1; AHgh+RqXtjOBHAK4ffpVYvq8Wrga6WEp/ld4uFSrwwR2E4C9U8rUtbSbZiEePR2vWwwmrfCkxbTaDZ29YQ==@vger.kernel.org
+X-Gm-Message-State: AOJu0YzqNB87r0zZyN7lNcWtkjF98oyRtT8JdTW1dXALVOodJvMM9P0T
+	hh32gajsjHKJkkEBprlXx4TLxZxFgU+e3m5hN3DymtNfrJe3REWZS00kR4NImGJT1B0=
+X-Gm-Gg: AR+sD107IIGGWzKC8tNBBNkUYaayQeIXRTUZ3+9b6VEuqBoKLZg4ofarm4mdcMBIJOp
+	Dfkx9XJ99aWWfYw7VQyHfDvCTR5zRSPis+WuoK5g5udn6JWIE1d6CvVkmBwcj+LZwyHiiIeKdrL
+	r0iSys2/TDO28W5mKB4V4dQS3QoV3eJuKs4MaaARnJdExHeuvEBHd4KsNPRelBjdeR9Du4gS9Rh
+	RZQ05LtUWbXnqKcE17gYXMLV5qbzSFzAz6QEZSQQu8qSwwqyiYpfY9aM/+JL8fOA5sI2tblTrBj
+	yv3n6HMpaszZCLR9vW/yeb8DIr7FG5zWxCSYcFSwE/P85io97cM/M/0BYLFoKR1345jmkAvhcqR
+	cpQG3Yybpt/gOS/lHgn5cCy+U7JDlnUzGwICD/mGhP3HjFCS+F7iqDgQPz/UzsbjGcPk+r76vpP
+	YP2F7wnKULywg2AbiOzFW7/NMmHuujwSbVOLqRRhp//tLO/HFvcgVzrHpwmGtNM5DCbzaiWAwH2
+	4Mw7i3g4J7pa88SSVbcH+0hFyT71sVAzS8P2jqedUFoaAEUeYUAHCQLZrup9A==
+X-Received: by 2002:a05:600c:1f95:b0:490:c6c2:52 with SMTP id 5b1f17b1804b1-496c64261d4mr74271315e9.3.1785328441446;
+        Wed, 29 Jul 2026 05:34:01 -0700 (PDT)
+Received: from localhost (p200300f65f47db0401da7fd03a16a046.dip0.t-ipconnect.de. [2003:f6:5f47:db04:1da:7fd0:3a16:a046])
+        by smtp.gmail.com with UTF8SMTPSA id 5b1f17b1804b1-49764d6d0f8sm50701985e9.2.2026.07.29.05.34.00
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 29 Jul 2026 05:34:00 -0700 (PDT)
+Date: Wed, 29 Jul 2026 14:33:59 +0200
+From: Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <u.kleine-koenig@baylibre.com>
+To: Svyatoslav Ryhel <clamor95@gmail.com>
+Cc: Rob Herring <robh@kernel.org>, 
+	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
+	Dmitry Torokhov <dmitry.torokhov@gmail.com>, Lee Jones <lee@kernel.org>, Pavel Machek <pavel@kernel.org>, 
+	Sebastian Reichel <sre@kernel.org>, Ion Agorria <ion@agorria.com>, 
+	=?utf-8?B?TWljaGHFgiBNaXJvc8WCYXc=?= <mirq-linux@rere.qmqm.pl>, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
+	linux-input@vger.kernel.org, linux-leds@vger.kernel.org, linux-pm@vger.kernel.org
+Subject: Re: [PATCH v10 2/7] mfd: Add driver for ASUS Transformer embedded
+ controller
+Message-ID: <amnxliqWscD4Mjdz@monoceros>
+References: <20260721095233.420823-1-clamor95@gmail.com>
+ <20260721095233.420823-3-clamor95@gmail.com>
+ <amGx2fJCUB4_XW1M@monoceros>
+ <CAPVz0n2yWtTOgruRc+MAYTZ9=rd6qf6sEnX9v8THvJkN_opvbA@mail.gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 6/6] arm64: dts: qcom: rb3gen2: add Industrial BT UART
- overlay
-To: Rahul Samana <rahul.samana@oss.qualcomm.com>,
-        Bartosz Golaszewski <brgl@kernel.org>,
-        Marcel Holtmann
- <marcel@holtmann.org>,
-        Luiz Augusto von Dentz <luiz.dentz@gmail.com>,
-        Rob Herring <robh@kernel.org>,
-        Krzysztof Kozlowski <krzk+dt@kernel.org>,
-        Conor Dooley <conor+dt@kernel.org>,
-        Balakrishna Godavarthi <quic_bgodavar@quicinc.com>,
-        Rocky Liao <quic_rjliao@quicinc.com>,
-        Manivannan Sadhasivam
- <mani@kernel.org>,
-        Bjorn Andersson <andersson@kernel.org>,
-        Konrad Dybcio <konradybcio@kernel.org>
-Cc: Bartosz Golaszewski <brgl@bgdev.pl>, linux-arm-msm@vger.kernel.org,
-        linux-bluetooth@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
-        linux-pm@vger.kernel.org, quic_mohamull@quicinc.com,
-        quic_hbandi@quicinc.com, quic_anubhavg@quicinc.com
-References: <20260727-rb3-industrial-bt-uart-v2-0-2d100f30e202@oss.qualcomm.com>
- <20260727-rb3-industrial-bt-uart-v2-6-2d100f30e202@oss.qualcomm.com>
-Content-Language: en-US
-From: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
-In-Reply-To: <20260727-rb3-industrial-bt-uart-v2-6-2d100f30e202@oss.qualcomm.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-Authority-Analysis: v=2.4 cv=RJOD2Yi+ c=1 sm=1 tr=0 ts=6a69f2a4 cx=c_pps
- a=wuOIiItHwq1biOnFUQQHKA==:117 a=PRfkaYvzSr8QmIIGAkY2Sg==:17
- a=IkcTkHD0fZMA:10 a=RAioF0-LDSMA:10 a=s4-Qcg_JpJYA:10
- a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=DJpcGTmdVt4CTyJn9g5Z:22
- a=iMgkBSKgpprIcW5G8oEA:9 a=QEXdDO2ut3YA:10 a=XD7yVLdPMpWraOa8Un9W:22
-X-Proofpoint-ORIG-GUID: ElTPUUZF1MARBhWYxWGaRWsKyTf31YGz
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzI5MDEwNCBTYWx0ZWRfX4aFGxaAN52fn
- hDnu9/VNe723r9WOAeVvo6WvEhJNVpXCHhiSC0T/EzBeyGT/FNwCgXPdeh+6ByyCktu5J3UBtPN
- snFW0VhhtX1oA0cP8UIKvCnf7v4uViVc7LJEjpYfXpZr/W/rUK+Bmn64hUktMtke9EcY/MPX1zf
- lWOjaRO0TgvHMPW4kTrcETQdt0YHtmYJ8+I2ao4I9Q1oX6ct86Z/a+PppyoeYHk8xdz7IB8/QUR
- 8G9dtsNnciLTqbvz+AloJ9em6nrEtYhMJg5XIDeA4hWEZzuv7ezp4bt2Doz5+FfUhNF18hFY45C
- XayU8MW2qOxG4g2HlSrdPO7IvcoINEoVrJO5lzqX4A0Z1n1vzAsV9cwc5PKdLfbXAAA6l6+BD0m
- j6IiSmXgrfh5kdXbckQEKqj7TfyXT3HQBM9kaOFJk+xH8BTBORIerplt9/cpBz7D8m94HMOugHv
- 3odDAoYjxy8PrZlCDXQ==
-X-Proofpoint-Spam-Info: AW1haW4tMjYwNzI5MDEwNCBTYWx0ZWRfX0v979nuxVkGl
- 077hVaFpymjoi2nIe0Glc5+UQhFUKMAaInUh/rKfz15NZkUsZIcJl7ZKGiwrI18fFfDZHOjgzQu
- iKdVPHtME6dkn1ymu7jT5xai25KJbRA=
-X-Proofpoint-GUID: ElTPUUZF1MARBhWYxWGaRWsKyTf31YGz
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-07-29_04,2026-07-28_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- phishscore=0 lowpriorityscore=0 priorityscore=1501 bulkscore=0 malwarescore=0
- impostorscore=0 suspectscore=0 clxscore=1015 spamscore=0 adultscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2607290104
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="6dqlofrf2szwmrad"
+Content-Disposition: inline
+In-Reply-To: <CAPVz0n2yWtTOgruRc+MAYTZ9=rd6qf6sEnX9v8THvJkN_opvbA@mail.gmail.com>
 
-On 7/27/26 5:45 PM, Rahul Samana wrote:
-> The reworked RB3 Gen 2 Industrial mezzanine keeps the common Industrial
-> mezzanine hardware description but routes QCC2072 Bluetooth over UART4
-> instead of the default Bluetooth-over-USB path.
-> 
-> Build this variant by applying the common Industrial mezzanine overlay
-> first, followed by the BT UART overlay. The overlay models the M.2 E-key
-> connector graph endpoints for PCIe and UART, and disables the on-board
-> WCN6750 PMU and UART7 path so the M.2 QCC2072 Bluetooth controller can be
-> used instead.
 
-So is the onboard module disabled? Can we not just use two in parallel?
+--6dqlofrf2szwmrad
+Content-Type: text/plain; protected-headers=v1; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+Subject: Re: [PATCH v10 2/7] mfd: Add driver for ASUS Transformer embedded
+ controller
+MIME-Version: 1.0
 
-[...]
+On Sat, Jul 25, 2026 at 04:23:13PM +0300, Svyatoslav Ryhel wrote:
+> =D1=87=D1=82, 23 =D0=BB=D0=B8=D0=BF. 2026=E2=80=AF=D1=80. =D0=BE 09:25 Uw=
+e Kleine-K=C3=B6nig
+> <u.kleine-koenig@baylibre.com> =D0=BF=D0=B8=D1=88=D0=B5:
+> >
+> > Hello,
+> >
+> > On Tue, Jul 21, 2026 at 12:52:28PM +0300, Svyatoslav Ryhel wrote:
+> > > From: Micha=C5=82 Miros=C5=82aw <mirq-linux@rere.qmqm.pl>
+> > >
+> > > Support Nuvoton NPCE795-based ECs as used in Asus Transformer TF201,
+> > > TF300T, TF300TG, TF300TL and TF700T pad and dock, as well as TF101 do=
+ck
+> > > and TF600T, P1801-T and TF701T pad. This is a glue driver handling
+> > > detection and common operations for EC's functions.
+> > >
+> > > Co-developed-by: Svyatoslav Ryhel <clamor95@gmail.com>
+> > > Signed-off-by: Svyatoslav Ryhel <clamor95@gmail.com>
+> > > Signed-off-by: Micha=C5=82 Miros=C5=82aw <mirq-linux@rere.qmqm.pl>
+> >
+> > Documentation/process/submitting-patches.rst has:
+> >
+> >         [...] the ordering of Signed-off-by: tags should reflect the
+> >         chronological history of the patch insofar as possible [...]
+> >
+> > So your S-o-b should be last when you submit a patch.
+> >
+> > > +#include <linux/i2c.h>
+> > > [...]
+> > > +#include <linux/mod_devicetable.h>
+> >
+> > <linux/mod_devicetable.h> will go away soon. Please rely on
+> > <linux/i2c.h> to provide a definition of struct of_device_id and drop
+> > the #include of mod_devicetable.h.
+> >
+> > > +static const struct of_device_id asus_ec_match[] =3D {
+> > > +     {
+> > > +             .compatible =3D "asus,sl101-ec-dock",
+> > > +             .data =3D &asus_ec_sl101_dock_data
+> > > +     }, {
+> > > +             .compatible =3D "asus,tf101-ec-dock",
+> > > +             .data =3D &asus_ec_tf101_dock_data
+> > > +     }, {
+> > > +             .compatible =3D "asus,tf201-ec-pad",
+> > > +             .data =3D &asus_ec_tf201_pad_data
+> > > +     }, {
+> > > +             .compatible =3D "asus,tf600t-ec-pad",
+> > > +             .data =3D &asus_ec_tf600t_pad_data
+> > > +     },
+> > > +     { /* sentinel */ }
+> > > +};
+> >
+> > Trailing comma after the assignments to .data please.
+> >
+>=20
+> Sure, but out of curiosity, why in this case you ask for trailing
+> comma and if entries are in one line, you don't.
 
-> +&pcie0_m2_e {
-> +	port {
-> +		pcie0_m2_e_ep: endpoint {
-> +			remote-endpoint = <&m2_e_pcie_ep>;
-> +		};
-> +	};
-> +};
-> +
-> +&uart4 {
-> +	interrupts-extended = <&intc GIC_SPI 605 IRQ_TYPE_LEVEL_HIGH>,
-> +			      <&tlmm 19 IRQ_TYPE_EDGE_FALLING>;
-> +	pinctrl-names = "default", "sleep";
-> +	pinctrl-1 = <&qup_uart4_sleep_cts>, <&qup_uart4_sleep_rts>,
-> +		    <&qup_uart4_sleep_tx>, <&qup_uart4_sleep_rx>;
-> +
-> +	status = "okay";
-> +
-> +	port {
-> +		uart4_m2_e_ep: endpoint {
-> +			remote-endpoint = <&m2_e_uart_ep>;
-> +		};
-> +	};
+Because this is the most used style. The rationale for the trailing
+comma is that if you want to add a new assignment to a multiline
+initializer you have to touch the line without comma:
 
-Let's define both PCIe and UART endpoint sin the SoC DTSI. And don't
-mention "m2" in their labels.
+ 	}, {
+ 		.compatible =3D "asus,tf600t-ec-pad",
+-		.data =3D &asus_ec_tf600t_pad_data
++		.data =3D &asus_ec_tf600t_pad_data,
++		.something_else =3D &foobar,
+ 	},
 
-Just pcie0_port0_ep and uart4_ep respectively.
+so if the comma is already there, the patch reduces to:
 
-Konrad
+ 	}, {
+ 		.compatible =3D "asus,tf600t-ec-pad",
+ 		.data =3D &asus_ec_tf600t_pad_data,
++		.something_else =3D &foobar,
+ 	},
+
+=2E For adding a new assignment to:
+
+ 	{ .compatible =3D "..." }
+
+you have to touch the line anyhow, so there is no advantage to already
+have the comma. And then it seems parsimony prevails.
+
+Best regards
+Uwe
+
+--6dqlofrf2szwmrad
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQEzBAABCgAdFiEEP4GsaTp6HlmJrf7Tj4D7WH0S/k4FAmpp8zUACgkQj4D7WH0S
+/k6ZNAf8DhR7uBfXuQZzNcJ2dR9KB5Mucc4l5ZRolBWJcq6FHN8KK2BbDb+bkrcE
+pUhYeNPt0LnZBA6JHWhJAM1zlHnLaQ2PlBWxeR4EIwAhM8nyXcfHgmgMJxBHSeEQ
+qHWXZKtQd90uCGYg4BnQO8LmgAQR610/ujayOjnD0EgB2Wy19ZkENuG5Nu+Irzef
+8DWW0WMWbrTCP49l4fgVWsLE8/yOaBE1jBeyaZ17yXLwz5vbs6OfeCkqaK11AOnH
+KXbRlcea/K7YZX7wPKZLhHMSvmzSk+NEQgQpg7+qgg7NYMLDgJFCfvFTWhNj5lqb
+GcHcRJv6c3GBFhS3t9oSrHiBeXrX0A==
+=JxD4
+-----END PGP SIGNATURE-----
+
+--6dqlofrf2szwmrad--
