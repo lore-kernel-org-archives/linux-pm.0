@@ -1,233 +1,228 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C70B34D98EF
-	for <linux-pm@vger.kernel.org>; Wed, 29 Jul 2026 18:25:17 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id ADA99451998;
+	Wed, 29 Jul 2026 18:40:13 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1785349520; cv=none; b=YvVRUIhHjVy/UWbsbvhvNLwzhStNgxSE6TZZylUo8ITYkE5IhoOi3J618Lr4VpN4Ztm3EP7dkpGsVbJ6YuxA5QaJHXgyYwbGqHDkqtN2jptka7PV2Jt2WzfhbnKdGzn8mGF2u5otzU421vmB/LObOr/HMyeLLl4ilwjpJglRntc=
+	t=1785350415; cv=none; b=CzhdYAAdOnxN/weuHkRIerN/DLTRfkEf0wBKHO0znWaHY8eYDKAqxVK+229rC0Dc3BLKm78RTu1FQksuW3AtJvNluauYTe7XwGZZ7Viht0O7z6+M/U6qxCkIylUJdImGnQ+0oIbBHU2mONwDiTN9PR8Ut93LaL4iiOvH39paYr4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1785349520; c=relaxed/simple;
-	bh=QdW7MgW2MF5/as2Ch3vhSpYi2mVtggZKrMFf8/VCn9s=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=UpdhnRMEcUej6Bhkl0B5j21TBAOu4HoQNQSTSyaTMRppo2mWSIFoTIQAfj2gBMmA55eY8UTeJgzw6WJO5P3P00LtRDUb8+XhJzD1nAd6B59EiWa6BoF88O3SOIjgT8vNUSoFfCxDgrUR3+GEYwU2LjcXNiDBQKKyRn8Si2o8B7g=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=ALdiMVL7; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1785350415; c=relaxed/simple;
+	bh=37N/mRjik54MLq7pSe87pazmvervw8jaPQQtTqGyo0Q=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=hMfHKw1xLyQ7uWilswBtV4JenwOLeY0ElF1LHz58yZYAiEV+KkpgExuoFbqFuZ/3VD8zrAJFuIjjz6rXItP6tSEosAF61B5k9zRVxQuItHS8qbbB0LNE+2d5Sc5HkDyJqx4/zkhyxw7Sl6L6vuH7duadr4O1R9EN5tSZuGkpQWA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=X9uTx88o; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="ALdiMVL7"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 01CD31F00ADB
-	for <linux-pm@vger.kernel.org>; Wed, 29 Jul 2026 18:25:16 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="X9uTx88o"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id AB4F81F000E9;
+	Wed, 29 Jul 2026 18:40:11 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1785349517;
-	bh=ikUcw6KcywPXfwnfVZTZ1J2dzmV/aERHR8hg7DjN3XU=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc;
-	b=ALdiMVL7oGVwdHjufPsqYPQa1mB6ej+ztwoFu/60pgmaE9djdtjmkLZBDG6ZAeD6Q
-	 sTlWFbbujb/npcGS0LNlcxiUYHeHzYfH5Xr7lMHDkAdo1ogkFJWg6zSuME7zo+ncgw
-	 Tm3bvPsuhZl1YOxeNpSRH0F/FbU8oF+8iVcYEwU5xkc8BeTPGosBa7pjG3GpQdTJlC
-	 KvUjyWYmNWf24I4n0pMuk4DUtEhTFeSYj4Ur0++NzlNJAQPuOEJHFNd73Yc88071cM
-	 BkB5xQI1E8WGjR53sBEEntBhW6qact0H48MXWiJEN1E7Xw6Gb+iImh64kKS6R/IxMy
-	 5H3Q9IiPtbRfg==
-Received: by mail-lj1-f172.google.com with SMTP id 38308e7fff4ca-39c9452244aso11545141fa.3
-        for <linux-pm@vger.kernel.org>; Wed, 29 Jul 2026 11:25:16 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AHgh+RrEbN3e9h5sTaBMOCgWJ3qp49h0TARBvf5G9HYeYouY8TKf4gxlDDqWJ5w3FWcI0ka/GzUQhs/8iQ==@vger.kernel.org
-X-Gm-Message-State: AOJu0YzC0EqIKECjRfrt29d0IhZeE+YFTDauqVQN5cSzW/iuKRTAnGtm
-	KOw79Try7DP6mcOmsy4C+Nn7nk+FvOxr0BSOHWae/ajJbBsG8a2aJDVr46XscD/nx5IFmwnC6eS
-	93mbPf9fU6EEWnn6kEl1QZzMZNSCpWYc=
-X-Received: by 2002:a05:651c:1602:b0:39f:5f76:9eeb with SMTP id
- 38308e7fff4ca-39f5f76ad35mr7911081fa.33.1785349515376; Wed, 29 Jul 2026
- 11:25:15 -0700 (PDT)
+	s=k20260515; t=1785350413;
+	bh=gdSZlcZLOrT3qLd/7Xc6VhHCdWDOoqN5SFhYE+390ec=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References;
+	b=X9uTx88of3pNOkBye0J4bMIvkXzb14bxgNRlOeov8NwnqbLMrpv/9IGtkRBQvlaF2
+	 UMW0NbL1J/1rOC+ytlAbhig7nnpmnUcNwun4uNeLACyFyeD0K4FfZ29m8JdTg56mXw
+	 tgsZCJwfbFujJxGtAPVge4cjJMDNpl+q6dP+k64dOHoleY1LSq5K3DOtqkskgQtEQQ
+	 gddFWvJMQo5D+9Dkd6tHUQOMEy2rTycSJFaeqN+KMr8MYTZfz02VjFcmq9P2lwaUY+
+	 EEUM/s72j59qiRKhW4K3umBrsBtmC5LpvNVpF8ER5IADRjeD+TFBLiVYu7k/wtQZRn
+	 qO0thK9BbmcuA==
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+To: Jing Wu <realwujing@gmail.com>, linux-pm@vger.kernel.org
+Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
+ Viresh Kumar <viresh.kumar@linaro.org>, Doug Smythies <dsmythies@telus.net>,
+ "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
+ linux-kernel@vger.kernel.org
+Subject:
+ [PATCH v1] cpufreq: intel_pstate: Adjust policy->cur in active mode to policy
+Date: Wed, 29 Jul 2026 20:40:08 +0200
+Message-ID: <5144014.31r3eYUQgx@rafael.j.wysocki>
+Organization: Linux Kernel Development - Intel
+In-Reply-To:
+ <20260729-bug-intel-pstate-policy-cur-v1-1-51f61e5cbd74@gmail.com>
+References: <20260729-bug-intel-pstate-policy-cur-v1-1-51f61e5cbd74@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <096b42fa-107f-450d-b3b1-03bcad3f1e04@oracle.com>
- <CAJZ5v0g+SkTxuP5fqUMisQAh19v-JzpmRZHiKtYzJH1sVt656g@mail.gmail.com>
- <5f5cb821-92ae-4539-ae81-a43e33a7ded5@arm.com> <f5946a8a-43be-49d4-a827-25149112b21f@oracle.com>
- <774c3a68-6a6b-4e2e-a347-03e36953b750@arm.com>
-In-Reply-To: <774c3a68-6a6b-4e2e-a347-03e36953b750@arm.com>
-From: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
-Date: Wed, 29 Jul 2026 20:25:03 +0200
-X-Gmail-Original-Message-ID: <CAJZ5v0iPonKR6CDykRr4soKFmRAcf3fUfaMA1WrZ8_gHKgukPw@mail.gmail.com>
-X-Gm-Features: AUfX_mzbR1l31HAp_thVHQzffrc_iNaYBXI65KIl-8mQBOSwpkIHJ5K7u3YwOow
-Message-ID: <CAJZ5v0iPonKR6CDykRr4soKFmRAcf3fUfaMA1WrZ8_gHKgukPw@mail.gmail.com>
-Subject: Re: [REGRESSION] sched/idle: Sysbench threads regression after f4c31b07b136
-To: Christian Loehle <christian.loehle@arm.com>
-Cc: Joseph Salisbury <joseph.salisbury@oracle.com>, 
-	"Rafael J. Wysocki (Intel)" <rafael@kernel.org>, rafael.j.wysocki@intel.com, 
-	Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, 
-	Juri Lelli <juri.lelli@redhat.com>, Vincent Guittot <vincent.guittot@linaro.org>, 
-	Dietmar Eggemann <dietmar.eggemann@arm.com>, frederic@kernel.org, linux-pm@vger.kernel.org, 
-	LKML <linux-kernel@vger.kernel.org>, regressions@lists.linux.dev
+Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
 
-On Tue, Jul 28, 2026 at 10:30=E2=80=AFAM Christian Loehle
-<christian.loehle@arm.com> wrote:
->
-> On 7/24/26 18:20, Joseph Salisbury wrote:
-> > Hi Rafael, Christian,
-> >
-> > On 7/6/26 10:29 AM, Christian Loehle wrote:
-> >> On 7/2/26 19:47, Rafael J. Wysocki (Intel) wrote:
-> >>> Hi,
-> >>>
-> >>> On Thu, Jul 2, 2026 at 6:30=E2=80=AFPM Joseph Salisbury
-> >>> <joseph.salisbury@oracle.com> wrote:
-> >>>> Hi Rafael,
-> >>>>
-> >>>> We are seeing a reproducible MySQL Sysbench threads regression.  A
-> >>>> bisect indicated the following commit as the first bad commit:
-> >>>> f4c31b07b136 ("sched: idle: Consolidate the handling of two special =
-cases")
-> >>>>
-> >>>> The regression was found in Oracle kernel performance testing on OCI=
- VM
-> >>>> shapes:
-> >>>>
-> >>>> VM Details:
-> >>>> * VM.Standard2.1:
-> >>>>         x86 OCI VM shape, 1 OCPU / 2 hardware threads, about 14.5 GB=
- RAM
-> >>>>
-> >>>>    * VM.Standard.A1.Flex.2:
-> >>>>         Arm/Ampere A1 flexible VM shape, 2 vCPU threads, about 10.9 =
-GB RAM
-> >>>>
-> >>>>
-> >>>> The ResultsDB runs show the regression in the Sysbench threads metri=
-c:
-> >>>>
-> >>>>     - VM.Standard2.1:       333 -> 236  (-29.1%)
-> >>>>     - VM.Standard.A1.Flex.2: 1286 -> 1152 (-10.4%)
-> >>>>
-> >>>> A test kernel was built with f4c31b07b136 reverted and the performan=
-ce
-> >>>> regression was recovered.
-> >>>>
-> >>>>   From the code, it is possible the regression is due to the new
-> >>>> previous-wakeup heuristic in the special idle cases.  Before the com=
-mit:
-> >>>>
-> >>>>     - no cpuidle driver:
-> >>>>         tick_nohz_idle_stop_tick()
-> >>>>         default_idle_call()
-> >>>>
-> >>>>     - one idle state:
-> >>>>         tick_nohz_idle_retain_tick()
-> >>>>         cpuidle state 0
-> >>> I think that this is your case and the tick stops for you sometimes
-> >>> now while it had never stopped before.
-> >>>
-> >>> Can you confirm?
-> > The guest-visible data does not show the single-idle-state cpuidle case=
-.
-> > Both affected guests report:
-> >
-> > /sys/devices/system/cpu/cpuidle/current_driver =3D none
-> > /sys/devices/system/cpu/cpuidle/current_governor =3D menu
-> >
-> > There are also no /sys/devices/system/cpu/cpu*/cpuidle entries on eithe=
-r guest.  So from the guest data, this looks like the no-cpuidle-driver spe=
-cial case rather than the one-idle-state case.
-> >
-> > The full revert of f4c31b07b136 recovered the regression. I also tested=
- Rafael's suggested one-line change, applied as:
-> >
-> >     -        idle_call_stop_or_retain_tick(stop_tick);
-> >    +        idle_call_stop_or_retain_tick(false);
-> >
-> > That test kernel still showed regressed performance on VM.Standard2.1.
-> >
-> >
-> >>>
-> >>> Overall, it would be good to know the idle state lists for both the V=
-M
-> >>> and the host.
-> > For the VMs, there are no guest cpuidle state lists exposed because the=
- cpuidle driver is "none".
-> >
-> > I do not currently have the host-side idle-state lists from the OCI hos=
-ts.  I can try to get that data if it would still be useful.
-> >>>
-> >> +1, but also which HZ are you using?
-> > VM.Standard2.1, x86_64:
-> >
-> > CONFIG_HZ_1000=3Dy
-> > CONFIG_HZ=3D1000
-> >
-> > VM.Standard.A1.Flex.2, aarch64:
-> >
-> > CONFIG_HZ_250=3Dy
-> > CONFIG_HZ=3D250
-> >
-> >> Both systems reported have 2 logical CPUs then?
-> >
-> > Yes:
-> >
-> > VM.Standard2.1:
-> >
-> > CPU(s): 2
-> > Thread(s) per core: 2
-> > Core(s) per socket: 1
-> > Socket(s): 1
-> >
-> > VM.Standard.A1.Flex.2:
-> >
-> > CPU(s): 2
-> > Thread(s) per core: 1
-> > Core(s) per socket: 2
-> > Socket(s): 1
-> >
-> >> Were higher core counts also
-> >> tested and how does it affect them?
-> > Yes. Higher-core-count runs were checked. The regression appears limite=
-d to the smaller core-count shapes.
-> >
-> > The current data shows regressions on:
-> >
-> > - VM.Standard2.1
-> > - VM.Standard.A1.Flex.2
-> > - VM.Standard.E4.Flex.1
-> >
-> > The larger tested shapes did not show the same regression pattern. The =
-test runs use one sysbench thread per online CPU/core count as encoded in t=
-he metric name.
-> >
-> >
->
-> Interesting, so your guests (no cpuidle) need the tick stopped at every
-> idle entry to not regress, i.e. the below?
-> Is there anything obvious that shows why that would be? Maybe in the
-> hypervisor behaviour?
+On Wednesday, July 29, 2026 10:59:24 AM CEST Jing Wu wrote:
+> When cpu->policy is CPUFREQ_POLICY_PERFORMANCE, intel_pstate_set_policy()
+> pins the CPU to a fixed pstate (max(min_pstate, max_perf_ratio)) and
+> programs it directly, precisely because, per the existing comment,
+> "NOHZ_FULL CPUs need this as the governor callback may not be invoked
+> on them". Two lines later it still unconditionally clobbers policy->cur
+> down to policy->min, discarding the pinned value it just computed and
+> applied.
+> 
+> arch_freq_get_on_cpu() falls back to cpufreq_quick_get(), i.e.
+> policy->cur, whenever its APERF/MPERF sample goes stale. A CPU whose
+> tick keeps running refreshes that sample constantly and rarely hits
+> the fallback, but an isolated CPU covered by nohz_full with a single
+> runnable task never gets another tick, so it permanently reports the
+> floor through this fallback - even though it is genuinely pinned to,
+> and running at, the frequency computed just above.
+> 
+> Set policy->cur to the exact pinned frequency (pstate * scaling) in
+> the CPUFREQ_POLICY_PERFORMANCE branch instead, and only fall back to
+> policy->min for the general case, where the frequency genuinely isn't
+> known without a fresh sample.
+> 
+> Fixes: d51847acb018 ("cpufreq: intel_pstate: set stale CPU frequency to minimum")
+> Co-developed-by: Qiliang Yuan <yuanql9@chinatelecom.cn>
+> Signed-off-by: Qiliang Yuan <yuanql9@chinatelecom.cn>
+> Signed-off-by: Jing Wu <realwujing@gmail.com>
+> ---
+>  drivers/cpufreq/intel_pstate.c | 20 +++++++++++++++-----
+>  1 file changed, 15 insertions(+), 5 deletions(-)
+> 
+> diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+> index 5a0eeb84d3821..b2c60c4931dcd 100644
+> --- a/drivers/cpufreq/intel_pstate.c
+> +++ b/drivers/cpufreq/intel_pstate.c
+> @@ -2908,8 +2908,23 @@ static int intel_pstate_set_policy(struct cpufreq_policy *policy)
+>  		 */
+>  		intel_pstate_clear_update_util_hook(policy->cpu);
+>  		intel_pstate_set_pstate(cpu, pstate);
+> +
+> +		/*
+> +		 * Report the exact pinned frequency instead of the floor:
+> +		 * the CPU is pinned to pstate here and nothing else changes
+> +		 * it, unlike the general case below.
+> +		 */
+> +		policy->cur = pstate * cpu->pstate.scaling;
+>  	} else {
+>  		intel_pstate_set_update_util_hook(policy->cpu);
+> +
+> +		/*
+> +		 * Keep policy->cur within limits here: outside of the pinned
+> +		 * CPUFREQ_POLICY_PERFORMANCE case above, it is never updated
+> +		 * by the intel_pstate driver, but it is used as a stale
+> +		 * frequency value.
+> +		 */
+> +		policy->cur = policy->min;
+>  	}
+>  
+>  	if (hwp_active) {
+> @@ -2922,11 +2937,6 @@ static int intel_pstate_set_policy(struct cpufreq_policy *policy)
+>  			intel_pstate_clear_update_util_hook(policy->cpu);
+>  		intel_pstate_hwp_set(policy->cpu);
+>  	}
+> -	/*
+> -	 * policy->cur is never updated with the intel_pstate driver, but it
+> -	 * is used as a stale frequency value. So, keep it within limits.
+> -	 */
+> -	policy->cur = policy->min;
+>  
+>  	mutex_unlock(&intel_pstate_limits_lock);
+>  
+> 
+> ---
 
-Well, this is all unclear to me and it looks like the host is using
-the tick stopping in the guest to drive vCPU scheduling decisions or
-similar.
+Good idea overall, but it takes a bit more to do this.  In particular, the HWP
+case needs some more care.
 
-I'm guessing (but not sure at all) that arch_cpu_idle() in the x86
-version of the guest is just native_safe_halt() which then traps to
-the host which does something.  And that may depend on whether or not
-the tick has been stopped in the guest.
+Also, I don't think that this really is a fix.  The code works as intended,
+although what it does is sometimes confusing.
 
-I'm not going to apply any changes related to this without a clear
-understanding of what is really going on and there is too little
-information for that ATM.
+Below is my version of this change (on top of linux-next), please let me know
+if it works for you.
 
-> ----
->
-> diff --git a/kernel/sched/idle.c b/kernel/sched/idle.c
-> index 052435f4d3e3..d91a102ef028 100644
-> --- a/kernel/sched/idle.c
-> +++ b/kernel/sched/idle.c
-> @@ -194,8 +194,7 @@ static void cpuidle_idle_call(bool stop_tick)
->         }
->
->         if (cpuidle_not_available(drv, dev)) {
-> -               idle_call_stop_or_retain_tick(stop_tick);
-> -
-> +               idle_call_stop_or_retain_tick(true);
->                 default_idle_call();
->                 goto exit_idle;
->         }
->
+Thanks!
+
+---
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Subject: [PATCH v1] cpufreq: intel_pstate: Adjust policy->cur in active mode to policy
+
+Since arch_freq_get_on_cpu() on x86 falls back to cpufreq_quick_get(),
+which effectively causes policy->cur to be returned when intel_pstate
+is used, adjust intel_pstate_set_policy() to set policy->cur to reflect
+the P-state that is actually going to be requested in the "performance"
+policy case instead of setting it to policy->min (which is confusing
+because it causes scaling_cur_freq to show the minimum frequency while
+the CPU is likely running at the maximum one).
+
+For this purpose, rearrange intel_pstate_set_policy() to handle the HWP
+case separately, to avoid calling intel_pstate_set_pstate() pointlessly
+with HWP enabled, and use the observation that with HWP enabled in the
+active mode, the utilization update hook is only needed when HWP boost
+is used and the policy is not "performance".
+
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ drivers/cpufreq/intel_pstate.c |   38 +++++++++++++++++++++++---------------
+ 1 file changed, 23 insertions(+), 15 deletions(-)
+
+--- a/drivers/cpufreq/intel_pstate.c
++++ b/drivers/cpufreq/intel_pstate.c
+@@ -2870,6 +2870,7 @@ static void intel_pstate_set_pstate(stru
+ 
+ static int intel_pstate_set_policy(struct cpufreq_policy *policy)
+ {
++	unsigned int freq = policy->min;
+ 	struct cpudata *cpu;
+ 
+ 	if (!policy->cpuinfo.max_freq)
+@@ -2885,7 +2886,23 @@ static int intel_pstate_set_policy(struc
+ 
+ 	intel_pstate_update_perf_limits(cpu, policy->min, policy->max);
+ 
+-	if (cpu->policy == CPUFREQ_POLICY_PERFORMANCE) {
++	if (hwp_active) {
++		/*
++		 * The active mode only requires an update util hook if HWP
++		 * boost is used and the policy is not "performance".
++		 */
++		if (hwp_boost && cpu->policy != CPUFREQ_POLICY_PERFORMANCE) {
++			intel_pstate_set_update_util_hook(policy->cpu);
++		} else {
++			intel_pstate_clear_update_util_hook(policy->cpu);
++			if (cpu->policy == CPUFREQ_POLICY_PERFORMANCE) {
++				freq = cpu->max_perf_ratio * cpu->pstate.scaling;
++				if (cpu->pstate.scaling != cpu->pstate.perf_ctl_scaling)
++					freq = rounddown(freq, cpu->pstate.perf_ctl_scaling);
++			}
++		}
++		intel_pstate_hwp_set(policy->cpu);
++	} else if (cpu->policy == CPUFREQ_POLICY_PERFORMANCE) {
+ 		int pstate = max(cpu->pstate.min_pstate, cpu->max_perf_ratio);
+ 
+ 		/*
+@@ -2894,25 +2910,17 @@ static int intel_pstate_set_policy(struc
+ 		 */
+ 		intel_pstate_clear_update_util_hook(policy->cpu);
+ 		intel_pstate_set_pstate(cpu, pstate);
++		freq = pstate * cpu->pstate.scaling;
+ 	} else {
+ 		intel_pstate_set_update_util_hook(policy->cpu);
+ 	}
+-
+-	if (hwp_active) {
+-		/*
+-		 * When hwp_boost was active before and dynamically it
+-		 * was turned off, in that case we need to clear the
+-		 * update util hook.
+-		 */
+-		if (!hwp_boost)
+-			intel_pstate_clear_update_util_hook(policy->cpu);
+-		intel_pstate_hwp_set(policy->cpu);
+-	}
+ 	/*
+-	 * policy->cur is never updated with the intel_pstate driver, but it
+-	 * is used as a stale frequency value. So, keep it within limits.
++	 * policy->cur is never updated in the intel_pstate driver, but it is
++	 * used as a stale frequency value, so set it to reflect the actual
++	 * requested P-state in the "performance" policy case and to the min
++	 * otherwise.
+ 	 */
+-	policy->cur = policy->min;
++	policy->cur = freq;
+ 
+ 	mutex_unlock(&intel_pstate_limits_lock);
+ 
+
+
+
