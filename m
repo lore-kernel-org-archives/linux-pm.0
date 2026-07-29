@@ -1,128 +1,306 @@
-Received: from smtpbgau2.qq.com (smtpbgau2.qq.com [54.206.34.216])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 53B5C3BBA0E;
-	Wed, 29 Jul 2026 07:12:03 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=54.206.34.216
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0D556423A9B;
+	Wed, 29 Jul 2026 07:29:08 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1785309127; cv=none; b=YnM1ZKxWwRVXrxc08LH2clndwM2vamg04Dm1KS2dwG+uGBuRjla/i4MiFXXiIcgiR0RxIg+P2DmpUY9CLkT/dq0qzEHHiT7w96BiYAW3mcOYQ1+OmHWgip1OdtJMaEPiRAPEqE5mw6rggCqN2EcbGQkXfZkvqeb0NiBcxrSQ0us=
+	t=1785310158; cv=none; b=mGR+l/rZSul2IHajhpPB6b8NyX75GfsUdqDAHjBPHQxxP/Npu95JsHJN4n0H0abj2SJjPNoKF+VAbWgwTjsX1jfPaDYhfVOaH2vrHjPHY1YACBNJ3SSpZ0IryqjEsSEUireH7Xx8znNMCt3zyWUuDl3TNwOQOes7w8G2hhEQs3Y=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1785309127; c=relaxed/simple;
-	bh=0jBSwWWxAPh2XhzKlKX3Ha/G7MTAa4fmccZf+ivZit8=;
-	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=eE+x5/kyJ9Zi50Bx+atpzCDDvO8ULu2RfiT8Q/kTCZ3yp5wCZWacixKFrEjdLQv52oj4cL+vI/q62zy1Dxn1tnrz36UoEkEr5vSiDssQaOtVniOZKyJK7nI1jZChmDhxdhQtOe16u156p5v554QwAKCyXHJl8dD9/1Y8b8rl5Ok=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=uniontech.com; spf=pass smtp.mailfrom=uniontech.com; dkim=pass (1024-bit key) header.d=uniontech.com header.i=@uniontech.com header.b=OFHIbaRs; arc=none smtp.client-ip=54.206.34.216
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=uniontech.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=uniontech.com
+	s=arc-20240116; t=1785310158; c=relaxed/simple;
+	bh=0GPxDcwyimw4bHAA4qTNOyDQJhuAQtZVF3rC79tiNd8=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=QArgq9cYDfHBaGMdslkmAc1M3vVqrnE5BkI+qHsZD1HqnFawfNPi+FYvYbHRhC+vXCAVVhdFjTKZ9dQnUs+4RJ2+gvPzo1oKkQqLfiDsgdR6e0frPhrQcvAf6JCLNFREve1jLb1ko/uP9xGmSTP2m5W4djO68NVMbLZpvA2kHSM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=HGc5cJjZ; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=uniontech.com header.i=@uniontech.com header.b="OFHIbaRs"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=uniontech.com;
-	s=onoh2408; t=1785309115;
-	bh=ItAzDrGXYP8b6c97M26jIDQMPp6eaBvh2rEKaBw/1IQ=;
-	h=From:To:Subject:Date:Message-Id:MIME-Version;
-	b=OFHIbaRsOTjWdRnwsUZ3WL8hir8N4KeeRsgLOEoWr9vW5pR8v6QK5Kh+9J7ztvmtl
-	 XVYsDRgS2WZPuveMlwU+V03KqlDILSQyUV1yIitGkaaMhDj/bRXGkIY2k1hyMZtfpO
-	 IlqKEyp6JauQkC7c4nS/HNLmimjyXyed+8lbTKHE=
-X-QQ-mid: zesmtpgz6t1785309103ta048b11d
-X-QQ-Originating-IP: 2KaEe4OPHTK3VuFLrCf1V0uN+XzuixMQmanUNhrWej0=
-Received: from localhost.localdomain ( [113.57.152.160])
-	by bizesmtp.qq.com (ESMTP) with 
-	id ; Wed, 29 Jul 2026 15:11:41 +0800 (CST)
-X-QQ-SSF: 0000000000000000000000000000000
-X-QQ-GoodBg: 1
-X-BIZMAIL-ID: 15843917138568715823
-EX-QQ-RecipientCnt: 15
-From: Haowen Tu <tuhaowen@uniontech.com>
-To: laurent.pinchart@ideasonboard.com,
-	rafael@kernel.org
-Cc: gregkh@linuxfoundation.org,
-	hansg@kernel.org,
-	kernel@uniontech.com,
-	lenb@kernel.org,
-	linux-kernel@vger.kernel.org,
-	linux-media@vger.kernel.org,
-	linux-pm@vger.kernel.org,
-	linux-usb@vger.kernel.org,
-	mchehab@kernel.org,
-	oneukum@suse.com,
-	pavel@kernel.org,
-	stern@rowland.harvard.edu,
-	tuhaowen@uniontech.com
-Subject: [PATCH v4 3/4] PM: hibernate: notify on image write failure
-Date: Wed, 29 Jul 2026 15:11:22 +0800
-Message-Id: <e2b88a0b33797b36ce4b1c8340a9f33d844fb79d.1785226280.git.tuhaowen@uniontech.com>
-X-Mailer: git-send-email 2.20.1
-In-Reply-To: <cover.1785226280.git.tuhaowen@uniontech.com>
-References: <20260723084633.GE648629@killaraus.ideasonboard.com> <cover.1785226280.git.tuhaowen@uniontech.com>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="HGc5cJjZ"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id B7CFE1F000E9;
+	Wed, 29 Jul 2026 07:29:04 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1785310147;
+	bh=dDJuyxTx89l+wBrZp9SB2fXDrF6LUCjF+IHLy2dmd0o=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To;
+	b=HGc5cJjZpDotJJMikzDYnOwgbeDbIueRd7ncAspKugQzpn0hlBnKc6e8XSSbqlAvr
+	 mahD/qvYqIJKlJDyq1vFXZyXXEA03d9MONzxOptjM3OywB9pVvENNaAj49ROa24S93
+	 T881DM5z086V1IoVHqX/cdiHI7cg3HahhL5nzdL2b5k3hzfGqRcbGpF3X/4rWIxxgi
+	 xHb+QXNVGkqfaOQ7pfmoG5HC+e+o9X4uP85ZM9FNySarTnmgoRV7tofo10rid7Rorr
+	 h8VD3Ek68Sp5MYE+zQaUw3gEm5ZMJhUzO6F7K5IVHTqtudcmd97X1MWwgtunXa1aor
+	 WeUaNXgNWvbVQ==
+Message-ID: <cbac4803-cf65-4b8b-a662-073189df478b@kernel.org>
+Date: Wed, 29 Jul 2026 09:29:03 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-QQ-SENDSIZE: 520
-Feedback-ID: zesmtpgz:uniontech.com:qybglogicsvrsz:qybglogicsvrsz3b-0
-X-QQ-XMAILINFO: Mfy7wfw2LMQ4F9Vpyw4N3tk1S5MfL5MK6bnS4EsOq2FSKhM0oVocn0a9
-	V/8ERSOCv1xLQ4PBrmjwoZLVEPLerrNTHCW6f7/Y8I6aHWLtFnX9J3opA+kaT9U7DW89FtL
-	yPqUx9xz0CIqWVF1i/pgs6SbAC7BUJwYEQKREQB0sImeDz9IwhRbbCco8ThhXAbWqWo/Vmv
-	3CjvyNGgBALd72GUdnHZyXcWeQRNYtQxWz/xC6Ksi6kSwxtjumMNLRq+5xRDAOHyyivEgNt
-	hsiREn17PCDFFwjMGEfIXZIOfyNoXegmMzEMlToouIu6hKV63nJcM6kFDgrGxpfP+1NGEBY
-	M8j5MP7Urx6UvoLVx7J3Cpd7+vFZzHKhnOfIQ7QsZTZcMPwoQU5n0QuEaaKTwvRnntz2A/0
-	4mJdxEu9qE8LXzi9BCJjoDk0OS2fzWxc6xGx+CtCJtcbkZ/cTz7di+Vsk32uv8jHxTvj12Q
-	M4T1MeDOmMbmdLu/EU3rbRqhasYinVNYp/qtIWFE+Uqv7F1aStELLusfTMstjwc1IHOLLov
-	X59JxNffsC8FPiFQ5kJ1IZt1RsiMR4Ocsa4BqGsXYFOalVdHq1IRuwfiLakkjdiMLVrdswF
-	YEYpDUmRcP5gx/Wlr3iosnG6spTCOQztUi4sF8H63RVqlqFYOgZSu0VxY5geVCRRqBasdJh
-	WSq/+pad+ji52xCYj8nKvOinnY62C+pLdmsMWsihA7RmlrOoyKu7Q/joaiw1h8SVvdHRRrE
-	9OKqGo5QZS0arfLBWu4lGx5cUJW4c5Tm6FCseyyMyy8B0UNqmGG59VXJPYMW146KtT37HU+
-	ZwcaMxggAsV11wR1/rhDfTdsgyFZJ/DQLbzQ6dOI8a7LP0nTMNG/RWZyxaLR7SI9KwpPJWX
-	4CKIosLH744mOI3xajsBK2nLn2lhl4HduEKYhStxU4M8C9fWgnupttpGNuSmRRn6xo65hj8
-	c0+k0GWBHv36lcVQp5W+loonUhgdRVwmOO7Zm4DWg6DqY7/9sRtmyPxmt9/CBEYbpOjOwlR
-	WzRjsDbrtmEkdhPuOqIPWbsvcdBHUan+ARlr/whrTeKF5+NVNWQfZkYXCXDKk=
-X-QQ-XMRINFO: M/715EihBoGS47X28/vv4NpnfpeBLnr4Qg==
-X-QQ-RECHKSPAM: 0
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v4 4/4] media: uvcvideo: defer streaming restart after
+ hibernation snapshot
+To: Haowen Tu <tuhaowen@uniontech.com>, laurent.pinchart@ideasonboard.com,
+ rafael@kernel.org
+Cc: gregkh@linuxfoundation.org, kernel@uniontech.com, lenb@kernel.org,
+ linux-kernel@vger.kernel.org, linux-media@vger.kernel.org,
+ linux-pm@vger.kernel.org, linux-usb@vger.kernel.org, mchehab@kernel.org,
+ oneukum@suse.com, pavel@kernel.org, stern@rowland.harvard.edu
+References: <20260723084633.GE648629@killaraus.ideasonboard.com>
+ <cover.1785226280.git.tuhaowen@uniontech.com>
+ <6179cdb467414a1949fabbd4d8dec29affe9c3ea.1785226280.git.tuhaowen@uniontech.com>
+From: Hans de Goede <hansg@kernel.org>
+Content-Language: en-US, nl
+In-Reply-To: <6179cdb467414a1949fabbd4d8dec29affe9c3ea.1785226280.git.tuhaowen@uniontech.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-Some drivers may defer device-specific resume work after the hibernation
-snapshot has been created, because the system is expected to either write
-the image and power off, or enter the test-resume path.
+Hi Haowen,
 
-If writing the image fails, however, the original kernel continues
-running. Add a PM_HIBERNATION_IMAGE_WRITE_FAILED notification after
-swsusp_write() fails and before userspace is thawed, so drivers that
-deferred resume work can recover their device state before userspace
-observes it.
+Thank you for your work on this.
 
-Signed-off-by: Haowen Tu <tuhaowen@uniontech.com>
----
- include/linux/suspend.h  | 1 +
- kernel/power/hibernate.c | 3 +++
- 2 files changed, 4 insertions(+)
+On 29-Jul-26 09:11, Haowen Tu wrote:
+> When a UVC camera is streaming and the system enters hibernation, the
+> streaming interface is frozen before the snapshot is created. The
+> original kernel then resumes devices with PMSG_THAW so it can write the
+> hibernation image.
+> 
+> Restarting UVC streaming during this transient phase can turn the camera
+> LED back on and generate USB traffic even though the normal successful
+> path writes the image and powers off.
 
-diff --git a/include/linux/suspend.h b/include/linux/suspend.h
-index 2cebbec3e2f7..36a5b3a8cb38 100644
---- a/include/linux/suspend.h
-+++ b/include/linux/suspend.h
-@@ -441,6 +441,7 @@ static inline int is_hibernate_resume_dev(dev_t dev) { return 0; }
- #define PM_POST_SUSPEND		0x0004 /* Suspend finished */
- #define PM_RESTORE_PREPARE	0x0005 /* Going to restore a saved image */
- #define PM_POST_RESTORE		0x0006 /* Restore failed */
-+#define PM_HIBERNATION_IMAGE_WRITE_FAILED	0x0007 /* Image write failed */
- 
- extern struct mutex system_transition_mutex;
- 
-diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
-index 045d29f55011..592862fd45d4 100644
---- a/kernel/power/hibernate.c
-+++ b/kernel/power/hibernate.c
-@@ -890,6 +890,9 @@ int hibernate(void)
- 				power_down();
- 		}
- 		pm_restore_gfp_mask();
-+
-+		if (error)
-+			pm_notifier_call_chain(PM_HIBERNATION_IMAGE_WRITE_FAILED);
- 	} else {
- 		pm_pr_dbg("Hibernation image restored successfully.\n");
- 	}
--- 
-2.20.1
+Right, so the purpose here is to avoid the LED turning back on and
+to speedup the hibernate?
+
+IOW except for the LED turning back on and things taking slightly
+longer everything works correctly with the current code, right ?
+
+I'm wondering if it would not be better to solve this in userspace
+and have userspace stop the streaming before hibernation ?
+
+Things like network connections will also get disrupted so some sort
+of system-is-going-to-suspend notification to userspace processes
+sounds useful ?   This could e.g. also be used for program to save
+any unsaved work (e.g. save unsaved changes in an editor to
+a recovery file).
+
+> USB interface resume callbacks do
+> not receive the PM message,
+
+Hmm, the way you word this sound like this is a problem at the USB
+layer. But I think this is more of a short-coming in the generic
+device model.
+
+To clarify AFAIK the actual USB device to which the interfaces belong
+also does not get a specific PM message here, right ?
+
+The reason I'm asking is because the way this is worded in the commit
+message makes it sounds like this might be something which could
+be solved in the USB subsystem which I do not think is the case ?
+
+Regards,
+
+Hans
+
+
+
+
+> so use pm_hibernation_snapshot_done() to
+> detect this phase and defer the streaming restart.
+> 
+> The deferred state is kept in the UVC stream. If image writeout succeeds,
+> the system powers off and no restart is needed. If image writeout fails,
+> the PM core sends PM_HIBERNATION_IMAGE_WRITE_FAILED before userspace is
+> thawed; the UVC PM notifier then restarts streams whose resume was
+> deferred. If that recovery restart fails, fall back to the existing
+> streamoff error path so userspace is notified instead of waiting on
+> buffers indefinitely.
+> 
+> Signed-off-by: Haowen Tu <tuhaowen@uniontech.com>
+> ---
+>  drivers/media/usb/uvc/uvc_driver.c | 56 +++++++++++++++++++++++++++++-
+>  drivers/media/usb/uvc/uvc_video.c  | 19 +++++++++-
+>  drivers/media/usb/uvc/uvcvideo.h   |  2 ++
+>  3 files changed, 75 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/media/usb/uvc/uvc_driver.c b/drivers/media/usb/uvc/uvc_driver.c
+> index 31b4ac3b48c1..3cf861e0fa95 100644
+> --- a/drivers/media/usb/uvc/uvc_driver.c
+> +++ b/drivers/media/usb/uvc/uvc_driver.c
+> @@ -13,6 +13,7 @@
+>  #include <linux/list.h>
+>  #include <linux/module.h>
+>  #include <linux/slab.h>
+> +#include <linux/suspend.h>
+>  #include <linux/usb.h>
+>  #include <linux/usb/quirks.h>
+>  #include <linux/usb/uvc.h>
+> @@ -38,6 +39,8 @@ unsigned int uvc_dbg_param;
+>  unsigned int uvc_timeout_param = UVC_CTRL_STREAMING_TIMEOUT;
+>  
+>  static struct usb_driver uvc_driver;
+> +static LIST_HEAD(uvc_pm_devices);
+> +static DEFINE_MUTEX(uvc_pm_mutex);
+>  
+>  /* ------------------------------------------------------------------------
+>   * Utility functions
+> @@ -2200,6 +2203,7 @@ static int uvc_probe(struct usb_interface *intf,
+>  	INIT_LIST_HEAD(&dev->entities);
+>  	INIT_LIST_HEAD(&dev->chains);
+>  	INIT_LIST_HEAD(&dev->streams);
+> +	INIT_LIST_HEAD(&dev->pm_list);
+>  	kref_init(&dev->ref);
+>  	atomic_set(&dev->nmappings, 0);
+>  
+> @@ -2346,6 +2350,10 @@ static int uvc_probe(struct usb_interface *intf,
+>  	if (!(dev->quirks & UVC_QUIRK_DISABLE_AUTOSUSPEND))
+>  		usb_enable_autosuspend(udev);
+>  
+> +	mutex_lock(&uvc_pm_mutex);
+> +	list_add_tail(&dev->pm_list, &uvc_pm_devices);
+> +	mutex_unlock(&uvc_pm_mutex);
+> +
+>  	uvc_dbg(dev, PROBE, "UVC device initialized\n");
+>  
+>  	return 0;
+> @@ -2370,6 +2378,10 @@ static void uvc_disconnect(struct usb_interface *intf)
+>  	    UVC_SC_VIDEOSTREAMING)
+>  		return;
+>  
+> +	mutex_lock(&uvc_pm_mutex);
+> +	list_del_init(&dev->pm_list);
+> +	mutex_unlock(&uvc_pm_mutex);
+> +
+>  	uvc_unregister_video(dev);
+>  	kref_put(&dev->ref, uvc_delete);
+>  }
+> @@ -2447,6 +2459,41 @@ static int uvc_reset_resume(struct usb_interface *intf)
+>  	return __uvc_resume(intf, 1);
+>  }
+>  
+> +static int uvc_pm_notify(struct notifier_block *nb, unsigned long action,
+> +			 void *data)
+> +{
+> +	struct uvc_device *dev;
+> +	struct uvc_streaming *stream;
+> +	int ret;
+> +
+> +	if (action != PM_HIBERNATION_IMAGE_WRITE_FAILED)
+> +		return NOTIFY_DONE;
+> +
+> +	mutex_lock(&uvc_pm_mutex);
+> +	list_for_each_entry(dev, &uvc_pm_devices, pm_list) {
+> +		list_for_each_entry(stream, &dev->streams, list) {
+> +			if (!stream->hibernate_resume_deferred)
+> +				continue;
+> +
+> +			stream->hibernate_resume_deferred = 0;
+> +			ret = uvc_video_resume(stream, 0);
+> +			if (ret < 0) {
+> +				mutex_lock(&stream->queue.mutex);
+> +				vb2_streamoff(&stream->queue.queue,
+> +					      stream->queue.queue.type);
+> +				mutex_unlock(&stream->queue.mutex);
+> +			}
+> +		}
+> +	}
+> +	mutex_unlock(&uvc_pm_mutex);
+> +
+> +	return NOTIFY_OK;
+> +}
+> +
+> +static struct notifier_block uvc_pm_nb = {
+> +	.notifier_call = uvc_pm_notify,
+> +};
+> +
+>  /* ------------------------------------------------------------------------
+>   * Module parameters
+>   */
+> @@ -3291,8 +3338,15 @@ static int __init uvc_init(void)
+>  
+>  	uvc_debugfs_init();
+>  
+> +	ret = register_pm_notifier(&uvc_pm_nb);
+> +	if (ret < 0) {
+> +		uvc_debugfs_cleanup();
+> +		return ret;
+> +	}
+> +
+>  	ret = usb_register(&uvc_driver);
+>  	if (ret < 0) {
+> +		unregister_pm_notifier(&uvc_pm_nb);
+>  		uvc_debugfs_cleanup();
+>  		return ret;
+>  	}
+> @@ -3303,6 +3357,7 @@ static int __init uvc_init(void)
+>  static void __exit uvc_cleanup(void)
+>  {
+>  	usb_deregister(&uvc_driver);
+> +	unregister_pm_notifier(&uvc_pm_nb);
+>  	uvc_debugfs_cleanup();
+>  }
+>  
+> @@ -3313,4 +3368,3 @@ MODULE_AUTHOR(DRIVER_AUTHOR);
+>  MODULE_DESCRIPTION(DRIVER_DESC);
+>  MODULE_LICENSE("GPL");
+>  MODULE_VERSION(DRIVER_VERSION);
+> -
+> diff --git a/drivers/media/usb/uvc/uvc_video.c b/drivers/media/usb/uvc/uvc_video.c
+> index f6c8e3223796..2c57b7042856 100644
+> --- a/drivers/media/usb/uvc/uvc_video.c
+> +++ b/drivers/media/usb/uvc/uvc_video.c
+> @@ -12,6 +12,7 @@
+>  #include <linux/list.h>
+>  #include <linux/module.h>
+>  #include <linux/slab.h>
+> +#include <linux/suspend.h>
+>  #include <linux/usb.h>
+>  #include <linux/usb/hcd.h>
+>  #include <linux/videodev2.h>
+> @@ -2151,11 +2152,27 @@ int uvc_video_resume(struct uvc_streaming *stream, int reset)
+>  	if (!uvc_queue_streaming(&stream->queue))
+>  		return 0;
+>  
+> +	/*
+> +	 * Defer restarting the streaming hardware during the transient THAW
+> +	 * phase after a hibernation snapshot has been created. If writing the
+> +	 * image succeeds, the system powers off and the restart is not needed.
+> +	 * If writing fails, the PM core notifies the driver before userspace is
+> +	 * thawed so deferred streams can be restarted.
+> +	 */
+> +	if (pm_hibernation_snapshot_done()) {
+> +		stream->hibernate_resume_deferred = 1;
+> +		return 0;
+> +	}
+> +
+>  	ret = uvc_commit_video(stream, &stream->ctrl);
+>  	if (ret < 0)
+>  		return ret;
+>  
+> -	return uvc_video_start_transfer(stream, GFP_NOIO);
+> +	ret = uvc_video_start_transfer(stream, GFP_NOIO);
+> +	if (!ret)
+> +		stream->hibernate_resume_deferred = 0;
+> +
+> +	return ret;
+>  }
+>  
+>  /* ------------------------------------------------------------------------
+> diff --git a/drivers/media/usb/uvc/uvcvideo.h b/drivers/media/usb/uvc/uvcvideo.h
+> index 0a0c01b2420f..c87eaaaf2749 100644
+> --- a/drivers/media/usb/uvc/uvcvideo.h
+> +++ b/drivers/media/usb/uvc/uvcvideo.h
+> @@ -475,6 +475,7 @@ struct uvc_streaming {
+>  
+>  	/* Buffers queue. */
+>  	unsigned int frozen : 1;
+> +	unsigned int hibernate_resume_deferred : 1;
+>  	struct uvc_video_queue queue;
+>  	struct workqueue_struct *async_wq;
+>  	void (*decode)(struct uvc_urb *uvc_urb, struct uvc_buffer *buf,
+> @@ -604,6 +605,7 @@ struct uvc_device {
+>  
+>  	/* Video Streaming interfaces */
+>  	struct list_head streams;
+> +	struct list_head pm_list;
+>  	struct kref ref;
+>  
+>  	/* Status Interrupt Endpoint */
+
