@@ -1,195 +1,223 @@
-Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
+Received: from mailgw.kylinos.cn (mailgw.kylinos.cn [124.126.103.232])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7606B35DA42
-	for <linux-pm@vger.kernel.org>; Wed, 29 Jul 2026 04:03:25 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D54F9372B3C;
+	Wed, 29 Jul 2026 06:16:04 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=124.126.103.232
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1785297806; cv=none; b=eywdE2+dJnzgCg+++r4bhu8h7kcasysZkRT5eHjcOq0bmalLPn8rAJ3CmvlJLKsyjE3/iievrNKjB4MlX6ufam3w8TGtEM5Ja/8M3uvvliGu+3sGIWoLUYeIb/oas/8zMCMPCff9OBOWmmfqxO/davqVlu9zT3C9Nt2jCFoYAwE=
+	t=1785305769; cv=none; b=vGfrhoJvIy93fVvKddSndumqwJXBEwpAKQAVYQyxPMA5vgK1/KNrrHV8r+e2nwIuRGH0c6RMldrBA6+6gU5X/o8UZzxpCAd84gkjaYxZ8wHm6oMGrgC+6vjL0dG7/O5V+H/MfLc2YJtwGwaqWvVW/o0QYVp5cWxzxP3R+5dWE+Y=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1785297806; c=relaxed/simple;
-	bh=LBr3NTXV2yzRBMXWtpv4voFp79Ly8C77AyFyjo5ZLXA=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=ffSH7WeJv9yVAVKtK8Iv9jy3cDU2MTpLzCpoK9uFsTymFy27qvur8hptRfZrFytUIOVrJgHJl+HfsKzqus6V3YfXIWup4vF4O+NqFg8zM8vL6TMXdG/kr4Okj2C316LxT/2ucngsIRa4T9NdXLvyJKb4K+vQ3+o/V2klQrhOyYw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=X38jvpwl; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=kBhJjQ/6; arc=none smtp.client-ip=205.220.168.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="X38jvpwl";
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="kBhJjQ/6"
-Received: from pps.filterd (m0279863.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 66T1Gw69481766
-	for <linux-pm@vger.kernel.org>; Wed, 29 Jul 2026 04:03:25 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	FHWbIXuzL9cc9qmYkbMUa7J+mm16JcP+5CU+h9BwBJw=; b=X38jvpwlqZa8S7V4
-	p8TRh/D78I/Rq21eC8E83wUet2XhBqTE8HLatZo+SHukS5U7VgLpDSQ4sMOqElCc
-	7L+w/Ipq4CHl80RLNWp+aUCPTTwSV+5A5Kfc0DSi/R3iob0rHWvA9uaa+xygahRP
-	nY7SZUj1qX68xORtEj2g4dN1ezOuMuG50bqMWirhbKp2j96e34K0uORi7e5liJtE
-	7bD+5ausUh0h+EF7lyAgRioACAH6E+4H5Yks65IAwkIYlwWT56yeBmPtpm+uIUaq
-	5ib2wdu6Aoe16ZNuKbBXHLzFN2W5DTX1qQfLcGBlzRcNGIMakq5Z2kKWtumhIFAx
-	KdzS/Q==
-Received: from mail-pl1-f198.google.com (mail-pl1-f198.google.com [209.85.214.198])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4fq0q6t33n-1
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Wed, 29 Jul 2026 04:03:24 +0000 (GMT)
-Received: by mail-pl1-f198.google.com with SMTP id d9443c01a7336-2ce7dff6253so15747275ad.1
-        for <linux-pm@vger.kernel.org>; Tue, 28 Jul 2026 21:03:24 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1785297804; x=1785902604; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:in-reply-to:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=FHWbIXuzL9cc9qmYkbMUa7J+mm16JcP+5CU+h9BwBJw=;
-        b=kBhJjQ/6LOJpkBC4bnQca+gKYs86sBB2cpVOe3N/YGyG/uyY1vEV3ieU2vG7J4/9Xh
-         0myYCkzOR+ImJPXkdryYnmTVC5udCFxUSMBJD/XLU7XIYlHveTlPCn5gxInyRaDwvxxy
-         klpuWofLaC5Mxs91eMN17ADVXlvylwaUJi8YjLd5zrH062Aqwv4QIlOWMMwPPTGux9ww
-         4hnOWOFsmjRWim8dOb0LQBHF1TeipxPFUzYpEK/EfdL70pga+DeHgl80tjY9vmxL8fep
-         rjO4i7n7KiKY/TJV8qkuAgE3vhQEaTbhrJyWbQHF67taJQxlQBH7Iw5y3xiShvD+smk6
-         Xq/w==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1785297804; x=1785902604;
-        h=content-transfer-encoding:content-type:in-reply-to:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=FHWbIXuzL9cc9qmYkbMUa7J+mm16JcP+5CU+h9BwBJw=;
-        b=JIbJYcgEHMIMoZCR7Y1ivJFxlhlNj4eqjZIe+faZVl89Pz5kTRzWQ1dMrP0PG1Gb5m
-         iJRHiAe93Plk9ykkfYez36yq2jkM8PYOIBDeagnUoi2CTq2Y7KeprnKVXvdIDnwOK4Ci
-         ZJm4SXyjQjKXiTP3dPcD5JwXQ6mImZM/MnPoaaTE265AcWt/7VQGVeMnOnNEhV98VTcJ
-         b80DhSQwDt7KnNLdHXZo+PTNn9NHFbcxhaxwx0VNCdGmZ0ygI6IvI7fZGXz9jxrA+Pfc
-         E+Z4gKRsSp88mbOMHfvW4WeOss08fEd34pLOK9xEbXw3hBBkC+vXzaKDGzb57EcaR1Kr
-         eXig==
-X-Gm-Message-State: AOJu0YyjJOcz3OJE5PlHJKM4s48dh9J8iWQx8NS2PIDbvq4Jv5bggWC9
-	8UFNlBVjoN64stz0BZStjfoNBcfAjcROEkYa0ADyI3LNVlsqIGVKFyOsromQMzUbSc9zkS5gSqj
-	jTtHhDWXdOspXlLfY1AOydsk/DWZZWGCcQhLkLCcwcTSMcRFn5Vvq0SKpwLqBjg==
-X-Gm-Gg: AR+sD10xPJQ47V5jWaRLdzLI07vhPG96G4SJNEKz7aWzH7nMJad/74FwarRSuUpjYK3
-	x2OCF5gJjE8HOhDWqPS4fbKGkfSMUSbx0B7yf242YTmhsFJq8lc4go5n/sACHW5ezt2xsusaJAm
-	I0hfcAKtH75ZdiH7J1M5u/x/YIu5pmYmU/iQ1FjUQqGLcESC4m9hs+k2nwBLYlgQxuDX25yutB8
-	8gQ2XkqVOfEw/o+TfROmBbL4gSVi+F/zZTtfjX3IA3mOvqcB2uzTULdDkySh0hcTPG5dwLlwKvx
-	OHsB1EjLN01MJhsEUzbmZ/p6vPofUSZ3TF/yOnADQaO5qhw7XC01mt/AWlvbVm68qthBSHaU3nQ
-	PCN8+5FGHgGjm6w3ZUHcHrMq5iYsMS8EBln7PKJ3tCYf0JdouXoCeRKWD+B+/ovHEY2c7ESY=
-X-Received: by 2002:a17:902:da8a:b0:2cf:bbdb:425d with SMTP id d9443c01a7336-2d0267423e5mr7837965ad.18.1785297804220;
-        Tue, 28 Jul 2026 21:03:24 -0700 (PDT)
-X-Received: by 2002:a17:902:da8a:b0:2cf:bbdb:425d with SMTP id d9443c01a7336-2d0267423e5mr7837035ad.18.1785297802623;
-        Tue, 28 Jul 2026 21:03:22 -0700 (PDT)
-Received: from [10.133.33.87] (tpe-colo-wan-fw-bordernet.qualcomm.com. [103.229.16.4])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2d022a15199sm4667385ad.17.2026.07.28.21.03.18
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 28 Jul 2026 21:03:22 -0700 (PDT)
-Message-ID: <1c655514-4595-4d3e-bc87-09e4f8415f3f@oss.qualcomm.com>
-Date: Wed, 29 Jul 2026 12:03:16 +0800
+	s=arc-20240116; t=1785305769; c=relaxed/simple;
+	bh=e8FGAVTT5khFAyFskXVaBczff1W5aySeK9CTbu9nWfs=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=Zp1Ij1eKfrzqHSb4sXpTF6og8WuJ6g26lHhfRPVHEQuAQe+TjyTsPjnB6ZptmqPg3heDvIb1X7UN6ARsDLk7vSqsDdODqefE1B8omPFYwxYzHNVm6JJrb/3e6Y18ohLbE+VSXm06liBmIlw7Di4/R6R1uJ0PvKzZmX9I20IAe8A=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kylinos.cn; spf=pass smtp.mailfrom=kylinos.cn; arc=none smtp.client-ip=124.126.103.232
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kylinos.cn
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=kylinos.cn
+X-UUID: f4c3d9da8b1411f1aa26b74ffac11d73-20260729
+X-CTIC-Tags:
+	HR_CC_COUNT, HR_CC_DOMAIN_COUNT, HR_CC_NAME, HR_CC_NO_NAME, HR_CTE_8B
+	HR_CTT_MISS, HR_DATE_H, HR_DATE_WKD, HR_DATE_ZONE, HR_FROM_NAME
+	HR_SJ_DIGIT_LEN, HR_SJ_LANG, HR_SJ_LEN, HR_SJ_LETTER, HR_SJ_NOR_SYM
+	HR_SJ_PHRASE, HR_SJ_PHRASE_LEN, HR_SJ_WS, HR_TO_COUNT, HR_TO_DOMAIN_COUNT
+	HR_TO_NO_NAME, IP_UNTRUSTED, SRC_UNTRUSTED, IP_UNFAMILIAR, SRC_UNFAMILIAR
+	DN_TRUSTED, SRC_TRUSTED, SA_TRUSTED, SA_EXISTED, SN_TRUSTED
+	SN_EXISTED, SPF_NOPASS, DKIM_NOPASS, DMARC_NOPASS, CIE_BAD
+	CIE_GOOD_SPF, CIE_UNKNOWN, GTI_FG_BS, GTI_RG_INFO, GTI_C_BU
+	AMN_GOOD, ABX_MISS_RDNS
+X-CID-P-RULE: Release_Ham
+X-CID-O-INFO: VERSION:1.3.12,REQID:68a28910-ec20-41a6-ac6c-187de75d6c84,IP:10,
+	URL:0,TC:0,Content:0,EDM:0,RT:0,SF:0,FILE:0,BULK:0,RULE:Release_Ham,ACTION
+	:release,TS:10
+X-CID-INFO: VERSION:1.3.12,REQID:68a28910-ec20-41a6-ac6c-187de75d6c84,IP:10,UR
+	L:0,TC:0,Content:0,EDM:0,RT:0,SF:0,FILE:0,BULK:0,RULE:Release_Ham,ACTION:r
+	elease,TS:10
+X-CID-META: VersionHash:e7bac3a,CLOUDID:63fb6d16496f8e0ad5477dbb5e0857ce,BulkI
+	D:2607291415576EBNHADR,BulkQuantity:0,Recheck:0,SF:17|19|38|66|78|102|127|
+	865|898,TC:nil,Content:0|15|50,EDM:-3,IP:-2,URL:99|1,File:nil,RT:nil,Bulk:
+	nil,QS:nil,BEC:nil,COL:0,OSI:0,OSA:0,AV:0,LES:1,SPR:NO,DKR:0,DKP:0,BRR:0,B
+	RE:0,ARC:0
+X-CID-BVR: 2,SSN|SDN
+X-CID-BAS: 2,SSN|SDN,0,_
+X-CID-FACTOR: TF_CID_SPAM_SNR,TF_CID_SPAM_FAS,TF_CID_SPAM_FSD,TF_CID_SPAM_ULS
+X-CID-RHF: D41D8CD98F00B204E9800998ECF8427E
+X-UUID: f4c3d9da8b1411f1aa26b74ffac11d73-20260729
+X-User: tianyaxiong@kylinos.cn
+Received: from tian-x86.. [(106.16.184.249)] by mailgw.kylinos.cn
+	(envelope-from <tianyaxiong@kylinos.cn>)
+	(Generic MTA)
+	with ESMTP id 662220583; Wed, 29 Jul 2026 14:15:54 +0800
+From: Yaxiong Tian <tianyaxiong@kylinos.cn>
+To: rafael@kernel.org,
+	daniel.lezcano@kernel.org,
+	christian.loehle@arm.com,
+	lenb@kernel.org,
+	pavel@kernel.org,
+	shuah@kernel.org
+Cc: linux-kernel@vger.kernel.org,
+	linux-pm@vger.kernel.org,
+	linux-kselftest@vger.kernel.org,
+	Yaxiong Tian <tianyaxiong@kylinos.cn>
+Subject: [PATCH v2 0/6] cpuidle: speed up do_idle() by caching the governor latency QoS constraint
+Date: Wed, 29 Jul 2026 14:15:49 +0800
+Message-ID: <20260729061549.13419-1-tianyaxiong@kylinos.cn>
+X-Mailer: git-send-email 2.43.0
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] ACPI: CPPC: Gate desired performance getter on ACPI <6.6
-To: Christian Loehle <christian.loehle@arm.com>,
-        "Rafael J . Wysocki" <rafael@kernel.org>,
-        Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org,
-        linux-kernel@vger.kernel.org, Len Brown <lenb@kernel.org>,
-        Jie Zhan <zhanjie9@hisilicon.com>,
-        Lifeng Zheng <zhenglifeng1@huawei.com>,
-        Pierre Gondois <pierre.gondois@arm.com>,
-        Sumit Gupta <sumitg@nvidia.com>, Sudeep Holla <sudeep.holla@arm.com>,
-        Ionela Voinescu <ionela.voinescu@arm.com>,
-        zhongqiu.han@oss.qualcomm.com
-References: <20260728160538.2574100-1-christian.loehle@arm.com>
-Content-Language: en-US
-From: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>
-In-Reply-To: <20260728160538.2574100-1-christian.loehle@arm.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
-X-Proofpoint-GUID: 1E6w1oz8z9e1igsB3OeQhWxyNOsPb7Mf
-X-Authority-Analysis: v=2.4 cv=DqpmPm/+ c=1 sm=1 tr=0 ts=6a697b8c cx=c_pps
- a=MTSHoo12Qbhz2p7MsH1ifg==:117 a=nuhDOHQX5FNHPW3J6Bj6AA==:17
- a=IkcTkHD0fZMA:10 a=RAioF0-LDSMA:10 a=s4-Qcg_JpJYA:10
- a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=yOCtJkima9RkubShWh1s:22
- a=-CsNd9vw6T3jYN4hrYMA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
- a=GvdueXVYPmCkWapjIL-Q:22
-X-Proofpoint-ORIG-GUID: 1E6w1oz8z9e1igsB3OeQhWxyNOsPb7Mf
-X-Proofpoint-Spam-Info: AW1haW4tMjYwNzI5MDAyOSBTYWx0ZWRfXzkMdZ+lBy3gH
- +OQxTZUT6f1BManLKo5KZxzX5EiA1KBCdQ7J8QPYd0xh3hs75rlxDA+buVxOK/a1EceA+uf2eWb
- 9sqypsgQNhOSeYXBbmn2VLSiR/k5GQc=
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzI5MDAyOSBTYWx0ZWRfX9tq6hfVb6GKe
- qS2uZ/rpfMTJM7unXH2KhvDqhcnXLsLwb8TxxIWQkybzn1TFr5vVXZcntxXsxUdUEwodwRaJrlT
- P6+d/rnPljni07xMB6Od7i2YWoxReC22XPG9t7hs53vQQzmrLtwhtzYtDsG9AqlSJRkuoCQ013X
- vmXS4U+Obz8JNonfsTIi3vfAAF4wDFFD7Li8C0YRpZCYiKv/fzZQqG1PVNHeKX++AZYU9DjzyzG
- AkBPNwMFJNJo67CqOnQABgVA720Na1I0N9vfOhgN1nJQgBa2hyvoMdbMGMPBxy4ZIPHZog16xdB
- Is4lcl8H67LqEW/DFPU+iH8vsxPjAmcDfYCTVWWH3t0DBvlkAM7wbaeHZAkDUn5KHaqodZhuYfP
- NBr7R42TlHyQN21CluRtHKnUs2cluBMotjTJDfS2Lmm5e12XKtf1zfgvcu9d1x5xDdkM38zuEZa
- prYcHZFIadTrm6N5Tww==
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-07-29_01,2026-07-28_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- clxscore=1015 impostorscore=0 adultscore=0 bulkscore=0 spamscore=0
- suspectscore=0 lowpriorityscore=0 malwarescore=0 priorityscore=1501
- phishscore=0 classifier=typeunknown authscore=0 authtc= authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2606150000
- definitions=main-2607290029
 
-Hello Christian,
-Thanks for the patch.
+cpuidle_governor_latency_req() is evaluated on every idle-state
+selection.  It aggregates the per-CPU resume latency with the global
+CPU latency and wakeup latency QoS limits by repeatedly calling
+get_cpu_device() and pm_qos_read_value() cpu_latency_qos_limit()
+cpu_wakeup_latency_qos_limit().
 
-On 7/29/2026 12:05 AM, Christian Loehle wrote:
-> When CPPC feedback counters cannot provide a usable sample, cppc-cpufreq
-> calls cppc_get_desired_perf() because some platforms repurpose Desired
-> Performance to report actual delivered performance.
-> 
-> ACPI 6.6 changed the register's Optional Attribute from Read/Write to
-> Write. The existing cppc-cpufreq error path now falls back to its
-> cached OSPM request on ACPI >=6.6.
-> The original (and existing) workaround was for a specific HiSilicon
-> platform which isn't expected to report >=6.6.
-> 
-> Fixes: c47195631960 ("cppc_cpufreq: Use desired perf if feedback ctrs are 0 or unchanged")
+Use ftrace's function_graph, we can see:
+parent:          do_idle
+parent_total_ns: 36671010505
+parent_count:    5994
 
-missing S-o-b? 🙂
+SYMBOL                                                      TIME_NS    %ROOT  %PARENT      COUNT
+--------------------------------------------------------------------------------------------------
+do_idle                                                 36671010505  100.00%  100.00%       5994
+  cpuidle_idle_call                                     35566528731   96.99%   96.99%       8570
+    call_cpuidle                                        35476606844   96.74%   99.75%       8561
+      cpuidle_enter                                     35472932468   96.73%   99.99%       8526
+    cpuidle_select                                         52097031    0.14%    0.15%       8580
+      menu_select                                          49555181    0.14%   95.12%       8580
+        tick_nohz_get_sleep_length                         28843887    0.08%   58.21%       8570
+        cpuidle_governor_latency_req                        9567488    0.03%   19.31%       8580
+        tick_nohz_tick_stopped                              2057031    0.01%    4.15%      15695
+    cpuidle_reflect                                        11427201    0.03%    0.03%       8561
+      menu_reflect                                          6579506    0.02%   57.58%       8526
+        tick_nohz_idle_got_tick                             2231559    0.01%   33.92%       8526
+      __sysvec_apic_timer_interrupt                          105520    0.00%    0.92%          3
+    tick_nohz_idle_stop_tick                                8279641    0.02%    0.02%       1475
+    ---- skip
 
-> ---
->   drivers/acpi/cppc_acpi.c | 9 ++++++++-
->   1 file changed, 8 insertions(+), 1 deletion(-)
-> 
-> diff --git a/drivers/acpi/cppc_acpi.c b/drivers/acpi/cppc_acpi.c
-> index 53d09ca98f06..218fdea09c1c 100644
-> --- a/drivers/acpi/cppc_acpi.c
-> +++ b/drivers/acpi/cppc_acpi.c
-> @@ -1321,10 +1321,17 @@ static int cppc_set_reg_val(int cpu, enum cppc_regs reg_idx, u64 val)
->    * @cpunum: CPU from which to get desired performance.
->    * @desired_perf: Return address.
->    *
-> - * Return: 0 for success, -EIO otherwise.
-> + * Return: 0 for success, -EOPNOTSUPP for ACPI 6.6 or later, and a negative
-> + * errno otherwise.
->    */
->   int cppc_get_desired_perf(int cpunum, u64 *desired_perf)
->   {
-> +	/* ACPI 6.6 no longer specifies Desired Performance as readable. */
-> +	if (acpi_gbl_FADT.header.revision > 6 ||
-> +	    (acpi_gbl_FADT.header.revision == 6 &&
-> +	     acpi_gbl_FADT.minor_revision >= 6))
-> +		return -EOPNOTSUPP;
-> +
+The majority of the time spent in cpuidle_enter for CPUs entering
+idle state has already been charged to the idle path. Among the
+remaining contributors, cpuidle_governor_latency_req() accounts 
+for a non-negligible portion of the overall latency.
 
-Just for context, a separate topic: it seems that cppc_get_perf() also
-performs such a read. However, the value is subsequently overwritten in
-cppc_cpufreq_cpu_init(). Since this all takes place during
-initialization, it should be harmless. But It might be worth cleaning
-this up as well, in case reading a write-only register leads to
-potential undefined behavior?
+Under the menu governor this shows up hot: ftrace data shows,
+ cpuidle_governor_latency_req() accounts for about 19.9% of
+menu_select() time (~1.9 us/call).  After caching the aggregated
+value per CPU and invalidating via QoS notifiers, that share drops to
+about 4.2% (~0.3 us/call), roughly a 6x reduction on this path.
 
->   	return cppc_get_reg_val(cpunum, DESIRED_PERF, desired_perf);
->   }
->   EXPORT_SYMBOL_GPL(cppc_get_desired_perf);
+The ftrace data before and after the optimization is shown below:
+1) original
+parent:          menu_select
+parent_total_ns: 160492937
+parent_count:    16718
 
+SYMBOL                                                      TIME_NS    %ROOT  %PARENT      COUNT
+--------------------------------------------------------------------------------------------------
+menu_select                                               160492937  100.00%  100.00%      16718
+  tick_nohz_get_sleep_length                              100262940   62.47%   62.47%      16698
+    tick_nohz_next_event                                   67891299   42.30%   67.71%      16689
+      rcu_needs_cpu                                         2825649    1.76%    4.16%      16689
+      timekeeping_max_deferment                             2380377    1.48%    3.51%      15296
+    hrtimer_next_event_without                             17865162   11.13%   17.82%      15296
+      hrtimer_bases_next_event_without                      2707631    1.69%   15.16%      15296
+      _raw_spin_lock_irqsave                                2461132    1.53%   13.78%      15296
+        native_queued_spin_lock_slowpath                        177    0.00%    0.01%          1
+      _raw_spin_unlock_irqrestore                           2364647    1.47%   13.24%      15296
+    can_stop_idle_tick                                      2906072    1.81%    2.90%      16698
+  cpuidle_governor_latency_req                             31988150   19.93%   19.93%      16718
+    get_cpu_device                                          4122502    2.57%   12.89%      16718
+    pm_qos_read_value                                       3427318    2.14%   10.71%      16718
+    cpu_latency_qos_limit                                   3005804    1.87%    9.40%      16718
+    cpu_wakeup_latency_qos_limit                            3005475    1.87%    9.40%      16718
+  tick_nohz_tick_stopped                                    4551981    2.84%    2.84%      29496
+
+%ROOT = share of menu_select; %PARENT = share of immediate caller (inclusive)
+
+2) post-optimized
+parent:          menu_select
+parent_total_ns: 55428604
+parent_count:    7626
+
+SYMBOL                                                      TIME_NS    %ROOT  %PARENT      COUNT
+--------------------------------------------------------------------------------------------------
+menu_select                                                55428604  100.00%  100.00%       7626
+  tick_nohz_get_sleep_length                               37464607   67.59%   67.59%       7544
+    tick_nohz_next_event                                   24076913   43.44%   64.27%       7522
+      get_next_timer_interrupt                             16332381   29.47%   67.83%       5854
+      rcu_needs_cpu                                         1489633    2.69%    6.19%       7522
+      timekeeping_max_deferment                              870851    1.57%    3.62%       5586
+    hrtimer_next_event_without                              6140153   11.08%   16.39%       5586
+      hrtimer_bases_next_event_without                       979000    1.77%   15.94%       5586
+      _raw_spin_lock_irqsave                                 808786    1.46%   13.17%       5586
+      _raw_spin_unlock_irqrestore                            785518    1.42%   12.79%       5586
+    can_stop_idle_tick                                      1583137    2.86%    4.23%       7544
+  cpuidle_governor_latency_req                              2321119    4.19%    4.19%       7626
+  tick_nohz_tick_stopped                                    1863015    3.36%    3.36%      12751
+
+%ROOT = share of menu_select; %PARENT = share of immediate caller (inclusive)
+
+This series:
+- patch1~pathc3: Add QoS notifiers-related infrastructure and updates to
+latency_req_gen.
+- patch4: Implement QoS constraint for cache-aggregated governor latency
+- patch5: add latency_req QoS idle-state selection test
+- patch6: add idle-state disable selftest
+
+Patch 5 and 6 can be a separate topic.
+
+Changelog:
+v2:
+- In patch4: 
+      1: Fix latency_req_gen zero-initialization causing system to
+      2: Remove unnecessary WRITE_ONCE/READ_ONCE and add usage
+         restriction comments.
+      3: Rename the original cpuidle_governor_latency_req()
+         to cpuidle_aggregate_latency_req, and have the new
+         cpuidle_governor_latency_req() call it to implement
+         caching logic.
+- In patch5: 
+      1: Factor out common logic in preparation for the idle-state
+         disable selftest.
+      2: Add a preexisting QoS/disable warning to alert users that
+         existing system settings may interfere with the test.
+      3: Fix ResumeLatencyGuard value restoration.
+- Add patch6 for idle-state disable selftest
+
+V1 link is:
+https://lore.kernel.org/linux-pm/20260721092324.17508-1-tianyaxiong@kylinos.cn/
+
+Yaxiong Tian (6):
+  pm: qos: add notifiers for CPU latency and wakeup latency QoS
+  cpuidle: subscribe to global latency QoS notifiers
+  cpuidle: invalidate latency gen on per-CPU resume QoS changes
+  cpuidle: cache aggregated governor latency QoS constraint
+  selftests/cpuidle: add latency_req QoS idle-state selection test
+  selftests/cpuidle: add idle-state disable selftest
+
+ drivers/cpuidle/cpuidle.c                     |  15 +-
+ drivers/cpuidle/cpuidle.h                     |   2 +
+ drivers/cpuidle/governor.c                    | 148 ++++++++-
+ include/linux/pm_qos.h                        |  23 ++
+ kernel/power/qos.c                            |  50 ++++
+ tools/testing/selftests/Makefile              |   1 +
+ tools/testing/selftests/cpuidle/Makefile      |   7 +
+ tools/testing/selftests/cpuidle/config        |   3 +
+ .../cpuidle/cpuidle_disable_state.py          | 133 +++++++++
+ .../cpuidle/cpuidle_latency_req_qos.py        | 280 ++++++++++++++++++
+ .../testing/selftests/cpuidle/cpuidle_lib.py  | 226 ++++++++++++++
+ tools/testing/selftests/cpuidle/settings      |   2 +
+ 12 files changed, 885 insertions(+), 5 deletions(-)
+ create mode 100644 tools/testing/selftests/cpuidle/Makefile
+ create mode 100644 tools/testing/selftests/cpuidle/config
+ create mode 100755 tools/testing/selftests/cpuidle/cpuidle_disable_state.py
+ create mode 100755 tools/testing/selftests/cpuidle/cpuidle_latency_req_qos.py
+ create mode 100755 tools/testing/selftests/cpuidle/cpuidle_lib.py
+ create mode 100644 tools/testing/selftests/cpuidle/settings
 
 -- 
-Thx and BRs,
-Zhongqiu Han
+2.43.0
+
