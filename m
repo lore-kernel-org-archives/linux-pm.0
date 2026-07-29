@@ -1,166 +1,161 @@
-Received: from smtpbguseast1.qq.com (smtpbguseast1.qq.com [54.204.34.129])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pj1-f49.google.com (mail-pj1-f49.google.com [209.85.216.49])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9EB543033E7;
-	Wed, 29 Jul 2026 07:57:13 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=54.204.34.129
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A495443F095
+	for <linux-pm@vger.kernel.org>; Wed, 29 Jul 2026 08:59:31 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.216.49
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1785311841; cv=none; b=m18oxm4QKCkV9/cBMlBtwTtEZgliZQCj19JoQDWTKeWIRvGphJR8fdBMD/QMgHOIP3Ttw/KkL26zyBfWf9xWWJfdMlRRU5cIDCoH9mcQCd1ez8zTDItg84SvtvU0bii/i6GeWKlgRZRjNltYMWpF0DHgD5egn5RLkzhknqVpAJ8=
+	t=1785315573; cv=none; b=begbzv/SpB4LvndVCkdgNe8rOAfj7v7IemLwelPUHJC/J8cfGMGux6hJnaQ0CPnVZRfGMsxW61AVSZrOQLRhoOiY0ZrXVeeRebX5+ptM/NV0a64tGAc92buF4SjcncbEutpP3k5jweNgTuZI3z0QReyiwEAMVI5LF255aY31sgk=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1785311841; c=relaxed/simple;
-	bh=aC6agGiNkldsc7o0HfytXXz8CkacdipBUC1dfi0aRug=;
-	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=COnfXvmVmVekL1J8ka45xbsFuxhp5NS++DONBuI2FspbqyRnaiS0vAgabdJFy1LFTN2hRtnVEFsa3it35ajj1uSpWd7pP2OhzxoPLpbNvVY0nbRyM21wz63lzdJwGtiTcjTrZxjTKaKR++4FrMl5jGR7O/9DY/7lK2u9n6d4+6A=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=uniontech.com; spf=pass smtp.mailfrom=uniontech.com; dkim=pass (1024-bit key) header.d=uniontech.com header.i=@uniontech.com header.b=QeZlsI3k; arc=none smtp.client-ip=54.204.34.129
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=uniontech.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=uniontech.com
+	s=arc-20240116; t=1785315573; c=relaxed/simple;
+	bh=yKnjYx8lSNqt8Bfgn1Uw6mYSvKO+6twVH1bXjBZCpe0=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:To:Cc; b=kOst73oD+ym6NCRmlPc1EvtclnFOieKPWTpMBYPbB/7ujMoKbIjwjGYsuChfz9Id9x9ZbFvb6b3BBsGJFYbv8mCx7InGOCg2u0OVzTz9hFjva58g/eVUrEHtwgZrKjAjEa4RBdRpeee3H8YVim4+jMl8lGgT1mTPHHvMhOL6Gj8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=X1UoB7Ez; arc=none smtp.client-ip=209.85.216.49
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=uniontech.com header.i=@uniontech.com header.b="QeZlsI3k"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=uniontech.com;
-	s=onoh2408; t=1785311830;
-	bh=itgUVnq6VcHbBFJWsgdQm1lRjbCgycLezZK+ZgcI9PE=;
-	h=From:To:Subject:Date:Message-Id:MIME-Version;
-	b=QeZlsI3kPaswlf9mxZSVubQPZNzBrAe3PUAyQQnoNJKAqohQOz+J2CAox5x33n/qu
-	 kE8U29wKIB8xVedlux3pMtojfa3k+EQ+8IsAv4qLOv/x2rGW0o4oVWB5SkYigfFO4y
-	 FVgCRc4la9ZWlw23b7maFADI9mkUKkFOwaaDy5F4=
-X-QQ-mid: zesmtpsz2t1785311819tb4a40445
-X-QQ-Originating-IP: IDvnEqS10eRIJW0l4dG/ReB7pCt1MH1n0LB6KCtqvrA=
-Received: from localhost.localdomain ( [113.57.152.160])
-	by bizesmtp.qq.com (ESMTP) with 
-	id ; Wed, 29 Jul 2026 15:56:56 +0800 (CST)
-X-QQ-SSF: 0000000000000000000000000000000
-X-QQ-GoodBg: 1
-X-BIZMAIL-ID: 2273207960292754276
-EX-QQ-RecipientCnt: 15
-From: Haowen Tu <tuhaowen@uniontech.com>
-To: hansg@kernel.org
-Cc: gregkh@linuxfoundation.org,
-	kernel@uniontech.com,
-	laurent.pinchart@ideasonboard.com,
-	lenb@kernel.org,
-	linux-kernel@vger.kernel.org,
-	linux-media@vger.kernel.org,
-	linux-pm@vger.kernel.org,
-	linux-usb@vger.kernel.org,
-	mchehab@kernel.org,
-	oneukum@suse.com,
-	pavel@kernel.org,
-	rafael@kernel.org,
-	stern@rowland.harvard.edu,
-	tuhaowen@uniontech.com
-Subject: Re: [PATCH v4 4/4] media: uvcvideo: defer streaming restart after hibernation snapshot
-Date: Wed, 29 Jul 2026 15:56:55 +0800
-Message-Id: <20260729075655.1187692-1-tuhaowen@uniontech.com>
-X-Mailer: git-send-email 2.20.1
-In-Reply-To: <cbac4803-cf65-4b8b-a662-073189df478b@kernel.org>
-References: <cbac4803-cf65-4b8b-a662-073189df478b@kernel.org>
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="X1UoB7Ez"
+Received: by mail-pj1-f49.google.com with SMTP id 98e67ed59e1d1-38e69bdb0fcso558190a91.1
+        for <linux-pm@vger.kernel.org>; Wed, 29 Jul 2026 01:59:31 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1785315571; x=1785920371; darn=vger.kernel.org;
+        h=cc:to:message-id:content-transfer-encoding:content-type
+         :mime-version:subject:date:from:from:to:cc:subject:date:message-id
+         :reply-to:content-type;
+        bh=MUBj8aoQIvZNl7lEmOibROP3TCidjP31UdlwOK8igZo=;
+        b=X1UoB7EzHn2+0hQsb8SdvwvzDkSwg2TUmCNaBilabx4Nzq8fkxEbh++O65Eat5AVoQ
+         s9/sy64DUr4v+OnPPhYUBn7bCsKjBEqrWDYNWrFPjH5w1a1o502MQ17jLxkzTcuE+63P
+         Lthm3MYuOq9hWINS+3fgxd0de9n8F6vAU0brByHLKR8PeG76KUPvctRwJp+Iod0ESiu4
+         36l7/5Z40IdoZSaBxHPB7KtHPPP/FLi7f/1CTJ9hLh+3UUiwz6G2DE+0qabckN0xATLS
+         g1rPTqtvoHBsNZ+vnicGDLLA+F0v0X1W/BNayap7mjLjieICO0l6JZDv8N1nr6tWtQFu
+         iaHA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1785315571; x=1785920371;
+        h=cc:to:message-id:content-transfer-encoding:content-type
+         :mime-version:subject:date:from:x-gm-gg:x-gm-message-state:from:to
+         :cc:subject:date:message-id:reply-to:content-type;
+        bh=MUBj8aoQIvZNl7lEmOibROP3TCidjP31UdlwOK8igZo=;
+        b=BUIpwcYO30kPQdnp1J60VPNQtpp0NgRiOD3WEs7X+ma/F/9hMws8gQ4tPXRmgPzhRD
+         cJFrbGD0ZjJ7skf7axXCEWzVvmPV2xNO/+fo1j8uAROLgcJtZf741BJjt1uvEPK5+Qhq
+         0+YuQhRMPsfDOOpVFHXvpf6g1cIhjcE6pF6k3XxJD7Pmznu2Az3evx11GaUzXW7+9rUo
+         BmxOT7zLsdmJrD/mVvXJq48u79pxUbjwVhH0P5MyfH63bli1OezgTN7UH30A4VC9gkKx
+         Y9uzoZIlchNIKRmCDwz2KuF6QWYCJQJb53mUpGg8v+35dL+Fd/lHxUOZZS0OqHKGKRmU
+         Sx7A==
+X-Forwarded-Encrypted: i=1; AHgh+Rpv4Aid5tbygNFKpC9tfQ65qSOj1L7Uc+lPMttcaC/CPo1qzpWO5KrAahicYIqXW7ZD28uhsr6xdA==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yw5lK4nJrn/a17/R8H8FjC7eIpf9nXx8OjzWawqiDXP7mErwr1R
+	R2YXPNQKDBrqrtypVp76kZToivHaiV1HfP8HZHl4IxmakVC3YUsL1vwu
+X-Gm-Gg: AR+sD11fXkIG5nn6alX91vLHnqUs6mVaGED83Lqqls3f4tVRpnum5lLLANcCAR41FnV
+	KO7iiqWcUMLf3PzAb/f7i+qo1bz/BqP2jFWWO9S4WlaxVQ7ZFh8SkHBMljxcthP+d4EGbD89T3u
+	DnADbjyBaKReUFi174QkYBrKDrl/Z8I7PpsMbLUvVjHsG7xy8BNxkg/NjZ2vBxhfLwIUXPW8jYl
+	5itMUWZ9gVw3gKtnqLV7khirU0cpqnTyIzKktGGPDNxytdMQFpsG79kEnEb/I0no8VyS834HRMZ
+	X5C8mfnxOgDxyVNIXG76vZNhu6UVB7DqbkU5zqNaMlLz85VBZo0Jp6eYI+Yg1+G7k6rGPIj1xy5
+	g9Sh02yyaEfI3n4FZutkQn7DPI5luGN1kCX3sC6iF21CllIGSBRN247biDjEfikwZZsGjkbuh+x
+	34mdzTpKD08bJUl5nYNv83dXnHm1CW0Os6+dwgCSB6/mTiBr1oNOfcOWl74Q==
+X-Received: by 2002:a05:6a20:7290:b0:3c3:a804:8ee5 with SMTP id adf61e73a8af0-3c8ba635ee7mr7303455637.65.1785315570721;
+        Wed, 29 Jul 2026 01:59:30 -0700 (PDT)
+Received: from [127.0.1.1] ([23.254.208.9])
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-31504b1246dsm7040104eec.2.2026.07.29.01.59.27
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 29 Jul 2026 01:59:30 -0700 (PDT)
+From: Jing Wu <realwujing@gmail.com>
+Date: Wed, 29 Jul 2026 16:59:24 +0800
+Subject: [PATCH] cpufreq: intel_pstate: Sync policy->cur to the pinned
+ pstate
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-QQ-SENDSIZE: 520
-Feedback-ID: zesmtpsz:uniontech.com:qybglogicsvrsz:qybglogicsvrsz3b-0
-X-QQ-XMAILINFO: N+GbB1GeczC4vnrE/BvWJqsxRl/m/55X6uPCpqaHGEyUW5s4GEhPj60a
-	dENv7/ZDj0UH71UgM5eMYUIsICqjSvR1lGf7kbWZXUvu6i5T1jcDbdR653JnaJ8UH61xue5
-	RayiZGldVl/N3d7DR5FONLOUHahrFgdRzHy/6nuNVPq3mWz16RM/cHzq4jHdzOijrKCUV/b
-	87HMPYlVmHN1c94QaymVzHXpDovRSNs/a5FM11fZ3kf24KfhD5UpmjW6VdWt1HZ55+8sk2y
-	Gc+pP7tIXhP57Exa3fdTihHmS0N3q2Ox39tz+Si/MsZekWaa1pfulyXwctoo2Gq9pDpfUrr
-	dpHCFaG3YB27j+MUudhr6cBUZ0mcibPcSML0HRT2DQaX2m9kol6vA+XxG+IGX8c7CisI5gM
-	eeWkKi5Kwq4b/mcovH+EDVdKFfoKle4Su33MFskHEv1CqR21gBw0IIm1fRIjtrooU2uAM1r
-	UArhjMl6u+r3mCtbLYisd+OKlfRvRjwvz4fHXcU6RAVWPWKoFcVjoytQG2jIoQCQrqgr7c6
-	STg0xc7dKs/fxANKcN7CoxBlSUdemIgS6+qlEwhXvwWcoNj79JdhnHlztc6LaWNk51mYbct
-	FH91kUgiOBVfSB9I2fPUd4CgtZZH/QeRCu58ST+Ro3oBQHO2LDdI7VG5lE2L/0VDtMArr0u
-	APVj8D20GLoobGrQVX46w7NrZruYfBWMCXvbfLYE5jyP1p6d/7prOyIbl9tXSd0ez408jZT
-	dD3alR1TWeYOB8jRxgJwEgCiwj1X7OeyAFgRQrkgF2VPFksgWGnPisZFu5NifiNwZAOZMhE
-	vaSQtETRpr2mHBsWCPaED1Bk2H2WqRVkUflrv51TfEhGRZMHQYtS/xMNkuKmGOOZTj13Dku
-	y62x36PSZEpS7/7xzpYrh4cW3/eUGPRFE/61iBbDkwq2Ygkq7EbP7p38QuvpAKa9d6qgwKN
-	3U1fHhDq+Q1V54e0eulG+xy5YwDpg53tYnb+MfTo8M/tGGmAEhepD5JSlV9Kma/OwGwVDUQ
-	Myu/UYIam9sTRw8YjBhVeeRk43rbtJm1g4PzNzylPaxrrQPHcXCZTpsL/9/Rbdmnn78HOhP
-	g==
-X-QQ-XMRINFO: OWPUhxQsoeAVwkVaQIEGSKwwgKCxK/fD5g==
-X-QQ-RECHKSPAM: 0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20260729-bug-intel-pstate-policy-cur-v1-1-51f61e5cbd74@gmail.com>
+X-B4-Tracking: v=1; b=H4sIAOvAaWoC/x3MSwqAIBAA0KvErBtIKftcJVqYTTUQJmpRRHdPW
+ r7NeyCQZwrQZQ94OjnwbhNEnoFZtV0IeUoGWUhV1LLF8ViQbaQNXYg6Erp9Y3OjOTwKEmXb6Eq
+ pUkAanKeZr3/vh/f9AF4Ac11tAAAA
+To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, 
+ Len Brown <lenb@kernel.org>, "Rafael J. Wysocki" <rafael@kernel.org>, 
+ Viresh Kumar <viresh.kumar@linaro.org>, Doug Smythies <dsmythies@telus.net>
+Cc: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, 
+ linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
+ Jing Wu <realwujing@gmail.com>
+X-Mailer: b4 0.13.0
 
-Hi Hans,
+When cpu->policy is CPUFREQ_POLICY_PERFORMANCE, intel_pstate_set_policy()
+pins the CPU to a fixed pstate (max(min_pstate, max_perf_ratio)) and
+programs it directly, precisely because, per the existing comment,
+"NOHZ_FULL CPUs need this as the governor callback may not be invoked
+on them". Two lines later it still unconditionally clobbers policy->cur
+down to policy->min, discarding the pinned value it just computed and
+applied.
 
-On Wed, Jul 29, 2026 at 09:29:03AM +0200, Hans de Goede wrote:
-> Right, so the purpose here is to avoid the LED turning back on and
-> to speedup the hibernate?
->
-> IOW except for the LED turning back on and things taking slightly
-> longer everything works correctly with the current code, right ?
+arch_freq_get_on_cpu() falls back to cpufreq_quick_get(), i.e.
+policy->cur, whenever its APERF/MPERF sample goes stale. A CPU whose
+tick keeps running refreshes that sample constantly and rarely hits
+the fallback, but an isolated CPU covered by nohz_full with a single
+runnable task never gets another tick, so it permanently reports the
+floor through this fallback - even though it is genuinely pinned to,
+and running at, the frequency computed just above.
 
-Yes, the current code is functionally correct in the sense that the
-hibernation flow can complete and the camera can be restored afterwards.
+Set policy->cur to the exact pinned frequency (pstate * scaling) in
+the CPUFREQ_POLICY_PERFORMANCE branch instead, and only fall back to
+policy->min for the general case, where the frequency genuinely isn't
+known without a fresh sample.
 
-The issue was reported as a user-visible privacy concern.  When an active
-UVC camera enters hibernation, the camera LED turns off during the freeze
-phase but turns back on after the snapshot has been created, while the
-system is writing the hibernation image.  From the user's point of view,
-this looks like the camera has been activated again during the
-hibernation transition.
+Fixes: d51847acb018 ("cpufreq: intel_pstate: set stale CPU frequency to minimum")
+Co-developed-by: Qiliang Yuan <yuanql9@chinatelecom.cn>
+Signed-off-by: Qiliang Yuan <yuanql9@chinatelecom.cn>
+Signed-off-by: Jing Wu <realwujing@gmail.com>
+---
+ drivers/cpufreq/intel_pstate.c | 20 +++++++++++++++-----
+ 1 file changed, 15 insertions(+), 5 deletions(-)
 
-I am not claiming that this causes image data to be exposed.  The problem
-is the unnecessary hardware reactivation and the resulting unexpected
-privacy-indicator behavior during a system power transition.
+diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+index 5a0eeb84d3821..b2c60c4931dcd 100644
+--- a/drivers/cpufreq/intel_pstate.c
++++ b/drivers/cpufreq/intel_pstate.c
+@@ -2908,8 +2908,23 @@ static int intel_pstate_set_policy(struct cpufreq_policy *policy)
+ 		 */
+ 		intel_pstate_clear_update_util_hook(policy->cpu);
+ 		intel_pstate_set_pstate(cpu, pstate);
++
++		/*
++		 * Report the exact pinned frequency instead of the floor:
++		 * the CPU is pinned to pstate here and nothing else changes
++		 * it, unlike the general case below.
++		 */
++		policy->cur = pstate * cpu->pstate.scaling;
+ 	} else {
+ 		intel_pstate_set_update_util_hook(policy->cpu);
++
++		/*
++		 * Keep policy->cur within limits here: outside of the pinned
++		 * CPUFREQ_POLICY_PERFORMANCE case above, it is never updated
++		 * by the intel_pstate driver, but it is used as a stale
++		 * frequency value.
++		 */
++		policy->cur = policy->min;
+ 	}
+ 
+ 	if (hwp_active) {
+@@ -2922,11 +2937,6 @@ static int intel_pstate_set_policy(struct cpufreq_policy *policy)
+ 			intel_pstate_clear_update_util_hook(policy->cpu);
+ 		intel_pstate_hwp_set(policy->cpu);
+ 	}
+-	/*
+-	 * policy->cur is never updated with the intel_pstate driver, but it
+-	 * is used as a stale frequency value. So, keep it within limits.
+-	 */
+-	policy->cur = policy->min;
+ 
+ 	mutex_unlock(&intel_pstate_limits_lock);
+ 
 
-Avoiding the restart also avoids unnecessary device work in this window,
-but I do not intend to make performance the main argument here.  The
-primary goal is to avoid the unexpected camera reactivation.
+---
+base-commit: 502d801f0ab03e4f32f9a33d203154ce84887921
+change-id: 20260729-bug-intel-pstate-policy-cur-1e1498a56641
 
-> I'm wondering if it would not be better to solve this in userspace
-> and have userspace stop the streaming before hibernation ?
+Best regards,
+-- 
+Jing Wu <realwujing@gmail.com>
 
-That would help when all userspace camera users cooperate, but I don't
-think it is equivalent to handling this in the driver.
-
-UVC is a generic driver and the kernel PM transition can happen while an
-application is actively streaming.  Relying on every userspace camera
-consumer to stop streaming before hibernation would make the behavior
-depend on userspace policy and application support.  The driver already
-knows whether streaming was active at freeze time, and it is also the
-component that restarts the hardware during resume, so it can avoid this
-specific unnecessary hardware restart more reliably.
-
-> Hmm, the way you word this sound like this is a problem at the USB
-> layer. But I think this is more of a short-coming in the generic
-> device model.
->
-> To clarify AFAIK the actual USB device to which the interfaces belong
-> also does not get a specific PM message here, right ?
->
-> The reason I'm asking is because the way this is worded in the commit
-> message makes it sounds like this might be something which could
-> be solved in the USB subsystem which I do not think is the case ?
-
-Yes, that is my understanding as well.  The USB device resume path does
-not expose the specific PM transition type to the UVC interface driver's
-resume callback.
-
-The problem was observed in UVC, and the immediate reason there is that
-the UVC resume path is reached through usb_driver.resume(), which does
-not receive the PM event.  But I agree that this should not be worded as
-a USB subsystem bug.
-
-My earlier thought was to expose the THAW/RESTORE distinction through
-USB, but that would still need coordination with the PM core, and it
-would only cover USB drivers.  If other non-USB drivers have similar
-device-specific reasons to avoid work during the post-snapshot THAW
-phase, they would need their own handling too.
-
-So I can reword the commit message to avoid implying that this is a USB
-core issue.  Something like:
-
-  Some resume callback paths, including the UVC path through
-  usb_driver.resume(), do not receive the PM event and therefore cannot
-  distinguish the transient post-snapshot THAW phase from the later
-  RESTORE phase using their local callback arguments.
-
-The helper is intended to expose only the hibernation snapshot state.
-Whether it is safe or useful to defer any work remains a driver-specific
-decision.
-
-Thanks,
-Haowen
