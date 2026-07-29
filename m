@@ -1,376 +1,175 @@
-Received: from mail-244108.protonmail.ch (mail-244108.protonmail.ch [109.224.244.108])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-qv1-f44.google.com (mail-qv1-f44.google.com [209.85.219.44])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B5F78486E74
-	for <linux-pm@vger.kernel.org>; Wed, 29 Jul 2026 13:58:43 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=109.224.244.108
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EADD04ADDA2
+	for <linux-pm@vger.kernel.org>; Wed, 29 Jul 2026 14:09:00 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.219.44
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1785333529; cv=none; b=CkEC0t/N6pJizrFbxXGf3To6s8YbgccokxvS3awPjbj/oFGACQ7cwKGCJCzrXy4wnyi5ET72LYZ/p0Iq6IKObzxB38WnI0xBTt9uyAsgniFdqeJC9pc06/4cAKhjojlqBbva8lBrmh6sLVJEoL5auG4LONvSRKytVVj2TiVsBto=
+	t=1785334143; cv=none; b=B0iep1B1D3hzqrs13/ft5dEs6WPh4Fa33Ok1YWGIjHDbKhQCjB6C8VsWkxpLPH3fr/F6o0VUqMIL7ENrQFmqKZo8rK/df+TPJ5d9e79u27gk+NG1C3vEeImqN25682NGNa+qm18CfbpyaoQA5eKz+BBBzzSSFbOQjJ6M4g2Iogg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1785333529; c=relaxed/simple;
-	bh=7agwiNjT2Zbo4oK3OhnP10yj1z22bzUitQFouWfo0V8=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=KLNqNUirGgax8kI1kN0i7o8L8cVse5/L3/LNpmSzrdJzbJOzvJ5w8/bJ0pqFasJuNnOY9HYvj2DQ0UUBDAfccOsmm7ATGcfkHv5KrA3Q9CHoR+YRryYGhRadOM6g/HdmQCkbbOkcygwI5gIKWyZhJS2eu8/emow0C6xXwzSmc+Y=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=onurozkan.dev; spf=pass smtp.mailfrom=onurozkan.dev; dkim=pass (2048-bit key) header.d=onurozkan.dev header.i=@onurozkan.dev header.b=tGN0snve; arc=none smtp.client-ip=109.224.244.108
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=onurozkan.dev
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=onurozkan.dev
+	s=arc-20240116; t=1785334143; c=relaxed/simple;
+	bh=/67HQpFAEKtmh7pBdA3FLDCKv9mMdJ7V2q7+FUwXbd8=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=jqdJGIAolAHl22vn64+wiIjLs+shfquPMdPFkusAWMxW3HX1E0uq4GcvX78Tfly7Nf4aTrlwvF/oOaI2QjeLYPcoaTOa5fUPmr39ZNdDjyeABH7yc52KaIR8y67wUhafuy9HYFJhktrEQZ84PDxUV9J25dORaBqxsyh96GCMMQw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=rowland.harvard.edu; spf=fail smtp.mailfrom=g.harvard.edu; dkim=pass (2048-bit key) header.d=rowland.harvard.edu header.i=@rowland.harvard.edu header.b=fc5HPDSA; arc=none smtp.client-ip=209.85.219.44
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=rowland.harvard.edu
+Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=g.harvard.edu
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=onurozkan.dev header.i=@onurozkan.dev header.b="tGN0snve"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=onurozkan.dev;
-	s=protonmail; t=1785333514; x=1785592714;
-	bh=iRZrXScmBt7Xn5PKV2idbmZkaUeVgRzFQGtp98fuQIM=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:From:To:
-	 Cc:Date:Subject:Reply-To:Feedback-ID:Message-ID:BIMI-Selector;
-	b=tGN0snvepjHoyjKDELlbEe8O1GEUoghn2xmz5ljBPwvx53Cn+b+F3+wbkdRyywu/T
-	 aEcu5WNnBn9KZQfVmsqhFJ146kz8Wx+j32CVy3x6R33dKPDjIgorEA718f7+xEE1RC
-	 W/WwpHfH5TrDabjmT8LR6844hH3G3v8mTWJ0CzGexpgg18DekLszfAN02zY8wUvxQ8
-	 ATUReAotU7rPVFRZDCqSmssKQnrd2NHHoW5o5UaxcDbncU17lYOx9L7K1h6g0lG2Ou
-	 M/q9i5j5GpZEby6ZXctiXW8kGlMcEMIyjRk53piATPlVF6PTlffsgpH8BK1EAXRT8a
-	 MPH1Os3Mlbg2g==
-X-Pm-Submission-Id: 4h9DSm0stMz1DFF2
-From: =?UTF-8?q?Onur=20=C3=96zkan?= <work@onurozkan.dev>
-To: Beata Michalska <beata.michalska@arm.com>
-Cc: ojeda@kernel.org,
-	dakr@kernel.org,
-	gregkh@linuxfoundation.org,
-	rafael@kernel.org,
-	boqun@kernel.org,
-	gary@garyguo.net,
-	bjorn3_gh@protonmail.com,
-	lossin@kernel.org,
-	a.hindborg@kernel.org,
-	aliceryhl@google.com,
-	tmgross@umich.edu,
-	daniel.almeida@collabora.com,
-	boris.brezillon@collabora.com,
-	samitolvanen@google.com,
-	rust-for-linux@vger.kernel.org,
-	driver-core@lists.linux.dev,
-	linux-kernel@vger.kernel.org,
-	linux-pm@vger.kernel.org
-Subject: Re: [PATCH v2 1/3] rust: add runtime PM support
-Date: Wed, 29 Jul 2026 16:58:28 +0300
-Message-ID: <20260729135830.412048-1-work@onurozkan.dev>
-X-Mailer: git-send-email 2.51.2
-In-Reply-To: <amnCwIMj5dIJevfk@arm.com>
-References: <20260721153617.869933-1-beata.michalska@arm.com> <20260721153617.869933-2-beata.michalska@arm.com> <20260727145622.904965-1-work@onurozkan.dev> <amnCwIMj5dIJevfk@arm.com>
+	dkim=pass (2048-bit key) header.d=rowland.harvard.edu header.i=@rowland.harvard.edu header.b="fc5HPDSA"
+Received: by mail-qv1-f44.google.com with SMTP id 6a1803df08f44-8f29ec73064so6523226d6.1
+        for <linux-pm@vger.kernel.org>; Wed, 29 Jul 2026 07:09:00 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=rowland.harvard.edu; s=google; t=1785334137; x=1785938937; darn=vger.kernel.org;
+        h=in-reply-to:content-disposition:content-type:mime-version
+         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=QoSZbcsZXIA21iiTaWUMCP3YKzXreBNCKDmjiwMa46E=;
+        b=fc5HPDSAElfoSoHh+f7ML8gc7houZbNcc++y5+dTQI+inYS6W7Rc9GelL8uJVg9bYq
+         EF/Jdugz7g+8ihesTro33kfsM3wpCL1YOk4az52IsZ67ET7M3ZQjuMdBToudr0iYiWht
+         3rXef8fuPZr6pIVDqQYPKg6SR+OJxIX7wYbVc5n/NqDfLtBUhnQ4QfNMvDJNx1f7Og1O
+         RIx1Ncz1eJLfErxFjcbCKaj4pzoqnj3Kuq5qjvuf8IBanetkJ8mjTln/TQLgERwjeNCo
+         WDLz4np5Cl7Uu1np5XQ4hoNizl2iZ/XI2ViNPuiZ3BcOPwj7wwqJF5w6EHjXAIIKWhnZ
+         eeEQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1785334137; x=1785938937;
+        h=in-reply-to:content-disposition:content-type:mime-version
+         :references:message-id:subject:cc:to:from:date:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=QoSZbcsZXIA21iiTaWUMCP3YKzXreBNCKDmjiwMa46E=;
+        b=pkTZVmKCwGU55R1lP+SAvrU3HqNtbdFV+gtTAgN6wjIm5ODs64dW107mYJoopPcM0w
+         6YsbZ+n1BT/T2Ra6mnr2GAvMtkt5d/ngv+E00uKca6a+sUPBq20rrFVcwt8HElxOpiMW
+         3GU2NrdLYVol1PfYB9fFO0QJiZO0lUamUBARioPj2jicnO/Elisxp0dcgAhdlV5rGfpc
+         vDOrTWhqsWdhkcpYa3wJ/dhFxB1s7A1q6MtI0t0O6ZcG7dd9hr8VesWSi+F5B/u0JSfe
+         nyATPhV9AAAOpm9zOcHrTXgD12+ZOxg8OJg6y/NvG5sKKQgIA07xcwjaujC5Ao2ZzQPJ
+         6Heg==
+X-Forwarded-Encrypted: i=1; AHgh+Rr5hf3uHZI/E1SJ9qH+iTRclQGDCkvOqPU8Nbh+sX536cAqwgDQo/CdzL7f7tE5gf5dRpUaD0hI2Q==@vger.kernel.org
+X-Gm-Message-State: AOJu0YxrWfNbiQuzN2LNgkBEXVZExm9mxO30iNXYfRMGaa/1G5gUFWd+
+	xKOxm/r+Lqp/6mcynmV0+CZnRqGZD4Fk75buS5fa6KuXY3unesMDKoNdjxG17xwPGA==
+X-Gm-Gg: AR+sD133Fcja9fmqq7i1DiBOhgHd6HgZY+L2ARqzHFFH80a9K59RJiez9O8+cbWVJxM
+	lt2NG9c9Rt9baxoexffPVebbLHSPMCQG1/W5ygNaJcNkX/xCo3JSG5D4JykiXT+u5u2KHS2at+x
+	GP0A21mspA7zHXmJYvKBzSYGQHhkPhPRq6D0KpMfooCUPWDXkFbSkb+NeSeZgCp9FHtmnktyIXn
+	ug+0Qkxen4zPQO4dlVf0xYZeSgl4FBUAJcFJSoty/Z88rxYGY8ovnw/Qeo2rjUZdXHy29cVD/E5
+	YmFLztBXoYD9a3Gk+pD1AkIU6Yvsh6WHH9nk2/LqgISrWfyuOCUtI3fnU5rC1FB/TN4+9YcA4I4
+	8BYJ3yOOQx7XAg9dm5JWKuh6QwOMzrLKCoQL7SlnOuNFlDpRoQ0lRNqKiHGzaHjMzwfks9tlzEw
+	iRH4nrNUMyGpWf2JTnvb6DBV44Q8e+ks2r5fVOoU9AWroHtI1KRlXbKos2AnDxngINJk0/Ptgx6
+	BU8eMC2Um1UDOFgDQ==
+X-Received: by 2002:a05:620a:6cca:b0:931:62d:6c3e with SMTP id af79cd13be357-933026a88eemr685715385a.86.1785334134953;
+        Wed, 29 Jul 2026 07:08:54 -0700 (PDT)
+Received: from rowland.harvard.edu ([140.247.181.15])
+        by smtp.gmail.com with ESMTPSA id af79cd13be357-933e712fc05sm174197385a.29.2026.07.29.07.08.53
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 29 Jul 2026 07:08:54 -0700 (PDT)
+Date: Wed, 29 Jul 2026 10:08:51 -0400
+From: Alan Stern <stern@rowland.harvard.edu>
+To: Haowen Tu <tuhaowen@uniontech.com>
+Cc: hansg@kernel.org, gregkh@linuxfoundation.org, kernel@uniontech.com,
+	laurent.pinchart@ideasonboard.com, lenb@kernel.org,
+	linux-kernel@vger.kernel.org, linux-media@vger.kernel.org,
+	linux-pm@vger.kernel.org, linux-usb@vger.kernel.org,
+	mchehab@kernel.org, oneukum@suse.com, pavel@kernel.org,
+	rafael@kernel.org
+Subject: Re: [PATCH v4 4/4] media: uvcvideo: defer streaming restart after
+ hibernation snapshot
+Message-ID: <0e22e9d4-da39-4d3f-9492-5c74295be312@rowland.harvard.edu>
+References: <cbac4803-cf65-4b8b-a662-073189df478b@kernel.org>
+ <20260729075655.1187692-1-tuhaowen@uniontech.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260729075655.1187692-1-tuhaowen@uniontech.com>
 
-On Wed, 29 Jul 2026 11:07:12 +0200=0D
-Beata Michalska <beata.michalska@arm.com> wrote:=0D
-=0D
-> On Mon, Jul 27, 2026 at 05:56:20PM +0300, Onur =C3=96zkan wrote:=0D
-> > On Tue, 21 Jul 2026 17:34:02 +0200=0D
-> > Beata Michalska <beata.michalska@arm.com> wrote:=0D
-> > =0D
-> > > Add a Rust abstraction for Linux runtime PM, allowing Rust drivers to=
-=0D
-> > > register runtime PM callbacks and use scoped runtime PM requests whil=
-e=0D
-> > > retaining the behavior and guarantees of the underlying C PM core.=0D
-> > > =0D
-> > > Runtime PM is managed through a registration object tied to the devic=
-e=0D
-> > > lifetime. The registration stores the callback payload and 'ensures' =
-that=0D
-> > > the registration, its `PMContext`, and the payload do not outlive the=
-=0D
-> > > device. All that while `PMContext` holds a lifetime-annotated device =
-reference=0D
-> > > so that runtime PM requests are made only while the device remains bo=
-und.=0D
-> > > =0D
-> > > Drivers define runtime PM callbacks through the `PMOps` trait. The=0D
-> > > generated `dev_pm_ops` callbacks take the stored payload, pass owners=
-hip=0D
-> > > to the corresponding Rust callback, and store the returned payload fo=
-r=0D
-> > > the next invocation. Each callback must return a valid payload,=0D
-> > > regardless of whether the power transition succeeds or not.=0D
-> > > =0D
-> > > `PMContext` provides scoped helpers for common runtime PM operations:=
-=0D
-> > > =0D
-> > > - `ResumeScope` resumes the device for the lifetime of the scope.=0D
-> > > - `AwakeScope`  resumes the device and holds a runtime PM usage refer=
-ence.=0D
-> > > - `RetainScope` increments the runtime PM usage count without resumin=
-g the=0D
-> > >   		device.=0D
-> > > =0D
-> > > Each scope performs the corresponding inverse operation when dropped,=
-=0D
-> > > according to the selected driver-defined profile.=0D
-> > > =0D
-> > > The abstraction does not change the semantics of the C runtime PM API=
-.=0D
-> > > Asynchronous requests may only queue work, non-waiting requests may f=
-ail=0D
-> > > instead of sleeping, and callbacks remain subject to the existing dri=
-ver=0D
-> > > core rules.=0D
-> > > =0D
-> > > The current implementation requires the PM registration and `PMOps`=0D
-> > > implementation to use the same type because callback dispatch interpr=
-ets=0D
-> > > the stored registration data using that relationship. This requiremen=
-t is=0D
-> > > not yet fully enforced by the type system.=0D
-> > > =0D
-> > > Signed-off-by: Beata Michalska <beata.michalska@arm.com>=0D
-> > > ---=0D
-> > >  drivers/base/base.h             |    3 +=0D
-> > >  rust/bindings/bindings_helper.h |    1 +=0D
-> > >  rust/helpers/helpers.c          |    1 +=0D
-> > >  rust/helpers/pm_runtime.c       |   44 ++=0D
-> > >  rust/kernel/lib.rs              |    1 +=0D
-> > >  rust/kernel/pm.rs               | 1020 +++++++++++++++++++++++++++++=
-++=0D
-> > >  6 files changed, 1070 insertions(+)=0D
-> > >  create mode 100644 rust/helpers/pm_runtime.c=0D
-> > >  create mode 100644 rust/kernel/pm.rs=0D
-> > > =0D
-> > > diff --git a/drivers/base/base.h b/drivers/base/base.h=0D
-> > > index a19f4cda2c83..c49303e4a86a 100644=0D
-> > > --- a/drivers/base/base.h=0D
-> > > +++ b/drivers/base/base.h=0D
-> > > @@ -119,6 +119,9 @@ struct device_private {=0D
-> > >  	const struct device_driver *async_driver;=0D
-> > >  	char *deferred_probe_reason;=0D
-> > >  	struct device *device;=0D
-> > > +#ifdef CONFIG_RUST=0D
-> > > +	void *rust_private;=0D
-> > > +#endif=0D
-> > >  	u8 dead:1;=0D
-> > >  };=0D
-> > >  #define to_device_private_parent(obj)	\=0D
-> > > diff --git a/rust/bindings/bindings_helper.h b/rust/bindings/bindings=
-_helper.h=0D
-> > > index 1124785e210b..78a9153c6a01 100644=0D
-> > > --- a/rust/bindings/bindings_helper.h=0D
-> > > +++ b/rust/bindings/bindings_helper.h=0D
-> > > @@ -77,6 +77,7 @@=0D
-> > >  #include <linux/pid_namespace.h>=0D
-> > >  #include <linux/platform_device.h>=0D
-> > >  #include <linux/pm_opp.h>=0D
-> > > +#include <linux/pm_runtime.h>=0D
-> > >  #include <linux/poll.h>=0D
-> > >  #include <linux/property.h>=0D
-> > >  #include <linux/pwm.h>=0D
-> > > diff --git a/rust/helpers/helpers.c b/rust/helpers/helpers.c=0D
-> > > index 4488a87223b9..14d93a5d8b1f 100644=0D
-> > > --- a/rust/helpers/helpers.c=0D
-> > > +++ b/rust/helpers/helpers.c=0D
-> > > @@ -76,6 +76,7 @@=0D
-> > >  #include "pci.c"=0D
-> > >  #include "pid_namespace.c"=0D
-> > >  #include "platform.c"=0D
-> > > +#include "pm_runtime.c"=0D
-> > >  #include "poll.c"=0D
-> > >  #include "processor.c"=0D
-> > >  #include "property.c"=0D
-> > > diff --git a/rust/helpers/pm_runtime.c b/rust/helpers/pm_runtime.c=0D
-> > > new file mode 100644=0D
-> > > index 000000000000..d0d71fcb0097=0D
-> > > --- /dev/null=0D
-> > > +++ b/rust/helpers/pm_runtime.c=0D
-> > > @@ -0,0 +1,44 @@=0D
-> > > +// SPDX-License-Identifier: GPL-2.0=0D
-> > > +=0D
-> > > +#include <linux/pm_runtime.h>=0D
-> > > +=0D
-> > > +__rust_helper void rust_helper_pm_runtime_get_noresume(struct device=
- *dev)=0D
-> > > +{=0D
-> > > +	pm_runtime_get_noresume(dev);=0D
-> > > +}=0D
-> > > +=0D
-> > > +__rust_helper void rust_helper_pm_runtime_put_noidle(struct device *=
-dev)=0D
-> > > +{=0D
-> > > +	pm_runtime_put_noidle(dev);=0D
-> > > +}=0D
-> > > +=0D
-> > > +__rust_helper void rust_helper_pm_runtime_mark_last_busy(struct devi=
-ce *dev)=0D
-> > > +{=0D
-> > > +	pm_runtime_mark_last_busy(dev) ;=0D
-> > > +}=0D
-> > > +=0D
-> > > +__rust_helper bool rust_helper_pm_runtime_active(struct device *dev)=
-=0D
-> > > +{=0D
-> > > +	return pm_runtime_active(dev);=0D
-=0D
-[...]=0D
-=0D
-> > > +        // The `Device<Bound>` reference provides that guarantee.=0D
-> > > +        unsafe {=0D
-> > > +            bindings::pm_runtime_mark_last_busy(dev.as_raw());=0D
-> > > +        }=0D
-> > > +    }=0D
-> > > +=0D
-> > > +    #[inline]=0D
-> > > +    fn suspend(dev: &device::Device<device::Bound>, mode: Mode) -> R=
-esult {=0D
-> > > +        // SAFETY: `dev.as_raw()` must provide a valid pointer to=0D
-> > > +        // `struct device` for the duration of the call.=0D
-> > > +        // The `Device<Bound>` reference provides that guarantee.=0D
-> > > +        to_result(unsafe { bindings::__pm_runtime_suspend(dev.as_raw=
-(), mode.into()) })=0D
-> > > +    }=0D
-> > > +=0D
-> > > +    #[inline]=0D
-> > > +    fn get_if_active(dev: &device::Device<device::Bound>) -> Result =
-{=0D
-> > > +        // SAFETY: `dev.as_raw()` must provide a valid pointer to=0D
-> > > +        // `struct device` for the duration of the call.=0D
-> > > +        // The `Device<Bound>` reference provides that guarantee.=0D
-> > > +        match unsafe { bindings::pm_runtime_get_if_active(dev.as_raw=
-()) } {=0D
-> > > +            ret if ret < 0 =3D> Err(Error::from_errno(ret)),=0D
-> > > +            0 =3D> Err(EAGAIN),=0D
-> > > +            _ =3D> Ok(()),=0D
-> > > +        }=0D
-> > > +    }=0D
-> > > +=0D
-> > > +    #[inline]=0D
-> > > +    fn runtime_enable(dev: &device::Device<device::Bound>) {=0D
-> > > +        // SAFETY: `dev.as_raw()` must provide a valid pointer to=0D
-> > > +        // `struct device` for the duration of the call.=0D
-> > > +        // The `Device<Bound>` reference provides that guarantee.=0D
-> > > +        unsafe { bindings::pm_runtime_enable(dev.as_raw()) }=0D
-> > > +    }=0D
-> > > +=0D
-> > > +    #[inline]=0D
-> > > +    fn runtime_disable(dev: &device::Device<device::Bound>) {=0D
-> > > +        // SAFETY: `dev.as_raw()` must provide a valid pointer to=0D
-> > > +        // `struct device` for the duration of the call.=0D
-> > > +        // The `Device<Bound>` reference provides that guarantee.=0D
-> > > +        unsafe { bindings::__pm_runtime_disable(dev.as_raw(), true) =
-};=0D
-> > > +    }=0D
-> > =0D
-> > What happens when you call these twice i.e. runtime_enable() when it's =
-already=0D
-> > enabled or runtime_disable() when it's already disabled?=0D
-> > =0D
-> For pm_runtime_enable  - this will drop a warning.=0D
-> For pm_runtime_disable - the disable_depth counter will be increased. Thi=
-s=0D
-> implies that for every extra disable call - enable one needs to be issued=
-.=0D
-> All handled by PM core.=0D
-=0D
-I see. I was about to suggest typestate pattern here as we can easily avoid=
-=0D
-these issues, but if you want to rely on PM core that's also fine I guess.=
-=0D
-=0D
-> > > +}=0D
-> > > +=0D
-> > > +#[cfg(not(CONFIG_PM))]=0D
-> > > +impl Request {=0D
-> > > +    #[inline]=0D
-> > > +    fn active(dev: &device::Device<device::Bound>) -> bool {=0D
-> > > +        true=0D
-> > > +    }=0D
-> > > +=0D
-> > > +    #[inline]=0D
-> > > +    fn suspended(dev: &device::Device<device::Bound>) -> bool {=0D
-> > > +        false=0D
-> > > +    }=0D
-> > > +=0D
-> > > +    #[inline]=0D
-> > > +    fn resume(_dev: &device::Device<device::Bound>, _mode: Mode) -> =
-Result {=0D
-> > > +        Ok(())=0D
-> > > +    }=0D
-> > > +=0D
-> > > +    #[inline]=0D
-> > > +    fn idle(_dev: &device::Device<device::Bound>, _mode: Mode) -> Re=
-sult {=0D
-> > > +        Err(ENOSYS)=0D
-> > > +    }=0D
-> > > +=0D
-=0D
-[...]=0D
-=0D
-> > > +    /// Returns the runtime PM context associated with this registra=
-tion.=0D
-> > > +    pub fn ctx(&self) -> &PMContext<'a, T> {=0D
-> > > +        &self.ctx=0D
-> > > +    }=0D
-> > > +}=0D
-> > > +=0D
-> > > +impl<'a, T: PMOps> Drop for Registration<'a, T> {=0D
-> > > +    fn drop(&mut self) {=0D
-> > > +        // SAFETY: `self.ctx.inner.dev` is the device this registrat=
-ion was=0D
-> > > +        // created for. Runtime PM is disabled first, and `pm_runtim=
-e_barrier`=0D
-> > > +        // waits for pending runtime PM work/callbacks before the ca=
-llback data=0D
-> > > +        // is removed below.=0D
-> > > +=0D
-> > > +        unsafe {=0D
-> > > +            bindings::__pm_runtime_disable(self.ctx.inner.dev.as_raw=
-(), true);=0D
-> > =0D
-> > Same here, is this safe to call even if it's not enabled? Registration =
-can drop=0D
-> > even when pm runtime is not enabled, right?=0D
-> True but that again is handled by PM core.=0D
-=0D
-You should at least document that.=0D
-=0D
-> > =0D
-> > > +            bindings::pm_runtime_barrier(self.ctx.inner.dev.as_raw()=
-);=0D
-> > > +        }=0D
-> > =0D
-> > You should not combine multiple unsafe calls in single unsafe block I t=
-hink.=0D
-> Why?=0D
-=0D
-To keep the scope of each unsafe block as small as possible.=0D
-=0D
-> Do not see much point in separating those.=0D
-> =0D
-> ---=0D
-> BR=0D
-> Beata=0D
-> > =0D
-> > > +        // SAFETY: The pointer, if non-null, was stored by `Registra=
-tion::new`=0D
-> > > +        // using `Pin<KBox<RegistrationData<T>>>::into_foreign`. Run=
-time PM has=0D
-> > > +        // been disabled and drained above, so generated callbacks c=
-an no longer=0D
-> > > +        // borrow this data. Clearing `rust_private` prevents later =
-lookup, and=0D
-> > > +        // `from_foreign` reconstructs the owning allocation so it i=
-s dropped.=0D
-> > > +        unsafe {=0D
-> > > +            let ptr =3D (*(*self.ctx.inner.dev.as_raw()).p).rust_pri=
-vate;=0D
-> > > +=0D
-> > > +            if !ptr.is_null() {=0D
-> > > +                (*(*self.ctx.inner.dev.as_raw()).p).rust_private =3D=
- core::ptr::null_mut();=0D
-> > > +                Pin::<KBox<RegistrationData<'_, T>>>::from_foreign(p=
-tr);=0D
-> > > +            }=0D
-> > > +        }=0D
-> > > +    }=0D
-> > > +}=0D
-> > > -- =0D
-> > > 2.43.0=0D
-> > > =0D
+On Wed, Jul 29, 2026 at 03:56:55PM +0800, Haowen Tu wrote:
+> Hi Hans,
+> 
+> On Wed, Jul 29, 2026 at 09:29:03AM +0200, Hans de Goede wrote:
+> > Right, so the purpose here is to avoid the LED turning back on and
+> > to speedup the hibernate?
+> >
+> > IOW except for the LED turning back on and things taking slightly
+> > longer everything works correctly with the current code, right ?
+> 
+> Yes, the current code is functionally correct in the sense that the
+> hibernation flow can complete and the camera can be restored afterwards.
+> 
+> The issue was reported as a user-visible privacy concern.  When an active
+> UVC camera enters hibernation, the camera LED turns off during the freeze
+> phase but turns back on after the snapshot has been created, while the
+> system is writing the hibernation image.  From the user's point of view,
+> this looks like the camera has been activated again during the
+> hibernation transition.
+> 
+> I am not claiming that this causes image data to be exposed.  The problem
+> is the unnecessary hardware reactivation and the resulting unexpected
+> privacy-indicator behavior during a system power transition.
+> 
+> Avoiding the restart also avoids unnecessary device work in this window,
+> but I do not intend to make performance the main argument here.  The
+> primary goal is to avoid the unexpected camera reactivation.
+> 
+> > I'm wondering if it would not be better to solve this in userspace
+> > and have userspace stop the streaming before hibernation ?
+> 
+> That would help when all userspace camera users cooperate, but I don't
+> think it is equivalent to handling this in the driver.
+> 
+> UVC is a generic driver and the kernel PM transition can happen while an
+> application is actively streaming.  Relying on every userspace camera
+> consumer to stop streaming before hibernation would make the behavior
+> depend on userspace policy and application support.  The driver already
+> knows whether streaming was active at freeze time, and it is also the
+> component that restarts the hardware during resume, so it can avoid this
+> specific unnecessary hardware restart more reliably.
+> 
+> > Hmm, the way you word this sound like this is a problem at the USB
+> > layer. But I think this is more of a short-coming in the generic
+> > device model.
+> >
+> > To clarify AFAIK the actual USB device to which the interfaces belong
+> > also does not get a specific PM message here, right ?
+> >
+> > The reason I'm asking is because the way this is worded in the commit
+> > message makes it sounds like this might be something which could
+> > be solved in the USB subsystem which I do not think is the case ?
+> 
+> Yes, that is my understanding as well.  The USB device resume path does
+> not expose the specific PM transition type to the UVC interface driver's
+> resume callback.
+> 
+> The problem was observed in UVC, and the immediate reason there is that
+> the UVC resume path is reached through usb_driver.resume(), which does
+> not receive the PM event.  But I agree that this should not be worded as
+> a USB subsystem bug.
+> 
+> My earlier thought was to expose the THAW/RESTORE distinction through
+> USB, but that would still need coordination with the PM core, and it
+> would only cover USB drivers.  If other non-USB drivers have similar
+> device-specific reasons to avoid work during the post-snapshot THAW
+> phase, they would need their own handling too.
+> 
+> So I can reword the commit message to avoid implying that this is a USB
+> core issue.  Something like:
+> 
+>   Some resume callback paths, including the UVC path through
+>   usb_driver.resume(), do not receive the PM event and therefore cannot
+>   distinguish the transient post-snapshot THAW phase from the later
+>   RESTORE phase using their local callback arguments.
+> 
+> The helper is intended to expose only the hibernation snapshot state.
+> Whether it is safe or useful to defer any work remains a driver-specific
+> decision.
+
+You're missing an important fact: If something goes wrong during the 
+hibernation transition (for example, if the kernel's memory image can't 
+be stored to disk) then there will be no RESTORE phase.  Following the 
+THAW phase, the system will return to normal operation.
+
+For this reason, during THAW drivers must not assume that the system is 
+about to power down.
+
+Alan Stern
