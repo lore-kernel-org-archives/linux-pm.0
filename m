@@ -1,197 +1,135 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pj1-f41.google.com (mail-pj1-f41.google.com [209.85.216.41])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B76DC4908DE
-	for <linux-pm@vger.kernel.org>; Wed, 29 Jul 2026 13:09:08 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9678048CD4D
+	for <linux-pm@vger.kernel.org>; Wed, 29 Jul 2026 13:35:54 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.216.41
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1785330552; cv=none; b=gSkDWGOCfHXqen2RACBRi4T80onfhgZVHszFssaCfwQUGcokZGCtIVGt5pGGrQEPOUa+fXCSDYNf5QFZ7LpsKqDbMLGpfgroL3YlzLZYhZ7zVw/hrgeEwbel+8Vid2FBEB6veEkgY3Yolzm+7yqdxbNQGYQRgHaRrOgM3ib5O3E=
+	t=1785332160; cv=none; b=Gq/XO334dV+xzVG1kiMcVKJ2gKrUOGxB23LEep8UESz8rUdT8P+iM4N+GM2mbUK3rXb8leXhbPeE1SDik9VSO2xv1B7A4Wu+pad+qPZDGNCP/mycy/G0w5eEcNDWRbb1rnyWBiu7qGnCFtq/PUQs5moj8ZfvaU3qYGfKM3IQy/Y=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1785330552; c=relaxed/simple;
-	bh=hPGVYBghCJkgcN3tZrevoVo9gaB35gByq1m7eKQMIiQ=;
-	h=From:In-Reply-To:MIME-Version:References:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=btiEc3/koq0RTS+iY4fO8YA9tIouvDlZQzyAAMC6JCZqYZBopAJJLfSc58ER5SXUeTpFt4NX+oVSxwJw9f6R0Q0UBtrQ7p6rAyXYseA0H7/zTckcpzGAgkKJt9IrosWSrz2/8ijluNMsAGAVXR3f1FQKqW+NYOaYV9kp9+q+ynY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=ItNABVh+; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1785332160; c=relaxed/simple;
+	bh=K4ve5MfBbzgfCTnxntzKAnrEEY2G6SACbQzvWrRRI/0=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=BtzIPyj9U9MioU68lEWXl8HlSsW4DZt3x8Y00M4gKVAGNjdeRVMrkdwwbD8q2pjiIOu3QOx10i5N55TsEQughrlOiEho63uxovsWySBpYyzGJtnZyjaIlV0l5ZKvw8R4sEkvQEQt/ZdegC2QN7w8Xtg3v23drHlmSiS5iYVa2hw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=fBeDVZli; arc=none smtp.client-ip=209.85.216.41
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="ItNABVh+"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5B72E1F00AC4
-	for <linux-pm@vger.kernel.org>; Wed, 29 Jul 2026 13:09:07 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1785330547;
-	bh=ASFXsn4nXOD/mK641M4jZwzrrOlFUU+ziD5PtdpkWzw=;
-	h=From:In-Reply-To:References:Date:Subject:To:Cc;
-	b=ItNABVh+cfLWgv73RiFJkCwmQEUBhVv2sAXeVggmW8sKX6bWwx3atLLD3gdRMVCBb
-	 QFDs6oOcSvv1c0VovBWzK2PWrSrOAvvwYGrqXGgfi98P0q77S9RniaRbuETreCTpI1
-	 mfseWrDpO73hBEzU4rbdcCyEgSu4xHJzsWbj+IppAht687G75fpC4NbD0rk7eHp5CF
-	 dYXEp6n03VMiqHPJVnSzlkiLuWWggtMC9+1W95te21hbAo1QIThxSG3u0kQmwFrMFe
-	 r0ExQWTltCJTS8U0P0avlbpap5ZG2L/IIHxM01U0dzQ6SVP6hN5AybMm26Ee9tr+2M
-	 DleiwQTarQ56Q==
-Received: by mail-lf1-f52.google.com with SMTP id 2adb3069b0e04-5b015532f7bso817819e87.0
-        for <linux-pm@vger.kernel.org>; Wed, 29 Jul 2026 06:09:07 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AHgh+RojLBGJsJCMBqbBeQKhDzUDPQToUIWF6PGCm+ouj3dRKs35OwBjgdZ2PI/MeyqEciYtPEsveTxe+w==@vger.kernel.org
-X-Gm-Message-State: AOJu0YykSJfeyUa+1C7CIv7Wldj82kEieuMVOr3xhQ77ThL2kEdMThN1
-	bPB9+GyyA4lv8dOqnZViiXbQFcMw/+VRluPR2gAeOoWxiefYZ+1SHp7gWz646hy/TLLCd2qxA4t
-	6SRRoBcMQ2mVRoaDd11VLueUYLHgJKJUF08IHvEhbSQ==
-X-Received: by 2002:a05:6512:6181:b0:5ae:a9eb:c5c6 with SMTP id
- 2adb3069b0e04-5b2d0261512mr1133725e87.64.1785330546089; Wed, 29 Jul 2026
- 06:09:06 -0700 (PDT)
-Received: from 969154062570 named unknown by gmailapi.google.com with
- HTTPREST; Wed, 29 Jul 2026 09:09:04 -0400
-Received: from 969154062570 named unknown by gmailapi.google.com with
- HTTPREST; Wed, 29 Jul 2026 09:09:04 -0400
-From: Bartosz Golaszewski <brgl@kernel.org>
-In-Reply-To: <TY3PR01MB113462C8DE3B70428F113ABF386CB2@TY3PR01MB11346.jpnprd01.prod.outlook.com>
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="fBeDVZli"
+Received: by mail-pj1-f41.google.com with SMTP id 98e67ed59e1d1-3810c5d691bso863946a91.1
+        for <linux-pm@vger.kernel.org>; Wed, 29 Jul 2026 06:35:52 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1785332150; x=1785936950; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=FdnYKHj4vwBiQ41/lPUNxhmPYmA1whHhMDsyY4GnBq8=;
+        b=fBeDVZliYdxhR0cgS41bi1R900OplsXh44sGSYPvvcwcxLMmg/FIA8M0xZhSLdKBPL
+         5bVniUzAUhyNFNBrcr38oo3Z5ZdxclxoFRwMKH1jTTXdqgJTIblUYYHA/9/+C0LMlZig
+         jiGCqqMU4HD2WJtq+zvJg3P5qxoUrQVefVZzxMDOUdUmvwH1PeIRP3iQDmlSJc3w5ZwC
+         IpZLMsLzeE3+E8o3dgEkw/DWT/B62KGg31CAenqnTYsKsaLZUb7shTKZ7P9+CuTCIcdI
+         d4EbFyU5VKw/IT3hjQ2aWaia/Hs4d3Xt6Rl3jPnxgLGuwKqNCOD3A79qU1EHR/rWF13G
+         BuFw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1785332150; x=1785936950;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to:content-type;
+        bh=FdnYKHj4vwBiQ41/lPUNxhmPYmA1whHhMDsyY4GnBq8=;
+        b=I8q+W+iSTLMf1XOmk5LYlkR6oDYB+hx4/5L6j5sPTMQ/+r2/Swyoto/lECIgp4RJzg
+         O1HVIusTxs+yuzQVaC3TD3FhVfHGjESsSuXUDTjjH+lS882LqwQ1x76VOGRZrs8SqkM+
+         SOaZ7D5IvgZFUTpeUoHPgOlBGbRZ7JZcplD5hejZPywJzvzoZDFxt4xGB1kKPZuRqMty
+         dA+yADjIhoNj90vpbzotYPEByRPUzbglZEOaU4ByHt2hpsw4NbG9wDkeFIntfiWABNmJ
+         rvgVKoqnUVaq1BmJZaA/0nyFRk2iV2W1eCdn9krwHvi1pLX8cXxYYBKlyNOHlbXfOJAM
+         ZRsg==
+X-Forwarded-Encrypted: i=1; AHgh+RrZwGegNaqOAKDJiWjejTT7KC8IME38XIW23jGZGW+5ko69YJ6FTFXnaz/HwIPWUsU/hG1XRQnFeA==@vger.kernel.org
+X-Gm-Message-State: AOJu0YybFZ6kCN2Bf4S5ygG6PCr1J/ZFI+wKxgViy+1e4f62E/v81AwJ
+	bI9r/vd1vKO5I9DV1hScVBBO8Xdq4vj/MFOCD44/cXlF9YKbgyKln/6I
+X-Gm-Gg: AR+sD12fqPsT2mX7/84blExgicthiZZxkmGrYePb/1TFFqt+Ru2DM5sC6zxLi90IIen
+	x4kJfC2hlv3eHWu7v3ngO3b1N8UXT43VR5XZLPPmEfbAhAsaC5hk5V74U6yzkqW3bRZPye21S+x
+	ZOB+Cii/AKqrZU+eZVbbHBksN2+SkBg1fCYGvFBdFOyfRrE/7qvULB7Nw5/WxPhpYtJcBYPYYlB
+	I7u+XdJyPdJgmND0QUtu9f36OpNChyCgoFL5FWSfw+0XijJu1nrl4he8j738D20q00cvNDRWASt
+	78/bvp/ZnjHM16xrcHeBYnwQyt32J2PkkA9U+qhkFePCi1QB1i60QJ+/8VeV4VerFIFPGumS1eO
+	suqP1PEt7lmd65DofTjKCIrOuwFu7WR+xs4YZACuDAnuPGXjf7i5xW7j6AV51VgTTNvpa4EiPRX
+	rTOb7GrA2IPH9DN+QmZtYFgp23aKOg54dF0B5LtDkQRW6sx//C0PyvErk33LHg6Wn7j/vV8BYSY
+	ZPC00IbMHVqdylZbMOZ4yZA/mhrjNs=
+X-Received: by 2002:a17:90b:1645:b0:387:e0bb:57f8 with SMTP id 98e67ed59e1d1-38f6a4d6731mr6737970a91.41.1785332149629;
+        Wed, 29 Jul 2026 06:35:49 -0700 (PDT)
+Received: from fedora.mrout-thinkpadp16vgen1.punetw6.csb ([223.181.51.44])
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-31504baa01dsm11051142eec.12.2026.07.29.06.35.44
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 29 Jul 2026 06:35:48 -0700 (PDT)
+From: Malaya Kumar Rout <malayarout91@gmail.com>
+To: zhanjie9@hisilicon.com,
+	linux-pm@vger.kernel.org,
+	myungjoo.ham@samsung.com,
+	kyungmin.park@samsung.com,
+	cw00.choi@samsung.com,
+	kant@allwinnertech.com
+Cc: skhan@linuxfoundation.org,
+	me@brighamcampbell.com,
+	Malaya Kumar Rout <malayarout91@gmail.com>,
+	linux-kernel@vger.kernel.org
+Subject: [PATCH v2] PM / devfreq: userspace: Fix memory leak in userspace_init()
+Date: Wed, 29 Jul 2026 19:05:22 +0530
+Message-ID: <20260729133523.357383-1-malayarout91@gmail.com>
+X-Mailer: git-send-email 2.53.0
+In-Reply-To: <511c7f13-3344-44bf-a960-044fc2401789@hisilicon.com>
+References: <511c7f13-3344-44bf-a960-044fc2401789@hisilicon.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260725123433.162348-1-biju.das.jz@bp.renesas.com>
- <20260725123433.162348-3-biju.das.jz@bp.renesas.com> <CAMRc=Mf_oNCQK3o5-s4u8zejkVWM4WN_R9YO+NA4od0qqtGjow@mail.gmail.com>
- <TYCPR01MB11332A50145F29D93157A58BC86CB2@TYCPR01MB11332.jpnprd01.prod.outlook.com>
- <CAMRc=MdU12B-+vQxCuFVuoJLLza_51-bv1o1T9VYEHbkiZF1EA@mail.gmail.com>
- <TY3PR01MB1134633BC06738344A740654786CB2@TY3PR01MB11346.jpnprd01.prod.outlook.com>
- <CAMRc=MfOk=+dQvdEAY1ah=G1JNM=p7J6=+Tz_uCYDQGBMxXHqA@mail.gmail.com> <TY3PR01MB113462C8DE3B70428F113ABF386CB2@TY3PR01MB11346.jpnprd01.prod.outlook.com>
-Date: Wed, 29 Jul 2026 09:09:04 -0400
-X-Gmail-Original-Message-ID: <CAMRc=MeybezmErzs9+jYaBgXr+ufsTv5_V5sZjhP6ynuQk+W2Q@mail.gmail.com>
-X-Gm-Features: AUfX_mwmatqgN8qkrJFJEW5yCcx-5JS7pmFqF_UHjRuELIIi5AWfSahrMeY1x0Y
-Message-ID: <CAMRc=MeybezmErzs9+jYaBgXr+ufsTv5_V5sZjhP6ynuQk+W2Q@mail.gmail.com>
-Subject: Re: [PATCH 2/3] power: sequencing: Add Renesas RZ/G3L Power Ready driver
-To: Biju Das <biju.das.jz@bp.renesas.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, 
-	"linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, 
-	Prabhakar Mahadev Lad <prabhakar.mahadev-lad.rj@bp.renesas.com>, 
-	"linux-renesas-soc@vger.kernel.org" <linux-renesas-soc@vger.kernel.org>, 
-	Geert Uytterhoeven <geert+renesas@glider.be>, Rob Herring <robh@kernel.org>, 
-	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
-	"laurent.pinchart" <laurent.pinchart@ideasonboard.com>, Philipp Zabel <p.zabel@pengutronix.de>, 
-	"magnus.damm" <magnus.damm@gmail.com>, "biju.das.au" <biju.das.au@gmail.com>, 
-	Bartosz Golaszewski <brgl@kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 
-On Tue, 28 Jul 2026 16:38:00 +0200, Biju Das <biju.das.jz@bp.renesas.com> said:
-> Hi Bartosz Golaszewski,
->
-> Thanks for the feedback.
->
->> -----Original Message-----
->> From: Bartosz Golaszewski <brgl@kernel.org>
->> Sent: 28 July 2026 15:22
->> Subject: Re: [PATCH 2/3] power: sequencing: Add Renesas RZ/G3L Power Ready driver
->>
->> On Tue, 28 Jul 2026 13:55:22 +0200, Biju Das <biju.das.jz@bp.renesas.com> said:
->> > Hi Bartosz Golaszewski,
->> >
->> >> -----Original Message-----
->> >> From: Bartosz Golaszewski <brgl@kernel.org>
->> >> Sent: 28 July 2026 12:35
->> >> Subject: Re: [PATCH 2/3] power: sequencing: Add Renesas RZ/G3L Power
->> >> Ready driver
->> >>
->> >> On Tue, 28 Jul 2026 11:17:58 +0200, Biju Das <biju.das.jz@bp.renesas.com> said:
->> >> > Hi Bartosz Golaszewski,
->> >> >
->> >> > Thanks for the feedback.
->> >> >
->> >>
->> >> ...
->> >>
->> >> >> > +
->> >> >> > +static int pwrseq_rzg3l_pwrrdy_match(struct pwrseq_device *pwrseq,
->> >> >> > +				     struct device *dev)
->> >> >> > +{
->> >> >> > +	return PWRSEQ_MATCH_OK;
->> >> >>
->> >> >> When I see an always-tru match() callback, it always raises an alarm bell.
->> >> >> Typically, I'd expect there to be some validation of the consumer happening.
->> >> >>
->> >> >> Please at least provide an explanation of why it's ok.
->> >> >
->> >> > Without the match function the driver is not probing.
->> >> >
->> >>
->> >> Yes, that's expected.
->> >>
->> >> > sysc(driver) ->powerseq(driver) ->{DSI,CSI,USB}(driver) there is no
->> >> > property that I can match here as the resource is a register on the
->> >> > SYSC IP and powerseq driver is instantiated by the SYSC driver.
->> >> >
->> >> > Maybe I can provide a comment here saying that??
->> >> > "No DT property to match here, so it is OK always"
->> >> >
->> >>
->> >> So the sysc is the parent of the pwrseq provider and the CSI, DSI and
->> >> USB drivers are the consumers of the pwrseq descriptor? The latter
->> >> are children of the platform bus, am I getting this right? Can you point me to the device tree that
->> describes it?
->> >
->> > Yes,
->> >
->> > Please see [1], [2], [3]
->> >
->> > [1] sysc node
->> >
->> > [2] phyrst node (I planned to remove renesas,sysc-pwrrdy in the next
->> > version as it is going to use pwrseq)
->> >
->> > [3] dsi node (I planned to remove renesas,sysc-pwrrdy in the next
->> > version as it is going to use pwrseq)
->> >
->> > [1]
->> > https://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git/tr
->> > ee/arch/arm64/boot/dts/renesas/r9a08g046.dtsi?h=next-20260727#n609
->> >
->> > [2]
->> > https://lore.kernel.org/all/TY3PR01MB11346FA21EFADC8A3D53D81BE86CF2@TY
->> > 3PR01MB11346.jpnprd01.prod.outlook.com/T/#mf24ae1363925a97c840b275c108
->> > a9b72942c40bc
->> >
->> > [3]
->> > https://lore.kernel.org/all/20260704093433.273672-1-biju.das.jz@bp.ren
->> > esas.com/T/#m31c6711b5403c5a387b22467bb88371df73ae2b1
->> >
->> >
->> > Cheers,
->> > Biju
->> >
->>
+Fix a memory leak in the userspace_init() function where allocated
+memory is not freed when sysfs_create_group() fails.
 
-Please wrap your emails at 80 characters as per the mailing list etiquette.
+When sysfs_create_group() fails, the function returns without freeing
+the memory allocated for 'data', leading to a memory leak. This patch
+adds proper error handling to free the allocated memory and reset
+governor_data to NULL on failure.
 
->> Then it seems you have a phandle from the DSI node to the sysc node:
->>
->> renesas,sysc-pwrrdy = <&sysc 0xd70 0x2>;
->
-> But this is no more required after modelling the pwrrdy signal as powerseq driver.
->
+v2:
+- Removed redundant 'out:' goto label and returned -ENOMEM directly
+  on allocation failure.
 
-So can you show me what the actual DT nodes and connections look like?
+Fixes: 5fdded844892 ("PM/devfreq: governor: Add a private governor_data for governor")
+Signed-off-by: Malaya Kumar Rout <malayarout91@gmail.com>
+---
+ drivers/devfreq/governor_userspace.c | 13 ++++++++-----
+ 1 file changed, 8 insertions(+), 5 deletions(-)
 
->>
->> In match() you can check if that phandle leads to the sysc device who's the parent of the power sequencer
->> device and return MATCH_OK if it is.
->
-> As per the DT maintainer Krzysztof Kozlowski, we should not use random phandles for pwrrdy signal.
->
-> Also, I confirm that this property is unnecessary if we model it as Power sequencer.
->
-> From ABI, point now only matters is the pwrseq_target_data.name in the power sequence driver and
-> consumers.
->
-> dsi->pwrseq = devm_pwrseq_get(dsi->dev, "dsi-pwrrdy");
-> priv->pwrseq = devm_pwrseq_get(dev, "usb-pwrrdy");
->
-> From the experience, I don't think, DT maintainers will allow
-> to define a vendor property just for the driver match.
->
+diff --git a/drivers/devfreq/governor_userspace.c b/drivers/devfreq/governor_userspace.c
+index 3906ebedbae8..8211aadb81f0 100644
+--- a/drivers/devfreq/governor_userspace.c
++++ b/drivers/devfreq/governor_userspace.c
+@@ -89,15 +89,18 @@ static int userspace_init(struct devfreq *devfreq)
+ 	int err = 0;
+ 	struct userspace_data *data = kzalloc_obj(struct userspace_data);
+ 
+-	if (!data) {
+-		err = -ENOMEM;
+-		goto out;
+-	}
++	if (!data)
++		return -ENOMEM;
++
+ 	data->valid = false;
+ 	devfreq->governor_data = data;
+ 
+ 	err = sysfs_create_group(&devfreq->dev.kobj, &dev_attr_group);
+-out:
++	if (err) {
++		kfree(data);
++		devfreq->governor_data = NULL;
++	}
++
+ 	return err;
+ }
+ 
+-- 
+2.54.0
 
-You pointed me to the node so I assumed this is what it will look like. I don't
-have the full context in my head.
-
-I still prefer there to be some connection and validation of the pwrseq
-consumer so I'm inquiring about the architecture.
-
-Please respond with the relevant DT nodes' final form.
-
-Bart
