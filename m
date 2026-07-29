@@ -1,343 +1,415 @@
-Received: from SA9PR02CU001.outbound.protection.outlook.com (mail-southcentralusazon11013021.outbound.protection.outlook.com [40.93.196.21])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-oi1-f205.google.com (mail-oi1-f205.google.com [209.85.167.205])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B13F072623;
-	Wed, 29 Jul 2026 03:12:55 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.93.196.21
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1785294777; cv=fail; b=kcVtqVfMI4Wk0eFTszN0WGrJMRa1hSvvd4COq27Hh8m5lauOJDqf5w46LzlS8Rzf/bJ64haBeczIFtgWJ+JWCuXOliji+UlDRDf08vr91wAh8YnBNS4bVBXhAgevOPzP7VIjt3vf6YQPZvYKFRckfk1m3H3FCDvxkc/NZFpj/H4=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1785294777; c=relaxed/simple;
-	bh=jW4t7MwJo0cc1ygoywg2K9VEYm3DC5iZjbzbABfFuL8=;
-	h=Message-ID:Date:MIME-Version:Subject:To:CC:References:From:
-	 In-Reply-To:Content-Type; b=QDk88QEk6HD6TWXvBZzz707lIYiGdkcAMs3L0Iet5eHctfVnuk/AjHS0rVI7reOcI27QDixygl1tamBq5B/1cYNtzUmrH/NRLUsr3MH+NAmNx0lcUF61J1qxG2mRG5xzLd00ZxmqOELN3OXe693p1V5m0G+p7rMXn0nOWW64rh0=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com; spf=fail smtp.mailfrom=amd.com; dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b=0INXh9QQ; arc=fail smtp.client-ip=40.93.196.21
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com
-Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=amd.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b="0INXh9QQ"
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=ROS1C4E9GpvQnXVXdtc3VYPRY56ogg4VF++/o2a2/zKT/sNiB0zWUYwn5wowCcaF7WC5rcEi52dOgxR1R5cZmnT0qVbItPmca3eAgw654ngsKnx2UZLS4reM9AGF1T6o9PQK3jF5+N53lQwU2bwI92yOZ7nq8L3Bj/LP5UbopA3ZczFqO5xCi7f7Ur/uaowKcxz8GUp/60K4y+kAJvwc2u1/epeSIY32tJjgk3zLrRL7bRdT3TMHYsE80EfYmFUce1jsLxpVyR9/21YeJnbrNgEhXcC6UJ+veZxRBYSf8mjcmPQAMjfkrLqACTe+BAHHtv+/5+gt0CpB+Xz5mUe0Qw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=JAx1WcK4zQfj9RVxIchbqv1IZ16STiiNm9jWO6iU7bo=;
- b=MP0dX/6JQKVo3QTRZDEDMvgZDqKXgxY+4R2qcYjr4B9hLYVIpwxhvGrNR7dSwi2zY11G793CE2pVoJbUNE/q9JveuL+yBvyWVrhhh+QnVf+hkTc9/owZc5Ah32fFXUvHy2U57g/710yV35b/sTBErdsa0sLt3lr40u5DwYCHTwYoxy5WaB787z84n0dhQoW8pemCjVk8vH33lDC4ZaVu9/7+pmwHt0GGWOBdhKkg40hIdK6TJ+oUcN/z3inQ9xWKWaHHiRBhPfq34v0a6Kav7WJ/Jdm5yko7h72xfH0Iu4aG4RqXGJrzgmSAvsEylhpDDQAmvCnlKhM9+kcv35OyRQ==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
- 165.204.84.17) smtp.rcpttodomain=manifault.com smtp.mailfrom=amd.com;
- dmarc=pass (p=quarantine sp=quarantine pct=100) action=none
- header.from=amd.com; dkim=none (message not signed); arc=none (0)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=JAx1WcK4zQfj9RVxIchbqv1IZ16STiiNm9jWO6iU7bo=;
- b=0INXh9QQmQmiLJRTkZBSyaK4T+N2OrCXHebX5PBJfShUMy1/gj6gnkh95grrzvVlyKLEb+vP9lN6V26+vQZ0V+6JhkCa8L9SlAz6ihuBIPC49P+ru0O3rz83e7w+Krl7hc1BQOSTOcLCG3iNNEt8DzifqGHzihl0QEe+SP7ZQVc=
-Received: from DS7PR03CA0105.namprd03.prod.outlook.com (2603:10b6:5:3b7::20)
- by DS0PR12MB9040.namprd12.prod.outlook.com (2603:10b6:8:f5::18) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.270.12; Wed, 29 Jul
- 2026 03:12:50 +0000
-Received: from CY4PEPF0000EE31.namprd05.prod.outlook.com
- (2603:10b6:5:3b7:cafe::31) by DS7PR03CA0105.outlook.office365.com
- (2603:10b6:5:3b7::20) with Microsoft SMTP Server (version=TLS1_3,
- cipher=TLS_AES_256_GCM_SHA384) id 15.21.245.13 via Frontend Transport; Wed,
- 29 Jul 2026 03:12:50 +0000
-X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 165.204.84.17)
- smtp.mailfrom=amd.com; dkim=none (message not signed)
- header.d=none;dmarc=pass action=none header.from=amd.com;
-Received-SPF: Pass (protection.outlook.com: domain of amd.com designates
- 165.204.84.17 as permitted sender) receiver=protection.outlook.com;
- client-ip=165.204.84.17; helo=satlexmb08.amd.com; pr=C
-Received: from satlexmb08.amd.com (165.204.84.17) by
- CY4PEPF0000EE31.mail.protection.outlook.com (10.167.242.37) with Microsoft
- SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.21.270.5 via Frontend Transport; Wed, 29 Jul 2026 03:12:50 +0000
-Received: from satlexmb08.amd.com (10.181.42.217) by satlexmb08.amd.com
- (10.181.42.217) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.41; Tue, 28 Jul
- 2026 22:12:49 -0500
-Received: from [10.136.36.1] (10.180.168.240) by satlexmb08.amd.com
- (10.181.42.217) with Microsoft SMTP Server id 15.2.2562.41 via Frontend
- Transport; Tue, 28 Jul 2026 22:12:46 -0500
-Message-ID: <528d4cef-3c79-4b84-a99a-5566f246a4dc@amd.com>
-Date: Wed, 29 Jul 2026 08:42:45 +0530
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7D6FD2E6116
+	for <linux-pm@vger.kernel.org>; Wed, 29 Jul 2026 03:36:39 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.167.205
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1785296201; cv=none; b=kr9/Q0sA3/qCFMRsFB4O8Q8w6lXf2Sf4dqFqt34ODlxj8wf3eiFYkXWRpjBZdspsylkmTcqV+w3VgTdPza/697ieWeH5md5oaDIUKVnr9RhMngFoK8QMr57uGj9+n76NMN67MPcPbOF0vhKMjciG5pwVt457SeOCfiglBTWsACs=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1785296201; c=relaxed/simple;
+	bh=YCE9uOU4OrvFd2DKmVaTJGBlmH6Wlb5KZdSUax6l9bE=;
+	h=MIME-Version:Date:Message-ID:Subject:From:To:Content-Type; b=Erbp1DTkKEfAW3tEGjgNIJ9JPy8SPI1FWwSvTiyzSojX34/IeDYVglPDmWx74tioWnm3jmeFIeesdVgWypDtmt3bgXoJdi8iz16YPqviyRPZuNTCo2R5mvn7Anxsh1bh6pSorY1f9tUxBZWQA9Nv3VuFkH7oegdUKa3htPgeOgg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=syzkaller.appspotmail.com; spf=pass smtp.mailfrom=M3KW2WVRGUFZ5GODRSRYTGD7.apphosting.bounces.google.com; arc=none smtp.client-ip=209.85.167.205
+Authentication-Results: smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=syzkaller.appspotmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=M3KW2WVRGUFZ5GODRSRYTGD7.apphosting.bounces.google.com
+Received: by mail-oi1-f205.google.com with SMTP id 5614622812f47-4a45b3f0bdfso524019b6e.1
+        for <linux-pm@vger.kernel.org>; Tue, 28 Jul 2026 20:36:39 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1785296198; x=1785900998;
+        h=content-type:to:from:subject:message-id:date:mime-version
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=A0v5mRGbS2rTiMEzXjZ+tJA0JsHiN1tvBaFh4oEVAsI=;
+        b=hr5b4NKghOTV6bqUT4Im4zSEcuWa1xribw+uJpZmfROcqUTlSKeCudRXpyVkb/ZY9W
+         G07VPTlU45s/mNjD33LaUR7vAa+UAPM8q+OE6rE/ewfRZJqNwyUarMu+Hqiyd2g+9GaK
+         rKrMiKO8dER6pA8AnfaEWBpd8/feGiK58kJd9CddGpPH3BqjRmSJnZ45twzhbAU431ei
+         eZPFaSZg6HVnLBs6gCWy8OdKQ92X/Qt69+240lX2UcID+sUFnaskxTy0DgNDQ7faInd2
+         OxWTky8DfxfJQRStZZz2Wwz0cRjaaWPnv/6+wHTrtf8+6llsevQAJTltU6ahQN2r7Qjj
+         qKQw==
+X-Forwarded-Encrypted: i=1; AHgh+RpbFCCCvzxwdWhddvzPkg4Mq6C4pUuAD/0APLGT4AE+1/xWFj9f4cIpiZhMWcl7ni13sTK3C7seBg==@vger.kernel.org
+X-Gm-Message-State: AOJu0YxxtDDrzPctsPVjIOxi+3pkxMOvvr4ASkilgxOe0zSCwWktWCff
+	l7Qf1Be8Z5o+fRtTyTw8wVcjYCZhRyVGokOkvKnKr1q6AQxntFtiFpglrxf0uc7aRcCSJvB09g0
+	RYT1VN0BVQhfTGpTV+JrdvXsbNVpmltDHv4QxYjgdtKi4Pq2J9LSzZtgYTeU=
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [RFC PATCH 0/4] cpufreq/amd-pstate: Per-core EPP boost for
- recently-busy CPUs
-To: Mario Limonciello <mario.limonciello@amd.com>, David Vernet
-	<void@manifault.com>
-CC: <linux-pm@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
-	=?UTF-8?Q?Andr=C3=A9_Almeida?= <andrealmeid@igalia.com>, Changwoo Min
-	<changwoo@igalia.com>, Christian Loehle <christian.loehle@arm.com>, "Rafael
- J. Wysocki" <rafael@kernel.org>
-References: <20260728073150.54964-1-void@manifault.com>
- <700ebebe-f4ab-4329-ad43-716d74d6621c@arm.com>
- <40ab4c65-faf5-4a85-8761-bc6ebd1aec90@amd.com>
-Content-Language: en-US
-From: K Prateek Nayak <kprateek.nayak@amd.com>
-In-Reply-To: <40ab4c65-faf5-4a85-8761-bc6ebd1aec90@amd.com>
+X-Received: by 2002:a05:6808:3010:b0:4a4:c09:6a4 with SMTP id
+ 5614622812f47-4ad5b992f68mr2747511b6e.10.1785296198301; Tue, 28 Jul 2026
+ 20:36:38 -0700 (PDT)
+Date: Tue, 28 Jul 2026 20:36:38 -0700
+X-Google-Appengine-App-Id: s~syzkaller
+X-Google-Appengine-App-Id-Alias: syzkaller
+Message-ID: <6a697546.6bd615f2.c0aa.0009.GAE@google.com>
+Subject: [syzbot] [pm?] possible deadlock in device_link_add
+From: syzbot <syzbot+a335e4c21d52fb8d9e95@syzkaller.appspotmail.com>
+To: dakr@kernel.org, driver-core@lists.linux.dev, gregkh@linuxfoundation.org, 
+	lenb@kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, 
+	pavel@kernel.org, rafael@kernel.org, syzkaller-bugs@googlegroups.com
 Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
-X-EOPAttributedMessage: 0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: CY4PEPF0000EE31:EE_|DS0PR12MB9040:EE_
-X-MS-Office365-Filtering-Correlation-Id: a347dbc3-e9d1-454a-c488-08deed1f45b7
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|376014|36860700016|23010399003|1800799024|82310400026|13003099007|6133799003|56012099006|10067099003|11063799006|5023799004|4143699003|18002099003|22082099003|3023799007;
-X-Microsoft-Antispam-Message-Info:
-	gqwt8yCPY0TVSMj1JROsVsadqXKxRJTlgVy8QVx5RHBm3YsgRjylAXtYnLpoM7z2xonsZ07/Q8iKg6dw7mMIOPsSNoMd9Kivvt+sv8fc68EX9fmEYnPC6z7TWLbYvKA68vqQ/zCmr6FH/uQeiQcbsl4J1rDooXoQ7NLr086v38LDSp3dF79tzly/JDiVMDfK2IDvXjYt/KgKjMAomLKWnkG1vXtQjgnrPNExVc3ols8QhTaOKcvXLftCSahhcWDVR+DCAsddiBK0i/6C/HSkHamx16SKog3m21eri3zsrk/q1g3yAsNeX7EfKeBxUNmMxqw2OIfkEg9LzY4+j3HGS1OHgKyTQvkZZ8fwLZfWcLqwraaVxoXATjgbQWSypCD9MWBHf1p7m/HSBlPjLeq4yDspDX4J9J7c3xDiJAakWXlLS45Lys8Yj1Ji4CDLdZDeAiyeuXC2cYJwIfJoWSq19bZJqzURDJyh9oCTGR0RUEtmTh/uMXo+6sjsPd7AlaIJK+Mx8DfuCio24D6WktMW0KXrqx5ULNpSQY0Qdonx0YHyaGOMKm0N3IH+3jMg8nTEpzLoZK3n+/yKq4kWpdzsRiHbsKilxP62xGbcoDk9EBvjGI+xYuWvN7wwq1dmYUQE1OIU3EP9+LhWIikqAsu6coLQITdrOrjMvYSLnUjp7/kjVeS427WutSbToa39/D+IDEBendlB9xOU8QfgY+GVuA==
-X-Forefront-Antispam-Report:
-	CIP:165.204.84.17;CTRY:US;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:satlexmb08.amd.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230040)(376014)(36860700016)(23010399003)(1800799024)(82310400026)(13003099007)(6133799003)(56012099006)(10067099003)(11063799006)(5023799004)(4143699003)(18002099003)(22082099003)(3023799007);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	EJE//rUNSK8hXqkJHb+M2s/mw2TXCFLFajMs5cxvcfIYQEfDWpjcGUSL16OcazgDMcK5QQLB6lJiORBopWf3EylZKpDSq+QzC48+nAIhPo7VlE74d40aLu8OpFdzFvUyfXEhy8/e+QTa9RDsdkCpwp5z7fh5OWxktF5elyFtxwz76jnMKSyuX0nkuPrOUjX0ryQN3ilyIa5Fvu+889Je1m03fW6irN+hCUXcQK0PhHBLT7QBGGSsCExonrC5ZOjA3XGTq4nQnEZroxnP5UUNvD+h0yuG1LceFikfvrJJ9ntNCSxbUcNwEl9UP1rn9Qr9RUXeabfSyQvzinFxkjBlOEOddVr8aPyOe4OuImyWFXrZ9pUjNi8VNjNtnCEJB4ssoDchI9INtKjnJfWgVOfa8aoS3Q8s1UDhYut8GrxagBDe9ZODls8v12al3OMGGXfl
-X-OriginatorOrg: amd.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 29 Jul 2026 03:12:50.1744
- (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: a347dbc3-e9d1-454a-c488-08deed1f45b7
-X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
-X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=3dd8961f-e488-4e60-8e11-a82d994e183d;Ip=[165.204.84.17];Helo=[satlexmb08.amd.com]
-X-MS-Exchange-CrossTenant-AuthSource:
-	CY4PEPF0000EE31.namprd05.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Anonymous
-X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: DS0PR12MB9040
 
-Hello David, Mario,
+Hello,
 
-On 7/29/2026 1:13 AM, Mario Limonciello wrote:
-> +Prateek
-> 
-> On 7/28/26 09:17, Christian Loehle wrote:
->> On 7/28/26 08:31, David Vernet wrote:
->>> In active (EPP) mode the platform autonomously picks the operating point
->>> between min_perf and max_perf, biased by the EPP hint, and the kernel
->>> only rewrites the CPPC request on policy or limit changes. A workload
->>> dominated by one mostly-busy thread that takes frequent short sleeps
->>> (common in gaming workloads, for example) can fare poorly under this
->>> strategy. Each sleep decays the hardware's performance signal, causing
->>> post-wakeup bursts to start at a low operating point and inflating tail
->>> latency even though the CPU is essentially fully busy while work is
->>> available.
->>>
->>> As mentioned above, the motivating case here is gaming. A game's main or
->>> render thread typically blocks briefly on a futex or a GPU fence every
->>> frame, and the resulting frequency droop shows up directly as stale
->>> frames and inflated frame-time percentiles.
->>>
->>> Solving this at the cpufreq layer requires walking a fairly narrow
->>> path. Globally forcing EPP=performance fixes the tail but burns power
->>> on every core for every workload, which matters on handhelds where the
->>> CPU and GPU share a power budget. Raising min_perf on the busy core
->>> seems like the obvious surgical fix, but it pins the core at or above
->>> nominal even during micro-idle and vsync waits. On Van Gogh (Steam
->>> Deck) experiments that I ran, that perturbs the SMU's shared CPU/GPU
->>> boost management enough to regress the frame-time tail relative to doing
->>> nothing (numbers below).
->>>
->>> This series instead adds an opt-in, per-core EPP boost. When the
->>> epp_boost module parameter is enabled, an update-util hook samples each
->>> core's C0 residency (delta MPERF over delta TSC) at most once every
->>> 10 ms. If a sample shows the core at least 50% busy, the EPP field of
->>> its MSR_AMD_CPPC_REQ is set to performance (0) and held there until
->>> 300 ms pass without another busy sample, at which point the hook
->>> restores the request that policy management last stored in
->>> cppc_req_cached. Both writes happen only on the busy and idle edges, so
->>> the CPPC_REQ write rate matches that of a global EPP=performance
->>> setting. min, max and desired perf are never touched. The mechanism is
->>> only available in active mode on MSR (X86_FEATURE_CPPC) systems, since
->>> the hook does local MSR accesses from scheduler context which the
->>> shared memory interface cannot do. It composes with dynamic_epp, which
->>> selects the policy EPP from the platform profile and power source.
->>> epp_boost temporarily overrides whatever policy EPP is installed and
->>> restores it when the core goes idle.
+syzbot found the following issue on:
 
-I would also like to know Rafael's thoughts on kernel modifying the
-EPP to something other than what user has programmed.
+HEAD commit:    48a5a7ab8d6a Merge tag 'v7.2-rc4-smb3-client-fixes' of git..
+git tree:       upstream
+console output: https://syzkaller.appspot.com/x/log.txt?x=101332ea580000
+kernel config:  https://syzkaller.appspot.com/x/.config?x=145fa60d73086782
+dashboard link: https://syzkaller.appspot.com/bug?extid=a335e4c21d52fb8d9e95
+compiler:       gcc (Debian 14.2.0-19) 14.2.0, GNU ld (GNU Binutils for Debian) 2.44
 
-There are a ton of userspace tools that have currently profiled a bunch
-of systems and use the EPP interface to program a good default and their
-expectations may diverge if kernel starts modifying EPP underneath them.
+Unfortunately, I don't have any reproducer for this issue yet.
 
-This almost feels like putting the ondemand governor into the driver.
-Perhaps, the active mode drivers can be made to support the dynamic
-governors as opposed to just the static ones? that fits the overall
-cpufreq subsystem better but I'll wait on Rafael's thoughts on that.
+Downloadable assets:
+disk image (non-bootable): https://storage.googleapis.com/syzbot-assets/d900f083ada3/non_bootable_disk-48a5a7ab.raw.xz
+vmlinux: https://storage.googleapis.com/syzbot-assets/8ed725bee82f/vmlinux-48a5a7ab.xz
+kernel image: https://storage.googleapis.com/syzbot-assets/110c09c210d5/bzImage-48a5a7ab.xz
 
-> 
-> Have you seen the series from Prateek that reworks how dynamic EPP
-> works [1]?  It becomes an energy_performance_preference that userspace
-> can opt into.
+IMPORTANT: if you fix the issue, please add the following tag to the commit:
+Reported-by: syzbot+a335e4c21d52fb8d9e95@syzkaller.appspotmail.com
 
-I feel like that will come short of the expectations here because we
-would like to do this per-CPU based on utilization metrics as opposed
-to system profile / power status both of which are global and can lead
-to faster battery drain.
+i2c i2c-0: new_device: Instantiated device rt1719 at 0x49
+wusb3801 0-004a: supply vbus not found, using dummy regulator
+======================================================
+WARNING: possible circular locking dependency detected
+syzkaller #0 Tainted: G             L     
+------------------------------------------------------
+syz.6.979/9504 is trying to acquire lock:
+ffffffff8edba220 (fs_reclaim){+.+.}-{0:0}, at: might_alloc include/linux/sched/mm.h:317 [inline]
+ffffffff8edba220 (fs_reclaim){+.+.}-{0:0}, at: slab_pre_alloc_hook mm/slub.c:4565 [inline]
+ffffffff8edba220 (fs_reclaim){+.+.}-{0:0}, at: slab_alloc_node mm/slub.c:4925 [inline]
+ffffffff8edba220 (fs_reclaim){+.+.}-{0:0}, at: __kmalloc_cache_noprof+0x63/0x6c0 mm/slub.c:5511
 
-> 
-> I did have aspirations to hook into more changes than just platform
-> profile and power source eventually, so it sounds like we're at least
-> thinking in the same area.
+but task is already holding lock:
+ffffffff8fc0bc60 (dpm_list_mtx){+.+.}-{4:4}, at: device_link_add+0x2e5/0x19e0 drivers/base/core.c:828
 
-Ack! We'll at least need more input to the dynamic mode to cater to
-this specific case but it is going into the governor territory at that
-point if we want to use CPU specific signals.
+which lock already depends on the new lock.
 
-> 
-> [1] https://lore.kernel.org/linux-pm/20260727072056.1248-1-kprateek.nayak@amd.com/
-> 
-> Can you rework your series on top of that and see how the mechanics work out?
-> 
->>>
->>> Precedents
->>> ==========
->>>
->>> The closest precedent is intel_pstate's hwp_boost. It has the same
->>> overall shape as this feature. It is an opt-in update-util hook that
->>> temporarily rewrites the HWP request from scheduler context on a boost
->>> edge and restores the unboosted request after a hardcoded hold time
->>> (hwp_boost_hold_time_ns). It differs in two ways, both deliberate:
->>>
->>> 1. Trigger. hwp_boost activates on SCHED_CPUFREQ_IOWAIT. The waits
->>>     that matter here are futex waits and amdgpu fence waits, which do
->>>     not set the iowait flag, so a C0 residency trigger is used instead.
->>>     Residency also naturally covers the "mostly busy with short gaps"
->>>     pattern rather than only the wakeup instant.
->>>
->>> 2. Knob being boosted. hwp_boost raises the HWP min.
 
-I think that is why it is acceptable to be used with FW based scaling
-as it leaves the user programmed EPP alone.
+the existing dependency chain (in reverse order) is:
 
->>>                                                       As described
->>>     above, a min_perf floor measurably regressed the tail on Van Gogh,
->>>     so this feature biases only the EPP hint and leaves the platform
->>>     free to drop the operating point during the idle portions of the
->>>     frame.
->>>
->>> On the thresholds themselves, the sample period, busy threshold and
->>> decay window are hardcoded rather than exposed as tunables. I'm not sure
->>> if this is appropriate or not, but it seemed like it followed existing
->>> contours.
->>>
->>> hwp_boost_hold_time_ns for example is a hardcoded 3 ms, and schedutil's
->>> iowait boost decay is tied to TICK_NSEC, with no knobs for either. The
->>> 300 ms decay is sized so that a render thread which is only 50-80% busy
->>> from periodic vsync and GPU-fence waits holds the boost across its whole
->>> busy period at a couple of CPPC_REQ writes total, while an idle core
->>> sheds the boost well before it can matter. The energy exposure of a wide
->>> window is small because EPP only influences behavior in C0 and an idle
->>> core sits in CC6 regardless. If folks want me to make these tunable I am
->>> happy to expose them.
-> 
-> In a lot of ways I feel like you're fighting with the hardware (and
-> active mode) by doing it this way.  Did you look into using passive
-> or guided mode instead?  They might be better suited for what you're
-> trying to do.
+-> #8 (dpm_list_mtx){+.+.}-{4:4}:
+       lock_acquire kernel/locking/lockdep.c:5868 [inline]
+       lock_acquire+0x1b9/0x370 kernel/locking/lockdep.c:5825
+       __mutex_lock_common kernel/locking/mutex.c:646 [inline]
+       __mutex_lock+0x1a4/0x1bd0 kernel/locking/mutex.c:821
+       device_pm_add+0x87/0x370 drivers/base/power/main.c:153
+       device_add+0xa1b/0x1970 drivers/base/core.c:3720
+       device_create_groups_vargs+0x1f8/0x270 drivers/base/core.c:4454
+       device_create+0xed/0x130 drivers/base/core.c:4493
+       msr_device_create+0x31/0x70 arch/x86/kernel/msr.c:251
+       cpuhp_invoke_callback+0x3b4/0x9a0 kernel/cpu.c:194
+       cpuhp_thread_fun+0x3e9/0x7c0 kernel/cpu.c:1109
+       smpboot_thread_fn+0x3d3/0xaa0 kernel/smpboot.c:160
+       kthread+0x370/0x450 kernel/kthread.c:436
+       ret_from_fork+0x72b/0xd50 arch/x86/kernel/process.c:158
+       ret_from_fork_asm+0x1a/0x30 arch/x86/entry/entry_64.S:245
 
-Ack! Seems like UCLAMP_MIN + natural accumulation of PELT signals when
-running with passive mode + schedutil can achieve the desired results
-here but ...
+-> #7 (cpuhp_state-up){+.+.}-{0:0}:
+       lock_acquire kernel/locking/lockdep.c:5868 [inline]
+       lock_acquire+0x1b9/0x370 kernel/locking/lockdep.c:5825
+       cpuhp_lock_acquire kernel/cpu.c:103 [inline]
+       cpuhp_thread_fun+0x146/0x7c0 kernel/cpu.c:1086
+       smpboot_thread_fn+0x3d3/0xaa0 kernel/smpboot.c:160
+       kthread+0x370/0x450 kernel/kthread.c:436
+       ret_from_fork+0x72b/0xd50 arch/x86/kernel/process.c:158
+       ret_from_fork_asm+0x1a/0x30 arch/x86/entry/entry_64.S:245
 
-> 
->>>
->>> Testing methodology
->>> ===================
->>>
->>> All numbers are from a Steam Deck LCD (Van Gogh APU) running in active
->>> mode at EPP=balance_performance, using the Civilization VI graphics
->>> benchmark as a single-thread CPU-bound workload with a repeatable
->>> built-in benchmark pass.
->>>
->>> Comparisons were run as interleaved A/B tests with 6 iterations per
->>> configuration. For each run I collected per-frame frame times and the
->>> busy core's frequency, and derived average fps, 1%-low fps and the p99
->>> and p999 frame-time percentiles. Deltas were evaluated with Welch's
->>> t-test, and I report the p-values alongside the deltas below.
->>>
->>> Results:
->>>
->>> Default settings
->>> ----------------
->>> The busy core's median frequency sat at 2.43 GHz despite 98%
->>> utilization, which is the frequency droop described above.
->>
->> Two things to confirm for my understanding:
->> -Median frequency is the 50th percentile when weighing the OPPs by
->> residency, right?
->> - You're also using busy_pct = delta_MPERF * 100 / delta_TSC as
->> utilization, right? (Not util_avg or anything like that)
->>
->> Your observation looks like a firmware or SMU issue.
->> Can we confirm the (short) sleeps reset the demand-estimation, i.e.
->> by tracing cpu_idle/sched_switch and sample APERF/MPERF alongside it?
->> Also rt-app might be helpful to get a feel of how this behaves (and
->> create a similar pathological case like the single-threaded game).
->>
->>>
->>> Global EPP=performance
->>> ----------------------
->>> Globally forcing EPP=performance lifts the median to 3.5 GHz, cuts
->>> frame-time p999 by ~40% and raises 1%-low fps by ~16%, but does so on
->>> every core and for every workload.
->>>
->>> Raising min_perf to nominal on the busy core
->>> --------------------------------------------
->>> A variant of this patch that instead raised min_perf to nominal on the
->>> busy core reached the same 3.5 GHz median yet regressed p999 by 13-21%
->>> by perturbing the SMU boost management as described above.
+-> #6 (cpu_hotplug_lock){++++}-{0:0}:
+       lock_acquire kernel/locking/lockdep.c:5868 [inline]
+       lock_acquire+0x1b9/0x370 kernel/locking/lockdep.c:5825
+       percpu_down_read_internal include/linux/percpu-rwsem.h:53 [inline]
+       percpu_down_read include/linux/percpu-rwsem.h:77 [inline]
+       cpus_read_lock+0x42/0x170 kernel/cpu.c:490
+       static_key_slow_inc+0x12/0x30 kernel/jump_label.c:190
+       nbd_reconnect_socket drivers/block/nbd.c:1379 [inline]
+       nbd_genl_reconfigure+0xd82/0x1a00 drivers/block/nbd.c:2468
+       genl_family_rcv_msg_doit+0x214/0x300 net/netlink/genetlink.c:1114
+       genl_family_rcv_msg net/netlink/genetlink.c:1194 [inline]
+       genl_rcv_msg+0x560/0x800 net/netlink/genetlink.c:1209
+       netlink_rcv_skb+0x159/0x420 net/netlink/af_netlink.c:2556
+       genl_rcv+0x28/0x40 net/netlink/genetlink.c:1218
+       netlink_unicast_kernel net/netlink/af_netlink.c:1319 [inline]
+       netlink_unicast+0x585/0x850 net/netlink/af_netlink.c:1345
+       netlink_sendmsg+0x8b0/0xda0 net/netlink/af_netlink.c:1900
+       sock_sendmsg_nosec net/socket.c:775 [inline]
+       __sock_sendmsg net/socket.c:790 [inline]
+       ____sys_sendmsg+0xa4d/0xbe0 net/socket.c:2684
+       ___sys_sendmsg+0x190/0x1e0 net/socket.c:2738
+       __sys_sendmsg+0x160/0x210 net/socket.c:2770
+       do_syscall_x64 arch/x86/entry/syscall_64.c:63 [inline]
+       do_syscall_64+0x115/0x870 arch/x86/entry/syscall_64.c:94
+       entry_SYSCALL_64_after_hwframe+0x77/0x7f
 
-... this is interesting. Isn't Steam Deck a Zen2 machine? Does that
-have the MSR interface for CPPC?
+-> #5 (&nsock->tx_lock){+.+.}-{4:4}:
+       lock_acquire kernel/locking/lockdep.c:5868 [inline]
+       lock_acquire+0x1b9/0x370 kernel/locking/lockdep.c:5825
+       __mutex_lock_common kernel/locking/mutex.c:646 [inline]
+       __mutex_lock+0x1a4/0x1bd0 kernel/locking/mutex.c:821
+       nbd_handle_cmd drivers/block/nbd.c:1143 [inline]
+       nbd_queue_rq+0x428/0x1080 drivers/block/nbd.c:1207
+       blk_mq_dispatch_rq_list+0x422/0x1e70 block/blk-mq.c:2117
+       __blk_mq_do_dispatch_sched block/blk-mq-sched.c:168 [inline]
+       blk_mq_do_dispatch_sched block/blk-mq-sched.c:182 [inline]
+       __blk_mq_sched_dispatch_requests+0xcea/0x1620 block/blk-mq-sched.c:307
+       blk_mq_sched_dispatch_requests+0xd7/0x1c0 block/blk-mq-sched.c:329
+       blk_mq_run_work_fn+0x135/0x380 block/blk-mq.c:2531
+       process_one_work+0xa23/0x1940 kernel/workqueue.c:3322
+       process_scheduled_works kernel/workqueue.c:3405 [inline]
+       worker_thread+0x5ef/0xe50 kernel/workqueue.c:3486
+       kthread+0x370/0x450 kernel/kthread.c:436
+       ret_from_fork+0x72b/0xd50 arch/x86/kernel/process.c:158
+       ret_from_fork_asm+0x1a/0x30 arch/x86/entry/entry_64.S:245
 
-Also when you say you set min_perf on a busy_core, do you restore it
-back on the idle path?
+-> #4 (&cmd->lock){+.+.}-{4:4}:
+       lock_acquire kernel/locking/lockdep.c:5868 [inline]
+       lock_acquire+0x1b9/0x370 kernel/locking/lockdep.c:5825
+       __mutex_lock_common kernel/locking/mutex.c:646 [inline]
+       __mutex_lock+0x1a4/0x1bd0 kernel/locking/mutex.c:821
+       nbd_queue_rq+0xba/0x1080 drivers/block/nbd.c:1199
+       blk_mq_dispatch_rq_list+0x422/0x1e70 block/blk-mq.c:2117
+       __blk_mq_do_dispatch_sched block/blk-mq-sched.c:168 [inline]
+       blk_mq_do_dispatch_sched block/blk-mq-sched.c:182 [inline]
+       __blk_mq_sched_dispatch_requests+0xcea/0x1620 block/blk-mq-sched.c:307
+       blk_mq_sched_dispatch_requests+0xd7/0x1c0 block/blk-mq-sched.c:329
+       blk_mq_run_work_fn+0x135/0x380 block/blk-mq.c:2531
+       process_one_work+0xa23/0x1940 kernel/workqueue.c:3322
+       process_scheduled_works kernel/workqueue.c:3405 [inline]
+       worker_thread+0x5ef/0xe50 kernel/workqueue.c:3486
+       kthread+0x370/0x450 kernel/kthread.c:436
+       ret_from_fork+0x72b/0xd50 arch/x86/kernel/process.c:158
+       ret_from_fork_asm+0x1a/0x30 arch/x86/entry/entry_64.S:245
 
-I'm assuming what happens with min_perf method is that SMU is more
-aggressive at delivering nominal_perf and beyond, compared to the EPP
-performance route which perhaps starts off lower but has a steeper
-rampup curve compared to EPP balanced.
+-> #3 (set->srcu){.+.+}-{0:0}:
+       lock_sync kernel/locking/lockdep.c:5916 [inline]
+       lock_sync+0x9d/0x110 kernel/locking/lockdep.c:5904
+       srcu_lock_sync include/linux/srcu.h:199 [inline]
+       __synchronize_srcu+0xa2/0x300 kernel/rcu/srcutree.c:1481
+       blk_mq_wait_quiesce_done block/blk-mq.c:284 [inline]
+       blk_mq_wait_quiesce_done block/blk-mq.c:281 [inline]
+       blk_mq_quiesce_queue block/blk-mq.c:304 [inline]
+       blk_mq_quiesce_queue+0x149/0x1c0 block/blk-mq.c:299
+       elevator_switch+0x17b/0x7e0 block/elevator.c:576
+       elevator_change+0x352/0x530 block/elevator.c:681
+       elevator_set_default+0x29e/0x360 block/elevator.c:754
+       blk_register_queue+0x48e/0x630 block/blk-sysfs.c:992
+       __add_disk+0x73f/0xe40 block/genhd.c:524
+       add_disk_fwnode+0x118/0x480 block/genhd.c:593
+       add_disk include/linux/blkdev.h:800 [inline]
+       nbd_dev_add+0x77a/0xb10 drivers/block/nbd.c:2021
+       nbd_init+0x291/0x2b0 drivers/block/nbd.c:2729
+       do_one_initcall+0x11d/0x700 init/main.c:1347
+       do_initcall_level init/main.c:1409 [inline]
+       do_initcalls init/main.c:1425 [inline]
+       do_basic_setup init/main.c:1445 [inline]
+       kernel_init_freeable+0x6ea/0x7b0 init/main.c:1658
+       kernel_init+0x1f/0x1e0 init/main.c:1548
+       ret_from_fork+0x72b/0xd50 arch/x86/kernel/process.c:158
+       ret_from_fork_asm+0x1a/0x30 arch/x86/entry/entry_64.S:245
 
-Could you get some turbostat traces for both case with Civ VI to see
-how the frequency scaling behaves with the EPP route vs min_perf
-method?
+-> #2 (&q->elevator_lock){+.+.}-{4:4}:
+       lock_acquire kernel/locking/lockdep.c:5868 [inline]
+       lock_acquire+0x1b9/0x370 kernel/locking/lockdep.c:5825
+       __mutex_lock_common kernel/locking/mutex.c:646 [inline]
+       __mutex_lock+0x1a4/0x1bd0 kernel/locking/mutex.c:821
+       elevator_change+0x1bc/0x530 block/elevator.c:679
+       elevator_set_none+0x92/0xf0 block/elevator.c:769
+       blk_mq_elv_switch_none block/blk-mq.c:5101 [inline]
+       __blk_mq_update_nr_hw_queues block/blk-mq.c:5146 [inline]
+       blk_mq_update_nr_hw_queues+0x4c1/0x15f0 block/blk-mq.c:5211
+       nbd_start_device+0x1a6/0xbd0 drivers/block/nbd.c:1526
+       nbd_genl_connect+0xff2/0x1a40 drivers/block/nbd.c:2276
+       genl_family_rcv_msg_doit+0x214/0x300 net/netlink/genetlink.c:1114
+       genl_family_rcv_msg net/netlink/genetlink.c:1194 [inline]
+       genl_rcv_msg+0x560/0x800 net/netlink/genetlink.c:1209
+       netlink_rcv_skb+0x159/0x420 net/netlink/af_netlink.c:2556
+       genl_rcv+0x28/0x40 net/netlink/genetlink.c:1218
+       netlink_unicast_kernel net/netlink/af_netlink.c:1319 [inline]
+       netlink_unicast+0x585/0x850 net/netlink/af_netlink.c:1345
+       netlink_sendmsg+0x8b0/0xda0 net/netlink/af_netlink.c:1900
+       sock_sendmsg_nosec net/socket.c:775 [inline]
+       __sock_sendmsg net/socket.c:790 [inline]
+       ____sys_sendmsg+0xa4d/0xbe0 net/socket.c:2684
+       ___sys_sendmsg+0x190/0x1e0 net/socket.c:2738
+       __sys_sendmsg+0x160/0x210 net/socket.c:2770
+       do_syscall_x64 arch/x86/entry/syscall_64.c:63 [inline]
+       do_syscall_64+0x115/0x870 arch/x86/entry/syscall_64.c:94
+       entry_SYSCALL_64_after_hwframe+0x77/0x7f
 
-I'll try to compare your method vs min_perf = nominal_perf method on
-my Zen3 laptop over the coming weekend to see if I'm able to repro
-this SMU behavior.
+-> #1 (&q->q_usage_counter(io)#49){++++}-{0:0}:
+       lock_acquire kernel/locking/lockdep.c:5868 [inline]
+       lock_acquire+0x1b9/0x370 kernel/locking/lockdep.c:5825
+       blk_alloc_queue+0x610/0x790 block/blk-core.c:504
+       blk_mq_alloc_queue+0x174/0x290 block/blk-mq.c:4420
+       __blk_mq_alloc_disk+0x29/0x120 block/blk-mq.c:4467
+       nbd_dev_add+0x492/0xb10 drivers/block/nbd.c:1991
+       nbd_init+0x291/0x2b0 drivers/block/nbd.c:2729
+       do_one_initcall+0x11d/0x700 init/main.c:1347
+       do_initcall_level init/main.c:1409 [inline]
+       do_initcalls init/main.c:1425 [inline]
+       do_basic_setup init/main.c:1445 [inline]
+       kernel_init_freeable+0x6ea/0x7b0 init/main.c:1658
+       kernel_init+0x1f/0x1e0 init/main.c:1548
+       ret_from_fork+0x72b/0xd50 arch/x86/kernel/process.c:158
+       ret_from_fork_asm+0x1a/0x30 arch/x86/entry/entry_64.S:245
 
->>>
->>> epp_boost enabled
->>> -----------------
->>> With epp_boost enabled, the busy core running the Civ VI main thread
->>> runs at a 3.5 GHz median and the benchmark gains 31.8% in 1%-low fps
->>> (p=0.014) and 4.1% in frame-time p99 (p=0.015), with p999 and average
->>> fps unchanged.
->>>
->>> David Vernet (4):
->>>    cpufreq/amd-pstate: Document missing kernel-doc members
->>>    cpufreq/amd-pstate: Update cppc_req_cached before writing the MSR
->>>    cpufreq/amd-pstate: Add per-core EPP boost for recently-busy CPUs
->>>    Documentation: amd-pstate: Document the epp_boost parameter
->>>
->>>   Documentation/admin-guide/pm/amd-pstate.rst |  16 ++
->>>   drivers/cpufreq/amd-pstate.c                | 230 ++++++++++++++++++++++++++--
->>>   drivers/cpufreq/amd-pstate.h                |  20 +++
->>>   3 files changed, 255 insertions(+), 11 deletions(-)
->>>
->>>
->>> base-commit: 92bf086d086f7cfe0d6f807dfd6b8d11bc61b626
->>
-> 
+-> #0 (fs_reclaim){+.+.}-{0:0}:
+       check_prev_add+0xeb/0xe60 kernel/locking/lockdep.c:3165
+       check_prevs_add kernel/locking/lockdep.c:3284 [inline]
+       validate_chain kernel/locking/lockdep.c:3908 [inline]
+       __lock_acquire+0x136c/0x1a40 kernel/locking/lockdep.c:5237
+       lock_acquire kernel/locking/lockdep.c:5868 [inline]
+       lock_acquire+0x1b9/0x370 kernel/locking/lockdep.c:5825
+       __fs_reclaim_acquire mm/page_alloc.c:4329 [inline]
+       fs_reclaim_acquire+0xc4/0x100 mm/page_alloc.c:4343
+       might_alloc include/linux/sched/mm.h:317 [inline]
+       slab_pre_alloc_hook mm/slub.c:4565 [inline]
+       slab_alloc_node mm/slub.c:4925 [inline]
+       __kmalloc_cache_noprof+0x63/0x6c0 mm/slub.c:5511
+       _kmalloc_noprof include/linux/slab.h:969 [inline]
+       _kzalloc_noprof include/linux/slab.h:1290 [inline]
+       device_link_add+0x45d/0x19e0 drivers/base/core.c:920
+       _regulator_get_common+0x594/0x9a0 drivers/regulator/core.c:2526
+       _regulator_get drivers/regulator/core.c:2545 [inline]
+       _regulator_get+0x58/0x70 drivers/regulator/core.c:2534
+       _devm_regulator_get+0x55/0xd0 drivers/regulator/devres.c:31
+       wusb3801_probe+0x151/0x8e0 drivers/usb/typec/wusb3801.c:342
+       i2c_device_probe+0x658/0xd10 drivers/i2c/i2c-core-base.c:592
+       call_driver_probe drivers/base/dd.c:628 [inline]
+       really_probe+0x241/0xa60 drivers/base/dd.c:706
+       __driver_probe_device+0x20e/0x450 drivers/base/dd.c:868
+       driver_probe_device+0x4a/0x140 drivers/base/dd.c:898
+       __device_attach_driver+0x1df/0x320 drivers/base/dd.c:1026
+       bus_for_each_drv+0x159/0x1e0 drivers/base/bus.c:500
+       __device_attach+0x1e4/0x4d0 drivers/base/dd.c:1098
+       device_initial_probe+0xaf/0xd0 drivers/base/dd.c:1153
+       bus_probe_device+0x64/0x160 drivers/base/bus.c:620
+       device_add+0x121d/0x1970 drivers/base/core.c:3772
+       i2c_new_client_device+0x660/0xd30 drivers/i2c/i2c-core-base.c:1019
+       new_device_store+0x20f/0x420 drivers/i2c/i2c-core-base.c:1307
+       dev_attr_store+0x58/0x80 drivers/base/core.c:2505
+       sysfs_kf_write+0xf2/0x150 fs/sysfs/file.c:145
+       kernfs_fop_write_iter+0x3e0/0x5f0 fs/kernfs/file.c:345
+       new_sync_write fs/read_write.c:595 [inline]
+       vfs_write+0x6ac/0x1050 fs/read_write.c:687
+       ksys_write+0x12a/0x250 fs/read_write.c:739
+       do_syscall_x64 arch/x86/entry/syscall_64.c:63 [inline]
+       do_syscall_64+0x115/0x870 arch/x86/entry/syscall_64.c:94
+       entry_SYSCALL_64_after_hwframe+0x77/0x7f
 
--- 
-Thanks and Regards,
-Prateek
+other info that might help us debug this:
 
+Chain exists of:
+  fs_reclaim --> cpuhp_state-up --> dpm_list_mtx
+
+ Possible unsafe locking scenario:
+
+       CPU0                    CPU1
+       ----                    ----
+  lock(dpm_list_mtx);
+                               lock(cpuhp_state-up);
+                               lock(dpm_list_mtx);
+  lock(fs_reclaim);
+
+ *** DEADLOCK ***
+
+7 locks held by syz.6.979/9504:
+ #0: ffff88802cc54b70 (&f->f_pos_lock){+.+.}-{4:4}, at: fdget_pos+0x2aa/0x380 fs/file.c:1259
+ #1: ffff88802667a450 (sb_writers#8){.+.+}-{0:0}, at: ksys_write+0x12a/0x250 fs/read_write.c:739
+ #2: ffff8880370f8080 (&of->mutex){+.+.}-{4:4}, at: kernfs_fop_write_iter+0x2c2/0x5f0 fs/kernfs/file.c:336
+ #3: ffff88802e23db48 (kn->active#72){.+.+}-{0:0}, at: kernfs_get_active_of fs/kernfs/file.c:73 [inline]
+ #3: ffff88802e23db48 (kn->active#72){.+.+}-{0:0}, at: kernfs_fop_write_iter+0x332/0x5f0 fs/kernfs/file.c:337
+ #4: ffff8880371f7148 (&dev->mutex){....}-{4:4}, at: device_lock include/linux/device.h:1102 [inline]
+ #4: ffff8880371f7148 (&dev->mutex){....}-{4:4}, at: __device_attach+0x7e/0x4d0 drivers/base/dd.c:1073
+ #5: ffffffff8fbf4080 (device_links_lock){+.+.}-{4:4}, at: device_links_write_lock drivers/base/core.c:316 [inline]
+ #5: ffffffff8fbf4080 (device_links_lock){+.+.}-{4:4}, at: device_link_add+0x2e0/0x19e0 drivers/base/core.c:827
+ #6: ffffffff8fc0bc60 (dpm_list_mtx){+.+.}-{4:4}, at: device_link_add+0x2e5/0x19e0 drivers/base/core.c:828
+
+stack backtrace:
+CPU: 1 UID: 0 PID: 9504 Comm: syz.6.979 Tainted: G             L      syzkaller #0 PREEMPT(full) 
+Tainted: [L]=SOFTLOCKUP
+Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 1.16.3-debian-1.16.3-2 04/01/2014
+Call Trace:
+ <TASK>
+ __dump_stack lib/dump_stack.c:94 [inline]
+ dump_stack_lvl+0x100/0x190 lib/dump_stack.c:120
+ print_circular_bug.cold+0x178/0x1c7 kernel/locking/lockdep.c:2043
+ check_noncircular+0x146/0x160 kernel/locking/lockdep.c:2175
+ check_prev_add+0xeb/0xe60 kernel/locking/lockdep.c:3165
+ check_prevs_add kernel/locking/lockdep.c:3284 [inline]
+ validate_chain kernel/locking/lockdep.c:3908 [inline]
+ __lock_acquire+0x136c/0x1a40 kernel/locking/lockdep.c:5237
+ lock_acquire kernel/locking/lockdep.c:5868 [inline]
+ lock_acquire+0x1b9/0x370 kernel/locking/lockdep.c:5825
+ __fs_reclaim_acquire mm/page_alloc.c:4329 [inline]
+ fs_reclaim_acquire+0xc4/0x100 mm/page_alloc.c:4343
+ might_alloc include/linux/sched/mm.h:317 [inline]
+ slab_pre_alloc_hook mm/slub.c:4565 [inline]
+ slab_alloc_node mm/slub.c:4925 [inline]
+ __kmalloc_cache_noprof+0x63/0x6c0 mm/slub.c:5511
+ _kmalloc_noprof include/linux/slab.h:969 [inline]
+ _kzalloc_noprof include/linux/slab.h:1290 [inline]
+ device_link_add+0x45d/0x19e0 drivers/base/core.c:920
+ _regulator_get_common+0x594/0x9a0 drivers/regulator/core.c:2526
+ _regulator_get drivers/regulator/core.c:2545 [inline]
+ _regulator_get+0x58/0x70 drivers/regulator/core.c:2534
+ _devm_regulator_get+0x55/0xd0 drivers/regulator/devres.c:31
+ wusb3801_probe+0x151/0x8e0 drivers/usb/typec/wusb3801.c:342
+ i2c_device_probe+0x658/0xd10 drivers/i2c/i2c-core-base.c:592
+ call_driver_probe drivers/base/dd.c:628 [inline]
+ really_probe+0x241/0xa60 drivers/base/dd.c:706
+ __driver_probe_device+0x20e/0x450 drivers/base/dd.c:868
+ driver_probe_device+0x4a/0x140 drivers/base/dd.c:898
+ __device_attach_driver+0x1df/0x320 drivers/base/dd.c:1026
+ bus_for_each_drv+0x159/0x1e0 drivers/base/bus.c:500
+ __device_attach+0x1e4/0x4d0 drivers/base/dd.c:1098
+ device_initial_probe+0xaf/0xd0 drivers/base/dd.c:1153
+ bus_probe_device+0x64/0x160 drivers/base/bus.c:620
+ device_add+0x121d/0x1970 drivers/base/core.c:3772
+ i2c_new_client_device+0x660/0xd30 drivers/i2c/i2c-core-base.c:1019
+ new_device_store+0x20f/0x420 drivers/i2c/i2c-core-base.c:1307
+ dev_attr_store+0x58/0x80 drivers/base/core.c:2505
+ sysfs_kf_write+0xf2/0x150 fs/sysfs/file.c:145
+ kernfs_fop_write_iter+0x3e0/0x5f0 fs/kernfs/file.c:345
+ new_sync_write fs/read_write.c:595 [inline]
+ vfs_write+0x6ac/0x1050 fs/read_write.c:687
+ ksys_write+0x12a/0x250 fs/read_write.c:739
+ do_syscall_x64 arch/x86/entry/syscall_64.c:63 [inline]
+ do_syscall_64+0x115/0x870 arch/x86/entry/syscall_64.c:94
+ entry_SYSCALL_64_after_hwframe+0x77/0x7f
+RIP: 0033:0x7f17c619de99
+Code: ff c3 66 2e 0f 1f 84 00 00 00 00 00 0f 1f 44 00 00 48 89 f8 48 89 f7 48 89 d6 48 89 ca 4d 89 c2 4d 89 c8 4c 8b 4c 24 08 0f 05 <48> 3d 01 f0 ff ff 73 01 c3 48 c7 c1 e8 ff ff ff f7 d8 64 89 01 48
+RSP: 002b:00007f17c70ca028 EFLAGS: 00000246 ORIG_RAX: 0000000000000001
+RAX: ffffffffffffffda RBX: 00007f17c6425fa0 RCX: 00007f17c619de99
+RDX: 000000000000000e RSI: 0000200000000400 RDI: 0000000000000004
+RBP: 00007f17c6233eaf R08: 0000000000000000 R09: 0000000000000000
+R10: 0000000000000000 R11: 0000000000000246 R12: 0000000000000000
+R13: 00007f17c6426038 R14: 00007f17c6425fa0 R15: 00007ffc87927898
+ </TASK>
+i2c i2c-0: new_device: Instantiated device wusb3801 at 0x4a
+
+
+---
+This report is generated by a bot. It may contain errors.
+See https://goo.gl/tpsmEJ for more information about syzbot.
+syzbot engineers can be reached at syzkaller@googlegroups.com.
+
+syzbot will keep track of this issue. See:
+https://goo.gl/tpsmEJ#status for how to communicate with syzbot.
+
+If the report is already addressed, let syzbot know by replying with:
+#syz fix: exact-commit-title
+
+If you want to overwrite report's subsystems, reply with:
+#syz set subsystems: new-subsystem
+(See the list of subsystem names on the web dashboard)
+
+If the report is a duplicate of another one, reply with:
+#syz dup: exact-subject-of-another-report
+
+If you want to undo deduplication, reply with:
+#syz undup
