@@ -1,138 +1,202 @@
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id AE5AD4457C4;
-	Wed, 29 Jul 2026 10:03:05 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
+Received: from mx1.white.stw.pengutronix.de (mx1.white.stw.pengutronix.de [185.203.200.13])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 29328456DF4;
+	Wed, 29 Jul 2026 10:07:37 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=185.203.200.13
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1785319387; cv=none; b=Q+Hy1xXriMzH4t0r2OUYWMpWzBKi3RYNydEmk/xuoLiBoNWCfFmw9ATwVIcaiZd79uqnOgzFd07BDRBxZ8ARsa0hi5fhENzNXQO4QiReb1L7u8pcaQAUIQO+vjIC1ftahjvS3g4jUiGkTINbOSP4OHVnXUt1cm1vQLQlGy/xHW0=
+	t=1785319661; cv=none; b=TkyIt9xHIVKcSwOn9LomuRVPGUknkdoMruERB5FEi7Wrg/GnyYDocNRDHX5Gv91f4cMYcF2k4V41yf2YRweRcIhBCcynqOZGzEi0EJ9yCLU905hlRRN/NPFSxGzOdGNL35H4Bx2KaKkphrBE2DOKv/Tqmfu3rSd8JtsoaM4FBtg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1785319387; c=relaxed/simple;
-	bh=BLk7v6tX864U5aBtrJjw4kVt5NL5m2+zgRvgCdOgA3o=;
-	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=UgqERpWIrjaaOYqhsXZyrNNhmzBNAwF2839GH2fGB6LlSrFfvhJOCMIB0Nt5kJ7WiRftxdrQNBFcEZHNOoAasED8FjmJkc3a9nUDLDSQuuZ8Yfo7zkJDzsUXKAygGXauD7GXR9U8MioIQ6MrM8kL/tkj/iAviu/vo32VR47rTu8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=H0qVHeIQ; arc=none smtp.client-ip=217.140.110.172
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="H0qVHeIQ"
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 24FBB168F;
-	Wed, 29 Jul 2026 03:03:01 -0700 (PDT)
-Received: from e127648.cambridge.arm.com (e127648.arm.com [10.1.39.91])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id DA4413F66F;
-	Wed, 29 Jul 2026 03:03:02 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1785319385; bh=BLk7v6tX864U5aBtrJjw4kVt5NL5m2+zgRvgCdOgA3o=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=H0qVHeIQYWRFAb7jLhE4JPCb2mKj3ZCXS9qITpAxfnkr4cpth/+42OuyxeSyTUVoo
-	 b/9NY76JphnOPQcgd/wXatXSmBpSI5yUx+zjtFh60Git+a75Vr/HTA8ToJLHC7AFYG
-	 FZJtVYs9GEuFzkiErlyLj2l4mmnaQMWMRzWfuTRo=
-From: Christian Loehle <christian.loehle@arm.com>
-To: "Rafael J . Wysocki" <rafael@kernel.org>,
-	Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linux-pm@vger.kernel.org,
-	linux-acpi@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	Len Brown <lenb@kernel.org>,
-	Jie Zhan <zhanjie9@hisilicon.com>,
-	Lifeng Zheng <zhenglifeng1@huawei.com>,
-	Pierre Gondois <pierre.gondois@arm.com>,
-	Sumit Gupta <sumitg@nvidia.com>,
-	Sudeep Holla <sudeep.holla@arm.com>,
-	Ionela Voinescu <ionela.voinescu@arm.com>,
-	zhongqiu.han@oss.qualcomm.com,
-	Christian Loehle <christian.loehle@arm.com>
-Subject: [PATCHv2 3/3] ACPI: CPPC: Stop reading desired_perf in cppc_get_perf()
-Date: Wed, 29 Jul 2026 11:02:45 +0100
-Message-Id: <20260729100245.2628302-4-christian.loehle@arm.com>
-X-Mailer: git-send-email 2.34.1
-In-Reply-To: <20260729100245.2628302-1-christian.loehle@arm.com>
-References: <20260729100245.2628302-1-christian.loehle@arm.com>
+	s=arc-20240116; t=1785319661; c=relaxed/simple;
+	bh=mpmy3RbzV7M4AY4S6nNlQc0eE+qLtws5Bem+Rv6pTUM=;
+	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
+	 Content-Type:MIME-Version; b=UiFc97lc2Rh8tGYb6KyXvnb4y70LKRTXwbdUylXk5Z1AAeHdYmx/bwxq4Q9kaFQ9Gnz3DYWfvxkPBX4POB8cSGias/+NPYZ5hteIwUoQVhaH0icHQH9y4RZoBOPI6gqZ5irBxJtnxGVqZ4tdZHxKs7Y10keSjhHMS/0nuMrCIVE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=pengutronix.de; spf=pass smtp.mailfrom=pengutronix.de; arc=none smtp.client-ip=185.203.200.13
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=pengutronix.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=pengutronix.de
+Received: from drehscheibe.grey.stw.pengutronix.de (drehscheibe.grey.stw.pengutronix.de [IPv6:2a0a:edc0:0:c01:1d::a2])
+	(Authenticated sender: relay-from-drehscheibe.grey.stw.pengutronix.de)
+	by mx1.white.stw.pengutronix.de (Postfix) with ESMTPSA id DEB55201D51;
+	Wed, 29 Jul 2026 12:07:35 +0200 (CEST)
+Received: from lupine.office.stw.pengutronix.de ([2a0a:edc0:0:900:1d::4e] helo=lupine)
+	by drehscheibe.grey.stw.pengutronix.de with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+	(Exim 4.96)
+	(envelope-from <p.zabel@pengutronix.de>)
+	id 1wp1CJ-001rk1-2f;
+	Wed, 29 Jul 2026 12:07:35 +0200
+Received: from pza by lupine with local (Exim 4.98.2)
+	(envelope-from <p.zabel@pengutronix.de>)
+	id 1wp1CJ-000000007BQ-35nf;
+	Wed, 29 Jul 2026 12:07:35 +0200
+Message-ID: <25ce87017f0871e10bebd5fd43194b16026aaa04.camel@pengutronix.de>
+Subject: Re: [PATCH v2 2/3] power: sequencing: Add Renesas RZ/G3L Power
+ Ready driver
+From: Philipp Zabel <p.zabel@pengutronix.de>
+To: Biju <biju.das.au@gmail.com>, Bartosz Golaszewski <brgl@kernel.org>, 
+ Geert Uytterhoeven <geert+renesas@glider.be>, Rob Herring
+ <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,  Conor Dooley
+ <conor+dt@kernel.org>, Laurent Pinchart
+ <Laurent.pinchart@ideasonboard.com>, Magnus Damm	 <magnus.damm@gmail.com>
+Cc: Biju Das <biju.das.jz@bp.renesas.com>, linux-kernel@vger.kernel.org, 
+	linux-pm@vger.kernel.org, Prabhakar Mahadev Lad	
+ <prabhakar.mahadev-lad.rj@bp.renesas.com>, linux-renesas-soc@vger.kernel.org
+Date: Wed, 29 Jul 2026 12:07:35 +0200
+In-Reply-To: <20260729093112.98324-3-biju.das.jz@bp.renesas.com>
+References: <20260729093112.98324-1-biju.das.jz@bp.renesas.com>
+	 <20260729093112.98324-3-biju.das.jz@bp.renesas.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+User-Agent: Evolution 3.56.2-0+deb13u1 
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
 
-cppc_get_perf() has one in-tree caller, cppc_cpufreq_get_cpu_data().
-It uses the function to preserve existing controls before writing them, but
-overwrites desired_perf with highest_perf before the first cppc_set_perf().
-Consequently, the current Desired Performance value is not consumed.
+On Mi, 2026-07-29 at 10:31 +0100, Biju wrote:
+> From: Biju Das <biju.das.jz@bp.renesas.com>
+>=20
+> Add a power sequencing driver for the Renesas RZ/G3L PWRRDY module,
+> which signals power readiness for various IPs (USB, DSI, CSI etc.) on the
+> SoC. The driver binds as an auxiliary device to the parent SYSC driver,
+> using its regmap to toggle the SYS_PWRRDY_N register bits, and exposes
+> {usb,dsi,csi}-pwrrdy pwrseq targets.
+>=20
+> Signed-off-by: Biju Das <biju.das.jz@bp.renesas.com>
+> ---
+> v1->v2:
+>  * Added a comment in pwrseq_rzg3l_pwrrdy_match().
+>  * Dropped dev_get_regmap() from probe as regmap is now part of platform
+>    data.
+>  * Added a blank line before devm_pwrseq_device_register() in probe.
+>  * Dropped the error message devm_pwrseq_device_register() as probe print=
+s
+>    failure message.
+>  * Dropped local variables dev and regmap from probe().
+> ---
+>  drivers/power/sequencing/Kconfig              |   8 +
+>  drivers/power/sequencing/Makefile             |   1 +
+>  .../power/sequencing/pwrseq-renesas-pwrrdy.c  | 139 ++++++++++++++++++
+>  3 files changed, 148 insertions(+)
+>  create mode 100644 drivers/power/sequencing/pwrseq-renesas-pwrrdy.c
+>=20
+[...]
+> diff --git a/drivers/power/sequencing/pwrseq-renesas-pwrrdy.c b/drivers/p=
+ower/sequencing/pwrseq-renesas-pwrrdy.c
+> new file mode 100644
+> index 000000000000..723d574c3f10
+> --- /dev/null
+> +++ b/drivers/power/sequencing/pwrseq-renesas-pwrrdy.c
+> @@ -0,0 +1,139 @@
+> +// SPDX-License-Identifier: GPL-2.0
+> +/*
+> + * Renesas RZ/G3L Power Ready driver
+> + *
+> + */
+> +
+> +#include <linux/auxiliary_bus.h>
+> +#include <linux/module.h>
+> +#include <linux/pwrseq/provider.h>
+> +#include <linux/regmap.h>
+> +
+> +#define SYS_PWRRDY_N		0xd70
+> +#define SYS_PWRRDY_N_USB_MASK	BIT(0)
+> +#define SYS_PWRRDY_N_DSI_MASK	BIT(1)
+> +#define SYS_PWRRDY_N_CSI_MASK	BIT(2)
+> +
+> +static int pwrseq_rzg3l_set_pwrrdy(struct pwrseq_device *pwrseq, u32 mas=
+k, u32 val)
+> +{
+> +	struct regmap *regmap =3D pwrseq_device_get_drvdata(pwrseq);
+> +
+> +	return regmap_update_bits(regmap, SYS_PWRRDY_N, mask, val);
+> +}
 
-Remove the Desired Performance read from this aggregate getter and
-document that the field is returned as zero.
+Did you mean to use regmap_assign_bits() with a boolean val?
+See below.
 
-Signed-off-by: Christian Loehle <christian.loehle@arm.com>
----
- drivers/acpi/cppc_acpi.c | 23 ++++++++---------------
- 1 file changed, 8 insertions(+), 15 deletions(-)
+> +static int pwrseq_rzg3l_usb_pwrrdy_enable(struct pwrseq_device *pwrseq)
+> +{
+> +	return pwrseq_rzg3l_set_pwrrdy(pwrseq, SYS_PWRRDY_N_USB_MASK, 0);
+> +}
+> +
+> +static int pwrseq_rzg3l_usb_pwrrdy_disable(struct pwrseq_device *pwrseq)
+> +{
+> +	return pwrseq_rzg3l_set_pwrrdy(pwrseq, SYS_PWRRDY_N_USB_MASK, 1);
 
-diff --git a/drivers/acpi/cppc_acpi.c b/drivers/acpi/cppc_acpi.c
-index 210988d57b71..8ce2033ba993 100644
---- a/drivers/acpi/cppc_acpi.c
-+++ b/drivers/acpi/cppc_acpi.c
-@@ -1828,22 +1828,22 @@ int cppc_set_enable(int cpu, bool enable)
- EXPORT_SYMBOL_GPL(cppc_set_enable);
- 
- /**
-- * cppc_get_perf - Get a CPU's performance controls.
-+ * cppc_get_perf - Get a CPU's readable performance controls.
-  * @cpu: CPU for which to get performance controls.
-  * @perf_ctrls: ptr to cppc_perf_ctrls. See cppc_acpi.h
-  *
-+ * Desired Performance is not read and is returned as 0.
-+ *
-  * Return: 0 for success with perf_ctrls, -ERRNO otherwise.
-  */
- int cppc_get_perf(int cpu, struct cppc_perf_ctrls *perf_ctrls)
- {
- 	struct cpc_desc *cpc_desc = per_cpu(cpc_desc_ptr, cpu);
--	struct cpc_register_resource *desired_perf_reg,
--				     *min_perf_reg, *max_perf_reg,
-+	struct cpc_register_resource *min_perf_reg, *max_perf_reg,
- 				     *energy_perf_reg, *auto_sel_reg;
--	u64 desired_perf = 0, min = 0, max = 0, energy_perf = 0, auto_sel = 0;
-+	u64 min = 0, max = 0, energy_perf = 0, auto_sel = 0;
- 	int pcc_ss_id = per_cpu(cpu_pcc_subspace_idx, cpu);
- 	struct cppc_pcc_data *pcc_ss_data = NULL;
--	bool read_desired_perf = cppc_desired_perf_readable();
- 	int ret = 0, regs_in_pcc = 0;
- 
- 	if (!cpc_desc) {
-@@ -1856,16 +1856,14 @@ int cppc_get_perf(int cpu, struct cppc_perf_ctrls *perf_ctrls)
- 		return -EINVAL;
- 	}
- 
--	desired_perf_reg = &cpc_desc->cpc_regs[DESIRED_PERF];
- 	min_perf_reg = &cpc_desc->cpc_regs[MIN_PERF];
- 	max_perf_reg = &cpc_desc->cpc_regs[MAX_PERF];
- 	energy_perf_reg = &cpc_desc->cpc_regs[ENERGY_PERF];
- 	auto_sel_reg = &cpc_desc->cpc_regs[AUTO_SEL_ENABLE];
- 
- 	/* Are any of the regs PCC ?*/
--	if ((read_desired_perf && CPC_IN_PCC(desired_perf_reg)) ||
--	    CPC_IN_PCC(min_perf_reg) ||
--	    CPC_IN_PCC(max_perf_reg) || CPC_IN_PCC(energy_perf_reg) ||
-+	if (CPC_IN_PCC(min_perf_reg) || CPC_IN_PCC(max_perf_reg) ||
-+	    CPC_IN_PCC(energy_perf_reg) ||
- 	    CPC_IN_PCC(auto_sel_reg)) {
- 		if (pcc_ss_id < 0) {
- 			pr_debug("Invalid pcc_ss_id for CPU:%d\n", cpu);
-@@ -1896,12 +1894,7 @@ int cppc_get_perf(int cpu, struct cppc_perf_ctrls *perf_ctrls)
- 	}
- 	perf_ctrls->min_perf = min;
- 
--	if (read_desired_perf && CPC_SUPPORTED(desired_perf_reg)) {
--		ret = cpc_read(cpu, desired_perf_reg, &desired_perf);
--		if (ret)
--			goto out_err;
--	}
--	perf_ctrls->desired_perf = desired_perf;
-+	perf_ctrls->desired_perf = 0;
- 
- 	if (CPC_SUPPORTED(energy_perf_reg)) {
- 		ret = cpc_read(cpu, energy_perf_reg, &energy_perf);
--- 
-2.34.1
+This happens to work correctly since SYS_PWRRDY_N_USB_MASK is 1.
 
+> +}
+> +
+> +static const struct pwrseq_unit_data pwrseq_rzg3l_usb_pwrrdy_unit =3D {
+> +	.name =3D "usb-pwrrdy-power-sequence",
+> +	.enable =3D pwrseq_rzg3l_usb_pwrrdy_enable,
+> +	.disable =3D pwrseq_rzg3l_usb_pwrrdy_disable,
+> +};
+> +
+> +static int pwrseq_rzg3l_dsi_pwrrdy_enable(struct pwrseq_device *pwrseq)
+> +{
+> +	return pwrseq_rzg3l_set_pwrrdy(pwrseq, SYS_PWRRDY_N_DSI_MASK, 0);
+> +}
+> +
+> +static int pwrseq_rzg3l_dsi_pwrrdy_disable(struct pwrseq_device *pwrseq)
+> +{
+> +	return pwrseq_rzg3l_set_pwrrdy(pwrseq, SYS_PWRRDY_N_DSI_MASK, 1);
+
+1 is not in SYS_PWRRDY_N_DSI_MASK, so this will clear the bit. Either
+set val =3D mask or use regmap_assign_bits().
+
+> +}
+> +
+> +static const struct pwrseq_unit_data pwrseq_rzg3l_dsi_pwrrdy_unit =3D {
+> +	.name =3D "dsi-pwrrdy-sequence",
+> +	.enable =3D pwrseq_rzg3l_dsi_pwrrdy_enable,
+> +	.disable =3D pwrseq_rzg3l_dsi_pwrrdy_disable,
+> +};
+> +
+> +static int pwrseq_rzg3l_csi_pwrrdy_enable(struct pwrseq_device *pwrseq)
+> +{
+> +	return pwrseq_rzg3l_set_pwrrdy(pwrseq, SYS_PWRRDY_N_CSI_MASK, 0);
+> +}
+> +
+> +static int pwrseq_rzg3l_csi_pwrrdy_disable(struct pwrseq_device *pwrseq)
+> +{
+> +	return pwrseq_rzg3l_set_pwrrdy(pwrseq, SYS_PWRRDY_N_CSI_MASK, 1);
+
+Same issue as above.
+
+[...]
+> +static int pwrseq_rzg3l_pwrrdy_match(struct pwrseq_device *pwrseq,
+> +				     struct device *dev)
+> +{
+> +	/*
+> +	 * The pwrrdy provider does not rely on any device-tree phandle/propert=
+y
+> +	 * matching, so it unconditionally matches every consumer device that
+> +	 * requests it.
+> +	 */
+> +	return PWRSEQ_MATCH_OK;
+> +}
+> +
+> +static int pwrseq_rzg3l_pwrrdy_probe(struct auxiliary_device *adev,
+> +				     const struct auxiliary_device_id *id)
+> +{
+> +	struct pwrseq_device *pwrseq;
+> +	struct pwrseq_config config =3D {
+> +		.parent =3D &adev->dev,
+> +		.owner =3D THIS_MODULE,
+> +		.drvdata =3D adev->dev.platform_data,
+> +		.match =3D pwrseq_rzg3l_pwrrdy_match,
+> +		.targets =3D pwrseq_rzg3l_pwrrdy_targets,
+> +	};
+> +
+> +	pwrseq =3D devm_pwrseq_device_register(&adev->dev, &config);
+> +
+> +	return IS_ERR(pwrseq) ? PTR_ERR(pwrseq) : 0;
+
+	return PTR_ERR_OR_ZERO(pwrseq);
+
+
+regards
+Philipp
