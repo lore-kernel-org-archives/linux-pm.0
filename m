@@ -1,193 +1,94 @@
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.16])
+Received: from mail-m49197.qiye.163.com (mail-m49197.qiye.163.com [45.254.49.197])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3065D446062;
-	Wed, 29 Jul 2026 10:45:18 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.16
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B978444C652;
+	Wed, 29 Jul 2026 10:47:05 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=45.254.49.197
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1785321924; cv=none; b=rGoYGFo6LGyZC7J1THSYI/BxYeYMTO9SPpQhS5w1B1YbDMrEJ2V3FyVCDEXkCFcZ7oZ4TBUEqjQjLdBPmuvGwrlajRWxK8no1nFvtmiWybXWGWq8GlEeEEGyNT+YhkWel6XkVkrozo/rqfRYh2zU9T4EEudE1SFhewJNDn/2q2c=
+	t=1785322028; cv=none; b=nLa3bfaBBKkJbp3ry2ZmltlT3k1hEzMJrCADlixjxRfOFw0mjcwoJy7A20LDaycnckBCrsb2L2g3jcXpmYDNrOhGFOKnlZzJD9KXsjV51nu2p/k+/paiIWKdq8PkbOrdk0fK4zW/AyKWMsu3WowCx6+l9dXJ1xLhMq+MM08++NU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1785321924; c=relaxed/simple;
-	bh=Wh8l0/vpj80Ek5OTWeKVru1Ok8+Ho1liW+9Qqkh/bY8=;
-	h=Date:From:To:Cc:Subject:Message-ID; b=ADYUN/SDVkBIovJqQ+youRoeb4C357yEK/XHfHZvtr4YRXEe61ShhmaoU4cwRSxmwnZtga6kRouqHQjkOUwsDc4wFmbbWY6Nu/T+zxGGGS9lYx7bxfmlmO0EjOuYUWC2kMBA7DO+ykec7PNn2Fm+dewaPr2ibdVYtk/lf9RqReE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=Djv8Th7E; arc=none smtp.client-ip=192.198.163.16
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
+	s=arc-20240116; t=1785322028; c=relaxed/simple;
+	bh=+h3jDllb4+KaH1RdxrVO9IlBEbSJ7INP8mO0V7oEOik=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=pw3fD/fO1641Mzyx5euoYjAza8pMFpwDshJHoH79rx2lZdeFo1feBM5sD+L9wl3u1+9UzIr3slMvmUSvxh55WLI32klgAS3uqnnkx/dhJ+hUKgltGKnXFyvTTLGCoFHN3OibSAIkekHs2nK+w9BwzFQZ/emWiNn708XVPT/P5bE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=seu.edu.cn; spf=pass smtp.mailfrom=seu.edu.cn; dkim=pass (1024-bit key) header.d=seu.edu.cn header.i=@seu.edu.cn header.b=AB6tDCvm; arc=none smtp.client-ip=45.254.49.197
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=seu.edu.cn
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=seu.edu.cn
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="Djv8Th7E"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1785321919; x=1816857919;
-  h=date:from:to:cc:subject:message-id;
-  bh=Wh8l0/vpj80Ek5OTWeKVru1Ok8+Ho1liW+9Qqkh/bY8=;
-  b=Djv8Th7EWygwZ/4Pz2ygUDXCalggtYblvblsaY/sMj2jkqW81ApR87tu
-   YODyfn7ifdkhu0xCzP6QJRqMYEAOalPAOacOjuVUIyekiW/FK2/vhRbcF
-   1083WJ6LuOVlVB0HKD4KxaOygqCA5o6nOlTgwCA0iPhX7jO3HgTExq0gm
-   4THNq6gfcRDiHtl3aMxyRHQ7JNdGdHN1jZkw6X0yBpGzoTJEANY6TO1Cp
-   9t7u9CQmSq6Yz3LdFaMaCnACKPdVVicxiiebN7+km5GLxY9o/YOW1HMdm
-   NXKqxsZ2kAYJ+MirwWTakRrdLAgZ2+Ei/Zp4ojMu3D+BiRxW4mWJCWnLo
-   g==;
-X-CSE-ConnectionGUID: 4grcmieQTDykT0vaTWaPpg==
-X-CSE-MsgGUID: Vc0h0RwlTAmuKi6IX4chXw==
-X-IronPort-AV: E=McAfee;i="6800,10657,11859"; a="73457831"
-X-IronPort-AV: E=Sophos;i="6.25,192,1779174000"; 
-   d="scan'208";a="73457831"
-Received: from orviesa010.jf.intel.com ([10.64.159.150])
-  by fmvoesa110.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 29 Jul 2026 03:45:17 -0700
-X-CSE-ConnectionGUID: oUsgHMUyTseVOJ5CmI8omA==
-X-CSE-MsgGUID: LjIv71InSGeAX72ELBukrQ==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.25,192,1779174000"; 
-   d="scan'208";a="258735943"
-Received: from lkp-server02.sh.intel.com (HELO ea128546eb3d) ([10.239.97.151])
-  by orviesa010.jf.intel.com with ESMTP; 29 Jul 2026 03:45:16 -0700
-Received: from kbuild by ea128546eb3d with local (Exim 4.98.2)
-	(envelope-from <lkp@intel.com>)
-	id 1wp1mk-00000000fHT-08R9;
-	Wed, 29 Jul 2026 10:45:14 +0000
-Date: Wed, 29 Jul 2026 18:44:35 +0800
-From: kernel test robot <lkp@intel.com>
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org
-Subject: [rafael-pm:bleeding-edge] BUILD SUCCESS
- 60686a183ed772b3fc587b1d3f41ec12d01e3b7d
-Message-ID: <202607291814.UNXEzdj4-lkp@intel.com>
-User-Agent: s-nail v14.9.25
+	dkim=pass (1024-bit key) header.d=seu.edu.cn header.i=@seu.edu.cn header.b="AB6tDCvm"
+Received: from LAPTOP-99KJFSET (unknown [36.153.54.46])
+	by smtp.qiye.163.com (Hmail) with ESMTP id 4805ec6e7;
+	Wed, 29 Jul 2026 18:47:01 +0800 (GMT+08:00)
+From: Hongyan Xu <getshell@seu.edu.cn>
+To: sre@kernel.org,
+	orsonzhai@gmail.com,
+	baolin.wang@linux.alibaba.com,
+	zhang.lyra@gmail.com
+Cc: linux-pm@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	jianhao.xu@seu.edu.cn
+Subject: [PATCH v2] power: supply: sc2731_charger: cancel work on remove
+Date: Wed, 29 Jul 2026 18:46:59 +0800
+Message-ID: <5d48b827687168cb1b1bfe85f17945566b42829d.1785321763.git.getshell@seu.edu.cn>
+X-Mailer: git-send-email 2.50.1.windows.1
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+X-HM-Tid: 0a9fad7c219403a1kunm3420595e117c22
+X-HM-MType: 10
+X-HM-Spam-Status: e1kfGhgUHx5ZQUpXWQgPGg8OCBgUHx5ZQUlOS1dZFg8aDwILHllBWSg2Ly
+	tZV1koWUFITzdXWRgWCB1ZQUpXWS1ZQUlXWQ8JGhUIEh9ZQVlDGR5KVkhKS0tMTUtLSkwYTVYeHw
+	5VEwETFhoSFyQUDg9ZV1kYEgtZQVlITVVKTkhVTk9VT01ZV1kWGg8SFR0UWUFZT0tIVUpLSEpOTE
+	5VSktLVUpCS0tZBg++
+DKIM-Signature: a=rsa-sha256;
+	b=AB6tDCvm9QyDTV5frvAkCOXERg6rgnINVJ4MOYCQl+Q5Mu51QJhY/Ph25hy33/aDhihCe1l+R2dzs64IOIGAnSLePZHeGAKuridfGhmv67KL1H1xExT1q4VwNXAhXonEqrrkoT6PAVo9UBZzjAizmUhTbHQ2d6qBC+s2SQ3tQ2M=; s=default; c=relaxed/relaxed; d=seu.edu.cn; v=1;
+	bh=xdHIcNpo2LsO9tly5GEqPe5wq3/0x+A4kcUrd5ShpIo=;
+	h=date:mime-version:subject:message-id:from;
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git bleeding-edge
-branch HEAD: 60686a183ed772b3fc587b1d3f41ec12d01e3b7d  Merge branch 'test/acpi-driver' into testing
+The USB notifier and initial charger detection can schedule info->work.
+The remove path unregisters the notifier, but does not cancel queued or
+running work before the devm-allocated driver data is released.
 
-elapsed time: 841m
+Set the platform drvdata used by remove, then cancel the work after
+unregistering the notifier.
 
-configs tested: 116
-configs skipped: 1
+This issue was found by a static analysis tool.
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+Fixes: 8ac1091ed18b ("power: supply: sc2731_charger: Add one work to charge/discharge")
+Reviewed-by: Baolin Wang <baolin.wang@linux.alibaba.com>
+Signed-off-by: Hongyan Xu <getshell@seu.edu.cn>
+---
+Changes in v2:
+- Add the Fixes tag requested by Baolin Wang.
+- Add Baolin Wang's Reviewed-by tag.
 
-tested configs:
-alpha                            allnoconfig    gcc-16.1.0
-alpha                           allyesconfig    gcc-16.1.0
-alpha                              defconfig    gcc-16.1.0
-arc                             allmodconfig    gcc-16.1.0
-arc                             allyesconfig    gcc-16.1.0
-arc                  randconfig-001-20260729    gcc-8.5.0
-arc                  randconfig-002-20260729    gcc-8.5.0
-arm                  randconfig-001-20260729    gcc-8.5.0
-arm                  randconfig-002-20260729    gcc-8.5.0
-arm                  randconfig-003-20260729    gcc-8.5.0
-arm                  randconfig-004-20260729    gcc-8.5.0
-arm64                         randconfig-001    gcc-14.3.0
-arm64                randconfig-001-20260729    clang-17
-arm64                randconfig-001-20260729    gcc-14.3.0
-arm64                randconfig-002-20260729    clang-17
-arm64                randconfig-002-20260729    gcc-14.3.0
-arm64                randconfig-003-20260729    clang-17
-arm64                randconfig-003-20260729    gcc-14.3.0
-arm64                randconfig-004-20260729    clang-17
-arm64                randconfig-004-20260729    gcc-14.3.0
-csky                            allmodconfig    gcc-16.1.0
-csky                 randconfig-001-20260729    clang-17
-csky                 randconfig-001-20260729    gcc-14.3.0
-csky                 randconfig-002-20260729    clang-17
-csky                 randconfig-002-20260729    gcc-14.3.0
-hexagon              randconfig-001-20260729    gcc-9.5.0
-hexagon              randconfig-002-20260729    gcc-9.5.0
-i386                            allmodconfig    gcc-14
-i386                buildonly-randconfig-001    gcc-14
-i386       buildonly-randconfig-001-20260729    gcc-14
-i386       buildonly-randconfig-002-20260729    gcc-14
-i386       buildonly-randconfig-003-20260729    gcc-14
-i386       buildonly-randconfig-004-20260729    gcc-14
-i386       buildonly-randconfig-005-20260729    gcc-14
-i386       buildonly-randconfig-006-20260729    gcc-14
-i386                          randconfig-001    clang-22
-i386                 randconfig-001-20260729    clang-22
-i386                 randconfig-002-20260729    clang-22
-i386                 randconfig-003-20260729    clang-22
-i386                 randconfig-004-20260729    clang-22
-i386                 randconfig-005-20260729    clang-22
-i386                 randconfig-006-20260729    clang-22
-i386                 randconfig-007-20260729    clang-22
-i386                          randconfig-011    gcc-14
-i386                 randconfig-011-20260729    gcc-14
-i386                 randconfig-012-20260729    gcc-14
-i386                 randconfig-013-20260729    gcc-14
-i386                 randconfig-014-20260729    gcc-14
-i386                 randconfig-015-20260729    gcc-14
-i386                 randconfig-016-20260729    gcc-14
-i386                 randconfig-017-20260729    gcc-14
-loongarch                          defconfig    clang-24
-loongarch            randconfig-001-20260729    gcc-9.5.0
-loongarch            randconfig-002-20260729    gcc-9.5.0
-m68k                       m5272c3_defconfig    gcc-16.1.0
-mips                          gcw0_defconfig    clang-24
-mips                     maltaaprp_defconfig    clang-17
-nios2                           allmodconfig    gcc-11.5.0
-nios2                            allnoconfig    gcc-11.5.0
-nios2                randconfig-001-20260729    gcc-9.5.0
-nios2                randconfig-002-20260729    gcc-9.5.0
-parisc                          alldefconfig    gcc-16.1.0
-parisc                          allmodconfig    gcc-16.1.0
-parisc                          allyesconfig    gcc-16.1.0
-parisc                             defconfig    gcc-16.1.0
-parisc               randconfig-001-20260729    clang-24
-parisc               randconfig-002-20260729    clang-24
-powerpc              randconfig-001-20260729    clang-24
-powerpc              randconfig-002-20260729    clang-24
-powerpc64            randconfig-001-20260729    clang-24
-powerpc64            randconfig-002-20260729    clang-24
-riscv            nommu_k210_sdcard_defconfig    gcc-16.1.0
-riscv                         randconfig-001    gcc-15.2.0
-riscv                randconfig-001-20260729    gcc-15.2.0
-riscv                randconfig-002-20260729    gcc-15.2.0
-s390                 randconfig-001-20260729    gcc-15.2.0
-s390                 randconfig-002-20260729    gcc-15.2.0
-sh                                 defconfig    gcc-16.1.0
-sh                           hp6xx_defconfig    gcc-16.1.0
-sh                   randconfig-001-20260729    gcc-15.2.0
-sh                   randconfig-002-20260729    gcc-15.2.0
-sparc                randconfig-001-20260729    gcc-10.5.0
-sparc                randconfig-002-20260729    gcc-10.5.0
-sparc64              randconfig-001-20260729    gcc-10.5.0
-sparc64              randconfig-002-20260729    gcc-10.5.0
-um                   randconfig-001-20260729    gcc-10.5.0
-um                   randconfig-002-20260729    gcc-10.5.0
-x86_64     buildonly-randconfig-001-20260729    clang-22
-x86_64     buildonly-randconfig-002-20260729    clang-22
-x86_64     buildonly-randconfig-003-20260729    clang-22
-x86_64     buildonly-randconfig-004-20260729    clang-22
-x86_64     buildonly-randconfig-005-20260729    clang-22
-x86_64     buildonly-randconfig-006-20260729    clang-22
-x86_64                                 kexec    clang-22
-x86_64                        randconfig-001    clang-22
-x86_64               randconfig-001-20260729    clang-22
-x86_64               randconfig-002-20260729    clang-22
-x86_64               randconfig-003-20260729    clang-22
-x86_64               randconfig-004-20260729    clang-22
-x86_64               randconfig-005-20260729    clang-22
-x86_64               randconfig-006-20260729    clang-22
-x86_64               randconfig-011-20260729    gcc-14
-x86_64               randconfig-012-20260729    gcc-14
-x86_64               randconfig-013-20260729    gcc-14
-x86_64               randconfig-014-20260729    gcc-14
-x86_64               randconfig-015-20260729    gcc-14
-x86_64               randconfig-016-20260729    gcc-14
-x86_64               randconfig-071-20260729    gcc-12
-x86_64               randconfig-072-20260729    gcc-12
-x86_64               randconfig-073-20260729    gcc-12
-x86_64               randconfig-074-20260729    gcc-12
-x86_64               randconfig-075-20260729    gcc-12
-x86_64               randconfig-076-20260729    gcc-12
-x86_64                          rhel-9.4-bpf    gcc-14
-xtensa               randconfig-001-20260729    gcc-10.5.0
-xtensa               randconfig-002-20260729    gcc-10.5.0
+Link to v1: https://lore.kernel.org/r/20260728123423.781-6-getshell@seu.edu.cn
 
---
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
+ drivers/power/supply/sc2731_charger.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/drivers/power/supply/sc2731_charger.c b/drivers/power/supply/sc2731_charger.c
+index 58b86fd..2b25e44 100644
+--- a/drivers/power/supply/sc2731_charger.c
++++ b/drivers/power/supply/sc2731_charger.c
+@@ -466,6 +466,7 @@ static int sc2731_charger_probe(struct platform_device *pdev)
+ 	mutex_init(&info->lock);
+ 	info->dev = &pdev->dev;
+ 	INIT_WORK(&info->work, sc2731_charger_work);
++	platform_set_drvdata(pdev, info);
+ 
+ 	info->regmap = dev_get_regmap(pdev->dev.parent, NULL);
+ 	if (!info->regmap) {
+@@ -516,6 +517,7 @@ static void sc2731_charger_remove(struct platform_device *pdev)
+ 	struct sc2731_charger_info *info = platform_get_drvdata(pdev);
+ 
+ 	usb_unregister_notifier(info->usb_phy, &info->usb_notify);
++	cancel_work_sync(&info->work);
+ }
+ 
+ static const struct of_device_id sc2731_charger_of_match[] = {
+-- 
+2.50.1.windows.1
