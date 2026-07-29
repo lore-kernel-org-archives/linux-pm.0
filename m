@@ -1,228 +1,104 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id ADA99451998;
-	Wed, 29 Jul 2026 18:40:13 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BA3923446CA
+	for <linux-pm@vger.kernel.org>; Wed, 29 Jul 2026 18:54:06 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1785350415; cv=none; b=CzhdYAAdOnxN/weuHkRIerN/DLTRfkEf0wBKHO0znWaHY8eYDKAqxVK+229rC0Dc3BLKm78RTu1FQksuW3AtJvNluauYTe7XwGZZ7Viht0O7z6+M/U6qxCkIylUJdImGnQ+0oIbBHU2mONwDiTN9PR8Ut93LaL4iiOvH39paYr4=
+	t=1785351247; cv=none; b=R4j1JRlXJRqNYq2RHv3HHdSIp/OHfgFQjIp2eBrXFnpjP28HwlUo1qID6SaeEb6OBSltRCPSrEv3ItirsqdP989vXBDOAXyzVXZyLftrwCoXOpZTyd38I68FiOkkMT4qGjflzolEnL1r6OOTcqj24NBMcn25ObKzOIRK7C3U71c=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1785350415; c=relaxed/simple;
-	bh=37N/mRjik54MLq7pSe87pazmvervw8jaPQQtTqGyo0Q=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=hMfHKw1xLyQ7uWilswBtV4JenwOLeY0ElF1LHz58yZYAiEV+KkpgExuoFbqFuZ/3VD8zrAJFuIjjz6rXItP6tSEosAF61B5k9zRVxQuItHS8qbbB0LNE+2d5Sc5HkDyJqx4/zkhyxw7Sl6L6vuH7duadr4O1R9EN5tSZuGkpQWA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=X9uTx88o; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1785351247; c=relaxed/simple;
+	bh=6zoZdSWUFC1Yh/KwmZfkp6cyAs6Uo+5LNkUL0WNS86U=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=gDiTqw69vg+IEGa1jADnU/gGKu4686pwNdtmCxtpO7lA79ck9HuVapC3WlWENUytTw6+Sw3k8cEfXhytM2u5Rc7nrFQHFAhERS7pyUlv/35JykyVMJOi9IaFSOcXRyah6UWzwOdPFRtYsrmEzaZ5rWZVHE+91eGuKYe6mS6lggg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=nu2b1DVo; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="X9uTx88o"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id AB4F81F000E9;
-	Wed, 29 Jul 2026 18:40:11 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="nu2b1DVo"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 835931F00A3A
+	for <linux-pm@vger.kernel.org>; Wed, 29 Jul 2026 18:54:06 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1785350413;
-	bh=gdSZlcZLOrT3qLd/7Xc6VhHCdWDOoqN5SFhYE+390ec=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References;
-	b=X9uTx88of3pNOkBye0J4bMIvkXzb14bxgNRlOeov8NwnqbLMrpv/9IGtkRBQvlaF2
-	 UMW0NbL1J/1rOC+ytlAbhig7nnpmnUcNwun4uNeLACyFyeD0K4FfZ29m8JdTg56mXw
-	 tgsZCJwfbFujJxGtAPVge4cjJMDNpl+q6dP+k64dOHoleY1LSq5K3DOtqkskgQtEQQ
-	 gddFWvJMQo5D+9Dkd6tHUQOMEy2rTycSJFaeqN+KMr8MYTZfz02VjFcmq9P2lwaUY+
-	 EEUM/s72j59qiRKhW4K3umBrsBtmC5LpvNVpF8ER5IADRjeD+TFBLiVYu7k/wtQZRn
-	 qO0thK9BbmcuA==
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-To: Jing Wu <realwujing@gmail.com>, linux-pm@vger.kernel.org
-Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
- Viresh Kumar <viresh.kumar@linaro.org>, Doug Smythies <dsmythies@telus.net>,
- "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
- linux-kernel@vger.kernel.org
-Subject:
- [PATCH v1] cpufreq: intel_pstate: Adjust policy->cur in active mode to policy
-Date: Wed, 29 Jul 2026 20:40:08 +0200
-Message-ID: <5144014.31r3eYUQgx@rafael.j.wysocki>
-Organization: Linux Kernel Development - Intel
-In-Reply-To:
- <20260729-bug-intel-pstate-policy-cur-v1-1-51f61e5cbd74@gmail.com>
-References: <20260729-bug-intel-pstate-policy-cur-v1-1-51f61e5cbd74@gmail.com>
+	s=k20260515; t=1785351246;
+	bh=jXQpDWqAb74OqEJpx4DwK5i29N3oHNBajY8MDldAJI0=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc;
+	b=nu2b1DVon6yP9gCT0EmEj/VW7jjj9PYZH4YPz2Pmv2w06qJOSMECnrakW2mFX5XXO
+	 qIoTef2Ra+R5xrWk1jHN3PScRK7VgqGGrWesSgSYZ/ruZXUWt5FOr2GllbjOfM4p5E
+	 mAly2BjbjHfO2hIXjZp+MgvZ0KTk1L+pmG6DkdRsoV9o7Ut/EHQXSujlXaFUudKPsI
+	 en+5u25ZqTIibZOkUnCEZvVrDoF32vGKM8Ep63oLeVyiN1hWEh3QLiyz4AvouHryvK
+	 ZnHC7C9xgwwxNrYTP+7wK6b3L+mj2Y/cVprZlfxhuiAUyiKBo5TTRW15h0i5enJKwe
+	 20gBR/xhYewKQ==
+Received: by mail-lj1-f175.google.com with SMTP id 38308e7fff4ca-39f678705c3so132241fa.1
+        for <linux-pm@vger.kernel.org>; Wed, 29 Jul 2026 11:54:06 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AHgh+RodLs/FJhvkVAsq1bxWmnMjTDgBzZ0xEEA9SiL9aFiZ+6aoAUvsNPF9/EAxL/YB4HjwNH/GHoYPpw==@vger.kernel.org
+X-Gm-Message-State: AOJu0YyDYodlpvc74YBflxatPihtMLxZgmRvvPsLJxIk9XCqPSMzAvx8
+	d0VSnU/D6SvQHnS8X1/PX4ntvoCwO2tI5eNhZcZrYnfkrrjRv0TQuxNbFP8t4/kb1Nqva0Vd7N9
+	QU4rsTEEesi+RJqQTvgWaPBm72RB/xYo=
+X-Received: by 2002:a2e:a547:0:b0:396:ade7:4153 with SMTP id
+ 38308e7fff4ca-39f604633f8mr7411561fa.0.1785351244980; Wed, 29 Jul 2026
+ 11:54:04 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7Bit
+References: <CAJZ5v0gcatfUYocWViAZjs=BkqSz-JK+bECm2cpanv9NrWgfnw@mail.gmail.com>
+ <ab8b093b-46e6-4738-afcf-4b97c9ad5af9@googlemail.com>
+In-Reply-To: <ab8b093b-46e6-4738-afcf-4b97c9ad5af9@googlemail.com>
+From: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
+Date: Wed, 29 Jul 2026 20:53:53 +0200
+X-Gmail-Original-Message-ID: <CAJZ5v0hw0Zhr190_V=OenLZGtOsTvb7T6UA7BPU_qoLbHa2tDA@mail.gmail.com>
+X-Gm-Features: AUfX_mxP7-FuMFrOAKn4CTf3Evrj9-SzgxgmNPJSqCXGuO3DOKWs4bnn3-Ps8sg
+Message-ID: <CAJZ5v0hw0Zhr190_V=OenLZGtOsTvb7T6UA7BPU_qoLbHa2tDA@mail.gmail.com>
+Subject: Re: [PATCH v2 2/3] thermal: hwmon: Register a hwmon device for each
+ thermal zone
+To: Oliver Freyermuth <o.freyermuth@googlemail.com>
+Cc: linux-hwmon@vger.kernel.org, linux@roeck-us.net, 
+	Linux PM <linux-pm@vger.kernel.org>
 Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-On Wednesday, July 29, 2026 10:59:24 AM CEST Jing Wu wrote:
-> When cpu->policy is CPUFREQ_POLICY_PERFORMANCE, intel_pstate_set_policy()
-> pins the CPU to a fixed pstate (max(min_pstate, max_perf_ratio)) and
-> programs it directly, precisely because, per the existing comment,
-> "NOHZ_FULL CPUs need this as the governor callback may not be invoked
-> on them". Two lines later it still unconditionally clobbers policy->cur
-> down to policy->min, discarding the pinned value it just computed and
-> applied.
-> 
-> arch_freq_get_on_cpu() falls back to cpufreq_quick_get(), i.e.
-> policy->cur, whenever its APERF/MPERF sample goes stale. A CPU whose
-> tick keeps running refreshes that sample constantly and rarely hits
-> the fallback, but an isolated CPU covered by nohz_full with a single
-> runnable task never gets another tick, so it permanently reports the
-> floor through this fallback - even though it is genuinely pinned to,
-> and running at, the frequency computed just above.
-> 
-> Set policy->cur to the exact pinned frequency (pstate * scaling) in
-> the CPUFREQ_POLICY_PERFORMANCE branch instead, and only fall back to
-> policy->min for the general case, where the frequency genuinely isn't
-> known without a fresh sample.
-> 
-> Fixes: d51847acb018 ("cpufreq: intel_pstate: set stale CPU frequency to minimum")
-> Co-developed-by: Qiliang Yuan <yuanql9@chinatelecom.cn>
-> Signed-off-by: Qiliang Yuan <yuanql9@chinatelecom.cn>
-> Signed-off-by: Jing Wu <realwujing@gmail.com>
-> ---
->  drivers/cpufreq/intel_pstate.c | 20 +++++++++++++++-----
->  1 file changed, 15 insertions(+), 5 deletions(-)
-> 
-> diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-> index 5a0eeb84d3821..b2c60c4931dcd 100644
-> --- a/drivers/cpufreq/intel_pstate.c
-> +++ b/drivers/cpufreq/intel_pstate.c
-> @@ -2908,8 +2908,23 @@ static int intel_pstate_set_policy(struct cpufreq_policy *policy)
->  		 */
->  		intel_pstate_clear_update_util_hook(policy->cpu);
->  		intel_pstate_set_pstate(cpu, pstate);
-> +
-> +		/*
-> +		 * Report the exact pinned frequency instead of the floor:
-> +		 * the CPU is pinned to pstate here and nothing else changes
-> +		 * it, unlike the general case below.
-> +		 */
-> +		policy->cur = pstate * cpu->pstate.scaling;
->  	} else {
->  		intel_pstate_set_update_util_hook(policy->cpu);
-> +
-> +		/*
-> +		 * Keep policy->cur within limits here: outside of the pinned
-> +		 * CPUFREQ_POLICY_PERFORMANCE case above, it is never updated
-> +		 * by the intel_pstate driver, but it is used as a stale
-> +		 * frequency value.
-> +		 */
-> +		policy->cur = policy->min;
->  	}
->  
->  	if (hwp_active) {
-> @@ -2922,11 +2937,6 @@ static int intel_pstate_set_policy(struct cpufreq_policy *policy)
->  			intel_pstate_clear_update_util_hook(policy->cpu);
->  		intel_pstate_hwp_set(policy->cpu);
->  	}
-> -	/*
-> -	 * policy->cur is never updated with the intel_pstate driver, but it
-> -	 * is used as a stale frequency value. So, keep it within limits.
-> -	 */
-> -	policy->cur = policy->min;
->  
->  	mutex_unlock(&intel_pstate_limits_lock);
->  
-> 
-> ---
+Hi,
 
-Good idea overall, but it takes a bit more to do this.  In particular, the HWP
-case needs some more care.
+On Tue, Jul 28, 2026 at 11:26=E2=80=AFPM Oliver Freyermuth
+<o.freyermuth@googlemail.com> wrote:
+>
+> Dear hwmon devs,
+> (please keep me in CC, I am not subscribed to the list),
+>
+> after upgrading my systems to kernel 7.1.5 which incorporates this change=
+ (Arch and Gentoo), I have for now become aware of two places with userspac=
+e fallout from this change:
+>
+> * KDE / Plasma System Monitor
+>    Report: https://bugs.kde.org/show_bug.cgi?id=3D523588
+>    Corresponding userspace code: https://invent.kde.org/plasma/ksystemsta=
+ts/-/blob/46f7e842767774b96bcd22edec0636a267151475/plugins/lmsensors/lmsens=
+ors.cpp
+>
+>    As Plasma System Monitor remembers the (full) hwmon sensor name in all=
+ widgets and thermal zone IDs may change depending on module load order, se=
+nsors are lost both after upgrade to 7.1.5 and at "random" boots after (whe=
+never init order changes for some reason).
+>
+> * (good old) gkrellm
+>    Report: https://git.srcbox.net/gkrellm/gkrellm/issues/98
+>    As shown in the report, gkrellm remembers the full hwmon sensor name a=
+nd hence is affected both when upgrading to 7.1.5 and also at "random" boot=
+s after (whenever init order changes for some reason).
+>
+> My custom Conky script followed the established practice of these tools a=
+nd also broke, but in my case, I fixed it myself by just ignoring the therm=
+al zone ID if present
+> ( https://github.com/olifre/conky-themes/commit/6d015b9d9eae21ffab8c5571c=
+387534bb93cbc50 ).
+>
+> As I do not use Gnome or other system monitoring tools, I do not know if =
+the fallout is larger than this,
+> but given that lmsensors returns the new names with thermal zone ID inclu=
+ded, it seems likely other tools suffer from similar problems.
 
-Also, I don't think that this really is a fix.  The code works as intended,
-although what it does is sometimes confusing.
+Thanks for the report, we'll clearly need to do something about this.
 
-Below is my version of this change (on top of linux-next), please let me know
-if it works for you.
+I'll see what can be done and figure out something.
 
 Thanks!
-
----
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Subject: [PATCH v1] cpufreq: intel_pstate: Adjust policy->cur in active mode to policy
-
-Since arch_freq_get_on_cpu() on x86 falls back to cpufreq_quick_get(),
-which effectively causes policy->cur to be returned when intel_pstate
-is used, adjust intel_pstate_set_policy() to set policy->cur to reflect
-the P-state that is actually going to be requested in the "performance"
-policy case instead of setting it to policy->min (which is confusing
-because it causes scaling_cur_freq to show the minimum frequency while
-the CPU is likely running at the maximum one).
-
-For this purpose, rearrange intel_pstate_set_policy() to handle the HWP
-case separately, to avoid calling intel_pstate_set_pstate() pointlessly
-with HWP enabled, and use the observation that with HWP enabled in the
-active mode, the utilization update hook is only needed when HWP boost
-is used and the policy is not "performance".
-
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- drivers/cpufreq/intel_pstate.c |   38 +++++++++++++++++++++++---------------
- 1 file changed, 23 insertions(+), 15 deletions(-)
-
---- a/drivers/cpufreq/intel_pstate.c
-+++ b/drivers/cpufreq/intel_pstate.c
-@@ -2870,6 +2870,7 @@ static void intel_pstate_set_pstate(stru
- 
- static int intel_pstate_set_policy(struct cpufreq_policy *policy)
- {
-+	unsigned int freq = policy->min;
- 	struct cpudata *cpu;
- 
- 	if (!policy->cpuinfo.max_freq)
-@@ -2885,7 +2886,23 @@ static int intel_pstate_set_policy(struc
- 
- 	intel_pstate_update_perf_limits(cpu, policy->min, policy->max);
- 
--	if (cpu->policy == CPUFREQ_POLICY_PERFORMANCE) {
-+	if (hwp_active) {
-+		/*
-+		 * The active mode only requires an update util hook if HWP
-+		 * boost is used and the policy is not "performance".
-+		 */
-+		if (hwp_boost && cpu->policy != CPUFREQ_POLICY_PERFORMANCE) {
-+			intel_pstate_set_update_util_hook(policy->cpu);
-+		} else {
-+			intel_pstate_clear_update_util_hook(policy->cpu);
-+			if (cpu->policy == CPUFREQ_POLICY_PERFORMANCE) {
-+				freq = cpu->max_perf_ratio * cpu->pstate.scaling;
-+				if (cpu->pstate.scaling != cpu->pstate.perf_ctl_scaling)
-+					freq = rounddown(freq, cpu->pstate.perf_ctl_scaling);
-+			}
-+		}
-+		intel_pstate_hwp_set(policy->cpu);
-+	} else if (cpu->policy == CPUFREQ_POLICY_PERFORMANCE) {
- 		int pstate = max(cpu->pstate.min_pstate, cpu->max_perf_ratio);
- 
- 		/*
-@@ -2894,25 +2910,17 @@ static int intel_pstate_set_policy(struc
- 		 */
- 		intel_pstate_clear_update_util_hook(policy->cpu);
- 		intel_pstate_set_pstate(cpu, pstate);
-+		freq = pstate * cpu->pstate.scaling;
- 	} else {
- 		intel_pstate_set_update_util_hook(policy->cpu);
- 	}
--
--	if (hwp_active) {
--		/*
--		 * When hwp_boost was active before and dynamically it
--		 * was turned off, in that case we need to clear the
--		 * update util hook.
--		 */
--		if (!hwp_boost)
--			intel_pstate_clear_update_util_hook(policy->cpu);
--		intel_pstate_hwp_set(policy->cpu);
--	}
- 	/*
--	 * policy->cur is never updated with the intel_pstate driver, but it
--	 * is used as a stale frequency value. So, keep it within limits.
-+	 * policy->cur is never updated in the intel_pstate driver, but it is
-+	 * used as a stale frequency value, so set it to reflect the actual
-+	 * requested P-state in the "performance" policy case and to the min
-+	 * otherwise.
- 	 */
--	policy->cur = policy->min;
-+	policy->cur = freq;
- 
- 	mutex_unlock(&intel_pstate_limits_lock);
- 
-
-
-
