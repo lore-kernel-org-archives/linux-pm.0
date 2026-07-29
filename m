@@ -1,36 +1,36 @@
-Received: from smtpbguseast3.qq.com (smtpbguseast3.qq.com [54.243.244.52])
+Received: from smtpbgau2.qq.com (smtpbgau2.qq.com [54.206.34.216])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 27F873B0AE2;
-	Wed, 29 Jul 2026 07:11:51 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=54.243.244.52
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4957A3BFE4F;
+	Wed, 29 Jul 2026 07:11:58 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=54.206.34.216
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1785309119; cv=none; b=XI/k1BYdPO2EZj62URteylsE8BS0WuQ9dboomcJRJidsBi9dlGo+IBt2++UlA+C1MwbbkLcP0ldEtuJ+5izNZMk/8xvc1cudpUVYcAIbtLuzGjk3MQECi45XlL9olUIo07NggFxDCQbErh4JiUQ4eszuGIU6EyqHnNVKlusqYAQ=
+	t=1785309122; cv=none; b=g+OydhYcLxpEnXhawp6slSjeD/rWQhicwpupxkXDn/Lr3ioyaU0s/p6g+mtN/zTr/fs4CMdoVTQV3n2jJltzpgKIc0326SdiFLcxcYJaMaH4do4B8iz1OoNeHzBoP70NGU/XfgaZaaDzOvVTGmi5Yrts9E7fDz1e0qCvub0CphM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1785309119; c=relaxed/simple;
-	bh=I5qTtsts4ePqKS+GLEYxvXdrZHtppnKWgD7Qi8HNo7M=;
+	s=arc-20240116; t=1785309122; c=relaxed/simple;
+	bh=AOBiTM10JHwNfkKAx0h0IIvMX6WxTXO2sDpbEzSHcAI=;
 	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=SCjZE0fBEmozoGHE8f3M686WHqWeY+OnPcJYOsqeeRaEzHrWdoXI9E6B0pL5mRK0xBm9O49WTgmmtVf4a+wi02X0D6YBIhRu0jF3ZLxTSKXOPGHAGqmOrbtkDkK59rkd+v1AUoE4Ky3z3y6qQN2XoGITx8WRy6XN+ps9ysy4rcU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=uniontech.com; spf=pass smtp.mailfrom=uniontech.com; dkim=pass (1024-bit key) header.d=uniontech.com header.i=@uniontech.com header.b=nrBPNhIX; arc=none smtp.client-ip=54.243.244.52
+	 MIME-Version; b=Q3qo5LwnDD23YTFjHOsmey24JzcoILy4N4xTe3HUGrXmNiaEjoCw8IgiKEv6qsBGmkcS+Xl4Qo/An3CSkM5FZi1LMorFPMrp2Bic9p3Zy5rWbVi4hMBROt8+QiR/F0mcOCfUi2CvcBWj7XJ98hO+iYPoOieXfPlpZYx9MtCvB1g=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=uniontech.com; spf=pass smtp.mailfrom=uniontech.com; dkim=pass (1024-bit key) header.d=uniontech.com header.i=@uniontech.com header.b=Oa6xF27L; arc=none smtp.client-ip=54.206.34.216
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=uniontech.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=uniontech.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=uniontech.com header.i=@uniontech.com header.b="nrBPNhIX"
+	dkim=pass (1024-bit key) header.d=uniontech.com header.i=@uniontech.com header.b="Oa6xF27L"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=uniontech.com;
-	s=onoh2408; t=1785309102;
-	bh=5xOVCFXEtbG3EQktKJ1PgZ4txTWTZ/R+7K3pkeRkDpo=;
+	s=onoh2408; t=1785309111;
+	bh=O1YTKr8Y/rFna83YYS7U0F7BOEJLK+gg/3NGb/or4kA=;
 	h=From:To:Subject:Date:Message-Id:MIME-Version;
-	b=nrBPNhIX0vpn+LZWC5UysPHzoB/yhIPWty3v/7yAPGafJMg3JAj+uMHTqUDJp26/h
-	 2B5fag2DRevTpsBKrVEsXnYMI6bivv5yCuPhS71Bbpq1QkJDDetr91lSCZKiw74Hnb
-	 0FjZ2vTaeYEJLtBjEsKOFkCTGKHgd7naP4VBQR1A=
-X-QQ-mid: zesmtpgz6t1785309091t976a8b4c
-X-QQ-Originating-IP: OsBCyYmP33cesME96eJoZFMj5XpVPT7ejjN9Dl4ojTk=
+	b=Oa6xF27Lck4rPRi7Lmv/514TTFzz8VlvKWD4I10Jsk/YNy4+OA22Npt1a7SY4+4tt
+	 3bPN+vUxwLtbgI3Zx0EOUHS7VBZLZ140FAr0kFLrehsPF7q8CQB1nX2jLbKQGKjLX7
+	 ciHUIOOhMTS03zzAg5PYHWjTpflM0+rLsxBBGXU8=
+X-QQ-mid: zesmtpgz6t1785309099t2b687191
+X-QQ-Originating-IP: WjPQ/f7R7tCBToYIB7rUAtsVlZiqBzG/yOe+5Kgv67c=
 Received: from localhost.localdomain ( [113.57.152.160])
 	by bizesmtp.qq.com (ESMTP) with 
-	id ; Wed, 29 Jul 2026 15:11:28 +0800 (CST)
+	id ; Wed, 29 Jul 2026 15:11:37 +0800 (CST)
 X-QQ-SSF: 0000000000000000000000000000000
 X-QQ-GoodBg: 1
-X-BIZMAIL-ID: 9183807335896332137
+X-BIZMAIL-ID: 17671344946874709150
 EX-QQ-RecipientCnt: 15
 From: Haowen Tu <tuhaowen@uniontech.com>
 To: laurent.pinchart@ideasonboard.com,
@@ -48,12 +48,12 @@ Cc: gregkh@linuxfoundation.org,
 	pavel@kernel.org,
 	stern@rowland.harvard.edu,
 	tuhaowen@uniontech.com
-Subject: [PATCH v4 0/4] PM: hibernate: defer UVC streaming restart after snapshot
-Date: Wed, 29 Jul 2026 15:11:19 +0800
-Message-Id: <cover.1785226280.git.tuhaowen@uniontech.com>
+Subject: [PATCH v4 2/4] PM: hibernate: add pm_hibernation_snapshot_done() helper
+Date: Wed, 29 Jul 2026 15:11:21 +0800
+Message-Id: <ac2ab0e03a93ef9b92b556d09cbcec58dcb73c87.1785226280.git.tuhaowen@uniontech.com>
 X-Mailer: git-send-email 2.20.1
-In-Reply-To: <20260723084633.GE648629@killaraus.ideasonboard.com>
-References: <20260723084633.GE648629@killaraus.ideasonboard.com>
+In-Reply-To: <cover.1785226280.git.tuhaowen@uniontech.com>
+References: <20260723084633.GE648629@killaraus.ideasonboard.com> <cover.1785226280.git.tuhaowen@uniontech.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -63,63 +63,89 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-QQ-SENDSIZE: 520
 Feedback-ID: zesmtpgz:uniontech.com:qybglogicsvrsz:qybglogicsvrsz3b-0
-X-QQ-XMAILINFO: OX/+6nY/vs4T59CMVovMrH6q+ad51uCZxVHFg0y/+nqXbxewTWxzHlN4
-	XkwOY/RPAzsyODCxWsUwzoR5hGu1ZnDqc3Q4zIdbl60i8ZVWRNdPNeCDbQEd7yjbnqNkhE0
-	DIf7YVRIKjI6jZ0r47rFAwQrC+olkWcQxKGb3OJ9FGVGhZF55p/GRn8irLN6bNY7o49n9tV
-	F6ouQU9Pt6HF/ryRjfjv+6KpJeqrhv7JO6hcgJ4yaRcxOm7MedQ9eNJARamGJOlZstV7EM0
-	e/gEXcabDhFQE0iW5RzFfjF58uDk+AQQuotaLQNadwW/OPVi0Jg3D9W2o5v0bOimEfokBzh
-	8HhFiWR0G/+ZJlf7xHtkpSppKP6eXkU/PiEA9VRZ852B3nknzyzwwD0tQEJYznYMz/OO8nG
-	o4Fue+P8H+waJsggceMTU4nRGbp71hAdck5DHZr3JCliIA6aFazJzrTbbE9mFcZWEBwupM7
-	VmGng3NmrPpDwCqNDrRy6UYEIVy+3ynaVio3f0spousz/WBIfSite9RPVTJ5z9NLUIZxCjy
-	rGxIXjk3n44OaoWUGZsWQdOqAiuqroLEPrhRkQYFGcx+YeV/ozwBYIrbdjPpdsZgHBsA5XK
-	AH7T8NkLqKsNmQDUzdfzOYbhZegxlD8ElzB4sUtp6XzxEQr6HfjancgBQPN4Op/0JAEBbKa
-	C2JuWICJXi4QcT/knM8kyZeFUwYQ1vNAgSPsVfDl4JOzyZU9n0o9w5JUU2Alf008s8/g+2F
-	mGEJ4nDmOnOPG527MUox6GEtud8+IWlLhPVjsEme6xfcP8ppc8GqtKS4d83IcQmTp0U1VFM
-	ArwJ52miR4WKnucoKIQjXAkP/6EOK09TQFQ5yeOUs4os/3JpwoxHaTr3RyGthv72TIQzC2F
-	NtLHXI+heYQhUwYjWZPPtZ9C+8h6fbROy1VJH0nEDNI8BR3i+/3dB+b7LaBL6ickR6FLmcu
-	nN5jBlnZoDLESPBsedy0SaYsO1gqgcJxIxI0YZbE8HQD6fIY7HQH9KTqL5RR5yEkAeabiN1
-	OW5PfnSMfzSXlvqldxyNlNOHTX3dQrNvUNVqcu3Q==
+X-QQ-XMAILINFO: NZY6XYMwxuFE1sQDuHrBZxqiKntr09ZNADAqqtZx4dNptpJvZc5XVbDQ
+	KgmBPidINJ0dz05scVJ64FkLMZTMaTdtOZXwxkfummMF5LvF7KLppE/8mBRnaoGNlvuvm91
+	E6hwP2krTPTBMyCA9cksf0wbEPqmCl7PtmdxoaOpLRhE3G/vlbRW2w+QAE+1y+OUhHk5OG9
+	QzRMv35Uyyy0XpDeJliCTLApGeExHid8TgJ0qmR2dLFj24WAEico5LitVs5kinQ4EeIfJer
+	J3zxXP8i/JyP1dk2QQAuhjgLQiRxPcNCiiXaBpNEppnzxKdj+G/9iXi0pBTG792d+qgrXEU
+	LQcLk4STXOeHMRxxAG9ceJDkZZB6qGh+rotgHS8XcFq/P2WWgsG2s1QQ74F4ryjD8mlXxhP
+	UZ+MIb9xMTcT+FLD02MXbPnaikboHfMWA/w75hChnn9L8xJ1tqIokkO/yf0aBfv/itwiGA/
+	y/fV32hW9+1Fsfa2Ktc3DH/xF9gP/YDZMo6xQrw5+vhF9118NyO98z2WdO2nbOda5NhT1nk
+	uQNIzu4rWdm/w4cMNK5Y0P5uExVDZPhHXD2jbm7jWSjqDT9X6HplPuZrlRjO9YnVSh3xZPI
+	QryfxhpZlKCapPL7qBOkdeuLiBPT8N1pYjOA58fPeGHQYHT5e3VAHLAiYDBydGEEEaxaVKH
+	MFueYOtQdod5A10KMR04xZxgd7rURqe37/UM07vC5g8FlgXTTJYhU8ZnjFyQnazYMT87CPP
+	9AkLUPIPgO2F4nuvTDM5T1m5OfoOhMH5aPvR5231RpWOL0JAUbmgZx5bNwJD0Nu2NpOFfuh
+	MAUNpihuQZqzFk8nFySFqA9/yW6Ankf9gRtBHhONt2rsug5+QaPAzjHStAoGXq2bkGPdYl4
+	VSqHzG5USkT/XCKACpB/bKWuIlec5WQ4lc3aBpq2C37bhsL1JBpVCZlNwHdQnrY96pCRTyF
+	n0L/PbJLu9PCCgAMl57NXkjBwoVnEBMUFQnjK1GEcwxSwO0GlEzmwtXNp+mLoDm3ATCah/A
+	tzfRc+GQ3GzpTHIzFZCfoXCaWrfYycFpc+i8pyKU8f21vMeGwHfxYSErcHeeQ3RgrBepByz
+	yMSXToqJO+qEsSX2Qmwf9s=
 X-QQ-XMRINFO: NI4Ajvh11aEjEMj13RCX7UuhPEoou2bs1g==
 X-QQ-RECHKSPAM: 0
 
-During hibernation, after the memory snapshot has been created, the
-kernel resumes devices with PMSG_THAW to write the hibernation image.
-USB interface resume callbacks do not receive the PM message, so UVC
-cannot distinguish that intermediate THAW resume from the later RESTORE
-resume by using its local callback arguments.
+Some subsystem resume callbacks do not receive the PM event and
+therefore cannot distinguish the PMSG_THAW phase after snapshot creation
+from the PMSG_RESTORE phase.
 
-This series keeps in_suspend consistent with the lifetime of snapshot
-memory, exports pm_hibernation_snapshot_done(), adds a hibernation image
-write failure notification, and uses both in uvcvideo to defer restarting
-streaming during the THAW phase after snapshot creation.
+Export pm_hibernation_snapshot_done() so a driver can query whether the
+hibernation snapshot has been created and is still available.  The helper
+only exposes the PM state; callers remain responsible for ensuring that
+any device-specific behavior is safe, including subsequent poweroff or
+shutdown handling.
 
-Unlike v3, the UVC patch now handles the image write failure path.  The
-driver records streams whose streaming restart was deferred.  If image
-writeout fails, PM sends PM_HIBERNATION_IMAGE_WRITE_FAILED after
-swsusp_write() returns and before userspace is thawed, and uvcvideo
-restarts those deferred streams.  If the recovery restart fails, the
-driver falls back to its existing streamoff error path so userspace is
-not left waiting indefinitely.
+The helper returns !!in_suspend.  This variable is set before
+swsusp_arch_suspend(), cleared before the snapshot memory is released,
+and marked __nosavedata, so it remains clear on the restore path.
 
-Changes in v4:
-- Add PM_HIBERNATION_IMAGE_WRITE_FAILED before userspace thaw on image
-  write failure.
-- Update uvcvideo to defer streaming restart instead of just skipping it.
-- Recover deferred UVC streams on image write failure.
-- Carry Rafael's Acked-by tags on the two PM patches from v3.
+Acked-by: Rafael J. Wysocki (Intel) <rafael@kernel.org>
+Signed-off-by: Haowen Tu <tuhaowen@uniontech.com>
+---
+ include/linux/suspend.h  |  2 ++
+ kernel/power/hibernate.c | 12 ++++++++++++
+ 2 files changed, 14 insertions(+)
 
-Haowen Tu (4):
-  PM: hibernate: clear in_suspend before freeing the snapshot
-  PM: hibernate: add pm_hibernation_snapshot_done() helper
-  PM: hibernate: notify on image write failure
-  media: uvcvideo: defer streaming restart after hibernation snapshot
-
- drivers/media/usb/uvc/uvc_driver.c | 56 +++++++++++++++++++++++++++++-
- drivers/media/usb/uvc/uvc_video.c  | 19 +++++++++-
- drivers/media/usb/uvc/uvcvideo.h   |  2 ++
- include/linux/suspend.h            |  3 ++
- kernel/power/hibernate.c           | 27 +++++++++++---
- 5 files changed, 101 insertions(+), 6 deletions(-)
-
+diff --git a/include/linux/suspend.h b/include/linux/suspend.h
+index b02876f1ae38..2cebbec3e2f7 100644
+--- a/include/linux/suspend.h
++++ b/include/linux/suspend.h
+@@ -393,6 +393,7 @@ extern void hibernation_set_ops(const struct platform_hibernation_ops *ops);
+ extern int hibernate(void);
+ extern bool system_entering_hibernation(void);
+ extern bool hibernation_available(void);
++bool pm_hibernation_snapshot_done(void);
+ asmlinkage int swsusp_save(void);
+ extern struct pbe *restore_pblist;
+ int pfn_is_nosave(unsigned long pfn);
+@@ -412,6 +413,7 @@ static inline void hibernation_set_ops(const struct platform_hibernation_ops *op
+ static inline int hibernate(void) { return -ENOSYS; }
+ static inline bool system_entering_hibernation(void) { return false; }
+ static inline bool hibernation_available(void) { return false; }
++static inline bool pm_hibernation_snapshot_done(void) { return false; }
+ 
+ static inline int hibernate_quiet_exec(int (*func)(void *data), void *data) {
+ 	return -ENOTSUPP;
+diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
+index 6d3e637c5a02..045d29f55011 100644
+--- a/kernel/power/hibernate.c
++++ b/kernel/power/hibernate.c
+@@ -113,6 +113,18 @@ bool hibernation_available(void)
+ 		!secretmem_active() && !cxl_mem_active();
+ }
+ 
++/**
++ * pm_hibernation_snapshot_done - check if a hibernation snapshot is available
++ *
++ * Return: %true if a hibernation snapshot has been taken and has not been
++ *         released yet.
++ */
++bool pm_hibernation_snapshot_done(void)
++{
++	return !!in_suspend;
++}
++EXPORT_SYMBOL_GPL(pm_hibernation_snapshot_done);
++
+ /**
+  * hibernation_set_ops - Set the global hibernate operations.
+  * @ops: Hibernation operations to use in subsequent hibernation transitions.
 -- 
 2.20.1
