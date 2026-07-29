@@ -1,318 +1,153 @@
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id 23148400987;
-	Wed, 29 Jul 2026 09:13:22 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
+Received: from mail-wr1-f50.google.com (mail-wr1-f50.google.com [209.85.221.50])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0E07F40A95A
+	for <linux-pm@vger.kernel.org>; Wed, 29 Jul 2026 09:31:16 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.50
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1785316405; cv=none; b=chsvdoPVdG9e+s6asYCkONPQNuHNyNBrGHRfk3c3VOe1fmLEGflIfHxDiOsOBO3JOaqL1ZRd+anFMq7xAkL5KHjOFWc8l2JZYalOqGB3Cb+V8uHvSbtrxIALB7HkltEQOrGa9m691RBhYDUC6iq25j9sWGViE8oi7n3+1yKfEqQ=
+	t=1785317478; cv=none; b=WD6njwtcMoQaE1TxuWG6LGPobcyZlYtn7dluQ5mV8rGRVM1hyXaSAWe9p/0AEa2zvibJJOB9AwL5y8uZfQLNKv8lxqaDRs4VyF4yA6Miut3udyhkDaK4X3IyalIwGV1XHKR9aZkSN5v3vhA3L3IYvz9JTF6+5kCNwiDA3snbVsA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1785316405; c=relaxed/simple;
-	bh=VYQZ0uG1eFXy8yMV1VZlUvDn9/3JYu6JowqhAG6Q8zo=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=SNE5kW/Z41dptOpnn09KD59ba0HK44zylS9Ws5oQz2KdpYNMDnn1qNMXZBp9VoXdBCMmjMbxhLrdK1E0/+FN6WZ2ckPCWwXkYB8xneikN2vTkbPnCFVLSsurTGl4ka9SMi/P4fOVnb46/YKiql3SqoQDNeF/vmolJrUa8Fcj3Kg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=sC8pnaKO; arc=none smtp.client-ip=217.140.110.172
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
+	s=arc-20240116; t=1785317478; c=relaxed/simple;
+	bh=15u40+pLhi5x+nQz+zpktr5A2OAGYH76zS0ua8GK5p8=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=gVjodFMC8qboqYsl4rgSK17BfeQ2e7K0V8Cowj4mSCzWEHian0AUItjOzGLv7bdk7lVZKyE2qNOETbePNFyuP+2kSOMB9zBjpgT/p8v+uJUuXrIKf0KzJHNnsgy9ihG0FV9ZxyDJO7RAnl44/g5oRpD89yEzhWXj8pKpAnI0kKg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=HYVv7qnr; arc=none smtp.client-ip=209.85.221.50
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="sC8pnaKO"
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 4B9E2169C;
-	Wed, 29 Jul 2026 02:13:18 -0700 (PDT)
-Received: from arm.com (usa-sjc-imap-foss1.foss.arm.com [10.121.207.14])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 22BEB3F86F;
-	Wed, 29 Jul 2026 02:13:17 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1785316402; bh=VYQZ0uG1eFXy8yMV1VZlUvDn9/3JYu6JowqhAG6Q8zo=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=sC8pnaKOXOW9PiMM+cepFdavbPzNJ8lwCc4oah3F42u3PVE8ZhuClwypJN3GMefOV
-	 izG2Ni0B/uN7+hepaK7e/5Gxf6dZkxTUFkAuQ9xXJWC5GE09f77f0d8kASBuq90k6g
-	 5pO2j5Da6kxHAjboEiBI/OeG+yAOhlMJIp6BGkP4=
-Date: Wed, 29 Jul 2026 11:13:15 +0200
-From: Beata Michalska <beata.michalska@arm.com>
-To: Onur =?iso-8859-1?Q?=D6zkan?= <work@onurozkan.dev>
-Cc: ojeda@kernel.org, dakr@kernel.org, gregkh@linuxfoundation.org,
-	rafael@kernel.org, boqun@kernel.org, gary@garyguo.net,
-	bjorn3_gh@protonmail.com, lossin@kernel.org, a.hindborg@kernel.org,
-	aliceryhl@google.com, tmgross@umich.edu,
-	daniel.almeida@collabora.com, boris.brezillon@collabora.com,
-	samitolvanen@google.com, rust-for-linux@vger.kernel.org,
-	driver-core@lists.linux.dev, linux-kernel@vger.kernel.org,
-	linux-pm@vger.kernel.org
-Subject: Re: [PATCH v2 3/3] drm/tyr: enable runtime PM
-Message-ID: <amnEK2oHziBq2q2a@arm.com>
-References: <20260721153617.869933-1-beata.michalska@arm.com>
- <20260721153617.869933-4-beata.michalska@arm.com>
- <20260727150103.911533-1-work@onurozkan.dev>
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="HYVv7qnr"
+Received: by mail-wr1-f50.google.com with SMTP id ffacd0b85a97d-47de0093c42so577755f8f.3
+        for <linux-pm@vger.kernel.org>; Wed, 29 Jul 2026 02:31:16 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1785317475; x=1785922275; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
+        bh=NGw4acqsR1sAad4BEmjY+ommPVLQEZy4kdT8lCYhgs4=;
+        b=HYVv7qnrLbAWnaSwGHh5Z+EwIz1FgWscKEIyFtDqJZqGApn+a1c2s4Xhjs68trV8eQ
+         K362ZO4jtlrDq6CG4tlctabrFVx6V6+ao2chbXbzVo9DU1kUsLETBQrD85344JYKK8bt
+         E4rzD8VnnO1YhZNteQAxS/XVyWnQkKpI6l5LZwnYP6CkB4a5BPx5xmj2MYRrBpuxYCy+
+         RspaNk53O4XZ/SRgBQPKYzKhCpYM5ec1uq01P4W9v8ADfWBql1iFjATQhOoB4ualTrrv
+         ug0U3UrfqQjGtrkm7RWWThtY1/gEmvM1Rt0pCDDaowHG5OM+4zWxb8k+jFSYcqeJ217d
+         GMrw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1785317475; x=1785922275;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=NGw4acqsR1sAad4BEmjY+ommPVLQEZy4kdT8lCYhgs4=;
+        b=bPW/8lYIB4a4Q5WNIAJ5pG1v+coqK9Gbn+qfqutrqQ9WLAHRMJCPJarWH7IQpMI5aK
+         9K0kpAQMTMtvuV1kEQUkUHwrydUg2ezBekwXNE8ZoFJgM9e/etrtD4EL27T5ngNdKXCo
+         p4Sh9FAhHM1D7jnaa7HphByOyPKcnn+z4tFAQUteLKcAf4vliZM4bNymeUUwu1MzF5Kj
+         QEPtZWuG2HgXQZM8XzkDZYKxmybA2kWSXZ4K1DAcVKFxmwiDWqT/iOuBrD2mQCUyTSmC
+         h03tKoOxBHoDFbDlmVQ6LrDAs+RwcpApiapsPjp3jtevBmI114DsRc79b/Awqz9sKzsJ
+         H2lQ==
+X-Forwarded-Encrypted: i=1; AHgh+RpBR5hJLE7WUnuhnhQbAjCdS9tZWcyLuJOmay+QsWpCPsXLxZ2a2KwkrQiIYIU+ZB7Nf2kdnF9hdA==@vger.kernel.org
+X-Gm-Message-State: AOJu0YzRfUL0t8891kTr1b/eQM5GNkSG8ixJtTuC7lA9qL+3W8E2RpEb
+	owpSCCoSaAn1vp6wxTE2reWfWD77AAoV5dMvfWfNwVi/EryhHZtlbE1v
+X-Gm-Gg: AR+sD13cn7QcZjSrp3CgDEiN78fqT5ndLa0cl8mstoU8NFgPYym/nCOS/z4X5NfpWcI
+	V4bmdHPrTphZ6o+NDRLSUsmEas/dAG2jLU0q/O+pwSWNH2FN4gXqVAP4f045l8ttDwF8X9xl9n1
+	0uCXqVmuySw3GVRL8wg+gny1NgKtxtZEeFImTANoJNfi6yvRWNrena6YL6+6yufcuY8DZEux8yT
+	FsaOB7GDIv/y2PRqRDAeczFOPM44fmvaAd/ro/M5LCZFwWj7qYNMevFpysLNniMJew7B/aFIoSv
+	BIW8ROmte/UEa6lY2llRMfCZPyzdU/c0XoMOEd9VbAVIGoi4WNk60K/uPXCOR9VNLvuWwUu4HNv
+	QpQp8oADAkrkdW849i/RlPGNrM7U916QJXI7VHvK9Wr1VdFKdR+uAruPnzd8v4QjIk/4dwHP/G2
+	xAFLE+OLHKN8JvYlBnJYNs+9mpC2DtcZNCUTsWz9Ah+kR1H2q66VRVmcraqtHLjcO1Vopn9F+b7
+	sBPBmpcQ7SeVTU=
+X-Received: by 2002:a05:6000:2403:b0:47f:9661:6766 with SMTP id ffacd0b85a97d-47fb1ec4d77mr7367485f8f.61.1785317475006;
+        Wed, 29 Jul 2026 02:31:15 -0700 (PDT)
+Received: from localhost.localdomain ([2a00:23c4:a702:d301:10b8:4461:ee04:15e2])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-47fb6aa3935sm6766388f8f.4.2026.07.29.02.31.14
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 29 Jul 2026 02:31:14 -0700 (PDT)
+From: Biju <biju.das.au@gmail.com>
+X-Google-Original-From: Biju <biju.das.jz@bp.renesas.com>
+To: Geert Uytterhoeven <geert+renesas@glider.be>,
+	Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	Laurent Pinchart <Laurent.pinchart@ideasonboard.com>,
+	Philipp Zabel <p.zabel@pengutronix.de>,
+	Bartosz Golaszewski <brgl@kernel.org>,
+	Magnus Damm <magnus.damm@gmail.com>
+Cc: Biju Das <biju.das.jz@bp.renesas.com>,
+	linux-renesas-soc@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	linux-pm@vger.kernel.org,
+	Prabhakar Mahadev Lad <prabhakar.mahadev-lad.rj@bp.renesas.com>,
+	Biju Das <biju.das.au@gmail.com>
+Subject: [PATCH v2 0/3] soc: renesas: rz-sysc: Add RZ/G3L PWRRDY power sequencing support
+Date: Wed, 29 Jul 2026 10:31:05 +0100
+Message-ID: <20260729093112.98324-1-biju.das.jz@bp.renesas.com>
+X-Mailer: git-send-email 2.43.0
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <20260727150103.911533-1-work@onurozkan.dev>
 
-On Mon, Jul 27, 2026 at 06:00:58PM +0300, Onur Özkan wrote:
-> On Tue, 21 Jul 2026 17:34:04 +0200
-> Beata Michalska <beata.michalska@arm.com> wrote:
-> 
-> > Add runtime PM support to the Tyr platform driver. Move the clocks and
-> > regulators used by runtime suspend and resume into the PM payload, register the
-> > PM callbacks, configure autosuspend, and let DRM paths take a PM usage
-> > reference while querying device state.
-> > 
-> > Signed-off-by: Beata Michalska <beata.michalska@arm.com>
-> > ---
-> >  drivers/gpu/drm/tyr/driver.rs | 112 ++++++++++++++++++++++++++++------
-> >  drivers/gpu/drm/tyr/file.rs   |   7 ++-
-> >  2 files changed, 98 insertions(+), 21 deletions(-)
-> > 
-> > diff --git a/drivers/gpu/drm/tyr/driver.rs b/drivers/gpu/drm/tyr/driver.rs
-> > index 8348c6cd3929..89fe216be0de 100644
-> > --- a/drivers/gpu/drm/tyr/driver.rs
-> > +++ b/drivers/gpu/drm/tyr/driver.rs
-> > @@ -1,6 +1,7 @@
-> >  // SPDX-License-Identifier: GPL-2.0 or MIT
-> >  
-> >  use kernel::{
-> > +    bindings,
-> >      clk::{
-> >          Clk,
-> >          OptionalClk, //
-> > @@ -20,16 +21,16 @@
-> >          poll,
-> >          Io, //
-> >      },
-> > -    new_mutex,
-> >      of,
-> >      platform,
-> > +    pm,
-> > +    pm::*,
-> >      prelude::*,
-> >      regulator,
-> >      regulator::Regulator,
-> >      sizes::SZ_2M,
-> >      sync::{
-> >          aref::ARef,
-> > -        Mutex, //
-> >      },
-> >      time, //
-> >  };
-> > @@ -55,18 +56,21 @@
-> >  pub(crate) struct TyrPlatformDriverData<'bound> {
-> >      _device: ARef<TyrDrmDevice>,
-> >      _reg: drm::Registration<'bound, TyrDrmDriver>,
-> > +    // This needs to be dropped after drm::Registration as this one borrows
-> > +    // borrows PMContext.
-> > +    pub(crate) pm: pm::Registration<'bound, TyrPlatformDriver>,
-> > +
-> > +}
-> > +
-> > +#[pin_data]
-> > +pub(crate) struct TyrRuntimePM<'bound> {
-> > +    pub(crate) pm: PMContext<'bound, TyrPlatformDriver>,
-> >  }
-> >  
-> >  #[pin_data]
-> >  pub(crate) struct TyrDrmDeviceData {
-> >      pub(crate) pdev: ARef<platform::Device>,
-> >  
-> > -    #[pin]
-> > -    clks: Mutex<Clocks>,
-> > -
-> > -    #[pin]
-> > -    regulators: Mutex<Regulators>,
-> > -
-> >      /// Some information on the GPU.
-> >      ///
-> >      /// This is mainly queried by userspace, i.e.: Mesa.
-> > @@ -101,6 +105,7 @@ impl platform::Driver for TyrPlatformDriver {
-> >      type IdInfo = ();
-> >      type Data<'bound> = TyrPlatformDriverData<'bound>;
-> >      const OF_ID_TABLE: Option<of::IdTable<Self::IdInfo>> = Some(&OF_TABLE);
-> > +    const PM_OPS: Option<&'static bindings::dev_pm_ops> = Some(&PMContext::<Self>::PM_OPS);
-> >  
-> >      fn probe<'bound>(
-> >          pdev: &'bound platform::Device<Core<'_>>,
-> > @@ -117,6 +122,25 @@ fn probe<'bound>(
-> >          let mali_regulator = Regulator::<regulator::Enabled>::get(pdev.as_ref(), c"mali")?;
-> >          let sram_regulator = Regulator::<regulator::Enabled>::get(pdev.as_ref(), c"sram")?;
-> >  
-> > +	let runtime_payload = TyrRuntimePMPayload {
-> > +            clks: Clocks {
-> > +                core: core_clk,
-> > +                stacks: stacks_clk,
-> > +                coregroup: coregroup_clk,
-> > +            },
-> > +            _regulators: Regulators {
-> > +                    _mali: mali_regulator,
-> > +                    _sram: sram_regulator,
-> > +            }
-> > +        };
-> > +
-> > +        let mut pm_configs = KVec::<PMConfig>::with_capacity(2, GFP_KERNEL)?;
-> > +        pm_configs.push(PMConfig::AutoSuspend(true), GFP_KERNEL)?;
-> > +        pm_configs.push(PMConfig::AutoSuspendDelay(300), GFP_KERNEL)?;
-> > +
-> > +        let pm_registration = pm::Registration::new(pdev.as_ref(), None, Some(pm_configs), Some(runtime_payload))?;
-> > +        let pm_context = pm_registration.ctx().clone();
-> > +
-> >          let request = pdev.io_request_by_index(0).ok_or(ENODEV)?;
-> >          let iomem = request.iomap_sized::<SZ_2M>()?;
-> >  
-> > @@ -138,28 +162,26 @@ fn probe<'bound>(
-> >  
-> >          let data = try_pin_init!(TyrDrmDeviceData {
-> >                  pdev: platform.clone(),
-> > -                clks <- new_mutex!(Clocks {
-> > -                    core: core_clk,
-> > -                    stacks: stacks_clk,
-> > -                    coregroup: coregroup_clk,
-> > -                }),
-> > -                regulators <- new_mutex!(Regulators {
-> > -                    _mali: mali_regulator,
-> > -                    _sram: sram_regulator,
-> > -                }),
-> >                  gpu_info,
-> >          });
-> >  
-> >          let tdev = drm::UnregisteredDevice::<TyrDrmDriver>::new(pdev, data)?;
-> >          // SAFETY: `reg` is stored in `TyrPlatformDriverData` and dropped when the driver is
-> >          // unbound; it is never forgotten.
-> > -        let reg = unsafe { drm::Registration::new(pdev.as_ref(), tdev, (), 0)? };
-> > +        let reg = unsafe { drm::Registration::new(
-> > +            pdev.as_ref(),
-> > +            tdev,
-> > +            pin_init!(TyrRuntimePM { pm: pm_context, }),
-> > +            0
-> > +        )? };
-> >  
-> >          let driver = TyrPlatformDriverData {
-> >              _device: reg.device().into(),
-> >              _reg: reg,
-> > +            pm: pm_registration,
-> >          };
-> >  
-> > +        driver.pm.ctx().enable(RuntimePMState::RESUMED)?;
-> >          // We need this to be dev_info!() because dev_dbg!() does not work at
-> >          // all in Rust for now, and we need to see whether probe succeeded.
-> >          dev_info!(pdev, "Tyr initialized correctly.\n");
-> > @@ -185,7 +207,7 @@ fn drop(self: Pin<&mut Self>) {}
-> >  #[vtable]
-> >  impl drm::Driver for TyrDrmDriver {
-> >      type Data = TyrDrmDeviceData;
-> > -    type RegistrationData<'a> = ();
-> > +    type RegistrationData<'a> = TyrRuntimePM<'a>;
-> >      type File = TyrDrmFileData;
-> >      type Object = drm::gem::shmem::Object<BoData>;
-> >      type ParentDevice<Ctx: DeviceContext> = platform::Device<Ctx>;
-> > @@ -216,3 +238,55 @@ struct Regulators {
-> >      _mali: Regulator<regulator::Enabled>,
-> >      _sram: Regulator<regulator::Enabled>,
-> >  }
-> > +
-> > +pub(crate) struct TyrRuntimePMPayload {
-> > +    clks: Clocks,
-> > +    _regulators: Regulators,
-> > +}
-> > +
-> > +#[vtable]
-> > +impl PMOps for TyrPlatformDriver {
-> > +    type DeviceType = platform::Device<kernel::device::Bound>;
-> > +    type RuntimePayloadType = TyrRuntimePMPayload;
-> > +
-> > +    fn runtime_suspend<'a>(
-> > +        _dev: &'a Self::DeviceType,
-> > +        payload: Option<TyrRuntimePMPayload>,
-> > +    ) -> Result<Option<TyrRuntimePMPayload>, (Option<TyrRuntimePMPayload>, Error)>  {
-> > +
-> > +        let Some(payload) = payload else {
-> > +          return Err((None, EINVAL));
-> > +        };
-> > +
-> > +        payload.clks.coregroup.disable_unprepare();
-> > +        payload.clks.stacks.disable_unprepare();
-> > +        payload.clks.core.disable_unprepare();
-> 
-> "impl Drop for Clocks" calls these as well, are they safe to re-call
-> when they already called?
-Apparently I did forget to tag this one as "DO NOT MERGE"
-as it is only supposed to illustrate the use of pm framework.
-Other than that: this will trigger warnings.
+From: Biju Das <biju.das.jz@bp.renesas.com>
 
----
-BR
-Beata
-> 
-> > +        Ok(Some(payload))
-> > +    }
-> > +    fn runtime_resume<'a>(
-> 
-> Missing newline before new function (this appears at multiple lines in this
-> series).
-> 
-> > +        _dev: &'a Self::DeviceType,
-> > +        payload: Option<TyrRuntimePMPayload>,
-> > +    ) -> Result<Option<TyrRuntimePMPayload>, (Option<TyrRuntimePMPayload>, Error)> {
-> > +
-> > +      let Some(payload) = payload else {
-> > +          return Err((None, EINVAL));
-> > +      };
-> > +
-> > +      if let Err(e) = payload.clks.core.prepare_enable() {
-> > +          return Err((Some(payload), e));
-> > +      }
-> > +
-> > +      if let Err(e) = payload.clks.stacks.prepare_enable() {
-> > +          payload.clks.core.disable_unprepare();
-> > +          return Err((Some(payload), e));
-> > +      }
-> > +
-> > +      if let Err(e) = payload.clks.coregroup.prepare_enable() {
-> > +          payload.clks.stacks.disable_unprepare();
-> > +          payload.clks.core.disable_unprepare();
-> > +          return Err((Some(payload), e));
-> > +      }
-> > +
-> > +      Ok(Some(payload))
-> > +   }
-> > +}
-> > diff --git a/drivers/gpu/drm/tyr/file.rs b/drivers/gpu/drm/tyr/file.rs
-> > index b686041d5d6b..d9371ddfb5f3 100644
-> > --- a/drivers/gpu/drm/tyr/file.rs
-> > +++ b/drivers/gpu/drm/tyr/file.rs
-> > @@ -5,6 +5,7 @@
-> >          self,
-> >          Registered, //
-> >      },
-> > +    pm::PMProfile,
-> >      prelude::*,
-> >      uaccess::UserSlice,
-> >      uapi, //
-> > @@ -12,7 +13,8 @@
-> >  
-> >  use crate::driver::{
-> >      TyrDrmDevice,
-> > -    TyrDrmDriver, //
-> > +    TyrDrmDriver,
-> > +    TyrRuntimePM,//
-> >  };
-> >  
-> >  #[pin_data]
-> > @@ -32,10 +34,11 @@ fn open(_dev: &drm::Device<Self::Driver>) -> Result<Pin<KBox<Self>>> {
-> >  impl TyrDrmFileData {
-> >      pub(crate) fn dev_query(
-> >          ddev: &TyrDrmDevice<Registered>,
-> > -        _reg_data: &(),
-> > +        reg_data: &TyrRuntimePM<'_>,
-> >          devquery: &mut uapi::drm_panthor_dev_query,
-> >          _file: &TyrDrmFile,
-> >      ) -> Result<u32> {
-> > +        let _pm_scope = reg_data.pm.get(PMProfile::new())?;
-> >          if devquery.pointer == 0 {
-> >              match devquery.type_ {
-> >                  uapi::drm_panthor_dev_query_type_DRM_PANTHOR_DEV_QUERY_GPU_INFO => {
-> > -- 
-> > 2.43.0
-> > 
+Hi All,
+
+Some RZ SoCs (e.g. RZ/G3L) have a PWRRDY register that signals power
+readiness for various IPs (USB, DSI, CSI, etc.) to their respective
+controllers. This register is part of the SYSC IP. Add a dedicated
+power sequencing driver to handle these signals.
+
+This series adds that support:
+
+- Patch 1 adds a pwrrdy_pwrseq flag to struct rz_sysc_soc_id_init_data,
+  sets it for RZ/G3L, and has the SYSC driver register a
+  "pwrseq-pwrrdy" auxiliary device when the flag is set, so a
+  dedicated driver can bind to it and handle the sequencing.
+
+- Patch 2 adds that dedicated driver, pwrseq-renesas-pwrrdy, which
+  binds to the auxiliary device exposed by patch 1 and exposes
+  usb-pwrrdy, dsi-pwrrdy, and csi-pwrrdy pwrseq targets, toggling the
+  appropriate bits in the SYS_PWRRDY_N register via the parent SYSC
+  driver's regmap.
+
+- Patch 3 selects POWER_SEQUENCING_RENESAS_PWRRDY from
+  SYSC_R9A08G046 so the new driver is built whenever RZ/G3L SYSC
+  support is enabled.
+  
+This series is based on proposal for power sequence driver [1]
+for USB PWRRDY signal and DSI PWRRDY signal[2].
+
+I will send USB/DSI/CSI driver patches based on this series soon.
+
+v1->v2:
+ * Switched to devm_auxiliary_device_create().
+ * Added regmap parameter to rz_sysc_pwrrdy_pwrseq_init(),so that regmap
+   can be passed as platform data.
+ * Added a comment in pwrseq_rzg3l_pwrrdy_match().
+ * Dropped dev_get_regmap() from probe as regmap is now part of platform
+   data.
+ * Added a blank line before devm_pwrseq_device_register() in probe.
+ * Dropped the error message devm_pwrseq_device_register() as probe prints
+   failure message.
+ * Dropped local variables dev and regmap from probe().
+ 
+ [1] https://lore.kernel.org/all/CAPDyKFpLnREr4C=wZ7o8Lb-CZbQa4Nr2VTuYdZHZ26Rcb1Masg@mail.gmail.com/ 
+ [2] https://lore.kernel.org/all/20260704093433.273672-1-biju.das.jz@bp.renesas.com/T/#mb6f18d8fa9a194fc0a15db5f4938df420da7b6b5
+
+Biju Das (3):
+  soc: renesas: rz-sysc: Register auxiliary device for PWRRDY power
+    sequencer
+  power: sequencing: Add Renesas RZ/G3L Power Ready driver
+  soc: renesas: Kconfig: Select POWER_SEQUENCING_RENESAS_PWRRDY for
+    R9A08G046
+
+ drivers/power/sequencing/Kconfig              |   8 +
+ drivers/power/sequencing/Makefile             |   1 +
+ .../power/sequencing/pwrseq-renesas-pwrrdy.c  | 139 ++++++++++++++++++
+ drivers/soc/renesas/Kconfig                   |   1 +
+ drivers/soc/renesas/r9a08g046-sysc.c          |   1 +
+ drivers/soc/renesas/rz-sysc.c                 |  21 +++
+ drivers/soc/renesas/rz-sysc.h                 |   2 +
+ 7 files changed, 173 insertions(+)
+ create mode 100644 drivers/power/sequencing/pwrseq-renesas-pwrrdy.c
+
+-- 
+2.43.0
+
