@@ -1,46 +1,46 @@
-Received: from DU2PR03CU002.outbound.protection.outlook.com (mail-northeuropeazon11011042.outbound.protection.outlook.com [52.101.65.42])
+Received: from DB3PR0202CU003.outbound.protection.outlook.com (mail-northeuropeazon11010063.outbound.protection.outlook.com [52.101.84.63])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4DEE93AAF77;
-	Wed, 29 Jul 2026 21:07:20 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.65.42
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2D1E94195A1;
+	Wed, 29 Jul 2026 21:07:32 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.84.63
 ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1785359242; cv=fail; b=lz5Wa2pPyuYvB8oMZvl3dOLfq95HnYNHNEO0lUFajpNYL0hgt8koO0BTw+5H7jNayoqL27KsfVFg2CqB+XvktMttGIlTHZhyM4uoqDc/hTPKiKNW79oKJJHUeGTItUoPkzaxySoOGtb5ZBHfbBz6YBojIIztvWn3kTPsbZNaMlk=
+	t=1785359254; cv=fail; b=h1AzVsXIoUckNxaNQkbXTx5vXp201oad4g6yP5qVFn0lqdneJGPqDqqS2uBjhaiyqIoGbIUgY864eW9yRJK0AY/X4AzKW7NkoUuXywUkq4Dnu97lhGMmXoOBvLG19L55E5MAdD4jiSAd99fiIpDcqTJSNB+Cs9zzepytINQ0ZWs=
 ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1785359242; c=relaxed/simple;
-	bh=PV55q4x8rXkcXCkSqBl/yFSSDB6/N49jdgxo0Oi8yzU=;
+	s=arc-20240116; t=1785359254; c=relaxed/simple;
+	bh=fD5T6Hwnv/7/ZlGN3dXtPuzYnF4OL4cQj/iar08eCRQ=;
 	h=From:To:CC:Subject:In-Reply-To:References:Date:Message-ID:
-	 MIME-Version:Content-Type; b=BaWvOqXrAdNEKHgqAFzmvlv8CsmiEgqG46u2zlt+Rmu7VI4DvGr9/cD1L0ZcOLQ04MbTp6J6C0oH2qCSaMPil9A+zqBmvErl8DgRPn59WPrDMkvnMjlKXQzmVBSIZoxkZ1dUJtQW4sBQmLKRek2A0/N4Xg40H/eacfJw4ZJcGpE=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=axis.com; spf=pass smtp.mailfrom=axis.com; dkim=pass (1024-bit key) header.d=axis.com header.i=@axis.com header.b=A129et1f; arc=fail smtp.client-ip=52.101.65.42
+	 MIME-Version:Content-Type; b=Z5AGkKQkGuI1gKHqtEJmeAfDyewBCTud9G6PGWt8jSLYeLJv+TUkxbEt1YZOFQaNdJEVmQh6eXfYMleCQiGm4dZImUqcHSd14pW0xAKDJ7ynN4uenmlilgILRV/gA4pwbgA99/mKTDiPzLLcUklwVEvz4XaKXAvIb69sNwziuN0=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=axis.com; spf=pass smtp.mailfrom=axis.com; dkim=pass (1024-bit key) header.d=axis.com header.i=@axis.com header.b=O3kChzgA; arc=fail smtp.client-ip=52.101.84.63
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=axis.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=axis.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=axis.com header.i=@axis.com header.b="A129et1f"
+	dkim=pass (1024-bit key) header.d=axis.com header.i=@axis.com header.b="O3kChzgA"
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=X9OAI5AN3PZdslQ6Ba7j0wCtvEM+KEXVCXwoRSEWOSCslUDJJKyyviENeS1DoWFWNv9ShoiMH0DseL3cEYTsO2CPSnoukk5DKVbiU9g30q0Jk79X90I5dUr6qgt8lCgy2zWHOVfoKvcr7IWHYuUd0keUTfzJVS1r1yjYaolnP00+57LF8t90b+Bx8iB8WjfHbPlPj5A8hmOojMTQ+VRgiMr7uwVFNx3JS7jmwy/6pnsj+zU1fC6CdKaCHzFFKayWNqTz20uyphwVkxMH+rVQx2AtnSTHcWD85fIVcV5l+wiXeRj7+KBe8XVHSEtyZhpigOHRGTcWl/1W4iNLOw2XjQ==
+ b=ssN8Nt14hPS01dxERIpYEuBaD7UOIah/+B18Bh0jFvnDJvlCFJVRxA5334PFJu6APbXV2UKt+6X9VVvKw/JcnFcUCnZPrhyC49fV8ERgHcur3HHRErHYWzBXPOknqst2KsIQQI+uxpzfPBzJkit26D5WYZd8c1sRG5bda2mSFX2IymvIWf3nMVqr6DyWCcz3qYdunKa2BprFerXchd56oZVH7XSm9OlyXUgHCdXf47yPrPDQpzGV75wM7Mfa2DvYNHQI2aVRCSo1/9Ip1zisqOg+vwW7QIVXoiB6EA8Inz2F01ul1sVwwfkNTbpOQJ+V4xc8ZE6pbnW7rEX1c15KgQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector10001;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=1agpDQKTCUFjv8ey/ex4NOAMLaFAe+rlJSIncjRFbew=;
- b=JC2i6nhQL9sC0yNhBGMxcQlSNrXA7zGZ924aR6Y4f/nHXJggmbuzpujbczYhLNGolggi0x8kMOvdTVU9KtXyO09CYZHxUeyaCn3W6lMom28EGxPuqfl1S4FJMGyw2r2RzlJzAeIdKyyC6zWWuZsKP2XN7m/TkLppiRxG+TYhhF8ay+bFsaYcZW/w0EIGTecrWX91Ou66PMZqBDDOxeJi57hRg+sDBagYVpH2z4TNpr/blDTASg/aviFOOu+SLmWiCKPLlXEhJ7yAKg++kA32g4tFkSsGbFCdJB8uXrLadutfSosGCUz68nh0itRyGxWl57uoDVAUTmUkCoSrJGbEyw==
+ bh=fD5T6Hwnv/7/ZlGN3dXtPuzYnF4OL4cQj/iar08eCRQ=;
+ b=PM9A0eUkuLqIZoi+UUNcIKD+vtxmUG1MreppB3ZJnDZ8re2CXLF/wBnMhF0UJhdn3TK9X7XtaDBwfKbbd5Y+XOQe+PH/AX6T3+FzbUTe01BlNwJjxpr/5zv0PTDQZ9lpmPbOqoAcfUTaSIYRLqLexMryHGR1M8BRKRq3fy4zE+K4PSEcSga7gAxYrb1yS7/OwuBMXe6Mbd2NLW9YSlkl9RPzg0i5gTgAE++h884GqS1xHSD6NvlvVHO+ftIi6uAb5pS0H62dSoCJZrwMC2tMp3Z5hN+QrkV6d9Sw3T4gMH5w2s1Ma12zPHVij7J8jJL9o2/KlTt1RdLVsXS7Y5VJhg==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
  195.60.68.100) smtp.rcpttodomain=vger.kernel.org smtp.mailfrom=axis.com;
  dmarc=pass (p=none sp=none pct=100) action=none header.from=axis.com;
  dkim=none (message not signed); arc=none (0)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=axis.com; s=selector1;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=1agpDQKTCUFjv8ey/ex4NOAMLaFAe+rlJSIncjRFbew=;
- b=A129et1f0BbLiOuJNrjPROS3uN0f58aqRJ3bI8IbccPyiWaUtIV7pZQ2T0oOsdjHuPsEkp6PShBb54e03Cvqd7NbNdlT5rAVm1Z8twngLm8C32H2HbTgbu3tiM6/LuwrFx4YIe60y0gyIhJkW6S7UiasDmfzcDr7KtyN/gMeP9A=
-Received: from DU7P189CA0017.EURP189.PROD.OUTLOOK.COM (2603:10a6:10:552::31)
- by GV1PR02MB8355.eurprd02.prod.outlook.com (2603:10a6:150:56::22) with
+ bh=fD5T6Hwnv/7/ZlGN3dXtPuzYnF4OL4cQj/iar08eCRQ=;
+ b=O3kChzgArO139Ozppjq77AAngDgmOlFvBM914kbFIfgX0N8N8u/2RKbEb6imFGbNTxX8febaohgm8xi9ZX/B5DoU10Elb2C2qmphUXDIj8zuDPujG4dhRCqTNTh9TjxbVSGxkLty5jP5z9cOIi65QDoA2067qSsM+9MUXD57f0U=
+Received: from DU7P189CA0026.EURP189.PROD.OUTLOOK.COM (2603:10a6:10:552::23)
+ by PA6PR02MB10615.eurprd02.prod.outlook.com (2603:10a6:102:3cf::17) with
  Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.270.12; Wed, 29 Jul
- 2026 21:07:16 +0000
+ 2026 21:07:28 +0000
 Received: from DB3PEPF0000885E.eurprd02.prod.outlook.com
- (2603:10a6:10:552:cafe::94) by DU7P189CA0017.outlook.office365.com
- (2603:10a6:10:552::31) with Microsoft SMTP Server (version=TLS1_3,
+ (2603:10a6:10:552:cafe::9c) by DU7P189CA0026.outlook.office365.com
+ (2603:10a6:10:552::23) with Microsoft SMTP Server (version=TLS1_3,
  cipher=TLS_AES_256_GCM_SHA384) id 15.21.270.13 via Frontend Transport; Wed,
- 29 Jul 2026 21:07:16 +0000
+ 29 Jul 2026 21:07:28 +0000
 X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 195.60.68.100)
  smtp.mailfrom=axis.com; dkim=none (message not signed)
  header.d=none;dmarc=pass action=none header.from=axis.com;
@@ -50,24 +50,24 @@ Received-SPF: Pass (protection.outlook.com: domain of axis.com designates
 Received: from mail.axis.com (195.60.68.100) by
  DB3PEPF0000885E.mail.protection.outlook.com (10.167.242.9) with Microsoft
  SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.21.292.8 via Frontend Transport; Wed, 29 Jul 2026 21:07:16 +0000
+ 15.21.292.8 via Frontend Transport; Wed, 29 Jul 2026 21:07:28 +0000
 Received: from pc67007-2609 (10.4.0.13) by se-mail10w.axis.com (10.20.40.10)
  with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1748.39; Wed, 29 Jul
- 2026 23:07:16 +0200
+ 2026 23:07:28 +0200
 From: Waqar Hameed <waqar.hameed@axis.com>
 To: Linmao Li <lilinmao@kylinos.cn>
 CC: Sebastian Reichel <sre@kernel.org>, <linux-pm@vger.kernel.org>,
 	<linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH v2 1/2] power: supply: bq25630: Scope battery
- information to bq25630_setup()
-In-Reply-To: <20260728024558.3611522-2-lilinmao@kylinos.cn> (Linmao Li's
-	message of "Tue, 28 Jul 2026 10:45:57 +0800")
+Subject: Re: [PATCH v2 2/2] power: supply: bq25630: Initialize hardware
+ before exposing the power supply
+In-Reply-To: <20260728024558.3611522-3-lilinmao@kylinos.cn> (Linmao Li's
+	message of "Tue, 28 Jul 2026 10:45:58 +0800")
 References: <20260728024558.3611522-1-lilinmao@kylinos.cn>
-	<20260728024558.3611522-2-lilinmao@kylinos.cn>
+	<20260728024558.3611522-3-lilinmao@kylinos.cn>
 User-Agent: a.out
-Date: Wed, 29 Jul 2026 23:07:15 +0200
-Message-ID: <pnd8q6t33p8.a.out@axis.com>
+Date: Wed, 29 Jul 2026 23:07:27 +0200
+Message-ID: <pnd4ihh33ow.a.out@axis.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -79,93 +79,53 @@ X-ClientProxiedBy: se-mail11w.axis.com (10.20.40.11) To se-mail10w.axis.com
  (10.20.40.10)
 X-EOPAttributedMessage: 0
 X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: DB3PEPF0000885E:EE_|GV1PR02MB8355:EE_
-X-MS-Office365-Filtering-Correlation-Id: 6a586457-bc38-4c7f-c2bc-08deedb55ea8
+X-MS-TrafficTypeDiagnostic: DB3PEPF0000885E:EE_|PA6PR02MB10615:EE_
+X-MS-Office365-Filtering-Correlation-Id: 2017fc3b-b0a6-468e-5baa-08deedb565b6
 X-MS-Exchange-SenderADCheck: 1
 X-MS-Exchange-AntiSpam-Relay: 0
 X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|36860700016|376014|23010399003|82310400026|1800799024|13003099007|56012099006|10067099003|5023799004|11063799006|4143699003|22082099003|18002099003;
+	BCL:0;ARA:13230040|376014|23010399003|82310400026|1800799024|36860700016|20046099003|22082099003|18002099003|4143699003|56012099006|10067099003|11063799006|6133799003;
 X-Microsoft-Antispam-Message-Info:
-	FcR8726JVwGUp+zuULkDzfBw/cmfnUtvxlm2hbSR3QjodkyMXt8DrQaxROxfzQ9jdWxql9MOyiiWXjUxnJSUQIEb1TyrELUF8iC+gaIiedUM2dZRpYuTshyIL+pS0OYqKNPI2fygENi4vFDAUh4e0KmbIl1a6Znbiqz1SD5CEOWMRcoYoOmd26ipLOOEb/0HMuFzRh6vdXCZA5NooR4+7uJT3Zr7mVK4zdvbMWOkxzRNAr7GtLBnJ17+MggeFgkKkyrmFgqCsWRFIx7z2+4BMIoJfO/oRiBo811WcutNJ5qqjRHxjEjZGe5fGaRkrTI4QTqc1h4lxioRa2H4IopkUX1v1GmptTYrYlfWbV43XnhIQ4zvGTrumrSEQkbT57anFVvOnGpvkeJ7ckcrqam5xWOkEXumx3U9UDEr112MuH3UYhr7eQ1UrtJyj/C06+6+Kx+1i0J1dma2as1VCx6NLGdn9kKg7rvskXQdj1k7uY5CnaqUCwDAS9tfHNsjm+zAF3L4+RNFWws31efaw93BvUX0ifGL1lVCr1RPIrez+8KPIClR8EXW50V+YPcO81idy3wdi3Ui9OCcuY9Kn9XHyCkhUJWestp9E4YWNoP8DXrJlQglaS8/VWbSNI34F4vZEhxnka/LfxiDIC+I7l/ulkJM0kCYtPRP8nkR34Jj7kkDZojO8fnWrY9mWYrnLw7HO1b7b8xHiD9ENCWg5PwZTg==
+	3PhtTrCmRa350V7GjCoTdRxliHSE9lA1TD5/g2eDODTc+UU6XwGT2qX3BJoxdCZ3nrkReSwHwbB/oG0WWfG6Chs7UA6fqYUoU9HmBeRYejmB1dbko5hL/5TFRx/jqWbi5StgQovfZsYJNigigX2sarPErGnCDVEnnjBT6py0NnW2MzTVLW4WG6Rm86VPaig3VDd6Gjm10Wwapi00yfOWgeY4QY8ltMkuCWhycDX1JXMHsuj/ZB/vIvOfxextKPKUFFKvnza1Rqg9tD1J/MXIJlzqxO0FqbW/dqSt53IcVJU/2JSEyWiGhL2AuNPH4IpGlhESJ+e7asdxjdGqYLDHT+ChiTSIboqoKsfrVXNP9uZuRHUHmcBXJ+sno+wwgq1PZ2tiHm4NFPGsPXaEpTUAFAJ2WYMsodFfUfBBSTeL2QSqWPKaVkaSIbPUk0u039YxuIX4dNfb4E11gBMcjtdMBwJ3P+jr8ZUPEBiTIHYk/DG+gT2/xpND6ZslbVySL+IMfGpFlHfWKRPi1fqPdg6cTrJJbsVLlwJknMI60NqL6KzaGwXezvddSS4Lam6AorApPrqOHqaPiHx+qoOxZfq6BNn2F6bjYbACcRHjQ3i2GS7ffVTjMc/q3y26e+U09ypignvbrdJQkeJWqdsglxLVD1dP6uAy9YFa+hkkXL7CEvBtnS8j91bMFh3wmjFTD/6fPetH2EZH9j/hyvurXaUuoA==
 X-Forefront-Antispam-Report:
-	CIP:195.60.68.100;CTRY:SE;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:mail.axis.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230040)(36860700016)(376014)(23010399003)(82310400026)(1800799024)(13003099007)(56012099006)(10067099003)(5023799004)(11063799006)(4143699003)(22082099003)(18002099003);DIR:OUT;SFP:1101;
+	CIP:195.60.68.100;CTRY:SE;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:mail.axis.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230040)(376014)(23010399003)(82310400026)(1800799024)(36860700016)(20046099003)(22082099003)(18002099003)(4143699003)(56012099006)(10067099003)(11063799006)(6133799003);DIR:OUT;SFP:1101;
 X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
 X-MS-Exchange-AntiSpam-MessageData-0:
-	qjrQ9qSmXIzSLnb+GIya9jnSBB/4XZc+rczn79Nojrpl1+OE01divRZkDo15R32VcuwWiBIRxFSs3hZRyFmZm5KCj1FiMH5qKROVTfW+SQzCd0cogVMuf63mc+lb/ZPziwBp6N80Iny5LlTt0rUKYVquJOMnI5yvV1ULymRS6Aapn8TCpfg9t1gTazfuULkCrEt7hEnueyfkjMhLFZJyivvP4Vhh1j2DwY8JRP7tLfmdADTkSUhmPsAyIJphGNIpX0PP1CmmtiLP9ZdTqF5++kd9nDsD25lYLDaB3dQ0Lpg+K6MupDWd0kjVofiuPxq6+0jYV+8hZTkF6DSrueTUFSt474MLl8D0z47d3FvVAMrtT7NmuCAzoyvpE0c7mn/4FZi8FsrSC/rJAWyYYnqPnpsycofRg6Nf6gbZvpzeIgPcPvAzqcH9DOGf/gpF145U
+	Ds+zFEuIO8AKF8vFM8k1MLaSdahMaMiKR/TfzURnopplKlcYur1gwajweuKtm+UCm/oDR/s/9kppZQHppPGwUt95oGGKOLDlZAXogOTzGQ0UB9gBf+BDM+Esm7Y5xRc3zL+q01eBDDj878hiAGITJvfTC5iQhqJqOGepanql7rzNPouZ9BfdhHSMzBiscAaYO/Ar1Ltj9ttBYBJ9NoKIqUu1gfDCsRdbYA2txV98m5voSlrNUn9lVPx/lKAqnh3Qeqfuc43Lw7jmfmCi6K97z58ggnRATQ4hMSbfuMVJminHHpHI6X50rU0pzOBJkhqSOlJm63BDc3v0E0ixQo1WbC0Vxnk7OwyA203vAw4jjILrELkviLK7+4ZMP0fx37DXmfAlBI5928Od+J6AJQy17OQRWTxt0uzYZf+Xevajc8H0waA5QcUtSxCbwDF769HG
 X-OriginatorOrg: axis.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 29 Jul 2026 21:07:16.5659
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 29 Jul 2026 21:07:28.4004
  (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: 6a586457-bc38-4c7f-c2bc-08deedb55ea8
+X-MS-Exchange-CrossTenant-Network-Message-Id: 2017fc3b-b0a6-468e-5baa-08deedb565b6
 X-MS-Exchange-CrossTenant-Id: 78703d3c-b907-432f-b066-88f7af9ca3af
 X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=78703d3c-b907-432f-b066-88f7af9ca3af;Ip=[195.60.68.100];Helo=[mail.axis.com]
 X-MS-Exchange-CrossTenant-AuthSource:
 	DB3PEPF0000885E.eurprd02.prod.outlook.com
 X-MS-Exchange-CrossTenant-AuthAs: Anonymous
 X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: GV1PR02MB8355
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: PA6PR02MB10615
 
 On Tue, Jul 28, 2026 at 10:45 +0800 Linmao Li <lilinmao@kylinos.cn> wrote:
 
-> data->batinfo is only used by bq25630_setup() to program the initial
-> charge limits, but power_supply_get_battery_info() allocates it on
-> psy->dev, so it stays around for the lifetime of the device. Nothing
-> else in the driver uses it.
+> bq25630_setup() resets the device, disables the watchdog and programs
+> the charge limits from the battery information. It runs at the end of
+> bq25630_probe(), that is after the power supply has been registered, so
+> the device is already exposed to the system while the hardware still
+> holds its power-on defaults.
 >
-> Get the battery information in bq25630_setup(), just before it is read,
-> and release it on every path out of that function. The driver data no
-> longer has to carry the pointer.
+> power_supply_desc::init runs during registration, after the driver data
+> and the fwnode are available and before the device is added. Use it for
+> bq25630_setup() and drop the explicit call from bq25630_probe().
+>
+> The callback is passed the power supply, so take the driver data from it
+> and use it for the battery information as well: data->psy is only
+> assigned once devm_power_supply_register() returns, which is after the
+> callback has run.
 >
 > Signed-off-by: Linmao Li <lilinmao@kylinos.cn>
 
-Much better! However, `git` complains:
+Looks good to me!
 
-  $ git am /path/to/patch
-  error: cannot convert from y to UTF-8
-  fatal: could not parse patch
-
-LKML also warns about this [1]. I was able to force UTF-8 and workaround
-this though... You might want check your setup.
-
-> ---
->  drivers/power/supply/bq25630_charger.c | 47 ++++++++++++++------------
->  1 file changed, 25 insertions(+), 22 deletions(-)
->
-> diff --git a/drivers/power/supply/bq25630_charger.c b/drivers/power/supply/bq25630_charger.c
-> index 165f8c67b489..9b5f524505d3 100644
-> --- a/drivers/power/supply/bq25630_charger.c
-> +++ b/drivers/power/supply/bq25630_charger.c
-> @@ -356,7 +356,6 @@ struct bq25630_data {
->  	struct regmap_field *regfields[BQ25630_REGF_MAX];
->  
->  	struct power_supply *psy;
-> -	struct power_supply_battery_info *batinfo;
->  
->  	/* State status from IRQs. */
->  	u8 statregs[BQ25630_NR_STAT_REGS];
-> @@ -668,6 +667,7 @@ static int bq25630_reset(struct bq25630_data *data)
->  
->  static int bq25630_setup(struct bq25630_data *data)
->  {
-> +	struct power_supply_battery_info *batinfo;
->  	int ret;
->  
->  	ret = bq25630_reset(data);
-> @@ -684,69 +684,77 @@ static int bq25630_setup(struct bq25630_data *data)
->  		return ret;
->  	}
->  
-> +	ret = power_supply_get_battery_info(data->psy, &batinfo);
-> +	if (ret)
-> +		return dev_err_probe(data->dev, ret,
-> +				     "Could not get battery info\n");
-> +
-
-`dev_err_probe()` shouldn't be used here. Yes, it is _currently_ only
-used from `probe()`, but that shouldn't be an assumption/"policy".
-Better to let caller decide on that. I understand that it was just a
-pure copy-paste from `probe()`, but we should change it do `dev_error()`
-to match the rest of this function.
+Reviewed-by: Waqar Hameed <waqar.hameed@axis.com>
 
 [...]
 
-[1] https://lore.kernel.org/lkml/20260728024558.3611522-2-lilinmao@kylinos.cn/
