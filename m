@@ -1,61 +1,39 @@
-Received: from sender4-op-o11.zoho.com (sender4-op-o11.zoho.com [136.143.188.11])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D4B2B3D8901;
-	Thu, 30 Jul 2026 22:24:44 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=136.143.188.11
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1785450286; cv=pass; b=KKkTC9uVbYVOm+eVkcTzGIq1J3LzienLt8I6qhbqI1+HIApWaaJ7Z6QZG9gdoat6wt7a4vPlVfJ3QpFq2nKk7gyxFsTMngQv0NfJaExXpZm3v07s62VMX5LF9i8j03+me5eWAWY8Kz2dHrSjhdEQA7LCOCDKaPoyu6cxnjjyzHI=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1785450286; c=relaxed/simple;
-	bh=d0i9HDqmQaVirMU39SBAIJQgl7eqNcVittnSMCAH1Yo=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=RMm2qk0Wfi8FkfVq0bF0aIdtEq9z5+H3A/Grll+YUfDhp8i9ubQP5w81vK7IPR6yDtgWndwjcF4JiScA+8ewpZohG6kCnazpqUUQwgas9lEkTviJl590PLSFTxGcYhJ7tMjx0qTLa8GHTAxFeif9liAag6KqAwXX3J/cB6GW3SQ=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (1024-bit key) header.d=collabora.com header.i=sebastian.reichel@collabora.com header.b=SgQIyVwH; arc=pass smtp.client-ip=136.143.188.11
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 49A191D5CFE;
+	Thu, 30 Jul 2026 22:36:16 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1785450977; cv=none; b=F9g93JkZVfWy3UFzZpVN0zUHuvClyBlW93+MRts9fyX8AiS61bWxWHoukCmAjAwYej3N6Kmua+0vZEPSSPrv47ycZihK9FapWueGH+Egp07+Nmq1gzGx/FoqmaR/r+mAhKW4zl4LeUwQPp7bupn6dH+UgRImvE5KeunC8sKaziY=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1785450977; c=relaxed/simple;
+	bh=WOslJGLRgjwyAb3zyQvRKJVopXPbFxz/89CCXnc0miM=;
+	h=Date:From:To:Cc:Subject:Message-ID:MIME-Version:Content-Type:
+	 Content-Disposition; b=MYisWW2HE9B1upewjcI82OOZ9wvQJkUoxDtEVCNxIN1dWk1Wv3AtUBhk3Bz6IWekJrDSRroDDi7Grh+UvTcr8c+VIw4zO75uVZyEsze7uIDGG3+wnMKGufNUAeLjGqEEY7ckhcHCvg8laIsn2efwjDMJh320jKhnMZc9j/gQKgI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=JLSy1FuZ; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=collabora.com header.i=sebastian.reichel@collabora.com header.b="SgQIyVwH"
-ARC-Seal: i=1; a=rsa-sha256; t=1785450265; cv=none; 
-	d=zohomail.com; s=zohoarc; 
-	b=nCwqrpQA/5KRd/aoEYqtyv5P//KsZyi0QfDgUIPirBnE7rULFe4p/z8fCtwSYYnfNl882nAeMXuGn81z7443i2YARqAtVj3+p/iwagNPmpFfCgnjb7plT5FVxsgHKq4nWGIQw1RqBvOsH6jJtG3mopOst6vi6ylsgEyyfawrRYw=
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=zohomail.com; s=zohoarc; 
-	t=1785450265; h=Content-Type:Cc:Cc:Date:Date:From:From:In-Reply-To:MIME-Version:Message-ID:Subject:Subject:To:To:Message-Id:Reply-To; 
-	bh=P2EOieav7Aqn1vOjTwTK3mtj6IAIOaeNk67juagebGM=; 
-	b=X9TWJRYqgxEp6be8H9utRmMrJmeiXvpy29IBI8NjPmRRgjUSQpw92+hhPLnzvrC1rx3MvEVDLH3TJNZS35LGfTqK1DckXm9OBoISuht6/jlj8NGomQprOX9gM8JzbstYV107nVrChBkebal+jbJTt2Y3/T7TSN1W/HpXwlJooIw=
-ARC-Authentication-Results: i=1; mx.zohomail.com;
-	dkim=pass  header.i=collabora.com;
-	spf=pass  smtp.mailfrom=sebastian.reichel@collabora.com;
-	dmarc=pass header.from=<sebastian.reichel@collabora.com>
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; t=1785450265;
-	s=zohomail; d=collabora.com; i=sebastian.reichel@collabora.com;
-	h=Date:Date:From:From:To:To:Cc:Cc:Subject:Subject:Message-ID:MIME-Version:Content-Type:In-Reply-To:Message-Id:Reply-To;
-	bh=P2EOieav7Aqn1vOjTwTK3mtj6IAIOaeNk67juagebGM=;
-	b=SgQIyVwHk3tFpQsCoVUtW27U7gYycBjqS9l7usPChy5SqAp42CYB1L+TPYStT7FJ
-	+Vjkf9vLdUb2p0ZeHKrPGO0b7YvdfLCrbPQzV+Jw075kR9I5km41D5vne7w5FHG2Kcg
-	EoMlLQJqv6+9zp+x0/PvRnaqV70wLxzPMzxeRJao=
-Received: by mx.zohomail.com with SMTPS id 178545026283429.3908393134966;
-	Thu, 30 Jul 2026 15:24:22 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="JLSy1FuZ"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 098771F000E9;
+	Thu, 30 Jul 2026 22:36:16 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1785450976;
+	bh=odnsOAZzm5u5Wq1NnmtjrdZfMAHJQl58DgIGih+mmws=;
+	h=Date:From:To:Cc:Subject;
+	b=JLSy1FuZL0ybX4+vQb9egIz7ru7tlaRYOJxhI9Le5KWXM814fBV8ZXBXDhlI3vxK+
+	 XnuIe+faZvaCd9NjPThsU1YOCQjjlXj4ROoGzODgx/BthD3DQC04GA+RZieoSsmjim
+	 0EyjERpfQe0w4td8/mRa0nVLTPk++OGv4x2a+1LIrl/weRv8CGnacWyud0/C0MQtoN
+	 l5PAs/P71ULp1h8tYA7zmf5AuGgE4MzI1PyhMZtkbH2ozQWuo9DBipwVGX+qfsl1br
+	 XN4FNUCklVQDBv6LbT7d4TjZJ7WxVdXYYqoo/jseC/AYi9onAdIM0E66W9MCicVoLN
+	 s1sTrHp7L1nzg==
 Received: by venus (Postfix, from userid 1000)
-	id 2B80118029A; Fri, 31 Jul 2026 00:24:18 +0200 (CEST)
-Date: Fri, 31 Jul 2026 00:24:18 +0200
-From: Sebastian Reichel <sebastian.reichel@collabora.com>
-To: Amit Sunil Dhamne <amitsd@google.com>
-Cc: Badhri Jagan Sridharan <badhri@google.com>, 
-	Heikki Krogerus <heikki.krogerus@linux.intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
-	Hans de Goede <hansg@kernel.org>, Krzysztof Kozlowski <krzk@kernel.org>, 
-	Marek Szyprowski <m.szyprowski@samsung.com>, Sebastian Krzyszkowiak <sebastian.krzyszkowiak@puri.sm>, 
-	Purism Kernel Team <kernel@puri.sm>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	linux-usb@vger.kernel.org, =?utf-8?B?QW5kcsOp?= Draszik <andre.draszik@linaro.org>, 
-	Tudor Ambarus <tudor.ambarus@linaro.org>, Peter Griffin <peter.griffin@linaro.org>, 
-	RD Babiera <rdbabiera@google.com>, Kyle Tso <kyletso@google.com>
-Subject: Re: [PATCH v5 2/2] usb: typec: tcpm: Add support for Battery Status
- response message
-Message-ID: <amvLtvDbJ8g-1rJ3@venus>
-References: <20260714-batt-status-v5-0-9de4aa900b69@google.com>
- <20260714-batt-status-v5-2-9de4aa900b69@google.com>
- <amVJ1u67qHENBQ5l@venus>
- <5cdf0238-24f8-402f-a72a-d490f8d9c99a@google.com>
+	id 74FAC1805FF; Fri, 31 Jul 2026 00:36:14 +0200 (CEST)
+Date: Fri, 31 Jul 2026 00:36:14 +0200
+From: Sebastian Reichel <sre@kernel.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Subject: [GIT PULL] power-supply changes for 7.2-rc
+Message-ID: <amvRQlU7ArDfz5yc@venus>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -63,136 +41,75 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="qyehq7adb53xg3ab"
+	protocol="application/pgp-signature"; boundary="zlqmjsozn4r7nsyk"
 Content-Disposition: inline
-In-Reply-To: <5cdf0238-24f8-402f-a72a-d490f8d9c99a@google.com>
-X-Zoho-Virus-Status: 1
-X-Zoho-AV-Stamp: zmail-av-0.2.10.1.5.2/285.439.57
-X-ZohoMailClient: External
 
 
---qyehq7adb53xg3ab
+--zlqmjsozn4r7nsyk
 Content-Type: text/plain; protected-headers=v1; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-Subject: Re: [PATCH v5 2/2] usb: typec: tcpm: Add support for Battery Status
- response message
+Subject: [GIT PULL] power-supply changes for 7.2-rc
 MIME-Version: 1.0
 
-Hi,
+Hi Linus,
 
-On Wed, Jul 29, 2026 at 05:56:29PM -0700, Amit Sunil Dhamne wrote:
-> [...]
->
-> > > +/*
-> > > + * As per USB PD Spec Rev 3.18 (Sec. 6.5.13.11), the number of fixed=
- batteries
-> > > + * that a port can be queried is restricted to 4.
-> > > + */
-> > > +#define MAX_NUM_FIXED_BATT				4
-> >=20
-> > If I understand the spec correctly, the presence of a fixed battery
-> > should never change for fixed batteries. I guess the rationale is,
-> > that one only has to the battery capabilities once for these kind of
-> > batteries. But for the Linux kernel this concept does not exist and
-> > all batteries are potentialle hot-swappable. For real hardware with
-> > TCPM and hot-swappable battery, this code will now incorrectly
-> > expose them as fixed battery and violate the spec. I think this should
-> > at least be mentioned in the commit message.
-> >=20
->=20
-> You are completely right. I was approaching this primarily from the
-> smartphone side (Pixel 6), where batteries are effectively fixed and
-> inaccessible to the user. Because I don't have a setup with TCPM +
-> hot-swappable (in the context of the spec) batteries to test with, I only
-> implemented the fixed case.
->
-> I mentioned this constraint in the cover letter, but I agree it could
-> have been in the commit message as well. Since Greg has already picked
-> this series up into his tree, I can't amend the commit message now.
-> However, if you think it's necessary, I can send a small incremental
-> patch to add a comment in the code clarifying this assumption.
-> Otherwise, we can leave it as-is until someone has the hardware to
-> properly implement and test the hot-swappable support. Let me know what
-> you prefer.
+The following changes since commit dc59e4fea9d83f03bad6bddf3fa2e52491777482:
 
-You tested only the fixed variant, but your implementation is in the
-generic TCPM and does not check if it runs on a Pixel 6. If you
-touch generic code you need to think generic :)
+  Linux 7.2-rc1 (2026-06-28 12:01:31 -0700)
 
-Generally I would expect it is "safer" to expose batteries as
-hot-swappable when they are fixed than the other way around.
-FWIW the kernel's power-supply framework has no concept of fixed
-batteries.
+are available in the Git repository at:
 
-> > > [...]
-> > > +	batt =3D port->fixed_batt[batt_id];
-> > > +	ret =3D power_supply_get_property(batt, POWER_SUPPLY_PROP_PRESENT, =
-&val);
-> > > +	if (ret)
-> > > +		tcpm_log(port,
-> > > +			 "Failed to fetch power_supply_prop_present ret %d",
-> > > +			 ret);
-> > > +	else
-> > > +		batt_present =3D val.intval > 0;
-> > > +
-> > > +	ret =3D power_supply_get_property(batt, POWER_SUPPLY_PROP_CHARGE_NO=
-W,
-> > > +					&val);
-> > > +	if (!ret) {
-> > > +		charge_now =3D val.intval;
-> > > +		ret =3D power_supply_get_property(batt,
-> > > +						POWER_SUPPLY_PROP_VOLTAGE_AVG,
-> > > +						&val);
-> > > +		if (!ret) {
-> > > +			energy_now =3D div_u64((u64)charge_now * val.intval,
-> > > +					     1000000);
-> > > +
-> > > +			/*
-> > > +			 * Battery Present Charge is reported in
-> > > +			 * increments of 0.1WH.
-> > > +			 */
-> > > +			present_charge =3D (u16)UW_TO_W(energy_now * 10);
-> > > +		}
-> > > +	}
-> > > [...]
-> >=20
-> > What about fuel gauges, which expose POWER_SUPPLY_PROP_ENERGY_NOW
-> > instead of POWER_SUPPLY_PROP_CHARGE_NOW?
->=20
-> Good point. Our fuel gauge uses charge_* properties, so charge_now was
-> sufficient for our immediate use case, but it makes sense to support
-> energy_now natively for other users.
->=20
-> Since the original patch is already merged, I could write an incremental
-> follow-up patch that checks POWER_SUPPLY_PROP_ENERGY_NOW first, and if
-> it's not supported, falls back to calculating it via CHARGE_NOW *
-> VOLTAGE_AVG. Please let me know if this works?
+  https://git.kernel.org/pub/scm/linux/kernel/git/sre/linux-power-supply.git tags/for-v7.2-rc
 
-That sounds sensible to me.
+for you to fetch changes up to 160a783aa65b74782bc17cb874af1a6d3f5fba3c:
 
-Greetings,
+  power: supply: bq25890: fix the -10 C NTC lookup entry (2026-07-23 17:07:24 +0200)
 
--- Sebastian
+----------------------------------------------------------------
+Power Supply Fixes for 7.2 cycle
 
---qyehq7adb53xg3ab
+* Documentation build fix for bd71828
+* max17040: handle missing status supplier
+* macsmc: Support macOS 27 SMC firmware
+* bq25890: fix the -10 C NTC lookup entry
+
+----------------------------------------------------------------
+Jianing Li (1):
+      power: supply: max17040: handle missing status supplier
+
+Randy Dunlap (1):
+      power: supply: bd71828: add a terminating table border
+
+Sasha Finkelstein (1):
+      power: supply: macsmc: Support macOS 27 SMC firmware
+
+Xu Rao (1):
+      power: supply: bq25890: fix the -10 C NTC lookup entry
+
+ .../ABI/testing/sysfs-class-power-bd71828          |  1 +
+ drivers/power/supply/bq25890_charger.c             |  2 +-
+ drivers/power/supply/macsmc-power.c                | 52 +++++++++++++++++++---
+ drivers/power/supply/max17040_battery.c            |  6 ++-
+ 4 files changed, 52 insertions(+), 9 deletions(-)
+
+--zlqmjsozn4r7nsyk
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAmprzw4ACgkQ2O7X88g7
-+poz0A/+Oyytl2CQTkU1NiGQryK8B3TvHsp7xGl/6ytERDUEqsth+Bak3dA/qO0t
-sHahi8j5TAfnysANfqtMAy3QPNPyYdQTzt3qaUr1LGIZjkQU2Jwc66Fj0VjGJxh3
-QGQejTigD2dBJzYvQp4ifvGYXuTba+KhaIyXCdjpzNYQ3K9MRb75e3+cRTElMdsC
-YH066o2Dwdm7cDprzm5QKN6Pnv1tORLUenT8x7L67ZrHxQELcZJj/b3b5YbK/bIX
-0Fns9AplRLL5Y2s85tl98LhAYSWGrNO8OCr+bY7EAWVzAG2XcOdAg/nADza8ks9E
-9qwONB4+b8xDxrRcywhm/Y218NW3jkzv6A3H4tqgsIHA+dTMdD4APuxoro/yhIea
-SdxzJsSoGpncgq4vuNubrTFAegMafwWx1ecwIDKAcFmw3TfsukQPPCZot/hQ/rjL
-fT3NaVysteP8uqLVTaKXZWTSs58d+GVsPoti3Siiy1wB3l+vtKKsZ/NYlIk6++rU
-Zxj/WhTWTmn12XPTiop6M+umqTuBx/6Jhd+MSE7p4AnkCoBiBmMMUDH99WLP5fjV
-KlVoxjW38mOnsoAHGKWLNUHWEkuZV+L4bgyJZC5z7nJ9ItUDuE4T2lYlgGkFt8gz
-YA8Z/EVmOECCn+fdijlqdua4yjRLTAvdRBFTC5QDzA1iOQPlZwA=
-=d4NC
+iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAmpr0d4ACgkQ2O7X88g7
++poaRw//XzoVqGWbE5ZQ1OgO336hAtlV/5W7ZFct0iHMDA+9BN+1Ag4iJW+a5Grg
+SA+e2xZkGLyYXXgY4fJ12cgdCFpb8Rj5cVXdYdDLkfIpn2ilmqAQp1IhnEaC3R+m
+nRMw2gfo5FVWesSOnNG6FQ2aCnwTHWXELmIJZvhgP7o9xFl5/zPupe+cKmsGWOle
+df+K/gbjhjZULkj8D7INniCXWcMvk8sSqRHjBHfiPU/SgR1SHAWvhNiUqK5lW9lV
+c5BFrc41oOSOXu4KV5fL8t98CauPDY6A333WI3nBZpeFAJoajHWBCvw4kwzvmwPw
+JgUwqT3LiZVeWGS+TOwNtnFEh4TVAPkFB+dYuY3gl/R8WWNeMxOqgLUMTaisCjv2
+3lMV2WB97KGpkS5bsLPZNmfpGkLXqYIcbfnf9FVYzeJfcukpFqNN8LR6xFOtZ/oo
+TrqFXHMWxb6FZUKOhUtZ6w33nO4GLW9Rb9z1YG7TgW+SLumJI1Sj1CVphs48lrus
+bqsoQnJR0UYZITaMSjM8Kz7Yl/mAeBACWC7NOtF3Ll8hiyc+uFj5zMJ9uCDBver9
+H1LhgZhaEjyLA6OZDIDrd1R3d+P+rSFtsyW/we5I6zXj6+hWletvzNr7hfIbj6mI
+0w4IhskqdKNoB2CnFWN2lFVT7kTi7IsOB60VQvJL5bXNC/eNV/8=
+=Oe4K
 -----END PGP SIGNATURE-----
 
---qyehq7adb53xg3ab--
+--zlqmjsozn4r7nsyk--
