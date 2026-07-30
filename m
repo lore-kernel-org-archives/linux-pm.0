@@ -1,45 +1,63 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+Received: from mx1.white.stw.pengutronix.de (mx1.white.stw.pengutronix.de [185.203.200.13])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CB0EA377ED7;
-	Thu, 30 Jul 2026 05:08:49 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6B22535F60F;
+	Thu, 30 Jul 2026 05:24:30 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=185.203.200.13
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1785388130; cv=none; b=R62G92Q8Kk6SAnHY5NygDmPrZpZwgDTSsXB4qmggDpR8m5lENhbykcijgaEuYWLkSyAmJC1eS8cVDsbGIBJRRMaMwNDjjFYo1W7OXn3QbkN5JlBW8sQNqRr39LiCjZlsi8+w4VDiFuHXXgVKD9ENZfdAHsuaAVep6TyM1G0OLCk=
+	t=1785389075; cv=none; b=EFZtqp03hW+FrjrdrCus0pFCjzfgzxDuDrhoMvySkLdIDILyoUdFFVgPJSVXGgWA+4woJ2Gwgmw38jcSu9kTugv9co25iDPwAw9aHOrnKLO0blwBwFCD3ZKnwvrseOp8Tn2FTQxgPsSN+w2KGYl/Q+FuTnb41jOoiE6d9Gb4hmM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1785388130; c=relaxed/simple;
-	bh=w3RNhY8T7AAkT0oL5eFQJk0juwISMg/vLwZO2uP6Ltw=;
+	s=arc-20240116; t=1785389075; c=relaxed/simple;
+	bh=1DMuGx8VV1yF9PYUAM0K7yn25rsOtJAy0VjBYUuI1xo=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=nvw45t/SyuUjNcpv6D8lFiXfx9OJ5UPye9onRhb2vusXEpj6RXV4G7hjGXaukbvEjTI9ugwLZOv1kG2VdmLFdvO9d/iF8yGUZhU/vZT8cLbVkMFMQ5iO8/7KtrZOvLFp5xyCCRG60k2PR4LHb/bDlAr4Kg1I09J3Lzzrwzuc5CE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=J55ZNzvV; arc=none smtp.client-ip=100.103.45.18
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="J55ZNzvV"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id CA0A51F000E9;
-	Thu, 30 Jul 2026 05:08:44 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1785388129;
-	bh=c20U8o5u3vtQTLB4Ygx6a5wNvee/y72tJCfxUAblbdU=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=J55ZNzvVoC8KR+Rwtov0ygdHWS0GAnXT2c3UJyZB5zTWfVQ3GKBSBKd+6lpGObhR1
-	 WxtAEtHUyofasLOxLtxHJtNtKuVqnXrHO5ffQvWZC+QSBSvxN4wNhLkUd1PLzKsDB1
-	 WVA0tZWuaFbXbGBnMrBJfb/UtYOlfnE4KBM6oXaxApu1K2k68QRUN19s32a3CNtX0R
-	 IUZlnV89ix/gvEqNjAIUQpAyDaVefTUcGg8z1jkmcGpa5eG4uGGKM1hZthNZEM7Eqn
-	 eIiDBPM06jSpxeUsAyyzGdkxionNA03s/4gr46E/vVYONQrI1zn0UKUszrW2tRnlyU
-	 YNiEg3H1sPnyA==
-Date: Thu, 30 Jul 2026 07:08:40 +0200
-From: Manivannan Sadhasivam <mani@kernel.org>
-To: Krishna Chaitanya Chundru <krishna.chundru@oss.qualcomm.com>
-Cc: Bjorn Andersson <andersson@kernel.org>, 
-	Konrad Dybcio <konradybcio@kernel.org>, Rob Herring <robh@kernel.org>, 
-	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
-	Bartosz Golaszewski <brgl@kernel.org>, linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, 
-	Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>, Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
-Subject: Re: [PATCH v6 2/3] arm64: dts: qcom: eliza-evk: Add PCIe0 with M.2 E
- key connector
-Message-ID: <vatryeq6qsan342wow42rosabjofi6cqkom7aczllko4kw7n4t@v7k3fxat7nfi>
-References: <20260730-eliza_evk-v6-0-40ece2d33114@oss.qualcomm.com>
- <20260730-eliza_evk-v6-2-40ece2d33114@oss.qualcomm.com>
+	 Content-Type:Content-Disposition:In-Reply-To; b=Z4nbWdk+ZnwmILQxMlfYXdNdcdJ2otoTd+nDHZVn515Lo5OBanbgpB2YRlyEg3E3oiIlh0ZU2C5Qo7t9Vbo5snoUBH8/pS2PaaRCHmAICzdoJt3NCuqfaNsXTByEdXFEyl/MfQ5hHKF5gLEMAdYT0NAmo5EyEpCsydAqMD3e2MI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=pengutronix.de; spf=pass smtp.mailfrom=pengutronix.de; arc=none smtp.client-ip=185.203.200.13
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=pengutronix.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=pengutronix.de
+Received: from drehscheibe.grey.stw.pengutronix.de (drehscheibe.grey.stw.pengutronix.de [IPv6:2a0a:edc0:0:c01:1d::a2])
+	(Authenticated sender: relay-from-drehscheibe.grey.stw.pengutronix.de)
+	by mx1.white.stw.pengutronix.de (Postfix) with ESMTPSA id 73CC8202B53;
+	Thu, 30 Jul 2026 07:24:28 +0200 (CEST)
+Received: from pty.whiteo.stw.pengutronix.de ([2a0a:edc0:2:b01:1d::c5])
+	by drehscheibe.grey.stw.pengutronix.de with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+	(Exim 4.96)
+	(envelope-from <ore@pengutronix.de>)
+	id 1wpJFs-001zo8-1D;
+	Thu, 30 Jul 2026 07:24:28 +0200
+Received: from ore by pty.whiteo.stw.pengutronix.de with local (Exim 4.98.2)
+	(envelope-from <ore@pengutronix.de>)
+	id 1wpJFs-0000000EyYP-0yzJ;
+	Thu, 30 Jul 2026 07:24:28 +0200
+Date: Thu, 30 Jul 2026 07:24:28 +0200
+From: Oleksij Rempel <o.rempel@pengutronix.de>
+To: Matti Vaittinen <mazziesaccount@gmail.com>
+Cc: Faruque Ansari <faruque.ansari@oss.qualcomm.com>,
+	Sebastian Reichel <sre@kernel.org>,
+	Wim Van Sebroeck <wim@linux-watchdog.org>,
+	Guenter Roeck <linux@roeck-us.net>,
+	Benson Leung <bleung@chromium.org>,
+	Tzung-Bi Shih <tzungbi@kernel.org>,
+	Srinivas Kandagatla <srini@kernel.org>,
+	Daniel Lezcano <daniel.lezcano@kernel.org>,
+	linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linux-watchdog@vger.kernel.org, linux-arm-msm@vger.org,
+	kernel@pengutronix.de, Liam Girdwood <lgirdwood@gmail.com>,
+	Mark Brown <broonie@kernel.org>,
+	"Rafael J. Wysocki" <rafael@kernel.org>,
+	Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>,
+	=?utf-8?B?U8O4cmVu?= Andersen <san@skov.dk>,
+	Guenter Roeck <groeck@chromium.org>,
+	Ahmad Fatoum <a.fatoum@pengutronix.de>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	avaneesh.dwivedi@oss.qualcomm.com,
+	Umang Chheda <umang.chheda@oss.qualcomm.com>,
+	linux-arm-msm@vger.kernel.org
+Subject: Re: [PATCH v2 2/3] power: reset: pscrr: add watchdog pretimeout
+ reason tracking
+Message-ID: <amrgDC0s3rb5Xv4N@pengutronix.de>
+References: <20260722-pscrr-reboot-reason-v2-0-495ba3005953@oss.qualcomm.com>
+ <20260722-pscrr-reboot-reason-v2-2-495ba3005953@oss.qualcomm.com>
+ <98e65507-3084-4948-8096-4e2d8d20dc81@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -48,169 +66,84 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20260730-eliza_evk-v6-2-40ece2d33114@oss.qualcomm.com>
+In-Reply-To: <98e65507-3084-4948-8096-4e2d8d20dc81@gmail.com>
+X-Sent-From: Pengutronix Hildesheim
+X-URL: http://www.pengutronix.de/
+X-Accept-Language: de,en
+X-Accept-Content-Type: text/plain
 
-On Thu, Jul 30, 2026 at 10:18:54AM +0530, Krishna Chaitanya Chundru wrote:
-> The Eliza EVK board features an M.2 E key connector connected to PCIe0.
-> Enable the PCIe0 root port and its QMP PHY with the necessary RPMH
-> regulator supplies. The M.2 slot's 3.3V supply rail is GPIO-controlled
-> via a TCA9538 I/O expander on I2C4.
-> 
-> The M.2 E key slot hosts a WLAN card connected over PCIe and a Bluetooth
-> device connected over UART. Model the connector using the
-> pcie-m2-e-connector binding, wiring the PCIe root port and UART5 for
-> the respective interfaces.
-> 
-> Reviewed-by: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
-> Reviewed-by: Manivannan Sadhasivam <mani@kernel.org>
-> Reviewed-by: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
-> Signed-off-by: Krishna Chaitanya Chundru <krishna.chundru@oss.qualcomm.com>
-> ---
->  arch/arm64/boot/dts/qcom/eliza-evk.dtsi | 116 ++++++++++++++++++++++++++++++++
->  1 file changed, 116 insertions(+)
-> 
-> diff --git a/arch/arm64/boot/dts/qcom/eliza-evk.dtsi b/arch/arm64/boot/dts/qcom/eliza-evk.dtsi
-> index e47b24f8b827..b35fffb50976 100644
-> --- a/arch/arm64/boot/dts/qcom/eliza-evk.dtsi
-> +++ b/arch/arm64/boot/dts/qcom/eliza-evk.dtsi
-> @@ -11,6 +11,92 @@ aliases {
->  	chosen {
->  		stdout-path = "serial0:115200n8";
->  	};
-> +
-> +	vreg_pcie_m_3p3: regulator-3p3 {
-> +		compatible = "regulator-fixed";
-> +
-> +		regulator-name = "vreg_3p3";
-> +		regulator-min-microvolt = <3300000>;
-> +		regulator-max-microvolt = <3300000>;
-> +
-> +		gpio = <&gpio_expander1 6 GPIO_ACTIVE_HIGH>;
-> +		enable-active-high;
-> +	};
-> +
-> +	connector-0 {
-> +		compatible = "pcie-m2-e-connector";
-> +		vpcie3v3-supply = <&vreg_pcie_m_3p3>;
-> +		w-disable1-gpios = <&tlmm 35 GPIO_ACTIVE_LOW>;
-> +		w-disable2-gpios = <&pm8550vs_g_gpios 4 GPIO_ACTIVE_HIGH>;
+Hi Matti,
 
-Hmm, Sashiko pointed out the polarity issue here, GPIO_ACTIVE_HIGH. Is it a
-mistake?
-
-- Mani
-
-> +
-> +		pinctrl-0 = <&m2_w_disable1>, <&m2_w_disable2>;
-> +		pinctrl-names = "default";
-> +
-> +		ports {
-> +			#address-cells = <1>;
-> +			#size-cells = <0>;
-> +
-> +			port@0 {
-> +				reg = <0>;
-> +				#address-cells = <1>;
-> +				#size-cells = <0>;
-> +
-> +				m2_e_pcie_ep: endpoint@0 {
-> +					reg = <0>;
-> +					remote-endpoint = <&pcieport0_ep>;
-> +				};
-> +			};
-> +
-> +			port@3 {
-> +				reg = <3>;
-> +				#address-cells = <1>;
-> +				#size-cells = <0>;
-> +
-> +				m2_e_uart_ep: endpoint@0 {
-> +					reg = <0>;
-> +					remote-endpoint = <&uart5_ep>;
-> +				};
-> +			};
-> +		};
-> +	};
-> +};
-> +
-> +&i2c4 {
-> +	pinctrl-0 = <&qup_i2c4_data_clk>;
-> +	pinctrl-names = "default";
-> +
-> +	clock-frequency = <400000>;
-> +
-> +	status = "okay";
-> +
-> +	gpio_expander1: gpio@3c {
-> +		compatible = "ti,tca9538";
-> +		#gpio-cells = <2>;
-> +		gpio-controller;
-> +		reg = <0x3c>;
-> +	};
-> +};
-> +
-> +&pcie0 {
-> +	status = "okay";
-> +};
-> +
-> +&pcie0_phy {
-> +	vdda-phy-supply = <&vreg_l1k>;
-> +	vdda-pll-supply = <&vreg_l3k>;
-> +
-> +	status = "okay";
-> +};
-> +
-> +&pcie0_port0 {
-> +	wake-gpios = <&tlmm 114 GPIO_ACTIVE_LOW>;
-> +	reset-gpios = <&tlmm 78 GPIO_ACTIVE_LOW>;
-> +
-> +	port {
-> +		pcieport0_ep: endpoint {
-> +			remote-endpoint = <&m2_e_pcie_ep>;
-> +		};
-> +	};
->  };
->  
->  &uart13 {
-> @@ -18,3 +104,33 @@ &uart13 {
->  
->  	status = "okay";
->  };
-> +
-> +&uart5 {
-> +	status = "okay";
-> +
-> +	port {
-> +		uart5_ep: endpoint {
-> +			remote-endpoint = <&m2_e_uart_ep>;
-> +		};
-> +	};
-> +};
-> +
-> +&pm8550vs_g_gpios {
-> +	m2_w_disable2: m2-w-disable2-state {
-> +		pins = "gpio4";
-> +		function = "normal";
-> +		input-disable;
-> +		output-enable;
-> +		bias-disable;
-> +		power-source = <2>;
-> +	};
-> +};
-> +
-> +&tlmm {
-> +	m2_w_disable1: m2-w-disable1-state {
-> +		pins = "gpio35";
-> +		function = "gpio";
-> +		drive-strength = <2>;
-> +		bias-pull-up;
-> +	};
-> +};
+On Thu, Jul 30, 2026 at 07:49:41AM +0300, Matti Vaittinen wrote:
+> On 22/07/2026 18:13, Faruque Ansari wrote:
+> > Watchdog pretimeout resets are not recorded with a dedicated reset
+> > reason, causing subsequent boots to report PSCR_UNKNOWN and making it
+> > difficult to distinguish them from other unexpected resets.
+> > 
+> > Add PSCR_WATCHDOG_PRETIMEOUT as a dedicated reset reason code and
+> > prevent the panic notifier from overwriting a watchdog pretimeout
+> > reason with PSCR_KERNEL_PANIC when the pretimeout governor triggers a
+> > panic.
+> > 
+> > Signed-off-by: Faruque Ansari <faruque.ansari@oss.qualcomm.com>
+> > ---
+> >   drivers/power/reset/pscrr.c           | 7 ++++++-
+> >   include/linux/power/power_on_reason.h | 1 +
+> >   include/linux/reboot.h                | 1 +
+> >   kernel/reboot.c                       | 1 +
+> >   4 files changed, 9 insertions(+), 1 deletion(-)
+> > 
+> > diff --git a/drivers/power/reset/pscrr.c b/drivers/power/reset/pscrr.c
+> > index b5906f127e88..5b107c62fe82 100644
+> > --- a/drivers/power/reset/pscrr.c
+> > +++ b/drivers/power/reset/pscrr.c
+> > @@ -149,7 +149,12 @@ static int pscrr_panic_notifier(struct notifier_block *nb,
+> >   	if (!backend || !backend->ops || !backend->ops->write_reason)
+> >   		return NOTIFY_OK;
+> > -	set_psc_reason(PSCR_KERNEL_PANIC);
+> > +	/*
+> > +	 * Do not overwrite a previously recorded watchdog pretimeout reason
+> > +	 * during panic handling.
+> > +	 */
+> > +	if (get_psc_reason() != PSCR_WATCHDOG_PRETIMEOUT)
+> > +		set_psc_reason(PSCR_KERNEL_PANIC);
 > 
-> -- 
-> 2.34.1
+> Hi Faruque,
 > 
+> I like the idea of adding WDG pretimeout resets in pscrr. I am just
+> wondering what makes WDG reason so special, that it shouldn't be overwritten
+> while other reasons can be? Can this notifier be called (now or in the
+> future) so, that there are other reasons getting overwritten? For some
+> reason I think the PSCRR was designed to be able to store multiple
+> reasons(?)
+
+It depends on the backed. A simple nvmem cell, would be able to hold
+only one reason.
+
+> Could you just add one more instead of overwriting existing - or
+> should the check be more generic (to ensure the reason is only set if there
+> is nothing to overwrite).
+
+So, depending on the backed, we will have different policies. For
+example, with one slot storage, we need to decided what to store:
+first one or the last one.
+
+In most cases, the initial one is most interesting. But, if we are
+debugging system reset/reboot behavior, the last one.
+
+> 
+> If I am just completely lost (which happens), could you then improve the
+> comment a bit to explain why WDG timeout is special and shouldn't be
+> overwritten. The checking code itself is quite self-explatonary ;)
+
+Good question. I included this patch to my refactoring, but didn't had
+strong opinion haw to handle it. I guess, after introducing record
+policy, this issue will be partially addressed:
+
+https://github.com/olerem/linux-2.6/blob/v7.2/topic/pscr/Documentation/ABI/testing/sysfs-kernel-pscrr#L95
 
 -- 
-மணிவண்ணன் சதாசிவம்
+Pengutronix e.K.                           |                             |
+Steuerwalder Str. 21                       | http://www.pengutronix.de/  |
+31137 Hildesheim, Germany                  | Phone: +49-5121-206917-0    |
+Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
