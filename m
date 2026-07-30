@@ -1,113 +1,178 @@
-Received: from gz.d.sender-sib.com (gz.d.sender-sib.com [77.32.148.26])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from sender-of-o55.zoho.eu (sender-of-o55.zoho.eu [136.143.169.55])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 19D273368AB
-	for <linux-pm@vger.kernel.org>; Thu, 30 Jul 2026 02:08:23 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=77.32.148.26
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1785377308; cv=none; b=XHG0GZbco698jJnv0llCnyZN8TfSD1MdZSEwfrBKHfMI1v5NXjy45SRq3dyaUb0Qa06HfK+bSKxD3iduT2Cq7/0Dq0nZNTFV/H2diMH8mKW3/svuPJRSI9E95gU/yVL17oXZbZMFuP4geYCj+gM4iXPYMylvWPGofjKH+/hBvPA=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1785377308; c=relaxed/simple;
-	bh=3hkjjuYyVB0m6Smk6gyUHDlUV6Fkp96xJMOB63LpOms=;
-	h=Date:Subject:Cc:Message-Id:From:To:Mime-Version; b=tJR0/ARtxMh4zFzRuLGuofRC8z+uyPqzfSUW+nVnzYImYpfQu29oyAgPOb5A058bpUcnbzO6PoDeOni2k8SN2a1KcYL5Rqbvgshxm06Zq5OzzLyoOt1bdL39pr57Z81tLgMOpgnIateQGeSiYlRCmko9Sgbljy4q3gCvhIga5dk=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=iusegentoo.com; spf=pass smtp.mailfrom=gz.d.sender-sib.com; dkim=pass (2048-bit key) header.d=iusegentoo.com header.i=@iusegentoo.com header.b=n77p6TxZ; arc=none smtp.client-ip=77.32.148.26
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 025D919CD0A
+	for <linux-pm@vger.kernel.org>; Thu, 30 Jul 2026 03:01:06 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=136.143.169.55
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1785380470; cv=pass; b=BQYrrPMK2jX6YDTGjbR5e2N+eK/GGP0LhqkzyxX9z7HLf4Tc4fasJ1/XSTj61TbGV37gS+Zh+Z7SShII2rEb+eEwMfi44H0ryJEH+/r/+auNrImIBC+pqZAD6ebZ5NPdXz0ZTRB9OL2reD3aiwPYzownFhKWOyz0KpqcyGv/5QQ=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1785380470; c=relaxed/simple;
+	bh=QeOqBCNxAOK+n4t/DmBTbWaTehojT2n5Ail+thTmoHw=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=TvRmPTQQhpqcDMJXNt+kxHuGK9Ia4uNH2Qvme6JqlbDM3cBFZuZVdjIzzamMK6VsDDaPhAOYfk2ATpJXMo7BuGaQY+LGDnQMDtQz/2iuvDgAiEAtPMeohawMUjFyEMHIsMXkhuOxA0gZPhHXZw2Z1N9BlXtCOq25St0U9Taz9tc=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=iusegentoo.com; spf=pass smtp.mailfrom=iusegentoo.com; dkim=pass (1024-bit key) header.d=iusegentoo.com header.i=ali@iusegentoo.com header.b=ZLCGqVy1; arc=pass smtp.client-ip=136.143.169.55
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=iusegentoo.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gz.d.sender-sib.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=iusegentoo.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=iusegentoo.com header.i=@iusegentoo.com header.b="n77p6TxZ"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=iusegentoo.com;
- q=dns/txt; s=brevo2; bh=p2VWfSLGy3p76kgbgNzYvWemU/FLLI81tuSv/+jIUVw=;
- h=from:subject:date:to:cc:mime-version:content-transfer-encoding:list-unsubscribe:x-csa-complaints:list-unsubscribe-post:message-id:x-sib-id:feedback-id;
-        b=n77p6TxZbXQyPaoFlAB7WBnO4eLklpNfNKs3EV35wfjgBegC1nVuiH0Ba6cEDi0qGc3cRQvTRNV+
-        mQjJIuXOkoxIISBzWO3YiaMnIaCBTl4xf3ykQIjDMhxFpGtSL17JK93mm0aX+1h3g3QH0Xj5cZsb
-        2JLM9ph/mqwLqwPFKRt7fZMoqV2clpBKpneBDMKSJfBQHxeNLb0roRXfL7si2SQKGjNSl/Lx7X28
-        /6j/LmnG4ijPGgvumw9ah/Y+k7oB+kKajVzjg3aBwGKs0wWCcTwEzXCmwG7riIc5NdMYmEnrkjGs
-        pNuYWa3tciysyAqoK1SSJ7x1JJmF1UxHOYjbNw==
-Date: Thu, 30 Jul 2026 05:07:02 +0300
-Subject: [PATCH] cpupower: Avoid uninitialized reads in topology sorting
-Cc: <linux-pm@vger.kernel.org>,  <linux-kernel@vger.kernel.org>,  "John B . Wyatt IV" <jwyatt@redhat.com>,  "John Kacur" <jkacur@redhat.com>,  <stable@vger.kernel.org>
-Origin-messageId: <20260730020703.15163-1-ali@iusegentoo.com>
-List-Unsubscribe-Post: List-Unsubscribe=One-Click
-X-CSA-Complaints: csa-complaints@eco.de
-X-sib-id: UMMS_mW1ljZe5azfMihNgglU4C0sBIyaC1PzmZe4jkR3bTS5C7ZPTOyArn_mna5Inh-7Xk305XlFmXs3B7LaTPGA_zjJg1WDiWb1zbo2sDmrFlTY1Rv4YtaxKxyHhoeRdsxEEjNjZzBdNvW1iN-KmAAmZIRwOPcD-931foxkfODO1F2KZbrm
-Message-Id: <ed911cc9-41d8-439b-90e2-942960242528@smtp-relay.sendinblue.com>
-Feedback-ID: 77.32.148.26:11609595_-1:11609595:Sendinblue
-From: "Ali Ahmet Memis" <ali@iusegentoo.com>
-X-Mailin-EID: NDgzOTI2MDM4fmxpbnV4LXBtQHZnZXIua2VybmVsLm9yZ348MjAyNjA3MzAwMjA3MDMuMTUxNjMtMS1hbGlAaXVzZWdlbnRvby5jb20%2Bfmd6LmQuc2VuZGVyLXNpYi5jb20%3D
-To: "Shuah Khan" <shuah@kernel.org>,"Thomas Renninger" <trenn@suse.com>
+	dkim=pass (1024-bit key) header.d=iusegentoo.com header.i=ali@iusegentoo.com header.b="ZLCGqVy1"
+ARC-Seal: i=1; a=rsa-sha256; t=1785380444; cv=none; 
+	d=zohomail.eu; s=zohoarc; 
+	b=NqpRAVxG+FtCxSCZARrvBTg6ptK5l2y/FiP8O8K9I0GURhObuipGUdjwlPlI+URWIjhdzoGIpAOSO6D1kCUM5+88NaMgUBLqwNQL+GT4lJAgQSPfIWwJDFrRFCtqyh18AFXqtOzq7R2G3aJPJOGMPqwebFlvRA63pgiF/sBlVqw=
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=zohomail.eu; s=zohoarc; 
+	t=1785380444; h=Content-Transfer-Encoding:Cc:Cc:Date:Date:From:From:MIME-Version:Message-ID:Subject:Subject:To:To:Message-Id:Reply-To; 
+	bh=zlE4YGKAm0cmJs59qDCAcEJvFaom5KfZb9PiKkB8O58=; 
+	b=FvhV5gIia/RUtr5riV9HHgwQa9kEt567NUIHlP33F6ZwGArM45FrPpTkjXlnHY/+rgozpDWdl9KRT7ot+KQLM3QI4n3VDKth1BTHNSs9AYN5p1c5NvdQSbu+nn2pXrm0G4uCNhgFYWupxbPl/sOyJ8y4fTIcUBfS5eT6dpeJofU=
+ARC-Authentication-Results: i=1; mx.zohomail.eu;
+	dkim=pass  header.i=iusegentoo.com;
+	spf=pass  smtp.mailfrom=ali@iusegentoo.com;
+	dmarc=pass header.from=<ali@iusegentoo.com>
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; t=1785380444;
+	s=zmail; d=iusegentoo.com; i=ali@iusegentoo.com;
+	h=From:From:To:To:Cc:Cc:Subject:Subject:Date:Date:Message-ID:MIME-Version:Content-Transfer-Encoding:Message-Id:Reply-To;
+	bh=zlE4YGKAm0cmJs59qDCAcEJvFaom5KfZb9PiKkB8O58=;
+	b=ZLCGqVy1p7X8G4S8CjOVo6/Z5nIITd150uILrz7g0qpZnWSUA6d2P/r/nXixF0Tq
+	1YOe6ACuqLCtRoclVUPBg6gzvm29iJavjpVK2/AfTWVpBtQYrX9mRfmugIaKAHSzBha
+	nbupNdAoWSKFk2FriFld30iLloiH9NXTfW6wwyhA=
+Received: by mx.zoho.eu with SMTPS id 1785380442638594.3961943698703;
+	Thu, 30 Jul 2026 05:00:42 +0200 (CEST)
+From: Ali Ahmet Memis <ali@iusegentoo.com>
+To: Len Brown <lenb@kernel.org>
+Cc: linux-pm@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	stable@vger.kernel.org
+Subject: [PATCH] tools/power turbostat: Read complete CPU lists
+Date: Thu, 30 Jul 2026 06:00:31 +0300
+Message-ID: <20260730030031.28678-1-ali@iusegentoo.com>
+X-Mailer: git-send-email 2.54.0
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
-Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-X-Mailer: git-send-email 2.54.0
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+X-ZohoMailClient: External
 
+CPU_SUBSET_MAXCPUS accepts CPU IDs through 8191, but the sysfs and
+cgroup CPU-list readers stop at 1024 bytes. A fragmented cpuset or
+hybrid PMU CPU list can exceed that size and be truncated.
+initialize_cpu_set_from_sysfs() can also pass a full, non-NUL-terminated
+buffer to parse_cpu_str(), causing an out-of-bounds read.
 
-get_cpu_topology() allocates core_info with malloc(). If a topology
-attribute disappears while CPUs are being hotplugged, an error path can
-leave core_cpu_list uninitialized. __compare_core_cpu_list() then passes
-the field to strcmp() while sorting the array.
+Additionally, initialize_cpu_set_from_sysfs() returns with the file
+still open on success. It is now called once per CPU for
+thread_siblings_list, so large systems can leak thousands of descriptors
+during topology discovery.
 
-Use calloc() for the array and ignore entries without complete topology
-data when counting cores. Besides avoiding the invalid read, this keeps an
-incomplete entry from being counted as a physical core.
+Use getline() so both readers receive a complete, NUL-terminated line.
+Close and free the sysfs CPU-list resources on every path, and report
+malformed input from the correct buffer.
 
-Fixes: f89cb9cba7a2 ("cpupower: Implement CPU physical core querying")
+Fixes: eb187540d13a ("tools/power turbostat: Increase CPU_SUBSET_MAXCPUS to 8192")
+Fixes: 58839fdbd441 ("tools/power turbostat: Process HT siblings in CPU order")
 Cc: stable@vger.kernel.org
 Signed-off-by: Ali Ahmet Memis <ali@iusegentoo.com>
 ---
-Tested with a two-CPU topology mock that makes the second CPU's sysfs
-reads fail. Valgrind reports uninitialized reads before this patch and
-no errors after it.
+ tools/power/x86/turbostat/turbostat.c | 44 +++++++++++++++------------
+ 1 file changed, 25 insertions(+), 19 deletions(-)
 
-Build-tested with:
-  make -C tools/power/cpupower NLS=3Dfalse CPUFREQ_BENCH=3Dfalse
-
- tools/power/cpupower/lib/cpupower.c | 18 ++++++++++++------
- 1 file changed, 12 insertions(+), 6 deletions(-)
-
-diff --git a/tools/power/cpupower/lib/cpupower.c b/tools/power/cpupower/lib=
-/cpupower.c
-index d7f7ec6f1..a8ee304bd 100644
---- a/tools/power/cpupower/lib/cpupower.c
-+++ b/tools/power/cpupower/lib/cpupower.c
-@@ -171,7 +171,7 @@ int get_cpu_topology(struct cpupower_topology *cpu_top)
- 	char path[SYSFS_PATH_MAX];
- 	char *last_cpu_list;
-=20
--	cpu_top->core_info =3D malloc(sizeof(struct cpuid_core_info) * cpus);
-+	cpu_top->core_info =3D calloc(cpus, sizeof(struct cpuid_core_info));
- 	if (cpu_top->core_info =3D=3D NULL)
- 		return -ENOMEM;
- 	cpu_top->pkgs =3D cpu_top->cores =3D 0;
-@@ -214,11 +214,17 @@ int get_cpu_topology(struct cpupower_topology *cpu_to=
-p)
- 	qsort(cpu_top->core_info, cpus, sizeof(struct cpuid_core_info),
- 	      __compare_core_cpu_list);
-=20
--	last_cpu_list =3D cpu_top->core_info[0].core_cpu_list;
--	cpu_top->cores =3D 1;
--	for (cpu =3D 1; cpu < cpus; cpu++) {
--		if (strcmp(cpu_top->core_info[cpu].core_cpu_list, last_cpu_list) !=3D 0 =
-&&
--		    cpu_top->core_info[cpu].pkg !=3D -1) {
-+	last_cpu_list =3D NULL;
-+	cpu_top->cores =3D 0;
-+	for (cpu =3D 0; cpu < cpus; cpu++) {
-+		if (cpu_top->core_info[cpu].pkg =3D=3D -1 ||
-+		    cpu_top->core_info[cpu].core =3D=3D -1 ||
-+		    cpu_top->core_info[cpu].core_cpu_list[0] =3D=3D '\0')
-+			continue;
-+
-+		if (!last_cpu_list ||
-+		    strcmp(cpu_top->core_info[cpu].core_cpu_list,
-+			   last_cpu_list) !=3D 0) {
- 			last_cpu_list =3D cpu_top->core_info[cpu].core_cpu_list;
- 			cpu_top->cores++;
- 		}
---=20
+diff --git a/tools/power/x86/turbostat/turbostat.c b/tools/power/x86/turbostat/turbostat.c
+index 920694c3c..cec3f2fbb 100644
+--- a/tools/power/x86/turbostat/turbostat.c
++++ b/tools/power/x86/turbostat/turbostat.c
+@@ -6311,33 +6311,35 @@ int for_all_proc_cpus(int (func) (int))
+ 
+ #define PATH_EFFECTIVE_CPUS	"/sys/fs/cgroup/cpuset.cpus.effective"
+ 
+-static char cpu_effective_str[1024];
++static char *cpu_effective_str;
+ 
+ static int update_effective_str(bool startup)
+ {
+ 	FILE *fp;
+-	char *pos;
+-	char buf[1024];
++	char *buf = NULL;
++	size_t size = 0;
+ 	int ret;
+ 
+-	if (cpu_effective_str[0] == '\0' && !startup)
++	if (!cpu_effective_str && !startup)
+ 		return 0;
+ 
+ 	fp = fopen(PATH_EFFECTIVE_CPUS, "r");
+ 	if (!fp)
+ 		return 0;
+ 
+-	pos = fgets(buf, 1024, fp);
+-	if (!pos)
++	if (getline(&buf, &size, fp) < 0)
+ 		err(1, "%s: file read failed", PATH_EFFECTIVE_CPUS);
+ 
+ 	fclose(fp);
+ 
+-	ret = strncmp(cpu_effective_str, buf, 1024);
+-	if (!ret)
++	ret = cpu_effective_str ? strcmp(cpu_effective_str, buf) : 1;
++	if (!ret) {
++		free(buf);
+ 		return 0;
++	}
+ 
+-	strncpy(cpu_effective_str, buf, 1024);
++	free(cpu_effective_str);
++	cpu_effective_str = buf;
+ 	return 1;
+ }
+ 
+@@ -8529,13 +8531,16 @@ int add_rapl_perf_counter(int cpu, struct rapl_counter_info_t *rci, const struct
+ 	return ret;
+ }
+ 
+-char cpuset_buf[1024];
+-int initialize_cpu_set_from_sysfs(cpu_set_t *cpu_set, char *sysfs_path, char *sysfs_file)
++int initialize_cpu_set_from_sysfs(cpu_set_t *cpu_set, const char *sysfs_path,
++				  const char *sysfs_file)
+ {
+ 	FILE *fp;
++	char *cpuset_buf = NULL;
++	size_t size = 0;
+ 	char path[128];
++	int ret = -1;
+ 
+-	if (snprintf(path, 128, "%s/%s", sysfs_path, sysfs_file) > 128)
++	if (snprintf(path, sizeof(path), "%s/%s", sysfs_path, sysfs_file) >= (int)sizeof(path))
+ 		err(-1, "%s %s", sysfs_path, sysfs_file);
+ 
+ 	fp = fopen(path, "r");
+@@ -8543,19 +8548,20 @@ int initialize_cpu_set_from_sysfs(cpu_set_t *cpu_set, char *sysfs_path, char *sy
+ 		warn("open %s", path);
+ 		return -1;
+ 	}
+-	if (fread(cpuset_buf, sizeof(char), 1024, fp) == 0) {
++	if (getline(&cpuset_buf, &size, fp) < 0) {
+ 		warn("read %s", sysfs_path);
+-		goto err;
++		goto out;
+ 	}
+ 	if (parse_cpu_str(cpuset_buf, cpu_set, cpu_possible_setsize)) {
+-		warnx("%s: cpu str malformat %s\n", sysfs_path, cpu_effective_str);
+-		goto err;
++		warnx("%s: cpu str malformat %s\n", sysfs_path, cpuset_buf);
++		goto out;
+ 	}
+-	return 0;
++	ret = 0;
+ 
+-err:
++out:
+ 	fclose(fp);
+-	return -1;
++	free(cpuset_buf);
++	return ret;
+ }
+ 
+ void print_cpu_set(char *s, cpu_set_t *set)
+-- 
 2.54.0
-
 
