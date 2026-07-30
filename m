@@ -1,141 +1,184 @@
-Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-oa1-f78.google.com (mail-oa1-f78.google.com [209.85.160.78])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3FF2E43934D;
-	Thu, 30 Jul 2026 13:44:26 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4052543CEF7
+	for <linux-pm@vger.kernel.org>; Thu, 30 Jul 2026 14:04:30 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.160.78
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1785419067; cv=none; b=TS8PTVSrlcs0LHwS2VA6WSQEko0zlAVm9G0gdbuv2bApMHT/Trd0cC4EhpOAkyOgESFeEohigMAcqGswytKnYiv4qVM6q2YRLYk24M8MwqIyp0B5cgh4SLzG2M1u7s6SAoPrSiIqbhzP6aCgxnZgnf8AVuJ2gvo5Dd6MrNeNHME=
+	t=1785420274; cv=none; b=n3O07xmAUNng95t23fDXr/m4sAAQUZVsl/N4f/hgky8LSF8OmK4P7M0m7OatoVjzfhsIoNgDUDDdKcTcEn+FO2vms31WG14Vkqjw5fq83i+IBeqzUAy6gnUq5i/M3N7OIKdq+ACJAuol5jCJ1o/Sz3SAv69HBGAoxT9AGojeQQg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1785419067; c=relaxed/simple;
-	bh=bQg1CV/cl1NwBFdpNzutcN/vhqRlpTzWwz93LULblz4=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=moi8BmABMbJyz34gAssTcU66HVHxDdoqmy8Pj8XNbwwDOEb51IKGIPQoSnBjvHvrvfRAzb196pjQFB6hd3gh7nHzkDdQckPH1F2Tu49Lm9Y2g9PUQMnYDwCJijpoV6sN7zb55/4iCrk3cSsXsHq98ys4C8FTdckQIuWvrnj5bHM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=W2v2VppS; arc=none smtp.client-ip=205.220.168.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=qualcomm.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="W2v2VppS"
-Received: from pps.filterd (m0279862.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 66UDDIBX841981;
-	Thu, 30 Jul 2026 13:44:24 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-type:date:from:in-reply-to:message-id:mime-version
-	:references:subject:to; s=qcppdkim1; bh=wiSak0RHAiRJ/jqz8HoC55zt
-	gtTNeufco1hRS6lvUMU=; b=W2v2VppSnmkhvlbuXD2oMOHbO9pX4qSPRdF3roxv
-	PKRG06I+o9HatTEQXhzZOgzjlTktt1G/uQJtJymhetJZIwE60xe3ZfGAxs5rEl8a
-	+z5eL43HW8pnDBUaeBiSbNNWzfRgnd4bfJq13/Lg86IICeZrjdNILqlkKMIHJdgl
-	WCdAT1gIDR9xZsM7bRd0rB34WhZ8kmE3nmr2Sxzoyca+RTDevWtL0Gk/qgMzEFW3
-	xlN4a8EGP2ClIegvje3ykgyXdwDg/TWnn4ssv3ZLZq2khtNfq7oLbmBHQze0GGOD
-	Ndz8dj8gzmizqChrXXtGfoWvij6Epg+wskxz2fjtkXNU+Q==
-Received: from apblrppmta01.qualcomm.com (blr-bdr-fw-01_GlobalNAT_AllZones-Outside.qualcomm.com [103.229.18.19])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4fr6wmg8pj-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 30 Jul 2026 13:44:23 +0000 (GMT)
-Received: from pps.filterd (APBLRPPMTA01.qualcomm.com [127.0.0.1])
-	by APBLRPPMTA01.qualcomm.com (8.18.1.7/8.18.1.7) with ESMTP id 66UDiKxr026768;
-	Thu, 30 Jul 2026 13:44:20 GMT
-Received: from pps.reinject (localhost [127.0.0.1])
-	by APBLRPPMTA01.qualcomm.com (PPS) with ESMTPS id 4fmp7k6bf5-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 30 Jul 2026 13:44:20 +0000 (GMT)
-Received: from APBLRPPMTA01.qualcomm.com (APBLRPPMTA01.qualcomm.com [127.0.0.1])
-	by pps.reinject (8.18.1.12/8.18.1.12) with ESMTP id 66UDiKw1026757;
-	Thu, 30 Jul 2026 13:44:20 GMT
-Received: from hu-devc-hyd-u22-c.qualcomm.com (hu-kotarake-hyd.qualcomm.com [10.213.97.140])
-	by APBLRPPMTA01.qualcomm.com (PPS) with ESMTPS id 66UDiKOx026755
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 30 Jul 2026 13:44:20 +0000 (GMT)
-Received: by hu-devc-hyd-u22-c.qualcomm.com (Postfix, from userid 2389607)
-	id 83BA1B31; Thu, 30 Jul 2026 19:14:19 +0530 (+0530)
-Date: Thu, 30 Jul 2026 19:14:19 +0530
-From: Rakesh Kota <rakesh.kota@oss.qualcomm.com>
-To: Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>
-Cc: Bjorn Andersson <andersson@kernel.org>,
-        Krzysztof Kozlowski <krzk@kernel.org>,
-        Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>,
-        Konrad Dybcio <konradybcio@kernel.org>, Rob Herring <robh@kernel.org>,
-        Krzysztof Kozlowski <krzk+dt@kernel.org>,
-        Conor Dooley <conor+dt@kernel.org>, Sebastian Reichel <sre@kernel.org>,
-        linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
-        jishnu.prakash@oss.qualcomm.com, kamal.wadhwa@oss.qualcomm.com
-Subject: Re: [PATCH 0/2] qcom_battmgr: Add batteryless DC-adapter MAINS
- support
-Message-ID: <20260730134419.tq2nxrp3n5ghx3xe@hu-kotarake-hyd.qualcomm.com>
-References: <20260519065938.4i5wot72pfxy4m3d@hu-kotarake-hyd.qualcomm.com>
- <ag-NLvh4ROgTCs_L@baldur>
- <d4001407-cdb0-48ee-a138-87c94b5dab01@oss.qualcomm.com>
- <20260702111737.2qtjcfskulav4usd@hu-kotarake-hyd.qualcomm.com>
- <5d5c693b-bd07-40a4-aea5-d9e1884aac50@kernel.org>
- <20260703091319.5kcsqjtx4e4rshsy@hu-kotarake-hyd.qualcomm.com>
- <7c7ab43f-45c0-48bc-921a-8820408c88c9@kernel.org>
- <20260716084850.gssw67izy6vq36tg@hu-kotarake-hyd.qualcomm.com>
- <alltBcYWULOv7nEv@baldur>
- <aimahyy7gnnw44pdedtt5xovq7nqw236fb6hwsm2fqjzagmcm2@7767eiubcdz2>
+	s=arc-20240116; t=1785420274; c=relaxed/simple;
+	bh=uFhwgS2vLQEmm4lBKzXFfa4rECzUW1SHhbCizBlG4TQ=;
+	h=MIME-Version:Date:Message-ID:Subject:From:To:Content-Type; b=UirXfL1Vk2+ROV+z1H6pHXMUrafwW2GKgdLBlG0d5ay+yq/srz4B2vZLQ58t226DoLIWUp5iPJCSLIARa6A3CHCTFFXWg2bRXOobASZYPpqB9ZJnbqWCgDdUwRmjuA4QqTi1y5Z0cxMGZytV8dsPLcYV9HQnafNivAM+KWOMGzI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=syzkaller.appspotmail.com; spf=pass smtp.mailfrom=M3KW2WVRGUFZ5GODRSRYTGD7.apphosting.bounces.google.com; arc=none smtp.client-ip=209.85.160.78
+Authentication-Results: smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=syzkaller.appspotmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=M3KW2WVRGUFZ5GODRSRYTGD7.apphosting.bounces.google.com
+Received: by mail-oa1-f78.google.com with SMTP id 586e51a60fabf-458582a8c9fso651377fac.2
+        for <linux-pm@vger.kernel.org>; Thu, 30 Jul 2026 07:04:30 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1785420269; x=1786025069;
+        h=content-type:to:from:subject:message-id:date:mime-version
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=1+OaPrjgQyiPhwmLW40a+vLrhbjAPIk0/p/m0HGMDaI=;
+        b=H/MP1EwkcGfA5WlKrla9/7LXJiv50qf8KA+RameVZ7Ho3LpF+SGOQ4+SmDW831bycm
+         x2B38z05YNWLHKYBdRmQFAr5f3umyF127tcIztTsaNDgRSsRRFfRravG8o8bTpuW52AU
+         G+lRUZjixnz8O0flxNyT9mgbY81+Dc/yHXnxbAEyp7+vwlJiUPKQH6831wHF1rWHXdc2
+         zo66qy/RjF5nkNG4Pj2sSB5ljK7PpyfC1KT/9b6aZUQOFcpi17AIjsYtfx4ItoNUyME7
+         bOgQ5lIaFvseJHCAQT+bXWuF6SfChUUag1Htk6EwwY6qHWjrR4RrVeKQjFYO7uX0o9JN
+         hzgw==
+X-Forwarded-Encrypted: i=1; AHgh+RoWKLQazCc/zEhbmXEzMvVfNYeyht5PJt6/KwzeBue7WAgMGeUG505H126NAnftv0kWeFze4UhRZg==@vger.kernel.org
+X-Gm-Message-State: AOJu0YwP2LXu22CzM+4QRy3177qs2Fc1ZHsazM5lrNAvKLRwfowut8HO
+	FWYHos64IQzBtmM1I7j5giQ3hGOoxS6faJ7SyGu51GxsJ+Q2cltikZG+CZZ1n7m+nhHPbvVfM/o
+	sjC8ytj9u8mIoPe3Fd0X7yfAySxwPQg/jnijxLXNSncxMhyv64NNPoW3g1TI=
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <aimahyy7gnnw44pdedtt5xovq7nqw236fb6hwsm2fqjzagmcm2@7767eiubcdz2>
-X-QCInternal: smtphost
-X-QCInternal: smtphost
-X-Proofpoint-Spam-Info: AW1haW4tMjYwNzMwMDEwNCBTYWx0ZWRfXy8OO4ovosz/W
- 5U45TVSQQWqbJfoRhB2huhFb3ng5/MySnz8nYqPeu6AV+vNRa5xqNfVgTphNPtikuHmo4yVCenS
- +IybENQxUu8ixQBW5srfuBsYgtKaOvs=
-X-Proofpoint-GUID: Ts-kM3T11W3z5ajMe3shi_F8hvk-e-Sn
-X-Authority-Analysis: v=2.4 cv=OauoyBTY c=1 sm=1 tr=0 ts=6a6b5538 cx=c_pps
- a=Ou0eQOY4+eZoSc0qltEV5Q==:117 a=Ou0eQOY4+eZoSc0qltEV5Q==:17
- a=kj9zAlcOel0A:10 a=RAioF0-LDSMA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=u7WPNUs3qKkmUXheDGA7:22 a=_K5XuSEh1TEqbUxoQ0s3:22 a=oBn097-8SNn81nznA08A:9
- a=CjuIK1q_8ugA:10
-X-Proofpoint-ORIG-GUID: Ts-kM3T11W3z5ajMe3shi_F8hvk-e-Sn
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzMwMDEwNCBTYWx0ZWRfX6thqYOR1I9qP
- 8aIqs3urLJw+fGZV8//iin4cBMlARSFnwlYYENJdam6M3t0n8T5MsvaDyOSjcPmg9huDc56yjyL
- l59n0vFD8AL4WiyiLK6IxItEnJEjdRkE2hCc7woh1CGuqMmQDXkjpWF7AjLySLmkXDhrCdEgFLn
- AoF12m+tt2rhSAJtgniE3diaOQqarr573BqtzWHB3BQV9R27IPg9bSfZb8jboz9QOAOW+TF4Qdk
- xyatJz608rksRe9N/Xn5DN6lVVMMImzcOr7mUI8djVEQ+NKk1qm02abVT6lPqvQCMo6ebTtpUDe
- cDtFgP9XZI4LXThmJfghDt/cNKgXOJbU59w6aKGnb5PozRVgYjLoBvB5MAkHQo/gKlp9zGwek/5
- CJs845bLVasfUG+NFaH8MI2oD/p7usIYbYRyYNfXxuVml5Ma3bneVsl3Wzvie8Y65h2wS+rOKdo
- yEaPSr2rPt2T6aaxqgg==
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-07-30_04,2026-07-29_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- malwarescore=0 adultscore=0 clxscore=1015 priorityscore=1501
- lowpriorityscore=0 spamscore=0 impostorscore=0 bulkscore=0 suspectscore=0
- phishscore=0 classifier=typeunknown authscore=0 authtc= authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2606150000
- definitions=main-2607300104
+X-Received: by 2002:a05:6871:b22:b0:44c:b209:d716 with SMTP id
+ 586e51a60fabf-458c19ba5ecmr1758769fac.22.1785420269144; Thu, 30 Jul 2026
+ 07:04:29 -0700 (PDT)
+Date: Thu, 30 Jul 2026 07:04:29 -0700
+X-Google-Appengine-App-Id: s~syzkaller
+X-Google-Appengine-App-Id-Alias: syzkaller
+Message-ID: <6a6b59ed.57649fcc.360844.0019.GAE@google.com>
+Subject: [syzbot] [pm?] KASAN: invalid-access Read in swsusp_save
+From: syzbot <syzbot+461576769f21a04b4bc0@syzkaller.appspotmail.com>
+To: lenb@kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, 
+	pavel@kernel.org, rafael@kernel.org, syzkaller-bugs@googlegroups.com
+Content-Type: text/plain; charset="UTF-8"
 
-On Wed, Jul 22, 2026 at 05:04:00PM +0300, Dmitry Baryshkov wrote:
-> On Thu, Jul 16, 2026 at 06:54:36PM -0500, Bjorn Andersson wrote:
-> > On Thu, Jul 16, 2026 at 02:18:50PM +0530, Rakesh Kota wrote:
-> > 
-> > I think this is similar to if we had a discrete charger block that we
-> > describe in DeviceTree, we would somehow have to describe the
-> > "configuration" of that component.
-> > 
-> > But I don't think you considered those other use cases. Perhaps this
-> > should be an optional qcom,battmgr-interfaces = "ac", "usb" ...; taking
-> > the list of interfaces that is actually implemented.
-> 
-> I like this idea.
->
+Hello,
 
-Thanks, Dmitry and Bjorn.
+syzbot found the following issue on:
 
-Krzysztof, could you please share your suggestion on adding this as a
-new optional DT property (qcom,battmgr-interfaces = "ac", "usb",...;)
-listing the interfaces actually implemented on a given platform?
+HEAD commit:    3b5f4b83c4ab Merge tag 'for-7.2-rc5-tag' of git://git.kern..
+git tree:       https://kernel.googlesource.com/pub/scm/linux/kernel/git/torvalds/linux master
+console output: https://syzkaller.appspot.com/x/log.txt?x=11f35632580000
+kernel config:  https://syzkaller.appspot.com/x/.config?x=6c49f4c107ee8924
+dashboard link: https://syzkaller.appspot.com/bug?extid=461576769f21a04b4bc0
+compiler:       aarch64-linux-gnu-gcc (Debian 14.2.0-19) 14.2.0, GNU ld (GNU Binutils for Debian) 2.44
+userspace arch: arm64
 
-regards
-Rakesh Kota
+Unfortunately, I don't have any reproducer for this issue yet.
 
-> -- 
-> With best wishes
-> Dmitry
+Downloadable assets:
+disk image (non-bootable): https://storage.googleapis.com/syzbot-assets/fa3fbcfdac58/non_bootable_disk-3b5f4b83.raw.xz
+vmlinux: https://storage.googleapis.com/syzbot-assets/dd359154ea98/vmlinux-3b5f4b83.xz
+kernel image: https://storage.googleapis.com/syzbot-assets/4ae5720d1f28/Image-3b5f4b83.gz.xz
+
+IMPORTANT: if you fix the issue, please add the following tag to the commit:
+Reported-by: syzbot+461576769f21a04b4bc0@syzkaller.appspotmail.com
+
+printk: Suspending console(s) (use no_console_suspend to debug)
+Disabling non-boot CPUs ...
+psci: CPU1 killed (polled 0 ms)
+hibernate: Saved 0 MTE pages
+==================================================================
+BUG: KASAN: invalid-access in do_copy_page kernel/power/snapshot.c:1436 [inline]
+BUG: KASAN: invalid-access in safe_copy_page kernel/power/snapshot.c:1457 [inline]
+BUG: KASAN: invalid-access in copy_data_page kernel/power/snapshot.c:1508 [inline]
+BUG: KASAN: invalid-access in copy_data_pages kernel/power/snapshot.c:1543 [inline]
+BUG: KASAN: invalid-access in swsusp_save+0x2cc/0x590 kernel/power/snapshot.c:2133
+Read at addr f4f000000341f100 by task syz.1.8/3536
+Pointer tag: [f4], memory tag: [fe]
+
+CPU: 0 UID: 0 PID: 3536 Comm: syz.1.8 Not tainted syzkaller #0 PREEMPT 
+Hardware name: linux,dummy-virt (DT)
+Call trace:
+ dump_backtrace arch/arm64/kernel/stacktrace.c:498 [inline] (C)
+ show_stack+0x18/0x24 arch/arm64/kernel/stacktrace.c:499 (C)
+ __dump_stack lib/dump_stack.c:94 [inline]
+ dump_stack_lvl+0x60/0x80 lib/dump_stack.c:120
+ print_address_description mm/kasan/report.c:378 [inline]
+ print_report+0x1c4/0x4b0 mm/kasan/report.c:482
+ kasan_report+0x84/0xac mm/kasan/report.c:595
+ report_tag_fault arch/arm64/mm/fault.c:368 [inline]
+ do_tag_recovery arch/arm64/mm/fault.c:380 [inline]
+ __do_kernel_fault+0x1b4/0x220 arch/arm64/mm/fault.c:424
+ do_bad_area+0x68/0x80 arch/arm64/mm/fault.c:529
+ do_tag_check_fault+0x34/0x44 arch/arm64/mm/fault.c:909
+ do_mem_abort+0x40/0x90 arch/arm64/mm/fault.c:985
+ el1_abort+0x44/0x64 arch/arm64/kernel/entry-common.c:322
+ el1h_64_sync_handler+0x50/0xac arch/arm64/kernel/entry-common.c:449
+ el1h_64_sync+0x6c/0x70 arch/arm64/kernel/entry.S:589
+ do_copy_page kernel/power/snapshot.c:1436 [inline] (P)
+ safe_copy_page kernel/power/snapshot.c:1457 [inline] (P)
+ copy_data_page kernel/power/snapshot.c:1508 [inline] (P)
+ copy_data_pages kernel/power/snapshot.c:1543 [inline] (P)
+ swsusp_save+0x2cc/0x590 kernel/power/snapshot.c:2133 (P)
+ swsusp_arch_suspend+0x74/0x618 arch/arm64/kernel/hibernate.c:355
+ create_image kernel/power/hibernate.c:358 [inline]
+ hibernation_snapshot+0x208/0x438 kernel/power/hibernate.c:442
+ hibernate+0x1cc/0x3c0 kernel/power/hibernate.c:811
+ state_store+0xe8/0xf4 kernel/power/main.c:821
+ kobj_attr_store+0x18/0x34 lib/kobject.c:840
+ sysfs_kf_write+0x7c/0x98 fs/sysfs/file.c:145
+ kernfs_fop_write_iter+0x138/0x200 fs/kernfs/file.c:345
+ new_sync_write fs/read_write.c:595 [inline]
+ vfs_write+0x244/0x36c fs/read_write.c:687
+ ksys_write+0x70/0x108 fs/read_write.c:739
+ __do_sys_write fs/read_write.c:750 [inline]
+ __se_sys_write fs/read_write.c:747 [inline]
+ __arm64_sys_write+0x1c/0x30 fs/read_write.c:747
+ __invoke_syscall arch/arm64/kernel/syscall.c:35 [inline]
+ invoke_syscall+0x54/0x10c arch/arm64/kernel/syscall.c:49
+ el0_svc_common.constprop.0+0x40/0xe0 arch/arm64/kernel/syscall.c:121
+ do_el0_svc+0x1c/0x34 arch/arm64/kernel/syscall.c:140
+ el0_svc+0x38/0x1fc arch/arm64/kernel/entry-common.c:736
+ el0t_64_sync_handler+0xa0/0xf0 arch/arm64/kernel/entry-common.c:755
+ el0t_64_sync+0x1a4/0x1a8 arch/arm64/kernel/entry.S:594
+
+The buggy address belongs to the physical page:
+page: refcount:0 mapcount:0 mapping:0000000000000000 index:0x0 pfn:0x4341c
+head: order:2 mapcount:0 entire_mapcount:0 nr_pages_mapped:0 pincount:0
+flags: 0x1ffec0000000040(head|node=0|zone=0|lastcpupid=0x7ff|kasantag=0xb)
+page_type: f8(unknown)
+raw: 01ffec0000000040 0000000000000000 dead000000000122 0000000000000000
+raw: 0000000000000000 0000000000000000 00000000f8000000 0000000000000000
+head: 01ffec0000000040 0000000000000000 dead000000000122 0000000000000000
+head: 0000000000000000 0000000000000000 00000000f8000000 0000000000000000
+head: 01ffec0000000002 ffffc1ffc00d0701 00000000ffffffff 00000000ffffffff
+head: ffffffffffffffff 0000000000000000 00000000ffffffff 0000000000000004
+page dumped because: kasan: bad access detected
+
+Memory state around the buggy address:
+ fff000000341ef00: f4 f4 f4 f4 f4 f4 f4 f4 f4 f4 f4 f4 f4 f4 f4 f4
+ fff000000341f000: f4 f4 f4 f4 f4 f4 f4 f4 f4 f4 f4 f4 f4 f4 f4 f4
+>fff000000341f100: fe fe fe fe fe fe fe fe fe fe fe fe fe fe fe fe
+                   ^
+ fff000000341f200: fe fe fe fe fe fe fe fe fe fe fe fe fe fe fe fe
+ fff000000341f300: fe fe fe fe fe fe fe fe fe fe fe fe fe fe fe fe
+==================================================================
+Enabling non-boot CPUs ...
+CPU1 is up
+PM: Cannot find swap device, try swapon -a
+PM: Cannot get swap writer
+OOM killer enabled.
+Restarting tasks: Starting
+Restarting tasks: Done
+PM: hibernation: hibernation exit
+
+
+---
+This report is generated by a bot. It may contain errors.
+See https://goo.gl/tpsmEJ for more information about syzbot.
+syzbot engineers can be reached at syzkaller@googlegroups.com.
+
+syzbot will keep track of this issue. See:
+https://goo.gl/tpsmEJ#status for how to communicate with syzbot.
+
+If the report is already addressed, let syzbot know by replying with:
+#syz fix: exact-commit-title
+
+If you want to overwrite report's subsystems, reply with:
+#syz set subsystems: new-subsystem
+(See the list of subsystem names on the web dashboard)
+
+If the report is a duplicate of another one, reply with:
+#syz dup: exact-subject-of-another-report
+
+If you want to undo deduplication, reply with:
+#syz undup
