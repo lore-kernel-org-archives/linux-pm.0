@@ -1,293 +1,472 @@
 Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 42BA642BC5E
-	for <linux-pm@vger.kernel.org>; Thu, 30 Jul 2026 12:01:02 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 374F842EEB7
+	for <linux-pm@vger.kernel.org>; Thu, 30 Jul 2026 12:41:05 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1785412863; cv=none; b=AzD6z3OUXn5NkiBYCTD4gyrsxiDjSLgO/ttuMP1xIUz5RlXDQ+y6P6H+FD4vUFHEjVbMcV6cqelQwH/n5ozDvx6efgTBS+rMO3ZsvWBvHgyeQW9LSCr34LenuRVFaPm+v+6Sm2PvRMo3c+k9+vNPVmCvpATWrf33eSDKeRe8ZPs=
+	t=1785415269; cv=none; b=AL0hRsWtg4q0F971y9xTNtnz9h/uEFxx3u7Dew/zw6BCJEMarpKo6TM45cteYNjzXhTO+KJe7xPO/oQTBmGvQ3Ym6vtir6j2o+OS6kAjde5I8fZU8jjdbiJGEOH5kZJZ+4/LzE9m/dTjpG/ldirqfvAuajblmgTCmCyAgZnnD0s=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1785412863; c=relaxed/simple;
-	bh=ySDiR9YPLrb5IFR36TCBslNdsY8sArZgsyYs5F+l2SQ=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=DbSkwCH/j/1H00v1cVUExBV6ypn8DySre8dNFfLe1iE0AiePTgWlw3nws3D/6pCoVCT9VJBBHqA05MDtY071le4Ozgjeqv2VaOJgJlcVXZelB5SQJsyGOk7dCBGzde0DkNHPYcENJCeCEF2V1cwWXSeyyE2ZEX5gKXfeZLUJV2c=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=ek69fdz3; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=HLOGEU1u; arc=none smtp.client-ip=205.220.168.131
+	s=arc-20240116; t=1785415269; c=relaxed/simple;
+	bh=t5o0y2/SJvXG9lCHetx3RMBak7avXDKQDjHj2cZyWwM=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=sSbjrGWS6R4j51nDZstswYNQTFHkY0Q98i8ho8KQXLfulj0O1apCIbrwI/375q34uZIgAke0vkqFd0FsyT8xBhq2ya/tvOUSVeBz47xZRcnoA+KaoFpRFVQiABPXRiRtVOXtXx7TPMRBjn7qzetG1uHJorWshkuiNKuU+zprGoQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=kcf2W2fV; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=HUeS+n/b; arc=none smtp.client-ip=205.220.168.131
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="ek69fdz3";
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="HLOGEU1u"
-Received: from pps.filterd (m0279862.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 66UB7x08562988
-	for <linux-pm@vger.kernel.org>; Thu, 30 Jul 2026 12:01:01 GMT
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="kcf2W2fV";
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="HUeS+n/b"
+Received: from pps.filterd (m0279863.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 66UB8E0q825720
+	for <linux-pm@vger.kernel.org>; Thu, 30 Jul 2026 12:41:04 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
 	cc:content-transfer-encoding:content-type:date:from:in-reply-to
 	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	6JK9gzvvCPLMwkZwM+DdBcV1dmsHnyUD0kCzj/Lw3mo=; b=ek69fdz3q0ljydi5
-	XXbWSeTg7eopKzhhhFEje2gX6ZggnNMInKd4b9l5Lhpaf7woGTd8vJrcousg+OZF
-	DdvGX3jzyIGvUO90+oiHsYRaECesfiVXMFQXe42d8Q8Pf/PiudnM8NyBJH3BpYhN
-	tjIUyM6kRdv02/Pyr3jQgDf69RyuQeY1bCRXCjVKVJUEUfPOKbR43FQDiOl1uCAu
-	l8BMYvq6sUdOY4ZRYRZh7HN24RqhbWZ2iVHdIyb1ECpctNEy7exZ4d1oCWt+NFIZ
-	TcuvuJFSuQw1OPxs5LE7PR8dz+1xR3b9tP0UnbdETu7ZmleCQK3px4jbojQm6rqb
-	H4HFRA==
-Received: from mail-pg1-f200.google.com (mail-pg1-f200.google.com [209.85.215.200])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4fr5fjg5sq-1
+	nk3YlK7n3Nu0vqzXpHhwmvmJkRiBA+wHllXI2VhY2wA=; b=kcf2W2fVOJsELi7L
+	RKSgD79Df1gz7S98qhWXBTQIC8GkwYzCjqjPc8cdVBMJ8o6lroAqmVxlFxTvvbUr
+	Ynpowtp/YQ5p4MAmodTjpmmMkTjgSG95TTUpmyPSAgMMiY9BUvM2klfmlKVtRIBY
+	pPwAk8VniOBQUUoUrZedFvTBMS9jYwYnxd1CdvYuZseBQP39hI5BGV/uPdKOumA7
+	GMVPqbN3Ryo3TjDIRKvGq1nwMrvItwugNggXZSo/Jir88nUm5P+dgUfKlb83g8oB
+	mcTzg6UpQvjbajUFcu/mF2o49wOnkem6FmpvPREWzlcqTVr5o1s0NkrKbTydnxoJ
+	s/cx/w==
+Received: from mail-yw1-f197.google.com (mail-yw1-f197.google.com [209.85.128.197])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4fr5fprb1n-1
 	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Thu, 30 Jul 2026 12:01:01 +0000 (GMT)
-Received: by mail-pg1-f200.google.com with SMTP id 41be03b00d2f7-ca7c1e22995so3357813a12.3
-        for <linux-pm@vger.kernel.org>; Thu, 30 Jul 2026 05:01:01 -0700 (PDT)
+	for <linux-pm@vger.kernel.org>; Thu, 30 Jul 2026 12:41:04 +0000 (GMT)
+Received: by mail-yw1-f197.google.com with SMTP id 00721157ae682-81eb7dc4e28so70548777b3.0
+        for <linux-pm@vger.kernel.org>; Thu, 30 Jul 2026 05:41:04 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1785412861; x=1786017661; darn=vger.kernel.org;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :content-type:mime-version:subject:date:from:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=6JK9gzvvCPLMwkZwM+DdBcV1dmsHnyUD0kCzj/Lw3mo=;
-        b=HLOGEU1uVyYdwZ5TR3VgmFUiuMN2E6Xu0Lhi4qqpRZ1daSHlSwfM0S+YP4yzsaRcEi
-         gOuKEHzxyKwYusqo34MGVUXz9Ebmd+ODF6R/9ivMGan04LMcQd638Phrt8OFKUAmJol0
-         T7tp4RN4IS4qQIe9SjXJmdm6KuY0QDkDwcGzMw5anrC5lFbu8dcTwe5rCiu4cuwQwlQp
-         nUxPiMqa8IsPfSb+QM+TzrL4rQ3goBF010V+rP7dPb78AZnOSYCp/x83BhTyncBjID3B
-         tqGKJvpdKfVGRwcyUK+TJMKxQVtkQKZ5UDHpMh4GE/Oo+SmEupiFNhPOGEEp3dtP46P/
-         Y0Qg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1785412861; x=1786017661;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :content-type:mime-version:subject:date:from:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+        d=oss.qualcomm.com; s=google; t=1785415263; x=1786020063; darn=vger.kernel.org;
+        h=content-transfer-encoding:content-type:in-reply-to:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=6JK9gzvvCPLMwkZwM+DdBcV1dmsHnyUD0kCzj/Lw3mo=;
-        b=fudlkOvX0YfpZP6lsP87i3z+z1mvq4HrrBZ96ZqV1nlogEx1flQiFJOY2bAyu04fqD
-         W/qK0et5cblb0vQJlnpI+hMNbIrRdHxQWIjDsNSO+TuFGdcIozXraYtsMeoOcRbGaLxd
-         AIUxHthyh5em93DMsiNz7CSLgWrAASIKb/eeZwufPHSZ3ZFpYH4cjZaqpqDXsbANrHD6
-         F9zyGPLEGCPeQpwH8uQTNEJ5pJajCItyoi9UCqTGDFuqLHrxr/pak4ff3SsCHI7hP+7C
-         XQWyF7RSqE4He6EJDOqpT6F9SE2KA+bNTsHZQUFzD1wiUGdBj29MgIA7Dk28FyUME9Wm
-         WyoQ==
-X-Forwarded-Encrypted: i=1; AHgh+RpdbwIQu0qntsSMS0NOickiuhAK3xO792anSeNH4JnVqyK0LedeUajU+GruJRlECLnsm8apps3QuQ==@vger.kernel.org
-X-Gm-Message-State: AOJu0YxIDYRFc1ESIYe+ZBbnxgfBySKb6r9Bc3t5THxWwJLNeXfuuknh
-	+AiuAaIYgUpelZBmPPA24A4W/Od7AimbHge15bu3sdKuhopccl5iVNSBL/nm5eRYEcVuAf3kMtE
-	rnMSWZlIaSI3LmUdMVIDqSgsW7TCH/CoCE8IFYcg7kBZ9ua6mAgLzoJ+UwvxfGJ8zf8ZFXg==
-X-Gm-Gg: AR+sD10AQjSPzeH6JSQL2kkyuXKKWOGSkDpTxhPtV3AKggciODXg9OugQbd+plAR1Zn
-	uyr6OJX/DJ6T7CIWqjRYayuYwP8PMpEbMDEQke0sRTFmOFq3IZKo9Hy6yO1Qqev1hGyeRZrphIT
-	PwKhKcnmsWyrggyA/S/XCqYbP3EFlXfm20/wxiWuFBIjLjeV1rRCdXhIohqUifBpupwa8xJL16n
-	8SMRwibTAAmZxldL52TIiI7s6wbQz+D+5ab2S9hjOKyNgC9eb49ys+OdhInhFU3sOcqDzdl7Dgq
-	HFJGJlWa47ek2IHlyqSr164EUoYixQeWIC5njdd/FzrAhDh32smCK6tJhlligk/0+x4B/V1ZK9/
-	KL2JTB4hNAKYfvrbIVn/uDUVQnaHC/oGEahs=
-X-Received: by 2002:a05:6a21:9983:b0:3c8:e000:96f8 with SMTP id adf61e73a8af0-3c9006f112bmr2293906637.65.1785412858924;
-        Thu, 30 Jul 2026 05:00:58 -0700 (PDT)
-X-Received: by 2002:a05:6a21:9983:b0:3c8:e000:96f8 with SMTP id adf61e73a8af0-3c9006f112bmr2293789637.65.1785412857247;
-        Thu, 30 Jul 2026 05:00:57 -0700 (PDT)
-Received: from hu-krichai-hyd.qualcomm.com ([202.46.23.25])
-        by smtp.gmail.com with ESMTPSA id a92af1059eb24-13f9a041e36sm7822776c88.7.2026.07.30.05.00.52
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 30 Jul 2026 05:00:56 -0700 (PDT)
-From: Krishna Chaitanya Chundru <krishna.chundru@oss.qualcomm.com>
-Date: Thu, 30 Jul 2026 17:30:18 +0530
-Subject: [PATCH v7 3/3] arm64: dts: qcom: eliza-evk: Add PCIe1 with TC9563
- PCIe switch
+        bh=nk3YlK7n3Nu0vqzXpHhwmvmJkRiBA+wHllXI2VhY2wA=;
+        b=HUeS+n/bbA5lTHRWfeZn7FIEPjK7VN1ROYM/JsKti/LH0a2ceoGKsFF60W+NYlFYdI
+         54rEBdqPVzguA80g48Tt+U+8NPulYPvBC9mkGYQnM9jRO1eAtbzSFWyLkwwSIsxSgwmC
+         eCR/z7jEw7bWWuTi1vHYHGyJHcbzaxA73tSUHb9eU1wGzzOprhl5ckJMvIMO5Q2vPaz0
+         JIbYKFDMDgDl1TWv8Mc+gb/b5/T2j5uGgL0FjwdrNGhSqzYXkpiuvTPmkG7cltM1pDKy
+         QauRRqOMe5Gss+NjhMoJjb3jlP4QrLD5mzg1Vv13R3C/m0nlyvyJfAF+8zHDVZWPkBZA
+         zCgQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1785415263; x=1786020063;
+        h=content-transfer-encoding:content-type:in-reply-to:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=nk3YlK7n3Nu0vqzXpHhwmvmJkRiBA+wHllXI2VhY2wA=;
+        b=RfNvq87WUmS4lqdo1EVAumoDbYlWQSnUFNrQBmInrTERtg4R/AuxPovYQZhKOynPas
+         Y0vuIYpMiyCxXBKEYdmpEekr+0cO1buN4qv6BF/2WZB2XwKb9kVg7EVGgNQ4If7P9CtK
+         qXnC7RH0z/IcYXGLrb++mAgbe/Xv4nTfw/hmG+J7vtSMIqcLega7CDMohJwB1tltMtO0
+         YDHf2RY90n5755VFUFnuXyBVnPB/SZALscksqy+HEKanXq6c8jmotJ4QvK453qDo8PK0
+         l7DC4phVuT6tpmOcM8GQKSyxAKgWDbNjh8Jmlpj49gaNp3LARrpKVKUv2YRIgUvN0mZt
+         5qew==
+X-Forwarded-Encrypted: i=1; AHgh+RqM2YJZVYfH2I5udRGXGKomCuugtBpnsp4AK6MclSwS4LQ61USNucuXIFqV1mDW7hzre4fgnWVgKA==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yxuz76kzUcmejEwFt/yzJZTXbciRGRBaohjQ+JTFNbeyqRw3wQJ
+	xuuOoPLD/ppEecdKKLmsWpeLB06c93UIOd1/sNKpe5bLXj08F4kw1aISuEk+oxZp8LEQcsy9rZ1
+	jXQO07M1Tc6NluuRZiIwrqAvTvteC8QX9vtg7CfJItV7kqD1SSE7HGSxl7kotrpWycCd/KuGxs4
+	Q=
+X-Gm-Gg: AR+sD13iLLJ4MguCtfxgzq34n4ADWvxuuCXOq6RddeaDONgTIU7Dynha2Ps7iV0yY0X
+	o6Djdq1Gra2ymeOfMkWi9XJjK63m3bdWBteDKPE78Gut+REWrj1IxTb5+8dQqCkUVemEeFVxluj
+	klmiEA7/VhTWDsbuVPYodAYf3QNJp2EyBytinRt+FiearzFzcxOFP9Qd9jR7Bf4/dqIIARSJzoX
+	sdiyN/+epox/bKCqyv+sxYRm2yeZEgrFTmKFBPkQYjZcnUL2PDvNbnvVVwwDsQyC5JgA6anVPb6
+	9V6ofcSX2V1xkhMplt73mDvQmWfeD+fWGl9MYADFGCpm3RHGEliKDV7pb1YqujlcDmEGoDgPJDs
+	czGESyQTTFY2a6JzdCJU5W4FrwGXYFUolPBWFIo4GecZNzDF0kUvMXKXt9zyUzH7IZg==
+X-Received: by 2002:a05:690e:4894:20b0:667:8c87:25ef with SMTP id 956f58d0204a3-6692f73fff0mr1225286d50.71.1785415263164;
+        Thu, 30 Jul 2026 05:41:03 -0700 (PDT)
+X-Received: by 2002:a05:690e:4894:20b0:667:8c87:25ef with SMTP id 956f58d0204a3-6692f73fff0mr1225272d50.71.1785415262619;
+        Thu, 30 Jul 2026 05:41:02 -0700 (PDT)
+Received: from ?IPV6:2a01:cde0:108:24ed:2206:62e9:bbc4:c360? ([2a01:cde0:108:24ed:2206:62e9:bbc4:c360])
+        by smtp.gmail.com with ESMTPSA id 956f58d0204a3-6692c734cfasm1186898d50.6.2026.07.30.05.41.00
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Thu, 30 Jul 2026 05:41:02 -0700 (PDT)
+Message-ID: <16a17547-8292-46d0-94e1-0d9a49db55cf@oss.qualcomm.com>
+Date: Thu, 30 Jul 2026 14:40:58 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20260730-eliza_evk-v7-3-7ac7b66a3e6d@oss.qualcomm.com>
-References: <20260730-eliza_evk-v7-0-7ac7b66a3e6d@oss.qualcomm.com>
-In-Reply-To: <20260730-eliza_evk-v7-0-7ac7b66a3e6d@oss.qualcomm.com>
-To: Bjorn Andersson <andersson@kernel.org>,
-        Konrad Dybcio <konradybcio@kernel.org>, Rob Herring <robh@kernel.org>,
-        Krzysztof Kozlowski <krzk+dt@kernel.org>,
+User-Agent: Mozilla Thunderbird
+Subject: Re: [RFC PATCH] dt-bindings: power: Add power-limit-controller schema
+To: Manaf Meethalavalappu Pallikunhi <manaf.pallikunhi@oss.qualcomm.com>,
+        Krzysztof Kozlowski <krzk@kernel.org>
+Cc: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
         Conor Dooley <conor+dt@kernel.org>,
-        Manivannan Sadhasivam <mani@kernel.org>,
-        Bartosz Golaszewski <brgl@kernel.org>
-Cc: linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
-        linux-pm@vger.kernel.org,
-        Krishna Chaitanya Chundru <krishna.chundru@oss.qualcomm.com>,
-        Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>,
-        Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>,
-        Abel Vesa <abel.vesa@oss.qualcomm.com>
-X-Mailer: b4 0.15.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1785412836; l=3785;
- i=krishna.chundru@oss.qualcomm.com; s=20230907; h=from:subject:message-id;
- bh=ySDiR9YPLrb5IFR36TCBslNdsY8sArZgsyYs5F+l2SQ=;
- b=nqUC1f8G5lYQx8G8Qvk2JfIGkirB8bK6RMI5BvdAbyzIKNX76NMnkHjvfguQiilT6WmDoZn8Q
- yFZeb6X3u+EDY5FQ2kfMamv9eoEUmkaRrAc8mQgq+4yIJfSLg+yt7Ku
-X-Developer-Key: i=krishna.chundru@oss.qualcomm.com; a=ed25519;
- pk=10CL2pdAKFyzyOHbfSWHCD0X0my7CXxj8gJScmn1FAg=
-X-Proofpoint-GUID: NE353I7Wv4a8YOypD-CNNvglRxRfQ8p7
-X-Authority-Analysis: v=2.4 cv=TKF1jVla c=1 sm=1 tr=0 ts=6a6b3cfd cx=c_pps
- a=oF/VQ+ItUULfLr/lQ2/icg==:117 a=ZePRamnt/+rB5gQjfz0u9A==:17
- a=IkcTkHD0fZMA:10 a=RAioF0-LDSMA:10 a=s4-Qcg_JpJYA:10
- a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=_K5XuSEh1TEqbUxoQ0s3:22
- a=EUspDBNiAAAA:8 a=VwQbUJbxAAAA:8 a=qQkGquXN9PvF_GGjQ98A:9 a=QEXdDO2ut3YA:10
- a=3WC7DwWrALyhR5TkjVHa:22
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzMwMDA5MCBTYWx0ZWRfX6zpGgg4sEUYU
- 8Q/zRp1iocZUA2ChR/GFng4OA1Yyir8GdkLoi9j063kfxEMZP34GrEAL8NI2dXG7B+ZMnv2qedj
- UUYK1huK3FIqroqTvEC6FsIJt16SEQeUoH5bZegOMZ2yQ+ehnY1zFYUm9wtYQ+O1F/l1/SeNvRP
- XDbRnh0ll/D3fKIes33vwaiCpPS85oylKj/Ob5GKPxMK5Y8QG1m+zmKtTRyGOQhl8dnReDoIR9G
- 7woF//W+59pFZdhhAxaU6SmKuq/5TgDdlfrWFC5+MclQKr7uQfnHpbXUF9v82w+hJAT8V1vJb71
- 684o6JeuKQWpGTfalw2/f1Q9m7xj9nuyaKXI1IECd/9gIqX+Z/eSk/Ya/bxBGRJl6YmQDsq7q14
- qt0rwrKN6ltUud711rLzcmOCIw7etwEogEo0SpEbtoILcnlpL1OO4ncG0sh6rvbedEOOtCZ6yBz
- pH9TK6rjOx07Vn8vsrg==
-X-Proofpoint-Spam-Info: AW1haW4tMjYwNzMwMDA5MCBTYWx0ZWRfXwhIozubQSCnp
- nnUcFIPa7Ad24rfwZrOdH5DvWfy0mafnIPSbbt7zP7zAHkUtxBcp4RV6V444kJLGSjPe23YabrJ
- b5Vnjeh2zW/Oa1oarhnYDg4QLkLWmYo=
-X-Proofpoint-ORIG-GUID: NE353I7Wv4a8YOypD-CNNvglRxRfQ8p7
+        "Rafael J . Wysocki"
+ <rafael@kernel.org>,
+        Bjorn Andersson <andersson@kernel.org>,
+        Konrad Dybcio <konradybcio@kernel.org>,
+        Gaurav Kohli <gaurav.kohli@oss.qualcomm.com>,
+        linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+        Ulf Hansson <ulf.hansson@oss.qualcomm.com>
+References: <20260703-modern-indigo-wolverine-6b6eaa@quoll>
+ <20260709180727.4015267-1-manaf.pallikunhi@oss.qualcomm.com>
+Content-Language: en-US
+From: Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>
+In-Reply-To: <20260709180727.4015267-1-manaf.pallikunhi@oss.qualcomm.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-Authority-Analysis: v=2.4 cv=ErfiaycA c=1 sm=1 tr=0 ts=6a6b4660 cx=c_pps
+ a=0mLRTIufkjop4KoA/9S1MA==:117 a=xqWC_Br6kY4A:10 a=IkcTkHD0fZMA:10
+ a=RAioF0-LDSMA:10 a=s4-Qcg_JpJYA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=u7WPNUs3qKkmUXheDGA7:22 a=yOCtJkima9RkubShWh1s:22 a=gEfo2CItAAAA:8
+ a=EUspDBNiAAAA:8 a=YG6TYCAIP6Cmhb9qLQcA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
+ a=WgItmB6HBUc_1uVUp3mg:22 a=sptkURWiP4Gy88Gu7hUp:22
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzMwMDA5NSBTYWx0ZWRfX1tQc+iGD+X/9
+ RTHM+mGyBBz+sXD0o4I3hrDYEq3G/zaDcg+RE2kjyATLHPAIgpecihGJ5u4IVwTnzyc24H8I2fq
+ a0Pf43l1kxOPU/zqL0omWpyWJihaDlBomi5bFHz86q0zWC6uyiuwSa3uHrebcAoJolT2MJZHUde
+ 6D65TZIUDDLcpT0T53+SZCBHa5KGi+rOEhDALjBYf2qimGTjO6+HVdjKbGL++PrXlDO42DcLdlD
+ Ly1PQSzLk4VXrlMU9i7XFpo90uLcZBMJepusHs1iByrx5shMjpYVNbG3ezVlqCt1qz+EYwo7pJ2
+ Y5NWlzo4e8IjduGBbsuF/v6WyOtNxtPCwhA48qqo+6ILl6Fi9C+XL3Yakuu9IVarQBxMvWTIdtt
+ TfMHetkdTsO5V6TM4wFLmR4H0cB6xyzspmqGIb5D4P+r5T2qwegiD1/4WzXVmgwY8OJp8NPWmei
+ yqgnj8aMkftBQJus9vA==
+X-Proofpoint-GUID: QjV7dDRjl7YjN0WoW38vmGbCm0V80aO1
+X-Proofpoint-ORIG-GUID: QjV7dDRjl7YjN0WoW38vmGbCm0V80aO1
+X-Proofpoint-Spam-Info: AW1haW4tMjYwNzMwMDA5NSBTYWx0ZWRfX3HVzORrDMu1M
+ jEMmZDgNHKMpefHBRdJBAY7Km5unUrMrzX0/pqKhlBvcNMfc6uoZt3UlVK8POvAcKiPB5wvbtTR
+ YfqI3iL2Y1zjZO3bCZT6K8x2+am7Fd8=
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.134,FMLib:17.12.100.49
  definitions=2026-07-30_03,2026-07-29_01,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- clxscore=1015 spamscore=0 priorityscore=1501 malwarescore=0 impostorscore=0
- lowpriorityscore=0 bulkscore=0 adultscore=0 phishscore=0 suspectscore=0
+ suspectscore=0 phishscore=0 lowpriorityscore=0 spamscore=0 bulkscore=0
+ clxscore=1015 impostorscore=0 malwarescore=0 adultscore=0 priorityscore=1501
  classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2607300090
+ reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2607300095
 
-The Eliza EVK board connects PCIe1 (8GT/s x2) to a Toshiba TC9563
-PCIe switch. Enable PCIe1 and its QMP PHY nodes.
 
-TC9563 uses I2C (at address 0x77 on I2C4) for its management interface.
+Hi Manaf,
 
-Override the base iommu-map with the expanded set covering all the
-switch's downstream ports (0x1400-0x1408 SID range).
+[+Cc Ulf]
 
-The TC9563 RESX# and PERST# are OR-ed internally to assert reset on the
-switch. Use TC9563 RESX# pin via a TLMM GPIO and skip wiring PERST#
-from the PCIe controller.
+On 7/9/26 20:07, Manaf Meethalavalappu Pallikunhi wrote:
+> This RFC proposes a new device tree binding schema for power limit
+> controllers that manage SoC power domains with hardware-enforced power
+> capping capabilities.
+> 
+> Background
+> ==========
+> Modern SoCs implement sophisticated power management hardware that can
+> monitor and enforce power consumption limits across multiple power
+> domains. For example, Qualcomm's SPEL (SoC Power and Electrical Limits)
+> manages hierarchical power domains including system-level, SoC-level,
+> and individual subsystem domains (CPU clusters, GPU, modem, etc.).
+> 
+> These controllers help prevent thermal overload, maintain system
+> stability, and comply with platform power budgets. However, there is
+> currently no unified device tree representation that can describe their
+> hierarchical nature and diverse capabilities.
 
-Reviewed-by: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
-Reviewed-by: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
-Reviewed-by: Abel Vesa <abel.vesa@oss.qualcomm.com>
-Reviewed-by: Manivannan Sadhasivam <mani@kernel.org>
-Signed-off-by: Krishna Chaitanya Chundru <krishna.chundru@oss.qualcomm.com>
----
- arch/arm64/boot/dts/qcom/eliza-evk.dtsi | 105 ++++++++++++++++++++++++++++++++
- 1 file changed, 105 insertions(+)
+I'm wondering if that could be described with the power domains and some 
+additional properties
 
-diff --git a/arch/arm64/boot/dts/qcom/eliza-evk.dtsi b/arch/arm64/boot/dts/qcom/eliza-evk.dtsi
-index b35fffb50976..ccd6f0113513 100644
---- a/arch/arm64/boot/dts/qcom/eliza-evk.dtsi
-+++ b/arch/arm64/boot/dts/qcom/eliza-evk.dtsi
-@@ -12,6 +12,26 @@ chosen {
- 		stdout-path = "serial0:115200n8";
- 	};
- 
-+	vreg_0p9: regulator-0v9 {
-+		compatible = "regulator-fixed";
-+		regulator-name = "VREG_0P9";
-+
-+		regulator-min-microvolt = <900000>;
-+		regulator-max-microvolt = <900000>;
-+		regulator-always-on;
-+		regulator-boot-on;
-+	};
-+
-+	vreg_1p8: regulator-1v8 {
-+		compatible = "regulator-fixed";
-+		regulator-name = "VREG_1P8";
-+
-+		regulator-min-microvolt = <1800000>;
-+		regulator-max-microvolt = <1800000>;
-+		regulator-always-on;
-+		regulator-boot-on;
-+	};
-+
- 	vreg_pcie_m_3p3: regulator-3p3 {
- 		compatible = "regulator-fixed";
- 
-@@ -99,6 +119,91 @@ pcieport0_ep: endpoint {
- 	};
- };
- 
-+&pcie1 {
-+	iommu-map = <0x0 &apps_smmu 0x1400 0x0 0x1>,
-+		    <0x100 &apps_smmu 0x1401 0x0 0x1>,
-+		    <0x208 &apps_smmu 0x1402 0x0 0x1>,
-+		    <0x210 &apps_smmu 0x1403 0x0 0x1>,
-+		    <0x218 &apps_smmu 0x1404 0x0 0x1>,
-+		    <0x300 &apps_smmu 0x1405 0x0 0x1>,
-+		    <0x400 &apps_smmu 0x1406 0x0 0x1>,
-+		    <0x500 &apps_smmu 0x1407 0x0 0x1>,
-+		    <0x501 &apps_smmu 0x1408 0x0 0x1>;
-+
-+	status = "okay";
-+};
-+
-+&pcie1_phy {
-+	vdda-phy-supply = <&vreg_l1k>;
-+	vdda-pll-supply = <&vreg_l3k>;
-+
-+	status = "okay";
-+};
-+
-+&pcie1_port0 {
-+	wake-gpios = <&tlmm 53 GPIO_ACTIVE_LOW>;
-+	/* Same GPIO is used for both PERST# and resx-gpio */
-+
-+	tc9563: pcie@0,0 {
-+		compatible = "pci1179,0623";
-+		reg = <0x10000 0x0 0x0 0x0 0x0>;
-+		#address-cells = <3>;
-+		#size-cells = <2>;
-+
-+		device_type = "pci";
-+		ranges;
-+		bus-range = <0x2 0xff>;
-+
-+		vddc-supply = <&vreg_0p9>;
-+		vdd18-supply = <&vreg_1p8>;
-+		vdd09-supply = <&vreg_0p9>;
-+		vddio1-supply = <&vreg_1p8>;
-+		vddio2-supply = <&vreg_1p8>;
-+		vddio18-supply = <&vreg_1p8>;
-+
-+		i2c-parent = <&i2c4 0x77>;
-+
-+		resx-gpios = <&tlmm 54 GPIO_ACTIVE_LOW>;
-+
-+		pcie@1,0 {
-+			reg = <0x20800 0x0 0x0 0x0 0x0>;
-+			#address-cells = <3>;
-+			#size-cells = <2>;
-+
-+			device_type = "pci";
-+			ranges;
-+			bus-range = <0x3 0xff>;
-+		};
-+
-+		pcie@2,0 {
-+			reg = <0x21000 0x0 0x0 0x0 0x0>;
-+			#address-cells = <3>;
-+			#size-cells = <2>;
-+
-+			device_type = "pci";
-+			ranges;
-+			bus-range = <0x4 0xff>;
-+		};
-+
-+		pcie@3,0 {
-+			reg = <0x21800 0x0 0x0 0x0 0x0>;
-+			#address-cells = <3>;
-+			#size-cells = <2>;
-+			device_type = "pci";
-+			ranges;
-+			bus-range = <0x5 0xff>;
-+
-+			ethernet@0,0 {
-+				reg = <0x50000 0x0 0x0 0x0 0x0>;
-+			};
-+
-+			ethernet@0,1 {
-+				reg = <0x50100 0x0 0x0 0x0 0x0>;
-+			};
-+		};
-+	};
-+};
-+
- &uart13 {
- 	compatible = "qcom,geni-debug-uart";
- 
+Documentation/devicetree/bindings/power/power-domain.yaml
 
--- 
-2.34.1
+
+> Proposed Schema Design
+> ======================
+> The schema supports a flexible, hierarchical structure:
+> 
+> 1. Power Limit Controller Node
+>     - Root node representing the hardware controller
+>     - Uses #power-limit-domain-cells for domain referencing
+> 
+> 2. Power Domain Nodes (power-limit-domain@N)
+>     - Individual domains/zones under the controller
+>     - Each domain identified by a register index
+>     - Optional parent-domain property for hierarchical relationships
+>     - Can be either:
+>       * Monitoring-only (no power-limits child node)
+>       * Power-limiting (with power-limits child node)
+> 
+> 3. Power Limit Constraints (power-limit@N)
+>     - Multiple constraints per domain (PL1, PL2, PL3, etc.)
+>     - Each constraint defines:
+>       * Settable power limit (with min/max bounds)
+>       * Settable time window for power averaging (with min/max bounds)
+>       * Default values at boot/reset
+>       * Constraint name for identification
+> 
+> Hierarchical Example (Qualcomm SPEL)
+> ============================
+>     System Domain (with PL1/PL2)
+>       └── SoC Domain (with PL1/PL2)
+>             ├── CPU Cluster Domain (with PL1/PL2)
+>             ├── GPU Domain (monitoring-only)
+>             └── Modem Domain (monitoring-only)
+> 
+> Before investing further in this direction, we would like to check with
+> the community on a few points:
+> 
+> 1. Is a generic power-limit-controller binding the right approach here,
+>     or should this remain a vendor-specific binding (e.g., under
+>     qcom,spel)?
+> 
+> 2. If a generic binding is acceptable, does this schema design look
+>     reasonable as a starting point?
+> 
+> 3. If this is the preferred direction, we would need to design a
+>     generic driver that consumes this binding and exposes the domains
+>     via the powercap sysfs interface — effectively requiring a
+>     significant redesign of the existing Qualcomm SPEL driver to sit
+>     on top of a vendor-agnostic core. Does that align with what the
+>     community would expect here?
+> 
+> Any guidance on whether this is the right path forward — would
+> be greatly appreciated before we commit further engineering effort.
+> 
+> Signed-off-by: Manaf Meethalavalappu Pallikunhi <manaf.pallikunhi@oss.qualcomm.com>
+> ---
+>   .../power/limits/power-limit-controller.yaml  | 238 ++++++++++++++++++
+>   1 file changed, 238 insertions(+)
+>   create mode 100644 Documentation/devicetree/bindings/power/limits/power-limit-controller.yaml
+> 
+> diff --git a/Documentation/devicetree/bindings/power/limits/power-limit-controller.yaml b/Documentation/devicetree/bindings/power/limits/power-limit-controller.yaml
+> new file mode 100644
+> index 000000000000..9cd4d9d6414d
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/power/limits/power-limit-controller.yaml
+> @@ -0,0 +1,238 @@
+> +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
+> +%YAML 1.2
+> +---
+> +$id: http://devicetree.org/schemas/power/limits/power-limit-controller.yaml#
+> +$schema: http://devicetree.org/meta-schemas/core.yaml#
+> +
+> +title: Power Limit Controller and Domains
+> +
+> +maintainers:
+> +  - Manaf Meethalavalappu Pallikunhi <manaf.pallikunhi@oss.qualcomm.com>
+> +
+> +description: |
+> +  Power limit controllers are hardware blocks that enforce power consumption
+> +  limits on SoC power domains to prevent thermal overload, maintain system
+> +  stability, and comply with platform power budgets.
+> +
+> +  The binding supports a hierarchical structure:
+> +    - A power limit controller
+> +    - Multiple power domains/zones under the controller
+> +    - Each domain can have power limit constraints or be monitoring-only
+> +    - Domains with constraints support multiple power limits (PL1, PL2, PL3, etc.)
+> +
+> +  Controller capabilities:
+> +    - Hardware-enforced power capping for one or more power domains
+> +    - Multiple configurable power limits per domain (sustained, burst, peak)
+> +    - Time window controls for power averaging
+> +    - Energy or power monitoring and reporting
+> +    - Power balancing algorithms across domains
+> +
+> +  This binding describes the common properties for power limit controller
+> +  provider nodes. Individual controller bindings should reference this schema
+> +  and add device-specific properties.
+> +
+> +select: false
+> +
+> +properties:
+> +  $nodename:
+> +    pattern: "^power-limits(@.*)?$"
+> +
+> +  '#power-limit-domain-cells':
+> +    description: |
+> +      Number of cells in a power limit domain specifier for child domains.
+> +      Typically 1, representing the domain index.
+> +    const: 1
+> +
+> +patternProperties:
+> +  "^power-limit-domain@[0-9]+$":
+> +    type: object
+> +    description: |
+> +      Individual power limit domain/zone under this controller.
+> +      Each domain can either:
+> +        - Have power limit constraints (with power-limits child node)
+> +        - Be monitoring-only (without power-limits child node)
+> +
+> +    properties:
+> +      reg:
+> +        description: Power domain index identifier
+> +        maxItems: 1
+> +
+> +      domain-name:
+> +        description: |
+> +          Name of this power domain (e.g., "system", "soc", "subsystem").
+> +        $ref: /schemas/types.yaml#/definitions/string
+> +
+> +      parent-domain:
+> +        $ref: /schemas/types.yaml#/definitions/phandle
+> +        description: |
+> +          Reference to the parent power limit domain, if this domain is a
+> +          sub-domain of another domain. This establishes a hierarchical
+> +          relationship between domains.
+> +
+> +          For example, a "subsystem" domain might be a child of a "soc" domain,
+> +          or a "soc" domain might be a child of a "system" domain.
+> +
+> +      power-limits:
+> +        type: object
+> +        description: |
+> +          Container node for power limit constraints within this domain.
+> +          Each child node represents a power limit constraint index.
+> +
+> +          This node is optional. If omitted (or if monitoring-only is set),
+> +          the domain provides only power/energy measurement without limits.
+> +
+> +        patternProperties:
+> +          "^power-limit@[0-9]+$":
+> +            type: object
+> +            description: |
+> +              Individual power limit constraint configuration.
+> +
+> +              Each constraint defines:
+> +              - A settable power limit
+> +              - A settable time window
+> +              - Optional min/max bounds for power and time window
+> +              - A name identifier
+> +
+> +              Typical constraint indices:
+> +                - Index 0: PL1 (sustained/long-term power limit)
+> +                - Index 1: PL2 (burst/short-term power limit)
+> +                - Index 2: PL3 (peak/instantaneous power limit)
+> +
+> +            properties:
+> +              reg:
+> +                description: Power limit constraint index identifier
+> +                maxItems: 1
+> +
+> +              constraint-name:
+> +                description: |
+> +                  Name of this power limit constraint (e.g., "long_term", "short_term").
+> +                $ref: /schemas/types.yaml#/definitions/string
+> +
+> +              power-limit-min-microwatt:
+> +                description: |
+> +                  Minimum power limit that can be configured for this constraint.
+> +                  Represents the lower bound of the allowable power range.
+> +
+> +              power-limit-max-microwatt:
+> +                description: |
+> +                  Maximum power limit that can be configured for this constraint.
+> +                  Represents the upper bound of the allowable power range.
+> +
+> +              power-limit-microwatt:
+> +                description: |
+> +                  Default power limit value for this constraint at boot/reset.
+> +                  This is the initial value that will be programmed.
+> +
+> +              time-window-min-microsecond:
+> +                description: |
+> +                  Minimum time window for power averaging.
+> +                  Shorter windows allow faster response to power excursions.
+> +
+> +              time-window-max-microsecond:
+> +                description: |
+> +                  Maximum time window for power averaging.
+> +                  Longer windows provide more stable power limiting.
+> +
+> +              time-window-microsecond:
+> +                description: |
+> +                  Default time window value for power averaging at boot/reset.
+> +                  This is the initial value that will be programmed.
+> +
+> +            required:
+> +              - reg
+> +
+> +            additionalProperties: true
+> +
+> +        additionalProperties: false
+> +
+> +    required:
+> +      - reg
+> +
+> +    additionalProperties: true
+> +
+> +additionalProperties: true
+> +
+> +examples:
+> +  - |
+> +    // Multi-domain power limit controller with mixed capabilities
+> +    // Demonstrates multiple domains with and without power limit constraints
+> +    power-limits@ef3b000 {
+> +        compatible = "qcom,glymur-spel";
+> +        reg = <0x0ef3b000 0x1000>;
+> +        #power-limit-domain-cells = <1>;
+> +
+> +        // Domain 0: System domain with full power limit control (PL1/PL2)
+> +        sys_domain: power-limit-domain@0 {
+> +            reg = <0>;
+> +            domain-name = "system";
+> +
+> +            power-limits {
+> +                // PL1: Sustained/Long-term Power Limit
+> +                power-limit@0 {
+> +                    reg = <0>;
+> +                    constraint-name = "long_term";
+> +
+> +                    power-limit-min-microwatt = <15000000>;     // 15W min
+> +                    power-limit-max-microwatt = <28000000>;     // 28W max
+> +                    power-limit-microwatt = <20000000>;         // 20W default
+> +
+> +                    time-window-min-microsecond = <1000000>;    // 1s min
+> +                    time-window-max-microsecond = <10000000>;   // 10s max
+> +                    time-window-microsecond = <8000000>;        // 8s default
+> +                };
+> +
+> +                // PL2: Burst/Short-term Power Limit
+> +                power-limit@1 {
+> +                    reg = <1>;
+> +                    constraint-name = "short_term";
+> +
+> +                    power-limit-min-microwatt = <15000000>;     // 15W min
+> +                    power-limit-max-microwatt = <64000000>;     // 64W max
+> +                    power-limit-microwatt = <45000000>;         // 45W default
+> +
+> +                    time-window-min-microsecond = <10000>;      // 10ms min
+> +                    time-window-max-microsecond = <1000000>;    // 1s max
+> +                    time-window-microsecond = <28000>;          // 28ms default
+> +                };
+> +            };
+> +        };
+> +
+> +        // Domain 1: SoC domain - child of system, monitoring only
+> +        soc_domain: power-limit-domain@1 {
+> +            reg = <1>;
+> +            domain-name = "soc";
+> +            parent-domain = <&sys_domain>;
+> +
+> +            // This domain exposes only:
+> +            // - power_uw (current power)
+> +            // - energy_uj (energy counter)
+> +            // - enabled (measurement control)
+> +        };
+> +
+> +        // Domain 2: Subsystem domain with single power limit
+> +        power-limit-domain@2 {
+> +            reg = <2>;
+> +            domain-name = "cpu";
+> +            parent-domain = <&soc_domain>;
+> +
+> +            power-limits {
+> +                power-limit@0 {
+> +                    reg = <0>;
+> +                    constraint-name = "subsystem";
+> +
+> +                    power-limit-min-microwatt = <5000000>;      // 5W
+> +                    power-limit-max-microwatt = <15000000>;     // 15W
+> +                    power-limit-microwatt = <10000000>;         // 10W
+> +
+> +                    time-window-microsecond = <1000000>;        // 1s
+> +                };
+> +            };
+> +        };
+> +
+> +        // Domain 3: Another subsystem - monitoring only (no power-limits node)
+> +        power-limit-domain@3 {
+> +            reg = <3>;
+> +            domain-name = "gpu";
+> +            parent-domain = <&soc_domain>;
+> +        };
+> +    };
 
