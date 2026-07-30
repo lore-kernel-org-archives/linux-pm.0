@@ -1,172 +1,207 @@
-Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-ot1-f44.google.com (mail-ot1-f44.google.com [209.85.210.44])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9DD7A3CC314
-	for <linux-pm@vger.kernel.org>; Thu, 30 Jul 2026 07:42:35 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D040B318EE2
+	for <linux-pm@vger.kernel.org>; Thu, 30 Jul 2026 07:50:02 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.210.44
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1785397357; cv=none; b=TuFO/Jdfptw9FqZMtIReds7FxQoomEdxA0hkncuW+uD+Fd+QIfXm5zLesfTg3VrlqouCrItcaS2swAtyW5sDm39rQQTkyUjovNxtWhE45bplDm4cMR6RQ4vc3KJsCBf/dUl2CsrQxgJwPAXzB5b8IHC2KKepVQ+cq7gdTklLA/w=
+	t=1785397804; cv=none; b=NbMyTmKtvwuigQFiJXzPiucxqJubic9v64JQN4DprpqE6w/o5AGW7WKd8QfaBoNUXf72s1PQ5P5BzwjbDh2bs7ovS/jec++rN/SBNDFTMIwMsAHRENeG4ZM1myxdCWJHYVoR3xEQBkSw0PArdkDj2BOApbCF8oIKO+WE/fKHaE4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1785397357; c=relaxed/simple;
-	bh=28ZLWM/pIAuHM+vAC8WI2Vv9H2XW6bKXry8d3aIER/4=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=N/OlxZ54QEzTYVIIUk7ZAzeMH69F1n6ppK+HNHZHCb/bFX6DxjFevV8QCSfYDFB8/Vp9ImZ7wLIW7KiintWxahTGUAGB1vBopEGB7SI4WpZ6tENU/ELclXGDaenIOT8heiPx+Ipcsb7eu/IYqF7VB/ryAOgL4jYEx00xoy7wx6k=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=cMpM2Llx; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=Vjb/y4ah; arc=none smtp.client-ip=205.220.168.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
+	s=arc-20240116; t=1785397804; c=relaxed/simple;
+	bh=V4XB6Z2WcelOH80PVFy0hXEl/U5gL2srcXIIlGS3z3w=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=noChlnnl95dFXIj5nIdvO+FSSO4jOjzzW60sfVc5ElC4ozu69O7Sxp0mTFDHuM5RuzKzT+Ix6ecTtq0IM9Ns1FvTL8vihtJYSXVRSFxS/q1D4FY/6TVu8VCOqLa3StYGg9pxSyGryPc29B7VdLYBVqIK07gxLEcuzk/CyyZvb+8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=manifault.com; spf=pass smtp.mailfrom=manifault.com; dkim=pass (2048-bit key) header.d=manifault-com.20251104.gappssmtp.com header.i=@manifault-com.20251104.gappssmtp.com header.b=GbrFp0cw; arc=none smtp.client-ip=209.85.210.44
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=manifault.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=manifault.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="cMpM2Llx";
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="Vjb/y4ah"
-Received: from pps.filterd (m0279864.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 66U7MdV73832192
-	for <linux-pm@vger.kernel.org>; Thu, 30 Jul 2026 07:42:35 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	o8hNYcnTlO2sEp+wOOaNROgXRLuhpC/AD2RNYMOE4VU=; b=cMpM2Llx/3TaRzEk
-	5n/xZ4RN8j/H7gFGCXJEZ8I49KPSnIb++JFW5DNcuJJT2p+ucWozOi4sAAKoVWHQ
-	vvFCVdgYc7c7rTa19I3axMmNWGn/xJ7i+DnDiQSPcTWlUNvm8t+dPxHCJGKTsmdi
-	5DzJxzl77JdCQrGkiYEI3FtxD/WQBGmBNQ3Rx0idWXJdv3d2I71Rc6gHnYM6JRtm
-	xNz9e33mHuNIEISjNAR2JOvJqtfQvDVTU/mnQxywqYtEXyIt+wCv3aClpvcyRQmC
-	LSlvFvnGXOAxFJ9bWYN+C9EqG4glFT/Lpu7myP3dcvoU+v86WnA4O8va/01RgL2N
-	uxmTpQ==
-Received: from mail-qt1-f197.google.com (mail-qt1-f197.google.com [209.85.160.197])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4fr25wg2u4-1
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Thu, 30 Jul 2026 07:42:34 +0000 (GMT)
-Received: by mail-qt1-f197.google.com with SMTP id d75a77b69052e-51bfa45b280so2944731cf.3
-        for <linux-pm@vger.kernel.org>; Thu, 30 Jul 2026 00:42:34 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=manifault-com.20251104.gappssmtp.com header.i=@manifault-com.20251104.gappssmtp.com header.b="GbrFp0cw"
+Received: by mail-ot1-f44.google.com with SMTP id 46e09a7af769-7ea9c6ea7deso1133197a34.3
+        for <linux-pm@vger.kernel.org>; Thu, 30 Jul 2026 00:50:02 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1785397354; x=1786002154; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:in-reply-to:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=o8hNYcnTlO2sEp+wOOaNROgXRLuhpC/AD2RNYMOE4VU=;
-        b=Vjb/y4ahmXKxpafbYC6+1yMAG8hM1+SvYOGsnZdOzARbZLPe/AoM5cSx6wtJYNE8pP
-         6B9JgEtprXg8KWCTc8zD+Wj8JCdEypzSRr7S0D7EJHnZy89QzGuCwiFPTCbt32nbp6iq
-         VWefYidUvHbG8KTCpFzXr16zeDdmROOiPy6buD8ICx4vzz/evxH8c6G0nr2NtIftM1OP
-         MWJ2gRD067bZSFzAaD8AsKSpnrGKB9xj932+RekS4Btaml3fvDFrDVy+L9aGaDm9ayxb
-         lh+7nuC9uFbqxsUecwNkk9ldGFJb6naNOOspHsnaDiea0sAlRTtVsJRDy7YtCGPpDRtw
-         UFrQ==
+        d=manifault-com.20251104.gappssmtp.com; s=20251104; t=1785397801; x=1786002601; darn=vger.kernel.org;
+        h=user-agent:in-reply-to:content-disposition:content-type
+         :mime-version:references:message-id:subject:cc:to:from:date:from:to
+         :cc:subject:date:message-id:reply-to:content-type;
+        bh=MMcX5Rjc2WXkq4n3CTVj+weAnFVZCpuT2pl5NdS61yc=;
+        b=GbrFp0cwSmiDlI+9M3vZc8FYmzHSoEky3BmI111BpM9k9T/XzqSUMRmjrcx2aD2hft
+         9hc9ytVhvm2jsL/fxnDSw4SWE/jyH0PMQc5WdTqfKamT9q3+diwTs0vwVfw4F3AUPo87
+         Ret8X4KY4Y12lkTBbDImUQlaU7AOqqVnLCabikrrzg3UdJcPkUSE8cnnO44X4bGMRb9d
+         1tvAzRHVdx/SmeItSN1tk/0f/4mTJ9UIySMgg1h5PVamqOAA21cuFsmd/ErRXNYgeNqY
+         4fAUojpmYEv1UGLcJ9L3qyR3vgFiWxV5J+ZDww91qwG5WFY3CJlV3/ld4w445MFYhH7x
+         xJyg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1785397354; x=1786002154;
-        h=content-transfer-encoding:content-type:in-reply-to:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=o8hNYcnTlO2sEp+wOOaNROgXRLuhpC/AD2RNYMOE4VU=;
-        b=ob93ZC5dBUNg7HQwe3IUW+pmwAAJpnNR/kpFdAfXCi7eRoz5qoStEDWFHQyyrX4UV9
-         Q7/aWpssfkSZkwV4ARCLWpqzhJsDxXqPYLoslMEwcNGtTp+8vTeTiJBo3liUv0iBoo4o
-         E25AS8qKd6IHjnetOI/fR55mITsmSTdJ9a6rGFCW1r85DnqEUTJItYwVcajeSaBdycFQ
-         ktiylmx27Ze6TO8Nxn0M7nYB5jGD+r+lwz4EUgcfv+qMYyAf2CUo5sJltB7nh+l8p4qx
-         GzujpR/OYEAKJ+yUNuiXds2vbHEO5SN4AyR5DwPvAaP2fZOHt3pesySC9sa2I8M7OoSz
-         o18w==
-X-Forwarded-Encrypted: i=1; AHgh+RptXdw04opwtzYCHm3F6bp8lN8MWweDPJdBes6LRqca4P19qtQ/EEcORWBE++Cxrf+iykLWyZFtmA==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yzs90D3xvTAQkpMGIpgBl2cfp2Iob4WHmaE6tDcjiM+yjv1S+XI
-	T5wezSEIoFrsKQz4S/uqurrNDtbwfjaUjTywo12sL7Y4FdkLGjJehS2XaUoPnmZWxpZN1Cg9EnK
-	y4kgb/8vWLtt2bRHBYLZ2x1lTmZfPT6fG3Rr3tQEQ0OUr7lb0kdrv4xWObe7R8A==
-X-Gm-Gg: AR+sD101emWb4POHgL68R8Fi1cW3hl5aFMbue3I1lFe218Bok34qLfx3wAY3IL5nH5t
-	3d+ueRUS3oRafIeJl3d4E/RrXx8OISNKxMRcOVNoqPHwO8ukN3CPq03C/ldMciTLNi/oNNx4zC7
-	3ZIwQVpXxYi8S5SGwJvCSCe0LioPu7oxTb62biSvUq3wkr2BzU5qT+081B47fPHPV81MXgOvkOb
-	q2i+RSEQBeJsezdOhhU52nh/RXrrkuDip1BFhDgc4vYLUkepNMxUxqqMeKmnVgGs81iXn8VblJN
-	p2ionxGyLY4sCO4oPArHwbsYNELUveLxbCa7e/0naiFqm2mEmcpAPn0fR0GhjemJvlAPBofMwk0
-	Ys3PDjqyd6jBrku3hdfMZqF+2
-X-Received: by 2002:a05:620a:a21a:b0:931:23a:83ca with SMTP id af79cd13be357-93486f06b41mr187325685a.4.1785397353695;
-        Thu, 30 Jul 2026 00:42:33 -0700 (PDT)
-X-Received: by 2002:a05:620a:a21a:b0:931:23a:83ca with SMTP id af79cd13be357-93486f06b41mr187322385a.4.1785397353313;
-        Thu, 30 Jul 2026 00:42:33 -0700 (PDT)
-Received: from [192.168.120.193] ([178.235.128.140])
-        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-c1fa851b322sm34493866b.7.2026.07.30.00.42.30
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Thu, 30 Jul 2026 00:42:32 -0700 (PDT)
-Message-ID: <9a042817-3a3d-4637-8df7-466ffa380403@oss.qualcomm.com>
-Date: Thu, 30 Jul 2026 09:42:29 +0200
+        d=1e100.net; s=20251104; t=1785397801; x=1786002601;
+        h=user-agent:in-reply-to:content-disposition:content-type
+         :mime-version:references:message-id:subject:cc:to:from:date:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=MMcX5Rjc2WXkq4n3CTVj+weAnFVZCpuT2pl5NdS61yc=;
+        b=XA7XhsIHJA/Tv5BYDZ4GuLz1/CDF0brDXkivwc9VJ11+VtUensTChx8+h5SBicTFn6
+         QQVVGAGLeN7QIIPqpRf2iQWPnNB0V28FakhkpyaOAtkfQvb5UFnaclwg7efD9BTeYaYT
+         U42GFNOaTMpJ5e0nHvP6M358o3zpmGN24GkGfLAJrAAPoFgKTDTsIfupxOIqDni0pMUx
+         LoyI9oaU3AtoJw/00sAgn2KuH/i0hqgZtMCMFx3Bzq/GBUFoadklrTu8UdQV1Wsjb4IH
+         xvfIGx0mAq3kZdtqxnfUUpd6PBM3KoehXFuXfU75lsdl3N4KHtHL/TNu4EdkapkLtd/C
+         vefw==
+X-Gm-Message-State: AOJu0YwT58RldkfgvPm6/sFaosDNfE/ESiTvxlydXltbI5XVX8nJNr2e
+	+WBgX3VWeUFPjfJqgun45oS9ub+MLJ/fvPrBioU0hr+1JENGrm6T5DDtBXaFYQUP6QREhH5Qcpk
+	0qGsxz8cJ
+X-Gm-Gg: AR+sD11+RwV4idlEtN6/Se9o/HmBMgAr9SIx2fc8xNJ/KXWx1TerI1tdh9GAxaEUCk4
+	v8aG0EJ+1fQC0QQ5A44L/HIrGtXXhs8f6bDawiG5CBoNm5yg5wrPOIH0QrmTm/TxurKo0pQq2RK
+	307+AjxFFTkHsU82Cl8y7i0+tU0HRGcIZlEg5tvJ8GavYSE5YPoJWzoIUL2gURjqnXh50/rETfF
+	tEPdGSo+djwKveyP8UEmfeO2Zv+AH8j0P8LWhEj5OgoQWx7alZPgpvsybsdNgMp63cBOxznP0bT
+	fmK+qGEArRHdunwiMV9puuKKVd9aq1DHDPPtnW5NyfDOVzpiUzk5bNtlvdLMTN+8W5471mK3YAb
+	JoJMF6p9b2VyQyE1SKMWehpwiYouBAyWrebvtMVcMA4csB28QdWDfAjc6jyvJ0tspcDnW5BAdAj
+	Ls4esH89M+sNTgMnPhF6I+1gac2aJwQBizOCjWvuD1ZbAJny0oGUTPDOq6X1U6UmhFx4nEJsoEw
+	5MVqxQ1Z3vZep4HsqWSEdf9
+X-Received: by 2002:a05:6830:6aca:b0:7ec:2fe:1ec0 with SMTP id 46e09a7af769-7f02becbbd2mr799133a34.4.1785397801583;
+        Thu, 30 Jul 2026 00:50:01 -0700 (PDT)
+Received: from localhost (c-76-141-129-107.hsd1.il.comcast.net. [76.141.129.107])
+        by smtp.gmail.com with ESMTPSA id 46e09a7af769-7f00d94d7desm4234393a34.22.2026.07.30.00.50.00
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 30 Jul 2026 00:50:00 -0700 (PDT)
+Date: Thu, 30 Jul 2026 02:49:59 -0500
+From: David Vernet <void@manifault.com>
+To: Mario Limonciello <mario.limonciello@amd.com>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
+	=?utf-8?B?QW5kcsOp?= Almeida <andrealmeid@igalia.com>, Changwoo Min <changwoo@igalia.com>, 
+	Christian Loehle <christian.loehle@arm.com>, "Rafael J. Wysocki" <rafael@kernel.org>, 
+	K Prateek Nayak <KPrateek.Nayak@amd.com>, Huang Rui <ray.huang@amd.com>, Perry Yuan <perry.yuan@amd.com>
+Subject: Re: [RFC PATCH 0/4] cpufreq/amd-pstate: Per-core EPP boost for
+ recently-busy CPUs
+Message-ID: <amsABQU2GiJqSNsS@maniforge>
+References: <20260728073150.54964-1-void@manifault.com>
+ <700ebebe-f4ab-4329-ad43-716d74d6621c@arm.com>
+ <40ab4c65-faf5-4a85-8761-bc6ebd1aec90@amd.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v6 3/3] arm64: dts: qcom: eliza-evk: Add PCIe1 with TC9563
- PCIe switch
-To: Manivannan Sadhasivam <mani@kernel.org>,
-        Krishna Chaitanya Chundru <krishna.chundru@oss.qualcomm.com>
-Cc: Bjorn Andersson <andersson@kernel.org>,
-        Konrad Dybcio <konradybcio@kernel.org>, Rob Herring <robh@kernel.org>,
-        Krzysztof Kozlowski <krzk+dt@kernel.org>,
-        Conor Dooley
- <conor+dt@kernel.org>,
-        Bartosz Golaszewski <brgl@kernel.org>, linux-arm-msm@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-pci@vger.kernel.org, linux-pm@vger.kernel.org,
-        Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>,
-        Abel Vesa <abel.vesa@oss.qualcomm.com>
-References: <20260730-eliza_evk-v6-0-40ece2d33114@oss.qualcomm.com>
- <20260730-eliza_evk-v6-3-40ece2d33114@oss.qualcomm.com>
- <ofkvwrvfpyhjflrmbyi43gd4mltrqdmf3pzdvxwitrqshtttvo@r3xpfq3m42ha>
-Content-Language: en-US
-From: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
-In-Reply-To: <ofkvwrvfpyhjflrmbyi43gd4mltrqdmf3pzdvxwitrqshtttvo@r3xpfq3m42ha>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-Proofpoint-Spam-Info: AW1haW4tMjYwNzMwMDA1NCBTYWx0ZWRfX/4nRBJT2UQKv
- HzhXY1aJPkB1BpuHgZBPVbX34IVxLlVKkNLC6W5e53vkaGV6tH8eRSCYCK9mzVitl/VGTjga5jo
- k0LzFREy2WOtb5y7s/r4hzpJ3G8JEqE=
-X-Authority-Analysis: v=2.4 cv=dJmWXuZb c=1 sm=1 tr=0 ts=6a6b006b cx=c_pps
- a=EVbN6Ke/fEF3bsl7X48z0g==:117 a=PRfkaYvzSr8QmIIGAkY2Sg==:17
- a=IkcTkHD0fZMA:10 a=RAioF0-LDSMA:10 a=s4-Qcg_JpJYA:10
- a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=DJpcGTmdVt4CTyJn9g5Z:22
- a=VwQbUJbxAAAA:8 a=FQzAjSPMhRWCFvqDWQYA:9 a=QEXdDO2ut3YA:10
- a=a_PwQJl-kcHnX1M80qC6:22
-X-Proofpoint-ORIG-GUID: cggP23boESBWnfMqKgzqXk9TuRT1kgGc
-X-Proofpoint-GUID: cggP23boESBWnfMqKgzqXk9TuRT1kgGc
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzMwMDA1NCBTYWx0ZWRfXztIqRk7L0T/z
- yTkkvvIlWeLwYV5OX7AJ/KCp9BtMCG+b18WOd6fqM5L1cOCoxJcAbMCvBefIBehHs3VY5QPjc1f
- h+HXuV3Yod5mptdGL1MDiovs2gogE6KjWsjk0hXnzjM5EFfzDW/LlVI0cnYvatGuhm9xRUSJI7d
- sQjI+qVl9nb7lEB3v/puk37loZpKdH1vUDT0MLMVkIyvzTUPHK45de9YHz8xsaGrnn/QWS4txw/
- cjTjXKILTUa8ubXItbSQECxt2dazzc47DwuPicEa7Jyc8vF5hdBLJ66ZwWC7ZpN2uCquuGvBUre
- EYjbWyYaP1+trpE/mradPka60+87E5WxTT/4RAnK54SRkL/SYu96GbNgChsVhmrvGAINjGm3tOi
- wAORAlMggv9GCbh4p5Rtfgtf8Mad6ywVWnuhOwqfHRIEb6QnQezbl9142Mq02Z3x+22mx6qA3qC
- 6T3IOX53yvI/Abd3zfA==
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-07-30_02,2026-07-29_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- impostorscore=0 malwarescore=0 adultscore=0 spamscore=0 phishscore=0
- priorityscore=1501 bulkscore=0 clxscore=1015 lowpriorityscore=0
- suspectscore=0 classifier=typeunknown authscore=0 authtc= authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2606150000
- definitions=main-2607300054
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="dbbisx2ty3hhe5sk"
+Content-Disposition: inline
+In-Reply-To: <40ab4c65-faf5-4a85-8761-bc6ebd1aec90@amd.com>
+User-Agent: NeoMutt/20260105
 
-On 7/30/26 7:25 AM, Manivannan Sadhasivam wrote:
-> On Thu, Jul 30, 2026 at 10:18:55AM +0530, Krishna Chaitanya Chundru wrote:
->> The Eliza EVK board connects PCIe1 (8GT/s x2) to a Toshiba TC9563
->> PCIe switch. Enable PCIe1 and its QMP PHY nodes.
->>
->> TC9563 uses I2C (at address 0x77 on I2C4) for its management interface.
+
+--dbbisx2ty3hhe5sk
+Content-Type: text/plain; protected-headers=v1; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+Subject: Re: [RFC PATCH 0/4] cpufreq/amd-pstate: Per-core EPP boost for
+ recently-busy CPUs
+MIME-Version: 1.0
+
+On Tue, Jul 28, 2026 at 02:43:46PM -0500, Mario Limonciello wrote:
+
+Hi Mario,
 
 [...]
 
->> +		pcie@3,0 {
->> +			reg = <0x21800 0x0 0x0 0x0 0x0>;
->> +			#address-cells = <3>;
->> +			#size-cells = <2>;
->> +			device_type = "pci";
->> +			ranges;
->> +			bus-range = <0x5 0xff>;
->> +
->> +			pcie@0,0 {
->> +				reg = <0x50000 0x0 0x0 0x0 0x0>;
->> +				#address-cells = <3>;
->> +				#size-cells = <2>;
->> +				device_type = "pci";
->> +				ranges;
-> 
-> Sashiko pointed out that you are using bridge specific properties in EP node:
-> https://lore.kernel.org/linux-pci/20260730051031.20D8E1F000E9@smtp.kernel.org
+> > > This series instead adds an opt-in, per-core EPP boost. When the
+> > > epp_boost module parameter is enabled, an update-util hook samples ea=
+ch
+> > > core's C0 residency (delta MPERF over delta TSC) at most once every
+> > > 10 ms. If a sample shows the core at least 50% busy, the EPP field of
+> > > its MSR_AMD_CPPC_REQ is set to performance (0) and held there until
+> > > 300 ms pass without another busy sample, at which point the hook
+> > > restores the request that policy management last stored in
+> > > cppc_req_cached. Both writes happen only on the busy and idle edges, =
+so
+> > > the CPPC_REQ write rate matches that of a global EPP=3Dperformance
+> > > setting. min, max and desired perf are never touched. The mechanism is
+> > > only available in active mode on MSR (X86_FEATURE_CPPC) systems, since
+> > > the hook does local MSR accesses from scheduler context which the
+> > > shared memory interface cannot do. It composes with dynamic_epp, which
+> > > selects the policy EPP from the platform profile and power source.
+> > > epp_boost temporarily overrides whatever policy EPP is installed and
+> > > restores it when the core goes idle.
+>=20
+> Have you seen the series from Prateek that reworks how dynamic EPP works
+> [1]?  It becomes an energy_performance_preference that userspace can opt
+> into.
+>=20
+> I did have aspirations to hook into more changes than just platform profi=
+le
+> and power source eventually, so it sounds like we're at least thinking in
+> the same area.
+>=20
+> [1] https://lore.kernel.org/linux-pm/20260727072056.1248-1-kprateek.nayak=
+@amd.com/
+>=20
+> Can you rework your series on top of that and see how the mechanics work
+> out?
 
-Can we harden the bindings here?
+I hadn't seen it before posting this, thanks for the pointer. Agreed
+that we're thinking in the same area. The way I see the two fitting
+together is that his rework decides the policy EPP from system-level
+inputs, while this series temporarily overrides the EPP of individual
+busy cores and then restores whatever policy management installed. So my
+expectation is that they compose rather than compete, but I'll rebase
+and test with his changes and report back.
 
-Konrad
+[...]
+
+> > > On the thresholds themselves, the sample period, busy threshold and
+> > > decay window are hardcoded rather than exposed as tunables. I'm not s=
+ure
+> > > if this is appropriate or not, but it seemed like it followed existing
+> > > contours.
+> > >=20
+> > > hwp_boost_hold_time_ns for example is a hardcoded 3 ms, and schedutil=
+'s
+> > > iowait boost decay is tied to TICK_NSEC, with no knobs for either. The
+> > > 300 ms decay is sized so that a render thread which is only 50-80% bu=
+sy
+> > > from periodic vsync and GPU-fence waits holds the boost across its wh=
+ole
+> > > busy period at a couple of CPPC_REQ writes total, while an idle core
+> > > sheds the boost well before it can matter. The energy exposure of a w=
+ide
+> > > window is small because EPP only influences behavior in C0 and an idle
+> > > core sits in CC6 regardless. If folks want me to make these tunable I=
+ am
+> > > happy to expose them.
+>=20
+> In a lot of ways I feel like you're fighting with the hardware (and active
+> mode) by doing it this way.  Did you look into using passive or guided mo=
+de
+> instead?  They might be better suited for what you're trying to do.
+
+I didn't try passive or guided mode, but I did try raising min_perf to
+nominal on busy cores in active mode (with a restore on the idle path)
+just to see what would happen. That reached the same 3.5 GHz median but
+regressed frame-time p999 by 13-21%, per the numbers in the cover
+letter. I'm happy to test guided mode out and see if I observe the same
+issue. Passive mode w/ UCLAMP_MIN I also haven't tested at all, but I
+will.
+
+R.e. fighting the hardware, I think the concern is valid, though I do
+think there's some precedent given that Intel has their hwp_boost thing
+(though as Prateek said it's a bit different than what I'm proposing as
+they don't muck with user-programmed EPP hints). The way I rationalized
+it is that EPP is the hint interface the hardware gives us for exactly
+this kind of bias, and the boost only moves it temporarily for cores
+that are demonstrably busy. But active mode wasn't really designed with
+this kernel-side dynamism in mind, so I'll defer to you folks and Rafael
+on whether this is an acceptable shape for it (or whether Prateek's idea
+of possibly having the active-mode drivers support dynamic governors
+would make sense).
+
+Thanks,
+David
+
+--dbbisx2ty3hhe5sk
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iHUEABYKAB0WIQRBxU1So5MTLwphjdFZ5LhpZcTzZAUCamsCJwAKCRBZ5LhpZcTz
+ZESmAP9b7c/CFO31jEfL1itlxzNJD7VaLM2P6TiRjx0o8ojn8gEAsAci+0CySmxf
+bIB9TXmsupm1IP/NX4VRnDUH2OR6CAE=
+=6IxJ
+-----END PGP SIGNATURE-----
+
+--dbbisx2ty3hhe5sk--
