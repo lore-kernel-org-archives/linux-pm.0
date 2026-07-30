@@ -1,237 +1,104 @@
-Received: from mail-pg1-f171.google.com (mail-pg1-f171.google.com [209.85.215.171])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mailgw.kylinos.cn (mailgw.kylinos.cn [124.126.103.232])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4F2BB30EF7E
-	for <linux-pm@vger.kernel.org>; Thu, 30 Jul 2026 00:56:36 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.215.171
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 152F313A244;
+	Thu, 30 Jul 2026 01:17:25 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=124.126.103.232
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1785372997; cv=none; b=jgWagKF/inZLObFyDqlSCcFp/euzWv1h0m1A9JDkwKjE40dRNTu0u17GNfsZ3ifwJx8a/h2UnFGdpKw8HsRw/NyGp/Kc3zDHCl0QX93F6g0UGvItMBf32+2qxbOaDokVgcfCvCw7TiI+8C2bS1XUslXB1AOrqyDaldYSUbqUk4Y=
+	t=1785374249; cv=none; b=NUOnpKNWAfA3v1KVHxfmsHuzEFyUjD51/YPuIOuMBFWpZcr3+woFx4bTkLCQP6h79yg3ofet3vR9lPZ4otHiQp96rk0uAVd71qEnEGiTQx/t+4XWuSAj09/+7Z4K509szEJQcojQl0nxYRBMEIALTMOX4edAKhXK9lr+X/v4aJM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1785372997; c=relaxed/simple;
-	bh=3ObghyUyPlLo9ITrR6S/QXV4UB1t410DjLMNdBrKvzU=;
-	h=Message-ID:Date:MIME-Version:From:Subject:To:Cc:References:
-	 In-Reply-To:Content-Type; b=h7SNK15keCT1xlOrY2CZfsRsnFhUd/moBB9WP1xgPt58/N1LkiX8QWn/YNTJ6+3EVomI/W8WQvMbajeGNrgb/LopDBv7PKlj0XLkD8aU2aZGZG+ugGn3iMbiRUVGvft2W1wEB0MXDiamobHvS6Lh5Ji6SZTb1pOWDlx3EUOLyso=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com; spf=pass smtp.mailfrom=google.com; dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b=Vh8q3fgC; arc=none smtp.client-ip=209.85.215.171
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=google.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b="Vh8q3fgC"
-Received: by mail-pg1-f171.google.com with SMTP id 41be03b00d2f7-ca12086c06eso1191082a12.0
-        for <linux-pm@vger.kernel.org>; Wed, 29 Jul 2026 17:56:36 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20251104; t=1785372995; x=1785977795; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:in-reply-to:content-language
-         :references:cc:to:subject:from:user-agent:mime-version:date
-         :message-id:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=i8UGR9cVOX6uh57M+KLNA0BVZnOPxXsCVTw3GnHIK7o=;
-        b=Vh8q3fgC3j+41DQo/kltaW0dXXGiYWHAYRc/FD25S1RnPX0bMH0lwA0kyaraHySGWL
-         Xx3bpJl2d/cERUWXLSD/uGhg5NP/fLAGD8/CimgyEkfuuheS4dVSdkM2Ip6XN++fSxLq
-         3wMcOGUOZ845L9q4KwNb2WWmSNUuC3uhptkb6gze2V+IZ2RJN1KMobINjevTUM4pRcCo
-         NMje1R94YKDwACujsLl/cw+UdWXje2y+zGHiTC6l0+7nRv903z5S2rTpPJgSwNb7hraB
-         w8GkwFE2EnOk66qYtpEkfqJXGJOrLY2jKIQBnFPVYD3IaUzQ0DVqFSpsjJ79qmh9NP+c
-         k+OA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1785372995; x=1785977795;
-        h=content-transfer-encoding:content-type:in-reply-to:content-language
-         :references:cc:to:subject:from:user-agent:mime-version:date
-         :message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=i8UGR9cVOX6uh57M+KLNA0BVZnOPxXsCVTw3GnHIK7o=;
-        b=lQ95OFFioS1Jxf+jCPLmp5+od+3TbJkB8/bB+Iz9eeGhddLIJv7OuQnCzlJwX1mzXJ
-         hGGfSu+x/1fGkHriVqwN3vPYLzk6WJlGODr7nPxRQztukpspBGu2TRRaTS4drk7aW0oH
-         vl6RIXLHMYnIvEkKkbPJ4hS+IAvvk1/vi5YrRuoXTEOLGpOprZCKH8gN1PVrczZYubRu
-         52dKKIWqhSrsp34BWKFt1Xj/2JWqTRvznEU7zqJthwtpGQoxcKqyh7B4f1ommYhZ0iXS
-         /QJTh7Puh8Le5vrMgkH8kNAForGztkBDsJWdatuG8NELKwlVDzchKV/UpIlFqYzvfZyE
-         ixLg==
-X-Forwarded-Encrypted: i=1; AHgh+RqWYfV4zKwJ7wNjGrh51+s00AvPB8wD5eD7rhMiLIPxAYaNQS5s8iuglZUjsXMxSBhhPTI/xOqezg==@vger.kernel.org
-X-Gm-Message-State: AOJu0YwdAwIUUMvERUH2ru5sAqVwvw+t93plHOKd7jbxdr1q9BCMTZF2
-	Yg8QOwsSY8T8tfaBJWYPIKZX19r+5AvTwfFRNqzVeUalWHuagaifCHrrfNvLf8NiNA==
-X-Gm-Gg: AR+sD11PRw4PRg9bcUNTTFFF/rpUNO2bE9YbERotBnoF+sftpm5A84CCTdETl1cBBwN
-	2KSyKEzCGTAr5JOJCmezrf/e1dBtzxZYslAKyMSpm9yHOkDaEcptzUXF5cRRKFdYmIIU9dBDK8A
-	TIYnscjfUy+WPZGScmPE8nU7nn7ykYzuYVxBK/ahVHTnHGxUj1s+H+SEUSzu8W/JsK8kjd2Nwv5
-	ask1gbO9Sh5Lj91wgxodlkZw+Vj/Gf3s2opbJjE6RE0gQWpFFJEKJyR3JbMtefsAAy7XdZYibvi
-	fK8cko7PZPsS7ZWRgC9+4neeQ3lLvWYfJQtKZUbggaelpzuuoDZezkH11Y8uEc/AKrzh82mgy1Y
-	891eXcg3Wf/guWQPdqXc+p2QAOkDirhwpM4i/MiGG7NtCZSvWzSaa020i6FI+CHirBlcrRQln5Y
-	BvYAHuUsU6HPj76KhpCvgcD+9wyfdqumoDRKZay7rQGtOrH3PO+B/eXBdNm9OoHbafcciuROjnp
-	Ifdu6VIB0YGTvboMoV0i4FnMdGXcIyInNLnFaP36do3xUAuVPBG3NGleAS4u7t3iozjLX2Qt2/d
-	SMNI3K3bUY//bg6LMeY=
-X-Received: by 2002:a05:6a20:430b:b0:3b4:85db:1bed with SMTP id adf61e73a8af0-3c9008d247emr301869637.45.1785372994792;
-        Wed, 29 Jul 2026 17:56:34 -0700 (PDT)
-Received: from ?IPV6:2a00:79e0:2e7c:8:e4cf:de45:8976:b90b? ([2a00:79e0:2e7c:8:e4cf:de45:8976:b90b])
-        by smtp.gmail.com with ESMTPSA id a92af1059eb24-13e7265be48sm14041126c88.8.2026.07.29.17.56.33
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Wed, 29 Jul 2026 17:56:34 -0700 (PDT)
-Message-ID: <5cdf0238-24f8-402f-a72a-d490f8d9c99a@google.com>
-Date: Wed, 29 Jul 2026 17:56:29 -0700
+	s=arc-20240116; t=1785374249; c=relaxed/simple;
+	bh=z9rCIFseRBPNZbXwzIhVuCjRr8a5jA9U6WRPS5YWoqI=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=AWQ29airdHccVM40rDiYnuKJSnvAo3DvnsJdcLpBBDvYSZykAqAaLS3bn1z4djbJzvr2uid01Gir95U1n+c2Wv3x1xKZRRFoKmoGpe8Rxz7BNNSvyIpMuHWjL8SbzfatFSj7PqO9caQidh8dKiGkwyl8zmI/IMop7mAwdAWrwM4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kylinos.cn; spf=pass smtp.mailfrom=kylinos.cn; arc=none smtp.client-ip=124.126.103.232
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kylinos.cn
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=kylinos.cn
+X-UUID: 68ca32588bb411f1aa26b74ffac11d73-20260730
+X-CID-P-RULE: Release_Ham
+X-CID-O-INFO: VERSION:1.3.12,REQID:40e7f201-4b4f-4034-b3b0-3790b9d7512a,IP:0,U
+	RL:0,TC:0,Content:0,EDM:25,RT:0,SF:0,FILE:0,BULK:0,RULE:Release_Ham,ACTION
+	:release,TS:25
+X-CID-META: VersionHash:e7bac3a,CLOUDID:bd5a205922a9d0fcd6e8de74054d1177,BulkI
+	D:nil,BulkQuantity:0,Recheck:0,SF:102|850|865|898,TC:nil,Content:0|15|50,E
+	DM:5,IP:nil,URL:99|1,File:nil,RT:nil,Bulk:nil,QS:nil,BEC:nil,COL:0,OSI:0,O
+	SA:0,AV:0,LES:1,SPR:NO,DKR:0,DKP:0,BRR:0,BRE:0,ARC:0
+X-CID-BVR: 2,SSN|SDN
+X-CID-BAS: 2,SSN|SDN,0,_
+X-CID-FACTOR: TF_CID_SPAM_SNR,TF_CID_SPAM_ULS
+X-CID-RHF: D41D8CD98F00B204E9800998ECF8427E
+X-UUID: 68ca32588bb411f1aa26b74ffac11d73-20260730
+X-User: lilinmao@kylinos.cn
+Received: from localhost.localdomain [(10.44.16.150)] by mailgw.kylinos.cn
+	(envelope-from <lilinmao@kylinos.cn>)
+	(Generic MTA with TLSv1.3 TLS_AES_256_GCM_SHA384 256/256)
+	with ESMTP id 1898333408; Thu, 30 Jul 2026 09:17:19 +0800
+From: Linmao Li <lilinmao@kylinos.cn>
+To: Sebastian Reichel <sre@kernel.org>
+Cc: Waqar Hameed <waqar.hameed@axis.com>,
+	linux-pm@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	Linmao Li <lilinmao@kylinos.cn>
+Subject: [PATCH v3 0/2] power: supply: bq25630: scope the battery information
+Date: Thu, 30 Jul 2026 09:17:11 +0800
+Message-Id: <20260730011713.3332913-1-lilinmao@kylinos.cn>
+X-Mailer: git-send-email 2.25.1
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-From: Amit Sunil Dhamne <amitsd@google.com>
-Subject: Re: [PATCH v5 2/2] usb: typec: tcpm: Add support for Battery Status
- response message
-To: Sebastian Reichel <sebastian.reichel@collabora.com>
-Cc: Badhri Jagan Sridharan <badhri@google.com>,
- Heikki Krogerus <heikki.krogerus@linux.intel.com>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Hans de Goede <hansg@kernel.org>, Krzysztof Kozlowski <krzk@kernel.org>,
- Marek Szyprowski <m.szyprowski@samsung.com>,
- Sebastian Krzyszkowiak <sebastian.krzyszkowiak@puri.sm>,
- Purism Kernel Team <kernel@puri.sm>, linux-pm@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org,
- =?UTF-8?Q?Andr=C3=A9_Draszik?= <andre.draszik@linaro.org>,
- Tudor Ambarus <tudor.ambarus@linaro.org>,
- Peter Griffin <peter.griffin@linaro.org>, RD Babiera <rdbabiera@google.com>,
- Kyle Tso <kyletso@google.com>
-References: <20260714-batt-status-v5-0-9de4aa900b69@google.com>
- <20260714-batt-status-v5-2-9de4aa900b69@google.com> <amVJ1u67qHENBQ5l@venus>
-Content-Language: en-US
-In-Reply-To: <amVJ1u67qHENBQ5l@venus>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 
-Hi Sebastian,
+data->batinfo is only read by bq25630_setup(), but it is fetched in
+bq25630_probe() and kept in the driver data for the lifetime of the
+device.
 
-On 7/25/26 5:01 PM, Sebastian Reichel wrote:
-> Hi,
-> 
-> On Tue, Jul 14, 2026 at 09:10:53PM +0000, Amit Sunil Dhamne via B4 Relay wrote:
->> From: Amit Sunil Dhamne <amitsd@google.com>
->>
->> Add support for responding to a Get_Battery_Status request with a
->> Battery_Status message. The port partner shall request the status of a
->> port's battery by providing an index in the Get_Battery_Status AMS. In
->> case of failure to identify the battery, the port shall reply with an
->> appropriate message indicating so.
->>
->> Support for Battery_Status message is required for sinks that contain
->> battery as specified in USB PD Rev3.1 v1.8
->> ("Applicability of Data Messages" section).
->>
->> Signed-off-by: Amit Sunil Dhamne <amitsd@google.com>
->> Reviewed-by: Badhri Jagan Sridharan <badhri@google.com>
->> Acked-by: Heikki Krogerus <heikki.krogerus@linux.intel.com>
->> ---
->>  drivers/usb/typec/tcpm/tcpm.c | 138 ++++++++++++++++++++++++++++++++++++++++--
->>  include/linux/usb/pd.h        |  29 +++++++++
->>  2 files changed, 163 insertions(+), 4 deletions(-)
->>
->> diff --git a/drivers/usb/typec/tcpm/tcpm.c b/drivers/usb/typec/tcpm/tcpm.c
->> index 7ef746a90a17..cd33ee131ebd 100644
->> --- a/drivers/usb/typec/tcpm/tcpm.c
->> +++ b/drivers/usb/typec/tcpm/tcpm.c
->> @@ -12,6 +12,7 @@
->>  #include <linux/jiffies.h>
->>  #include <linux/kernel.h>
->>  #include <linux/kthread.h>
->> +#include <linux/math64.h>
->>  #include <linux/minmax.h>
->>  #include <linux/module.h>
->>  #include <linux/mutex.h>
->> @@ -232,7 +233,8 @@ enum pd_msg_request {
->>  	PD_MSG_DATA_SINK_CAP,
->>  	PD_MSG_DATA_SOURCE_CAP,
->>  	PD_MSG_DATA_REV,
->> -	PD_MSG_EXT_SINK_CAP_EXT
->> +	PD_MSG_EXT_SINK_CAP_EXT,
->> +	PD_MSG_DATA_BATT_STATUS
->>  };
->>  
->>  enum adev_actions {
->> @@ -387,7 +389,15 @@ struct pd_timings {
->>  };
->>  
->>  /* Convert microwatt to watt */
->> -#define UW_TO_W(pow)					((pow) / 1000000)
->> +#define UW_TO_W(pow)				(div_u64((pow), 1000000))
->> +
->> +/*
->> + * As per USB PD Spec Rev 3.18 (Sec. 6.5.13.11), the number of fixed batteries
->> + * that a port can be queried is restricted to 4.
->> + */
->> +#define MAX_NUM_FIXED_BATT				4
-> 
-> If I understand the spec correctly, the presence of a fixed battery
-> should never change for fixed batteries. I guess the rationale is,
-> that one only has to the battery capabilities once for these kind of
-> batteries. But for the Linux kernel this concept does not exist and
-> all batteries are potentialle hot-swappable. For real hardware with
-> TCPM and hot-swappable battery, this code will now incorrectly
-> expose them as fixed battery and violate the spec. I think this should
-> at least be mentioned in the commit message.
-> 
+Patch 1 moves the get/put pair into bq25630_setup() and drops the member.
+Patch 2 then uses the new power_supply_desc::init callback so the charger
+registers are programmed before the device is exposed to the system.
 
-You are completely right. I was approaching this primarily from the
-smartphone side (Pixel 6), where batteries are effectively fixed and
-inaccessible to the user. Because I don't have a setup with TCPM +
-hot-swappable (in the context of the spec) batteries to test with, I 
-only implemented the fixed case.
+Patch 2 depends on commit c1eb5905fdce ("power: supply: Add registration
+init callback"), which is in the power-supply tree but not in linux-next
+yet. The series is therefore based on power-supply/for-next.
 
-I mentioned this constraint in the cover letter, but I agree it could
-have been in the commit message as well. Since Greg has already picked
-this series up into his tree, I can't amend the commit message now.
-However, if you think it's necessary, I can send a small incremental
-patch to add a comment in the code clarifying this assumption.
-Otherwise, we can leave it as-is until someone has the hardware to
-properly implement and test the hot-swappable support. Let me know what
-you prefer.
+Changes in v3:
+- Use dev_err() instead of dev_err_probe() for the battery info failure in
+  bq25630_setup(). The function is currently only reached from probe(), but
+  that should not be baked in as a policy, and the rest of the function
+  already uses dev_err() (Waqar Hameed).
+- Rebased onto current power-supply/for-next.
 
->> [...]
->> +	batt = port->fixed_batt[batt_id];
->> +	ret = power_supply_get_property(batt, POWER_SUPPLY_PROP_PRESENT, &val);
->> +	if (ret)
->> +		tcpm_log(port,
->> +			 "Failed to fetch power_supply_prop_present ret %d",
->> +			 ret);
->> +	else
->> +		batt_present = val.intval > 0;
->> +
->> +	ret = power_supply_get_property(batt, POWER_SUPPLY_PROP_CHARGE_NOW,
->> +					&val);
->> +	if (!ret) {
->> +		charge_now = val.intval;
->> +		ret = power_supply_get_property(batt,
->> +						POWER_SUPPLY_PROP_VOLTAGE_AVG,
->> +						&val);
->> +		if (!ret) {
->> +			energy_now = div_u64((u64)charge_now * val.intval,
->> +					     1000000);
->> +
->> +			/*
->> +			 * Battery Present Charge is reported in
->> +			 * increments of 0.1WH.
->> +			 */
->> +			present_charge = (u16)UW_TO_W(energy_now * 10);
->> +		}
->> +	}
->> [...]
-> 
-> What about fuel gauges, which expose POWER_SUPPLY_PROP_ENERGY_NOW
-> instead of POWER_SUPPLY_PROP_CHARGE_NOW?
-> 
+Note that v2 went out with a broken charset in the Content-Type header,
+which made git am fail. That was a send-email misconfiguration on my side,
+not a change in the patches themselves; it is fixed for this posting.
+Thanks to Waqar Hameed for reporting it.
 
-Good point. Our fuel gauge uses charge_* properties, so charge_now was
-sufficient for our immediate use case, but it makes sense to support
-energy_now natively for other users.
+Changes in v2:
+- Move the battery information get/put pair into bq25630_setup().
+- Remove the now-unused batinfo member from the driver data.
+- Use power_supply_desc::init to complete the hardware setup before the
+  power supply is exposed.
+- Split the changes into two patches.
 
-Since the original patch is already merged, I could write an incremental
-follow-up patch that checks POWER_SUPPLY_PROP_ENERGY_NOW first, and if
-it's not supported, falls back to calculating it via CHARGE_NOW *
-VOLTAGE_AVG. Please let me know if this works?
+Link to v2:
+https://lore.kernel.org/linux-pm/20260728024558.3611522-1-lilinmao@kylinos.cn/
+Link to v1:
+https://lore.kernel.org/linux-pm/20260727093738.2611185-1-lilinmao@kylinos.cn/
+
+Compile-tested on power-supply/for-next with CONFIG_CHARGER_BQ25630=m; both
+patches build cleanly with W=1. Not tested on hardware.
+
+Linmao Li (2):
+  power: supply: bq25630: Scope battery information to bq25630_setup()
+  power: supply: bq25630: Initialize hardware before exposing the power
+    supply
+
+ drivers/power/supply/bq25630_charger.c | 56 +++++++++++++-------------
+ 1 file changed, 29 insertions(+), 27 deletions(-)
 
 
-> P.S.: Sorry for slow review.
-
-No worries, thanks for your feedback!
-
-Regards,
-Amit
-> 
-> Greetings,
-> 
-> -- Sebastian
-> 
+base-commit: 5584ad5706e594c7648655171785aa4fffdd3db5
+-- 
+2.25.1
 
