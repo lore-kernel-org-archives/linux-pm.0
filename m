@@ -1,158 +1,141 @@
-Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
+Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7721E3C4572;
-	Thu, 30 Jul 2026 13:27:28 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.180.131
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3FF2E43934D;
+	Thu, 30 Jul 2026 13:44:26 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1785418051; cv=none; b=NyOnyvGY9///0BwY1oOEmVQuAWvjkhNvxrCrHJ1vWStfuTHXvjYZIn2yQJQW7dXkY9Z2KRtMizF+9KvU0rtriyPYctQgGZ4VKOWxwweNq2r3QvNnzkvqCt2U9yhVz+lX4/zsupm2K5vC5ikA6rbNI4ILeLeFritCCVZM94jk4hA=
+	t=1785419067; cv=none; b=TS8PTVSrlcs0LHwS2VA6WSQEko0zlAVm9G0gdbuv2bApMHT/Trd0cC4EhpOAkyOgESFeEohigMAcqGswytKnYiv4qVM6q2YRLYk24M8MwqIyp0B5cgh4SLzG2M1u7s6SAoPrSiIqbhzP6aCgxnZgnf8AVuJ2gvo5Dd6MrNeNHME=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1785418051; c=relaxed/simple;
-	bh=k3bXAJG7NWiQ5+q9rZvHpUWfUuBY/Z0D6Aae9E7hwJY=;
+	s=arc-20240116; t=1785419067; c=relaxed/simple;
+	bh=bQg1CV/cl1NwBFdpNzutcN/vhqRlpTzWwz93LULblz4=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=F/thgscZbqTSr5b0TeSt47v/ulUhGit997MLTKWgsAinjKaUfGNti8RWf7yWWviwfNENaucJ4ERT3ZOclLsJCQayrbiXwDY8rOjmQU9yhmd6HP0vdVsWWTlsvnX5fD8R3gTCjrJrZoj+epO/D+YhYOOOHbJdPNQAZAB1gxshYH0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=cMOribUl; arc=none smtp.client-ip=205.220.180.131
+	 Content-Type:Content-Disposition:In-Reply-To; b=moi8BmABMbJyz34gAssTcU66HVHxDdoqmy8Pj8XNbwwDOEb51IKGIPQoSnBjvHvrvfRAzb196pjQFB6hd3gh7nHzkDdQckPH1F2Tu49Lm9Y2g9PUQMnYDwCJijpoV6sN7zb55/4iCrk3cSsXsHq98ys4C8FTdckQIuWvrnj5bHM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=W2v2VppS; arc=none smtp.client-ip=205.220.168.131
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="cMOribUl"
-Received: from pps.filterd (m0279868.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 66UDDP2j920538;
-	Thu, 30 Jul 2026 13:27:25 GMT
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="W2v2VppS"
+Received: from pps.filterd (m0279862.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 66UDDIBX841981;
+	Thu, 30 Jul 2026 13:44:24 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	aT+T9J9OUVhzm9vgVnLZSep2Z41lckJUmxQ/vTHQH7s=; b=cMOribUl5QwTMc+D
-	voAHRt1RzOzfDGtCIWZTNGN/5obugQiLZPmrNVaRo6+CsdiP6LN9JfMY6lHDTT2A
-	rMbBSAWlZM9PdSCADdvOdnGDjEaSxFTSgQk2sz/OVjUYmGBYEokFlu/OiWodqzdZ
-	UaGSmRUxH7GGn+WwoF6JWuLtiphV8hSyW2qcQOLFIcASpWy+f6Lano82JSSmdYIy
-	9uoQNaXjQ1YFrv+U99wyR3OrWB9YJj1HUawlDazc6gdNhh5VqrjwxQfu6db9XbeX
-	vNH2GIfQaefxBGGwiXNNxWcE+arYsOMdsNUHEDNQY9Tm328GToV4zUC1pE72K3Hf
-	WjsUIw==
+	cc:content-type:date:from:in-reply-to:message-id:mime-version
+	:references:subject:to; s=qcppdkim1; bh=wiSak0RHAiRJ/jqz8HoC55zt
+	gtTNeufco1hRS6lvUMU=; b=W2v2VppSnmkhvlbuXD2oMOHbO9pX4qSPRdF3roxv
+	PKRG06I+o9HatTEQXhzZOgzjlTktt1G/uQJtJymhetJZIwE60xe3ZfGAxs5rEl8a
+	+z5eL43HW8pnDBUaeBiSbNNWzfRgnd4bfJq13/Lg86IICeZrjdNILqlkKMIHJdgl
+	WCdAT1gIDR9xZsM7bRd0rB34WhZ8kmE3nmr2Sxzoyca+RTDevWtL0Gk/qgMzEFW3
+	xlN4a8EGP2ClIegvje3ykgyXdwDg/TWnn4ssv3ZLZq2khtNfq7oLbmBHQze0GGOD
+	Ndz8dj8gzmizqChrXXtGfoWvij6Epg+wskxz2fjtkXNU+Q==
 Received: from apblrppmta01.qualcomm.com (blr-bdr-fw-01_GlobalNAT_AllZones-Outside.qualcomm.com [103.229.18.19])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4fr6s1r7dt-1
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4fr6wmg8pj-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 30 Jul 2026 13:27:24 +0000 (GMT)
+	Thu, 30 Jul 2026 13:44:23 +0000 (GMT)
 Received: from pps.filterd (APBLRPPMTA01.qualcomm.com [127.0.0.1])
-	by APBLRPPMTA01.qualcomm.com (8.18.1.7/8.18.1.7) with ESMTP id 66UDRL7k004231;
-	Thu, 30 Jul 2026 13:27:21 GMT
+	by APBLRPPMTA01.qualcomm.com (8.18.1.7/8.18.1.7) with ESMTP id 66UDiKxr026768;
+	Thu, 30 Jul 2026 13:44:20 GMT
 Received: from pps.reinject (localhost [127.0.0.1])
-	by APBLRPPMTA01.qualcomm.com (PPS) with ESMTPS id 4fmp7k65tq-1
+	by APBLRPPMTA01.qualcomm.com (PPS) with ESMTPS id 4fmp7k6bf5-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 30 Jul 2026 13:27:21 +0000 (GMT)
+	Thu, 30 Jul 2026 13:44:20 +0000 (GMT)
 Received: from APBLRPPMTA01.qualcomm.com (APBLRPPMTA01.qualcomm.com [127.0.0.1])
-	by pps.reinject (8.18.1.12/8.18.1.12) with ESMTP id 66UDRKoU004225;
-	Thu, 30 Jul 2026 13:27:20 GMT
+	by pps.reinject (8.18.1.12/8.18.1.12) with ESMTP id 66UDiKw1026757;
+	Thu, 30 Jul 2026 13:44:20 GMT
 Received: from hu-devc-hyd-u22-c.qualcomm.com (hu-kotarake-hyd.qualcomm.com [10.213.97.140])
-	by APBLRPPMTA01.qualcomm.com (PPS) with ESMTPS id 66UDRKOW004224
+	by APBLRPPMTA01.qualcomm.com (PPS) with ESMTPS id 66UDiKOx026755
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 30 Jul 2026 13:27:20 +0000 (GMT)
+	Thu, 30 Jul 2026 13:44:20 +0000 (GMT)
 Received: by hu-devc-hyd-u22-c.qualcomm.com (Postfix, from userid 2389607)
-	id B47A0B31; Thu, 30 Jul 2026 18:57:19 +0530 (+0530)
-Date: Thu, 30 Jul 2026 18:57:19 +0530
+	id 83BA1B31; Thu, 30 Jul 2026 19:14:19 +0530 (+0530)
+Date: Thu, 30 Jul 2026 19:14:19 +0530
 From: Rakesh Kota <rakesh.kota@oss.qualcomm.com>
-To: Krzysztof Kozlowski <krzk@kernel.org>
-Cc: Sebastian Reichel <sre@kernel.org>, Rob Herring <robh@kernel.org>,
+To: Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>
+Cc: Bjorn Andersson <andersson@kernel.org>,
+        Krzysztof Kozlowski <krzk@kernel.org>,
+        Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>,
+        Konrad Dybcio <konradybcio@kernel.org>, Rob Herring <robh@kernel.org>,
         Krzysztof Kozlowski <krzk+dt@kernel.org>,
-        Conor Dooley <conor+dt@kernel.org>, Vinod Koul <vkoul@kernel.org>,
-        Bjorn Andersson <andersson@kernel.org>,
-        Konrad Dybcio <konradybcio@kernel.org>, linux-pm@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-arm-msm@vger.kernel.org,
-        Kamal Wadhwa <kamal.wadhwa@oss.qualcomm.com>,
-        Jishnu Prakash <jishnu.prakash@oss.qualcomm.com>
-Subject: Re: [PATCH v6 2/3] dt-bindings: power: reset: fix minimum reg count
- for pmk8350-pon
-Message-ID: <20260730132719.onaqskeg6jsjm4y6@hu-kotarake-hyd.qualcomm.com>
-References: <20260724-b4-add_pwrkey_and_resin-v6-0-41acc214d93a@oss.qualcomm.com>
- <20260724-b4-add_pwrkey_and_resin-v6-2-41acc214d93a@oss.qualcomm.com>
- <20260727-weightless-fierce-tiger-a9c6ed@quoll>
- <20260728101223.5uvgmqmpwgvjvysz@hu-kotarake-hyd.qualcomm.com>
- <3e50d846-e850-4c85-97c2-60a34b66e976@kernel.org>
+        Conor Dooley <conor+dt@kernel.org>, Sebastian Reichel <sre@kernel.org>,
+        linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+        jishnu.prakash@oss.qualcomm.com, kamal.wadhwa@oss.qualcomm.com
+Subject: Re: [PATCH 0/2] qcom_battmgr: Add batteryless DC-adapter MAINS
+ support
+Message-ID: <20260730134419.tq2nxrp3n5ghx3xe@hu-kotarake-hyd.qualcomm.com>
+References: <20260519065938.4i5wot72pfxy4m3d@hu-kotarake-hyd.qualcomm.com>
+ <ag-NLvh4ROgTCs_L@baldur>
+ <d4001407-cdb0-48ee-a138-87c94b5dab01@oss.qualcomm.com>
+ <20260702111737.2qtjcfskulav4usd@hu-kotarake-hyd.qualcomm.com>
+ <5d5c693b-bd07-40a4-aea5-d9e1884aac50@kernel.org>
+ <20260703091319.5kcsqjtx4e4rshsy@hu-kotarake-hyd.qualcomm.com>
+ <7c7ab43f-45c0-48bc-921a-8820408c88c9@kernel.org>
+ <20260716084850.gssw67izy6vq36tg@hu-kotarake-hyd.qualcomm.com>
+ <alltBcYWULOv7nEv@baldur>
+ <aimahyy7gnnw44pdedtt5xovq7nqw236fb6hwsm2fqjzagmcm2@7767eiubcdz2>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <3e50d846-e850-4c85-97c2-60a34b66e976@kernel.org>
+In-Reply-To: <aimahyy7gnnw44pdedtt5xovq7nqw236fb6hwsm2fqjzagmcm2@7767eiubcdz2>
 X-QCInternal: smtphost
 X-QCInternal: smtphost
-X-Proofpoint-ORIG-GUID: QvAhPHqCFOfVvnt-fYi4BxmJ2Te6YJn2
-X-Proofpoint-Spam-Info: AW1haW4tMjYwNzMwMDEwMiBTYWx0ZWRfX/m3MEExnAg4U
- L8IA3s7XOQLWGGRlpd3yynlbNunSciS9R2t/KB8OEGoTNPgd+dP2PGVUyZGp/QTm8WayZxfJxZb
- js4YutF1Q+rhM+eAcP63f4sqKh8pO6g=
-X-Authority-Analysis: v=2.4 cv=EK42FVZC c=1 sm=1 tr=0 ts=6a6b513c cx=c_pps
+X-Proofpoint-Spam-Info: AW1haW4tMjYwNzMwMDEwNCBTYWx0ZWRfXy8OO4ovosz/W
+ 5U45TVSQQWqbJfoRhB2huhFb3ng5/MySnz8nYqPeu6AV+vNRa5xqNfVgTphNPtikuHmo4yVCenS
+ +IybENQxUu8ixQBW5srfuBsYgtKaOvs=
+X-Proofpoint-GUID: Ts-kM3T11W3z5ajMe3shi_F8hvk-e-Sn
+X-Authority-Analysis: v=2.4 cv=OauoyBTY c=1 sm=1 tr=0 ts=6a6b5538 cx=c_pps
  a=Ou0eQOY4+eZoSc0qltEV5Q==:117 a=Ou0eQOY4+eZoSc0qltEV5Q==:17
- a=IkcTkHD0fZMA:10 a=RAioF0-LDSMA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=u7WPNUs3qKkmUXheDGA7:22 a=ZpdpYltYx_vBUK5n70dp:22 a=94fjyzl-pMFmqcS69P8A:9
- a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
-X-Proofpoint-GUID: QvAhPHqCFOfVvnt-fYi4BxmJ2Te6YJn2
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzMwMDEwMiBTYWx0ZWRfX+cHP+H2K9CQk
- lI0kZUUYSCveX/N+knhZJZ+sQVW3d9JhzSUZnlYgNzEfC3TLJWMdKVYpB97gCE7d4CY7TP0i3SG
- RTz+eD6ixM1xojUndhdIk2AmeuKmjP9OaixR/NiEaB2U6rAIjrwdwQEPvbvszo3iKOhjfj/6PcM
- cA+CIqolMI4dHIqXA9dUm2SQC0CjF+UId7kpkk2E3LbvqHaa9OChhT0jdF5qUg0pVwn3J9lTneK
- wIRIRhVh4C06y2cPSbu7J+oK8QhhzifHlv+cayJSUTwGuSI814d4C//qvgdKVoOY2bzWDl5ioc0
- 0vWYdpvA0i0p9Gib6pBcn0hJ7M9KexHpPEJMpNrXYhennnBZUGXGPPowpOFEQh9JD0ri0e4ufIl
- fCKLc7sVDVnWFDt2yFmCZCKBKYX3oCdpLVdlDBlICbFDA/+0Dm0pGrGMJ/OaPt1pu96XYw1uuHd
- /ZVEiFDY7zKK1DmSOtw==
+ a=kj9zAlcOel0A:10 a=RAioF0-LDSMA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=u7WPNUs3qKkmUXheDGA7:22 a=_K5XuSEh1TEqbUxoQ0s3:22 a=oBn097-8SNn81nznA08A:9
+ a=CjuIK1q_8ugA:10
+X-Proofpoint-ORIG-GUID: Ts-kM3T11W3z5ajMe3shi_F8hvk-e-Sn
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzMwMDEwNCBTYWx0ZWRfX6thqYOR1I9qP
+ 8aIqs3urLJw+fGZV8//iin4cBMlARSFnwlYYENJdam6M3t0n8T5MsvaDyOSjcPmg9huDc56yjyL
+ l59n0vFD8AL4WiyiLK6IxItEnJEjdRkE2hCc7woh1CGuqMmQDXkjpWF7AjLySLmkXDhrCdEgFLn
+ AoF12m+tt2rhSAJtgniE3diaOQqarr573BqtzWHB3BQV9R27IPg9bSfZb8jboz9QOAOW+TF4Qdk
+ xyatJz608rksRe9N/Xn5DN6lVVMMImzcOr7mUI8djVEQ+NKk1qm02abVT6lPqvQCMo6ebTtpUDe
+ cDtFgP9XZI4LXThmJfghDt/cNKgXOJbU59w6aKGnb5PozRVgYjLoBvB5MAkHQo/gKlp9zGwek/5
+ CJs845bLVasfUG+NFaH8MI2oD/p7usIYbYRyYNfXxuVml5Ma3bneVsl3Wzvie8Y65h2wS+rOKdo
+ yEaPSr2rPt2T6aaxqgg==
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.134,FMLib:17.12.100.49
  definitions=2026-07-30_04,2026-07-29_01,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- adultscore=0 malwarescore=0 bulkscore=0 impostorscore=0 lowpriorityscore=0
- phishscore=0 suspectscore=0 priorityscore=1501 clxscore=1015 spamscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2607300102
+ malwarescore=0 adultscore=0 clxscore=1015 priorityscore=1501
+ lowpriorityscore=0 spamscore=0 impostorscore=0 bulkscore=0 suspectscore=0
+ phishscore=0 classifier=typeunknown authscore=0 authtc= authcc=
+ route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2606150000
+ definitions=main-2607300104
 
-On Tue, Jul 28, 2026 at 12:20:12PM +0200, Krzysztof Kozlowski wrote:
-> On 28/07/2026 12:12, Rakesh Kota wrote:
-> > On Mon, Jul 27, 2026 at 08:36:38AM +0200, Krzysztof Kozlowski wrote:
-> >> On Fri, Jul 24, 2026 at 03:44:12PM +0530, Rakesh Kota wrote:
-> >>> The GEN3 PON peripheral requires two register address spaces: "hlos"
-> >>> for the primary PON block and "pbs" for the address needs to be
-> >>> specified to facilitate software debouncing. Set minItems: 2 for reg
-> >>
-> >> That's ABI break and I do not underestand if this was broken before or
-> >> not. Driver ignores the PBS, so everything was working fine, no? Then
-> >> why PBS is required now? Is it actually working or not?
-> >>
+On Wed, Jul 22, 2026 at 05:04:00PM +0300, Dmitry Baryshkov wrote:
+> On Thu, Jul 16, 2026 at 06:54:36PM -0500, Bjorn Andersson wrote:
+> > On Thu, Jul 16, 2026 at 02:18:50PM +0530, Rakesh Kota wrote:
 > > 
-> > Not an ABI break. All in-tree GEN3 DTs using qcom,pmk8350-pon have
-> > always specified both "hlos" and "pbs" reg entries — pmk8350.dtsi,
+> > I think this is similar to if we had a discrete charger block that we
+> > describe in DeviceTree, we would somehow have to describe the
+> > "configuration" of that component.
+> > 
+> > But I don't think you considered those other use cases. Perhaps this
+> > should be an optional qcom,battmgr-interfaces = "ac", "usb" ...; taking
+> > the list of interfaces that is actually implemented.
 > 
-> That's not related to ABI.
+> I like this idea.
+>
 
-my earlier reply focused on justifying this as "not an ABI break,"
-but that was never your question. Since the driver works fine without
-PBS, there's no functional bug being fixed here, so the ABI-break
-framing doesn't apply either way.
+Thanks, Dmitry and Bjorn.
 
-> What about my DTS?
-
-you're right, Whether an in-tree DTS omits PBS today isn't
-the point - tightening minItems retroactively is an ABI concern
-regardless.
-
-> > pmk8550.dtsi, pmk8850.dtsi, sc8280xp-pmics.dtsi. No issues were seen
-> > precisely because PBS was never omitted on any GEN3 platform.
-> > 
-> > minItems: 2 simply enforces in the schema what has always been present
-> > in practice, ensuring future GEN3 DTs cannot accidentally omit the PBS
-> > address space which is a GEN3 hardware requirement.
-> This does not answer my questions.
-
-Hopefully the above does now - to summarize: PBS is not functionally
-required (driver skips it fine), so this patch isn't fixing a bug,
-and tightening the schema risks breaking a DTB.
-
-Given that, should I post a v7 dropping this patch from the series ?
+Krzysztof, could you please share your suggestion on adding this as a
+new optional DT property (qcom,battmgr-interfaces = "ac", "usb",...;)
+listing the interfaces actually implemented on a given platform?
 
 regards
-Rakesh Kota	
-> 
-> Best regards,
-> Krzysztof
+Rakesh Kota
+
+> -- 
+> With best wishes
+> Dmitry
