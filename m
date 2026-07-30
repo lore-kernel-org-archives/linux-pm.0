@@ -1,150 +1,250 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E303244999F
-	for <linux-pm@vger.kernel.org>; Thu, 30 Jul 2026 18:00:02 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1CBBA2C1594
+	for <linux-pm@vger.kernel.org>; Thu, 30 Jul 2026 18:33:04 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1785434404; cv=none; b=JONBnYdnn8w1H+XeQy8FGZbTBaMxuV49UpSW1d3FQOMO3pm+jLPe2nAI2waAEx4jBiS8U+jsX+3UhtBNvghhL7PKzqhtFuMRy46e8srKrMuSVfj6TnzfDI0nNPF9JCIoleXg9qHlYfdfLICc9r0M3BkJDC+RBW6ulFj8AzaHmt4=
+	t=1785436386; cv=none; b=a+KsYETue3TEf9rebaXAvwzQL48jixb6qXpCA9ylyILOJFUTb/hP8pLWQ0D/7jyvAvmieDFP18H6M6p9FSWSk4Y8N3k39D6Jt4B3/gHmzL3XOWPHcfjMAi60aLJ1hebvqZ78Xf5ePGOIR7glwV+wAZ1rIqvS0SUHBX5OVXMbWH0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1785434404; c=relaxed/simple;
-	bh=Xl/KBklYTTrLCNDdvWQxbvELY1eguSQbqDgfYkn8y9Y=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=SzN/x/5rOnYeudDqknWWmObSXj7mXt3WQcNrKS6kw7xbDvBinC82CBv1Xi2ciRBaIYAfkVsvEQ0JC2/EHCLA/VUR2WjMK8MuTJv/EDB3Ud7xK0Dzy40qu8/1NoY5W+M6BMs5gCFrE0LZo1gipX8nhDv5+MtBXMziKnu6rliMt+4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=nqzXaZjD; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1785436386; c=relaxed/simple;
+	bh=9GL9zOg1tTAq0eSz/9z4Dmh04tNwFLnMOkIe2M+pKeo=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=i+y9HjUYU8xOzlCwCZXDBNaH6YRNJObPNL8Z98m/GSYXIXGYoEbC8++sYX/vFzV8P2u6n+gt7Inc1J1L8qnHF8aXq9x+5z9/SFLDWRENyhkMsE8g+hfcJQv0pkIAKFUWglcFliLMANlOEX69IBd/AVPJeo+bRvhvkARrdzwufX8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=inHHOty4; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=eXtdYqdL; arc=none smtp.client-ip=205.220.168.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="nqzXaZjD"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id AEB741F00ACF
-	for <linux-pm@vger.kernel.org>; Thu, 30 Jul 2026 18:00:02 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1785434402;
-	bh=ggMb29DTDO03PyVm6GwHOcbMPnV/eDpnqYpVTLhUtME=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc;
-	b=nqzXaZjDAD76c2M1C1utCNdMGpms3uugm7B1M4h1WJfR3kh4VqkUKSSaTij0GALLl
-	 rjv1r2YXJ3P1zDZ192Bav/MOqb6oSLr72gY3qL35OnRw0GD6tbCHKQ6h0xLBHviPa8
-	 gDd9WOz/ilpN3jY3f9S4dQGBfVhIx78XeVzdGUtHmjq84ZJAoGbGIOVAYS3HQOGaI8
-	 dH9CcE9xCz3mjyPoYxpL1wenhbaYlTKBEExlt+P8J74a3qagc0qm6j/6KFRnJvgEst
-	 0hq3A85/480+9wI9epEyYGX5iPIzs7aXN9sCh1OdIbvYpSDwfbZFB9q9dDc4yq2559
-	 /0/GIlGNAC/7w==
-Received: by mail-lf1-f42.google.com with SMTP id 2adb3069b0e04-5b2a44a3b66so73544e87.1
-        for <linux-pm@vger.kernel.org>; Thu, 30 Jul 2026 11:00:02 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AHgh+RpmCpsAv2vk6QV8Z2I760xaU230/KrgDsUkkeX4qVTAIWJxWm4AO1G40FPBaabhRYMmh54QyMRXaQ==@vger.kernel.org
-X-Gm-Message-State: AOJu0YxqVqBQ5JbOs476QgQst0PNBzzkUZrHQP2GyMH268/Ms7s97Rrk
-	SMjFHuloitzk8MAXWvZZOOue9kF4qbroa/F9LX6oflNm01dVVSOjDTXa8/ijeNQN5q9Un5rEmYb
-	ffJwiQZ0Y2WfuDF/7BvIsNFnYU1XTBHY=
-X-Received: by 2002:a05:6512:39c2:b0:5b0:1108:c575 with SMTP id
- 2adb3069b0e04-5b2db3457a7mr700029e87.7.1785434400246; Thu, 30 Jul 2026
- 11:00:00 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="inHHOty4";
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="eXtdYqdL"
+Received: from pps.filterd (m0279867.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 66UGWfO12556046
+	for <linux-pm@vger.kernel.org>; Thu, 30 Jul 2026 18:33:04 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
+	ahCtsMBdVYMxFMkXHrGydOopNEKYRJCw12sUjfq9kyk=; b=inHHOty4DMOCuK6Z
+	RLQlI5eVa+CeBfoemThSmEdZb9GnXmrP/A5N2ZmhETtDROrtYJPhjRDB/Dv8BjZ8
+	SxDVuhOnyUrPuMboBG9xYmB2KrlqSs+wIEHQZ5L/YRgo3BAKavjuVXGXy+/THl+M
+	x0JdYywKAoCU/BVqidrU9c3sF3QcbhuhlnF2ggJPP+s4g9NGSb27euj6FH/0F1fO
+	akGpdU/bQPRrZJwqWIOKMjYwNuAFFDeBMWIbnZXwr/qSkP7T4YzhiSgLVrELjhkP
+	2qVAgp4L9HhMX5oR8gcKLnTYSmWcXA7/WZUWpHhIKZUYzvGG0Sf87cpaCPikwyJR
+	hd8DLg==
+Received: from mail-yw1-f199.google.com (mail-yw1-f199.google.com [209.85.128.199])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4fr8169fhn-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <linux-pm@vger.kernel.org>; Thu, 30 Jul 2026 18:33:04 +0000 (GMT)
+Received: by mail-yw1-f199.google.com with SMTP id 00721157ae682-81aea53d559so3052177b3.0
+        for <linux-pm@vger.kernel.org>; Thu, 30 Jul 2026 11:33:04 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=oss.qualcomm.com; s=google; t=1785436383; x=1786041183; darn=vger.kernel.org;
+        h=content-transfer-encoding:content-type:in-reply-to:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=ahCtsMBdVYMxFMkXHrGydOopNEKYRJCw12sUjfq9kyk=;
+        b=eXtdYqdLGDUYnI6yJQJ5YawFfj+99YBNsuS3dvXIEBGjaCbS+oKhyfTC5QgoNFCVUX
+         F3fMPemY1QToV+jO0aIXpbVGpBMV/daKSGOftEO9/a9XY5J+uFOY5h7IX6WtpzwZoePv
+         TFGdGiPWwUHlQgYhzL1Hi540s76i0pq0bOd2118B4hnjVfyPHAPGGeju1n3gS3GF1Hxl
+         f88Bg22Xv3kxXOO+SaLTQdtu0N4Yfbsqy5taMmYx0xaOoNRGCZt+HQVtPkyvWC+X3qf3
+         LhNiWFa5noPQQJfwc/iUClz8+AFtPTCTm29K7hXwD2DnZXFWDLCtIpFh/SHiqIihAhxZ
+         JwZw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1785436383; x=1786041183;
+        h=content-transfer-encoding:content-type:in-reply-to:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=ahCtsMBdVYMxFMkXHrGydOopNEKYRJCw12sUjfq9kyk=;
+        b=pwD/qS1SquosAcVL9hsyJQg1ocsyPIcemBWeIWxMlu62+bShY5KpgauuWYli/uV4z4
+         6oSlJBwUsaOLgzmIBDTTPqzjg3cdJTR62fWsyUwq3VWTcd9pchZk3NUQbZc+arbMzfsp
+         mP2/sTVl7uckw4eu5jYToioazmKJwNqW0Xmkz+DAXUW2mRKTj9KPOUqrWq4527NcwrOm
+         8sgrU554qjHqgPDqmYvCOMZt//AM3TzGibSseeFbx0CNtk5+C7DxsdPAPFhl2G1GEmHc
+         cZGRA06N8vtDQ+DAjwcJGbyc4k6YBmjXJ4Vfi92Ak5Ve+tgSgnqoyUVpnzeBtJXAH+SF
+         CQDQ==
+X-Forwarded-Encrypted: i=1; AHgh+RrkVsdpzqQ1pNGcaYIFMdcU3WRzS+q2UqOo2EMtdRVc91QGaCNXEyzYPMHFFB9y6s8qU7C/Ozs01g==@vger.kernel.org
+X-Gm-Message-State: AOJu0YwdSRyLr1yalBfhWuWzlfdN8LEyEpWa4ZyeKGgWU/UG7r8SVyxL
+	Mlx8kJa7X7rlpc75CJxjZPA140pqCaQvnwX97Jwy4IBtbdTc6w8owMiRWlh5Sp0yQnU3uxpNQ9y
+	7lfccrqMHZ7Fj9UuNW8HFYH5YELCq4P0o91xS3Nsyj0i3XzDY7n+sSN5Yj1WEmA==
+X-Gm-Gg: AR+sD11E4Mc1ICUNE0teUQzDyYk9ff8hfnAZNTDy+cjy58fH1IaTJSy8Q7VHCbrctZB
+	wuD1RLR52Wmc5ZfLytpZOub88v++gXdFXY2pR6xfWuxoKSZapEf7idhP0bXgt5aGNvOryRjHNiC
+	/2iuNEkUtavtFTxT8gsEUJUx+oCbDYfqPgV4ccJjfKQejoUXiAtPHY4+NoxZOAc4UfzMXiSrYnh
+	WcYPkZyDVIyZEeSoSo/i2qqMaIjtkxh2Co3JlJMCz0gswtREoARCVf4wdhBPCfmby/tI/qXqPpF
+	x7YlCgQjep8U8ElC/imWvMO5Kv+M4Ro1ZzJEK8W4jjSyaUCOaMf7zj3DHaEbEDpFv2TYlapNLYl
+	1VnipZkGFFFTiT9Tsq367hwbsBvr7R45uFgQH+9l8Ir09gz1lMsvu2MSuYtWayjJ/
+X-Received: by 2002:a05:690c:6210:b0:81d:6af3:b9b8 with SMTP id 00721157ae682-81fb8aec869mr25686517b3.60.1785436383430;
+        Thu, 30 Jul 2026 11:33:03 -0700 (PDT)
+X-Received: by 2002:a05:690c:6210:b0:81d:6af3:b9b8 with SMTP id 00721157ae682-81fb8aec869mr25686187b3.60.1785436383000;
+        Thu, 30 Jul 2026 11:33:03 -0700 (PDT)
+Received: from ?IPV6:2a01:cde0:108:24ed:2206:62e9:bbc4:c360? ([2a01:cde0:108:24ed:2206:62e9:bbc4:c360])
+        by smtp.gmail.com with ESMTPSA id 00721157ae682-81fb8a882f8sm15241967b3.23.2026.07.30.11.32.59
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Thu, 30 Jul 2026 11:33:02 -0700 (PDT)
+Message-ID: <78ed74b8-a810-4253-af7d-65bddd223fd7@oss.qualcomm.com>
+Date: Thu, 30 Jul 2026 20:32:58 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <cafd8af9-c6e9-4bf2-b496-23e796fbc9a6@linux.dev>
- <CAJZ5v0hWDKHXO5d-rgp_TMiS48fHY-cTxf5r5rGg2eBNpNtVig@mail.gmail.com> <fe8a69c9-83a4-48aa-8904-73ce70ef7a62@gmx.de>
-In-Reply-To: <fe8a69c9-83a4-48aa-8904-73ce70ef7a62@gmx.de>
-From: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
-Date: Thu, 30 Jul 2026 19:59:47 +0200
-X-Gmail-Original-Message-ID: <CAJZ5v0jHQhbVDeZZGraNE3h0kzLog3Xq2x6Z=BxOTqsGJoyQwQ@mail.gmail.com>
-X-Gm-Features: AUfX_mwaI3GLhLzRMWwWSa46p2a1j7z_xihXD4nSf0wLudvoKINpvxcrHBNqeH4
-Message-ID: <CAJZ5v0jHQhbVDeZZGraNE3h0kzLog3Xq2x6Z=BxOTqsGJoyQwQ@mail.gmail.com>
-Subject: Re: [REGRESSION] thermal: per-zone hwmon names break Steam Deck fan control
-To: Armin Wolf <W_Armin@gmx.de>
-Cc: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>, Matthew Schwartz <matthew.schwartz@linux.dev>, 
-	regressions@lists.linux.dev, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, 
-	Linux PM <linux-pm@vger.kernel.org>, linux-hwmon@vger.kernel.org, 
-	stable@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v6 1/9] dt-bindings: remoteproc: qcom,pas: add
+ #cooling-cells property
+To: Gaurav Kohli <gaurav.kohli@oss.qualcomm.com>,
+        Bjorn Andersson <andersson@kernel.org>,
+        Mathieu Poirier <mathieu.poirier@linaro.org>,
+        Rob Herring <robh@kernel.org>,
+        Krzysztof Kozlowski <krzk+dt@kernel.org>,
+        Conor Dooley
+ <conor+dt@kernel.org>,
+        Amit Kucheria <amit.kucheria@oss.qualcomm.com>,
+        Konrad Dybcio <konradybcio@kernel.org>,
+        "Rafael J. Wysocki"
+ <rafael@kernel.org>,
+        Daniel Lezcano <daniel.lezcano@kernel.org>,
+        Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>,
+        Manivannan Sadhasivam <mani@kernel.org>, Kees Cook <kees@kernel.org>,
+        "Gustavo A. R. Silva" <gustavoars@kernel.org>,
+        cros-qcom-dts-watchers@chromium.org
+Cc: linux-arm-msm@vger.kernel.org, linux-remoteproc@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-pm@vger.kernel.org, linux-hardening@vger.kernel.org,
+        manaf.pallikunhi@oss.qualcomm.com
+References: <20260727-b4-qmi-tmd-v6-0-973cd3a226af@oss.qualcomm.com>
+ <20260727-b4-qmi-tmd-v6-1-973cd3a226af@oss.qualcomm.com>
+Content-Language: en-US
+From: Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>
+In-Reply-To: <20260727-b4-qmi-tmd-v6-1-973cd3a226af@oss.qualcomm.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzMwMDEzNyBTYWx0ZWRfX/1RxNB1J41Nw
+ TcrexFsnUwXphLV1vs1XUqIMrtgcNidxa5ztuWkIb3DPfhPgUa61vZBq42oDzDDLbKqzvuXghCk
+ csz8MgZEdPhgAYiU+37CEmTsvSW7NFyUAaupNNnu7SZDXxpcPMra+56+ZIyZPHdtZnlVaiYtePG
+ 0SghOkIkxGhZZlRyeZo5HA9NicWz2DL+BhkUpPuLmbcNomARR5SGaw5hD50DVrTcckkL3iQ6teP
+ o05TeFhdDJPgHp20sIpAP4KvYRjObs/tvvkqyPAqlJFFSpnw66dQ/HfV+DyR3KHcqOCyZcHMgCk
+ s/oCSYbkPhQKhbIkO43CtiNfFIYy9rBOzVg5cB5XfoaEOtYZZVTSonLHI4yKImLY5GEjw/ZTQ6y
+ 0JOaV9YsoIGQgc7z54B0AnpnpudxSrlboFR/8scbH2z7/1OKf+xAbp9JJJRWZnyekJ50yB5pvrb
+ qs9WpfIzMBWLd+ZQm3g==
+X-Authority-Analysis: v=2.4 cv=LIlWhpW9 c=1 sm=1 tr=0 ts=6a6b98e0 cx=c_pps
+ a=72HoHk1woDtn7btP4rdmlg==:117 a=xqWC_Br6kY4A:10 a=IkcTkHD0fZMA:10
+ a=RAioF0-LDSMA:10 a=s4-Qcg_JpJYA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=u7WPNUs3qKkmUXheDGA7:22 a=eoimf2acIAo5FJnRuUoq:22 a=EUspDBNiAAAA:8
+ a=YquD-R9NUEwuMsMzHaIA:9 a=QEXdDO2ut3YA:10 a=kA6IBgd4cpdPkAWqgNAz:22
+X-Proofpoint-ORIG-GUID: HRgWePQm7jGID0vchJVt1dLkxEAjC45S
+X-Proofpoint-Spam-Info: AW1haW4tMjYwNzMwMDEzNyBTYWx0ZWRfX5v4PUt8e2KxR
+ PFRbFSwYVzx8vhfKW2fij5+83296kDYYKDJh38zGhZQHL+qtDbm4hL5dp7TbJbCZl2fst2ifTON
+ O0VJdZdinHQDih0A707EK0Ko8Dj1W6c=
+X-Proofpoint-GUID: HRgWePQm7jGID0vchJVt1dLkxEAjC45S
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.134,FMLib:17.12.100.49
+ definitions=2026-07-30_05,2026-07-30_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ spamscore=0 priorityscore=1501 impostorscore=0 clxscore=1015 suspectscore=0
+ lowpriorityscore=0 phishscore=0 adultscore=0 bulkscore=0 malwarescore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2607300137
 
-On Thu, Jul 30, 2026 at 6:46=E2=80=AFPM Armin Wolf <W_Armin@gmx.de> wrote:
->
-> Am 30.07.26 um 11:33 schrieb Rafael J. Wysocki (Intel):
->
-> > Hi,
-> >
-> > On Wed, Jul 29, 2026 at 10:50=E2=80=AFPM Matthew Schwartz
-> > <matthew.schwartz@linux.dev> wrote:
-> >> Hello,
-> >>
-> >> After upgrading my Steam Deck OLED to a 7.2-rc kernel, the userspace f=
-an control daemon that I use stopped working. I bisected the regression to =
-d6323469bcfb ("thermal: hwmon: Register a hwmon device for each thermal zon=
-e").
-> >>
-> >> Before this commit, the ACPI thermal-zone hwmon name was acpitz, while=
- after the change it is now acpitz_0.
-> >>
-> >> The device profiles for fan control rely on the exact `acpitz` hwmon n=
-aming like the below code snippet:
-> >>
-> >> devices:
-> >>    - hwmon_name: acpitz
-> >>      nice_name: CPU
-> >>      max_temp: 90
-> >>      temp_hysteresis: 0
-> >>      sensor_name: temp1
-> >>
-> >> So now, the profile fails to load with:
-> >>
-> >> fancontrol.py[40528]: Warning: hwmons not fully loaded, retrying...
-> >> fancontrol.py[40528]: Warning: hwmons not fully loaded, retrying...
-> >> fancontrol.py[40528]: Warning: hwmons not fully loaded, retrying...
-> >> fancontrol.py[40528]: Traceback (most recent call last):
-> >> fancontrol.py[40528]:   File "/usr/share/jupiter-fan-control/fancontro=
-l.py", line 606, in <module>
-> >> fancontrol.py[40528]:     raise FileNotFoundError("Failed to load hwmo=
-ns after 10 attempts.")
-> >> fancontrol.py[40528]: FileNotFoundError: Failed to load hwmons after 1=
-0 attempts.
-> >>
-> >> Because initialization fails, the daemon never enters its fan-control =
-loop or writes the requested fan target.
-> >>
-> >> This change was also backported to Linux 7.1.5 as commit 996957016bc1,=
- so the regression is present there as well and has led to a userspace ABI =
-regression. I can look at accommodating the change on the userspace side, b=
-ut it still seemed worth reporting as a kernel regression.
-> >>
-> >> Thanks,
-> >> Matt
-> >>
-> >> #regzbot introduced: d6323469bcfbda91f0aa89b7b39ad45fe822ca5d
-> > Thanks for the report!
-> >
-> > I think that commit d6323469bcfb will need to be reverted.
->
-> Would it be possible to instead make the new behavior depend on a Kconfig=
- option?
 
-Yes, it would, but I'm not sure I want to go down that path.
+Hi Gaurav,
 
-There is a major weakness in the new scheme, which I didn't take into
-consideration, that it builds hwmon interface names using thermal zone
-IDs which span all of the thermal zones in the system, not just
-thermal zones of the same type, so what user space gets basically
-depends on the initialization ordering.  Granted, this can be fixed,
-but then is it really a good idea to register a hwmon class device
-under a thermal class device?
 
-I'm still thinking that in the future it would be good to give parents
-to thermal zones, in which case hwmon class devices should be
-registered under those parents.
+On 7/27/26 16:22, Gaurav Kohli wrote:
+> Document the optional #cooling-cells property for Qualcomm PAS
+> remoteproc nodes so they can be used as thermal cooling devices via
+> the QMI Thermal Mitigation Device (TMD) interface.
+> 
+> Qualcomm remote processors expose TMD endpoints that support thermal
+> throttling through firmware. The cooling-device specifier uses 3 cells:
+> 
+>    <&phandle device_id min_state max_state>
+> 
+> where device_id selects the TMD endpoint (for example PA, modem, or
+> CDSP software mitigation), with constants defined in:
+> include/dt-bindings/thermal/qcom,pas.h
+> 
+> Example usage in a thermal zone:
+> 
+>    cooling-maps {
+>        map0 {
+>            trip = <&cpu_alert>;
+>            cooling-device = <&remoteproc_cdsp
+>                             QCOM_TMD_CDSP_SW
+>                             0 THERMAL_NO_LIMIT>;
+>        };
+>    };
+> 
+> Signed-off-by: Gaurav Kohli <gaurav.kohli@oss.qualcomm.com>
+> ---
+>   .../bindings/remoteproc/qcom,pas-common.yaml         |  9 +++++++++
+>   MAINTAINERS                                          |  1 +
+>   include/dt-bindings/thermal/qcom,pas.h               | 20 ++++++++++++++++++++
+>   3 files changed, 30 insertions(+)
+> 
+> diff --git a/Documentation/devicetree/bindings/remoteproc/qcom,pas-common.yaml b/Documentation/devicetree/bindings/remoteproc/qcom,pas-common.yaml
+> index 11faf655f530..f75cab6b4ed9 100644
+> --- a/Documentation/devicetree/bindings/remoteproc/qcom,pas-common.yaml
+> +++ b/Documentation/devicetree/bindings/remoteproc/qcom,pas-common.yaml
+> @@ -77,6 +77,15 @@ properties:
+>         channels and devices related to the ADSP.
+>       unevaluatedProperties: false
+>   
+> +  '#cooling-cells':
+> +    description: |
+> +      Cooling device with three cells:
+> +        Cell 0: Cooling device id as defined in
+> +                include/dt-bindings/thermal/qcom,pas.h
+> +        Cell 1: Minimum cooling state
+> +        Cell 2: Maximum cooling state
+> +    const: 3
 
-> This way we would give userspace time to adapt to the new behavior. Remov=
-ing it completely
-> would mean that userspace will newer adapt.
+I'm not sure it is necessary to re-explain what is the property format 
+as it is already described in thermal-cooling-devices.yaml
 
-But IMV it would be better to ask them to adapt just once.  So if the
-plan is to arrange things to register thermal zones under specific
-parents, that is what user space will need to adapt to and
-intermediate adaptation episodes should be avoided, so to speak.
+Other than that:
 
-In the interim though there is the bug causing thermal zone removal to
-deadlock due to the misdesigned hwmon interface which needs to be
-addressed in the short term, possibly without disturbing user space.
+Acked-by: Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>
 
-To that end, I'm thinking about creating a faux device called, say,
-thermal_sensors that will be used as the parent for all of the hwmon
-class devices created automatically by the thermal core.
+>     glink-edge:
+>       $ref: /schemas/remoteproc/qcom,glink-edge.yaml#
+>       description:
+> diff --git a/MAINTAINERS b/MAINTAINERS
+> index dcffe9fc54f6..3f1e2bbf7099 100644
+> --- a/MAINTAINERS
+> +++ b/MAINTAINERS
+> @@ -3423,6 +3423,7 @@ F:	drivers/watchdog/gunyah_wdt.c
+>   F:	include/dt-bindings/arm/qcom,ids.h
+>   F:	include/dt-bindings/firmware/qcom,scm.h
+>   F:	include/dt-bindings/soc/qcom*
+> +F:	include/dt-bindings/thermal/qcom,pas.h
+>   F:	include/linux/firmware/qcom
+>   F:	include/linux/soc/qcom/
+>   F:	include/soc/qcom/
+> diff --git a/include/dt-bindings/thermal/qcom,pas.h b/include/dt-bindings/thermal/qcom,pas.h
+> new file mode 100644
+> index 000000000000..f603bddef9a8
+> --- /dev/null
+> +++ b/include/dt-bindings/thermal/qcom,pas.h
+> @@ -0,0 +1,20 @@
+> +/* SPDX-License-Identifier: GPL-2.0-only OR BSD-2-Clause */
+> +/*
+> + * Qualcomm PAS remoteproc cooling device indices
+> + *
+> + * These indices are used in device tree cooling-maps to reference
+> + * specific TMD devices provided by PAS-managed remote processors via QMI.
+> + *
+> + * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
+> + */
+> +#ifndef _DT_BINDINGS_THERMAL_QCOM_PAS_H
+> +#define _DT_BINDINGS_THERMAL_QCOM_PAS_H
+> +
+> +/* CDSP thermal mitigation device id */
+> +#define QCOM_TMD_CDSP_SW	0
+> +
+> +/* Modem thermal mitigation device id */
+> +#define QCOM_TMD_PA	0
+> +#define QCOM_TMD_MODEM	1
+> +
+> +#endif /* _DT_BINDINGS_THERMAL_QCOM_PAS_H */
+> 
+
