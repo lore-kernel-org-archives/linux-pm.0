@@ -1,112 +1,113 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-ej1-f45.google.com (mail-ej1-f45.google.com [209.85.218.45])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3E0AF3BCD0A
-	for <linux-pm@vger.kernel.org>; Thu, 30 Jul 2026 09:33:22 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D734B3F9A1E
+	for <linux-pm@vger.kernel.org>; Thu, 30 Jul 2026 09:35:07 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.218.45
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1785404003; cv=none; b=rCxJDrP6szXrEGQY84flmsUb944BKYUwhHk/PEDkeSpaW6N5kLAySvuxYcPVyVXpbRjjG45WSxCQoG3PgEdT/YJi0hNQQ44ZhRjNk1WNOU/awoGkLKDVZan9Mm+zVcSmXpv5xOSD8QkS05/T8uEqUfzcsNrQKjpCxzXNOrhi09Y=
+	t=1785404109; cv=none; b=N8NQ1+oUs0tJAwW+nu30FZMsbA1E/7tmwSYOA53UJBQzjYT5Y7C/yLz1MPemW7/0r5tG0NdwvtZsba1d8/olhcjCPLsnG3rXFsmH6SsyBu60WXKXhqFWwL1ub2GIH3CwMGfhY8UodVyBQROB1aZHGBU9N9lzd2xcrzGHJ+V2Auo=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1785404003; c=relaxed/simple;
-	bh=iYMHnvH0OKGCDdTGrzlI3yhg9p5eCKTm9i6oNiNLpdk=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=ZVVcQ//bxidnR/ucx+jT8rSKTXyStus4pbpqA5RkuLSGQ3dkfOTdnokE+KDqwZtpnvfHKcCWwri6iJn2VTDErcutIaRYqu372nncZ4eoVUl+fs8o9yt5Uwr79AosENp1pcnBGUyYIWLSNzZT1C7DskBDNZj48rmBEjiN9PAAGbU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=YV2SQfnk; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1785404109; c=relaxed/simple;
+	bh=vuwucA9vipnQ6DR1ZbZrDDrjcEvHXJZFOVBWKVa4tds=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=CqGdWh2012E/ArDI/BI9MTE33BeerTrDIt6Ja7fe90fzqCXrsx0rHdDuPpTir5VlpTWKl1M8G9XBWuffauQWwK4R5Pn6DQ5u6A9Hs+o/JepibO+W28iSvhrrzQZOZa/oCRY59hxmTwLSVd7C5sQZ0SMh/KHvw+Cag5r7FTrN5aA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=OJq67jNz; arc=none smtp.client-ip=209.85.218.45
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="YV2SQfnk"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1A7711F00A3F
-	for <linux-pm@vger.kernel.org>; Thu, 30 Jul 2026 09:33:22 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1785404002;
-	bh=Gwcd753fWtAnlelFtxkponYfNiVbGFQihpYN8RGz7/w=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc;
-	b=YV2SQfnkPi6irvwjs+pOtcroloDKSb143fkoSCOg6z9dPw3qOhgjnY/dGvVQHhGiF
-	 KFoSHm8qMrIisiHc0ce+faONel1+7Kjuxqj9XroP3UQ/GVel/lZteKWZs8Nx1eZ9RJ
-	 UW5XzVj6R8awhVdr2QTvCazgQ2e2NZWw/x03w0qv8clpJoarFBtuUUlBzaclv/XkdO
-	 WZSNiqaWqisoPfPrL6jL/IHz1pWBsgEyA772pN/US4owzZbwSPQ5LQDB8HmVT5Apze
-	 Q01wtJuWOZrfHHcq16kR2AtewkCLdNRb/AIaavT4iSPbYk01L0/3ousdgsSRPJNl56
-	 SQ4ruZ3eXggeA==
-Received: by mail-lf1-f47.google.com with SMTP id 2adb3069b0e04-5aeb8c19017so2405144e87.0
-        for <linux-pm@vger.kernel.org>; Thu, 30 Jul 2026 02:33:22 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AHgh+RobL/RDcryqAb6PRXzougKJtYDNWxCF9wQDqff66vvfaffKknORyTefgqP4w/6GiDRe29lma5ombg==@vger.kernel.org
-X-Gm-Message-State: AOJu0YxQQxlFDNrqoCXFs80Q89Io9V6zGnZ9zRpT4yclfDe55KKQ1mFz
-	fsKpo6d0+L8+hOB8npbh72YJL/n3B8FLA9Eb1ZAe8NciXax8SHp8/Tfzs2dd7DyuVePU26mWMWh
-	qlz2+FXNRRY1gU2juGi6nkckiBbgyEWU=
-X-Received: by 2002:a05:6512:1384:b0:5ae:b24c:7723 with SMTP id
- 2adb3069b0e04-5b2db34f426mr409984e87.17.1785404000537; Thu, 30 Jul 2026
- 02:33:20 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="OJq67jNz"
+Received: by mail-ej1-f45.google.com with SMTP id a640c23a62f3a-c1677c91969so224315266b.1
+        for <linux-pm@vger.kernel.org>; Thu, 30 Jul 2026 02:35:07 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1785404106; x=1786008906; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
+        bh=LorXrpjvB9CH6Civ3yNIe2+RrIhqKWqCrvDhWx+glCc=;
+        b=OJq67jNzp82vgB4CVKRXaMGpzqr5LOcQ+F85YYJf6h0iTH3RtFbW0NmM8Jz2ftc289
+         ZiROiXTkzR86Q2rheVQN0LmIy//4otmwhibj0EOc7g/roeKzueK5k8bM1Z+J2Y8PHa3n
+         ixDT9DalEC1aNW6m2kfBHDdWULd60wuHOYznKi+9QObqpdJw0S5HctwCkpJuq/kdtIY4
+         txaDXvZFTDQSfLfvrHebm12I8Jn8xyhDsGATMkAn+DsToFha4oiPX8dbZbE7GXulMFm3
+         h9Rm06lgHUF4sT+VhXQ19LImYNKr+DrmnohkeUjSBswdhh5q9CzpNr1OubeVO2s+Nq9c
+         3dew==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1785404106; x=1786008906;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=LorXrpjvB9CH6Civ3yNIe2+RrIhqKWqCrvDhWx+glCc=;
+        b=jgU9zCOIRFmzZE1XHwSrHV/8zS/CqMS14j4CXWZ+RvScrro+JwjiL7MiSLumthBCoQ
+         kUzmAEecNrWaQ90lFAISXYQGP83ATE9yosYZRdhATEOSgbjTfeJJPWbBbWXg2ScX2tBg
+         +5VVHH3T0lK1Blgq/6gaxERNGMXllovT+2QkeQN5/xbZeA9phO9F1ykWbCXkCnNY1mv4
+         ra+nBUczb2aCzkzspQIKo6RVp1uNSmHhiT+/6NoPe5fctzzFL/WBDaJTGyBJKJAcWU+Z
+         l/35oXAGn+EW5QVy49FTighHVSVjI2MoxsXQKP7xm6R46GnPuRrxNVnewfQcuMKYWx7+
+         17CA==
+X-Forwarded-Encrypted: i=1; AHgh+RrxXtpbu7ZvE6ZLBKLzSLzdgO2JgA/GNnprdaltX6JaHUQ18GnhnP4FYZcoc0szhSPx7/+x3TXkAA==@vger.kernel.org
+X-Gm-Message-State: AOJu0YzCFkjBoIpGS7plC+ROYXAtNhK1GXJQjn4qPDBe0HXOaA6NPnVl
+	UkGLYk0K02kH560EJ0Bu7MC/Kncca215gEOgnJup9UutboJPfNx9G/a1
+X-Gm-Gg: AR+sD13gCqRF+trQfptaqpamT2+GkSyxl4eJs7vRtsRfOMlnIG99KZo0KhADZfuCOho
+	nnu8fQLAVuVdGih8Yu2WKNUtT+SQsKWS8i47h9lZxeCZ0amDqSK499/rOHxhIosChftJs4MWuLR
+	4wcGrUgparVV5imdVS5XpmGiJD0ej/xZvOzZOLMiSfEHvO6N6ezUszLbEkRy7jXYr1Z0QRym6OA
+	ZANVobCae6Fz76bBR/pDklJoKPyNi4Sb6GnxB7jcfHPpVxf89MhHkHMmne6ay1q2WaUdbEKKwJz
+	1IOnxGJXmbRNyp+ZQ6TMru8d2sAroHVUscpwF+mAZNxdaWExR/6g2b0zA6LPfE6aN2wAudtfLqr
+	dQvKU8d+MKSkMWF9sclnpmPQ9xdSbJdZC55440agji18WTHOzCn5e6DeeI1MBtBeY2tWOpJsnGq
+	jEqYrai523MhjGAIx0Y8O5F2pozaTmnUbERU3H3jQIPOIw8h768emlD5Z9uXVOe7MZQnoj4kO7C
+	K7f8+UkEEJEndiTSpYeaQ==
+X-Received: by 2002:a17:907:c08c:b0:c12:7934:52fd with SMTP id a640c23a62f3a-c1fa55ce082mr100963066b.32.1785404105894;
+        Thu, 30 Jul 2026 02:35:05 -0700 (PDT)
+Received: from workstation (161-53-210-87.ftth.glasoperator.nl. [87.210.53.161])
+        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-c1fa8577e78sm46733066b.20.2026.07.30.02.35.05
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 30 Jul 2026 02:35:05 -0700 (PDT)
+From: Stanislav Zaikin <zstaseg@gmail.com>
+To: Bjorn Andersson <andersson@kernel.org>,
+	Konrad Dybcio <konradybcio@kernel.org>,
+	Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	Sebastian Reichel <sre@kernel.org>
+Cc: linux-arm-msm@vger.kernel.org,
+	devicetree@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	linux-pm@vger.kernel.org,
+	Stanislav Zaikin <zstaseg@gmail.com>
+Subject: [RFC PATCH 0/3] Add Xiaomi 12 Lite 5G (taoyao) battery support
+Date: Thu, 30 Jul 2026 11:34:59 +0200
+Message-ID: <20260730093502.689505-1-zstaseg@gmail.com>
+X-Mailer: git-send-email 2.53.0
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <cafd8af9-c6e9-4bf2-b496-23e796fbc9a6@linux.dev>
-In-Reply-To: <cafd8af9-c6e9-4bf2-b496-23e796fbc9a6@linux.dev>
-From: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
-Date: Thu, 30 Jul 2026 11:33:07 +0200
-X-Gmail-Original-Message-ID: <CAJZ5v0hWDKHXO5d-rgp_TMiS48fHY-cTxf5r5rGg2eBNpNtVig@mail.gmail.com>
-X-Gm-Features: AUfX_mxpk7wOb3Rn1IIPdkmSayC3zS-sp0NaL-oKcv7EWugBomcUesiy2CrmkiA
-Message-ID: <CAJZ5v0hWDKHXO5d-rgp_TMiS48fHY-cTxf5r5rGg2eBNpNtVig@mail.gmail.com>
-Subject: Re: [REGRESSION] thermal: per-zone hwmon names break Steam Deck fan control
-To: Matthew Schwartz <matthew.schwartz@linux.dev>
-Cc: regressions@lists.linux.dev, 
-	"Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Linux PM <linux-pm@vger.kernel.org>, 
-	linux-hwmon@vger.kernel.org, stable@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
 
-Hi,
+Xiaomi 12 Lite 5G (taoyao) has an additional property with ID 12 that
+breaks the parsing in qcom_battmgr. Fix that by introducing separate
+maps for lookups properties in both directions.
 
-On Wed, Jul 29, 2026 at 10:50=E2=80=AFPM Matthew Schwartz
-<matthew.schwartz@linux.dev> wrote:
->
-> Hello,
->
-> After upgrading my Steam Deck OLED to a 7.2-rc kernel, the userspace fan =
-control daemon that I use stopped working. I bisected the regression to d63=
-23469bcfb ("thermal: hwmon: Register a hwmon device for each thermal zone")=
-.
->
-> Before this commit, the ACPI thermal-zone hwmon name was acpitz, while af=
-ter the change it is now acpitz_0.
->
-> The device profiles for fan control rely on the exact `acpitz` hwmon nami=
-ng like the below code snippet:
->
-> devices:
->   - hwmon_name: acpitz
->     nice_name: CPU
->     max_temp: 90
->     temp_hysteresis: 0
->     sensor_name: temp1
->
-> So now, the profile fails to load with:
->
-> fancontrol.py[40528]: Warning: hwmons not fully loaded, retrying...
-> fancontrol.py[40528]: Warning: hwmons not fully loaded, retrying...
-> fancontrol.py[40528]: Warning: hwmons not fully loaded, retrying...
-> fancontrol.py[40528]: Traceback (most recent call last):
-> fancontrol.py[40528]:   File "/usr/share/jupiter-fan-control/fancontrol.p=
-y", line 606, in <module>
-> fancontrol.py[40528]:     raise FileNotFoundError("Failed to load hwmons =
-after 10 attempts.")
-> fancontrol.py[40528]: FileNotFoundError: Failed to load hwmons after 10 a=
-ttempts.
->
-> Because initialization fails, the daemon never enters its fan-control loo=
-p or writes the requested fan target.
->
-> This change was also backported to Linux 7.1.5 as commit 996957016bc1, so=
- the regression is present there as well and has led to a userspace ABI reg=
-ression. I can look at accommodating the change on the userspace side, but =
-it still seemed worth reporting as a kernel regression.
->
-> Thanks,
-> Matt
->
-> #regzbot introduced: d6323469bcfbda91f0aa89b7b39ad45fe822ca5d
+The other approach that I tried is manual shifting properties:
 
-Thanks for the report!
++	if (battmgr->variant == QCOM_BATTMGR_TAOYAO && prop > BATT_CHG_CTRL_LIM_MAX)
++		prop++;
+...
++		if (battmgr->variant == QCOM_BATTMGR_TAOYAO && property > BATT_CHG_CTRL_LIM_MAX + 1)
++			property--;
 
-I think that commit d6323469bcfb will need to be reverted.
+But I found that more obscure.
+
+Will be happy to switch if the maintainers prefer this one.
+
+Stanislav Zaikin (3):
+  dt-bindings: soc: qcom: add xiaomi,taoyao-pmic-glink compatible
+  power: supply: qcom_battmgr: add Xiaomi taoyao support
+  arm64: dts: qcom: sm7325-xiaomi-taoyao: switch to device-specific
+    pmic-glink compatible
+
+ .../bindings/soc/qcom/qcom,pmic-glink.yaml    |  1 +
+ .../boot/dts/qcom/sm7325-xiaomi-taoyao.dts    |  2 +-
+ drivers/power/supply/qcom_battmgr.c           | 86 ++++++++++++++++++-
+ 3 files changed, 84 insertions(+), 5 deletions(-)
+
+-- 
+2.53.0
+
