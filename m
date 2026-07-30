@@ -1,175 +1,306 @@
-Received: from mail-ot1-f44.google.com (mail-ot1-f44.google.com [209.85.210.44])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 36B463403E0
-	for <linux-pm@vger.kernel.org>; Thu, 30 Jul 2026 05:57:49 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.210.44
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 067C438F926
+	for <linux-pm@vger.kernel.org>; Thu, 30 Jul 2026 06:23:55 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1785391073; cv=none; b=gsFhbbnvurBVFkQBxyHnsXwk25PEtLMHVE9j84ci5eCaWEGQqoJBxIpF3Gvo2cpcYt6cvvRDBwg4MVHEyVcaf9sKQZ/SrCAPCof1TNKmS+t6tq2wMy9CQxKu+1Krpp4KaHPp71eQrvsB0d7Rm6fViBnbJXvjkb5mA5E2Y9nzWac=
+	t=1785392637; cv=none; b=avCW0TzjS0OEI/7FKRwFU6sEJQUmAEiOLEkocs6iZIJ15lyjKYto+jUhrXjNzP0xEcTYdVm+DpJIOe9YwOmUT/dqEtk45uWqjz+xHHQ6SvXNEaNK9C9Wv7pP9IElgANhEj8dWfakguE3R/e71Zan0accv3gLBBwFtQY1quom64Q=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1785391073; c=relaxed/simple;
-	bh=elrJJODL1Vl6dYW/ghsCTBe3TiiL2VuRJbi5aBpjw0E=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=mgIGjygo0cA+7lrsIyDteqvHQ7v/m2OrWIg+oih8WIrIfR6KQRt8YcztD/nGkAO03ZPZ7pfm1pTPyj/Q/4xyedCY/pObI2I4+xL7aIHRZ/Xdddr7ZHanIsT1QxO8ZtqlYhAl475rRRdPxq5p0eYlC4tXW5FF0lV3E3IShOM7YCE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=manifault.com; spf=pass smtp.mailfrom=manifault.com; dkim=pass (2048-bit key) header.d=manifault-com.20251104.gappssmtp.com header.i=@manifault-com.20251104.gappssmtp.com header.b=FkwD79h8; arc=none smtp.client-ip=209.85.210.44
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=manifault.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=manifault.com
+	s=arc-20240116; t=1785392637; c=relaxed/simple;
+	bh=RhmT0d6BPogBq0AJVpZkywtKfHR5UJJ4Gb6cYL6H6DU=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=IZ+sFlxNREH06n3yoduUyeuSd+lilbhh77gB/421xP5kw+Q0idjWmpelCiuicsEyS0jpNlAVWy4cL7oN3AUz9ET8bWceF2r60gzzydJJSCU5kt/ZHThZOjD0zsbV4RJnfxJfsk6x8Fjpuyu0uJJ3MygXezupmGCtqTNOQfhE0ag=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=URwrs5Oe; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=I09bnoWs; arc=none smtp.client-ip=205.220.168.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=manifault-com.20251104.gappssmtp.com header.i=@manifault-com.20251104.gappssmtp.com header.b="FkwD79h8"
-Received: by mail-ot1-f44.google.com with SMTP id 46e09a7af769-7eb5bdb50fcso1196446a34.1
-        for <linux-pm@vger.kernel.org>; Wed, 29 Jul 2026 22:57:49 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="URwrs5Oe";
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="I09bnoWs"
+Received: from pps.filterd (m0279864.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 66U6LbuV3692807
+	for <linux-pm@vger.kernel.org>; Thu, 30 Jul 2026 06:23:55 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
+	MN39yuEBBrn83OI1PfHjjtKhjs8VxV5nIEc8XlBfd88=; b=URwrs5OeemF5ukU+
+	C5ohds+HVsMO+cxqzmleTW0Z9905IfMYUNqly8W6QZbooFS17cHvZizfQzfHyhsv
+	T//YTpmqakkoNaSio9EKqK8ILbCpCeffihWOauQX4sbfw1Tb88mGL7eqHZa9TAig
+	Dc5uW7QC+eo97rX6CBjLX+93BlO3w19wvmHO7ir6gTHcvquKb7IhpA3PbYBaLV+d
+	gnKb6OfbEOyD/iTTbIepxliDDNJQdph0REU7Fzf9aYgbYRioMhdOlsa/pT1qxV7M
+	NnOAYKAYtk5WsTBgiPL9vI1moZFGrguEGLla82wNB0VQ167iHX1dPXCXXG80HVTw
+	Upoi/A==
+Received: from mail-pl1-f199.google.com (mail-pl1-f199.google.com [209.85.214.199])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4fr19ag0af-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <linux-pm@vger.kernel.org>; Thu, 30 Jul 2026 06:23:55 +0000 (GMT)
+Received: by mail-pl1-f199.google.com with SMTP id d9443c01a7336-2cca3673560so31911775ad.1
+        for <linux-pm@vger.kernel.org>; Wed, 29 Jul 2026 23:23:55 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=manifault-com.20251104.gappssmtp.com; s=20251104; t=1785391068; x=1785995868; darn=vger.kernel.org;
-        h=user-agent:in-reply-to:content-disposition:content-type
-         :mime-version:references:message-id:subject:cc:to:from:date:from:to
-         :cc:subject:date:message-id:reply-to:content-type;
-        bh=G1YBtjGWPIAJs8RYckw93SW7NOctckdT45mokOADGow=;
-        b=FkwD79h8TyjKfaenSqW8aOzBZ2cVc2dmk+kp5Iil6++ndY5Ykx5dIzsvE1qZZ3jbVv
-         gesBiEl0wfdB9H4F/Z5gCC2ZW9f26/63DPEmSKt6t44LsPUJiDXHeqvYeeBI5zx2xxWt
-         hdVxrhKv8ry9XMhKyOgLCc7cYUnGqI9bQu+cvGsTV4g4mbrGUAKk8FQ4Vx8hxilBBDGY
-         DMGlr4YR6w8e1T6Ywlw00rK8eNHIhQkkI/Obat9m4vZtF9LtVISqZj7rsdMDslepIozO
-         dTKOZFiGe+43piJpyLcakXqEsz8gfUwGmmHOqghzmomMXl7gDeFyIZ4+tHvilOasRLQM
-         vQEw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1785391068; x=1785995868;
-        h=user-agent:in-reply-to:content-disposition:content-type
-         :mime-version:references:message-id:subject:cc:to:from:date:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+        d=oss.qualcomm.com; s=google; t=1785392634; x=1785997434; darn=vger.kernel.org;
+        h=content-transfer-encoding:content-type:in-reply-to:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=G1YBtjGWPIAJs8RYckw93SW7NOctckdT45mokOADGow=;
-        b=QfWq/wU8NmXSPoYM1zMCexoolahm9yct+G5urtX0nUhcQVmgq56tStHrUtFBxtJnZp
-         R5Cx6TBc+ODfNeUln5slFRTjK524teEVC9MF6o6Ux3cHJUhdjGJMlykZmLXuhIAVo1ft
-         a7aik6PjBbcXRFpjXMYsVxveNCrp82pWJoCSyX1Pycf92CBQtNIyllYXMbd/YOedo0eU
-         QGqfOiKF2KU+kVmJyi9EBfDl8Umzvd/syXRwvMV/OAii3s1SB/hZgegBGknnKu3kqZqj
-         6ldmeyD2Jdsh55tOqgFeftCWV6hxwO9b3LJGzx8TDNfxtzHWj6rzURLs1/15M/BGX0jU
-         l04A==
-X-Forwarded-Encrypted: i=1; AHgh+RrIzF94nNVZ71czmeXhtN/Ex/nhUq3jDiLq+5V740sWmrjSeVTJ/+vEYn6bh6atnDp7s7X++CE75A==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yy8mfaE6sfKuOqU70x0rhmfLThXZ9jw/lwbLwJ09VzeXeWEFAYm
-	8+TfLzOnp06iaoUdUTKajuaWq2AHi+Rr04xLzpmnjG+euiWsJd/czlFWSJ9NqB3aQVA4
-X-Gm-Gg: AR+sD13TD5Pwj52xMGz+ondIUlqxY5dVe8NDNGYv0lirvoCCU3KxyWsN+xKIrNtDm1I
-	Kv7nuHSY+pzibzOeL3Z5BsdyDgbnQuELYG41aCRw9m6Ah+28aftwLcd+cUQKAkXNnLq5hd6oEAo
-	9YcJrWWIyJ75Ya/FbjSIK7KzaRlDikaOFISiOmY5siTEEHCcSiB6ysgi8idJC1VG3sLn6zso+JV
-	4n0l8e68bLtYbohFdRywFGFJMw1r5PHypD68SdFJ/XjFxoH4ZAL8HsZPYtNJRyPNiCTR/JMDqzo
-	HFzuLkZH84guCKFobqhnnLIroJA4nqQOX9jNJPxbYKKGD3gD0nIUqWra0sziK1deSRSlIQK/LKR
-	N2DK0ZWL7yRpytfK9W12j76ZCI9/2iLEjyOkOciKDUwWNSuDvvv6FHL91ou0wxWN0vxRWJ9Z08U
-	+IIW78zIFQD3V/iRgNCvI9cJuztNtCKYpc+kxIMmfnV6KV+igmOjhkPZ+5c3fd3CGmlhRaZXFQo
-	LObB0nIKxdNksZfsrd0+guHuFB2a5BQcP4=
-X-Received: by 2002:a05:6830:310b:b0:7e4:163:49cc with SMTP id 46e09a7af769-7f02bed52d5mr669619a34.7.1785391067870;
-        Wed, 29 Jul 2026 22:57:47 -0700 (PDT)
-Received: from localhost (c-76-141-129-107.hsd1.il.comcast.net. [76.141.129.107])
-        by smtp.gmail.com with ESMTPSA id 46e09a7af769-7f00d591de0sm3955057a34.1.2026.07.29.22.57.47
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 29 Jul 2026 22:57:47 -0700 (PDT)
-Date: Thu, 30 Jul 2026 00:57:45 -0500
-From: David Vernet <void@manifault.com>
-To: Christian Loehle <christian.loehle@arm.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Huang Rui <ray.huang@amd.com>, 
-	Mario Limonciello <mario.limonciello@amd.com>, Perry Yuan <perry.yuan@amd.com>, 
-	K Prateek Nayak <kprateek.nayak@amd.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	=?utf-8?B?QW5kcsOp?= Almeida <andrealmeid@igalia.com>, Changwoo Min <changwoo@igalia.com>
-Subject: Re: [RFC PATCH 0/4] cpufreq/amd-pstate: Per-core EPP boost for
- recently-busy CPUs
-Message-ID: <amrZ08BnDP4OriHa@maniforge>
-References: <20260728073150.54964-1-void@manifault.com>
- <700ebebe-f4ab-4329-ad43-716d74d6621c@arm.com>
+        bh=MN39yuEBBrn83OI1PfHjjtKhjs8VxV5nIEc8XlBfd88=;
+        b=I09bnoWs8VyjoStpIGL+efJBlMSrMAg69TLiBcvDJWoRz+EOuy9MtGhZMFlZxeVC0O
+         Kg1bYwNtLx3++CqRc7wi8CrEBKHg+PNm8V9LVQqWXh3QFBcsEbpUhuQP/rc6mthzRNMX
+         /bX64YfY6YMXytmWRdW9+Q5jl8NW7xfyS0mNPPBDfOpNk9LLM5QHCUtIJRMH5o5S1XYS
+         okgNIqrFqVxoobTJ1yYPLk4ALv5TOFWv4q1/cVu2g5cj9pu+m267akG3Rp1hPi63S8+h
+         0gdIcviK1E9yL416xyXWO0tySdTIKaTW001x2nWVtlg6e9eT2G9EVX3xydyi02ZUhgJj
+         A4dQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1785392634; x=1785997434;
+        h=content-transfer-encoding:content-type:in-reply-to:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=MN39yuEBBrn83OI1PfHjjtKhjs8VxV5nIEc8XlBfd88=;
+        b=KcqtVNNL09tbH41lA68cYq1rpMeqXBxclc1tQafBA1ndAESk957KXqHJu1MVUvH864
+         ChPjUwYWytDgdpRAoorkq+ZysJrBvro7maE8e3vPtvLt2DMqjyFUSLc76YklKNCrfe1q
+         4x3B2N5dMZxywBNsc9BuSaUL9sJ6/fsa17NbRj+NfH7VIK8OIBSwJ9wolM3D69g1fVlm
+         6yjS+hdt5mdLLAl01HYaANSw8SH7W6ioNn99qzPkVtAw20QsxWss8KxwfKYYpCulf9uR
+         ZV5ym4FEXmjLsidNyIZXOHhiAN7cMI8eAHdGvFIZ+TlxoTvO3JNjfLiQhjU6aWZc9lu2
+         T8sA==
+X-Forwarded-Encrypted: i=1; AHgh+RrQ42fTS+BxFtQoEqyLXFxnTz6xAaXE+s1/yLCHTyd7Ve4aQljmmN2bUP+Q6Fji4E8RTLfbt9fwIQ==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yz1RwUXX1trEUCN0bhGkeSYisJYZFd+hAJ7G+D5WB6/zPjc60QT
+	s8vd3FuBcGOlMYqM4lDHCF5obrphQm3xkBLBepfLc5O1xMJm6JnaPDSnHRQ4iTOHBi/2lDtWx88
+	2AmAPG7ZWdkkQTxpF69ibe8aWmObDygUd9Qkfu6Xpl14rIXxcRy+axmM4p1U/Jw==
+X-Gm-Gg: AR+sD11mvt6wRvGqYV2vE3IyZVmOipqr5nYtLv4DoryDtW9fV6CIVUVRKaFYOh90pkg
+	zG4DhQFjcv0FOc/M2chAdqvXe9731jmWUzbfD1c5s+ni1G+uUN1dhWCIxWklKLi/iBUARu+rjpt
+	A/T7/zzMy4Ri+nDtavsUMMHMwqcapSJe0SJLlhA9700oyxdFaqjKkX7/Sc4u2oY/vgKZG08T+8n
+	6XZbBvj+5fwntHQrG0LyLAKDD15EKSj20cEnZIeorwWUu2OkaAxev2Vcn5flbgkTS3RpMbAGGBl
+	TCkXFpj+Cw53sVb5tk5Ei9kLn76Ya4fsVLDHy8VUlsfRLfxolER29K5gzfLDhai5WZCTYQCSfLy
+	8NNGovL5/M0vFSq/eoXg1rsQV0NRpbF5CcQ==
+X-Received: by 2002:a17:902:d483:b0:2ca:53e1:b915 with SMTP id d9443c01a7336-2d035c20259mr14843225ad.14.1785392634291;
+        Wed, 29 Jul 2026 23:23:54 -0700 (PDT)
+X-Received: by 2002:a17:902:d483:b0:2ca:53e1:b915 with SMTP id d9443c01a7336-2d035c20259mr14843025ad.14.1785392633852;
+        Wed, 29 Jul 2026 23:23:53 -0700 (PDT)
+Received: from [10.92.206.102] ([202.46.23.19])
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2d022a6a584sm20911595ad.33.2026.07.29.23.23.49
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Wed, 29 Jul 2026 23:23:53 -0700 (PDT)
+Message-ID: <8cb3869b-98e1-4631-952c-2106986527cb@oss.qualcomm.com>
+Date: Thu, 30 Jul 2026 11:53:47 +0530
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="wtdukudjwzownic4"
-Content-Disposition: inline
-In-Reply-To: <700ebebe-f4ab-4329-ad43-716d74d6621c@arm.com>
-User-Agent: NeoMutt/20260105
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v6 2/3] arm64: dts: qcom: eliza-evk: Add PCIe0 with M.2 E
+ key connector
+To: Manivannan Sadhasivam <mani@kernel.org>
+Cc: Bjorn Andersson <andersson@kernel.org>,
+        Konrad Dybcio <konradybcio@kernel.org>, Rob Herring <robh@kernel.org>,
+        Krzysztof Kozlowski <krzk+dt@kernel.org>,
+        Conor Dooley
+ <conor+dt@kernel.org>,
+        Bartosz Golaszewski <brgl@kernel.org>, linux-arm-msm@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-pci@vger.kernel.org, linux-pm@vger.kernel.org,
+        Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>,
+        Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
+References: <20260730-eliza_evk-v6-0-40ece2d33114@oss.qualcomm.com>
+ <20260730-eliza_evk-v6-2-40ece2d33114@oss.qualcomm.com>
+ <vatryeq6qsan342wow42rosabjofi6cqkom7aczllko4kw7n4t@v7k3fxat7nfi>
+Content-Language: en-US
+From: Krishna Chaitanya Chundru <krishna.chundru@oss.qualcomm.com>
+In-Reply-To: <vatryeq6qsan342wow42rosabjofi6cqkom7aczllko4kw7n4t@v7k3fxat7nfi>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-Proofpoint-Spam-Info: AW1haW4tMjYwNzMwMDA0MiBTYWx0ZWRfX5W1wF2PpZH6E
+ fOIgeQgC45cqpSI98Bx2wgFAET90tncdQk6AC2Dh9yWDY6yseqqAzZxw21GQ5MWjmGAStGbXPpL
+ R5Q3fdD2oFRDcFDvThVb4cJ3+/n7iiI=
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzMwMDA0MiBTYWx0ZWRfXyRby1srSw4xY
+ D9zKeTe7WkzFDs6HhVdex3bEyZKmlhZ8FVeqvfwQhBHycHb/qPf3OGxrzsetnXLe4ompqc5I0CO
+ 6CkBfqEHiG+CFcMHRVYkvEbYHJl0rnqGUNIrIjLmTtxx5cfy7tPgAK4rozWSNV+yPC0RxdHJQ83
+ A9N9royuTiJG1NPbwPf8vLgDI1iwqNEEo/gbWfcilR6zUbnuVM14r65fij3fQmUE0dulKE6Gi6w
+ kI9sNM27w9imZ9xIbI1c/g8LREkxYL9EHHymGjVf4pb9Q0sVncYjctucPpUBjzrAp27RZAUCBeb
+ xI1KPOO1OORvQnZHgHM0RSYL/CI8jaG0w6tLRCGFRDhMZ2CLcCA+oqivdXvnM/2fx6G0vpFESfB
+ 2wWmLqVAvTZSmtfMERlvn1+2eLCc/e+UA0SZZwWBaMG9DsIXSh6p/MBcY56kkLa4wR2bwp43u1P
+ 3hnO9J2qzt8AKxKYw2w==
+X-Proofpoint-GUID: jqzr5pkM6F8gUaq7antddSI6vRJBU9Zf
+X-Proofpoint-ORIG-GUID: jqzr5pkM6F8gUaq7antddSI6vRJBU9Zf
+X-Authority-Analysis: v=2.4 cv=RPuD2Yi+ c=1 sm=1 tr=0 ts=6a6aedfb cx=c_pps
+ a=JL+w9abYAAE89/QcEU+0QA==:117 a=j4ogTh8yFefVWWEFDRgCtg==:17
+ a=IkcTkHD0fZMA:10 a=RAioF0-LDSMA:10 a=s4-Qcg_JpJYA:10
+ a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=DJpcGTmdVt4CTyJn9g5Z:22
+ a=EUspDBNiAAAA:8 a=VwQbUJbxAAAA:8 a=WptVsyCosi7Mub_EgEwA:9 a=QEXdDO2ut3YA:10
+ a=324X-CrmTo6CU4MGRt3R:22
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.134,FMLib:17.12.100.49
+ definitions=2026-07-30_01,2026-07-29_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ lowpriorityscore=0 impostorscore=0 adultscore=0 clxscore=1015
+ priorityscore=1501 bulkscore=0 phishscore=0 suspectscore=0 malwarescore=0
+ spamscore=0 classifier=typeunknown authscore=0 authtc= authcc= route=outbound
+ adjust=0 reason=mlx scancount=1 engine=8.22.0-2606150000
+ definitions=main-2607300042
 
 
---wtdukudjwzownic4
-Content-Type: text/plain; protected-headers=v1; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-Subject: Re: [RFC PATCH 0/4] cpufreq/amd-pstate: Per-core EPP boost for
- recently-busy CPUs
-MIME-Version: 1.0
 
-On Tue, Jul 28, 2026 at 03:17:50PM +0100, Christian Loehle wrote:
-> On 7/28/26 08:31, David Vernet wrote:
+On 7/30/2026 10:38 AM, Manivannan Sadhasivam wrote:
+> On Thu, Jul 30, 2026 at 10:18:54AM +0530, Krishna Chaitanya Chundru wrote:
+>> The Eliza EVK board features an M.2 E key connector connected to PCIe0.
+>> Enable the PCIe0 root port and its QMP PHY with the necessary RPMH
+>> regulator supplies. The M.2 slot's 3.3V supply rail is GPIO-controlled
+>> via a TCA9538 I/O expander on I2C4.
+>>
+>> The M.2 E key slot hosts a WLAN card connected over PCIe and a Bluetooth
+>> device connected over UART. Model the connector using the
+>> pcie-m2-e-connector binding, wiring the PCIe root port and UART5 for
+>> the respective interfaces.
+>>
+>> Reviewed-by: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
+>> Reviewed-by: Manivannan Sadhasivam <mani@kernel.org>
+>> Reviewed-by: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
+>> Signed-off-by: Krishna Chaitanya Chundru <krishna.chundru@oss.qualcomm.com>
+>> ---
+>>  arch/arm64/boot/dts/qcom/eliza-evk.dtsi | 116 ++++++++++++++++++++++++++++++++
+>>  1 file changed, 116 insertions(+)
+>>
+>> diff --git a/arch/arm64/boot/dts/qcom/eliza-evk.dtsi b/arch/arm64/boot/dts/qcom/eliza-evk.dtsi
+>> index e47b24f8b827..b35fffb50976 100644
+>> --- a/arch/arm64/boot/dts/qcom/eliza-evk.dtsi
+>> +++ b/arch/arm64/boot/dts/qcom/eliza-evk.dtsi
+>> @@ -11,6 +11,92 @@ aliases {
+>>  	chosen {
+>>  		stdout-path = "serial0:115200n8";
+>>  	};
+>> +
+>> +	vreg_pcie_m_3p3: regulator-3p3 {
+>> +		compatible = "regulator-fixed";
+>> +
+>> +		regulator-name = "vreg_3p3";
+>> +		regulator-min-microvolt = <3300000>;
+>> +		regulator-max-microvolt = <3300000>;
+>> +
+>> +		gpio = <&gpio_expander1 6 GPIO_ACTIVE_HIGH>;
+>> +		enable-active-high;
+>> +	};
+>> +
+>> +	connector-0 {
+>> +		compatible = "pcie-m2-e-connector";
+>> +		vpcie3v3-supply = <&vreg_pcie_m_3p3>;
+>> +		w-disable1-gpios = <&tlmm 35 GPIO_ACTIVE_LOW>;
+>> +		w-disable2-gpios = <&pm8550vs_g_gpios 4 GPIO_ACTIVE_HIGH>;
+> Hmm, Sashiko pointed out the polarity issue here, GPIO_ACTIVE_HIGH. Is it a
+> mistake?
+No it is working with active high only, it is how they connected in the HW.
 
-[...]
+- Krishna Chaitanya.
+> - Mani
+>
+>> +
+>> +		pinctrl-0 = <&m2_w_disable1>, <&m2_w_disable2>;
+>> +		pinctrl-names = "default";
+>> +
+>> +		ports {
+>> +			#address-cells = <1>;
+>> +			#size-cells = <0>;
+>> +
+>> +			port@0 {
+>> +				reg = <0>;
+>> +				#address-cells = <1>;
+>> +				#size-cells = <0>;
+>> +
+>> +				m2_e_pcie_ep: endpoint@0 {
+>> +					reg = <0>;
+>> +					remote-endpoint = <&pcieport0_ep>;
+>> +				};
+>> +			};
+>> +
+>> +			port@3 {
+>> +				reg = <3>;
+>> +				#address-cells = <1>;
+>> +				#size-cells = <0>;
+>> +
+>> +				m2_e_uart_ep: endpoint@0 {
+>> +					reg = <0>;
+>> +					remote-endpoint = <&uart5_ep>;
+>> +				};
+>> +			};
+>> +		};
+>> +	};
+>> +};
+>> +
+>> +&i2c4 {
+>> +	pinctrl-0 = <&qup_i2c4_data_clk>;
+>> +	pinctrl-names = "default";
+>> +
+>> +	clock-frequency = <400000>;
+>> +
+>> +	status = "okay";
+>> +
+>> +	gpio_expander1: gpio@3c {
+>> +		compatible = "ti,tca9538";
+>> +		#gpio-cells = <2>;
+>> +		gpio-controller;
+>> +		reg = <0x3c>;
+>> +	};
+>> +};
+>> +
+>> +&pcie0 {
+>> +	status = "okay";
+>> +};
+>> +
+>> +&pcie0_phy {
+>> +	vdda-phy-supply = <&vreg_l1k>;
+>> +	vdda-pll-supply = <&vreg_l3k>;
+>> +
+>> +	status = "okay";
+>> +};
+>> +
+>> +&pcie0_port0 {
+>> +	wake-gpios = <&tlmm 114 GPIO_ACTIVE_LOW>;
+>> +	reset-gpios = <&tlmm 78 GPIO_ACTIVE_LOW>;
+>> +
+>> +	port {
+>> +		pcieport0_ep: endpoint {
+>> +			remote-endpoint = <&m2_e_pcie_ep>;
+>> +		};
+>> +	};
+>>  };
+>>  
+>>  &uart13 {
+>> @@ -18,3 +104,33 @@ &uart13 {
+>>  
+>>  	status = "okay";
+>>  };
+>> +
+>> +&uart5 {
+>> +	status = "okay";
+>> +
+>> +	port {
+>> +		uart5_ep: endpoint {
+>> +			remote-endpoint = <&m2_e_uart_ep>;
+>> +		};
+>> +	};
+>> +};
+>> +
+>> +&pm8550vs_g_gpios {
+>> +	m2_w_disable2: m2-w-disable2-state {
+>> +		pins = "gpio4";
+>> +		function = "normal";
+>> +		input-disable;
+>> +		output-enable;
+>> +		bias-disable;
+>> +		power-source = <2>;
+>> +	};
+>> +};
+>> +
+>> +&tlmm {
+>> +	m2_w_disable1: m2-w-disable1-state {
+>> +		pins = "gpio35";
+>> +		function = "gpio";
+>> +		drive-strength = <2>;
+>> +		bias-pull-up;
+>> +	};
+>> +};
+>>
+>> -- 
+>> 2.34.1
+>>
 
-> > Testing methodology
-> > =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> >=20
-> > All numbers are from a Steam Deck LCD (Van Gogh APU) running in active
-> > mode at EPP=3Dbalance_performance, using the Civilization VI graphics
-> > benchmark as a single-thread CPU-bound workload with a repeatable
-> > built-in benchmark pass.
-> >=20
-> > Comparisons were run as interleaved A/B tests with 6 iterations per
-> > configuration. For each run I collected per-frame frame times and the
-> > busy core's frequency, and derived average fps, 1%-low fps and the p99
-> > and p999 frame-time percentiles. Deltas were evaluated with Welch's
-> > t-test, and I report the p-values alongside the deltas below.
-> >=20
-> > Results:
-> >=20
-> > Default settings
-> > ----------------
-> > The busy core's median frequency sat at 2.43 GHz despite 98%
-> > utilization, which is the frequency droop described above.
->=20
-> Two things to confirm for my understanding:
-> -Median frequency is the 50th percentile when weighing the OPPs by
-> residency, right?
-
-Yes, effectively. It's the median of 500 samples of scaling_cur_freq
-taken at 50 ms intervals.
-
-> - You're also using busy_pct =3D delta_MPERF * 100 / delta_TSC as
-> utilization, right? (Not util_avg or anything like that)
-
-The 98% I mentioned in the cover letter is the render thread's on-CPU
-share of wall clock during the benchmark window. The trigger in patch 3
-is busy_pct =3D delta_MPERF * 100 / delta_TSC.
-
-> Your observation looks like a firmware or SMU issue.
-> Can we confirm the (short) sleeps reset the demand-estimation, i.e.
-> by tracing cpu_idle/sched_switch and sample APERF/MPERF alongside it?
-
-Good idea. I ran this experiment and I think you're correct that it's a
-firmware or SMU issue. I did three 60s captures of sched_switch +
-power:cpu_idle via trace-cmd during the Civ6 graphics benchmark with a
-pinned sampler reading APERF/MPERF on all 8 CPUs at 1 ms alongside, and
-it showed that frequency drops from 3.5 GHz to a ~2.4 GHz plateau
-whenever the render task blocks for more than .2 ms. This drop then
-seems to persist for at least 8ms after the task wakes up (sometimes
-persisting for several seconds). I also don't think C state matters
-here, as this happens even if I restrict cpuidle to POLL and C1 only.
-
-This is the post-wake effective busy clock, controlled for how long the
-render task was blocked:
-
-  idle time     pre    0-2ms  2-4ms  4-6ms  6-8ms
-  <0.2ms        3.50   3.50   3.50   3.50   3.50
-  0.2-0.5ms     3.49   2.43   2.42   2.43   2.43
-  2-5ms         2.43   2.43   2.43   2.43   2.42
-  >5ms          3.50   2.43   2.43   2.43   2.42
-
-> Also rt-app might be helpful to get a feel of how this behaves (and
-> create a similar pathological case like the single-threaded game).
-
-Yeah that's a good idea. I can try that this weekend.
-
---wtdukudjwzownic4
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iHUEABYKAB0WIQRBxU1So5MTLwphjdFZ5LhpZcTzZAUCamrn2QAKCRBZ5LhpZcTz
-ZP+uAP97ci2qOjVPXysUzKo09+70aSVYX0X6eRdsu5udrileWQD+PXhWoCsNsVwj
-U8CqTR0e6AOp/ia7yjI9bmWkoRcongo=
-=ZVUo
------END PGP SIGNATURE-----
-
---wtdukudjwzownic4--
