@@ -1,301 +1,158 @@
-Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-lf1-f51.google.com (mail-lf1-f51.google.com [209.85.167.51])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 953AF3A0B24
-	for <linux-pm@vger.kernel.org>; Thu, 30 Jul 2026 04:49:26 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.180.131
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C6EF93A3822
+	for <linux-pm@vger.kernel.org>; Thu, 30 Jul 2026 04:49:48 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.167.51
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1785386968; cv=none; b=e+qpE51hRKnGtWveYdHbL92RrNVx2TDgi3JtPQ5fUHfVI+OHX0/pohN04tWZfGULp+ESMvkSX6fr8HOG3YLJWXXisVacSwbtY9xYznCveGQsiiYfimRFeHCrK4gpgZ8KFvP5heMqT5mqh1A/eQ5/2DawcHMJFuRR0LawbCt8PX4=
+	t=1785386990; cv=none; b=tZTZ4BE0ASxeg/zK01p5qxWZUUMgHo0M003g4WHAOG2o+/BWfS+0XuU1PpkLtr0x/ybgoojckzzCdmbIZEy9FyM+617h1JujowaylNjuG+nW2gmUhUx0KoduZmbsto9eLA/JRBKSz3uwdKNiXC9WM0aSOjv9G/gb7ssv0ngOB50=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1785386968; c=relaxed/simple;
-	bh=xRvX4C1MLDNeabWWOraVYq1lOeHEO2kDMcvyddoS6Mc=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=Yhf2brG4YcSmF6DyKFgWGtEPZWwpylNobaRkFAGI51iegRfHeTeKbn+LNtmlWWbu3DSLTDY+bf7V7KiB4iTUZ9bW6Qx+6l9UakFVjIwWb4f+Wq1jigEF4ZeWF/jUicQp3i4mqdlF6AwJF+Gdk58Q3qiAL+MZtSz3hy7JrjIEdQY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=hX6pj2sN; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=W35CIr2g; arc=none smtp.client-ip=205.220.180.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
+	s=arc-20240116; t=1785386990; c=relaxed/simple;
+	bh=fhP1wbG3d+ulOnMxYIqs1V3WpHngKveC8jngYyjspSI=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=ekw8Fx227O6eQgTYYtAkPRjATSeLMDlFan+uMMgbcdplEff6SWavK3hB5g8jEEAaHp5mj5BmC+ODYHqN6HSzJpmo+y8To/jsREaZT5ArwD7nIvTdNpq0+LPqaidnSuE5ibNT91iZ3ICG8aJEp04gNcMbhYiE7hnVMyA0OA8xkDc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=dXFNJ6h7; arc=none smtp.client-ip=209.85.167.51
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="hX6pj2sN";
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="W35CIr2g"
-Received: from pps.filterd (m0279872.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 66U4mbaH3848858
-	for <linux-pm@vger.kernel.org>; Thu, 30 Jul 2026 04:49:25 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	P3Z3wys6yl1RdfpZu+o6Am4NfC2qD7iJbwimZM6YAyo=; b=hX6pj2sNe5NFkUE7
-	q1xPicelvFLYLykWPcxozb6+Oc846166aBR7a9XsEII/NTNxlrgLecsxbiwrUkTN
-	oLGjIJ7xK0+Gc1Xtkx0oSZTfSwl3oIHcsGfpUIW+IdnMh6UUADfIg6IWdnxOdcCz
-	T6f3Gk6O3KdKg8buKy2Akd/hou9OeaBdDoZSzO3OMeyYjEldn989N5uMXDeiIZXU
-	nUbtdQ6ljlGvHtFwcDCNJXuZARF/XqVNo0uFDo0E1n6ISXMzNUbCJIBDVOtqlH8y
-	srYjHHI0Ax5c7dOdGfLhwBvXTJHhsScyiVRA2VgH7qXKlE9D6Uer/0xLoQQ1B3Vm
-	1z70fA==
-Received: from mail-pj1-f70.google.com (mail-pj1-f70.google.com [209.85.216.70])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4fqywhg03a-1
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Thu, 30 Jul 2026 04:49:25 +0000 (GMT)
-Received: by mail-pj1-f70.google.com with SMTP id 98e67ed59e1d1-38e22137fb3so2623520a91.0
-        for <linux-pm@vger.kernel.org>; Wed, 29 Jul 2026 21:49:25 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="dXFNJ6h7"
+Received: by mail-lf1-f51.google.com with SMTP id 2adb3069b0e04-5b2a3166398so1447964e87.3
+        for <linux-pm@vger.kernel.org>; Wed, 29 Jul 2026 21:49:48 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1785386964; x=1785991764; darn=vger.kernel.org;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :content-type:mime-version:subject:date:from:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=P3Z3wys6yl1RdfpZu+o6Am4NfC2qD7iJbwimZM6YAyo=;
-        b=W35CIr2g3NN4LflyP7CUSPS4D3GKx0V4VMoy1MTqnLFuwTS0tTO88fF2lHIMt/6+n6
-         Akqa70v8FpbOpgG7kLBw/tPyW4FkY2/IEhPdN4h4l6yptVfgCd5n/mjntT3N2nT3hXII
-         hSN7+12Tj6dItNFt1iiV0ZSvmlKokW12VslUA2gyHWGqjiRTirSQqRZH0LclYVyjm5m9
-         cqCE9xDsX8P/z4s+27GF/6Xnw2bh1Dt5YKVQ1I8lAlknyxGy8f+DsXf1LtwmvYegSSVD
-         r9F5/Vt12SHsg7fFarU8vWS+AnKnM5tfaTGNKP2yFxBk+FAHV2TpTwKg9lw0Dwm2Uab/
-         3vzg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1785386964; x=1785991764;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :content-type:mime-version:subject:date:from:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+        d=gmail.com; s=20251104; t=1785386987; x=1785991787; darn=vger.kernel.org;
+        h=content-transfer-encoding:content-type:in-reply-to:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=P3Z3wys6yl1RdfpZu+o6Am4NfC2qD7iJbwimZM6YAyo=;
-        b=NA3setKcmDE9W2AVl0wi/iOqxdz4lmznkJu8MJOc3+4q2vTJ4IEDMD9UI1O7ZtRI3/
-         8jLFq4QpjrSClgqgTsR/5VNCQ9C06Vc9LntTWGDd5zjBq4BHj3vKqK3mJQ8K99LmMBav
-         yL9PiTCDP0bjjNtuCCZP7Lcp37ilV3NJ460h1BseNsOa2/eim/SKfGPtxFhOTQp1932p
-         tYC0DQ3EapC2hf9V6Zut02LSIjwvIAQBDxgLdr7950EmwD47HNOHTT7ZmrUSJqEtUFEd
-         KTndtF5wSon0G9rs2EXClKVQxeUtO3CQNiOaHOLGyHqd24LcBIr+6WjKp2YCDcRqspOp
-         ACQw==
-X-Forwarded-Encrypted: i=1; AHgh+RqMSt0S0XrfC/YTQS89f7DTFVQMg/yxLSYMGo24lLeUP6HNHI6w6g29c9hW7G8lCH8MCK6etWGAzA==@vger.kernel.org
-X-Gm-Message-State: AOJu0YwPjhW8wMvPWCJz50g2BZqU/Sbgi+FVV2DGjIQB2dQa58wMBOc+
-	02yUNhsGMMMlY5CT74YOuoBj615vKnZVxfmkkPf2Gi8jXKOS2SkTl2Qy+MweesyP6QmJLBwzxAU
-	yDPH+teJEkIX8U3EnGaaN/vNOxEi2OZsaSexr9MEwF7bfuI4JYAIgKOmOZ5jOAA==
-X-Gm-Gg: AR+sD12rfJL/KxhQycctDVS5+plT9KCy1wkF+iDw0Q1quDXhSZuKOXUX74zoj/1dMyl
-	MWSmtpnTDmzGwVsW6So6UQlSbWjev9p3R41FBuFz4vIZo6Rpk7VOTJAKEiaZo3dtlojOMr1WBcj
-	ZJJlCzTHh+r6xi63tdL7hHZQueUykx2PZ4V2TaffZY1BIlX6NAfqkpVyI5AruA3aipjwA6Mywbl
-	Wzt7SRBuVLLmxzyFVURnDjtFrWhVGYldGOuWP3wow4NBhLUkmrzKj3pl/WfavJ3Z6Q3PgVgOl57
-	9UI+FWkksmKr0Ipx9zvXEWtCN8NNQfrmaekzUw/MtGGitLqgWmyED9gutBArtQeKRV2bnfHkST0
-	f6z7QGvaV4IA7fjrAFbtV4VPt4bHp2SD+78A=
-X-Received: by 2002:a17:90b:4487:b0:387:e0cb:c8da with SMTP id 98e67ed59e1d1-38f9c05e928mr842183a91.35.1785386964448;
-        Wed, 29 Jul 2026 21:49:24 -0700 (PDT)
-X-Received: by 2002:a17:90b:4487:b0:387:e0cb:c8da with SMTP id 98e67ed59e1d1-38f9c05e928mr842150a91.35.1785386963954;
-        Wed, 29 Jul 2026 21:49:23 -0700 (PDT)
-Received: from hu-krichai-hyd.qualcomm.com ([202.46.23.25])
-        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-31504cc9dffsm17740241eec.14.2026.07.29.21.49.19
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 29 Jul 2026 21:49:23 -0700 (PDT)
-From: Krishna Chaitanya Chundru <krishna.chundru@oss.qualcomm.com>
-Date: Thu, 30 Jul 2026 10:18:55 +0530
-Subject: [PATCH v6 3/3] arm64: dts: qcom: eliza-evk: Add PCIe1 with TC9563
- PCIe switch
+        bh=noDLu52YW31HFzyavdKF9a76RS9zMi0V29PPmiJzuHo=;
+        b=dXFNJ6h79KOaDvge74toyTzo7CSY4ZLfseYS5AmU0d5n3P19d4gBhN3H2+tOx61hjZ
+         mPMzxd6OA1VnlYUlhg4LcJdjGE5y/MFqSIZ/wa/2zYVOvmUBvFT+iZiKXldklrcRkn96
+         pmqBpZhnnrS2htx/vr9lB39MFoubN27qCXRtAF+8uNm+7KJOmJHpCKDBCeJlav5hGFez
+         8e4DBNITuEuBt+kpRdDUYVk0nnqZgn7ZjMGaLtURYMMevAkZOQRgVgp3iQx/on3v6OUX
+         ASBNhoaYH/5I590eQPs/C76Lsn9XGQKSQ4xSB4ubZY1Vw7O6dwGfbTRhudzXe3WnBkIb
+         2CXA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1785386987; x=1785991787;
+        h=content-transfer-encoding:content-type:in-reply-to:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=noDLu52YW31HFzyavdKF9a76RS9zMi0V29PPmiJzuHo=;
+        b=DREoMBuutsoqTCRYutJiL8qGVKoW6yE/71L5QWzItfkNNo1SGHQKkV/hnb9FDyVjbl
+         /SZh+/WcDjNc9cZHYM1bwtxgIIQ6KTvRmrF3qEkfYcCiQChSKTJw+5OQIibiNMS6jPva
+         L0tRREYANMa19XrSoIfOVWyBpzOpxYDQaBBXNzpDIogfnsnXn9KF54paJP8eEJjZmRCq
+         /Djgd9rCZAo3MtkHr1O2+gUW46UAOLO7aNg29ptBBZ064AN1O9U4O6Aa3vKnrC3g3Bso
+         /2umhOqAOzn6t1HvHNz6CPKUvV8/cXRxIOReR+1zgZlf7qVz3L01jP46G+2YMf33lOV1
+         q5/Q==
+X-Gm-Message-State: AOJu0Yyy4mntZGH6i2DKU6gS1qQFRRaTyKXOC90dqfafPek/JfKtI4q8
+	fFbfFKzi49QymGR/GCRfcOPLYlWqr2IriyRVm61lptZSOOErNbet1i5H
+X-Gm-Gg: AR+sD11N2Z3xeGJnkk8wR1hWvblTur/kQjnoj3pIZZLsupgaNOzSbjVjotjjBAYR9nS
+	SYFUmfJa2n9q+mw5N7iM9VpPb3vljvx/uUFa/YuOQaHoohIuLQF3ASXMD0Ajtwyi9W4Yx1ozX0S
+	vvXMczfUQEo0Vt6WvsUNVZETj9elktzJaWgVEK9CErI5o1mS8MIN1i9utKh6ZncPLWRr2mZzBkz
+	+idRcLUTf3BMeunXS0dglHvZJYZ6hgh41IgOazPHMD5IW9Jv2cHBm/E+rL2afvdoowvC0ZF6gkE
+	gUiKXmZRbLaIq2z+p3BO178srGRiCISTZHmBj7QSRuqsu6I2rmmbAclHs/eFFU9gENywh5+iBgC
+	wX29nH44zub5yU5f+pARIltfiLpCCBdZXszfFSgdbPnH8dYEihDQCiXoFKSDobni+0mX9EeVllk
+	EpGefg1oBHpSS8G2XN5LzESUK1KlUB97YWcKJol99TU32sHOD9EmKgMOXaVvvoo+90eg4DWWVJ4
+	ERRSq+CF0hk8vJUzQ70Yfe/HUYH8aaSgx9jM3grlDKqBQ==
+X-Received: by 2002:ac2:4e0f:0:b0:5b2:a885:f3b9 with SMTP id 2adb3069b0e04-5b2db36d8c7mr167808e87.35.1785386986590;
+        Wed, 29 Jul 2026 21:49:46 -0700 (PDT)
+Received: from ?IPV6:2a10:a5c0:800d:dd00:8fdf:935a:2c85:d703? ([2a10:a5c0:800d:dd00:8fdf:935a:2c85:d703])
+        by smtp.gmail.com with ESMTPSA id 38308e7fff4ca-39f6acb1167sm1267961fa.36.2026.07.29.21.49.42
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Wed, 29 Jul 2026 21:49:44 -0700 (PDT)
+Message-ID: <98e65507-3084-4948-8096-4e2d8d20dc81@gmail.com>
+Date: Thu, 30 Jul 2026 07:49:41 +0300
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v2 2/3] power: reset: pscrr: add watchdog pretimeout
+ reason tracking
+To: Faruque Ansari <faruque.ansari@oss.qualcomm.com>,
+ Sebastian Reichel <sre@kernel.org>, Wim Van Sebroeck
+ <wim@linux-watchdog.org>, Guenter Roeck <linux@roeck-us.net>,
+ Benson Leung <bleung@chromium.org>, Tzung-Bi Shih <tzungbi@kernel.org>,
+ Oleksij Rempel <o.rempel@pengutronix.de>,
+ Srinivas Kandagatla <srini@kernel.org>,
+ Daniel Lezcano <daniel.lezcano@kernel.org>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linux-watchdog@vger.kernel.org, linux-arm-msm@vger.org,
+ kernel@pengutronix.de, Liam Girdwood <lgirdwood@gmail.com>,
+ Mark Brown <broonie@kernel.org>, "Rafael J. Wysocki" <rafael@kernel.org>,
+ Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>,
+ =?UTF-8?Q?S=C3=B8ren_Andersen?= <san@skov.dk>,
+ Guenter Roeck <groeck@chromium.org>, Ahmad Fatoum <a.fatoum@pengutronix.de>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ avaneesh.dwivedi@oss.qualcomm.com,
+ Umang Chheda <umang.chheda@oss.qualcomm.com>, linux-arm-msm@vger.kernel.org
+References: <20260722-pscrr-reboot-reason-v2-0-495ba3005953@oss.qualcomm.com>
+ <20260722-pscrr-reboot-reason-v2-2-495ba3005953@oss.qualcomm.com>
+Content-Language: en-US, en-AU, en-GB, en-BW
+From: Matti Vaittinen <mazziesaccount@gmail.com>
+In-Reply-To: <20260722-pscrr-reboot-reason-v2-2-495ba3005953@oss.qualcomm.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260730-eliza_evk-v6-3-40ece2d33114@oss.qualcomm.com>
-References: <20260730-eliza_evk-v6-0-40ece2d33114@oss.qualcomm.com>
-In-Reply-To: <20260730-eliza_evk-v6-0-40ece2d33114@oss.qualcomm.com>
-To: Bjorn Andersson <andersson@kernel.org>,
-        Konrad Dybcio <konradybcio@kernel.org>, Rob Herring <robh@kernel.org>,
-        Krzysztof Kozlowski <krzk+dt@kernel.org>,
-        Conor Dooley <conor+dt@kernel.org>,
-        Manivannan Sadhasivam <mani@kernel.org>,
-        Bartosz Golaszewski <brgl@kernel.org>
-Cc: linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
-        linux-pm@vger.kernel.org,
-        Krishna Chaitanya Chundru <krishna.chundru@oss.qualcomm.com>,
-        Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>,
-        Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>,
-        Abel Vesa <abel.vesa@oss.qualcomm.com>
-X-Mailer: b4 0.15.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1785386943; l=3929;
- i=krishna.chundru@oss.qualcomm.com; s=20230907; h=from:subject:message-id;
- bh=xRvX4C1MLDNeabWWOraVYq1lOeHEO2kDMcvyddoS6Mc=;
- b=ZXdfrRJ1qSVHT54S1wu6IW0qgZORh00leh/BRLSc6+nRRn89zk0rYmVzD3qywqSvRyRmaLKKL
- Gy76euuD/sHAjZPo2IyN4X1rkeCGijHbSDc25Tmk6L0D56szlRJcWxc
-X-Developer-Key: i=krishna.chundru@oss.qualcomm.com; a=ed25519;
- pk=10CL2pdAKFyzyOHbfSWHCD0X0my7CXxj8gJScmn1FAg=
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzMwMDAyOSBTYWx0ZWRfX7pUSrDLNDKuj
- qpX6ieQQuAtegD57W4MK0aG1+ZUDbEH7zF7xuESwkjMm+plq+v7iUmdEgevxrYrslBR6zMK6nXk
- fmu6nZGpZYmQbY/zQz7G/aiLjj8n3SvFAHdySkOUUuQkIKwH8y2C3JtrlxanCv8MGfcvtcub+Yk
- Lv7SgZGqr2CJOfHFL/IZDqKwbL/eFGKx8rFp1d9VFlwpZFL/jDSYfUrpvPHhL9IYCWSTkXXOQfb
- O/nv7AvbGuOVEmFFlfpyrbJdOnv9KIABJARqUv71kJnJEvpnANmJUfYkGNQBJWcZCZGiMavNuLY
- yRvaMvHUmRaEC7b/lkk2aO2fWpdbWyc6ZSmiRB/b28LF1/I+0lHJwkR2xVKuKbftJwdpmx9h91T
- YrA4wHcjPaKhWHvbzOG2uN1KGCK8JR0SWMPS/Ha3NILO8e4yIs2EHg7/1p4p02YKCNpjCXynRc+
- mUaNo5cBj5rupQ/p/mw==
-X-Authority-Analysis: v=2.4 cv=N/IZ0W9B c=1 sm=1 tr=0 ts=6a6ad7d5 cx=c_pps
- a=0uOsjrqzRL749jD1oC5vDA==:117 a=ZePRamnt/+rB5gQjfz0u9A==:17
- a=IkcTkHD0fZMA:10 a=RAioF0-LDSMA:10 a=s4-Qcg_JpJYA:10
- a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=yx91gb_oNiZeI1HMLzn7:22
- a=EUspDBNiAAAA:8 a=VwQbUJbxAAAA:8 a=qQkGquXN9PvF_GGjQ98A:9 a=QEXdDO2ut3YA:10
- a=mQ_c8vxmzFEMiUWkPHU9:22
-X-Proofpoint-GUID: B1_ydqhGoOZUgwoaqwf2J24V8BAMTzej
-X-Proofpoint-ORIG-GUID: B1_ydqhGoOZUgwoaqwf2J24V8BAMTzej
-X-Proofpoint-Spam-Info: AW1haW4tMjYwNzMwMDAyOSBTYWx0ZWRfX0gGCb0MiEFrc
- N9Ffz8eRuywt2xej1Iz8nbRUW2/GKd9ig8oN+ioB2jAyQp7VIxZVJ5YP8yfKApWuUVZFs4+H3BK
- z+zmiKMATmtfho2QD2S/XBxwJoAvVMA=
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-07-30_01,2026-07-29_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- malwarescore=0 spamscore=0 clxscore=1015 phishscore=0 lowpriorityscore=0
- priorityscore=1501 bulkscore=0 adultscore=0 impostorscore=0 suspectscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2607300029
 
-The Eliza EVK board connects PCIe1 (8GT/s x2) to a Toshiba TC9563
-PCIe switch. Enable PCIe1 and its QMP PHY nodes.
+On 22/07/2026 18:13, Faruque Ansari wrote:
+> Watchdog pretimeout resets are not recorded with a dedicated reset
+> reason, causing subsequent boots to report PSCR_UNKNOWN and making it
+> difficult to distinguish them from other unexpected resets.
+> 
+> Add PSCR_WATCHDOG_PRETIMEOUT as a dedicated reset reason code and
+> prevent the panic notifier from overwriting a watchdog pretimeout
+> reason with PSCR_KERNEL_PANIC when the pretimeout governor triggers a
+> panic.
+> 
+> Signed-off-by: Faruque Ansari <faruque.ansari@oss.qualcomm.com>
+> ---
+>   drivers/power/reset/pscrr.c           | 7 ++++++-
+>   include/linux/power/power_on_reason.h | 1 +
+>   include/linux/reboot.h                | 1 +
+>   kernel/reboot.c                       | 1 +
+>   4 files changed, 9 insertions(+), 1 deletion(-)
+> 
+> diff --git a/drivers/power/reset/pscrr.c b/drivers/power/reset/pscrr.c
+> index b5906f127e88..5b107c62fe82 100644
+> --- a/drivers/power/reset/pscrr.c
+> +++ b/drivers/power/reset/pscrr.c
+> @@ -149,7 +149,12 @@ static int pscrr_panic_notifier(struct notifier_block *nb,
+>   	if (!backend || !backend->ops || !backend->ops->write_reason)
+>   		return NOTIFY_OK;
+>   
+> -	set_psc_reason(PSCR_KERNEL_PANIC);
+> +	/*
+> +	 * Do not overwrite a previously recorded watchdog pretimeout reason
+> +	 * during panic handling.
+> +	 */
+> +	if (get_psc_reason() != PSCR_WATCHDOG_PRETIMEOUT)
+> +		set_psc_reason(PSCR_KERNEL_PANIC);
 
-TC9563 uses I2C (at address 0x77 on I2C4) for its management interface.
+Hi Faruque,
 
-Override the base iommu-map with the expanded set covering all the
-switch's downstream ports (0x1400-0x1408 SID range).
+I like the idea of adding WDG pretimeout resets in pscrr. I am just 
+wondering what makes WDG reason so special, that it shouldn't be 
+overwritten while other reasons can be? Can this notifier be called (now 
+or in the future) so, that there are other reasons getting overwritten? 
+For some reason I think the PSCRR was designed to be able to store 
+multiple reasons(?) Could you just add one more instead of overwriting 
+existing - or should the check be more generic (to ensure the reason is 
+only set if there is nothing to overwrite).
 
-The TC9563 RESX# and PERST# are OR-ed internally to assert reset on the
-switch. Use TC9563 RESX# pin via a TLMM GPIO and skip wiring PERST#
-from the PCIe controller.
+If I am just completely lost (which happens), could you then improve the 
+comment a bit to explain why WDG timeout is special and shouldn't be 
+overwritten. The checking code itself is quite self-explatonary ;)
 
-Reviewed-by: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
-Reviewed-by: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
-Reviewed-by: Abel Vesa <abel.vesa@oss.qualcomm.com>
-Reviewed-by: Manivannan Sadhasivam <mani@kernel.org>
-Signed-off-by: Krishna Chaitanya Chundru <krishna.chundru@oss.qualcomm.com>
----
- arch/arm64/boot/dts/qcom/eliza-evk.dtsi | 113 ++++++++++++++++++++++++++++++++
- 1 file changed, 113 insertions(+)
+Anyways, I am happy to see the PSCRR being worked on! Thanks!
 
-diff --git a/arch/arm64/boot/dts/qcom/eliza-evk.dtsi b/arch/arm64/boot/dts/qcom/eliza-evk.dtsi
-index b35fffb50976..419e737c54e6 100644
---- a/arch/arm64/boot/dts/qcom/eliza-evk.dtsi
-+++ b/arch/arm64/boot/dts/qcom/eliza-evk.dtsi
-@@ -12,6 +12,26 @@ chosen {
- 		stdout-path = "serial0:115200n8";
- 	};
- 
-+	vreg_0p9: regulator-0v9 {
-+		compatible = "regulator-fixed";
-+		regulator-name = "VREG_0P9";
-+
-+		regulator-min-microvolt = <900000>;
-+		regulator-max-microvolt = <900000>;
-+		regulator-always-on;
-+		regulator-boot-on;
-+	};
-+
-+	vreg_1p8: regulator-1v8 {
-+		compatible = "regulator-fixed";
-+		regulator-name = "VREG_1P8";
-+
-+		regulator-min-microvolt = <1800000>;
-+		regulator-max-microvolt = <1800000>;
-+		regulator-always-on;
-+		regulator-boot-on;
-+	};
-+
- 	vreg_pcie_m_3p3: regulator-3p3 {
- 		compatible = "regulator-fixed";
- 
-@@ -99,6 +119,99 @@ pcieport0_ep: endpoint {
- 	};
- };
- 
-+&pcie1 {
-+	iommu-map = <0x0 &apps_smmu 0x1400 0x1>,
-+		    <0x100 &apps_smmu 0x1401 0x1>,
-+		    <0x208 &apps_smmu 0x1402 0x1>,
-+		    <0x210 &apps_smmu 0x1403 0x1>,
-+		    <0x218 &apps_smmu 0x1404 0x1>,
-+		    <0x300 &apps_smmu 0x1405 0x1>,
-+		    <0x400 &apps_smmu 0x1406 0x1>,
-+		    <0x500 &apps_smmu 0x1407 0x1>,
-+		    <0x501 &apps_smmu 0x1408 0x1>;
-+
-+	status = "okay";
-+};
-+
-+&pcie1_phy {
-+	vdda-phy-supply = <&vreg_l1k>;
-+	vdda-pll-supply = <&vreg_l3k>;
-+
-+	status = "okay";
-+};
-+
-+&pcie1_port0 {
-+	wake-gpios = <&tlmm 53 GPIO_ACTIVE_LOW>;
-+	/* Same GPIO is used for both PERST# and resx-gpio */
-+
-+	tc9563: pcie@0,0 {
-+		compatible = "pci1179,0623";
-+		reg = <0x10000 0x0 0x0 0x0 0x0>;
-+		#address-cells = <3>;
-+		#size-cells = <2>;
-+
-+		device_type = "pci";
-+		ranges;
-+		bus-range = <0x2 0xff>;
-+
-+		vddc-supply = <&vreg_0p9>;
-+		vdd18-supply = <&vreg_1p8>;
-+		vdd09-supply = <&vreg_0p9>;
-+		vddio1-supply = <&vreg_1p8>;
-+		vddio2-supply = <&vreg_1p8>;
-+		vddio18-supply = <&vreg_1p8>;
-+
-+		i2c-parent = <&i2c4 0x77>;
-+
-+		resx-gpios = <&tlmm 54 GPIO_ACTIVE_LOW>;
-+
-+		pcie@1,0 {
-+			reg = <0x20800 0x0 0x0 0x0 0x0>;
-+			#address-cells = <3>;
-+			#size-cells = <2>;
-+
-+			device_type = "pci";
-+			ranges;
-+			bus-range = <0x3 0xff>;
-+		};
-+
-+		pcie@2,0 {
-+			reg = <0x21000 0x0 0x0 0x0 0x0>;
-+			#address-cells = <3>;
-+			#size-cells = <2>;
-+
-+			device_type = "pci";
-+			ranges;
-+			bus-range = <0x4 0xff>;
-+		};
-+
-+		pcie@3,0 {
-+			reg = <0x21800 0x0 0x0 0x0 0x0>;
-+			#address-cells = <3>;
-+			#size-cells = <2>;
-+			device_type = "pci";
-+			ranges;
-+			bus-range = <0x5 0xff>;
-+
-+			pcie@0,0 {
-+				reg = <0x50000 0x0 0x0 0x0 0x0>;
-+				#address-cells = <3>;
-+				#size-cells = <2>;
-+				device_type = "pci";
-+				ranges;
-+			};
-+
-+			pcie@0,1 {
-+				reg = <0x50100 0x0 0x0 0x0 0x0>;
-+				#address-cells = <3>;
-+				#size-cells = <2>;
-+				device_type = "pci";
-+				ranges;
-+			};
-+		};
-+	};
-+};
-+
- &uart13 {
- 	compatible = "qcom,geni-debug-uart";
- 
+Yours,
+  -- Matti
 
 -- 
-2.34.1
+Matti Vaittinen
+Linux kernel developer at ROHM Semiconductors
+Oulu Finland
 
+~~ When things go utterly wrong vim users can always type :help! ~~
