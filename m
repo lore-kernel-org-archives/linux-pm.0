@@ -1,146 +1,92 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AD0233B1EC8;
-	Thu, 30 Jul 2026 08:35:01 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 89B173E1231
+	for <linux-pm@vger.kernel.org>; Thu, 30 Jul 2026 08:52:09 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1785400501; cv=none; b=jWb7AlCD7ZAxpjzxLsNKiJiID3n0N6YYYUxt/Yf1CTGkfiJIdVTRHHLYGWMI3u3dcMhO9siLC2S+UJgq5eGM8QAxCiQhOElxMN/dhalrer7u+GQVcRFEghRMVK2r5+XmTexhY5ZMV/B6TyYitvuYxxgpWr7VMkgfKdyNYDMO9ic=
+	t=1785401533; cv=none; b=dhOsGZj3/YnbR9rJiKPJzArDh971IPLBBxoBbKBFE3zGS7IOHjLnFm7afNKfquxhvQgjY9U5Wg4hzYT/u7S/u0dq6Q0W21uyDX0Ve6wtaATev/7btcwbGbWNaMW5RDZRGlfheJQkNAkex+REm7pYWrsH2lvGI1IKYNmr6Jctx0E=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1785400501; c=relaxed/simple;
-	bh=kZutcbweUt6v7QjWlxQA00/uuYFO/XJNm3iPcBOuyYw=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=uHmnOpNYMn2NWyUUoRmfvnQR1e3hgT7sF5FiaFEqxiN5evK4dSF4cn7608CaUbuU+W8NAHUj2Gf0BqF3AsMgW1RpVZmsCjJpHQ0Uj8vKY80fqiit2rhXOQkyLOuUzBhAfTfaOXwIuHDdk/YFia4oe8ADHuvTWFON3g7jOiUV9us=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=s3hax5Y6; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1785401533; c=relaxed/simple;
+	bh=P0s9hpnOoF4rnWi7XE5IqmTuWPlqLa2592IkfQmX430=;
+	h=From:In-Reply-To:MIME-Version:References:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=jemoFlvgqfZ3JGKxNmnsaVIe0IvG7R/B1yhQQeFyVNvKy64qcarULwr+Sq4DcW0Uir0xkx+CgoI5ZWoPPbtD6hxZdt3nuZXyurrcSp3Hrum8IMdBYONS2z3FzlSQR0QqyKoqpaIrAp4+AvGop8VqxWXDCDSWrY6oJPh2lkVIPHA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=btX0TtJB; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="s3hax5Y6"
-Received: by smtp.kernel.org (Postfix) with ESMTPS id AB496C2BCB3;
-	Thu, 30 Jul 2026 08:35:00 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1785400500;
-	bh=kZutcbweUt6v7QjWlxQA00/uuYFO/XJNm3iPcBOuyYw=;
-	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
-	b=s3hax5Y6WxHdP9oxPs+cSmWhD/YShxIPr3/pHVFgdm8LsRwnLM4SSvA2sYrrUj7Zz
-	 StRAPzUQCLYGJC98lS7Oe71PKm7/yrOP6yEn9ke6H6py6Uyk3J7HnXIBNADdPZ8GfV
-	 bfKlZRPIXCf+do43mcfBzqxBg4ak6H2RCx/EX7pb4PQ6IZyIEz2DiiXazqsWip0qPc
-	 QCG1NJb99vz4/PCRot3icd5DOzXDppcDUTKJJb5R0zqS2+ZDYVlTN8KYiolCa7eNig
-	 XuypgiY9LoMMYNqkw3Cbd+2e57t3zDrpjNOm2aN/qiwufeH7Z3K6GP0j5BC2Gr9CkU
-	 caUALnEJaUSeA==
-Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8B009C55162;
-	Thu, 30 Jul 2026 08:35:00 +0000 (UTC)
-From: Xianwei Zhao via B4 Relay <devnull+xianwei.zhao.amlogic.com@kernel.org>
-Date: Thu, 30 Jul 2026 08:34:37 +0000
-Subject: [PATCH 1/2] dt-bindings: thermal: amlogic: Add A9 thermal bindings
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="btX0TtJB"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id A1D541F00A3F
+	for <linux-pm@vger.kernel.org>; Thu, 30 Jul 2026 08:52:08 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1785401528;
+	bh=P0s9hpnOoF4rnWi7XE5IqmTuWPlqLa2592IkfQmX430=;
+	h=From:In-Reply-To:References:Date:Subject:To:Cc;
+	b=btX0TtJBl2bLrcUEL4Od6ngVqeNS4+4qlE8XAPorAh9OPuSH86FgDJaZZPTjmKHlu
+	 +6oYaV7DE6tpjf9gmVbJBCTqTf5Jczl1DW3MYk4Pjryyi9R60h+sTc656XQFLgyzHD
+	 XrU8ALCsgVVJTBY5cFwxB50hMQhdcrgObIruqUIqUZ/LNNYwIrP6g6OS3o+Ocv7OAG
+	 SgFOkSZZv+h7qaY0XQUh68uUDzg6Zpoqvo0QvTcgUxgQcepjNgYhRGSdn5T0qftrCN
+	 X5C0G9VMCysyKxSTqtprIEMh95fK3U11R3XfsDM5OaJP65hDqcmSqqLPb+YlU30TDC
+	 Y+r4v33g6sr2w==
+Received: by mail-lf1-f44.google.com with SMTP id 2adb3069b0e04-5aebd52488cso2021289e87.2
+        for <linux-pm@vger.kernel.org>; Thu, 30 Jul 2026 01:52:08 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AHgh+Rqtwsoa+bSo1h/NI3ssOsWiNXEAUL0u7dnrq+4pv5Roc6/pW5y53SvZfkKGiIWU7VkKTpYUudl3Sg==@vger.kernel.org
+X-Gm-Message-State: AOJu0YxtnFVvdRjrr55CjTSLHcTaF6eEHdxed7IN8XQYg5wbZASCAKrM
+	495bWKLpf3yL+rCpMX8D9FoIJ7jV47zXqUEYIEdMlb2qyCHzMXgZxdfhEL6WYXJx17G7KAqO2UF
+	6fJ1gGNcolPggRnXt2dQ0RqkW6b5oumLxweWbN/WIag==
+X-Received: by 2002:a05:6512:6894:20b0:5b0:ceb2:194b with SMTP id
+ 2adb3069b0e04-5b2db36f116mr194574e87.36.1785401527295; Thu, 30 Jul 2026
+ 01:52:07 -0700 (PDT)
+Received: from 969154062570 named unknown by gmailapi.google.com with
+ HTTPREST; Thu, 30 Jul 2026 01:52:06 -0700
+Received: from 969154062570 named unknown by gmailapi.google.com with
+ HTTPREST; Thu, 30 Jul 2026 01:52:06 -0700
+From: Bartosz Golaszewski <brgl@kernel.org>
+In-Reply-To: <TY3PR01MB11346732C04ED0DC52502267B86CA2@TY3PR01MB11346.jpnprd01.prod.outlook.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20260730-a9-thermal-v1-1-d786d37cba58@amlogic.com>
-References: <20260730-a9-thermal-v1-0-d786d37cba58@amlogic.com>
-In-Reply-To: <20260730-a9-thermal-v1-0-d786d37cba58@amlogic.com>
-To: Guillaume La Roque <glaroque@baylibre.com>, 
- "Rafael J. Wysocki" <rafael@kernel.org>, 
- Daniel Lezcano <daniel.lezcano@kernel.org>, Zhang Rui <rui.zhang@intel.com>, 
- Lukasz Luba <lukasz.luba@arm.com>, Rob Herring <robh@kernel.org>, 
- Krzysztof Kozlowski <krzk+dt@kernel.org>, 
- Conor Dooley <conor+dt@kernel.org>
-Cc: linux-pm@vger.kernel.org, linux-amlogic@lists.infradead.org, 
- devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
- Xianwei Zhao <xianwei.zhao@amlogic.com>
-X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1785400497; l=2032;
- i=xianwei.zhao@amlogic.com; s=20251216; h=from:subject:message-id;
- bh=a2jDBBmn4Im07LAaY1RPp+SwGvK+6Pv6kYhWR+NQIKY=;
- b=5JXLh377xnZAYCkjTOkmo9Amu8ZrBVMLJbqzx0+yVYyODdrh310hP4MJiZA6/Ks+DkT8G86mf
- wL62TLUnu/VCPLkhvreP6/c9OrkpDKkpBmp/r5KBke+mJFpgegMJe9D
-X-Developer-Key: i=xianwei.zhao@amlogic.com; a=ed25519;
- pk=dWwxtWCxC6FHRurOmxEtr34SuBYU+WJowV/ZmRJ7H+k=
-X-Endpoint-Received: by B4 Relay for xianwei.zhao@amlogic.com/20251216 with
- auth_id=578
-X-Original-From: Xianwei Zhao <xianwei.zhao@amlogic.com>
-Reply-To: xianwei.zhao@amlogic.com
+References: <20260725123433.162348-1-biju.das.jz@bp.renesas.com>
+ <20260725123433.162348-3-biju.das.jz@bp.renesas.com> <CAMRc=Mf_oNCQK3o5-s4u8zejkVWM4WN_R9YO+NA4od0qqtGjow@mail.gmail.com>
+ <TYCPR01MB11332A50145F29D93157A58BC86CB2@TYCPR01MB11332.jpnprd01.prod.outlook.com>
+ <CAMRc=MdU12B-+vQxCuFVuoJLLza_51-bv1o1T9VYEHbkiZF1EA@mail.gmail.com>
+ <TY3PR01MB1134633BC06738344A740654786CB2@TY3PR01MB11346.jpnprd01.prod.outlook.com>
+ <CAMRc=MfOk=+dQvdEAY1ah=G1JNM=p7J6=+Tz_uCYDQGBMxXHqA@mail.gmail.com>
+ <TY3PR01MB113462C8DE3B70428F113ABF386CB2@TY3PR01MB11346.jpnprd01.prod.outlook.com>
+ <CAMRc=MeybezmErzs9+jYaBgXr+ufsTv5_V5sZjhP6ynuQk+W2Q@mail.gmail.com> <TY3PR01MB11346732C04ED0DC52502267B86CA2@TY3PR01MB11346.jpnprd01.prod.outlook.com>
+Date: Thu, 30 Jul 2026 01:52:06 -0700
+X-Gmail-Original-Message-ID: <CAMRc=MdAsZwqQxJ_G0VXjyFjDzUfT5WSoSW4t0RGtAiyw8FQXQ@mail.gmail.com>
+X-Gm-Features: AUfX_mxwuZ4AleOIKJ06LwMAbeiwmTGJdUtdnJMlxTOISOQMWh841snC5GH3dYU
+Message-ID: <CAMRc=MdAsZwqQxJ_G0VXjyFjDzUfT5WSoSW4t0RGtAiyw8FQXQ@mail.gmail.com>
+Subject: Re: [PATCH 2/3] power: sequencing: Add Renesas RZ/G3L Power Ready driver
+To: Biju Das <biju.das.jz@bp.renesas.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, 
+	"linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, 
+	Prabhakar Mahadev Lad <prabhakar.mahadev-lad.rj@bp.renesas.com>, 
+	"linux-renesas-soc@vger.kernel.org" <linux-renesas-soc@vger.kernel.org>, 
+	Geert Uytterhoeven <geert+renesas@glider.be>, Rob Herring <robh@kernel.org>, 
+	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
+	"laurent.pinchart" <laurent.pinchart@ideasonboard.com>, Philipp Zabel <p.zabel@pengutronix.de>, 
+	"magnus.damm" <magnus.damm@gmail.com>, "biju.das.au" <biju.das.au@gmail.com>, 
+	Bartosz Golaszewski <brgl@kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 
-From: Xianwei Zhao <xianwei.zhao@amlogic.com>
+On Wed, 29 Jul 2026 16:33:31 +0200, Biju Das <biju.das.jz@bp.renesas.com> said:
+>
+> Here it is. Please find the relevant DT nodes usbphy-ctrl [1] and dsi [2]
+>
+> [1] https://lore.kernel.org/all/20260729115022.222340-9-biju.das.jz@bp.renesas.com/
+> [2] https://lore.kernel.org/all/20260729125516.230757-14-biju.das.jz@bp.renesas.com/
+>
 
-Document the thermal controller compatibles for the Amlogic A9 SoC.
+So the sysc is the parent of the power sequencer but there's no relation
+between it and the consumers modeled in DT?
 
-Describe the required "core" and "plck" clocks, add the optional
-"amlogic,hw-reset-temp" property, and update the schema constraints for
-A9-specific thermal controllers.
+In that case some validation is still required: you should make sure the
+consumer device is compatible with a list of devices we can service. sysc and
+consumers also seem to share the parent node so that's worth checking too.
 
-Signed-off-by: Xianwei Zhao <xianwei.zhao@amlogic.com>
----
- .../bindings/thermal/amlogic,thermal.yaml          | 29 +++++++++++++++++++++-
- 1 file changed, 28 insertions(+), 1 deletion(-)
+We shouldn't just return MATCH_OK for anyone that comes knocking.
 
-diff --git a/Documentation/devicetree/bindings/thermal/amlogic,thermal.yaml b/Documentation/devicetree/bindings/thermal/amlogic,thermal.yaml
-index 8cfa44dcda58..5f5dc6f12851 100644
---- a/Documentation/devicetree/bindings/thermal/amlogic,thermal.yaml
-+++ b/Documentation/devicetree/bindings/thermal/amlogic,thermal.yaml
-@@ -23,6 +23,7 @@ properties:
-           - const: amlogic,g12a-thermal
-       - enum:
-           - amlogic,a1-cpu-thermal
-+          - amlogic,a9-thermal
-           - amlogic,t7-thermal
- 
-   reg:
-@@ -32,7 +33,13 @@ properties:
-     maxItems: 1
- 
-   clocks:
--    maxItems: 1
-+    minItems: 1
-+    maxItems: 2
-+
-+  clock-names:
-+    items:
-+      - const: core
-+      - const: pclk
- 
-   power-domains:
-     maxItems: 1
-@@ -52,6 +59,10 @@ properties:
-           - description: phandle to the secure monitor
-           - description: sensor index to get specific calibration data
- 
-+  amlogic,hw-reset-temp:
-+    description: The hardware-controlled reset temperature value.
-+    $ref: /schemas/types.yaml#/definitions/uint32
-+
- required:
-   - compatible
-   - reg
-@@ -73,6 +84,22 @@ allOf:
-       required:
-         - amlogic,secure-monitor
- 
-+  - if:
-+      properties:
-+        compatible:
-+          contains:
-+            enum:
-+              - amlogic,a9-thermal
-+    then:
-+      required:
-+        - clock-names
-+    else:
-+      properties:
-+        clocks:
-+          maxItems: 1
-+        clocks-names: false
-+        amlogic,hw-reset-temp: false
-+
- unevaluatedProperties: false
- 
- examples:
-
--- 
-2.52.0
-
-
+Bart
