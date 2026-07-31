@@ -1,87 +1,87 @@
-Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
+Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 59DDA3E9C05
-	for <linux-pm@vger.kernel.org>; Fri, 31 Jul 2026 17:50:19 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8D626451981
+	for <linux-pm@vger.kernel.org>; Fri, 31 Jul 2026 17:51:59 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.180.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1785520220; cv=none; b=Pwy2C1JDnk8pecSlRamTwB27kyc5J5Xz5beFBJYUI/8huLIUN5qPPWAzYJKt5WFb0lCNSuxCYKuW0Lhuj0PVQH2xxLdMEffHkIgxhkSn2Zgus3Nhyi1p4L8KRi7b27PvAZ5rKOg9ZnoCvwGMnk9s5XqHCAMPP7B2LFgqT0MReCY=
+	t=1785520321; cv=none; b=nz7ywJ8p+KkWU22kEtp7dP/l4SbWfvkUIr3za8vKTOKkS4D+ilb0MscrGBoSFK6gVI7JaG/DEIINS58SO7s2AOMRdL2w9mKY+5vwWFclrOUt5gE2NJ9Kc8OCmf6pTIXDSuFknlrhdVny8u88A7zVJ+t2XrWBhbcoS3tF2fX0jco=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1785520220; c=relaxed/simple;
-	bh=W+jYCexIEEQ0uU8y51WVpnMWkSUysalkAisSyNtFft8=;
+	s=arc-20240116; t=1785520321; c=relaxed/simple;
+	bh=HW3Kmxon0yqBcSpEnNtQ9XHfCXtaiXQdbvu8OJxwZwE=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=LEiS1iqhhE5W/nmZX1rzlTmq5POHsNcSXF3IFrP0R6Yh26w1Af8ovEcGxCggnyAtGyZR74AIowTK1Ih9wRBn75iSRRreC3eX0yOQRJxSvOYPSy1ltvwfqoc1ZTRXNWDCIgW4NwQHWT0re4EXKCT8BUdilvGsLoWRoZomN2wVeEE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=WylN/WvW; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=aGlkblPy; arc=none smtp.client-ip=205.220.168.131
+	 In-Reply-To:Content-Type; b=uAEuQrX0GuApGchI6Yu9ptUNgNau/Nw6VYXSavbwNpENNoR3ekBcHbx8BEnFMNwwH/rbWQlNYibdwOATuvzUrq0x6Po/GiK7Xo9uvHi8LHXq7tBV3aCNBNKd9y/JfivOwS1WSo4/fk/jh3KQMvmJUcjMTf9/qWME8hZvwFD0nTQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=DrBgNv+L; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=c3ru8v4a; arc=none smtp.client-ip=205.220.180.131
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="WylN/WvW";
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="aGlkblPy"
-Received: from pps.filterd (m0279866.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 66VFNwrF019766
-	for <linux-pm@vger.kernel.org>; Fri, 31 Jul 2026 17:50:18 GMT
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="DrBgNv+L";
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="c3ru8v4a"
+Received: from pps.filterd (m0279871.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 66VFOP33507763
+	for <linux-pm@vger.kernel.org>; Fri, 31 Jul 2026 17:51:58 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
 	cc:content-transfer-encoding:content-type:date:from:in-reply-to
 	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	P701Iru64K2mSQrogLQeosSLRzpER8DGLClpum85WkU=; b=WylN/WvWm4a3hQ7l
-	gR3enDQS3p4eFfYf0588nOrDLV9/FM2qvAcZKlKQSflCDuDxAjrB3DQETg+96Y69
-	N40bAl/ojeTE2hi8KKZXI39SbtPK3qu5zzx4i5NJ0u9nJUIiIjIywx5OaayQdh/6
-	ZGOesjdSKCOTUEfxCqEsZaZIzqOJdRRYSkGOc/g4/lc3GnPuF1lBdvWFAGbP3fUB
-	14ImkqtqENwuQskWBHX1IUXllnZrqmgSTgTfiynA9c8LG4iXXd7+Qf3Luk680xjy
-	VpLzpKGCPQYL6iwvJvdRlY+ewaZJJrCihYNj5uF3UivstPxptN8WRX2rErHq9BmY
-	lZdl4A==
-Received: from mail-oi1-f198.google.com (mail-oi1-f198.google.com [209.85.167.198])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4frugh1hwt-1
+	iZ0R++hTVk5sIhaTyuJ0Ofa6jVpk6M/E6xz4eej3pmU=; b=DrBgNv+LLOTlWZyV
+	ShXSmsxD8mGTZja4AWm0t20ox4AGq4pvFmqZtnkj80UKOp8kl0jWmLaSu6m2hpfV
+	TDumYQt20FcC8XrCrAwYIHRbigZVZfZmdh7oR4dUjBCkYLg7cv78V8WxWh68TD9b
+	yj2urnc+uKXgExOmH8KQnhQOLWAkY65uJSjpKDmGDnx4/pgOKvcwFXoJKX7dkL5B
+	j4YnmFyGRNflq+ZG+9q/xTBoSMJjbY1U1PRGD/6T5ZVZlpoKVaghX8bIfe9UC6kh
+	pFz/nbfSnS8S3r9V9nFb9CiVPUc8HCeh+6z+ZAYV7eNEP7HnzLEwbQRbcTttbbCg
+	zOhO5w==
+Received: from mail-pg1-f198.google.com (mail-pg1-f198.google.com [209.85.215.198])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4fru131qbx-1
 	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Fri, 31 Jul 2026 17:50:18 +0000 (GMT)
-Received: by mail-oi1-f198.google.com with SMTP id 5614622812f47-4ab4af22d09so1615339b6e.0
-        for <linux-pm@vger.kernel.org>; Fri, 31 Jul 2026 10:50:18 -0700 (PDT)
+	for <linux-pm@vger.kernel.org>; Fri, 31 Jul 2026 17:51:58 +0000 (GMT)
+Received: by mail-pg1-f198.google.com with SMTP id 41be03b00d2f7-ca7c1e22995so1914758a12.3
+        for <linux-pm@vger.kernel.org>; Fri, 31 Jul 2026 10:51:58 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1785520218; x=1786125018; darn=vger.kernel.org;
+        d=oss.qualcomm.com; s=google; t=1785520317; x=1786125117; darn=vger.kernel.org;
         h=content-transfer-encoding:content-type:in-reply-to:from
          :content-language:references:cc:to:subject:user-agent:mime-version
          :date:message-id:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=P701Iru64K2mSQrogLQeosSLRzpER8DGLClpum85WkU=;
-        b=aGlkblPyNoZ6V0flfTJNoZ8aeGzru0CMxlBYaYUI78TcZp0zMK3rYT+leXstx5uY4M
-         0dcTRjPFRV/5A8IVG8KpNnDM154/gH5ohcT9tvMbyA1mjRXfCgOHkIfmkgDUibx05JdZ
-         ZI88nKqKfqwu8gV1YMlOsq9YnPjmgL/7BWURl5VAhEM2nLb1Y2l5UZCDzK9UwQVyMuNv
-         O28cZnDZKs/gQMGcVQDTdPb89slh5qULoHu9K2+aOcelpSA+XTDLaHb7En9TS1XSpbWw
-         57edD3reE1L6Heq96Uk3/7sDLhRpsIe2mWwGcGwRfCd/ax2ckti2GU/TziX7R/eE9vgD
-         iX1w==
+        bh=iZ0R++hTVk5sIhaTyuJ0Ofa6jVpk6M/E6xz4eej3pmU=;
+        b=c3ru8v4aTiAN2XOqpM1cQEzi42AgowXMGHB7HkbLQP6ArCS5O7NJ1cU5dFh7q2Ma1N
+         0rxx5URtQJEgETpPiPguJp1O7YMZMvw9VQKq+ao84Miw8+x5ljE0PDWyXvrFBy3vvyiu
+         XV4O8zq4tySeTR84IAZZ1T4mo0KZDec2gBaUaz2BCR6vVT2qTJUnMnGEACkAPmwci9ab
+         ZeJHwWQIgjFC+OBD+i63kQzK69/OoH0iARngcHpKRAEe87KrVYWjkyg+3npJD58zhFut
+         y75WqboR0pCt4M73cT172MUyT6DR7IU0r2m47WTfnyrRydFI0iPFAXnh24mI0t9MgjA4
+         YFyA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1785520218; x=1786125018;
+        d=1e100.net; s=20251104; t=1785520317; x=1786125117;
         h=content-transfer-encoding:content-type:in-reply-to:from
          :content-language:references:cc:to:subject:user-agent:mime-version
          :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=P701Iru64K2mSQrogLQeosSLRzpER8DGLClpum85WkU=;
-        b=BNmGdZbjniv9ZZHKQ+p3+aq0iPYtNgq0tgfNoM1zTvgta+ARzhMUbOTECN2wdpNNVC
-         8a9i5fDYTBHwmMdujEZSbhPskIgW8jNz2+YVXuxAzirlBx9aCoiA400Ya2p2TZV/3WQ8
-         Qm179/ZNZxdFQpnbowZG1F9mwX+BvDYdmyyaknzbfHYYxRt+2+XUAOWwtI3QbTMLnhiR
-         ByzJeR5mVDghUG9LVc+mpuZgMeIvJIpgMRgx6su9KYnjb/3qZqbpEnwLnyG4wVeRro+M
-         oUCmder1+HB2JYjs5kzU/t1hHkEKgAxpk6WdkKvFgM9VqwD7DDiAcxd29zec9YGwU7Eq
-         zk5Q==
-X-Forwarded-Encrypted: i=1; AHgh+Rqj2weRwutVVWN6RXiMScaV7vTxUVP1UenpQMuGkFYAZyhu4NToQq6oEaF9pbgB5ZGRp5mkbeH07A==@vger.kernel.org
-X-Gm-Message-State: AOJu0YxNqv55kkXOoooEAfUMPwyqTzCZeAepBOdY34KABtWFm4g0weE4
-	ZmtOtyBlhhtyCstI178Jpevkqlpqb4QtZo/bNpzIBSwrFmPtMR3wZKozRlS2Dhwx7szJvp+p6Fk
-	jUwsUfATNrXcSsa0g0rDR3RMqRMt5EOFypaaIKXPXd7PQPLNicEH2wPSzjrL5ZA==
-X-Gm-Gg: AR+sD10ZRRnw0Pwku/1rWODed4fOGOQgCnCx8ukk/I+77MtSsV6CRUL8tU1voi3GVKE
-	LTDj2ovf9xqZY/zCySLhVfW1aHtucb1S23/By/vEKcpPFL77NVxpBDOKNEAw9Ycb+gYCHaLmdW2
-	Xefff2u8XC7zQ/tNLfU7rTchLmPq5/2JkvWA9O6/XqeNJ+JAfWSCgAJJQWjIJL6pTvuADmhtNeK
-	YDXOpWnnTeNd7q95dPjTsFXC36l46G6YIdDlAXvtfkdEvr96JgCaiSnJO0F6e7TLGTPlB0mHygF
-	jiJYhjP4XkjaXd8fIT2smWn5lxJTiKMTS7BN+l/9ncxSXsOrDZHC65aVyeomosM8NubQLWRAlgE
-	OC7+71vtxOgbvv7Xi9htH7ILhAFdkVzii
-X-Received: by 2002:a05:6808:2384:b0:496:e0:a47b with SMTP id 5614622812f47-4af5e329e27mr1603426b6e.20.1785520217688;
-        Fri, 31 Jul 2026 10:50:17 -0700 (PDT)
-X-Received: by 2002:a05:6808:2384:b0:496:e0:a47b with SMTP id 5614622812f47-4af5e329e27mr1603356b6e.20.1785520217171;
-        Fri, 31 Jul 2026 10:50:17 -0700 (PDT)
+        bh=iZ0R++hTVk5sIhaTyuJ0Ofa6jVpk6M/E6xz4eej3pmU=;
+        b=U98XVqHJN22VpixzCP0bxcqVlhLZUw15uAihYPDXfFc/gAjg7i1zVkOMQ4/mpUASB2
+         N7A4qikNYvmNn6VdQCWZ2N49/QBpDEBtrqlBVr+OHMUmn2J+LnLow4SZXZnODp+J7rQm
+         YCo7uopzRpQtv27cL/Rixewdg/0ppl3GaoHPohwQI+yg71hqzk/J32DsVk9TE0i3H5IN
+         DXb2Yf/R4WuYWl9Gd/hJD3l/NPlOdZYcQxwpUZJ4CPvvczuDreJq3NN1YYUzvO2sDf4j
+         JOd1QwG9Z8NRGwLLHPUod+Alu72nTDM1/VAd437gUfqm6oZtSTsPHvb8CjXQCb2EV9/x
+         ezjA==
+X-Forwarded-Encrypted: i=1; AHgh+RotSvyPr4KFsOMT2gBGyMgLZoOFJBzLACW4eYQonbmkWhiC1un4kMkNS7iz4CRY6iO9eyQKLk8l7Q==@vger.kernel.org
+X-Gm-Message-State: AOJu0YwmyBSK793f8OjJYe/W9zSzOEGLRBZ1O31U7o+i1xYkNQsSW3pf
+	ZySvkEK66B8oA5+WmdzgLADt/u23TTTKbWFMP+xc2NQpNgHoiDrHbly+jRe1SFcJzkPdMK4629w
+	1fug3aBnGZl3uKXpt0iUP8IaeJmNnw1hrttrCYv1SzrByJwGhmJP4l6Ryim5H2A==
+X-Gm-Gg: AR+sD10X4rhYpH9VYcINyTdBUnxZtgWBZ7jNIifMFn5FerUjQ9v/LaJJpgT57Ehf/S/
+	O7Rxti1Cgvgmdq8Fx/luSLU33FikQt3i/LLDYOl/Cr9FO+JSly8oopU14N2cROLd0YKuTgg80HV
+	kNPvV2L072AVHA4/dAdHL7sMhtDOLso9swJ6Y6Dguw4aXCgj3ZJeVs7Aj4iuOCRxJ73xiSVBUHt
+	ifElqle4ZZ5vxR1thKVcsti2Mpe53Tg7jgRRfEdRS26oXB/nqNFEgtkcI8VS73bHvFbJxQ2HkxK
+	1cZOmZTC3/QtBYLFp0p/shcg6m3rmpAGSyFoiQVFqm9Z2G21yahXeye6kwMy0q/AfMO8G8mak5A
+	l2goyiaDSBp9NEvCRY5t/L5jXopHzARaq
+X-Received: by 2002:a05:6a20:d487:b0:3b4:71a9:cd8f with SMTP id adf61e73a8af0-3c92a8371fcmr694618637.41.1785520317115;
+        Fri, 31 Jul 2026 10:51:57 -0700 (PDT)
+X-Received: by 2002:a05:6a20:d487:b0:3b4:71a9:cd8f with SMTP id adf61e73a8af0-3c92a8371fcmr694580637.41.1785520316592;
+        Fri, 31 Jul 2026 10:51:56 -0700 (PDT)
 Received: from [192.168.1.10] ([122.177.247.168])
-        by smtp.gmail.com with ESMTPSA id 5614622812f47-4af58933884sm1164801b6e.0.2026.07.31.10.50.09
+        by smtp.gmail.com with ESMTPSA id a92af1059eb24-13fab4cb51asm7645350c88.9.2026.07.31.10.51.49
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Fri, 31 Jul 2026 10:50:16 -0700 (PDT)
-Message-ID: <b5afd21c-4516-4a8c-bc8f-6598ec385d27@oss.qualcomm.com>
-Date: Fri, 31 Jul 2026 23:20:07 +0530
+        Fri, 31 Jul 2026 10:51:56 -0700 (PDT)
+Message-ID: <222a33d8-6ab8-451f-9d22-ae06fbe269b6@oss.qualcomm.com>
+Date: Fri, 31 Jul 2026 23:21:46 +0530
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -89,14 +89,13 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 6/6] arm64: dts: qcom: rb3gen2: add Industrial BT UART
- overlay
-To: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>,
-        Bartosz Golaszewski <brgl@kernel.org>,
-        Marcel Holtmann
- <marcel@holtmann.org>,
+Subject: Re: [PATCH v2 2/6] Bluetooth: qca: add QCC2072 support
+To: Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>
+Cc: Bartosz Golaszewski <brgl@kernel.org>,
+        Marcel Holtmann <marcel@holtmann.org>,
         Luiz Augusto von Dentz <luiz.dentz@gmail.com>,
-        Rob Herring <robh@kernel.org>,
+        Rob Herring
+ <robh@kernel.org>,
         Krzysztof Kozlowski <krzk+dt@kernel.org>,
         Conor Dooley <conor+dt@kernel.org>,
         Balakrishna Godavarthi <quic_bgodavar@quicinc.com>,
@@ -105,162 +104,406 @@ To: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>,
  <mani@kernel.org>,
         Bjorn Andersson <andersson@kernel.org>,
         Konrad Dybcio <konradybcio@kernel.org>,
-        Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>
-Cc: Bartosz Golaszewski <brgl@bgdev.pl>, linux-arm-msm@vger.kernel.org,
+        Bartosz Golaszewski <brgl@bgdev.pl>, linux-arm-msm@vger.kernel.org,
         linux-bluetooth@vger.kernel.org, devicetree@vger.kernel.org,
         linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
         linux-pm@vger.kernel.org, quic_mohamull@quicinc.com,
-        quic_hbandi@quicinc.com, quic_anubhavg@quicinc.com
+        quic_hbandi@quicinc.com, quic_anubhavg@quicinc.com,
+        Vivek Sahu <vivek.sahu@oss.qualcomm.com>,
+        Yepuri Siddu <yepuri.siddu@oss.qualcomm.com>
 References: <20260727-rb3-industrial-bt-uart-v2-0-2d100f30e202@oss.qualcomm.com>
- <20260727-rb3-industrial-bt-uart-v2-6-2d100f30e202@oss.qualcomm.com>
- <794424df-4714-43a4-b4b8-e960998ad1f1@oss.qualcomm.com>
- <ce283ef7-2460-4fa4-a1f5-9757fd6b42b5@oss.qualcomm.com>
- <6d61d749-440f-40ad-82e5-e1e909afad06@oss.qualcomm.com>
- <b47345f1-1c7b-4424-9c6b-3dd02c0f4ab6@oss.qualcomm.com>
- <bf7821a2-d813-4f89-b891-9c26d228ae67@oss.qualcomm.com>
+ <20260727-rb3-industrial-bt-uart-v2-2-2d100f30e202@oss.qualcomm.com>
+ <53mokww7o5hky34fhwyje7utpqu42md5uknqn2b5km22ccsfzi@fsbf2pth6ztj>
 Content-Language: en-US
 From: Rahul Samana <rahul.samana@oss.qualcomm.com>
-In-Reply-To: <bf7821a2-d813-4f89-b891-9c26d228ae67@oss.qualcomm.com>
+In-Reply-To: <53mokww7o5hky34fhwyje7utpqu42md5uknqn2b5km22ccsfzi@fsbf2pth6ztj>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzMxMDEzNiBTYWx0ZWRfX6jVohcOD/LlQ
- aWy9p8mVtNvEouP2sEnr5Pn7uMRiaA9oXvUMp214yxOB0qoZIsTWZqXNak1ZxxuBsQK9oJ0oinx
- UXJxcCSl3b4OuRvvgaTPn8iIENddaJChnqaHUivl3yWA6oRyQ/BCb5nj6gd/haokrzurKbkcmcZ
- sNdfaEseLLWPwBGFVZX8jYBsQt3nBXdCSGxx5GiVNDth4CONYbMdAMdSfOVnkyDNDn7GQ5xV2Tn
- g2AePjtvpekdSk41Y1yNIAfe72iy4evNJVVJ0XUizBoC5Oqo45s6ffvrvvUufZ4BIePPIhIDNYY
- 5kmcsFhvIQjIGUF4wXe6aVGSkGcsrc5lsOjgmWp4QYP+A7JKwXkgzQhjVtrwIy29CLgcyocEHqB
- ySB8vyty3+QH96Vwzm3D0zM3p7GCUmcs/w07QJptHc8mch7tLyiznxop0tBrs6OsCBxvcaeMDNl
- u/NfN826Je4aoHsa1NA==
-X-Proofpoint-Spam-Info: AW1haW4tMjYwNzMxMDEzNiBTYWx0ZWRfX5ejcCQLNThcE
- dXdh5NvssaddcbbXAJzaMLGJujZrJyyVmATGIn7hEI3UqhTRvzaNwIUe74cb47oObBXci+WUdaq
- Tg9TYZb/TbCnD2HE1YEL2fxk+muUsSE=
-X-Authority-Analysis: v=2.4 cv=U+iiy+ru c=1 sm=1 tr=0 ts=6a6ce05a cx=c_pps
- a=4ztaESFFfuz8Af0l9swBwA==:117 a=wVA5pQU3D6HtJETKl3oCcQ==:17
+X-Proofpoint-Spam-Info: AW1haW4tMjYwNzMxMDEzNyBTYWx0ZWRfX3uwGjAy0/vkS
+ P/2J89Q6s+Ti0oiuMn31/Fp4icZSByG5X4AMMjo6/j2dB8tCgnCHOVQPKNFvoLcFA5SPBfjUX+t
+ Lzi4EkLGJLEHbj3pJ30zl/PUGjeJdxE=
+X-Proofpoint-GUID: wIboGFG9b-OS1iws3PFZnbngg9LUouVd
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzMxMDEzNyBTYWx0ZWRfX9fFN71xD1Guv
+ L196sqOwIH5PlURtg/oC0b4bM37qg2jJEyFsOOZ5f5ka+amIiTJS2l2KWiTXu8QTlHnpqaHArML
+ v8HoFcRuHJDMO1eBWnT3VTFs7CsZFdhmY4DoQIf0gAkMKqeOkNvmysMJm+vVq/pKfJAufFi22RL
+ uCbCkK5b2TRhFIn8el5sO3pd+OLZnykxQipvE0zHq1PJ5jjx6pgFmSidoiAIxhFlVnJWp9oxwc2
+ McrcJpmZroRrCAzMCeXurIUIUDDeCdkV94/lYwc62hcjwWJGN29aAwcPasuKdN6PEhVaXq1vXqu
+ xxSDpes/xIa49U+7HoJnGCWK/WQjxtZ8e047I9Qx+fEpFu8g14GcsliFHd3v90invzkBpoKvk1p
+ OmoAkfB0PsmfQdvy/fON1FprmXzPwnHmCMn9rA8hCoG95f8jMlD4KXgensdB0ZvburF6BcawnVZ
+ 5HUbof4Is23IzeLvl1A==
+X-Proofpoint-ORIG-GUID: wIboGFG9b-OS1iws3PFZnbngg9LUouVd
+X-Authority-Analysis: v=2.4 cv=CYI4Irrl c=1 sm=1 tr=0 ts=6a6ce0be cx=c_pps
+ a=Qgeoaf8Lrialg5Z894R3/Q==:117 a=wVA5pQU3D6HtJETKl3oCcQ==:17
  a=IkcTkHD0fZMA:10 a=RAioF0-LDSMA:10 a=s4-Qcg_JpJYA:10
- a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=YMgV9FUhrdKAYTUUvYB2:22
- a=sZyqPLha_0TG7Fz-sX4A:9 a=QEXdDO2ut3YA:10 a=TPnrazJqx2CeVZ-ItzZ-:22
-X-Proofpoint-ORIG-GUID: 3CRWrF396Z6Lad9ROMmJwvlJ068dohwo
-X-Proofpoint-GUID: 3CRWrF396Z6Lad9ROMmJwvlJ068dohwo
+ a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=3WHJM1ZQz_JShphwDgj5:22
+ a=EUspDBNiAAAA:8 a=MOouYykqAnKcD-W-GfoA:9 a=QEXdDO2ut3YA:10
+ a=x9snwWr2DeNwDh03kgHS:22
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.134,FMLib:17.12.100.49
  definitions=2026-07-31_05,2026-07-30_01,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- phishscore=0 malwarescore=0 spamscore=0 lowpriorityscore=0 adultscore=0
- impostorscore=0 suspectscore=0 bulkscore=0 clxscore=1015 priorityscore=1501
+ priorityscore=1501 suspectscore=0 spamscore=0 adultscore=0 lowpriorityscore=0
+ clxscore=1015 impostorscore=0 bulkscore=0 phishscore=0 malwarescore=0
  classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2607310136
+ reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2607310137
 
 
 
-On 31-07-2026 21:19, Konrad Dybcio wrote:
-> On 7/31/26 4:48 PM, Rahul Samana wrote:
+On 31-07-2026 20:39, Dmitry Baryshkov wrote:
+> On Mon, Jul 27, 2026 at 09:15:02PM +0530, Rahul Samana wrote:
+>> From: Vivek Sahu <vivek.sahu@oss.qualcomm.com>
 >>
+>> QCC2072 uses the ORN firmware and NVM naming scheme. The tested RB3 Gen 2
+>> Industrial BT-over-UART setup also needs the BCS calibration TLV to be
+>> combined with the selected NVM before download.
 >>
->> On 31-07-2026 18:20, Konrad Dybcio wrote:
->>> On 7/31/26 8:53 AM, Rahul Samana wrote:
->>>>
->>>>
->>>> On 29-07-2026 18:01, Konrad Dybcio wrote:
->>>>> On 7/27/26 5:45 PM, Rahul Samana wrote:
->>>>>> The reworked RB3 Gen 2 Industrial mezzanine keeps the common Industrial
->>>>>> mezzanine hardware description but routes QCC2072 Bluetooth over UART4
->>>>>> instead of the default Bluetooth-over-USB path.
-> 
-> I only noticed this now - are there 2 variants of the industrial
-> mezz being sold concurrently? Is the already-in-kernel one some
-> sort of a prototype SKU? i.e. should we support both?
-> 
->>>>>>
->>>>>> Build this variant by applying the common Industrial mezzanine overlay
->>>>>> first, followed by the BT UART overlay. The overlay models the M.2 E-key
->>>>>> connector graph endpoints for PCIe and UART, and disables the on-board
->>>>>> WCN6750 PMU and UART7 path so the M.2 QCC2072 Bluetooth controller can be
->>>>>> used instead.
->>>>>
->>>>> So is the onboard module disabled? Can we not just use two in parallel?
->>>>>
->>>>
->>>> The Industrial mezzanine variants do not support the on-board WCN6750
->>>> wireless path. The common Industrial mezzanine overlay already disables
->>>> the on-board Wi-Fi node.
->>>
->>> What does 'do not support' it mean here? They are physically present
->>> as part of the SoM, so unless the lanes are somehow diverted away,
->>> why is it not?
->>>
->>> Konrad
+>> Keep the BCS/NVM combination in a helper so missing calibration data or
+>> allocation failures can fall back to downloading the NVM alone without a
+>> local skip label.
 >>
->> Hi Konrad,
+>> Select the NVM file and BCS calibration file using the controller board ID
+>> when available, with fallback to the default files. Initialize the BCS
+>> calibration filename independently of the NVM filename source so custom NVM
+>> firmware-name paths do not leave it unset.
 >>
->> The WCN6750 module is physically present on the SoM. What I meant is that
->> the current Industrial mezzanine devicetree already disables the on-board
->> Wi-Fi path, and this BT UART variant followed the same board-level policy
->> for the on-board Bluetooth UART/PMU path.
-> 
-> Okay, and do we know why that's the case in the first place?
-> 
->> For the endpoint labels, I can move the UART endpoint to the SoC DTSI,
->> kodiak.dtsi, as uart4_ep.
-> 
-> Please do
-> 
->> For the PCIe endpoint, the PCIe path to the M.2 QCC2072 device is not the
->> PCIe0 root port in kodiak.dtsi. In the composed devicetree, it is
->> behind the Industrial mezzanine PCIe switch, under:
+>> Register the QCC2072 compatible with hci_qca and route it through the same
+>> UART setup, speed switching and power-control paths as recent Qualcomm
+>> Bluetooth controllers.
 >>
->>     /soc@0/pcie@1c00000/pcie@0/pcie@0,0/pcie@2,0
+>> This continues the QCC2072 enablement work previously posted by Vivek Sahu
+>> and later extended by Yepuri Siddu for the RB3 Gen 2 Industrial
+>> BT-over-UART use case.
 >>
+>> Signed-off-by: Vivek Sahu <vivek.sahu@oss.qualcomm.com>
+>> Co-developed-by: Yepuri Siddu <yepuri.siddu@oss.qualcomm.com>
+>> Signed-off-by: Yepuri Siddu <yepuri.siddu@oss.qualcomm.com>
+>> Co-developed-by: Rahul Samana <rahul.samana@oss.qualcomm.com>
+>> Signed-off-by: Rahul Samana <rahul.samana@oss.qualcomm.com>
+>> ---
+>>  drivers/bluetooth/btqca.c   | 72 ++++++++++++++++++++++++++++++++++++++++++++-
+>>  drivers/bluetooth/btqca.h   |  2 ++
+>>  drivers/bluetooth/hci_qca.c | 24 +++++++++++++++
+>>  3 files changed, 97 insertions(+), 1 deletion(-)
 >>
->> So placing pcie0_port0_ep in kodiak.dtsi would not describe the actual
->> topology.
+>> diff --git a/drivers/bluetooth/btqca.c b/drivers/bluetooth/btqca.c
+>> index 10c496eaea2c..34bc0684cf1b 100644
+>> --- a/drivers/bluetooth/btqca.c
+>> +++ b/drivers/bluetooth/btqca.c
+>> @@ -569,6 +569,54 @@ static int qca_inject_cmd_complete_event(struct hci_dev *hdev)
+>>  	return hci_recv_frame(hdev, skb);
+>>  }
+>>  
+>> +static void qca_combine_nvm_calib(struct hci_dev *hdev, u8 **data,
+>> +				  int *size, char *calib_name,
+>> +				  size_t max_size)
+>> +{
+>> +	const struct firmware *calib_fw;
+>> +	struct tlv_type_hdr *outer_hdr;
+>> +	size_t inner_len, combined_size;
+>> +	u8 *combined_data;
+>> +	int err;
+>> +
+>> +	err = request_firmware(&calib_fw, calib_name, &hdev->dev);
+>> +	if (err) {
+>> +		if (qca_get_alt_nvm_file(calib_name, max_size))
+>> +			err = request_firmware(&calib_fw, calib_name, &hdev->dev);
+>> +
+>> +		if (err) {
+>> +			bt_dev_err(hdev, "QCA Failed to request file: %s (%d)",
+>> +				   calib_name, err);
+>> +			return;
+>> +		}
+>> +	}
+>> +
+>> +	bt_dev_info(hdev, "QCA Downloading %s", calib_name);
+>> +
+>> +	inner_len = *size + calib_fw->size;
+>> +	combined_size = sizeof(*outer_hdr) + inner_len;
+>> +	combined_data = vmalloc(combined_size);
+>> +	if (!combined_data) {
+>> +		bt_dev_warn(hdev,
+>> +			    "QCA Failed to allocate memory for file: %s",
+>> +			    calib_name);
+>> +		release_firmware(calib_fw);
+>> +		return;
+>> +	}
+>> +
+>> +	outer_hdr = (struct tlv_type_hdr *)combined_data;
+>> +	/* high 24 bits = payload length, low 8 bits = type */
+>> +	outer_hdr->type_len = cpu_to_le32((inner_len << 8) | 4);
+>> +	memcpy(combined_data + sizeof(*outer_hdr), *data, *size);
+>> +	memcpy(combined_data + sizeof(*outer_hdr) + *size,
+>> +	       calib_fw->data, calib_fw->size);
+>> +	release_firmware(calib_fw);
+>> +
+>> +	vfree(*data);
+>> +	*data = combined_data;
+>> +	*size = combined_size;
+>> +}
+>> +
+>>  static int qca_download_firmware(struct hci_dev *hdev,
+>>  				 struct qca_fw_config *config,
+>>  				 enum qca_btsoc_type soc_type,
+>> @@ -614,6 +662,11 @@ static int qca_download_firmware(struct hci_dev *hdev,
+>>  	memcpy(data, fw->data, size);
+>>  	release_firmware(fw);
+>>  
+>> +	if (soc_type == QCA_QCC2072 && config->type == TLV_TYPE_NVM)
+>> +		qca_combine_nvm_calib(hdev, &data, &size,
+>> +				      config->calib_name,
+>> +				      sizeof(config->calib_name));
+>> +
+>>  	ret = qca_tlv_check_data(hdev, config, data, size, soc_type);
+>>  	if (ret)
+>>  		goto out;
+>> @@ -845,6 +898,10 @@ int qca_uart_setup(struct hci_dev *hdev, uint8_t baudrate,
+>>  			snprintf(config.fwname, sizeof(config.fwname),
+>>  				 "qca/hmtbtfw%02x.tlv", rom_ver);
+>>  			break;
+>> +		case QCA_QCC2072:
+>> +			snprintf(config.fwname, sizeof(config.fwname),
+>> +				 "qca/ornbtfw%02x.tlv", rom_ver);
+>> +			break;
 > 
-> Yes, that was an omission from my side
+> Please try to keep these sorted.
 > 
+>>  		default:
+>>  			snprintf(config.fwname, sizeof(config.fwname),
+>>  				 "qca/rampatch_%08x.bin", soc_ver);
+>> @@ -878,7 +935,8 @@ int qca_uart_setup(struct hci_dev *hdev, uint8_t baudrate,
+>>  	/* Give the controller some time to get ready to receive the NVM */
+>>  	msleep(10);
+>>  
+>> -	if (soc_type == QCA_QCA2066 || soc_type == QCA_WCN7850)
+>> +	if (soc_type == QCA_QCA2066 || soc_type == QCA_WCN7850 ||
+>> +	    soc_type == QCA_QCC2072)
+>>  		qca_read_fw_board_id(hdev, &boardid);
+>>  
+>>  	/* Download NVM configuration */
+>> @@ -939,12 +997,23 @@ int qca_uart_setup(struct hci_dev *hdev, uint8_t baudrate,
+>>  			qca_get_nvm_name_by_board(config.fwname, sizeof(config.fwname),
+>>  				 "hmtnv", soc_type, ver, rom_ver, boardid);
+>>  			break;
+>> +		case QCA_QCC2072:
+>> +			qca_get_nvm_name_by_board(config.fwname, sizeof(config.fwname),
+>> +						  "ornnv", soc_type, ver,
+>> +						  rom_ver, boardid);
+>> +			break;
 > 
->> I tried adding a generic label/endpoint to that downstream port in the
->> Industrial mezzanine overlay and referencing it from the BT UART overlay.
->> However, when the overlays are compiled separately and then composed, that
->> label is not available while applying the BT UART overlay, so the composed
->> DTB build fails with FDT_ERR_NOTFOUND.
+> Sorted
 > 
-> I think this generic description is simply not achievable today without
-> a bigger plan in place
+>>  		default:
+>>  			snprintf(config.fwname, sizeof(config.fwname),
+>>  				 "qca/nvm_%08x.bin", soc_ver);
+>>  		}
+>>  	}
+>>  
+>> +	if (soc_type == QCA_QCC2072)
+>> +		qca_get_nvm_name_by_board(config.calib_name,
+>> +					  sizeof(config.calib_name),
+>> +					  "ornbcscal", soc_type, ver,
+>> +					  rom_ver, boardid);
+>> +
+>>  	err = qca_download_firmware(hdev, &config, soc_type, rom_ver);
+>>  	if (err < 0 && !firmware_name && soc_type == QCA_WCN6855) {
+>>  		qca_get_nvm_name_by_board(config.fwname, sizeof(config.fwname),
+>> @@ -1001,6 +1070,7 @@ int qca_uart_setup(struct hci_dev *hdev, uint8_t baudrate,
+>>  	case QCA_WCN6750:
+>>  	case QCA_WCN6855:
+>>  	case QCA_WCN7850:
+>> +	case QCA_QCC2072:
 > 
-> Konrad
+> Sorted
+> 
+>>  		/* get fw build info */
+>>  		err = qca_read_fw_build_info(hdev);
+>>  		if (err < 0)
+>> diff --git a/drivers/bluetooth/btqca.h b/drivers/bluetooth/btqca.h
+>> index 8f3c1b1c77b3..425133096eda 100644
+>> --- a/drivers/bluetooth/btqca.h
+>> +++ b/drivers/bluetooth/btqca.h
+>> @@ -94,6 +94,7 @@ enum qca_tlv_type {
+>>  struct qca_fw_config {
+>>  	u8 type;
+>>  	char fwname[64];
+>> +	char calib_name[64];
+>>  	uint8_t user_baud_rate;
+>>  	enum qca_tlv_dnld_mode dnld_mode;
+>>  	enum qca_tlv_dnld_mode dnld_type;
+>> @@ -158,6 +159,7 @@ enum qca_btsoc_type {
+>>  	QCA_WCN6750,
+>>  	QCA_WCN6855,
+>>  	QCA_WCN7850,
+>> +	QCA_QCC2072,
+> 
+> Sorted
+> 
+>>  };
+>>  
+>>  #if IS_ENABLED(CONFIG_BT_QCA)
+>> diff --git a/drivers/bluetooth/hci_qca.c b/drivers/bluetooth/hci_qca.c
+>> index 1222f97800f4..449f0896bdac 100644
+>> --- a/drivers/bluetooth/hci_qca.c
+>> +++ b/drivers/bluetooth/hci_qca.c
+>> @@ -1375,6 +1375,7 @@ static int qca_set_baudrate(struct hci_dev *hdev, uint8_t baudrate)
+>>  
+>>  	/* Give the controller time to process the request */
+>>  	switch (qca_soc_type(hu)) {
+>> +	case QCA_QCC2072:
+> 
+> Ok, here you've discovered sorting order.
+> 
+>>  	case QCA_WCN3950:
+>>  	case QCA_WCN3988:
+>>  	case QCA_WCN3990:
+>> @@ -1462,6 +1463,7 @@ static unsigned int qca_get_speed(struct hci_uart *hu,
+>>  static int qca_check_speeds(struct hci_uart *hu)
+>>  {
+>>  	switch (qca_soc_type(hu)) {
+>> +	case QCA_QCC2072:
+>>  	case QCA_WCN3950:
+>>  	case QCA_WCN3988:
+>>  	case QCA_WCN3990:
+>> @@ -1513,6 +1515,7 @@ static int qca_set_speed(struct hci_uart *hu, enum qca_speed_type speed_type)
+>>  		case QCA_WCN6750:
+>>  		case QCA_WCN6855:
+>>  		case QCA_WCN7850:
+>> +		case QCA_QCC2072:
+> 
+> And then lost it again.
+> 
+>>  			hci_uart_set_flow_control(hu, true);
+>>  			break;
+>>  
+>> @@ -1548,6 +1551,7 @@ static int qca_set_speed(struct hci_uart *hu, enum qca_speed_type speed_type)
+>>  		case QCA_WCN6750:
+>>  		case QCA_WCN6855:
+>>  		case QCA_WCN7850:
+>> +		case QCA_QCC2072:
+>>  			hci_uart_set_flow_control(hu, false);
+>>  			break;
+>>  
+>> @@ -1864,6 +1868,7 @@ static int qca_power_on(struct hci_dev *hdev)
+>>  	case QCA_WCN6750:
+>>  	case QCA_WCN6855:
+>>  	case QCA_WCN7850:
+>> +	case QCA_QCC2072:
+>>  		ret = qca_regulator_init(hu);
+>>  		break;
+>>  
+>> @@ -1963,6 +1968,10 @@ static int qca_setup(struct hci_uart *hu)
+>>  		soc_name = "wcn7850";
+>>  		break;
+>>  
+>> +	case QCA_QCC2072:
+>> +		soc_name = "qcc2072";
+>> +		break;
+>> +
+>>  	default:
+>>  		soc_name = "ROME/QCA6390";
+>>  	}
+>> @@ -1986,6 +1995,7 @@ static int qca_setup(struct hci_uart *hu)
+>>  	case QCA_WCN6750:
+>>  	case QCA_WCN6855:
+>>  	case QCA_WCN7850:
+>> +	case QCA_QCC2072:
+>>  		if (qcadev && qcadev->bdaddr_property_broken)
+>>  			hci_set_quirk(hdev, HCI_QUIRK_BDADDR_PROPERTY_BROKEN);
+>>  
+>> @@ -2019,6 +2029,7 @@ static int qca_setup(struct hci_uart *hu)
+>>  	case QCA_WCN6750:
+>>  	case QCA_WCN6855:
+>>  	case QCA_WCN7850:
+>> +	case QCA_QCC2072:
+>>  		break;
+>>  
+>>  	default:
+>> @@ -2172,6 +2183,12 @@ static const struct qca_device_data qca_soc_data_wcn3998 __maybe_unused = {
+>>  	.num_vregs = 4,
+>>  };
+>>  
+>> +static const struct qca_device_data qca_soc_data_qcc2072 __maybe_unused = {
+>> +	.soc_type = QCA_QCC2072,
+>> +	.num_vregs = 0,
+>> +	.capabilities = QCA_CAP_WIDEBAND_SPEECH | QCA_CAP_VALID_LE_STATES,
+>> +};
+>> +
+>>  static const struct qca_device_data qca_soc_data_wcn6750 __maybe_unused = {
+>>  	.soc_type = QCA_WCN6750,
+>>  	.vregs = (struct qca_vreg []) {
+>> @@ -2274,6 +2291,7 @@ static void qca_power_off(struct hci_uart *hu)
+>>  
+>>  	case QCA_WCN6750:
+>>  	case QCA_WCN6855:
+>> +	case QCA_QCC2072:
+>>  		gpiod_set_value_cansleep(qcadev->bt_en, 0);
+>>  		msleep(100);
+>>  		qca_regulator_disable(qcadev);
+>> @@ -2429,6 +2447,7 @@ static int qca_serdev_probe(struct serdev_device *serdev)
+>>  	case QCA_WCN6750:
+>>  	case QCA_WCN6855:
+>>  	case QCA_WCN7850:
+>> +	case QCA_QCC2072:
+>>  		qcadev->bt_power = devm_kzalloc(&serdev->dev,
+>>  						sizeof(struct qca_power),
+>>  						GFP_KERNEL);
+>> @@ -2448,6 +2467,7 @@ static int qca_serdev_probe(struct serdev_device *serdev)
+>>  	case QCA_WCN6750:
+>>  	case QCA_WCN6855:
+>>  	case QCA_WCN7850:
+>> +	case QCA_QCC2072:
+>>  		if (!device_property_present(&serdev->dev, "enable-gpios")) {
+>>  			/*
+>>  			 * Backward compatibility with old DT sources. If the
+>> @@ -2490,6 +2510,7 @@ static int qca_serdev_probe(struct serdev_device *serdev)
+>>  		if (!qcadev->bt_en &&
+>>  		    (data->soc_type == QCA_WCN6750 ||
+>>  		     data->soc_type == QCA_WCN6855 ||
+>> +		     data->soc_type == QCA_QCC2072 ||
+> 
+> Randomly in the middle. No
+> 
+>>  		     data->soc_type == QCA_WCN7850))
+>>  			power_ctrl_enabled = false;
+>>  
+>> @@ -2498,6 +2519,7 @@ static int qca_serdev_probe(struct serdev_device *serdev)
+>>  		if (IS_ERR(qcadev->sw_ctrl) &&
+>>  		    (data->soc_type == QCA_WCN6750 ||
+>>  		     data->soc_type == QCA_WCN6855 ||
+>> +		     data->soc_type == QCA_QCC2072 ||
+>>  		     data->soc_type == QCA_WCN7850)) {
+>>  			dev_err(&serdev->dev, "failed to acquire SW_CTRL gpio\n");
+>>  			return PTR_ERR(qcadev->sw_ctrl);
+>> @@ -2576,6 +2598,7 @@ static void qca_serdev_remove(struct serdev_device *serdev)
+>>  	struct qca_power *power = qcadev->bt_power;
+>>  
+>>  	switch (qcadev->btsoc_type) {
+>> +	case QCA_QCC2072:
+>>  	case QCA_WCN3988:
+>>  	case QCA_WCN3990:
+>>  	case QCA_WCN3991:
+>> @@ -2785,6 +2808,7 @@ static const struct of_device_id qca_bluetooth_of_match[] = {
+>>  	{ .compatible = "qcom,wcn6750-bt", .data = &qca_soc_data_wcn6750},
+>>  	{ .compatible = "qcom,wcn6855-bt", .data = &qca_soc_data_wcn6855},
+>>  	{ .compatible = "qcom,wcn7850-bt", .data = &qca_soc_data_wcn7850},
+>> +	{ .compatible = "qcom,qcc2072-bt", .data = &qca_soc_data_qcc2072 },
+> 
+> And here too. Keep those sorted.
+> 
 
-Hi Konrad, Dmitry,
+Hi Dmitry,
 
-Yes, both Industrial Kit variants need to be supported.
-
-The default Industrial Kit uses the common Industrial mezzanine hardware
-description and continues to use the existing Bluetooth-over-USB path. The
-reworked Industrial Kit variant keeps the rest of the Industrial mezzanine
-hardware the same, but routes Bluetooth over UART4 instead.
-
-That is why this series models the reworked variant by applying the base RB3
-Gen 2 DTB first, then the common Industrial mezzanine overlay, and finally
-the BT UART overlay.
-
-For the WCN6750 disablement reason, I will re-check the board/SKU details
-and come back with the exact reason instead of assuming it only from the
-current devicetree state.
-
-For v3, I will move the UART endpoint to the SoC DTSI, kodiak.dtsi, as
-uart4_ep.
-
-For the PCIe endpoint, the exact PCIe node is introduced by the Industrial
-mezzanine overlay, and a second overlay cannot reference a label introduced
-there. So the clean label-and-patch model suggested earlier is not buildable
-with the current two-overlay setup.
-
-The PCIe graph endpoint is needed for the pwrseq-pcie-m2 provider to
-associate the enumerated QCC2072 PCI function with the M.2 connector. Given
-that, would the nested patching style from v1 be acceptable as an interim
-solution for this variant despite the concern Dmitry raised?
-
-I am open to other suggestions if there is a better way to model this within
-the current overlay structure.
+Ack, I will keep the entries sorted consistently in v3.
 
 Thanks,
 Rahul
+
+>>  	{ /* sentinel */ }
+>>  };
+>>  MODULE_DEVICE_TABLE(of, qca_bluetooth_of_match);
+>>
+>> -- 
+>> 2.34.1
+>>
+> 
 
