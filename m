@@ -1,87 +1,87 @@
 Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BBDD53F12C8
-	for <linux-pm@vger.kernel.org>; Fri, 31 Jul 2026 10:35:11 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 22A75427FBF
+	for <linux-pm@vger.kernel.org>; Fri, 31 Jul 2026 10:35:05 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.180.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1785494130; cv=none; b=sEgZxAOwN58iJ2jLH6ne+dMPpo7TjlDZNWYDdyW3ICyZ9Jmf35uTe9AwD56JwOnlsd2jd3NqR74sMKCe0DK6/PihKuT1B6TOqhei5hc/QVM47yRmfMotJWWLW+YBdnn9sglwvV39sSDC61/Gw1jSe+UhSvVYxRSibO2wbbSyrEI=
+	t=1785494136; cv=none; b=ajanOtLTU7D4srqJsOOqLDUSZJIf4qpn5wuQrkYysLNTwFAEJmWXs3ousv9vRaWkcjXNGPVuNkppqu2vpIdfK4wBHo/0a63g1gjmFs1l1/Sg9h3mGQNopoGxvBI4L+o6edUblXZzB7uwprfZIQ/nZ7TULy3otPxZOIEGsmIlU48=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1785494130; c=relaxed/simple;
-	bh=8jCvvQvR/TUK8TVzkPQrR6iOrXuHBCo0rM5hCiElzIA=;
+	s=arc-20240116; t=1785494136; c=relaxed/simple;
+	bh=zu8gupPC5A5PcDFsGHMjuTQqaVyyOo6BMNe0DLfwd9A=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=VsA40PsGhqV+7g1bm0Cj3hXfXV4/afxmkjckUt5Bbnjck1vvHFHEmC093GbsGiTz9rKjdXdlEac8mZN/Fa/+QZx+sZxd6vyImchkbY/8Uboq0TtgPeeXjGLXsdR4x8AwhvEcSjGFd7isoyHOxCnKdB9fmDo9hYgfPJxPRh+RWKA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=UCf5tq4Y; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=RJtrGoRQ; arc=none smtp.client-ip=205.220.180.131
+	 In-Reply-To:To:Cc; b=YEyw/kzCZIUP2HrTmWluunCGUmB1Nc2VLC6w0dYi0/+JuCmLxbUvBnk1IoiuWcmH78MXdQux2RSS2SUzAXUFJn2NJfr1NnT+bOlCUm0VV5scwesbvklpCNPzO5efkF3ESwQ0UUFcUWPY5F/s2j7E44zlkl4+gGY53DLyYfaQ/bM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=eKxMCkrP; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=U28AMDQI; arc=none smtp.client-ip=205.220.180.131
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="UCf5tq4Y";
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="RJtrGoRQ"
-Received: from pps.filterd (m0279869.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 66VAC6cB3972795
-	for <linux-pm@vger.kernel.org>; Fri, 31 Jul 2026 10:35:08 GMT
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="eKxMCkrP";
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="U28AMDQI"
+Received: from pps.filterd (m0279870.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 66VAC9AQ3851101
+	for <linux-pm@vger.kernel.org>; Fri, 31 Jul 2026 10:35:01 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
 	cc:content-transfer-encoding:content-type:date:from:in-reply-to
 	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	wTHLwHQvEfPrSw7dqgVln+HLO66Otor7GBfQ5C0UNnk=; b=UCf5tq4YVIpM/623
-	6V0sPxSZuiceUJhyQTbrMmSWE0V6VC03wx1cCSMjw1l2YYy+9z2H4nfGXTMSuDnB
-	O2H2RGVZ3VT7StgSyMbSJqaUxmGxTxAFAZLy2dx05JbqAiO1bS9/JuPA9UrwjnFR
-	v50CH6/wQKHcIz/ccPqw2cPrO3khhTzopI5LDabMDpH9c24LxSYMx8l2an477odj
-	tdF97BqzgDdo9OFQP6UfJw63qxXYysoEz4JAF6FT3e2C6pkDpfCtqYb4IXIeuwW6
-	lfJB8fvzLuQIfnN3VErK1hIIp9jNoYh9khFKmZkrB2ZOAcKFV43wOERcIhZcc3sS
-	idPNuQ==
-Received: from mail-pl1-f199.google.com (mail-pl1-f199.google.com [209.85.214.199])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4frsecr4ye-1
+	7YD+0nJhg2tipomjvVHvKwH4PnwKW0weQoAtx/YRHdM=; b=eKxMCkrPvnwfbLFQ
+	7KP6DGZhz7qBb9xh/nukJeLm2zlWAFPwxjh0AtgaoI/430zhNQZa84bPiH1UHseA
+	PsOHzjhPsZLrU/cx54ATkCmVi/jOQtd9FfuLEqFOmB+QM+2FRuio8+Hv6kLxM314
+	DoGSJjKdbaFyJ8k578/u0XqRzKMjfFfsQrKtcmp/x/ALHTCcFmB4pPxA1a7fhz70
+	SjSvHAXYa0m8BvavWi5Od8T73Voc+q9qtkzy/NA47rQgOFejrN4xO+4jBehvugev
+	7bNaqg4B6vqMSy6C41/VXyV0Fyo/KOTau/dCBm7PoL9yEi1BxuOPP61r3+29TaAm
+	HMFiug==
+Received: from mail-pg1-f198.google.com (mail-pg1-f198.google.com [209.85.215.198])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4frsg204b0-1
 	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Fri, 31 Jul 2026 10:35:08 +0000 (GMT)
-Received: by mail-pl1-f199.google.com with SMTP id d9443c01a7336-2cc88e22f92so16834075ad.1
-        for <linux-pm@vger.kernel.org>; Fri, 31 Jul 2026 03:35:08 -0700 (PDT)
+	for <linux-pm@vger.kernel.org>; Fri, 31 Jul 2026 10:35:01 +0000 (GMT)
+Received: by mail-pg1-f198.google.com with SMTP id 41be03b00d2f7-ca6bd8a190cso1110385a12.0
+        for <linux-pm@vger.kernel.org>; Fri, 31 Jul 2026 03:35:01 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1785494107; x=1786098907; darn=vger.kernel.org;
+        d=oss.qualcomm.com; s=google; t=1785494100; x=1786098900; darn=vger.kernel.org;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :content-type:mime-version:subject:date:from:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=wTHLwHQvEfPrSw7dqgVln+HLO66Otor7GBfQ5C0UNnk=;
-        b=RJtrGoRQJLGoEmgPvck02QZk6QPdeVzNYWFUEyN/XpZx2axULtVOlo+m2/8/lcdUg7
-         LAO7cYWaMN6q+NDV2+sfm/Sl6gif7WOhQi7NYlHdKIaCzNclEYSt9rdDERq4VHHCDfJZ
-         LgIpk3mi6d/AYFzARC8alCBPjovRbFofYeWi0w8xaNa8CtS1V1Ob5ARZHyoApBWFgcpQ
-         97wdzxibhJ/j61VJTYVbjktFXNNRB1FAMmpAX2/g6HcXzws8Jm8KBILWiC+h66FReVE0
-         SKAXW6z3rOW7RYulME+ERkz7HZv2vqmKsu8uu4iJs9gm1pjkQ1VS9YOqrkZarZqojq9l
-         Pnog==
+        bh=7YD+0nJhg2tipomjvVHvKwH4PnwKW0weQoAtx/YRHdM=;
+        b=U28AMDQIPXNPC/ZGwOg3UN1qxOHvKk6H2+BBj+zC/ny7Ytd/Y3QuFCPaHwV1yD4lc3
+         a0JQIJbbKhOLU4uLa6femSE4xHdp6RoiRCJ5D9riwKyqdH0lclXiy6zhkaRaR8W+vH/b
+         o4zXTxHOYJ2ZtTrrWFFN1JfRepB/osgvKplLn8BODcjmtNXya1AB5Z/F6Ku024MyScDF
+         3FcNAz5+xrK7FDq6VJWdvGeBtr71c0X3JuaF9xBbqBQHGDzM10jW48r/WG2f1xVawrfy
+         dfpAmeaPqTG7MJRrwMaiSDhcDPltMXGaQ58J/YPrQaOXhrQkUqu+dsJe8yXXvq/hfnx9
+         BKDQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1785494107; x=1786098907;
+        d=1e100.net; s=20251104; t=1785494100; x=1786098900;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :content-type:mime-version:subject:date:from:x-gm-gg
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=wTHLwHQvEfPrSw7dqgVln+HLO66Otor7GBfQ5C0UNnk=;
-        b=fcsxo+qT1oSGKCi4FcUyPUx4uGpLsc5CVdYi9BoTL6qFoiPpU9PPWZ5VoM3l3t1/I4
-         Zl0VB/chn8KM56OR8wHBA3aiFYKtSAls/AC5ab0/UXFvkGqT1IXAo6YZlFnpzZSIK7il
-         scg8mScfSfJ088IlqZz/Q6AiwisMGZh+fgDs5I0ZB373LzMb8S7VweD0Gib2QP/ogvgJ
-         bqiQ+mImCFg5bmlq+YR1Vx/+W8gNagaYjolnr1+QDMqc3ojaPoqc9DiTmABfDNawTYYY
-         a8pFvAUOpJXN/CTEu/IR/E6EXP0f+UnXPYO1tw3x4XHvI3AdCsZZzxuWuJh/H68eVraE
-         12IQ==
-X-Forwarded-Encrypted: i=1; AHgh+RpCFZhmzjjCxtgstXFlZjs+sOQZKUMbCDbgLfQNQhHWT8IQ6I8yqwqlroz3X5xr41W1lT/Qw/bK1w==@vger.kernel.org
-X-Gm-Message-State: AOJu0YyGf7XRPOV2RN1PILpMOKiZSfwFSHcipo/V86H+18dLF/U+JeV/
-	w8UhAeQfqSU5Tx9zqEHlgvp4QoQBlu074YV/DKLptjPnFvHvcL3UNhO8DTdUfUOouypXBbB9V3r
-	tAPSMc+kY6P36T2S73Zu4JaDXfT92bzZL5Xh15l68Dd2GpMap5UYkTXb00zqMjQ==
-X-Gm-Gg: AR+sD112Tp/B2reQd749ieMH4XDbfl87efSUEgXYQSM88YJrPTUvF82hiP2dPU5aRuI
-	SqAD2EwuIxpwQHKOMaLons158ckIK9D3o1rgzMpC0CIQjcnzw+u7kzb/ovTjasJXZPg8tMhC/W8
-	DKwk8lcFNpQRlyLtUV9IqlLGF0QLlH50lseAcyMPo6HDpo8EFH8/QKwtdoXINOkxaXVRfVaa4wy
-	knXf1mU5Erjw/r37CcExrpealfNSqvjH5KwAUAjURBna36LjFGIgNxoXAwDW2LcVH50pbOTf7wH
-	h3dJgxR9Gn2CP7UODwVqkM2HXKMBD3NKRM5nKValOV/WJZrp+9xjeyWA0TUT5xDGsDxMzX6vyRP
-	cQ/RjzGJk5IsEj5mL5bqsLjsDEQqEqQ==
-X-Received: by 2002:a17:903:4683:b0:2cf:47c4:3d1a with SMTP id d9443c01a7336-2d046d70b30mr15627975ad.3.1785494107457;
-        Fri, 31 Jul 2026 03:35:07 -0700 (PDT)
-X-Received: by 2002:a17:903:4683:b0:2cf:47c4:3d1a with SMTP id d9443c01a7336-2d046d70b30mr15627615ad.3.1785494107074;
-        Fri, 31 Jul 2026 03:35:07 -0700 (PDT)
+        bh=7YD+0nJhg2tipomjvVHvKwH4PnwKW0weQoAtx/YRHdM=;
+        b=fopMkDYXfOi9lSPPqpvMzZ0apcRZQigmsFAn0gkSxYkuur1k2zLLd+y/gtk686AukI
+         Ujgp7t3wfIhFH3im20tDxbv8gc4U8qdy0uFCf+/EHNCwcHtZpEs543L7N6MSpSRo6zSq
+         2PrrWhF3VGjuwIadmMKfCgskxyPoRLnqNDUXDyqwfHEdN/DGK6C2/Vr7zvyfBDFKJ3HB
+         4vTQYV8NwHzQvPV7qsXPU5Zv2DEHFfQNBnZxKfCsBATZkUetxV0yqgjRsDAyGlLHKGwh
+         JSryGMXJShxLlKuxbr6OqfTqIqZOYTWIed3loxNoLvaD/+xMnAfZ+c+GReSYlZabNCOZ
+         6Jpw==
+X-Forwarded-Encrypted: i=1; AHgh+RoLKkRIlyXr63W77wBDIBiv31T/c2KxVXBOhQ/dv4xY8buM9cH4Eyri6BIBvNinCiAhLsf3jvCtGA==@vger.kernel.org
+X-Gm-Message-State: AOJu0YxTJGTcoH+jBy7h9tLZuws5Ju/0db+33Pm/x/q/+FlUIVOsr10H
+	3dvnkcBSzZh3rcp9eCU2ZVcz0jzPf0zuYSks+0TeJb3CPob9hFqjV3PrzA6ErVfUyu5UdiHtz1t
+	RP+iyBf3b4nJd+trU35zwS5vEBckK5exzWzCpU9VKxFxXDYw8bnQdGgsW/uIdxQ==
+X-Gm-Gg: AR+sD12wMiz8Iu3B4PFzBGKf5dDqEsRymtOfmxTxLe3HYtBzFG15KyEZQa+QxRFjjiG
+	4R6aJFhbkP5wZb1e+92WunxdL+Upxy/HWRkSW7sqmGEon2jqcqvYRxi7efL1UncOhfGlAPhFHZK
+	oX/xwff+n5oUy8Lu3Ink45ciBNY3RoeMt3HMMOmBag+s3DNnb/ksJdFOOmQtYu+7gMm0XBUH5ES
+	rOs6HFFYVsfqWuVc71j5vxQ/XUiCAfAsjB5PIbJRSX2VWemQ7PIloyzwOWwKy8HXnvO/AsAbTEV
+	whevZfaWYxiZ4R7bQ6J9wxS61BxJn2VY/p5K8G+IKTNRtbJE3jZ0h2cBUR/3P3ZbWQmjEvJ1TJi
+	A4jv8xdwh/Y+4/DEpdXauis1j52pEBw==
+X-Received: by 2002:a05:6a20:72a8:b0:3b1:cce5:9140 with SMTP id adf61e73a8af0-3c91b1fa5ccmr1486198637.33.1785494100139;
+        Fri, 31 Jul 2026 03:35:00 -0700 (PDT)
+X-Received: by 2002:a05:6a20:72a8:b0:3b1:cce5:9140 with SMTP id adf61e73a8af0-3c91b1fa5ccmr1486155637.33.1785494099682;
+        Fri, 31 Jul 2026 03:34:59 -0700 (PDT)
 Received: from hu-gkohli-hyd.qualcomm.com ([202.46.23.25])
-        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-3153e18e114sm8493680eec.28.2026.07.31.03.35.00
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-3153e18e114sm8493680eec.28.2026.07.31.03.34.52
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 31 Jul 2026 03:35:06 -0700 (PDT)
+        Fri, 31 Jul 2026 03:34:59 -0700 (PDT)
 From: Gaurav Kohli <gaurav.kohli@oss.qualcomm.com>
-Date: Fri, 31 Jul 2026 16:03:47 +0530
-Subject: [PATCH v7 7/9] arm64: dts: qcom: talos: Enable CDSP cooling
+Date: Fri, 31 Jul 2026 16:03:46 +0530
+Subject: [PATCH v7 6/9] arm64: dts: qcom: lemans: Enable CDSP cooling
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -90,7 +90,7 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Message-Id: <20260731-b4-qmi-tmd-v7-7-3befd44403d5@oss.qualcomm.com>
+Message-Id: <20260731-b4-qmi-tmd-v7-6-3befd44403d5@oss.qualcomm.com>
 References: <20260731-b4-qmi-tmd-v7-0-3befd44403d5@oss.qualcomm.com>
 In-Reply-To: <20260731-b4-qmi-tmd-v7-0-3befd44403d5@oss.qualcomm.com>
 To: Bjorn Andersson <andersson@kernel.org>,
@@ -115,71 +115,68 @@ Cc: linux-arm-msm@vger.kernel.org, linux-remoteproc@vger.kernel.org,
         manaf.pallikunhi@oss.qualcomm.com,
         Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>
 X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1785494047; l=1994;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1785494047; l=8007;
  i=gaurav.kohli@oss.qualcomm.com; s=20260302; h=from:subject:message-id;
- bh=8jCvvQvR/TUK8TVzkPQrR6iOrXuHBCo0rM5hCiElzIA=;
- b=95ug3fuOSgVxrn5ZroqFPVPz8oce5m8u2Db2rhrpdC/rTCUQuE+HE6RrAO/i6tSsH9u36kgiE
- UCzR3CMjg3+BJ6ptUwwbgY02X9A9rc4A4eRU3uk0DIlOd0DDFi1cdTL
+ bh=zu8gupPC5A5PcDFsGHMjuTQqaVyyOo6BMNe0DLfwd9A=;
+ b=bqVA7apPugofHDMXHIlxYAXSKEGTOtlFaOfDqZA9Tz/LzoH8PDwtoONXVi3CChVOLbAT9NgEf
+ 6UiH2mxtaH6AZZjPSxRINsy20hVYDP06iGhnPRZYBH2STYZ+KwiNgiz
 X-Developer-Key: i=gaurav.kohli@oss.qualcomm.com; a=ed25519;
  pk=IdNsqe8rWsF6dbpGHfwPEH9zM0nbOdRH72HxUT9qPak=
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzMxMDA3OSBTYWx0ZWRfX8cJYZSWdIqz0
- SGO+89vP9GFO2gA6APuWrA8KEK7zlLLc7u1fvQkS09gXxjrQeW9kT89KeMarz7GFKo8nMxiBTh2
- IOmdxBDx/Eol4vfYpbkPnzwybNG3+acdlPMYUT3jJDxDk4fPKRPckl63yshdDMhoTy3W8pHjcWa
- wsRg08UYQufvDPQoQGWT4T9PgRApSCUWBIxpu8GqjZxI2AOs5Xgy9KlM3qHUspyBsTX40VERe6q
- Ba0d43UpDgu0Zu0lR/YOa9T7T7nFR/jsddpIfP0o0Y8fWOXY1n57km6S6udR5FFDiL48mE51BMf
- 7e+I7GEG9DfrYvnermRVtujFFOJNMZD7XvWLxx055Ao2QeAeNJtqFr/PYLGykvTx1Ijh7WtsTua
- q2xZMw9Wp7M4uOLnJ4VXWuIQTt2KTLpr7JyxkAKbbE83/ysI8tJQbUs3tqUwidmp4fuzHnJlJFQ
- BRV9P7CQCFucY0H5YDQ==
-X-Proofpoint-ORIG-GUID: ZQrNDzKrvys6Ap50su80XfOXH0BFuhkC
-X-Proofpoint-GUID: ZQrNDzKrvys6Ap50su80XfOXH0BFuhkC
-X-Authority-Analysis: v=2.4 cv=CpOPtH4D c=1 sm=1 tr=0 ts=6a6c7a5c cx=c_pps
- a=JL+w9abYAAE89/QcEU+0QA==:117 a=ZePRamnt/+rB5gQjfz0u9A==:17
+X-Proofpoint-Spam-Info: AW1haW4tMjYwNzMxMDA3OSBTYWx0ZWRfXxW5VVwLvJ1D4
+ u1y1q3YaAwSY32uOrf4CAZ5rBDIFZ6ufGTFt4jfcZoNAvxGAJftnGW9ka86e0/JzPJmmat8dgm+
+ utUXoKMi4WTTqmEQ23c7fFLneIfsI7E=
+X-Authority-Analysis: v=2.4 cv=Yvk/gYYX c=1 sm=1 tr=0 ts=6a6c7a55 cx=c_pps
+ a=Qgeoaf8Lrialg5Z894R3/Q==:117 a=ZePRamnt/+rB5gQjfz0u9A==:17
  a=IkcTkHD0fZMA:10 a=RAioF0-LDSMA:10 a=s4-Qcg_JpJYA:10
- a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=_glEPmIy2e8OvE2BGh3C:22
- a=EUspDBNiAAAA:8 a=ptpooaJMTZRctn2qr1AA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
- a=324X-CrmTo6CU4MGRt3R:22
-X-Proofpoint-Spam-Info: AW1haW4tMjYwNzMxMDA3OSBTYWx0ZWRfX+Z8aUIz/lvQA
- U1SWT7VsxCJwuuQ4RaI4xlSjN3x1xOkKWy7nocbfVJWrXO31378XSLc7/bDHD+HCoYr46RfpTd6
- g/fc0u78yLz8BRomcjvqyHeZ4LrAOu8=
+ a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=gowsoOTTUOVcmtlkKump:22
+ a=EUspDBNiAAAA:8 a=JpLBe5vfuqbXlpy2plQA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
+ a=x9snwWr2DeNwDh03kgHS:22
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzMxMDA3OSBTYWx0ZWRfXysO4JrmXrQ86
+ lVBJTctiVr1zRo+AHCj8nrW+zjsPpLsOBMvHFwmNb5x/vjI/mxGSiiAh3TRagX6J/Ubd/t+VGo4
+ rKdITvuAUIQZ+Wjhzt74Q4idZP6jZ4V4zr9fIZcDFz8igFhqmfNi4Wfl6wDhJdC98pLz7IeEjGU
+ XVsiHuZpRvQSRp41SHRbPcue0YJAMM9K2XDWeKB7QvUtUZwiB0R6HDaHRJb+wOMraQCvTRbUYR2
+ 79uzpFP75I3gKARpTwXnKng8CqYB3M0cG1y9emglKL/eNLB9atYoR1YIKoBwBoAiGBnCs8d7CIF
+ QgLsGF3ulEKyV2UmhhqnBf3RIAY3qu2s/+G6MiTphpLfpu/eGWxiEHYWuftezAj8C+tQm0OFBEm
+ pdq+T9eh0NGRyAQY1UjYTEEoMfNVmRxJqLR/BgbTbslqvig61+tsfsPWotnKJJ5YuXNxRWQdKPw
+ sXLmZKW3txmw4QzOAqA==
+X-Proofpoint-ORIG-GUID: xe-RCraW_NNVDN2KNJdYAn0gSvZ6Zs6a
+X-Proofpoint-GUID: xe-RCraW_NNVDN2KNJdYAn0gSvZ6Zs6a
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.134,FMLib:17.12.100.49
  definitions=2026-07-31_03,2026-07-30_01,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- suspectscore=0 phishscore=0 bulkscore=0 adultscore=0 lowpriorityscore=0
- priorityscore=1501 clxscore=1015 malwarescore=0 spamscore=0 impostorscore=0
+ malwarescore=0 suspectscore=0 phishscore=0 impostorscore=0 bulkscore=0
+ lowpriorityscore=0 priorityscore=1501 spamscore=0 adultscore=0 clxscore=1015
  classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
  reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2607310079
 
 Unlike the CPU, the CDSP does not throttle its speed automatically
-when it reaches high temperatures in talos.
+when it reaches high temperatures in lemans.
 
-Set up CDSP cooling by throttling the cdsp, when it reaches 105°C.
-
-Add polling-delay-passive so the governor periodically evaluates
-the zone during passive cooling and steps up cooling levels when
-temperature stabilizes below the next trip.
+Set up CDSP cooling for both instances by throttling the cdsp, when
+it reaches 105°C.
 
 Reviewed-by: Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>
 Reviewed-by: Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>
 Signed-off-by: Gaurav Kohli <gaurav.kohli@oss.qualcomm.com>
 ---
- arch/arm64/boot/dts/qcom/talos.dtsi | 19 +++++++++++++++++++
- 1 file changed, 19 insertions(+)
+ arch/arm64/boot/dts/qcom/lemans.dtsi | 125 +++++++++++++++++++++++++++++++----
+ 1 file changed, 113 insertions(+), 12 deletions(-)
 
-diff --git a/arch/arm64/boot/dts/qcom/talos.dtsi b/arch/arm64/boot/dts/qcom/talos.dtsi
-index bdfb70ca9740..0fb7cb8e9f64 100644
---- a/arch/arm64/boot/dts/qcom/talos.dtsi
-+++ b/arch/arm64/boot/dts/qcom/talos.dtsi
+diff --git a/arch/arm64/boot/dts/qcom/lemans.dtsi b/arch/arm64/boot/dts/qcom/lemans.dtsi
+index 3b0539e27b51..2ca14300ec6d 100644
+--- a/arch/arm64/boot/dts/qcom/lemans.dtsi
++++ b/arch/arm64/boot/dts/qcom/lemans.dtsi
 @@ -21,6 +21,7 @@
- #include <dt-bindings/power/qcom,rpmhpd.h>
+ #include <dt-bindings/power/qcom-rpmpd.h>
  #include <dt-bindings/soc/qcom,gpr.h>
  #include <dt-bindings/soc/qcom,rpmh-rsc.h>
 +#include <dt-bindings/thermal/qcom,pas.h>
  #include <dt-bindings/thermal/thermal.h>
  
  / {
-@@ -3840,6 +3841,8 @@ remoteproc_cdsp: remoteproc@8300000 {
- 			qcom,smem-states = <&cdsp_smp2p_out 0>;
+@@ -7773,6 +7774,8 @@ remoteproc_cdsp0: remoteproc@26300000 {
+ 			qcom,smem-states = <&smp2p_cdsp0_out 0>;
  			qcom,smem-state-names = "stop";
  
 +			#cooling-cells = <3>;
@@ -187,38 +184,303 @@ index bdfb70ca9740..0fb7cb8e9f64 100644
  			status = "disabled";
  
  			glink-edge {
-@@ -5497,15 +5500,31 @@ map0 {
- 		};
+@@ -7912,6 +7915,8 @@ remoteproc_cdsp1: remoteproc@2a300000 {
+ 			qcom,smem-states = <&smp2p_cdsp1_out 0>;
+ 			qcom,smem-state-names = "stop";
  
- 		q6-hvx-thermal {
-+			polling-delay-passive = <200>;
++			#cooling-cells = <3>;
 +
- 			thermal-sensors = <&tsens0 10>;
+ 			status = "disabled";
+ 
+ 			glink-edge {
+@@ -8760,7 +8765,7 @@ nsp-0-0-0-thermal {
+ 			thermal-sensors = <&tsens2 5>;
  
  			trips {
-+				q6_hvx_alert0: trip-point0 {
-+					temperature = <105000>;
-+					hysteresis = <5000>;
-+					type = "passive";
-+				};
-+
- 				q6-hvx-critical {
- 					temperature = <115000>;
- 					hysteresis = <1000>;
- 					type = "critical";
+-				trip-point0 {
++				nsp_0_0_0_alert0: trip-point0 {
+ 					temperature = <105000>;
+ 					hysteresis = <5000>;
+ 					type = "passive";
+@@ -8772,6 +8777,14 @@ trip-point1 {
+ 					type = "passive";
  				};
  			};
 +
 +			cooling-maps {
 +				map0 {
-+					trip = <&q6_hvx_alert0>;
-+					cooling-device = <&remoteproc_cdsp QCOM_TMD_CDSP_SW
++					trip = <&nsp_0_0_0_alert0>;
++					cooling-device = <&remoteproc_cdsp0 QCOM_TMD_CDSP_SW
 +							 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
 +				};
 +			};
  		};
  
- 		mdm-core-thermal {
+ 		nsp-0-1-0-thermal {
+@@ -8780,7 +8793,7 @@ nsp-0-1-0-thermal {
+ 			thermal-sensors = <&tsens2 6>;
+ 
+ 			trips {
+-				trip-point0 {
++				nsp_0_1_0_alert0: trip-point0 {
+ 					temperature = <105000>;
+ 					hysteresis = <5000>;
+ 					type = "passive";
+@@ -8792,6 +8805,14 @@ trip-point1 {
+ 					type = "passive";
+ 				};
+ 			};
++
++			cooling-maps {
++				map0 {
++					trip = <&nsp_0_1_0_alert0>;
++					cooling-device = <&remoteproc_cdsp0 QCOM_TMD_CDSP_SW
++							 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
++				};
++			};
+ 		};
+ 
+ 		nsp-0-2-0-thermal {
+@@ -8800,7 +8821,7 @@ nsp-0-2-0-thermal {
+ 			thermal-sensors = <&tsens2 7>;
+ 
+ 			trips {
+-				trip-point0 {
++				nsp_0_2_0_alert0: trip-point0 {
+ 					temperature = <105000>;
+ 					hysteresis = <5000>;
+ 					type = "passive";
+@@ -8812,6 +8833,14 @@ trip-point1 {
+ 					type = "passive";
+ 				};
+ 			};
++
++			cooling-maps {
++				map0 {
++					trip = <&nsp_0_2_0_alert0>;
++					cooling-device = <&remoteproc_cdsp0 QCOM_TMD_CDSP_SW
++							 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
++				};
++			};
+ 		};
+ 
+ 		nsp-1-0-0-thermal {
+@@ -8820,7 +8849,7 @@ nsp-1-0-0-thermal {
+ 			thermal-sensors = <&tsens2 8>;
+ 
+ 			trips {
+-				trip-point0 {
++				nsp_1_0_0_alert0: trip-point0 {
+ 					temperature = <105000>;
+ 					hysteresis = <5000>;
+ 					type = "passive";
+@@ -8832,6 +8861,14 @@ trip-point1 {
+ 					type = "passive";
+ 				};
+ 			};
++
++			cooling-maps {
++				map0 {
++					trip = <&nsp_1_0_0_alert0>;
++					cooling-device = <&remoteproc_cdsp1 QCOM_TMD_CDSP_SW
++							 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
++				};
++			};
+ 		};
+ 
+ 		nsp-1-1-0-thermal {
+@@ -8840,7 +8877,7 @@ nsp-1-1-0-thermal {
+ 			thermal-sensors = <&tsens2 9>;
+ 
+ 			trips {
+-				trip-point0 {
++				nsp_1_1_0_alert0: trip-point0 {
+ 					temperature = <105000>;
+ 					hysteresis = <5000>;
+ 					type = "passive";
+@@ -8852,6 +8889,14 @@ trip-point1 {
+ 					type = "passive";
+ 				};
+ 			};
++
++			cooling-maps {
++				map0 {
++					trip = <&nsp_1_1_0_alert0>;
++					cooling-device = <&remoteproc_cdsp1 QCOM_TMD_CDSP_SW
++							 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
++				};
++			};
+ 		};
+ 
+ 		nsp-1-2-0-thermal {
+@@ -8860,7 +8905,7 @@ nsp-1-2-0-thermal {
+ 			thermal-sensors = <&tsens2 10>;
+ 
+ 			trips {
+-				trip-point0 {
++				nsp_1_2_0_alert0: trip-point0 {
+ 					temperature = <105000>;
+ 					hysteresis = <5000>;
+ 					type = "passive";
+@@ -8872,6 +8917,14 @@ trip-point1 {
+ 					type = "passive";
+ 				};
+ 			};
++
++			cooling-maps {
++				map0 {
++					trip = <&nsp_1_2_0_alert0>;
++					cooling-device = <&remoteproc_cdsp1 QCOM_TMD_CDSP_SW
++							 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
++				};
++			};
+ 		};
+ 
+ 		ddrss-0-thermal {
+@@ -9014,7 +9067,7 @@ nsp-0-0-1-thermal {
+ 			thermal-sensors = <&tsens3 5>;
+ 
+ 			trips {
+-				trip-point0 {
++				nsp_0_0_1_alert0: trip-point0 {
+ 					temperature = <105000>;
+ 					hysteresis = <5000>;
+ 					type = "passive";
+@@ -9026,6 +9079,14 @@ trip-point1 {
+ 					type = "passive";
+ 				};
+ 			};
++
++			cooling-maps {
++				map0 {
++					trip = <&nsp_0_0_1_alert0>;
++					cooling-device = <&remoteproc_cdsp0 QCOM_TMD_CDSP_SW
++							 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
++				};
++			};
+ 		};
+ 
+ 		nsp-0-1-1-thermal {
+@@ -9034,7 +9095,7 @@ nsp-0-1-1-thermal {
+ 			thermal-sensors = <&tsens3 6>;
+ 
+ 			trips {
+-				trip-point0 {
++				nsp_0_1_1_alert0: trip-point0 {
+ 					temperature = <105000>;
+ 					hysteresis = <5000>;
+ 					type = "passive";
+@@ -9046,6 +9107,14 @@ trip-point1 {
+ 					type = "passive";
+ 				};
+ 			};
++
++			cooling-maps {
++				map0 {
++					trip = <&nsp_0_1_1_alert0>;
++					cooling-device = <&remoteproc_cdsp0 QCOM_TMD_CDSP_SW
++							 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
++				};
++			};
+ 		};
+ 
+ 		nsp-0-2-1-thermal {
+@@ -9054,7 +9123,7 @@ nsp-0-2-1-thermal {
+ 			thermal-sensors = <&tsens3 7>;
+ 
+ 			trips {
+-				trip-point0 {
++				nsp_0_2_1_alert0: trip-point0 {
+ 					temperature = <105000>;
+ 					hysteresis = <5000>;
+ 					type = "passive";
+@@ -9066,6 +9135,14 @@ trip-point1 {
+ 					type = "passive";
+ 				};
+ 			};
++
++			cooling-maps {
++				map0 {
++					trip = <&nsp_0_2_1_alert0>;
++					cooling-device = <&remoteproc_cdsp0 QCOM_TMD_CDSP_SW
++							 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
++				};
++			};
+ 		};
+ 
+ 		nsp-1-0-1-thermal {
+@@ -9074,7 +9151,7 @@ nsp-1-0-1-thermal {
+ 			thermal-sensors = <&tsens3 8>;
+ 
+ 			trips {
+-				trip-point0 {
++				nsp_1_0_1_alert0: trip-point0 {
+ 					temperature = <105000>;
+ 					hysteresis = <5000>;
+ 					type = "passive";
+@@ -9086,6 +9163,14 @@ trip-point1 {
+ 					type = "passive";
+ 				};
+ 			};
++
++			cooling-maps {
++				map0 {
++					trip = <&nsp_1_0_1_alert0>;
++					cooling-device = <&remoteproc_cdsp1 QCOM_TMD_CDSP_SW
++							 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
++				};
++			};
+ 		};
+ 
+ 		nsp-1-1-1-thermal {
+@@ -9094,7 +9179,7 @@ nsp-1-1-1-thermal {
+ 			thermal-sensors = <&tsens3 9>;
+ 
+ 			trips {
+-				trip-point0 {
++				nsp_1_1_1_alert0: trip-point0 {
+ 					temperature = <105000>;
+ 					hysteresis = <5000>;
+ 					type = "passive";
+@@ -9106,6 +9191,14 @@ trip-point1 {
+ 					type = "passive";
+ 				};
+ 			};
++
++			cooling-maps {
++				map0 {
++					trip = <&nsp_1_1_1_alert0>;
++					cooling-device = <&remoteproc_cdsp1 QCOM_TMD_CDSP_SW
++							 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
++				};
++			};
+ 		};
+ 
+ 		nsp-1-2-1-thermal {
+@@ -9114,7 +9207,7 @@ nsp-1-2-1-thermal {
+ 			thermal-sensors = <&tsens3 10>;
+ 
+ 			trips {
+-				trip-point0 {
++				nsp_1_2_1_alert0: trip-point0 {
+ 					temperature = <105000>;
+ 					hysteresis = <5000>;
+ 					type = "passive";
+@@ -9126,6 +9219,14 @@ trip-point1 {
+ 					type = "passive";
+ 				};
+ 			};
++
++			cooling-maps {
++				map0 {
++					trip = <&nsp_1_2_1_alert0>;
++					cooling-device = <&remoteproc_cdsp1 QCOM_TMD_CDSP_SW
++							 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
++				};
++			};
+ 		};
+ 
+ 		ddrss-1-thermal {
 
 -- 
 2.34.1
