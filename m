@@ -1,185 +1,176 @@
-Received: from mail-ej1-f54.google.com (mail-ej1-f54.google.com [209.85.218.54])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 822E33ED5C7
-	for <linux-pm@vger.kernel.org>; Fri, 31 Jul 2026 11:20:54 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.218.54
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 43C123E3DAF
+	for <linux-pm@vger.kernel.org>; Fri, 31 Jul 2026 11:35:47 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1785496856; cv=none; b=f2Lhsrd7T9PkLpSnJF/sh2E4ymz2g/1lDRa+qhgCwM4Qcow4ixQ7hCYdp2uaX1mWpCMof1OqvBWvu7nro2d3NlUEvFXxbzZlK29zJpO3Ysp4NBcFm0a/jAUo+0l7lqlK2UoPgN4SbXJJ1V5vNSiwlZenyiOxrJtErF0XsPdif8I=
+	t=1785497748; cv=none; b=jr9XBJG4z1teLwfuiiQt4uqz5too1DYIbNgMypk1FsriX4oLDeyXOrJbvd075lNreJ/LtfNQjjT4SRPeWfnVJ4Rsc39gbljG5eBn0pt5crSM8YEQ5gDvsgch4dr62YQN1aGUCF9c6dpxPObeCGECyOdc9gIR0HyJG2V5Q/FE90g=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1785496856; c=relaxed/simple;
-	bh=bhq3MzeqOsauBzIWfBC+LweuxxY/XXQ4w63ZT64jvPM=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=Bs+G+xY3nOLN+Js+6cFgoZEpW3cxQBYL4Tt34ildIcuB5h9wzLQHZ6WhPoiqdsdh+/0l+BwN948Jzd0hJGmVLFI9m54DxDNK/REsObBCMWa14pEIIvYloSvI7CvmRx7RTzoChCJisc7hI7RkE/nrbJk+v9QHziAs7Vw/pvin1EM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=dmVncrkE; arc=none smtp.client-ip=209.85.218.54
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
+	s=arc-20240116; t=1785497748; c=relaxed/simple;
+	bh=plfZ4FsucgnFmYB+WLfqiTzRuqQ1f/GHyVysSGWQv6o=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=DfubkOfcIfwxUPi4K8nA03y8Yi3s+cTvv1D72zYU+RTDZUa8mc5xk4aIYPcIlZ7UXtpvXIFjlH5YeO+uUl9Oq2LFxeIik4K3a/QMXQ8AvUKA9RankkiteuLOAg1qsRxmjpE2o0sYJEHCibmRj8xgekKZGLXXLlASG4ZHIoSA5KU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=kxrN1WAD; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=SjyigWmW; arc=none smtp.client-ip=205.220.168.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="dmVncrkE"
-Received: by mail-ej1-f54.google.com with SMTP id a640c23a62f3a-c1fbe461f59so125498666b.2
-        for <linux-pm@vger.kernel.org>; Fri, 31 Jul 2026 04:20:54 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="kxrN1WAD";
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="SjyigWmW"
+Received: from pps.filterd (m0279865.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 66VBMFuI145710
+	for <linux-pm@vger.kernel.org>; Fri, 31 Jul 2026 11:35:46 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
+	SntzIFPR+4FwE76k9egHNUQnO0nVT2pXTp/Kx+qC7ww=; b=kxrN1WADw9DCh02h
+	SQ5T1fm+EggEMTO0j14VZTvKWSZnDbMroGMOUD7c7xWRPqbPFFyQ81tGnFoIQps2
+	9Kx2MCNHisvGxAozCoWt8gcLsscBornjTPHFspVsU3oYOgJbS1rlrTL8aZNaznHQ
+	Nky6SDLbN3YFUdT7DzyF4jMDBZoWRI9VgmrsFhL7Z8QsxnkLX5jI/yBK++NhDN/H
+	0DyH0Iuw4a8UnAQDv71eSAEFWN6krXrotYlDRv66eDLXr6fd5Ss+CL959fks1Mah
+	Rh0e1TaWWNpPaiwoU0vJnpoMiob2U0oHNNlHA7SwBzQLbQ1Mr+BVHanKQOpx1XD7
+	NlSLLQ==
+Received: from mail-qt1-f200.google.com (mail-qt1-f200.google.com [209.85.160.200])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4frt3t06y1-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <linux-pm@vger.kernel.org>; Fri, 31 Jul 2026 11:35:42 +0000 (GMT)
+Received: by mail-qt1-f200.google.com with SMTP id d75a77b69052e-51bfa45b280so1365121cf.3
+        for <linux-pm@vger.kernel.org>; Fri, 31 Jul 2026 04:35:42 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1785496853; x=1786101653; darn=vger.kernel.org;
-        h=in-reply-to:content-transfer-encoding:content-disposition
-         :content-type:mime-version:references:message-id:subject:cc:to:from
-         :date:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=bzkNS7AH3AQpIYPHQeQ9hpg4r1cVjOJtrFQ4q2xajzU=;
-        b=dmVncrkEQMeZ3LCEtrYL7CKtvI9z3zNHGLiZrU4uVjApYP+2LAbk6nesi/bE8VH9Ku
-         Pdz+s/ZWQKVRlwGNRKxLlmHqvoId39fwxRp+ju/k9w0tkNvwwKw/7k2dsvnFByGknyb5
-         6ZSHtJkGMFJsfKI2lJLXqGC/ewN7t/2+vW1qB3/JLlnXq2MUQQZLbipQGZNVs1HmSTre
-         s6GdXVTtawgh+wv3dZMEad0Q5zl5IYOmgRGOFFKo6XHOIeOApbMioQ8axdw3b+VDGGSG
-         nxVqUhpg+LqSTbjjrNFu3XUItIdvf0jz5CNbQ/h6l+UoGwQTlAZFnr9umE3F/oaF+Yhs
-         sseA==
+        d=oss.qualcomm.com; s=google; t=1785497741; x=1786102541; darn=vger.kernel.org;
+        h=content-transfer-encoding:content-type:in-reply-to:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=SntzIFPR+4FwE76k9egHNUQnO0nVT2pXTp/Kx+qC7ww=;
+        b=SjyigWmWGA5cFtSY1uZaf2AysLmzLSaGEBGx5qZtx8oZBlv96/QXdS+AzzkP+hh+Lp
+         4SELrDpm0JjfUbavF9pvGWixLuiu1+1anemdD1gC/4OdgVvG/lpxpuavmBqoy29IUsxH
+         Gxmvkb2JxNvY+8vta8wgM7v55BdzJ0nNcgvAlkG3jJZ58aNawLC/PCKeaWNskGL9GcO5
+         mPj7YVTwFpgB1pM5qWQpsk6OB6vEWaGjvcHAWPsKyaSNZPXgjY6h5GVlXse0fjsB1ysy
+         985y4go7UyDGnLT/4X56R+e30qx4vBXLeIpuhjX/jHF2Ry7FuUi9gralOxP44jbV08KT
+         Iz+w==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1785496853; x=1786101653;
-        h=in-reply-to:content-transfer-encoding:content-disposition
-         :content-type:mime-version:references:message-id:subject:cc:to:from
-         :date:x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to:content-type;
-        bh=bzkNS7AH3AQpIYPHQeQ9hpg4r1cVjOJtrFQ4q2xajzU=;
-        b=dbTfnh7La0LHNg/J7A3DMAyLuy+0HRaoZAjwdl3ilsVUxs2mnnERJfhvjjrssx2g40
-         IpoUJZoga4djwCxKXoP1cb5w998GGrw9KeJgzuXZPY16cIDNUwWlgyrSCv0lcap/QdJy
-         DITI8ghvGx3kdv+cfVjcT2UxYpELSdiBJuKVuaw9MOzmwkNhUSy/cTjwVwWoNAwLWwQp
-         I7OLg327fx6PYEITFw4yXbtGS2R3CkY12F3T/MijcCdN9QAiLuJ3Zmz+kzh6on6fIg7m
-         os0clSZ88MYCpaizIrt4bHBqSYmZLIiKc6N5g6DtocMAPEtnTADPbE/rKaWyNMkVTkJn
-         J5og==
-X-Forwarded-Encrypted: i=1; AHgh+RrzQyWwf3D5GkEQmNUToh4LeMYqNWNbUtiMgQuz3AYN0d3xvY7h9wUeMP10M530sAg7RQ6mghsFCg==@vger.kernel.org
-X-Gm-Message-State: AOJu0YzWrZ/zvR2qrlGUxLgRyy5iG+HTr5qq0PVsGFjmsX9m+2iHfzFf
-	JD8NKoiObmyFLab8fUNULkdogVunGRqpAnQDsPuZdabwYzCRpW9mXk8z0qr9XHZIJLA=
-X-Gm-Gg: AR+sD11/QpZm8wuzldKSym7hKAUGzRZjDfStL72bkfgo4Gk16MdqTz5LUKugMJCdxd6
-	l2k8RSB9CHQmNvUyyfLU7DHfenG25sjXf2WlWzR8i2ZzHE8wbC1kUjgxDv2GlkPOO5NlTaHIMsb
-	h20yCiDNXaAzCJiHWcoc5C1bD9ChXBCH1fEq1VdttuYGczNG0mFhR/E/vW6kDNvLKbnNp4snXy+
-	qrM4WVisKDlJT5N+yXEGj+LmAL1Mxzl2D1d2jICMW3O9jNeMItEfzbR4vGfB2HXHuvozUGm18n/
-	0XhhW12RSIi681bk7y9zPbGsOqEINpMrses8/aQ4NvSzUjiFjpN9p1GKx0lby4qovO//xABs0MZ
-	tfI3Bp5r6w1hsEd+7OHo9J9VQT07arT7tMN/bCF5VkzZ13JvHsuvgBhR38YbnBEubRDfVuHY7kZ
-	xiMMaovOIv+mjJmLRwgZDe2+WDkSZfgyNwJarBXV5sZAx4v2JakoZMgMprKLfWTsj3U+c1IlEy
-X-Received: by 2002:a17:907:1ca4:b0:c12:6dbf:4a80 with SMTP id a640c23a62f3a-c1fd295ec35mr86137366b.63.1785496852551;
-        Fri, 31 Jul 2026 04:20:52 -0700 (PDT)
-Received: from linaro.org ([2a02:2454:ff24:7210:4eea:ae3f:f2e0:1952])
-        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-c1fd3cc331fsm128489966b.28.2026.07.31.04.20.51
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 31 Jul 2026 04:20:52 -0700 (PDT)
-Date: Fri, 31 Jul 2026 13:20:48 +0200
-From: Stephan Gerhold <stephan.gerhold@linaro.org>
-To: Gaurav Kohli <gaurav.kohli@oss.qualcomm.com>
-Cc: Bjorn Andersson <andersson@kernel.org>,
-	Mathieu Poirier <mathieu.poirier@linaro.org>,
-	Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>,
-	Amit Kucheria <amit.kucheria@oss.qualcomm.com>,
-	Konrad Dybcio <konradybcio@kernel.org>,
-	"Rafael J. Wysocki" <rafael@kernel.org>,
-	Daniel Lezcano <daniel.lezcano@kernel.org>,
-	Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>,
-	Manivannan Sadhasivam <mani@kernel.org>,
-	Kees Cook <kees@kernel.org>,
-	"Gustavo A. R. Silva" <gustavoars@kernel.org>,
-	cros-qcom-dts-watchers@chromium.org, linux-arm-msm@vger.kernel.org,
-	linux-remoteproc@vger.kernel.org, devicetree@vger.kernel.org,
-	linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
-	linux-hardening@vger.kernel.org, manaf.pallikunhi@oss.qualcomm.com,
-	Dipa Ramesh Mantre <dipa.mantre@oss.qualcomm.com>,
-	Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>
-Subject: Re: [PATCH v7 9/9] arm64: dts: qcom: hamoa: Enable CDSP cooling
-Message-ID: <amyFARId5K-Izco1@linaro.org>
-References: <20260731-b4-qmi-tmd-v7-0-3befd44403d5@oss.qualcomm.com>
- <20260731-b4-qmi-tmd-v7-9-3befd44403d5@oss.qualcomm.com>
+        d=1e100.net; s=20251104; t=1785497741; x=1786102541;
+        h=content-transfer-encoding:content-type:in-reply-to:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=SntzIFPR+4FwE76k9egHNUQnO0nVT2pXTp/Kx+qC7ww=;
+        b=m2pUP42weejq79h3O2EFlacr71p443ymP8fxSqj5pmlRdnjth9jh4u3GI4KdysTC34
+         GMhKitwZSgE0+OTfS2ZLZgQFy45/L2yAyLSKxjqx43OWpjcs8bD0KAEaag9HBvl/tIGs
+         3WjDOtU779s8BfAe4VRgnx0xiIYxfST2JLzahD0b+xS4Up5F8aPYe7XTBez4j0G7uQ7k
+         Y8Lfasp8HPSoLaDGDrybr26qRY8+Dik4ZBRYn5Tvn6oAxlgdfHyIEzx3+4TVPBB4oqtw
+         nKhnXAyHxQeHg4R+F3LjWgyqD3m2s1xyAcZ1lE3vsZ1aDxM2Waq7nhP2QxzPYDZHTrDi
+         GLWw==
+X-Gm-Message-State: AOJu0YzO6nr9LOon31Y3DaVjmdArjVuZX+iNUgjw0AImhe7USC3YadHE
+	XpAgy6lnOx9i0bB01eaEZQDTPhGdMTz6Poh7uw0eVfrqvWKdhh9rJxH2/rL88o3D3+lbD5vsQmg
+	8kw/GzcxrZZpt9CVOhfCov5OqZvC3YEOGDhdVu7HgCv5JlUPQtJpx/uS4MAX0lw==
+X-Gm-Gg: AR+sD13SmctmqHjAkT8ALtJ5M7Tdh61Xd/QPrmGEdt7gaYydTAt1w/oQIz+kTz5OAKf
+	JMc+2eJKGu+nzmx2/Kjo07Hmk1/0yqnz4+hI2K5YGCSHAXxjfg9KXGZ4+JoQaUi6smgGGIlrcan
+	Q9pw/9AzsC2Vx9F+nR+yJdB6GNCVvCW98SGWm80RNuZv5BBjP7psDeidgTdUGliv9YeSzw6jLhQ
+	AHGFyq7W3h8nF2Hahmd6ow15qU0+UHyahbaJZnjsLQXKq8wPeLRMGBTfeXaucXRkZF/PoUsJdl7
+	6TJmHNzDYUJ68coj2a3MTvwcDxvu/0CBujHNXQatTuDrVDk8VuHI1rd55qnIIG2Z8VoDVfv78qy
+	DKpyOcUQTmQumEunqwO4vKbrG
+X-Received: by 2002:a05:622a:6bd0:20b0:51c:2324:666 with SMTP id d75a77b69052e-52b4b164ab7mr15392151cf.3.1785497740976;
+        Fri, 31 Jul 2026 04:35:40 -0700 (PDT)
+X-Received: by 2002:a05:622a:6bd0:20b0:51c:2324:666 with SMTP id d75a77b69052e-52b4b164ab7mr15391851cf.3.1785497740570;
+        Fri, 31 Jul 2026 04:35:40 -0700 (PDT)
+Received: from [192.168.120.193] ([178.235.128.140])
+        by smtp.gmail.com with ESMTPSA id 4fb4d7f45d1cf-6a09c664713sm1227143a12.30.2026.07.31.04.35.38
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Fri, 31 Jul 2026 04:35:39 -0700 (PDT)
+Message-ID: <c5a3a4e3-d78c-46ea-a638-2b6e37d7efbf@oss.qualcomm.com>
+Date: Fri, 31 Jul 2026 13:35:38 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] pmdomain: core: Wait for device link removals before
+ dropping genpd->dev
+To: jaseg <git@jaseg.de>, Ulf Hansson <ulfh@kernel.org>,
+        Abel Vesa <abelvesa@kernel.org>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-arm-msm@vger.kernel.org,
+        =?UTF-8?Q?Jan_Sebastian_G=C3=B6tte?=
+ <linux@jaseg.de>,
+        stable@vger.kernel.org
+References: <20260731102147.127082-1-git@jaseg.de>
+Content-Language: en-US
+From: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
+In-Reply-To: <20260731102147.127082-1-git@jaseg.de>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <20260731-b4-qmi-tmd-v7-9-3befd44403d5@oss.qualcomm.com>
+X-Authority-Analysis: v=2.4 cv=dNKWXuZb c=1 sm=1 tr=0 ts=6a6c8892 cx=c_pps
+ a=JbAStetqSzwMeJznSMzCyw==:117 a=PRfkaYvzSr8QmIIGAkY2Sg==:17
+ a=IkcTkHD0fZMA:10 a=RAioF0-LDSMA:10 a=s4-Qcg_JpJYA:10
+ a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=Um2Pa8k9VHT-vaBCBUpS:22
+ a=LNI6Y7vA10jdH1asw2gA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
+ a=uxP6HrT_eTzRwkO_Te1X:22
+X-Proofpoint-GUID: 3X9UaX_tTU672f7ERqdjs1pVXM73e-4W
+X-Proofpoint-Spam-Info: AW1haW4tMjYwNzMxMDA4NyBTYWx0ZWRfX5ndBINPBxsje
+ ih9kVi9DfoNzjiALlkY7pytCMeJlFc3LxOjsbr0ji/vNTK0iWsBnEYBK8OqndqiuqkjHuvELBAN
+ wgLPyBuTyBH9r0CP00gygn/qGUply1M=
+X-Proofpoint-ORIG-GUID: 3X9UaX_tTU672f7ERqdjs1pVXM73e-4W
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzMxMDA4NyBTYWx0ZWRfXwYmln1BpuoIA
+ CNMbEou2RWVDp696mOWYjFOoVST1jB24KIXIXIVSLKITCbNDK9OipmgdcED0xmUkznxFBUVl8su
+ N01N5hz+eeCoo7YlcO0Pz3rc6aRBsMSjoZWaw+ymtoos3819Yi9blkxpGA/zVd25tgIlC3iWjAO
+ wDIsvsEQ7kCZREcKxXPJ0yDdi2/BokLsubVzctsoT4cLOgFkDvOmoxgiH3egNDExqw8dWvGztAf
+ DBeqKm3ha5XG+/oDb1ZbIp/mDRMly5Ao/X6G6MtewVzfhz28mLFGF6fZfB4KDJpekv8RtWdAovq
+ z9YDzr5rveFQH1wsrjNlXZ0MP2nMTKBijlMM7ncwfWfb3qDg22Hxq6Vry681nb1ftaClkrDMMvt
+ D/pVAbIrlZFXxbHFTPycNBVH/c+tSGIdSKng/Ge2BhJiCT82eksuHB3OcTkCqKEMHIeiVpYMCpJ
+ qenE9q+atzcLUqlqKzg==
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.134,FMLib:17.12.100.49
+ definitions=2026-07-31_04,2026-07-30_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ suspectscore=0 impostorscore=0 bulkscore=0 spamscore=0 phishscore=0
+ priorityscore=1501 malwarescore=0 clxscore=1015 adultscore=0
+ lowpriorityscore=0 classifier=typeunknown authscore=0 authtc= authcc=
+ route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2606150000
+ definitions=main-2607310087
 
-On Fri, Jul 31, 2026 at 04:03:49PM +0530, Gaurav Kohli wrote:
-> From: Dipa Ramesh Mantre <dipa.mantre@oss.qualcomm.com>
+On 7/31/26 12:21 PM, jaseg wrote:
+> From: Jan Sebastian GÃ¶tte <linux@jaseg.de>
 > 
-> Unlike the CPU, the CDSP does not throttle its speed automatically
-> when it reaches high temperatures in hamoa.
+> genpd->dev is embedded in struct generic_pm_domain and its release
+> function is empty, so providers free the containing genpd with a plain
+> kfree() once of_genpd_remove_last() returns, ignoring its refcount.
 > 
-> Set up CDSP cooling by throttling the cdsp, when it reaches 95°C.
+> Since genpd->dev is registered on the genpd provider bus, fw_devlink
+> creates device links to it, and those are torn down asynchronously.
+> Nothing made genpd_remove() wait for those teardowns, so the provider
+> could free the memory backing genpd->dev while the queued workers still
+> used it.
 > 
-> Add polling-delay-passive so the governor periodically evaluates
-> the zone during passive cooling and steps up cooling levels when
-> temperature stabilizes below the next trip.
+> This is reachable at boot on qrb2210, where the firmware rejects PC mode
+> and psci_cpuidle_domain_probe() removes all the CPU PM domains before
+> returning -EPROBE_DEFER. The bug is asymptomatic on defconfig, but shows
+> up when enabling KASAN or INIT_ON_FREE_DEFAULT_ON. In some builds, it
+> causes the kernel to crash a few hundred ms into the boot.
 > 
-
-Would be good to mention why you are treating hamoa-iot-evk differently.
-
-> Signed-off-by: Dipa Ramesh Mantre <dipa.mantre@oss.qualcomm.com>
-> Reviewed-by: Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>
-> Signed-off-by: Gaurav Kohli <gaurav.kohli@oss.qualcomm.com>
-> ---
->  arch/arm64/boot/dts/qcom/hamoa-iot-evk.dts | 32 +++++++++++++++
->  arch/arm64/boot/dts/qcom/hamoa.dtsi        | 63 ++++++++++++++++++++++++++++++
->  2 files changed, 95 insertions(+)
+> Call device_link_wait_removal() before dropping the final reference. All
+> link removal work is queued from device_del(), via
+> device_links_driver_cleanup() and device_links_purge(), which precedes
+> genpd_free_data(), and flush_workqueue() waits for it to complete.
 > 
-> diff --git a/arch/arm64/boot/dts/qcom/hamoa-iot-evk.dts b/arch/arm64/boot/dts/qcom/hamoa-iot-evk.dts
-> index 9fa86bb6438e..a146be1cb5fb 100644
-> --- a/arch/arm64/boot/dts/qcom/hamoa-iot-evk.dts
-> +++ b/arch/arm64/boot/dts/qcom/hamoa-iot-evk.dts
-> @@ -1684,4 +1684,36 @@ trip-point0 {
->  			};
->  		};
->  	};
-> +
-> +	nsp0-thermal {
-> +		trips {
-> +			trip-point1 {
-> +				temperature = <105000>;
-> +			};
-> +		};
-> +	};
-> +
-> +	nsp1-thermal {
-> +		trips {
-> +			trip-point1 {
-> +				temperature = <105000>;
-> +			};
-> +		};
-> +	};
-> +
-> +	nsp2-thermal {
-> +		trips {
-> +			trip-point1 {
-> +				temperature = <105000>;
-> +			};
-> +		};
-> +	};
-> +
-> +	nsp3-thermal {
-> +		trips {
-> +			trip-point1 {
-> +				temperature = <105000>;
-> +			};
-> +		};
-> +	};
->  };
+> Note: This patch was LLM-assisted. I reproduced the issue and tested
+> this patch on hardware, and I did my best to verify it by hand. However,
+> I'm far from an expert in pmdomain, so YMMV.
 
-Please avoid overriding node values like this... One quick rename of one
-of the involved nodes and this will be silently broken without compile
-error. Nowadays dtbs_check will *probably* catch these, but if you
-override values using the label reference you would notice it
-immediately when compiling.
+Thanks for the submission!
 
-All those nodes already have a label you can use:
+I'm not an expert in pmdomain either, but it seems to make sense
 
-&nsp0_alert0 {
-	temperature = <105000>;
-};
 
-&nsp1_alert0 {
-	temperature = <105000>;
-};
+For future contributions, it's best to keep things that you wouldn't
+necessarily want to preserve in the git log under the --- line (so that
+it still shows up in the patch but it's removed during `git am`)
 
-If the same pattern is already used for other thermal overrides in
-hamoa-iot-evk.dts, it would be good to prepend a patch to fix those too.
+Also, your sender identity doesn't match the patch author (i.e. your
+full name shows up in the From: header of the patch but not in the
+email), but that's just cosmetic
 
-Thanks,
-Stephan
+Konrad
