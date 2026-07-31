@@ -1,144 +1,133 @@
 Received: from sender4-op-o11.zoho.com (sender4-op-o11.zoho.com [136.143.188.11])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 80149345ED3;
-	Fri, 31 Jul 2026 21:30:13 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 127EF1D95A3;
+	Fri, 31 Jul 2026 21:34:08 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=136.143.188.11
 ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1785533415; cv=pass; b=eG+985PRYrUrzLuyurD6Bk8uWDpJLckktMKxWp/o7mIh+hS53MPsZxXvMtwwdCKSLOl1k+wvZ2Hac/pgnte55YfWnI8FshLAECqGZVwuPaNahwbmNQsZ23zrqpVsLSGnMu7yxUtu5xwQ1leeFI8YsgF+eoWnDQjQXvGIJFyOLL4=
+	t=1785533650; cv=pass; b=rZb6ujd5xb/grIUW9InKwRbrLFRTs5xfNr+Wi4Iewwui9Tm0HCApkzyJ0TN7w7tSQBWmglALcz2n3lYDLy2FSDmVL9yI1ngYLsPuDLZHN4kTVqakoSqKQcYE3Rr1UCNZwLI4qGg4QQgHbygelY8wgJt7IoYYNXLZiZMSL3IGPLE=
 ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1785533415; c=relaxed/simple;
-	bh=FoRKKwIXFm7vL+HuTHo6DfVSvRV6CQlL5i9RWIu6LrQ=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=brD74pWjL+QlpU8kpoqScrXobd+X+YJc7jUWri848/uD6DOiOH8AKVKBkqq1U71I0zebcGjXDwk17x512FGB+MGshZY5QqPH261uQ8BwvjY6qxQeL7O7e5aOOCUzMbuZfzLvX2x2TPE28IImqqNSBDB6dERI97QSUhrldjeIKBU=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (1024-bit key) header.d=collabora.com header.i=sebastian.reichel@collabora.com header.b=Bfc6vPBE; arc=pass smtp.client-ip=136.143.188.11
+	s=arc-20240116; t=1785533650; c=relaxed/simple;
+	bh=28SYLaxEswFYrX7pB/BBBjg3ucFfM5uxTXPR0tHPjcc=;
+	h=Content-Type:Mime-Version:Subject:From:In-Reply-To:Date:Cc:
+	 Message-Id:References:To; b=J0pUB0iAWulU8qW0CUexzJKDLZrdmsduhvL3BFa4jfyzTcTnZkoKM+n2rz4+R64+uAUgHrLBqRJNidn2MnIXh58xD52DBhOH2d/I42TLxg+RvjxPaXRV1z0ZKp5vvTYt+8V7m7NDqaDnl5dwydrQsaKnmLHGDDVK93TfKttji8o=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (1024-bit key) header.d=collabora.com header.i=daniel.almeida@collabora.com header.b=hv8bf7ml; arc=pass smtp.client-ip=136.143.188.11
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=collabora.com header.i=sebastian.reichel@collabora.com header.b="Bfc6vPBE"
-ARC-Seal: i=1; a=rsa-sha256; t=1785533401; cv=none; 
+	dkim=pass (1024-bit key) header.d=collabora.com header.i=daniel.almeida@collabora.com header.b="hv8bf7ml"
+ARC-Seal: i=1; a=rsa-sha256; t=1785533593; cv=none; 
 	d=zohomail.com; s=zohoarc; 
-	b=CzRxDK1mjwfPwHHpsKnM9vcjFy/JlbkUNnnkBdZ0nPbBZ7AlvhYBEhsQrdO9C75wD6GO7aLu1tdePqaikIr2eJ2ZeMJzYO7BhvUgV4SBODa5qlj/lWFqZQuA9oPoz/P0BS8iai4iLJadDKZ5cNGuPPq+YQ9Fj9SxQ4kAgxW6nGo=
+	b=gHWANFQFZoJJaYEhuKmaZUxWUFD+rkzqPNoml4H2CAPw9Eir1vP5sTf8FH55AQFSTqXbJsRM4yw6PQGOM3+kOK3r7L8MauTZbozYas9fQW65jLiuw5EycL0OsVg5TO4UsvIAt6uzxShq3/IXxF0gXXTGZxTO6NkOGsqXv11V2UU=
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=zohomail.com; s=zohoarc; 
-	t=1785533401; h=Content-Type:Cc:Cc:Date:Date:From:From:In-Reply-To:MIME-Version:Message-ID:Subject:Subject:To:To:Message-Id:Reply-To; 
-	bh=HDQFriGFDmR+oMWFFaGJL3URfqf634GVEENYJlsoSyc=; 
-	b=RHMg57EjBBRIFiy+uTg/mqiFGG9qLROECI6ZIIbeKU2ZRVJv4DjH6OYdRiRr5UaiTII5nfJAyg69KYHATr+GZIFHlfO866JXkSuZwecZsupD2Rlqws0MYeSJPl8yNBn3Qa7h4rSODjeoTdIMMiHFRF0ZZSobU694QWpyRmtfF2w=
+	t=1785533593; h=Content-Type:Content-Transfer-Encoding:Cc:Cc:Date:Date:From:From:In-Reply-To:MIME-Version:Message-ID:Subject:Subject:To:To:Message-Id:Reply-To; 
+	bh=28SYLaxEswFYrX7pB/BBBjg3ucFfM5uxTXPR0tHPjcc=; 
+	b=i9xAT7I6wpEq5+55Y74aQJDsqPQN2QZYJAo6dyuwFyrXGYK6n0G4QS3yvwaIgiUukMsstV9j9UnOUru03iQu3tpTSKc8NBqBw12A1m0IaT/lICrjJ2XXiPUwRW0CKH/UhDz8g4VaX7/e2TkzPCXoFT47bwxxweCbYOXkFnNFTUM=
 ARC-Authentication-Results: i=1; mx.zohomail.com;
 	dkim=pass  header.i=collabora.com;
-	spf=pass  smtp.mailfrom=sebastian.reichel@collabora.com;
-	dmarc=pass header.from=<sebastian.reichel@collabora.com>
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; t=1785533401;
-	s=zohomail; d=collabora.com; i=sebastian.reichel@collabora.com;
-	h=Date:Date:From:From:To:To:Cc:Cc:Subject:Subject:Message-ID:MIME-Version:Content-Type:In-Reply-To:Message-Id:Reply-To;
-	bh=HDQFriGFDmR+oMWFFaGJL3URfqf634GVEENYJlsoSyc=;
-	b=Bfc6vPBE8qEB+7MyXYIpScVHKU1fMnmIV4hYkOZy2bwU7vIxlF2KxHpZSfobDSmv
-	jeVZJS8Pb+W1mLHpRif13DvaqRH9SuQxpcdcZr1aGjyIveee+2h11FDETU3jVl2y31R
-	R6AL4n+O3KYIbxOAt8nB77qgbjxjmLW42EPhw6KQ=
-Received: by mx.zohomail.com with SMTPS id 1785533398963541.1363057424423;
-	Fri, 31 Jul 2026 14:29:58 -0700 (PDT)
-Received: by venus (Postfix, from userid 1000)
-	id 1919318029A; Fri, 31 Jul 2026 23:29:56 +0200 (CEST)
-Date: Fri, 31 Jul 2026 23:29:56 +0200
-From: Sebastian Reichel <sebastian.reichel@collabora.com>
-To: Fan Wu <fanwu01@zju.edu.cn>
-Cc: linux-pm@vger.kernel.org, laurentiu.palcu@intel.com, krzk@kernel.org, 
-	linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Subject: Re: [PATCH] power: supply: bq24257: fix use-after-free on remove
-Message-ID: <am0ShrO_o3lJ_V8L@venus>
-References: <20260731143554.334179-1-fanwu01@zju.edu.cn>
+	spf=pass  smtp.mailfrom=daniel.almeida@collabora.com;
+	dmarc=pass header.from=<daniel.almeida@collabora.com>
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; t=1785533593;
+	s=zohomail; d=collabora.com; i=daniel.almeida@collabora.com;
+	h=Content-Type:Mime-Version:Subject:Subject:From:From:In-Reply-To:Date:Date:Cc:Cc:Content-Transfer-Encoding:Message-Id:Message-Id:To:To:Reply-To;
+	bh=28SYLaxEswFYrX7pB/BBBjg3ucFfM5uxTXPR0tHPjcc=;
+	b=hv8bf7mlLR3lRI+e3WrpA+6efQ42RwhE8qX5b9m1qEMxfc9CGh7FGc46xbl6ss+l
+	VAF4ZyymF+yxhahxdJCFv82nK+92hoPQyWArswJxbPIlUignAZgCeUgrBJk8aUD9AWe
+	bpwEq29KEJWbNIYk7JBR1AT6NZeaCco7hOSh9vog=
+Received: by mx.zohomail.com with SMTPS id 1785533591479424.44668881936855;
+	Fri, 31 Jul 2026 14:33:11 -0700 (PDT)
+Content-Type: text/plain;
+	charset=utf-8
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="6ohbx7ih6omxgklt"
-Content-Disposition: inline
-In-Reply-To: <20260731143554.334179-1-fanwu01@zju.edu.cn>
-X-Zoho-Virus-Status: 1
-X-Zoho-AV-Stamp: zmail-av-0.2.10.1.5.2/285.527.77
+Mime-Version: 1.0 (Mac OS X Mail 16.0 \(3826.700.81\))
+Subject: Re: [PATCH v5 0/4] Clk improvements
+From: Daniel Almeida <daniel.almeida@collabora.com>
+In-Reply-To: <20260731183735.15036-1-mhi@mailbox.org>
+Date: Fri, 31 Jul 2026 18:32:48 -0300
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>,
+ Viresh Kumar <viresh.kumar@linaro.org>,
+ Danilo Krummrich <dakr@kernel.org>,
+ Alice Ryhl <aliceryhl@google.com>,
+ Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+ Maxime Ripard <mripard@kernel.org>,
+ Thomas Zimmermann <tzimmermann@suse.de>,
+ David Airlie <airlied@gmail.com>,
+ Simona Vetter <simona@ffwll.ch>,
+ Drew Fustini <fustini@kernel.org>,
+ Guo Ren <guoren@kernel.org>,
+ Fu Wei <wefu@redhat.com>,
+ =?utf-8?Q?Uwe_Kleine-K=C3=B6nig?= <ukleinek@kernel.org>,
+ Michael Turquette <mturquette@baylibre.com>,
+ Stephen Boyd <sboyd@kernel.org>,
+ Miguel Ojeda <ojeda@kernel.org>,
+ Gary Guo <gary@garyguo.net>,
+ =?utf-8?Q?Bj=C3=B6rn_Roy_Baron?= <bjorn3_gh@protonmail.com>,
+ Benno Lossin <lossin@kernel.org>,
+ Andreas Hindborg <a.hindborg@kernel.org>,
+ Trevor Gross <tmgross@umich.edu>,
+ Michal Wilczynski <m.wilczynski@samsung.com>,
+ Boqun Feng <boqun@kernel.org>,
+ Boris Brezillon <boris.brezillon@collabora.com>,
+ =?utf-8?Q?Onur_=C3=96zkan?= <work@onurozkan.dev>,
+ linux-pm@vger.kernel.org,
+ linux-kernel@vger.kernel.org,
+ dri-devel@lists.freedesktop.org,
+ linux-riscv@lists.infradead.org,
+ linux-pwm@vger.kernel.org,
+ linux-clk@vger.kernel.org,
+ rust-for-linux@vger.kernel.org
+Content-Transfer-Encoding: quoted-printable
+Message-Id: <E20E4FD3-F4DA-4029-99F7-DB4F93AA2994@collabora.com>
+References: <20260706-clk-type-state-v5-0-67c5f326a16c@collabora.com>
+ <20260731183735.15036-1-mhi@mailbox.org>
+To: Maurice Hieronymus <mhi@mailbox.org>
+X-Mailer: Apple Mail (2.3826.700.81)
 X-ZohoMailClient: External
 
+Hi Maurice,
 
---6ohbx7ih6omxgklt
-Content-Type: text/plain; protected-headers=v1; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-Subject: Re: [PATCH] power: supply: bq24257: fix use-after-free on remove
-MIME-Version: 1.0
-
-Hi,
-
-On Fri, Jul 31, 2026 at 02:35:54PM +0000, Fan Wu wrote:
-> The STAT-pin interrupt is devm-managed, so it stays armed until the devm
-> cleanup that runs after remove() returns. remove() cancels
-> bq->iilimit_setup_work while the handler can still fire; the threaded
-> handler reschedules that work and dereferences bq, so the work runs
-> against freed memory once devm frees bq.
+> On 31 Jul 2026, at 15:37, Maurice Hieronymus <mhi@mailbox.org> wrote:
 >=20
-> Call devm_free_irq() before canceling the work so the handler is quiesced
-> and cannot reschedule it after the cancel.
+> Hi Daniel,
 >=20
-> Found by static analysis.
+> at your suggestion [0] I rebased my `clk_rate_exclusive_get()` binding =
+for
+> pwm-th1520 on top of this series, so it is now waiting on it to land. =
+As v5
+> has not seen any comments in the last few weeks, I wanted to ask what =
+the
+> current status is.
+
+Nobody has replied so far. I don=E2=80=99t think there are any further =
+comments.
+
 >=20
-> Fixes: 2219a935963e ("power_supply: Add TI BQ24257 charger driver")
-> Cc: stable@vger.kernel.org
-> Assisted-by: Codex:gpt-5.6
-> Signed-off-by: Fan Wu <fanwu01@zju.edu.cn>
-> ---
-
-Instead of this, which renders the device managed part of the IRQ
-request pointless, just make the delayed work also device
-managed and thus ordered correctly:
-
-1. Move the INIT_DELAYED_WORK() block directly before the IRQ registration
-2. Replace INIT_DELAYED_WORK() with devm_delayed_work_autocancel()
-3. Drop the now pointless cancel_delayed_work_sync() from remove function
-
-Greetings,
-
--- Sebastian
-
->  drivers/power/supply/bq24257_charger.c | 1 +
->  1 file changed, 1 insertion(+)
+> If there are no blockers left and you expect it to be merged soon, I =
+am
+> happy to keep waiting. Otherwise I would offer to send my series =
+standalone
+> against the current `Clk` API and let you rebase on top of mine - it =
+is the
+> much smaller of the two, touching only `Clk::rate_exclusive_get()` and
+> pwm_th1520.rs.
 >=20
-> diff --git a/drivers/power/supply/bq24257_charger.c b/drivers/power/suppl=
-y/bq24257_charger.c
-> index 72f1bfea8d..b9110d5fe2 100644
-> --- a/drivers/power/supply/bq24257_charger.c
-> +++ b/drivers/power/supply/bq24257_charger.c
-> @@ -1064,6 +1064,7 @@ static void bq24257_remove(struct i2c_client *clien=
-t)
->  {
->  	struct bq24257_device *bq =3D i2c_get_clientdata(client);
-> =20
-> +	devm_free_irq(&client->dev, client->irq, bq);
->  	if (bq->iilimit_autoset_enable)
->  		cancel_delayed_work_sync(&bq->iilimit_setup_work);
-> =20
-> --=20
-> 2.34.1
+> [0]: =
+https://lore.kernel.org/rust-for-linux/140FE1B3-73CA-45EA-B978-648A1A48B57=
+7@collabora.com/
 >=20
+> Thanks a lot,
+>=20
+> Maurice
 
---6ohbx7ih6omxgklt
-Content-Type: application/pgp-signature; name="signature.asc"
+Your series might hit the same blocker as this one. Perhaps we can try =
+to get
+both merged at the same time?
 
------BEGIN PGP SIGNATURE-----
+@Stephen gentle ping here :)
 
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAmptE8oACgkQ2O7X88g7
-+prahQ//dIC78ynMsXKstM6WhszwzzvQfMvNG05wWON+xJUuQQoRp79HvPmeZFrk
-9HbOn+qL9dx9vq6amfE6zaKFfV8+U0zvC/AAnbkjU8bcsodcWPqHuaNnhT+MW138
-+iGlvge7xhlLC8GLE/xWM6M30Vk5+9yDIlm0DxaQ876ub+TenJgploiF9zhIYaiL
-t0DHaDZ1qiVIj1aCa+Ue+hX0QkyZac0/nKF7s75iy5dHwL1+iGFd+eAm8smoiJA8
-D0jJBwaPrK/uGPKpWAFfeCsLR/jYjwVUZolf+Rpi9dVCZNBTBtFt/InT0hX5N8vS
-lB7SROz9sIv3ICcbwvGNjsS30xrYi+kQFt5I7PGTHCMfMFKcglfBIq/xHRPZQugd
-8v+d3lVVQdHV+TyhPJIMDHC65+eNnBgUup2OANGeWq/wq8DHwgCBrD3uco0HS+58
-/MFvcL7gy5u2DUWZRQ4NhlH4wBMR3WCIQ4uWMQKtfu6kM7iZYtAMRAmg+dBaIfa6
-YorgGQvvhZ7HnNdxZ1MX2yuRFNMnX6OyztKZ6h02ZaCcGoMfHfWO8HiPFidSPqkk
-GwN9/c0SzNgGoIc9H9ZcYPDy1mE5W/Dsi2iXF7fmSvtW0nBL9n7os6Fs6SYWX7tP
-8ZXHO3o0B6ZgrAN+oWZo5wJc3RfBkQnOjnnLOXISLZIrf5av4NY=
-=/mKT
------END PGP SIGNATURE-----
+=E2=80=94 Daniel
 
---6ohbx7ih6omxgklt--
