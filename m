@@ -1,23 +1,22 @@
 Received: from mail.loongson.cn (mail.loongson.cn [114.242.206.163])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id 53F2E3BBFD3;
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id 5B4DF3BC673;
 	Fri, 31 Jul 2026 09:43:00 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=114.242.206.163
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1785490984; cv=none; b=aLvxrCzDFhU1wpfFfg6F3rhMzUuck2jioFRwAQ6hw9WzvD6XhoXA/mCjLy/M0d/+WyJJzOa+b8m6963ZtXMqJRCUTq3iG/fJsUbaovkMaHltMnZp6w59Yr05x02MDULMKzu4Xa5TYE3i95Sk2fbBbm1Ay+3DH6xQ8IpRezFTSyQ=
+	t=1785490985; cv=none; b=JJsHncEnB5iaIZ61EWnoJTqomjF4ow3eMJqhiXt3Lmv8R27TWjcEM/VM3k+Zdu5gnwqGdGsWVfAQtiXrNJ6a5LFpCMNuMUy+4h3JLTYBZCWCiK4iXLU//VjGWD8qkk83ICpbf798cYvEVLYMcZYcTv1L5RVh6iL3Vkz9lfzdwd4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1785490984; c=relaxed/simple;
-	bh=9E8GdqP31dgwfZYT4f13k2PUrM5L41eD1gFxUICd/xw=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=ejVm8MmOqe694CLyYIetl5JxpRhj7VGDy5gBeOh6rJclFCu0SWl8ZDHpIQyY0p/UzMDVUkq9KNxsaVFBCPJrsu604w6BAyuV4B+C+2VgzfwaKQZ8c3xVXj/6DWtkjoZ2BfcWGrItHVWOU/M+b05wgwRJtvl3ydFCNKE8mrW1Nvk=
+	s=arc-20240116; t=1785490985; c=relaxed/simple;
+	bh=9PO/MiE851ATe1MubOIc99IKFY0BFwh9qQCCPBrXsuE=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=UviTwstGG3iDjfwL5yqtDvDudt0LGYUF7shjjjcQ32crEQPyqXUEv7TpcsPN+Hmsuylpni7bY7uhJHFyIJo/WT6MfTwAQSxemZMbpoFXN3af2mr6F15R9rv/0/eld2rMEX8RPBddkqPJquqIvmkRCfVH++7hyj5AFtMfVxcrvPU=
 ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=loongson.cn; spf=pass smtp.mailfrom=loongson.cn; arc=none smtp.client-ip=114.242.206.163
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=loongson.cn
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=loongson.cn
 Received: from loongson.cn (unknown [223.64.68.205])
-	by gateway (Coremail) with SMTP id _____8BxGOsfbmxqjywJAA--.30900S3;
-	Fri, 31 Jul 2026 17:42:55 +0800 (CST)
+	by gateway (Coremail) with SMTP id _____8BxvKEYbmxqgywJAA--.7638S3;
+	Fri, 31 Jul 2026 17:42:48 +0800 (CST)
 Received: from kernelserver (unknown [223.64.68.205])
-	by front1 (Coremail) with SMTP id qMiowJDxu8QPbmxqHvYeAA--.48910S3;
-	Fri, 31 Jul 2026 17:42:46 +0800 (CST)
+	by front1 (Coremail) with SMTP id qMiowJDxu8QPbmxqHvYeAA--.48910S2;
+	Fri, 31 Jul 2026 17:42:40 +0800 (CST)
 From: Binbin Zhou <zhoubinbin@loongson.cn>
 To: Binbin Zhou <zhoubb.aaron@gmail.com>,
 	Huacai Chen <chenhuacai@loongson.cn>,
@@ -35,15 +34,11 @@ Cc: Huacai Chen <chenhuacai@kernel.org>,
 	devicetree@vger.kernel.org,
 	linux-pm@vger.kernel.org,
 	mfd@lists.linux.dev,
-	Binbin Zhou <zhoubinbin@loongson.cn>,
-	stable@vger.kernel.org,
-	Sashiko <sashiko-bot@kernel.org>
-Subject: [PATCH v3 1/5] thermal/drivers/loongson2: Correct thermal sensor registration loop
-Date: Fri, 31 Jul 2026 17:42:17 +0800
-Message-ID: <367a07d2190203b2412d13f407eea81334122e31.1785480242.git.zhoubinbin@loongson.cn>
+	Binbin Zhou <zhoubinbin@loongson.cn>
+Subject: [PATCH v3 0/5] thermal: loongson2: Add support for Loongson-2K0300 SoC
+Date: Fri, 31 Jul 2026 17:42:16 +0800
+Message-ID: <cover.1785480242.git.zhoubinbin@loongson.cn>
 X-Mailer: git-send-email 2.52.0
-In-Reply-To: <cover.1785480242.git.zhoubinbin@loongson.cn>
-References: <cover.1785480242.git.zhoubinbin@loongson.cn>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -51,70 +46,97 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-CM-TRANSID:qMiowJDxu8QPbmxqHvYeAA--.48910S3
-X-CM-SenderInfo: p2kr3uplqex0o6or00hjvr0hdfq/1tbiAQEFCGpsIlAFfQAAsB
-X-Coremail-Antispam: 1Uk129KBj93XoW7tr1UCFW8ZFy5Jw13Wr43CFX_yoW8Cr1rpF
-	sxC3WYkr98GFs7Z34DArWUXan0ya4ftFW7WF4xWw1rWrn3J34agryrJFW2qa40yFy8ZF1Y
-	qr98tFWDCayDZrXCm3ZEXasCq-sJn29KB7ZKAUJUUUUx529EdanIXcx71UUUUU7KY7ZEXa
+X-CM-TRANSID:qMiowJDxu8QPbmxqHvYeAA--.48910S2
+X-CM-SenderInfo: p2kr3uplqex0o6or00hjvr0hdfq/1tbiAgEFCGpsKC8E-gAAs1
+X-Coremail-Antispam: 1Uk129KBj93XoWxJrW5CFy7JFy5Kr48GF13Jrc_yoW8Kw17pa
+	yY93sxCr1UGF4UAws3J3yxZr4Yvrn5ta9xZFs3Gw1ruwn8KFyay3y8ta15ZFyxCr45WFW2
+	vryvkrWkCF1DuFXCm3ZEXasCq-sJn29KB7ZKAUJUUUUx529EdanIXcx71UUUUU7KY7ZEXa
 	sCq-sGcSsGvfJ3Ic02F40EFcxC0VAKzVAqx4xG6I80ebIjqfuFe4nvWSU5nxnvy29KBjDU
 	0xBIdaVrnRJUUUBIb4IE77IF4wAFF20E14v26r1j6r4UM7CY07I20VC2zVCF04k26cxKx2
-	IYs7xG6rWj6s0DM7CIcVAFz4kK6r1a6r1DM28lY4IEw2IIxxk0rwA2F7IY1VAKz4vEj48v
-	e4kI8wA2z4x0Y4vE2Ix0cI8IcVAFwI0_Gr0_Xr1l84ACjcxK6xIIjxv20xvEc7CjxVAFwI
+	IYs7xG6rWj6s0DM7CIcVAFz4kK6r1Y6r17M28lY4IEw2IIxxk0rwA2F7IY1VAKz4vEj48v
+	e4kI8wA2z4x0Y4vE2Ix0cI8IcVAFwI0_JFI_Gr1l84ACjcxK6xIIjxv20xvEc7CjxVAFwI
 	0_Gr0_Cr1l84ACjcxK6I8E87Iv67AKxVW8Jr0_Cr1UM28EF7xvwVC2z280aVCY1x0267AK
 	xVW8Jr0_Cr1UM2kKe7AKxVWUAVWUtwAS0I0E0xvYzxvE52x082IY62kv0487Mc804VCY07
 	AIYIkI8VC2zVCFFI0UMc02F40EFcxC0VAKzVAqx4xG6I80ewAv7VC0I7IYx2IY67AKxVWU
-	tVWrXwAv7VC2z280aVAFwI0_Gr0_Cr1lOx8S6xCaFVCjc4AY6r1j6r4UM4x0Y48IcxkI7V
+	AVWUtwAv7VC2z280aVAFwI0_Jr0_Gr1lOx8S6xCaFVCjc4AY6r1j6r4UM4x0Y48IcxkI7V
 	AKI48JMxkF7I0En4kS14v26r1q6r43MxAIw28IcxkI7VAKI48JMxC20s026xCaFVCjc4AY
 	6r1j6r4UMxCIbckI1I0E14v26r126r1DMI8I3I0E5I8CrVAFwI0_Jr0_Jr4lx2IqxVCjr7
 	xvwVAFwI0_JrI_JrWlx4CE17CEb7AF67AKxVW8ZVWrXwCIc40Y0x0EwIxGrwCI42IY6xII
-	jxv20xvE14v26r4j6ryUMIIF0xvE2Ix0cI8IcVCY1x0267AKxVW8JVWxJwCI42IY6xAIw2
-	0EY4v20xvaj40_Jr0_JF4lIxAIcVC2z280aVAFwI0_Gr0_Cr1lIxAIcVC2z280aVCY1x02
-	67AKxVW8JVW8JrUvcSsGvfC2KfnxnUUI43ZEXa7IUbRVbDUUUUU==
+	jxv20xvE14v26r1I6r4UMIIF0xvE2Ix0cI8IcVCY1x0267AKxVW8JVWxJwCI42IY6xAIw2
+	0EY4v20xvaj40_Jr0_JF4lIxAIcVC2z280aVAFwI0_Jr0_Gr1lIxAIcVC2z280aVCY1x02
+	67AKxVW8JVW8JrUvcSsGvfC2KfnxnUUI43ZEXa7IU8svtJUUUUU==
 
-The registration loop in loongson2_thermal_probe() incorrectly uses
-dev_err_probe() when the sensor is not present (-ENODEV). In that case,
-the driver should continue to the next sensor index rather than treating
-it as a fatal error.
+Hi all:
 
-Fix this by correctly handling -ENODEV and only returning on other
-errors. Also add a final check to ensure at least one thermal zone was
-registered.
+This patch series adds thermal zone support for the Loongson-2K0300 SoC.
 
-Cc: stable@vger.kernel.org
-Reported-by: Sashiko <sashiko-bot@kernel.org>
-Closes: https://sashiko.dev/#/patchset/cover.1783670011.git.zhoubinbin@loongson.cn?part=2
-Fixes: e7e3a7c35791 ("thermal/drivers/loongson-2: Add thermal management support")
-Signed-off-by: Binbin Zhou <zhoubinbin@loongson.cn>
----
- drivers/thermal/loongson2_thermal.c | 8 +++++---
- 1 file changed, 5 insertions(+), 3 deletions(-)
+The Loongson-2K0300's thermal sensor is generally compatible with the
+existing Loongson-2K series, but it features several key differences:
+1. It has an independent CPU ID register for reading chip version
+information.
+2. The raw temperature output field has been extended from 8 bits to 11
+bits.
+3. The temperature calculation formula has been updated to incorporate a
+correction factor based on the version information.
 
-diff --git a/drivers/thermal/loongson2_thermal.c b/drivers/thermal/loongson2_thermal.c
-index ea4dd2fb1f47..5f47fa51fb90 100644
---- a/drivers/thermal/loongson2_thermal.c
-+++ b/drivers/thermal/loongson2_thermal.c
-@@ -161,16 +161,18 @@ static int loongson2_thermal_probe(struct platform_device *pdev)
- 
- 	for (i = 0; i <= LOONGSON2_MAX_SENSOR_SEL_NUM; i++) {
- 		tzd = devm_thermal_of_zone_register(dev, i, data, thermal_ops);
--
- 		if (!IS_ERR(tzd))
- 			break;
- 
--		if (PTR_ERR(tzd) != -ENODEV)
-+		if (PTR_ERR(tzd) == -ENODEV)
- 			continue;
- 
--		return dev_err_probe(dev, PTR_ERR(tzd), "failed to register");
-+		return dev_err_probe(dev, PTR_ERR(tzd), "failed to register sensor %d\n", i);
- 	}
- 
-+	if (IS_ERR(tzd))
-+		return dev_err_probe(dev, -ENODEV, "No thermal sensor registered\n");
-+
- 	ret = devm_request_threaded_irq(dev, irq, NULL, loongson2_thermal_irq_thread,
- 					IRQF_ONESHOT, "loongson2_thermal", tzd);
- 	if (ret < 0)
+To ensure robustness on older hardware revisions, a fallback mechanism
+is included: if the calculated temperature falls outside the valid range
+(-55 TO 125),  the driver falls back to a simpler calculation and prints
+a warning.
+
+The patches have been validated on the Loongson-2K0300 development board.
+
+Thanks.
+Binbin
+
+=========
+V3:
+Patch (2/5):
+ - New patch for moving thermal_ops to chip_data;
+Patch (3/5):
+ - Correct spelling errors;
+Patch (4/5):
+ - Add Acked-by from Conor, thanks;
+Patch (5/5):
+ - Keep loongson2_thermal_data->chip_data as const, and use
+   data->flags as the private data.
+ - Renmae LOONGSON2_THSENS_OUT_10B_MASK ->
+   LOONGSON2_THSENS_OUT_11B_MASK;
+
+Link to V2:
+https://lore.kernel.org/all/cover.1784619512.git.zhoubinbin@loongson.cn/
+
+V2:
+Patch (1/4):
+ - New patch form Sashiko;
+Patch (2/4):
+ - New patch for adding chipid syscon compatible;
+Patch (3/4):
+ - Use `loongson,chipid` phandle replace reg property;
+Patch (3/4):
+ - Refact `calib_offset` calculate routing;
+ - Add LS2K0300_OLD_FUSE_FLAG flag.
+
+Link to V1:
+https://lore.kernel.org/all/cover.1783670011.git.zhoubinbin@loongson.cn/
+
+Binbin Zhou (5):
+  thermal/drivers/loongson2: Correct thermal sensor registration loop
+  thermal/drivers/loongson2: Move thermal_ops to chip_data for SoC
+    scalability
+  dt-bindings: mfd: syscon: Allow syscon compatible for Loongson-2K0300
+    chip id
+  dt-bindings: thermal: loongson,ls2k-thermal: Add compatible for
+    Loongson-2K0300
+  thermal/drivers/loongson2: Add support for Loongson-2K0300
+
+ .../devicetree/bindings/mfd/syscon.yaml       |   2 +
+ .../thermal/loongson,ls2k-thermal.yaml        |  73 +++++++++---
+ drivers/thermal/loongson2_thermal.c           | 110 ++++++++++++++++--
+ 3 files changed, 157 insertions(+), 28 deletions(-)
+
+
+base-commit: 795f1b1a91ae13ebc012a364075e42f486a1cafe
 -- 
 2.52.0
 
