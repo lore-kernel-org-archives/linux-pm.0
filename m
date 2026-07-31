@@ -1,509 +1,214 @@
-Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
+Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8D626451981
-	for <linux-pm@vger.kernel.org>; Fri, 31 Jul 2026 17:51:59 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.180.131
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1CD6C34D384
+	for <linux-pm@vger.kernel.org>; Fri, 31 Jul 2026 18:07:33 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1785520321; cv=none; b=nz7ywJ8p+KkWU22kEtp7dP/l4SbWfvkUIr3za8vKTOKkS4D+ilb0MscrGBoSFK6gVI7JaG/DEIINS58SO7s2AOMRdL2w9mKY+5vwWFclrOUt5gE2NJ9Kc8OCmf6pTIXDSuFknlrhdVny8u88A7zVJ+t2XrWBhbcoS3tF2fX0jco=
+	t=1785521255; cv=none; b=dSM85EH9wQ6y6E/qTzEslm7bi53qb9yNnR8BIPjLcN9tJgrj5Cy8MOnhnJYbmxTW4bot2wdzgc0qp7pa/NrDkTZrBXWLtYCD5jGl7G0eT1B2A+aJ365GbI0T5pD0W5KERW+PqvX3JzjSSpdl3NFWZeepKuewAnKytTMk+2ZJRGk=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1785520321; c=relaxed/simple;
-	bh=HW3Kmxon0yqBcSpEnNtQ9XHfCXtaiXQdbvu8OJxwZwE=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=uAEuQrX0GuApGchI6Yu9ptUNgNau/Nw6VYXSavbwNpENNoR3ekBcHbx8BEnFMNwwH/rbWQlNYibdwOATuvzUrq0x6Po/GiK7Xo9uvHi8LHXq7tBV3aCNBNKd9y/JfivOwS1WSo4/fk/jh3KQMvmJUcjMTf9/qWME8hZvwFD0nTQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=DrBgNv+L; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=c3ru8v4a; arc=none smtp.client-ip=205.220.180.131
+	s=arc-20240116; t=1785521255; c=relaxed/simple;
+	bh=TvwLYVfSP/I25cwjK7mSZoCeb4ayWQzCh+Noex+a+q8=;
+	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=DGyS6sa9tBPYNDmGjZuGyPG7i71z6oR5XBr5ZBx1vx7ZHl2JXN1oZk/UfyfqXQGAdIaRjOFyhzt0awydVFjKWetdR8c8wFw34UhOVg3nE7qDqT0RqLz4MD8yd9KGpXd03jsXMLx16+F92ihVXsu0q4T8mE1n+Rnshn8SCHxOkj8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=VKefcG2R; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=SaVlNnA2; arc=none smtp.client-ip=205.220.168.131
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="DrBgNv+L";
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="c3ru8v4a"
-Received: from pps.filterd (m0279871.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 66VFOP33507763
-	for <linux-pm@vger.kernel.org>; Fri, 31 Jul 2026 17:51:58 GMT
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="VKefcG2R";
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="SaVlNnA2"
+Received: from pps.filterd (m0279862.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 66VFOA7L107062
+	for <linux-pm@vger.kernel.org>; Fri, 31 Jul 2026 18:07:33 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	iZ0R++hTVk5sIhaTyuJ0Ofa6jVpk6M/E6xz4eej3pmU=; b=DrBgNv+LLOTlWZyV
-	ShXSmsxD8mGTZja4AWm0t20ox4AGq4pvFmqZtnkj80UKOp8kl0jWmLaSu6m2hpfV
-	TDumYQt20FcC8XrCrAwYIHRbigZVZfZmdh7oR4dUjBCkYLg7cv78V8WxWh68TD9b
-	yj2urnc+uKXgExOmH8KQnhQOLWAkY65uJSjpKDmGDnx4/pgOKvcwFXoJKX7dkL5B
-	j4YnmFyGRNflq+ZG+9q/xTBoSMJjbY1U1PRGD/6T5ZVZlpoKVaghX8bIfe9UC6kh
-	pFz/nbfSnS8S3r9V9nFb9CiVPUc8HCeh+6z+ZAYV7eNEP7HnzLEwbQRbcTttbbCg
-	zOhO5w==
-Received: from mail-pg1-f198.google.com (mail-pg1-f198.google.com [209.85.215.198])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4fru131qbx-1
+	cc:content-transfer-encoding:content-type:date:from:message-id
+	:mime-version:subject:to; s=qcppdkim1; bh=ifmahfVjpMgOLth5IowDND
+	zQ/5SrSxDfdfJHN0gzlC4=; b=VKefcG2RQSCtZT17iA4xOErEkhSOMvxHpMI+jU
+	h8lbgdfFG9K6SmBRfxbHPcu5yMzP7WU5RapwkikQWUd3lT7Mb0VtRwCZW8Msa1TV
+	HrFqJah/meDjrPDt0jMTBnO+Caj8nBs7KAP46sGsOblG7e0xTfnvzEj0iNmfI7Il
+	o4RTq7xyfU8co67biz6EDmbNgcsOd4VXS0jRehaNhs81vISzvuYnhIX2mvn4hAZV
+	B+53XS4eM1SkTZSiB96rC2IRB+FP+DELtc+KMEcP55EkdR240Z+HD2MIL63VWKXY
+	2LwQAccIZntTjHS2AWNYveiKUb1INOysApSrueUAuxRjvSqw==
+Received: from mail-pf1-f200.google.com (mail-pf1-f200.google.com [209.85.210.200])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4fru2u1rca-1
 	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Fri, 31 Jul 2026 17:51:58 +0000 (GMT)
-Received: by mail-pg1-f198.google.com with SMTP id 41be03b00d2f7-ca7c1e22995so1914758a12.3
-        for <linux-pm@vger.kernel.org>; Fri, 31 Jul 2026 10:51:58 -0700 (PDT)
+	for <linux-pm@vger.kernel.org>; Fri, 31 Jul 2026 18:07:33 +0000 (GMT)
+Received: by mail-pf1-f200.google.com with SMTP id d2e1a72fcca58-8482b95574dso1732285b3a.1
+        for <linux-pm@vger.kernel.org>; Fri, 31 Jul 2026 11:07:33 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1785520317; x=1786125117; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:in-reply-to:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=iZ0R++hTVk5sIhaTyuJ0Ofa6jVpk6M/E6xz4eej3pmU=;
-        b=c3ru8v4aTiAN2XOqpM1cQEzi42AgowXMGHB7HkbLQP6ArCS5O7NJ1cU5dFh7q2Ma1N
-         0rxx5URtQJEgETpPiPguJp1O7YMZMvw9VQKq+ao84Miw8+x5ljE0PDWyXvrFBy3vvyiu
-         XV4O8zq4tySeTR84IAZZ1T4mo0KZDec2gBaUaz2BCR6vVT2qTJUnMnGEACkAPmwci9ab
-         ZeJHwWQIgjFC+OBD+i63kQzK69/OoH0iARngcHpKRAEe87KrVYWjkyg+3npJD58zhFut
-         y75WqboR0pCt4M73cT172MUyT6DR7IU0r2m47WTfnyrRydFI0iPFAXnh24mI0t9MgjA4
-         YFyA==
+        d=oss.qualcomm.com; s=google; t=1785521253; x=1786126053; darn=vger.kernel.org;
+        h=cc:to:content-transfer-encoding:content-type:mime-version
+         :message-id:date:subject:from:from:to:cc:subject:date:message-id
+         :reply-to:content-type;
+        bh=ifmahfVjpMgOLth5IowDNDzQ/5SrSxDfdfJHN0gzlC4=;
+        b=SaVlNnA26Y0wrP76+s5ixnoU/BPMp1qxczkiHGeuH16BienFM99z9r2D/FQJ/b0Zsd
+         9jb9ec1v+s0Y9jR2UCCztZ5H6yp13qqzlbMpdd0P4ZYJIIB0C0upVfUCbwKcqwxlJ1V2
+         62I5dg/bD5Wvco78ZPX3GB0C25cDmq7f2DIO4rDNwWUOQlxIVJQHZ0K5THU727FnJguN
+         bleOjKRcYi5HzJBOzQtk8J1QThelvoB9Uj24xaY4tDGhuXGYIILSCPnPSmir2XptKn/9
+         3PrnMNt2VQ25A4RbF0sXSQuTArAnVpupz49dyvQcLFGLWjE6AbholAJqocx8VXpx5Kb4
+         6KbA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1785520317; x=1786125117;
-        h=content-transfer-encoding:content-type:in-reply-to:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=iZ0R++hTVk5sIhaTyuJ0Ofa6jVpk6M/E6xz4eej3pmU=;
-        b=U98XVqHJN22VpixzCP0bxcqVlhLZUw15uAihYPDXfFc/gAjg7i1zVkOMQ4/mpUASB2
-         N7A4qikNYvmNn6VdQCWZ2N49/QBpDEBtrqlBVr+OHMUmn2J+LnLow4SZXZnODp+J7rQm
-         YCo7uopzRpQtv27cL/Rixewdg/0ppl3GaoHPohwQI+yg71hqzk/J32DsVk9TE0i3H5IN
-         DXb2Yf/R4WuYWl9Gd/hJD3l/NPlOdZYcQxwpUZJ4CPvvczuDreJq3NN1YYUzvO2sDf4j
-         JOd1QwG9Z8NRGwLLHPUod+Alu72nTDM1/VAd437gUfqm6oZtSTsPHvb8CjXQCb2EV9/x
-         ezjA==
-X-Forwarded-Encrypted: i=1; AHgh+RotSvyPr4KFsOMT2gBGyMgLZoOFJBzLACW4eYQonbmkWhiC1un4kMkNS7iz4CRY6iO9eyQKLk8l7Q==@vger.kernel.org
-X-Gm-Message-State: AOJu0YwmyBSK793f8OjJYe/W9zSzOEGLRBZ1O31U7o+i1xYkNQsSW3pf
-	ZySvkEK66B8oA5+WmdzgLADt/u23TTTKbWFMP+xc2NQpNgHoiDrHbly+jRe1SFcJzkPdMK4629w
-	1fug3aBnGZl3uKXpt0iUP8IaeJmNnw1hrttrCYv1SzrByJwGhmJP4l6Ryim5H2A==
-X-Gm-Gg: AR+sD10X4rhYpH9VYcINyTdBUnxZtgWBZ7jNIifMFn5FerUjQ9v/LaJJpgT57Ehf/S/
-	O7Rxti1Cgvgmdq8Fx/luSLU33FikQt3i/LLDYOl/Cr9FO+JSly8oopU14N2cROLd0YKuTgg80HV
-	kNPvV2L072AVHA4/dAdHL7sMhtDOLso9swJ6Y6Dguw4aXCgj3ZJeVs7Aj4iuOCRxJ73xiSVBUHt
-	ifElqle4ZZ5vxR1thKVcsti2Mpe53Tg7jgRRfEdRS26oXB/nqNFEgtkcI8VS73bHvFbJxQ2HkxK
-	1cZOmZTC3/QtBYLFp0p/shcg6m3rmpAGSyFoiQVFqm9Z2G21yahXeye6kwMy0q/AfMO8G8mak5A
-	l2goyiaDSBp9NEvCRY5t/L5jXopHzARaq
-X-Received: by 2002:a05:6a20:d487:b0:3b4:71a9:cd8f with SMTP id adf61e73a8af0-3c92a8371fcmr694618637.41.1785520317115;
-        Fri, 31 Jul 2026 10:51:57 -0700 (PDT)
-X-Received: by 2002:a05:6a20:d487:b0:3b4:71a9:cd8f with SMTP id adf61e73a8af0-3c92a8371fcmr694580637.41.1785520316592;
-        Fri, 31 Jul 2026 10:51:56 -0700 (PDT)
-Received: from [192.168.1.10] ([122.177.247.168])
-        by smtp.gmail.com with ESMTPSA id a92af1059eb24-13fab4cb51asm7645350c88.9.2026.07.31.10.51.49
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Fri, 31 Jul 2026 10:51:56 -0700 (PDT)
-Message-ID: <222a33d8-6ab8-451f-9d22-ae06fbe269b6@oss.qualcomm.com>
-Date: Fri, 31 Jul 2026 23:21:46 +0530
+        d=1e100.net; s=20251104; t=1785521253; x=1786126053;
+        h=cc:to:content-transfer-encoding:content-type:mime-version
+         :message-id:date:subject:from:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to:content-type;
+        bh=ifmahfVjpMgOLth5IowDNDzQ/5SrSxDfdfJHN0gzlC4=;
+        b=evbsKADSOO17n23Zrn/TkZqWx2WZNowA1dW3S3QJw8VME6p1HlHmFqrsCJdnecYZB4
+         NMUBCD/ZumHxn/0iEe5UOXu2aLQ3nqL0fhytcNiot2CFPf+BqRIebNMw8CcbF7cWxJ9Q
+         Mvn7m6mrmFEFRJ9UroexdzE9i8c90iNm938Ri23sJsn0m/gL34ze3EITCqBHRJQ4VC+r
+         0WAWx9+DKP49cSzcYKmMht46VXHCeo5sB/fbMdB/G86gWo4ervvd3OnrgEyV63V39iVd
+         5x5IYpRVQQjMxyZbqHZrFH/fIRPDWei5hCeK3237Ley9x4nvbqaZnWLOx8FmvniMqidF
+         xMhg==
+X-Forwarded-Encrypted: i=1; AHgh+RpBYuVwB5lllKQ07Oj3umV32gN6agYuRwVpLQzQhlrUzln4iVYt799RpeTNs24zs6+AJt+ybJtI8w==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yzq9OkkxMa96cVBY5LKB6hn9pDcwRlmO75KNTVovL18MksWK41+
+	fNJ5avqsctB2erCYou0+N4ba/ee1LVtyH2SmbPgdUqRq8AH5MjhwUhQ0Agq8I96IN6AaSyVEvIn
+	xeny6pab/m6aBxUlLZNn2q/IsrjMqYQPij/MKQMgo8fNeEqI9oUuoiFbpnnK/Nw==
+X-Gm-Gg: AR+sD107M9W2wOGljJKS61GVazvk4hlHRJ/+S1rT5QrJ4q6hBCNjnBLKSDuSRFpBe4c
+	wqfyGIydoBaO8Wt9+dBRglOK+hiWKJSewXJxVByfHXdBSuHxj/9TGWUnamRzjNQbMZhbgEQzqDF
+	vbtEwn80PGYgEBXzUp0dayj/syKr6bAvDdpnSnrhw04cK/Hn10e6vR9UGr+sMxjehEJX7t5mDt4
+	fh8mgC/2qWM5p96yLKtHvuMxdlL6RwUb2Xi9E/LuyjpW5pQYp9a2Dvyz5aUpvPGU8lXKsh0crxb
+	hThcbyDaCBcq7RnRi2H65CnIHjAwqe/fEvhlhurMnCdm7CeU+yEMCB730ngjwDfApSj5+3gYcTq
+	a+oJ+urNJhKSmPh2Uo4A=
+X-Received: by 2002:a05:6a21:e58d:b0:3c3:a804:8eed with SMTP id adf61e73a8af0-3c92a8b7943mr760333637.56.1785521252414;
+        Fri, 31 Jul 2026 11:07:32 -0700 (PDT)
+X-Received: by 2002:a05:6a21:e58d:b0:3c3:a804:8eed with SMTP id adf61e73a8af0-3c92a8b7943mr760289637.56.1785521251936;
+        Fri, 31 Jul 2026 11:07:31 -0700 (PDT)
+Received: from [10.213.109.130] ([202.46.23.25])
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-3153e06fe9fsm7069923eec.25.2026.07.31.11.07.24
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 31 Jul 2026 11:07:31 -0700 (PDT)
+From: Jishnu Prakash <jishnu.prakash@oss.qualcomm.com>
+Subject: [PATCH 0/7] Add support for QCOM SPMI PMIC5 Gen4 ADC
+Date: Fri, 31 Jul 2026 23:36:13 +0530
+Message-Id: <20260731-pmic5_gen4_adc-v1-0-9c49b2eea6f9@oss.qualcomm.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 2/6] Bluetooth: qca: add QCC2072 support
-To: Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>
-Cc: Bartosz Golaszewski <brgl@kernel.org>,
-        Marcel Holtmann <marcel@holtmann.org>,
-        Luiz Augusto von Dentz <luiz.dentz@gmail.com>,
-        Rob Herring
- <robh@kernel.org>,
-        Krzysztof Kozlowski <krzk+dt@kernel.org>,
-        Conor Dooley <conor+dt@kernel.org>,
-        Balakrishna Godavarthi <quic_bgodavar@quicinc.com>,
-        Rocky Liao <quic_rjliao@quicinc.com>,
-        Manivannan Sadhasivam
- <mani@kernel.org>,
-        Bjorn Andersson <andersson@kernel.org>,
-        Konrad Dybcio <konradybcio@kernel.org>,
-        Bartosz Golaszewski <brgl@bgdev.pl>, linux-arm-msm@vger.kernel.org,
-        linux-bluetooth@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
-        linux-pm@vger.kernel.org, quic_mohamull@quicinc.com,
-        quic_hbandi@quicinc.com, quic_anubhavg@quicinc.com,
-        Vivek Sahu <vivek.sahu@oss.qualcomm.com>,
-        Yepuri Siddu <yepuri.siddu@oss.qualcomm.com>
-References: <20260727-rb3-industrial-bt-uart-v2-0-2d100f30e202@oss.qualcomm.com>
- <20260727-rb3-industrial-bt-uart-v2-2-2d100f30e202@oss.qualcomm.com>
- <53mokww7o5hky34fhwyje7utpqu42md5uknqn2b5km22ccsfzi@fsbf2pth6ztj>
-Content-Language: en-US
-From: Rahul Samana <rahul.samana@oss.qualcomm.com>
-In-Reply-To: <53mokww7o5hky34fhwyje7utpqu42md5uknqn2b5km22ccsfzi@fsbf2pth6ztj>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-Proofpoint-Spam-Info: AW1haW4tMjYwNzMxMDEzNyBTYWx0ZWRfX3uwGjAy0/vkS
- P/2J89Q6s+Ti0oiuMn31/Fp4icZSByG5X4AMMjo6/j2dB8tCgnCHOVQPKNFvoLcFA5SPBfjUX+t
- Lzi4EkLGJLEHbj3pJ30zl/PUGjeJdxE=
-X-Proofpoint-GUID: wIboGFG9b-OS1iws3PFZnbngg9LUouVd
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzMxMDEzNyBTYWx0ZWRfX9fFN71xD1Guv
- L196sqOwIH5PlURtg/oC0b4bM37qg2jJEyFsOOZ5f5ka+amIiTJS2l2KWiTXu8QTlHnpqaHArML
- v8HoFcRuHJDMO1eBWnT3VTFs7CsZFdhmY4DoQIf0gAkMKqeOkNvmysMJm+vVq/pKfJAufFi22RL
- uCbCkK5b2TRhFIn8el5sO3pd+OLZnykxQipvE0zHq1PJ5jjx6pgFmSidoiAIxhFlVnJWp9oxwc2
- McrcJpmZroRrCAzMCeXurIUIUDDeCdkV94/lYwc62hcjwWJGN29aAwcPasuKdN6PEhVaXq1vXqu
- xxSDpes/xIa49U+7HoJnGCWK/WQjxtZ8e047I9Qx+fEpFu8g14GcsliFHd3v90invzkBpoKvk1p
- OmoAkfB0PsmfQdvy/fON1FprmXzPwnHmCMn9rA8hCoG95f8jMlD4KXgensdB0ZvburF6BcawnVZ
- 5HUbof4Is23IzeLvl1A==
-X-Proofpoint-ORIG-GUID: wIboGFG9b-OS1iws3PFZnbngg9LUouVd
-X-Authority-Analysis: v=2.4 cv=CYI4Irrl c=1 sm=1 tr=0 ts=6a6ce0be cx=c_pps
- a=Qgeoaf8Lrialg5Z894R3/Q==:117 a=wVA5pQU3D6HtJETKl3oCcQ==:17
+X-B4-Tracking: v=1; b=H4sIABbkbGoC/y2N7YrCMBBFX6Xkt5F8NElbZNn3ECnJZKIR02rTi
+ iC++6Z2/wyc4d573iTjFDGTrnqTCZ8xx3EowHcVgYsdzkijL0wEE5oZyeg9RVD9GYe6tx5okNI
+ bpZ2zCkgp3ScM8fUdPJ42zou7Iszryn9iwsdSTPMWIwlztl9TVx02kRC0KOSq6OdEnzVllHHeN
+ jwUGzS/Y877x2JvMKa0L+dnnXY2I10/ce6qoFjbOO0sGs1R1hod+NZbE1qlhQBWGykhBHL6fP4
+ A+pEWfAcBAAA=
+X-Change-ID: 20260730-pmic5_gen4_adc-f33d756bba5c
+To: Jonathan Cameron <jic23@kernel.org>, David Lechner <dlechner@baylibre.com>,
+        =?utf-8?q?Nuno_S=C3=A1?= <nuno.sa@analog.com>,
+        Andy Shevchenko <andy@kernel.org>, Rob Herring <robh@kernel.org>,
+        Krzysztof Kozlowski <krzk+dt@kernel.org>,
+        Conor Dooley <conor+dt@kernel.org>, Amit Kucheria <amitk@kernel.org>,
+        Thara Gopinath <thara.gopinath@gmail.com>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Daniel Lezcano <daniel.lezcano@kernel.org>,
+        Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>,
+        Bjorn Andersson <andersson@kernel.org>,
+        Konrad Dybcio <konradybcio@kernel.org>
+Cc: linux-iio@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org,
+        linux-pm@vger.kernel.org, Kamal Wadhwa <kamal.wadhwa@oss.qualcomm.com>,
+        Anjelique Melendez <anjelique.melendez@oss.qualcomm.com>,
+        Manaf Meethalavalappu Pallikunhi <manaf.pallikunhi@oss.qualcomm.com>,
+        Priyansh Jain <priyansh.jain@oss.qualcomm.com>,
+        Jishnu Prakash <jishnu.prakash@oss.qualcomm.com>
+X-Mailer: b4 0.15.2
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1785521244; l=3216;
+ i=jishnu.prakash@oss.qualcomm.com; s=20251014; h=from:subject:message-id;
+ bh=TvwLYVfSP/I25cwjK7mSZoCeb4ayWQzCh+Noex+a+q8=;
+ b=uhmUbiWgEP6WpSeawanJtED/WGKEis4wMGT9Vl2z2d4Dckgg2H5ZfV2GXM23RI5T9dXjap1vR
+ OqID+Bf8lZ/C28FmUYlQevCJz8gARzvCRpYQOe/Cep/Q7+H/s1ravVZ
+X-Developer-Key: i=jishnu.prakash@oss.qualcomm.com; a=ed25519;
+ pk=g89pXdLVwRjdTeQ+uX1QzvBO346E3hQAc1N7fcTXgmk=
+X-Proofpoint-ORIG-GUID: uk7KficT1p0GI1TNT1kFVv7VKHzcYthr
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzMxMDEzOSBTYWx0ZWRfX/JA5jTNyYqOP
+ UQi2M0bWQKfUjFRX2278xa0Q5FX5J6iITcp5k2ho6TBvlaUBxF8IM7Ie8HZiWyNuImraA22lH9f
+ oubsmypwwlvXU2zEfaEQ/URKvYZD8UKIGp9hZGpWm2v+aGML+0W4TMZdNpICzhtoUb2zEC6w8jT
+ WKeh5SYlmcge+yAsKjN7+vRCrC7QoapP2CarmEf9TZ8Au8KUlGec402hxQrs+w68eH2DhOnhg+3
+ N4w+JzR1DLYV8iFlCzI98/AOf4kozRtsGcogbgMkrqb039xRIZ3yMDNZKaaeVGtcgQHZJbgOVy5
+ UoKrq4xwEk+lfyc7fZ0SN+ecsiomeFyssMmuesDZzG702eb6KrBNORa+YQG/0bO5bkCY1k0qi1t
+ BNbE8ibhMo+u+eDNoReNcHhBVnvAxed9TAOyYhtwEsQZfkbNIpVMMjIxQPtM6L1ovq9MuAyvnp8
+ Xhu51ZuYVswErAfIPKg==
+X-Proofpoint-GUID: uk7KficT1p0GI1TNT1kFVv7VKHzcYthr
+X-Proofpoint-Spam-Info: AW1haW4tMjYwNzMxMDEzOSBTYWx0ZWRfX1Ger0qp+gV6m
+ z4LWukOOs1QGNA4kuJbmYbA0Syl05jJfKdLSJ+2UuZmQx+PYtJhwaKxqaqW0EGG42uwENOpC0ud
+ 2ppc4uzxW/AACHi+e5tA9CmH/87c18Y=
+X-Authority-Analysis: v=2.4 cv=b+uCJNGx c=1 sm=1 tr=0 ts=6a6ce465 cx=c_pps
+ a=mDZGXZTwRPZaeRUbqKGCBw==:117 a=ZePRamnt/+rB5gQjfz0u9A==:17
  a=IkcTkHD0fZMA:10 a=RAioF0-LDSMA:10 a=s4-Qcg_JpJYA:10
- a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=3WHJM1ZQz_JShphwDgj5:22
- a=EUspDBNiAAAA:8 a=MOouYykqAnKcD-W-GfoA:9 a=QEXdDO2ut3YA:10
- a=x9snwWr2DeNwDh03kgHS:22
+ a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=_K5XuSEh1TEqbUxoQ0s3:22
+ a=VwQbUJbxAAAA:8 a=EUspDBNiAAAA:8 a=JsIwp8TvIpfYpZRrz7MA:9 a=QEXdDO2ut3YA:10
+ a=zc0IvFSfCIW2DFIPzwfm:22
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.134,FMLib:17.12.100.49
  definitions=2026-07-31_05,2026-07-30_01,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501 suspectscore=0 spamscore=0 adultscore=0 lowpriorityscore=0
- clxscore=1015 impostorscore=0 bulkscore=0 phishscore=0 malwarescore=0
+ spamscore=0 bulkscore=0 adultscore=0 priorityscore=1501 impostorscore=0
+ lowpriorityscore=0 malwarescore=0 phishscore=0 clxscore=1015 suspectscore=0
  classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2607310137
+ reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2607310139
 
+PMIC5 Gen4 ADC is the next generation following PMIC5 Gen3 ADC, with
+several hardware changes for improved performance. In software
+implementation, it is mostly similar to Gen3 ADC with the following
+key differences:
 
+- Increased ratiometric conversion resolution from 14 bits to 16 bits.
+- Extended SID field from 4 to 5 bits and addition of a 2-bit bus index
+  field in the SID register, to support communication with up to 32 PMICs
+  per bus across up to 4 buses under the latest PMIC arbiter (v8).
 
-On 31-07-2026 20:39, Dmitry Baryshkov wrote:
-> On Mon, Jul 27, 2026 at 09:15:02PM +0530, Rahul Samana wrote:
->> From: Vivek Sahu <vivek.sahu@oss.qualcomm.com>
->>
->> QCC2072 uses the ORN firmware and NVM naming scheme. The tested RB3 Gen 2
->> Industrial BT-over-UART setup also needs the BCS calibration TLV to be
->> combined with the selected NVM before download.
->>
->> Keep the BCS/NVM combination in a helper so missing calibration data or
->> allocation failures can fall back to downloading the NVM alone without a
->> local skip label.
->>
->> Select the NVM file and BCS calibration file using the controller board ID
->> when available, with fallback to the default files. Initialize the BCS
->> calibration filename independently of the NVM filename source so custom NVM
->> firmware-name paths do not leave it unset.
->>
->> Register the QCC2072 compatible with hci_qca and route it through the same
->> UART setup, speed switching and power-control paths as recent Qualcomm
->> Bluetooth controllers.
->>
->> This continues the QCC2072 enablement work previously posted by Vivek Sahu
->> and later extended by Yepuri Siddu for the RB3 Gen 2 Industrial
->> BT-over-UART use case.
->>
->> Signed-off-by: Vivek Sahu <vivek.sahu@oss.qualcomm.com>
->> Co-developed-by: Yepuri Siddu <yepuri.siddu@oss.qualcomm.com>
->> Signed-off-by: Yepuri Siddu <yepuri.siddu@oss.qualcomm.com>
->> Co-developed-by: Rahul Samana <rahul.samana@oss.qualcomm.com>
->> Signed-off-by: Rahul Samana <rahul.samana@oss.qualcomm.com>
->> ---
->>  drivers/bluetooth/btqca.c   | 72 ++++++++++++++++++++++++++++++++++++++++++++-
->>  drivers/bluetooth/btqca.h   |  2 ++
->>  drivers/bluetooth/hci_qca.c | 24 +++++++++++++++
->>  3 files changed, 97 insertions(+), 1 deletion(-)
->>
->> diff --git a/drivers/bluetooth/btqca.c b/drivers/bluetooth/btqca.c
->> index 10c496eaea2c..34bc0684cf1b 100644
->> --- a/drivers/bluetooth/btqca.c
->> +++ b/drivers/bluetooth/btqca.c
->> @@ -569,6 +569,54 @@ static int qca_inject_cmd_complete_event(struct hci_dev *hdev)
->>  	return hci_recv_frame(hdev, skb);
->>  }
->>  
->> +static void qca_combine_nvm_calib(struct hci_dev *hdev, u8 **data,
->> +				  int *size, char *calib_name,
->> +				  size_t max_size)
->> +{
->> +	const struct firmware *calib_fw;
->> +	struct tlv_type_hdr *outer_hdr;
->> +	size_t inner_len, combined_size;
->> +	u8 *combined_data;
->> +	int err;
->> +
->> +	err = request_firmware(&calib_fw, calib_name, &hdev->dev);
->> +	if (err) {
->> +		if (qca_get_alt_nvm_file(calib_name, max_size))
->> +			err = request_firmware(&calib_fw, calib_name, &hdev->dev);
->> +
->> +		if (err) {
->> +			bt_dev_err(hdev, "QCA Failed to request file: %s (%d)",
->> +				   calib_name, err);
->> +			return;
->> +		}
->> +	}
->> +
->> +	bt_dev_info(hdev, "QCA Downloading %s", calib_name);
->> +
->> +	inner_len = *size + calib_fw->size;
->> +	combined_size = sizeof(*outer_hdr) + inner_len;
->> +	combined_data = vmalloc(combined_size);
->> +	if (!combined_data) {
->> +		bt_dev_warn(hdev,
->> +			    "QCA Failed to allocate memory for file: %s",
->> +			    calib_name);
->> +		release_firmware(calib_fw);
->> +		return;
->> +	}
->> +
->> +	outer_hdr = (struct tlv_type_hdr *)combined_data;
->> +	/* high 24 bits = payload length, low 8 bits = type */
->> +	outer_hdr->type_len = cpu_to_le32((inner_len << 8) | 4);
->> +	memcpy(combined_data + sizeof(*outer_hdr), *data, *size);
->> +	memcpy(combined_data + sizeof(*outer_hdr) + *size,
->> +	       calib_fw->data, calib_fw->size);
->> +	release_firmware(calib_fw);
->> +
->> +	vfree(*data);
->> +	*data = combined_data;
->> +	*size = combined_size;
->> +}
->> +
->>  static int qca_download_firmware(struct hci_dev *hdev,
->>  				 struct qca_fw_config *config,
->>  				 enum qca_btsoc_type soc_type,
->> @@ -614,6 +662,11 @@ static int qca_download_firmware(struct hci_dev *hdev,
->>  	memcpy(data, fw->data, size);
->>  	release_firmware(fw);
->>  
->> +	if (soc_type == QCA_QCC2072 && config->type == TLV_TYPE_NVM)
->> +		qca_combine_nvm_calib(hdev, &data, &size,
->> +				      config->calib_name,
->> +				      sizeof(config->calib_name));
->> +
->>  	ret = qca_tlv_check_data(hdev, config, data, size, soc_type);
->>  	if (ret)
->>  		goto out;
->> @@ -845,6 +898,10 @@ int qca_uart_setup(struct hci_dev *hdev, uint8_t baudrate,
->>  			snprintf(config.fwname, sizeof(config.fwname),
->>  				 "qca/hmtbtfw%02x.tlv", rom_ver);
->>  			break;
->> +		case QCA_QCC2072:
->> +			snprintf(config.fwname, sizeof(config.fwname),
->> +				 "qca/ornbtfw%02x.tlv", rom_ver);
->> +			break;
-> 
-> Please try to keep these sorted.
-> 
->>  		default:
->>  			snprintf(config.fwname, sizeof(config.fwname),
->>  				 "qca/rampatch_%08x.bin", soc_ver);
->> @@ -878,7 +935,8 @@ int qca_uart_setup(struct hci_dev *hdev, uint8_t baudrate,
->>  	/* Give the controller some time to get ready to receive the NVM */
->>  	msleep(10);
->>  
->> -	if (soc_type == QCA_QCA2066 || soc_type == QCA_WCN7850)
->> +	if (soc_type == QCA_QCA2066 || soc_type == QCA_WCN7850 ||
->> +	    soc_type == QCA_QCC2072)
->>  		qca_read_fw_board_id(hdev, &boardid);
->>  
->>  	/* Download NVM configuration */
->> @@ -939,12 +997,23 @@ int qca_uart_setup(struct hci_dev *hdev, uint8_t baudrate,
->>  			qca_get_nvm_name_by_board(config.fwname, sizeof(config.fwname),
->>  				 "hmtnv", soc_type, ver, rom_ver, boardid);
->>  			break;
->> +		case QCA_QCC2072:
->> +			qca_get_nvm_name_by_board(config.fwname, sizeof(config.fwname),
->> +						  "ornnv", soc_type, ver,
->> +						  rom_ver, boardid);
->> +			break;
-> 
-> Sorted
-> 
->>  		default:
->>  			snprintf(config.fwname, sizeof(config.fwname),
->>  				 "qca/nvm_%08x.bin", soc_ver);
->>  		}
->>  	}
->>  
->> +	if (soc_type == QCA_QCC2072)
->> +		qca_get_nvm_name_by_board(config.calib_name,
->> +					  sizeof(config.calib_name),
->> +					  "ornbcscal", soc_type, ver,
->> +					  rom_ver, boardid);
->> +
->>  	err = qca_download_firmware(hdev, &config, soc_type, rom_ver);
->>  	if (err < 0 && !firmware_name && soc_type == QCA_WCN6855) {
->>  		qca_get_nvm_name_by_board(config.fwname, sizeof(config.fwname),
->> @@ -1001,6 +1070,7 @@ int qca_uart_setup(struct hci_dev *hdev, uint8_t baudrate,
->>  	case QCA_WCN6750:
->>  	case QCA_WCN6855:
->>  	case QCA_WCN7850:
->> +	case QCA_QCC2072:
-> 
-> Sorted
-> 
->>  		/* get fw build info */
->>  		err = qca_read_fw_build_info(hdev);
->>  		if (err < 0)
->> diff --git a/drivers/bluetooth/btqca.h b/drivers/bluetooth/btqca.h
->> index 8f3c1b1c77b3..425133096eda 100644
->> --- a/drivers/bluetooth/btqca.h
->> +++ b/drivers/bluetooth/btqca.h
->> @@ -94,6 +94,7 @@ enum qca_tlv_type {
->>  struct qca_fw_config {
->>  	u8 type;
->>  	char fwname[64];
->> +	char calib_name[64];
->>  	uint8_t user_baud_rate;
->>  	enum qca_tlv_dnld_mode dnld_mode;
->>  	enum qca_tlv_dnld_mode dnld_type;
->> @@ -158,6 +159,7 @@ enum qca_btsoc_type {
->>  	QCA_WCN6750,
->>  	QCA_WCN6855,
->>  	QCA_WCN7850,
->> +	QCA_QCC2072,
-> 
-> Sorted
-> 
->>  };
->>  
->>  #if IS_ENABLED(CONFIG_BT_QCA)
->> diff --git a/drivers/bluetooth/hci_qca.c b/drivers/bluetooth/hci_qca.c
->> index 1222f97800f4..449f0896bdac 100644
->> --- a/drivers/bluetooth/hci_qca.c
->> +++ b/drivers/bluetooth/hci_qca.c
->> @@ -1375,6 +1375,7 @@ static int qca_set_baudrate(struct hci_dev *hdev, uint8_t baudrate)
->>  
->>  	/* Give the controller time to process the request */
->>  	switch (qca_soc_type(hu)) {
->> +	case QCA_QCC2072:
-> 
-> Ok, here you've discovered sorting order.
-> 
->>  	case QCA_WCN3950:
->>  	case QCA_WCN3988:
->>  	case QCA_WCN3990:
->> @@ -1462,6 +1463,7 @@ static unsigned int qca_get_speed(struct hci_uart *hu,
->>  static int qca_check_speeds(struct hci_uart *hu)
->>  {
->>  	switch (qca_soc_type(hu)) {
->> +	case QCA_QCC2072:
->>  	case QCA_WCN3950:
->>  	case QCA_WCN3988:
->>  	case QCA_WCN3990:
->> @@ -1513,6 +1515,7 @@ static int qca_set_speed(struct hci_uart *hu, enum qca_speed_type speed_type)
->>  		case QCA_WCN6750:
->>  		case QCA_WCN6855:
->>  		case QCA_WCN7850:
->> +		case QCA_QCC2072:
-> 
-> And then lost it again.
-> 
->>  			hci_uart_set_flow_control(hu, true);
->>  			break;
->>  
->> @@ -1548,6 +1551,7 @@ static int qca_set_speed(struct hci_uart *hu, enum qca_speed_type speed_type)
->>  		case QCA_WCN6750:
->>  		case QCA_WCN6855:
->>  		case QCA_WCN7850:
->> +		case QCA_QCC2072:
->>  			hci_uart_set_flow_control(hu, false);
->>  			break;
->>  
->> @@ -1864,6 +1868,7 @@ static int qca_power_on(struct hci_dev *hdev)
->>  	case QCA_WCN6750:
->>  	case QCA_WCN6855:
->>  	case QCA_WCN7850:
->> +	case QCA_QCC2072:
->>  		ret = qca_regulator_init(hu);
->>  		break;
->>  
->> @@ -1963,6 +1968,10 @@ static int qca_setup(struct hci_uart *hu)
->>  		soc_name = "wcn7850";
->>  		break;
->>  
->> +	case QCA_QCC2072:
->> +		soc_name = "qcc2072";
->> +		break;
->> +
->>  	default:
->>  		soc_name = "ROME/QCA6390";
->>  	}
->> @@ -1986,6 +1995,7 @@ static int qca_setup(struct hci_uart *hu)
->>  	case QCA_WCN6750:
->>  	case QCA_WCN6855:
->>  	case QCA_WCN7850:
->> +	case QCA_QCC2072:
->>  		if (qcadev && qcadev->bdaddr_property_broken)
->>  			hci_set_quirk(hdev, HCI_QUIRK_BDADDR_PROPERTY_BROKEN);
->>  
->> @@ -2019,6 +2029,7 @@ static int qca_setup(struct hci_uart *hu)
->>  	case QCA_WCN6750:
->>  	case QCA_WCN6855:
->>  	case QCA_WCN7850:
->> +	case QCA_QCC2072:
->>  		break;
->>  
->>  	default:
->> @@ -2172,6 +2183,12 @@ static const struct qca_device_data qca_soc_data_wcn3998 __maybe_unused = {
->>  	.num_vregs = 4,
->>  };
->>  
->> +static const struct qca_device_data qca_soc_data_qcc2072 __maybe_unused = {
->> +	.soc_type = QCA_QCC2072,
->> +	.num_vregs = 0,
->> +	.capabilities = QCA_CAP_WIDEBAND_SPEECH | QCA_CAP_VALID_LE_STATES,
->> +};
->> +
->>  static const struct qca_device_data qca_soc_data_wcn6750 __maybe_unused = {
->>  	.soc_type = QCA_WCN6750,
->>  	.vregs = (struct qca_vreg []) {
->> @@ -2274,6 +2291,7 @@ static void qca_power_off(struct hci_uart *hu)
->>  
->>  	case QCA_WCN6750:
->>  	case QCA_WCN6855:
->> +	case QCA_QCC2072:
->>  		gpiod_set_value_cansleep(qcadev->bt_en, 0);
->>  		msleep(100);
->>  		qca_regulator_disable(qcadev);
->> @@ -2429,6 +2447,7 @@ static int qca_serdev_probe(struct serdev_device *serdev)
->>  	case QCA_WCN6750:
->>  	case QCA_WCN6855:
->>  	case QCA_WCN7850:
->> +	case QCA_QCC2072:
->>  		qcadev->bt_power = devm_kzalloc(&serdev->dev,
->>  						sizeof(struct qca_power),
->>  						GFP_KERNEL);
->> @@ -2448,6 +2467,7 @@ static int qca_serdev_probe(struct serdev_device *serdev)
->>  	case QCA_WCN6750:
->>  	case QCA_WCN6855:
->>  	case QCA_WCN7850:
->> +	case QCA_QCC2072:
->>  		if (!device_property_present(&serdev->dev, "enable-gpios")) {
->>  			/*
->>  			 * Backward compatibility with old DT sources. If the
->> @@ -2490,6 +2510,7 @@ static int qca_serdev_probe(struct serdev_device *serdev)
->>  		if (!qcadev->bt_en &&
->>  		    (data->soc_type == QCA_WCN6750 ||
->>  		     data->soc_type == QCA_WCN6855 ||
->> +		     data->soc_type == QCA_QCC2072 ||
-> 
-> Randomly in the middle. No
-> 
->>  		     data->soc_type == QCA_WCN7850))
->>  			power_ctrl_enabled = false;
->>  
->> @@ -2498,6 +2519,7 @@ static int qca_serdev_probe(struct serdev_device *serdev)
->>  		if (IS_ERR(qcadev->sw_ctrl) &&
->>  		    (data->soc_type == QCA_WCN6750 ||
->>  		     data->soc_type == QCA_WCN6855 ||
->> +		     data->soc_type == QCA_QCC2072 ||
->>  		     data->soc_type == QCA_WCN7850)) {
->>  			dev_err(&serdev->dev, "failed to acquire SW_CTRL gpio\n");
->>  			return PTR_ERR(qcadev->sw_ctrl);
->> @@ -2576,6 +2598,7 @@ static void qca_serdev_remove(struct serdev_device *serdev)
->>  	struct qca_power *power = qcadev->bt_power;
->>  
->>  	switch (qcadev->btsoc_type) {
->> +	case QCA_QCC2072:
->>  	case QCA_WCN3988:
->>  	case QCA_WCN3990:
->>  	case QCA_WCN3991:
->> @@ -2785,6 +2808,7 @@ static const struct of_device_id qca_bluetooth_of_match[] = {
->>  	{ .compatible = "qcom,wcn6750-bt", .data = &qca_soc_data_wcn6750},
->>  	{ .compatible = "qcom,wcn6855-bt", .data = &qca_soc_data_wcn6855},
->>  	{ .compatible = "qcom,wcn7850-bt", .data = &qca_soc_data_wcn7850},
->> +	{ .compatible = "qcom,qcc2072-bt", .data = &qca_soc_data_qcc2072 },
-> 
-> And here too. Keep those sorted.
-> 
+This series adds support for the PMIC5 Gen4 ADC:
 
-Hi Dmitry,
+Patches 1-3 add the dt-bindings, IIO ADC driver, and thermal ADC-TM
+driver support respectively, within the existing files.
 
-Ack, I will keep the entries sorted consistently in v3.
+Patch 4 adds a DT header file with macro definitions for Gen4 virtual
+channel numbers, used in the "reg" property of ADC channel nodes.
 
-Thanks,
-Rahul
+Patch 5 adds the DT node for the Gen4 ADC peripheral under PMK8850.
 
->>  	{ /* sentinel */ }
->>  };
->>  MODULE_DEVICE_TABLE(of, qca_bluetooth_of_match);
->>
->> -- 
->> 2.34.1
->>
-> 
+Patches 6 and 7 add ADC support for Glymur and Kaanapali boards.
+This includes ADC channels for die temperature, VPH power and
+system thermistors, thermal zone nodes for thermistors and temp_alarm
+node configurations to use ADC die_temp channels for temperature reads.
+
+This series is dependent on the following series, which adds thermal
+monitoring support for Gen3 ADC: 
+https://lore.kernel.org/all/20260722-gen3_adc_tm-v4-0-011981f756c8@oss.qualcomm.com/.
+
+Signed-off-by: Jishnu Prakash <jishnu.prakash@oss.qualcomm.com>
+---
+Jishnu Prakash (7):
+      dt-bindings: iio: adc: Add support for QCOM PMIC5 Gen4 ADC
+      iio: adc: qcom-spmi-adc5-gen3: Add support for QCOM PMIC5 Gen4 ADC
+      thermal: qcom: qcom-spmi-adc-tm5-gen3: Add support for QCOM PMIC5 Gen4 ADC
+      arm64: dts: qcom: Add header file for ADC5 Gen4 channel macros
+      arm64: dts: qcom: pmk8850: Add ADC5 Gen4 peripheral
+      arm64: dts: qcom: glymur: Add ADC support for Glymur CRD
+      arm64: dts: qcom: kaanapali: Add ADC support for Kaanapali boards
+
+ .../bindings/iio/adc/qcom,spmi-adc5-gen3.yaml      |  47 +++-
+ arch/arm64/boot/dts/qcom/glymur-crd.dtsi           | 143 ++++++++++
+ arch/arm64/boot/dts/qcom/kaanapali-mtp.dts         | 312 +++++++++++++++++++++
+ arch/arm64/boot/dts/qcom/kaanapali-qrd.dts         | 312 +++++++++++++++++++++
+ arch/arm64/boot/dts/qcom/pmk8850.dtsi              |  25 ++
+ arch/arm64/boot/dts/qcom/qcom-adc5-gen4.h          |  96 +++++++
+ drivers/iio/adc/qcom-spmi-adc5-gen3.c              | 165 ++++++++---
+ drivers/iio/adc/qcom-vadc-common.c                 |  43 +++
+ drivers/thermal/qcom/qcom-spmi-adc-tm5-gen3.c      |  19 +-
+ include/linux/iio/adc/qcom-adc5-gen3-common.h      |  44 ++-
+ include/linux/iio/adc/qcom-vadc-common.h           |   6 +
+ 11 files changed, 1156 insertions(+), 56 deletions(-)
+---
+base-commit: f5098b6bae761e346ebcd9da7f95622c04733cff
+change-id: 20260730-pmic5_gen4_adc-f33d756bba5c
+prerequisite-message-id: <20260722-gen3_adc_tm-v4-0-011981f756c8@oss.qualcomm.com>
+prerequisite-patch-id: a11759e2d93f71e1512222baf904ced88a7b5262
+prerequisite-patch-id: 3170107e11602d8c212f8a554db85860383b1e52
+prerequisite-patch-id: 6b719c6c28e9572b9fef186a53c2c5fa6fbdf001
+
+Best regards,
+--  
+Jishnu Prakash <jishnu.prakash@oss.qualcomm.com>
 
