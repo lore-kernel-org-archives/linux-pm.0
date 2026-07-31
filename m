@@ -1,153 +1,95 @@
-Received: from mail-lj1-f180.google.com (mail-lj1-f180.google.com [209.85.208.180])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 426BA42CB1B
-	for <linux-pm@vger.kernel.org>; Fri, 31 Jul 2026 14:34:31 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.208.180
+Received: from azure-sdnproxy.icoremail.net (azure-sdnproxy.icoremail.net [52.187.6.220])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id 081A841D102;
+	Fri, 31 Jul 2026 14:37:01 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=52.187.6.220
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1785508472; cv=none; b=SDsgNQuYrcqm6z/nPFxmUA1p1L3FQ8x97Bzb92ebJcM1ImDJziqwjEu4nCANxA76DLeojtLSFC4cx8EkjM+AJTQcBmbGLNne/ealMV4gFNTpWCYo57rAQGBRZXTsZz7wN6msFtZ4q2XnII3krWjws8I1u7Z3VlWQVhcc6en5A04=
+	t=1785508629; cv=none; b=IU8rAeut517YAZPjDT9CuNDYmss9tP1C4+rXW4qFCSzONIpYLIXWPjXt8UDU0J3SsS1qJI5D9Jvr1l00OOoyNnUsVfBaXBPe0WfeIMnGrhVElO0R/qsiivmYPL6XycUfc4zrHFnjA/7rDmJKVEpZQNlsJ8Ar4to78MtetK4RyKE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1785508472; c=relaxed/simple;
-	bh=Lu9hJWM5FnkOlRaWVWjIRI/RDVl5jUP9oaZX7fCXZhY=;
-	h=Message-ID:Date:MIME-Version:Subject:From:To:Cc:References:
-	 In-Reply-To:Content-Type; b=chsduC0taomRdyJ8rid1ksCbgnwSEZfDZc7OuWjulhibSMHzIyr+95XLWUGmYgo/sGYd7r48Tp5uncOusEcGWzA1f4eRkWgsQIzhrmAoLOZdOPzN1ewTq4q4yhg9HB9Hp4oIDmHpBiMoiOFwp6b7m9T5Bqp24xgch81L1DrNME0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=X+ByasTO; arc=none smtp.client-ip=209.85.208.180
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="X+ByasTO"
-Received: by mail-lj1-f180.google.com with SMTP id 38308e7fff4ca-39dbe684115so18289691fa.1
-        for <linux-pm@vger.kernel.org>; Fri, 31 Jul 2026 07:34:31 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1785508469; x=1786113269; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:in-reply-to:content-language
-         :references:cc:to:from:subject:user-agent:mime-version:date
-         :message-id:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=cEYf8XWt7uIQNYBnvw5HrwZeU0df85IjOKBJMRJ7Wzw=;
-        b=X+ByasTObEzX5fSUAw2i3Y9aVdSdmy4R+Is2Uj0h1R8ZFdcMCEK7ijp3rGrmiO7ZvM
-         qW+rIj6ajAqShR3qi9EFIDSOJmBLE4Jtpns8tCVzTH+X9HELyNdtLhNdYA+kv00ANwCU
-         KLNnFhObk0PkcFMTw2OrrXFbaTNYyieiNeWja7zXH5qmvZuyHFuDM1IaeELjZP66r0IL
-         TRrdBMWEprra6URU2F60Y7I6YYFQ3K0VfwBCK/6oTMz6yswd7KK/ULIJ4qYbwIklJGZx
-         r1kHQ5SJZFtM1CludfBx5QwdID//sAmOcKI6/1Jbtz3qK3X5+E6+ofidePRNLk/FhC1i
-         yqJg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1785508469; x=1786113269;
-        h=content-transfer-encoding:content-type:in-reply-to:content-language
-         :references:cc:to:from:subject:user-agent:mime-version:date
-         :message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=cEYf8XWt7uIQNYBnvw5HrwZeU0df85IjOKBJMRJ7Wzw=;
-        b=BbQsWiDefLY/NSJgFxn+9c+YH34RffpPaMJ/PNSP7aDlMCnpuM4BFDqiolETikoMJM
-         u5b4gzTrF2tqvCb7/1dRO8YegLJndq3/6VxHClOn96ifrjxjCHhEP+kH/CGRaO0DH2PM
-         XPkuW2Dyaq0gNDS2epw+RTcXoQJsAxMxCm+AhkVkNw/yfRNeBOyU/wBo3PprcIvrL+1R
-         1BQXDl/UxgjvyHE88KVO2Eo31Ojkh2rwAPg/F3C8skUo5E15MLHAcfR4p5xo3NstTdDC
-         Mfh+etPf4CpnbbFEt4eE1zE5R4Q90Q2Ko9NoSRpJo6TtEIzG0VVLygN9SWA9cFNfYV7Y
-         Dt5w==
-X-Forwarded-Encrypted: i=1; AHgh+RpeTcq0QXICfMerfj8i2q5jAJJdYZ4B1SI+M/i5szCuAPriFZBawfJGnlnSBS3fleZStHGrgbHgEQ==@vger.kernel.org
-X-Gm-Message-State: AOJu0YyFfcjRStK51EUn8ONKYFPTBIoeFChoABMzQJLySqKJWQ2QNnTk
-	uvgpoLWktvViM5+hyQvydTGWxjOxaEWMN7qtekVYGvBTAoNSuKrbuGpq
-X-Gm-Gg: AR+sD11eYgvF5JIRLG7bBnAVUVSDBVvShM6023nG3aSV1EyjyayXJmf9x6Dvn0WG05a
-	h3wSSfjj1xmcaz15Mo1YtSNDY7WmjYkPeMOGnbi/tGldLdSzs6/zbj7XzKltFuu6WUVumHIcdzJ
-	v/Huzoh6bKQRfG8qPoi9KKyxJ+eaanRaXSyC6Iyz5ITzejz4YmyrslLLHgGI5RIYtyk+gSWur5a
-	gD1V4pBh6e073/Ybr3L+7ejrdgCbv4RS07j8c3YPOXx6fsba44Oz+Xz4gSowOh1BpUC2epyKJEh
-	kEXIrzfkTko+mmZ4tm7r1jhTd1TaL63ykCpOyeGX/P1twlcL/lm/sITiTShDCfLaKcY2gVBET9M
-	26otB5A3yqF0B4RTh/NUBWZKxi0Cwb4n72T4PoFQIKruLHzso0TBaohY9nn+Xw9VTUJ3pqWGrbs
-	OhQxup34b3e2Tzdq9fEItwobW9XCEGx71hldYOPIMOnTox5Kmwd+zfNzWHH+zcwP3bQaMD/VZw
-X-Received: by 2002:a05:6512:3d03:b0:5ae:acbd:439c with SMTP id 2adb3069b0e04-5b2e2422d22mr454761e87.23.1785508468894;
-        Fri, 31 Jul 2026 07:34:28 -0700 (PDT)
-Received: from [192.168.120.193] ([178.235.128.140])
-        by smtp.gmail.com with ESMTPSA id 2adb3069b0e04-5b2e2441db4sm332262e87.45.2026.07.31.07.34.24
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Fri, 31 Jul 2026 07:34:28 -0700 (PDT)
-Message-ID: <7855a0c3-29ac-4842-8e07-352fcb535a63@gmail.com>
-Date: Fri, 31 Jul 2026 16:34:23 +0200
+	s=arc-20240116; t=1785508629; c=relaxed/simple;
+	bh=vjnXK6e/+zs+rtt3t+EiPCrC7Uppk9/6Fja90aK7H3k=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=ppHzZ1ZfwO6N6yfm/Rj7yvjue/hRhjFgYRhB7V8Ehx/UIXB2mbH6TvP0NkM+ZHG2Bw6Ad8wW5JlX/4cWUizNAGQcqEcutkQCE29t5abqJZzSYd+IuP+LYwGPA8L1DubA0rVxcMyuwtgSq3GvRiFtCOD6B3G45YJrJpozwSiMS7M=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=zju.edu.cn; spf=pass smtp.mailfrom=zju.edu.cn; arc=none smtp.client-ip=52.187.6.220
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=zju.edu.cn
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=zju.edu.cn
+Received: from zju.edu.cn (unknown [10.98.66.117])
+	by mtasvr (Coremail) with SMTP id _____wDHoX4Ls2xqQj1UAA--.8037S3;
+	Fri, 31 Jul 2026 22:37:00 +0800 (CST)
+Received: from localhost.localdomain (unknown [10.98.66.117])
+	by mail-app1 (Coremail) with SMTP id yy_KCgCHiaMKs2xqlOZcAw--.50299S2;
+	Fri, 31 Jul 2026 22:36:58 +0800 (CST)
+From: Fan Wu <fanwu01@zju.edu.cn>
+To: linux-pm@vger.kernel.org
+Cc: sre@kernel.org,
+	laurentiu.palcu@intel.com,
+	krzk@kernel.org,
+	linux-kernel@vger.kernel.org,
+	stable@vger.kernel.org,
+	Fan Wu <fanwu01@zju.edu.cn>
+Subject: [PATCH] power: supply: bq24257: fix use-after-free on remove
+Date: Fri, 31 Jul 2026 14:35:54 +0000
+Message-Id: <20260731143554.334179-1-fanwu01@zju.edu.cn>
+X-Mailer: git-send-email 2.34.1
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v6 11/16] dt-bindings: usb: mediatek,mtk-xhci: Switch to
- ports for USB connections
-From: Konrad Dybcio <konradybcio@gmail.com>
-To: Chen-Yu Tsai <wenst@chromium.org>, Bartosz Golaszewski <brgl@kernel.org>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
- Daniel Scally <djrscally@gmail.com>,
- Heikki Krogerus <heikki.krogerus@linux.intel.com>,
- Sakari Ailus <sakari.ailus@linux.intel.com>,
- "Rafael J. Wysocki" <rafael@kernel.org>, Danilo Krummrich <dakr@kernel.org>,
- Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
- Conor Dooley <conor+dt@kernel.org>, Matthias Brugger
- <matthias.bgg@gmail.com>,
- AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
-Cc: linux-acpi@vger.kernel.org, driver-core@lists.linux.dev,
- linux-pm@vger.kernel.org, linux-usb@vger.kernel.org,
- devicetree@vger.kernel.org, linux-mediatek@lists.infradead.org,
- linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
- Manivannan Sadhasivam <mani@kernel.org>,
- Alan Stern <stern@rowland.harvard.edu>,
- Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>,
- Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
-References: <20260721065413.2306137-1-wenst@chromium.org>
- <20260721065413.2306137-12-wenst@chromium.org>
- <38397324-56b0-41e9-960f-152a16ce8b12@gmail.com>
-Content-Language: en-US
-In-Reply-To: <38397324-56b0-41e9-960f-152a16ce8b12@gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
+X-CM-TRANSID:yy_KCgCHiaMKs2xqlOZcAw--.50299S2
+X-CM-SenderInfo: qrstjiaswqq6lmxovvfxof0/
+X-CM-DELIVERINFO: =?B?wPs6qAXKKxbFmtjJiESix3B1w3vZ3A9ovKVTomAyoQazvoRs/NHSP8GI2EvgeEEW7R
+	sfnVCjTgEH9dVomQuWcozCBBEXEjcR45dYs2uGwFfNb8p3BvjsVFH5IA1/nmqcZr4X+QVd
+	1O1BJuJDoz2Owor9xTip9E6mavGmQbzmcFsnzP86
+X-Coremail-Antispam: 1Uk129KBj93XoW7tr47tryxXw17Gw1kGr4rWFX_yoW8JFW5pr
+	Z5CF90krWUJFW2ya1vvanrCFyrCFy5A347CFWxKw15A3ZxJr4Utryj9FsxWry3ArW8ZF4S
+	9FnIqFW0vry5CrcCm3ZEXasCq-sJn29KB7ZKAUJUUUUU529EdanIXcx71UUUUU7KY7ZEXa
+	sCq-sGcSsGvfJ3Ic02F40EFcxC0VAKzVAqx4xG6I80ebIjqfuFe4nvWSU5nxnvy29KBjDU
+	0xBIdaVrnRJUUU9Gb4IE77IF4wAFF20E14v26r4j6ryUM7CY07I20VC2zVCF04k26cxKx2
+	IYs7xG6rWj6s0DM7CIcVAFz4kK6r1j6r18M28lY4IEw2IIxxk0rwA2F7IY1VAKz4vEj48v
+	e4kI8wA2z4x0Y4vE2Ix0cI8IcVAFwI0_tr0E3s1l84ACjcxK6xIIjxv20xvEc7CjxVAFwI
+	0_Gr1j6F4UJwA2z4x0Y4vEx4A2jsIE14v26rxl6s0DM28EF7xvwVC2z280aVCY1x0267AK
+	xVW0oVCq3wAac4AC62xK8xCEY4vEwIxC4wAS0I0E0xvYzxvE52x082IY62kv0487Mc804V
+	CY07AIYIkI8VC2zVCFFI0UMc02F40EFcxC0VAKzVAqx4xG6I80ewAv7VC0I7IYx2IY67AK
+	xVWUJVWUGwAv7VC2z280aVAFwI0_Gr0_Cr1lOx8S6xCaFVCjc4AY6r1j6r4UM4x0Y48Icx
+	kI7VAKI48JM4x0Y48IcxkI7VAKI48G6xCjnVAKz4kxMxAIw28IcxkI7VAKI48JMxC20s02
+	6xCaFVCjc4AY6r1j6r4UMI8I3I0E5I8CrVAFwI0_Jr0_Jr4lx2IqxVCjr7xvwVAFwI0_Jr
+	I_JrWlx4CE17CEb7AF67AKxVWUAVWUtwCIc40Y0x0EwIxGrwCI42IY6xIIjxv20xvE14v2
+	6r1j6r1xMIIF0xvE2Ix0cI8IcVCY1x0267AKxVWUJVW8JwCI42IY6xAIw20EY4v20xvaj4
+	0_Jr0_JF4lIxAIcVC2z280aVAFwI0_Gr0_Cr1lIxAIcVC2z280aVCY1x0267AKxVW8JVW8
+	JrUvcSsGvfC2KfnxnUUI43ZEXa7IU86c_DUUUUU==
 
-On 7/31/26 4:33 PM, Konrad Dybcio wrote:
-> On 7/21/26 8:54 AM, Chen-Yu Tsai wrote:
->> This reverts commit 454a1e3cd36c113341d7b71e8e691c6e47ab4a8a.
->>
->> MediaTek's XHCI implementation supports both USB 2.0 High Speed (HS)
->> and USB 3.x Super Speed (SS). The block can also be synthesized with
->> either HS-only capability or HS+SS capability. The SSUSB controller
->> handles the device or gadget mode. Saying that SSUSB handles the HS
->> portion is wrong.
-> 
-> [...]
-> 
->> +  ports:
->> +    $ref: /schemas/graph.yaml#/properties/ports
->> +
->> +    properties:
->> +      port@1:
->> +        $ref: /schemas/graph.yaml#/properties/port
->> +        description: Super Speed (SS) data bus if SS-capable;
->> +          otherwise High Speed (HS) data bus.
->> +
->> +      port@2:
->> +        $ref: /schemas/graph.yaml#/properties/port
->> +        description: High Speed (HS) data bus if controller is SS-capable.
-> 
-> FWIW this is opposite vs what the (most common) DWC3 schema defines:
+The STAT-pin interrupt is devm-managed, so it stays armed until the devm
+cleanup that runs after remove() returns. remove() cancels
+bq->iilimit_setup_work while the handler can still fire; the threaded
+handler reschedules that work and dereferences bq, so the work runs
+against freed memory once devm frees bq.
 
-(s/opposite/different to)
+Call devm_free_irq() before canceling the work so the handler is quiesced
+and cannot reschedule it after the cancel.
 
-Konrad
+Found by static analysis.
 
-> 
-> 
-> (also true for mediatek,mtu3 and renesas,usb3-peri)
-> 
-> -- Documentation/devicetree/bindings/usb/snps,dwc3-common.yaml
->   ports:
->     $ref: /schemas/graph.yaml#/properties/ports
->     description:
->       Those ports should be used with any connector to the data bus of this
->       controller using the OF graph bindings specified if the "usb-role-switch"
->       property is used.
-> 
->     properties:
->       port@0:
->         $ref: /schemas/graph.yaml#/properties/port
->         description: High Speed (HS) data bus.
-> 
->       port@1:
->         $ref: /schemas/graph.yaml#/properties/port
->         description: Super Speed (SS) data bus.
-> 
-> Konrad
+Fixes: 2219a935963e ("power_supply: Add TI BQ24257 charger driver")
+Cc: stable@vger.kernel.org
+Assisted-by: Codex:gpt-5.6
+Signed-off-by: Fan Wu <fanwu01@zju.edu.cn>
+---
+ drivers/power/supply/bq24257_charger.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/drivers/power/supply/bq24257_charger.c b/drivers/power/supply/bq24257_charger.c
+index 72f1bfea8d..b9110d5fe2 100644
+--- a/drivers/power/supply/bq24257_charger.c
++++ b/drivers/power/supply/bq24257_charger.c
+@@ -1064,6 +1064,7 @@ static void bq24257_remove(struct i2c_client *client)
+ {
+ 	struct bq24257_device *bq = i2c_get_clientdata(client);
+ 
++	devm_free_irq(&client->dev, client->irq, bq);
+ 	if (bq->iilimit_autoset_enable)
+ 		cancel_delayed_work_sync(&bq->iilimit_setup_work);
+ 
+-- 
+2.34.1
+
