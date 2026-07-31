@@ -1,59 +1,35 @@
-Received: from smtpbgau1.qq.com (smtpbgau1.qq.com [54.206.16.166])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DD5AA29D27D;
-	Fri, 31 Jul 2026 01:30:57 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=54.206.16.166
+Received: from zg8tmtyylji0my4xnjqumte4.icoremail.net (zg8tmtyylji0my4xnjqumte4.icoremail.net [162.243.164.118])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id 5D522318121;
+	Fri, 31 Jul 2026 02:21:16 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=162.243.164.118
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1785461463; cv=none; b=q1Pv8Q4FkQZkYZWtgQLAbFHpH8OiZMFT+PC/QVzxTM+fVESHhYD7SvwLi98/BxOfOS6cdwcBeCTAlPnRTvIz1CNEAiAeJn6C7odnpZIktlUCXhhaKBD4VZFGkK5D7XbaPL/fRV1p56BYWrv+LFRoXUJDqWNixhRXDx2cC2dpZro=
+	t=1785464486; cv=none; b=km2XBliQYiAsCWvKnjCbfdLxRvHJL0lHTjWNzVqCgIhlDUnLKvOxGdh0dyNjzeVvW9cqZoQDWrYJdp/8ZAm0knR6ra+5Jb8Pzr8xdLbjfHgJynGLi6jCnz2pMuY0ozdYlqDcpq+qB9jhNSz5Kt6hV6vLlTEViesCcHSNRXTDMrQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1785461463; c=relaxed/simple;
-	bh=JZl7+Iq+TkZ6KtfzXP/ZMoFzLUUZIidJ3IyemrpboMg=;
-	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=Pfu2nerbyqJMnZT/JQW5fZdrPwIVadcXzTXE0bMY0onTQP80Zu6YzfNLgCXCSQtfU2BIURFLwU9vjfGOnvF1BoC8i2GzVIsS6lLzAxXhrY74R4iOhiCGkxY/aox9/lyHQasxKUM5dWHalGN69vCG4ACLdqe+h/nhI5zhsm5J9s0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=uniontech.com; spf=pass smtp.mailfrom=uniontech.com; dkim=pass (1024-bit key) header.d=uniontech.com header.i=@uniontech.com header.b=m4BL+af6; arc=none smtp.client-ip=54.206.16.166
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=uniontech.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=uniontech.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=uniontech.com header.i=@uniontech.com header.b="m4BL+af6"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=uniontech.com;
-	s=onoh2408; t=1785461449;
-	bh=VOddwZB2ExC+qB3w6kRHEoXg3vMe6ErDqJixfcX5e1U=;
-	h=From:To:Subject:Date:Message-Id:MIME-Version;
-	b=m4BL+af6+znJQHIF1rsrHmjuJcIhS4CvW15do5v8Z4+nELU9cEU4sK5HIaim7xurc
-	 V+IZT4hIwJHNl7ulbQhvJRzOKxy1esuit3wfN0tS7PfmIRgn24OwO4jZXsT+Mn0MER
-	 W/xFlCAPPBXBX0p68zKO52JL6+LlwS3SS1sFMxiQ=
-X-QQ-mid: esmtpgz15t1785461428tf7c0f590
-X-QQ-Originating-IP: PGexwB07BwrBrwYbQb7cSisCsll351s8YVPydnYQXxs=
-Received: from localhost.localdomain ( [113.57.152.160])
-	by bizesmtp.qq.com (ESMTP) with 
-	id ; Fri, 31 Jul 2026 09:30:26 +0800 (CST)
-X-QQ-SSF: 0000000000000000000000000000000
-X-QQ-GoodBg: 1
-X-BIZMAIL-ID: 10344273564525670133
-EX-QQ-RecipientCnt: 15
-From: Haowen Tu <tuhaowen@uniontech.com>
-To: laurent.pinchart@ideasonboard.com,
-	stern@rowland.harvard.edu,
-	rafael@kernel.org
-Cc: tuhaowen@uniontech.com,
-	gregkh@linuxfoundation.org,
-	hansg@kernel.org,
-	kernel@uniontech.com,
-	lenb@kernel.org,
+	s=arc-20240116; t=1785464486; c=relaxed/simple;
+	bh=7LaM6hGzKUCUT2Tp6oALb5MO2CH/V7rbICfdfbUTYEA=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=k8AvU/KGl0Ht1YowViIdcuXSOGJcr7BG8O9Ya4mp7v50uOHMjjLf/N0UbSrxn4gRfGfHXvG49OMgczf1BRdWDZKrv0sHvh0DDLUCGYJ+MNE9tYxlSkKNcEZ6HANrrXP+t7ex5wJI+EJL/coX3qX35BeWjHNNd6qlSracLxUYHi8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=zju.edu.cn; spf=pass smtp.mailfrom=zju.edu.cn; arc=none smtp.client-ip=162.243.164.118
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=zju.edu.cn
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=zju.edu.cn
+Received: from zju.edu.cn (unknown [10.98.66.117])
+	by mtasvr (Coremail) with SMTP id _____wA3ITeRBmxqawpSAA--.3444S3;
+	Fri, 31 Jul 2026 10:21:06 +0800 (CST)
+Received: from localhost.localdomain (unknown [10.98.66.117])
+	by mail-app2 (Coremail) with SMTP id zC_KCgDHEcaNBmxqaSdjAw--.43748S2;
+	Fri, 31 Jul 2026 10:21:01 +0800 (CST)
+From: Fan Wu <fanwu01@zju.edu.cn>
+To: linux-pm@vger.kernel.org
+Cc: sre@kernel.org,
+	andersson@kernel.org,
+	neil.armstrong@linaro.org,
+	linux-arm-msm@vger.kernel.org,
 	linux-kernel@vger.kernel.org,
-	linux-media@vger.kernel.org,
-	linux-pm@vger.kernel.org,
-	linux-usb@vger.kernel.org,
-	mchehab@kernel.org,
-	oneukum@suse.com,
-	pavel@kernel.org
-Subject: Re: [PATCH v4 4/4] media: uvcvideo: defer streaming restart after hibernation snapshot
-Date: Fri, 31 Jul 2026 09:30:24 +0800
-Message-Id: <20260731013024.1577337-1-tuhaowen@uniontech.com>
-X-Mailer: git-send-email 2.20.1
-In-Reply-To: <20260730153817.GA1555869@killaraus.ideasonboard.com>
-References: <20260730153817.GA1555869@killaraus.ideasonboard.com>
+	stable@vger.kernel.org,
+	Fan Wu <fanwu01@zju.edu.cn>
+Subject: [PATCH] power: supply: qcom_battmgr: fix use-after-free of battmgr on remove
+Date: Fri, 31 Jul 2026 02:20:06 +0000
+Message-Id: <20260731022006.317192-1-fanwu01@zju.edu.cn>
+X-Mailer: git-send-email 2.34.1
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -61,80 +37,84 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-QQ-SENDSIZE: 520
-Feedback-ID: esmtpgz:uniontech.com:qybglogicsvrsz:qybglogicsvrsz3b-0
-X-QQ-XMAILINFO: MfQnJH+7WKv6TS5mRVB3/RA2ZYsYkcEzOAHTYcFIjoOMObrvyo86w0In
-	VwNF+uqMfvf4pgQjcCk0jnbdwKQkS9T5LK+i9rz3M6XhZlQhGM74SI+WeSIXDjott1tOHxh
-	AGyJPlyO8ib/CBejNdlsiZtQR0yRn0nPzCDOH8yjn1YfJrYV0vH/g9GcDgk3TZxlX8SxCnP
-	UnRY1S0d/ouo/9l3feJ8zj0LCbzfUbn0gPirxQffJfJ1ALWxwBPPaiJO1zDJUChVfusaQ6A
-	d9QdFOJqPzUutY+fYBfjtjIZdW3PEYa/Ep5dtkrmoX76mB5tSE7GKFgTlfZ1aTNKhQsMD8l
-	h96PcENzCH56klPkP9id8Zg7f7q7i84uQpTMtklGDjFjxzrZNgf0YZoa6ch8qNbb21YqN+e
-	x61sTBM45YdXgxpVHjMdZYBvFVIShUMKubq8xs77Cokwd2eAC6mGlKvFy3lRQp3u242iZK7
-	HBNxqPovU6wLjDMPr2XniuGVUpR9YUa/5LMzfDBhREe93Qv9FNJMKNBMEYf4YOeFXfmeWve
-	M2S7eS+GUKDe51Tjf5smGpE6n1Kq/AWj+sswqWiO00GS32t41yUu92g7r159wJa6K9Tmq9a
-	Jc1XnK4ZVB/M8la+/71hH5Y6+L03Gw7pJlsnAZT0nIUALle21oYU8//CiZMrFABbqPjEa1x
-	ynUsJtTN2hqsAWpcSjv4qFv8MXpLf4IWpDdzDwaxtdcvQbOrqZzAUODgMASUveb3F6PHspq
-	P4m3RQxV4jkd6w1BKW47pEwXOFEQq4s/eW4qQFW5iSgLw0+/4yYbdpp2H42a7kYKG4J0h0n
-	+zcz2G9BEecUf74GybBGJC7hUdJYVVSVBixLiE7Uos+Fb0Xyd1vXwMm5pwMhMIXc9qSTNr0
-	EOqhj7RoPoeljLQliFZcfmEXAvxOBTTh0Sh6eSrxDDAvpc9iKdrh7N8raEVXoAOqlhBtDs1
-	6GzHLNjRm3cqLYYPKH853kemso9DpWtaYCPxID7uwiRnu7U2lHygu+1huci0sN0mPMPN3p+
-	mjZn/2FYZQQWsBWfBg1zFObfBzu2MfmR459XbAvQ==
-X-QQ-XMRINFO: NS+P29fieYNwqS3WCnRCOn9D1NpZuCnCRA==
-X-QQ-RECHKSPAM: 0
+X-CM-TRANSID:zC_KCgDHEcaNBmxqaSdjAw--.43748S2
+X-CM-SenderInfo: qrstjiaswqq6lmxovvfxof0/
+X-CM-DELIVERINFO: =?B?c5bTJQXKKxbFmtjJiESix3B1w3vZ3A9ovKVTomAyoQazvoRs/NHSP8GI2EvgeEEW7R
+	sfncGSG+szpQCInt5Y8rbJUI0taF0N0kZZZ0tR6irGjEFRcKWeojhCgW6dpE3YRGCeJXm+
+	Nr3uGInxBeApWKp/hlSp9E6mavGmQbzmcFsnzP86
+X-Coremail-Antispam: 1Uk129KBj93XoW7AFW5AF4xJF4DCr4DAFWxXwc_yoW8uF48pa
+	s3tF9I9ry5ZFZxXa4jyr47AFyfGw4qkry3Gry7Wa40vrnIyr18XFW5KF10vFy5Jrs7ta12
+	y39Iqr98WF4fCwbCm3ZEXasCq-sJn29KB7ZKAUJUUUUU529EdanIXcx71UUUUU7KY7ZEXa
+	sCq-sGcSsGvfJ3Ic02F40EFcxC0VAKzVAqx4xG6I80ebIjqfuFe4nvWSU5nxnvy29KBjDU
+	0xBIdaVrnRJUUU9lb4IE77IF4wAFF20E14v26r4j6ryUM7CY07I20VC2zVCF04k26cxKx2
+	IYs7xG6rWj6s0DM7CIcVAFz4kK6r1j6r18M28lY4IEw2IIxxk0rwA2F7IY1VAKz4vEj48v
+	e4kI8wA2z4x0Y4vE2Ix0cI8IcVAFwI0_tr0E3s1l84ACjcxK6xIIjxv20xvEc7CjxVAFwI
+	0_Gr1j6F4UJwA2z4x0Y4vEx4A2jsIE14v26rxl6s0DM28EF7xvwVC2z280aVCY1x0267AK
+	xVW0oVCq3wAac4AC62xK8xCEY4vEwIxC4wAS0I0E0xvYzxvE52x082IY62kv0487Mc804V
+	CY07AIYIkI8VC2zVCFFI0UMc02F40EFcxC0VAKzVAqx4xG6I80ewAv7VC0I7IYx2IY67AK
+	xVWUJVWUGwAv7VC2z280aVAFwI0_Jr0_Gr1lOx8S6xCaFVCjc4AY6r1j6r4UM4x0Y48Icx
+	kI7VAKI48JM4x0Y48IcxkI7VAKI48G6xCjnVAKz4kxMxAIw28IcxkI7VAKI48JMxC20s02
+	6xCaFVCjc4AY6r1j6r4UMI8I3I0E5I8CrVAFwI0_Jr0_Jr4lx2IqxVCjr7xvwVAFwI0_Jr
+	I_JrWlx4CE17CEb7AF67AKxVWUtVW8ZwCIc40Y0x0EwIxGrwCI42IY6xIIjxv20xvE14v2
+	6r1j6r1xMIIF0xvE2Ix0cI8IcVCY1x0267AKxVWUJVW8JwCI42IY6xAIw20EY4v20xvaj4
+	0_Jr0_JF4lIxAIcVC2z280aVAFwI0_Jr0_Gr1lIxAIcVC2z280aVCY1x0267AKxVWUJVW8
+	JbIYCTnIWIevJa73UjIFyTuYvjxU7gAwDUUUU
 
-Hi Laurent, Alan,
+qcom_battmgr_pdr_notify() queues enable_work when the PMIC GLINK service
+comes up. The worker recovers battmgr through container_of() and issues a
+firmware request.
 
-On Thu, Jul 30, 2026 at 06:38:17PM +0300, Laurent Pinchart wrote:
-> Something like that. I'm very biased as I mostly work on multimedia
-> devices, but it feels to me that for many drivers the current
-> hibernation procedure is too complex. Those drivers don't need to
-> differentiate suspend and hibernation, they only need to be instructed
-> to suspend at some point, and resume later. Resuming could occur when
-> the system is woken up, or when hibernation fails in the THAW phase, and
-> those drivers wouldn't care to differentiate between the two. Seeing an
-> extra resume + suspend cycle due to the hibernation machinery needing to
-> write the image to disk, and having to handle that cycle manually as in
-> this series, is additional complexity that (unless I'm missing
-> something) could be handled by the PM core.
+The driver has no remove callback, so a pending or running enable_work can
+access battmgr after devres frees it. The PMIC GLINK client stays on the
+client list until its devres release action, so a PDR notification can
+also queue the work while remove is running.
 
-I agree.  This was actually close to what I considered before trying the
-smaller UVC-specific approach.
+Add a remove callback that disables and drains enable_work before devres
+release. Unlike cancel_work_sync(), disable_work_sync() also blocks a later
+PDR notification from queueing the work. Store battmgr with
+auxiliary_set_drvdata() in probe so remove can retrieve it.
 
-My initial thought was that the PM core could distinguish the
-post-snapshot resume used for writing the hibernation image from the
-later path where the original kernel continues running.  In that model,
-devices that do not need to be resumed during the image-write phase
-could be marked accordingly.  They would remain suspended after FREEZE,
-and would only be resumed if the original kernel continues running
-instead of powering down.
+This issue was found by an in-house static analysis tool.
 
-That would avoid making each driver open-code the same kind of
-post-snapshot THAW check and recovery handling.  It would also avoid the
-notifier ordering issue in v4, because the PM core would keep the normal
-device ordering when resuming the skipped devices.
+Fixes: 29e8142b5623 ("power: supply: Introduce Qualcomm PMIC GLINK power supply")
+Cc: stable@vger.kernel.org # v6.10+
+Assisted-by: Codex:gpt-5.6
+Signed-off-by: Fan Wu <fanwu01@zju.edu.cn>
+---
+ drivers/power/supply/qcom_battmgr.c | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
 
-The reason I did not start with that approach is that it looked like a
-larger PM core change.  It needs a clear definition of which devices need
-to be resumed for hibernation image writeout, and it needs to preserve
-parent-device and storage-stack dependencies.  It also needs to handle
-the case Alan mentioned, where the restore kernel cannot restore the
-image and sends THAW before continuing; that path should not be skipped
-in the same way as the post-snapshot image-writeout resume.
+diff --git a/drivers/power/supply/qcom_battmgr.c b/drivers/power/supply/qcom_battmgr.c
+index 490137a23d..f8c3efd2c9 100644
+--- a/drivers/power/supply/qcom_battmgr.c
++++ b/drivers/power/supply/qcom_battmgr.c
+@@ -1638,6 +1638,8 @@ static int qcom_battmgr_probe(struct auxiliary_device *adev,
+ 	if (!battmgr)
+ 		return -ENOMEM;
+ 
++	auxiliary_set_drvdata(adev, battmgr);
++
+ 	battmgr->dev = dev;
+ 
+ 	psy_cfg.drv_data = battmgr;
+@@ -1729,9 +1731,17 @@ static const struct auxiliary_device_id qcom_battmgr_id_table[] = {
+ };
+ MODULE_DEVICE_TABLE(auxiliary, qcom_battmgr_id_table);
+ 
++static void qcom_battmgr_remove(struct auxiliary_device *adev)
++{
++	struct qcom_battmgr *battmgr = auxiliary_get_drvdata(adev);
++
++	disable_work_sync(&battmgr->enable_work);
++}
++
+ static struct auxiliary_driver qcom_battmgr_driver = {
+ 	.name = "pmic_glink_power_supply",
+ 	.probe = qcom_battmgr_probe,
++	.remove = qcom_battmgr_remove,
+ 	.id_table = qcom_battmgr_id_table,
+ };
+ 
+-- 
+2.34.1
 
-So v4 was an attempt to keep the change local to the observed UVC issue
-while still handling the swsusp_write() failure path.  But I agree that,
-if this is viewed as a more general PM problem, a PM-core solution with
-an explicit skip and recovery mechanism would be cleaner than a UVC
-notifier.
-
-Rafael, would such a PM-core direction be acceptable to explore?  For
-example, a device flag indicating that the device does not need to be
-resumed during the post-snapshot image-write phase, with PM resuming
-those skipped devices if the original kernel continues running, before
-userspace is thawed?
-
-If that direction is preferred, I can rework the series around a
-PM-core-managed mechanism.
-
-Thanks,
-Haowen
