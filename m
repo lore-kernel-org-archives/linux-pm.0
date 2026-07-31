@@ -1,43 +1,49 @@
-Received: from m16.mail.163.com (m16.mail.163.com [117.135.210.5])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CF8653C8700;
-	Fri, 31 Jul 2026 08:44:02 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=117.135.210.5
+Received: from mail.loongson.cn (mail.loongson.cn [114.242.206.163])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id 53F2E3BBFD3;
+	Fri, 31 Jul 2026 09:43:00 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=114.242.206.163
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1785487448; cv=none; b=g8+KCUYJY9H66jtoGJSPecT43kJd2x/MjguyOpCXfKKKfuwvAKmeqGJmDwg4K4LdfIGUHs26lDyyIlh0hUWwg3mtz3PFYJJYtRDAKFKBD9oEUBy0wyjOUe95UyiF7ZN4i5rULdgg2OBvrFUwo9dSynVNQFyAAsqklpAOdaiEsSQ=
+	t=1785490984; cv=none; b=aLvxrCzDFhU1wpfFfg6F3rhMzUuck2jioFRwAQ6hw9WzvD6XhoXA/mCjLy/M0d/+WyJJzOa+b8m6963ZtXMqJRCUTq3iG/fJsUbaovkMaHltMnZp6w59Yr05x02MDULMKzu4Xa5TYE3i95Sk2fbBbm1Ay+3DH6xQ8IpRezFTSyQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1785487448; c=relaxed/simple;
-	bh=rR3bx8bTKOdbLvBlwiFTDxDkxVPMurUGXLng7YD3Xz0=;
-	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=UP4KO2MidJbT4I/OKx4/F3mwGiwSIWcLLnfFp6gD1g7bvJCKL5pkGOBJ7362qnkXdVKEwSmA0jGT2Gmxps6Ceu94gVXfr162s6c/pWXSWQZGy5uaK6O4MrkwHOHZulTgQq2/QfSVqCFtiBQontt4cVxznj5Szzz2lQh8B5ChdPE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=163.com; spf=pass smtp.mailfrom=163.com; dkim=pass (1024-bit key) header.d=163.com header.i=@163.com header.b=IkodWosq; arc=none smtp.client-ip=117.135.210.5
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=163.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=163.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=163.com header.i=@163.com header.b="IkodWosq"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=163.com;
-	s=s110527; h=From:To:Subject:Date:Message-Id:MIME-Version; bh=ch
-	nRK+f+QN2xrkbOGk6dgBwvq7tejnNWZlvbVTRSm54=; b=IkodWosqUZFCPOpK71
-	HVQvuqlPx0iYUNR32jPRLzWieN1llnHqVwfCKgdxMwrPhPl5uA1gxSDxnGv4Cxka
-	Ou2sjHe135dOGsIL12KqJ9Em7HBNpTJties+ZT5Hyj57ZDNmcyFY0YmIEX7FAZrz
-	yAURd9yZzVOPD0KqR86GRkto4=
-Received: from QD202103290168A.neusoft.internal (unknown [])
-	by gzga-smtp-mtada-g1-4 (Coremail) with SMTP id _____wCnJIkbYGxq6spFNA--.56958S2;
-	Fri, 31 Jul 2026 16:43:10 +0800 (CST)
-From: Jianing Li <m13940358460@163.com>
-To: Sebastian Reichel <sre@kernel.org>
-Cc: Iskren Chernev <me@iskren.info>,
-	Krzysztof Kozlowski <krzk@kernel.org>,
-	Marek Szyprowski <m.szyprowski@samsung.com>,
-	Matheus Castello <matheus@castello.eng.br>,
+	s=arc-20240116; t=1785490984; c=relaxed/simple;
+	bh=9E8GdqP31dgwfZYT4f13k2PUrM5L41eD1gFxUICd/xw=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=ejVm8MmOqe694CLyYIetl5JxpRhj7VGDy5gBeOh6rJclFCu0SWl8ZDHpIQyY0p/UzMDVUkq9KNxsaVFBCPJrsu604w6BAyuV4B+C+2VgzfwaKQZ8c3xVXj/6DWtkjoZ2BfcWGrItHVWOU/M+b05wgwRJtvl3ydFCNKE8mrW1Nvk=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=loongson.cn; spf=pass smtp.mailfrom=loongson.cn; arc=none smtp.client-ip=114.242.206.163
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=loongson.cn
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=loongson.cn
+Received: from loongson.cn (unknown [223.64.68.205])
+	by gateway (Coremail) with SMTP id _____8BxGOsfbmxqjywJAA--.30900S3;
+	Fri, 31 Jul 2026 17:42:55 +0800 (CST)
+Received: from kernelserver (unknown [223.64.68.205])
+	by front1 (Coremail) with SMTP id qMiowJDxu8QPbmxqHvYeAA--.48910S3;
+	Fri, 31 Jul 2026 17:42:46 +0800 (CST)
+From: Binbin Zhou <zhoubinbin@loongson.cn>
+To: Binbin Zhou <zhoubb.aaron@gmail.com>,
+	Huacai Chen <chenhuacai@loongson.cn>,
+	Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	Yinbo Zhu <zhuyinbo@loongson.cn>,
+	zhanghongchen <zhanghongchen@loongson.cn>,
+	"Rafael J . Wysocki" <rafael@kernel.org>,
+	Daniel Lezcano <daniel.lezcano@linaro.org>,
+	Zhang Rui <rui.zhang@intel.com>,
+	Lukasz Luba <lukasz.luba@arm.com>,
+	Lee Jones <lee@kernel.org>
+Cc: Huacai Chen <chenhuacai@kernel.org>,
+	devicetree@vger.kernel.org,
 	linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	Jianing Li <m13940358460@163.com>,
-	stable@vger.kernel.org
-Subject: [PATCH] power: supply: max17040: drop incorrect I2C functionality check
-Date: Fri, 31 Jul 2026 16:42:59 +0800
-Message-Id: <20260731084259.916-1-m13940358460@163.com>
-X-Mailer: git-send-email 2.23.0.windows.1
+	mfd@lists.linux.dev,
+	Binbin Zhou <zhoubinbin@loongson.cn>,
+	stable@vger.kernel.org,
+	Sashiko <sashiko-bot@kernel.org>
+Subject: [PATCH v3 1/5] thermal/drivers/loongson2: Correct thermal sensor registration loop
+Date: Fri, 31 Jul 2026 17:42:17 +0800
+Message-ID: <367a07d2190203b2412d13f407eea81334122e31.1785480242.git.zhoubinbin@loongson.cn>
+X-Mailer: git-send-email 2.52.0
+In-Reply-To: <cover.1785480242.git.zhoubinbin@loongson.cn>
+References: <cover.1785480242.git.zhoubinbin@loongson.cn>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -45,55 +51,70 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-CM-TRANSID:_____wCnJIkbYGxq6spFNA--.56958S2
-X-Coremail-Antispam: 1Uf129KBjvJXoW7Cr43Jr4xtr4xXrW7Kr4Uurg_yoW8ArWxpa
-	n8GrnxKrWjqr4q93yDtw4UAFy5GayrArW3KFyvy3sI9anrJrW0yF98trW2kFW7Jr93ZanF
-	vrZ7ta45CrsxC37anT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
-	9KBjDUYxBIdaVFxhVjvjDU0xZFpf9x0pRFzuQUUUUU=
-X-CM-SenderInfo: jprtmkaqtvmkiwq6il2tof0z/xtbC+x7UD2psYB5M+gAA3w
+X-CM-TRANSID:qMiowJDxu8QPbmxqHvYeAA--.48910S3
+X-CM-SenderInfo: p2kr3uplqex0o6or00hjvr0hdfq/1tbiAQEFCGpsIlAFfQAAsB
+X-Coremail-Antispam: 1Uk129KBj93XoW7tr1UCFW8ZFy5Jw13Wr43CFX_yoW8Cr1rpF
+	sxC3WYkr98GFs7Z34DArWUXan0ya4ftFW7WF4xWw1rWrn3J34agryrJFW2qa40yFy8ZF1Y
+	qr98tFWDCayDZrXCm3ZEXasCq-sJn29KB7ZKAUJUUUUx529EdanIXcx71UUUUU7KY7ZEXa
+	sCq-sGcSsGvfJ3Ic02F40EFcxC0VAKzVAqx4xG6I80ebIjqfuFe4nvWSU5nxnvy29KBjDU
+	0xBIdaVrnRJUUUBIb4IE77IF4wAFF20E14v26r1j6r4UM7CY07I20VC2zVCF04k26cxKx2
+	IYs7xG6rWj6s0DM7CIcVAFz4kK6r1a6r1DM28lY4IEw2IIxxk0rwA2F7IY1VAKz4vEj48v
+	e4kI8wA2z4x0Y4vE2Ix0cI8IcVAFwI0_Gr0_Xr1l84ACjcxK6xIIjxv20xvEc7CjxVAFwI
+	0_Gr0_Cr1l84ACjcxK6I8E87Iv67AKxVW8Jr0_Cr1UM28EF7xvwVC2z280aVCY1x0267AK
+	xVW8Jr0_Cr1UM2kKe7AKxVWUAVWUtwAS0I0E0xvYzxvE52x082IY62kv0487Mc804VCY07
+	AIYIkI8VC2zVCFFI0UMc02F40EFcxC0VAKzVAqx4xG6I80ewAv7VC0I7IYx2IY67AKxVWU
+	tVWrXwAv7VC2z280aVAFwI0_Gr0_Cr1lOx8S6xCaFVCjc4AY6r1j6r4UM4x0Y48IcxkI7V
+	AKI48JMxkF7I0En4kS14v26r1q6r43MxAIw28IcxkI7VAKI48JMxC20s026xCaFVCjc4AY
+	6r1j6r4UMxCIbckI1I0E14v26r126r1DMI8I3I0E5I8CrVAFwI0_Jr0_Jr4lx2IqxVCjr7
+	xvwVAFwI0_JrI_JrWlx4CE17CEb7AF67AKxVW8ZVWrXwCIc40Y0x0EwIxGrwCI42IY6xII
+	jxv20xvE14v26r4j6ryUMIIF0xvE2Ix0cI8IcVCY1x0267AKxVW8JVWxJwCI42IY6xAIw2
+	0EY4v20xvaj40_Jr0_JF4lIxAIcVC2z280aVAFwI0_Gr0_Cr1lIxAIcVC2z280aVCY1x02
+	67AKxVW8JVW8JrUvcSsGvfC2KfnxnUUI43ZEXa7IUbRVbDUUUUU==
 
-max17040_probe() rejects adapters that do not advertise
-I2C_FUNC_SMBUS_BYTE. The driver does not issue SMBus byte transactions,
-however. Its regmap has 8-bit registers and 16-bit big-endian values, for
-which regmap-i2c supports either raw I2C transfers or SMBus word-data
-transactions.
+The registration loop in loongson2_thermal_probe() incorrectly uses
+dev_err_probe() when the sensor is not present (-ENODEV). In that case,
+the driver should continue to the next sensor index rather than treating
+it as a fatal error.
 
-Consequently, an adapter providing raw I2C transfers or SMBus word data
-but not SMBus byte transactions is rejected even though regmap can access
-the device. Conversely, the current check can pass an adapter that regmap
-cannot use.
+Fix this by correctly handling -ENODEV and only returning on other
+errors. Also add a final check to ensure at least one thermal zone was
+registered.
 
-Drop the stale check and let devm_regmap_init_i2c() validate and select
-the supported transfer method.
-
-Fixes: c6f4a42de60b ("Add MAX17040 Fuel Gauge driver")
 Cc: stable@vger.kernel.org
-Signed-off-by: Jianing Li <m13940358460@163.com>
+Reported-by: Sashiko <sashiko-bot@kernel.org>
+Closes: https://sashiko.dev/#/patchset/cover.1783670011.git.zhoubinbin@loongson.cn?part=2
+Fixes: e7e3a7c35791 ("thermal/drivers/loongson-2: Add thermal management support")
+Signed-off-by: Binbin Zhou <zhoubinbin@loongson.cn>
 ---
- drivers/power/supply/max17040_battery.c | 4 ----
- 1 file changed, 4 deletions(-)
+ drivers/thermal/loongson2_thermal.c | 8 +++++---
+ 1 file changed, 5 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/power/supply/max17040_battery.c b/drivers/power/supply/max17040_battery.c
-index 98d34d5f3c80..b641d7387311 100644
---- a/drivers/power/supply/max17040_battery.c
-+++ b/drivers/power/supply/max17040_battery.c
-@@ -470,16 +470,12 @@ static const struct power_supply_desc max17040_battery_desc = {
- static int max17040_probe(struct i2c_client *client)
- {
- 	const struct i2c_device_id *id = i2c_client_get_device_id(client);
--	struct i2c_adapter *adapter = client->adapter;
- 	struct power_supply_config psy_cfg = {};
- 	struct max17040_chip *chip;
- 	enum chip_id chip_id;
- 	bool enable_irq = false;
- 	int ret;
+diff --git a/drivers/thermal/loongson2_thermal.c b/drivers/thermal/loongson2_thermal.c
+index ea4dd2fb1f47..5f47fa51fb90 100644
+--- a/drivers/thermal/loongson2_thermal.c
++++ b/drivers/thermal/loongson2_thermal.c
+@@ -161,16 +161,18 @@ static int loongson2_thermal_probe(struct platform_device *pdev)
  
--	if (!i2c_check_functionality(adapter, I2C_FUNC_SMBUS_BYTE))
--		return -EIO;
+ 	for (i = 0; i <= LOONGSON2_MAX_SENSOR_SEL_NUM; i++) {
+ 		tzd = devm_thermal_of_zone_register(dev, i, data, thermal_ops);
 -
- 	chip = devm_kzalloc(&client->dev, sizeof(*chip), GFP_KERNEL);
- 	if (!chip)
- 		return -ENOMEM;
+ 		if (!IS_ERR(tzd))
+ 			break;
+ 
+-		if (PTR_ERR(tzd) != -ENODEV)
++		if (PTR_ERR(tzd) == -ENODEV)
+ 			continue;
+ 
+-		return dev_err_probe(dev, PTR_ERR(tzd), "failed to register");
++		return dev_err_probe(dev, PTR_ERR(tzd), "failed to register sensor %d\n", i);
+ 	}
+ 
++	if (IS_ERR(tzd))
++		return dev_err_probe(dev, -ENODEV, "No thermal sensor registered\n");
++
+ 	ret = devm_request_threaded_irq(dev, irq, NULL, loongson2_thermal_irq_thread,
+ 					IRQF_ONESHOT, "loongson2_thermal", tzd);
+ 	if (ret < 0)
 -- 
-2.50.1
+2.52.0
 
