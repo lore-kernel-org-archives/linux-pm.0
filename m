@@ -1,177 +1,100 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8F3AD2D7398;
-	Sun,  2 Aug 2026 03:38:38 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+Received: from azure-sdnproxy.icoremail.net (azure-sdnproxy.icoremail.net [40.65.178.148])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id C555C3D994;
+	Sun,  2 Aug 2026 03:55:47 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=40.65.178.148
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1785641919; cv=none; b=B1YkheHDjLs94eLitcSIj6rH/iRldF+fr7dJZRTu0jxvi2B/ZykaAeE+bCuak2CQWowF8RlBpBZVlReEBB6sstw5NtM0SyCAJ74oivChLfrBBkpX3x7foMjDC4+70zJNX8oiNCD2+9t5fhCKQhi5jNcrKo0huwyN3wdwGEy5+7I=
+	t=1785642958; cv=none; b=GiBqf9aQCKoDliItow2FrJd0dYsZMSNc1KnlyQtDnZi/21ZeM6v7mx/qe6cGxRw8TKBrC/fWBaKrLkWpdm6OChW8ZbbEXRum1AF0lDxV2xqLYCo2n5kDgz5k4JsQ1sbGh1udAcfgYOE7AM7yuLuvhKO47qsAiAgmryofZwTW/Vg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1785641919; c=relaxed/simple;
-	bh=aF4RmHEruNGFHPMGVQ1ak9aHQShiwv1Ob0bELMip9Jk=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=FyvwRQYD42q11ONS338lUC6ABcNwjeil+ViInWr8z7QByLOGisdYC5zEa2SGyDXaxyC0znRKXA5XcVkLLKy3xgG0d3Uim3eo0MGZloQU2lWn2aQgW3Pb6CxfePnkMlZ1I5P362lDIgSGe/hzzQ1wR827hZnuuPCtyk2uszL0O8c=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=XeCjXlI7; arc=none smtp.client-ip=100.103.45.18
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="XeCjXlI7"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 345511F00AC4;
-	Sun,  2 Aug 2026 03:38:36 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1785641918;
-	bh=+TexX9rPlZFjIyLEyoK3UWWn0etmeyXn6pzQ5byloqM=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=XeCjXlI7tOSJ1PRf6kZmJ+3zMIhva3ED4OoRl69JiO5HGRYGBSw3MbWTQc14PjVKV
-	 J06GMQRDQFrgwQQSV81JF0SlxOiiKT0Wl3TeMLsRSkOvI5YH03axrqJjKh/S4G4R2e
-	 CUIwOg+4FlWZUbhzkuVWzOamOuCwy5MedrTo0lx0btBxZH7ltqdDaTvwdO0QxePL5z
-	 Pl7KttgJacYwf/gtB6JSzwf17WzMCJ6ldHByp5lMcYmqp7Ym4hRL/Fziqp2cuU/LyL
-	 rxiWWh0iLEOsvteD5u/MF+tXhD3SwID/hodrx2MiI+KsPNeZ5JyCiB2kyaJ2DkhdhX
-	 /0wPNrcmAqG7Q==
-Date: Sat, 1 Aug 2026 22:38:33 -0500
-From: Bjorn Andersson <andersson@kernel.org>
-To: Rahul Samana <rahul.samana@oss.qualcomm.com>
-Cc: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>, 
-	Bartosz Golaszewski <brgl@kernel.org>, Marcel Holtmann <marcel@holtmann.org>, 
-	Luiz Augusto von Dentz <luiz.dentz@gmail.com>, Rob Herring <robh@kernel.org>, 
-	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
-	Balakrishna Godavarthi <quic_bgodavar@quicinc.com>, Rocky Liao <quic_rjliao@quicinc.com>, 
-	Manivannan Sadhasivam <mani@kernel.org>, Konrad Dybcio <konradybcio@kernel.org>, 
-	Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>, Bartosz Golaszewski <brgl@bgdev.pl>, 
-	linux-arm-msm@vger.kernel.org, linux-bluetooth@vger.kernel.org, devicetree@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, 
-	quic_mohamull@quicinc.com, quic_hbandi@quicinc.com, quic_anubhavg@quicinc.com
-Subject: Re: [PATCH v2 6/6] arm64: dts: qcom: rb3gen2: add Industrial BT UART
- overlay
-Message-ID: <am6572YrbAULTa88@baldur>
-References: <20260727-rb3-industrial-bt-uart-v2-0-2d100f30e202@oss.qualcomm.com>
- <20260727-rb3-industrial-bt-uart-v2-6-2d100f30e202@oss.qualcomm.com>
- <794424df-4714-43a4-b4b8-e960998ad1f1@oss.qualcomm.com>
- <ce283ef7-2460-4fa4-a1f5-9757fd6b42b5@oss.qualcomm.com>
- <6d61d749-440f-40ad-82e5-e1e909afad06@oss.qualcomm.com>
- <b47345f1-1c7b-4424-9c6b-3dd02c0f4ab6@oss.qualcomm.com>
- <bf7821a2-d813-4f89-b891-9c26d228ae67@oss.qualcomm.com>
- <b5afd21c-4516-4a8c-bc8f-6598ec385d27@oss.qualcomm.com>
+	s=arc-20240116; t=1785642958; c=relaxed/simple;
+	bh=uokThyasGj0zsfe+6j0fd1cIu+NTNJmJFKuV18x4aGY=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=bpO/XjPaIFU+2yJgSyBdLNDba0Hzi6uhOSb7lB9K65qQKfTBgHKOBMNV/DTlL490Mu6z6xWjNE8E+zNUEveUZ614nB/Ewa8VAWLqUNiIouuTvnAQc/tcMVKkSVcTJs7T3Kp/1BUvXCRvm0V6a69eEaTt77Xw9BvFba7snUGmz/c=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=zju.edu.cn; spf=pass smtp.mailfrom=zju.edu.cn; arc=none smtp.client-ip=40.65.178.148
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=zju.edu.cn
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=zju.edu.cn
+Received: from zju.edu.cn (unknown [10.98.66.117])
+	by mtasvr (Coremail) with SMTP id _____wDXsT65v25qkFZZAA--.9630S3;
+	Sun, 02 Aug 2026 11:55:38 +0800 (CST)
+Received: from localhost.localdomain (unknown [10.98.66.117])
+	by mail-app1 (Coremail) with SMTP id yy_KCgC3BZ65v25q6aJqAw--.56351S2;
+	Sun, 02 Aug 2026 11:55:37 +0800 (CST)
+From: Fan Wu <fanwu01@zju.edu.cn>
+To: linux-pm@vger.kernel.org
+Cc: sre@kernel.org,
+	Milo.Kim@ti.com,
+	anton.vorontsov@linaro.org,
+	linux-kernel@vger.kernel.org,
+	stable@vger.kernel.org,
+	Fan Wu <fanwu01@zju.edu.cn>
+Subject: [PATCH] power: supply: lp8788-charger: fix use-after-free on remove
+Date: Sun,  2 Aug 2026 03:54:42 +0000
+Message-Id: <20260802035442.421697-1-fanwu01@zju.edu.cn>
+X-Mailer: git-send-email 2.34.1
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <b5afd21c-4516-4a8c-bc8f-6598ec385d27@oss.qualcomm.com>
+Content-Transfer-Encoding: 8bit
+X-CM-TRANSID:yy_KCgC3BZ65v25q6aJqAw--.56351S2
+X-CM-SenderInfo: qrstjiaswqq6lmxovvfxof0/
+X-CM-DELIVERINFO: =?B?urpP1QXKKxbFmtjJiESix3B1w3vZ3A9ovKVTomAyoQazvoRs/NHSP8GI2EvgeEEW7R
+	sfnVCjTgEH9dVomQuWcozCBBE4/q36jXTFU8JsSW1mrStnMrJAT2o5k4TOdxLHZODf9cXW
+	GRHR5vYaeKPzrDGLCxLN5RPxYw6l01w8CbPzC/8w
+X-Coremail-Antispam: 1Uk129KBj93XoW7tryxWr4kGFWfCF1kJr1rXwc_yoW8GFW8pF
+	s5CrZxGrW8WF4UKayqq3W2kFyUKa4fAFW5CFWxJ345X34fJw12q3Z0gFWfWFy5AryxXrs3
+	t3Waqw4j9Fy3uFgCm3ZEXasCq-sJn29KB7ZKAUJUUUUU529EdanIXcx71UUUUU7KY7ZEXa
+	sCq-sGcSsGvfJ3Ic02F40EFcxC0VAKzVAqx4xG6I80ebIjqfuFe4nvWSU5nxnvy29KBjDU
+	0xBIdaVrnRJUUU9lb4IE77IF4wAFF20E14v26r4j6ryUM7CY07I20VC2zVCF04k26cxKx2
+	IYs7xG6rWj6s0DM7CIcVAFz4kK6r1j6r18M28lY4IEw2IIxxk0rwA2F7IY1VAKz4vEj48v
+	e4kI8wA2z4x0Y4vE2Ix0cI8IcVAFwI0_tr0E3s1l84ACjcxK6xIIjxv20xvEc7CjxVAFwI
+	0_Cr0_Gr1UM28EF7xvwVC2z280aVAFwI0_GcCE3s1l84ACjcxK6I8E87Iv6xkF7I0E14v2
+	6rxl6s0DM2vYz4IE04k24VAvwVAKI4IrM2AIxVAIcxkEcVAq07x20xvEncxIr21l57IF6x
+	kI12xvs2x26I8E6xACxx1l5I8CrVACY4xI64kE6c02F40Ex7xfMcIj6xIIjxv20xvE14v2
+	6r1j6r18McIj6I8E87Iv67AKxVWUJVW8JwAm72CE4IkC6x0Yz7v_Jr0_Gr1lF7xvr2IYc2
+	Ij64vIr41lF7xvr2IYc2Ij64vIr40E4x8a64kEw24l42xK82IYc2Ij64vIr41l4I8I3I0E
+	4IkC6x0Yz7v_Jr0_Gr1lx2IqxVAqx4xG67AKxVWUJVWUGwC20s026x8GjcxK67AKxVWUGV
+	WUWwC2zVAF1VAY17CE14v26r126r1DMIIYrxkI7VAKI48JMIIF0xvE2Ix0cI8IcVAFwI0_
+	Jr0_JF4lIxAIcVC0I7IYx2IY6xkF7I0E14v26r1j6r4UMIIF0xvE42xK8VAvwI8IcIk0rV
+	WUJVWUCwCI42IY6I8E87Iv67AKxVWUJVW8JwCI42IY6I8E87Iv6xkF7I0E14v26r4j6r4U
+	JbIYCTnIWIevJa73UjIFyTuYvjxU7gAwDUUUU
 
-On Fri, Jul 31, 2026 at 11:20:07PM +0530, Rahul Samana wrote:
-> 
-> 
-> On 31-07-2026 21:19, Konrad Dybcio wrote:
-> > On 7/31/26 4:48 PM, Rahul Samana wrote:
-> >>
-> >>
-> >> On 31-07-2026 18:20, Konrad Dybcio wrote:
-> >>> On 7/31/26 8:53 AM, Rahul Samana wrote:
-> >>>>
-> >>>>
-> >>>> On 29-07-2026 18:01, Konrad Dybcio wrote:
-> >>>>> On 7/27/26 5:45 PM, Rahul Samana wrote:
-> >>>>>> The reworked RB3 Gen 2 Industrial mezzanine keeps the common Industrial
-> >>>>>> mezzanine hardware description but routes QCC2072 Bluetooth over UART4
-> >>>>>> instead of the default Bluetooth-over-USB path.
-> > 
-> > I only noticed this now - are there 2 variants of the industrial
-> > mezz being sold concurrently? Is the already-in-kernel one some
-> > sort of a prototype SKU? i.e. should we support both?
-> > 
-> >>>>>>
-> >>>>>> Build this variant by applying the common Industrial mezzanine overlay
-> >>>>>> first, followed by the BT UART overlay. The overlay models the M.2 E-key
-> >>>>>> connector graph endpoints for PCIe and UART, and disables the on-board
-> >>>>>> WCN6750 PMU and UART7 path so the M.2 QCC2072 Bluetooth controller can be
-> >>>>>> used instead.
-> >>>>>
-> >>>>> So is the onboard module disabled? Can we not just use two in parallel?
-> >>>>>
-> >>>>
-> >>>> The Industrial mezzanine variants do not support the on-board WCN6750
-> >>>> wireless path. The common Industrial mezzanine overlay already disables
-> >>>> the on-board Wi-Fi node.
-> >>>
-> >>> What does 'do not support' it mean here? They are physically present
-> >>> as part of the SoM, so unless the lanes are somehow diverted away,
-> >>> why is it not?
-> >>>
-> >>> Konrad
-> >>
-> >> Hi Konrad,
-> >>
-> >> The WCN6750 module is physically present on the SoM. What I meant is that
-> >> the current Industrial mezzanine devicetree already disables the on-board
-> >> Wi-Fi path, and this BT UART variant followed the same board-level policy
-> >> for the on-board Bluetooth UART/PMU path.
-> > 
-> > Okay, and do we know why that's the case in the first place?
-> > 
-> >> For the endpoint labels, I can move the UART endpoint to the SoC DTSI,
-> >> kodiak.dtsi, as uart4_ep.
-> > 
-> > Please do
-> > 
-> >> For the PCIe endpoint, the PCIe path to the M.2 QCC2072 device is not the
-> >> PCIe0 root port in kodiak.dtsi. In the composed devicetree, it is
-> >> behind the Industrial mezzanine PCIe switch, under:
-> >>
-> >>     /soc@0/pcie@1c00000/pcie@0/pcie@0,0/pcie@2,0
-> >>
-> >>
-> >> So placing pcie0_port0_ep in kodiak.dtsi would not describe the actual
-> >> topology.
-> > 
-> > Yes, that was an omission from my side
-> > 
-> > 
-> >> I tried adding a generic label/endpoint to that downstream port in the
-> >> Industrial mezzanine overlay and referencing it from the BT UART overlay.
-> >> However, when the overlays are compiled separately and then composed, that
-> >> label is not available while applying the BT UART overlay, so the composed
-> >> DTB build fails with FDT_ERR_NOTFOUND.
-> > 
-> > I think this generic description is simply not achievable today without
-> > a bigger plan in place
-> > 
-> > Konrad
-> 
-> Hi Konrad, Dmitry,
-> 
-> Yes, both Industrial Kit variants need to be supported.
-> 
-> The default Industrial Kit uses the common Industrial mezzanine hardware
-> description and continues to use the existing Bluetooth-over-USB path.
+lp8788_charger_remove() flushes charger_work before unregistering the
+IRQs. An IRQ thread can queue charger_work after flush_work() has
+returned. The work can then run after devres frees pchg and dereference
+it in lp8788_charger_event().
 
-"Kit uses the common" what do you even mean?! The mezzanine is a
-physical thing, it doesn't _use_ anything! The mezzanine exists and the
-DeviceTree describe what it is.
+Unregister the IRQs first. free_irq() waits for any running threaded
+handler, so no handler can queue more work afterwards. Then use
+cancel_work_sync() to cancel pending work or wait for running work to
+finish.
 
-> The
-> reworked Industrial Kit variant keeps the rest of the Industrial mezzanine
-> hardware the same, but routes Bluetooth over UART4 instead.
-> 
+This issue was found by an in-house static analysis tool.
 
-Does "reworked mezzanine" mean what it usually does? I.e. that you have
-taken the mezzanine and modified it?
+Fixes: 98a276649358 ("power_supply: Add new lp8788 charger driver")
+Cc: stable@vger.kernel.org
+Assisted-by: Codex:gpt-5.6
+Signed-off-by: Fan Wu <fanwu01@zju.edu.cn>
 
-[..]
-> 
-> I am open to other suggestions if there is a better way to model this within
-> the current overlay structure.
-> 
+---
+ drivers/power/supply/lp8788-charger.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-I don't think it's possible to give you other suggestions as you haven't
-described what this thing is, you just explaining how you're hacking
-something together and ask us to help adjust your hack without knowing
-what it is you're trying to describe with your DeviceTree.
+diff --git a/drivers/power/supply/lp8788-charger.c b/drivers/power/supply/lp8788-charger.c
+index f0a680c155..1bc2c150fb 100644
+--- a/drivers/power/supply/lp8788-charger.c
++++ b/drivers/power/supply/lp8788-charger.c
+@@ -710,8 +710,8 @@ static void lp8788_charger_remove(struct platform_device *pdev)
+ {
+ 	struct lp8788_charger *pchg = platform_get_drvdata(pdev);
 
-Regards,
-Bjorn
+-	flush_work(&pchg->charger_work);
+ 	lp8788_irq_unregister(pdev, pchg);
++	cancel_work_sync(&pchg->charger_work);
+ }
 
-> Thanks,
-> Rahul
-> 
+ static struct platform_driver lp8788_charger_driver = {
+--
+2.43.0
+
+
