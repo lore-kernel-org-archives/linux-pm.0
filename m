@@ -1,84 +1,159 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 23E903002B3
-	for <linux-pm@vger.kernel.org>; Sun,  2 Aug 2026 21:26:31 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E72D92264D9;
+	Sun,  2 Aug 2026 23:49:45 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1785705994; cv=none; b=mBKL4+j+GCx5IFKqJ1iZsdx/X+YmGMol9e0olTEpE+4EAfbZ2/2nd9Zr8+5ID7L7p+YjbC5ndjx+xR30CuHnexh/pW8fbA+L6wBmvGRSKS+EJ3cC+9FzzMCbP5U84oRchSzJC38Gk7Fkr/yKMDAdxTBd+TDd/P3nG2CxJnq2GxI=
+	t=1785714587; cv=none; b=ng3IrY9OHWbl8D7MzfHz3VMUk+wjjkNJ1yGF7rbOno+f5/uPhO2IUYqZdzKusAWsaoxACXDr1LMXncgyDzRfBAAjkHh8KizB2RNYf4IDNQe+5yCdMzA9hHJrcta0AN4bLgeqk8+vQvSjhfsKnllHBQfXa4rvpLf1kDSE04SNzOo=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1785705994; c=relaxed/simple;
-	bh=BHaT52wstLR5JIyPVlpC0s9xU0VwLxcHNvb2KCQJXKI=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=b4pzimddOPXdbo9GXfYtO8oPrMFJedv9W3CQRNqp7WUBrD7w9WGAW8Enrd6BT9tW/vxFgEqX7e4QeW+90TGrd4HOGZlgmy6jHOvPtIgA0RKSCdGUjCCo/+st+99xbnyKGmPATsisCXdTmnTsxXJxW9KnLQSDDezlprmmgm1HOUo=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=EDpA6hXB; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1785714587; c=relaxed/simple;
+	bh=JGscVa3KFAw9z5nZgmk3X6JizoVa+vzmK9tIPxz+GPo=;
+	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=DiHUK/mhoDdo/huKQS7xc9HOg6RZtlguaknQaT/qO+o1ON2CQpVjeOdO0a0+KzmsRv8c9XBtHn0tR2QtSKXXnn5ERazlyEErnQQ4gBZzE3hR+0UIWqZTlEgqXesa4ivPZtFVUGCZhl+nsmCXlJZTaWMO5HlIpEN4fr/ZtvuE21s=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=i9VeCVOw; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="EDpA6hXB"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id D2EAD1F000E9
-	for <linux-pm@vger.kernel.org>; Sun,  2 Aug 2026 21:26:31 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="i9VeCVOw"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id B8BBE1F000E9;
+	Sun,  2 Aug 2026 23:49:42 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1785705991;
-	bh=8AWKY2/647Z/rBpzq6WyGtvFnqnH6on/zVbW7HtZYzQ=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc;
-	b=EDpA6hXBhy1BGpVNcgUGcwZ6AcJ9hY1uzkAGiw7W3ViDkE3qm10nJZugT1Fy4EwrJ
-	 ysmQUM65dFD1+rs8iHc/zbhkXnwnOGUNUWfuzocrxOqa2YssQYZi3sEC7IVbvpGuGS
-	 Nt6u3roC7Tr/kAdtkiPjQ/iVqJpEdCgWF0lWo34pLtKWj8Dz/T3SU4eKID+yUpQ69j
-	 ACA39N7DuxJCGy6M7JczhPHG0tSPuIHp5MMjEQuBochX27RDrbyN4YY9hXC/XOZl0U
-	 DB5jVC8veXDEqE90V4A2fvZbl9LNGLPwXaJ2bk74o4C6u7f0if+ielGNudBXvw32c7
-	 g+1w6e5PHXjOA==
-Received: by mail-lj1-f180.google.com with SMTP id 38308e7fff4ca-39c95395230so26101691fa.2
-        for <linux-pm@vger.kernel.org>; Sun, 02 Aug 2026 14:26:31 -0700 (PDT)
-X-Gm-Message-State: AOJu0Yw8JDTGxJO2axl8EdY82i+U9fNtvNOGMbPwt2+mZrUXdA/2TmsU
-	4rcYfJIe8M8NI4UQFYdMIXunqV1UVmXKQlWvCzT0Ox4Ze+gR/GskeKj2ZU+JL0CQzyzdStLmuyc
-	limZXMeDViOao8Ogx7fdp6h6enbg9z2k=
-X-Received: by 2002:a2e:a806:0:b0:39c:6928:9b6e with SMTP id
- 38308e7fff4ca-39f86426f57mr14557451fa.29.1785705990676; Sun, 02 Aug 2026
- 14:26:30 -0700 (PDT)
+	s=k20260515; t=1785714585;
+	bh=4uQoeWOc9qQjtyG2spie5qB9XYVYpRiMcI+qdnyqlJ4=;
+	h=Date:From:To:Cc:Subject:In-Reply-To:References;
+	b=i9VeCVOw5oG3kvTQrKUC8a/8E7dS4aqWPFigwZjTUMro7xhAmBWt9yPQCWBKH+fM0
+	 Ls5OPJ4MnxWZc4BDLRYKmEGYn+MSqXDnypsi/s8rIkngMfKj/G/Gn+lGwYq8jGlkYR
+	 DlU4itQH3MkI29iznJfwcAdgfBvM71O+NurBdlZa95GQRicfDXoRcap8tplPbP0Se4
+	 4fnfJDgmrQ31m50g11ntjSynxURo84Df2YYsbkdXn2qXfCoVx7ueZItADK0GB5aUlN
+	 lGwMU96k8llre03IeUzygPMtNc/odDbms6x6zShkUZSnAPw+j3MW24Nj1sI8XE3qjP
+	 BAWWcaxENfn5Q==
+Date: Mon, 3 Aug 2026 00:49:40 +0100
+From: Jonathan Cameron <jic23@kernel.org>
+To: Jishnu Prakash <jishnu.prakash@oss.qualcomm.com>
+Cc: David Lechner <dlechner@baylibre.com>, Nuno =?UTF-8?B?U8Oh?=
+ <nuno.sa@analog.com>, Andy Shevchenko <andy@kernel.org>, Rob Herring
+ <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
+ <conor+dt@kernel.org>, Amit Kucheria <amitk@kernel.org>, Thara Gopinath
+ <thara.gopinath@gmail.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Daniel
+ Lezcano <daniel.lezcano@kernel.org>, Zhang Rui <rui.zhang@intel.com>,
+ Lukasz Luba <lukasz.luba@arm.com>, Bjorn Andersson <andersson@kernel.org>,
+ Konrad Dybcio <konradybcio@kernel.org>, linux-iio@vger.kernel.org,
+ devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, Kamal Wadhwa
+ <kamal.wadhwa@oss.qualcomm.com>, Anjelique Melendez
+ <anjelique.melendez@oss.qualcomm.com>, Manaf Meethalavalappu Pallikunhi
+ <manaf.pallikunhi@oss.qualcomm.com>, Priyansh Jain
+ <priyansh.jain@oss.qualcomm.com>
+Subject: Re: [PATCH 1/7] dt-bindings: iio: adc: Add support for QCOM PMIC5
+ Gen4 ADC
+Message-ID: <20260803004940.0277c0ac@jic23-huawei>
+In-Reply-To: <20260731-pmic5_gen4_adc-v1-1-9c49b2eea6f9@oss.qualcomm.com>
+References: <20260731-pmic5_gen4_adc-v1-0-9c49b2eea6f9@oss.qualcomm.com>
+	<20260731-pmic5_gen4_adc-v1-1-9c49b2eea6f9@oss.qualcomm.com>
+X-Mailer: Claws Mail 4.4.0 (GTK 3.24.52; x86_64-pc-linux-gnu)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260802020316.417757-1-fanwu01@zju.edu.cn>
-In-Reply-To: <20260802020316.417757-1-fanwu01@zju.edu.cn>
-From: Linus Walleij <linusw@kernel.org>
-Date: Sun, 2 Aug 2026 23:26:17 +0200
-X-Gmail-Original-Message-ID: <CAD++jLn3whP6JkQ7gViR=wQKOUxH7h2QYt2du5k=1Eu9u-LdWA@mail.gmail.com>
-X-Gm-Features: AUfX_mxy2qMHeCMO7AUGRkbFhoC74VYLbN9_1A4hf1P7vPfBRPHQMFjKQ4-OFgQ
-Message-ID: <CAD++jLn3whP6JkQ7gViR=wQKOUxH7h2QYt2du5k=1Eu9u-LdWA@mail.gmail.com>
-Subject: Re: [PATCH] power: supply: ab8500_fg: fix use-after-free on remove
-To: Fan Wu <fanwu01@zju.edu.cn>
-Cc: linux-pm@vger.kernel.org, sre@kernel.org, arun.murthy@stericsson.com, 
-	anton.vorontsov@linaro.org, linux-kernel@vger.kernel.org, 
-	stable@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 
-On Sun, Aug 2, 2026 at 4:04=E2=80=AFAM Fan Wu <fanwu01@zju.edu.cn> wrote:
+On Fri, 31 Jul 2026 23:36:14 +0530
+Jishnu Prakash <jishnu.prakash@oss.qualcomm.com> wrote:
 
-> ab8500_fg_remove() destroys the driver workqueue while the threaded
-> interrupt handlers are still armed; they are devm-managed and freed
-> only after ->remove() returns, so a handler that fires in that
-> window queues work on the freed workqueue.
->
-> Tear the workqueue down through devm instead, registering its cleanup
-> after the power supply and before the interrupt requests.  devm then
-> frees the interrupts first, so the handlers can no longer queue work,
-> before disabling the delayed and plain work items and destroying the
-> workqueue.  Disabling the items, rather than cancelling them, keeps
-> them disabled so no producer (including the power-supply
-> external_power_changed callback) can requeue them.
->
-> Found by an in-house static analysis tool.
->
-> Fixes: 13151631b5bd ("ab8500-fg: A8500 fuel gauge driver")
-> Cc: stable@vger.kernel.org # v6.10+
-> Assisted-by: Codex:gpt-5.6
-> Signed-off-by: Fan Wu <fanwu01@zju.edu.cn>
+> PMIC5 Gen4 ADC is similar to PMIC5 Gen3 ADC, with several changes made for
+> improved performance, mostly at the hardware level. The main differences are
+> increased ratiometric conversion resolution (from 14 bits to 16 bits) and
+> increased bit field width for PMIC SID (to allow communication with an
+> increased number of PMICs, supported on latest SoCs).
 
-Neat, I like it!
-Reviewed-by: Linus Walleij <linusw@kernel.org>
+Hi Jishnu,
 
-Yours,
-Linus Walleij
+The mixed case is enough of a surprise (to me least) that I'd expect
+there to either be more discussion here or for it to be handled first
+as a dt binding patch to allow for v4 channels on v3 hardware.
+
+That would provide a place for a description of why that is necessary and
+then the following gen4 dt-bindings patch with gen3 channels would seem
+like a natural extension.
+
+Other than that this seems fine to me.
+
+Jonathan
+
+> 
+> Signed-off-by: Jishnu Prakash <jishnu.prakash@oss.qualcomm.com>
+> ---
+>  .../bindings/iio/adc/qcom,spmi-adc5-gen3.yaml      | 47 +++++++++++++++++++++-
+>  1 file changed, 46 insertions(+), 1 deletion(-)
+> 
+> diff --git a/Documentation/devicetree/bindings/iio/adc/qcom,spmi-adc5-gen3.yaml b/Documentation/devicetree/bindings/iio/adc/qcom,spmi-adc5-gen3.yaml
+> index 149f4af8f4b8..e79ddc2acca0 100644
+> --- a/Documentation/devicetree/bindings/iio/adc/qcom,spmi-adc5-gen3.yaml
+> +++ b/Documentation/devicetree/bindings/iio/adc/qcom,spmi-adc5-gen3.yaml
+> @@ -21,9 +21,14 @@ description: |
+>    All boards using a particular (SOC + master PMIC) combination will have the
+>    same number of ADC SDAMs supported on that PMIC.
+>  
+> +  PMIC5 Gen4 ADC is similar to Gen3 ADC, with some differences such as
+> +  improved ratiometric conversion resolution.
+> +
+>  properties:
+>    compatible:
+> -    const: qcom,spmi-adc5-gen3
+> +    enum:
+> +      - qcom,spmi-adc5-gen3
+> +      - qcom,spmi-adc5-gen4
+>  
+>    reg:
+>      items:
+> @@ -83,6 +88,46 @@ patternProperties:
+>            This property indicates ADC_TM monitoring is done on this channel.
+>          type: boolean
+>  
+> +      qcom,adc5-gen4:
+> +        description:
+> +          Indicates channel is of type ADC5 Gen4. This may be needed in cases where the
+> +          master PMIC has an ADC peripheral of type Gen3, but some of the other PMICs it
+> +          communicates with have ADC peripherals of type Gen4, so channels of those PMICs
+> +          need to be marked as Gen4 to ensure their conversions are handled correctly.
+> +        type: boolean
+> +
+> +      qcom,adc5-gen3:
+> +        description:
+> +          Indicates channel is of type ADC5 Gen3. This may be needed in cases where the
+> +          master PMIC has an ADC peripheral of type Gen4, but some of the other PMICs
+> +          under it have ADC peripherals of type Gen3.
+> +        type: boolean
+> +
+> +allOf:
+> +  - if:
+> +      properties:
+> +        compatible:
+> +          contains:
+> +            const: qcom,spmi-adc5-gen4
+> +
+> +    then:
+> +      patternProperties:
+> +        "^channel@[0-9a-f]+$":
+> +          properties:
+> +            qcom,adc5-gen4: false
+> +
+> +  - if:
+> +      properties:
+> +        compatible:
+> +          contains:
+> +            const: qcom,spmi-adc5-gen3
+> +
+> +    then:
+> +      patternProperties:
+> +        "^channel@[0-9a-f]+$":
+> +          properties:
+> +            qcom,adc5-gen3: false
+> +
+>  required:
+>    - compatible
+>    - reg
+> 
+
