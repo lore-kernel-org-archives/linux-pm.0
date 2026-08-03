@@ -1,203 +1,255 @@
-Received: from CH5PR02CU005.outbound.protection.outlook.com (mail-northcentralusazon11012070.outbound.protection.outlook.com [40.107.200.70])
+Received: from mailgw.kylinos.cn (mailgw.kylinos.cn [124.126.103.232])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 048B938F941;
-	Mon,  3 Aug 2026 04:00:53 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.107.200.70
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1785729656; cv=fail; b=V0681xLnLnt+7F+Z3lDh+9WqRHnNp6xvdfsdn4F5AyBw7D0QFkNBaAqm5qFwSxyjk/TAuOPYOgUSbmbarUAR18q01+xWu2OkC02+RGait3A/YpNrrGSwJpO6UBe3ZGY0VCfB/SzKcBDDKNOwZKCNiiczmMcMwcThx7WRTaNWMnk=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1785729656; c=relaxed/simple;
-	bh=PtVd90Gazq4Unm/j9/t8yKYWe2a5TkCQYnX/iCdNxxI=;
-	h=Content-Type:Date:Message-Id:From:To:Cc:Subject:References:
-	 In-Reply-To:MIME-Version; b=ucFZCjGIP4SwO3pDvZL/UzBQvI/45KlN3PqPY/6W4W9Vc0ysnV4KuhmVbk1UQkpZfrcPRUgmnMpNO3J7dYB56dOfg6QaJpmvn+2fcSuKbNRW3VPs0QjmzNmLuID+XH0G/JppNox7m8+m/p5+9vnAFiGzfM6APCo4FRhSEZq0hBw=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com; spf=fail smtp.mailfrom=nvidia.com; dkim=pass (2048-bit key) header.d=Nvidia.com header.i=@Nvidia.com header.b=LLOB84qH; arc=fail smtp.client-ip=40.107.200.70
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com
-Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=nvidia.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=Nvidia.com header.i=@Nvidia.com header.b="LLOB84qH"
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=Ja0UzfWclDGM7BZRYdfhZPzfnSLIE398rR3EEBBJDCKZAPXCkyUsPDm1qvoDL7dGUpqr+UO+l1Wxlw3Axzq18mHNM+T6C6yGlAAJygpoTN4Px4QIC5MrIxHDwyg7J+ywnmzZ4Bb0iZ6jGxZhI+FDlDj45nnjCus6N5Xrvl2GNhstZcR1Ce+D9gBNrlD4i3ZQX+dz1xwkFCEPaH8PfDSQj3+ycTnvpfURuT8C7Yn+eAw9EQmxiEjtYBB9Iu1GXtn8p1g6aTVTvcgd7olI4gLIWmMPk5EiHIml/CaGNDvcLyrr5XDCrf0xNWR5FLZxsNKH8yiN9MszYj8goDjd/Qfi4g==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=PtVd90Gazq4Unm/j9/t8yKYWe2a5TkCQYnX/iCdNxxI=;
- b=Rz5ccnbUUPbyPBmsLj8tPbfIrokNwHxEbKqD7oSdqjEsff9m9cgwmTtCBNintyIF+OpX8zv/Jxlc1uci2PVCtU5JSYXmpmcHZq9g35/wyNOCsMng5cKMGqXHkyRf+WtWkXxOY12Vj4EcJZB1PH2SAoD5bK3eACCEkjGXIePgRcg3IfUINeN6vnrapIzxoCANSkoaQoMALGcSKW+ysetbzbLqSoxhK3KIl53hvWIsM9SNRwGW7HUDIofPBZ2bno5w0ckDvL+z2rBN9DsoqOHfD5PuK48YGWM88UHnrSKN2TcH0Ds0sBhNuqwzGltBaePtPIbRCWOacGIhKX6uXmpdzg==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=nvidia.com; dmarc=pass action=none header.from=nvidia.com;
- dkim=pass header.d=nvidia.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
- s=selector2;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=PtVd90Gazq4Unm/j9/t8yKYWe2a5TkCQYnX/iCdNxxI=;
- b=LLOB84qH6mho1Lp7jnIhWFLfByuuRdZk6QWfZDWxG6zggHZGvowSDnj0wMBLPZrDb348OGPPQuaUuU5vpmzzC9whF7uRcycwlZTuGIFsdXhaY/DcqqAXDoRz5ANd8fNMfrDvIxBzmzNCW2LhwDnxg2C3/bz949DHNTKUJ7TN5aeZ8MgAtm1BqOXY7AprbqSfYpZaRe9sXtNSlkFfBQ0TF51YhTnXjB87cG+IfxhRXGqgTyR4IpwHRdi10gojxS809s/jgmquW7eJ5iWjWq9GAq1YAWj/4wwoMFNUuBryA5yBrnS1EEVvsH4/XXy6Kaitk2W9/umQ2BB1PbhztSGghQ==
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=nvidia.com;
-Received: from CH2PR12MB3990.namprd12.prod.outlook.com (2603:10b6:610:28::18)
- by SN7PR12MB7022.namprd12.prod.outlook.com (2603:10b6:806:261::7) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.270.17; Mon, 3 Aug
- 2026 04:00:49 +0000
-Received: from CH2PR12MB3990.namprd12.prod.outlook.com
- ([fe80::7de1:4fe5:8ead:5989]) by CH2PR12MB3990.namprd12.prod.outlook.com
- ([fe80::7de1:4fe5:8ead:5989%4]) with mapi id 15.21.0270.015; Mon, 3 Aug 2026
- 04:00:49 +0000
-Content-Type: text/plain; charset=UTF-8
-Date: Mon, 03 Aug 2026 13:00:45 +0900
-Message-Id: <DKF0BU8N7JJX.T802R11VZ0A5@nvidia.com>
-From: "Alexandre Courbot" <acourbot@nvidia.com>
-To: "Gary Guo" <gary@garyguo.net>
-Cc: "Daniel Almeida" <daniel.almeida@collabora.com>, "Rafael J. Wysocki"
- <rafael@kernel.org>, "Viresh Kumar" <viresh.kumar@linaro.org>, "Danilo
- Krummrich" <dakr@kernel.org>, "Alice Ryhl" <aliceryhl@google.com>, "Maarten
- Lankhorst" <maarten.lankhorst@linux.intel.com>, "Maxime Ripard"
- <mripard@kernel.org>, "Thomas Zimmermann" <tzimmermann@suse.de>, "David
- Airlie" <airlied@gmail.com>, "Simona Vetter" <simona@ffwll.ch>, "Drew
- Fustini" <fustini@kernel.org>, "Guo Ren" <guoren@kernel.org>, "Fu Wei"
- <wefu@redhat.com>, =?utf-8?q?Uwe_Kleine-K=C3=B6nig?= <ukleinek@kernel.org>,
- "Michael Turquette" <mturquette@baylibre.com>, "Stephen Boyd"
- <sboyd@kernel.org>, "Miguel Ojeda" <ojeda@kernel.org>,
- =?utf-8?q?Bj=C3=B6rn_Roy_Baron?= <bjorn3_gh@protonmail.com>, "Benno Lossin"
- <lossin@kernel.org>, "Andreas Hindborg" <a.hindborg@kernel.org>, "Trevor
- Gross" <tmgross@umich.edu>, "Michal Wilczynski" <m.wilczynski@samsung.com>,
- "Boqun Feng" <boqun@kernel.org>, <linux-pm@vger.kernel.org>,
- <linux-kernel@vger.kernel.org>, <dri-devel@lists.freedesktop.org>,
- <linux-riscv@lists.infradead.org>, <linux-pwm@vger.kernel.org>,
- <linux-clk@vger.kernel.org>, <rust-for-linux@vger.kernel.org>, "Boris
- Brezillon" <boris.brezillon@collabora.com>, =?utf-8?q?Onur_=C3=96zkan?=
- <work@onurozkan.dev>, "Maurice" <mhi@mailbox.org>
-Subject: Re: [PATCH v5 1/4] rust: clk: use the type-state pattern
-Content-Transfer-Encoding: quoted-printable
-References: <20260706-clk-type-state-v5-0-67c5f326a16c@collabora.com>
- <20260706-clk-type-state-v5-1-67c5f326a16c@collabora.com>
- <DKEO7DXQ8604.1CB09QFM2EO68@garyguo.net>
-In-Reply-To: <DKEO7DXQ8604.1CB09QFM2EO68@garyguo.net>
-X-ClientProxiedBy: TY4P301CA0041.JPNP301.PROD.OUTLOOK.COM
- (2603:1096:405:2be::15) To CH2PR12MB3990.namprd12.prod.outlook.com
- (2603:10b6:610:28::18)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3A71025B0B3
+	for <linux-pm@vger.kernel.org>; Mon,  3 Aug 2026 05:54:30 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=124.126.103.232
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1785736474; cv=none; b=X8BSoj6ZpHNKMSzvYscQi+VboDXsTXq1rhva9y786Nkq6WeJzZrvJw2oppyze8sqRSVepIkfvWQv3pSlMKRvkrJ4wAlZaRENb3KlMyygHaqVvmmJdqJOz9OabfV36YDkgOYTxpPRqNRQR9WKLshIT9SSc1A3cMSBvK4+68HQpQY=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1785736474; c=relaxed/simple;
+	bh=8I32DuevIxpDGk0rBhyOs9Rcf6NAd9pmc8hqltENfB4=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=sYN6j7myRQ7d7rc9eg6fjMCVvREb+ekofC+n5xEsC0RtygcCqes8lrEmzori46jZcvZk1koKGt0VLTyWyRXd4H66JBrG2qV4T679ubTVhr79i17SW6OqyuNMbur5dZpl8rNNxY1qMiWFMBcpv5ZKXtPgsANvHBqfMSLRlKQzG0g=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kylinos.cn; spf=pass smtp.mailfrom=kylinos.cn; arc=none smtp.client-ip=124.126.103.232
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kylinos.cn
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=kylinos.cn
+X-UUID: c45261d88eff11f1aa26b74ffac11d73-20260803
+X-CTIC-Tags:
+	HR_CC_COUNT, HR_CC_DOMAIN_COUNT, HR_CC_NAME, HR_CC_NO_NAME, HR_CTE_8B
+	HR_CTT_MISS, HR_DATE_H, HR_DATE_WKD, HR_DATE_ZONE, HR_FROM_NAME
+	HR_SJ_LANG, HR_SJ_LEN, HR_SJ_LETTER, HR_SJ_NOR_SYM, HR_SJ_PHRASE
+	HR_SJ_PHRASE_LEN, HR_SJ_WS, HR_TO_COUNT, HR_TO_DOMAIN_COUNT, HR_TO_NO_NAME
+	IP_UNTRUSTED, SRC_UNTRUSTED, IP_UNFAMILIAR, SRC_UNFAMILIAR, DN_TRUSTED
+	SRC_TRUSTED, SA_UNTRUSTED, SA_UNFAMILIAR, SN_UNTRUSTED, SN_UNFAMILIAR
+	SPF_NOPASS, DKIM_NOPASS, DMARC_NOPASS, CIE_BAD, CIE_GOOD_SPF
+	CIE_UNKNOWN, GTI_FG_BS, GTI_RG_INFO, GTI_C_BU, AMN_GOOD
+	ABX_MISS_RDNS
+X-CID-P-RULE: Release_Ham
+X-CID-O-INFO: VERSION:1.3.12,REQID:c6ea6ec1-e518-46e4-b5c4-fa6a2d11cf2a,IP:10,
+	URL:0,TC:0,Content:0,EDM:0,RT:0,SF:0,FILE:0,BULK:0,RULE:Release_Ham,ACTION
+	:release,TS:10
+X-CID-INFO: VERSION:1.3.12,REQID:c6ea6ec1-e518-46e4-b5c4-fa6a2d11cf2a,IP:10,UR
+	L:0,TC:0,Content:0,EDM:0,RT:0,SF:0,FILE:0,BULK:0,RULE:Release_Ham,ACTION:r
+	elease,TS:10
+X-CID-META: VersionHash:e7bac3a,CLOUDID:662e726180efa697c96b83bcad0b836b,BulkI
+	D:2608031347567GBH1KBE,BulkQuantity:1,Recheck:0,SF:10|38|66|78|102|127|136
+	|850|865|898,TC:nil,Content:0|15|50,EDM:-3,IP:-2,URL:0,File:nil,RT:nil,Bul
+	k:40,QS:nil,BEC:nil,COL:0,OSI:0,OSA:0,AV:0,LES:1,SPR:NO,DKR:0,DKP:0,BRR:0,
+	BRE:0,ARC:0
+X-CID-BVR: 2,SSN|SDN
+X-CID-BAS: 2,SSN|SDN,0,_
+X-CID-FACTOR: TF_CID_SPAM_SNR
+X-CID-RHF: D41D8CD98F00B204E9800998ECF8427E
+X-UUID: c45261d88eff11f1aa26b74ffac11d73-20260803
+X-User: xiongxin@kylinos.cn
+Received: from localhost.localdomain [(175.2.45.188)] by mailgw.kylinos.cn
+	(envelope-from <xiongxin@kylinos.cn>)
+	(Generic MTA with TLSv1.3 TLS_AES_256_GCM_SHA384 256/256)
+	with ESMTP id 1818191233; Mon, 03 Aug 2026 13:54:18 +0800
+From: Xiong Xin <xiongxin@kylinos.cn>
+To: rafael@kernel.org,
+	pavel@kernel.org,
+	will@kernel.org,
+	james.morse@arm.com
+Cc: linux-pm@vger.kernel.org,
+	Xiong Xin <xiongxin@kylinos.cn>,
+	Riwen Lu <luriwen@kylinos.cn>
+Subject: [PATCH] PM: hibernate: flush icache for restored pages from task context
+Date: Mon,  3 Aug 2026 13:54:12 +0800
+Message-Id: <20260803055412.63981-1-xiongxin@kylinos.cn>
+X-Mailer: git-send-email 2.25.1
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: CH2PR12MB3990:EE_|SN7PR12MB7022:EE_
-X-MS-Office365-Filtering-Correlation-Id: f0737ca1-011a-4f4e-ba6b-08def113cd96
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|366016|1800799024|10070799003|23010399003|7416014|376014|22082099003|18002099003|5023799004|4143699003|11063799006|10067099003|56012099006;
-X-Microsoft-Antispam-Message-Info:
-	la5lIuKmE5whqFjroxnKBJkX6nybuADCXvSxEusMGv0qJxsDpnwu0IImpsVmmb2Br4fmabx289BSoQB5EVr/+SACAWwElNUTgv2kRyhyn0tstzJliJ7uQxkWYd14yYFwlN55UM9+KgFK+2CUbWKvQPpkRIUm528PxnE3xn5dqHyD7oi2DR9P0/iWJHBEDnlKhgsgjWEGjGRK5WsKhSdCRYm4VHxOd8GqGXDYg8g66oovrXxlrSuqWG0QHn/4GRVvifCMC2ClL3IMvkIF5TglL8IggOQQLPRlmqRRv41kYKAFyaR82vsMhZSBu+DDJq5dwfDRoAZlHagC33RCr/4FIdBc20ri3kUajU8yfYoNx8VkzvBu13AEBhxk/SvbZhgdqoJ74s5k+xoA43jKWO9//rkz0YFcoR/kRYksCgoiSIYPyPiUScKRB5R5irUmEUBuOumC/NpynV7E3lBWRnhodyYpI14yOeCsCw22XeBzZT4H/HTjhj1WP9VAChvJPG87umws+AApG61dKYhnHVzObcT4d+C3/h3/7stSoa4LU0OB/kr2EBgJQjcVohI6+Z6mHbAiCC/msT89lrvyj7+qrg0QNsiJNTxLE0U6KLGsO2Q9MmZdUEaTbiJcIrAx9PFHtQ/nJUMkaeNVYYDhBh3rMLAD3CCLB1IZR/LP/tNKMT4=
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:CH2PR12MB3990.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(1800799024)(10070799003)(23010399003)(7416014)(376014)(22082099003)(18002099003)(5023799004)(4143699003)(11063799006)(10067099003)(56012099006);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 2
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?utf-8?B?SnFDYWZlNWN4OUcyKzNxSENyVVg0T28xV3FNMjFZSDdDbkswSFFGbzdJSVdk?=
- =?utf-8?B?NUhTNEsreFFrbVZQU0ZrNHdmUjI3TW5hRThjY2p0cEcydzgxd0VSNnlxaGlP?=
- =?utf-8?B?K2JrcWx0Nm9jaTNSdVRpajZoTmZsZUlsMnFva1VEaC9Jc25CQnBzdzJTS013?=
- =?utf-8?B?ZmliTXRESE8wRUdvZ25TdHhoSWZsZkZ0WENYaFVDVEhOY2dRR3JZNUpmVTFz?=
- =?utf-8?B?a2VncDdNMDRpSGk5UzJCeWRlWHIra05jZUxVc2dNZTRWWG5GWmxseXVpcnJZ?=
- =?utf-8?B?RmY3dGZPZUtTbVJIcVcvSFhLRnlPaDdkNXdzbUhVTWNXemFDY1FlZDcyRzNH?=
- =?utf-8?B?RHVHc1BkQkM3Nk44ZkpXT0Erc2pMbFduWHN4U1pmS243bU9qY2xNYzBXejRq?=
- =?utf-8?B?RENPamc2WTQySTZyZU5DajcreWM4RVdkUFRoeWdFZXlEdkZpdHM2SzJQZnhC?=
- =?utf-8?B?TnV4ZzZlWDRPSys1VjVDa09BMHBhRnpiL2FJYUxoQ2RsSk5kQTFORUN1NGFP?=
- =?utf-8?B?djZCd1NIQlhpZGlmQ3JPcGhsUThSNE90Q2FzZUFlQUFmSkFnWHRMUitLNjZJ?=
- =?utf-8?B?YWxRNlhZUWwzNkRValZ4bXI2bTFnT2lUVVN4cFRFLzRRam9ZM2ZHVEt4Unky?=
- =?utf-8?B?bzBMYUVDRHRlZ3kxQk4wb2t0blVZbXExSGEwcFRHcmMwU1R0S01lSk90cVMy?=
- =?utf-8?B?UjRFeDFpREpNYjhTeWQwVUNHbmxxQVlrKzN3aHRuWlFtdmJVOUlMcmxNbUI4?=
- =?utf-8?B?b1FtZHNqN3ltNmlWd1ZhcWZTcnZSdnhZNjhST1p0NHE1d01TZWxLTDR4VjJO?=
- =?utf-8?B?Rm96VkZBcnF2SVFpVlEvbW0xaWNqcHIzMDJyMFVpUk1yaW12dk00aEljdzMz?=
- =?utf-8?B?VnR3aHJuZlJyK3NhYkYzZ1IzbjZKS2RvaDVHVk5Vbk8xb1kxem1LempzYVVp?=
- =?utf-8?B?RVJaSThqWHBqbEJ4UXlZVmUxaWlxMTZlK3ZOcGt6Ui93REs5dGdTZzAxcUFV?=
- =?utf-8?B?R1JYK0VUQ0hrcUp1M25tcVpRbVphU1c3UG9JRmNiYkVxdnRpYlEvTG8xcjcz?=
- =?utf-8?B?VGFqYkJvbklQSG1oWVcvNnNMb1dCMmxnVTR4R2hOUXA0R0JiM0liNDJYeENu?=
- =?utf-8?B?MEU0emZTZ3RUdVZPSlFMMDVOU0xCeldaUGltMk1iMmpJcnU4L2FpZGpFcTNQ?=
- =?utf-8?B?RFZ2eGRmZXJDYVVjUmp3ZnVFT1JsSTVGRmJ4RlpudVVURGdhcUNPNFJVMkVM?=
- =?utf-8?B?N3hZQWl2WTlScHVkUEd5UGJGcllEdkVScURBSlRaRG56aDJ1ZHQ0RWVER2I2?=
- =?utf-8?B?NjJKZW8yN3JoQktaYXF6ME52QzNwMTc5c3VLeEYxTjhGU1dMVHg0MFBuTmdh?=
- =?utf-8?B?T0NNaXp5WjcrZ0RRb3piN1Zwc3M3b0ZWQ0cyMTV5cWo3dERkN2hEdklmSEZ0?=
- =?utf-8?B?RWJJZUpWVW9NNllHYm9sNktUTyt6QmVvMW9xZUV6Y0ZEVnl6WFJJYjQ5Z1lo?=
- =?utf-8?B?TTU5Q0dLK0kxMXFvQlhPMFRlWEJObitpT0ZqOHpWNkE5THl2Z2tGQU1xTzNK?=
- =?utf-8?B?bk1NMFZmeXlvRUZsOTZmSURUTHQyMjk3RCtpYllUbE9lWUJGckY4aktFWHg2?=
- =?utf-8?B?cXMxaSs2c2NMbyszN2tTV0hKUlh6ZFpNdlI1ZlNJdWhlN3BsWXBwcWtEQm5x?=
- =?utf-8?B?Q2o0MDc3bG9DUkgvemdvK1M4N2I3azlFdUlOMU41em1lTlJJbEJGcHRyYWM0?=
- =?utf-8?B?OEpYYkJPOWtLeGo2VVhPQnpVY3ZUWURNN2d6aUJrS2FCdS9BU1l5YzQyblVn?=
- =?utf-8?B?SEJSd0E1aU1EUVhTMW8welZPSnY5bld6YUZONHBjcjY5b3d2WWNKQ1RsYWYz?=
- =?utf-8?B?aXJvNW5BTUxkMW9yOVdyRTJYc3hFdnhrTktpN21XTzgvZzRWYW5OVmxTdGlZ?=
- =?utf-8?B?bnJnWVA0dGZ2UGhDdmFCVXJMU1NkZk5CaEgyU3NUaVFvV2EweVVSM2piZHVU?=
- =?utf-8?B?c2hiM1BWblloMURyRkNnUzZRaHdmR0Q2Q21BZUlGNjdUZ0tzcVhQUllRYnVl?=
- =?utf-8?B?d0gzYmZwYmFrWXVQVlRDbUNjWkR4RUMzUWUxcFpqb0s4VU1jVVlHWWRuN0Z2?=
- =?utf-8?B?NjBFM3lXZDZ0UXd6SWhWanVYOWxJT2hBS1UvdURIN3hrRzdoN3ZyMlN5WEY2?=
- =?utf-8?B?OGFUYVdaWXZURE92TlVqY2F1WWVBZ2wvTHBTV010Zkl0SDZaOXd3cXhCZFF4?=
- =?utf-8?B?RlF5VVhtR2tPKzlZR3pCSXNjL3I0TkI3Mm82dUVsWGh0RzdpOE80cTFjejF0?=
- =?utf-8?B?Z3VVaWVuVWNESjQvWlFtdTdOTjRyYkgvcGk1SnZRejZPWlA1NVZQMlRqZEhL?=
- =?utf-8?Q?vBw7rWd7NUcrVxI/z9pZkweCpOYJiUNqUMz28++12WVDZ?=
-X-MS-Exchange-AntiSpam-MessageData-1: IXcUqmo4JzWltg==
-X-OriginatorOrg: Nvidia.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: f0737ca1-011a-4f4e-ba6b-08def113cd96
-X-MS-Exchange-CrossTenant-AuthSource: CH2PR12MB3990.namprd12.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 03 Aug 2026 04:00:49.2518
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: p9tQfBu72J6ZyEjEzufexXb82DIPCAcjiP0UB0HJKdZ6gp4l5UzGCfkFa/SWh5lLyrMlL8gNqLf+yxD81NDfJg==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: SN7PR12MB7022
+Content-Transfer-Encoding: 8bit
 
-On Mon Aug 3, 2026 at 3:30 AM JST, Gary Guo wrote:
-> On Mon Jul 6, 2026 at 3:37 PM BST, Daniel Almeida wrote:
-<...>
->> It solves d) by directly encoding the state of the Clk into the type, e.=
-g.:
->> Clk<Enabled> is now known to be a Clk that is enabled.
->
-> The design conflate states with actions. Our existing type state for devi=
-ces
-> don't do this: `Device<Bound>` means that the device is currently bound, =
-not
-> that dropping it will unbind it. Yet, a `Clk<Prepared>` doesn't mean just=
- that
-> "clock is prepared" but rather "clock is prepared and needs to be unprepa=
-red on
-> drop".
->
-> One way around this is to mimic the "Registration" pattern: have a type t=
-o
-> indicate that a `Clk` has been prepared and its `drop` will undo it, and =
-then
-> this type can `Deref` to `Clk<Prepared>` which just mean a prepared clock=
-.
+When resuming from hibernation with `hibernate=nocompress`, the kernel
+loads the image via load_image(), which submits read bios asynchronously
+and waits on them with hib_wait_io(). The bio completion callback
+hib_end_io() runs from the block IRQ/softirq path.
 
-Just as the driver core hands over `&Device<Bound>` to a driver as a
-guarantee that the device is currently bound, so can the driver pass a
-`&Clk<Prepared>` to a function to assert a similar proof. Here the
-reference only means "clock is prepared", without any action implied.
+Commit f6cf0545ec69 ("PM / Hibernate: Call flush_icache_range() on pages
+restored in-place") added a flush_icache_range() call inside hib_end_io()
+(under clean_pages_on_read). On architectures such as ARM64,
+flush_icache_range() ends with kick_all_cpus_sync() -> smp_call_function()
+(wait=1), which contains:
 
-The typestate has real practical benefits, as unlike `Device` which has
-a well-defined life cycle entirely controlled by the driver core, clock
-handles are owned by drivers and their use can go all over the place.
+    WARN_ON_ONCE(!in_task());
 
-Driver A might want to enable a clock in short bursts in order to
-preserve power, and keep it prepared otherwise. For this, a
-`Clk<Prepared>` with the `EnabledGuard` I mentioned in patch 2 would be
-a good fit. Driver B might need to keep a given clock enabled all the
-time and only change its rate, and thus will store a `Clk<Enabled>`.
-Driver C may have different PM states, and can encode these in an enum
-where relevant clocks are either `Prepared` or `Enabled` depending on
-the variant.
+Because hib_end_io() executes in hardirq/softirq context, in_task() is
+always false there, and the WARN fires which happens while the resume
+task is asleep in hib_wait_io() and the CPU is idle, the warning log as
+follows:
 
-Mandating a registration-like pattern here looks a bit overkill to me
-and I am not sure what this would grant us. It would definitely
-introduce some complexity: say that you want to keep a prepared clock in
-your driver data, does it mean you need to store the `Clk` itself, and
-then its prepared guard, which references the `Clk` in the same
-structure?
+[  182.265661] PM: Loading image data pages (286403 pages)...
+[  182.265670] hibernate: Hibernated on CPU 0 [mpidr:0x0]
+[  182.267762] ------------[ cut here ]------------
+[  182.267767] WARNING: kernel/smp.c:844 at smp_call_function_many_cond+0x78c/0xa08, CPU#2: swapper/2/0
+[  182.298749] Modules linked in: btrfs xor libblake2b raid6_pq ufs qnx4 hfsplus hfs minix ntfs msdos jfs nls_ucs2_utils xfs st xfrd
+[  182.353702] CPU: 2 UID: 0 PID: 0 Comm: swapper/2 Kdump: loaded Not tainted 7.2.0-rc5-generic #2 PREEMPT(lazy)
+...
+[  182.372630] pstate: 804000c5 (Nzcv daIF +PAN -UAO -TCO -DIT -SSBS BTYPE=--)
+[  182.379578] pc : smp_call_function_many_cond+0x78c/0xa08
+[  182.384877] lr : kick_all_cpus_sync+0x50/0xa8
+[  182.389221] sp : ffff800083cabc30
+[  182.392522] x29: ffff800083cabc30 x28: ffff002002322ac0 x27: ffff001f8bb5a000
+[  182.399646] x26: ffff80008351ddb8 x25: 0000000000000002 x24: 0000000000000000
+[  182.406770] x23: ffff80008351d000 x22: 0000000000000001 x21: 0000000000000001
+[  182.413892] x20: 0000000000000000 x19: 0000000000000000 x18: ffff800083c95068
+[  182.421015] x17: 0000000000000000 x16: 0000000000000000 x15: 0000000000000000
+[  182.428138] x14: 0000000000000000 x13: 0000000000000000 x12: 0000000000000000
+[  182.435261] x11: 00000000000000c0 x10: 0000000000000000 x9 : ffff80008027bd38
+[  182.442384] x8 : ffff800083cabe88 x7 : 0000000000000000 x6 : 0000000000000000
+[  182.449507] x5 : ffff80008351ddb8 x4 : 0000000000000000 x3 : 0000000000000001
+[  182.456630] x2 : 0000000000000000 x1 : 0000000000000000 x0 : 0000000000010000
+[  182.463753] Call trace:
+[  182.466187]  smp_call_function_many_cond+0x78c/0xa08 (P)
+[  182.471487]  kick_all_cpus_sync+0x50/0xa8
+[  182.475484]  hib_end_io+0x18c/0x270
+[  182.478963]  bio_endio+0x1b8/0x320
+[  182.482355]  blk_mq_end_request_batch+0x2d8/0x650
+[  182.487048]  nvme_pci_complete_batch+0x74/0xb0 [nvme]
+[  182.492091]  nvme_irq+0x9c/0xb0 [nvme]
+[  182.495830]  __handle_irq_event_percpu+0x64/0x440
+[  182.500523]  handle_irq_event+0x58/0x130
+[  182.504435]  handle_fasteoi_irq+0x120/0x1b8
+[  182.508606]  handle_irq_desc+0x58/0x98
+[  182.512344]  generic_handle_domain_irq+0x24/0x50
+[  182.516949]  gic_handle_irq+0x19c/0x3a0
+[  182.520773]  call_on_irq_stack+0x48/0x68
+[  182.524684]  do_interrupt_handler+0xb0/0xc0
+[  182.528856]  el1_interrupt+0x4c/0xd8
+[  182.532421]  el1h_64_irq_handler+0x1c/0x40
+[  182.536506]  el1h_64_irq+0x84/0x88
+[  182.539895]  default_idle_call+0x48/0x150 (P)
+[  182.544241]  do_idle+0x26c/0x3b0
+[  182.547457]  cpu_startup_entry+0x40/0x50
+[  182.551367]  secondary_start_kernel+0x130/0x170
+[  182.555885]  __secondary_switched+0xc8/0xd0
+[  182.560058] ---[ end trace 0000000000000000 ]---
 
-I guess it's fine if we enable this pattern via the storage of a
-`Clk<Unprepared>` and the relevant use of guards, as it may be the
-correct fit for a few drivers; but that's not how most drivers use
-clocks, so we should also allow them to store their resource in a more
-advanced state.
+This only affects the nocompress path: the compressed path
+(load_compressed_image) sets clean_pages_on_decompress and flushes from
+the decompression kthread (task context), so its hib_end_io() never calls
+flush_icache_range().
+
+Fix it by deferring the flush to task context. hib_end_io() now only
+records the restored page on a per-batch list (using page->lru, which is
+free because hibernate safe/in-place pages are neither on an LRU nor in
+the page cache). After hib_wait_io() returns to load_image() (task
+context, all bios of the batch completed), hib_flush_icache_pages() walks
+the list and calls flush_icache_range() on each page. This preserves the
+asynchronous batched I/O throughput of the nocompress path.
+
+Fixes: f6cf0545ec69 ("PM / Hibernate: Call flush_icache_range() on pages restored in-place")
+Acked-by: Riwen Lu <luriwen@kylinos.cn>
+Signed-off-by: Xiong Xin <xiongxin@kylinos.cn>
+
+diff --git a/kernel/power/swap.c b/kernel/power/swap.c
+index c626e9dc3c1c..7a97f5550124 100644
+--- a/kernel/power/swap.c
++++ b/kernel/power/swap.c
+@@ -223,6 +223,8 @@ struct hib_bio_batch {
+ 	wait_queue_head_t	wait;
+ 	blk_status_t		error;
+ 	struct blk_plug		plug;
++	struct list_head	icache_pages;
++	spinlock_t		icache_lock;
+ };
+ 
+ static void hib_init_batch(struct hib_bio_batch *hb)
+@@ -230,6 +232,8 @@ static void hib_init_batch(struct hib_bio_batch *hb)
+ 	atomic_set(&hb->count, 0);
+ 	init_waitqueue_head(&hb->wait);
+ 	hb->error = BLK_STS_OK;
++	INIT_LIST_HEAD(&hb->icache_pages);
++	spin_lock_init(&hb->icache_lock);
+ 	blk_start_plug(&hb->plug);
+ }
+ 
+@@ -249,11 +253,19 @@ static void hib_end_io(struct bio *bio)
+ 			 (unsigned long long)bio->bi_iter.bi_sector);
+ 	}
+ 
+-	if (bio_data_dir(bio) == WRITE)
++	if (bio_data_dir(bio) == WRITE) {
+ 		put_page(page);
+-	else if (clean_pages_on_read)
+-		flush_icache_range((unsigned long)page_address(page),
+-				   (unsigned long)page_address(page) + PAGE_SIZE);
++	} else if (clean_pages_on_read) {
++		/*
++		 * Stash the page on the batch list, load_image()
++		 * will flush it once hib_wait_io() has returned to task
++		 * context. The page is neither on an LRU nor in the page
++		 * cache, so its lru member is free to use as link node.
++		 */
++		spin_lock(&hb->icache_lock);
++		list_add(&page->lru, &hb->icache_pages);
++		spin_unlock(&hb->icache_lock);
++	}
+ 
+ 	if (bio->bi_status && !hb->error)
+ 		hb->error = bio->bi_status;
+@@ -295,6 +307,23 @@ static int hib_wait_io(struct hib_bio_batch *hb)
+ 	return blk_status_to_errno(hb->error);
+ }
+ 
++/*
++ * Flush the icache for pages restored since the last hib_wait_io().
++ * Must be called from task context (after hib_wait_io() returned): all
++ * bios of the batch have completed, so the icache_pages list is no longer
++ * touched by hib_end_io() and can be walked without the lock.
++ */
++static void hib_flush_icache_pages(struct hib_bio_batch *hb)
++{
++	struct page *page, *tmp;
++
++	list_for_each_entry_safe(page, tmp, &hb->icache_pages, lru) {
++		list_del_init(&page->lru);
++		flush_icache_range((unsigned long)page_address(page),
++				   (unsigned long)page_address(page) + PAGE_SIZE);
++	}
++}
++
+ /*
+  * Saving part
+  */
+@@ -1106,8 +1135,12 @@ static int load_image(struct swap_map_handle *handle,
+ 		ret = swap_read_page(handle, data_of(*snapshot), &hb);
+ 		if (ret)
+ 			break;
+-		if (snapshot->sync_read)
++		if (snapshot->sync_read) {
+ 			ret = hib_wait_io(&hb);
++			if (ret)
++				break;
++			hib_flush_icache_pages(&hb);
++		}
+ 		if (ret)
+ 			break;
+ 		if (!(nr_pages % m))
+@@ -1121,10 +1154,17 @@ static int load_image(struct swap_map_handle *handle,
+ 	if (!ret)
+ 		ret = err2;
+ 	if (!ret) {
++		hib_flush_icache_pages(&hb);
+ 		pr_info("Image loading done\n");
+ 		ret = snapshot_write_finalize(snapshot);
+ 		if (!ret && !snapshot_image_loaded(snapshot))
+ 			ret = -ENODATA;
++	} else {
++		/*
++		 * Reinit the list instead of walking it to avoid
++		 * use-after-free.
++		 */
++		INIT_LIST_HEAD(&hb.icache_pages);
+ 	}
+ 	swsusp_show_speed(start, stop, nr_to_read, "Read");
+ 	return ret;
+-- 
+2.25.1
+
