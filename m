@@ -1,315 +1,142 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 72F003515FB;
-	Mon,  3 Aug 2026 22:22:34 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id 7E89C330644;
+	Mon,  3 Aug 2026 22:28:20 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1785795755; cv=none; b=Hb+1sYo7HCxOP2AyYUJhXoTUV36ZlCVY+Y3/2UnS+URTzU+oRW6frAQsiFj5w8S9+fhpHA5MdCUZuRadG3ogutLpNjpNOAIz7DhsM9E0Tq1cnk1NfIMK00d6VHdlnPW5U5uBSPBOmFBXNzd7kNVyFMWdh2eP2cPcKO7sw0acCuA=
+	t=1785796103; cv=none; b=VgwX9eestXbRqmalfRiLpCbSqptg8L+5VocsD6H0x3wbV2XGO2fWUmr7Ik+zP5ee6XuU7wi2hqrwczr/OwjsVJbaFwbI0wDhFI0u/BtfyAXjmGo8xDsE+UVMLUG6XQ0hQRlgIojcPS1+trGN/wB7/eRwGtAlhyDvp7m/0/EAIuw=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1785795755; c=relaxed/simple;
-	bh=CNSO+WBmvcqw+nvXWqefnKshU3yhwvZPb8pHXa21cmM=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=XHhv2KDtuZkBTQG9UKMw8pvDGcGCI/PkDzB+6L0B749KNqbjd/gC/B4vFFPRCsTv0gSWW2cg+AjB3ym/wPgSfZr/SsGLYHC/2aRVjoGwWRuksHcel5G2yJgeLcCb8J4U6cSOedl3+a1Q+0fsc7UekWQGYs178B9kdVy2lfCAglU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=C3vNjADY; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1785796103; c=relaxed/simple;
+	bh=NXJgj8gPFUqPBvFvOMrhrVy+XO6YL2yIwB/GeZEOGgw=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=EzZZM3DDSE/RYtE7z4/K2BkCLZr4+pue8FViuJIDpvpTBLnY8jwi7LRm0Jv5SeXb1dADzsOJ1l7o5lipNPuqGGcOzEKKDjwijps6iqVzCSSEyvx1ZGr+BuxTivYC48G4L2JDxnOTCJraNhC5IP9lW+VtJ2wlg8ytRQSt6ODxwkg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=MlOHhvq8; arc=none smtp.client-ip=217.140.110.172
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="C3vNjADY"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 83D731F000E9;
-	Mon,  3 Aug 2026 22:22:33 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1785795754;
-	bh=QyFPn8q42V8UAdgnXK7tNQAdLlrB0mrtydrnFstRtOY=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=C3vNjADY8AkCkgdef674Ux6vNUnGjEVwy+Q149SCSwvkxrkRdiKnrfXbr86VIonb2
-	 7s1O5Lh0oX+ctP2/i9Mb07/AMW18YVoZNiooaka2Vcff5zzESjKEjPcKGNt4xZwi7X
-	 Qv6+Xr51KWHv9LoToBUUA24iTxLCzOP5rnZRQ2Qrkg8FBEyf/XB+GbAMKXeksuNsNA
-	 a3bAKhwKP+wXNaQ41RXiLI75lxPYpeGK1CIJ4NXvkLuo/902CrMvCd5rCFZ5PGdgWp
-	 Jl3OatlG52N232U3kjz3fOZpvHgN1AqSBXWePQ83RtrWZJ4VEG8/n9nP/3qZsfbd56
-	 3f3FacM2OdRMQ==
-Date: Mon, 3 Aug 2026 17:22:31 -0500
-From: Rob Herring <robh@kernel.org>
-To: Bhargav Joshi <j.bhargav.u@gmail.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>,
-	Daniel Lezcano <daniel.lezcano@kernel.org>,
-	Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Eduardo Valentin <edubezval@gmail.com>, linux-pm@vger.kernel.org,
-	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-	goledhruva@gmail.com, m-chawdhry@ti.com, daniel.baluta@gmail.com,
-	simona.toaca@nxp.com
-Subject: Re: [PATCH] dt-bindings: thermal: ti,omap-bandgap: Convert to DT
- schema
-Message-ID: <20260803222231.GA728307-robh@kernel.org>
-References: <20260731-ti-bandgap-v1-1-aeee6a658520@gmail.com>
+	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="MlOHhvq8"
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 30D80143D;
+	Mon,  3 Aug 2026 15:28:15 -0700 (PDT)
+Received: from [10.57.0.71] (unknown [10.57.0.71])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id E45563F632;
+	Mon,  3 Aug 2026 15:28:16 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
+	t=1785796099; bh=NXJgj8gPFUqPBvFvOMrhrVy+XO6YL2yIwB/GeZEOGgw=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=MlOHhvq8WEVJI3A8rewVMHVOBwqb036diiVgMzikIqEuxYL2gcChiASOedICqR/YU
+	 5dm94z3k1kd9O57msIH9i1Q9iLoXhdtj7bhqyrzk42y36NrRpFCWTNRy5iliCcHer0
+	 w3mlXL63otKIY89csgp5QFIpTBQzR5OuiQ8GkBMc=
+Message-ID: <f48c36fe-446f-4f83-8d2d-0913aafc377e@arm.com>
+Date: Mon, 3 Aug 2026 23:28:14 +0100
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260731-ti-bandgap-v1-1-aeee6a658520@gmail.com>
+User-Agent: Mozilla Thunderbird
+Subject: Re: [RESEND][PATCH 0/3] ACPI: CPPC: Reduce .target() callback
+ overhead
+To: "Rafael J . Wysocki" <rafael@kernel.org>,
+ Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org,
+ linux-kernel@vger.kernel.org, Len Brown <lenb@kernel.org>,
+ Jie Zhan <zhanjie9@hisilicon.com>, Lifeng Zheng <zhenglifeng1@huawei.com>,
+ Pierre Gondois <pierre.gondois@arm.com>, Sumit Gupta <sumitg@nvidia.com>,
+ Sudeep Holla <sudeep.holla@arm.com>,
+ Ionela Voinescu <ionela.voinescu@arm.com>, zhongqiu.han@oss.qualcomm.com
+References: <20260803210527.1285229-1-christian.loehle@arm.com>
+Content-Language: en-US
+From: Christian Loehle <christian.loehle@arm.com>
+In-Reply-To: <20260803210527.1285229-1-christian.loehle@arm.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-On Fri, Jul 31, 2026 at 12:42:38AM +0530, Bhargav Joshi wrote:
-> Convert Texas Instruments OMAP SCM bandgap from legacy text to DT schema
+On 8/3/26 22:05, Christian Loehle wrote:
+> cppc-cpufreq reaches cppc_set_perf() from every target callback.  For
+> direct SystemMemory controls, that path currently does several steps
+> which are unnecessary once the immutable _CPC layout is known:
 > 
-> Add "ti,dra752-bandgap" to compatible which was missing in text binding
-> but used and matched by same driver.
+>   - a full-width write first reads the access unit and merges the value.
+>   - every write takes the descriptor's RMW lock, even when its access unit
+>     is not shared with another _CPC entry.
+>   - cppc_set_perf() evaluates the same three PCC predicates at each phase
+>     of the transaction.
 > 
-> Document the "#thermal-sensor-cells" property, which was missing from
-> the original text binding but is required in practice by all in-tree
-> users via the common thermal-sensor.yaml binding.
+> Remove those costs while retaining the existing conservative paths for
+> partial fields, overlapping or malformed access units, and PCC controls.
 > 
-> Signed-off-by: Bhargav Joshi <j.bhargav.u@gmail.com>
-> ---
->  .../bindings/thermal/ti,omap-bandgap.yaml          | 227 +++++++++++++++++++++
->  .../devicetree/bindings/thermal/ti_soc_thermal.txt |  88 --------
->  2 files changed, 227 insertions(+), 88 deletions(-)
+> The series was tested on Arm Power-Orion O6 and AmpereOne systems using
+> cppc-cpufreq and schedutil.  An rt-app task pinned to one CPU ran for
+> 500 us every 2 ms with uclamp.min=512, for 5000 periods per run.  schedutil
+> rate_limit_us was 1000.  cppc_cpufreq_fast_switch() latency was measured
+> for 100 ten-second runs.  Each sample is the mean callback latency within
+> one run, and the table reports the median and sample standard deviation
+> of those samples.
 > 
-> diff --git a/Documentation/devicetree/bindings/thermal/ti,omap-bandgap.yaml b/Documentation/devicetree/bindings/thermal/ti,omap-bandgap.yaml
-> new file mode 100644
-> index 000000000000..5afd10a84f70
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/thermal/ti,omap-bandgap.yaml
-> @@ -0,0 +1,227 @@
-> +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
-> +%YAML 1.2
-> +---
-> +$id: http://devicetree.org/schemas/thermal/ti,omap-bandgap.yaml#
-> +$schema: http://devicetree.org/meta-schemas/core.yaml#
-> +
-> +title: Texas Instruments OMAP SCM bandgap
-> +
-> +maintainers:
-> +  - Eduardo Valentin <edubezval@gmail.com>
-> +
-> +description:
-> +  In the System Control Module, OMAP supplies a voltage reference and a
-> +  temperature sensor feature that are gathered in the band gap voltage and
-> +  temperature sensor (VBGAPTS) module. The band gap provides current and
-> +  voltage reference for its internal circuits and other analog IP blocks. The
-> +  analog-to-digital converter (ADC) produces an output value that is
-> +  proportional to the silicon temperature.
-> +
-> +properties:
-> +  compatible:
-> +    enum:
-> +      - ti,omap34xx-bandgap
-> +      - ti,omap36xx-bandgap
-> +      - ti,omap4430-bandgap
-> +      - ti,omap4460-bandgap
-> +      - ti,omap4470-bandgap
-> +      - ti,omap5430-bandgap
-> +      - ti,dra752-bandgap
-> +
-> +  reg:
-> +    minItems: 1
-> +    maxItems: 6
-> +
-> +  interrupts:
-> +    maxItems: 1
-> +
-> +  gpios:
-> +    maxItems: 1
-> +    description:
-> +      used to inform which GPIO line the tshut signal is routed to. The
-> +      informed GPIO will be treated as an IRQ;
-> +
-> +  "#thermal-sensor-cells":
-> +    enum: [0, 1]
-> +
-> +required:
-> +  - compatible
-> +  - reg
-> +
-> +allOf:
-> +  - $ref: thermal-sensor.yaml#
-> +
-> +  - if:
-> +      properties:
-> +        compatible:
-> +          contains:
-> +            enum:
-> +              - ti,omap34xx-bandgap
-> +              - ti,omap36xx-bandgap
-> +
-> +    then:
-> +      properties:
-> +        reg:
-> +          minItems: 1
-> +          maxItems: 1
-> +
-> +        interrupts: false
-> +
-> +        gpios: false
-> +
-> +        "#thermal-sensor-cells":
-> +          const: 0
-> +
-> +  - if:
-> +      properties:
-> +        compatible:
-> +          contains:
-> +            const: ti,omap4430-bandgap
-> +
-> +    then:
-> +      properties:
-> +        reg:
-> +          minItems: 2
-> +          maxItems: 2
-> +
-> +        interrupts: false
-> +
-> +        "#thermal-sensor-cells":
-> +          const: 0
-> +
-> +      required:
-> +        - gpios
-> +
-> +  - if:
-> +      properties:
-> +        compatible:
-> +          contains:
-> +            enum:
-> +              - ti,omap4460-bandgap
-> +              - ti,omap4470-bandgap
-> +
-> +    then:
-> +      properties:
-> +        reg:
-> +          minItems: 3
-> +          maxItems: 3
-> +
-> +        interrupts:
-> +          maxItems: 1
+> Orion O6               median       stdev       callbacks
+> baseline               5703 ns      307 ns       188017
+> complete series        5023 ns      240 ns       188209
+> ==> 680 ns (11.9%) reduction
+> 
+> AmpereOne              median       stdev
+> baseline               2090 ns      157 ns
+> complete series      1907.5 ns      140 ns
+> ==> 182.5 ns (8.7%) reduction
+> 
+> The cumulative intermediate results on the Orion O6 attribute roughly half
+> of the gain to each of the first two patches: avoiding the read reduced
+> the median by 284 ns (5.0%), and avoiding the lock reduced it by another
+> 336 ns (6.2%).
+> Together they account for 620 ns of the 680 ns total reduction.
+> 
+> With the same arm64 configuration and GCC 11.4, caching the PCC predicate
+> also reduces cppc_set_perf() from 1124 to 884 bytes.  The generated
+> function has 60 fewer instructions, 17 fewer loads and 20 fewer branches.
+> 
+> This series is based on the CPPC fixes posted at (already queued):
+> https://lore.kernel.org/lkml/20260722093825.1030594-1-christian.loehle@arm.com/
+> 
+> and the separately posted fix still under review:
+> https://lore.kernel.org/lkml/20260724104042.1481804-1-christian.loehle@arm.com/
+> 
+> PS:
+> There's a final optimization that I actually wanted to make but decided to
+> split it out for now as it somewhat replicated Sumit's series:
+> Skipping redundant perf ctrl writes in cpufreq-cppc if registers are non-PCC
+> and !shared (because the values are unchanged, the
+> !autonomous-common-case), but that requires the driver to have a more
+> complex caching- and atomic-updating machinery in place, similar to
+> hotplug. As opposed to this series the optimization would be for the
+> microcontroller handling the CPPC requests, which may be shared across
+> many CPUs and therefore redundant requests can increase the dvfs
+> transition latency.
+> That patch will follow once Sumit's is queued:
+> https://lore.kernel.org/lkml/20260716153820.2007095-1-sumitg@nvidia.com/
+> 
+> [RESEND] for the new base-commit specifier below
+> 
+> Christian Loehle (3):
+>   ACPI: CPPC: Avoid unnecessary reads for full-width writes
+>   ACPI: CPPC: Avoid locking standalone full-width registers
+>   ACPI: CPPC: Evaluate performance-control PCC use once
+> 
+>  drivers/acpi/cppc_acpi.c | 135 +++++++++++++++++++++++++++++++--------
+>  include/acpi/cppc_acpi.h |   5 +-
+>  2 files changed, 113 insertions(+), 27 deletions(-)
+> 
+> 
+> base-commit: 075b74841bd0065a3bda3440873c747938e69b68
 
-Drop. 1 is already the max.
+Nice, so that worked:
+https://sashiko.dev/#/patchset/20260803210527.1285229-1-christian.loehle@arm.com
+Seems no findings on $SUBJECT but the rest of the comments it has
+look legit to me? I'll go take another look tomorrow:
 
-> +
-> +        "#thermal-sensor-cells":
-> +          const: 0
-> +
-> +      required:
-> +        - interrupts
-> +        - gpios
-> +
-> +  - if:
-> +      properties:
-> +        compatible:
-> +          contains:
-> +            const: ti,omap5430-bandgap
-> +
-> +    then:
-> +      properties:
-> +        reg:
-> +          minItems: 4
-> +          maxItems: 4
-> +
-> +        interrupts:
-> +          maxItems: 1
+1. Using per-CPU cpc_desc->rmw_lock for SYSTEM_MEMORY CPPC control register that
+may be shared.
+2. MASK_VAL_WRITE() truncation on 32bit architectures.
+3. acpi_cppc_processor_exit() calls kfree(cpc_ptr) unconditionally (UAF with sysfs?)
+4. cppc_set_reg_val_in_pcc() calls cpc_write() before down_write(&pcc_ss_data->pcc_lock)
+5 & 6 are sanitization of values from FW. 
 
-Drop. 1 is already the max.
-
-> +
-> +        gpios: false
-> +
-> +        "#thermal-sensor-cells":
-> +          const: 1
-> +
-> +      required:
-> +        - interrupts
-> +
-> +  - if:
-> +      properties:
-> +        compatible:
-> +          contains:
-> +            const: ti,dra752-bandgap
-> +
-> +    then:
-> +      properties:
-> +        reg:
-> +          minItems: 6
-> +          maxItems: 6
-> +
-> +        interrupts:
-> +          maxItems: 1
-
-Drop. 1 is already the max.
-
-> +
-> +        gpios: false
-> +
-> +        "#thermal-sensor-cells":
-> +          const: 1
-> +
-> +      required:
-> +        - interrupts
-> +
-> +unevaluatedProperties: false
-> +
-> +examples:
-> +  - |
-> +    bandgap@48002524 {
-> +        compatible = "ti,omap34xx-bandgap";
-> +        reg = <0x48002524 0x4>;
-> +        #thermal-sensor-cells = <0>;
-> +    };
-> +
-> +  - |
-> +    bandgap@48002524 {
-> +        compatible = "ti,omap36xx-bandgap";
-> +        reg = <0x48002524 0x4>;
-> +        #thermal-sensor-cells = <0>;
-> +    };
-> +
-> +  - |
-> +    #include <dt-bindings/gpio/gpio.h>
-> +
-> +    bandgap@4a002260 {
-> +        compatible = "ti,omap4430-bandgap";
-> +        reg = <0x4a002260 0x4>, <0x4a00232c 0x4>;
-> +        gpios = <&gpio3 22 GPIO_ACTIVE_HIGH>; /* tshut */
-> +        #thermal-sensor-cells = <0>;
-> +    };
-> +
-> +  - |
-> +    #include <dt-bindings/gpio/gpio.h>
-> +    #include <dt-bindings/interrupt-controller/irq.h>
-> +
-> +    bandgap@4a002260 {
-> +        compatible = "ti,omap4460-bandgap";
-> +        reg = <0x4a002260 0x4>, <0x4a00232c 0x4>, <0x4a002378 0x18>;
-> +        interrupts = <0 126 IRQ_TYPE_LEVEL_HIGH>; /* talert */
-> +        gpios = <&gpio3 22 GPIO_ACTIVE_HIGH>; /* tshut */
-> +        #thermal-sensor-cells = <0>;
-> +    };
-> +
-> +  - |
-> +    #include <dt-bindings/interrupt-controller/arm-gic.h>
-> +    #include <dt-bindings/interrupt-controller/irq.h>
-> +
-> +    bandgap@4a0021e0 {
-> +        compatible = "ti,omap5430-bandgap";
-> +        reg = <0x4a0021e0 0xc>, <0x4a00232c 0xc>,
-> +              <0x4a002380 0x2c>, <0x4a0023c0 0x3c>;
-> +        interrupts = <GIC_SPI 126 IRQ_TYPE_LEVEL_HIGH>; /* talert */
-> +        #thermal-sensor-cells = <1>;
-> +    };
-> +
-> +  - |
-> +    #include <dt-bindings/interrupt-controller/arm-gic.h>
-> +    #include <dt-bindings/interrupt-controller/irq.h>
-> +
-> +    bandgap@4a0021e0 {
-> +        compatible = "ti,dra752-bandgap";
-> +        reg = <0x4a0021e0 0xc>, <0x4a00232c 0xc>,
-> +              <0x4a002380 0x2c>, <0x4a0023c0 0x3c>,
-> +              <0x4a002564 0x8>, <0x4a002574 0x50>;
-> +        interrupts = <GIC_SPI 121 IRQ_TYPE_LEVEL_HIGH>; /* talert */
-> +        #thermal-sensor-cells = <1>;
-> +    };
-
-1 or 2 examples is enough. Perhaps the 1st and last to have the simplest 
-and most complex.
