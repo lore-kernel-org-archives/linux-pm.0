@@ -1,52 +1,74 @@
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id 53B1A2D8795;
-	Mon,  3 Aug 2026 21:05:46 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
+Received: from mail-pl1-f175.google.com (mail-pl1-f175.google.com [209.85.214.175])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A48313B42D7
+	for <linux-pm@vger.kernel.org>; Mon,  3 Aug 2026 21:07:25 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.175
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1785791148; cv=none; b=EXS5xmBERrTQq7I40roPixMUbVttLXqfGDOLg6jBU9ZUvzLw4NPqpvn3QgWfCOPz5VdB8Bg5uOY8QPvWKVSOG2ViUySe0IaPHDEo1oAvP8kaV3ujEmnIbQXmKRRkYkBFAdKFJz++Hba4xfdqgzIXy0RPlYCQMa0xJMK0aE3rQGA=
+	t=1785791246; cv=none; b=u2y30T/1/aUyTbhhTwwHjjSoZ09qm8aVx0LHd471QRh7SkZv3AZzJ8gqQ1UZVOlgw7bqF3nZH/osg+cTyk6BSQIjCZsC2xGh2xnQntZ+kUU9aMdbxQKbXoPfGlcR6DLU2SZNwRV0Y6MuT0imCBXYD6MUDjgJ1hvJO61Ep1Ixg94=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1785791148; c=relaxed/simple;
-	bh=eNP5GqOW7zsH2R03Okaf82MSE794/afd4AaWtwVDhXs=;
-	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=theHeh6AhaXE/44ZZnlod4z4H8aoXapUct5RUyK8txHfHEOQ6Xvosle1etOICkREGTsR/+v2Ce9WfHSKcm1bPQl/gvO3DBUx5mKXBZr8KFx4HM3bepSbHWqPmXIcy+1VDyc61RlkrJeUfD8WAK6LcHpd4S4sU8YG3GFc+N3qlMA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=YQWWQvr/; arc=none smtp.client-ip=217.140.110.172
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
+	s=arc-20240116; t=1785791246; c=relaxed/simple;
+	bh=nthUiIShsevE0eWa2hPRlXX6lkplZuzzgbo2dNWmXpw=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=jGVruIlTh/zpzH/p+VO+Js2HAGJEFjk0vp0za30Pns9dlopDSp/Yq0czVPOuuChaihhr8Isns3MlHjNJZZuFn1FDDMI5cfrToUpT5g11neMuspxSRd3yOVX6Eb4SvPvRHnyXaPNjWdTzo4lY+IhiVdic6noMxlAdkwhJhUECmSQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=a9llnKlB; arc=none smtp.client-ip=209.85.214.175
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="YQWWQvr/"
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id A2A301476;
-	Mon,  3 Aug 2026 14:05:41 -0700 (PDT)
-Received: from e127648.arm.com (unknown [10.57.0.71])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id 6FA703F86F;
-	Mon,  3 Aug 2026 14:05:43 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1785791145; bh=eNP5GqOW7zsH2R03Okaf82MSE794/afd4AaWtwVDhXs=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=YQWWQvr/f3KrOx5TGL6xHVRegyjjUQo2S1ujWcuSYY7bv+DgtJNVO6+7ZbIhoHruh
-	 gOV/WP1hMIe0mi42z+2X+IvRv2Y/ry6xHD6ICNavHRCK2MVJ2GrKhOsQS5m7nqO93K
-	 aVNHGC1jmAYclQ+4FlvinrqYeVP+2eU+B2Tdir0g=
-From: Christian Loehle <christian.loehle@arm.com>
-To: "Rafael J . Wysocki" <rafael@kernel.org>,
-	Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linux-pm@vger.kernel.org,
-	linux-acpi@vger.kernel.org,
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="a9llnKlB"
+Received: by mail-pl1-f175.google.com with SMTP id d9443c01a7336-2cc891373e0so42276755ad.2
+        for <linux-pm@vger.kernel.org>; Mon, 03 Aug 2026 14:07:25 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1785791245; x=1786396045; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
+        bh=qKfhfD+X3yrM3Hm1dz4XJjX8IqpqqbygeYd6dnInQMQ=;
+        b=a9llnKlBqJr1zPkc2WBeGCvdfg+B8L43wnRMu3utIaHTVCrXqqskFnYGawa1aPBnS2
+         t6No6jKaLKVSbiQPITk6MAhQFbak+HrQ1PeWGf0hyvlt/fytUyzHaOWbv6IU+CnR0jEY
+         gezWp3C1Ydap345zbcNGT+stQtQ3UYcA+706+ganScVTDd2TnCoedZKanM8ExN7MEXew
+         3nUXDDMKy60dsV9rQUEuLorz+Q5vnx/ETDpdfLBaZsdory1xbCZR2WFqFqEvCiTY/4kh
+         BVt9nPuU0CCTgJWRTtmkWAu4VQcREFcBJLzGkY4WKODidqaELtpjlQwtu3bCOfTM87LV
+         GDcw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1785791245; x=1786396045;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=qKfhfD+X3yrM3Hm1dz4XJjX8IqpqqbygeYd6dnInQMQ=;
+        b=NC9m6cyCupc6945MvR0fg70OtnudpwzTmhIHwIMtDmhwVZu1VvJMhuidMNEBjIEw07
+         wpGq+hEOnZepqIH1D1NXv+P8iCQ0ognEP3nLSjbkvN1xN87BLpKeBV+JsXCjoYdbt78q
+         PKU3wkPFXTGexxGmIYM70Q0gnSgVOINxf6POP1LFK+HBrtn5cO0ViDD5vFkJW55obcdu
+         3G/0IvqPjkVPMkxVgwy4Me0+DKrlrsKVVon7+o0iP2CHKd6b9a4nnEHNwsiB7YiDd3Ge
+         N9GtXaDwE4ZAYy/0EjgryVTs4FMvQYcxFqFbrt5NV0838suoCRpAGcYGGFeKL0d5TB85
+         ewRg==
+X-Forwarded-Encrypted: i=1; AHgh+RpzULyZ4AsxWyta/6JDtZ5z6DjPIt4RWBMnPBNKjKrqWp+7xjTjmKfffmVKOaGizi8yRcmSCp0WAQ==@vger.kernel.org
+X-Gm-Message-State: AOJu0YzVav7Knnh34JeOVYlflVvZ9NC0mVY6+UsjHJE2XoLp85OsoEIs
+	V7wPuUTukb+krhWxaVYV1z+dqYaUQ90olcqueyKT8oz7tZvfUobE8nXH
+X-Gm-Gg: AR+sD12OJ1HtugENzRUJGC8DUM5FSRsl6VyGRQ4ROcA2GHC8DiMH4ft0Zk92/dwD1xe
+	xsHJ9TJmMhhOqyrGEersUUd3kf9XP7PVuVRyXfRLcYysGAksx0QUPa49SOdgQplp+iyV5V16QZ5
+	4T9dfDIGs9YHuc4TzX8dfocvPktuc3ovdwedf1RdmHCf9Nn24NhzWZADLX2Al3bEKLMp0JZjy47
+	AXD3bN2PBl+VZlPTsQl1F8nkNFq8eO+YIEP2bFVyqcmE+S4PJLNZ3q/T4UTIff6XaH1+Txg89Yw
+	UyzLKKFMbiz964AD6Mmc/H2BQU3f1m9ak8YHDY6i0j837s9sUWbb+Y35PMBN40nZE11QQhVO2VT
+	TZLvUBnI6I0MF7XtRkgsHuZVr6tOhP8ijSH+wIxLipnDj6t4N85gZ0NRd2x8g90aSX397Vt2rIW
+	LqTzFea7mvswK1vmp9zVPn4TgXEhpI4s/WmKmxO9cCT29QE6d9axF10shGQKW6Za93bMsZB7q7v
+	tnJWPmL/B1MiHHUVP+A+mhdN2a+2SROp/FzjvYqig==
+X-Received: by 2002:a05:6a21:7a82:b0:3c0:9c19:65a4 with SMTP id adf61e73a8af0-3c92a992be6mr11926671637.76.1785791244783;
+        Mon, 03 Aug 2026 14:07:24 -0700 (PDT)
+Received: from lappy (108-228-232-20.lightspeed.sndgca.sbcglobal.net. [108.228.232.20])
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-3153e06f88fsm40203442eec.20.2026.08.03.14.07.24
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 03 Aug 2026 14:07:24 -0700 (PDT)
+From: "Derek J. Clark" <derekjohn.clark@gmail.com>
+To: Sebastian Reichel <sre@kernel.org>
+Cc: Hans de Goede <hansg@kernel.org>,
+	"Pierre-Loup A . Griffais" <pgriffais@valvesoftware.com>,
+	"Derek J . Clark" <derekjohn.clark@gmail.com>,
+	linux-pm@vger.kernel.org,
 	linux-kernel@vger.kernel.org,
-	Len Brown <lenb@kernel.org>,
-	Jie Zhan <zhanjie9@hisilicon.com>,
-	Lifeng Zheng <zhenglifeng1@huawei.com>,
-	Pierre Gondois <pierre.gondois@arm.com>,
-	Sumit Gupta <sumitg@nvidia.com>,
-	Sudeep Holla <sudeep.holla@arm.com>,
-	Ionela Voinescu <ionela.voinescu@arm.com>,
-	zhongqiu.han@oss.qualcomm.com,
-	Christian Loehle <christian.loehle@arm.com>
-Subject: [PATCH 3/3] ACPI: CPPC: Evaluate performance-control PCC use once
-Date: Mon,  3 Aug 2026 22:05:27 +0100
-Message-Id: <20260803210527.1285229-4-christian.loehle@arm.com>
-X-Mailer: git-send-email 2.34.1
-In-Reply-To: <20260803210527.1285229-1-christian.loehle@arm.com>
-References: <20260803210527.1285229-1-christian.loehle@arm.com>
+	linux-api@vger.kernel.org
+Subject: [PATCH] Documentation: sysfs-class-power: Update Long_Life description
+Date: Mon,  3 Aug 2026 14:07:20 -0700
+Message-ID: <20260803210720.23844-1-derekjohn.clark@gmail.com>
+X-Mailer: git-send-email 2.55.0
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -55,66 +77,66 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-cppc_set_perf() evaluates the same immutable address-space predicates
-before and after each phase of a performance-control update. This repeats
-the three-control PCC test three times for every target request.
+While adding charge limiting support to the Lenovo WMI drivers, there
+was some back and forth about whether charge_types or
+charge_control_end_threshold was the appropriate attribute to expose a
+battery charge limiting toggle that is fixed in the BIOS. The confusion
+arose because the charge_control_end_threshold description closely
+matches the functional change the hardware is making, while the
+charge_types functionality better suits the actual an on/off toggle that
+occurs in the BIOS. This specific scenario is not explicitly enumerated
+in the documentation, though it is fairly common.
 
-Evaluate the predicate once after resolving the control descriptors and
-reuse the result throughout the transaction.
+Given that the original intention was to use it this way[1],[2], and that
+the samsung-laptop[3], ideapad-laptop[4], and lenovo-wmi-other[5] drivers
+all use the convention of charge_types with an exposed Long_Life and
+Standard value for this, codify it in the Documentation to avoid confusion
+in the future.
 
-Signed-off-by: Christian Loehle <christian.loehle@arm.com>
+[1] https://lore.kernel.org/linux-pm/49993a42-aa91-46bf-acef-4a089db4c2db@redhat.com/
+[2] https://lore.kernel.org/platform-driver-x86/20241209204051.8786-1-hdegoede@redhat.com/
+[3] https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=de2884c6cdd3d133704ce37393590dd1c761500c
+[4] https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=da8f2708f9b69707f4efeb432a18395e46b4666f
+[5] https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=9ca8fc065b88b327acbfdc33454efea391639716
+
+Suggested-by: Hans de Goede <hansg@kernel.org>
+Signed-off-by: Derek J. Clark  <derekjohn.clark@gmail.com>
 ---
- drivers/acpi/cppc_acpi.c | 9 ++++++---
- 1 file changed, 6 insertions(+), 3 deletions(-)
+ Documentation/ABI/testing/sysfs-class-power | 14 +++++++++-----
+ 1 file changed, 9 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/acpi/cppc_acpi.c b/drivers/acpi/cppc_acpi.c
-index 2793d6b7d40d..cd1c4a30eb6f 100644
---- a/drivers/acpi/cppc_acpi.c
-+++ b/drivers/acpi/cppc_acpi.c
-@@ -2002,6 +2002,7 @@ int cppc_set_perf(int cpu, struct cppc_perf_ctrls *perf_ctrls)
- 	struct cpc_register_resource *desired_reg, *min_perf_reg, *max_perf_reg;
- 	int pcc_ss_id = per_cpu(cpu_pcc_subspace_idx, cpu);
- 	struct cppc_pcc_data *pcc_ss_data = NULL;
-+	bool regs_in_pcc;
- 	int ret = 0;
+diff --git a/Documentation/ABI/testing/sysfs-class-power b/Documentation/ABI/testing/sysfs-class-power
+index 5641f1fd5fd6..98b389845d1e 100644
+--- a/Documentation/ABI/testing/sysfs-class-power
++++ b/Documentation/ABI/testing/sysfs-class-power
+@@ -365,9 +365,12 @@ Contact:	linux-pm@vger.kernel.org
+ Description:
+ 		Represents a battery percentage level, above which charging will
+ 		stop. Not all hardware is capable of setting this to an arbitrary
+-		percentage. Drivers will round written values to the nearest
+-		supported value. Reading back the value will show the actual
+-		threshold set by the driver.
++		value, instead providing different minimum, maximum, or step
++		values. Drivers will round written values to the nearest supported
++		value. Reading back the value will show the actual threshold set
++		by the driver. For hardware that only supports a single fixed
++		value, use charge_types with a value of "Long Life" (vs "Standard")
++		instead'
  
- 	if (!cpc_desc) {
-@@ -2012,6 +2013,8 @@ int cppc_set_perf(int cpu, struct cppc_perf_ctrls *perf_ctrls)
- 	desired_reg = &cpc_desc->cpc_regs[DESIRED_PERF];
- 	min_perf_reg = &cpc_desc->cpc_regs[MIN_PERF];
- 	max_perf_reg = &cpc_desc->cpc_regs[MAX_PERF];
-+	regs_in_pcc = CPC_IN_PCC(desired_reg) || CPC_IN_PCC(min_perf_reg) ||
-+		      CPC_IN_PCC(max_perf_reg);
+ 		Access: Read, Write
  
- 	/*
- 	 * This is Phase-I where we want to write to CPC registers
-@@ -2020,7 +2023,7 @@ int cppc_set_perf(int cpu, struct cppc_perf_ctrls *perf_ctrls)
- 	 * Since read_lock can be acquired by multiple CPUs simultaneously we
- 	 * achieve that goal here
- 	 */
--	if (CPC_IN_PCC(desired_reg) || CPC_IN_PCC(min_perf_reg) || CPC_IN_PCC(max_perf_reg)) {
-+	if (regs_in_pcc) {
- 		if (pcc_ss_id < 0) {
- 			pr_debug("Invalid pcc_ss_id\n");
- 			return -ENODEV;
-@@ -2056,7 +2059,7 @@ int cppc_set_perf(int cpu, struct cppc_perf_ctrls *perf_ctrls)
- 	if (perf_ctrls->max_perf && CPC_SUPPORTED(max_perf_reg))
- 		cpc_write(cpu, max_perf_reg, perf_ctrls->max_perf);
- 
--	if (CPC_IN_PCC(desired_reg) || CPC_IN_PCC(min_perf_reg) || CPC_IN_PCC(max_perf_reg))
-+	if (regs_in_pcc)
- 		up_read(&pcc_ss_data->pcc_lock);	/* END Phase-I */
- 	/*
- 	 * This is Phase-II where we transfer the ownership of PCC to Platform
-@@ -2104,7 +2107,7 @@ int cppc_set_perf(int cpu, struct cppc_perf_ctrls *perf_ctrls)
- 	 * case during a CMD_READ and if there are pending writes it delivers
- 	 * the write command before servicing the read command
- 	 */
--	if (CPC_IN_PCC(desired_reg) || CPC_IN_PCC(min_perf_reg) || CPC_IN_PCC(max_perf_reg)) {
-+	if (regs_in_pcc) {
- 		if (down_write_trylock(&pcc_ss_data->pcc_lock)) {/* BEGIN Phase-II */
- 			/* Update only if there are pending write commands */
- 			if (pcc_ss_data->pending_pcc_write_cmd)
+@@ -398,8 +401,9 @@ Description:
+ 			when to start and stop charging. Advanced users
+ 			can use this to drastically extend battery life.
+ 		Long Life:
+-			The charger reduces its charging rate in order to
+-			prolong the battery health.
++			The charger firmware reduces its charging rate and/or
++			maximum charging percentage to a hardware specified
++			fixed limit in order to prolong the battery health.
+ 		Bypass:
+ 			The charger bypasses the charging path around the
+ 			integrated converter allowing for a "smart" wall
 -- 
-2.34.1
+2.55.0
 
