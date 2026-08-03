@@ -1,31 +1,31 @@
 Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id D8F5F36B067;
-	Mon,  3 Aug 2026 10:02:58 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id E754C371046;
+	Mon,  3 Aug 2026 10:03:00 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1785751381; cv=none; b=i/OiIoS1XrWxYxgpoPrVWWetCXbU+de9HT4ndb81RQXeOW9FGHJlSUI5W7uwiEsTIz6Wam2RbQViwCE2qivM/4UpV3n/sIo5JmdPd9+ztrbMUknCI4gTJ9KAsdnjYnY6WRlbmRmBLXgrdcEGbxRL/KHWPe75h9KUnkPBDvPVjVU=
+	t=1785751383; cv=none; b=rrWgJ7Yr43tfIvof8rAyzgBJazmKik1dC00UUkbRfq+G7Y+pNcUqGYNIk81RVAzCNJSqyO3/JK24ygVLkcKcWfxiUBoXf4zdR0gcPpahcQhQW6on/opB4p31wgqmvwzI2/OfRQAjsRXyrmjOTvKkolXZtKL6rUdV7P05i7QPQMc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1785751381; c=relaxed/simple;
-	bh=nJ9QWCi/tJmF9Pq2ORqEtY5V8jGQpOuqrz5rNcgEs1k=;
+	s=arc-20240116; t=1785751383; c=relaxed/simple;
+	bh=TdGjTLd7CFgZjqZPky+2Tqgc86QPVB5Ryw4ljGn3VoE=;
 	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=WEkZ6JsW550kncrsXzH4pLFyHjHMX8DUVOsAP70OdSRQW5rrg+pssc+biIFZ+2ofJ1SyW12C8i8EvHhne8ZjtmvqKnySs0Gf4TuTH6T5PxKFifEfkPna4mhjdleOi0fjZrcxPECxIIyZ52OLM9CSs6t4F3MDjiHtzSzTr1CChsE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=GxCHASjE; arc=none smtp.client-ip=217.140.110.172
+	 MIME-Version; b=BweZ1LKJ1TKiQ8rFT4bI+eyjOnoyryekaM707oy5j0Z0BOeIweHLIkR+QwpS8CFOH/lJiV6ylQpbmtlitmtYuVdaPU9v9EBUxmavNKer/bz2V0ST/dz+IutJg7iLsJFmujclyCt1Wa5TGYLbiG7RD5ncvhfV39v7GaQ0QxozUqQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=eoQ/C9M1; arc=none smtp.client-ip=217.140.110.172
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="GxCHASjE"
+	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="eoQ/C9M1"
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id E1128143D;
-	Mon,  3 Aug 2026 03:02:53 -0700 (PDT)
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 4431C1476;
+	Mon,  3 Aug 2026 03:02:56 -0700 (PDT)
 Received: from e127648.cambridge.arm.com (e127648.arm.com [10.1.39.91])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id DF6163F66F;
-	Mon,  3 Aug 2026 03:02:55 -0700 (PDT)
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id 4713C3F66F;
+	Mon,  3 Aug 2026 03:02:58 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1785751377; bh=nJ9QWCi/tJmF9Pq2ORqEtY5V8jGQpOuqrz5rNcgEs1k=;
+	t=1785751380; bh=TdGjTLd7CFgZjqZPky+2Tqgc86QPVB5Ryw4ljGn3VoE=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=GxCHASjERhwg3n9lUBA3VJ3DbHDSRY+7VzcqlwjmFdvgSC8zDYXf7u2tnUjvjB/9I
-	 2EOytqgMxNA6V7Gsoo3xrUCQZvsetOAMzBH1Gi7MbgFN4AqKodoAJDWjwcUhDLIlYq
-	 JTRUSKkjdHg1n3KTfNGZcYwuzBJuvp09ui7vdaUw=
+	b=eoQ/C9M1L8XXd6M+eOO/C6DEZ3B8IXNTQkYFkzK6uLFxN3b5+Uktb3Iaj613nE0uD
+	 9iTaT2L7g9GajIEl13Fj0nJIBhSC9F2z88DCsAq/D5wnI/sCaIeh5phDbfmp6wQbV7
+	 si+t1tTFOBgfr+9FC7bC8Ki8jSKrn05O8JF2fSW0=
 From: Christian Loehle <christian.loehle@arm.com>
 To: christian.loehle@arm.com,
 	"Rafael J . Wysocki" <rafael@kernel.org>,
@@ -41,12 +41,12 @@ Cc: linux-pm@vger.kernel.org,
 	Sudeep Holla <sudeep.holla@arm.com>,
 	Ionela Voinescu <ionela.voinescu@arm.com>,
 	zhongqiu.han@oss.qualcomm.com
-Subject: [PATCH v3 0/3] ACPI: CPPC: Avoid Desired Performance reads on ACPI 6.6+
-Date: Mon,  3 Aug 2026 11:02:48 +0100
-Message-Id: <cover.1785749175.git.christian.loehle@arm.com>
+Subject: [PATCH v3 1/3] ACPI: CPPC: Reject desired_perf reads on ACPI 6.6+
+Date: Mon,  3 Aug 2026 11:02:49 +0100
+Message-Id: <18ee922e97441b99b9ab346fe559d837d05eb5e7.1785749175.git.christian.loehle@arm.com>
 X-Mailer: git-send-email 2.34.1
-In-Reply-To: <20260729100245.2628302-1-christian.loehle@arm.com>
-References: <20260729100245.2628302-1-christian.loehle@arm.com>
+In-Reply-To: <cover.1785749175.git.christian.loehle@arm.com>
+References: <20260729100245.2628302-1-christian.loehle@arm.com> <cover.1785749175.git.christian.loehle@arm.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -55,41 +55,81 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-ACPI 6.6 changed the Optional Attribute of Desired Performance from
-Read/Write to Write.
+When CPPC feedback counters cannot provide a usable sample, cppc-cpufreq
+calls cppc_get_desired_perf() because some platforms repurpose Desired
+Performance to report actual delivered performance.
 
-cppc-cpufreq reads Desired Performance when feedback counters cannot
-provide a usable sample because some older platforms repurpose the
-register to report actual delivered performance. Preserve that workaround
-on systems reporting an older ACPI revision, but do not attempt the read
-on ACPI 6.6 or later, where firmware no longer promises a readable value
-and cppc-cpufreq can fall back to its cached OSPM request instead.
+The fallback was added for platforms on which Desired Performance reflects
+delivered performance. ACPI 6.6 defines the register as write-only, so
+invoking that workaround on an ACPI 6.6 or later platform would require an
+invalid register read.
 
-cppc_get_perf() also reads Desired Performance while populating the
-control values used during cppc-cpufreq initialization. Its only in-tree
-caller overwrites that value with highest_perf before the controls are
-first written, so the value is never consumed.
+Make cppc_get_desired_perf() return -EOPNOTSUPP in that case. When checking
+the FADT minor revision, mask off its upper errata-generation bits and
+compare only the specification minor version.
 
-Patches 1 and 2 provide minimal, backportable fixes for the two read
-paths. Patch 3 simplifies the mainline API by no longer reading
-Desired Performance through cppc_get_perf() on any ACPI revision.
+The FADT revision may not accurately describe the semantics implemented by
+_CPC. If a nominally pre-6.6 platform implements Desired Performance as
+write-only, a read may return zero and make cppc_cpufreq_get_rate() report
+0 kHz. Treat a zero read as unusable and fall back to the cached OSPM
+request, just as for a failed read.
 
-Changes since v2:
-- Fall back to the cached OSPM request when reading Desired Performance
-  returns zero as suggested by Sumit Gupta.
-- Pick up Reviewed-by tags from Zhongqiu Han for patches 2 and 3.
-- Rebase onto v7.2-rc6
-
-Christian Loehle (3):
-  ACPI: CPPC: Reject desired_perf reads on ACPI 6.6+
-  ACPI: CPPC: Skip desired_perf read in cppc_get_perf()
-  ACPI: CPPC: Stop reading desired_perf in cppc_get_perf()
-
- drivers/acpi/cppc_acpi.c       | 36 +++++++++++++++++++++-------------
+Fixes: c47195631960 ("cppc_cpufreq: Use desired perf if feedback ctrs are 0 or unchanged")
+Cc: stable@vger.kernel.org
+Suggested-by: Sumit Gupta <sumitg@nvidia.com>
+Signed-off-by: Christian Loehle <christian.loehle@arm.com>
+---
+ drivers/acpi/cppc_acpi.c       | 15 ++++++++++++++-
  drivers/cpufreq/cppc_cpufreq.c |  2 +-
- 2 files changed, 23 insertions(+), 15 deletions(-)
+ 2 files changed, 15 insertions(+), 2 deletions(-)
 
-
-base-commit: 075b74841bd0065a3bda3440873c747938e69b68
+diff --git a/drivers/acpi/cppc_acpi.c b/drivers/acpi/cppc_acpi.c
+index 53d09ca98f06..6e5381f8de38 100644
+--- a/drivers/acpi/cppc_acpi.c
++++ b/drivers/acpi/cppc_acpi.c
+@@ -1316,15 +1316,28 @@ static int cppc_set_reg_val(int cpu, enum cppc_regs reg_idx, u64 val)
+ 	return cpc_write(cpu, reg, val);
+ }
+ 
++static bool cppc_desired_perf_readable(void)
++{
++	u8 minor_revision = acpi_gbl_FADT.minor_revision & 0x0f;
++
++	return acpi_gbl_FADT.header.revision < 6 ||
++	       (acpi_gbl_FADT.header.revision == 6 && minor_revision < 6);
++}
++
+ /**
+  * cppc_get_desired_perf - Get the desired performance register value.
+  * @cpunum: CPU from which to get desired performance.
+  * @desired_perf: Return address.
+  *
+- * Return: 0 for success, -EIO otherwise.
++ * Return: 0 for success, -EOPNOTSUPP for ACPI 6.6 or later, and a negative
++ * errno otherwise.
+  */
+ int cppc_get_desired_perf(int cpunum, u64 *desired_perf)
+ {
++	/* ACPI 6.6 no longer specifies Desired Performance as readable. */
++	if (!cppc_desired_perf_readable())
++		return -EOPNOTSUPP;
++
+ 	return cppc_get_reg_val(cpunum, DESIRED_PERF, desired_perf);
+ }
+ EXPORT_SYMBOL_GPL(cppc_get_desired_perf);
+diff --git a/drivers/cpufreq/cppc_cpufreq.c b/drivers/cpufreq/cppc_cpufreq.c
+index 6fe0e972952a..80893844353c 100644
+--- a/drivers/cpufreq/cppc_cpufreq.c
++++ b/drivers/cpufreq/cppc_cpufreq.c
+@@ -836,7 +836,7 @@ static unsigned int cppc_cpufreq_get_rate(unsigned int cpu)
+ 	 * value first as some platforms may update the actual delivered perf
+ 	 * there; if failed, resort to the cached desired perf.
+ 	 */
+-	if (cppc_get_desired_perf(cpu, &delivered_perf))
++	if (cppc_get_desired_perf(cpu, &delivered_perf) || !delivered_perf)
+ 		delivered_perf = cpu_data->perf_ctrls.desired_perf;
+ 
+ 	return cppc_perf_to_khz(&cpu_data->perf_caps, delivered_perf);
 -- 
 2.34.1
+
