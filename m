@@ -1,31 +1,31 @@
 Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id BD82B3B71C6;
-	Mon,  3 Aug 2026 21:05:43 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id 53B1A2D8795;
+	Mon,  3 Aug 2026 21:05:46 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1785791145; cv=none; b=nPLCqE3qfK0Om2bN1C9w+hVrZSH4kc+n87mcRNG0h1TQJdp/1CfvoFUGFkIxxYWvYv55vSHjGOQ5EALbgjvZBGKOwaeQEJqnwSqO6KZXkEeerWUjxRN1oQGqHeItwSzp28wheRG7MxtMzufp0lqUZXp/xbefWVsjwVdTRqZOqbY=
+	t=1785791148; cv=none; b=EXS5xmBERrTQq7I40roPixMUbVttLXqfGDOLg6jBU9ZUvzLw4NPqpvn3QgWfCOPz5VdB8Bg5uOY8QPvWKVSOG2ViUySe0IaPHDEo1oAvP8kaV3ujEmnIbQXmKRRkYkBFAdKFJz++Hba4xfdqgzIXy0RPlYCQMa0xJMK0aE3rQGA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1785791145; c=relaxed/simple;
-	bh=gq9J1RvWC89pSiDbdZPLorYduWb+4Hbnf2Jhd3DjhiQ=;
+	s=arc-20240116; t=1785791148; c=relaxed/simple;
+	bh=eNP5GqOW7zsH2R03Okaf82MSE794/afd4AaWtwVDhXs=;
 	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=H83zOPNCccbRgjhUAeZTQw5u1XLzCb4QblIUVK0Zu99CF1ljdIbsGsw33FxByCzJT0P1ECCWgk2raymYdgQo/ZZx6qDQlvBSjT3E8pRWL3yDEzaIU9YTWe9mFiE6TvedPcBx2S1E9/ojuueny76/CMD/fFQTpldElRKGOeJR+90=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=q79hImrF; arc=none smtp.client-ip=217.140.110.172
+	 MIME-Version; b=theHeh6AhaXE/44ZZnlod4z4H8aoXapUct5RUyK8txHfHEOQ6Xvosle1etOICkREGTsR/+v2Ce9WfHSKcm1bPQl/gvO3DBUx5mKXBZr8KFx4HM3bepSbHWqPmXIcy+1VDyc61RlkrJeUfD8WAK6LcHpd4S4sU8YG3GFc+N3qlMA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=YQWWQvr/; arc=none smtp.client-ip=217.140.110.172
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="q79hImrF"
+	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="YQWWQvr/"
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 0B03E143D;
-	Mon,  3 Aug 2026 14:05:39 -0700 (PDT)
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id A2A301476;
+	Mon,  3 Aug 2026 14:05:41 -0700 (PDT)
 Received: from e127648.arm.com (unknown [10.57.0.71])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id CFE803F86F;
-	Mon,  3 Aug 2026 14:05:40 -0700 (PDT)
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id 6FA703F86F;
+	Mon,  3 Aug 2026 14:05:43 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1785791143; bh=gq9J1RvWC89pSiDbdZPLorYduWb+4Hbnf2Jhd3DjhiQ=;
+	t=1785791145; bh=eNP5GqOW7zsH2R03Okaf82MSE794/afd4AaWtwVDhXs=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=q79hImrFDuwV9ADDuIoiwjGdoSYITlBcVg83GjTBIwbSj88kOzwnjDf1qkPh+4sxf
-	 WMPfxFHC+dHHrL74KgxihIcUNzNBdn2qOveHJteQAse6u1t2O9+OY7y0DRQ11H0YsF
-	 yEiKaa0MNfX5kpdn9N58HTdeYxNpHudRJKUlqfeM=
+	b=YQWWQvr/f3KrOx5TGL6xHVRegyjjUQo2S1ujWcuSYY7bv+DgtJNVO6+7ZbIhoHruh
+	 gOV/WP1hMIe0mi42z+2X+IvRv2Y/ry6xHD6ICNavHRCK2MVJ2GrKhOsQS5m7nqO93K
+	 aVNHGC1jmAYclQ+4FlvinrqYeVP+2eU+B2Tdir0g=
 From: Christian Loehle <christian.loehle@arm.com>
 To: "Rafael J . Wysocki" <rafael@kernel.org>,
 	Viresh Kumar <viresh.kumar@linaro.org>
@@ -41,9 +41,9 @@ Cc: linux-pm@vger.kernel.org,
 	Ionela Voinescu <ionela.voinescu@arm.com>,
 	zhongqiu.han@oss.qualcomm.com,
 	Christian Loehle <christian.loehle@arm.com>
-Subject: [PATCH 2/3] ACPI: CPPC: Avoid locking standalone full-width registers
-Date: Mon,  3 Aug 2026 22:05:26 +0100
-Message-Id: <20260803210527.1285229-3-christian.loehle@arm.com>
+Subject: [PATCH 3/3] ACPI: CPPC: Evaluate performance-control PCC use once
+Date: Mon,  3 Aug 2026 22:05:27 +0100
+Message-Id: <20260803210527.1285229-4-christian.loehle@arm.com>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20260803210527.1285229-1-christian.loehle@arm.com>
 References: <20260803210527.1285229-1-christian.loehle@arm.com>
@@ -55,187 +55,66 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-cpc_write() serializes every SystemMemory write with the per-CPU
-rmw_lock. The lock is required for read-modify-write fields and for
-registers whose access units overlap, but not for a full-width register
-in a standalone access unit.
+cppc_set_perf() evaluates the same immutable address-space predicates
+before and after each phase of a performance-control update. This repeats
+the three-control PCC test three times for every target request.
 
-The _CPC layout is immutable after it has been parsed. Classify each
-SystemMemory register at probe time and retain locking for partial
-fields, invalid access widths, and overlapping access units. Allow
-standalone full-width registers to bypass the descriptor lookup and
-spinlock.
-
-Store the classification in existing structure padding so that struct
-cpc_register_resource does not grow.
+Evaluate the predicate once after resolving the control descriptors and
+reuse the result throughout the transaction.
 
 Signed-off-by: Christian Loehle <christian.loehle@arm.com>
 ---
- drivers/acpi/cppc_acpi.c | 97 ++++++++++++++++++++++++++++++++++------
- include/acpi/cppc_acpi.h |  5 ++-
- 2 files changed, 88 insertions(+), 14 deletions(-)
+ drivers/acpi/cppc_acpi.c | 9 ++++++---
+ 1 file changed, 6 insertions(+), 3 deletions(-)
 
 diff --git a/drivers/acpi/cppc_acpi.c b/drivers/acpi/cppc_acpi.c
-index 9b8d68b44ea9..2793d6b7d40d 100644
+index 2793d6b7d40d..cd1c4a30eb6f 100644
 --- a/drivers/acpi/cppc_acpi.c
 +++ b/drivers/acpi/cppc_acpi.c
-@@ -200,6 +200,72 @@ show_cppc_data(cppc_get_perf_ctrs, cppc_perf_fb_ctrs, wraparound_time);
- 	((((val) & GENMASK(((reg)->bit_width) - 1, 0)) << (reg)->bit_offset) |		\
- 	((prev_val) & ~(GENMASK(((reg)->bit_width) - 1, 0) << (reg)->bit_offset)))	\
+@@ -2002,6 +2002,7 @@ int cppc_set_perf(int cpu, struct cppc_perf_ctrls *perf_ctrls)
+ 	struct cpc_register_resource *desired_reg, *min_perf_reg, *max_perf_reg;
+ 	int pcc_ss_id = per_cpu(cpu_pcc_subspace_idx, cpu);
+ 	struct cppc_pcc_data *pcc_ss_data = NULL;
++	bool regs_in_pcc;
+ 	int ret = 0;
  
-+static u64 cpc_sysmem_access_size(const struct cpc_register_resource *reg)
-+{
-+	const struct cpc_reg *gas = &reg->cpc_entry.reg;
-+	unsigned int width;
-+
-+	if (gas->access_width > 4)
-+		return 0;
-+
-+	width = GET_BIT_WIDTH(gas);
-+
-+	if (width != 8 && width != 16 && width != 32 && width != 64)
-+		return 0;
-+
-+	return width / 8;
-+}
-+
-+static bool cpc_sysmem_access_units_overlap(const struct cpc_register_resource *a,
-+					    const struct cpc_register_resource *b)
-+{
-+	const struct cpc_reg *a_gas = &a->cpc_entry.reg;
-+	const struct cpc_reg *b_gas = &b->cpc_entry.reg;
-+	u64 a_size = cpc_sysmem_access_size(a);
-+	u64 b_size = cpc_sysmem_access_size(b);
-+
-+	/* Keep the conservative locking path for malformed access widths. */
-+	if (!a_size || !b_size)
-+		return true;
-+
-+	if (a_gas->address < b_gas->address)
-+		return b_gas->address - a_gas->address < a_size;
-+
-+	return a_gas->address - b_gas->address < b_size;
-+}
-+
-+static void cpc_mark_rmw_lock_users(struct cpc_desc *cpc_desc)
-+{
-+	int i, j;
-+
-+	for (i = 0; i < cpc_desc->num_entries - 2; i++) {
-+		struct cpc_register_resource *a = &cpc_desc->cpc_regs[i];
-+		struct cpc_reg *gas;
-+		u64 access_size;
-+
-+		if (!CPC_SUPPORTED(a) || !CPC_IN_SYSTEM_MEMORY(a))
-+			continue;
-+
-+		gas = &a->cpc_entry.reg;
-+		access_size = cpc_sysmem_access_size(a);
-+		if (gas->bit_offset || !access_size ||
-+		    gas->bit_width != access_size * 8)
-+			a->cpc_entry.use_rmw_lock = true;
-+
-+		for (j = i + 1; j < cpc_desc->num_entries - 2; j++) {
-+			struct cpc_register_resource *b = &cpc_desc->cpc_regs[j];
-+
-+			if (!CPC_SUPPORTED(b) || !CPC_IN_SYSTEM_MEMORY(b))
-+				continue;
-+			if (!cpc_sysmem_access_units_overlap(a, b))
-+				continue;
-+
-+			a->cpc_entry.use_rmw_lock = true;
-+			b->cpc_entry.use_rmw_lock = true;
-+		}
-+	}
-+}
-+
- static ssize_t show_feedback_ctrs(struct kobject *kobj,
- 		struct kobj_attribute *attr, char *buf)
- {
-@@ -904,6 +970,7 @@ int acpi_cppc_processor_probe(struct acpi_processor *pr)
+ 	if (!cpc_desc) {
+@@ -2012,6 +2013,8 @@ int cppc_set_perf(int cpu, struct cppc_perf_ctrls *perf_ctrls)
+ 	desired_reg = &cpc_desc->cpc_regs[DESIRED_PERF];
+ 	min_perf_reg = &cpc_desc->cpc_regs[MIN_PERF];
+ 	max_perf_reg = &cpc_desc->cpc_regs[MAX_PERF];
++	regs_in_pcc = CPC_IN_PCC(desired_reg) || CPC_IN_PCC(min_perf_reg) ||
++		      CPC_IN_PCC(max_perf_reg);
  
- 	/* Store CPU Logical ID */
- 	cpc_ptr->cpu_id = pr->id;
-+	cpc_mark_rmw_lock_users(cpc_ptr);
- 	raw_spin_lock_init(&cpc_ptr->rmw_lock);
+ 	/*
+ 	 * This is Phase-I where we want to write to CPC registers
+@@ -2020,7 +2023,7 @@ int cppc_set_perf(int cpu, struct cppc_perf_ctrls *perf_ctrls)
+ 	 * Since read_lock can be acquired by multiple CPUs simultaneously we
+ 	 * achieve that goal here
+ 	 */
+-	if (CPC_IN_PCC(desired_reg) || CPC_IN_PCC(min_perf_reg) || CPC_IN_PCC(max_perf_reg)) {
++	if (regs_in_pcc) {
+ 		if (pcc_ss_id < 0) {
+ 			pr_debug("Invalid pcc_ss_id\n");
+ 			return -ENODEV;
+@@ -2056,7 +2059,7 @@ int cppc_set_perf(int cpu, struct cppc_perf_ctrls *perf_ctrls)
+ 	if (perf_ctrls->max_perf && CPC_SUPPORTED(max_perf_reg))
+ 		cpc_write(cpu, max_perf_reg, perf_ctrls->max_perf);
  
- 	/* Parse PSD data for this CPU */
-@@ -1123,6 +1190,7 @@ static int cpc_write(int cpu, struct cpc_register_resource *reg_res, u64 val)
- 	struct cpc_reg *reg = &reg_res->cpc_entry.reg;
- 	struct cpc_desc *cpc_desc;
- 	unsigned long flags;
-+	bool locked = false;
- 
- 	size = GET_BIT_WIDTH(reg);
- 
-@@ -1156,18 +1224,20 @@ static int cpc_write(int cpu, struct cpc_register_resource *reg_res, u64 val)
- 				val, size);
- 
- 	if (reg->space_id == ACPI_ADR_SPACE_SYSTEM_MEMORY) {
--		cpc_desc = per_cpu(cpc_desc_ptr, cpu);
--		if (!cpc_desc) {
--			pr_debug("No CPC descriptor for CPU:%d\n", cpu);
--			return -ENODEV;
--		}
--
- 		/*
--		 * Only partial fields need the previous contents to preserve bits
--		 * outside the field. Keep serializing full-width writes because
--		 * another _CPC entry may share the access unit and require RMW.
-+		 * The _CPC layout is immutable after probe. The precomputed flag
-+		 * retains serialization for partial fields or overlapping access
-+		 * units; standalone full-width registers avoid the lock.
- 		 */
--		raw_spin_lock_irqsave(&cpc_desc->rmw_lock, flags);
-+		locked = reg_res->cpc_entry.use_rmw_lock;
-+		if (locked) {
-+			cpc_desc = per_cpu(cpc_desc_ptr, cpu);
-+			if (!cpc_desc) {
-+				pr_debug("No CPC descriptor for CPU:%d\n", cpu);
-+				return -ENODEV;
-+			}
-+			raw_spin_lock_irqsave(&cpc_desc->rmw_lock, flags);
-+		}
- 
- 		if (reg->bit_offset || reg->bit_width != size) {
- 			switch (size) {
-@@ -1184,8 +1254,9 @@ static int cpc_write(int cpu, struct cpc_register_resource *reg_res, u64 val)
- 				prev_val = readq_relaxed(vaddr);
- 				break;
- 			default:
--				raw_spin_unlock_irqrestore(&cpc_desc->rmw_lock,
--							   flags);
-+				if (locked)
-+					raw_spin_unlock_irqrestore(&cpc_desc->rmw_lock,
-+								   flags);
- 				return -EFAULT;
- 			}
- 			val = MASK_VAL_WRITE(reg, prev_val, val);
-@@ -1217,7 +1288,7 @@ static int cpc_write(int cpu, struct cpc_register_resource *reg_res, u64 val)
- 		break;
- 	}
- 
--	if (reg->space_id == ACPI_ADR_SPACE_SYSTEM_MEMORY)
-+	if (locked)
- 		raw_spin_unlock_irqrestore(&cpc_desc->rmw_lock, flags);
- 
- 	return ret_val;
-diff --git a/include/acpi/cppc_acpi.h b/include/acpi/cppc_acpi.h
-index 8c191b9ac18f..19830146c644 100644
---- a/include/acpi/cppc_acpi.h
-+++ b/include/acpi/cppc_acpi.h
-@@ -69,7 +69,10 @@ struct cpc_register_resource {
- 	acpi_object_type type;
- 	u64 __iomem *sys_mem_vaddr;
- 	union {
--		struct cpc_reg reg;
-+		struct {
-+			struct cpc_reg reg;
-+			bool use_rmw_lock;
-+		};
- 		u64 int_value;
- 	} cpc_entry;
- };
+-	if (CPC_IN_PCC(desired_reg) || CPC_IN_PCC(min_perf_reg) || CPC_IN_PCC(max_perf_reg))
++	if (regs_in_pcc)
+ 		up_read(&pcc_ss_data->pcc_lock);	/* END Phase-I */
+ 	/*
+ 	 * This is Phase-II where we transfer the ownership of PCC to Platform
+@@ -2104,7 +2107,7 @@ int cppc_set_perf(int cpu, struct cppc_perf_ctrls *perf_ctrls)
+ 	 * case during a CMD_READ and if there are pending writes it delivers
+ 	 * the write command before servicing the read command
+ 	 */
+-	if (CPC_IN_PCC(desired_reg) || CPC_IN_PCC(min_perf_reg) || CPC_IN_PCC(max_perf_reg)) {
++	if (regs_in_pcc) {
+ 		if (down_write_trylock(&pcc_ss_data->pcc_lock)) {/* BEGIN Phase-II */
+ 			/* Update only if there are pending write commands */
+ 			if (pcc_ss_data->pending_pcc_write_cmd)
 -- 
 2.34.1
 
