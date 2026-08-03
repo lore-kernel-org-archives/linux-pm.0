@@ -1,70 +1,73 @@
 Received: from flow-a8-smtp.messagingengine.com (flow-a8-smtp.messagingengine.com [103.168.172.143])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 68BDB361960;
-	Mon,  3 Aug 2026 09:41:40 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5160F367B7B;
+	Mon,  3 Aug 2026 09:41:51 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=103.168.172.143
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1785750102; cv=none; b=LPKhV2RqVWggwLzp8eTlX0D5kl4jKobQmlgowaXNbQM4Z2CscpW5eHWgQVHT3goQUKrB+J2Byr9M0Bovsy0MNdx5mVgP+KA93C9SmnTKVnmCUd0obs4Qj2tVRqhae+GVxsmjQJGgEGdj0A+kCzMlmGk0XD5omkoaHU0zrOcRpmk=
+	t=1785750113; cv=none; b=sjrCwF4NBfnIAEMiVcrT5THiU8VFWUCLTJ/kGuRKx9px0+WalA9ors7Rb5pSEGjf9qcGxIv2/aosv5LW2gQBy7u1L0IIya7aVAHDYyv2c6i/yYjh3pV/fNsA4j+U1/Wqac/MVutN9vsZWtQvxczNFkVZO1F3W8SfUWeo2yDeWfY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1785750102; c=relaxed/simple;
-	bh=ZGEFHCHZ8kB00ZgVgFZNwwjL3g8tu8Cl3vy7bms7Tlo=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=qlbl8/V0sCfuqFOmyrk3zltmQDizaGGAyApAx0Ykl0ZlGOYuMYHV7Fh/N++ziI5YVQ7MASmWspf96wDjcrX46Mo6VMGqJPGKrLValPCGupXg0IiGZwGfaQgvtoxVqxpKJ/5qcbFRIHW2MBTxvMfYF/5BA4Tis6bgXJb6hjBba9o=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gahingwoo.com; spf=pass smtp.mailfrom=gahingwoo.com; dkim=pass (2048-bit key) header.d=gahingwoo.com header.i=@gahingwoo.com header.b=FrCshYnc; dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b=QAFgcjBU; arc=none smtp.client-ip=103.168.172.143
+	s=arc-20240116; t=1785750113; c=relaxed/simple;
+	bh=3ivv1mltqxjq4IGCvAiFS9StUQ0xJUEE22WqT/qpA/0=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=knGpZCbGziuSkRpx7Xv+ZqjGfVU8IqbsFzF+spPTK6lj7wWFjXe98h4UtpmXDFPy7QFYsf0lc8E68KUpt7N3S7pVsCMbD60mNhETUOnkW6Zc5Xlx2mWPGwl7iJWEhdIKRy6rECK9LOzB5cjdTKCOMQeU2MeR3KXucUxER3m+5GE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gahingwoo.com; spf=pass smtp.mailfrom=gahingwoo.com; dkim=pass (2048-bit key) header.d=gahingwoo.com header.i=@gahingwoo.com header.b=IaZxPp6C; dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b=V4E5/v9l; arc=none smtp.client-ip=103.168.172.143
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gahingwoo.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gahingwoo.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gahingwoo.com header.i=@gahingwoo.com header.b="FrCshYnc";
-	dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b="QAFgcjBU"
-Received: from phl-compute-11.internal (phl-compute-11.internal [10.202.2.51])
-	by mailflow.phl.internal (Postfix) with ESMTP id 407B9138007E;
-	Mon,  3 Aug 2026 05:41:39 -0400 (EDT)
+	dkim=pass (2048-bit key) header.d=gahingwoo.com header.i=@gahingwoo.com header.b="IaZxPp6C";
+	dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b="V4E5/v9l"
+Received: from phl-compute-03.internal (phl-compute-03.internal [10.202.2.43])
+	by mailflow.phl.internal (Postfix) with ESMTP id 2CFEB138007E;
+	Mon,  3 Aug 2026 05:41:50 -0400 (EDT)
 Received: from phl-frontend-03 ([10.202.2.162])
-  by phl-compute-11.internal (MEProxy); Mon, 03 Aug 2026 05:41:39 -0400
+  by phl-compute-03.internal (MEProxy); Mon, 03 Aug 2026 05:41:50 -0400
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gahingwoo.com;
 	 h=cc:cc:content-transfer-encoding:content-type:date:date:from
-	:from:in-reply-to:message-id:mime-version:reply-to:subject
-	:subject:to:to; s=fm1; t=1785750099; x=1785753699; bh=TjBZ2sxYTo
-	t4ZxCwMqLsNuQdsX7EDDjtD1qoITGGKpM=; b=FrCshYncSVCqvikUenSbYLRb5P
-	9TZnR8y5PBGqzZNJOOMmurpHTGk5gOcEkEtDHLRWQ07pVsz/yZkfRwFgJaPwbMtA
-	TVLT2wlNiYIiJ5j/IruCIjBxTtYfkQvL2eSsEYkCAKB7qyR7JnWye+59GkDCDqbN
-	fF68moYcYxsMzrPfGUbjwoktzAPlzq+AT0mYqwM4PuXs0TGUamzS6xd8yQCqSSri
-	cbNSNDK5ksm2Ck4CX+5Yp9IifEwveXGcWuOWkKycZpXXyzNK/m4ycA927XmH6miY
-	b9um2lBhdSzahR4HNGXB0rxwBT4SGTQDOQtH1dzQYl5O5+nduMtO38KtcUiw==
+	:from:in-reply-to:in-reply-to:message-id:mime-version:references
+	:reply-to:subject:subject:to:to; s=fm1; t=1785750110; x=
+	1785753710; bh=Ou8Q2+MSVN0oE4OVVJlFXqxdMV+YjRi2MbtXNEWiRwQ=; b=I
+	aZxPp6C5MVesB3i99cA0te4iiNDnv99+oYYJPdgdCIE07IWzC/WrKXoEmk4XTa8Q
+	lr7psQwye5bHPLuG9ZgN6v92FYmVirL8H75ugYVp4R3n+CWJiMsHYhZE1HgWk9my
+	vK3D9g6E4MIjVZ03ZohH4pgS7b/1HDP1MWKh+PgpVSAz/sWhor+SPFFJ0CUfGyWE
+	7w+syAGomvvxzw8LHWoojMe5uA8t9Sowbq9JAFyO3LpkDQfRsmh7NS13+ANq0Wyj
+	bHlqdj0PzSnX2uOFHGZwTiw4tBrqYClEo/2DuoNL8HZrbsWNe3C+JBbMdqSDytho
+	EqeTeBz3ATpMMtX9Rb2kg==
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
 	messagingengine.com; h=cc:cc:content-transfer-encoding
 	:content-type:date:date:feedback-id:feedback-id:from:from
-	:in-reply-to:message-id:mime-version:reply-to:subject:subject:to
-	:to:x-me-proxy:x-me-sender:x-me-sender:x-sasl-enc; s=fm3; t=
-	1785750099; x=1785753699; bh=TjBZ2sxYTot4ZxCwMqLsNuQdsX7EDDjtD1q
-	oITGGKpM=; b=QAFgcjBUuJ2/lnyBOL127HlVQQbW258MsnREkCufl0qhpH6QU9P
-	WErmtAP3Hx+Rp6nqaWSZmTA3t6/vV+hYEu6AQN6N/Xt0kq2bmTSBkXIT1sQHURoN
-	lwFlULaC7Y/nzex1Y56Cw5kld21LqcYu8pXBg6f/zJ5xGbBo8Sp1IvUXyntfMtLO
-	E/scyzJslwb0hOPXN74j9CkA7rS7wx+jfI8fNELWkOFZloI9g/JwGc7BEOG+mVcv
-	j55zz05ANs1aPi7JVTLIA+8i7p0NfVA7cnsVVSIm14rJaTr8JPsZvQ3/pnsV1ivZ
-	p6obt/TXW+Wg8CB4rdSQMZYL4Ro7ToN+/Zg==
-X-ME-Sender: <xms:UWJwama0JGuZD2yzVfuBXsjVkAj1ETlKSQPlD5qAKBR-pTmIa1aHOg>
-    <xme:UWJwagcKGBvYx1N4w4GB-KlfH6Ue9p4Qm0QFfnXg-YVBLV658d0DGc3o1eVk4brhE
-    kCKT3pmInBFDqeywhhnp28Cyp9kPorz-zkX1rFaAAVvI3UnV1s88Yqj>
-X-ME-Received: <xmr:UWJwaoqwfHzB7URsBdX3tWsJ5HeODnZyyFSx_qRNFl3rEcEBV-P6g0bR6iDFoY95RSViJcegFQ>
-X-ME-Proxy-Cause: dmFkZTESuhYZ/nFulXLAx1C4KGDGpkzGieIZVlP6P3ydugCkCoYWX0qjJfrh0w8TLqZeex
-    dFfFdDja4AFPvdbTlYXDd6i5/E7TpUsRs7pg1lpMGzkjhIrjBIPY89TtQWl74Qwx8aQhYx
-    MYV9UklLiudZpGdcDVeCm9e95UgpS49LiB2cYCvTi88jtcpwyJaHyezxFJRMHyTVed4GlJ
-    gZixLJTZlCUL+fJPzQ/zk/AOQs/lumu5YjC2fKUR/PsM6ao8XZe0QhRL/gbvhcwHyhG9Dk
-    A74bIdluXV/netX8wsO8Wh2rbeiEOWejshj4VMRJ/tYOHy8RncWw8HiAB9NzZGPvR2PTl3
-    Nhugdkx2NKhTCLAWlqQHqkAbCnH/3pAoUNGgPU+HZ7UMQRZ4pezwSWqLv7MO74My6rntS6
-    cFLxAQw/xwWXl/ycy6GKUTz3hU/qK2oxhdmvQsOzLheRCAhqj110XTBsM4zUbklyGLmaEN
-    BNhz8nXUvosnH2QfKkcmZhfXFdg2Pjm87D8/HXqc8ht3zo7oA6kGZY2paCMi+Ntt+dkzua
-    lp+cMvdDS3AlW9ea+5h00mbdJb6k31Xl7AtZ3ARFI/iLRKJmAAEl5fFVNaSiujyzGc+voB
-    kx64Mewc6QCEvcFjD5MNpZKeirsyd4cIhxLO/fMJQvHuxifbUjaK8n8tvv7w
-X-ME-Proxy: <xmx:UWJwavDa-TxnFuK8Zrzjpov-H7SeZqIlAhAKs176sUltuBJdePBVXw>
-    <xmx:UWJwauXlD-U3vW91zzv1WSC7asjvaZtwEEDPjdllw58BJE-9KLTdsA>
-    <xmx:UWJwar5RPvP37kuA5ojzErdKlaE6jmzur1yOmemgbqNFAeqvemZhxQ>
-    <xmx:UWJwanCGUEnK9mzd9pAe815CYbgMJ_XoUX8hDlO2Eq3-dIcpGS8efA>
-    <xmx:U2JwahhblQcauCLZA8jYH2JGBk6Wkl2kJ4cfQjEOIwHB0f-OW2xXyc3I>
+	:in-reply-to:in-reply-to:message-id:mime-version:references
+	:reply-to:subject:subject:to:to:x-me-proxy:x-me-sender
+	:x-me-sender:x-sasl-enc; s=fm3; t=1785750110; x=1785753710; bh=O
+	u8Q2+MSVN0oE4OVVJlFXqxdMV+YjRi2MbtXNEWiRwQ=; b=V4E5/v9l8SiNiRiVk
+	Mca9DsiWhQ/vXYM9zdDBXw2si4F+GSDIfIAKFjnJ4Ko4v4ikYo17T1sz0JJSGwp4
+	pQS+/tOmVoRrqx43K5n2ZJmzDWBDlayBvNwzkHzNPEW4JYYwXoHNl02JQzhU+kRx
+	kh/DMrAKWkKDiDVPem+IeZSKR1b7iLxwrBUoPcMJm84tGSKsqPt6lbujQ0XHdhkG
+	A8xf0cYiO/a2f+KLF2VXbsX+Zbo4ER6diVXTil6r+GT437WS0o5mrU6JhHJdOh4j
+	4FWZgaJR7YiBXarBJZ7CIUCN/obHkPCsQ3p/rTRzUJmGUILHXHwEMxREjMBQZ9eF
+	vJTtA==
+X-ME-Sender: <xms:XWJwaoCl_ROqeDZWRcrzeRrWN962KnyAZ5KSC9mKIm4hZIgwBUJZ9Q>
+    <xme:XWJwahkODLhiOpsz2l6wFo1FPAt0Boar-9en6MS_y7pHJRrnhSGA4PlBEA2As1tzB
+    rlIv-s7KcBd0fvLTdbpAkpdyhgS1uWVqG7DrxM-uhFnzeL4qzO8DfY_>
+X-ME-Received: <xmr:XWJwajSYoujRXdnPUi3BBuPBwzvbX068i_Al5uvlzVgh-b9S5fuofZl-KMiPEPo8mDMlYvWWtQ>
+X-ME-Proxy-Cause: dmFkZTGK8sYY2+VIHMufshop7U7KJXKp08cXT1LYA5ScMiFY0fIMIwVf3gkTYGEA1wzkLV
+    89iQpyWbf/AGZdeuKItP5X6dlCjx6ppgss66DaLIELn4UdFqAYfcfqeAWw64rJ1dJkFiz6
+    KGTI1oj0SRJH8tgQryl3iV1mPugIT51SKvySPQTMyPp9rCCweZsKL9EPsMiRh7jp0fss4G
+    a2BES4dZK+whWlGCW0wtQ8GM1hd6aeGCKs9MnflDMYWsHaR5Y7CVd4vlwRuD/roQLVm86e
+    HsQnl0ZH3HNHkxstn/pSTy6gKzEpzvt5Vo+yb/2G9ipZimDkxzHlqyLBJB+dSYCPIEO/Cj
+    rINtdkQxVppaPfzHQ4OMr2/G2CFBmMEQ+vpvk0F1loO4vVYfeBgFC/g5CdjPAIAEh88yZ7
+    i4tNAre0pwlGn9A1rBQPbjeOrU5YYhLCs8PFQ5rhBqyA/hbTzdXEokrp2WiKxCpdY5zXR0
+    GwbTaYXM0fxEva677r5Psuas21Cor7YmmrCiOVxoecAEETeE9Cxp3FF3yngwE0ckrYjjZG
+    MeZiUiFSxeT2sroFUJbP4upSBbrzCU516r9XWuwz+k/Yy7bYmaCLssRNtSGpmMDvtPAgON
+    DMAz/Yd1/L78PZaQQBRshhkyC3J4y+oT3bJW2n636+BAT2lxfeXf0ZpIAlVw
+X-ME-Proxy: <xmx:XWJwalI6-FMGi_K4-AoU_6pXPUpXjBR5gGPRqul6r69XierSJ0BKZw>
+    <xmx:XWJwap-OaCPvtG6Q3UL6lm2o4KfXgvALaOjapn0we_JFY2QCKi9siw>
+    <xmx:XWJwavBEDf5BzlvjHD4ojSZ0tVPH7_pi7FjtWiCzSBs2Pw0ALqTJfg>
+    <xmx:XWJwarr-BGBMF8qJKi4_WDBJvd-c9bzs9hyrk-dYd4G6nW8i5pBDvw>
+    <xmx:XmJwaprtXkCiIMua6zL0d4oA22PFug92N1qmRYQUVmfDXD4kCXmyivFI>
 Feedback-ID: i7a5e4b5f:Fastmail
 Received: by mail.messagingengine.com (Postfix) with ESMTPA; Mon,
- 3 Aug 2026 05:41:30 -0400 (EDT)
+ 3 Aug 2026 05:41:42 -0400 (EDT)
 From: Jiaxing Hu <gahing@gahingwoo.com>
 To: tomeu@tomeuvizoso.net,
 	heiko@sntech.de,
@@ -86,10 +89,12 @@ Cc: royalnet026@gmail.com,
 	linux-arm-kernel@lists.infradead.org,
 	linux-kernel@vger.kernel.org,
 	Jiaxing Hu <gahing@gahingwoo.com>
-Subject: [RFC PATCH v4 0/6] accel/rocket: RK3576 NPU (RKNN) enablement
-Date: Mon,  3 Aug 2026 21:41:19 +1200
-Message-ID: <20260803094125.3285895-1-gahing@gahingwoo.com>
+Subject: [RFC PATCH v4 1/6] dt-bindings: npu: rockchip: add rockchip,rk3576-rknn-core
+Date: Mon,  3 Aug 2026 21:41:20 +1200
+Message-ID: <20260803094125.3285895-2-gahing@gahingwoo.com>
 X-Mailer: git-send-email 2.43.0
+In-Reply-To: <20260803094125.3285895-1-gahing@gahingwoo.com>
+References: <20260803094125.3285895-1-gahing@gahingwoo.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -98,115 +103,48 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-This is a fixes only revision. Nothing here changes what the NPU does; it
-is six bugs found in v3, five of them by the Sashiko review bot and each
-one checked against the vendor DT, the vendor driver or the hardware
-before being believed.
+The RK3576 NPU has two cores of the same RKNN block the RK3588 binding
+already describes, but no NPU SRAM supply, so sram-supply is required
+for rockchip,rk3588-rknn-core only and rejected otherwise.
 
-Tested on a Radxa ROCK 4D, on next-20260730.
+Signed-off-by: Jiaxing Hu <gahing@gahingwoo.com>
+---
+ .../bindings/npu/rockchip,rk3588-rknn-core.yaml   | 15 ++++++++++++++-
+ 1 file changed, 14 insertions(+), 1 deletion(-)
 
-Changes in v4
--------------
-
-  * rk3576.dtsi: rknn_core_1 was at the wrong address. The vendor node is
-    reg = <0x27700000 0x8000>, <0x27708000 0x8000> and its driver takes
-    base[i] straight from those, so core 1 lives at 0x27708000, not
-    0x27710000. rknn_mmu_1 at 0x2770a000 was consistent with the vendor
-    layout all along.
-
-  * rk3576.dtsi: both cores carried five reg entries including dpu and
-    dpu_rdma, which the binding does not allow and the driver does not
-    map. Cut to the three the binding defines. I had validated the
-    binding itself in v3 but never ran dtbs_check against it.
-
-  * rk3576.dtsi: rknn_core_1 was missing the CBUF clocks, so it could
-    never have probed on RK3576, where the driver asks for six by name.
-
-  * rk3576.dtsi: each core now lists both NPU power domains. With one
-    domain the driver core auto-attaches it and
-    devm_pm_domain_attach_list() then returns -EEXIST, so the driver
-    could only ever have worked on a board that overrode this, which is
-    exactly what rk3576-rock-4d.dts was doing. The board override is
-    dropped. The IOMMUs keep a single domain each, since they rely on
-    that same auto-attach.
-
-  * accel/rocket: rocket_job_fini() did not cancel the completion poll
-    timer or its work, so unbind could leave them running against freed
-    memory.
-
-  * accel/rocket: a poll work already queued when the interrupt lands
-    could finalise the next job as well. It now carries the sequence
-    number of the job it was started for.
-
-Verified on hardware: the NPU probes with the two domain list, a known
-byte exact convolution stays byte exact six times over, and an
-unbind/rebind cycle rebinds cleanly and runs again with no warning.
-
-Igor Paunovic gave a Tested-by on the v3 driver patch. I have not
-carried it over, since patch 4 changed after it. Igor, the changes are
-in the poll_completion path and in rocket_job_fini, so RK3588 never
-reaches either, but it is your tag to give.
-
-What is still wrong
--------------------
-
-Unchanged from v3, and the search has narrowed rather than moved.
-
-A single convolution is byte exact, and re-running that same one is byte
-exact every time. What fails is running a different one after it: the
-second configuration computes nothing and writes out a zero point
-surface, while the one already resident keeps working. Going back to it
-is byte exact again.
-
-Tomeu suggested this looked like the ping-pong register bank never
-switching, which fits, and the readback agrees that the pointer is stuck:
-we write S_POINTER bit 0 as 0 and it reads back 1, on every job, for the
-rest of the session. But the driver cannot move it. Flipping bit 0 per
-submit, in the direct writes and in all four regcmd entries, changes
-neither the readback nor the result. Selecting a bank the way
-rk3576_state_init does, with the PP bits cleared, stops the units arming
-at all. Pulsing POINTER_PP_CLEAR, with or without EXECUTER_PP_CLEAR,
-moves nothing. The vendor does not switch banks per submit either; it
-writes 0xe exactly as we do, and only does the 0, 1, 0x1e dance once per
-reset. Adding that sequence verbatim, at the same point the vendor calls
-it, changes nothing.
-
-A read snapshot of every block the driver can reach, pc, cna, core, dpu
-and rdma, 20 KB in total, taken at the same point in a job that computed
-and one that did not, differs in exactly one word, and that word is
-OPERATION_ENABLE. At completion the register state carries no trace of
-which job worked.
-
-So it is not the register writes (both drivers enumerated), not the
-regcmd payload (vendor bytes replayed through rocket still fail), not the
-register state at completion, not the ping-pong controls, and not
-clocks, genpd, IOMMU, cache or resets. The vendor computes different
-configurations correctly on this silicon and this kernel, so a difference
-exists and it is somewhere none of that reaches. Suggestions very
-welcome.
-
-I used Claude Opus 5 to trim this series out of my debugging tree and
-generate the diffs.
-
-Jiaxing Hu (6):
-  dt-bindings: npu: rockchip: add rockchip,rk3576-rknn-core
-  pmdomain/rockchip: add optional per-domain power-on settle delay
-  pmdomain/rockchip: cycle optional power-domain resets on power-on
-  accel/rocket: add RK3576 NPU (RKNN) support
-  arm64: dts: rockchip: rk3576: add NPU (RKNN) nodes
-  arm64: dts: rockchip: rk3576-rock-4d: enable NPU
-
- .../npu/rockchip,rk3588-rknn-core.yaml        |  15 +-
- .../boot/dts/rockchip/rk3576-rock-4d.dts      |  10 +
- arch/arm64/boot/dts/rockchip/rk3576.dtsi      |  76 ++++-
- drivers/accel/rocket/rocket_core.c            |  53 ++-
- drivers/accel/rocket/rocket_core.h            |  21 +-
- drivers/accel/rocket/rocket_device.c          |   4 +
- drivers/accel/rocket/rocket_drv.c             |  25 +-
- drivers/accel/rocket/rocket_job.c             | 306 ++++++++++++++++++
- drivers/pmdomain/rockchip/pm-domains.c        |  71 ++--
- 9 files changed, 550 insertions(+), 31 deletions(-)
-
+diff --git a/Documentation/devicetree/bindings/npu/rockchip,rk3588-rknn-core.yaml b/Documentation/devicetree/bindings/npu/rockchip,rk3588-rknn-core.yaml
+index caca2a490..0a7baac24 100644
+--- a/Documentation/devicetree/bindings/npu/rockchip,rk3588-rknn-core.yaml
++++ b/Documentation/devicetree/bindings/npu/rockchip,rk3588-rknn-core.yaml
+@@ -21,6 +21,7 @@ properties:
+ 
+   compatible:
+     enum:
++      - rockchip,rk3576-rknn-core
+       - rockchip,rk3588-rknn-core
+ 
+   reg:
+@@ -75,7 +76,19 @@ required:
+   - resets
+   - reset-names
+   - npu-supply
+-  - sram-supply
++
++allOf:
++  - if:
++      properties:
++        compatible:
++          contains:
++            const: rockchip,rk3588-rknn-core
++    then:
++      required:
++        - sram-supply
++    else:
++      properties:
++        sram-supply: false
+ 
+ additionalProperties: false
+ 
 -- 
 2.43.0
 
