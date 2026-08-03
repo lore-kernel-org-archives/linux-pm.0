@@ -1,142 +1,315 @@
-Received: from mail-pl1-f175.google.com (mail-pl1-f175.google.com [209.85.214.175])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A48313B42D7
-	for <linux-pm@vger.kernel.org>; Mon,  3 Aug 2026 21:07:25 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.175
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 72F003515FB;
+	Mon,  3 Aug 2026 22:22:34 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1785791246; cv=none; b=u2y30T/1/aUyTbhhTwwHjjSoZ09qm8aVx0LHd471QRh7SkZv3AZzJ8gqQ1UZVOlgw7bqF3nZH/osg+cTyk6BSQIjCZsC2xGh2xnQntZ+kUU9aMdbxQKbXoPfGlcR6DLU2SZNwRV0Y6MuT0imCBXYD6MUDjgJ1hvJO61Ep1Ixg94=
+	t=1785795755; cv=none; b=Hb+1sYo7HCxOP2AyYUJhXoTUV36ZlCVY+Y3/2UnS+URTzU+oRW6frAQsiFj5w8S9+fhpHA5MdCUZuRadG3ogutLpNjpNOAIz7DhsM9E0Tq1cnk1NfIMK00d6VHdlnPW5U5uBSPBOmFBXNzd7kNVyFMWdh2eP2cPcKO7sw0acCuA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1785791246; c=relaxed/simple;
-	bh=nthUiIShsevE0eWa2hPRlXX6lkplZuzzgbo2dNWmXpw=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=jGVruIlTh/zpzH/p+VO+Js2HAGJEFjk0vp0za30Pns9dlopDSp/Yq0czVPOuuChaihhr8Isns3MlHjNJZZuFn1FDDMI5cfrToUpT5g11neMuspxSRd3yOVX6Eb4SvPvRHnyXaPNjWdTzo4lY+IhiVdic6noMxlAdkwhJhUECmSQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=a9llnKlB; arc=none smtp.client-ip=209.85.214.175
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1785795755; c=relaxed/simple;
+	bh=CNSO+WBmvcqw+nvXWqefnKshU3yhwvZPb8pHXa21cmM=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=XHhv2KDtuZkBTQG9UKMw8pvDGcGCI/PkDzB+6L0B749KNqbjd/gC/B4vFFPRCsTv0gSWW2cg+AjB3ym/wPgSfZr/SsGLYHC/2aRVjoGwWRuksHcel5G2yJgeLcCb8J4U6cSOedl3+a1Q+0fsc7UekWQGYs178B9kdVy2lfCAglU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=C3vNjADY; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="a9llnKlB"
-Received: by mail-pl1-f175.google.com with SMTP id d9443c01a7336-2cc891373e0so42276755ad.2
-        for <linux-pm@vger.kernel.org>; Mon, 03 Aug 2026 14:07:25 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1785791245; x=1786396045; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=qKfhfD+X3yrM3Hm1dz4XJjX8IqpqqbygeYd6dnInQMQ=;
-        b=a9llnKlBqJr1zPkc2WBeGCvdfg+B8L43wnRMu3utIaHTVCrXqqskFnYGawa1aPBnS2
-         t6No6jKaLKVSbiQPITk6MAhQFbak+HrQ1PeWGf0hyvlt/fytUyzHaOWbv6IU+CnR0jEY
-         gezWp3C1Ydap345zbcNGT+stQtQ3UYcA+706+ganScVTDd2TnCoedZKanM8ExN7MEXew
-         3nUXDDMKy60dsV9rQUEuLorz+Q5vnx/ETDpdfLBaZsdory1xbCZR2WFqFqEvCiTY/4kh
-         BVt9nPuU0CCTgJWRTtmkWAu4VQcREFcBJLzGkY4WKODidqaELtpjlQwtu3bCOfTM87LV
-         GDcw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1785791245; x=1786396045;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=qKfhfD+X3yrM3Hm1dz4XJjX8IqpqqbygeYd6dnInQMQ=;
-        b=NC9m6cyCupc6945MvR0fg70OtnudpwzTmhIHwIMtDmhwVZu1VvJMhuidMNEBjIEw07
-         wpGq+hEOnZepqIH1D1NXv+P8iCQ0ognEP3nLSjbkvN1xN87BLpKeBV+JsXCjoYdbt78q
-         PKU3wkPFXTGexxGmIYM70Q0gnSgVOINxf6POP1LFK+HBrtn5cO0ViDD5vFkJW55obcdu
-         3G/0IvqPjkVPMkxVgwy4Me0+DKrlrsKVVon7+o0iP2CHKd6b9a4nnEHNwsiB7YiDd3Ge
-         N9GtXaDwE4ZAYy/0EjgryVTs4FMvQYcxFqFbrt5NV0838suoCRpAGcYGGFeKL0d5TB85
-         ewRg==
-X-Forwarded-Encrypted: i=1; AHgh+RpzULyZ4AsxWyta/6JDtZ5z6DjPIt4RWBMnPBNKjKrqWp+7xjTjmKfffmVKOaGizi8yRcmSCp0WAQ==@vger.kernel.org
-X-Gm-Message-State: AOJu0YzVav7Knnh34JeOVYlflVvZ9NC0mVY6+UsjHJE2XoLp85OsoEIs
-	V7wPuUTukb+krhWxaVYV1z+dqYaUQ90olcqueyKT8oz7tZvfUobE8nXH
-X-Gm-Gg: AR+sD12OJ1HtugENzRUJGC8DUM5FSRsl6VyGRQ4ROcA2GHC8DiMH4ft0Zk92/dwD1xe
-	xsHJ9TJmMhhOqyrGEersUUd3kf9XP7PVuVRyXfRLcYysGAksx0QUPa49SOdgQplp+iyV5V16QZ5
-	4T9dfDIGs9YHuc4TzX8dfocvPktuc3ovdwedf1RdmHCf9Nn24NhzWZADLX2Al3bEKLMp0JZjy47
-	AXD3bN2PBl+VZlPTsQl1F8nkNFq8eO+YIEP2bFVyqcmE+S4PJLNZ3q/T4UTIff6XaH1+Txg89Yw
-	UyzLKKFMbiz964AD6Mmc/H2BQU3f1m9ak8YHDY6i0j837s9sUWbb+Y35PMBN40nZE11QQhVO2VT
-	TZLvUBnI6I0MF7XtRkgsHuZVr6tOhP8ijSH+wIxLipnDj6t4N85gZ0NRd2x8g90aSX397Vt2rIW
-	LqTzFea7mvswK1vmp9zVPn4TgXEhpI4s/WmKmxO9cCT29QE6d9axF10shGQKW6Za93bMsZB7q7v
-	tnJWPmL/B1MiHHUVP+A+mhdN2a+2SROp/FzjvYqig==
-X-Received: by 2002:a05:6a21:7a82:b0:3c0:9c19:65a4 with SMTP id adf61e73a8af0-3c92a992be6mr11926671637.76.1785791244783;
-        Mon, 03 Aug 2026 14:07:24 -0700 (PDT)
-Received: from lappy (108-228-232-20.lightspeed.sndgca.sbcglobal.net. [108.228.232.20])
-        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-3153e06f88fsm40203442eec.20.2026.08.03.14.07.24
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 03 Aug 2026 14:07:24 -0700 (PDT)
-From: "Derek J. Clark" <derekjohn.clark@gmail.com>
-To: Sebastian Reichel <sre@kernel.org>
-Cc: Hans de Goede <hansg@kernel.org>,
-	"Pierre-Loup A . Griffais" <pgriffais@valvesoftware.com>,
-	"Derek J . Clark" <derekjohn.clark@gmail.com>,
-	linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	linux-api@vger.kernel.org
-Subject: [PATCH] Documentation: sysfs-class-power: Update Long_Life description
-Date: Mon,  3 Aug 2026 14:07:20 -0700
-Message-ID: <20260803210720.23844-1-derekjohn.clark@gmail.com>
-X-Mailer: git-send-email 2.55.0
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="C3vNjADY"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 83D731F000E9;
+	Mon,  3 Aug 2026 22:22:33 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1785795754;
+	bh=QyFPn8q42V8UAdgnXK7tNQAdLlrB0mrtydrnFstRtOY=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=C3vNjADY8AkCkgdef674Ux6vNUnGjEVwy+Q149SCSwvkxrkRdiKnrfXbr86VIonb2
+	 7s1O5Lh0oX+ctP2/i9Mb07/AMW18YVoZNiooaka2Vcff5zzESjKEjPcKGNt4xZwi7X
+	 Qv6+Xr51KWHv9LoToBUUA24iTxLCzOP5rnZRQ2Qrkg8FBEyf/XB+GbAMKXeksuNsNA
+	 a3bAKhwKP+wXNaQ41RXiLI75lxPYpeGK1CIJ4NXvkLuo/902CrMvCd5rCFZ5PGdgWp
+	 Jl3OatlG52N232U3kjz3fOZpvHgN1AqSBXWePQ83RtrWZJ4VEG8/n9nP/3qZsfbd56
+	 3f3FacM2OdRMQ==
+Date: Mon, 3 Aug 2026 17:22:31 -0500
+From: Rob Herring <robh@kernel.org>
+To: Bhargav Joshi <j.bhargav.u@gmail.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>,
+	Daniel Lezcano <daniel.lezcano@kernel.org>,
+	Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	Eduardo Valentin <edubezval@gmail.com>, linux-pm@vger.kernel.org,
+	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+	goledhruva@gmail.com, m-chawdhry@ti.com, daniel.baluta@gmail.com,
+	simona.toaca@nxp.com
+Subject: Re: [PATCH] dt-bindings: thermal: ti,omap-bandgap: Convert to DT
+ schema
+Message-ID: <20260803222231.GA728307-robh@kernel.org>
+References: <20260731-ti-bandgap-v1-1-aeee6a658520@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260731-ti-bandgap-v1-1-aeee6a658520@gmail.com>
 
-While adding charge limiting support to the Lenovo WMI drivers, there
-was some back and forth about whether charge_types or
-charge_control_end_threshold was the appropriate attribute to expose a
-battery charge limiting toggle that is fixed in the BIOS. The confusion
-arose because the charge_control_end_threshold description closely
-matches the functional change the hardware is making, while the
-charge_types functionality better suits the actual an on/off toggle that
-occurs in the BIOS. This specific scenario is not explicitly enumerated
-in the documentation, though it is fairly common.
+On Fri, Jul 31, 2026 at 12:42:38AM +0530, Bhargav Joshi wrote:
+> Convert Texas Instruments OMAP SCM bandgap from legacy text to DT schema
+> 
+> Add "ti,dra752-bandgap" to compatible which was missing in text binding
+> but used and matched by same driver.
+> 
+> Document the "#thermal-sensor-cells" property, which was missing from
+> the original text binding but is required in practice by all in-tree
+> users via the common thermal-sensor.yaml binding.
+> 
+> Signed-off-by: Bhargav Joshi <j.bhargav.u@gmail.com>
+> ---
+>  .../bindings/thermal/ti,omap-bandgap.yaml          | 227 +++++++++++++++++++++
+>  .../devicetree/bindings/thermal/ti_soc_thermal.txt |  88 --------
+>  2 files changed, 227 insertions(+), 88 deletions(-)
+> 
+> diff --git a/Documentation/devicetree/bindings/thermal/ti,omap-bandgap.yaml b/Documentation/devicetree/bindings/thermal/ti,omap-bandgap.yaml
+> new file mode 100644
+> index 000000000000..5afd10a84f70
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/thermal/ti,omap-bandgap.yaml
+> @@ -0,0 +1,227 @@
+> +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
+> +%YAML 1.2
+> +---
+> +$id: http://devicetree.org/schemas/thermal/ti,omap-bandgap.yaml#
+> +$schema: http://devicetree.org/meta-schemas/core.yaml#
+> +
+> +title: Texas Instruments OMAP SCM bandgap
+> +
+> +maintainers:
+> +  - Eduardo Valentin <edubezval@gmail.com>
+> +
+> +description:
+> +  In the System Control Module, OMAP supplies a voltage reference and a
+> +  temperature sensor feature that are gathered in the band gap voltage and
+> +  temperature sensor (VBGAPTS) module. The band gap provides current and
+> +  voltage reference for its internal circuits and other analog IP blocks. The
+> +  analog-to-digital converter (ADC) produces an output value that is
+> +  proportional to the silicon temperature.
+> +
+> +properties:
+> +  compatible:
+> +    enum:
+> +      - ti,omap34xx-bandgap
+> +      - ti,omap36xx-bandgap
+> +      - ti,omap4430-bandgap
+> +      - ti,omap4460-bandgap
+> +      - ti,omap4470-bandgap
+> +      - ti,omap5430-bandgap
+> +      - ti,dra752-bandgap
+> +
+> +  reg:
+> +    minItems: 1
+> +    maxItems: 6
+> +
+> +  interrupts:
+> +    maxItems: 1
+> +
+> +  gpios:
+> +    maxItems: 1
+> +    description:
+> +      used to inform which GPIO line the tshut signal is routed to. The
+> +      informed GPIO will be treated as an IRQ;
+> +
+> +  "#thermal-sensor-cells":
+> +    enum: [0, 1]
+> +
+> +required:
+> +  - compatible
+> +  - reg
+> +
+> +allOf:
+> +  - $ref: thermal-sensor.yaml#
+> +
+> +  - if:
+> +      properties:
+> +        compatible:
+> +          contains:
+> +            enum:
+> +              - ti,omap34xx-bandgap
+> +              - ti,omap36xx-bandgap
+> +
+> +    then:
+> +      properties:
+> +        reg:
+> +          minItems: 1
+> +          maxItems: 1
+> +
+> +        interrupts: false
+> +
+> +        gpios: false
+> +
+> +        "#thermal-sensor-cells":
+> +          const: 0
+> +
+> +  - if:
+> +      properties:
+> +        compatible:
+> +          contains:
+> +            const: ti,omap4430-bandgap
+> +
+> +    then:
+> +      properties:
+> +        reg:
+> +          minItems: 2
+> +          maxItems: 2
+> +
+> +        interrupts: false
+> +
+> +        "#thermal-sensor-cells":
+> +          const: 0
+> +
+> +      required:
+> +        - gpios
+> +
+> +  - if:
+> +      properties:
+> +        compatible:
+> +          contains:
+> +            enum:
+> +              - ti,omap4460-bandgap
+> +              - ti,omap4470-bandgap
+> +
+> +    then:
+> +      properties:
+> +        reg:
+> +          minItems: 3
+> +          maxItems: 3
+> +
+> +        interrupts:
+> +          maxItems: 1
 
-Given that the original intention was to use it this way[1],[2], and that
-the samsung-laptop[3], ideapad-laptop[4], and lenovo-wmi-other[5] drivers
-all use the convention of charge_types with an exposed Long_Life and
-Standard value for this, codify it in the Documentation to avoid confusion
-in the future.
+Drop. 1 is already the max.
 
-[1] https://lore.kernel.org/linux-pm/49993a42-aa91-46bf-acef-4a089db4c2db@redhat.com/
-[2] https://lore.kernel.org/platform-driver-x86/20241209204051.8786-1-hdegoede@redhat.com/
-[3] https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=de2884c6cdd3d133704ce37393590dd1c761500c
-[4] https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=da8f2708f9b69707f4efeb432a18395e46b4666f
-[5] https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=9ca8fc065b88b327acbfdc33454efea391639716
+> +
+> +        "#thermal-sensor-cells":
+> +          const: 0
+> +
+> +      required:
+> +        - interrupts
+> +        - gpios
+> +
+> +  - if:
+> +      properties:
+> +        compatible:
+> +          contains:
+> +            const: ti,omap5430-bandgap
+> +
+> +    then:
+> +      properties:
+> +        reg:
+> +          minItems: 4
+> +          maxItems: 4
+> +
+> +        interrupts:
+> +          maxItems: 1
 
-Suggested-by: Hans de Goede <hansg@kernel.org>
-Signed-off-by: Derek J. Clark  <derekjohn.clark@gmail.com>
----
- Documentation/ABI/testing/sysfs-class-power | 14 +++++++++-----
- 1 file changed, 9 insertions(+), 5 deletions(-)
+Drop. 1 is already the max.
 
-diff --git a/Documentation/ABI/testing/sysfs-class-power b/Documentation/ABI/testing/sysfs-class-power
-index 5641f1fd5fd6..98b389845d1e 100644
---- a/Documentation/ABI/testing/sysfs-class-power
-+++ b/Documentation/ABI/testing/sysfs-class-power
-@@ -365,9 +365,12 @@ Contact:	linux-pm@vger.kernel.org
- Description:
- 		Represents a battery percentage level, above which charging will
- 		stop. Not all hardware is capable of setting this to an arbitrary
--		percentage. Drivers will round written values to the nearest
--		supported value. Reading back the value will show the actual
--		threshold set by the driver.
-+		value, instead providing different minimum, maximum, or step
-+		values. Drivers will round written values to the nearest supported
-+		value. Reading back the value will show the actual threshold set
-+		by the driver. For hardware that only supports a single fixed
-+		value, use charge_types with a value of "Long Life" (vs "Standard")
-+		instead'
- 
- 		Access: Read, Write
- 
-@@ -398,8 +401,9 @@ Description:
- 			when to start and stop charging. Advanced users
- 			can use this to drastically extend battery life.
- 		Long Life:
--			The charger reduces its charging rate in order to
--			prolong the battery health.
-+			The charger firmware reduces its charging rate and/or
-+			maximum charging percentage to a hardware specified
-+			fixed limit in order to prolong the battery health.
- 		Bypass:
- 			The charger bypasses the charging path around the
- 			integrated converter allowing for a "smart" wall
--- 
-2.55.0
+> +
+> +        gpios: false
+> +
+> +        "#thermal-sensor-cells":
+> +          const: 1
+> +
+> +      required:
+> +        - interrupts
+> +
+> +  - if:
+> +      properties:
+> +        compatible:
+> +          contains:
+> +            const: ti,dra752-bandgap
+> +
+> +    then:
+> +      properties:
+> +        reg:
+> +          minItems: 6
+> +          maxItems: 6
+> +
+> +        interrupts:
+> +          maxItems: 1
 
+Drop. 1 is already the max.
+
+> +
+> +        gpios: false
+> +
+> +        "#thermal-sensor-cells":
+> +          const: 1
+> +
+> +      required:
+> +        - interrupts
+> +
+> +unevaluatedProperties: false
+> +
+> +examples:
+> +  - |
+> +    bandgap@48002524 {
+> +        compatible = "ti,omap34xx-bandgap";
+> +        reg = <0x48002524 0x4>;
+> +        #thermal-sensor-cells = <0>;
+> +    };
+> +
+> +  - |
+> +    bandgap@48002524 {
+> +        compatible = "ti,omap36xx-bandgap";
+> +        reg = <0x48002524 0x4>;
+> +        #thermal-sensor-cells = <0>;
+> +    };
+> +
+> +  - |
+> +    #include <dt-bindings/gpio/gpio.h>
+> +
+> +    bandgap@4a002260 {
+> +        compatible = "ti,omap4430-bandgap";
+> +        reg = <0x4a002260 0x4>, <0x4a00232c 0x4>;
+> +        gpios = <&gpio3 22 GPIO_ACTIVE_HIGH>; /* tshut */
+> +        #thermal-sensor-cells = <0>;
+> +    };
+> +
+> +  - |
+> +    #include <dt-bindings/gpio/gpio.h>
+> +    #include <dt-bindings/interrupt-controller/irq.h>
+> +
+> +    bandgap@4a002260 {
+> +        compatible = "ti,omap4460-bandgap";
+> +        reg = <0x4a002260 0x4>, <0x4a00232c 0x4>, <0x4a002378 0x18>;
+> +        interrupts = <0 126 IRQ_TYPE_LEVEL_HIGH>; /* talert */
+> +        gpios = <&gpio3 22 GPIO_ACTIVE_HIGH>; /* tshut */
+> +        #thermal-sensor-cells = <0>;
+> +    };
+> +
+> +  - |
+> +    #include <dt-bindings/interrupt-controller/arm-gic.h>
+> +    #include <dt-bindings/interrupt-controller/irq.h>
+> +
+> +    bandgap@4a0021e0 {
+> +        compatible = "ti,omap5430-bandgap";
+> +        reg = <0x4a0021e0 0xc>, <0x4a00232c 0xc>,
+> +              <0x4a002380 0x2c>, <0x4a0023c0 0x3c>;
+> +        interrupts = <GIC_SPI 126 IRQ_TYPE_LEVEL_HIGH>; /* talert */
+> +        #thermal-sensor-cells = <1>;
+> +    };
+> +
+> +  - |
+> +    #include <dt-bindings/interrupt-controller/arm-gic.h>
+> +    #include <dt-bindings/interrupt-controller/irq.h>
+> +
+> +    bandgap@4a0021e0 {
+> +        compatible = "ti,dra752-bandgap";
+> +        reg = <0x4a0021e0 0xc>, <0x4a00232c 0xc>,
+> +              <0x4a002380 0x2c>, <0x4a0023c0 0x3c>,
+> +              <0x4a002564 0x8>, <0x4a002574 0x50>;
+> +        interrupts = <GIC_SPI 121 IRQ_TYPE_LEVEL_HIGH>; /* talert */
+> +        #thermal-sensor-cells = <1>;
+> +    };
+
+1 or 2 examples is enough. Perhaps the 1st and last to have the simplest 
+and most complex.
