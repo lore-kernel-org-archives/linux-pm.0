@@ -1,40 +1,44 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9D39D39D6F6;
-	Mon,  3 Aug 2026 18:11:14 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1B4E742CAFB;
+	Mon,  3 Aug 2026 18:15:24 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1785780676; cv=none; b=flyJnRFZhR/EGTWEP5TmIotaTGL+i7r4gcwZIPHSUwfcRGoJtbnJWmQqb5jww090O3G4cHgw6Avu0uKkSjqULw471KmVT0AOKRaIIebNfGZ9n2+0Fk5gxmeK200v3f4QOJtKGKxZSUfYLNqqAgnzMdlKBkkGHIbQ6FLgPiK+hLo=
+	t=1785780926; cv=none; b=JWINgS8RuIraeIl/gJlxIQylMIorUBLLe0Jve0IGFUCBul9wYxnxyJidligIWMIWOfjpGvZ2ZeUgUjxYEqOsuMArCRDm4w2qFvouU+hpiZyZJ8ZEJfj2N77EBFGlSnFlYOAnWihA3wLiKj6phG9P1TrX8CQbOKUARgV7PadKt9k=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1785780676; c=relaxed/simple;
-	bh=VlB8ik3K/w+Mz9YdhToh8/rEVvPcaGHd7IqacymkKt8=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=pzzfKzk5OoWuCqq6hasyH8T0vOkefTJdsuWUHVP8H9FnCC8+ZT9/oCmuOSVAeaG6mKZ9RKtXzSoMvEHQp9vzqNC8vk4002WXfdBb6hJLb6dF8YZQy+lYVlGX1edyctZXwTHwnhsFjiUHqINc9ZUI8oFG8hX+n/sbPsxIt1gCskc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Xu04ZLaD; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1785780926; c=relaxed/simple;
+	bh=2qVG8Suh4pze18kxHfUWgu99q/R2KATrHXJS4P+Oluc=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=tYUlCPQZ91MYxdlfcIARweekQX5yulWzvFLm0tQwOWUfqhrjpjPsOr3Fq4rN3Ri3VMCUsoWDovE13/alnxzdjfJX0ZUlZBXDnAWf/MnnCeTCcNzLCB07+5SY4ZA6SKLXFYN44arHy2Cq/OW0XZLt1k3lS7eBkYut9DSK/N3rhaI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Nb9UTTvt; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Xu04ZLaD"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1251C1F00A3F;
-	Mon,  3 Aug 2026 18:11:12 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Nb9UTTvt"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6DF7C1F000E9;
+	Mon,  3 Aug 2026 18:15:23 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1785780674;
-	bh=ADmuhGyPnsQrVI3q0l1mWHXbtYHb6HXx7eCGIqiSASU=;
-	h=From:To:Cc:Subject:Date;
-	b=Xu04ZLaD9z00p21u8EFlaDnNxHYGOQ7X2gwqpY/wxUy8hHvuPB+OH0AUxI7YTvq4L
-	 GVkIYu8E4u4j6ySoNlPnmNtQC8Bkv9ZmxszJ3G7kRq6NEF6xeuLsRKaBMU5vnXwVSy
-	 uHCRUMqAZLeKaIxGQDSI4yTNceFxk0XXnRSJhAvij6qWyonWQfYbgXtAA5nItnEz65
-	 HlS723qRwygvDhWETsQ/iu/E7G2+CK7AA+dDhxlirT9zC+B7rfhgZRHVjYucL85JvP
-	 hQTqs7+LyH4SnLuTlPLsDPxW4LTmHS1RXykOohJ6ufXuQY2brqiHbM/q7wjKomjPJt
-	 o/1PRgnBP7FuQ==
+	s=k20260515; t=1785780924;
+	bh=fQEP/9FYn2SX1clI/0mxxJkxFXMyoCyvFtT6uAITpFc=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References;
+	b=Nb9UTTvt6zujI0nDDC5nhokO8kBVIfJWQghMSuChiTI56rqTcA/gGKf9cxiO3+p6R
+	 Y1KGyWq3FSEc/2W7YuTu8iiTma8kW42JQQhwHP5qVLE3ADzSwCg6iHlY/jOt8a3htn
+	 NXjslJ8erdtdinm7Ns8wiBCEwz+bt4XAM3FNmoMdyZ9egvAviwNoL2qcTuRmVG5oWY
+	 BC7uYFqWYiWx2sOK+sksyA3riJqRNhdllylCKiNpZNJOCjAO/ZolUEbxzhmBamSgBU
+	 jUWmLyWQEBf4y40khfA3EZ4ZFZilwY/c3XuUUBoOFzUttGP70g+6GAspNrHEoqtr82
+	 HC6Y/lssx+0Vw==
 From: "Rafael J. Wysocki" <rafael@kernel.org>
-To: Linux PM <linux-pm@vger.kernel.org>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Alan Stern <stern@rowland.harvard.edu>, LKML <linux-kernel@vger.kernel.org>,
- Julian Silver <mendaxca@gmail.com>
+To: linux-pm@vger.kernel.org
+Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
+ Doug Smythies <dsmythies@telus.net>, linux-kernel@vger.kernel.org
 Subject:
- [PATCH v1] intel_idle: Avoid using deep idle states during initialization
-Date: Mon, 03 Aug 2026 20:11:10 +0200
-Message-ID: <5120454.31r3eYUQgx@rafael.j.wysocki>
+ [PATCH v1] cpufreq: intel_pstate: Avoid using DESIRED_PERF when DEC is
+ enabled
+Date: Mon, 03 Aug 2026 20:15:20 +0200
+Message-ID: <5091298.GXAFRqVoOG@rafael.j.wysocki>
 Organization: Linux Kernel Development - Intel
+In-Reply-To:
+ <20260729-bug-intel-pstate-policy-cur-v1-1-51f61e5cbd74@gmail.com>
+References: <20260729-bug-intel-pstate-policy-cur-v1-1-51f61e5cbd74@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -46,85 +50,72 @@ Content-Type: text/plain; charset="UTF-8"
 
 From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Commit c0f691388992 ("intel_idle: Use subsys_initcall_sync() for
-initialization") effectively made intel_idle initialize earlier which
-turns out to interfere with USB EHCI probing on some platforms [1].
-Investigation led to the conclusion that this was related to allowing
-package idle states to be used earlier than before.
+In principle, the desired performance level can be set in MSR_HWP_REQUEST
+to indicate to the processor what performance level the OS would like
+the given CPU to run at, but if the Dynamic Efficiency Control (DEC)
+feature is enabled in the processor, doing so may result in confusing
+the processor firmware.  It is then better to let the processor firmware
+figure out the most suitable performance level by itself.
 
-Work around that issue by making intel_idle set a CPU latency QoS
-request to prevent package idle states from being used on all platforms
-supported by it for the duration of the device_initcall() initialization
-phase.
+Accordingly, make intel_pstate always set the desired performance level
+to zero (which means "no preference") when running on a platform with
+DEC enabled.
 
-Fixes: c0f691388992 ("intel_idle: Use subsys_initcall_sync() for initialization")
-Reported-by: Julian Silver <mendaxca@gmail.com>
-Closes: https://lore.kernel.org/linux-acpi/3353bdf3-4f33-44b1-809b-b0378bee5816@gmail.com/
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- drivers/idle/intel_idle.c |   21 +++++++++++++++++++++
- 1 file changed, 21 insertions(+)
 
---- a/drivers/idle/intel_idle.c
-+++ b/drivers/idle/intel_idle.c
-@@ -53,6 +53,7 @@
- #include <linux/notifier.h>
- #include <linux/cpu.h>
- #include <linux/moduleparam.h>
-+#include <linux/pm_qos.h>
- #include <linux/sysfs.h>
- #include <asm/cpuid/api.h>
- #include <asm/cpu_device_id.h>
-@@ -2822,6 +2823,9 @@ error:
- 	pr_info("Failed to adjust C-states with data from 'intel_idle.table'\n");
- }
+Applies on top of linux-next.
+
+---
+ drivers/cpufreq/intel_pstate.c |    9 +++++++--
+ 1 file changed, 7 insertions(+), 2 deletions(-)
+
+--- a/drivers/cpufreq/intel_pstate.c
++++ b/drivers/cpufreq/intel_pstate.c
+@@ -303,6 +303,7 @@ static bool per_cpu_limits __ro_after_in
+ static bool hwp_forced __ro_after_init;
+ static bool hwp_boost __read_mostly;
+ static bool hwp_is_hybrid;
++static u32 hwp_desired_mask __read_mostly = ~0U;
  
-+#define INTEL_IDLE_INIT_QOS	20
-+static struct pm_qos_request qos_req __initdata;
-+
- static int __init intel_idle_init(void)
- {
- 	const struct x86_cpu_id *id;
-@@ -2891,6 +2895,13 @@ static int __init intel_idle_init(void)
- 	if (retval)
- 		pr_warn("failed to initialized sysfs");
+ static struct cpufreq_driver *intel_pstate_driver __read_mostly;
  
-+	/*
-+	 * Some platforms, in particular the Intel S1200BTL motherboard, have a
-+	 * problem with using package idle states too early, so prevent that
-+	 * from taking place until the device_initcall() phase is over.
-+	 */
-+	cpu_latency_qos_add_request(&qos_req, INTEL_IDLE_INIT_QOS);
-+
- 	retval = cpuidle_register_driver(&intel_idle_driver);
- 	if (retval) {
- 		struct cpuidle_driver *drv = cpuidle_get_driver();
-@@ -2915,6 +2926,9 @@ hp_setup_fail:
- 	intel_idle_cpuidle_devices_uninit();
- 	cpuidle_unregister_driver(&intel_idle_driver);
- init_driver_fail:
-+	if (cpu_latency_qos_request_active((&qos_req)))
-+		cpu_latency_qos_remove_request(&qos_req);
-+
- 	intel_idle_sysfs_uninit();
- 	free_percpu(intel_idle_cpuidle_devices);
- 	return retval;
-@@ -2922,6 +2934,15 @@ init_driver_fail:
- }
- subsys_initcall_sync(intel_idle_init);
+@@ -3150,7 +3151,7 @@ static void intel_cpufreq_hwp_update(str
+ 	value |= HWP_MAX_PERF(max);
  
-+static int __init intel_idle_init_complete(void)
-+{
-+	if (cpu_latency_qos_request_active((&qos_req)))
-+		cpu_latency_qos_remove_request(&qos_req);
+ 	value &= ~HWP_DESIRED_PERF(~0L);
+-	value |= HWP_DESIRED_PERF(desired);
++	value |= HWP_DESIRED_PERF(desired & hwp_desired_mask);
+ 
+ 	if (value == prev)
+ 		return;
+@@ -3787,6 +3788,7 @@ static int __init intel_pstate_init(void
+ 	id = x86_match_cpu(hwp_support_ids);
+ 	if (id) {
+ 		bool epp_present = hwp_check_epp();
++		bool dec_present = hwp_check_dec();
+ 
+ 		/*
+ 		 * If HWP is enabled already, there is no choice but to deal
+@@ -3798,7 +3800,7 @@ static int __init intel_pstate_init(void
+ 			no_hwp = 0;
+ 		} else if (no_load) {
+ 			return -ENODEV;
+-		} else if (!epp_present && !hwp_check_dec()) {
++		} else if (!epp_present && !dec_present) {
+ 			/*
+ 			 * Avoid enabling HWP for processors without EPP support
+ 			 * unless the Dynamic Efficiency Control (DEC) enable
+@@ -3820,6 +3822,9 @@ static int __init intel_pstate_init(void
+ 			if (!default_driver)
+ 				default_driver = &intel_pstate;
+ 
++			if (dec_present)
++				hwp_desired_mask = 0;
 +
-+	return 0;
-+}
-+device_initcall_sync(intel_idle_init_complete);
-+
- /*
-  * We are not really modular, but we used to support that.  Meaning we also
-  * support "intel_idle.max_cstate=..." at boot and also a read-only export of
+ 			if (!id->driver_data)
+ 				pstate_funcs.get_cpu_scaling = hwp_get_cpu_scaling;
+ 
 
 
 
