@@ -1,31 +1,31 @@
 Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id AF2E63A8739;
-	Mon,  3 Aug 2026 20:35:46 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id DE2FB429CEB;
+	Mon,  3 Aug 2026 20:35:48 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1785789348; cv=none; b=A1TtFywF/TZ3uH12h0DVIWarbCclcuR2BEHLPPcyx1zOJcusezixi2PVPUHapeUphqG7zeIGAYjo5erUzifnw1Qh3G/TYznBUzj/o88u086v76224OCUVQ2LmJTNKqbMwG+utfYaHt8/qb3hzzy51oukfnKz47PlQD/A36c2Knk=
+	t=1785789360; cv=none; b=WZAJs9avitmeL0O8S+gdMSLfmSgJrtm0yp7blz2MPiVyRXaxsOu2uMUFBOB6+VPDma7xMfzXVKHSxn7xrfpLZNiua9YjY4O6yQxLXnmWqP4iS+IiXJIlURq4WEEZXIK9IdL5C2KrjbCA/sgYOFwIVGjvscg5eRKnlv4HPbs2L38=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1785789348; c=relaxed/simple;
-	bh=ss2foDawKwclPC/rzOYzqYK5nvpCkQy93E99c9mNN6M=;
+	s=arc-20240116; t=1785789360; c=relaxed/simple;
+	bh=aXEladsx7QGEQ3DSQbj0ebilCOY8ifpj9tTQIEY3teU=;
 	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=IZ06hmAgpBJ++I8TE9eGpRM/acLUvN361yJ75TJs0OlQ8UeGZGBefA5E0WCo6xNONF7qTOAgvPveARzxwE1LI4f1x6iUjHIADCpLTvh0ZqtwpGsskfoZk29ppT6ObrSoqNqefLRs7HUdRcJ3MjiZIZ5zT94v22P9V5pH8VSJ80s=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=adTNzQA0; arc=none smtp.client-ip=217.140.110.172
+	 MIME-Version; b=YLklqETUqWXhclhdgHXBc+iJOhdQ3C5UtXq5iu6JQ2sfmYhzoksSLKIJMiIeRMsx07Ln3wUlM8IK7e05SX2PhwyJ+ViPGD7yBSVmNTHiLhOXHzcEhBs9zUvNYY3GDbeGc+umJ41yeC6c13nFurMbfc7wcJbKv80PR0PVQNQZQFE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=qJgaBubD; arc=none smtp.client-ip=217.140.110.172
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="adTNzQA0"
+	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="qJgaBubD"
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id EBD1B1596;
-	Mon,  3 Aug 2026 13:35:41 -0700 (PDT)
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 8A810143D;
+	Mon,  3 Aug 2026 13:35:44 -0700 (PDT)
 Received: from e127648.arm.com (unknown [10.57.0.71])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id 9867C3F632;
-	Mon,  3 Aug 2026 13:35:43 -0700 (PDT)
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id 5820B3F632;
+	Mon,  3 Aug 2026 13:35:46 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1785789346; bh=ss2foDawKwclPC/rzOYzqYK5nvpCkQy93E99c9mNN6M=;
+	t=1785789348; bh=aXEladsx7QGEQ3DSQbj0ebilCOY8ifpj9tTQIEY3teU=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=adTNzQA0qv0dLpO4mEJ9dAl5HXBy9vDcMe5wmxEpe0hw81l+agG995Dsxe3wtD2pT
-	 e+DGATL0Jj1wbYjWUR4Yhk5apCM7JDV9qKVJQJJMP0XOpXZmBsYECAsIapMIe/QEgS
-	 QTW6cRRrkekCBQp+iyUav9suvN1myJGEMcQKCEpk=
+	b=qJgaBubDzKb0jZhbemu+nQGwDwwIdwQgcttDoihCtFDDNxXRxMIop239h+Pz0F9vJ
+	 pZi98sTVteMA960+GT70K4tIFbuchaco6+2e1PRw/G/+b3eKARKvVnuDVNdVbHmL6A
+	 R2jJ36PjlrO9L9zYuz1hatSW+S7NRSUnb35TuR08=
 From: Christian Loehle <christian.loehle@arm.com>
 To: "Rafael J . Wysocki" <rafael@kernel.org>,
 	Viresh Kumar <viresh.kumar@linaro.org>
@@ -40,11 +40,10 @@ Cc: linux-pm@vger.kernel.org,
 	Sudeep Holla <sudeep.holla@arm.com>,
 	Ionela Voinescu <ionela.voinescu@arm.com>,
 	zhongqiu.han@oss.qualcomm.com,
-	Christian Loehle <christian.loehle@arm.com>,
-	stable@vger.kernel.org
-Subject: [PATCH 2/3] ACPI: CPPC: Skip desired_perf read in cppc_get_perf()
-Date: Mon,  3 Aug 2026 21:35:30 +0100
-Message-Id: <20260803203531.1268651-3-christian.loehle@arm.com>
+	Christian Loehle <christian.loehle@arm.com>
+Subject: [PATCH 3/3] ACPI: CPPC: Stop reading desired_perf in cppc_get_perf()
+Date: Mon,  3 Aug 2026 21:35:31 +0100
+Message-Id: <20260803203531.1268651-4-christian.loehle@arm.com>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20260803203531.1268651-1-christian.loehle@arm.com>
 References: <20260803203531.1268651-1-christian.loehle@arm.com>
@@ -56,64 +55,86 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-ACPI 6.5 defines _CPC revision 3 and lists Read/Write as the Optional
-Attribute of Desired Performance. ACPI 6.6 advances _CPC to revision 4 and
-lists only Write. cppc_get_perf() nevertheless reads the register when
-initializing performance controls, even though cppc-cpufreq overwrites the
-value before using it.
+cppc_get_perf() has one in-tree caller, cppc_cpufreq_get_cpu_data().
+It uses the function to preserve existing controls before writing them, but
+overwrites desired_perf with highest_perf before the first cppc_set_perf().
+Consequently, the current Desired Performance value is not consumed.
 
-Use the _CPC revision check from cppc_get_desired_perf() and leave
-desired_perf zero instead of reading it for _CPC revision 4 or later. Also
-exclude the register from PCC read-command detection so it cannot trigger
-an otherwise unnecessary read command.
+Remove the Desired Performance read from this aggregate getter and
+document that the field is returned as zero.
 
-Fixes: 658fa7b1c47a ("ACPI: CPPC: Add cppc_get_perf() API to read performance controls")
-Cc: stable@vger.kernel.org
-Suggested-by: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>
 Reviewed-by: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>
 Signed-off-by: Christian Loehle <christian.loehle@arm.com>
 ---
- drivers/acpi/cppc_acpi.c | 7 +++++--
- 1 file changed, 5 insertions(+), 2 deletions(-)
+ drivers/acpi/cppc_acpi.c | 22 +++++++---------------
+ 1 file changed, 7 insertions(+), 15 deletions(-)
 
 diff --git a/drivers/acpi/cppc_acpi.c b/drivers/acpi/cppc_acpi.c
-index 42aeb749ebe0..becb7e442b30 100644
+index becb7e442b30..15a1c5f00e51 100644
 --- a/drivers/acpi/cppc_acpi.c
 +++ b/drivers/acpi/cppc_acpi.c
-@@ -1845,12 +1845,14 @@ int cppc_get_perf(int cpu, struct cppc_perf_ctrls *perf_ctrls)
- 	u64 desired_perf = 0, min = 0, max = 0, energy_perf = 0, auto_sel = 0;
+@@ -1834,41 +1834,38 @@ EXPORT_SYMBOL_GPL(cppc_set_enable);
+  * @cpu: CPU for which to get performance controls.
+  * @perf_ctrls: ptr to cppc_perf_ctrls. See cppc_acpi.h
+  *
++ * Desired Performance is not read and is returned as 0.
++ *
+  * Return: 0 for success with perf_ctrls, -ERRNO otherwise.
+  */
+ int cppc_get_perf(int cpu, struct cppc_perf_ctrls *perf_ctrls)
+ {
+ 	struct cpc_desc *cpc_desc = per_cpu(cpc_desc_ptr, cpu);
+-	struct cpc_register_resource *desired_perf_reg,
+-				     *min_perf_reg, *max_perf_reg,
++	struct cpc_register_resource *min_perf_reg, *max_perf_reg,
+ 				     *energy_perf_reg, *auto_sel_reg;
+-	u64 desired_perf = 0, min = 0, max = 0, energy_perf = 0, auto_sel = 0;
++	u64 min = 0, max = 0, energy_perf = 0, auto_sel = 0;
  	int pcc_ss_id = per_cpu(cpu_pcc_subspace_idx, cpu);
  	struct cppc_pcc_data *pcc_ss_data = NULL;
-+	bool read_desired_perf;
+-	bool read_desired_perf;
  	int ret = 0, regs_in_pcc = 0;
  
  	if (!cpc_desc) {
  		pr_debug("No CPC descriptor for CPU:%d\n", cpu);
  		return -ENODEV;
  	}
-+	read_desired_perf = cppc_desired_perf_readable(cpc_desc);
+-	read_desired_perf = cppc_desired_perf_readable(cpc_desc);
  
  	if (!perf_ctrls) {
  		pr_debug("Invalid perf_ctrls pointer\n");
-@@ -1864,7 +1866,8 @@ int cppc_get_perf(int cpu, struct cppc_perf_ctrls *perf_ctrls)
+ 		return -EINVAL;
+ 	}
+ 
+-	desired_perf_reg = &cpc_desc->cpc_regs[DESIRED_PERF];
+ 	min_perf_reg = &cpc_desc->cpc_regs[MIN_PERF];
+ 	max_perf_reg = &cpc_desc->cpc_regs[MAX_PERF];
+ 	energy_perf_reg = &cpc_desc->cpc_regs[ENERGY_PERF];
  	auto_sel_reg = &cpc_desc->cpc_regs[AUTO_SEL_ENABLE];
  
  	/* Are any of the regs PCC ?*/
--	if (CPC_IN_PCC(desired_perf_reg) || CPC_IN_PCC(min_perf_reg) ||
-+	if ((read_desired_perf && CPC_IN_PCC(desired_perf_reg)) ||
-+	    CPC_IN_PCC(min_perf_reg) ||
- 	    CPC_IN_PCC(max_perf_reg) || CPC_IN_PCC(energy_perf_reg) ||
+-	if ((read_desired_perf && CPC_IN_PCC(desired_perf_reg)) ||
+-	    CPC_IN_PCC(min_perf_reg) ||
+-	    CPC_IN_PCC(max_perf_reg) || CPC_IN_PCC(energy_perf_reg) ||
++	if (CPC_IN_PCC(min_perf_reg) || CPC_IN_PCC(max_perf_reg) ||
++	    CPC_IN_PCC(energy_perf_reg) ||
  	    CPC_IN_PCC(auto_sel_reg)) {
  		if (pcc_ss_id < 0) {
-@@ -1896,7 +1899,7 @@ int cppc_get_perf(int cpu, struct cppc_perf_ctrls *perf_ctrls)
+ 			pr_debug("Invalid pcc_ss_id for CPU:%d\n", cpu);
+@@ -1899,12 +1896,7 @@ int cppc_get_perf(int cpu, struct cppc_perf_ctrls *perf_ctrls)
  	}
  	perf_ctrls->min_perf = min;
  
--	if (CPC_SUPPORTED(desired_perf_reg)) {
-+	if (read_desired_perf && CPC_SUPPORTED(desired_perf_reg)) {
- 		ret = cpc_read(cpu, desired_perf_reg, &desired_perf);
- 		if (ret)
- 			goto out_err;
+-	if (read_desired_perf && CPC_SUPPORTED(desired_perf_reg)) {
+-		ret = cpc_read(cpu, desired_perf_reg, &desired_perf);
+-		if (ret)
+-			goto out_err;
+-	}
+-	perf_ctrls->desired_perf = desired_perf;
++	perf_ctrls->desired_perf = 0;
+ 
+ 	if (CPC_SUPPORTED(energy_perf_reg)) {
+ 		ret = cpc_read(cpu, energy_perf_reg, &energy_perf);
 -- 
 2.34.1
 
