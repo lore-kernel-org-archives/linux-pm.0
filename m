@@ -1,39 +1,40 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 69DBD2F7445;
-	Mon,  3 Aug 2026 18:19:52 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 49CAB4322E7;
+	Mon,  3 Aug 2026 18:30:39 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1785781193; cv=none; b=cl0JsqK54LV3cVMESvMIenn/y55tayb7qOC3Fwe6P078zVEaKfnexSaCE9W//aAjG+iq8pGrzv7AzJCfFycTDucR5KSC6x5NKB+BOnCrNP4g9keVM4Ae99OF4qMxEOodrStoUn8HZ4UNPBWxDkMz2mLxIiicmxqg9fCj69eDt24=
+	t=1785781840; cv=none; b=uE/EAHlrY4iya7TqN0HjPyeNPKJyMdrErf2VFJ6SMTrwD0AtPuBlHH3uQ6+PS0qra6YTvaFV+5llx/0gFLLbNPv0zIKLFycDwAsDOyk8IAlA9em0HmxZrkQBQo0f9Q/9UgGFNx6OOU9DwO+3vhlNTWmccpYN80h7fMt+SNhSq48=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1785781193; c=relaxed/simple;
-	bh=pKOCGh2LC3eZx7POG8Q8w42wprt0ftYuGYBZPNdm7rQ=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=XgpnMX2RA+rjPBURu5w+LFswiwR8hnWeT8aMfu4WG2MZAhQBpl/P7BCcc4sHj3O4a+k/tVsp5yg4vszvM5VNvHv6t3AA3JgHxbClAns1MGhhSWtpCEVjAWbohDJc9tdJcKhYUSKedYm0UqS9FkDMAB3IO9OXRl50+6usS68Nlg0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=UOfaNT6S; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1785781840; c=relaxed/simple;
+	bh=ejEdjXspy82ihy2AK7N+jLI6ApjVzmHZFhx2yQ61Kgg=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=XMC3p73kdq4TtszTnqUcDSdazyPFLhEc09xmoqQGFmD9p05XMkqzXxTmbBG4QxxChcltYmJVHp1ilyD1gutB1zMJjUkbTNOg8k7e8pe6hMOr8A5+pgrTQrB46t38tPfILNqqn9tMiNNmTnZfNkRWNj9lPv/564YhiaVtSiuwEfw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Q8WJY3V9; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="UOfaNT6S"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id AD5F11F000E9;
-	Mon,  3 Aug 2026 18:19:50 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Q8WJY3V9"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 593E21F000E9;
+	Mon,  3 Aug 2026 18:30:37 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1785781192;
-	bh=eZEoZzUR+slFGo1MmV1KC5RprQhkcbLlKj7Ny4IxhYQ=;
+	s=k20260515; t=1785781839;
+	bh=NKEAhHR1vkSxFrjzZS7Nbn6XxygKfJDdleDZqxswBJ0=;
 	h=From:To:Cc:Subject:Date;
-	b=UOfaNT6SdACM//4WgLTb7vIej0+XSypU0ID3f96uJR5e/qsFQj2waVTz9rPct6YWq
-	 ahy0/AmBqAR8FODicoVStkNLEyq/hmt6zYLXAzk1LE5/oNlZ19OtwlU4CoUSdheKvZ
-	 J6SQEN6F3/Zf+4K12Yen8I0w3er4ltOxGiZn0XFc2RvYLOLe3LZJhf4qXgfWUcD3Tc
-	 eQS7x18mOBHK3CBoO8sVzQWBeZk3nj3RpiNdfex5zSiJWZ3/PF+0KwVHKy4pImQn0j
-	 ZvZTZQ8cBPKom2N9SRpK26qCZwO5xNaEsstQ84f3EqFfw2SwwiipVdyM+2B2yroZMr
-	 fgNT6KTiWTuBg==
+	b=Q8WJY3V9+O4jW/BObtYLLb3aoAU9FvabYgDGkv2n64lhawXS1LMPDAO/ZRiWVU82a
+	 3/8AmXaDB49D9xXqYNS/k5U83jB1vgv8+R7qBi4R5CkQAFtxT9VxCw1a7N3zonXTsX
+	 jRQ5d4Q0p59RIHo/455tQ0yYYBOuSga8u1P+Q8++TFleiQJpcxJSFVBLE+0FtNh/es
+	 C09f/8agzciBhjGAAiBETxsas97hmKSCwOoBWInzCqTPRCCCSxug7tLPnfDc5HyDcS
+	 Ll/Nk3hztN75EAbjkq8kdF4j2Ali0HWaYuDQzZfZdNIYOaqUPMAFkj2hbELhW+jyVo
+	 YO53tQtNu9eoQ==
 From: "Rafael J. Wysocki" <rafael@kernel.org>
 To: Linux PM <linux-pm@vger.kernel.org>
-Cc: Doug Smythies <dsmythies@telus.net>,
- Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
- LKML <linux-kernel@vger.kernel.org>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+ Linux ACPI <linux-acpi@vger.kernel.org>, Lukasz Luba <lukasz.luba@arm.com>,
+ Daniel Lezcano <daniel.lezcano@kernel.org>, Armin Wolf <w_armin@gmx.de>,
+ Guenter Roeck <linux@roeck-us.net>, linux-hwmon@vger.kernel.org
 Subject:
- [PATCH v1] cpufreq: intel_pstate: Consolidate HWP P-states initialization
-Date: Mon, 03 Aug 2026 20:19:47 +0200
-Message-ID: <3056221.e9J7NaK4W3@rafael.j.wysocki>
+ [PATCH v1] thermal: hwmon: Remove hwmon class device along with its parent
+Date: Mon, 03 Aug 2026 20:30:35 +0200
+Message-ID: <23195575.EfDdHjke4D@rafael.j.wysocki>
 Organization: Linux Kernel Development - Intel
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
@@ -46,163 +47,218 @@ Content-Type: text/plain; charset="UTF-8"
 
 From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-After previous changes, intel_pstate_hybrid_hwp_adjust() does not do
-much and its name and kerneldoc comment (which is not really necessary
-because the function is static) have become a bit confusing.  Moreover,
-the initialization of P-states on systems with HWP enabled is divided
-between it and a direct conditional statement branch in
-intel_pstate_get_cpu_pstates() which is not super-easy to follow.
+The current code creates one hwmon device per thermal zone type and that
+device is registered under the first thermal zone of the given type.
 
-Address this by introducing intel_pstate_get_hwp_pstates() for the
-entire HWP-specific initialization of P-states and moving the code from
-intel_pstate_hybrid_hwp_adjust() into it along with some HWP-related
-code from intel_pstate_get_cpu_pstates().
+That turns out to be problematic when the thermal zone holding the
+hwmon device is removed.
 
-No intentional functional impact.
+For example, say that there are two ACPI thermal zones on a system
 
+ /sys/devices/virtual/thermal/thermal_zone0/
+ /sys/devices/virtual/thermal/thermal_zone1/
+
+The current code registers a hwmon class device for thermal_zone0 only:
+
+ /sys/devices/virtual/thermal/thermal_zone0/hwmon0/
+
+because the type is "acpitz" for both of them, but it adds a sysfs
+attribute that belongs to thermal_zone1 under it:
+
+ /sys/devices/virtual/thermal/thermal_zone0/hwmon0/temp2_input
+
+There is also
+
+ /sys/devices/virtual/thermal/thermal_zone0/hwmon0/temp1_input
+
+which belongs to thermal_zone0.
+
+When thermal_zone0 is removed, say because the ACPI thermal driver is
+unbound from the underlying platform device, thermal_remove_hwmon_sysfs()
+skips the removal of hwmon0 because of the temp2_input attribute
+belonging to thermal_zone1 which effectively prevents thermal_zone0
+removal from making progress.
+
+Address this by making thermal_remove_hwmon_sysfs() remove the entire
+hwmon class device interface for the given thermal zone type when the
+thermal zone device holding it is removed.
+
+To prevent races with thermal_add_hwmon_sysfs() that may interfere
+with this, carry out the entire addition and removal of hwmon sysfs
+interfaces for thermal zones under thermal_hwmon_list_lock.
+
+Also adjust the layout of the labels in thermal_add_hwmon_sysfs() to
+the current kernel coding style to align with the new "unlock" label.
+
+Link: https://lore.kernel.org/linux-pm/20260402021828.16556-1-liujia6264@gmail.com/
+Fixes: f6b6b52ef7a5 ("thermal_hwmon: Pass the originating device down to hwmon_device_register_with_info")
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- drivers/cpufreq/intel_pstate.c |  113 +++++++++++++++++++----------------------
- 1 file changed, 54 insertions(+), 59 deletions(-)
 
---- a/drivers/cpufreq/intel_pstate.c
-+++ b/drivers/cpufreq/intel_pstate.c
-@@ -555,47 +555,6 @@ static int intel_pstate_freq_to_hwp(stru
- 	return intel_pstate_freq_to_hwp_rel(cpu, freq, CPUFREQ_RELATION_L);
- }
+Applies on top of the reverts at
+
+https://lore.kernel.org/linux-pm/6319276.lOV4Wx5bFT@rafael.j.wysocki/
+
+I'd like to make this change in 7.3.
+
+Given the user space sensitivity to hwmon-related changes in the kernel,
+there's not much more that can be done to address the problem in the short
+term AFAICS.
+
+---
+ drivers/thermal/thermal_hwmon.c |   87 +++++++++++++++-------------------------
+ 1 file changed, 34 insertions(+), 53 deletions(-)
+
+--- a/drivers/thermal/thermal_hwmon.c
++++ b/drivers/thermal/thermal_hwmon.c
+@@ -95,34 +95,12 @@ thermal_hwmon_lookup_by_type(const struc
+ 	struct thermal_hwmon_device *hwmon;
+ 	char type[THERMAL_NAME_LENGTH];
  
--/**
-- * intel_pstate_hybrid_hwp_adjust - Calibrate HWP performance levels.
-- * @cpu: Target CPU.
-- *
-- * On hybrid processors, HWP may expose more performance levels than there are
-- * P-states accessible through the PERF_CTL interface.  If that happens, the
-- * scaling factor between HWP performance levels and CPU frequency will be less
-- * than the scaling factor between P-state values and CPU frequency.
-- *
-- * In that case, adjust the CPU parameters used in computations accordingly.
-- */
--static void intel_pstate_hybrid_hwp_adjust(struct cpudata *cpu)
--{
--	int perf_ctl_max_phys = cpu->pstate.max_pstate_physical;
--	int perf_ctl_scaling = cpu->pstate.perf_ctl_scaling;
--	int perf_ctl_turbo = pstate_funcs.get_turbo(cpu->cpu);
--	int scaling = cpu->pstate.scaling;
--	int freq;
+-	mutex_lock(&thermal_hwmon_list_lock);
+ 	list_for_each_entry(hwmon, &thermal_hwmon_list, node) {
+ 		strscpy(type, tz->type);
+ 		strreplace(type, '-', '_');
+-		if (!strcmp(hwmon->type, type)) {
+-			mutex_unlock(&thermal_hwmon_list_lock);
++		if (!strcmp(hwmon->type, type))
+ 			return hwmon;
+-		}
+ 	}
+-	mutex_unlock(&thermal_hwmon_list_lock);
 -
--	pr_debug("CPU%d: PERF_CTL max_phys = %d\n", cpu->cpu, perf_ctl_max_phys);
--	pr_debug("CPU%d: PERF_CTL turbo = %d\n", cpu->cpu, perf_ctl_turbo);
--	pr_debug("CPU%d: PERF_CTL scaling = %d\n", cpu->cpu, perf_ctl_scaling);
--	pr_debug("CPU%d: HWP_CAP guaranteed = %d\n", cpu->cpu, cpu->pstate.max_pstate);
--	pr_debug("CPU%d: HWP_CAP highest = %d\n", cpu->cpu, cpu->pstate.turbo_pstate);
--	pr_debug("CPU%d: HWP-to-frequency scaling factor: %d\n", cpu->cpu, scaling);
--
--	if (scaling == perf_ctl_scaling)
--		return;
--
--	hwp_is_hybrid = true;
--
--	freq = perf_ctl_max_phys * perf_ctl_scaling;
--	cpu->pstate.max_pstate_physical = intel_pstate_freq_to_hwp(cpu, freq);
--
--	/*
--	 * Cast the min P-state value retrieved via pstate_funcs.get_min() to
--	 * the effective range of HWP performance levels.
--	 */
--	cpu->pstate.min_pstate = intel_pstate_freq_to_hwp(cpu, cpu->pstate.min_freq);
+-	return NULL;
 -}
 -
- static bool turbo_is_disabled(void)
- {
- 	u64 misc_en;
-@@ -2293,34 +2252,70 @@ static int hwp_get_cpu_scaling(int cpu)
- 	return intel_pstate_cppc_get_scaling(cpu);
- }
- 
-+static void intel_pstate_get_hwp_pstates(struct cpudata *cpu)
-+{
-+	int perf_ctl_max_phys = cpu->pstate.max_pstate_physical;
-+	int perf_ctl_scaling = cpu->pstate.perf_ctl_scaling;
-+	int perf_ctl_turbo = cpu->pstate.turbo_pstate;
-+	int cpuid = cpu->cpu;
-+
-+	__intel_pstate_get_hwp_cap(cpu);
-+
-+	if (!pstate_funcs.get_cpu_scaling)
-+		return;
-+
-+	pr_debug("CPU%d: PERF_CTL max_phys = %d\n", cpuid, perf_ctl_max_phys);
-+	pr_debug("CPU%d: PERF_CTL turbo = %d\n", cpuid, perf_ctl_turbo);
-+	pr_debug("CPU%d: PERF_CTL scaling = %d\n", cpuid, perf_ctl_scaling);
-+	pr_debug("CPU%d: HWP_CAP lowest = %d\n", cpuid, cpu->pstate.min_pstate);
-+	pr_debug("CPU%d: HWP_CAP guaranteed = %d\n", cpuid, cpu->pstate.max_pstate);
-+	pr_debug("CPU%d: HWP_CAP highest = %d\n", cpuid, cpu->pstate.turbo_pstate);
-+
-+	cpu->pstate.scaling = pstate_funcs.get_cpu_scaling(cpuid);
-+
-+	pr_debug("CPU%d: HWP-to-frequency scaling = %d\n", cpuid, cpu->pstate.scaling);
-+
-+	/*
-+	 * On hybrid processors, HWP may expose more performance levels than
-+	 * there are P-states accessible through the PERF_CTL interface.  If
-+	 * that happens, the scaling between HWP performance levels and CPU
-+	 * frequency will be less than the scaling between P-state values and
-+	 * CPU frequency.  In that case, update the maximum physical non-turbo
-+	 * performance level and the minimum performance level accordingly.
-+	 */
-+	if (cpu->pstate.scaling != perf_ctl_scaling) {
-+		int freq;
-+
-+		freq = perf_ctl_max_phys * perf_ctl_scaling;
-+		cpu->pstate.max_pstate_physical = intel_pstate_freq_to_hwp(cpu, freq);
-+
-+		freq = cpu->pstate.min_freq;
-+		cpu->pstate.min_pstate = intel_pstate_freq_to_hwp(cpu, freq);
-+
-+		hwp_is_hybrid = true;
-+	}
-+	/*
-+	 * If the CPU is going online for the first time and it was offline
-+	 * initially, asym capacity scaling may need to be updated.
-+	 */
-+	hybrid_update_capacity(cpu);
-+}
-+
- static void intel_pstate_get_cpu_pstates(struct cpudata *cpu)
- {
- 	int perf_ctl_scaling = pstate_funcs.get_scaling();
- 
- 	cpu->pstate.max_pstate_physical = pstate_funcs.get_max_physical(cpu->cpu);
-+	cpu->pstate.turbo_pstate = pstate_funcs.get_turbo(cpu->cpu);
- 	cpu->pstate.min_pstate = pstate_funcs.get_min(cpu->cpu);
- 	cpu->pstate.min_freq = cpu->pstate.min_pstate * perf_ctl_scaling;
- 	cpu->pstate.perf_ctl_scaling = perf_ctl_scaling;
-+	cpu->pstate.scaling = perf_ctl_scaling;
- 
--	if (hwp_active) {
--		__intel_pstate_get_hwp_cap(cpu);
+-/* Find the temperature input matching a given thermal zone */
+-static struct thermal_hwmon_temp *
+-thermal_hwmon_lookup_temp(const struct thermal_hwmon_device *hwmon,
+-			  const struct thermal_zone_device *tz)
+-{
+-	struct thermal_hwmon_temp *temp;
 -
--		if (pstate_funcs.get_cpu_scaling) {
--			cpu->pstate.scaling = pstate_funcs.get_cpu_scaling(cpu->cpu);
--			intel_pstate_hybrid_hwp_adjust(cpu);
--		} else {
--			cpu->pstate.scaling = perf_ctl_scaling;
+-	mutex_lock(&thermal_hwmon_list_lock);
+-	list_for_each_entry(temp, &hwmon->tz_list, hwmon_node)
+-		if (temp->tz == tz) {
+-			mutex_unlock(&thermal_hwmon_list_lock);
+-			return temp;
 -		}
--		/*
--		 * If the CPU is going online for the first time and it was
--		 * offline initially, asym capacity scaling needs to be updated.
--		 */
--		hybrid_update_capacity(cpu);
--	} else {
--		cpu->pstate.scaling = perf_ctl_scaling;
-+	if (hwp_active)
-+		intel_pstate_get_hwp_pstates(cpu);
-+	else
- 		cpu->pstate.max_pstate = pstate_funcs.get_max(cpu->cpu);
--		cpu->pstate.turbo_pstate = pstate_funcs.get_turbo(cpu->cpu);
--	}
+-	mutex_unlock(&thermal_hwmon_list_lock);
  
- 	intel_pstate_update_freq_limits(cpu);
+ 	return NULL;
+ }
+@@ -138,7 +116,9 @@ int thermal_add_hwmon_sysfs(struct therm
+ 	struct thermal_hwmon_device *hwmon;
+ 	struct thermal_hwmon_temp *temp;
+ 	int new_hwmon_device = 1;
+-	int result;
++	int result = 0;
++
++	mutex_lock(&thermal_hwmon_list_lock);
+ 
+ 	hwmon = thermal_hwmon_lookup_by_type(tz);
+ 	if (hwmon) {
+@@ -147,8 +127,10 @@ int thermal_add_hwmon_sysfs(struct therm
+ 	}
+ 
+ 	hwmon = kzalloc_obj(*hwmon);
+-	if (!hwmon)
+-		return -ENOMEM;
++	if (!hwmon) {
++		result = -ENOMEM;
++		goto unlock;
++	}
+ 
+ 	INIT_LIST_HEAD(&hwmon->tz_list);
+ 	strscpy(hwmon->type, tz->type, THERMAL_NAME_LENGTH);
+@@ -196,23 +178,23 @@ int thermal_add_hwmon_sysfs(struct therm
+ 		temp->temp_crit_present = true;
+ 	}
+ 
+-	mutex_lock(&thermal_hwmon_list_lock);
+ 	if (new_hwmon_device)
+ 		list_add_tail(&hwmon->node, &thermal_hwmon_list);
+ 	list_add_tail(&temp->hwmon_node, &hwmon->tz_list);
+-	mutex_unlock(&thermal_hwmon_list_lock);
+ 
+-	return 0;
++	goto unlock;
+ 
+- unregister_input:
++unregister_input:
+ 	device_remove_file(hwmon->device, &temp->temp_input.attr);
+- free_temp_mem:
++free_temp_mem:
+ 	kfree(temp);
+- unregister_name:
++unregister_name:
+ 	if (new_hwmon_device)
+ 		hwmon_device_unregister(hwmon->device);
+- free_mem:
++free_mem:
+ 	kfree(hwmon);
++unlock:
++	mutex_unlock(&thermal_hwmon_list_lock);
+ 
+ 	return result;
+ }
+@@ -220,8 +202,11 @@ EXPORT_SYMBOL_GPL(thermal_add_hwmon_sysf
+ 
+ void thermal_remove_hwmon_sysfs(struct thermal_zone_device *tz)
+ {
++	struct thermal_hwmon_temp *temp, *entry;
+ 	struct thermal_hwmon_device *hwmon;
+-	struct thermal_hwmon_temp *temp;
++	bool unregister;
++
++	guard(mutex)(&thermal_hwmon_list_lock);
+ 
+ 	hwmon = thermal_hwmon_lookup_by_type(tz);
+ 	if (unlikely(!hwmon)) {
+@@ -230,29 +215,25 @@ void thermal_remove_hwmon_sysfs(struct t
+ 		return;
+ 	}
+ 
+-	temp = thermal_hwmon_lookup_temp(hwmon, tz);
+-	if (unlikely(!temp)) {
+-		/* Should never happen... */
+-		dev_dbg(&tz->device, "temperature input lookup failed!\n");
+-		return;
+-	}
++	unregister = hwmon->device->parent == &tz->device;
+ 
+-	device_remove_file(hwmon->device, &temp->temp_input.attr);
+-	if (temp->temp_crit_present)
+-		device_remove_file(hwmon->device, &temp->temp_crit.attr);
++	list_for_each_entry_safe_reverse(temp, entry, &hwmon->tz_list, hwmon_node) {
++		if (!unregister && temp->tz != tz)
++			continue;
+ 
+-	mutex_lock(&thermal_hwmon_list_lock);
+-	list_del(&temp->hwmon_node);
+-	kfree(temp);
+-	if (!list_empty(&hwmon->tz_list)) {
+-		mutex_unlock(&thermal_hwmon_list_lock);
+-		return;
++		device_remove_file(hwmon->device, &temp->temp_input.attr);
++		if (temp->temp_crit_present)
++			device_remove_file(hwmon->device, &temp->temp_crit.attr);
++
++		list_del(&temp->hwmon_node);
++		kfree(temp);
+ 	}
+-	list_del(&hwmon->node);
+-	mutex_unlock(&thermal_hwmon_list_lock);
+ 
+-	hwmon_device_unregister(hwmon->device);
+-	kfree(hwmon);
++	if (unregister) {
++		list_del(&hwmon->node);
++		hwmon_device_unregister(hwmon->device);
++		kfree(hwmon);
++	}
+ }
+ EXPORT_SYMBOL_GPL(thermal_remove_hwmon_sysfs);
  
 
 
