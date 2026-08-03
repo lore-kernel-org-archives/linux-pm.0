@@ -1,113 +1,130 @@
-Received: from sender-of-o57.zoho.eu (sender-of-o57.zoho.eu [136.143.169.57])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EFF4640A940;
-	Mon,  3 Aug 2026 17:53:02 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=136.143.169.57
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1785779585; cv=pass; b=Wrl4D6wFuA6ExUFBvgpjtMCcXBWriZTuPlJzw61XDtyR0KvZ6czIINs4NGnh89CuER5XIz2WRlLTLHhXbD6nmK7vhmVo6n9G5K1N/wgQe0ArlCJxompBp0Mf8C7hmi00IvxurGx6t3QsR0ylLUrzxC9LOKAefU28EOGTrZeCjzo=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1785779585; c=relaxed/simple;
-	bh=dW/rFN6UQszISJxpbWexXiVebV0ZdzGTTToSdoraeX4=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=QPlW0AQjFoz2kupTLZaDHn5MmoF4V+1/t9en3NUJiqTR4TfKbXiKiZNaE2WSf4RQe0M+fSkqF5KVn9kDT0AVSgY3ILBJGNT1VeGMX2UfofxP8g4oprhvhHsmrqRcpHCbZ0gj/m8Cf5E8hnBOnK71rEwFongTmnntFY1g65ANq9c=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=iusegentoo.com; spf=pass smtp.mailfrom=iusegentoo.com; dkim=pass (1024-bit key) header.d=iusegentoo.com header.i=ali@iusegentoo.com header.b=NiP7nJLi; arc=pass smtp.client-ip=136.143.169.57
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=iusegentoo.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=iusegentoo.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9D39D39D6F6;
+	Mon,  3 Aug 2026 18:11:14 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1785780676; cv=none; b=flyJnRFZhR/EGTWEP5TmIotaTGL+i7r4gcwZIPHSUwfcRGoJtbnJWmQqb5jww090O3G4cHgw6Avu0uKkSjqULw471KmVT0AOKRaIIebNfGZ9n2+0Fk5gxmeK200v3f4QOJtKGKxZSUfYLNqqAgnzMdlKBkkGHIbQ6FLgPiK+hLo=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1785780676; c=relaxed/simple;
+	bh=VlB8ik3K/w+Mz9YdhToh8/rEVvPcaGHd7IqacymkKt8=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=pzzfKzk5OoWuCqq6hasyH8T0vOkefTJdsuWUHVP8H9FnCC8+ZT9/oCmuOSVAeaG6mKZ9RKtXzSoMvEHQp9vzqNC8vk4002WXfdBb6hJLb6dF8YZQy+lYVlGX1edyctZXwTHwnhsFjiUHqINc9ZUI8oFG8hX+n/sbPsxIt1gCskc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Xu04ZLaD; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=iusegentoo.com header.i=ali@iusegentoo.com header.b="NiP7nJLi"
-ARC-Seal: i=1; a=rsa-sha256; t=1785779573; cv=none; 
-	d=zohomail.eu; s=zohoarc; 
-	b=EKRjsiIwBhX7Hsdyy6Cfd/x04rIq9pZ3/NChvDSbXaGOXQqGuKLcEmcWScrCKCJS8bkAYtWGT9xcNjqbwB4y9b7gbEI0XdyPnklaR/gmx3psW7JnY5CwOOsKMrld/GEFFfBRye2DETYH9SriOV5npuL5EyaDp8A99AX5DvFTBis=
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=zohomail.eu; s=zohoarc; 
-	t=1785779573; h=Content-Transfer-Encoding:Cc:Cc:Date:Date:From:From:In-Reply-To:MIME-Version:Message-ID:Subject:Subject:To:To:Message-Id:Reply-To; 
-	bh=gjD6ruQIHBNzIgsVh4WW/czh/4yYBJQ/RaFhBsssmkM=; 
-	b=LL+gQi/9rkfVZNVTzfj/qvhUTlTLcWfpn3fVd7GXnxeag1qVM6cGc1Y0tgAtr0dd9xj9xSMEiD0ZT0Jfuv0fWRAuFf2x9Q8Z8Ud5BSuw5W7IbF6pSFLNtEP9lZmkLYMLEmjpBgHbQ634u9DdRW2ESB0ZSYNiRxxJQrfukF0/Q/M=
-ARC-Authentication-Results: i=1; mx.zohomail.eu;
-	dkim=pass  header.i=iusegentoo.com;
-	spf=pass  smtp.mailfrom=ali@iusegentoo.com;
-	dmarc=pass header.from=<ali@iusegentoo.com>
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; t=1785779573;
-	s=zmail; d=iusegentoo.com; i=ali@iusegentoo.com;
-	h=From:From:To:To:Cc:Cc:Subject:Subject:Date:Date:Message-ID:In-Reply-To:MIME-Version:Content-Transfer-Encoding:Message-Id:Reply-To;
-	bh=gjD6ruQIHBNzIgsVh4WW/czh/4yYBJQ/RaFhBsssmkM=;
-	b=NiP7nJLis4lRhJLwq0wRMSLZvNObYIEa4DKmxPx1rFLUQrdgl54w6lsU6ymF4hBQ
-	1s4brVloWOv6LEFiwqHWywS7UO/PhklRYg5KF+/KJ65GB/XfThszmQyQtfrd22fq5+U
-	ULY5RJHd19P77R8lqTuoryyZQQCLDD8JpMGxLB74=
-Received: by mx.zoho.eu with SMTPS id 178577957017337.401196725483146;
-	Mon, 3 Aug 2026 19:52:50 +0200 (CEST)
-From: Ali Ahmet Memis <ali@iusegentoo.com>
-To: Thomas Renninger <trenn@suse.com>,
-	Shuah Khan <shuah@kernel.org>,
-	"John B . Wyatt IV" <jwyatt@redhat.com>,
-	John Kacur <jkacur@redhat.com>
-Cc: linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-Subject: [PATCH v2 2/2] cpupower: do not count incomplete topology entries as physical cores
-Date: Mon,  3 Aug 2026 17:52:08 +0000
-Message-ID: <20260803175215.117518-3-ali@iusegentoo.com>
-X-Mailer: git-send-email 2.55.0
-In-Reply-To: <20260803175215.117518-1-ali@iusegentoo.com>
-References: <20260803175215.117518-1-ali@iusegentoo.com>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Xu04ZLaD"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1251C1F00A3F;
+	Mon,  3 Aug 2026 18:11:12 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1785780674;
+	bh=ADmuhGyPnsQrVI3q0l1mWHXbtYHb6HXx7eCGIqiSASU=;
+	h=From:To:Cc:Subject:Date;
+	b=Xu04ZLaD9z00p21u8EFlaDnNxHYGOQ7X2gwqpY/wxUy8hHvuPB+OH0AUxI7YTvq4L
+	 GVkIYu8E4u4j6ySoNlPnmNtQC8Bkv9ZmxszJ3G7kRq6NEF6xeuLsRKaBMU5vnXwVSy
+	 uHCRUMqAZLeKaIxGQDSI4yTNceFxk0XXnRSJhAvij6qWyonWQfYbgXtAA5nItnEz65
+	 HlS723qRwygvDhWETsQ/iu/E7G2+CK7AA+dDhxlirT9zC+B7rfhgZRHVjYucL85JvP
+	 hQTqs7+LyH4SnLuTlPLsDPxW4LTmHS1RXykOohJ6ufXuQY2brqiHbM/q7wjKomjPJt
+	 o/1PRgnBP7FuQ==
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+To: Linux PM <linux-pm@vger.kernel.org>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Alan Stern <stern@rowland.harvard.edu>, LKML <linux-kernel@vger.kernel.org>,
+ Julian Silver <mendaxca@gmail.com>
+Subject:
+ [PATCH v1] intel_idle: Avoid using deep idle states during initialization
+Date: Mon, 03 Aug 2026 20:11:10 +0200
+Message-ID: <5120454.31r3eYUQgx@rafael.j.wysocki>
+Organization: Linux Kernel Development - Intel
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-ZohoMailClient: External
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="UTF-8"
 
-The physical core count is derived by sorting core_info by core_cpu_list
-and counting how many distinct lists there are. The loop seeds the count
-with entry 0 unconditionally:
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-	last_cpu_list = cpu_top->core_info[0].core_cpu_list;
-	cpu_top->cores = 1;
+Commit c0f691388992 ("intel_idle: Use subsys_initcall_sync() for
+initialization") effectively made intel_idle initialize earlier which
+turns out to interfere with USB EHCI probing on some platforms [1].
+Investigation led to the conclusion that this was related to allowing
+package idle states to be used earlier than before.
 
-An entry whose topology could not be read is still a member of the array,
-carrying pkg and core of -1 and either an empty core_cpu_list or the
-literal "-1". After the sort such an entry can land at index 0, where it is
-counted as a physical core even though the pkg check inside the loop was
-meant to exclude it. The check is also applied only to the entries that
-follow, so the seed is never validated.
+Work around that issue by making intel_idle set a CPU latency QoS
+request to prevent package idle states from being used on all platforms
+supported by it for the duration of the device_initcall() initialization
+phase.
 
-Skip entries without complete topology data and count from zero, so only
-CPUs with a package, a core and a core list contribute.
-
-Fixes: f89cb9cba7a2 ("cpupower: Implement CPU physical core querying")
-Signed-off-by: Ali Ahmet Memis <ali@iusegentoo.com>
+Fixes: c0f691388992 ("intel_idle: Use subsys_initcall_sync() for initialization")
+Reported-by: Julian Silver <mendaxca@gmail.com>
+Closes: https://lore.kernel.org/linux-acpi/3353bdf3-4f33-44b1-809b-b0378bee5816@gmail.com/
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- tools/power/cpupower/lib/cpupower.c | 16 +++++++++++-----
- 1 file changed, 11 insertions(+), 5 deletions(-)
+ drivers/idle/intel_idle.c |   21 +++++++++++++++++++++
+ 1 file changed, 21 insertions(+)
 
-diff --git a/tools/power/cpupower/lib/cpupower.c b/tools/power/cpupower/lib/cpupower.c
-index 559b04f4387e..a8ee304bdcc0 100644
---- a/tools/power/cpupower/lib/cpupower.c
-+++ b/tools/power/cpupower/lib/cpupower.c
-@@ -214,11 +214,17 @@ int get_cpu_topology(struct cpupower_topology *cpu_top)
- 	qsort(cpu_top->core_info, cpus, sizeof(struct cpuid_core_info),
- 	      __compare_core_cpu_list);
+--- a/drivers/idle/intel_idle.c
++++ b/drivers/idle/intel_idle.c
+@@ -53,6 +53,7 @@
+ #include <linux/notifier.h>
+ #include <linux/cpu.h>
+ #include <linux/moduleparam.h>
++#include <linux/pm_qos.h>
+ #include <linux/sysfs.h>
+ #include <asm/cpuid/api.h>
+ #include <asm/cpu_device_id.h>
+@@ -2822,6 +2823,9 @@ error:
+ 	pr_info("Failed to adjust C-states with data from 'intel_idle.table'\n");
+ }
  
--	last_cpu_list = cpu_top->core_info[0].core_cpu_list;
--	cpu_top->cores = 1;
--	for (cpu = 1; cpu < cpus; cpu++) {
--		if (strcmp(cpu_top->core_info[cpu].core_cpu_list, last_cpu_list) != 0 &&
--		    cpu_top->core_info[cpu].pkg != -1) {
-+	last_cpu_list = NULL;
-+	cpu_top->cores = 0;
-+	for (cpu = 0; cpu < cpus; cpu++) {
-+		if (cpu_top->core_info[cpu].pkg == -1 ||
-+		    cpu_top->core_info[cpu].core == -1 ||
-+		    cpu_top->core_info[cpu].core_cpu_list[0] == '\0')
-+			continue;
++#define INTEL_IDLE_INIT_QOS	20
++static struct pm_qos_request qos_req __initdata;
 +
-+		if (!last_cpu_list ||
-+		    strcmp(cpu_top->core_info[cpu].core_cpu_list,
-+			   last_cpu_list) != 0) {
- 			last_cpu_list = cpu_top->core_info[cpu].core_cpu_list;
- 			cpu_top->cores++;
- 		}
--- 
-2.55.0
+ static int __init intel_idle_init(void)
+ {
+ 	const struct x86_cpu_id *id;
+@@ -2891,6 +2895,13 @@ static int __init intel_idle_init(void)
+ 	if (retval)
+ 		pr_warn("failed to initialized sysfs");
+ 
++	/*
++	 * Some platforms, in particular the Intel S1200BTL motherboard, have a
++	 * problem with using package idle states too early, so prevent that
++	 * from taking place until the device_initcall() phase is over.
++	 */
++	cpu_latency_qos_add_request(&qos_req, INTEL_IDLE_INIT_QOS);
++
+ 	retval = cpuidle_register_driver(&intel_idle_driver);
+ 	if (retval) {
+ 		struct cpuidle_driver *drv = cpuidle_get_driver();
+@@ -2915,6 +2926,9 @@ hp_setup_fail:
+ 	intel_idle_cpuidle_devices_uninit();
+ 	cpuidle_unregister_driver(&intel_idle_driver);
+ init_driver_fail:
++	if (cpu_latency_qos_request_active((&qos_req)))
++		cpu_latency_qos_remove_request(&qos_req);
++
+ 	intel_idle_sysfs_uninit();
+ 	free_percpu(intel_idle_cpuidle_devices);
+ 	return retval;
+@@ -2922,6 +2934,15 @@ init_driver_fail:
+ }
+ subsys_initcall_sync(intel_idle_init);
+ 
++static int __init intel_idle_init_complete(void)
++{
++	if (cpu_latency_qos_request_active((&qos_req)))
++		cpu_latency_qos_remove_request(&qos_req);
++
++	return 0;
++}
++device_initcall_sync(intel_idle_init_complete);
++
+ /*
+  * We are not really modular, but we used to support that.  Meaning we also
+  * support "intel_idle.max_cstate=..." at boot and also a read-only export of
+
+
 
