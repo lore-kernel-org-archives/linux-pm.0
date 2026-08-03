@@ -1,64 +1,126 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A5AF535AC1B;
-	Mon,  3 Aug 2026 23:01:56 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2183233438F;
+	Mon,  3 Aug 2026 23:10:47 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.137.202.133
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1785798117; cv=none; b=HiIvvU3YP7XbruBDoEUZ9FSCgOzLxuytG2uu4Kn60DR1aDYBE6g3eJlyIJ1IHNROjX8+QednnqyoqMa4HhqAn5OBdhXoBI/OQvaOMzJKhEYRzNNUn2SASCjDCqHjtqwcLBmzPJKqihNrCxiQkm9Mh3jqH9pNEvKjZ8o1i/I+ZWM=
+	t=1785798649; cv=none; b=gKhvfwrAIx1sgDKJyefY6tHzP9wYGhnzuDQ+ncvs/jXYeC90nxNkGmRJEFknd8AKCHOqMTQrX+uZVN/YWfU3JSXrtkjGk2LtOGz632YdSKba9MlpKKwhfPSi9gnrzw+K/gYnRYyyj/kryj4QwYd+a5elgFCSfDJAZMlKLH7i5Hk=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1785798117; c=relaxed/simple;
-	bh=PuTJMmP9dKz+WBRPGKDynihKXhcewSang6kZr3Z2kWU=;
-	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
-	 MIME-Version:Content-Type; b=r7fQRU/ivUdbxxiBSJ1HZ9vdkfNpa1u2LzKDQ9j9ewwHrpcqqGvhwW5yGa2u8CmUZGq1tssvgLwzg7SeBFTXOAe/GGpd664UpTng0u7g3phM7WFYxmddX50/f12LmwhqdHhkl+8v8rrlLt7XMJ0v3lsfZWiGYV1Gl0wC/WclGGg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4BF8A1F00A3E;
-	Mon,  3 Aug 2026 23:01:56 +0000 (UTC)
-Received: by venus (Postfix, from userid 1000)
-	id B05E618060E; Tue, 04 Aug 2026 01:01:54 +0200 (CEST)
-From: Sebastian Reichel <sebastian.reichel@collabora.com>
-To: linux-pm@vger.kernel.org, Fan Wu <fanwu01@zju.edu.cn>
-Cc: sre@kernel.org, linusw@kernel.org, arun.murthy@stericsson.com, 
- anton.vorontsov@linaro.org, linux-kernel@vger.kernel.org, 
- stable@vger.kernel.org
-In-Reply-To: <20260802020316.417757-1-fanwu01@zju.edu.cn>
-References: <20260802020316.417757-1-fanwu01@zju.edu.cn>
-Subject: Re: [PATCH] power: supply: ab8500_fg: fix use-after-free on remove
-Message-Id: <178579811468.234019.4487541526073009513.b4-ty@b4>
-Date: Tue, 04 Aug 2026 01:01:54 +0200
+	s=arc-20240116; t=1785798649; c=relaxed/simple;
+	bh=kcWR37WHm9NVWvIBUCzFh8nuWT3mfRj4ODNfC3d+a0c=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=lI+481o6l3AD5ACNAU9Dyf+sp57pdIRF9ZW0NxdgHsK6znng/B7/bWxOsUqebTDDLBY9SwHy2f+4kXBEk5oWDNyKzlQe6Hw7u+CKhXynXY98688paz+jyZfWXFTOVWZToGSokRgP8HBQIljkaXz1m5ruyeXa48ufMP6ZSlz66eM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=infradead.org; spf=pass smtp.mailfrom=infradead.org; dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b=eVgXmazl; arc=none smtp.client-ip=198.137.202.133
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=infradead.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=infradead.org
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="eVgXmazl"
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=infradead.org; s=bombadil.20210309; h=Content-Transfer-Encoding:
+	Content-Type:In-Reply-To:From:References:Cc:To:Subject:MIME-Version:Date:
+	Message-ID:Sender:Reply-To:Content-ID:Content-Description;
+	bh=1fQasks1koEbaOHY+SF92A17sBEYdogE4ymIU+3tgPM=; b=eVgXmazlahllG3GSV5gswSq6PS
+	XQQMytv+gYvRpNj35jA+bPw5hucoxdX1H0yy19HPqLOVvNNlGJrMMIonkqIDV8oi0MXATVwU9OJCS
+	4sY0O6GLxHNW3KoZp5jXKEoLSC4hbEFpDEh1GMmlq8xxoMjB+Ov/7L0au9OczuTTFnLZwkP+uy2pf
+	dQPGb4/uvdhchYRlrHOg7yck96yjOpt6IzeuUrDOAWC1fFH+IaZzCc0LpXJMGOh6/7pudGBw+RlJd
+	1Igr+ps0QMfIqVlvKkA7pmnzSApNDsjTMqF5K1nOP5o11meWUctQJ7gCpPGKztpp6q9Ccv3Sw1i7Z
+	fs4GKHrQ==;
+Received: from [50.53.43.113] (helo=[192.168.254.34])
+	by bombadil.infradead.org with esmtpsa (Exim 4.99.1 #2 (Red Hat Linux))
+	id 1wr1ny-00000000ei4-3en8;
+	Mon, 03 Aug 2026 23:10:46 +0000
+Message-ID: <c847bfce-59cb-48d7-9ddf-92431da74d53@infradead.org>
+Date: Mon, 3 Aug 2026 16:10:45 -0700
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] Documentation: sysfs-class-power: Update Long_Life
+ description
+To: "Derek J. Clark" <derekjohn.clark@gmail.com>,
+ Sebastian Reichel <sre@kernel.org>
+Cc: Hans de Goede <hansg@kernel.org>,
+ "Pierre-Loup A . Griffais" <pgriffais@valvesoftware.com>,
+ linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linux-api@vger.kernel.org
+References: <20260803210720.23844-1-derekjohn.clark@gmail.com>
+Content-Language: en-US
+From: Randy Dunlap <rdunlap@infradead.org>
+In-Reply-To: <20260803210720.23844-1-derekjohn.clark@gmail.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-Mailer: b4 0.15.2
 
 
-On Sun, 02 Aug 2026 02:03:16 +0000, Fan Wu wrote:
-> ab8500_fg_remove() destroys the driver workqueue while the threaded
-> interrupt handlers are still armed; they are devm-managed and freed
-> only after ->remove() returns, so a handler that fires in that
-> window queues work on the freed workqueue.
+
+On 8/3/26 2:07 PM, Derek J. Clark wrote:
+> While adding charge limiting support to the Lenovo WMI drivers, there
+> was some back and forth about whether charge_types or
+> charge_control_end_threshold was the appropriate attribute to expose a
+> battery charge limiting toggle that is fixed in the BIOS. The confusion
+> arose because the charge_control_end_threshold description closely
+> matches the functional change the hardware is making, while the
+> charge_types functionality better suits the actual an on/off toggle that
+> occurs in the BIOS. This specific scenario is not explicitly enumerated
+> in the documentation, though it is fairly common.
 > 
-> Tear the workqueue down through devm instead, registering its cleanup
-> after the power supply and before the interrupt requests.  devm then
-> frees the interrupts first, so the handlers can no longer queue work,
-> before disabling the delayed and plain work items and destroying the
-> workqueue.  Disabling the items, rather than cancelling them, keeps
-> them disabled so no producer (including the power-supply
-> external_power_changed callback) can requeue them.
+> Given that the original intention was to use it this way[1],[2], and that
+> the samsung-laptop[3], ideapad-laptop[4], and lenovo-wmi-other[5] drivers
+> all use the convention of charge_types with an exposed Long_Life and
+> Standard value for this, codify it in the Documentation to avoid confusion
+> in the future.
 > 
-> [...]
+> [1] https://lore.kernel.org/linux-pm/49993a42-aa91-46bf-acef-4a089db4c2db@redhat.com/
+> [2] https://lore.kernel.org/platform-driver-x86/20241209204051.8786-1-hdegoede@redhat.com/
+> [3] https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=de2884c6cdd3d133704ce37393590dd1c761500c
+> [4] https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=da8f2708f9b69707f4efeb432a18395e46b4666f
+> [5] https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=9ca8fc065b88b327acbfdc33454efea391639716
+> 
+> Suggested-by: Hans de Goede <hansg@kernel.org>
+> Signed-off-by: Derek J. Clark  <derekjohn.clark@gmail.com>
+> ---
+>  Documentation/ABI/testing/sysfs-class-power | 14 +++++++++-----
+>  1 file changed, 9 insertions(+), 5 deletions(-)
+> 
+> diff --git a/Documentation/ABI/testing/sysfs-class-power b/Documentation/ABI/testing/sysfs-class-power
+> index 5641f1fd5fd6..98b389845d1e 100644
+> --- a/Documentation/ABI/testing/sysfs-class-power
+> +++ b/Documentation/ABI/testing/sysfs-class-power
+> @@ -365,9 +365,12 @@ Contact:	linux-pm@vger.kernel.org
+>  Description:
+>  		Represents a battery percentage level, above which charging will
+>  		stop. Not all hardware is capable of setting this to an arbitrary
+> -		percentage. Drivers will round written values to the nearest
+> -		supported value. Reading back the value will show the actual
+> -		threshold set by the driver.
+> +		value, instead providing different minimum, maximum, or step
+> +		values. Drivers will round written values to the nearest supported
+> +		value. Reading back the value will show the actual threshold set
+> +		by the driver. For hardware that only supports a single fixed
+> +		value, use charge_types with a value of "Long Life" (vs "Standard")
+> +		instead'
 
-Applied, thanks!
+maybe		instead.
+?
+>  
+>  		Access: Read, Write
+>  
+> @@ -398,8 +401,9 @@ Description:
+>  			when to start and stop charging. Advanced users
+>  			can use this to drastically extend battery life.
+>  		Long Life:
+> -			The charger reduces its charging rate in order to
+> -			prolong the battery health.
+> +			The charger firmware reduces its charging rate and/or
+> +			maximum charging percentage to a hardware specified
+> +			fixed limit in order to prolong the battery health.
+>  		Bypass:
+>  			The charger bypasses the charging path around the
+>  			integrated converter allowing for a "smart" wall
 
-[1/1] power: supply: ab8500_fg: fix use-after-free on remove
-      commit: 75b1e88d34254f4fb7753345e21bfee47abddd7f
-
-Best regards,
 -- 
-Sebastian Reichel <sebastian.reichel@collabora.com>
+~Randy
 
