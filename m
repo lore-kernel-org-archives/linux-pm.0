@@ -1,160 +1,137 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 904EB2EC0A6;
-	Mon,  3 Aug 2026 14:02:23 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id 3543041CB31;
+	Mon,  3 Aug 2026 14:07:57 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1785765744; cv=none; b=LtpLccqw/nDousskOcLyyC4O7/YvfxbcS5Rio9dJ1b/rSj3kXq33DhrhAAuDz1v2E1L0VBl1R1sx85B/r2hEJHXeZ20ngB4mCm/80IV3+SJD7MrunA+3mxS+WgAWRZXZvIUtvOPQgMJizZv11iP05/6BZBqLMFwcJOMPWQpEffM=
+	t=1785766079; cv=none; b=mMChytUm3iFMpsgwhjUu3VERoIsUU5EH3Q5+j5xKcxzFpUnuPFN5Fp866GzcGkVxTfi5TmDo0mwBFz1N/7m44/Bu5eBduszYv/LVQl6svXrzZUp7TSFKbZw9XSU/klS9sun+okCV6DarwryO/XKRFMOyRCF0fmZCWmAJPjBNugE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1785765744; c=relaxed/simple;
-	bh=91+5d5w0IBat7XmUafS9OMB0xElt2o9m8PAQSTBabdI=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=ImXxbSchIaXhO58PlrD5NwnBI1eGc+MXLSzVRq7IKGNc22c+iRDCLC+QcJ4L0pSnyOqDkFm+wu5r3OvzUbQlocNxfq2tJ1WpUui0JFCtMzs9n9RjvR7sVQkxjfBZvi7FdNpzBSzzGdhvxnJTHvmSLXgRtAZnuEJ31qVSDa4rSLI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=dzngFhPC; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1785766079; c=relaxed/simple;
+	bh=ceDPxQhnxFVr3VRUYS6PmWrZ8RZWSqkjM6zIo7C7Y7w=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=Zzs90KbSi3mNgQjqhMhM93uB862y3USE0yImexfWujv3pKwOOQV1HD1aylshfSrnLz1c9QV11uvEalvRZLnpiuKPZjvSSOMN+VzS/TxCDeI6y0aKDH39RGkC9Shvir5Q/2NumvCQ52pZ9zJLWXNYg/xXv381ctNNMcCy5Xqi/0o=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=i/SeqjSS; arc=none smtp.client-ip=217.140.110.172
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="dzngFhPC"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 112ED1F000E9;
-	Mon,  3 Aug 2026 14:02:23 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1785765743;
-	bh=8MQ8T7NdvAwpzxaCZ1+v7WJCcrO5pFRdCLXlVF1VhRk=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=dzngFhPCD8XmmP7MUsAOv0G7EzXOnMwETJWSUldS5GWOpWZnu5FQ5OBt6Tk1GhkWY
-	 sL8QLYACy9jYmtNx+rqZfhjhaec8bqDrTylFd7PAS3cYSj3d0S7LypEYaHuj19/sSz
-	 ixpHt7poJV7vHiTmKODx3r2187gK//eJU/RG2WCgXlrbGz966iFHzbz7MmMgkq21nq
-	 XQdC7MT3PtEhr9/D8AmBgHD+fUQ6hYwADW+3rFiG+G96meo1RsRGUKwXEoYHFqluFK
-	 Z1GSDfEDc0A5fwAHN4VaDzyDUtlophV8GKRctLd2NBNTcg88Nc6gTM+/g3HT9E6Pl9
-	 OPLXGzdvVKqmQ==
-Date: Mon, 3 Aug 2026 09:02:22 -0500
-From: Rob Herring <robh@kernel.org>
-To: Shivendra Pratap <shivendra.pratap@oss.qualcomm.com>
-Cc: Lorenzo Pieralisi <lpieralisi@kernel.org>,
-	Arnd Bergmann <arnd@arndb.de>,
-	Bjorn Andersson <andersson@kernel.org>,
-	Sebastian Reichel <sre@kernel.org>,
-	Souvik Chakravarty <Souvik.Chakravarty@arm.com>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Andy Yan <andy.yan@rock-chips.com>,
-	Matthias Brugger <matthias.bgg@gmail.com>,
-	Mark Rutland <mark.rutland@arm.com>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Konrad Dybcio <konradybcio@kernel.org>,
-	John Stultz <john.stultz@linaro.org>,
-	Moritz Fischer <moritz.fischer@ettus.com>,
-	"Rafael J. Wysocki" <rafael@kernel.org>,
-	Daniel Lezcano <daniel.lezcano@kernel.org>,
-	Christian Loehle <christian.loehle@arm.com>,
-	Lee Jones <lee@kernel.org>, Ulf Hansson <ulfh@kernel.org>,
-	Pavan Kondeti <pavan.kondeti@oss.qualcomm.com>,
-	Bartosz Golaszewski <brgl@kernel.org>,
-	Sudeep Holla <sudeep.holla@kernel.org>,
-	Florian Fainelli <florian.fainelli@broadcom.com>,
-	Krzysztof Kozlowski <krzk@kernel.org>,
-	Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>,
-	Mukesh Ojha <mukesh.ojha@oss.qualcomm.com>,
-	Andre Draszik <andre.draszik@linaro.org>,
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	Kathiravan Thirumoorthy <kathiravan.thirumoorthy@oss.qualcomm.com>,
-	linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org,
-	devicetree@vger.kernel.org, mfd@lists.linux.dev,
-	Srinivas Kandagatla <srini@kernel.org>
-Subject: Re: [PATCH v24 05/12] dt-bindings: arm: Document reboot mode magic
-Message-ID: <20260803140222.GA3188037-robh@kernel.org>
-References: <20260803-arm-psci-system_reset2-vendor-reboots-v24-0-889281373870@oss.qualcomm.com>
- <20260803-arm-psci-system_reset2-vendor-reboots-v24-5-889281373870@oss.qualcomm.com>
+	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="i/SeqjSS"
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 77FF3143D;
+	Mon,  3 Aug 2026 07:07:53 -0700 (PDT)
+Received: from [10.1.39.91] (e127648.arm.com [10.1.39.91])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id B0EF53F632;
+	Mon,  3 Aug 2026 07:07:55 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
+	t=1785766077; bh=ceDPxQhnxFVr3VRUYS6PmWrZ8RZWSqkjM6zIo7C7Y7w=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=i/SeqjSSME8Sy7eXQlShpWpML6EyiYQkYK+ZmjfwbwbcHRnrWxG902RpMFKd0DwDy
+	 FEPaVd0CQRhOO9rHj2xiIFnefSvJCnBkI4uO3PUvD4jfTL0mUFsVzkki5NZYfQ1au5
+	 Q1iAW+WrQBpj93VBmOeLN91Y7XV0zMLj92b7vkkQ=
+Message-ID: <033eb158-936a-4f79-a134-80402fb018e8@arm.com>
+Date: Mon, 3 Aug 2026 15:07:54 +0100
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260803-arm-psci-system_reset2-vendor-reboots-v24-5-889281373870@oss.qualcomm.com>
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 0/3] ACPI: CPPC: Reduce .target() callback overhead
+To: "Rafael J . Wysocki" <rafael@kernel.org>,
+ Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org,
+ linux-kernel@vger.kernel.org, Len Brown <lenb@kernel.org>,
+ Jie Zhan <zhanjie9@hisilicon.com>, Lifeng Zheng <zhenglifeng1@huawei.com>,
+ Pierre Gondois <pierre.gondois@arm.com>, Sumit Gupta <sumitg@nvidia.com>,
+ Sudeep Holla <sudeep.holla@arm.com>,
+ Ionela Voinescu <ionela.voinescu@arm.com>,
+ Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>
+References: <20260724134251.1632824-1-christian.loehle@arm.com>
+Content-Language: en-US
+From: Christian Loehle <christian.loehle@arm.com>
+In-Reply-To: <20260724134251.1632824-1-christian.loehle@arm.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-On Mon, Aug 03, 2026 at 03:13:36PM +0530, Shivendra Pratap wrote:
-> Add bindings to describe vendor-specific reboot modes. Values here
-> correspond to valid parameters to vendor-specific reset types in PSCI
-> SYSTEM_RESET2 call.
+On 7/24/26 14:42, Christian Loehle wrote:
+> cppc-cpufreq reaches cppc_set_perf() from every target callback.  For
+> direct SystemMemory controls, that path currently does several steps
+> which are unnecessary once the immutable _CPC layout is known:
 > 
-> Signed-off-by: Shivendra Pratap <shivendra.pratap@oss.qualcomm.com>
-> ---
->  Documentation/devicetree/bindings/arm/psci.yaml | 58 +++++++++++++++++++++++++
->  1 file changed, 58 insertions(+)
+>   - a full-width write first reads the access unit and merges the value.
+>   - every write takes the descriptor's RMW lock, even when its access unit
+>     is not shared with another _CPC entry.
+>   - cppc_set_perf() evaluates the same three PCC predicates at each phase
+>     of the transaction.
 > 
-> diff --git a/Documentation/devicetree/bindings/arm/psci.yaml b/Documentation/devicetree/bindings/arm/psci.yaml
-> index 6e2e0c551841..7d6a86690a2e 100644
-> --- a/Documentation/devicetree/bindings/arm/psci.yaml
-> +++ b/Documentation/devicetree/bindings/arm/psci.yaml
-> @@ -98,6 +98,41 @@ properties:
->        [1] Kernel documentation - ARM idle states bindings
->          Documentation/devicetree/bindings/cpu/idle-states.yaml
->  
-> +  reboot-mode:
-> +    type: object
-> +    $ref: /schemas/power/reset/reboot-mode.yaml#
-> +    unevaluatedProperties: false
-> +    properties:
-> +      # "mode-normal" is just SYSTEM_RESET
-> +      mode-normal: false
-> +    patternProperties:
-> +      "^mode-.*$":
-> +        minItems: 1
-> +        maxItems: 3
-> +        items:
-> +          - description: arg1 (vendor-specific SYSTEM_RESET2 reset_type)
-> +            allOf:
+> Remove those costs while retaining the existing conservative paths for
+> partial fields, overlapping or malformed access units, and PCC controls.
+> 
+> The series was tested on Arm Power-Orion O6 and AmpereOne systems using
+> cppc-cpufreq and schedutil.  An rt-app task pinned to one CPU ran for
+> 500 us every 2 ms with uclamp.min=512, for 5000 periods per run.  schedutil
+> rate_limit_us was 1000.  cppc_cpufreq_fast_switch() latency was measured
+> for 100 ten-second runs.  Each sample is the mean callback latency within
+> one run, and the table reports the median and sample standard deviation
+> of those samples.
+> 
+> Orion O6               median       stdev       callbacks
+> baseline               5703 ns      307 ns       188017
+> complete series        5023 ns      240 ns       188209
+> ==> 680 ns (11.9%) reduction
+> 
+> AmpereOne              median       stdev
+> baseline               2090 ns      157 ns
+> complete series      1907.5 ns      140 ns
+> ==> 182.5 ns (8.7%) reduction
+> 
+> The cumulative intermediate results on the Orion O6 attribute roughly half
+> of the gain to each of the first two patches: avoiding the read reduced
+> the median by 284 ns (5.0%), and avoiding the lock reduced it by another
+> 336 ns (6.2%).
+> Together they account for 620 ns of the 680 ns total reduction.
+> 
+> With the same arm64 configuration and GCC 11.4, caching the PCC predicate
+> also reduces cppc_set_perf() from 1124 to 884 bytes.  The generated
+> function has 60 fewer instructions, 17 fewer loads and 20 fewer branches.
+> 
+> This series is based on the CPPC fixes posted at (already queued):
+> https://lore.kernel.org/lkml/20260722093825.1030594-1-christian.loehle@arm.com/
+> 
+> and the separately posted fix still under review:
+> https://lore.kernel.org/lkml/20260724104042.1481804-1-christian.loehle@arm.com/
+> 
+> PS:
+> There's a final optimization that I actually wanted to make but decided to
+> split it out for now as it somewhat replicated Sumit's series:
+> Skipping redundant perf ctrl writes in cpufreq-cppc if registers are non-PCC
+> and !shared (because the values are unchanged, the
+> !autonomous-common-case), but that requires the driver to have a more
+> complex caching- and atomic-updating machinery in place, similar to
+> hotplug. As opposed to this series the optimization would be for the
+> microcontroller handling the CPPC requests, which may be shared across
+> many CPUs and therefore redundant requests can increase the dvfs
+> transition latency.
+> That patch will follow once Sumit's is queued:
+> https://lore.kernel.org/lkml/20260716153820.2007095-1-sumitg@nvidia.com/
+> 
+> Christian Loehle (3):
+>   ACPI: CPPC: Avoid unnecessary reads for full-width writes
+>   ACPI: CPPC: Avoid locking standalone full-width registers
+>   ACPI: CPPC: Evaluate performance-control PCC use once
+> 
+>  drivers/acpi/cppc_acpi.c | 135 +++++++++++++++++++++++++++++++--------
+>  include/acpi/cppc_acpi.h |   5 +-
+>  2 files changed, 113 insertions(+), 27 deletions(-)
+> 
+> 
+> base-commit: 1590cf0329716306e948a8fc29f1d3ee87d3989f
+> prerequisite-patch-id: 4c1f4063800e3658717eb77e43af13dad52d55cc
+> prerequisite-patch-id: 5c40d9f099543123c9b904d18ce651e740fbefb8
+> prerequisite-patch-id: 7202391dca8f31f9eb8f6d59fc753b3ce665e103
 
-Don't need allOf here.
 
-> +              - $ref: /schemas/types.yaml#/definitions/uint32
-> +              - minimum: 0x80000000
-> +          - description: arg2 (cookie_lo in 2-cell form, cookie_hi in 3-cell form)
-> +            $ref: /schemas/types.yaml#/definitions/uint32
-> +          - description: arg3 (cookie_lo in 3-cell form)
-> +            $ref: /schemas/types.yaml#/definitions/uint32
-> +        description: |
-> +          Describes a PSCI SYSTEM_RESET2 vendor-specific reset type. The string
-> +          after "mode-" maps a reboot mode to a vendor-specific reset.
+I was about the rebase and resend this series but noticed it still applies cleanly
+on 7.2-rc6 + ACPI: CPPC: Avoid Desired Performance reads on ACPI 6.6+
+https://lore.kernel.org/all/cover.1785749175.git.christian.loehle@arm.com/
 
-Blank line if this is a paragraph.
-
-> +          A vendor-specific reset takes two arguments, a 32-bit reset_type and a
-> +          64-bit cookie. The arguments are encoded as up to three 32-bit cells.
-> +          Each mode property is encoded as mode-xxx = <arg1[, arg2[, arg3]]>,
-> +          where:
-
-blank line
-
-> +          - arg1 is reset_type and must be >= 0x80000000.
-> +          - In 2-cell form, arg2 is lower 32 bits of cookie.
-> +          - In 3-cell form, arg2 is high 32 bits of cookie
-> +            and arg3 is low 32 bits of cookie.
-
-Indent the list by 2 more spaces.
-
-> +
-> +          All values should be provided as per the PSCI SYSTEM_RESET2
-> +          specification.
-> +
->  patternProperties:
->    "^power-domain-":
->      $ref: /schemas/power/power-domain.yaml#
-> @@ -137,6 +172,15 @@ allOf:
->        required:
->          - cpu_off
->          - cpu_on
-> +  - if:
-> +      not:
-> +        properties:
-> +          compatible:
-> +            contains:
-> +              const: arm,psci-1.0
-
-SYSTEM_RESET2 was introduced in PSCI 1.1...
-
-> +    then:
-> +      properties:
-> +        reboot-mode: false
+Any comments on this?
