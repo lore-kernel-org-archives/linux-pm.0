@@ -1,110 +1,141 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-vs1-f51.google.com (mail-vs1-f51.google.com [209.85.217.51])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AC2473BCD17;
-	Mon,  3 Aug 2026 11:44:56 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E27E4331ECF
+	for <linux-pm@vger.kernel.org>; Mon,  3 Aug 2026 12:01:32 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.217.51
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1785757497; cv=none; b=nIAvGQa2C8lC6JKPgewcxieR8YLIMLU3Zde+lOyA7IcXnbBwOyTpwUaKBOg85QRh///bK4VUIrSc3qeYy9hVC4gpykxvd9E9q4ijp30p6HdXKhP2tzp/NR/q1b0jY9l9cwyMOlrvaXpTvfxrEe4smZ8r04IFhhdejOVkRmI1DOU=
+	t=1785758496; cv=none; b=lW4R0kqtphYWaSrzpzeh1rIUE4LAAM8y+S8N2TYXfPnEHp/2j7/mEtCbYE4/ntmL4w/GBEGKQVWYlb4kHiXv1smIu9XWWQ0t43jr39iP8Ltyt1O8S5H99ITCD86A33hhKiixdDZsPHG5139Gv3vyssjBVnlrqXVPtI0jPGAMH8M=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1785757497; c=relaxed/simple;
-	bh=J8PRGWV3+I0wXpCaHk5I0Izh5G9sTqdLEINNXqnVHwM=;
-	h=Date:Content-Type:MIME-Version:From:Cc:To:In-Reply-To:References:
-	 Message-Id:Subject; b=TAT4sypIWCu8NxcHIuAT7ou9X9KRZ445b4cK7Ltva3L3Q8Dekaaguig1z8WE0bgTgoW2eYI2v89gokLdWt6RbTrWA5fUvdd123viPSKpaoMAxLh4oF2RBr3yynHOy0k8P5AAMCOfwOUtrqxw7JhEJLa1EP6joPf4uHp5PckYh3Y=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=fail (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=l3FjwlGI reason="signature verification failed"; arc=none smtp.client-ip=100.103.45.18
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="l3FjwlGI"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 662DE1F000E9;
-	Mon,  3 Aug 2026 11:44:55 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1785757496;
-	bh=8YQ2M9Eps1JKx10yr4780R1ecWZB0HlgXUHXNalwtiM=;
-	h=Date:From:Cc:To:In-Reply-To:References:Subject;
-	b=l3FjwlGIvY9J5WKcaj4U+GHHJ0vSTZaGjUixFKx7WZt0ScOo/BXhTkDF14UlaeWpc
-	 GS+60FdPXJC2+HBGNfM815HDuGPwFTVT2ZMnIYj5Qqpp2feLlNTTkGKY1FDdZuu13N
-	 9HEbTx8Hs8V2b68uOQF1IjA0Ra9kNb91CiPSQShAG+XdLbXXxvBJOq+KxVAT/IY/Fi
-	 OCTiBlG1fa8naz1MYhSsv29Xqa60dU5Y7HgoD3PVylPvEz9cls3/EMcfStwYRpoee6
-	 vmyofz453SgmnpYcoUGzSXmGhYs4tT/zboqO7Y/CymG1XWULb56CvCkZRsw3MdTHZy
-	 RUiZFTLw6OXzw==
-Date: Mon, 03 Aug 2026 06:44:53 -0500
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+	s=arc-20240116; t=1785758496; c=relaxed/simple;
+	bh=okWIOwpaAfBMcyH50oSVfKzplqlhnVTdVosRYGHHdGI=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=U7FuvAemnyEEAn9lHWcQCmR0t7AOTNyuNcCkhApt592eYKVlaFb1LP/kQKZPxEnqHW6JcCAkxaK7qjlRDgSqtN6e2mz655CN9m25FLxf2l758PUDyHZrHMOvBG0j7snI0T+pMqMHYK5OBJmaIMnK/5E4IUsNsmS5IwEsaiKbQsY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org; spf=pass smtp.mailfrom=gmail.com; arc=none smtp.client-ip=209.85.217.51
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+Received: by mail-vs1-f51.google.com with SMTP id ada2fe7eead31-74ab6c88052so1032272137.2
+        for <linux-pm@vger.kernel.org>; Mon, 03 Aug 2026 05:01:32 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1785758492; x=1786363292;
+        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
+         :references:mime-version:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to:content-type;
+        bh=/3F2htAaSgkkxvZ/5MPPccMC2gln25kjMNeYIdiRBb0=;
+        b=Hug45E4Gbe/dlTOzkp4WRfcCYzSrlkJ4r779ggPI/mYBasLmw8dFgmgWzG9SalOHja
+         GvJlhqpDyy3O1MICEJDk9nj52bQW2tlC9vLV+YlskPNtlnyQxvnVefy30PlKz5kucSAQ
+         FGL5xUA8iB4GBOnaZ3y6FRqXL7ysLuVxwAfh19QkjHIkZ/J1WRvgksxS+R9GYzsgE+TM
+         qtm8vXjnrJXwF5FrQlQNcSES06T7QmZ+MdI5/TZVBSa3mMRCFPUe0gJFTRoAxQ+XDrz/
+         EDEoH6c13meila2APZcVkPkgsgQoXyW/i7rbBI3HU+t6bm8BVmdNUqex/0khhA3AygXs
+         X2Yg==
+X-Forwarded-Encrypted: i=1; AHgh+RpMhu919/WBTj5QjTpxH3l0LSI/5tE7zR7m90op0OcLijeOuGZJkX0OmaMEbmjHx14fkYCoFzLMAQ==@vger.kernel.org
+X-Gm-Message-State: AOJu0YytBmTHAHdJhIZngcqmxh7EVoCCmvc4sXx/6DgOa4d40SVnDe9O
+	AE0w4s7W0pwFL8B2CjI/svzWoKkOn9hZjn8ED0tu/BpJh7UYCPOi0wi6is3twwhi
+X-Gm-Gg: AR+sD12shocBt+kdyHyaFtBaWY/K3YQficvgkT5X+3j4qya/F1Ef+v8OB/YSg70oi+e
+	UkTGw8ERjisGk12SqJm41VV1iSLtmrtqLOw7e3pEPeSvqH7J/agu/JVJAsaBek7JFqIdD7U4xkf
+	ii3hCjRSc5c6I8BtprM2x7gOFBgBTXWFoBt9LQYyMRn7Vr+Xll/xgdaxQwuS2IuVbvIExT+F2vU
+	zBzjDzCMPmeolO4K920SKkMZoGB8kq5F5kCGotsfrYW4HLkBHVhd3K+AgU4crVkfKTRJbZ34ZBf
+	W+d7NK0uSom1P8j8AkUQDWhNhLT7SchQsUGHCuY3c0aYTWJJxPTXSgx1CT3rbFCLAIi9NPOzTAd
+	IScM3eTVo8/e9JPua+qChaLciLhePGtncjy5etuCIkof78ZOlYA/QI6wAOy2HunAan5AgMcL8bs
+	eWK/2y9RqXJX2zkWgkazHVxdQEB4e5tOULfDDC6s/2EDPZkvc9zL6pdyJW6PvVyKkdF/9XDNYrA
+	SZLjav8SUUD7hJ/mz1pd7lLqjq6LQ==
+X-Received: by 2002:a05:6102:f8c:b0:74d:ce65:4739 with SMTP id ada2fe7eead31-75b22162230mr6203871137.8.1785758491654;
+        Mon, 03 Aug 2026 05:01:31 -0700 (PDT)
+Received: from mail-vk1-f178.google.com (mail-vk1-f178.google.com. [209.85.221.178])
+        by smtp.gmail.com with ESMTPSA id ada2fe7eead31-759c905316csm5943315137.8.2026.08.03.05.01.30
+        for <linux-pm@vger.kernel.org>
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Mon, 03 Aug 2026 05:01:30 -0700 (PDT)
+Received: by mail-vk1-f178.google.com with SMTP id 71dfb90a1353d-5c2c96286f0so1595917e0c.3
+        for <linux-pm@vger.kernel.org>; Mon, 03 Aug 2026 05:01:30 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AHgh+RpRGX4Gf72ZDtLsvDx+J4jVrhV5gRqPrQQD/RPwVTlZhHBucm5/P6nBqfEKu/81pgUXP9lMIwKLfA==@vger.kernel.org
+X-Received: by 2002:a05:6122:c94:b0:5a0:370:f12c with SMTP id
+ 71dfb90a1353d-5c3877ee9a2mr2551587e0c.11.1785758489767; Mon, 03 Aug 2026
+ 05:01:29 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-From: "Rob Herring (Arm)" <robh@kernel.org>
-Cc: Florian Fainelli <florian.fainelli@broadcom.com>, 
- linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rafael@kernel.org>, 
- Mark Rutland <mark.rutland@arm.com>, Lee Jones <lee@kernel.org>, 
- Krzysztof Kozlowski <krzk@kernel.org>, 
- Konrad Dybcio <konradybcio@kernel.org>, 
- Bjorn Andersson <andersson@kernel.org>, 
- Lorenzo Pieralisi <lpieralisi@kernel.org>, 
- Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>, 
- Ulf Hansson <ulfh@kernel.org>, 
- Souvik Chakravarty <Souvik.Chakravarty@arm.com>, 
- Mukesh Ojha <mukesh.ojha@oss.qualcomm.com>, Arnd Bergmann <arnd@arndb.de>, 
- Conor Dooley <conor+dt@kernel.org>, linux-arm-kernel@lists.infradead.org, 
- Sebastian Reichel <sre@kernel.org>, Srinivas Kandagatla <srini@kernel.org>, 
- Andy Yan <andy.yan@rock-chips.com>, 
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
- Krzysztof Kozlowski <krzk+dt@kernel.org>, 
- Matthias Brugger <matthias.bgg@gmail.com>, 
- Christian Loehle <christian.loehle@arm.com>, 
- Daniel Lezcano <daniel.lezcano@kernel.org>, 
- Pavan Kondeti <pavan.kondeti@oss.qualcomm.com>, 
- Sudeep Holla <sudeep.holla@kernel.org>, 
- Kathiravan Thirumoorthy <kathiravan.thirumoorthy@oss.qualcomm.com>, 
- devicetree@vger.kernel.org, Andre Draszik <andre.draszik@linaro.org>, 
- Bartosz Golaszewski <brgl@kernel.org>, John Stultz <john.stultz@linaro.org>, 
- mfd@lists.linux.dev, linux-kernel@vger.kernel.org, 
- linux-arm-msm@vger.kernel.org, Moritz Fischer <moritz.fischer@ettus.com>
-To: Shivendra Pratap <shivendra.pratap@oss.qualcomm.com>
-In-Reply-To: <20260803-arm-psci-system_reset2-vendor-reboots-v24-5-889281373870@oss.qualcomm.com>
-References: <20260803-arm-psci-system_reset2-vendor-reboots-v24-0-889281373870@oss.qualcomm.com>
- <20260803-arm-psci-system_reset2-vendor-reboots-v24-5-889281373870@oss.qualcomm.com>
-Message-Id: <178575749351.2483197.6720070407824857023.robh@kernel.org>
-Subject: Re: [PATCH v24 05/12] dt-bindings: arm: Document reboot mode magic
+References: <cover.1783505329.git.geert+renesas@glider.be> <49726acff0fee1c3606e83c4f242ef6aad25b4b8.1783505329.git.geert+renesas@glider.be>
+ <20260710-adventurous-burgundy-chimera-b2fff9@quoll> <CAMuHMdV=ckONBbTYELPJU8YWoNzdu3PJ95VR8cz+f_7dUeiPUw@mail.gmail.com>
+ <20260716214924.GA1477674-robh@kernel.org>
+In-Reply-To: <20260716214924.GA1477674-robh@kernel.org>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Mon, 3 Aug 2026 14:01:18 +0200
+X-Gmail-Original-Message-ID: <CAMuHMdU0ss6wUEdjC+OYa3iQS439aJ8b_d9M2ws7Ayn4_kOyMQ@mail.gmail.com>
+X-Gm-Features: AUfX_mxcGqdlDliYxmfdCYiKuiCZlBR4i5y6ZczTyLGv0wHHqfKRM8R7C8jMMeU
+Message-ID: <CAMuHMdU0ss6wUEdjC+OYa3iQS439aJ8b_d9M2ws7Ayn4_kOyMQ@mail.gmail.com>
+Subject: Re: [PATCH v2 05/10] dt-bindings: clock: renesas,r8a78000-cpg: Add
+ firmware property
+To: Rob Herring <robh@kernel.org>
+Cc: Krzysztof Kozlowski <krzk@kernel.org>, Sudeep Holla <sudeep.holla@kernel.org>, 
+	Cristian Marussi <cristian.marussi@arm.com>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+	Conor Dooley <conor+dt@kernel.org>, Saravana Kannan <saravanak@kernel.org>, 
+	Ulf Hansson <ulfh@kernel.org>, "Rafael J . Wysocki" <rafael@kernel.org>, 
+	Philipp Zabel <p.zabel@pengutronix.de>, Michael Turquette <mturquette@baylibre.com>, 
+	Stephen Boyd <sboyd@kernel.org>, Brian Masney <bmasney@redhat.com>, 
+	Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>, Vinod Koul <vkoul@kernel.org>, 
+	Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>, Kevin Hilman <khilman@baylibre.com>, 
+	Florian Fainelli <florian.fainelli@broadcom.com>, 
+	Wolfram Sang <wsa+renesas@sang-engineering.com>, 
+	Marek Vasut <marek.vasut+renesas@mailbox.org>, 
+	Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>, arm-scmi@vger.kernel.org, 
+	linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, 
+	linux-pm@vger.kernel.org, linux-clk@vger.kernel.org, 
+	linux-renesas-soc@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
 
+Hi Rob,
 
-On Mon, 03 Aug 2026 15:13:36 +0530, Shivendra Pratap wrote:
-> Add bindings to describe vendor-specific reboot modes. Values here
-> correspond to valid parameters to vendor-specific reset types in PSCI
-> SYSTEM_RESET2 call.
-> 
-> Signed-off-by: Shivendra Pratap <shivendra.pratap@oss.qualcomm.com>
-> ---
->  Documentation/devicetree/bindings/arm/psci.yaml | 58 +++++++++++++++++++++++++
->  1 file changed, 58 insertions(+)
-> 
+On Thu, 16 Jul 2026 at 23:49, Rob Herring <robh@kernel.org> wrote:
+> On Fri, Jul 10, 2026 at 01:02:39PM +0200, Geert Uytterhoeven wrote:
+> > On Fri, 10 Jul 2026 at 12:21, Krzysztof Kozlowski <krzk@kernel.org> wrote:
+> > > On Wed, Jul 08, 2026 at 12:16:23PM +0200, Geert Uytterhoeven wrote:
+> > > > Add a firmware property, for systems where SCMI must be used instead of
+> > > > direct hardware access.
+> > > >
+> > > > Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+> > > > ---
+> > > > v2:
+> > > >   - Spin off from "dt-bindings: clock: Document Renesas R-Car X5H Clock
+> > > >     Pulse Generator".
+> > > > ---
+> > > >  .../devicetree/bindings/clock/renesas,r8a78000-cpg.yaml    | 7 +++++++
+> > > >  1 file changed, 7 insertions(+)
+> > > >
+> > > > diff --git a/Documentation/devicetree/bindings/clock/renesas,r8a78000-cpg.yaml b/Documentation/devicetree/bindings/clock/renesas,r8a78000-cpg.yaml
+> > > > index 4e23bba334382346..fc499e7cf52e4f0c 100644
+> > > > --- a/Documentation/devicetree/bindings/clock/renesas,r8a78000-cpg.yaml
+> > > > +++ b/Documentation/devicetree/bindings/clock/renesas,r8a78000-cpg.yaml
+> > > > @@ -35,6 +35,12 @@ properties:
+> > > >        <dt-bindings/clock/renesas,r8a78000-cpg.h>.
+> > > >      const: 1
+> > > >
+> > > > +  firmware:
+> > >
+> > > RPi is doing similar, but I have doubts. It looks way too close to
+> > > generic "syscon" which is disallowed.
+> > >
+> > > I think this should be vendor+purpose specific, e.g.:
+> > > "renesas,scmi-transport" or "renesas,scmi-firmware"
+>
+> If you can tell me the resource that a 'firmware' provider provides then
+> it is fine, but you can't.
 
-My bot found errors running 'make dt_binding_check' on your patch:
+It provides a firmware API, which is not available until the firmware
+provider is initialized.
 
-yamllint warnings/errors:
+Thanks!
 
-dtschema/dtc warnings/errors:
-/builds/robherring/dt-review-ci/linux/Documentation/devicetree/bindings/arm/psci.yaml: properties:reboot-mode:patternProperties:^mode-.*$: {'minItems': 1, 'maxItems': 3, 'items': [{'description': 'arg1 (vendor-specific SYSTEM_RESET2 reset_type)', 'allOf': [{'$ref': '/schemas/types.yaml#/definitions/uint32'}, {'minimum': 2147483648}]}, {'description': 'arg2 (cookie_lo in 2-cell form, cookie_hi in 3-cell form)', '$ref': '/schemas/types.yaml#/definitions/uint32'}, {'description': 'arg3 (cookie_lo in 3-cell form)', '$ref': '/schemas/types.yaml#/definitions/uint32'}], 'description': 'Describes a PSCI SYSTEM_RESET2 vendor-specific reset type. The string\nafter "mode-" maps a reboot mode to a vendor-specific reset.\nA vendor-specific reset takes two arguments, a 32-bit reset_type and a\n64-bit cookie. The arguments are encoded as up to three 32-bit cells.\nEach mode property is encoded as mode-xxx = <arg1[, arg2[, arg3]]>,\nwhere:\n- arg1 is reset_type and must be >= 0x80000000.\n- In 2-cel
- l form, arg2 is lower 32 bits of cookie.\n- In 3-cell form, arg2 is high 32 bits of cookie\n  and arg3 is low 32 bits of cookie.\n\nAll values should be provided as per the PSCI SYSTEM_RESET2\nspecification.\n'} should not be valid under {'required': ['maxItems']}
-	hint: "maxItems" is not needed with an "items" list
-	from schema $id: http://devicetree.org/meta-schemas/items.yaml
+Gr{oetje,eeting}s,
 
-doc reference errors (make refcheckdocs):
+                        Geert
 
-See https://patchwork.kernel.org/project/devicetree/patch/20260803-arm-psci-system_reset2-vendor-reboots-v24-5-889281373870@oss.qualcomm.com
+-- 
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-The base for the series is generally the latest rc1. A different dependency
-should be noted in *this* patch.
-
-If you already ran 'make dt_binding_check' and didn't see the above
-error(s), then make sure 'yamllint' is installed and dt-schema is up to
-date:
-
-pip3 install dtschema --upgrade
-
-Please check and re-submit after running the above command yourself. Note
-that DT_SCHEMA_FILES can be set to your schema file to speed up checking
-your schema. However, it must be unset to test all examples with your schema.
-
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
