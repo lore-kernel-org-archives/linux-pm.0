@@ -1,73 +1,73 @@
 Received: from flow-a8-smtp.messagingengine.com (flow-a8-smtp.messagingengine.com [103.168.172.143])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0A0894A0C;
-	Mon,  3 Aug 2026 09:42:11 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1DF2335F19D;
+	Mon,  3 Aug 2026 09:42:22 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=103.168.172.143
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1785750133; cv=none; b=pLzbmoqAt0pi93ILhdLqrVYo5A4S3SaNOAHCks+I8+SnP1kwc8t7G1Xf08lZQArHpVOlT+gKBjwIUyERFgoS4mjNxPNiqTTRmYcDeEC9S5Gwp0O0tT3drYBzKBCnl+SDAM0XArlf31zGb5bzsk97HkZnZepl2GZAXs7ghf8FMCY=
+	t=1785750145; cv=none; b=ecuWFOa086EjQyR9/qfhG4clSA8FCaxaWxF/16qQB8MwqbXIIAmg+/fV3/hQv+J8WxAAEXi1juZFYp8Df6Y9z16Tlce+4hxYtzKk+aHDtfvYUydsHKPlx3SqvrxSyZLO9qD2BjZdT1qQ8uftIBnuNlEisAHDcaeT0Qw/Vs8JuVs=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1785750133; c=relaxed/simple;
-	bh=NYWeX1zT+UWLIEpQ6DXkvnWhzoaOxj6r57zcKYjDIXg=;
+	s=arc-20240116; t=1785750145; c=relaxed/simple;
+	bh=M6gODdRFcAD5obPQuWlSGHXEBC72r/h+I5lTX6xsebo=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=qgKjJddFfdQnRaZVFAgI9SXd1Az+NUF3JIkwc9kCpxEk86PJUYUzy+KKqjWM3WdvrwobJTcdsbHQmZ/0/Qo7njaItq/+0iq7+Utgh/1CJxnfl1zsjxN1t1PiY9uyKuRI6sSOVRCndaFRWAW1MFQh/mpjlqqw4E8RUI4b7mK6f9s=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gahingwoo.com; spf=pass smtp.mailfrom=gahingwoo.com; dkim=pass (2048-bit key) header.d=gahingwoo.com header.i=@gahingwoo.com header.b=MciCjb6Q; dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b=gBTserxC; arc=none smtp.client-ip=103.168.172.143
+	 MIME-Version; b=mv40Yc8CF4lK8hJgSf/m7ub6lYnaB6LIiKsYiDd85baQCd7bbGOQ/iT5uWpcCVf9r3Pb8g6wNJIW6koVlRWDg9M1+pq2QCeLrDz9ioOHIlkCWfRjHWMOxzZ00oJqxYasWCEBOKEaccElCxYGEfIpg8u0WA5uNigE2vrJX6lKAko=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gahingwoo.com; spf=pass smtp.mailfrom=gahingwoo.com; dkim=pass (2048-bit key) header.d=gahingwoo.com header.i=@gahingwoo.com header.b=fMqDsNlB; dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b=R4Jcbtwr; arc=none smtp.client-ip=103.168.172.143
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gahingwoo.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gahingwoo.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gahingwoo.com header.i=@gahingwoo.com header.b="MciCjb6Q";
-	dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b="gBTserxC"
+	dkim=pass (2048-bit key) header.d=gahingwoo.com header.i=@gahingwoo.com header.b="fMqDsNlB";
+	dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b="R4Jcbtwr"
 Received: from phl-compute-07.internal (phl-compute-07.internal [10.202.2.47])
-	by mailflow.phl.internal (Postfix) with ESMTP id 1FA5F138007E;
-	Mon,  3 Aug 2026 05:42:11 -0400 (EDT)
+	by mailflow.phl.internal (Postfix) with ESMTP id 3F7641380099;
+	Mon,  3 Aug 2026 05:42:22 -0400 (EDT)
 Received: from phl-frontend-04 ([10.202.2.163])
-  by phl-compute-07.internal (MEProxy); Mon, 03 Aug 2026 05:42:11 -0400
+  by phl-compute-07.internal (MEProxy); Mon, 03 Aug 2026 05:42:22 -0400
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gahingwoo.com;
 	 h=cc:cc:content-transfer-encoding:content-type:date:date:from
 	:from:in-reply-to:in-reply-to:message-id:mime-version:references
-	:reply-to:subject:subject:to:to; s=fm1; t=1785750131; x=
-	1785753731; bh=vfiH5V16AyO9stikNxuMC7UErEwVoICawUpn+9ckh+U=; b=M
-	ciCjb6Q3VntZWJBFZT4daNuBP3KseLRFsSHgcvXDNZfG5jYvJdPO9jHaoDFFEXP7
-	8EEAoTQBi21bSeKWaYicmI5TVHY6JRlho02H0yuURY56agk3D138VJotNzp2Fepk
-	wduxmmjxVNc+2pYSRJGXO/3pK53V40IY0rgDXozyUo2ASOVV35REt50q/kWmly6V
-	XiIFbhPn4mUp68f+VdKEl+WXkNco9L0sZph6ZewnGsmVXR5kKMbja5Wu3ZskkT9J
-	0XFlOnrk9h938VLzLR5dFl0St2CN/zM3WDag4zcc9PrrLZh5qWliK6IOQ0lxO18b
-	9OlOmntwoE6w3DzpRt9Vg==
+	:reply-to:subject:subject:to:to; s=fm1; t=1785750142; x=
+	1785753742; bh=eI1qescUcRC6jwvEx959guNvwIbgualqvnMLfwjgGRM=; b=f
+	MqDsNlB47FGVrIEBYlaEfDmIMDJJN3/y4WuiHeB+mzeCMiTLeZ8+QHqNsNlgTO7O
+	fzGpymtLgr1rHD90udWA2GRuEsgDr6xM8pY5IztWYG5frHanklzo07uKtSPHfaRV
+	XcrWGgZ23kPVw0WuwTU/23jL2XU6t5cIxlt2ti5Sl6w65i+J6xoQF8OdEm5JB4Wq
+	3dZvUW8JgXv0lfql5Th3iyLzQchMAvWRKA2c78ll2yCKQrRyWOvXAmqf//utngaB
+	vt3DCDu43bya3FiMV7qS/oV7mS+nDWN+rX8ARtUjxCEELKIrdaL9cRm5weu9Wbxk
+	NJBz2QOYIuW90TRvYMxRw==
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
 	messagingengine.com; h=cc:cc:content-transfer-encoding
 	:content-type:date:date:feedback-id:feedback-id:from:from
 	:in-reply-to:in-reply-to:message-id:mime-version:references
 	:reply-to:subject:subject:to:to:x-me-proxy:x-me-sender
-	:x-me-sender:x-sasl-enc; s=fm3; t=1785750131; x=1785753731; bh=v
-	fiH5V16AyO9stikNxuMC7UErEwVoICawUpn+9ckh+U=; b=gBTserxC+XXloIhpS
-	up+nD3ExNFFV+QUvHvfQ7ytrk3CCKO5sdYNT5Xm2lcXdhNIQC8/uFAQryKcvmm3K
-	bqgSrwvPp26hKjWAhz2p1MKPJY1cNnPPS0pd48E+u9bagwlGMPEAO4z7hfpkKM53
-	TtvCbhAuZ2jowk3gS876PJtgcXuofLwF+zgLJwDVbj+XgeQmC2zUIk2WZ5x/Nfyx
-	lkzgbOmPtX4Cn7KW2OZrFdmghQ2IDbLgoX3ljXETmT387RWmgbe4hX8UEBCrbaF/
-	e7XYTs99j6r2dfGdRItCb4u2gaDj/fLjnqOV+pHt1JsD4SWWuY4SrYn2UPJXtul1
-	o221w==
-X-ME-Sender: <xms:cmJwakk3rXbBOdD3utjG0WyN40835YjLBAHQ6CFgLamAXz_O7Qxjtg>
-    <xme:cmJwaq62Ey0UG3-eBwMgVeFLBOResII_u3a5BWrdS8JFk9HbqDMrL3ljC7cnEseat
-    T-YLbKWtdtiPXFoZiqCNzKVnQoTaRu996B5goVnXkKGgsf-sCS5uE8>
-X-ME-Received: <xmr:cmJwaqU9tz39dh-JfZJPU7mH_IADvE2VWL-yAeZh1UE9m6OyVdypKVVJQCZUTdX00PuBkMt9ww>
-X-ME-Proxy-Cause: dmFkZTFjY2LyPb/9LfXn4QCibSWxeeRWJF58tfvFoO1JpUYwl/f8fQT4gNNHDkwtzTG3mW
-    QB9Z5E2ZaiRLdwTk7Bf1cP6j2q2LuyYXAyG5SuQy6DwnGU1S0GzExnzN4TJrhwhfA2voA2
-    n2K0qQ7ZhvGfjI6tOvBvuW8sUUpow6OyrJ4H8Jm+8CF5bCgHVQ4I3VQwTEXeIHlOg0F+vh
-    Iqy32CoHpA615dyPNJOIbTr8Kos0tW88p1VITCDcWhI1Pkk+5LOtOBwFm8TmwIOzW5PsEo
-    tPufk9ICYRNR6HPn77DziTnrKAnrLZzqwRBloqTdNsqFLZVnL8NzKJLgMxCkSg4QeWk1lX
-    ZCi92cTzOwqDdGNi9OjQjzmEHR/ibLFkRVAgedwPclg+uAcYVpexktu7i2Nyaj7OvyrSXt
-    qmpz2CbtKoAmZkXQXWKY9DByt3JvdcU9gQuP/gT1Knf1RuwDnQmKtbFm0a+IvHbu8JB4/L
-    VxcE5PBr6x90ohNH59xPiM5dKu0/BItIrVsjEMRLCmKudBTdOS5pkvH23YdtfCkXmo792c
-    oJ0rFWsJcwx7UNMQDtFS2hli71Nmxd9isR9ya7U+kWUCpGSAlYn3tgKcEFcLAh6Sv85FIO
-    Tdiv1mowuQB4hotyxK+13T+Zapc/BJbiU3f0xN7D9IbShoAD3u7nO4uqWJaQ
-X-ME-Proxy: <xmx:cmJwam8xkpxIlomLZzLhU8oznL01ZKAr6ICldVnMypvKjIfdNapgSw>
-    <xmx:cmJwavjTtlX0P4G5cQFFhyit9-KrhMT5O_5Lu2Qnas6-K1_B3ysbaw>
-    <xmx:cmJwatXButdmtYdy9LAIz_T6SPD1vgVwA9lfhM7ulouX6zilsQodcA>
-    <xmx:cmJwajvqNKY-3VZQzWACyqA2ctoQ_mMjhQuJ6wK6kmyDKTKVgbFy0w>
-    <xmx:c2JwagezJk__qhSaMb2_K-3Wfm7h7pi58ouLMI9HmvIuMRMyIyOo3GD2>
+	:x-me-sender:x-sasl-enc; s=fm3; t=1785750142; x=1785753742; bh=e
+	I1qescUcRC6jwvEx959guNvwIbgualqvnMLfwjgGRM=; b=R4Jcbtwrq39fCaOfk
+	4jkb9+gaylcpTwhaHoTHZxrCr18o1dZgty6VzGuN8X4Bak1rSdY+pvq4XgvQgnWY
+	g7wpB6Tqc6cie9FIzObBgLDG/2WP+aTC6RgeUDxqjww9OmwProVmw+JNZ3nURQpc
+	NdC8oCIRve70q+oTMD9eMgOnAWi+h2M9w9Y0qDlHO+/oLnqavoQ9SE8sNNOMcsEX
+	VktcnxtDEgRuWmZPc8F/CtFNAvcmrhnTED7qncPu/Qho99s15GvP5ZNTjjR67xoZ
+	/hCUtbLIcEkYFvxThtT3eFf+wdUXjNiq9R15C+8yzWUS81PFGpg23lG0cCQs4W9b
+	ZLy/Q==
+X-ME-Sender: <xms:fWJwaowDRf0fAG_k6o-sKxsJwsLQhmGqT8mo76dJsAStlmFP1AUALQ>
+    <xme:fWJwaitsbI7kOtyAwKg-RY9woQseFeypgnlByPFf1HnAg0VHaCMGC_tuwNwYBRts0
+    FXMZ7Dpz4MJ6adJsbIuUIHF_T-kRaG070dgeQeXUDO7YvDump26gSk>
+X-ME-Received: <xmr:fWJwan1kC9k6KltkZ5zgUhBwuD53RjDldqYjoV4REEec68XEmuuQOycNGTCS5ORBXRHZYFvu3Q>
+X-ME-Proxy-Cause: dmFkZTFczgYon7gxrtziaWA1VmzKRyyk2L4vsthSEIEaaMdpmFDlfezZIMMRelfrxRdxpS
+    InT2ALbM/Ea9RSvT+0fdffgmQXwcWWXRhoyCKsSes+4wdqyr69y/JvRpP/uCnvIyW3gV6I
+    OJi1OUtZr3x+oZGZhlKso/1B1mYcYkYZodEKPvCfeAmP7ghdFPKNsJqBx6XEaks2t+/BHU
+    PripfHdktVMesd/azawilwTZA4i17DQBIeFWFuIs1KQt9xHH7XhnKMt/JSwiDXb3WFQn8h
+    FDfW/FDlvjW7cnZJQmDeLzczr6pQWMUbPpn2f75ExE/C6LduWhlIBgDCI1k/PAE+u8GCWv
+    Hpuvr9TthDQKC6bZmQiV2aABgrSIl/SbhlQDi//rWBkUoxvAnyLsMqhugjsmYrxGGgHOGX
+    tQPKsxJ0MPm/BAVKw2/LZ69o+FRCd9Gauhn08S4EpcKbn726468HvNnYHvXOVGQzPT8ifi
+    Z5pilfQJAVAzF3uI3IRTLDTjHjAnaFOVLGflbM2ybIU4nZFUocAWuV0cUs8htoltnHb0vB
+    bvfPDY1AIHqPpgo7tfqySGTTeazjLqA5RdFZKfmiQbB5mBq/zKhYx1AIXiFIksxVJeQqjQ
+    ruqtlgCwc0rFvBb5he586+WOfxzKhvw9FiB16nZr7qSoDxFcWeqZ1zrvN8gQ
+X-ME-Proxy: <xmx:fWJwau4kGC5sIJLdJM8YZEXHQ7zpW3qi1BVjeY_9xPjhAiiwKn0WAQ>
+    <xmx:fWJwapM-r16NNq6GtA_scEdXM9HdzIn-pHKC2VZ0autpnldfJQBo0g>
+    <xmx:fWJwaiG7iIfhWKUR-dsehWvZuH5mDIGjmlrXivtxXhgwQd5UOMnPgA>
+    <xmx:fWJwat36flir2bYz9smK55ZnMpDuQwnBrN2xKQH1Jpr34sefW5eAaw>
+    <xmx:fWJwag7-4g5uTbQQr1sXndy0OYpcgPBx2rTZTVFqItIvrsRwarMwcWT8>
 Feedback-ID: i7a5e4b5f:Fastmail
 Received: by mail.messagingengine.com (Postfix) with ESMTPA; Mon,
- 3 Aug 2026 05:42:03 -0400 (EDT)
+ 3 Aug 2026 05:42:13 -0400 (EDT)
 From: Jiaxing Hu <gahing@gahingwoo.com>
 To: tomeu@tomeuvizoso.net,
 	heiko@sntech.de,
@@ -89,9 +89,9 @@ Cc: royalnet026@gmail.com,
 	linux-arm-kernel@lists.infradead.org,
 	linux-kernel@vger.kernel.org,
 	Jiaxing Hu <gahing@gahingwoo.com>
-Subject: [RFC PATCH v4 3/6] pmdomain/rockchip: cycle optional power-domain resets on power-on
-Date: Mon,  3 Aug 2026 21:41:22 +1200
-Message-ID: <20260803094125.3285895-4-gahing@gahingwoo.com>
+Subject: [RFC PATCH v4 4/6] accel/rocket: add RK3576 NPU (RKNN) support
+Date: Mon,  3 Aug 2026 21:41:23 +1200
+Message-ID: <20260803094125.3285895-5-gahing@gahingwoo.com>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <20260803094125.3285895-1-gahing@gahingwoo.com>
 References: <20260803094125.3285895-1-gahing@gahingwoo.com>
@@ -103,85 +103,637 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Some Rockchip domains come out of power-on with their bus interface in
-an undefined state. On the RK3576 NPU this shows up as a hang on the
-first access after a cold power-on; the vendor kernel cycles the
-domain's resets at this point and that clears it.
+The RK3576 carries the same RKNN block as the RK3588, with two cores
+instead of three and a few platform differences:
 
-Take the domain node's resets if it has any, and pulse them between
-releasing idle and restoring QoS. The resets are optional, so domains
-that do not declare any behave exactly as before.
+ - the CBUF (convolution buffer) has its own clock domain, so the core
+   needs six clocks rather than four;
+ - the BIU reset moved into the power domain, leaving one reset here;
+ - the NPU spans two power domains, and a device with more than one is
+   skipped by the driver-core single-domain auto-attach, so the list has
+   to be attached explicitly;
+ - the DPU completion interrupt is armed exactly as on RK3588 but never
+   reaches the GIC. The completion is visible in INTERRUPT_RAW_STATUS,
+   so sample that from an hrtimer rather than wait for an interrupt that
+   does not come. The interrupt stays armed, so if it ever does arrive
+   the normal handler finalises the job first.
+
+Select all of that from of_device_id match data so the RK3588 path keeps
+its existing counts and behaviour unchanged.
 
 Signed-off-by: Jiaxing Hu <gahing@gahingwoo.com>
 ---
- drivers/pmdomain/rockchip/pm-domains.c | 19 +++++++++++++++++++
- 1 file changed, 19 insertions(+)
+ drivers/accel/rocket/rocket_core.c   |  53 ++++-
+ drivers/accel/rocket/rocket_core.h   |  21 +-
+ drivers/accel/rocket/rocket_device.c |   4 +
+ drivers/accel/rocket/rocket_drv.c    |  25 ++-
+ drivers/accel/rocket/rocket_job.c    | 306 +++++++++++++++++++++++++++
+ 5 files changed, 403 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/pmdomain/rockchip/pm-domains.c b/drivers/pmdomain/rockchip/pm-domains.c
-index e1857f878..82051f600 100644
---- a/drivers/pmdomain/rockchip/pm-domains.c
-+++ b/drivers/pmdomain/rockchip/pm-domains.c
-@@ -19,6 +19,7 @@
- #include <linux/of_clk.h>
- #include <linux/clk.h>
- #include <linux/delay.h>
-+#include <linux/reset.h>
- #include <linux/regmap.h>
- #include <linux/regulator/consumer.h>
- #include <linux/mfd/syscon.h>
-@@ -103,6 +104,7 @@ struct rockchip_pm_domain {
- 	struct clk_bulk_data *clks;
- 	struct device_node *node;
- 	struct regulator *supply;
-+	struct reset_control *resets;
- };
+diff --git a/drivers/accel/rocket/rocket_core.c b/drivers/accel/rocket/rocket_core.c
+index b3b2fa9ba..5738fccdb 100644
+--- a/drivers/accel/rocket/rocket_core.c
++++ b/drivers/accel/rocket/rocket_core.c
+@@ -8,12 +8,40 @@
+ #include <linux/err.h>
+ #include <linux/iommu.h>
+ #include <linux/platform_device.h>
++#include <linux/pm_domain.h>
+ #include <linux/pm_runtime.h>
+ #include <linux/reset.h>
  
- struct rockchip_pmu {
-@@ -688,6 +690,13 @@ static int rockchip_pd_power(struct rockchip_pm_domain *pd, bool power_on)
- 		if (pd->info->delay_us)
- 			udelay(pd->info->delay_us);
+ #include "rocket_core.h"
+ #include "rocket_job.h"
  
-+		/* Optional: some domains need their resets cycled after power-on. */
-+		if (pd->resets) {
-+			reset_control_assert(pd->resets);
-+			udelay(10);
-+			reset_control_deassert(pd->resets);
-+		}
++/*
++ * The vendor's rk3576_state_init, which rocket has no equivalent of. It runs at
++ * probe and after every reset, and it is the only place either driver selects a
++ * ping-pong bank: S_POINTER 0, write DATA_SIZE1, S_POINTER 1, write DATA_SIZE1
++ * again, then arm with 0x1e. So the vendor initialises BOTH banks once per
++ * reset and then leaves the pointer alone, exactly like we do per submit.
++ *
++ * We never initialise bank 1 at all, which fits what the board shows: the first
++ * configuration computes and a second, different one does not.
++ */
++int rocket_state_init = 1;
++module_param_named(state_init, rocket_state_init, int, 0644);
++MODULE_PARM_DESC(state_init, "Run the vendor's state_init on power-up (default 1)");
 +
- 		rockchip_pmu_restore_qos(pd);
++void rocket_core_state_init(struct rocket_core *core)
++{
++	if (!rocket_state_init)
++		return;
++
++	rocket_pc_writel(core, BASE_ADDRESS, 0x1);
++	rocket_cna_writel(core, S_POINTER, 0);
++	rocket_cna_writel(core, DATA_SIZE1, 0x80000000);
++	rocket_cna_writel(core, S_POINTER, 1);
++	rocket_cna_writel(core, DATA_SIZE1, 0x80000000);
++	rocket_cna_writel(core, S_POINTER, 0x1e);
++}
++
+ int rocket_core_init(struct rocket_core *core)
+ {
+ 	struct device *dev = core->dev;
+@@ -21,14 +49,22 @@ int rocket_core_init(struct rocket_core *core)
+ 	u32 version;
+ 	int err = 0;
+ 
++	/* RK3576 moves the BIU reset into its power domain and takes only srst_a. */
+ 	core->resets[0].id = "srst_a";
+ 	core->resets[1].id = "srst_h";
+-	err = devm_reset_control_bulk_get_exclusive(&pdev->dev, ARRAY_SIZE(core->resets),
++	err = devm_reset_control_bulk_get_exclusive(&pdev->dev, core->soc->num_resets,
+ 						    core->resets);
+ 	if (err)
+ 		return dev_err_probe(dev, err, "failed to get resets for core %d\n", core->index);
+ 
+-	err = devm_clk_bulk_get(dev, ARRAY_SIZE(core->clks), core->clks);
++	core->clks[0].id = "aclk";
++	core->clks[1].id = "hclk";
++	core->clks[2].id = "npu";
++	core->clks[3].id = "pclk";
++	/* RK3576 clocks the CBUF separately; the compute path stalls without these. */
++	core->clks[4].id = "aclk_cbuf";
++	core->clks[5].id = "hclk_cbuf";
++	err = devm_clk_bulk_get(dev, core->soc->num_clks, core->clks);
+ 	if (err)
+ 		return dev_err_probe(dev, err, "failed to get clocks for core %d\n", core->index);
+ 
+@@ -65,6 +101,19 @@ int rocket_core_init(struct rocket_core *core)
+ 		return err;
  	}
  
-@@ -857,6 +866,14 @@ static int rockchip_pm_add_one_domain(struct rockchip_pmu *pmu,
- 	if (error)
- 		goto err_put_clocks;
- 
-+	pd->resets = of_reset_control_array_get_optional_exclusive(node);
-+	if (IS_ERR(pd->resets)) {
-+		error = PTR_ERR(pd->resets);
-+		dev_err(pmu->dev, "%pOFn: failed to get resets: %d\n", node, error);
-+		pd->resets = NULL;
-+		goto err_unprepare_clocks;
++	/*
++	 * RK3576 spans two power domains, and a multi-domain device is skipped
++	 * by the driver-core single-domain auto-attach, so attach the list here.
++	 */
++	if (core->soc->multi_power_domain) {
++		struct dev_pm_domain_list *pd_list;
++
++		err = devm_pm_domain_attach_list(dev, NULL, &pd_list);
++		if (err < 0)
++			return dev_err_probe(dev, err,
++					     "failed to attach NPU power domains\n");
 +	}
 +
- 	pd->num_qos = of_count_phandle_with_args(node, "pm_qos",
- 						 NULL);
+ 	pm_runtime_use_autosuspend(dev);
  
-@@ -927,6 +944,7 @@ static int rockchip_pm_add_one_domain(struct rockchip_pmu *pmu,
- 	clk_bulk_unprepare(pd->num_clks, pd->clks);
- err_put_clocks:
- 	clk_bulk_put(pd->num_clks, pd->clks);
-+	reset_control_put(pd->resets);
- 	return error;
+ 	/*
+diff --git a/drivers/accel/rocket/rocket_core.h b/drivers/accel/rocket/rocket_core.h
+index f6d738285..e4cc11336 100644
+--- a/drivers/accel/rocket/rocket_core.h
++++ b/drivers/accel/rocket/rocket_core.h
+@@ -6,6 +6,7 @@
+ 
+ #include <drm/gpu_scheduler.h>
+ #include <linux/clk.h>
++#include <linux/hrtimer.h>
+ #include <linux/io.h>
+ #include <linux/mutex_types.h>
+ #include <linux/reset.h>
+@@ -27,16 +28,25 @@
+ #define rocket_core_writel(core, reg, value) \
+ 	writel(value, (core)->core_iomem + (REG_CORE_##reg) - REG_CORE_S_STATUS)
+ 
++/* Per-SoC differences, selected by the of_device_id match data. */
++struct rocket_soc_data {
++	unsigned int num_clks;		/* clk_bulk count: 4 base, 6 with CBUF */
++	unsigned int num_resets;	/* reset_bulk count: 2 base, 1 on RK3576 */
++	bool multi_power_domain;	/* device spans more than one PM domain */
++	bool poll_completion;		/* completion IRQ never reaches the GIC */
++};
++
+ struct rocket_core {
+ 	struct device *dev;
+ 	struct rocket_device *rdev;
++	const struct rocket_soc_data *soc;
+ 	unsigned int index;
+ 
+ 	int irq;
+ 	void __iomem *pc_iomem;
+ 	void __iomem *cna_iomem;
+ 	void __iomem *core_iomem;
+-	struct clk_bulk_data clks[4];
++	struct clk_bulk_data clks[6];
+ 	struct reset_control_bulk_data resets[2];
+ 
+ 	struct iommu_group *iommu_group;
+@@ -52,6 +62,14 @@ struct rocket_core {
+ 		atomic_t pending;
+ 	} reset;
+ 
++	struct hrtimer poll_timer;
++	struct work_struct poll_work;
++	atomic_t poll_active;
++	unsigned int poll_ticks;
++	unsigned int poll_seq;
++	unsigned int poll_work_seq;
++	unsigned int sptr_bank;
++
+ 	struct drm_gpu_scheduler sched;
+ 	u64 fence_context;
+ 	u64 emit_seqno;
+@@ -60,5 +78,6 @@ struct rocket_core {
+ int rocket_core_init(struct rocket_core *core);
+ void rocket_core_fini(struct rocket_core *core);
+ void rocket_core_reset(struct rocket_core *core);
++void rocket_core_state_init(struct rocket_core *core);
+ 
+ #endif
+diff --git a/drivers/accel/rocket/rocket_device.c b/drivers/accel/rocket/rocket_device.c
+index 46e6ee1e7..bfb00f967 100644
+--- a/drivers/accel/rocket/rocket_device.c
++++ b/drivers/accel/rocket/rocket_device.c
+@@ -31,6 +31,10 @@ struct rocket_device *rocket_device_init(struct platform_device *pdev,
+ 		if (of_device_is_available(core_node))
+ 			num_cores++;
+ 
++	for_each_compatible_node(core_node, NULL, "rockchip,rk3576-rknn-core")
++		if (of_device_is_available(core_node))
++			num_cores++;
++
+ 	rdev->cores = devm_kcalloc(dev, num_cores, sizeof(*rdev->cores), GFP_KERNEL);
+ 	if (!rdev->cores)
+ 		return ERR_PTR(-ENOMEM);
+diff --git a/drivers/accel/rocket/rocket_drv.c b/drivers/accel/rocket/rocket_drv.c
+index 8bbbce594..95599e791 100644
+--- a/drivers/accel/rocket/rocket_drv.c
++++ b/drivers/accel/rocket/rocket_drv.c
+@@ -176,6 +176,7 @@ static int rocket_probe(struct platform_device *pdev)
+ 
+ 	rdev->cores[core].rdev = rdev;
+ 	rdev->cores[core].dev = &pdev->dev;
++	rdev->cores[core].soc = of_device_get_match_data(&pdev->dev);
+ 	rdev->cores[core].index = core;
+ 
+ 	rdev->num_cores++;
+@@ -213,8 +214,23 @@ static void rocket_remove(struct platform_device *pdev)
+ 	}
  }
  
-@@ -945,6 +963,7 @@ static void rockchip_pm_remove_one_domain(struct rockchip_pm_domain *pd)
++static const struct rocket_soc_data rk3588_soc_data = {
++	.num_clks = 4,
++	.num_resets = 2,
++	.multi_power_domain = false,
++	.poll_completion = false,
++};
++
++static const struct rocket_soc_data rk3576_soc_data = {
++	.num_clks = 6,
++	.num_resets = 1,
++	.multi_power_domain = true,
++	.poll_completion = true,
++};
++
+ static const struct of_device_id dt_match[] = {
+-	{ .compatible = "rockchip,rk3588-rknn-core" },
++	{ .compatible = "rockchip,rk3588-rknn-core", .data = &rk3588_soc_data },
++	{ .compatible = "rockchip,rk3576-rknn-core", .data = &rk3576_soc_data },
+ 	{}
+ };
+ MODULE_DEVICE_TABLE(of, dt_match);
+@@ -240,12 +256,15 @@ static int rocket_device_runtime_resume(struct device *dev)
+ 	if (core < 0)
+ 		return -ENODEV;
  
- 	clk_bulk_unprepare(pd->num_clks, pd->clks);
- 	clk_bulk_put(pd->num_clks, pd->clks);
-+	reset_control_put(pd->resets);
+-	err = clk_bulk_prepare_enable(ARRAY_SIZE(rdev->cores[core].clks), rdev->cores[core].clks);
++	err = clk_bulk_prepare_enable(rdev->cores[core].soc->num_clks, rdev->cores[core].clks);
+ 	if (err) {
+ 		dev_err(dev, "failed to enable (%d) clocks for core %d\n", err, core);
+ 		return err;
+ 	}
  
- 	/* protect the zeroing of pm->num_clks */
- 	mutex_lock(&pd->pmu->mutex);
++	/* Vendor runs its state_init once per power-up; we never did. */
++	rocket_core_state_init(&rdev->cores[core]);
++
+ 	return 0;
+ }
+ 
+@@ -260,7 +279,7 @@ static int rocket_device_runtime_suspend(struct device *dev)
+ 	if (!rocket_job_is_idle(&rdev->cores[core]))
+ 		return -EBUSY;
+ 
+-	clk_bulk_disable_unprepare(ARRAY_SIZE(rdev->cores[core].clks), rdev->cores[core].clks);
++	clk_bulk_disable_unprepare(rdev->cores[core].soc->num_clks, rdev->cores[core].clks);
+ 
+ 	return 0;
+ }
+diff --git a/drivers/accel/rocket/rocket_job.c b/drivers/accel/rocket/rocket_job.c
+index bb77b6bf0..c21310ef7 100644
+--- a/drivers/accel/rocket/rocket_job.c
++++ b/drivers/accel/rocket/rocket_job.c
+@@ -7,6 +7,8 @@
+ #include <drm/drm_file.h>
+ #include <drm/drm_gem.h>
+ #include <drm/rocket_accel.h>
++#include <linux/dma-map-ops.h>
++#include <linux/hrtimer.h>
+ #include <linux/interrupt.h>
+ #include <linux/overflow.h>
+ #include <linux/iommu.h>
+@@ -21,6 +23,216 @@
+ 
+ #define JOB_TIMEOUT_MS 500
+ 
++/*
++ * RK3576 arms the same DPU completion as RK3588, but the interrupt never
++ * reaches the GIC. The completion itself is visible in INTERRUPT_RAW_STATUS,
++ * so sample that instead. The tick cap bounds jobs that never raise it at all,
++ * which is the same open problem as the wrong inference results.
++ */
++/*
++ * EXPERIMENT (not for upstream), 2026-08-01, following Tomeu's suggestion that
++ * the block is stuck on ping-pong bank 0.
++ *
++ * S_POINTER bit 0 (CNA_S_POINTER_POINTER) selects which register bank the
++ * writes that follow land in. The vendor's rk3576_state_init programs both
++ * banks by writing S_POINTER=0 then S_POINTER=1 around the same register.
++ * rocket writes 0xe (PP_EN|EXECUTER_PP_EN|PP_MODE, bit 0 clear) both directly
++ * in hw_submit and, via mesa, four times inside every regcmd, so the pointer
++ * never leaves bank 0.
++ *
++ * That matches what the board does: re-running one configuration is byte exact
++ * forever, and loading a different one computes nothing until a reset. If the
++ * block only reloads its configuration when the bank flips, nothing after the
++ * first load is ever picked up.
++ *
++ * sptr_alt=1 flips bit 0 per submit, in the direct writes and in the regcmd
++ * (which would otherwise overwrite them during replay).
++ */
++static int rocket_sptr_alt;
++module_param_named(sptr_alt, rocket_sptr_alt, int, 0644);
++MODULE_PARM_DESC(sptr_alt, "S_POINTER bank: 0=off, 1=flip bit 0, 2=vendor style bare bank select");
++
++/*
++ * Readback said the POINTER field is not ours to write: with PP_MODE set we
++ * write bit 0 as 0 and it reads back 1, flipping it changes nothing, and
++ * clearing the PP bits to write a bare bank stops the units arming at all
++ * (EXECUTER never latches, and even the model that normally works fails).
++ * So the pointer is stuck at 1 and the driver cannot steer it directly.
++ *
++ * The one thing the vendor does that we never do is pulse POINTER_PP_CLEAR.
++ * Its rk3576_state_init ends with 0x1e, which is our 0xe plus bit 4, and we
++ * only ever write that once at power on. If the pointer is released by the
++ * clear rather than by a write to bit 0, that would fit the shape of this
++ * bug exactly: the first configuration lands and nothing after it does.
++ *
++ * pp_clear=1 pulses it on CNA and CORE before each submit.
++ * pp_clear=2 also sets EXECUTER_PP_CLEAR (bit 5).
++ */
++/*
++ * Read snapshot of the register blocks the driver maps, taken at the same point
++ * in two jobs and diffed. Everything done so far has been a writel audit, which
++ * by construction cannot see a bit the hardware sets and the driver never
++ * writes. That is the class INTERRUPT_MASK bit 31 turned out to belong to.
++ *
++ * pc, cna and core come through the driver's own mappings. DPU and RDMA are not
++ * mapped by rocket, so they get their own ioremap: the vendor DT covers the
++ * whole core as one 32 KB range and its driver reads 0x4000/0x4004/0x4008/0x4018
++ * and 0x5000/0x5004/0x5008, so both blocks are decoded and safe.
++ *
++ * What is NOT safe is 0x27702000. Mainline splits it out as rknn_mmu_0 and
++ * rk_iommu owns it; a first attempt swept the range as one contiguous block,
++ * mapped over it and wedged the board with RCU stalls. Skip it.
++ */
++static int rocket_snap;
++module_param_named(snap, rocket_snap, int, 0644);
++MODULE_PARM_DESC(snap, "Snapshot pc/cna/core per job and diff job 0 against later ones");
++
++#define ROCKET_SNAP_BLK   0x1000
++#define ROCKET_SNAP_NBLK  5
++#define ROCKET_SNAP_WORDS (ROCKET_SNAP_NBLK * ROCKET_SNAP_BLK / 4)
++#define ROCKET_SNAP_DPU_PHYS  0x27704000UL	/* dpu + rdma, 2 blocks */
++
++static u32 *rocket_snap_buf[2];
++static unsigned int rocket_snap_n;
++static void __iomem *rocket_snap_dpu;
++
++static void rocket_snap_take(struct rocket_core *core)
++{
++	void __iomem *blk[ROCKET_SNAP_NBLK];
++	unsigned int slot, b, i, w = 0, diffs = 0;
++	u32 *cur;
++
++	if (!rocket_snap)
++		return;
++
++	if (!rocket_snap_buf[0]) {
++		rocket_snap_buf[0] = kmalloc_array(ROCKET_SNAP_WORDS, 4, GFP_KERNEL);
++		rocket_snap_buf[1] = kmalloc_array(ROCKET_SNAP_WORDS, 4, GFP_KERNEL);
++		if (!rocket_snap_buf[0] || !rocket_snap_buf[1])
++			return;
++	}
++
++	if (!rocket_snap_dpu)
++		rocket_snap_dpu = ioremap(ROCKET_SNAP_DPU_PHYS, 2 * ROCKET_SNAP_BLK);
++	if (!rocket_snap_dpu)
++		return;
++
++	blk[0] = core->pc_iomem;
++	blk[1] = core->cna_iomem;
++	blk[2] = core->core_iomem;
++	blk[3] = rocket_snap_dpu;
++	blk[4] = rocket_snap_dpu + ROCKET_SNAP_BLK;
++
++	slot = rocket_snap_n ? 1 : 0;
++	cur = rocket_snap_buf[slot];
++	for (b = 0; b < ROCKET_SNAP_NBLK; b++)
++		for (i = 0; i < ROCKET_SNAP_BLK; i += 4)
++			cur[w++] = readl(blk[b] + i);
++
++	if (rocket_snap_n) {
++		static const char * const name[ROCKET_SNAP_NBLK] = {
++			"pc", "cna", "core", "dpu", "rdma"
++		};
++		static const u32 base[ROCKET_SNAP_NBLK] = {
++			0x0000, 0x1000, 0x3000, 0x4000, 0x5000
++		};
++
++		for (i = 0; i < ROCKET_SNAP_WORDS; i++) {
++			if (rocket_snap_buf[0][i] == cur[i])
++				continue;
++			if (++diffs > 48)
++				break;
++			b = i / (ROCKET_SNAP_BLK / 4);
++			dev_info(core->dev, "snap diff %s+0x%04x: job0=%08x job%u=%08x\n",
++				 name[b],
++				 base[b] + (i % (ROCKET_SNAP_BLK / 4)) * 4,
++				 rocket_snap_buf[0][i], rocket_snap_n, cur[i]);
++		}
++		dev_info(core->dev, "snap: job%u differs from job0 in %u words%s\n",
++			 rocket_snap_n, diffs, diffs > 48 ? " (truncated)" : "");
++	} else {
++		dev_info(core->dev, "snap: job0 baseline captured\n");
++	}
++	rocket_snap_n++;
++}
++
++static int rocket_pp_clear;
++module_param_named(pp_clear, rocket_pp_clear, int, 0644);
++MODULE_PARM_DESC(pp_clear, "Pulse POINTER_PP_CLEAR before each submit (0=off, 1=pointer, 2=pointer+executer)");
++
++/*
++ * Round 1 of the ping-pong experiment flipped bit 0 per submit and changed
++ * nothing at all: the second configuration still computed nothing and the
++ * repeated same-configuration case still worked. That only rules out the
++ * simplest reading though. rocket and mesa both write 0xe, which has
++ * POINTER_PP_EN, EXECUTER_PP_EN and POINTER_PP_MODE set, while the vendor's
++ * rk3576_state_init selects a bank with a BARE 0 or 1, all those bits clear.
++ * If PP_MODE means the hardware owns the pointer, our bit 0 was a don't care
++ * and the null result says nothing.
++ *
++ * So before trying anything else, read the register back and see whether the
++ * field is even live: what it holds after our write, and whether it moves on
++ * its own across a job.
++ */
++static int rocket_sptr_dbg;
++module_param_named(sptr_dbg, rocket_sptr_dbg, int, 0644);
++MODULE_PARM_DESC(sptr_dbg, "Log S_POINTER of all four units at submit and at completion");
++
++static void rocket_sptr_dump(struct rocket_core *core, const char *tag)
++{
++	if (!rocket_sptr_dbg)
++		return;
++
++	/*
++	 * Only CNA and CORE are mapped (reg-names are pc, cna, core), and their
++	 * offsets are relative to each block's own base, which is what the
++	 * rocket_*_readl macros do. Reading them off pc_iomem faults.
++	 */
++	dev_info(core->dev, "sptr %s: cna=%08x core=%08x\n", tag,
++		 rocket_cna_readl(core, S_POINTER),
++		 rocket_core_readl(core, S_POINTER));
++}
++
++static void rocket_sptr_patch_regcmd(struct rocket_core *core, struct rocket_job *job,
++				     struct rocket_task *task, u32 bank)
++{
++	phys_addr_t phys = iommu_iova_to_phys(job->domain->domain, task->regcmd);
++	unsigned int i, patched = 0;
++	struct scatterlist sg;
++	struct page *page;
++	u64 *rv;
++
++	if (!phys || !pfn_valid(PFN_DOWN(phys)))
++		return;
++
++	rv = phys_to_virt(phys);
++	for (i = 0; i < task->regcmd_count; i++) {
++		u16 reg = rv[i] & 0xffff;
++		u32 val;
++
++		if (reg != 0x1004 && reg != 0x3004 && reg != 0x4004 && reg != 0x5004)
++			continue;
++
++		val = (u32)((rv[i] >> 16) & 0xffffffffu);
++		if (rocket_sptr_alt == 2)
++			val = bank;		/* bare, like rk3576_state_init */
++		else
++			val = (val & ~1u) | bank;
++		rv[i] = (rv[i] & ~(0xffffffffULL << 16)) | ((u64)val << 16);
++		patched++;
++	}
++
++	page = pfn_to_page(PFN_DOWN(phys));
++	sg_init_table(&sg, 1);
++	sg_set_page(&sg, page, PAGE_SIZE, 0);
++	dma_sync_sg_for_device(core->dev, &sg, 1, DMA_TO_DEVICE);
++
++	dev_info(core->dev, "sptr_alt: bank=%u patched %u S_POINTER entries\n", bank, patched);
++}
++
++#define RK3576_POLL_INTERVAL_NS	1000000LL	/* 1 ms */
++#define RK3576_POLL_MAX_TICKS	8
++
+ static struct rocket_job *
+ to_rocket_job(struct drm_sched_job *sched_job)
+ {
+@@ -111,6 +323,7 @@ static void rocket_job_hw_submit(struct rocket_core *core, struct rocket_job *jo
+ {
+ 	struct rocket_task *task;
+ 	unsigned int extra_bit;
++	u32 bank = 0;
+ 
+ 	/* Don't queue the job if a reset is in progress */
+ 	if (atomic_read(&core->reset.pending))
+@@ -125,6 +338,12 @@ static void rocket_job_hw_submit(struct rocket_core *core, struct rocket_job *jo
+ 
+ 	 /* From rknpu, in the TRM this bit is marked as reserved */
+ 	extra_bit = 0x10000000 * core->index;
++
++	if (rocket_sptr_alt) {
++		bank = core->sptr_bank & 1;
++		core->sptr_bank++;
++		extra_bit |= bank;
++	}
+ 	rocket_cna_writel(core, S_POINTER, CNA_S_POINTER_POINTER_PP_EN(1) |
+ 					   CNA_S_POINTER_EXECUTER_PP_EN(1) |
+ 					   CNA_S_POINTER_POINTER_PP_MODE(1) |
+@@ -135,6 +354,9 @@ static void rocket_job_hw_submit(struct rocket_core *core, struct rocket_job *jo
+ 					    CORE_S_POINTER_POINTER_PP_MODE(1) |
+ 					    extra_bit);
+ 
++	if (rocket_sptr_alt)
++		rocket_sptr_patch_regcmd(core, job, task, bank);
++
+ 	rocket_pc_writel(core, BASE_ADDRESS, task->regcmd);
+ 	rocket_pc_writel(core, REGISTER_AMOUNTS,
+ 			 PC_REGISTER_AMOUNTS_PC_DATA_AMOUNT((task->regcmd_count + 1) / 2 - 1));
+@@ -151,6 +373,33 @@ static void rocket_job_hw_submit(struct rocket_core *core, struct rocket_job *jo
+ 
+ 	rocket_pc_writel(core, OPERATION_ENABLE, PC_OPERATION_ENABLE_OP_EN(1));
+ 
++	if (core->soc->poll_completion) {
++		core->poll_ticks = 0;
++		core->poll_seq++;
++		atomic_set(&core->poll_active, 1);
++		hrtimer_start(&core->poll_timer, ns_to_ktime(RK3576_POLL_INTERVAL_NS),
++			      HRTIMER_MODE_REL);
++	}
++
++	if (rocket_pp_clear) {
++		u32 base = CNA_S_POINTER_POINTER_PP_EN(1) |
++			   CNA_S_POINTER_EXECUTER_PP_EN(1) |
++			   CNA_S_POINTER_POINTER_PP_MODE(1) | extra_bit;
++		u32 clr = base | CNA_S_POINTER_POINTER_PP_CLEAR(1);
++
++		if (rocket_pp_clear == 2)
++			clr |= CNA_S_POINTER_EXECUTER_PP_CLEAR(1);
++
++		rocket_sptr_dump(core, "pre-clear ");
++		rocket_cna_writel(core, S_POINTER, clr);
++		rocket_core_writel(core, S_POINTER, clr);
++		rocket_sptr_dump(core, "post-clear");
++		rocket_cna_writel(core, S_POINTER, base);
++		rocket_core_writel(core, S_POINTER, base);
++	}
++
++	rocket_sptr_dump(core, "at-kick   ");
++
+ 	dev_dbg(core->dev, "Submitted regcmd at 0x%llx to core %d", task->regcmd, core->index);
+ }
+ 
+@@ -341,8 +590,55 @@ static struct dma_fence *rocket_job_run(struct drm_sched_job *sched_job)
+ 	return ERR_PTR(ret);
+ }
+ 
++static void rocket_job_handle_irq(struct rocket_core *core);
++
++static enum hrtimer_restart rocket_poll_timer_fn(struct hrtimer *timer)
++{
++	struct rocket_core *core = container_of(timer, struct rocket_core, poll_timer);
++	u32 raw;
++
++	if (!atomic_read(&core->poll_active))
++		return HRTIMER_NORESTART;
++
++	core->poll_work_seq = core->poll_seq;
++
++	raw = rocket_pc_readl(core, INTERRUPT_RAW_STATUS);
++	if ((raw & (PC_INTERRUPT_RAW_STATUS_DPU_0 | PC_INTERRUPT_RAW_STATUS_DPU_1)) ||
++	    ++core->poll_ticks >= RK3576_POLL_MAX_TICKS) {
++		atomic_set(&core->poll_active, 0);
++		schedule_work(&core->poll_work);
++		return HRTIMER_NORESTART;
++	}
++
++	hrtimer_forward_now(timer, ns_to_ktime(RK3576_POLL_INTERVAL_NS));
++	return HRTIMER_RESTART;
++}
++
++static void rocket_poll_work_fn(struct work_struct *work)
++{
++	struct rocket_core *core = container_of(work, struct rocket_core, poll_work);
++
++	/*
++	 * The interrupt can land while this work is already queued, finalise the
++	 * job and let the next one start. Without this the stale work would then
++	 * finalise that new job as well.
++	 */
++	if (core->poll_work_seq != core->poll_seq)
++		return;
++
++	rocket_job_handle_irq(core);
++}
++
+ static void rocket_job_handle_irq(struct rocket_core *core)
+ {
++	if (core->soc->poll_completion) {
++		atomic_set(&core->poll_active, 0);
++		hrtimer_cancel(&core->poll_timer);
++	}
++
++	rocket_sptr_dump(core, "at-done   ");
++	rocket_snap_take(core);
++
+ 	pm_runtime_mark_last_busy(core->dev);
+ 
+ 	rocket_pc_writel(core, OPERATION_ENABLE, 0x0);
+@@ -460,6 +756,10 @@ int rocket_job_init(struct rocket_core *core)
+ 	int ret;
+ 
+ 	INIT_WORK(&core->reset.work, rocket_reset_work);
++	INIT_WORK(&core->poll_work, rocket_poll_work_fn);
++	hrtimer_setup(&core->poll_timer, rocket_poll_timer_fn, CLOCK_MONOTONIC,
++		      HRTIMER_MODE_REL);
++	atomic_set(&core->poll_active, 0);
+ 	spin_lock_init(&core->fence_lock);
+ 	mutex_init(&core->job_lock);
+ 
+@@ -503,6 +803,12 @@ void rocket_job_fini(struct rocket_core *core)
+ {
+ 	drm_sched_fini(&core->sched);
+ 
++	if (core->soc->poll_completion) {
++		atomic_set(&core->poll_active, 0);
++		hrtimer_cancel(&core->poll_timer);
++		cancel_work_sync(&core->poll_work);
++	}
++
+ 	cancel_work_sync(&core->reset.work);
+ 	destroy_workqueue(core->reset.wq);
+ }
 -- 
 2.43.0
 
