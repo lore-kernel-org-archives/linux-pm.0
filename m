@@ -1,199 +1,110 @@
-Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1BEB54052A1
-	for <linux-pm@vger.kernel.org>; Mon,  3 Aug 2026 11:27:49 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.180.131
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AC2473BCD17;
+	Mon,  3 Aug 2026 11:44:56 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1785756471; cv=none; b=fVFL786SRqbrYdZfTxj34/3VBeU9M8hVhFgNmCABryjFZF+3mUYV0I7mJJEaE2tNVnd0mmxX1plzENxvzmOC+OiyvNS8ULJ7fHZZpAehmIEoTgra2mWt1IxAdfFTL/fucZ715JEQITNll2jAFry98SA1qBTvRLKN+m2poMZF81I=
+	t=1785757497; cv=none; b=nIAvGQa2C8lC6JKPgewcxieR8YLIMLU3Zde+lOyA7IcXnbBwOyTpwUaKBOg85QRh///bK4VUIrSc3qeYy9hVC4gpykxvd9E9q4ijp30p6HdXKhP2tzp/NR/q1b0jY9l9cwyMOlrvaXpTvfxrEe4smZ8r04IFhhdejOVkRmI1DOU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1785756471; c=relaxed/simple;
-	bh=0dv1A7SJOo2bKiDuoNzEWcgZZ+KiBt3T3wDwWvNFD88=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=PLqDDaqPke7MZExtFwkpuOY4mCGNui6LnpnAHiuPNftrONHSqpQ1L9Mm0E4kjSNnKX6FRKnT8hTNlmAkeg1vM/D59JX21Er+LmXuWuPHVSmqONGS8kzZaiGNwAbP/iR5FNcIC728zwDPxNFouBZYZRmBspA4QQvV8rd26e08Zz8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=MYj+XBI9; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=FmP/LQ85; arc=none smtp.client-ip=205.220.180.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
+	s=arc-20240116; t=1785757497; c=relaxed/simple;
+	bh=J8PRGWV3+I0wXpCaHk5I0Izh5G9sTqdLEINNXqnVHwM=;
+	h=Date:Content-Type:MIME-Version:From:Cc:To:In-Reply-To:References:
+	 Message-Id:Subject; b=TAT4sypIWCu8NxcHIuAT7ou9X9KRZ445b4cK7Ltva3L3Q8Dekaaguig1z8WE0bgTgoW2eYI2v89gokLdWt6RbTrWA5fUvdd123viPSKpaoMAxLh4oF2RBr3yynHOy0k8P5AAMCOfwOUtrqxw7JhEJLa1EP6joPf4uHp5PckYh3Y=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=fail (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=l3FjwlGI reason="signature verification failed"; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="MYj+XBI9";
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="FmP/LQ85"
-Received: from pps.filterd (m0279873.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 673AmGJQ3929490
-	for <linux-pm@vger.kernel.org>; Mon, 3 Aug 2026 11:27:49 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	N3o1mXZjzla+jeybDNPZNT0ZGQaCc2d0LM1HbsUBkMQ=; b=MYj+XBI9ndvt2gJg
-	Kh/De3jdsQi0yDbEtqmr3/aeyTkjJ313ktVn1KAd2A98jdiJ/EPiT1mRsm0RDY37
-	p4Bmi52yI9aEOaJt1lhpMbaDWceUreieN45BGi5a+ipphSsSiryQ/hyoRqHAmaZC
-	b61ccaoHyNoh7/axWu8OCQcre9i+MgCh0vxYegNE/N53ib7SaYjHq4vx/VlucE+I
-	e2cxc5YXSWYknREjByunWhCzrZSM52qve6dr922z7fIPVB5x2B75KgJwol2i/vkU
-	lbOFUBPVh96NHS8b2Bo8Gxm7HzfVJ0sySZeuvqnX7zftmcEY94c2mAPHJ4ci8/HF
-	O4drIg==
-Received: from mail-pj1-f72.google.com (mail-pj1-f72.google.com [209.85.216.72])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4ftnhkha6x-1
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Mon, 03 Aug 2026 11:27:48 +0000 (GMT)
-Received: by mail-pj1-f72.google.com with SMTP id 98e67ed59e1d1-38ec0f510a9so8231550a91.2
-        for <linux-pm@vger.kernel.org>; Mon, 03 Aug 2026 04:27:48 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1785756468; x=1786361268; darn=vger.kernel.org;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :content-type:mime-version:subject:date:from:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=N3o1mXZjzla+jeybDNPZNT0ZGQaCc2d0LM1HbsUBkMQ=;
-        b=FmP/LQ85VHSTmea1YIIiF2H9UtH1+V+b8iUDEcYGxMcrjv+YfIYmm8gTQvSEC4ezB8
-         KAmJxKLa5DZVPYlcbVlUcVFJ/xQytm2akyrxbtRuHmKdmODKMY4rcAT4j5Tv/4dqT1iU
-         KN6a4TzmFCrEcAcFmBTTBy51Anuz0sVbQfXsUN0pjSOwdioO1AMMJBRhenTTOLBUwbR2
-         gVtxIbtoFfUD6XYtkQRc2KLeMu45uSdN3B7QII6mpUexfTi7zpt48lo9TWyPRqQ17ime
-         CX4U+cXCgTt+kLKzTga6u3y8yBjBcW3aNGmu0KXqjt5tFSI//D28oEMUJL+3b1sZpnxw
-         DwMA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1785756468; x=1786361268;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :content-type:mime-version:subject:date:from:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=N3o1mXZjzla+jeybDNPZNT0ZGQaCc2d0LM1HbsUBkMQ=;
-        b=XA8Sn5JoOzH6meSdzX/jeI/jc4YmlqUrIe6salZ/Cdmk2edBX89rhswXec15/nOp+q
-         KpnBEbABDpd8i5mvyLMnpWxZfRzko17/0V96FLYRYuxOwr9NvRgBLOVxRLdU8CvrRKX8
-         PunIJbDYKF7FGkuaVTca5wwpCGtbdoT3V41kWmkm/3+we8ALOKRFRtFLBPdVDteFW2wi
-         ThoXlyJS4Q8IkrkbcU+ZIaoiwBuECMOElXTQeu9UHzIJTz1pP/5gb67xh51MfQ7FC1Wn
-         OoLNTIsj6Wty++ju52iH192xR3i6Q9gBXc+QtNEULA3bF1GSHnnB3wJSCLaadlgyAKF3
-         zVOw==
-X-Forwarded-Encrypted: i=1; AHgh+RrRmo/bJlPQ8uB8BYwASv/MiCdjuA27B++O3mb4hCFFisSnb1YqO+KWpV+8emCwfp8gdcROzQWObw==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yzf9FO6IwUJmVbkXtK/L1SwJfAl2NVPuW3d9RM9x8ljodALy4WV
-	h8shCu1jloARXHITJXSjGdiCDxjwmIvsEw3Eaaahz2EhSLlhsEGCkrzg1827XUMBuVYxq9sYT9w
-	DmrRwTgkq4kQGMEq1DOc7Jn/IlRyFYv1kOVPaorwyWzox8YG99FPpdBfXzYEPaQ==
-X-Gm-Gg: AR+sD12xPC7rpoWWl+i7X30H7FFskr2D2CknfdtD1iMFzlDl7s2PQ6LwBMPpzYmUGoo
-	rf5bPSDj02uteg7rGzVteA3zdo8LRhXqLm9AhKRXM4wn98E3wMvJLPIzCIF0IHry5N48aPydtbe
-	jObB1MPrSWjkVx2I9ayI4iubbwcIjEhOO/8KujJlm9UsD8KRc+JZgXHsaH5sIBYfP3zqhYg6n+7
-	e9ZD/XiEdrf1Ielym6s3nHzSBS3xjb75lCf9fCLF1mr0gnC/iLMrlYKbF46rqdhmKKRYPGgKiYz
-	6Q418G+pbFhBdI9TUGNTjwDsRvd7z2wGSMLyIn4EhEqLq59EksThIGlviFHdsSt6Ba1rvu27CHB
-	Q/Auaulf/RO1sqKo=
-X-Received: by 2002:a17:90b:590c:b0:387:e0db:3fb1 with SMTP id 98e67ed59e1d1-38fbc59b1aamr9104243a91.42.1785756468024;
-        Mon, 03 Aug 2026 04:27:48 -0700 (PDT)
-X-Received: by 2002:a17:90b:590c:b0:387:e0db:3fb1 with SMTP id 98e67ed59e1d1-38fbc59b1aamr9104217a91.42.1785756467583;
-        Mon, 03 Aug 2026 04:27:47 -0700 (PDT)
-Received: from [10.213.101.118] ([202.46.23.25])
-        by smtp.gmail.com with ESMTPSA id a92af1059eb24-13fab132cc4sm29967043c88.2.2026.08.03.04.27.42
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 03 Aug 2026 04:27:47 -0700 (PDT)
-From: Komal Bajaj <komal.bajaj@oss.qualcomm.com>
-Date: Mon, 03 Aug 2026 16:56:39 +0530
-Subject: [PATCH RESEND v7 10/10] arm64: dts: qcom: shikra: Add
- gpio-reserved-ranges to tlmm
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="l3FjwlGI"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 662DE1F000E9;
+	Mon,  3 Aug 2026 11:44:55 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1785757496;
+	bh=8YQ2M9Eps1JKx10yr4780R1ecWZB0HlgXUHXNalwtiM=;
+	h=Date:From:Cc:To:In-Reply-To:References:Subject;
+	b=l3FjwlGIvY9J5WKcaj4U+GHHJ0vSTZaGjUixFKx7WZt0ScOo/BXhTkDF14UlaeWpc
+	 GS+60FdPXJC2+HBGNfM815HDuGPwFTVT2ZMnIYj5Qqpp2feLlNTTkGKY1FDdZuu13N
+	 9HEbTx8Hs8V2b68uOQF1IjA0Ra9kNb91CiPSQShAG+XdLbXXxvBJOq+KxVAT/IY/Fi
+	 OCTiBlG1fa8naz1MYhSsv29Xqa60dU5Y7HgoD3PVylPvEz9cls3/EMcfStwYRpoee6
+	 vmyofz453SgmnpYcoUGzSXmGhYs4tT/zboqO7Y/CymG1XWULb56CvCkZRsw3MdTHZy
+	 RUiZFTLw6OXzw==
+Date: Mon, 03 Aug 2026 06:44:53 -0500
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20260803-shikra-dt-m1-v7-10-7fec8e777076@oss.qualcomm.com>
-References: <20260803-shikra-dt-m1-v7-0-7fec8e777076@oss.qualcomm.com>
-In-Reply-To: <20260803-shikra-dt-m1-v7-0-7fec8e777076@oss.qualcomm.com>
-To: Vinod Koul <vkoul@kernel.org>, Frank Li <Frank.Li@kernel.org>,
-        Rob Herring <robh@kernel.org>,
-        Krzysztof Kozlowski <krzk+dt@kernel.org>,
-        Conor Dooley <conor+dt@kernel.org>,
-        Krzysztof Kozlowski <krzk@kernel.org>,
-        Georgi Djakov <djakov@kernel.org>,
-        Bjorn Andersson <andersson@kernel.org>,
-        Konrad Dybcio <konradybcio@kernel.org>
-Cc: linux-arm-msm@vger.kernel.org, dmaengine@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-pm@vger.kernel.org, Komal Bajaj <komal.bajaj@oss.qualcomm.com>,
-        Anurag Pateriya <apateriy@qti.qualcomm.com>,
-        Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>,
-        Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>
-X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1785756396; l=1886;
- i=komal.bajaj@oss.qualcomm.com; s=20250710; h=from:subject:message-id;
- bh=0dv1A7SJOo2bKiDuoNzEWcgZZ+KiBt3T3wDwWvNFD88=;
- b=WpBlGJWorHogze412PHSk78w/XBSwlfOmdkhz1YWwB6FvVItJ9dYxbfWWFtj7kbZZBSfDK8Y9
- xVDqXTI/YxIDkc4DolysftMpHcs/yUuDjNQUVPQNdwbmtJ5QTqjGJml
-X-Developer-Key: i=komal.bajaj@oss.qualcomm.com; a=ed25519;
- pk=wKh8mgDh+ePUZ4IIvpBhQOqf16/KvuQHvSvHK20LXNU=
-X-Proofpoint-GUID: OmpZzC6MxiXce-3Dqk5HKstdHhMWbDtT
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwODAzMDEwMiBTYWx0ZWRfX4WilEFDDxSE6
- KCsQPknjBNMKvBOL9SXMx4rb7CmghgWKLPni5TxLWto4CM2F4kgxlwMvR4EsbghDR3eEvoCLWSX
- GeBq7WGcd3Dp+j3MtAhZ9NHC3+ijfdIwhl4SKUOk9JJ0J4lhLJgGH45/k9CDJrpIwcJsv2/zukq
- gvVnbtLFyh0Ei0wmyNd5+Gbc/XJRLhIXYyO51critso3dhfNY2mZaARiL3O1iJHBiJv6RSKkj2i
- opg18eca1UDS0EhTI68ERupZP9lmveJBTJELLKsCK2j7UpLr0PCBgwKUEPPLzRMLcVwufWZEk5F
- DhWldkZNSAcEYqMCjQBeTWS5zcqgBwFu1AuwOBCF3CzBaZGw/PDRSdRYE2G+gfbOTKHtpM1wF7J
- 7bR7ajV9WGU4pZyWGaC3f5TW42wNeT/eq8YRq7K4Kmfdnxl+Fb415ryJpqz27UYuwp7uDunEdj4
- LrDw5nQZjiNe2QP+/YA==
-X-Proofpoint-ORIG-GUID: OmpZzC6MxiXce-3Dqk5HKstdHhMWbDtT
-X-Proofpoint-Spam-Info: AW1haW4tMjYwODAzMDEwMiBTYWx0ZWRfX0B6Rr16pbLhx
- rwlmEdC16j3epAfUrtdzBuvNgVkc2kV7XQKwIbkUcIjyU+WltJ7/PvqqHA5D4/zFZZ6+cB31dpO
- Z2eIVmUIqvR8RzDs972p5Nd5j2/XUfc=
-X-Authority-Analysis: v=2.4 cv=UIjt2ify c=1 sm=1 tr=0 ts=6a707b34 cx=c_pps
- a=RP+M6JBNLl+fLTcSJhASfg==:117 a=ZePRamnt/+rB5gQjfz0u9A==:17
- a=IkcTkHD0fZMA:10 a=Sv0fKeRqtYgA:10 a=s4-Qcg_JpJYA:10
- a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=rJkE3RaqiGZ5pbrm-msn:22
- a=EUspDBNiAAAA:8 a=kzPlCIsnF9mgv2CmAuUA:9 a=QEXdDO2ut3YA:10
- a=iS9zxrgQBfv6-_F4QbHw:22
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-08-02_06,2026-07-30_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- malwarescore=0 clxscore=1015 priorityscore=1501 lowpriorityscore=0
- impostorscore=0 bulkscore=0 adultscore=0 spamscore=0 suspectscore=0
- phishscore=0 classifier=typeunknown authscore=0 authtc= authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2606150000
- definitions=main-2608030102
+From: "Rob Herring (Arm)" <robh@kernel.org>
+Cc: Florian Fainelli <florian.fainelli@broadcom.com>, 
+ linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rafael@kernel.org>, 
+ Mark Rutland <mark.rutland@arm.com>, Lee Jones <lee@kernel.org>, 
+ Krzysztof Kozlowski <krzk@kernel.org>, 
+ Konrad Dybcio <konradybcio@kernel.org>, 
+ Bjorn Andersson <andersson@kernel.org>, 
+ Lorenzo Pieralisi <lpieralisi@kernel.org>, 
+ Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>, 
+ Ulf Hansson <ulfh@kernel.org>, 
+ Souvik Chakravarty <Souvik.Chakravarty@arm.com>, 
+ Mukesh Ojha <mukesh.ojha@oss.qualcomm.com>, Arnd Bergmann <arnd@arndb.de>, 
+ Conor Dooley <conor+dt@kernel.org>, linux-arm-kernel@lists.infradead.org, 
+ Sebastian Reichel <sre@kernel.org>, Srinivas Kandagatla <srini@kernel.org>, 
+ Andy Yan <andy.yan@rock-chips.com>, 
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+ Matthias Brugger <matthias.bgg@gmail.com>, 
+ Christian Loehle <christian.loehle@arm.com>, 
+ Daniel Lezcano <daniel.lezcano@kernel.org>, 
+ Pavan Kondeti <pavan.kondeti@oss.qualcomm.com>, 
+ Sudeep Holla <sudeep.holla@kernel.org>, 
+ Kathiravan Thirumoorthy <kathiravan.thirumoorthy@oss.qualcomm.com>, 
+ devicetree@vger.kernel.org, Andre Draszik <andre.draszik@linaro.org>, 
+ Bartosz Golaszewski <brgl@kernel.org>, John Stultz <john.stultz@linaro.org>, 
+ mfd@lists.linux.dev, linux-kernel@vger.kernel.org, 
+ linux-arm-msm@vger.kernel.org, Moritz Fischer <moritz.fischer@ettus.com>
+To: Shivendra Pratap <shivendra.pratap@oss.qualcomm.com>
+In-Reply-To: <20260803-arm-psci-system_reset2-vendor-reboots-v24-5-889281373870@oss.qualcomm.com>
+References: <20260803-arm-psci-system_reset2-vendor-reboots-v24-0-889281373870@oss.qualcomm.com>
+ <20260803-arm-psci-system_reset2-vendor-reboots-v24-5-889281373870@oss.qualcomm.com>
+Message-Id: <178575749351.2483197.6720070407824857023.robh@kernel.org>
+Subject: Re: [PATCH v24 05/12] dt-bindings: arm: Document reboot mode magic
 
-Add gpio-reserved-ranges property to the TLMM node for both Shikra
-SoM variants (CQM and IQS). These reserved GPIOs are inaccessible
-from the non-secure world and dedicated to fixed functions.
 
-Co-developed-by: Anurag Pateriya <apateriy@qti.qualcomm.com>
-Signed-off-by: Anurag Pateriya <apateriy@qti.qualcomm.com>
-Reviewed-by: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
-Reviewed-by: Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>
-Signed-off-by: Komal Bajaj <komal.bajaj@oss.qualcomm.com>
----
- arch/arm64/boot/dts/qcom/shikra-cqm-som.dtsi | 6 ++++++
- arch/arm64/boot/dts/qcom/shikra-iqs-som.dtsi | 6 ++++++
- 2 files changed, 12 insertions(+)
+On Mon, 03 Aug 2026 15:13:36 +0530, Shivendra Pratap wrote:
+> Add bindings to describe vendor-specific reboot modes. Values here
+> correspond to valid parameters to vendor-specific reset types in PSCI
+> SYSTEM_RESET2 call.
+> 
+> Signed-off-by: Shivendra Pratap <shivendra.pratap@oss.qualcomm.com>
+> ---
+>  Documentation/devicetree/bindings/arm/psci.yaml | 58 +++++++++++++++++++++++++
+>  1 file changed, 58 insertions(+)
+> 
 
-diff --git a/arch/arm64/boot/dts/qcom/shikra-cqm-som.dtsi b/arch/arm64/boot/dts/qcom/shikra-cqm-som.dtsi
-index 2fff5fe9f6d2..8ac42ff625a0 100644
---- a/arch/arm64/boot/dts/qcom/shikra-cqm-som.dtsi
-+++ b/arch/arm64/boot/dts/qcom/shikra-cqm-som.dtsi
-@@ -196,6 +196,12 @@ pm4125_l22: l22 {
- };
- 
- &tlmm {
-+	gpio-reserved-ranges = <6 4>, /* Fingerprint SPI */
-+			       <14 4>, /* eSE SPI */
-+			       <30 2>, /* NFC SPI */
-+			       <138 1>, /* NFC Secure IO */
-+			       <155 11>; /* eMMC Boot */
-+
- 	sw_ctrl_default: sw-ctrl-default-state {
- 		pins = "gpio88";
- 		function = "gpio";
-diff --git a/arch/arm64/boot/dts/qcom/shikra-iqs-som.dtsi b/arch/arm64/boot/dts/qcom/shikra-iqs-som.dtsi
-index 657a14ca9606..4ff97945274d 100644
---- a/arch/arm64/boot/dts/qcom/shikra-iqs-som.dtsi
-+++ b/arch/arm64/boot/dts/qcom/shikra-iqs-som.dtsi
-@@ -218,6 +218,12 @@ pm8150_l18: l18 {
- };
- 
- &tlmm {
-+	 gpio-reserved-ranges = <6 4>, /* Fingerprint SPI */
-+			       <14 4>, /* eSE SPI */
-+			       <30 2>, /* NFC SPI */
-+			       <138 1>, /* NFC Secure IO */
-+			       <155 11>; /* eMMC Boot */
-+
- 	sw_ctrl_default: sw-ctrl-default-state {
- 		pins = "gpio88";
- 		function = "gpio";
+My bot found errors running 'make dt_binding_check' on your patch:
 
--- 
-2.34.1
+yamllint warnings/errors:
+
+dtschema/dtc warnings/errors:
+/builds/robherring/dt-review-ci/linux/Documentation/devicetree/bindings/arm/psci.yaml: properties:reboot-mode:patternProperties:^mode-.*$: {'minItems': 1, 'maxItems': 3, 'items': [{'description': 'arg1 (vendor-specific SYSTEM_RESET2 reset_type)', 'allOf': [{'$ref': '/schemas/types.yaml#/definitions/uint32'}, {'minimum': 2147483648}]}, {'description': 'arg2 (cookie_lo in 2-cell form, cookie_hi in 3-cell form)', '$ref': '/schemas/types.yaml#/definitions/uint32'}, {'description': 'arg3 (cookie_lo in 3-cell form)', '$ref': '/schemas/types.yaml#/definitions/uint32'}], 'description': 'Describes a PSCI SYSTEM_RESET2 vendor-specific reset type. The string\nafter "mode-" maps a reboot mode to a vendor-specific reset.\nA vendor-specific reset takes two arguments, a 32-bit reset_type and a\n64-bit cookie. The arguments are encoded as up to three 32-bit cells.\nEach mode property is encoded as mode-xxx = <arg1[, arg2[, arg3]]>,\nwhere:\n- arg1 is reset_type and must be >= 0x80000000.\n- In 2-cel
+ l form, arg2 is lower 32 bits of cookie.\n- In 3-cell form, arg2 is high 32 bits of cookie\n  and arg3 is low 32 bits of cookie.\n\nAll values should be provided as per the PSCI SYSTEM_RESET2\nspecification.\n'} should not be valid under {'required': ['maxItems']}
+	hint: "maxItems" is not needed with an "items" list
+	from schema $id: http://devicetree.org/meta-schemas/items.yaml
+
+doc reference errors (make refcheckdocs):
+
+See https://patchwork.kernel.org/project/devicetree/patch/20260803-arm-psci-system_reset2-vendor-reboots-v24-5-889281373870@oss.qualcomm.com
+
+The base for the series is generally the latest rc1. A different dependency
+should be noted in *this* patch.
+
+If you already ran 'make dt_binding_check' and didn't see the above
+error(s), then make sure 'yamllint' is installed and dt-schema is up to
+date:
+
+pip3 install dtschema --upgrade
+
+Please check and re-submit after running the above command yourself. Note
+that DT_SCHEMA_FILES can be set to your schema file to speed up checking
+your schema. However, it must be unset to test all examples with your schema.
 
