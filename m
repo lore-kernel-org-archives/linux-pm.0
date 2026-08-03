@@ -1,186 +1,105 @@
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id 02DFA42BEBA;
-	Mon,  3 Aug 2026 20:47:03 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7352B328B7F;
+	Mon,  3 Aug 2026 20:53:28 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1785790026; cv=none; b=dJP9/KriYSlMDpDn23dMDSRD1l+Bwg526moFYNu01CK9KKerUr/l4Ua1Jl7MNB/dHuhD5UP7O/jH+x2p6R55byMtQpgRwpQvXJTnaghppACRNuAnkrPIy6WXB1T/RB0JlMn7v7gTG4+4bM6rzyu/PEb8gapQbsdlI2ZU+PvBKMk=
+	t=1785790409; cv=none; b=pa4NkaWIWyXJQWwGzokLYGUoMHgjQwBsUM47ybrwQL9n5LyALCwIW0UZ66YQRpsY146Gbk5QQBqtIzcqwivSSJdD6Q7mRLLlbEE5T2Q7OMs3MQ+HyaItzKk2qffatFn3Tob+SBL71NMSp+4EpLGJXBotCAss+HMdopzTzY8Gv6o=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1785790026; c=relaxed/simple;
-	bh=bNN8afaKkSQsGb5zYeGHzmvS3ZkKTxnVHtHplVnUiCE=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=HNwaIJ+cLW6XworhFFNBOTSLzFuU/KVhPj/BjgGYZMa7QbicvOgQM8KbEyz3ZPvLSB+tqVi6nPvQSlctjkFPvjhb3gTVNd8XqPfnIfYtO1fvyqGpznJQKGfgrPcG5ev4V/jZCLACwAVl1HwTGC+AGC6wrBBysRqffKcZHVOImjs=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=mJDnFVfY; arc=none smtp.client-ip=217.140.110.172
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
+	s=arc-20240116; t=1785790409; c=relaxed/simple;
+	bh=MDzfBwhETVtZ+aaDo4ix5KcYZIh3rn9zmcx1yyWNTp8=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=Fw1Z5Wg3z9t7SwTc1HP9s0Y+Ux2UVmhUK6TfXJ+t3WOKUioF4D/x91yP+YyhX0Xtbe89K3noFAAVYxeFLkuC9XRubZLUjOYyZqjgRhu4QQuPep6eP/+dx1svGbvYJVZTZ5vh0lhXgHZSHlLPT/UPw0V68my+lVxpzloLxglZ8B0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=WcECJy5z; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="mJDnFVfY"
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id D555A143D;
-	Mon,  3 Aug 2026 13:46:58 -0700 (PDT)
-Received: from [10.57.0.71] (unknown [10.57.0.71])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id B01D33F632;
-	Mon,  3 Aug 2026 13:47:00 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1785790022; bh=bNN8afaKkSQsGb5zYeGHzmvS3ZkKTxnVHtHplVnUiCE=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=mJDnFVfY46QrhnTB82KrqN7s3c0kDDVm5+5DR1Igz73B6HqsAJxeqhf6uE5oKW03i
-	 T9qLGDmcteYcPjhIhJupiIFJvKO/4ebPTvED8szwyA6k3FDKGQ+ZlbXFC4yzIEWlAe
-	 vKKOhWbAs2kJSXG18ffuniRNLIRc1dRqlF+3CEUk=
-Message-ID: <e672b3f1-1a43-4f20-a02c-384b283883c9@arm.com>
-Date: Mon, 3 Aug 2026 21:46:58 +0100
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="WcECJy5z"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9B3681F00A3A;
+	Mon,  3 Aug 2026 20:53:26 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1785790408;
+	bh=42fMjfMmyKoxIac5xGfUWe0H4Hd5p40u1U7vZae7AME=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=WcECJy5zwe3it57uD+HxHZblPLjWVcBNQ4VhRCHd+jKDvO2jXi+m1kaTmRCsRRtg2
+	 QZv+SCD+KsaR3eZlvT0BW/ID679n01MbA83TiXwbEoW1L+W3NZwEyTU1zQpKDvOGCE
+	 urFSI4Joboi6Hyiq5c2YqJ6nXTowsFtdF/4P6kZgUHmg/GSO7B+hNn4Hqlen68o8R/
+	 q9bBSdE7BE92kMkNHFWafNdaz3b4KDwLwEOSwwtD5f8211u/yLgB7/tTHtKXWQzNHT
+	 MQg75JSK1wxMkLL4SVfp7mSe+XGv74BCfS570fKjbcvIODC2S4wXYzjPPjvkQ2o8Q3
+	 bLV42DdnxLicQ==
+Date: Mon, 3 Aug 2026 22:53:24 +0200
+From: Andi Shyti <andi.shyti@kernel.org>
+To: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
+Cc: Rob Herring <robh@kernel.org>, 
+	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
+	Mark Rutland <mark.rutland@arm.com>, Lorenzo Pieralisi <lpieralisi@kernel.org>, 
+	Suzuki K Poulose <suzuki.poulose@arm.com>, Mike Leach <mike.leach@arm.com>, 
+	James Clark <james.clark@linaro.org>, Leo Yan <leo.yan@arm.com>, Damien Le Moal <dlemoal@kernel.org>, 
+	Niklas Cassel <cassel@kernel.org>, Jyri Sarha <jyri.sarha@iki.fi>, 
+	Tomi Valkeinen <tomi.valkeinen@ideasonboard.com>, David Airlie <airlied@gmail.com>, 
+	Simona Vetter <simona@ffwll.ch>, Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, 
+	Maxime Ripard <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>, 
+	Matthias Brugger <matthias.bgg@gmail.com>, 
+	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>, Linus Walleij <linusw@kernel.org>, 
+	Bartosz Golaszewski <brgl@kernel.org>, Patrice Chotard <patrice.chotard@foss.st.com>, 
+	Jassi Brar <jassisinghbrar@gmail.com>, Lee Jones <lee@kernel.org>, 
+	Johannes Berg <johannes@sipsolutions.net>, Jeff Johnson <jjohnson@kernel.org>, 
+	Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@kernel.org>, 
+	Yangbo Lu <yangbo.lu@nxp.com>, Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <ukleinek@kernel.org>, 
+	Paul Walmsley <pjw@kernel.org>, Samuel Holland <samuel.holland@sifive.com>, 
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Richard Cochran <richardcochran@gmail.com>, 
+	Jens Wiklander <jenswi@kernel.org>, Yuanfang Zhang <yuanfang.zhang@oss.qualcomm.com>, 
+	YC Hung <yc.hung@mediatek.com>, Svyatoslav Ryhel <clamor95@gmail.com>, 
+	Sean Wang <sean.wang@kernel.org>, Frank Li <Frank.Li@nxp.com>, 
+	Peter Ujfalusi <peter.ujfalusi@gmail.com>, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
+	linux-arm-kernel@lists.infradead.org, coresight@lists.linaro.org, linux-arm-msm@vger.kernel.org, 
+	linux-ide@vger.kernel.org, dri-devel@lists.freedesktop.org, 
+	linux-mediatek@lists.infradead.org, linux-gpio@vger.kernel.org, linux-i2c@vger.kernel.org, 
+	mfd@lists.linux.dev, linux-wireless@vger.kernel.org, ath10k@lists.infradead.org, 
+	linux-pm@vger.kernel.org, netdev@vger.kernel.org, linux-pwm@vger.kernel.org, 
+	linux-riscv@lists.infradead.org, linux-usb@vger.kernel.org
+Subject: Re: [PATCH] dt-bindings: Correct white-space style
+Message-ID: <anD_bci501e0J3q2@zenone.zhora.eu>
+References: <20260801195613.235430-2-krzysztof.kozlowski@oss.qualcomm.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 0/3] ACPI: CPPC: Reduce .target() callback overhead
-To: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org,
- linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
- Jie Zhan <zhanjie9@hisilicon.com>, Lifeng Zheng <zhenglifeng1@huawei.com>,
- Pierre Gondois <pierre.gondois@arm.com>, Sumit Gupta <sumitg@nvidia.com>,
- Sudeep Holla <sudeep.holla@arm.com>,
- Ionela Voinescu <ionela.voinescu@arm.com>,
- Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>
-References: <20260724134251.1632824-1-christian.loehle@arm.com>
- <033eb158-936a-4f79-a134-80402fb018e8@arm.com>
- <CAJZ5v0jFvXKTO7MnC5GHYo85E6NwXQUXRDmmkq1i9BtSbQueAg@mail.gmail.com>
-Content-Language: en-US
-From: Christian Loehle <christian.loehle@arm.com>
-In-Reply-To: <CAJZ5v0jFvXKTO7MnC5GHYo85E6NwXQUXRDmmkq1i9BtSbQueAg@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260801195613.235430-2-krzysztof.kozlowski@oss.qualcomm.com>
 
-On 8/3/26 15:54, Rafael J. Wysocki (Intel) wrote:
-> On Mon, Aug 3, 2026 at 4:07 PM Christian Loehle
-> <christian.loehle@arm.com> wrote:
->>
->> On 7/24/26 14:42, Christian Loehle wrote:
->>> cppc-cpufreq reaches cppc_set_perf() from every target callback.  For
->>> direct SystemMemory controls, that path currently does several steps
->>> which are unnecessary once the immutable _CPC layout is known:
->>>
->>>   - a full-width write first reads the access unit and merges the value.
->>>   - every write takes the descriptor's RMW lock, even when its access unit
->>>     is not shared with another _CPC entry.
->>>   - cppc_set_perf() evaluates the same three PCC predicates at each phase
->>>     of the transaction.
->>>
->>> Remove those costs while retaining the existing conservative paths for
->>> partial fields, overlapping or malformed access units, and PCC controls.
->>>
->>> The series was tested on Arm Power-Orion O6 and AmpereOne systems using
->>> cppc-cpufreq and schedutil.  An rt-app task pinned to one CPU ran for
->>> 500 us every 2 ms with uclamp.min=512, for 5000 periods per run.  schedutil
->>> rate_limit_us was 1000.  cppc_cpufreq_fast_switch() latency was measured
->>> for 100 ten-second runs.  Each sample is the mean callback latency within
->>> one run, and the table reports the median and sample standard deviation
->>> of those samples.
->>>
->>> Orion O6               median       stdev       callbacks
->>> baseline               5703 ns      307 ns       188017
->>> complete series        5023 ns      240 ns       188209
->>> ==> 680 ns (11.9%) reduction
->>>
->>> AmpereOne              median       stdev
->>> baseline               2090 ns      157 ns
->>> complete series      1907.5 ns      140 ns
->>> ==> 182.5 ns (8.7%) reduction
->>>
->>> The cumulative intermediate results on the Orion O6 attribute roughly half
->>> of the gain to each of the first two patches: avoiding the read reduced
->>> the median by 284 ns (5.0%), and avoiding the lock reduced it by another
->>> 336 ns (6.2%).
->>> Together they account for 620 ns of the 680 ns total reduction.
->>>
->>> With the same arm64 configuration and GCC 11.4, caching the PCC predicate
->>> also reduces cppc_set_perf() from 1124 to 884 bytes.  The generated
->>> function has 60 fewer instructions, 17 fewer loads and 20 fewer branches.
->>>
->>> This series is based on the CPPC fixes posted at (already queued):
->>> https://lore.kernel.org/lkml/20260722093825.1030594-1-christian.loehle@arm.com/
->>>
->>> and the separately posted fix still under review:
->>> https://lore.kernel.org/lkml/20260724104042.1481804-1-christian.loehle@arm.com/
->>>
->>> PS:
->>> There's a final optimization that I actually wanted to make but decided to
->>> split it out for now as it somewhat replicated Sumit's series:
->>> Skipping redundant perf ctrl writes in cpufreq-cppc if registers are non-PCC
->>> and !shared (because the values are unchanged, the
->>> !autonomous-common-case), but that requires the driver to have a more
->>> complex caching- and atomic-updating machinery in place, similar to
->>> hotplug. As opposed to this series the optimization would be for the
->>> microcontroller handling the CPPC requests, which may be shared across
->>> many CPUs and therefore redundant requests can increase the dvfs
->>> transition latency.
->>> That patch will follow once Sumit's is queued:
->>> https://lore.kernel.org/lkml/20260716153820.2007095-1-sumitg@nvidia.com/
->>>
->>> Christian Loehle (3):
->>>   ACPI: CPPC: Avoid unnecessary reads for full-width writes
->>>   ACPI: CPPC: Avoid locking standalone full-width registers
->>>   ACPI: CPPC: Evaluate performance-control PCC use once
->>>
->>>  drivers/acpi/cppc_acpi.c | 135 +++++++++++++++++++++++++++++++--------
->>>  include/acpi/cppc_acpi.h |   5 +-
->>>  2 files changed, 113 insertions(+), 27 deletions(-)
->>>
->>>
->>> base-commit: 1590cf0329716306e948a8fc29f1d3ee87d3989f
->>> prerequisite-patch-id: 4c1f4063800e3658717eb77e43af13dad52d55cc
->>> prerequisite-patch-id: 5c40d9f099543123c9b904d18ce651e740fbefb8
->>> prerequisite-patch-id: 7202391dca8f31f9eb8f6d59fc753b3ce665e103
->>
->>
->> I was about the rebase and resend this series but noticed it still applies cleanly
->> on 7.2-rc6 + ACPI: CPPC: Avoid Desired Performance reads on ACPI 6.6+
->> https://lore.kernel.org/all/cover.1785749175.git.christian.loehle@arm.com/
->>
->> Any comments on this?
+Hi Krzysztof,
+
+On Sat, Aug 01, 2026 at 09:56:14PM +0200, Krzysztof Kozlowski wrote:
+> Correct a few white-space issues, like double space after '=' or before
+> bracket '{' characters, which will be flagged by dt-check-style.  No
+> functional changes.
 > 
-> Sashiko says that it couldn't apply this series:
+> Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
 > 
-> https://sashiko.dev/#/patchset/20260724134251.1632824-1-christian.loehle%40arm.com
+> ---
 > 
-> Would it apply on top of plain 7.2-rc6?  If so, can you please rebase
-> and resend it?  Or is it linux-next-only?
+> Patch applies on Rob's for-next branch.
+> ---
+>  .../arm/firmware/linaro,optee-tz.yaml         |  8 +-
+>  .../devicetree/bindings/arm/psci.yaml         | 18 ++--
+>  .../bindings/arm/qcom,coresight-tnoc.yaml     |  2 +-
+>  .../devicetree/bindings/ata/st,ahci.yaml      | 22 ++---
+>  .../bindings/display/ti/ti,am65x-dss.yaml     | 12 +--
+>  .../bindings/display/ti/ti,j721e-dss.yaml     | 96 +++++++++----------
+>  .../bindings/display/ti/ti,k2g-dss.yaml       | 36 +++----
+>  .../bindings/dsp/mediatek,mt8195-dsp.yaml     |  2 +-
+>  .../bindings/gpio/st,nomadik-gpio.yaml        |  2 +-
+>  .../devicetree/bindings/i2c/st,sti-i2c.yaml   |  2 +-
 
-Strange, it still works for me, anything I'm missing?
-Anyway I can rebase on v7.2-rc6 and rebase, the desired_perf changes are unrelated,
-but here's my log FWIW:
+Yes, I had noticed this recent white space which slipped off my
+review, but it looked too much hassle for a single patch removing
+the white space.
 
-# git checkout v7.2-rc6
-# git switch -c cloehle/cppc-target-optimizations-7.2-rc6-test
-# b4 am -c -o - 20260724134251.1632824-1-christian.loehle@arm.com | git am
-Grabbing thread from lore.kernel.org/all/20260724134251.1632824-1-christian.loehle@arm.com/t.mbox.gz
-Checking for newer revisions
-Grabbing search results from lore.kernel.org
-Analyzing 6 messages in the thread
-Looking for additional code-review trailers on lore.kernel.org
-Analyzing 0 code-review messages
-Checking attestation on all messages, may take a moment...
----
-  ✓ [PATCH 1/3] ACPI: CPPC: Avoid unnecessary reads for full-width writes
-  ✓ [PATCH 2/3] ACPI: CPPC: Avoid locking standalone full-width registers
-  ✓ [PATCH 3/3] ACPI: CPPC: Evaluate performance-control PCC use once
-  ---
-  ✓ Signed: DKIM/arm.com
----
-Total patches: 3
----
- Link: https://lore.kernel.org/r/20260724134251.1632824-1-christian.loehle@arm.com
- Base: using specified base-commit 1590cf0329716306e948a8fc29f1d3ee87d3989f
-       git checkout -b 20260724_christian_loehle_arm_com 1590cf0329716306e948a8fc29f1d3ee87d3989f
-Applying: ACPI: CPPC: Avoid unnecessary reads for full-width writes
-Applying: ACPI: CPPC: Avoid locking standalone full-width registers
-Applying: ACPI: CPPC: Evaluate performance-control PCC use once
+Thanks!
 
-# git log --oneline
-86f53dfeddb6 (HEAD -> cloehle/cppc-target-optimizations-7.2-rc6-test) ACPI: CPPC: Evaluate performance-control PCC use once
-61378f475006 ACPI: CPPC: Avoid locking standalone full-width registers
-0c5b12480412 ACPI: CPPC: Avoid unnecessary reads for full-width writes
-075b74841bd0 (tag: v7.2-rc6, origin/master, origin/HEAD) Linux 7.2-rc6
+Acked-by: Andi Shyti <andi.shyti@kernel.org>
 
+Andi
