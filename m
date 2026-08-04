@@ -1,150 +1,285 @@
-Received: from canpmsgout01.his.huawei.com (canpmsgout01.his.huawei.com [113.46.200.216])
+Received: from courrier.aliel.fr (courrier.aliel.fr [65.21.61.41])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2A3A345DF5C;
-	Tue,  4 Aug 2026 08:52:54 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=113.46.200.216
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E156A43CE57;
+	Tue,  4 Aug 2026 08:54:11 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=65.21.61.41
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1785833577; cv=none; b=HjL7Lce1q3qA33GUITq1G/TnlD0j3T5T3AMVPlnjW5srrq9xArWIRp++bofda5azyUqZp/rMurE9NyoJsgIrYeFiXQ/eXGaT4h9u8OUZ6Pqkfty9Wudb1/42QxzXIaMAg8Oq0fkuoNUGi0aJD/Sxx7x661D7T2urGDpf8cv3LJU=
+	t=1785833655; cv=none; b=j7lZccEtSyT5cT+xeTzHkyPCwLl+WrBGaWMEBDDIYauBML3HrpwEdg56vzyxsR+IY0xa+L+cFSxAKGgevWUs0r7P/g/x1z/T0E2Pr3c1k9f/Skab2Am3jBCLp3H3fDPgp/8W90wimu3M85PnYefoBb0lqvonwPDzo9VVCgoNQd4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1785833577; c=relaxed/simple;
-	bh=lbfyjpQGikg2fwlU4B1wBMNg9ioxsQXwBSGp1X0dAaI=;
-	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=kBPENcR9j56zLCyayWFkS0hvr4QXQlAlmTaQRLeTvAXrBTbv5MgV2vCpBL6xORm11LXES+R1zpjecDQZpIUitxcg4JMASu7LtmbM6257tXOCjZKXqfBtdYft+2crwooKmU4ntwm/3iFXR7fukEMEFnhpv0s2zNKNKvwq4/3KxlI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; spf=pass smtp.mailfrom=huawei.com; dkim=pass (1024-bit key) header.d=huawei.com header.i=@huawei.com header.b=GbqsxbM8; arc=none smtp.client-ip=113.46.200.216
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=huawei.com
+	s=arc-20240116; t=1785833655; c=relaxed/simple;
+	bh=UDyLan8moulhm/gx9Qx6wNSmAi1qEIRCeyqKz0VXlBY=;
+	h=Message-ID:Date:MIME-Version:From:Subject:To:Cc:References:
+	 In-Reply-To:Content-Type; b=GEBAUWz2SPcNjBUnIfAb768pyyrPG74kViLcA5HUXo1rQFj/WKZDJrzwkghnl6lktNS/RWNcthpvNn/9ggEbg04zzYoUgfYcgssG6AprMUbTc0UNGqKgroXlUO8hZo63J/8ChRQG0QxV1ynrM8jFUMk6SF/fE3mxrtPyN/TEtzU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=aliel.fr; spf=pass smtp.mailfrom=aliel.fr; dkim=pass (1024-bit key) header.d=aliel.fr header.i=@aliel.fr header.b=nZKCxyWw; arc=none smtp.client-ip=65.21.61.41
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=aliel.fr
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=aliel.fr
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=huawei.com header.i=@huawei.com header.b="GbqsxbM8"
-dkim-signature: v=1; a=rsa-sha256; d=huawei.com; s=dkim;
-	c=relaxed/relaxed; q=dns/txt;
-	h=From;
-	bh=qnmIKmDtED1A4RTC75yukztLHMsK8E6I1/QPQ2SMS0E=;
-	b=GbqsxbM8b3I296YHsDAavRcC/UE3BLAJ2lZwoBykqlaB9MUuxtL2WddV/Gfg7n/1f1HYLaUXV
-	niWpCvvp+wJzWf+AoiYkTb2UR3Zf/tSolUNqs/gSf6QUtxzehF+losN5MQSLFAJRljZdNvjTeo0
-	exwJT6y5jHB1LO/SGHOYr9A=
-Received: from mail.maildlp.com (unknown [172.19.163.104])
-	by canpmsgout01.his.huawei.com (SkyGuard) with ESMTPS id 4hDnB13bqKz1T4Lb;
-	Tue,  4 Aug 2026 16:43:05 +0800 (CST)
-Received: from kwepemf100001.china.huawei.com (unknown [7.202.181.215])
-	by mail.maildlp.com (Postfix) with ESMTPS id 7ABEC4057F;
-	Tue,  4 Aug 2026 16:52:44 +0800 (CST)
-Received: from localhost.localdomain (10.50.163.32) by
- kwepemf100001.china.huawei.com (7.202.181.215) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.1544.36; Tue, 4 Aug 2026 16:52:43 +0800
-From: Lifeng Zheng <zhenglifeng1@huawei.com>
-To: <rafael@kernel.org>, <viresh.kumar@linaro.org>, <saket.dumbre@intel.com>,
-	<lenb@kernel.org>, <zhanjie9@hisilicon.com>, <pierre.gondois@arm.com>,
-	<sumitg@nvidia.com>
-CC: <linux-acpi@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
-	<linux-pm@vger.kernel.org>, <acpica-devel@lists.linux.dev>,
-	<linuxarm@huawei.com>, <lihuisong@huawei.com>, <yubowen8@huawei.com>,
-	<zhangpengjie2@huawei.com>, <wangzhi12@huawei.com>,
-	<linhongye@h-partners.com>, <zhenglifeng1@huawei.com>
-Subject: [PATCH v2 5/8] ACPI: CPPC: Store optional flag in cpc_register_resource
-Date: Tue, 4 Aug 2026 16:50:39 +0800
-Message-ID: <20260804085042.4118193-6-zhenglifeng1@huawei.com>
-X-Mailer: git-send-email 2.33.0
-In-Reply-To: <20260804085042.4118193-1-zhenglifeng1@huawei.com>
-References: <20260804085042.4118193-1-zhenglifeng1@huawei.com>
+	dkim=pass (1024-bit key) header.d=aliel.fr header.i=@aliel.fr header.b="nZKCxyWw"
+Message-ID: <5d11fa8d-737b-48d5-b8e9-88eace8ec4d7@aliel.fr>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=aliel.fr;
+	s=courrier-s1; t=1785833649;
+	bh=UDyLan8moulhm/gx9Qx6wNSmAi1qEIRCeyqKz0VXlBY=;
+	h=Date:From:Subject:To:Cc:References:In-Reply-To;
+	b=nZKCxyWwvfNBCcKsS9SeRIImqCG+gkGKBGxQtVUwOsn1f/RJKEc0544BMs0cz3YG+
+	 9fJw0UvMGksf9Tz6PMnSNVgeNTusrg6ARJ7hg2iIXuCOGokXYqYr0kxcEGBO3ZtKxw
+	 RAnJhlfGyLvaMAuIY3+XUkJQog4LCyT8zgyAutlM=
+Date: Tue, 4 Aug 2026 10:54:08 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird Beta
+From: linux-kernel-dev@aliel.fr
+Subject: Re: [PATCH v8 4/8] mfd: khadas-mcu: Add support for VIM4 MCU variant
+To: Lee Jones <lee@kernel.org>
+Cc: Neil Armstrong <neil.armstrong@linaro.org>, Rob Herring
+ <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
+ Conor Dooley <conor+dt@kernel.org>, Andi Shyti <andi.shyti@kernel.org>,
+ Kevin Hilman <khilman@baylibre.com>, Jerome Brunet <jbrunet@baylibre.com>,
+ Martin Blumenstingl <martin.blumenstingl@googlemail.com>,
+ Beniamino Galvani <b.galvani@gmail.com>,
+ "Rafael J. Wysocki" <rafael@kernel.org>,
+ Daniel Lezcano <daniel.lezcano@kernel.org>, Zhang Rui <rui.zhang@intel.com>,
+ Lukasz Luba <lukasz.luba@arm.com>, Liam Girdwood <lgirdwood@gmail.com>,
+ Mark Brown <broonie@kernel.org>, linux-amlogic@lists.infradead.org,
+ devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linux-i2c@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ linux-pm@vger.kernel.org
+References: <20260702-add-mcu-fan-khadas-vim4-v8-0-244feee91a36@aliel.fr>
+ <20260702-add-mcu-fan-khadas-vim4-v8-4-244feee91a36@aliel.fr>
+ <20260723154847.GP3363113@google.com>
+Content-Language: en-US
+In-Reply-To: <20260723154847.GP3363113@google.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-ClientProxiedBy: kwepems500002.china.huawei.com (7.221.188.17) To
- kwepemf100001.china.huawei.com (7.202.181.215)
 
-The current optionality check uses a compile-time bitmask (REG_OPTIONAL)
-applied at call sites via IS_OPTIONAL_CPC_REG(reg_idx).  This requires
-every caller to know the register index, which will not work for registers
-accessed without a fixed index (e.g. entries inside Resource Priority
-sub-packages).
+On 7/23/26 5:48 PM, Lee Jones wrote:
+> /* Sashiko Automation: Reviewed (0 Findings) */
+> 
+> On Thu, 02 Jul 2026, Ronald Claveau via B4 Relay wrote:
+> 
+>> From: Ronald Claveau <linux-kernel-dev@aliel.fr>
+>>
+>> Refactor probe() to use per-variant values
+>> instead of hardcoded globals.
+>>
+>> Add dedicated regmap configuration for the VIM4 MCU,
+>> with its own volatile/writeable registers.
+>>
+>> Add the fan control register
+>> (0–100 levels vs 0–3 for previous supported boards).
+>>
+>> Add a new compatible string "khadas,vim4-mcu".
+>>
+>> Reviewed-by: Neil Armstrong <neil.armstrong@linaro.org>
+>> Signed-off-by: Ronald Claveau <linux-kernel-dev@aliel.fr>
+>> ---
+>>
+>>  drivers/mfd/khadas-mcu.c | 118 ++++++++++++++++++++++++++++++++++++++++-------
+>>  1 file changed, 102 insertions(+), 16 deletions(-)
+>>
+>> diff --git a/drivers/mfd/khadas-mcu.c b/drivers/mfd/khadas-mcu.c
+>> index ba981a7886921..d2ca7deda45c6 100644
+>> --- a/drivers/mfd/khadas-mcu.c
+>> +++ b/drivers/mfd/khadas-mcu.c
+>> @@ -13,6 +13,9 @@
+>>  #include <linux/module.h>
+>>  #include <linux/regmap.h>
+>>  
+>> #define KHADAS_MCU_FAN_LEVEL_MAX 3
+>> #define KHADAS_MCU_VIM4_FAN_LEVEL_MAX 0x64
+>> +
+>>  static bool khadas_mcu_reg_volatile(struct device *dev, unsigned int reg)
+>>  {
+>>  	if (reg >= KHADAS_MCU_USER_DATA_0_REG &&
+>> @@ -75,47 +78,129 @@ static const struct regmap_config khadas_mcu_regmap_config = {
+>>  	.cache_type	= REGCACHE_MAPLE,
+>>  };
+>>  
+>> -static struct mfd_cell khadas_mcu_fan_cells[] = {
+>> +static const struct khadas_mcu_fan_pdata khadas_mcu_fan_pdata = {
+>> +	.fan_reg	= KHADAS_MCU_CMD_FAN_STATUS_CTRL_REG,
+>> +	.max_level	= KHADAS_MCU_FAN_LEVEL_MAX,
+>> +};
+>> +
+>> +static const struct mfd_cell khadas_mcu_fan_cells[] = {
+>>  	/* VIM1/2 Rev13+ and VIM3 only */
+>> -	{ .name = "khadas-mcu-fan-ctrl", },
+>> +	{
+>> +		.name = "khadas-mcu-fan-ctrl",
+>> +		.platform_data = &khadas_mcu_fan_pdata,
+>> +		.pdata_size = sizeof(khadas_mcu_fan_pdata),
+>> +	},
+>>  };
+> 
+> If you're tweaking, feel free to get more upstream creds by laying down
+> a prelim patch changing these to MFD_CELL_*().
+> 
 
-Add a boolean 'optional' field to cpc_register_resource so that each
-register element carries its own optionality.  Populate the field during
-_CPC probe (for main registers) and parse_priority_regs() (for Resource
-Priority sub-packages), using the existing REG_OPTIONAL and
-RES_PRIO_OPTIONAL bitmasks respectively.
+Thanks for the suggestion, will do that for the next version.
 
-Replace the IS_OPTIONAL_CPC_REG() check in cppc_get_reg_val() with a
-direct test of reg->optional, and remove the IS_OPTIONAL_CPC_REG() macro.
+>> -static struct mfd_cell khadas_mcu_cells[] = {
+>> +static const struct mfd_cell khadas_mcu_cells[] = {
+>>  	{ .name = "khadas-mcu-user-mem", },
+>>  };
+>>  
+>> +static bool khadas_mcu_vim4_reg_volatile(struct device *dev, unsigned int reg)
+>> +{
+>> +	switch (reg) {
+>> +	case KHADAS_MCU_PWR_OFF_CMD_REG:
+>> +	case KHADAS_MCU_VIM4_REST_CONF_REG:
+>> +	case KHADAS_MCU_WOL_INIT_START_REG:
+>> +	case KHADAS_MCU_VIM4_LED_ON_RAM_REG:
+>> +	case KHADAS_MCU_VIM4_FAN_CTRL_REG:
+>> +	case KHADAS_MCU_VIM4_WDT_EN_REG:
+>> +	case KHADAS_MCU_VIM4_SYS_RST_REG:
+>> +		return true;
+>> +	default:
+>> +		return false;
+>> +	}
+>> +}
+>> +
+>> +static bool khadas_mcu_vim4_reg_writeable(struct device *dev, unsigned int reg)
+>> +{
+>> +	switch (reg) {
+>> +	case KHADAS_MCU_VERSION_0_REG:
+>> +	case KHADAS_MCU_VERSION_1_REG:
+>> +	case KHADAS_MCU_SHUTDOWN_NORMAL_STATUS_REG:
+>> +		return false;
+>> +	default:
+>> +		return true;
+>> +	}
+>> +}
+>> +
+>> +static const struct regmap_config khadas_mcu_vim4_regmap_config = {
+>> +	.reg_bits	= 8,
+>> +	.reg_stride	= 1,
+>> +	.val_bits	= 8,
+>> +	.max_register	= KHADAS_MCU_VIM4_SYS_RST_REG,
+>> +	.volatile_reg	= khadas_mcu_vim4_reg_volatile,
+>> +	.writeable_reg	= khadas_mcu_vim4_reg_writeable,
+>> +	.cache_type	= REGCACHE_MAPLE,
+>> +};
+>> +
+>> +static const struct khadas_mcu_fan_pdata khadas_vim4_fan_pdata = {
+>> +	.fan_reg	= KHADAS_MCU_VIM4_FAN_CTRL_REG,
+>> +	.max_level	= KHADAS_MCU_VIM4_FAN_LEVEL_MAX,
+>> +};
+>> +
+>> +static const struct mfd_cell khadas_mcu_vim4_cells[] = {
+>> +	{
+>> +		.name		= "khadas-mcu-fan-ctrl",
+>> +		.platform_data	= &khadas_vim4_fan_pdata,
+>> +		.pdata_size	= sizeof(khadas_vim4_fan_pdata),
+>> +	},
+>> +};
+>> +
+>>  static int khadas_mcu_probe(struct i2c_client *client)
+>>  {
+>> +	const struct mfd_cell *cells, *fan_cells;
+>> +	const struct regmap_config *regmap_cfg;
+>>  	struct device *dev = &client->dev;
+>> +	int ncells, nfan_cells, ret;
+>>  	struct khadas_mcu *ddata;
+>> -	int ret;
+>>  
+>>  	ddata = devm_kzalloc(dev, sizeof(*ddata), GFP_KERNEL);
+>>  	if (!ddata)
+>>  		return -ENOMEM;
+>>  
+>> +	switch ((uintptr_t)i2c_get_match_data(client)) {
+> 
+> Let's pull this out of the switch():
+> 
+> 	const void *match;
+> 
+> 	match = i2c_get_match_data(client);
+> 	if (!match)
+> 		return -ENODEV;
+> 
+> This would separate the declaration from the potentially failing
+> function call and prevent implicitly matching 'KHADAS_MCU_GENERIC' (if
+> its value is 0) should the lookup fail.
+> 
 
-Signed-off-by: Lifeng Zheng <zhenglifeng1@huawei.com>
----
- drivers/acpi/cppc_acpi.c | 13 ++++++++-----
- include/acpi/cppc_acpi.h |  1 +
- 2 files changed, 9 insertions(+), 5 deletions(-)
+Thanks for that catch, I will change it.
 
-diff --git a/drivers/acpi/cppc_acpi.c b/drivers/acpi/cppc_acpi.c
-index fde51823e938..3b35c757a789 100644
---- a/drivers/acpi/cppc_acpi.c
-+++ b/drivers/acpi/cppc_acpi.c
-@@ -137,11 +137,11 @@ static DEFINE_PER_CPU(struct cpc_desc *, cpc_desc_ptr);
- #define REG_OPTIONAL (0x7FC7D0)
- 
- /*
-- * Use the index of the register in per-cpu cpc_regs[] to check if
-- * it's an optional one.
-+ * Each bit indicates the optionality of the register in resource
-+ * priority register descriptor with the corresponding index. 0 means
-+ * mandatory and 1 means optional.
-  */
--#define IS_OPTIONAL_CPC_REG(reg_idx) (REG_OPTIONAL & (1U << (reg_idx)))
--
-+#define RES_PRIO_OPTIONAL (0x6)
- /*
-  * Arbitrary Retries in case the remote processor is slow to respond
-  * to PCC commands. Keeping it high enough to cover emulators where
-@@ -844,6 +844,7 @@ static int parse_priority_regs(union acpi_object *cpc_obj,
- 
- 		reg_elements[0].type = ACPI_TYPE_PACKAGE;
- 		reg_elements[0].cpc_entry.package.count = resources_count;
-+		reg_elements[0].optional = RES_PRIO_OPTIONAL & 1U;
- 
- 		for (j = 0; j < reg_elements[0].cpc_entry.package.count; j++) {
- 			reg_elements[0].cpc_entry.package.elements[j].type = ACPI_TYPE_INTEGER;
-@@ -852,6 +853,7 @@ static int parse_priority_regs(union acpi_object *cpc_obj,
- 		}
- 
- 		for (j = 1; j < RESOURCE_PRIORITY_NUM; j++) {
-+			reg_elements[j].optional = RES_PRIO_OPTIONAL & (1U << j);
- 			ret = parse_cpc_element(&reg_desc_obj.package.elements[j], &reg_elements[j],
- 						pcc_subspace_id, cpu, RESOURCE_PRIORITY);
- 			if (ret)
-@@ -990,6 +992,7 @@ int acpi_cppc_processor_probe(struct acpi_processor *pr)
- 	/* Iterate through remaining entries in _CPC */
- 	for (i = 2; i < num_ent; i++) {
- 		cpc_obj = &out_obj->package.elements[i];
-+		cpc_ptr->cpc_regs[i-2].optional = REG_OPTIONAL & (1U << (i-2));
- 
- 		/*
- 		 * Package-type entries are used for nested structures such as
-@@ -1409,7 +1412,7 @@ static int cppc_get_reg_val(int cpu, enum cppc_regs reg_idx, u64 *val)
- 
- 	reg = &cpc_desc->cpc_regs[reg_idx];
- 
--	if ((reg->type == ACPI_TYPE_INTEGER && IS_OPTIONAL_CPC_REG(reg_idx) &&
-+	if ((reg->type == ACPI_TYPE_INTEGER && reg->optional &&
- 	     !reg->cpc_entry.int_value) || (reg->type != ACPI_TYPE_INTEGER &&
- 	     IS_NULL_REG(&reg->cpc_entry.reg))) {
- 		pr_debug("CPC register is not supported\n");
-diff --git a/include/acpi/cppc_acpi.h b/include/acpi/cppc_acpi.h
-index 19f8a722654b..c0b8d52016cd 100644
---- a/include/acpi/cppc_acpi.h
-+++ b/include/acpi/cppc_acpi.h
-@@ -80,6 +80,7 @@ struct cpc_register_resource {
- 			struct cpc_register_resource *elements;
- 		} package;
- 	} cpc_entry;
-+	bool optional;
- };
- 
- /* Container to hold the CPC details for each CPU */
+>> +	case KHADAS_MCU_GENERIC:
+>> +		regmap_cfg	= &khadas_mcu_regmap_config;
+>> +		cells		= khadas_mcu_cells;
+>> +		ncells		= ARRAY_SIZE(khadas_mcu_cells);
+>> +		fan_cells	= khadas_mcu_fan_cells;
+>> +		nfan_cells	= ARRAY_SIZE(khadas_mcu_fan_cells);
+>> +		break;
+>> +	case KHADAS_MCU_VIM4:
+>> +		regmap_cfg	= &khadas_mcu_vim4_regmap_config;
+>> +		cells		= NULL;
+>> +		ncells		= 0;
+>> +		fan_cells	= khadas_mcu_vim4_cells;
+>> +		nfan_cells	= ARRAY_SIZE(khadas_mcu_vim4_cells);
+>> +		break;
+>> +	default:
+>> +		return -ENODEV;
+>> +	}
+>> +
+>>  	i2c_set_clientdata(client, ddata);
+>>  
+>>  	ddata->dev = dev;
+>>  
+>> -	ddata->regmap = devm_regmap_init_i2c(client, &khadas_mcu_regmap_config);
+>> +	ddata->regmap = devm_regmap_init_i2c(client, regmap_cfg);
+>>  	if (IS_ERR(ddata->regmap)) {
+>>  		ret = PTR_ERR(ddata->regmap);
+>> -		dev_err(dev, "Failed to allocate register map: %d\n", ret);
+>> -		return ret;
+>> +		return dev_err_probe(dev, ret, "Failed to allocate register map\n");
+>>  	}
+>>  
+>> -	ret = devm_mfd_add_devices(dev, PLATFORM_DEVID_NONE,
+>> -				   khadas_mcu_cells,
+>> -				   ARRAY_SIZE(khadas_mcu_cells),
+>> -				   NULL, 0, NULL);
+>> -	if (ret)
+>> -		return ret;
+>> +	if (cells && ncells) {
+>> +		ret = devm_mfd_add_devices(dev, PLATFORM_DEVID_NONE,
+>> +					   cells,
+>> +					   ncells,
+>> +					   NULL, 0, NULL);
+>> +		if (ret)
+>> +			return ret;
+>> +	}
+>>  
+>>  	if (of_property_present(dev->of_node, "#cooling-cells"))
+>>  		return devm_mfd_add_devices(dev, PLATFORM_DEVID_NONE,
+>> -					    khadas_mcu_fan_cells,
+>> -					    ARRAY_SIZE(khadas_mcu_fan_cells),
+>> +					    fan_cells,
+>> +					    nfan_cells,
+>>  					    NULL, 0, NULL);
+>>  
+>>  	return 0;
+>> @@ -123,7 +208,8 @@ static int khadas_mcu_probe(struct i2c_client *client)
+>>  
+>>  #ifdef CONFIG_OF
+>>  static const struct of_device_id khadas_mcu_of_match[] = {
+>> -	{ .compatible = "khadas,mcu", },
+>> +	{ .compatible = "khadas,mcu", .data = (void *)KHADAS_MCU_GENERIC },
+>> +	{ .compatible = "khadas,vim4-mcu", .data = (void *)KHADAS_MCU_VIM4 },
+>>  	{},
+>>  };
+>>  MODULE_DEVICE_TABLE(of, khadas_mcu_of_match);
+>>
+>> -- 
+>> 2.49.0
+>>
+>>
+> 
+
+
 -- 
-2.33.0
-
+Best regards,
+Ronald
