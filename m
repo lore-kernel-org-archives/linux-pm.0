@@ -1,140 +1,141 @@
-Received: from mail-ej1-f44.google.com (mail-ej1-f44.google.com [209.85.218.44])
+Received: from mail-wm1-f71.google.com (mail-wm1-f71.google.com [209.85.128.71])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A9E0C42AFA5
-	for <linux-pm@vger.kernel.org>; Tue,  4 Aug 2026 07:49:55 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.218.44
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1785829797; cv=pass; b=dtX6e0qNcIWw9rychXwN1H/EE/uAAOiizWxpDL2XfuRQIPyEMIf6JQ7VQnU2B+XeMla51YDFGftnsBu2+3Z518utDsMgYyQR7cZAWYse/73UZg2OGb3X7iwH3C0vSpmOLYvHWAA5DAO7E1T7lcdKrfuGKzbBDderus23m/DX1nw=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1785829797; c=relaxed/simple;
-	bh=OmWlM/JGJt4Vhs83DOiTTiO0UFaa1QDbwgGwrj5GUKU=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=rLNFUUVcDWG8NMF19maLfe5CgSuJI/54QMGGa9CXmfmR7gz9mCdYfe14R2fuo02Ee70OC0Hkvv6DOt/TiCiggKuvZLNJQEh+VSpepgG9/tRVcRqYRCQhWDGI8At5fAuDagRIUl/bEcMmdluWROB/5R20/fqaNkXs8sK471GKv8k=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=MwLAupQr; arc=pass smtp.client-ip=209.85.218.44
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D756543B3D6
+	for <linux-pm@vger.kernel.org>; Tue,  4 Aug 2026 08:02:14 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.71
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1785830538; cv=none; b=HWoFJa//ORZoWQl1L12WwITgjQ0cmSsZYjScMdU4YFRo6Kax2syVOHBvhtF/ySCO591yUpl9IXhsrBSuZQjD9cWSUTiyzvzc5J1go5BhGn1imGimuDt3Tk0E8nNkqg15xtAUNROPALDiaFywJPAXkycD5us7LHdPonWFp5ER2aA=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1785830538; c=relaxed/simple;
+	bh=CB5SYoKg/5ZxEr5pPhwxBoe4hMu1CcWGN7cso8dfp4M=;
+	h=Date:In-Reply-To:Mime-Version:References:Message-ID:Subject:From:
+	 To:Cc:Content-Type; b=a0XWZYfg5iAtxp5H7aRHmxS9cjmdUCUSA38VczfZvLlP6wI5ez/FaKrCEGg8gzkO1krk96RUP51DDJkozQETkdmUD7CzgTiBd38Yfl9+2DvIyPJTyJU2bOop2vZQzqiAU4FgfcaYQYy5oPv64lEvpyumjduQWgFVAiFK0aapldo=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com; spf=pass smtp.mailfrom=flex--aliceryhl.bounces.google.com; dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b=ZZ79MWYP; arc=none smtp.client-ip=209.85.128.71
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=flex--aliceryhl.bounces.google.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="MwLAupQr"
-Received: by mail-ej1-f44.google.com with SMTP id a640c23a62f3a-c1712a04ddaso684911166b.2
-        for <linux-pm@vger.kernel.org>; Tue, 04 Aug 2026 00:49:55 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1785829794; cv=none;
-        d=google.com; s=arc-20260327;
-        b=f/kFtKvcokHzS4UdRNB3Ub82sSQLb9B2+1b8VQVs7JoJAl1J5zV63hEhpNLdRgIhTA
-         x5Z2lE9ugkgZN6bzf6JqQfDQuK5zPSxJ1MUJTanthbUI6w+NfmRQO6dOohUqNGo/gCgw
-         huDg3gv0B+h8vKNSP17H9UCAnsBTVcI5MNkwUIvbRE9CZRyN0iNTGssZ2wMOei3XREay
-         g4DoPnGwwZvKrEq0ZufwlpzU94AhgVUwYKFBzQHtZi5bhq7PjiqBrcOAoz5kGzKVmEik
-         qMp2yvPK4hlFULMhEmicAZsEFkyFQ7gnDExTe7OVfxIOhnTUz1FmxoyojtdvkLcDW8vy
-         Gkmw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=tIHHVDdHYzYzDyqpm0ApPfqei6BlC/PdRs4c7TbsR9E=;
-        fh=kNfTU6muu/DVIZ9JtYTVl7N79krcMlEipseBxeDkIM8=;
-        b=dGq6ZJ4BCnjdMl2wMpcU3PgXrjxWqU1fg+mvf0O9qukF28cUOGLpC8idmJyT4vk+1W
-         P9/xwsNHEV6V/kG0GbMCdoMZ1V+/k5F0mSaRj7C0dUEIb4/Dc4koTGUIEUvskeCV25IF
-         p8PoPD7T9nKk2cT1FYvfEgTECPvO8CfVITBsdkrWgEl6vd5VKl8lk8PxB8FA8C3Vt4LS
-         JF9eBa+WFBMqcUTvkCi4gmmHJW9K1lGAbO/lyas1QiYMQ4kRG7T0uGYJKmr+MoA3iV5E
-         zYqaPJzsjkJzRJ4RPd/1z/Pnr3J32VLOvnsjc7A/TQJfKn1BmF+nREsQTCUeXBCrC4Ja
-         kcTg==;
-        darn=vger.kernel.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
+	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b="ZZ79MWYP"
+Received: by mail-wm1-f71.google.com with SMTP id 5b1f17b1804b1-4954a93c565so16978685e9.2
+        for <linux-pm@vger.kernel.org>; Tue, 04 Aug 2026 01:02:14 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1785829794; x=1786434594; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=tIHHVDdHYzYzDyqpm0ApPfqei6BlC/PdRs4c7TbsR9E=;
-        b=MwLAupQriseS1XOL3IA0aaUvCW567en3TxkDW0y3zmZOgTMwMVUT8aEKbeagJyMhDA
-         QbVZswQVN4acBX0uUHGkMXbyEaz19SBCK3HzDszbmxLakDi7jLU7Fo0u55pZFXR0+WJ8
-         Xa7kBh5XSqFG64eP3y8Y2wLu/4QEGImzV2m2ODaNoq5dhWQrmC0smD4MSrMyM4h4oYUS
-         cJ7ksMoszTcP2Hf5lYw5xYMwx0HhcNBmBkF0rOvkR+rN3DTe8Ven0bv4wVS7iSR7/viS
-         4y1Kl1mwuS66GyPhaxaRDduhxcA23yAtB9hMpXb1azeyN6Za7r4zmvSJfMfn/iruTwnk
-         dfjA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1785829794; x=1786434594;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+        d=google.com; s=20251104; t=1785830533; x=1786435333; darn=vger.kernel.org;
+        h=content-type:cc:to:from:subject:message-id:references:mime-version
+         :in-reply-to:date:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=tIHHVDdHYzYzDyqpm0ApPfqei6BlC/PdRs4c7TbsR9E=;
-        b=pJopGWMafKHDmRr907wju5KgTFSEZaL6Orj8KyWxbA3HFO/RO9OzZDd8XqKVjJ6kPF
-         5eH9s/KO6uHtSLZTxc35aXOjWHPfEDg+GwUaK5pdgoyna7OY6zIKSprmjy5vCekK4q9h
-         /PHmTQDJ3fYNcqpKmhecU+viB+/2VKoXYvp78i9CHT+HbnlEqDtIcGFD5wVRYiyr4M+6
-         g1lZmPnGLES/e74mychYEiBkqrYE+hDYAB+3DD9xf/cFmZ+ZqWR3xigPg0/Dd4CyiqHi
-         huPrKaIY+rFEZIhH+LjraEfTYpKKc28fiXFc1d9ydWLaGGaZrAIENdDmwBX3yoadX7r6
-         fYMw==
-X-Forwarded-Encrypted: i=1; AHgh+RrQxSZMPaoOvv4v5HFw6fhIktxcWPM5/9owAA6ycThhBeKmX4UOUMGAwlrOr00Nfuh64nkr0THuSw==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yw/kYkg58v0yHH9QHpF9mkfeQ2yNQmgyp8SreUUK1bvyJmfOqqi
-	habtDyJj2b9fbKkd1mXHPNIdXGiqwOEYBRm8Vty86z3YgDHPGmWbaNojqiHXWkWDwG6sJVSk9k5
-	rpOLk6NUytyRH7zZSSClMaRC8PsJht+c=
-X-Gm-Gg: AR+sD12CxvDJpC5nBpCes0XDDWsV9LyAqGgT40ymhXpoEIFmrRlB6ttz0aW/cjVAJdE
-	P0wsw7rCnG1TGcc8/rRsQJsgbu7BhSf1q5CfNDk/BEYU1Lftz62fDwb1unGtdKTNGs4Rx5HHPcr
-	eZEyNwldKyAPJssBh2PbM2cEH9rjgVkSD7DdCx3/MUrznmcrHw7Lne9IxSy/Au+pJJ98ygGZfll
-	7iMhSQUKHJxFuaqSQB5hcKBaS2YtPMGrJfDC+hltOYsV7xrGJJuxLWXrnqmNxYdAxRFZ8Tly1RR
-	JBOZXP55dyZ51WmwVV/8Oh0ADwbKRTvqcFz8Vc0teBaY644=
-X-Received: by 2002:a17:907:3c83:b0:c1c:257e:4888 with SMTP id
- a640c23a62f3a-c1fe80d7742mr1126518766b.27.1785829793494; Tue, 04 Aug 2026
- 00:49:53 -0700 (PDT)
+        bh=nEJITv1WcGLvr9b4sfSYJz2GZb00MTzVJtJ1pz53UrA=;
+        b=ZZ79MWYP6Jvv2LYutooK1TErsMloJ3F3TgfvrnqLUsOPlsz3FZzocV4yQN6HtjvukC
+         U9Fq9TbiBIrLUpCCj6kK5NjHjKeUzAN0wwrclDIrPC3uQmZeaeAF35jReVIpC6ipDEsp
+         CLb1WIQLVYhhJNp347imKwpxMqlAikgxvnEEb8iO0EaTfYqG8Lquoj+q7YsN0xJxDgUy
+         YZB+JrDp0yLKkaDv174XLfweyqZCLIgD1l6juoezzXtTk6YpTWP1Es3DOF1XpFiebOaW
+         PqdOHGCCGNm1i+YHtfGxVddWHq+2zsQuiD3AGzPeI6u54xHMVBkr0n/w8GLn6tkZNIre
+         5ENQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1785830533; x=1786435333;
+        h=content-type:cc:to:from:subject:message-id:references:mime-version
+         :in-reply-to:date:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=nEJITv1WcGLvr9b4sfSYJz2GZb00MTzVJtJ1pz53UrA=;
+        b=jz9ip4gl58N+5EJ437IDQ17dk1f7BeTP/6/rBXZlVMILK6Vqw3Aot6lKPDN0NAa0QF
+         73QJ7G05tERg6NECUd8NGZTd8wQA3frzyd2KrjiTVO01oOZqQURrvzxoUHlOE53lK4vY
+         FYqKmtbtiF+MU7Dmqw+yjA4LiSDaML/lu+bG3CO7K7TZ4pnvA1RR6NACT9q8Xq+VhxA0
+         /RAMBHAnr/DjOmxqgnIbObS872i8X7usXRnIcp0cJne0q8gpOskNFIE8oBnlSacCRZ86
+         MDKlx3ZJAM8J7x4V2QArx20PyclqkoCHGKfI89v5fZzhtxpQbhx1rGVCORMAqAvQJvBn
+         pjzA==
+X-Forwarded-Encrypted: i=1; AHgh+RqFzITAZEnroY3FZ5LL3BOK+MnAg8/SsuzuU3iRh1vEecj4uTh+xkQFb160QOTsINDyZgtQ+07Ibw==@vger.kernel.org
+X-Gm-Message-State: AOJu0YwMCqr9WGDA8xK9MXDvR0Eq3r7wfB/Hf4nfMf+BIeVfkAbVIBTR
+	31lFrlG2CnN0tEPLxj7XX/Hmr7KdV90fhFVvKEECeevAC1oq/EO85jK6IYf83a7zF+sPZL9A0m+
+	96XeWCZV4Mb0kPd/e0A==
+X-Received: from wmpx38.prod.google.com ([2002:a05:600c:18a6:b0:495:49a0:9476])
+ (user=aliceryhl job=prod-delivery.src-stubby-dispatcher) by
+ 2002:a05:600c:4f84:b0:496:bbcb:b0bb with SMTP id 5b1f17b1804b1-4980c674e31mr299591655e9.18.1785830532277;
+ Tue, 04 Aug 2026 01:02:12 -0700 (PDT)
+Date: Tue, 4 Aug 2026 08:02:11 +0000
+In-Reply-To: <20260721153617.869933-3-beata.michalska@arm.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
-MIME-Version: 1.0
-References: <cover.1785480242.git.zhoubinbin@loongson.cn> <0fbb8d766b6ed33bf4ae9b066eac174f55ae5b56.1785480242.git.zhoubinbin@loongson.cn>
- <20260804-intelligent-kickass-squid-e4c4c0@quoll>
-In-Reply-To: <20260804-intelligent-kickass-squid-e4c4c0@quoll>
-From: Binbin Zhou <zhoubb.aaron@gmail.com>
-Date: Tue, 4 Aug 2026 15:49:40 +0800
-X-Gm-Features: AUfX_mx5oxerXvL0N18GQL0cgfDF9LTPcv7Pk-z3jk4krWgDnaxFa1jCKZmpg4c
-Message-ID: <CAMpQs4J+RSF+rk1RJW-4+mbaeWpAzMKeiZo1R=B-wfXnAM5ScA@mail.gmail.com>
-Subject: Re: [PATCH v3 3/5] dt-bindings: mfd: syscon: Allow syscon compatible
- for Loongson-2K0300 chip id
-To: Krzysztof Kozlowski <krzk@kernel.org>
-Cc: Binbin Zhou <zhoubinbin@loongson.cn>, Huacai Chen <chenhuacai@loongson.cn>, 
-	Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
-	Yinbo Zhu <zhuyinbo@loongson.cn>, zhanghongchen <zhanghongchen@loongson.cn>, 
-	"Rafael J . Wysocki" <rafael@kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, 
-	Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>, Lee Jones <lee@kernel.org>, 
-	Huacai Chen <chenhuacai@kernel.org>, devicetree@vger.kernel.org, 
-	linux-pm@vger.kernel.org, mfd@lists.linux.dev
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Mime-Version: 1.0
+References: <20260721153617.869933-1-beata.michalska@arm.com> <20260721153617.869933-3-beata.michalska@arm.com>
+Message-ID: <anGcgxwNXz5_RzD1@google.com>
+Subject: Re: [PATCH v2 2/3] rust: platform: wire runtime PM callbacks
+From: Alice Ryhl <aliceryhl@google.com>
+To: Beata Michalska <beata.michalska@arm.com>
+Cc: ojeda@kernel.org, dakr@kernel.org, gregkh@linuxfoundation.org, 
+	rafael@kernel.org, boqun@kernel.org, gary@garyguo.net, 
+	bjorn3_gh@protonmail.com, lossin@kernel.org, a.hindborg@kernel.org, 
+	tmgross@umich.edu, daniel.almeida@collabora.com, 
+	boris.brezillon@collabora.com, work@onurozkan.dev, samitolvanen@google.com, 
+	rust-for-linux@vger.kernel.org, driver-core@lists.linux.dev, 
+	linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
 
-Hi Krzysztof:
+On Tue, Jul 21, 2026 at 05:34:03PM +0200, Beata Michalska wrote:
+> Allow Rust platform drivers to expose runtime PM callbacks to the driver core.
+> 
+> The runtime PM abstraction builds a dev_pm_ops table for the concrete driver
+> implementation, but the platform bus still needs to receive that table through
+> struct platform_driver. Add an optional PM_OPS associated constant to
+> platform::Driver and initialize the coresponding C device_driver struct
+> accordingly during registration. The platform glue only wires the callback
+> table into the C driver model; ownership of the callback payload and
+> runtime PM teardown remain with the pm module.
+> 
+> Signed-off-by: Beata Michalska <beata.michalska@arm.com>
+> ---
+>  rust/kernel/platform.rs | 9 +++++++++
+>  1 file changed, 9 insertions(+)
+> 
+> diff --git a/rust/kernel/platform.rs b/rust/kernel/platform.rs
+> index d8d48f60b0b9..b7e422388634 100644
+> --- a/rust/kernel/platform.rs
+> +++ b/rust/kernel/platform.rs
+> @@ -72,6 +72,11 @@ unsafe fn register(
+>              None => core::ptr::null(),
+>          };
+>  
+> +        let pm_ops = match T::PM_OPS {
+> +            Some(ops) => ops,
+> +            None => core::ptr::null(),
+> +        };
 
-On Tue, Aug 4, 2026 at 2:57=E2=80=AFPM Krzysztof Kozlowski <krzk@kernel.org=
-> wrote:
->
-> On Fri, Jul 31, 2026 at 05:42:19PM +0800, Binbin Zhou wrote:
-> > The Loongson-2K0300 SoC exposes its chip ID registers through a syscon
-> > interface. Add the specific compatible `loongson,ls2k0300-chipid-syscon=
-`
-> > to the allowed list of syscon bindings so that it can be referenced fro=
-m
-> > the thermal node via a phandle.
-> >
-> > Signed-off-by: Binbin Zhou <zhoubinbin@loongson.cn>
-> > ---
-> >  Documentation/devicetree/bindings/mfd/syscon.yaml | 2 ++
-> >  1 file changed, 2 insertions(+)
-> >
-> > diff --git a/Documentation/devicetree/bindings/mfd/syscon.yaml b/Docume=
-ntation/devicetree/bindings/mfd/syscon.yaml
-> > index e22867088063..18eb9defec8c 100644
-> > --- a/Documentation/devicetree/bindings/mfd/syscon.yaml
-> > +++ b/Documentation/devicetree/bindings/mfd/syscon.yaml
-> > @@ -76,6 +76,7 @@ select:
->
-> There is no such select in the code.
+This value is just any user-provided &bindings::pm_ops, which I think is
+too lax. There is no guarantee that the Registration and the PM_OPS
+table agree on what the type T is, which can lead to type confusion.
 
-Yes, I see, I will rebase on the linux-mfd/for-mfd-next branch.
->
-> Best regards,
-> Krzysztof
->
+Most likely, you must instead give `trait Driver` an associated type
+saying "the PmOps type is this particular type", and then here you can
+do `Some(T::PM_OPS)` to actually get the associated table.
 
---=20
-Thanks.
-Binbin
+And then in the registration, you can further require that the types
+also match there. E.g., maybe make the registration generic over the
+Driver type and then the inner type T is just D::PmData or similar.
+
+Alice
+
+>          // SAFETY: It's safe to set the fields of `struct platform_driver` on initialization.
+>          unsafe {
+>              (*pdrv.get()).driver.name = name.as_char_ptr();
+> @@ -79,6 +84,7 @@ unsafe fn register(
+>              (*pdrv.get()).remove = Some(Self::remove_callback);
+>              (*pdrv.get()).driver.of_match_table = of_table;
+>              (*pdrv.get()).driver.acpi_match_table = acpi_table;
+> +            (*pdrv.get()).driver.pm = pm_ops;
+>          }
+>  
+>          // SAFETY: `pdrv` is guaranteed to be a valid `DriverType`.
+> @@ -222,6 +228,9 @@ pub trait Driver {
+>      /// The table of ACPI device ids supported by the driver.
+>      const ACPI_ID_TABLE: Option<acpi::IdTable<Self::IdInfo>> = None;
+>  
+> +    /// Runtime PM callbacks
+> +    const PM_OPS: Option<&'static bindings::dev_pm_ops> = None;
+> +
+>      /// Platform driver probe.
+>      ///
+>      /// Called when a new platform device is added or discovered.
+> -- 
+> 2.43.0
+> 
