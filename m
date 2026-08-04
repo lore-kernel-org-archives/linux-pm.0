@@ -1,192 +1,150 @@
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id E612936B913;
-	Tue,  4 Aug 2026 12:28:26 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
+Received: from mail.loongson.cn (mail.loongson.cn [114.242.206.163])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id D19A03A7580;
+	Tue,  4 Aug 2026 12:41:15 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=114.242.206.163
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1785846508; cv=none; b=bExhg5//Hdrt2GeMJeKpgpTo2VemizIvRc1MJvRHMnTJP/COL5iVdfFSp4MAoz42WfPbfuRS/2mVuSBG2+ZwDzyoriT74vOjSdy+OOukXUh8Gl+Xg304v6tGfa1JVaZaAvWBznfVGnSVZbHgR93lgn1iDM4FqAGAEoowIGiZbLo=
+	t=1785847281; cv=none; b=t1CrKc0x6AaR5lEftMZMnouS49G7CCQIYo8mH2L5+JpHREK81YMAFu9XJJHUDsmcnnCt5eqQV9mVt3nyi+ykvWDIjHWS30+Y9qmRDUNRvEZoqmiSECCS7Lz0whnqRrOo6EshxeiQ58mCdKjKF/R3NchIL6qEUODScbHObQadGvY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1785846508; c=relaxed/simple;
-	bh=O6MGaayfqKbwMTZ8rRJxQ6cRb2muhGjQiCHzQ7H4mmw=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=k8/5gKCU7yiThzshO98XvA/j12QtZtvAXYU6CKGd41lxsElmoRERyTkdech4NQ3fJm93YqtWtqgc09zwnWmrS7mt9kaAbUxwWsEzhGSm+3aa5J83SCQY97xhWSBY5sE732RYzqlnVkeL27VXbdmV2AvqDzEbqnnNvfWX7T77xF0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=a8wogyMN; arc=none smtp.client-ip=217.140.110.172
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="a8wogyMN"
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 3D5BF1476;
-	Tue,  4 Aug 2026 05:28:22 -0700 (PDT)
-Received: from arm.com (usa-sjc-imap-foss1.foss.arm.com [10.121.207.14])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 0B8603F66F;
-	Tue,  4 Aug 2026 05:28:21 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1785846506; bh=O6MGaayfqKbwMTZ8rRJxQ6cRb2muhGjQiCHzQ7H4mmw=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=a8wogyMNeg7UTwUcdUptjw7WYbB3APC17qU87uA9otovh8QHxD4g+DrqE41VYqe4T
-	 iTaQDKBZXnJeFl8zSesylKmzFaE9hvUtoaweETmBHL1jea0F26KDhlyD6QB7BUTUb7
-	 n7BAQQkYU90x6twYhezN+NUOL6F8mknM/9+P9LZs=
-Date: Tue, 4 Aug 2026 14:28:19 +0200
-From: Beata Michalska <beata.michalska@arm.com>
-To: Alice Ryhl <aliceryhl@google.com>
-Cc: dakr@kernel.org, ojeda@kernel.org, gregkh@linuxfoundation.org,
-	rafael@kernel.org, boqun@kernel.org, gary@garyguo.net,
-	bjorn3_gh@protonmail.com, lossin@kernel.org, a.hindborg@kernel.org,
-	tmgross@umich.edu, daniel.almeida@collabora.com,
-	boris.brezillon@collabora.com, work@onurozkan.dev,
-	samitolvanen@google.com, rust-for-linux@vger.kernel.org,
-	driver-core@lists.linux.dev, linux-kernel@vger.kernel.org,
-	linux-pm@vger.kernel.org
-Subject: Re: [PATCH v2 2/3] rust: platform: wire runtime PM callbacks
-Message-ID: <anHa43G9-aln8wik@arm.com>
-References: <20260721153617.869933-1-beata.michalska@arm.com>
- <20260721153617.869933-3-beata.michalska@arm.com>
- <anGt2_OAK2UWtXuO@google.com>
+	s=arc-20240116; t=1785847281; c=relaxed/simple;
+	bh=3Hm5r9BL9XG1KKn73aPb9IDnZq9iCmFZ3x+PsIurjo4=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=pyvh+00/QuyXVoxhEV8bVhWnN00rHoHUr7qU5+oSab2RGXeMhuN1tefnCci7nOYnTtk1aon39WPRKfICplD5vbx5gj8Vngsen4hHZheILZrgfnBYgtx8Qx3gVStvDdnud0f7RdWG+IsWNKttbw8GvOCKTrJFIA9dlhENY5O595M=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=loongson.cn; spf=pass smtp.mailfrom=loongson.cn; arc=none smtp.client-ip=114.242.206.163
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=loongson.cn
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=loongson.cn
+Received: from loongson.cn (unknown [223.64.68.205])
+	by gateway (Coremail) with SMTP id _____8BxJOjp3XFq20QKAA--.10431S3;
+	Tue, 04 Aug 2026 20:41:13 +0800 (CST)
+Received: from kernelserver (unknown [223.64.68.205])
+	by front1 (Coremail) with SMTP id qMiowJCxq8S33XFqkm8jAA--.9345S2;
+	Tue, 04 Aug 2026 20:41:08 +0800 (CST)
+From: Binbin Zhou <zhoubinbin@loongson.cn>
+To: Binbin Zhou <zhoubb.aaron@gmail.com>,
+	Huacai Chen <chenhuacai@loongson.cn>,
+	Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	Yinbo Zhu <zhuyinbo@loongson.cn>,
+	zhanghongchen <zhanghongchen@loongson.cn>,
+	"Rafael J . Wysocki" <rafael@kernel.org>,
+	Daniel Lezcano <daniel.lezcano@linaro.org>,
+	Zhang Rui <rui.zhang@intel.com>,
+	Lukasz Luba <lukasz.luba@arm.com>,
+	Lee Jones <lee@kernel.org>
+Cc: Huacai Chen <chenhuacai@kernel.org>,
+	devicetree@vger.kernel.org,
+	linux-pm@vger.kernel.org,
+	mfd@lists.linux.dev,
+	Binbin Zhou <zhoubinbin@loongson.cn>
+Subject: [PATCH v4 0/5] thermal: loongson2: Add support for Loongson-2K0300 SoC
+Date: Tue,  4 Aug 2026 20:40:12 +0800
+Message-ID: <cover.1785829933.git.zhoubinbin@loongson.cn>
+X-Mailer: git-send-email 2.52.0
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <anGt2_OAK2UWtXuO@google.com>
+Content-Transfer-Encoding: 8bit
+X-CM-TRANSID:qMiowJCxq8S33XFqkm8jAA--.9345S2
+X-CM-SenderInfo: p2kr3uplqex0o6or00hjvr0hdfq/1tbiAQEJCGpxaFEngQAAsF
+X-Coremail-Antispam: 1Uk129KBj93XoWxJF4fKw1fXr4kur45tryUXFc_yoW5GF4fpa
+	y5u3sxCr1DGF4UJws3JrWxZF4Yvrn5tFZxXFs7Kwn5uwn8KFyay3y8ta15ZryxCF45WFW2
+	vryvkrWkCF4DuFXCm3ZEXasCq-sJn29KB7ZKAUJUUUU7529EdanIXcx71UUUUU7KY7ZEXa
+	sCq-sGcSsGvfJ3Ic02F40EFcxC0VAKzVAqx4xG6I80ebIjqfuFe4nvWSU5nxnvy29KBjDU
+	0xBIdaVrnRJUUU9Yb4IE77IF4wAFF20E14v26r1j6r4UM7CY07I20VC2zVCF04k26cxKx2
+	IYs7xG6rWj6s0DM7CIcVAFz4kK6r1Y6r17M28lY4IEw2IIxxk0rwA2F7IY1VAKz4vEj48v
+	e4kI8wA2z4x0Y4vE2Ix0cI8IcVAFwI0_Jr0_JF4l84ACjcxK6xIIjxv20xvEc7CjxVAFwI
+	0_Jr0_Gr1l84ACjcxK6I8E87Iv67AKxVWxJVW8Jr1l84ACjcxK6I8E87Iv6xkF7I0E14v2
+	6r4UJVWxJr1ln4kS14v26r1Y6r17M2AIxVAIcxkEcVAq07x20xvEncxIr21l57IF6xkI12
+	xvs2x26I8E6xACxx1l5I8CrVACY4xI64kE6c02F40Ex7xfMcIj6xIIjxv20xvE14v26r12
+	6r1DMcIj6I8E87Iv67AKxVWUJVW8JwAm72CE4IkC6x0Yz7v_Jr0_Gr1lF7xvr2IYc2Ij64
+	vIr41l42xK82IYc2Ij64vIr41l4I8I3I0E4IkC6x0Yz7v_Jr0_Gr1l4IxYO2xFxVAFwI0_
+	Jrv_JF1lx2IqxVAqx4xG67AKxVWUJVWUGwC20s026x8GjcxK67AKxVWUGVWUWwC2zVAF1V
+	AY17CE14v26r4a6rW5MIIYrxkI7VAKI48JMIIF0xvE2Ix0cI8IcVAFwI0_Jr0_JF4lIxAI
+	cVC0I7IYx2IY6xkF7I0E14v26r1j6r4UMIIF0xvE42xK8VAvwI8IcIk0rVWUJVWUCwCI42
+	IY6I8E87Iv67AKxVWUJVW8JwCI42IY6I8E87Iv6xkF7I0E14v26r4j6r4UJbIYCTnIWIev
+	Ja73UjIFyTuYvjxUc0eHDUUUU
 
-On Tue, Aug 04, 2026 at 09:16:11AM +0000, Alice Ryhl wrote:
-> On Tue, Jul 21, 2026 at 05:34:03PM +0200, Beata Michalska wrote:
-> > Allow Rust platform drivers to expose runtime PM callbacks to the driver core.
-> > 
-> > The runtime PM abstraction builds a dev_pm_ops table for the concrete driver
-> > implementation, but the platform bus still needs to receive that table through
-> > struct platform_driver. Add an optional PM_OPS associated constant to
-> > platform::Driver and initialize the coresponding C device_driver struct
-> > accordingly during registration. The platform glue only wires the callback
-> > table into the C driver model; ownership of the callback payload and
-> > runtime PM teardown remain with the pm module.
-> > 
-> > Signed-off-by: Beata Michalska <beata.michalska@arm.com>
-> > ---
-> >  rust/kernel/platform.rs | 9 +++++++++
-> >  1 file changed, 9 insertions(+)
-> > 
-> > diff --git a/rust/kernel/platform.rs b/rust/kernel/platform.rs
-> > index d8d48f60b0b9..b7e422388634 100644
-> > --- a/rust/kernel/platform.rs
-> > +++ b/rust/kernel/platform.rs
-> > @@ -72,6 +72,11 @@ unsafe fn register(
-> >              None => core::ptr::null(),
-> >          };
-> >  
-> > +        let pm_ops = match T::PM_OPS {
-> > +            Some(ops) => ops,
-> > +            None => core::ptr::null(),
-> > +        };
-> > +
-> >          // SAFETY: It's safe to set the fields of `struct platform_driver` on initialization.
-> >          unsafe {
-> >              (*pdrv.get()).driver.name = name.as_char_ptr();
-> > @@ -79,6 +84,7 @@ unsafe fn register(
-> >              (*pdrv.get()).remove = Some(Self::remove_callback);
-> >              (*pdrv.get()).driver.of_match_table = of_table;
-> >              (*pdrv.get()).driver.acpi_match_table = acpi_table;
-> > +            (*pdrv.get()).driver.pm = pm_ops;
-> >          }
-> >  
-> >          // SAFETY: `pdrv` is guaranteed to be a valid `DriverType`.
-> > @@ -222,6 +228,9 @@ pub trait Driver {
-> >      /// The table of ACPI device ids supported by the driver.
-> >      const ACPI_ID_TABLE: Option<acpi::IdTable<Self::IdInfo>> = None;
-> >  
-> > +    /// Runtime PM callbacks
-> > +    const PM_OPS: Option<&'static bindings::dev_pm_ops> = None;
-> > +
-> >      /// Platform driver probe.
-> >      ///
-> >      /// Called when a new platform device is added or discovered.
-> 
-> I've been thinking more about this, and I can't help but wonder whether
-> we could significantly simplify it. Why not just do this:
-> 
-> 1. Update rust/kernel/platform.rs Driver trait to include pm ops
-> directly in the trait:
-> 
-> 	#[vtable]
-> 	pub trait Driver {
-> 	    type IdInfo: 'static;
-> 	    type Data<'bound>: Send + 'bound;
-> 	    const OF_ID_TABLE: Option<of::IdTable<Self::IdInfo>> = None;
-> 	    const ACPI_ID_TABLE: Option<acpi::IdTable<Self::IdInfo>> = None;
-> 	
-> 	    fn probe<'bound>(
-> 	        dev: &'bound Device<device::Core<'_>>,
-> 	        id_info: Option<&'bound Self::IdInfo>,
-> 	    ) -> impl PinInit<Self::Data<'bound>, Error> + 'bound;
-> 	
-> 	    fn unbind<'bound>(dev: &'bound Device<device::Core<'_>>, this: Pin<&Self::Data<'bound>>) {
-> 	        let _ = (dev, this);
-> 	    }
-> 	
-> 	    // Add these methods.
-> 	    fn runtime_suspend<'bound>(
-> 	        dev: &'bound Device<device::Bound>,
-> 	        data: &Self::Data<'bound>,
-> 	    ) -> Result
-> 	    {
-> 	        build_error!(VTABLE_DEFAULT_ERROR)
-> 	    }
-> 	
-> 	    fn runtime_resume<'bound>(
-> 	        dev: &'bound Device<device::Bound>,
-> 	        data: &Self::Data<'bound>,
-> 	    ) -> Result
-> 	    {
-> 	        build_error!(VTABLE_DEFAULT_ERROR)
-> 	    }
-> 	}
-> 
-> By marking the trait with #[vtable], we know whether the user has
-> overridden runtime_suspend() and runtime_resume() and then the platform
-> abstraction can enable PM in that scenario:
-> 
->  - If `T::HAS_RUNTIME_SUSPEND && T::HAS_RUNTIME_RESUME` then set
->    `(*pdrv.get()).driver.pm` to a table using those methods in
->    register().
->  - If `T::HAS_RUNTIME_SUSPEND && T::HAS_RUNTIME_RESUME` then invoke
->    `pm_runtime_enable()` from `probe_callback()` after the
->    `set_callback()` line. Note that this call is infallible.
->  - Do the same from unplug to disable PM.
-> 
-> And then you automatically PM whenever you implement those two methods
-> in the `platform::Driver` trait, and that's all you need to do. Since we
-> invoke `pm_runtime_enable()` in `probe_callback()` after setting the
-> private data, there's no issue with passing the device private data to
-> the callbacks.
-> 
-> Note that we can trigger a const eval panic on `T::HAS_RUNTIME_SUSPEND
-> != T::HAS_RUNTIME_RESUME` to enforce that you must implement both
-> methods if you implement either one.
-> 
-> Thoughts? I know we have gone down this route before, but I just think
-> it would be so so much simpler than the current approach. I know that
-> this diverges from IRQ and such by not having a Registration, but I
-> actually think that's ok. PM is already different from IRQ callbacks in
-> the sense that the platform abstractions need PM-specific code *anyway*
-> to properly set pm_ops in the `struct platform_device`.
-> 
+Hi all:
 
-This is a sound idea, though there are few caveats.
-This patchset only introduces runtime_resume and runtime_suspend, though the
-range of pm ops is wider than that. So if we go the way you suggest, we need to
-accept that all of those would finally end up in that trait's implementation.
-Further more this would need to be replicated for other bus devices.
-Which makes the implementation pretty noisy.
-Offloading enabling runtime PM to bus driver might not be suitable for all
-potential users of runtime PM either. Some drivers might want to enable it
-while in probe, call device resume and do some early setup. With this approach,
-using drvdata is still an issue.
-The sample implementation for Tyr is just one way of doing things.
+This patch series adds thermal zone support for the Loongson-2K0300 SoC.
 
----
-BR
-Beata
-> Alice
+The Loongson-2K0300's thermal sensor is generally compatible with the
+existing Loongson-2K series, but it features several key differences:
+1. It has an independent CPU ID register for reading chip version
+information.
+2. The raw temperature output field has been extended from 8 bits to 11
+bits.
+3. The temperature calculation formula has been updated to incorporate a
+correction factor based on the version information.
+
+To ensure robustness on older hardware revisions, a fallback mechanism
+is included: if the calculated temperature falls outside the valid range
+(-55 TO 125),  the driver falls back to a simpler calculation and prints
+a warning.
+
+The patches have been validated on the Loongson-2K0300 development board.
+
+Thanks.
+Binbin
+
+=========
+V4:
+ - Rebase on linux-mfd/for-mfd-next;
+Patch (3/5):
+ - Remove the `compatible` adding to the `select` node.
+
+Link to V3:
+https://lore.kernel.org/all/cover.1785480242.git.zhoubinbin@loongson.cn/
+
+V3:
+Patch (2/5):
+ - New patch for moving thermal_ops to chip_data;
+Patch (3/5):
+ - Correct spelling errors;
+Patch (4/5):
+ - Add Acked-by from Conor, thanks;
+Patch (5/5):
+ - Keep loongson2_thermal_data->chip_data as const, and use
+   data->flags as the private data.
+ - Renmae LOONGSON2_THSENS_OUT_10B_MASK ->
+   LOONGSON2_THSENS_OUT_11B_MASK;
+
+Link to V2:
+https://lore.kernel.org/all/cover.1784619512.git.zhoubinbin@loongson.cn/
+
+V2:
+Patch (1/4):
+ - New patch form Sashiko;
+Patch (2/4):
+ - New patch for adding chipid syscon compatible;
+Patch (3/4):
+ - Use `loongson,chipid` phandle replace reg property;
+Patch (3/4):
+ - Refact `calib_offset` calculate routing;
+ - Add LS2K0300_OLD_FUSE_FLAG flag.
+
+Link to V1:
+https://lore.kernel.org/all/cover.1783670011.git.zhoubinbin@loongson.cn/
+
+Binbin Zhou (5):
+  thermal/drivers/loongson2: Correct thermal sensor registration loop
+  thermal/drivers/loongson2: Move thermal_ops to chip_data for SoC
+    scalability
+  dt-bindings: mfd: syscon: Allow syscon compatible for Loongson-2K0300
+    chip id
+  dt-bindings: thermal: loongson,ls2k-thermal: Add compatible for
+    Loongson-2K0300
+  thermal/drivers/loongson2: Add support for Loongson-2K0300
+
+ .../devicetree/bindings/mfd/syscon.yaml       |   1 +
+ .../thermal/loongson,ls2k-thermal.yaml        |  73 +++++++++---
+ drivers/thermal/loongson2_thermal.c           | 110 ++++++++++++++++--
+ 3 files changed, 156 insertions(+), 28 deletions(-)
+
+
+base-commit: b1eb3de64d02cec71b419b9918d1697797fa156d
+-- 
+2.52.0
+
