@@ -1,144 +1,179 @@
-Received: from azure-sdnproxy.icoremail.net (azure-sdnproxy.icoremail.net [52.187.6.220])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id 382EE46A607;
-	Tue,  4 Aug 2026 14:56:19 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=52.187.6.220
+Received: from mail-pj1-f49.google.com (mail-pj1-f49.google.com [209.85.216.49])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4AB1F46AA7D
+	for <linux-pm@vger.kernel.org>; Tue,  4 Aug 2026 14:59:39 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.216.49
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1785855389; cv=none; b=soGHzPNegd0FIcJwjp2e28TPZOnC9bQNhefFd9andeSkgJjJTOo6Ehp81icV8OuHfg5CvFEN+MSEroccsDLEVzt5geK8ZfF/JXmQCQJJ8l9MvERXxyjw0gIXZHx+04dBjVNJj7rK9UKjz9vCgqnISOdQUbfVLE0yW6wlSzmr6oI=
+	t=1785855581; cv=none; b=XOIkDQekeRfX3oc5GrNo0FTS17MDTe1xm5sa+AY2WrYS7B8JddRCdNbjpbw+SMjGFYC55nSFjl9fQTd0kj3JT14qPEb1z/hm9Vywbj+qPXqiLHh/WIRJRP8/y+vbp6a6Tz/4Gq0gMEMU01XJtGLLBvz6J8X3yluhQXuXhFNy6RI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1785855389; c=relaxed/simple;
-	bh=G8AQuawFH1bb49rZ1Mc9YB2h6/WXYx6qel0iSLf9Zis=;
-	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=oLLCK7CVpVPjF61igAvxSNAKUX+l7JtAjWFEI9fAUV1JOUlrirfu/OJgDs0/GJ7TNXSiRG18c+JfPsr3JUnXbE5w/dCJ+BFyAt7Y+0OIccXoErH6nwW05D5UGRS6FSIQ+9M1G/Q0yIUWy0+u3SGNFeHj1ORpBNUigoyilUzplLk=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=zju.edu.cn; spf=pass smtp.mailfrom=zju.edu.cn; arc=none smtp.client-ip=52.187.6.220
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=zju.edu.cn
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=zju.edu.cn
-Received: from zju.edu.cn (unknown [10.98.66.117])
-	by mtasvr (Coremail) with SMTP id _____wBnfnyI_XFq8RplAA--.12054S3;
-	Tue, 04 Aug 2026 22:56:09 +0800 (CST)
-Received: from localhost.localdomain (unknown [10.98.66.117])
-	by mail-app2 (Coremail) with SMTP id zC_KCgBXyM2G_XFqFFKJAw--.18278S2;
-	Tue, 04 Aug 2026 22:56:06 +0800 (CST)
-From: Fan Wu <fanwu01@zju.edu.cn>
-To: linux-pm@vger.kernel.org
-Cc: sre@kernel.org,
-	r-rivera-matos@ti.com,
-	linux-kernel@vger.kernel.org,
-	stable@vger.kernel.org,
-	Fan Wu <fanwu01@zju.edu.cn>
-Subject: [PATCH] power: supply: bq256xx: drain usb_work before freeing the charger
-Date: Tue,  4 Aug 2026 14:55:11 +0000
-Message-Id: <20260804145511.103470-1-fanwu01@zju.edu.cn>
-X-Mailer: git-send-email 2.34.1
+	s=arc-20240116; t=1785855581; c=relaxed/simple;
+	bh=vx2HoAYnzxdjsoZwz0pespz2k8WkdfkdO1teBXi4bB4=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=OMT8KufbRi0s+AZxE1Ziu92+e9OsvTnYPTXBdzaQ0ZHNKgywM0qL+QdHS6fIxAAtqxTKazIa5gyH8rbdBs1T3xdhCNX3QkuQhb3N5c44551fc8ermT2CPjscMSkwe+5oS7WSB2CDa1xkjtEuBRd6i8tO2VK4zdZNWNMOs29h+FA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=roeck-us.net; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=HYcoXcat; arc=none smtp.client-ip=209.85.216.49
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=roeck-us.net
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="HYcoXcat"
+Received: by mail-pj1-f49.google.com with SMTP id 98e67ed59e1d1-38759bcd877so4397106a91.2
+        for <linux-pm@vger.kernel.org>; Tue, 04 Aug 2026 07:59:39 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1785855578; x=1786460378; darn=vger.kernel.org;
+        h=content-transfer-encoding:content-type:in-reply-to:autocrypt:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:sender:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=5JgwzEvtfB2uQ9F0aI+6JlH048Ow6xZYPMLayRepZQo=;
+        b=HYcoXcatS11kJzJ5rqUn3MyxV4fcaxEsSFbQl7ip5/2wYxWpZFFzsbuXBR1wFkKBaO
+         PHjwqzJ9IqnmJQZMw7HYXkYxWxDvTKRvkpA47OoD0g/jzoD9I668/kZQXQd/S1TU14ny
+         mOy+kT0DnkFKCUmCzj6bIawmO7XxsXsUVC3/oND2pZJxo9IwWze0G5RpuruhvO0jxIK9
+         tMqXP6FK/OosAfkZAFj9Cmbr4JK3hTjk5lydBM8ID9UOGjZ4dDB7tpz/TWGYiTOnylC/
+         NUh2RmaDk4OhmTpMt3JYk2PeAZG5DNxqseJOBXUIWKR9SlnJsrzlDezd112pwz4gmJTM
+         IIRA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1785855578; x=1786460378;
+        h=content-transfer-encoding:content-type:in-reply-to:autocrypt:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:sender:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to:content-type;
+        bh=5JgwzEvtfB2uQ9F0aI+6JlH048Ow6xZYPMLayRepZQo=;
+        b=WALBVacmO0dg865LbdBK6Iuy4ZPFvMEu3VkIsgV8CkbsbYnu4VMj/W2mJGfiJ0IbGK
+         RDVVRDW8IDmmxJ+CCjXS/n7FhTslW1X73NMtfjk9tnpYR4xIayZiOgnbhHG4VNXTibZ4
+         doisKSb08J+5k6VqyXX4wOTNIZIThbXL0hWHbndQY9h8c/osb3FRzQQTaVGpek6Rbe1x
+         E6yC1610vjSB/XX8kzZT8DEQgf+n/JV4GJ2RSKppO54lX8FvKTFzjAtv8yHWa36kuZoJ
+         BvroVpEqkv4c4pECrG4SPBHL//LU0Byq7bnmn+uNGu3Eh0Vem0QJkqObdU9dkHWPCgLd
+         /ElQ==
+X-Gm-Message-State: AOJu0Yx0KK8sU4jL4lQsCZ9DTMimHV7szLjLYB0Dr//kho94GZ9TdtJL
+	sgJiZLk8wzSZhtIrDuF+zmhFsqIMKlFs1Ti/q7JqQrEL4bQzM8qnH0OA
+X-Gm-Gg: AR+sD11NFNt7CzpcNCL1wLXmHPQe7jBeqteigLMyw9HOwAX51+RoTi+CnzLqMmylOtc
+	VL8//EUSalzSI19aev78LdqKFQuOM/3qceHV9kDu5Zq7HX9oQ5QMM7/sVqb368ep9D59jd2t88l
+	FqCEi1gcQi7rg5hTmcSbA8PnTZLmLSxDsjQrMov2EqdfZEjADt0Pluc0uPubfbMaLg/86j6i74D
+	cn3lbSW+2EWC+knWKCnhchNzV3lXepwvSFMPDtOOi/dboigVZ2T1lVBYKKsS5sh+JbTqwHme5eZ
+	csl9wuJMBCDt9BdSZ/IB/9vwhrHNHJ+5MCzFcWhskbZYsxHD1DXQXJkFvSdbpvCnCzeFXYRm88s
+	Z61CSWriru8sOZI57VQIO0W4j+KPmIM9/lfRjP/GATibGb5AgD+D/Xw7+Lg7lPlUmo1MWEH/MyP
+	ulGZXhcqGWgzbuK2O236GsbKHji6xEgqu50gTeZpsYWede+fHc6Z1VJQT6CHGZbEpi5BpaRsvtI
+	/GcQFm2SpWJ2bn+mFZSNb740RFUIOz9X533yQ==
+X-Received: by 2002:a17:90b:2b50:b0:37f:e326:6559 with SMTP id 98e67ed59e1d1-38fbc51a361mr13144797a91.22.1785855578147;
+        Tue, 04 Aug 2026 07:59:38 -0700 (PDT)
+Received: from ?IPV6:2600:1700:e321:62f0:da43:aeff:fecc:bfd5? ([2600:1700:e321:62f0:da43:aeff:fecc:bfd5])
+        by smtp.gmail.com with ESMTPSA id a92af1059eb24-13fca50acddsm4434915c88.3.2026.08.04.07.59.36
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Tue, 04 Aug 2026 07:59:37 -0700 (PDT)
+Sender: Guenter Roeck <groeck7@gmail.com>
+Message-ID: <bf41bb0a-6f2c-443a-a487-164277c2dcfa@roeck-us.net>
+Date: Tue, 4 Aug 2026 07:59:35 -0700
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-CM-TRANSID:zC_KCgBXyM2G_XFqFFKJAw--.18278S2
-X-CM-SenderInfo: qrstjiaswqq6lmxovvfxof0/
-X-CM-DELIVERINFO: =?B?zXCYfgXKKxbFmtjJiESix3B1w3vZ3A9ovKVTomAyoQazvoRs/NHSP8GI2EvgeEEW7R
-	sfncGSG+szpQCInt5Y8rbJUI1+2rKgwZbUJoZLd1K+vX+HY6thFd2cGMvnkHTL9dfkgmDO
-	2kpSfiCVE4veLEz8xT2p9E6mavGmQbzmcFsnzP86
-X-Coremail-Antispam: 1Uk129KBj93XoWxZryDXr47GrW3GFWkJF15WrX_yoW5Cr1rp3
-	98CFn8Cr4kZFW8GFWqqF1kZa48K3WftrW5Ar1fJ34YvrnxGw1Dta48tFs0g3yxJFyrZr40
-	y3y7tay7uay5CrcCm3ZEXasCq-sJn29KB7ZKAUJUUUUU529EdanIXcx71UUUUU7KY7ZEXa
-	sCq-sGcSsGvfJ3Ic02F40EFcxC0VAKzVAqx4xG6I80ebIjqfuFe4nvWSU5nxnvy29KBjDU
-	0xBIdaVrnRJUUU9lb4IE77IF4wAFF20E14v26r1j6r4UM7CY07I20VC2zVCF04k26cxKx2
-	IYs7xG6rWj6s0DM7CIcVAFz4kK6r1j6r18M28lY4IEw2IIxxk0rwA2F7IY1VAKz4vEj48v
-	e4kI8wA2z4x0Y4vE2Ix0cI8IcVAFwI0_tr0E3s1l84ACjcxK6xIIjxv20xvEc7CjxVAFwI
-	0_Gr1j6F4UJwA2z4x0Y4vEx4A2jsIE14v26rxl6s0DM28EF7xvwVC2z280aVCY1x0267AK
-	xVW0oVCq3wAac4AC62xK8xCEY4vEwIxC4wAS0I0E0xvYzxvE52x082IY62kv0487Mc804V
-	CY07AIYIkI8VC2zVCFFI0UMc02F40EFcxC0VAKzVAqx4xG6I80ewAv7VC0I7IYx2IY67AK
-	xVWUJVWUGwAv7VC2z280aVAFwI0_Jr0_Gr1lOx8S6xCaFVCjc4AY6r1j6r4UM4x0Y48Icx
-	kI7VAKI48JM4x0Y48IcxkI7VAKI48G6xCjnVAKz4kxMxAIw28IcxkI7VAKI48JMxC20s02
-	6xCaFVCjc4AY6r1j6r4UMI8I3I0E5I8CrVAFwI0_Jr0_Jr4lx2IqxVCjr7xvwVAFwI0_Jr
-	I_JrWlx4CE17CEb7AF67AKxVWUAVWUtwCIc40Y0x0EwIxGrwCI42IY6xIIjxv20xvE14v2
-	6r1j6r1xMIIF0xvE2Ix0cI8IcVCY1x0267AKxVWUJVW8JwCI42IY6xAIw20EY4v20xvaj4
-	0_Jr0_JF4lIxAIcVC2z280aVAFwI0_Jr0_Gr1lIxAIcVC2z280aVCY1x0267AKxVWUJVW8
-	JbIYCTnIWIevJa73UjIFyTuYvjxU2LIDUUUUU
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v3 3/3] watchdog: pretimeout: update PSC reason in panic
+ pretimeout governor
+To: Faruque Ansari <faruque.ansari@oss.qualcomm.com>,
+ Sebastian Reichel <sre@kernel.org>, Wim Van Sebroeck
+ <wim@linux-watchdog.org>, Benson Leung <bleung@chromium.org>,
+ Tzung-Bi Shih <tzungbi@kernel.org>, Oleksij Rempel
+ <o.rempel@pengutronix.de>, Srinivas Kandagatla <srini@kernel.org>,
+ Daniel Lezcano <daniel.lezcano@kernel.org>,
+ Pengutronix Kernel Team <kernel@pengutronix.de>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linux-watchdog@vger.kernel.org, linux-arm-msm@vger.kernel.org,
+ Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>,
+ "Rafael J. Wysocki" <rafael@kernel.org>, Zhang Rui <rui.zhang@intel.com>,
+ Lukasz Luba <lukasz.luba@arm.com>, =?UTF-8?Q?S=C3=B8ren_Andersen?=
+ <san@skov.dk>, Guenter Roeck <groeck@chromium.org>,
+ Matti Vaittinen <mazziesaccount@gmail.com>,
+ Ahmad Fatoum <a.fatoum@pengutronix.de>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ avaneesh.dwivedi@oss.qualcomm.com,
+ Umang Chheda <umang.chheda@oss.qualcomm.com>
+References: <20260804-pscrr-reboot-reason-v3-0-e706dbfc7465@oss.qualcomm.com>
+ <20260804-pscrr-reboot-reason-v3-3-e706dbfc7465@oss.qualcomm.com>
+Content-Language: en-US
+From: Guenter Roeck <linux@roeck-us.net>
+Autocrypt: addr=linux@roeck-us.net; keydata=
+ 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
+ np3900V20aS7eD9K8GTU0TGC1pyz6IVJwIE=
+In-Reply-To: <20260804-pscrr-reboot-reason-v3-3-e706dbfc7465@oss.qualcomm.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
-The USB-PHY notifier queues usb_work, whose handler calls
-power_supply_changed(bq->charger). The reset devm action only unregisters
-the notifier and was registered before the power supplies, so devm frees
-bq->charger on unwind before the action runs; a usb_work still queued can
-then dereference it.
+On 8/4/26 02:21, Faruque Ansari wrote:
+> Update the PSC reset reason by invoking
+> set_psc_reason(PSCR_WATCHDOG_PRETIMEOUT) from the panic governor's
+> pretimeout handler before calling panic(), so the reset cause is
+> committed to persistent storage before the system goes down.
+> 
+> Signed-off-by: Faruque Ansari <faruque.ansari@oss.qualcomm.com>
 
-Register the reset action after the power supplies, so it unregisters
-the notifiers and drains usb_work before the supplies are released.
-Initialize usb_work and obtain the PHY references before registering
-the notifiers, so the worker cannot run before the supplies exist.
+Acked-by: Guenter Roeck <linux@roeck-us.net>
 
-Found by static analysis.
-
-Fixes: 32e4978bb920 ("power: supply: bq256xx: Introduce the BQ256XX charger driver")
-Cc: stable@vger.kernel.org
-Assisted-by: Codex:gpt-5.6
-Signed-off-by: Fan Wu <fanwu01@zju.edu.cn>
----
-
- drivers/power/supply/bq256xx_charger.c | 29 +++++++++++++++--------------
- 1 file changed, 15 insertions(+), 14 deletions(-)
-
-diff --git a/drivers/power/supply/bq256xx_charger.c b/drivers/power/supply/bq256xx_charger.c
-index 5a6634fde8..43e1da849d 100644
---- a/drivers/power/supply/bq256xx_charger.c
-+++ b/drivers/power/supply/bq256xx_charger.c
-@@ -896,6 +896,8 @@ static void bq256xx_charger_reset(void *data)
- 
- 	if (!IS_ERR_OR_NULL(bq->usb3_phy))
- 		usb_unregister_notifier(bq->usb3_phy, &bq->usb_nb);
-+
-+	cancel_work_sync(&bq->usb_work);
- }
- 
- static int bq256xx_set_charger_property(struct power_supply *psy,
-@@ -1721,24 +1723,12 @@ static int bq256xx_probe(struct i2c_client *client)
- 		return ret;
- 	}
- 
--	ret = devm_add_action_or_reset(dev, bq256xx_charger_reset, bq);
--	if (ret)
--		return ret;
-+	INIT_WORK(&bq->usb_work, bq256xx_usb_work);
-+	bq->usb_nb.notifier_call = bq256xx_usb_notifier;
- 
- 	/* OTG reporting */
- 	bq->usb2_phy = devm_usb_get_phy(dev, USB_PHY_TYPE_USB2);
--	if (!IS_ERR_OR_NULL(bq->usb2_phy)) {
--		INIT_WORK(&bq->usb_work, bq256xx_usb_work);
--		bq->usb_nb.notifier_call = bq256xx_usb_notifier;
--		usb_register_notifier(bq->usb2_phy, &bq->usb_nb);
--	}
--
- 	bq->usb3_phy = devm_usb_get_phy(dev, USB_PHY_TYPE_USB3);
--	if (!IS_ERR_OR_NULL(bq->usb3_phy)) {
--		INIT_WORK(&bq->usb_work, bq256xx_usb_work);
--		bq->usb_nb.notifier_call = bq256xx_usb_notifier;
--		usb_register_notifier(bq->usb3_phy, &bq->usb_nb);
--	}
- 
- 	ret = bq256xx_power_supply_init(bq, &psy_cfg, dev);
- 	if (ret) {
-@@ -1746,6 +1736,17 @@ static int bq256xx_probe(struct i2c_client *client)
- 		return ret;
- 	}
- 
-+	/* Register after the power supplies so devm runs it first. */
-+	ret = devm_add_action_or_reset(dev, bq256xx_charger_reset, bq);
-+	if (ret)
-+		return ret;
-+
-+	if (!IS_ERR_OR_NULL(bq->usb2_phy))
-+		usb_register_notifier(bq->usb2_phy, &bq->usb_nb);
-+
-+	if (!IS_ERR_OR_NULL(bq->usb3_phy))
-+		usb_register_notifier(bq->usb3_phy, &bq->usb_nb);
-+
- 	if (client->irq) {
- 		ret = devm_request_threaded_irq(dev, client->irq, NULL,
- 						bq256xx_irq_handler_thread,
-
--- 
-2.34.1
+> ---
+>   drivers/watchdog/pretimeout_panic.c | 2 ++
+>   1 file changed, 2 insertions(+)
+> 
+> diff --git a/drivers/watchdog/pretimeout_panic.c b/drivers/watchdog/pretimeout_panic.c
+> index 8c3ac674dc45..819487b5e6fe 100644
+> --- a/drivers/watchdog/pretimeout_panic.c
+> +++ b/drivers/watchdog/pretimeout_panic.c
+> @@ -5,6 +5,7 @@
+>   
+>   #include <linux/kernel.h>
+>   #include <linux/module.h>
+> +#include <linux/reboot.h>
+>   #include <linux/watchdog.h>
+>   
+>   #include "watchdog_pretimeout.h"
+> @@ -17,6 +18,7 @@
+>    */
+>   static void pretimeout_panic(struct watchdog_device *wdd)
+>   {
+> +	set_psc_reason(PSCR_WATCHDOG_PRETIMEOUT);
+>   	panic("watchdog pretimeout event\n");
+>   }
+>   
+> 
 
