@@ -1,162 +1,142 @@
-Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
+Received: from canpmsgout12.his.huawei.com (canpmsgout12.his.huawei.com [113.46.200.227])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C194C43F094;
-	Tue,  4 Aug 2026 09:22:10 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D4728418A46
+	for <linux-pm@vger.kernel.org>; Tue,  4 Aug 2026 09:38:21 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=113.46.200.227
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1785835336; cv=none; b=XVI9ToHwT9i8ZyY1bEaRRkDTBO4MKDc4gjdE6b6Uic7NLxCJKf9q8+fUkHomhGuDnt3VssEQDcdjCBMsPguVfpXed4i66aDe7BA3JYJiYPiQkQsox4xjVvN6W1ZVZABGTzf/Q8wGFp6N4NtAIhEAHCevniNJcMyNDfCPOQjNStA=
+	t=1785836307; cv=none; b=jfatEI0I7vBzm/NmtB80I6e0d8cIXleiOa936enD1tTOAju/HGHalz+mxKtIE1Qn1uLhlKX0y1rh8w72mJ2a14idRlxao3ZjNwZjOHlq8FC5+DLxank4uprr+XItyoriZPXamZQVUWjM5Zimf9X9sxRpZqRNXdH62my9H8K808Q=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1785835336; c=relaxed/simple;
-	bh=GFT5Quyvtm2AnN6GjRy0E7fQDV03fynTyPPxMNj00P0=;
-	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=gLszbS4OBdQwzEse1CdOCgkXn6O6Y6E3Fx9eeX06czvGB8LL1QG14WLSwHW1EHCZn/kMgCAYNscuob9ltPtCvKl2RJrMrUoCxx+08g0CRW5XZXCo/UPZdonD5JH1H3RDw+8DSclSQNsvUnAl1khRnTFJhXue7CiNiwDn37TG8jM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=i5/jam2w; arc=none smtp.client-ip=205.220.168.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
+	s=arc-20240116; t=1785836307; c=relaxed/simple;
+	bh=sBgCGykOe4dGi+t75u3foiUNg9DJqcvnAqJThzQcG9s=;
+	h=Message-ID:Date:MIME-Version:Subject:To:CC:References:From:
+	 In-Reply-To:Content-Type; b=urURuvDAwVCDdJZ0BCTINAS3CC7RlBdJjcD3w/PI0lPmbnufL9kJK28Di1mxVOWg2ttucMSr/76hLUdHbb+PTHPFxHU7vv87lOlCdRdjLiaTG6U3vuZ/AkkKqAuAFCH70KOF7TSMgqhW8DGBeE7LnveCnE05wmIxxIDfb8Dwc4Q=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; spf=pass smtp.mailfrom=huawei.com; dkim=pass (1024-bit key) header.d=huawei.com header.i=@huawei.com header.b=GhZ5aLEh; arc=none smtp.client-ip=113.46.200.227
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=huawei.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="i5/jam2w"
-Received: from pps.filterd (m0279866.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6748CBrV2978751;
-	Tue, 4 Aug 2026 09:21:39 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:content-type:date:from:message-id
-	:mime-version:subject:to; s=qcppdkim1; bh=E8dSVd/EBkNeRd08/l7nqW
-	Wx4bVFfiJ2ZMYPS9Fkn9g=; b=i5/jam2w1uhxdj4Q6TRo2x9WQ/ODr7O7XVp8w7
-	KxWJJ6DUWxoA+ASsKVXIW1IQLKP2onnsH2vUFgUaPM0HlfPdJwhsv0KufKuqp5nU
-	3JonxjStRMyXYfrzFpAazO/AMPShanK+lHD7ya3aTx99KcveQdV7VpYaPE2jofac
-	B57Z7PXxZ2DVgDqpo+btjDglb+hhB73GV/CmCTMazIpkF5GdUzEI+civ4Rv2GWBe
-	q6zmoIOYbhNKxSPk5maES7gcReIQLq1+l2V0dtTdAEcOqI8wX2ZOj+RDsg0SfaOY
-	5kJhpYQVJg9QBxmqt0wDQpYnGSPEm6u/g/HH4bCoDaZGB0nw==
-Received: from apblrppmta02.qualcomm.com (blr-bdr-fw-01_GlobalNAT_AllZones-Outside.qualcomm.com [103.229.18.19])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4fu2syjg7h-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 04 Aug 2026 09:21:38 +0000 (GMT)
-Received: from pps.filterd (APBLRPPMTA02.qualcomm.com [127.0.0.1])
-	by APBLRPPMTA02.qualcomm.com (8.18.1.7/8.18.1.7) with ESMTP id 6749LYVG027291;
-	Tue, 4 Aug 2026 09:21:34 GMT
-Received: from pps.reinject (localhost [127.0.0.1])
-	by APBLRPPMTA02.qualcomm.com (PPS) with ESMTP id 4fs9vjk7ur-1;
-	Tue, 04 Aug 2026 09:21:34 +0000 (GMT)
-Received: from APBLRPPMTA02.qualcomm.com (APBLRPPMTA02.qualcomm.com [127.0.0.1])
-	by pps.reinject (8.18.1.12/8.18.1.12) with ESMTP id 6749LY8I027285;
-	Tue, 4 Aug 2026 09:21:34 GMT
-Received: from hu-ffaruque-hyd.qualcomm.com (hu-ffaruque-hyd.qualcomm.com [10.147.245.31])
-	by APBLRPPMTA02.qualcomm.com (PPS) with ESMTP id 6749LY9G027260;
-	Tue, 04 Aug 2026 09:21:34 +0000 (GMT)
-From: Faruque Ansari <faruque.ansari@oss.qualcomm.com>
-Subject: [PATCH v3 0/3] power: reset: pscrr: record reset cause on panic
- and watchdog pretimeout
-Date: Tue, 04 Aug 2026 14:51:19 +0530
-Message-Id: <20260804-pscrr-reboot-reason-v3-0-e706dbfc7465@oss.qualcomm.com>
+	dkim=pass (1024-bit key) header.d=huawei.com header.i=@huawei.com header.b="GhZ5aLEh"
+dkim-signature: v=1; a=rsa-sha256; d=huawei.com; s=dkim;
+	c=relaxed/relaxed; q=dns/txt;
+	h=From;
+	bh=i+ghQVwwIcBHPV3xBu7iUV/MUtzGz9ebQRM8ZIfeaVU=;
+	b=GhZ5aLEhiFaCM3jklQpFSS7vF2SYu99iFO3h/0DiE9Kf1fOocwp5HQHZ8G4pyVbh5n91YEUbI
+	lx32I4z4RVPQeyqxtN6HYN2brFFxdwwrv6yWAt+M7o8ditZyD925MauCivtVi/IxiCF6b1E6RmY
+	WBb5YCrKatqS8jpX0YFv7jc=
+Received: from mail.maildlp.com (unknown [172.19.162.92])
+	by canpmsgout12.his.huawei.com (SkyGuard) with ESMTPS id 4hDp9g537BznTVn;
+	Tue,  4 Aug 2026 17:27:51 +0800 (CST)
+Received: from kwepemf100001.china.huawei.com (unknown [7.202.181.215])
+	by mail.maildlp.com (Postfix) with ESMTPS id C180E40565;
+	Tue,  4 Aug 2026 17:38:18 +0800 (CST)
+Received: from [10.67.121.90] (10.67.121.90) by kwepemf100001.china.huawei.com
+ (7.202.181.215) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1544.36; Tue, 4 Aug
+ 2026 17:38:18 +0800
+Message-ID: <fd3b6402-fd34-4b23-b5c7-69aae1adb5e5@huawei.com>
+Date: Tue, 4 Aug 2026 17:38:17 +0800
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-X-B4-Tracking: v=1; b=H4sIAA+vcWoC/x2MQQqAIBAAvxJ7TjDLqL4SHUrX2ovGbkQg/T3pN
- MxhJoMgEwpMVQbGm4RSLNLWFbhjjTsq8sXBaNPrQbfqFMesGLeUroJVUlShMbYbe4tOeyjlyRj
- o+a/z8r4ffPNJgmUAAAA=
-X-Change-ID: 20260803-pscrr-reboot-reason-f1254965ec0d
-To: Sebastian Reichel <sre@kernel.org>,
-        Wim Van Sebroeck <wim@linux-watchdog.org>,
-        Guenter Roeck <linux@roeck-us.net>, Benson Leung <bleung@chromium.org>,
-        Tzung-Bi Shih <tzungbi@kernel.org>,
-        Oleksij Rempel <o.rempel@pengutronix.de>,
-        Srinivas Kandagatla <srini@kernel.org>,
-        Daniel Lezcano <daniel.lezcano@kernel.org>,
-        Pengutronix Kernel Team <kernel@pengutronix.de>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-watchdog@vger.kernel.org, linux-arm-msm@vger.kernel.org,
-        kernel@pengutronix.de, Liam Girdwood <lgirdwood@gmail.com>,
-        Mark Brown <broonie@kernel.org>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>,
-        =?utf-8?q?S=C3=B8ren_Andersen?= <san@skov.dk>,
-        Guenter Roeck <groeck@chromium.org>,
-        Matti Vaittinen <mazziesaccount@gmail.com>,
-        Ahmad Fatoum <a.fatoum@pengutronix.de>,
-        Andrew Morton <akpm@linux-foundation.org>,
-        avaneesh.dwivedi@oss.qualcomm.com,
-        Umang Chheda <umang.chheda@oss.qualcomm.com>,
-        Faruque Ansari <faruque.ansari@oss.qualcomm.com>
-X-Mailer: b4 0.14.3
-X-QCInternal: smtphost
-X-QCInternal: smtphost
-X-Authority-Analysis: v=2.4 cv=TIh1jVla c=1 sm=1 tr=0 ts=6a71af23 cx=c_pps
- a=Ou0eQOY4+eZoSc0qltEV5Q==:117 a=Ou0eQOY4+eZoSc0qltEV5Q==:17
- a=IkcTkHD0fZMA:10 a=Sv0fKeRqtYgA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=u7WPNUs3qKkmUXheDGA7:22 a=YMgV9FUhrdKAYTUUvYB2:22 a=VwQbUJbxAAAA:8
- a=EUspDBNiAAAA:8 a=kGTgZ7n9gimcELQYmocA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
-X-Proofpoint-Spam-Info: AW1haW4tMjYwODA0MDA3MyBTYWx0ZWRfX4CLMap/DvE0J
- trdAu25uMxZwI2aW5oOL3lOeY8yQN4PTrgjOk+HZXwPR/gXwtMiEz2B1aefBhGpt2jnPx1nNGPn
- oz1D3u+8snfQ435aRcRK7qtA7+p6Xsk=
-X-Proofpoint-ORIG-GUID: Fgu_5RzkI5mndqgFBUSh-CjtCPO7rYc_
-X-Proofpoint-GUID: Fgu_5RzkI5mndqgFBUSh-CjtCPO7rYc_
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwODA0MDA3MyBTYWx0ZWRfX7GyFyW6QehqP
- 9BtvK2KFMNVBOKL6mWKF5hYabau89QnpfsB9vys6I3CbwbK8xYhjrED5B82CLPdCfRA1cMxMDHB
- s6ibECtL6N9Wd9dbKxuYYAPbTmR8/ly8OcX5TBMK4n76mb+ukk3JF31Mif1CVVsx8vobu3VXOAL
- EWCD/1xvwL57mbBqh3322jfY4tHhyAEOItsZPoft7FTOdxXRYxIzWBHpRzyAIJDwjf4Z16zmFNH
- VqtGCYn/f2plD6gFkHIii4g43kIrzCTIEkNeAE0ppMKEX6cXQb+H/CmVKxb1rkq08pHWGGayOBc
- 4faOoyW9WOxZ9qC0FSSk4aOOEDoeR/zgcVvNCcN+bVPTLKYKi06DeCpBpD/SpWLn8f57LhENqKR
- /iPdjK6VJgzaRDXaU20wwAhOXyJ4Cw5guNoGiIfcKRh0JAyihqgIrMPvgqdPobrTrjFLjkUcw22
- j1gXysy7anTvYw0+AfA==
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-08-04_02,2026-08-03_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- impostorscore=0 suspectscore=0 phishscore=0 malwarescore=0 spamscore=0
- bulkscore=0 lowpriorityscore=0 clxscore=1015 adultscore=0 priorityscore=1501
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2608040073
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v4 0/4] devfreq: Add refcounts for governor modules
+To: Jie Zhan <zhanjie9@hisilicon.com>, <cwchoi00@gmail.com>,
+	<cw00.choi@samsung.com>, <myungjoo.ham@samsung.com>,
+	<kyungmin.park@samsung.com>, <linux-pm@vger.kernel.org>,
+	<linux-arm-kernel@lists.infradead.org>
+CC: <linuxarm@huawei.com>, <tianyaxiong@kylinos.cn>,
+	<zhangpengjie2@huawei.com>, <lihuisong@huawei.com>,
+	<prime.zeng@hisilicon.com>
+References: <20260729102348.3857779-1-zhanjie9@hisilicon.com>
+From: "zhenglifeng (A)" <zhenglifeng1@huawei.com>
+In-Reply-To: <20260729102348.3857779-1-zhanjie9@hisilicon.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+X-ClientProxiedBy: kwepems100001.china.huawei.com (7.221.188.238) To
+ kwepemf100001.china.huawei.com (7.202.181.215)
 
-This series extends the Power State Change Reason Register (PSCRR) [1]
-framework to capture two additional reset causes.
+On 7/29/2026 6:23 PM, Jie Zhan wrote:
+> A governor module can be dynamically inserted or removed if compiled as a
+> kernel module.  'devfreq->governor' would become NULL if the governor
+> module is removed when it's in use.
+> 
+> For user-friendliness, get and put the module refcount of a governor module
+> when it's in use.  As a result, unloading a governor module in use returns
+> an error, e.g.:
+> 
+> $ cat governor
+> performance
+> $ rmmod governor_performance
+> rmmod: ERROR: Module governor_performance is in use
+> 
+> Note that this can't stop force unload, so it's more of a
+> user-friendliness improvement rather than strict protection.  The
+> existing code that keeps devfreq working when 'devfreq->governor' is
+> NULL should still be there.
+> 
+> Patch 1-3 clean up mutex with guards and factor out a common governor
+> setting function, so as to prepare for implementing governor reference
+> counting.  They can be applied separately.
+> 
+> Patch 4 adds the reference counting mechanism for devfreq governor
+> modules.
+> 
+> This set is based on devfreq-next of 7.1-rc1.
+> 
+> Changelog
+> ---------
+> v4:
+> - Patch 3: Return an error if starting new governor fails and restoring
+>   old governor succeeds, such that the caller won't get misled.
+> 
+> v3:
+> - Link: https://lore.kernel.org/all/20260519113251.3745140-1-zhanjie9@hisilicon.com/
+> - Rework patch 4 to make the 'owner' field assignment optional in the
+>   governor code.  This prevents device-driver-bundled governors (such as
+>   those in hisi_uncore_freq and tegra30-devfreq) from causing
+>   self-reference issues that block module removal. Additionally, merge
+>   patches 4 and 5 to clearly present the new 'owner' member alongside
+>   its usage.
+> - Drop patch 6 because it's no longer needed since v2.
+> - Update commit logs of patch 3 and 4 to clarify background and
+>   motivation.
+> - Pick up 2 tags from Yaxiong (thanks!).
+> - Trivial cleanups.
+> 
+> v2:
+> - Link: https://lore.kernel.org/all/20260513093832.1645890-1-zhanjie9@hisilicon.com/
+> - Rebase on devfreq-next of 7.1-rc1.
+> - Drop the patches related to the NULL pointer deference issue of
+>   'devfreq->governor', which has been solved and merged recently.
+> - Remove the dedicated mutex for 'devfreq_governor_list' because the
+>   refcount changes don't depend on that.
+> - Some minor cleanups and fixes.
+> 
+> v1:
+> - Link: https://lore.kernel.org/all/20260326123428.800407-1-zhanjie9@hisilicon.com/
+> 
+> Jie Zhan (4):
+>   devfreq: Use mutex guard in governor_store()
+>   devfreq: Use mutex guard in devfreq_add/remove_governor()
+>   devfreq: Factor out devfreq_set_governor()
+>   devfreq: Refcount governor modules while in use
+> 
+>  drivers/devfreq/devfreq.c                 | 185 +++++++++++-----------
+>  drivers/devfreq/governor_passive.c        |   1 +
+>  drivers/devfreq/governor_performance.c    |   1 +
+>  drivers/devfreq/governor_powersave.c      |   1 +
+>  drivers/devfreq/governor_simpleondemand.c |   1 +
+>  drivers/devfreq/governor_userspace.c      |   1 +
+>  include/linux/devfreq-governor.h          |  11 ++
+>  7 files changed, 112 insertions(+), 89 deletions(-)
+> 
 
-  1. Kernel panic — a panic notifier writes PSCR_KERNEL_PANIC to NVMEM
-     before the system resets, so the next boot can distinguish a panic
-     from other reset causes.
+LGTM.
 
-  2. Watchdog pretimeout — set_psc_reason(PSCR_WATCHDOG_PRETIMEOUT) is
-     called from pretimeout_panic(), when the watchdog fire its
-     pre-reset notification before resetting the system, so the reason gets
-     saved and we know its was a watchdog timeout that caused the reset.
+Reviewed-by: Lifeng Zheng <zhenglifeng1@huawei.com>
 
-[1] https://lore.kernel.org/all/20260731095959.296056-1-o.rempel@pengutronix.de/
 
-Changes in v3:
-  - Update patch 3/3 based on Guenter Roeck's feedback:
-      * Move set_psc_reason(PSCR_WATCHDOG_PRETIMEOUT) from
-        watchdog_notify_pretimeout() to pretimeout_panic().
-
-Changes in v2:
-https://lore.kernel.org/lkml/20260722-pscrr-reboot-reason-v2-0-495ba3005953@oss.qualcomm.com/
-  - Split patch 2/2 into two patches as requested by Guenter Roeck:
-      * Patch 2/3: power/reset — add PSCR_WATCHDOG_PRETIMEOUT and guard
-          panic notifier against overwriting watchdog reason.
-      * Patch 3/3: watchdog — hook set_psc_reason() into
-          watchdog_notify_pretimeout().
-
-Signed-off-by: Faruque Ansari <faruque.ansari@oss.qualcomm.com>
----
-Faruque Ansari (3):
-      power: reset: pscrr: add kernel panic reason tracking
-      power: reset: pscrr: add watchdog pretimeout reason tracking
-      watchdog: pretimeout: update PSC reason in panic pretimeout governor
-
- drivers/power/reset/pscrr/pscrr.c     | 30 ++++++++++++++++++++++++++++++
- drivers/watchdog/pretimeout_panic.c   |  2 ++
- include/linux/power/power_on_reason.h |  1 +
- include/linux/reboot.h                |  3 +++
- kernel/reboot.c                       |  1 +
- 5 files changed, 37 insertions(+)
----
-base-commit: 551961df5728932d968a4aae534714acfa43f3a1
-change-id: 20260803-pscrr-reboot-reason-f1254965ec0d
-
-Best regards,
--- 
-Faruque Ansari <faruque.ansari@oss.qualcomm.com>
 
