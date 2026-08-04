@@ -1,100 +1,102 @@
-Received: from courrier.aliel.fr (courrier.aliel.fr [65.21.61.41])
+Received: from canpmsgout10.his.huawei.com (canpmsgout10.his.huawei.com [113.46.200.225])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A842343C078;
-	Tue,  4 Aug 2026 08:40:31 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=65.21.61.41
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 53D9E448380;
+	Tue,  4 Aug 2026 08:52:44 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=113.46.200.225
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1785832835; cv=none; b=alUbFNAFoAKwtGUWSDSnuhrOw0OvyQVQaawLX/CP+xf+BHT6atZYuGSTd6ELPfx1LCicToFVayHF3brb4kcqf4/WgXCKsD9bG8k4Wfb97Jt/w8p4/hmCTkqhxxWqFMsxNdpkXBTpGY85h4CB0Fz8rjIF6Lw5qrob1amuXhPeGQc=
+	t=1785833567; cv=none; b=oLOh/xsvx5RNnsP3UqNIgPA9mj6WAOdsXOlfc7mheUuj4zL2Zd9oGPzhD3xLER2m2FSJ2dsnxgixPuglqczCr/rEgj4fJuwPYB46P4eHeYAalTtCaOqb9CdXA5P6w3YaYvH1QlmvPBpE35DNT59iPVd1fJjwR9/swyoBzDUtIYs=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1785832835; c=relaxed/simple;
-	bh=p2hRbF6OR9u6soQD8uwd3KG20dyyAPFIEut3UyAAn20=;
-	h=Message-ID:Date:MIME-Version:From:Subject:To:Cc:References:
-	 In-Reply-To:Content-Type; b=eh9eMbTH4To492OEzAxBI5g9Ln1we+8RhFNshDis5o+tNhOeng2Gm4HBa/R82lYxb3ApfT4pChECuQNwY89EJ+pu4gAjos+7e7o7wj39ufgzzKACS1eTzqJUOaHX446ymZXTAxqdDrNWlFSjfWr+5imD4i55o6vC9xRa7Oo7FPM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=aliel.fr; spf=pass smtp.mailfrom=aliel.fr; dkim=pass (1024-bit key) header.d=aliel.fr header.i=@aliel.fr header.b=TxqyMj3z; arc=none smtp.client-ip=65.21.61.41
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=aliel.fr
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=aliel.fr
+	s=arc-20240116; t=1785833567; c=relaxed/simple;
+	bh=SFifmtolDLhp7/hIPyEN4KkxrXXW9qcorg+HFcP9k3Y=;
+	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=TeN6M8pFwxcwb6pi+KDVtL1+41Bcz6lamr7Rys+5GL/J2CoWFEFsMwPwntRZ6PTqDA7U9ki7mWwsiQA4+1NZEQsuG2X6iFWJdxhq3IzGzP+8kjswQnp8s5kmavzWc+sBTIbpxHoP9efW6BGuvUfjxJm2KGE8KQCoVnEaS9E5AuU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; spf=pass smtp.mailfrom=huawei.com; dkim=pass (1024-bit key) header.d=huawei.com header.i=@huawei.com header.b=w5ItmmVB; arc=none smtp.client-ip=113.46.200.225
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=huawei.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=aliel.fr header.i=@aliel.fr header.b="TxqyMj3z"
-Message-ID: <42363af0-a2af-4f8b-8ad2-834539c979b0@aliel.fr>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=aliel.fr;
-	s=courrier-s1; t=1785832273;
-	bh=p2hRbF6OR9u6soQD8uwd3KG20dyyAPFIEut3UyAAn20=;
-	h=Date:From:Subject:To:Cc:References:In-Reply-To;
-	b=TxqyMj3z1Lg2uE0F//7bjxqsXG1z7qyHSQ/66bPbAUtMFaPEBrytueMpUZpuZy/Qc
-	 mRmdKvaYJ5Fvb1d8aVSO1M2Bct0I0AbM9nlq/Q7ynqP7UZAka/+kXnAxSBBf24+YpH
-	 oJo6XkMgCCF0ivRjz7XUkw654IL4NXB8uGzEVmF8=
-Date: Tue, 4 Aug 2026 10:30:24 +0200
+	dkim=pass (1024-bit key) header.d=huawei.com header.i=@huawei.com header.b="w5ItmmVB"
+dkim-signature: v=1; a=rsa-sha256; d=huawei.com; s=dkim;
+	c=relaxed/relaxed; q=dns/txt;
+	h=From;
+	bh=yKGqqQI+Uhtn74jATxL7vYZkfUPEKo/fbFgxPKC8IXg=;
+	b=w5ItmmVBe04bQA2BUp49OUOIW6odv8MFOXXRQrz3DNZbrNuf+H2Uq6ZF2mb2uNqZQ93ewKtSe
+	7SSv20mBDSXelAc8R9B94s+fV1tNPWBPk2zEixk4mDo866cNEMQBJKd72mCAUSUJwMhyQRZbXhV
+	yh16vzKwzKN3NdIJylU/BKA=
+Received: from mail.maildlp.com (unknown [172.19.163.163])
+	by canpmsgout10.his.huawei.com (SkyGuard) with ESMTPS id 4hDnB83B4Nz1K96s;
+	Tue,  4 Aug 2026 16:43:12 +0800 (CST)
+Received: from kwepemf100001.china.huawei.com (unknown [7.202.181.215])
+	by mail.maildlp.com (Postfix) with ESMTPS id E8D0C4057A;
+	Tue,  4 Aug 2026 16:52:41 +0800 (CST)
+Received: from localhost.localdomain (10.50.163.32) by
+ kwepemf100001.china.huawei.com (7.202.181.215) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.1544.36; Tue, 4 Aug 2026 16:52:41 +0800
+From: Lifeng Zheng <zhenglifeng1@huawei.com>
+To: <rafael@kernel.org>, <viresh.kumar@linaro.org>, <saket.dumbre@intel.com>,
+	<lenb@kernel.org>, <zhanjie9@hisilicon.com>, <pierre.gondois@arm.com>,
+	<sumitg@nvidia.com>
+CC: <linux-acpi@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
+	<linux-pm@vger.kernel.org>, <acpica-devel@lists.linux.dev>,
+	<linuxarm@huawei.com>, <lihuisong@huawei.com>, <yubowen8@huawei.com>,
+	<zhangpengjie2@huawei.com>, <wangzhi12@huawei.com>,
+	<linhongye@h-partners.com>, <zhenglifeng1@huawei.com>
+Subject: [PATCH v2 1/8] ACPI: CPPC: Prepare cpc_register_resource for Package-type entries
+Date: Tue, 4 Aug 2026 16:50:35 +0800
+Message-ID: <20260804085042.4118193-2-zhenglifeng1@huawei.com>
+X-Mailer: git-send-email 2.33.0
+In-Reply-To: <20260804085042.4118193-1-zhenglifeng1@huawei.com>
+References: <20260804085042.4118193-1-zhenglifeng1@huawei.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird Beta
-From: linux-kernel-dev@aliel.fr
-Subject: Re: [PATCH v8 0/8] Add VIM4 MCU/FAN support
-To: Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>
-Cc: linux-amlogic@lists.infradead.org, devicetree@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-i2c@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org,
- Conor Dooley <conor.dooley@microchip.com>,
- Neil Armstrong <neil.armstrong@linaro.org>, Lee Jones <lee@kernel.org>,
- Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
- Conor Dooley <conor+dt@kernel.org>, Andi Shyti <andi.shyti@kernel.org>,
- Kevin Hilman <khilman@baylibre.com>, Jerome Brunet <jbrunet@baylibre.com>,
- Martin Blumenstingl <martin.blumenstingl@googlemail.com>,
- Beniamino Galvani <b.galvani@gmail.com>,
- "Rafael J. Wysocki" <rafael@kernel.org>,
- Daniel Lezcano <daniel.lezcano@kernel.org>, Zhang Rui <rui.zhang@intel.com>,
- Lukasz Luba <lukasz.luba@arm.com>, Liam Girdwood <lgirdwood@gmail.com>,
- Mark Brown <broonie@kernel.org>
-References: <20260702-add-mcu-fan-khadas-vim4-v8-0-244feee91a36@aliel.fr>
- <713c728a-f68f-41fa-a64b-09ccecef9157@oss.qualcomm.com>
-Content-Language: en-US
-In-Reply-To: <713c728a-f68f-41fa-a64b-09ccecef9157@oss.qualcomm.com>
-Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-ClientProxiedBy: kwepems500002.china.huawei.com (7.221.188.17) To
+ kwepemf100001.china.huawei.com (7.202.181.215)
 
-On 7/8/26 3:42 PM, Daniel Lezcano wrote:
-> On 7/2/26 11:55, Ronald Claveau via B4 Relay wrote:
->> The Khadas VIM4 board features a different MCU variant compared to
->> previous VIM boards.
->> While it shares the same I2C-based communication model,
->> it differs in some ways:
->>
->>    - A distinct register map with its own volatile/writeable register set
->>    - A fan control with 0–100 levels instead of the 0–3 levels previously
-> 
-> That means for a eg. 100 ms polling, the first one takes 10s to reach
-> the max speed, while the second takes 300ms, right ?
-> 
+CPPC v4 (ACPI 6.6, Section 8.4.6.1.2.7) introduces the Resource
+Priority entry, which is a Package of sub-packages rather than a
+plain Integer or Buffer register.  The existing cpc_register_resource
+union only accommodates Integer and Buffer (register descriptor)
+fields.
 
-Sorry for the delay.
-Yes I defined levels 30-100 in the DT as the MCU register description
-stated that:
-`Note: the parameter value of fan normally open is 0x1E~0x64`
+Add a Package variant to the cpc_entry union so that nested
+structures such as RESOURCE_PRIORITY can store their element count
+and a dynamically allocated array of child cpc_register_resource
+descriptors.
 
-I didn't find any issue with the stress test, but I will address your
-concern with a smaller list.
+No functional change intended; the new Package fields are not yet
+consumed by any caller.
 
->>    - A fan power supply gated through a regulator
->>
->> This series adds support for this new variant by:
->>
->>    1. Refactoring the khadas-mcu MFD driver to use per-variant data
->>       structures (regmap config, cells, fan platform data),
->>       and adding the khadas,vim4-mcu compatible string.
->>
->>    2. Extending the fan thermal driver to retrieve the fan register
->>       and maximum level from platform_data,
->>       and to optionally manage a power regulator for the fan supply.
-> 
-> Through which tree do you expect patch 5/8 to go ?
-> 
+Signed-off-by: Lifeng Zheng <zhenglifeng1@huawei.com>
+---
+ include/acpi/cppc_acpi.h | 8 ++++++++
+ 1 file changed, 8 insertions(+)
 
-MFD seems a good candidate as this patch depends on it.
-
+diff --git a/include/acpi/cppc_acpi.h b/include/acpi/cppc_acpi.h
+index 8693890a7275..1839582b80be 100644
+--- a/include/acpi/cppc_acpi.h
++++ b/include/acpi/cppc_acpi.h
+@@ -71,6 +71,14 @@ struct cpc_register_resource {
+ 	union {
+ 		struct cpc_reg reg;
+ 		u64 int_value;
++		/*
++		 * CPPC v4: nested Package (e.g. RESOURCE_PRIORITY),
++		 * elements dynamically allocated
++		 */
++		struct {
++			u32 count;
++			struct cpc_register_resource *elements;
++		} package;
+ 	} cpc_entry;
+ };
+ 
 -- 
-Best regards,
-Ronald
+2.33.0
+
