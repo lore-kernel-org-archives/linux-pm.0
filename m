@@ -1,179 +1,145 @@
-Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
+Received: from mail.alien8.de (mail.alien8.de [65.109.113.108])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9EBEB48424C
-	for <linux-pm@vger.kernel.org>; Tue,  4 Aug 2026 18:21:25 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7C9313E5A09;
+	Tue,  4 Aug 2026 18:49:54 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=65.109.113.108
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1785867687; cv=none; b=KrBhKE11kLJOeXpEY/vhDp3PHhRxpCyompg0IlJYhqP+8g2NrQQTAT6ndzSYnexbhD3TWfoQNOnXtKIRJbpSKyNGUxf/plXdGAs01g5niBq9AzWwd5DJ05Mm9rcX37ENQh2GScKpLAlH/ZttO8RSvj0bimMrwftjbyOuSWKZu5s=
+	t=1785869399; cv=none; b=abVfofXbg8grv9g6IrHelaHXL+aSt+nyrW4Mi9G2yteUjmBIiuFwGDjnzhqP7pCzsiPwgu3mF007u7HSgEoMVZLXtVLGWtIi9Z0QD4Cn5y4+djudB1hRk6AYknOYk4DU+uwHFpckHxKHDAEoT5OoF4j4lHhH/d68yHWlkrOGQtU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1785867687; c=relaxed/simple;
-	bh=cIWebNNhd5WCWNDRpeq+4wg5O6YVuBD+ott+AM4Qcrg=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=XN9U+OdUjDZWYSXziO+X/yKiAhIvQED+ZjQe9NAMbqNeyHfAWkRrspSm2RRsjBf3cIt8wX0CFoDkA5BWhgBj4hsI5Wyl4RItu2d3goF2Z0cx+xNVPpWNtaLW16l3Hs5+3vRVOZ32LkawuIpyDI669HRtMxynr0D31Gki9urNMuM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=R5bg7HYc; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=LnV3uU5X; arc=none smtp.client-ip=205.220.168.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
+	s=arc-20240116; t=1785869399; c=relaxed/simple;
+	bh=NfnRqyEDQtC2UWJqFZYYpE9YtnU00mUM6F9dwitVwig=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=Z/lptwmmnPizNvDv8Q1oTiZXDSzM7FO7VyU/SOkqw9xaFwWxG2eDmj8iU1XL3KamNSygc8oPMZ8feudXILORVjXF1DYvUl29mQ4XjL6iTa7i5MKI/Wk7XX2EPOi9Uld3enV2DBIrp01IE11gntduTZpmcCVPtW5t4jtobm6zEpQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=alien8.de; spf=pass smtp.mailfrom=alien8.de; dkim=pass (4096-bit key) header.d=alien8.de header.i=@alien8.de header.b=MTec/dYY; arc=none smtp.client-ip=65.109.113.108
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=alien8.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=alien8.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="R5bg7HYc";
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="LnV3uU5X"
-Received: from pps.filterd (m0279863.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 674H3PRP404528
-	for <linux-pm@vger.kernel.org>; Tue, 4 Aug 2026 18:21:25 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	4AjFf2wRc96KLV85FfeVqtVQ8LAkWfwTKk1LL7rV1DE=; b=R5bg7HYcPz8Yj0AR
-	t8M1djPYY9C8jY2/ETun+qYssnxlMxweryJIH/WXKY8z6x9WexK1Mp2wDQjnHIVM
-	eK3bbGLz+XKrI9A8U6xELAvtq+f/2i1+utuhKUqOLZ6yr1Kx0yIZXdVO1IMdzqjc
-	t608yxRGzXDPp4JQfyOO+SvRJ/L5Xvhk5DkhbkOfSZ+y9788gHw6JWA3FPNH6TK7
-	t/Jy6+VfH29pKOnQORfa6S8amuH+eOOhWbJ2cFjKopXubljJmDsyz6aFDfKhGMXj
-	KUUNEo6UuJb9ZXQemLVNmsZKS9crMIuJkg0Q97crNJmeGFK0o/QLIm9AlboeDo4w
-	Ohbskw==
-Received: from mail-pj1-f69.google.com (mail-pj1-f69.google.com [209.85.216.69])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4fum56gcfm-1
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Tue, 04 Aug 2026 18:21:24 +0000 (GMT)
-Received: by mail-pj1-f69.google.com with SMTP id 98e67ed59e1d1-38dbf293831so154002a91.3
-        for <linux-pm@vger.kernel.org>; Tue, 04 Aug 2026 11:21:24 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1785867684; x=1786472484; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:in-reply-to:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=4AjFf2wRc96KLV85FfeVqtVQ8LAkWfwTKk1LL7rV1DE=;
-        b=LnV3uU5XmTpApwXeRbBtr/cG9FUMlBDabYhTGtfApb+dqWPF6QBDbrBO0cnlSkfvm0
-         WBxAqLRqmrjvzawBb+Yl/nEGuKGfYnWD6dIuLeA3qCnVQl0nlAN5+xP9GYJYz9of6dS5
-         rC0XxOHzmiTV1qNPO18fIrjFGJWBrYGgKC4FL1VsFRdQtjtt1rvlcdHJmoqBgjvU5dGR
-         j97FvcX++aUOXj+sbXevmwfmKJcLajFTJhRafKdyVGGsYgVhjXWL1anxeha8DSM5Yvfy
-         q8cR1y24scjRby7pSZX89mGcJPG+no2RQA0vhGfH2lrLB7aK9iWyQOJcLafG89NiBzym
-         IBJw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1785867684; x=1786472484;
-        h=content-transfer-encoding:content-type:in-reply-to:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=4AjFf2wRc96KLV85FfeVqtVQ8LAkWfwTKk1LL7rV1DE=;
-        b=Y0wknH8r8WKGOqHq7ZLFgL7IMF6bhMomONvtit9RHWmg/7Wo4j2qvvjygRf4iuNUaJ
-         bf+wJ1e8mSZNOU3DUr14CAXrniI9MNX7K6VprMAZXTNtpsWI85BrGeeqn9IpkkpsHV8n
-         GuCskN2nd4C5kysG3CyzpXTNCxqqDUTaxwcO00V5rxlf+IdhNwPD36wR3WWPjQQTwm10
-         jQ0VpN6fbb91vhjm4mtMt+sGYm5+fID9/iTtt2lqbwPx65RIJbuZF5HCtnF7zyBr93XG
-         K5w5z/cKkytxIlim+12Oevb2HCPiUmrFRs0Iw3geA/0Os11k/4Wg8b1ZpZEPN0GlncpZ
-         P9yw==
-X-Forwarded-Encrypted: i=1; AHgh+Rq7xv+CjgMdPczxHid264lpRlM6s45w7+u0ufErtAZPigsZy1JcYuJyeR/5FzLB6Bc85mTEz2yDnA==@vger.kernel.org
-X-Gm-Message-State: AOJu0YxTPMGDIgA8rPltYbnIpv+icAXuVq7wIV0Py4MQoJcXMDC+bonx
-	VWzX7I/BynwilfoA8PDzaSAL0IVZHmnr/fCKZ0PaaLH1bVEj0vfyGrCWv3jYcPNofTUhSnD7OK1
-	cpglQ5s+fhhmgTLigPsKFYQdRWfjIJ/lJTiAyVfFB06a5Q7YDeZTtrYjGgFhCSQ==
-X-Gm-Gg: AR+sD12F4CYcRr7xw/qznQlGMs06kNypVN5ZQ6crRbzkx7A0X7fIAJJWVjv2BUNGnPG
-	FN0JW6voDvDfxRcJZE/vdYbpViiqI+MgUuOG+G74teqD1vu2/oCMIMEcxhiF6ltPu2aTo0x13yz
-	qEv10PQ4D3fDebDrC9ThAiwBN1CRT71jBQaEz0coIPhXFR3ZYE1V3Ia3FVJuGdEd85SsbqL5c1/
-	EBbPw6iKD8gPozrTncOmQRzSV9Rhg20ATu+XTtUhiaXD7ajURh9tCuqokW2DmdcMmEiO8oAKfNl
-	aJFUYuBN0jNlB9OFxw6tfad60kHTwyZQzwWO9WPzTDsdOiTn5A0kRo9vqpM05xuXbH8yvAokEoi
-	8Tl51eQhJ90AT527VmJauSO9KNubfa7VTUw==
-X-Received: by 2002:a17:90b:5111:b0:38e:64b0:8bce with SMTP id 98e67ed59e1d1-3903c633720mr666617a91.20.1785867684206;
-        Tue, 04 Aug 2026 11:21:24 -0700 (PDT)
-X-Received: by 2002:a17:90b:5111:b0:38e:64b0:8bce with SMTP id 98e67ed59e1d1-3903c633720mr666592a91.20.1785867683751;
-        Tue, 04 Aug 2026 11:21:23 -0700 (PDT)
-Received: from [192.168.1.8] ([106.222.234.41])
-        by smtp.gmail.com with ESMTPSA id a92af1059eb24-13fca8df89asm11465837c88.9.2026.08.04.11.21.20
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 04 Aug 2026 11:21:23 -0700 (PDT)
-Message-ID: <a67a1fd9-1a90-4c82-8ebd-bc6d7d15fe10@oss.qualcomm.com>
-Date: Tue, 4 Aug 2026 23:51:18 +0530
+	dkim=pass (4096-bit key) header.d=alien8.de header.i=@alien8.de header.b="MTec/dYY"
+Received: from localhost (localhost.localdomain [127.0.0.1])
+	by mail.alien8.de (SuperMail on ZX Spectrum 128k) with ESMTP id 35D5A40E01CE;
+	Tue,  4 Aug 2026 18:49:46 +0000 (UTC)
+X-Virus-Scanned: Debian amavisd-new at mail.alien8.de
+Authentication-Results: mail.alien8.de (amavisd-new); dkim=pass (4096-bit key)
+	header.d=alien8.de
+Received: from mail.alien8.de ([127.0.0.1])
+	by localhost (mail.alien8.de [127.0.0.1]) (amavisd-new, port 10026)
+	with ESMTP id fqE_V-rzFjuR; Tue,  4 Aug 2026 18:49:36 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=alien8.de; s=alien8;
+	t=1785869375; bh=szOG1XqzgEIyu7x0nRnqYMDlVAXKjoc3bI8pnOPitHE=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=MTec/dYYtohtqTUKVQU4yM+QLUShejJHoC4fgj3DXZGNUSdRZHdX79UgkYhHn0rtG
+	 +Cn0fXMmDv9DuSSiS3Sc2ASsCWL72z+6D6f+OGnU6wskZ/4pwVlMm95maihh4rIt1I
+	 aeR/rhK5WErPztKQ3X7VpjqLTgWzWci/XfF72CR90TNGJlSgb6xtiDs1Nb7tNvmkRR
+	 Curfg29JS7qEA+tvx+OMKFA9VIwbyWeRuG8td779/R0j7NjWjmuxk4oF69sYhE3BJO
+	 uCUlIz3jZpSGuBxzn+jdHqi0DxK+KCIDBzz6FRvwWna6cwYZouDo6H8DmHiHeBwmkt
+	 QQdYWshalIIopRNXEshtzWkl6Nc8fL2GNuhxcdcqz5qsQWCKONoLWdCLKVlj8abLbZ
+	 jmCTK0x0S6YFfe0Bh8Xnmrs3pfLIOcdt/pdwH8cEZYg60FyyFVqZXNbqE/Dg9OwmcD
+	 HoHcmexpOFEXUYZbrgVaCbLXhnb5U8eNvoeDtbYP9piXfVAHvhqh2KbIJ7HmxxxKIK
+	 DnqBJspIJsqWVrMjkitohQB9DiRm0X74uJ1Nt5H0/MSG8bc21zjvDr8ehAhUlzFRcT
+	 bZptyFTv3DP4iaEMhIixzL8TtJbAEGyH3Sd4mKDnBI93FWTxsCSpHUM8XIBsZWh2kV
+	 7kd1hvhSh0OjyRGuaHV7HxmA=
+Received: from stx.tnic (unknown [IPv6:2600:1700:38ca:c00::1b])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange ECDHE (P-256) server-signature ECDSA (P-256) server-digest SHA256)
+	(No client certificate requested)
+	by mail.alien8.de (SuperMail on ZX Spectrum 128k) with ESMTPSA id 7694140E0171;
+	Tue,  4 Aug 2026 18:49:23 +0000 (UTC)
+Date: Tue, 4 Aug 2026 11:49:20 -0700
+From: Borislav Petkov <bp@alien8.de>
+To: Sean Rhodes <sean@starlabs.systems>,
+	Mario Limonciello <mario.limonciello@amd.com>
+Cc: x86@kernel.org, "Rafael J. Wysocki" <rafael@kernel.org>,
+	Pavel Machek <pavel@kernel.org>, Thomas Gleixner <tglx@kernel.org>,
+	Ingo Molnar <mingo@redhat.com>,
+	Dave Hansen <dave.hansen@linux.intel.com>,
+	"H. Peter Anvin" <hpa@zytor.com>, linux-pm@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86/pm: Save AMD CPUID leaf 7 across S3
+Message-ID: <20260804184920.GBanI0MCMbnglz7Ncc@fat_crate.local>
+References: <4430d02d34617dd2d3cb506202fe44d5e45c053b.1785838418.git.sean@starlabs.systems>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH V3 08/14] i3c: master: Support IBI-based wakeup capability
-To: Adrian Hunter <adrian.hunter@intel.com>, alexandre.belloni@bootlin.com
-Cc: Frank.Li@nxp.com, akhilrajeev@nvidia.com, rafael@kernel.org,
-        linux-i3c@lists.infradead.org, linux-kernel@vger.kernel.org,
-        linux-pci@vger.kernel.org, linux-pm@vger.kernel.org
-References: <20260804133810.184905-1-adrian.hunter@intel.com>
- <20260804133810.184905-9-adrian.hunter@intel.com>
-Content-Language: en-US
-From: Mukesh Savaliya <mukesh.savaliya@oss.qualcomm.com>
-In-Reply-To: <20260804133810.184905-9-adrian.hunter@intel.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Proofpoint-ORIG-GUID: -cpE6TrlOaI7Kr8mU_THCjC3LzitAIyG
-X-Authority-Analysis: v=2.4 cv=Co+PtH4D c=1 sm=1 tr=0 ts=6a722da4 cx=c_pps
- a=vVfyC5vLCtgYJKYeQD43oA==:117 a=/lQgZcjXNA7ZrIsIl4Cfeg==:17
- a=IkcTkHD0fZMA:10 a=Sv0fKeRqtYgA:10 a=s4-Qcg_JpJYA:10
- a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=yOCtJkima9RkubShWh1s:22
- a=Nx64Jw-tU8Eu9UldoZ8A:9 a=QEXdDO2ut3YA:10 a=rl5im9kqc5Lf4LNbBjHf:22
-X-Proofpoint-Spam-Info: AW1haW4tMjYwODA0MDE0OCBTYWx0ZWRfXyjsnVXhJ1EFf
- vR+8tHbTztvctM3Xnli1eWyOldb+wEBVT/un5vtKrEj3kowag13AQccrwrHJrZV7bZL5LhlKkJk
- AlzMnDzR98F/21PyE8BGLdkX/d5JWcY=
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwODA0MDE0OCBTYWx0ZWRfXz5q+ip5ymWHZ
- ZKQTVfZwQwdVK+r+KKnM0GB92HM2iJczxmb0i7ryKA8w0fLhkzlf2sEu7JdRVi01RTCKMDpaetE
- ogS7gZRqxNApuOdCy7iOyLOxQLQOgzWFWobaLMmY+Q19NJ36DRjyZnKj5LC/ghqHM1LJHtOsWAy
- DTW5Y3pf6sF44fC8li+Qlmn4rOwScBL5sPLQn1/9VfYbKBO8SS6cR9eEKNKFb3eMjRl+zCqohhO
- rwbmIRGekUNHF9IvKrs1X0pLCMNicS1MiQvgOVzm7/En98j+xpv2r0kb//rrTNoWydshbUr899s
- Yi9RqVVME5x0UaKikOEuJpfmkQjG8zG2+kI+ptjEspNNj5fxHx2W8UWy4VApnUktgr2ttoLdfLv
- hxC0hPBGSh59qIhP9r3IJGINhgOitnJus4RDhawY4Wz7902dQpdI0Wy5xbAu/EBv26SoRSMJWiw
- 7O4vVWPXnCqIvW4zOYw==
-X-Proofpoint-GUID: -cpE6TrlOaI7Kr8mU_THCjC3LzitAIyG
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-08-04_03,2026-08-04_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501 suspectscore=0 lowpriorityscore=0 clxscore=1015
- impostorscore=0 spamscore=0 phishscore=0 bulkscore=0 malwarescore=0
- adultscore=0 classifier=typeunknown authscore=0 authtc= authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2606150000
- definitions=main-2608040148
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <4430d02d34617dd2d3cb506202fe44d5e45c053b.1785838418.git.sean@starlabs.systems>
 
++ Mario.
 
+On Tue, Aug 04, 2026 at 11:13:41AM +0100, Sean Rhodes wrote:
+> Some AMD systems return from S3 with the boot CPU CPUID leaf 7
+> override MSR reset. On Byte/Cezanne, CPUID leaf 7 EBX becomes
+> 0x219c9fb9 on CPU0 after S3 even though XTEST still raises #UD.
+> Userspace can then select RTM-optimised glibc paths and fault after
+> resume.
 
-On 8/4/2026 7:08 PM, Adrian Hunter wrote:
-[...]
-> diff --git a/drivers/i3c/master.c b/drivers/i3c/master.c
-> index e7ea41007889..e6b320da475e 100644
-> --- a/drivers/i3c/master.c
-> +++ b/drivers/i3c/master.c
-> @@ -2110,6 +2110,13 @@ i3c_master_register_new_i3c_devs(struct i3c_master_controller *master)
->   		if (desc->boardinfo)
->   			device_set_node(&desc->dev->dev, desc->boardinfo->fwnode);
->   
-> +		/*
-> +		 * In the case of IBI wakeup, any IBI-capable device can
-> +		 * wakeup.
-you are registering a particular device to the master, so why "any 
-IBI-capable device " ?
+Do you have the latest BIOS on that machine?
 
-"If device has IBI capability, mark as wakeup capable" to simplify 
-comment  ?
-> +		 */
-> +		if (master->ibi_wakeup && (desc->info.bcr & I3C_BCR_IBI_REQ_CAP))
-> +			device_set_wakeup_capable(&desc->dev->dev, true);
+> The x86 suspend code already has a small MSR save/restore list for
+> firmware-modified MSRs and restores it after resume microcode has been
+> loaded. Add MSR_AMD64_CPUID_FN_7 for the AMD families that can modify
+> this MSR during CPU init so the pre-suspend CPUID mask is restored
+> before tasks are thawed.
+> 
+> This covers family 17h, 19h, and 1Ah:
+
+Why?
+
+> family 17h has the Cyan Skillfish
+> RDSEED leaf-7 quirk, family 19h covers the observed Cezanne issue, and
+> family 1Ah has the Zen5 RDSEED leaf-7 quirk.
+
+Those RDSEED quirks need more details as to why they need to be applied here.
+
+> Tested on StarBook Mk V (Byte/Cezanne, 26.07 firmware):
+> - without this restore, dmesg showed "ACPI: PM: Low-level resume complete"
+>   and "PM: suspend exit"; the post-S3 CPUID probe showed CPU0 leaf 7 EBX
+>   0x219c9fb9 with hle=1 rtm=1 while XTEST still raised #UD.
+> - a temporary PM resume hook clearing the same MSR logged
+>   "CPU0 MSR_AMD64_CPUID_FN_7 0x219c9fb9 -> 0x219c97a9"; the post-S3 probe
+>   showed hle=0 rtm=0 on all CPUs.
+> - this patch booted on Byte and registered the MSR save path; dmesg showed
+>   "x86/pm: AMD family 0x19 CPU detected"; pm_test freezer/devices/platform/
+>   processors/core passed with the same boot ID.
+
+For future patches: testing goes...
+
+> 
+> Tested-by: Sean Rhodes <sean@starlabs.systems>
+> Signed-off-by: Sean Rhodes <sean@starlabs.systems>
+> ---
+
+<-- here, under that line.
+
+>  arch/x86/power/cpu.c | 15 +++++++++++++++
+>  1 file changed, 15 insertions(+)
+> 
+> diff --git a/arch/x86/power/cpu.c b/arch/x86/power/cpu.c
+> index 702f30eaf9c4..b85061f4cee4 100644
+> --- a/arch/x86/power/cpu.c
+> +++ b/arch/x86/power/cpu.c
+> @@ -467,9 +467,24 @@ static int msr_save_cpuid_features(const struct x86_cpu_id *c)
+>  	return msr_build_context(cpuid_msr_id, ARRAY_SIZE(cpuid_msr_id));
+>  }
+>  
+> +static int msr_save_amd_leaf7_cpuid_features(const struct x86_cpu_id *c)
+> +{
+> +	u32 cpuid_msr_id[] = {
+> +		MSR_AMD64_CPUID_FN_7,
+> +	};
 > +
->   		list_add_tail(&desc->dev->node, &i3c_unreg_devs);
->   	}
->   
-> diff --git a/include/linux/i3c/master.h b/include/linux/i3c/master.h
-> index 2b96c4ea75fb..16394aca7230 100644
-> --- a/include/linux/i3c/master.h
-> +++ b/include/linux/i3c/master.h
-> @@ -523,6 +523,7 @@ struct i3c_master_controller_ops {
->    * @hotjoin: true if the master support hotjoin
->    * @rpm_allowed: true if Runtime PM allowed
->    * @rpm_ibi_allowed: true if IBI and Hot-Join allowed while runtime suspended
-> + * @ibi_wakeup: IBI can wakeup the system
->    * @shutting_down: set to true when master begins shutdown or unregister
->    * @boardinfo.i3c: list of I3C  boardinfo objects
->    * @boardinfo.i2c: list of I2C boardinfo objects
-> @@ -562,6 +563,7 @@ struct i3c_master_controller {
->   	unsigned int hotjoin: 1;
->   	unsigned int rpm_allowed: 1;
->   	unsigned int rpm_ibi_allowed: 1;
-> +	unsigned int ibi_wakeup: 1;
->   	bool shutting_down;
->   	struct {
->   		struct list_head i3c;
+> +	pr_info("x86/pm: AMD family %#x CPU detected, saving CPUID leaf 7 MSR across suspend.\n",
 
+I guess pr_info_once() is fine here.
+
+Thx.
+
+-- 
+Regards/Gruss,
+    Boris.
+
+https://people.kernel.org/tglx/notes-about-netiquette
