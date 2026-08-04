@@ -1,195 +1,149 @@
-Received: from mail-wm1-f69.google.com (mail-wm1-f69.google.com [209.85.128.69])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A87C943CE42
-	for <linux-pm@vger.kernel.org>; Tue,  4 Aug 2026 09:16:14 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.69
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3708643CEF2;
+	Tue,  4 Aug 2026 09:22:06 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.180.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1785834976; cv=none; b=X9ooGeirnL++XPPOwMcUOFmLQP/43OwbP5a1Gx7sOZ1t5V4FnUJQgAFPcYaCdO91Kx7aOXZIHzB/2UI8PXNl90h4GF3oIsgzf64Etls0G84OGzZAeNKxczZD6hHK89JCSlJR9Ix0myV7wWZKYOPggM4N5B/kEKreQSVjRtrJNW4=
+	t=1785835329; cv=none; b=Y6VVAVCf22vG+HsYl40c6XQoL2w5eYWmfPRMfsPNQrAV5nX+GoyDuYkorBHz42JjM/Jl7P5qzGbZhfxsktJkzykQgS9UU3j8Btmn1P+aXe2ScJuf4kV37F3P7kK0T7YTG+ffi4h/9HPKJ1Pk8nZ/VJq48HMDsce/DNhfGEaNrt4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1785834976; c=relaxed/simple;
-	bh=seQi5dHm7N0iENzPndBuyLMvlINbZuNsFgRvyq8o0Jo=;
-	h=Date:In-Reply-To:Mime-Version:References:Message-ID:Subject:From:
-	 To:Cc:Content-Type; b=MIidTdQMCqk7A4YPIQjZgnbJS7FEzENOvTV56At4LhH9CZkmybRtYmJU+ejUeVFeqWfV8aQMfvAneoode706VKekBlQhoQc4OrQjOp7J9DrEkIOKfjPzOdL1WuWEMi/j2sLPf3dmOV7upCfywdLebvgkhtNXCGgqHg3Uns2Uoro=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com; spf=pass smtp.mailfrom=flex--aliceryhl.bounces.google.com; dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b=OrQBhyTc; arc=none smtp.client-ip=209.85.128.69
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=flex--aliceryhl.bounces.google.com
+	s=arc-20240116; t=1785835329; c=relaxed/simple;
+	bh=ARgR8aPbH4uU6yMM6lztEeNLijJyXZf2YV/9a0Is8LU=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=dSCXuNjDycgKdMqiBIUxWjObxO/wG6dQwC9hB2pbq9geYiCQReCoBN01xukYM7UVKQMbLzveHZAp0k6XPqvaWcA//v3neX1AOHHA7ndgCIktw3p9I+0HpxJbC7faw4u3f56qrETn9XJ/nRqfXfpnHsDvTzR8Efd2iGTuI9VFlUc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=BRH//DsD; arc=none smtp.client-ip=205.220.180.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b="OrQBhyTc"
-Received: by mail-wm1-f69.google.com with SMTP id 5b1f17b1804b1-4955ce558d8so30908025e9.3
-        for <linux-pm@vger.kernel.org>; Tue, 04 Aug 2026 02:16:14 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20251104; t=1785834973; x=1786439773; darn=vger.kernel.org;
-        h=content-type:cc:to:from:subject:message-id:references:mime-version
-         :in-reply-to:date:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=f7xJl7liXrGedcihtRFOy204jJIb+lTqMppbYEP+Pf0=;
-        b=OrQBhyTcDRQPJ5KqhK1HKgtUqG0Jxc5xUNLRsrRPlID6T3Q0kISmeqvkGPKCXuQBOD
-         m381kPvGmBBuN3cWw2YJXIBsI4rLeKqgKvlOdfFVCyFRiFcMncz+BwB0lqp8ntgKee8T
-         Z797A05tpZaxroswQX243bSIqvRmKULg/dh2Tz4+RereDFpiRKMB/SrBd2jaUAV7vq9j
-         whxEHQqkY3kagNHoLfRc4CkAqtih8gDd/dV7QfdcPWLuMApf7ljpxUhbk1sA9AHJ1vsv
-         gypIKeItAPZ+9MZFySNGjCbOzeoRbEWvqjoQYokdznrDVSB8Ct6X2Bq6gMBCZ4tx//zq
-         vTmQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1785834973; x=1786439773;
-        h=content-type:cc:to:from:subject:message-id:references:mime-version
-         :in-reply-to:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=f7xJl7liXrGedcihtRFOy204jJIb+lTqMppbYEP+Pf0=;
-        b=mj4uuciiy+7ThnHXBQ4RmtSrI1YlGpOTEIxbLBMmraf6VEPkpB4ybtI9YOCtWf7Gw6
-         zR1h2ghMBEimRkFonu5J0cicOKlZAESeRtzp/6ZXUIriZGp1pNGBco5VWGkcGcxESvk0
-         g9IzKcxbaVScBqRpP2/jvNlSjo8m5niKUIJ4YC2yE1+PDG4tcvJVZabghIi3dbZ2vcfS
-         7qqCslMrB3vi30etffN3XHJO2oApsPYhMSxDMWOqCpSCX/2r4zoiA2Ghsu5BUqQeKUSz
-         p0eZ5yNhnOnGLO8aKkZJ9mODjkUafyExmLIgLq7nuFbUNGHFezyDIaV8dWLMfSqvHZQ1
-         dNgw==
-X-Forwarded-Encrypted: i=1; AHgh+RrNCTGKN4jXjYECd9AFWiP0RdmuXu8TvuWRnqntBvxo1bWIS3ul0iqxS8KMIlHE8oN9DbTHTGt7rg==@vger.kernel.org
-X-Gm-Message-State: AOJu0YwnUhU/hTJjTdmPwj7CJkkn/M3eDx+3PMzJYDqNHu3Vung0aO00
-	flVhXrYVxWlF9VQj3XfQge/DUwHSegW72eH2V7eg05vkanAanNEkO/HAEKP8zuOE3VnVr8Rk14Q
-	7dJWhMv+bHsI9GXPQjg==
-X-Received: from wmjl15.prod.google.com ([2002:a7b:c34f:0:b0:487:3739:c5c4])
- (user=aliceryhl job=prod-delivery.src-stubby-dispatcher) by
- 2002:a05:600c:3b01:b0:493:f0f5:f2d7 with SMTP id 5b1f17b1804b1-4980c66c90fmr247655025e9.7.1785834972482;
- Tue, 04 Aug 2026 02:16:12 -0700 (PDT)
-Date: Tue, 4 Aug 2026 09:16:11 +0000
-In-Reply-To: <20260721153617.869933-3-beata.michalska@arm.com>
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="BRH//DsD"
+Received: from pps.filterd (m0279870.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6748CMQu3300468;
+	Tue, 4 Aug 2026 09:21:39 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
+	SqqiIiH8h2AqcgR9DgbjNWCm4HTJ6T1Ws54sjHwyhZI=; b=BRH//DsDCbhIfuDP
+	sDaPrrbDK3AMjbitqlE4okVUQJfVBeCFTvkE/W5zXknJleXk1CtdOs6cYvtSSTyz
+	oYzr5MB76jKHExYhQHYkRN+l9nP6PX/DgjBuqfSiPA3LMreAitSgQw27MiafOM13
+	67NtrvA7g4AQCrfxrX3phxM70RW565HuTiRTgmPZopYvKnYMFUYcf+q7jNS1PmmN
+	9lrWOB7YO+ravzUeswtwDuSfPpbMkcJfNFoI1zc/sMltlfurM0495n1bvGGoFCFk
+	tkBoCoP5P3eolzMutDVu9ZrE1IdH6N3jAKAnyPL/QVelr3br6EXPH08OdUM6lCjd
+	cZaqCA==
+Received: from apblrppmta02.qualcomm.com (blr-bdr-fw-01_GlobalNAT_AllZones-Outside.qualcomm.com [103.229.18.19])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4fu1p8auh4-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 04 Aug 2026 09:21:38 +0000 (GMT)
+Received: from pps.filterd (APBLRPPMTA02.qualcomm.com [127.0.0.1])
+	by APBLRPPMTA02.qualcomm.com (8.18.1.7/8.18.1.7) with ESMTP id 6749LaWq027346;
+	Tue, 4 Aug 2026 09:21:36 GMT
+Received: from pps.reinject (localhost [127.0.0.1])
+	by APBLRPPMTA02.qualcomm.com (PPS) with ESMTP id 4fs9vjk7v3-1;
+	Tue, 04 Aug 2026 09:21:36 +0000 (GMT)
+Received: from APBLRPPMTA02.qualcomm.com (APBLRPPMTA02.qualcomm.com [127.0.0.1])
+	by pps.reinject (8.18.1.12/8.18.1.12) with ESMTP id 6749LY8O027285;
+	Tue, 4 Aug 2026 09:21:35 GMT
+Received: from hu-ffaruque-hyd.qualcomm.com (hu-ffaruque-hyd.qualcomm.com [10.147.245.31])
+	by APBLRPPMTA02.qualcomm.com (PPS) with ESMTP id 6749LY9J027260;
+	Tue, 04 Aug 2026 09:21:35 +0000 (GMT)
+From: Faruque Ansari <faruque.ansari@oss.qualcomm.com>
+Date: Tue, 04 Aug 2026 14:51:22 +0530
+Subject: [PATCH v3 3/3] watchdog: pretimeout: update PSC reason in panic
+ pretimeout governor
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
-Mime-Version: 1.0
-References: <20260721153617.869933-1-beata.michalska@arm.com> <20260721153617.869933-3-beata.michalska@arm.com>
-Message-ID: <anGt2_OAK2UWtXuO@google.com>
-Subject: Re: [PATCH v2 2/3] rust: platform: wire runtime PM callbacks
-From: Alice Ryhl <aliceryhl@google.com>
-To: Beata Michalska <beata.michalska@arm.com>, dakr@kernel.org
-Cc: ojeda@kernel.org, gregkh@linuxfoundation.org, rafael@kernel.org, 
-	boqun@kernel.org, gary@garyguo.net, bjorn3_gh@protonmail.com, 
-	lossin@kernel.org, a.hindborg@kernel.org, tmgross@umich.edu, 
-	daniel.almeida@collabora.com, boris.brezillon@collabora.com, 
-	work@onurozkan.dev, samitolvanen@google.com, rust-for-linux@vger.kernel.org, 
-	driver-core@lists.linux.dev, linux-kernel@vger.kernel.org, 
-	linux-pm@vger.kernel.org
+MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20260804-pscrr-reboot-reason-v3-3-e706dbfc7465@oss.qualcomm.com>
+References: <20260804-pscrr-reboot-reason-v3-0-e706dbfc7465@oss.qualcomm.com>
+In-Reply-To: <20260804-pscrr-reboot-reason-v3-0-e706dbfc7465@oss.qualcomm.com>
+To: Sebastian Reichel <sre@kernel.org>,
+        Wim Van Sebroeck <wim@linux-watchdog.org>,
+        Guenter Roeck <linux@roeck-us.net>, Benson Leung <bleung@chromium.org>,
+        Tzung-Bi Shih <tzungbi@kernel.org>,
+        Oleksij Rempel <o.rempel@pengutronix.de>,
+        Srinivas Kandagatla <srini@kernel.org>,
+        Daniel Lezcano <daniel.lezcano@kernel.org>,
+        Pengutronix Kernel Team <kernel@pengutronix.de>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-watchdog@vger.kernel.org, linux-arm-msm@vger.kernel.org,
+        kernel@pengutronix.de, Liam Girdwood <lgirdwood@gmail.com>,
+        Mark Brown <broonie@kernel.org>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>,
+        =?utf-8?q?S=C3=B8ren_Andersen?= <san@skov.dk>,
+        Guenter Roeck <groeck@chromium.org>,
+        Matti Vaittinen <mazziesaccount@gmail.com>,
+        Ahmad Fatoum <a.fatoum@pengutronix.de>,
+        Andrew Morton <akpm@linux-foundation.org>,
+        avaneesh.dwivedi@oss.qualcomm.com,
+        Umang Chheda <umang.chheda@oss.qualcomm.com>,
+        Faruque Ansari <faruque.ansari@oss.qualcomm.com>
+X-Mailer: b4 0.14.3
+X-QCInternal: smtphost
+X-QCInternal: smtphost
+X-Authority-Analysis: v=2.4 cv=A5xc+aWG c=1 sm=1 tr=0 ts=6a71af23 cx=c_pps
+ a=Ou0eQOY4+eZoSc0qltEV5Q==:117 a=Ou0eQOY4+eZoSc0qltEV5Q==:17
+ a=IkcTkHD0fZMA:10 a=Sv0fKeRqtYgA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=u7WPNUs3qKkmUXheDGA7:22 a=gowsoOTTUOVcmtlkKump:22 a=EUspDBNiAAAA:8
+ a=FYyizyoliohAzulCZuQA:9 a=QEXdDO2ut3YA:10
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwODA0MDA3MyBTYWx0ZWRfXxBgajlnhQcXI
+ 7wQ9ebeYNA6cUpA3cn0mTRo27RHHV6tSaZKSyBUf5VNfviM35He/ab81F8xEg2W+4H6xXfjzavB
+ q1aN3Lom8De280AwaAk11qwDyTrqnlmrnrdCKr22vsW4u92D9KciETj6DDB2ycgku8un3IxejzE
+ xrkyWIb8A7G4Xjd2gY6dLIc1kOfaurfbh8T2zr8JIpkmmwHFCbEArPR/Glehp4oZ+pJLaNabv7w
+ JlC3rYs5G9J0pkBku9Ns71vb5RVhxuxoFZL9gpHuQl3GA7pd8FwPb4367sYApWf79POQcKJ/7O8
+ YzMaoMWk4iJhunPEYnzV8pfnRKQtEetvIOR0qaoEXHjju005uoPXZey3G2LqebZR/7OQi621qlX
+ ihNEi2yjyrqn9kYSxoC+oFyLOhtmaXaX7re0P0SesRSWDfJr0z7HmTTH5jPvsiIU3ehKA5+1DWd
+ lLmUvyXYKxiJ+Pl6zEA==
+X-Proofpoint-Spam-Info: AW1haW4tMjYwODA0MDA3MyBTYWx0ZWRfXzGKZDv4041a6
+ Ijk2u55T7GCFpxD7i5NxiHFpTLZwQpK38ejl6eeqlqMxr15A2VqCxdfKzM7xnekkc8qAhegaH0U
+ d+Z9AaZwuPotb4Q1WJqnRCb1jJ9ha7k=
+X-Proofpoint-ORIG-GUID: O-8R8Ss2-e6W8Go5svX2v1PRQW9s1qvW
+X-Proofpoint-GUID: O-8R8Ss2-e6W8Go5svX2v1PRQW9s1qvW
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
+ definitions=2026-08-04_02,2026-08-03_02,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ lowpriorityscore=0 malwarescore=0 priorityscore=1501 clxscore=1015
+ suspectscore=0 adultscore=0 bulkscore=0 spamscore=0 impostorscore=0
+ phishscore=0 classifier=typeunknown authscore=0 authtc= authcc=
+ route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2606150000
+ definitions=main-2608040073
 
-On Tue, Jul 21, 2026 at 05:34:03PM +0200, Beata Michalska wrote:
-> Allow Rust platform drivers to expose runtime PM callbacks to the driver core.
-> 
-> The runtime PM abstraction builds a dev_pm_ops table for the concrete driver
-> implementation, but the platform bus still needs to receive that table through
-> struct platform_driver. Add an optional PM_OPS associated constant to
-> platform::Driver and initialize the coresponding C device_driver struct
-> accordingly during registration. The platform glue only wires the callback
-> table into the C driver model; ownership of the callback payload and
-> runtime PM teardown remain with the pm module.
-> 
-> Signed-off-by: Beata Michalska <beata.michalska@arm.com>
-> ---
->  rust/kernel/platform.rs | 9 +++++++++
->  1 file changed, 9 insertions(+)
-> 
-> diff --git a/rust/kernel/platform.rs b/rust/kernel/platform.rs
-> index d8d48f60b0b9..b7e422388634 100644
-> --- a/rust/kernel/platform.rs
-> +++ b/rust/kernel/platform.rs
-> @@ -72,6 +72,11 @@ unsafe fn register(
->              None => core::ptr::null(),
->          };
->  
-> +        let pm_ops = match T::PM_OPS {
-> +            Some(ops) => ops,
-> +            None => core::ptr::null(),
-> +        };
-> +
->          // SAFETY: It's safe to set the fields of `struct platform_driver` on initialization.
->          unsafe {
->              (*pdrv.get()).driver.name = name.as_char_ptr();
-> @@ -79,6 +84,7 @@ unsafe fn register(
->              (*pdrv.get()).remove = Some(Self::remove_callback);
->              (*pdrv.get()).driver.of_match_table = of_table;
->              (*pdrv.get()).driver.acpi_match_table = acpi_table;
-> +            (*pdrv.get()).driver.pm = pm_ops;
->          }
->  
->          // SAFETY: `pdrv` is guaranteed to be a valid `DriverType`.
-> @@ -222,6 +228,9 @@ pub trait Driver {
->      /// The table of ACPI device ids supported by the driver.
->      const ACPI_ID_TABLE: Option<acpi::IdTable<Self::IdInfo>> = None;
->  
-> +    /// Runtime PM callbacks
-> +    const PM_OPS: Option<&'static bindings::dev_pm_ops> = None;
-> +
->      /// Platform driver probe.
->      ///
->      /// Called when a new platform device is added or discovered.
+Update the PSC reset reason by invoking
+set_psc_reason(PSCR_WATCHDOG_PRETIMEOUT) from the panic governor's
+pretimeout handler before calling panic(), so the reset cause is
+committed to persistent storage before the system goes down.
 
-I've been thinking more about this, and I can't help but wonder whether
-we could significantly simplify it. Why not just do this:
+Signed-off-by: Faruque Ansari <faruque.ansari@oss.qualcomm.com>
+---
+ drivers/watchdog/pretimeout_panic.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-1. Update rust/kernel/platform.rs Driver trait to include pm ops
-directly in the trait:
+diff --git a/drivers/watchdog/pretimeout_panic.c b/drivers/watchdog/pretimeout_panic.c
+index 8c3ac674dc45..819487b5e6fe 100644
+--- a/drivers/watchdog/pretimeout_panic.c
++++ b/drivers/watchdog/pretimeout_panic.c
+@@ -5,6 +5,7 @@
+ 
+ #include <linux/kernel.h>
+ #include <linux/module.h>
++#include <linux/reboot.h>
+ #include <linux/watchdog.h>
+ 
+ #include "watchdog_pretimeout.h"
+@@ -17,6 +18,7 @@
+  */
+ static void pretimeout_panic(struct watchdog_device *wdd)
+ {
++	set_psc_reason(PSCR_WATCHDOG_PRETIMEOUT);
+ 	panic("watchdog pretimeout event\n");
+ }
+ 
 
-	#[vtable]
-	pub trait Driver {
-	    type IdInfo: 'static;
-	    type Data<'bound>: Send + 'bound;
-	    const OF_ID_TABLE: Option<of::IdTable<Self::IdInfo>> = None;
-	    const ACPI_ID_TABLE: Option<acpi::IdTable<Self::IdInfo>> = None;
-	
-	    fn probe<'bound>(
-	        dev: &'bound Device<device::Core<'_>>,
-	        id_info: Option<&'bound Self::IdInfo>,
-	    ) -> impl PinInit<Self::Data<'bound>, Error> + 'bound;
-	
-	    fn unbind<'bound>(dev: &'bound Device<device::Core<'_>>, this: Pin<&Self::Data<'bound>>) {
-	        let _ = (dev, this);
-	    }
-	
-	    // Add these methods.
-	    fn runtime_suspend<'bound>(
-	        dev: &'bound Device<device::Bound>,
-	        data: &Self::Data<'bound>,
-	    ) -> Result
-	    {
-	        build_error!(VTABLE_DEFAULT_ERROR)
-	    }
-	
-	    fn runtime_resume<'bound>(
-	        dev: &'bound Device<device::Bound>,
-	        data: &Self::Data<'bound>,
-	    ) -> Result
-	    {
-	        build_error!(VTABLE_DEFAULT_ERROR)
-	    }
-	}
+-- 
+2.34.1
 
-By marking the trait with #[vtable], we know whether the user has
-overridden runtime_suspend() and runtime_resume() and then the platform
-abstraction can enable PM in that scenario:
-
- - If `T::HAS_RUNTIME_SUSPEND && T::HAS_RUNTIME_RESUME` then set
-   `(*pdrv.get()).driver.pm` to a table using those methods in
-   register().
- - If `T::HAS_RUNTIME_SUSPEND && T::HAS_RUNTIME_RESUME` then invoke
-   `pm_runtime_enable()` from `probe_callback()` after the
-   `set_callback()` line. Note that this call is infallible.
- - Do the same from unplug to disable PM.
-
-And then you automatically PM whenever you implement those two methods
-in the `platform::Driver` trait, and that's all you need to do. Since we
-invoke `pm_runtime_enable()` in `probe_callback()` after setting the
-private data, there's no issue with passing the device private data to
-the callbacks.
-
-Note that we can trigger a const eval panic on `T::HAS_RUNTIME_SUSPEND
-!= T::HAS_RUNTIME_RESUME` to enforce that you must implement both
-methods if you implement either one.
-
-Thoughts? I know we have gone down this route before, but I just think
-it would be so so much simpler than the current approach. I know that
-this diverges from IRQ and such by not having a Registration, but I
-actually think that's ok. PM is already different from IRQ callbacks in
-the sense that the platform abstractions need PM-specific code *anyway*
-to properly set pm_ops in the `struct platform_device`.
-
-Alice
