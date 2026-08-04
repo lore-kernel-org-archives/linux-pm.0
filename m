@@ -1,177 +1,108 @@
-Received: from mail-wm1-f72.google.com (mail-wm1-f72.google.com [209.85.128.72])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3A47B42F71E
-	for <linux-pm@vger.kernel.org>; Tue,  4 Aug 2026 08:13:16 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.72
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C31A03546C2;
+	Tue,  4 Aug 2026 08:20:29 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1785831197; cv=none; b=MDWtbOyGTa/fuil5RxLJbky5n5wtXp1F4ANISbVCg3+rZoUWtyaz/BKi0+ObSimO/E05xYCzWOLgRdE7p6CyM4TNmphGPEPKSg7e6aVqftua7dKZ2OaBo8K9U6ZfgV3r8XEXCG6amSsBArCdYGWY+yDvZLSlnlUvwUwkbQvWwP0=
+	t=1785831631; cv=none; b=Q69n1e/pHDP1yF4+wKFlGrMn8EXcSFAiBqFYg6lX0u7mBgM6z+x0XVaiyZw5MyA1QFTfvrUjpgI3SdFcx3Z9QvX9KNMsOJhg+jrygkMkgpWGQOI7L2HL+MrZ5e3KQ9mmTjbWvJP5qgJtcVG9U1/xHH3rkXSN6ovjer5O/lGmBAc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1785831197; c=relaxed/simple;
-	bh=LAsOEtzxkMYoh59OODdN+yuBYdhcMYsLZPgZzAuESiM=;
-	h=Date:In-Reply-To:Mime-Version:References:Message-ID:Subject:From:
-	 To:Cc:Content-Type; b=fKtaMGIHMphrG60m1H8841A+H4RiEmmE+Tqn97S+2z0YSmEoT493ePTqC/mdyxyhNAm/uBhtB2hJbjfgz5uHqB4v1Cj18ZeSMly3yjyF2ZPVNiCt6ncXMXap56dl8jcqXfKF3Ko+7xtkHQyEe5z1P7gwE2tdDEHY+tAHfjGQnDs=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com; spf=pass smtp.mailfrom=flex--aliceryhl.bounces.google.com; dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b=f89qypL6; arc=none smtp.client-ip=209.85.128.72
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=flex--aliceryhl.bounces.google.com
+	s=arc-20240116; t=1785831631; c=relaxed/simple;
+	bh=uMyvUdU4ThXE8jcdAR6oaEHWSbN0mhwoasyqRIwVz7A=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=jRipGkXPUJobOySipRbKlAZrLPJaVx6zxsW2hMp6O8B4YzpcFhQfpY7jb/NgSz9yYdmMnnLh7U7d8oUoT+Oz+d9r5h3G/RUslmcZ9RVXWgcLxVmyeF+mFKBNguLDivmK/vxpCcraC5zigjRnGiG98lkEewyy1Zaeh2BPbd7b+4A=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=AeMfAHdB; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b="f89qypL6"
-Received: by mail-wm1-f72.google.com with SMTP id 5b1f17b1804b1-4956c1655c3so17698815e9.0
-        for <linux-pm@vger.kernel.org>; Tue, 04 Aug 2026 01:13:16 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20251104; t=1785831194; x=1786435994; darn=vger.kernel.org;
-        h=content-type:cc:to:from:subject:message-id:references:mime-version
-         :in-reply-to:date:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=+5Xh3KzsVxqqcicEBvZF6wQ7Jh9PvamLGM+WRhr6wnk=;
-        b=f89qypL6GWzc2JvNJlAo70VASaiXEbniyzCrkj67nhZ6yLfnmDL9cYnI5idUH8O1qE
-         vRnh0GRsPMejFF+TwRoQ+wuqG3F1OrrKaMC+BV/TZKyGv8IB3zpFyZM6bvMM9NRGuZ7g
-         3fgnFagn4Njr9OuOWZIdFiJ8Cco/c4AuemttAeMZ9DlqjPpHvHuUKfZpvvWHJOZDt5+V
-         2bzRWB9nD11EunyeRAMvFlr9oAPN5Poj2ElvaHHopAMC1usVcN041XAN8ZjzTJ0Zji55
-         0QYbrqkq7rDdBO8k4yvlRWy7IqKyo+eDmMasMVY+GpQJBWK+szBbYl+Enmf0R6mDA8eK
-         uYTg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1785831194; x=1786435994;
-        h=content-type:cc:to:from:subject:message-id:references:mime-version
-         :in-reply-to:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=+5Xh3KzsVxqqcicEBvZF6wQ7Jh9PvamLGM+WRhr6wnk=;
-        b=rv6mnUWPB8o2LJpuMZM+MJT9SGY9MBVjtRPt3jsaBbwDvmLWbGqINpwpbhs40DOix2
-         o62EDhu1LST2Y7JSFl8VJcL+3y8esqqwR7v9rF2P5uKND2CoHqXmpZZroR8hmHfxmBfm
-         HDqaafeoPgOP1ZA7l7VYyJzl8APu/g5eWuKxf3yIimOUV06W0Rd13618DkLcSm1OYMMw
-         yPSOdhrCm54eKXfWE6I3S2xo/gPkjy8P1Tw9OJP/gzkq7bSZIvUZyTbjZFSc30Mg0kxj
-         18iUpL83JP+XOj69BCQOR9bWCyux1s5suGCaQ5jrh3iU/U4EdE4J82ALFAiRrtFsQmou
-         GYww==
-X-Forwarded-Encrypted: i=1; AHgh+RqtQviSBzZhDIxiydU3Qt/RdWVxX/drDA4thbq9Mu1idkBE1IvnxoQTnkBG1Z8SRZ/HgIMkC3IqgA==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yxu5yfT2/ulsGnIU82Pikov7DIRaPhEqO54E742MoMWwGAbY0jN
-	60ijA94KPGqQuMIwEZUb2iUS+vFxl8b7EhGVH+M1I5teSaDoaNGoAPEQU/2Qf2EPRNvrgQiL7VH
-	BaT1W2Gq6HMX0j67jgg==
-X-Received: from wmlu6.prod.google.com ([2002:a05:600c:2106:b0:490:b1af:78f3])
- (user=aliceryhl job=prod-delivery.src-stubby-dispatcher) by
- 2002:a05:600c:350c:b0:495:4d00:2fda with SMTP id 5b1f17b1804b1-4980f23180fmr233843235e9.2.1785831193972;
- Tue, 04 Aug 2026 01:13:13 -0700 (PDT)
-Date: Tue, 4 Aug 2026 08:13:13 +0000
-In-Reply-To: <20260721153617.869933-2-beata.michalska@arm.com>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="AeMfAHdB"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9AF211F000E9;
+	Tue,  4 Aug 2026 08:20:27 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1785831628;
+	bh=ErN/rXvd8AZnHQ1jQfyz1IaQg+OYv8k/6ZjCX+2Q/q0=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=AeMfAHdBM8vG705UAGj+BI2fvN+YxIaEBL4QjctWMGWJFWCK+9nPWAY3/0DZ38Qb5
+	 KIgoQe7GFu19XofItavn71lrraMuz/soT7F5qDeIrXfLUOAm9MJ62VkKXO1+vvdj1E
+	 CQF0NvWU4nMtREV7pck595RHKwI2NNo/w5koXw1gO6F/NSWBWXBjv2VjrmtStLufv7
+	 frzZGwMeh9zTBKJ68Er77iHhE+zVfyE9yvtsF5Q9ZSO0izLlRsWv6+a9uHrRqlkbu6
+	 V9m51jNqxo+YvK5kJEQ+LDAsBAz9hoT428HmrH7FQzIOmS/NMbdvmSQ5C32zEKl5j3
+	 hp6vp0rjLKtbw==
+Date: Tue, 4 Aug 2026 10:20:24 +0200
+From: Krzysztof Kozlowski <krzk@kernel.org>
+To: Jishnu Prakash <jishnu.prakash@oss.qualcomm.com>
+Cc: Jonathan Cameron <jic23@kernel.org>, 
+	David Lechner <dlechner@baylibre.com>, Nuno =?utf-8?B?U8Oh?= <nuno.sa@analog.com>, 
+	Andy Shevchenko <andy@kernel.org>, Rob Herring <robh@kernel.org>, 
+	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
+	Amit Kucheria <amitk@kernel.org>, Thara Gopinath <thara.gopinath@gmail.com>, 
+	"Rafael J. Wysocki" <rafael@kernel.org>, Daniel Lezcano <daniel.lezcano@kernel.org>, 
+	Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>, 
+	Bjorn Andersson <andersson@kernel.org>, Konrad Dybcio <konradybcio@kernel.org>, 
+	linux-iio@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
+	linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, 
+	Kamal Wadhwa <kamal.wadhwa@oss.qualcomm.com>, Anjelique Melendez <anjelique.melendez@oss.qualcomm.com>, 
+	Manaf Meethalavalappu Pallikunhi <manaf.pallikunhi@oss.qualcomm.com>, Priyansh Jain <priyansh.jain@oss.qualcomm.com>
+Subject: Re: [PATCH 1/7] dt-bindings: iio: adc: Add support for QCOM PMIC5
+ Gen4 ADC
+Message-ID: <20260804-marvellous-crayfish-of-recreation-d06401@quoll>
+References: <20260731-pmic5_gen4_adc-v1-0-9c49b2eea6f9@oss.qualcomm.com>
+ <20260731-pmic5_gen4_adc-v1-1-9c49b2eea6f9@oss.qualcomm.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
-Mime-Version: 1.0
-References: <20260721153617.869933-1-beata.michalska@arm.com> <20260721153617.869933-2-beata.michalska@arm.com>
-Message-ID: <anGfGWWxiuZj4i2U@google.com>
-Subject: Re: [PATCH v2 1/3] rust: add runtime PM support
-From: Alice Ryhl <aliceryhl@google.com>
-To: Beata Michalska <beata.michalska@arm.com>
-Cc: ojeda@kernel.org, dakr@kernel.org, gregkh@linuxfoundation.org, 
-	rafael@kernel.org, boqun@kernel.org, gary@garyguo.net, 
-	bjorn3_gh@protonmail.com, lossin@kernel.org, a.hindborg@kernel.org, 
-	tmgross@umich.edu, daniel.almeida@collabora.com, 
-	boris.brezillon@collabora.com, work@onurozkan.dev, samitolvanen@google.com, 
-	rust-for-linux@vger.kernel.org, driver-core@lists.linux.dev, 
-	linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20260731-pmic5_gen4_adc-v1-1-9c49b2eea6f9@oss.qualcomm.com>
 
-On Tue, Jul 21, 2026 at 05:34:02PM +0200, Beata Michalska wrote:
-> +/// Runtime PM callbacks implemented by a driver.
-> +///
-> +/// Defines the [`PMOps`] trait and its corresponding [`bindings::dev_pm_ops`].
-> +///
-> +/// Each generated C callback recovers the Rust bus device from the raw
-> +/// `struct device *`, borrows the registered runtime PM payload, and delegates
-> +/// to the matching [`PMOps`] trait method.
-> +///
-> +/// # Safety
-> +///
-> +/// `PMContext::<T>::PM_OPS` must only be installed for devices whose concrete
-> +/// bus type is `T::DeviceType`, and whose runtime PM registration data was
-> +/// installed by [`Registration::new`] for the same `T`.
-> +///
-> +macro_rules! define_pm_ops {
-> +    ($($name:ident $( : $desc:tt )? ),+ $(,)?) => {
-> +        $( define_pm_callback!( @parse_desc $name $( $desc )?); )+
-> +        define_pm_ops!(@common $( $name ), +);
-> +    };
+On Fri, Jul 31, 2026 at 11:36:14PM +0530, Jishnu Prakash wrote:
+> PMIC5 Gen4 ADC is similar to PMIC5 Gen3 ADC, with several changes made for
+> improved performance, mostly at the hardware level. The main differences are
+> increased ratiometric conversion resolution (from 14 bits to 16 bits) and
+> increased bit field width for PMIC SID (to allow communication with an
+> increased number of PMICs, supported on latest SoCs).
+> 
+> Signed-off-by: Jishnu Prakash <jishnu.prakash@oss.qualcomm.com>
+> ---
+>  .../bindings/iio/adc/qcom,spmi-adc5-gen3.yaml      | 47 +++++++++++++++++++++-
+>  1 file changed, 46 insertions(+), 1 deletion(-)
+> 
+> diff --git a/Documentation/devicetree/bindings/iio/adc/qcom,spmi-adc5-gen3.yaml b/Documentation/devicetree/bindings/iio/adc/qcom,spmi-adc5-gen3.yaml
+> index 149f4af8f4b8..e79ddc2acca0 100644
+> --- a/Documentation/devicetree/bindings/iio/adc/qcom,spmi-adc5-gen3.yaml
+> +++ b/Documentation/devicetree/bindings/iio/adc/qcom,spmi-adc5-gen3.yaml
+> @@ -21,9 +21,14 @@ description: |
+>    All boards using a particular (SOC + master PMIC) combination will have the
+>    same number of ADC SDAMs supported on that PMIC.
+>  
+> +  PMIC5 Gen4 ADC is similar to Gen3 ADC, with some differences such as
+> +  improved ratiometric conversion resolution.
 > +
-> +    (@common $( $name:ident),+ ) => {
-> +        /// Runtime PM callbacks implemented by a driver
-> +        #[vtable]
-> +        pub trait PMOps: Sized
-> +        {
-> +            /// Type of a bus device
-> +            type DeviceType: AsBusDevice<device::Bound>;
-> +            /// Type of the data associated with a PM transitions:
-> +            type RuntimePayloadType: Send;
-> +
-> +            $(
-> +                #[allow(missing_docs)]
-> +                // Callback-specific docs are provided by the generated `dev_pm_ops`
-> +                // contract on `PMOps`.
-> +
-> +                fn $name<'a>(
-> +                    _dev:  &'a Self::DeviceType,
-> +                    _payload: Option<Self::RuntimePayloadType>,
-> +                ) -> Result<Option<Self::RuntimePayloadType>, (Option<Self::RuntimePayloadType>, Error)> {
-> +                    build_error!(VTABLE_DEFAULT_ERROR)
-> +                }
-> +            )+
-> +        }
-> +        paste!(
-> +            impl<'a, T:PMOps> PMContext<'a, T> {
-> +                /// Driver-provided runtime PM operations.
-> +                ///
-> +                /// A driver implements this trait to handle runtime PM
-> +                /// transitions for its device type.
-> +                ///
-> +                /// Each callback receives the device and the current payload.
-> +                /// On success, it returns the payload to keep for the next
-> +                /// transition. On failure, it returns the payload together
-> +                /// with the error so the previous, or otherwise sane state
-> +                /// can be preserved.
-> +                pub const PM_OPS: bindings::dev_pm_ops = bindings::dev_pm_ops {
-> +                    $( [<$name>]: if T::[<HAS_ $name:upper>] {
-> +                        Some([<$name _callback>]::<T>)
-> +                    } else {
-> +                        None
-> +                    }, )+
-> +                    ..PMOPS_NONE
-> +                };
-> +            }
-> +        );
-> +    }
-> +}
+>  properties:
+>    compatible:
+> -    const: qcom,spmi-adc5-gen3
+> +    enum:
+> +      - qcom,spmi-adc5-gen3
+> +      - qcom,spmi-adc5-gen4
+>  
+>    reg:
+>      items:
+> @@ -83,6 +88,46 @@ patternProperties:
+>            This property indicates ADC_TM monitoring is done on this channel.
+>          type: boolean
+>  
+> +      qcom,adc5-gen4:
+> +        description:
+> +          Indicates channel is of type ADC5 Gen4. This may be needed in cases where the
+> +          master PMIC has an ADC peripheral of type Gen3, but some of the other PMICs it
+> +          communicates with have ADC peripherals of type Gen4, so channels of those PMICs
+> +          need to be marked as Gen4 to ensure their conversions are handled correctly.
+> +        type: boolean
 
-> +
-> +define_pm_ops!(
-> +    // PM state change
-> +    runtime_suspend,
-> +    runtime_resume,
-> +);
+It is implied by the compatibles, in this case the peripheral
+compatible.
 
-I think using a macro to define this trait is overkill. Just write it
-out:
+Best regards,
+Krzysztof
 
-pub trait PMOps: Sized {
-    /// Type of a bus device
-    type DeviceType: AsBusDevice<device::Bound>;
-    /// Type of the data associated with a PM transitions:
-    type RuntimePayloadType: Send;
-
-    fn runtime_suspend<'a>(
-        _dev:  &'a Self::DeviceType,
-        _payload: Option<Self::RuntimePayloadType>,
-    ) -> Result<Option<Self::RuntimePayloadType>, (Option<Self::RuntimePayloadType>, Error)> {
-        build_error!(VTABLE_DEFAULT_ERROR)
-    }
-
-    fn runtime_resume<'a>(
-        _dev:  &'a Self::DeviceType,
-        _payload: Option<Self::RuntimePayloadType>,
-    ) -> Result<Option<Self::RuntimePayloadType>, (Option<Self::RuntimePayloadType>, Error)> {
-        build_error!(VTABLE_DEFAULT_ERROR)
-    }
-}
-
-This is a lot easier to read.
-
-Alice
