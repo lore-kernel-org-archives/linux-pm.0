@@ -1,118 +1,134 @@
-Received: from mx1.white.stw.pengutronix.de (mx1.white.stw.pengutronix.de [185.203.200.13])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8E0ED45C6F8;
-	Wed,  5 Aug 2026 12:13:43 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=185.203.200.13
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 322E93C7DE1;
+	Wed,  5 Aug 2026 12:19:07 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1785932026; cv=none; b=YvIgq7E6JSG45eoKdi516+94XVf49h/Y/zT3VdN6AOoFsG1+ysL0IX7QYFD4sDcaz21jmLrvSl/ImHss/oAloVFkKYfbTBnG2DmLhBSW4L3LGXfd27cnlqeWM4EDbVlCuVGalEwtU9a80LI+Y1sxRN5gfyD+eP33EPj47utQxjg=
+	t=1785932348; cv=none; b=jXWQCi5ydCqoxb2tBrKHYKvW5FSIAv1d7hB/cXfZ5InRw4nJ97mX6Ov3Cl4/XA+QjXOyDEW/SpXrmryO1XyC7vgV0r+2GnPqGiBBpRnWnrGSxRBG5tD82hOeQx7nDyRUMQaK6LRzb09EvqGwCUzyMGJaVHAFMJ4vkw50H9ob6Ts=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1785932026; c=relaxed/simple;
-	bh=qPmUCOr+9MGj4dzFyL2caBXocsNG0nEiU8hCXK/8ZJI=;
-	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=m8Wm5c9Ova60eic98CWxmW1g3rEpPXNHSR9N38Pi6JbuqzSkrAN/wLxFjLsE8rRIXmIrAcjEzDHNKKQ2Fmsf/yo9dVikjivjGr+HLYuojHD0JZqeWnVvsLBnCjSvI6cEpGQXlzSK/6u4fD0rVteu62hGvp8KsV3dSyd9D0qoTRg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=pengutronix.de; spf=pass smtp.mailfrom=pengutronix.de; arc=none smtp.client-ip=185.203.200.13
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=pengutronix.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=pengutronix.de
-Received: from [IPv6:2a0a:edc0:0:900:1d::4e] (lupine.office.stw.pengutronix.de [IPv6:2a0a:edc0:0:900:1d::4e])
-	(Authenticated sender: pza@pengutronix.de)
-	by mx1.white.stw.pengutronix.de (Postfix) with ESMTPSA id 0AF8D201281;
-	Wed, 05 Aug 2026 14:13:41 +0200 (CEST)
-Message-ID: <58c85258b5c3aaa4bf26dbcdb7eea01549864a08.camel@pengutronix.de>
-Subject: Re: [RFC PATCH v5 v5 5/8] pmdomain/rockchip: cycle optional
- power-domain resets on power-on
-From: Philipp Zabel <p.zabel@pengutronix.de>
-To: Jiaxing Hu <gahing@gahingwoo.com>, tomeu@tomeuvizoso.net,
- heiko@sntech.de, 	robh@kernel.org, krzk+dt@kernel.org, conor+dt@kernel.org,
- joro@8bytes.org, 	will@kernel.org, robin.murphy@arm.com, ulfh@kernel.org,
- ogabbay@kernel.org, 	zhangqing@rock-chips.com
-Cc: royalnet026@gmail.com, alchark@flipper.net, chaoyi.chen@rock-chips.com, 
-	dri-devel@lists.freedesktop.org, linux-rockchip@lists.infradead.org, 
-	iommu@lists.linux.dev, linux-pm@vger.kernel.org,
- devicetree@vger.kernel.org, 	linux-arm-kernel@lists.infradead.org,
- linux-kernel@vger.kernel.org
-Date: Wed, 05 Aug 2026 14:13:40 +0200
-In-Reply-To: <20260805063826.95682-6-gahing@gahingwoo.com>
-References: <20260805063826.95682-1-gahing@gahingwoo.com>
-	 <20260805063826.95682-6-gahing@gahingwoo.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-User-Agent: Evolution 3.56.2-0+deb13u1 
+	s=arc-20240116; t=1785932348; c=relaxed/simple;
+	bh=JmZ8M0SN4ih168r+YbC/9WNlIET0F+AKXWj1sRQUcvw=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=FyL5dHiMROW3A7SXiZ2P40P57fcsZhABh4lNa4pyDkWc/b2TLjrFmNm2fgNNBwhtKdtnYYdsTGJC0Ypy3g0JG1TNPBVx+EbWjPttNBQ12Oq6N/hEnpeCWsjzTsvNOta2xggIbPZHGUi7hPeCcC1nHyPfB/xa9llG76Dg/tYF+Qg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=QmUMh/kE; arc=none smtp.client-ip=100.103.45.18
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="QmUMh/kE"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id E094E1F000E9;
+	Wed,  5 Aug 2026 12:19:05 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1785932347;
+	bh=ryUCT1I0NhGr3mY1hgYVq8pD7GX6p39nJnHv1df6CQE=;
+	h=From:To:Cc:Subject:Date;
+	b=QmUMh/kEcbhtxoly18U6rzo7s3tAPaONT9d6L0S3YxMs/YtDO42z1jjFZa7Bpjj2l
+	 a1He17n+5lJ7W2YIprG7D7iKLvSWUIePUU8s17ba1hIv5Y5FYvHUO2ch85TZN13ts/
+	 4hRTD7qpzQMwBeNPgJPuTBSo3UKXLVTDp03/AOkVr0IdJpk6nyFy5Yc1JKQyzyl1UH
+	 0A/qE09265PtUEJlvCUMbGHNGCvtovrrwXsUAl5Z6gmNxXTsIkiwawMV6j3wH7PRQm
+	 xnID9KiYGxrFPFUqypp7whENRJZkWoPjHudSWVhTtscYslBNDQtuJPVCx7NmY8znlN
+	 25m28OT3UIq1w==
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+To: Linux PM <linux-pm@vger.kernel.org>
+Cc: Doug Smythies <dsmythies@telus.net>,
+ Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
+ LKML <linux-kernel@vger.kernel.org>
+Subject:
+ [PATCH v2] cpufreq: intel_pstate: Avoid using DESIRED_PERF when DEC is
+ enabled
+Date: Wed, 05 Aug 2026 14:18:11 +0200
+Message-ID: <4758098.LvFx2qVVIh@rafael.j.wysocki>
+Organization: Linux Kernel Development - Intel
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="UTF-8"
 
-On Mi, 2026-08-05 at 18:38 +1200, Jiaxing Hu wrote:
-> Some Rockchip domains come out of power-on with their bus interface in
-> an undefined state. On the RK3576 NPU this shows up as a hang on the
-> first access after a cold power-on; the vendor kernel cycles the
-> domain's resets at this point and that clears it.
->=20
-> Take the domain node's resets if it has any, and pulse them between
-> releasing idle and restoring QoS. The resets are optional, so domains
-> that do not declare any behave exactly as before.
->=20
-> Signed-off-by: Jiaxing Hu <gahing@gahingwoo.com>
-> ---
->  drivers/pmdomain/rockchip/pm-domains.c | 19 +++++++++++++++++++
->  1 file changed, 19 insertions(+)
->=20
-> diff --git a/drivers/pmdomain/rockchip/pm-domains.c b/drivers/pmdomain/ro=
-ckchip/pm-domains.c
-> index e1857f878..82051f600 100644
-> --- a/drivers/pmdomain/rockchip/pm-domains.c
-> +++ b/drivers/pmdomain/rockchip/pm-domains.c
-> @@ -19,6 +19,7 @@
->  #include <linux/of_clk.h>
->  #include <linux/clk.h>
->  #include <linux/delay.h>
-> +#include <linux/reset.h>
->  #include <linux/regmap.h>
->  #include <linux/regulator/consumer.h>
->  #include <linux/mfd/syscon.h>
-> @@ -103,6 +104,7 @@ struct rockchip_pm_domain {
->  	struct clk_bulk_data *clks;
->  	struct device_node *node;
->  	struct regulator *supply;
-> +	struct reset_control *resets;
->  };
-> =20
->  struct rockchip_pmu {
-> @@ -688,6 +690,13 @@ static int rockchip_pd_power(struct rockchip_pm_doma=
-in *pd, bool power_on)
->  		if (pd->info->delay_us)
->  			udelay(pd->info->delay_us);
-> =20
-> +		/* Optional: some domains need their resets cycled after power-on. */
-> +		if (pd->resets) {
-> +			reset_control_assert(pd->resets);
-> +			udelay(10);
-> +			reset_control_deassert(pd->resets);
-> +		}
-> +
->  		rockchip_pmu_restore_qos(pd);
->  	}
-> =20
-> @@ -857,6 +866,14 @@ static int rockchip_pm_add_one_domain(struct rockchi=
-p_pmu *pmu,
->  	if (error)
->  		goto err_put_clocks;
-> =20
-> +	pd->resets =3D of_reset_control_array_get_optional_exclusive(node);
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Why is this using of_reset_control_array_get_optional_exclusive()
-instead of devm_reset_control_array_get_optional_exclusive() when pd is
-allocated with devm_kzalloc()?
+In principle, the desired performance level can be set in MSR_HWP_REQUEST
+to indicate to the processor what performance level the OS would like
+the given CPU to run at, but if the Dynamic Efficiency Control (DEC)
+feature is enabled in the processor, doing so may result in confusing
+the processor firmware.  It is then better to let the processor firmware
+figure out the most suitable performance level by itself.
 
-> +	if (IS_ERR(pd->resets)) {
-> +		error =3D PTR_ERR(pd->resets);
-> +		dev_err(pmu->dev, "%pOFn: failed to get resets: %d\n", node, error);
+Accordingly, make intel_pstate always set the desired performance level
+to zero (which means "no preference") when running on a platform with
+DEC enabled.
 
-dev_err_probe() to avoid printing on -EPROBE_DEFER.
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Acked-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+---
+
+Applies to linux-next.
+
+v1 -> v2:
+   * Use rdmsrq_safe() in hwp_check_dec() (Sashiko)
+
+---
+ drivers/cpufreq/intel_pstate.c |   13 +++++++++----
+ 1 file changed, 9 insertions(+), 4 deletions(-)
+
+--- a/drivers/cpufreq/intel_pstate.c
++++ b/drivers/cpufreq/intel_pstate.c
+@@ -303,6 +303,7 @@ static bool per_cpu_limits __ro_after_in
+ static bool hwp_forced __ro_after_init;
+ static bool hwp_boost __read_mostly;
+ static bool hwp_is_hybrid;
++static u32 hwp_desired_mask __read_mostly = ~0U;
+ 
+ static struct cpufreq_driver *intel_pstate_driver __read_mostly;
+ 
+@@ -3150,7 +3151,7 @@ static void intel_cpufreq_hwp_update(str
+ 	value |= HWP_MAX_PERF(max);
+ 
+ 	value &= ~HWP_DESIRED_PERF(~0L);
+-	value |= HWP_DESIRED_PERF(desired);
++	value |= HWP_DESIRED_PERF(desired & hwp_desired_mask);
+ 
+ 	if (value == prev)
+ 		return;
+@@ -3760,9 +3761,9 @@ static bool hwp_check_epp(void)
+ 
+ static bool hwp_check_dec(void)
+ {
+-	u64 power_ctl;
++	u64 power_ctl = 0;
+ 
+-	rdmsrq(MSR_IA32_POWER_CTL, power_ctl);
++	rdmsrq_safe(MSR_IA32_POWER_CTL, &power_ctl);
+ 	return !!(power_ctl & BIT(POWER_CTL_DEC_ENABLE));
+ }
+ 
+@@ -3787,6 +3788,7 @@ static int __init intel_pstate_init(void
+ 	id = x86_match_cpu(hwp_support_ids);
+ 	if (id) {
+ 		bool epp_present = hwp_check_epp();
++		bool dec_present = hwp_check_dec();
+ 
+ 		/*
+ 		 * If HWP is enabled already, there is no choice but to deal
+@@ -3798,7 +3800,7 @@ static int __init intel_pstate_init(void
+ 			no_hwp = 0;
+ 		} else if (no_load) {
+ 			return -ENODEV;
+-		} else if (!epp_present && !hwp_check_dec()) {
++		} else if (!epp_present && !dec_present) {
+ 			/*
+ 			 * Avoid enabling HWP for processors without EPP support
+ 			 * unless the Dynamic Efficiency Control (DEC) enable
+@@ -3820,6 +3822,9 @@ static int __init intel_pstate_init(void
+ 			if (!default_driver)
+ 				default_driver = &intel_pstate;
+ 
++			if (dec_present)
++				hwp_desired_mask = 0;
++
+ 			if (!id->driver_data)
+ 				pstate_funcs.get_cpu_scaling = hwp_get_cpu_scaling;
+ 
 
 
-regards
-Philipp
+
