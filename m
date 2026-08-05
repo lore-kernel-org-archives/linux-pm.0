@@ -1,180 +1,87 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.10])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1949046EF97
-	for <linux-pm@vger.kernel.org>; Wed,  5 Aug 2026 13:08:42 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CEDD7476694
+	for <linux-pm@vger.kernel.org>; Wed,  5 Aug 2026 13:53:31 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.10
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1785935324; cv=none; b=f2czF/JAYbqbeQfCxtEu666g3yYu5Qra+DdcX4ZMTCA96ezpWLKFZ337VC2NwEqylLBf3ILYx0X82K1tSe3iQqYUQmeOSg3Q6VDMv9ctJ2hUKyR1cDtw3kvoKBhdASKIKNovlOZ2VFLDzELPdgYrgYG2zEI1lnI+dvUvdnTW6EE=
+	t=1785938014; cv=none; b=UuiYKRboRE+2nstzvVktKHcuMle5AuJX6uF6VJdArUfMts7r6apCBTKMEFBtJq7L36o80U8RCq7yH1eqiz28s4qILpDoNEUghhlMhxaAKTFivBVivdK2NI0JDejybThSEXNcDp1HG7tDG8zYaAc9PXiMeN1feX685GY0YP/6FZg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1785935324; c=relaxed/simple;
-	bh=6dUMIQzJj/gjxFZDPawThVxYqfw6kpsbefTT6E1dAT4=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=MJE9L97aKlwyh8B+iGFb5cwUf/28QKcoBuymBvQI+9BCI09+ibmZLnmY0WzFmo0BL129FIe0xNV77ugTeBewJ6Bq13TkUFa5BnXZR92S6BKvjqbrb6XKA2l8F/nD9l0yi0HRp6ybjm5Q6/NQp5EED4C0cTpuzMRRFn/sLVtRwWA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=ZojHv2G5; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1785938014; c=relaxed/simple;
+	bh=0uN32aL02N8IHX342QsiVYT8zP7gnajakKpV4FQn6K0=;
+	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
+	 Content-Type:MIME-Version; b=YsofGzPCSaAhyS30Hr5cIJln7kBNSkrUqMSxM1X0Cq1EkfldvamnhyvlmGOlBex1BEP/a7xMOeMZ91Q4HJPb+UI6mdLVCaf1i/Hg/yBAWDKUS9buUBYIUwjCGmZ49pB/lYJnl0TmtmgpLPykOIgAoJ9ALpFFB93hSCAP9lEWMmg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=pass smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=IgLKUDR/; arc=none smtp.client-ip=198.175.65.10
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="ZojHv2G5"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id A934C1F00ACF
-	for <linux-pm@vger.kernel.org>; Wed,  5 Aug 2026 13:08:42 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1785935322;
-	bh=rriqBNK6oHvVYqznZx3OyFyQqrBnagP/gYB4IvuW224=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc;
-	b=ZojHv2G5aY3DwD+8ZzyoYIkGtVhpCWlB7AMfBhbtjF9okbu8HRvnFFJqeNJ/lNeif
-	 bRXto/wzSBYinYfgB9VC82Lj9Oxl24v9IB34eoS9/Hk1a1CHT4KWORj3o9Mz8JrWR5
-	 8Las6/DaU0DwO+i98hz1+jRR29sL6fow7uzCyF+xWUEKdqyk1DW7X41iy1YIYghHq2
-	 DZlaZ2PJvjfrFTEyvE+JeCihqUpKFc22a5PdTlrEBqHuxrndKDALcgvoILKRfbfiYb
-	 WYGD3Rg8Mu2at92Y0yV6nG9pcXZK3xxuRnV+iWZcD+qn2kmNlJClPq3ADaCRj+V+ch
-	 wWlRGVWii83lA==
-Received: by mail-lj1-f180.google.com with SMTP id 38308e7fff4ca-39ee96f8047so7053401fa.1
-        for <linux-pm@vger.kernel.org>; Wed, 05 Aug 2026 06:08:42 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AHgh+RpYIUjJtScdke0BOyixx8mmYFHLgzYG+d+QhqbkXsmL5aBzMzsa+W0xhiA8Xk+z6f7owl88ILG4QA==@vger.kernel.org
-X-Gm-Message-State: AOJu0YzpNUkzNaJqygUg2WKbZbVq/guyvOcUYc2VdGxF2sgCw7XUIrD5
-	997xK7oqsZ2SILwh/YJ4mCWkPfc31zgymbH+cZJJ3aYW65nm34H1D8U4R/9vIVcx6RVGojqIweJ
-	d6QuhQOvLkysWEwm+Z9H62NbPDdMyLp4=
-X-Received: by 2002:a05:6512:61b3:b0:5ae:c063:6397 with SMTP id
- 2adb3069b0e04-5b2f4b8f29fmr928934e87.15.1785935321073; Wed, 05 Aug 2026
- 06:08:41 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="IgLKUDR/"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1785938012; x=1817474012;
+  h=message-id:subject:from:to:cc:date:in-reply-to:
+   references:content-transfer-encoding:mime-version;
+  bh=0uN32aL02N8IHX342QsiVYT8zP7gnajakKpV4FQn6K0=;
+  b=IgLKUDR/VNRifuG2tmpeUAJAeGCkWzS1SLBc9lmDdY8xrID2ezVJ3yv2
+   DhAVsN+C+Duwt+ZFk7P+v+qGfvNfcaK9mFkESo0Xi45KM23pKbzp7ECRa
+   JrLiDIgNA05xibiv2Q0s/ui5aNivmyWV8Z8LtqXbPpEphuPIje+xoEJR6
+   O+9rTArYBVdFRX6TPHswKsbDIQ5cdDUna7irrE3grGiIQ5e7DnWVwLMuL
+   J7PAYyA1jmTR//beAJZGKqWzmm0Ym1QPYsZ2VYEhHzJpGWtolxnNMkCix
+   YPx95+UMpT/SBRf27/bkSlmoeCcG3iGcYYPyXtDei1tD83IECVP5T1yMt
+   w==;
+X-CSE-ConnectionGUID: yH6G0la7Q0eTqXrqD5835Q==
+X-CSE-MsgGUID: NhgzgSj+TBurBNFNPTqiag==
+X-IronPort-AV: E=McAfee;i="6800,10657,11865"; a="103914425"
+X-IronPort-AV: E=Sophos;i="6.25,206,1779174000"; 
+   d="scan'208";a="103914425"
+Received: from orviesa003.jf.intel.com ([10.64.159.143])
+  by orvoesa102.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 05 Aug 2026 06:53:31 -0700
+X-CSE-ConnectionGUID: fU99kfmtTtO6n+CMEl4l/w==
+X-CSE-MsgGUID: vfGnwn2hRcaqNs2g5DKtNA==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.25,206,1779174000"; 
+   d="scan'208";a="265311940"
+Received: from linux.intel.com ([10.54.29.200])
+  by orviesa003.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 05 Aug 2026 06:53:29 -0700
+Received: from [10.245.244.28] (abityuts-desk1.ger.corp.intel.com [10.245.244.28])
+	by linux.intel.com (Postfix) with ESMTP id BB1D920BF398;
+	Wed,  5 Aug 2026 06:53:27 -0700 (PDT)
+Message-ID: <194df922f197e738bf19e86be4e4ecd25c141f74.camel@linux.intel.com>
+Subject: Re: Bug Report: intel_idle: no model entry for Wildcat Lake, falls
+ back to ACPI _CST
+From: Artem Bityutskiy <artem.bityutskiy@linux.intel.com>
+To: Karan Shukla <karzshukla@gmail.com>, linux-pm@vger.kernel.org
+Cc: rafael@kernel.org, lenb@kernel.org
+Date: Wed, 05 Aug 2026 16:53:26 +0300
+In-Reply-To: <CABoscT+MDv1=LRnogCanDfF33KLmMs3ah5n4A8OA=F8E7nprCQ@mail.gmail.com>
+References: 
+	<CABoscT+MDv1=LRnogCanDfF33KLmMs3ah5n4A8OA=F8E7nprCQ@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+User-Agent: Evolution 3.60.2 (3.60.2-1.fc44) 
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260803210527.1285229-1-christian.loehle@arm.com> <f48c36fe-446f-4f83-8d2d-0913aafc377e@arm.com>
-In-Reply-To: <f48c36fe-446f-4f83-8d2d-0913aafc377e@arm.com>
-From: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
-Date: Wed, 5 Aug 2026 15:08:26 +0200
-X-Gmail-Original-Message-ID: <CAJZ5v0hdAmDORMeHD5qVpji8vBZpCP-uHJ-bF_7wYxA5f8kKaA@mail.gmail.com>
-X-Gm-Features: AUfX_mzpRx3VG1wGIvbulaHf7izF1itLfhxfEyIyhlUMkBZwn6rv-6d431tybeQ
-Message-ID: <CAJZ5v0hdAmDORMeHD5qVpji8vBZpCP-uHJ-bF_7wYxA5f8kKaA@mail.gmail.com>
-Subject: Re: [RESEND][PATCH 0/3] ACPI: CPPC: Reduce .target() callback overhead
-To: Christian Loehle <christian.loehle@arm.com>
-Cc: "Rafael J . Wysocki" <rafael@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, 
-	linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	Len Brown <lenb@kernel.org>, Jie Zhan <zhanjie9@hisilicon.com>, 
-	Lifeng Zheng <zhenglifeng1@huawei.com>, Pierre Gondois <pierre.gondois@arm.com>, 
-	Sumit Gupta <sumitg@nvidia.com>, Sudeep Holla <sudeep.holla@arm.com>, 
-	Ionela Voinescu <ionela.voinescu@arm.com>, zhongqiu.han@oss.qualcomm.com
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
 
-On Tue, Aug 4, 2026 at 12:28=E2=80=AFAM Christian Loehle
-<christian.loehle@arm.com> wrote:
->
-> On 8/3/26 22:05, Christian Loehle wrote:
-> > cppc-cpufreq reaches cppc_set_perf() from every target callback.  For
-> > direct SystemMemory controls, that path currently does several steps
-> > which are unnecessary once the immutable _CPC layout is known:
-> >
-> >   - a full-width write first reads the access unit and merges the value=
-.
-> >   - every write takes the descriptor's RMW lock, even when its access u=
-nit
-> >     is not shared with another _CPC entry.
-> >   - cppc_set_perf() evaluates the same three PCC predicates at each pha=
-se
-> >     of the transaction.
-> >
-> > Remove those costs while retaining the existing conservative paths for
-> > partial fields, overlapping or malformed access units, and PCC controls=
-.
-> >
-> > The series was tested on Arm Power-Orion O6 and AmpereOne systems using
-> > cppc-cpufreq and schedutil.  An rt-app task pinned to one CPU ran for
-> > 500 us every 2 ms with uclamp.min=3D512, for 5000 periods per run.  sch=
-edutil
-> > rate_limit_us was 1000.  cppc_cpufreq_fast_switch() latency was measure=
-d
-> > for 100 ten-second runs.  Each sample is the mean callback latency with=
-in
-> > one run, and the table reports the median and sample standard deviation
-> > of those samples.
-> >
-> > Orion O6               median       stdev       callbacks
-> > baseline               5703 ns      307 ns       188017
-> > complete series        5023 ns      240 ns       188209
-> > =3D=3D> 680 ns (11.9%) reduction
-> >
-> > AmpereOne              median       stdev
-> > baseline               2090 ns      157 ns
-> > complete series      1907.5 ns      140 ns
-> > =3D=3D> 182.5 ns (8.7%) reduction
-> >
-> > The cumulative intermediate results on the Orion O6 attribute roughly h=
-alf
-> > of the gain to each of the first two patches: avoiding the read reduced
-> > the median by 284 ns (5.0%), and avoiding the lock reduced it by anothe=
-r
-> > 336 ns (6.2%).
-> > Together they account for 620 ns of the 680 ns total reduction.
-> >
-> > With the same arm64 configuration and GCC 11.4, caching the PCC predica=
-te
-> > also reduces cppc_set_perf() from 1124 to 884 bytes.  The generated
-> > function has 60 fewer instructions, 17 fewer loads and 20 fewer branche=
-s.
-> >
-> > This series is based on the CPPC fixes posted at (already queued):
-> > https://lore.kernel.org/lkml/20260722093825.1030594-1-christian.loehle@=
-arm.com/
-> >
-> > and the separately posted fix still under review:
-> > https://lore.kernel.org/lkml/20260724104042.1481804-1-christian.loehle@=
-arm.com/
-> >
-> > PS:
-> > There's a final optimization that I actually wanted to make but decided=
- to
-> > split it out for now as it somewhat replicated Sumit's series:
-> > Skipping redundant perf ctrl writes in cpufreq-cppc if registers are no=
-n-PCC
-> > and !shared (because the values are unchanged, the
-> > !autonomous-common-case), but that requires the driver to have a more
-> > complex caching- and atomic-updating machinery in place, similar to
-> > hotplug. As opposed to this series the optimization would be for the
-> > microcontroller handling the CPPC requests, which may be shared across
-> > many CPUs and therefore redundant requests can increase the dvfs
-> > transition latency.
-> > That patch will follow once Sumit's is queued:
-> > https://lore.kernel.org/lkml/20260716153820.2007095-1-sumitg@nvidia.com=
-/
-> >
-> > [RESEND] for the new base-commit specifier below
-> >
-> > Christian Loehle (3):
-> >   ACPI: CPPC: Avoid unnecessary reads for full-width writes
-> >   ACPI: CPPC: Avoid locking standalone full-width registers
-> >   ACPI: CPPC: Evaluate performance-control PCC use once
-> >
-> >  drivers/acpi/cppc_acpi.c | 135 +++++++++++++++++++++++++++++++--------
-> >  include/acpi/cppc_acpi.h |   5 +-
-> >  2 files changed, 113 insertions(+), 27 deletions(-)
-> >
-> >
-> > base-commit: 075b74841bd0065a3bda3440873c747938e69b68
->
-> Nice, so that worked:
-> https://sashiko.dev/#/patchset/20260803210527.1285229-1-christian.loehle@=
-arm.com
-> Seems no findings on $SUBJECT
+Hi,
 
-Yes, so applied as 7.3 material.
+On Wed, 2026-08-05 at 09:31 -0400, Karan Shukla wrote:
+> Hi,
+>=20
+> In this case I was able to determine that intel_idle has no entry for Wil=
+dcat Lake, though Panther Lake was added earlier this year.
 
-> but the rest of the comments it has look legit to me?
+Just historical context:
 
-Yes, but please address those on top of the $subject series, thanks!
+I submitted Panther Lake patches.
 
-> I'll go take another look tomorrow:
->
-> 1. Using per-CPU cpc_desc->rmw_lock for SYSTEM_MEMORY CPPC control regist=
-er that
-> may be shared.
-> 2. MASK_VAL_WRITE() truncation on 32bit architectures.
-> 3. acpi_cppc_processor_exit() calls kfree(cpc_ptr) unconditionally (UAF w=
-ith sysfs?)
-> 4. cppc_set_reg_val_in_pcc() calls cpc_write() before down_write(&pcc_ss_=
-data->pcc_lock)
-> 5 & 6 are sanitization of values from FW.
+I did not measure Wildcat Lake (WCL), only Panther Lake (PTL). Yes,
+we=C2=A0internally discussed to just use Pather Lake (PTL) values, but we
+figured there may be differences in firmware, and I was not
+comfortable=C2=A0using PTL values for WCL without measuring them.
 
-Sounds good to me.
+
+Artem.
