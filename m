@@ -1,169 +1,106 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+Received: from m16.mail.163.com (m16.mail.163.com [117.135.210.4])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 87F113655C4;
-	Wed,  5 Aug 2026 14:36:43 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 75893390234;
+	Wed,  5 Aug 2026 14:40:57 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=117.135.210.4
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1785940610; cv=none; b=NlRIMuwdwba6zEOpFLC6aVv3JS0eKD4eYKWSGC8hvCXksfiNr/fNCB6E3dm/8Uwr9wg0msBJaCtNBxOEnMsTDZ6j+iYMy5ILKmxmTjF2JMM84ar14cQP0V8420VX2DYEC0jgFBDzFH5ueGdHiNQYPNTsj++Qyw9noU6mFBY32Ws=
+	t=1785940869; cv=none; b=Nf6gf3ei9bxdkUUWvtFGeHs643NHJE2/zRsh4Vt7wXweRkeKi74YL7IuMdEV+7c4/Rj0D1gMrMoANXbktU9gP8nQ/Q2wptxbkSuK9Pu0RZpMf/ROuGlhKfonJzD99ZBm2LvgVDCDWMX3oHSAhtPajjd5nU9zKZUEo/wMNgr5YDw=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1785940610; c=relaxed/simple;
-	bh=7GoSDoB93OWd6S7TY2lJhVqrkySeLyhqBbvZ98qHgmY=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=J9fwB8rgUrhMQLV9fKtH7yyvqoYPNnU+OO3z2t/TayPBdVRbLdGgU88cGiUlyddJ7FyKR8tqFzlC3zKvnFa0BlJLeXW75FZ55oh97OPEzv6JGYh4FCpdlj0nAExujac933Fz1OqqNgjTSFqseWMAkIXeTZgEPlfTG8s4S3BnG/o=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=N64w5yGZ; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1785940869; c=relaxed/simple;
+	bh=Ys+Bm3HAcptcJY8mztSxc31f658W9MqMu6vD2Ly4muw=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=SaqdcmFPfAmWViMSUNpeV/fGpFPefObKV0D4R6yRhkch7Y05xOVHFgUd8xV2ivFmLutk/y0thkWluZcVvsnfTcYW/74hu80OupOeT/jfCd6+YJW13H42p4+gJbpPAEW4hrP3MJZAgODgUFCCjBXSVh0LVIfrHcCYOtGRSWYGfWk=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=163.com; spf=pass smtp.mailfrom=163.com; dkim=pass (1024-bit key) header.d=163.com header.i=@163.com header.b=KPlfamkC; arc=none smtp.client-ip=117.135.210.4
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=163.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=163.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="N64w5yGZ"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3ED911F00A3A;
-	Wed,  5 Aug 2026 14:36:34 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1785940601;
-	bh=tM1i/5O7X4rW++TCZUi84s5/0oEu0OW0LHTYnEXJIaY=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To;
-	b=N64w5yGZESz9WHBxo9icgkwglEJW/VSUyFIb4U/m50LvuvBibNYhDhSm47JTui3g9
-	 ftQV9U3RjxqTLipFGG+AccUh8bZxfHzo4B4KkK+KqWHgwzUxge1oMIzIRhtymGj4N8
-	 l+zgpB4RgaIotfSiGovMPaqnneqj1Ff5YaBCOiyUWGHgiNP0EIAVQa70ZzU2TI53nN
-	 q6hWRnHLer9uHb73k2lNtC0HfeR2gDEl3BubWRIVkgAAA0yKztH0evocxmC6LfJdNv
-	 W2lEUye2EIWwQjlAFPhvZ07tWwqtiXg2TRt3Rx2JBPpxSGNzv93Tau0+7QBbuS+mP/
-	 dTvy7w23wVKGQ==
-Message-ID: <768142f0-2638-41f3-a34f-dc80bb99eb7f@kernel.org>
-Date: Wed, 5 Aug 2026 16:36:31 +0200
+	dkim=pass (1024-bit key) header.d=163.com header.i=@163.com header.b="KPlfamkC"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=163.com;
+	s=s110527; h=From:To:Subject:Date:Message-ID:MIME-Version; bh=Dd
+	KekUZhzSFi+yc5KTHvN42O6H95FUeG1o1RwiMrKj0=; b=KPlfamkCMCNO8LR+JG
+	dD2ySy1k70EsQdflkcUtmTw5ZCXT260UXB0fMMvVv24fgEFZf+7UeHb6xGDoJr4D
+	FpKa3YUEP9TZrPMvu1LrKTBdenxRdXi7IjjFm1DVjyNxXoiwv+5SIB7F6N2hubSQ
+	7us8YKKZVbkZ5bVAMF7TIjSLs=
+Received: from localhost (unknown [])
+	by gzsmtp3 (Coremail) with SMTP id PigvCgAnH_81S3NqqC4ULg--.14152S2;
+	Wed, 05 Aug 2026 22:39:50 +0800 (CST)
+From: Hui Su <sh_def@163.com>
+To: rafael@kernel.org,
+	viresh.kumar@linaro.org
+Cc: linux-pm@vger.kernel.org,
+	mingo@redhat.com,
+	peterz@infradead.org,
+	linux-kernel@vger.kernel.org,
+	stable@vger.kernel.org,
+	Hui Su <sh_def@163.com>
+Subject: [PATCH] cpufreq: schedutil: Fix rate limit overflow
+Date: Wed,  5 Aug 2026 22:39:42 +0800
+Message-ID: <20260805143942.805176-1-sh_def@163.com>
+X-Mailer: git-send-email 2.43.0
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 1/6] dt-bindings: bluetooth: qca: add QCC2072
-To: Manivannan Sadhasivam <mani@kernel.org>
-Cc: Rahul Samana <rahul.samana@oss.qualcomm.com>,
- Bartosz Golaszewski <brgl@kernel.org>, Marcel Holtmann
- <marcel@holtmann.org>, Luiz Augusto von Dentz <luiz.dentz@gmail.com>,
- Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
- Conor Dooley <conor+dt@kernel.org>,
- Balakrishna Godavarthi <quic_bgodavar@quicinc.com>,
- Rocky Liao <quic_rjliao@quicinc.com>, Bjorn Andersson
- <andersson@kernel.org>, Konrad Dybcio <konradybcio@kernel.org>,
- Bartosz Golaszewski <brgl@bgdev.pl>, linux-arm-msm@vger.kernel.org,
- linux-bluetooth@vger.kernel.org, devicetree@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
- linux-pm@vger.kernel.org, quic_mohamull@quicinc.com,
- quic_hbandi@quicinc.com, quic_anubhavg@quicinc.com
-References: <20260727-rb3-industrial-bt-uart-v2-1-2d100f30e202@oss.qualcomm.com>
- <20260731-first-righteous-bear-dd72ed@quoll>
- <712f8a14-d2a1-4a90-82f9-05cd694f2658@oss.qualcomm.com>
- <c1875dd6-fe3a-4a69-a6fd-b461c8fba6e4@kernel.org>
- <6d6465bb-47ac-464c-af4e-0ca72325705f@oss.qualcomm.com>
- <8a388310-d3cc-4d02-abb6-0eb98c24cfce@kernel.org>
- <4523441f-498a-4bbd-80f3-97a7a9206c00@oss.qualcomm.com>
- <6e0b9e79-ccd4-4689-9a6b-9b4fc556d5e4@kernel.org>
- <gfhlyvoefcsvtjuxfo75qeham272cc5g2r3npjenzs5esjifiy@ro7dtkpxwizk>
- <8ab6c26f-b648-447c-9fdd-f1424beb44f4@kernel.org>
- <sewfntbhqtj2apfdi4ouan27artvj4lyxqizvinsvzltbofqu2@riuoo3fmczff>
-From: Krzysztof Kozlowski <krzk@kernel.org>
-Content-Language: en-US
-Autocrypt: addr=krzk@kernel.org; keydata=
- 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
-In-Reply-To: <sewfntbhqtj2apfdi4ouan27artvj4lyxqizvinsvzltbofqu2@riuoo3fmczff>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
+X-CM-TRANSID:PigvCgAnH_81S3NqqC4ULg--.14152S2
+X-Coremail-Antispam: 1Uf129KBjvJXoW7Ar1kXF13uF13uw4rAF1rtFb_yoW8tFy7pF
+	Wakay0yr4qq3WUtrs3KF4Dua1UAF1UJ3srKryfC3Z2ywnxJw1Fg34xGF1DXFWxCFn0kw1f
+	A3WYqay5ZF18X37anT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
+	9KBjDUYxBIdaVFxhVjvjDU0xZFpf9x0pEv38UUUUUU=
+X-CM-SenderInfo: xvkbvvri6rljoofrz/xtbCwRZXtmpzSzYAkgAA3A
 
-On 05/08/2026 16:12, Manivannan Sadhasivam wrote:
-> On Wed, Aug 05, 2026 at 02:33:51PM +0200, Krzysztof Kozlowski wrote:
->> DT is not representation of internal device driver instantiation mechanism.
->>
-> 
-> Here, the driver is just creating compatible for a real device. What difference
-> does it make if the BT node was defined statically in the DT vs created
-> dynamically? Both nodes do represent a real BT device, not driver's own
-> representation. And by the time the node was created, the device is physically
-> attached to the system.
+rate_limit_us is unsigned int. On 32-bit systems, multiplying it by
+NSEC_PER_USEC is therefore carried out in 32-bit arithmetic before
+the result is assigned to freq_update_delay_ns.
 
-What stops this power sequencing drivers, after more driver patches, the
-best if being part of some bigger series, to add properties like
-"linux,name-of-driver-to-bind" or whatever other SW properties?
+For example, writing 4294968 to rate_limit_us wraps the delay from
+4294968000 ns to 704 ns. This makes schedutil update far more often
+than configured.
 
-This is what happened in that linked thread:
-https://lore.kernel.org/all/20260326-pci-m2-e-v7-8-43324a7866e6@oss.qualcomm.com/
-The driver code is adding children under other nodes (references by
-graph) and it is nowhere documented. Maybe bindings of these other nodes
-allow it, maybe not. How do you even validate that?
+Add sugov_update_rate_limit_us() to widen the value to u64 before
+converting units. Use it when updating the tunable through sysfs and
+when starting the governor, so both paths set the same valid delay.
 
-So answering your question - yes, there is a difference because:
-1. DTS we validate but whatever you add to driver code we do not and we
-cannot,
-2. DTS represents hardware but whatever you do in your driver code
-represents who knows what (maybe hardware, maybe not, can represent
-anything)
+Fixes: 9bdcb44e391d ("cpufreq: schedutil: New governor based on scheduler utilization data")
+Signed-off-by: Hui Su <sh_def@163.com>
 
-And if you claim "I add hardware in the driver!", I respond - maybe
-true, maybe not, but look at this crap:
-https://web.git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=687bfbba5a1cb15cee51519c210141ed1c4b0ec7
+diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
+index dff4ee04694c2b90301ed0fa158a509a3423cee1..8bf7a2c34b9f200d8f5776205ea2a7f495e04e69 100644
+--- a/kernel/sched/cpufreq_schedutil.c
++++ b/kernel/sched/cpufreq_schedutil.c
+@@ -61,6 +61,12 @@ static DEFINE_PER_CPU(struct sugov_cpu, sugov_cpu);
+ 
+ /************************ Governor internals ***********************/
+ 
++static void sugov_update_rate_limit_us(struct sugov_policy *sg_policy)
++{
++	sg_policy->freq_update_delay_ns =
++		(u64)sg_policy->tunables->rate_limit_us * NSEC_PER_USEC;
++}
++
+ static bool sugov_should_update_freq(struct sugov_policy *sg_policy, u64 time)
+ {
+ 	s64 delta_ns;
+@@ -606,7 +612,7 @@ rate_limit_us_store(struct gov_attr_set *attr_set, const char *buf, size_t count
+ 	tunables->rate_limit_us = rate_limit_us;
+ 
+ 	list_for_each_entry(sg_policy, &attr_set->policy_list, tunables_hook)
+-		sg_policy->freq_update_delay_ns = rate_limit_us * NSEC_PER_USEC;
++		sugov_update_rate_limit_us(sg_policy);
+ 
+ 	return count;
+ }
+@@ -848,7 +854,7 @@ static int sugov_start(struct cpufreq_policy *policy)
+ 	void (*uu)(struct update_util_data *data, u64 time, unsigned int flags);
+ 	unsigned int cpu;
+ 
+-	sg_policy->freq_update_delay_ns	= sg_policy->tunables->rate_limit_us * NSEC_PER_USEC;
++	sugov_update_rate_limit_us(sg_policy);
+ 	sg_policy->last_freq_update_time	= 0;
+ 	sg_policy->next_freq			= 0;
+ 	sg_policy->work_in_progress		= false;
+-- 
+2.43.0
 
-Since we DISALLOWED venus-decoder and venus-encoder DT nodes, what did
-Bryan do? Squeezed via driver code fake disallowed nodes and even gave
-them compatibles not looking like compatibles, so any regex won't work.
-
-This power sequencing work here has the same problem of sneaking ABI,
-which I pointed out here:
-https://lore.kernel.org/all/9cc5af16-d95e-4f10-8b4a-5e29c136079c@kernel.org/
-
-Look at above patch - nothing documents that ABI. The same as Bryan's
-fake venus-decoder and encore (not only fake but actually rejected). And
-to avoid ABI-check tools (or incoming tools), this power sequencing code
-does not even call a "compatible" a "compatible". No, it calls it
-"driver_data" nicely avoiding detection.
-
-This is terrible practice and I feel like allowing this patch is silent
-acknowledgment or agreement of such practice.
-
-It's about basic ABI principles - if you have DT ABI, it must be both
-clear in the drivers code and in DT bindings, instead of obfuscated
-calling a compatible driver data. If you don't, then this is not DT ABI
-and you are not allowed to use OF code to instantiate drivers. Use SW
-nodes or KHO-style whatever else is there.
-
-Best regards,
-Krzysztof
