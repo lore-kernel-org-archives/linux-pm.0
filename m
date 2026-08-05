@@ -1,109 +1,74 @@
-Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
+Received: from mout-p-201.mailbox.org (mout-p-201.mailbox.org [80.241.56.171])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 69B9E3D3302;
-	Wed,  5 Aug 2026 20:24:30 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.137.202.133
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 004133BCD05;
+	Wed,  5 Aug 2026 22:22:42 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=80.241.56.171
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1785961473; cv=none; b=Yi71xxno2Qs4QQzqADuLVF0ldbfM5isoK5GqNJEvjeFam43ayjG3+VsCeD4La9V9veVN13FDliFVQywXuoot2z32XVifKOAc+IwEArLIKB8joLZqsDY40VRM9hdxgDvN6eNU1cMf2e+MNPcY0CDz1Cb4ymm1I4l/1ItfocW19ag=
+	t=1785968564; cv=none; b=Jg1KLY7BxjGsOB4VopNV/drR16IpTZG9LvPKREYAHqdc5kyDdrt9U33LUpwyG3XwRzQviAphbHcnYVQpNqmsjuXQUX7EPgBbkb2XNEKuVzKqnHi59PEzqfgue9w+ATNh6GefDPkcGzfhjvYUfWfTbCBJ/lqFpUgnPxw+DApqL98=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1785961473; c=relaxed/simple;
-	bh=IIE3u8srsOWgIOJO0YdejbZre3in0zRoedz1p4ZgRxs=;
+	s=arc-20240116; t=1785968564; c=relaxed/simple;
+	bh=3VdDvZ7VlZB4G/5KGO8LpztRCadiI8DcBO6EziPhcww=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=r14TfsoQzFMIb6RDLAkv892kUesvBGFT0z91M62JvC79P9kcCpHcmyBf587f/s7Wiz0EyiSw6bk6ylW0LiFLvQ3ShDIYwXrqnrFJpyhCbySLBpivcT7MGG3S3Ot2Gb5ui+voQZFxAFOJjMDS24S5J+MQqHXd09HtpeIgm+WpAS8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=infradead.org; spf=pass smtp.mailfrom=infradead.org; dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b=gCkftO02; arc=none smtp.client-ip=198.137.202.133
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=infradead.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=infradead.org
+	 In-Reply-To:Content-Type; b=oPJB/6OMzYQogOZxYbJL0HQi4FNwUmOA2islRmiX0U1boncpeWBB5r4R9Bt9Wkd3Vlkm9jJYzGoht6r0Sl9Mop18iEG5xHva8rcOBicBcMFKzp3zr5d6vGv3UiPDGO0me0UWQK+yZaG4UTtLj+1hQb9nZPPqTjSfqCvMkQnQFiY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=mailbox.org; spf=pass smtp.mailfrom=mailbox.org; dkim=pass (2048-bit key) header.d=mailbox.org header.i=@mailbox.org header.b=i5Ou1FbN; arc=none smtp.client-ip=80.241.56.171
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=mailbox.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=mailbox.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="gCkftO02"
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=infradead.org; s=bombadil.20210309; h=Content-Transfer-Encoding:
-	Content-Type:In-Reply-To:From:References:Cc:To:Subject:MIME-Version:Date:
-	Message-ID:Sender:Reply-To:Content-ID:Content-Description;
-	bh=C3x0mMXb8xK4Txc32OTX6BYPYD69PgClixHyFbpA0Z0=; b=gCkftO02aV/1Vjxl8lS9/zysvT
-	uHAHnNEcYRIPnxOJGYEgsYEMEP8wL/sNnzp0/rkhXZdUSsz+Q5sNUHrSJq15c1jNliiidaughlBuR
-	+TCTp/5aqAepN5gpodmK/bJZotBgIBY1AyXoZxZLyVr5YrX/8pJrPsLTvhz1soiXSKe4g2FfZmStr
-	7TGpmg+Va+rcT0vqyxOh4rxoXWIO8oxPjGvBHGOiVpv65nV5arXWA3/vo20GaGTyicbIfQbolJHnd
-	JgZfZbxF+wTTVfvIpupBrusyebI+IX8q9zXVlOGsokiwn9QrzgueEt1YGFG+Yfg9FlPf+Lb8UvrLe
-	ENoqcW3g==;
-Received: from [50.53.43.113] (helo=[192.168.254.34])
-	by bombadil.infradead.org with esmtpsa (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wriA5-00000004Wd6-1xQd;
-	Wed, 05 Aug 2026 20:24:25 +0000
-Message-ID: <d6a18ccc-8c84-425c-873e-36d8729bd1f8@infradead.org>
-Date: Wed, 5 Aug 2026 13:24:24 -0700
+	dkim=pass (2048-bit key) header.d=mailbox.org header.i=@mailbox.org header.b="i5Ou1FbN"
+Received: from smtp2.mailbox.org (smtp2.mailbox.org [10.196.197.2])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange x25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by mout-p-201.mailbox.org (Postfix) with ESMTPS id 4hFlKC5B74zMlL8;
+	Thu, 06 Aug 2026 00:22:39 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=mailbox.org; s=mail20150812;
+	t=1785968559;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=vitaPJ1/0YLkHqTJEs/ZTCtg7eWB6JEZx0pV0zq63EE=;
+	b=i5Ou1FbNhMzgKOeo4jhLaG9cFgV2Kjht8KosjinmjyxoETMalIeRyQMlxXYjH7D+kUN8AI
+	iXrHH2sdLDVm31mSlNMbXtwxD7cKRRodigjp95P7FPPu02G6asRC1iGQTc9HDt+zoGVD0E
+	aU3sC0Co6YAcj0l+BktbDSqAOfORG797rsGz0Ywq2p2g+5B3ZEzNkE+AjUOKFe7dUm/DPE
+	pCSVHsFLdjuVuvxXE3Wv9ncy8KZweJnWuJHAl+bukaIJZc6MY8DY6wz+FnPjAk1CJ5aTkn
+	qVp7Jbsgqo8Yt5e9fVeSLTiVtLPCxPGgfce+UZDOemet/YD9Uow8NV/KbhlisA==
+Message-ID: <42472bef-cafb-4633-bd7e-7e6f707fdad5@mailbox.org>
+Date: Thu, 6 Aug 2026 00:22:35 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] power: supply: add stubs for notifier registration
- helpers
-To: Elson Serrao <elson.serrao@oss.qualcomm.com>,
- Sebastian Reichel <sre@kernel.org>
-Cc: Thinh Nguyen <Thinh.Nguyen@synopsys.com>, linux-pm@vger.kernel.org,
- linux-kernel@vger.kernel.org
-References: <20260805185401.3625514-1-elson.serrao@oss.qualcomm.com>
+Subject: Re: [PATCH v3 3/6] clk: renesas: Add R-Car X5H CPG driver
+To: Geert Uytterhoeven <geert+renesas@glider.be>,
+ Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
+ Conor Dooley <conor+dt@kernel.org>,
+ Michael Turquette <mturquette@baylibre.com>, Stephen Boyd
+ <sboyd@kernel.org>, Brian Masney <bmasney@redhat.com>,
+ Ulf Hansson <ulfh@kernel.org>, Philipp Zabel <p.zabel@pengutronix.de>,
+ Wolfram Sang <wsa+renesas@sang-engineering.com>,
+ Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
+Cc: devicetree@vger.kernel.org, linux-clk@vger.kernel.org,
+ linux-pm@vger.kernel.org, linux-renesas-soc@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+References: <cover.1785941595.git.geert+renesas@glider.be>
+ <3f981753722de1ba871667be63460e89d299d635.1785941595.git.geert+renesas@glider.be>
 Content-Language: en-US
-From: Randy Dunlap <rdunlap@infradead.org>
-In-Reply-To: <20260805185401.3625514-1-elson.serrao@oss.qualcomm.com>
-Content-Type: text/plain; charset=UTF-8
+From: Marek Vasut <marek.vasut@mailbox.org>
+In-Reply-To: <3f981753722de1ba871667be63460e89d299d635.1785941595.git.geert+renesas@glider.be>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
+X-MBO-RS-ID: 00ba4762705b72c2803
+X-MBO-RS-META: 45u7qioqppyfd15eaa44f15u86pde877
 
-
-
-On 8/5/26 11:54 AM, Elson Serrao wrote:
-> power_supply_reg_notifier() and power_supply_unreg_notifier() are declared
-> unconditionally, with no fallback when CONFIG_POWER_SUPPLY is disabled.
-> Any driver that calls them unconditionally fails to link:
+On 8/5/26 5:20 PM, Geert Uytterhoeven wrote:
+> Add a minimal Clock Pulse Generator driver for the R-Car X5H (R8A78000)
+> SoC.  For now this supports just the few fixed-rate clocks that are
+> needed by the current minimal DTS.
 > 
-> ERROR: modpost: "power_supply_unreg_notifier" [drivers/usb/dwc3/dwc3.ko]
-> undefined!
-> ERROR: modpost: "power_supply_reg_notifier" [drivers/usb/dwc3/dwc3.ko]
-> undefined!
-> 
-> Fix this by adding stub functions for these calls.
-> 
-> Fixes: 7c87ef27af79 ("usb: dwc3: avoid probe deferral when USB power supply is not available")
-> Reported-by: Randy Dunlap <rdunlap@infradead.org>
-> Closes: https://lore.kernel.org/all/a9dd53b3-0666-404a-99e0-76617ae3f944@infradead.org/
-> Signed-off-by: Elson Serrao <elson.serrao@oss.qualcomm.com>
+> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 
-Tested-by: Randy Dunlap <rdunlap@infradead.org>
-Acked-by: Randy Dunlap <rdunlap@infradead.org>
-
-Thanks.
-
-> ---
->  include/linux/power_supply.h | 5 ++++-
->  1 file changed, 4 insertions(+), 1 deletion(-)
-> 
-> diff --git a/include/linux/power_supply.h b/include/linux/power_supply.h
-> index a9c056f13077..e749d2189335 100644
-> --- a/include/linux/power_supply.h
-> +++ b/include/linux/power_supply.h
-> @@ -816,15 +816,18 @@ struct power_supply_battery_info {
->  	int bti_resistance_tolerance;
->  };
->  
-> +#if IS_ENABLED(CONFIG_POWER_SUPPLY)
->  extern int power_supply_reg_notifier(struct notifier_block *nb);
->  extern void power_supply_unreg_notifier(struct notifier_block *nb);
-> -#if IS_ENABLED(CONFIG_POWER_SUPPLY)
->  extern struct power_supply *power_supply_get_by_name(const char *name);
->  extern int __must_check power_supply_get_system_batteries(struct device *dev,
->  							  struct power_supply ***psys);
->  extern void power_supply_put_system_batteries(struct power_supply **psys, int count);
->  extern void power_supply_put(struct power_supply *psy);
->  #else
-> +static inline int power_supply_reg_notifier(struct notifier_block *nb)
-> +{ return -EOPNOTSUPP; }
-> +static inline void power_supply_unreg_notifier(struct notifier_block *nb) {}
->  static inline void power_supply_put(struct power_supply *psy) {}
->  static inline struct power_supply *power_supply_get_by_name(const char *name)
->  { return NULL; }
-
--- 
-~Randy
+Reviewed-by: Marek Vasut <marek.vasut+renesas@mailbox.org>
