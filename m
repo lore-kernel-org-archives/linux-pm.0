@@ -1,271 +1,492 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+Received: from out-189.mta0.migadu.com (out-189.mta0.migadu.com [91.218.175.189])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8F2332F7F1C;
-	Wed,  5 Aug 2026 12:34:01 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CB84246AA62
+	for <linux-pm@vger.kernel.org>; Wed,  5 Aug 2026 12:52:51 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=91.218.175.189
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1785933242; cv=none; b=m/ugzvcVC2eD00p6BuQiJU7WeBcU9iIyJDW+cV/hM4yIMHEelPN09I/jxd4pdeUOGfcmnbsW0xmPtHC3Ze2HuKGXkfT9M6CBjpc9ZC/doUThxWWU+eBJIXhKSPSG1ehNH7NgNQ84p7Aba/kpCGtsSuwEwbuS7yzW4ZxS2x8A2B0=
+	t=1785934379; cv=none; b=j0KAwryizP9T24GP8JFMB2yos9VjKAweFP41qoDyMyl2GI60x4DwjD33bNmVBPxhBXrQLrI9E92yWXSxtmhKePq3iRcE28DTGGV27RQnWsqYt1hsKK9bVOwam/CQnVGUdZzC2eMZ7Um6BDURPZzUWPfAg+9jOJxntXWs+orB/ss=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1785933242; c=relaxed/simple;
-	bh=8yWTpkhnKpM634lwFrGrIHnPXohxkjE0F48iMxwAimQ=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=C0LlspgISj2IutewRSX9JhuHSOFbAsRSnKEPCEOz6465js5xtHHDV4nDJ6cDbkV7Wy/noB4DqKf0rk228BINef46Z5E7/sP1SpDKg3Ugnq2l0uoIad43KkB/+khWMZRRE5gbsgmFjbSExE/zTZU1UB3DHBO+J/YzXNbLgd98cVU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=D2Wwd4y9; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1785934379; c=relaxed/simple;
+	bh=YfQnn/dbIuW54QfigKTTMf+yLHYtKM4CF9ZW/iqSJa0=;
+	h=Mime-Version:Content-Type:Date:Message-Id:Cc:Subject:From:To:
+	 References:In-Reply-To; b=neqgNA+J+8hfnQdhCoybQFiFBKIvcMANcdfcYHI9t5bPrYhivwUx7s1bodEwleq8XCYxcN7NW2IM+ifBCUQcgrwyvSC4qeVJ3vmWb3EmZRWEPE3Om9H6Byi9M23aGD460LWaJiKqVICTpIL+MY+nzQ49CGxNm5UxUfSBssDqQqY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=cknow-tech.com; spf=pass smtp.mailfrom=cknow-tech.com; dkim=pass (2048-bit key) header.d=cknow-tech.com header.i=@cknow-tech.com header.b=nIajNt3q; arc=none smtp.client-ip=91.218.175.189
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=cknow-tech.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=cknow-tech.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="D2Wwd4y9"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id D39D81F000E9;
-	Wed,  5 Aug 2026 12:33:53 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1785933241;
-	bh=faziCBXSUs4f1fN5QGqJBFJJO8BhYf4C5QWrpWwCjGM=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To;
-	b=D2Wwd4y9VAlmraPLc9gLm8As/wTO5ULYU6/adndyRCv/NFz1HCcw4aZjl7YybzRDN
-	 qRu9OOQBVslng9u+2HVBmTbM6kYr8UnE3wG9k0Y+lM2DDnLlYLh2gnWBcJS+udIUIC
-	 PxHc2kQmEzunGzwL3I1edbRVFxkunbqvo26dvo568E1jcWYkO2nlqVyWT/hlu/94Jk
-	 HuxD0D/wZ5uty3mGaLMea7pcfbJmpiHZkvDwci/gWduHgPbLA2+S2yTAd/oDx4k//F
-	 jrXqpMiGznlpS45wVJIttU3orJcWZ89WPFLbfcYzwtC5MctFPZyAasIUXqlJmuyrt6
-	 6yk9Gb6udN4HA==
-Message-ID: <8ab6c26f-b648-447c-9fdd-f1424beb44f4@kernel.org>
-Date: Wed, 5 Aug 2026 14:33:51 +0200
+	dkim=pass (2048-bit key) header.d=cknow-tech.com header.i=@cknow-tech.com header.b="nIajNt3q"
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
-MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 1/6] dt-bindings: bluetooth: qca: add QCC2072
-To: Manivannan Sadhasivam <mani@kernel.org>
-Cc: Rahul Samana <rahul.samana@oss.qualcomm.com>,
- Bartosz Golaszewski <brgl@kernel.org>, Marcel Holtmann
- <marcel@holtmann.org>, Luiz Augusto von Dentz <luiz.dentz@gmail.com>,
- Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
- Conor Dooley <conor+dt@kernel.org>,
- Balakrishna Godavarthi <quic_bgodavar@quicinc.com>,
- Rocky Liao <quic_rjliao@quicinc.com>, Bjorn Andersson
- <andersson@kernel.org>, Konrad Dybcio <konradybcio@kernel.org>,
- Bartosz Golaszewski <brgl@bgdev.pl>, linux-arm-msm@vger.kernel.org,
- linux-bluetooth@vger.kernel.org, devicetree@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
- linux-pm@vger.kernel.org, quic_mohamull@quicinc.com,
- quic_hbandi@quicinc.com, quic_anubhavg@quicinc.com
-References: <20260727-rb3-industrial-bt-uart-v2-0-2d100f30e202@oss.qualcomm.com>
- <20260727-rb3-industrial-bt-uart-v2-1-2d100f30e202@oss.qualcomm.com>
- <20260731-first-righteous-bear-dd72ed@quoll>
- <712f8a14-d2a1-4a90-82f9-05cd694f2658@oss.qualcomm.com>
- <c1875dd6-fe3a-4a69-a6fd-b461c8fba6e4@kernel.org>
- <6d6465bb-47ac-464c-af4e-0ca72325705f@oss.qualcomm.com>
- <8a388310-d3cc-4d02-abb6-0eb98c24cfce@kernel.org>
- <4523441f-498a-4bbd-80f3-97a7a9206c00@oss.qualcomm.com>
- <6e0b9e79-ccd4-4689-9a6b-9b4fc556d5e4@kernel.org>
- <gfhlyvoefcsvtjuxfo75qeham272cc5g2r3npjenzs5esjifiy@ro7dtkpxwizk>
-From: Krzysztof Kozlowski <krzk@kernel.org>
-Content-Language: en-US
-Autocrypt: addr=krzk@kernel.org; keydata=
- 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
-In-Reply-To: <gfhlyvoefcsvtjuxfo75qeham272cc5g2r3npjenzs5esjifiy@ro7dtkpxwizk>
+Mime-Version: 1.0
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=cknow-tech.com;
+	s=key1; t=1785934358;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=vNhnb6jBQpoGsN5TmbYgz5dCfwxd5/O/xYd00sVY3Ls=;
+	b=nIajNt3qjv825OzAIrvUT/uFNh0ISFr3TXlH+m6ASlKEJYrtZIdRHSRzaa6rXTOyMwX+RD
+	I9M4XqE6a/XBBcnqkSY1v30HbYin0iFQqd3GR26zX4rh1H7ibu/9QGTje+CsM7RVauwf1g
+	rO8Ov2a3emfdh78jieT8/+FjpEDkBJW3JAlOxiAeCchI9+W9tK67nol4ahmjXT033UIS6N
+	Te14tKFPuaF10sDGrdHWzvW5/BoVqjwxXWA/2LNr8TXC9vZch6t2lt42UNrmhw6rP6vAw7
+	Xa024CFdCT179KjLU526uh/AQko2rcZY61nAmkXWGCZolaytFvHkEQkCuMY+8Q==
+Content-Transfer-Encoding: quoted-printable
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Date: Wed, 05 Aug 2026 14:52:23 +0200
+Message-Id: <DKH0VYV0DMRB.3F9GXE6E2TSZ@cknow-tech.com>
+Cc: <royalnet026@gmail.com>, <alchark@flipper.net>,
+ <chaoyi.chen@rock-chips.com>, <dri-devel@lists.freedesktop.org>,
+ <linux-rockchip@lists.infradead.org>, <iommu@lists.linux.dev>,
+ <linux-pm@vger.kernel.org>, <devicetree@vger.kernel.org>,
+ <linux-arm-kernel@lists.infradead.org>, <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC PATCH v5 v5 6/8] accel/rocket: add RK3576 NPU (RKNN)
+ support
+X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
+From: "Diederik de Haas" <diederik@cknow-tech.com>
+To: "Jiaxing Hu" <gahing@gahingwoo.com>, <tomeu@tomeuvizoso.net>,
+ <heiko@sntech.de>, <robh@kernel.org>, <krzk+dt@kernel.org>,
+ <conor+dt@kernel.org>, <joro@8bytes.org>, <will@kernel.org>,
+ <robin.murphy@arm.com>, <ulfh@kernel.org>, <p.zabel@pengutronix.de>,
+ <ogabbay@kernel.org>, <zhangqing@rock-chips.com>
+References: <20260805063826.95682-1-gahing@gahingwoo.com>
+ <20260805063826.95682-7-gahing@gahingwoo.com>
+In-Reply-To: <20260805063826.95682-7-gahing@gahingwoo.com>
+X-Migadu-Flow: FLOW_OUT
 
-On 05/08/2026 14:09, Manivannan Sadhasivam wrote:
-> On Sat, Aug 01, 2026 at 05:49:53PM +0200, Krzysztof Kozlowski wrote:
->> On 01/08/2026 17:31, Rahul Samana wrote:
->>>
->>>
->>> On 01-08-2026 20:18, Krzysztof Kozlowski wrote:
->>>> On 31/07/2026 17:51, Rahul Samana wrote:
->>>>>
->>>>>
->>>>> On 31-07-2026 20:34, Krzysztof Kozlowski wrote:
->>>>>> On 31/07/2026 16:45, Rahul Samana wrote:
->>>>>>>
->>>>>>>
->>>>>>> On 31-07-2026 15:16, Krzysztof Kozlowski wrote:
->>>>>>>> On Mon, Jul 27, 2026 at 09:15:01PM +0530, Rahul Samana wrote:
->>>>>>>>> QCC2072 can be used on M.2 E-key cards where the card power resources are
->>>>>>>>> described by the pcie-m2-e-connector node. In that setup, the M.2 power
->>>>>>>>> sequencing provider creates the Bluetooth serdev child after matching the
->>>>>>>>> QCC2072 PCI function.
->>>>>>>>>
->>>>>>>>> Integrated non-M.2 designs need board-specific power resources. Document
->>>>>>>>> only the compatible for now and leave those properties to be added with
->>>>>>>>> matching driver support.
->>>>>>>>>
->>>>>>>>> Document the qcom,qcc2072-bt compatible used for QCC2072 Bluetooth
->>>>>>>>> controllers connected over UART.
->>>>>>>>>
->>>>>>>>> Signed-off-by: Rahul Samana <rahul.samana@oss.qualcomm.com>
->>>>>>>>
->>>>>>>> NAK, exactly same comments as before.
->>>>>>>>
->>>>>>>> Nothing got improved, although what is weird - original SoB is gone, so
->>>>>>>> this is legally dubious work.
->>>>>>>>
->>>>>>>> Best regards,
->>>>>>>> Krzysztof
->>>>>>>>
->>>>>>>
->>>>>>> Hi Krzysztof,
->>>>>>>
->>>>>>> Thanks for the review.
->>>>>>>
->>>>>>> For the binding contents, I tried to capture the current scope in the binding
->>>>>>> description itself. This series supports QCC2072 only as an M.2 E-key card,
->>>>>>> where the card power resources are described by the pcie-m2-e-connector node
->>>>>>> and the M.2 pwrseq provider creates the Bluetooth serdev child.
->>>>>>>
->>>>>>> The binding also says:
->>>>>>>
->>>>>>>   Integrated non-M.2 designs require board-specific power resources. Those
->>>>>>>   properties, together with a static devicetree example, should be added when
->>>>>>>   integrated non-M.2 support is added.
->>>>>>
->>>>>> Bindings must be complete and your driver support is irrelevant here.
->>>>>>
->>>>>> If you claim this is a PCI device thus you do not need any resources,
->>>>>> then the binding is not needed either. PCI devices are enumerable. And
->>>>>> to prove it: look at your DTS. Do you see qcom,qcc2072-bt being used? No.
->>>>>>
->>>>>>>
->>>>>>> We do not currently have an integrated non-M.2 QCC2072 design, so I do not
->>>>>>> have board-specific regulator supplies to document for that topology.
->>>>>>>
->>>>>>> Could you please suggest how you would prefer this binding to be handled for
->>>>>>> the current M.2-only use case? 
->>>>>>
->>>>>> Drop the binding, you do not need it.
->>>>>>
->>>>>> Anyway the problem is that more comments were ignored.
->>>>>>
->>>>>
->>>>> Hi Krzysztof,
->>>>>
->>>>> Just to clarify the reason for adding this binding in v2: 
->>>>> v1 did not add a binding because this series only targets the M.2 use case.
->>>>>
->>>>> I added the minimal binding in v2 because checkpatch reported
->>>>> qcom,qcc2072-bt as an undocumented compatible, and I interpreted the request
->>>>> to fix the checkpatch warnings as requiring this compatible to be documented.
->>>>> I also had the earlier feedback in mind, where the indirect
->>>>> qcom,qcc2072-bt compatible was pushed back because it was undocumented:
->>>>>
->>>>> https://lore.kernel.org/all/20260703-eliza_evk-v1-3-7624440bd76d@oss.qualcomm.com/
->>>>>
->>>>> Based on your clarification here, I will drop the binding patch in v3 and
->>>>> keep qcom,qcc2072-bt only as the pwrseq-created child compatible for this
->>>>> M.2 case.
->>>>
->>>> My previous statement is also valid, please read entire threads.
->>>>
->>>> You cannot have undocumented qcom,qcc2072-bt.
->>>>
->>>> I ask you to drop both, because they are not needed. But feel free to
->>>> prove me wrong, see my first paragraph in the previous reply.
->>>>
->>>>
->>> The PCIe M.2 power sequencing driver, pwrseq-pcie-m2.c, uses
->>> pwrseq_m2_pci_ids to translate the enumerated PCI function into the
->>> Bluetooth compatible used for the generated serdev child.
->>>
->>> For example, WCN7850 maps PCI ID 17cb:1107 to qcom,wcn7850-bt, then hci_qca
->>> matches that compatible to select qca_soc_data_wcn7850.
->>>
->>> For QCC2072, pwrseq-pcie-m2.c matches PCI ID 17cb:1112 and creates the
->>> generated Bluetooth serdev child with compatible "qcom,qcc2072-bt". The
->>> hci_qca driver then matches "qcom,qcc2072-bt" and uses qca_soc_data_qcc2072
->>> as the controller-specific data.
->>
->> The purpose of Devicetree is not to describe Linux internal driver
->> matching. Do not use compatibles for that.
->>
->>
->>>
->>> That match data is needed by hci_qca to select the QCC2072 soc_type,
->>> firmware/NVM naming, calibration handling, and capabilities. Without some
->>> identity being passed from the PCI match to the generated serdev child,
->>> hci_qca cannot distinguish QCC2072 from the other Qualcomm UART Bluetooth
->>> controllers on this path.
->>>
->>> Please correct me if I misunderstood the concern or if you are asking for
->>> this identity to be passed from pwrseq-pcie-m2.c to hci_qca through a
->>> different mechanism.
->>>
->>> I can drop the binding patch, but unless there is a preferred alternative
->>> mechanism, I think we still need the pwrseq-pcie-m2 QCC2072 PCI ID support
->>> from patch 3 so the power sequencing driver can pass the QCC2072 identity
->>> into hci_qca through the generated serdev child:
->>
->> You have plenty of options, starting from what is very common already -
->> driver name used by MFD or aux devices.
->>
-> 
-> It is not just a driver matching problem, but ensuring that we properly describe
-> the BT device in DT. Since the BT interface of the M.2 device is not
+On Wed Aug 5, 2026 at 8:38 AM CEST, Jiaxing Hu wrote:
+> The RK3576 carries the same RKNN block as the RK3588, with two cores
+> instead of three and a few platform differences:
+>
+>  - the CBUF (convolution buffer) has its own clock domain, so the core
+>    needs six clocks rather than four;
+>  - the BIU reset moved into the power domain, leaving one reset here;
+>  - the NPU spans two power domains, and a device with more than one is
+>    skipped by the driver-core single-domain auto-attach, so the list has
+>    to be attached explicitly;
+>  - the DPU completion interrupt is armed exactly as on RK3588 but never
+>    reaches the GIC. The completion is visible in INTERRUPT_RAW_STATUS,
+>    so sample that from an hrtimer rather than wait for an interrupt that
+>    does not come. The interrupt stays armed, so if it ever does arrive
+>    the normal handler finalises the job first.
+>
+> Select all of that from of_device_id match data so the RK3588 path keeps
+> its existing counts and behaviour unchanged.
 
-This device does not exist in DT. This is the problem which started my
-entire investigation and above email.
+Would it make sense to split this patch up in 2 patches:
+1) Prepare for different NPU/RKNN implementations
+2) Add support for RK3576 NPU/RKNN
 
-I am happy to see proofs of it existing in DTS.
+It seems like you're changing the implementation for RK3588 in this patch
+AND add support for RK3576. It's often better to split those things out.
 
-My proof:
-1. copy-paste the compatible (qcom,qcc2072-bt) from the binding.
-2. Open each DTS patch and look for that compatible: no results.
+Cheers,
+  Diederik
 
+> Signed-off-by: Jiaxing Hu <gahing@gahingwoo.com>
+> ---
+>  drivers/accel/rocket/rocket_core.c   |  26 +++++-
+>  drivers/accel/rocket/rocket_core.h   |  20 ++++-
+>  drivers/accel/rocket/rocket_device.c |   4 +
+>  drivers/accel/rocket/rocket_drv.c    |  22 ++++-
+>  drivers/accel/rocket/rocket_job.c    | 121 ++++++++++++++++++++++++---
+>  5 files changed, 176 insertions(+), 17 deletions(-)
+>
+> diff --git a/drivers/accel/rocket/rocket_core.c b/drivers/accel/rocket/ro=
+cket_core.c
+> index b3b2fa9ba..e08288c8c 100644
+> --- a/drivers/accel/rocket/rocket_core.c
+> +++ b/drivers/accel/rocket/rocket_core.c
+> @@ -8,6 +8,7 @@
+>  #include <linux/err.h>
+>  #include <linux/iommu.h>
+>  #include <linux/platform_device.h>
+> +#include <linux/pm_domain.h>
+>  #include <linux/pm_runtime.h>
+>  #include <linux/reset.h>
+> =20
+> @@ -21,14 +22,22 @@ int rocket_core_init(struct rocket_core *core)
+>  	u32 version;
+>  	int err =3D 0;
+> =20
+> +	/* RK3576 moves the BIU reset into its power domain and takes only srst=
+_a. */
+>  	core->resets[0].id =3D "srst_a";
+>  	core->resets[1].id =3D "srst_h";
+> -	err =3D devm_reset_control_bulk_get_exclusive(&pdev->dev, ARRAY_SIZE(co=
+re->resets),
+> +	err =3D devm_reset_control_bulk_get_exclusive(&pdev->dev, core->soc->nu=
+m_resets,
+>  						    core->resets);
+>  	if (err)
+>  		return dev_err_probe(dev, err, "failed to get resets for core %d\n", c=
+ore->index);
+> =20
+> -	err =3D devm_clk_bulk_get(dev, ARRAY_SIZE(core->clks), core->clks);
+> +	core->clks[0].id =3D "aclk";
+> +	core->clks[1].id =3D "hclk";
+> +	core->clks[2].id =3D "npu";
+> +	core->clks[3].id =3D "pclk";
+> +	/* RK3576 clocks the CBUF separately; the compute path stalls without t=
+hese. */
+> +	core->clks[4].id =3D "aclk_cbuf";
+> +	core->clks[5].id =3D "hclk_cbuf";
+> +	err =3D devm_clk_bulk_get(dev, core->soc->num_clks, core->clks);
+>  	if (err)
+>  		return dev_err_probe(dev, err, "failed to get clocks for core %d\n", c=
+ore->index);
+> =20
+> @@ -65,6 +74,19 @@ int rocket_core_init(struct rocket_core *core)
+>  		return err;
+>  	}
+> =20
+> +	/*
+> +	 * RK3576 spans two power domains, and a multi-domain device is skipped
+> +	 * by the driver-core single-domain auto-attach, so attach the list her=
+e.
+> +	 */
+> +	if (core->soc->multi_power_domain) {
+> +		struct dev_pm_domain_list *pd_list;
+> +
+> +		err =3D devm_pm_domain_attach_list(dev, NULL, &pd_list);
+> +		if (err < 0)
+> +			return dev_err_probe(dev, err,
+> +					     "failed to attach NPU power domains\n");
+> +	}
+> +
+>  	pm_runtime_use_autosuspend(dev);
+> =20
+>  	/*
+> diff --git a/drivers/accel/rocket/rocket_core.h b/drivers/accel/rocket/ro=
+cket_core.h
+> index f6d738285..205ff070d 100644
+> --- a/drivers/accel/rocket/rocket_core.h
+> +++ b/drivers/accel/rocket/rocket_core.h
+> @@ -6,6 +6,7 @@
+> =20
+>  #include <drm/gpu_scheduler.h>
+>  #include <linux/clk.h>
+> +#include <linux/hrtimer.h>
+>  #include <linux/io.h>
+>  #include <linux/mutex_types.h>
+>  #include <linux/reset.h>
+> @@ -27,16 +28,25 @@
+>  #define rocket_core_writel(core, reg, value) \
+>  	writel(value, (core)->core_iomem + (REG_CORE_##reg) - REG_CORE_S_STATUS=
+)
+> =20
+> +/* Per-SoC differences, selected by the of_device_id match data. */
+> +struct rocket_soc_data {
+> +	unsigned int num_clks;		/* clk_bulk count: 4 base, 6 with CBUF */
+> +	unsigned int num_resets;	/* reset_bulk count: 2 base, 1 on RK3576 */
+> +	bool multi_power_domain;	/* device spans more than one PM domain */
+> +	bool poll_completion;		/* completion IRQ never reaches the GIC */
+> +};
+> +
+>  struct rocket_core {
+>  	struct device *dev;
+>  	struct rocket_device *rdev;
+> +	const struct rocket_soc_data *soc;
+>  	unsigned int index;
+> =20
+>  	int irq;
+>  	void __iomem *pc_iomem;
+>  	void __iomem *cna_iomem;
+>  	void __iomem *core_iomem;
+> -	struct clk_bulk_data clks[4];
+> +	struct clk_bulk_data clks[6];
+>  	struct reset_control_bulk_data resets[2];
+> =20
+>  	struct iommu_group *iommu_group;
+> @@ -52,6 +62,14 @@ struct rocket_core {
+>  		atomic_t pending;
+>  	} reset;
+> =20
+> +	struct hrtimer poll_timer;
+> +	struct work_struct poll_work;
+> +	atomic_t poll_active;
+> +	unsigned int poll_ticks;
+> +	unsigned int poll_seq;
+> +	unsigned int poll_work_seq;
+> +	bool poll_dying;
+> +
+>  	struct drm_gpu_scheduler sched;
+>  	u64 fence_context;
+>  	u64 emit_seqno;
+> diff --git a/drivers/accel/rocket/rocket_device.c b/drivers/accel/rocket/=
+rocket_device.c
+> index 46e6ee1e7..bfb00f967 100644
+> --- a/drivers/accel/rocket/rocket_device.c
+> +++ b/drivers/accel/rocket/rocket_device.c
+> @@ -31,6 +31,10 @@ struct rocket_device *rocket_device_init(struct platfo=
+rm_device *pdev,
+>  		if (of_device_is_available(core_node))
+>  			num_cores++;
+> =20
+> +	for_each_compatible_node(core_node, NULL, "rockchip,rk3576-rknn-core")
+> +		if (of_device_is_available(core_node))
+> +			num_cores++;
+> +
+>  	rdev->cores =3D devm_kcalloc(dev, num_cores, sizeof(*rdev->cores), GFP_=
+KERNEL);
+>  	if (!rdev->cores)
+>  		return ERR_PTR(-ENOMEM);
+> diff --git a/drivers/accel/rocket/rocket_drv.c b/drivers/accel/rocket/roc=
+ket_drv.c
+> index 8bbbce594..7f7dfa374 100644
+> --- a/drivers/accel/rocket/rocket_drv.c
+> +++ b/drivers/accel/rocket/rocket_drv.c
+> @@ -176,6 +176,7 @@ static int rocket_probe(struct platform_device *pdev)
+> =20
+>  	rdev->cores[core].rdev =3D rdev;
+>  	rdev->cores[core].dev =3D &pdev->dev;
+> +	rdev->cores[core].soc =3D of_device_get_match_data(&pdev->dev);
+>  	rdev->cores[core].index =3D core;
+> =20
+>  	rdev->num_cores++;
+> @@ -213,8 +214,23 @@ static void rocket_remove(struct platform_device *pd=
+ev)
+>  	}
+>  }
+> =20
+> +static const struct rocket_soc_data rk3588_soc_data =3D {
+> +	.num_clks =3D 4,
+> +	.num_resets =3D 2,
+> +	.multi_power_domain =3D false,
+> +	.poll_completion =3D false,
+> +};
+> +
+> +static const struct rocket_soc_data rk3576_soc_data =3D {
+> +	.num_clks =3D 6,
+> +	.num_resets =3D 1,
+> +	.multi_power_domain =3D true,
+> +	.poll_completion =3D true,
+> +};
+> +
+>  static const struct of_device_id dt_match[] =3D {
+> -	{ .compatible =3D "rockchip,rk3588-rknn-core" },
+> +	{ .compatible =3D "rockchip,rk3588-rknn-core", .data =3D &rk3588_soc_da=
+ta },
+> +	{ .compatible =3D "rockchip,rk3576-rknn-core", .data =3D &rk3576_soc_da=
+ta },
+>  	{}
+>  };
+>  MODULE_DEVICE_TABLE(of, dt_match);
+> @@ -240,7 +256,7 @@ static int rocket_device_runtime_resume(struct device=
+ *dev)
+>  	if (core < 0)
+>  		return -ENODEV;
+> =20
+> -	err =3D clk_bulk_prepare_enable(ARRAY_SIZE(rdev->cores[core].clks), rde=
+v->cores[core].clks);
+> +	err =3D clk_bulk_prepare_enable(rdev->cores[core].soc->num_clks, rdev->=
+cores[core].clks);
+>  	if (err) {
+>  		dev_err(dev, "failed to enable (%d) clocks for core %d\n", err, core);
+>  		return err;
+> @@ -260,7 +276,7 @@ static int rocket_device_runtime_suspend(struct devic=
+e *dev)
+>  	if (!rocket_job_is_idle(&rdev->cores[core]))
+>  		return -EBUSY;
+> =20
+> -	clk_bulk_disable_unprepare(ARRAY_SIZE(rdev->cores[core].clks), rdev->co=
+res[core].clks);
+> +	clk_bulk_disable_unprepare(rdev->cores[core].soc->num_clks, rdev->cores=
+[core].clks);
+> =20
+>  	return 0;
+>  }
+> diff --git a/drivers/accel/rocket/rocket_job.c b/drivers/accel/rocket/roc=
+ket_job.c
+> index bb77b6bf0..28845ac4e 100644
+> --- a/drivers/accel/rocket/rocket_job.c
+> +++ b/drivers/accel/rocket/rocket_job.c
+> @@ -7,6 +7,7 @@
+>  #include <drm/drm_file.h>
+>  #include <drm/drm_gem.h>
+>  #include <drm/rocket_accel.h>
+> +#include <linux/hrtimer.h>
+>  #include <linux/interrupt.h>
+>  #include <linux/overflow.h>
+>  #include <linux/iommu.h>
+> @@ -21,6 +22,15 @@
+> =20
+>  #define JOB_TIMEOUT_MS 500
+> =20
+> +/*
+> + * RK3576 arms the same DPU completion as RK3588, but the interrupt neve=
+r
+> + * reaches the GIC. The completion itself is visible in INTERRUPT_RAW_ST=
+ATUS,
+> + * so sample that instead. The tick cap bounds jobs that never raise it =
+at all,
+> + * which is the same open problem as the wrong inference results.
+> + */
+> +#define RK3576_POLL_INTERVAL_NS	1000000LL	/* 1 ms */
+> +#define RK3576_POLL_MAX_TICKS	8
+> +
+>  static struct rocket_job *
+>  to_rocket_job(struct drm_sched_job *sched_job)
+>  {
+> @@ -151,6 +161,14 @@ static void rocket_job_hw_submit(struct rocket_core =
+*core, struct rocket_job *jo
+> =20
+>  	rocket_pc_writel(core, OPERATION_ENABLE, PC_OPERATION_ENABLE_OP_EN(1));
+> =20
+> +	if (core->soc->poll_completion) {
+> +		core->poll_ticks =3D 0;
+> +		core->poll_seq++;
+> +		atomic_set(&core->poll_active, 1);
+> +		hrtimer_start(&core->poll_timer, ns_to_ktime(RK3576_POLL_INTERVAL_NS),
+> +			      HRTIMER_MODE_REL);
+> +	}
+> +
+>  	dev_dbg(core->dev, "Submitted regcmd at 0x%llx to core %d", task->regcm=
+d, core->index);
+>  }
+> =20
+> @@ -341,25 +359,87 @@ static struct dma_fence *rocket_job_run(struct drm_=
+sched_job *sched_job)
+>  	return ERR_PTR(ret);
+>  }
+> =20
+> +static void rocket_job_handle_irq(struct rocket_core *core);
+> +
+> +static enum hrtimer_restart rocket_poll_timer_fn(struct hrtimer *timer)
+> +{
+> +	struct rocket_core *core =3D container_of(timer, struct rocket_core, po=
+ll_timer);
+> +	u32 raw;
+> +
+> +	if (!atomic_read(&core->poll_active))
+> +		return HRTIMER_NORESTART;
+> +
+> +	core->poll_work_seq =3D core->poll_seq;
+> +
+> +	raw =3D rocket_pc_readl(core, INTERRUPT_RAW_STATUS);
+> +	if ((raw & (PC_INTERRUPT_RAW_STATUS_DPU_0 | PC_INTERRUPT_RAW_STATUS_DPU=
+_1)) ||
+> +	    ++core->poll_ticks >=3D RK3576_POLL_MAX_TICKS) {
+> +		atomic_set(&core->poll_active, 0);
+> +		schedule_work(&core->poll_work);
+> +		return HRTIMER_NORESTART;
+> +	}
+> +
+> +	hrtimer_forward_now(timer, ns_to_ktime(RK3576_POLL_INTERVAL_NS));
+> +	return HRTIMER_RESTART;
+> +}
+> +
+> +/* Start the job's next task, or retire it. Caller holds job_lock. */
+> +static void rocket_job_next_locked(struct rocket_core *core)
+> +{
+> +	lockdep_assert_held(&core->job_lock);
+> +
+> +	if (!core->in_flight_job)
+> +		return;
+> +
+> +	if (core->in_flight_job->next_task_idx < core->in_flight_job->task_coun=
+t) {
+> +		rocket_job_hw_submit(core, core->in_flight_job);
+> +		return;
+> +	}
+> +
+> +	iommu_detach_group(NULL, iommu_group_get(core->dev));
+> +	dma_fence_signal(core->in_flight_job->done_fence);
+> +	pm_runtime_put_autosuspend(core->dev);
+> +	core->in_flight_job =3D NULL;
+> +}
+> +
+> +static void rocket_poll_work_fn(struct work_struct *work)
+> +{
+> +	struct rocket_core *core =3D container_of(work, struct rocket_core, pol=
+l_work);
+> +
+> +	pm_runtime_mark_last_busy(core->dev);
+> +
+> +	scoped_guard(mutex, &core->job_lock) {
+> +		/*
+> +		 * The interrupt can land while this work is queued, retire the job
+> +		 * and start the next task. poll_seq only moves under job_lock, in
+> +		 * hw_submit, so comparing it here says whether that happened. Doing
+> +		 * it outside the lock would leave the window open rather than close
+> +		 * it, and this work would then submit a task on top of a live one.
+> +		 */
+> +		if (READ_ONCE(core->poll_dying) || core->poll_work_seq !=3D core->poll=
+_seq)
+> +			return;
+> +
+> +		rocket_pc_writel(core, OPERATION_ENABLE, 0x0);
+> +		rocket_pc_writel(core, INTERRUPT_CLEAR, 0x1ffff);
+> +
+> +		rocket_job_next_locked(core);
+> +	}
+> +}
+> +
+>  static void rocket_job_handle_irq(struct rocket_core *core)
+>  {
+> +	if (core->soc->poll_completion) {
+> +		atomic_set(&core->poll_active, 0);
+> +		hrtimer_cancel(&core->poll_timer);
+> +	}
+> +
+>  	pm_runtime_mark_last_busy(core->dev);
+> =20
+>  	rocket_pc_writel(core, OPERATION_ENABLE, 0x0);
+>  	rocket_pc_writel(core, INTERRUPT_CLEAR, 0x1ffff);
+> =20
+>  	scoped_guard(mutex, &core->job_lock)
+> -		if (core->in_flight_job) {
+> -			if (core->in_flight_job->next_task_idx < core->in_flight_job->task_co=
+unt) {
+> -				rocket_job_hw_submit(core, core->in_flight_job);
+> -				return;
+> -			}
+> -
+> -			iommu_detach_group(NULL, iommu_group_get(core->dev));
+> -			dma_fence_signal(core->in_flight_job->done_fence);
+> -			pm_runtime_put_autosuspend(core->dev);
+> -			core->in_flight_job =3D NULL;
+> -		}
+> +		rocket_job_next_locked(core);
+>  }
+> =20
+>  static void
+> @@ -460,6 +540,10 @@ int rocket_job_init(struct rocket_core *core)
+>  	int ret;
+> =20
+>  	INIT_WORK(&core->reset.work, rocket_reset_work);
+> +	INIT_WORK(&core->poll_work, rocket_poll_work_fn);
+> +	hrtimer_setup(&core->poll_timer, rocket_poll_timer_fn, CLOCK_MONOTONIC,
+> +		      HRTIMER_MODE_REL);
+> +	atomic_set(&core->poll_active, 0);
+>  	spin_lock_init(&core->fence_lock);
+>  	mutex_init(&core->job_lock);
+> =20
+> @@ -501,8 +585,23 @@ int rocket_job_init(struct rocket_core *core)
+> =20
+>  void rocket_job_fini(struct rocket_core *core)
+>  {
+> +	/*
+> +	 * Stop the poll from starting hardware work before tearing anything
+> +	 * down: it submits the next task, and drm_sched_fini() does not wait
+> +	 * for work already queued. Cancel after the scheduler is gone, so a
+> +	 * job running now cannot re-arm the timer behind the cancel.
+> +	 */
+> +	if (core->soc->poll_completion)
+> +		WRITE_ONCE(core->poll_dying, true);
+> +
+>  	drm_sched_fini(&core->sched);
+> =20
+> +	if (core->soc->poll_completion) {
+> +		atomic_set(&core->poll_active, 0);
+> +		hrtimer_cancel(&core->poll_timer);
+> +		cancel_work_sync(&core->poll_work);
+> +	}
+> +
+>  	cancel_work_sync(&core->reset.work);
+>  	destroy_workqueue(core->reset.wq);
+>  }
 
-
-> discoverable, we are currently using the PCIe IDs of the M.2 device to create
-> the BT node dynamically under UART node using OF_DYNAMIC as proposed in this
-> patch which got merged already [1]. Then we also create the serdev device and
-> allow the existing BT hci_qca driver to probe and make use of the created DT
-> node.
-
-Your Linux drivers are not supposed to create internal OF for regular
-DT. Please drop that patch. I do not get why that patch was merged
-without any DT approval.
-
-DT is not representation of internal device driver instantiation mechanism.
-
-Best regards,
-Krzysztof
