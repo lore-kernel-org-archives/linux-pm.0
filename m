@@ -1,106 +1,124 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 55A3F442B24
-	for <linux-pm@vger.kernel.org>; Wed,  5 Aug 2026 11:53:36 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 10D40448B92
+	for <linux-pm@vger.kernel.org>; Wed,  5 Aug 2026 11:56:54 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1785930817; cv=none; b=uGwhvL76EyQTmEcl0YYAzfBZxmNZDsl+NJq2/OOcmnyz8NFKJv90VAdsJd5Wmle5R3sAtgwBYdZvHSObN8fJhLccNP7SMweIpQvfBCmhSml2+WkVrdT3D9zGEW0TGc9o5C53t/XTIVK+/326VmaV6NyHch8dptvoUR9g40aJkVg=
+	t=1785931015; cv=none; b=LW2cvZvlZ3ehWgSI5OaJxo1LKeVDSajcF/K5HfNsqjAmPyWX5LP00OUhS6U8dBtvqJjJXiGLfVHkHq1TN85WN4BXvF8I/HPrqHfraT65h2O5U+XZTK3CgnJm1Yfat1/TdJ6IYLhglLgdnxbm7Y8zpMc40gFumM6Kwk0TpknWtms=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1785930817; c=relaxed/simple;
-	bh=e4Gwlqr6LtwhMycGRIbAW5pAJuE+jLgEMN/9h13znJo=;
+	s=arc-20240116; t=1785931015; c=relaxed/simple;
+	bh=I7qg8ZHjT6aP3EdkzgxQ5wD7De1vxy79GN86MwMPs5U=;
 	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=U+7bcY0LhLHtikQY7BCA/IC9zNw72z/62CVsGGbscx0IXMqndmtKexGgySCkhsbIzmqOpnVycsaEio/a2yr5/y5AYYmXlQW3mykHbZ5/YaeivHomPrEH2DJliDPmXhQGj95QXtKxg1bmIDk8Ap+323rZgPWMlODtg8a3g2B2I+A=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=jJj780cD; arc=none smtp.client-ip=100.103.45.18
+	 To:Cc:Content-Type; b=BSzIv8f3IbDAnLsMzZ9IZ/4/yYKLT9DCZ8ixdXm5qgQSlPMGTAJCcktCvGyRhGkMp6F5VlQ9Xd2QOu3nQFn3+rtLX/HlSyBoE9DpDGZT6cB8AHE7sM8PEfExzl7t3WQY1hwhP4UThaGlzC7dxzvHAR0VkDVpC2q50qWyMyeVUpY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Hnh/Vr32; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="jJj780cD"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0021C1F00ADE
-	for <linux-pm@vger.kernel.org>; Wed,  5 Aug 2026 11:53:35 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Hnh/Vr32"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id E795E1F00ACA
+	for <linux-pm@vger.kernel.org>; Wed,  5 Aug 2026 11:56:53 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1785930816;
-	bh=KsdFDkxZFSRpjNSIFYzJhF5uwTw9ei74CtBcPGhq/ys=;
+	s=k20260515; t=1785931013;
+	bh=v3j6SSWGBWbZMku2YVU1lSgFa1zeRknBYo04mpyzRcs=;
 	h=References:In-Reply-To:From:Date:Subject:To:Cc;
-	b=jJj780cDu9t2/GgxzRpGoBDDnvsqvaY2EAZs/uS+L4TT+5JY1QNCAs6GSeiJCIlJF
-	 LvJmVq1mUNLAKKZw3Kzc11cWRK56B4hjSWPcLudPGUDMxHTuFJ5RRsoxjfc8uh5H0f
-	 VbLJklrRQcrSj5pKzbO4RUC1Zz4+sbzuJ8AUxrhw96O3oyCczAZ+O28Cqvg6z/88Fx
-	 cxbO3olf2dFgLuIc9Jg1/JoDZ2v2F3jg/k3OUZn3RdLVN3okDXub4ZxH0jnTB1MKLW
-	 2WI+ZnJz8DKDmGO5e15aJM5b5PNgAqnumkhVjtC4JsdBTPjJmrxiwP5hCgF/1nyN98
-	 W6/4jwE82GROQ==
-Received: by mail-lf1-f42.google.com with SMTP id 2adb3069b0e04-5b0148201fbso811215e87.3
-        for <linux-pm@vger.kernel.org>; Wed, 05 Aug 2026 04:53:35 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AHgh+Rr+ruAomFX2Yc+7FVje6ECsRbOatiCcOInCtgNm6mcIA3n6nBxb7suaQp7GfFfQIsROWyZ32rHuLA==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yzt32Sdo4w6mkz5/X62fhhH3kflbd3v/aORQnKkt7kLRBNA4BkE
-	TPKsrSwIRO1Tq9424OydsYAugr/ZoRrvi0ppMX0BZg8tHBJRtztodPXdUdPl1BEUNy1j1b5Qzx/
-	Mt6GLKkWq4i964G8SJohN9r1oP/wWgs4=
-X-Received: by 2002:a05:6512:1291:b0:5a8:88f8:9ed4 with SMTP id
- 2adb3069b0e04-5b2f4cc941fmr890956e87.30.1785930814327; Wed, 05 Aug 2026
- 04:53:34 -0700 (PDT)
+	b=Hnh/Vr32RfiHJeNIfTkrZJAujSS5nalOxsFa0HGGKXuWaGDhJeyyblLG2O/Y52mrD
+	 vyQu5Vr57APpzCKhCmWrn0eLnyrUmA7PG8pzMbVveG9VNVxBMiTbXxXBeHbPmprNGU
+	 DO2lzW3DouPdtV/O4U5hhta8iQ7ddGvi5pSccGNZURzDCh86X53OcEE+ITpuep8anA
+	 2mzzMISrQDAcMm2YU8g8rkRIdLp6I7OmWXmbsr09Vp4cas3Npwe0chzZxxE9IuywJp
+	 2y2litu7h2fjR7CMMWDxIMFtsiuoCR/x0zhOXibbpQF/t2xQQ2R02h9d7YA8QyUXOE
+	 Fzcm4MI1xzNaw==
+Received: by mail-lf1-f49.google.com with SMTP id 2adb3069b0e04-5b01cb18515so859114e87.2
+        for <linux-pm@vger.kernel.org>; Wed, 05 Aug 2026 04:56:53 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AHgh+RpZ6p0PZiyj1tgyoIG2Tv0TpQY/c29YyVFSoJ9ACJ0/Ca4YNnaZUpXfMeHla0f19cC2CZQtIUz8iA==@vger.kernel.org
+X-Gm-Message-State: AOJu0YzaUvmTP0/IkgIU16zlIUNKi2MgJ+azZVsv3aCC5N32O4cbIuQe
+	KCJe1USiFc0TZlFjpftJz14t9e9eb5sCTiQ5CLSzEmR/eys8mGwImC66LqN+jUqc8Je3aVfq8Fh
+	Y1nQmjASu7FRb1QH2n5P6REAlYHm2T5Q=
+X-Received: by 2002:a05:6512:3e1f:b0:5b2:f211:130e with SMTP id
+ 2adb3069b0e04-5b2f4cd2825mr836974e87.37.1785931012383; Wed, 05 Aug 2026
+ 04:56:52 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <12947893.O9o76ZdvQC@rafael.j.wysocki> <5123895.31r3eYUQgx@rafael.j.wysocki>
- <7011fec6-f2ac-4ceb-bdb9-adbccdabf6d8@arm.com>
-In-Reply-To: <7011fec6-f2ac-4ceb-bdb9-adbccdabf6d8@arm.com>
+References: <962d2e30-9270-4652-b802-1676966b7968@linuxfoundation.org>
+In-Reply-To: <962d2e30-9270-4652-b802-1676966b7968@linuxfoundation.org>
 From: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
-Date: Wed, 5 Aug 2026 13:53:22 +0200
-X-Gmail-Original-Message-ID: <CAJZ5v0iH0oewk3EVjRKsJqaOC23LdKURzttCgEoJqLqeobPBrA@mail.gmail.com>
-X-Gm-Features: AUfX_mw20zt4kk615xQBvkDFqHuKufWwS4uG5fQtYpkLpCPJc9iwToqxu3CsJBo
-Message-ID: <CAJZ5v0iH0oewk3EVjRKsJqaOC23LdKURzttCgEoJqLqeobPBrA@mail.gmail.com>
-Subject: Re: [PATCH v2 1/2] Revert "thermal/drivers/hwmon: Cleanup coding
- style a bit"
-To: Lukasz Luba <lukasz.luba@arm.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, LKML <linux-kernel@vger.kernel.org>, 
-	Linux PM <linux-pm@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, 
-	Daniel Lezcano <daniel.lezcano@kernel.org>, Armin Wolf <w_armin@gmx.de>, 
-	Guenter Roeck <linux@roeck-us.net>, linux-hwmon@vger.kernel.org
+Date: Wed, 5 Aug 2026 13:56:40 +0200
+X-Gmail-Original-Message-ID: <CAJZ5v0j-akqqEh9MwG2WiPngrz+-SX2th+-GY-12dn0MzzZwfg@mail.gmail.com>
+X-Gm-Features: AUfX_mxZedSA0T9ug_gOWqiYEbtW0MoWoCNTAWHoGnIeSOCihHjh-zyCyhoGb8s
+Message-ID: <CAJZ5v0j-akqqEh9MwG2WiPngrz+-SX2th+-GY-12dn0MzzZwfg@mail.gmail.com>
+Subject: Re: [GIT PULL] cpupower fixes update for Linux 7.3-rc1
+To: Shuah Khan <skhan@linuxfoundation.org>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, shuah <shuah@kernel.org>, 
+	"John B. Wyatt IV" <jwyatt@redhat.com>, John Kacur <jkacur@redhat.com>, Thomas Renninger <trenn@suse.com>, 
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Wed, Aug 5, 2026 at 12:32=E2=80=AFPM Lukasz Luba <lukasz.luba@arm.com> w=
-rote:
->
->
->
-> On 8/4/26 21:09, Rafael J. Wysocki wrote:
-> > From: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
-> >
-> > Revert commit 030a48b0f6ce ("thermal/drivers/hwmon: Cleanup coding styl=
-e
-> > a bit") that introduced a use-after-free into the error path of
-> > thermal_add_hwmon_sysfs() by removing a valid check from it.
-> >
-> > Link: https://lore.kernel.org/linux-hwmon/20260803183915.4ED7D1F000E9@s=
-mtp.kernel.org/
-> > Cc: All applicable <stable@vger.kernel.org>
-> > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > ---
-> >   drivers/thermal/thermal_hwmon.c | 3 ++-
-> >   1 file changed, 2 insertions(+), 1 deletion(-)
-> >
-> > diff --git a/drivers/thermal/thermal_hwmon.c b/drivers/thermal/thermal_=
-hwmon.c
-> > index 597c33c8a555..ec73d03a1e60 100644
-> > --- a/drivers/thermal/thermal_hwmon.c
-> > +++ b/drivers/thermal/thermal_hwmon.c
-> > @@ -212,7 +212,8 @@ int thermal_add_hwmon_sysfs(struct thermal_zone_dev=
-ice *tz)
-> >       if (new_hwmon_device)
-> >               hwmon_device_unregister(hwmon->device);
-> >    free_mem:
-> > -     kfree(hwmon);
-> > +     if (new_hwmon_device)
-> > +             kfree(hwmon);
-> >
-> >       return result;
-> >   }
->
-> LGTM, a tricky plumbing. I'm sorry for being late with review.
+Hi Shuah,
 
-No worries.
+On Tue, Aug 4, 2026 at 11:31=E2=80=AFPM Shuah Khan <skhan@linuxfoundation.o=
+rg> wrote:
+>
+> Hi Rafael,
+>
+> Please pull the cpupower update for Linux 7.3-rc1.
+>
+> Adds support for generic CPPC display that depends only on standardized
+> fields, improving AMD specific implementation for the same.
+>
+> Removes conditional return with no effect as part of tree-wide code clean
+> up effort.
+>
+> diff is attached.
+>
+> thanks,
+> -- Shuah
+>
+> ----------------------------------------------------------------
+> The following changes since commit dc59e4fea9d83f03bad6bddf3fa2e524917774=
+82:
+>
+>    Linux 7.2-rc1 (2026-06-28 12:01:31 -0700)
+>
+> are available in the Git repository at:
+>
+>    git://git.kernel.org/pub/scm/linux/kernel/git/shuah/linux tags/linux-c=
+pupower-7.3-rc1
+>
+> for you to fetch changes up to adfe0057326ffbc2cd5ff69a57ec0e50b5e74095:
+>
+>    cpupower: remove conditional return with no effect (2026-08-04 13:12:0=
+6 -0600)
+>
+> ----------------------------------------------------------------
+> linux-cpupower-7.3-rc1
+>
+> Adds support for generic CPPC display that depends only on standardized
+> fields, improving AMD specific implementation for the same.
+>
+> Removes conditional return with no effect as part of tree-wide code clean
+> up effort.
+>
+> ----------------------------------------------------------------
+> Jeremy Linton (4):
+>        cpupower: Add generic CPPC performance display
+>        cpupower: Build and call CPPC information on non-AMD processors
+>        cpupower: Print kernel and hardware frequency information
+>        cpupower: Add libm to cpupower for generic CPPC view
+>
+> Sang-Heon Jeon (1):
+>        cpupower: remove conditional return with no effect
+>
+>   tools/power/cpupower/Makefile                |  6 +--
+>   tools/power/cpupower/utils/cpufreq-info.c    | 11 +++---
+>   tools/power/cpupower/utils/helpers/cppc.c    | 56 +++++++++++++++++++++=
++++++++
+>   tools/power/cpupower/utils/helpers/helpers.h |  2 +
+>   tools/power/cpupower/utils/powercap-info.c   |  2 -
+>   5 files changed, 67 insertions(+), 10 deletions(-)
+>   create mode 100644 tools/power/cpupower/utils/helpers/cppc.c
+> ----------------------------------------------------------------
 
-> Reviewed-by: Lukasz Luba <lukasz.luba@arm.com>
-
-And thanks!
+Pulled and added to linux-pm.git/linux-next, thanks!
