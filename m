@@ -1,19 +1,19 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 29C7D1ACED5;
-	Wed,  5 Aug 2026 15:21:08 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 28765478859;
+	Wed,  5 Aug 2026 15:21:13 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1785943270; cv=none; b=TGFdMQ3fojdO6vSHqZ+ulDBh+hO4pWVtSQaJf+aDg0Z1J3alS87lqU3yMoPzwnKu2oueBEKsHSFGltFps6RaGKoQszg81FX5mtT60QYfEHi608zv/QQl1WHSW49rlr/Rofd8ixfNY9nIKsl7UQUgvFuu5YQ+zazeJb9advgt498=
+	t=1785943274; cv=none; b=WRHujBs9xgfEt0gk9Op0hXNRx0xodLqxnVSaK8WCuOTwpnUzpT+EPVP6HXlxmPqmIMQ7aWEgUkwVLjFebc4/y0tqzXiaBSeraEBAjM0i48YqNB15swBOtzV8E46hhdbLySdGHB54dG2suaPJdN1Nb/geZHNRuY2H/5znscQGCr8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1785943270; c=relaxed/simple;
-	bh=b/ioUMqrpQtpju97vaf3OSPM0DlD2QUKdDEN7m06sbY=;
+	s=arc-20240116; t=1785943274; c=relaxed/simple;
+	bh=TivlnZRdkebeAmAjJjT4n7r5quvXruztK8/+iVvyBLs=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=dHc28DvscIOv6GMFqq/pd+MBXRbvkskdrH3ivyZD18UQKo8XE7UnbH6nD/RH1ep+yG7OqaNN9/CBffF91v4EWhn/u1YKPllH7RFSpVob90kiWBbXxoplaTDgZytLoWg4AOjvmYfPkNLxIxXXGBrbOHn2retllhfSg8d+iC0TMgY=
+	 MIME-Version; b=e4FUVZnsSz8feOrI/qNNXTtbE85PAPz1hr1A4W6kvjVNq9RpOuSgW3g/eTMWzZZyUxwCM7QGQctm7WeI/6SddzQkNbUKPQFnO+r5Kbx9c3bZq73LvQ/rMV06bjJg9sgDsQ62IrA8D1euaYx2EbR3peu/czt22F7WO5Q7C6LWis4=
 ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0A1D41F00A3A;
-	Wed,  5 Aug 2026 15:21:04 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3BB2A1F000E9;
+	Wed,  5 Aug 2026 15:21:09 +0000 (UTC)
 From: Geert Uytterhoeven <geert+renesas@glider.be>
 To: Rob Herring <robh@kernel.org>,
 	Krzysztof Kozlowski <krzk+dt@kernel.org>,
@@ -34,9 +34,9 @@ Cc: devicetree@vger.kernel.org,
 	linux-kernel@vger.kernel.org,
 	Geert Uytterhoeven <geert+renesas@glider.be>,
 	Conor Dooley <conor.dooley@microchip.com>
-Subject: [PATCH v3 1/6] dt-bindings: clock: Document Renesas R-Car X5H Clock Pulse Generator
-Date: Wed,  5 Aug 2026 17:20:49 +0200
-Message-ID: <7a33c99816c850faeec5c17532811faf78959a1d.1785941595.git.geert+renesas@glider.be>
+Subject: [PATCH v3 2/6] dt-bindings: power: Document Renesas R-Car X5H Module Controller
+Date: Wed,  5 Aug 2026 17:20:50 +0200
+Message-ID: <1173a3a32e818befa8d2ede0edda7aa1da82e549.1785941595.git.geert+renesas@glider.be>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <cover.1785941595.git.geert+renesas@glider.be>
 References: <cover.1785941595.git.geert+renesas@glider.be>
@@ -48,113 +48,119 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Document support for the Renesas R-Car X5H Clock Pulse Generator, and
-add binding definitions for a limited initial set of clocks.
+Document support for Renesas R-Car X5H Module Controllers, and add
+binding definitions for power domains not backed by registers.
 
 Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 Reviewed-by: Marek Vasut <marek.vasut+renesas@mailbox.org>
-Tested-by: Marek Vasut <marek.vasut+renesas@mailbox.org>
 Acked-by: Conor Dooley <conor.dooley@microchip.com>
 ---
 v3:
-  - Add Acked-by,
+  - Add Reviewed-by, Acked-by,
 
 v2:
-  - Add Reviewed-by, Tested-by,
-  - Drop preliminary,
-  - Expand CPG acronym,
-  - Drop R8A78000_CPG_MSOCK_PERW_BUS,
-  - Add R8A78000_CPG_SGASYNCD8_PERW_BUS, to avoid holes in the
-    SGASYNCDn_PERW_BUS sequence,
+  - Clarify the meaning of the two power domain cells and the reset
+    cell,
+  - Drop R8A78000_MDLC_PD_CMN, as CMN is backed by MDPG bits,
+  - Expand MDLC acronym,
+  - Add a comment stating that all R8A78000_MDLC_PD_* definitions are
+    for always-on power domains,
   - Drop firmware property.
 ---
- .../bindings/clock/renesas,r8a78000-cpg.yaml  | 55 +++++++++++++++++++
- .../dt-bindings/clock/renesas,r8a78000-cpg.h  | 14 +++++
- 2 files changed, 69 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/clock/renesas,r8a78000-cpg.yaml
- create mode 100644 include/dt-bindings/clock/renesas,r8a78000-cpg.h
+ .../bindings/power/renesas,r8a78000-mdlc.yaml | 61 +++++++++++++++++++
+ .../dt-bindings/power/renesas,r8a78000-mdlc.h | 15 +++++
+ 2 files changed, 76 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/power/renesas,r8a78000-mdlc.yaml
+ create mode 100644 include/dt-bindings/power/renesas,r8a78000-mdlc.h
 
-diff --git a/Documentation/devicetree/bindings/clock/renesas,r8a78000-cpg.yaml b/Documentation/devicetree/bindings/clock/renesas,r8a78000-cpg.yaml
+diff --git a/Documentation/devicetree/bindings/power/renesas,r8a78000-mdlc.yaml b/Documentation/devicetree/bindings/power/renesas,r8a78000-mdlc.yaml
 new file mode 100644
-index 0000000000000000..4e23bba334382346
+index 0000000000000000..1dba1e1b1c5b52d0
 --- /dev/null
-+++ b/Documentation/devicetree/bindings/clock/renesas,r8a78000-cpg.yaml
-@@ -0,0 +1,55 @@
++++ b/Documentation/devicetree/bindings/power/renesas,r8a78000-mdlc.yaml
+@@ -0,0 +1,61 @@
 +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
 +%YAML 1.2
 +---
-+$id: http://devicetree.org/schemas/clock/renesas,r8a78000-cpg.yaml#
++$id: http://devicetree.org/schemas/power/renesas,r8a78000-mdlc.yaml#
 +$schema: http://devicetree.org/meta-schemas/core.yaml#
 +
-+title: Renesas R-Car X5H Clock Pulse Generator
++title: Renesas R-Car X5H Module Controller
 +
 +maintainers:
 +  - Geert Uytterhoeven <geert+renesas@glider.be>
 +
 +description:
-+  The R-Car X5H Clock Pulse Generator (CLK CONTROL) consists of oscillators,
-+  PLL circuits, clock dividers and clock control circuits.  It provides various
-+  clocks for other modules.
++  Each instance of the R-Car X5H Module Controller (MODULE CONTROL) provides
++  Power Gating for up to 64 Power Domains, and Module Standby and Reset for up
++  to 256 modules in the Power Domain of each Module hierarchy.
 +
 +properties:
 +  compatible:
-+    const: renesas,r8a78000-cpg
++    const: renesas,r8a78000-mdlc
 +
 +  reg:
 +    maxItems: 1
 +
-+  clocks:
-+    maxItems: 2
++  '#power-domain-cells':
++    description: |
++      - The first power domain specifier cell is the power domain part, and
++        must be either the Module Power Domain Gating (MPDG) register index
++        (0x00-0x3f) from the datasheet, for power domains which are backed by
++        MPDG bits and which can be controlled in that manner,  or a Power
++        Domain number, as defined in
++        <dt-bindings/power/renesas,r8a78000-mdlc.h>, for power domains which
++        are always on, and for which there are no MPDG bits to control them.
 +
-+  clock-names:
-+    items:
-+      - const: extal
-+      - const: extalr
++      - The second power domain specifier cell is the module standby part, and
++        must be the module number (0x00-0xff), composed of the Module System
++        Reset (MSRES) register index in the high nibble, and the Module Reset
++        Destination bitfield index in the low nibble.
++    const: 2
 +
-+  '#clock-cells':
++  '#reset-cells':
 +    description:
-+      The single clock specifier cell must be the clock number, as defined in
-+      <dt-bindings/clock/renesas,r8a78000-cpg.h>.
++      The single reset specifier cell must be the module number (0x00-0xff),
++      and thus identical to the second power domain specifier cell.
 +    const: 1
 +
 +required:
 +  - compatible
 +  - reg
-+  - clocks
-+  - clock-names
-+  - '#clock-cells'
++  - '#power-domain-cells'
++  - '#reset-cells'
 +
 +additionalProperties: false
 +
 +examples:
 +  - |
-+    clock-controller@c1320000 {
-+            compatible = "renesas,r8a78000-cpg";
-+            reg = <0xc1320000 0x10000>;
-+            clocks = <&extal_clk>, <&extalr_clk>;
-+            clock-names = "extal", "extalr";
-+            #clock-cells = <1>;
++    system-controller@c3060000 {
++            compatible = "renesas,r8a78000-mdlc";
++            reg = <0xc3060000 0x1000>;
++            #power-domain-cells = <2>;
++            #reset-cells = <1>;
 +    };
-diff --git a/include/dt-bindings/clock/renesas,r8a78000-cpg.h b/include/dt-bindings/clock/renesas,r8a78000-cpg.h
+diff --git a/include/dt-bindings/power/renesas,r8a78000-mdlc.h b/include/dt-bindings/power/renesas,r8a78000-mdlc.h
 new file mode 100644
-index 0000000000000000..7fd09a3fb353d952
+index 0000000000000000..6f3d1ae23648e55b
 --- /dev/null
-+++ b/include/dt-bindings/clock/renesas,r8a78000-cpg.h
-@@ -0,0 +1,14 @@
++++ b/include/dt-bindings/power/renesas,r8a78000-mdlc.h
+@@ -0,0 +1,15 @@
 +/* SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause) */
 +/*
 + * Copyright (C) 2026 Glider bv
 + */
-+#ifndef __DT_BINDINGS_CLOCK_RENESAS_R8A78000_CPG_H__
-+#define __DT_BINDINGS_CLOCK_RENESAS_R8A78000_CPG_H__
++#ifndef __DT_BINDINGS_POWER_RENESAS_R8A78000_MDLC_H__
++#define __DT_BINDINGS_POWER_RENESAS_R8A78000_MDLC_H__
 +
-+/* R-Car X5H Clock Pulse Generator Clocks */
++/* R-Car X5H Module Controller Always-On Power Domains */
 +
-+#define R8A78000_CPG_SGASYNCD4_PERW_BUS		0
-+#define R8A78000_CPG_SGASYNCD8_PERW_BUS		1
-+#define R8A78000_CPG_SGASYNCD16_PERW_BUS	2
++#define R8A78000_MDLC_PD_AON			0x40
++#define R8A78000_MDLC_PD_SCP			0x41
++#define R8A78000_MDLC_PD_APL			0x42
++#define R8A78000_MDLC_PD_ACL			0x43
 +
-+#endif /* __DT_BINDINGS_CLOCK_RENESAS_R8A78000_CPG_H__ */
++#endif /* __DT_BINDINGS_POWER_RENESAS_R8A78000_MDLC_H__ */
 -- 
 2.43.0
 
