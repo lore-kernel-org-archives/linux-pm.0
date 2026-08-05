@@ -1,300 +1,255 @@
-Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
+Received: from flow-a7-smtp.messagingengine.com (flow-a7-smtp.messagingengine.com [103.168.172.142])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 05C843DB325
-	for <linux-pm@vger.kernel.org>; Wed,  5 Aug 2026 06:18:58 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2777933290F;
+	Wed,  5 Aug 2026 06:38:39 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=103.168.172.142
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1785910741; cv=none; b=Z4sJmzdK93p+RRQ+tGtRCyBaOV7e8sTx4WT6UB5j0xfxlwj3MoYoM913kCJToAXpdu9vWX+HYy2paOmPxxY++WKgzqMpL79lfk1VXG2vpQOIvvBf99/i2bzoS8KvG9RXCS+4pAY/pKJ0RIdN0m+37/izes5Op/46kS7pZ3T5dcQ=
+	t=1785911923; cv=none; b=IlvcOVsL/w6ZIwTcsnYT7vTxjgiLQTMjAk9Yqr42Uysx9hrLXDUKmOU5UrPL0MsUeHi3CC5VNryaHaPRIxanZJ4nTMCR3GUAGQHRwFQkdr7FkPhI0hFkyk+26EuZEmDWyorIWMIMg0Y23hSB1IKlLKkMzfig8I4NIG4Nv5Oy8GQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1785910741; c=relaxed/simple;
-	bh=MbJ4xQgIXo1xsWEFSQw1SlfI9A5LaPiERjRMt5TCJJ4=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=NDOhCknwFaxPfiZoXu6i+gRhG2LXXD460csuTEYkiuI0d0QO2QadKegu4drQHnuR/0Wssu3Skhxx0EEEPKGeqhOsXLdV35dIUQ9A6mDEXtdifp0zQ8kYnSP1Uj21cnDJ1vGl/8lsgTtjMLYPG5cmEfJi8vBpg0QUNUx1qLzJmqQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=bGfZgjCP; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=QbQc9coV; arc=none smtp.client-ip=205.220.168.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
+	s=arc-20240116; t=1785911923; c=relaxed/simple;
+	bh=7TgfouKg4ZbX1kt882cuRd46cQPGwOvlz3ZGhPahbA4=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=F9WfU6CRJ28pat+CewvFMf+cBvW1wxdjedMFUpLXwGSXEq4a6Y1o0wn9B9zQUbLbUO2VMRlstkT2zpJQEJGtqmLAty5XX7vyklncGzvgioMjh9VTnQo8M3lxc8HgzRB0eD/g6BBWNFY8Q+V6ZltFelRdmPvgv3j7CrYcf/yl6T0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gahingwoo.com; spf=pass smtp.mailfrom=gahingwoo.com; dkim=pass (2048-bit key) header.d=gahingwoo.com header.i=@gahingwoo.com header.b=P9kqzUXv; dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b=flapXqY3; arc=none smtp.client-ip=103.168.172.142
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gahingwoo.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gahingwoo.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="bGfZgjCP";
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="QbQc9coV"
-Received: from pps.filterd (m0279864.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6755kxUv1318571
-	for <linux-pm@vger.kernel.org>; Wed, 5 Aug 2026 06:18:58 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	IUwwlRJ7oVartoiGymz2Uz94bLku19J9MoLLo0EivII=; b=bGfZgjCPLEsdbuX0
-	y2IqEjjJ2DAuvYcFOuXiQ2jfAkP4ncf8ZxNZzpDceIEwJduml2aBH1KlcgDj1NhC
-	A3VF4ajOodZhenUEq8Noxsw7AOS/4OK2MXYNziibP9FLpESvSQIOHc99HhhongMQ
-	Ew0A61aw+rSeyY9Xh4EJIyYksud7MmEmE7eNiFWybFJNDKq4y8Y4pitEG3bjBNOt
-	IaowQvGmK1KOAW5E0b9zqT20soR4+3Uxomit00/5o/ilti6m7JE7QbX+YJLBaI5u
-	K5id3rUMiaMuTlbAxyVfJMY69RPSiGw39oaISC6xx5AergGlkB2ZlgE3YwEm0xH8
-	2Fb7bw==
-Received: from mail-pj1-f72.google.com (mail-pj1-f72.google.com [209.85.216.72])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4fuwbqrjrh-1
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Wed, 05 Aug 2026 06:18:58 +0000 (GMT)
-Received: by mail-pj1-f72.google.com with SMTP id 98e67ed59e1d1-3811279d51aso990957a91.1
-        for <linux-pm@vger.kernel.org>; Tue, 04 Aug 2026 23:18:58 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1785910737; x=1786515537; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:in-reply-to:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=IUwwlRJ7oVartoiGymz2Uz94bLku19J9MoLLo0EivII=;
-        b=QbQc9coVQPRTRH+ro1Vr417S/ouEUO/a3VAuCqx2+OFKHK8J08hFaaF4JJKp5e49+i
-         6xWRQAeizLcifnbXsJGGs2vcgFHKGnTqdDHO8rRg9E089UBu4/07+oL7jGpi85J9xcu3
-         g8ap1ETeQLRw4oZO27Y6Y5QJif5uJh5yaSMLHYJj6pK/1Y5dX6WtsxNoIWGf0IuWbzkz
-         93YRL85TMMgQKZHWtdST//TRiIt4dcJ7Rfk+F7v2WxVCWm2zRvl1VNGnjscM9eQvT4of
-         lXwhadkIwa3qy+ECF4/ykG8vXptv1p+KKLtM+Rjj654AkBuRnF5Z50ALPcuKv71e2ge6
-         KzAg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1785910737; x=1786515537;
-        h=content-transfer-encoding:content-type:in-reply-to:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=IUwwlRJ7oVartoiGymz2Uz94bLku19J9MoLLo0EivII=;
-        b=lP+NUG4XjZNM/hfl3qUwuBtDwi+rTj4Da0NyCYoO74ySQxoz9Vd30RpndyTyBdiIFv
-         LzGzVD5BDc3hAcbjltaKuW2uotBxOEu2nc2xdB9KIAtw30Mw7PFXMuk7iCl61mmzITmo
-         GGlsNjODaeDWpW+lLvYkWlBXuljKGtxhw4VPpQUNAFVafUgaJjPqiDckE6zqvE6x3CIt
-         h/774S52BM/+5afa70Ot+D9tShN+2aJAaZ8gUOSnMX96ls0FbSgyHRE9CbP/deHuQkqG
-         MYipq2MoAX4FR4dq+Ml62qjnyD6F/r901JsF+LdBWRmSHGsMNl2/jdW3Ji6+hM+kYhEI
-         84Og==
-X-Forwarded-Encrypted: i=1; AHgh+RpKDhWd+CFSS9XD2BivywXajSc77STfFuKsCwKe7acqQUeNvLhW//RjibKL/w9T7eTTdDIaHfgF0Q==@vger.kernel.org
-X-Gm-Message-State: AOJu0YwhlFKf9sepYAR/BW0TY+XgqI9WBEBLWOw3MZvwkUD5f2HKCsUB
-	CWX+MR10+EgC54H2HwYmT7X30LB47MRDxnResdIp/MAExngEAxhRDh9p8drBAzIl7mRWFYkYHfu
-	NqFhO7+G1ps4nPzX5sG0ICQv5nQ/PN5cv81dk8mHY7/HSEjPu/KvJq8lfMTQ2fA==
-X-Gm-Gg: AR+sD10FGCgph6CcLwAtooNpVrpM/Kh66y3rJmyIibkqsaEqzlsR/Rb3bHN1mXh/pCt
-	44NzNjjFMecATSl5uN93QXJBTdFlHH9drWDkFSnplG4Khpp6WY0S6uK2VP78KHG6KcYnxLLzV/S
-	0b4EhO7Jp0ID5IfAskCr8K5gL0234drGprywvCG4Iug4Shl74CTTGT3YA3aEfOkEwfC91gn7Hfa
-	RXagFYdnCifyl2YkTwUkWOnOGkZXEJS0afwvVVShS8VSgowJoDv2GjHF4NFwc9m1EqFwI5C/fAE
-	n9jbIE7OiXW0nhAUh/BzlWZMXHzkXu1nD1z+RRcNE74kSJkKcOw3srE8X2Ctyq1SSWtGLLSp5Yf
-	OV6fKBfglDOiytxpgpubZO+IRiLBueWw=
-X-Received: by 2002:a17:90b:4b87:b0:37f:c2a8:ce45 with SMTP id 98e67ed59e1d1-3903c537d5fmr4245629a91.4.1785910737430;
-        Tue, 04 Aug 2026 23:18:57 -0700 (PDT)
-X-Received: by 2002:a17:90b:4b87:b0:37f:c2a8:ce45 with SMTP id 98e67ed59e1d1-3903c537d5fmr4245550a91.4.1785910736859;
-        Tue, 04 Aug 2026 23:18:56 -0700 (PDT)
-Received: from [10.217.252.136] ([202.46.22.19])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-38febe308dbsm3451025a91.0.2026.08.04.23.18.49
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 04 Aug 2026 23:18:56 -0700 (PDT)
-Message-ID: <a86124c9-a5ff-4265-8a14-68b25f010577@oss.qualcomm.com>
-Date: Wed, 5 Aug 2026 11:48:48 +0530
+	dkim=pass (2048-bit key) header.d=gahingwoo.com header.i=@gahingwoo.com header.b="P9kqzUXv";
+	dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b="flapXqY3"
+Received: from phl-compute-05.internal (phl-compute-05.internal [10.202.2.45])
+	by mailflow.phl.internal (Postfix) with ESMTP id 2AD4513802B4;
+	Wed,  5 Aug 2026 02:38:39 -0400 (EDT)
+Received: from phl-frontend-03 ([10.202.2.162])
+  by phl-compute-05.internal (MEProxy); Wed, 05 Aug 2026 02:38:39 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gahingwoo.com;
+	 h=cc:cc:content-transfer-encoding:content-type:date:date:from
+	:from:in-reply-to:message-id:mime-version:reply-to:subject
+	:subject:to:to; s=fm1; t=1785911919; x=1785915519; bh=g6Uv9mO+P9
+	T5LeH7Cm34F3NFSCvKpL9kzp/edPA5KNU=; b=P9kqzUXvtO6wDSbLjg6lTBgtDL
+	xzeZ7ZaCxnWaONlnPaC378iTn+OI8hyZJnKooI/tPQ9i8CiGsBHssXuzoc+73lEY
+	TU3IUA0xoVYLdmgWpddNYHa2pHTCvt+IRnR1BeNMLHn/GUtQj5d56L0fo/d0ZGX6
+	GaquEJpTxrMjBJ3v8CPKZl3NKBIJ0to+ngxVT6B99l40EsVwFZ+p5godwGq4NVz8
+	9H1QotCLIXkMrdvUjSDwxeagI6lfsY4EeqrZFv7LzPHlYlx8XbEj5cBuTcA94A3U
+	Bdg8Cgc8on8xrdPw1clEqIwvhHAlhb4ISL0onSEpX+HoH+b7xFfcif/95owg==
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
+	messagingengine.com; h=cc:cc:content-transfer-encoding
+	:content-type:date:date:feedback-id:feedback-id:from:from
+	:in-reply-to:message-id:mime-version:reply-to:subject:subject:to
+	:to:x-me-proxy:x-me-sender:x-me-sender:x-sasl-enc; s=fm3; t=
+	1785911919; x=1785915519; bh=g6Uv9mO+P9T5LeH7Cm34F3NFSCvKpL9kzp/
+	edPA5KNU=; b=flapXqY34XmnMDe2Z5rt2I3zWtI8KbDgvh0ajSxilTB80LNQzpI
+	2B276WucLblCyab04ou5Zl48Uqxj6xulp9sX/ebpoZVr000VeMYQfG8p0RC9dTnX
+	l0SJIrV4fCE7xwIoy+y/CUxCTvKm8LN6E3sr3uvBPT59se9cXOmeXcDYQh4qFYNY
+	OiyE4UXDtnbId8HBRn70RS+aggjuyX8eFEyDGBUAYMaOnfTGwTal9QjQBqqkTi1z
+	3UsSr+KHcjVd/cbPyelNK414Zq6xS8SWbz6dPtzQgHBs+01Hr4qrHtTVoXIRvccZ
+	RkjENmRRwr0PCqg9r4Jejv6vVTFXm0l+HgA==
+X-ME-Sender: <xms:bdpyavTUOuXMTIof5YwAjj9KY7rlqjS0oc-SAkOexrqQvZQuSRUnxA>
+    <xme:bdpyaksreizHH1pVECUO8ZPeCvQhEs2jBA3m186UmjE78_oZIoHRsv9UFNtsHb4X1
+    CjYX65WvMOmfUkxpC-tHu4leuWzvOT2AeQ4754iomOXs_Np8m9CVRc>
+X-ME-Received: <xmr:bdpyatUQy-5zxYQzYmJ5MpRZ6q5tsDOB2UZPPe-quvpwPRPQKtNKPDfLsCjN9yhO7kdQzaCHjg>
+X-ME-Proxy-Cause: dmFkZTFB7fQjnmED8PXEjhEhpXGa0ZNyqxf1UtstvyQCP/Nnq5CY5r2eREKRNXTJtOFG5y
+    ScTdt2z/c+nZVvwiDjxZtexv8n6kk199CIyQpYqR3ohM0uw49uwTX3SP1VDWHkWRjGEwb1
+    fKlY1sNQhT2fOy19Q+2in9A8XhJxYHykx+EoISd5SsOkJuqjbtkeByJvNSdNKcd8xba2EY
+    G4UilfwYMhcxmiW+H56AOvTve0A4UY6iQYwPGUO8czIgt/Y1sz7l+JzwQHQWO0XRv6Gc6E
+    UOSMbjVJrmXNhnuag8oRBT7olYifwlbDrnlpW7Dc56FFTGFTGmRgGuZr+/R1efsHfT2ZVs
+    /eY1N09ZzzGtmqdX7+FJbZtbZINkEIWw5nWO96cdRd1Y2Ng3Wqmx5d02QJSjpxdVomLJle
+    I8Arpo+6mcn576C0GzQ3z0A83iv1O76LYvvvCJdFKoTxcipnU12PLDMRHdFeINi/RnJ3kY
+    YjU9llZvfibkxufeUiajgDUkzy+peZfDhetaG07O44jTX+ZOXfZxOuxKNUVSq9/mZPvhtE
+    DiYmzYMLXGgkqhhcVQFaxApPK3UCiZoPZ8TW/wS5gRU3GFIrw1Xn5mdxiNGMlZA978W4Gn
+    fBi0yKwr/iXnRtHbGLNdfqCGu5i/2N7tFLqjgglQwdxZ4m1345y1OboCE1Ow
+X-ME-Proxy: <xmx:bdpyaomZzcmHaI4-W7yqwuy4DeOlE2RX3A_Kj1gsNuuw2RAyyXFpsQ>
+    <xmx:bdpyagDIj8u2HiFVxy2OjWBUcSMyll0Vmiwb2e6-sNkOR5GiA-OD1g>
+    <xmx:bdpyat85MTleFYuxDOHt0eXpVcWbbf8QH2CnNJrny_oD6t2hbvBsZg>
+    <xmx:bdpyaiQkeZ8VL3nhPb-_buOdLr_Gq2NSvTRYahUC_9taeedM1g5Kyg>
+    <xmx:b9pyaog-InDByVK_ZI3Jd3vUy28hnqxstGB6YNIsTaNOyMhqFogKYUKr>
+Feedback-ID: i7a5e4b5f:Fastmail
+Received: by mail.messagingengine.com (Postfix) with ESMTPA; Wed,
+ 5 Aug 2026 02:38:31 -0400 (EDT)
+From: Jiaxing Hu <gahing@gahingwoo.com>
+To: tomeu@tomeuvizoso.net,
+	heiko@sntech.de,
+	robh@kernel.org,
+	krzk+dt@kernel.org,
+	conor+dt@kernel.org,
+	joro@8bytes.org,
+	will@kernel.org,
+	robin.murphy@arm.com,
+	ulfh@kernel.org,
+	p.zabel@pengutronix.de,
+	ogabbay@kernel.org,
+	zhangqing@rock-chips.com
+Cc: royalnet026@gmail.com,
+	alchark@flipper.net,
+	chaoyi.chen@rock-chips.com,
+	dri-devel@lists.freedesktop.org,
+	linux-rockchip@lists.infradead.org,
+	iommu@lists.linux.dev,
+	linux-pm@vger.kernel.org,
+	devicetree@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org,
+	linux-kernel@vger.kernel.org,
+	Jiaxing Hu <gahing@gahingwoo.com>
+Subject: [RFC PATCH v5 0/8] accel/rocket: RK3576 NPU (RKNN) enablement
+Date: Wed,  5 Aug 2026 18:38:18 +1200
+Message-ID: <20260805063826.95682-1-gahing@gahingwoo.com>
+X-Mailer: git-send-email 2.43.0
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 6/6] arm64: dts: qcom: rb3gen2: add Industrial BT UART
- overlay
-To: Bjorn Andersson <andersson@kernel.org>
-Cc: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>,
-        Bartosz Golaszewski <brgl@kernel.org>,
-        Marcel Holtmann
- <marcel@holtmann.org>,
-        Luiz Augusto von Dentz <luiz.dentz@gmail.com>,
-        Rob Herring <robh@kernel.org>,
-        Krzysztof Kozlowski <krzk+dt@kernel.org>,
-        Conor Dooley <conor+dt@kernel.org>,
-        Balakrishna Godavarthi <quic_bgodavar@quicinc.com>,
-        Rocky Liao <quic_rjliao@quicinc.com>,
-        Manivannan Sadhasivam
- <mani@kernel.org>,
-        Konrad Dybcio <konradybcio@kernel.org>,
-        Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>,
-        Bartosz Golaszewski <brgl@bgdev.pl>, linux-arm-msm@vger.kernel.org,
-        linux-bluetooth@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
-        linux-pm@vger.kernel.org, quic_mohamull@quicinc.com,
-        quic_hbandi@quicinc.com, quic_anubhavg@quicinc.com
-References: <20260727-rb3-industrial-bt-uart-v2-0-2d100f30e202@oss.qualcomm.com>
- <20260727-rb3-industrial-bt-uart-v2-6-2d100f30e202@oss.qualcomm.com>
- <794424df-4714-43a4-b4b8-e960998ad1f1@oss.qualcomm.com>
- <ce283ef7-2460-4fa4-a1f5-9757fd6b42b5@oss.qualcomm.com>
- <6d61d749-440f-40ad-82e5-e1e909afad06@oss.qualcomm.com>
- <b47345f1-1c7b-4424-9c6b-3dd02c0f4ab6@oss.qualcomm.com>
- <bf7821a2-d813-4f89-b891-9c26d228ae67@oss.qualcomm.com>
- <b5afd21c-4516-4a8c-bc8f-6598ec385d27@oss.qualcomm.com>
- <am6572YrbAULTa88@baldur>
-Content-Language: en-US
-From: Rahul Samana <rahul.samana@oss.qualcomm.com>
-In-Reply-To: <am6572YrbAULTa88@baldur>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-Proofpoint-ORIG-GUID: OEoDFZlbD0d85mYlXlOzvEI1pwNO5P2S
-X-Authority-Analysis: v=2.4 cv=B+uJFutM c=1 sm=1 tr=0 ts=6a72d5d2 cx=c_pps
- a=RP+M6JBNLl+fLTcSJhASfg==:117 a=fChuTYTh2wq5r3m49p7fHw==:17
- a=IkcTkHD0fZMA:10 a=Sv0fKeRqtYgA:10 a=s4-Qcg_JpJYA:10
- a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=DJpcGTmdVt4CTyJn9g5Z:22
- a=kUy7bicM43VmfkegJQAA:9 a=QEXdDO2ut3YA:10 a=iS9zxrgQBfv6-_F4QbHw:22
-X-Proofpoint-GUID: OEoDFZlbD0d85mYlXlOzvEI1pwNO5P2S
-X-Proofpoint-Spam-Info: AW1haW4tMjYwODA1MDA0NyBTYWx0ZWRfX7nHtARwIb2qz
- 5wanGI3goMmp70g1nRpAPQyfK9exNsLStLXs1oyBQ1gqmIsuBRtZpFYySUmgZozsC5Iotx/DQQ3
- 2iCJ2ssZJ+TQIujoHxfaEdkFpnC9cXA=
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwODA1MDA0NyBTYWx0ZWRfXw2c5HvLCs8Y8
- YZliS/BTZxgxl7vf+/JqVqJbmTEGWn8gtk8yDMHcbJH+vnbhSzqEhOnIb/smVZOawir0U0vTHnR
- 7HBqKw3aIzzwl0+i4JLyrjAiyhfEVNpBsIPTOSpFnebN+KrrsCOXbrw6Yq2vKiPDliOxeV1eBv7
- GBsdt0IJlwnKSHYpZn1JbGSnKpKbQNXmd3nEaw2JP9qHY6+zo406XpLeqdnSeMtepBcuJYvgNIN
- HG0eu/DfeKcZuXyjDokFIifZfjJnoI9EjJJ0z5Nopeo4XFDVdj22SDNLv2tdXAWjuuC1DHdqzRq
- NgGkgrBnH8nElkggYi5/eg3BzitLZ8vQL2g65neyajLiLLt6P0Mtz0is1bQtEiVjmtJUmbnuNHw
- +bgnQ0habr0GG/McIkkwyfGkDnamou8eP0E/OdpuIELf9oEB5kw0nuvXhsfIT4u9JH0uKB6Exex
- VWr7FbsEKrMXo12Af2Q==
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-08-05_02,2026-08-04_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- clxscore=1015 spamscore=0 lowpriorityscore=0 bulkscore=0 phishscore=0
- priorityscore=1501 suspectscore=0 malwarescore=0 adultscore=0 impostorscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2608050047
+Content-Transfer-Encoding: 8bit
 
+v4 was supposed to be a fixes only revision and its patch 4 was not.
+I trimmed the series out of my debugging tree and the trim missed
+rocket_job.c entirely, so 202 lines of ping-pong experiment went out
+with it, including a rocket_core_state_init() call that runs
+unconditionally from rocket_device_runtime_resume() and would therefore
+have replayed the RK3576 vendor init on RK3588 as well. Igor Paunovic
+caught it when he went to re-test, before it cost anyone else time.
+Sorry for the noise.
 
+That code is gone. rocket_job.c is back to +72 lines, which is v3 plus
+the two fixes v4 was meant to carry.
 
-On 02-08-2026 09:08, Bjorn Andersson wrote:
-> On Fri, Jul 31, 2026 at 11:20:07PM +0530, Rahul Samana wrote:
->>
->>
->> On 31-07-2026 21:19, Konrad Dybcio wrote:
->>> On 7/31/26 4:48 PM, Rahul Samana wrote:
->>>>
->>>>
->>>> On 31-07-2026 18:20, Konrad Dybcio wrote:
->>>>> On 7/31/26 8:53 AM, Rahul Samana wrote:
->>>>>>
->>>>>>
->>>>>> On 29-07-2026 18:01, Konrad Dybcio wrote:
->>>>>>> On 7/27/26 5:45 PM, Rahul Samana wrote:
->>>>>>>> The reworked RB3 Gen 2 Industrial mezzanine keeps the common Industrial
->>>>>>>> mezzanine hardware description but routes QCC2072 Bluetooth over UART4
->>>>>>>> instead of the default Bluetooth-over-USB path.
->>>
->>> I only noticed this now - are there 2 variants of the industrial
->>> mezz being sold concurrently? Is the already-in-kernel one some
->>> sort of a prototype SKU? i.e. should we support both?
->>>
->>>>>>>>
->>>>>>>> Build this variant by applying the common Industrial mezzanine overlay
->>>>>>>> first, followed by the BT UART overlay. The overlay models the M.2 E-key
->>>>>>>> connector graph endpoints for PCIe and UART, and disables the on-board
->>>>>>>> WCN6750 PMU and UART7 path so the M.2 QCC2072 Bluetooth controller can be
->>>>>>>> used instead.
->>>>>>>
->>>>>>> So is the onboard module disabled? Can we not just use two in parallel?
->>>>>>>
->>>>>>
->>>>>> The Industrial mezzanine variants do not support the on-board WCN6750
->>>>>> wireless path. The common Industrial mezzanine overlay already disables
->>>>>> the on-board Wi-Fi node.
->>>>>
->>>>> What does 'do not support' it mean here? They are physically present
->>>>> as part of the SoM, so unless the lanes are somehow diverted away,
->>>>> why is it not?
->>>>>
->>>>> Konrad
->>>>
->>>> Hi Konrad,
->>>>
->>>> The WCN6750 module is physically present on the SoM. What I meant is that
->>>> the current Industrial mezzanine devicetree already disables the on-board
->>>> Wi-Fi path, and this BT UART variant followed the same board-level policy
->>>> for the on-board Bluetooth UART/PMU path.
->>>
->>> Okay, and do we know why that's the case in the first place?
->>>
->>>> For the endpoint labels, I can move the UART endpoint to the SoC DTSI,
->>>> kodiak.dtsi, as uart4_ep.
->>>
->>> Please do
->>>
->>>> For the PCIe endpoint, the PCIe path to the M.2 QCC2072 device is not the
->>>> PCIe0 root port in kodiak.dtsi. In the composed devicetree, it is
->>>> behind the Industrial mezzanine PCIe switch, under:
->>>>
->>>>     /soc@0/pcie@1c00000/pcie@0/pcie@0,0/pcie@2,0
->>>>
->>>>
->>>> So placing pcie0_port0_ep in kodiak.dtsi would not describe the actual
->>>> topology.
->>>
->>> Yes, that was an omission from my side
->>>
->>>
->>>> I tried adding a generic label/endpoint to that downstream port in the
->>>> Industrial mezzanine overlay and referencing it from the BT UART overlay.
->>>> However, when the overlays are compiled separately and then composed, that
->>>> label is not available while applying the BT UART overlay, so the composed
->>>> DTB build fails with FDT_ERR_NOTFOUND.
->>>
->>> I think this generic description is simply not achievable today without
->>> a bigger plan in place
->>>
->>> Konrad
->>
->> Hi Konrad, Dmitry,
->>
->> Yes, both Industrial Kit variants need to be supported.
->>
->> The default Industrial Kit uses the common Industrial mezzanine hardware
->> description and continues to use the existing Bluetooth-over-USB path.
-> 
-> "Kit uses the common" what do you even mean?! The mezzanine is a
-> physical thing, it doesn't _use_ anything! The mezzanine exists and the
-> DeviceTree describe what it is.
-> 
->> The
->> reworked Industrial Kit variant keeps the rest of the Industrial mezzanine
->> hardware the same, but routes Bluetooth over UART4 instead.
->>
-> 
-> Does "reworked mezzanine" mean what it usually does? I.e. that you have
-> taken the mezzanine and modified it?
-> 
+Tested on a Radxa ROCK 4D, on next-20260730.
 
-Hi Bjorn,
+Changes in v5
+-------------
 
-Let me clarify.
+  * accel/rocket: the experiment code v4 shipped by mistake is removed.
+    No module parameters, no snapshot ioremap, no regcmd patching.
 
-There are two physical RB3 Gen 2 Industrial mezzanine variants that need
-to be supported:
+  * dt-bindings: the RK3576 nodes never validated against the RK3588
+    binding, which still described RK3588's shape only. Igor ran
+    dt-validate and found ten failures across the two cores: six clocks
+    and two power domains where the schema allowed four and one, and a
+    single reset where dtschema infers minItems from maxItems and so
+    requires two. The property ranges are widened and each SoC is pinned
+    back to its own shape in allOf, so nothing loosens for RK3588. I
+    checked that by giving an RK3588 node a fifth clock and confirming
+    the schema still rejects it.
 
-1. The existing RB3 Gen 2 Industrial mezzanine variant currently
-   described in-tree, where the M.2 E-key interface routes Bluetooth over
-   USB.
+  * dt-bindings: new patch. The resets that patch 5 adds to the NPU power
+    domain nodes had no binding at all, and pd-node is
+    unevaluatedProperties: false at every level, so the DTS could not
+    validate. Also found by Igor.
 
-2. A reworked RB3 Gen 2 Industrial mezzanine variant, where the
-   mezzanine board was reworked to make the existing M.2 E-key interface
-   route Bluetooth over UART4.
+  * dt-bindings: new patch. The NPU MMU nodes carry five clocks and no
+    clock-names, which rockchip,iommu.yaml does not allow either. This
+    one is not cosmetic: with only aclk and iface enabled the MMU accepts
+    reads and silently drops register writes, which is what commit
+    841363ebb508 ("iommu/rockchip: Take all DT clocks") was for. The
+    schema is widened to match, minItems stays at 2 so every existing
+    devicetree is unaffected, and the DTS gets its clock-names back.
+    Found by the Sashiko bot.
 
-The reworked variant is a physical mezzanine board variant, not a
-software-only configuration of the same board.
+  * accel/rocket: the poll work checked its sequence number outside
+    job_lock, which narrowed the race it was meant to close rather than
+    closing it. poll_seq only moves under job_lock, in hw_submit, so the
+    check belongs there too. The shared part of the completion path is
+    split into a helper both callers use. Also from the bot.
 
-The intent of this overlay is to describe only that board-level
-difference while reusing the common Industrial mezzanine description for
-the hardware that remains unchanged.
+  * accel/rocket: rocket_job_fini() cancelled the poll after
+    drm_sched_fini(), but the completion path submits the job's next
+    task, and drm_sched_fini() does not wait for work already queued, so
+    a poll could arm the hardware while teardown was disabling clocks.
+    A dying flag now stops that before the scheduler goes away, and the
+    cancel stays after it so a job running at that moment cannot re-arm
+    the timer behind it. Also from the bot.
 
-Thanks,
-Rahul
+  * rk3576-rock-4d.dts: the commit message now says why the supply is
+    marked always-on and why only core 0 is enabled, rather than leaving
+    both to be asked about.
 
+Igor, this is not the mechanical respin I said it would be. The last two
+items restructure rocket_job_handle_irq(), which is the RK3588 path as
+well, so it needs characterising rather than a repeat of your v3 bench.
+Both are gated on soc->poll_completion for behaviour, but the code
+underneath is shared. Thanks for reading the diff instead of trusting
+the cover letter.
 
-> [..]
->>
->> I am open to other suggestions if there is a better way to model this within
->> the current overlay structure.
->>
-> 
-> I don't think it's possible to give you other suggestions as you haven't
-> described what this thing is, you just explaining how you're hacking
-> something together and ask us to help adjust your hack without knowing
-> what it is you're trying to describe with your DeviceTree.
-> 
-> Regards,
-> Bjorn
-> 
->> Thanks,
->> Rahul
->>
+Verified on hardware, twice, with every debug knob off: the NPU probes
+with the two domain list, a known byte exact convolution stays byte exact
+six times over, running a different one and coming back is unchanged, and
+unbind/rebind rebinds cleanly and runs again with no warning.
 
+What is still wrong
+-------------------
+
+A single convolution is byte exact, and re-running it is byte exact every
+time. A different one after it computes nothing, while the resident one
+keeps working, and going back to it is byte exact again.
+
+Igor suggested on the v4 thread that this reads less like a register we
+fail to write and more like something the block never re-fetches, and
+that the useful question is whether the regcmd is read at all. That
+turned out to be the right question, and the answer is now measured.
+
+Overwriting the head of the regcmd buffer in place, just before OP_EN,
+changes nothing for a repeat submit: it computes byte exact from a buffer
+full of 0xdeadbeef. The same corruption on the first submit after a
+resume makes that job wrong. So some submits load their configuration and
+some run from resident state, and the write itself is confirmed by
+reading it back.
+
+Filling the output BOs with a marker byte just before OP_EN says what the
+failing submit does with that state. On a submit that computes, the
+marker is gone from every byte and the result is correct. On the submit
+that walls, the marker survives in 100% of the buffer.
+
+So the failing submit is a no-op. It does not read its configuration, it
+does not compute, and it never writes its output, which means it does not
+know where the output goes. It still looks like a completion, because
+INTERRUPT_RAW_STATUS PC_DONE is permanently latched and the poll
+condition is therefore always already true.
+
+I have to correct something in the v3 and v4 cover letters here. Both
+said the failing job "writes out a zero point surface", and I read that
+as the MAC producing nothing. That was wrong. A fresh shmem BO is zeroed,
+0x00 plus the +0x80 that teflon applies on readback is 128, and 128 is
+exactly what I had been calling the zero point fill. The buffer was never
+written at all. Nothing was ever measured about the MAC on this path.
+
+That also retires the ping-pong lead from the v3 thread, and not because
+the observation was wrong. The pointer is stuck, S_POINTER bit 0 reads
+back 1 whatever we write, but flipping it, selecting a bank the way
+rk3576_state_init does, and pulsing POINTER_PP_CLEAR are all null, the
+vendor does not switch banks per submit either, and adding its state_init
+verbatim changes nothing. The bank is about where a configuration lands,
+and the configuration is not being read in the first place.
+
+What is left is the condition under which the block loads at all. That is
+what I am chasing now, and suggestions are very welcome.
+
+I used Claude Opus 5 to trim this series out of my debugging tree and
+generate the diffs. It is also what missed the hunk in v4, so this time
+the trimmed tree was diffed against v3 patch by patch and grepped for
+every experiment symbol before sending.
+
+Jiaxing Hu (8):
+  dt-bindings: npu: rockchip: add rockchip,rk3576-rknn-core
+  dt-bindings: power: rockchip: allow resets in a power domain node
+  dt-bindings: iommu: rockchip: allow the RK3576 NPU MMU clock set
+  pmdomain/rockchip: add optional per-domain power-on settle delay
+  pmdomain/rockchip: cycle optional power-domain resets on power-on
+  accel/rocket: add RK3576 NPU (RKNN) support
+  arm64: dts: rockchip: rk3576: add NPU (RKNN) nodes
+  arm64: dts: rockchip: rk3576-rock-4d: enable NPU
+
+ .../devicetree/bindings/iommu/rockchip,iommu.yaml  |   8 ++
+ .../bindings/npu/rockchip,rk3588-rknn-core.yaml    |  47 +++++++-
+ .../bindings/power/rockchip,power-controller.yaml  |   8 ++
+ arch/arm64/boot/dts/rockchip/rk3576-rock-4d.dts    |  10 ++
+ arch/arm64/boot/dts/rockchip/rk3576.dtsi           |  80 +++++++++++++-
+ drivers/accel/rocket/rocket_core.c                 |  26 ++++-
+ drivers/accel/rocket/rocket_core.h                 |  20 +++-
+ drivers/accel/rocket/rocket_device.c               |   4 +
+ drivers/accel/rocket/rocket_drv.c                  |  22 +++-
+ drivers/accel/rocket/rocket_job.c                  | 121 +++++++++++++++++++--
+ drivers/pmdomain/rockchip/pm-domains.c             |  71 ++++++++----
+ 11 files changed, 373 insertions(+), 44 deletions(-)
+
+--
+2.43.0
