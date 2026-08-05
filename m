@@ -1,386 +1,128 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pl1-f174.google.com (mail-pl1-f174.google.com [209.85.214.174])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7E8F4420475;
-	Wed,  5 Aug 2026 15:21:29 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1785943290; cv=none; b=sAZypnFIltG1vItDnnrAuFCRaM7geeo4hqIaBpkYVOX4hJ1yh7fOgGsZ1ONV9cOB9wlNr6R7QL31Py1qvf22WvUX44IEBIdS5AST8qaOBbKOn4wXIM7hHR0IA9tVk7SIJlVbXrrEMiBFDbC1nKehC1QNN2FUoLr3G3JvAnothOs=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1785943290; c=relaxed/simple;
-	bh=I0J+MWKiWSED1BqPpMHg3NeQTQNNwiOeUyWs5x1YkOs=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=gBoipKSnzz+HvSkMTh5BygrGU/58MfxdmoZKtCtCVYRxTeA+bfUaYZ04CfqGoKnVUmxPAQwTdzGmv2OMinhwlkhJZA61os786J9i5aEPID2JMUemHbOp+cdrCnp7Tj45mt31BjgL6ixUvT1i5rulxllDOhX4MMHp+BRCZdLBwhY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7F2B11F00A3D;
-	Wed,  5 Aug 2026 15:21:25 +0000 (UTC)
-From: Geert Uytterhoeven <geert+renesas@glider.be>
-To: Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Michael Turquette <mturquette@baylibre.com>,
-	Stephen Boyd <sboyd@kernel.org>,
-	Brian Masney <bmasney@redhat.com>,
-	Ulf Hansson <ulfh@kernel.org>,
-	Philipp Zabel <p.zabel@pengutronix.de>,
-	Wolfram Sang <wsa+renesas@sang-engineering.com>,
-	Marek Vasut <marek.vasut+renesas@mailbox.org>,
-	Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
-Cc: devicetree@vger.kernel.org,
-	linux-clk@vger.kernel.org,
-	linux-pm@vger.kernel.org,
-	linux-renesas-soc@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org,
-	linux-kernel@vger.kernel.org,
-	Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH v3 6/6] arm64: dts: renesas: r8a78000: Add MDLC nodes
-Date: Wed,  5 Aug 2026 17:20:54 +0200
-Message-ID: <9b7f96352ef5fe08e7003169710a9af874fccb68.1785941595.git.geert+renesas@glider.be>
-X-Mailer: git-send-email 2.43.0
-In-Reply-To: <cover.1785941595.git.geert+renesas@glider.be>
-References: <cover.1785941595.git.geert+renesas@glider.be>
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E923D3CE0A2
+	for <linux-pm@vger.kernel.org>; Wed,  5 Aug 2026 17:21:02 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.214.174
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1785950465; cv=pass; b=Ax8vRXFNZRLh7jjUe8eA4eQJktvj2Hra6mn8Z6tAqofk4/pArI5fWbRetVMdqro2+M8EP+peFnpr857sgc1WPglE64oh6lTYiBc67cgQhFlPDifwAkLqBbecOyh+RsVpTdEkUesF5h7mWWWYd87FFnYJwlmf1ypJliHlgRfGa9A=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1785950465; c=relaxed/simple;
+	bh=f+1hgjoLe+9OAau5GDXmSyjb/F1lcu3rz3NObPtffwY=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=CPUIxs0ifErgOorFbPL6NJWwlqKvHG/5hTjVNLVl2XPtGs9tfKtoqJNUIr9/o/8vGkB0+BcNWKhvHaSExEExzwBbbYW1u/HoDI4DEGCCQjBwG9jN+DYLKm4W7vT3lsjcM1ZI2A3Gjht7UGoc8t7ekCSdNsuKAUcGDuZD3sdIPUU=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=ZT1xHc2x; arc=pass smtp.client-ip=209.85.214.174
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="ZT1xHc2x"
+Received: by mail-pl1-f174.google.com with SMTP id d9443c01a7336-2cc8311c6ddso1672315ad.0
+        for <linux-pm@vger.kernel.org>; Wed, 05 Aug 2026 10:21:02 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1785950460; cv=none;
+        d=google.com; s=arc-20260327;
+        b=BCiFkGZcQ8BJVSMuty3p7Dfa7o21Ac6KTy/hhfpRZJc9HipVhgJpcOrJ4h3E+FEEC1
+         wbo45+u9RzL5FLAoSamWg5UV1WPq1hRGv+DCLnzxy/jaZh71pp3PPwL7qV+cybyAvUWG
+         2DcKkgt41kmjDhV47pO13/VDwUeDedUhf6rkNbAz5tCMAQbjiO7wJI3aWBEovDRPIOYh
+         z6sYAihev2xIT1O6Ho73FEwEecQLPiY5YVXy/r1AX3Krc7R8jd+I15tOio6P0qowQO6Q
+         NcVe9tMZLYEhQc17gCiNKv7UepOWOw7cmMBssBvHACBTNW6PtthY/Z7GrWyIJ6Gi6wgk
+         NkxA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=Cz1E8dA+nCFkDM0OHZhKzEI4Qib+t52DoabszOc2ICI=;
+        fh=0VvrkDRtpm/042qCCeMTPj+rNnNceYgyZtfHKztjUkk=;
+        b=RYdj8LCiHvH6uutqx2MW7Z1Qb4xUo3HqKSBVGXYGkdVuJpCDStfQ8DsjfixYs0tzjP
+         AXw71SUbNscYOoUvzUyojY6JPeSLUVsri1cMm6Nrw95eN5Keq0aUM6vlNVsztXP10QmZ
+         t2K8obWtYNhNI9F2F7FQS6imOTp2GeFKiokYgAQiwu0gdml0ApgNxAju1OVn3rkVkzHb
+         EMQ9+f9HnCea93bnTyad9EkEo0HohdI78BcvG6iwRr2Ixs38NAV85J74loo+RU2No2n4
+         IOxh31ChmU2mKl5JnaBFaR2XEibg4BJLqoy/r2cqJFIzn66C+4yQpPTOo46nk7Ljv0XE
+         PYeA==;
+        darn=vger.kernel.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1785950460; x=1786555260; darn=vger.kernel.org;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=Cz1E8dA+nCFkDM0OHZhKzEI4Qib+t52DoabszOc2ICI=;
+        b=ZT1xHc2xyP9XYk8PUPnDAntsicElF5elLjXJHYxK/dTIRxhOXP4BYmKyaAm7D4myJe
+         FXySCyN7nRIDJjvQu9UXCW9eDvMXBTKWNXVzmoLwbtoeTkM+2avemvUwcCdFVmdxcM5y
+         HMcojfHT74MtjHUYX3FGuPiSQu6CG9RcMZN10Jij5DCneHFtm2g+5oKnouFZiqpXEehp
+         s6g/qW8DnpBdkqN4RMvOha0mJmzKRXFYxdpGFxxrgKrHq8SOqH3+XjNo42K8aYfHQQpY
+         ieaRXp6TarxQO7iZdwat5LWdNaE6ED/8Ui2j8nc1nYOEyzIfdGs6la8xuL4tQi7opQXq
+         gWug==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1785950460; x=1786555260;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=Cz1E8dA+nCFkDM0OHZhKzEI4Qib+t52DoabszOc2ICI=;
+        b=muZH0W32MQccOEzFLbgnV5hi5f9YojfSQckpK9ZJAmtvRMhlr2tDe5QuF0mwbw9WeG
+         ltwDYaYYIVAQ8RbzcBmCxEwmtg88ceME1rKywNFOdvRJYj6CbhrYrhXOIpWHLocCztps
+         ZgEM8awQLDerxt5TBC+EjdcpaJ/pT5o8ICml+0V7sEbtSgi6Ycbc5frUiltQXfvB+Daw
+         iV4Wb3L8gBPQPl6kJY6t+qnyVCS7MKfy4t+ZYJNmammNAIMeVnD4IcJEkE3y6RgkUrKC
+         +AP8wKWAAClmWJr2+Rn3mDPHo3cKRaZ0QfSHDuY+/7W6nBfbcXdzRPdQW2rDubxfgCsR
+         gLuw==
+X-Forwarded-Encrypted: i=1; AHgh+RrEsUW+KKNSr4/CfhcrXhMvhx05VvqL92JVlVLPvjlZ9pc6PP3mlOOuP66JmaoBi0FINxJxbEFS9A==@vger.kernel.org
+X-Gm-Message-State: AOJu0YyVxwjzPGp+0NeyLQ/lnyRRcAIXJFr8zAJ/1ln3iHaeYa9JqqLA
+	LHoQTVE8+tTIEKPIWCmVcl7GL/1JlpCJm/q5By7TH9iJMMZ4FtsQlZKFInv/v+8fgMwVGO0rtcZ
+	ykp/eNrGO3GkAAanG49RJaRxnXSj3RQg=
+X-Gm-Gg: AR+sD11J/WjsxZ2EDXdPaIkNqj8e2awqAfKPVOjHpr1WdUbdYRJtyP5iAd7CNLFJukl
+	XDzIqZW2rzvI0ZU2ITAKJj6Ky2ykoYIGoF9v2gyX7Jsep4EoB3GANnUE2YgVlXRS7zy4hvaIfxX
+	c9kO8YzfmBLWISAM6A38boogMB7pqYIHBJ79kR1g93C4fRZFnv3rFnivsr+fS9Keppvdwemui3E
+	yOekCVgH2ow6zF5NjOaiwzZs5Q9eGQQ2vwQWDyy6ttQwfE9JBiF8iihM1k3skve/ykmMq4V7lIG
+	PGqs5Cjwxm4wN1BQZJOsAiIjN/wpYbG+++wS4ZrlScV5H5KJBSl9G/KyOUpwEDygL5KpqS+XFPU
+	Ot7S1lli8gWwEsUjaxNFG02GEo2T4rLgyQ6TD8bWxQdLPkyCMaAXGgaCw72Pn
+X-Received: by 2002:a17:902:ec8a:b0:2c9:ed4a:c3a4 with SMTP id
+ d9443c01a7336-2d0ca1658f2mr73522915ad.0.1785950460122; Wed, 05 Aug 2026
+ 10:21:00 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+References: <0CoR7Z5B4-PH8GYYbWlZysVJpMnNLTFzTO0tBlOpJQNFiQ2CPrhdjyD4-4jQs4n0J_1QqovCd_EaYpclyigEKw==@protonmail.internalid>
+ <20260628095132.47753-1-trev@trevrosa.dev> <87pkzw9aut.fsf@t14s.mail-host-address-is-not-set>
+In-Reply-To: <87pkzw9aut.fsf@t14s.mail-host-address-is-not-set>
+From: Miguel Ojeda <miguel.ojeda.sandonis@gmail.com>
+Date: Wed, 5 Aug 2026 19:20:45 +0200
+X-Gm-Features: AUfX_mwN2wRwvmcNPuq0EpEyS5qgayFtXbsdflDPhbgmFxUJf-YMOIqJTLTJEvs
+Message-ID: <CANiq72=wo4LOfa3hrJhTFr8UzkchW4QQtUespCTq7qRJvrr6CA@mail.gmail.com>
+Subject: Re: [PATCH v6] rust: aref: make `AlwaysRefCounted::inc_ref` an
+ associated function
+To: Andreas Hindborg <a.hindborg@kernel.org>
+Cc: Trevor Chan <trev@trevrosa.dev>, gregkh@linuxfoundation.org, rafael@kernel.org, 
+	dakr@kernel.org, ojeda@kernel.org, paul@paul-moore.com, aliceryhl@google.com, 
+	airlied@gmail.com, simona@ffwll.ch, viro@zeniv.linux.org.uk, 
+	brauner@kernel.org, igor.korotin@linux.dev, vireshk@kernel.org, nm@ti.com, 
+	sboyd@kernel.org, m.wilczynski@samsung.com, boqun@kernel.org, 
+	gary@garyguo.net, axboe@kernel.dk, daniel.almeida@collabora.com, 
+	shankari.ak0208@gmail.com, lyude@redhat.com, j@jananu.net, lossin@kernel.org, 
+	acourbot@nvidia.com, markus.probst@posteo.de, driver-core@lists.linux.dev, 
+	rust-for-linux@vger.kernel.org, linux-kernel@vger.kernel.org, 
+	linux-block@vger.kernel.org, linux-security-module@vger.kernel.org, 
+	dri-devel@lists.freedesktop.org, linux-fsdevel@vger.kernel.org, 
+	linux-mm@kvack.org, linux-pm@vger.kernel.org, linux-pci@vger.kernel.org, 
+	linux-pwm@vger.kernel.org, david.m.ertman@intel.com, iweiny@kernel.org, 
+	leon@kernel.org, bjorn3_gh@protonmail.com, tmgross@umich.edu, 
+	tamird@kernel.org, work@onurozkan.dev, sergeh@kernel.org, 
+	matthew.brost@intel.com, thomas.hellstrom@linux.intel.com, jack@suse.cz, 
+	ljs@kernel.org, liam@infradead.org, bhelgaas@google.com, 
+	kwilczynski@kernel.org, ptikhomirov@virtuozzo.com
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Add device nodes for the Module Control (MDLC) blocks on the R-Car X5H
-(R8A78000) SoC.
+On Wed, Aug 5, 2026 at 11:26=E2=80=AFAM Andreas Hindborg <a.hindborg@kernel=
+.org> wrote:
+>
+> Reviewed-by: Andreas Hindborg <a.hindborg@kernel.org>
 
-Complete hardware desciption of all (H)SCIF serial ports, by linking
-them to an MDLC for power domains and resets.
+In case it helps, there was a v7 of this one:
 
-Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
-Reviewed-by: Marek Vasut <marek.vasut+renesas@mailbox.org>
----
-v3:
-  - Add Reviewed-by,
-  - Sort MDLC nodes (alphabetically, by label),
+  https://lore.kernel.org/rust-for-linux/20260628100731.64885-1-trev@trevro=
+sa.dev/#r
 
-v2:
-  - Split in separate CPG and MDLC patches.
----
- arch/arm64/boot/dts/renesas/r8a78000.dtsi | 241 ++++++++++++++++++++++
- 1 file changed, 241 insertions(+)
-
-diff --git a/arch/arm64/boot/dts/renesas/r8a78000.dtsi b/arch/arm64/boot/dts/renesas/r8a78000.dtsi
-index 1fe078c7822c01a5..9a07753b221541ed 100644
---- a/arch/arm64/boot/dts/renesas/r8a78000.dtsi
-+++ b/arch/arm64/boot/dts/renesas/r8a78000.dtsi
-@@ -6,6 +6,7 @@
-  */
- 
- #include <dt-bindings/clock/renesas,r8a78000-cpg.h>
-+#include <dt-bindings/power/renesas,r8a78000-mdlc.h>
- #include <dt-bindings/interrupt-controller/arm-gic.h>
- 
- / {
-@@ -870,6 +871,8 @@ scif0: serial@c0700000 {
- 				 <&cpg R8A78000_CPG_SGASYNCD4_PERW_BUS>,
- 				 <&scif_clk>;
- 			clock-names = "fck", "brg_int", "scif_clk";
-+			power-domains = <&mdlc_perw R8A78000_MDLC_PD_APL 0x40>;
-+			resets = <&mdlc_perw 0x40>;
- 			status = "disabled";
- 		};
- 
-@@ -882,6 +885,8 @@ scif1: serial@c0704000 {
- 				 <&cpg R8A78000_CPG_SGASYNCD4_PERW_BUS>,
- 				 <&scif_clk>;
- 			clock-names = "fck", "brg_int", "scif_clk";
-+			power-domains = <&mdlc_perw R8A78000_MDLC_PD_APL 0x41>;
-+			resets = <&mdlc_perw 0x41>;
- 			status = "disabled";
- 		};
- 
-@@ -894,6 +899,8 @@ scif3: serial@c0708000 {
- 				 <&cpg R8A78000_CPG_SGASYNCD4_PERW_BUS>,
- 				 <&scif_clk>;
- 			clock-names = "fck", "brg_int", "scif_clk";
-+			power-domains = <&mdlc_perw R8A78000_MDLC_PD_APL 0x42>;
-+			resets = <&mdlc_perw 0x42>;
- 			status = "disabled";
- 		};
- 
-@@ -906,6 +913,8 @@ scif4: serial@c070c000 {
- 				 <&cpg R8A78000_CPG_SGASYNCD4_PERW_BUS>,
- 				 <&scif_clk>;
- 			clock-names = "fck", "brg_int", "scif_clk";
-+			power-domains = <&mdlc_perw R8A78000_MDLC_PD_APL 0x43>;
-+			resets = <&mdlc_perw 0x43>;
- 			status = "disabled";
- 		};
- 
-@@ -918,6 +927,8 @@ hscif0: serial@c0710000 {
- 				 <&cpg R8A78000_CPG_SGASYNCD4_PERW_BUS>,
- 				 <&scif_clk>;
- 			clock-names = "fck", "brg_int", "scif_clk";
-+			power-domains = <&mdlc_perw R8A78000_MDLC_PD_APL 0x54>;
-+			resets = <&mdlc_perw 0x54>;
- 			status = "disabled";
- 		};
- 
-@@ -930,6 +941,8 @@ hscif1: serial@c0714000 {
- 				 <&cpg R8A78000_CPG_SGASYNCD4_PERW_BUS>,
- 				 <&scif_clk>;
- 			clock-names = "fck", "brg_int", "scif_clk";
-+			power-domains = <&mdlc_perw R8A78000_MDLC_PD_APL 0x55>;
-+			resets = <&mdlc_perw 0x55>;
- 			status = "disabled";
- 		};
- 
-@@ -942,6 +955,8 @@ hscif2: serial@c0718000 {
- 				 <&cpg R8A78000_CPG_SGASYNCD4_PERW_BUS>,
- 				 <&scif_clk>;
- 			clock-names = "fck", "brg_int", "scif_clk";
-+			power-domains = <&mdlc_perw R8A78000_MDLC_PD_APL 0x56>;
-+			resets = <&mdlc_perw 0x56>;
- 			status = "disabled";
- 		};
- 
-@@ -954,6 +969,8 @@ hscif3: serial@c071c000 {
- 				 <&cpg R8A78000_CPG_SGASYNCD4_PERW_BUS>,
- 				 <&scif_clk>;
- 			clock-names = "fck", "brg_int", "scif_clk";
-+			power-domains = <&mdlc_perw R8A78000_MDLC_PD_APL 0x57>;
-+			resets = <&mdlc_perw 0x57>;
- 			status = "disabled";
- 		};
- 
-@@ -974,6 +991,230 @@ cpg: clock-controller@c1320000 {
- 			#clock-cells = <1>;
- 			bootph-all;
- 		};
-+
-+		mdlc_aon: system-controller@c1338000 {
-+			compatible = "renesas,r8a78000-mdlc";
-+			reg = <0 0xc1338000 0 0x1000>;
-+			#power-domain-cells = <2>;
-+			#reset-cells = <1>;
-+			bootph-all;
-+		};
-+
-+		mdlc_cmnn: system-controller@ca410000 {
-+			compatible = "renesas,r8a78000-mdlc";
-+			reg = <0 0xca410000 0 0x1000>;
-+			#power-domain-cells = <2>;
-+			#reset-cells = <1>;
-+			bootph-all;
-+		};
-+
-+		mdlc_cmns: system-controller@ca510000 {
-+			compatible = "renesas,r8a78000-mdlc";
-+			reg = <0 0xca510000 0 0x1000>;
-+			#power-domain-cells = <2>;
-+			#reset-cells = <1>;
-+			bootph-all;
-+		};
-+
-+		mdlc_ddr0: system-controller@e8000000 {
-+			compatible = "renesas,r8a78000-mdlc";
-+			reg = <0 0xe8000000 0 0x1000>;
-+			#power-domain-cells = <2>;
-+			#reset-cells = <1>;
-+			bootph-all;
-+		};
-+
-+		mdlc_ddr1: system-controller@e8080000 {
-+			compatible = "renesas,r8a78000-mdlc";
-+			reg = <0 0xe8080000 0 0x1000>;
-+			#power-domain-cells = <2>;
-+			#reset-cells = <1>;
-+			bootph-all;
-+		};
-+
-+		mdlc_ddr2: system-controller@e8100000 {
-+			compatible = "renesas,r8a78000-mdlc";
-+			reg = <0 0xe8100000 0 0x1000>;
-+			#power-domain-cells = <2>;
-+			#reset-cells = <1>;
-+			bootph-all;
-+		};
-+
-+		mdlc_ddr3: system-controller@e8180000 {
-+			compatible = "renesas,r8a78000-mdlc";
-+			reg = <0 0xe8180000 0 0x1000>;
-+			#power-domain-cells = <2>;
-+			#reset-cells = <1>;
-+			bootph-all;
-+		};
-+
-+		mdlc_ddr4: system-controller@e8200000 {
-+			compatible = "renesas,r8a78000-mdlc";
-+			reg = <0 0xe8200000 0 0x1000>;
-+			#power-domain-cells = <2>;
-+			#reset-cells = <1>;
-+			bootph-all;
-+		};
-+
-+		mdlc_ddr5: system-controller@e8280000 {
-+			compatible = "renesas,r8a78000-mdlc";
-+			reg = <0 0xe8280000 0 0x1000>;
-+			#power-domain-cells = <2>;
-+			#reset-cells = <1>;
-+			bootph-all;
-+		};
-+
-+		mdlc_ddr6: system-controller@e8300000 {
-+			compatible = "renesas,r8a78000-mdlc";
-+			reg = <0 0xe8300000 0 0x1000>;
-+			#power-domain-cells = <2>;
-+			#reset-cells = <1>;
-+			bootph-all;
-+		};
-+
-+		mdlc_ddr7: system-controller@e8380000 {
-+			compatible = "renesas,r8a78000-mdlc";
-+			reg = <0 0xe8380000 0 0x1000>;
-+			#power-domain-cells = <2>;
-+			#reset-cells = <1>;
-+			bootph-all;
-+		};
-+
-+		mdlc_dsp: system-controller@cbe90000 {
-+			compatible = "renesas,r8a78000-mdlc";
-+			reg = <0 0xcbe90000 0 0x1000>;
-+			#power-domain-cells = <2>;
-+			#reset-cells = <1>;
-+			bootph-all;
-+		};
-+
-+		mdlc_gpc: system-controller@cb510000 {
-+			compatible = "renesas,r8a78000-mdlc";
-+			reg = <0 0xcb510000 0 0x1000>;
-+			#power-domain-cells = <2>;
-+			#reset-cells = <1>;
-+			bootph-all;
-+		};
-+
-+		mdlc_hscn: system-controller@c9c90000 {
-+			compatible = "renesas,r8a78000-mdlc";
-+			reg = <0 0xc9c90000 0 0x1000>;
-+			#power-domain-cells = <2>;
-+			#reset-cells = <1>;
-+			bootph-all;
-+		};
-+
-+		mdlc_hscs: system-controller@de200000 {
-+			compatible = "renesas,r8a78000-mdlc";
-+			reg = <0 0xde200000 0 0x1000>;
-+			#power-domain-cells = <2>;
-+			#reset-cells = <1>;
-+			bootph-all;
-+		};
-+
-+		mdlc_imn: system-controller@c1990000 {
-+			compatible = "renesas,r8a78000-mdlc";
-+			reg = <0 0xc1990000 0 0x1000>;
-+			#power-domain-cells = <2>;
-+			#reset-cells = <1>;
-+			bootph-all;
-+		};
-+
-+		mdlc_ims: system-controller@c1d90000 {
-+			compatible = "renesas,r8a78000-mdlc";
-+			reg = <0 0xc1d90000 0 0x1000>;
-+			#power-domain-cells = <2>;
-+			#reset-cells = <1>;
-+			bootph-all;
-+		};
-+
-+		mdlc_mm: system-controller@e9980000 {
-+			compatible = "renesas,r8a78000-mdlc";
-+			reg = <0 0xe9980000 0 0x1000>;
-+			#power-domain-cells = <2>;
-+			#reset-cells = <1>;
-+			bootph-all;
-+		};
-+
-+		mdlc_npu0: system-controller@d2c30000 {
-+			compatible = "renesas,r8a78000-mdlc";
-+			reg = <0 0xd2c30000 0 0x1000>;
-+			#power-domain-cells = <2>;
-+			#reset-cells = <1>;
-+			bootph-all;
-+		};
-+
-+		mdlc_npu1: system-controller@d6c30000 {
-+			compatible = "renesas,r8a78000-mdlc";
-+			reg = <0 0xd6c30000 0 0x1000>;
-+			#power-domain-cells = <2>;
-+			#reset-cells = <1>;
-+			bootph-all;
-+		};
-+
-+		mdlc_pere: system-controller@c08f0000 {
-+			compatible = "renesas,r8a78000-mdlc";
-+			reg = <0 0xc08f0000 0 0x1000>;
-+			#power-domain-cells = <2>;
-+			#reset-cells = <1>;
-+			bootph-all;
-+		};
-+
-+		mdlc_perw: system-controller@c05d0000 {
-+			compatible = "renesas,r8a78000-mdlc";
-+			reg = <0 0xc05d0000 0 0x1000>;
-+			#power-domain-cells = <2>;
-+			#reset-cells = <1>;
-+			bootph-all;
-+		};
-+
-+		mdlc_rt: system-controller@19440000 {
-+			compatible = "renesas,r8a78000-mdlc";
-+			reg = <0 0x19440000 0 0x1000>;
-+			#power-domain-cells = <2>;
-+			#reset-cells = <1>;
-+			bootph-all;
-+		};
-+
-+		mdlc_scp: system-controller@c1330000 {
-+			compatible = "renesas,r8a78000-mdlc";
-+			reg = <0 0xc1330000 0 0x1000>;
-+			#power-domain-cells = <2>;
-+			#reset-cells = <1>;
-+			bootph-all;
-+		};
-+
-+		mdlc_top: system-controller@c6480000 {
-+			compatible = "renesas,r8a78000-mdlc";
-+			reg = <0 0xc6480000 0 0x1000>;
-+			#power-domain-cells = <2>;
-+			#reset-cells = <1>;
-+			bootph-all;
-+		};
-+
-+		mdlc_vio: system-controller@c5000000 {
-+			compatible = "renesas,r8a78000-mdlc";
-+			reg = <0 0xc5000000 0 0x1000>;
-+			#power-domain-cells = <2>;
-+			#reset-cells = <1>;
-+			bootph-all;
-+		};
-+
-+		mdlc_vipn: system-controller@c3060000 {
-+			compatible = "renesas,r8a78000-mdlc";
-+			reg = <0 0xc3060000 0 0x1000>;
-+			#power-domain-cells = <2>;
-+			#reset-cells = <1>;
-+			bootph-all;
-+		};
-+
-+		mdlc_vips: system-controller@c3460000 {
-+			compatible = "renesas,r8a78000-mdlc";
-+			reg = <0 0xc3460000 0 0x1000>;
-+			#power-domain-cells = <2>;
-+			#reset-cells = <1>;
-+			bootph-all;
-+		};
- 	};
- 
- 	timer {
--- 
-2.43.0
-
+Cheers,
+Miguel
