@@ -1,19 +1,19 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 66D27477E51;
-	Wed,  5 Aug 2026 15:21:17 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 29A25477E51;
+	Wed,  5 Aug 2026 15:21:21 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1785943278; cv=none; b=eL+ttS8d3STJgJgxN4aKh2c3DU0VeNh39yKrORuKZ/Vt4mBz5ka3JfvozMScjNXxLppdcNV0kBNS6uLivXDHAl/vuaj/Jt7OtHLXEgHZrTkOdygEUVF+dxYE7yt2CxVKCw8k/4b+nQxH2zQkZQzIbEZ1fbsjjLQ99bRl2UChB60=
+	t=1785943282; cv=none; b=EgIMfxn2P62eO0pFPKkA1ncT+GrDgi89rhuw1RifclSS856P5Nya3ff+mW1dvj8mQwj/wL0zeC0nfqk8u7rPBwYa0snV66mswySjOYKgfKYnP3jyq1mDRtGHeCBu9QygNe82d6TitvGr5X/EGPcJh3G5g5v8uMftOaX3sQapxIc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1785943278; c=relaxed/simple;
-	bh=jstlG2uEpPXFK/GgJ2YPsn0an3lMBL0ZuVnngTY46hE=;
+	s=arc-20240116; t=1785943282; c=relaxed/simple;
+	bh=t6yLzGGXXrhB5hoGTwyQoIva2UQzCuHjc1rb7pSwjQQ=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=BIDvQ1WFDQoQNTrJXF8tzMf3ihe/AzIZ9hyEcJ44MztjHSP7cxvmuOazPMuRDRXLQzng6MNfpU0QNbqCi0e7dLjSTF3BjBBUvoN19Bfs7uPEgfoZzjoOpFjNWMkLfQaRF+0cdxlm6Zse9Jc5G9JjOkrPFuSKEZGlUlIeYYwFdwM=
+	 MIME-Version; b=m9zWzS0+v4mOnmMzlEvMG246V4DWAMC80hdiYhYVRaEXa0syq17bVQ2Z7C9sz6JT+Ws2CB12U98hHmALRlir13pZDbLSBnHuhhd6nXzTw8qwOVzyf99JPEO5vU9aUvg0hDb0YVlXmTSpWoEf3rSG3K09QlCZFbbPHF6oL4Ve4ho=
 ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 756421F00A3A;
-	Wed,  5 Aug 2026 15:21:13 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 759041F000E9;
+	Wed,  5 Aug 2026 15:21:17 +0000 (UTC)
 From: Geert Uytterhoeven <geert+renesas@glider.be>
 To: Rob Herring <robh@kernel.org>,
 	Krzysztof Kozlowski <krzk+dt@kernel.org>,
@@ -33,9 +33,9 @@ Cc: devicetree@vger.kernel.org,
 	linux-arm-kernel@lists.infradead.org,
 	linux-kernel@vger.kernel.org,
 	Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH v3 3/6] clk: renesas: Add R-Car X5H CPG driver
-Date: Wed,  5 Aug 2026 17:20:51 +0200
-Message-ID: <3f981753722de1ba871667be63460e89d299d635.1785941595.git.geert+renesas@glider.be>
+Subject: [PATCH v3 4/6] pmdomain: renesas: Add R-Car X5H MDLC driver
+Date: Wed,  5 Aug 2026 17:20:52 +0200
+Message-ID: <89e6a71b35703f10e12f520af1f389b5f40f4b35.1785941595.git.geert+renesas@glider.be>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <cover.1785941595.git.geert+renesas@glider.be>
 References: <cover.1785941595.git.geert+renesas@glider.be>
@@ -47,198 +47,308 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Add a minimal Clock Pulse Generator driver for the R-Car X5H (R8A78000)
-SoC.  For now this supports just the few fixed-rate clocks that are
-needed by the current minimal DTS.
+Add a minimal Module Controller driver for the R-Car X5H (R8A78000) SoC.
+For now this just supports the always-on power domains, and dummy module
+clocks and resets for the serial console (which is enabled by the boot
+loader).
 
 Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 ---
 v3:
-  - Add fixed-rate clocks to kerneldoc of r8a78000_cpg_priv.map,
-  - Use devm_clk_hw_register_fixed_rate(), drop unregister_fixed_clks(),
-  - Drop fill_clk_map(), as it is not really needed until SCMI remapping
-    support is added later,
   - Replace <linux/mod_devicetable.h> by more specific
     <linux/device-id/of.h> in v7.2-rc2,
+  - Add a comment to document only always-on domains are supported,
+  - Consistently use /* sentinel */ for zero sentinels,
+  - Drop trailing commas from sentinels,
 
 v2:
-  - Spin off from "clk: renesas: Add R-Car X5H CPG SCMI remapping
+  - Spin off from "pmdomain: renesas: Add R-Car X5H MDLC SCMI remapping
     driver",
   - Add default support not using SCMI,
   - Drop all SCMI remapping support,
   - Document use of -1 as a sentinel,
-  - Document use of FIXED_CLK() IDs.
+  - Rename struct r8a78000_mdlc_info to mdlc_info,
+  - Print HW IDs in hexadecimal,
+  - Reduce log level for unsupported MDLC instances from warn to dbg,
 ---
- drivers/clk/renesas/Kconfig        |   4 +
- drivers/clk/renesas/Makefile       |   1 +
- drivers/clk/renesas/r8a78000-cpg.c | 166 +++++++++++++++++++++++++++++
- 3 files changed, 171 insertions(+)
- create mode 100644 drivers/clk/renesas/r8a78000-cpg.c
+ drivers/pmdomain/renesas/Kconfig         |   4 +
+ drivers/pmdomain/renesas/Makefile        |   1 +
+ drivers/pmdomain/renesas/r8a78000-mdlc.c | 330 +++++++++++++++++++++++
+ drivers/soc/renesas/Kconfig              |   1 +
+ 4 files changed, 336 insertions(+)
+ create mode 100644 drivers/pmdomain/renesas/r8a78000-mdlc.c
 
-diff --git a/drivers/clk/renesas/Kconfig b/drivers/clk/renesas/Kconfig
-index 0203ecbb38825f13..f0482bdfc4616cfa 100644
---- a/drivers/clk/renesas/Kconfig
-+++ b/drivers/clk/renesas/Kconfig
-@@ -34,6 +34,7 @@ config CLK_RENESAS
- 	select CLK_R8A779F0 if ARCH_R8A779F0
- 	select CLK_R8A779G0 if ARCH_R8A779G0
- 	select CLK_R8A779H0 if ARCH_R8A779H0
-+	select CLK_R8A78000 if ARCH_R8A78000
- 	select CLK_R9A06G032 if ARCH_R9A06G032
- 	select CLK_R9A07G043 if ARCH_R9A07G043
- 	select CLK_R9A07G044 if ARCH_R9A07G044
-@@ -176,6 +177,9 @@ config CLK_R8A779H0
- 	bool "R-Car V4M clock support" if COMPILE_TEST
- 	select CLK_RCAR_GEN4_CPG
+diff --git a/drivers/pmdomain/renesas/Kconfig b/drivers/pmdomain/renesas/Kconfig
+index b507c3e0d723efc6..f2f52d3c29a083f1 100644
+--- a/drivers/pmdomain/renesas/Kconfig
++++ b/drivers/pmdomain/renesas/Kconfig
+@@ -13,6 +13,10 @@ config SYSC_RMOBILE
+ 	bool "System Controller support for R-Mobile" if COMPILE_TEST
  
-+config CLK_R8A78000
-+	bool "R-Car X5H clock support" if COMPILE_TEST
+ # SoC
++config MDLC_R8A78000
++	bool "Module Controller support for R8A78000 (R-Car X5H)" if COMPILE_TEST
++	select RESET_CONTROLLER
 +
- config CLK_R9A06G032
- 	bool "RZ/N1D clock support" if COMPILE_TEST
- 
-diff --git a/drivers/clk/renesas/Makefile b/drivers/clk/renesas/Makefile
-index bd2bed91ab291d72..4f76f8c402ffe9a3 100644
---- a/drivers/clk/renesas/Makefile
-+++ b/drivers/clk/renesas/Makefile
-@@ -31,6 +31,7 @@ obj-$(CONFIG_CLK_R8A779A0)		+= r8a779a0-cpg-mssr.o
- obj-$(CONFIG_CLK_R8A779F0)		+= r8a779f0-cpg-mssr.o
- obj-$(CONFIG_CLK_R8A779G0)		+= r8a779g0-cpg-mssr.o
- obj-$(CONFIG_CLK_R8A779H0)		+= r8a779h0-cpg-mssr.o
-+obj-$(CONFIG_CLK_R8A78000)		+= r8a78000-cpg.o
- obj-$(CONFIG_CLK_R9A06G032)		+= r9a06g032-clocks.o
- obj-$(CONFIG_CLK_R9A07G043)		+= r9a07g043-cpg.o
- obj-$(CONFIG_CLK_R9A07G044)		+= r9a07g044-cpg.o
-diff --git a/drivers/clk/renesas/r8a78000-cpg.c b/drivers/clk/renesas/r8a78000-cpg.c
+ config SYSC_R8A7742
+ 	bool "System Controller support for R8A7742 (RZ/G1H)" if COMPILE_TEST
+ 	select SYSC_RCAR
+diff --git a/drivers/pmdomain/renesas/Makefile b/drivers/pmdomain/renesas/Makefile
+index 0391e6e67440a786..17849aad37a5ac4f 100644
+--- a/drivers/pmdomain/renesas/Makefile
++++ b/drivers/pmdomain/renesas/Makefile
+@@ -1,5 +1,6 @@
+ # SPDX-License-Identifier: GPL-2.0
+ # SoC
++obj-$(CONFIG_MDLC_R8A78000)	+= r8a78000-mdlc.o
+ obj-$(CONFIG_SYSC_R8A7742)	+= r8a7742-sysc.o
+ obj-$(CONFIG_SYSC_R8A7743)	+= r8a7743-sysc.o
+ obj-$(CONFIG_SYSC_R8A7745)	+= r8a7745-sysc.o
+diff --git a/drivers/pmdomain/renesas/r8a78000-mdlc.c b/drivers/pmdomain/renesas/r8a78000-mdlc.c
 new file mode 100644
-index 0000000000000000..7946f9d0b423def1
+index 0000000000000000..5c8acead7cff9bdd
 --- /dev/null
-+++ b/drivers/clk/renesas/r8a78000-cpg.c
-@@ -0,0 +1,166 @@
++++ b/drivers/pmdomain/renesas/r8a78000-mdlc.c
+@@ -0,0 +1,330 @@
 +// SPDX-License-Identifier: GPL-2.0
 +/*
-+ * R-Car X5H Clock Pulse Generator
++ * R-Car X5H Module Controller
 + *
 + * Copyright (C) 2026 Glider bv
 + */
 +
-+#include <linux/clk.h>
-+#include <linux/clk-provider.h>
 +#include <linux/dev_printk.h>
 +#include <linux/device-id/of.h>
 +#include <linux/module.h>
 +#include <linux/of.h>
 +#include <linux/platform_device.h>
++#include <linux/pm_domain.h>
++#include <linux/reset-controller.h>
 +#include <linux/slab.h>
 +
-+#include <dt-bindings/clock/renesas,r8a78000-cpg.h>
++#include <dt-bindings/power/renesas,r8a78000-mdlc.h>
 +
-+struct clk_map {
-+	int dt_id;		/* DT binding clock ID or -1 sentinel */
-+	u32 fw_id;		/* FIXED_CLK() ID */
++struct mod_map {
++	int hw_id;		/* Hardware module ID or -1 sentinel */
 +};
 +
-+enum fixed_clk {
-+	FIXED_CLK_66M,
-+	FIXED_CLK_266M,
-+	NUM_FIXED_CLKS
++struct mdlc_info {
++	u32 base;
++	const struct mod_map *mod_map;
 +};
-+
-+static const unsigned long fixed_clk_rates[NUM_FIXED_CLKS] = {
-+	[FIXED_CLK_66M] = 66666000,
-+	[FIXED_CLK_266M] = 266660000,
-+};
-+
-+#define FIXED_CLK(rate)		FIXED_CLK_ ## rate
 +
 +/**
-+ * struct r8a78000_cpg_priv - Clock Pulse Generator Private Data
++ * struct r8a78000_mdlc_priv - Module Controller Private Data
 + *
-+ * @dev: CPG device
-+ * @map: Mapping from DT clock IDs to fixed-rate clocks
-+ * @fixed_hws: Fixed rate clocks
++ * @link: Link into list of MDLC instances
++ * @genpd_data: PM domain provider data
++ * @rcdev: Reset controller entity
++ * @dev: MDLC device
++ * @np: Device node in DT representing the MDLC
++ * @mod_map: Mapping from hardware module IDs
 + */
-+struct r8a78000_cpg_priv {
++struct r8a78000_mdlc_priv {
++	struct hlist_node link;
++	struct genpd_onecell_data genpd_data;
++	struct reset_controller_dev rcdev;
 +	struct device *dev;
-+	const struct clk_map *map;
-+	struct clk_hw *fixed_hws[NUM_FIXED_CLKS];
++	struct device_node *np;
++	const struct mod_map *mod_map;
 +};
 +
-+static const struct clk_map *clk_map_find(const struct clk_map *map, u32 id)
++static struct generic_pm_domain *r8a78000_genpd_always_on;
++static HLIST_HEAD(r8a78000_mdlc_list);
++static DEFINE_MUTEX(r8a78000_mdlc_lock);	/* protects the two above */
++
++static struct generic_pm_domain *r8a78000_genpd_xlate(
++			const struct of_phandle_args *spec, void *data)
++{
++	struct r8a78000_mdlc_priv *priv = container_of(data,
++					struct r8a78000_mdlc_priv, genpd_data);
++	struct device *dev = priv->dev;
++	u32 id;
++
++	if (spec->args_count != 2)
++		return ERR_PTR(-EINVAL);
++
++	id = spec->args[0];
++
++	if (id >= R8A78000_MDLC_PD_AON) {
++		dev_dbg(dev,
++			"Mapping HW power domain 0x%x to always-on domain\n",
++			id);
++		return r8a78000_genpd_always_on;
++	}
++
++	/* For now only always-on domains are supported */
++	dev_err(dev, "Unknown power domain 0x%x\n", id);
++	return ERR_PTR(-ENOENT);
++}
++
++#define rcdev_to_priv(_rcdev)	\
++	container_of(_rcdev, struct r8a78000_mdlc_priv, rcdev)
++
++static const struct mod_map *mod_map_find(const struct mod_map *map, u32 id)
 +{
 +	if (!map)
 +		return NULL;
 +
-+	for (; map->dt_id >= 0; map++) {
-+		if (map->dt_id == id)
++	for (; map->hw_id >= 0; map++) {
++		if (map->hw_id == id)
 +			return map;
 +	}
 +
 +	return NULL;
 +}
 +
-+static struct clk_hw *r8a78000_clk_get(struct of_phandle_args *spec,
-+				      void *data)
++static int r8a78000_mdlc_reset_xlate(struct reset_controller_dev *rcdev,
++				     const struct of_phandle_args *spec)
 +{
-+	struct r8a78000_cpg_priv *priv = data;
++	struct r8a78000_mdlc_priv *priv = rcdev_to_priv(rcdev);
 +	struct device *dev = priv->dev;
-+	const struct clk_map *map;
-+	struct clk_hw *hw;
++	const struct mod_map *map;
 +	u32 id;
 +
 +	if (spec->args_count != 1)
-+		return ERR_PTR(-EINVAL);
++		return -EINVAL;
 +
 +	id = spec->args[0];
 +
-+	map = clk_map_find(priv->map, id);
++	map = mod_map_find(priv->mod_map, id);
 +	if (!map) {
-+		dev_err(dev, "Unknown clock %u\n", id);
-+		return ERR_PTR(-ENOENT);
++		dev_err(dev, "Unknown reset 0x%x\n", id);
++		return -ENOENT;
 +	}
 +
-+	dev_dbg(dev, "Mapping DT clock %u to fixed clock %u\n", id, map->fw_id);
-+
-+	hw = priv->fixed_hws[map->fw_id];
-+
-+	dev_dbg(dev, "clock %u is %s at %lu Hz\n", id, clk_hw_get_name(hw),
-+		clk_hw_get_rate(hw));
-+
-+	return hw;
++	dev_dbg(dev, "Ignoring HW reset 0x%x\n", id);
++	return id;
 +}
 +
-+static int register_fixed_clks(struct r8a78000_cpg_priv *priv)
-+{
-+	struct device *dev = priv->dev;
-+	unsigned long rate;
-+	struct clk_hw *hw;
-+	const char *name;
-+
-+	for (unsigned int i = 0; i < ARRAY_SIZE(fixed_clk_rates); i++) {
-+		rate = fixed_clk_rates[i];
-+		name = devm_kasprintf(dev, GFP_KERNEL, "cpg-%lu", rate);
-+		if (!name)
-+			return -ENOMEM;
-+
-+		hw = devm_clk_hw_register_fixed_rate(dev, name, NULL, 0, rate);
-+		if (IS_ERR(hw))
-+			return PTR_ERR(hw);
-+
-+		priv->fixed_hws[i] = hw;
++#define DEFINE_MDLC_RESET_WRAPPER(op)					    \
++	static int r8a78000_mdlc_ ## op(struct reset_controller_dev *rcdev, \
++					unsigned long id)		    \
++	{								    \
++		struct r8a78000_mdlc_priv *priv = rcdev_to_priv(rcdev);	    \
++									    \
++		dev_dbg(priv->dev, "%s: Ignoring\n", __func__);		    \
++		return 0;						    \
 +	}
 +
++DEFINE_MDLC_RESET_WRAPPER(reset)
++DEFINE_MDLC_RESET_WRAPPER(assert)
++DEFINE_MDLC_RESET_WRAPPER(deassert)
++DEFINE_MDLC_RESET_WRAPPER(status)
++
++static const struct reset_control_ops r8a78000_mdlc_reset_ops = {
++	.reset = r8a78000_mdlc_reset,
++	.assert = r8a78000_mdlc_assert,
++	.deassert = r8a78000_mdlc_deassert,
++	.status = r8a78000_mdlc_status,
++};
++
++static int r8a78000_mdlc_attach_dev(struct generic_pm_domain *domain,
++				    struct device *dev)
++{
++	struct device_node *np = dev->of_node;
++	struct r8a78000_mdlc_priv *priv;
++	struct of_phandle_args pd_spec;
++	const struct mod_map *map;
++	unsigned int id;
++	int ret;
++
++	ret = of_parse_phandle_with_args(np, "power-domains",
++					 "#power-domain-cells", 0, &pd_spec);
++	if (ret < 0)
++		return ret;
++
++	if (pd_spec.args_count != 2) {
++		of_node_put(pd_spec.np);
++		return -EINVAL;
++	}
++
++	scoped_guard(mutex, &r8a78000_mdlc_lock) {
++		hlist_for_each_entry(priv, &r8a78000_mdlc_list, link) {
++			if (priv->np == pd_spec.np)
++				break;
++		}
++	}
++
++	if (!priv) {
++		dev_err(dev, "%s: MDLC %pOF not found\n", __func__, pd_spec.np);
++		of_node_put(pd_spec.np);
++		return -ENODEV;
++	}
++
++	id = pd_spec.args[1];
++	of_node_put(pd_spec.np);
++
++	map = mod_map_find(priv->mod_map, id);
++	if (!map) {
++		dev_err(dev, "Unknown module 0x%x\n", id);
++		return -ENOENT;
++	}
++
++	dev_dbg(dev, "Ignoring HW module 0x%x\n", id);
 +	return 0;
 +}
 +
-+static int r8a78000_cpg_probe(struct platform_device *pdev)
++static void r8a78000_mdlc_unlink(void *data)
 +{
-+	struct device *dev = &pdev->dev;
-+	struct r8a78000_cpg_priv *priv;
-+	const struct clk_map *map;
++	struct r8a78000_mdlc_priv *priv = data;
++
++	scoped_guard(mutex, &r8a78000_mdlc_lock) {
++		hlist_del(&priv->link);
++	}
++}
++
++static void r8a78000_genpd_del_provider(void *data)
++{
++	of_genpd_del_provider(data);
++}
++
++static int r8a78000_genpd_always_on_singleton(struct device *dev)
++{
++	struct generic_pm_domain *genpd;
 +	int ret;
 +
-+	map = of_device_get_match_data(dev);
-+	if (!map)
++	guard(mutex)(&r8a78000_mdlc_lock);
++
++	if (r8a78000_genpd_always_on)
++		return 0;
++
++	genpd = kzalloc_obj(*genpd);
++	if (!genpd)
++		return -ENOMEM;
++
++	genpd->name = "always-on";
++	genpd->attach_dev = r8a78000_mdlc_attach_dev;
++
++	ret = pm_genpd_init(genpd, &pm_domain_always_on_gov, false);
++	if (ret) {
++		kfree(genpd);
++		return dev_err_probe(dev, ret,
++				     "Failed to create always-on domain\n");
++	}
++
++	r8a78000_genpd_always_on = genpd;
++	return 0;
++}
++
++static int r8a78000_mdlc_probe(struct platform_device *pdev)
++{
++	struct device *dev = &pdev->dev;
++	struct device_node *np = dev->of_node;
++	struct r8a78000_mdlc_priv *priv;
++	const struct mdlc_info *info;
++	struct resource *res;
++	int ret;
++
++	ret = r8a78000_genpd_always_on_singleton(dev);
++	if (ret)
++		return ret;
++
++	info = of_device_get_match_data(dev);
++	if (!info)
 +		return -ENODEV;
 +
 +	priv = devm_kzalloc(dev, sizeof(*priv), GFP_KERNEL);
@@ -246,41 +356,102 @@ index 0000000000000000..7946f9d0b423def1
 +		return -ENOMEM;
 +
 +	priv->dev = dev;
-+	priv->map = map;
++	priv->np = np;
 +
-+	ret = register_fixed_clks(priv);
++	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
++	if (!res)
++		return -ENODEV;
++
++	for (; info->base; info++) {
++		if (info->base == res->start)
++			break;
++	}
++
++	if (!info->base) {
++		dev_dbg(dev, "Unsupported MDLC instance 0x%pa\n", &res->start);
++		return -ENODEV;
++	}
++
++	priv->mod_map = info->mod_map;
++
++	scoped_guard(mutex, &r8a78000_mdlc_lock) {
++		hlist_add_head(&priv->link, &r8a78000_mdlc_list);
++	}
++
++	ret = devm_add_action_or_reset(dev, r8a78000_mdlc_unlink, priv);
 +	if (ret)
-+		return ret;
++		return dev_err_probe(dev, ret, "failed to add action\n");
 +
-+	return devm_of_clk_add_hw_provider(dev, r8a78000_clk_get, priv);
++	/* Note that no actual domains are registered, just need translation */
++	priv->genpd_data.xlate = r8a78000_genpd_xlate;
++	ret = of_genpd_add_provider_onecell(np, &priv->genpd_data);
++	if (ret)
++		return dev_err_probe(dev, ret,
++				     "Failed to register genpd provider\n");
++
++	ret = devm_add_action_or_reset(dev, r8a78000_genpd_del_provider, np);
++	if (ret)
++		return dev_err_probe(dev, ret,
++				     "failed to add unregister action\n");
++
++	priv->rcdev.ops = &r8a78000_mdlc_reset_ops;
++	priv->rcdev.of_node = np;
++	priv->rcdev.of_reset_n_cells = 1;
++	priv->rcdev.of_xlate = r8a78000_mdlc_reset_xlate;
++
++	ret = devm_reset_controller_register(dev, &priv->rcdev);
++	if (ret)
++		return dev_err_probe(dev, ret,
++				     "Failed to register reset controller\n");
++
++	return 0;
 +}
 +
-+static const struct clk_map r8a78000_cpg_default[] = {
-+	{ R8A78000_CPG_SGASYNCD4_PERW_BUS,	FIXED_CLK(266M) },
-+	{ R8A78000_CPG_SGASYNCD16_PERW_BUS,	FIXED_CLK(66M) },
++static const struct mod_map r8a78000_mdlc_perw_mod_default[] = {
++	{ 0x54 },	/* HSCIF0 */
 +	{ -1 }
 +};
 +
-+static const struct of_device_id r8a78000_cpg_match[] = {
++static const struct mdlc_info r8a78000_mdlc_default[] = {
 +	{
-+		.compatible = "renesas,r8a78000-cpg",
-+		.data = &r8a78000_cpg_default,
++		.base = 0xc05d0000 /* mdlc_perw */,
++		.mod_map = r8a78000_mdlc_perw_mod_default,
 +	},
 +	{ /* sentinel */ }
 +};
 +
-+static struct platform_driver r8a78000_cpg_driver = {
-+	.probe = r8a78000_cpg_probe,
++static const struct of_device_id r8a78000_mdlc_match[] = {
++	{
++		.compatible = "renesas,r8a78000-mdlc",
++		.data = &r8a78000_mdlc_default,
++	},
++	{ /* sentinel */ }
++};
++
++static struct platform_driver r8a78000_mdlc_driver = {
++	.probe = r8a78000_mdlc_probe,
 +	.driver = {
-+		.name = "r8a78000-cpg",
-+		.of_match_table = r8a78000_cpg_match,
++		.name = "r8a78000-mdlc",
++		.of_match_table = r8a78000_mdlc_match,
 +		.suppress_bind_attrs = true,
 +	},
 +};
 +
-+builtin_platform_driver(r8a78000_cpg_driver)
++builtin_platform_driver(r8a78000_mdlc_driver)
 +
-+MODULE_DESCRIPTION("R-Car X5H CPG Driver");
++MODULE_DESCRIPTION("R-Car X5H MDLC Driver");
+diff --git a/drivers/soc/renesas/Kconfig b/drivers/soc/renesas/Kconfig
+index fdf18ed2dfc2186d..eb8ac0d47d9d42b1 100644
+--- a/drivers/soc/renesas/Kconfig
++++ b/drivers/soc/renesas/Kconfig
+@@ -357,6 +357,7 @@ config ARCH_R8A78000
+ 	bool "ARM64 Platform support for R8A78000 (R-Car X5H)"
+ 	default y if ARCH_RENESAS
+ 	select ARCH_RCAR_GEN5
++	select MDLC_R8A78000
+ 	help
+ 	  This enables support for the Renesas R-Car X5H SoC.
+ 
 -- 
 2.43.0
 
