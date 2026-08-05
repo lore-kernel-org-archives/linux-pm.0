@@ -1,139 +1,149 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8D4223909BF;
-	Wed,  5 Aug 2026 14:52:33 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 08B481ACED5;
+	Wed,  5 Aug 2026 15:21:04 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1785941554; cv=none; b=HBkR5f7HlVyjaJLcQjD/1m2gL5BaqnJliQRNhT5SCrQORyHiT5H+oeGSxkDwyTZmE3Ktcxcwc93XB+b564bIJs97rkmVg0rPWhfqtbM5SuTt7NzIsix0PIocgAxgX54Fwh9vBxNdKbR4dmHvC4SPxBILT5/Qu0iXQzTjUQWqlNQ=
+	t=1785943266; cv=none; b=k/WLwi7jOXO5LH3Mp0/bbd8atct1BjGQn0HJrIG3NQKCwPIGAisTwDN0aY4rWhZ3oW7tLIjlRy9Zo9sf3M/1oU5OHusU3jloyzYlM/Wbo+bM0MOEV93CTR3M+w0jgIrEYA4dLv/keGGAg3LPWvmHLAij0Bzfi7NNB3Y+5kO2mAw=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1785941554; c=relaxed/simple;
-	bh=V1vMFzvbpOsVqDlP1F4HLLpMA2iy2wrtQgeOlHIvRcQ=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=UrL4nTPLaMudkgnowJxqSe+IFE9njwZaXkH32LLWvl67nqOklFTN9/hjEffnvlTQDBIkHtx1Qn5EoVUnuqM3bjtNw92Yl62gG7bxfchlcMrUzx52oqRD9WjmWzF8oiUIFdcsfA35jL6rK/14BIwr3gWUxbrGCwC3gpjjrsbCouM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Uz8Jmq8v; arc=none smtp.client-ip=100.103.45.18
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Uz8Jmq8v"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 66E271F000E9;
-	Wed,  5 Aug 2026 14:52:25 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1785941553;
-	bh=ELhK4rl+r13PV2J/cKV8h4IXQk1HnwLW6SsE62SCcCM=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=Uz8Jmq8ve7/kkG2FNZKGvCTlvZLhpZJNbpuNuiR00/q4ZAOZwbCJtTDPFum/EvPJr
-	 IoxlHVX9XwcRfu469CsXQXFQAsuPocPub8051e5AERbZ1txkdazoqga4YTZ7XJoSe0
-	 EDSNuYANVeoppZFogTtSFraeg0t0PS+bOzPuSg/ZnQD0xHNAwxrf5j9ZOBOQwBpMmc
-	 4oTVyre+fKRpMkXJdzlrykf1ZF8/lZU9IlLJdCJe45GMhfvEqd3+c3AkmKtIzRezbU
-	 WCKixfhHoJWNTxojv61gU1PhFMm+HYf9Ogy4EKe8MytMpUjB+yCVhZiEIrarY5i3gi
-	 G5X493ZKh+ApQ==
-Date: Wed, 5 Aug 2026 16:52:15 +0200
-From: Manivannan Sadhasivam <mani@kernel.org>
-To: Krzysztof Kozlowski <krzk@kernel.org>
-Cc: Rahul Samana <rahul.samana@oss.qualcomm.com>, 
-	Bartosz Golaszewski <brgl@kernel.org>, Marcel Holtmann <marcel@holtmann.org>, 
-	Luiz Augusto von Dentz <luiz.dentz@gmail.com>, Rob Herring <robh@kernel.org>, 
-	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
-	Balakrishna Godavarthi <quic_bgodavar@quicinc.com>, Rocky Liao <quic_rjliao@quicinc.com>, 
-	Bjorn Andersson <andersson@kernel.org>, Konrad Dybcio <konradybcio@kernel.org>, 
-	Bartosz Golaszewski <brgl@bgdev.pl>, linux-arm-msm@vger.kernel.org, linux-bluetooth@vger.kernel.org, 
-	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org, 
-	linux-pm@vger.kernel.org, quic_mohamull@quicinc.com, quic_hbandi@quicinc.com, 
-	quic_anubhavg@quicinc.com
-Subject: Re: [PATCH v2 1/6] dt-bindings: bluetooth: qca: add QCC2072
-Message-ID: <5tkajres2vjkt436teaujcqyc3mjqr65rsfvwhjbmlk3fc3gpt@j6ozyfattae3>
-References: <712f8a14-d2a1-4a90-82f9-05cd694f2658@oss.qualcomm.com>
- <c1875dd6-fe3a-4a69-a6fd-b461c8fba6e4@kernel.org>
- <6d6465bb-47ac-464c-af4e-0ca72325705f@oss.qualcomm.com>
- <8a388310-d3cc-4d02-abb6-0eb98c24cfce@kernel.org>
- <4523441f-498a-4bbd-80f3-97a7a9206c00@oss.qualcomm.com>
- <6e0b9e79-ccd4-4689-9a6b-9b4fc556d5e4@kernel.org>
- <gfhlyvoefcsvtjuxfo75qeham272cc5g2r3npjenzs5esjifiy@ro7dtkpxwizk>
- <8ab6c26f-b648-447c-9fdd-f1424beb44f4@kernel.org>
- <sewfntbhqtj2apfdi4ouan27artvj4lyxqizvinsvzltbofqu2@riuoo3fmczff>
- <768142f0-2638-41f3-a34f-dc80bb99eb7f@kernel.org>
+	s=arc-20240116; t=1785943266; c=relaxed/simple;
+	bh=Ny5Kx9wXzwxNDJ9xElZ0YlC6exLF+nb2wacloxIZTs4=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=C9kjaC9YVWECffozgHnlDZt6T4KO9qcHfPXYQqDiTMZbjDGK0G1TmrdXYobmJPLpszAGDPKzHmjtUIC78K6+70S6UYRs6O0j+zPEeF3eFJr4QgAOpxi4wThk3hO9zFRfsmT1+5ma22vufBFOFqFpKrLqmsOI3hREpomjiS23aCI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id EC3A91F000E9;
+	Wed,  5 Aug 2026 15:21:00 +0000 (UTC)
+From: Geert Uytterhoeven <geert+renesas@glider.be>
+To: Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	Michael Turquette <mturquette@baylibre.com>,
+	Stephen Boyd <sboyd@kernel.org>,
+	Brian Masney <bmasney@redhat.com>,
+	Ulf Hansson <ulfh@kernel.org>,
+	Philipp Zabel <p.zabel@pengutronix.de>,
+	Wolfram Sang <wsa+renesas@sang-engineering.com>,
+	Marek Vasut <marek.vasut+renesas@mailbox.org>,
+	Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
+Cc: devicetree@vger.kernel.org,
+	linux-clk@vger.kernel.org,
+	linux-pm@vger.kernel.org,
+	linux-renesas-soc@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org,
+	linux-kernel@vger.kernel.org,
+	Geert Uytterhoeven <geert+renesas@glider.be>
+Subject: [PATCH v3 0/6] R-Car X5H CPG/MDLC support
+Date: Wed,  5 Aug 2026 17:20:48 +0200
+Message-ID: <cover.1785941595.git.geert+renesas@glider.be>
+X-Mailer: git-send-email 2.43.0
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <768142f0-2638-41f3-a34f-dc80bb99eb7f@kernel.org>
 
-On Wed, Aug 05, 2026 at 04:36:31PM +0200, Krzysztof Kozlowski wrote:
-> On 05/08/2026 16:12, Manivannan Sadhasivam wrote:
-> > On Wed, Aug 05, 2026 at 02:33:51PM +0200, Krzysztof Kozlowski wrote:
-> >> DT is not representation of internal device driver instantiation mechanism.
-> >>
-> > 
-> > Here, the driver is just creating compatible for a real device. What difference
-> > does it make if the BT node was defined statically in the DT vs created
-> > dynamically? Both nodes do represent a real BT device, not driver's own
-> > representation. And by the time the node was created, the device is physically
-> > attached to the system.
-> 
-> What stops this power sequencing drivers, after more driver patches, the
-> best if being part of some bigger series, to add properties like
-> "linux,name-of-driver-to-bind" or whatever other SW properties?
-> 
-> This is what happened in that linked thread:
-> https://lore.kernel.org/all/20260326-pci-m2-e-v7-8-43324a7866e6@oss.qualcomm.com/
-> The driver code is adding children under other nodes (references by
-> graph) and it is nowhere documented. Maybe bindings of these other nodes
-> allow it, maybe not. How do you even validate that?
-> 
+	Hi all,
 
-So the concern is validating the properties that get added dynamically and I get
-that. How about inserting an overlay for the BT node instead of creating the
-node on the fly? Like, drivers/misc/lan966x_pci.dtso
+This patch series adds minimal support for the Renesas R-Car X5H Clock
+Pulse Generator (CPG) and Module Controller (MDLC), to aim for replacing
+the dummy clocks in r8a78000.dtsi with proper hardware description.
+These two components are closely related, in the sense that they are
+both supposed to be accessed through the ARM System Control and
+Management Interface (SCMI) on the Ironhide development board.
 
-This way, the overlay would be validated against a binding and the driver would
-just be inserting it.
+This series consists of three parts:
+  1. Patches 1-2 add DT bindings and DT binding definitions,
+  2. Patches 3-4 add minimal CPG and MDLC drivers,
+  3. Patches 5-6 update the DTS.
+Note that this series depends on v7.2-rc2, due to the use of
+<linux/device-id/of.h>.
 
-> So answering your question - yes, there is a difference because:
-> 1. DTS we validate but whatever you add to driver code we do not and we
-> cannot,
-> 2. DTS represents hardware but whatever you do in your driver code
-> represents who knows what (maybe hardware, maybe not, can represent
-> anything)
-> 
-> And if you claim "I add hardware in the driver!", I respond - maybe
-> true, maybe not, but look at this crap:
-> https://web.git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=687bfbba5a1cb15cee51519c210141ed1c4b0ec7
-> 
-> Since we DISALLOWED venus-decoder and venus-encoder DT nodes, what did
-> Bryan do? Squeezed via driver code fake disallowed nodes and even gave
-> them compatibles not looking like compatibles, so any regex won't work.
-> 
-> This power sequencing work here has the same problem of sneaking ABI,
-> which I pointed out here:
-> https://lore.kernel.org/all/9cc5af16-d95e-4f10-8b4a-5e29c136079c@kernel.org/
-> 
-> Look at above patch - nothing documents that ABI. The same as Bryan's
-> fake venus-decoder and encore (not only fake but actually rejected). And
-> to avoid ABI-check tools (or incoming tools), this power sequencing code
-> does not even call a "compatible" a "compatible". No, it calls it
-> "driver_data" nicely avoiding detection.
-> 
-> This is terrible practice and I feel like allowing this patch is silent
-> acknowledgment or agreement of such practice.
-> 
-> It's about basic ABI principles - if you have DT ABI, it must be both
-> clear in the drivers code and in DT bindings, instead of obfuscated
-> calling a compatible driver data. If you don't, then this is not DT ABI
-> and you are not allowed to use OF code to instantiate drivers. Use SW
-> nodes or KHO-style whatever else is there.
-> 
+Changes compared to v2[1]:
+  - Add Acked-by, Reviewed-by,
+  - Add fixed-rate clocks to kerneldoc of r8a78000_cpg_priv.map,
+  - Use devm_clk_hw_register_fixed_rate(), drop unregister_fixed_clks(),
+  - Drop fill_clk_map(), as it is not really needed until SCMI remapping
+    support is added later,
+  - Replace <linux/mod_devicetable.h> by more specific
+    <linux/device-id/of.h> in v7.2-rc2,
+  - Add a comment to document only always-on domains are supported,
+  - Consistently use /* sentinel */ for zero sentinels,
+  - Drop trailing commas from sentinels,
+  - Sort MDLC nodes (alphabetically, by label).
 
-I did propose using SW nodes initially, but then it got changed to
-OF_DYNAMIC with review from Andy. But honestly, Andy only mentioned 'DT
-Overlay' [1], and I was the one decided to use OF_DYNAMIC.
+Major changes compared to v1[2] (more detail in the individual patches):
+  - Add default support not using SCMI,
+  - Drop everything related to SCMI.
 
-- Mani
+Note that this series does not use or rely on SCMI in any way.
+SCMI remapping support will be added in a subsequent series (old version
+at [3]).
+Full hardware support without using SCMI could be added, too, if anyone
+would care about that use case.
 
-[1] https://lore.kernel.org/all/aWSwgRiEkT9unYw9@smile.fi.intel.com
+For testing, I have pushed this series plus additional work (including
+a rebased and updated version of [3]) to [4].
+
+While I know it is getting late in the cycle, this work (especially the
+DT bindings) are a dependency for about any R-Car X5H progress, so it
+would be good to have it included in v7.3.
+Hence I plan to queue the clock patches (1, 3) in renesas-clk for v7.3
+(Stephen still hasn't merged my earlier PR for v7.3 anyway).
+Ulf: It would be great if you could take the pmdomain patches (2, 4).
+The DTS changes (5-6) can wait for v7.4; they have a hard dependency on
+the presence of both drivers anyway.
+
+Thanks for your comments!
+
+[1] "[PATCH v2 0/6] R-Car X5H CPG/MDLC support"
+    https://lore.kernel.org/cover.1783505142.git.geert+renesas@glider.be
+[2] "[PATCH/RFC 00/14] R-Car X5H Ironhide SCMI CPG/MDLC remapping"
+    https://lore.kernel.org/cover.1776793163.git.geert+renesas@glider.be
+[3] "[PATCH v2 00/10] R-Car X5H Ironhide CPG/MDLC SCMI remapping support"
+    https://lore.kernel.org/cover.1783505329.git.geert+renesas@glider.be
+[4] topic/rcar-x5h-ironhide-scmi-cpg-mdlc-remapping-v3-wip branch of
+    https://git.kernel.org/pub/scm/linux/kernel/git/geert/renesas-drivers.git
+
+Geert Uytterhoeven (6):
+  dt-bindings: clock: Document Renesas R-Car X5H Clock Pulse Generator
+  dt-bindings: power: Document Renesas R-Car X5H Module Controller
+  clk: renesas: Add R-Car X5H CPG driver
+  pmdomain: renesas: Add R-Car X5H MDLC driver
+  arm64: dts: renesas: r8a78000: Add CPG node
+  arm64: dts: renesas: r8a78000: Add MDLC nodes
+
+ .../bindings/clock/renesas,r8a78000-cpg.yaml  |  55 +++
+ .../bindings/power/renesas,r8a78000-mdlc.yaml |  61 ++++
+ arch/arm64/boot/dts/renesas/r8a78000.dtsi     | 300 ++++++++++++++--
+ drivers/clk/renesas/Kconfig                   |   4 +
+ drivers/clk/renesas/Makefile                  |   1 +
+ drivers/clk/renesas/r8a78000-cpg.c            | 166 +++++++++
+ drivers/pmdomain/renesas/Kconfig              |   4 +
+ drivers/pmdomain/renesas/Makefile             |   1 +
+ drivers/pmdomain/renesas/r8a78000-mdlc.c      | 330 ++++++++++++++++++
+ drivers/soc/renesas/Kconfig                   |   1 +
+ .../dt-bindings/clock/renesas,r8a78000-cpg.h  |  14 +
+ .../dt-bindings/power/renesas,r8a78000-mdlc.h |  15 +
+ 12 files changed, 927 insertions(+), 25 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/clock/renesas,r8a78000-cpg.yaml
+ create mode 100644 Documentation/devicetree/bindings/power/renesas,r8a78000-mdlc.yaml
+ create mode 100644 drivers/clk/renesas/r8a78000-cpg.c
+ create mode 100644 drivers/pmdomain/renesas/r8a78000-mdlc.c
+ create mode 100644 include/dt-bindings/clock/renesas,r8a78000-cpg.h
+ create mode 100644 include/dt-bindings/power/renesas,r8a78000-mdlc.h
 
 -- 
-மணிவண்ணன் சதாசிவம்
+2.43.0
+
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
