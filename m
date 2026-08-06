@@ -1,117 +1,196 @@
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id 4FDE641F5C1;
-	Thu,  6 Aug 2026 09:02:10 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1F7CF31E845;
+	Thu,  6 Aug 2026 09:02:21 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1786006932; cv=none; b=pWvLGxWyJDAauCaPoA7LXTp9suUQekSOXovJ8OmfTwDErmbSkWnE/c3s/kzvRnZQ0hdMx0WGtTfubDeMqkAqpbk0CHOG4Itj98zzCu8QQo8A0/RceJM1NckArv8x1Y4Gcr6zyNjBC6rj4mEp730EJaR+cWlzybx5DZY0/E9RaJU=
+	t=1786006943; cv=none; b=cTxamUwsH+HLOiFQp3tJo44krnLsrXL4bbv3UlNMrfQuheAF6Zu1EL78nWlp4YXin/ZjTnQY34KTnl/yeovCsThHkRw6dAGmW/iq5G8VoEv2yvGuPdb95GD0iH1z8AIPvi/Xh4SfH3ophdGNODE2e6xwpGRWEpKSfCrs6OEL4U4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1786006932; c=relaxed/simple;
-	bh=m5NHGSN+QWQ8jGKH8m7qhVAsGzAtYJFkQ76VmJgsTDk=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=MhowiPvV9pDJCsN14bh6Y40QOxw7fdx44PAj0/BwQvqh+7H3OaksrC7BqZ0VI+7pjf/jHlzGr8AH6hR3nicwKRk8MJ0wH1oSGO9qUP6jb0+EEX19zH+mAH/XyKPBtYfNlDychdKew5vWtKzI9RMWeAmiU1a6Pj6HaC7Os1HOGy4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=nHbm64lf; arc=none smtp.client-ip=217.140.110.172
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
+	s=arc-20240116; t=1786006943; c=relaxed/simple;
+	bh=BhoAIRSSw12dwlgtkrUG8lawrlcOm1C2AjCzInw67mA=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=C2SARmgEOU4vr44PZUh6hp81fK3owHrI6qxHr60hZ/0Uc1kaqdPLPwAMmMMMfWMD1FXY+ljY5iqMF0qpuc7UG8RiNvkMiA58P78kw68SYDOcKwz+spVPMMSt1WYy1+QIDP0IEc4xNwdxg6xlSIPOpZgwT3YCMEjT21Qize0X39g=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b=nHioQw1J; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="nHbm64lf"
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 9EFEA153B;
-	Thu,  6 Aug 2026 02:02:05 -0700 (PDT)
-Received: from [10.1.39.91] (e127648.arm.com [10.1.39.91])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id C32153F632;
-	Thu,  6 Aug 2026 02:02:05 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1786006929; bh=m5NHGSN+QWQ8jGKH8m7qhVAsGzAtYJFkQ76VmJgsTDk=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=nHbm64lfHdIi0J0dmQAmkTIhjYo1crK4cdBFSbfZpyrGGNMXAmRdw8/MhqmY+4A0U
-	 yWqibBUr7FTRRN1mKfc7wnVdc8YbhfizL/Wv1UfJHWmlKDz7l8VLr1Oi/uPl3ryG0i
-	 OT8xONLCw8KzRSpHBvjn/aiV1CNskCWtQyM479fo=
-Message-ID: <7a4be9a1-4b00-49c4-bdbf-649268e78c7a@arm.com>
-Date: Thu, 6 Aug 2026 10:02:03 +0100
+	dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b="nHioQw1J"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4A8681F000E9;
+	Thu,  6 Aug 2026 09:02:21 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linuxfoundation.org;
+	s=korg; t=1786006941;
+	bh=fP86ssXPihe2gMNpYTG8Xgq5ose0BM8EMTaFtieBwMU=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=nHioQw1JYiKx68eTF6pCOnzKC1rHeHuuwJ8b7f1TmUtHMxRv2bNp7z0jdDKNEjjZa
+	 9UpqaJghk4zpTXEVXkB3NmZiPSERlpSqLNdF1+HW9FG+KFbXBaz3UPGIRkPaI8sPJo
+	 U0/hsCoNHHni3FWmPhHfFUmSPxsbyE64pnpPUNnk=
+Date: Thu, 6 Aug 2026 11:02:04 +0200
+From: Greg KH <gregkh@linuxfoundation.org>
+To: Yichong Chen <chenyichong@uniontech.com>
+Cc: rafael@kernel.org, dakr@kernel.org, djakov@kernel.org,
+	quic_mdtipton@quicinc.com, vkoul@kernel.org,
+	yung-chuan.liao@linux.intel.com, pierre-louis.bossart@linux.dev,
+	driver-core@lists.linux.dev, linux-kernel@vger.kernel.org,
+	linux-pm@vger.kernel.org, linux-sound@vger.kernel.org
+Subject: Re: [PATCH v2 2/3] soundwire: debugfs: replace writable string helper
+Message-ID: <2026080613-expert-primary-a222@gregkh>
+References: <20260806084854.1019789-1-chenyichong@uniontech.com>
+ <20260806084854.1019789-3-chenyichong@uniontech.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 2/2] sched/cpufreq: Update schedutil's DVFS request to
- reach the boost frequencies
-To: Sibi Sankar <sibi.sankar@oss.qualcomm.com>, rafael@kernel.org,
- viresh.kumar@linaro.org, mingo@redhat.com, peterz@infradead.org,
- linux-arm-msm@vger.kernel.org, juri.lelli@redhat.com,
- vincent.guittot@linaro.org, dietmar.eggemann@arm.com
-Cc: linux-kernel@vger.kernel.org, rostedt@goodmis.org, bsegall@google.com,
- mgorman@suse.de, vschneid@redhat.com, kprateek.nayak@amd.com,
- linux-pm@vger.kernel.org, Ionela Voinescu <Ionela.Voinescu@arm.com>,
- Beata Michalska <Beata.Michalska@arm.com>,
- Dietmar Eggemann <dietmar.eggemann@arm.com>
-References: <20260806044230.909961-1-sibi.sankar@oss.qualcomm.com>
- <20260806044230.909961-3-sibi.sankar@oss.qualcomm.com>
-Content-Language: en-US
-From: Christian Loehle <christian.loehle@arm.com>
-In-Reply-To: <20260806044230.909961-3-sibi.sankar@oss.qualcomm.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260806084854.1019789-3-chenyichong@uniontech.com>
 
-On 8/6/26 05:42, Sibi Sankar wrote:
-> capacity_freq_ref, exposed to schedutil via get_capacity_ref_freq(),
-> was introduced by commit 9942cb22ea45 ("sched/topology: Add a new
-> arch_scale_freq_ref() method") as a fixed anchor that does not move at
-> runtime. However, schedutil uses that same fixed anchor as the reference
-> plugged into map_util_freq() which saturates exactly at capacity_freq_ref.
+On Thu, Aug 06, 2026 at 04:48:53PM +0800, Yichong Chen wrote:
+> debugfs_create_str() is being made read-only because its generic write path
+> is hard to make safe without adding more locking to the helper.
 > 
-> As a result, a system with cpufreq boost enabled effectively never runs at
-> boost frequencies under schedutil-governed load. Fix this by plugging in
-> policy-max into the map_util_freq equation, so that the DVFS requests
-> translates to the actual cpufreq driver ceiling.
+> Convert the SoundWire firmware_file entry to a local write-only file
+> operation before removing writable string support from
+> debugfs_create_str().
 > 
-> Signed-off-by: Sibi Sankar <sibi.sankar@oss.qualcomm.com>
+> Copy the firmware name before request_firmware() so later debugfs writes
+> cannot replace the string while it is being used.
+> 
+> Signed-off-by: Yichong Chen <chenyichong@uniontech.com>
 > ---
->  kernel/sched/cpufreq_schedutil.c | 13 ++++++++++---
->  1 file changed, 10 insertions(+), 3 deletions(-)
+>  drivers/soundwire/debugfs.c | 56 ++++++++++++++++++++++++++++++++++---
+>  1 file changed, 52 insertions(+), 4 deletions(-)
 > 
-> diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
-> index a1782755efcc..dcefbeaa0702 100644
-> --- a/kernel/sched/cpufreq_schedutil.c
-> +++ b/kernel/sched/cpufreq_schedutil.c
-> @@ -195,10 +195,17 @@ static unsigned int get_next_freq(struct sugov_policy *sg_policy,
->  				  unsigned long util, unsigned long max)
->  {
->  	struct cpufreq_policy *policy = sg_policy->policy;
-> -	unsigned int freq;
-> +	unsigned int freq, ref;
->  
-> -	freq = get_capacity_ref_freq(policy);
-> -	freq = map_util_freq(util, freq, max);
-> +	ref = get_capacity_ref_freq(policy);
+> diff --git a/drivers/soundwire/debugfs.c b/drivers/soundwire/debugfs.c
+> index 099eb84a548e..bba2b65a0668 100644
+> --- a/drivers/soundwire/debugfs.c
+> +++ b/drivers/soundwire/debugfs.c
+> @@ -145,6 +145,38 @@ static u32 start_addr;
+>  static size_t num_bytes;
+>  static u8 read_buffer[MAX_CMD_BYTES];
+>  static char *firmware_file;
+> +static DEFINE_MUTEX(firmware_file_lock);
 > +
-> +	/*
-> +	 * That fixed anchor governs how utilization is interpreted, but
-> +	 * the DVFS request is free to target the current policy ceiling.
-> +	 * Using ref alone would saturate the util->freq map at ref so
-> +	 * use policy->max to reach boost frequencies.
+> +static ssize_t firmware_file_write(struct file *file,
+> +				   const char __user *user_buf,
+> +				   size_t count, loff_t *ppos)
+> +{
+> +	char *old, *new;
+> +
+> +	if (*ppos)
+> +		return -EINVAL;
+> +	if (count + 1 > PAGE_SIZE)
+> +		return -E2BIG;
+> +
+> +	new = memdup_user_nul(user_buf, count);
+> +	if (IS_ERR(new))
+> +		return PTR_ERR(new);
+> +	strim(new);
+> +
+> +	mutex_lock(&firmware_file_lock);
+> +	old = firmware_file;
+> +	firmware_file = new;
+> +	mutex_unlock(&firmware_file_lock);
 
-I'm not sure those two statements are compatible with the implementation below?
-util / max is expressed in the capacity scale established using ref, multiplying
-that ratio by policy->max changes the interpretation of every util value.
+scoped lock?
 
+> +
+> +	kfree(old);
+> +	return count;
+> +}
+> +
+> +static const struct file_operations firmware_file_fops = {
+> +	.open = simple_open,
+> +	.write = firmware_file_write,
+> +	.llseek = default_llseek,
+> +};
+>  
+>  static int set_command(void *data, u64 value)
+>  {
+> @@ -246,6 +278,7 @@ static int cmd_go(void *data, u64 value)
+>  {
+>  	const struct firmware *fw = NULL;
+>  	struct sdw_slave *slave = data;
+> +	char *fw_name = NULL;
+>  	ktime_t start_t;
+>  	ktime_t finish_t;
+>  	int ret;
+> @@ -265,15 +298,24 @@ static int cmd_go(void *data, u64 value)
+>  	}
+>  
+>  	if (cmd == 0) {
+> -		ret = request_firmware(&fw, firmware_file, &slave->dev);
+> +		mutex_lock(&firmware_file_lock);
 
-> +	 */
-> +	freq = map_util_freq(util, max(ref, READ_ONCE(policy->max)), max);
+Again, scoped lock?
 
-Isn't the underlying problem that schedutil can't handle requests above capacity 1024?
+> +		if (firmware_file)
+> +			fw_name = kstrdup(firmware_file, GFP_KERNEL);
+> +		mutex_unlock(&firmware_file_lock);
+> +		if (!fw_name) {
+> +			ret = -ENOMEM;
+> +			goto out;
+> +		}
+> +
+> +		ret = request_firmware(&fw, fw_name, &slave->dev);
+>  		if (ret < 0) {
+> -			dev_err(&slave->dev, "firmware %s not found\n", firmware_file);
+> +			dev_err(&slave->dev, "firmware %s not found\n", fw_name);
+>  			goto out;
+>  		}
+>  		if (fw->size < num_bytes) {
+>  			dev_err(&slave->dev,
+>  				"firmware %s: firmware size %zd, desired %zd\n",
+> -				firmware_file, fw->size, num_bytes);
+> +				fw_name, fw->size, num_bytes);
+>  			goto out;
+>  		}
+>  	}
+> @@ -306,6 +348,7 @@ static int cmd_go(void *data, u64 value)
+>  out:
+>  	if (fw)
+>  		release_firmware(fw);
+> +	kfree(fw_name);
+>  
+>  	pm_runtime_mark_last_busy(&slave->dev);
+>  	pm_runtime_put(&slave->dev);
+> @@ -358,7 +401,8 @@ void sdw_slave_debugfs_init(struct sdw_slave *slave)
+>  
+>  	debugfs_create_file("read_buffer", 0400, d, slave, &read_buffer_fops);
+>  	if (firmware_file)
+> -		debugfs_create_str("firmware_file", 0200, d, &firmware_file);
+> +		debugfs_create_file("firmware_file", 0200, d, NULL,
+> +				    &firmware_file_fops);
+>  
+>  	slave->debugfs = d;
+>  }
+> @@ -370,8 +414,10 @@ void sdw_slave_debugfs_exit(struct sdw_slave *slave)
+>  
+>  void sdw_debugfs_init(void)
+>  {
+> +	mutex_lock(&firmware_file_lock);
+>  	if (!firmware_file)
+>  		firmware_file = kstrdup("", GFP_KERNEL);
+> +	mutex_unlock(&firmware_file_lock);
 
-effective_cpu_util() caps util at max, and sugov_effective_cpu_perf() applies
-the 25% headroom before clipping the result back to that same value.
-Therefore the input here cannot exceed 1024, and mapping it against ref
-can never request a frequency above ref.
-Using policy->max makes boost reachable, but also stretches the complete frequency range.
-For example, with ref = 4454400, policy->max = 4723200, and effective util 640, the request
-changes from 2784000 to 2952000.
+Same here.
 
-Making 'boost frequencies' truly compatible with schedutil (or PELT/CAS for that matter)
-is a discussion that is yet to be had?
-See also
-https://lore.kernel.org/lkml/20250626093018.106265-1-dietmar.eggemann@arm.com/
+>  
+>  	sdw_debugfs_root = debugfs_create_dir("soundwire", NULL);
+>  }
+> @@ -379,6 +425,8 @@ void sdw_debugfs_init(void)
+>  void sdw_debugfs_exit(void)
+>  {
+>  	debugfs_remove_recursive(sdw_debugfs_root);
+> +	mutex_lock(&firmware_file_lock);
 
+And here.
+
+>  	kfree(firmware_file);
+>  	firmware_file = NULL;
+
+This doesn't need to get set to NULL, right?
+
+thanks,
+
+greg k-h
