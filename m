@@ -1,57 +1,57 @@
-Received: from mail-ed1-f70.google.com (mail-ed1-f70.google.com [209.85.208.70])
+Received: from mail-wm1-f69.google.com (mail-wm1-f69.google.com [209.85.128.69])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C24C23DEFF1
-	for <linux-pm@vger.kernel.org>; Thu,  6 Aug 2026 06:41:39 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.208.70
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 976EE3DAAB4
+	for <linux-pm@vger.kernel.org>; Thu,  6 Aug 2026 06:45:04 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.69
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1785998501; cv=none; b=RG7QQqHhRKIz0a4ubJFeIIJNJwutesU4WNpN485hE495oP6UrgUQ5ze1YpThCjrBw3e0EPenYZQHldmi9uO77YwqGknWZvNPBSkkwmW8TM/m+UOFABgsB5NGvd9n6x33gHqJElLB29WcBtfz9O0odS/WsvcATTEp0Q9FyEwyPy0=
+	t=1785998706; cv=none; b=SHni6xhCqC+LkNVVGi1kipQRojMIr8U2DBanSJ1EStJMHk4FjGx1TFEWgllCSBwsGdN6zz1Ro9f5CciYMAu6SoqZJPyuHQ/yz6rg9gIRYvKzuNMM4WyfUUYDQmu5gcCyg+N+q2uUpfzXLiVIt6XCTa57luqNXcw3OZqQ8i1YTqU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1785998501; c=relaxed/simple;
-	bh=CfNRJZeZmqs+vpmkTIy+iPYiZj1ZA6vbNYOB8IJb70g=;
+	s=arc-20240116; t=1785998706; c=relaxed/simple;
+	bh=fRTJ1SJFWkaeN99T099jlMEWWDBrUQRgB6IQGkMC//0=;
 	h=Date:In-Reply-To:Mime-Version:References:Message-ID:Subject:From:
-	 To:Cc:Content-Type; b=MN6syKsuYC1rLz+4QYuKjnPPjjzUE5wgYnSVA+l/bhHGJYDwbSElU0U+SLCeLaY9B7sJg8gwV9FsKGZM/zYsqQ/CJKRnzZTMFvTWndxeFjI60oTfb6V0wiOpy4Oe7YpSXu7PWpDaLoHOJbKyueORUe99n4JFmjB2lEcfpJT6ncM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com; spf=pass smtp.mailfrom=flex--aliceryhl.bounces.google.com; dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b=i6gG8tE2; arc=none smtp.client-ip=209.85.208.70
+	 To:Cc:Content-Type; b=j6rRLNSmbovI0aB6gLySQl3v/128FcqAbk42YZofxFTEx0xUYQBB97HO/20HizO4csipOC/vjK4D8jPN81AQnJwo9DHEe8IH6zlgPMiRMf+Ewd1QDMOlep1IhE2PBFCUwFOIH/RDGhSuLdbsYhFbmKt4x5yCcfFA96CuPuwdjV4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com; spf=pass smtp.mailfrom=flex--aliceryhl.bounces.google.com; dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b=LHqtjjYy; arc=none smtp.client-ip=209.85.128.69
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=flex--aliceryhl.bounces.google.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b="i6gG8tE2"
-Received: by mail-ed1-f70.google.com with SMTP id 4fb4d7f45d1cf-6a17cc60731so1474110a12.3
-        for <linux-pm@vger.kernel.org>; Wed, 05 Aug 2026 23:41:39 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b="LHqtjjYy"
+Received: by mail-wm1-f69.google.com with SMTP id 5b1f17b1804b1-496b6f97676so17924345e9.2
+        for <linux-pm@vger.kernel.org>; Wed, 05 Aug 2026 23:45:04 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20251104; t=1785998498; x=1786603298; darn=vger.kernel.org;
+        d=google.com; s=20251104; t=1785998703; x=1786603503; darn=vger.kernel.org;
         h=content-type:cc:to:from:subject:message-id:references:mime-version
          :in-reply-to:date:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=US1i/tRbzF6S64ni7H83o50wYD7eH+0GOV1v3nMXlH0=;
-        b=i6gG8tE249xI9jU1a1xvdfs3vwwm7ijRobSgdxQq9G6DtXWNXqpUEUpwBgeRws0ZLS
-         NoPTvkO0CXzKiHEp6sJ/EI4+NB9yVZ+gKNjO4qPkMnH9XvGj+Qb3PU1K894vaLNlB9W1
-         koD7rVr6qyCX2H7WSnhKAi6+94i8TbhOgcU2q7J9TZmmQMzJrSXgC6oEOI21K6bgUH9a
-         OSRonge9lrD66SUuhkLB7zk1d3+/ivLjfwL4y5g8fVhbwpD1AMLdUqQNtfj1PfwEbEcy
-         is5USgpHyncU/wTQ+PASt3rX+pTLpWEU8q+9Jd1f+DEzwcTUl0E31NCcGkw8tx5WrJGn
-         Hh5w==
+        bh=zRICwH8NrYFqbtAQ5CUI1CBNEXWJgmDrqZQyPRGCMDg=;
+        b=LHqtjjYyc7p50lFWb++MNoxu50vjQThWRpPfuzM7kf7LQYMt1cM3xK5/PfrBKQSqxQ
+         bG2yMsusCOHYOEzmhVCabWqj+Hl36iTDCk5BevenidVqwWG3J45DDbY8LJgQSfqRWzLk
+         I+cbUu+3YXivb8ey4ekr4dnk7s1IaCNxrbDka7RWBJ8FRs1aAraZsBqXIHaLOj+/3BnD
+         cuSWJM2FpZixERUjr9eipUd+nG3Aomh/C46SKB7HE6x+KL96il+QyLO4OjomF2dvSGdE
+         p6WjYJd2SUpNJ5JGP2ZhKFwk1EAyPFCYgVfpQ4H8+37YZsgCTGErjOm75x9mYBOT28yO
+         /HDg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1785998498; x=1786603298;
+        d=1e100.net; s=20251104; t=1785998703; x=1786603503;
         h=content-type:cc:to:from:subject:message-id:references:mime-version
          :in-reply-to:date:x-gm-message-state:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=US1i/tRbzF6S64ni7H83o50wYD7eH+0GOV1v3nMXlH0=;
-        b=Txrj4TKe/+zULrabDlGZQIB+pclzKBcCQAbgpuCi2jKHUU4nR1lYFzyJpmWWwMTgRm
-         wchq3E5fKt04Je8MI++HCgrJm5H8UE8jmiAQ9BsUR5AIyEoGSvv6mSo3BXkgxo+dEP15
-         bMe7F0kSHzmiAd1VUij8N22jIdH5J5tLz2SVorOj+mg3tog6jiVtM7FfYe53bkG8O7qY
-         29XU1rmPyd3nNm1lsrybWG3gd5Q2ARh91bveRSfix/PQqJi+eaWLJ0tf++2kOgxask6I
-         5Z6r/qhvxDMe3T+RRB6mFTwaCyiWJDICrPvJ3h1nMVtrEIc74EUrR7mKD8g0w9dSvItZ
-         QmfQ==
-X-Forwarded-Encrypted: i=1; AHgh+Rq62chLKMymcH8b5/VPoKRrtzs0uOnnlMlcsStu8fcmocyvZ/DI1NB5QbL+4VvA9DXTzWkP4HpvQQ==@vger.kernel.org
-X-Gm-Message-State: AOJu0YwLz4wx6FM1FAsk178OtZisWWk6fx0NgGnjGvFqOxEH21vxMGA2
-	Of+cuzuxyz0Lodwy2nToDzaWSg5Sa3qHnlFBQI8Cm5N21HJ06uEadE8dgPb19+0iEPmZdK5MVtF
-	OAky9ij8uSh+GrmBe6A==
-X-Received: from edbdm10.prod.google.com ([2002:a05:6402:22ca:b0:698:ac87:5b65])
+        bh=zRICwH8NrYFqbtAQ5CUI1CBNEXWJgmDrqZQyPRGCMDg=;
+        b=hdjeY8tt9aAnoal6CegKzulIv97ApzdP2kLEPFGJJ9Qjrv6uSOE4OJhybzMSGVayE+
+         U6e0NHFLYXAYPWiresHcIPFTlxrJIY1u9Kw8iNh1Fzu4L3Jfa6M0rccYHEcxbaQKEEa8
+         94SnJTbzhQy7Rgy2D9idylQYHvfjB9j4jNLQ7Vn/IadZ9Tz92Icsys4Ljb+lgPV2JApJ
+         28M9RVjJIuWlTCKAgCI4PdqbcVT2aeEMZtjK312KqbyqSYTirIiKdzgCq/HjPpez47KV
+         WLHd57xlXecysOjGXfQIj8aKc+IW6/brrpHzoVSw+N/Us/bVr46P6jxya+gXKddAUzoA
+         Rupw==
+X-Forwarded-Encrypted: i=1; AHgh+RrskwH+DHCWNfssBgOrY2CD5pn5Dpaj63EAlpR9fFqSoT27XQkwgpef0an3qbuihksq2B6wv4BOiw==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yw8yG6w0ARmuXLYgYrw5I9kjuJl/wsQh6HXN3tCuwPgtm/XLET7
+	gINYeTGJ1/OR+uh0clbLYpbXQSG5XJno1KreaasTR4yRkaVMnvnsOqDR42bX9Gb4vGnGpcRH1kc
+	CnjcaPtthPXW2vWLjFg==
+X-Received: from wmbjo7.prod.google.com ([2002:a05:600c:6b47:b0:493:c2c9:129b])
  (user=aliceryhl job=prod-delivery.src-stubby-dispatcher) by
- 2002:a05:6402:1f47:b0:698:3602:d0d with SMTP id 4fb4d7f45d1cf-6a14f252b49mr6344045a12.17.1785998497864;
- Wed, 05 Aug 2026 23:41:37 -0700 (PDT)
-Date: Thu, 6 Aug 2026 06:41:36 +0000
-In-Reply-To: <anHarTAFv-c4qx4h@arm.com>
+ 2002:a05:600c:1f86:b0:499:52ab:a50c with SMTP id 5b1f17b1804b1-49952aba5b3mr58567965e9.1.1785998702236;
+ Wed, 05 Aug 2026 23:45:02 -0700 (PDT)
+Date: Thu, 6 Aug 2026 06:45:01 +0000
+In-Reply-To: <anHa43G9-aln8wik@arm.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -59,13 +59,13 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 Mime-Version: 1.0
 References: <20260721153617.869933-1-beata.michalska@arm.com>
- <20260721153617.869933-2-beata.michalska@arm.com> <anGfGWWxiuZj4i2U@google.com>
- <anHarTAFv-c4qx4h@arm.com>
-Message-ID: <anQsoIbL6dGWmzbL@google.com>
-Subject: Re: [PATCH v2 1/3] rust: add runtime PM support
+ <20260721153617.869933-3-beata.michalska@arm.com> <anGt2_OAK2UWtXuO@google.com>
+ <anHa43G9-aln8wik@arm.com>
+Message-ID: <anQtbRH9SB5H1zRe@google.com>
+Subject: Re: [PATCH v2 2/3] rust: platform: wire runtime PM callbacks
 From: Alice Ryhl <aliceryhl@google.com>
 To: Beata Michalska <beata.michalska@arm.com>
-Cc: ojeda@kernel.org, dakr@kernel.org, gregkh@linuxfoundation.org, 
+Cc: dakr@kernel.org, ojeda@kernel.org, gregkh@linuxfoundation.org, 
 	rafael@kernel.org, boqun@kernel.org, gary@garyguo.net, 
 	bjorn3_gh@protonmail.com, lossin@kernel.org, a.hindborg@kernel.org, 
 	tmgross@umich.edu, daniel.almeida@collabora.com, 
@@ -74,50 +74,184 @@ Cc: ojeda@kernel.org, dakr@kernel.org, gregkh@linuxfoundation.org,
 	linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 Content-Type: text/plain; charset="utf-8"
 
-On Tue, Aug 04, 2026 at 02:27:25PM +0200, Beata Michalska wrote:
-> On Tue, Aug 04, 2026 at 08:13:13AM +0000, Alice Ryhl wrote:
-> > On Tue, Jul 21, 2026 at 05:34:02PM +0200, Beata Michalska wrote:
-> > > +define_pm_ops!(
-> > > +    // PM state change
-> > > +    runtime_suspend,
-> > > +    runtime_resume,
-> > > +);
+On Tue, Aug 04, 2026 at 02:28:19PM +0200, Beata Michalska wrote:
+> On Tue, Aug 04, 2026 at 09:16:11AM +0000, Alice Ryhl wrote:
+> > On Tue, Jul 21, 2026 at 05:34:03PM +0200, Beata Michalska wrote:
+> > > Allow Rust platform drivers to expose runtime PM callbacks to the driver core.
+> > > 
+> > > The runtime PM abstraction builds a dev_pm_ops table for the concrete driver
+> > > implementation, but the platform bus still needs to receive that table through
+> > > struct platform_driver. Add an optional PM_OPS associated constant to
+> > > platform::Driver and initialize the coresponding C device_driver struct
+> > > accordingly during registration. The platform glue only wires the callback
+> > > table into the C driver model; ownership of the callback payload and
+> > > runtime PM teardown remain with the pm module.
+> > > 
+> > > Signed-off-by: Beata Michalska <beata.michalska@arm.com>
+> > > ---
+> > >  rust/kernel/platform.rs | 9 +++++++++
+> > >  1 file changed, 9 insertions(+)
+> > > 
+> > > diff --git a/rust/kernel/platform.rs b/rust/kernel/platform.rs
+> > > index d8d48f60b0b9..b7e422388634 100644
+> > > --- a/rust/kernel/platform.rs
+> > > +++ b/rust/kernel/platform.rs
+> > > @@ -72,6 +72,11 @@ unsafe fn register(
+> > >              None => core::ptr::null(),
+> > >          };
+> > >  
+> > > +        let pm_ops = match T::PM_OPS {
+> > > +            Some(ops) => ops,
+> > > +            None => core::ptr::null(),
+> > > +        };
+> > > +
+> > >          // SAFETY: It's safe to set the fields of `struct platform_driver` on initialization.
+> > >          unsafe {
+> > >              (*pdrv.get()).driver.name = name.as_char_ptr();
+> > > @@ -79,6 +84,7 @@ unsafe fn register(
+> > >              (*pdrv.get()).remove = Some(Self::remove_callback);
+> > >              (*pdrv.get()).driver.of_match_table = of_table;
+> > >              (*pdrv.get()).driver.acpi_match_table = acpi_table;
+> > > +            (*pdrv.get()).driver.pm = pm_ops;
+> > >          }
+> > >  
+> > >          // SAFETY: `pdrv` is guaranteed to be a valid `DriverType`.
+> > > @@ -222,6 +228,9 @@ pub trait Driver {
+> > >      /// The table of ACPI device ids supported by the driver.
+> > >      const ACPI_ID_TABLE: Option<acpi::IdTable<Self::IdInfo>> = None;
+> > >  
+> > > +    /// Runtime PM callbacks
+> > > +    const PM_OPS: Option<&'static bindings::dev_pm_ops> = None;
+> > > +
+> > >      /// Platform driver probe.
+> > >      ///
+> > >      /// Called when a new platform device is added or discovered.
 > > 
-> > I think using a macro to define this trait is overkill. Just write it
-> > out:
+> > I've been thinking more about this, and I can't help but wonder whether
+> > we could significantly simplify it. Why not just do this:
 > > 
-> > pub trait PMOps: Sized {
-> >     /// Type of a bus device
-> >     type DeviceType: AsBusDevice<device::Bound>;
-> >     /// Type of the data associated with a PM transitions:
-> >     type RuntimePayloadType: Send;
+> > 1. Update rust/kernel/platform.rs Driver trait to include pm ops
+> > directly in the trait:
 > > 
-> >     fn runtime_suspend<'a>(
-> >         _dev:  &'a Self::DeviceType,
-> >         _payload: Option<Self::RuntimePayloadType>,
-> >     ) -> Result<Option<Self::RuntimePayloadType>, (Option<Self::RuntimePayloadType>, Error)> {
-> >         build_error!(VTABLE_DEFAULT_ERROR)
-> >     }
+> > 	#[vtable]
+> > 	pub trait Driver {
+> > 	    type IdInfo: 'static;
+> > 	    type Data<'bound>: Send + 'bound;
+> > 	    const OF_ID_TABLE: Option<of::IdTable<Self::IdInfo>> = None;
+> > 	    const ACPI_ID_TABLE: Option<acpi::IdTable<Self::IdInfo>> = None;
+> > 	
+> > 	    fn probe<'bound>(
+> > 	        dev: &'bound Device<device::Core<'_>>,
+> > 	        id_info: Option<&'bound Self::IdInfo>,
+> > 	    ) -> impl PinInit<Self::Data<'bound>, Error> + 'bound;
+> > 	
+> > 	    fn unbind<'bound>(dev: &'bound Device<device::Core<'_>>, this: Pin<&Self::Data<'bound>>) {
+> > 	        let _ = (dev, this);
+> > 	    }
+> > 	
+> > 	    // Add these methods.
+> > 	    fn runtime_suspend<'bound>(
+> > 	        dev: &'bound Device<device::Bound>,
+> > 	        data: &Self::Data<'bound>,
+> > 	    ) -> Result
+> > 	    {
+> > 	        build_error!(VTABLE_DEFAULT_ERROR)
+> > 	    }
+> > 	
+> > 	    fn runtime_resume<'bound>(
+> > 	        dev: &'bound Device<device::Bound>,
+> > 	        data: &Self::Data<'bound>,
+> > 	    ) -> Result
+> > 	    {
+> > 	        build_error!(VTABLE_DEFAULT_ERROR)
+> > 	    }
+> > 	}
 > > 
-> >     fn runtime_resume<'a>(
-> >         _dev:  &'a Self::DeviceType,
-> >         _payload: Option<Self::RuntimePayloadType>,
-> >     ) -> Result<Option<Self::RuntimePayloadType>, (Option<Self::RuntimePayloadType>, Error)> {
-> >         build_error!(VTABLE_DEFAULT_ERROR)
-> >     }
-> > }
+> > By marking the trait with #[vtable], we know whether the user has
+> > overridden runtime_suspend() and runtime_resume() and then the platform
+> > abstraction can enable PM in that scenario:
 > > 
-> > This is a lot easier to read.
-> It is, though there are more collbacks, that I would expect to be added at some
-> point, so macro is just to avoid several code blocks that would only differ in
-> function name.
-> But I do see your point.
-> Happy to change that if you still believe there is no much point to it.
+> >  - If `T::HAS_RUNTIME_SUSPEND && T::HAS_RUNTIME_RESUME` then set
+> >    `(*pdrv.get()).driver.pm` to a table using those methods in
+> >    register().
+> >  - If `T::HAS_RUNTIME_SUSPEND && T::HAS_RUNTIME_RESUME` then invoke
+> >    `pm_runtime_enable()` from `probe_callback()` after the
+> >    `set_callback()` line. Note that this call is infallible.
+> >  - Do the same from unplug to disable PM.
+> > 
+> > And then you automatically PM whenever you implement those two methods
+> > in the `platform::Driver` trait, and that's all you need to do. Since we
+> > invoke `pm_runtime_enable()` in `probe_callback()` after setting the
+> > private data, there's no issue with passing the device private data to
+> > the callbacks.
+> > 
+> > Note that we can trigger a const eval panic on `T::HAS_RUNTIME_SUSPEND
+> > != T::HAS_RUNTIME_RESUME` to enforce that you must implement both
+> > methods if you implement either one.
+> > 
+> > Thoughts? I know we have gone down this route before, but I just think
+> > it would be so so much simpler than the current approach. I know that
+> > this diverges from IRQ and such by not having a Registration, but I
+> > actually think that's ok. PM is already different from IRQ callbacks in
+> > the sense that the platform abstractions need PM-specific code *anyway*
+> > to properly set pm_ops in the `struct platform_device`.
+> > 
+> 
+> This is a sound idea, though there are few caveats.
+> This patchset only introduces runtime_resume and runtime_suspend, though the
+> range of pm ops is wider than that. So if we go the way you suggest, we need to
+> accept that all of those would finally end up in that trait's implementation.
+> Further more this would need to be replicated for other bus devices.
+> Which makes the implementation pretty noisy.
 
-I generally believe that for traits such as this one where end-users are
-likely to look up the definition, it's much more important that it's
-easy to read when you look up the source, than it being easy to write.
-Therefore, I think it should not use a macro, even if there are many
-methods.
+You can potentially do this:
+
+	#[vtable]
+	pub trait Driver {
+	    type IdInfo: 'static;
+	    type Data<'bound>: Send + 'bound;
+	    type PMOps: PMOps; // set to Self or () for no PM
+	    const OF_ID_TABLE: Option<of::IdTable<Self::IdInfo>> = None;
+	    const ACPI_ID_TABLE: Option<acpi::IdTable<Self::IdInfo>> = None;
+	
+	    fn probe<'bound>(
+	        dev: &'bound Device<device::Core<'_>>,
+	        id_info: Option<&'bound Self::IdInfo>,
+	    ) -> impl PinInit<Self::Data<'bound>, Error> + 'bound;
+	
+	    fn unbind<'bound>(dev: &'bound Device<device::Core<'_>>, this: Pin<&Self::Data<'bound>>) {
+	        let _ = (dev, this);
+	    }
+	}
+	
+	trait PMOps {
+	    fn runtime_suspend<'bound>(
+	        dev: &'bound Device<device::Bound>,
+	        data: &Self::Data<'bound>,
+	    ) -> Result
+	    {
+	        build_error!(VTABLE_DEFAULT_ERROR)
+	    }
+	
+	    fn runtime_resume<'bound>(
+	        dev: &'bound Device<device::Bound>,
+	        data: &Self::Data<'bound>,
+	    ) -> Result
+	    {
+	        build_error!(VTABLE_DEFAULT_ERROR)
+	    }
+	}
+
+To avoid that duplication.
+
+> Offloading enabling runtime PM to bus driver might not be suitable for all
+> potential users of runtime PM either. Some drivers might want to enable it
+> while in probe, call device resume and do some early setup. With this approach,
+> using drvdata is still an issue.
+> The sample implementation for Tyr is just one way of doing things.
+
+Ok, it of course depends on how these things are actually used, but it
+was not clear to me that this does not fit all actual use-cases in
+practice.
 
 Alice
