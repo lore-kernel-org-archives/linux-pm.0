@@ -1,79 +1,57 @@
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.19])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8622340EBA1;
-	Thu,  6 Aug 2026 21:51:32 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.19
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 92F2C3C3F40;
+	Thu,  6 Aug 2026 23:03:00 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1786053094; cv=none; b=ZGDSjh/UeYY3QtMCWm/s6QcV/xr1NDwdQpmNld6AQyUElqhgQ6CiYQfCgvQ1krWwUx6KBpvDwkWOBn+4MlMQUlxfCitHGT4qmYd8zqkJvCERa0y0ddS684h6g1bNqZXpO2vkpVTxGELgMcWxKoYTbr6eN3ATUID78pPworxZuB4=
+	t=1786057381; cv=none; b=NIwL+6Y7e9b44IRW+uSIZd186V5RrXigNN0OZiJZd1JABjLS6Deda14eeZPOADprP5EBaHCeuBPVM/pqj4cHfED9GwCyfX3c/r+nse6W0SWudAoPcemYSeOwAww+5BwnlaLjblIUAtqjIb4MTrFU3ufAK78ZsOTisNCFvSVqtRU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1786053094; c=relaxed/simple;
-	bh=7YXZzO7rHKj6qKOZ2jDkYVaRVikc1Wt8k9LrXwdPOkI=;
+	s=arc-20240116; t=1786057381; c=relaxed/simple;
+	bh=a/01b8sD9zIGPSc2JMt+xKNlmwk4MxTk+yXjBOK3Urs=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=Ast/+CtArSYz1oAKxx39wSbWi+RiV3uenwR9z3qmHOBBEkujKuiCrpCa6otmo9mn3fYGWsr5c5E2HXX8KFZgwM+T/Li25Dcolr8FXitV4svdseprvlecpXw0/0DtOrEbdTsQfZ/syv80DtBbuKZe87AWVaVRZbes9gjgxsBEhIk=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=STrjp17Z; arc=none smtp.client-ip=192.198.163.19
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
+	 Content-Type:Content-Disposition:In-Reply-To; b=iVwRNstxSlEPYaRIYU69WApmPhu6xFpgFeuZP71qEQkecC855IPcKUPsho05lUEN6r/wiFNO4v5ltczp0tHXOdp0/kUwIlJ6j3Z94OWgyQjGnLbIsVuFBN5+U79OVLuuK3r67kbdNpIWk59XPbliEwzRN32oYClfuqc2bzG8EF8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=F4oGabaE; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="STrjp17Z"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1786053093; x=1817589093;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=7YXZzO7rHKj6qKOZ2jDkYVaRVikc1Wt8k9LrXwdPOkI=;
-  b=STrjp17ZrWDDfBkq6sC6Z3ueXIF2jXJWW7OIEK375PjXAX9+Kg0x881B
-   B/tFAsOhA40Z0lvuWVffvaQAEljKw7HYMqX/u7KP0ur9dOv6jJC6wRO0d
-   DHJUEQxewFwF/3wcMAPvZ3ix9baxvlK4Vk9YNc++PpXraV3YglmGArkoC
-   iKmr4WFz3XinofM9bF2IfWwapjytMYTSBBTRaGoHF485ODLSJ+83P9WYi
-   TWw13K4aqwMmD5m4HxjNkjtU44HLV1zYQPtySd2JSudd5Gj+2p4RPZQKS
-   mpPou75Nx/vjJJkTUg/wpXIUtZopZQJCa9y9NqB10rFxJ7pc54PduokLY
-   g==;
-X-CSE-ConnectionGUID: KFxNgBEHR9KxKySnE2yhMg==
-X-CSE-MsgGUID: YzVDWGa4Tq+38KhSvoMDDw==
-X-IronPort-AV: E=McAfee;i="6800,10657,11867"; a="85630870"
-X-IronPort-AV: E=Sophos;i="6.25,209,1779174000"; 
-   d="scan'208";a="85630870"
-Received: from fmviesa002.fm.intel.com ([10.60.135.142])
-  by fmvoesa113.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 06 Aug 2026 14:51:32 -0700
-X-CSE-ConnectionGUID: AB8YyTXOSCSKko1pPJhpvA==
-X-CSE-MsgGUID: gfPYtjsYTwuf1P+pMEQQWA==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.25,209,1779174000"; 
-   d="scan'208";a="285586569"
-Received: from lkp-server01.sh.intel.com (HELO 6eda058d650d) ([10.239.97.150])
-  by fmviesa002.fm.intel.com with ESMTP; 06 Aug 2026 14:51:25 -0700
-Received: from kbuild by 6eda058d650d with local (Exim 4.98.2)
-	(envelope-from <lkp@intel.com>)
-	id 1ws5zl-00000000GKf-1GLg;
-	Thu, 06 Aug 2026 21:51:21 +0000
-Date: Fri, 7 Aug 2026 05:50:26 +0800
-From: kernel test robot <lkp@intel.com>
-To: Markus Elfring <Markus.Elfring@web.de>, acpica-devel@lists.linux.dev,
-	bpf@vger.kernel.org, coresight@lists.linaro.org,
-	kvm@vger.kernel.org, linux-acpi@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org, linux-gpio@vger.kernel.org,
-	linux-kselftest@vger.kernel.org, linux-mm@kvack.org,
-	linux-perf-users@vger.kernel.org, linux-pm@vger.kernel.org,
-	linux-trace-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-	mptcp@lists.linux.dev, netdev@vger.kernel.org,
-	platform-driver-x86@vger.kernel.org, virtualization@lists.linux.dev,
-	Adrian Hunter <adrian.hunter@intel.com>,
-	Alex Mastro <amastro@fb.com>, Alex Williamson <alex@shazbot.org>,
-	Alexander Shishkin <alexander.shishkin@linux.intel.com>,
-	Alexei Starovoitov <ast@kernel.org>,
-	Andi Kleen <ak@linux.intel.com>,
-	Andrew Lunn <andrew+netdev@lunn.ch>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Andrii Nakryiko <andrii@kernel.org>,
-	Ankur Arora <ankur.a.arora@oracle.com>,
-	Arnaldo Carvalho de Melo <acme@kernel.org>,
-	Bartosz Golaszewski <brgl@kernel.org>
-Cc: llvm@lists.linux.dev, oe-kbuild-all@lists.linux.dev,
-	Linux Memory Management List <linux-mm@kvack.org>
-Subject: Re: [PATCH] tools: Use fputc() calls in some functions
-Message-ID: <202608070547.MRKfa3bH-lkp@intel.com>
-References: <48f2d61f-d468-49b7-881e-f00777db073f@web.de>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="F4oGabaE"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id B633E1F000E9;
+	Thu,  6 Aug 2026 23:02:58 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1786057380;
+	bh=ya3F+JYCuxaItWlW05Rm+GX7ajI5CM/X3K+sFJTZFC8=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=F4oGabaEGxQXh55uqEDFuXc0lrSGATbDod9Fkho17EJgwC2HSf/mscz8w++7KPXAg
+	 IcYj8IMrVHcdFmMHI2laiOrXu10TzZ9UMvJ3eZHA2cTLi5I6E3XByHHH4XP1aBAT+x
+	 XtQQQiq5femdvrdyVlFXrz/qJGkrZvs6hziBikd2p3dgQjuMPa8QKaaNBngbvLCRLD
+	 9KlrK9cf606zGNnhEyQFHtM9D8UvhofWnjFIq/15Hk9SV/ir+SbxHIy4I0L1HYRf3r
+	 ZTE823OcHfKVDSjBN3xIwXMjNcqWdQ2+EXJH84OBOIMoPAHa7n9QH91mtBdPmyNgvU
+	 Uwhl4x4n2C+zA==
+Date: Thu, 6 Aug 2026 18:02:56 -0500
+From: Bjorn Andersson <andersson@kernel.org>
+To: Rahul Samana <rahul.samana@oss.qualcomm.com>
+Cc: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>, 
+	Bartosz Golaszewski <brgl@kernel.org>, Marcel Holtmann <marcel@holtmann.org>, 
+	Luiz Augusto von Dentz <luiz.dentz@gmail.com>, Rob Herring <robh@kernel.org>, 
+	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
+	Balakrishna Godavarthi <quic_bgodavar@quicinc.com>, Rocky Liao <quic_rjliao@quicinc.com>, 
+	Manivannan Sadhasivam <mani@kernel.org>, Konrad Dybcio <konradybcio@kernel.org>, 
+	Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>, Bartosz Golaszewski <brgl@bgdev.pl>, 
+	linux-arm-msm@vger.kernel.org, linux-bluetooth@vger.kernel.org, devicetree@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, 
+	quic_mohamull@quicinc.com, quic_hbandi@quicinc.com, quic_anubhavg@quicinc.com
+Subject: Re: [PATCH v2 6/6] arm64: dts: qcom: rb3gen2: add Industrial BT UART
+ overlay
+Message-ID: <anURderHHz5WHIRe@baldur>
+References: <20260727-rb3-industrial-bt-uart-v2-0-2d100f30e202@oss.qualcomm.com>
+ <20260727-rb3-industrial-bt-uart-v2-6-2d100f30e202@oss.qualcomm.com>
+ <794424df-4714-43a4-b4b8-e960998ad1f1@oss.qualcomm.com>
+ <ce283ef7-2460-4fa4-a1f5-9757fd6b42b5@oss.qualcomm.com>
+ <6d61d749-440f-40ad-82e5-e1e909afad06@oss.qualcomm.com>
+ <b47345f1-1c7b-4424-9c6b-3dd02c0f4ab6@oss.qualcomm.com>
+ <bf7821a2-d813-4f89-b891-9c26d228ae67@oss.qualcomm.com>
+ <b5afd21c-4516-4a8c-bc8f-6598ec385d27@oss.qualcomm.com>
+ <am6572YrbAULTa88@baldur>
+ <a86124c9-a5ff-4265-8a14-68b25f010577@oss.qualcomm.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -82,76 +60,170 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <48f2d61f-d468-49b7-881e-f00777db073f@web.de>
+In-Reply-To: <a86124c9-a5ff-4265-8a14-68b25f010577@oss.qualcomm.com>
 
-Hi Markus,
+On Wed, Aug 05, 2026 at 11:48:48AM +0530, Rahul Samana wrote:
+> 
+> 
+> On 02-08-2026 09:08, Bjorn Andersson wrote:
+> > On Fri, Jul 31, 2026 at 11:20:07PM +0530, Rahul Samana wrote:
+> >>
+> >>
+> >> On 31-07-2026 21:19, Konrad Dybcio wrote:
+> >>> On 7/31/26 4:48 PM, Rahul Samana wrote:
+> >>>>
+> >>>>
+> >>>> On 31-07-2026 18:20, Konrad Dybcio wrote:
+> >>>>> On 7/31/26 8:53 AM, Rahul Samana wrote:
+> >>>>>>
+> >>>>>>
+> >>>>>> On 29-07-2026 18:01, Konrad Dybcio wrote:
+> >>>>>>> On 7/27/26 5:45 PM, Rahul Samana wrote:
+> >>>>>>>> The reworked RB3 Gen 2 Industrial mezzanine keeps the common Industrial
+> >>>>>>>> mezzanine hardware description but routes QCC2072 Bluetooth over UART4
+> >>>>>>>> instead of the default Bluetooth-over-USB path.
+> >>>
+> >>> I only noticed this now - are there 2 variants of the industrial
+> >>> mezz being sold concurrently? Is the already-in-kernel one some
+> >>> sort of a prototype SKU? i.e. should we support both?
+> >>>
+> >>>>>>>>
+> >>>>>>>> Build this variant by applying the common Industrial mezzanine overlay
+> >>>>>>>> first, followed by the BT UART overlay. The overlay models the M.2 E-key
+> >>>>>>>> connector graph endpoints for PCIe and UART, and disables the on-board
+> >>>>>>>> WCN6750 PMU and UART7 path so the M.2 QCC2072 Bluetooth controller can be
+> >>>>>>>> used instead.
+> >>>>>>>
+> >>>>>>> So is the onboard module disabled? Can we not just use two in parallel?
+> >>>>>>>
+> >>>>>>
+> >>>>>> The Industrial mezzanine variants do not support the on-board WCN6750
+> >>>>>> wireless path. The common Industrial mezzanine overlay already disables
+> >>>>>> the on-board Wi-Fi node.
+> >>>>>
+> >>>>> What does 'do not support' it mean here? They are physically present
+> >>>>> as part of the SoM, so unless the lanes are somehow diverted away,
+> >>>>> why is it not?
+> >>>>>
+> >>>>> Konrad
+> >>>>
+> >>>> Hi Konrad,
+> >>>>
+> >>>> The WCN6750 module is physically present on the SoM. What I meant is that
+> >>>> the current Industrial mezzanine devicetree already disables the on-board
+> >>>> Wi-Fi path, and this BT UART variant followed the same board-level policy
+> >>>> for the on-board Bluetooth UART/PMU path.
+> >>>
+> >>> Okay, and do we know why that's the case in the first place?
+> >>>
+> >>>> For the endpoint labels, I can move the UART endpoint to the SoC DTSI,
+> >>>> kodiak.dtsi, as uart4_ep.
+> >>>
+> >>> Please do
+> >>>
+> >>>> For the PCIe endpoint, the PCIe path to the M.2 QCC2072 device is not the
+> >>>> PCIe0 root port in kodiak.dtsi. In the composed devicetree, it is
+> >>>> behind the Industrial mezzanine PCIe switch, under:
+> >>>>
+> >>>>     /soc@0/pcie@1c00000/pcie@0/pcie@0,0/pcie@2,0
+> >>>>
+> >>>>
+> >>>> So placing pcie0_port0_ep in kodiak.dtsi would not describe the actual
+> >>>> topology.
+> >>>
+> >>> Yes, that was an omission from my side
+> >>>
+> >>>
+> >>>> I tried adding a generic label/endpoint to that downstream port in the
+> >>>> Industrial mezzanine overlay and referencing it from the BT UART overlay.
+> >>>> However, when the overlays are compiled separately and then composed, that
+> >>>> label is not available while applying the BT UART overlay, so the composed
+> >>>> DTB build fails with FDT_ERR_NOTFOUND.
+> >>>
+> >>> I think this generic description is simply not achievable today without
+> >>> a bigger plan in place
+> >>>
+> >>> Konrad
+> >>
+> >> Hi Konrad, Dmitry,
+> >>
+> >> Yes, both Industrial Kit variants need to be supported.
+> >>
+> >> The default Industrial Kit uses the common Industrial mezzanine hardware
+> >> description and continues to use the existing Bluetooth-over-USB path.
+> > 
+> > "Kit uses the common" what do you even mean?! The mezzanine is a
+> > physical thing, it doesn't _use_ anything! The mezzanine exists and the
+> > DeviceTree describe what it is.
+> > 
+> >> The
+> >> reworked Industrial Kit variant keeps the rest of the Industrial mezzanine
+> >> hardware the same, but routes Bluetooth over UART4 instead.
+> >>
+> > 
+> > Does "reworked mezzanine" mean what it usually does? I.e. that you have
+> > taken the mezzanine and modified it?
+> > 
+> 
+> Hi Bjorn,
+> 
+> Let me clarify.
+> 
+> There are two physical RB3 Gen 2 Industrial mezzanine variants that need
+> to be supported:
+> 
+> 1. The existing RB3 Gen 2 Industrial mezzanine variant currently
+>    described in-tree, where the M.2 E-key interface routes Bluetooth over
+>    USB.
+> 
+> 2. A reworked RB3 Gen 2 Industrial mezzanine variant, where the
+>    mezzanine board was reworked to make the existing M.2 E-key interface
+>    route Bluetooth over UART4.
+> 
 
-kernel test robot noticed the following build errors:
+Reworked as in: "there exist a dozen such boards in the world" or is
+this an actually supported configuration that can be purchased?
 
-[auto build test ERROR on perf-tools-next/perf-tools-next]
-[also build test ERROR on tip/perf/core perf-tools/perf-tools linus/master v7.2-rc6 next-20260806]
-[cannot apply to acme/perf/core]
-[If your patch is applied to the wrong git tree, kindly drop us a note.
-And when submitting patch, we suggest to use '--base' as documented in
-https://git-scm.com/docs/git-format-patch#_base_tree_information]
 
-url:    https://github.com/intel-lab-lkp/linux/commits/Markus-Elfring/tools-Use-fputc-calls-in-some-functions/20260806-165154
-base:   https://git.kernel.org/pub/scm/linux/kernel/git/perf/perf-tools-next.git perf-tools-next
-patch link:    https://lore.kernel.org/r/48f2d61f-d468-49b7-881e-f00777db073f%40web.de
-patch subject: [PATCH] tools: Use fputc() calls in some functions
-config: x86_64-kexec (https://download.01.org/0day-ci/archive/20260807/202608070547.MRKfa3bH-lkp@intel.com/config)
-compiler: clang version 22.1.3 (https://github.com/llvm/llvm-project e9846648fd6183ee6d8cbdb4502213fcf902a211)
-reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20260807/202608070547.MRKfa3bH-lkp@intel.com/reproduce)
+The fact that you call this mezzanine "the BT-UART mezzanine" forces me
+to assume that this isn't an actual product, prove me wrong please.
 
-If you fix the issue in a separate patch/commit (i.e. not just a new version of
-the same patch/commit), kindly add following tags
-| Reported-by: kernel test robot <lkp@intel.com>
-| Closes: https://lore.kernel.org/oe-kbuild-all/202608070547.MRKfa3bH-lkp@intel.com/
+> The reworked variant is a physical mezzanine board variant, not a
+> software-only configuration of the same board.
+> 
 
-All errors (new ones prefixed by >>):
+That's obvious.
 
->> builtin-check.c:300:8: error: incompatible pointer to integer conversion passing 'FILE *' (aka 'struct _IO_FILE *') to parameter of type 'int' [-Wint-conversion]
-     300 |         fputc(stderr, '\n');
-         |               ^~~~~~
-   /usr/include/stdio.h:155:16: note: expanded from macro 'stderr'
-     155 | #define stderr stderr
-         |                ^~~~~~
-   /usr/include/stdio.h:611:23: note: passing argument to parameter '__c' here
-     611 | extern int fputc (int __c, FILE *__stream) __nonnull ((2));
-         |                       ^
->> builtin-check.c:300:16: error: incompatible integer to pointer conversion passing 'int' to parameter of type 'FILE *' (aka 'struct _IO_FILE *') [-Wint-conversion]
-     300 |         fputc(stderr, '\n');
-         |                       ^~~~
-   /usr/include/stdio.h:611:34: note: passing argument to parameter '__stream' here
-     611 | extern int fputc (int __c, FILE *__stream) __nonnull ((2));
-         |                                  ^
-   2 errors generated.
->> disas.c:540:9: error: incompatible pointer to integer conversion passing 'FILE *' (aka 'struct _IO_FILE *') to parameter of type 'int' [-Wint-conversion]
-     540 |                 fputc(stream, '\n');
-         |                       ^~~~~~
-   /usr/include/stdio.h:611:23: note: passing argument to parameter '__c' here
-     611 | extern int fputc (int __c, FILE *__stream) __nonnull ((2));
-         |                       ^
->> disas.c:540:17: error: incompatible integer to pointer conversion passing 'int' to parameter of type 'FILE *' (aka 'struct _IO_FILE *') [-Wint-conversion]
-     540 |                 fputc(stream, '\n');
-         |                               ^~~~
-   /usr/include/stdio.h:611:34: note: passing argument to parameter '__stream' here
-     611 | extern int fputc (int __c, FILE *__stream) __nonnull ((2));
-         |                                  ^
-   make[5]: *** [tools/build/Makefile.build:96: tools/objtool/builtin-check.o] Error 1
-   2 errors generated.
-   make[5]: *** [tools/build/Makefile.build:95: tools/objtool/disas.o] Error 1
-   make[5]: Target '__build' not remade because of errors.
-   make[4]: *** [Makefile:123: tools/objtool/objtool-in.o] Error 2
-   make[4]: Target 'all' not remade because of errors.
-   make[3]: *** [Makefile:74: objtool] Error 2
-   make[2]: *** [Makefile:1587: tools/objtool] Error 2
-   make[2]: Target 'prepare' not remade because of errors.
-   make[1]: *** [Makefile:248: __sub-make] Error 2
-   make[1]: Target 'prepare' not remade because of errors.
-   make: *** [Makefile:248: __sub-make] Error 2
-   make: Target 'prepare' not remade because of errors.
+> The intent of this overlay is to describe only that board-level
+> difference while reusing the common Industrial mezzanine description for
+> the hardware that remains unchanged.
+> 
 
---
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
+But then you need to clearly describe what the difference between the
+two boards is and model that in a clear way.
+
+Regards,
+Bjorn
+
+> Thanks,
+> Rahul
+> 
+> 
+> > [..]
+> >>
+> >> I am open to other suggestions if there is a better way to model this within
+> >> the current overlay structure.
+> >>
+> > 
+> > I don't think it's possible to give you other suggestions as you haven't
+> > described what this thing is, you just explaining how you're hacking
+> > something together and ask us to help adjust your hack without knowing
+> > what it is you're trying to describe with your DeviceTree.
+> > 
+> > Regards,
+> > Bjorn
+> > 
+> >> Thanks,
+> >> Rahul
+> >>
+> 
