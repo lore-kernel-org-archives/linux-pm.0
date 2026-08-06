@@ -1,175 +1,122 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+Received: from out-180.mta0.migadu.com (out-180.mta0.migadu.com [91.218.175.180])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 89C83420E71;
-	Thu,  6 Aug 2026 09:03:14 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 13FC43590AE
+	for <linux-pm@vger.kernel.org>; Thu,  6 Aug 2026 09:24:09 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=91.218.175.180
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1786006995; cv=none; b=tlv/IYPlzo1Ek/iVuWf0jQAV6zIVBafJ/mXn3vAD3Vd+4es4s4lRsiS0A6G/I6Y8dFXkkkkIZK9OHN22lciR7m12fS8smYG5ppph9FSvNfXvUjzMhUUHJSj7xwB/DHmcLaUlSGtSrpA2OcCLzRfExOg8foWWE12KMk/Ty2H/GT0=
+	t=1786008252; cv=none; b=u5rrsh6rggxZ0fLqaYbsi7/N35S4PFFxh0Hz4iCsHtpwMegttOCk8kBxaPwoS73Fl3GKkptxAWxdevxH7sZ2gmuwX5IN6AYHG1CcgPfgZi9jJv9K4X61RFwcDxpEIVeIUaTzyKDmcPXDAYEBqTQNSanH9VSRYMUVnLVvbVI3IcE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1786006995; c=relaxed/simple;
-	bh=hYaaeHxtlIUX9RPbGzHTyde5bpDQO814QzMaZajkgfM=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=fk7QrtCejrKix+/RttfrWOBm9wdqaKPGrXscBI3aK5/2cXmTJJHmgC1/8m6vnClwiXLKYyGyla4Q1F1yG/x8/7tdygUQHPo5lXzfsY79StpN1Bgwb1+lRwxLqki+9Rlc5HiXVj6H86DC6dhmo9Y27qpLpg7+ITE2/shVIWsQerE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b=B3+h6QPq; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1786008252; c=relaxed/simple;
+	bh=2Bux34acxbkkdsfc7hWzKdEN3DqFCaMDm99n6apUicc=;
+	h=Mime-Version:Content-Type:Date:Message-Id:Cc:Subject:From:To:
+	 References:In-Reply-To; b=h0auZsGX506TVr9VCEQiyBzmrz3rhhdJ7ld4cREp4lODmxpe5Spp0y5Lz1m5mhTPmX+0AltVO/QiK6oe9imzNw0Z/7gWlQkhMlBWkJKIxgUlQlqggFqbD+AOlqktU/5hM5tbPbLlppB77b73f1E70dehwxDul3VpWu1savcHOuQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=cknow-tech.com; spf=pass smtp.mailfrom=cknow-tech.com; dkim=pass (2048-bit key) header.d=cknow-tech.com header.i=@cknow-tech.com header.b=aUsX59P/; arc=none smtp.client-ip=91.218.175.180
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=cknow-tech.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=cknow-tech.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b="B3+h6QPq"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9D1AC1F000E9;
-	Thu,  6 Aug 2026 09:03:13 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linuxfoundation.org;
-	s=korg; t=1786006994;
-	bh=lAncwb5tYNHbDlWx4NpQRxZtFZ2L75sRaN3vi62T2wE=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=B3+h6QPqgiSowBB0AJR2JZ3YfkDEugzvz27sphIFrTVe9UUI8a7NcpcXG+TppDcke
-	 cAavuAi95kE/DxD/etVUQMGEg8WDOx1uIQvsFVrT5QiqBYMI1UZ5qzUUorufSR2NoG
-	 I4Zi/m/y+VRsVvi+dy0OEmA2cmq8TOpWOA2bkSh4=
-Date: Thu, 6 Aug 2026 11:02:56 +0200
-From: Greg KH <gregkh@linuxfoundation.org>
-To: Yichong Chen <chenyichong@uniontech.com>
-Cc: rafael@kernel.org, dakr@kernel.org, djakov@kernel.org,
-	quic_mdtipton@quicinc.com, vkoul@kernel.org,
-	yung-chuan.liao@linux.intel.com, pierre-louis.bossart@linux.dev,
-	driver-core@lists.linux.dev, linux-kernel@vger.kernel.org,
-	linux-pm@vger.kernel.org, linux-sound@vger.kernel.org
-Subject: Re: [PATCH v2 3/3] debugfs: make debugfs_create_str() read-only
-Message-ID: <2026080614-unlimited-likewise-e6e0@gregkh>
-References: <20260806084854.1019789-1-chenyichong@uniontech.com>
- <20260806084854.1019789-4-chenyichong@uniontech.com>
+	dkim=pass (2048-bit key) header.d=cknow-tech.com header.i=@cknow-tech.com header.b="aUsX59P/"
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260806084854.1019789-4-chenyichong@uniontech.com>
+Mime-Version: 1.0
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=cknow-tech.com;
+	s=key1; t=1786008236;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=dA4vidVbXhTuIp9QqxNa6zPIHYzqdAruYLG2CSq3Ubg=;
+	b=aUsX59P/Rs0XtXz+pr6ZpDN3xLg2qhYYUcMwU5i5B/YJXki/xjKg/RXiIOPHD3m9wiyjvm
+	jjtHnKM1QWosaYFlpMX5nDchtabNJlbdbH7CS3g+9D2C9VSszWthR0ltCUX05RcmR4QMZ/
+	Xi0EOCqNBIStnzsROASC+WnMZmvfFI1x/8NpxUBVi1nbEflvD/gkv8vGZvdE3TsPPWwZXS
+	CjIV1ID7V6Fmx2Y3YC7X6gKgc9XTIS+8wMAGg2lykgDGb3mM1ENs3gD1WilT84k7Zw+lJc
+	7xdWzeqKxtFOe6gcU83DyeYCC7mrKZAkOp8H2qiDv6OHqQk0mQNkCccyFW6EDg==
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=UTF-8
+Date: Thu, 06 Aug 2026 11:23:39 +0200
+Message-Id: <DKHR2P0XJF0B.OY937NT39DR7@cknow-tech.com>
+Cc: <royalnet026@gmail.com>, <alchark@flipper.net>,
+ <chaoyi.chen@rock-chips.com>, <diederik@cknow-tech.com>,
+ <dri-devel@lists.freedesktop.org>, <linux-rockchip@lists.infradead.org>,
+ <iommu@lists.linux.dev>, <linux-pm@vger.kernel.org>,
+ <devicetree@vger.kernel.org>, <linux-arm-kernel@lists.infradead.org>,
+ <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC PATCH v6 3/9] dt-bindings: iommu: rockchip: allow the
+ RK3576 NPU MMU clock set
+X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
+From: "Diederik de Haas" <diederik@cknow-tech.com>
+To: "Jiaxing Hu" <gahing@gahingwoo.com>, <tomeu@tomeuvizoso.net>,
+ <heiko@sntech.de>, <robh@kernel.org>, <krzk+dt@kernel.org>,
+ <conor+dt@kernel.org>, <joro@8bytes.org>, <will@kernel.org>,
+ <robin.murphy@arm.com>, <ulfh@kernel.org>, <p.zabel@pengutronix.de>,
+ <ogabbay@kernel.org>, <zhangqing@rock-chips.com>
+References: <20260806063413.350184-1-gahing@gahingwoo.com>
+ <20260806063413.350184-4-gahing@gahingwoo.com>
+In-Reply-To: <20260806063413.350184-4-gahing@gahingwoo.com>
+X-Migadu-Flow: FLOW_OUT
 
-On Thu, Aug 06, 2026 at 04:48:54PM +0800, Yichong Chen wrote:
-> debugfs_create_str() supports replacing the backing string from userspace.
-> Concurrent writers can race and free the same old string twice.
-> 
-> All writable in-tree users have been converted to local file operations.
-> Remove the generic write support from debugfs_create_str(), and refuse to
-> create a file when the caller passes write permission bits.
-> 
-> This makes unsupported writable use visible instead of silently creating a
-> file with different permissions.
-> 
-> Fixes: 86b5488121db ("debugfs: Add write support to debugfs_create_str()")
-> Signed-off-by: Yichong Chen <chenyichong@uniontech.com>
+On Thu Aug 6, 2026 at 8:34 AM CEST, Jiaxing Hu wrote:
+> The RK3576 NPU MMUs need more than aclk and iface. With only those two
+> enabled the MMU accepts reads but silently drops register writes: a
+> DTE_ADDR value written from the power domain, while the domain clocks
+> are still on, reads back correctly, and the write rk_iommu_resume() does
+> microseconds later does not land at all. The vendor DT names the CBUF
+> clocks as that MMU's interface clocks and its driver keeps every NPU
+> clock on for as long as the device is powered.
+>
+> The driver side of this is already upstream, commit 841363ebb508
+> ("iommu/rockchip: Take all DT clocks"), which switched rk_iommu to
+> devm_clk_bulk_get_all(). Widen the schema to match so those nodes can
+> be described. minItems stays at 2, so every existing devicetree, which
+> all carry exactly aclk and iface, is unaffected.
+
+I agree with all remarks Sashiko made wrt this patch:
+https://sashiko.dev/#/patchset/20260805063826.95682-1-gahing%40gahingwoo.co=
+m?part=3D3
+
+Now every MMU with "rockchip,rk3568-iommu", "rockchip,rk3588-iommu" or
+"rockchip,rk3576-iommu" is allowed to have a minimum of 2 clocks, instead
+of having exactly 2 clocks. That does not sound desirable.
+
+Cheers,
+  Diederik
+>
+> Signed-off-by: Jiaxing Hu <gahing@gahingwoo.com>
 > ---
->  fs/debugfs/file.c | 81 ++++++-----------------------------------------
->  1 file changed, 10 insertions(+), 71 deletions(-)
-> 
-> diff --git a/fs/debugfs/file.c b/fs/debugfs/file.c
-> index 08de6652a4f3..f5abd067b260 100644
-> --- a/fs/debugfs/file.c
-> +++ b/fs/debugfs/file.c
-> @@ -1049,98 +1049,37 @@ ssize_t debugfs_read_file_str(struct file *file, char __user *user_buf,
->  	return ret;
->  }
->  
-> -static ssize_t debugfs_write_file_str(struct file *file, const char __user *user_buf,
-> -				      size_t count, loff_t *ppos)
-> -{
-> -	struct dentry *dentry = F_DENTRY(file);
-> -	char *old, *new = NULL;
-> -	int pos = *ppos;
-> -	int r;
-> -
-> -	r = debugfs_file_get(dentry);
-> -	if (unlikely(r))
-> -		return r;
-> -
-> -	old = *(char **)file->private_data;
-> -
-> -	/* only allow strict concatenation */
-> -	r = -EINVAL;
-> -	if (pos && pos != strlen(old))
-> -		goto error;
-> -
-> -	r = -E2BIG;
-> -	if (pos + count + 1 > PAGE_SIZE)
-> -		goto error;
-> -
-> -	r = -ENOMEM;
-> -	new = kmalloc(pos + count + 1, GFP_KERNEL);
-> -	if (!new)
-> -		goto error;
-> -
-> -	if (pos)
-> -		memcpy(new, old, pos);
-> -
-> -	r = -EFAULT;
-> -	if (copy_from_user(new + pos, user_buf, count))
-> -		goto error;
-> -
-> -	new[pos + count] = '\0';
-> -	strim(new);
-> -
-> -	rcu_assign_pointer(*(char __rcu **)file->private_data, new);
-> -	synchronize_rcu();
-> -	kfree(old);
-> -
-> -	debugfs_file_put(dentry);
-> -	return count;
-> -
-> -error:
-> -	kfree(new);
-> -	debugfs_file_put(dentry);
-> -	return r;
-> -}
-> -
->  static const struct file_operations fops_str = {
->  	.read =		debugfs_read_file_str,
-> -	.write =	debugfs_write_file_str,
-> -	.open =		simple_open,
-> -	.llseek =	default_llseek,
-> -};
-> -
-> -static const struct file_operations fops_str_ro = {
-> -	.read =		debugfs_read_file_str,
-> -	.open =		simple_open,
-> -	.llseek =	default_llseek,
-> -};
-> -
-> -static const struct file_operations fops_str_wo = {
-> -	.write =	debugfs_write_file_str,
->  	.open =		simple_open,
->  	.llseek =	default_llseek,
->  };
->  
->  /**
-> - * debugfs_create_str - create a debugfs file that is used to read and write a string value
-> + * debugfs_create_str - create a debugfs file that is used to read a string value
->   * @name: a pointer to a string containing the name of the file to create.
->   * @mode: the permission that the file should have
->   * @parent: a pointer to the parent dentry for this file.  This should be a
->   *          directory dentry if set.  If this parameter is %NULL, then the
->   *          file will be created in the root of the debugfs filesystem.
-> - * @value: a pointer to the variable that the file should read to and write
-> - *         from. This pointer and the string it points to must not be %NULL.
-> + * @value: a pointer to the variable that the file should read from. This
-> + *         pointer and the string it points to must not be %NULL.
->   *
->   * This function creates a file in debugfs with the given name that
-> - * contains the value of the variable @value.  If the @mode variable is so
-> - * set, it can be read from, and written to.
-> + * contains the value of the variable @value.  The file can be read from.
-> + * Writable files are not supported; if @mode contains write permission bits,
-> + * no file is created.
->   */
->  void debugfs_create_str(const char *name, umode_t mode,
->  			struct dentry *parent, char **value)
->  {
->  	if (WARN_ON(!value || !*value))
->  		return;
-> +	if (WARN_ONCE(mode & 0222,
-> +		      "%s() does not support writable files\n", __func__))
+>  .../devicetree/bindings/iommu/rockchip,iommu.yaml         | 8 ++++++++
+>  1 file changed, 8 insertions(+)
+>
+> diff --git a/Documentation/devicetree/bindings/iommu/rockchip,iommu.yaml =
+b/Documentation/devicetree/bindings/iommu/rockchip,iommu.yaml
+> index 6ce41d11f..a3cedcaaa 100644
+> --- a/Documentation/devicetree/bindings/iommu/rockchip,iommu.yaml
+> +++ b/Documentation/devicetree/bindings/iommu/rockchip,iommu.yaml
+> @@ -42,14 +42,22 @@ properties:
+>      minItems: 1
+> =20
+>    clocks:
+> +    minItems: 2
+>      items:
+>        - description: Core clock
+>        - description: Interface clock
+> +      - description: Compute clock, RK3576 NPU MMUs only
+> +      - description: Convolution buffer core clock, RK3576 NPU MMUs only
+> +      - description: Convolution buffer interface clock, RK3576 NPU MMUs=
+ only
+> =20
+>    clock-names:
+> +    minItems: 2
+>      items:
+>        - const: aclk
+>        - const: iface
+> +      - const: npu
+> +      - const: aclk_cbuf
+> +      - const: hclk_cbuf
+> =20
+>    "#iommu-cells":
+>      const: 0
 
-Why WARN_ONCE()?  multiple callers could be hitting this.
 
-thanks,
-
-greg k-h
