@@ -1,162 +1,173 @@
-Received: from mail-vk1-f169.google.com (mail-vk1-f169.google.com [209.85.221.169])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 88F643C6A57
-	for <linux-pm@vger.kernel.org>; Thu,  6 Aug 2026 08:58:46 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.169
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 46BC23DD503;
+	Thu,  6 Aug 2026 09:01:25 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1786006728; cv=none; b=ie6xBiqdBjNVQs284tE5TFrr75l4RkErq4xdbff5dJUBAMIcpPCNZGFzDh2SLTUsi0TctcZ1YvgIaHQIFY+2qvUQpr6G5omVokViJNNgv7yf4mAIiMxs4seWGKA5IPp+OjdRaSEU8A2CTOOxSFnLzxveSpsp3jOdm6Gysd1RUlU=
+	t=1786006887; cv=none; b=QtxpJQ6WAsPH7iMFvKQ+6j6mIbCuiweGrfQR4Bt9I0f+3IEKgqBDEnUwE1dEyiSmZgn2SOGKguaqoQnjUV8euarRRQZjNnU4A/5Locn2M7E4UT/4VVgJJa+ftORd9f90cNB5AK6Tou0EP63I3Ob2lrfU376MH+vzMrlS4ly/HDE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1786006728; c=relaxed/simple;
-	bh=Wp5Awetz8x1lkJd7iV42zxvDh1yQD5wNbmheE5eZ5No=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=p/aE/zK08j4LAhW998hKvE6voRMrUadUv8KXK65gXZ7GHd1a243RcBCx66UFJQHaFTJ8lZbdaNjGtARFDpOUVLVkMWrgFsiKG0s3N13OiBhtZAi7OpFoUmPET9YuCQp+OoLaRwcdhk5sSvf53wNZS4z+dZfyS3kWhQOa0cC8tso=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org; spf=pass smtp.mailfrom=gmail.com; arc=none smtp.client-ip=209.85.221.169
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
-Received: by mail-vk1-f169.google.com with SMTP id 71dfb90a1353d-5bf94664327so794524e0c.1
-        for <linux-pm@vger.kernel.org>; Thu, 06 Aug 2026 01:58:46 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1786006725; x=1786611525;
-        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
-         :references:mime-version:x-gm-gg:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to:content-type;
-        bh=Y/Tg3lEpqdaiPRfyjPgi2cmAvw9BxKYOOcBoKp4sZn8=;
-        b=aeW9J7FcbkxBk95OdHm3txbBpwn+M/VdttqRZBFL68uYUT0sr/njZv5G8XeM/A2GSY
-         r6TdwWoIxYdhB6vt2hI6aUaV9BcyK1VVMpFGXtvueGD3FQKnNEv1jEJd4ztzHkontkIY
-         i0A1tvfkltEvZdxR+mXtljIkUKmyMEzO6sZx+EAfKPm4MbTg+cY876fycu6xJGcbXzCb
-         +ACTFfasenfgiX7V54JGohIvs6vMhrFijzqmE1MmmfRq9STvK0f1DdRQm59orPeY8rft
-         7Cst1DDGIc+xfP4mbj/X+f2iMRpCm0Z6o43Hxlq60owsx2jLbZgQS5x0z8piAmmhkF02
-         4X8Q==
-X-Forwarded-Encrypted: i=1; AHgh+Roqaja3RfZfTTjXI3S+O7BxV45aD7QT2dx68AheowOp/wjzQXZhj/eh3hFR44o+Dl9vqqAcQ3f5GQ==@vger.kernel.org
-X-Gm-Message-State: AOJu0YzhpIx3SRvczmZPSfwpLcq0hSQwI5rhNkYl2Q7AM0WBLYW62n4g
-	1Sem/yFSQI2ysjunCtDp4HtG69+7PVFg9/yKqLQAihwazVyZFbVs/7lbV47k53Iw
-X-Gm-Gg: AR+sD13KkHXPBxfCoOy3aiNFF4AjGLfDpgYy7hOp05lEjer4FZfMjthG7lgmoGmaew2
-	J8xl0IVgHziFVNe8j2IpGlAwEZBzU0BgLbqhP1cj0so9ovMW1TcOpH+tMUa36eYDDQ0UkHTxQTj
-	S1HLQ3cMBsscUlmWQD/HrVpECO8FdDmBOZacRxo0xzo97X4rPU0dtWHvauib1AsTHN4SH7qXypO
-	3y1+IsJ8npVjJmsqwd47FmC3fVVBmA/IrvjqogKfyLkpKTy4TdJlo+bajlNlqOx4PIq32eQTS89
-	S82pJAJh2zwnV0IiljmbZ6XfYWdpdQNcOika4Xfo5pf5vBz2KHATcLyadwpRrdSOznFkW5jcwbp
-	DIIk5aL+nQS89fbNXYNn6atPJPgXTyJC5V1F60Q0LIfjmeIR7D2Q/zuEEwQu6kwQYqSthu/5N7L
-	rhcMPbv9RWwzDw4VNxbn7ViG8+x0iSEmDtGAWzu3DTi5eoSZlypw8KtbICUfkboKG16UfTGZ3Z2
-	bloRqeZUjXqwF++DRE9W2thTVU33NwDj9wRfjxA
-X-Received: by 2002:a05:6102:5045:b0:740:2717:a2d5 with SMTP id ada2fe7eead31-760e7df2d1bmr3106844137.6.1786006725323;
-        Thu, 06 Aug 2026 01:58:45 -0700 (PDT)
-Received: from mail-vk1-f175.google.com (mail-vk1-f175.google.com. [209.85.221.175])
-        by smtp.gmail.com with ESMTPSA id 71dfb90a1353d-5c3d050c87esm2798643e0c.3.2026.08.06.01.58.44
-        for <linux-pm@vger.kernel.org>
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Thu, 06 Aug 2026 01:58:45 -0700 (PDT)
-Received: by mail-vk1-f175.google.com with SMTP id 71dfb90a1353d-5c2dbaf828eso671854e0c.0
-        for <linux-pm@vger.kernel.org>; Thu, 06 Aug 2026 01:58:44 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AHgh+RpJGj9X1wk/VcbvZOn4wRzTjP0GB7W+G3GUwF8IFBYxgYRdVednQ8w+3lCPZWpne8sr2T33snKONQ==@vger.kernel.org
-X-Received: by 2002:a05:6102:374e:b0:739:626d:4473 with SMTP id
- ada2fe7eead31-760e3698c49mr3173857137.0.1786006724650; Thu, 06 Aug 2026
- 01:58:44 -0700 (PDT)
+	s=arc-20240116; t=1786006887; c=relaxed/simple;
+	bh=QPeb6M2iCPCZMs8c9dwgYHumyO34WqnHwJvzcycTgqc=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=m9ddhym8dNCckuUCk4EorvWAnm28i4egREbhGaVNXIvhEqQGtDk/5BwcOVtevZblVuupZovUU35ao3OJw3eLmNmOOIq0VvSxf0NKDDVwkOqZ9G4UPpyjA3pG5wE86ju8F2dMEfNm8GdsS6XqKhSEf85UtYuzCpo8JCIbgKWZkdc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b=b/fMIERL; arc=none smtp.client-ip=100.103.45.18
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b="b/fMIERL"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4B74C1F000E9;
+	Thu,  6 Aug 2026 09:01:25 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linuxfoundation.org;
+	s=korg; t=1786006885;
+	bh=BFIPNtqlQDio3zu8anhXqcJnHiAHEd5OCYYW3ygP5rw=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=b/fMIERLf3DnkVBBBpX/DgXd+ILZ2zjw8i3J4VAFOyRJ8tiZr+fIvnWdw3oT+MDwO
+	 97Q/jdEKy6O1itc6zggqJwPjUfEHPn7wHo6gNbQSpvIXCzluvgL0xAYXUjE7kkWkTa
+	 5UEY+wcl68dG+8T6PxHsfaN6YU5eczKyETTy5pJg=
+Date: Thu, 6 Aug 2026 11:01:07 +0200
+From: Greg KH <gregkh@linuxfoundation.org>
+To: Yichong Chen <chenyichong@uniontech.com>
+Cc: rafael@kernel.org, dakr@kernel.org, djakov@kernel.org,
+	quic_mdtipton@quicinc.com, vkoul@kernel.org,
+	yung-chuan.liao@linux.intel.com, pierre-louis.bossart@linux.dev,
+	driver-core@lists.linux.dev, linux-kernel@vger.kernel.org,
+	linux-pm@vger.kernel.org, linux-sound@vger.kernel.org
+Subject: Re: [PATCH v2 1/3] interconnect: debugfs: replace writable string
+ helper
+Message-ID: <2026080632-delighted-bonsai-18b7@gregkh>
+References: <20260806084854.1019789-1-chenyichong@uniontech.com>
+ <20260806084854.1019789-2-chenyichong@uniontech.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <cover.1785941595.git.geert+renesas@glider.be> <89e6a71b35703f10e12f520af1f389b5f40f4b35.1785941595.git.geert+renesas@glider.be>
- <7c30baacac8c75037f32c0ac3099a6107cbec38b.camel@pengutronix.de>
-In-Reply-To: <7c30baacac8c75037f32c0ac3099a6107cbec38b.camel@pengutronix.de>
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Thu, 6 Aug 2026 10:58:32 +0200
-X-Gmail-Original-Message-ID: <CAMuHMdX3mUVq5HAOcoLxf8_=ALKe_j-0uSTTORA_KyiOq1Bgiw@mail.gmail.com>
-X-Gm-Features: AUfX_mwUZKZac7nMaa-VOsxeMPj2DizVJUU-sXiHc_DXR1wX8yJ0IgF-oPKqM3c
-Message-ID: <CAMuHMdX3mUVq5HAOcoLxf8_=ALKe_j-0uSTTORA_KyiOq1Bgiw@mail.gmail.com>
-Subject: Re: [PATCH v3 4/6] pmdomain: renesas: Add R-Car X5H MDLC driver
-To: Philipp Zabel <p.zabel@pengutronix.de>
-Cc: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
-	Conor Dooley <conor+dt@kernel.org>, Michael Turquette <mturquette@baylibre.com>, 
-	Stephen Boyd <sboyd@kernel.org>, Brian Masney <bmasney@redhat.com>, Ulf Hansson <ulfh@kernel.org>, 
-	Wolfram Sang <wsa+renesas@sang-engineering.com>, 
-	Marek Vasut <marek.vasut+renesas@mailbox.org>, 
-	Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>, devicetree@vger.kernel.org, 
-	linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, 
-	linux-renesas-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
-	linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260806084854.1019789-2-chenyichong@uniontech.com>
 
-Hi Philipp,
+On Thu, Aug 06, 2026 at 04:48:52PM +0800, Yichong Chen wrote:
+> debugfs_create_str() is being made read-only because its generic write path
+> is hard to make safe without adding more locking to the helper.
+> 
+> Convert the interconnect debugfs client src_node and dst_node entries to
+> local file operations before removing writable string support from
+> debugfs_create_str().  Protect the string replacement and path lookup with
+> the existing debugfs_lock.
+> 
+> Signed-off-by: Yichong Chen <chenyichong@uniontech.com>
+> ---
+>  drivers/interconnect/debugfs-client.c | 75 ++++++++++++++++++++++-----
+>  1 file changed, 62 insertions(+), 13 deletions(-)
+> 
+> diff --git a/drivers/interconnect/debugfs-client.c b/drivers/interconnect/debugfs-client.c
+> index 08df9188ef94..b71c25fd9314 100644
+> --- a/drivers/interconnect/debugfs-client.c
+> +++ b/drivers/interconnect/debugfs-client.c
+> @@ -5,6 +5,7 @@
+>  #include <linux/debugfs.h>
+>  #include <linux/interconnect.h>
+>  #include <linux/platform_device.h>
+> +#include <linux/slab.h>
+>  
+>  #include "internal.h"
+>  
+> @@ -36,6 +37,59 @@ struct debugfs_path {
+>  	struct list_head list;
+>  };
+>  
+> +static ssize_t icc_node_read(struct file *file, char __user *user_buf,
+> +			     size_t count, loff_t *ppos)
+> +{
+> +	char **node = file->private_data;
+> +	char *copy;
+> +	size_t len;
+> +	ssize_t ret;
+> +
+> +	mutex_lock(&debugfs_lock);
+> +	copy = kstrdup(*node ?: "", GFP_KERNEL);
+> +	mutex_unlock(&debugfs_lock);
 
-On Thu, 6 Aug 2026 at 10:13, Philipp Zabel <p.zabel@pengutronix.de> wrote:
-> On Mi, 2026-08-05 at 17:20 +0200, Geert Uytterhoeven wrote:
-> > Add a minimal Module Controller driver for the R-Car X5H (R8A78000) SoC.
-> > For now this just supports the always-on power domains, and dummy module
-> > clocks and resets for the serial console (which is enabled by the boot
-> > loader).
-> >
-> > Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
-> > ---
-> > v3:
-> >   - Replace <linux/mod_devicetable.h> by more specific
-> >     <linux/device-id/of.h> in v7.2-rc2,
-> >   - Add a comment to document only always-on domains are supported,
-> >   - Consistently use /* sentinel */ for zero sentinels,
-> >   - Drop trailing commas from sentinels,
-> >
-> > v2:
-> >   - Spin off from "pmdomain: renesas: Add R-Car X5H MDLC SCMI remapping
-> >     driver",
-> >   - Add default support not using SCMI,
-> >   - Drop all SCMI remapping support,
-> >   - Document use of -1 as a sentinel,
-> >   - Rename struct r8a78000_mdlc_info to mdlc_info,
-> >   - Print HW IDs in hexadecimal,
-> >   - Reduce log level for unsupported MDLC instances from warn to dbg,
-> > ---
-> >  drivers/pmdomain/renesas/Kconfig         |   4 +
-> >  drivers/pmdomain/renesas/Makefile        |   1 +
-> >  drivers/pmdomain/renesas/r8a78000-mdlc.c | 330 +++++++++++++++++++++++
-> >  drivers/soc/renesas/Kconfig              |   1 +
-> >  4 files changed, 336 insertions(+)
-> >  create mode 100644 drivers/pmdomain/renesas/r8a78000-mdlc.c
-> >
-> > diff --git a/drivers/pmdomain/renesas/r8a78000-mdlc.c b/drivers/pmdomain/renesas/r8a78000-mdlc.c
-> > new file mode 100644
-> > index 0000000000000000..5c8acead7cff9bdd
-> > --- /dev/null
-> > +++ b/drivers/pmdomain/renesas/r8a78000-mdlc.c
-> > @@ -0,0 +1,330 @@
-> [...]
-> > +#define DEFINE_MDLC_RESET_WRAPPER(op)                                            \
-> > +     static int r8a78000_mdlc_ ## op(struct reset_controller_dev *rcdev, \
-> > +                                     unsigned long id)                   \
-> > +     {                                                                   \
-> > +             struct r8a78000_mdlc_priv *priv = rcdev_to_priv(rcdev);     \
-> > +                                                                         \
-> > +             dev_dbg(priv->dev, "%s: Ignoring\n", __func__);             \
-> > +             return 0;                                                   \
-> > +     }
-> > +
-> > +DEFINE_MDLC_RESET_WRAPPER(reset)
-> > +DEFINE_MDLC_RESET_WRAPPER(assert)
-> > +DEFINE_MDLC_RESET_WRAPPER(deassert)
-> > +DEFINE_MDLC_RESET_WRAPPER(status)
-> > +
-> > +static const struct reset_control_ops r8a78000_mdlc_reset_ops = {
-> > +     .reset = r8a78000_mdlc_reset,
-> > +     .assert = r8a78000_mdlc_assert,
-> > +     .deassert = r8a78000_mdlc_deassert,
-> > +     .status = r8a78000_mdlc_status,
->
-> Are .reset and .status needed by any consumers?
-> I'd leave them -ENOTSUPP otherwise.
+scoped guard?
 
-.reset is used by a variety of R-Car drivers.
-.status is used by the R-Car I2C and PCIe drivers.
+> +	if (!copy)
+> +		return -ENOMEM;
+> +
+> +	len = strlen(copy);
+> +	copy[len++] = '\n';
+> +	ret = simple_read_from_buffer(user_buf, count, ppos, copy, len);
+> +	kfree(copy);
+> +	return ret;
+> +}
+> +
+> +static ssize_t icc_node_write(struct file *file, const char __user *user_buf,
+> +			      size_t count, loff_t *ppos)
+> +{
+> +	char **node = file->private_data;
+> +	char *old, *new;
+> +
+> +	if (*ppos)
+> +		return -EINVAL;
+> +	if (count + 1 > PAGE_SIZE)
+> +		return -E2BIG;
+> +
+> +	new = memdup_user_nul(user_buf, count);
+> +	if (IS_ERR(new))
+> +		return PTR_ERR(new);
+> +	strim(new);
+> +
+> +	mutex_lock(&debugfs_lock);
+> +	old = *node;
+> +	*node = new;
+> +	mutex_unlock(&debugfs_lock);
 
-So both will be used later.
+Same here.
 
-Gr{oetje,eeting}s,
+> +
+> +	kfree(old);
+> +	return count;
+> +}
+> +
+> +static const struct file_operations icc_node_fops = {
+> +	.open = simple_open,
+> +	.read = icc_node_read,
+> +	.write = icc_node_write,
+> +	.llseek = default_llseek,
+> +};
+> +
+>  static struct icc_path *get_path(const char *src, const char *dst)
+>  {
+>  	struct debugfs_path *path;
+> @@ -56,24 +110,17 @@ static int icc_get_set(void *data, u64 val)
+>  
+>  	mutex_lock(&debugfs_lock);
+>  
+> -	rcu_read_lock();
+> -	src = rcu_dereference(src_node);
+> -	dst = rcu_dereference(dst_node);
+> -
+>  	/*
+>  	 * If we've already looked up a path, then use the existing one instead
+>  	 * of calling icc_get() again. This allows for updating previous BW
+>  	 * votes when "get" is written to multiple times for multiple paths.
+>  	 */
+> -	cur_path = get_path(src, dst);
+> -	if (cur_path) {
+> -		rcu_read_unlock();
+> +	cur_path = get_path(src_node, dst_node);
+> +	if (cur_path)
+>  		goto out;
+> -	}
+>  
+> -	src = kstrdup(src, GFP_ATOMIC);
+> -	dst = kstrdup(dst, GFP_ATOMIC);
+> -	rcu_read_unlock();
+> +	src = kstrdup(src_node, GFP_KERNEL);
+> +	dst = kstrdup(dst_node, GFP_KERNEL);
 
-                        Geert
+Why is GFP_KERNEL now ok, while GFP_ATOMIC wasn't?  Is this the rcu
+stuff interacting somehow?
 
--- 
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+thanks,
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+greg k-h
