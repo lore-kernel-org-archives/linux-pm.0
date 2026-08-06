@@ -1,214 +1,162 @@
-Received: from smtpbgeu1.qq.com (smtpbgeu1.qq.com [52.59.177.22])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-vk1-f169.google.com (mail-vk1-f169.google.com [209.85.221.169])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4961441F5C8;
-	Thu,  6 Aug 2026 08:49:20 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=52.59.177.22
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 88F643C6A57
+	for <linux-pm@vger.kernel.org>; Thu,  6 Aug 2026 08:58:46 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.169
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1786006164; cv=none; b=fXejqh37ohU6OXT1WI56OlIGdDON+ngUuEQe9jLh6GjOGAgpEWsERZq372xBdcBsxQZBrJH7YdBoCQzrDLBr5kmk3lE8cY5B1nWaa1QbQ41cn1wal/DoChxtrHWxmm9+RVtCtdZB+TMyxDodOzeA8OuZshZRIiRlCX2a0C/bUgA=
+	t=1786006728; cv=none; b=ie6xBiqdBjNVQs284tE5TFrr75l4RkErq4xdbff5dJUBAMIcpPCNZGFzDh2SLTUsi0TctcZ1YvgIaHQIFY+2qvUQpr6G5omVokViJNNgv7yf4mAIiMxs4seWGKA5IPp+OjdRaSEU8A2CTOOxSFnLzxveSpsp3jOdm6Gysd1RUlU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1786006164; c=relaxed/simple;
-	bh=ePp+RxiutBCyzzEvl5K1dmKuPb/y40CYrZgkRG5vNg0=;
-	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=CzkBfx2wdontdI+UpzbdJla4eDqtYTQabnkAmKaRNdvYDmahu51z0CEUe5ZnZvMb7sacJPzYsGCiOKLyxfVeiwSvEVXaL5RGXdQgGspSMl+dUJBIZHuUS8AU2CbI5j8PBlA4Hn1uoI5FQOrlqSqYyg48AnLX9PJ2USB9IEq8fSo=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=uniontech.com; spf=pass smtp.mailfrom=uniontech.com; dkim=pass (1024-bit key) header.d=uniontech.com header.i=@uniontech.com header.b=LqbrOUy2; arc=none smtp.client-ip=52.59.177.22
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=uniontech.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=uniontech.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=uniontech.com header.i=@uniontech.com header.b="LqbrOUy2"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=uniontech.com;
-	s=onoh2408; t=1786006157;
-	bh=qvo8GnxR4HBw5KUhU+lgGsArbxbsBLDwyjUKHDJAdeY=;
-	h=From:To:Subject:Date:Message-Id:MIME-Version;
-	b=LqbrOUy2TqqM0OtmFMg1/aUcsufALMPN0WLPugFfgvfYGAHSNMdnqjCmqaW3ywnan
-	 bZw8xMgQnOX7SEuRn+bmzVftjP7xDhZgBnh7uMlZK4bB2w+2UJZlqYf+PDSrfrr54Z
-	 85fsL5X+JGjQKvsIwLyuqnSuS2vG4cKgjQ9Y7a7Q=
-X-QQ-mid: esmtpgz10t1786006153t5a193209
-X-QQ-Originating-IP: JVhbFHdaKldKfaSuDbI31KdscLgt26kiGyz/MsQ1sFk=
-Received: from uniontech.com ( [113.57.152.160])
-	by bizesmtp.qq.com (ESMTP) with 
-	id ; Thu, 06 Aug 2026 16:49:10 +0800 (CST)
-X-QQ-SSF: 0000000000000000000000000000000
-X-QQ-GoodBg: 1
-X-BIZMAIL-ID: 11587436272673348081
-EX-QQ-RecipientCnt: 13
-From: Yichong Chen <chenyichong@uniontech.com>
-To: gregkh@linuxfoundation.org
-Cc: rafael@kernel.org,
-	dakr@kernel.org,
-	djakov@kernel.org,
-	quic_mdtipton@quicinc.com,
-	vkoul@kernel.org,
-	yung-chuan.liao@linux.intel.com,
-	pierre-louis.bossart@linux.dev,
-	driver-core@lists.linux.dev,
-	linux-kernel@vger.kernel.org,
-	linux-pm@vger.kernel.org,
-	linux-sound@vger.kernel.org,
-	Yichong Chen <chenyichong@uniontech.com>
-Subject: [PATCH v2 3/3] debugfs: make debugfs_create_str() read-only
-Date: Thu,  6 Aug 2026 16:48:54 +0800
-Message-Id: <20260806084854.1019789-4-chenyichong@uniontech.com>
-X-Mailer: git-send-email 2.20.1
-In-Reply-To: <20260806084854.1019789-1-chenyichong@uniontech.com>
-References: <20260806084854.1019789-1-chenyichong@uniontech.com>
+	s=arc-20240116; t=1786006728; c=relaxed/simple;
+	bh=Wp5Awetz8x1lkJd7iV42zxvDh1yQD5wNbmheE5eZ5No=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=p/aE/zK08j4LAhW998hKvE6voRMrUadUv8KXK65gXZ7GHd1a243RcBCx66UFJQHaFTJ8lZbdaNjGtARFDpOUVLVkMWrgFsiKG0s3N13OiBhtZAi7OpFoUmPET9YuCQp+OoLaRwcdhk5sSvf53wNZS4z+dZfyS3kWhQOa0cC8tso=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org; spf=pass smtp.mailfrom=gmail.com; arc=none smtp.client-ip=209.85.221.169
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+Received: by mail-vk1-f169.google.com with SMTP id 71dfb90a1353d-5bf94664327so794524e0c.1
+        for <linux-pm@vger.kernel.org>; Thu, 06 Aug 2026 01:58:46 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1786006725; x=1786611525;
+        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
+         :references:mime-version:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to:content-type;
+        bh=Y/Tg3lEpqdaiPRfyjPgi2cmAvw9BxKYOOcBoKp4sZn8=;
+        b=aeW9J7FcbkxBk95OdHm3txbBpwn+M/VdttqRZBFL68uYUT0sr/njZv5G8XeM/A2GSY
+         r6TdwWoIxYdhB6vt2hI6aUaV9BcyK1VVMpFGXtvueGD3FQKnNEv1jEJd4ztzHkontkIY
+         i0A1tvfkltEvZdxR+mXtljIkUKmyMEzO6sZx+EAfKPm4MbTg+cY876fycu6xJGcbXzCb
+         +ACTFfasenfgiX7V54JGohIvs6vMhrFijzqmE1MmmfRq9STvK0f1DdRQm59orPeY8rft
+         7Cst1DDGIc+xfP4mbj/X+f2iMRpCm0Z6o43Hxlq60owsx2jLbZgQS5x0z8piAmmhkF02
+         4X8Q==
+X-Forwarded-Encrypted: i=1; AHgh+Roqaja3RfZfTTjXI3S+O7BxV45aD7QT2dx68AheowOp/wjzQXZhj/eh3hFR44o+Dl9vqqAcQ3f5GQ==@vger.kernel.org
+X-Gm-Message-State: AOJu0YzhpIx3SRvczmZPSfwpLcq0hSQwI5rhNkYl2Q7AM0WBLYW62n4g
+	1Sem/yFSQI2ysjunCtDp4HtG69+7PVFg9/yKqLQAihwazVyZFbVs/7lbV47k53Iw
+X-Gm-Gg: AR+sD13KkHXPBxfCoOy3aiNFF4AjGLfDpgYy7hOp05lEjer4FZfMjthG7lgmoGmaew2
+	J8xl0IVgHziFVNe8j2IpGlAwEZBzU0BgLbqhP1cj0so9ovMW1TcOpH+tMUa36eYDDQ0UkHTxQTj
+	S1HLQ3cMBsscUlmWQD/HrVpECO8FdDmBOZacRxo0xzo97X4rPU0dtWHvauib1AsTHN4SH7qXypO
+	3y1+IsJ8npVjJmsqwd47FmC3fVVBmA/IrvjqogKfyLkpKTy4TdJlo+bajlNlqOx4PIq32eQTS89
+	S82pJAJh2zwnV0IiljmbZ6XfYWdpdQNcOika4Xfo5pf5vBz2KHATcLyadwpRrdSOznFkW5jcwbp
+	DIIk5aL+nQS89fbNXYNn6atPJPgXTyJC5V1F60Q0LIfjmeIR7D2Q/zuEEwQu6kwQYqSthu/5N7L
+	rhcMPbv9RWwzDw4VNxbn7ViG8+x0iSEmDtGAWzu3DTi5eoSZlypw8KtbICUfkboKG16UfTGZ3Z2
+	bloRqeZUjXqwF++DRE9W2thTVU33NwDj9wRfjxA
+X-Received: by 2002:a05:6102:5045:b0:740:2717:a2d5 with SMTP id ada2fe7eead31-760e7df2d1bmr3106844137.6.1786006725323;
+        Thu, 06 Aug 2026 01:58:45 -0700 (PDT)
+Received: from mail-vk1-f175.google.com (mail-vk1-f175.google.com. [209.85.221.175])
+        by smtp.gmail.com with ESMTPSA id 71dfb90a1353d-5c3d050c87esm2798643e0c.3.2026.08.06.01.58.44
+        for <linux-pm@vger.kernel.org>
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Thu, 06 Aug 2026 01:58:45 -0700 (PDT)
+Received: by mail-vk1-f175.google.com with SMTP id 71dfb90a1353d-5c2dbaf828eso671854e0c.0
+        for <linux-pm@vger.kernel.org>; Thu, 06 Aug 2026 01:58:44 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AHgh+RpJGj9X1wk/VcbvZOn4wRzTjP0GB7W+G3GUwF8IFBYxgYRdVednQ8w+3lCPZWpne8sr2T33snKONQ==@vger.kernel.org
+X-Received: by 2002:a05:6102:374e:b0:739:626d:4473 with SMTP id
+ ada2fe7eead31-760e3698c49mr3173857137.0.1786006724650; Thu, 06 Aug 2026
+ 01:58:44 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-QQ-SENDSIZE: 520
-Feedback-ID: esmtpgz:uniontech.com:qybglogicsvrgz:qybglogicsvrgz3a-0
-X-QQ-XMAILINFO: Mh1JMxfliF/1MGldjCRDRJRwJtAVKKQlCrJHxteiApDdMbhGrm5tquH/
-	Xv2XAbGoAvGCCXOWJHRwTVf/YfbF/FmeNzF5WC6Yr43wkBJUXlgR9/iUAK/uAtBeGQsWr9m
-	wdGWkW0aq3DId0HWZvyWUeqhC1XdDugPtOsqSamTb7KjXlY1hMUCXWtSoJxss8eYTmuxdfq
-	GsKdXDCVXmssOi84PBSKMkBHrN6/FwMUny0sKWt6nAYr5lDQV5A1wzxeqSZcqaFiMbDCNTz
-	gwZfIf7qnIsH7NsQpUd/tdSjetbmHo5hZvsxvDnfijhsMBhz09H5IQw5DeurlRt45woT2l3
-	0qKBQxJXL510ZFk9OqvMW8qTTltzcPNKTVlZxJv9wPvRR8EjnVC4ImyyfWXRFxeq8ZvQDNK
-	OxTIPptbGPzKBaObMMiAQJVAi8AQC/ori1i5raCkp+OFaX1P1+PyiIRfDnfb85Y2jUWJe73
-	tHOxPqoieiD0qCqPRVsIvYnYiiBbwaCTIe+SAMI0oRAX28Ong0K/LuaUTL8KYOLXpHWZNZA
-	s+FQZseN0ZXVZdz93IlLKH0vUg8QmII6iUl7EvMeZruTtS4qpDZ0P2gCuqobCEztG61hpum
-	vPg6Dv6LpTOPF7eCRULC0HU846i5tK6LlTnXpFHEiTs9WhBZqvfScb/i3/AUK5s/Eg10B2e
-	7l3uHbFuPs3WZqvelvKMf/UwoefKHQJYuhaV6MLvVT7si5jNVlTiC+HXWALSWjV8dPSEhdZ
-	DXWeLqTmVhWkG/2VX+fErGB/EYo4rc4D/4ApKMsZ5Mz1dkHSl9bVR49xQC5UJzcu+MUGywq
-	sh8XwyreqvfFDmAtEixuq2TXZg9HBLZ8VTTyN+bcLHh6dLPLkEP/N0r3NkqBC1w3cW35Bil
-	y0ZYA1/O6zhuDAaBu6OquWo8YzfRJrn581IA1VOOfWfgAkVSTZSVQsnNmiGiBpKVO71ZrwE
-	vxxSUItxROxg766dTOQJCJ9T9oIcGVcrFRbL034EyWmHz0CWvLIN0RzmUys5esdHAx4gp2l
-	xL1Qrgwjgg4XPCnPzjfycGHMnXfPwM2b0sAZm6HRT0OBMgBU+r6hn/QS5dWWU=
-X-QQ-XMRINFO: MSVp+SPm3vtSI1QTLgDHQqIV1w2oNKDqfg==
-X-QQ-RECHKSPAM: 0
+References: <cover.1785941595.git.geert+renesas@glider.be> <89e6a71b35703f10e12f520af1f389b5f40f4b35.1785941595.git.geert+renesas@glider.be>
+ <7c30baacac8c75037f32c0ac3099a6107cbec38b.camel@pengutronix.de>
+In-Reply-To: <7c30baacac8c75037f32c0ac3099a6107cbec38b.camel@pengutronix.de>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Thu, 6 Aug 2026 10:58:32 +0200
+X-Gmail-Original-Message-ID: <CAMuHMdX3mUVq5HAOcoLxf8_=ALKe_j-0uSTTORA_KyiOq1Bgiw@mail.gmail.com>
+X-Gm-Features: AUfX_mwUZKZac7nMaa-VOsxeMPj2DizVJUU-sXiHc_DXR1wX8yJ0IgF-oPKqM3c
+Message-ID: <CAMuHMdX3mUVq5HAOcoLxf8_=ALKe_j-0uSTTORA_KyiOq1Bgiw@mail.gmail.com>
+Subject: Re: [PATCH v3 4/6] pmdomain: renesas: Add R-Car X5H MDLC driver
+To: Philipp Zabel <p.zabel@pengutronix.de>
+Cc: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+	Conor Dooley <conor+dt@kernel.org>, Michael Turquette <mturquette@baylibre.com>, 
+	Stephen Boyd <sboyd@kernel.org>, Brian Masney <bmasney@redhat.com>, Ulf Hansson <ulfh@kernel.org>, 
+	Wolfram Sang <wsa+renesas@sang-engineering.com>, 
+	Marek Vasut <marek.vasut+renesas@mailbox.org>, 
+	Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>, devicetree@vger.kernel.org, 
+	linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, 
+	linux-renesas-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
+	linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
 
-debugfs_create_str() supports replacing the backing string from userspace.
-Concurrent writers can race and free the same old string twice.
+Hi Philipp,
 
-All writable in-tree users have been converted to local file operations.
-Remove the generic write support from debugfs_create_str(), and refuse to
-create a file when the caller passes write permission bits.
+On Thu, 6 Aug 2026 at 10:13, Philipp Zabel <p.zabel@pengutronix.de> wrote:
+> On Mi, 2026-08-05 at 17:20 +0200, Geert Uytterhoeven wrote:
+> > Add a minimal Module Controller driver for the R-Car X5H (R8A78000) SoC.
+> > For now this just supports the always-on power domains, and dummy module
+> > clocks and resets for the serial console (which is enabled by the boot
+> > loader).
+> >
+> > Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+> > ---
+> > v3:
+> >   - Replace <linux/mod_devicetable.h> by more specific
+> >     <linux/device-id/of.h> in v7.2-rc2,
+> >   - Add a comment to document only always-on domains are supported,
+> >   - Consistently use /* sentinel */ for zero sentinels,
+> >   - Drop trailing commas from sentinels,
+> >
+> > v2:
+> >   - Spin off from "pmdomain: renesas: Add R-Car X5H MDLC SCMI remapping
+> >     driver",
+> >   - Add default support not using SCMI,
+> >   - Drop all SCMI remapping support,
+> >   - Document use of -1 as a sentinel,
+> >   - Rename struct r8a78000_mdlc_info to mdlc_info,
+> >   - Print HW IDs in hexadecimal,
+> >   - Reduce log level for unsupported MDLC instances from warn to dbg,
+> > ---
+> >  drivers/pmdomain/renesas/Kconfig         |   4 +
+> >  drivers/pmdomain/renesas/Makefile        |   1 +
+> >  drivers/pmdomain/renesas/r8a78000-mdlc.c | 330 +++++++++++++++++++++++
+> >  drivers/soc/renesas/Kconfig              |   1 +
+> >  4 files changed, 336 insertions(+)
+> >  create mode 100644 drivers/pmdomain/renesas/r8a78000-mdlc.c
+> >
+> > diff --git a/drivers/pmdomain/renesas/r8a78000-mdlc.c b/drivers/pmdomain/renesas/r8a78000-mdlc.c
+> > new file mode 100644
+> > index 0000000000000000..5c8acead7cff9bdd
+> > --- /dev/null
+> > +++ b/drivers/pmdomain/renesas/r8a78000-mdlc.c
+> > @@ -0,0 +1,330 @@
+> [...]
+> > +#define DEFINE_MDLC_RESET_WRAPPER(op)                                            \
+> > +     static int r8a78000_mdlc_ ## op(struct reset_controller_dev *rcdev, \
+> > +                                     unsigned long id)                   \
+> > +     {                                                                   \
+> > +             struct r8a78000_mdlc_priv *priv = rcdev_to_priv(rcdev);     \
+> > +                                                                         \
+> > +             dev_dbg(priv->dev, "%s: Ignoring\n", __func__);             \
+> > +             return 0;                                                   \
+> > +     }
+> > +
+> > +DEFINE_MDLC_RESET_WRAPPER(reset)
+> > +DEFINE_MDLC_RESET_WRAPPER(assert)
+> > +DEFINE_MDLC_RESET_WRAPPER(deassert)
+> > +DEFINE_MDLC_RESET_WRAPPER(status)
+> > +
+> > +static const struct reset_control_ops r8a78000_mdlc_reset_ops = {
+> > +     .reset = r8a78000_mdlc_reset,
+> > +     .assert = r8a78000_mdlc_assert,
+> > +     .deassert = r8a78000_mdlc_deassert,
+> > +     .status = r8a78000_mdlc_status,
+>
+> Are .reset and .status needed by any consumers?
+> I'd leave them -ENOTSUPP otherwise.
 
-This makes unsupported writable use visible instead of silently creating a
-file with different permissions.
+.reset is used by a variety of R-Car drivers.
+.status is used by the R-Car I2C and PCIe drivers.
 
-Fixes: 86b5488121db ("debugfs: Add write support to debugfs_create_str()")
-Signed-off-by: Yichong Chen <chenyichong@uniontech.com>
----
- fs/debugfs/file.c | 81 ++++++-----------------------------------------
- 1 file changed, 10 insertions(+), 71 deletions(-)
+So both will be used later.
 
-diff --git a/fs/debugfs/file.c b/fs/debugfs/file.c
-index 08de6652a4f3..f5abd067b260 100644
---- a/fs/debugfs/file.c
-+++ b/fs/debugfs/file.c
-@@ -1049,98 +1049,37 @@ ssize_t debugfs_read_file_str(struct file *file, char __user *user_buf,
- 	return ret;
- }
- 
--static ssize_t debugfs_write_file_str(struct file *file, const char __user *user_buf,
--				      size_t count, loff_t *ppos)
--{
--	struct dentry *dentry = F_DENTRY(file);
--	char *old, *new = NULL;
--	int pos = *ppos;
--	int r;
--
--	r = debugfs_file_get(dentry);
--	if (unlikely(r))
--		return r;
--
--	old = *(char **)file->private_data;
--
--	/* only allow strict concatenation */
--	r = -EINVAL;
--	if (pos && pos != strlen(old))
--		goto error;
--
--	r = -E2BIG;
--	if (pos + count + 1 > PAGE_SIZE)
--		goto error;
--
--	r = -ENOMEM;
--	new = kmalloc(pos + count + 1, GFP_KERNEL);
--	if (!new)
--		goto error;
--
--	if (pos)
--		memcpy(new, old, pos);
--
--	r = -EFAULT;
--	if (copy_from_user(new + pos, user_buf, count))
--		goto error;
--
--	new[pos + count] = '\0';
--	strim(new);
--
--	rcu_assign_pointer(*(char __rcu **)file->private_data, new);
--	synchronize_rcu();
--	kfree(old);
--
--	debugfs_file_put(dentry);
--	return count;
--
--error:
--	kfree(new);
--	debugfs_file_put(dentry);
--	return r;
--}
--
- static const struct file_operations fops_str = {
- 	.read =		debugfs_read_file_str,
--	.write =	debugfs_write_file_str,
--	.open =		simple_open,
--	.llseek =	default_llseek,
--};
--
--static const struct file_operations fops_str_ro = {
--	.read =		debugfs_read_file_str,
--	.open =		simple_open,
--	.llseek =	default_llseek,
--};
--
--static const struct file_operations fops_str_wo = {
--	.write =	debugfs_write_file_str,
- 	.open =		simple_open,
- 	.llseek =	default_llseek,
- };
- 
- /**
-- * debugfs_create_str - create a debugfs file that is used to read and write a string value
-+ * debugfs_create_str - create a debugfs file that is used to read a string value
-  * @name: a pointer to a string containing the name of the file to create.
-  * @mode: the permission that the file should have
-  * @parent: a pointer to the parent dentry for this file.  This should be a
-  *          directory dentry if set.  If this parameter is %NULL, then the
-  *          file will be created in the root of the debugfs filesystem.
-- * @value: a pointer to the variable that the file should read to and write
-- *         from. This pointer and the string it points to must not be %NULL.
-+ * @value: a pointer to the variable that the file should read from. This
-+ *         pointer and the string it points to must not be %NULL.
-  *
-  * This function creates a file in debugfs with the given name that
-- * contains the value of the variable @value.  If the @mode variable is so
-- * set, it can be read from, and written to.
-+ * contains the value of the variable @value.  The file can be read from.
-+ * Writable files are not supported; if @mode contains write permission bits,
-+ * no file is created.
-  */
- void debugfs_create_str(const char *name, umode_t mode,
- 			struct dentry *parent, char **value)
- {
- 	if (WARN_ON(!value || !*value))
- 		return;
-+	if (WARN_ONCE(mode & 0222,
-+		      "%s() does not support writable files\n", __func__))
-+		return;
- 
--	debugfs_create_mode_unsafe(name, mode, parent, value, &fops_str,
--				   &fops_str_ro, &fops_str_wo);
-+	debugfs_create_file_unsafe(name, mode, parent, value, &fops_str);
- }
- EXPORT_SYMBOL_GPL(debugfs_create_str);
- 
+Gr{oetje,eeting}s,
+
+                        Geert
+
 -- 
-2.51.0
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
