@@ -1,41 +1,41 @@
 Received: from sender-of-o57.zoho.eu (sender-of-o57.zoho.eu [136.143.169.57])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6295F486B81;
-	Thu,  6 Aug 2026 17:53:00 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B37FE488DA0;
+	Thu,  6 Aug 2026 17:53:01 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=136.143.169.57
 ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1786038782; cv=pass; b=cAgNNbq9gS8oY2r7CNEOLYmIlbVl6xGoGdZF1nPpfFhnVblsr5gfMAIkXCYM4tm7/nKNJAKCoSuvqyIyRubJjn/6hgtR69ge1W2WJPgmbrE8351r/9ZC06BC1/GlxXIOPZoquSxW9bpQP+1eBrEI02mIMWUsjQRixjzJFyDLJLQ=
+	t=1786038783; cv=pass; b=ca4ru1VDE7lxeMjYeuOynq4Y9MycqGW22t853dSHu5AL6UNLBo7ljRLzpKOjE5u9U6sKwNCZURigkyn/SyZ1ndfsHGgWv8JQKBuKHBfuC/vIVx2eNBqmEp7zw/I52DxRqyDaLwuarNqvwVF36au7zClkA0RlzqScKauy57N2cwc=
 ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1786038782; c=relaxed/simple;
-	bh=NPeV05VN2Q0m0jGasmNg0LOBo6pBEGcCRFWfCNqtMCc=;
+	s=arc-20240116; t=1786038783; c=relaxed/simple;
+	bh=EHhbCVevOeBscWI01IhLo1jCKu5Z9Cq5gdkjjH5gg2M=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=GnCioBqJg58t3RJiqGiTbhP2RePyCrPHOkMGIx7vXnYHX2n2Yvkn2RnYSfXRzj4IFvyOky6bcT6PSr5a1nwfI3IxRcHlhwlkxtmCkrgHza8p77+OhL6biANJWNr4QChWqrltuF89dErp5FPPHL0c3RAxPNh6hAqm+b3MxNXW6zs=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=iusegentoo.com; spf=pass smtp.mailfrom=iusegentoo.com; dkim=pass (1024-bit key) header.d=iusegentoo.com header.i=ali@iusegentoo.com header.b=nAvDTGwr; arc=pass smtp.client-ip=136.143.169.57
+	 MIME-Version; b=rRZ/vFm2vEu9lTaK4rgD3iImL4epFRREp+/llOrIEx2xUXRSFfDQAbIqFm2y+BN8KsZYAKWUfePwA8NP+ifo6fGHnAejONRT4PC5VmXM4JxkFtWljmkLo/2Z72nVG4IMleW+jaP7L1HGsI5a8qZHt6rcxFl9+lfoos9+BLR+Qsw=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=iusegentoo.com; spf=pass smtp.mailfrom=iusegentoo.com; dkim=pass (1024-bit key) header.d=iusegentoo.com header.i=ali@iusegentoo.com header.b=pRUZMSmx; arc=pass smtp.client-ip=136.143.169.57
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=iusegentoo.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=iusegentoo.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=iusegentoo.com header.i=ali@iusegentoo.com header.b="nAvDTGwr"
-ARC-Seal: i=1; a=rsa-sha256; t=1786038769; cv=none; 
+	dkim=pass (1024-bit key) header.d=iusegentoo.com header.i=ali@iusegentoo.com header.b="pRUZMSmx"
+ARC-Seal: i=1; a=rsa-sha256; t=1786038772; cv=none; 
 	d=zohomail.eu; s=zohoarc; 
-	b=Brwnmvm7jTeXnyCSPLcqE5h7ICrHloLx0AU6C+uLHhkhR5AXl5ozVp9toMtFDrXXFuoCApu3GjfZbSh9PENx4yl6PZypiwkX0kzh4ygZaAxnvbVv0rojpuF3UnGErlFrzcOJ48JRakfyFE9rKXVNBpQ7AQdMIFO34ekwCvKNQQM=
+	b=LXDrQE5DRtOmnOdT/vCGdUecPqEDwuhhyXZotAhYMSQxAftf1kzznOrBYnv1t2TCH+O7vh8mTA9eSMIEIOobeZg5iurlmNFt71EsbneA7fSqjPaBRdTFwLmOhDitIYwfg1a/2KGshEf+iiY+KAZ365Tl+ZWh+xBTjXayTSvbBow=
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=zohomail.eu; s=zohoarc; 
-	t=1786038769; h=Content-Transfer-Encoding:Cc:Cc:Date:Date:From:From:In-Reply-To:MIME-Version:Message-ID:Subject:Subject:To:To:Message-Id:Reply-To; 
-	bh=urS3ZJ7s9lTN82OPa2CAKOLVBQaanTrheAG+VfgV1cA=; 
-	b=WRDZ4+W1UIr8YejLzRZJobgo2KpZ4uCZ+Yn2L4TNNLi32/yVbE7rhf11JhaZsmWfT5YtjqC0slXSdQqe9ZI3Vt4ifEuOWnyEjR+R3JokCWHdzbQTda77qDzvUuwRzuGuyOTTXlMJH+/unS1cbvEUpH19XO6cvqXZixS77yhae98=
+	t=1786038772; h=Content-Transfer-Encoding:Cc:Cc:Date:Date:From:From:In-Reply-To:MIME-Version:Message-ID:Subject:Subject:To:To:Message-Id:Reply-To; 
+	bh=Z6WATQx7HFOLER/80FIk8wzVJDGzY5WQorFbOQe4yZs=; 
+	b=MW9iV72uf5GLe3fNy9PO1t8L+F6FBcOd/NAqsS/e06+Xwb9/sBFqiI65UM/bCVZ3f8HnvGRhtJOjWu+XQilYUYb7oNf7FytjPNm94hFpxh8aB4hDznOlUZP22hmtlscWOKZVRafxjJ8I9yO6LnHTna/Vbsiiv++f7dilrhWfl9A=
 ARC-Authentication-Results: i=1; mx.zohomail.eu;
 	dkim=pass  header.i=iusegentoo.com;
 	spf=pass  smtp.mailfrom=ali@iusegentoo.com;
 	dmarc=pass header.from=<ali@iusegentoo.com>
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; t=1786038769;
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; t=1786038772;
 	s=zmail; d=iusegentoo.com; i=ali@iusegentoo.com;
 	h=From:From:To:To:Cc:Cc:Subject:Subject:Date:Date:Message-ID:In-Reply-To:MIME-Version:Content-Transfer-Encoding:Message-Id:Reply-To;
-	bh=urS3ZJ7s9lTN82OPa2CAKOLVBQaanTrheAG+VfgV1cA=;
-	b=nAvDTGwrJXgy414XN9dNdPHfg78oGOjyJmpGeHOnWDKScvggK6rIHOW2Si4HdwY2
-	E3bgLO4WrYyMCm7SPlyr/HmPtENQ9/2FfOJO/xBXlUWZBabT5llrTFRSHt7jhgnhPvh
-	WH0baEq3CXtyZ1tG1xkoaR9AcWO8kQfLMRASFFk4=
-Received: by mx.zoho.eu with SMTPS id 1786038767555754.9783520765928;
-	Thu, 6 Aug 2026 19:52:47 +0200 (CEST)
+	bh=Z6WATQx7HFOLER/80FIk8wzVJDGzY5WQorFbOQe4yZs=;
+	b=pRUZMSmxDTFSaAvKFqt1wwGAJLPcYQfExXggD+JI+rk6oqWOxnQdC1dlbBL6kIp5
+	J8x9QW79IWm4Qs5sM1j5lxgpqcBdykhFkth7fcG0QKnWe6NwK9fQ13rShvGFq8uRWgJ
+	CEU4x1/k12f31wYma85AUf0We01l6E19dyrEWftg=
+Received: by mx.zoho.eu with SMTPS id 1786038769940664.4531870277694;
+	Thu, 6 Aug 2026 19:52:49 +0200 (CEST)
 From: Ali Ahmet Memis <ali@iusegentoo.com>
 To: Shuah Khan <skhan@linuxfoundation.org>,
 	Shuah Khan <shuah@kernel.org>,
@@ -44,9 +44,9 @@ To: Shuah Khan <skhan@linuxfoundation.org>,
 	John Kacur <jkacur@redhat.com>
 Cc: linux-pm@vger.kernel.org,
 	linux-kernel@vger.kernel.org
-Subject: [PATCH v3 2/3] cpupower: let the core == -1 check handle failed topology reads
-Date: Thu,  6 Aug 2026 17:51:39 +0000
-Message-ID: <20260806175140.270935-3-ali@iusegentoo.com>
+Subject: [PATCH v3 3/3] cpupower: do not count incomplete topology entries as physical cores
+Date: Thu,  6 Aug 2026 17:51:40 +0000
+Message-ID: <20260806175140.270935-4-ali@iusegentoo.com>
 X-Mailer: git-send-email 2.55.0
 In-Reply-To: <20260803175215.117518-1-ali@iusegentoo.com>
 References: <20260803175215.117518-1-ali@iusegentoo.com>
@@ -59,46 +59,59 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-ZohoMailClient: External
 
-When physical_package_id or core_id cannot be read, get_cpu_topology()
-sets pkg and core to -1 and skips the rest of the iteration. The check
-below them exists to give such an entry a defined core_cpu_list:
+The physical core count is derived by sorting core_info by core_cpu_list
+and counting how many distinct lists there are. The loop seeds the count
+with entry 0 unconditionally:
 
-	if (cpu_top->core_info[cpu].core == -1) {
-		strncpy(cpu_top->core_info[cpu].core_cpu_list, "-1", CPULIST_BUFFER);
-		continue;
-	}
+	last_cpu_list = cpu_top->core_info[0].core_cpu_list;
+	cpu_top->cores = 1;
 
-The two continue statements above it mean it never runs for the entries it
-was written for, since a CPU whose topology cannot be read is exactly the
-case it describes. Nothing between the reads and that check needs skipping,
-so drop the continue statements and let it do its job.
+A CPU whose topology could not be read is still a member of the array,
+carrying pkg and core of -1 and a core_cpu_list of "-1". That sorts ahead
+of any real cpu list, so after the qsort it is entry 0 and it seeds the
+count as if it were a core. The pkg check inside the loop only guards the
+entries that follow, never the one the count started from.
 
-Suggested-by: Shuah Khan <skhan@linuxfoundation.org>
+An offline CPU is enough to reach this. The topology attribute group is
+added and removed by a CPU hotplug callback in drivers/base/topology.c, so
+physical_package_id and core_id are absent while a CPU is offline and both
+reads fail.
+
+Skip entries without complete topology data and count from zero, so only
+CPUs with a package and a core contribute.
+
+Fixes: f89cb9cba7a2 ("cpupower: Implement CPU physical core querying")
 Signed-off-by: Ali Ahmet Memis <ali@iusegentoo.com>
 ---
- tools/power/cpupower/lib/cpupower.c | 2 --
- 1 file changed, 2 deletions(-)
+ tools/power/cpupower/lib/cpupower.c | 15 ++++++++++-----
+ 1 file changed, 10 insertions(+), 5 deletions(-)
 
 diff --git a/tools/power/cpupower/lib/cpupower.c b/tools/power/cpupower/lib/cpupower.c
-index 559b04f4387e..3d7e22ed1fd7 100644
+index 3d7e22ed1fd7..7784eb499435 100644
 --- a/tools/power/cpupower/lib/cpupower.c
 +++ b/tools/power/cpupower/lib/cpupower.c
-@@ -184,7 +184,6 @@ int get_cpu_topology(struct cpupower_topology *cpu_top)
- 			&(cpu_top->core_info[cpu].pkg)) < 0) {
- 			cpu_top->core_info[cpu].pkg = -1;
- 			cpu_top->core_info[cpu].core = -1;
--			continue;
+@@ -212,11 +212,16 @@ int get_cpu_topology(struct cpupower_topology *cpu_top)
+ 	qsort(cpu_top->core_info, cpus, sizeof(struct cpuid_core_info),
+ 	      __compare_core_cpu_list);
+ 
+-	last_cpu_list = cpu_top->core_info[0].core_cpu_list;
+-	cpu_top->cores = 1;
+-	for (cpu = 1; cpu < cpus; cpu++) {
+-		if (strcmp(cpu_top->core_info[cpu].core_cpu_list, last_cpu_list) != 0 &&
+-		    cpu_top->core_info[cpu].pkg != -1) {
++	last_cpu_list = NULL;
++	cpu_top->cores = 0;
++	for (cpu = 0; cpu < cpus; cpu++) {
++		if (cpu_top->core_info[cpu].pkg == -1 ||
++		    cpu_top->core_info[cpu].core == -1)
++			continue;
++
++		if (!last_cpu_list ||
++		    strcmp(cpu_top->core_info[cpu].core_cpu_list,
++			   last_cpu_list) != 0) {
+ 			last_cpu_list = cpu_top->core_info[cpu].core_cpu_list;
+ 			cpu_top->cores++;
  		}
- 		if(sysfs_topology_read_file(
- 			cpu,
-@@ -192,7 +191,6 @@ int get_cpu_topology(struct cpupower_topology *cpu_top)
- 			&(cpu_top->core_info[cpu].core)) < 0) {
- 			cpu_top->core_info[cpu].pkg = -1;
- 			cpu_top->core_info[cpu].core = -1;
--			continue;
- 		}
- 		if (cpu_top->core_info[cpu].core == -1) {
- 			strncpy(cpu_top->core_info[cpu].core_cpu_list, "-1", CPULIST_BUFFER);
 -- 
 2.55.0
 
